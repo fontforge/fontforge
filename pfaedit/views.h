@@ -495,9 +495,10 @@ extern int SFGenerateFont(SplineFont *sf,int family);
 extern GTextInfo *AnchorClassesList(SplineFont *sf);
 extern GTextInfo **AnchorClassesLList(SplineFont *sf);
 extern unichar_t *ClassName(const unichar_t *name,uint32 feature_tag,
-	uint16 flags, int script_lang_index);
+	uint16 flags, int script_lang_index, int merge_with);
 extern unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag,uint16 flags,
-	int script_lang_index, GTextInfo *tags, SplineFont *sf, SplineChar *default_script);
+	int script_lang_index, GTextInfo *tags, SplineFont *sf, SplineChar *default_script,
+	int merge_with);
 extern GTextInfo *SFLangList(SplineFont *sf,int addfinal,SplineChar *default_script);
 extern void ScriptLangList(SplineFont *sf,GGadget *list,int sli);
 extern void GListDelSelected(GGadget *list);

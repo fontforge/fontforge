@@ -152,6 +152,7 @@ struct ttfinfo {
     int platform, specific;		/* values of the encoding we chose to use */
 
     int anchor_class_cnt;		/* For GPOS */
+    int anchor_merge_cnt;
     AnchorClass *ahead, *alast;
 
     KernClass *khead, *klast;

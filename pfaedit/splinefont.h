@@ -133,7 +133,7 @@ typedef struct bdffloat {
     uint8 *bitmap;
 } BDFFloat;
 
-/* OpenType does not document 'DFLT' as a language, but we'll use it anyway. */
+/* OpenType does not document 'dflt' as a language, but we'll use it anyway. */
 /* we'll turn it into a default entry when we output it. */
 #define DEFAULT_LANG		CHR('d','f','l','t')
 #define DEFAULT_SCRIPT		CHR('D','F','L','T')
@@ -145,6 +145,7 @@ typedef struct anchorclass {
     uint32 feature_tag;
     uint16 script_lang_index;
     uint16 flags;
+    int merge_with;
     struct anchorclass *next;
 } AnchorClass;
 

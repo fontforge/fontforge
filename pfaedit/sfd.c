@@ -889,7 +889,7 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 		fprintf( sfd, "%c%c%c%c ",
 			an->feature_tag>>24, (an->feature_tag>>16)&0xff,
 			(an->feature_tag>>8)&0xff, an->feature_tag&0xff );
-	    fprintf( sfd, "%d %d ", an->flags, an->script_lang_index );
+	    fprintf( sfd, "%d %d %d ", an->flags, an->script_lang_index, an->merge_with );
 	}
 	putc('\n',sfd);
     }
@@ -2166,23 +2166,28 @@ static void SFDCleanupAnchorClasses(SplineFont *sf) {
     int i, j, scnt;
 #define S_MAX	100
     uint32 scripts[S_MAX];
+    int merge=0;
 
-    for ( ac = sf->anchor; ac!=NULL; ac=ac->next ) if ( ac->script_lang_index==0xffff ) {
-	scnt = 0;
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	    for ( ap = sf->chars[i]->anchor; ap!=NULL && ap->anchor!=ac; ap=ap->next );
-	    if ( ap!=NULL && scnt<S_MAX ) {
-		uint32 script = SCScriptFromUnicode(sf->chars[i]);
-		if ( script==0 )
-	continue;
-		for ( j=0; j<scnt; ++j )
-		    if ( scripts[j]==script )
-		break;
-		if ( j==scnt )
-		    scripts[scnt++] = script;
+    for ( ac = sf->anchor; ac!=NULL; ac=ac->next ) {
+	if ( ac->script_lang_index==0xffff ) {
+	    scnt = 0;
+	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+		for ( ap = sf->chars[i]->anchor; ap!=NULL && ap->anchor!=ac; ap=ap->next );
+		if ( ap!=NULL && scnt<S_MAX ) {
+		    uint32 script = SCScriptFromUnicode(sf->chars[i]);
+		    if ( script==0 )
+	    continue;
+		    for ( j=0; j<scnt; ++j )
+			if ( scripts[j]==script )
+		    break;
+		    if ( j==scnt )
+			scripts[scnt++] = script;
+		}
 	    }
+	    ac->script_lang_index = SFAddScriptIndex(sf,scripts,scnt);
 	}
-	ac->script_lang_index = SFAddScriptIndex(sf,scripts,scnt);
+	if ( ac->merge_with == 0xffff )
+	    ac->merge_with = ++merge;
     }
 #undef S_MAX
 }
@@ -2428,6 +2433,14 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 		    an->script_lang_index = temp;
 		} else
 		    an->script_lang_index = 0xffff;		/* Will be fixed up later */
+		while ( (ch=getc(sfd))==' ' || ch=='\t' );
+		ungetc(ch,sfd);
+		if ( isdigit(ch)) {
+		    int temp;
+		    getint(sfd,&temp);
+		    an->merge_with = temp;
+		} else
+		    an->merge_with = 0xffff;			/* Will be fixed up later */
 		if ( lastan==NULL )
 		    sf->anchor = an;
 		else

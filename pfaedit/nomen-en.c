@@ -1714,6 +1714,8 @@ static char str_NoScript = "No Script";
 static char str_NeedsScriptForSubs = "If you specify positioning or substitution information for a character, pfaedit needs to know its script.";
 static char str_NeedsScriptForSubsGuess = "If you specify positioning or substitution information for a character, pfaedit needs to know its script.\nWould this one be correct: '%c%c%c%c'?";
 static char str_ReallyNoScript = "You did not specify a script for this glyph (or PfaEdit failed to guess it). This may cause problems if you use this glyph in a GPOS or GSUB table.\nContinue anyway?"
+static char str_MergeWith = "Merge With:";
+static char str_MergeWithPopup = "PfaEdit will attempt to merge all anchor classes with the same value for \"Merge With\" into one GPOS lookup";
     /* Import */
 static char str_Duppixelsize[] = "Duplicate pixelsize";
 /* "The font database already contains a bitmap\nfont with this pixelsize (%d)\nDo you want to overwrite it?" */

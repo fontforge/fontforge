@@ -1501,11 +1501,11 @@ return;
 }
 
 unichar_t *ClassName(const unichar_t *name,uint32 feature_tag,
-	uint16 flags, int script_lang_index) {
+	uint16 flags, int script_lang_index,int merge_with) {
     unichar_t *newname, *upt;
     char index[10];
 
-    newname = galloc((u_strlen(name)+16)*sizeof(unichar_t));
+    newname = galloc((u_strlen(name)+20)*sizeof(unichar_t));
     if ( (newname[0] = feature_tag>>24)==0 ) newname[0] = ' ';
     if ( (newname[1] = (feature_tag>>16)&0xff)==0 ) newname[1] = ' ';
     if ( (newname[2] = (feature_tag>>8)&0xff)==0 ) newname[2] = ' ';
@@ -1522,6 +1522,12 @@ unichar_t *ClassName(const unichar_t *name,uint32 feature_tag,
     sprintf( index,"%3d ", script_lang_index );
     uc_strcpy(upt,index);
     upt += u_strlen(upt);
+
+    if ( merge_with!=-1 ) {
+	sprintf( index,"%3d ", merge_with );
+	uc_strcpy(upt,index);
+	upt += u_strlen(upt);
+    }
 
     u_strcpy(upt,name);
 return( newname );
@@ -1571,20 +1577,21 @@ return( true );
 
 unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	int script_lang_index, GTextInfo *tags, SplineFont *sf,
-	SplineChar *default_script ) {
+	SplineChar *default_script, int merge_with ) {
     static unichar_t nullstr[] = { 0 };
     struct ac_dlg acd;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[13];
-    GTextInfo label[13];
+    GGadgetCreateData gcd[15];
+    GTextInfo label[15];
     GWindow gw;
-    unichar_t ubuf[8];
+    char buf[12];
+    unichar_t ubuf[8], ub2[12];
     unichar_t *ret;
     const unichar_t *name, *utag;
     unichar_t *end;
     uint32 tag;
-    int temp;
+    int temp, i;
 
     if ( def==NULL ) def=nullstr;
     if ( def_tag==0 && u_strlen(def)>4 && def[4]==' ' && def[0]<0x7f && def[1]<0x7f && def[2]<0x7f && def[3]<0x7f ) {
@@ -1609,6 +1616,14 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	    def = end;
 	    if ( *def==' ' ) ++def;
 	}
+	if ( merge_with!=-1 ) {
+	    temp = u_strtol(def,&end,10);
+	    if ( end!=def ) {
+		merge_with = temp;
+		def = end;
+		if ( *def==' ' ) ++def;
+	    }
+	}
     }
 
 	memset(&acd,0,sizeof(acd));
@@ -1625,7 +1640,7 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,160));
-	pos.height = GDrawPointsToPixels(NULL,225);
+	pos.height = GDrawPointsToPixels(NULL,merge_with==-1?225:265);
 	gw = GDrawCreateTopWindow(NULL,&pos,acd_e_h,&acd,&wattrs);
 
 	memset(&gcd,0,sizeof(gcd));
@@ -1712,25 +1727,46 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	gcd[9].gd.label = &label[9];
 	gcd[9].creator = GCheckBoxCreate;
 
-	gcd[10].gd.pos.x = 15-3; gcd[10].gd.pos.y = gcd[9].gd.pos.y+22;
-	gcd[10].gd.pos.width = -1; gcd[10].gd.pos.height = 0;
-	gcd[10].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[10].text = (unichar_t *) _STR_OK;
-	label[10].text_in_resource = true;
-	gcd[10].gd.mnemonic = 'O';
-	gcd[10].gd.label = &label[10];
-	gcd[10].gd.cid = true;
-	gcd[10].creator = GButtonCreate;
+	i = 10;
+	if ( merge_with!=-1 ) {
+	    label[i].text = (unichar_t *) _STR_MergeWith;
+	    label[i].text_in_resource = true;
+	    gcd[i].gd.label = &label[i];
+	    gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[9].gd.pos.y+22;
+	    gcd[i].gd.flags = gg_enabled|gg_visible;
+	    gcd[i].gd.popup_msg = GStringGetResource(_STR_MergeWithPopup,NULL);
+	    gcd[i++].creator = GLabelCreate;
 
-	gcd[11].gd.pos.x = -15; gcd[11].gd.pos.y = gcd[10].gd.pos.y+3;
-	gcd[11].gd.pos.width = -1; gcd[11].gd.pos.height = 0;
-	gcd[11].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[11].text = (unichar_t *) _STR_Cancel;
-	label[11].text_in_resource = true;
-	gcd[11].gd.label = &label[11];
-	gcd[11].gd.mnemonic = 'C';
-	gcd[11].gd.cid = false;
-	gcd[11].creator = GButtonCreate;
+	    sprintf( buf, "%d", merge_with ); uc_strcpy(ub2,buf);
+	    label[i].text = ub2;
+	    gcd[i].gd.label = &label[i];
+	    gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+13;
+	    gcd[i].gd.pos.width = 140;
+	    gcd[i].gd.flags = gg_enabled|gg_visible;
+	    gcd[i].gd.popup_msg = GStringGetResource(_STR_MergeWithPopup,NULL);
+	    gcd[i++].creator = GTextFieldCreate;
+
+	    gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+26;
+	} else 
+	    gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+22;
+
+	gcd[i].gd.pos.x = 15-3;
+	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	label[i].text = (unichar_t *) _STR_OK;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.cid = true;
+	gcd[i++].creator = GButtonCreate;
+
+	gcd[i].gd.pos.x = -15; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+3;
+	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	label[i].text = (unichar_t *) _STR_Cancel;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.cid = false;
+	gcd[i++].creator = GButtonCreate;
 
 	GGadgetsCreate(gw,gcd);
 	acd.taglist = gcd[3].ret;
@@ -1766,7 +1802,17 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	if ( GGadgetIsChecked(gcd[7].ret) ) flags |= pst_ignorebaseglyphs;
 	if ( GGadgetIsChecked(gcd[8].ret) ) flags |= pst_ignoreligatures;
 	if ( GGadgetIsChecked(gcd[9].ret) ) flags |= pst_ignorecombiningmarks;
-	ret = ClassName(name,tag,flags,script_lang_index);
+	if ( merge_with!=-1 ) {
+	    const unichar_t *ret = _GGadgetGetTitle(gcd[11].ret); unichar_t *end;
+	    int temp = u_strtol(ret,&end,10);
+	    if ( *end ) {
+		GWidgetErrorR(_STR_BadNumber,_STR_BadNumber);
+		acd.done = false;
+ goto tryagain;
+	     }
+	     merge_with = temp;
+	}
+	ret = ClassName(name,tag,flags,script_lang_index,merge_with);
     } else
 	ret = NULL;
     GDrawDestroyWindow(gw);
@@ -2152,7 +2198,7 @@ static void CI_DoNew(CharInfo *ci, unichar_t *def) {
 	flags = pst_ignorecombiningmarks;
     newname = sel==0 
 	    ? AskPosTag(newstrings[sel],def,0,flags,-1,pst_tags[sel],ci->sc->parent,ci->sc)
-	    : AskNameTag(newstrings[sel],def,0,flags,-1,pst_tags[sel],ci->sc->parent,ci->sc);
+	    : AskNameTag(newstrings[sel],def,0,flags,-1,pst_tags[sel],ci->sc->parent,ci->sc,-1);
     if ( newname!=NULL ) {
 	if ( sel!=0 )
 	    if ( !LigCheck(ci->sc,sel+1,(newname[0]<<24)|(newname[1]<<16)|(newname[2]<<8)|newname[3],
@@ -2267,7 +2313,7 @@ static int CI_Edit(GGadget *g, GEvent *e) {
 return( true );
 	newname = sel==0 
 		? AskPosTag(editstrings[sel],ti->text,0,0,0,pst_tags[sel],ci->sc->parent,ci->sc)
-		: AskNameTag(editstrings[sel],ti->text,0,0,0,pst_tags[sel],ci->sc->parent,ci->sc);
+		: AskNameTag(editstrings[sel],ti->text,0,0,0,pst_tags[sel],ci->sc->parent,ci->sc,-1);
 	if ( newname!=NULL ) {
 	    old = GGadgetGetList(list,&len);
 	    for ( i=0; i<len; ++i ) if ( old[i]!=ti ) {

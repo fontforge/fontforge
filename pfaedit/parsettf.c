@@ -3968,6 +3968,7 @@ static AnchorClass **MarkGlyphsProcessMarks(FILE *ttf,int markoffset,
 	ac->feature_tag = lookup->tag;
 	ac->script_lang_index = lookup->script_lang_index;
 	ac->flags = lookup->flags;
+	ac->merge_with = info->anchor_merge_cnt+1;
 	if ( info->ahead==NULL )
 	    info->ahead = ac;
 	else
@@ -4117,6 +4118,7 @@ return;
       break;
     }
     info->anchor_class_cnt += classcnt;
+    ++ info->anchor_merge_cnt;
     free(markglyphs); free(baseglyphs);
     free(classes);
 }

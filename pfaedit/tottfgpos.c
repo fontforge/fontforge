@@ -356,23 +356,36 @@ return( NULL );
 return( glyphs );
 }
 
-static void AnchorClassDecompose(SplineFont *sf,AnchorClass *ac,
-	SplineChar ***mark,SplineChar ***base,
+static void AnchorClassDecompose(SplineFont *sf,AnchorClass *_ac, int classcnt, int *subcnts,
+	SplineChar ***marks,SplineChar ***base,
 	SplineChar ***lig,SplineChar ***mkmk) {
     /* Run through the font finding all characters with this anchor class */
+    /*  (and the cnt-1 classes after it) */
     /*  and distributing in the four possible anchor types */
-    int i,j;
+    int i,j,k;
     struct sclist { int cnt; SplineChar **glyphs; } heads[at_max];
     AnchorPoint *test;
+    AnchorClass *ac;
 
     memset(heads,0,sizeof(heads));
+    memset(subcnts,0,classcnt*sizeof(int));
     for ( j=0; j<2; ++j ) {
 	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	    for ( test=sf->chars[i]->anchor; test!=NULL && test->anchor!=ac; test=test->next );
-	    if ( test!=NULL && test->type!=at_centry && test->type!=at_cexit ) {
-		if ( heads[test->type].glyphs!=NULL )
-		    heads[test->type].glyphs[heads[test->type].cnt] = sf->chars[i];
-		++heads[test->type].cnt;
+	    for ( ac = _ac, k=0; k<classcnt; ++k, ac=ac->next ) {
+		for ( test=sf->chars[i]->anchor; test!=NULL && test->anchor!=ac; test=test->next );
+		if ( test==NULL )
+		    /* Do Nothing */;
+		else if ( test->type==at_mark ) {
+		    if ( j )
+			marks[k][subcnts[k]] = sf->chars[i];
+		    ++subcnts[k];
+	    break;
+		} else if ( test->type!=at_centry && test->type!=at_cexit ) {
+		    if ( heads[test->type].glyphs!=NULL )
+			heads[test->type].glyphs[heads[test->type].cnt] = sf->chars[i];
+		    ++heads[test->type].cnt;
+	    break;
+		}
 	    }
 	}
 	if ( j==1 )
@@ -383,9 +396,13 @@ static void AnchorClassDecompose(SplineFont *sf,AnchorClass *ac,
 		heads[i].glyphs[heads[i].cnt] = NULL;
 		heads[i].cnt = 0;
 	    }
+	for ( k=0; k<classcnt; ++k ) if ( subcnts[k]!=0 ) {
+	    marks[k] = galloc((subcnts[k]+1)*sizeof(SplineChar *));
+	    marks[k][subcnts[k]] = NULL;
+	    subcnts[k] = 0;
+	}
     }
 
-    *mark = heads[at_mark].glyphs;
     *base = heads[at_basechar].glyphs;
     *lig  = heads[at_baselig].glyphs;
     *mkmk = heads[at_basemark].glyphs;
@@ -801,132 +818,195 @@ return( lookups );
 return( lookups );
 }
 
-static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *ac,
-	enum anchor_type at,
-	SplineChar **marks,SplineChar **base,struct lookup *lookups) {
+static int orderglyph(const void *_sc1,const void *_sc2) {
+    SplineChar * const *sc1 = _sc1, * const *sc2 = _sc2;
+
+return( (*sc1)->ttf_glyph - (*sc2)->ttf_glyph );
+}
+
+static SplineChar **allmarkglyphs(SplineChar ***glyphlist, int classcnt) {
     SplineChar **glyphs;
+    int i, tot, k;
+
+    if ( classcnt==1 )
+return( glyphlist[0]);
+
+    for ( i=tot=0; i<classcnt; ++i ) {
+	for ( k=0; glyphlist[i][k]!=NULL; ++k );
+	tot += k;
+    }
+    glyphs = galloc((tot+1)*sizeof(SplineChar *));
+    for ( i=tot=0; i<classcnt; ++i ) {
+	for ( k=0; glyphlist[i][k]!=NULL; ++k )
+	    glyphs[tot++] = glyphlist[i][k];
+    }
+    qsort(glyphs,tot,sizeof(SplineChar *),orderglyph);
+    for ( i=k=0; i<tot; ++i ) {
+	while ( i+1<tot && glyphs[i]==glyphs[i+1]) ++i;
+	glyphs[k++] = glyphs[i];
+    }
+    glyphs[k] = NULL;
+return( glyphs );
+}
+
+static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
+	enum anchor_type at,
+	SplineChar ***marks,SplineChar **base,struct lookup *lookups, int classcnt) {
+    AnchorClass *ac=NULL;
     struct lookup *new;
-    int i,j,cnt,k, pos, offset, suboffset, tot, max, mask;
+    int j,cnt,k,l, pos, offset, suboffset, tot, max;
     uint32 coverage_offset, markarray_offset;
     AnchorPoint *ap, **aps;
+    SplineChar **markglyphs;
 
-    for ( i=0; base[i]!=NULL; ++i )
-	base[i]->ticked = false;
-    for ( i=0; base[i]!=NULL; ++i ) if ( !base[i]->ticked ) {
-	glyphs = GlyphsOfScript(base,i);
-	for ( cnt=0; glyphs[cnt]!=NULL; ++cnt );
-	new = chunkalloc(sizeof(struct lookup));
-	new->script = SCScriptFromUnicode(glyphs[0]);
-	new->feature_tag = ac->feature_tag;
-	new->flags = ac->flags;
-	new->script_lang_index = ac->script_lang_index;
-	new->lookup_type = 3+at;	/* One of the "mark to *" types 4,5,6 */
-	new->offset = ftell(gpos);
-	new->next = lookups;
-	lookups = new;
+    for ( cnt=0; base[cnt]!=NULL; ++cnt );
+    new = chunkalloc(sizeof(struct lookup));
+    new->feature_tag = _ac->feature_tag;
+    new->flags = _ac->flags;
+    new->script_lang_index = _ac->script_lang_index;
+    new->lookup_type = 3+at;	/* One of the "mark to *" types 4,5,6 */
+    new->offset = ftell(gpos);
+    new->next = lookups;
+    lookups = new;
 
-	putshort(gpos,1);	/* format 1 for this subtable */
-	putshort(gpos,0);	/* Fill in later, offset to mark coverage table */
-	putshort(gpos,0);	/* Fill in later, offset to base coverage table */
-	putshort(gpos,1);	/* 1 class */
-	putshort(gpos,0);	/* Fill in later, offset to mark array */
-	putshort(gpos,12);	/* Offset to base array */
-	    /* Base array */
-	putshort(gpos,cnt);	/* Number of entries in array */
-	if ( at==at_basechar || at==at_basemark ) {
-	    offset = 2+2*cnt;
+    putshort(gpos,1);	/* format 1 for this subtable */
+    putshort(gpos,0);	/* Fill in later, offset to mark coverage table */
+    putshort(gpos,0);	/* Fill in later, offset to base coverage table */
+    putshort(gpos,classcnt);
+    putshort(gpos,0);	/* Fill in later, offset to mark array */
+    putshort(gpos,12);	/* Offset to base array */
+	/* Base array */
+    putshort(gpos,cnt);	/* Number of entries in array */
+    if ( at==at_basechar || at==at_basemark ) {
+	offset = 2;
+	for ( l=0; l<3; ++l ) {
 	    for ( j=0; j<cnt; ++j ) {
-		putshort(gpos,offset);
-		offset += 6;
+		for ( k=0, ac=_ac; k<classcnt; ++k, ac=ac->next ) {
+		    for ( ap=base[j]->anchor; ap!=NULL && ap->anchor!=ac; ap=ap->next );
+		    if ( ap!=NULL ) switch ( l ) {
+		      case 0:
+			offset += 2;
+		      break;
+		      case 1:
+			putshort(gpos,offset);
+			offset += 6;
+		      break;
+		      case 2:
+			putshort(gpos,1);		/* Anchor format 1 */
+			putshort(gpos,ap->me.x);	/* X coord of attachment */
+			putshort(gpos,ap->me.y);	/* Y coord of attachment */
+		      break;
+		    }
+		}
 	    }
-	    for ( j=0; j<cnt; ++j ) {
-		for ( ap=glyphs[j]->anchor; ap!=NULL && ap->anchor!=ac; ap=ap->next );
-		putshort(gpos,1);		/* Anchor format 1 */
-		putshort(gpos,ap->me.x);	/* X coord of attachment */
-		putshort(gpos,ap->me.y);	/* Y coord of attachment */
-	    }
-	} else {
-	    offset = 2+2*cnt;
-	    suboffset = 0;
-	    for ( j=0; j<cnt; ++j ) {
-		putshort(gpos,offset);
-		pos = tot = max = 0;
-		mask = 0;
-		for ( ap=glyphs[j]->anchor; ap!=NULL ; ap=ap->next )
+	}
+    } else {
+	offset = 2+2*cnt;
+	suboffset = 0;
+	for ( j=0; j<cnt; ++j ) {
+	    putshort(gpos,offset);
+	    pos = tot = max = 0;
+	    for ( ap=base[j]->anchor; ap!=NULL ; ap=ap->next )
+		for ( k=0, ac=_ac; k<classcnt; ++k, ac=ac->next ) {
 		    if ( ap->anchor==ac ) {
 			if ( pos<ap->lig_index ) pos = ap->lig_index;
-			if ( !(mask&(1<<ap->lig_index) ) ) { ++tot; mask |= (1<<ap->lig_index); }
+			++tot;
 		    }
-		if ( pos>max ) max = pos;
-		offset += 2+(pos+1)*2+tot*(2+6);
-		    /* 2 for component count, for each component an offset to an offset to an anchor record */
-	    }
-	    aps = galloc((max+1)*sizeof(AnchorPoint *));
-	    for ( j=0; j<cnt; ++j ) {
-		memset(aps,0,(max+1)*sizeof(AnchorPoint *));
-		pos = 0;
-		for ( ap=glyphs[j]->anchor; ap!=NULL ; ap=ap->next )
+		}
+	    if ( pos>max ) max = pos;
+	    offset += 2+(pos+1)*classcnt*2+tot*6;
+		/* 2 for component count, for each component an offset to an offset to an anchor record */
+	}
+	++max;
+	aps = galloc((classcnt*max)*sizeof(AnchorPoint *));
+	for ( j=0; j<cnt; ++j ) {
+	    memset(aps,0,(classcnt*max)*sizeof(AnchorPoint *));
+	    pos = 0;
+	    for ( ap=base[j]->anchor; ap!=NULL ; ap=ap->next )
+		for ( k=0, ac=_ac; k<classcnt; ++k, ac=ac->next ) {
 		    if ( ap->anchor==ac ) {
 			if ( pos<ap->lig_index ) pos = ap->lig_index;
-			aps[ap->lig_index] = ap;
+			aps[k*max+ap->lig_index] = ap;
 		    }
-		++pos;
-		putshort(gpos,pos);
-		offset = 2+2*pos;
-		for ( k=0; k<pos; ++k ) {
-		    if ( aps[k]==NULL )
+		}
+	    ++pos;
+	    putshort(gpos,pos);
+	    offset = 2+2*pos*classcnt;
+	    for ( l=0; l<pos; ++l ) {
+		for ( k=0; k<classcnt; ++k ) {
+		    if ( aps[k*max+l]==NULL )
 			putshort(gpos,0);
 		    else {
 			putshort(gpos,offset);
 			offset += 6;
 		    }
 		}
-		for ( k=0; k<pos; ++k ) {
-		    if ( aps[k]!=NULL ) {
+	    }
+	    for ( l=0; l<pos; ++l ) {
+		for ( k=0; k<classcnt; ++k ) {
+		    if ( aps[k*max+l]!=NULL ) {
+			/* !!! We could search through the character here to see */
+			/*  if there is any point with this coord, and if so connect */
+			/*  anchor to the point (anchor format 2) */
 			putshort(gpos,1);		/* Anchor format 1 */
-			putshort(gpos,aps[k]->me.x);	/* X coord of attachment */
-			putshort(gpos,aps[k]->me.y);	/* Y coord of attachment */
+			putshort(gpos,aps[k*max+l]->me.x);	/* X coord of attachment */
+			putshort(gpos,aps[k*max+l]->me.y);	/* Y coord of attachment */
 		    }
 		}
 	    }
-	    free(aps);
 	}
-	coverage_offset = ftell(gpos);
-	fseek(gpos,lookups->offset+4,SEEK_SET);
-	putshort(gpos,coverage_offset-lookups->offset);
-	fseek(gpos,0,SEEK_END);
-	dumpcoveragetable(gpos,glyphs);
-	free(glyphs);
+	free(aps);
+    }
+    coverage_offset = ftell(gpos);
+    fseek(gpos,lookups->offset+4,SEEK_SET);
+    putshort(gpos,coverage_offset-lookups->offset);
+    fseek(gpos,0,SEEK_END);
+    dumpcoveragetable(gpos,base);
 
     /* We tried sharing the mark table, (among all these sub-tables) but */
-    /*  that doesn't work once we need to be able to reorder the sub-tables */
-	coverage_offset = ftell(gpos);
-	dumpcoveragetable(gpos,marks);
-	markarray_offset = ftell(gpos);
-	for ( cnt=0; marks[cnt]!=NULL; ++cnt );
-	putshort(gpos,cnt);
-	offset = 2+4*cnt;
-	for ( j=0; j<cnt; ++j ) {
+    /*  that doesn't work because we need to be able to reorder the sub-tables */
+    markglyphs = allmarkglyphs(marks,classcnt);
+    coverage_offset = ftell(gpos);
+    dumpcoveragetable(gpos,markglyphs);
+    markarray_offset = ftell(gpos);
+    for ( cnt=0; markglyphs[cnt]!=NULL; ++cnt );
+    putshort(gpos,cnt);
+    offset = 2+4*cnt;
+    for ( j=0; j<cnt; ++j ) {
+	if ( classcnt==0 )
 	    putshort(gpos,0);		/* Only one class */
-	    putshort(gpos,offset);
-	    offset += 6;
+	else {
+	    for ( k=0, ac=_ac; k<classcnt; ++k, ac=ac->next ) {
+		for ( ap = markglyphs[j]->anchor; ap!=NULL && ap->anchor!=ac; ap=ap->next );
+		if ( ap!=NULL )
+	    break;
+	    }
+	    putshort(gpos,k);
 	}
-	for ( j=0; j<cnt; ++j ) {
-	    for ( ap=marks[j]->anchor; ap!=NULL && ap->anchor!=ac; ap=ap->next );
-	    putshort(gpos,1);		/* Anchor format 1 */
-	    putshort(gpos,ap->me.x);	/* X coord of attachment */
-	    putshort(gpos,ap->me.y);	/* Y coord of attachment */
-	}
-
-	fseek(gpos,new->offset+2,SEEK_SET);	/* mark coverage table offset */
-	putshort(gpos,coverage_offset-new->offset);
-	fseek(gpos,4,SEEK_CUR);
-	putshort(gpos,markarray_offset-new->offset);
-
-	fseek(gpos,0,SEEK_END);
-	new->len = ftell(gpos)-new->offset;
+	putshort(gpos,offset);
+	offset += 6;
     }
+    for ( j=0; j<cnt; ++j ) {
+	for ( k=0, ac=_ac; k<classcnt; ac=ac->next ) {
+	    for ( ap = markglyphs[j]->anchor; ap!=NULL && ap->anchor!=ac; ap=ap->next );
+	    if ( ap!=NULL )
+	break;
+	}
+	putshort(gpos,1);		/* Anchor format 1 */
+	putshort(gpos,ap->me.x);	/* X coord of attachment */
+	putshort(gpos,ap->me.y);	/* Y coord of attachment */
+    }
+    if ( markglyphs!=marks[0] )
+	free(markglyphs);
+
+    fseek(gpos,new->offset+2,SEEK_SET);	/* mark coverage table offset */
+    putshort(gpos,coverage_offset-new->offset);
+    fseek(gpos,4,SEEK_CUR);
+    putshort(gpos,markarray_offset-new->offset);
+
     fseek(gpos,0,SEEK_END);
+    new->len = ftell(gpos)-new->offset;
+
 return( lookups );
 }
 
@@ -1139,12 +1219,14 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
     /* When we find a feature, we split it out into various scripts */
     /*  dumping one lookup per script into the file */
     struct lookup *lookups = NULL, *new;
-    int i, j;
-    SplineChar **marks, **base, **lig, **mkmk, ***map, **glyphs;
+    int i, j, cnt, max;
+    SplineChar ***marks;
+    int *subcnts;
+    SplineChar **base, **lig, **mkmk, ***map, **glyphs;
     SplineChar *sc;
-    AnchorClass *ac;
+    AnchorClass *ac, *p, *ac2, *n;
     struct tagflaglang *ligtags;
-    int max, cnt;
+    int cmax, classcnt;
     enum possub_type type;
     PST *pst;
     KernPair *kp;
@@ -1231,27 +1313,64 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 	new->len = ftell(lfile)-new->offset;
     }
 
-    /* Every Anchor Class gets its own lookup (and may get several if it has */
-    /*  different anchor types or scripts) */
+    /* Order the AnchorClasses so that all those with the same:
+	    tag
+	    sli
+	    merge field
+	are together. These will be treated as one sub-table (well we might
+	get 2 sub-tables if there are both ligature and normal base glyphs)
+    */
     for ( ac=sf->anchor; ac!=NULL; ac = ac->next ) {
+	for ( p=ac, ac2 = ac->next; ac2!=NULL; ac2 = n ) {
+	    n = ac2->next;
+	    if ( ac2->feature_tag==ac->feature_tag &&
+		    ac2->script_lang_index == ac->script_lang_index &&
+		    ac2->merge_with == ac->merge_with &&
+		    p!=ac ) { 	/* if p==ac we don't need to do anything, already in place */
+		ac2->next = ac->next;
+		ac->next = ac2;
+		p->next = n;
+	    } else
+		p = ac;
+	}
+    }
+    if ( sf->anchor ) {
+	marks = galloc((cmax=20)*sizeof(SplineChar **));
+	subcnts = galloc(cmax*sizeof(int));
+    }
+    for ( ac=sf->anchor; ac!=NULL; ac = ac->next ) {
+	for ( p=ac, ac2 = ac->next, classcnt=1; ac2!=NULL &&
+		ac2->feature_tag==ac->feature_tag &&
+		ac2->script_lang_index == ac->script_lang_index &&
+		ac2->merge_with == ac->merge_with ; p=ac2, ac2 = ac2->next )
+	    ++classcnt;
 	if ( ac->feature_tag==CHR('c','u','r','s') )
 	    lookups = dumpgposCursiveAttach(lfile,ac,sf,lookups);
 	else {
-	    AnchorClassDecompose(sf,ac,&marks,&base,&lig,&mkmk);
-	    if ( marks!=NULL && base!=NULL )
-		lookups = dumpgposAnchorData(lfile,ac,at_basechar,marks,base,lookups);
-	    if ( marks!=NULL && lig!=NULL )
-		lookups = dumpgposAnchorData(lfile,ac,at_baselig,marks,lig,lookups);
-	    if ( marks!=NULL && mkmk!=NULL )
-		lookups = dumpgposAnchorData(lfile,ac,at_basemark,marks,mkmk,lookups);
-	    free(marks);
+	    if ( classcnt>cmax ) {
+		marks = grealloc(marks,(cmax=classcnt+10)*sizeof(SplineChar **));
+		subcnts = grealloc(subcnts,cmax*sizeof(int));
+	    }
+	    AnchorClassDecompose(sf,ac,classcnt,subcnts,marks,&base,&lig,&mkmk);
+	    if ( marks[0]!=NULL && base!=NULL )
+		lookups = dumpgposAnchorData(lfile,ac,at_basechar,marks,base,lookups,classcnt);
+	    if ( marks[0]!=NULL && lig!=NULL )
+		lookups = dumpgposAnchorData(lfile,ac,at_baselig,marks,lig,lookups,classcnt);
+	    if ( marks[0]!=NULL && mkmk!=NULL )
+		lookups = dumpgposAnchorData(lfile,ac,at_basemark,marks,mkmk,lookups,classcnt);
+	    for ( i=0; i<classcnt; ++i )
+		free(marks[i]);
 	    free(base);
 	    free(lig);
 	    free(mkmk);
+	    ac = p;
 	}
     }
-    if ( sf->anchor )
+    if ( sf->anchor ) {
+	free(marks);
+	free(subcnts);
 	AnchorGuessContext(sf,at);
+    }
 
 return( lookups );
 }
@@ -1669,7 +1788,7 @@ static FILE *dumpg___info(struct alltabs *at, SplineFont *sf,int is_gpos) {
     /* Dump out either a gpos or a gsub table. gpos handles kerns, gsub ligs */
     FILE *lfile, *lfile2, *g___, *efile;
     struct lookup *lookups=NULL, *feature_ordered, *l, *next;
-    int cnt, offset, i, flags;
+    int cnt, offset, i;
     char *buf;
     uint32 *scripts, *langs;
     uint32 lookup_list_table_start, feature_list_table_start, here, scripts_start_offset;
@@ -1770,11 +1889,15 @@ return( NULL );
     efile=g___FigureExtensionSubTables(lookups,is_gpos);
     for ( i=0, l=lookups; l!=NULL; l=l->next, ++i ) {
 	putshort(g___,l->lookup_type);
+#if 0
 	/* The right to left flag is not relevant for most of the tables I generate */
 	/* but MS has it in tables where it is not relevant, so... */
 	flags = l->script==CHR('a','r','a','b') || l->script==CHR('h','e','b','r');
 	flags |= (l->flags&~1);
 	putshort(g___,flags);
+#else
+	putshort(g___,l->flags);
+#endif
 	putshort(g___,1);		/* Each table controls one lookup */
 	putshort(g___,(cnt-i)*8+l->offset); /* Offset to lookup data which is in the temp file */
 	    /* there are (cnt-i) lookup tables (of size 8) between here and */

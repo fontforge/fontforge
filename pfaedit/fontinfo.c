@@ -1994,7 +1994,7 @@ GTextInfo *AnchorClassesList(SplineFont *sf) {
     ti = gcalloc(cnt+1,sizeof(GTextInfo));
     for ( cnt=0, an=sf->anchor; an!=NULL; ++cnt, an=an->next ) {
 	ti[cnt].text = ClassName(an->name,an->feature_tag,an->flags,
-		an->script_lang_index);
+		an->script_lang_index, an->merge_with);
 	ti[cnt].fg = ti[cnt].bg = COLOR_DEFAULT;
 	ti[cnt].userdata = an;
     }
@@ -2011,14 +2011,14 @@ GTextInfo **AnchorClassesLList(SplineFont *sf) {
     for ( cnt=0, an=sf->anchor; an!=NULL; ++cnt, an=an->next ) {
 	ti[cnt] = gcalloc(1,sizeof(GTextInfo));
 	ti[cnt]->text = ClassName(an->name,an->feature_tag,an->flags,
-		an->script_lang_index);
+		an->script_lang_index,an->merge_with);
 	ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
 	ti[cnt]->userdata = an;
     }
     ti[cnt] = gcalloc(1,sizeof(GTextInfo));
 return( ti );
 }
-	
+
 static void GFI_AnchorShow(GGadget *g, int index) {
     struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
     int i, start;
@@ -2089,6 +2089,16 @@ static int GFI_AnchorShowBase(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int AnchorClassesNextMerge(AnchorClass *ac) {
+    int max=0;
+
+    while ( ac!=NULL ) {
+	if ( ac->merge_with>max ) max = ac->merge_with;
+	ac = ac->next;
+    }
+return( max + 1 );
+}
+
 static int GFI_AnchorNew(GGadget *g, GEvent *e) {
     int len, i;
     GTextInfo **old, **new;
@@ -2097,7 +2107,7 @@ static int GFI_AnchorNew(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	newname = AskNameTag(_STR_NewAnchorClass,NULL,CHR('m','a','r','k'),0,
-		-1, mark_tags,d->sf,NULL);
+		-1, mark_tags,d->sf,NULL,AnchorClassesNextMerge(d->sf->anchor));
 	if ( newname!=NULL ) {
 	    list = GWidgetGetControl(GGadgetGetWindow(g),CID_AnchorClasses);
 	    old = GGadgetGetList(list,&len);
@@ -2249,7 +2259,7 @@ static int GFI_AnchorRename(GGadget *g, GEvent *e) {
 	list = GWidgetGetControl(GGadgetGetWindow(g),CID_AnchorClasses);
 	if ( (ti = GGadgetGetListItemSelected(list))==NULL )
 return( true );
-	newname = AskNameTag(_STR_EditAnchorClass,ti->text,0,0,0,mark_tags,d->sf,NULL);
+	newname = AskNameTag(_STR_EditAnchorClass,ti->text,0,0,0,mark_tags,d->sf,NULL,0);
 	if ( newname!=NULL ) {
 	    old = GGadgetGetList(list,&len);
 	    if (( uc_strncmp(newname,"curs",4)==0 && uc_strncmp(ti->text,"curs",4)!=0 ) ||
