@@ -1207,7 +1207,10 @@ static void PasteNonExistantRefCheck(SplineChar *sc,Undoes *paster,RefChar *ref,
 	    else if ( psunicodenames[ref->unicode_enc]!=NULL )
 		name = psunicodenames[ref->unicode_enc];
 	    else {
-		sprintf( buf, "uni%04X", ref->unicode_enc );
+		if ( ref->unicode_enc<0x10000 )
+		    sprintf( buf, "uni%04X", ref->unicode_enc );
+		else
+		    sprintf( buf, "u%04X", ref->unicode_enc );
 		name = buf;
 	    }
 	    yes = GWidgetAskCenteredR(_STR_BadReference,buts,1,1,_STR_FontNoRefNoOrig,name,sc->name);

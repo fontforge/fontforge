@@ -66,6 +66,11 @@ extern char *AdobeStandardEncoding[256];
 extern int psunicodenames_cnt;
 extern const char *psunicodenames[];
 extern unsigned short unicode_from_adobestd[256];
+extern struct psaltnames {
+    char *name;
+    int unicode;
+} psaltuninames[];
+extern int psaltuninames_cnt;
 
 extern int default_fv_font_size;
 extern int default_fv_antialias;

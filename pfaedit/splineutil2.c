@@ -1587,7 +1587,10 @@ SplineFont *SplineFontNew(void) {
 	    else if ( uenc<32 || (uenc>0x7e && uenc<0xa0))
 		name = ".notdef";
 	    else {
-		sprintf(buf,"uni%04X", uenc );
+		if ( uenc<0x10000 )
+		    sprintf(buf,"uni%04X", uenc );
+		else
+		    sprintf(buf,"u%04X", uenc );
 		name = buf;
 	    }
 	}

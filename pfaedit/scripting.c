@@ -1017,7 +1017,8 @@ static int ParseCharIdent(Context *c, Val *val) {
 	else {
 	    str = val->u.sval;
 	    if ( sscanf(str,"uni%x", &uni)==0 )
-		sscanf( str, "U+%x", &uni);
+		if ( sscanf(str,"u%x", &uni)==0 )
+		    sscanf( str, "U+%x", &uni);
 	}
 	bottom = SFFindChar(sf,uni,str);
     } else
@@ -1320,7 +1321,10 @@ static void bSetUnicodeValue(Context *c) {
 	    name = copy(psunicodenames[uni]);
 	else if (( uni>=32 && uni<0x7f ) || uni>=0xa1 ) {
 	    char buf[12];
-	    sprintf( buf,"uni%04X", uni );
+	    if ( uni<0x10000 )
+		sprintf( buf,"uni%04X", uni );
+	    else
+		sprintf( buf,"u%04X", uni );
 	    name = copy(buf);
 	} else
 	    name = copy(".notdef");
@@ -1878,7 +1882,8 @@ static void bInFont(Context *c) {
 	else {
 	    str = c->a.vals[1].u.sval;
 	    if ( sscanf(str,"uni%x", &uni)==0 )
-		sscanf( str, "U+%x", &uni);
+		if ( sscanf(str,"u%x", &uni)==0 )
+		    sscanf( str, "U+%x", &uni);
 	}
 	enc = SFFindChar(sf,uni,str);
 	c->return_val.u.ival = (enc!=-1);
@@ -1903,7 +1908,8 @@ static void bWorthOutputting(Context *c) {
 	else {
 	    str = c->a.vals[1].u.sval;
 	    if ( sscanf(str,"uni%x", &uni)==0 )
-		sscanf( str, "U+%x", &uni);
+		if ( sscanf(str,"u%x", &uni)==0 )
+		    sscanf( str, "U+%x", &uni);
 	}
 	enc = SFFindChar(sf,uni,str);
 	c->return_val.u.ival = enc!=-1 && SCWorthOutputting(sf->chars[enc]);

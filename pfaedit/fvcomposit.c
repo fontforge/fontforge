@@ -663,6 +663,10 @@ return( true );
 	int uni = strtol(sc->name+3,&end,16);
 	if ( *end=='.' && SFCIDFindExistingChar(sf,uni,NULL)!=-1 )
 return( true );
+    } else if ( sc->name[0]=='u' && strstr(sc->name,".vert")!=NULL ) {
+	int uni = strtol(sc->name+1,&end,16);
+	if ( *end=='.' && SFCIDFindExistingChar(sf,uni,NULL)!=-1 )
+return( true );
     }
 return( false );
 }

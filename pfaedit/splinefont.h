@@ -870,6 +870,9 @@ extern BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,
 	int pixelsize,int depth);
 extern void FreeTypeFreeContext(void *freetypecontext);
 
+extern int UniFromName(const char *name);
+extern int uUniFromName(const unichar_t *name);
+
 extern void doversion(void);
 
 # if HANYANG

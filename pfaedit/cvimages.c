@@ -790,6 +790,7 @@ return( false );
     continue;
 	if ( !(
 		(isu && entry->d_name[0]=='u' && entry->d_name[1]=='n' && entry->d_name[2]=='i' && (val=strtol(entry->d_name+3,&end,16), end==pt)) ||
+		(isu && entry->d_name[0]=='u' && (val=strtol(entry->d_name+1,&end,16), end==pt)) ||
 		(isc && entry->d_name[0]=='c' && entry->d_name[1]=='i' && entry->d_name[2]=='d' && (val=strtol(entry->d_name+3,&end,10), end==pt)) ||
 		(ise && entry->d_name[0]=='e' && entry->d_name[1]=='n' && entry->d_name[2]=='c' && (val=strtol(entry->d_name+3,&end,10), end==pt)) ))
     continue;
@@ -870,7 +871,7 @@ static unichar_t wildimg[] = { '*', '.', '{',
 't','i','f','f',',',
 #endif
 'x','b','m',',', 'b','m','p', '}', '\0' };
-static unichar_t wildtemplate[] = { '{','u','n','i',',','c','i','d',',','e','n','c','}','[','0','-','9','a','-','f','A','-','F',']','*', '.', '{',
+static unichar_t wildtemplate[] = { '{','u','n','i',',','u',',','c','i','d',',','e','n','c','}','[','0','-','9','a','-','f','A','-','F',']','*', '.', '{',
 #ifndef _NO_LIBUNGIF
 'g','i','f',',',
 #endif
@@ -882,7 +883,7 @@ static unichar_t wildtemplate[] = { '{','u','n','i',',','c','i','d',',','e','n',
 #endif
 'x','b','m',',', 'b','m','p', '}', '\0' };
 /* Hmm. Mac seems to use the extension 'art' for eps files sometimes */
-static unichar_t wildepstemplate[] = { '{','u','n','i',',','c','i','d',',','e','n','c','}','[','0','-','9','a','-','f','A','-','F',']','*', '.', '{', 'p','s',',', 'e','p','s',',','a','r','t','}',  0 };
+static unichar_t wildepstemplate[] = { '{','u','n','i',',','u',',','c','i','d',',','e','n','c','}','[','0','-','9','a','-','f','A','-','F',']','*', '.', '{', 'p','s',',', 'e','p','s',',','a','r','t','}',  0 };
 static unichar_t wildps[] = { '*', '.', '{', 'p','s',',', 'e','p','s',',', 'a','r','t','}', '\0' };
 static unichar_t wildfig[] = { '*', '.', '{', 'f','i','g',',','x','f','i','g','}',  '\0' };
 static unichar_t wildbdf[] = { '*', '.', 'b', 'd','{', 'f', ',','f','.','g','z',',','f','.','Z',',','f','.','b','z','2','}',  '\0' };

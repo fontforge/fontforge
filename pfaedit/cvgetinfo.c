@@ -151,14 +151,13 @@ static void SetNameFromUnicode(GWindow gw,int cid,int val) {
 
     if ( val>=0 && val<psunicodenames_cnt && psunicodenames[val]!=NULL )
 	temp = uc_copy(psunicodenames[val]);
-    else if ( val==0x2d )
-	temp = uc_copy("hyphen-minus");
-    else if ( val==0xa0 )
-	temp = uc_copy("nonbreakingspace");
 /* If it a control char is already called ".notdef" then give it a uniXXXX style name */
     else if (( val>=32 && val<0x7f ) || val>=0xa1 ||
 	    (uc_strcmp(curname,".notdef")==0 && val!=0)) {
-	sprintf( buf,"uni%04X", val );
+	if ( val>= 0x10000 )
+	    sprintf( buf,"u%04X", val );	/* u style names may contain 4,5 or 6 hex digits */
+	else
+	    sprintf( buf,"uni%04X", val );
 	temp = uc_copy(buf);
     } else
 	temp = uc_copy(".notdef");
@@ -344,24 +343,88 @@ return;
     free(components);
 }
 
+int UniFromName(const char *name) {
+    int i = -1;
+
+    if ( strncmp(name,"uni",3)==0 ) { char *end;
+	i = strtol(name+3,&end,16);
+	if ( *end || end-name!=7 )	/* uniXXXXXXXX means a ligature of uniXXXX and uniXXXX */
+	    i = -1;
+    } else if ( name[0]=='u' ) { char *end;
+	i = strtol(name+1,&end,16);
+	if ( *end )
+	    i = -1;
+    }
+    if ( i==-1 ) for ( i=psunicodenames_cnt-1; i>=0 ; --i ) {
+	if ( psunicodenames[i]!=NULL )
+	    if ( strcmp(name,psunicodenames[i])==0 )
+    break;
+    }
+    if ( i==-1 ) for ( i=psaltuninames_cnt-1; i>=0 ; --i ) {
+	if ( strcmp(name,psaltuninames[i].name)==0 )
+    break;
+    }
+#if 0
+    if ( i==-1 ) {
+	for ( i=65535; i>=0; --i )
+	    if ( UnicodeCharacterNames[i>>8][i&0xff]!=NULL &&
+		    uc_strcmp(UnicodeCharacterNames[i>>8][i&0xff],name)==0 )
+	break;
+    }
+#endif
+return( i );
+}
+
+int uUniFromName(const unichar_t *name) {
+    int i = -1;
+    unichar_t *end;
+
+    if ( uc_strncmp(name,"uni",3)==0 ) {
+	i = u_strtol(name+3,&end,16);
+	if ( *end || end-name!=7 )	/* uniXXXXXXXX means a ligature of uniXXXX and uniXXXX */
+	    i = -1;
+    } else if ( name[0]=='u' ) {
+	i = u_strtol(name+1,&end,16);
+	if ( *end )
+	    i = -1;
+    }
+    if ( i==-1 ) for ( i=psunicodenames_cnt-1; i>=0 ; --i ) {
+	if ( psunicodenames[i]!=NULL )
+	    if ( uc_strcmp(name,psunicodenames[i])==0 )
+    break;
+    }
+    if ( i==-1 ) for ( i=psaltuninames_cnt-1; i>=0 ; --i ) {
+	if ( uc_strcmp(name,psaltuninames[i].name)==0 )
+    break;
+    }
+#if 0
+    if ( i==-1 ) {
+	for ( i=65535; i>=0; --i )
+	    if ( UnicodeCharacterNames[i>>8][i&0xff]!=NULL &&
+		    u_strcmp(name,UnicodeCharacterNames[i>>8][i&0xff])==0 )
+	break;
+    }
+#endif
+return( i );
+}
+
 static int CI_SName(GGadget *g, GEvent *e) {	/* Set From Name */
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
 	const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_UName));
 	int i;
 	char buf[10]; unichar_t ubuf[2], *temp;
+	i = uUniFromName(ret);
 	for ( i=psunicodenames_cnt-1; i>=0; --i )
 	    if ( psunicodenames[i]!=NULL && uc_strcmp(ret,psunicodenames[i])==0 )
 	break;
 	if ( i==-1 ) {
 	    /* Adobe says names like uni00410042 represent a ligature (A&B) */
-	    /*  (that is "uni" followed by two 4-digit codes). Adobe does not */
-	    /*  name things outside BMP, but logically they'd be uniXXXXXX. */
-	    /*  currently unicode doesn't go up to XXXXXXXX so there is no */
-	    /*  ambiguity */
-	    if ( ret[0]=='u' && ret[1]=='n' && ret[2]=='i' && u_strlen(ret)<3+8 ) {
+	    /*  (that is "uni" followed by two 4-digit codes). */
+	    /* But that names outside of BMP should be uXXXX or uXXXXX or uXXXXXX */
+	    if ( ret[0]=='u' && ret[1]!='n' && u_strlen(ret)<=1+6 ) {
 		unichar_t *end;
-		i = u_strtol(ret+3,&end,16);
+		i = u_strtol(ret+1,&end,16);
 		if ( *end )
 		    i = -1;
 		else		/* Make sure it is properly capitalized */

@@ -78,22 +78,6 @@ static int gettoken(FILE *bdf, char *tokbuf, int size) {
 return( pt!=tokbuf?1:ch==EOF?-1: 0 );
 }
 
-static int finduniname(char *name) {
-    int i = -1;
-
-    if ( strncmp(name,"uni",3)==0 ) { char *end;
-	i = strtol(name+3,&end,16);
-	if ( *end )
-	    i = -1;
-    }
-    if ( i==-1 ) for ( i=psunicodenames_cnt-1; i>=0 ; --i ) {
-	if ( psunicodenames[i]!=NULL )
-	    if ( strcmp(name,psunicodenames[i])==0 )
-    break;
-    }
-return( i );
-}
-
 static void ExtendSF(SplineFont *sf, int enc, int set) {
     BDFFont *b;
     FontView *fvs;
@@ -133,7 +117,7 @@ static void MakeEncChar(SplineFont *sf,int enc,char *name) {
     }
     free(sf->chars[enc]->name);
     sf->chars[enc]->name = copy(name);
-    sf->chars[enc]->unicodeenc = finduniname(name);
+    sf->chars[enc]->unicodeenc = UniFromName(name);
     sf->chars[enc]->enc = enc;
     /*sf->encoding_name = em_none;*/
 }
@@ -168,7 +152,7 @@ static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
 	}
 	if ( i==-1 && (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4 ||
 		sf->encoding_name==em_iso8859_1)) {
-	    i = finduniname(name);
+	    i = UniFromName(name);
 	    if ( i==-1 || i>sf->charcnt || sf->chars[i]!=NULL )
 		i = -1;
 	    if ( i!=-1 )

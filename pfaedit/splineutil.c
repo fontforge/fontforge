@@ -893,29 +893,6 @@ return( k );
 return( -1 );
 }
 
-int UnicodeNameLookup(char *name) {
-    int i;
-
-    if ( name==NULL )
-return( -1 );
-
-    if ( *name=='u' && name[1]=='n' && name[2]=='i' &&
-	    (isdigit(name[3]) || (name[3]>='A' && name[3]<='F')) &&
-	    (isdigit(name[4]) || (name[4]>='A' && name[4]<='F')) &&
-	    (isdigit(name[5]) || (name[5]>='A' && name[5]<='F')) &&
-	    (isdigit(name[6]) || (name[6]>='A' && name[6]<='F')) &&
-	    name[7]=='\0' ) {
-return( strtol(name+3,NULL,16));
-    }
-    for ( i=0; i<psunicodenames_cnt; ++i ) if ( psunicodenames[i]!=NULL )
-	if ( strcmp(name,psunicodenames[i])==0 )
-return( i );
-    if ( strcmp(name,"nonbreakingspace")==0 )
-return( 0xa0 );
-
-return( -1 );
-}
-
 SplinePointList *SplinePointListCopy1(SplinePointList *spl) {
     SplinePointList *cur;
     SplinePoint *pt, *cpt, *first;
@@ -1612,7 +1589,7 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd) {
 	}
 	sf->chars[i]->vwidth = sf->ascent+sf->descent;
 	sf->chars[i]->enc = i;
-	sf->chars[i]->unicodeenc = UnicodeNameLookup(encoding[i]);
+	sf->chars[i]->unicodeenc = UniFromName(encoding[i]);
 	sf->chars[i]->parent = sf;
 	sf->chars[i]->lig = SCLigDefault(sf->chars[i]);		/* Should read from AFM file, but that's way too much work */
 	GProgressNext();

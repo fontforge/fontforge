@@ -408,11 +408,14 @@ static void GreekHack(void) {
     }
     /* I'm leaving mu at 00b5 (rather than 03bc) */
 
+#if 0
 /* Adobe says 0x03d6 should be called "omega1", but Unicode says it's a varient of Pi */
+/* Done now with alternate PS names */
     if ( getenv("PFAEDIT_PI1")!=NULL )
 	psunicodenames[0x03d6] = "pi1";
     else
 	psunicodenames[0x03d6] = "omega1";
+#endif
 }
 
 static unichar_t *utf8_copy(char *src) {

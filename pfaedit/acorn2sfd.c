@@ -133,6 +133,10 @@ static int UniFromName(char *name) {
 
     if ( strncmp(name,"uni",3)==0 ) { char *end;
 	i = strtol(name+3,&end,16);
+	if ( *end || end-name!=7 )
+	    i = -1;
+    } else if ( name[0]=='u' ) { char *end;
+	i = strtol(name+1,&end,16);
 	if ( *end )
 	    i = -1;
     }
@@ -141,6 +145,18 @@ static int UniFromName(char *name) {
 	    if ( strcmp(name,psunicodenames[i])==0 )
     break;
     }
+    if ( i==-1 ) for ( i=psaltuninames_cnt-1; i>=0 ; --i ) {
+	if ( strcmp(name,psaltuninames[i].name)==0 )
+    break;
+    }
+#if 0
+    if ( i==-1 ) {
+	for ( i=65535; i>=0; --i )
+	    if ( UnicodeCharacterNames[i>>8][i&0xff]!=NULL &&
+		    uc_strcmp(UnicodeCharacterNames[i>>8][i&0xff],name)==0 )
+	break;
+    }
+#endif
 return( i );
 }
 

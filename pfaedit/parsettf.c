@@ -3164,24 +3164,15 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 
 static int EncFromName(const char *name) {
     int i;
-    if ( name[0]=='u' && name[1]=='n' && name[2]=='i' ) {
-	char *end;
-	i = strtol(name+3,&end,16);
-	if ( i>=0 && i<=0xffff && *end=='\0' )
-return( i );
-    } else if ( strlen(name)==4 ) {
+    i = UniFromName(name);
+    if ( i==-1 && strlen(name)==4 ) {
 	/* MS says use this kind of name, Adobe says use the one above */
 	char *end;
 	i = strtol(name,&end,16);
 	if ( i>=0 && i<=0xffff && *end=='\0' )
 return( i );
     }
-	
-    for ( i=0; i<psunicodenames_cnt; ++i ) if ( psunicodenames[i]!=NULL ) {
-	if ( strcmp(psunicodenames[i],name)==0 )
 return( i );
-    }
-return( -1 );
 }
 
 static void readttfos2metrics(FILE *ttf,struct ttfinfo *info) {
@@ -3296,7 +3287,10 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 		psunicodenames[info->chars[i]->unicodeenc]!=NULL )
 	    name = psunicodenames[info->chars[i]->unicodeenc];
 	else {
-	    sprintf( buffer, "uni%04X", info->chars[i]->unicodeenc );
+	    if ( info->chars[i]->unicodeenc<0x10000 )
+		sprintf( buffer, "uni%04X", info->chars[i]->unicodeenc );
+	    else
+		sprintf( buffer, "u%04X", info->chars[i]->unicodeenc );
 	    name = buffer;
 	}
 	info->chars[i]->name = copy(name);
@@ -3883,7 +3877,7 @@ return;
     for ( i=0; i<256; ++i ) if ( (sc = hi[i])!=NULL )
 	chars[sc->enc] = sc;
     for ( i=0; i<256+extras; ++i ) if ( (sc=chars[i])!=NULL ) {
-	uenc = UnicodeNameLookup(sc->name);
+	uenc = UniFromName(sc->name);
 	if ( uenc!=-1 )
 	    sc->unicodeenc = uenc;
     }
