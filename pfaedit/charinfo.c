@@ -2401,7 +2401,7 @@ return;
 
     for ( i=0; d[i]!=NULL; ++i ) {
 	data = d[i];
-	if ( strlen(data)<10 || data[4]!=' ' || data[8]!=' ' ) {
+	if ( strlen(data)<10 || data[4]!=' ' || data[9]!=' ' ) {
 	    GWidgetErrorR(_STR_BadPOSSUB,_STR_BadPOSSUBPaste);
 return;
 	}
@@ -2688,7 +2688,8 @@ static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
 	else if ( _UnicodeNameAnnot!=NULL &&
 		(uname = _UnicodeNameAnnot[uni>>16][(uni>>8)&0xff][uni&0xff].name)!=NULL &&
 		strstr(uname,"LIGATURE")==NULL &&
-		strstr(uname,"VULGAR FRACTION")==NULL )
+		strstr(uname,"VULGAR FRACTION")==NULL &&
+		uni!=0x215f )
 	    alt = NULL;
     }
     if ( alt==NULL ) {
@@ -2703,7 +2704,7 @@ return( AdobeLigatureFormat(name));
     else if ( uni==0xfb04 && alt_lig==1 )
 	components = copy("ff l");
     else if ( alt!=NULL ) {
-	if ( alt[1]==0x2044 && alt[3]==0 && alt_lig==1 ) {
+	if ( alt[1]==0x2044 && (alt[2]==0 || alt[3]==0) && alt_lig==1 ) {
 	    u_strcpy(hack,alt);
 	    hack[1] = '/';
 	    alt = hack;
@@ -3221,7 +3222,11 @@ static void SCMergePSList(SplineChar *sc,PST *list) {
     for ( ; list!=NULL; list=next ) {
 	next = list->next;
 	prev = NULL;
-	for ( test=sc->possub; test!=NULL && test->tag!=list->tag; prev=test, test=test->next );
+	for ( test=sc->possub; test!=NULL ; prev=test, test=test->next ) {
+	    if ( test->tag==list->tag && (test->type!=pst_ligature ||
+		    strcmp(test->u.lig.components,list->u.lig.components)==0 ))
+	break;
+	}
 	if ( test!=NULL ) {
 	    if ( prev==NULL )
 		sc->possub = list;
