@@ -82,6 +82,7 @@ SOFTWARE.
 #define GK_Menu			XK_Menu
 #define GK_Help			XK_Help
 
+#define GK_KP_Enter		XK_KP_Enter
 #define GK_KP_Home		XK_KP_Home	
 #define GK_KP_Left		XK_KP_Left	
 #define GK_KP_Up		XK_KP_Up	
@@ -93,7 +94,7 @@ SOFTWARE.
 #define GK_KP_Page_Down		XK_KP_Page_Down	
 #define GK_KP_End		XK_KP_End	
 #define GK_KP_Begin		XK_KP_Begin	
-                                                
+
 #define GK_F1			XK_F1		
 #define GK_F2			XK_F2		
 #define GK_F3			XK_F3		
@@ -203,6 +204,7 @@ SOFTWARE.
 #define GK_Menu			0xff17
 #define GK_Help			0xff18
 
+#define GK_KP_Enter		0xFF8D
 #define GK_KP_Home		0xff19	
 #define GK_KP_Left		0xff1a	
 #define GK_KP_Up		0xff1b	

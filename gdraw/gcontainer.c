@@ -469,7 +469,8 @@ return( handled );
 	handled = true;
     }
     /* Return activates the default button (if there is one) */
-    else if ( !handled && event->u.chr.keysym==GK_Return && topd->gdef!=NULL ) {
+    else if ( !handled && (event->u.chr.keysym==GK_Return || event->u.chr.keysym==GK_KP_Enter) &&
+	    topd->gdef!=NULL ) {
 	sub.type = et_controlevent;
 	sub.w = topd->gdef->base;
 	sub.u.control.subtype = et_buttonactivate;
