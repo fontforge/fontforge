@@ -766,7 +766,7 @@ return( maybe );
 		    getPfaEditShareDir()==NULL?"/usr/share/pfaedit":getPfaEditShareDir()
 #endif
 		    );
-	    if ( ret==1 )
+	    if ( ret==1 || screen_display==NULL )
 		ubuf[0] = '\0';
 	}
 	if ( ubuf[0]=='\0' )
