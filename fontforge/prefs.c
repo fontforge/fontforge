@@ -105,7 +105,7 @@ extern MacFeat *default_mac_feature_map,	/* from macenc.c */
 int updateflex = false;
 
 extern int rectelipse, polystar, regular_star;	/* from cvpalettes.c */
-extern int center_out;				/* from cvpalettes.c */
+extern int center_out[2];			/* from cvpalettes.c */
 extern float rr_radius;				/* from cvpalettes.c */
 extern int ps_pointcnt;				/* from cvpalettes.c */
 extern float star_percent;			/* from cvpalettes.c */
@@ -335,7 +335,8 @@ static struct prefs_list {
 	{ "RegularStar", pr_bool, &regular_star, NULL, NULL, '\0', NULL, 1 },
 	{ "PolyStar", pr_bool, &polystar, NULL, NULL, '\0', NULL, 1 },
 	{ "RectEllipse", pr_bool, &rectelipse, NULL, NULL, '\0', NULL, 1 },
-	{ "RectEllipseCenterOut", pr_bool, &center_out, NULL, NULL, '\0', NULL, 1 },
+	{ "RectCenterOut", pr_bool, &center_out[0], NULL, NULL, '\0', NULL, 1 },
+	{ "EllipseCenterOut", pr_bool, &center_out[1], NULL, NULL, '\0', NULL, 1 },
 	{ "PolyStartPointCnt", pr_int, &ps_pointcnt, NULL, NULL, '\0', NULL, 1 },
 	{ "RoundRectRadius", pr_real, &rr_radius, NULL, NULL, '\0', NULL, 1 },
 	{ "StarPercent", pr_real, &star_percent, NULL, NULL, '\0', NULL, 1 },
