@@ -2257,13 +2257,14 @@ static void LSysAddToFeature(struct feature *feature,uint32 script,uint32 lang,
 static void ProcessLangSys(FILE *ttf,uint32 langsysoff,
 	struct feature *features, int fcnt, uint32 script, uint32 lang) {
     int cnt, feature, i;
+    int complained=false;
 
     fseek(ttf,langsysoff,SEEK_SET);
     /* lookuporder = */ getushort(ttf);	/* not meaningful yet */
     feature = getushort(ttf); /* required feature */
     if ( feature==0xffff )
 	/* No required feature */;
-    else if ( feature<fcnt )
+    else if ( feature!=EOF && feature<fcnt )
 	LSysAddToFeature(&features[feature],script,lang,true);
     else {
 	fprintf( stderr, "Required feature out of bounds in script table.\n" );
@@ -2271,10 +2272,14 @@ static void ProcessLangSys(FILE *ttf,uint32 langsysoff,
     cnt = getushort(ttf);
     for ( i=0; i<cnt; ++i ) {
 	feature = getushort(ttf);
+	if ( feature==EOF )
+    break;
 	if ( feature<fcnt )
 	    LSysAddToFeature(&features[feature],script,lang,false);
-	else
+	else if ( !complained ) {
 	    fprintf( stderr, "Feature out of bounds in script table.\n" );
+	    complained = true;
+	}
     }
 }
 
@@ -2348,15 +2353,19 @@ static struct feature *tagTtfFeaturesWithScript(FILE *ttf,uint32 script_pos,
 	if ( stab.langcnt>=stab.maxcnt ) {
 	    stab.maxcnt = stab.langcnt+30;
 	    stab.langsys = grealloc(stab.langsys,stab.maxcnt*sizeof(uint16));
-	    stab.lang = grealloc(stab.langsys,stab.maxcnt*sizeof(uint32));
+	    stab.lang = grealloc(stab.lang,stab.maxcnt*sizeof(uint32));
 	}
 	for ( j=0; j<stab.langcnt; ++j ) {
 	    stab.lang[j] = getlong(ttf);
 	    stab.langsys[j] = getushort(ttf);
 	}
+	if ( feof(ttf)) {
+	    fprintf( stderr, "Bad Language system record\n" );
+    break;
+	}
 	if ( stab.deflangsys!=0 )
 	    ProcessLangSys(ttf,scripts[i].offset+stab.deflangsys,features,fcnt,scripts[i].script,DEFAULT_LANG);
-	for ( j=0; j<stab.langcnt; ++j )
+	for ( j=0; j<stab.langcnt && !feof(ttf); ++j )
 	    ProcessLangSys(ttf,scripts[i].offset+stab.langsys[j],features,fcnt,scripts[i].script,stab.lang[j]);
     }
     free(stab.langsys);
@@ -2665,6 +2674,10 @@ return;
     lu_type = getushort(ttf);
     lookup->flags = getushort(ttf);
     cnt = getushort(ttf);
+    if ( cnt==EOF || ftell(ttf)+2*cnt > info->g_bounds ) {
+	fprintf( stderr, "Bad lookup count\n" );
+return;
+    }
     st_offsets = galloc(cnt*sizeof(uint16));
     for ( j=0; j<cnt; ++j )
 	st_offsets[j] = getushort(ttf);
@@ -3568,6 +3581,10 @@ static struct statetable *read_statetable(FILE *ttf, int ent_extras, int ismorx,
     } else {
 	st->first_glyph = getushort(ttf);
 	st->nglyphs = getushort(ttf);
+	if ( feof(ttf)) {
+	    fprintf(stderr,"Bad glyph count in mort table.\n");
+	    st->nglyphs = 0;
+	}
 	st->classes = galloc(st->nglyphs);
 	fread(st->classes,1,st->nglyphs,ttf);
 	for ( i=0; i<st->nglyphs; ++i ) {

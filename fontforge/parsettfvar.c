@@ -493,6 +493,11 @@ static void VaryGlyphs(struct ttfinfo *info,int tupleIndex,int gnum,
 
     if ( info->chars[gnum]==NULL )	/* Apple doesn't support ttc so this */
 return;					/*  can't happen */
+    if ( points==NULL ) {
+	fprintf( stderr, "Mismatched local and shared tuple flags.\n" );
+return;
+    }
+
     if ( points[0]==ALL_POINTS )
 	pcnt = PointCount(info->chars[gnum])+4;
     else {

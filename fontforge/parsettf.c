@@ -3605,10 +3605,12 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    trans = enc->unicode;
 	    for ( i=0; i<256 && i<info->glyph_cnt && i<len-6; ++i )
 		if ( !justinuse ) {
-		    info->chars[table[i]]->enc = i;
-		    if ( trans!=NULL )
-			info->chars[table[i]]->unicodeenc = trans[i];
-		} else
+		    if ( table[i]<info->glyph_cnt && info->chars[table[i]]!=NULL ) {
+			info->chars[table[i]]->enc = i;
+			if ( trans!=NULL )
+			    info->chars[table[i]]->unicodeenc = trans[i];
+		    }
+		} else if ( table[i]<info->glyph_cnt && info->chars[table[i]]!=NULL )
 		    info->inuse[table[i]] = 1;
 	} else if ( format==4 ) {
 	    if ( strmatch(enc->enc_name,"symbol")==0 ) {
@@ -3882,7 +3884,8 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 		    break;
 		} else
 		    for ( i=start; i<=end; ++i ) {
-			if ( startglyph+i-start >= info->glyph_cnt ) {
+			if ( startglyph+i-start >= info->glyph_cnt ||
+				info->chars[startglyph+i-start]==NULL ) {
 			    fprintf( stderr, "Bad font: Encoding data out of range.\n" );
 		    break;
 			} else {
@@ -4237,7 +4240,7 @@ return( false );
 		chars[i]->layers[ly_fore].refs = next;
 	    else
 		prev->next = next;
-	    free(ref);
+	    chunkfree(ref,sizeof(RefChar));
 	} else {
 	    ref->sc = chars[ref->local_enc];
 	    ref->adobe_enc = getAdobeEnc(ref->sc->name);
@@ -4508,12 +4511,15 @@ static void CheckEncoding(struct ttfinfo *info) {
 
     extras = 0;
     for ( j=0; j<info->glyph_cnt; ++j )
-	if ( (info->chars[j]->enc==0 && j!=0) || info->chars[j]->enc>=256 )
+	if ( info->chars[j]!=NULL &&
+		((info->chars[j]->enc==0 && j!=0) || info->chars[j]->enc>=256 ))
 	    ++extras;
     chars = gcalloc(256+extras,sizeof(SplineChar *));
     extras = 0;
     for ( j=0; j<info->glyph_cnt; ++j ) {
-	if (( info->chars[j]->enc==0 && j!=0) || info->chars[j]->enc>=256 ) {
+	if ( info->chars[j]==NULL )
+	    /* Do Nothing */;
+	else if (( info->chars[j]->enc==0 && j!=0) || info->chars[j]->enc>=256 ) {
 	    chars[256+extras] = info->chars[j];
 	    info->chars[j]->enc = 256+extras++;
 	} else
