@@ -566,6 +566,24 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	  case CHR('P','f','E','d'):
 	    info->pfed_start = offset;
 	  break;
+
+	    /* Apple's mm fonts */
+	  case CHR('g','v','a','r'):
+	    info->gvar_start = offset;
+	    info->gvar_len = length;
+	  break;
+	  case CHR('f','v','a','r'):
+	    info->fvar_start = offset;
+	    info->fvar_len = length;
+	  break;
+	  case CHR('a','v','a','r'):
+	    info->avar_start = offset;
+	    info->avar_len = length;
+	  break;
+	  case CHR('c','v','a','r'):
+	    info->cvar_start = offset;
+	    info->cvar_len = length;
+	  break;
 	}
     }
 return( true );
@@ -698,7 +716,7 @@ return;
     if ( str==NULL )		/* we didn't understand the encoding */
 return;
 
-    if ( plat==1 )
+    if ( plat==1 || plat==0 )
 	language = WinLangFromMac(language);
     if ( (language&0xff00)==0 ) language |= 0x400;
 
@@ -3876,6 +3894,10 @@ return( 0 );
     } else if ( info->glyphlocations_start!=0 && info->glyph_start!=0 ) {
 	info->to_order2 = (!loaded_fonts_same_as_new ||
 		(loaded_fonts_same_as_new && new_fonts_are_order2));
+	/* If it's an apple mm font, then we don't want to change the order */
+	/*  This messes up the point count */
+	if ( info->gvar_start!=0 && info->fvar_start!=0 )
+	    info->to_order2 = true;
 	readttfglyphs(ttf,info);
     } else if ( info->cff_start!=0 ) {
 	info->to_order2 = (loaded_fonts_same_as_new && new_fonts_are_order2);
@@ -3910,6 +3932,19 @@ return( 0 );
 	if ( info->lcar_start!=0 )
 	    readttflcar(ttf,info);
     }
+    /* read the cvt table before reading variation data */
+    if ( info->to_order2 ) {
+	    /* Yes, even though we've looked at maxp already, let's make a blind */
+	    /*  copy too for those fields we can't compute on our own */
+	    /* Like size of twilight zone, etc. */
+	TtfCopyTableBlindly(info,ttf,info->maxp_start,info->maxp_len,CHR('m','a','x','p'));
+	TtfCopyTableBlindly(info,ttf,info->cvt_start,info->cvt_len,CHR('c','v','t',' '));
+	TtfCopyTableBlindly(info,ttf,info->fpgm_start,info->fpgm_len,CHR('f','p','g','m'));
+	TtfCopyTableBlindly(info,ttf,info->prep_start,info->prep_len,CHR('p','r','e','p'));
+    }
+    /* Do this before reading kerning info */
+    if ( info->to_order2 && info->gvar_start!=0 && info->fvar_start!=0 )
+	readttfvariations(info,ttf);
     if ( info->gpos_start!=0 )		/* kerning info may live in the gpos table too */
 	readttfgpossub(ttf,info,true);
     else {
@@ -3924,15 +3959,6 @@ return( 0 );
 	/* We will default the gsub table later... */;
 	if ( info->morx_start!=0 || info->mort_start!=0 )
 	    readttfmort(ttf,info);
-    }
-    if ( info->to_order2 ) {
-	    /* Yes, even though we've looked at maxp already, let's make a blind */
-	    /*  copy too for those fields we can't compute on our own */
-	    /* Like number of instructions, etc. */
-	TtfCopyTableBlindly(info,ttf,info->maxp_start,info->maxp_len,CHR('m','a','x','p'));
-	TtfCopyTableBlindly(info,ttf,info->cvt_start,info->cvt_len,CHR('c','v','t',' '));
-	TtfCopyTableBlindly(info,ttf,info->fpgm_start,info->fpgm_len,CHR('f','p','g','m'));
-	TtfCopyTableBlindly(info,ttf,info->prep_start,info->prep_len,CHR('p','r','e','p'));
     }
     if ( info->pfed_start!=0 )
 	pfed_read(ttf,info);
