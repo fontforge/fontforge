@@ -2184,8 +2184,9 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		    ret->width = stack[0];
 		    stack[0] = stack[1]; stack[1] = stack[2]; --sp;
 		}
-		closepath(cur,is_type2);
-	    }
+		closepath(cur,true);
+	    } else if ( cur!=NULL && cur->first->prev==NULL )
+		closepath(cur,false);		/* Even in type1 fonts closepath is optional */
 	  case 5: /* rlineto */
 	  case 6: /* hlineto */
 	  case 7: /* vlineto */
