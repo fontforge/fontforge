@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 4-Nov-2004 -->
+  <!-- AP: Last modified: 15-Nov-2004 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -11,6 +11,48 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    15-Nov-2004
+    <UL>
+      <LI>
+	If ff started without a prefs file, then creating a new font would crash
+      <LI>
+	If a copyright string contained a newline then ff would generate bad postscript
+      <LI>
+	If user added a comment to an empty glyph then the comment wasn't saved in
+	the sfd file.
+      <LI>
+	If ff saved a utf7 string to an sfd file (ttf names, etc.) and that string
+	contained a hyphen that followed immediately after something that needed
+	to be encoded in base64, then the hyphen would be lost.
+    </UL>
+  <LI>
+    12-Nov-2004
+    <UL>
+      <LI>
+	ff would crash on postscript fonts where the encoding included a glyph name
+	not defined in CharStrings (probably broken on 12-Oct)
+      <LI>
+	More remove overlap work
+      <LI>
+	In the glyph window, when the scaled distance between the top and bottom
+	of the window is less than 1 em-unit, then the vertical ruler was drawn with
+	the top and bottom labels reversed.
+      <LI>
+	sfd files used to have a limit of 1023 characters in ttf 'name' table strings.
+    </UL>
+  <LI>
+    6-Nov-2004
+    <UL>
+      <LI>
+	Encoding change broke prefs dialog
+    </UL>
+  <LI>
+    5-Nov-2004
+    <UL>
+      <LI>
+	Encoding change didn't work on libiconv systems
+    </UL>
   <LI>
     4-Nov-2004
     <UL>
