@@ -1183,7 +1183,8 @@ return( true );
 		val1 = u_strtol(ti[i]->text,&end,10);
 		val2 = u_strtol(end+1,NULL,10);
 		if ( val1==feat && val2==on ) {
-		    GWidgetErrorR(_STR_ThisSettingCodeIsAlreadyUsed,_STR_ThisSettingCodeIsAlreadyUsed);
+		    static int buts[] = { _STR_Yes, _STR_No, 0 };
+		    if ( GWidgetAskR(_STR_ThisSettingCodeIsAlreadyUsed,buts,0,1,_STR_ThisSettingCodeIsAlreadyUsedReuse)==1 )
 return( true );
 		}
 	    }

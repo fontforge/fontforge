@@ -2055,6 +2055,7 @@ static char mnemonic_Off = 'O';
 static char *str_Mutex = "Mutex";
 static char mnemonic_Mutex = 'M';
 static char *str_ThisSettingCodeIsAlreadyUsed = "This feature, setting combination is already used";
+static char *str_ThisSettingCodeIsAlreadyUsedReuse = "This feature, setting combination is already used\nDo you really wish to reuse it?";
 static char *str_OffNameNull = "If the Off-Name is blank, then the Off-Code must be -1";
 static char *str_PrefsAppNotice1 = "Normally PfaEdit will find applications by searching for"
 static char *str_PrefsAppNotice2 = "them in your PATH environment variable, if you want"

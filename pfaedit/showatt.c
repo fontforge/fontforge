@@ -69,6 +69,9 @@ struct att_dlg {
     struct node *current;
 };
 
+static void BuildFPST(struct node *node,struct att_dlg *att);
+static void BuildAnchorLists_(struct node *node,struct att_dlg *att);
+
 static void nodesfree(struct node *node) {
     int i;
 
@@ -552,6 +555,7 @@ static void BuildMorxScript(struct node *node,struct att_dlg *att) {
     int i,j,k,l,m, tot, max;
     SplineFont *_sf = att->sf, *sf;
     uint32 *feats;
+    FPST *fpst, **fpsts;
     struct node *featnodes;
     extern GTextInfo *pst_tags[];
     int feat, set;
@@ -570,6 +574,7 @@ static void BuildMorxScript(struct node *node,struct att_dlg *att) {
 	    for ( pst=sc->possub; pst!=NULL; pst=pst->next )
 		    if ( pst->type!=pst_position && pst->type!=pst_lcaret &&
 			    pst->type!=pst_pair &&
+			    pst->script_lang_index!=SLI_NESTED &&
 			    OTTagToMacFeature(pst->tag,&feat,&set)) {
 		int sli = pst->script_lang_index;
 		struct script_record *sr = _sf->script_lang[sli];
@@ -590,17 +595,46 @@ static void BuildMorxScript(struct node *node,struct att_dlg *att) {
 	++k;
     } while ( k<_sf->subfontcnt );
 
+    fpsts = NULL;
+    for ( fpst = _sf->possub; fpst!=NULL; fpst=fpst->next ) {
+	if ( FPSTisMacable(_sf,fpst)) {
+	    int sli = fpst->script_lang_index;
+	    struct script_record *sr = _sf->script_lang[sli];
+	    for ( l=0; sr[l].script!=0 && sr[l].script!=script; ++l );
+	    if ( sr[l].script!=0 ) {
+		for ( m=0; sr[l].langs[m]!=0 && sr[l].langs[m]!=lang; ++m );
+		if ( sr[l].langs[m]!=0 ) {
+		    for ( l=0; l<tot && feats[l]!=fpst->tag; ++l );
+		    if ( l>=tot ) {
+			if ( fpsts==NULL )
+			    fpsts = gcalloc(max,sizeof(FPST *));
+			if ( tot>=max ) {
+			    feats = grealloc(feats,(max+=30)*sizeof(uint32));
+			    fpsts = grealloc(fpsts,max*sizeof(FPST *));
+			}
+			fpsts[tot] = fpst;
+			feats[tot++] = fpst->tag;
+		    }
+		}
+	    }
+	}
+    }
+
     featnodes = gcalloc(tot+1,sizeof(struct node));
     for ( i=0; i<tot; ++i ) {
 	/* featnodes[i].tag = feats[i]; */
 	featnodes[i].parent = node;
 	featnodes[i].build = BuildMorxFeatures;
+	if ( fpsts!=NULL && fpsts[i]!=NULL ) {
+	    featnodes[i].build = BuildFPST;
+	    featnodes[i].u.fpst = fpsts[i];
+	}
 	for ( k=1; pst_tags[k]!=NULL; ++k ) {
-	    for ( j=0; pst_tags[k][j].text!=NULL && featnodes[i].tag!=(uint32) pst_tags[k][j].userdata; ++j );
+	    for ( j=0; pst_tags[k][j].text!=NULL && feats[i]!=(uint32) pst_tags[k][j].userdata; ++j );
 	    if ( pst_tags[k][j].text!=NULL )
 	break;
 	}
-	OTTagToMacFeature(pst->tag,&feat,&set);
+	OTTagToMacFeature(feats[i],&feat,&set);
 	featnodes[i].tag = (feat<<16)|set;
 	sprintf( buf, "%d,%d ", feat,set );
 	uc_strcpy(ubuf,buf);
@@ -630,9 +664,6 @@ static void BuildAnchorLists_(struct node *node,struct att_dlg *att) {
     uint32 script = node->parent->parent->tag;
     BuildAnchorLists(node,att,script);
 }
-
-static void BuildFPST(struct node *node,struct att_dlg *att);
-static void BuildAnchorLists_(struct node *node,struct att_dlg *att);
 
 static void BuildFeature_(struct node *node,struct att_dlg *att) {
     uint32 feat=node->tag;
@@ -1565,10 +1596,11 @@ return;
 	}
     }
 
-    if ( isgpos || isgsub ) {
+    if ( isgpos || isgsub || ismorx ) {
 	for ( fpst = _sf->possub; fpst!=NULL; fpst=fpst->next )
 	    if ((( isgpos && (fpst->type==pst_contextpos || fpst->type==pst_chainpos)) ||
-		    ( isgsub && (fpst->type==pst_contextsub || fpst->type==pst_chainsub || fpst->type==pst_reversesub ))) &&
+		    ( isgsub && (fpst->type==pst_contextsub || fpst->type==pst_chainsub || fpst->type==pst_reversesub )) ||
+		    ( ismorx && FPSTisMacable(sf,fpst))) &&
 		    fpst->script_lang_index!=SLI_NESTED && fpst->script_lang_index!=SLI_UNKNOWN ) {
 		int sli = fpst->script_lang_index;
 		struct script_record *sr = _sf->script_lang[sli];
@@ -1654,7 +1686,8 @@ static void BuildTop(struct att_dlg *att) {
 			hasgdef = haslcar = true;
 		} else {
 		    hasgsub = true;
-		    if ( OTTagToMacFeature(pst->type,&feat,&set))
+		    if ( SLIHasDefault(sf,pst->script_lang_index) &&
+			    OTTagToMacFeature(pst->type,&feat,&set))
 			hasmorx = true;
 		}
 	    }
@@ -1688,6 +1721,8 @@ static void BuildTop(struct att_dlg *att) {
 	    hasgpos = true;
 	else
 	    hasgsub = true;
+	if ( FPSTisMacable(sf,fpst))
+	    hasmorx = true;
     }
 
     if ( hasgsub+hasgpos+hasgdef+hasmorx+haskern+haslcar+hasopbd+hasprop==0 ) {

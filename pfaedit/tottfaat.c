@@ -63,11 +63,11 @@ static void DumpKernClass(FILE *file, uint16 *class,int cnt,int add,int mul) {
 	putshort(file,class[i]*mul+add);
 }
 
-static int SLIHasDefault(SplineFont *sf,int sli) {
+int SLIHasDefault(SplineFont *sf,int sli) {
     struct script_record *sr = sf->script_lang[sli];
     int i, j;
 
-    if ( sli==SLI_NESTED )
+    if ( sli==SLI_NESTED || sli==SLI_UNKNOWN )
 return( false );
 
     for ( i=0; sr[i].script!=0; ++i )
@@ -1051,13 +1051,26 @@ return( false );
 return( any );
 }
 
-static int OnlyOneSubs(SplineFont *sf, FPST *fpst) {
+int FPSTisMacable(SplineFont *sf, FPST *fpst) {
     int i;
+    int featureType, featureSetting;
 
-    if ( fpst->format==pst_reversecoverage )
-return( true );
+    if ( fpst->type!=pst_contextsub && fpst->type!=pst_chainsub )
+return( false );
+    if ( !SLIHasDefault(sf,fpst->script_lang_index))
+return( false );
+    if ( !OTTagToMacFeature(fpst->tag,&featureType,&featureSetting) )
+return( false );
+
+    if ( fpst->format != pst_coverage )
+return( false );
 
     for ( i=0; i<fpst->rule_cnt; ++i ) {
+	if ( fpst->rules[i].u.coverage.ncnt+
+		fpst->rules[i].u.coverage.bcnt+
+		fpst->rules[i].u.coverage.fcnt>=10 )
+return( false );			/* Let's not make a state machine this complicated */
+
 	if ( fpst->rules[i].lookup_cnt==2 ) {
 	    switch ( fpst->format ) {
 	      case pst_coverage:
@@ -1345,10 +1358,7 @@ static struct feature *aat_dumpmorx_contextchainsubs(struct alltabs *at, SplineF
     int chrs;
 
     for ( fpst = sf->possub; fpst!=NULL; fpst=fpst->next ) {
-	if (( fpst->type==pst_contextsub || fpst->type==pst_chainsub ) &&
-		(fpst->format == pst_coverage && fpst->rules[0].u.coverage.ncnt+fpst->rules[0].u.coverage.bcnt+fpst->rules[0].u.coverage.fcnt<10 ) &&
-		SLIHasDefault(sf,fpst->script_lang_index) &&
-		OnlyOneSubs(sf,fpst) &&
+	if ( FPSTisMacable(sf,fpst) &&
 		(cur = featureFromTag(fpst->tag))!=NULL ) {
 	    cur->r2l = fpst->flags&pst_r2l ? 1 : 0;
 	    cur->subtable_type = 1;		/* contextual glyph subs */
@@ -1983,7 +1993,7 @@ return( true );
 
     *featureType = 0;
     *featureSetting = 0;
-return( 0 );
+return( false );
 }
 
 static struct feature *featureFromTag(uint32 tag ) {
