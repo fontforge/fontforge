@@ -1333,6 +1333,10 @@ static void MVMouse(MetricsView *mv,GEvent *event) {
 	    if ( i<mv->charcnt )
 		SCPreparePopup(mv->gw,mv->perchar[i].sc);
 	}
+	if ( mv->cursor!=ct_mypointer ) {
+	    GDrawSetCursor(mv->gw,ct_mypointer);
+	    mv->cursor = ct_mypointer;
+	}
 return;
     }
 
