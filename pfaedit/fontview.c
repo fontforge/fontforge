@@ -3821,7 +3821,7 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
     dummy->enc = i;
     if ( sf->compacted ) {
 	for ( j=i-1; j>=0; --j )
-	    if ( sf->chars[j]!=NULL )
+	    if ( j<sf->charcnt && sf->chars[j]!=NULL )
 	break;
 	if ( j>0 )
 	    dummy->old_enc = sf->chars[j]->old_enc+(i-j);
@@ -4053,14 +4053,21 @@ static GImage *UniGetRotatedGlyph(SplineFont *sf, SplineChar *sc,int uni) {
     if ( uni!=-1 )
 	/* Do nothing */;
     else if ( sscanf(sc->name,"vertuni%x", &uni)!=1 &&
-	    (sscanf( sc->name, "vertcid_%d", &cid)==1 ||
+	    (sscanf( sc->name, "cid-%d", &cid)==1 ||
+	     sscanf( sc->name, "vertcid_%d", &cid)==1 ||	/* Obsolete names */
 	     sscanf( sc->name, "cid_%d", &cid)==1 )) {
 	cidsc = NULL;
-	if ( sf->cidmaster==NULL ) {
-	    if ( cid>=0 && cid<sf->charcnt )
-		cidsc = sf->chars[cid];
+	if ( !sf->compacted ) {
+	    if ( sf->cidmaster==NULL ) {
+		if ( cid>=0 && cid<sf->charcnt )
+		    cidsc = sf->chars[cid];
+	    } else {
+		cidsc = SCBuildDummy(&dummy,sf,cid);
+	    }
 	} else {
-	    cidsc = SCBuildDummy(&dummy,sf,cid);
+	    int i;
+	    for (i=0; i<sf->charcnt && sf->chars[i]->old_enc!=cid; i++);
+	    cidsc = SCBuildDummy(&dummy,sf,i);
 	}
 	if ( cidsc==NULL || cidsc->unicodeenc==-1 )
 return( NULL );
