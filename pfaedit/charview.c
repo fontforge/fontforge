@@ -1689,7 +1689,8 @@ static void CVDoSnaps(CharView *cv, FindSel *fs) {
     else if ( p->cx>cv->sc->width-fs->fudge && p->cx<cv->sc->width+fs->fudge &&
 	    !cv->widthsel)
 	p->cx = cv->sc->width;
-    else if ( cv->widthsel && p->cx>cv->p.cx-fs->fudge && p->cx<cv->p.cx+fs->fudge )
+    else if ( cv->widthsel && p!=cv->p &&
+		p->cx>cv->p.cx-fs->fudge && p->cx<cv->p.cx+fs->fudge )
 	p->cx = cv->oldwidth;
 #if 0
     else if ( cv->sc->parent->hsnaps!=NULL && cv->drawmode!=dm_grid ) {
