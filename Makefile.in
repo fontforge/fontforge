@@ -13,23 +13,23 @@ top_builddir = .
 INSTALL = @INSTALL@
 
 pfaedit: libgunicode libgdraw
-	( cd pfaedit ; $(MAKE) )
+	$(MAKE) -C pfaedit
 
 libgunicode:
-	( cd Unicode ; $(MAKE) )
+	$(MAKE) -C Unicode
 
 libgdraw:
-	( cd gdraw ; $(MAKE) )
+	$(MAKE) -C gdraw
 
 clean:
-	( cd pfaedit ; $(MAKE) clean )
-	( cd Unicode ; $(MAKE) clean )
-	( cd gdraw ; $(MAKE) clean )
+	$(MAKE) -C pfaedit clean
+	$(MAKE) -C Unicode clean
+	$(MAKE) -C gdraw clean
 
 distclean cleaner:
-	( cd pfaedit ; $(MAKE) distclean )
-	( cd Unicode ; $(MAKE) distclean )
-	( cd gdraw ; $(MAKE) distclean )
+	$(MAKE) -C pfaedit distclean
+	$(MAKE) -C Unicode distclean
+	$(MAKE) -C gdraw distclean
 	rm Makefile config.cache config.log config.status libtool
 
 install: $(sharedir)
