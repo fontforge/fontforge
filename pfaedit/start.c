@@ -152,7 +152,7 @@ static GWindow splashw;
 static GTimer *autosave_timer, *splasht;
 static GFont *splash_font, *splash_italic;
 static int as,fh, linecnt;
-static unichar_t msg[300];
+static unichar_t msg[350];
 static unichar_t *lines[20], *is, *ie;
 
 struct delayed_event {
@@ -175,6 +175,7 @@ void ShowAboutScreen(void) {
 
 static void SplashLayout() {
     unichar_t *start, *pt, *lastspace;
+    extern const char *source_modtime_str;
 
     uc_strcpy(msg, "When my father finished his book on Renaissance printing (The Craft of Printing and the Publication of Shakespeare's Works) he told me that I would have to write the chapter on computer typography. This is my attempt to do so.");
 
@@ -198,6 +199,9 @@ static void SplashLayout() {
 	lines[linecnt++] = pt;
 	if ( *pt ) ++pt;
     }
+    uc_strcpy(pt,"  Version: ");;
+    uc_strcat(pt,source_modtime_str);
+    lines[linecnt++] = pt+u_strlen(pt);
     lines[linecnt] = NULL;
     is = u_strchr(msg,'(');
     ie = u_strchr(msg,')');
