@@ -921,7 +921,11 @@ static char *AskKey(SplineFont *sf) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_PrivateKey,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Private Key");
+#endif
     pos.x = pos.y = 0;
     ptwidth = 2*GIntGetResource(_NUM_Buttonsize)+GGadgetScale(60);
     pos.width =GDrawPointsToPixels(NULL,ptwidth);
@@ -1028,7 +1032,11 @@ static void PIPrivateCheck(struct gfi_data *d) {
 }
 
 static int PIFinishFormer(struct gfi_data *d) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
     static int buts[] = { _STR_OK, _STR_Cancel, 0 };
+#elif defined(FONTFORGE_CONFIG_GTK)
+    static char *buts[] = { GTK_STOCK_OK, GTK_STOCK_CANCEL, NULL };
+#endif
     unichar_t *end;
 
     if ( d->old_sel < 0 )
@@ -1051,19 +1059,35 @@ return( true );			/* Didn't change */
 	break;
 	if ( KnownPrivates[i].name!=NULL ) {
 	    if ( KnownPrivates[i].type==pt_array ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		if ( *pt!='[' && GWidgetAskR(_STR_Badtype,buts,0,1,_STR_Arrayquest)==1 )
+#elif defined(FONTFORGE_CONFIG_GTK)
+		if ( *pt!='[' && gwwv_ask(_("Bad type"),buts,0,1,_("Expected array\nProcede anyway?"))==1 )
+#endif
 return( false );
 	    } else if ( KnownPrivates[i].type==pt_boolean ) {
 		if ( uc_strcmp(pt,"true")!=0 && uc_strcmp(pt,"false")!=0 &&
+#if defined(FONTFORGE_CONFIG_GDRAW)
 			GWidgetAskR(_STR_Badtype,buts,0,1,_STR_Boolquest)==1 )
+#elif defined(FONTFORGE_CONFIG_GTK)
+			gwwv_ask(_("Bad type"),buts,0,1,_("Expected boolean\nProcede anyway?"))==1 )
+#endif
 return( false );
 	    } else if ( KnownPrivates[i].type==pt_code ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		if ( *pt!='{' && GWidgetAskR(_STR_Badtype,buts,0,1,_STR_Codequest)==1 )
+#elif defined(FONTFORGE_CONFIG_GTK)
+		if ( *pt!='{' && gwwv_ask(_("Bad type"),buts,0,1,_("Expected code\nProcede anyway?"))==1 )
+#endif
 return( false );
 	    } else if ( KnownPrivates[i].type==pt_number ) {
 		u_strtod(pt,&end);
 		while ( isspace(*end)) ++end;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		if ( *end!='\0' && GWidgetAskR(_STR_Badtype,buts,0,1,_STR_Numberquest)==1 )
+#elif defined(FONTFORGE_CONFIG_GTK)
+		if ( *end!='\0' && gwwv_ask(_("Bad type"),buts,0,1,_("Expected number\nProcede anyway?"))==1 )
+#endif
 return( false );
 	    }
 	}
@@ -1196,7 +1220,11 @@ static int PI_Guess(GGadget *g, GEvent *e) {
     real stemsnap[12];
     char buffer[211];
     unichar_t *temp;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     static int buts[] = { _STR_OK, _STR_Cancel, 0 };
+#elif defined(FONTFORGE_CONFIG_GTK)
+    static char *buts[] = { GTK_STOCK_OK, GTK_STOCK_CANCEL, NULL };
+#endif
     struct psdict *private;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
@@ -1208,7 +1236,11 @@ static int PI_Guess(GGadget *g, GEvent *e) {
 	sel = GGadgetGetFirstListSelectedItem(list);
 	if ( strcmp(private->keys[sel],"BlueValues")==0 ||
 		strcmp(private->keys[sel],"OtherBlues")==0 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    if ( GWidgetAskR(_STR_Guess,buts,0,1,_STR_Bluequest)==1 )
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    if ( gwwv_ask(_("Guess"),buts,0,1,_("This will change both BlueValues and OtherBlues.\nDo you want to continue?"))==1 )
+#endif
 return( true );
 	    PIPrivateCheck(d);
 	    private = d->private;
@@ -1219,14 +1251,22 @@ return( true );
 	    PSDictChangeEntry(sf->private,"OtherBlues",buffer);
 	} else if ( strcmp(private->keys[sel],"StdHW")==0 ||
 		strcmp(private->keys[sel],"StemSnapH")==0 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    if ( GWidgetAskR(_STR_Guess,buts,0,1,_STR_Hstemquest)==1 )
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    if ( gwwv_ask(_("Guess"),buts,0,1,_("This will change both StdHW and StemSnapH.\nDo you want to continue?"))==1 )
+#endif
 return( true );
 	    FindHStems(sf,stemsnap,snapcnt);
 	    PIPrivateCheck(d);
 	    SnapSet(d->private,stemsnap,snapcnt,"StdHW","StemSnapH");
 	} else if ( strcmp(private->keys[sel],"StdVW")==0 ||
 		strcmp(private->keys[sel],"StemSnapV")==0 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    if ( GWidgetAskR(_STR_Guess,buts,0,1,_STR_Vstemquest)==1 )
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    if ( gwwv_ask(_("Guess"),buts,0,1,_("This will change both StdVW and StemSnapV.\nDo you want to continue?"))==1 )
+#endif
 return( true );
 	    FindVStems(sf,stemsnap,snapcnt);
 	    PIPrivateCheck(d);
@@ -1578,7 +1618,11 @@ return( __SFReencodeFont(sf,em_original,NULL));
 	if ( item!=NULL ) {
 	    enc_cnt = item->char_cnt;
 	} else {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_InvalidEncoding,_STR_InvalidEncoding);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Invalid Encoding"),_("Invalid Encoding"));
+#endif
 return( false );
 	}
     } else if ( new_map==em_unicode || new_map==em_big5 || new_map==em_big5hkscs || new_map==em_johab )
@@ -1710,7 +1754,11 @@ return(false);
 		tlen = item->char_cnt;
 		table = NULL;
 	    } else {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_InvalidEncoding,_STR_InvalidEncoding);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Invalid Encoding"),_("Invalid Encoding"));
+#endif
 return( false );
 	    }
 	} else if ( new_map==em_jis208 ) {
@@ -2463,10 +2511,22 @@ return;
     if ( i==d->sf->charcnt ) {
 	if ( start==0 ) {
 	    GGadgetSetEnabled(g,false);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_NoMore,index==0?_STR_NoMarks:_STR_NoBases);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("No More"),index==0?_("There are no marks associated with this anchor class"):_("There are no base characters associated with this anchor class"));
+#endif
 	} else {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GGadgetSetTitle(g,GStringGetResource(index==0?_STR_ShowFirstMark:_STR_ShowFirstBase,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    GGadgetSetTitle(g,index==0?_("Show First Mark"));
+#endif
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_NoMore,index==0?_STR_NoMoreMarks:_STR_NoMoreBases);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("No More"),index==0?_("There are no more marks associated with this anchor class"):_("There are no more base characters associated with this anchor class"));
+#endif
 	}
     } else {
 	cvs = NULL;
@@ -2484,7 +2544,11 @@ return;
 	else
 	    d->anchor_shows[index].cv = CharViewCreate(sc,sc->parent->fv);
 	if ( start==0 )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GGadgetSetTitle(g,GStringGetResource(index==0?_STR_ShowNextMark:_STR_ShowNextBase,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    GGadgetSetTitle(g,index==0?_("Show Next Mark"));
+#endif
     }
 }
 
@@ -2591,7 +2655,11 @@ static int GFI_AnchorNew(GGadget *g, GEvent *e) {
 	    break;
 	    }
 	    if ( i<len ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_DuplicateName,_STR_DuplicateName);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Duplicate Name"),_("Duplicate Name"));
+#endif
 		free(newname);
 return( true );
 	    }
@@ -2601,7 +2669,11 @@ return( true );
 		break;
 		}
 		if ( i<len ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GWidgetErrorR(_STR_OnlyOne,_STR_OnlyOneCurs);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    gwwv_post_error(_("Only One"),_("There may be only one anchor class tagged with 'curs'"));
+#endif
 		    free(newname);
 return( true );
 		}
@@ -2741,7 +2813,11 @@ return( true );
 	    old = GGadgetGetList(list,&len);
 	    if (( uc_strncmp(newname,"curs",4)==0 && uc_strncmp(ti->text,"curs",4)!=0 ) ||
 		    ( uc_strncmp(newname,"curs",4)!=0 && uc_strncmp(ti->text,"curs",4)==0 )) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_CantChange,_STR_CantChangeCurs);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Can't do this change"),_("You may not change the tag on an anchor class to or from 'curs'"));
+#endif
 		free(newname);
 return( false );
 	    }
@@ -2755,13 +2831,25 @@ return( false );
 		break;
 		}
 		if ( i<len ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GWidgetErrorR(_STR_DuplicateName,_STR_DupAnchorClassNotTag,newname);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    gwwv_post_error(_("Duplicate Name"),_("The name, %s, is already in use with a different tag."),newname);
+#endif
 		    free(newname);
 return( false );
 		}
 	    } else {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		static int buts[] = { _STR_Continue, _STR_Cancel, 0 };
 		if ( GWidgetAskR(_STR_DuplicateName,buts,0,1,_STR_DupAnchorClass,newname)==1 )
+#elif defined(FONTFORGE_CONFIG_GTK)
+		char *buts[3];
+		buts[0] = _("C_ontinue");
+		buts[1] = GTK_STOCK_CANCEL;
+		buts[2] = NULL;
+		if ( gwwv_ask(_("Duplicate Name"),buts,0,1,_("The name, %s, is already in use.\nIf you elect to continue these two anchor classes\nwill be merged when you press the OK button."),newname)==1 )
+#endif
 return( false );
 	    }
 	    new = gcalloc(len+1,sizeof(GTextInfo *));
@@ -2791,9 +2879,17 @@ static int GFI_AnchorSelChanged(GGadget *g, GEvent *e) {
 	d->anchor_shows[0].restart = true;
 	d->anchor_shows[1].restart = true;
 	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_ShowMark),
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GStringGetResource(_STR_ShowFirstMark,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+		_("Show First Mark"));
+#endif
 	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_ShowBase),
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GStringGetResource(_STR_ShowFirstBase,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+		_("Show First Base"));
+#endif
 	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ShowMark),sel!=-1 && old[sel]->userdata!=NULL);
 	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ShowBase),sel!=-1 && old[sel]->userdata!=NULL);
     } else if ( e->type==et_controlevent && e->u.control.subtype == et_listdoubleclick ) {
@@ -3018,7 +3114,11 @@ static GTextInfo *SMList(SplineFont *sf,enum asm_type type) {
     ti = gcalloc(len+1,sizeof(GTextInfo));
     for ( len=0, sm = sf->sm; sm!=NULL; sm=sm->next ) if ( sm->type==type ) {
 	if ( type==asm_kern )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    ti[len].text = u_copy(GStringGetResource(_STR_Kerning,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    ti[len].text = u_copy(_("Kerning"));
+#endif
 	else
 	    ti[len].text = FeatSetName(sf,sm->feature,sm->setting);
 	ti[len].fg = ti[len].bg = COLOR_DEFAULT;
@@ -3053,7 +3153,11 @@ void GFI_FinishSMNew(struct gfi_data *d,ASM *sm, int success, int isnew) {
 	if ( sm->type!=asm_kern )
 	    name = FeatSetName(d->sf,sm->feature,sm->setting);
 	else
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    name = u_copy(GStringGetResource(_STR_Kerning,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    name = u_copy(_("Kerning"));
+#endif
 	if ( isnew )
 	    GListAppendLine(list,name,false)->userdata = sm;
 	else
@@ -3163,17 +3267,31 @@ return( true );
 }
 
 static int AskTooFew() {
+#if defined(FONTFORGE_CONFIG_GDRAW)
     static int buts[] = { _STR_OK, _STR_Cancel, 0 };
 return( GWidgetAskR(_STR_Toofew,buts,0,1,_STR_Reducing) );
+#elif defined(FONTFORGE_CONFIG_GTK)
+    static char *buts[] = { GTK_STOCK_OK, GTK_STOCK_CANCEL, NULL };
+return( gwwv_ask(_("Too Few Characters"),buts,0,1,_("You are reducing the number of characters below the\ncurrent number. This will delete some characters.\nIs that what you wish to do?")) );
+#endif
 }
 
 static int AskLoseUndoes() {
+#if defined(FONTFORGE_CONFIG_GDRAW)
     static int buts[] = { _STR_OK, _STR_Cancel, 0 };
 return( GWidgetAskR(_STR_LosingUndoes,buts,0,1,_STR_ChangingOrderLosesUndoes) );
+#elif defined(FONTFORGE_CONFIG_GTK)
+    static char *buts[] = { GTK_STOCK_OK, GTK_STOCK_CANCEL, NULL };
+return( gwwv_ask(_("Losing Undoes"),buts,0,1,_("Changing the order of the splines in the font will lose all undoes.\nContinue anyway?")) );
+#endif
 }
 
 static void BadFamily() {
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GWidgetErrorR(_STR_Badfamily,_STR_Badfamilyn);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_post_error(_("Bad Family Name"),_("Bad Family Name, must begin with an alphabetic character."));
+#endif
 }
 
 static char *modifierlist[] = { "Ital", "Obli", "Kursive", "Cursive", "Slanted",
@@ -3432,7 +3550,11 @@ static int CheckNames(struct gfi_data *d) {
     unichar_t *end;
 
     if ( *ufamily=='\0' ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_FamilyNameRequired,_STR_FamilyNameRequired);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("A Font Family name is required"),_("A Font Family name is required"));
+#endif
 return( false );
     }
     /* A postscript name cannot be a number. There are two ways it can be a */
@@ -3441,12 +3563,20 @@ return( false );
     /*  do a cursory test for that */
     u_strtod(ufamily,&end);
     if ( *end=='\0' || (isdigit(ufamily[0]) && u_strchr(ufamily,'#')!=NULL) ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_BadFamilyName,_STR_PSNameNotNumber);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Bad Font Family Name"),_("A Postscript name may not be a number"));
+#endif
 return( false );
     }
     while ( *ufamily ) {
 	if ( *ufamily<' ' || *ufamily>=0x7f ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadFamilyName,_STR_BadPSName);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Font Family Name"),_("A Postscript name should be ASCII\nand must not contain (){}[]<>%%/ or space"));
+#endif
 return( false );
 	}
 	++ufamily;
@@ -3455,7 +3585,11 @@ return( false );
     u_strtod(ufont,&end);
     if ( (*end=='\0' || (isdigit(ufont[0]) && u_strchr(ufont,'#')!=NULL)) &&
 	    *ufont!='\0' ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_BadFontName,_STR_PSNameNotNumber);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Bad Font Name"),_("A Postscript name may not be a number"));
+#endif
 return( false );
     }
     while ( *ufont ) {
@@ -3463,13 +3597,21 @@ return( false );
 		*ufont=='(' || *ufont=='[' || *ufont=='{' || *ufont=='<' ||
 		*ufont==')' || *ufont==']' || *ufont=='}' || *ufont=='>' ||
 		*ufont=='%' || *ufont=='/' ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadFontName,_STR_BadPSName);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Font Name"),_("A Postscript name should be ASCII\nand must not contain (){}[]<>%%/ or space"));
+#endif
 return( false );
 	}
 	++ufont;
     }
     if ( u_strlen(ufont)>63 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_BadFontName,_STR_BadPSName);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Bad Font Name"),_("A Postscript name should be ASCII\nand must not contain (){}[]<>%%/ or space"));
+#endif
 return( false );
     }
 return( true );
@@ -3697,8 +3839,18 @@ return;
 	    } else {
 		int ans=-1;
 		if ( changeall==-1 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    static int buts[] = { _STR_Change, _STR_ChangeAll, _STR_RetainAll, _STR_Retain, 0 };
 		    ans = GWidgetAskR(_STR_Mismatch,buts,0,3,_STR_MismatchLong,
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    char *buts[5];
+		    buts[0] = _("Change");
+		    buts[1] = _("Change All");
+		    buts[2] = _("Retain All");
+		    buts[3] = _("Retain");
+		    buts[4] = NULL;
+		    ans = gwwv_ask(_("Mismatch"),buts,0,3,_("You have changed one version of %s but not the one under TTF Names. Would you like to set the TTF version to the changed one?"),
+#endif
 			    GStringGetResource(dups[i].sid,NULL));
 		    if ( ans==1 ) changeall=1;
 		    else if ( ans==2 ) changeall=0;
@@ -4036,7 +4188,11 @@ return( true );
 	if ( err )
 return(true);
 	if ( as+des>16384 || des<0 || as<0 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_Badascentdescent,_STR_Badascentdescentn);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Ascent/Descent"),_("Ascent and Descent must be positive and their sum less than 16384"));
+#endif
 return( true );
 	}
 	mcs = -1;
@@ -4047,7 +4203,11 @@ return( true );
 		if ( ti[i]->selected )
 		    mcs |= (int) (intpt) ti[i]->userdata;
 	    if ( (mcs&sf_condense) && (mcs&sf_extend)) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_BadStyle,_STR_NotBothCondenseExtend);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad Style"),_("A style may not have both condense and extend set (it makes no sense)"));
+#endif
 return( true );
 	    }
 	}
@@ -4077,8 +4237,17 @@ return( true );
 	if ( namechange && sf->filename!=NULL &&
 		((uniqueid!=0 && uniqueid==sf->uniqueid) ||
 		 (sf->xuid!=NULL && uc_strcmp(txt,sf->xuid)==0)) ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    static int buts[] = { _STR_Change, _STR_Retain, _STR_Cancel, 0 };
 	    int ans = GWidgetAskR(_STR_UniqueIDTitle,buts,0,2,_STR_UniqueIDChange);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    char *buts[4];
+	    buts[0] = _("Change");
+	    buts[1] = _("Retain");
+	    buts[2] = GTK_STOCK_CANCEL;
+	    buts[3] = NULL;
+	    int ans = gwwv_ask(_("Change UniqueID?"),buts,0,2,_("You have changed this font's name without changing the UniqueID (or XUID).\nThis is probably not a good idea, would you like me to\ngenerate a random new value?"));
+#endif
 	    if ( ans==2 ) {
 		GDrawSetCursor(gw,ct_pointer);
 return(true);
@@ -4300,10 +4469,18 @@ static void GFI_AsDsLab(struct gfi_data *d, int cid) {
 
     if ( cid==CID_WinAscentIsOff )
 	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_WinAscentLab),
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GStringGetResource(isoffset?_STR_WinAscentOff:_STR_WinAscent,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+		isoffset?_("Win Ascent Offset:"));
+#endif
     else
 	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_WinDescentLab),
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GStringGetResource(isoffset?_STR_WinDescentOff:_STR_WinDescent,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+		isoffset?_("Win Descent Offset:"));
+#endif
     CIDFindBounds(d->sf,&b);
     b.miny = -b.miny;
 
@@ -4469,7 +4646,11 @@ return( true );
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	wattrs.window_title = GStringGetResource(_STR_MoreParams,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	wattrs.window_title = _("More Params");
+#endif
 	pos.x = pos.y = 0;
 	pos.width =GDrawPointsToPixels(NULL,GGadgetScale(180));
 	pos.height = GDrawPointsToPixels(NULL,tot*26+60);
@@ -4539,11 +4720,19 @@ static int GFI_TeXChanged(GGadget *g, GEvent *e) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	if ( GGadgetGetCid(g)==CID_TeXText ) {
 	    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_TeXExtraSpLabel),
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GStringGetResource(_STR_ExtraSp,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    _("Extra Sp:"));
+#endif
 	    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_MoreParams),false);
 	} else {
 	    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_TeXExtraSpLabel),
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GStringGetResource(_STR_MathSp,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    _("Math Sp:"));
+#endif
 	    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_MoreParams),true);
 	}
     }
@@ -4579,7 +4768,11 @@ static void DefaultTeX(struct gfi_data *d) {
     else {
 	GGadgetSetChecked(GWidgetGetControl(d->gw,CID_TeXText), true);
 	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_TeXExtraSpLabel),
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GStringGetResource(_STR_ExtraSp,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+		_("Extra Sp:"));
+#endif
 	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_MoreParams),false);
     }
 }
@@ -4697,7 +4890,11 @@ return;
     }
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     u_snprintf(title,sizeof(title)/sizeof(title[0]),GStringGetResource(_STR_Fontinformation,NULL), sf->fontname);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    u_snprintf(title,sizeof(title)/sizeof(title[0]),_("Font Information for %.90s"), sf->fontname);
+#endif
     wattrs.window_title = title;
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(268));
@@ -4902,7 +5099,11 @@ return;
     elabel[6].text = (unichar_t *) _STR_ForceEncoding;
     elabel[6].text_in_resource = true;
     egcd[6].gd.label = &elabel[6];
+#if defined(FONTFORGE_CONFIG_GDRAW)
     egcd[6].gd.popup_msg = GStringGetResource(_STR_ForceEncodingPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    egcd[6].gd.popup_msg = _("Normally changing the encoding moves characters from their old location\nto their appriate location in the new encoding.\nBut if this box is checked, then FontForge assumes that\nthe glyphs are in the right place already, but\nhave got the wrong names and will rename everything\nto match the new encoding.");
+#endif
     egcd[6].gd.cid = CID_ForceEncoding;
     egcd[6].creator = GCheckBoxCreate;
 
@@ -5192,7 +5393,11 @@ return;
     psgcd[21].gd.flags = sf->order2 ? (gg_visible | gg_enabled | gg_cb_on) : (gg_visible | gg_enabled);
     psgcd[21].gd.cid = CID_IsOrder2;
     psgcd[21].creator = GCheckBoxCreate;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     psgcd[21].gd.popup_msg = GStringGetResource(_STR_PopupOrder2Splines,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    psgcd[21].gd.popup_msg = _("Use quadratic (that is truetype) splines to hold the outlines of this\nfont rather than cubic (postscript) splines. Set this option if you\nare editing truetype font. Unset it if you are editing an opentype\nor postscript font (FontForge will convert to the appropriate\nspline type when it generates fonts so this is not required).");
+#endif
 
 #ifdef FONTFORGE_CONFIG_TYPE3
     psgcd[22].gd.pos.x = 12; psgcd[22].gd.pos.y = psgcd[21].gd.pos.y+16;
@@ -5202,7 +5407,11 @@ return;
     psgcd[22].gd.flags = sf->multilayer ? (gg_visible | gg_enabled | gg_cb_on) : (gg_visible | gg_enabled);
     psgcd[22].gd.cid = CID_IsMultiLayer;
     psgcd[22].creator = GCheckBoxCreate;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     psgcd[22].gd.popup_msg = GStringGetResource(_STR_PopupMultiLayer,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    psgcd[22].gd.popup_msg = _("Allow editing of multiple colors and shades, fills and strokes.\nMulti layered fonts can only be output as type3 or svg fonts.");
+#endif
 #endif
 
     if ( sf->subfontcnt!=0 ) {
@@ -5264,7 +5473,11 @@ return;
     pgcd[4].gd.mnemonic = 'G';
     pgcd[4].gd.handle_controlevent = PI_Hist;
     pgcd[4].gd.cid = CID_Hist;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     pgcd[4].gd.popup_msg = GStringGetResource(_STR_HistPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    pgcd[4].gd.popup_msg = _("Histogram Dialog");
+#endif
     pgcd[4].creator = GButtonCreate;
 
     pgcd[5].gd.pos.x = -10; pgcd[5].gd.pos.y = pgcd[2].gd.pos.y;
@@ -5325,7 +5538,11 @@ return;
     vlabel[6].text_in_resource = true;
     vgcd[6].gd.label = &vlabel[6];
     vgcd[6].gd.flags = gg_visible | gg_enabled;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     vgcd[6].gd.popup_msg = GStringGetResource(_STR_EmbeddablePopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    vgcd[6].gd.popup_msg = _("Can this font be embedded in a downloadable (pdf)\ndocument and if so what behaviors are permitted on\nboth the document and the font.");
+#endif
     vgcd[6].creator = GLabelCreate;
 
     vgcd[7].gd.pos.x = 100; vgcd[7].gd.pos.y = vgcd[6].gd.pos.y-6;
@@ -5355,7 +5572,11 @@ return;
     vgcd[8].gd.flags = gg_visible | gg_enabled;
     if ( sf->pfminfo.fstype!=-1 && (sf->pfminfo.fstype&0x100) )
 	vgcd[8].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     vgcd[8].gd.popup_msg = GStringGetResource(_STR_NoSubsettingPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    vgcd[8].gd.popup_msg = _("If set then the entire font must be\nembedded in a document when any character is.\nOtherwise the document creator need\nonly include the characters it uses.");
+#endif
     vgcd[8].gd.cid = CID_NoSubsetting;
     vgcd[8].creator = GCheckBoxCreate;
 
@@ -5366,7 +5587,11 @@ return;
     vgcd[9].gd.flags = gg_visible | gg_enabled;
     if ( sf->pfminfo.fstype!=-1 && ( sf->pfminfo.fstype&0x200 ))
 	vgcd[9].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     vgcd[9].gd.popup_msg = GStringGetResource(_STR_OnlyBitmapsPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    vgcd[9].gd.popup_msg = _("Only Bitmaps may be embedded\nOutline descriptions may not be\n(if font file contains no bitmaps\nthen nothing may be embedded)");
+#endif
     vgcd[9].gd.cid = CID_OnlyBitmaps;
     vgcd[9].creator = GCheckBoxCreate;
 
@@ -5375,7 +5600,11 @@ return;
     vlabel[10].text_in_resource = true;
     vgcd[10].gd.label = &vlabel[10];
     vgcd[10].gd.flags = gg_visible | gg_enabled;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     vgcd[10].gd.popup_msg = GStringGetResource(_STR_WinAscentPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    vgcd[10].gd.popup_msg = _("Anything outside the OS/2 WinAscent &\nWinDescent fields will be clipped by windows.\nThis includes marks, etc. that have been repositioned by GPOS.\nIf the \"[] Is Offset\" checkbox is clear then\nany number you enter will be the value used in OS/2.\nIf set then any number you enter will be added to the\nfont's bounds. You should leave this\nfield 0 and check \"[*] Is Offset\" in most cases.");
+#endif
     vgcd[10].gd.cid = CID_WinAscentLab;
     vgcd[10].creator = GLabelCreate;
 
@@ -5431,7 +5660,11 @@ return;
     vlabel[16].text_in_resource = true;
     vgcd[16].gd.label = &vlabel[16];
     vgcd[16].gd.flags = gg_visible | gg_enabled;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     vgcd[16].gd.popup_msg = GStringGetResource(_STR_LineGapPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    vgcd[16].gd.popup_msg = _("Sets the linegap field in both the OS/2 and hhea tables");
+#endif
     vgcd[16].creator = GLabelCreate;
 
     vgcd[17].gd.pos.x = 105; vgcd[17].gd.pos.y = vgcd[16].gd.pos.y-4;
@@ -5447,7 +5680,11 @@ return;
     vlabel[18].text_in_resource = true;
     vgcd[18].gd.label = &vlabel[18];
     vgcd[18].gd.flags = sf->hasvmetrics ? (gg_visible | gg_enabled) : gg_visible;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     vgcd[18].gd.popup_msg = GStringGetResource(_STR_VLineGapPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    vgcd[18].gd.popup_msg = _("Sets the linegap field in the vhea table.\nThis is the horizontal spacing between rows\nof vertically set text.");
+#endif
     vgcd[18].gd.cid = CID_VLineGapLab;
     vgcd[18].creator = GLabelCreate;
 
@@ -5753,7 +5990,11 @@ return;
     txgcd[k].gd.label = &txlabel[k];
     txgcd[k].gd.pos.x = 10; txgcd[k].gd.pos.y = txgcd[k-2].gd.pos.y+26;
     txgcd[k].gd.flags = gg_visible | gg_enabled;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     txgcd[k].gd.popup_msg = GStringGetResource(_STR_DesignSizePopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    txgcd[k].gd.popup_msg = _("The size (in points) for which this face was designed");
+#endif
     txgcd[k++].creator = GLabelCreate;
 
     txgcd[k].gd.pos.x = 70; txgcd[k].gd.pos.y = txgcd[k-1].gd.pos.y-4;

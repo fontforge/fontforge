@@ -567,7 +567,11 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_Options,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Options");
+#endif
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,OPT_Width));
@@ -600,7 +604,11 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_Round;
     label[k].text_in_resource = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_PSRoundPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[k].gd.popup_msg = _("Do you want to round coordinates to integers (this saves space)?");
+#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_Round;
     gcd[k++].creator = GCheckBoxCreate;
@@ -609,7 +617,11 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_Hints;
     label[k].text_in_resource = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_PSHintsPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[k].gd.popup_msg = _("Do you want the font file to contain PostScript hints?");
+#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.handle_controlevent = OPT_PSHints;
     gcd[k].gd.cid = CID_PS_Hints;
@@ -619,7 +631,11 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_FlexHints;
     label[k].text_in_resource = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_FlexHintsPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[k].gd.popup_msg = _("Do you want the font file to contain PostScript flex hints?");
+#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_Flex;
     gcd[k++].creator = GCheckBoxCreate;
@@ -628,7 +644,11 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = 0 ;
     label[k].text = (unichar_t *) _STR_HintSubs;
     label[k].text_in_resource = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_HintSubsPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[k].gd.popup_msg = _("Do you want the font file to do hint substitution?");
+#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_HintSubs;
     gcd[k++].creator = GCheckBoxCreate;
@@ -637,7 +657,11 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = 0 ;
     label[k].text = (unichar_t *) _STR_First256;
     label[k].text_in_resource = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_First256Popup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[k].gd.popup_msg = _("Limit the font so that only the first 256 (encoded) characters\nwill be included in the file");
+#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_Restrict256;
     gcd[k++].creator = GCheckBoxCreate;
@@ -646,7 +670,11 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_Outputafm;
     label[k].text_in_resource = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_OutputAfmPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[k].gd.popup_msg = _("The AFM file contains metrics information that many word-processors will read when using a PostScript® font.");
+#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_AFM;
     gcd[k++].creator = GCheckBoxCreate;
@@ -655,7 +683,11 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_Outputpfm;
     label[k].text_in_resource = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_OutputPfmPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[k].gd.popup_msg = _("The PFM file contains information Windows needs to install a PostScript® font.");
+#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_PFM;
     gcd[k++].creator = GCheckBoxCreate;
@@ -664,7 +696,11 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_Outputtfm;
     label[k].text_in_resource = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_OutputTfmPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[k].gd.popup_msg = _("The tfm and enc files contain information TeX needs to install a PostScript® font.");
+#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_TFM;
     gcd[k++].creator = GCheckBoxCreate;
@@ -687,7 +723,11 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_Hints;
     label[k].text_in_resource = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_TTFHintsPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[k].gd.popup_msg = _("Do you want the font file to contain truetype hints? This will not\ngenerate new instructions, it will just make use of whatever is associated\nwith each character.");
+#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_Hints;
     gcd[k++].creator = GCheckBoxCreate;
@@ -696,7 +736,11 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_PSNames;
     label[k].text_in_resource = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_PSNamesPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[k].gd.popup_msg = _("Do you want the font file to contain the names of each character in the font?");
+#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_FullPS;
     gcd[k++].creator = GCheckBoxCreate;
@@ -705,7 +749,11 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_AppleMode;
     label[k].text_in_resource = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_AppleModePopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[k].gd.popup_msg = _("Apple and MS/Adobe differ about the format of truetype and opentype files\nThis allows you to select which standard to follow for your font.\nThe main differences are:\n The requirements for the 'postscript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite characters are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop");
+#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_AppleMode;
     gcd[k++].creator = GCheckBoxCreate;
@@ -714,7 +762,11 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_OpenTypeMode;
     label[k].text_in_resource = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_OpenTypeModePopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[k].gd.popup_msg = _("Apple and MS/Adobe differ about the format of truetype and opentype files\nThis allows you to select which standard to follow for your font.\nThe main differences are:\n The requirements for the 'postscript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite characters are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop");
+#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_OpenTypeMode;
     gcd[k++].creator = GCheckBoxCreate;
@@ -723,7 +775,11 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_PfaEditTable;
     label[k].text_in_resource = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_PfaEditTablePopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[k].gd.popup_msg = _("The PfaEdit table is an extension to the TrueType format\nand contains various data used by FontForge");
+#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_PfEd;
     gcd[k++].creator = GLabelCreate;
@@ -732,7 +788,11 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_PfEdComments;
     label[k].text_in_resource = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_PfEdCommentsPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[k].gd.popup_msg = _("Save glyph comments in the PfEd table");
+#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_PfEdComments;
     gcd[k++].creator = GCheckBoxCreate;
@@ -741,7 +801,11 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_PfEdColors;
     label[k].text_in_resource = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_PfEdColorsPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[k].gd.popup_msg = _("Save glyph colors in the PfEd table");
+#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_PfEdColors;
     gcd[k++].creator = GCheckBoxCreate;
@@ -808,7 +872,11 @@ static int AskDepth() {
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	wattrs.window_title = GStringGetResource(_STR_GreymapDepth,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	wattrs.window_title = _("Bits per Pixel in the greymap");
+#endif
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,150));
@@ -937,7 +1005,11 @@ return( -1 );
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	wattrs.window_title = GStringGetResource(_STR_BDFResolution,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	wattrs.window_title = _("BDF Resolution");
+#endif
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,150));
@@ -982,7 +1054,11 @@ return( -1 );
 	gcd[3].gd.pos.x = 20; gcd[3].gd.pos.y = gcd[2].gd.pos.y+17;
 	gcd[3].gd.flags = gg_enabled|gg_visible|gg_cb_on;
 	gcd[3].gd.cid = -1;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	gcd[3].gd.popup_msg = GStringGetResource(_STR_GuessResPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gcd[3].gd.popup_msg = _("Guess each font's resolution based on its pixel size");
+#endif
 	gcd[3].creator = GRadioCreate;
 
 	label[4].text = (unichar_t *) _STR_Other_;
@@ -1124,13 +1200,21 @@ return( true );
 static int CheckIfTransparent(SplineFont *sf) {
     /* Type3 doesn't support translucent fills */
     int i,j;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     static int buts[3] = { _STR_Yes, _STR_Cancel, 0 };
+#elif defined(FONTFORGE_CONFIG_GTK)
+    static char *buts[3] = { GTK_STOCK_YES, GTK_STOCK_CANCEL, NULL };
+#endif
 
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	SplineChar *sc = sf->chars[i];
 	for ( j=ly_fore; j<sc->layer_cnt; ++j ) {
 	    if ( sc->layers[i].fill_brush.opacity!=0 || sc->layers[i].stroke_pen.brush.opacity!=0 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		if ( GWidgetAskR(_STR_BadDrawingOperation,buts,0,1,_STR_Type3NotTrans)==1 )
+#elif defined(FONTFORGE_CONFIG_GTK)
+		if ( gwwv_ask(_("Bad Drawing Operation"),buts,0,1,_("This font contains at least one translucent layer, but type3 does not support that (anything translucent or transparent is treated as opaque). Do you want to proceed anyway?"))==1 )
+#endif
 return( true );
 
 return( false );
@@ -1143,13 +1227,21 @@ return( false );
 static int CheckIfImages(SplineFont *sf) {
     /* SVG doesn't support images (that I can figure out anyway) */
     int i,j;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     static int buts[3] = { _STR_Yes, _STR_Cancel, 0 };
+#elif defined(FONTFORGE_CONFIG_GTK)
+    static char *buts[3] = { GTK_STOCK_YES, GTK_STOCK_CANCEL, NULL };
+#endif
 
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	SplineChar *sc = sf->chars[i];
 	for ( j=ly_fore; j<sc->layer_cnt; ++j ) {
 	    if ( sc->layers[i].fill_brush.opacity!=1.0 || sc->layers[i].stroke_pen.brush.opacity!=1.0 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		if ( GWidgetAskR(_STR_BadDrawingOperation,buts,0,1,_STR_SvgNoImages)==1 )
+#elif defined(FONTFORGE_CONFIG_GTK)
+		if ( gwwv_ask(_("Bad Drawing Operation"),buts,0,1,_("This font contains at least one foreground image, but svg does not support that. Do you want to proceed anyway?"))==1 )
+#endif
 return(true);
 
 return( false );
@@ -1274,7 +1366,11 @@ return( NULL );
     /*if ( def==NULL )*/
 	def = "*.sfd";
     uc_strcpy(ubuf,def);
+#if defined(FONTFORGE_CONFIG_GDRAW)
     uret = GWidgetOpenFile(GStringGetResource(_STR_FindMultipleMap,NULL),NULL,ubuf,NULL,GFileChooserFilterWernerSFDs);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    uret = GWidgetOpenFile(_("Find Sub Font Definition file"),NULL,ubuf,NULL,GFileChooserFilterWernerSFDs);
+#endif
     ret = u2def_copy(uret);
     free(uret);
 return( ret );
@@ -1297,7 +1393,11 @@ static int32 *ParseWernerSFDFile(char *wernerfilename,SplineFont *sf,int *max,ch
 
     file = fopen(wernerfilename,"r");
     if ( file==NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_NoSubFontDefinitionFile,_STR_NoSubFontDefinitionFile);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("No Sub Font Definition file"),_("No Sub Font Definition file"));
+#endif
 return( NULL );
     }
 
@@ -1320,7 +1420,11 @@ return( NULL );
     subfilecnt = 0;
     while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
 	if ( strncmp(buffer,pfaeditflag,strlen(pfaeditflag))== 0 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_WrongSFDFile,_STR_BadSFDFile);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Wrong type of SFD file"),_("This looks like one of FontForge's SplineFont DataBase files.\nNot one of TeX's SubFont Definition files.\nAn unfortunate confusion of extensions."));
+#endif
 	    free(mapping);
 return( NULL );
 	}
@@ -1535,16 +1639,28 @@ return( 0 );
 
     err = !WritePSFont(filename,&temp,subtype,old_ps_flags);
     if ( err )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_Savefailedtitle,_STR_Savefailedtitle);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Save Failed"),_("Save Failed"));
+#endif
     if ( !err && (old_ps_flags&ps_flag_afm) && GProgressNextStage()) {
 	if ( !WriteAfmFile(filename,&temp,oldformatstate)) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_Afmfailedtitle,_STR_Afmfailedtitle);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Afm Save Failed"),_("Afm Save Failed"));
+#endif
 	    err = true;
 	}
     }
     if ( !err && (old_ps_flags&ps_flag_tfm) ) {
 	if ( !WriteTfmFile(filename,&temp,oldformatstate)) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_Tfmfailedtitle,_STR_Tfmfailedtitle);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Tfm Save Failed"),_("Tfm Save Failed"));
+#endif
 	    err = true;
 	}
     }
@@ -1578,7 +1694,11 @@ static int WriteMultiplePSFont(SplineFont *sf,char *newname,int32 *sizes,
     pt = strrchr(newname,'.');
     if ( pt==NULL ||
 	    (strcmp(pt,".pfa")!=0 && strcmp(pt,".pfb")!=0 && strcmp(pt,".mult")!=0)) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_BadExtension,_STR_MustBeType1);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Bad Extension"),_("You must specify a standard type1 extension (.pfb or .pfa)"));
+#endif
 return( 0 );
     }
 
@@ -1604,8 +1724,16 @@ return( 1 );
 	++filecnt;
 #endif
     path = def2u_copy(newname);
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressStartIndicator(10,GStringGetResource(_STR_SavingFont,NULL),
+#elif defined(FONTFORGE_CONFIG_GTK)
+    GProgressStartIndicator(10,_("Saving font"),
+#endif
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GStringGetResource(_STR_SavingMultiplePSFonts,NULL),
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    _("Saving Multiple Postscript Fonts"),
+#endif
 	    path,256,(max+1)*filecnt );
     free(path);
     /*GProgressEnableStop(false);*/
@@ -1644,7 +1772,11 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 	flags = old_psotb_flags;
 
     path = def2u_copy(newname);
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressStartIndicator(10,GStringGetResource(_STR_SavingFont,NULL),
+#elif defined(FONTFORGE_CONFIG_GTK)
+    GProgressStartIndicator(10,_("Saving font"),
+#endif
 		GStringGetResource(oldformatstate==ff_ttf || oldformatstate==ff_ttfsym ||
 		     oldformatstate==ff_ttfmacbin ?_STR_SavingTTFont:
 		 oldformatstate==ff_otf || oldformatstate==ff_otfdfont ?_STR_SavingOpenTypeFont:
@@ -1700,20 +1832,32 @@ return( true );
 	  break;
 	}
 	if ( oerr ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_Savefailedtitle,_STR_Savefailedtitle);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Save Failed"),_("Save Failed"));
+#endif
 	    err = true;
 	}
     }
     if ( !err && (flags&ps_flag_tfm) ) {
 	if ( !WriteTfmFile(newname,sf,oldformatstate)) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_Tfmfailedtitle,_STR_Tfmfailedtitle);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Tfm Save Failed"),_("Tfm Save Failed"));
+#endif
 	    err = true;
 	}
     }
     if ( !err && (flags&ps_flag_afm) ) {
 	GProgressIncrementBy(-sf->charcnt);
 	if ( !WriteAfmFile(newname,sf,oldformatstate)) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_Afmfailedtitle,_STR_Afmfailedtitle);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Afm Save Failed"),_("Afm Save Failed"));
+#endif
 	    err = true;
 	}
     }
@@ -1721,7 +1865,11 @@ return( true );
 	GProgressChangeLine1R(_STR_SavingPFM);
 	GProgressIncrementBy(-sf->charcnt);
 	if ( !WritePfmFile(newname,sf,oldformatstate==ff_ptype0)) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_Pfmfailedtitle,_STR_Pfmfailedtitle);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Pfm Save Failed"),_("Pfm Save Failed"));
+#endif
 	    err = true;
 	}
     }
@@ -1960,7 +2108,11 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
     int iscid, i;
     Encoding *item=NULL;
     struct sflist *sfs=NULL, *cur, *last=NULL;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     static int buts[] = { _STR_Yes, _STR_No, 0 };
+#elif defined(FONTFORGE_CONFIG_GTK)
+    static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
+#endif
     static int psscalewarned=0, ttfscalewarned=0;
     int flags;
 
@@ -1969,7 +2121,11 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
 		(d->sf->chars[i]->layers[ly_fore].splines!=NULL || d->sf->chars[i]->layers[ly_fore].refs!=NULL))
     break;
     if ( i!=0 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( GWidgetAskR(_STR_NotdefName,buts,0,1,_STR_NotdefChar,i)==1 )
+#elif defined(FONTFORGE_CONFIG_GTK)
+	if ( gwwv_ask(_("Notdef name"),buts,0,1,_("The character at encoding %d is named \".notdef\" but contains an outline. Because it is called \".notdef\" it will not be included in the generated font. You may give it a new name using Element->Char Info. Do you wish to continue font generation (and omit this character)?"),i)==1 )
+#endif
 return;
     }
 
@@ -1978,13 +2134,21 @@ return;
     iscid = oldformatstate==ff_cid || oldformatstate==ff_cffcid ||
 	    oldformatstate==ff_otfcid || oldformatstate==ff_otfciddfont;
     if ( !iscid && (d->sf->cidmaster!=NULL || d->sf->subfontcnt>1)) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( GWidgetAskR(_STR_NotCID,buts,0,1,_STR_NotCIDOk)==1 )
+#elif defined(FONTFORGE_CONFIG_GTK)
+	if ( gwwv_ask(_("Not a CID format"),buts,0,1,_("You are attempting to save a CID font in a non-CID format. This is ok, but it means that only the current sub-font will be saved.\nIs that what you want?"))==1 )
+#endif
 return;
     }
 
     if ( oldformatstate<=ff_cffcid || (oldformatstate>=ff_otf && oldformatstate<=ff_otfciddfont)) {
 	if ( d->sf->ascent+d->sf->descent!=1000 && !psscalewarned ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    if ( GWidgetAskR(_STR_EmSizeBad,buts,0,1,_STR_PSEmSize1000,
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    if ( gwwv_ask(_("Non-standard Em-Size"),buts,0,1,_("The convention is that PostScript fonts should have an Em-Size of 1000. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->PS General dialog.\nDo you wish to continue to generate your font in spite of this?"),
+#endif
 		    d->sf->ascent+d->sf->descent)==1 )
 return;
 	    psscalewarned = true;
@@ -1996,7 +2160,11 @@ return;
 	    if ( bit==val )
 	break;
 	if ( bit==0 && !ttfscalewarned ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    if ( GWidgetAskR(_STR_EmSizeBad,buts,0,1,_STR_TTFEmSize2,val)==1 )
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    if ( gwwv_ask(_("Non-standard Em-Size"),buts,0,1,_("The convention is that TrueType fonts should have an Em-Size which is a power of 2. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->PS General dialog.\nDo you wish to continue to generate your font in spite of this?"),val)==1 )
+#endif
 return;
 	    ttfscalewarned = true;
 	}
@@ -2009,7 +2177,11 @@ return;
 	    ((d->sf->encoding_name>=em_first2byte && d->sf->encoding_name<em_base) ||
 	     (d->sf->encoding_name>=em_base && (item==NULL || item->char_cnt>256))) ) {
 	static int buts[3] = { _STR_Yes, _STR_Cancel, 0 };
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( GWidgetAskR(_STR_EncodingTooLarge,buts,0,1,_STR_TwoBEncIn1BFont)==1 )
+#elif defined(FONTFORGE_CONFIG_GTK)
+	if ( gwwv_ask(_("Encoding Too Large"),buts,0,1,_("Your font has a 2 byte encoding, but you are attempting to save it in a format that only supports one byte encodings. This means that you won't be able to access anything after the first 256 characters without reencoding the font.\n\nDo you want to procede anyway?"))==1 )
+#endif
 return;
     }
 
@@ -2020,14 +2192,26 @@ return;
 return;
     if ( oldbitmapstate==bf_nfntmacbin && oldformatstate!=ff_pfbmacbin && !nfnt_warned ) {
 	nfnt_warned = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetPostNoticeR(_STR_NFNTObsoleteTit,_STR_NFNTObsolete);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_notice(_("The 'NFNT' bitmap format is obsolete"),_("The 'NFNT' bitmap format is not used under OS/X (though you still need to create a (useless) bitmap font if you are saving a type1 PostScript resource)"));
+#endif
     } else if ( oldformatstate==ff_pfbmacbin &&
 	    (oldbitmapstate!=bf_nfntmacbin || sizes[0]==0)) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_Type1NeedsNFNTTit,_STR_Type1NeedsNFNT);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Needs bitmap font"),_("When generating a Mac Type1 resource font, you MUST generate at least one NFNT bitmap font to go with it. If you have not created any bitmaps for this font, cancel this dlg and use the Element->Bitmaps Available command to create one"));
+#endif
 return;
     } else if ( oldformatstate==ff_pfbmacbin && !post_warned) {
 	post_warned = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetPostNoticeR(_STR_POSTDepreciatedTit,_STR_POSTDepreciated);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_notice(_("The 'POST' type1 format is probably depreciated"),_("The 'POST' type1 format is probably depreciated and may not work in future version of the mac."));
+#endif
     }
 
     if ( d->family ) {
@@ -2102,13 +2286,33 @@ static void GFD_exists(GIOControl *gio) {
     const unichar_t *rcb[3]; unichar_t rcmn[2];
 
     rcb[2]=NULL;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     rcb[0] = GStringGetResource( _STR_Replace, &rcmn[0]);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    rcb[0] =  _("Replace");
+#endif
+#if defined(FONTFORGE_CONFIG_GDRAW)
     rcb[1] = GStringGetResource( _STR_Cancel, &rcmn[1]);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    rcb[1] =  _("Cancel");
+#endif
 
+#if defined(FONTFORGE_CONFIG_GDRAW)
     u_strcpy(buffer, GStringGetResource(_STR_Fileexistspre,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+    u_strcpy(buffer, _("File, "));
+#endif
     u_strcat(buffer, u_GFileNameTail(gio->path));
+#if defined(FONTFORGE_CONFIG_GDRAW)
     u_strcat(buffer, GStringGetResource(_STR_Fileexistspost,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+    u_strcat(buffer, _(", exists. Replace it?"));
+#endif
+#if defined(FONTFORGE_CONFIG_GDRAW)
     if ( GWidgetAsk(GStringGetResource(_STR_Fileexists,NULL),rcb,rcmn,0,1,buffer)==0 ) {
+#elif defined(FONTFORGE_CONFIG_GTK)
+    if ( GWidgetAsk(_("File Exists"),rcb,rcmn,0,1,buffer)==0 ) {
+#endif
 	DoSave(d,gio->path);
     }
     GFileChooserReplaceIO(d->gfc,NULL);
@@ -2179,7 +2383,11 @@ static void GFD_dircreatefailed(GIOControl *gio) {
     struct gfc_data *d = gio->userdata;
     unichar_t buffer[500];
 
+#if defined(FONTFORGE_CONFIG_GDRAW)
     u_strcpy(buffer, GStringGetResource(_STR_Couldntcreatedir,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+    u_strcpy(buffer, _("Couldn't create directory"));
+#endif
     uc_strcat(buffer,": ");
     u_strcat(buffer, u_GFileNameTail(gio->path));
     uc_strcat(buffer, ".\n");
@@ -2189,7 +2397,11 @@ static void GFD_dircreatefailed(GIOControl *gio) {
     }
     if ( gio->status[0]!='\0' )
 	u_strcat(buffer,gio->status);
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GWidgetPostNotice(GStringGetResource(_STR_Couldntcreatedir,NULL),buffer);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    GWidgetPostNotice(_("Couldn't create directory"),buffer);
+#endif
     GFileChooserReplaceIO(d->gfc,NULL);
 }
 
@@ -2508,15 +2720,27 @@ int SFGenerateFont(SplineFont *sf,int family) {
 	    }
 	}
 	if ( MacStyleCode(sf,NULL)!=0 || familycnt==0 || sf->multilayer ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadFamilyForMac,_STR_BadMacFamily);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Mac Family"),_("To generate a Mac family file, the current font must have plain (Normal, Regular, etc.) style, and there must be other open fonts with the same family name."));
+#endif
 return( 0 );
 	} else if ( dup ) {
 	    MacStyleCode(dup,&psstyle);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadFamilyForMac,_STR_TwoFontsSameStyle,
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Mac Family"),_("There are two open fonts with the current family name and the same style. %.30s and %.30s"),
+#endif
 		dup->fontname, familysfs[dupfc][dupstyle]->fontname);
 return( 0 );
 	} else if ( badenc ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadFamilyForMac,_STR_DifferentEncodings,
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Mac Family"),_("The font %1$.30s has a different encoding than that of %2$.30s"),
+#endif
 		badenc->fontname, sf->fontname );
 return( 0 );
 	}
@@ -2531,7 +2755,11 @@ return( 0 );
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(family?_STR_GenerateMac:_STR_Generate,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = family?_("Generate Mac Family...");
+#endif
     pos.x = pos.y = 0;
     totwid = GGadgetScale(295);
     bsbigger = 4*bs+4*14>totwid; totwid = bsbigger?4*bs+4*12:totwid;
@@ -2597,7 +2825,11 @@ return( 0 );
     gcd[5].gd.flags = gg_visible | gg_enabled;
     label[5].text = (unichar_t *) _STR_Options;
     label[5].text_in_resource = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[5].gd.popup_msg = GStringGetResource(_STR_OptionsPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[5].gd.popup_msg = _("Allows you to select optional behavior when generating the font");
+#endif
     gcd[5].gd.label = &label[5];
     gcd[5].gd.handle_controlevent = GFD_Options;
     gcd[5].creator = GButtonCreate;

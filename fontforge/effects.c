@@ -274,7 +274,11 @@ void OutlineDlg(FontView *fv, CharView *cv,MetricsView *mv,int isinline) {
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	wattrs.window_title = GStringGetResource(isinline?_STR_Inline:_STR_Outline,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	wattrs.window_title = isinline?_("Inline");
+#endif
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,170));
@@ -1100,7 +1104,11 @@ void ShadowDlg(FontView *fv, CharView *cv,MetricsView *mv,int wireframe) {
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	wattrs.window_title = GStringGetResource(_STR_Shadow,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	wattrs.window_title = _("Shadow");
+#endif
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,160));

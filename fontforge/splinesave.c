@@ -1896,7 +1896,11 @@ static void AddNumber2(GrowBuf *gb, real pos, int round) {
     if ( pos!=floor(pos )) {
 #if 0
 	if ( !real_warn ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetPostNoticeR(_STR_NotIntegral,_STR_TryRoundToInt);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_notice(_("Not integral"),_("This font contains at least one non-integral coordinate.\nThis is perfectly legal, but it is unusual and does\nincrease the size of the generated font file. You might\nwant to try using\n  Element->Round To Int\non the entire font."));
+#endif
 	    real_warn = true;
 	}
 #endif

@@ -75,7 +75,11 @@ return( val );
 
 void ProtestR(int labelr) {
     unichar_t ubuf[80];
+#if defined(FONTFORGE_CONFIG_GDRAW)
     u_strcpy(ubuf,GStringGetResource(_STR_Badnumberin,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+    u_strcpy(ubuf,_("Bad Number in "));
+#endif
     u_strcat(ubuf,GStringGetResource(labelr,NULL));
     if ( ubuf[u_strlen(ubuf)-1]==' ' )
 	ubuf[u_strlen(ubuf)-1]='\0';
@@ -372,7 +376,11 @@ return;
 	sprintf( temp, "osascript -l AppleScript -e \"Tell application \"%s\" to getURL \"%s\"\"",
 	    pt, fullspec);
 	system(temp);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetPostNoticeR(_STR_LeaveX,_STR_LeaveXLong);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_notice(_("Leave X"),_("A browser is probably running in the native Mac windowing system. You must leave the X environment to view it. Try Cmd-Opt-A"));
+#endif
     } else {
 #elif __Mac
     /* This seems a bit easier... Thanks to riggle */
@@ -380,7 +388,11 @@ return;
 	temp = galloc(strlen(browser) + strlen(fullspec) + 20);
 	sprintf( temp, "open \"%s\" &", fullspec );
 	system(temp);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetPostNoticeR(_STR_LeaveX,_STR_LeaveXLong);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_notice(_("Leave X"),_("A browser is probably running in the native Mac windowing system. You must leave the X environment to view it. Try Cmd-Opt-A"));
+#endif
     } else {
 #elif __CygWin
     if ( browser[0]=='\0' ) {

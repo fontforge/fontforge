@@ -1244,14 +1244,26 @@ BDFFont *SplineFontToBDFHeader(SplineFont *_sf, int pixelsize, int indicate) {
     if ( indicate ) {
 	sprintf(csize,"%d", pixelsize );
 	uc_strcpy(size,csize);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	u_strcat(size,GStringGetResource(_STR_Pixels,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	u_strcat(size,_(" pixels"));
+#endif
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	u_strcpy(aa,GStringGetResource(_STR_GenBitmap,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	u_strcpy(aa,_("Generating bitmap font"));
+#endif
 	if ( sf->fontname!=NULL ) {
 	    uc_strcat(aa,": ");
 	    uc_strncat(aa,sf->fontname,sizeof(aa)/sizeof(aa[0])-u_strlen(aa));
 	    aa[sizeof(aa)/sizeof(aa[0])-1] = '\0';
 	}
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressStartIndicator(10,GStringGetResource(_STR_Rasterizing,NULL),
+#elif defined(FONTFORGE_CONFIG_GTK)
+	GProgressStartIndicator(10,_("Rasterizing..."),
+#endif
 		aa,size,sf->charcnt,1);
 	GProgressEnableStop(0);
     }
@@ -1637,14 +1649,26 @@ return( SplineFontRasterize(_sf,pixelsize,true));
 
     sprintf(csize,"%d", pixelsize );
     uc_strcpy(size,csize);
+#if defined(FONTFORGE_CONFIG_GDRAW)
     u_strcat(size,GStringGetResource(_STR_Pixels,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+    u_strcat(size,_(" pixels"));
+#endif
+#if defined(FONTFORGE_CONFIG_GDRAW)
     u_strcpy(aa,GStringGetResource(_STR_GenAntiAlias,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+    u_strcpy(aa,_("Generating anti-alias font"));
+#endif
     if ( sf->fontname!=NULL ) {
 	uc_strcat(aa,": ");
 	uc_strncat(aa,sf->fontname,sizeof(aa)/sizeof(aa[0])-u_strlen(aa));
 	aa[sizeof(aa)/sizeof(aa[0])-1] = '\0';
     }
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressStartIndicator(10,GStringGetResource(_STR_Rasterizing,NULL),
+#elif defined(FONTFORGE_CONFIG_GTK)
+    GProgressStartIndicator(10,_("Rasterizing..."),
+#endif
 	    aa,size,sf->charcnt,1);
     GProgressEnableStop(0);
 

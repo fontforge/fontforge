@@ -131,7 +131,11 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_Simplify,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Simplify");
+#endif
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,180));
@@ -173,7 +177,11 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     gcd[3].gd.flags = gg_enabled|gg_visible;
     if ( oldextrema )
 	gcd[3].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[3].gd.popup_msg = GStringGetResource(_STR_RemoveExtremaPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[3].gd.popup_msg = _("Normally simplify will not remove points at the extrema of curves\n(both PostScript and TrueType suggest you retain these points)");
+#endif
     gcd[3].gd.cid = CID_Extrema;
     gcd[3].creator = GCheckBoxCreate;
 
@@ -185,7 +193,11 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     if ( oldslopes )
 	gcd[4].gd.flags |= gg_cb_on;
     gcd[4].gd.cid = CID_Slopes;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[4].gd.popup_msg = GStringGetResource(_STR_ChangeSlopesPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[4].gd.popup_msg = _("Normally simplify will not change the slope of the contour at the points.");
+#endif
     gcd[4].creator = GCheckBoxCreate;
 
     gcd[5].gd.pos.x = 15; gcd[5].gd.pos.y = gcd[4].gd.pos.y + 20;
@@ -204,7 +216,11 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
 	if ( oldsmooth )
 	    gcd[6].gd.flags |= gg_cb_on;
     }
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[6].gd.popup_msg = GStringGetResource(_STR_CurveSmoothingPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[6].gd.popup_msg = _("Simplify will examine corner points whose control points are almost\ncolinear and smooth them into curve points");
+#endif
     gcd[6].gd.cid = CID_Smooth;
     gcd[6].creator = GCheckBoxCreate;
 
@@ -238,7 +254,11 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
 	if ( oldsmoothhv )
 	    gcd[9].gd.flags |= gg_cb_on;
     }
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[9].gd.popup_msg = GStringGetResource(_STR_SnapToHVPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[9].gd.popup_msg = _("If the slope of an adjusted point is near horizontal or vertical\nsnap to that");
+#endif
     gcd[9].gd.cid = CID_SmoothHV;
     gcd[9].creator = GCheckBoxCreate;
 
@@ -253,7 +273,11 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
 	if ( oldlinefix )
 	    gcd[10].gd.flags |= gg_cb_on;
     }
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[10].gd.popup_msg = GStringGetResource(_STR_FlattenBumpsPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[10].gd.popup_msg = _("If a line has a bump on it then flatten out that bump");
+#endif
     gcd[10].gd.cid = CID_FlattenBumps;
     gcd[10].creator = GCheckBoxCreate;
 

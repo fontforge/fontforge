@@ -160,7 +160,11 @@ return;
 return;
     if ( !SFTFSetFont(GWidgetGetControl(di->gw,CID_SampleText),doall?0:-1,-1,
 	    sf,type,size,aa))
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_BadFont,_STR_BadFont);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Bad Font"),_("Bad Font"));
+#endif
     di->sf = sf;
     di->fonttype = type;
     di->pixelsize = size;
@@ -362,7 +366,11 @@ return( true );
 		}
 		if ( pt!=buf )
 		    pt[-1] = '\0';
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_BadSize,_STR_RequestedSizeNotAvail,buf);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad Size"),_("Requested bitmap size not available in font. Font supports %s"),buf);
+#endif
 		best = DSP_BestMatchDlg(di);
 		if ( best!=NULL ) {
 		    sprintf( buf, "%d", best->pixelsize);
@@ -495,7 +503,11 @@ void DisplayDlg(SplineFont *sf) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_Display,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Display...");
+#endif
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,410));
     pos.height = GDrawPointsToPixels(NULL,330);
@@ -513,7 +525,11 @@ void DisplayDlg(SplineFont *sf) {
     gcd[0].gd.cid = CID_Font;
     gcd[0].gd.u.list = FontNames(sf);
     gcd[0].gd.handle_controlevent = DSP_FontChanged;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     /*gcd[0].gd.popup_msg = GStringGetResource(_STR_FullFontPopup,NULL);*/
+#elif defined(FONTFORGE_CONFIG_GTK)
+    /*gcd[0].gd.popup_msg = _("Displays all the glyphs in the font on a rectangular grid at the given point size");*/
+#endif
     gcd[0].creator = GListButtonCreate;
 
     label[1].text = (unichar_t *) _STR_AA;
@@ -524,7 +540,11 @@ void DisplayDlg(SplineFont *sf) {
     gcd[1].gd.flags = gg_visible | gg_enabled | gg_cb_on;
     if ( sf->bitmaps!=NULL && ( !hasfreetype || sf->onlybitmaps ))
 	gcd[1].gd.flags = DSP_AAState(sf,bestbdf);
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[1].gd.popup_msg = GStringGetResource(_STR_AAPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[1].gd.popup_msg = _("AntiAlias (greymap) characters, or bitmap characters");
+#endif
     gcd[1].gd.handle_controlevent = DSP_AAChange;
     gcd[1].gd.cid = CID_AA;
     gcd[1].creator = GCheckBoxCreate;
@@ -535,7 +555,11 @@ void DisplayDlg(SplineFont *sf) {
     gcd[2].gd.mnemonic = 'S';
     gcd[2].gd.pos.x = 210; gcd[2].gd.pos.y = gcd[0].gd.pos.y+6; 
     gcd[2].gd.flags = gg_visible | gg_enabled;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[2].gd.popup_msg = GStringGetResource(_STR_PixelSizePopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[2].gd.popup_msg = _("Specifies the pixel size of the characters on display");
+#endif
     gcd[2].gd.cid = CID_SizeLab;
     gcd[2].creator = GLabelCreate;
 
@@ -551,7 +575,11 @@ void DisplayDlg(SplineFont *sf) {
     gcd[3].gd.flags = gg_visible | gg_enabled;
     gcd[3].gd.cid = CID_Size;
     gcd[3].gd.handle_controlevent = DSP_SizeChanged;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[3].gd.popup_msg = GStringGetResource(_STR_PixelSizePopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[3].gd.popup_msg = _("Specifies the pixel size of the characters on display");
+#endif
     gcd[3].creator = GTextFieldCreate;
 
     label[4].text = (unichar_t *) "pfb";
@@ -562,7 +590,11 @@ void DisplayDlg(SplineFont *sf) {
     gcd[4].gd.flags = gg_visible | gg_enabled | gg_cb_on;
     gcd[4].gd.cid = CID_pfb;
     gcd[4].gd.handle_controlevent = DSP_RadioSet;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[4].gd.popup_msg = GStringGetResource(_STR_FormatPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[4].gd.popup_msg = _("Specifies file format used to pass the font to freetype\n  pfb -- is the standard postscript type1\n  ttf -- is truetype\n  httf-- is hinted truetype\n  otf -- is opentype\n  bitmap -- not passed to freetype for rendering\n    bitmap fonts must already be generated\n  FontForge -- uses FontForge's own rasterizer, not\n    freetype's. Only as last resort");
+#endif
     gcd[4].creator = GRadioCreate;
     if ( sf->subfontcnt!=0 || !hasfreetype || sf->onlybitmaps ) gcd[4].gd.flags = gg_visible;
 
@@ -574,7 +606,11 @@ void DisplayDlg(SplineFont *sf) {
     gcd[5].gd.flags = gg_visible | gg_enabled;
     gcd[5].gd.cid = CID_ttf;
     gcd[5].gd.handle_controlevent = DSP_RadioSet;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[5].gd.popup_msg = GStringGetResource(_STR_FormatPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[5].gd.popup_msg = _("Specifies file format used to pass the font to freetype\n  pfb -- is the standard postscript type1\n  ttf -- is truetype\n  httf-- is hinted truetype\n  otf -- is opentype\n  bitmap -- not passed to freetype for rendering\n    bitmap fonts must already be generated\n  FontForge -- uses FontForge's own rasterizer, not\n    freetype's. Only as last resort");
+#endif
     gcd[5].creator = GRadioCreate;
     if ( sf->subfontcnt!=0 || !hasfreetype || sf->onlybitmaps ) gcd[5].gd.flags = gg_visible;
 
@@ -586,7 +622,11 @@ void DisplayDlg(SplineFont *sf) {
     gcd[6].gd.flags = gg_visible | gg_enabled;
     gcd[6].gd.cid = CID_httf;
     gcd[6].gd.handle_controlevent = DSP_RadioSet;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[6].gd.popup_msg = GStringGetResource(_STR_FormatPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[6].gd.popup_msg = _("Specifies file format used to pass the font to freetype\n  pfb -- is the standard postscript type1\n  ttf -- is truetype\n  httf-- is hinted truetype\n  otf -- is opentype\n  bitmap -- not passed to freetype for rendering\n    bitmap fonts must already be generated\n  FontForge -- uses FontForge's own rasterizer, not\n    freetype's. Only as last resort");
+#endif
     gcd[6].creator = GRadioCreate;
     if ( sf->subfontcnt!=0 || !hasfreetype || sf->onlybitmaps ) gcd[6].gd.flags = gg_visible;
 
@@ -598,7 +638,11 @@ void DisplayDlg(SplineFont *sf) {
     gcd[7].gd.flags = gg_visible | gg_enabled;
     gcd[7].gd.cid = CID_otf;
     gcd[7].gd.handle_controlevent = DSP_RadioSet;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[7].gd.popup_msg = GStringGetResource(_STR_FormatPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[7].gd.popup_msg = _("Specifies file format used to pass the font to freetype\n  pfb -- is the standard postscript type1\n  ttf -- is truetype\n  httf-- is hinted truetype\n  otf -- is opentype\n  bitmap -- not passed to freetype for rendering\n    bitmap fonts must already be generated\n  FontForge -- uses FontForge's own rasterizer, not\n    freetype's. Only as last resort");
+#endif
     gcd[7].creator = GRadioCreate;
     if ( !hasfreetype || sf->onlybitmaps ) gcd[7].gd.flags = gg_visible;
     else if ( sf->subfontcnt!=0 ) gcd[7].gd.flags |= gg_cb_on;
@@ -611,7 +655,11 @@ void DisplayDlg(SplineFont *sf) {
     gcd[8].gd.flags = gg_visible | gg_enabled;
     gcd[8].gd.cid = CID_bitmap;
     gcd[8].gd.handle_controlevent = DSP_RadioSet;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[8].gd.popup_msg = GStringGetResource(_STR_FormatPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[8].gd.popup_msg = _("Specifies file format used to pass the font to freetype\n  pfb -- is the standard postscript type1\n  ttf -- is truetype\n  httf-- is hinted truetype\n  otf -- is opentype\n  bitmap -- not passed to freetype for rendering\n    bitmap fonts must already be generated\n  FontForge -- uses FontForge's own rasterizer, not\n    freetype's. Only as last resort");
+#endif
     gcd[8].creator = GRadioCreate;
     if ( sf->bitmaps==NULL ) gcd[8].gd.flags = gg_visible;
     else if ( !hasfreetype || sf->onlybitmaps ) gcd[8].gd.flags |= gg_cb_on;
@@ -624,7 +672,11 @@ void DisplayDlg(SplineFont *sf) {
     gcd[9].gd.flags = gg_visible | gg_enabled;
     gcd[9].gd.cid = CID_pfaedit;
     gcd[9].gd.handle_controlevent = DSP_RadioSet;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[9].gd.popup_msg = GStringGetResource(_STR_FormatPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[9].gd.popup_msg = _("Specifies file format used to pass the font to freetype\n  pfb -- is the standard postscript type1\n  ttf -- is truetype\n  httf-- is hinted truetype\n  otf -- is opentype\n  bitmap -- not passed to freetype for rendering\n    bitmap fonts must already be generated\n  FontForge -- uses FontForge's own rasterizer, not\n    freetype's. Only as last resort");
+#endif
     gcd[9].creator = GRadioCreate;
     if ( !hasfreetype && sf->bitmaps==NULL ) gcd[9].gd.flags |= gg_cb_on;
     else if ( sf->onlybitmaps ) gcd[9].gd.flags = gg_visible;

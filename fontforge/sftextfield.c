@@ -1008,7 +1008,11 @@ static unichar_t errort[] = { 'C','o','u','l','d',' ','n','o','t',' ','o','p','e
 static unichar_t error[] = { 'C','o','u','l','d',' ','n','o','t',' ','o','p','e','n',' ','%','.','1','0','0','h','s',  '\0' };
 
 static void SFTextAreaImport(SFTextArea *st) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
     unichar_t *ret = GWidgetOpenFile(GStringGetResource(_STR_Open,NULL),NULL,
+#elif defined(FONTFORGE_CONFIG_GTK)
+    unichar_t *ret = GWidgetOpenFile(_("Open"),NULL,
+#endif
 	    txt,NULL,NULL);
     char *cret;
     unichar_t *str;
@@ -1029,7 +1033,11 @@ return;
 }
 
 static void SFTextAreaSave(SFTextArea *st) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
     unichar_t *ret = GWidgetSaveAsFile(GStringGetResource(_STR_Save,NULL),NULL,
+#elif defined(FONTFORGE_CONFIG_GTK)
+    unichar_t *ret = GWidgetSaveAsFile(_("Save"),NULL,
+#endif
 	    txt,NULL,NULL);
     char *cret;
     FILE *file;

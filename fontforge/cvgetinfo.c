@@ -126,7 +126,11 @@ static int GI_ROK_Do(GIData *ci) {
 	    /* Don't want the user to insert an enormous scale factor or */
 	    /*  it will move points outside the legal range. */
 	    GTextFieldSelect(GWidgetGetControl(ci->gw,1000+i),0,-1);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_OutOfRange,_STR_OutOfRange);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Value out of range"),_("Value out of range"));
+#endif
 	    errs = true;
 	}
 	if ( errs )
@@ -172,8 +176,17 @@ static int GI_Show(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
 	if ( ci->changed ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    static int buts[] = { _STR_Change, _STR_Retain, _STR_Cancel, 0 };
 	    int ans = GWidgetAskR(_STR_TransformChanged,buts,0,2,_STR_TransformChangedApply);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    char *buts[4];
+	    buts[0] = _("C_hange");
+	    buts[1] = _("_Retain");
+	    buts[2] = GTK_STOCK_CANCEL;
+	    buts[3] = NULL;
+	    int ans = gwwv_ask(_("Transformation Matrix Changed"),buts,0,2,_("You have changed the transformation matrix, do you wish to use the new version?"));
+#endif
 	    if ( ans==2 )
 return( true );
 	    else if ( ans==0 ) {
@@ -226,7 +239,11 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	wattrs.window_title = GStringGetResource(_STR_ReferenceInfo,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	wattrs.window_title = _("Reference Info");
+#endif
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,RI_Width));
@@ -262,7 +279,11 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	gcd[j].gd.label = &label[j];
 	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+14;
 	gcd[j].gd.flags = gg_enabled|gg_visible;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	gcd[j].gd.popup_msg = GStringGetResource(_STR_TransformPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gcd[j].gd.popup_msg = _("The transformation matrix specifies how the points in\nthe source character should be transformed before\nthey are drawn in the current character.\n x(new) = tm[1,1]*x + tm[2,1]*y + tm[3,1]\n y(new) = tm[1,2]*x + tm[2,2]*y + tm[3,2]");
+#endif
 	gcd[j].creator = GLabelCreate;
 	++j;
 
@@ -347,7 +368,11 @@ static void ImgGetInfo(CharView *cv, ImageList *img) {
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	wattrs.window_title = GStringGetResource(_STR_ImageInfo,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	wattrs.window_title = _("Image Info");
+#endif
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,II_Width));
@@ -669,8 +694,13 @@ static int AI_Delete(GGadget *g, GEvent *e) {
 	for ( ap=ci->sc->anchor; ap!=ci->ap; ap=ap->next )
 	    prev = ap;
 	if ( prev==NULL && ci->ap->next==NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    static int buts[] = { _STR_Yes, _STR_No, 0 };
 	    if ( GWidgetAskR(_STR_LastAnchor,buts,0,1,_STR_RemoveLastAnchor)==1 ) {
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
+	    if ( gwwv_ask(_("Last Anchor Point"),buts,0,1,_("You are deleting the last anchor point in this character.\nDoing so will cause this dialog to close, is that what you want?"))==1 ) {
+#endif
 		AI_Ok(g,e);
 return( true );
 	    }
@@ -696,7 +726,11 @@ static int AI_New(GGadget *g, GEvent *e) {
 	if ( sf->cidmaster ) sf = sf->cidmaster;
 
 	if ( AnchorClassUnused(ci->sc,&waslig)==NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetPostNoticeR(_STR_MakeNewClass,_STR_MakeNewAnchorClass);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_notice(_("Make a new anchor class"),_("I cannot find an unused anchor class\nto assign a new point to. If you\nwish a new anchor point you must\ndefine a new anchor class with\nElement->Font Info"));
+#endif
 	    FontInfo(sf,8,true);		/* Anchor Class */
 	    if ( AnchorClassUnused(ci->sc,&waslig)==NULL )
 return(true);
@@ -747,7 +781,11 @@ static void AI_TestOrdering(GIData *ci,real x) {
 		( aps->lig_index>ap->lig_index &&
 		    (( isr2l && aps->me.x>x) ||
 		     (!isr2l && aps->me.x<x))) ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_OutOfOrder,_STR_IndexOutOfOrder,aps->lig_index);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Out Of Order"),_("Marks within a ligature should be ordered with the direction of writing.\nThis one and %d are out of order."),aps->lig_index);
+#endif
 return;
 	    }
 	}
@@ -772,7 +810,11 @@ return( true );
 	for ( aps=ci->sc->anchor; aps!=NULL; aps=aps->next ) {
 	    if ( aps->anchor==ap->anchor && aps!=ap ) {
 		if ( aps->lig_index==index ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GWidgetErrorR(_STR_IndexInUse,_STR_LigIndexInUse);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    gwwv_post_error(_("Index in use"),_("This ligature index is already in use"));
+#endif
 return( true );
 		} else if ( aps->lig_index>max )
 		    max = aps->lig_index;
@@ -780,7 +822,11 @@ return( true );
 	}
 	if ( index>max+10 ) {
 	    char buf[20]; unichar_t ubuf[20];
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_TooBig,_STR_IndexTooBig);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Too Big"),_("This index is much larger than the closest neighbor"));
+#endif
 	    sprintf(buf,"%d", max+1);
 	    uc_strcpy(ubuf,buf);
 	    GGadgetSetTitle(g,ubuf);
@@ -845,7 +891,11 @@ return( true );			/* No op */
 	}
 	if ( ap!=NULL || (sawentry && sawexit)) {
 	    AI_SelectList(ci,ci->ap);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_ClassUsed,_STR_AnchorClassUsed);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Class already used"),_("This anchor class already is associated with a point in this character"));
+#endif
 	} else {
 	    ci->ap->anchor = an;
 	    if ( an->type==act_curs ) {
@@ -968,7 +1018,11 @@ return;
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	wattrs.window_title = GStringGetResource(_STR_AnchorPointInfo,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	wattrs.window_title = _("Anchor Point Info");
+#endif
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,AI_Width));
@@ -1835,7 +1889,11 @@ static int PI_HintSel(GGadget *g, GEvent *e) {
 		}
 	    }
 	    if ( h2!=NULL )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_OverlappedHints,_STR_OverlappedHintsLong,
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Overlapped Hints"),_("The hint you have just selected overlaps with <%.2f,%.2f>. You should deselect one of the two."),
+#endif
 			h2->start,h2->width);
 	}
     }
@@ -1917,7 +1975,11 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	wattrs.restrict_input_to_me = 1;
 	wattrs.positioned = 1;
 	wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	wattrs.window_title = GStringGetResource(_STR_PointInfo,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	wattrs.window_title = _("Point Info");
+#endif
 	wattrs.is_dlg = true;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,PI_Width));
 	pos.height = GDrawPointsToPixels(NULL,PI_Height);
@@ -2407,7 +2469,11 @@ return;
 			if ( UsedIn(sc->name,pst->u.mult.components)) {
 			    if ( deps!=NULL ) {
 				u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),
+#if defined(FONTFORGE_CONFIG_GDRAW)
 					GStringGetResource(_STR_SubsInGlyph,NULL),
+#elif defined(FONTFORGE_CONFIG_GTK)
+					_("'%c%c%c%c' in glyph %.40s"),
+#endif
 			                pst->tag>>24, (pst->tag>>16)&0xff,
 			                (pst->tag>>8)&0xff, pst->tag&0xff,
 			                sf->chars[i]->name);

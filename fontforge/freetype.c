@@ -628,7 +628,11 @@ return( NULL );
     if ( !bc_checked && ftc->isttf ) {
 	bc_checked = true;
 	if ( !hasFreeTypeByteCode())
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetPostNoticeR(_STR_NoByteCode,_STR_NoByteCodeMsg);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_notice(_("No ByteCode Interpreter"),_("These results are those of the freetype autohinter. They do not reflect the truetype instructions."));
+#endif
     }
 
     if ( _FT_Set_Char_Size(ftc->face,0,(int) (ptsize*64), dpi, dpi))
@@ -822,7 +826,11 @@ return( TT_Err_Execution_Too_Long );
 	if ( AtWp(dc,exc) || !dc->multi_step || AtBp(dc,exc) ||
 		(exc->curRange==tt_coderange_glyph && exc->IP==exc->codeSize)) {
 	    if ( dc->found_wp ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetPostNoticeR(_STR_HitWatchPoint,_STR_HitWatchPointn,dc->wp_ptindex);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_notice(_("Hit Watch Point"),_("Point %d was moved by the previous instruction"),dc->wp_ptindex);
+#endif
 		dc->found_wp = true;
 	    }
 	    pthread_mutex_lock(&dc->parent_mutex);
@@ -1029,7 +1037,11 @@ return;
     }
     /* Else add it */
     if ( dc->bcnt>=sizeof(dc->breaks)/sizeof(dc->breaks[0]) ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_TooManyBreakpoints,_STR_TooManyBreakpoints);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Too Many Breakpoints"),_("Too Many Breakpoints"));
+#endif
 return;
     }
     i = dc->bcnt++;

@@ -121,14 +121,14 @@ return;
 # ifdef FONTFORGE_CONFIG_GDRAW
 	    GRect r;
 	    Color bg;
-	    r.x = j*fv->cbw+1; r.width = fv->cbw-1;
-	    r.y = i*fv->cbh+1; r.height = FV_LAB_HEIGHT-1;
 	    if ( sc->color!=COLOR_DEFAULT )
 		bg = sc->color;
 	    else if ( sc->layers[ly_back].splines!=NULL || sc->layers[ly_back].images!=NULL )
 		bg = 0x808080;
 	    else
 		bg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(fv->v));
+	    r.x = j*fv->cbw+1; r.width = fv->cbw-1;
+	    r.y = i*fv->cbh+1; r.height = FV_LAB_HEIGHT-1;
 	    GDrawSetXORBase(fv->v,bg);
 	    GDrawSetXORMode(fv->v);
 	    GDrawFillRect(fv->v,&r,0x000000);
@@ -136,9 +136,19 @@ return;
 # elif defined(FONTFORGE_CONFIG_GTK)
 	    GdkGC *gc = fv->v->style->fg_gc[fv->v->state];
 	    GdkGCValues values;
+	    struct GdkColor bg;
 	    gdk_gc_get_values(gc,&values);
+	    bg.pixel = -1;
+	    if ( sc->color!=COLOR_DEFAULT ) {
+		bg.red   = ((sc->color>>16)&0xff)<<8;
+		bg.green = ((sc->color>>8 )&0xff)<<8;
+		bg.blue  = ((sc->color    )&0xff)<<8;
+	    } else if ( sc->layers[ly_back].splines!=NULL || sc->layers[ly_back].images!=NULL )
+		bg.red = bg.green = bg.blue = 0x8000;
+	    else
+		bg = values.background;
 	    gdk_gc_set_function(gc,GDK_XOR);
-	    gdk_gc_set_foreground(gc, &values.background);
+	    gdk_gc_set_foreground(gc, &bg);
 	    gdk_draw_rectangle(fv->v->window, gc, TRUE,
 		    j*fv->cbw+1, i*fv->cbh+1,  fv->cbw-1, fv->lab_height);
 	    gdk_gc_set_values(gc,&values,
@@ -332,7 +342,11 @@ static void FVFlattenAllBitmapSelections(FontView *fv) {
 
 static int AskChanged(SplineFont *sf) {
     int ret;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     static int buts[] = { _STR_Save, _STR_Dontsave, _STR_Cancel, 0 };
+#elif defined(FONTFORGE_CONFIG_GTK)
+    char *buts[4];
+#endif
     char *filename, *fontname;
 
     if ( sf->cidmaster!=NULL )
@@ -346,17 +360,36 @@ static int AskChanged(SplineFont *sf) {
 	filename = sf->origname;
     if ( filename==NULL ) filename = "untitled.sfd";
     filename = GFileNameTail(filename);
+#if defined(FONTFORGE_CONFIG_GDRAW)
     ret = GWidgetAskR( _STR_Fontchange,buts,0,2,_STR_FontChangedMsg,fontname,filename);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    buts[0] = GTK_STOCK_SAVE;
+    buts[1] = _("_Don't Save");
+    buts[2] = GTK_STOCK_CANCEL;
+    buts[3] = NULL;
+    ret = gwwv_ask( _("Font changed"),buts,0,2,_("Font %1$.40s in file %2$.40s has been changed.\nDo you want to save it?"),fontname,filename);
+#endif
 return( ret );
 }
 
 static int RevertAskChanged(char *fontname,char *filename) {
     int ret;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     static int buts[] = { _STR_Revert, _STR_Cancel, 0 };
+#elif defined(FONTFORGE_CONFIG_GTK)
+    char *buts[3];
+#endif
 
     if ( filename==NULL ) filename = "untitled.sfd";
     filename = GFileNameTail(filename);
+#if defined(FONTFORGE_CONFIG_GDRAW)
     ret = GWidgetAskR( _STR_Fontchange,buts,0,1,_STR_FontChangedRevertMsg,fontname,filename);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    buts[0] = GTK_STOCK_REVERT;
+    buts[1] = GTK_STOCK_CANCEL;
+    buts[2] = NULL;
+    ret = gwwv_ask( _("Font changed"),buts,0,1,_("Font %1$.40s in file %2$.40s has been changed.\nReverting the file will lose those changes.\nIs that what you want?"),fontname,filename);
+#endif
 return( ret==0 );
 }
 
@@ -420,7 +453,11 @@ int _FVMenuSaveAs(FontView *fv) {
 	    uc_strcat(temp,"MM");
 	uc_strcat(temp,".sfd");
     }
+#if defined(FONTFORGE_CONFIG_GDRAW)
     ret = GWidgetSaveAsFile(GStringGetResource(_STR_Saveas,NULL),temp,NULL,NULL,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    ret = GWidgetSaveAsFile(_("Save as..."),temp,NULL,NULL,NULL);
+#endif
     free(temp);
     if ( ret==NULL )
 return( 0 );
@@ -489,7 +526,11 @@ int _FVMenuSave(FontView *fv) {
     else {
 	FVFlattenAllBitmapSelections(fv);
 	if ( !SFDWriteBak(sf) )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_SaveFailed,_STR_SaveFailed);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Save Failed"),_("Save Failed"));
+#endif
 	else {
 	    SplineFontSetUnChanged(sf);
 	    ret = true;
@@ -768,24 +809,43 @@ static void FVMenuRevertGlyph(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SplineFont *sf = fv->sf;
     SplineChar *sc, *tsc;
     SplineChar temp;
-    static int buts[] = { _STR_Yes, _STR_YesToAll, _STR_NoToAll, _STR_No, _STR_Cancel, 0 };
 
     for ( i=0; i<sf->charcnt; ++i ) if ( fv->selected[i] && sf->chars[i]!=NULL ) {
 	tsc = sf->chars[i];
 	if ( tsc->namechanged ) {
 	    if ( nc_state==-1 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_NameChanged,_STR_NameChangedGlyph,tsc->name);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Glyph Name Changed"),_("The the name of character %.40s has changed. This is what I use to find the glyph in the file, so I cannot revert this character.\n(You will not be warned for subsequent characters)"),tsc->name);
+#endif
 		nc_state = 0;
 	    }
 	} else {
 	    sc = SFDReadOneChar(sf->filename,tsc->name);
 	    if ( sc==NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_CantFindGlyph,_STR_CantRevertGlyph,tsc->name);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Can't Find Glyph"),_("The glyph, %.80s, can't be found in the sfd file"),tsc->name);
+#endif
 		tsc->namechanged = true;
 	    } else {
 		if ( sc->layers[ly_fore].refs!=NULL && sf->encodingchanged ) {
 		    if ( refs_state==-1 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
+			static int buts[] = { _STR_Yes, _STR_YesToAll,
+					_STR_NoToAll, _STR_No, _STR_Cancel, 0 };
 			ret = GWidgetAskR(_STR_GlyphHasRefs,buts,0,1,_STR_GlyphHasRefsQuestion,tsc->name);
+#elif defined(FONTFORGE_CONFIG_GTK)
+			char *buts[5];
+			buts[0] = GTK_STOCK_YES;
+			buts[1] = _("Yes to All");
+			buts[2] = _("No to All");
+			buts[3] = GTK_STOCK_NO;
+			buts[4] = GTK_STOCK_CANCEL;
+			ret = gwwv_ask(_("Problems With References"),buts,0,1,_("The character, %.40s, contained references, but the font's encoding has changed. I will probably not be able to map those references to the correct locations. If I proceed some references may be lost and others may link to incorrect characters. Do you want to proceed anyway?"),tsc->name);
+#endif
 			if ( ret == 1 || ret == 2 )
 			    refs_state = ret;
 		    } else
@@ -892,7 +952,11 @@ char *GetPostscriptFontName(char *dir, int mult) {
     char *temp;
 
     u_dir = uc_copy(dir);
+#if defined(FONTFORGE_CONFIG_GDRAW)
     ret = FVOpenFont(GStringGetResource(_STR_OpenPostscript,NULL),
+#elif defined(FONTFORGE_CONFIG_GTK)
+    ret = FVOpenFont(_("Open Postscript Font"),
+#endif
 	    u_dir,wild,mimes,mult,true);
     temp = u2def_copy(ret);
 
@@ -908,7 +972,11 @@ void MergeKernInfo(SplineFont *sf) {
     static unichar_t wild[] = { '*', 0 };	/* Mac resource files generally don't have extensions */
     static unichar_t wild2[] = { '*', 0 };
 #endif
+#if defined(FONTFORGE_CONFIG_GDRAW)
     unichar_t *ret = GWidgetOpenFile(GStringGetResource(_STR_MergeKernInfo,NULL),
+#elif defined(FONTFORGE_CONFIG_GTK)
+    unichar_t *ret = GWidgetOpenFile(_("Merge Kern Info"),
+#endif
 	    NULL,sf->mm!=NULL?wild2:wild,NULL,NULL);
     char *temp = u2def_copy(ret);
     int isamfm, isafm, istfm;
@@ -988,12 +1056,17 @@ static void FVMenuImport(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static int FVSelCount(FontView *fv) {
     int i, cnt=0;
-    static int buts[] = { _STR_OK, _STR_Cancel, 0 };
 
     for ( i=0; i<fv->sf->charcnt; ++i )
 	if ( fv->selected[i] ) ++cnt;
     if ( cnt>10 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
+    static int buts[] = { _STR_OK, _STR_Cancel, 0 };
 	if ( GWidgetAskR(_STR_Manywin,buts,0,1,_STR_Toomany)==1 )
+#elif defined(FONTFORGE_CONFIG_GTK)
+	static char *buts[] = { GTK_STOCK_OK, GTK_STOCK_CANCEL, NULL };
+	if ( gwwv_ask(_("Many Windows"),buts,0,1,_("This involves opening more than 10 windows.\nIs that really what you want?"))==1 )
+#endif
 return( false );
     }
 return( true );
@@ -1405,7 +1478,11 @@ static void FVClear(FontView *fv) {
     int i;
     BDFFont *bdf;
     int refstate = 0;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     static int buts[] = { _STR_Yes, _STR_YesToAll, _STR_UnlinkAll, _STR_NoToAll, _STR_No, 0 };
+#elif defined(FONTFORGE_CONFIG_GTK)
+    char *buts[6];
+#endif
     int yes, unsel;
     /* refstate==0 => ask, refstate==1 => clearall, refstate==-1 => skip all */
 
@@ -1420,7 +1497,17 @@ static void FVClear(FontView *fv) {
 		} else if ( unsel ) {
 		    if ( refstate<0 )
     continue;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    yes = GWidgetAskCenteredR(_STR_BadReference,buts,2,4,_STR_ClearDependent,fv->sf->chars[i]->name);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    buts[0] = GTK_STOCK_YES;
+		    buts[1] = _("Yes to All");
+		    buts[2] = _("Unlink All");
+		    buts[3] = _("No to All");
+		    buts[4] = GTK_STOCK_NO;
+		    buts[5] = NULL;
+		    yes = gwwv_ask(_("Bad Reference"),buts,2,4,_("You are attempting to clear %.30s which is refered to by\nanother character. Are you sure you want to clear it?"),fv->sf->chars[i]->name);
+#endif
 		    if ( yes==1 )
 			refstate = 1;
 		    else if ( yes==2 ) {
@@ -1796,7 +1883,11 @@ static void FVMenuCopyFeatureToFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void FVMenuRemoveAllFeatures(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     if ( !SFRemoveThisFeatureTag(fv->sf,0xffffffff,SLI_UNKNOWN,-1))
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_NoFeaturesRemoved,_STR_NoFeaturesRemoved);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("No Features Removed"),_("No Features Removed"));
+#endif
 }
 
 static void FVMenuRemoveFeatures(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1807,7 +1898,11 @@ static void FVMenuRemoveFeatures(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void FVMenuRemoveUnusedNested(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     if ( !SFRemoveUnusedNestedFeatures(fv->sf))
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_NoFeaturesRemoved,_STR_NoFeaturesRemoved);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("No Features Removed"),_("No Features Removed"));
+#endif
 }
 
 static void FVMenuRetagFeature(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2287,7 +2382,6 @@ static void FVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int i, cnt=0, changed, refchanged, preserved, layer;
     int askedall=-1, asked;
-    static int buts[] = { _STR_UnlinkAll, _STR_Unlink, _STR_No, _STR_Cancel, 0 };
     RefChar *ref;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
@@ -2304,7 +2398,17 @@ static void FVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		if ( ref->transform[0]*ref->transform[3]<0 ||
 			(ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
 		    if ( asked==-1 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
+			static int buts[] = { _STR_UnlinkAll, _STR_Unlink, _STR_No, _STR_Cancel, 0 };
 			asked = GWidgetAskR(_STR_FlippedRef,buts,0,2,_STR_FlippedRefUnlink, sc->name );
+#elif defined(FONTFORGE_CONFIG_GTK)
+			char *buts[5];
+			buts[0] = _("Unlink All");
+			buts[1] = _("Unlink");
+			buts[2] = GTK_STOCK_CANCEL;
+			buts[3] = NULL;
+			asked = gwwv_ask(_("Flipped Reference"),buts,0,2,_("%.50s contains a flipped reference. This cannot be corrected as is. Would you like me to unlink it and then correct it?"), sc->name );
+#endif
 			if ( asked==3 )
 return;
 			else if ( asked==2 )
@@ -2364,7 +2468,6 @@ static void FVMenuAutotrace(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 void FVBuildAccent(FontView *fv,int onlyaccents) {
     int i, cnt=0;
     SplineChar dummy;
-    static int buts[] = { _STR_Yes, _STR_No, 0 };
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] )
 	++cnt;
@@ -2376,7 +2479,13 @@ void FVBuildAccent(FontView *fv,int onlyaccents) {
 	    sc = SCBuildDummy(&dummy,fv->sf,i);
 	else if ( screen_display==NULL && sc->unicodeenc == 0x00c5 /* Aring */ &&
 		sc->layers[ly_fore].splines!=NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
+	    static int buts[] = { _STR_Yes, _STR_No, 0 };
 	    if ( GWidgetAskR(_STR_Replacearing,buts,0,1,_STR_Areyousurearing)==1 )
+#elif defined(FONTFORGE_CONFIG_GTK)
+    static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
+	    if ( gwwv_ask(_("Replace Å"),buts,0,1,_("Are you sure you want to replace Å?\nThe ring will not join to the A."))==1 )
+#endif
     continue;
 	}
 	if ( SFIsSomethingBuildable(fv->sf,sc,onlyaccents) ) {
@@ -2779,7 +2888,11 @@ static void FVMenuShowMetrics(GWindow fvgw,struct gmenuitem *mi,GEvent *e) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(d.ish?_STR_ShowHMetrics:_STR_ShowVMetrics,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = d.ish?_("Show H. Metrics...");
+#endif
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(170));
     pos.height = GDrawPointsToPixels(NULL,130);
@@ -2794,7 +2907,11 @@ static void FVMenuShowMetrics(GWindow fvgw,struct gmenuitem *mi,GEvent *e) {
     gcd[0].gd.pos.x = 8; gcd[0].gd.pos.y = 8; 
     gcd[0].gd.flags = gg_enabled|gg_visible|(metrics&fvm_baseline?gg_cb_on:0);
     gcd[0].gd.cid = fvm_baseline;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[0].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[0].gd.popup_msg = _("Is Layer Visible?");
+#endif
     gcd[0].creator = GCheckBoxCreate;
 
     label[1].text = (unichar_t *) _STR_Origin;
@@ -2811,7 +2928,11 @@ static void FVMenuShowMetrics(GWindow fvgw,struct gmenuitem *mi,GEvent *e) {
     gcd[2].gd.pos.x = 8; gcd[2].gd.pos.y = gcd[1].gd.pos.y+16;
     gcd[2].gd.flags = gg_enabled|gg_visible|(metrics&fvm_advanceat?gg_cb_on:0);
     gcd[2].gd.cid = fvm_advanceat;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[2].gd.popup_msg = GStringGetResource(_STR_AdvanceLinePopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[2].gd.popup_msg = _("Display the advance width as a line\nperpendicular to the advance direction");
+#endif
     gcd[2].creator = GCheckBoxCreate;
 
     label[3].text = (unichar_t *) _STR_AdvanceWidthAsBar;
@@ -2820,7 +2941,11 @@ static void FVMenuShowMetrics(GWindow fvgw,struct gmenuitem *mi,GEvent *e) {
     gcd[3].gd.pos.x = 8; gcd[3].gd.pos.y = gcd[2].gd.pos.y+16; 
     gcd[3].gd.flags = gg_enabled|gg_visible|(metrics&fvm_advanceto?gg_cb_on:0);
     gcd[3].gd.cid = fvm_advanceto;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[3].gd.popup_msg = GStringGetResource(_STR_AdvanceBarPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[3].gd.popup_msg = _("Display the advance width as a bar under the character\nshowing the extent of the advance");
+#endif
     gcd[3].creator = GCheckBoxCreate;
 
     label[4].text = (unichar_t *) _STR_OK;
@@ -3485,7 +3610,11 @@ return;
     if ( new->fv != NULL ) {
 	if ( new->fv->gw!=NULL )
 	    GDrawRaise(new->fv->gw);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_CloseFont,_STR_CloseFontForCID,new->origname);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Please close font"),_("Please close %s before inserting it into a CID font"),new->origname);
+#endif
 return;
     }
 
@@ -3520,14 +3649,22 @@ return;
 static void FVMenuRemoveFontFromCID(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     SplineFont *cidmaster = fv->cidmaster, *sf = fv->sf, *replace;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     static int buts[] = { _STR_Remove, _STR_Cancel, 0 };
+#elif defined(FONTFORGE_CONFIG_GTK)
+    static char *buts[] = { GTK_STOCK_REMOVE, GTK_STOCK_CANCEL, NULL };
+#endif
     int i;
     MetricsView *mv, *mnext;
     FontView *fvs;
 
     if ( cidmaster==NULL || cidmaster->subfontcnt<=1 )	/* Can't remove last font */
 return;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     if ( GWidgetAskR(_STR_RemoveFont,buts,0,1,_STR_CIDRemoveFontCheck,
+#elif defined(FONTFORGE_CONFIG_GTK)
+    if ( gwwv_ask(_("Remove Font"),buts,0,1,_("Are you sure you wish to remove sub-font %1$.40s from the CID font %2$.40s"),
+#endif
 	    sf->fontname,cidmaster->fontname)==1 )
 return;
 
@@ -3645,7 +3782,11 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = anychars==-1 || multilayer;
 	    removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);
 	    free(mi->ti.text);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    mi->ti.text = u_copy(GStringGetResource(removeOverlap?_STR_Autohint:_STR_FullAutohint,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    mi->ti.text = u_copy(removeOverlap?_("AutoHint"));
+#endif
 	  break;
 	  case MID_HintSubsPt:
 	    mi->ti.disabled = fv->sf->order2 || anychars==-1 || multilayer;
@@ -4114,9 +4255,17 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 		i<sizeof(vwlist)/sizeof(vwlist[0])-1 && bdf!=NULL;
 		++i, bdf = bdf->next ) {
 	    if ( BDFDepth(bdf)==1 )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		u_sprintf( buffer, GStringGetResource(_STR_DPixelBitmap,NULL), bdf->pixelsize );
+#elif defined(FONTFORGE_CONFIG_GTK)
+		u_sprintf( buffer, _("%d pixel bitmap"), bdf->pixelsize );
+#endif
 	    else
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		u_sprintf( buffer, GStringGetResource(_STR_DdPixelBitmap,NULL),
+#elif defined(FONTFORGE_CONFIG_GTK)
+		u_sprintf( buffer, _("%d@%d pixel bitmap"),
+#endif
 			bdf->pixelsize, BDFDepth(bdf) );
 	    vwlist[i].ti.text = u_copy(buffer);
 	    vwlist[i].ti.checkable = true;
@@ -4688,7 +4837,11 @@ void FontViewMenu_ActivateHints(GtkMenuItem *menuitem, gpointer user_data) {
 	    mi->ti.disabled = anychars==-1 || multilayer;
 	    removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);
 	    free(mi->ti.text);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    mi->ti.text = u_copy(GStringGetResource(removeOverlap?_STR_Autohint:_STR_FullAutohint,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    mi->ti.text = u_copy(removeOverlap?_("AutoHint"));
+#endif
 	  break;
 	  case MID_HintSubsPt:
 	    mi->ti.disabled = fv->sf->order2 || anychars==-1 || multilayer;
@@ -4788,9 +4941,17 @@ void FontViewMenu_ActivateView(GtkMenuItem *menuitem, gpointer user_data) {
 		i<sizeof(vwlist)/sizeof(vwlist[0])-1 && bdf!=NULL;
 		++i, bdf = bdf->next ) {
 	    if ( BDFDepth(bdf)==1 )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		u_sprintf( buffer, GStringGetResource(_STR_DPixelBitmap,NULL), bdf->pixelsize );
+#elif defined(FONTFORGE_CONFIG_GTK)
+		u_sprintf( buffer, _("%d pixel bitmap"), bdf->pixelsize );
+#endif
 	    else
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		u_sprintf( buffer, GStringGetResource(_STR_DdPixelBitmap,NULL),
+#elif defined(FONTFORGE_CONFIG_GTK)
+		u_sprintf( buffer, _("%d@%d pixel bitmap"),
+#endif
 			bdf->pixelsize, BDFDepth(bdf) );
 	    vwlist[i].ti.text = u_copy(buffer);
 	    vwlist[i].ti.checkable = true;
@@ -7107,14 +7268,22 @@ return( NULL );
 	    fullname = strippedname;
     }
 
+#if defined(FONTFORGE_CONFIG_GDRAW)
     u_strcpy(ubuf,GStringGetResource(_STR_LoadingFontFrom,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+    u_strcpy(ubuf,_("Loading font from "));
+#endif
     len = u_strlen(ubuf);
     u_strncat(ubuf,temp = def2u_copy(GFileNameTail(fullname)),100);
     free(temp);
     ubuf[100+len] = '\0';
     /* If there are no pfaedit windows, give them something to look at */
     /*  immediately. Otherwise delay a bit */
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressStartIndicator(fv_list==NULL?0:10,GStringGetResource(_STR_Loading,NULL),ubuf,GStringGetResource(_STR_ReadingGlyphs,NULL),0,1);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    GProgressStartIndicator(fv_list==NULL?0:10,_("Loading..."),ubuf,GStringGetResource(_("Reading Glyphs"),NULL),0,1);
+#endif
     GProgressEnableStop(0);
     if ( fv_list==NULL && screen_display!=NULL ) { GDrawSync(NULL); GDrawProcessPendingEvents(NULL); }
 
@@ -7230,11 +7399,23 @@ return( NULL );
 	    }
 	}
     } else if ( !GFileExists(filename) )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_CouldntOpenFontTitle,_STR_NoSuchFontFile,GFileNameTail(filename));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Couldn't open font"),_("The requested file, %.100s, does not exist"),GFileNameTail(filename));
+#endif
     else if ( !GFileReadable(filename) )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_CouldntOpenFontTitle,_STR_FontFileNotReadable,GFileNameTail(filename));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Couldn't open font"),_("You do not have permission to read %.100s"),GFileNameTail(filename));
+#endif
     else
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_CouldntOpenFontTitle,_STR_CouldntParseFont,GFileNameTail(filename));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Couldn't open font"),_("%.100s is not in a known format (or is so badly corrupted as to be unreadable)"),GFileNameTail(filename));
+#endif
 
     if ( tmpfile!=NULL ) {
 	unlink(tmpfile);
@@ -7250,8 +7431,13 @@ return( NULL );
     if ( (openflags&of_fstypepermitted) && sf!=NULL && (sf->pfminfo.fstype&0xff)==0x0002 ) {
 	/* Ok, they have told us from a script they have access to the font */
     } else if ( !fromsfd && sf!=NULL && (sf->pfminfo.fstype&0xff)==0x0002 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	static int buts[] = { _STR_Yes, _STR_No, 0 };
 	if ( GWidgetAskR(_STR_RestrictedFont,buts,1,1,_STR_RestrictedRightsFont)==1 ) {
+#elif defined(FONTFORGE_CONFIG_GTK)
+	static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
+	if ( gwwv_ask(_("Restricted Font"),buts,1,1,_("This font is marked with an FSType of 2 (Restricted\nLicense). That means it is not editable without the\npermission of the legal owner.\n\nDo you have such permission?"))==1 ) {
+#endif
 	    SplineFontFree(sf);
 return( NULL );
 	}

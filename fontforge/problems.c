@@ -389,7 +389,11 @@ return;
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	wattrs.window_title = GStringGetResource(_STR_ProbExplain,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	wattrs.window_title = _("Problem explanation");
+#endif
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,400));
 	pos.height = GDrawPointsToPixels(NULL,86);
@@ -481,23 +485,43 @@ return;
 
     if ( explain==_STR_ProbBadSubs ) {
 	u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GStringGetResource(_STR_ProbBadSubs2,NULL), p->badsubsname,
+#elif defined(FONTFORGE_CONFIG_GTK)
+		_("'%2$c%3$c%4$c%5$c' refers to an empty character \"%1$.20s\""), p->badsubsname,
+#endif
 		(p->badsubstag>>24),(p->badsubstag>>16)&0xff,(p->badsubstag>>8)&0xff,p->badsubstag&0xff);
     } else if ( explain==_STR_ProbMultiUni ) {
 	u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GStringGetResource(_STR_ProbMultiUni2,NULL),
+#elif defined(FONTFORGE_CONFIG_GTK)
+		_("%.40s"),
+#endif
 		p->glyphname );
     } else if ( explain==_STR_ProbMultiName ) {
 	u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GStringGetResource(_STR_ProbMultiName2,NULL),
+#elif defined(FONTFORGE_CONFIG_GTK)
+		_("%d"),
+#endif
 		p->glyphenc );
     } else if ( found==expected )
 	ubuf[0]='\0';
     else {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	u_strcpy(ubuf,GStringGetResource(_STR_Found,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	u_strcpy(ubuf,_("Found "));
+#endif
 	sprintf(buf,"%.4g", found );
 	uc_strcat(ubuf,buf);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	u_strcat(ubuf,GStringGetResource(_STR_Expected,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	u_strcat(ubuf,_(", expected "));
+#endif
 	sprintf(buf,"%.4g", expected );
 	uc_strcat(ubuf,buf);
     }
@@ -1695,7 +1719,11 @@ static int MGA_Rpl(GGadget *g, GEvent *e) {
 	const unichar_t *_rpl = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_RplText));
 	if ( d->islookup ) {
 	    if ( u_strlen(_rpl)!=4 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_TagMustBe4,_STR_TagMustBe4);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Tag must be 4 characters long"),_("Tag must be 4 characters long"));
+#endif
 return( true);
 	    }
 	    mark_tagto_replace(d->p,d->tag,((_rpl[0]&0xff)<<24)|((_rpl[1]&0xff)<<16)|((_rpl[2]&0xff)<<8)|((_rpl[3]&0xff)));
@@ -1779,27 +1807,47 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32 tag,
     if ( which == mg_pst ) {
 	if ( pst->macfeature )
 	    u_snprintf(buffer,sizeof(buffer)/sizeof(buffer[0]),
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GStringGetResource(_STR_GlyphMacPSTTag,NULL),
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    _("Glyph %1$.50s with a %2$s with feature <%3$d,%4$d>"),
+#endif
 		    sc->name, pstnames[pst->type],
 		    pst->tag>>16, pst->tag&0xffff);
 	else
 	    u_snprintf(buffer,sizeof(buffer)/sizeof(buffer[0]),
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GStringGetResource(_STR_GlyphPSTTag,NULL),
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    _("Glyph %1$.50s with a %2$s with tag '%3$c%4$c%5$c%6$c'"),
+#endif
 		    sc->name, pstnames[pst->type],
 		    pst->tag>>24, (pst->tag>>16)&0xff, (pst->tag>>8)&0xff, pst->tag&0xff);
     } else if ( which == mg_fpst || which==mg_lookups )
 	u_snprintf(buffer,sizeof(buffer)/sizeof(buffer[0]),
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GStringGetResource(_STR_FPSTKernTag,NULL),
+#elif defined(FONTFORGE_CONFIG_GTK)
+		_("%1$s with tag '%2$c%3$c%4$c%5$c'"),
+#endif
 		fpstnames[fpst->type-pst_contextpos],
 		fpst->tag>>24, (fpst->tag>>16)&0xff, (fpst->tag>>8)&0xff, fpst->tag&0xff);
     else if ( which == mg_asm || which==mg_smlookups )
 	u_snprintf(buffer,sizeof(buffer)/sizeof(buffer[0]),
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GStringGetResource(_STR_MacASMTag,NULL),
+#elif defined(FONTFORGE_CONFIG_GTK)
+		_("%1$s with feature <%2$d,%3$d>"),
+#endif
 		asmnames[sm->type],
 		sm->feature, sm->setting);
     else
 	u_snprintf(buffer,sizeof(buffer)/sizeof(buffer[0]),
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GStringGetResource(_STR_FPSTKernTag,NULL),
+#elif defined(FONTFORGE_CONFIG_GTK)
+		_("%1$s with tag '%2$c%3$c%4$c%5$c'"),
+#endif
 		which==mg_kern ? "Kerning Class": "Vertical Kerning Class",
 		which==mg_kern ? 'k' : 'v', which==mg_kern ? 'e' : 'k', 'r', 'n' );
 
@@ -1819,7 +1867,11 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32 tag,
     wattrs.restrict_input_to_me = 1;
     wattrs.centered = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_MissingGlyph,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Check for missing glyph names");
+#endif
     pos.x = pos.y = 0;
     ptwidth = 3*blen+GGadgetScale(80);
     pos.width =GDrawPointsToPixels(NULL,ptwidth);
@@ -2147,7 +2199,11 @@ static int CheckForATT(struct problems *p) {
     ASM *sm;
     KernClass *kc;
     SplineFont *_sf, *sf;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     static int buts[] = { _STR_Yes, _STR_No, 0 };
+#elif defined(FONTFORGE_CONFIG_GTK)
+    static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
+#endif
 
     _sf = p->fv->sf;
     if ( _sf->cidmaster ) _sf = _sf->cidmaster;
@@ -2160,7 +2216,11 @@ static int CheckForATT(struct problems *p) {
 	    for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
 		if ( sf->script_lang[i][0].script == DEFAULT_SCRIPT ) {
 		    found = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    if ( GWidgetAskR(_STR_UsedDFLTscript,buts,0,1,_STR_ProbDFLT)==0 ) {
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    if ( gwwv_ask(_("Check for use of 'DFLT' script"),buts,0,1,_("This font refers to the script 'DFLT'\nwhich means FontForge couldn't guess\na good script.\nYou should probably provide a new\nlist of scripts (if you are unsure\nof which scripts to select, select all\nthat are used in your font).\nWould you like to do this?"))==0 ) {
+#endif
 			unichar_t *dflt, *result;
 			dflt = ScriptLangLine(sf->script_lang[i]);
 			result = ShowScripts(dflt);
@@ -2434,7 +2494,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_Findprobs,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Find Problems...");
+#endif
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,218));
     pos.height = GDrawPointsToPixels(NULL,294);
@@ -2450,7 +2514,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[0].gd.pos.x = 3; pgcd[0].gd.pos.y = 5; 
     pgcd[0].gd.flags = gg_visible | gg_enabled;
     if ( pointstooclose ) pgcd[0].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     pgcd[0].gd.popup_msg = GStringGetResource(_STR_Points2ClosePopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    pgcd[0].gd.popup_msg = _("If two adjacent points on the same path are less than a few\nemunits apart they will cause problems for some of FontForge's\ncommands. PostScript shouldn't care though.");
+#endif
     pgcd[0].gd.cid = CID_PointsTooClose;
     pgcd[0].creator = GCheckBoxCreate;
 
@@ -2461,7 +2529,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[1].gd.pos.x = 3; pgcd[1].gd.pos.y = pgcd[0].gd.pos.y+19; 
     pgcd[1].gd.flags = gg_visible | gg_enabled;
     if ( doxnear ) pgcd[1].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     pgcd[1].gd.popup_msg = GStringGetResource(_STR_XNearPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    pgcd[1].gd.popup_msg = _("Allows you to check that vertical stems in several\ncharacters start at the same location.");
+#endif
     pgcd[1].gd.cid = CID_XNear;
     pgcd[1].creator = GCheckBoxCreate;
 
@@ -2483,7 +2555,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[3].gd.pos.x = 3; pgcd[3].gd.pos.y = pgcd[1].gd.pos.y+26; 
     pgcd[3].gd.flags = gg_visible | gg_enabled;
     if ( doynear ) pgcd[3].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     pgcd[3].gd.popup_msg = GStringGetResource(_STR_YNearPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    pgcd[3].gd.popup_msg = _("Allows you to check that horizontal stems in several\ncharacters start at the same location.");
+#endif
     pgcd[3].gd.cid = CID_YNear;
     pgcd[3].creator = GCheckBoxCreate;
 
@@ -2505,7 +2581,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[5].gd.pos.x = 3; pgcd[5].gd.pos.y = pgcd[3].gd.pos.y+20; 
     pgcd[5].gd.flags = gg_visible | gg_enabled;
     if ( doynearstd ) pgcd[5].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     pgcd[5].gd.popup_msg = GStringGetResource(_STR_YNearStdPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    pgcd[5].gd.popup_msg = _("Allows you to find points which are slightly\noff from the baseline, xheight,cap height,\nascender, descender heights.");
+#endif
     pgcd[5].gd.cid = CID_YNearStd;
     pgcd[5].creator = GCheckBoxCreate;
 
@@ -2516,7 +2596,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[6].gd.pos.x = 3; pgcd[6].gd.pos.y = pgcd[5].gd.pos.y+15; 
     pgcd[6].gd.flags = gg_visible | gg_enabled;
     if ( cpstd ) pgcd[6].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     pgcd[6].gd.popup_msg = GStringGetResource(_STR_CpStdPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    pgcd[6].gd.popup_msg = _("Allows you to find control points which are almost,\nbut not quite horizontal or vertical\nfrom their base point\n(or at the italic angle).");
+#endif
     pgcd[6].gd.cid = CID_CpStd;
     pgcd[6].creator = GCheckBoxCreate;
 
@@ -2527,7 +2611,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[7].gd.pos.x = 3; pgcd[7].gd.pos.y = pgcd[6].gd.pos.y+15; 
     pgcd[7].gd.flags = gg_visible | gg_enabled;
     if ( cpodd ) pgcd[7].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     pgcd[7].gd.popup_msg = GStringGetResource(_STR_CpOddPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    pgcd[7].gd.popup_msg = _("Allows you to find control points which when projected\nonto the line segment between the two end points lie\noutside of those end points");
+#endif
     pgcd[7].gd.cid = CID_CpOdd;
     pgcd[7].creator = GCheckBoxCreate;
 
@@ -2537,7 +2625,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[8].gd.pos.x = 3; pgcd[8].gd.pos.y = pgcd[7].gd.pos.y+15; 
     pgcd[8].gd.flags = gg_visible | gg_enabled;
     if ( irrelevantcp ) pgcd[8].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     pgcd[8].gd.popup_msg = GStringGetResource(_STR_IrrelevantCPPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    pgcd[8].gd.popup_msg = _("Control points are irrelevant if they are too close to the main\npoint to make a significant difference in the shape of the curve.");
+#endif
     pgcd[8].gd.cid = CID_IrrelevantCP;
     pgcd[8].creator = GCheckBoxCreate;
 
@@ -2546,7 +2638,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[9].gd.label = &plabel[9];
     pgcd[9].gd.pos.x = 20; pgcd[9].gd.pos.y = pgcd[8].gd.pos.y+20; 
     pgcd[9].gd.flags = gg_visible | gg_enabled;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     pgcd[9].gd.popup_msg = GStringGetResource(_STR_IrrelevantFactorPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    pgcd[9].gd.popup_msg = _("A control point is deemed irrelevant if the distance between it and the main\n(end) point is less than this times the distance between the two end points");
+#endif
     pgcd[9].creator = GLabelCreate;
 
     sprintf( irrel, "%g", irrelevantfactor*100 );
@@ -2556,7 +2652,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[10].gd.pos.x = 105; pgcd[10].gd.pos.y = pgcd[9].gd.pos.y-3;
     pgcd[10].gd.pos.width = 50; 
     pgcd[10].gd.flags = gg_visible | gg_enabled;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     pgcd[10].gd.popup_msg = GStringGetResource(_STR_IrrelevantFactorPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    pgcd[10].gd.popup_msg = _("A control point is deemed irrelevant if the distance between it and the main\n(end) point is less than this times the distance between the two end points");
+#endif
     pgcd[10].gd.cid = CID_IrrelevantFactor;
     pgcd[10].creator = GTextFieldCreate;
 
@@ -2565,7 +2665,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[11].gd.label = &plabel[11];
     pgcd[11].gd.pos.x = 163; pgcd[11].gd.pos.y = pgcd[9].gd.pos.y; 
     pgcd[11].gd.flags = gg_visible | gg_enabled;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     pgcd[11].gd.popup_msg = GStringGetResource(_STR_IrrelevantFactorPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    pgcd[11].gd.popup_msg = _("A control point is deemed irrelevant if the distance between it and the main\n(end) point is less than this times the distance between the two end points");
+#endif
     pgcd[11].creator = GLabelCreate;
 
 /* ************************************************************************** */
@@ -2580,7 +2684,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pagcd[0].gd.pos.x = 3; pagcd[0].gd.pos.y = 6; 
     pagcd[0].gd.flags = gg_visible | gg_enabled;
     if ( openpaths ) pagcd[0].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     pagcd[0].gd.popup_msg = GStringGetResource(_STR_OpenPathsPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    pagcd[0].gd.popup_msg = _("All paths should be closed loops, there should be no exposed endpoints");
+#endif
     pagcd[0].gd.cid = CID_OpenPaths;
     pagcd[0].creator = GCheckBoxCreate;
 
@@ -2591,7 +2699,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pagcd[1].gd.pos.x = 3; pagcd[1].gd.pos.y = pagcd[0].gd.pos.y+17; 
     pagcd[1].gd.flags = gg_visible | gg_enabled;
     if ( intersectingpaths ) pagcd[1].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     pagcd[1].gd.popup_msg = GStringGetResource(_STR_IntersectingPathsPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    pagcd[1].gd.popup_msg = _("No paths with within a glyph should intersect");
+#endif
     pagcd[1].gd.cid = CID_IntersectingPaths;
     pagcd[1].creator = GCheckBoxCreate;
 
@@ -2602,7 +2714,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pagcd[2].gd.pos.x = 3; pagcd[2].gd.pos.y = pagcd[1].gd.pos.y+17; 
     pagcd[2].gd.flags = gg_visible | gg_enabled;
     if ( linestd ) pagcd[2].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     pagcd[2].gd.popup_msg = GStringGetResource(_STR_LineStdPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    pagcd[2].gd.popup_msg = _("Allows you to find lines which are almost,\nbut not quite horizontal or vertical\n(or at the italic angle).");
+#endif
     pagcd[2].gd.cid = CID_LineStd;
     pagcd[2].creator = GCheckBoxCreate;
 
@@ -2613,7 +2729,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pagcd[3].gd.pos.x = 3; pagcd[3].gd.pos.y = pagcd[2].gd.pos.y+17; 
     pagcd[3].gd.flags = gg_visible | gg_enabled;
     if ( direction ) pagcd[3].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     pagcd[3].gd.popup_msg = GStringGetResource(_STR_CheckDirectionPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    pagcd[3].gd.popup_msg = _("Postscript and TrueType require that paths be drawn\nin a clockwise direction. This lets you check that they\nare.");
+#endif
     pagcd[3].gd.cid = CID_Direction;
     pagcd[3].creator = GCheckBoxCreate;
 
@@ -2624,7 +2744,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pagcd[4].gd.pos.x = 3; pagcd[4].gd.pos.y = pagcd[3].gd.pos.y+21; 
     pagcd[4].gd.flags = gg_visible | gg_enabled;
     if ( toomanypoints ) pagcd[4].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     pagcd[4].gd.popup_msg = GStringGetResource(_STR_MorePointsThanPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    pagcd[4].gd.popup_msg = _("The PostScript Language Reference Manual (Appendix B) says that\nan interpreter need not support paths with more than 1500 points.\nI think this count includes control points. From PostScript's point\nof view, all the contours in a character make up one path. Modern\ninterpreters tend to support paths with more points than this limit.\n(Note a truetype font after conversion to PS will contain\ntwice as many control points)");
+#endif
     pagcd[4].gd.cid = CID_TooManyPoints;
     pagcd[4].creator = GCheckBoxCreate;
 
@@ -2635,7 +2759,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pagcd[5].gd.pos.x = 105; pagcd[5].gd.pos.y = pagcd[4].gd.pos.y-3;
     pagcd[5].gd.pos.width = 50; 
     pagcd[5].gd.flags = gg_visible | gg_enabled;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     pagcd[5].gd.popup_msg = GStringGetResource(_STR_MorePointsThanPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    pagcd[5].gd.popup_msg = _("The PostScript Language Reference Manual (Appendix B) says that\nan interpreter need not support paths with more than 1500 points.\nI think this count includes control points. From PostScript's point\nof view, all the contours in a character make up one path. Modern\ninterpreters tend to support paths with more points than this limit.\n(Note a truetype font after conversion to PS will contain\ntwice as many control points)");
+#endif
     pagcd[5].gd.cid = CID_PointsMax;
     pagcd[5].creator = GTextFieldCreate;
 
@@ -2651,7 +2779,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rfgcd[0].gd.pos.x = 3; rfgcd[0].gd.pos.y = 6; 
     rfgcd[0].gd.flags = gg_visible | gg_enabled;
     if ( flippedrefs ) rfgcd[0].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     rfgcd[0].gd.popup_msg = GStringGetResource(_STR_CheckFlippedRefsPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    rfgcd[0].gd.popup_msg = _("Postscript and TrueType require that paths be drawn\nin a clockwise direction. If you have a reference\nthat has been flipped then the paths in that reference will\nprobably be counter-clockwise. You should unlink it and do\nCorect direction on it.");
+#endif
     rfgcd[0].gd.cid = CID_FlippedRefs;
     rfgcd[0].creator = GCheckBoxCreate;
 
@@ -2662,7 +2794,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rfgcd[1].gd.pos.x = 3; rfgcd[1].gd.pos.y = rfgcd[0].gd.pos.y+21; 
     rfgcd[1].gd.flags = gg_visible | gg_enabled;
     if ( toodeeprefs ) rfgcd[1].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     rfgcd[1].gd.popup_msg = GStringGetResource(_STR_RefsDeeperThanPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    rfgcd[1].gd.popup_msg = _("The Type 2 Charstring Reference (Appendix B) says that\nsubroutines may not be nested more than 10 deep. Each\nnesting level for references requires one subroutine\nlevel, and hints may require another level.");
+#endif
     rfgcd[1].gd.cid = CID_TooDeepRefs;
     rfgcd[1].creator = GCheckBoxCreate;
 
@@ -2673,7 +2809,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rfgcd[2].gd.pos.x = 140; rfgcd[2].gd.pos.y = rfgcd[1].gd.pos.y-3;
     rfgcd[2].gd.pos.width = 40; 
     rfgcd[2].gd.flags = gg_visible | gg_enabled;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     rfgcd[2].gd.popup_msg = GStringGetResource(_STR_RefsDeeperThanPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    rfgcd[2].gd.popup_msg = _("The Type 2 Charstring Reference (Appendix B) says that\nsubroutines may not be nested more than 10 deep. Each\nnesting level for references requires one subroutine\nlevel, and hints may require another level.");
+#endif
     rfgcd[2].gd.cid = CID_RefDepthMax;
     rfgcd[2].creator = GTextFieldCreate;
 
@@ -2689,7 +2829,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hgcd[0].gd.pos.x = 3; hgcd[0].gd.pos.y = 5; 
     hgcd[0].gd.flags = gg_visible | gg_enabled;
     if ( hintnopt ) hgcd[0].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     hgcd[0].gd.popup_msg = GStringGetResource(_STR_HintNoPtPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    hgcd[0].gd.popup_msg = _("Ghostview (perhaps other interpreters) has a problem when a\nhint exists without any points that lie on it.");
+#endif
     hgcd[0].gd.cid = CID_HintNoPt;
     hgcd[0].creator = GCheckBoxCreate;
 
@@ -2700,7 +2844,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hgcd[1].gd.pos.x = 3; hgcd[1].gd.pos.y = hgcd[0].gd.pos.y+17; 
     hgcd[1].gd.flags = gg_visible | gg_enabled;
     if ( ptnearhint ) hgcd[1].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     hgcd[1].gd.popup_msg = GStringGetResource(_STR_PtNearHintPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    hgcd[1].gd.popup_msg = _("Often if a point is slightly off from a hint\nit is because a stem is made up\nof several segments, and one of them\nhas the wrong width.");
+#endif
     hgcd[1].gd.cid = CID_PtNearHint;
     hgcd[1].creator = GCheckBoxCreate;
 
@@ -2711,7 +2859,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hgcd[2].gd.pos.x = 3; hgcd[2].gd.pos.y = hgcd[1].gd.pos.y+21;
     hgcd[2].gd.flags = gg_visible | gg_enabled;
     if ( hintwidth ) hgcd[2].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     hgcd[2].gd.popup_msg = GStringGetResource(_STR_HintWidthPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    hgcd[2].gd.popup_msg = _("Allows you to check that stems have consistant widths..");
+#endif
     hgcd[2].gd.cid = CID_HintWidthNear;
     hgcd[2].creator = GCheckBoxCreate;
 
@@ -2733,7 +2885,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hgcd[4].gd.pos.x = 3; hgcd[4].gd.pos.y = hgcd[3].gd.pos.y+19;
     hgcd[4].gd.flags = gg_visible | gg_enabled;
     if ( stem3 ) hgcd[4].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     hgcd[4].gd.popup_msg = GStringGetResource(_STR_Hint3Popup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    hgcd[4].gd.popup_msg = _("This checks if the character almost, but not exactly,\nconforms to the requirements for a stem3 hint.\nThat is, either vertically or horizontally, there must\nbe exactly three hints, and they must have the same\nwidth and they must be evenly spaced.");
+#endif
     hgcd[4].gd.cid = CID_Stem3;
     hgcd[4].gd.handle_controlevent = Prob_EnableExact;
     hgcd[4].creator = GCheckBoxCreate;
@@ -2746,7 +2902,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hgcd[5].gd.flags = gg_visible;
     if ( showexactstem3 ) hgcd[5].gd.flags |= gg_cb_on;
     if ( stem3 ) hgcd[5].gd.flags |= gg_enabled;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     hgcd[5].gd.popup_msg = GStringGetResource(_STR_ShowExactHint3Popup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    hgcd[5].gd.popup_msg = _("Shows when this character is exactly a stem3 hint");
+#endif
     hgcd[5].gd.cid = CID_ShowExactStem3;
     hgcd[5].creator = GCheckBoxCreate;
 
@@ -2756,7 +2916,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hgcd[6].gd.pos.x = 3; hgcd[6].gd.pos.y = hgcd[5].gd.pos.y+21; 
     hgcd[6].gd.flags = gg_visible | gg_enabled;
     if ( toomanyhints ) hgcd[6].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     hgcd[6].gd.popup_msg = GStringGetResource(_STR_MoreHintsThanPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    hgcd[6].gd.popup_msg = _("The Type 2 Charstring Reference (Appendix B) says that\nthere may be at most 96 horizontal and vertical stem hints\nin a character.");
+#endif
     hgcd[6].gd.cid = CID_TooManyHints;
     hgcd[6].creator = GCheckBoxCreate;
 
@@ -2767,7 +2931,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hgcd[7].gd.pos.x = 105; hgcd[7].gd.pos.y = hgcd[6].gd.pos.y-3;
     hgcd[7].gd.pos.width = 50; 
     hgcd[7].gd.flags = gg_visible | gg_enabled;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     hgcd[7].gd.popup_msg = GStringGetResource(_STR_MoreHintsThanPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    hgcd[7].gd.popup_msg = _("The Type 2 Charstring Reference (Appendix B) says that\nthere may be at most 96 horizontal and vertical stem hints\nin a character.");
+#endif
     hgcd[7].gd.cid = CID_HintsMax;
     hgcd[7].creator = GTextFieldCreate;
 
@@ -2783,7 +2951,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rgcd[0].gd.pos.x = 3; rgcd[0].gd.pos.y = 6; 
     rgcd[0].gd.flags = gg_visible | gg_enabled;
     if ( bitmaps ) rgcd[0].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     rgcd[0].gd.popup_msg = GStringGetResource(_STR_CheckBitmapsPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    rgcd[0].gd.popup_msg = _("Are there any outline characters which don't have a bitmap version in one of the bitmap fonts?\nConversely are there any bitmap characters without a corresponding outline character?");
+#endif
     rgcd[0].gd.cid = CID_Bitmaps;
     rgcd[0].creator = GCheckBoxCreate;
 
@@ -2794,7 +2966,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rgcd[1].gd.pos.x = 3; rgcd[1].gd.pos.y = rgcd[0].gd.pos.y+21;
     rgcd[1].gd.flags = gg_visible | gg_enabled;
     if ( advancewidth ) rgcd[1].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     rgcd[1].gd.popup_msg = GStringGetResource(_STR_AdvanceWidthPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    rgcd[1].gd.popup_msg = _("Check for characters whose advance width is not the displayed value.");
+#endif
     rgcd[1].gd.cid = CID_AdvanceWidth;
     rgcd[1].creator = GCheckBoxCreate;
 
@@ -2821,7 +2997,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rgcd[3].gd.flags = gg_visible | gg_enabled;
     if ( !sf->hasvmetrics ) rgcd[3].gd.flags = gg_visible;
     else if ( vadvancewidth ) rgcd[3].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     rgcd[3].gd.popup_msg = GStringGetResource(_STR_AdvanceVWidthPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    rgcd[3].gd.popup_msg = _("Check for characters whose vertical advance width is not the displayed value.");
+#endif
     rgcd[3].gd.cid = CID_VAdvanceWidth;
     rgcd[3].creator = GCheckBoxCreate;
 
@@ -2844,7 +3024,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rgcd[5].gd.pos.x = 3; rgcd[5].gd.pos.y = rgcd[4].gd.pos.y+24; 
     rgcd[5].gd.flags = gg_visible | gg_enabled;
     if ( badsubs ) rgcd[5].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     rgcd[5].gd.popup_msg = GStringGetResource(_STR_SubsToEmptyCharPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    rgcd[5].gd.popup_msg = _("Check for characters which contain 'GSUB' entries which refer to empty characters");
+#endif
     rgcd[5].gd.cid = CID_BadSubs;
     rgcd[5].creator = GCheckBoxCreate;
 
@@ -2854,7 +3038,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rgcd[6].gd.pos.x = 3; rgcd[6].gd.pos.y = rgcd[5].gd.pos.y+17; 
     rgcd[6].gd.flags = gg_visible | gg_enabled;
     if ( multuni ) rgcd[6].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     rgcd[6].gd.popup_msg = GStringGetResource(_STR_MultipleUnicode,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    rgcd[6].gd.popup_msg = _("Check multiple Unicode");
+#endif
     rgcd[6].gd.cid = CID_MultUni;
     rgcd[6].creator = GCheckBoxCreate;
 
@@ -2864,7 +3052,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rgcd[7].gd.pos.x = 3; rgcd[7].gd.pos.y = rgcd[6].gd.pos.y+17; 
     rgcd[7].gd.flags = gg_visible | gg_enabled;
     if ( multname ) rgcd[7].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     rgcd[7].gd.popup_msg = GStringGetResource(_STR_MultipleNamePopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    rgcd[7].gd.popup_msg = _("Check for muliple characters which with the same name");
+#endif
     rgcd[7].gd.cid = CID_MultName;
     rgcd[7].creator = GCheckBoxCreate;
 
@@ -2880,7 +3072,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     cgcd[0].gd.pos.x = 3; cgcd[0].gd.pos.y = 6;
     cgcd[0].gd.flags = gg_visible | gg_enabled;
     if ( cidmultiple ) cgcd[0].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     cgcd[0].gd.popup_msg = GStringGetResource(_STR_CIDMultiplePopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    cgcd[0].gd.popup_msg = _("Check whether a CID is defined in more than one sub-font");
+#endif
     cgcd[0].gd.cid = CID_CIDMultiple;
     cgcd[0].creator = GCheckBoxCreate;
 
@@ -2891,7 +3087,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     cgcd[1].gd.pos.x = 3; cgcd[1].gd.pos.y = cgcd[0].gd.pos.y+17; 
     cgcd[1].gd.flags = gg_visible | gg_enabled;
     if ( cidblank ) cgcd[1].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     cgcd[1].gd.popup_msg = GStringGetResource(_STR_CIDBlankPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    cgcd[1].gd.popup_msg = _("Check whether a CID is undefined in all sub-fonts");
+#endif
     cgcd[1].gd.cid = CID_CIDBlank;
     cgcd[1].creator = GCheckBoxCreate;
 
@@ -2906,7 +3106,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     agcd[0].gd.pos.x = 3; agcd[0].gd.pos.y = 6;
     agcd[0].gd.flags = gg_visible | gg_enabled;
     if ( missingglyph ) agcd[0].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     agcd[0].gd.popup_msg = GStringGetResource(_STR_MissingGlyphPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    agcd[0].gd.popup_msg = _("Check whether a substitution, kerning class, etc. uses a glyph name which does not match any glyph in the font");
+#endif
     agcd[0].gd.cid = CID_MissingGlyph;
     agcd[0].creator = GCheckBoxCreate;
 
@@ -2916,7 +3120,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     agcd[1].gd.pos.x = 3; agcd[1].gd.pos.y = agcd[0].gd.pos.y+17; 
     agcd[1].gd.flags = gg_visible | gg_enabled;
     if ( missinglookuptag ) agcd[1].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     agcd[1].gd.popup_msg = GStringGetResource(_STR_MissingLookupTagPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    agcd[1].gd.popup_msg = _("Check whether a contextual subtitution/positioning item refers to a tag which is not defined in the font");
+#endif
     agcd[1].gd.cid = CID_MissingLookupTag;
     agcd[1].creator = GCheckBoxCreate;
 
@@ -2926,7 +3134,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     agcd[2].gd.pos.x = 3; agcd[2].gd.pos.y = agcd[1].gd.pos.y+17; 
     agcd[2].gd.flags = gg_visible | gg_enabled;
     if ( DFLTscript ) agcd[2].gd.flags |= gg_cb_on;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     agcd[2].gd.popup_msg = GStringGetResource(_STR_UsedDFLTscriptPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    agcd[2].gd.popup_msg = _("Use of the 'DFLT' script is not very informative.\nFontForge will occasionally make create an entry with\nthis script if it doesn't know what better to use.");
+#endif
     agcd[2].gd.cid = CID_DFLTScript;
     agcd[2].creator = GCheckBoxCreate;
 

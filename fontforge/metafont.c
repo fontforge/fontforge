@@ -927,7 +927,11 @@ static void MapFromCounterGroup(struct map *map,MetaFontDlg *meta,
 		if ( (newcwidth<meta->counters[isvert].widthmin && counterwidth>=meta->counters[isvert].widthmin) ||
 			newcwidth<0 ) {
 		    if ( !counterwarned )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 			GWidgetErrorR(_STR_CounterTooSmallT,_STR_CounterTooSmall, charname);
+#elif defined(FONTFORGE_CONFIG_GTK)
+			gwwv_post_error(_("Counter Too Small"),_("A counter in %.30s was requested to be too small, it has been pegged at its minimum value"), charname);
+#endif
 		    counterwarned = true;
 		    if ( counterwidth>=meta->counters[isvert].widthmin )
 			newcwidth = meta->counters[isvert].widthmin;
@@ -2052,7 +2056,11 @@ void MetaFont(FontView *fv,CharView *cv,SplineChar *sc) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_MetaFont,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Meta Font...");
+#endif
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,268));
     pos.height = GDrawPointsToPixels(NULL,330);

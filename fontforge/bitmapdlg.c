@@ -186,7 +186,11 @@ static void FVScaleBitmaps(FontView *fv,int32 *sizes) {
 	if ( !GProgressNext())
     break;
     } else if ( sizes[i]>0 && (sizes[i]>>16)!=1 && !warned ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_CantScaleGreymap,_STR_CantScaleGreymap);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Can't scale a greymap font"),_("Can't scale a greymap font"));
+#endif
 	warned = true;
     }
     GProgressEndIndicator();
@@ -250,7 +254,11 @@ static int FVRegenBitmaps(CreateBitmapData *bd,int32 *sizes,int usefreetype) {
 	if ( bdf==NULL ) {
 	    unichar_t temp[100];
 	    char buffer[10];
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    u_strcpy(temp,GStringGetResource(_STR_BadRegenSize,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    u_strcpy(temp,_("Attempt to regenerate a pixel size that has not been created: "));
+#endif
 	    if ( (sizes[i]>>16)==1 )
 		sprintf(buffer,"%d", sizes[i]&0xffff);
 	    else
@@ -386,7 +394,11 @@ static void BitmapsDoIt(CreateBitmapData *bd,int32 *sizes,int usefreetype) {
 	if ( sizes[0]!=0 )
 	    FVScaleBitmaps(bd->fv,sizes);
 	else {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_CantDeleteAllBitmaps,_STR_CantDeleteAllBitmaps);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Can't delete all bitmaps"),_("Can't delete all bitmaps"));
+#endif
 return;
 	}
     } else if ( bd->isavail )
@@ -489,11 +501,19 @@ return( true );
 static void _CB_SystemChange(CreateBitmapData *bd) {
     int system = GetSystem(bd->gw);
     GGadgetSetTitle(GWidgetGetControl(bd->gw,CID_75Lab),
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GStringGetResource(system==CID_X?_STR_PointSizes75:
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    system==CID_X?_("Point sizes on a 75 dpi screen")
+#endif
 			       system==CID_Win?_STR_PointSizes96:
 					       _STR_PointSizes72,NULL));
     GGadgetSetTitle(GWidgetGetControl(bd->gw,CID_100Lab),
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GStringGetResource(system==CID_Win?_STR_PointSizes120:
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    system==CID_Win?_("Point sizes on a 120 dpi screen")
+#endif
 					       _STR_PointSizes100,NULL));
     GGadgetSetEnabled(GWidgetGetControl(bd->gw,CID_100Lab),system!=CID_Mac);
     GGadgetSetEnabled(GWidgetGetControl(bd->gw,CID_100),system!=CID_Mac);
@@ -561,7 +581,11 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(isavail ? _STR_Bitmapsavail : _STR_Regenbitmaps,NULL );
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = isavail ? _("Bitmaps Available...");
+#endif
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,190));

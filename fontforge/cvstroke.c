@@ -189,7 +189,11 @@ static int Stroke_OK(GGadget *g, GEvent *e) {
 	si->removeexternal = GGadgetIsChecked( GWidgetGetControl(sw,CID_RmExternal));
 	si->removeoverlapifneeded = GGadgetIsChecked( GWidgetGetControl(sw,CID_CleanupSelfIntersect));
 	if ( si->removeinternal && si->removeexternal ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadValue,_STR_NotInternalAndExternal);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Value"),_("Removing both the internal and the external contours makes no sense"));
+#endif
 	    err = true;
 	}
 	si->radius = GetRealR(sw,CID_Width,_STR_StrokeWidth,&err)/2;
@@ -370,7 +374,11 @@ return( false );
 	if ( sd->si && (!(event->u.mouse.state&0x0f00) || event->u.mouse.device!=NULL ) &&
 		!sd->dontexpand ) {
 	    if ( event->u.mouse.y >= sd->r1.y-3 && event->u.mouse.y < sd->r1.y+sd->r1.height+3 )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GGadgetPreparePopup(gw,GStringGetResource(_STR_PressurePopup,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+		GGadgetPreparePopup(gw,_("Press in this square with a wacom pressure sensitive tool\nto set the pressure end-point"));
+#endif
 	    if ( event->u.mouse.y >= sd->r1.y && event->u.mouse.y < sd->r1.y+sd->r1.height &&
 		    event->u.mouse.device!=NULL ) {
 		if ( event->u.mouse.x>=sd->r1.x && event->u.mouse.x < sd->r1.x+sd->r1.width )
@@ -435,7 +443,11 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	wattrs.window_title = GStringGetResource(strokeit!=NULL ? _STR_Stroke : _STR_FreeHand,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	wattrs.window_title = strokeit!=NULL ? _("Expand Stroke...");
+#endif
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,SD_Width));
@@ -622,7 +634,11 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.pos.x = gcd[gcdoff-2].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y+24;
 	gcd[gcdoff].gd.flags = gg_visible;
 	gcd[gcdoff].gd.cid = CID_ThicknessRatioTxt;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	gcd[gcdoff].gd.popup_msg = GStringGetResource(_STR_PenHeightRatioPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gcd[gcdoff].gd.popup_msg = _("A caligraphic pen's nib has two dimensions, the width\n(which may be set by Stroke Width below) and a thickness\nor height. I express the height as a ratio to the width.");
+#endif
 	gcd[gcdoff++].creator = GLabelCreate;
 
 	sprintf( ratiobuf, "%g", def->ratio );
@@ -633,7 +649,11 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.pos.x = gcd[gcdoff-2].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y+24;
 	gcd[gcdoff].gd.flags = gg_visible;
 	gcd[gcdoff].gd.cid = CID_ThicknessRatio;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	gcd[gcdoff].gd.popup_msg = GStringGetResource(_STR_PenHeightRatioPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gcd[gcdoff].gd.popup_msg = _("A caligraphic pen's nib has two dimensions, the width\n(which may be set by Stroke Width below) and a thickness\nor height. I express the height as a ratio to the width.");
+#endif
 	gcd[gcdoff++].creator = GTextFieldCreate;
 
 	    /* Elipse */
@@ -673,7 +693,11 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.pos.x = gcd[gcdoff-2].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y+24;
 	gcd[gcdoff].gd.flags = gg_visible;
 	gcd[gcdoff].gd.cid = CID_MinorAxis;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	gcd[gcdoff].gd.popup_msg = GStringGetResource(_STR_PenHeightRatioPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gcd[gcdoff].gd.popup_msg = _("A caligraphic pen's nib has two dimensions, the width\n(which may be set by Stroke Width below) and a thickness\nor height. I express the height as a ratio to the width.");
+#endif
 	gcd[gcdoff++].creator = GTextFieldCreate;
 	/* End radio area */
 
@@ -774,7 +798,11 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.pos.x = gcd[gcdoff-1].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+15;
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (def->removeoverlapifneeded?gg_cb_on:0);
 	gcd[gcdoff].gd.cid = CID_CleanupSelfIntersect;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	gcd[gcdoff].gd.popup_msg = GStringGetResource(_STR_CleanupSelfIntersectPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gcd[gcdoff].gd.popup_msg = _("When FontForge detects that an expanded stroke will self-intersect,\nthen setting this option will cause it to try to make things nice\nby removing the intersections");
+#endif
 	gcd[gcdoff++].creator = GCheckBoxCreate;
 
 	gcd[gcdoff].gd.pos.x = 30-3; gcd[gcdoff].gd.pos.y = (strokeit!=NULL?SD_Height:FH_Height)-30-3;
@@ -884,7 +912,11 @@ static uint32 getcol(GGadget *g,int *err) {
     col = u_strtol(ret,&end,16);
     if ( col<0 || col>0xffffff || *end!='\0' ) {
 	*err = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_BadColor,_STR_BadColor);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Bad Color"),_("Bad Color"));
+#endif
     }
 return( col );
 }
@@ -934,7 +966,11 @@ return( true );
 	temp.stroke_pen.trans[3] = u_strtod(end,&end2);
 	for ( ret = end2 ; *ret==' ' || *ret==']' ; ++ret );
 	if ( end2==end || *ret!='\0' || temp.stroke_pen.trans[0] ==0 || temp.stroke_pen.trans[3]==0 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadMatrix,_STR_BadMatrix);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Transformation Matrix"),_("Bad Transformation Matrix"));
+#endif
 return( true );
 	}
 	temp.stroke_pen.linecap =
@@ -1009,7 +1045,11 @@ int LayerDialog(Layer *layer) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_Layer,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Layer");
+#endif
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,LY_Width));

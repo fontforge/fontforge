@@ -2440,8 +2440,7 @@ static char *mnemonic_YesToAll = 'A';
 static char *str_NoToAll = "全ていいえ(o)";
 static char *mnemonic_NoToAll = 'o';
 /* "The clipboard contains a bitmap character of size %d,\na size which is not in your database.\nWould you like to create a bitmap font of that size,\nor ignore this character?" */
-static char *str_ClipContainsPre = "クリックボードには以下のサイズ ";
-static char *str_ClipContainsPost = " のビットマップ文字が含まれています,\nこれはデータベースにはありません.\nこのサイズのビットマップを作成しますか, それともこの文字を無視しますか?";
+static char *str_ClipContains = "クリックボードには以下のサイズ %hs のビットマップ文字が含まれています,\nこれはデータベースにはありません.\nこのサイズのビットマップを作成しますか, それともこの文字を無視しますか?";
 static char *str_Pasting = "ペースト中...";
 static char *str_SelfRef = "文字が自己参照しています."
 static char *str_AttemptSelfRef = "自分自身を参照する文字を作ろうとしました.";

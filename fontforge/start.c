@@ -611,7 +611,11 @@ int main( int argc, char **argv ) {
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.positioned = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_FontForge,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("FontForge");
+#endif
     wattrs.border_width = 2;
     wattrs.background_color = 0xffffff;
     wattrs.is_dlg = true;

@@ -5190,7 +5190,11 @@ static int SD_Call(GGadget *g, GEvent *e) {
 	unichar_t *fn;
 	unichar_t *insert;
     
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	fn = GWidgetOpenFile(GStringGetResource(_STR_CallScript,NULL), NULL, filter, NULL, NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	fn = GWidgetOpenFile(_("Call Script"), NULL, filter, NULL, NULL);
+#endif
 	if ( fn==NULL )
 return(true);
 	insert = galloc((u_strlen(fn)+10)*sizeof(unichar_t));
@@ -5322,7 +5326,11 @@ void ScriptDlg(FontView *fv) {
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	wattrs.window_title = GStringGetResource(_STR_ExecuteScript,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	wattrs.window_title = _("Execute Script...");
+#endif
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GDrawPointsToPixels(NULL,GGadgetScale(SD_Width));

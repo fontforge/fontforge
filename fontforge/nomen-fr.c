@@ -2408,8 +2408,7 @@ static char *mnemonic_YesToAll = 'O' ;
 static char *str_NoToAll = "Non à tout" ;
 static char *mnemonic_NoToAll = 'N' ;
    /* "The clipboard contains a bitmap character of size %d,\na size which is not in your database.\nWould you like to create a bitmap font of that size,\nor ignore this character ?" */
-static char *str_ClipContainsPre = "Le presse-papier contient un glyphe bitmap de taille " ;
-static char *str_ClipContainsPost = ",\ntaille qui n'est pas parmi les valeurs actuelles.\nVoulez vous générer une fonte bitmap de cette taille,\nou ignorer ce glyphe" ;
+static char *str_ClipContains = "Le presse-papier contient un glyphe bitmap de taille %hs,\ntaille qui n'est pas parmi les valeurs actuelles.\nVoulez vous générer une fonte bitmap de cette taille,\nou ignorer ce glyphe" ;
 static char *str_Pasting = "Coller..." ;
 static char *str_SelfRef = "Glyphe avec auto-référence"
 static char *str_AttemptSelfRef = "Vous essayez de créer un glyphe qui se référence lui même" ;

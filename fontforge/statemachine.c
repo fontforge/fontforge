@@ -1297,7 +1297,11 @@ return( false );
 	    if ( *end=='>' ) ++end;
 	    for ( ; isspace(*end); ++end );
 	    if ( *end!='\0' ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_BadFeatureSetting,_STR_BadFeatureSetting);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad Feature Setting"),_("Bad Feature Setting"));
+#endif
 return( true );
 	    }
 	}
@@ -1336,7 +1340,11 @@ static int GetFeatureSetting(SplineFont *sf, unichar_t *text,
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_ConvertFromOpenType,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Convert from OpenType...");
+#endif
     pos.x = pos.y = 0;
     pos.width = GDrawPointsToPixels(NULL,200);
     pos.height = GDrawPointsToPixels(NULL,96);
@@ -1473,7 +1481,11 @@ ASM *SMConvertDlg(SplineFont *sf) {
     int k;
 
     if ( cvts==NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_NothingToConvert,_STR_NothingToConvert);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Nothing to Convert"),_("Nothing to Convert"));
+#endif
 return( NULL );
     }
 
@@ -1486,7 +1498,11 @@ return( NULL );
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_ConvertFromOpenType,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Convert from OpenType...");
+#endif
     pos.x = pos.y = 0;
     pos.width = GDrawPointsToPixels(NULL,180);
     pos.height = GDrawPointsToPixels(NULL,200);
@@ -1600,7 +1616,11 @@ static void SMD_Fillup(SMD *smd) {
     GTextInfo *ti = GGadgetGetListItem(list,class);
 
     u_snprintf(buffer,sizeof(buffer)/sizeof(buffer[0]),
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GStringGetResource(_STR_StateClass,NULL), state, ti->text );
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    _("State %d,  %.40s"), state, ti->text );
+#endif
     GGadgetSetTitle(GWidgetGetControl(smd->editgw,CID_StateClass),buffer);
     sprintf(buf,"%d", this->next_state );
     uc_strcpy(buffer,buf);
@@ -1695,12 +1715,20 @@ return( false );
 		ProtestR(_STR_KernValues);
 return( false );
 	    } else if ( kerns>=8 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_TooManyKerns,_STR_AtMost8Kerns);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Too Many Kerns"),_("At most 8 kerning values may be specified here"));
+#endif
 return( false );
 	    } else if ( kbuf[kerns]&1 ) {
 		kbuf[kerns] &= ~1;
 		if ( !oddcomplain )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GWidgetPostNoticeR(_STR_KernsMustBeEven,_STR_KernsMustBeEven);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    gwwv_post_notice(_("Kerning values must be even"),_("Kerning values must be even"));
+#endif
 		oddcomplain = true;
 	    }
 	    ++kerns;
@@ -1722,7 +1750,11 @@ return( false );
 	if ( *ret=='\0' )
 	    /* That's ok */;
 	else if ( u_strlen(ret)!=4 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_TagMustBe4,_STR_TagMustBe4);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Tag must be 4 characters long"),_("Tag must be 4 characters long"));
+#endif
 return( false );
 	} else
 	    mtag = (ret[0]<<24)|(ret[1]<<16)|(ret[2]<<8)|ret[3];
@@ -1730,7 +1762,11 @@ return( false );
 	if ( *ret=='\0' )
 	    /* That's ok */;
 	else if ( u_strlen(ret)!=4 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_TagMustBe4,_STR_TagMustBe4);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Tag must be 4 characters long"),_("Tag must be 4 characters long"));
+#endif
 return( false );
 	} else
 	    ctag = (ret[0]<<24)|(ret[1]<<16)|(ret[2]<<8)|ret[3];
@@ -1749,7 +1785,11 @@ return( false );
 
 	mins = copy_count(smd->editgw,CID_InsMark,&cnt);
 	if ( cnt>31 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_TooManyGlyphs,_STR_AtMost31Glyphs);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Too Many Glyphs"),_("At most 31 glyphs may be specified in an insert list"));
+#endif
 	    free(mins);
 return( false );
 	}
@@ -1759,7 +1799,11 @@ return( false );
 return( false );
 	cins = copy_count(smd->editgw,CID_InsCur,&cnt);
 	if ( cnt>31 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_TooManyGlyphs,_STR_AtMost31Glyphs);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Too Many Glyphs"),_("At most 31 glyphs may be specified in an insert list"));
+#endif
 	    free(mins);
 	    free(cins);
 return( false );
@@ -1859,7 +1903,11 @@ static void SMD_EditState(SMD *smd) {
     wattrs.restrict_input_to_me = true;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_EditStateTransition,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Edit State Transition");
+#endif
     pos.x = pos.y = 0;
     pos.width = GDrawPointsToPixels(NULL,GGadgetScale(SMDE_WIDTH));
     pos.height = GDrawPointsToPixels(NULL,SMDE_HEIGHT);
@@ -1870,8 +1918,16 @@ static void SMD_EditState(SMD *smd) {
     k = 0; listk = -1;
 
     u_snprintf(stateclass,sizeof(stateclass)/sizeof(stateclass[0]),
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GStringGetResource(_STR_StateClass,NULL), 999,
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    _("State %d,  %.40s"), 999,
+#endif
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GStringGetResource(_STR_MacEverythingElse,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    _("Class 1: {Everything Else}"));
+#endif
     label[k].text = stateclass;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 5;
@@ -2193,7 +2249,11 @@ static unichar_t *AddClass(int class_num,const unichar_t *text,int freetext) {
     unichar_t *ret;
 
     u_snprintf(buf,sizeof(buf)/sizeof(buf[0]),
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GStringGetResource(_STR_Class_d,NULL),class_num);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    _("Class %d"),class_num);
+#endif
     ret = galloc((u_strlen(buf)+u_strlen(text)+4)*sizeof(unichar_t));
     u_strcpy(ret,buf);
     uc_strcat(ret,": ");
@@ -2211,7 +2271,11 @@ static int SMD_Next(GGadget *g, GEvent *e) {
 	GGadget *list = GWidgetGetControl( smd->gw, CID_Classes );
 	int32 len;
 
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !CCD_NameListCheck(smd->sf,ret,true,_STR_BadClass) ||
+#elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !CCD_NameListCheck(smd->sf,ret,true,_("Bad Class") ||
+#endif
 		CCD_InvalidClassList(ret,list,smd->isedit))
 return( true );
 
@@ -2388,7 +2452,11 @@ return( SMD_Next(g,e));
 	} else if ( sm->type==asm_kern ) {	/* Kerns don't get feature/settings */
 	    sm->feature = sm->setting = 0xffff;
 	} else {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadFeatureSetting,_STR_BadFeatureSetting);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Feature Setting"),_("Bad Feature Setting"));
+#endif
 return( true );
 	}
 	
@@ -2456,9 +2524,17 @@ return;
 	    u_strncpy(space+len,upt,(sizeof(space)/sizeof(space[0]))-1 - len);
 	} else if ( event->u.mouse.x<smd->xstart2 ) {
 	    if ( s==0 )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		u_strcat(space,GStringGetResource(_STR_StartOfInput,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+		u_strcat(space,_("{Start of Input}"));
+#endif
 	    else if ( s==1 )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		u_strcat(space,GStringGetResource(_STR_StartOfLine,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+		u_strcat(space,_("{Start of Line}"));
+#endif
 	}
 	if ( space[0]=='\0' )
 return;
@@ -3059,10 +3135,26 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
 
     {
 	GGadget *list = GWidgetGetControl(smd->gw,CID_Classes);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GListAppendLine(list,GStringGetResource(_STR_EndOfText,NULL),false);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	GListAppendLine(list,_("Class 0: {End of Text}"),false);
+#endif
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GListAppendLine(list,GStringGetResource(_STR_MacEverythingElse,NULL),false);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	GListAppendLine(list,_("Class 1: {Everything Else}"),false);
+#endif
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GListAppendLine(list,GStringGetResource(_STR_DeletedGlyph,NULL),false);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	GListAppendLine(list,_("Class 2: {Deleted Glyph}"),false);
+#endif
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GListAppendLine(list,GStringGetResource(_STR_EndOfLine,NULL),false);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	GListAppendLine(list,_("Class 3: {End of Line}"),false);
+#endif
 	for ( k=4; k<sm->class_cnt; ++k ) {
 	    unichar_t *temp = AddClass(k,uc_copy(sm->classes[k]),true);
 	    GListAppendLine(list,temp,false);
@@ -3083,7 +3175,11 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 5;
     gcd[k].gd.pos.width = -1;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_SetGlyphsFromSelectionPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[k].gd.popup_msg = _("Set this glyph list to be the characters selected in the fontview");
+#endif
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.handle_controlevent = SMD_FromSelection;
     gcd[k].gd.cid = CID_Set;
@@ -3094,7 +3190,11 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 70; gcd[k].gd.pos.y = 5;
     gcd[k].gd.pos.width = -1;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_SelectFromGlyphsPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[k].gd.popup_msg = _("Set the fontview's selection to be the characters named here");
+#endif
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.handle_controlevent = SMD_ToSelection;
     gcd[k].gd.cid = CID_Select;

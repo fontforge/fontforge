@@ -2425,7 +2425,11 @@ return( false );
 	    if ( sel!=NULL )
 		language = (int) sel->userdata;
 	    else if ( nd->index==-1 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_BadLanguage,_STR_BadLanguage);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad Language"),_("Bad Language"));
+#endif
 return( true );
 	    }	/* Otherwise use the original language, it might not be one we recognize */
 	    if ( language != nd->changing->lang )
@@ -2441,7 +2445,11 @@ return( true );
 		val2 = (((struct macname *) (ti[i]->userdata))->enc<<16) |
 			(((struct macname *) (ti[i]->userdata))->lang);
 		if ( val2==val1 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GWidgetErrorR(_STR_ThisFeatureCodeIsAlreadyUsed,_STR_ThisFeatureCodeIsAlreadyUsed);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    gwwv_post_error(_("This feature code is already used"),_("This feature code is already used"));
+#endif
 return( true );
 		}
 	    }
@@ -2507,7 +2515,11 @@ static char *AskName(struct macname *changing,struct macname *all,GGadget *list,
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_Setting,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Setting");
+#endif
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,270));
     pos.height = GDrawPointsToPixels(NULL,98);
@@ -2772,14 +2784,22 @@ return( false );
 	    ret1 = _GGadgetGetTitle(GWidgetGetControl(sd->gw,CID_Id));
 	    val1 = u_strtol(ret1,&end,10);
 	    if ( *end!='\0' ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_BadNumber,_STR_BadNumber);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad Number"),_("Bad Number"));
+#endif
 return( true );
 	    }
 	    ti = GGadgetGetList(sd->settinglist,&len);
 	    for ( i=0; i<len; ++i ) if ( i!=sd->index ) {
 		val2 = ((struct macsetting *) (ti[i]->userdata))->setting;
 		if ( val2==val1 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GWidgetErrorR(_STR_ThisSettingIsAlreadyUsed,_STR_ThisSettingIsAlreadyUsed);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    gwwv_post_error(_("This setting is already used"),_("This setting is already used"));
+#endif
 return( true );
 		}
 	    }
@@ -2855,7 +2875,11 @@ static char *AskSetting(struct macsetting *changing,struct macsetting *all,
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_Setting,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Setting");
+#endif
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,270));
     pos.height = GDrawPointsToPixels(NULL,193);
@@ -3067,14 +3091,22 @@ return( false );
 	    ret1 = _GGadgetGetTitle(GWidgetGetControl(fd->gw,CID_Id));
 	    val1 = u_strtol(ret1,&end,10);
 	    if ( *end!='\0' ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_BadNumber,_STR_BadNumber);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad Number"),_("Bad Number"));
+#endif
 return( true );
 	    }
 	    ti = GGadgetGetList(fd->featurelist,&len);
 	    for ( i=0; i<len; ++i ) if ( i!=fd->index ) {
 		val2 = ((MacFeat *) (ti[i]->userdata))->feature;
 		if ( val2==val1 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GWidgetErrorR(_STR_ThisFeatureCodeIsAlreadyUsed,_STR_ThisFeatureCodeIsAlreadyUsed);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    gwwv_post_error(_("This feature code is already used"),_("This feature code is already used"));
+#endif
 return( true );
 		}
 	    }
@@ -3151,7 +3183,11 @@ static char *AskFeature(MacFeat *changing,MacFeat *all,GGadget *list, int index)
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_Feature,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Feature");
+#endif
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,265));
     pos.height = GDrawPointsToPixels(NULL,353);

@@ -221,7 +221,11 @@ void _aplistbuild(struct gmenuitem *top,SplineFont *sf,
     mi->ti.userdata = (void *) (-1);
     mi->ti.bg = mi->ti.fg = COLOR_DEFAULT;
     mi->invoke = func;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     mi->ti.text = u_copy(GStringGetResource(_STR_All,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+    mi->ti.text = u_copy(_("All"));
+#endif
     if ( cnt==1 )
 	mi->ti.disabled = true;
     else {

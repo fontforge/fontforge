@@ -958,7 +958,11 @@ static int Prefs_ScriptBrowse(GGadget *g, GEvent *e) {
 	static unichar_t filter[] = { '*','.','p','e',  0 };
 
 	if ( *cur=='\0' ) cur=NULL;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	ret = GWidgetOpenFile(GStringGetResource(_STR_CallScript,NULL), cur, filter, NULL,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	ret = GWidgetOpenFile(_("Call Script"), cur, filter, NULL,NULL);
+#endif
 	if ( ret==NULL )
 return(true);
 	GGadgetSetTitle(tf,ret);
@@ -974,7 +978,11 @@ static int Prefs_BrowseFile(GGadget *g, GEvent *e) {
 	const unichar_t *cur = _GGadgetGetTitle(tf); unichar_t *ret;
 
 	if ( *cur=='\0' ) cur=NULL;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	ret = GWidgetOpenFile(GStringGetResource(_STR_CallScript,NULL), cur, NULL, NULL,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	ret = GWidgetOpenFile(_("Call Script"), cur, NULL, NULL,NULL);
+#endif
 	if ( ret==NULL )
 return(true);
 	GGadgetSetTitle(tf,ret);
@@ -1077,13 +1085,21 @@ return( false );
 	    ret1 = _GGadgetGetTitle(sd->set_code);
 	    on = u_strtol(ret1,&end,10);
 	    if ( *end!='\0' ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_BadNumber,_STR_BadNumber);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad Number"),_("Bad Number"));
+#endif
 return( true );
 	    }
 	    ret1 = _GGadgetGetTitle(sd->feature);
 	    feat = u_strtol(ret1,&end,10);
 	    if ( *end!='\0' && *end!=' ' ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_BadNumber,_STR_BadNumber);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad Number"),_("Bad Number"));
+#endif
 return( true );
 	    }
 	    ti = GGadgetGetList(sd->list,&len);
@@ -1091,8 +1107,13 @@ return( true );
 		val1 = u_strtol(ti[i]->text,&end,10);
 		val2 = u_strtol(end+1,NULL,10);
 		if ( val1==feat && val2==on ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    static int buts[] = { _STR_Yes, _STR_No, 0 };
 		    if ( GWidgetAskR(_STR_ThisSettingCodeIsAlreadyUsed,buts,0,1,_STR_ThisSettingCodeIsAlreadyUsedReuse)==1 )
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
+		    if ( gwwv_ask(_("This feature, setting combination is already used"),buts,0,1,_("This feature, setting combination is already used\nDo you really wish to reuse it?"))==1 )
+#endif
 return( true );
 		}
 	    }
@@ -1108,7 +1129,11 @@ return( true );
 		ubuf[3] = ' ';
 	    len = u_strlen(ret1);
 	    if ( len<2 || len>4 || ubuf[0]>=0x7f || ubuf[1]>=0x7f || ubuf[2]>=0x7f || ubuf[3]>=0x7f ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_TagTooLong,_STR_FeatureTagTooLong);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Tag too long"),_("Feature tags must be exactly 4 ASCII characters"));
+#endif
 return( true );
 	    }
 	    sprintf(buf,"%3d,%2d %c%c%c%c",
@@ -1144,7 +1169,11 @@ static unichar_t *AskSetting(struct macsettingname *temp,GGadget *list, int inde
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_MappingB,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Mapping");
+#endif
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,240));
     pos.height = GDrawPointsToPixels(NULL,120);
@@ -1346,10 +1375,18 @@ static int Prefs_Ok(GGadget *g, GEvent *e) {
 	    if ( *names[i]=='\0' ) names[i] = NULL;
 	    if ( *scripts[i]=='\0' ) scripts[i] = NULL;
 	    if ( scripts[i]==NULL && names[i]!=NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_MenuNameWithNoScript,_STR_MenuNameWithNoScript);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Menu name with no associated script"),_("Menu name with no associated script"));
+#endif
 return( true );
 	    } else if ( scripts[i]!=NULL && names[i]==NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_ScriptWithNoMenuName,_STR_ScriptWithNoMenuName);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Script with no associated menu name"),_("Script with no associated menu name"));
+#endif
 return( true );
 	    }
 	}
@@ -1541,7 +1578,11 @@ void DoPrefs(void) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_Prefs,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Preferences...");
+#endif
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,290));
     pos.height = GDrawPointsToPixels(NULL,line_max*26+69);
@@ -1610,7 +1651,11 @@ void DoPrefs(void) {
     slabel[sgc].text = (unichar_t *) _STR_MenuName;
     slabel[sgc].text_in_resource = true;
     sgcd[sgc].gd.label = &slabel[sgc];
+#if defined(FONTFORGE_CONFIG_GDRAW)
     sgcd[sgc].gd.popup_msg = GStringGetResource(_STR_ScriptMenuPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    sgcd[sgc].gd.popup_msg = _("You may create a script menu containing up to 10 frequently used scripts\nEach entry in the menu needs both a name to display in the menu and\na script file to execute. The menu name may contain any unicode characters.\nThe button labeled \"...\" will allow you to browse for a script file.");
+#endif
     sgcd[sgc].gd.pos.x = 8;
     sgcd[sgc].gd.pos.y = y2;
     sgcd[sgc].gd.flags = gg_visible | gg_enabled;
@@ -1619,7 +1664,11 @@ void DoPrefs(void) {
     slabel[sgc].text = (unichar_t *) _STR_ScriptFile;
     slabel[sgc].text_in_resource = true;
     sgcd[sgc].gd.label = &slabel[sgc];
+#if defined(FONTFORGE_CONFIG_GDRAW)
     sgcd[sgc].gd.popup_msg = GStringGetResource(_STR_ScriptMenuPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    sgcd[sgc].gd.popup_msg = _("You may create a script menu containing up to 10 frequently used scripts\nEach entry in the menu needs both a name to display in the menu and\na script file to execute. The menu name may contain any unicode characters.\nThe button labeled \"...\" will allow you to browse for a script file.");
+#endif
     sgcd[sgc].gd.pos.x = 110;
     sgcd[sgc].gd.pos.y = y2;
     sgcd[sgc].gd.flags = gg_visible | gg_enabled;

@@ -4144,8 +4144,14 @@ return(NULL);
     oldloc = setlocale(LC_NUMERIC,"C");
     ret = SlurpRecovery(asfd,tok,sizeof(tok));
     if ( ret==NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	static int buts[] = { _STR_ForgetIt, _STR_TryAgain, 0 };
 	if ( GWidgetAskR(_STR_RecoveryFailed,buts,0,1,_STR_RecoveryOfFailed,tok)==0 )
+#elif defined(FONTFORGE_CONFIG_GTK)
+	char *buts[3];
+	buts[0] = "_Forget It"; buts[1] = "_Try Again"; buts[2] = NULL;
+	if ( gwwv_ask(_("Recovery Failed"),buts,0,1,_("Automagic recovery of changes to %.80s failed.\nShould FontForge try again to recover next time you start it?"),tok)==0 )
+#endif
 	    unlink(autosavename);
     }
     setlocale(LC_NUMERIC,oldloc);

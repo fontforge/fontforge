@@ -1734,7 +1734,11 @@ static unichar_t *CVMakeTitles(CharView *cv,unichar_t *ubuf) {
     unichar_t *title;
     SplineChar *sc = cv->sc;
 
+#if defined(FONTFORGE_CONFIG_GDRAW)
     u_sprintf(ubuf,GStringGetResource(_STR_CvTitle,NULL),
+#elif defined(FONTFORGE_CONFIG_GTK)
+    u_sprintf(ubuf,_("%1$.80s at %2$d from %3$.90s"),
+#endif
 	    sc->name, sc->enc, sc->parent->fontname);
     if ( sc->changed )
 	uc_strcat(ubuf," *");
@@ -2115,12 +2119,20 @@ return;
     uc_strcpy(ubuffer,buffer);
     GDrawDrawText(pixmap,MAG_DATA,ybase,ubuffer,-1,NULL,0);
     GDrawDrawText(pixmap,LAYER_DATA,ybase,
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GStringGetResource(cv->drawmode==dm_fore ? _STR_Fore :
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    cv->drawmode==dm_fore ? _("Fore")
+#endif
 				cv->drawmode==dm_back ? _STR_Back : _STR_Grid, NULL ),
 	    -1,NULL,0);
     if ( cv->coderange!=cr_none )
 	GDrawDrawText(pixmap,CODERANGE_DATA,ybase,
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GStringGetResource(cv->coderange==cr_fpgm ? _STR_Fpgm :
+#elif defined(FONTFORGE_CONFIG_GTK)
+		cv->coderange==cr_fpgm ? _("'fpgm'")
+#endif
 				    cv->coderange==cr_prep ? _STR_Prep : _STR_Glyph, NULL ),
 	    -1,NULL,0);
     sp = cv->p.sp!=NULL ? cv->p.sp : cv->lastselpt;
@@ -3207,7 +3219,11 @@ static void CVDrop(CharView *cv,GEvent *event) {
     RefChar *new;
 
     if ( cv->drawmode!=dm_fore ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_NotForeground,_STR_RefsOnlyFore);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Not Foreground"),_("References may be dragged only to the foreground layer"));
+#endif
 return;
     }
     if ( !GDrawSelectionHasType(cv->gw,sn_drag_and_drop,"STRING"))
@@ -3987,16 +4003,28 @@ void RevertedGlyphReferenceFixup(SplineChar *sc, SplineFont *sf) {
 static void CVMenuRevertGlyph(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     SplineChar *sc, temp;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     static int buts[] = { _STR_OK, _STR_Cancel, 0 };
+#elif defined(FONTFORGE_CONFIG_GTK)
+    static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_CANCEL, NULL };
+#endif
 
     if ( cv->sc->parent->filename==NULL || cv->sc->namechanged || cv->sc->parent->mm!=NULL )
 return;
     sc = SFDReadOneChar(cv->sc->parent->filename,cv->sc->name);
     if ( sc==NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_CantFindGlyph,_STR_CantRevertGlyph,cv->sc->name);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Can't Find Glyph"),_("The glyph, %.80s, can't be found in the sfd file"),cv->sc->name);
+#endif
 	cv->sc->namechanged = true;
     } else if ( sc->layers[ly_fore].refs!=NULL && cv->sc->parent->encodingchanged &&
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetAskR(_STR_GlyphHasRefs,buts,0,1,_STR_GlyphHasRefsQuestion,cv->sc->name)==1 ) {
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_ask(_("Problems With References"),buts,0,1,_("The character, %.40s, contained references, but the font's encoding has changed. I will probably not be able to map those references to the correct locations. If I proceed some references may be lost and others may link to incorrect characters. Do you want to proceed anyway?"),cv->sc->name)==1 ) {
+#endif
 	SplineCharFree(sc);
     } else {
 	SCPreserveState(cv->sc,true);
@@ -5719,7 +5747,11 @@ void CVAddAnchor(CharView *cv) {
     int waslig;
 
     if ( AnchorClassUnused(cv->sc,&waslig)==NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetPostNoticeR(_STR_MakeNewClass,_STR_MakeNewAnchorClass);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_notice(_("Make a new anchor class"),_("I cannot find an unused anchor class\nto assign a new point to. If you\nwish a new anchor point you must\ndefine a new anchor class with\nElement->Font Info"));
+#endif
 	FontInfo(cv->sc->parent,8,true);		/* Anchor Class */
 	if ( AnchorClassUnused(cv->sc,&waslig)==NULL )
 return;
@@ -5765,13 +5797,19 @@ static void CVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     int changed=false, refchanged=false;
     RefChar *ref;
     int asked=-1;
-    static int buts[] = { _STR_Unlink, _STR_No, _STR_Cancel, 0 };
 
     if ( cv->drawmode==dm_fore ) for ( ref=cv->sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	if ( ref->transform[0]*ref->transform[3]<0 ||
 		(ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
 	    if ( asked==-1 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
+		static int buts[] = { _STR_Unlink, _STR_No, _STR_Cancel, 0 };
 		asked = GWidgetAskR(_STR_FlippedRef,buts,0,2,_STR_FlippedRefUnlink, cv->sc->name );
+#elif defined(FONTFORGE_CONFIG_GTK)
+		char buts[4];
+		buts[0] = _("_Unlink"); buts[1] = GTK_STOCK_NO; buts[2] = GTK_STOCK_CANCEL; buts[3] = NULL;
+		asked = gwwv_ask(_("Flipped Reference"),buts,0,2,_("%.50s contains a flipped reference. This cannot be corrected as is. Would you like me to unlink it and then correct it?"), cv->sc->name );
+#endif
 		if ( asked==2 )
 return;
 		else if ( asked==1 )
@@ -5993,11 +6031,19 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 #if 0
 	    free(mi->ti.text);
 	    if ( e==NULL || !(e->u.mouse.state&ksm_shift) ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		mi->ti.text = u_copy(GStringGetResource(_STR_Simplify,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+		mi->ti.text = u_copy(_("Simplify"));
+#endif
 		mi->short_mask = ksm_control|ksm_shift;
 		mi->invoke = is_cv ? CVMenuSimplify : SVMenuSimplify;
 	    } else {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		mi->ti.text = u_copy(GStringGetResource(_STR_SimplifyMore,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+		mi->ti.text = u_copy(_("Simplify More..."));
+#endif
 		mi->short_mask = (ksm_control|ksm_meta|ksm_shift);
 		mi->invoke = is_cv ? CVMenuSimplifyMore : SVMenuSimplifyMore;
 	    }
@@ -6280,7 +6326,11 @@ static void mdlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_AddxMD:
 	    mi->ti.disabled = cnt==0 || cnt>2 || (sp2!=NULL && sp2->me.x==sp1->me.x);
 	    free(mi->ti.text);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    mi->ti.text = u_copy(GStringGetResource(cnt==1?_STR_AddMD2Width: _STR_AddxMD,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    mi->ti.text = u_copy(cnt==1?_("Add MD Here to Width"));
+#endif
 	  break;
 	  case MID_RoundX:
 	    mi->ti.disabled = cnt==0;
@@ -6317,7 +6367,11 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = multilayer;
 	    removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);
 	    free(mi->ti.text);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    mi->ti.text = u_copy(GStringGetResource(removeOverlap?_STR_Autohint: _STR_FullAutohint,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    mi->ti.text = u_copy(removeOverlap?_("AutoHint"));
+#endif
 	  break;
 	  case MID_HintSubsPt: case MID_AutoCounter:
 	    mi->ti.disabled = cv->sc->parent->order2 || multilayer;
@@ -6387,14 +6441,22 @@ static void cv_sllistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = !cv->showhmetrics;
 	    if ( !mi->ti.disabled ) {
 		free(mi->ti.text);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		mi->ti.text = u_copy(GStringGetResource(cv->widthsel?_STR_DeselectWidth:_STR_SelectWidth,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+		mi->ti.text = u_copy(cv->widthsel?_("Deselect Width"));
+#endif
 	    }
 	  break;
 	  case MID_SelectVWidth:
 	    mi->ti.disabled = !cv->showvmetrics || !cv->sc->parent->hasvmetrics;
 	    if ( !mi->ti.disabled ) {
 		free(mi->ti.text);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		mi->ti.text = u_copy(GStringGetResource(cv->vwidthsel?_STR_DeselectVWidth:_STR_SelectVWidth,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+		mi->ti.text = u_copy(cv->vwidthsel?_("Deselect VWidth"));
+#endif
 	    }
 	  break;
 	  case MID_SelectHM:
@@ -6507,11 +6569,19 @@ static void cv_vwlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_HidePoints:
 	    free(mi->ti.text);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    mi->ti.text = u_copy(GStringGetResource(cv->showpoints?_STR_Hidepoints:_STR_Showpoints,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    mi->ti.text = u_copy(cv->showpoints?_("Hide Points"));
+#endif
 	  break;
 	  case MID_HideRulers:
 	    free(mi->ti.text);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    mi->ti.text = u_copy(GStringGetResource(cv->showrulers?_STR_Hiderulers:_STR_Showrulers,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    mi->ti.text = u_copy(cv->showrulers?_("Hide Rulers"));
+#endif
 	  break;
 	  case MID_ShowGridFit:
 	    mi->ti.disabled = !hasFreeType() || cv->drawmode!=dm_fore || cv->dv!=NULL;
@@ -7022,7 +7092,11 @@ return;
     if ( mm->normal->chars[cv->sc->enc]!=NULL )
 	_SCCharChangedUpdate(mm->normal->chars[cv->sc->enc],-1);
     if ( err!=0 )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_BadMM,err);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Bad Multiple Master Font"),err);
+#endif
 }
 
 static GMenuItem mmlist[] = {

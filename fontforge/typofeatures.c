@@ -1143,7 +1143,11 @@ static int SFD_ParseSelect(struct sf_dlg *d,int off,struct select_res *res) {
     } else if ( u_strlen(ret)==4 ) {
 	res->tag = (ret[0]<<24) | (ret[1]<<16) | (ret[2]<<8) | ret[3];
     } else {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_BadTag,_STR_TagMustBe4);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Bad Tag"),_("Tag must be 4 characters long"));
+#endif
 return( false );
     }
 
@@ -1435,7 +1439,11 @@ static int SelectFeatureDlg(SplineFont *sf,enum selectfeaturedlg_type type) {
 	} else {
 	    GTextInfo *sel = GGadgetGetListItemSelected(GWidgetGetControl(d.gw,CID_FontList));
 	    if ( sel==NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_NoSelectedFont,_STR_NoSelectedFont);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("No Selected Font"),_("No Selected Font"));
+#endif
  goto retry;
 	    }
 	    ret = SFCopyTheseFeaturesToSF(sf,res1.tag,res1.sli,res1.flags,
@@ -1449,15 +1457,27 @@ return( ret );
 
 void SFRemoveFeatureDlg(SplineFont *sf) {
     if ( !SelectFeatureDlg(sf,sfd_remove))
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_NoFeaturesRemoved,_STR_NoFeaturesRemoved);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("No Features Removed"),_("No Features Removed"));
+#endif
 }
 
 void SFCopyFeatureToFontDlg(SplineFont *sf) {
     if ( !SelectFeatureDlg(sf,sfd_copyto))
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_NoFeaturesCopied,_STR_NoFeaturesCopied);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("No Features Copied"),_("No Features Copied"));
+#endif
 }
 
 void SFRetagFeatureDlg(SplineFont *sf) {
     if ( !SelectFeatureDlg(sf,sfd_retag))
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_NoFeaturesRetagged,_STR_NoFeaturesRetagged);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("No Features Retagged"),_("No Features Retagged"));
+#endif
 }

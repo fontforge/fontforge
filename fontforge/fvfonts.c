@@ -801,7 +801,11 @@ static void CIDMergeFont(SplineFont *into,SplineFont *other) {
 void MergeFont(FontView *fv,SplineFont *other) {
 
     if ( fv->sf==other ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_MergingProb,_STR_MergingFontSelf);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Merging Problem"),_("Merging a font with itself achieves nothing"));
+#endif
 return;
     }
     if ( fv->sf->cidmaster!=NULL && other->subfonts!=NULL &&
@@ -809,7 +813,11 @@ return;
 	     strcmp(fv->sf->cidmaster->ordering,other->ordering)!=0 ||
 	     fv->sf->cidmaster->supplement<other->supplement ||
 	     fv->sf->cidmaster->subfontcnt<other->subfontcnt )) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_MergingProb,_STR_MergingCIDMismatch);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Merging Problem"),_("When merging two CID keyed fonts, they must have the same Registry and Ordering, and the font being merged into (the mergee) must have a supplement which is at least as recent as the other's. Furthermore the mergee must have at least as many subfonts as the merger."));
+#endif
 return;
     }
     /* Ok. when merging CID fonts... */
@@ -842,7 +850,11 @@ return;
 	if ( sf==NULL )
 	    /* Do Nothing */;
 	else if ( sf->fv==fv )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_MergingProb,_STR_MergingFontSelf);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Merging Problem"),_("Merging a font with itself achieves nothing"));
+#endif
 	else
 	    MergeFont(fv,sf);
 	file = fpt+2;
@@ -948,7 +960,11 @@ void FVMergeFonts(FontView *fv) {
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	wattrs.window_title = GStringGetResource(_STR_Mergefonts,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	wattrs.window_title = _("Merge Fonts...");
+#endif
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,150));
 	pos.height = GDrawPointsToPixels(NULL,88);
@@ -957,7 +973,11 @@ void FVMergeFonts(FontView *fv) {
 	memset(&label,0,sizeof(label));
 	memset(&gcd,0,sizeof(gcd));
 
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	u_sprintf( buffer, GStringGetResource(_STR_FontToMergeInto,NULL), fv->sf->fontname );
+#elif defined(FONTFORGE_CONFIG_GTK)
+	u_sprintf( buffer, _("Font to merge into %.20s"), fv->sf->fontname );
+#endif
 	label[0].text = buffer;
 	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6; 
@@ -1303,15 +1323,27 @@ static void InterpolateFont(SplineFont *base, SplineFont *other, real amount) {
     int i, index;
 
     if ( base==other ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_InterpolatingProb,_STR_InterpolatingFontSelf);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Interpolating Problem"),_("Interpolating a font with itself achieves nothing"));
+#endif
 return;
     } else if ( base->order2!=other->order2 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_InterpolatingProb,_STR_InterpolatingFontsDiffOrder);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Interpolating Problem"),_("Interpolating between fonts with different spline orders (ie. between postscript and truetype)"));
+#endif
 return;
     }
 #ifdef FONTFORGE_CONFIG_TYPE3
     else if ( base->multilayer && other->multilayer ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_InterpolatingProb,_STR_InterpolatingFontsDiffLayers);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Interpolating Problem"),_("Interpolating between fonts with different editing types (ie. between type3 and type1)"));
+#endif
 return;
     }
 #endif
@@ -1399,7 +1431,11 @@ void FVInterpolateFonts(FontView *fv) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_Interp,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Interpolate Fonts...");
+#endif
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,200));
     pos.height = GDrawPointsToPixels(NULL,118);
@@ -1408,7 +1444,11 @@ void FVInterpolateFonts(FontView *fv) {
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
 
+#if defined(FONTFORGE_CONFIG_GDRAW)
     u_sprintf( buffer, GStringGetResource(_STR_InterpBetween,NULL), fv->sf->fontname );
+#elif defined(FONTFORGE_CONFIG_GTK)
+    u_sprintf( buffer, _("Interpolating between %.20s and:"), fv->sf->fontname );
+#endif
     label[0].text = buffer;
     gcd[0].gd.label = &label[0];
     gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6; 

@@ -174,7 +174,11 @@ return;
 	head = PSSlurpEncodings(file);
     fclose(file);
     if ( head==NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_BadEncFormat,_STR_BadEncFormat );
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Bad encoding file format"),_("Bad encoding file format") );
+#endif
 return;
     }
 
@@ -182,21 +186,49 @@ return;
 	item->enc_num = ++enc_num;
 	if ( item->enc_name==NULL ) {
 	    if ( item==head && item->next==NULL )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		u_strcpy(ubuf,GStringGetResource(_STR_PleaseNameEnc,NULL) );
+#elif defined(FONTFORGE_CONFIG_GTK)
+		u_strcpy(ubuf,_("Please name this encoding") );
+#endif
 	    else {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		u_strcpy(ubuf,GStringGetResource(_STR_PleaseNameEncPre,NULL) );
+#elif defined(FONTFORGE_CONFIG_GTK)
+		u_strcpy(ubuf,_("Please name the ") );
+#endif
 		if ( i==1 )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    u_strcat(ubuf,GStringGetResource(_STR_First,NULL) );
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    u_strcat(ubuf,_("First") );
+#endif
 		else if ( i==2 )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    u_strcat(ubuf,GStringGetResource(_STR_Second,NULL) );
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    u_strcat(ubuf,_("Second") );
+#endif
 		else if ( i==3 )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    u_strcat(ubuf,GStringGetResource(_STR_Third,NULL) );
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    u_strcat(ubuf,_("Third") );
+#endif
 		else {
 		    sprintf(buffer,"%d", i );
 		    uc_strcat(ubuf,buffer);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    u_strcat(ubuf,GStringGetResource(_STR_Th,NULL) );
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    u_strcat(ubuf,_("th") );
+#endif
 		}
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		u_strcat(ubuf,GStringGetResource(_STR_PleaseNameEncPost,NULL) );
+#elif defined(FONTFORGE_CONFIG_GTK)
+		u_strcat(ubuf,_(" encoding in this file") );
+#endif
 	    }
 	    name = GWidgetAskString(ubuf,NULL,ubuf);
 	    if ( name!=NULL ) {
@@ -388,7 +420,11 @@ return;
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_RemoveEncoding,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Remove Encoding");
+#endif
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,150));
     pos.height = GDrawPointsToPixels(NULL,110);
@@ -480,7 +516,11 @@ void LoadEncodingFile(void) {
     unichar_t *fn;
     char *filename;
 
+#if defined(FONTFORGE_CONFIG_GDRAW)
     fn = GWidgetOpenFile(GStringGetResource(_STR_LoadEncoding,NULL), NULL, filter, NULL,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    fn = GWidgetOpenFile(_("Load Encoding"), NULL, filter, NULL,NULL);
+#endif
     if ( fn==NULL )
 return;
     filename = u2def_copy(fn);
@@ -754,9 +794,13 @@ struct cidmap *FindCidMap(char *registry,char *ordering,int supplement,SplineFon
     struct cidmap *map, *maybe=NULL;
     char *file, *maybefile=NULL;
     int maybe_sup = -1;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     static int buts[] = { _STR_UseIt, _STR_Search, 0 };
     static int buts2[] = { _STR_UseIt, _STR_GiveUp, 0 };
     static int buts3[] = { _STR_Browse, _STR_GiveUp, 0 };
+#elif defined(FONTFORGE_CONFIG_GTK)
+    char *buts[3], *buts2[3], *buts[3];
+#endif
     unichar_t ubuf[100]; char buf[100];
     int ret;
 
@@ -803,7 +847,12 @@ return( maybe );	/* User has said it's ok to use maybe at this supplement level 
 	if ( maybe!=NULL )
 	    maybe_sup = maybe->supplement;
 	if ( sf!=NULL ) sf->loading_cid_map = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	ret = GWidgetAskR(_STR_UseCidMap,buts,0,1,_STR_SearchForCIDMap,
+#elif defined(FONTFORGE_CONFIG_GTK)
+	buts[0] = "_Use It"; buts[1] = "Search"; buts[2] = NULL;
+	ret = gwwv_ask(_("Use CID Map"),buts,0,1,_("This font is based on the charset %1$.20s-%2$.20s-%3$d, but the best I've been able to find is %1$.20s-%2$.20s-%4$d.\nShall I use that or let you search?"),
+#endif
 		registry,ordering,supplement,maybe_sup);
 	if ( sf!=NULL ) sf->loading_cid_map = false;
 	if ( ret==0 ) {
@@ -826,7 +875,12 @@ return( maybe );
 #endif
 	uc_strcpy(ubuf,buf);
 	if ( maybe==NULL && maybefile==NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    ret = GWidgetAskR(_STR_NoCidmap,buts3,0,1,_STR_LookForCidmap,
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    buts3[0] = "_Browse"; buts3[1] = "_Give Up"; buts3[2] = NULL;
+	    ret = gwwv_ask(_("No cidmap file..."),buts3,0,1,_("FontForge was unable to find a cidmap file for this font. It is not essential to have one, but some things will work better if you do. If you have not done so you might want to download the cidmaps from:\n   http://FontForge.sourceforge.net/cidmaps.tgz\nand then gunzip and untar them and move them to:\n  %.80s\n\nWould you like to search your local disk for an appropriate file?"),
+#endif
 #ifdef SHAREDIR
 		    SHAREDIR
 #else
@@ -840,7 +894,12 @@ return( maybe );
 	    uret = NULL;
 	else if ( screen_display!=NULL ) {
 	    if ( sf!=NULL ) sf->loading_cid_map = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    uret = GWidgetOpenFile(GStringGetResource(_STR_FindCharset,NULL),NULL,ubuf,NULL,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    buts2[0] = "_Use It"; buts2[1] = "_Give Up"; buts2[2] = NULL;
+	    uret = GWidgetOpenFile(_("Find a cidmap file..."),NULL,ubuf,NULL,NULL);
+#endif
 	    if ( sf!=NULL ) sf->loading_cid_map = false;
 	}
 	if ( uret==NULL ) {
@@ -852,7 +911,11 @@ return( maybe );
 	    } else if ( screen_display==NULL ) {
 		file = maybefile;
 		maybefile = NULL;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    } else if ( GWidgetAskR(_STR_UseCidMap,buts2,0,1,_STR_AreYouSureCharset)==0 ) {
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    } else if ( gwwv_ask(_("Use CID Map"),buts2,0,1,_("Are you sure you don't want to use the cidmap I found?"))==0 ) {
+#endif
 		if ( maybe!=NULL ) {
 		    maybe->maxsupple = supplement;
 return( maybe );
@@ -928,8 +991,13 @@ void SFEncodeToMap(SplineFont *sf,struct cidmap *map) {
 	sc->enc = -1;
 
     if ( anyextras ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	static int buttons[] = { _STR_Delete, _STR_Add, 0 };
 	if ( GWidgetAskR(_STR_ExtraCharsTitle,buttons,0,1,_STR_ExtraChars)==1 ) {
+#elif defined(FONTFORGE_CONFIG_GTK)
+	static char *buttons[] = { GTK_STOCK_DELETE, GTK_STOCK_ADD, NULL };
+	if ( gwwv_ask(_("Extraneous characters"),buttons,0,1,_("The current encoding contains characters which I cannot map to CIDs.\nShould I delete them or add them to the end (where they may conflict with future ros definitions)?"))==1 ) {
+#endif
 	    if ( map!=NULL && max<map->cidmax ) max = map->cidmax;
 	    anyextras = 0;
 	    for ( i=0; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sc = sf->chars[i]) ) {
@@ -1041,7 +1109,11 @@ struct cidmap *AskUserForCIDMap(SplineFont *sf) {
     FindMapsInDir(&block,"/usr/share/fontforge");
 
     choices = gcalloc(block.cur+2,sizeof(unichar_t *));
+#if defined(FONTFORGE_CONFIG_GDRAW)
     choices[0] = u_copy(GStringGetResource(_STR_Browse,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+    choices[0] = u_copy(_("Browse..."));
+#endif
     for ( i=0; i<block.cur; ++i )
 	choices[i+1] = uc_copy(block.maps[i]);
     ret = GWidgetChoicesR(_STR_FindCharset,choices,i+1,0,_STR_SelectCIDOrdering);
@@ -1049,7 +1121,11 @@ struct cidmap *AskUserForCIDMap(SplineFont *sf) {
 	free( (unichar_t *) choices[i] );
     free(choices);
     if ( ret==0 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	unichar_t *uret = GWidgetOpenFile(GStringGetResource(_STR_FindCharset,NULL),NULL,cidwild,NULL,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	unichar_t *uret = GWidgetOpenFile(_("Find a cidmap file..."),NULL,cidwild,NULL,NULL);
+#endif
 	if ( uret==NULL )
 	    ret = -1;
 	else {
@@ -1415,11 +1491,19 @@ int SFFlattenByCMap(SplineFont *sf,char *cmapname) {
     if ( sf->cidmaster!=NULL )
 	sf = sf->cidmaster;
     if ( sf->subfontcnt==0 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_NotACIDFont,_STR_NotACIDFont);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Not a CID-keyed font"),_("Not a CID-keyed font"));
+#endif
 return(false);
     }
     if ( cmapname==NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	unichar_t *uret = GWidgetOpenFile(GStringGetResource(_STR_FindCMap,NULL),NULL,NULL,NULL,CMapFilter);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	unichar_t *uret = GWidgetOpenFile(_("Find an adobe CMap file..."),NULL,NULL,NULL,CMapFilter);
+#endif
 	cmapname = u2def_copy(uret);
 	free(uret);
     }
@@ -1434,7 +1518,11 @@ return(false);
 	if ( max<cmap->groups[cmt_cid].ranges[i].last )
 	    max = cmap->groups[cmt_cid].ranges[i].last;
 	if ( cmap->groups[cmt_cid].ranges[i].last>0x100000 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_EncodingTooLarge,_STR_EncodingTooLarge);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Encoding Too Large"),_("Encoding Too Large"));
+#endif
 	    cmapfree(cmap);
 return(false);
 	}
@@ -1472,7 +1560,11 @@ return(false);
 			if ( m<sizeof(found)/sizeof(found[0]) )
 			    found[m++] = l;
 			else if ( !warned ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 			    GWidgetPostNoticeR(_STR_MultipleEncodingIgnored,
+#elif defined(FONTFORGE_CONFIG_GTK)
+			    gwwv_post_notice(_("MultipleEncodingIgnored"),
+#endif
 				    _STR_CIDGlyphMultEncoded, i,
 			            sizeof(found)/sizeof(found[0]),
 			            sizeof(found)/sizeof(found[0]));
@@ -1537,8 +1629,13 @@ static void SFEncodeToCMap(SplineFont *cidmaster,SplineFont *sf,struct cmap *cma
     }
 
     if ( anyextras ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	static int buttons[] = { _STR_Delete, _STR_Add, 0 };
 	if ( GWidgetAskR(_STR_ExtraCharsTitle,buttons,0,1,_STR_ExtraChars)==1 ) {
+#elif defined(FONTFORGE_CONFIG_GTK)
+	static char *buttons[] = { GTK_STOCK_DELETE, GTK_STOCK_ADD, NULL };
+	if ( gwwv_ask(_("Extraneous characters"),buttons,0,1,_("The current encoding contains characters which I cannot map to CIDs.\nShould I delete them or add them to the end (where they may conflict with future ros definitions)?"))==1 ) {
+#endif
 	    if ( cmap!=NULL && max<cmap->total ) max = cmap->total;
 	    anyextras = 0;
 	    for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL ) {
@@ -1562,7 +1659,11 @@ SplineFont *MakeCIDMaster(SplineFont *sf,int bycmap,char *cmapfilename, struct c
     if ( bycmap ) {
 	freeme = false;
 	if ( cmapfilename==NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    unichar_t *uret = GWidgetOpenFile(GStringGetResource(_STR_FindCMap,NULL),NULL,NULL,NULL,CMapFilter);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    unichar_t *uret = GWidgetOpenFile(_("Find an adobe CMap file..."),NULL,NULL,NULL,CMapFilter);
+#endif
 	    cmapfilename = u2def_copy(uret);
 	    freeme = true;
 	    free(uret);
