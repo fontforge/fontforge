@@ -639,6 +639,7 @@ extern char *GetNextUntitledName(void);
 extern SplineFont *SplineFontEmpty(void);
 extern SplineFont *SplineFontBlank(int enc,int charcnt);
 extern void SFIncrementXUID(SplineFont *sf);
+extern void SFRandomChangeXUID(SplineFont *sf);
 extern SplineSet *SplineSetReverse(SplineSet *spl);
 extern SplineSet *SplineSetsExtractOpen(SplineSet **tbase);
 extern SplineSet *SplineSetsCorrect(SplineSet *base);

@@ -1409,7 +1409,7 @@ SplineFont *SplineFontNew(void) {
 return( sf );
 }
 
-void SFIncrementXUID(SplineFont *sf) {
+static void SFChangeXUID(SplineFont *sf, int random) {
     char *pt, *new, *npt;
     int val;
 
@@ -1422,8 +1422,12 @@ return;
 	pt = sf->xuid;
     else
 	++pt;
-    val = strtol(pt,NULL,10);
-    val = (val+1)&0xffffff;
+    if ( random )
+	val = rand()&0xffffff;
+    else {
+	val = strtol(pt,NULL,10);
+	val = (val+1)&0xffffff;
+    }
 
     new = galloc(pt-sf->xuid+12);
     strncpy(new,sf->xuid,pt-sf->xuid);
@@ -1432,6 +1436,14 @@ return;
     sprintf(npt, "%d]", val );
     free(sf->xuid); sf->xuid = new;
     sf->changed = true;
+}
+
+void SFIncrementXUID(SplineFont *sf) {
+    SFChangeXUID(sf,false);
+}
+
+void SFRandomChangeXUID(SplineFont *sf) {
+    SFChangeXUID(sf,true);
 }
 
 void SPAverageCps(SplinePoint *sp) {
