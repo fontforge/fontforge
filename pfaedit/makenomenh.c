@@ -117,7 +117,7 @@ static int makenomenh() {
     fprintf( out, "#include <stdio.h>\n" );
     fprintf( out, "#include <ggadget.h>\n\n" );
 
-    fprintf( out, "#define __NOMEN_CHECKSUM\t%d\n\n", stat_buf.st_size );
+    fprintf( out, "#define __NOMEN_CHECKSUM\t%d\n\n", (int) stat_buf.st_size );
     checksum = stat_buf.st_size;
 
     while( fgets(buffer,sizeof(buffer),in)!=NULL ) {
@@ -657,7 +657,7 @@ return;
 	    fprintf( out, "}\n\n" );
 
 	    stat("nomen-en.c",&stat_buf);
-	    fprintf( out, "int %sNomenChecksum = %d;\n", uc, stat_buf.st_size );
+	    fprintf( out, "int %sNomenChecksum = %d;\n", uc, (int) stat_buf.st_size );
 	    fclose(out);
 	}
     }
