@@ -2899,6 +2899,33 @@ static struct _GImage shadow_base = {
     1
 };
 
+static unsigned char wireframe_data[] = {
+    0xff, 0xff, 
+    0x80, 0x3f, 
+    0xbf, 0x9f, 
+    0x84, 0x2f, 
+    0xf4, 0xd7, 
+    0xf5, 0x67, 
+    0xf5, 0x87, 
+    0xf5, 0xbf, 
+    0xf5, 0xbf, 
+    0xf5, 0xbf, 
+    0x84, 0x3f, 
+    0xbf, 0x9f, 
+    0x80, 0x2f, 
+    0xdf, 0xd7, 
+    0xef, 0xe7, 
+    0xf0, 0x7, 
+};
+
+static struct _GImage wireframe_base = {
+    it_mono,
+    15420,16,16,2,
+    (uint8 *) wireframe_data,
+    &magnify0_clut,
+    1
+};
+
 
 GImage GIcon_smallskew = { 0, &smallskew0_base };
 GImage GIcon_smallscale = { 0, &smallscale0_base };
@@ -2941,3 +2968,4 @@ GImage GIcon_findinter = { 0, &findinter_base };
 GImage GIcon_outline = { 0, &outline_base };
 GImage GIcon_inline = { 0, &inline_base };
 GImage GIcon_shadow = { 0, &shadow_base };
+GImage GIcon_wireframe = { 0, &wireframe_base };

@@ -187,6 +187,7 @@ typedef struct outlinedata {
     CharView *cv;
     MetricsView *mv;
     int isinline;
+    int wireframe;
     GWindow gw;
 } OutlineData;
 
@@ -370,8 +371,35 @@ static int NextLineOfInflection(SplinePoint *n) {
 return( LineOfInflection(p,n));
 }
 
-static void AddVerticalExtremaAndMove(SplineSet *base,real shadow_length) {
-    SplineSet *spl;
+static SplineSet *SpMove(SplinePoint *sp,real offset,SplineSet *cur,SplineSet *lines) {
+    SplinePoint *new;
+    SplineSet *line;
+
+    new = chunkalloc(sizeof(SplinePoint));
+    *new = *sp;
+    new->me.x += offset;
+    new->nextcp.x += offset;
+    new->prevcp.x += offset;
+    new->prev = new->next = NULL;
+
+    if ( cur->first==NULL )
+	cur->first = new;
+    else
+	SplineMake(cur->last,new,sp->next->order2);
+    cur->last = new;
+
+    line = chunkalloc(sizeof(SplineSet));
+    line->first = SplinePointCreate(sp->me.x,sp->me.y);
+    line->last = SplinePointCreate(new->me.x,new->me.y);
+    SplineMake(line->first,line->last,sp->next->order2);
+    line->next = lines;
+
+return( line );
+}
+
+static SplineSet *AddVerticalExtremaAndMove(SplineSet *base,real shadow_length,
+	int wireframe) {
+    SplineSet *spl, *head=NULL, *last=NULL, *cur, *lines=NULL;
     Spline *s, *first;
     SplinePoint *sp, *found, *new;
     real pabove, nabove, offset;
@@ -379,7 +407,7 @@ static void AddVerticalExtremaAndMove(SplineSet *base,real shadow_length) {
     int p;
 
     if ( shadow_length==0 )
-return;
+return(NULL);
 
     t[0] = t[1] = 0;
     for ( spl=base; spl!=NULL; spl=spl->next ) if ( spl->first->prev!=NULL && spl->first->prev->from!=spl->first ) {
@@ -448,59 +476,135 @@ return;
 	if ( found==NULL )
     continue;
 	offset = 0;
-	/* Make duplicates of any ticked points and move them over */
-	for ( sp = found; ; ) {
-	    if ( !sp->ticked ) {
-		sp->me.x += offset;
-		sp->nextcp.x += offset;
-		sp->prevcp.x += offset;
-	    } else {
-		new = chunkalloc(sizeof(SplinePoint));
-		*new = *sp;
-		new->ticked = false; sp->ticked = false;
-		if ( (sp->nonextcp && sp->next->to->me.x>sp->me.x) ||
-			(!sp->nonextcp && sp->nextcp.x>sp->me.x)) {
-		    sp->next->from = new;
-		    sp->nonextcp = true;
-		    sp->nextcp = sp->me;
-		    new->me.x += shadow_length;
-		    new->nextcp.x += shadow_length;
-		    new->noprevcp = true;
-		    new->prevcp = new->me;
-		    SplineMake3(sp,new);
-		    offset = shadow_length;
-		    sp = new;
+	if ( !wireframe ) {
+	    /* Make duplicates of any ticked points and move them over */
+	    for ( sp = found; ; ) {
+		if ( !sp->ticked ) {
+		    sp->me.x += offset;
+		    sp->nextcp.x += offset;
+		    sp->prevcp.x += offset;
 		} else {
-		    sp->prev->to = new;
-		    sp->noprevcp = true;
-		    sp->prevcp = sp->me;
-		    new->me.x += shadow_length;
-		    new->prevcp.x += shadow_length;
-		    new->nonextcp = true;
-		    new->nextcp = new->me;
-		    SplineMake3(new,sp);
-		    offset = 0;
-		    if ( sp==found ) found=new;
+		    new = chunkalloc(sizeof(SplinePoint));
+		    *new = *sp;
+		    new->ticked = false; sp->ticked = false;
+		    if ( (sp->nonextcp && sp->next->to->me.x>sp->me.x) ||
+			    (!sp->nonextcp && sp->nextcp.x>sp->me.x)) {
+			sp->next->from = new;
+			sp->nonextcp = true;
+			sp->nextcp = sp->me;
+			new->me.x += shadow_length;
+			new->nextcp.x += shadow_length;
+			new->noprevcp = true;
+			new->prevcp = new->me;
+			SplineMake(sp,new,sp->prev->order2);
+			offset = shadow_length;
+			sp = new;
+		    } else {
+			sp->prev->to = new;
+			sp->noprevcp = true;
+			sp->prevcp = sp->me;
+			new->me.x += shadow_length;
+			new->prevcp.x += shadow_length;
+			new->nonextcp = true;
+			new->nextcp = new->me;
+			SplineMake(new,sp,sp->next->order2);
+			offset = 0;
+			if ( sp==found ) found=new;
+		    }
 		}
+		sp = sp->next->to;
+		if ( sp==found )
+	    break;
 	    }
+	    for ( sp = found; ; ) {
+		SplineRefigure(sp->prev);
+		sp = sp->next->to;
+		if ( sp==found )
+	    break;
+	    }
+	} else {
+	    cur = NULL;
+	    /* Wire frame... do hidden line removal by only copying the */
+	    /*  points which would be moved by the above code */
+	    if ( !((found->nonextcp && found->next->to->me.x>found->me.x) ||
+		    (!found->nonextcp && found->nextcp.x>found->me.x)))
+		found = found->next->to;	/* Don't start out by processing the last thing in a chunk */
+	    for ( sp = found; ; ) {
+		if ( !sp->ticked ) {
+		    if ( offset!=0 ) {
+			lines = SpMove(sp,offset,cur,lines);
+		    }
+		} else {
+		    if ( (sp->nonextcp && sp->next->to->me.x>sp->me.x) ||
+			    (!sp->nonextcp && sp->nextcp.x>sp->me.x)) {
+			offset = shadow_length;
+			cur = chunkalloc(sizeof(SplineSet));
+			if ( last==NULL )
+			    head = cur;
+			else
+			    last->next = cur;
+			last = cur;
+			lines = SpMove(sp,offset,cur,lines);
+		    } else {
+			lines = SpMove(sp,offset,cur,lines);
+			offset = 0;
+			cur = NULL;
+		    }
+		}
+		sp = sp->next->to;
+		if ( sp==found )
+	    break;
+	    }
+	    last->next = lines;
+	}
+    }
+return( head );
+}
+
+static void SSSelectAll(SplineSet *spl,int select) {
+    SplinePoint *sp;
+
+    while ( spl!=NULL ) {
+	for ( sp=spl->first; ; ) {
+	    sp->selected = select;
+	    if ( sp->next==NULL )
+	break;
 	    sp = sp->next->to;
-	    if ( sp==found )
+	    if ( sp==spl->first )
 	break;
 	}
-	for ( sp = found; ; ) {
-	    SplineRefigure(sp->prev);
+	spl = spl->next;
+    }
+}
+
+static void SSCleanup(SplineSet *spl) {
+    SplinePoint *sp;
+    /* look for likely rounding errors (caused by the two rotations) and */
+    /*  get rid of them */
+
+    while ( spl!=NULL ) {
+	for ( sp=spl->first; ; ) {
+	    sp->me.x = rint(sp->me.x*1024)/1024.;
+	    sp->me.y = rint(sp->me.y*1024)/1024.;
+	    sp->nextcp.x = rint(sp->nextcp.x*1024)/1024.;
+	    sp->nextcp.y = rint(sp->nextcp.y*1024)/1024.;
+	    sp->prevcp.x = rint(sp->prevcp.x*1024)/1024.;
+	    sp->prevcp.y = rint(sp->prevcp.y*1024)/1024.;
+	    if ( sp->next==NULL )
+	break;
 	    sp = sp->next->to;
-	    if ( sp==found )
+	    if ( sp==spl->first )
 	break;
 	}
+	spl = spl->next;
     }
 }
 
 static SplineSet *SSShadow(SplineSet *spl,real angle, real outline_width,
-	real shadow_length,SplineChar *sc) {
+	real shadow_length,SplineChar *sc, int wireframe) {
     real trans[6];
     StrokeInfo si;
-    SplineSet *internal, *temp;
+    SplineSet *internal, *temp, *frame, *fatframe, *outline;
 
     if ( spl==NULL )
 return( NULL );
@@ -512,7 +616,7 @@ return( NULL );
     spl = SplinePointListTransform(spl,trans,true);
 
     internal = NULL;
-    if ( outline_width!=0 ) {
+    if ( outline_width!=0 && !wireframe ) {
 	memset(&si,0,sizeof(si));
 	si.removeexternal = true;
 	si.radius = outline_width;
@@ -520,8 +624,35 @@ return( NULL );
 	SplineSetsAntiCorrect(internal);
     }
 
-    AddVerticalExtremaAndMove(spl,shadow_length);
-    spl = SplineSetRemoveOverlap(spl,over_remove);
+    frame = AddVerticalExtremaAndMove(spl,shadow_length,wireframe);
+    if ( !wireframe ) 
+	spl = SplineSetRemoveOverlap(spl,over_remove);
+    else {
+	if ( outline_width!=0 ) {
+	    memset(&si,0,sizeof(si));
+	    si.radius = outline_width/2;
+	    fatframe = SSStroke(frame,&si,sc);
+	    SplinePointListsFree(frame); frame = fatframe;
+	    outline = SSStroke(spl,&si,sc);
+	    SSSelectAll(frame,false);
+#if 0		/* doesn't work !!!! */
+	    si.radius = outline_width/3;
+	    si.removeinternal = true;
+	    mask = SSStroke(spl,&si,sc);
+	    SSSelectAll(mask,true);
+	    for ( temp=mask; temp->next!=NULL; temp=temp->next);
+	    temp->next = frame;
+	    frame = SplineSetRemoveOverlap(mask,over_exclude);
+	    SplinePointListsFree(spl);
+#endif
+	    for ( temp=outline; temp->next!=NULL; temp=temp->next);
+	    temp->next = frame;
+	    spl = SplineSetRemoveOverlap(outline,over_remove);
+	} else {
+	    for ( temp=spl; temp->next!=NULL; temp=temp->next);
+	    temp->next = frame;
+	}
+    }
 
     if ( internal!=NULL ) {
 	for ( temp = spl; temp->next!=NULL; temp=temp->next );
@@ -530,11 +661,12 @@ return( NULL );
 
     trans[1] = -trans[1]; trans[2] = -trans[2];
     spl = SplinePointListTransform(spl,trans,true);	/* rotate back */
+    SSCleanup(spl);
 return( spl );
 }
     
 void FVShadow(FontView *fv,real angle, real outline_width,
-	real shadow_length) {
+	real shadow_length, int wireframe) {
     int i, cnt=0;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->splines )
@@ -545,7 +677,7 @@ void FVShadow(FontView *fv,real angle, real outline_width,
 	    if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->splines ) {
 	SplineChar *sc = fv->sf->chars[i];
 	SCPreserveState(sc,false);
-	sc->splines = SSShadow(sc->splines,angle,outline_width,shadow_length,sc);
+	sc->splines = SSShadow(sc->splines,angle,outline_width,shadow_length,sc,wireframe);
 	SCCharChangedUpdate(sc);
 	if ( !GProgressNext())
     break;
@@ -554,14 +686,14 @@ void FVShadow(FontView *fv,real angle, real outline_width,
 }
 
 static void CVShadow(CharView *cv,real angle, real outline_width,
-	real shadow_length) {
+	real shadow_length,int wireframe) {
     CVPreserveState(cv);
-    *cv->heads[cv->drawmode] = SSShadow(*cv->heads[cv->drawmode],angle,outline_width,shadow_length,cv->sc);
+    *cv->heads[cv->drawmode] = SSShadow(*cv->heads[cv->drawmode],angle,outline_width,shadow_length,cv->sc,wireframe);
     CVCharChangedUpdate(cv);
 }
 
 static void MVShadow(MetricsView *mv,real angle, real outline_width,
-	real shadow_length) {
+	real shadow_length,int wireframe) {
     int i;
 
     for ( i=mv->charcnt-1; i>=0; --i )
@@ -570,7 +702,7 @@ static void MVShadow(MetricsView *mv,real angle, real outline_width,
     if ( i!=-1 ) {
 	SplineChar *sc = mv->perchar[i].sc;
 	SCPreserveState(sc,false);
-	sc->splines = SSShadow(sc->splines,angle,outline_width,shadow_length,sc);
+	sc->splines = SSShadow(sc->splines,angle,outline_width,shadow_length,sc,wireframe);
 	SCCharChangedUpdate(sc);
     }
 }
@@ -596,17 +728,17 @@ return(true);
 	def_sun_angle = angle;
 	angle *= 3.1415926535897932/180;
 	if ( od->fv!=NULL )
-	    FVShadow(od->fv,angle,width,len);
+	    FVShadow(od->fv,angle,width,len,od->wireframe);
 	else if ( od->cv!=NULL )
-	    CVShadow(od->cv,angle,width,len);
+	    CVShadow(od->cv,angle,width,len,od->wireframe);
 	else if ( od->mv!=NULL )
-	    MVShadow(od->mv,angle,width,len);
+	    MVShadow(od->mv,angle,width,len,od->wireframe);
 	od->done = true;
     }
 return( true );
 }
 
-void ShadowDlg(FontView *fv, CharView *cv,MetricsView *mv) {
+void ShadowDlg(FontView *fv, CharView *cv,MetricsView *mv,int wireframe) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
@@ -620,6 +752,7 @@ void ShadowDlg(FontView *fv, CharView *cv,MetricsView *mv) {
     od.fv = fv;
     od.cv = cv;
     od.mv = mv;
+    od.wireframe = wireframe;
 
 	memset(&wattrs,0,sizeof(wattrs));
 	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
