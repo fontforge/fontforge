@@ -1461,11 +1461,15 @@ static void dumpfontcomments(void (*dumpchar)(int ch,void *data), void *data,
 	while ( *strt!='\0' ) {
 	    pt = strt;
 	    while ( pt<strt+60 && *pt ) {
-		npt = strpbrk(pt,"\n\t ");
+		npt = strpbrk(pt,"\n\t\r ");
 		if ( npt==NULL ) npt = strt+strlen(strt);
 		if ( npt<strt+60 || pt==strt ) {
 		    pt = npt;
-		    if ( *pt ) ++pt;		/* skip over the space */
+		    if ( isspace(*pt)) {
+			++pt;
+			if ( pt[-1]=='\n' || pt[-1]=='\r' )
+	    break;
+		    }
 		} else
 	    break;
 	    }
