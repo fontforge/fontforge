@@ -205,10 +205,14 @@ return;
     if ( strstrmatch(browser,"/cygdrive")!=NULL && strstr(fullspec,":/")==NULL ) {
 	/* It looks as though the browser is a windows application, so we */
 	/*  should give it a windows file name */
+	char *pt, *tpt;
 	extern void cygwin_conv_to_full_win32_path(const char *unx,char *win);
 	temp = galloc(1024);
 	cygwin_conv_to_full_win32_path(fullspec,temp);
-	strncpy(fullspec,temp,1024); fullspec[1023]='\0';
+	for ( pt = fullspec, tpt = temp; *tpt && pt<fullspec+sizeof(fullspec)-3; *pt++ = *tpt++ )
+	    if ( *tpt=='\\' )
+		*pt++ = '\\';
+	*pt = '\0';
 	free(temp);
     }
 #endif
