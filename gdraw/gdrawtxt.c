@@ -584,7 +584,7 @@ enum charset GDrawFindEncoding(unichar_t *text, int32 len, FontInstance *fi,
     const unsigned long * plane;
     int name_cnt = fi->fam->name_cnt;
 
-    for ( ch = *text; iszerowidth(ch) && text<end; ch = *++text );
+    for ( ; text<end && iszerowidth(ch = *text) ; ++text );
     if ( text==end ) {
 	if ( next!=NULL )
 	    *next = text;
