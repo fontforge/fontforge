@@ -503,6 +503,7 @@ typedef struct splinefont {
 #endif
     char *comments;
     struct remap *remap;
+    int tempuniqueid;
 } SplineFont;
 
 /* mac styles. Useful idea we'll just steal it */

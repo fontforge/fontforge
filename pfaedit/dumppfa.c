@@ -601,6 +601,8 @@ return( false );
     ++cnt;	/* minfeature is required */
     if ( !hasblue && (otherblues[0]!=0 || otherblues[1]!=0) ) ++cnt;
     ++cnt;	/* password is required */
+    if ( sf->tempuniqueid!=0 )
+	++cnt;	/* UniqueID should be in both private and public areas */
     if ( incid==NULL ) {
 	++cnt;	/* nd is required */
 	++cnt;	/* np is required */
@@ -659,6 +661,8 @@ return( false );
 	dumpf(dumpchar,data,"/ForceBold true def\n" );
     if ( !haslg && iscjk ) 
 	dumpf(dumpchar,data,"/LanguageGroup 1 def\n" );
+    if ( sf->tempuniqueid!=0 )
+	dumpf(dumpchar,data,"/LanguageGroup %d def\n", sf->tempuniqueid );
     if ( sf->private!=NULL ) {
 	for ( i=0; i<sf->private->next; ++i ) {
 	    dumpf(dumpchar,data,"/%s ", sf->private->keys[i]);
@@ -828,6 +832,7 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 	uniqueid = 4000000 + (rand()&0x3ffff);
     else
 	uniqueid = sf->uniqueid ;
+    sf->tempuniqueid = uniqueid;
 
     if ( format!=ff_ptype3 ) {
 	dumpf(dumpchar,data,"FontDirectory/%s known{/%s findfont dup/UniqueID known{dup\n", sf->fontname, sf->fontname);

@@ -1119,7 +1119,10 @@ return;
 		mycmp("password",line+1,endtok)==0 ||
 		mycmp("MinFeature",line+1,endtok)==0 )
 	    /* These conveigh no information, but are required */;
-	else {
+	else if ( mycmp("UniqueID",line+1,endtok)==0 ) {
+	    if ( fp->fd->uniqueid==0 )
+		fp->fd->uniqueid = strtol(endtok,NULL,10);
+	} else {
 	    if ( mycmp("lenIV",line+1,endtok)==0 )
 		fp->fd->private->leniv = strtol(endtok,NULL,10);	/* We need this value */
 	    AddValue(fp,fp->fd->private->private,line,endtok);
