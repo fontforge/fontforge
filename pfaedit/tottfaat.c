@@ -1324,6 +1324,19 @@ return( features );
     free( all );
 return( features );
 }
+	
+static struct feature *reversefeatures(struct feature *cur) {
+    struct feature *n, *p;
+
+    p = NULL;
+    while ( cur!=NULL ) {
+	n = cur->next;
+	cur->next = p;
+	p = cur;
+	cur = n;
+    }
+return( p );
+}
 
 static void aat_dumpfeat(struct alltabs *at, SplineFont *sf, struct feature *feature) {
     int scnt, fcnt, cnt;
@@ -1342,9 +1355,13 @@ static void aat_dumpfeat(struct alltabs *at, SplineFont *sf, struct feature *fea
     /* As we fill up the feat table we also create an array of strings */
     /*  (strid, char *pointer) which will be used by the 'name' table to */
     /*  give names to the features and their settings */
+    /* The mac documentation says that the features should be sorted by feature type */
+    /*  This is a lie. Features should appear in the same order they appear */
+    /*  in the morx table, otherwise WorldText goes blooie */
 
     if ( feature==NULL )
 return;
+    feature = reversefeatures(feature);
 
     fcnt = scnt = 0;
     for ( k=0; k<3; ++k ) {
@@ -1402,6 +1419,7 @@ return;
 	    putshort(at->feat,0);
 	    putlong(at->feat,0);
 	    offset = 12 /* header */ + fcnt*12;
+	} else if ( k==1 ) {
 		/* FeatureName entry for All Typographics */
 	    mf = FindMacFeature(sf,0,&smf);
 	    if ( (mf!=NULL && mf->featname!=NULL) || (smf!=NULL && smf->featname!=NULL)) {
@@ -1415,7 +1433,7 @@ return;
 	    putshort(at->feat,0x0000);	/* non exclusive */
 	    putshort(at->feat,strid++);
 	    offset += 1*4;		/* (1 setting, 4 bytes) All Features */
-	} else if ( k==1 ) {
+	} else if ( k==2 ) {
 		/* Setting Name Array for All Typographic Features */
 	    ms = FindMacSetting(sf,0,0,&sms);
 	    if ( (ms!=NULL && ms->setname!=NULL) || (sms!=NULL && sms->setname!=NULL)) {
