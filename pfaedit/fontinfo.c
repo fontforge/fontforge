@@ -1683,9 +1683,11 @@ static char *_GetModifiers(char *fontname, char *familyname,char *weight) {
     /* "NimbusSanL-Regu" vs "Nimbus Sans L" (note "San" vs "Sans") */
     /* so look for a '-' if there is one and use that as the break point... */
 
-    if ( (fpt=strchr(fontname,'-'))!=NULL )
-	/* OK */;
-    else if ( familyname!=NULL ) {
+    if ( (fpt=strchr(fontname,'-'))!=NULL ) {
+	++fpt;
+	if ( *fpt=='\0' )
+	    fpt = NULL;
+    } else if ( familyname!=NULL ) {
 	for ( pt = fontname, fpt=familyname; *fpt!='\0' && *pt!='\0'; ) {
 	    if ( *fpt == *pt ) {
 		++fpt; ++pt;
@@ -1738,9 +1740,11 @@ static const unichar_t *_uGetModifiers(const unichar_t *fontname, const unichar_
     /* "NimbusSanL-Regu" vs "Nimbus Sans L" (note "San" vs "Sans") */
     /* so look for a '-' if there is one and use that as the break point... */
 
-    if ( (fpt=u_strchr(fontname,'-'))!=NULL )
-	/* Ok */;
-    else if ( familyname!=NULL ) {
+    if ( (fpt=u_strchr(fontname,'-'))!=NULL ) {
+	++fpt;
+	if ( *fpt=='\0' )
+	    fpt = NULL;
+    } else if ( familyname!=NULL ) {
 	for ( pt = fontname, fpt=familyname; *fpt!='\0' && *pt!='\0'; ) {
 	    if ( *fpt == *pt ) {
 		++fpt; ++pt;
