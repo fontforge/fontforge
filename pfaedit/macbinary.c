@@ -421,7 +421,7 @@ static uint32 BDFToNFNT(FILE *res, BDFFont *bdf) {
     }
     for ( i=0; i<258; ++i )
 	putshort(res,locs[i]);
-    owloc = ftell(res);
+    owloc = ftell(res);			/* valgrind reports an error here (but not above). god knows why */
     for ( i=0; i<258; ++i ) {
 	putc(lbearings[i],res);
 	putc(widths[i],res);
