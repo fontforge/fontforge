@@ -1504,18 +1504,34 @@ static void g___ChainingSubTable3(FILE *ttf, int stoffset,
     int warned2 = false;
 
     bcnt = getushort(ttf);
+    if ( feof(ttf)) {
+	fprintf( stderr, "End of file in context chaining subtable.\n" );
+return;
+    }
     bcoverage = galloc(bcnt*sizeof(uint16));
     for ( i=0; i<bcnt; ++i )
 	bcoverage[i] = getushort(ttf);
     gcnt = getushort(ttf);
+    if ( feof(ttf)) {
+	fprintf( stderr, "End of file in context chaining subtable.\n" );
+return;
+    }
     coverage = galloc(gcnt*sizeof(uint16));
     for ( i=0; i<gcnt; ++i )
 	coverage[i] = getushort(ttf);
     fcnt = getushort(ttf);
+    if ( feof(ttf)) {
+	fprintf( stderr, "End of file in context chaining subtable.\n" );
+return;
+    }
     fcoverage = galloc(fcnt*sizeof(uint16));
     for ( i=0; i<fcnt; ++i )
 	fcoverage[i] = getushort(ttf);
     scnt = getushort(ttf);
+    if ( feof(ttf)) {
+	fprintf( stderr, "End of file in context chaining subtable.\n" );
+return;
+    }
     sl = galloc(scnt*sizeof(struct seqlookup));
     for ( k=0; k<scnt; ++k ) {
 	sl[k].seq = getushort(ttf);

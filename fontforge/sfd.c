@@ -1820,7 +1820,7 @@ static void rle2image(struct enc85 *dec,int rlelen,struct _GImage *base) {
 	    }
 	    set = 1;
 	} else {
-	    if ( pt + (cnt>>3) >= end ) {
+	    if ( pt + ((c+cnt)>>3) >= end ) {
 		fprintf(stderr, "Run length encoded image has been corrupted.\n" );
     break;
 	    }
