@@ -412,7 +412,8 @@ static int Goto_OK(GGadget *g, GEvent *e) {
 		u_strcpy( ubuf, GStringGetResource(_STR_Couldntfindchar,NULL));
 		u_strncat(ubuf,ret,70);
 		GWidgetPostNotice(GStringGetResource(_STR_Goto,NULL),ubuf);
-	    }
+	    } else
+		d->done = true;
 	} else
 	    d->done = true;
     }
@@ -488,7 +489,7 @@ return( enc );
 		wid = temp;
 	}
 	if ( pos.width<wid+20 ) {
-	    pos.width = wid+30;
+	    pos.width = wid+20;
 	    GDrawResize(gw,pos.width,pos.height);
 	}
 
