@@ -365,7 +365,7 @@ static void FVDoit(CreateWidthData *wd) {
     int i;
     BDFChar *bc;
 
-    if ( fv->sf->onlybitmaps ) {
+    if ( fv->sf->onlybitmaps && fv->show!=NULL ) {
 	double scale = (fv->sf->ascent+fv->sf->descent)/(double) fv->show->pixelsize;
 	wd->setto *= scale;
 	wd->increment *= scale;
@@ -377,9 +377,13 @@ static void FVDoit(CreateWidthData *wd) {
 	if ( sc==NULL )
 	    sc = SFMakeChar(fv->sf,i);
 	if ( fv->sf->onlybitmaps ) {
-	    bc = fv->show->chars[i];
-	    if ( bc==NULL )
+	    if ( fv->show!=NULL )
 		bc = BDFMakeChar(fv->show,i);
+	    else {
+		BDFFont *bdf;
+		for ( bdf=fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
+		    bc = BDFMakeChar(bdf,i);
+	    }
 	}
 	DoChar(sc,wd,fv,bc);
     }
