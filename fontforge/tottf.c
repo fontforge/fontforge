@@ -1575,7 +1575,9 @@ return;
 }
 
 static void DumpStrDouble(char *pt,FILE *cfff,int oper) {
-    real d = strtod(pt,NULL);
+    real d;
+    if ( *pt=='[' ) ++pt;		/* For StdHW, StdVW */
+    d = strtod(pt,NULL);
     dumpdbloper(cfff,d,oper);
 }
 
@@ -1647,10 +1649,14 @@ static void dumpcffcharset(SplineFont *sf,struct alltabs *at) {
     }
 
     for ( i=1; i<sf->charcnt; ++i )
-	if ( SCWorthOutputting(sf->chars[i]) ) {
+	if ( SCWorthOutputting(sf->chars[i]) &&
+		sf->chars[i]==SCDuplicate(sf->chars[i])) {
 	    at->gn_sid[i] = storesid(at,sf->chars[i]->name);
 	    putshort(at->charset,at->gn_sid[i]);
 	}
+    for ( i=1; i<sf->charcnt; ++i )
+	if ( sf->chars[i]!=SCDuplicate(sf->chars[i]))
+	    at->gn_sid[i] = at->gn_sid[SCDuplicate(sf->chars[i])->enc];
 }
 
 static void dumpcffcidset(SplineFont *sf,struct alltabs *at) {
