@@ -1,0 +1,112 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 14-Jan-2002 -->
+  <!-- AP: Last modified: 14-Jan-2002 -->
+  <TITLE>Command Line Arguments</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+  Command Line Arguments
+</H1>
+<P>
+<CODE>$ pfaedit [-options] [filenames]</CODE>
+<P>
+The filenames may specify any number of files in one of the font formats
+that PfaEdit recognizes (various postscript formats, truetype, opentype,
+mac resource, bitmap).
+<P>
+Some files (.ttc or mac resource) may contain more than one outline font.
+You may pick which font you want by following the filename with the fontname
+in parentheses, thus:<BR>
+<CODE>&nbsp; &nbsp; $ pfaedit "gulim.ttc(GulimChe)"</CODE><BR>
+will select the font GulimChe out of the font file gulim.ttc.
+<P>
+PfaEdit recognizes the following options:
+<DL>
+  <DT>
+    -depth val
+  <DD>
+    Specifies that PfaEdit should search for a visual with the given depth
+  <DT>
+    -display name
+  <DD>
+    Specifies the name of the display on which PfaEdit will open its windows
+  <DT>
+    -help
+  <DD>
+    Bring up a <A HREF="helpmenu.html">browser</A> looking at this documentation.
+  <DT>
+    -keyboard type
+  <DD>
+    Where type may be<BR>
+    ibm | mac | sun | ppc | 0 | 1 | 2 | 3<BR>
+    Allows you to specify the type of keyboard. Currently this is only relevent
+    when generating menus. The modifier keys are in different locations on different
+    keyboards (under different operating systems) and if PfaEdit knows what keyboard
+    you are using it can make the hot-keys have better labels.
+    <UL>
+      <LI>
+	ibm | 0<BR>
+	Uses the Control and Alt keys
+      <LI>
+	mac | 1<BR>
+	Uses the Command and Option keys (Mac OS/X, Mac keyboard)
+      <LI>
+	ppc | 3<BR>
+	Uses the Control and Command keys (Suse ppc linux, Mac keyboard)
+      <LI>
+	sun | 2<BR>
+	Uses the Control and Meta keys
+    </UL>
+  <DT>
+    -new
+  <DD>
+    Creates a new font.
+  <DT>
+    -nosplash
+  <DD>
+    PfaEdit will not display its splash screen on startup (for slow connections)
+  <DT>
+    -recover type
+  <DD>
+    Where type may be:
+    <DL>
+      <DT>
+	none
+      <DD>
+	Do not attempt any automatic file recovery
+      <DT>
+	clean
+      <DD>
+	Clean out the directory containing files to be recovered
+      <DT>
+	auto
+      <DD>
+	recover any files which have been changed but which pfaedit crashed on before
+	saving.
+    </DL>
+  <DT>
+    -sync
+  <DD>
+    Do synchronous screen drawing. Slows things down, makes some things easier
+    to debug.
+  <DT>
+    -usage
+  <DD>
+    Display a brief description of the options
+  <DT>
+    -vc type
+  <DD>
+    Where type may be:<BR>
+    StaticGray GrayScale StaticColor PsuedoColor TrueColor DirectColor<BR>
+    (See the X manuals for a description of what these mean). PfaEdit will search
+    through the visuals in an attempt to find one with the desired VisualClass
+    (given here) and depth (given with the -depth option).
+</DL>
+<P>
+<P>
+<P ALIGN=Center>
+-- <A HREF="xres.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
+<A HREF="faqFS.html">Next</A> --
+</BODY></HTML>
