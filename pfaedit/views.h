@@ -176,6 +176,7 @@ typedef struct charview {
     int keysym, oldstate;
 #endif
     struct searchview *searcher;	/* The sv within which this view is embedded (if it is) */
+    GIC *gic;
 } CharView;
 
 typedef struct bitmapview {

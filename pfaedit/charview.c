@@ -2179,6 +2179,7 @@ static int v_e_h(GWindow gw, GEvent *event) {
       break;
       case et_mousedown:
 	CVPaletteActivate(cv);
+	GDrawSetGIC(gw,cv->gic,0,20);
 	if ( cv->inactive )
 	    SVMakeActive(cv->searcher,cv);
 	CVMouseDown(cv,event);
@@ -2204,10 +2205,12 @@ static int v_e_h(GWindow gw, GEvent *event) {
 	CVTimer(cv,event);
       break;
       case et_focus:
+	if ( event->u.focus.gained_focus ) {
+	    GDrawSetGIC(gw,cv->gic,0,20);
 #if 0
-	if ( event->u.focus.gained_focus )
 	    CVPaletteActivate(cv);
 #endif
+	}
       break;
     }
 return( true );
@@ -2581,10 +2584,12 @@ static int cv_e_h(GWindow gw, GEvent *event) {
 	    SCPreparePopup(cv->gw,cv->sc);
       break;
       case et_focus:
+	if ( event->u.focus.gained_focus ) {
+	    GDrawSetGIC(gw,cv->gic,0,20);
 #if 0
-	if ( event->u.focus.gained_focus )
 	    CVPaletteActivate(cv);
 #endif
+	}
       break;
     }
 return( true );
@@ -4633,6 +4638,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv) {
 
     CVFit(cv);
     GDrawSetVisible(cv->v,true);
+    cv->gic = GDrawCreateInputContext(cv->v,gic_root|gic_orlesser);
     GDrawSetVisible(cv->gw,true);
 }
 
