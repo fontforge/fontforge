@@ -2049,7 +2049,7 @@ static void MVMenuRound2Int(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     break;
     if ( i!=-1 ) {
 	SCPreserveState(mv->perchar[i].sc,false);
-	SCRound2Int( mv->perchar[i].sc);
+	SCRound2Int( mv->perchar[i].sc,1.0);
     }
 }
 

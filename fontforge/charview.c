@@ -5177,7 +5177,7 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
 
     SplinePointListTransform(cv->layerheads[cv->drawmode]->splines,transform,!anysel);
     if ( flags&fvt_round_to_int )
-	SplineSetsRound2Int(cv->layerheads[cv->drawmode]->splines);
+	SplineSetsRound2Int(cv->layerheads[cv->drawmode]->splines,1.0);
     if ( cv->layerheads[cv->drawmode]->images!=NULL ) {
 	ImageListTransform(cv->layerheads[cv->drawmode]->images,transform);
 	SCOutOfDateBackground(cv->sc);
@@ -5293,54 +5293,25 @@ static void CVMenuNLTransform(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-static void SplinePointRound(SplinePoint *sp) {
-    sp->me.x = rint(sp->me.x);
-    sp->me.y = rint(sp->me.y);
-    sp->nextcp.x = rint(sp->nextcp.x);
-    sp->nextcp.y = rint(sp->nextcp.y);
+static void SplinePointRound(SplinePoint *sp,real factor) {
+    sp->me.x = rint(sp->me.x*factor)/factor;
+    sp->me.y = rint(sp->me.y*factor)/factor;
+    sp->nextcp.x = rint(sp->nextcp.x*factor)/factor;
+    sp->nextcp.y = rint(sp->nextcp.y*factor)/factor;
     if ( sp->next!=NULL && sp->next->order2 )
 	sp->next->to->prevcp = sp->nextcp;
-    sp->prevcp.x = rint(sp->prevcp.x);
-    sp->prevcp.y = rint(sp->prevcp.y);
+    sp->prevcp.x = rint(sp->prevcp.x*factor)/factor;
+    sp->prevcp.y = rint(sp->prevcp.y*factor)/factor;
     if ( sp->prev!=NULL && sp->prev->order2 )
 	sp->prev->from->nextcp = sp->prevcp;
 }
 
-void SplineSetsRound2Int(SplineSet *spl) {
+void SplineSetsRound2Int(SplineSet *spl,real factor) {
     SplinePoint *sp;
 
     for ( ; spl!=NULL; spl=spl->next ) {
 	for ( sp=spl->first; ; ) {
-	    SplinePointRound(sp);
-	    if ( sp->prev!=NULL )
-		SplineRefigure(sp->prev);
-	    if ( sp->next==NULL )
-	break;
-	    sp = sp->next->to;
-	    if ( sp==spl->first )
-	break;
-	}
-	if ( spl->first->prev!=NULL )
-	    SplineRefigure(spl->first->prev);
-    }
-}
-
-void SplineSetsRound2Sixtyfourths(SplineSet *spl) {
-    SplinePoint *sp;
-
-    for ( ; spl!=NULL; spl=spl->next ) {
-	for ( sp=spl->first; ; ) {
-	    sp->me.x = rint(sp->me.x*64)/64.0;
-	    sp->me.y = rint(sp->me.y*64)/64.0;
-	    sp->nextcp.x = rint(sp->nextcp.x*64)/64.0;
-	    sp->nextcp.y = rint(sp->nextcp.y*64)/64.0;
-	    if ( sp->next!=NULL && sp->next->order2 )
-		sp->next->to->prevcp = sp->nextcp;
-	    sp->prevcp.x = rint(sp->prevcp.x*64)/64.0;
-	    sp->prevcp.y = rint(sp->prevcp.y*64)/64.0;
-	    if ( sp->prev!=NULL && sp->prev->order2 )
-		sp->prev->from->nextcp = sp->prevcp;
-
+	    SplinePointRound(sp,factor);
 	    if ( sp->prev!=NULL )
 		SplineRefigure(sp->prev);
 	    if ( sp->next==NULL )
@@ -5397,7 +5368,7 @@ static void SplineSetsChangeCoord(SplineSet *spl,real old, real new,int isy) {
     }
 }
 
-void SCRound2Int(SplineChar *sc) {
+void SCRound2Int(SplineChar *sc,real factor) {
     RefChar *r;
     StemInfo *stems;
     real old, new;
@@ -5405,26 +5376,26 @@ void SCRound2Int(SplineChar *sc) {
 
     for ( stems = sc->hstem; stems!=NULL; stems=stems->next ) {
 	old = stems->start+stems->width;
-	stems->start = rint(stems->start);
-	stems->width = rint(stems->width);
+	stems->start = rint(stems->start*factor)/factor;
+	stems->width = rint(stems->width*factor)/factor;
 	new = stems->start+stems->width;
 	if ( old!=new )
 	    SplineSetsChangeCoord(sc->layers[ly_fore].splines,old,new,true);
     }
     for ( stems = sc->vstem; stems!=NULL; stems=stems->next ) {
 	old = stems->start+stems->width;
-	stems->start = rint(stems->start);
-	stems->width = rint(stems->width);
+	stems->start = rint(stems->start*factor)/factor;
+	stems->width = rint(stems->width*factor)/factor;
 	new = stems->start+stems->width;
 	if ( old!=new )
 	    SplineSetsChangeCoord(sc->layers[ly_fore].splines,old,new,false);
     }
 
     for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
-	SplineSetsRound2Int(sc->layers[layer].splines);
+	SplineSetsRound2Int(sc->layers[layer].splines,factor);
 	for ( r=sc->layers[layer].refs; r!=NULL; r=r->next ) {
-	    r->transform[4] = rint(r->transform[4]);
-	    r->transform[5] = rint(r->transform[5]);
+	    r->transform[4] = rint(r->transform[4]*factor)/factor;
+	    r->transform[5] = rint(r->transform[5]*factor)/factor;
 	    RefCharFindBounds(r);
 	}
     }
@@ -5454,7 +5425,7 @@ static void _CVMenuRound2Int(CharView *cv) {
     for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
 	for ( sp=spl->first; ; ) {
 	    if ( sp->selected || !anysel )
-		SplinePointRound(sp);
+		SplinePointRound(sp,1.0);
 	    if ( sp->prev!=NULL )
 		SplineRefigure(sp->prev);
 	    if ( sp->next==NULL )
@@ -5469,8 +5440,8 @@ static void _CVMenuRound2Int(CharView *cv) {
     if ( cv->drawmode==dm_fore ) {
 	for ( r=cv->sc->layers[ly_fore].refs; r!=NULL; r=r->next ) {
 	    if ( r->selected || !anysel ) {
-		r->transform[4] = rint(r->transform[4]);
-		r->transform[5] = rint(r->transform[5]);
+		r->transform[4] = rint(r->transform[4]*1.0)/1.0;
+		r->transform[5] = rint(r->transform[5]*1.0)/1.0;
 	    }
 	}
     }

@@ -2517,10 +2517,21 @@ static void bAddExtrema(Context *c) {
 }
 
 static void bRoundToInt(Context *c) {
+    real factor = 1.0;
+    int i;
+    SplineFont *sf = c->curfv->sf;
 
-    if ( c->a.argc!=1 )
+    if ( c->a.argc!=1 && c->a.argc!=2 )
 	error( c, "Wrong number of arguments");
-    FVFakeMenus(c->curfv,103);
+    else if ( c->a.argc==2 ) {
+	if ( c->a.vals[1].type!=v_int )
+	    error( c, "Bad type for argument" );
+	factor = c->a.vals[1].u.ival;
+    }
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && c->curfv->selected[i] ) {
+	SCPreserveState(sf->chars[i],false);
+	SCRound2Int( sf->chars[i],factor);
+    }
 }
 
 static void bAutotrace(Context *c) {

@@ -2587,7 +2587,7 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], uint8 *sel,
 	TransHints(sc->vstem,transform[0],transform[4],transform[3],transform[5],flags&fvt_round_to_int);
     }
     if ( flags&fvt_round_to_int )
-	SCRound2Int(sc);
+	SCRound2Int(sc,1.0);
     if ( transform[0]==1 && transform[3]==1 && transform[1]==0 &&
 	    transform[2]==0 && transform[5]==0 &&
 	    transform[4]!=0 && 
@@ -3165,7 +3165,7 @@ static void FVRound2Int(FontView *fv) {
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SCPreserveState(fv->sf->chars[i],false);
-	SCRound2Int( fv->sf->chars[i]);
+	SCRound2Int( fv->sf->chars[i],1.0);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
 	if ( !GProgressNext())
