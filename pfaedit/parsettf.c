@@ -520,7 +520,7 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	  case CHR('G','S','U','B'):
 	    info->gsub_start = offset;
 	  break;
-	  case CHR('b','d','a','t'):		/* Apple/MS use a different tag. Great. */
+	  case CHR('b','d','a','t'):		/* Apple/MS use a different tag, but the same format. Great. */
 	  case CHR('E','B','D','T'):
 	    info->bitmapdata_start = offset;
 	  break;
