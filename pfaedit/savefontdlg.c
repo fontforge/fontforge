@@ -59,6 +59,7 @@ struct gfc_data {
     int done;
     int sod_done;
     int sod_which;
+    int sod_invoked;
     int ret;
     int family, familycnt;
     GWindow gw;
@@ -131,11 +132,12 @@ static GTextInfo bitmaptypes[] = {
 
 #if __Mac
 int old_ttf_flags = ttf_flag_applemode;
+int old_otf_flags = ttf_flag_applemode;
 #else
 int old_ttf_flags = 0;
+int old_otf_flags = 0;
 #endif
 int old_ps_flags = ps_flag_afm;
-int old_otf_flags = 0;
 int old_psotb_flags = ps_flag_afm;
 
 int oldformatstate = ff_pfb;
@@ -402,6 +404,7 @@ return( false );
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors)) )
 		    d->psotb_flags |= ttf_flag_pfed_colors;
 	    }
+	    d->sod_invoked = true;
 	}
 	d->sod_done = true;
     }
@@ -1522,7 +1525,6 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 	  case ff_pfa: case ff_pfb: case ff_ptype3: case ff_ptype0: case ff_cid:
 	    oerr = !WritePSFont(newname,sf,oldformatstate,flags);
 	  break;
-	  break;
 	  case ff_ttf: case ff_ttfsym: case ff_otf: case ff_otfcid:
 	    oerr = !WriteTTFFont(newname,sf,oldformatstate,sizes,bmap,
 		flags);
@@ -1824,9 +1826,19 @@ return;
       break;
       case 1:	/* TrueType */
 	flags = old_ttf_flags = d->ttf_flags;
+	if ( !d->sod_invoked ) {
+	    if ( oldformatstate==ff_ttfmacbin || oldformatstate==ff_ttfdfont || d->family ||
+		    (oldformatstate==ff_none && oldbitmapstate==bf_sfnt_dfont))
+		old_ttf_flags |= ttf_flag_applemode;
+	}
       break;
       case 2:	/* OpenType */
 	flags = old_otf_flags = d->otf_flags;
+	if ( !d->sod_invoked ) {
+	    if ( oldformatstate==ff_otfdfont || oldformatstate==ff_otfciddfont || d->family ||
+		    (oldformatstate==ff_none && oldbitmapstate==bf_sfnt_dfont))
+		old_ttf_flags |= ttf_flag_applemode;
+	}
       break;
       case 3:	/* PostScript & OpenType bitmaps */
 	old_ps_flags = d->ps_flags;
@@ -2173,6 +2185,13 @@ int SFGenerateFont(SplineFont *sf,int family) {
     SplineFont *familysfs[48];
     uint16 psstyle;
 
+    if ( alwaysgenapple || family ) {
+	old_ttf_flags |= ttf_flag_applemode;
+	old_otf_flags |= ttf_flag_applemode;
+    } else {
+	old_ttf_flags &= ~ttf_flag_applemode;
+	old_otf_flags &= ~ttf_flag_applemode;
+    }
     if ( family ) {
 	/* I could just disable the menu item, but I think it's a bit confusing*/
 	/*  and I want people to know why they can't generate a family */
