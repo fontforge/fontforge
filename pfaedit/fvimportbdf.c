@@ -192,6 +192,12 @@ static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
 	    sf->chars[i]->widthset = true;
 	}
     }
+    if ( i==-1 && sf->onlybitmaps && sf->bitmaps==b && b->next==NULL ) {
+	/* try adding it to the end of the font */
+	if ( enc>=sf->charcnt ) i=enc;
+	else i = sf->charcnt;
+	MakeEncChar(sf,i,name);
+    }
     if ( i==-1 )	/* Can't guess the proper encoding, ignore it */
 return(-1);
     if ( i!=enc && enc!=-1 && sf->onlybitmaps && sf->bitmaps==b && b->next==NULL && sf->chars[enc]!=NULL ) {
@@ -227,41 +233,49 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b) {
     break;
     }
     i = figureProperEncoding(sf,b,enc,name,swidth);
-    if ( (bc=b->chars[i])!=NULL ) {
-	free(bc->bitmap);
-	BDFFloatFree(bc->selection);
+    if ( i!=-1 ) {
+	if ( (bc=b->chars[i])!=NULL ) {
+	    free(bc->bitmap);
+	    BDFFloatFree(bc->selection);
+	} else {
+	    b->chars[i] = bc = gcalloc(1,sizeof(BDFChar));
+	    bc->sc = sf->chars[i];
+	    bc->enc = i;
+	}
+	bc->xmin = xmin;
+	bc->ymin = ymin;
+	bc->xmax = xmax;
+	bc->ymax = ymax;
+	bc->width = width;
+	bc->bytes_per_line = ((xmax-xmin)>>3) + 1;
+	bc->bitmap = galloc(bc->bytes_per_line*(ymax-ymin+1));
+
+	pt = bc->bitmap; end = pt + bc->bytes_per_line*(ymax-ymin+1);
+	while ( pt<end ) {
+	    int ch1, ch2, val;
+	    while ( isspace(ch1=getc(bdf)) );
+	    ch2 = getc(bdf);
+	    val = 0;
+	    if ( ch1>='0' && ch1<='9' ) val = (ch1-'0')<<4;
+	    else if ( ch1>='a' && ch1<='f' ) val = (ch1-'a'+10)<<4;
+	    else if ( ch1>='A' && ch1<='F' ) val = (ch1-'A'+10)<<4;
+	    if ( ch2>='0' && ch2<='9' ) val |= (ch2-'0');
+	    else if ( ch2>='a' && ch2<='f' ) val |= (ch2-'a'+10);
+	    else if ( ch2>='A' && ch2<='F' ) val |= (ch2-'A'+10);
+	    *pt++ = val;
+	    if ( ch2==EOF )
+	break;
+	}
+
+	for ( bv=bc->views; bv!=NULL; bv=bv->next )
+	    GDrawRequestExpose(bv->v,NULL,false);
     } else {
-	b->chars[i] = bc = gcalloc(1,sizeof(BDFChar));
-	bc->sc = sf->chars[i];
-	bc->enc = i;
+	int cnt = (((xmax-xmin)>>3) + 1) * (ymax-ymin+1);
+	for ( i=0; i<cnt; ++i ) {
+	    while ( isspace(getc(bdf)) );
+	    getc(bdf);
+	}
     }
-    bc->xmin = xmin;
-    bc->ymin = ymin;
-    bc->xmax = xmax;
-    bc->ymax = ymax;
-    bc->width = width;
-    bc->bytes_per_line = ((xmax-xmin)>>3) + 1;
-    bc->bitmap = galloc(bc->bytes_per_line*(ymax-ymin+1));
-
-    pt = bc->bitmap; end = pt + bc->bytes_per_line*(ymax-ymin+1);
-    while ( pt<end ) {
-	int ch1, ch2, val;
-	while ( isspace(ch1=getc(bdf)) );
-	ch2 = getc(bdf);
-	val = 0;
-	if ( ch1>='0' && ch1<='9' ) val = (ch1-'0')<<4;
-	else if ( ch1>='a' && ch1<='f' ) val = (ch1-'a'+10)<<4;
-	else if ( ch1>='A' && ch1<='F' ) val = (ch1-'A'+10)<<4;
-	if ( ch2>='0' && ch2<='9' ) val |= (ch2-'0');
-	else if ( ch2>='a' && ch2<='f' ) val |= (ch2-'a'+10);
-	else if ( ch2>='A' && ch2<='F' ) val |= (ch2-'A'+10);
-	*pt++ = val;
-	if ( ch2==EOF )
-    break;
-    }
-
-    for ( bv=bc->views; bv!=NULL; bv=bv->next )
-	GDrawRequestExpose(bv->v,NULL,false);
 }
 
 static int BDFParseEnc(char *encname, int encoff) {
