@@ -30,7 +30,7 @@
 #include <utype.h>
 #include <ustring.h>
 
-extern int GraveAcuteCenterBottom;
+extern int GraveAcuteCenterBottom, CharCenterHighest;
 extern int accent_offset;	/* in prefs.c */
 
 #define BottomAccent	0x300
@@ -1260,18 +1260,21 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 	/*  the highest point (mostly anyway, there are exceptions) */
 	if ( pos&____ABOVE ) {
 	    static DBounds pointless;
-	    if ( basech!='b' && basech!='d' && basech!='h' && basech!='n' && basech!='r' && basech!=0xf8 &&
-		    basech!='B' && basech!='D' && basech!='L' && basech!=0xd8 )
-		ybase = SCFindTopXRange(sc,&bb,ia);
-	    if ( ((basech=='h' && ch==0x307) ||	/* dot over the stem in hdot */
-		    basech=='i' || basech=='j' || basech==0x131 || basech==0xf6be ||
-		    (basech=='k' && ch==0x301) ||
-		    (baserch=='L' && ch==0x304) ||
-		    basech=='l' || basech=='t' ) &&
-		    (xoff=SCStemCheck(sf,basech,&bb,&pointless,pos))!=0x70000000 )
-		bb.minx = bb.maxx = xoff;		/* While on "t" we should center over the stem */
+	    if ( CharCenterHighest ) {
+		if ( basech!='b' && basech!='d' && basech!='h' && basech!='n' && basech!='r' && basech!=0xf8 &&
+			basech!='B' && basech!='D' && basech!='L' && basech!=0xd8 )
+		    ybase = SCFindTopXRange(sc,&bb,ia);
+		if ( ((basech=='h' && ch==0x307) ||	/* dot over the stem in hdot */
+			basech=='i' || basech=='j' || basech==0x131 || basech==0xf6be ||
+			(basech=='k' && ch==0x301) ||
+			(baserch=='L' && (ch==0x301 || ch==0x304)) ||
+			basech=='l' || basech=='t' ) &&
+			(xoff=SCStemCheck(sf,basech,&bb,&pointless,pos))!=0x70000000 )
+		    bb.minx = bb.maxx = xoff;		/* While on "t" we should center over the stem */
+	    }
 	} else if ( ( pos&____BELOW ) && !eta )
-	    ybase = SCFindBottomXRange(sc,&bb,ia);
+	    if ( CharCenterHighest )
+		ybase = SCFindBottomXRange(sc,&bb,ia);
     }
 
     if ( isupper(basech) && ch==0x342)	/* While this guy rides above PSILI on left */

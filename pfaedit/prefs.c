@@ -48,6 +48,7 @@ int autohint_before_generate = 1;
 int ItalicConstrained=true;
 int accent_offset = 6;
 int GraveAcuteCenterBottom = 1;
+int CharCenterHighest = 1;
 int ask_user_for_resolution = true;
 int stop_at_join = false;
 float arrowAmount=1;
@@ -352,14 +353,18 @@ static struct prefs_list {
 	{ "AutoWidthSync", pr_bool, &adjustwidth, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupAWS },
 	{ "AutoLBearingSync", pr_bool, &adjustlbearing, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupALS },
 	{ "ItalicConstrained", pr_bool, &ItalicConstrained, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupIC },
-	{ "AccentOffsetPercent", pr_int, &accent_offset, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupAO },
-	{ "AcuteCenterBottom", pr_bool, &GraveAcuteCenterBottom, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupGA },
 	{ "ArrowMoveSize", pr_real, &arrowAmount, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupAA },
 	{ "SnapDistance", pr_real, &snapdistance, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupSD },
 	{ "JoinSnap", pr_real, &joinsnap, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupJS },
 	{ "CopyMetaData", pr_bool, &copymetadata, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupCMD },
 	{ "UndoDepth", pr_int, &maxundoes, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupUndo },
 	{ "StopAtJoin", pr_bool, &stop_at_join, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupSAJ },
+	{ NULL }
+},
+  accent_list[] = {
+	{ "AccentOffsetPercent", pr_int, &accent_offset, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupAO },
+	{ "AccentCenterLowest", pr_bool, &GraveAcuteCenterBottom, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupGA },
+	{ "CharCenterHighest", pr_bool, &CharCenterHighest, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupCH },
 	{ NULL }
 },
  args_list[] = {
@@ -407,6 +412,7 @@ static struct prefs_list {
  oldnames[] = {
 	{ "LocalCharset", pr_encoding, &prefs_encoding, NULL, NULL, 'L', NULL, 0, _STR_PrefsPopupLoc },
 	{ "DefaultTTFApple", pr_int, &pointless, NULL, NULL, '\0', NULL, 1 },
+	{ "AcuteCenterBottom", pr_bool, &GraveAcuteCenterBottom, NULL, NULL, '\0', NULL, 1, _STR_PrefsPopupGA },
 	{ NULL }
 },
  *prefs_list[] = { general_list, editing_list, args_list, generate_list, hidden_list, NULL },
@@ -415,6 +421,7 @@ static struct prefs_list {
 struct visible_prefs_list { int tab_name; struct prefs_list *pl; } visible_prefs_list[] = {
     { _STR_Generic, general_list},
     { _STR_Editing, editing_list},
+    { _STR_Accents, accent_list},
     { _STR_PrefsApps, args_list},
     { _STR_PrefsFontInfo, generate_list},
     { 0 }
