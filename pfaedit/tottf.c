@@ -396,12 +396,12 @@ static SplinePoint *ttfapprox(Spline *ps,real tmin, real tmax, SplinePoint *star
     /* no points of inflection in quad splines */
 
     if ( ps->splines[0].a!=0 ) {
-	inflect[i] = -ps->splines[0].b/(3*ps->splines[0].b);
+	inflect[i] = -ps->splines[0].b/(3*ps->splines[0].a);
 	if ( inflect[i]>tmin && inflect[i]<tmax )
 	    ++i;
     }
     if ( ps->splines[1].a!=0 ) {
-	inflect[i] = -ps->splines[1].b/(3*ps->splines[1].b);
+	inflect[i] = -ps->splines[1].b/(3*ps->splines[1].a);
 	if ( inflect[i]>tmin && inflect[i]<tmax )
 	    ++i;
     }
