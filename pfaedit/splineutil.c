@@ -1452,16 +1452,19 @@ static SplineChar *DuplicateNameReference(SplineFont *sf,char **encoding,int enc
 
     encoding[encindex] = FindUnusedName(encoding,encoding[encindex],sf->charcnt);
     sc->name = copy(encoding[encindex]);
-    sc->refs = ref = gcalloc(1,sizeof(RefChar));
-    ref->sc = sf->chars[i];
-    ref->transform[0] = ref->transform[3] = 1;
-    ref->local_enc = i;
-    for ( i=0; i<256; ++i )
-	if ( strcmp(ref->sc->name,AdobeStandardEncoding[i])==0 )
-    break;
-    ref->adobe_enc = i==256? -1 : i;
-    SCMakeDependent(sc,ref->sc);
-    ref->checked = true;
+    sc->unicodeenc = -1;
+    sc->width = sf->chars[i]->width;
+    sc->vwidth = sf->chars[i]->vwidth;
+    sc->parent = sf;
+    if ( sf->chars[i]->splines!=NULL || sf->chars[i]->refs!=NULL ) {
+	sc->refs = ref = gcalloc(1,sizeof(RefChar));
+	ref->sc = sf->chars[i];
+	ref->transform[0] = ref->transform[3] = 1;
+	ref->local_enc = i;
+	ref->adobe_enc = getAdobeEnc(ref->sc->name);
+	SCMakeDependent(sc,ref->sc);
+	ref->checked = true;
+    }
 return( sc );
 }
 

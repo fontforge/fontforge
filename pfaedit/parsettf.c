@@ -2817,13 +2817,15 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    enc = em_unicode;
 	    encoff = offset;
 	    mod = 0;
-	} else if ( platform==3 && specific==0 && (enc==em_none||enc==-2) ) {
+	} else if ( platform==3 && specific==0 && (enc==em_none||enc==-2||enc==em_mac) ) {
 	    /* Only select symbol if we don't have something better */
 	    enc = em_symbol;
 	    encoff = offset;
-	    trans = unicode_from_MacSymbol;
+	    /* Now I had assumed this would be a 1 byte encoding, but it turns*/
+	    /*  out to map into the unicode private use area at U+f000-U+F0FF */
+	    /*  so it's a 2 byte enc */
 /* Mac platform specific encodings are script numbers. 0=>roman, 1=>jap, 2=>big5, 3=>korean, 4=>arab, 5=>hebrew, 6=>greek, 7=>cyrillic, ... 25=>simplified chinese */
-	} else if ( platform==1 && specific==0 && (enc==em_none||enc==em_symbol||enc==-2) ) {
+	} else if ( platform==1 && specific==0 && (enc==em_none||enc==-2) ) {
 	    enc = em_mac;
 	    encoff = offset;
 	    trans = unicode_from_mac;
@@ -2860,6 +2862,8 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	if ( format==0 ) {
 	    for ( i=0; i<len-6; ++i )
 		table[i] = getc(ttf);
+	    if ( enc==em_symbol && trans==NULL )
+		trans = unicode_from_MacSymbol;
 	    for ( i=0; i<256 && i<info->glyph_cnt && i<len-6; ++i )
 		if ( !justinuse ) {
 		    info->chars[table[i]]->enc = i;
@@ -2868,6 +2872,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 		} else
 		    info->inuse[table[i]] = 1;
 	} else if ( format==4 ) {
+	    if ( enc==em_symbol ) enc=em_unicode;
 	    segCount = getushort(ttf)/2;
 	    /* searchRange = */ getushort(ttf);
 	    /* entrySelector = */ getushort(ttf);
@@ -3721,14 +3726,12 @@ return( buffer );
 
 static SplineChar *SFMakeDupRef(SplineFont *sf, int local_enc, struct dup *dup) {
     SplineChar *sc = SplineCharCreate();
-    RefChar *ref = chunkalloc(sizeof(RefChar));
-    char buffer[40];
+    char buffer[40], *temp;
 
     sc->enc = local_enc;
     sc->unicodeenc = dup->uni;
     sc->width = dup->sc->width;
     sc->vwidth = dup->sc->vwidth;
-    sc->refs = ref;
     sc->parent = sf;
     if ( dup->uni>=0 && dup->uni<0x10000 && psunicodenames[dup->uni]!=NULL )
 	strcpy(buffer,psunicodenames[dup->uni]);
@@ -3739,16 +3742,26 @@ static SplineChar *SFMakeDupRef(SplineFont *sf, int local_enc, struct dup *dup) 
     else
 	sprintf( buffer, "unencoded_%d", local_enc );
     sc->name = copy(buffer);
-    if ( strcmp(sc->name,dup->sc->name)==0 )
-	sc->name = FindUnusedNameTTF(sf,sc->name);
+    if ( strcmp(sc->name,dup->sc->name)==0 ) {
+	temp = FindUnusedNameTTF(sf,sc->name);
+	if ( dup->uni==0x20 ) {		/* Sometimes tab takes the same glyph as space. But space should get the name */
+	    sc->name = dup->sc->name;
+	    dup->sc->name = temp;
+	} else
+	    sc->name = temp;
+    }
 
-    ref->sc = dup->sc;
-    ref->local_enc = dup->sc->enc;
-    ref->unicode_enc = dup->sc->unicodeenc;
-    ref->adobe_enc = getAdobeEnc(ref->sc->name);
-    ref->transform[0] = ref->transform[3] = 1;
-    SCReinstanciateRefChar(sc,ref);
-    SCMakeDependent(sc,ref->sc);
+    if ( dup->sc->refs!=NULL || dup->sc->splines!=NULL ) {
+	RefChar *ref = chunkalloc(sizeof(RefChar));
+	sc->refs = ref;
+	ref->sc = dup->sc;
+	ref->local_enc = dup->sc->enc;
+	ref->unicode_enc = dup->sc->unicodeenc;
+	ref->adobe_enc = getAdobeEnc(ref->sc->name);
+	ref->transform[0] = ref->transform[3] = 1;
+	SCReinstanciateRefChar(sc,ref);
+	SCMakeDependent(sc,ref->sc);
+    }
 return( sc );
 }
 
