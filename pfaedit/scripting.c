@@ -1662,6 +1662,8 @@ static void bSetPanose(Context *c) {
 	SFDefaultOS2Info(&c->curfv->sf->pfminfo,c->curfv->sf,c->curfv->sf->fontname);
 	c->curfv->sf->pfminfo.panose[c->a.vals[1].u.ival] = c->a.vals[2].u.ival;
     }
+    c->curfv->sf->pfminfo.pfmset = true;
+    c->curfv->sf->changed = true;
 }
  
 static void bSetUniqueID(Context *c) {
