@@ -1034,7 +1034,7 @@ static int morx_dumpASM(FILE *temp,ASM *sm, struct alltabs *at, SplineFont *sf )
 		if ( i==stcnt ) {
 		    subsins[stcnt].pos = stcnt==0 ? 0 : subsins[stcnt-1].pos +
 							subsins[stcnt-1].len;
-		    subsins[stcnt].names = this->u.insert.mark_ins;
+		    subsins[stcnt].names = this->u.insert.cur_ins;
 		    subsins[stcnt].glyphs = NamesToGlyphs(sf,subsins[stcnt].names,&subsins[stcnt].len);
 		    ++stcnt;
 		}
