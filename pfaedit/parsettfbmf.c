@@ -263,7 +263,7 @@ static void readttfbitmapfont(FILE *ttf,struct ttfinfo *info,
 	    big.vbearingY = (signed char) getc(ttf);
 	    big.vadvance = getc(ttf);
 	    for ( i=first; i<=last; ++i ) {
-		if ( info->inuse==NULL || info->inuse[i+first] )
+		if ( info->inuse==NULL || info->inuse[i] )
 		    ttfreadbmfglyph(ttf,info,offset,
 			    size,&big,
 			    imageformat,i,bdf);
