@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Dec-2000 -->
-  <!-- AP: Last modified: 22-Oct-2002 -->
+  <!-- AP: Last modified: 02-Nov-2002 -->
   <TITLE>The File Menu</TITLE>
 </HEAD>
 <BODY>
@@ -231,12 +231,17 @@
     or "cid*" are handled similarly except that they specify the current encoding
     (and the number must be in decimal rather than hex).
     <P>
+    <SMALL>PfaEdit does best when given <A NAME="bitmapfiles">bitmap</A> images. It will grey out the
+    foreground and make the background transparent. It will also compress them
+    when it stores them in the sfd file. It will handle most other image formats
+    but does not try to optimize them in anyway. Please use bitmaps here.</SMALL>
+    <P>
     Finally you may load an encapsulated postscript file (or rather the sub-set
     of postscript that PfaEdit understands) into the foreground of characters.
     As with images above this may either import depending on the selection or
     a template.
     <P>
-    In the Outline View this allows you to import an image into the background,
+    In the Outline View this allows you to import an image into the background (see the above remark about <A HREF="#bitmapfiles">bitmaps</A>,
     or import eps or fig files into the foreground (the xfig conversion is really
     bad, the eps conversion is very limitted).
     <P>
