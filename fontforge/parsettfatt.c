@@ -3889,18 +3889,21 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 	    format = coverage>>8;
 	    flags_good = ((coverage&7)<=1);
 	    isv = !(coverage&1);
-	    tupleIndex = 0;
+	    tupleIndex = -1;
 	    header_size = 6;
 	} else {
 	    len = getlong(ttf);
 	    coverage = getushort(ttf);
 	    /* Apple has reordered the bits */
 	    format = (coverage&0xff);
-	    flags_good = ((coverage&0xff00)==0 || (coverage&0xff00)==0x8000);
+	    flags_good = ((coverage&0xdf00)==0 || (coverage&0xdf00)==0x8000);
 	    isv = coverage&0x8000? 1 : 0;
 	    tupleIndex = getushort(ttf);
-	    if ( tupleIndex!=0 )	/* Only deal with default tuple until we parse variation tables */
-		flags_good = false;
+	    if ( coverage&0x2000 ) {
+		if ( info->variations==NULL )
+		    flags_good = false;	/* Ignore if we failed to load the tuple data */
+	    } else
+		tupleIndex = -1;
 	    header_size = 8;
 	}
 	if ( flags_good && format==0 ) {

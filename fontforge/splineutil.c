@@ -2152,7 +2152,8 @@ SplineFont *SplineFontFromPSFont(FontDict *fd) {
 	SplineFontFromMMType1(sf,fd,&pscontext);
     else
 	SplineFontFromType1(sf,fd,&pscontext);
-    if ( loaded_fonts_same_as_new && new_fonts_are_order2 )
+    if ( loaded_fonts_same_as_new && new_fonts_are_order2 &&
+	    fd->weightvector==NULL )
 	SFConvertToOrder2(sf);
 return( sf );
 }
