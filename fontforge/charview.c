@@ -2022,7 +2022,7 @@ return;
 	    dy = -1;
 	  break;
 	}
-	if ( (event->u.chr.state & ksm_control) || cv->b1_tool == cvt_hand ) {
+	if ( event->u.chr.state & (ksm_control|ksm_capslock) ) {
 	    struct sbevent sb;
 	    sb.type = dy>0 || dx<0 ? et_sb_halfup : et_sb_halfdown;
 	    if ( dx==0 )
@@ -2071,6 +2071,8 @@ return;
 		event->u.chr.keysym == GK_Next )
 	    sb.type = et_sb_downpage;
 	CVVScroll(cv,&sb);
+    } else if ( event->u.chr.keysym == GK_Home ) {
+	CVFit(cv);
     } else if ( !(event->u.chr.state&(ksm_control|ksm_meta)) &&
 	    event->type == et_char &&
 	    cv->searcher==NULL &&
