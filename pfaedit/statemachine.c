@@ -1586,7 +1586,7 @@ static void SMD_Fillup(SMD *smd) {
     GGadgetSetTitle(GWidgetGetControl(smd->editgw,CID_NextState),buffer);
 
     GGadgetSetChecked(GWidgetGetControl(smd->editgw,CID_Flag4000),
-	    this->flags&0x4000?1:0);
+	    this->flags&0x4000?0:1);
     GGadgetSetChecked(GWidgetGetControl(smd->editgw,CID_Flag8000),
 	    this->flags&0x8000?1:0);
     if ( smd->sm->type==asm_indic ) {
