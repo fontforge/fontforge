@@ -2304,7 +2304,7 @@ static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl,
 	struct hintdb *hdb, BasePoint *start,int is_order2,int round) {
     Spline *spline, *first;
     SplinePointList temp, *freeme = NULL;
-    int init = true;
+    int init = true, unhinted = true;;
 
     if ( is_order2 )
 	freeme = spl = SplineSetsPSApprox(spl);
@@ -2331,9 +2331,13 @@ static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl,
 		spl = &temp;
 	    }
 	}
-	if ( start==NULL || !init )
+	if ( start==NULL || !init ) {
+	    if ( unhinted && hdb->cnt>0 && spl->first->hintmask!=NULL ) {
+		hdb->mask[0] = ~(*spl->first->hintmask)[0];	/* Make it different */
+		unhinted = false;
+	    }
 	    moveto2(gb,hdb,spl->first,round);
-	else {
+	} else {
 	    hdb->current = *start = spl->first->me;
 	    init = false;
 	}
