@@ -501,9 +501,15 @@ static void GradImproveInter(Monotonic *m1, Monotonic *m2,
 	gt1 = Grad1(&s1->splines[0],&s2->splines[0],t1,t2) + Grad1(&s1->splines[1],&s2->splines[1],t1,t2);
 	gt2 = Grad1(&s2->splines[0],&s1->splines[0],t2,t1) + Grad1(&s2->splines[1],&s1->splines[1],t2,t1);
 	glen = sqrt(gt1*gt1 + gt2*gt2) * factor;
+	if ( glen==0 )
+    break;
 	*_t1 = t1; *_t2 = t2;
 	t1 -= gt1/glen;
 	t2 -= gt2/glen;
+	if ( isnan(t1) || isnan(t2)) {
+	    IError( "Nan in grad" );
+    break;
+	}
 	olderr = error;
 	/*++cnt;*/
     }
