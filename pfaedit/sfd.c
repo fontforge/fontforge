@@ -42,7 +42,7 @@ static const char *charset_names[] = {
     "jis201",
     "win", "mac", "symbol", "zapfding", "adobestandard",
     "jis208", "jis212", "ksc5601", "gb2312", "big5", "big5hkscs", "johab",
-    "unicode", "unicode4", "sjis", "wansung", NULL};
+    "unicode", "unicode4", "sjis", "wansung", "gb2312pk", NULL};
 
 signed char inbase64[256] = {
         -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,

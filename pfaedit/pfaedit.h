@@ -53,6 +53,7 @@ enum { em_base = 0x100,		/* an addition to enum charset, used as the base value 
 	em_wansung,
 	em_jisgb,
 	em_max2,
+/* Any changes above should be duplicated in sfd.c:36-45 */
 	em_unicodeplanes = 0x10000,		/* One encoding for each plane of unicode */
 	em_unicodeplanesmax = 0x17fff,
 	em_custom = em_none,
