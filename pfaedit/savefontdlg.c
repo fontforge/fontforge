@@ -634,18 +634,19 @@ return( NULL );
 return( ret );
 }
 
-static short *ParseWernerSFDFile(char *wernerfilename,SplineFont *sf,int *max) {
+static short *ParseWernerSFDFile(char *wernerfilename,SplineFont *sf,int *max,char ***_names) {
     /* one entry for each char, >=1 => that subfont, 0=>not mapped, -1 => end of char mark */
-    int cnt=0;
-    int k, sub,warned = false;
+    int cnt=0, subfilecnt=0;
+    int k, warned = false;
     uint32 r1,r2,i,modi;
     SplineFont *_sf;
     short *mapping;
     FILE *file;
     char buffer[200];
-    char *end;
+    char *end, *pt;
     char *orig;
     struct remap *map;
+    char **names;
 
     file = fopen(wernerfilename,"r");
     if ( file==NULL ) {
@@ -663,16 +664,26 @@ return( NULL );
     mapping[cnt] = -1;
     *max = 0;
 
+    while ( fgets(buffer,sizeof(buffer),file)!=NULL )
+	++subfilecnt;
+    names = galloc((subfilecnt+1)*sizeof(char *));
+
+    rewind(file);
+    subfilecnt = 0;
     while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
 	if ( strncmp(buffer,pfaeditflag,strlen(pfaeditflag))== 0 ) {
 	    GWidgetErrorR(_STR_WrongSFDFile,_STR_BadSFDFile);
 	    free(mapping);
 return( NULL );
 	}
-	if ( !isdigit(buffer[0]))
+	if ( buffer[0]=='#' || buffer[0]=='\0' || isspace(buffer[0]))
     continue;
-	sub = strtol(buffer,&end,10);
-	if ( sub>*max ) *max = sub;
+	for ( pt = buffer; !isspace(*pt); ++pt );
+	if ( *pt=='\0' || *pt=='\r' || *pt=='\n' )
+    continue;
+	names[subfilecnt] = copyn(buffer,pt-buffer);
+	if ( subfilecnt>*max ) *max = subfilecnt;
+	end = pt;
 	while ( *end!='\0' ) {
 	    while ( isspace(*end)) ++end;
 	    if ( *end=='\0' )
@@ -698,20 +709,23 @@ return( NULL );
 		if ( modi<cnt ) {
 		    if ( mapping[modi]!=0 && !warned ) {
 			fprintf( stderr, "Warning: Encoding %d is mapped to at least two sub-fonts (%d and %d)\n Only one will be used here.\n",
-				i, sub, mapping[modi]);
+				i, subfilecnt, mapping[modi]);
 			warned = true;
 		    }
-		    mapping[modi] = sub;
+		    mapping[modi] = subfilecnt;
 		}
 	    }
 	}
+	++subfilecnt;
     }
+    names[subfilecnt]=NULL;
+    *_names = names;
     fclose(file);
 return( mapping );
 }
 
 static int SaveSubFont(SplineFont *sf,char *newname,int32 *sizes,int res,
-	short *mapping, int subfont) {
+	short *mapping, int subfont, char **names) {
     SplineFont temp;
     SplineChar *chars[256], **newchars;
     SplineFont *_sf;
@@ -740,7 +754,7 @@ static int SaveSubFont(SplineFont *sf,char *newname,int32 *sizes,int res,
 	break;
 	} while ( k<sf->subfontcnt );
 	if ( pos>=256 )
-	    fprintf( stderr, "More that 256 entries in subfont %d\n", subfont );
+	    fprintf( stderr, "More that 256 entries in subfont %s\n", names[subfont] );
 	else if ( i<_sf->charcnt ) {
 	    if ( _sf->chars[i]!=NULL ) {
 		_sf->chars[i]->parent = &temp;
@@ -791,18 +805,19 @@ return( 0 );
     if ( spt==NULL ) spt = filename; else ++spt;
     if ( pt>spt )
 	*pt = '\0';
-    sprintf( buf, "%02d", subfont );
     pt = strstr(spt,"%d");
     if ( pt==NULL )
-	strcat(filename,buf);
+	pt = strstr(spt,"%s");
+    if ( pt==NULL )
+	strcat(filename,names[subfont]);
     else {
-	pt[0] = buf[0];
-	pt[1] = buf[1];
-	if ( buf[2]!='\0' ) {
+	pt[0] = names[subfont][0];
+	pt[1] = names[subfont][1];
+	if ( names[subfont][2]!='\0' ) {
 	    int l;
 	    for ( l=strlen(pt); l>=2 ; --l )
 		pt[l+1] = pt[l];
-	    pt[2] = buf[2];
+	    pt[2] = names[subfont][2];
 	}
     }
     temp.fontname = copy(spt);
@@ -865,6 +880,7 @@ static int WriteMultiplePSFont(SplineFont *sf,char *newname,int32 *sizes,
     short *mapping;
     unichar_t *path;
     int i;
+    char **names;
 
     if ( wernerfilename==NULL ) {
 	wernerfilename = GetWernerSFDFile(sf);
@@ -872,7 +888,7 @@ static int WriteMultiplePSFont(SplineFont *sf,char *newname,int32 *sizes,
     }
     if ( wernerfilename==NULL )
 return( 0 );
-    mapping = ParseWernerSFDFile(wernerfilename,sf,&max);
+    mapping = ParseWernerSFDFile(wernerfilename,sf,&max,&names);
     if ( tofree ) free(wernerfilename);
     if ( mapping==NULL )
 return( 1 );
@@ -895,8 +911,11 @@ return( 1 );
     /*GProgressEnableStop(false);*/
 
     for ( i=1; i<=max && !err; ++i )
-	err = SaveSubFont(sf,newname,sizes,res,mapping,i);
+	err = SaveSubFont(sf,newname,sizes,res,mapping,i,names);
     RestoreSF(sf);
+    free(mapping);
+    for ( i=0; names[i]!=NULL; ++i ) free(names[i]);
+    free(names);
     free( sizes );
     GProgressEndIndicator();
     if ( !err )
