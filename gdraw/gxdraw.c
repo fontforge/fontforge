@@ -751,8 +751,12 @@ static int myerrorhandler(Display *disp, XErrorEvent *err) {
 
     if (err->request_code>0 && err->request_code<128)
 	majorcode = XProtocalCodes[err->request_code];
+    else if ( err->request_code==146 )
+	majorcode = "XInputExtension";
     else
 	majorcode = "";
+    if ( err->request_code==146 && err->minor_code==3 )
+	fprintf( stderr, "Error connecting to wacom tablet. Sometimes linux fails to configure\n it properly. Try typing\n$ su\n# insmod wacom\n" );
     XGetErrorText(disp,err->error_code,buffer,sizeof(buffer));
     fprintf( stderr, "X Error of failed request: %s\n", buffer );
     fprintf( stderr, "  Major opcode of failed request:  %d.%d (%s)\n",
@@ -2947,7 +2951,10 @@ return;
 		    if ( ((XDeviceKeyEvent *) event)->first_axis!=0 )
 			gevent.type = et_noevent;	/* Repeat of previous event to add more axes */
 		} else {
-		    gevent.u.mouse.state = ((XDeviceButtonEvent *) event)->device_state;
+		    /* Pass the buttons from the device, the key modifiers from the normal state */
+		    gevent.u.mouse.state =
+			    ( ((XDeviceButtonEvent *) event)->device_state & 0xffffff00) |
+			    ( ((XDeviceButtonEvent *) event)->state	   & 0x000000ff);
 		    gevent.u.mouse.x = ((XDeviceButtonEvent *) event)->x;
 		    gevent.u.mouse.y = ((XDeviceButtonEvent *) event)->y;
 		    gdisp->expecting_core_event = true;
