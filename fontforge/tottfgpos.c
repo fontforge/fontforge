@@ -3059,6 +3059,10 @@ static void dump_script_table(FILE *g___,SplineFont *sf,
 
     /* Dump the script table */
     base = ftell(g___);
+    /* In the case of a dump G??? script entry (put in to make Uniscribe */
+    /*  happy) Volt adds a dummy default language entry too */
+    if ( dflt_index==-1 && k==0 )
+	dflt_index = 0;
     putshort(g___,dflt_index==-1?0:4+k*6);/* offset from start of script table */
 				/* to data for default language */
     putshort(g___,k);		/* count of all non-default languages */
@@ -3425,48 +3429,44 @@ static uint32 *ScriptsFromFeatures(SplineFont *sf, uint8 *used,
 return( scripts );
 }
 
-/* These two routines are to work around what I believe is a Uniscribe bug */
+/* This routine is to work around what I believe is a Uniscribe bug */
 /* If I have a mini-font with a hebrew base char and a hebrew mark char, and */
 /*  a GPOS mark-to-base table, then the font only works IF there is also a */
 /*  GSUB table with a (possibly empty) entry for script 'hebr' */
 /* It appears that GSUB must contain script entries for all scripts in GPOS */
-static void SaveScripts(struct alltabs *at,uint32 *scripts,int cnt) {
-    at->gpos_script_cnt = cnt;
-    if ( cnt!=0 ) {
-	at->gpos_scripts = galloc((cnt+1)*sizeof(uint32));
-	memcpy(at->gpos_scripts,scripts,(cnt+1)*sizeof(uint32));
-    }
-}
-
+/* Actually it's more complex and is described in some detail in otf_orderlangs */
+/*  (in hebrew both tables must be present, or MS rejects the font (for hebrew) */
+/*  (in latin the font isn't rejected, but GPOS won't work unless GSUB is present */
 static uint32 *MergeScripts(struct alltabs *at,uint32 *scripts,int *scnt) {
     int i,j,k;
     uint32 *s;
 
     if ( scripts==NULL ) {
-	*scnt = at->gpos_script_cnt;
-return( at->gpos_scripts );
-    } else if ( at->gpos_scripts==NULL )
+	*scnt = at->script_cnt;
+	s = galloc((at->script_cnt+1)*sizeof(uint32));
+	memcpy(s,at->scripts,(at->script_cnt+1)*sizeof(uint32));
+return( s );
+    } else if ( at->scripts==NULL )
 return( scripts );
 
-    s = galloc((*scnt+at->gpos_script_cnt+1)*sizeof(uint32));
-    for ( i=j=k=0; i<*scnt || j<at->gpos_script_cnt; ) {
-	if ( i<*scnt && j<at->gpos_script_cnt ) {
-	    if ( scripts[i] == at->gpos_scripts[j] ) {
+    s = galloc((*scnt+at->script_cnt+1)*sizeof(uint32));
+    for ( i=j=k=0; i<*scnt || j<at->script_cnt; ) {
+	if ( i<*scnt && j<at->script_cnt ) {
+	    if ( scripts[i] == at->scripts[j] ) {
 		s[k++] = scripts[i];
 		++i; ++j;
-	    } else if ( scripts[i] < at->gpos_scripts[j] ) {
+	    } else if ( scripts[i] < at->scripts[j] ) {
 		s[k++] = scripts[i++];
 	    } else {
-		s[k++] = at->gpos_scripts[j++];
+		s[k++] = at->scripts[j++];
 	    }
 	} else if ( i<*scnt )
 	    s[k++] = scripts[i++];
 	else
-	    s[k++] = at->gpos_scripts[j++];
+	    s[k++] = at->scripts[j++];
     }
     s[k] = 0;
     free(scripts);
-    free(at->gpos_scripts);
     *scnt = k;
 return( s );
 }
@@ -3496,7 +3496,7 @@ static FILE *dumpg___info(struct alltabs *at, SplineFont *sf,int is_gpos) {
 	lookups = GSUBfigureLookups(lfile,sf,at,&nested);
 	for ( ord = sf->orders; ord!=NULL && ord->table_tag!=CHR('G','S','U','B'); ord = ord->next );
     }
-    if ( lookups==NULL && at->gpos_script_cnt==0 ) {
+    if ( lookups==NULL && at->script_cnt==0 ) {
 	fclose(lfile);
 return( NULL );
     }
@@ -3515,10 +3515,7 @@ return( NULL );
 	used[l->script_lang_index] = true;
 
     scripts = ScriptsFromFeatures(sf,used,&cnt,&langs,&lc);
-    if ( is_gpos )
-	SaveScripts(at,scripts,cnt);
-    else
-	scripts = MergeScripts(at,scripts,&cnt);
+    scripts = MergeScripts(at,scripts,&cnt);
     touched = galloc(lc);
 
     g___ = tmpfile();
@@ -4182,8 +4179,16 @@ void OrderTable(SplineFont *sf,uint32 table_tag) {
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-void otf_orderlangs(SplineFont *sf) {
+void otf_orderlangs(struct alltabs *at,SplineFont *sf) {
     int i,j,k,l, len,max;
+    uint8 *used;
+    PST *pst;
+    KernPair *kp;
+    KernClass *kc;
+    AnchorClass *ac;
+    FPST *fpst;
+    uint32 *scripts;
+    int smax;
 
     if ( sf->cidmaster!=NULL ) sf=sf->cidmaster;
     else if ( sf->mm!=NULL ) sf=sf->mm->normal;
@@ -4217,4 +4222,93 @@ return;
 	}
 	if ( j>max ) max = j;
     }
+
+/* Sergey Malkin from MicroSoft tells me:
+    Each shaping engine in Uniscribe can decide on its requirements for
+    layout tables - some of them require both GSUB and GPOS, in some cases
+    any table present is enough, or it can work without any table. 
+
+    Sometimes, purpose of the check is to determine if font is supporting
+    particular script - if required tables are not there font is just
+    rejected by this shaping engine. Sometimes, shaping engine can not just
+    reject the font because there are fonts using older shaping technologies
+    we still have to support, so it uses some logic when to fallback to
+    legacy layout code. 
+
+    In your case this is Hebrew, where both tables are required to use
+    OpenType processing. Arabic requires both tables too, Latin requires
+    GSUB to execute GPOS. But in general, if you have both tables you should
+    be safe with any script to get fully featured OpenType shaping.
+
+In other words, if we have a Hebrew font with just GPOS features they won't work,
+and MS will not use the font at all. We must add a GSUB table. In the unlikely
+event that we had a hebrew font with only GSUB it would not work either.
+
+So if we want our lookups to have a chance of executing under Uniscribe we
+better make sure that both tables have the same script set.
+
+(Sergey says we could optimize a little: A Latin GSUB table will run without
+a GPOS, but he says the GPOS won't work without a GSUB.)
+*/
+    /* Here we build the set of scripts used in either table... */
+    /* I could just look at the script_lang table and use everything in it */
+    /* But if I do that I may through in some extranious scripts that never */
+    /* have a feature attached to them. */
+
+    used = gcalloc(sf->sli_cnt,sizeof(uint8));
+    for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
+	for ( pst = sf->chars[i]->possub; pst!=NULL; pst=pst->next )
+	    if ( pst->type<=pst_ligature && /*pst->script_lang_index>=0 &&*/
+		    pst->script_lang_index<sf->sli_cnt )
+		used[pst->script_lang_index] = true;
+	for ( kp = sf->chars[i]->kerns; kp!=NULL; kp = kp->next )
+	    if ( /*kp->sli>=0 &&*/ kp->sli<sf->sli_cnt )
+		used[kp->sli] = true;
+	for ( kp = sf->chars[i]->vkerns; kp!=NULL; kp = kp->next )
+	    if ( /*kp->sli>=0 &&*/ kp->sli<sf->sli_cnt )
+		used[kp->sli] = true;
+    }
+    for ( kc = sf->kerns; kc!=NULL; kc = kc->next )
+	if ( /*kc->sli>=0 &&*/ kc->sli<sf->sli_cnt )
+	    used[kc->sli] = true;
+    for ( kc = sf->vkerns; kc!=NULL; kc = kc->next )
+	if ( /*kc->sli>=0 &&*/ kc->sli<sf->sli_cnt )
+	    used[kc->sli] = true;
+    for ( ac=sf->anchor; ac!=NULL; ac = ac->next )
+	if ( /*ac->script_lang_index>=0 &&*/ ac->script_lang_index<sf->sli_cnt )
+	    used[ac->script_lang_index] = true;
+    for ( fpst=sf->possub; fpst!=NULL; fpst=fpst->next )
+	if ( /*fpst->script_lang_index>=0 &&*/ fpst->script_lang_index<sf->sli_cnt )
+	    used[fpst->script_lang_index] = true;
+
+    smax = 0;
+    for ( i=0; sf->script_lang[i]!=NULL; ++i ) if ( used[i] ) {
+	for ( j=0; sf->script_lang[i][j].script!=0; ++j );
+	smax += j;
+    }
+
+    scripts = galloc((smax+1)*sizeof(uint32));
+    smax = 0;
+    for ( i=0; sf->script_lang[i]!=NULL; ++i ) if ( used[i] ) {
+	for ( j=0; sf->script_lang[i][j].script!=0; ++j )
+	    scripts[smax++] = sf->script_lang[i][j].script;
+    }
+    scripts[smax] = 0;
+
+    for ( i=0; i<smax-1; ++i ) for ( j=i+1; j<smax; ++j ) {
+	if ( scripts[i]>scripts[j] ) {
+	    uint32 temp = scripts[i];
+	    scripts[i] = scripts[j];
+	    scripts[j] = temp;
+	}
+    }
+    for ( i=0; i<smax-1; ++i ) {
+	for ( j=i+1; j<smax && scripts[i]==scripts[j]; ++j );
+	if ( i+1!=j ) {
+	    memcpy(scripts+i+1,scripts+j,(smax-j+1)*sizeof(uint32));
+	    smax -= (j-i-1);
+	}
+    }
+    at->scripts = scripts;
+    at->script_cnt = smax;
 }
