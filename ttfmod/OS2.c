@@ -414,9 +414,7 @@ static GTextInfo codepagelist[] = {
 #define CID_IBMFamilyL		1009
 #define CID_Vendor		1010
 #define CID_Selection		1011
-#define CID_SelectionAdd	1012
-#define CID_SelectionRemove	1013
-#define CID_SelectionShow	1014
+#define CID_SelectionList	1012
 
 #define CID_SubXSize		2001
 #define CID_SubYSize		2002
@@ -441,16 +439,12 @@ static GTextInfo codepagelist[] = {
 #define CID_PanXHeight		4010
 
 #define CID_UnicodeRanges	5001
-#define CID_UnicodeAdd		5002
-#define CID_UnicodeRemove	5003
-#define CID_UnicodeShow		5004
+#define CID_UnicodeList		5002
+#define CID_FirstUnicode	5003
+#define CID_LastUnicode		5004
 #define CID_CodePageLab		5005
 #define CID_CodePageRanges	5006
-#define CID_CodePageAdd		5008
-#define CID_CodePageRemove	5010
-#define CID_CodePageShow	5011
-#define CID_FirstUnicode	5012
-#define CID_LastUnicode		5013
+#define CID_CodePageList	5007
 
 #define CID_TypoAscender	6001
 #define CID_TypoDescender	6002
@@ -505,8 +499,7 @@ static int OS2_VersionChange(GGadget *g, GEvent *e) {
     if ( val==0 || val==1 || val==2 ) {
 	GGadgetSetEnabled(GWidgetGetControl(gw,CID_CodePageLab),val!=0);
 	GGadgetSetEnabled(GWidgetGetControl(gw,CID_CodePageRanges),val!=0);
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_CodePageAdd),val!=0);
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_CodePageRemove),val!=0);
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_CodePageList),val!=0);
 	GGadgetSetEnabled(GWidgetGetControl(gw,CID_XHeightLab),val==2);
 	GGadgetSetEnabled(GWidgetGetControl(gw,CID_XHeight),val==2);
 	GGadgetSetEnabled(GWidgetGetControl(gw,CID_CapHeightLab),val==2);
@@ -613,214 +606,105 @@ static int OS2_FamilyChange(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static void readunicoderanges(GGadget *g,int32 flags[4]) {
-    const unichar_t *ret;
-    unichar_t *end;
-
-    ret = _GGadgetGetTitle(g);
-    flags[3] = u_strtoul(ret,&end,16);
-    while ( !isdigit(*end) && *end!='\0' ) ++end;
-    flags[2] = u_strtoul(end,&end,16);
-    while ( !isdigit(*end) && *end!='\0' ) ++end;
-    flags[1] = u_strtoul(end,&end,16);
-    while ( !isdigit(*end) && *end!='\0' ) ++end;
-    flags[0] = u_strtoul(end,&end,16);
-}
-
-static int _OS2_UnicodeChange(GGadget *g, int32 flags[4]) {
-    GWindow gw = GDrawGetParentWindow(GGadgetGetWindow(g));
-    int len, size, i, set;
-    GGadget *add, *remove, *show;
-    GTextInfo **alist, **rlist;
-    unichar_t *temp, *pt;
-
-    add = GWidgetGetControl(gw,CID_UnicodeAdd);
-    remove = GWidgetGetControl(gw,CID_UnicodeRemove);
-    show = GWidgetGetControl(gw,CID_UnicodeShow);
-
-    alist = GGadgetGetList(add,&len);
-    rlist = GGadgetGetList(remove,&len);
-    for ( i=size=0; i<len; ++i ) {
-	set = (flags[i>>5]&(1<<(i&31)))?1 : 0;
-	alist[i]->disabled =  set;
-	rlist[i]->disabled = !set;
-	alist[i]->selected = rlist[i]->selected = false;
-	if ( set ) size += u_strlen(alist[i]->text)+2;
-    }
-    GGadgetSetTitle(add,GStringGetResource(_STR_Add,NULL));
-    GGadgetSetTitle(remove,GStringGetResource(_STR_Remove,NULL));
-
-    temp = pt = galloc((size+1)*sizeof(unichar_t));
-    for ( i=0; i<len; ++i ) {
-	if ( flags[i>>5]&(1<<(i&31)) ) {
-	    u_strcpy(pt,alist[i]->text);
-	    uc_strcat(pt,", ");
-	    pt += u_strlen(pt);
-	}
-    }
-    if ( size!=0 )
-	pt-=2;
-    *pt = '\0';
-    GGadgetSetTitle(show,temp);
-    free(temp);
-    
-return( true );
-}
-
 static int OS2_UnicodeChange(GGadget *g, GEvent *e) {
     int32 flags[4];
+    int len,i,bit,set;
 
-    if ( e!=NULL && (e->type!=et_controlevent || e->u.control.subtype != et_textchanged ))
-return( true );
+    if ( e==NULL || (e->type==et_controlevent && e->u.control.subtype == et_textchanged )) {
+	const unichar_t *ret;
+	unichar_t *end;
+	GWindow gw = GDrawGetParentWindow(GGadgetGetWindow(g));
+	GGadget *list;
 
-    readunicoderanges(g,flags);
-return( _OS2_UnicodeChange(g,flags));
-}
+	ret = _GGadgetGetTitle(g);
+	flags[3] = u_strtoul(ret,&end,16);
+	while ( !isdigit(*end) && *end!='\0' ) ++end;
+	flags[2] = u_strtoul(end,&end,16);
+	while ( !isdigit(*end) && *end!='\0' ) ++end;
+	flags[1] = u_strtoul(end,&end,16);
+	while ( !isdigit(*end) && *end!='\0' ) ++end;
+	flags[0] = u_strtoul(end,&end,16);
 
-static int OS2_UnicodeChangeAddRemove(GGadget *g, GEvent *e) {
-    GWindow gw = GDrawGetParentWindow(GGadgetGetWindow(g));
-    int32 flags[4];
-    int bit;
-    GGadget *field;
-    char ranges[40]; unichar_t ur[40];
+	list = GWidgetGetControl(gw,CID_UnicodeList);
 
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate )
-return( true );
-    field = GWidgetGetControl(gw,CID_UnicodeRanges);
-    readunicoderanges(field,flags);
-    bit = GGadgetGetFirstListSelectedItem(g);
-    if ( GGadgetGetCid(g)==CID_UnicodeAdd )
-	flags[bit>>5] |= (1<<(bit&31));
-    else
-	flags[bit>>5] &= ~(1<<(bit&31));
-    _OS2_UnicodeChange(field,flags);
-    sprintf( ranges, "%08x.%08x.%08x.%08x", flags[3], flags[2], flags[1], flags[0]);
-    uc_strcpy(ur,ranges);
-    GGadgetSetTitle(field,ur);
-return( true );
-}
-
-static void readcodepages(GGadget *g,int32 flags[2]) {
-    const unichar_t *ret;
-    unichar_t *end;
-
-    ret = _GGadgetGetTitle(g);
-    flags[1] = u_strtoul(ret,&end,16);
-    while ( !isdigit(*end) && *end!='\0' ) ++end;
-    flags[0] = u_strtoul(end,&end,16);
-}
-
-static int _OS2_CodePageChange(GGadget *g, int32 flags[2]) {
-    GWindow gw = GDrawGetParentWindow(GGadgetGetWindow(g));
-    int len, size, i, set, bit;
-    GGadget *add, *remove, *show;
-    GTextInfo **alist, **rlist;
-    unichar_t *temp, *pt;
-
-    add = GWidgetGetControl(gw,CID_CodePageAdd);
-    remove = GWidgetGetControl(gw,CID_CodePageRemove);
-    show = GWidgetGetControl(gw,CID_CodePageShow);
-
-    alist = GGadgetGetList(add,&len);
-    rlist = GGadgetGetList(remove,&len);
-    for ( i=size=0; i<len; ++i ) {
-	bit = (int) (alist[i]->userdata);
-	set = (flags[bit>>5]&(1<<(bit&31)))?1 : 0;
-	alist[i]->disabled =  set;
-	rlist[i]->disabled = !set;
-	alist[i]->selected = rlist[i]->selected = false;
-	if ( set ) size += u_strlen(alist[i]->text)+2;
-    }
-    GGadgetSetTitle(add,GStringGetResource(_STR_Add,NULL));
-    GGadgetSetTitle(remove,GStringGetResource(_STR_Remove,NULL));
-
-    temp = pt = galloc((size+1)*sizeof(unichar_t));
-    for ( i=0; i<len; ++i ) {
-	bit = (int) (alist[i]->userdata);
-	if ( flags[bit>>5]&(1<<(bit&31)) ) {
-	    u_strcpy(pt,alist[i]->text);
-	    uc_strcat(pt,", ");
-	    pt += u_strlen(pt);
+	for ( i=0; unicoderangelist[i].text!=NULL; ++i ) {
+	    bit = (int) (unicoderangelist[i].userdata);
+	    set = (flags[bit>>5]&(1<<(bit&31)))?1 : 0;
+	    GGadgetSelectListItem(list,i,set);
 	}
+    } else if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	GWindow gw = GDrawGetParentWindow(GGadgetGetWindow(g));
+	char ranges[40]; unichar_t ur[40];
+	GTextInfo **list = GGadgetGetList(g,&len);
+	GGadget *field = GWidgetGetControl(gw,CID_Selection);
+
+	flags[0] = flags[1] = flags[2] = flags[3] = 0;
+	for ( i=0; i<len; ++i )
+	    if ( list[i]->selected ) {
+		bit = ((int) (list[i]->userdata));
+		flags[bit>>5] |= (1<<(bit&31));
+	    }
+
+	sprintf( ranges, "%08x.%08x.%08x.%08x", flags[3], flags[2], flags[1], flags[0]);
+	uc_strcpy(ur,ranges);
+	GGadgetSetTitle(field,ur);
     }
-    if ( size!=0 )
-	pt-=2;
-    *pt = '\0';
-    GGadgetSetTitle(show,temp);
-    free(temp);
-    
 return( true );
 }
 
 static int OS2_CodePageChange(GGadget *g, GEvent *e) {
     int32 flags[2];
+    int len,i,bit,set;
 
-    if ( e!=NULL && (e->type!=et_controlevent || e->u.control.subtype != et_textchanged ))
-return( true );
+    if ( e==NULL || (e->type==et_controlevent && e->u.control.subtype == et_textchanged )) {
+	const unichar_t *ret;
+	unichar_t *end;
+	GWindow gw = GDrawGetParentWindow(GGadgetGetWindow(g));
+	GGadget *list;
 
-    readcodepages(g,flags);
-return( _OS2_CodePageChange(g,flags));
-}
+	ret = _GGadgetGetTitle(g);
+	flags[1] = u_strtoul(ret,&end,16);
+	while ( !isdigit(*end) && *end!='\0' ) ++end;
+	flags[0] = u_strtoul(end,&end,16);
 
-static int OS2_CodePageChangeAddRemove(GGadget *g, GEvent *e) {
-    GWindow gw = GDrawGetParentWindow(GGadgetGetWindow(g));
-    int32 flags[2];
-    int bit;
-    GGadget *field;
-    char ranges[40]; unichar_t ur[40];
+	list = GWidgetGetControl(gw,CID_CodePageList);
 
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate )
-return( true );
-    field = GWidgetGetControl(gw,CID_CodePageRanges);
-    readcodepages(field,flags);
-    bit = (int) (GGadgetGetListItemSelected(g)->userdata);
-    if ( GGadgetGetCid(g)==CID_CodePageAdd )
-	flags[bit>>5] |= (1<<(bit&31));
-    else
-	flags[bit>>5] &= ~(1<<(bit&31));
-    _OS2_CodePageChange(field,flags);
-    sprintf( ranges, "%08x.%08x", flags[1], flags[0]);
-    uc_strcpy(ur,ranges);
-    GGadgetSetTitle(field,ur);
+	for ( i=0; codepagelist[i].text!=NULL; ++i ) {
+	    bit = (int) (codepagelist[i].userdata);
+	    set = (flags[bit>>5]&(1<<(bit&31)))?1 : 0;
+	    GGadgetSelectListItem(list,i,set);
+	}
+    } else if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	GWindow gw = GDrawGetParentWindow(GGadgetGetWindow(g));
+	char ranges[40]; unichar_t ur[40];
+	GTextInfo **list = GGadgetGetList(g,&len);
+	GGadget *field = GWidgetGetControl(gw,CID_CodePageRanges);
+
+	flags[0] = flags[1] = 0;
+	for ( i=0; i<len; ++i )
+	    if ( list[i]->selected ) {
+		bit = ((int) (list[i]->userdata));
+		flags[bit>>5] |= (1<<(bit&31));
+	    }
+
+	sprintf( ranges, "%08x.%08x", flags[1], flags[0]);
+	uc_strcpy(ur,ranges);
+	GGadgetSetTitle(field,ur);
+    }
 return( true );
 }
 
 static int _OS2_SelectionChange(GGadget *g, int32 flags) {
     GWindow gw = GDrawGetParentWindow(GGadgetGetWindow(g));
-    int len, size, i, set;
-    GGadget *add, *remove, *show;
-    GTextInfo **alist, **rlist;
-    unichar_t *temp, *pt;
+    int i, set;
+    GGadget *list;
 
-    add = GWidgetGetControl(gw,CID_SelectionAdd);
-    remove = GWidgetGetControl(gw,CID_SelectionRemove);
-    show = GWidgetGetControl(gw,CID_SelectionShow);
+    list = GWidgetGetControl(gw,CID_SelectionList);
 
-    alist = GGadgetGetList(add,&len);
-    rlist = GGadgetGetList(remove,&len);
-    for ( i=size=0; i<len; ++i ) {
-	set = (flags&(1<<i))?1 : 0;
-	alist[i]->disabled =  set;
-	rlist[i]->disabled = !set;
-	alist[i]->selected = rlist[i]->selected = false;
-	if ( set ) size += u_strlen(alist[i]->text)+2;
+    for ( i=0; fsselectionlist[i].text!=NULL; ++i ) {
+	set = (flags&(1<<((int) (fsselectionlist[i].userdata))))?1 : 0;
+	GGadgetSelectListItem(list,i,set);
     }
-    GGadgetSetTitle(add,GStringGetResource(_STR_Add,NULL));
-    GGadgetSetTitle(remove,GStringGetResource(_STR_Remove,NULL));
-
-    temp = pt = galloc((size+1)*sizeof(unichar_t));
-    for ( i=0; i<len; ++i ) {
-	if ( flags&(1<<i) ) {
-	    u_strcpy(pt,alist[i]->text);
-	    uc_strcat(pt,", ");
-	    pt += u_strlen(pt);
-	}
-    }
-    if ( size!=0 )
-	pt-=2;
-    *pt = '\0';
-    GGadgetSetTitle(show,temp);
-    free(temp);
     
 return( true );
 }
@@ -829,38 +713,30 @@ static int OS2_SelectionChange(GGadget *g, GEvent *e) {
     int32 flags;
     const unichar_t *ret;
 
-    if ( e!=NULL && (e->type!=et_controlevent || e->u.control.subtype != et_textchanged ))
-return( true );
-
-    ret = GGadgetGetTitle(g);
-    flags = u_strtoul(ret,NULL,16);
-return( _OS2_SelectionChange(g,flags));
-}
-
-static int OS2_SelectionChangeAddRemove(GGadget *g, GEvent *e) {
-    GWindow gw = GDrawGetParentWindow(GGadgetGetWindow(g));
-    const unichar_t *ret;
-    int32 flags;
-    int bit;
-    GGadget *field;
-    char sel[40]; unichar_t us[40];
-
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate )
-return( true );
-    field = GWidgetGetControl(gw,CID_Selection);
-    ret = GGadgetGetTitle(field);
-    flags = u_strtoul(ret,NULL,16);
-    bit = GGadgetGetFirstListSelectedItem(g);
-    if ( GGadgetGetCid(g)==CID_SelectionAdd ) {
-	flags |= (1<<bit);
-	if ( bit==6 ) flags = 1<<6;		/* If regular is set, all others must be clear */
-	else flags &= ~(1<<6);			/* If something else is set, regular must be clear */
-    } else
-	flags &= ~(1<<bit);
-    _OS2_SelectionChange(field,flags);
-    sprintf( sel, "%04x", flags);
-    uc_strcpy(us,sel);
-    GGadgetSetTitle(field,us);
+    if ( e==NULL || (e->type==et_controlevent && e->u.control.subtype == et_textchanged )) {
+	ret = GGadgetGetTitle(g);
+	flags = u_strtoul(ret,NULL,16);
+	_OS2_SelectionChange(g,flags);
+    } else if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	GWindow gw = GDrawGetParentWindow(GGadgetGetWindow(g));
+	char sel[8]; unichar_t us[8];
+	int len,i;
+	GTextInfo **list = GGadgetGetList(g,&len);
+	GGadget *field = GWidgetGetControl(gw,CID_Selection);
+	for ( i=flags=0; i<len; ++i )
+	    if ( list[i]->selected )
+		flags |= 1<<((int) (list[i]->userdata));
+	/* if Regular is set, then nothing else may be */
+	if ( e->u.control.u.list.changed_index==6 && (flags&(1<<6)))
+	    _OS2_SelectionChange(field,flags = (1<<6));
+	/* If they set some other bit, and regular was set, turn it off */
+	else if ( e->u.control.u.list.changed_index!=6 && (flags&(1<<6)) &&
+		flags!=(1<<6) )
+	    _OS2_SelectionChange(field,flags &= ~(1<<6));
+	sprintf( sel, "%04x", flags);
+	uc_strcpy(us,sel);
+	GGadgetSetTitle(field,us);
+    }
 return( true );
 }
 
@@ -1160,30 +1036,13 @@ void OS2CreateEditor(Table *tab,TtfView *tfv) {
     ggcd[19].gd.handle_controlevent = OS2_SelectionChange;
     ggcd[19].creator = GTextFieldCreate;
 
-    ggcd[20].gd.pos.x = 150; ggcd[20].gd.pos.y = ggcd[19].gd.pos.y; ggcd[20].gd.pos.width = 60;
-    ggcd[20].gd.flags = gg_visible | gg_enabled;
-    ggcd[20].gd.cid = CID_SelectionAdd;
+    ggcd[20].gd.pos.x = 150; ggcd[20].gd.pos.y = ggcd[19].gd.pos.y;
+    ggcd[20].gd.pos.height = 7*12+10;
+    ggcd[20].gd.flags = gg_visible | gg_enabled | gg_list_multiplesel;
+    ggcd[20].gd.cid = CID_SelectionList;
     ggcd[20].gd.u.list = fsselectionlist;
-    glabel[20].text = (unichar_t *) _STR_Add;
-    glabel[20].text_in_resource = true;
-    ggcd[20].gd.label = &glabel[20];
-    ggcd[20].gd.handle_controlevent = OS2_SelectionChangeAddRemove;
-    ggcd[20].creator = GListButtonCreate;
-
-    ggcd[21].gd.pos.x = 220; ggcd[21].gd.pos.y = ggcd[20].gd.pos.y; ggcd[21].gd.pos.width = 60;
-    ggcd[21].gd.flags = gg_visible | gg_enabled;
-    ggcd[21].gd.cid = CID_SelectionRemove;
-    ggcd[21].gd.u.list = fsselectionlist;
-    glabel[21].text = (unichar_t *) _STR_Remove;
-    glabel[21].text_in_resource = true;
-    ggcd[21].gd.label = &glabel[21];
-    ggcd[21].gd.handle_controlevent = OS2_SelectionChangeAddRemove;
-    ggcd[21].creator = GListButtonCreate;
-
-    ggcd[22].gd.pos.x = 10; ggcd[22].gd.pos.y = ggcd[20].gd.pos.y+26; ggcd[22].gd.pos.width = 270;
-    ggcd[22].gd.flags = gg_visible;
-    ggcd[22].gd.cid = CID_SelectionShow;
-    ggcd[22].creator = GTextFieldCreate;
+    ggcd[20].gd.handle_controlevent = OS2_SelectionChange;
+    ggcd[20].creator = GListCreate;
 
 /******************************************************************************/
     memset(&alabel,0,sizeof(alabel));
@@ -1367,112 +1226,77 @@ void OS2CreateEditor(Table *tab,TtfView *tfv) {
     cgcd[1].gd.handle_controlevent = OS2_UnicodeChange;
     cgcd[1].creator = GTextFieldCreate;
 
-    cgcd[2].gd.pos.x = 20; cgcd[2].gd.pos.y = cgcd[1].gd.pos.y+24; cgcd[2].gd.pos.width = 120;
-    cgcd[2].gd.flags = gg_visible | gg_enabled;
-    cgcd[2].gd.cid = CID_UnicodeAdd;
+    cgcd[2].gd.pos.x = 20; cgcd[2].gd.pos.y = cgcd[1].gd.pos.y+24;
+    cgcd[2].gd.pos.width = 220; cgcd[2].gd.pos.height = 6*12+10;
+    cgcd[2].gd.flags = gg_visible | gg_enabled | gg_list_multiplesel;
+    cgcd[2].gd.cid = CID_UnicodeList;
     cgcd[2].gd.u.list = unicoderangelist;
-    clabel[2].text = (unichar_t *) _STR_Add;
-    clabel[2].text_in_resource = true;
-    cgcd[2].gd.label = &clabel[2];
-    cgcd[2].gd.handle_controlevent = OS2_UnicodeChangeAddRemove;
-    cgcd[2].creator = GListButtonCreate;
+    cgcd[2].gd.handle_controlevent = OS2_UnicodeChange;
+    cgcd[2].creator = GListCreate;
 
-    cgcd[3].gd.pos.x = 160; cgcd[3].gd.pos.y = cgcd[2].gd.pos.y; cgcd[3].gd.pos.width = 120;
-    cgcd[3].gd.flags = gg_visible | gg_enabled;
-    cgcd[3].gd.cid = CID_UnicodeRemove;
-    cgcd[3].gd.u.list = unicoderangelist;
-    clabel[3].text = (unichar_t *) _STR_Remove;
+    cgcd[3].gd.pos.x = 10; cgcd[3].gd.pos.y = cgcd[2].gd.pos.y+cgcd[2].gd.pos.height+4+6;
+    clabel[3].text = (unichar_t *) _STR_FirstUnicode;
     clabel[3].text_in_resource = true;
     cgcd[3].gd.label = &clabel[3];
-    cgcd[3].gd.handle_controlevent = OS2_UnicodeChangeAddRemove;
-    cgcd[3].creator = GListButtonCreate;
+    cgcd[3].gd.flags = gg_visible | gg_enabled;
+    cgcd[3].creator = GLabelCreate;
 
-    cgcd[4].gd.pos.x = 10; cgcd[4].gd.pos.y = cgcd[2].gd.pos.y+26; cgcd[4].gd.pos.width = 270;
-    cgcd[4].gd.flags = gg_visible | gg_textarea_wrap;
-    cgcd[4].gd.cid = CID_UnicodeShow;
-    cgcd[4].creator = GTextAreaCreate;
+    sprintf( first, "U+%04x", tgetushort(tab,64));
+    clabel[4].text = (unichar_t *) first;
+    clabel[4].text_is_1byte = true;
+    cgcd[4].gd.label = &clabel[4];
+    cgcd[4].gd.pos.x = 80; cgcd[4].gd.pos.y = cgcd[3].gd.pos.y-6; cgcd[4].gd.pos.width = 60;
+    cgcd[4].gd.flags = gg_visible | gg_enabled;
+    cgcd[4].gd.cid = CID_FirstUnicode;
+    cgcd[4].creator = GTextFieldCreate;
 
-    cgcd[5].gd.pos.x = 10; cgcd[5].gd.pos.y = cgcd[4].gd.pos.y+57+6;
-    clabel[5].text = (unichar_t *) _STR_FirstUnicode;
+    cgcd[5].gd.pos.x = 155; cgcd[5].gd.pos.y = cgcd[3].gd.pos.y;
+    clabel[5].text = (unichar_t *) _STR_LastUnicode;
     clabel[5].text_in_resource = true;
     cgcd[5].gd.label = &clabel[5];
     cgcd[5].gd.flags = gg_visible | gg_enabled;
     cgcd[5].creator = GLabelCreate;
 
-    sprintf( first, "U+%04x", tgetushort(tab,64));
-    clabel[6].text = (unichar_t *) first;
+    sprintf( last, "U+%04x", tgetushort(tab,66));
+    clabel[6].text = (unichar_t *) last;
     clabel[6].text_is_1byte = true;
     cgcd[6].gd.label = &clabel[6];
-    cgcd[6].gd.pos.x = 80; cgcd[6].gd.pos.y = cgcd[5].gd.pos.y-6; cgcd[6].gd.pos.width = 60;
+    cgcd[6].gd.pos.x = 190; cgcd[6].gd.pos.y = cgcd[4].gd.pos.y; cgcd[6].gd.pos.width = 60;
     cgcd[6].gd.flags = gg_visible | gg_enabled;
-    cgcd[6].gd.cid = CID_FirstUnicode;
+    cgcd[6].gd.cid = CID_LastUnicode;
     cgcd[6].creator = GTextFieldCreate;
 
-    cgcd[7].gd.pos.x = 155; cgcd[7].gd.pos.y = cgcd[5].gd.pos.y;
-    clabel[7].text = (unichar_t *) _STR_LastUnicode;
+    cgcd[7].gd.pos.x = 10; cgcd[7].gd.pos.y = cgcd[6].gd.pos.y+24;
+    clabel[7].text = (unichar_t *) _STR_CodePages;
     clabel[7].text_in_resource = true;
     cgcd[7].gd.label = &clabel[7];
     cgcd[7].gd.flags = gg_visible | gg_enabled;
+    cgcd[7].gd.cid = CID_CodePageLab;
     cgcd[7].creator = GLabelCreate;
 
-    sprintf( last, "U+%04x", tgetushort(tab,66));
-    clabel[8].text = (unichar_t *) last;
+    sprintf( codepages, "%08x.%08x", tgetlong(tab,82), tgetlong(tab,78));
+    clabel[8].text = (unichar_t *) codepages;
     clabel[8].text_is_1byte = true;
     cgcd[8].gd.label = &clabel[8];
-    cgcd[8].gd.pos.x = 190; cgcd[8].gd.pos.y = cgcd[6].gd.pos.y; cgcd[8].gd.pos.width = 60;
+    cgcd[8].gd.pos.x = 10; cgcd[8].gd.pos.y = cgcd[7].gd.pos.y+13; cgcd[8].gd.pos.width = 140;
     cgcd[8].gd.flags = gg_visible | gg_enabled;
-    cgcd[8].gd.cid = CID_LastUnicode;
+    cgcd[8].gd.cid = CID_CodePageRanges;
+    cgcd[8].gd.handle_controlevent = OS2_CodePageChange;
     cgcd[8].creator = GTextFieldCreate;
 
-    cgcd[9].gd.pos.x = 10; cgcd[9].gd.pos.y = cgcd[8].gd.pos.y+24;
-    clabel[9].text = (unichar_t *) _STR_CodePages;
-    clabel[9].text_in_resource = true;
-    cgcd[9].gd.label = &clabel[9];
-    cgcd[9].gd.flags = gg_visible | gg_enabled;
-    cgcd[9].gd.cid = CID_CodePageLab;
-    cgcd[9].creator = GLabelCreate;
-
-    sprintf( codepages, "%08x.%08x", tgetlong(tab,82), tgetlong(tab,78));
-    clabel[10].text = (unichar_t *) codepages;
-    clabel[10].text_is_1byte = true;
-    cgcd[10].gd.label = &clabel[10];
-    cgcd[10].gd.pos.x = 10; cgcd[10].gd.pos.y = cgcd[9].gd.pos.y+13; cgcd[10].gd.pos.width = 270;
-    cgcd[10].gd.flags = gg_visible | gg_enabled;
-    cgcd[10].gd.cid = CID_CodePageRanges;
-    cgcd[10].gd.handle_controlevent = OS2_CodePageChange;
-    cgcd[10].creator = GTextFieldCreate;
-
-    cgcd[11].gd.pos.x = 20; cgcd[11].gd.pos.y = cgcd[10].gd.pos.y+24; cgcd[11].gd.pos.width = 120;
-    cgcd[11].gd.flags = gg_visible | gg_enabled;
-    cgcd[11].gd.cid = CID_CodePageAdd;
-    cgcd[11].gd.u.list = codepagelist;
-    clabel[11].text = (unichar_t *) _STR_Add;
-    clabel[11].text_in_resource = true;
-    cgcd[11].gd.label = &clabel[11];
-    cgcd[11].gd.handle_controlevent = OS2_CodePageChangeAddRemove;
-    cgcd[11].creator = GListButtonCreate;
-
-    cgcd[12].gd.pos.x = 160; cgcd[12].gd.pos.y = cgcd[11].gd.pos.y; cgcd[12].gd.pos.width = 120;
-    cgcd[12].gd.flags = gg_visible | gg_enabled;
-    cgcd[12].gd.cid = CID_CodePageRemove;
-    cgcd[12].gd.u.list = codepagelist;
-    clabel[12].text = (unichar_t *) _STR_Remove;
-    clabel[12].text_in_resource = true;
-    cgcd[12].gd.label = &clabel[12];
-    cgcd[12].gd.handle_controlevent = OS2_CodePageChangeAddRemove;
-    cgcd[12].creator = GListButtonCreate;
-
-    cgcd[13].gd.pos.x = 10; cgcd[13].gd.pos.y = cgcd[11].gd.pos.y+26; cgcd[13].gd.pos.width = 270;
-    cgcd[13].gd.flags = gg_visible | gg_textarea_wrap;
-    cgcd[13].gd.cid = CID_CodePageShow;
-    cgcd[13].creator = GTextAreaCreate;
+    cgcd[9].gd.pos.x = 160; cgcd[9].gd.pos.y = cgcd[8].gd.pos.y;
+    cgcd[9].gd.pos.width = 135; cgcd[9].gd.pos.height = 7*12+10;
+    cgcd[9].gd.flags = gg_visible | gg_enabled | gg_list_multiplesel;
+    cgcd[9].gd.cid = CID_CodePageList;
+    cgcd[9].gd.u.list = codepagelist;
+    cgcd[9].gd.handle_controlevent = OS2_CodePageChange;
+    cgcd[9].creator = GListCreate;
 
     if ( vnum==0 ) {
 	codepages[0] = '\0';
+	cgcd[7].gd.flags &= ~gg_enabled;
+	cgcd[8].gd.flags &= ~gg_enabled;
 	cgcd[9].gd.flags &= ~gg_enabled;
-	cgcd[10].gd.flags &= ~gg_enabled;
-	cgcd[11].gd.flags &= ~gg_enabled;
-	cgcd[12].gd.flags &= ~gg_enabled;
     }
 /******************************************************************************/
     memset(&tlabel,0,sizeof(tlabel));
@@ -1743,7 +1567,7 @@ void OS2CreateEditor(Table *tab,TtfView *tfv) {
     GGadgetsCreate(gw,mgcd);
 
     OS2_UnicodeChange(cgcd[1].ret,NULL);		/* Initialize unicoderanges */
-    OS2_CodePageChange(cgcd[10].ret,NULL);		/* Initialize codepages */
+    OS2_CodePageChange(cgcd[8].ret,NULL);		/* Initialize codepages */
     OS2_SelectionChange(ggcd[19].ret,NULL);		/* Initialize fsselection */
 
     GDrawSetVisible(gw,true);
