@@ -403,6 +403,8 @@ GRect *_ggadget_getsize(GGadget *g,GRect *rct);
 GRect *_ggadget_getinnersize(GGadget *g,GRect *rct);
 void _GGroup_Init(void);
 
+extern unichar_t *_GGadgetFileToUString(char *filename,int max);
+
 extern int GBoxDrawBorder(GWindow gw,GRect *pos,GBox *design,
 	enum gadget_state state,int is_default);
 extern void GBoxDrawBackground(GWindow gw,GRect *pos,GBox *design,
