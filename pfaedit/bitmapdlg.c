@@ -381,10 +381,14 @@ return( ret );
 
 static void BitmapsDoIt(CreateBitmapData *bd,int32 *sizes,int usefreetype) {
 
-    bd->done = true;
-    if ( bd->isavail && bd->sf->onlybitmaps && bd->sf->bitmaps!=NULL )
-	FVScaleBitmaps(bd->fv,sizes);
-    else if ( bd->isavail )
+    if ( bd->isavail && bd->sf->onlybitmaps && bd->sf->bitmaps!=NULL ) {
+	if ( sizes[0]!=0 )
+	    FVScaleBitmaps(bd->fv,sizes);
+	else {
+	    GWidgetErrorR(_STR_CantDeleteAllBitmaps,_STR_CantDeleteAllBitmaps);
+return;
+	}
+    } else if ( bd->isavail )
 	SFFigureBitmaps(bd->sf,sizes,usefreetype);
     else {
 	if ( !FVRegenBitmaps(bd,sizes,usefreetype))
@@ -392,6 +396,7 @@ static void BitmapsDoIt(CreateBitmapData *bd,int32 *sizes,int usefreetype) {
 	else
 	    lastwhich = bd->which;
     }
+    bd->done = true;
 }
 
 static int CB_OK(GGadget *g, GEvent *e) {

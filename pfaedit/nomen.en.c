@@ -967,6 +967,7 @@ static char *str_MacSizes = "Mac";
 static char *str_UseFreeType = "Use FreeType";
 static char *str_ScalingBitmaps = "Scaling Bitmaps";
 static char *str_CantScaleGreymap = "Can't scale a greymap font";
+static char *str_CantDeleteAllBitmaps = "Can't delete all bitmaps";
     /* Bitmap view */
 /* "%s at %d from %s", charactername, pixelsize, fontname */
 static char *str_bvat = " at ";
