@@ -820,11 +820,9 @@ unichar_t *ScriptLangLine(struct script_record *sr) {
 return( line );
 }
 
-GTextInfo *SFLangList(SplineFont *sf,int addfinal,SplineChar *default_script) {
-    int i,j,k,l,best_sli,scnt,matched;
-    GTextInfo *ti;
+int SCDefaultSLI(SplineFont *sf, SplineChar *default_script) {
+    int i,j,k,l,best_sli,scnt,matched,def_sli;
     uint32 script;
-    int def_sli;
     PST *pst;
 
     if ( sf->cidmaster ) sf = sf->cidmaster;
@@ -877,7 +875,17 @@ GTextInfo *SFLangList(SplineFont *sf,int addfinal,SplineChar *default_script) {
 	    def_sli = best_sli;
 	}
     }
-	    
+return( def_sli );
+}
+
+GTextInfo *SFLangList(SplineFont *sf,int addfinal,SplineChar *default_script) {
+    int i;
+    GTextInfo *ti;
+    int def_sli;
+
+    if ( sf->cidmaster ) sf = sf->cidmaster;
+    def_sli = SCDefaultSLI(sf,default_script);
+
     for ( i=0; sf->script_lang[i]!=NULL; ++i );
     ti = gcalloc(i+2,sizeof( GTextInfo ));
     for ( i=0; sf->script_lang[i]!=NULL; ++i )
@@ -2726,8 +2734,25 @@ static void SetNameFromUnicode(GWindow gw,int cid,int val) {
     free(temp);
 }
 
+void SCInsertPST(SplineChar *sc,PST *new) {
+    PST *old, *prev;
+
+    for ( old=sc->possub, prev = NULL; old!=NULL; prev = old, old = old->next ) {
+	if ( old->tag==new->tag && old->type==new->type &&
+		old->script_lang_index == new->script_lang_index ) {
+	    new->next = old->next;
+	    PSTFree(old);
+    break;
+	}
+    }
+    if ( prev==NULL )
+	sc->possub = new;
+    else
+	prev->next = new;
+}
+
 void SCAppendPosSub(SplineChar *sc,enum possub_type type, char **d) {
-    PST *new, *old;
+    PST *new;
     char *pt, *end, *data, *spt, *tpt;
     int i;
 
@@ -2802,18 +2827,7 @@ return;
 		new->u.lig.lig = sc;
 	}
 
-	for ( old=sc->possub; old!=NULL; old = old->next ) {
-	    if ( old->tag==new->tag && old->type==new->type ) {
-		new->next = old->next;
-		*old = *new;
-		chunkfree(new,sizeof(PST));
-	break;
-	    }
-	}
-	if ( old==NULL ) {
-	    new->next = sc->possub;
-	    sc->possub = new;
-	}
+	SCInsertPST(sc,new);
     }
     if ( i!=0 )
 	sc->parent->changed = true;

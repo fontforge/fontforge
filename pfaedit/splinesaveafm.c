@@ -170,10 +170,30 @@ int CheckAfmOfPostscript(SplineFont *sf,char *psname) {
 return( ret );
 }
 
+static void SubsNew(SplineChar *to,enum possub_type type,int tag,char *components,
+	    SplineChar *default_script) {
+    PST *pst;
+
+    pst = chunkalloc(sizeof(PST));
+    pst->type = type;
+    pst->script_lang_index = SCDefaultSLI(to->parent,default_script);
+    pst->tag = tag;
+    pst->u.alt.components = components;
+    SCInsertPST(to,pst);
+}
+
+static void LigatureNew(SplineChar *sc3,SplineChar *sc1,SplineChar *sc2) {
+    char *components = galloc(strlen(sc1->name)+strlen(sc2->name)+2);
+    strcpy(components,sc1->name);
+    strcat(components," ");
+    strcpy(components,sc2->name);
+    SubsNew(sc3,pst_ligature,CHR('l','i','g','a'),components,sc1);
+}
+    
 static void tfmDoLigKern(SplineFont *sf, int enc, int lk_index,
 	uint8 *ligkerntab, uint8 *kerntab) {
     int enc2, k_index;
-    SplineChar *sc1, *sc2;
+    SplineChar *sc1, *sc2, *sc3;
     real off;
 
     if ( enc>=sf->charcnt || (sc1=sf->chars[enc])==NULL )
@@ -181,8 +201,9 @@ return;
 
     while ( 1 ) {
 	enc2 = ligkerntab[lk_index*4+1];
-	if ( enc2<sf->charcnt && (sc2=sf->chars[enc2])!=NULL &&
-		ligkerntab[lk_index*4+2]>=128 ) {
+	if ( enc2>=sf->charcnt || (sc2=sf->chars[enc2])==NULL )
+	    /* Not much we can do. can't kern to a non-existant char */;
+	else if ( ligkerntab[lk_index*4+2]>=128 ) {
 	    k_index = ((ligkerntab[lk_index*4+2]-128)*256+ligkerntab[lk_index*4+3])*4;
 	    off = (sf->ascent+sf->descent) *
 		    ((kerntab[k_index]<<24) + (kerntab[k_index+1]<<16) +
@@ -190,6 +211,10 @@ return;
 		    (double) 0x100000;
  /* printf( "%s(%d) %s(%d) -> %g\n", sc1->name, sc1->enc, sc2->name, sc2->enc, off); */
 	    KPInsert(sc1,sc2,off);
+	} else if ( ligkerntab[lk_index*4+2]==0 &&
+		ligkerntab[lk_index*4+3]<sf->charcnt &&
+		(sc3=sf->chars[ligkerntab[lk_index*4+3]])!=NULL ) {
+	    LigatureNew(sc3,sc1,sc2);
 	}
 	if ( ligkerntab[lk_index*4]>=128 )
     break;
@@ -197,12 +222,61 @@ return;
     }
 }
 
+static void tfmDoCharList(SplineFont *sf,int i,int *charlist) {
+    int used[256], ucnt, len, was;
+    char *components;
+
+    ucnt = 0, len=0;
+    while ( i!=-1 ) {
+	if ( i<sf->charcnt && sf->chars[i]!=NULL ) {
+	    used[ucnt++] = i;
+	    len += strlen(sf->chars[i]->name)+1;
+	}
+	was = i;
+	i = charlist[i];
+	charlist[was] = -1;
+    }
+    if ( ucnt<=1 )
+return;
+
+    components = galloc(len+1); components[0] = '\0';
+    for ( i=1; i<ucnt; ++i ) {
+	strcat(components,sf->chars[used[i]]->name);
+	if ( i!=ucnt-1 )
+	    strcat(components," ");
+    }
+    SubsNew(sf->chars[used[0]],pst_alternate,CHR('T','C','H','L'),components,
+	    sf->chars[used[0]]);
+}
+
+static void tfmDoExten(SplineFont *sf,int i,uint8 *ext) {
+    int j, len, k;
+    char *names[4], *components;
+
+    names[0] = names[1] = names[2] = names[3] = ".notdef";
+    for ( j=len=0; j<4; ++j ) {
+	k = ext[j];
+	if ( k<sf->charcnt && sf->chars[k]!=NULL )
+	    names[j] = sf->chars[k]->name;
+	len += strlen(names[j])+1;
+    }
+    components = galloc(len); components[0] = '\0';
+    for ( j=0; j<4; ++j ) {
+	strcat(components,names[j]);
+	if ( j!=3 )
+	    strcat(components," ");
+    }
+    SubsNew(sf->chars[i],pst_multiple,CHR('T','E','X','L'),components,
+	    sf->chars[i]);
+}
+
 int LoadKerningDataFromTfm(SplineFont *sf, char *filename) {
     FILE *file = fopen(filename,"r");
     int i, tag, left;
-    uint8 *ligkerntab, *kerntab;
+    uint8 *ligkerntab, *kerntab, *ext;
     int head_len, first, last, width_size, height_size, depth_size, italic_size,
-	    ligkern_size, kern_size;
+	    ligkern_size, kern_size, esize, param_size;
+    int charlist[256], ept[256];
 
     if ( file==NULL )
 return( 0 );
@@ -216,8 +290,8 @@ return( 0 );
     italic_size = getushort(file);
     ligkern_size = getushort(file);
     kern_size = getushort(file);
-    /* extensible char tab size = getushort(file); */
-    /* font param size = getushort(file); */
+    esize = getushort(file);
+    param_size = getushort(file);
     if ( first-1>last || last>=256 ) {
 	fclose(file);
 return( 0 );
@@ -228,11 +302,21 @@ return( 1 );	/* we successfully read no data */
     }
     kerntab = gcalloc(kern_size,sizeof(int32));
     ligkerntab = gcalloc(ligkern_size,sizeof(int32));
+    ext = gcalloc(esize,sizeof(int32));
     fseek( file,
 	    (6+head_len+(last-first+1)+width_size+height_size+depth_size+italic_size)*sizeof(int32),
 	    SEEK_SET);
     fread( ligkerntab,1,ligkern_size*sizeof(int32),file);
     fread( kerntab,1,kern_size*sizeof(int32),file);
+    fread( ext,1,esize*sizeof(int32),file);
+    for ( i=0; i<22 && i<param_size; ++i )
+	sf->texdata.params[i] = getlong(file);
+    if ( param_size==22 ) sf->texdata.type = tex_math;
+    else if ( param_size==13 ) sf->texdata.type = tex_mathext;
+    else if ( param_size>=7 ) sf->texdata.type = tex_text;
+
+    memset(charlist,-1,sizeof(charlist));
+    memset(ept,-1,sizeof(ept));
 
     fseek( file, (6+head_len)*sizeof(int32), SEEK_SET);
     for ( i=first; i<=last; ++i ) {
@@ -242,9 +326,18 @@ return( 1 );	/* we successfully read no data */
 	left = getc(file);
 	if ( tag==1 )
 	    tfmDoLigKern(sf,i,left,ligkerntab,kerntab);
+	else if ( tag==2 )
+	    charlist[i] = left;
+	else if ( tag==3 )
+	    tfmDoExten(sf,i,ext+left);
     }
 
-    free( ligkerntab); free(kerntab);
+    for ( i=first; i<=last; ++i ) {
+	if ( charlist[i]!=-1 )
+	    tfmDoCharList(sf,i,charlist);
+    }
+    
+    free( ligkerntab); free(kerntab); free(ext);
     fclose(file);
 return( 1 );
 }
@@ -1459,7 +1552,7 @@ void TeXDefaultParams(SplineFont *sf) {
     int i, spacew;
     BlueData bd;
 
-    if ( sf->texdata.generalset || sf->texdata.mathset || sf->texdata.mathextset )
+    if ( sf->texdata.type!=tex_unset )
 return;
 
     spacew = .33*(1<<20);	/* 1/3 em for a space seems like a reasonable size */
@@ -1550,7 +1643,7 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
 	header.face += 12;
 
     TeXDefaultParams(sf);
-    pcnt = sf->texdata.mathset ? 22 : sf->texdata.mathextset ? 13 : 7;
+    pcnt = sf->texdata.type==tex_math ? 22 : sf->texdata.type==tex_mathext ? 13 : 7;
 
     memset(widths,0,sizeof(widths));
     memset(heights,0,sizeof(heights));

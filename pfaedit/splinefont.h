@@ -647,9 +647,7 @@ typedef struct splinefont {
     struct kernclass *kerns;
     struct kernclasslistdlg *kcld;
     struct texdata {
-	unsigned int generalset: 1;
-	unsigned int mathset: 1;
-	unsigned int mathextset: 1;
+	enum { tex_unset, tex_text, tex_math, tex_mathext } type;
 	int32 params[22];		/* param[6] has different meanings in normal and math fonts */
     } texdata;
 } SplineFont;
@@ -801,10 +799,12 @@ extern AnchorClass *AnchorClassMkMkMatch(SplineChar *sc1,SplineChar *sc2,
 	AnchorPoint **_ap1,AnchorPoint **_ap2 );
 extern AnchorClass *AnchorClassCursMatch(SplineChar *sc1,SplineChar *sc2,
 	AnchorPoint **_ap1,AnchorPoint **_ap2 );
+extern void SCInsertPST(SplineChar *sc,PST *new);
 extern void PSTFree(PST *lig);
 extern void PSTsFree(PST *lig);
 extern uint16 PSTDefaultFlags(enum possub_type type,SplineChar *sc );
 extern int PSTContains(const char *components,const char *name);
+extern int SCDefaultSLI(SplineFont *sf, SplineChar *default_script);
 extern StemInfo *StemInfoCopy(StemInfo *h);
 extern DStemInfo *DStemInfoCopy(DStemInfo *h);
 extern MinimumDistance *MinimumDistanceCopy(MinimumDistance *h);
