@@ -291,14 +291,14 @@ return( NULL );
 	    r2->transform[4] = x; r2->transform[5] = y;
 	    r1->next = r2;
 	}
-	sc->refs = r1;
+	sc->layers[ly_fore].refs = r1;
 return(sc);
     }
     
     readcoords(file,flags&1,&x,&y);	/* bounding box, lbearing, ybase */
     readcoords(file,flags&1,&x,&y);	/* bounding box, width,height */
 
-    sc->splines = ReadSplineSets(file,flags,NULL,true);
+    sc->layers[ly_fore].splines = ReadSplineSets(file,flags,NULL,true);
     verb = getc(file);
     if ( verb!=EOF && verb&(1<<2) ) {
 	/* It looks to me as though the stroked paths are duplicates of the */
@@ -307,7 +307,7 @@ return(sc);
 	/* Every character has them... */
 	/*fprintf( stderr, "There are some stroked paths in %s, you should run\n  Element->Expand Stroke on this character\n", sc->name );*/
 	if ( includestrokes )
-	    sc->splines = ReadSplineSets(file,flags,sc->splines,false);
+	    sc->layers[ly_fore].splines = ReadSplineSets(file,flags,sc->layers[ly_fore].splines,false);
 	else
 	    ReadSplineSets(file,flags,NULL,false);	/* read and ignore */
 	verb = getc(file);
@@ -319,8 +319,8 @@ return(sc);
 	    r1->local_enc = ch;
 	    readcoords(file,flags&1,&x,&y);
 	    r1->transform[4] = x; r1->transform[5] = y;
-	    r1->next = sc->refs;
-	    sc->refs = r1;
+	    r1->next = sc->layers[ly_fore].refs;
+	    sc->layers[ly_fore].refs = r1;
 	}
     }
 return( sc );
@@ -651,16 +651,16 @@ return;
 static void FixupRefs(SplineChar *sc,SplineFont *sf) {
     RefChar *rf, *prev, *next;
 
-    if ( sc==NULL || sc->refs==NULL )
+    if ( sc==NULL || sc->layers[ly_fore].refs==NULL )
 return;
     prev = NULL;
-    for ( rf = sc->refs; rf!=NULL; rf=next ) {
+    for ( rf = sc->layers[ly_fore].refs; rf!=NULL; rf=next ) {
 	next = rf->next;
 	if ( rf->local_enc<0 || rf->local_enc>=sf->charcnt || sf->chars[rf->local_enc]==NULL ) {
 	    fprintf( stderr, "%s contains a reference to a character at index %d which does not exist.\n",
 		sc->name, rf->local_enc );
 	    if ( prev==NULL )
-		sc->refs = next;
+		sc->layers[ly_fore].refs = next;
 	    else
 		prev->next = next;
 	    free(rf);
