@@ -704,7 +704,7 @@ return(nsp);
 }
 
 static Entity *EntityCreate(SplinePointList *head,int linecap,int linejoin,
-	real linewidth) {
+	real linewidth, real *transform) {
     Entity *ent = gcalloc(1,sizeof(Entity));
     ent->type = et_splines;
     ent->u.splines.splines = head;
@@ -713,6 +713,7 @@ static Entity *EntityCreate(SplinePointList *head,int linecap,int linejoin,
     ent->u.splines.stroke_width = linewidth;
     ent->u.splines.fill.col = 0xffffffff;
     ent->u.splines.stroke.col = 0xffffffff;
+    memcpy(ent->u.splines.transform,transform,6*sizeof(real));
 return( ent );
 }
 
@@ -1618,9 +1619,10 @@ printf( "-%s-\n", toknames[tok]);
 		if ( tok==pt_stroke ) {
 		    ent->u.splines.cap = linecap; ent->u.splines.join = linejoin;
 		    ent->u.splines.stroke_width = linewidth;
+		    memcpy(ent->u.splines.transform,transform,sizeof(transform));
 		}
 	    } else {
-		ent = EntityCreate(head,linecap,linejoin,linewidth);
+		ent = EntityCreate(head,linecap,linejoin,linewidth,transform);
 		ent->next = ec->splines;
 		ec->splines = ent;
 	    }
@@ -1870,7 +1872,7 @@ printf( "-%s-\n", toknames[tok]);
  done:
     freestuff(stack,sp,&dict,&gb);
     if ( head!=NULL ) {
-	ent = EntityCreate(head,linecap,linejoin,linewidth);
+	ent = EntityCreate(head,linecap,linejoin,linewidth,transform);
 	ent->next = ec->splines;
 	ec->splines = ent;
     }
@@ -1880,9 +1882,10 @@ printf( "-%s-\n", toknames[tok]);
 
 static SplinePointList *SplinesFromEntities(EntityChar *ec) {
     Entity *ent, *next;
-    SplinePointList *head=NULL, *last, *new, *nlast, *temp, *each;
+    SplinePointList *head=NULL, *last, *new, *nlast, *temp, *each, *transed;
     StrokeInfo si;
     int toobigwarn = false;
+    real inversetrans[6];
 
     for ( ent=ec->splines; ent!=NULL; ent = next ) {
 	next = ent->next;
@@ -1894,7 +1897,10 @@ static SplinePointList *SplinesFromEntities(EntityChar *ec) {
 		si.cap = ent->u.splines.cap;
 		si.radius = ent->u.splines.stroke_width/2;
 		new = NULL;
-		for ( each = ent->u.splines.splines; each!=NULL; each=each->next ) {
+		MatInverse(inversetrans,ent->u.splines.transform);
+		transed = SplinePointListTransform(SplinePointListCopy(
+			ent->u.splines.splines),inversetrans,true);
+		for ( each = transed; each!=NULL; each=each->next ) {
 		    temp = SplineSetStroke(each,&si,NULL);
 		    if ( new==NULL )
 			new=temp;
@@ -1903,6 +1909,8 @@ static SplinePointList *SplinesFromEntities(EntityChar *ec) {
 		    if ( temp!=NULL )
 			for ( nlast=temp; nlast->next!=NULL; nlast=nlast->next );
 		}
+		new = SplinePointListTransform(new,ent->u.splines.transform,true);
+		SplinePointListFree(transed);
 		if ( ent->u.splines.fill.col==0xffffffff )
 		    SplinePointListFree(ent->u.splines.splines);
 		else if ( new==NULL )
