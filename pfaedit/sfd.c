@@ -1503,7 +1503,7 @@ return( liga );
 
 static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf) {
     SplineChar *sc;
-    char tok[200], ch;
+    char tok[2000], ch;
     RefChar *lastr=NULL, *ref;
     ImageList *lasti=NULL, *img;
     AnchorPoint *lastap = NULL;
