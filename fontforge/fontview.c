@@ -5553,7 +5553,6 @@ static void FVMouse(FontView *fv,GEvent *event) {
     SplineChar *sc, dummy;
     int dopopup = true;
 
-    GGadgetEndPopup();
     if ( event->type==et_mousedown )
 	CVPaletteDeactivate();
     if ( pos<0 ) {
@@ -5801,6 +5800,7 @@ static int v_e_h(GWindow gw, GEvent *event) {
 return( GGadgetDispatchEvent(fv->vsb,event));
     }
 
+    GGadgetPopupExternalEvent(event);
     switch ( event->type ) {
       case et_expose:
 	GDrawSetLineWidth(gw,0);

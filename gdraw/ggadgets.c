@@ -30,6 +30,7 @@
 #include "ggadgetP.h"
 #include "gresource.h"
 #include "gwidget.h"
+#include "gkeysym.h"
 #include "ustring.h"
 
 GBox _ggadget_Default_Box = { bt_raised, bs_rect, 2, 2, 0, 0, 
@@ -335,6 +336,23 @@ void GGadgetEndPopup() {
 	GDrawCancelTimer(popup_vanish_timer);
 	popup_vanish_timer = NULL;
     }
+}
+
+void GGadgetPopupExternalEvent(GEvent *e) {
+    if ( !popup_visible )
+return;
+    /* Depress control key to keep popup alive */
+    if ( e->type == et_char &&
+	    ( e->u.chr.keysym == GK_Control_L || e->u.chr.keysym == GK_Control_R )) {
+	if ( popup_vanish_timer!=NULL ) {
+	    GDrawCancelTimer(popup_vanish_timer);
+	    popup_vanish_timer = NULL;
+	}
+return;
+    }
+    if ( e->type==et_char || e->type==et_charup || e->type==et_mousemove ||
+	    e->type == et_mousedown || e->type==et_mouseup )
+	GGadgetEndPopup();
 }
 
 static int GGadgetPopupTest(GEvent *e) {

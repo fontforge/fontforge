@@ -256,6 +256,7 @@ return(true);
     if ( topd==NULL )
 	fprintf( stderr, "No top level window found\n" );
 
+    GGadgetPopupExternalEvent(event);
     if ( event->type == et_expose ) {
 	GRect old;
 	
@@ -281,7 +282,6 @@ return( true );
 	    handled = (topd->popupowner->funcs->handle_mouse)(topd->popupowner,event);
 return( handled );
 	}
-	GGadgetEndPopup();
 	if ( gd->grabgadget!=NULL ) {
 	    handled = (gd->grabgadget->funcs->handle_mouse)(gd->grabgadget,event);
 	    if ( gw->is_dying || gw->widget_data==NULL )	/* Bug!!! gw might have been freed already */
@@ -447,8 +447,6 @@ static int _GWidget_TopLevel_Key(GWindow top, GWindow ew, GEvent *event) {
     int handled=0;
     GEvent sub;
 
-    GGadgetEndPopup();
-
     if ( !top->is_popup )
 	last_input_window = top;
 
@@ -588,6 +586,7 @@ static int _GWidget_TopLevel_eh(GWindow gw, GEvent *event) {
     if ( td==NULL )		/* Dying */
 return( true );
 
+    GGadgetPopupExternalEvent(event);
     if ( event->type==et_focus ) {
 	if ( event->u.focus.gained_focus ) {
 	    if ( gw->is_toplevel && !gw->is_popup && !gw->is_dying ) {
@@ -636,7 +635,6 @@ return( true );
 	    (td->e_h)(gw,event);
 return( true );
     } else if ( !gw->is_dying && event->type == et_crossing ) {
-	GGadgetEndPopup();
 	GiveToAll((GContainerD *) td,event);
 return( true );
     } else if ( event->type == et_char || event->type == et_charup ) {

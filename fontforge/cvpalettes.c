@@ -716,6 +716,7 @@ return( true );
     if ( cv==NULL )
 return( true );
 
+    GGadgetPopupExternalEvent(event);
     switch ( event->type ) {
       case et_expose:
 	ToolsExpose(gw,cv,&event->u.expose.rect);

@@ -971,9 +971,6 @@ return;
 	}
     }
     SplineRefigure2(spline);
-
-	if ( spline->from->prev )
-	    SplineRefigure2(spline->from->prev);
 }
 
 Spline *SplineMake2(SplinePoint *from, SplinePoint *to) {
