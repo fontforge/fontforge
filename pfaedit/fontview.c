@@ -4764,6 +4764,8 @@ FontView *FontViewCreate(SplineFont *sf) {
 	    if ( bdf==NULL )
 		bdf = fv->filled;
 	}
+	if ( sf->onlybitmaps && bdf==fv->filled && sf->bitmaps!=NULL )
+	    bdf = sf->bitmaps;
     }
     fv->cbw = -1;
     FVChangeDisplayFont(fv,bdf);

@@ -2960,9 +2960,9 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 		    /* Done */;
 		else if ( rangeOffset[i]==0 ) {
 		    for ( j=startchars[i]; j<=endchars[i]; ++j ) {
-			if ( justinuse )
+			if ( justinuse && (uint16) (j+delta[i])<info->glyph_cnt )
 			    info->inuse[(uint16) (j+delta[i])] = true;
-			else if ( info->chars[(uint16) (j+delta[i])]==NULL )
+			else if ( (uint16) (j+delta[i])>=info->glyph_cnt || info->chars[(uint16) (j+delta[i])]==NULL )
 			    fprintf( stderr, "Attempt to encode missing glyph %d to %d (0x%x)\n",
 				    j+delta[i], modenc(j,mod), modenc(j,mod));
 			else if ( info->chars[(uint16) (j+delta[i])]->unicodeenc==-1 ) {
@@ -3780,6 +3780,11 @@ return( 0 );
     readttfpreglyph(ttf,info);
     GProgressChangeTotal(info->glyph_cnt);
 
+    /* If font only contains bitmaps, then only read bitmaps */
+    if ( info->glyphlocations_start==0 && info->cff_start==0 &&
+	    info->bitmapdata_start!=0 && info->bitmaploc_start!=0 )
+	info->onlystrikes = true;
+
     if ( info->onlystrikes )
 	info->chars = gcalloc(info->glyph_cnt+1,sizeof(SplineChar *));
     else if ( info->glyphlocations_start!=0 && info->glyph_start!=0 )
@@ -3795,8 +3800,10 @@ return( 0 );
 	TTFLoadBitmaps(ttf,info,info->onlyonestrike);
     else if ( info->onlystrikes )
 	GWidgetErrorR( _STR_NoBitmaps, _STR_NoBitmapsInTTF, filename==NULL ? "<unknown>" : filename );
-    if ( info->onlystrikes && info->bitmaps==NULL )
+    if ( info->onlystrikes && info->bitmaps==NULL ) {
+	free(info->chars);
 return( 0 );
+    }
     if ( info->hmetrics_start!=0 )
 	readttfwidths(ttf,info);
     if ( info->vmetrics_start!=0 && info->vhea_start!=0 )
@@ -4031,6 +4038,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->fontname = info->fontname;
     sf->fullname = info->fullname;
     sf->familyname = info->familyname;
+    sf->onlybitmaps = info->onlystrikes;
     if ( sf->fontname==NULL ) {
 	sf->fontname = copy(sf->fullname);
 	if ( sf->fontname==NULL )

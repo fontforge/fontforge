@@ -378,7 +378,11 @@ return;
 	    sprintf(buf,"%d@%d", sizes[i].ppem, sizes[i].depth );
 	choices[i] = uc_copy(buf);
     }
-    if ( screen_display==NULL ) {
+    /* When loading a ttf font with only bitmaps, and there's only one strike */
+    /*  then just load that strike. Don't ask */
+    if ( info->glyphlocations_start==0 && info->cff_start==0 && cnt==1 )
+	sel[0] = true;
+    else if ( screen_display==NULL ) {
 	if ( onlyone ) {
 	    biggest=0;
 	    for ( i=1; i<cnt; ++i )
