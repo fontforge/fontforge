@@ -349,7 +349,7 @@ static int BDFParseEnc(char *encname, int encoff) {
     enc = em_none;
     if ( strcmp(encname,"ISO8859")==0 || strcmp(encname,"ISO-8859")==0 ) {
 	enc = em_iso8859_1+encoff;
-	if ( enc>em_iso8859_11 )
+	if ( enc<=em_iso8859_13 )
 	    --enc;
 	if ( enc>em_iso8859_15 ) enc = em_iso8859_15;
     } else if ( strcmp(encname,"ISOLatin1Encoding")==0 ) {
@@ -367,6 +367,8 @@ static int BDFParseEnc(char *encname, int encoff) {
 	enc = em_win;
     } else if ( strstrmatch(encname,"koi8")!=NULL ) {
 	enc = em_koi8_r;
+    } else if ( strstrmatch(encname,"JISX0201")!=NULL ) {
+	enc = em_jis201;
     } else if ( strstrmatch(encname,"JISX0208")!=NULL ) {
 	enc = em_jis208;
     } else if ( strstrmatch(encname,"JISX0212")!=NULL ) {

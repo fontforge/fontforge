@@ -4023,17 +4023,17 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 	    dummy->unicodeenc = temp;
 	} else
 	    dummy->unicodeenc = -1;
-    } else if ( sf->encoding_name==em_jis208 && i>=0x2121 && i<0x7d7d &&
-	    (i&0xff)>=0x21 && (i&0xff)<=0x7d )
+    } else if ( sf->encoding_name==em_jis208 && i>=0x2121 && i<=0x7e7e &&
+	    (i&0xff)>=0x21 && (i&0xff)<=0x7e )
 	dummy->unicodeenc = unicode_from_jis208[((i-0x2121)>>8)*94+((i&0xff)-0x21)];
-    else if ( sf->encoding_name==em_jis212 && i>=0x2121 && i<0x7d7d &&
-	    (i&0xff)>=0x21 && (i&0xff)<=0x7d )
+    else if ( sf->encoding_name==em_jis212 && i>=0x2121 && i<=0x7e7e &&
+	    (i&0xff)>=0x21 && (i&0xff)<=0x7e )
 	dummy->unicodeenc = unicode_from_jis212[((i-0x2121)>>8)*94+((i&0xff)-0x21)];
-    else if ( sf->encoding_name==em_ksc5601 && i>=0x2121 && i<0x7d7d &&
-	    (i&0xff)>=0x21 && (i&0xff)<=0x7d )
+    else if ( sf->encoding_name==em_ksc5601 && i>=0x2121 && i<=0x7e7e &&
+	    (i&0xff)>=0x21 && (i&0xff)<=0x7e )
 	dummy->unicodeenc = unicode_from_ksc5601[((i-0x2121)>>8)*94+((i&0xff)-0x21)];
-    else if ( sf->encoding_name==em_gb2312 && i>=0x2121 && i<0x7d7d &&
-	    (i&0xff)>=0x21 && (i&0xff)<=0x7d )
+    else if ( sf->encoding_name==em_gb2312 && i>=0x2121 && i<=0x7e7e &&
+	    (i&0xff)>=0x21 && (i&0xff)<=0x7e )
 	dummy->unicodeenc = unicode_from_gb2312[((i-0x2121)>>8)*94+((i&0xff)-0x21)];
     else if ( sf->encoding_name>=em_jis208 )
 	dummy->unicodeenc = -1;
@@ -4294,7 +4294,7 @@ return( true );
       case em_ksc5601: case em_jis208: case em_jis212: case em_gb2312:
 	if ( !GDrawFontHasCharset(fv->header,enc))
 return( false);
-	if ( ch1<0x21 || ch1>0x7d || ch2<0x21 || ch2>0x7d )
+	if ( ch1<0x21 || ch1>0x7e || ch2<0x21 || ch2>0x7e )
 return( false );
 	mods->has_charset = true; mods->charset = enc;
 	buf[0] = (ch1<<8)|ch2;

@@ -596,7 +596,7 @@ return( sf->chars[i]);
 return( NULL );
     } else if ( !pi->iscid ) {
 	max = 256;
-	if ( pi->iscjk ) max = 0x7d7e;
+	if ( pi->iscjk ) max = 0x7e7e;
 	for ( i=0 ; i<sf->charcnt && i<max; ++i )
 	    if ( sf->chars[i]!=NULL && sf->chars[i]->unicodeenc==ch ) {
 		if ( SCWorthOutputting(sf->chars[i]))

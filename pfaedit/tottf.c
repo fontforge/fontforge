@@ -3765,7 +3765,6 @@ return( format12 );
 }
 
 static int figureencoding(SplineFont *sf,int i) {
-#if 1
     /* We used to be able to generate a format 4 table for various cjk encodings */
     /*  (if they didn't have any single byte characters). Now we always generate */
     /*  a format2 (8/16) table for cjk AND a format 4 (unicode) table. So this */
@@ -3775,36 +3774,6 @@ static int figureencoding(SplineFont *sf,int i) {
 return( -1 );
 
 return( sf->chars[i]->unicodeenc );
-#else
-    switch ( sf->encoding_name ) {
-      default:				/* Unicode */
-	  if ( sf->chars[i]->unicodeenc>=65536 )	/* format 4 doesn't support 4byte encodings, we have an additional format 12 table for that */
-return( -1 );
-
-return( sf->chars[i]->unicodeenc );
-      case em_big5:			/* Taiwan, Hong Kong */
-      case em_big5hkscs:		/* ?Hong Kong? */
-      case em_johab:			/* Korea */
-      case em_wansung:			/* Korea */
-      case em_sjis:			/* Japan */
-return( i>65536?-1:i );
-      case em_ksc5601:			/* Wansung */
-	if ( i<0x2121 || i>0x7d7d || (i&0xff)<0x21 || (i&0xff)>0x7d )
-return( -1 );
-
-return( i + 0x8080 );
-      case em_jis208: {			/* SJIS */
-	int ch1, ch2, ro, co;
-	ch1 = (i>>8)-0x21; ch2 = (i&0xff)-0x21;
-	if ( ch1>=94 )
-return( -1 );
-	ro = ch1<95 ? 112 : 176;
-	co = (ch1&1) ? (ch2>95?32:31) : 126;
-
-return(  ((((ch1+1)>>1) + ro )<<8 )    |    (ch2+co) );
-      }
-    }
-#endif
 }
 
 static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format) {
