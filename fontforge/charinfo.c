@@ -2293,7 +2293,7 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
     GTextInfo *tags = pst_tags[type-1], *mactags = tags;
 
     if ( def==NULL ) def=nullstr;
-    if ( def_tag==0 ) {
+    if ( def_tag==0 && *def!='\0' ) {
 	uint16 sli;
 	DecomposeClassName(def,&components,&def_tag,&macfeature,
 		&flags, &sli,

@@ -87,7 +87,7 @@ static uint32 scripts[][15] = {
 /* Cherokee */	{ CHR('c','h','e','r'), 0x13a0, 0x13ff },
 /* Cirth */	{ CHR('c','i','r','t'), 0x12080, 0x120ff },
 /* Cypriot */	{ CHR('c','p','m','n'), 0x10800, 0x1083f },
-/* Cyrillic */	{ CHR('c','y','r','l'), 0x0500, 0x052f },
+/* Cyrillic */	{ CHR('c','y','r','l'), 0x0400, 0x052f },
 /* Deseret */	{ CHR('d','s','r','t'), 0x10400, 0x1044f },
 /* Devanagari */{ CHR('d','e','v','a'), 0x0900, 0x097f },
 /* Ethiopic */	{ CHR('e','t','h','i'), 0x1200, 0x139f },
