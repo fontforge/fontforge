@@ -771,7 +771,7 @@ return( maybe );
 	}
 	if ( ubuf[0]=='\0' )
 	    uret = NULL;
-	else {
+	else if ( screen_display!=NULL ) {
 	    if ( sf!=NULL ) sf->loading_cid_map = true;
 	    uret = GWidgetOpenFile(GStringGetResource(_STR_FindCharset,NULL),NULL,ubuf,NULL);
 	    if ( sf!=NULL ) sf->loading_cid_map = false;
@@ -779,7 +779,13 @@ return( maybe );
 	if ( uret==NULL ) {
 	    if ( maybe==NULL && maybefile==NULL )
 		/* No luck */;
-	    else if ( GWidgetAskR(_STR_UseCidMap,buts2,0,1,_STR_AreYouSureCharset)==0 ) {
+	    else if ( screen_display==NULL && maybe!=NULL ) {
+		maybe->maxsupple = supplement;
+return( maybe );
+	    } else if ( screen_display==NULL ) {
+		file = maybefile;
+		maybefile = NULL;
+	    } else if ( GWidgetAskR(_STR_UseCidMap,buts2,0,1,_STR_AreYouSureCharset)==0 ) {
 		if ( maybe!=NULL ) {
 		    maybe->maxsupple = supplement;
 return( maybe );
