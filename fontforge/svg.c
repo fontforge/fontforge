@@ -614,21 +614,31 @@ return( ret );
 int _ExportSVG(FILE *svg,SplineChar *sc) {
     char *oldloc, *end;
     int em_size;
+    DBounds b;
+
+    SplineCharFindBounds(sc,&b);
+    em_size = sc->parent->ascent+sc->parent->descent;
+    if ( b.minx>0 ) b.minx=0;
+    if ( b.maxx<em_size ) b.maxx = em_size;
+    if ( b.miny>-sc->parent->descent ) b.miny = -sc->parent->descent;
+    if ( b.maxy<em_size ) b.maxy = em_size;
 
     oldloc = setlocale(LC_NUMERIC,"C");
     fprintf(svg, "<?xml version=\"1.0\" standalone=\"no\"?>\n" );
     fprintf(svg, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\" >\n" ); 
-    em_size = sc->parent->ascent+sc->parent->descent;
-    fprintf(svg, "<svg viewBox=\"0 %d %d %d\">\n",
-	    -sc->parent->descent, em_size, em_size );
+    fprintf(svg, "<svg viewBox=\"%d %d %d %d\">\n",
+	    (int) floor(b.minx), (int) floor(b.miny),
+	    (int) ceil(b.maxx), (int) ceil(b.maxy));
     fprintf(svg, "  <g transform=\"matrix(1 0 0 -1 0 %d)\">\n",
 	    sc->parent->ascent );
+#if 0		/* Used to show the advance width, but as I don't in eps, probably should be consistent */
     fprintf(svg, "   <g stroke=\"green\" stroke-width=\"1\">\n" );
     fprintf(svg, "     <line x1=\"0\" y1=\"0\" x2=\"%d\" y2=\"0\" />\n", sc->width );
     fprintf(svg, "     <line x1=\"0\" y1=\"10\" x2=\"0\" y2=\"-10\" />\n" );
     fprintf(svg, "     <line x1=\"%d\" y1=\"10\" x2=\"%d\" y2=\"-10\" />\n",
 	    sc->width, sc->width );
     fprintf(svg, "   </g>\n\n" );
+#endif
     if ( !sc->parent->multilayer || !svg_sc_any(sc)) {
 	fprintf(svg, "   <path fill=\"currentColor\"\n");
 	end = "   </path>\n";
