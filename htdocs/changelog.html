@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 4-Apr-2004 -->
+  <!-- AP: Last modified: 10-Apr-2004 -->
   <TITLE>Change log for FontForge</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,31 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    10-Apr-2004
+    <UL>
+      <LI>
+	The flatten commands didn't preserve the ttf 'name' table nor the 'OS/2'
+	table
+      <LI>
+	Redid the way 'name' table was generated, hopefully we do better for the
+	mac now.
+      <LI>
+	the 'kern' table had a bad rangeShift value (it was the negative of what
+	it should be)
+      <LI>
+	Pasting a reference from one font to another could crash if the destination
+	font did not have the refered character.
+      <LI>
+	".null" was appearing twice in the 'post' table when saving a ttf file a
+	second time.
+      <LI>
+	Markus Schwarzenberg points out that the ScaleToEm() scripting command didn't
+	work when given a single argument.
+      <LI>
+	Pierre Hanser points out that the version fix on 4-Apr had a bug that caused
+	crashes on Macs (perhaps elsewhere).
+    </UL>
   <LI>
     04-Apr-2004
     <UL>
