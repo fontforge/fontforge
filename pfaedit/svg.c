@@ -39,6 +39,17 @@
 /* ****************************    SVG Output    **************************** */
 /* ************************************************************************** */
 
+static void latin1ToUtf8Out(FILE *file,char *str) {
+    /* beware of characters above 0x80, also &, <, > (things that are magic for xml) */
+    while ( *str ) {
+	if ( *str=='&' || *str=='<' || *str=='>' || (*str&0x80) )
+	    fprintf( file, "&#%d;", (uint8) *str);
+	else
+	    putc(*str,file);
+	++str;
+    }
+}
+
 static int svg_outfontheader(FILE *file, SplineFont *sf) {
     char *pt;
     int defwid = SFFigureDefWidth(sf,NULL);
@@ -89,6 +100,10 @@ static int svg_outfontheader(FILE *file, SplineFont *sf) {
 	fprintf(file," By %s\n", pwd->pw_name);
     endpwent();
 /* End comment */
+    if ( sf->copyright!=NULL ) {
+	latin1ToUtf8Out(file,sf->copyright);
+	putc('\n',file);
+    }
     fprintf( file, "</metadata>\n" );
     fprintf( file, "<defs>\n" );
     fprintf( file, "<font id=\"%s\" horiz-adv-x=\"%d\" ", sf->fontname, defwid );
