@@ -28,7 +28,7 @@
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>
-#include "utype.h"
+#include <utype.h>
 #include "psfont.h"
 #include "sd.h"
 
@@ -44,7 +44,7 @@ typedef struct entitychar {
 typedef struct _io {
     char *macro, *start;
     FILE *ps;
-    int backedup;
+    int backedup, cnt;
     struct _io *prev;
 } _IO;
 
@@ -100,7 +100,8 @@ enum pstoks { pt_eof=-1, pt_moveto, pt_rmoveto, pt_curveto, pt_rcurveto,
     pt_abs, pt_round, pt_ceiling, pt_floor, pt_truncate, pt_max, pt_min,
     pt_ne, pt_eq, pt_gt, pt_ge, pt_lt, pt_le, pt_and, pt_or, pt_xor, pt_not,
     pt_true, pt_false,
-    pt_if, pt_ifelse, pt_def, pt_bind, pt_load,
+    pt_if, pt_ifelse, pt_for,
+    pt_def, pt_bind, pt_load,
     pt_setlinecap, pt_setlinejoin, pt_setlinewidth,
     pt_currentlinecap, pt_currentlinejoin, pt_currentlinewidth,
     pt_setgray, pt_currentgray, pt_sethsbcolor, pt_currenthsbcolor,
@@ -129,7 +130,8 @@ char *toknames[] = { "moveto", "rmoveto", "curveto", "rcurveto",
 	"abs", "round", "ceiling", "floor", "truncate", "max", "min",
 	"ne", "eq", "gt", "ge", "lt", "le", "and", "or", "xor", "not",
 	"true", "false", 
-	"if", "ifelse", "def", "bind", "load",
+	"if", "ifelse", "for",
+	"def", "bind", "load",
 	"setlinecap", "setlinejoin", "setlinewidth",
 	"currentlinecap", "currentlinejoin", "currentlinewidth",
 	"setgray", "currentgray", "sethsbcolor", "currenthsbcolor",
@@ -170,6 +172,10 @@ return( ch );
 	} else {
 	    if ( (ch = *(io->macro++))!='\0' )
 return( ch );
+	    if ( --io->cnt>0 ) {
+		io->macro = io->start;
+return( nextch(wrapper));
+	    }
 	}
 	wrapper->top = io->prev;
 	free(io->start);
@@ -190,13 +196,14 @@ return;
 	wrapper->top->backedup = ch;
 }
 
-static void pushio(IO *wrapper, FILE *ps, char *macro) {
+static void pushio(IO *wrapper, FILE *ps, char *macro, int cnt) {
     _IO *io = galloc(sizeof(_IO));
 
     io->prev = wrapper->top;
     io->ps = ps;
     io->macro = io->start = copy(macro);
     io->backedup = EOF;
+    io->cnt = cnt;
     wrapper->top = io;
 }
 
@@ -384,6 +391,12 @@ struct pskeyval {
     union vals u;
     char *key;
 };
+
+typedef struct retstack {
+    int max;
+    int cnt;
+    real *stack;
+} RetStack;
 
 static int AddEntry(struct pskeydict *dict,struct psstack *stack, int sp) {
     int i;
@@ -718,7 +731,7 @@ static Entity *EntityCreate(SplinePointList *head,int linecap,int linejoin,
 return( ent );
 }
 
-static void InterpretPS(FILE *ps, EntityChar *ec) {
+static void InterpretPS(FILE *ps, char *psstr, EntityChar *ec, RetStack *rs) {
     SplinePointList *cur=NULL, *head=NULL;
     BasePoint current, temp;
     int tok, i, j;
@@ -750,7 +763,7 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
     oldloc = setlocale(LC_NUMERIC,"C");
 
     wrapper.top = NULL;
-    pushio(&wrapper,ps,NULL);
+    pushio(&wrapper,ps,psstr,1);
 
     memset(&gb,'\0',sizeof(GrowBuf));
     memset(&dict,'\0',sizeof(dict));
@@ -777,7 +790,7 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 	    }
 	} else if ( tok==pt_unknown && (kv=lookup(&dict,tokbuf))!=NULL ) {
 	    if ( kv->type == ps_instr )
-		pushio(&wrapper,NULL,copy(kv->u.str));
+		pushio(&wrapper,NULL,copy(kv->u.str),1);
 	    else if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
 		stack[sp].type = kv->type;
 		stack[sp++].u = kv->u;
@@ -913,8 +926,8 @@ printf( "-%s-\n", toknames[tok]);
 	  case pt_index:
 	    if ( sp>0 ) {
 		i = stack[--sp].u.val;
-		if ( sp>=i && i>0 ) {
-		    stack[sp] = stack[sp-i];
+		if ( sp>=i && i>=0 ) {
+		    stack[sp] = stack[sp-i-1];
 		    if ( stack[sp].type==ps_string || stack[sp].type==ps_instr ||
 			    stack[sp].type==ps_lit )
 			stack[sp].u.str = copy(stack[sp].u.str);
@@ -1099,7 +1112,7 @@ printf( "-%s-\n", toknames[tok]);
 		if ( ((stack[sp-2].type == ps_bool && stack[sp-2].u.tf) ||
 			(stack[sp-2].type == ps_num && strstr(stack[sp-1].u.str,"setcachedevice")!=NULL)) &&
 			stack[sp-1].type==ps_instr )
-		    pushio(&wrapper,NULL,stack[sp-1].u.str);
+		    pushio(&wrapper,NULL,stack[sp-1].u.str,1);
 		if ( stack[sp-1].type==ps_string || stack[sp-1].type==ps_instr || stack[sp-1].type==ps_lit )
 		    free(stack[sp-1].u.str);
 		sp -= 2;
@@ -1109,7 +1122,7 @@ printf( "-%s-\n", toknames[tok]);
 		/* about, but the interp needs to learn the width of the char */
 		if ( strstr(stack[sp-1].u.str,"setcachedevice")!=NULL ||
 			strstr(stack[sp-1].u.str,"setcharwidth")!=NULL )
-		    pushio(&wrapper,NULL,stack[sp-1].u.str);
+		    pushio(&wrapper,NULL,stack[sp-1].u.str,1);
 		free(stack[sp-1].u.str);
 		sp = 0;
 	    }
@@ -1118,16 +1131,40 @@ printf( "-%s-\n", toknames[tok]);
 	    if ( sp>=3 ) {
 		if ( stack[sp-3].type == ps_bool && stack[sp-3].u.tf ) {
 		    if ( stack[sp-2].type==ps_instr )
-			pushio(&wrapper,NULL,stack[sp-2].u.str);
+			pushio(&wrapper,NULL,stack[sp-2].u.str,1);
 		} else {
 		    if ( stack[sp-1].type==ps_instr )
-			pushio(&wrapper,NULL,stack[sp-1].u.str);
+			pushio(&wrapper,NULL,stack[sp-1].u.str,1);
 		}
 		if ( stack[sp-1].type==ps_string || stack[sp-1].type==ps_instr || stack[sp-1].type==ps_lit )
 		    free(stack[sp-1].u.str);
 		if ( stack[sp-2].type==ps_string || stack[sp-2].type==ps_instr || stack[sp-2].type==ps_lit )
 		    free(stack[sp-2].u.str);
 		sp -= 3;
+	    }
+	  break;
+	  case pt_for:
+	    if ( sp>=4 ) {
+		real init, incr, limit;
+		char *func;
+		int cnt;
+
+		if ( stack[sp-4].type == ps_num && stack[sp-3].type==ps_num &&
+			stack[sp-2].type==ps_num && stack[sp-1].type==ps_instr ) {
+		    init = stack[sp-4].u.val;
+		    incr = stack[sp-3].u.val;
+		    limit = stack[sp-2].u.val;
+		    func = stack[sp-1].u.str;
+		    sp -= 4;
+		    cnt = 0;
+		    if ( incr>0 ) {
+			while ( init<=limit ) { ++cnt; init += incr; }
+		    } else if ( incr<0 ) {
+			while ( init>=limit ) { ++cnt; init += incr; }
+		    }
+		    pushio(&wrapper,NULL,func,cnt);
+		    free(func);
+		}
 	    }
 	  break;
 	  case pt_load:
@@ -1886,6 +1923,17 @@ printf( "-%s-\n", toknames[tok]);
 	}}
     }
  done:
+    if ( rs!=NULL ) {
+	int i, cnt, j;
+	for ( i=sp-1; i>=0; --i )
+	    if ( stack[i].type!=ps_num )
+	break;
+	cnt = sp-1-i;
+	if ( cnt>rs->max ) cnt = rs->max;
+	rs->cnt = cnt;
+	for ( j=i+1; j<sp; ++j )
+	    rs->stack[j-i-1] = stack[j].u.val;
+    }
     freestuff(stack,sp,&dict,&gb);
     if ( head!=NULL ) {
 	ent = EntityCreate(head,linecap,linejoin,linewidth,transform);
@@ -2033,7 +2081,7 @@ SplinePointList *SplinePointListInterpretPS(FILE *ps) {
     int flags = -1;
 
     memset(&ec,'\0',sizeof(ec));
-    InterpretPS(ps,&ec);
+    InterpretPS(ps,NULL,&ec,NULL);
 return( SplinesFromEntities(&ec,&flags));
 }
 
@@ -2041,7 +2089,7 @@ Entity *EntityInterpretPS(FILE *ps) {
     EntityChar ec;
 
     memset(&ec,'\0',sizeof(ec));
-    InterpretPS(ps,&ec);
+    InterpretPS(ps,NULL,&ec,NULL);
 return( ec.splines );
 }
 
@@ -2052,12 +2100,12 @@ static void SCInterpretPS(FILE *ps,SplineChar *sc, int *flags) {
     IO wrapper;
 
     wrapper.top = NULL;
-    pushio(&wrapper,ps,NULL);
+    pushio(&wrapper,ps,NULL,1);
 
     if ( nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf))!=pt_opencurly )
 	fprintf(stderr, "We don't understand this font\n" );
     memset(&ec,'\0',sizeof(ec));
-    InterpretPS(ps,&ec);
+    InterpretPS(ps,NULL,&ec,NULL);
     ec.sc = sc;
     sc->width = ec.width;
     sc->refs = ec.refs;
@@ -2075,7 +2123,7 @@ void PSFontInterpretPS(FILE *ps,struct charprocs *cp) {
     int flags = -1;
 
     wrapper.top = NULL;
-    pushio(&wrapper,ps,NULL);
+    pushio(&wrapper,ps,NULL,1);
 
     while ( (tok = nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf)))!=pt_eof && tok!=pt_end ) {
 	if ( tok==pt_namelit ) {
@@ -2087,7 +2135,7 @@ void PSFontInterpretPS(FILE *ps,struct charprocs *cp) {
 		SCInterpretPS(ps,sc,&flags);
        		GProgressNext();
 	    } else {
-		InterpretPS(ps,&dummy);
+		InterpretPS(ps,NULL,&dummy,NULL);
 	    }
 	}
     }
@@ -2139,7 +2187,7 @@ Encoding *PSSlurpEncodings(FILE *file) {
     int tok;
 
     wrapper.top = NULL;
-    pushio(&wrapper,file,NULL);
+    pushio(&wrapper,file,NULL,1);
 
     while ( (tok = nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf)))!=pt_eof ) {
 	encname = NULL;
@@ -2197,6 +2245,18 @@ return( head );
     }
 
 return( head );
+}
+
+int EvaluatePS(char *str,real *stack,int size) {
+    EntityChar ec;
+    RetStack rs;
+
+    memset(&ec,'\0',sizeof(ec));
+    memset(&rs,'\0',sizeof(rs));
+    rs.max = size;
+    rs.stack = stack;
+    InterpretPS(NULL,str,&ec,&rs);
+return( rs.cnt );
 }
 
 static void closepath(SplinePointList *cur, int is_type2) {

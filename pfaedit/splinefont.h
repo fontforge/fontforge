@@ -1316,6 +1316,7 @@ extern SplineSet *SplinePointListInterpretSVG(char *filename,int em_size, int as
 extern SplinePointList *SplinePointListInterpretPS(FILE *ps);
 extern void PSFontInterpretPS(FILE *ps,struct charprocs *cp);
 extern struct enc *PSSlurpEncodings(FILE *file);
+extern int EvaluatePS(char *str,real *stack,int size);
 struct pscontext {
     int is_type2;
     int instance_count;
