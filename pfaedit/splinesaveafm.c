@@ -90,6 +90,7 @@ int LoadKerningDataFromAfm(SplineFont *sf, char *filename) {
 
     if ( file==NULL )
 return( 0 );
+    GProgressChangeLine2R(_STR_ReadingAFM);
     while ( mygets(file,buffer,sizeof(buffer))!=NULL ) {
 	if ( strncmp(buffer,"KPX",3)==0 ) {
 	    for ( pt=buffer+3; isspace(*pt); ++pt);
