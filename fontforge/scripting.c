@@ -5269,7 +5269,7 @@ return;
     else if ( (strcmp(argv[1],"-nosplash")==0 || strcmp(argv[1],"--nosplash")==0) &&
 	    argc>=3 && ( strcmp(argv[2],"-script")==0 || strcmp(argv[2],"--script")==0 ))
 	ProcessScript(argc, argv,NULL);
-    if ( access(argv[1],X_OK|R_OK)==0 ) {
+    /*if ( access(argv[1],X_OK|R_OK)==0 )*/ {
 	FILE *temp = fopen(argv[1],"r");
 	char buffer[200];
 	if ( temp==NULL )
