@@ -227,13 +227,11 @@ return( false );
 	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]!=sc ) {
 	    if ( unienc!=-1 && sf->chars[i]->unicodeenc==unienc ) {
 		if ( !mv && !MultipleValues(sf->chars[i]->name,i)) {
-		    free(lig);
 return( false );
 		}
 		mv = 1;
 	    } else if ( !isnotdef && strcmp(name,sf->chars[i]->name)==0 ) {
 		if ( !MultipleNames()) {
-		    free(lig);
 return( false );
 		}
 		free(sf->chars[i]->name);
