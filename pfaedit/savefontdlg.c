@@ -1500,6 +1500,28 @@ static unichar_t *BitmapList(SplineFont *sf) {
 return( uret );
 }
 
+static unichar_t *uStyleName(SplineFont *sf) {
+    int stylecode = MacStyleCode(sf,NULL);
+    char buffer[200];
+
+    buffer[0]='\0';
+    if ( stylecode&sf_bold )
+	strcpy(buffer," Bold");
+    if ( stylecode&sf_italic )
+	strcat(buffer," Italic");
+    if ( stylecode&sf_outline )
+	strcat(buffer," Outline");
+    if ( stylecode&sf_shadow )
+	strcat(buffer," Shadow");
+    if ( stylecode&sf_condense )
+	strcat(buffer," Condensed");
+    if ( stylecode&sf_extend )
+	strcat(buffer," Extended");
+    if ( buffer[0]=='\0' )
+	strcpy(buffer," Plain");
+return( uc_copy(buffer+1));
+}
+	
 int SFGenerateFont(SplineFont *sf,int family) {
     GRect pos;
     GWindow gw;
@@ -1819,6 +1841,7 @@ return( 0 );
 	    gcd[k].gd.label = &label[k];
 	    gcd[k].gd.cid = CID_Family+i*10;
 	    gcd[k].data = familysfs[j];
+	    gcd[k].gd.popup_msg = uStyleName(familysfs[j]);
 	    gcd[k++].creator = GCheckBoxCreate;
 
 	    gcd[k].gd.pos.x = gcd[8].gd.pos.x; gcd[k].gd.pos.y = y; gcd[k].gd.pos.width = gcd[8].gd.pos.width;
@@ -1844,6 +1867,8 @@ return( 0 );
     GGadgetsCreate(gw,gcd);
     GGadgetSetUserData(gcd[2].ret,gcd[0].ret);
     free(label[9].text);
+    for ( i=15; i<k; ++i ) if ( gcd[i].gd.popup_msg!=NULL )
+	free((unichar_t *) gcd[i].gd.popup_msg);
 
     GFileChooserConnectButtons(gcd[0].ret,gcd[1].ret,gcd[2].ret);
     {
