@@ -40,21 +40,21 @@ extern int accent_offset;	/* in prefs.c */
 /* postscript wants accented chars built with accents in the 0x2c? range */
 /*  except for grave and acute which live in iso8859-1 range */
 /*  this table is ordered on a best try basis */
-static const unichar_t accents[][3] = {
-    { 0x60, 0x2cb },		/* grave */
-    { 0xb4, 0x2ca },		/* acute */
-    { 0x2c6, 0x5e },		/* circumflex */
-    { 0x2dc, 0x7e },		/* tilde */
-    { 0xaf, 0x2c9 },		/* macron */
-    { 0x305, 0xaf },		/* overline, (macron is suggested as a syn, but it's not quite right) */
-    { 0x2d8 },			/* breve */
-    { 0x2d9, '.' },		/* dot above */
-    { 0xa8 },			/* diaeresis */
-    { 0x2c0 },			/* hook above */
-    { 0x2da, 0xb0 },		/* ring above */
-    { 0x2dd },			/* real acute */
-    { 0x2c7 },			/* caron */
-    { 0x2c8, 0x384, '\''  },	/* vertical line, tonos */
+static const unichar_t accents[][4] = {
+    { 0x2cb, 0x300, 0x60 },		/* grave */
+    { 0x2ca, 0x301, 0xb4 },		/* acute */
+    { 0x2c6, 0x302, 0x5e },		/* circumflex */
+    { 0x2dc, 0x303, 0x7e },		/* tilde */
+    { 0x2c9, 0x304, 0xaf },		/* macron */
+    { 0x305, 0xaf },			/* overline, (macron is suggested as a syn, but it's not quite right) */
+    { 0x2d8, 0x306 },			/* breve */
+    { 0x2d9, 0x307, '.' },		/* dot above */
+    { 0xa8,  0x308 },			/* diaeresis */
+    { 0x2c0 },				/* hook above */
+    { 0x2da, 0xb0 },			/* ring above */
+    { 0x2dd },				/* real acute */
+    { 0x2c7 },				/* caron */
+    { 0x2c8, 0x384, 0x30d, '\''  },	/* vertical line, tonos */
     { '"' },			/* real vertical line */
     { 0 },			/* real grave */
     { 0 },			/* cand... */		/* 310 */
