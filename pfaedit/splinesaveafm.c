@@ -671,7 +671,7 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype) {
     int i, j, cnt, max, vcnt;
     int caph, xh, ash, dsh;
     int type0 = ( formattype==ff_ptype0 );
-    int encmax=!type0?256:sf->encoding_name<em_big5?94*94:65536;
+    int encmax=!type0?256:65536;
     int anyzapf;
     int iscid = ( formattype==ff_cid || formattype==ff_otfcid );
     time_t now;
@@ -815,11 +815,9 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype) {
 		AfmCIDChar(afm, sc, i);
 	}
     } else if ( type0 && sf->encoding_name>=em_jis208 && sf->encoding_name<=em_gb2312 ) {
-	int enc;
 	for ( i=0; i<sf->charcnt && i<encmax; ++i )
 	    if ( SCWorthOutputting(sf->chars[i]) ) {
-		enc = (i/96 + '!')*256 + (i%96 + ' ');
-		AfmSplineCharX(afm,sf->chars[i],enc);
+		AfmSplineCharX(afm,sf->chars[i],i);
 	    }
     } else if ( type0 ) {
 	for ( i=0; i<sf->charcnt && i<encmax && i<0x2700; ++i )

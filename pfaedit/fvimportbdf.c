@@ -107,17 +107,18 @@ static void ExtendSF(SplineFont *sf, int enc, int set) {
 }
 
 static void MakeEncChar(SplineFont *sf,int enc,char *name) {
+    int uni;
 
     ExtendSF(sf,enc,false);
 
-    if ( sf->chars[enc]==NULL ) {
-	sf->chars[enc] = SplineCharCreate();
-	sf->chars[enc]->parent = sf;
-	sf->chars[enc]->width = sf->chars[enc]->vwidth = sf->ascent+sf->descent;
-    }
+    if ( sf->chars[enc]==NULL )
+	SFMakeChar(sf,enc);
     free(sf->chars[enc]->name);
     sf->chars[enc]->name = copy(name);
-    sf->chars[enc]->unicodeenc = UniFromName(name);
+
+    uni = UniFromName(name);
+    if ( uni!=-1 )
+	sf->chars[enc]->unicodeenc = uni;
     sf->chars[enc]->enc = enc;
     /*sf->encoding_name = em_none;*/
 }
@@ -126,8 +127,6 @@ static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
 	int swidth, int swidth1) {
     int i = -1;
 
-    /* Need to do something about 94x94 encodings where the encoding we get */
-    /*  is not the same as what we use internally !!! */
     if ( strcmp(name,".notdef")==0 ) {
 	if ( enc<32 || (enc>=127 && enc<0xa0)) i=enc;
 	else if ( sf->encoding_name==em_none ) i = enc;
@@ -1590,7 +1589,7 @@ return(false);
 return(false);
 
     cnt = getformint32(file,format);
-    if ( cnt!=b->charcnt )
+    if ( cnt>b->charcnt )
 return( false );
     for ( i=0; i<cnt; ++i ) {
 	int swidth = getformint32(file,format);
@@ -1628,9 +1627,9 @@ return( false );
 
     if ( !PcfReadBitmaps(file,toc,b))
 return( false );
+    PcfReadEncodingsNames(file,toc,sf,b);
     if ( sf->onlybitmaps )
 	PcfReadSWidths(file,toc,b);
-    PcfReadEncodingsNames(file,toc,sf,b);
     new = gcalloc(sf->charcnt,sizeof(BDFChar *));
     mult = gcalloc(mcnt+1,sizeof(BDFChar *)); multcnt=0;
     for ( i=0; i<mcnt; ++i ) {
@@ -1727,6 +1726,7 @@ BDFFont *SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback) {
     defs.res = -1;
     foundry[0] = '\0';
     fontname[0] = '\0';
+    comments[0] = '\0';
 
     if ( ispk==1 && strcmp(filename+strlen(filename)-2,"gf")==0 )
 	ispk = 3;

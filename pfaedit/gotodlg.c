@@ -375,7 +375,7 @@ return( enc );
 			enc = -1;
 		} else {
 		    if ( enc>=1 && enc<=94 && j>=1 && j<=94 )
-			enc = (enc-1)*96 + j;
+			enc = ((enc+0x20)<<8) + j+0x20;
 		    else
 			enc = -1;
 		}

@@ -3627,7 +3627,7 @@ return( false );
 	/* Ok to name it itself */;
     else if ( (sf->encoding_name<e_first2byte && sc->enc<256) ||
 	    (sf->encoding_name>=em_big5 && sf->encoding_name<=em_unicode && sc->enc<65536 ) ||
-	    (sf->encoding_name>=e_first2byte && sf->encoding_name<em_unicode && sc->enc<94*96 ) ||
+	    (sf->encoding_name>=e_first2byte && sf->encoding_name<em_unicode && sc->enc<0x7d7d ) ||
 	    sc->unicodeenc!=-1 )
 	sf->encoding_name = em_none;
 

@@ -4038,14 +4038,18 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 	    dummy->unicodeenc = temp;
 	} else
 	    dummy->unicodeenc = -1;
-    } else if ( sf->encoding_name==em_jis208 && i<96*94 && i%96!=0 && i%96!=95 )
-	dummy->unicodeenc = unicode_from_jis208[(i/96)*94+(i%96-1)];
-    else if ( sf->encoding_name==em_jis212 && i<96*94 && i%96!=0 && i%96!=95 )
-	dummy->unicodeenc = unicode_from_jis212[(i/96)*94+(i%96-1)];
-    else if ( sf->encoding_name==em_ksc5601 && i<96*94 && i%96!=0 && i%96!=95 )
-	dummy->unicodeenc = unicode_from_ksc5601[(i/96)*94+(i%96-1)];
-    else if ( sf->encoding_name==em_gb2312 && i<96*94 && i%96!=0 && i%96!=95 )
-	dummy->unicodeenc = unicode_from_gb2312[(i/96)*94+(i%96-1)];
+    } else if ( sf->encoding_name==em_jis208 && i>=0x2121 && i<0x7d7d &&
+	    (i&0xff)>=0x21 && (i&0xff)<=0x7d )
+	dummy->unicodeenc = unicode_from_jis208[((i-0x2121)>>8)*94+((i&0xff)-0x21)];
+    else if ( sf->encoding_name==em_jis212 && i>=0x2121 && i<0x7d7d &&
+	    (i&0xff)>=0x21 && (i&0xff)<=0x7d )
+	dummy->unicodeenc = unicode_from_jis212[((i-0x2121)>>8)*94+((i&0xff)-0x21)];
+    else if ( sf->encoding_name==em_ksc5601 && i>=0x2121 && i<0x7d7d &&
+	    (i&0xff)>=0x21 && (i&0xff)<=0x7d )
+	dummy->unicodeenc = unicode_from_ksc5601[((i-0x2121)>>8)*94+((i&0xff)-0x21)];
+    else if ( sf->encoding_name==em_gb2312 && i>=0x2121 && i<0x7d7d &&
+	    (i&0xff)>=0x21 && (i&0xff)<=0x7d )
+	dummy->unicodeenc = unicode_from_gb2312[((i-0x2121)>>8)*94+((i&0xff)-0x21)];
     else if ( sf->encoding_name>=em_jis208 )
 	dummy->unicodeenc = -1;
     else
@@ -4282,11 +4286,10 @@ return( true );
       case em_ksc5601: case em_jis208: case em_jis212:
 	if ( !GDrawFontHasCharset(fv->header,fv->sf->encoding_name))
 return( false);
-	ch1 = sc->enc/96; ch2 = (sc->enc%96)-1;
-	if ( ch1>0x7d-0x21 || ch2>94 || ch2<0 )
+	if ( ch1<0x21 || ch1>0x7d || ch2>0x21 || ch2<0x7d )
 return( false );
 	mods->has_charset = true; mods->charset = fv->sf->encoding_name;
-	buf[0] = ((ch1+0x21)<<8) + ch2+0x21;
+	buf[0] = sc->enc;
 	buf[1] = 0;
 return( true );
       break;

@@ -485,7 +485,7 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding, int res) {
 int BDFFontDump(char *filename,BDFFont *font, char *encodingname, int res) {
     char buffer[300];
     FILE *file;
-    int i, enc, is94x94=font->sf->encoding_name>=em_jis208 && font->sf->encoding_name<=em_gb2312;
+    int i, enc;
     int ret = 0;
 
     if ( filename==NULL ) {
@@ -499,11 +499,7 @@ int BDFFontDump(char *filename,BDFFont *font, char *encodingname, int res) {
 	BDFDumpHeader(file,font,encodingname,res);
 	for ( i=0; i<font->charcnt; ++i ) if ( !IsntBDFChar(font->chars[i])) {
 	    enc = i;
-	    if ( is94x94 && i<96*94 )
-		enc = (i/96+'!')*256 + i%96+' ';
-	    else if ( is94x94 )
-		enc = -1;
-	    else if ( i>=256 && font->sf->encoding_name!=em_unicode && font->sf->encoding_name!=em_unicode4 )
+	    if ( i>=256 && font->sf->encoding_name<=em_first2byte )
 		enc = -1;
 	    BDFDumpChar(file,font,font->chars[i],enc);
 	}

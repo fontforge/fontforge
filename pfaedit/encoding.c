@@ -1551,7 +1551,7 @@ return( 65536 );
     else if ( encoding_name < em_first2byte )
 return( 256 );
     else if ( encoding_name <= em_last94x94 )
-return( 96*94 );
+return( 65536 );
     else if ( encoding_name >= em_base ) {
 	for ( item=enclist; item!=NULL && item->enc_num!=encoding_name;
 		item=item->next );

@@ -1347,7 +1347,7 @@ return( false );
     } else {
 	used[i>>3] |= (1<<(i&7));
 	if ( tlen2==94*94 ) {
-	    sc->enc = (i/94)*96+(i%94)+1;
+	    sc->enc = 0x2121 + ((i/94)<<8) + (i%94);
 return( true );
 	} else if ( table==unicode_from_ksc5601 ) {
 	    /* Wansung */
@@ -1510,7 +1510,7 @@ return( false );
     else if ( new_map==em_unicode4 )
 	enc_cnt = unicode4_size;
     else if ( new_map>=em_first2byte )
-	enc_cnt = 94*96;
+	enc_cnt = 65536;
 
     if ( sf->charcnt<enc_cnt ) {
 	sf->chars = grealloc(sf->chars,enc_cnt*sizeof(SplineChar *));
@@ -1683,7 +1683,7 @@ return( false );
     else if ( table==NULL )
 	/* Done */;
     else if ( tlen == 94*94 )
-	enc_cnt = 94*96;
+	enc_cnt = 65536;
     else if ( tlen == 0x10000-0xa100 || tlen==0x10000-0x8400 || tlen==0x10000-0x8100 )
 	enc_cnt = 65536;
 

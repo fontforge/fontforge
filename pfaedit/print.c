@@ -245,7 +245,7 @@ static void dump_prologue(PI *pi) {
 	    /* Now see if there are any unencoded characters in the font, and if so */
 	    /*  reencode enough fonts to display them all. These will all be 256 char fonts */
 	    if ( pi->iscjk )
-		i = 96*94;
+		i = 65536;
 	    else if ( pi->twobyte )
 		i = 65536;
 	    else
@@ -364,7 +364,7 @@ return(0);
 
     if ( pi->iscid )
 	/* No encoding worries */;
-    else if ( (pi->twobyte && line>=65536) || (pi->iscjk && line>=96*94) || ( !pi->twobyte && line>=256 ) ) {
+    else if ( (pi->twobyte && line>=65536) || ( !pi->twobyte && line>=256 ) ) {
 	/* Nothing more encoded. Can't use the normal font, must use one of */
 	/*  the funky reencodings we built up at the beginning */
 	if ( pi->lastbase!=(line>>8) ) {
@@ -596,7 +596,7 @@ return( sf->chars[i]);
 return( NULL );
     } else if ( !pi->iscid ) {
 	max = 256;
-	if ( pi->iscjk ) max = 96*94;
+	if ( pi->iscjk ) max = 0x7d7e;
 	for ( i=0 ; i<sf->charcnt && i<max; ++i )
 	    if ( sf->chars[i]!=NULL && sf->chars[i]->unicodeenc==ch ) {
 		if ( SCWorthOutputting(sf->chars[i]))

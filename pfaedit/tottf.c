@@ -3794,13 +3794,13 @@ return( sf->chars[i]->unicodeenc );
       case em_sjis:			/* Japan */
 return( i>65536?-1:i );
       case em_ksc5601:			/* Wansung */
-	if ( (i/96)>=94 )
+	if ( i<0x2121 || i>0x7d7d || (i&0xff)<0x21 || (i&0xff)>0x7d )
 return( -1 );
 
-return( ((i/96)<<8) + (i%96) + 0xa1a0 );
+return( i + 0x8080 );
       case em_jis208: {			/* SJIS */
 	int ch1, ch2, ro, co;
-	ch1 = i/96; ch2 = i%96;
+	ch1 = (i>>8)-0x21; ch2 = (i&0xff)-0x21;
 	if ( ch1>=94 )
 return( -1 );
 	ro = ch1<95 ? 112 : 176;

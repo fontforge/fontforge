@@ -2867,40 +2867,6 @@ static void dupfree(struct dup *dups) {
 }
 
 static int modenc(int enc,int modtype) {
-#if 0		/* to convert to jis208 (or later ksc5601) */
-    if ( modtype==2 /* SJIS */ ) {
-	if ( enc<=127 ) {
-	    /* Latin */
-	    enc += 94*96;
-	} else if ( enc>=161 && enc<=223 ) {
-	    /* Katakana */
-	    enc += 96*96-160;
-	} else {
-	    int ch1 = enc>>8, ch2 = enc&0xff;
-	    if ( ch1 >= 129 && ch1<= 159 )
-		ch1 -= 112;
-	    else
-		ch1 -= 176;
-	    ch1 <<= 1;
-	    if ( ch2>=159 )
-		ch2-= 126;
-	    else if ( ch2>127 ) {
-		--ch1;
-		ch2 -= 32;
-	    } else {
-		--ch1;
-		ch2 -= 31;
-	    }
-	    enc = (ch1-0x21)*96+(ch2-0x20);
-	}
-    } else if ( modtype==5 /* Wansung == KSC 5601-1987, I hope */ ) {
-	if ( enc>0xa1a1 ) {
-	    enc -= 0xa1a1;
-	    enc = (enc>>8)*96 + (enc&0xff)+1;
-	} else if ( enc<0x100 )
-	    enc += 96*94;
-    }
-#endif
 return( enc );
 }
 
@@ -3879,7 +3845,7 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
 	}
 
     if ( info->encoding_name>=em_first2byte && info->encoding_name<=em_last94x94 )
-	epos = ((max+95)/96)*96;
+	epos = 65536;
     else if ( info->encoding_name==em_unicode4 )
 	epos = (max>=unicode4_size) ? max+1 : unicode4_size;
     else

@@ -1036,7 +1036,7 @@ static void dumptype0stuff(FILE *out,SplineFont *sf) {
 
     dumpreencodeproc(out);
     notdefname = dumpnotdefenc(out,sf);
-    if ( sf->encoding_name >= em_last94x94 ) {
+    if ( sf->encoding_name >= em_first2byte ) {
 	for ( i=1; i<256; ++i ) {
 	    if ( somecharsused(sf,i<<8, (i<<8)+0xff)) {
 		fprintf( out, "/%sBase /%s%d [\n", sf->fontname, sf->fontname, i );
@@ -1045,7 +1045,7 @@ static void dumptype0stuff(FILE *out,SplineFont *sf) {
 			    sf->chars[(i<<8)+j]!=NULL?sf->chars[(i<<8)+j]->name:
 			    notdefname );
 		fprintf( out, "] ReEncode\n\n" );
-	    } else if ( i==0x27 ) {
+	    } else if ( i==0x27 && sf->encoding_name==em_unicode ) {
 		fprintf( out, "%% Add Zapf Dingbats to unicode font at 0x2700\n" );
 		fprintf( out, "%%  But only if on the printer, else use notdef\n" );
 		fprintf( out, "%%  gv, which has no Zapf, maps courier to the name\n" );
@@ -1073,22 +1073,6 @@ static void dumptype0stuff(FILE *out,SplineFont *sf) {
 		fprintf( out, "  } ifelse\n\n" );
 	    }
 	}
-    } else {
-	/* 94x94 encoding of oriental characters */
-	for ( i=0; i<94; ++i ) {
-	    if ( somecharsused(sf,i*96, i*96+95 )) {
-		fprintf( out, "/%sBase /%s%d [\n", sf->fontname, sf->fontname, i );
-		for ( j=0; j<32; ++j )
-		    fprintf( out, " /%s\n", notdefname );
-		for ( ; j<96+32; ++j )
-		    fprintf( out, " /%s\n",
-			    sf->chars[i*96+j-32]!=NULL?sf->chars[i*96+j-32]->name:
-			    notdefname );
-		for ( ; j<256; ++j )
-		    fprintf( out, " /%s\n", notdefname );
-		fprintf( out, "] ReEncode\n\n" );
-	    }
-	}
     }
 
     fprintf( out, "/%s 20 dict dup begin\n", sf->fontname );
@@ -1104,26 +1088,12 @@ static void dumptype0stuff(FILE *out,SplineFont *sf) {
 	fprintf( out, " %d\n", i );
     fprintf( out, "] readonly def\n" );
     fprintf( out, "/FDepVector [\n" );
-    if ( sf->encoding_name >= em_first2byte &&
-	    sf->encoding_name <= em_last94x94 ) {
-	for ( i=0; i<33; ++i )
+    fprintf( out, " /%sBase findfont\n", sf->fontname );
+    for ( i=1; i<256; ++i )
+	if ( somecharsused(sf,i<<8, (i<<8)+0xff) || (i==0x27 && sf->encoding_name==em_unicode) )
+	    fprintf( out, " /%s%d findfont\n", sf->fontname, i );
+	else
 	    fprintf( out, " /%sNotDef findfont\n", sf->fontname );
-	for ( i=0; i<94; ++i ) {
-	    if ( somecharsused(sf,i*96, i*96+95 ))
-		fprintf( out, " /%s%d findfont\n", sf->fontname, i );
-	    else
-		fprintf( out, " /%sNotDef findfont\n", sf->fontname );
-	}
-	for ( i=0; i<129; ++i )
-	    fprintf( out, " /%sNotDef findfont\n", sf->fontname );
-    } else {
-	fprintf( out, " /%sBase findfont\n", sf->fontname );
-	for ( i=1; i<256; ++i )
-	    if ( somecharsused(sf,i<<8, (i<<8)+0xff) || i==0x27 )
-		fprintf( out, " /%s%d findfont\n", sf->fontname, i );
-	    else
-		fprintf( out, " /%sNotDef findfont\n", sf->fontname );
-    }
     fprintf( out, "  ] readonly def\n" );
     fprintf( out, "end definefont pop\n" );
     fprintf( out, "%%%%EOF\n" );

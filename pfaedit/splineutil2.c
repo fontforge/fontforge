@@ -2065,19 +2065,19 @@ SplineFont *SplineFontNew(void) {
     } else if ( default_encoding==em_jis208 ) {
 	table = unicode_from_jis208;
 	tlen = 94*94;
-	enclen = 94*96;
+	enclen = 65536;
     } else if ( default_encoding==em_jis212 ) {
 	table = unicode_from_jis212;
 	tlen = 94*94;
-	enclen = 94*96;
+	enclen = 65536;
     } else if ( default_encoding==em_ksc5601 ) {
 	table = unicode_from_ksc5601;
 	tlen = 94*94;
-	enclen = 94*96;
+	enclen = 65536;
     } else if ( default_encoding==em_gb2312 ) {
 	table = unicode_from_gb2312;
 	tlen = 94*94;
-	enclen = 94*96;
+	enclen = 65536;
     } else if ( default_encoding==em_big5 ) {
 	table = unicode_from_big5;
 	tlen = 0x10000-0xa100;
@@ -2120,10 +2120,10 @@ SplineFont *SplineFontNew(void) {
 	else if ( table==NULL )
 	    uenc = i;
 	else if ( tlen==94*94 ) {
-	    if ( i%96==0 || i%96==95 )
+	    if ( i<0x2121 || i>0x7d7d || (i&0xff)<0x21 || (i&0xff)>0x7d )
 		uenc = -1;
 	    else
-		uenc = table[(i/96)*94+(i%96-1)];
+		uenc = table[((i>>8)-0x21)*94+((i&0xff)-0x21)];
 	} else if ( tlen==0x10000-0xa100 || tlen == 0x10000-0x8400 ) {
 	    uenc = ( i<160 )?i : -1;	/* deal with single byte encoding of big5 */
 	} else if ( tlen==257 ) {		/* sjis */
