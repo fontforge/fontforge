@@ -911,6 +911,7 @@ extern void Disp_DefaultTemplate(CharView *cv);
 # endif
 
 extern SearchView *SVCreate(FontView *fv);
+extern void FVReplaceOutlineWithReference( FontView *fv );
 extern void SVCharViewInits(SearchView *sv);
 extern void SVMenuClose(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void SVChar(SearchView *sv, GEvent *event);

@@ -835,8 +835,17 @@ void CVUndoCleanup(CharView *cv) {
 
     if ( cv->drawmode==dm_fore && (!cv->p.anysel || cv->p.transanyrefs)) {
 	for ( uref=undo->u.state.refs; uref!=NULL; uref=uref->next ) {
+#ifdef FONTFORGE_CONFIG_TYPE3
+	    int i;
+	    for ( i=0; i<uref->layer_cnt; ++i )
+		SplinePointListFree(uref->layers[i].splines);
+	    free(uref->layers);
+	    uref->layers = NULL;
+	    uref->layer_cnt = 0;
+#else
 	    SplinePointListFree(uref->layers[0].splines);
 	    uref->layers[0].splines = NULL;
+#endif
 	}
     }
     undo->undotype = ut_state;
@@ -904,7 +913,7 @@ return;
 
 static Undoes copybuffer;
 
-static void CopyBufferFree(void) {
+void CopyBufferFree(void) {
 
     switch( copybuffer.undotype ) {
       case ut_state: case ut_statehint:
@@ -1258,7 +1267,12 @@ void CopySelected(CharView *cv) {
 	for ( refs = cv->layerheads[cv->drawmode]->refs; refs!=NULL; refs = refs->next ) if ( refs->selected ) {
 	    new = RefCharCreate();
 	    *new = *refs;
+#ifdef FONTFORGE_CONFIG_TYPE3
+	    new->layers = NULL;
+	    new->layer_cnt = 0;
+#else
 	    new->layers[0].splines = NULL;
+#endif
 	    new->local_enc = new->sc->enc;
 	    new->sc = NULL;
 	    new->next = copybuffer.u.state.refs;
@@ -1943,14 +1957,22 @@ return;
 	    for ( refs = paster->u.state.refs; refs!=NULL; refs=refs->next ) {
 		if ( cv->searcher!=NULL )
 		    sc = FindCharacter(cv->searcher->fv->sf,refs);
-		else
+		else {
 		    sc = FindCharacter(cvsc->parent,refs);
-		if ( sc!=NULL && SCDependsOnSC(sc,cvsc))
-		    GWidgetErrorR(_STR_SelfRef,_STR_AttemptSelfRef);
-		else if ( sc!=NULL ) {
+		    if ( sc!=NULL && SCDependsOnSC(sc,cvsc)) {
+			GWidgetErrorR(_STR_SelfRef,_STR_AttemptSelfRef);
+			sc = NULL;
+		    }
+		}
+		if ( sc!=NULL ) {
 		    new = RefCharCreate();
 		    *new = *refs;
+#ifdef FONTFORGE_CONFIG_TYPE3
+		    new->layers = NULL;
+		    new->layer_cnt = 0;
+#else
 		    new->layers[0].splines = NULL;
+#endif
 		    new->sc = sc;
 		    new->selected = true;
 		    new->next = cvsc->layers[ly_fore].refs;

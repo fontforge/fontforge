@@ -1077,6 +1077,7 @@ extern void SplinePointListsFree(SplinePointList *head);
 extern void RefCharFree(RefChar *ref);
 extern void RefCharsFree(RefChar *ref);
 extern void RefCharsFreeRef(RefChar *ref);
+extern void CopyBufferFree(void);
 extern void UndoesFree(Undoes *undo);
 extern void StemInfosFree(StemInfo *h);
 extern void StemInfoFree(StemInfo *h);

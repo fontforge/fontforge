@@ -396,17 +396,30 @@ static int SCMatchesFull(SplineChar *sc,SearchView *s) {
     int i, first;
 
     s->matched_ss = s->matched_refs = 0;
+    first = true;
     for ( s_r = s->sc_srch.layers[ly_fore].refs; s_r!=NULL; s_r = s_r->next ) {
 	for ( r = sc->layers[ly_fore].refs, i=0; r!=NULL; r=r->next, ++i ) if ( !(s->matched_refs&(1<<i)) ) {
-	    if ( r->sc == s_r->sc )	/* I should check the transform to see if the tryflips (etc) flags would make this not a match */
+	    if ( r->sc == s_r->sc ) {
+		/* I should check the transform to see if the tryflips (etc) flags would make this not a match */
+		if ( r->transform[0]==1 && r->transform[1]==0 &&
+			r->transform[2]==0 && r->transform[3]==1 ) {
+		    if ( first ) {
+			s->matched_scale = 1.0;
+			s->matched_x = r->transform[4];
+			s->matched_y = r->transform[5];
+			first = false;
 	break;
+		    } else if ( r->transform[4]==s->matched_x &&
+			    r->transform[5] == s->matched_y )
+	break;
+		}
+	    }
 	}
 	if ( r==NULL )
 return( false );
 	s->matched_refs |= 1<<i;
     }
 
-    first = true;
     for ( s_spl = s->path, s_r_spl=s->revpath; s_spl!=NULL; s_spl=s_spl->next, s_r_spl = s_r_spl->next ) {
 	for ( spl=sc->layers[ly_fore].splines, i=0; spl!=NULL; spl=spl->next, ++i ) if ( !(s->matched_ss&(1<<i)) ) {
 	    s->matched_spl = spl;
@@ -666,7 +679,12 @@ static void DoReplaceFull(SplineChar *sc,SearchView *s) {
 	new = RefCharCreate();
 	*new = *r;
 	memcpy(new->transform,subtrans,sizeof(subtrans));
-	new->layers[ly_fore].splines = NULL;
+#ifdef FONTFORGE_CONFIG_TYPE3
+	new->layers = NULL;
+	new->layer_cnt = 0;
+#else
+	new->layers[0].splines = NULL;
+#endif
 	new->next = sc->layers[ly_fore].refs;
 	new->selected = true;
 	sc->layers[ly_fore].refs = new;
@@ -745,14 +763,8 @@ static void SVSelectSC(SearchView *sv) {
     sc->changed_since_search = false;
 }
 
-static void SVParseDlg(SearchView *sv) {
-    SplinePointList *spl;
-
-    sv->tryreverse = true;
-    sv->tryflips = GGadgetIsChecked(GWidgetGetControl(sv->gw,CID_Flipping));
-    sv->tryscale = GGadgetIsChecked(GWidgetGetControl(sv->gw,CID_Scaling));
-    sv->tryrotate = GGadgetIsChecked(GWidgetGetControl(sv->gw,CID_Rotating));
-    sv->onlyselected = GGadgetIsChecked(GWidgetGetControl(sv->gw,CID_Selected));
+static void SVResetPaths(SearchView *sv) {
+    SplineSet *spl;
 
     if ( sv->sc_srch.changed_since_autosave ) {
 	sv->path = sv->sc_srch.layers[ly_fore].splines;
@@ -770,6 +782,17 @@ static void SVParseDlg(SearchView *sv) {
 	    spl = SplineSetReverse(spl);
 	sv->sc_rpl.changed_since_autosave = false;
     }
+}
+
+static void SVParseDlg(SearchView *sv) {
+
+    sv->tryreverse = true;
+    sv->tryflips = GGadgetIsChecked(GWidgetGetControl(sv->gw,CID_Flipping));
+    sv->tryscale = GGadgetIsChecked(GWidgetGetControl(sv->gw,CID_Scaling));
+    sv->tryrotate = GGadgetIsChecked(GWidgetGetControl(sv->gw,CID_Rotating));
+    sv->onlyselected = GGadgetIsChecked(GWidgetGetControl(sv->gw,CID_Selected));
+
+    SVResetPaths(sv);
 
     /* Only do a sub pattern search if we have a single path and it is open */
     /*  and there is either no replace pattern, or it is also a single open */
@@ -904,7 +927,7 @@ static int SV_Find(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static void DoFindAll(SearchView *sv) {
+static int _DoFindAll(SearchView *sv) {
     int i, any=0;
     SplineChar *startcur = sv->curchar;
 
@@ -921,8 +944,15 @@ static void DoFindAll(SearchView *sv) {
 	} else
 	    sv->fv->selected[i] = false;
     }
-    GDrawRequestExpose(sv->fv->v,NULL,false);
     sv->curchar = startcur;
+return( any );
+}
+
+static void DoFindAll(SearchView *sv) {
+    int any;
+
+    any = _DoFindAll(sv);
+    GDrawRequestExpose(sv->fv->v,NULL,false);
     if ( !any )
 	GWidgetPostNoticeR(_STR_NotFound,_STR_PatternNotFound,sv->fv->sf->fontname);
 }
@@ -1238,30 +1268,19 @@ return;
     }
 }
 
-SearchView *SVCreate(FontView *fv) {
-    SearchView *sv;
-    GRect pos, size;
-    GWindow gw;
-    GWindowAttrs wattrs;
-    GGadgetCreateData gcd[12];
-    GTextInfo label[12];
-    FontRequest rq;
-    int as, ds, ld;
-    static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
-
-    if ( searcher!=NULL ) {
-	if ( SVAttachFV(fv,true)) {
-	    GDrawSetVisible(fv->sv->gw,true);
-	    GDrawRaise(fv->sv->gw);
-return( searcher );
-	} else
-return( NULL );
-    }
-
-    searcher = sv = gcalloc(1,sizeof(SearchView));
+static SearchView *SVFillup(SearchView *sv, FontView *fv) {
 
     sv->sc_srch.enc = 0; sv->sc_srch.unicodeenc = -1; sv->sc_srch.name = "Search";
     sv->sc_rpl.enc = 1; sv->sc_rpl.unicodeenc = -1; sv->sc_rpl.name = "Replace";
+    sv->sc_srch.layer_cnt = sv->sc_rpl.layer_cnt = 2;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    sv->sc_srch.layers = gcalloc(2,sizeof(Layer));
+    sv->sc_rpl.layers = gcalloc(2,sizeof(Layer));
+    LayerDefault(&sv->sc_srch.layers[0]);
+    LayerDefault(&sv->sc_srch.layers[1]);
+    LayerDefault(&sv->sc_rpl.layers[0]);
+    LayerDefault(&sv->sc_rpl.layers[1]);
+#endif
     sv->chars[0] = &sv->sc_srch;
     sv->chars[1] = &sv->sc_rpl;
     sv->dummy_sf.chars = sv->chars;
@@ -1284,10 +1303,37 @@ return( NULL );
     sv->dummy_fv.magnify = 1;
 
     sv->fv = fv;
-    fv->sv = sv;
+    if ( fv!=NULL )
+	fv->sv = sv;
+return( sv );
+}
+
+SearchView *SVCreate(FontView *fv) {
+    SearchView *sv;
+    GRect pos, size;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[12];
+    GTextInfo label[12];
+    FontRequest rq;
+    int as, ds, ld;
+    static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
+
+    if ( searcher!=NULL ) {
+	if ( SVAttachFV(fv,true)) {
+	    GDrawSetVisible(fv->sv->gw,true);
+	    GDrawRaise(fv->sv->gw);
+return( searcher );
+	} else
+return( NULL );
+    }
+
+    searcher = sv = SVFillup( gcalloc(1,sizeof(SearchView)), fv );
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor/*|wam_icon*/;
+    wattrs.mask = wam_events|wam_cursor|wam_isdlg/*|wam_icon*/;
+    wattrs.is_dlg = true;
+    wattrs.event_masks = -1;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_pointer;
     /*wattrs.icon = icon;*/
@@ -1420,4 +1466,107 @@ return( NULL );
 
     GDrawSetVisible(sv->gw,true);
 return( sv );
+}
+
+static int IsASingleReferenceOrEmpty(SplineChar *sc) {
+    int i, empty = true;
+
+    for ( i = ly_fore; i<sc->layer_cnt; ++i ) {
+	if ( sc->layers[i].splines!=NULL )
+return( false );
+	if ( sc->layers[i].images!=NULL )
+return( false );
+	if ( sc->layers[i].refs!=NULL ) {
+	    if ( !empty )
+return( false );
+	    if ( sc->layers[i].refs->next!=NULL )
+return( false );
+	    empty = false;
+	}
+    }
+
+return( true );
+}
+
+static void CV2SC(CharView *cv, SplineChar *sc, SearchView *sv) {
+    cv->sc = sc;
+    cv->layerheads[dm_fore] = &sc->layers[ly_fore];
+    cv->layerheads[dm_back] = &sc->layers[ly_back];
+    cv->layerheads[dm_grid] = NULL;
+    cv->drawmode = dm_fore;
+    cv->searcher = sv;
+}
+
+void FVReplaceOutlineWithReference( FontView *fv ) {
+    SearchView *sv;
+    uint8 *selected, *changed;
+    SplineFont *sf = fv->sf;
+    int i, j, selcnt = 0;
+    SearchView *oldsv = fv->sv;
+
+    if ( fv->v!=NULL )
+	GDrawSetCursor(fv->v,ct_watch);
+
+    sv = SVFillup( gcalloc(1,sizeof(SearchView)), fv);
+    CV2SC(&sv->cv_srch,&sv->sc_srch,sv);
+    CV2SC(&sv->cv_rpl,&sv->sc_rpl,sv);
+    sv->replaceall = true;
+
+    selected = galloc(sf->charcnt);
+    memcpy(selected,fv->selected,sf->charcnt);
+    changed = gcalloc(sf->charcnt,1);
+
+    selcnt = 0;
+    for ( i=0; i<sf->charcnt; ++i ) if ( selected[i] && sf->chars[i]!=NULL )
+	++selcnt;
+    GProgressStartIndicatorR(10,_STR_ReplaceOutlineWithReference,
+	    _STR_ReplaceOutlineWithReference,0,selcnt,1);
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( selected[i] && sf->chars[i]!=NULL ) {
+	if ( IsASingleReferenceOrEmpty(sf->chars[i]))
+    continue;		/* No point in replacing something which is itself a ref with a ref to a ref */
+	memset(fv->selected,0,sf->charcnt);
+	fv->selected[i] = true;
+	FVCopy(fv,true);
+	SCClearContents(&sv->sc_srch);
+	PasteToCV(&sv->cv_srch);
+	FVCopy(fv,false);
+	SCClearContents(&sv->sc_rpl);
+	PasteToCV(&sv->cv_rpl);
+	sv->sc_srch.changed_since_autosave = sv->sc_rpl.changed_since_autosave = true;
+	SVResetPaths(sv);
+	if ( !_DoFindAll(sv) && selcnt==1 )
+	    GWidgetPostNoticeR(_STR_NotFound,_STR_GlyphNotFound,
+		    sf->fontname,sf->chars[i]->name);
+	for ( j=0; j<sf->charcnt; ++j )
+	    if ( fv->selected[j] )
+		changed[j] = 1;
+	CopyBufferFree();
+	if ( !GProgressNext())
+    break;
+    }
+    GProgressEndIndicator();
+
+    fv->sv = oldsv;
+
+    SCClearContents(&sv->sc_srch);
+    SCClearContents(&sv->sc_rpl);
+    for ( i=0; i<sv->sc_srch.layer_cnt; ++i )
+	UndoesFree(sv->sc_srch.layers[i].undoes);
+    for ( i=0; i<sv->sc_rpl.layer_cnt; ++i )
+	UndoesFree(sv->sc_rpl.layers[i].undoes);
+#ifdef FONTFORGE_CONFIG_TYPE3
+    free(sv->sc_srch.layers);
+    free(sv->sc_rpl.layers);
+#endif
+    free(sv);
+
+    free(selected);
+    memcpy(fv->selected,changed,sf->charcnt);
+    free(changed);
+
+    if ( fv->v!=NULL ) {
+	GDrawRequestExpose(fv->v,NULL,false);
+	GDrawSetCursor(fv->v,ct_pointer);
+    }
 }
