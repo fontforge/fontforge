@@ -973,32 +973,47 @@ return( sub );
 
 static void dumpothersubrs(void (*dumpchar)(int ch,void *data), void *data,
 	int incid, int needsflex, int needscounters, MMSet *mm ) {
-    extern const char *othersubrs[];
-    extern const char *othersubrsnoflex[];
-    extern const char *othersubrscounters[];
-    extern const char *othersubrsnocounters[];
-    extern const char *othersubrsend[];
+    extern const char **othersubrs_copyright[];
+    extern const char **othersubrs[];
     extern const char *cid_othersubrs[];
-    int i;
-    const char **subs;
+    int i,j;
 
     dumpstr(dumpchar,data,"/OtherSubrs \n" );
-    subs = incid ? cid_othersubrs : needsflex ? othersubrs : othersubrsnoflex;
-    for ( i=0; subs[i]!=NULL; ++i ) {
-	dumpstr(dumpchar,data,subs[i]);
-	dumpchar('\n',data);
-    }
-    if (!incid) { 
-	if ( needscounters ) {
-	    for ( i=0; othersubrscounters[i]!=NULL; ++i ) {
-                dumpstr(dumpchar,data,othersubrscounters[i]);
-                dumpchar('\n',data);
-            }
-        } else if ( mm!=NULL ) {
-	    for ( i=0; othersubrsnocounters[i]!=NULL; ++i ) {
-                dumpstr(dumpchar,data,othersubrsnocounters[i]);
-                dumpchar('\n',data);
-            }
+    if ( incid ) {
+	for ( i=0; cid_othersubrs[i]!=NULL; ++i ) {
+	    dumpstr(dumpchar,data,cid_othersubrs[i]);
+	    dumpchar('\n',data);
+	}
+    } else {
+	int max_subr, min_subr;
+
+	/* I assume I always want the hint replacement subr, (it's small) */
+	/*  but the flex subrs are large, and if I can omit them, I shall */
+	if ( needsflex ) {
+	    min_subr = 0;
+	    max_subr = 3;
+	} else {
+	    min_subr = 3;
+	    max_subr = 3;
+	}
+	if ( needscounters )
+	    max_subr = 13;
+	for ( i=0; othersubrs_copyright[0][i]!=NULL; ++i ) {
+	    dumpstr(dumpchar,data,othersubrs_copyright[0][i]);
+	    dumpchar('\n',data);
+	}
+	dumpstr(dumpchar,data,"[ ");	/* start array */
+	for ( j=0; j<min_subr; ++j )
+	    dumpstr(dumpchar,data," {}\n");
+	for ( ; j<=max_subr; ++j )
+	    for ( i=0; othersubrs[j][i]!=NULL; ++i ) {
+		dumpstr(dumpchar,data,othersubrs[j][i]);
+		dumpchar('\n',data);
+	    }
+        if ( mm!=NULL ) {
+	    /* MM other subrs begin at 14, so skip anything up till then */
+	    for ( ; j<=13; ++j )
+		dumpstr(dumpchar,data," {}\n");
 	}
 	if ( mm!=NULL ) {
 	    /* the code for the multiple master subroutines depends on */
@@ -1029,10 +1044,7 @@ static void dumpothersubrs(void (*dumpchar)(int ch,void *data), void *data,
 		    2*mm->instance_count+4, 1-mm->instance_count,
 		    mm->instance_count+5);
 	}
-        for ( i=0; othersubrsend[i]!=NULL; ++i ) {
-            dumpstr(dumpchar,data,othersubrsend[i]);
-            dumpchar('\n',data);
-        }
+	dumpstr(dumpchar,data,"] ");	/* End array */
     }
     dumpstr(dumpchar,data,incid?"def\n":"ND\n" );
 }
