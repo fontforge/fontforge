@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Sep-2002 -->
-  <!-- AP: Last modified: 6-Sep-2002 -->
+  <!-- AP: Last modified: 10-Sep-2002 -->
   <TITLE>Display Fonts</TITLE>
 </HEAD>
 <BODY>
@@ -17,6 +17,9 @@ see how they look on the screen and together.
 The textarea should behave like any of PfaEdit's textarea's (except this
 one is a lot slower to respond than others), it also allows you to select
 any piece of text in it and change the font and pixel size.
+<P>
+First make a selection (or type ^A to select everything), then choose which
+font you want and how you want it rasterized.
 <P>
 You may also select how the font is rasterized. The first four choices (pfb,
 ttf, httf, otf) will be rasterized by freetype, and the display is very similar
@@ -45,6 +48,12 @@ You can choose whether you want the font to be antialiased or not.
 And different bits of text can have different settings, so you can compare
 them and decide which is least worse. Also you can compare two different
 fonts and see how well they work together.
+<P>
+As with the the print dialog you may Import text from a file. The file must
+either be in the current local encoding, or UCS2 (unicode) or UTF8 (unicode).
+If it is in unicode the first character in the file must be U+FEFF. You can
+also save the contents of the field into a file (it will be in UCS2 and preceded
+by U+FEFF) by typing ^S.
 <P ALIGN=Center>
 -- <A HREF="filemenu.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
 <A HREF="filemenu.html">Next</A> --

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 7-Sep-2002 -->
+  <!-- AP: Last modified: 10-Sep-2002 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -522,8 +522,7 @@ a[4][0] = "Nested array";
 	you may want this off)
       <LI>
 	fmflags&amp;16 =&gt; where apple and ms/adobe differ about the format of
-	a true/open type file, use apple's definition (otherwise use
-	ms/adobe)<BR>
+	a true/open type file, use apple's definition (otherwise use ms/adobe)<BR>
 	Currently this affects bitmaps store in the font (Apple calls the table 'bdat',
 	ms/adobe 'EBDT') and the PostScript name in the 'name' table (Apple says
 	it must occur exactly once, ms/adobe say at least twice)
@@ -675,7 +674,8 @@ a[4][0] = "Nested array";
   <DT>
     Paste
   <DD>
-    Copies the clipboard into the current font (removing what was there before)
+    Copies the clipboard into the selected characters of the current font (removing
+    what was there before)
   <DT>
     PasteInto
   <DD>

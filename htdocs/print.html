@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-May-2001 -->
-  <!-- AP: Last modified: 22-Aug-2002 -->
+  <!-- AP: Last modified: 10-Sep-2002 -->
   <TITLE>Printing</TITLE>
 </HEAD>
 <BODY>
@@ -23,8 +23,7 @@ When you choose to print you have the option of printing:
     <IMG SRC="CharPrint.png" WIDTH="283" HEIGHT="392">
   <LI>
     Certain selected characters at various pointsizes (36, 24, 20, 18, 16, 15,
-    14, 13, 12, 11, 10, 9, 8, 7.5, 7, 6.5, 6, 5.5, 5, 4.5,
-    4)<BR>
+    14, 13, 12, 11, 10, 9, 8, 7.5, 7, 6.5, 6, 5.5, 5, 4.5, 4)<BR>
     <IMG SRC="MultiPrint.png" WIDTH="227" HEIGHT="259">
   <LI>
     A sample of the font in use. This will handle kerning, bi-directional text,
@@ -52,8 +51,8 @@ then the greek will not appear. Of course you may change it however you wish...
 You may also save the sample text to a file by typing ^S within the textarea.
 The text will be saved in ucs2 format (starting with 0xfeff). And you my
 import text into the textarea by typing ^I. Files imported should be either
-in ucs2 (possibly byte reversed, determined by the initial 0xfeff) or in
-the current default encoding.
+in ucs2 (possibly byte reversed, determined by the initial U+FEFF), in utf8
+(again with an initial U+FEFF) or in the current default encoding.
 <P>
 The Setup button allows you to pick a printer, pagesize, etc.<BR Clear=ALL>
 <P>
