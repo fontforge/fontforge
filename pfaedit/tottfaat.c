@@ -450,3 +450,82 @@ return;
     if ( at->proplen&2 )
 	putshort(at->prop,0);
 }
+
+/* ************************************************************************** */
+/* *************************    utility routines    ************************* */
+/* ************************************************************************** */
+
+static struct {
+    int mac_feature_type;
+    int mac_feature_setting;
+    uint32 otf_tag;
+} macfeat_otftag[] = {
+    { 1, 0, CHR('r','l','i','g') },	/* Required ligatures */
+    { 1, 2, CHR('l','i','g','a') },	/* Common ligatures */
+    { 1, 4, CHR('d','l','i','g') },	/* rare ligatures => discretionary */
+    { 1, 4, CHR('h','l','i','g') },	/* rare ligatures => historic */
+    /* 1, 6, logos */
+    /* 1, 8, rebus pictures */
+    /* 1, 10, diphthong ligatures */
+    /* 1, 12, squared ligatures */
+    /* 1, 14, abrev squared ligatures */
+    /* 2, 1, partially connected cursive */
+    /* 2, 2, connected cursive */
+    /* 3, 2, all caps */
+    /* 3, 3, all lower */
+    { 3, 4, CHR('s','m','c','p') },	/* small caps */
+    /* 3, 4, initial caps */
+    /* 3, 5, initial caps, small caps */
+    { 4, 0, CHR('v','r','t','2') },	/* vertical forms => vertical rotation */
+    { 4, 0, CHR('v','k','n','a') },	/* vertical forms => vertical kana */
+    { 6, 0, CHR('t','n','u','m') },	/* monospace numbers => Tabular numbers */
+    /* 8, ?, swashes */
+    { 10, 1, CHR('s','u','p','s') },	/* superior vertical position => superscript */
+    { 10, 3, CHR('s','u','p','s') },	/* ordinal vertical position => superscript */
+    { 10, 2, CHR('s','u','b','s') },	/* inferior vertical position => subscript */
+    { 11, 1, CHR('f','r','a','c') },	/* vertical fraction => fraction ligature */
+    { 20, 0, CHR('t','r','a','d') },	/* tradictional characters => traditional forms */
+    { 20, 0, CHR('t','n','a','m') },	/* tradictional characters => traditional names */
+    { 20, 1, CHR('s','m','p','l') },	/* simplified characters */
+    { 20, 2, CHR('j','p','7','8') },	/* jis 1978 */
+    { 20, 3, CHR('j','p','8','3') },	/* jis 1983 */
+    { 20, 4, CHR('j','p','9','0') },	/* jis 1990 */
+    { 21, 0, CHR('o','n','u','m') },	/* lower case number => old style numbers */
+    { 22, 0, CHR('p','w','i','d') },	/* proportional text => proportional widths */
+    { 22, 2, CHR('h','w','i','d') },	/* half width text => half widths */
+    { 22, 3, CHR('f','w','i','d') },	/* full width text => full widths */
+    { 25, 0, CHR('f','w','i','d') },	/* full width kana => full widths */
+    { 25, 1, CHR('p','w','i','d') },	/* proportional kana => proportional widths */
+    { 26, 0, CHR('f','w','i','d') },	/* full width ideograph => full widths */
+    { 26, 1, CHR('p','w','i','d') },	/* proportional ideograph => proportional widths */
+    { 103, 0, CHR('h','w','i','d') },	/* half width cjk roman => half widths */
+    { 103, 1, CHR('p','w','i','d') },	/* proportional cjk roman => proportional widths */
+    { 103, 3, CHR('f','w','i','d') },	/* full width cjk roman => full widths */
+    { 0, 0, 0 }
+};
+
+uint32 MacFeatureToOTTag(int featureType,int featureSetting) {
+    int i;
+
+    for ( i=0; macfeat_otftag[i].otf_tag!=0; ++i )
+	if ( macfeat_otftag[i].mac_feature_type == featureType &&
+		macfeat_otftag[i].mac_feature_setting == featureSetting )
+return( macfeat_otftag[i].otf_tag );
+
+return( 0 );
+}
+
+int OTTagToMacFeature(uint32 tag, int *featureType,int *featureSetting) {
+    int i;
+
+    for ( i=0; macfeat_otftag[i].otf_tag!=0; ++i )
+	if ( macfeat_otftag[i].otf_tag == tag ) {
+	    *featureType = macfeat_otftag[i].mac_feature_type;
+	    *featureSetting = macfeat_otftag[i].mac_feature_setting;
+return( true );
+	}
+
+    *featureType = 0;
+    *featureSetting = 0;
+return( 0 );
+}

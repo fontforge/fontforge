@@ -141,8 +141,11 @@ struct ttfinfo {
     unsigned int comcomplain: 1;	/* We've complained about composit formats in EBDT */
     unsigned int onlystrikes: 1;	/* Only read in the bitmaps, not the outlines */
     unsigned int onlyonestrike: 1;	/* Only read in one bitmap (strike) */
+
     int anchor_class_cnt;		/* For GPOS */
     AnchorClass *ahead, *alast;
+
+    uint32 mort_subs_tag;
 };
 
 struct tabdir {
@@ -482,3 +485,5 @@ extern void aat_dumplcar(struct alltabs *at, SplineFont *sf);
 extern void aat_dumpmorx(struct alltabs *at, SplineFont *sf);
 extern void aat_dumpopbd(struct alltabs *at, SplineFont *sf);
 extern void aat_dumpprop(struct alltabs *at, SplineFont *sf);
+extern uint32 MacFeatureToOTTag(int featureType,int featureSetting);
+extern int OTTagToMacFeature(uint32 tag, int *featureType,int *featureSetting);

@@ -4596,7 +4596,7 @@ static void prop_apply_default(struct ttfinfo *info, int gfirst, int glast,void 
     for ( i=gfirst; i<=glast; ++i )
 	TTF_SetProp(info,i, def_prop);
 }
-    
+
 static void readttfprop(FILE *ttf,struct ttfinfo *info) {
     int def;
 
@@ -4741,6 +4741,149 @@ static void readttfopbd(FILE *ttf,struct ttfinfo *info) {
 return;				/*  indicated by points */
     readttf_applelookup(ttf,info,info->opbd_start,
 	    opbd_apply_values,opbd_apply_value,NULL,NULL);
+}
+
+static void TTF_SetMortSubs(struct ttfinfo *info, int gnum, int gsubs) {
+    PST *pst;
+    SplineChar *sc, *ssc;
+
+    if ( gsubs==0 )
+return;
+
+    if ( gnum<0 || gnum>=info->glyph_cnt ) {
+	fprintf( stderr, "Glyph out of bounds in 'mort' table %d\n", gnum );
+return;
+    } else if ( gsubs<0 || gsubs>=info->glyph_cnt ) {
+	fprintf( stderr, "Substitute glyph out of bounds in 'mort' table %d\n", gsubs );
+return;
+    } else if ( (sc=info->chars[gnum])==NULL || (ssc=info->chars[gsubs])==NULL )
+return;
+
+    pst = chunkalloc(sizeof(PST));
+    pst->type = pst_substitution;
+    pst->tag = info->mort_subs_tag;
+    pst->next = sc->possub;
+    sc->possub = pst;
+    pst->u.subs.variant = copy(ssc->name);
+}
+
+static void mort_apply_values(struct ttfinfo *info, int gfirst, int glast,FILE *ttf) {
+    uint16 gnum;
+    int i;
+
+    for ( i=gfirst; i<=glast; ++i ) {
+	gnum = getushort(ttf);
+	TTF_SetMortSubs(info,i, gnum);
+    }
+}
+
+static void mort_apply_value(struct ttfinfo *info, int gfirst, int glast,FILE *ttf) {
+    uint16 gnum;
+    int i;
+
+    gnum = getushort(ttf);
+
+    for ( i=gfirst; i<=glast; ++i )
+	TTF_SetMortSubs(info,i, gnum );
+}
+
+static uint32 readmortchain(FILE *ttf,struct ttfinfo *info, uint32 base, int ismorx) {
+    uint32 chain_len, nfeatures, nsubtables;
+    uint32 enable_flags, disable_flags, flags;
+    int featureType, featureSetting;
+    int i,j,k;
+    uint32 length, coverage;
+    uint32 here;
+    uint32 tag;
+    struct tagmaskfeature { uint32 tag, enable_flags; } tmf[32];
+
+    /* default flags = */ getlong(ttf);
+    chain_len = getlong(ttf);
+    if ( ismorx ) {
+	nfeatures = getlong(ttf);
+	nsubtables = getlong(ttf);
+    } else {
+	nfeatures = getushort(ttf);
+	nsubtables = getushort(ttf);
+    }
+
+    k = 0;
+    for ( i=0; i<nfeatures; ++i ) {
+	featureType = getushort(ttf);
+	featureSetting = getushort(ttf);
+	enable_flags = getlong(ttf);
+	disable_flags = getlong(ttf);
+	tag = MacFeatureToOTTag(featureType,featureSetting);
+	if ( enable_flags!=0 && tag!=0 && k<32 ) {
+	    tmf[k].tag = tag;
+	    tmf[k++].enable_flags = enable_flags;
+	}
+    }
+    if ( k==0 )
+return( chain_len );
+
+    for ( i=0; i<nsubtables; ++i ) {
+	here = ftell(ttf);
+	if ( ismorx ) {
+	    length = getlong(ttf);
+	    coverage = getlong(ttf);
+	} else {
+	    length = getushort(ttf);
+	    coverage = getushort(ttf);
+	    coverage = ((coverage&0xe000)<<16) | (coverage&7);	/* convert to morx format */
+	}
+	flags = getlong(ttf);
+	for ( j=k-1; j>=0 && !(flags&tmf[j].enable_flags); --j );
+	if ( j>=0 ) {
+	    switch( coverage&0xff ) {
+	      case 0:
+		/* Indic rearangement */
+	      break;
+	      case 1:
+		/* contextual glyph substitution */
+	      break;
+	      case 2:
+		/* ligature substitution */
+	      break;
+	      case 4:
+		info->mort_subs_tag = tmf[j].tag;
+		/* Another case of that isn't specified in the docs */
+		/* It seems unlikely that (in morx at least!) the base for */
+		/*  offsets in the lookup table should be the start of the */
+		/*  mor[tx] table, it would make more sense for it to be the*/
+		/*  start of the lookup table instead (for format 4 lookups) */
+		readttf_applelookup(ttf,info,base,
+			mort_apply_values,mort_apply_value,NULL,NULL);
+	      break;
+	      case 5:
+		/* contextual glyph insertion */
+	      break;
+	    }
+	}
+	fseek(ttf, here+length, SEEK_SET );
+    }
+
+return( chain_len );
+}
+
+static void readttfmort(FILE *ttf,struct ttfinfo *info) {
+    uint32 base = info->morx_start!=0 ? info->morx_start : info->mort_start;
+    uint32 here, len;
+    int ismorx;
+    int32 version;
+    int i, nchains;
+
+    fseek(ttf,base,SEEK_SET);
+    version = getlong(ttf);
+    ismorx = version == 0x00020000;
+    if ( version!=0x00010000 && version != 0x00020000 )
+return;
+    nchains = getlong(ttf);
+    for ( i=0; i<nchains; ++i ) {
+	here = ftell(ttf);
+	len = readmortchain(ttf,info,base,ismorx);
+	fseek(ttf,here+len,SEEK_SET);
+    }
 }
 
 static void UnfigureControls(Spline *spline,BasePoint *pos) {
@@ -4906,8 +5049,11 @@ return( 0 );
     }
     if ( info->gsub_start!=0 )
 	readttfgpossub(ttf,info,false);
-    else
+    else {
 	/* We will default the gsub table later... */;
+	if ( info->morx_start!=0 || info->mort_start!=0 )
+	    readttfmort(ttf,info);
+    }
     setlocale(LC_NUMERIC,oldloc);
     ttfFixupReferences(info);
 return( true );
