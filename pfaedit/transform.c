@@ -32,7 +32,7 @@
 
 typedef struct transdata {
     void *userdata;
-    void (*transfunc)(void *,double trans[6],int otype);
+    void (*transfunc)(void *,double trans[6],int otype,BVTFunc *);
     int  (*getorigin)(void *,BasePoint *bp,int otype);
     GWindow tblock[TCnt];
     GWindow gw;
@@ -83,13 +83,32 @@ static GTextInfo transformtypes[] = {
     { (unichar_t *) "Skew...", NULL, 0, 0, (void *) 0x20, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};
 
+static void skewselect(BVTFunc *bvtf,double t) {
+    double off, bestoff;
+    int i, best;
+
+    bestoff = 10; best = 0;
+    for ( i=1; i<=10; ++i ) {
+	if (  (off = t*i-rint(t*i))<0 ) off = -off;
+	if ( off<bestoff ) {
+	    bestoff = off;
+	    best = i;
+	}
+    }
+
+    bvtf->func = bvt_skew;
+    bvtf->x = rint(t*best);
+    bvtf->y = best;
+}
+
 static int Trans_OK(GGadget *g, GEvent *e) {
     GWindow tw;
     double transform[6], trans[6], t[6];
     double angle;
     int i, index, err;
     BasePoint base;
-    int origin;
+    int origin, bvpos=0;
+    BVTFunc bvts[TCnt+1];
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	TransData *td = GDrawGetUserData(GGadgetGetWindow(g));
@@ -116,27 +135,42 @@ static int Trans_OK(GGadget *g, GEvent *e) {
 	      case 1:		/* Move */
 		trans[4] = GetDouble(tw,CID_XMove,"X Movement",&err);
 		trans[5] = GetDouble(tw,CID_YMove,"Y Movement",&err);
+		bvts[bvpos].x = trans[4]; bvts[bvpos].y = trans[5]; bvts[bvpos++].func = bvt_transmove;
 	      break;
 	      case 2:		/* Rotate */
 		angle = GetDouble(tw,CID_Angle,"Rotation Angle",&err);
 		if ( GGadgetIsChecked( GWidgetGetControl(tw,CID_Clockwise)) )
 		    angle = -angle;
+		if ( fmod(angle,90)!=0 )
+		    bvts[bvpos++].func = bvt_none;
+		else {
+		    angle = fmod(angle,360);
+		    if ( angle<0 ) angle+=360;
+		    if ( angle==90 ) bvts[bvpos++].func = bvt_rotate90ccw;
+		    else if ( angle==180 ) bvts[bvpos++].func = bvt_rotate180;
+		    else if ( angle==270 ) bvts[bvpos++].func = bvt_rotate90cw;
+		}
 		angle *= 3.1415926535897932/180;
 		trans[0] = trans[3] = cos(angle);
 		trans[2] = -(trans[1] = sin(angle));
 	      break;
 	      case 3:		/* Scale Uniformly */
 		trans[0] = trans[3] = GetDouble(tw,CID_Scale,"Scale Factor",&err)/100.0;
+		bvts[bvpos++].func = bvt_none;
 	      break;
 	      case 4:		/* Scale */
 		trans[0] = GetDouble(tw,CID_XScale,"X Scale Factor",&err)/100.0;
 		trans[3] = GetDouble(tw,CID_YScale,"Y Scale Factor",&err)/100.0;
+		bvts[bvpos++].func = bvt_none;
 	      break;
 	      case 5:		/* Flip */
-		if ( GGadgetIsChecked( GWidgetGetControl(tw,CID_Horizontal)) )
+		if ( GGadgetIsChecked( GWidgetGetControl(tw,CID_Horizontal)) ) {
 		    trans[0] = -1;
-		else
+		    bvts[bvpos++].func = bvt_fliph;
+		} else {
 		    trans[3] = -1;
+		    bvts[bvpos++].func = bvt_flipv;
+		}
 	      break;
 	      case 6:		/* Skew */
 		angle = GetDouble(tw,CID_SkewAng,"Skew Angle",&err);
@@ -144,6 +178,7 @@ static int Trans_OK(GGadget *g, GEvent *e) {
 		    angle = -angle;
 		angle *= 3.1415926535897932/180;
 		trans[2] = tan(angle);
+		skewselect(&bvts[bvpos],trans[2]); ++bvpos;
 	      break;
 	      default:
 		GDrawIError("Unexpected selection in Transform");
@@ -177,12 +212,13 @@ return(true);
      transform[0], transform[1], transform[2], transform[3], transform[4], transform[5]);
 #endif
 	}
+	bvts[bvpos++].func = bvt_none;
 	for ( i=0; i<6; ++i )
 	    if ( DoubleNear(transform[i],0)) transform[i] = 0;
 	transform[4] += base.x;
 	transform[5] += base.y;
 
-	(td->transfunc)(td->userdata,transform,origin);
+	(td->transfunc)(td->userdata,transform,origin,bvts);
 	td->done = true;
     }
 return( true );
@@ -406,7 +442,7 @@ static void MakeTransBlock(TransData *td,int bnum) {
     GDrawSetVisible(gw,true);
 }
 
-void TransformDlgCreate(void *data,void (*transfunc)(void *,double *,int),
+void TransformDlgCreate(void *data,void (*transfunc)(void *,double *,int,BVTFunc *),
 	int (*getorigin)(void *,BasePoint *,int)) {
     GRect pos;
     GWindow gw;

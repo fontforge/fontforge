@@ -54,17 +54,18 @@ return( 0 );
 return( 1 );
 }
 
-void BVRotateBitmap(BitmapView *bv,enum bvtools type ) {
-    BDFChar *bc = bv->bc;
+static void BCTransFunc(BDFChar *bc,enum bvtools type,int xoff,int yoff) {
     int i, j;
     uint8 *pt, *end, *pt2, *bitmap;
     int bpl, temp;
-    int xoff, yoff;
     int xmin, xmax;
 
-    BCPreserveState(bc);
     BCFlattenFloat(bc);
-    if ( type==bvt_flipv ) {
+    if ( type==bvt_transmove ) {
+	bc->xmin += xoff; bc->xmax += xoff;
+	bc->ymin += yoff; bc->ymax += yoff;
+	bitmap = NULL;
+    } else if ( type==bvt_flipv ) {
 	for ( i=0, j=bc->ymax-bc->ymin; i<j; ++i, --j ) {
 	    pt = bc->bitmap + i*bc->bytes_per_line;
 	    pt2 = bc->bitmap + j*bc->bytes_per_line;
@@ -131,36 +132,62 @@ void BVRotateBitmap(BitmapView *bv,enum bvtools type ) {
 	temp = bc->xmax; bc->xmax = bc->ymax; bc->ymax = temp;
 	temp = bc->xmin; bc->xmin = bc->ymin; bc->ymin = temp;
     } else /* if ( type==bvt_skew ) */ {
-	if ( askfraction(&xoff,&yoff)) {
-	    if ( xoff>0 ) {
-		xmin = bc->xmin+(xoff*bc->ymin)/yoff;
-		xmax = bc->xmax+(xoff*bc->ymax)/yoff;
-	    } else {
-		xmin = bc->xmin+(xoff*bc->ymax)/yoff;
-		xmax = bc->xmax+(xoff*bc->ymin)/yoff;
-	    }
-	    bpl = ((xmax-xmin)>>3) + 1;
-	    bitmap = gcalloc((bc->ymax-bc->ymin+1)*bpl,sizeof(uint8));
-	    for ( i=0; i<=bc->ymax-bc->ymin; ++i ) {
-		pt = bc->bitmap + i*bc->bytes_per_line;
-		pt2 = bitmap + i*bpl;
-		for ( j=0; j<=bc->xmax-bc->xmin; ++j ) {
-		    if ( pt[j>>3]&(1<<(7-(j&7))) ) {
-			int nj = j+bc->xmin-xmin + (xoff*(bc->ymax-i))/yoff;
-			pt2[nj>>3] |= (1<<(7-(nj&7)));
-		    }
+	if ( xoff>0 ) {
+	    xmin = bc->xmin+(xoff*bc->ymin)/yoff;
+	    xmax = bc->xmax+(xoff*bc->ymax)/yoff;
+	} else {
+	    xmin = bc->xmin+(xoff*bc->ymax)/yoff;
+	    xmax = bc->xmax+(xoff*bc->ymin)/yoff;
+	}
+	bpl = ((xmax-xmin)>>3) + 1;
+	bitmap = gcalloc((bc->ymax-bc->ymin+1)*bpl,sizeof(uint8));
+	for ( i=0; i<=bc->ymax-bc->ymin; ++i ) {
+	    pt = bc->bitmap + i*bc->bytes_per_line;
+	    pt2 = bitmap + i*bpl;
+	    for ( j=0; j<=bc->xmax-bc->xmin; ++j ) {
+		if ( pt[j>>3]&(1<<(7-(j&7))) ) {
+		    int nj = j+bc->xmin-xmin + (xoff*(bc->ymax-i))/yoff;
+		    pt2[nj>>3] |= (1<<(7-(nj&7)));
 		}
 	    }
-	    bc->xmax = xmax; bc->xmin = xmin; bc->bytes_per_line = bpl;
-	} else
-	    bitmap = NULL;
+	}
+	bc->xmax = xmax; bc->xmin = xmin; bc->bytes_per_line = bpl;
     }
     if ( bitmap!=NULL ) {
 	free(bc->bitmap);
 	bc->bitmap = bitmap;
     }
     BCCompressBitmap(bc);
-    BCCharChangedUpdate(bc,bv->fv);
+}
+
+void BCTrans(BDFFont *bdf,BDFChar *bc,BVTFunc *bvts,FontView *fv ) {
+    int xoff=0, yoff=0, i;
+
+    if ( bvts[0].func==bvt_none )
+return;
+    BCPreserveState(bc);
+    for ( i=0; bvts[i].func!=bvt_none; ++i ) {
+	if ( bvts[i].func==bvt_transmove ) {
+	    xoff = rint(bvts[i].x*bdf->pixelsize/(fv->sf->ascent+fv->sf->descent));
+	    yoff = rint(bvts[i].y*bdf->pixelsize/(fv->sf->ascent+fv->sf->descent));
+	} else if ( bvts[i].func==bvt_skew ) {
+	    xoff = bvts[i].x;
+	    yoff = bvts[i].y;
+	}
+	BCTransFunc(bc,bvts[i].func,xoff,yoff);
+    }
+    BCCharChangedUpdate(bc,fv);
+}
+
+void BVRotateBitmap(BitmapView *bv,enum bvtools type ) {
+    int xoff=0, yoff=0;
+
+    if ( type==bvt_skew )
+	if ( !askfraction(&xoff,&yoff))
+return;
+    BCPreserveState(bv->bc);
+    BCTransFunc(bv->bc,type,xoff,yoff);
+    BCCharChangedUpdate(bv->bc,bv->fv);
 }
 
 static void BCExpandBitmap(BDFChar *bc, int x, int y) {

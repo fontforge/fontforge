@@ -2670,7 +2670,7 @@ void CVTransFunc(CharView *cv,double transform[6]) {
     }
 }
 
-static void transfunc(void *d,double transform[6],int otype) {
+static void transfunc(void *d,double transform[6],int otype,BVTFunc *bvts) {
     CharView *cv = (CharView *) d;
 
     cv->p.transany = CVAnySel(cv,NULL,NULL,NULL);

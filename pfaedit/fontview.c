@@ -865,13 +865,14 @@ void FVTrans(FontView *fv,SplineChar *sc,double transform[6], char *sel) {
     SCCharChangedUpdate(sc,fv);
 }
 
-static void FVTransFunc(void *_fv,double transform[6],int otype) {
+static void FVTransFunc(void *_fv,double transform[6],int otype, BVTFunc *bvts) {
     FontView *fv = _fv;
     double transx = transform[4], transy=transform[5];
     DBounds bb;
     BasePoint base;
     int i, cnt=0;
     static unichar_t trans[] = { 'T','r','a','n','s','f','o','r','m','i','n','g',' ','.','.','.',  '\0' };
+    BDFFont *bdf;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
 	++cnt;
@@ -890,6 +891,10 @@ static void FVTransFunc(void *_fv,double transform[6],int otype) {
 		(transform[1]*base.x+transform[3]*base.y);
 	}
 	FVTrans(fv,sc,transform,fv->selected);
+	if ( !fv->onlycopydisplayed ) {
+	    for ( bdf = fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next ) if ( bdf->chars[i]!=NULL )
+		BCTrans(bdf,bdf->chars[i],bvts,fv);
+	}
 	if ( !GProgressNext())
     break;
     }
@@ -1152,7 +1157,11 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi) {
 	  case MID_CharInfo:
 	    mi->ti.disabled = anychars<0;
 	  break;
-	  case MID_Transform: case MID_Stroke: case MID_RmOverlap:
+	  case MID_Transform:
+	    mi->ti.disabled = anychars==-1;
+	    /* some Transformations make sense on bitmaps now */
+	  break;
+	  case MID_Stroke: case MID_RmOverlap:
 	  case MID_Simplify: case MID_Round:
 	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps;
 	  break;
@@ -1849,7 +1858,8 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		box.x = j*fv->cbw; box.width = fv->cbw;
 		box.y = i*fv->cbh+14+1; box.height = box.width+1;
 		GDrawPushClip(pixmap,&box,&old2);
-		if ( sc->splines==NULL && sc->refs==NULL && !sc->widthset &&
+		if ( !fv->sf->onlybitmaps &&
+			sc->splines==NULL && sc->refs==NULL && !sc->widthset &&
 			!(bdfc->xmax<=0 && bdfc->xmin==0 && bdfc->ymax<=0 && bdfc->ymax==0) ) {
 		    /* If we have a bitmap but no outline character... */
 		    GRect b;

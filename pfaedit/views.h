@@ -87,9 +87,14 @@ enum bvtools { bvt_pointer, bvt_magnify,
 	bvt_elipse, bvt_filledelipse,
 	bvt_max2 = bvt_filledelipse,
 	bvt_none = -1,
-	bvt_fliph=0, bvt_flipv, bvt_rotate90cw, bvt_rotate90ccw, bvt_rotate180, bvt_skew };
+	bvt_fliph=0, bvt_flipv, bvt_rotate90cw, bvt_rotate90ccw, bvt_rotate180, bvt_skew, bvt_transmove };
 enum drawmode { dm_fore, dm_back, dm_grid, dm_max };
 
+typedef struct bvtfunc {
+    enum bvtools func;
+    int x,y;		/* used by skew and move */
+} BVTFunc;
+    
 typedef struct charview {
     SplineChar *sc;
     unsigned int showback:1;
@@ -294,7 +299,7 @@ extern void CVToolsSetCursor(CharView *cv, int state);
 extern void CVToolsPopup(CharView *cv, GEvent *event);
 extern void BVToolsPopup(BitmapView *bv, GEvent *event);
 extern void CVTransFunc(CharView *cv,double transform[6]);
-extern void TransformDlgCreate(void *data,void (*transfunc)(void *,double *,int),
+extern void TransformDlgCreate(void *data,void (*transfunc)(void *,double *,int,BVTFunc *),
 	int (*getorigin)(void *,BasePoint *,int));
 extern void BitmapDlg(FontView *fv,SplineChar *sc, int isavail);
 extern void CVReviewHints(CharView *cv);
@@ -400,6 +405,7 @@ extern BDFFloat *BDFFloatCreate(BDFChar *bc,int xmin,int xmax,int ymin,int ymax,
 extern BDFFloat *BDFFloatCopy(BDFFloat *sel);
 extern void BDFFloatFree(BDFFloat *sel);
 extern void BVMenuRotateInvoked(GWindow gw,struct gmenuitem *mi);
+extern void BCTrans(BDFFont *bdf,BDFChar *bc,BVTFunc *bvts,FontView *fv );
 extern void BVRotateBitmap(BitmapView *bv,enum bvtools type );
 extern void BCSetPoint(BDFChar *bc, int x, int y, int clear);
 extern void BCGeneralFunction(BitmapView *bv,
