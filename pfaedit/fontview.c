@@ -1733,8 +1733,7 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
-static void FVMenuCenter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+void FVMetricsCenter(FontView *fv,int docenter) {
     int i;
     DBounds bb;
     real transform[6];
@@ -1744,13 +1743,18 @@ static void FVMenuCenter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
 	SplineCharFindBounds(sc,&bb);
-	if ( mi->mid==MID_Center )
+	if ( docenter )
 	    transform[4] = (sc->width-(bb.maxx-bb.minx))/2 - bb.minx;
 	else
 	    transform[4] = (sc->width-(bb.maxx-bb.minx))/3 - bb.minx;
 	if ( transform[4]!=0 )
 	    FVTrans(fv,sc,transform,NULL,false);
     }
+}
+
+static void FVMenuCenter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    FVMetricsCenter(fv,mi->mid==MID_Center);
 }
 
 static void FVMenuSetWidth(GWindow gw,struct gmenuitem *mi,GEvent *e) {

@@ -1388,6 +1388,12 @@ static void bSetRBearing(Context *c) {
     FVSetWidthScript(c->curfv,wt_rbearing,c->a.vals[1].u.ival);
 }
 
+static void bCenterInWidth(Context *c) {
+    if ( c->a.argc!=1 )
+	error( c, "Wrong number of arguments");
+    FVMetricsCenter(c->curfv,true);
+}
+
 static void bSetKern(Context *c) {
     SplineFont *sf = c->curfv->sf;
     SplineChar *sc1, *sc2;
@@ -1663,6 +1669,7 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "SetVWidth", bSetVWidth },
     { "SetLBearing", bSetLBearing },
     { "SetRBearing", bSetRBearing },
+    { "CenterInWidth", bCenterInWidth },
     { "SetKern", bSetKern },
     { "RemoveAllKerns", bClearAllKerns },
 /* CID Menu */

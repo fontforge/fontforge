@@ -325,6 +325,7 @@ extern void FVTrans(FontView *fv,SplineChar *sc,real transform[6],char *sel,
 	int dobackground);
 extern void FVBuildAccent(FontView *fv,int onlyaccents);
 extern void FVFakeMenus(FontView *fv,int cmd);
+extern void FVMetricsCenter(FontView *fv,int docenter);
 extern void MergeFont(FontView *fv,SplineFont *other);
 extern void FVMergeFonts(FontView *fv);
 extern void FVInterpolateFonts(FontView *fv);
