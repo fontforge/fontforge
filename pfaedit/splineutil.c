@@ -173,6 +173,15 @@ void SplineFree(Spline *spline) {
     chunkfree(spline,sizeof(Spline));
 }
 
+SplinePoint *SplinePointCreate(real x, real y) {
+    SplinePoint *sp = chunkalloc(sizeof(SplinePoint));
+    sp->me.x = x; sp->me.y = y;
+    sp->nextcp = sp->prevcp = sp->me;
+    sp->nonextcp = sp->noprevcp = true;
+    sp->nextcpdef = sp->prevcpdef = false;
+return( sp );
+}
+
 void SplinePointFree(SplinePoint *sp) {
     chunkfree(sp,sizeof(SplinePoint));
 }

@@ -103,20 +103,74 @@ static SplineSet * slurpcompound(FILE *fig,SplineChar *sc, SplineSet *sofar) {
 return( sofar );
 }
 
+static SplinePoint *ArcSpline(SplinePoint *sp,float sa,SplinePoint *ep,float ea,
+	float cx, float cy, float r) {
+    double len;
+    double ss, sc, es, ec;
+
+    ss = sin(sa); sc = cos(sa); es = sin(ea); ec = cos(ea);
+    if ( ep==NULL )
+	ep = SplinePointCreate(cx+r*ec, cy+r*es);
+    len = ((ea-sa)/(3.1415926535897932/2)) * r * .552;
+
+    sp->nextcp.x = sp->me.x - len*ss; sp->nextcp.y = sp->me.y + len*sc;
+    ep->prevcp.x = ep->me.x + len*es; ep->prevcp.y = ep->me.y - len*ec;
+    sp->nonextcp = ep->noprevcp = false;
+    SplineMake(sp,ep);
+return( ep );
+}
+
 static SplineSet * slurparc(FILE *fig,SplineChar *sc, SplineSet *sofar) {
     int ch;
-    int sub, dir, fa, ba;
-    float cx, cy;
-    int sx,sy,ex,ey;
+    int sub, dir, fa, ba;	/* 0 clockwise, 1 counter */
+    float cx, cy, r, sa, ea, ma;
+    float sx,sy,ex,ey;
+    int _sx,_sy,_ex,_ey;
+    SplinePoint *sp, *ep;
+    SplinePointList *spl;
+    real scale = sc->parent->ascent/(8.5*1200.0);
+    real ascent = 11*1200*sc->parent->ascent/(sc->parent->ascent+sc->parent->descent);
+
     fscanf(fig, "%d %*d %*d %*d %*d %*d %*d %*d %*f %*d %d %d %d %f %f %d %d %*d %*d %d %d",
-	    &sub, &dir, &fa, &ba, &cx, &cy, &sx, &sy, &ex, &ey );
+	    &sub, &dir, &fa, &ba, &cx, &cy, &_sx, &_sy, &_ex, &_ey );
     while ((ch=getc(fig))!='\n' && ch!=EOF);
     /* I ignore arrow lines */
     if ( fa )
 	while ((ch=getc(fig))!='\n' && ch!=EOF);
     if ( ba )
 	while ((ch=getc(fig))!='\n' && ch!=EOF);
-return( sofar );
+    sx = _sx*scale; sy = (ascent-_sy)*scale; ex = _ex*scale; ey=(ascent-_ey)*scale; cx*=scale; cy=(ascent-cy)*scale;
+    r = sqrt( (sx-cx)*(sx-cx) + (sy-cy)*(sy-cy) );
+    sa = atan2(sy-cy,sx-cx);
+    ea = atan2(ey-cy,ex-cx);
+
+    spl = chunkalloc(sizeof(SplinePointList));
+    spl->next = sofar;
+    spl->first = sp = SplinePointCreate(sx,sy);
+    spl->last = ep = SplinePointCreate(ex,ey);
+
+    if ( dir==0 ) {	/* clockwise */
+	if ( ea>sa ) ea -= 2*3.1415926535897932;
+	ma=ceil(sa/(3.1415926535897932/2)-1)*(3.1415926535897932/2);
+	if ( RealNearish( sa,ma )) ma -= (3.1415926535897932/2);
+	while ( ma > ea ) {
+	    sp = ArcSpline(sp,sa,NULL,ma,cx,cy,r);
+	    sa = ma;
+	    ma -= (3.1415926535897932/2);
+	}
+	sp = ArcSpline(sp,sa,ep,ea,cx,cy,r);
+    } else {		/* counterclockwise */
+	if ( ea<sa ) ea += 2*3.1415926535897932;
+	ma=floor(sa/(3.1415926535897932/2)+1)*(3.1415926535897932/2);
+	if ( RealNearish( sa,ma )) ma += (3.1415926535897932/2);
+	while ( ma < ea ) {
+	    sp = ArcSpline(sp,sa,NULL,ma,cx,cy,r);
+	    sa = ma;
+	    ma += (3.1415926535897932/2);
+	}
+	sp = ArcSpline(sp,sa,ep,ea,cx,cy,r);
+    }
+return( spl );
 }
 
 static SplineSet * slurpelipse(FILE *fig,SplineChar *sc, SplineSet *sofar) {

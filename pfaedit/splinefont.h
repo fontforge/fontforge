@@ -569,6 +569,7 @@ extern int RealWithin(real a,real b,real fudge);
 extern void LineListFree(LineList *ll);
 extern void LinearApproxFree(LinearApprox *la);
 extern void SplineFree(Spline *spline);
+extern SplinePoint *SplinePointCreate(real x, real y);
 extern void SplinePointFree(SplinePoint *sp);
 extern void SplinePointMDFree(SplineChar *sc,SplinePoint *sp);
 extern void SplinePointListFree(SplinePointList *spl);
