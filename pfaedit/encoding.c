@@ -541,7 +541,7 @@ return( map->cidmax );
 
 static char *SearchDirForCidMap(char *dir,char *registry,char *ordering,
 	int supplement,char **maybefile) {
-    char maybe[NAME_MAX+1];
+    char maybe[FILENAME_MAX+1];
     struct dirent *ent;
     DIR *d;
     int len, rlen = strlen(registry), olen=strlen(ordering);
