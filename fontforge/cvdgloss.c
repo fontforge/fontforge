@@ -1174,7 +1174,7 @@ void DVCreateGloss(DebugView *dv) {
     wattrs.cursor = ct_mypointer;
     wattrs.window_title = GStringGetResource(_STR_TTGloss,NULL);
     pos.x = 664; pos.y = 732;
-    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,160)); pos.height = 169;
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,230)); pos.height = 169;
     dv->gloss = GDrawCreateTopWindow(NULL,&pos,dvgloss_e_h,dv,&wattrs);
 
     memset(&gd,0,sizeof(gd));
