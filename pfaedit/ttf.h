@@ -350,13 +350,13 @@ struct glyphinfo {
 };
 
 struct vorg {
-    ushort majorVersion;		/* 1 */
-    ushort minorVersion;		/* 0 */
+    uint16 majorVersion;		/* 1 */
+    uint16 minorVersion;		/* 0 */
     short defaultVertOriginY;	/* Y coord of default vertical origin in the design coordinate system */
-    ushort numVertOriginYMetrics;	/* exceptions to the above, elements in following array */
+    uint16 numVertOriginYMetrics;	/* exceptions to the above, elements in following array */
 #if 0
     struct {
-	ushort glyphindex;		/* ordered */
+	uint16 glyphindex;		/* ordered */
 	short vertOrigin;
     } origins[];
 #endif
