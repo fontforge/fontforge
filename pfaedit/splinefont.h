@@ -571,7 +571,7 @@ enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_multiple, ff_ptype3, ff_ptype
 	ff_ttf, ff_ttfsym, ff_ttfmacbin, ff_ttfdfont, ff_otf, ff_otfdfont,
 	ff_otfcid, ff_otfciddfont, ff_none };
 enum bitmapformat { bf_bdf, bf_ttf, bf_sfnt_dfont, 
-	bf_nfntmacbin, bf_nfntdfont, bf_none };
+	bf_nfntmacbin, bf_nfntdfont, bf_none, bf_fon };
 extern SplineChar *SFFindExistingCharMac(SplineFont *,int unienc);
 extern int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format);
 extern int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format);
@@ -786,6 +786,7 @@ extern SplineFont *_SFReadTTF(FILE *ttf,int flags,char *filename);
 extern SplineFont *SFReadTTF(char *filename,int flags);
 extern SplineFont *CFFParse(FILE *temp,int len,char *fontsetname);
 extern SplineFont *SFReadMacBinary(char *filename,int flags);
+extern SplineFont *SFReadWinFON(char *filename,int toback);
 extern SplineFont *LoadSplineFont(char *filename,enum openflags);
 extern SplineFont *ReadSplineFont(char *filename,enum openflags);	/* Don't use this, use LoadSF instead */
 extern uint16 MacStyleCode( SplineFont *sf, uint16 *psstyle );

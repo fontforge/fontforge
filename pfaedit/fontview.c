@@ -4887,6 +4887,9 @@ return( NULL );
 		strmatch(fullname+strlen(strippedname)-4, ".hqx")==0 ||
 		strmatch(fullname+strlen(strippedname)-6, ".dfont")==0 ) {
 	sf = SFReadMacBinary(fullname,0);
+    } else if ( strmatch(fullname+strlen(strippedname)-4, ".fon")==0 ||
+		strmatch(fullname+strlen(strippedname)-4, ".fnt")==0 ) {
+	sf = SFReadWinFON(fullname,0);
     } else if ( strmatch(fullname+strlen(fullname)-4, ".pfa")==0 ||
 		strmatch(fullname+strlen(fullname)-4, ".pfb")==0 ||
 		strmatch(fullname+strlen(fullname)-4, ".pf3")==0 ||
@@ -4933,6 +4936,7 @@ return( NULL );
 		/* Ikarus font type appears at word 50 (byte offset 98) */
 		/* Ikarus name section length (at word 2, byte offset 2) was 55 in the 80s at URW */
 		sf = SFReadIkarus(fullname);
+	    } else if ( ((ch2<<8)|ch1)==0x5A4D || ((ch2<<8)|ch1)==0x200 || ((ch2<<8)|ch1)==0x300 ) {
 	    } else
 		sf = SFReadMacBinary(fullname,0);
 	}

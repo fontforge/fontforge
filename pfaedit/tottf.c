@@ -4601,7 +4601,8 @@ void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *_sf,char *fontname) {
 	    pfminfo->pfmfamily = 0x40;
 	    pfminfo->panose[0] = 3;
 	}
-	pfminfo->pfmfamily |= 0x1;	/* Else it assumes monospace */
+	if ( samewid==-1 )
+	    pfminfo->pfmfamily |= 0x1;	/* Else it assumes monospace */
 
 	pfminfo->weight = 400;
 	pfminfo->panose[2] = 5;
