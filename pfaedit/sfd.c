@@ -336,7 +336,7 @@ static void SFDDumpMinimumDistances(FILE *sfd,SplineChar *sc) {
 
     if ( md==NULL )
 return;
-    for ( ss = sc->splines; ss!=NULL; ss=ss->next ) {
+    for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
 	for ( sp=ss->first; ; ) {
 	    sp->ptindex = pt++;
 	    if ( sp->next == NULL )
@@ -572,8 +572,8 @@ static void SFDDumpTtfTable(FILE *sfd,struct ttf_table *tab) {
 static int SFDOmit(SplineChar *sc) {
     if ( sc==NULL )
 return( true );
-    if ( sc->splines==NULL && sc->refs==NULL && sc->anchor==NULL &&
-	    sc->backgroundsplines==NULL && sc->backimages==NULL ) {
+    if ( sc->layers[ly_fore].splines==NULL && sc->refs==NULL && sc->anchor==NULL &&
+	    sc->layers[ly_back].splines==NULL && sc->backimages==NULL ) {
 	if ( strcmp(sc->name,".null")==0 || strcmp(sc->name,"nonmarkingreturn")==0 )
 return(true);
 	if ( !sc->widthset && sc->width==sc->parent->ascent+sc->parent->descent &&
@@ -623,14 +623,14 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
     }
     if ( sc->ttf_instrs_len!=0 )
 	SFDDumpTtfInstrs(sfd,sc);
-    if ( sc->splines!=NULL ) {
+    if ( sc->layers[ly_fore].splines!=NULL ) {
 	fprintf(sfd, "Fore\n" );
-	SFDDumpSplineSet(sfd,sc->splines);
+	SFDDumpSplineSet(sfd,sc->layers[ly_fore].splines);
 	SFDDumpMinimumDistances(sfd,sc);
     }
     SFDDumpAnchorPoints(sfd,sc);
     for ( ref=sc->refs; ref!=NULL; ref=ref->next ) if ( ref->sc!=NULL ) {
-	if ( ref->sc->enc==0 && ref->sc->splines==NULL )
+	if ( ref->sc->enc==0 && ref->sc->layers[ly_fore].splines==NULL )
 	    fprintf( stderr, "Using a reference to character 0, removed. In %s\n", sc->name);
 	else
 	fprintf(sfd, "Ref: %d %d %c %g %g %g %g %g %g\n",
@@ -639,9 +639,9 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
 		ref->transform[0], ref->transform[1], ref->transform[2],
 		ref->transform[3], ref->transform[4], ref->transform[5]);
     }
-    if ( sc->backgroundsplines!=NULL ) {
+    if ( sc->layers[ly_back].splines!=NULL ) {
 	fprintf(sfd, "Back\n" );
-	SFDDumpSplineSet(sfd,sc->backgroundsplines);
+	SFDDumpSplineSet(sfd,sc->layers[ly_back].splines);
     }
     for ( img=sc->backimages; img!=NULL; img=img->next )
 	SFDDumpImage(sfd,img);
@@ -1170,9 +1170,9 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
     if ( sf->rules!=NULL )
 	SFDDumpCompositionRules(sfd,sf->rules);
 #endif
-    if ( sf->gridsplines!=NULL ) {
+    if ( sf->grid.splines!=NULL ) {
 	fprintf(sfd, "Grid\n" );
-	SFDDumpSplineSet(sfd,sf->gridsplines);
+	SFDDumpSplineSet(sfd,sf->grid.splines);
     }
     if ( sf->texdata.type!=tex_unset ) {
 	fprintf(sfd, "TeXData: %d %d", sf->texdata.type, sf->texdata.designsize );
@@ -1848,7 +1848,7 @@ static void SFDGetMinimumDistances(FILE *sfd, SplineChar *sc) {
 
     for ( i=0; i<2; ++i ) {
 	pt = 0;
-	for ( ss = sc->splines; ss!=NULL; ss=ss->next ) {
+	for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
 	    for ( sp=ss->first; ; ) {
 		if ( mapping!=NULL ) mapping[pt] = sp;
 		pt++;
@@ -2168,11 +2168,11 @@ return( NULL );
 	} else if ( strmatch(tok,"AnchorPoint:")==0 ) {
 	    lastap = SFDReadAnchorPoints(sfd,sc,lastap);
 	} else if ( strmatch(tok,"Fore")==0 ) {
-	    sc->splines = SFDGetSplineSet(sf,sfd);
+	    sc->layers[ly_fore].splines = SFDGetSplineSet(sf,sfd);
 	} else if ( strmatch(tok,"MinimumDistance:")==0 ) {
 	    SFDGetMinimumDistances(sfd,sc);
 	} else if ( strmatch(tok,"Back")==0 ) {
-	    sc->backgroundsplines = SFDGetSplineSet(sf,sfd);
+	    sc->layers[ly_back].splines = SFDGetSplineSet(sf,sfd);
 	} else if ( strmatch(tok,"Ref:")==0 ) {
 	    ref = SFDGetRef(sfd);
 	    if ( lastr==NULL )
@@ -2464,7 +2464,7 @@ static void SFDFixupRef(SplineChar *sc,RefChar *ref) {
 	    ref->sc->refs = NULL;
     break;
 	}
-	if ( rf->splines==NULL )
+	if ( rf->layers[0].splines==NULL )
 	    SFDFixupRef(ref->sc,rf);
     }
     SCReinstanciateRefChar(sc,ref);
@@ -3236,7 +3236,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    getreal(sfd,&temp);
 	    sf->cidversion = temp;
 	} else if ( strmatch(tok,"Grid")==0 ) {
-	    sf->gridsplines = SFDGetSplineSet(sf,sfd);
+	    sf->grid.splines = SFDGetSplineSet(sf,sfd);
 	} else if ( strmatch(tok,"ScriptLang:")==0 ) {
 	    int i,j,k;
 	    int imax, jmax, kmax;

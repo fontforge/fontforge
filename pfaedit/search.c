@@ -363,7 +363,7 @@ static int SCMatchesIncomplete(SplineChar *sc,SearchView *s,int startafter) {
     SplineSet *spl;
     SplinePoint *sp;
 
-    for ( spl=startafter?s->matched_spl:sc->splines; spl!=NULL; spl=spl->next ) {
+    for ( spl=startafter?s->matched_spl:sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next ) {
 	s->matched_spl = spl;
 	for ( sp=startafter?s->last_sp:spl->first; ; ) {
 	    if ( SPMatchesF(sp,s,s->path,true)) {
@@ -408,7 +408,7 @@ return( false );
 
     first = true;
     for ( s_spl = s->path, s_r_spl=s->revpath; s_spl!=NULL; s_spl=s_spl->next, s_r_spl = s_r_spl->next ) {
-	for ( spl=sc->splines, i=0; spl!=NULL; spl=spl->next, ++i ) if ( !(s->matched_ss&(1<<i)) ) {
+	for ( spl=sc->layers[ly_fore].splines, i=0; spl!=NULL; spl=spl->next, ++i ) if ( !(s->matched_ss&(1<<i)) ) {
 	    s->matched_spl = spl;
 	    if ( spl->first!=spl->last ) {	/* Open */
 		if ( s_spl->first!=s_spl->last ) {
@@ -639,11 +639,11 @@ static void DoReplaceFull(SplineChar *sc,SearchView *s) {
 	    SCRemoveDependent(sc,r);
     }
     sprev = NULL;
-    for ( spl=sc->splines, i=0; spl!=NULL; spl=snext, ++i ) {
+    for ( spl=sc->layers[ly_fore].splines, i=0; spl!=NULL; spl=snext, ++i ) {
 	snext = spl->next;
 	if ( s->matched_ss&(1<<i)) {
 	    if ( sprev==NULL )
-		sc->splines = snext;
+		sc->layers[ly_fore].splines = snext;
 	    else
 		sprev->next = snext;
 	    spl->next = NULL;
@@ -666,18 +666,18 @@ static void DoReplaceFull(SplineChar *sc,SearchView *s) {
 	new = chunkalloc(sizeof(RefChar));
 	*new = *r;
 	memcpy(new->transform,subtrans,sizeof(subtrans));
-	new->splines = NULL;
+	new->layers[ly_fore].splines = NULL;
 	new->next = sc->refs;
 	new->selected = true;
 	sc->refs = new;
 	SCReinstanciateRefChar(sc,new);
 	SCMakeDependent(sc,new->sc);
     }
-    temp = SplinePointListTransform(SplinePointListCopy(s->sc_rpl.splines),transform,true);
-    if ( sc->splines==NULL )
-	sc->splines = temp;
+    temp = SplinePointListTransform(SplinePointListCopy(s->sc_rpl.layers[ly_fore].splines),transform,true);
+    if ( sc->layers[ly_fore].splines==NULL )
+	sc->layers[ly_fore].splines = temp;
     else {
-	for ( spl=sc->splines; spl->next!=NULL; spl = spl->next );
+	for ( spl=sc->layers[ly_fore].splines; spl->next!=NULL; spl = spl->next );
 	spl->next = temp;
 	for ( ; temp!=NULL; temp=temp->next ) {
 	    for ( sp=temp->first; ; ) {
@@ -702,7 +702,7 @@ static void SVSelectSC(SearchView *sv) {
     int i;
 
     /* Deselect all */;
-    for ( spl = sc->splines; spl!=NULL; spl = spl->next ) {
+    for ( spl = sc->layers[ly_fore].splines; spl!=NULL; spl = spl->next ) {
 	for ( sp=spl->first ;; ) {
 	    sp->selected = false;
 	    if ( sp->next == NULL )
@@ -728,7 +728,7 @@ static void SVSelectSC(SearchView *sv) {
 	for ( rf=sc->refs, i=0; rf!=NULL; rf=rf->next, ++i )
 	    if ( sv->matched_refs&(1<<i) )
 		rf->selected = true;
-	for ( spl = sc->splines,i=0; spl!=NULL; spl = spl->next, ++i ) {
+	for ( spl = sc->layers[ly_fore].splines,i=0; spl!=NULL; spl = spl->next, ++i ) {
 	    if ( sv->matched_ss&(1<<i) ) {
 		for ( sp=spl->first ;; ) {
 		    sp->selected = true;
@@ -755,7 +755,7 @@ static void SVParseDlg(SearchView *sv) {
     sv->onlyselected = GGadgetIsChecked(GWidgetGetControl(sv->gw,CID_Selected));
 
     if ( sv->sc_srch.changed_since_autosave ) {
-	sv->path = sv->sc_srch.splines;
+	sv->path = sv->sc_srch.layers[ly_fore].splines;
 	SplinePointListsFree(sv->revpath);
 	sv->revpath = SplinePointListCopy(sv->path);
 	for ( spl=sv->revpath; spl!=NULL; spl=spl->next )
@@ -763,7 +763,7 @@ static void SVParseDlg(SearchView *sv) {
 	sv->sc_srch.changed_since_autosave = false;
     }
     if ( sv->sc_rpl.changed_since_autosave ) {
-	sv->replacepath = sv->sc_rpl.splines;
+	sv->replacepath = sv->sc_rpl.layers[ly_fore].splines;
 	SplinePointListsFree(sv->revreplace);
 	sv->revreplace = SplinePointListCopy(sv->replacepath);
 	for ( spl=sv->revreplace; spl!=NULL; spl=spl->next )
@@ -1074,7 +1074,7 @@ static void SVDraw(SearchView *sv, GWindow pixmap, GEvent *event) {
 }
 
 static void SVCheck(SearchView *sv) {
-    int show = ( sv->sc_srch.splines!=NULL || sv->sc_srch.refs!=NULL );
+    int show = ( sv->sc_srch.layers[ly_fore].splines!=NULL || sv->sc_srch.refs!=NULL );
     int showrplall=show, showrpl;
 
     if ( sv->sc_srch.changed_since_autosave && sv->showsfindnext ) {
@@ -1082,9 +1082,9 @@ static void SVCheck(SearchView *sv) {
 	sv->showsfindnext = false;
     }
     if ( showrplall ) {
-	if ( sv->sc_srch.splines!=NULL && sv->sc_srch.splines->next==NULL &&
-		sv->sc_srch.splines->first->prev==NULL &&
-		sv->sc_rpl.splines==NULL && sv->sc_rpl.refs==NULL )
+	if ( sv->sc_srch.layers[ly_fore].splines!=NULL && sv->sc_srch.layers[ly_fore].splines->next==NULL &&
+		sv->sc_srch.layers[ly_fore].splines->first->prev==NULL &&
+		sv->sc_rpl.layers[ly_fore].splines==NULL && sv->sc_rpl.refs==NULL )
 	    showrplall = false;
     }
     showrpl = showrplall;
@@ -1110,8 +1110,8 @@ static void SVCheck(SearchView *sv) {
 }
 
 static void SearchViewFree(SearchView *sv) {
-    SplinePointListsFree(sv->sc_srch.splines);
-    SplinePointListsFree(sv->sc_rpl.splines);
+    SplinePointListsFree(sv->sc_srch.layers[ly_fore].splines);
+    SplinePointListsFree(sv->sc_rpl.layers[ly_fore].splines);
     RefCharsFree(sv->sc_srch.refs);
     RefCharsFree(sv->sc_rpl.refs);
     free(sv);
@@ -1202,7 +1202,7 @@ return( false );
 		    RefCharFree(r);
 		    any = true;
 		} else {
-		    /*SplinePointListsFree(r->splines); r->splines = NULL;*/
+		    /*SplinePointListsFree(r->layers[0].splines); r->layers[0].splines = NULL;*/
 		    r->local_enc = pos;
 		    r->sc = fv->sf->chars[pos];
 		    SCReinstanciateRefChar(searcher->chars[i],r);

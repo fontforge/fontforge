@@ -686,9 +686,9 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 static void CVDrawTemplates(CharView *cv,GWindow pixmap,SplineChar *template,DRect *clip) {
     RefChar *r;
 
-    CVDrawSplineSet(cv,pixmap,template->splines,templateoutlinecol,false,clip);
+    CVDrawSplineSet(cv,pixmap,template->layers[ly_fore].splines,templateoutlinecol,false,clip);
     for ( r=template->refs; r!=NULL; r=r->next )
-	CVDrawSplineSet(cv,pixmap,r->splines,templateoutlinecol,false,clip);
+	CVDrawSplineSet(cv,pixmap,r->layers[0].splines,templateoutlinecol,false,clip);
 }
 
 static void CVShowDHint(CharView *cv, GWindow pixmap, DStemInfo *dstem) {
@@ -1062,7 +1062,7 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 	CVShowMinimumDistance(cv, pixmap,md);
 
     if ( cv->showvhints || cv->showhhints ) {
-	for ( spl=cv->sc->splines; spl!=NULL; spl=spl->next ) {
+	for ( spl=cv->sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next ) {
 	    if ( spl->first->prev!=NULL ) for ( sp=spl->first ; ; ) {
 		if ( cv->showhhints && sp->flexx ) {
 		    double x,y,end;
@@ -1209,8 +1209,8 @@ return;
 
     CVDrawSplineSet(cv,pixmap,undo->u.state.splines,oldoutlinecol,false,clip);
     for ( refs=undo->u.state.refs; refs!=NULL; refs=refs->next )
-	if ( refs->splines!=NULL )
-	    CVDrawSplineSet(cv,pixmap,refs->splines,oldoutlinecol,false,clip);
+	if ( refs->layers[0].splines!=NULL )
+	    CVDrawSplineSet(cv,pixmap,refs->layers[0].splines,oldoutlinecol,false,clip);
     /* Don't do images... */
 }
     
@@ -1260,8 +1260,8 @@ return;
 	    sc = sub->chars[cv->sc->enc];
 	if ( sc!=NULL ) {
 	    for ( rf=sc->refs; rf!=NULL; rf = rf->next )
-		CVDrawSplineSet(cv,pixmap,rf->splines,backoutlinecol,false,clip);
-	    CVDrawSplineSet(cv,pixmap,sc->splines,backoutlinecol,false,clip);
+		CVDrawSplineSet(cv,pixmap,rf->layers[0].splines,backoutlinecol,false,clip);
+	    CVDrawSplineSet(cv,pixmap,sc->layers[ly_fore].splines,backoutlinecol,false,clip);
 	}
     }
 }
@@ -1307,7 +1307,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    GDrawDrawPixmap(pixmap,cv->backimgs,&r,0,0);
 	}
 	if ( cv->showgrids || cv->drawmode==dm_grid ) {
-	    CVDrawSplineSet(cv,pixmap,cv->fv->sf->gridsplines,guideoutlinecol,
+	    CVDrawSplineSet(cv,pixmap,cv->fv->sf->grid.splines,guideoutlinecol,
 		    cv->showpoints && cv->drawmode==dm_grid,&clip);
 	}
 	if ( cv->showhmetrics ) {
@@ -1376,8 +1376,8 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	}
     }
 
-    if ( *cv->uheads[cv->drawmode]!=NULL && (*cv->uheads[cv->drawmode])->undotype==ut_tstate )
-	DrawOldState(cv,pixmap,*cv->uheads[cv->drawmode], &clip);
+    if ( cv->layerheads[cv->drawmode]->undoes!=NULL && cv->layerheads[cv->drawmode]->undoes->undotype==ut_tstate )
+	DrawOldState(cv,pixmap,cv->layerheads[cv->drawmode]->undoes, &clip);
 
     if ( !cv->show_ft_results && cv->dv==NULL ) {
 	if ( cv->showback || cv->drawmode==dm_back ) {
@@ -1385,7 +1385,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    /*  is to draw to pixmap, dump pixmap a bit earlier */
 	    /* Then when we moved the fill image around, we had to deal with the */
 	    /*  images before the fill... */
-	    CVDrawSplineSet(cv,pixmap,cv->sc->backgroundsplines,backoutlinecol,
+	    CVDrawSplineSet(cv,pixmap,cv->sc->layers[ly_back].splines,backoutlinecol,
 		    cv->showpoints && cv->drawmode==dm_back,&clip);
 	    if ( cv->template1!=NULL )
 		CVDrawTemplates(cv,pixmap,cv->template1,&clip);
@@ -1400,12 +1400,12 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	CVDrawAnchorPoints(cv,pixmap);
 	for ( rf=cv->sc->refs; rf!=NULL; rf = rf->next ) {
 	    CVDrawRefName(cv,pixmap,rf,0);
-	    CVDrawSplineSet(cv,pixmap,rf->splines,foreoutlinecol,false,&clip);
+	    CVDrawSplineSet(cv,pixmap,rf->layers[0].splines,foreoutlinecol,false,&clip);
 	    if ( rf->selected )
 		CVDrawBB(cv,pixmap,&rf->bb);
 	}
 
-	CVDrawSplineSet(cv,pixmap,cv->sc->splines,foreoutlinecol,
+	CVDrawSplineSet(cv,pixmap,cv->sc->layers[ly_fore].splines,foreoutlinecol,
 		cv->showpoints && cv->drawmode==dm_fore,&clip);
     }
 
@@ -1610,7 +1610,7 @@ static GWindow CharIcon(CharView *cv, FontView *fv) {
     GDrawFillRect(icon,&r,0x0);		/* for some reason icons seem to be color reversed by my defn */
 
     bdf = NULL; bdfc = NULL;
-    if ( sc->refs!=NULL || sc->splines!=NULL ) {
+    if ( sc->refs!=NULL || sc->layers[ly_fore].splines!=NULL ) {
 	bdf = fv->show;
 	if ( bdf->chars[sc->enc]==NULL )
 	    bdf = fv->filled;
@@ -1733,9 +1733,9 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     cv->sc = sc;
     cv->next = sc->views;
     sc->views = cv;
-    cv->heads[dm_fore] = &sc->splines; cv->heads[dm_back] = &sc->backgroundsplines;
-    cv->uheads[dm_fore] = &sc->undoes[dm_fore]; cv->rheads[dm_back] = &sc->undoes[dm_back];
-    cv->rheads[dm_fore] = &sc->redoes[dm_fore]; cv->rheads[dm_back] = &sc->redoes[dm_back];
+    cv->layerheads[dm_fore] = &sc->layers[ly_fore];
+    cv->layerheads[dm_back] = &sc->layers[ly_back];
+    cv->layerheads[dm_grid] = &sc->parent->grid;
     cv->p.sp = cv->lastselpt = NULL;
     cv->template1 = cv->template2 = NULL;
 #if HANYANG
@@ -2342,13 +2342,13 @@ static void CVDoSnaps(CharView *cv, FindSel *fs) {
     PressedOn *p = fs->p;
 
 #if 1
-    if ( cv->drawmode!=dm_grid && *cv->heads[dm_grid]!=NULL ) {
+    if ( cv->drawmode!=dm_grid && cv->layerheads[dm_grid]->splines!=NULL ) {
 	PressedOn temp;
 	int oldseek = fs->seek_controls;
 	temp = *p;
 	fs->p = &temp;
 	fs->seek_controls = false;
-	if ( InSplineSet( fs, *cv->heads[dm_grid])) {
+	if ( InSplineSet( fs, cv->layerheads[dm_grid]->splines)) {
 	    if ( temp.spline!=NULL ) {
 		p->cx = ((temp.spline->splines[0].a*temp.t+
 			    temp.spline->splines[0].b)*temp.t+
@@ -2404,14 +2404,14 @@ static void CVDoSnaps(CharView *cv, FindSel *fs) {
 static int _CVTestSelectFromEvent(CharView *cv,FindSel *fs) {
     PressedOn temp;
 
-    if ( !InSplineSet(fs,*cv->heads[cv->drawmode])) {
+    if ( !InSplineSet(fs,cv->layerheads[cv->drawmode]->splines)) {
 	if ( cv->drawmode==dm_fore) {
 	    RefChar *rf;
 	    temp = cv->p;
 	    fs->p = &temp;
 	    fs->seek_controls = false;
 	    for ( rf=cv->sc->refs; rf!=NULL; rf = rf->next ) {
-		if ( InSplineSet(fs,rf->splines)) {
+		if ( InSplineSet(fs,rf->layers[0].splines)) {
 		    cv->p.ref = rf;
 		    cv->p.anysel = true;
 	    break;
@@ -2485,11 +2485,11 @@ return;
 	fs.p = &cv->p;
     } else if ( cv->active_tool == cvt_curve || cv->active_tool == cvt_corner ||
 	    cv->active_tool == cvt_tangent || cv->active_tool == cvt_pen ) {
-	InSplineSet(&fs,*cv->heads[cv->drawmode]);
+	InSplineSet(&fs,cv->layerheads[cv->drawmode]->splines);
 	if ( fs.p->sp==NULL && fs.p->spline==NULL )
 	    CVDoSnaps(cv,&fs);
     } else {
-	NearSplineSetPoints(&fs,*cv->heads[cv->drawmode]);
+	NearSplineSetPoints(&fs,cv->layerheads[cv->drawmode]->splines);
 	if ( fs.p->sp==NULL && fs.p->spline==NULL )
 	    CVDoSnaps(cv,&fs);
     }
@@ -2551,7 +2551,7 @@ int SCNumberPoints(SplineChar *sc) {
     SplinePoint *sp;
     int starts_with_cp, startcnt;
 
-    for ( ss = sc->splines; ss!=NULL; ss=ss->next ) {
+    for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
 	starts_with_cp = (ss->first->ttfindex == pnum+1 || ss->first->ttfindex==0xffff) &&
 		!ss->first->noprevcp;
 	startcnt = pnum;
@@ -2594,7 +2594,7 @@ static void instrcheck(SplineChar *sc) {
 return;
     /* If the points are no longer in order then the instructions are not valid */
     /*  (because they'll refer to the wrong points) and should be removed */
-    for ( ss = sc->splines; ss!=NULL; ss=ss->next ) {
+    for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
 	starts_with_cp = (ss->first->ttfindex == pnum+1 || ss->first->ttfindex==0xffff) &&
 		!ss->first->noprevcp;
 	if ( starts_with_cp ) ++pnum;
@@ -2838,12 +2838,12 @@ return;
 	/* Don't snap to points when moving control points */;
     else if ( !cv->joinvalid || !CheckPoint(&fs,&cv->joinpos,NULL)) {
 	SplinePointList *spl;
-	spl = *cv->heads[cv->drawmode];
+	spl = cv->layerheads[cv->drawmode]->splines;
 	if ( cv->recentchange && cv->active_tool==cvt_pointer &&
-		*cv->uheads[cv->drawmode]!=NULL &&
-		((*cv->uheads[cv->drawmode])->undotype==ut_state ||
-		 (*cv->uheads[cv->drawmode])->undotype==ut_tstate ))
-	    spl = (*cv->uheads[cv->drawmode])->u.state.splines;
+		cv->layerheads[cv->drawmode]->undoes!=NULL &&
+		(cv->layerheads[cv->drawmode]->undoes->undotype==ut_state ||
+		 cv->layerheads[cv->drawmode]->undoes->undotype==ut_tstate ))
+	    spl = cv->layerheads[cv->drawmode]->undoes->u.state.splines;
 	if ( cv->active_tool != cvt_knife )
 	    NearSplineSetPoints(&fs,spl);
 	else 
@@ -3107,7 +3107,7 @@ return;
 	    }
 	    new = chunkalloc(sizeof(RefChar));
 	    new->transform[0] = new->transform[3] = 1.0;
-	    new->splines = NULL;
+	    new->layers[0].splines = NULL;
 	    new->sc = rsc;
 	    new->next = cv->sc->refs;
 	    cv->sc->refs = new;
@@ -3857,7 +3857,7 @@ static void CVMenuRevertGlyph(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SplineChar *sc, temp;
     static int buts[] = { _STR_OK, _STR_Cancel, 0 };
 
-    if ( cv->sc->parent->filename==NULL || cv->sc->namechanged )
+    if ( cv->sc->parent->filename==NULL || cv->sc->namechanged || cv->sc->parent->mm!=NULL )
 return;
     sc = SFDReadOneChar(cv->sc->parent->filename,cv->sc->name);
     if ( sc==NULL ) {
@@ -3871,14 +3871,14 @@ return;
 	SCPreserveBackground(cv->sc);
 	temp = *cv->sc;
 	cv->sc->dependents = NULL;
-	cv->sc->undoes[0] = cv->sc->undoes[1] = NULL;
+	cv->sc->layers[ly_fore].undoes = cv->sc->layers[ly_back].undoes = NULL;
 	SplineCharFreeContents(cv->sc);
 	*cv->sc = *sc;
 	chunkfree(sc,sizeof(SplineChar));
 	cv->sc->parent = temp.parent;
 	cv->sc->dependents = temp.dependents;
-	cv->sc->undoes[0] = temp.undoes[0];
-	cv->sc->undoes[1] = temp.undoes[1];
+	cv->sc->layers[ly_fore].undoes = temp.layers[ly_fore].undoes;
+	cv->sc->layers[ly_back].undoes = temp.layers[ly_back].undoes;
 	cv->sc->views = temp.views;
 	cv->sc->changed = temp.changed;
 	cv->sc->enc = temp.enc;
@@ -3911,7 +3911,9 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = cv->fv->sf->origname==NULL;
 	  break;
 	  case MID_RevertGlyph:
-	    mi->ti.disabled = cv->fv->sf->filename==NULL || cv->sc->namechanged;
+	    mi->ti.disabled = cv->fv->sf->filename==NULL ||
+		    cv->sc->namechanged ||
+		    cv->fv->sf->mm!=NULL;
 	  break;
 	  case MID_Recent:
 	    mi->ti.disabled = !RecentFilesAny();
@@ -4151,7 +4153,7 @@ static void CVSelectContours(CharView *cv,struct gmenuitem *mi) {
     SplinePoint *sp;
     int sel;
 
-    for ( spl=*cv->heads[cv->drawmode]; spl!=NULL; spl=spl->next ) {
+    for ( spl=cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
 	sel = false;
 	for ( sp=spl->first ; ; ) {
 	    if ( sp->selected ) {
@@ -4196,7 +4198,7 @@ return;
 	    other = other->next->to;
 	else {
 	    if ( spl->next == NULL )
-		spl = *cv->heads[cv->drawmode];
+		spl = cv->layerheads[cv->drawmode]->splines;
 	    else
 		spl = spl->next;
 	    other = spl->first;
@@ -4205,10 +4207,10 @@ return;
 	if ( other!=spl->first ) {
 	    other = other->prev->from;
 	} else {
-	    if ( spl==*cv->heads[cv->drawmode] ) {
-		for ( ss = *cv->heads[cv->drawmode]; ss->next!=NULL; ss=ss->next );
+	    if ( spl==cv->layerheads[cv->drawmode]->splines ) {
+		for ( ss = cv->layerheads[cv->drawmode]->splines; ss->next!=NULL; ss=ss->next );
 	    } else {
-		for ( ss = *cv->heads[cv->drawmode]; ss->next!=spl; ss=ss->next );
+		for ( ss = cv->layerheads[cv->drawmode]->splines; ss->next!=spl; ss=ss->next );
 	    }
 	    spl = ss;
 	    other = ss->last;
@@ -4216,9 +4218,9 @@ return;
 		other = other->prev->from;
 	}
     } else if ( mi->mid == MID_FirstPt ) {
-	if ( *cv->heads[cv->drawmode]==NULL )
+	if ( cv->layerheads[cv->drawmode]->splines==NULL )
 return;
-	other = (*cv->heads[cv->drawmode])->first;
+	other = (cv->layerheads[cv->drawmode]->splines)->first;
 	CVClearSel(cv);
     } else if ( mi->mid == MID_FirstPtNextCont ) {
 	if ( spl->next!=NULL )
@@ -4369,8 +4371,8 @@ static void CVDoClear(CharView *cv) {
     CVPreserveState(cv);
     if ( cv->drawmode==dm_fore )
 	SCRemoveSelectedMinimumDistances(cv->sc,2);
-    *cv->heads[cv->drawmode] = SplinePointListRemoveSelected(cv->sc,
-	    *cv->heads[cv->drawmode]);
+    cv->layerheads[cv->drawmode]->splines = SplinePointListRemoveSelected(cv->sc,
+	    cv->layerheads[cv->drawmode]->splines);
     if ( cv->drawmode==dm_fore ) {
 	RefChar *refs, *next;
 	AnchorPoint *ap, *aprev=NULL, *anext;
@@ -4450,7 +4452,7 @@ static void _CVMerge(CharView *cv,int elide) {
     if ( !CVAnySel(cv,&anyp,NULL,NULL,NULL) || !anyp)
 return;
     CVPreserveState(cv);
-    SplineCharMerge(cv->sc,cv->heads[cv->drawmode],!elide);
+    SplineCharMerge(cv->sc,&cv->layerheads[cv->drawmode]->splines,!elide);
     SCClearSelPt(cv->sc);
     CVCharChangedUpdate(cv);
 }
@@ -4471,7 +4473,7 @@ static void _CVJoin(CharView *cv) {
 
     CVAnySel(cv,&anyp,NULL,NULL,NULL);
     CVPreserveState(cv);
-    *cv->heads[cv->drawmode] = SplineSetJoin(*cv->heads[cv->drawmode],!anyp,joinsnap/cv->scale,&changed);
+    cv->layerheads[cv->drawmode]->splines = SplineSetJoin(cv->layerheads[cv->drawmode]->splines,!anyp,joinsnap/cv->scale,&changed);
     if ( changed )
 	CVCharChangedUpdate(cv);
 }
@@ -4499,7 +4501,7 @@ static void CVCut(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVCopyFgBg(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
-    if ( cv->sc->splines==NULL )
+    if ( cv->sc->layers[ly_fore].splines==NULL )
 return;
     SCCopyFgToBg(cv->sc,true);
 }
@@ -4566,9 +4568,9 @@ static void CVUnlinkRef(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVRemoveUndoes(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
-    UndoesFree(*cv->uheads[cv->drawmode]);
-    UndoesFree(*cv->rheads[cv->drawmode]);
-    *cv->uheads[cv->drawmode] = *cv->rheads[cv->drawmode] = NULL;
+    UndoesFree(cv->layerheads[cv->drawmode]->undoes);
+    UndoesFree(cv->layerheads[cv->drawmode]->redoes);
+    cv->layerheads[cv->drawmode]->undoes = cv->layerheads[cv->drawmode]->redoes = NULL;
 }
 
 /* We can only paste if there's something in the copy buffer */
@@ -4597,10 +4599,10 @@ static void cv_edlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	  break;
 	  case MID_CopyLBearing: case MID_CopyRBearing:
 	    mi->ti.disabled = cv->drawmode!=dm_fore ||
-		    (cv->sc->splines==NULL && cv->sc->refs==NULL);
+		    (cv->sc->layers[ly_fore].splines==NULL && cv->sc->refs==NULL);
 	  break;
 	  case MID_CopyFgToBg:
-	    mi->ti.disabled = cv->sc->splines==NULL;
+	    mi->ti.disabled = cv->sc->layers[ly_fore].splines==NULL;
 	  break;
 	  case MID_CopyGridFit:
 	    mi->ti.disabled = cv->gridfit==NULL;
@@ -4614,13 +4616,13 @@ static void cv_edlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 		    !GDrawSelectionHasType(cv->gw,sn_clipboard,"image/eps");
 	  break;
 	  case MID_Undo:
-	    mi->ti.disabled = *cv->uheads[cv->drawmode]==NULL;
+	    mi->ti.disabled = cv->layerheads[cv->drawmode]->undoes==NULL;
 	  break;
 	  case MID_Redo:
-	    mi->ti.disabled = *cv->rheads[cv->drawmode]==NULL;
+	    mi->ti.disabled = cv->layerheads[cv->drawmode]->redoes==NULL;
 	  break;
 	  case MID_RemoveUndoes:
-	    mi->ti.disabled = *cv->rheads[cv->drawmode]==NULL && *cv->uheads[cv->drawmode]==NULL;
+	    mi->ti.disabled = cv->layerheads[cv->drawmode]->undoes==NULL && cv->layerheads[cv->drawmode]->redoes==NULL;
 	  break;
 	  case MID_CopyRef:
 	    mi->ti.disabled = cv->drawmode!=dm_fore || cv->searcher!=NULL;
@@ -4709,7 +4711,7 @@ static void _CVMenuPointType(CharView *cv,struct gmenuitem *mi) {
     Spline *spline, *first;
 
     CVPreserveState(cv);	/* We should only get here if there's a selection */
-    for ( spl = *cv->heads[cv->drawmode]; spl!=NULL ; spl = spl->next ) {
+    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL ; spl = spl->next ) {
 	first = NULL;
 	if ( spl->first->selected ) {
 	    if ( spl->first->pointtype!=pointtype )
@@ -4737,7 +4739,7 @@ static void cv_ptlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
     Spline *spline, *first;
     SplinePoint *selpt=NULL;
 
-    for ( spl = *cv->heads[cv->drawmode]; spl!=NULL && type!=-1; spl = spl->next ) {
+    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL && type!=-1; spl = spl->next ) {
 	first = NULL;
 	if ( spl->first->selected ) {
 	    sel = spl;
@@ -4793,7 +4795,7 @@ static void _CVMenuDir(CharView *cv,struct gmenuitem *mi) {
     Spline *spline, *first;
     int needsrefresh = false;
 
-    for ( spl = *cv->heads[cv->drawmode]; spl!=NULL; spl = spl->next ) {
+    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
 	first = NULL;
 	splinepoints = 0;
 	if ( spl->first->selected ) splinepoints = true;
@@ -4864,9 +4866,9 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
     real t[6];
     AnchorPoint *ap;
 
-    SplinePointListTransform(*cv->heads[cv->drawmode],transform,!anysel);
+    SplinePointListTransform(cv->layerheads[cv->drawmode]->splines,transform,!anysel);
     if ( flags&fvt_round_to_int )
-	SplineSetsRound2Int(*cv->heads[cv->drawmode]);
+	SplineSetsRound2Int(cv->layerheads[cv->drawmode]->splines);
     if ( cv->drawmode==dm_back ) {
 	for ( img = cv->sc->backimages; img!=NULL; img=img->next )
 	    if ( img->selected || !anysel ) {
@@ -4875,7 +4877,7 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
     } else if ( cv->drawmode==dm_fore ) {
 	for ( refs = cv->sc->refs; refs!=NULL; refs=refs->next )
 	    if ( refs->selected || !anysel ) {
-		SplinePointListTransform(refs->splines,transform,true);
+		SplinePointListTransform(refs->layers[0].splines,transform,true);
 		t[0] = refs->transform[0]*transform[0] +
 			    refs->transform[1]*transform[2];
 		t[1] = refs->transform[0]*transform[1] +
@@ -4895,7 +4897,7 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
 		    t[5] = rint( t[5] );
 		}
 		memcpy(refs->transform,t,sizeof(t));
-		SplineSetFindBounds(refs->splines,&refs->bb);
+		SplineSetFindBounds(refs->layers[0].splines,&refs->bb);
 	    }
 	if ( cv->showanchor ) {
 	    for ( ap=cv->sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->selected || !anysel )
@@ -4924,7 +4926,8 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
 	    SCPreserveBackground(cv->sc);
 	    for ( img = cv->sc->backimages; img!=NULL; img=img->next )
 		BackgroundImageTransform(cv->sc, img, transform);
-	    SplinePointListTransform(*cv->heads[dm_back],transform,true);
+	    SplinePointListTransform(cv->layerheads[cv->drawmode]->splines,
+		    transform,true);
 	}
     }
 }
@@ -5073,7 +5076,7 @@ void SCRound2Int(SplineChar *sc) {
 	stems->width = rint(stems->width);
 	new = stems->start+stems->width;
 	if ( old!=new )
-	    SplineSetsChangeCoord(sc->splines,old,new,true);
+	    SplineSetsChangeCoord(sc->layers[ly_fore].splines,old,new,true);
     }
     for ( stems = sc->vstem; stems!=NULL; stems=stems->next ) {
 	old = stems->start+stems->width;
@@ -5081,14 +5084,14 @@ void SCRound2Int(SplineChar *sc) {
 	stems->width = rint(stems->width);
 	new = stems->start+stems->width;
 	if ( old!=new )
-	    SplineSetsChangeCoord(sc->splines,old,new,false);
+	    SplineSetsChangeCoord(sc->layers[ly_fore].splines,old,new,false);
     }
 
-    SplineSetsRound2Int(sc->splines);
+    SplineSetsRound2Int(sc->layers[ly_fore].splines);
     for ( r=sc->refs; r!=NULL; r=r->next ) {
 	r->transform[4] = rint(r->transform[4]);
 	r->transform[5] = rint(r->transform[5]);
-	SplineSetFindBounds(r->splines,&r->bb);
+	SplineSetFindBounds(r->layers[0].splines,&r->bb);
     }
     SCCharChangedUpdate(sc);
 }
@@ -5112,7 +5115,7 @@ static void _CVMenuRound2Int(CharView *cv) {
     RefChar *r;
 
     CVPreserveState(cv);
-    for ( spl= *cv->heads[cv->drawmode]; spl!=NULL; spl=spl->next ) {
+    for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
 	for ( sp=spl->first; ; ) {
 	    if ( sp->selected || !anysel )
 		SplinePointRound(sp);
@@ -5165,7 +5168,7 @@ static void _CVMenuOverlap(CharView *cv,enum overlap_type ot) {
 	MinimumDistancesFree(cv->sc->md);
 	cv->sc->md = NULL;
     }
-    *cv->heads[cv->drawmode] = SplineSetRemoveOverlap(cv->sc,*cv->heads[cv->drawmode],ot);
+    cv->layerheads[cv->drawmode]->splines = SplineSetRemoveOverlap(cv->sc,cv->layerheads[cv->drawmode]->splines,ot);
     CVCharChangedUpdate(cv);
 }
 
@@ -5191,15 +5194,15 @@ return;
     if ( spl!=NULL ) {
 	SplinePointList *p, *pp, *t;
 	p = pp = NULL;
-	for ( t=*cv->heads[cv->drawmode]; t!=NULL && t!=spl; t=t->next ) {
+	for ( t=cv->layerheads[cv->drawmode]->splines; t!=NULL && t!=spl; t=t->next ) {
 	    pp = p; p = t;
 	}
 	switch ( mi->mid ) {
 	  case MID_First:
 	    if ( p!=NULL ) {
 		p->next = spl->next;
-		spl->next = *cv->heads[cv->drawmode];
-		*cv->heads[cv->drawmode] = spl;
+		spl->next = cv->layerheads[cv->drawmode]->splines;
+		cv->layerheads[cv->drawmode]->splines = spl;
 	    }
 	  break;
 	  case MID_Earlier:
@@ -5207,7 +5210,7 @@ return;
 		p->next = spl->next;
 		spl->next = p;
 		if ( pp==NULL ) {
-		    *cv->heads[cv->drawmode] = spl;
+		    cv->layerheads[cv->drawmode]->splines = spl;
 		} else {
 		    pp->next = spl;
 		}
@@ -5215,10 +5218,10 @@ return;
 	  break;
 	  case MID_Last:
 	    if ( spl->next!=NULL ) {
-		for ( t=*cv->heads[cv->drawmode]; t->next!=NULL; t=t->next );
+		for ( t=cv->layerheads[cv->drawmode]->splines; t->next!=NULL; t=t->next );
 		t->next = spl;
 		if ( p==NULL )
-		    *cv->heads[cv->drawmode] = spl->next;
+		    cv->layerheads[cv->drawmode]->splines = spl->next;
 		else
 		    p->next = spl->next;
 		spl->next = NULL;
@@ -5230,7 +5233,7 @@ return;
 		spl->next = t->next;
 		t->next = spl;
 		if ( p==NULL )
-		    *cv->heads[cv->drawmode] = t;
+		    cv->layerheads[cv->drawmode]->splines = t;
 		else
 		    p->next = t;
 	    }
@@ -5341,7 +5344,7 @@ static void _CVMenuAddExtrema(CharView *cv) {
 
     (void) CVAnySel(cv,&anysel,NULL,NULL,NULL);
     CVPreserveState(cv);
-    SplineCharAddExtrema(*cv->heads[cv->drawmode],anysel);
+    SplineCharAddExtrema(cv->layerheads[cv->drawmode]->splines,anysel);
     CVCharChangedUpdate(cv);
 }
 
@@ -5356,7 +5359,7 @@ static void CVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     smpl.err = (cv->sc->parent->ascent+cv->sc->parent->descent)/1000.;
     CVPreserveState(cv);
-    *cv->heads[cv->drawmode] = SplineCharSimplify(cv->sc,*cv->heads[cv->drawmode],
+    cv->layerheads[cv->drawmode]->splines = SplineCharSimplify(cv->sc,cv->layerheads[cv->drawmode]->splines,
 	    &smpl);
     CVCharChangedUpdate(cv);
 }
@@ -5368,7 +5371,7 @@ static void CVMenuSimplifyMore(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( !SimplifyDlg(cv->sc->parent,&smpl))
 return;
     CVPreserveState(cv);
-    *cv->heads[cv->drawmode] = SplineCharSimplify(cv->sc,*cv->heads[cv->drawmode],&smpl);
+    cv->layerheads[cv->drawmode]->splines = SplineCharSimplify(cv->sc,cv->layerheads[cv->drawmode]->splines,&smpl);
     CVCharChangedUpdate(cv);
 }
 
@@ -5376,7 +5379,7 @@ static void CVMenuCleanupChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     static struct simplifyinfo smpl = { sf_cleanup };
     CVPreserveState(cv);
-    *cv->heads[cv->drawmode] = SplineCharSimplify(cv->sc,*cv->heads[cv->drawmode],&smpl);
+    cv->layerheads[cv->drawmode]->splines = SplineCharSimplify(cv->sc,cv->layerheads[cv->drawmode]->splines,&smpl);
     CVCharChangedUpdate(cv);
 }
 
@@ -5387,7 +5390,7 @@ static void _CVMenuMakeFirst(CharView *cv) {
     Spline *spline, *first;
 
     sel = NULL;
-    for ( spl = *cv->heads[cv->drawmode]; spl!=NULL; spl = spl->next ) {
+    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
 	first = NULL;
 	splinepoints = 0;
 	if ( spl->first->selected ) { splinepoints = 1; sel = spl; selpt=spl->first; }
@@ -5486,7 +5489,7 @@ return;
     if ( !refchanged )
 	CVPreserveState(cv);
 	
-    *cv->heads[cv->drawmode] = SplineSetsCorrect(*cv->heads[cv->drawmode],&changed);
+    cv->layerheads[cv->drawmode]->splines = SplineSetsCorrect(cv->layerheads[cv->drawmode]->splines,&changed);
     if ( changed || refchanged )
 	CVCharChangedUpdate(cv);
 }
@@ -5517,7 +5520,7 @@ static void cv_allistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
     SplinePointList *spl;
     SplinePoint *sp=NULL;
 
-    for ( spl = *cv->heads[cv->drawmode]; spl!=NULL; spl = spl->next ) {
+    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
 	sp=spl->first;
 	while ( 1 ) {
 	    if ( sp->selected )
@@ -5597,7 +5600,7 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 #endif
 
     sel = NULL;
-    for ( spl = *cv->heads[cv->drawmode]; spl!=NULL; spl = spl->next ) {
+    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
 	first = NULL;
 	splinepoints = 0;
 	if ( spl->first->selected ) { splinepoints = 1; sel = spl; selpt = spl->first;}
@@ -5655,10 +5658,10 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	    mi->ti.disabled = cv->drawmode!=dm_fore || cv->sc->refs!=NULL || order2;
 	  break;
 	  case MID_Stroke:
-	    mi->ti.disabled = ( *cv->heads[cv->drawmode]==NULL || order2 );
+	    mi->ti.disabled = ( cv->layerheads[cv->drawmode]->splines==NULL || order2 );
 	  break;
 	  case MID_RmOverlap: case MID_Effects:
-	    mi->ti.disabled = ( *cv->heads[cv->drawmode]==NULL || order2 );
+	    mi->ti.disabled = ( cv->layerheads[cv->drawmode]->splines==NULL || order2 );
 	  break;
 #ifdef PFAEDIT_CONFIG_TILEPATH
 	  case MID_TilePath:
@@ -5669,12 +5672,12 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	    mi->ti.disabled = cv->fv->sf->bitmaps==NULL;
 	  break;
 	  case MID_AddExtrema:
-	    mi->ti.disabled = *cv->heads[cv->drawmode]==NULL;
+	    mi->ti.disabled = cv->layerheads[cv->drawmode]->splines==NULL;
 	  /* Like Simplify, always available, but may not do anything if */
 	  /*  all extrema have points. I'm not going to check for that, too hard */
 	  break;
 	  case MID_Simplify:
-	    mi->ti.disabled = *cv->heads[cv->drawmode]==NULL;
+	    mi->ti.disabled = cv->layerheads[cv->drawmode]->splines==NULL;
 	  /* Simplify is always available (it may not do anything though) */
 	  /*  well, ok. Disable it if there is absolutely nothing to work on */
 #if 0
@@ -5864,7 +5867,7 @@ static void CVMenuRoundHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SplineSet *ss;
     SplinePoint *sp;
 
-    for ( ss=cv->sc->splines; ss!=NULL; ss=ss->next ) {
+    for ( ss=cv->sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
 	for ( sp=ss->first; ; ) {
 	    if ( sp->selected ) {
 		if ( mi->mid==MID_RoundX )
@@ -5890,7 +5893,7 @@ static void CVMenuAddMD(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SplineSet *ss;
     SplinePoint *sp, *sel1=NULL, *sel2=NULL;
 
-    for ( ss=cv->sc->splines; ss!=NULL; ss=ss->next ) {
+    for ( ss=cv->sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
 	for ( sp=ss->first; ; ) {
 	    if ( sp->selected ) {
 		if ( sel1==NULL )
@@ -5928,7 +5931,7 @@ static void mdlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     int allrx=-1, allry=-1, cnt=0;
 
     sp1 = sp2 = NULL;
-    for ( ss=cv->sc->splines; ss!=NULL; ss=ss->next ) {
+    for ( ss=cv->sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
 	for ( sp=ss->first; ; ) {
 	    if ( sp->selected ) {
 		++cnt;
@@ -6066,7 +6069,7 @@ static void cv_sllistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = !exactlyone;
 	  break;
 	  case MID_FirstPt: case MID_Contours:
-	    mi->ti.disabled = *cv->heads[cv->drawmode]==NULL;
+	    mi->ti.disabled = cv->layerheads[cv->drawmode]->splines==NULL;
 	  break;
 	  case MID_SelectWidth:
 	    mi->ti.disabled = !cv->showhmetrics;
@@ -6365,10 +6368,10 @@ static void smlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	switch ( mi->mid ) {
 	  case MID_Simplify:
 	  case MID_CleanupChar:
-	    mi->ti.disabled = *cv->heads[cv->drawmode]==NULL;
+	    mi->ti.disabled = cv->layerheads[cv->drawmode]->splines==NULL;
 	  break;
 	  case MID_SimplifyMore:
-	    mi->ti.disabled = *cv->heads[cv->drawmode]==NULL;
+	    mi->ti.disabled = cv->layerheads[cv->drawmode]->splines==NULL;
 	  break;
 	}
     }
@@ -6392,7 +6395,7 @@ static void orlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     isfirst = islast = false;
     if ( spl!=NULL ) {
-	isfirst = *cv->heads[cv->drawmode]==spl;
+	isfirst = cv->layerheads[cv->drawmode]->splines==spl;
 	islast = spl->next==NULL;
     } else if ( r!=NULL ) {
 	isfirst = cv->sc->refs==r;
@@ -6694,6 +6697,7 @@ static void CVMenuShowSubChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     /* Change to the same char in a different instance font of the mm */
 
     CVChangeSC(cv,SFMakeChar(new,cv->sc->enc));
+    cv->layerheads[dm_grid] = &new->grid;
 }
 
 static void mmlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
@@ -6886,12 +6890,9 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv) {
     cv->er_tool = cvt_knife;
     cv->showing_tool = cvt_pointer;
     cv->pressed_tool = cv->pressed_display = cv->active_tool = cvt_none;
-    cv->heads[dm_fore] = &sc->splines; cv->heads[dm_back] = &sc->backgroundsplines;
-    cv->heads[dm_grid] = &fv->sf->gridsplines;
-    cv->uheads[dm_fore] = &sc->undoes[dm_fore]; cv->uheads[dm_back] = &sc->undoes[dm_back];
-    cv->uheads[dm_grid] = &fv->sf->gundoes;
-    cv->rheads[dm_fore] = &sc->redoes[dm_fore]; cv->rheads[dm_back] = &sc->redoes[dm_back];
-    cv->rheads[dm_grid] = &fv->sf->gredoes;
+    cv->layerheads[dm_fore] = &sc->layers[ly_fore];
+    cv->layerheads[dm_back] = &sc->layers[ly_back];
+    cv->layerheads[dm_grid] = &fv->sf->grid;
 
 #if HANYANG
     if ( sc->parent->rules!=NULL && sc->compositionunit )
@@ -7189,13 +7190,13 @@ static void SVUnlinkRef(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void SVRemoveUndoes(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SearchView *sv = (SearchView *) GDrawGetUserData(gw);
 
-    UndoesFree(*sv->cv_srch.uheads[sv->cv_srch.drawmode]);
-    UndoesFree(*sv->cv_srch.rheads[sv->cv_srch.drawmode]);
-    *sv->cv_srch.uheads[sv->cv_srch.drawmode] = *sv->cv_srch.rheads[sv->cv_srch.drawmode] = NULL;
+    UndoesFree(sv->cv_srch.layerheads[sv->cv_srch.drawmode]->undoes);
+    UndoesFree(sv->cv_srch.layerheads[sv->cv_srch.drawmode]->redoes);
+    sv->cv_srch.layerheads[sv->cv_srch.drawmode]->undoes = sv->cv_srch.layerheads[sv->cv_srch.drawmode]->redoes = NULL;
 
-    UndoesFree(*sv->cv_rpl.uheads[sv->cv_rpl.drawmode]);
-    UndoesFree(*sv->cv_rpl.rheads[sv->cv_rpl.drawmode]);
-    *sv->cv_rpl.uheads[sv->cv_rpl.drawmode] = *sv->cv_rpl.rheads[sv->cv_rpl.drawmode] = NULL;
+    UndoesFree(sv->cv_rpl.layerheads[sv->cv_rpl.drawmode]->undoes);
+    UndoesFree(sv->cv_rpl.layerheads[sv->cv_rpl.drawmode]->redoes);
+    sv->cv_rpl.layerheads[sv->cv_rpl.drawmode]->undoes = sv->cv_rpl.layerheads[sv->cv_rpl.drawmode]->redoes = NULL;
 }
 
 static void SVMenuPointType(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -7264,7 +7265,7 @@ static void SVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     static struct simplifyinfo smpl = { sf_normal,.75,.05,0 };
     smpl.err = (cv->sc->parent->ascent+cv->sc->parent->descent)/1000.;
     CVPreserveState(cv);
-    *cv->heads[cv->drawmode] = SplineCharSimplify(cv->sc,*cv->heads[cv->drawmode],&smpl);
+    cv->layerheads[cv->drawmode]->splines = SplineCharSimplify(cv->sc,cv->layerheads[cv->drawmode]->splines,&smpl);
     CVCharChangedUpdate(cv);
 }
 
@@ -7276,7 +7277,7 @@ static void SVMenuSimplifyMore(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( !SimplifyDlg(&smpl))
 return;
     CVPreserveState(cv);
-    *cv->heads[cv->drawmode] = SplineCharSimplify(cv->sc,*cv->heads[cv->drawmode],&smpl);
+    cv->layerheads[cv->drawmode]->splines = SplineCharSimplify(cv->sc,cv->layerheads[cv->drawmode]->splines,&smpl);
     CVCharChangedUpdate(cv);
 }
 #endif
@@ -7286,7 +7287,7 @@ static void SVMenuCleanupChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     static struct simplifyinfo smpl = { sf_cleanup };
     CharView *cv = sv->cv_srch.inactive ? &sv->cv_rpl : &sv->cv_srch;
     CVPreserveState(cv);
-    *cv->heads[cv->drawmode] = SplineCharSimplify(cv->sc,*cv->heads[cv->drawmode],&smpl);
+    cv->layerheads[cv->drawmode]->splines = SplineCharSimplify(cv->sc,cv->layerheads[cv->drawmode]->splines,&smpl);
     CVCharChangedUpdate(cv);
 }
 
@@ -7313,7 +7314,7 @@ static void SVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = sv->cv_srch.inactive ? &sv->cv_rpl : &sv->cv_srch;
     int changed=false;
     CVPreserveState(cv);
-    *cv->heads[cv->drawmode] = SplineSetsCorrect(*cv->heads[cv->drawmode],&changed);
+    cv->layerheads[cv->drawmode]->splines = SplineSetsCorrect(cv->layerheads[cv->drawmode]->splines,&changed);
     if ( changed )
 	CVCharChangedUpdate(cv);
 }

@@ -414,7 +414,7 @@ static void dumpproc(void (*dumpchar)(int ch,void *data), void *data, SplineChar
     else
 	dumpstr(dumpchar,data,"\n");
 
-    dumpsplineset(dumpchar,data,sc->splines);
+    dumpsplineset(dumpchar,data,sc->layers[ly_fore].splines);
     if ( sc->refs!=NULL ) {
 	dumpstr(dumpchar,data,"    pop -1\n" );
 	for ( ref = sc->refs; ref!=NULL; ref=ref->next ) {

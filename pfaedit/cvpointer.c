@@ -113,10 +113,10 @@ return;
     continue;
 	if ( selected==NULL || !selected[dlist->sc->enc] ) {
 	    SCPreserveState(dlist->sc,false);
-	    SplinePointListShift(dlist->sc->splines,off,true);
+	    SplinePointListShift(dlist->sc->layers[ly_fore].splines,off,true);
 	    for ( ref = dlist->sc->refs; ref!=NULL; ref=ref->next )
 		    if ( ref->sc!=sc && (selected==NULL || !selected[ref->sc->enc] )) {
-		SplinePointListShift(ref->splines,off,true);
+		SplinePointListShift(ref->layers[0].splines,off,true);
 		ref->transform[4] += off;
 		ref->bb.minx += off; ref->bb.maxx += off;
 	    }
@@ -134,7 +134,7 @@ int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi, int *anya) {
     ImageList *il;
     AnchorPoint *ap;
 
-    for ( spl = *cv->heads[cv->drawmode]; spl!=NULL && !anypoints; spl = spl->next ) {
+    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL && !anypoints; spl = spl->next ) {
 	first = NULL;
 	if ( spl->first->selected ) anypoints = true;
 	for ( spline=spl->first->next; spline!=NULL && spline!=first && !anypoints; spline = spline->to->next ) {
@@ -169,7 +169,7 @@ int CVClearSel(CharView *cv) {
     AnchorPoint *ap;
 
     cv->lastselpt = NULL;
-    for ( spl = *cv->heads[cv->drawmode]; spl!=NULL; spl = spl->next ) {
+    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
 	if ( spl->first->selected ) { needsupdate = true; spl->first->selected = false; }
 	first = NULL;
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
@@ -205,7 +205,7 @@ int CVSetSel(CharView *cv,int mask) {
 
     cv->lastselpt = NULL;
     if ( mask&1 )
-    for ( spl = *cv->heads[cv->drawmode]; spl!=NULL; spl = spl->next ) {
+    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
 	if ( !spl->first->selected ) { needsupdate = true; spl->first->selected = true; }
 	first = NULL;
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
@@ -247,7 +247,7 @@ int CVAllSelected(CharView *cv) {
     RefChar *rf;
     ImageList *img;
 
-    for ( spl = *cv->heads[cv->drawmode]; spl!=NULL; spl = spl->next ) {
+    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
 	if ( !spl->first->selected )
 return( false );
 	first = NULL;
@@ -299,7 +299,7 @@ void CVFindCenter(CharView *cv, BasePoint *bp, int nosel) {
     DBounds b;
 
     b.minx = b.miny = b.maxx = b.maxy = 0;
-    SplineSetFindSelBounds(*cv->heads[cv->drawmode],&b,nosel);
+    SplineSetFindSelBounds(cv->layerheads[cv->drawmode]->splines,&b,nosel);
     if ( cv->drawmode==dm_fore ) {
 	RefChar *rf;
 	for ( rf=cv->sc->refs; rf!=NULL; rf=rf->next ) {
@@ -694,7 +694,7 @@ static int CVRectSelect(CharView *cv, real newx, real newy) {
 	}
     }
 
-    for ( spl = *cv->heads[cv->drawmode]; spl!=NULL; spl = spl->next ) {
+    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
 	first = NULL;
 	if ( spl->first->prev==NULL ) {
 	    bp = &spl->first->me;
@@ -847,10 +847,10 @@ static int CVCheckMerges(CharView *cv ) {
 
   restart:
     ++cnt;
-    for ( activess=*cv->heads[cv->drawmode]; activess!=NULL; activess=activess->next ) {
+    for ( activess=cv->layerheads[cv->drawmode]->splines; activess!=NULL; activess=activess->next ) {
 	if ( activess->first->prev==NULL && (activess->first->selected ||
 		activess->last->selected)) {
-	    for ( mergess = *cv->heads[cv->drawmode]; mergess!=NULL; mergess=mergess->next ) {
+	    for ( mergess = cv->layerheads[cv->drawmode]->splines; mergess!=NULL; mergess=mergess->next ) {
 		if ( mergess->first->prev==NULL && (!mergess->first->selected ||
 			!mergess->last->selected)) {
 		    if ( !mergess->first->selected && activess->first->selected &&
@@ -902,14 +902,14 @@ int CVMoveSelection(CharView *cv, real dx, real dy) {
     transform[4] = dx; transform[5] = dy;
     if ( transform[4]==0 && transform[5]==0 )
 return(false);
-    SplinePointListTransform(*cv->heads[cv->drawmode],transform,false);
+    SplinePointListTransform(cv->layerheads[cv->drawmode]->splines,transform,false);
     if ( cv->drawmode==dm_fore ) {
 	for ( refs = cv->sc->refs; refs!=NULL; refs=refs->next ) if ( refs->selected ) {
 	    refs->transform[4] += transform[4];
 	    refs->transform[5] += transform[5];
 	    refs->bb.minx += transform[4]; refs->bb.maxx += transform[4];
 	    refs->bb.miny += transform[5]; refs->bb.maxy += transform[5];
-	    SplinePointListTransform(refs->splines,transform,true);
+	    SplinePointListTransform(refs->layers[0].splines,transform,true);
 	}
 	if ( cv->showanchor ) {
 	    for ( ap=cv->sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->selected ) {

@@ -36,7 +36,7 @@ void FVOutline(FontView *fv, real width) {
     SplineSet *temp, *spl;
     int i, cnt=0, changed;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->splines )
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->layers[ly_fore].splines )
 	++cnt;
     GProgressStartIndicatorR(10,_STR_Outlining,_STR_Outlining,0,cnt,1);
 
@@ -45,13 +45,13 @@ void FVOutline(FontView *fv, real width) {
     si.radius = width;
     si.removeoverlapifneeded = true;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->splines ) {
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->layers[ly_fore].splines ) {
 	SplineChar *sc = fv->sf->chars[i];
 	SCPreserveState(sc,false);
-	temp = SSStroke(sc->splines,&si,sc);
-	for ( spl=sc->splines; spl->next!=NULL; spl=spl->next );
+	temp = SSStroke(sc->layers[ly_fore].splines,&si,sc);
+	for ( spl=sc->layers[ly_fore].splines; spl->next!=NULL; spl=spl->next );
 	spl->next = temp;
-	SplineSetsCorrect(sc->splines,&changed);
+	SplineSetsCorrect(sc->layers[ly_fore].splines,&changed);
 	SCCharChangedUpdate(sc);
 	if ( !GProgressNext())
     break;
@@ -70,10 +70,10 @@ static void CVOutline(CharView *cv, real width) {
     si.removeoverlapifneeded = true;
 
     CVPreserveState(cv);
-    temp = SSStroke(*cv->heads[cv->drawmode],&si,cv->sc);
-    for ( spl=*cv->heads[cv->drawmode]; spl->next!=NULL; spl=spl->next );
+    temp = SSStroke(cv->layerheads[cv->drawmode]->splines,&si,cv->sc);
+    for ( spl=cv->layerheads[cv->drawmode]->splines; spl->next!=NULL; spl=spl->next );
     spl->next = temp;
-    SplineSetsCorrect(*cv->heads[cv->drawmode],&changed);
+    SplineSetsCorrect(cv->layerheads[cv->drawmode]->splines,&changed);
     CVCharChangedUpdate(cv);
 }
 
@@ -93,10 +93,10 @@ static void MVOutline(MetricsView *mv, real width) {
     if ( i!=-1 ) {
 	SplineChar *sc = mv->perchar[i].sc;
 	SCPreserveState(sc,false);
-	temp = SSStroke(sc->splines,&si,sc);
-	for ( spl=sc->splines; spl->next!=NULL; spl=spl->next );
+	temp = SSStroke(sc->layers[ly_fore].splines,&si,sc);
+	for ( spl=sc->layers[ly_fore].splines; spl->next!=NULL; spl=spl->next );
 	spl->next = temp;
-	SplineSetsCorrect(sc->splines,&changed);
+	SplineSetsCorrect(sc->layers[ly_fore].splines,&changed);
 	SCCharChangedUpdate(sc);
     }
 }
@@ -106,7 +106,7 @@ void FVInline(FontView *fv, real width, real inset) {
     SplineSet *temp, *spl, *temp2;
     int i, cnt=0, changed;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->splines )
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->layers[ly_fore].splines )
 	++cnt;
     GProgressStartIndicatorR(10,_STR_Inlining,_STR_Inlining,0,cnt,1);
 
@@ -114,18 +114,18 @@ void FVInline(FontView *fv, real width, real inset) {
     si.removeexternal = true;
     si.removeoverlapifneeded = true;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->splines ) {
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->layers[ly_fore].splines ) {
 	SplineChar *sc = fv->sf->chars[i];
 	SCPreserveState(sc,false);
 	si.radius = width;
-	temp = SSStroke(sc->splines,&si,sc);
+	temp = SSStroke(sc->layers[ly_fore].splines,&si,sc);
 	si.radius = width+inset;
-	temp2 = SSStroke(sc->splines,&si,sc);
-	for ( spl=sc->splines; spl->next!=NULL; spl=spl->next );
+	temp2 = SSStroke(sc->layers[ly_fore].splines,&si,sc);
+	for ( spl=sc->layers[ly_fore].splines; spl->next!=NULL; spl=spl->next );
 	spl->next = temp;
 	for ( ; spl->next!=NULL; spl=spl->next );
 	spl->next = temp2;
-	SplineSetsCorrect(sc->splines,&changed);
+	SplineSetsCorrect(sc->layers[ly_fore].splines,&changed);
 	SCCharChangedUpdate(sc);
 	if ( !GProgressNext())
     break;
@@ -144,14 +144,14 @@ static void CVInline(CharView *cv, real width, real inset) {
 
     CVPreserveState(cv);
     si.radius = width;
-    temp = SSStroke(*cv->heads[cv->drawmode],&si,cv->sc);
+    temp = SSStroke(cv->layerheads[cv->drawmode]->splines,&si,cv->sc);
     si.radius = width+inset;
-    temp2 = SSStroke(*cv->heads[cv->drawmode],&si,cv->sc);
-    for ( spl=*cv->heads[cv->drawmode]; spl->next!=NULL; spl=spl->next );
+    temp2 = SSStroke(cv->layerheads[cv->drawmode]->splines,&si,cv->sc);
+    for ( spl=cv->layerheads[cv->drawmode]->splines; spl->next!=NULL; spl=spl->next );
     spl->next = temp;
     for ( ; spl->next!=NULL; spl=spl->next );
     spl->next = temp2;
-    SplineSetsCorrect(*cv->heads[cv->drawmode],&changed);
+    SplineSetsCorrect(cv->layerheads[cv->drawmode]->splines,&changed);
     CVCharChangedUpdate(cv);
 }
 
@@ -171,14 +171,14 @@ static void MVInline(MetricsView *mv, real width, real inset) {
 	SplineChar *sc = mv->perchar[i].sc;
 	SCPreserveState(sc,false);
 	si.radius = width;
-	temp = SSStroke(sc->splines,&si,sc);
+	temp = SSStroke(sc->layers[ly_fore].splines,&si,sc);
 	si.radius = width+inset;
-	temp2 = SSStroke(sc->splines,&si,sc);
-	for ( spl=sc->splines; spl->next!=NULL; spl=spl->next );
+	temp2 = SSStroke(sc->layers[ly_fore].splines,&si,sc);
+	for ( spl=sc->layers[ly_fore].splines; spl->next!=NULL; spl=spl->next );
 	spl->next = temp;
 	for ( ; spl->next!=NULL; spl=spl->next );
 	spl->next = temp2;
-	SplineSetsCorrect(sc->splines,&changed);
+	SplineSetsCorrect(sc->layers[ly_fore].splines,&changed);
 	SCCharChangedUpdate(sc);
     }
 }
@@ -410,7 +410,7 @@ static void OrientEdges(SplineSet *base,SplineChar *sc) {
 
     memset(&el,'\0',sizeof(el));
     memset(&dummy,'\0',sizeof(dummy));
-    dummy.splines = base;
+    dummy.layers[ly_fore].splines = base;
     if ( sc!=NULL ) dummy.name = sc->name;
     ELFindEdges(&dummy,&el);
     el.major = 1;
@@ -937,7 +937,7 @@ static SplineSet *SSShadow(SplineSet *spl,real angle, real outline_width,
     real trans[6];
     StrokeInfo si;
     SplineSet *internal, *temp, *bottom, *fatframe, *lines;
-    int isfore = spl==sc->splines;
+    int isfore = spl==sc->layers[ly_fore].splines;
 
     if ( spl==NULL )
 return( NULL );
@@ -1008,15 +1008,15 @@ void FVShadow(FontView *fv,real angle, real outline_width,
 	real shadow_length, int wireframe) {
     int i, cnt=0;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->splines )
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->layers[ly_fore].splines )
 	++cnt;
     GProgressStartIndicatorR(10,_STR_Shadowing,_STR_Shadowing,0,cnt,1);
 
     for ( i=0; i<fv->sf->charcnt; ++i )
-	    if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->splines ) {
+	    if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->layers[ly_fore].splines ) {
 	SplineChar *sc = fv->sf->chars[i];
 	SCPreserveState(sc,false);
-	sc->splines = SSShadow(sc->splines,angle,outline_width,shadow_length,sc,wireframe);
+	sc->layers[ly_fore].splines = SSShadow(sc->layers[ly_fore].splines,angle,outline_width,shadow_length,sc,wireframe);
 	SCCharChangedUpdate(sc);
 	if ( !GProgressNext())
     break;
@@ -1027,7 +1027,7 @@ void FVShadow(FontView *fv,real angle, real outline_width,
 static void CVShadow(CharView *cv,real angle, real outline_width,
 	real shadow_length,int wireframe) {
     CVPreserveState(cv);
-    *cv->heads[cv->drawmode] = SSShadow(*cv->heads[cv->drawmode],angle,outline_width,shadow_length,cv->sc,wireframe);
+    cv->layerheads[cv->drawmode]->splines = SSShadow(cv->layerheads[cv->drawmode]->splines,angle,outline_width,shadow_length,cv->sc,wireframe);
     CVCharChangedUpdate(cv);
 }
 
@@ -1041,7 +1041,7 @@ static void MVShadow(MetricsView *mv,real angle, real outline_width,
     if ( i!=-1 ) {
 	SplineChar *sc = mv->perchar[i].sc;
 	SCPreserveState(sc,false);
-	sc->splines = SSShadow(sc->splines,angle,outline_width,shadow_length,sc,wireframe);
+	sc->layers[ly_fore].splines = SSShadow(sc->layers[ly_fore].splines,angle,outline_width,shadow_length,sc,wireframe);
 	SCCharChangedUpdate(sc);
     }
 }

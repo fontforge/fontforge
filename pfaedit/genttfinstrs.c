@@ -1581,7 +1581,7 @@ void initforinstrs(SplineChar *sc) {
     SplinePoint *sp;
     MinimumDistance *md;
 
-    for ( ss=sc->splines; ss!=NULL; ss=ss->next ) {
+    for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
 	for ( sp=ss->first; ; ) {
 	    sp->dontinterpolate = false;
 	    if ( sp->next==NULL )
@@ -1687,7 +1687,7 @@ return;
 
     if ( sc->vstem==NULL && sc->hstem==NULL && sc->dstem==NULL && sc->md==NULL )
 return;
-    if ( sc->splines==NULL )
+    if ( sc->layers[ly_fore].splines==NULL )
 return;
 
     if ( bd==NULL ) {
@@ -1699,14 +1699,14 @@ return;
     gi.fudge = (sc->parent->ascent+sc->parent->descent)/500;
 
     cnt = contourcnt = 0;
-    for ( ss=sc->splines; ss!=NULL; ss=ss->next, ++contourcnt )
+    for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next, ++contourcnt )
 	cnt = SSPointCnt(ss,cnt,false);
 
     contourends = galloc((contourcnt+1)*sizeof(int));
     bp = galloc(cnt*sizeof(BasePoint));
     touched = gcalloc(cnt,1);
     contourcnt = cnt = 0;
-    for ( ss=sc->splines; ss!=NULL; ss=ss->next ) {
+    for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
 	touched[cnt] |= tf_startcontour;
 	cnt = SSAddPoints(ss,cnt,bp,NULL,false);
 	touched[cnt-1] |= tf_endcontour;
@@ -1714,7 +1714,7 @@ return;
     }
     contourends[contourcnt] = 0;
 
-    dogeninstructions(sc, &gi, contourends, bp, cnt, sc->splines, touched);
+    dogeninstructions(sc, &gi, contourends, bp, cnt, sc->layers[ly_fore].splines, touched);
 
     free(touched);
     free(bp);

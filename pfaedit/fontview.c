@@ -558,7 +558,7 @@ static void FVReattachCVs(SplineFont *old,SplineFont *new) {
 		for ( cv=old->chars[i]->views; cv!=NULL; cv = cvnext ) {
 		    cvnext = cv->next;
 		    CVChangeSC(cv,sub->chars[enc]);
-		    cv->heads[dm_grid] = &new->gridsplines;
+		    cv->layerheads[dm_grid] = &new->grid;
 		}
 	    }
 	    GDrawProcessPendingEvents(NULL);
@@ -683,14 +683,14 @@ return;
 		    SCPreserveBackground(tsc);
 		    temp = *tsc;
 		    tsc->dependents = NULL;
-		    tsc->undoes[0] = tsc->undoes[1] = NULL;
+		    tsc->layers[ly_back].undoes = tsc->layers[ly_fore].undoes = NULL;
 		    SplineCharFreeContents(tsc);
 		    *tsc = *sc;
 		    chunkfree(sc,sizeof(SplineChar));
 		    tsc->parent = sf;
 		    tsc->dependents = temp.dependents;
-		    tsc->undoes[0] = temp.undoes[0];
-		    tsc->undoes[1] = temp.undoes[1];
+		    tsc->layers[ly_fore].undoes = temp.layers[ly_fore].undoes;
+		    tsc->layers[ly_back].undoes = temp.layers[ly_back].undoes;
 		    tsc->views = temp.views;
 		    tsc->changed = temp.changed;
 		    tsc->enc = temp.enc;
@@ -1133,7 +1133,7 @@ static void FVCopyFgtoBg(FontView *fv) {
     int i;
 
     for ( i=0; i<fv->sf->charcnt; ++i )
-	if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->splines!=NULL )
+	if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->layers[1].splines!=NULL )
 	    SCCopyFgToBg(fv->sf->chars[i],true);
 }
 
@@ -1158,8 +1158,8 @@ void SCClearContents(SplineChar *sc) {
 return;
     sc->widthset = false;
     sc->width = sc->parent->ascent+sc->parent->descent;
-    SplinePointListsFree(sc->splines);
-    sc->splines = NULL;
+    SplinePointListsFree(sc->layers[1].splines);
+    sc->layers[1].splines = NULL;
     AnchorPointsFree(sc->anchor);
     sc->anchor = NULL;
     for ( refs=sc->refs; refs!=NULL; refs = next ) {
@@ -1181,7 +1181,7 @@ void SCClearAll(SplineChar *sc) {
 
     if ( sc==NULL )
 return;
-    if ( sc->splines==NULL && sc->refs==NULL && !sc->widthset &&
+    if ( sc->layers[1].splines==NULL && sc->refs==NULL && !sc->widthset &&
 	    sc->hstem==NULL && sc->vstem==NULL && sc->anchor==NULL &&
 	    (!copymetadata ||
 		(sc->unicodeenc==-1 && strcmp(sc->name,".notdef")==0)))
@@ -1202,11 +1202,11 @@ void SCClearBackground(SplineChar *sc) {
 
     if ( sc==NULL )
 return;
-    if ( sc->backgroundsplines==NULL && sc->backimages==NULL )
+    if ( sc->layers[0].splines==NULL && sc->backimages==NULL )
 return;
     SCPreserveBackground(sc);
-    SplinePointListsFree(sc->backgroundsplines);
-    sc->backgroundsplines = NULL;
+    SplinePointListsFree(sc->layers[0].splines);
+    sc->layers[0].splines = NULL;
     ImageListsFree(sc->backimages);
     sc->backimages = NULL;
     SCOutOfDateBackground(sc);
@@ -1327,7 +1327,7 @@ return;
 
     for ( i=0; i<sf->charcnt; ++i ) if ( fv->selected[i] && sf->chars[i]!=NULL ) {
 	SCPreserveState(sf->chars[i],false);
-	sf->chars[i]->splines = SplineSetJoin(sf->chars[i]->splines,true,joinsnap,&changed);
+	sf->chars[i]->layers[ly_fore].splines = SplineSetJoin(sf->chars[i]->layers[ly_fore].splines,true,joinsnap,&changed);
 	if ( changed )
 	    SCCharChangedUpdate(sf->chars[i]);
     }
@@ -1382,10 +1382,10 @@ void SFRemoveUndoes(SplineFont *sf,uint8 *selected) {
 	    ssf = main->subfontcnt==0? main: main->subfonts[k];
 	    if ( i<ssf->charcnt && ssf->chars[i]!=NULL ) {
 		sc = ssf->chars[i];
-		UndoesFree(sc->undoes[0]); sc->undoes[0] = NULL;
-		UndoesFree(sc->undoes[1]); sc->undoes[1] = NULL;
-		UndoesFree(sc->redoes[0]); sc->redoes[0] = NULL;
-		UndoesFree(sc->redoes[1]); sc->redoes[1] = NULL;
+		UndoesFree(sc->layers[ly_fore].undoes); sc->layers[ly_fore].undoes = NULL;
+		UndoesFree(sc->layers[ly_back].undoes); sc->layers[ly_back].undoes = NULL;
+		UndoesFree(sc->layers[ly_fore].redoes); sc->layers[ly_fore].redoes = NULL;
+		UndoesFree(sc->layers[ly_back].redoes); sc->layers[ly_back].redoes = NULL;
 	    }
 	    ++k;
 	} while ( k<main->subfontcnt );
@@ -1404,11 +1404,12 @@ static void FVMenuUndo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     int was_blended = mm!=NULL && mm->normal==fv->sf;
 
     for ( i=0; i<fv->sf->charcnt; ++i )
-	if ( fv->selected[i] && fv->sf->chars[i]!=NULL && fv->sf->chars[i]->undoes[0]!=NULL ) {
-	    SCDoUndo(fv->sf->chars[i],dm_fore);
+	if ( fv->selected[i] && fv->sf->chars[i]!=NULL &&
+		fv->sf->chars[i]->layers[ly_fore].undoes!=NULL ) {
+	    SCDoUndo(fv->sf->chars[i],ly_fore);
 	    if ( was_blended ) {
 		for ( j=0; j<mm->instance_count; ++j )
-		    SCDoUndo(mm->instances[j]->chars[i],dm_fore);
+		    SCDoUndo(mm->instances[j]->chars[i],ly_fore);
 	    }
 	}
 }
@@ -1420,11 +1421,12 @@ static void FVMenuRedo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     int was_blended = mm->normal==fv->sf;
 
     for ( i=0; i<fv->sf->charcnt; ++i )
-	if ( fv->selected[i] && fv->sf->chars[i]!=NULL && fv->sf->chars[i]->redoes[0]!=NULL ) {
-	    SCDoRedo(fv->sf->chars[i],dm_fore);
+	if ( fv->selected[i] && fv->sf->chars[i]!=NULL &&
+		fv->sf->chars[i]->layers[ly_fore].redoes!=NULL ) {
+	    SCDoRedo(fv->sf->chars[i],ly_fore);
 	    if ( was_blended ) {
 		for ( j=0; j<mm->instance_count; ++j )
-		    SCDoRedo(mm->instances[j]->chars[i],dm_fore);
+		    SCDoRedo(mm->instances[j]->chars[i],ly_fore);
 	    }
 	}
 }
@@ -1526,7 +1528,7 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		for ( pos=0; pos<fv->sf->charcnt; ++pos )
 		    if ( fv->selected[pos] && fv->sf->chars[pos]!=NULL )
 			if ( fv->sf->chars[pos]->backimages!=NULL ||
-				fv->sf->chars[pos]->backgroundsplines!=NULL ) {
+				fv->sf->chars[pos]->layers[ly_back].splines!=NULL ) {
 			    mi->ti.disabled = false;
 		break;
 			}
@@ -1535,14 +1537,14 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_Undo:
 	    for ( pos=0; pos<fv->sf->charcnt; ++pos )
 		if ( fv->selected[pos] && fv->sf->chars[pos]!=NULL )
-		    if ( fv->sf->chars[pos]->undoes[0]!=NULL )
+		    if ( fv->sf->chars[pos]->layers[ly_fore].undoes!=NULL )
 	    break;
 	    mi->ti.disabled = pos==fv->sf->charcnt;
 	  break;
 	  case MID_Redo:
 	    for ( pos=0; pos<fv->sf->charcnt; ++pos )
 		if ( fv->selected[pos] && fv->sf->chars[pos]!=NULL )
-		    if ( fv->sf->chars[pos]->redoes[0]!=NULL )
+		    if ( fv->sf->chars[pos]->layers[ly_fore].redoes!=NULL )
 	    break;
 	    mi->ti.disabled = pos==fv->sf->charcnt;
 	  break;
@@ -1709,7 +1711,7 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], uint8 *sel,
 	}
     for ( ap=sc->anchor; ap!=NULL; ap=ap->next )
 	ApTransform(ap,transform);
-    SplinePointListTransform(sc->splines,transform,true);
+    SplinePointListTransform(sc->layers[ly_fore].splines,transform,true);
     for ( refs = sc->refs; refs!=NULL; refs=refs->next ) {
 	if ( sel!=NULL && sel[refs->sc->enc] ) {
 	    /* if the character referred to is selected then it's going to */
@@ -1728,10 +1730,10 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], uint8 *sel,
 	    t[4] -= t[0]; t[5] -= t[1];
 	    if ( t[4]!=0 || t[5]!=0 ) {
 		t[0] = t[3] = 1; t[1] = t[2] = 0;
-		SplinePointListTransform(refs->splines,t,true);
+		SplinePointListTransform(refs->layers[0].splines,t,true);
 	    }
 	} else {
-	    SplinePointListTransform(refs->splines,transform,true);
+	    SplinePointListTransform(refs->layers[0].splines,transform,true);
 	    t[0] = refs->transform[0]*transform[0] +
 			refs->transform[1]*transform[2];
 	    t[1] = refs->transform[0]*transform[1] +
@@ -1748,7 +1750,7 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], uint8 *sel,
 			transform[5];
 	    memcpy(refs->transform,t,sizeof(t));
 	}
-	SplineSetFindBounds(refs->splines,&refs->bb);
+	SplineSetFindBounds(refs->layers[0].splines,&refs->bb);
     }
     if ( transform[1]==0 && transform[2]==0 ) {
 	TransHints(sc->hstem,transform[3],transform[5],transform[0],transform[4],flags&fvt_round_to_int);
@@ -1766,7 +1768,7 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], uint8 *sel,
     if ( flags&fvt_dobackground ) {
 	ImageList *img;
 	SCPreserveBackground(sc);
-	SplinePointListTransform(sc->backgroundsplines,transform,true);
+	SplinePointListTransform(sc->layers[ly_back].splines,transform,true);
 	for ( img = sc->backimages; img!=NULL; img=img->next )
 	    BackgroundImageTransform(sc, img, transform);
     }
@@ -1926,7 +1928,7 @@ static void FVOverlap(FontView *fv,enum overlap_type ot) {
 	SCPreserveState(sc,false);
 	MinimumDistancesFree(sc->md);
 	sc->md = NULL;
-	sc->splines = SplineSetRemoveOverlap(sc,sc->splines,ot);
+	sc->layers[ly_fore].splines = SplineSetRemoveOverlap(sc,sc->layers[ly_fore].splines,ot);
 	SCCharChangedUpdate(sc);
 	if ( !GProgressNext())
     break;
@@ -1980,7 +1982,7 @@ void _FVSimplify(FontView *fv,struct simplifyinfo *smpl) {
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
 	SCPreserveState(sc,false);
-	sc->splines = SplineCharSimplify(sc,sc->splines,smpl);
+	sc->layers[ly_fore].splines = SplineCharSimplify(sc,sc->layers[ly_fore].splines,smpl);
 	SCCharChangedUpdate(sc);
 	if ( !GProgressNext())
     break;
@@ -2022,7 +2024,7 @@ static void FVAddExtrema(FontView *fv) {
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
 	SCPreserveState(sc,false);
-	SplineCharAddExtrema(sc->splines,false);
+	SplineCharAddExtrema(sc->layers[ly_fore].splines,false);
 	SCCharChangedUpdate(sc);
 	if ( !GProgressNext())
     break;
@@ -2074,7 +2076,7 @@ return;
 
 	if ( !refchanged )
 	    SCPreserveState(sc,false);
-	sc->splines = SplineSetsCorrect(sc->splines,&changed);
+	sc->layers[ly_fore].splines = SplineSetsCorrect(sc->layers[ly_fore].splines,&changed);
 	if ( changed || refchanged )
 	    SCCharChangedUpdate(sc);
 	if ( !GProgressNext())
@@ -2122,7 +2124,7 @@ void FVBuildAccent(FontView *fv,int onlyaccents) {
 	if ( sc==NULL )
 	    sc = SCBuildDummy(&dummy,fv->sf,i);
 	else if ( screen_display==NULL && sc->unicodeenc == 0x00c5 /* Aring */ &&
-		sc->splines!=NULL ) {
+		sc->layers[ly_fore].splines!=NULL ) {
 	    if ( GWidgetAskR(_STR_Replacearing,buts,0,1,_STR_Areyousurearing)==1 )
     continue;
 	}
@@ -2165,7 +2167,7 @@ return( false );
 static void SCReplaceWith(SplineChar *dest, SplineChar *src) {
     int enc=dest->enc, uenc=dest->unicodeenc, oenc = dest->old_enc;
     Undoes *u[2], *r1;
-    SplineSet *back = dest->backgroundsplines;
+    SplineSet *back = dest->layers[ly_back].splines;
     ImageList *images = dest->backimages;
     struct splinecharlist *scl = dest->dependents;
     RefChar *refs;
@@ -2175,10 +2177,10 @@ return;
 
     SCPreserveState(src,2);
     SCPreserveState(dest,2);
-    u[0] = dest->undoes[0]; u[1] = dest->undoes[1]; r1 = dest->redoes[1];
+    u[0] = dest->layers[ly_fore].undoes; u[1] = dest->layers[ly_back].undoes; r1 = dest->layers[ly_back].redoes;
 
     free(dest->name);
-    SplinePointListsFree(dest->splines);
+    SplinePointListsFree(dest->layers[ly_fore].splines);
     RefCharsFree(dest->refs);
     StemInfosFree(dest->hstem);
     StemInfosFree(dest->vstem);
@@ -2191,14 +2193,14 @@ return;
 
     *dest = *src;
     dest->backimages = images;
-    dest->backgroundsplines = back;
-    dest->undoes[0] = u[0]; dest->undoes[1] = u[1]; dest->redoes[0] = NULL; dest->redoes[1] = r1;
+    dest->layers[ly_back].splines = back;
+    dest->layers[ly_fore].undoes = u[0]; dest->layers[ly_back].undoes = u[1]; dest->layers[ly_fore].redoes = NULL; dest->layers[ly_back].redoes = r1;
     dest->enc = enc; dest->unicodeenc = uenc; dest->old_enc = oenc;
     dest->dependents = scl;
     dest->namechanged = true;
 
     src->name = copy(".notdef");
-    src->splines = NULL;
+    src->layers[ly_fore].splines = NULL;
     src->refs = NULL;
     src->hstem = NULL;
     src->vstem = NULL;
@@ -4435,6 +4437,7 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 
     memset(dummy,'\0',sizeof(*dummy));
     dummy->color = COLOR_DEFAULT;
+    dummy->layer_cnt = 2;
     dummy->enc = i;
     if ( sf->compacted ) {
 	for ( j=i-1; j>=0; --j )
@@ -4898,7 +4901,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		    rotated = UniGetRotatedGlyph(fv->sf,sc,-1);
 		}
 	    }
-	    if ( sc->backgroundsplines!=NULL || sc->backimages!=NULL || sc->color!=COLOR_DEFAULT ) {
+	    if ( sc->layers[ly_back].splines!=NULL || sc->backimages!=NULL || sc->color!=COLOR_DEFAULT ) {
 		GRect r;
 		r.x = j*fv->cbw+1; r.width = fv->cbw-1;
 		r.y = i*fv->cbh+1; r.height = FV_LAB_HEIGHT-1;
@@ -4963,7 +4966,8 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		box.y = i*fv->cbh+14+1; box.height = box.width+1;
 		GDrawPushClip(pixmap,&box,&old2);
 		if ( !fv->sf->onlybitmaps &&
-			sc->splines==NULL && sc->refs==NULL && !sc->widthset &&
+			sc->layers[ly_fore].splines==NULL && sc->refs==NULL &&
+			!sc->widthset &&
 			!(bdfc->xmax<=0 && bdfc->xmin==0 && bdfc->ymax<=0 && bdfc->ymax==0) ) {
 		    /* If we have a bitmap but no outline character... */
 		    GRect b;

@@ -1744,7 +1744,7 @@ return( false );
 		/* skip */;
 	    else if ( (target==NULL && !infont(sc,table,tlen,item,used,new_map)) ||
 		      (target!=NULL && !intarget(sc,target) ) ) {
-		if ( sc->splines==NULL && sc->refs==NULL && sc->dependents==NULL &&
+		if ( sc->layers[ly_fore].splines==NULL && sc->refs==NULL && sc->dependents==NULL &&
 			(!sc->widthset || strcmp(sc->name,".notdef")==0 ) ) {
 			/* glyphs mapped to .notdef in a type1 font will have widthset but its not meaningful */
 		    RemoveSplineChar(sf,i);

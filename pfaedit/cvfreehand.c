@@ -841,19 +841,19 @@ return;
 #endif
 	CVPreserveState(cv);
 	if ( CVFreeHandInfo()->stroke_type==si_centerline ) {
-	    cv->freehand.current_trace->next = *cv->heads[cv->drawmode];
-	    *cv->heads[cv->drawmode] = cv->freehand.current_trace;
+	    cv->freehand.current_trace->next = cv->layerheads[cv->drawmode]->splines;
+	    cv->layerheads[cv->drawmode]->splines = cv->freehand.current_trace;
 	} else {
 	    SplineSet *ss = cv->freehand.current_trace;
 	    while ( ss->next!=NULL )
 		ss = ss->next;
-	    ss->next = *cv->heads[cv->drawmode];
+	    ss->next = cv->layerheads[cv->drawmode]->splines;
 #if 0		/* This branch is correct */
-	    *cv->heads[cv->drawmode] = cv->freehand.current_trace->next;
+	    cv->layerheads[cv->drawmode]->splines = cv->freehand.current_trace->next;
 	    cv->freehand.current_trace->next = NULL;
 	    SplinePointListFree(cv->freehand.current_trace);
 #else		/* Debug!!!! */
-	    *cv->heads[cv->drawmode] = cv->freehand.current_trace;
+	    cv->layerheads[cv->drawmode]->splines = cv->freehand.current_trace;
 #endif
 	}
 	cv->freehand.current_trace = NULL;

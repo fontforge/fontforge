@@ -1113,7 +1113,7 @@ static void readttfsimpleglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, in
 	last_pos = pts[i].y;
     }
 
-    sc->splines = ttfbuildcontours(path_cnt,endpt,flags,pts,info->to_order2);
+    sc->layers[ly_fore].splines = ttfbuildcontours(path_cnt,endpt,flags,pts,info->to_order2);
     if ( info->to_order2 && len!=0 ) {
 	sc->ttf_instrs_len = len;
 	sc->ttf_instrs = instructions;
@@ -3701,7 +3701,7 @@ static int ttfFindPointInSC(SplineChar *sc,int pnum,BasePoint *pos) {
     int last=0, ret;
     RefChar *refs;
 
-    for ( ss = sc->splines; ss!=NULL; ss=ss->next ) {
+    for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
 	for ( sp=ss->first; ; ) {
 	    if ( sp->ttfindex==pnum ) {
 		*pos = sp->me;

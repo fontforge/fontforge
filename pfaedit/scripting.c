@@ -2362,7 +2362,7 @@ static void bCorrectDirection(Context *c) {
 	}
 	if ( !refchanged )
 	    SCPreserveState(sc,false);
-	sc->splines = SplineSetsCorrect(sc->splines,&changed);
+	sc->layers[ly_fore].splines = SplineSetsCorrect(sc->layers[ly_fore].splines,&changed);
 	if ( changed || refchanged )
 	    SCCharChangedUpdate(sc);
     }

@@ -2641,7 +2641,7 @@ SplineSet *SplineSetsDetectDir(SplineSet **_base,int *_lastscan) {
 
     memset(&el,'\0',sizeof(el));
     memset(&dummy,'\0',sizeof(dummy));
-    dummy.splines = base;
+    dummy.layers[ly_fore].splines = base;
     ELFindEdges(&dummy,&el);
     el.major = 1;
     ELOrder(&el,el.major);
@@ -2714,7 +2714,7 @@ return( -1 );		/* Open paths, (open paths with only one point are a special case
 
     memset(&el,'\0',sizeof(el));
     memset(&dummy,'\0',sizeof(dummy));
-    dummy.splines = spl;
+    dummy.layers[ly_fore].splines = spl;
     next = spl->next; spl->next = NULL;
     ELFindEdges(&dummy,&el);
     el.major = 1;

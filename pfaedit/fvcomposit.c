@@ -399,9 +399,9 @@ static real SplineCharQuickTop(SplineChar *sc) {
     RefChar *ref;
     real max, temp;
 
-    max = SplineSetQuickTop(sc->splines);
+    max = SplineSetQuickTop(sc->layers[ly_fore].splines);
     for ( ref = sc->refs; ref!=NULL; ref = ref->next )
-	if ( (temp =SplineSetQuickTop(ref->splines))>max )
+	if ( (temp =SplineSetQuickTop(ref->layers[0].splines))>max )
 	    max = temp;
 return( max );
 }
@@ -412,17 +412,17 @@ static int haschar(SplineFont *sf,int ch) {
     if ( sf->encoding_name==em_unicode ||  sf->encoding_name==em_unicode4 ||
 	    (ch<0x100 && sf->encoding_name==em_iso8859_1))
 return( ch<sf->charcnt && sf->chars[ch]!=NULL &&
-	(sf->chars[ch]->splines!=NULL || sf->chars[ch]->refs!=NULL || sf->chars[ch]->widthset) );
+	(sf->chars[ch]->layers[ly_fore].splines!=NULL || sf->chars[ch]->refs!=NULL || sf->chars[ch]->widthset) );
     else if ( sf->encoding_name>=em_unicodeplanes && sf->encoding_name<=em_unicodeplanesmax ) {
 	i = ch - ((sf->encoding_name-em_unicodeplanes)<<16);
 return( i>=0 && i<sf->charcnt && sf->chars[i]!=NULL &&
-	(sf->chars[i]->splines!=NULL || sf->chars[i]->refs!=NULL || sf->chars[i]->widthset) );
+	(sf->chars[i]->layers[ly_fore].splines!=NULL || sf->chars[i]->refs!=NULL || sf->chars[i]->widthset) );
     }
 
     for ( i=sf->charcnt-1; i>=0; --i ) if ( sf->chars[i]!=NULL )
 	if ( sf->chars[i]->unicodeenc == ch )
     break;
-return( i!=-1 && (sf->chars[i]->splines!=NULL || sf->chars[i]->refs!=NULL || (ch==0x20 && sf->chars[i]->widthset)) );
+return( i!=-1 && (sf->chars[i]->layers[ly_fore].splines!=NULL || sf->chars[i]->refs!=NULL || (ch==0x20 && sf->chars[i]->widthset)) );
 }
 
 static SplineChar *findchar(SplineFont *sf,int ch) {
@@ -846,9 +846,9 @@ static real SCFindTopXRange(SplineChar *sc,DBounds *bounds, real ia) {
     bounds->minx = bounds->maxx = 0;
 
     for ( rf=sc->refs; rf!=NULL; rf = rf->next )
-	yextreme = _SplineSetFindXRangeAtYExtremum(rf->splines,bounds,true,yextreme,ia);
+	yextreme = _SplineSetFindXRangeAtYExtremum(rf->layers[0].splines,bounds,true,yextreme,ia);
 
-    yextreme = _SplineSetFindXRangeAtYExtremum(sc->splines,bounds,true,yextreme,ia);
+    yextreme = _SplineSetFindXRangeAtYExtremum(sc->layers[ly_fore].splines,bounds,true,yextreme,ia);
     if ( yextreme == -0x80000 ) yextreme = 0;
 return( yextreme );
 }
@@ -861,9 +861,9 @@ static real SCFindBottomXRange(SplineChar *sc,DBounds *bounds, real ia) {
     bounds->minx = bounds->maxx = 0;
 
     for ( rf=sc->refs; rf!=NULL; rf = rf->next )
-	yextreme = _SplineSetFindXRangeAtYExtremum(rf->splines,bounds,false,yextreme,ia);
+	yextreme = _SplineSetFindXRangeAtYExtremum(rf->layers[0].splines,bounds,false,yextreme,ia);
 
-    yextreme = _SplineSetFindXRangeAtYExtremum(sc->splines,bounds,false,yextreme,ia);
+    yextreme = _SplineSetFindXRangeAtYExtremum(sc->layers[ly_fore].splines,bounds,false,yextreme,ia);
     if ( yextreme == 0x80000 ) yextreme = 0;
 return( yextreme );
 }
@@ -878,9 +878,9 @@ static real SCFindTopBounds(SplineChar *sc,DBounds *bounds, real ia) {
     bounds->minx = bounds->maxx = 0;
 
     for ( rf=sc->refs; rf!=NULL; rf = rf->next )
-	_SplineSetFindXRange(rf->splines,bounds,ymin,ymax,ia);
+	_SplineSetFindXRange(rf->layers[0].splines,bounds,ymin,ymax,ia);
 
-    _SplineSetFindXRange(sc->splines,bounds,ymin,ymax,ia);
+    _SplineSetFindXRange(sc->layers[ly_fore].splines,bounds,ymin,ymax,ia);
 return( ymin );
 }
 
@@ -893,9 +893,9 @@ static real SCFindBottomBounds(SplineChar *sc,DBounds *bounds, real ia) {
     bounds->minx = bounds->maxx = 0;
 
     for ( rf=sc->refs; rf!=NULL; rf = rf->next )
-	_SplineSetFindXRange(rf->splines,bounds,ymin,ymax,ia);
+	_SplineSetFindXRange(rf->layers[0].splines,bounds,ymin,ymax,ia);
 
-    _SplineSetFindXRange(sc->splines,bounds,ymin,ymax,ia);
+    _SplineSetFindXRange(sc->layers[ly_fore].splines,bounds,ymin,ymax,ia);
 return( ymin );
 }
 
@@ -911,9 +911,9 @@ static real SplineCharFindSlantedBounds(SplineChar *sc,DBounds *bounds, real ia)
 	bounds->minx = bounds->maxx = 0;
 
 	for ( rf=sc->refs; rf!=NULL; rf = rf->next )
-	    _SplineSetFindXRange(rf->splines,bounds,ymin,ymax,ia);
+	    _SplineSetFindXRange(rf->layers[0].splines,bounds,ymin,ymax,ia);
 
-	_SplineSetFindXRange(sc->splines,bounds,ymin,ymax,ia);
+	_SplineSetFindXRange(sc->layers[ly_fore].splines,bounds,ymin,ymax,ia);
     }
 return( ymin );
 }
@@ -1476,17 +1476,17 @@ static void DoSpaces(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
       break;
       case 0x2007:
 	tempsc = findchar(sf,'0');
-	if ( tempsc!=NULL && tempsc->splines==NULL && tempsc->refs==NULL ) tempsc = NULL;
+	if ( tempsc!=NULL && tempsc->layers[ly_fore].splines==NULL && tempsc->refs==NULL ) tempsc = NULL;
 	if ( tempsc==NULL ) width = em/2; else width = tempsc->width;
       break;
       case 0x2008:
 	tempsc = findchar(sf,'.');
-	if ( tempsc!=NULL && tempsc->splines==NULL && tempsc->refs==NULL ) tempsc = NULL;
+	if ( tempsc!=NULL && tempsc->layers[ly_fore].splines==NULL && tempsc->refs==NULL ) tempsc = NULL;
 	if ( tempsc==NULL ) width = em/4; else width = tempsc->width;
       break;
       case ' ':
 	tempsc = findchar(sf,'I');
-	if ( tempsc!=NULL && tempsc->splines==NULL && tempsc->refs==NULL ) tempsc = NULL;
+	if ( tempsc!=NULL && tempsc->layers[ly_fore].splines==NULL && tempsc->refs==NULL ) tempsc = NULL;
 	if ( tempsc==NULL ) width = em/4; else width = tempsc->width;
       break;
       default:
@@ -1552,12 +1552,12 @@ static void DoRules(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
       break;
       case 0x2010: case 0x2011:
 	tempsc = findchar(sf,'-');
-	if ( tempsc!=NULL && tempsc->splines==NULL && tempsc->refs==NULL ) tempsc = NULL;
+	if ( tempsc!=NULL && tempsc->layers[ly_fore].splines==NULL && tempsc->refs==NULL ) tempsc = NULL;
 	if ( tempsc==NULL ) width = (4*em)/10; else width = tempsc->width;
       break;
       case 0x2012:
 	tempsc = findchar(sf,'0');
-	if ( tempsc!=NULL && tempsc->splines==NULL && tempsc->refs==NULL ) tempsc = NULL;
+	if ( tempsc!=NULL && tempsc->layers[ly_fore].splines==NULL && tempsc->refs==NULL ) tempsc = NULL;
 	if ( tempsc==NULL ) width = em/2; else width = tempsc->width;
       break;
       case 0x2013:
@@ -1575,7 +1575,7 @@ static void DoRules(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
     }
 
     tempsc = findchar(sf,'-');
-    if ( tempsc==NULL || (tempsc->splines==NULL && tempsc->refs==NULL )) {
+    if ( tempsc==NULL || (tempsc->layers[ly_fore].splines==NULL && tempsc->refs==NULL )) {
 	height = em/10;
 	lbearing = rbearing = em/10;
 	if ( lbearing+rbearing>2*width/3 )
@@ -1593,8 +1593,8 @@ static void DoRules(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
     sp = MakeSP(width-rbearing,ypos+height,sp,sf->order2);
     sp = MakeSP(width-rbearing,ypos,sp,sf->order2);
     SplineMake(sp,first,sf->order2);
-    sc->splines = chunkalloc(sizeof(SplinePointList));
-    sc->splines->first = sc->splines->last = first;
+    sc->layers[ly_fore].splines = chunkalloc(sizeof(SplinePointList));
+    sc->layers[ly_fore].splines->first = sc->layers[ly_fore].splines->last = first;
     sc->width = width;
     sc->widthset = true;
 
@@ -1687,16 +1687,16 @@ return;
     transform[1] = -1; transform[2] = 1;
     transform[4] = scbase->parent->descent; transform[5] = scbase->parent->vertical_origin;
 
-    sc->splines = SplinePointListTransform(SplinePointListCopy(scbase->splines),
+    sc->layers[ly_fore].splines = SplinePointListTransform(SplinePointListCopy(scbase->layers[ly_fore].splines),
 	    transform, true );
-    if ( sc->splines==NULL ) last = NULL;
-    else for ( last = sc->splines; last->next!=NULL; last = last->next );
+    if ( sc->layers[ly_fore].splines==NULL ) last = NULL;
+    else for ( last = sc->layers[ly_fore].splines; last->next!=NULL; last = last->next );
 
     for ( ref = scbase->refs; ref!=NULL; ref=ref->next ) {
-	temp = SplinePointListTransform(SplinePointListCopy(ref->splines),
+	temp = SplinePointListTransform(SplinePointListCopy(ref->layers[0].splines),
 	    transform, true );
 	if ( last==NULL )
-	    sc->splines = temp;
+	    sc->layers[ly_fore].splines = temp;
 	else
 	    last->next = temp;
 	if ( temp!=NULL )
@@ -1828,12 +1828,12 @@ return( 0 );
 return( 0 );
     sc = SFGetChar(sf,dotless->unicodeenc==0xf6be?'j':'i',NULL);
     xsc = SFGetChar(sf,'x',NULL);
-    if ( sc==NULL || sc->splines==NULL || sc->refs!=NULL || xsc==NULL )
+    if ( sc==NULL || sc->layers[ly_fore].splines==NULL || sc->refs!=NULL || xsc==NULL )
 return( 0 );
     QuickBlues(sf,&bd);
     if ( bd.xheight==0 )
 return( 0 );
-    for ( test=sc->splines; test!=NULL; test=test->next ) {
+    for ( test=sc->layers[ly_fore].splines; test!=NULL; test=test->next ) {
 	next = test->next; test->next = NULL;
 	SplineSetQuickBounds(test,&b);
 	test->next = next;
@@ -1852,11 +1852,11 @@ return( true );
 return( 0 );
 
     SCPreserveState(dotless,true);
-    SplinePointListsFree(dotless->splines);
-    dotless->splines = NULL;
+    SplinePointListsFree(dotless->layers[ly_fore].splines);
+    dotless->layers[ly_fore].splines = NULL;
     SCRemoveDependents(dotless);
     dotless->width = sc->width;
-    dotless->splines = head;
+    dotless->layers[ly_fore].splines = head;
     SCCharChangedUpdate(dotless);
     for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
 	if (( bc = bdf->chars[sc->enc])!=NULL ) {
@@ -1877,8 +1877,8 @@ void SCBuildComposit(SplineFont *sf, SplineChar *sc, int copybmp,FontView *fv) {
     if ( !SFIsSomethingBuildable(sf,sc,false))
 return;
     SCPreserveState(sc,true);
-    SplinePointListsFree(sc->splines);
-    sc->splines = NULL;
+    SplinePointListsFree(sc->layers[ly_fore].splines);
+    sc->layers[ly_fore].splines = NULL;
     SCRemoveDependents(sc);
     sc->width = 0;
 

@@ -221,17 +221,17 @@ static void svg_scpathdump(FILE *file, SplineChar *sc) {
     RefChar *ref;
     int lineout, any;
 
-    any = sc->splines!=NULL;
+    any = sc->layers[ly_fore].splines!=NULL;
     for ( ref=sc->refs ; ref!=NULL && !any; ref = ref->next )
-	any = ref->splines!=NULL;
+	any = ref->layers[0].splines!=NULL;
     if ( !any ) {
 	/* I think a space is represented by leaving out the d (path) entirely*/
 	/*  rather than having d="" */
     } else {
 	fprintf( file,"d=\"");
-	lineout = svg_pathdump(file,sc->splines,3);
+	lineout = svg_pathdump(file,sc->layers[ly_fore].splines,3);
 	for ( ref= sc->refs; ref!=NULL; ref=ref->next )
-	    lineout = svg_pathdump(file,ref->splines,lineout);
+	    lineout = svg_pathdump(file,ref->layers[0].splines,lineout);
 	if ( lineout>=255-4 ) putc('\n',file );
 	putc('"',file);
     }
@@ -1672,10 +1672,10 @@ static void SVGParseGlyphBody(SplineChar *sc, xmlNodePtr glyph) {
 
     path = _xmlGetProp(glyph,(xmlChar *) "d");
     if ( path!=NULL ) {
-	sc->splines = SVGParsePath(path);
+	sc->layers[ly_fore].splines = SVGParsePath(path);
 	_xmlFree(path);
     } else
-	sc->splines = SVGParseSVG(glyph,sc->parent->ascent+sc->parent->descent,
+	sc->layers[ly_fore].splines = SVGParseSVG(glyph,sc->parent->ascent+sc->parent->descent,
 		sc->parent->ascent);
 }
 
@@ -2206,7 +2206,7 @@ static int SFFindOrder(SplineFont *sf) {
     int i, ret;
 
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	ret = SPLFindOrder(sf->chars[i]->splines);
+	ret = SPLFindOrder(sf->chars[i]->layers[ly_fore].splines);
 	if ( ret!=-1 )
 return( ret );
     }
@@ -2263,7 +2263,7 @@ static void SFSetOrder(SplineFont *sf,int order2) {
     int i;
 
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	SPLSetOrder(sf->chars[i]->splines,order2);
+	SPLSetOrder(sf->chars[i]->layers[ly_fore].splines,order2);
     }
 }
 

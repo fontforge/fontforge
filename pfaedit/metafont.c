@@ -214,13 +214,13 @@ void SCCopyFgToBg(SplineChar *sc, int show) {
     SplinePointList *fore, *end;
 
     SCPreserveBackground(sc);
-    fore = SplinePointListCopy(sc->splines);
+    fore = SplinePointListCopy(sc->layers[ly_fore].splines);
     if ( fore!=NULL ) {
-	SplinePointListFree(sc->backgroundsplines);
-	sc->backgroundsplines = NULL;
+	SplinePointListFree(sc->layers[ly_back].splines);
+	sc->layers[ly_back].splines = NULL;
 	for ( end = fore; end->next!=NULL; end = end->next );
-	end->next = sc->backgroundsplines;
-	sc->backgroundsplines = fore;
+	end->next = sc->layers[ly_back].splines;
+	sc->layers[ly_back].splines = fore;
 	if ( show )
 	    SCCharChangedUpdate(sc);
     }
@@ -243,24 +243,24 @@ static SCI *SCIinit(SplineChar *sc,MetaFontDlg *meta) {
 
     SCPreserveState(sc,true);
 
-    SplinePointListSimplify(sc,sc->splines,&smpl);		/* Get rid of two points at the same location, they cause us problems */
+    SplinePointListSimplify(sc,sc->layers[ly_fore].splines,&smpl);		/* Get rid of two points at the same location, they cause us problems */
     if ( sc->manualhints || sc->changedsincelasthinted )
 	SplineCharAutoHint(sc,true);
 
     SCCopyFgToBg(sc,false);
 
-    for ( prev=NULL, ss=sc->splines; ss!=NULL; ss = ssnext ) {
+    for ( prev=NULL, ss=sc->layers[ly_fore].splines; ss!=NULL; ss = ssnext ) {
 	ssnext = ss->next;
 	if ( ss->first->next==NULL ) {	/* Single point */
 	    if ( prev==NULL )
-		sc->splines = ssnext;
+		sc->layers[ly_fore].splines = ssnext;
 	    else
 		prev->next = ssnext;
 	    SplinePointListFree(ss);
 	} else
 	    prev = ss;
     }
-    for ( ss = sc->splines; ss!=NULL; ss=ss->next ) {
+    for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
 	if ( ss->first->prev==NULL ) {
 	    /* It's not a loop, Close it! */
 	    SplineMake3( ss->last,ss->first );
@@ -268,7 +268,7 @@ static SCI *SCIinit(SplineChar *sc,MetaFontDlg *meta) {
 	}
     }
 
-    for ( ss = sc->splines, cnt=0; ss!=NULL; ss=ss->next ) {
+    for ( ss = sc->layers[ly_fore].splines, cnt=0; ss!=NULL; ss=ss->next ) {
 	for ( sp=ss->first; ; ) {
 	    sp->ptindex = cnt++;
 	    sp = sp->next->to;		/* only closed paths, so no NULL splines */
@@ -282,7 +282,7 @@ static SCI *SCIinit(SplineChar *sc,MetaFontDlg *meta) {
     sci->meta = meta;
     sci->ptcnt = cnt;
     sci->pts = gcalloc(cnt,sizeof(PointInfo));
-    for ( ss = sc->splines, cnt=0; ss!=NULL; ss=ss->next ) {
+    for ( ss = sc->layers[ly_fore].splines, cnt=0; ss!=NULL; ss=ss->next ) {
 	for ( sp=ss->first; ; ) {
 	    sci->pts[cnt++].cur = sp;
 	    sp = sp->next->to;
@@ -639,7 +639,7 @@ static void SplineFindOtherEdge(SCI *sci,Spline *spline) {
     /*  if we repeat this process we won't find anything better */
 
     right = left = NULL; rlen = llen = 0x7fffffff; bcnt = 0;
-    for ( ss = sci->sc->splines; ss!=NULL; ss=ss->next ) {
+    for ( ss = sci->sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
 	first = NULL;
 	for ( test = ss->first->next; test!=first; test = test->to->next ) {
 	  if ( first==NULL ) first = test;

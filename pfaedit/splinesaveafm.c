@@ -710,14 +710,14 @@ return( matched );
 
 int SCIsNotdef(SplineChar *sc,int fixed) {
 return( sc!=NULL && sc->enc==0 && sc->refs==NULL && strcmp(sc->name,".notdef")==0 &&
-	(sc->splines!=NULL || (sc->widthset && fixed==-1) ||
+	(sc->layers[ly_fore].splines!=NULL || (sc->widthset && fixed==-1) ||
 	 (sc->width!=sc->parent->ascent+sc->parent->descent && fixed==-1 ) ||
 	 (sc->width==fixed && fixed!=-1 && sc->widthset)));
 }
 
 int SCWorthOutputting(SplineChar *sc) {
 return( sc!=NULL &&
-	( sc->splines!=NULL || sc->refs!=NULL || sc->widthset || sc->anchor!=NULL ||
+	( sc->layers[ly_fore].splines!=NULL || sc->refs!=NULL || sc->widthset || sc->anchor!=NULL ||
 #if HANYANG
 	    sc->compositionunit ||
 #endif
@@ -726,7 +726,7 @@ return( sc!=NULL &&
 	( strcmp(sc->name,".notdef")!=0 || sc->enc==0) &&
 	( (strcmp(sc->name,".null")!=0 && strcmp(sc->name,"glyph1")!=0 &&
 	   strcmp(sc->name,"nonmarkingreturn")!=0 && strcmp(sc->name,"glyph2")!=0) ||
-	  sc->splines!=NULL || sc->dependents!=NULL || sc->refs!=NULL ) );
+	  sc->layers[ly_fore].splines!=NULL || sc->dependents!=NULL || sc->refs!=NULL ) );
 }
 
 int CIDWorthOutputting(SplineFont *cidmaster, int enc) {

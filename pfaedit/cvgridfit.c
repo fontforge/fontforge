@@ -60,7 +60,7 @@ return;
 	    cv->ft_pointsize, cv->ft_dpi );
     cv->gridfit = FreeType_GridFitChar(single_glyph_context,cv->sc->enc,
 	    cv->ft_pointsize, cv->ft_dpi, &cv->ft_gridfitwidth,
-	    cv->sc->splines );
+	    cv->sc->layers[ly_fore].splines );
 
 
     FreeTypeFreeContext(single_glyph_context);

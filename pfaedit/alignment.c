@@ -78,7 +78,7 @@ static void SpaceMany(CharView *cv,DBounds *b, int dir, int region_size, int cnt
 
     regions = galloc(cnt*sizeof(struct region));
     rcnt = 0;
-    for ( spl= *cv->heads[cv->drawmode]; spl!=NULL; spl=spl->next ) {
+    for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
 	sp=spl->first;
 	while ( 1 ) {
 	    if ( sp->selected ) {
@@ -133,7 +133,7 @@ return;
     regions[rcnt-1].offset = 0;
 
     CVPreserveState(cv);
-    for ( spl= *cv->heads[cv->drawmode]; spl!=NULL; spl=spl->next ) {
+    for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
 	sp=spl->first;
 	while ( 1 ) {
 	    if ( sp->selected ) {
@@ -223,7 +223,7 @@ static void AverageMany(CharView *cv,DBounds *b) {
     if ( yoff<xoff ) {
 	/* average y */
 	ypos = rint( (b->maxy+b->miny)/2 );
-	for ( spl= *cv->heads[cv->drawmode]; spl!=NULL; spl=spl->next ) {
+	for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
 	    sp=spl->first;
 	    while ( 1 ) {
 		if ( sp->selected ) {
@@ -243,7 +243,7 @@ static void AverageMany(CharView *cv,DBounds *b) {
     } else if ( xoff<yoff/2 ) {
 	/* constrain x */
 	xpos = rint( (b->maxx+b->minx)/2 );
-	for ( spl= *cv->heads[cv->drawmode]; spl!=NULL; spl=spl->next ) {
+	for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
 	    sp=spl->first;
 	    while ( 1 ) {
 		if ( sp->selected ) {
@@ -426,7 +426,7 @@ void CVConstrainSelection(CharView *cv,int type) {
     SplineSet *spl;
     int cnt=0;
 
-    for ( spl= *cv->heads[cv->drawmode]; spl!=NULL; spl=spl->next ) {
+    for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
 	sp=spl->first;
 	while ( 1 ) {
 	    if ( sp->selected ) {
@@ -579,7 +579,7 @@ void CVMakeParallel(CharView *cv) {
     SplineSet *ss;
     SplinePoint *sp;
 
-    for ( ss = *cv->heads[cv->drawmode]; ss!=NULL; ss=ss->next ) {
+    for ( ss = cv->layerheads[cv->drawmode]->splines; ss!=NULL; ss=ss->next ) {
 	for ( sp=ss->first; ; ) {
 	    if ( sp->selected ) {
 		if ( cnt>=4 )

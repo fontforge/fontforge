@@ -188,7 +188,7 @@ return;
 	    SCPreserveState(p->sc,false);
 	    SCRefToSplines(p->sc,r);
 	    changed = false;
-	    p->sc->splines = SplineSetsCorrect(p->sc->splines,&changed);
+	    p->sc->layers[ly_fore].splines = SplineSetsCorrect(p->sc->layers[ly_fore].splines,&changed);
 	    if ( changed )
 		SCCharChangedUpdate(p->sc);
 	} else
@@ -202,7 +202,7 @@ return;
 return;
     }
 
-    for ( spl=p->sc->splines; spl!=NULL; spl=spl->next ) {
+    for ( spl=p->sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next ) {
 	for ( sp = spl->first; ; ) {
 	    if ( sp->selected )
 	break;
@@ -520,7 +520,7 @@ return;
     if ( p->cv!=NULL ) {
 	CVClearSel(p->cv);
     } else {
-	for ( spl = p->sc->splines; spl!=NULL; spl = spl->next ) {
+	for ( spl = p->sc->layers[ly_fore].splines; spl!=NULL; spl = spl->next ) {
 	    spl->first->selected = false;
 	    first = NULL;
 	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
@@ -547,9 +547,9 @@ static int missing(struct problems *p,SplineSet *test, SplinePoint *sp) {
 return( false );
 
     if ( p->cv!=NULL )
-	spl = *p->cv->heads[p->cv->drawmode];
+	spl = p->cv->layerheads[p->cv->drawmode]->splines;
     else
-	spl = p->sc->splines;
+	spl = p->sc->layers[ly_fore].splines;
     for ( check = spl; check!=test && check!=NULL; check = check->next );
     if ( check==NULL )
 return( true );		/* Deleted splineset */
@@ -574,9 +574,9 @@ static int missingspline(struct problems *p,SplineSet *test, Spline *spline) {
 return( false );
 
     if ( p->cv!=NULL )
-	spl = *p->cv->heads[p->cv->drawmode];
+	spl = p->cv->layerheads[p->cv->drawmode]->splines;
     else
-	spl = p->sc->splines;
+	spl = p->sc->layers[ly_fore].splines;
     for ( check = spl; check!=test && check!=NULL; check = check->next );
     if ( check==NULL )
 return( true );		/* Deleted splineset */
@@ -840,10 +840,10 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
   restart:
     if ( cv!=NULL ) {
 	needsupdate = CVClearSel(cv);
-	spl = *cv->heads[cv->drawmode];
+	spl = cv->layerheads[cv->drawmode]->splines;
 	sc = cv->sc;
     } else {
-	for ( spl = sc->splines; spl!=NULL; spl = spl->next ) {
+	for ( spl = sc->layers[ly_fore].splines; spl!=NULL; spl = spl->next ) {
 	    if ( spl->first->selected ) { needsupdate = true; spl->first->selected = false; }
 	    first = NULL;
 	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
@@ -852,7 +852,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		if ( first==NULL ) first = spline;
 	    }
 	}
-	spl = sc->splines;
+	spl = sc->layers[ly_fore].splines;
     }
     p->sc = sc;
     if (( p->ptnearhint || p->hintwidthnearval || p->hintwithnopt ) &&
@@ -1301,9 +1301,9 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	SplineSet **base, *ret;
 	int lastscan= -1;
 	if ( cv!=NULL )
-	    base = cv->heads[cv->drawmode];
+	    base = &cv->layerheads[cv->drawmode]->splines;
 	else
-	    base = &sc->splines;
+	    base = &sc->layers[ly_fore].splines;
 	while ( !p->finish && (ret=SplineSetsDetectDir(base,&lastscan))!=NULL ) {
 	    sp = ret->first;
 	    changed = true;
@@ -1358,9 +1358,9 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     if ( p->toomanypoints && !p->finish ) {
 	int cnt=0;
 	RefChar *r;
-	cnt = SPLPointCnt(sc->splines);
+	cnt = SPLPointCnt(sc->layers[ly_fore].splines);
 	for ( r=sc->refs; r!=NULL ; r=r->next )
-	    cnt += SPLPointCnt(r->splines);
+	    cnt += SPLPointCnt(r->layers[0].splines);
 	if ( cnt>p->pointsmax ) {
 	    changed = true;
 	    ExplainIt(p,sc,_STR_ProbTooManyPoints,cnt,p->pointsmax);

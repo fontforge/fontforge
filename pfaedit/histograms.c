@@ -67,7 +67,7 @@ static HistData *HistFindBlues(SplineFont *sf,uint8 *selected) {
     low = -sf->descent; high = sf->ascent;
 
     for ( i=0; i<sf->charcnt; ++i ) {
-	if ( (sc = sf->chars[i])!=NULL && sc->splines!=NULL && sc->refs==NULL &&
+	if ( (sc = sf->chars[i])!=NULL && sc->layers[ly_fore].splines!=NULL && sc->refs==NULL &&
 		(selected==NULL || selected[i])) {
 	    SplineCharFindBounds(sc,&b);
 	    bottom = rint(b.miny);
@@ -139,7 +139,7 @@ static HistData *HistFindStemWidths(SplineFont *sf,uint8 *selected,int hor) {
     low = 0; high = sf->ascent+sf->descent;
 
     for ( i=0; i<sf->charcnt; ++i ) {
-	if ( (sc = sf->chars[i])!=NULL && sc->splines!=NULL && sc->refs==NULL &&
+	if ( (sc = sf->chars[i])!=NULL && sc->layers[ly_fore].splines!=NULL && sc->refs==NULL &&
 		(selected==NULL || selected[i])) {
 	    if ( autohint_before_generate && sc->changedsincelasthinted && !sc->manualhints )
 		SplineCharAutoHint(sc,true);

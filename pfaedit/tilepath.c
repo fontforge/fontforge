@@ -843,7 +843,7 @@ return;
 
     tile = SplinePointListCopy(tile);
     CVPreserveState(cv);
-    TileIt(cv->heads[cv->drawmode],tile, tilepos,tilescale, !anypoints,cv->sc->parent->order2);
+    TileIt(&cv->layerheads[cv->drawmode]->splines,tile, tilepos,tilescale, !anypoints,cv->sc->parent->order2);
     CVCharChangedUpdate(cv);
     SplinePointListsFree(tile);
     cv->lastselpt = NULL;
@@ -855,7 +855,7 @@ void SCTile(SplineChar *sc) {
     if ( tile==NULL )
 return;
 
-    if ( sc->splines==NULL )
+    if ( sc->layers[ly_fore].splines==NULL )
 return;
 
     if ( !TileAsk())
@@ -863,7 +863,7 @@ return;
 
     tile = SplinePointListCopy(tile);
     SCPreserveState(sc,false);
-    TileIt(&sc->splines,tile, tilepos,tilescale, true, sc->parent->order2);
+    TileIt(&sc->layers[ly_fore].splines,tile, tilepos,tilescale, true, sc->parent->order2);
     SCCharChangedUpdate(sc);
     SplinePointListsFree(tile);
 }
@@ -877,7 +877,7 @@ void FVTile(FontView *fv) {
 return;
 
     for ( i=0; i<fv->sf->charcnt; ++i )
-	if ( fv->selected[i] && (sc=fv->sf->chars[i])!=NULL && sc->splines!=NULL )
+	if ( fv->selected[i] && (sc=fv->sf->chars[i])!=NULL && sc->layers[ly_fore].splines!=NULL )
     break;
     if ( i==fv->sf->charcnt )
 return;
@@ -887,9 +887,9 @@ return;
 
     tile = SplinePointListCopy(tile);
     for ( i=0; i<fv->sf->charcnt; ++i )
-	if ( fv->selected[i] && (sc=fv->sf->chars[i])!=NULL && sc->splines!=NULL ) {
+	if ( fv->selected[i] && (sc=fv->sf->chars[i])!=NULL && sc->layers[ly_fore].splines!=NULL ) {
 	    SCPreserveState(sc,false);
-	    TileIt(&sc->splines,tile, tilepos,tilescale, true, fv->sf->order2);
+	    TileIt(&sc->layers[ly_fore].splines,tile, tilepos,tilescale, true, fv->sf->order2);
 	    SCCharChangedUpdate(sc);
 	}
     SplinePointListsFree(tile);

@@ -1915,7 +1915,7 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
 
     for ( i=d->sf->charcnt-1; i>=1; --i )
 	if ( d->sf->chars[i]!=NULL && strcmp(d->sf->chars[i]->name,".notdef")==0 &&
-		(d->sf->chars[i]->splines!=NULL || d->sf->chars[i]->refs!=NULL))
+		(d->sf->chars[i]->layers[ly_fore].splines!=NULL || d->sf->chars[i]->refs!=NULL))
     break;
     if ( i!=0 ) {
 	if ( GWidgetAskR(_STR_NotdefName,buts,0,1,_STR_NotdefChar,i)==1 )

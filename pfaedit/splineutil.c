@@ -305,7 +305,7 @@ void RefCharFree(RefChar *ref) {
 
     if ( ref==NULL )
 return;
-    SplinePointListsFree(ref->splines);
+    SplinePointListsFree(ref->layers[0].splines);
     chunkfree(ref,sizeof(RefChar));
 }
 
@@ -608,9 +608,9 @@ void SplineCharFindBounds(SplineChar *sc,DBounds *bounds) {
     bounds->miny = bounds->maxy = 0;
 
     for ( rf=sc->refs; rf!=NULL; rf = rf->next )
-	_SplineSetFindBounds(rf->splines,bounds);
+	_SplineSetFindBounds(rf->layers[0].splines,bounds);
 
-    _SplineSetFindBounds(sc->splines,bounds);
+    _SplineSetFindBounds(sc->layers[ly_fore].splines,bounds);
 }
 
 void SplineFontFindBounds(SplineFont *sf,DBounds *bounds) {
@@ -624,9 +624,9 @@ void SplineFontFindBounds(SplineFont *sf,DBounds *bounds) {
 	SplineChar *sc = sf->chars[i];
 	if ( sc!=NULL ) {
 	    for ( rf=sc->refs; rf!=NULL; rf = rf->next )
-		_SplineSetFindBounds(rf->splines,bounds);
+		_SplineSetFindBounds(rf->layers[0].splines,bounds);
 
-	    _SplineSetFindBounds(sc->splines,bounds);
+	    _SplineSetFindBounds(sc->layers[ly_fore].splines,bounds);
 	}
     }
 }
@@ -697,9 +697,9 @@ void SplineSetQuickBounds(SplineSet *ss,DBounds *b) {
 void SplineCharQuickBounds(SplineChar *sc, DBounds *b) {
     RefChar *ref;
 
-    SplineSetQuickBounds(sc->splines,b);
+    SplineSetQuickBounds(sc->layers[ly_fore].splines,b);
     for ( ref = sc->refs; ref!=NULL; ref = ref->next ) {
-	/*SplineSetQuickBounds(ref->splines,&temp);*/
+	/*SplineSetQuickBounds(ref->layers[0].splines,&temp);*/
 	if ( b->minx==0 && b->maxx==0 && b->miny==0 && b->maxy == 0 )
 	    *b = ref->bb;
 	else if ( ref->bb.minx!=0 || ref->bb.maxx != 0 || ref->bb.maxy != 0 || ref->bb.miny!=0 ) {
@@ -746,9 +746,9 @@ void SplineSetQuickConservativeBounds(SplineSet *ss,DBounds *b) {
 void SplineCharQuickConservativeBounds(SplineChar *sc, DBounds *b) {
     RefChar *ref;
 
-    SplineSetQuickConservativeBounds(sc->splines,b);
+    SplineSetQuickConservativeBounds(sc->layers[ly_fore].splines,b);
     for ( ref = sc->refs; ref!=NULL; ref = ref->next ) {
-	/*SplineSetQuickConservativeBounds(ref->splines,&temp);*/
+	/*SplineSetQuickConservativeBounds(ref->layers[0].splines,&temp);*/
 	if ( b->minx==0 && b->maxx==0 && b->miny==0 && b->maxy == 0 )
 	    *b = ref->bb;
 	else if ( ref->bb.minx!=0 || ref->bb.maxx != 0 || ref->bb.maxy != 0 || ref->bb.miny!=0 ) {
@@ -857,7 +857,7 @@ void SPLCatagorizePoints(SplinePointList *spl) {
 }
 
 void SCCatagorizePoints(SplineChar *sc) {
-    SPLCatagorizePoints(sc->splines);
+    SPLCatagorizePoints(sc->layers[ly_fore].splines);
 }
 
 static int CharsNotInEncoding(FontDict *fd) {
@@ -1311,11 +1311,11 @@ return;
     }
     rsc->ticked = false;
 
-    new = SplinePointListTransform(SplinePointListCopy(rsc->splines),transform,true);
+    new = SplinePointListTransform(SplinePointListCopy(rsc->layers[ly_fore].splines),transform,true);
     if ( new!=NULL ) {
 	for ( spl = new; spl->next!=NULL; spl = spl->next );
-	spl->next = topref->splines;
-	topref->splines = new;
+	spl->next = topref->layers[0].splines;
+	topref->layers[0].splines = new;
     }
 }
 
@@ -1476,7 +1476,7 @@ SplineChar *MakeDupRef(SplineChar *base, int local_enc, int uni_enc) {
     sc->parent = base->parent;
 
     /* Used not to bother for spaces, but SCDuplicate depends on the ref */
-    /*if ( dup->sc->refs!=NULL || dup->sc->splines!=NULL )*/ {
+    /*if ( dup->sc->refs!=NULL || dup->sc->layers[ly_fore].splines!=NULL )*/ {
 	RefChar *ref = chunkalloc(sizeof(RefChar));
 	sc->refs = ref;
 	ref->sc = base;
@@ -1524,7 +1524,7 @@ return;		/* It's just the expected matrix */
     trans[5] = rint(fontmatrix[5]*em);
 
     for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
-	SplinePointListTransform(sc->splines,trans,true);
+	SplinePointListTransform(sc->layers[ly_fore].splines,trans,true);
 	for ( refs=sc->refs; refs!=NULL; refs=refs->next ) {
 	    /* Just scale the offsets. we'll do all the base characters */
 	    double temp = refs->transform[4]*trans[0] +
@@ -1628,7 +1628,7 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext *
 	sf->chars[i]->ticked = true;
 	InstanciateReference(sf, refs, refs, refs->transform,sf->chars[i]);
 	if ( refs->sc!=NULL ) {
-	    SplineSetFindBounds(refs->splines,&refs->bb);
+	    SplineSetFindBounds(refs->layers[0].splines,&refs->bb);
 	    sf->chars[i]->ticked = false;
 	    pr = refs;
 	} else {
@@ -1655,7 +1655,7 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext *
     }
     for ( i=0; i<sf->charcnt; ++i ) for ( refs = sf->chars[i]->refs; refs!=NULL; refs=next ) {
 	next = refs->next;
-	if ( refs->adobe_enc==' ' && refs->splines==NULL ) {
+	if ( refs->adobe_enc==' ' && refs->layers[0].splines==NULL ) {
 	    /* When I have a link to a single character I will save out a */
 	    /*  seac to that character and a space (since I can only make */
 	    /*  real char links), so if we find a space link, get rid of*/
@@ -1977,26 +1977,26 @@ void SCReinstanciateRefChar(SplineChar *sc,RefChar *rf) {
     SplinePointList *spl, *new;
     RefChar *refs;
 
-    SplinePointListsFree(rf->splines);
-    rf->splines = NULL;
+    SplinePointListsFree(rf->layers[0].splines);
+    rf->layers[0].splines = NULL;
     if ( rf->sc==NULL )
 return;
-    new = SplinePointListTransform(SplinePointListCopy(rf->sc->splines),rf->transform,true);
+    new = SplinePointListTransform(SplinePointListCopy(rf->sc->layers[ly_fore].splines),rf->transform,true);
     if ( new!=NULL ) {
 	for ( spl = new; spl->next!=NULL; spl = spl->next );
-	spl->next = rf->splines;
-	rf->splines = new;
+	spl->next = rf->layers[0].splines;
+	rf->layers[0].splines = new;
     }
     for ( refs = rf->sc->refs; refs!=NULL; refs = refs->next ) {
-	new = SplinePointListTransform(SplinePointListCopy(refs->splines),rf->transform,true);
+	new = SplinePointListTransform(SplinePointListCopy(refs->layers[0].splines),rf->transform,true);
 	if ( new!=NULL ) {
 	    for ( spl = new; spl->next!=NULL; spl = spl->next );
-	    spl->next = rf->splines;
-	    rf->splines = new;
+	    spl->next = rf->layers[0].splines;
+	    rf->layers[0].splines = new;
 	}
     }
-    SplineSetFindBounds(rf->splines,&rf->bb);
-    SplineSetFindTop(rf->splines,&rf->top);
+    SplineSetFindBounds(rf->layers[0].splines,&rf->bb);
+    SplineSetFindTop(rf->layers[0].splines,&rf->top);
 }
 
 void SCReinstanciateRef(SplineChar *sc,SplineChar *rsc) {
@@ -2049,12 +2049,12 @@ void SCRemoveDependents(SplineChar *dependent) {
 void SCRefToSplines(SplineChar *sc,RefChar *rf) {
     SplineSet *spl;
 
-    if ( (spl = rf->splines)!=NULL ) {
+    if ( (spl = rf->layers[0].splines)!=NULL ) {
 	while ( spl->next!=NULL )
 	    spl = spl->next;
-	spl->next = sc->splines;
-	sc->splines = rf->splines;
-	rf->splines = NULL;
+	spl->next = sc->layers[ly_fore].splines;
+	sc->layers[ly_fore].splines = rf->layers[0].splines;
+	rf->layers[0].splines = NULL;
     }
     SCRemoveDependent(sc,rf);
 }
@@ -3308,11 +3308,11 @@ static void SCRemoveAnchorClass(SplineChar *sc,AnchorClass *an) {
     if ( sc==NULL )
 return;
     sc->anchor = AnchorPointsRemoveName(sc->anchor,an);
-    for ( test = sc->undoes[0]; test!=NULL; test=test->next )
+    for ( test = sc->layers[ly_fore].undoes; test!=NULL; test=test->next )
 	if ( test->undotype==ut_state || test->undotype==ut_tstate ||
 		test->undotype==ut_statehint || test->undotype==ut_statename )
 	    test->u.state.anchor = AnchorPointsRemoveName(test->u.state.anchor,an);
-    for ( test = sc->redoes[0]; test!=NULL; test=test->next )
+    for ( test = sc->layers[ly_fore].redoes; test!=NULL; test=test->next )
 	if ( test->undotype==ut_state || test->undotype==ut_tstate ||
 		test->undotype==ut_statehint || test->undotype==ut_statename )
 	    test->u.state.anchor = AnchorPointsRemoveName(test->u.state.anchor,an);
@@ -3448,6 +3448,7 @@ SplineChar *SplineCharCreate(void) {
     sc->color = COLOR_DEFAULT;
     sc->orig_pos = 0xffff;
     sc->unicodeenc = -1;
+    sc->layer_cnt = 2;
 return( sc );
 }
 
@@ -3464,8 +3465,8 @@ void SplineCharFreeContents(SplineChar *sc) {
     if ( sc==NULL )
 return;
     free(sc->name);
-    SplinePointListsFree(sc->splines);
-    SplinePointListsFree(sc->backgroundsplines);
+    SplinePointListsFree(sc->layers[ly_fore].splines);
+    SplinePointListsFree(sc->layers[ly_back].splines);
     RefCharsFree(sc->refs);
     ImageListsFree(sc->backimages);
     /* image garbage collection????!!!! */
@@ -3476,8 +3477,8 @@ return;
     KernPairsFree(sc->kerns);
     KernPairsFree(sc->vkerns);
     AnchorPointsFree(sc->anchor);
-    UndoesFree(sc->undoes[0]); UndoesFree(sc->undoes[1]);
-    UndoesFree(sc->redoes[0]); UndoesFree(sc->redoes[1]);
+    UndoesFree(sc->layers[ly_fore].undoes); UndoesFree(sc->layers[ly_back].undoes);
+    UndoesFree(sc->layers[ly_fore].redoes); UndoesFree(sc->layers[ly_back].redoes);
     SplineCharListsFree(sc->dependents);
     PSTFree(sc->possub);
     free(sc->ttf_instrs);
@@ -3664,12 +3665,12 @@ return;
     free(sf->xuid);
     free(sf->cidregistry);
     free(sf->ordering);
-    SplinePointListsFree(sf->gridsplines);
+    SplinePointListsFree(sf->grid.splines);
     AnchorClassesFree(sf->anchor);
     TableOrdersFree(sf->orders);
     TtfTablesFree(sf->ttf_tables);
-    UndoesFree(sf->gundoes);
-    UndoesFree(sf->gredoes);
+    UndoesFree(sf->grid.undoes);
+    UndoesFree(sf->grid.redoes);
     PSDictFree(sf->private);
     TTFLangNamesFree(sf->names);
     for ( i=0; i<sf->subfontcnt; ++i )

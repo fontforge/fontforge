@@ -41,7 +41,7 @@ int CVOneThingSel(CharView *cv, SplinePoint **sp, SplinePointList **_spl,
 
     *sp = NULL; *_spl=NULL; *ref=NULL; *img = NULL;
     if ( ap ) *ap = NULL;
-    for ( spl= *cv->heads[cv->drawmode]; spl!=NULL; spl=spl->next ) {
+    for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
 	if ( spl->first->selected ) {
 	    if ( found!=NULL )
 return( 0 );			/* At least two points */
@@ -107,7 +107,7 @@ int CVOneContourSel(CharView *cv, SplinePointList **_spl,
     ImageList *imgs, *foundimg=NULL;
 
     *_spl=NULL; *ref=NULL; *img = NULL;
-    for ( spl= *cv->heads[cv->drawmode]; spl!=NULL; spl=spl->next ) {
+    for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
 	if ( spl->first->selected ) {
 	    if ( found!=NULL && found!=spl )
 return( 0 );			/* At least two contours */
@@ -161,7 +161,7 @@ SplinePointList *CVAnySelPointList(CharView *cv) {
     SplinePointList *spl, *found=NULL;
     Spline *spline, *first;
 
-    for ( spl= *cv->heads[cv->drawmode]; spl!=NULL; spl=spl->next ) {
+    for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
 	if ( spl->first->selected ) {
 	    if ( found!=NULL )
 return( NULL );			/* At least two points */
@@ -189,7 +189,7 @@ SplinePoint *CVAnySelPoint(CharView *cv) {
     SplinePointList *spl;
     Spline *spline, *first; SplinePoint *found = NULL;
 
-    for ( spl= *cv->heads[cv->drawmode]; spl!=NULL; spl=spl->next ) {
+    for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
 	if ( spl->first->selected ) {
 	    if ( found!=NULL )
 return( NULL );			/* At least two points */
@@ -317,10 +317,10 @@ return;			/* We clicked on the active point, that's a no-op */
 	    if ( sp->prev!=NULL )
 		GDrawIError("Base point not at start of splineset in CVMouseDownPoint");
 	    /* remove the old spl entry from the chain */
-	    if ( cv->p.spl==*cv->heads[cv->drawmode] )
-		*cv->heads[cv->drawmode] = cv->p.spl->next;
+	    if ( cv->p.spl==cv->layerheads[cv->drawmode]->splines )
+		cv->layerheads[cv->drawmode]->splines = cv->p.spl->next;
 	    else { SplineSet *temp;
-		for ( temp = *cv->heads[cv->drawmode]; temp->next!=cv->p.spl; temp = temp->next );
+		for ( temp = cv->layerheads[cv->drawmode]->splines; temp->next!=cv->p.spl; temp = temp->next );
 		temp->next = cv->p.spl->next;
 	    }
 	    SplineMake(base,sp,order2);
@@ -351,8 +351,8 @@ return;			/* We clicked on the active point, that's a no-op */
 	ss = chunkalloc(sizeof(SplineSet));
 	sp = chunkalloc(sizeof(SplinePoint));
 	ss->first = ss->last = sp;
-	ss->next = *cv->heads[cv->drawmode];
-	*cv->heads[cv->drawmode] = ss;
+	ss->next = cv->layerheads[cv->drawmode]->splines;
+	cv->layerheads[cv->drawmode]->splines = ss;
 	sp->me.x = cv->p.cx;
 	sp->me.y = cv->p.cy;
 	sp->nextcp = sp->me;
@@ -430,10 +430,10 @@ void CVMergeSplineSets(CharView *cv, SplinePoint *active, SplineSet *activess,
 	SplinePointMDFree(cv->sc,merge);
     } else {
 	mergess->last = merge;
-	if ( mergess==*cv->heads[cv->drawmode] )
-	    *cv->heads[cv->drawmode] = mergess->next;
+	if ( mergess==cv->layerheads[cv->drawmode]->splines )
+	    cv->layerheads[cv->drawmode]->splines = mergess->next;
 	else {
-	    for ( spl = *cv->heads[cv->drawmode]; spl->next!=mergess; spl=spl->next );
+	    for ( spl = cv->layerheads[cv->drawmode]->splines; spl->next!=mergess; spl=spl->next );
 	    spl->next = mergess->next;
 	}
 	SplinePointListMDFree(cv->sc,mergess);

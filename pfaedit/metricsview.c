@@ -1650,8 +1650,8 @@ static void MVUndo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	break;
 	if ( i==-1 )
 return;
-	if ( mv->perchar[i].sc->undoes[dm_fore]!=NULL )
-	    SCDoUndo(mv->perchar[i].sc,dm_fore);
+	if ( mv->perchar[i].sc->layers[ly_fore].undoes!=NULL )
+	    SCDoUndo(mv->perchar[i].sc,ly_fore);
     }
 }
 
@@ -1667,8 +1667,8 @@ static void MVRedo(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	break;
 	if ( i==-1 )
 return;
-	if ( mv->perchar[i].sc->redoes[dm_fore]!=NULL )
-	    SCDoRedo(mv->perchar[i].sc,dm_fore);
+	if ( mv->perchar[i].sc->layers[ly_fore].redoes!=NULL )
+	    SCDoRedo(mv->perchar[i].sc,ly_fore);
     }
 }
 
@@ -1787,7 +1787,8 @@ return;
     if ( i==-1 )
 return;
     SCPreserveState(mv->perchar[i].sc,false);
-    mv->perchar[i].sc->splines = SplineSetJoin(mv->perchar[i].sc->splines,true,joinsnap,&changed);
+    mv->perchar[i].sc->layers[ly_fore].splines =
+	    SplineSetJoin(mv->perchar[i].sc->layers[ly_fore].splines,true,joinsnap,&changed);
     if ( changed )
 	SCCharChangedUpdate(mv->perchar[i].sc);
 }
@@ -1960,7 +1961,7 @@ static void _MVMenuOverlap(MetricsView *mv,enum overlap_type ot) {
 	SCPreserveState(sc,false);
 	MinimumDistancesFree(sc->md);
 	sc->md = NULL;
-	sc->splines = SplineSetRemoveOverlap(sc,sc->splines,ot);
+	sc->layers[ly_fore].splines = SplineSetRemoveOverlap(sc,sc->layers[ly_fore].splines,ot);
 	SCCharChangedUpdate(sc);
     }
 }
@@ -2013,7 +2014,7 @@ return;
     if ( i!=-1 ) {
 	SplineChar *sc = mv->perchar[i].sc;
 	SCPreserveState(sc,false);
-	sc->splines = SplineCharSimplify(sc,sc->splines,&smpl);
+	sc->layers[ly_fore].splines = SplineCharSimplify(sc,sc->layers[ly_fore].splines,&smpl);
 	SCCharChangedUpdate(sc);
     }
 }
@@ -2043,7 +2044,7 @@ static void MVMenuAddExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( i!=-1 ) {
 	SplineChar *sc = mv->perchar[i].sc;
 	SCPreserveState(sc,false);
-	SplineCharAddExtrema(sc->splines,false);
+	SplineCharAddExtrema(sc->layers[ly_fore].splines,false);
 	SCCharChangedUpdate(sc);
     }
 }
@@ -2119,7 +2120,7 @@ return;
 
 	if ( !refchanged )
 	    SCPreserveState(sc,false);
-	sc->splines = SplineSetsCorrect(sc->splines,&changed);
+	sc->layers[ly_fore].splines = SplineSetsCorrect(sc->layers[ly_fore].splines,&changed);
 	if ( changed || refchanged )
 	    SCCharChangedUpdate(sc);
     }
@@ -2818,10 +2819,10 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = i==-1 || !mv->fv->sf->hasvmetrics;
 	  break;
 	  case MID_Undo:
-	    mi->ti.disabled = i==-1 || mv->perchar[i].sc->undoes[dm_fore]==NULL;
+	    mi->ti.disabled = i==-1 || mv->perchar[i].sc->layers[ly_fore].undoes==NULL;
 	  break;
 	  case MID_Redo:
-	    mi->ti.disabled = i==-1 || mv->perchar[i].sc->redoes[dm_fore]==NULL;
+	    mi->ti.disabled = i==-1 || mv->perchar[i].sc->layers[ly_fore].redoes==NULL;
 	  break;
 	  case MID_UnlinkRef:
 	    mi->ti.disabled = i==-1 || mv->perchar[i].sc->refs==NULL;

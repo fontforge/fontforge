@@ -439,9 +439,9 @@ static void FindEdges(SplineChar *sc, EdgeList *es) {
     RefChar *rf;
 
     for ( rf=sc->refs; rf!=NULL; rf = rf->next )
-	FindEdgesSplineSet(rf->splines,es);
+	FindEdgesSplineSet(rf->layers[0].splines,es);
 
-    FindEdgesSplineSet(sc->splines,es);
+    FindEdgesSplineSet(sc->layers[ly_fore].splines,es);
 }
 
 Edge *ActiveEdgesInsertNew(EdgeList *es, Edge *active,int i) {

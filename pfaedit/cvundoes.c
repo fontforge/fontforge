@@ -49,7 +49,7 @@ return( NULL );
     for ( crefs = sc->refs; crefs!=NULL; crefs=crefs->next ) {
 	new = chunkalloc(sizeof(RefChar));
 	*new = *crefs;
-	new->splines = NULL;
+	new->layers[0].splines = NULL;
 	new->next = NULL;
 	if ( last==NULL )
 	    head = last = new;
@@ -104,7 +104,7 @@ return( NULL );
     }
     cur->next = NULL;
 
-    MDReplace(head,sc->splines,rpl);
+    MDReplace(head,sc->layers[ly_fore].splines,rpl);
 return( head );
 }
 
@@ -462,7 +462,8 @@ return( undo );
 }
 
 static Undoes *CVAddUndo(CharView *cv,Undoes *undo) {
-return( AddUndo(undo,cv->uheads[cv->drawmode],cv->rheads[cv->drawmode]));
+return( AddUndo(undo,&cv->layerheads[cv->drawmode]->undoes,
+	&cv->layerheads[cv->drawmode]->redoes));
 }
 
 Undoes *CVPreserveState(CharView *cv) {
@@ -478,7 +479,7 @@ return(NULL);
     undo->was_order2 = cv->sc->parent->order2;
     undo->u.state.width = cv->sc->width;
     undo->u.state.vwidth = cv->sc->vwidth;
-    undo->u.state.splines = SplinePointListCopy(*cv->heads[cv->drawmode]);
+    undo->u.state.splines = SplinePointListCopy(cv->layerheads[cv->drawmode]->splines);
     if ( cv->drawmode==dm_fore ) {
 	undo->u.state.refs = RefCharsCopyState(cv->sc);
 	undo->u.state.md = MDsCopyState(cv->sc,undo->u.state.splines);
@@ -501,7 +502,7 @@ return(NULL);
     undo->was_order2 = sc->parent->order2;
     undo->u.state.width = sc->width;
     undo->u.state.vwidth = sc->vwidth;
-    undo->u.state.splines = SplinePointListCopy(sc->splines);
+    undo->u.state.splines = SplinePointListCopy(sc->layers[ly_fore].splines);
     undo->u.state.refs = RefCharsCopyState(sc);
     undo->u.state.md = MDsCopyState(sc,undo->u.state.splines);
     undo->u.state.anchor = AnchorPointsCopy(sc->anchor);
@@ -518,7 +519,7 @@ return(NULL);
 	}
     }
     undo->u.state.copied_from = sc->parent;
-return( AddUndo(undo,&sc->undoes[0],&sc->redoes[0]));
+return( AddUndo(undo,&sc->layers[ly_fore].undoes,&sc->layers[ly_fore].redoes));
 }
 
 Undoes *SCPreserveBackground(SplineChar *sc) {
@@ -534,14 +535,14 @@ return(NULL);
     undo->was_order2 = sc->parent->order2;
     undo->u.state.width = sc->width;
     undo->u.state.vwidth = sc->vwidth;
-    undo->u.state.splines = SplinePointListCopy(sc->backgroundsplines);
+    undo->u.state.splines = SplinePointListCopy(sc->layers[ly_back].splines);
     undo->u.state.u.images = SCImagesCopyState(sc);
     undo->u.state.copied_from = sc->parent;
-return( AddUndo(undo,&sc->undoes[1],&sc->redoes[1]));
+return( AddUndo(undo,&sc->layers[ly_back].undoes,&sc->layers[ly_back].redoes));
 }
 
 void SCUndoSetLBearingChange(SplineChar *sc,int lbc) {
-    Undoes *undo = sc->undoes[0];
+    Undoes *undo = sc->layers[ly_fore].undoes;
 
     if ( undo==NULL || undo->undotype != ut_state )
 return;
@@ -566,7 +567,7 @@ Undoes *CVPreserveTState(CharView *cv) {
     if ( !cv->p.transany || cv->p.transanyrefs ) {
 	for ( refs = cv->sc->refs, urefs=undo->u.state.refs; urefs!=NULL; refs=refs->next, urefs=urefs->next )
 	    if ( !cv->p.transany || refs->selected )
-		urefs->splines = SplinePointListCopy(refs->splines);
+		urefs->layers[0].splines = SplinePointListCopy(refs->layers[0].splines);
     }
     undo->undotype = ut_tstate;
 
@@ -618,7 +619,7 @@ return(NULL);
     undo->was_modified = sc->changed;
     undo->was_order2 = sc->parent->order2;
     undo->u.state.width = sc->width;
-return( AddUndo(undo,&sc->undoes[0],&sc->redoes[0]));
+return( AddUndo(undo,&sc->layers[ly_fore].undoes,&sc->layers[ly_fore].redoes));
 }
 
 Undoes *SCPreserveVWidth(SplineChar *sc) {
@@ -633,7 +634,7 @@ return(NULL);
     undo->was_modified = sc->changed;
     undo->was_order2 = sc->parent->order2;
     undo->u.state.width = sc->vwidth;
-return( AddUndo(undo,&sc->undoes[0],&sc->redoes[0]));
+return( AddUndo(undo,&sc->layers[ly_fore].undoes,&sc->layers[ly_fore].redoes));
 }
 
 Undoes *BCPreserveState(BDFChar *bc) {
@@ -674,9 +675,9 @@ static void SCUndoAct(SplineChar *sc,int drawmode, Undoes *undo) {
 	undo->u.width = vwidth;
       } break;
       case ut_state: case ut_tstate: case ut_statehint: case ut_statename: {
-	SplinePointList **head = drawmode==dm_fore ? &sc->splines :
-				 drawmode==dm_back ? &sc->backgroundsplines :
-				    &sc->parent->gridsplines;
+	SplinePointList **head = drawmode==dm_fore ? &sc->layers[ly_fore].splines :
+				 drawmode==dm_back ? &sc->layers[ly_back].splines :
+				    &sc->parent->grid.splines;
 	SplinePointList *spl = *head;
 
 	if ( drawmode==dm_fore ) {
@@ -740,69 +741,69 @@ static void SCUndoAct(SplineChar *sc,int drawmode, Undoes *undo) {
 }
 
 void CVDoUndo(CharView *cv) {
-    Undoes *undo = *cv->uheads[cv->drawmode];
+    Undoes *undo = cv->layerheads[cv->drawmode]->undoes;
 
     if ( undo==NULL )		/* Shouldn't happen */
 return;
-    *cv->uheads[cv->drawmode] = undo->next;
+    cv->layerheads[cv->drawmode]->undoes = undo->next;
     undo->next = NULL;
     SCUndoAct(cv->sc,cv->drawmode,undo);
-    undo->next = *cv->rheads[cv->drawmode];
-    *cv->rheads[cv->drawmode] = undo;
+    undo->next = cv->layerheads[cv->drawmode]->redoes;
+    cv->layerheads[cv->drawmode]->redoes = undo;
     _CVCharChangedUpdate(cv,undo->was_modified);
     cv->lastselpt = NULL;
 return;
 }
 
 void CVDoRedo(CharView *cv) {
-    Undoes *undo = *cv->rheads[cv->drawmode];
+    Undoes *undo = cv->layerheads[cv->drawmode]->redoes;
 
     if ( undo==NULL )		/* Shouldn't happen */
 return;
-    *cv->rheads[cv->drawmode] = undo->next;
+    cv->layerheads[cv->drawmode]->redoes = undo->next;
     undo->next = NULL;
     SCUndoAct(cv->sc,cv->drawmode,undo);
-    undo->next = *cv->uheads[cv->drawmode];
-    *cv->uheads[cv->drawmode] = undo;
+    undo->next = cv->layerheads[cv->drawmode]->undoes;
+    cv->layerheads[cv->drawmode]->undoes = undo;
     CVCharChangedUpdate(cv);
     cv->lastselpt = NULL;
 return;
 }
 
-void SCDoUndo(SplineChar *sc,int drawmode) {
-    Undoes *undo = sc->undoes[drawmode];
+void SCDoUndo(SplineChar *sc,int layer) {
+    Undoes *undo = sc->layers[layer].undoes;
 
-    if ( drawmode!=dm_fore && drawmode!=dm_back ) {
-	GDrawIError( "Unsupported drawmode in SCDoUndo");
+    if ( layer!=ly_fore && layer!=ly_back ) {
+	GDrawIError( "Unsupported layer in SCDoUndo");
 return;
     }
 
     if ( undo==NULL )		/* Shouldn't happen */
 return;
-    sc->undoes[drawmode] = undo->next;
+    sc->layers[layer].undoes = undo->next;
     undo->next = NULL;
-    SCUndoAct(sc,drawmode,undo);
-    undo->next = sc->redoes[drawmode];
-    sc->redoes[drawmode] = undo;
+    SCUndoAct(sc,layer==ly_fore?dm_fore:dm_back,undo);
+    undo->next = sc->layers[layer].redoes;
+    sc->layers[layer].redoes = undo;
     _SCCharChangedUpdate(sc,undo->was_modified);
 return;
 }
 
-void SCDoRedo(SplineChar *sc, int drawmode) {
-    Undoes *undo = sc->redoes[drawmode];
+void SCDoRedo(SplineChar *sc, int layer) {
+    Undoes *undo = sc->layers[layer].redoes;
 
-    if ( drawmode!=dm_fore && drawmode!=dm_back ) {
-	GDrawIError( "Unsupported drawmode in SCDoUndo");
+    if ( layer!=ly_fore && layer!=ly_back ) {
+	GDrawIError( "Unsupported layer in SCDoRedo");
 return;
     }
 
     if ( undo==NULL )		/* Shouldn't happen */
 return;
-    sc->redoes[drawmode] = undo->next;
+    sc->layers[layer].redoes = undo->next;
     undo->next = NULL;
-    SCUndoAct(sc,drawmode,undo);
-    undo->next = sc->undoes[drawmode];
-    sc->undoes[drawmode] = undo;
+    SCUndoAct(sc,layer==ly_fore?dm_fore:dm_back,undo);
+    undo->next = sc->layers[layer].undoes;
+    sc->layers[layer].undoes = undo;
     SCCharChangedUpdate(sc);
 return;
 }
@@ -811,15 +812,15 @@ return;
 /*  then rounding errors will mount. Instead I go back to the original state */
 /*  each time */
 void CVRestoreTOriginalState(CharView *cv) {
-    Undoes *undo = *cv->uheads[cv->drawmode];
+    Undoes *undo = cv->layerheads[cv->drawmode]->undoes;
     RefChar *ref, *uref;
     ImageList *img, *uimg;
 
-    SplinePointListSet(*cv->heads[cv->drawmode],undo->u.state.splines);
+    SplinePointListSet(cv->layerheads[cv->drawmode]->splines,undo->u.state.splines);
     if ( cv->drawmode==dm_fore && (!cv->p.anysel || cv->p.transanyrefs)) {
 	for ( ref=cv->sc->refs, uref=undo->u.state.refs; uref!=NULL; ref=ref->next, uref=uref->next )
-	    if ( uref->splines!=NULL ) {
-		SplinePointListSet(ref->splines,uref->splines);
+	    if ( uref->layers[0].splines!=NULL ) {
+		SplinePointListSet(ref->layers[0].splines,uref->layers[0].splines);
 		memcpy(&ref->transform,&uref->transform,sizeof(ref->transform));
 	    }
     }
@@ -835,22 +836,22 @@ void CVRestoreTOriginalState(CharView *cv) {
 }
 
 void CVUndoCleanup(CharView *cv) {
-    Undoes * undo = *cv->uheads[cv->drawmode];
+    Undoes * undo = cv->layerheads[cv->drawmode]->undoes;
     RefChar *uref;
 
     if ( cv->drawmode==dm_fore && (!cv->p.anysel || cv->p.transanyrefs)) {
 	for ( uref=undo->u.state.refs; uref!=NULL; uref=uref->next ) {
-	    SplinePointListFree(uref->splines);
-	    uref->splines = NULL;
+	    SplinePointListFree(uref->layers[0].splines);
+	    uref->layers[0].splines = NULL;
 	}
     }
     undo->undotype = ut_state;
 }
 
 void CVRemoveTopUndo(CharView *cv) {
-    Undoes * undo = *cv->uheads[cv->drawmode];
+    Undoes * undo = cv->layerheads[cv->drawmode]->undoes;
 
-    *cv->uheads[cv->drawmode] = undo->next;
+    cv->layerheads[cv->drawmode]->undoes = undo->next;
     undo->next = NULL;
     UndoesFree(undo);
 }
@@ -1079,7 +1080,7 @@ return( copy(""));
     memset(&dummy,0,sizeof(dummy));
     dummy.name = "dummy";
     dummy.parent = fv_list->sf;		/* might not be the actual parent */
-    dummy.splines = cur->u.state.splines;
+    dummy.layers[ly_fore].splines = cur->u.state.splines;
     dummy.refs = cur->u.state.refs;
 
     eps = tmpfile();
@@ -1257,13 +1258,13 @@ void CopySelected(CharView *cv) {
     copybuffer.was_order2 = cv->sc->parent->order2;
     copybuffer.u.state.width = cv->sc->width;
     copybuffer.u.state.vwidth = cv->sc->vwidth;
-    copybuffer.u.state.splines = SplinePointListCopySelected(*cv->heads[cv->drawmode]);
+    copybuffer.u.state.splines = SplinePointListCopySelected(cv->layerheads[cv->drawmode]->splines);
     if ( cv->drawmode==dm_fore ) {
 	RefChar *refs, *new;
 	for ( refs = cv->sc->refs; refs!=NULL; refs = refs->next ) if ( refs->selected ) {
 	    new = chunkalloc(sizeof(RefChar));
 	    *new = *refs;
-	    new->splines = NULL;
+	    new->layers[0].splines = NULL;
 	    new->local_enc = new->sc->enc;
 	    new->sc = NULL;
 	    new->next = copybuffer.u.state.refs;
@@ -1325,7 +1326,7 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
 	cur->u.state.vwidth = sc->vwidth;
 	if ( full ) {
 	    cur->undotype = copymetadata ? ut_statename : ut_statehint;
-	    cur->u.state.splines = SplinePointListCopy(sc->splines);
+	    cur->u.state.splines = SplinePointListCopy(sc->layers[ly_fore].splines);
 	    cur->u.state.refs = RefCharsCopyState(sc);
 	    cur->u.state.anchor = AnchorPointsCopy(sc->anchor);
 	    cur->u.state.u.hints = UHintCopy(sc,true);
@@ -1456,12 +1457,12 @@ static void PasteNonExistantRefCheck(SplineChar *sc,Undoes *paster,RefChar *ref,
 		*refstate |= 2;
 	}
 	if ( (*refstate&1) || yes<=1 ) {
-	    new = SplinePointListTransform(SplinePointListCopy(rsc->splines),ref->transform,true);
+	    new = SplinePointListTransform(SplinePointListCopy(rsc->layers[ly_fore].splines),ref->transform,true);
 	    SplinePointListSelect(new,true);
 	    if ( new!=NULL ) {
 		for ( spl = new; spl->next!=NULL; spl = spl->next );
-		spl->next = sc->splines;
-		sc->splines = new;
+		spl->next = sc->layers[ly_fore].splines;
+		sc->layers[ly_fore].splines = new;
 	    }
 	}
     }
@@ -1648,8 +1649,8 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 	    SCSynchronizeWidth(sc,width,sc->width,fv);
 	sc->vwidth = vwidth;
 	if ( doclear ) {
-	    SplinePointListsFree(sc->splines);
-	    sc->splines = NULL;
+	    SplinePointListsFree(sc->layers[ly_fore].splines);
+	    sc->layers[ly_fore].splines = NULL;
 	    SCRemoveDependents(sc);
 	    AnchorPointsFree(sc->anchor);
 	    sc->anchor = NULL;
@@ -1658,12 +1659,12 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 	    SplinePointList *temp = SplinePointListCopy(paster->u.state.splines);
 	    if ( paster->was_order2 != sc->parent->order2 )
 		temp = SplineSetsConvertOrder(temp,sc->parent->order2);
-	    if ( sc->splines!=NULL ) {
-		SplinePointList *e = sc->splines;
+	    if ( sc->layers[ly_fore].splines!=NULL ) {
+		SplinePointList *e = sc->layers[ly_fore].splines;
 		while ( e->next!=NULL ) e = e->next;
 		e->next = temp;
 	    } else
-		sc->splines = temp;
+		sc->layers[ly_fore].splines = temp;
 	}
 	if ( !sc->searcherdummy )
 	    APMerge(sc,paster->u.state.anchor);
@@ -1695,7 +1696,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 		    new = chunkalloc(sizeof(RefChar));
 		    *new = *refs;
 		    new->transform[4] *= scale; new->transform[5] *= scale;
-		    new->splines = NULL;
+		    new->layers[0].splines = NULL;
 		    new->sc = rsc;
 		    new->next = sc->refs;
 		    sc->refs = new;
@@ -1762,7 +1763,7 @@ return;
       case ut_noop:
       break;
       case ut_state: case ut_statehint: case ut_statename:
-	if ( cv->drawmode==dm_fore && cvsc->splines==NULL && cvsc->refs==NULL ) {
+	if ( cv->drawmode==dm_fore && cvsc->layers[ly_fore].splines==NULL && cvsc->refs==NULL ) {
 	    SCSynchronizeWidth(cvsc,paster->u.state.width,cvsc->width,NULL);
 	    cvsc->vwidth = paster->u.state.vwidth;
 	}
@@ -1772,8 +1773,8 @@ return;
 		new = SplineSetsConvertOrder(new,cvsc->parent->order2 );
 	    SplinePointListSelect(new,true);
 	    for ( spl = new; spl->next!=NULL; spl = spl->next );
-	    spl->next = *cv->heads[cv->drawmode];
-	    *cv->heads[cv->drawmode] = new;
+	    spl->next = cv->layerheads[cv->drawmode]->splines;
+	    cv->layerheads[cv->drawmode]->splines = new;
 	}
 	if ( paster->undotype==ut_state && paster->u.state.u.images!=NULL ) {
 	    /* Images can only be pasted into background, so do that */
@@ -1804,7 +1805,7 @@ return;
 		else if ( sc!=NULL ) {
 		    new = chunkalloc(sizeof(RefChar));
 		    *new = *refs;
-		    new->splines = NULL;
+		    new->layers[0].splines = NULL;
 		    new->sc = sc;
 		    new->selected = true;
 		    new->next = cvsc->refs;
@@ -1827,12 +1828,12 @@ return;
 		else
 		    sc = FindCharacter(cvsc->parent,refs);
 		if ( sc!=NULL ) {
-		    new = SplinePointListTransform(SplinePointListCopy(sc->backgroundsplines),refs->transform,true);
+		    new = SplinePointListTransform(SplinePointListCopy(sc->layers[ly_back].splines),refs->transform,true);
 		    SplinePointListSelect(new,true);
 		    if ( new!=NULL ) {
 			for ( spl = new; spl->next!=NULL; spl = spl->next );
-			spl->next = cvsc->backgroundsplines;
-			cvsc->backgroundsplines = new;
+			spl->next = cvsc->layers[ly_back].splines;
+			cvsc->layers[ly_back].splines = new;
 		    }
 		}
 	    }

@@ -36,7 +36,7 @@ static RefChar *RefCharsCopy(RefChar *ref) {
     while ( ref!=NULL ) {
 	cur = chunkalloc(sizeof(RefChar));
 	*cur = *ref;
-	cur->splines = NULL;	/* Leave the old sc, we'll fix it later */
+	cur->layers[0].splines = NULL;	/* Leave the old sc, we'll fix it later */
 	cur->next = NULL;
 	if ( rhead==NULL )
 	    rhead = cur;
@@ -132,7 +132,7 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into) {
     nsc->parent = into;
     nsc->enc = -2;
     nsc->name = copy(sc->name);
-    nsc->splines = SplinePointListCopy(nsc->splines);
+    nsc->layers[ly_fore].splines = SplinePointListCopy(nsc->layers[ly_fore].splines);
     nsc->hstem = StemInfoCopy(nsc->hstem);
     nsc->vstem = StemInfoCopy(nsc->vstem);
     nsc->dstem = DStemInfoCopy(nsc->dstem);
@@ -141,9 +141,10 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into) {
     nsc->views = NULL;
     nsc->changed = true;
     nsc->dependents = NULL;		/* Fix up later when we know more */
-    nsc->backgroundsplines = NULL;
+    nsc->layers[ly_back].splines = NULL;
     nsc->backimages = NULL;
-    nsc->undoes[0] = nsc->undoes[1] = nsc->redoes[0] = nsc->redoes[1] = NULL;
+    nsc->layers[ly_fore].undoes = nsc->layers[ly_back].undoes = NULL;
+    nsc->layers[ly_fore].redoes = nsc->layers[ly_back].redoes = NULL;
     nsc->kerns = NULL;
     nsc->possub = PSTCopy(nsc->possub,nsc,sc->parent);
     if ( sc->parent!=NULL && into->order2!=sc->parent->order2 )
@@ -526,7 +527,7 @@ int SFFindExistingChar(SplineFont *sf, int unienc, char *name ) {
 
     if ( i==-1 || sf->chars[i]==NULL )
 return( -1 );
-    if ( sf->chars[i]->splines!=NULL || sf->chars[i]->refs!=NULL ||
+    if ( sf->chars[i]->layers[ly_fore].splines!=NULL || sf->chars[i]->refs!=NULL ||
 	    sf->chars[i]->widthset )
 return( i );
 
@@ -597,11 +598,11 @@ static int SFHasChar(SplineFont *sf, int unienc, char *name ) {
     index = _SFFindChar(sf,unienc,name);
     if ( index>=0 && index<sf->charcnt && sf->chars[index]!=NULL ) {
 	if ( sf->chars[index]->refs!=NULL ||
-		sf->chars[index]->splines!=NULL ||
+		sf->chars[index]->layers[ly_fore].splines!=NULL ||
 		sf->chars[index]->width!=sf->ascent+sf->descent ||
 		sf->chars[index]->widthset ||
 		sf->chars[index]->backimages != NULL ||
-		sf->chars[index]->backgroundsplines != NULL )
+		sf->chars[index]->layers[ly_back].splines != NULL )
 return( true );
     }
 return( false );
@@ -655,7 +656,7 @@ static void _MergeFont(SplineFont *into,SplineFont *other) {
 		    if ( into->bitmaps!=NULL && other->bitmaps!=NULL )
 			BitmapsCopy(bitmap_into,other,index,i);
 		} else if ( !doit ) {
-		    if ( o_sf->chars[i]->splines==NULL && o_sf->chars[i]->refs==NULL &&
+		    if ( o_sf->chars[i]->layers[ly_fore].splines==NULL && o_sf->chars[i]->refs==NULL &&
 			    !o_sf->chars[i]->widthset )
 			/* Don't bother to copy it */;
 		    else if ( SCDuplicate(o_sf->chars[i])!=o_sf->chars[i] )
@@ -741,7 +742,7 @@ static void CIDMergeFont(SplineFont *into,SplineFont *other) {
 	    i_sf->charcnt = i+1;
 	}
 	for ( i=0; i<o_sf->charcnt; ++i ) if ( o_sf->chars[i]!=NULL ) {
-	    if ( o_sf->chars[i]->splines==NULL && o_sf->chars[i]->refs==NULL &&
+	    if ( o_sf->chars[i]->layers[ly_fore].splines==NULL && o_sf->chars[i]->refs==NULL &&
 		    !o_sf->chars[i]->widthset )
 		/* Don't bother to copy it */;
 	    else if ( SFHasCID(into,i)==-1 ) {
@@ -991,7 +992,7 @@ static RefChar *InterpRefs(RefChar *base, RefChar *other, real amount, SplineCha
 	    cur->local_enc = cur->sc->enc;
 	    for ( i=0; i<6; ++i )
 		cur->transform[i] = base->transform[i] + amount*(other->transform[i]-base->transform[i]);
-	    cur->splines = NULL;
+	    cur->layers[0].splines = NULL;
 	    cur->checked = false;
 	    if ( head==NULL )
 		head = cur;
@@ -1128,15 +1129,16 @@ return;
     sc->changed = true;
     sc->views = NULL;
     sc->dependents = NULL;
-    sc->backgroundsplines = NULL;
+    sc->layers[ly_back].splines = NULL;
     sc->backimages = NULL;
-    sc->undoes[0] = sc->undoes[1] = sc->redoes[0] = sc->redoes[1] = NULL;
+    sc->layers[ly_fore].undoes = sc->layers[ly_back].undoes = NULL;
+    sc->layers[ly_fore].redoes = sc->layers[ly_back].redoes = NULL;
     sc->kerns = NULL;
     sc->name = copy(base->name);
     sc->width = base->width + amount*(other->width-base->width);
     sc->vwidth = base->vwidth + amount*(other->vwidth-base->vwidth);
     sc->lsidebearing = base->lsidebearing + amount*(other->lsidebearing-base->lsidebearing);
-    sc->splines = InterpSplineSets(base->splines,other->splines,amount,sc);
+    sc->layers[ly_fore].splines = InterpSplineSets(base->layers[ly_fore].splines,other->layers[ly_fore].splines,amount,sc);
     sc->refs = InterpRefs(base->refs,other->refs,amount,sc);
     sc->changedsincelasthinted = true;
     sc->widthset = base->widthset;

@@ -532,7 +532,10 @@ typedef struct refchar {
     int local_enc;
     int unicode_enc;		/* used by paste */
     real transform[6];		/* transformation matrix (first 2 rows of a 3x3 matrix, missing row is 0,0,1) */
-    SplinePointList *splines;
+    struct reflayer {
+	SplinePointList *splines;
+    } layers[1];
+    int layer_cnt;
     struct refchar *next;
     DBounds bb;
     struct splinechar *sc;
@@ -648,6 +651,14 @@ typedef struct minimumdistance {
     struct minimumdistance *next;
 } MinimumDistance;
 
+typedef struct layer {
+    SplinePointList *splines;
+    Undoes *undoes;
+    Undoes *redoes;
+} Layer;
+
+enum layer_type { ly_back=0, ly_fore=1 };
+    
 typedef struct splinechar {
     char *name;
     int enc, unicodeenc, old_enc;
@@ -659,7 +670,8 @@ typedef struct splinechar {
 				/* Always a temporary value */
     uint16 orig_pos;		/* Original position in the glyph list */
     int ttf_glyph;		/* only used when writing out a ttf or otf font */
-    SplinePointList *splines;
+    Layer layers[2];		/* layer[0] is background, layer[1] foreground */
+    int layer_cnt;
     StemInfo *hstem;		/* hstem hints have a vertical offset but run horizontally */
     StemInfo *vstem;		/* vstem hints have a horizontal offset but run vertically */
     DStemInfo *dstem;		/* diagonal hints for ttf */
@@ -692,10 +704,7 @@ typedef struct splinechar {
     struct splinecharlist { struct splinechar *sc; struct splinecharlist *next;} *dependents;
 	    /* The dependents list is a list of all characters which refenence*/
 	    /*  the current character directly */
-    SplinePointList *backgroundsplines;
     ImageList *backimages;
-    Undoes *undoes[2];
-    Undoes *redoes[2];
     KernPair *kerns;
     KernPair *vkerns;
     PST *possub;		/* If we are a ligature then this tells us what */
@@ -757,8 +766,7 @@ typedef struct splinefont {
     struct fontview *fv;
     enum charset encoding_name, old_encname;
     enum uni_interp uni_interp;
-    SplinePointList *gridsplines;
-    Undoes *gundoes, *gredoes;
+    Layer grid;
     BDFFont *bitmaps;
     char *origname;		/* filename of font file (ie. if not an sfd) */
     char *autosavename;

@@ -84,12 +84,12 @@ static void CVStrokeIt(void *_cv, StrokeInfo *si) {
     CVPreserveState(cv);
     if ( CVAnySel(cv,&anypoints,NULL,NULL,NULL) && anypoints ) {
 	prev = NULL;
-	for ( spl= *cv->heads[cv->drawmode]; spl!=NULL; spl = snext ) {
+	for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = snext ) {
 	    snext = spl->next;
 	    if ( PointListIsSelected(spl)) {
 		cur = SplineSetStroke(spl,si,cv->sc);
 		if ( prev==NULL )
-		    *cv->heads[cv->drawmode]=cur;
+		    cv->layerheads[cv->drawmode]->splines=cur;
 		else
 		    prev->next = cur;
 		while ( cur->next ) cur=cur->next;
@@ -101,7 +101,7 @@ static void CVStrokeIt(void *_cv, StrokeInfo *si) {
 		prev = spl;
 	}
     } else {
-	for ( spl= *cv->heads[cv->drawmode]; spl!=NULL; spl = spl->next ) {
+	for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
 	    cur = SplineSetStroke(spl,si,cv->sc);
 	    if ( head==NULL )
 		head = cur;
@@ -110,8 +110,8 @@ static void CVStrokeIt(void *_cv, StrokeInfo *si) {
 	    while ( cur->next!=NULL ) cur = cur->next;
 	    last = cur;
 	}
-	SplinePointListsFree( *cv->heads[cv->drawmode] );
-	*cv->heads[cv->drawmode] = head;
+	SplinePointListsFree( cv->layerheads[cv->drawmode]->splines );
+	cv->layerheads[cv->drawmode]->splines = head;
     }
     CVCharChangedUpdate(cv);
 }
@@ -121,9 +121,9 @@ static void SCStrokeIt(void *_sc, StrokeInfo *si) {
     SplineSet *temp;
 
     SCPreserveState(sc,false);
-    temp = SSStroke(sc->splines,si,sc);
-    SplinePointListsFree( sc->splines );
-    sc->splines = temp;
+    temp = SSStroke(sc->layers[ly_fore].splines,si,sc);
+    SplinePointListsFree( sc->layers[ly_fore].splines );
+    sc->layers[ly_fore].splines = temp;
     SCCharChangedUpdate(sc);
 }
 
@@ -139,9 +139,9 @@ static void FVStrokeIt(void *_fv, StrokeInfo *si) {
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
 	SCPreserveState(sc,false);
-	temp = SSStroke(sc->splines,si,sc);
-	SplinePointListsFree( sc->splines );
-	sc->splines = temp;
+	temp = SSStroke(sc->layers[ly_fore].splines,si,sc);
+	SplinePointListsFree( sc->layers[ly_fore].splines );
+	sc->layers[ly_fore].splines = temp;
 	SCCharChangedUpdate(sc);
 	if ( !GProgressNext())
     break;
@@ -822,7 +822,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 
 void CVStroke(CharView *cv) {
 
-    if ( *cv->heads[cv->drawmode]==NULL )
+    if ( cv->layerheads[cv->drawmode]->splines==NULL )
 return;
 
     MakeStrokeDlg(cv,CVStrokeIt,NULL);

@@ -102,7 +102,7 @@ enum bvtools { bvt_pointer, bvt_magnify,
 	bvt_max2 = bvt_filledelipse,
 	bvt_none = -1,
 	bvt_fliph=0, bvt_flipv, bvt_rotate90cw, bvt_rotate90ccw, bvt_rotate180, bvt_skew, bvt_transmove };
-enum drawmode { dm_fore, dm_back, dm_grid, dm_max };
+enum drawmode { dm_grid, dm_back, dm_fore, dm_max };
 
 typedef struct bvtfunc {
     enum bvtools func;
@@ -200,9 +200,7 @@ typedef struct charview {
     unsigned int inactive:1;			/* When in a search view */
     unsigned int show_ft_results: 1;	/* 32 */
     unsigned int coderange: 2;			/* For the debugger */
-    SplinePointList **heads[dm_max];
-    Undoes **uheads[dm_max];
-    Undoes **rheads[dm_max];
+    Layer *layerheads[dm_max];
     real scale;
     GWindow gw, v;
     int width, height;
@@ -762,8 +760,8 @@ extern Undoes *CVPreserveWidth(CharView *cv,int width);
 extern Undoes *CVPreserveVWidth(CharView *cv,int vwidth);
 extern void CVDoRedo(CharView *cv);
 extern void CVDoUndo(CharView *cv);
-extern void SCDoRedo(SplineChar *sc,int drawmode);
-extern void SCDoUndo(SplineChar *sc,int drawmode);
+extern void SCDoRedo(SplineChar *sc,int layer);
+extern void SCDoUndo(SplineChar *sc,int layer);
 extern void CVRestoreTOriginalState(CharView *cv);
 extern void CVUndoCleanup(CharView *cv);
 extern void CVRemoveTopUndo(CharView *cv);

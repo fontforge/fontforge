@@ -80,8 +80,8 @@ void CVMouseDownShape(CharView *cv) {
     CVPreserveState(cv);
     CVSetCharChanged(cv,true);
     cv->active_shape = chunkalloc(sizeof(SplineSet));
-    cv->active_shape->next = *(cv->heads[cv->drawmode]);
-    *cv->heads[cv->drawmode] = cv->active_shape;
+    cv->active_shape->next = cv->layerheads[cv->drawmode]->splines;
+    cv->layerheads[cv->drawmode]->splines = cv->active_shape;
     cv->active_shape->first = last = SPMake(&cv->info,pt_corner);
 
     switch ( cv->active_tool ) {

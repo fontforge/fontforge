@@ -86,16 +86,16 @@ int _ExportEPS(FILE *eps,SplineChar *sc) {
 
     fprintf( eps, "newpath\n" );
     if ( !sc->parent->order2 ) {
-	DumpSPL(eps,sc->splines);
+	DumpSPL(eps,sc->layers[ly_fore].splines);
 	for ( rf = sc->refs; rf!=NULL; rf = rf->next )
-	    DumpSPL(eps,rf->splines);
+	    DumpSPL(eps,rf->layers[0].splines);
     } else {
 	SplinePointList *temp;
-	temp = SplineSetsPSApprox(sc->splines);
+	temp = SplineSetsPSApprox(sc->layers[ly_fore].splines);
 	DumpSPL(eps,temp);
 	SplinePointListFree(temp);
 	for ( rf = sc->refs; rf!=NULL; rf = rf->next ) {
-	    temp = SplineSetsPSApprox(rf->splines);
+	    temp = SplineSetsPSApprox(rf->layers[0].splines);
 	    DumpSPL(eps,temp);
 	    SplinePointListFree(temp);
 	}
@@ -241,9 +241,9 @@ return(0);
     fprintf( fig, "Single\n" );
     fprintf( fig, "-2\n" );
     fprintf( fig, "1200 2\n" );
-    FigSplineSet(fig,sc->splines,spmax,sc->parent->ascent);
+    FigSplineSet(fig,sc->layers[ly_fore].splines,spmax,sc->parent->ascent);
     for ( rf=sc->refs; rf!=NULL; rf=rf->next )
-	FigSplineSet(fig,rf->splines, spmax, sc->parent->ascent );
+	FigSplineSet(fig,rf->layers[0].splines, spmax, sc->parent->ascent );
     ret = !ferror(fig);
     fclose(fig);
 return( ret );

@@ -138,22 +138,22 @@ return( true );
 
     for ( i=0; i<6; ++i )
 	ref->transform[i] = trans[i];
-    SplinePointListFree(ref->splines);
-    ref->splines = SplinePointListTransform(SplinePointListCopy(ref->sc->splines),trans,true);
+    SplinePointListFree(ref->layers[0].splines);
+    ref->layers[0].splines = SplinePointListTransform(SplinePointListCopy(ref->sc->layers[ly_fore].splines),trans,true);
     spl = NULL;
-    if ( ref->splines!=NULL )
-	for ( spl = ref->splines; spl->next!=NULL; spl = spl->next );
+    if ( ref->layers[0].splines!=NULL )
+	for ( spl = ref->layers[0].splines; spl->next!=NULL; spl = spl->next );
     for ( subref = ref->sc->refs; subref!=NULL; subref=subref->next ) {
-	new = SplinePointListTransform(SplinePointListCopy(subref->splines),trans,true);
+	new = SplinePointListTransform(SplinePointListCopy(subref->layers[0].splines),trans,true);
 	if ( spl==NULL )
-	    ref->splines = new;
+	    ref->layers[0].splines = new;
 	else
 	    spl->next = new;
 	if ( new!=NULL )
 	    for ( spl = new; spl->next!=NULL; spl = spl->next );
     }
 
-    SplineSetFindBounds(ref->splines,&ref->bb);
+    SplineSetFindBounds(ref->layers[0].splines,&ref->bb);
     CVCharChangedUpdate(ci->cv);
 return( true );
 }
@@ -1241,9 +1241,9 @@ static void PI_DoCancel(GIData *ci) {
     CharView *cv = ci->cv;
     ci->done = true;
     if ( cv->drawmode==dm_fore )
-	MDReplace(cv->sc->md,cv->sc->splines,ci->oldstate);
-    SplinePointListsFree(*cv->heads[cv->drawmode]);
-    *cv->heads[cv->drawmode] = ci->oldstate;
+	MDReplace(cv->sc->md,cv->sc->layers[ly_fore].splines,ci->oldstate);
+    SplinePointListsFree(cv->layerheads[cv->drawmode]->splines);
+    cv->layerheads[cv->drawmode]->splines = ci->oldstate;
     CVRemoveTopUndo(cv);
     SCClearSelPt(cv->sc);
     _PI_ShowHints(ci,false);
@@ -1502,7 +1502,7 @@ static int PI_Next(GGadget *g, GEvent *e) {
 	    ci->cursp = ci->cursp->next->to;
 	else {
 	    if ( ci->curspl->next == NULL )
-		ci->curspl = *cv->heads[cv->drawmode];
+		ci->curspl = cv->layerheads[cv->drawmode]->splines;
 	    else
 		ci->curspl = ci->curspl->next;
 	    ci->cursp = ci->curspl->first;
@@ -1531,10 +1531,10 @@ static int PI_Prev(GGadget *g, GEvent *e) {
 	if ( ci->cursp!=ci->curspl->first ) {
 	    ci->cursp = ci->cursp->prev->from;
 	} else {
-	    if ( ci->curspl==*cv->heads[cv->drawmode] ) {
-		for ( spl = *cv->heads[cv->drawmode]; spl->next!=NULL; spl=spl->next );
+	    if ( ci->curspl==cv->layerheads[cv->drawmode]->splines ) {
+		for ( spl = cv->layerheads[cv->drawmode]->splines; spl->next!=NULL; spl=spl->next );
 	    } else {
-		for ( spl = *cv->heads[cv->drawmode]; spl->next!=ci->curspl; spl=spl->next );
+		for ( spl = cv->layerheads[cv->drawmode]->splines; spl->next!=ci->curspl; spl=spl->next );
 	    }
 	    ci->curspl = spl;
 	    ci->cursp = spl->last;
@@ -1874,7 +1874,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
     gi.sc = cv->sc;
     gi.cursp = sp;
     gi.curspl = spl;
-    gi.oldstate = SplinePointListCopy(*cv->heads[cv->drawmode]);
+    gi.oldstate = SplinePointListCopy(cv->layerheads[cv->drawmode]->splines);
     gi.done = false;
     CVPreserveState(cv);
 

@@ -36,7 +36,7 @@ int CVTwoForePointsSelected(CharView *cv, SplinePoint **sp1, SplinePoint **sp2) 
     if ( cv->drawmode!=dm_fore )
 return( false ) ;
     cnt = 0;
-    for ( spl = cv->sc->splines; spl!=NULL; spl = spl->next ) {
+    for ( spl = cv->sc->layers[ly_fore].splines; spl!=NULL; spl = spl->next ) {
 	first = NULL;
 	for ( test = spl->first; test!=first; test = test->next->to ) {
 	    if ( test->selected ) {
@@ -222,7 +222,7 @@ static void RH_MovePoints(ReviewHintData *hd,StemInfo *active,int start,int widt
 	hd->undocreated = true;
     }
 
-    for ( spl=sc->splines; spl!=NULL; spl=spl->next ) {
+    for ( spl=sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next ) {
 	for ( sp = spl->first ; ; ) {
 	    if ( hd->ishstem ) {
 		switch ((which = OnHint(active,sp->me.y,sp->me.x)) ) {
@@ -333,7 +333,7 @@ static void DoCancel(ReviewHintData *hd) {
     hd->cv->sc->vconflicts = StemListAnyConflicts(hd->cv->sc->vstem);
     hd->cv->sc->manualhints = hd->oldmanual;
     if ( hd->undocreated )
-	SCDoUndo(hd->cv->sc,dm_fore);
+	SCDoUndo(hd->cv->sc,ly_fore);
     SCOutOfDateBackground(hd->cv->sc);
     SCUpdateAll(hd->cv->sc);
     hd->done = true;
@@ -804,7 +804,7 @@ void SCClearRounds(SplineChar *sc) {
     SplineSet *ss;
     SplinePoint *sp;
 
-    for ( ss=sc->splines; ss!=NULL; ss=ss->next ) {
+    for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
 	for ( sp=ss->first; ; ) {
 	    sp->roundx = sp->roundy = false;
 	    if ( sp->next==NULL )
@@ -838,7 +838,7 @@ void SCRemoveSelectedMinimumDistances(SplineChar *sc,int inx) {
 	    prev = md;
     }
 
-    for ( ss=sc->splines; ss!=NULL; ss=ss->next ) {
+    for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
 	for ( sp=ss->first; ; ) {
 	    if ( sp->selected ) {
 		if ( inx==2 ) sp->roundx = sp->roundy = false;

@@ -551,9 +551,9 @@ static real SCFindMinXAtY(SplineChar *sc,real y) {
     real min = NOTREACHED;
     RefChar *ref;
 
-    min = SSFindMinXAtY(sc->splines,y,NOTREACHED);
+    min = SSFindMinXAtY(sc->layers[ly_fore].splines,y,NOTREACHED);
     for ( ref=sc->refs; ref!=NULL; ref=ref->next )
-	min = SSFindMinXAtY(ref->splines,y,min);
+	min = SSFindMinXAtY(ref->layers[0].splines,y,min);
 return( min );
 }
 
@@ -562,9 +562,9 @@ static int SCIsMinXAtYCurved(SplineChar *sc,real y) {
     int curved = false;
     RefChar *ref;
 
-    min = SSFindMinXAtY(sc->splines,y,NOTREACHED);
+    min = SSFindMinXAtY(sc->layers[ly_fore].splines,y,NOTREACHED);
     for ( ref=sc->refs; ref!=NULL; ref=ref->next )
-	min = SSIsMinXAtYCurved(ref->splines,y,min,&curved);
+	min = SSIsMinXAtYCurved(ref->layers[0].splines,y,min,&curved);
 return( curved );
 }
 
@@ -581,9 +581,9 @@ static void SCFindEdges(struct charone *ch,WidthInfo *wi) {
     ch->redge = galloc((ch->top-ch->base+1)*sizeof(short));
     for ( i=0; i<=ch->top-ch->base; ++i )
 	ch->ledge[i] = ch->redge[i] = NOTREACHED;
-    SSFindEdges(ch->sc->splines,ch,wi);
+    SSFindEdges(ch->sc->layers[ly_fore].splines,ch,wi);
     for ( ref=ch->sc->refs; ref!=NULL; ref=ref->next )
-	SSFindEdges(ref->splines,ch,wi);
+	SSFindEdges(ref->layers[0].splines,ch,wi);
     ch->lbearing = ch->rmax = NOTREACHED;
     for ( i=0; i<=ch->top-ch->base; ++i ) {
 	if ( ch->ledge[i]!=NOTREACHED )
@@ -1104,7 +1104,7 @@ static struct charone **BuildCharList(SplineFont *sf,GWindow gw, int base,
 	if ( all ) {
 	    for ( i=cnt=0; i<sf->charcnt && cnt<300; ++i ) {
 		if ( sf->chars[i]!=NULL &&
-			(sf->chars[i]->splines!=NULL || sf->chars[i]->refs!=NULL )) {
+			(sf->chars[i]->layers[ly_fore].splines!=NULL || sf->chars[i]->refs!=NULL )) {
 		    if ( doit )
 			ret[cnt++] = MakeCharOne(sf->chars[i]);
 		    else
@@ -1114,7 +1114,7 @@ static struct charone **BuildCharList(SplineFont *sf,GWindow gw, int base,
 	} else if ( sel ) {
 	    for ( i=cnt=0; i<sf->charcnt && cnt<300; ++i ) {
 		if ( sf->fv->selected[i] && sf->chars[i]!=NULL &&
-			(sf->chars[i]->splines!=NULL || sf->chars[i]->refs!=NULL )) {
+			(sf->chars[i]->layers[ly_fore].splines!=NULL || sf->chars[i]->refs!=NULL )) {
 		    if ( doit )
 			ret[cnt++] = MakeCharOne(sf->chars[i]);
 		    else
@@ -1133,7 +1133,7 @@ static struct charone **BuildCharList(SplineFont *sf,GWindow gw, int base,
 		for ( ; s<=e && cnt<300 ; ++s ) {
 		    i = SFFindExistingChar(sf,s,NULL);
 		    if ( i!=-1 && sf->chars[i]!=NULL &&
-			    (sf->chars[i]->splines!=NULL || sf->chars[i]->refs!=NULL )) {
+			    (sf->chars[i]->layers[ly_fore].splines!=NULL || sf->chars[i]->refs!=NULL )) {
 			if ( doit )
 			    ret[cnt++] = MakeCharOne(sf->chars[i]);
 			else
@@ -1167,7 +1167,7 @@ static struct charone **BuildCharList(SplineFont *sf,GWindow gw, int base,
 		if ( s==cnt ) {
 		    i = SFFindExistingChar(sf,'I',NULL);
 		    if ( i!=-1 && sf->chars[i]!=NULL &&
-			    (sf->chars[i]->splines!=NULL || sf->chars[i]->refs!=NULL ))
+			    (sf->chars[i]->layers[ly_fore].splines!=NULL || sf->chars[i]->refs!=NULL ))
 			ret[cnt++] = MakeCharOne(sf->chars[i]);
 		    else
 			s = -1;
@@ -1317,7 +1317,7 @@ return( false );
     for ( i=cnt=0; i<ks->cur; ++i ) {
 	j = SFFindExistingChar(sf,ks->ch1[i],NULL);
 	if ( j!=-1 && sf->chars[j]!=NULL &&
-		(sf->chars[j]->splines!=NULL || sf->chars[j]->refs!=NULL ))
+		(sf->chars[j]->layers[ly_fore].splines!=NULL || sf->chars[j]->refs!=NULL ))
 	    wi->left[cnt++] = MakeCharOne(sf->chars[j]);
 	else
 	    ks->ch1[i] = '\0';
@@ -1350,7 +1350,7 @@ return( false );
     for ( cnt=0,cpt=ch2s; *cpt ; ++cpt ) {
 	j = SFFindExistingChar(sf,*cpt,NULL);
 	if ( j!=-1 && sf->chars[j]!=NULL &&
-		(sf->chars[j]->splines!=NULL || sf->chars[j]->refs!=NULL ))
+		(sf->chars[j]->layers[ly_fore].splines!=NULL || sf->chars[j]->refs!=NULL ))
 	    wi->right[cnt++] = MakeCharOne(sf->chars[j]);
     }
     wi->rcnt = cnt;
@@ -1558,7 +1558,7 @@ static int SFCount(SplineFont *sf) {
 
     for ( i=cnt=0; i<sf->charcnt; ++i )
 	if ( sf->chars[i]!=NULL &&
-		(sf->chars[i]->splines!=NULL || sf->chars[i]->refs!=NULL ))
+		(sf->chars[i]->layers[ly_fore].splines!=NULL || sf->chars[i]->refs!=NULL ))
 	    ++cnt;
 return( cnt );
 }
@@ -1569,7 +1569,7 @@ static int SFCountSel(SplineFont *sf) {
 
     for ( i=cnt=0; i<sf->charcnt; ++i )
 	if ( sel[i] && sf->chars[i]!=NULL &&
-		(sf->chars[i]->splines!=NULL || sf->chars[i]->refs!=NULL ))
+		(sf->chars[i]->layers[ly_fore].splines!=NULL || sf->chars[i]->refs!=NULL ))
 	    ++cnt;
 return( cnt );
 }
@@ -1936,7 +1936,7 @@ static struct charone **autowidthBuildCharList(SplineFont *sf,
     for ( doit=0; doit<2; ++doit ) {
       for ( i=cnt=0; i<sf->charcnt && cnt<300; ++i ) {
 	if ( sf->fv->selected[i] && sf->chars[i]!=NULL &&
-	     (sf->chars[i]->splines!=NULL || sf->chars[i]->refs!=NULL )) {
+	     (sf->chars[i]->layers[ly_fore].splines!=NULL || sf->chars[i]->refs!=NULL )) {
 	  if ( doit )
 	    ret[cnt++] = MakeCharOne(sf->chars[i]);
 	  else
@@ -1959,7 +1959,7 @@ static struct charone **autowidthBuildCharList(SplineFont *sf,
 	    if ( s==cnt ) {
 		i = SFFindExistingChar(sf,'I',NULL);
 		if ( i!=-1 && sf->chars[i]!=NULL &&
-			(sf->chars[i]->splines!=NULL || sf->chars[i]->refs!=NULL ))
+			(sf->chars[i]->layers[ly_fore].splines!=NULL || sf->chars[i]->refs!=NULL ))
 		    ret[cnt++] = MakeCharOne(sf->chars[i]);
 		else
 		    s = -1;

@@ -91,7 +91,7 @@ void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]) {
     descenth[0] = descenth[1] = descenth[2] = base[0] = base[1] = base[2] = 0;
     otherdigits[0] = otherdigits[1] = otherdigits[2] = 0;
     for ( i=0; i<sf->charcnt; ++i ) {
-	if ( sf->chars[i]!=NULL && sf->chars[i]->splines!=NULL ) {
+	if ( sf->chars[i]!=NULL && sf->chars[i]->layers[ly_fore].splines!=NULL ) {
 	    int enc = sf->chars[i]->unicodeenc;
 	    const unichar_t *upt;
 	    if ( isalnum(enc) &&
@@ -459,11 +459,11 @@ void QuickBlues(SplineFont *_sf, BlueData *bd) {
 		    enc==0x399 || enc==0x39f || enc==0x3ba || enc==0x3bf || enc==0x3c1 || enc==0x3be || enc==0x3c7 ||
 		    enc==0x41f || enc==0x41e || enc==0x43e || enc==0x43f || enc==0x440 || enc==0x452 || enc==0x445 ) {
 		t = sf->chars[i];
-		while ( t->splines==NULL && t->refs!=NULL )
+		while ( t->layers[ly_fore].splines==NULL && t->refs!=NULL )
 		    t = t->refs->sc;
 		max = -1e10; min = 1e10;
-		if ( t->splines!=NULL ) {
-		    for ( spl=t->splines; spl!=NULL; spl=spl->next ) {
+		if ( t->layers[ly_fore].splines!=NULL ) {
+		    for ( spl=t->layers[ly_fore].splines; spl!=NULL; spl=spl->next ) {
 			for ( sp=spl->first; ; ) {
 			    if ( sp->me.y > max ) max = sp->me.y;
 			    if ( sp->me.y < min ) min = sp->me.y;
@@ -728,13 +728,13 @@ void ELFindEdges(SplineChar *sc, EIList *el) {
     SplineSet *spl;
 
     el->sc = sc;
-    if ( sc->splines==NULL )
+    if ( sc->layers[ly_fore].splines==NULL )
 return;
 
-    el->coordmin[0] = el->coordmax[0] = sc->splines->first->me.x;
-    el->coordmin[1] = el->coordmax[1] = sc->splines->first->me.y;
+    el->coordmin[0] = el->coordmax[0] = sc->layers[ly_fore].splines->first->me.x;
+    el->coordmin[1] = el->coordmax[1] = sc->layers[ly_fore].splines->first->me.y;
 
-    for ( spl = sc->splines; spl!=NULL; spl = spl->next ) if ( spl->first->prev!=NULL && spl->first->prev->from!=spl->first ) {
+    for ( spl = sc->layers[ly_fore].splines; spl!=NULL; spl = spl->next ) if ( spl->first->prev!=NULL && spl->first->prev->from!=spl->first ) {
 	first = NULL;
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
 	    EIAddSpline(spline,el);
@@ -1865,7 +1865,7 @@ static StemInfo *URWSerifChecker(SplineChar *sc,StemInfo *stems) {
     double maxheight = .04*(sc->parent->ascent+sc->parent->descent);
     StemInfo *prev, *test, *cur;
 
-    for ( spl = sc->splines; spl!=NULL; spl=spl->next ) {
+    for ( spl = sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next ) {
 	for ( sp = spl->first; ; sp=n ) {
 	    if ( sp->next==NULL )
 	break;
@@ -2149,9 +2149,9 @@ static StemInfo *StemRemovePointlessHints(SplineChar *sc,int major,StemInfo *ste
 	n = stems->next;
 	right = stems->haspointright; left = stems->haspointleft;
 	if ( !left )
-	    left = AnyPointsAt(sc->splines,major,stems->start);
+	    left = AnyPointsAt(sc->layers[ly_fore].splines,major,stems->start);
 	if ( !right )
-	    right = AnyPointsAt(sc->splines,major,stems->start+stems->width);
+	    right = AnyPointsAt(sc->layers[ly_fore].splines,major,stems->start+stems->width);
 	if ( !right || !left ) {
 	    StemInfoFree(stems);
 	    if ( p==NULL )
@@ -2645,7 +2645,7 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
 
     /* Now look and see if we can find any edges which lie in */
     /*  these zones.  Edges which are not currently in hints */
-    for ( spl = sc->splines; spl!=NULL; spl = spl->next ) if ( spl->first->prev!=NULL ) {
+    for ( spl = sc->layers[ly_fore].splines; spl!=NULL; spl = spl->next ) if ( spl->first->prev!=NULL ) {
 	first = NULL;
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = spline->to->next ) {
 	    base = spline->from->me.y;
@@ -2863,7 +2863,7 @@ static HintInstance *SCGuessHintPoints(SplineChar *sc, StemInfo *stem,int major,
     real coord;
     HintInstance *head, *test, *cur, *prev;
 
-    for ( spl=sc->splines; spl!=NULL; spl=spl->next ) {
+    for ( spl=sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next ) {
 	for ( sp=spl->first; ; sp = np ) {
 	    coord = (major?sp->me.x:sp->me.y);
 	    sm = coord>=stem->start-off && coord<=stem->start+off;
@@ -2918,7 +2918,7 @@ static void SCGuessHintInstances(SplineChar *sc, StemInfo *stem,int major) {
     /*  a hint from one side of an H to the other, it will get the whole thing */
     /*  not just the cross stem) */
 
-    for ( spl=sc->splines; spl!=NULL; spl=spl->next ) {
+    for ( spl=sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next ) {
 	for ( sp=spl->first; ; sp = np ) {
 	    sm = (major?sp->me.x:sp->me.y)==stem->start;
 	    wm = (major?sp->me.x:sp->me.y)==stem->start+stem->width;
@@ -3386,7 +3386,7 @@ return;
 	    xmax = md->sp2->me.x;
     }
     if ( xmax<sc->width ) {
-	for ( ss=sc->splines; ss!=NULL; ss=ss->next) {
+	for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next) {
 	    for ( sp=ss->first ; ; ) {
 		if ( sp->me.x>=xmax-1 && sp->me.x<xmax+1 ) {
 		    md = chunkalloc(sizeof(MinimumDistance));
@@ -3550,7 +3550,7 @@ static void SCSerifCheck(SplineChar *sc,StemInfo *hint, int xdir) {
     SplinePoint *sp;
 
     for ( ; hint!=NULL ; hint=hint->next ) {
-	for ( ss=sc->splines; ss!=NULL; ss=ss->next ) {
+	for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
 	    for ( sp=ss->first ; ; ) {
 		if ( xdir && ((sp->me.x>=hint->start-1 && sp->me.x<=hint->start+1) ||
 			(sp->me.x>=hint->start+hint->width-1 && sp->me.x<=hint->start+hint->width+2)) )
@@ -3579,7 +3579,7 @@ static void _SCClearHintMasks(SplineChar *sc,int counterstoo) {
 	sc->countermasks = NULL; sc->countermask_cnt = 0;
     }
 
-    for ( spl = sc->splines; spl!=NULL; spl=spl->next ) {
+    for ( spl = sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next ) {
 	for ( sp = spl->first ; ; ) {
 	    chunkfree(sp->hintmask,sizeof(HintMask));
 	    sp->hintmask = NULL;
@@ -3592,7 +3592,7 @@ static void _SCClearHintMasks(SplineChar *sc,int counterstoo) {
     }
 
     for ( ref = sc->refs; ref!=NULL; ref=ref->next ) {
-	for ( spl = ref->splines; spl!=NULL; spl=spl->next ) {
+	for ( spl = ref->layers[0].splines; spl!=NULL; spl=spl->next ) {
 	    for ( sp = spl->first ; ; ) {
 		chunkfree(sp->hintmask,sizeof(HintMask));
 		sp->hintmask = NULL;
@@ -4194,7 +4194,7 @@ static void ResolveSplitHints(SplineChar *scs[16],int instance_count) {
 	hcnt = NumberHints(scs[i]);
 	UntickHints(scs[i]);
 	if ( hcnt>hmax ) hmax = hcnt;
-	spl[i] = scs[i]->splines;
+	spl[i] = scs[i]->layers[ly_fore].splines;
     }
     if ( hmax==0 )
 return;
@@ -4207,7 +4207,7 @@ return;
     }
     while ( anymore ) {
 	for ( i=0; i<instance_count; ++i )
-	    spl[i] = ( ref[i]!=NULL ) ? ref[i]->splines : NULL;
+	    spl[i] = ( ref[i]!=NULL ) ? ref[i]->layers[0].splines : NULL;
 	SplResolveSplitHints(scs,spl,instance_count,&hs,&vs);
 	anymore = false;
 	for ( i=0; i<instance_count; ++i ) {
@@ -4316,14 +4316,14 @@ return;						/* In an MM font we may still need to resolve things like different
     }
 
     for ( i=0; i<instance_count; ++i ) {
-	spl[i] = scs[i]->splines;
+	spl[i] = scs[i]->layers[ly_fore].splines;
 	ref[i] = scs[i]->refs;
     }
     inited = SplFigureHintMasks(scs,spl,instance_count,mask,false);
     forever {
 	for ( i=0; i<instance_count; ++i ) {
 	    if ( ref[i]!=NULL )
-		spl[i] = ref[i]->splines;
+		spl[i] = ref[i]->layers[0].splines;
 	}
 	inited = SplFigureHintMasks(scs,spl,instance_count,mask,inited);
 	anymore = false;
@@ -4558,7 +4558,7 @@ static int _SplineCharIsFlexible(SplineChar *sc, int blueshift) {
     if ( sc==NULL )
 return(false);
 
-    for ( spl = sc->splines; spl!=NULL; spl=spl->next ) {
+    for ( spl = sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next ) {
 	if ( spl->first->prev==NULL ) {
 	    /* Mark everything on the open path as inflexible */
 	    sp=spl->first;
@@ -4629,7 +4629,7 @@ static int MatchFlexes(MMSet *mm,int enc) {
 
     for ( i=0; i<mm->instance_count; ++i )
 	if ( enc<mm->instances[i]->charcnt && mm->instances[i]->chars[enc]!=NULL )
-	    spl[i] = mm->instances[i]->chars[enc]->splines;
+	    spl[i] = mm->instances[i]->chars[enc]->layers[ly_fore].splines;
 	else
 	    spl[i] = NULL;
     while ( spl[0]!=NULL ) {
@@ -4699,7 +4699,7 @@ static void SCUnflex(SplineChar *sc) {
     SplineSet *spl;
     SplinePoint *sp;
 
-    for ( spl = sc->splines; spl!=NULL; spl=spl->next ) {
+    for ( spl = sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next ) {
 	/* Mark everything on the path as inflexible */
 	sp=spl->first;
 	while ( 1 ) {

@@ -230,13 +230,13 @@ return;
 	spl = SplineSetsConvertOrder(spl,true);
     for ( espl=spl; espl->next!=NULL; espl = espl->next );
     if ( dm==dm_grid )
-	head = &sc->parent->gridsplines;
+	head = &sc->parent->grid.splines;
     else if ( dm==dm_fore ) {
 	SCPreserveState(sc,false);
-	head = &sc->splines;
+	head = &sc->layers[ly_fore].splines;
     } else {
 	SCPreserveBackground(sc);
-	head = &sc->backgroundsplines;
+	head = &sc->layers[ly_back].splines;
     }
     if ( doclear )
 	SplinePointListsFree(*head);
@@ -270,8 +270,8 @@ return;
     }
     for ( espl=spl; espl->next!=NULL; espl = espl->next );
     SCPreserveState(sc,false);
-    espl->next = sc->splines;
-    sc->splines = spl;
+    espl->next = sc->layers[ly_fore].splines;
+    sc->layers[ly_fore].splines = spl;
     SCCharChangedUpdate(sc);
 }
 
@@ -291,13 +291,13 @@ return;
     }
     for ( espl=spl; espl->next!=NULL; espl = espl->next );
     if ( dm==dm_grid )
-	head = &sc->parent->gridsplines;
+	head = &sc->parent->grid.splines;
     else if ( dm==dm_fore ) {
 	SCPreserveState(sc,false);
-	head = &sc->splines;
+	head = &sc->layers[ly_fore].splines;
     } else {
 	SCPreserveBackground(sc);
-	head = &sc->backgroundsplines;
+	head = &sc->layers[ly_back].splines;
     }
     if ( doclear )
 	SplinePointListsFree(*head);
@@ -543,7 +543,7 @@ static SplineSet * slurppolyline(FILE *fig,SplineChar *sc, SplineSet *sofar) {
 	    SplineMake3(spl->last,spl->first);
 	    spl->last = spl->first;
 	}
-	spl->next = sc->splines;
+	spl->next = sc->layers[ly_fore].splines;
 	spl->next = sofar;
     }
     free(bps);
@@ -792,8 +792,8 @@ return;
 	if ( cv->sc->parent->order2 )
 	    spl = SplineSetsConvertOrder(spl,true);
 	for ( espl=spl; espl->next!=NULL; espl=espl->next );
-	espl->next = *cv->heads[cv->drawmode];
-	*cv->heads[cv->drawmode] = spl;
+	espl->next = cv->layerheads[cv->drawmode]->splines;
+	cv->layerheads[cv->drawmode]->splines = spl;
 	CVCharChangedUpdate(cv);
     }
     fclose(fig);

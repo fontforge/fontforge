@@ -851,11 +851,11 @@ static void CvtPsSplineSet(GrowBuf *gb, SplineChar *scs[MmMax], int instance_cou
     int i;
 
     if ( is_order2 ) {
-	freeme = spl[0] = SplineSetsPSApprox(scs[0]->splines);
+	freeme = spl[0] = SplineSetsPSApprox(scs[0]->layers[ly_fore].splines);
 	instance_count = 1;
     } else {
 	for ( i=0; i<instance_count; ++i )
-	    spl[i] = scs[i]->splines;
+	    spl[i] = scs[i]->layers[ly_fore].splines;
     }
     while ( spl[0]!=NULL ) {
 	first = NULL;
@@ -953,7 +953,7 @@ static RefChar *IsRefable(RefChar *ref, int isps, real transform[6], RefChar *so
 		transform[5];
 
     if (( isps==1 && ref->adobe_enc!=-1 ) ||
-	    (/*isps!=1 &&*/ (ref->sc->splines!=NULL || ref->sc->refs==NULL))) {
+	    (/*isps!=1 &&*/ (ref->sc->layers[ly_fore].splines!=NULL || ref->sc->refs==NULL))) {
 	/* If we're in postscript mode and the character we are refering to */
 	/*  has an adobe encoding then we are done. */
 	/* In TrueType mode, if the character has no refs itself then we are */
@@ -964,10 +964,10 @@ static RefChar *IsRefable(RefChar *ref, int isps, real transform[6], RefChar *so
 	sub = chunkalloc(sizeof(RefChar));
 	*sub = *ref;
 	sub->next = sofar;
-	/*sub->splines = NULL;*/
+	/*sub->layers[0].splines = NULL;*/
 	memcpy(sub->transform,trans,sizeof(trans));
 return( sub );
-    } else if ( /* isps &&*/ ( ref->sc->refs==NULL || ref->sc->splines!=NULL) ) {
+    } else if ( /* isps &&*/ ( ref->sc->refs==NULL || ref->sc->layers[ly_fore].splines!=NULL) ) {
 	RefCharsFreeRef(sofar);
 return( NULL );
     }
@@ -1011,7 +1011,7 @@ RefChar *SCCanonicalRefs(SplineChar *sc, int isps) {
     real noop[6];
 
     /* Neither allows mixing splines and refs */
-    if ( sc->splines!=NULL )
+    if ( sc->layers[ly_fore].splines!=NULL )
 return(NULL);
     noop[0] = noop[3] = 1.0; noop[2]=noop[1]=noop[4]=noop[5] = 0;
     for ( ref=sc->refs; ref!=NULL; ref=ref->next ) {
@@ -1120,7 +1120,7 @@ return( true );
 static int IsPSRefable(SplineChar *sc) {
     RefChar *ref;
 
-    if ( sc->refs==NULL || sc->splines!=NULL )
+    if ( sc->refs==NULL || sc->layers[ly_fore].splines!=NULL )
 return( false );
 
     for ( ref=sc->refs; ref!=NULL; ref=ref->next ) {
@@ -1184,7 +1184,7 @@ return( false );
 	    r2 = NULL;			/* No space???? */
 	else {
 	    space.sc = scs[0]->parent->chars[i];
-	    if ( space.sc->splines!=NULL || space.sc->refs!=NULL )
+	    if ( space.sc->layers[ly_fore].splines!=NULL || space.sc->refs!=NULL )
 		r2 = NULL;
 	}
     } else if ( r2->next!=NULL )
@@ -1256,12 +1256,12 @@ static int _SCNeedsSubsPts(SplineChar *sc) {
     if ( sc->hstem==NULL && sc->vstem==NULL )
 return( false );
 
-    if ( sc->splines!=NULL )
-return( sc->splines->first->hintmask==NULL );
+    if ( sc->layers[ly_fore].splines!=NULL )
+return( sc->layers[ly_fore].splines->first->hintmask==NULL );
 
     for ( ref = sc->refs; ref!=NULL; ref=ref->next )
-	if ( ref->splines!=NULL )
-return( ref->splines->first->hintmask==NULL );
+	if ( ref->layers[0].splines!=NULL )
+return( ref->layers[0].splines->first->hintmask==NULL );
 
 return( false );		/* It's empty. that's easy. */
 }
@@ -1421,7 +1421,7 @@ static int AlwaysSeacable(SplineChar *sc) {
     int iscid = sc->parent->cidmaster!=NULL;
 
     for ( d=sc->dependents; d!=NULL; d = d->next ) {
-	if ( d->sc->splines!=NULL )	/* I won't deal with things with both splines and refs. */
+	if ( d->sc->layers[ly_fore].splines!=NULL )	/* I won't deal with things with both splines and refs. */
     continue;				/*  skip it */
 	for ( r=d->sc->refs; r!=NULL; r=r->next ) {
 	    if ( r->transform[0]!=1 || r->transform[1]!=0 ||
@@ -1549,7 +1549,7 @@ int SFOneWidth(SplineFont *sf) {
 
     width = -2;
     for ( i=0; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i]) &&
-	    (strcmp(sf->chars[i]->name,".notdef")!=0 || sf->chars[i]->splines!=NULL)) {
+	    (strcmp(sf->chars[i]->name,".notdef")!=0 || sf->chars[i]->layers[ly_fore].splines!=NULL)) {
 	/* Only trust the width of notdef if it's got some content */
 	/* (at least as far as fixed pitch determination goes) */
 	if ( width==-2 ) width = sf->chars[i]->width;
@@ -1572,7 +1572,7 @@ int CIDOneWidth(SplineFont *_sf) {
     do {
 	sf = _sf->subfonts==NULL? _sf : _sf->subfonts[k];
 	for ( i=0; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i]) &&
-		(strcmp(sf->chars[i]->name,".notdef")!=0 || sf->chars[i]->splines!=NULL)) {
+		(strcmp(sf->chars[i]->name,".notdef")!=0 || sf->chars[i]->layers[ly_fore].splines!=NULL)) {
 	    /* Only trust the width of notdef if it's got some content */
 	    /* (at least as far as fixed pitch determination goes) */
 	    if ( width==-2 ) width = sf->chars[i]->width;
@@ -1594,7 +1594,7 @@ return( sf->ascent+sf->descent );
 
     width = -2;
     for ( i=0; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i]) &&
-	    (strcmp(sf->chars[i]->name,".notdef")!=0 || sf->chars[i]->splines!=NULL)) {
+	    (strcmp(sf->chars[i]->name,".notdef")!=0 || sf->chars[i]->layers[ly_fore].splines!=NULL)) {
 	/* Only trust the width of notdef if it's got some content */
 	/* (at least as far as fixed pitch determination goes) */
 	if ( width==-2 ) width = sf->chars[i]->vwidth;
@@ -2479,9 +2479,9 @@ static unsigned char *SplineChar2PSOutline2(SplineChar *sc,int *len,
     scs[0] = sc;
     hdb.scs = scs;
 
-    CvtPsSplineSet2(&gb,sc->splines,&hdb,startend,sc->parent->order2,round);
+    CvtPsSplineSet2(&gb,sc->layers[ly_fore].splines,&hdb,startend,sc->parent->order2,round);
     for ( rf = sc->refs; rf!=NULL; rf = rf->next )
-	CvtPsSplineSet2(&gb,rf->splines,&hdb,NULL,sc->parent->order2,round);
+	CvtPsSplineSet2(&gb,rf->layers[0].splines,&hdb,NULL,sc->parent->order2,round);
     if ( gb.pt+1>=gb.end )
 	GrowBuffer(&gb);
     *gb.pt++ = 11;				/* return */
@@ -2547,9 +2547,9 @@ static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid,
 	DumpHints(&gb,sc->hstem,sc->hconflicts?18:1,sc->hconflicts?18:1,round);
 	DumpHints(&gb,sc->vstem,sc->vconflicts || sc->hconflicts?-1:3,sc->vconflicts || sc->hconflicts?23:3,round);
 	CounterHints2(&gb, sc, hdb.cnt );
-	CvtPsSplineSet2(&gb,sc->splines,&hdb,NULL,sc->parent->order2,round);
+	CvtPsSplineSet2(&gb,sc->layers[ly_fore].splines,&hdb,NULL,sc->parent->order2,round);
 	for ( rf = sc->refs; rf!=NULL; rf = rf->next )
-	    CvtPsSplineSet2(&gb,rf->splines,&hdb,NULL,sc->parent->order2,round);
+	    CvtPsSplineSet2(&gb,rf->layers[0].splines,&hdb,NULL,sc->parent->order2,round);
     }
     if ( gb.pt+1>=gb.end )
 	GrowBuffer(&gb);

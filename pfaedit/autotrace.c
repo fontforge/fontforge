@@ -143,7 +143,7 @@ static SplinePointList *SplinesFromEntities(Entity *ent, Color bgcol, int ispotr
     /*  the edge of the character */
     if ( !ispotrace ) do {
 	removed = false;
-	sc.splines = head;
+	sc.layers[ly_fore].splines = head;
 	SplineCharFindBounds(&sc,&bb);
 	fudge = (bb.maxy-bb.miny)/64;
 	if ( (bb.maxx-bb.minx)/64 > fudge )
@@ -316,8 +316,8 @@ return;
 		    if ( !changed )
 			SCPreserveState(sc,false);
 		    for ( last=new; last->next!=NULL; last=last->next );
-		    last->next = sc->splines;
-		    sc->splines = new;
+		    last->next = sc->layers[ly_fore].splines;
+		    sc->layers[ly_fore].splines = new;
 		    changed = true;
 		}
 	    }

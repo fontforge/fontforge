@@ -543,9 +543,9 @@ static void SCPrintPage(PI *pi,SplineChar *sc) {
     fprintf(pi->out,"%g %g moveto %g %g lineto stroke\n", page.minx, -sc->parent->descent*pi->scale+pi->yoff, page.maxx, -sc->parent->descent*pi->scale+pi->yoff );
     fprintf(pi->out,"%g %g moveto %g %g lineto stroke\n", pi->xoff+sc->width*pi->scale, page.miny, pi->xoff+sc->width*pi->scale, page.maxy );
 
-    PIDumpSPL(pi,sc->splines);
+    PIDumpSPL(pi,sc->layers[ly_fore].splines);
     for ( r=sc->refs; r!=NULL; r=r->next )
-	PIDumpSPL(pi,r->splines);
+	PIDumpSPL(pi,r->layers[0].splines);
 
 }
 

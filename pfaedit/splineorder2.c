@@ -615,18 +615,18 @@ void SCConvertToOrder2(SplineChar *sc) {
     if ( sc==NULL )
 return;
 
-    new = SplineSetsTTFApprox(sc->splines);
-    SplinePointListsFree(sc->splines);
-    sc->splines = new;
+    new = SplineSetsTTFApprox(sc->layers[ly_fore].splines);
+    SplinePointListsFree(sc->layers[ly_fore].splines);
+    sc->layers[ly_fore].splines = new;
 
-    new = SplineSetsTTFApprox(sc->backgroundsplines);
-    SplinePointListsFree(sc->backgroundsplines);
-    sc->backgroundsplines = new;
+    new = SplineSetsTTFApprox(sc->layers[ly_back].splines);
+    SplinePointListsFree(sc->layers[ly_back].splines);
+    sc->layers[ly_back].splines = new;
 
-    UndoesFree(sc->undoes[0]); UndoesFree(sc->undoes[1]);
-    UndoesFree(sc->redoes[0]); UndoesFree(sc->redoes[1]);
-    sc->undoes[0] = sc->undoes[1] = NULL;
-    sc->redoes[0] = sc->redoes[1] = NULL;
+    UndoesFree(sc->layers[ly_fore].undoes); UndoesFree(sc->layers[ly_back].undoes);
+    UndoesFree(sc->layers[ly_fore].redoes); UndoesFree(sc->layers[ly_back].redoes);
+    sc->layers[ly_fore].undoes = sc->layers[ly_back].undoes = NULL;
+    sc->layers[ly_fore].redoes = sc->layers[ly_back].redoes = NULL;
 
     MinimumDistancesFree(sc->md); sc->md = NULL;
 }
@@ -659,12 +659,12 @@ void SFConvertToOrder2(SplineFont *_sf) {
 	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && !sf->chars[i]->ticked )
 	    SCConvertRefs(sf->chars[i]);
 
-	new = SplineSetsTTFApprox(sf->gridsplines);
-	SplinePointListsFree(sf->gridsplines);
-	sf->gridsplines = new;
+	new = SplineSetsTTFApprox(sf->grid.splines);
+	SplinePointListsFree(sf->grid.splines);
+	sf->grid.splines = new;
 
-	UndoesFree(sf->gundoes); UndoesFree(sf->gredoes);
-	sf->gundoes = sf->gredoes = NULL;
+	UndoesFree(sf->grid.undoes); UndoesFree(sf->grid.redoes);
+	sf->grid.undoes = sf->grid.redoes = NULL;
 	sf->order2 = true;
 	++k;
     } while ( k<_sf->subfontcnt );
@@ -674,18 +674,18 @@ void SFConvertToOrder2(SplineFont *_sf) {
 void SCConvertToOrder3(SplineChar *sc) {
     SplineSet *new;
 
-    new = SplineSetsPSApprox(sc->splines);
-    SplinePointListsFree(sc->splines);
-    sc->splines = new;
+    new = SplineSetsPSApprox(sc->layers[ly_fore].splines);
+    SplinePointListsFree(sc->layers[ly_fore].splines);
+    sc->layers[ly_fore].splines = new;
 
-    new = SplineSetsPSApprox(sc->backgroundsplines);
-    SplinePointListsFree(sc->backgroundsplines);
-    sc->backgroundsplines = new;
+    new = SplineSetsPSApprox(sc->layers[ly_back].splines);
+    SplinePointListsFree(sc->layers[ly_back].splines);
+    sc->layers[ly_back].splines = new;
 
-    UndoesFree(sc->undoes[0]); UndoesFree(sc->undoes[1]);
-    UndoesFree(sc->redoes[0]); UndoesFree(sc->redoes[1]);
-    sc->undoes[0] = sc->undoes[1] = NULL;
-    sc->redoes[0] = sc->redoes[1] = NULL;
+    UndoesFree(sc->layers[ly_fore].undoes); UndoesFree(sc->layers[ly_back].undoes);
+    UndoesFree(sc->layers[ly_fore].redoes); UndoesFree(sc->layers[ly_back].redoes);
+    sc->layers[ly_fore].undoes = sc->layers[ly_back].undoes = NULL;
+    sc->layers[ly_fore].redoes = sc->layers[ly_back].redoes = NULL;
 
     MinimumDistancesFree(sc->md); sc->md = NULL;
 
@@ -717,12 +717,12 @@ void SFConvertToOrder3(SplineFont *_sf) {
 	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && !sf->chars[i]->ticked )
 	    SCConvertRefs(sf->chars[i]);
 
-	new = SplineSetsPSApprox(sf->gridsplines);
-	SplinePointListsFree(sf->gridsplines);
-	sf->gridsplines = new;
+	new = SplineSetsPSApprox(sf->grid.splines);
+	SplinePointListsFree(sf->grid.splines);
+	sf->grid.splines = new;
 
-	UndoesFree(sf->gundoes); UndoesFree(sf->gredoes);
-	sf->gundoes = sf->gredoes = NULL;
+	UndoesFree(sf->grid.undoes); UndoesFree(sf->grid.redoes);
+	sf->grid.undoes = sf->grid.redoes = NULL;
 
 	TtfTablesFree(sf->ttf_tables);
 	sf->ttf_tables = NULL;

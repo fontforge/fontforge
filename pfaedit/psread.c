@@ -364,7 +364,7 @@ static void ECCatagorizePoints( EntityChar *ec ) {
 
     memset(&sc,'\0',sizeof(sc));
     for ( ent=ec->splines; ent!=NULL; ent=ent->next ) if ( ent->type == et_splines ) {
-	sc.splines = ent->u.splines.splines;
+	sc.layers[ly_fore].splines = ent->u.splines.splines;
 	SCCatagorizePoints(&sc);
     }
 }
@@ -2109,7 +2109,7 @@ static void SCInterpretPS(FILE *ps,SplineChar *sc, int *flags) {
     ec.sc = sc;
     sc->width = ec.width;
     sc->refs = ec.refs;
-    sc->splines = SplinesFromEntities(&ec,flags);
+    sc->layers[ly_fore].splines = SplinesFromEntities(&ec,flags);
     free(wrapper.top);
 }
     
@@ -2353,7 +2353,7 @@ return;				/* Didn't change the order */
 
     for ( i=0; i<sc->countermask_cnt; ++i )
 	RemapHintMask(&sc->countermasks[i],mapping,max);
-    for ( spl = sc->splines; spl!=NULL; spl=spl->next ) {
+    for ( spl = sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next ) {
 	for ( sp = spl->first; ; ) {
 	    RemapHintMask(sp->hintmask,mapping,max);
 	    if ( sp->next==NULL )
@@ -3127,7 +3127,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 			if ( cur!=NULL )
 			    cur->next = spl;
 			else
-			    ret->splines = spl;
+			    ret->layers[ly_fore].splines = spl;
 			cur = spl;
 		    }
 	    break;
@@ -3337,7 +3337,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
     /* Even in type1 fonts all paths should be closed. But if we close them at*/
     /*  the obvious moveto, that breaks flex hints. So we have a hack here at */
     /*  the end which closes any open paths. */
-    if ( !is_type2 ) for ( cur = ret->splines; cur!=NULL; cur = cur->next ) if ( cur->first->prev==NULL ) {
+    if ( !is_type2 ) for ( cur = ret->layers[ly_fore].splines; cur!=NULL; cur = cur->next ) if ( cur->first->prev==NULL ) {
 	SplineMake3(cur->last,cur->first);
 	cur->last = cur->first;
     }
@@ -3346,7 +3346,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
     /*  backwards ... at least backwards from fontographer ... so reverse 'em*/
     /* Oh, I see. PS and TT disagree on which direction to use, so Fontographer*/
     /*  chose the TT direction and we must reverse postscript */
-    for ( cur = ret->splines; cur!=NULL; cur = cur->next )
+    for ( cur = ret->layers[ly_fore].splines; cur!=NULL; cur = cur->next )
 	SplineSetReverse(cur);
     if ( ret->hstem==NULL && ret->vstem==NULL )
 	ret->manualhints = false;

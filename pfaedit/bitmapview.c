@@ -472,9 +472,9 @@ static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
 	clip.height = event->u.expose.rect.height/cvtemp.scale;
 	clip.x = (event->u.expose.rect.x-cvtemp.xoff)/cvtemp.scale;
 	clip.y = (cvtemp.height-event->u.expose.rect.y-event->u.expose.rect.height-cvtemp.yoff)/cvtemp.scale;
-	CVDrawSplineSet(&cvtemp,pixmap,cvtemp.sc->splines,col,false,&clip);
+	CVDrawSplineSet(&cvtemp,pixmap,cvtemp.sc->layers[ly_fore].splines,col,false,&clip);
 	for ( refs = cvtemp.sc->refs; refs!=NULL; refs = refs->next )
-	    CVDrawSplineSet(&cvtemp,pixmap,refs->splines,col,false,&clip);
+	    CVDrawSplineSet(&cvtemp,pixmap,refs->layers[0].splines,col,false,&clip);
     }
     if ( bv->active_tool==bvt_pointer ) {
 	if ( bv->bc->selection==NULL ) {

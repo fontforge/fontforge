@@ -448,7 +448,7 @@ return( true );
 	DebuggerGetWatches(dv->dc,&n);
 	watches = gcalloc(n,sizeof(uint8));
 
-	for ( ss = dv->cv->sc->splines; ss!=NULL; ss=ss->next ) {
+	for ( ss = dv->cv->sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
 	    for ( sp=ss->first; ; ) {
 		sp->watched = false;
 		if ( sp->ttfindex == 0xffff )
@@ -1058,7 +1058,7 @@ void CVDebugFree(DebugView *dv) {
 	}
 	free(dv);
 
-	for ( ss = dv->cv->sc->splines; ss!=NULL; ss=ss->next ) {
+	for ( ss = dv->cv->sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
 	    for ( sp=ss->first; ; ) {
 		sp->watched = false;
 		if ( sp->next==NULL )

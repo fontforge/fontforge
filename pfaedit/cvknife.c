@@ -122,7 +122,7 @@ void CVMouseUpKnife(CharView *cv) {
 
     while ( foundsomething ) {
 	foundsomething = false;
-	for ( spl = *cv->heads[cv->drawmode]; spl!=NULL && !foundsomething; spl = spl->next ) {
+	for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL && !foundsomething; spl = spl->next ) {
 	    for ( s = spl->first->next; s!=NULL ; ) {
 		nexts = NULL;
 		if ( s->to!=spl->first )

@@ -844,13 +844,13 @@ static void SFApplyEnc(SplineFont *sf, int charcnt) {
 	for ( rprev = NULL, refs=sc->refs; refs!=NULL; refs=rnext ) {
 	    rnext = refs->next;
 	    if ( refs->sc->enc==-1 ) {
-		new = refs->splines;
+		new = refs->layers[0].splines;
 		if ( new!=NULL ) {
 		    for ( spl = new; spl->next!=NULL; spl = spl->next );
-		    spl->next = sc->splines;
-		    sc->splines = new;
+		    spl->next = sc->layers[ly_fore].splines;
+		    sc->layers[ly_fore].splines = new;
 		}
-		refs->splines=NULL;
+		refs->layers[0].splines=NULL;
 		RefCharFree(refs);
 		if ( rprev==NULL )
 		    sc->refs = rnext;

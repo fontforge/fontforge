@@ -1169,7 +1169,7 @@ static void SplineSetFindNeeded(SplineChar *realsc,SplineSet *base,enum overlap_
     SplineChar sc;
 
     memset(&sc,'\0',sizeof(sc));
-    sc.splines = base;
+    sc.layers[ly_fore].splines = base;
     sc.name = realsc->name;
 
     memset(&el,'\0',sizeof(el));

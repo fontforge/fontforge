@@ -77,11 +77,11 @@ typedef struct entity {
     struct entity *next;
 } Entity;
 	    
-typedef struct layer {
+typedef struct entlayer {
     Entity *entities;
     char *name;
     unsigned int isvisible: 1;
-} Layer;
+} EntLayer;
 
 typedef struct tile {
     Entity *tile;
@@ -92,7 +92,7 @@ typedef struct tile {
 
 typedef struct splinedesign {
     int lcnt, lmax, active;
-    Layer *layers;
+    EntLayer *layers;
 
     real width, height;		/* in millimeters */
     int16 hpages, vpages;

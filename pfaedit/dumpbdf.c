@@ -358,7 +358,7 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding, int res) {
 	cap_h = font->chars['X']->ymax;
     }
     if ( (font->sf->chars[0]!=NULL &&
-	    (font->sf->chars[0]->splines!=NULL || (font->sf->chars[0]->widthset && *mono!='M')) &&
+	    (font->sf->chars[0]->layers[ly_fore].splines!=NULL || (font->sf->chars[0]->widthset && *mono!='M')) &&
 	     font->sf->chars[0]->refs==NULL && strcmp(font->sf->chars[0]->name,".notdef")==0 ) )
 	def_ch = 0;
 

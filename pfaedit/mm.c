@@ -284,7 +284,7 @@ static int ContourCount(SplineChar *sc) {
     SplineSet *spl;
     int i;
 
-    for ( spl=sc->splines, i=0; spl!=NULL; spl=spl->next, ++i );
+    for ( spl=sc->layers[ly_fore].splines, i=0; spl!=NULL; spl=spl->next, ++i );
 return( i );
 }
 
@@ -292,7 +292,7 @@ static int ContourPtMatch(SplineChar *sc1, SplineChar *sc2) {
     SplineSet *spl1, *spl2;
     SplinePoint *sp1, *sp2;
 
-    for ( spl1=sc1->splines, spl2=sc2->splines; spl1!=NULL && spl2!=NULL; spl1=spl1->next, spl2=spl2->next ) {
+    for ( spl1=sc1->layers[ly_fore].splines, spl2=sc2->layers[ly_fore].splines; spl1!=NULL && spl2!=NULL; spl1=spl1->next, spl2=spl2->next ) {
 	for ( sp1=spl1->first, sp2 = spl2->first; ; ) {
 	    if ( sp1->nonextcp!=sp2->nonextcp || sp1->noprevcp!=sp2->noprevcp )
 return( false );
@@ -315,7 +315,7 @@ return( true );
 static int ContourDirMatch(SplineChar *sc1, SplineChar *sc2) {
     SplineSet *spl1, *spl2;
 
-    for ( spl1=sc1->splines, spl2=sc2->splines; spl1!=NULL && spl2!=NULL; spl1=spl1->next, spl2=spl2->next ) {
+    for ( spl1=sc1->layers[ly_fore].splines, spl2=sc2->layers[ly_fore].splines; spl1!=NULL && spl2!=NULL; spl1=spl1->next, spl2=spl2->next ) {
 	if ( SplinePointListIsClockwise(spl1)!=SplinePointListIsClockwise(spl2) )
 return( false );
     }
@@ -326,7 +326,7 @@ static int ContourHintMaskMatch(SplineChar *sc1, SplineChar *sc2) {
     SplineSet *spl1, *spl2;
     SplinePoint *sp1, *sp2;
 
-    for ( spl1=sc1->splines, spl2=sc2->splines; spl1!=NULL && spl2!=NULL; spl1=spl1->next, spl2=spl2->next ) {
+    for ( spl1=sc1->layers[ly_fore].splines, spl2=sc2->layers[ly_fore].splines; spl1!=NULL && spl2!=NULL; spl1=spl1->next, spl2=spl2->next ) {
 	for ( sp1=spl1->first, sp2 = spl2->first; ; ) {
 	    if ( (sp1->hintmask==NULL)!=(sp2->hintmask==NULL) )
 return( false );
@@ -626,7 +626,7 @@ return( 0 );
     while ( all ) {
 	ref = chunkalloc(sizeof(RefChar));
 	*ref = *refs[0];
-	ref->splines = NULL;
+	ref->layers[0].splines = NULL;
 	ref->next = NULL;
 	memset(ref->transform,0,sizeof(ref->transform));
 	ref->sc = mm->normal->chars[refs[0]->sc->enc];
@@ -666,7 +666,7 @@ return( _STR_MMDiffRefEncodings );
 	/* Blend Splines */
     any = false; all = true;
     for ( i=0; i<mm->instance_count; ++i ) {
-	spls[i] = mm->instances[i]->chars[enc]->splines;
+	spls[i] = mm->instances[i]->chars[enc]->layers[ly_fore].splines;
 	if ( spls[i]!=NULL ) any = true;
 	else all = false;
     }
@@ -674,7 +674,7 @@ return( _STR_MMDiffRefEncodings );
     while ( all ) {
 	spl = chunkalloc(sizeof(SplinePointList));
 	if ( spllast==NULL )
-	    sc->splines = spl;
+	    sc->layers[ly_fore].splines = spl;
 	else
 	    spllast->next = spl;
 	spllast = spl;
