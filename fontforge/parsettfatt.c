@@ -1751,7 +1751,7 @@ return;
 		lig = 0;
 	    }
 	    cc = getushort(ttf);
-	    if ( cc>100 ) {
+	    if ( cc<0 || cc>100 ) {
 		fprintf( stderr, "Unlikely count of ligature components (%d), I suspect this ligature sub-\n table is garbage, I'm giving up on it.\n", cc );
 		free(glyphs); free(lig_offsets);
 return;
@@ -1803,7 +1803,8 @@ return;
 		}
 	    } else if ( info->chars[lig]!=NULL ) {
 		for ( k=len=0; k<cc; ++k )
-		    if ( info->chars[lig_glyphs[k]]!=NULL )
+		    if ( lig_glyphs[k]<info->glyph_cnt &&
+			    info->chars[lig_glyphs[k]]!=NULL )
 			len += strlen(info->chars[lig_glyphs[k]]->name)+1;
 		liga = chunkalloc(sizeof(PST));
 		liga->type = pst_ligature;
@@ -1815,7 +1816,8 @@ return;
 		liga->u.lig.lig = info->chars[lig];
 		liga->u.lig.components = pt = galloc(len);
 		for ( k=0; k<cc; ++k ) {
-		    if ( info->chars[lig_glyphs[k]]!=NULL ) {
+		    if ( lig_glyphs[k]<info->glyph_cnt &&
+			    info->chars[lig_glyphs[k]]!=NULL ) {
 			strcpy(pt,info->chars[lig_glyphs[k]]->name);
 			pt += strlen(pt);
 			*pt++ = ' ';
@@ -1990,6 +1992,11 @@ static struct feature *readttffeatures(FILE *ttf,int32 pos,int isgpos, struct tt
     cnt = getushort(ttf);
     if ( cnt<=0 )
 return( NULL );
+    else if ( cnt>1000 ) {
+	fprintf( stderr, "Too many mac feature/settings %d\n", cnt );
+return( NULL );
+    }
+
     features = gcalloc(cnt+1,sizeof(struct feature));
     info->feats[isgpos] = galloc((3*cnt+1)*sizeof(uint32));
     info->feats[isgpos][0] = 0;
@@ -2004,6 +2011,10 @@ return( NULL );
 	if ( features[i].tag==CHR('s','i','z','e') && parameters!=0 )
 	    readttfsizeparameters(ttf,pos+parameters,info);
 	features[i].lcnt = getushort(ttf);
+	if ( features[i].lcnt<0 ) {
+	    fprintf(stderr,"Bad mac feature/setting count.\n" );
+	    features[i].lcnt = 0;
+	}
 	features[i].lookups = galloc(features[i].lcnt*sizeof(uint16));
 	for ( j=0; j<features[i].lcnt; ++j )
 	    features[i].lookups[j] = getushort(ttf);
@@ -2180,7 +2191,7 @@ static void LSysAddToFeature(struct feature *feature,uint32 script,uint32 lang,
 }
 
 static void ProcessLangSys(FILE *ttf,uint32 langsysoff,
-	struct feature *features, uint32 script, uint32 lang) {
+	struct feature *features, int fcnt, uint32 script, uint32 lang) {
     int cnt, feature, i;
 
     fseek(ttf,langsysoff,SEEK_SET);
@@ -2188,13 +2199,18 @@ static void ProcessLangSys(FILE *ttf,uint32 langsysoff,
     feature = getushort(ttf); /* required feature */
     if ( feature==0xffff )
 	/* No required feature */;
-    else {
+    else if ( feature<fcnt )
 	LSysAddToFeature(&features[feature],script,lang,true);
+    else {
+	fprintf( stderr, "Required feature out of bounds in script table.\n" );
     }
     cnt = getushort(ttf);
     for ( i=0; i<cnt; ++i ) {
 	feature = getushort(ttf);
-	LSysAddToFeature(&features[feature],script,lang,false);
+	if ( feature<fcnt )
+	    LSysAddToFeature(&features[feature],script,lang,false);
+	else
+	    fprintf( stderr, "Feature out of bounds in script table.\n" );
     }
 }
 
@@ -2233,6 +2249,7 @@ return( features );
 static struct feature *tagTtfFeaturesWithScript(FILE *ttf,uint32 script_pos,
 	struct feature *features) {
     int cnt, i, j;
+    int fcnt;
     struct scriptrec {
 	uint32 script;
 	uint32 offset;
@@ -2243,6 +2260,10 @@ static struct feature *tagTtfFeaturesWithScript(FILE *ttf,uint32 script_pos,
 	uint16 *langsys;
 	uint32 *lang;
     } stab;
+
+    fcnt = 0;
+    if ( features!=NULL )
+	for ( ; features[fcnt].tag!=0; ++fcnt );
 
     fseek(ttf,script_pos,SEEK_SET);
     cnt = getushort(ttf);
@@ -2270,9 +2291,9 @@ static struct feature *tagTtfFeaturesWithScript(FILE *ttf,uint32 script_pos,
 	    stab.langsys[j] = getushort(ttf);
 	}
 	if ( stab.deflangsys!=0 )
-	    ProcessLangSys(ttf,scripts[i].offset+stab.deflangsys,features,scripts[i].script,DEFAULT_LANG);
+	    ProcessLangSys(ttf,scripts[i].offset+stab.deflangsys,features,fcnt,scripts[i].script,DEFAULT_LANG);
 	for ( j=0; j<stab.langcnt; ++j )
-	    ProcessLangSys(ttf,scripts[i].offset+stab.langsys[j],features,scripts[i].script,stab.lang[j]);
+	    ProcessLangSys(ttf,scripts[i].offset+stab.langsys[j],features,fcnt,scripts[i].script,stab.lang[j]);
     }
     free(stab.langsys);
     free(stab.lang);
@@ -3275,8 +3296,8 @@ return;
     break;
 	    }
 	    lig_glyph = memushort(sm->data,sm->length,sm->ligOff+2*lig_offset);
-	    if ( lig_glyph>=sm->info->glyph_cnt ) {
-		fprintf(stderr, "Attempt to make a ligature for glyph %d out of ",
+	    if ( lig_glyph>=sm->info->glyph_cnt || sm->info->chars[lig_glyph]==NULL ) {
+		fprintf(stderr, "Attempt to make a ligature for (non-existent) glyph %d out of ",
 			lig_glyph );
 		for ( j=lcp; j<sm->lcp; ++j )
 		    fprintf(stderr,"%d ",sm->lig_comp_glyphs[j]);
@@ -3590,11 +3611,12 @@ static char **ClassesFromStateTable(struct statetable *st,int ismorx,struct ttfi
     int i;
 
     if ( ismorx ) {
-	for ( i=0; i<info->glyph_cnt; ++i )
+	for ( i=0; i<info->glyph_cnt; ++i ) if ( info->chars[i]!=NULL )
 	    lens[st->classes2[i]] += strlen( info->chars[i]->name )+1;
     } else {
 	for ( i=st->first_glyph; i<st->first_glyph+st->nglyphs && i<info->glyph_cnt; ++i )
-	    lens[st->classes[i-st->first_glyph]] += strlen( info->chars[i]->name )+1;
+	    if ( info->chars[i]!=NULL )
+		lens[st->classes[i-st->first_glyph]] += strlen( info->chars[i]->name )+1;
     }
     classes[0] = classes[1] = classes[2] = classes[3] = NULL;
     for ( i=4; i<st->nclasses; ++i ) {
@@ -3602,12 +3624,12 @@ static char **ClassesFromStateTable(struct statetable *st,int ismorx,struct ttfi
 	*classes[i] = '\0';
     }
     if ( ismorx ) {
-	for ( i=0; i<info->glyph_cnt; ++i ) if ( st->classes2[i]>=4 ) {
+	for ( i=0; i<info->glyph_cnt; ++i ) if ( st->classes2[i]>=4 && info->chars[i]!=NULL ) {
 	    strcat(classes[st->classes2[i]],info->chars[i]->name );
 	    strcat(classes[st->classes2[i]]," ");
 	}
     } else {
-	for ( i=st->first_glyph; i<st->first_glyph+st->nglyphs && i<info->glyph_cnt; ++i ) if ( st->classes[i-st->first_glyph]>=4 ) {
+	for ( i=st->first_glyph; i<st->first_glyph+st->nglyphs && i<info->glyph_cnt; ++i ) if ( st->classes[i-st->first_glyph]>=4 && info->chars[i]!=NULL ) {
 	    strcat(classes[st->classes[i-st->first_glyph]],info->chars[i]->name );
 	    strcat(classes[st->classes[i-st->first_glyph]]," " );
 	}

@@ -3182,10 +3182,13 @@ static StemInfo *SameH(StemInfo *old,real start, real width,
 	    unblended[0][j] += unblended[0][j-1];
 	    unblended[1][j] += unblended[1][j-1];
 	}
-	for ( sameh=old; sameh!=NULL; sameh=sameh->next )
+	for ( sameh=old; sameh!=NULL; sameh=sameh->next ) {
+	    if ( (*sameh->u.unblended)[0] == NULL || (*sameh->u.unblended)[1]==NULL )
+	continue;
 	    if ( UnblendedCompare((*sameh->u.unblended)[0],unblended[0],instance_count)==0 &&
 		    UnblendedCompare((*sameh->u.unblended)[1],unblended[1],instance_count)==0)
 	break;
+	}
     }
 return( sameh );
 }
@@ -3859,6 +3862,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	    }
 	    if ( v==19 || v==20 ) {		/* hintmask, cntrmask */
 		int bytes = (hint_cnt+7)/8;
+		if ( bytes>sizeof(HintMask) ) bytes = sizeof(HintMask);
 		if ( v==19 ) {
 		    ret->hstem = HintsAppend(ret->hstem,activeh); activeh=NULL;
 		    ret->vstem = HintsAppend(ret->vstem,activev); activev=NULL;

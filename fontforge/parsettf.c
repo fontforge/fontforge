@@ -519,6 +519,7 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	    info->glyphlocations_start = offset;
 	    info->loca_length = length;
 	    info->glyph_cnt = length/2-1;	/* the minus one is because there is one extra entry to give the length of the last glyph */
+	    if ( info->glyph_cnt<0 ) info->glyph_cnt = 0;
 	  break;
 	  case CHR('m','a','x','p'):
 	    info->maxp_start = offset;
@@ -627,6 +628,7 @@ static void readttfhead(FILE *ttf,struct ttfinfo *info) {
     info->index_to_loc_is_long = getushort(ttf);
     if ( info->index_to_loc_is_long )
 	info->glyph_cnt = info->loca_length/4-1;
+    if ( info->glyph_cnt<0 ) info->glyph_cnt = 0;
 }
 
 static void readttfhhea(FILE *ttf,struct ttfinfo *info) {
@@ -669,6 +671,7 @@ static void readttfmaxp(FILE *ttf,struct ttfinfo *info) {
     /* Open Type fonts have no loca table, so we can't calculate the glyph */
     /*  count from it */
     info->glyph_cnt = cnt;
+    if ( cnt<0 ) info->glyph_cnt = 0;
 }
 
 static char *stripspaces(char *str) {
@@ -1556,7 +1559,7 @@ return;
     } while ( flags&_MORE );
     if ( (flags & _INSTR ) && info->to_order2 && ftell(ttf)<end ) {
 	sc->ttf_instrs_len = getushort(ttf);
-	if ( sc->ttf_instrs_len != 0 && ftell(ttf)+sc->ttf_instrs_len<=end ) {
+	if ( sc->ttf_instrs_len > 0 && ftell(ttf)+sc->ttf_instrs_len<=end ) {
 	    uint8 *instructions = galloc(sc->ttf_instrs_len);
 	    int i;
 	    for ( i=0; i<sc->ttf_instrs_len; ++i )
@@ -2090,10 +2093,19 @@ return( NULL );
 	offsets[i] = getoffset(ttf,offsize);
     names = galloc((count+1)*sizeof(char *));
     for ( i=0; i<count; ++i ) {
-	names[i] = galloc(offsets[i+1]-offsets[i]+1);
-	for ( j=0; j<offsets[i+1]-offsets[i]; ++j )
-	    names[i][j] = getc(ttf);
-	names[i][j] = '\0';
+	if ( offsets[i+1]<offsets[i] ) {
+	    fprintf( stderr, "Bad CFF name INDEX\n" );
+	    while ( i<count ) {
+		names[i] = copy("");
+		++i;
+	    }
+	    --i;
+	} else {
+	    names[i] = galloc(offsets[i+1]-offsets[i]+1);
+	    for ( j=0; j<offsets[i+1]-offsets[i]; ++j )
+		names[i][j] = getc(ttf);
+	    names[i][j] = '\0';
+	}
     }
     names[i] = NULL;
     free(offsets);
@@ -2293,7 +2305,8 @@ static void readcffsubrs(FILE *ttf, struct pschars *subs) {
     uint16 count = getushort(ttf);
     int offsize;
     uint32 *offsets;
-    int i,j;
+    int i,j, base;
+    int err = false;
 
     memset(subs,'\0',sizeof(struct pschars));
     if ( count==0 )
@@ -2305,12 +2318,24 @@ return;
     offsize = getc(ttf);
     for ( i=0; i<=count; ++i )
 	offsets[i] = getoffset(ttf,offsize);
+    base = ftell(ttf)-1;
     for ( i=0; i<count; ++i ) {
-	subs->lens[i] = offsets[i+1]-offsets[i];
-	subs->values[i] = galloc(offsets[i+1]-offsets[i]+1);
-	for ( j=0; j<offsets[i+1]-offsets[i]; ++j )
-	    subs->values[i][j] = getc(ttf);
-	subs->values[i][j] = '\0';
+	if ( offsets[i+1]>offsets[i] && offsets[i+1]-offsets[i]<0x10000 ) {
+	    subs->lens[i] = offsets[i+1]-offsets[i];
+	    subs->values[i] = galloc(offsets[i+1]-offsets[i]+1);
+	    for ( j=0; j<offsets[i+1]-offsets[i]; ++j )
+		subs->values[i][j] = getc(ttf);
+	    subs->values[i][j] = '\0';
+	} else {
+	    if ( !err )
+		fprintf( stderr, "Bad subroutine INDEX in cff font.\n" );
+	    err = true;
+	    subs->lens[i] = 1;
+	    subs->values[i] = galloc(2);
+	    subs->values[i][0] = 11;		/* return */
+	    subs->values[i][1] = '\0';
+	    fseek(ttf,base+offsets[i+1],SEEK_SET);
+	}
     }
     free(offsets);
 }
@@ -3011,6 +3036,7 @@ static void cffinfofillup(struct ttfinfo *info, struct topdicts *dict,
 	char **strings, int scnt ) {
 
     info->glyph_cnt = dict->glyphs.cnt;
+    if ( info->glyph_cnt<0 ) info->glyph_cnt = 0;
 
     if ( dict->fontmatrix[0]==0 )
 	info->emsize = 1000;
@@ -3869,7 +3895,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
     }
     if ( interp==ui_none )
 	interp = amscheck(info->dups);
-    if ( info->chars!=NULL && info->chars[0]!=NULL && info->chars[0]->unicodeenc==0xffff &&
+    if ( info->chars!=NULL && info->glyph_cnt>0 && info->chars[0]!=NULL && info->chars[0]->unicodeenc==0xffff &&
 	    info->chars[0]->name!=NULL && strcmp(info->chars[0]->name,".notdef")==0 )
 	info->chars[0]->unicodeenc = -1;
     info->encoding_name = enc;
@@ -4496,7 +4522,7 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
     RefChar *rf;
     int newcharcnt;
 
-    if ( oldchars[1]!=NULL && oldchars[1]->enc==0 ) {
+    if ( oldcnt>1 && oldchars[1]!=NULL && oldchars[1]->enc==0 ) {
 	for ( i=0; i<oldcnt; ++i )
 	    if ( oldchars[i]!=NULL && oldchars[i]->enc==1 )
 	break;

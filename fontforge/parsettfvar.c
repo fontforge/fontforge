@@ -265,11 +265,11 @@ static int *readpackedpoints(FILE *ttf) {
 		runcnt = (runcnt&0x7f);
 		points[i++] = first = getushort(ttf);
 		/* first point not included in runcount */
-		for ( j=0; j<runcnt; ++j )
+		for ( j=0; j<runcnt && i<n; ++j )
 		    points[i++] = (first += getushort(ttf));
 	    } else {
 		points[i++] = first = getc(ttf);
-		for ( j=0; j<runcnt; ++j )
+		for ( j=0; j<runcnt && i<n; ++j )
 		    points[i++] = (first += getc(ttf));
 	    }
 	}
