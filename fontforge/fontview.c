@@ -100,7 +100,11 @@ return;
 	i = pos / fv->colcnt;
 	j = pos - i*fv->colcnt;
 	i -= fv->rowoff;
-	if ( i>=0 && i<fv->rowcnt ) {
+ /* Normally we should be checking against fv->rowcnt (rather than <=rowcnt) */
+ /*  but every now and then the WM forces us to use a window size which doesn't */
+ /*  fit our expectations (maximized view) and we must be prepared for half */
+ /*  lines */
+	if ( i>=0 && i<=fv->rowcnt ) {
 	    GRect r;
 	    r.x = j*fv->cbw+1; r.width = fv->cbw-1;
 	    r.y = i*fv->cbh+1; r.height = FV_LAB_HEIGHT-1;
@@ -121,7 +125,11 @@ return;
     i = enc / fv->colcnt;
     j = enc - i*fv->colcnt;
     i -= fv->rowoff;
-    if ( i>=0 && i<fv->rowcnt ) {
+ /* Normally we should be checking against fv->rowcnt (rather than <=rowcnt) */
+ /*  but every now and then the WM forces us to use a window size which doesn't */
+ /*  fit our expectations (maximized view) and we must be prepared for half */
+ /*  lines */
+    if ( i>=0 && i<=fv->rowcnt ) {
 	GRect r;
 	r.x = j*fv->cbw+1; r.width = fv->cbw-1;
 	r.y = i*fv->cbh+FV_LAB_HEIGHT+1; r.height = fv->cbw;
@@ -2516,6 +2524,7 @@ return;
 	    fv->magnify = 1;
 	fv->cbw = (bdf->pixelsize*fv->magnify)+1;
 	fv->cbh = (bdf->pixelsize*fv->magnify)+1+FV_LAB_HEIGHT+1;
+	fv->resize_expected = !samesize;
 	if ( samesize ) {
 	    GDrawRequestExpose(fv->v,NULL,false);
 	} else if ((( bdf->pixelsize<=fv->sf->display_size || bdf->pixelsize<=-fv->sf->display_size ) &&
@@ -4973,7 +4982,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
     }
     for ( i=0; i<=fv->colcnt; ++i )
 	GDrawDrawLine(pixmap,i*fv->cbw,0,i*fv->cbw,fv->height,0);
-    for ( i=event->u.expose.rect.y/fv->cbh; i<=fv->rowcnt &&
+    for ( i=event->u.expose.rect.y/fv->cbh; i<=fv->rowcnt && 
 	    (event->u.expose.rect.y+event->u.expose.rect.height+fv->cbh-1)/fv->cbh; ++i ) for ( j=0; j<fv->colcnt; ++j ) {
 	int index = (i+fv->rowoff)*fv->colcnt+j;
 	italic = false;
@@ -5735,7 +5744,9 @@ static void FVResize(FontView *fv,GEvent *event) {
 	topchar = SFFindChar(fv->sf,'A',NULL);
 	if ( topchar==-1 ) topchar = 0;
     }
-    if ( (event->u.resize.size.width-
+    if ( !event->u.resize.sized )
+	/* WM isn't responding to my resize requests, so no point in trying */;
+    else if ( (event->u.resize.size.width-
 		GDrawPointsToPixels(fv->gw,_GScrollBar_Width)-1)%fv->cbw!=0 ||
 	    (event->u.resize.size.height-fv->mbh-fv->infoh-1)%fv->cbh!=0 ) {
 	int cc = (event->u.resize.size.width+fv->cbw/2-
@@ -5985,12 +5996,13 @@ return( GGadgetDispatchEvent(fv->vsb,event));
 	/* KDE sends a continuous stream of resize events, and gets very */
 	/*  confused if I start resizing the window myself, try to wait for */
 	/*  the user to finish before responding to resizes */
-	if ( event->u.resize.sized ) {
+	if ( event->u.resize.sized || fv->resize_expected ) {
 	    static GEvent temp;
 	    if ( fv->resize )
 		GDrawCancelTimer(fv->resize);
 	    temp = *event;
 	    fv->resize = GDrawRequestTimer(fv->v,300,0,(void *) &temp);
+	    fv->resize_expected = false;
 	}
       break;
       case et_char:
