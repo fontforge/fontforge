@@ -2715,10 +2715,6 @@ return;
 static void opbd_apply_values(struct ttfinfo *info, int gfirst, int glast,FILE *ttf) {
     int i, left, right, offset;
     uint32 here;
-    /* the apple docs say that the bounds live in the lookup table */
-    /* the picture in the docs shows the bounds pointed to */
-    /* the example shows the bounds pointed to */
-    /* We conclude the original authors were bad writers */
 
     for ( i=gfirst; i<=glast; ++i ) {
 	offset = getushort(ttf);
@@ -3334,6 +3330,26 @@ return( NULL );
 return( str );
 }
 
+static void KernReadKernList(FILE *ttf,uint32 pos, struct asm_state *trans) {
+/* Apple does not document how to detect the end of the list */
+/* They say "an odd value that depends on coverage" */
+/*  There are at most 8 glyphs so let's use that limit for now */
+    int i;
+    int buffer[8];		/* At most 8 kerns are supported */
+
+    fseek(ttf,pos,SEEK_SET);
+    for ( i=0; i<8; ++i ) {
+	if ( (buffer[i]=(int16) getushort(ttf))==0 )
+    break;
+    }
+    if ( i==0 )
+return;
+
+    trans->u.kern.kerns = galloc(i*sizeof(int16));
+    memcpy(trans->u.kern.kerns,buffer,i*sizeof(int16));
+    trans->u.kern.kcnt = i;
+}
+
 static void read_perglyph_subs(FILE *ttf,struct ttfinfo *info,
 	int subs_base,int subs_end,struct statetable *st, uint8 *classes_subbed) {
     /* The file is positioned at the start of a per-glyph substitution table */
@@ -3402,8 +3418,8 @@ return( tag );
 }
 
 static void readttf_mortx_asm(FILE *ttf,struct ttfinfo *info,int ismorx,
-	uint32 length,enum asm_type type,int extras,
-	uint32 coverage, uint32 subtab_len) {
+	uint32 subtab_len,enum asm_type type,int extras,
+	uint32 coverage) {
     struct statetable *st;
     ASM *as;
     int i,j;
@@ -3483,7 +3499,8 @@ return;
 	/* Apple's docs say the substitutions are offset from the "state   */
 	/*  subtable", but it seems much more likely that they are offset  */
 	/*  from the substitution table (given that Apple's docs are often */
-	/*  wrong */
+	/*  wrong */ /* Apple's docs are right. not clear why that offset  */
+	/*  is there */
 	uint8 *classes_subbed = gcalloc(st->nclasses,1);
 	int lookup_max = -1, index;
 	int32 *lookups = galloc(st->nclasses*st->nstates*sizeof(int32));
@@ -3544,6 +3561,12 @@ return;
 	info->mort_is_nested = false;
 	free(lookups);
 	info->gentags.tt_cur += lookup_max;
+    } else if ( type == asm_kern ) {
+	for ( i=0; i<st->nclasses*st->nstates; ++i ) {
+	    if ( (as->state[i].flags&0x3fff)!=0 )
+		KernReadKernList(ttf,here+(as->state[i].flags&0x3fff),
+			&as->state[i]);
+	}
     }
     as->next = info->sm;
     info->sm = as;
@@ -3639,30 +3662,25 @@ return( chain_len );
 	    switch( coverage&0xff ) {
 	      case 0:	/* Indic rearangement */
 		readttf_mortx_asm(ttf,info,ismorx,length,asm_indic,0,
-			coverage,length);
+			coverage);
 	      break;
 	      case 1:	/* contextual glyph substitution */
 		readttf_mortx_asm(ttf,info,ismorx,length,asm_context,2,
-			coverage,length);
+			coverage);
 	      break;
 	      case 2:	/* ligature substitution */
-		/* Apple's ligature state machines are too wierd to be */
+		/* Apple's ligature state machines are too weird to be */
 		/*  represented easily, but I can parse them into a set */
 		/*  of ligatures -- assuming they are unconditional */
 		readttf_mortx_lig(ttf,info,ismorx,here,length);
 	      break;
 	      case 4:	/* non-contextual glyph substitutions */
-		/* Another case that isn't specified in the docs */
-		/* It seems unlikely that (in morx at least!) the base for */
-		/*  offsets in the lookup table should be the start of the */
-		/*  mor[tx] table, it would make more sense for it to be the*/
-		/*  start of the lookup table instead (for format 4 lookups) */
 		readttf_applelookup(ttf,info,
 			mort_apply_values,mort_apply_value,NULL,NULL);
 	      break;
 	      case 5:	/* contextual glyph insertion */
 		readttf_mortx_asm(ttf,info,ismorx,length,asm_insert,2,
-			coverage,length);
+			coverage);
 	      break;
 	    }
 	}
@@ -3767,10 +3785,17 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 	} else if ( flags_good && format==1 ) {
 	    /* format 1 is an apple state machine which can handle weird cases */
 	    /*  OpenType's spec doesn't document this */
-	    /*  I shan't support it */
+	    /* Apple's docs do not provide enough information to detect the */
+	    /*  end of the kerning data. So for now just ignore this */
+#if 0
+	    readttf_mortx_asm(ttf,info,false,len-header_size,asm_kern,0,
+		0 /* coverage doesn't apply */);
+	    fseek(ttf,begin_table+len,SEEK_SET);
+#else
 	    fseek(ttf,len-header_size,SEEK_CUR);
 	    fprintf( stderr, "This font has a format 1 kerning table (a state machine).\nPfaEdit doesn't parse these\nCould you send a copy of %s to gww@silcom.com?  Thanks.\n",
 		info->fontname );
+#endif
 	} else if ( flags_good && (format==2 || format==3 )) {
 	    /* two class based formats */
 	    if ( isv ) {
@@ -3787,13 +3812,6 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 		info->klast = kc;
 	    }
 	    if ( format==2 ) {
-		/* format 2, horizontal kerning data (as classes) not perpendicular */
-		/*  OpenType's spec documents this, but says windows won't support it */
-		/*  OpenType's spec also contradicts Apple's as to the data stored */
-		/*  OTF says class indeces are stored, Apple says byte offsets into array */
-		/*  Apple says offsets are stored in uint8, otf says indeces are in uint16 */
-		/* Bleah!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
-		/*  Ah. Apple's docs are incorrect. the values stored are uint16 offsets */
 		rowWidth = getushort(ttf);
 		left = getushort(ttf);
 		right = getushort(ttf);

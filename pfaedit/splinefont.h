@@ -250,7 +250,8 @@ typedef struct generic_fpst {
     uint8 ticked;
 } FPST;
 
-enum asm_type { asm_indic, asm_context, asm_lig, asm_simple=4, asm_insert };
+enum asm_type { asm_indic, asm_context, asm_lig, asm_simple=4, asm_insert,
+	asm_kern=0x11 };
 enum asm_flags { asm_vert=0x8000, asm_descending=0x4000, asm_always=0x2000 };
 
 typedef struct generic_asm {		/* Apple State Machine */
@@ -274,6 +275,10 @@ typedef struct generic_asm {		/* Apple State Machine */
 		char *mark_ins;
 		char *cur_ins;
 	    } insert;
+	    struct {
+		int16 *kerns;
+		int kcnt;
+	    } kern;
 	} u;
     } *state;
     uint32 opentype_tag;		/* If converted from opentype */
@@ -304,6 +309,10 @@ typedef struct generic_asm {		/* Apple State Machine */
 	0x0400	mark insert before
 	0x03e0	count of chars to be inserted at current (31 max)
 	0x001f	count of chars to be inserted at mark (31 max)
+ Kern:
+	0x8000	add current glyph to kerning stack
+	0x4000	don't advance to next glyph
+	0x3fff	value offset
 */
 
 struct macname {

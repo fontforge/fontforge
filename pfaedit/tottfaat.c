@@ -118,7 +118,6 @@ return;
     at->kern = tmpfile();
     if ( kccnt==0 && vkccnt==0 && vcnt==0 ) {
 	/* MS does not support format 2 kern sub-tables so if we have them */
-	/*	(also MS docs are different from Apple's docs on this subtable) */
 	/*  we might as well admit that this table is for apple only and use */
 	/*  the new format apple recommends. Otherwise, use the old format */
 	putshort(at->kern,0);		/* version */
@@ -322,9 +321,6 @@ return;
 /* *************************      (and 'feat')      ************************* */
 /* ************************************************************************** */
 
-/* Some otf tags may map to more than one type,setting ('fwid' maps to several) */
-/*  I think I shall ignore this complication. 'fwid' will just map to the general Full Width Text and ignore the more specific options */
-/* Some type,settings may control more than one otf_tag */
 /* I'm also going to break ligatures up into seperate sub-tables depending on */
 /*  script, so again there may be multiple tags */
 /* (only the default language will be used) */

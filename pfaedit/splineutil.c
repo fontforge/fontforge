@@ -3416,6 +3416,10 @@ void ASMFree(ASM *sm) {
 		free( sm->state[i].u.insert.mark_ins );
 		free( sm->state[i].u.insert.cur_ins );
 	    }
+	} else if ( sm->type==asm_kern ) {
+	    for ( i=0; i<sm->class_cnt*sm->state_cnt; ++i ) {
+		free( sm->state[i].u.kern.kerns );
+	    }
 	}
 	for ( i=4; i<sm->class_cnt; ++i )
 	    free(sm->classes[i]);
