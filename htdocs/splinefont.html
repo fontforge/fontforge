@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Feb-2001 -->
-  <!-- AP: Last modified: 2-Mar-2004 -->
+  <!-- AP: Last modified: 16-Apr-2004 -->
   <TITLE>The basic spline data structures of FontForge</TITLE>
 </HEAD>
 <BODY>
@@ -149,7 +149,7 @@ typedef struct strokeinfo {
     double radius;
     enum linejoin join;
     enum linecap cap;
-    unsigned int caligraphic: 1;
+    unsigned int calligraphic: 1;
     double penangle;
     double thickness;			/* doesn't work */
 } <A NAME="StrokeInfo">StrokeInfo</A>;
@@ -216,7 +216,7 @@ The floating selection in a <A HREF="#BDFChar">BDFChar</A>.
   <PRE>typedef struct undoes {
     struct undoes *next;
     enum undotype { ut_none=0, ut_state, ut_tstate, ut_width,
-	    ut_bitmap, ut_bitmapsel, ut_composit, ut_multiple } undotype;
+	    ut_bitmap, ut_bitmapsel, ut_composite, ut_multiple } undotype;
     union {
 	struct {
 	    int16 width;
@@ -227,7 +227,7 @@ The floating selection in a <A HREF="#BDFChar">BDFChar</A>.
 	} state;
 	int width;
 	struct {
-	    /*int16 width;*/	/* width should be controled by postscript */
+	    /*int16 width;*/	/* width should be controlled by postscript */
 	    int16 xmin,xmax,ymin,ymax;
 	    int16 bytes_per_line;
 	    uint8 *bitmap;
@@ -237,9 +237,9 @@ The floating selection in a <A HREF="#BDFChar">BDFChar</A>.
 	struct {		/* copy contains an outline state and a set of bitmap states */
 	    struct undoes *state;
 	    struct undoes *bitmaps;
-	} composit;
+	} composite;
 	struct {
-	    struct undoes *mult; /* copy contains several sub copies (composits, or states or widths or...) */
+	    struct undoes *mult; /* copy contains several sub copies (composites, or states or widths or...) */
 	} multiple;
     uint8 *bitmap;
     } u;
@@ -278,7 +278,7 @@ If there is no selection the entire bitmap is converted into a
 <A HREF="#BDFFloat">floating selection</A> and copied into the selection
 field.
 <P>
-ut_composit is used when doing a copy from the
+ut_composite is used when doing a copy from the
 <A HREF="views.html#FontView">FontView</A> where you are copying both the
 splines and the bitmaps of a character.
 <P>
@@ -383,7 +383,7 @@ a couple of flags that simplify tests. If the nextcp is degenerate (ie. at
 the same place as me) then nonextcp is set, similarly for prevcp. If the
 user has not touched the control points then they will have their default
 values, and when the user moves the point around fontforge will update the
-control points apropriately, if they do not have default values then fontforge
+control points appropriately, if they do not have default values then fontforge
 will only offset them.
 <P>
 If the point is selected then that bit will be set.
@@ -415,7 +415,7 @@ typedef struct linearapprox {
 These are the lines used to approximate a <A HREF="#Spline">Spline</A> when
 drawing it. They are cached so they don't need to be regenerated each time.
 There's a different set of lines for every scale (as there is a different
-amound of visible detail). They get freed and regenerated if the Spline changes.
+amount of visible detail). They get freed and regenerated if the Spline changes.
 <BLOCKQUOTE>
   <PRE>typedef struct spline1d {
     double a, b, c, d;
@@ -430,7 +430,7 @@ typedef struct spline {
     <A HREF="#SplinePoint">SplinePoint</A> *from, *to;
     <A HREF="#Spline1D">Spline1D</A> splines[2];		/* splines[0] is the x spline, splines[1] is y */
     <A HREF="#LinearApprox">struct linearapprox</A> *approx;
-    /* Posible optimizations:
+    /* Possible optimizations:
 	Precalculate bounding box
 	Precalculate points of inflection
     */
@@ -447,7 +447,7 @@ Splines in various functions. Most are used in the SplineOverlap routines,
 but some are used in other places too.
 <P>
 The Spline1D structures give the equations for the x and y coordinates
-respecitively (splines[0] is for x, splines[1] is for y).
+respectively (splines[0] is for x, splines[1] is for y).
 <BLOCKQUOTE>
   <PRE>typedef struct splinepointlist {
     <A HREF="#SplinePoint">SplinePoint</A> *first, *last;
@@ -581,7 +581,7 @@ indicates whether this one is selected or not.
     unsigned int changed_since_autosave: 1;
     unsigned int widthset: 1;	/* needed so an emspace char doesn't disappear */
     struct splinecharlist { struct splinechar *sc; struct splinecharlist *next;} *dependents;
-	    /* The dependents list is a list of all characters which refenence*/
+	    /* The dependents list is a list of all characters which reference*/
 	    /*  the current character directly */
     <A HREF="#SplinePointList">SplinePointList</A> *backgroundsplines;
     <A HREF="#ImageList">ImageList</A> *backimages;
@@ -680,10 +680,10 @@ look better but are slower.
 Dotlesswarn means that we've warned the user when s/he attempted to create
 an accented character based on i or j and a dotless version of those characters
 was not present in the font (there's no point in warning him again. The operation
-proceded with a dotted version).
+proceeded with a dotted version).
 <P>
 There is only one <A HREF="views.html#FontView">FontView</A> associated with
-a font (other data structurs allowed for multiple views, but the font does
+a font (other data structures allowed for multiple views, but the font does
 not).
 <P>
 The font has a characterset and an encoding.

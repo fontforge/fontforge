@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 3-Feb-2002 -->
-  <!-- AP: Last modified: 30-Jul-2003 -->
+  <!-- AP: Last modified: 16-Apr-2004 -->
   <TITLE>Format for X11 pcf bitmap font files</TITLE>
 </HEAD>
 <BODY>
@@ -174,7 +174,7 @@ Uncompressed_Metrics maxbounds;
 </PRE>
 </BLOCKQUOTE>
 <P>
-BDF Accelerators should be prefered to plain Accelerators if both tables
+BDF Accelerators should be preferred to plain Accelerators if both tables
 are present. BDF Accelerators contain data that refers only to the encoded
 characters in the font (while the simple Accelerator table includes all glyphs),
 therefore the BDF Accelerators are more accurate.
@@ -252,7 +252,7 @@ enc2-min_char_or_byte2].
 Not all glyphs need to be encoded. Not all encodings need to be associated
 with glyphs.
 <H2>
-  The Scaleable Widths Table
+  The Scalable Widths Table
 </H2>
 <P>
 The encoding table has type PCF_SWIDTHS. Its format must be PCF_DEFAULT.
@@ -263,7 +263,7 @@ int32 swidths[glyph_count];	/* byte offsets to bitmap data */
 </PRE>
 </BLOCKQUOTE>
 <P>
-The scaleable width of a character is the width of the corresponding postscript
+The scalable width of a character is the width of the corresponding postscript
 character in em-units (1/1000ths of an em).
 <H2>
   The Glyph Names Table

@@ -2,13 +2,12 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 16-Sep-2001 -->
-  <!-- AP: Last modified: 6-Mar-2004 -->
+  <!-- AP: Last modified: 16-Apr-2004 -->
   <TITLE>Changes to pfaedit (predecessor to fontforge)</TITLE>
 </HEAD>
 <BODY>
 <P>
-<A HREF="changelog.html">Current fontforge
-changes</A><BR>
+<A HREF="changelog.html">Current fontforge changes</A><BR>
 <A HREF="oldchangelog.html">Older fontforge changes</A>
 <P>
 <UL>
@@ -136,7 +135,7 @@ changes</A><BR>
 	FontForge had problems reading sfd files in the old point count format, this
 	meant we still got bad point count errors.
       <LI>
-	FontForge wrote bad sfd files if there were countermasks (all the countours
+	FontForge wrote bad sfd files if there were countermasks (all the contours
 	of the glyph would be lost)
       <LI>
 	I finally figured out why FontForge kept crashing when palettes were docked
@@ -184,7 +183,7 @@ changes</A><BR>
 	Still have problems with ttf point counts
       <LI>
 	If a user loaded a ttf file and made it monospace and then generated it as
-	ttf, all gyphs except the .notdef had an advance width of 0
+	ttf, all glyphs except the .notdef had an advance width of 0
     </UL>
   <LI>
     1-Feb-2004
@@ -379,7 +378,7 @@ changes</A><BR>
 	I just don't understand them).
       <LI>
 	Try harder to avoid using 'DFLT' script when coming up with a default script
-	for glyphs with no inate script.
+	for glyphs with no innate script.
       <LI>
 	Add a Find Problems to detect 'DFLT'
       <LI>
@@ -416,7 +415,7 @@ changes</A><BR>
 	  <LI>
 	    to allow the user to control the point type from there.
 	  <LI>
-	    to enforce constaints on control points (ie. the control points of a curve
+	    to enforce constraints on control points (ie. the control points of a curve
 	    point must be in line with the point itself)
 	  <LI>
 	    by adding an alternated mode of entering data, by distance and angle (rather
@@ -461,7 +460,7 @@ changes</A><BR>
       <LI>
 	The code for generating and loading otb (OpenType bitmap) fonts was broken.
       <LI>
-	And the code for generating my own wierd bitmap only fonts for windows had
+	And the code for generating my own weird bitmap only fonts for windows had
 	some flaws too (different flaws).
       <LI>
 	If I typed a character into a fontview (or char view) and the font did not
@@ -572,7 +571,7 @@ changes</A><BR>
     8-Nov-2003
     <UL>
       <LI>
-	Bug introduced 6-Nov, FontForge generated a bad 'loca' table when outputing
+	Bug introduced 6-Nov, FontForge generated a bad 'loca' table when outputting
 	a ttf outline font with bitmaps.
       <LI>
 	FontForge was getting the truetype point number wrong when reading outlines
@@ -618,7 +617,7 @@ changes</A><BR>
       <LI>
 	When FontForge removes glyphs with Font Info-&gt;Encoding-&gt;Number of
 	characters, it will now run through the font and remove any ligatures,
-	substitutions, etc. refering to non-existant glyph names.
+	substitutions, etc. refering to non-existent glyph names.
       <LI>
 	Some improvements to remove overlap.
       <LI>
@@ -630,7 +629,7 @@ changes</A><BR>
 	If a reference were copied in the outline character view and pasted into
 	the font view, fontforge would crash.
       <LI>
-	the expand stroke patch on 29-Sept broke caligraphic and elipse modes.
+	the expand stroke patch on 29-Sept broke calligraphic and ellipse modes.
       <LI>
 	The mouse's scroll wheel did not work in the metrics view.
       <LI>
@@ -638,7 +637,7 @@ changes</A><BR>
 	resizing.
       <LI>
 	Give the magnifying glass's rectangle mode a threshold so that it doesn't
-	resize tiny rectangles which are really caused by mouse gitter.
+	resize tiny rectangles which are really caused by mouse jitter.
       <LI>
 	Attempt to set a zoom size for character and bitmap windows, but modern window
 	managers don't seem to support the old protocol, and I can't find docs on
@@ -665,7 +664,7 @@ changes</A><BR>
 	a script
       <LI>
 	FontForge would leave a dangling pointer when converting from cubic to quadratic.
-	This did not affect ttf generation, but would affect most other opperations.
+	This did not affect ttf generation, but would affect most other operations.
     </UL>
   <LI>
     27-Oct-2003
@@ -822,7 +821,7 @@ changes</A><BR>
 	Give the Metrics View a vertical mode in which it does vertical kerning,
 	etc.
       <LI>
-	Add a hack to allow FontForge to parse a wierd pfb file.
+	Add a hack to allow FontForge to parse a weird pfb file.
     </UL>
   <LI>
     6-Oct-2003
@@ -837,7 +836,7 @@ changes</A><BR>
 	</UL>
       <LI>
 	The routine to convert a horizontal kerning class to the equivalent vertical
-	kerning class (of the vertical varients of the glyphs in the horizontal class)
+	kerning class (of the vertical variants of the glyphs in the horizontal class)
 	didn't work.
       <LI>
 	In Back and Lookup Classes of a contextual chaining substitution by class,
@@ -887,7 +886,7 @@ changes</A><BR>
 	Upgraded psunicodenames to the current Adobe Glyph List for New Fonts.
       <LI>
 	Simplify now works for quadratic splines. If one uses the []Allow Slopes
-	to Change checkbox then results are not good. I need a better algorithem.
+	to Change checkbox then results are not good. I need a better algorithm.
       <LI>
 	If asked to generate a type0 postscript font for a font encoded with an extended
 	1byte encoding (ie. one that had about 300 characters) FontForge would probably
@@ -920,8 +919,8 @@ changes</A><BR>
 	the user drags out a rectangle with it then the view will be shifted and
 	scaled so that rectangle fits in the window.
       <LI>
-	FontForge will no longer auto-generate hints on non-integral boundries. In
-	Type1 fonts such hints become meaningless and just confuse things.
+	FontForge will no longer auto-generate hints on non-integral boundaries.
+	In Type1 fonts such hints become meaningless and just confuse things.
       <LI>
 	FontForge will now draw a halo around points which will be part of a flex
 	hint. See the <A HREF="prefs.html#UpdateFlex">UpdateFlex</A> preference item.
@@ -948,7 +947,7 @@ changes</A><BR>
 	  <LI>
 	    FontForge understands the most of the state machines in the morx/mort tables
 	    (it does not understand ligature state machines, it parses these for all
-	    unconditional ligatures, but it will miss any condtional ones).
+	    unconditional ligatures, but it will miss any conditional ones).
 	  <LI>
 	    FontForge now lets you edit apple state machines
 	  <LI>
@@ -1062,7 +1061,7 @@ changes</A><BR>
     26-Aug-2003
     <UL>
       <LI>
-	When I added metadata to svg fonts (20-Aug) I inadvertantly put in two closing
+	When I added metadata to svg fonts (20-Aug) I inadvertently put in two closing
 	metadata tags. Which broke the font.
       <LI>
 	Fixed a bug conversion of context/chain coverage sub-table into a morx subtable.
@@ -1083,7 +1082,7 @@ changes</A><BR>
       <LI>
 	View-&gt;Show ATT had problems showing anything in 'morx'
       <LI>
-	Make it possible to edit contextual/chaining lookups that are formated by
+	Make it possible to edit contextual/chaining lookups that are formatted by
 	class
       <LI>
 	parsing/generating ttf files with class format context/chaining had problems
@@ -1391,7 +1390,7 @@ changes</A><BR>
 	Directory browsing didn't work if the local encoding wasn't latin1 and the
 	directory name contain non-ascii characters.
       <LI>
-	Add an entry to find problems to look for 'GSUB' entries to non-existant
+	Add an entry to find problems to look for 'GSUB' entries to non-existent
 	characters.
       <LI>
 	Expanded the simplify more command
@@ -1484,7 +1483,7 @@ changes</A><BR>
 	Several people at EuroTeX wanted more pen shapes in the expand stroke dlg.
 	Ellipses are easy, so we add them.
       <LI>
-	One guy at EuroTeX wanted to be able to store arbetrary per-glyph data in
+	One guy at EuroTeX wanted to be able to store arbitrary per-glyph data in
 	the font, so add a new (private) true/open type table that can contain the
 	glyph comments. This table has tag 'PfEd' and can contain sub-tables containing
 	font comment, glyph comments, glyph colors. Perhaps other data as need arises.
@@ -1810,7 +1809,7 @@ changes</A><BR>
 	Failed to realize that U+1FED was an accent
       <LI>
 	No longer tries to build greek accents out of latin ones when Build Accented
-	is invoked. (but still will for Build Composit).
+	is invoked. (but still will for Build Composite).
       <LI>
 	When swapping character names, check for names like "uniXXXX" and instead
 	of swapping it, rebuild it as appropriate for the other character.
@@ -1823,7 +1822,7 @@ changes</A><BR>
 	Added an "Original" encoding which gives you back the ordering of the glyphs
 	in the ttf font. (this may be changed when you regenerate a ttf font)
       <LI>
-	FontForge failed to read ttf instructions for composit glyphs.
+	FontForge failed to read ttf instructions for composite glyphs.
       <LI>
 	FontForge got confused if a ttf file had multiple glyphs named ".notdef"
 	(which to me looks like a bug in the ttf font, but Times New Roman does this
@@ -1893,7 +1892,7 @@ changes</A><BR>
       <LI>
 	Sometimes we failed to remove the dot when creating a dotless i/j character.
       <LI>
-	Merge/Simplify had caniptions when given a zero length spline.
+	Merge/Simplify had conniptions when given a zero length spline.
       <LI>
 	Added "DefaultATT" and "AddATT" scripting command to allow user to add Advanced
 	Typography features to characters.
@@ -1935,7 +1934,7 @@ changes</A><BR>
 	Added another tag to CharInfo scripting command: GlyphIndex. It returns the
 	glyph number in the ttf font.
       <LI>
-	Werner suggests that instead of namint things "nounicode-%x" where %x is
+	Werner suggests that instead of naming things "nounicode-%x" where %x is
 	the encoding, use "nounicode-%d-%d-%x" where the two new arguments are the
 	platform/specific pair used in the cmap we picked.
     </UL>
@@ -2012,7 +2011,7 @@ changes</A><BR>
 	cases
       <LI>
 	When figuring out whether to synchronize the width/lbearing of a base character
-	with the composits containing it, I only checked if the base character was
+	with the composites containing it, I only checked if the base character was
 	alphabetic. But that doesn't work for hebrew where unicode says the marks
 	are alphabetic. So add an additional check that it can't be a combining
 	character.
@@ -2057,7 +2056,7 @@ changes</A><BR>
       <LI>
 	When reading a ttf/otf font with a GSUB table fontforge will try to guess
 	reasonable names for unnamed glyphs by looking them up in the GSUB table.
-	Thus an unnamed vertical varient for "A" might be named "A.vrt2".
+	Thus an unnamed vertical variant for "A" might be named "A.vrt2".
       <LI>
 	FontForge would crash when outputting ttf files with no 'cvt' table (bug
 	introduced around 27-Feb)
@@ -2292,7 +2291,7 @@ changes</A><BR>
     01-Feb-2003
     <UL>
       <LI>
-	Add some support for Apple Advanced Typograph tables ('prop', 'lcar')
+	Add some support for Apple Advanced Typography tables ('prop', 'lcar')
       <LI>
 	Popup menus in textfields failed to refresh the text field
       <LI>
@@ -2476,7 +2475,7 @@ changes</A><BR>
 	Printing now handles anchored marks. (Display does not, just as display doesn't
 	handle kerning-- because X doesn't).
       <LI>
-	Support for curvsive positioning.
+	Support for cursive positioning.
       <LI>
 	I've registered with Adobe, and they have assigned FontForge an XUID base
 	number of 1021. Now when new users start fontforge for the first time they
@@ -2522,7 +2521,7 @@ changes</A><BR>
 	Metrics view now has a submenu (off of View) which allows you to change the
 	current glyph to one of its alternates.
       <LI>
-	Fixed unintitialized variable what would sometimes cause a crash when storing
+	Fixed uninitialized variable what would sometimes cause a crash when storing
 	bitmaps in a TTF/OTF file.
       <LI>
 	Fixed crash bug in 29-Dec when generating a truetype font without a GPOS
@@ -2756,13 +2755,13 @@ changes</A><BR>
 	<P>
 	Or by using the popup menu invoked by the third mouse button.
       <LI>
-	Rewrote Expand Stroke so that the caligraphic pen is no longer treated as
+	Rewrote Expand Stroke so that the calligraphic pen is no longer treated as
 	a line (it is now treated as a rectangle).
       <LI>
 	Changed behavior of Next/Prev char so that they do not wrap in the outline
 	character view. Also added the encoding to the title.
       <LI>
-	In the outline view made a seperate menu entry for Char Info and removed
+	In the outline view made a separate menu entry for Char Info and removed
 	it from "Get Info". Made Ctl-Shft-I invoke Char Info in all views (Ctl-I
 	will also invoke it everywhere but the outline view).
       <LI>
@@ -2876,7 +2875,7 @@ changes</A><BR>
       <LI>
 	Improved behavior of Remove Overlap. Fix inspired by Kanou.
       <LI>
-	Added a "Find Intersections" command, a varient of remove overlap that stops
+	Added a "Find Intersections" command, a variant of remove overlap that stops
 	after it finds the intersections. I think this half of the job has no major
 	bugs.
       <LI>
@@ -3008,7 +3007,7 @@ changes</A><BR>
 	Use LC_CTYPE (rather than LC_MESSAGES) to determine the current local encoding
       <LI>
 	If the width line were selected then FontForge would sometimes snap cursor
-	movements to an arbetrary x-value (often the axis)
+	movements to an arbitrary x-value (often the axis)
       <LI>
 	KANOU provided a patch which fixes some remove overlap problems.
       <LI>
@@ -3147,7 +3146,7 @@ changes</A><BR>
       <LI>
 	Added a dlg to <A HREF="display.html">display fonts </A>using freetype.
       <LI>
-	Added support for the obselete _XFREE86_GLYPH_RANGES property and then turned
+	Added support for the obsolete _XFREE86_GLYPH_RANGES property and then turned
 	it off by default.
       <LI>
 	Improvements to type2 output.
@@ -3249,7 +3248,7 @@ changes</A><BR>
       <LI>
 	AutoHint wasn't finding all the ghost hints it should have.
       <LI>
-	Put in (what I hope is) a better way of detecting extranious hints (the hypen
+	Put in (what I hope is) a better way of detecting extraneous hints (the hypen
 	case. At first sight the hstem and vstem appear equally valid) remove hints
 	which are wider than they are long.
       <LI>
@@ -3307,7 +3306,7 @@ changes</A><BR>
 	Added ability to Print to scripting.
       <LI>
 	Attempt to fix the fact that windows doesn't recognize my monospaced ttf
-	fonts as monspace.
+	fonts as monospace.
       <LI>
 	FontForge could be confused by strange values of Ascent in the hhea table
       <LI>
@@ -3479,7 +3478,7 @@ changes</A><BR>
 	Didn't position references by point matching properly (when loading from
 	ttf)
       <LI>
-	removed some debugging code inadvertantly left in after the rle fix.
+	removed some debugging code inadvertently left in after the rle fix.
       <LI>
 	Added support for <A HREF="xim.html">X Input Methods</A> (to do CJK character
 	input properly)<BR>
@@ -3654,13 +3653,13 @@ changes</A><BR>
       <LI>
 	Expand Stroke had problems with curved splines where the slope at one of
 	the end-points was 0/0. Since this will happen by default when joining a
-	corner point to a curved point this should have been a frequent occurance.
+	corner point to a curved point this should have been a frequent occurrence.
       <LI>
 	Bug in generating 'post' table if glyph 0 existed but was not .notdef.
       <LI>
 	Postscript fonts with one glyph going to multiple encodings cause problems.
       <LI>
-	Now both PS and TTF load will have consistant names in the above case.
+	Now both PS and TTF load will have consistent names in the above case.
       <LI>
 	My presumption of how symbol encodings were stored under MicroSoft was wrong.
 	It is not a one byte encoding, it is a map into the private/corporate use
@@ -3712,7 +3711,7 @@ changes</A><BR>
 	Font Info-&gt;PS Private got the wrong value when guessing the vertical stem
 	snaps
       <LI>
-	FontForge did not find ghosthints for things at the numeric height.
+	FontForge did not find ghost hints for things at the numeric height.
       <LI>
 	FontForge got non-integer values for some hints where it should have found
 	integer values.
@@ -4008,7 +4007,7 @@ changes</A><BR>
 	Added support for arabic forms in the GSUB table (ie. we now produce 'init',
 	'medi', 'fina', and 'isol' features)
       <LI>
-	Build composit should now note whether arabic ligatures are
+	Build composite should now note whether arabic ligatures are
 	&lt;initial&gt;, &lt;final&gt;, &lt;medial&gt; or &lt;isolated&gt;
       <LI>
 	It is now possible to have multiple font views looking at one font. I expect
@@ -4053,7 +4052,7 @@ changes</A><BR>
       <LI>
 	I was generating flex hints incorrectly.
       <LI>
-	Extended postscript interpretter slightly to recognize the eps files (called
+	Extended postscript interpreter slightly to recognize the eps files (called
 	"art") produced by fontographer
       <LI>
 	Additions to the scripting language
@@ -4069,7 +4068,7 @@ changes</A><BR>
 	The Expand Stroke fix for 4-Mar-2001 was too extreme.
       <LI>
 	Added a field to Char Info that shows the components out of which this character
-	(accented, ligature, hangul sylable, etc.) may be built.
+	(accented, ligature, hangul syllable, etc.) may be built.
     </UL>
   <LI>
     3-Apr-2002
@@ -4146,7 +4145,7 @@ changes</A><BR>
     <UL>
       <LI>
 	Small change to the format of cidmap files (to bring names into conformance
-	with adobe's spec on modifed unicode names), and corresponding changes to
+	with adobe's spec on modified unicode names), and corresponding changes to
 	a few routines.
       <LI>
 	Add support for the type1 format produced by GNU type1utils. Which is vaguely
@@ -4242,7 +4241,7 @@ changes</A><BR>
 	More work on hints. 
 	  <HR>
       <LI>
-	Build Composit will now build a dotlessi from an "i" (and same for dotlessj)
+	Build Composite will now build a dotlessi from an "i" (and same for dotlessj)
     </UL>
   <LI>
     20-Feb-2002
@@ -4421,7 +4420,7 @@ changes</A><BR>
       <LI>
 	Started work on 32 bit unicode.
       <LI>
-	Oops. Scripting handled the caligraphic pen angle incorrectly.
+	Oops. Scripting handled the calligraphic pen angle incorrectly.
       <LI>
 	Put something into the about box.
     </UL>
@@ -4456,7 +4455,7 @@ changes</A><BR>
       <LI>
 	FontForge got confused by some fonts produced by type1fix.pl. Should be fixed.
       <LI>
-	Build Composit Characters will now check the user defined ligature string
+	Build Composite Characters will now check the user defined ligature string
 	to see what characters to use to build a ligature.
     </UL>
   <LI>
@@ -4812,7 +4811,7 @@ changes</A><BR>
     2 Jan 2002
     <UL>
       <LI>
-	Copy From has been made global and sticky (each font used to have a seperate
+	Copy From has been made global and sticky (each font used to have a separate
 	value and it got lost on exit. Now there is one global value and it is saved
 	in the prefs file).
       <LI>
@@ -4886,7 +4885,7 @@ changes</A><BR>
       <LI>
 	Depressing the right mouse button invokes a popup menu in the fontview now.
       <LI>
-	Trying to move a control point with the mouse while simultaniously moving
+	Trying to move a control point with the mouse while simultaneously moving
 	the point itself with the arrow keys used to cause a crash
       <LI>
 	Selecting a bdf font which was in a bad format as a background caused a crash.
@@ -4981,7 +4980,7 @@ changes</A><BR>
       <LI>
 	Changed greek accent processing so that it uses more of the greek accents.
 	For reasons known best to themselves, unicode tends to map greek varia to
-	grave, oxia to accute, etc.
+	grave, oxia to acute, etc.
       <LI>
 	More work to make sure the screen fonts are readable
       <LI>
@@ -5045,7 +5044,7 @@ changes</A><BR>
       <LI>
 	The Greek fixup wasn't working as it should (sometimes would generate two
 	characters named "Delta" in pfb files). Should be fixed. Should also be
-	controlable by Preference item (ie. you can turn it off if you want to)
+	controllable by Preference item (ie. you can turn it off if you want to)
       <LI>
 	The metrics view did not display changes
       <LI>
@@ -5157,8 +5156,8 @@ changes</A><BR>
 	Oops. Urich Klauer found a bug in my parsing of ttf/otf tables (introduced
 	by the linegap change on 8 Nov) and sent a patch.
       <LI>
-	FontForge was erroneously complaining that all ttf composit glyphs were too
-	big (when reading them in, introduced 15 Nov).
+	FontForge was erroneously complaining that all ttf composite glyphs were
+	too big (when reading them in, introduced 15 Nov).
       <LI>
 	FontForge stored StdHW and StdVW in the wrong format when reading opentype
 	fonts and any .pfa/b fonts generated from that db caused ghostview problems.
@@ -5227,7 +5226,7 @@ changes</A><BR>
 	  <LI>
 	    Glyph 257 contains a contour consisting of one off-curve point.
 	  <LI>
-	    The encoding cmap refers to non-existant glyphs
+	    The encoding cmap refers to non-existent glyphs
 	  <LI>
 	    The fpgm attempts to move points around (it isn't allowed to do that according
 	    to the docs)
@@ -5268,7 +5267,7 @@ changes</A><BR>
 	The intent was that they should go to an unused slot outside of the encoding
 	rather than within. This has been fixed.
       <LI>
-	I've added a preference item allowing you to configure the seperation between
+	I've added a preference item allowing you to configure the separation between
 	the base character and the accent in the Build Accented Character command.
 	I've also changed it so that if the character is close to the x-height or
 	the cap height, the accent is positioned as if the character were at the
@@ -5343,7 +5342,7 @@ changes</A><BR>
       <LI>
 	I added a user interface to display and control these
       <LI>
-	I realized I was misinterpretting the ttf docs (again) and that IUP worked
+	I realized I was misinterpreting the ttf docs (again) and that IUP worked
 	better than I thought, and so I removed my own interpolation code (thank
 	you freetype! it is so good to see what the instructions do.)
       <LI>
@@ -5424,8 +5423,8 @@ changes</A><BR>
 	11 set do it apple's way, bit 12 set do it MS way, neither set flip a coin
 	and guess, both set die in horrible agony). But still no description of exactly
 	what Apple does. So I've changed my ttf output routine always to set bit
-	12 in the composit flags. And the read in does something if it gets the apple
-	bit. Probably not the right thing though.
+	12 in the composite flags. And the read in does something if it gets the
+	apple bit. Probably not the right thing though.
       <LI>
 	Fixed a potential problem clipping splines in the outline character display.
       <LI>
@@ -5514,8 +5513,8 @@ changes</A><BR>
       <LI>
 	Fixed potential crash in autohint
       <LI>
-	I now find the intersection of a (cubic) spline and a line by the cubic
-	algorithem rather than by iteration.
+	I now find the intersection of a (cubic) spline and a line by the cubic algorithm
+	rather than by iteration.
     </UL>
   <LI>
     15-Sept-2001
@@ -5829,7 +5828,7 @@ changes</A><BR>
 	cleaned up the truetype names aspect of the font info dlg.
       <LI>
 	Added a Translate Styles button to the above aspect if the string is Style
-	and the language is American English. (Sorry about the linguistic chauvanism)
+	and the language is American English. (Sorry about the linguistic chauvinism)
       <LI>
 	Allowed spaces in the Postscript family name again
       <LI>
@@ -5877,7 +5876,7 @@ changes</A><BR>
 	Added direction detection to Find Problems (to make sure outer paths are
 	clockwise)
       <LI>
-	Cleared selections between explainations on Find Problems
+	Cleared selections between explanations on Find Problems
       <LI>
 	Gave some indication of how near horizontal/vertical lines are wrong in find
 	problems
@@ -5993,7 +5992,7 @@ changes</A><BR>
 	when the stationary "path" consisted of exactly one point.
       <LI>
 	Sometimes control characters would be named "uni0001" (etc.) rather than
-	".notdef". Appropriate, but inconsistant. They should now always be called
+	".notdef". Appropriate, but inconsistent. They should now always be called
 	".notdef" (unless explicitly renamed).
     </UL>
   <LI>
@@ -6031,7 +6030,7 @@ changes</A><BR>
       <LI>
 	And during rectangle, ellipse, polygon and star generation.
       <LI>
-	Build Composit Char will now create the characters 0x2000-0x2015 (spaces
+	Build Composite Char will now create the characters 0x2000-0x2015 (spaces
 	and rules) if you ask it to.
       <LI>
 	Fixed several bugs caused by the resource string changed.
@@ -6046,7 +6045,7 @@ changes</A><BR>
       <LI>
 	Added some more strings.
       <LI>
-	Cleaned up the hint translation code to work with the new (ie. hint subtitution,
+	Cleaned up the hint translation code to work with the new (ie. hint substitution,
 	diagonal)
       <LI>
 	Improved UI for metrics view as per Valik's suggestions
@@ -6055,7 +6054,7 @@ changes</A><BR>
 	    Before it would wait until you depressed the mouse before changing the cursor,
 	    now it changes the cursor as you move.
 	  <LI>
-	    Better cursors (seperate cursors for kerning, setting rbearing (== width),
+	    Better cursors (separate cursors for kerning, setting rbearing (== width),
 	    setting lbearing)
 	  <LI>
 	    Selected character is drawn in a different color.
@@ -6074,7 +6073,7 @@ changes</A><BR>
 	end points). AutoHint shouldn't muck with things like that. And anyway it
 	got it wrong in several cases.
       <LI>
-	The simplify command will now remove colinear control points from a spline.
+	The simplify command will now remove collinear control points from a spline.
 	And if you hold down the shift key when invoking the menu the simplify command
 	will only do this (and will change its name to cleanup).
     </UL>
@@ -6155,7 +6154,7 @@ changes</A><BR>
 	    It would occasionally generate one subr containing overlapping hints
 	  <LI>
 	    It would create a Subrs array much bigger than needed. For some reason xfs
-	    had caniptions over the blank (but unused) entries
+	    had conniptions over the blank (but unused) entries
 	</OL>
     </UL>
   <LI>
@@ -6174,7 +6173,7 @@ changes</A><BR>
 	of Characters in Font Info)
       <LI>
 	Fixed a crash caused by reading in a ttf file where the kerning info specified
-	a non-existant glyph
+	a non-existent glyph
       <LI>
 	Fixed a crash caused by reading in a pf* file where the encoding was specified
 	in a slightly different format from the one we expect
@@ -6305,7 +6304,7 @@ changes</A><BR>
 	<A HREF="editmenu.html#From">Copy From</A> is set to All Fonts) transform
 	the bitmap associated bitmap characters as well as the outline characters.
       <LI>
-	Cleaned up Build Accented character so that it behaves consistantly between
+	Cleaned up Build Accented character so that it behaves consistently between
 	font/outline views, works with Copy From. The two different aspects of the
 	command (Accented vs. Composite) are now controlled by whether the Shift
 	key is down when the menu is invoked.
@@ -6390,7 +6389,7 @@ changes</A><BR>
     19 Apr 2001
     <UL>
       <LI>
-	Yesterday's builds were transfered as ASCII not BINARY and are totally useless.
+	Yesterday's builds were transferred as ASCII not BINARY and are totally useless.
       <LI>
 	Added a macintosh encoding to ttf output
       <LI>
@@ -6624,7 +6623,7 @@ changes</A><BR>
 	Selecting by dragging out a rectangle in the character outline view would
 	sometimes miss points. I think that's fixed.
       <LI>
-	Doing a multi-character copy in the fontview would remove non-existant characters
+	Doing a multi-character copy in the fontview would remove non-existent characters
 	from the copy set. They are no longer removed.
       <LI>
 	Build Accented character would always use a dotlessi when building an character
@@ -6703,8 +6702,8 @@ changes</A><BR>
       <LI>
 	Fixed some problems with the configure script (handles libraries now)
       <LI>
-	Added a progress widget to show how things are going on long operations (currenly
-	only font opens)
+	Added a progress widget to show how things are going on long operations
+	(currently only font opens)
       <LI>
 	Fixed numerous small annoyances
       <LI>
@@ -6754,7 +6753,7 @@ changes</A><BR>
 	which fill the bounding box.
       <LI>
 	Improved saving of both postscript and truetype fonts when there are composite
-	characters referring to other composits.
+	characters referring to other composites.
       <LI>
 	Fixed bug in file chooser where typing into the listbox (to select a file)
 	made it think (sometimes) that it had a directory.
@@ -6800,7 +6799,7 @@ changes</A><BR>
 	  <LI>
 	    Fixed problems with kuten decoding
 	  <LI>
-	    Fixed various crashes involving selecting and deselecting non-existant characters
+	    Fixed various crashes involving selecting and deselecting non-existent characters
 	</UL>
     </UL>
   <LI>
@@ -6923,7 +6922,7 @@ changes</A><BR>
     5 Dec 2000
     <UL>
       <LI>
-	Added a command that automagically builds an accented (or general composit)
+	Added a command that automagically builds an accented (or general composite)
 	character. (<A HREF="elementmenu.html#Accented">see below</A>)
       <LI>
 	Added support for various CJK encodings (JIS 208, JIS 212, old KSC 5601,
@@ -6998,7 +6997,7 @@ changes</A><BR>
     19 Nov 2000
     <UL>
       <LI>
-	Added Caligraphic expand stroke
+	Added Calligraphic expand stroke
       <LI>
 	Added Get Info
       <LI>

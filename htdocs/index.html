@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 10-Apr-2004 -->
+  <!-- AP: Last modified: 18-Apr-2004 -->
   <TITLE>FontForge</TITLE>
 </HEAD>
 <BODY>
@@ -114,19 +114,19 @@ let me know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="fontforge-20040410.tgz">Download fontforge linux-i386 Redhat 9.0
-    </A><A NAME="downloads">executable</A> Version: 10-Apr-2004
+    <A HREF="fontforge-20040418.tgz">Download fontforge linux-i386 Redhat 9.0
+    </A><A NAME="downloads">executable</A> Version: 18-Apr-2004
   <LI>
-    <A HREF="fontforge-20040410-1.i386.rpm">Download fontforge linux-i386 binary
-    rpm</A>. Version: 10-Apr-2004 (Redhat 9.0)
+    <A HREF="fontforge-20040418-1.i386.rpm">Download fontforge linux-i386 binary
+    rpm</A>. Version: 18-Apr-2004 (Redhat 9.0)
     <!--
     <LI>
     <A HREF="pfaedit-030226-1.ppc.rpm">Download pfaedit linux-ppc SUSE 7.1
     </A>binary rpm Version: 26-Feb-2003
     -->
   <LI>
-    <A HREF="fontforge-solaris-20040410.tgz">Download fontforge Solaris 8.0 Sparc
-    </A>executable Version: 10-Apr-2004 (no XIM support, no freetype, no SVG
+    <A HREF="fontforge-solaris-20040418.tgz">Download fontforge Solaris 8.0 Sparc
+    </A>executable Version: 18-Apr-2004 (no XIM support, no freetype, no SVG
     import)
     <UL>
       <LI>
@@ -142,12 +142,12 @@ let me know when you do</A>.
     pfaedit)
   <LI>
     <A HREF="MacOSX.html#binary">A Mac OS/X distribution</A>. Version
-    10-Apr-2004<BR>
+    18-Apr-2004<BR>
     &nbsp; &nbsp; How to install <A HREF="MacOSX.html#binary">FontForge on Mac
     OS/X</A>
   <LI>
-    <A HREF="fontforge_cygwin-20040410.tgz">A cygwin version</A> (for ms windows
-    32). Version: 10-Apr-2004<BR>
+    <A HREF="fontforge_cygwin-20040418.tgz">A cygwin version</A> (for ms windows
+    32). Version: 18-Apr-2004<BR>
     &nbsp; &nbsp; How to install <A HREF="faq.html#windows">FontForge under
     windows</A>
   <LI>
@@ -163,11 +163,11 @@ FontForge's capabilities.
   <A NAME="source">Source</A> distribution
 </H2>
 <P>
-You can download a <A HREF="fontforge-20040410-1.src.rpm">source RPM</A>:
-Version: 10-Apr-2004<BR>
-Or you can download the <A HREF="fontforge_full-20040410.tgz">source tree
+You can download a <A HREF="fontforge-20040418-1.src.rpm">source RPM</A>:
+Version: 18-Apr-2004<BR>
+Or you can download the <A HREF="fontforge_full-20040418.tgz">source tree
 </A>in one .tgz file: Version
-10-Apr-2004<!--
+18-Apr-2004<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -387,7 +387,7 @@ bitmap fonts that fontforge uses
 </H2>
 <P>
 All the documentation files in this directory bundled up into one
-<A HREF="fontforge_htdocs-20040410.tgz">tgz file</A> 10-Apr-2004.<BR>
+<A HREF="fontforge_htdocs-20040418.tgz">tgz file</A> 18-Apr-2004.<BR>
 If you do the following then FontForge will find the docs for you when you
 press F1 (ie. FontForge it will look in /usr/local/share/doc/fontforge before
 it looks on the web):
@@ -419,8 +419,8 @@ $ su
 </PRE>
 </BLOCKQUOTE>
 <P>
-FontForge now compiles dynamic libaries by default. If you would rather not
-deal with dynamic libraries (or if the compiler generates internal compiler
+FontForge now compiles dynamic libraries by default. If you would rather
+not deal with dynamic libraries (or if the compiler generates internal compiler
 errors when asked to generate PIC code, as Mac OS/X did in older versions)
 then use<BR>
 <CODE>&nbsp; &nbsp; &nbsp; &nbsp; $ configure.static</CODE><BR>
@@ -526,8 +526,7 @@ prepared to save frequently and always work on a copy of the original.
     type0 fonts (such as those made by itself), will get confused if there's
     more than one font with a chars dictionary.
   <LI>
-    FontForge's support for the <A HREF="gposgsub.html">GPOS/GSUB/GDEF</A>/VORG
-    table output is limited.
+    FontForge's support for the VORG table output is limited.
   <LI>
     FontForge's support for <A HREF="gposgsub.html#AAT">Apple's Advanced Typography
     tables</A> (AAT) is limited.
@@ -596,7 +595,7 @@ and rarely appear on this list.
     need something that small, scale the font up by a factor of 2 or more (including
     the ascent and descent).
   <LI>
-    There is a fundemental problem when importing a type3 font (or an eps file).
+    There is a fundamental problem when importing a type3 font (or an eps file).
     In an most postscript programs each contour is stroked or filled individually,
     but in a type1 character, all contours are filled together. This can lead
     to unexpected side-effects if contours overlap. (configuring fontforge for
@@ -628,7 +627,7 @@ and rarely appear on this list.
   Reporting <A NAME="bugs">bugs</A>...
 </H2>
 <P>
-I'm sure you'll find some. If you can isolate it and come up with a reproduceable
+I'm sure you'll find some. If you can isolate it and come up with a reproducible
 minimal case, that would be great. The executable has symbols in it so if
 you run it in gdb you should be able to get a stack trace... Do what you
 can.

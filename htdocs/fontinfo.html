@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 10-Mar-2004 -->
+  <!-- AP: Last modified: 16-Apr-2004 -->
   <TITLE>Font Info</TITLE>
 </HEAD>
 <BODY>
@@ -15,7 +15,7 @@
 The Font Info dialog is available from all views. It allows you to name your
 font, to set its <A HREF="fontview.html#Encodings">encoding</A> and various
 other useful bits of information. In a <A HREF="fontview.html#CID">CID keyed
-font</A>, there is a <A HREF="cidmenu.html#FontInfo">seperate command</A>
+font</A>, there is a <A HREF="cidmenu.html#FontInfo">separate command</A>
 to access the information for the font as a whole, the dialog looks the same.
 The dialog is composed of many different sub dialogs.
 <UL>
@@ -137,8 +137,8 @@ FontForge knows about the following encodings by default:
   <LI>
     ISO-8859-15 (Latin0) -- Replacement for Latin1. Does include the Euro.
   <LI>
-    ISO-8859-2 (Latin2) -- Central &amp; Eastern European (Czch, Hungarian, Polish,
-    Romanian, Croatian, Slovak, Slovnian.
+    ISO-8859-2 (Latin2) -- Central &amp; Eastern European (Czech, Hungarian,
+    Polish, Romanian, Croatian, Slovak, Slovnian.
   <LI>
     ISO-8859-3 (Latin3) -- Southern European (Esperanto, Maltese)
   <LI>
@@ -322,8 +322,8 @@ It contains:
     MacHebrew 
       <HR>
   <LI>
-    US-ASCII -- Not realy useful by itself any more, but provides the first 128
-    characters of almost every other encoding.
+    US-ASCII -- Not really useful by itself any more, but provides the first
+    128 characters of almost every other encoding.
 </UL>
 <H2>
   <IMG SRC="fontinfo-ps.png" WIDTH="376" HEIGHT="544" ALIGN="Right"><A NAME="PS-General">General</A>
@@ -361,14 +361,14 @@ your preference item). Adobe recommends that the XUID be changed every time
 the font is changed, so each time you generate a postscript font, that font's
 XUID (if present) will be incremented by 1 (This incrementing does not happen
 in CID-keyed fonts, where the XUID behavior is too complex for this simple
-trick). (The XUID field is only meaningfull in PostScript fonts)
+trick). (The XUID field is only meaningful in PostScript fonts)
 <P>
 The UniqueID field is an older convention for the same purpose as XUID. If
 you do not fill in this field then FontForge will pick a random number for
 you in the allowable range. If you want your font to have no unique id then
 give this the value of -1. If you have talked to Adobe and been assigned
 a real UniqueID then you may use this field, otherwise leave it blank. (The
-UniqueID field is only meaningfull in PostScript fonts)
+UniqueID field is only meaningful in PostScript fonts)
 <P>
 If you want your font to have <A NAME="vertical">vertical</A> metrics (generally
 this means you are working on a CJK font) then check the <CODE>[*] Has Vertical
@@ -455,7 +455,7 @@ in the Font Dictionary. If you do not provide a UniqueID here, FontForge
 will generate a random one itself (this is different from True Type's UniqueID.
 They perform the same function but are formatted differently).
 <P>
-These entries are only meaningfull for PostScript fonts.<BR CLEAR=ALL>
+These entries are only meaningful for PostScript fonts.<BR CLEAR=ALL>
 <H2>
   <IMG SRC="fontinfo-ttfvals.png" WIDTH="376" HEIGHT="544" ALIGN="Right"><A
       NAME="TTF-Values">TTF Values</A>
@@ -471,7 +471,7 @@ The width class allows you to provide a numeric value saying how condensed
 or expanded this font is.
 <P>
 The PFM Family is used when generating PFM files and classifies the font
-into some rather broad catagories (Serif, Sans, Monospace, Script, Decorative).
+into some rather broad categories (Serif, Sans, Monospace, Script, Decorative).
 <P>
 You can control whether you want to allow your font to be embedded into other
 documents (most commonly pdf). You can restrict it so that it can never be
@@ -585,20 +585,20 @@ The various strings and a brief description of their meanings are:
   <DT>
     License
   <DD>
-    A string describing the license terms under which the font is marketted
+    A string describing the license terms under which the font is marketed
   <DT>
     License
   <DD>
     An URL pointing to a page describing the terms of the license
   <DT>
-    Prefered Family
+    Preferred Family
   <DD>
     This is to get around a quirk of windows where only four Style names are
     allowed per family, so font families with more than four styles would get
     different family names above, but the preferred family name would be the
     same. This should only be specified if it differs from the family
   <DT>
-    Prefered Style
+    Preferred Style
   <DD>
     This is similar to the above, except it applies to the style.
   <DT>
@@ -620,7 +620,7 @@ type</A> as well.
 These settings specify strings for the windows platform. If you specify []
 Apple Mode when generating the font it will also generate equivalent entries
 for the mac (It will, always, generate two additional string sets by taking
-the american english entries and creating a "Mactintosh English" and an "Apple
+the american english entries and creating a "Macintosh English" and an "Apple
 Unicode (2.0)" set even if you don't specify [] Apple Mode).
 <P>
 Generally fonts will have a fairly complete set of strings in the American
@@ -757,7 +757,7 @@ languages.
     <TD>K&ouml;zepes</TD>
     <TD>S&ouml;t&eacute;tes</TD>
     <TD>Fekete</TD>
-    <TD><!--D&amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;#x151;lt-->
+    <TD><!--D&amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;#x151;lt-->
       Do"lt</TD>
     <TD>D&ouml;nt&ouml;tt</TD>
     <TD>Keskeny</TD>
@@ -790,7 +790,7 @@ appears in the dialog, labelled "Translate Style". If you press this button
 then FontForge will attempt to figure out the style of the font and then
 attempt to translate it into whatever other languages in knows about (essentially
 the above table). It will only translate to a language for which it knows
-all the componants and for which you have not already provided a translation.
+all the components and for which you have not already provided a translation.
 So if your style in American English is "BoldItalic" (and you have no other
 style entries) then after you press the "Translate Style" button FontForge
 will generate "GrasItalique" for French, "FettKursiv" for German,
@@ -811,7 +811,7 @@ docs</A>. Better information is available from
 <A HREF="http://www.agfamonotype.com/hardware/pan1.asp">AGFA</A> and
 <A HREF="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/gdi/fontext_48aa.asp">MS</A>.
 <P>
-These entries are only meaningfull for TrueType, OpenType and SVG
+These entries are only meaningful for TrueType, OpenType and SVG
 fonts.<BR Clear=All>
 <H2>
   <IMG SRC="fontinfo-tex.png" WIDTH="376" HEIGHT="544" ALIGN="Right"><A NAME="TeX">TeX</A>
@@ -821,7 +821,7 @@ This allows you to set the TeX font parameters (which are described in Appendix
 F, pp 98-100 of the MetaFont Book). There seem to be 3 different types of
 font parameters, those for text fonts, those for math fonts and those for
 math extension fonts. The later two have additional parameters which are
-accessable through the [More Params] button. The default values for the Math
+accessible through the [More Params] button. The default values for the Math
 parameters are probably reasonable. <FONT COLOR="Red"><STRONG>The default
 values for the Math Extension parameters are probably
 unreasonable</STRONG></FONT>.
@@ -833,7 +833,7 @@ your font).<BR Clear=All>
       NAME="Comment">Comment</A>
 </H2>
 <P>
-This allows you to keep track of arbetrary comments inside your font database.
+This allows you to keep track of arbitrary comments inside your font database.
 It does not correspond to any postscript or truetype entity. It is intended
 to store a changelog for the font itself, but could be used for other purposes...
 <P>
@@ -906,7 +906,7 @@ For a description of what a contextual feature might be
 This dialog allows you to create a new contextual feature by pressing the
 [New] button. This is a two part operation, first you will be prompted for
 the standard tag, script&amp;language combination, and flags, then (in a
-<A HREF="contextchain.html">seperate dialog</A>) you will be prompted for
+<A HREF="contextchain.html">separate dialog</A>) you will be prompted for
 the contents of the feature.
 <P>
 The [Edit] button will allow you to change the tags, script and flags (it

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
-  <!-- AP: Last modified: 2-Mar-2004 -->
+  <!-- AP: Last modified: 16-Apr-2004 -->
   <TITLE>More advanced features, ligatures, mark positioning, character variants</TITLE>
 </HEAD>
 <BODY>
@@ -89,7 +89,7 @@ Some variant forms are built in to FontForge, and if you use
 able to automate this process for you.
 <P>
 (Note: Type0, Type1 and Type3 PostScript fonts have no notation to handle
-this. You need to be creating an OpenType or TrueType font for these varients
+this. You need to be creating an OpenType or TrueType font for these variants
 to be output).
 <H3>
   <A NAME="Conditional">Conditional</A> Variants
@@ -114,14 +114,14 @@ Info-&gt;Contextual dialog </A>for more information
 </H2>
 <P>
 Some scripts (Arabic, Hebrew) need vowel marks placed around the main text
-characters. Other scripts (some varients of Latin and Greek) have so many
+characters. Other scripts (some variants of Latin and Greek) have so many
 possible accent combinations that having preassembled glyphs for all combinations
 is unwieldy.
 <P>
 In OpenType (which includes MicroSoft's TrueType fonts) it is possible to
 indicate on all base glyphs where marks should attach, and on all marks where
 the base glyphs should attach. Thus one could put an anchor centered above
-a capital-A indicating that all accents (accute, grave, umlaut, circumflex,
+a capital-A indicating that all accents (acute, grave, umlaut, circumflex,
 tilde, macron, ring, caron, ...) should attach there, and underneath all
 the accents one could put another anchor so that when the two glyphs are
 adjacent in the text the word-processor will know where to place the accent
@@ -141,10 +141,10 @@ the letter), so you may need more than one anchor for different styles of
 attachment.
 <P>
 Finally some letters can have multiple attachments, unicode U+1EA4, for example,
-is an A with a circumflex and an acute. Normally the circumflex and the accute
+is an A with a circumflex and an acute. Normally the circumflex and the acute
 will attach at the same point, which would be ugly and confusing. Instead
 we create a different kind of anchor, a mark to mark anchor, on the circumflex
-and allow the accute accent to attach to that.
+and allow the acute accent to attach to that.
 <P>
 Before one can create an anchor in a character one must notify FontForge
 that this font will have anchors. You must create an

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 23-Feb-2004 -->
-  <!-- AP: Last modified: 2-Mar-2004 -->
+  <!-- AP: Last modified: 16-Apr-2004 -->
   <TITLE>Multi Layered Editing of Type3 and SVG fonts</TITLE>
 </HEAD>
 <BODY>
@@ -20,7 +20,7 @@ with
 <P>
 If you have done this, then loading a type3 font (or an svg font organized
 in a similar fashion) will cause FontForge to retain information on each
-stroke and fill command. Each command is placed in a seperate layer and may
+stroke and fill command. Each command is placed in a separate layer and may
 be edited in isolation.
 <P>
 A new font may be converted to a multi-layered font by selecting
@@ -92,7 +92,7 @@ Images are allowed in Type3 fonts (but not in svg fonts). You can use the
 into any of the foreground layers. If the image is a bitmap image and the
 layer will be filled, then it will be output with an imagemask command (the
 bitmap will be drawn with the fill color), otherwise the image will be drawn
-with the colors specified in the image (Transpearant images are not supported
+with the colors specified in the image (Transparent images are not supported
 here).
 <P>
 FontForge will not skew, flip or rotate images.
@@ -118,7 +118,7 @@ transparent, 1.0 is fully opaque, .5 is translucent. Again this value may
 be inherited from the environment.
 <P>
 A stroke has a width (which again may be inherited, but probably should not
-be). Strokes are drawn using a circular pen. An eliptical pen may be specified
+be). Strokes are drawn using a circular pen. An elliptical pen may be specified
 by giving a transformation matrix here.
 <P>
 Finally a stroke needs to know how to treat the ends of paths, and how to
@@ -126,7 +126,7 @@ join non-tangent path-segments.
 <P>
 <P>
 FontForge's rasterization leaves much to be desired. It does not support
-full color (rounding everything to a shade of grey), and its stroking algorithem
+full color (rounding everything to a shade of grey), and its stroking algorithm
 is quite poor.
 <P>
 <P ALIGN=Center>

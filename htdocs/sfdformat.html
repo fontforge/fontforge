@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 10-Mar-2004 -->
+  <!-- AP: Last modified: 16-Apr-2004 -->
   <TITLE>Spline Font Database File Format</TITLE>
 </HEAD>
 <BODY>
@@ -92,7 +92,7 @@ The first line just identifies the file as an sfd file. The next few lines
 give the various different names that postscript allows fonts to have. Then
 some fairly self-explanatory items (if they don't make sense, look them up
 in the <A HREF="fontinfo.html">font info</A> dlg). A few things need some
-explaination:
+explanation:
 <DL>
   <DT>
     TeXData
@@ -319,8 +319,8 @@ EndFPST
 This defines a simple context chaining substitution by coverage class. The
 opentype flags are 0, script/lang index is 0, the feature tag is 'abvs'.
 There are no classes, no backtracking classes and no lookahead classes defined
-(it's by coverage table). There is one rule. (For a greater explaination
-of these cryptic comments see the OpenType specs on contextual lookups).
+(it's by coverage table). There is one rule. (For a greater explanation of
+these cryptic comments see the OpenType specs on contextual lookups).
 <P>
 Then follows the first rule. The first line, "1 1 0", says how many coverage
 tables there are in the normal list (1), how many in the backtrack list (1)
@@ -354,7 +354,7 @@ This defines a context chaining substitution, by classes. The format of the
 first line is the same as described above. Here we have three classes for
 the normal match and three for the backtracking match, and one rule. The
 next 4 lines define the classes. As with kerning by classes, class 0 does
-not need to be explicitly defined, it is implicitily defined to be "any glyph
+not need to be explicitly defined, it is implicitly defined to be "any glyph
 not defined in another class". So we define class 1 to be "b,o,v,..." and
 class 2 to be "a,c,d,e,...". And then we define the backtracking classes
 (which here happen to be the same as the classes for the normal match, but
@@ -620,7 +620,7 @@ point before which hint substitution occurs,
 </BLOCKQUOTE>
 <P>
 So the first two points have hint masks "xc0" and "xa0", these masks may
-be (almost) arbetrarily long, depending on the number of hints in the glyph.
+be (almost) arbitrarily long, depending on the number of hints in the glyph.
 "xc0" means that the first two hints are active (0x80 &amp; 0x40) while "xa0"
 means that the first and third are (0x80 and 0x20).
 <P>
@@ -704,7 +704,7 @@ low bit seems strange, but that was Adobe's design decision.) Here, the third
 (0x20), fourth (0x10) and fifth (0x08) stem hints (i.e. the three vertical
 stems) are in the group, yielding a counter mask of 0x38. If we were to add
 four more VStem hints to the glyph, making nine hints in all, then the mask
-would have to be given as 0x3800 (because two bytes are needed to accomodate
+would have to be given as 0x3800 (because two bytes are needed to accommodate
 nine bits).
 <P>
 If a font has been loaded from a truetype file it may containing hinting
@@ -722,7 +722,7 @@ This is 107 bytes of Enc85 encoded binary data.
 <P>
 If the character contains Anchor Points these will be included:
 <BLOCKQUOTE>
-  <PRE>AnchorPoint: "botom" 780 -60 basechar 0
+  <PRE>AnchorPoint: "bottom" 780 -60 basechar 0
 AnchorPoint: "top" 803 1487 basechar 0
 </PRE>
 </BLOCKQUOTE>
@@ -778,7 +778,7 @@ the current glyph is to be decomposed into. A ligature caret contains a count
 of the number of carets defined, and the a list of the locations of those
 carets.
 <P>
-A glyph may have an arbetrary comment associated with it, this will be output
+A glyph may have an arbitrary comment associated with it, this will be output
 in UTF-7
 <BLOCKQUOTE>
   <PRE>Comment: Hi
@@ -886,7 +886,7 @@ BeginSubFonts: 5 8318
 </PRE>
 </BLOCKQUOTE>
 <P>
-The <CODE>CIDVersion</CODE> is self-explanitory. The
+The <CODE>CIDVersion</CODE> is self-explanatory. The
 <CODE>BeginSubFonts</CODE> line says that there are 5 subfonts the largest
 of which contains slots for 8318 characters (again some of these may not
 be defined). This will be followed by a list of the subfonts (dumped out

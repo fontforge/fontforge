@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 2-Mar-2004 -->
+  <!-- AP: Last modified: 16-Apr-2004 -->
   <TITLE>Advanced Typography tables</TITLE>
 </HEAD>
 <BODY>
@@ -282,7 +282,7 @@ FontForge will read the following sub tables of the GSUB table:
     <TD>8</TD>
     <TD>reverse chaining contextual single substitution</TD>
     <TD>This allows glyph substitutions to happen in reverse order, and it a
-      varient of the chaining contextual subtable.</TD>
+      variant of the chaining contextual subtable.</TD>
     <TD>These may be created with the
       <A HREF="fontinfo.html#Contextual">Element-&gt;Font Info-&gt;Contextual
       </A>command</TD>
@@ -331,7 +331,7 @@ information see Apple's docs:
     'lcar' (ligature caret) table</A>
   <LI>
     <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6morx.html">The
-    'morx' (extended glyph metamorphisis) table</A>
+    'morx' (extended glyph metamorphosis) table</A>
     <UL>
       <LI>
 	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6mort.html">The
@@ -565,7 +565,7 @@ can sometimes be converted, and others have essentially no common ground.
 OpenType uses a four character feature tag (like 'liga') while Apple uses
 two numbers to represent a feature setting (&lt;1,2&gt;). For FontForge to
 be able to inter-convert an OpenType feature into an Apple feature there
-must first be a correspondance between the two naming conventions. Sometimes
+must first be a correspondence between the two naming conventions. Sometimes
 there is an easy direct conversion (above 'liga' and &lt;1,2&gt; both represent
 "Common Ligatures") but far more often there is none. See
 <A HREF="gposgsub.html#OT-Mac-features">below</A> for a list of the tags
@@ -619,7 +619,7 @@ GSUB tables have 7 sub-table formats, while morx tables have 5.
     <TD>This morx subtable allows a string of glyphs to be inserted before or
       after the current glyph (the current glyph always remains). This sub-table
       is contextual (ie. the insertion can be restricted to certain contexts).
-      It bears some similaries to the GSUB Multiple subtable above.</TD>
+      It bears some similarities to the GSUB Multiple subtable above.</TD>
   </TR>
   <TR>
     <TD VALIGN="Top">Alternate</TD>
@@ -701,7 +701,7 @@ Sadly OpenType and AAT provide disjoint capabilities when it comes to contextual
 matching. AAT is more capable in some areas, OpenType more capable in others.
 FontForge is able to convert an OpenType contextual substitution into an
 AAT one if FontForge can detect that the OpenType substitution does not use
-capabilies beyond those of AAT. Currently this means:
+capabilities beyond those of AAT. Currently this means:
 <UL>
   <LI>
     There is an apple feature which matches the otf tag
@@ -846,10 +846,10 @@ which both appear to support. The argument that follows is based on the
 capabilities of contextual matching, it applies equally to contextual ligatures,
 glyph insertion and glyph substitution, the examples given are only of glyph
 substitution because it is easier to represent (and because FontForge is
-only willing to contvert contextual glyph substitutions) But even here, there
+only willing to convert contextual glyph substitutions) But even here, there
 is a very basic mismatch in concepts between the way OpenType and Apple specify
-contextual substitutions. Consider the following contextual sustitution in
-a glyph list format:
+contextual substitutions. Consider the following contextual substitution
+in a glyph list format:
 <TABLE BORDER CELLPADDING="2">
   <TR>
     <TH>Initial Sequence</TH>
@@ -972,7 +972,7 @@ the "b" character will not have been marked as a substitution location.
   <HR>
 On the other hand, Apple's state machines can express things that OpenType
 tables cannot (again I'm restricting myself to contextual glyph substitutions).
-Consider the case of a swash character at the begining (or end) of a word.
+Consider the case of a swash character at the beginning (or end) of a word.
 Let us say that a word begins when a letter appears at the start of input
 or following a whitespace character. But OpenType has no way of expressing
 "start of input" (or end of input) in a contextual/chaining context, whereas
@@ -985,7 +985,7 @@ use a ligature substitution to do this.
 <P>
 Finally an AAT state machine can match a general regular expression, while
 OpenType tables can only match fixed length strings. Suppose you were typesetting
-mathematics and wanted a substitution which would convert an arbetrary digit
+mathematics and wanted a substitution which would convert an arbitrary digit
 string following a variable into a subscript (so x23 should become
 x<SMALL><SUB>23</SUB></SMALL>). It is easy to write a state machine which
 will keep substituting as long as it gets more digits, but you'd need an
@@ -1152,19 +1152,11 @@ tables</A>.
       <LI>
 	acnt (accent attachment)
       <LI>
-	avar (axis variation)
-      <LI>
 	bsln (baseline)
-      <LI>
-	cvar (CVT variation)
       <LI>
 	fdsc (font descriptor)
       <LI>
 	fmtx (font metrics)
-      <LI>
-	fvar (font variation)
-      <LI>
-	gvar (glyph variation)
       <LI>
 	hsty (horizontal style)
       <LI>
