@@ -970,11 +970,10 @@ return( NULL );
 	    memset(&si,0,sizeof(si));
 	    si.radius = outline_width/2;
 	    si.removeoverlapifneeded = true;
-	    si.cap = lc_round;
 	    fatframe = SSStroke(spl,&si,sc);
 	    SplinePointListsFree(spl);
 #if 0
-	    spl = SplineSetRemoveOverlap(sc,fatframe,over_remove);
+	    spl = SplineSetRemoveOverlap(sc,fatframe,over_remove);	/* To likely to cause remove overlap problems */
 #else
 	    spl = fatframe;
 #endif
@@ -1001,7 +1000,7 @@ return( NULL );
 
 return( spl );
 }
-    
+
 void FVShadow(FontView *fv,real angle, real outline_width,
 	real shadow_length, int wireframe) {
     int i, cnt=0;
