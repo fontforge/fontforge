@@ -707,6 +707,14 @@ return( ssplus );
 	    } else
 		SplinePointListFree(ssminus);
 	    SplineSetReverse(ssplus);
+	} else if ( si->removeexternal ) {
+	    if (reversed)
+		SplinePointListFree(ssminus);
+	    else {
+		SplinePointListFree(ssplus);
+		ssplus = ssminus;
+	    }
+	    SplineSetReverse(ssplus);
 	} else {
 	    ssplus->next = ssminus;
 	    SplineSetsCorrect(ssplus,&changed);

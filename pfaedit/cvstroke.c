@@ -67,6 +67,7 @@ typedef struct strokedlg {
 #define CID_PressureTxt	1021
 	/* For Kanou */
 #define CID_RmInternal	1022
+#define CID_RmExternal	1023
 
 static void CVStrokeIt(void *_cv, StrokeInfo *si) {
     CharView *cv = _cv;
@@ -188,6 +189,11 @@ static int Stroke_OK(GGadget *g, GEvent *e) {
 		GGadgetIsChecked( GWidgetGetControl(sw,CID_RoundJoin))?lj_round:
 		lj_miter;
 	si->removeinternal = GGadgetIsChecked( GWidgetGetControl(sw,CID_RmInternal));
+	si->removeexternal = GGadgetIsChecked( GWidgetGetControl(sw,CID_RmExternal));
+	if ( si->removeinternal && si->removeexternal ) {
+	    GWidgetErrorR(_STR_BadValue,_STR_NotInternalAndExternal);
+	    err = true;
+	}
 	si->caligraphic = GGadgetIsChecked( GWidgetGetControl(sw,CID_Caligraphic));
 	si->radius = GetRealR(sw,CID_Width,_STR_StrokeWidth,&err)/2;
 	if ( si->caligraphic ) {
@@ -255,6 +261,7 @@ static void StrokeSetup(StrokeDlg *sd, int calig) {
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_RoundJoin), calig==0);
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_MiterJoin), calig==0);
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_RmInternal), calig==0);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_RmExternal), calig==0);
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_PenAngle), calig==1);
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_PenAngleTxt), calig==1);
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_ThicknessRatio), calig==1);
@@ -358,7 +365,7 @@ return( true );
 }
 
 #define SD_Width	230
-#define SD_Height	241
+#define SD_Height	256
 #define FH_Height	(SD_Height+75)
 
 static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeInfo *si) {
@@ -371,7 +378,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
     GTextInfo label[31];
     int yoff=0;
     int gcdoff, stroke_gcd;
-    static StrokeInfo defaults = { 25, lj_round, lc_butt, false, false, false, false, 3.1415926535897932/4, .2, 50 };
+    static StrokeInfo defaults = { 25, lj_round, lc_butt, false, false, false, false, false, 3.1415926535897932/4, .2, 50 };
     StrokeInfo *def = si?si:&defaults;
     char anglebuf[20], ratiobuf[20], widthbuf[20], width2buf[20],
 	    pressurebuf[20], pressure2buf[20];
@@ -433,7 +440,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	label[gcdoff].text_in_resource = true;
 	gcd[gcdoff].gd.mnemonic = 'C';
 	gcd[gcdoff].gd.label = &label[gcdoff];
-	gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+6+99+4;
+	gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+6+114+4;
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (def->caligraphic ? gg_cb_on : 0);
 	gcd[gcdoff].gd.cid = CID_Caligraphic;
 	gcd[gcdoff].gd.handle_controlevent = Stroke_Caligraphic;
@@ -441,7 +448,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 
 	stroke_gcd = gcdoff;
 	gcd[gcdoff].gd.pos.x = 1; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y+6;
-	gcd[gcdoff].gd.pos.width = SD_Width-2; gcd[gcdoff].gd.pos.height = 99;
+	gcd[gcdoff].gd.pos.width = SD_Width-2; gcd[gcdoff].gd.pos.height = 114;
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
 	gcd[gcdoff++].creator = GGroupCreate;
 
@@ -542,6 +549,14 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.pos.x = gcd[gcdoff-4].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+20;
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (def->removeinternal?gg_cb_on:0);
 	gcd[gcdoff].gd.cid = CID_RmInternal;
+	gcd[gcdoff++].creator = GCheckBoxCreate;
+
+	label[gcdoff].text = (unichar_t *) _STR_RmExternalContour;
+	label[gcdoff].text_in_resource = true;
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.pos.x = gcd[gcdoff-1].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+15;
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (def->removeexternal?gg_cb_on:0);
+	gcd[gcdoff].gd.cid = CID_RmExternal;
 	gcd[gcdoff++].creator = GCheckBoxCreate;
 
 	label[gcdoff].text = (unichar_t *) _STR_PenAngle;

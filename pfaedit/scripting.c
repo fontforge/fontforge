@@ -1822,6 +1822,8 @@ static void bExpandStroke(Context *c) {
 	    error(c,"If 5 arguments are given, the fourth must be zero");
 	if ( c->a.vals[5].u.ival&1 )
 	    si.removeinternal = true;
+	else if ( c->a.vals[5].u.ival&2 )
+	    si.removeexternal = true;
     } else {
 	si.caligraphic = true;
 	si.penangle = 3.1415926535897932*c->a.vals[2].u.ival/180;
