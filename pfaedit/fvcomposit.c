@@ -486,6 +486,7 @@ return( space );
 
 const unichar_t *SFGetAlternate(SplineFont *sf, int base) {
     static unichar_t greekalts[5];
+    static unichar_t arabicalts[20];
     const unichar_t *upt, *pt; unichar_t *gpt;
 
     if ( base>=0xac00 && base<=0xd7a3 ) { /* Hangul syllables */
@@ -540,6 +541,34 @@ return( greekalts );
 		    *gpt++ = *upt;
 	    }
 return( greekalts );
+	}
+    } else if (( base>=0xfb50 && base<=0xfdff ) || ( base>=0xfe70 && base<0xfeff )) {
+	int ini=0, final=0;
+	if ( isarabisolated(base))
+	    ini = final = true;
+	else if ( isarabfinal(base))
+	    final = true;
+	else if ( isarabinitial(base))
+	    ini = true;
+	for ( gpt=arabicalts, pt = upt; *pt!='\0'; ++pt, ++gpt ) {
+	    if ( *pt==' ' ) {
+		*gpt = ' ';
+		ini = true;
+	    } else if ( *pt<0x600 || *pt>0x6ff )
+		*gpt = *pt;
+	    else if ( ini ) {
+		*gpt = ArabicForms[*pt-0x600].initial;
+		ini = false;
+	    } else if ( pt[1]==' ' || (pt[1]=='\0' && final))
+		*gpt = ArabicForms[*pt-0x600].final;
+	    else
+		*gpt = ArabicForms[*pt-0x600].medial;
+	    if ( !haschar(sf,*gpt))
+	break;
+	}
+	if ( *pt=='\0' ) {
+	    *gpt = '\0';
+return(arabicalts);
 	}
     }
 return( upt );
