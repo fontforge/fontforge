@@ -717,23 +717,37 @@ static void putstring(FILE *sfd, char *header, char *body) {
     putc('\n',sfd);
 }
 
-static void SFDDumpEncoding(FILE *sfd,int encname,char *keyword) {
+const char *EncName(int encname) {
+    static char buffer[40];
 
     if ( encname>=em_unicodeplanes && encname<=em_unicodeplanesmax ) {
-	fprintf(sfd, "%s: UnicodePlane%d\n", keyword, encname-em_unicodeplanes );
+	sprintf(buffer, "UnicodePlane%d", encname-em_unicodeplanes );
+return( buffer );
     } else if ( encname>=em_base ) {
 	Encoding *item;
 	for ( item = enclist; item!=NULL && item->enc_num!=encname; item = item->next );
-	if ( item==NULL )
-	    fprintf(sfd, "%s: keyword, custom\n" );
-	else
-	    fprintf(sfd, "%s: %s\n", keyword, item->enc_name );
+	if ( item!=NULL )
+return( item->enc_name );
+
+	fprintf(stderr, "Unknown encoding %d\n", encname );
+return( NULL );
     } else if ( encname>=sizeof(charset_names)/sizeof(charset_names[0])-2 &&
 	    encname!=em_none ) {
-	fprintf(sfd, "%s: %d\n", keyword, encname );
 	fprintf(stderr, "Unknown encoding %d\n", encname );
+return( NULL );
     } else
-	fprintf(sfd, "%s: %s\n", keyword, charset_names[encname+1] );
+return( charset_names[encname+1]);
+}
+
+static void SFDDumpEncoding(FILE *sfd,int encname,char *keyword) {
+    const char *name = EncName(encname);
+
+    if ( name==NULL && encname>=em_base )
+	name = "custom";
+    if ( name==NULL ) {
+	fprintf(sfd, "%s: %d\n", keyword, encname );
+    } else
+	fprintf(sfd, "%s: %s\n", keyword, name );
 }
 
 static void SFD_Dump(FILE *sfd,SplineFont *sf) {

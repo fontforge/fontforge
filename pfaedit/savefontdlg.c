@@ -211,6 +211,7 @@ static int WriteTfmFile(char *filename,SplineFont *sf, int formattype) {
     int ret;
     unichar_t *temp;
     int i;
+    char *encname;
 
     strcpy(buf,filename);
     pt = strrchr(buf,'.');
@@ -225,7 +226,7 @@ static int WriteTfmFile(char *filename,SplineFont *sf, int formattype) {
     tfm = fopen(buf,"w");
     if ( tfm==NULL )
 return( false );
-    ret = /*TfmSplineFont(tfm,sf,formattype)*/ true;	/* !!!!!!! */
+    ret = TfmSplineFont(tfm,sf,formattype);
     if ( fclose(tfm)==-1 )
 	ret = 0;
 
@@ -236,7 +237,13 @@ return( false );
     if ( enc==NULL )
 return( false );
 
-    fprintf( enc, "/%s-Enc [\n", sf->fontname );
+    encname=NULL;
+    if ( sf->subfontcnt==0 && sf->encoding_name!=em_custom && !sf->compacted )
+	encname = EncodingName(sf->encoding_name );
+    if ( encname==NULL )
+	fprintf( enc, "/%s-Enc [\n", sf->fontname );
+    else
+	fprintf( enc, "/%s [\n", encname );
     for ( i=0; i<sf->charcnt && i<256; ++i ) {
 	if ( sf->chars[i]==NULL )
 	    fprintf( enc, " /.notdef" );

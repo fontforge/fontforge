@@ -172,7 +172,6 @@ return( ret );
 
 static void tfmDoLigKern(SplineFont *sf, int enc, int lk_index,
 	uint8 *ligkerntab, uint8 *kerntab) {
-    int next;
     int enc2, k_index;
     SplineChar *sc1, *sc2;
     real off;
@@ -194,9 +193,7 @@ return;
 	}
 	if ( ligkerntab[lk_index*4]>=128 )
     break;
-	next = lk_index + ligkerntab[lk_index*4];
-	if ( next==lk_index ) ++next;	/* I guess */
-	lk_index = next;
+	lk_index += ligkerntab[lk_index*4] + 1;
     }
 }
 
@@ -1014,6 +1011,7 @@ int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0) {
     /* my docs imply that pfm files can only handle 1byte fonts */
     long size, devname, facename, extmetrics, exttable, driverinfo, kernpairs, pos;
     DBounds b;
+    int style;
 
     SFKernPrepare(sf);
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
@@ -1073,12 +1071,8 @@ int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0) {
     if ( caph==0 ) caph = ash;
     putlshort(sf->ascent+sf->descent-caph-dsh,pfm);	/* Internal leading */
     putlshort(0/*(sf->ascent+sf->descent)/8*/,pfm);	/* External leading */
-/* I don't check for "italic" and "oblique" because URW truncates them to 4 characters */
-    putc(sf->italicangle!=0 ||
-	    strstrmatch(sf->fontname,"ital")!=NULL ||
-	    strstrmatch(sf->fontname,"kurs")!=NULL ||
-	    strstrmatch(sf->fontname,"slanted")!=NULL ||
-	    strstrmatch(sf->fontname,"obli")!=NULL,pfm);	/* is italic */
+    style = MacStyleCode(sf,NULL);
+    putc(style&sf_italic?1:0,pfm);	/* is italic */
     putc(0,pfm);			/* underline */
     putc(0,pfm);			/* strikeout */
     putlshort(sf->pfminfo.weight,pfm);	/* weight */
@@ -1229,4 +1223,370 @@ int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0) {
     SFKernCleanup(sf);
 
 return( !ferror(pfm));
+}
+
+typedef uint32 fix_word;
+
+struct tfm_header {
+    uint32 checksum;	/* don't know how to calculate this, use 0 to ignore it */
+    fix_word design_size;	/* in points (10<<20 seems to be default) */
+    char encoding[40];	/* first byte is length, rest are a string that names the encoding */
+	/* ASCII, TeX text, TeX math extension, XEROX, GRAPHIC, UNSPECIFIED */
+    char family[20];	/* Font Family, preceded by a length byte */
+    uint8 seven_bit_safe_flag;
+    uint8 ignored[2];
+    uint8 face; 	/* 0=>roman, 1=>italic */
+    			/* 4=>light, 0=>medium, 2=>bold */
+			/* 6=>condensed, 0=>regular, 12=>extended */
+};
+
+struct tfm_params {
+    fix_word slant;	/* -sin(italic_angle) (a small positive number) */
+    fix_word space;	/* inter-word spacing (advance width of space) */
+    fix_word space_stretch;	/* inter-word glue stretching */
+	/* About 1/2 space for cmr */
+    fix_word space_shrink;	/* inter-word glue shrinking */
+	/* About 1/3 space for cmr */
+    fix_word x_height;
+    fix_word quad;	/* == 1.0 */
+    fix_word extra_space;	/* added at end of sentences */
+	/* same as space_shrink for cmr */
+/* tex math and tex math extension have extra parameters. They are not */
+/*  explained (page 7) */
+};
+struct ligkern {
+    uint8 skip;
+    uint8 other_char;
+    uint8 op;
+    uint8 remainder;
+    struct ligkern *next;
+};
+
+static struct ligkern *TfmAddKern(KernPair *kp,struct ligkern *last,double *kerns,
+	int *_kcnt) {
+    struct ligkern *new = gcalloc(1,sizeof(struct ligkern));
+    int i;
+
+    new->other_char = kp->sc->enc;
+    for ( i=*_kcnt-1; i>=0 ; --i )
+	if ( kerns[i] == kp->off )
+    break;
+    if ( i<0 ) {
+	i = (*_kcnt)++;
+	kerns[i] = kp->off;
+    }
+    new->remainder = i&0xff;
+    new->op = 128 + (i>>8);
+    new->next = last;
+return( new );
+}
+
+static struct ligkern *TfmAddLiga(LigList *l,struct ligkern *last) {
+    struct ligkern *new;
+
+    if ( l->lig->u.lig.lig->enc>=256 )
+return( last );
+    if ( l->components==NULL || l->components->sc->enc>=256 || l->components->next!=NULL )
+return( last );
+    new = gcalloc(1,sizeof(struct ligkern));
+    new->other_char = l->components->sc->enc;
+    new->remainder = l->lig->u.lig.lig->enc;
+    new->next = last;
+    new->op = 0*4 + 0*2 + 0;
+	/* delete next char, delete current char, start over and check the resultant ligature for more ligs */
+return( new );
+}
+
+static int CoalesceValues(double *values,int max,int *index) {
+    int i,j,k,top, offpos,diff;
+    int backindex[257];
+    double off, test;
+
+    values[256] = 0;
+    for ( i=0; i<257; ++i )
+	backindex[i] = i;
+
+    /* sort */
+    for ( i=0; i<256; ++i ) for ( j=i+1; j<257; ++j ) {
+	if ( values[i]>values[j] ) {
+	    int l = backindex[i];
+	    double val = values[i];
+	    backindex[i] = backindex[j];
+	    values[i] = values[j];
+	    backindex[j] = l;
+	    values[j] = val;
+	}
+    }
+    for ( i=0; i<257; ++i )
+	index[backindex[i]] = i;
+    top = 257;
+    for ( i=0; i<top; ++i ) {
+	for ( j=i+1; j<257 && values[i]==values[j]; ++j );
+	if ( j>i+1 ) {
+	    int diff = j-i-1;
+	    for ( k=i+1; k+diff<257; ++k )
+		values[k] = values[k+diff];
+	    for ( k=0; k<257; ++k ) {
+		if ( index[k]>=j )
+		    index[k] -= diff;
+		else if ( index[k]>i )
+		    index[k] = i;
+	    }
+	    top -= diff;
+	}
+    }
+    if ( top<=max )
+return( top );
+
+    while ( top>max ) {
+	off = fabs(values[0]-values[1]);
+	offpos = 0;
+	for ( i=1; i<top-1; ++i ) {
+	    test = fabs(values[i]-values[i+1]);
+	    if ( test<off ) {
+		off = test;
+		offpos = i;
+	    }
+	}
+	diff = 1;
+	for ( k=offpos+1; k+diff<256; ++k )
+	    values[k] = values[k+diff];
+	for ( k=0; k<257; ++k ) {
+	    if ( index[k]>offpos )
+		index[k] -= diff;
+	}
+	top -= diff;
+    }
+return( top );
+}
+
+int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
+    struct tfm_header header;
+    struct tfm_params params;
+    char *full=NULL, *encname;
+    int i, spacew;
+    BlueData bd;
+    DBounds b;
+    struct ligkern *ligkerns[256], *lk;
+    double widths[257], heights[257], depths[257], italics[257];
+    uint8 tags[256], lkindex[256];
+    int former[256];
+    int widthindex[257], heightindex[257], depthindex[257], italicindex[257];
+    double *kerns;
+    int widcnt, hcnt, dcnt, icnt, kcnt, lkcnt;
+    int first, last;
+    KernPair *kp;
+    LigList *l;
+    int style, any;
+    uint32 *lkarray;
+
+    SFLigaturePrepare(sf);
+    LigatureClosure(sf);		/* Convert 3 character ligs to a set of two character ones when possible */
+    SFKernPrepare(sf);			/* Undoes kern classes */
+
+    memset(&header,0,sizeof(header));
+    header.checksum = 0;		/* don't check checksum (I don't know how to calculate it) */
+    header.design_size = 10<<20;	/* default to 10pt */
+    encname=NULL;
+    if ( sf->subfontcnt==0 && sf->encoding_name!=em_custom && !sf->compacted )
+	encname = EncodingName(sf->encoding_name );
+    if ( encname==NULL ) {
+	full = galloc(strlen(sf->fontname)+10);
+	strcpy(full,sf->fontname);
+	strcat(full,"-Enc");
+	encname = full;
+    }
+    header.encoding[0] = strlen(encname);
+    if ( header.encoding[0]>39 ) {
+	header.encoding[0] = 39;
+	memcpy(header.encoding+1,encname,39);
+    } else
+	strcpy(header.encoding+1,encname);
+    if ( full ) free(full);
+
+    header.family[0] = strlen(sf->familyname);
+    if ( header.family[0]>19 ) {
+	header.family[0] = 19;
+	memcpy(header.family+1,sf->familyname,19);
+    } else
+	strcpy(header.family+1,sf->familyname);
+    for ( i=128; i<sf->charcnt && i<256; ++i )
+	if ( SCWorthOutputting(sf->chars[i]))
+    break;
+    if ( i>=sf->charcnt || i>=256 )
+	header.seven_bit_safe_flag = true;
+    style = MacStyleCode(sf,NULL);
+    if ( style&sf_italic )
+	header.face = 1;
+    if ( style&sf_bold )
+	header.face+=2;
+    else if ( strstrmatch(sf->fontname,"Ligh") ||
+	    strstrmatch(sf->fontname,"Thin") ||
+	    strstrmatch(sf->fontname,"Maigre") ||
+	    strstrmatch(sf->fontname,"Mager") )
+	header.face += 4;
+    if ( style&sf_condense )
+	header.face += 6;
+    else if ( style&sf_extend )
+	header.face += 12;
+
+    spacew = .33*(1<<20);	/* 1/3 em for a space seems like a reasonable size */
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->unicodeenc==' ' ) {
+	spacew = (sf->chars[i]->width<<20)/(sf->ascent+sf->descent);
+    break;
+    }
+    QuickBlues(sf,&bd);
+
+    memset(&params,0,sizeof(params));
+    params.slant = rint( -sin(sf->italicangle)*(1<<20) );
+    params.space = spacew;
+    params.space_stretch = spacew/2;
+    params.space_shrink = spacew/3;
+    if ( bd.xheight>0 )
+	params.x_height = (bd.xheight*(1<<20))/(sf->ascent+sf->descent);
+    params.quad = 1<<20;
+    params.extra_space = spacew/3;
+
+    memset(widths,0,sizeof(widths));
+    memset(heights,0,sizeof(heights));
+    memset(depths,0,sizeof(depths));
+    memset(italics,0,sizeof(italics));
+    memset(tags,0,sizeof(tags));
+    first = last = -1;
+    for ( i=0; i<256 && i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i])) {
+	SplineCharFindBounds(sf->chars[i],&b);
+	widths[i] = sf->chars[i]->width;
+	if ( b.maxy>0 )
+	    heights[i] = b.maxy;
+	if ( b.miny<0 )
+	    depths[i] = -b.miny;
+	if ( (style&sf_italic) && b.maxx>sf->chars[i]->width )
+	    italics[i] = (b.maxx-sf->chars[i]->width)*(1<<20)/(sf->ascent+sf->descent) +
+		    ((1<<20)>>4);	/* With a 1/16 em white space after it */
+	if ( first==-1 ) first = i;
+	last = i;
+    }
+    widcnt = CoalesceValues(widths,256,widthindex);
+    hcnt = CoalesceValues(heights,16,heightindex);
+    dcnt = CoalesceValues(depths,16,depthindex);
+    icnt = CoalesceValues(italics,16,italicindex);
+    if ( last==-1 ) { first = 1; last = 0; }
+
+    kcnt = 0;
+    for ( i=0; i<256 && i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i])) {
+	SplineChar *sc = sf->chars[i];
+	for ( kp=sc->kerns; kp!=NULL; kp=kp->next )
+	    if ( kp->sc->enc<256 ) ++kcnt;
+    }
+    kerns = NULL;
+    if ( kcnt!=0 )
+	kerns = galloc(kcnt*sizeof(double));
+    kcnt = lkcnt = 0;
+    memset(ligkerns,0,sizeof(ligkerns));
+    for ( i=0; i<256 && i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i])) {
+	SplineChar *sc = sf->chars[i];
+	for ( kp=sc->kerns; kp!=NULL; kp=kp->next )
+	    if ( kp->sc->enc<256 )
+		ligkerns[i] = TfmAddKern(kp,ligkerns[i],kerns,&kcnt);
+	for ( l=sc->ligofme; l!=NULL; l=l->next )
+	    ligkerns[i] = TfmAddLiga(l,ligkerns[i]);
+	if ( ligkerns[i]!=NULL ) {
+	    tags[i] = 1;
+	    for ( lk=ligkerns[i]; lk!=NULL; lk=lk->next )
+		++lkcnt;
+	}
+    }
+    lkarray = galloc(lkcnt*sizeof(uint32));
+    memset(former,-1,sizeof(former));
+    memset(lkindex,0,sizeof(lkindex));
+    lkcnt = 0;
+    do {
+	any = false;
+	for ( i=0; i<256; ++i ) if ( ligkerns[i]!=NULL ) {
+	    lk = ligkerns[i];
+	    ligkerns[i] = lk->next;
+	    if ( former[i]!=-1 )
+		lkarray[former[i]] |= (lkcnt-former[i]-1)<<24;
+	    else
+		lkindex[i] = lkcnt;
+	    former[i] = lkcnt;
+	    lkarray[lkcnt++] = ((lk->next==NULL?128:0)<<24) |
+				(lk->other_char<<16) |
+			        (lk->op<<8) |
+			        lk->remainder;
+	    free( lk );
+	    any = true;
+	}
+    } while ( any );
+
+/* Now output the file */
+	/* Table of contents */
+    putshort(tfm,
+	    6+			/* Table of contents size */
+	    18 +		/* header size */
+	    (last-first+1) +	/* Per glyph data */
+	    widcnt +		/* entries in the width table */
+	    hcnt +		/* entries in the height table */
+	    dcnt +		/* entries in the depth table */
+	    icnt +		/* entries in the italic correction table */
+	    lkcnt +		/* entries in the lig/kern table */
+	    kcnt +		/* entries in the kern table */
+	    0 +			/* No extensible characters here */
+	    7);			/* font parameter words */
+    putshort(tfm,18);
+    putshort(tfm,first);
+    putshort(tfm,last);
+    putshort(tfm,widcnt);
+    putshort(tfm,hcnt);
+    putshort(tfm,dcnt);
+    putshort(tfm,icnt);
+    putshort(tfm,lkcnt);
+    putshort(tfm,kcnt);
+    putshort(tfm,0);
+    putshort(tfm,7);
+	    /* header */
+    putlong(tfm,header.checksum);
+    putlong(tfm,header.design_size);
+    fwrite(header.encoding,1,sizeof(header.encoding),tfm);
+    fwrite(header.family,1,sizeof(header.family),tfm);
+    fwrite(&header.seven_bit_safe_flag,1,4,tfm);
+	    /* per-glyph data */
+    for ( i=first; i<=last ; ++i ) {
+	if ( SCWorthOutputting(sf->chars[i])) {
+	    putc(widthindex[i],tfm);
+	    putc((heightindex[i]<<4)|depthindex[i],tfm);
+	    putc((italicindex[i]<<2)|tags[i],tfm);
+	    putc(lkindex[i],tfm);
+	} else {
+	    putlong(tfm,0);
+	}
+    }
+	    /* width table */
+    for ( i=0; i<widcnt; ++i )
+	putlong(tfm,(widths[i]*(1<<20))/(sf->ascent+sf->descent));
+	    /* height table */
+    for ( i=0; i<hcnt; ++i )
+	putlong(tfm,(heights[i]*(1<<20))/(sf->ascent+sf->descent));
+	    /* depth table */
+    for ( i=0; i<dcnt; ++i )
+	putlong(tfm,(depths[i]*(1<<20))/(sf->ascent+sf->descent));
+	    /* italic correction table */
+    for ( i=0; i<icnt; ++i )
+	putlong(tfm,(italics[i]*(1<<20))/(sf->ascent+sf->descent));
+	    /* lig/kern table */
+    for ( i=0; i<lkcnt; ++i )
+	putlong(tfm,lkarray[i]);
+	    /* kern table */
+    for ( i=0; i<kcnt; ++i )
+	putlong(tfm,(kerns[i]*(1<<20))/(sf->ascent+sf->descent));
+	    /* extensible table */
+    /* empty */
+	    /* font parameters */
+    for ( i=0; i<7; ++i )
+	putlong(tfm,(&params.slant)[i]);
+
+    SFLigatureCleanup(sf);
+    SFKernCleanup(sf);
+
+return( !ferror(tfm));
 }

@@ -990,6 +990,7 @@ extern int IsntBDFChar(BDFChar *bdfc);
 extern int CIDWorthOutputting(SplineFont *cidmaster, int enc); /* Returns -1 on failure, font number on success */
 extern int AfmSplineFont(FILE *afm, SplineFont *sf,int formattype);
 extern int PfmSplineFont(FILE *pfm, SplineFont *sf,int type0);
+extern int TfmSplineFont(FILE *afm, SplineFont *sf,int formattype);
 extern char *EncodingName(int map);
 extern void SFLigaturePrepare(SplineFont *sf);
 extern void SFLigatureCleanup(SplineFont *sf);
@@ -999,6 +1000,7 @@ extern KernClass *SFFindKernClass(SplineFont *sf,SplineChar *first,SplineChar *l
 	int *index,int allow_zero);
 extern int SCSetMetaData(SplineChar *sc,char *name,int unienc,const unichar_t *comment);
 
+extern const char *EncName(int encname);
 extern int SFDWrite(char *filename,SplineFont *sf);
 extern int SFDWriteBak(SplineFont *sf);
 extern SplineFont *SFDRead(char *filename);
