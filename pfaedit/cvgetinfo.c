@@ -343,9 +343,50 @@ return;
     free(components);
 }
 
+static int psnamesinited=false;
+#define HASH_SIZE	257
+struct psbucket { const char *name; int uni; struct psbucket *prev; } *psbuckets[HASH_SIZE];
+
+static int hashname(const char *name) {
+    /* Name is assumed to be ascii */
+    int hash=0;
+
+    while ( *name ) {
+	if ( *name<=' ' || *name>=0x7f )
+    break;
+	hash = (hash<<3)|((hash>>29)&0x7);
+	hash ^= *name++-(' '+1);
+    }
+    hash ^= (hash>>16);
+    hash &= 0xffff;
+return( hash%HASH_SIZE );
+}
+
+static void psaddbucket(const char *name, int uni) {
+    int hash = hashname(name);
+    struct psbucket *buck = gcalloc(1,sizeof(struct psbucket));
+
+    buck->name = name;
+    buck->uni = uni;
+    buck->prev = psbuckets[hash];
+    psbuckets[hash] = buck;
+}
+
+static void psinitnames(void) {
+    int i;
+
+    for ( i=psaltuninames_cnt-1; i>=0 ; --i )
+	psaddbucket(psaltuninames[i].name,psaltuninames[i].unicode);
+    for ( i=psunicodenames_cnt-1; i>=0 ; --i )
+	if ( psunicodenames[i]!=NULL )
+	    psaddbucket(psunicodenames[i],i);
+    psnamesinited = true;
+}
+
 int UniFromName(const char *name) {
     int i = -1;
     char *end;
+    struct psbucket *buck;
 
     if ( strncmp(name,"uni",3)==0 ) {
 	i = strtol(name+3,&end,16);
@@ -356,14 +397,14 @@ int UniFromName(const char *name) {
 	if ( *end )
 	    i = -1;
     }
-    if ( i==-1 ) for ( i=psunicodenames_cnt-1; i>=0 ; --i ) {
-	if ( psunicodenames[i]!=NULL )
-	    if ( strcmp(name,psunicodenames[i])==0 )
-    break;
-    }
-    if ( i==-1 ) for ( i=psaltuninames_cnt-1; i>=0 ; --i ) {
-	if ( strcmp(name,psaltuninames[i].name)==0 )
-    break;
+    if ( i==-1 ) {
+	if ( !psnamesinited )
+	    psinitnames();
+	for ( buck = psbuckets[hashname(name)]; buck!=NULL; buck=buck->prev )
+	    if ( strcmp(buck->name,name)==0 )
+	break;
+	if ( buck!=NULL )
+	    i = buck->uni;
     }
 #if 0
     if ( i==-1 ) {
