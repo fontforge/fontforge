@@ -1349,10 +1349,16 @@ return( true );
 	} else {
 	    static unichar_t filter[] = { '*','.','t', 'x', 't', '\0' };
 	    unichar_t *fn = GWidgetOpenFile(GStringGetResource(_STR_LoadKernPairs,NULL), NULL, filter, NULL,NULL);
-	    if ( fn==NULL )
+	    if ( fn==NULL ) {
+		GDrawSetVisible(gw,true);
+		wi->done = false;
 return( true );
-	    if ( !ReadKernPairFile(fn,wi))
+	    }
+	    if ( !ReadKernPairFile(fn,wi)) {
+		GDrawSetVisible(gw,true);
+		wi->done = false;
 return( true );
+	    }
 	}
 	BuildCharPairs(wi);
 	if ( wi->autokern ) {
