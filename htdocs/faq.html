@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 14-Jan-2003 -->
+  <!-- AP: Last modified: 20-Jan-2003 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -11,7 +11,7 @@
 </TABLE>
 <H1 ALIGN=Center>
   Frequently Asked Questions<BR>
-  <SMALL>(or all the questions I've been asked so far)</SMALL>
+  <SMALL>(or many of the questions I've been asked so far)</SMALL>
 </H1>
 <P>
 <UL>
@@ -68,10 +68,14 @@
     <A HREF="#no-copy-names">Why doesn't Edit-&gt;Copy copy character names as
     well as glyph info?</A>
   <LI>
+    <A HREF="#copy-names">Why does Edit-&gt;Paste complain about name duplication?</A>
+  <LI>
     <A HREF="#cidmaps">What on earth are the cidmap files, and should I care
     about them?</A>
+<UL>
   <LI>
     <A HREF="cidmenu.html#CID">(What is a CID-keyed font?)</A>
+</UL>
   <LI>
     <A HREF="#simplify">Does the simplify command lose accuracy?</A>
   <LI>
@@ -100,6 +104,10 @@
     to build one of the Extended Greek characters (U+1F00-U+1FFF) PfaEdit picks
     the wrong accents. Why?</A>
   <LI>
+    <A HREF="#u-accents">When I use Element-&gt;Build Accented Character
+    to build accents over "u" or "y" I get the accent over one of the stems not
+    centered on the character. Why?</A>
+  <LI>
     <A HREF="#ttf2afm">Why does ttf2afm crash on PfaEdit ttf files?</A>
   <LI>
     <A HREF="index.html#known-bugs">Where can I find a list of known bugs in
@@ -118,7 +126,7 @@
 	There are lots of latin fonts. There are far fewer greek, cyrillic, indic,
 	thai, chinese, japanese, korean, unicode...
       <LI>
-	Traditionally each new style of art and architecture has an associated style
+	Even for latin, traditionally each new style of art and architecture has an associated style
 	of fonts. New fonts are always being created to reflect the esthetics of
 	the times.
       <LI>
@@ -694,6 +702,10 @@ MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
     in <A HREF="editmenu.html#CharName">Edit-&gt;Copy From-&gt;Char Name</A>
     which allows you to change the default behavior.
   <DT>
+    <A NAME="copy-names"><B>Why does Edit-&gt;Paste complain about name duplication?</B></A>
+  <DD>
+    Because you have Edit->Copy From->Copy Metadata checked. Uncheck it.
+  <DT>
     <A NAME="cidmaps"><B>What on earth are cidmap files and should I care about
     them?</B></A>
   <DD>
@@ -855,6 +867,17 @@ MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
     also contains code points for the greek accents starting around U+1FBD, if
     you fill these code points with the appropriate accents then PfaEdit will
     use these rather than the latin accents.
+  <DT>
+    <A NAME="u-accents"><B>When I use Element-&gt;Build Accented Character
+    to build accents over "u" or "y" I get the accent over one of the stems not
+    centered on the character. Why?</B></A>
+  <DD>
+    One of your stems is a little taller than the other. PfaEdit centers accents
+    over the tallest point on the character. If there are several points with
+    the same height, then an average is used.
+    <P>
+    If you make all your stems be the same height then the accent should be
+    properly centered.
   <DT>
     <A NAME="ttf2afm"><B>Why does ttf2afm crash on PfaEdit ttf files?</B></A>
   <DD>
