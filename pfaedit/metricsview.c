@@ -64,6 +64,8 @@ static void MVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
     int si;
     int ke = mv->height-mv->sbh-(mv->fh+4);
     struct aplist *apl;
+    double s = sin(-mv->fv->sf->italicangle*3.1415926535897932/180.);
+    int x_iaoffh = 0, x_iaoffl = 0;
 
     clip = &event->u.expose.rect;
     if ( clip->y+clip->height < mv->topend )
@@ -96,6 +98,10 @@ return;
 	if ( mv->right_to_left )
 	    x = mv->width - x - mv->perchar[0].dwidth - mv->perchar[0].kernafter;
 	GDrawDrawLine(pixmap,x,mv->topend,x,mv->displayend,0x808080);
+	x_iaoffh = rint((ybase-mv->topend)*s), x_iaoffl = rint((mv->displayend-ybase)*s);
+	if ( ItalicConstrained && x_iaoffh!=0 ) {
+	    GDrawDrawLine(pixmap,x+x_iaoffh,mv->topend,x-x_iaoffl,mv->displayend,0x909090);
+	}
     }
     si = -1;
     for ( i=0; i<mv->charcnt; ++i ) {
@@ -104,8 +110,11 @@ return;
 	if ( mv->right_to_left )
 	    x = mv->width - x - mv->perchar[i].dwidth - mv->perchar[i].kernafter;
 	if ( mv->bdf==NULL && mv->showgrid ) {
-	    GDrawDrawLine(pixmap,x+mv->perchar[i].dwidth+mv->perchar[i].kernafter,
-		    mv->topend,x+mv->perchar[i].dwidth+mv->perchar[i].kernafter,mv->displayend,0x808080);
+	    int xp = x+mv->perchar[i].dwidth+mv->perchar[i].kernafter;
+	    GDrawDrawLine(pixmap,xp, mv->topend,xp,mv->displayend,0x808080);
+	    if ( ItalicConstrained && x_iaoffh!=0 ) {
+		GDrawDrawLine(pixmap,xp+x_iaoffh,mv->topend,xp-x_iaoffl,mv->displayend,0x909090);
+	    }
 	}
 	if ( mv->right_to_left )
 	    x += mv->perchar[i].kernafter-mv->perchar[i].xoff;

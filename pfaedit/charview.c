@@ -1044,6 +1044,11 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     }
     if ( cv->showhmetrics ) {
 	DrawLine(cv,pixmap,0,-8096,0,8096,0x808080);
+	if ( ItalicConstrained && cv->sc->parent->italicangle!=0 ) {
+	    double s = sin(-cv->sc->parent->italicangle*3.1415926535897932/180.);
+	    int xoff = rint(8096*s);
+	    DrawLine(cv,pixmap,-xoff,-8096,xoff,8096,0x909090);
+	}
 	DrawLine(cv,pixmap,-8096,0,8096,0,0x808080);
 	DrawLine(cv,pixmap,-8096,sf->ascent,8096,sf->ascent,0x808080);
 	DrawLine(cv,pixmap,-8096,-sf->descent,8096,-sf->descent,0x808080);
@@ -1103,6 +1108,11 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    dtou( ubuf, cv->sc->width);
 	    GDrawSetFont(pixmap,cv->small);
 	    GDrawDrawText(pixmap,x+5,cv->sas+3,ubuf,-1,NULL,0x00000);
+	}
+	if ( ItalicConstrained && cv->sc->parent->italicangle!=0 ) {
+	    double s = sin(-cv->sc->parent->italicangle*3.1415926535897932/180.);
+	    int xoff = rint(8096*s);
+	    DrawLine(cv,pixmap,cv->sc->width-xoff,-8096,cv->sc->width+xoff,8096,0x909090);
 	}
     }
     if ( cv->showvmetrics ) {
