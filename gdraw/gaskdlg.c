@@ -151,7 +151,7 @@ static GWindow DlgCreate(const unichar_t *title,const unichar_t *question,va_lis
 	char *temp;
 	fprintf(stderr, "%s\n", temp=u2def_copy(ubuf));
 	free(temp);
-	d->done = true;
+	if ( d!=NULL ) d->done = true;
 return( NULL );
     }
 
