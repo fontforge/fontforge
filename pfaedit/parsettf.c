@@ -2949,6 +2949,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
     SplineChar *sc;
     uint8 *used;
     int badencwarned=false;
+    int glyph_tot;
 
     fseek(ttf,info->encoding_start,SEEK_SET);
     version = getushort(ttf);
@@ -3068,7 +3069,8 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    /* that's the amount of space left in the subtable and it must */
 	    /*  be filled with glyphIDs */
 	    glyphs = galloc(len);
-	    for ( i=0; i<len/2; ++i )
+	    glyph_tot = len/2;
+	    for ( i=0; i<glyph_tot; ++i )
 		glyphs[i] = getushort(ttf);
 	    for ( i=0; i<segCount; ++i ) {
 		if ( rangeOffset[i]==0 && startchars[i]==0xffff )
@@ -3099,8 +3101,16 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 		    /* It isn't explicitly mentioned by a rangeOffset of 0xffff*/
 		    /*  means no glyph */
 		    for ( j=startchars[i]; j<=endchars[i]; ++j ) {
-			index = glyphs[ (i-segCount+rangeOffset[i]/2) +
-					    j-startchars[i] ];
+			int temp = (i-segCount+rangeOffset[i]/2) + j-startchars[i];
+			if ( temp<glyph_tot )
+			    index = glyphs[ temp ];
+			else {
+			    /* This happened in mingliu.ttc(PMingLiU) */
+			    if ( !justinuse )
+				fprintf( stderr, "Glyph index out of bounds. Was %d, must be less than %d.\n In attempt to associate a glyph with encoding %x in segment %d\n with platform=%d, specific=%d (in 'cmap')\n",
+					temp, glyph_tot, j, i, info->platform, info->specific );
+			    index = 0;
+			}
 			if ( index!=0 ) {
 			    index = (unsigned short) (index+delta[i]);
 			    if ( index>=info->glyph_cnt )
