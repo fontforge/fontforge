@@ -3592,7 +3592,7 @@ return;
 static void show_contextkerndata(uint8 *entry,struct statetable *st,struct ttfinfo *info, FILE *ttf) {
     int flags = (entry[2]<<8)|entry[3];
     int offset = flags&0x3fff;
-    int i;
+    int i, k;
 
     printf( "\t   Flags %04x ", flags );
     if ( flags&0x8000 )
@@ -3606,8 +3606,11 @@ static void show_contextkerndata(uint8 *entry,struct statetable *st,struct ttfin
 	printf( "Offset=%d, len=%d\n", offset, st->len );
 	fseek(ttf,offset+st->state_start,SEEK_SET);
 	printf( "Kerns: " );
-	for ( i=0; i<6; ++i )
-	    printf( "%d ", (short) getushort(ttf));
+	for ( i=0; i<8; ++i ) {
+	    printf( "%d ", (k = (short) getushort(ttf)) & ~1 );
+	    if ( k&1 )	/* list is terminated by an odd number */
+	break;
+	}
 	printf( "\n" );
     }
 }
