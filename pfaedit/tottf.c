@@ -4499,11 +4499,12 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
     else if ( format==ff_none && at->applemode ) {
 	AssignTTFGlyph(sf,bsizes);
 	aborted = !dumpcffhmtx(at,sf,true);
-    } else if ( format==ff_none && at->msbitmaps ) {
+    } else if ( format==ff_none && at->otbbitmaps ) {
 	AssignTTFGlyph(sf,bsizes);
 	aborted = !dumpcffhmtx(at,sf,true);
-	if ( !at->otbbitmaps )
-	    dumpnoglyphs(sf,&at->gi);
+	dumpnoglyphs(sf,&at->gi);
+    } else if ( format==ff_none && at->msbitmaps ) {
+	aborted = !dumpglyphs(sf,&at->gi);
     } else {
 	struct ttf_table *tab;
 	/* There's a typo in Adobe's docs, and the instructions in these tables*/
@@ -4548,7 +4549,7 @@ return( false );
     setos2(&at->os2,at,sf,format);	/* should precede kern/ligature output */
     if ( at->gi.glyph_len<0x20000 )
 	at->head.locais32 = 0;
-    if ( bsizes!=NULL && format==ff_none && !at->applemode )
+    if ( format==ff_none && at->otbbitmaps )
 	dummyloca(at);
     else if ( format!=ff_otf && format!=ff_otfcid && (format!=ff_none || (bsizes!=NULL && !at->applemode && at->opentypemode)) )
 	redoloca(at);
@@ -4722,19 +4723,19 @@ return( false );
 	at->tabdir.tabs[i++].length = at->featlen;
     }
 
-    if ( format!=ff_otf && format!=ff_otfcid && format!=ff_none ) {
-	if ( at->fpgmf!=NULL ) {
-	    at->tabdir.tabs[i].tag = CHR('f','p','g','m');
-	    at->tabdir.tabs[i].data = at->fpgmf;
-	    at->tabdir.tabs[i++].length = at->fpgmlen;
-	}
+    if ( at->fpgmf!=NULL ) {
+	at->tabdir.tabs[i].tag = CHR('f','p','g','m');
+	at->tabdir.tabs[i].data = at->fpgmf;
+	at->tabdir.tabs[i++].length = at->fpgmlen;
+    }
 
-	if ( at->gaspf!=NULL ) {
-	    at->tabdir.tabs[i].tag = CHR('g','a','s','p');
-	    at->tabdir.tabs[i].data = at->gaspf;
-	    at->tabdir.tabs[i++].length = at->gasplen;
-	}
+    if ( at->gaspf!=NULL ) {
+	at->tabdir.tabs[i].tag = CHR('g','a','s','p');
+	at->tabdir.tabs[i].data = at->gaspf;
+	at->tabdir.tabs[i++].length = at->gasplen;
+    }
 
+    if ( at->gi.glyphs!=NULL ) {
 	at->tabdir.tabs[i].tag = CHR('g','l','y','f');
 	at->tabdir.tabs[i].data = at->gi.glyphs;
 	at->tabdir.tabs[i++].length = at->gi.glyph_len;
@@ -4766,8 +4767,7 @@ return( false );
 	at->tabdir.tabs[i++].length = at->lcarlen;
     }
 
-    if ( format!=ff_otf && format!=ff_otfcid && (format!=ff_none ||
-	    (at->msbitmaps && bf!=bf_otb) )) {
+    if ( at->loca!=NULL ) {
 	at->tabdir.tabs[i].tag = CHR('l','o','c','a');
 	at->tabdir.tabs[i].data = at->loca;
 	at->tabdir.tabs[i++].length = at->localen;
