@@ -297,7 +297,8 @@ static int DefaultEncoding(void) {
     const char *loc = getenv("LC_ALL");
     int enc;
 
-    if ( loc==NULL ) loc = getenv("LC_MESSAGES");
+    if ( loc==NULL ) loc = getenv("LC_CTYPE");
+    /*if ( loc==NULL ) loc = getenv("LC_MESSAGES");*/
     if ( loc==NULL ) loc = getenv("LANG");
 
     if ( loc==NULL )
