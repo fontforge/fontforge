@@ -1883,6 +1883,17 @@ void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
 	++cnt;
+
+    if ( cnt>10 || cnt>fv->sf->charcnt/2 ) {
+	if ( transform[3]!=1.0 ) {
+	    fv->sf->pfminfo.os2_typoascent = 0;		/* Value won't be valid after a masive scale */
+	    if ( transform[2]==0 )
+		fv->sf->pfminfo.linegap *= transform[3];
+	}
+	if ( transform[1]==0 && transform[0]!=1.0 )
+	    fv->sf->pfminfo.vlinegap *= transform[0];
+    }
+
     GProgressStartIndicatorR(10,_STR_Transforming,_STR_Transforming,0,cnt,1);
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
