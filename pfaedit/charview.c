@@ -58,6 +58,7 @@ struct cvshows CVShows = {
 };
 static Color pointcol = 0xff0000;
 static Color firstpointcol = 0x707000;
+static Color selectedpointcol = 0xffff00;
 static Color extremepointcol = 0xc00080;
 Color nextcpcol = 0x007090;
 Color prevcpcol = 0xff00ff;
@@ -99,6 +100,7 @@ static void CVColInit( void ) {
     GResStruct cvcolors[] = {
 	{ "PointColor", rt_color, &pointcol },
 	{ "FirstPointColor", rt_color, &firstpointcol },
+	{ "SelectedPointColor", rt_color, &selectedpointcol },
 	{ "ExtremePointColor", rt_color, &extremepointcol },
 	{ "NextCPColor", rt_color, &nextcpcol },
 	{ "PrevCPColor", rt_color, &prevcpcol },
@@ -428,6 +430,8 @@ static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp, SplineSet *
 	    ((sp->nextcp.x==sp->me.x && sp->prevcp.x==sp->me.x) ||
 	     (sp->nextcp.y==sp->me.y && sp->prevcp.y==sp->me.y)) )
 	 col = extremepointcol;
+     if ( sp->selected )
+	 col = selectedpointcol;
 
     x =  cv->xoff + rint(sp->me.x*cv->scale);
     y = -cv->yoff + cv->height - rint(sp->me.y*cv->scale);
@@ -495,6 +499,8 @@ return;
     r.x = x-2;
     r.y = y-2;
     r.width = r.height = 5;
+    if ( sp->selected )
+	GDrawSetLineWidth(pixmap,2);
     if ( sp->pointtype==pt_curve ) {
 	--r.x; --r.y; r.width +=2; r.height += 2;
 	if ( sp->selected )
@@ -553,6 +559,7 @@ return;
 	else
 	    GDrawFillPoly(pixmap,gp,4,col);
     }
+    GDrawSetLineWidth(pixmap,0);
     if ( (cv->showpointnumbers || cv->show_ft_results|| cv->dv ) && sp->ttfindex!=0xffff ) {
 	sprintf( buf,"%d", sp->ttfindex );
 	uc_strcpy(ubuf,buf);
