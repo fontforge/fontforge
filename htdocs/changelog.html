@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 23-Oct-2003 -->
+  <!-- AP: Last modified: 28-Oct-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,53 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    29-Oct-2003
+    <UL>
+      <LI>
+	When removing an ATT feature from a glyph using a script, PfaEdit would screw up
+	memory. Leading to unpredictable results.
+    </UL>
+  <LI>
+    28-Oct-2003
+    <UL>
+      <LI>
+	PfaEdit would crash when converting from cubic to quadratic splines in a
+	script
+      <LI>
+	PfaEdit would leave a dangling pointer when converting from cubic to quadratic.
+	This did not affect ttf generation, but would affect most other opperations.
+    </UL>
+  <LI>
+    27-Oct-2003
+    <UL>
+      <LI>
+	PfaEdit would crash when changing the encoding of a font with a .notdef character
+	to a user defined encoding.
+      <LI>
+	If one had multiple ligatures for the same glyph with the same tag and script,
+	PfaEdit would eat all but one of them.
+      <LI>
+	When generating most kinds of font, of a font which had ligatures containing
+	glyph names that were not in the font, then PfaEdit would often screw up
+	memory and eventually crash.
+    </UL>
+  <LI>
+    26-Oct-2003
+    <UL>
+      <LI>
+	Simplify sometimes removed points at extrema even when it should not have
+      <LI>
+	If one had a ttf font (with instructions) and merged in a postscript font
+	and then generated a ttf font, PfaEdit would complain about an internal error,
+	but go on to produce a valid font. It should no longer complain.
+      <LI>
+	When generating fonts from a script, if the font were in compacted format
+	the generated font would have a compact encoding (instead of the desired
+	encoding).
+      <LI>
+	Kanou provided a patch to speed up importing bitmap fonts.
+    </UL>
   <LI>
     23-Oct-2003
     <UL>

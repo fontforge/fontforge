@@ -856,10 +856,8 @@ int SFFindScriptLangRecord(SplineFont *sf,struct script_record *sr) {
     if ( sf->script_lang==NULL )
 return( -1 );
     for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
-	if ( SRMatch(sf->script_lang[i],sr)) {
-	    ScriptRecordFree(sr);
+	if ( SRMatch(sf->script_lang[i],sr))
 return( i );
-	}
     }
 return( -1 );
 }
@@ -1114,7 +1112,7 @@ return( NULL );
     }
 
     /* Order it properly */
-    if ( sr[i].script!=0 ) 
+    if ( sr[0].script!=0 ) 
     for ( i=0; sr[i+1].script!=0; ++i ) for ( j=i+1; sr[j].script!=0; ++j ) {
 	if ( sr[i].script>sr[j].script ) {
 	    srtemp = sr[i];
