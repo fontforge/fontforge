@@ -637,7 +637,7 @@ return( NULL );
 	def = "*.sfd";
     uc_strcpy(ubuf,def);
     uret = GWidgetOpenFile(GStringGetResource(_STR_FindMultipleMap,NULL),NULL,ubuf,NULL,GFileChooserFilterWernerSFDs);
-    ret = cu_copy(uret);
+    ret = u2def_copy(uret);
     free(uret);
 return( ret );
 }
@@ -1117,7 +1117,7 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
     int iscid;
     Encoding *item=NULL;
 
-    temp = cu_copy(path);
+    temp = u2def_copy(path);
     oldformatstate = GGadgetGetFirstListSelectedItem(d->pstype);
     iscid = oldformatstate==ff_cid || oldformatstate==ff_otfcid || oldformatstate==ff_otfciddfont;
     if ( !iscid && (d->sf->cidmaster!=NULL || d->sf->subfontcnt>1)) {

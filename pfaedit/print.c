@@ -1531,7 +1531,7 @@ return(true);
 	    ret = GWidgetSaveAsFile(GStringGetResource(_STR_PrintToFile,NULL),ubuf,filter,NULL,NULL);
 	    if ( ret==NULL )
 return(true);
-	    file = cu_copy(ret);
+	    file = u2def_copy(ret);
 	    free(ret);
 	    pi->out = fopen(file,"w");
 	    if ( pi->out==NULL ) {

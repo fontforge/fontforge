@@ -325,7 +325,7 @@ int _FVMenuSaveAs(FontView *fv) {
     free(temp);
     if ( ret==NULL )
 return( 0 );
-    filename = cu_copy(ret);
+    filename = u2def_copy(ret);
     free(ret);
     FVFlattenAllBitmapSelections(fv);
     ok = SFDWrite(filename,fv->sf);
@@ -601,7 +601,7 @@ char *GetPostscriptFontName(char *dir, int mult) {
     u_dir = uc_copy(dir);
     ret = FVOpenFont(GStringGetResource(_STR_OpenPostscript,NULL),
 	    u_dir,wild,mimes,mult,true);
-    temp = cu_copy(ret);
+    temp = u2def_copy(ret);
 
     free(ret);
 return( temp );
@@ -610,7 +610,7 @@ return( temp );
 void MergeKernInfo(SplineFont *sf) {
     static unichar_t wild[] = { '*', '.', '[','a','t',']', 'f','m',  '\0' };
     unichar_t *ret = GWidgetOpenFile(GStringGetResource(_STR_MergeKernInfo,NULL),NULL,wild,NULL,NULL);
-    char *temp = cu_copy(ret);
+    char *temp = u2def_copy(ret);
     int isafm;
 
     if ( temp==NULL )		/* Cancelled */

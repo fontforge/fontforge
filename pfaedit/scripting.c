@@ -3263,6 +3263,7 @@ return( true );			/* Error return */
 	else {
 	    const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(sd->gw,CID_Script));
 	    while ( *ret ) {
+		/* There's a bug here. Filenames need to be converted to the local charset !!!! */
 		putc(*ret,c.script);
 		++ret;
 	    }

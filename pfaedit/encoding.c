@@ -480,7 +480,7 @@ void LoadEncodingFile(void) {
     fn = GWidgetOpenFile(GStringGetResource(_STR_LoadEncoding,NULL), NULL, filter, NULL,NULL);
     if ( fn==NULL )
 return;
-    filename = cu_copy(fn);
+    filename = u2def_copy(fn);
     ParseEncodingFile(filename);
     free(fn); free(filename);
     DumpPfaEditEncodings();
@@ -1034,15 +1034,17 @@ return( map );
 static enum fchooserret CMapFilter(GGadget *g,GDirEntry *ent,
 	const unichar_t *dir) {
     enum fchooserret ret = GFileChooserDefFilter(g,ent,dir);
-    char buf2[200];
+    char buf2[256];
     FILE *file;
     static char *cmapflag = "%!PS-Adobe-3.0 Resource-CMap";
 
     if ( ret==fc_show && !ent->isdir ) {
-	char *filename = galloc(u_strlen(dir)+u_strlen(ent->name)+5);
-	cu_strcpy(filename,dir);
+	int len = 3*(u_strlen(dir)+u_strlen(ent->name)+5);
+	char *filename = galloc(len);
+	u2def_strncpy(filename,dir,len);
 	strcat(filename,"/");
-	cu_strcat(filename,ent->name);
+	u2def_strncpy(buf2,ent->name,sizeof(buf2));
+	strcat(filename,buf2);
 	file = fopen(filename,"r");
 	if ( file==NULL )
 	    ret = fc_hide;
@@ -1295,7 +1297,7 @@ return;
     }
     if ( cmapname==NULL ) {
 	unichar_t *uret = GWidgetOpenFile(GStringGetResource(_STR_FindCMap,NULL),NULL,NULL,NULL,CMapFilter);
-	cmapname = cu_copy(uret);
+	cmapname = u2def_copy(uret);
 	free(uret);
     }
     if ( cmapname==NULL )
@@ -1431,7 +1433,7 @@ SplineFont *MakeCIDMaster(SplineFont *sf,int bycmap,char *cmapfilename) {
 	freeme = false;
 	if ( cmapfilename==NULL ) {
 	    unichar_t *uret = GWidgetOpenFile(GStringGetResource(_STR_FindCMap,NULL),NULL,NULL,NULL,CMapFilter);
-	    cmapfilename = cu_copy(uret);
+	    cmapfilename = u2def_copy(uret);
 	    freeme = true;
 	    free(uret);
 	}

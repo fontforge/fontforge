@@ -1360,7 +1360,7 @@ static int ReadKernPairFile(unichar_t *fn,WidthInfo *wi) {
     unichar_t buffer[300];
     struct kernsets ks;
 
-    filename = cu_copy(fn);
+    filename = u2def_copy(fn);
     free(fn);
     file = fopen(filename,"r");
     if ( file==NULL ) {
