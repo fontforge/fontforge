@@ -28,12 +28,6 @@
 #include "gfile.h"
 #include "ustring.h"
 
-/* .tar application/x-tar */
-/* .gz application/x-compressed */
-/* .Z application/x-compressed */
-/* .tgz application/x-compressed */
-/* .zip application/x-compressed */
-
 unichar_t unknown[] = { '*','/','*', '\0' };
 unichar_t textplain[] = { 't','e','x','t','/','p','l','a','i','n', '\0' };
 unichar_t texthtml[] = { 't','e','x','t','/','h','t','m','l', '\0' };
@@ -60,6 +54,10 @@ unichar_t fontcid[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-',
 unichar_t macbin[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','m','a','c','b','i','n','a','r','y', '\0' };
 unichar_t machqx[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','m','a','c','-','b','i','n','h','e','x','4','0', '\0' };
 unichar_t macdfont[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','m','a','c','-','d','f','o','n','t', '\0' };
+unichar_t compressed[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','c','o','m','p','r','e','s','s','e','d', '\0' };
+unichar_t tar[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','t','a','r', '\0' };
+unichar_t fontpcf[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','f','o','n','t','/','p','c','f', '\0' };
+unichar_t fontsnf[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','f','o','n','t','/','s','n','f', '\0' };
 
 unichar_t *GIOguessMimeType(const unichar_t *path,int isdir) {
     unichar_t *pt;
@@ -121,6 +119,16 @@ return( macbin );
 return( machqx );
     else if ( uc_strmatch(pt,".dfont")==0 )
 return( macdfont );
+    else if ( uc_strmatch(pt,".gz")==0 || uc_strmatch(pt,".tgz")==0 ||
+	    uc_strmatch(pt,".Z")==0 || uc_strmatch(pt,".zip")==0 ||
+	    uc_strmatch(pt,".rpm")==0 )
+return( compressed );
+    else if ( uc_strmatch(pt,".tar")==0 )
+return( tar );
+    else if ( uc_strmatch(pt,".pcf")==0 )
+return( fontpcf );
+    else if ( uc_strmatch(pt,".snf")==0 )
+return( fontsnf );
 
 return( unknown );
 }

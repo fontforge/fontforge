@@ -47,3 +47,5 @@ extern GImage _GIcon_ttf;
 extern GImage _GIcon_cid;
 extern GImage _GIcon_mac;
 extern GImage _GIcon_macttf;
+extern GImage _GIcon_compressed;
+extern GImage _GIcon_tar;

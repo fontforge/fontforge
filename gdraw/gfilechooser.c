@@ -209,6 +209,10 @@ return( &_GIcon_dir );
 return( &_GIcon_object );
     if ( cu_strstartmatch("application/x-core",m) )
 return( &_GIcon_core );
+    if ( cu_strstartmatch("application/x-tar",m) )
+return( &_GIcon_tar );
+    if ( cu_strstartmatch("application/x-compressed",m) )
+return( &_GIcon_compressed );
     if ( cu_strstartmatch("application/x-font/ttf",m) || cu_strstartmatch("application/x-font/otf",m))
 return( &_GIcon_ttf );
     if ( cu_strstartmatch("application/x-font/cid",m) )
@@ -217,6 +221,8 @@ return( &_GIcon_cid );
 return( &_GIcon_mac );
     if ( cu_strstartmatch("application/x-mac-dfont",m) )
 return( &_GIcon_macttf );
+    if ( cu_strstartmatch("application/x-font/pcf",m) || cu_strstartmatch("application/x-font/snf",m))
+return( &_GIcon_textfontbdf );
 
 return( &_GIcon_unknown );
 }
