@@ -3766,7 +3766,12 @@ static void GXResourceInit(GXDisplay *gdisp,char *programname) {
     GResStruct res[21];
     int dithertemp; double sizetemp, sizetempcm;
     int depth = -1, vc = -1, cm=-1, cmpos;
-    int tbf = 1, mxc = 1;
+    int tbf = 1;
+#if __Mac
+    int mxc = 1;	/* Don't leave this on by default. The cmd key uses the same bit as numlock on other systems */
+#else
+    int mxc = 0;
+#endif
 
     rmatom = XInternAtom(gdisp->display,"RESOURCE_MANAGER",true);
     if ( rmatom!=None ) {

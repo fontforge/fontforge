@@ -161,9 +161,11 @@ typedef struct gdisplay GDisplay;
 typedef struct gtimer GTimer;
 
 enum keystate_mask { ksm_shift=1, ksm_capslock=2, ksm_control=4, ksm_meta=8,
+	ksm_cmdsuse=0x8,
 /* Suse X on a Mac maps command to meta. As of Mac 10.2, the command key is 0x10 */
 /*  In 10.0 the command key was 0x20 */
 	ksm_cmdmacosx=0x10,	/* But not the command key under suse ppc linux*/
+	ksm_numlock=0x10,	/* It's numlock on my 386 system */
 	ksm_super=0x40,		/* RedHat mask for the key with the windows flag on it */
 	ksm_hyper=0x80,
 /* Both Suse and Mac OS/X now map option to 0x2000, but under 10.0 it was meta */
