@@ -2781,7 +2781,8 @@ struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
 		CCD_SameAsClasses(GWidgetGetControl(ccd->class,CID_SameAsClasses+i*20),NULL);
 	    }
 	}
-	FPSTFree(tempfpst);
+	if ( tempfpst!=fpst )
+	    FPSTFree(tempfpst);
     } else {
 	for ( i=0; i<3; ++i )
 	    GListAppendLine(GWidgetGetControl(ccd->class,CID_GList+300+i*20),
