@@ -40,6 +40,9 @@ void CVDebugFree(DebugView *dv) {
 int DVChar(DebugView *dv, GEvent *event) {
 return( false );
 }
+
+void CVDebugPointPopup(CharView *cv) {
+}
 #else
 #include <ft2build.h>
 #include FT_FREETYPE_H
