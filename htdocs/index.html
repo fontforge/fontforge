@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 27-Jul-2002 -->
+  <!-- AP: Last modified: 30-Jul-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -85,8 +85,8 @@ let me know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-020727.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 27-July-2002
+    <A HREF="pfaedit-020730.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 30-July-2002
   <LI>
     <A HREF="pfaedit-020709-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
     Version: 9-July-2002 (Redhat 7.1)
@@ -94,8 +94,8 @@ let me know when you do</A>.
     <A HREF="pfaedit-020622-1.ppc.rpm">Download pfaedit linux-ppc SUSE 7.1
     </A>binary rpm Version: 22-June-2002
   <LI>
-    <A HREF="pfaedit-solaris-020724.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 24-July-2002
+    <A HREF="pfaedit-solaris-020728.tgz">Download pfaedit Solaris 8.0
+    </A>executable Version: 28-July-2002
   <LI>
     <A HREF="http://packages.debian.org/unstable/x11/pfaedit.html">A debian package
     is available at the debian site.</A>
@@ -123,9 +123,9 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-020709-1.src.rpm">source RPM</A>: Version:
 9-July-2002<BR>
-Or you can download the <A HREF="pfaedit_full-020727.tgz">entire source tree
+Or you can download the <A HREF="pfaedit_full-020730.tgz">entire source tree
 </A>in one .tgz file: Version
-27-July-2002<!--
+30-July-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -285,6 +285,61 @@ current)
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    30-July-2002
+    <UL>
+      <LI>
+	Fixed a couple of problems found by
+	<A HREF="http://developer.kde.org/~sewardj/">valgrind</A>
+      <LI>
+	Applied a patch from KANOU Hiroki. PasteInto did not work.
+      <LI>
+	Added run length encoding compression to sfd files (for background images).
+	Bitmap image sizes are much smaller now.
+      <LI>
+	PfaEdit failed to recognize that a PNG black and white image was monochrome.
+      <LI>
+	Now PfaEdit will immediately put up the progress indicator when loading the
+	first font (so the user has something to look at)
+      <LI>
+	A little more work on generate multiple.
+      <LI>
+	Removed a confusing message about autohinting a font for which no autohinting
+	was actually done (it was just checking to see if it needed to).
+      <LI>
+	Oops. Windows won't accept a ttf file if there is no name table entry with
+	the same platform/specific entries as those in the cmap.
+      <LI>
+	If a character contained a reference to a blank character that PfaEdit decided
+	wasn't worth outputting, then the truetype composite for it would not work.
+      <LI>
+	The standard format for the ttf "version" name is different from the equivalent
+	postscript name. Added code to interconvert between the two rather than expecting
+	them to be the same.
+      <LI>
+	Added a gasp table for when there was no hinting.
+    </UL>
+  <LI>
+    28-July-2002
+    <UL>
+      <LI>
+	Pressing the [Filter] button on a blank field will show the current filter
+	text (holding the mouse over the [Filter] button will cause a popup to appear
+	with the same info).
+      <LI>
+	If there were know selection the pressing an arrow key would presume that
+	the selection was at encoding -1, which caused strange behavior. Now we will
+	pretend that the selection is visible and halfway down the screen.
+      <LI>
+	Oops. CMap files allow for multiple encodings for the same glyph. Now prepared
+	to put in refs.
+      <LI>
+	Oops. Generate multiple had several problems (couldn't handle encodings above
+	0x80000000, was surprised by empty font numbers, etc.)
+      <LI>
+	If a family name contained a space then only the first word in it would be
+	read out of an sfd file
+    </UL>
   <LI>
     27-July-2002
     <UL>

@@ -1097,7 +1097,7 @@ return;
     }
     if ( d->sf->encoding_name>=em_base )
 	for ( item=enclist; item!=NULL && item->enc_num!=d->sf->encoding_name; item=item->next );
-    if ( oldformatstate<ff_ptype0 && oldformatstate!=ff_multiple &&
+    if ( ((oldformatstate<ff_ptype0 && oldformatstate!=ff_multiple) || oldformatstate==ff_ttfsym) &&
 	    ((d->sf->encoding_name>=em_first2byte && d->sf->encoding_name<em_base) ||
 	     (d->sf->encoding_name>=em_base && (item==NULL || item->char_cnt>256))) ) {
 	static int buts[3] = { _STR_Yes, _STR_Cancel, 0 };

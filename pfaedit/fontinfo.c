@@ -2084,6 +2084,7 @@ return( base );
 
 void TTF_PSDupsDefault(SplineFont *sf) {
     struct ttflangname *english;
+    char versionbuf[40];
 
     /* Ok, if we've just loaded a ttf file then we've got a bunch of langnames*/
     /*  we copied some of them (copyright, family, fullname, etc) into equiv */
@@ -2109,10 +2110,13 @@ return;
 	free(english->names[ttf_fullname]);
 	english->names[ttf_fullname]=NULL;
     }
-    if ( english->names[ttf_version]!=NULL &&
-	    uc_strcmp(english->names[ttf_version],sf->version)==0 ) {
-	free(english->names[ttf_version]);
-	english->names[ttf_version]=NULL;
+    if ( sf->version!=NULL ) {
+	sprintf(versionbuf,"Version %.20s ", sf->version);
+	if ( english->names[ttf_version]!=NULL &&
+		uc_strcmp(english->names[ttf_version],versionbuf)==0 ) {
+	    free(english->names[ttf_version]);
+	    english->names[ttf_version]=NULL;
+	}
     }
     if ( english->names[ttf_subfamily]!=NULL &&
 	    uc_strcmp(english->names[ttf_subfamily],SFGetModifiers(sf))==0 ) {
@@ -2124,6 +2128,8 @@ return;
     free(english->names[ttf_postscriptname]);
     english->names[ttf_postscriptname]=NULL;
 }
+
+static unichar_t versionformatspec[] = { 'V','e','r','s','i','o','n',' ','%','.','2','0','s',' ', '\0' };
 
 static void TTF_PSDupsChanged(GWindow gw,SplineFont *sf,struct ttflangname *newnames) {
     struct ttflangname *english, *sfenglish;
@@ -2138,6 +2144,7 @@ static void TTF_PSDupsChanged(GWindow gw,SplineFont *sf,struct ttflangname *newn
 	 { -1 }};
 #undef offsetfrom
     int changeall = -1, i;
+    unichar_t versionbuf[40];
 
     for ( english=newnames; english!=NULL && english->lang!=0x409; english=english->next );
     if ( english==NULL )
@@ -2148,6 +2155,12 @@ return;
 	if ( dups[i].cid==CID_Fontname )
 	    txt1 = _uGetModifiers(txt,_GGadgetGetTitle(GWidgetGetControl(gw,CID_Family)),
 		    _GGadgetGetTitle(GWidgetGetControl(gw,CID_Weight)));
+	else if ( dups[i].cid==CID_Version ) {
+	    u_sprintf(versionbuf,versionformatspec,txt);
+	    txt1 = versionbuf;
+	    if ( u_strcmp(txt1,english->names[dups[i].ttf])!=0 )
+		versionbuf[u_strlen(versionbuf)-1] = '\0';	/* Trailing space often omitted */
+	}
 	if ( english->names[dups[i].ttf]!=NULL &&
 		uc_strcmp(txt,*(char **) (((char *) sf) + dups[i].off))!=0 &&
 		u_strcmp(txt1,english->names[dups[i].ttf])!=0 ) {
@@ -2274,6 +2287,7 @@ static void DefaultLanguage(struct gfi_data *d) {
     int i, found=-1, samelang=-1, langlen, reslen;
     static char *envs[] = { "LC_ALL", "LC_MESSAGES", "LANG", NULL };
     GGadget *g = GWidgetGetControl(d->gw,CID_Language);
+    unichar_t versionbuf[40];
 
     for ( i=0; envs[i]!=NULL && lang==NULL; ++i )
 	lang = getenv(envs[i]);
@@ -2312,7 +2326,9 @@ static void DefaultLanguage(struct gfi_data *d) {
 	    GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Fontname)),
 	    d->def.names[ttf_family],
 	    GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Weight)));
-    d->def.names[ttf_version] = GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Version));
+    u_sprintf(versionbuf,versionformatspec,
+	    _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Version)));
+    d->def.names[ttf_version] = u_copy(versionbuf);
     DefaultTTFEnglishNames(&d->def, d->sf);
     TNFinishFormer(d);
 }
@@ -2419,6 +2435,9 @@ return(true);
 	    enc = (int) (GGadgetGetListItem(GWidgetGetControl(gw,CID_Encoding),enc)->userdata);
 	    if ( enc==em_unicodeplanes )
 		enc += d->uplane;
+	    GDrawSetCursor(gw,ct_watch);
+	    GDrawSetCursor(GGadgetGetWindow(GWidgetGetControl(gw,CID_Encoding)),ct_watch);
+	    GDrawSync(NULL);
 	    if ( force_enc )
 		reformat_fv = SFForceEncoding(sf,enc);
 	    else

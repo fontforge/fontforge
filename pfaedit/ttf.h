@@ -141,7 +141,7 @@ struct tabdir {
 	uint32 checksum;/* for table */
 	uint32 offset;	/* to start of table in file */
 	uint32 length;
-    } tabs[20];		/* room for all the above tables */
+    } tabs[21];		/* room for all the above tables */
 };
 
 struct glyphhead {
@@ -401,6 +401,8 @@ struct alltabs {
     int vheadlen;
     FILE *vorgf;
     int vorglen;
+    FILE *gaspf;
+    int gasplen;
     FILE *cfff;
     int cfflen;
     FILE *sidf;

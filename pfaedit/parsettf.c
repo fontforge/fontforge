@@ -218,9 +218,14 @@ static int enc_from_platspec(int platform,int specific) {
 	else if ( specific==3 )
 	    enc = em_wansung;
     } else if ( platform==2 ) {		/* obselete */
-	enc = em_unicode;
+	if ( specific==0 )
+	    enc = em_iso8859_1;		/* Actually just ASCII */
+	else if ( specific==1 )
+	    enc = em_unicode;
+	else if ( specific==2 )
+	    enc = em_iso8859_1;
     } else if ( platform==3 ) {
-	if ( specific==1 )
+	if ( specific==1 || specific==0 )	/* symbol (sp=0) is just unicode */
 	    enc = em_unicode;
 	else if ( specific==2 )
 	    enc = em_sjis;
@@ -578,8 +583,10 @@ static void readttfhhea(FILE *ttf,struct ttfinfo *info) {
     /* fontographer puts the max ascender/min descender here instead. idiots */
     if ( info->ascent==0 && info->descent==0 )
 	info->ascent = .8*info->emsize;
+#if 0
     else if ( info->ascent+info->descent!=info->emsize )
 	info->ascent = info->ascent * ((real) info->emsize)/(info->ascent+info->descent);
+#endif
     info->descent = info->emsize-info->ascent;
 
     for ( i=0; i<12; ++i )
@@ -744,7 +751,7 @@ return( ret );
 
 static void readttfcopyrights(FILE *ttf,struct ttfinfo *info) {
     int i, cnt, tableoff;
-    int platform, specific, language, name, strlen, stroff;
+    int platform, specific, language, name, str_len, stroff;
     int enc;
 
     /* All I want here are the names of the font and its copyright */
@@ -757,13 +764,13 @@ static void readttfcopyrights(FILE *ttf,struct ttfinfo *info) {
 	specific = getushort(ttf);
 	language = getushort(ttf);
 	name = getushort(ttf);
-	strlen = getushort(ttf);
+	str_len = getushort(ttf);
 	stroff = getushort(ttf);
 	enc = enc_from_platspec(platform,specific);
 	if ( enc!=em_none ) {
 	    if ( platform==0 || platform==1 )
 		language = AppleLang_to_MS(language);
-	    TTFAddLangStr(ttf,info,language,name,strlen,tableoff+stroff,enc);
+	    TTFAddLangStr(ttf,info,language,name,str_len,tableoff+stroff,enc);
 	}
     }
 
@@ -777,8 +784,17 @@ static void readttfcopyrights(FILE *ttf,struct ttfinfo *info) {
 	info->version = FindLangEntry(info,ttf_version);
     if ( info->fontname==NULL )
 	info->fontname = FindLangEntry(info,ttf_postscriptname);
-    
+
+    /* OpenType spec says the version string should begin with "Version " and */
+    /*  end with a space and have a number in between */
     if ( info->version==NULL ) info->version = copy("1.0");
+    else if ( strnmatch(info->version,"Version ",8)==0 ) {
+	char *temp = copy(info->version+8);
+	if ( temp[strlen(temp)-1]==' ' )
+	    temp[strlen(temp)-1] = '\0';
+	free(info->version);
+	info->version = temp;
+    }
     if ( info->fontname==NULL && info->fullname!=NULL )
 	info->fontname = stripspaces(copy(info->fullname));
 }

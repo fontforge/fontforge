@@ -3053,12 +3053,13 @@ static void dumpcompositinstrs(SplineChar *sc, struct glyphinfo *gi,RefChar *ref
 }
 #endif
 
-static void dumpcomposit(SplineChar *sc, RefChar *refs, struct glyphinfo *gi) {
+static void dumpcomposite(SplineChar *sc, RefChar *refs, struct glyphinfo *gi) {
     struct glyphhead gh;
     DBounds bb;
     int i, ptcnt, ctcnt, flags;
     SplineSet *ss;
     RefChar *ref;
+    int any = false;
 
     if ( sc->changedsincelasthinted && !sc->manualhints )
 	if ( !(gi->flags&ttf_flag_nohints) )
@@ -3074,6 +3075,10 @@ static void dumpcomposit(SplineChar *sc, RefChar *refs, struct glyphinfo *gi) {
 
     i=ptcnt=ctcnt=0;
     for ( ref=refs; ref!=NULL; ref=ref->next, ++i ) {
+	if ( ref->sc->ttf_glyph==-1 ) {
+	    if ( refs->next==NULL || any )
+    continue;
+	}
 	flags = (1<<1)|(1<<2)|(1<<12);	/* Args are always values for me */
 					/* Always round args to grid */
 	    /* There is some very strange stuff wrongly-documented on the apple*/
@@ -3105,7 +3110,7 @@ static void dumpcomposit(SplineChar *sc, RefChar *refs, struct glyphinfo *gi) {
 		ref->transform[5]<-128 || ref->transform[5]>127 )
 	    flags |= (1<<0);
 	putshort(gi->glyphs,flags);
-	putshort(gi->glyphs,ref->sc->ttf_glyph);
+	putshort(gi->glyphs,ref->sc->ttf_glyph==-1?0:ref->sc->ttf_glyph);
 	if ( flags&(1<<0) ) {
 	    putshort(gi->glyphs,(short)ref->transform[4]);
 	    putshort(gi->glyphs,(short)ref->transform[5]);
@@ -3258,7 +3263,7 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     for ( cnt=0; i<sf->charcnt; ++i ) {
 	if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]==SCDuplicate(sf->chars[i])) {
 	    if ( (refs = SCCanonicalRefs(sf->chars[i],false))!=NULL )
-		dumpcomposit(sf->chars[i],refs,gi);
+		dumpcomposite(sf->chars[i],refs,gi);
 	    else
 		dumpglyph(sf->chars[i],gi);
 	}
@@ -4682,6 +4687,8 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *_sf,
 	}
 	++k;
     } while ( k<_sf->subfontcnt );
+    if ( format==ff_ttfsym )	/* MS Symbol font has this set to zero. Does it matter? */
+	memset(os2->unicoderange,0,sizeof(os2->unicoderange));
     sf = _sf;
 
     if ( TTFFoundry!=NULL )
@@ -4696,11 +4703,26 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *_sf,
     else if ( cnt2!=0 )
 	os2->avgCharWid = avg2/cnt2;
     memcpy(os2->panose,sf->pfminfo.panose,sizeof(os2->panose));
-    os2->firstcharindex = first;
-    os2->lastcharindex = last;
-    OS2FigureCodePages(sf, os2->ulCodePage);
-    if ( os2->ulCodePage[0]==0 )
-	os2->ulCodePage[0] |= 1;
+    if ( format==ff_ttfsym ) {
+	os2->ulCodePage[0] = 0x80000000;
+	os2->ulCodePage[1] = 0;
+	first = 255; last = 0;
+	if ( sf->chars!=NULL && sf->chars[0]!=NULL && sf->chars[0]->ttf_glyph!=-1 &&
+		!SCIsNotdef(sf->chars[0],-1) )
+	    first = 0;
+	for ( i=1; i<sf->charcnt && i<255; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
+	    if ( i<first ) first = i;
+	    if ( i>last ) last = i;
+	}
+	os2->firstcharindex = 0xf000 + first;
+	os2->lastcharindex  = 0xf000 + last;
+    } else {
+	os2->firstcharindex = first;
+	os2->lastcharindex = last;
+	OS2FigureCodePages(sf, os2->ulCodePage);
+	if ( os2->ulCodePage[0]==0 )
+	    os2->ulCodePage[0] |= 1;
+    }
 
     if ( format==ff_otf || format==ff_otfcid ) {
 	BlueData bd;
@@ -4898,6 +4920,18 @@ static void redocvt(struct alltabs *at) {
     at->cvtlen = ftell(at->cvtf);
     if ( 1&at->gi.cvtcur )
 	putshort(at->cvtf,0);
+}
+
+static void dumpgasp(struct alltabs *at) {
+
+    at->gaspf = tmpfile();
+    putshort(at->gaspf,0);	/* Version number */
+    putshort(at->gaspf,1);	/* One range */
+    putshort(at->gaspf,0xffff);	/* Upper bound on pixels/em for this range */
+    putshort(at->gaspf,0x2);	/* Grey scale, no gridfitting */
+				    /* No hints, so no grids to fit */
+    at->gasplen = ftell(at->gaspf);
+	/* This table is always 32 bit aligned */
 }
 
 /* scripts (for opentype) that I understand */
@@ -5634,13 +5668,11 @@ static void dumpmacstr(FILE *file,unichar_t *str) {
     } while ( ch!='\0' );
 }
 
-#if 0
-static void dumpstr(FILE *file,unichar_t *str) {
+static void dumpstr(FILE *file,char *str) {
     do {
 	putc(*str,file);
     } while ( *str++!='\0' );
 }
-#endif
 
 static void dumpustr(FILE *file,unichar_t *str) {
     do {
@@ -5676,6 +5708,10 @@ static struct { int mslang, maclang, enc, used; } mactrans[] = {
     { 0 }};
 #endif
 
+/* Oh. If the encoding is symbol (platform=3, specific=0) then Windows won't */
+/*  accept the font unless the name table also has entries for (3,0). I'm not */
+/*  sure if this is the case for the CJK encodings (docs don't mention that) */
+/*  but let's do it just in case */
 void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf) {
     time_t now;
     struct tm *tm;
@@ -5697,46 +5733,47 @@ void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf) {
     }
     if ( dummy->names[ttf_fullname]==NULL || *dummy->names[ttf_fullname]=='\0' )
 	dummy->names[ttf_fullname] = uc_copy(sf->fullname);
-    if ( dummy->names[ttf_version]==NULL || *dummy->names[ttf_version]=='\0' )
-	dummy->names[ttf_version] = uc_copy(sf->version);
+    if ( dummy->names[ttf_version]==NULL || *dummy->names[ttf_version]=='\0' ) {
+	sprintf(buffer,"Version %s ", sf->version);
+	dummy->names[ttf_version] = uc_copy(buffer);
+    }
     if ( dummy->names[ttf_postscriptname]==NULL || *dummy->names[ttf_postscriptname]=='\0' )
 	dummy->names[ttf_postscriptname] = uc_copy(sf->fontname);
 }
 
-static void dumpnames(struct alltabs *at, SplineFont *sf) {
+static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format) {
     int pos=0,i,j;
     struct ttflangname dummy, *cur, *useng;
-    int strcnt=0;
+    int strcnt=0, cnt=0;
     int posses[ttf_namemax];
+    int maxlen, len, enc, specific;
+    char *space;
+    int extra=0;
 
+    if ( sf->encoding_name==em_ksc5601 || sf->encoding_name==em_wansung ||
+	    sf->encoding_name==em_jis208 || sf->encoding_name==em_sjis ||
+	    sf->encoding_name==em_big5 || sf->encoding_name==em_johab ||
+	    format == ff_ttfsym )
+	extra = 1;
     memset(&dummy,'\0',sizeof(dummy));
     useng = NULL;
     for ( cur=sf->names; cur!=NULL; cur=cur->next ) {
 	if ( cur->lang!=0x409 ) {
 	    for ( i=0; i<ttf_namemax; ++i )
-		if ( cur->names[i]!=NULL ) ++strcnt;
+		if ( cur->names[i]!=NULL ) strcnt += extra+1;
 	} else {
 	    dummy = *cur;
 	    useng = cur;
 	}
     }
     DefaultTTFEnglishNames(&dummy, sf);
-    for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL ) strcnt+=3;
+    for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL ) strcnt+=3+extra;
     	/* once of mac roman encoding, once for mac unicode and once for windows unicode 409 */
 
     at->name = tmpfile();
     putshort(at->name,0);	/* format */
     putshort(at->name,strcnt);	/* numrec */
     putshort(at->name,(3+strcnt*6)*sizeof(int16));	/* offset to strings */
-    for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL ) {
-	putshort(at->name,1);	/* apple */
-	putshort(at->name,0);	/*  */
-	putshort(at->name,0);	/* Roman alphabet */
-	putshort(at->name,i);
-	putshort(at->name,u_strlen(dummy.names[i]));
-	putshort(at->name,pos);
-	pos += u_strlen(dummy.names[i])+1;
-    }
     for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL ) {
 	putshort(at->name,0);	/* apple unicode */
 	putshort(at->name,3);	/* 3 => Unicode 2.0 semantics */ /* 0 ("default") is also a reasonable value */
@@ -5746,35 +5783,133 @@ static void dumpnames(struct alltabs *at, SplineFont *sf) {
 	putshort(at->name,pos);
 	posses[i] = pos;
 	pos += 2*u_strlen(dummy.names[i])+2;
+	++cnt;
     }
     for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL ) {
-	putshort(at->name,3);	/* MS platform */
-	putshort(at->name,1);	/* not symbol */
-	putshort(at->name,0x0409);	/* american english language */
+	putshort(at->name,1);	/* apple */
+	putshort(at->name,0);	/*  */
+	putshort(at->name,0);	/* Roman alphabet */
 	putshort(at->name,i);
-	putshort(at->name,2*u_strlen(dummy.names[i]));
-	putshort(at->name,posses[i]);
+	putshort(at->name,u_strlen(dummy.names[i]));
+	putshort(at->name,pos);
+	pos += u_strlen(dummy.names[i])+1;
+	++cnt;
     }
-
-    for ( cur=sf->names; cur!=NULL; cur=cur->next ) if ( cur->lang!=0x409 ) {
-	for ( i=0; i<ttf_namemax; ++i ) if ( cur->names[i]!=NULL ) {
+    if ( format==ff_ttfsym ) {
+	for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL ) {
 	    putshort(at->name,3);	/* MS platform */
-	    putshort(at->name,1);	/* not symbol */
-	    putshort(at->name,cur->lang);/* american english language */
+	    putshort(at->name,0);
+	    putshort(at->name,0x0409);	/* american english language */
 	    putshort(at->name,i);
-	    putshort(at->name,2*u_strlen(cur->names[i]));
-	    putshort(at->name,pos);
-	    pos += 2*u_strlen(cur->names[i])+2;
+	    putshort(at->name,2*u_strlen(dummy.names[i]));
+	    putshort(at->name,posses[i]);
+	++cnt;
+	}
+
+	for ( cur=sf->names; cur!=NULL; cur=cur->next ) if ( cur->lang!=0x409 ) {
+	    for ( i=0; i<ttf_namemax; ++i ) if ( cur->names[i]!=NULL ) {
+		putshort(at->name,3);	/* MS platform */
+		putshort(at->name,0);	/* not symbol */
+		putshort(at->name,cur->lang);/* american english language */
+		putshort(at->name,i);
+		putshort(at->name,2*u_strlen(cur->names[i]));
+		putshort(at->name,pos);
+		pos += 2*u_strlen(cur->names[i])+2;
+	++cnt;
+	    }
 	}
     }
 
-    for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL )
-	dumpmacstr(at->name,dummy.names[i]);
+    maxlen = 0;
+    for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL ) {
+	putshort(at->name,3);	/* MS platform */
+	putshort(at->name,1);
+	putshort(at->name,0x0409);	/* american english language */
+	putshort(at->name,i);
+	len = u_strlen(dummy.names[i]);
+	if ( len>maxlen ) maxlen = len;
+	putshort(at->name,2*len);
+	putshort(at->name,posses[i]);
+	++cnt;
+    }
+    for ( cur=sf->names; cur!=NULL; cur=cur->next ) if ( cur->lang!=0x409 ) {
+	for ( i=0; i<ttf_namemax; ++i ) if ( cur->names[i]!=NULL ) {
+	    putshort(at->name,3);	/* MS platform */
+	    putshort(at->name,1);	/* unicode */
+	    putshort(at->name,cur->lang);
+	    putshort(at->name,i);
+	    len = u_strlen(cur->names[i]);
+	    if ( len>maxlen ) maxlen = len;
+	    putshort(at->name,2*len);
+	    putshort(at->name,pos);
+	    pos += 2*u_strlen(cur->names[i])+2;
+	++cnt;
+	}
+    }
+
+    enc = em_unicode; space = NULL;
+    if ( sf->encoding_name==em_ksc5601 || sf->encoding_name==em_wansung ||
+	    sf->encoding_name==em_jis208 || sf->encoding_name==em_sjis ||
+	    sf->encoding_name==em_big5 || sf->encoding_name==em_johab ) {
+	specific =  sf->encoding_name==em_ksc5601 ? 5 :	/* Wansung, korean */
+		    sf->encoding_name==em_wansung ? 5 :	/* Wansung, korean */
+		    sf->encoding_name==em_jis208 ? 2 :	/* SJIS */
+		    sf->encoding_name==em_sjis ? 2 :	/* SJIS */
+		    sf->encoding_name==em_big5 ? 4 :	/* Big5, traditional Chinese */
+		    /* sf->encoding_name==em_johab*/ 6;	/* Korean */
+	enc = sf->encoding_name;
+	if ( sf->encoding_name==em_ksc5601 ) enc = em_wansung;
+	else if ( sf->encoding_name==em_jis208 ) enc = em_sjis;
+	maxlen = 3*maxlen+10;
+	space = galloc(maxlen);
+	for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL ) {
+	    putshort(at->name,3);	/* MS platform */
+	    putshort(at->name,specific);
+	    putshort(at->name,0x0409);	/* american english language */
+	    putshort(at->name,i);
+	    putshort(at->name,strlen(u2encoding_strncpy(space,dummy.names[i],maxlen,enc)));
+	    putshort(at->name,pos);
+	    pos += strlen(space)+1;
+	++cnt;
+	}
+	for ( cur=sf->names; cur!=NULL; cur=cur->next ) if ( cur->lang!=0x409 ) {
+	    for ( i=0; i<ttf_namemax; ++i ) if ( cur->names[i]!=NULL ) {
+		putshort(at->name,3);	/* MS platform */
+		putshort(at->name,specific);
+		putshort(at->name,cur->lang);
+		putshort(at->name,i);
+		putshort(at->name,strlen(u2encoding_strncpy(space,cur->names[i],maxlen,enc)));
+		putshort(at->name,pos);
+		pos += strlen(space)+1;
+	++cnt;
+	    }
+	}
+    }
+    if ( cnt!=strcnt )
+	fprintf(stderr, "String count wrong in 'name' table, is %d should be %d\n", cnt, strcnt );
+    if ( ftell(at->name)!=(3+strcnt*6)*sizeof(int16) )
+	fprintf(stderr, "Table offset wrong in 'name' table, is %d should be %d\n", ftell(at->name), (3+strcnt*6)*sizeof(short) );
+
     for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL )
 	dumpustr(at->name,dummy.names[i]);
+    for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL )
+	dumpmacstr(at->name,dummy.names[i]);
+    if ( format==ff_ttfsym ) {
+	for ( cur=sf->names; cur!=NULL; cur=cur->next ) if ( cur->lang!=0x409 )
+	    for ( i=0; i<ttf_namemax; ++i ) if ( cur->names[i]!=NULL )
+		dumpustr(at->name,cur->names[i]);
+    }
     for ( cur=sf->names; cur!=NULL; cur=cur->next ) if ( cur->lang!=0x409 )
 	for ( i=0; i<ttf_namemax; ++i ) if ( cur->names[i]!=NULL )
 	    dumpustr(at->name,cur->names[i]);
+    if ( enc!=em_unicode ) {
+	for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL )
+	    dumpstr(at->name,u2encoding_strncpy(space,dummy.names[i],maxlen,enc));
+	for ( cur=sf->names; cur!=NULL; cur=cur->next ) if ( cur->lang!=0x409 )
+	    for ( i=0; i<ttf_namemax; ++i ) if ( cur->names[i]!=NULL )
+		dumpstr(at->name,u2encoding_strncpy(space,cur->names[i],maxlen,enc));
+	free(space);
+    }
     at->namelen = ftell(at->name);
     if ( (at->namelen&3)!=0 )
 	for ( j= 4-(at->namelen&3); j>0; --j )
@@ -6146,7 +6281,7 @@ return( sf->chars[i]->unicodeenc );
       case em_johab:			/* Korea */
       case em_wansung:			/* Korea */
       case em_sjis:			/* Japan */
-return( i );
+return( i>65536?-1:i );
       case em_ksc5601:			/* Wansung */
 	if ( (i/96)>=94 )
 return( -1 );
@@ -6205,7 +6340,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
     table[0] = table[8] = table[13] = table[29] = 1;
     table[9] = table[32]==0 ? 1 : table[32];
 
-    if ( format==ff_ttfsym || sf->encoding_name==em_symbol ) {
+    if ( format==ff_ttfsym ) {
 	int acnt=0, pcnt=0;
 	int space = table[9];
 	for ( i=0; i<sf->charcnt; ++i ) {
@@ -6370,7 +6505,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	    hasmac = 0;		/* Don't know what johab looks like on mac */
 	} else if ( format12!=NULL )
 	    enccnt = 4;
-	else if ( format==ff_ttfsym || sf->encoding_name==em_symbol ) {
+	else if ( format==ff_ttfsym ) {
 	    enccnt = 2;
 	    hasmac = 0;
 	}
@@ -6411,7 +6546,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	}
 	putshort(at->cmap,3);		/* ms platform */
 	putshort(at->cmap,		/* plat specific enc */
-		format==ff_ttfsym || sf->encoding_name==em_symbol ? 0 :
+		format==ff_ttfsym ? 0 :
 		sf->encoding_name==em_ksc5601 ? 5 :	/* Wansung, korean */
 		sf->encoding_name==em_wansung ? 5 :	/* Wansung, korean */
 		sf->encoding_name==em_jis208 ? 2 :	/* SJIS */
@@ -6464,7 +6599,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
     if ( (at->cmaplen&2)!=0 )
 	putshort(at->cmap,0);
 
-    if ( format==ff_ttfsym || sf->encoding_name==em_symbol ) {
+    if ( format==ff_ttfsym ) {
 	if ( !alreadyprivate ) {
 	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=&notdef && sf->chars[i]!=&nonmarkingreturn && sf->chars[i]!=NULL ) {
 		sf->chars[i]->unicodeenc = sf->chars[i]->enc;
@@ -6590,6 +6725,9 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
     int i, j, pos, aborted;
     BDFFont *bdf;
 
+    if ( sf->encoding_name == em_symbol && format==ff_ttf )
+	format = ff_ttfsym;
+
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
 	sf->chars[i]->ttf_glyph = -1;
 
@@ -6615,6 +6753,8 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
     at->maxp.version = 0x00010000;
     if ( format==ff_otf || format==ff_otfcid || format==ff_none )
 	at->maxp.version = 0x00005000;
+    at->maxp.maxnumcomponents = 1;
+    at->maxp.maxcomponentdepth = 1;
     at->maxp.maxZones = 2;		/* 1 would probably do, don't use twilight */
     at->maxp.maxFDEFs = 1;		/* Not even 1 */
     at->maxp.maxStorage = 1;		/* Not even 1 */
@@ -6643,7 +6783,7 @@ return( false );
     sethhead(&at->hhead,&at->vhead,at,sf);
     setvorg(&at->vorg,sf);
     setos2(&at->os2,at,sf,format);	/* should precede kern/ligature output */
-    dumpnames(at,sf);
+    dumpnames(at,sf,format);
     if ( at->gi.glyph_len<0x20000 )
 	at->head.locais32 = 0;
     if ( format!=ff_otf && format!=ff_otfcid && format!=ff_none )
@@ -6662,6 +6802,8 @@ return( false );
     dumpgsub(at,sf);		/* ttf will probably ignore these, but doesn't hurt to dump them */
     redoos2(at);
     redocvt(at);
+    if ( (flags&ttf_flag_nohints) && format!=ff_otf && format!=ff_otfcid )
+	dumpgasp(at);
     dumppost(at,sf,format);
     dumpcmap(at,sf,format);
 
@@ -6774,6 +6916,14 @@ return( false );
 	    at->tabdir.tabs[i].offset = pos;
 	    at->tabdir.tabs[i++].length = at->gi.fpgmlen;
 	    pos += ((at->gi.fpgmlen+3)>>2)<<2;
+	}
+
+	if ( at->gaspf!=NULL ) {
+	    at->tabdir.tabs[i].tag = CHR('g','a','s','p');
+	    at->tabdir.tabs[i].checksum = filecheck(at->gaspf);
+	    at->tabdir.tabs[i].offset = pos;
+	    at->tabdir.tabs[i++].length = at->gasplen;
+	    pos += ((at->gasplen+3)>>2)<<2;
 	}
 
 	at->tabdir.tabs[i].tag = CHR('g','l','y','f');
@@ -6907,6 +7057,8 @@ static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
 	if ( at->gi.fpgmf!=NULL ) {
 	    if ( !ttfcopyfile(ttf,at->gi.fpgmf,at->tabdir.tabs[i++].offset)) at->error = true;
 	}
+	if ( at->gaspf!=NULL )
+	    if ( !ttfcopyfile(ttf,at->gaspf,at->tabdir.tabs[i++].offset)) at->error = true;
 	if ( !ttfcopyfile(ttf,at->gi.glyphs,at->tabdir.tabs[i++].offset)) at->error = true;
     }
     if ( format!=ff_none ) {
