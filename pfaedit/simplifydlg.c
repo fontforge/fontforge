@@ -196,10 +196,14 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     label[6].text = (unichar_t *) _STR_CurveSmoothing;
     label[6].text_in_resource = true;
     gcd[6].gd.label = &label[6];
-    gcd[6].gd.pos.x = 8; gcd[6].gd.pos.y = gcd[5].gd.pos.y+4; 
-    gcd[6].gd.flags = gg_enabled|gg_visible;
-    if ( oldsmooth )
-	gcd[6].gd.flags |= gg_cb_on;
+    gcd[6].gd.pos.x = 8; gcd[6].gd.pos.y = gcd[5].gd.pos.y+4;
+    if ( sf->order2 )
+	gcd[6].gd.flags = gg_visible;
+    else {
+	gcd[6].gd.flags = gg_enabled|gg_visible;
+	if ( oldsmooth )
+	    gcd[6].gd.flags |= gg_cb_on;
+    }
     gcd[6].gd.popup_msg = GStringGetResource(_STR_CurveSmoothingPopup,NULL);
     gcd[6].gd.cid = CID_Smooth;
     gcd[6].creator = GCheckBoxCreate;
@@ -209,6 +213,7 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     gcd[7].gd.label = &label[7];
     gcd[7].gd.pos.x = 20; gcd[7].gd.pos.y = gcd[6].gd.pos.y+24;
     gcd[7].gd.flags = gg_enabled|gg_visible;
+    if ( sf->order2 ) gcd[7].gd.flags = gg_visible;
     gcd[7].creator = GLabelCreate;
 
     sprintf( buffer2, "%.3g", oldsmooth_tan );
@@ -218,6 +223,7 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     gcd[8].gd.pos.x = 94; gcd[8].gd.pos.y = gcd[7].gd.pos.y-6;
     gcd[8].gd.pos.width = 40;
     gcd[8].gd.flags = gg_enabled|gg_visible;
+    if ( sf->order2 ) gcd[8].gd.flags = gg_visible;
     gcd[8].gd.cid = CID_SmoothTan;
     gcd[8].creator = GTextFieldCreate;
 
@@ -225,9 +231,13 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     label[9].text_in_resource = true;
     gcd[9].gd.label = &label[9];
     gcd[9].gd.pos.x = 17; gcd[9].gd.pos.y = gcd[8].gd.pos.y+24; 
-    gcd[9].gd.flags = gg_enabled|gg_visible;
-    if ( oldsmoothhv )
-	gcd[9].gd.flags |= gg_cb_on;
+    if ( sf->order2 )
+	gcd[9].gd.flags = gg_visible;
+    else {
+	gcd[9].gd.flags = gg_enabled|gg_visible;
+	if ( oldsmoothhv )
+	    gcd[9].gd.flags |= gg_cb_on;
+    }
     gcd[9].gd.popup_msg = GStringGetResource(_STR_SnapToHVPopup,NULL);
     gcd[9].gd.cid = CID_SmoothHV;
     gcd[9].creator = GCheckBoxCreate;
@@ -236,9 +246,13 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     label[10].text_in_resource = true;
     gcd[10].gd.label = &label[10];
     gcd[10].gd.pos.x = 8; gcd[10].gd.pos.y = gcd[9].gd.pos.y+14; 
-    gcd[10].gd.flags = gg_enabled|gg_visible;
-    if ( oldlinefix )
-	gcd[10].gd.flags |= gg_cb_on;
+    if ( sf->order2 )
+	gcd[10].gd.flags = gg_visible;
+    else {
+	gcd[10].gd.flags = gg_enabled|gg_visible;
+	if ( oldlinefix )
+	    gcd[10].gd.flags |= gg_cb_on;
+    }
     gcd[10].gd.popup_msg = GStringGetResource(_STR_FlattenBumpsPopup,NULL);
     gcd[10].gd.cid = CID_FlattenBumps;
     gcd[10].creator = GCheckBoxCreate;
@@ -248,6 +262,7 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     gcd[11].gd.label = &label[11];
     gcd[11].gd.pos.x = 20; gcd[11].gd.pos.y = gcd[10].gd.pos.y+24;
     gcd[11].gd.flags = gg_enabled|gg_visible;
+    if ( sf->order2 ) gcd[11].gd.flags = gg_visible;
     gcd[11].creator = GLabelCreate;
 
     sprintf( buffer3, "%.3g", oldlinefixup_rat*sim.em_size );
@@ -257,12 +272,14 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     gcd[12].gd.pos.x = 90; gcd[12].gd.pos.y = gcd[11].gd.pos.y-6;
     gcd[12].gd.pos.width = 40;
     gcd[12].gd.flags = gg_enabled|gg_visible;
+    if ( sf->order2 ) gcd[12].gd.flags = gg_visible;
     gcd[12].gd.cid = CID_FlattenBound;
     gcd[12].creator = GTextFieldCreate;
 
     gcd[13].gd.pos.x = gcd[12].gd.pos.x+gcd[12].gd.pos.width+3;
     gcd[13].gd.pos.y = gcd[11].gd.pos.y;
     gcd[13].gd.flags = gg_visible | gg_enabled ;
+    if ( sf->order2 ) gcd[13].gd.flags = gg_visible;
     label[13].text = (unichar_t *) _STR_EmUnits;
     label[13].text_in_resource = true;
     gcd[13].gd.label = &label[13];

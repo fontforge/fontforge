@@ -1059,9 +1059,9 @@ extern void SCMakeDependent(SplineChar *dependent,SplineChar *base);
 extern SplinePoint *SplineBisect(Spline *spline, double t);
 extern Spline *SplineSplit(Spline *spline, double ts[3]);
 extern Spline *ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
-	TPoint *mid, int cnt);
+	TPoint *mid, int cnt,int order2);
 extern Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
-	TPoint *mid, int cnt);
+	TPoint *mid, int cnt,int order2);
 extern double SplineLength(Spline *spline);
 extern int SplineIsLinear(Spline *spline);
 extern int SplineIsLinearMake(Spline *spline);

@@ -5002,8 +5002,6 @@ static void CVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     static struct simplifyinfo smpl = { sf_normal,.75,.05,0 };
 
-    if ( cv->sc->parent->order2 )
-return;
     smpl.err = (cv->sc->parent->ascent+cv->sc->parent->descent)/1000.;
     CVPreserveState(cv);
     *cv->heads[cv->drawmode] = SplineCharSimplify(cv->sc,*cv->heads[cv->drawmode],
@@ -5014,9 +5012,6 @@ return;
 static void CVMenuSimplifyMore(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     static struct simplifyinfo smpl = { sf_normal,.75,.05,0 };
-
-    if ( cv->sc->parent->order2 )
-return;
 
     if ( !SimplifyDlg(cv->sc->parent,&smpl))
 return;
@@ -5321,11 +5316,8 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	  /* Like Simplify, always available, but may not do anything if */
 	  /*  all extrema have points. I'm not going to check for that, too hard */
 	  break;
-	  case MID_CleanupChar:
-	    mi->ti.disabled = *cv->heads[cv->drawmode]==NULL || order2;
-	  break;
 	  case MID_Simplify:
-	    mi->ti.disabled = *cv->heads[cv->drawmode]==NULL || order2;
+	    mi->ti.disabled = *cv->heads[cv->drawmode]==NULL;
 	  /* Simplify is always available (it may not do anything though) */
 	  /*  well, ok. Disable it if there is absolutely nothing to work on */
 #if 0
@@ -5981,8 +5973,12 @@ static void smlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
-	  case MID_Simplify: case MID_SimplifyMore:
-	    mi->ti.disabled = cv->sc->parent->order2;
+	  case MID_Simplify:
+	  case MID_CleanupChar:
+	    mi->ti.disabled = *cv->heads[cv->drawmode]==NULL;
+	  break;
+	  case MID_SimplifyMore:
+	    mi->ti.disabled = *cv->heads[cv->drawmode]==NULL;
 	  break;
 	}
     }

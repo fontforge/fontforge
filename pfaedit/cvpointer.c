@@ -816,7 +816,7 @@ return;
     tp[2].t = t;
     tp[3] = tp[0];		/* Give more weight to this point than to the others */
     tp[4] = tp[0];		/*  ditto */
-    cv->p.spline = ApproximateSplineFromPoints(old->from,old->to,tp,5);
+    cv->p.spline = ApproximateSplineFromPoints(old->from,old->to,tp,5,old->order2);
     old->from->pointtype = pt_corner; old->to->pointtype = pt_corner;
     old->from->nextcpdef = old->to->prevcpdef = false;
     SplineFree(old);

@@ -2198,18 +2198,6 @@ static GMenuItem smlist[] = {
     { NULL }
 };
 
-static void smlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-	switch ( mi->mid ) {
-	  case MID_Simplify: case MID_SimplifyMore:
-	    mi->ti.disabled = mv->fv->sf->order2;
-	  break;
-	}
-    }
-}
-
 static GMenuItem rmlist[] = {
     { { (unichar_t *) _STR_Rmoverlap, &GIcon_rmoverlap, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 0, 1, 0, 'O' }, 'O', ksm_control|ksm_shift, NULL, NULL, MVMenuOverlap, MID_RmOverlap },
     { { (unichar_t *) _STR_Intersect, &GIcon_intersection, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, NULL, NULL, MVMenuOverlap, MID_Intersection },
@@ -2268,7 +2256,7 @@ static GMenuItem ellist[] = {
     { { (unichar_t *) _STR_TilePath, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, MVMenuTilePath, MID_TilePath },
 #endif
     { { (unichar_t *) _STR_Rmoverlap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'O' }, '\0', ksm_control|ksm_shift, rmlist, NULL, NULL, MID_RmOverlap },
-    { { (unichar_t *) _STR_Simplify, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, '\0', ksm_control|ksm_shift, smlist, smlistcheck, NULL, MID_Simplify },
+    { { (unichar_t *) _STR_Simplify, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, '\0', ksm_control|ksm_shift, smlist, NULL, NULL, MID_Simplify },
     { { (unichar_t *) _STR_AddExtrema, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'x' }, 'X', ksm_control|ksm_shift, NULL, NULL, MVMenuAddExtrema, MID_AddExtrema },
     { { (unichar_t *) _STR_Round2int, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '_', ksm_control|ksm_shift, NULL, NULL, MVMenuRound2Int, MID_Round },
     { { (unichar_t *) _STR_Effects, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, eflist, NULL, NULL, MID_Effects },
@@ -2491,7 +2479,7 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 #endif
 	  case MID_Simplify:
-	    mi->ti.disabled = sc==NULL || mv->fv->sf->onlybitmaps || order2;
+	    mi->ti.disabled = sc==NULL || mv->fv->sf->onlybitmaps;
 #if 0
 	    free(mi->ti.text);
 	    if ( e==NULL || !(e->u.mouse.state&ksm_shift) ) {

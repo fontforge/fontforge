@@ -524,7 +524,8 @@ static SplinePoint *TDMakePoint(TD *td,Spline *old,real t) {
 return( new );
 }
 
-static Spline *AdjustSpline(TD *td,Spline *old,SplinePoint *newfrom,SplinePoint *newto) {
+static Spline *AdjustSpline(TD *td,Spline *old,SplinePoint *newfrom,SplinePoint *newto,
+	int order2) {
     TPoint tps[15];
     int i;
     double t;
@@ -535,10 +536,10 @@ static Spline *AdjustSpline(TD *td,Spline *old,SplinePoint *newfrom,SplinePoint 
 	newto = TDMakePoint(td,old,1);
     for ( i=1, t=1/16.0; i<16; ++i, t+= 1/16.0 )
 	AdjustPoint(td,old,t,&tps[i-1]);
-return( ApproximateSplineFromPoints(newfrom,newto,tps,15) );
+return( ApproximateSplineFromPoints(newfrom,newto,tps,15, order2) );
 }
 
-static void AdjustSplineSet(TD *td) {
+static void AdjustSplineSet(TD *td,int order2) {
     SplineSet *spl, *last=NULL, *new;
     Spline *spline, *s;
     SplinePoint *lastsp, *nextsp, *sp;
@@ -558,7 +559,7 @@ static void AdjustSplineSet(TD *td) {
 	for ( spline=spl->first->next; spline!=NULL; spline=spline->to->next ) {
 	    if ( spline->to==spl->first )
 		nextsp = new->first;
-	    s = AdjustSpline(td,spline,lastsp,nextsp);
+	    s = AdjustSpline(td,spline,lastsp,nextsp,order2);
 	    lastsp = s->to;
 	    if ( nextsp!=NULL )
 	break;
@@ -587,7 +588,7 @@ static void AdjustSplineSet(TD *td) {
     }
 }
 
-static void TileSplineSets(TD *td,SplineSet **head) {
+static void TileSplineSets(TD *td,SplineSet **head,int order2) {
     SplineSet *prev=NULL, *spl, *next;
 
     for ( spl = *head; spl!=NULL; spl = next ) {
@@ -600,7 +601,7 @@ static void TileSplineSets(TD *td,SplineSet **head) {
 	    td->path = spl;
 	    if ( TDMakeSamples(td)) {
 		TileLine(td);
-		AdjustSplineSet(td);
+		AdjustSplineSet(td,order2);
 		free( td->samples );
 		free( td->joins );
 		SplinePointListsFree(td->tileset);
@@ -620,7 +621,7 @@ static void TileSplineSets(TD *td,SplineSet **head) {
 
 static void TileIt(SplineSet **head,SplineSet *tile,
 	enum tilepos tilepos, enum tilescale tilescale,
-	int doall) {
+	int doall,int order2) {
     TD td;
     real trans[6];
 
@@ -643,7 +644,7 @@ static void TileIt(SplineSet **head,SplineSet *tile,
 	SplinePointListTransform(tile,trans,true);
     SplineSetFindBounds(tile,&td.bb);
 
-    TileSplineSets(&td,head);
+    TileSplineSets(&td,head,order2);
 }
 
 static enum tilepos tilepos=tp_center;
@@ -842,7 +843,7 @@ return;
 
     tile = SplinePointListCopy(tile);
     CVPreserveState(cv);
-    TileIt(cv->heads[cv->drawmode],tile, tilepos,tilescale, !anypoints);
+    TileIt(cv->heads[cv->drawmode],tile, tilepos,tilescale, !anypoints,cv->sc->parent->order2);
     CVCharChangedUpdate(cv);
     SplinePointListsFree(tile);
     cv->lastselpt = NULL;
@@ -862,7 +863,7 @@ return;
 
     tile = SplinePointListCopy(tile);
     SCPreserveState(sc,false);
-    TileIt(&sc->splines,tile, tilepos,tilescale, true);
+    TileIt(&sc->splines,tile, tilepos,tilescale, true, sc->parent->order2);
     SCCharChangedUpdate(sc);
     SplinePointListsFree(tile);
 }
@@ -888,7 +889,7 @@ return;
     for ( i=0; i<fv->sf->charcnt; ++i )
 	if ( fv->selected[i] && (sc=fv->sf->chars[i])!=NULL && sc->splines!=NULL ) {
 	    SCPreserveState(sc,false);
-	    TileIt(&sc->splines,tile, tilepos,tilescale, true);
+	    TileIt(&sc->splines,tile, tilepos,tilescale, true, fv->sf->order2);
 	    SCCharChangedUpdate(sc);
 	}
     SplinePointListsFree(tile);

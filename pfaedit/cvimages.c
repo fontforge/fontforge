@@ -521,7 +521,7 @@ static void AdjustTs(TPoint *mids,SplinePoint *from, SplinePoint *to) {
     }
 }
 
-static SplineSet *ApproximateXSpline(struct xspline *xs) {
+static SplineSet *ApproximateXSpline(struct xspline *xs,int order2) {
     int i, j;
     real t;
     TPoint mids[7];
@@ -544,7 +544,7 @@ static SplineSet *ApproximateXSpline(struct xspline *xs) {
 	    mids[j].t = t;
 	}
 	AdjustTs(mids,spl->last,sp);
-	ApproximateSplineFromPoints(spl->last,sp,mids,sizeof(mids)/sizeof(mids[0]));
+	ApproximateSplineFromPoints(spl->last,sp,mids,sizeof(mids)/sizeof(mids[0]),order2);
 	SPAverageCps(spl->last);
 	spl->last = sp;
     }
@@ -586,7 +586,7 @@ static SplineSet * slurpspline(FILE *fig,SplineChar *sc, SplineSet *sofar) {
 	xs.cp[cnt-1] = xs.cp[0];
 	xs.s[cnt-1] = xs.s[0];
     }
-    spl = ApproximateXSpline(&xs);
+    spl = ApproximateXSpline(&xs,sc->parent->order2);
 
     free(xs.cp);
     free(xs.s);

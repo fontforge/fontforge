@@ -478,6 +478,7 @@ static SplineSet *TraceCurve(CharView *cv) {
     TPoint *mids;
     double len,sofar;
     StrokeInfo *si;
+    int order2 = cv->sc->parent->order2;
 
     /* First we look for straight lines in the data. We will put SplinePoints */
     /*  at their endpoints */
@@ -564,9 +565,9 @@ static SplineSet *TraceCurve(CharView *cv) {
 	cur = SplinePointCreate(pt->here.x,pt->here.y);
 	cur->ptindex = pt->num;
 	if ( base->next->online || base->next==pt )
-	    SplineMake3(last,cur);
+	    SplineMake(last,cur,order2);
 	else
-	    ApproximateSplineFromPoints(last,cur,mids+base->num+1,pt->num-base->num-1);
+	    ApproximateSplineFromPoints(last,cur,mids+base->num+1,pt->num-base->num-1,order2);
 	last = cur;
     }
     spl->last = last;
@@ -598,13 +599,13 @@ static SplineSet *TraceCurve(CharView *cv) {
 		if ( !cur->noprevcp )
 		    ApproximateSplineFromPointsSlopes(cur->prev->from,cur,
 			    mids+cur->prev->from->ptindex+1,
-			    cur->ptindex-cur->prev->from->ptindex-1);
+			    cur->ptindex-cur->prev->from->ptindex-1,order2);
 	    }
 	}
 	if ( !cur->nonextcp )
 	    ApproximateSplineFromPointsSlopes(cur,cur->next->to,
 		    mids+cur->ptindex+1,
-		    cur->next->to->ptindex-cur->ptindex-1);
+		    cur->next->to->ptindex-cur->ptindex-1,order2);
     }
 
     free(mids);

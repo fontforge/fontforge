@@ -363,7 +363,7 @@ static void MakeJoints(JointPoint *ret,StrokeInfo *si,
 	CirclePoint(&approx[1],center,&temp,factor*si->radius); approx[1].t = .25;
 	temp.x = (ret->inter.x+to->me.x)/2; temp.y = (ret->inter.y+to->me.y)/2;
 	CirclePoint(&approx[2],center,&temp,factor*si->radius); approx[2].t = .75;
-	ApproximateSplineFromPointsSlopes(from,to,approx,3);
+	ApproximateSplineFromPointsSlopes(from,to,approx,3,false);
     }
 }
 
@@ -858,8 +858,8 @@ return( ssplus );
 		    m_to = SplinePointCreate((m.x+temp.x)/2,(m.y+temp.y)/2);
 		    m_to->pointtype = pt_corner;
 		}
-		ApproximateSplineFromPoints(p_to,p_from,pmids,Approx);
-		ApproximateSplineFromPoints(m_from,m_to,mmids,Approx);
+		ApproximateSplineFromPoints(p_to,p_from,pmids,Approx,false);
+		ApproximateSplineFromPoints(m_from,m_to,mmids,Approx,false);
 		if ( m_from!=minus && m_from->pointtype!=pt_corner )
 		    m_from->pointtype = pt_tangent;
 	    }
@@ -892,7 +892,7 @@ return( ssplus );
 		/*  the control points on the corner point yet */
 		if ( pt1==-1 && pt2==-1 ) ++pcnt;
 	    }
-	    ApproximateSplineFromPointsSlopes(pto,plus,pmids,pcnt);
+	    ApproximateSplineFromPointsSlopes(pto,plus,pmids,pcnt,false);
 	    for ( i=0; i<approx; ++i ) {
 		real t = m_tlast + (i+1)*(m_tcur-m_tlast)/(approx+1);
 		mmids[mcnt].t = (t-m_tlast)/(m_tcur-m_tlast);
@@ -901,7 +901,7 @@ return( ssplus );
 		OnEdge(&p,&m,spline,t,t,spline,si,&pt1,&mt1,&pt2,&mt2);
 		if ( mt1==-1 && mt2==-1 ) ++mcnt;
 	    }
-	    ApproximateSplineFromPointsSlopes(minus,mto,mmids,mcnt);
+	    ApproximateSplineFromPointsSlopes(minus,mto,mmids,mcnt,false);
 	}
 	if ( spline->to->next!=NULL ) {
 	    plus = cur_plus.from;

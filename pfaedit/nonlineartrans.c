@@ -567,7 +567,7 @@ static void SplineSetNLTrans(SplineSet *ss,struct context *c,
 		    mids[i].x = NL_expr(c,c->x_expr);
 		    mids[i].y = NL_expr(c,c->y_expr);
 		}
-		ApproximateSplineFromPoints(last,next,mids,20);
+		ApproximateSplineFromPoints(last,next,mids,20,false);
 	    } else
 		SplineMake3(last,next);
 	    last = next;
