@@ -1276,8 +1276,15 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], char *sel,
 	    t[5] = refs->transform[4]*transform[1] +
 			refs->transform[5]*transform[3] +
 			/*transform[5]*/0;
+	    t[0] = refs->transform[4]; t[1] = refs->transform[5];
 	    refs->transform[4] = t[4];
 	    refs->transform[5] = t[5];
+	    /* Now update the splines to match */
+	    t[4] -= t[0]; t[5] -= t[1];
+	    if ( t[4]!=0 || t[5]!=0 ) {
+		t[0] = t[3] = 1; t[1] = t[2] = 0;
+		SplinePointListTransform(refs->splines,t,true);
+	    }
 	} else {
 	    SplinePointListTransform(refs->splines,transform,true);
 	    t[0] = refs->transform[0]*transform[0] +

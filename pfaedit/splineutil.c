@@ -1462,6 +1462,46 @@ static SplineChar *DuplicateNameReference(SplineFont *sf,char **encoding,int enc
 return( sc );
 }
 
+static void TransByFontMatrix(SplineFont *sf,real fontmatrix[6]) {
+    real trans[6];
+    int em = sf->ascent+sf->descent, i;
+    SplineChar *sc;
+    RefChar *refs;
+
+    if ( fontmatrix[0]==fontmatrix[3] &&
+	    fontmatrix[1]==0 && fontmatrix[2]==0 &&
+	    fontmatrix[4]==0 && fontmatrix[5]==0 )
+return;		/* It's just the expected matrix */
+
+    trans[0] = 1;
+    if ( fontmatrix[0]==fontmatrix[3] ) trans[3] = 1;
+    else trans[3] = rint(fontmatrix[3]*em);
+    trans[1] = fontmatrix[1]*em;
+    trans[2] = fontmatrix[2]*em;
+    trans[4] = rint(fontmatrix[4]*em);
+    trans[5] = rint(fontmatrix[5]*em);
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+	SplinePointListTransform(sc->splines,trans,true);
+	for ( refs=sc->refs; refs!=NULL; refs=refs->next ) {
+	    /* Just scale the offsets. we'll do all the base characters */
+	    double temp = refs->transform[4]*trans[0] +
+			refs->transform[5]*trans[2] +
+			/*transform[4]*/0;
+	    refs->transform[5] = refs->transform[4]*trans[1] +
+			refs->transform[5]*trans[3] +
+			/*transform[5]*/0;
+	    refs->transform[4] = temp;
+	}
+	sc->changedsincelasthinted = true;
+	sc->manualhints = false;
+    }
+    for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+	for ( refs=sc->refs; refs!=NULL; refs=refs->next )
+	    SCReinstanciateRefChar(sc,refs);
+    }
+}
+
 static void SplineFontFromType1(SplineFont *sf, FontDict *fd) {
     int i, isnotdef;
     RefChar *refs, *next, *pr;
@@ -1569,6 +1609,10 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd) {
 	}
     }
     free(encoding);
+    /* sometimes (some apple oblique fonts) the fontmatrix is not just a */
+    /*  formality, it acutally contains a skew. So be ready */
+    if ( fd->fontmatrix[0]!=0 )
+	TransByFontMatrix(sf,fd->fontmatrix);
 }
 
 static SplineFont *SplineFontFromCIDType1(SplineFont *sf, FontDict *fd) {

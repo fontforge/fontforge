@@ -981,8 +981,10 @@ return;
 	    i = strtol(line,&ept,10);
 	    if ( i<subrs->cnt ) {
 		findstring(fp,subrs,i,NULL,ept);
-	    } else
+	    } else if ( !fp->alreadycomplained ) {
 		fprintf( stderr, "Index too big (must be <%d) |%s", subrs->cnt, line);
+		fp->alreadycomplained = true;
+	    }
 	} else if ( strncmp(line, "readonly put", 12)==0 || strncmp(line, "ND", 2)==0 || strncmp(line, "|-", 2)==0 ) {
 	    fp->insubs = false;
 	} else if ( *line=='\n' || *line=='\0' ) {
@@ -998,9 +1000,10 @@ return;
 	    fp->inchars = false;
 	else if ( *line!='\n' || *line=='\0' )
 	    /* Ignore it */;
-	else if ( *line!='/' || !(isalpha(line[1]) || line[1]=='.'))
+	else if ( *line!='/' || !(isalpha(line[1]) || line[1]=='.')) {
 	    fprintf( stderr, "No name for CharStrings dictionary |%s", line );
-	else if ( chars->next>=chars->cnt )
+	    fp->alreadycomplained = true;
+	} else if ( chars->next>=chars->cnt )
 	    fprintf( stderr, "Too many entries in CharStrings dictionary |%s", line );
 	else {
 	    int i = chars->next;
@@ -1043,9 +1046,12 @@ return;
 	    fp->fd->fontinfo->notice = getstring(endtok,in);
 	else if ( mycmp("Copyright",line+1,endtok)==0 )		/* cff spec allows for copyright and notice */
 	    fp->fd->fontinfo->notice = getstring(endtok,in);
-	else if ( mycmp("FullName",line+1,endtok)==0 )
-	    fp->fd->fontinfo->fullname = getstring(endtok,in);
-	else if ( mycmp("FamilyName",line+1,endtok)==0 )
+	else if ( mycmp("FullName",line+1,endtok)==0 ) {
+	    if ( fp->fd->fontinfo->fullname==NULL )
+		fp->fd->fontinfo->fullname = getstring(endtok,in);
+	    else
+		getstring(endtok,in);
+	} else if ( mycmp("FamilyName",line+1,endtok)==0 )
 	    fp->fd->fontinfo->familyname = getstring(endtok,in);
 	else if ( mycmp("Weight",line+1,endtok)==0 )
 	    fp->fd->fontinfo->weight = getstring(endtok,in);
@@ -1154,15 +1160,23 @@ return;
 	    }
 return;
 	}
-	if ( mycmp("FontName",line+1,endtok)==0 )
-	    fp->fd->fontname = gettoken(endtok);
-	else if ( mycmp("PaintType",line+1,endtok)==0 )
+	if ( mycmp("FontName",line+1,endtok)==0 ) {
+	    if ( fp->fd->fontname==NULL )
+		fp->fd->fontname = gettoken(endtok);
+	    else
+		gettoken(endtok);	/* skip it */
+	} else if ( mycmp("PaintType",line+1,endtok)==0 )
 	    fp->fd->painttype = strtol(endtok,NULL,10);
 	else if ( mycmp("FontType",line+1,endtok)==0 )
 	    fp->fd->fonttype = strtol(endtok,NULL,10);
-	else if ( mycmp("FontMatrix",line+1,endtok)==0 )
-	     fillrealarray(fp->fd->fontmatrix,endtok,6);
-	else if ( mycmp("LanguageLevel",line+1,endtok)==0 )
+	else if ( mycmp("FontMatrix",line+1,endtok)==0 ) {
+	    if ( fp->fd->fontmatrix[0]==0 )
+		fillrealarray(fp->fd->fontmatrix,endtok,6);
+	    else {
+		real temp[6];
+		fillrealarray(temp,endtok,6);
+	    }
+	} else if ( mycmp("LanguageLevel",line+1,endtok)==0 )
 	    fp->fd->languagelevel = strtol(endtok,NULL,10);
 	else if ( mycmp("WMode",line+1,endtok)==0 )
 	    fp->fd->wmode = strtol(endtok,NULL,10);
@@ -1230,8 +1244,10 @@ static void addinfo(struct fontparse *fp,char *line,char *tok,char *binstart,int
 		chars->values[i] = galloc(binlen);
 		memcpy(chars->values[i],binstart,binlen);
 		if ( i>=chars->next ) chars->next = i+1;
-	    } else
+	    } else if ( !fp->alreadycomplained ) {
 		fprintf( stderr, "Index too big (must be <%d) |%s", chars->cnt, line);
+		fp->alreadycomplained = true;
+	    }
 	} else if ( !fp->alreadycomplained ) {
 	    fprintf( stderr, "Didn't understand |%s", line );
 	    fp->alreadycomplained = true;
@@ -1251,8 +1267,10 @@ static void addinfo(struct fontparse *fp,char *line,char *tok,char *binstart,int
 	    ++chars->next;
 	    GProgressNext();
 	}
-    } else
+    } else if ( !fp->alreadycomplained ) {
 	fprintf( stderr, "Shouldn't be in addinfo |%s", line );
+	fp->alreadycomplained = true;
+    }
 }
 
 /* In the book the token which starts a character description is always RD but*/
