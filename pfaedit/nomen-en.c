@@ -3344,6 +3344,7 @@ static char *str_MMMismatchKerns = "The character %1$.30hs in font %2$.30hs has 
 static char *str_MMNeedsBoldThresh = "There is no ForceBoldThreshold entry in the weighted font, but there is a ForceBold entry in font %30hs"
 static char *str_MMPrivateMismatch = "The entry \"%1$.20hs\" is not present in the private dictionary of both %2$.30hs and %3$.30hs"
 static char *str_MMMismatchHintMask = "The character %1$.30hs in font %2$.30hs has a different hint mask on its contours than in %3$.30hs"
+static char *str_MMOrder2 = "The font %.30hs contains quadratic splines. It must be converted to cubic splines before it can be used in a multiple master"
 static char *str_NoProblems = "No problems detected"
     /* Adjectives, etc. that are sometimes masculine and sometimes feminine in french (perhaps other langs) */
 static char str_NewDDD_fem[] = "New...";

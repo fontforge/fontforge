@@ -837,7 +837,7 @@ static void CvtPsSplineSet(GrowBuf *gb, SplineChar *scs[MmMax], int instance_cou
     int i;
 
     if ( is_order2 ) {
-	freeme = spl[0] = SplineSetsPSApprox(spl[0]);
+	freeme = spl[0] = SplineSetsPSApprox(scs[0]->splines);
 	instance_count = 1;
     } else {
 	for ( i=0; i<instance_count; ++i )

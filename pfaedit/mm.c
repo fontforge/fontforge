@@ -397,6 +397,14 @@ int MMValid(MMSet *mm,int complain) {
     if ( mm==NULL )
 return( false );
 
+    for ( i=0; i<mm->instance_count; ++i )
+	if ( mm->instances[i]->order2 ) {
+	    if ( complain )
+		GWidgetErrorR(_STR_BadMM,_STR_MMOrder2,
+			sf->fontname);
+return( false );
+	}
+
     sf = mm->instances[0];
 
     if ( PSDictHasEntry(sf->private,"ForceBold")!=NULL &&
