@@ -125,7 +125,9 @@ return( -1 );
     rbase = test;
 
     top = oldtop; bottom = oldtest+1;		/* find the last resource */
-    forever {
+    if ( bottom == top )
+	test = top;
+    else forever {
 	test = (top+bottom)/2;
 	cmp = strncmp(prefix,_GResource_Res[test].res,plen);
 	if ( cmp>0 ) {
