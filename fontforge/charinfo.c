@@ -594,14 +594,8 @@ static GTextInfo ligature_tags[] = {
     { (unichar_t *) _STR_PreBaseSubs, NULL, 0, 0, (void *) CHR('p','r','e','s'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_PostBaseForms, NULL, 0, 0, (void *) CHR('p','s','t','f'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_PostBaseSubs, NULL, 0, 0, (void *) CHR('p','s','t','s'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Reph, NULL, 0, 0, (void *) CHR('r','e','p','h'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Reph, NULL, 0, 0, (void *) CHR('r','p','h','f'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_VattuVariants, NULL, 0, 0, (void *) CHR('v','a','t','u'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_MacLogos, NULL, 0, 0, (void *) CHR('M','L','O','G'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_MacRebus, NULL, 0, 0, (void *) CHR('M','R','E','B'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_MacDiphthongLig, NULL, 0, 0, (void *) CHR('M','D','L','G'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_MacSquareLig, NULL, 0, 0, (void *) CHR('M','S','L','G'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_MacAbbrevSquareLig, NULL, 0, 0, (void *) CHR('M','A','L','G'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_MacUnicodeDecomposition, NULL, 0, 0, (void *) CHR('M','U','C','M'), NULL, false, false, false, false, false, false, false, true },
 /* My hack to identify required features */
     { (unichar_t *) _STR_RQD, NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, false, true },
     { NULL }
@@ -647,6 +641,7 @@ GTextInfo simplesubs_tags[] = {
     { (unichar_t *) _STR_Denominators, NULL, 0, 0, (void *) CHR('d','n','o','m'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_ExpertForms, NULL, 0, 0, (void *) CHR('e','x','p','t'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_TerminalForms, NULL, 0, 0, (void *) CHR('f','i','n','a'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_FractionLig, NULL, 0, 0, (void *) CHR('f','r','a','c'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_FullWidths, NULL, 0, 0, (void *) CHR('f','w','i','d'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_HistoricalForms, NULL, 0, 0, (void *) CHR('h','i','s','t'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_HorKanaAlt, NULL, 0, 0, (void *) CHR('h','k','n','a'), NULL, false, false, false, false, false, false, false, true },
@@ -695,12 +690,6 @@ GTextInfo simplesubs_tags[] = {
     { (unichar_t *) _STR_VertRotAlt, NULL, 0, 0, (void *) CHR('v','r','t','2'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_VertKana, NULL, 0, 0, (void *) CHR('v','k','n','a'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_SlashedZero, NULL, 0, 0, (void *) CHR('z','e','r','o'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_MacWordInitialSwash, NULL, 0, 0, (void *) CHR('M','S','W','I'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_MacWordFinalSwash, NULL, 0, 0, (void *) CHR('M','S','W','F'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_MacLineInitialSwash, NULL, 0, 0, (void *) CHR('M','S','L','I'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_MacLineFinalSwash, NULL, 0, 0, (void *) CHR('M','S','L','F'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_MacNonFinalSwash, NULL, 0, 0, (void *) CHR('M','S','N','F'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_MacMonospaceWidth, NULL, 0, 0, (void *) CHR('M','W','I','D'), NULL, false, false, false, false, false, false, false, true },
 /* My hack to identify required features */
     { (unichar_t *) _STR_RQD, NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, false, true },
     { NULL }
@@ -4334,6 +4323,7 @@ uint32 LigTagFromUnicode(int uni) {
 	tag = CHR('r','l','i','g');
       break;
     }
+#if 0
     if ( tag==CHR('l','i','g','a') && uni!=-1 && uni<0x10000 ) {
 	const unichar_t *alt=NULL;
 	if ( isdecompositionnormative(uni) &&
@@ -4343,6 +4333,7 @@ uint32 LigTagFromUnicode(int uni) {
 		tag = CHR('M','U','C','M');
 	}
     }
+#endif
 return( tag );
 }
 
