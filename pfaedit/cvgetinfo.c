@@ -1610,7 +1610,7 @@ void CVGetInfo(CharView *cv) {
     if ( !CVOneThingSel(cv,&sp,&spl,&ref,&img,&ap)) {
 #if 0
 	if ( cv->fv->cidmaster==NULL )
-	    SCGetInfo(cv->sc,false);
+	    SCGetInfo(cv->sc);
 #endif
     } else if ( ref!=NULL )
 	RefGetInfo(cv,ref);

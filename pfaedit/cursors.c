@@ -681,5 +681,4 @@ void InitCursors(void) {
     ct_ddcursor = GDrawCreateCursor(image,image,0xff0000,0xffffff,ddcursor_x_hot,
 	    ddcursor_y_hot);
     GDrawDestroyWindow(image);
-    GDrawDestroyWindow(mask);
 }

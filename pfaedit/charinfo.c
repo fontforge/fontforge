@@ -35,6 +35,7 @@
 typedef struct charinfo {
     CharView *cv;
     SplineChar *sc;
+    SplineChar *oldsc;		/* oldsc->charinfo will point to us. Used to keep track of that pointer */
     GWindow gw;
     int done, first, changed;
 } CharInfo;
@@ -528,50 +529,87 @@ return( ret==0 );
 return( true );
 }
 
-static int CI_New(GGadget *g, GEvent *e) {
+static void CI_DoNew(CharInfo *ci, unichar_t *def) {
     int len, i, sel;
     GTextInfo **old, **new;
     GGadget *list;
-    CharInfo *ci;
     unichar_t *newname;
+
+    sel = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_Tabs))-2;
+    newname = sel==0 
+	    ? AskPosTag(newstrings[sel],def,0,pst_tags[sel])
+	    : AskNameTag(newstrings[sel],def,0,pst_tags[sel]);
+    if ( newname!=NULL ) {
+	if ( sel!=0 )
+	    if ( !LigCheck(ci->sc,sel+1,(newname[0]<<24)|(newname[1]<<16)|(newname[2]<<8)|newname[3],
+		    newname+5)) {
+		free(newname );
+return;
+	    }
+	list = GWidgetGetControl(ci->gw,CID_List+sel*100);
+	old = GGadgetGetList(list,&len);
+	for ( i=0; i<len; ++i ) {
+	    if ( u_strncmp(old[i]->text,newname,4)==0 )
+	break;
+	}
+	if ( i<len && sel+1!=pst_ligature ) {
+	    GWidgetErrorR(_STR_DuplicateTag,_STR_DuplicateTag);
+	    free(newname);
+return;
+	}
+	new = gcalloc(len+2,sizeof(GTextInfo *));
+	for ( i=0; i<len; ++i ) {
+	    new[i] = galloc(sizeof(GTextInfo));
+	    *new[i] = *old[i];
+	    new[i]->text = u_copy(new[i]->text);
+	}
+	new[i] = gcalloc(1,sizeof(GTextInfo));
+	new[i]->fg = new[i]->bg = COLOR_DEFAULT;
+	new[i]->userdata = NULL;
+	new[i]->text = newname;
+	new[i+1] = gcalloc(1,sizeof(GTextInfo));
+	GGadgetSetList(list,new,false);
+    }
+}
+
+static void CI_Drop(CharInfo *ci, GEvent *e) {
+    char *cnames;
+    unichar_t *unames;
+    int sel;
+    int32 len;
+
+    sel = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_Tabs))-1;
+    if ( sel<=pst_position || sel>=pst_max ) {
+	GDrawBeep(NULL);
+return;
+    }
+
+    if ( !GDrawSelectionHasType(ci->gw,sn_drag_and_drop,"STRING"))
+return;
+    cnames = GDrawRequestSelection(ci->gw,sn_drag_and_drop,"STRING",&len);
+    if ( cnames==NULL )
+return;
+
+    if ( sel==pst_substitution && strchr(cnames,' ')!=NULL ) {
+	GWidgetErrorR(_STR_TooManyComponents,_STR_SubsOnlyOne);
+	free(cnames);
+return;
+    }
+
+    unames = galloc((strlen(cnames)+6)*sizeof(unichar_t));
+    uc_strcpy(unames, "     ");
+    uc_strcpy(unames+5,cnames);
+    CI_DoNew(ci,unames);
+    free(cnames);
+    free(unames);
+}
+
+static int CI_New(GGadget *g, GEvent *e) {
+    CharInfo *ci;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	ci = GDrawGetUserData(GGadgetGetWindow(g));
-	sel = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_Tabs))-2;
-	newname = sel==0 
-		? AskPosTag(newstrings[sel],NULL,0,pst_tags[sel])
-		: AskNameTag(newstrings[sel],NULL,0,pst_tags[sel]);
-	if ( newname!=NULL ) {
-	    if ( sel!=0 )
-		if ( !LigCheck(ci->sc,sel+1,(newname[0]<<24)|(newname[1]<<16)|(newname[2]<<8)|newname[3],
-			newname+5)) {
-		    free(newname );
-return( true );
-		}
-	    list = GWidgetGetControl(GGadgetGetWindow(g),CID_List+sel*100);
-	    old = GGadgetGetList(list,&len);
-	    for ( i=0; i<len; ++i ) {
-		if ( u_strncmp(old[i]->text,newname,4)==0 )
-	    break;
-	    }
-	    if ( i<len && sel+1!=pst_ligature ) {
-		GWidgetErrorR(_STR_DuplicateTag,_STR_DuplicateTag);
-		free(newname);
-return( true );
-	    }
-	    new = gcalloc(len+2,sizeof(GTextInfo *));
-	    for ( i=0; i<len; ++i ) {
-		new[i] = galloc(sizeof(GTextInfo));
-		*new[i] = *old[i];
-		new[i]->text = u_copy(new[i]->text);
-	    }
-	    new[i] = gcalloc(1,sizeof(GTextInfo));
-	    new[i]->fg = new[i]->bg = COLOR_DEFAULT;
-	    new[i]->userdata = NULL;
-	    new[i]->text = newname;
-	    new[i+1] = gcalloc(1,sizeof(GTextInfo));
-	    GGadgetSetList(list,new,false);
-	}
+	CI_DoNew(ci,NULL);
     }
 return( true );
 }
@@ -1093,11 +1131,15 @@ return( false );
 return( ret );
 }
 
+static void CI_Finish(CharInfo *ci) {
+    GDrawDestroyWindow(ci->gw);
+}
+
 static int CI_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
 	if ( _CI_OK(ci) )
-	    ci->done = true;
+	    CI_Finish(ci);
     }
 return( true );
 }
@@ -1724,10 +1766,17 @@ static void CIFillup(CharInfo *ci) {
     int cnts[pst_max];
     PST *pst;
 
+    if ( ci->oldsc!=NULL && ci->oldsc->charinfo==ci )
+	ci->oldsc->charinfo = NULL;
+    sc->charinfo = ci;
+    ci->oldsc = sc;
+
     CI_CanPaste(ci);
 
-    GGadgetSetEnabled(GWidgetGetControl(ci->gw,-1),sc->enc>0);
-    GGadgetSetEnabled(GWidgetGetControl(ci->gw,1),sc->enc<sf->charcnt-1);
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,-1), sc->enc>0 &&
+	    (sf->chars[sc->enc-1]==NULL || sf->chars[sc->enc-1]->charinfo==NULL));
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,1), sc->enc<sf->charcnt-1 &&
+	    (sf->chars[sc->enc+1]==NULL || sf->chars[sc->enc+1]->charinfo==NULL));
 
     temp = uc_copy(sc->name);
     GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_UName),temp);
@@ -1815,11 +1864,16 @@ static int CI_NextPrev(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
 	int enc = ci->sc->enc + GGadgetGetCid(g);	/* cid is 1 for next, -1 for prev */
+	SplineChar *new;
+
 	if ( enc<0 || enc>=ci->sc->parent->charcnt )
 return( true );
 	if ( !_CI_OK(ci))
 return( true );
-	ci->sc = SFMakeChar(ci->sc->parent,enc);
+	new = SFMakeChar(ci->sc->parent,enc);
+	if ( new->charinfo!=NULL && new->charinfo!=ci )
+return( true );
+	ci->sc = new;
 	CIFillup(ci);
     }
 return( true );
@@ -1828,7 +1882,7 @@ return( true );
 static int CI_Cancel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
-	ci->done = true;
+	CI_Finish(ci);
     }
 return( true );
 }
@@ -1836,7 +1890,7 @@ return( true );
 static int ci_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	CharInfo *ci = GDrawGetUserData(gw);
-	ci->done = true;
+	CI_Finish(ci);
     } else if ( event->type==et_char ) {
 	CharInfo *ci = GDrawGetUserData(gw);
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
@@ -1850,6 +1904,13 @@ return( true );
 return( true );
 	}
 return( false );
+    } else if ( event->type == et_drop ) {
+	CharInfo *ci = GDrawGetUserData(gw);
+	CI_Drop(ci,event);
+    } else if ( event->type == et_destroy ) {
+	CharInfo *ci = GDrawGetUserData(gw);
+	ci->sc->charinfo = NULL;
+	free(ci);
     } else if ( event->type == et_map ) {
 	/* Above palettes */
 	GDrawRaise(gw);
@@ -1857,8 +1918,8 @@ return( false );
 return( true );
 }
 
-void SCGetInfo(SplineChar *sc, int nextprev) {
-    static CharInfo ci;
+void SCGetInfo(SplineChar *sc) {
+    CharInfo *ci;
     GRect pos;
     GWindowAttrs wattrs;
     GGadgetCreateData ugcd[12], cgcd[6], psgcd[5][7], cogcd[3], mgcd[9];
@@ -1868,8 +1929,15 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
     static GBox smallbox = { bt_raised, bs_rect, 2, 1, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };
     static int boxset=0;
 
-    ci.sc = sc;
-    ci.done = false;
+    if ( sc->charinfo!=NULL ) {
+	GDrawSetVisible(sc->charinfo->gw,true);
+	GDrawRaise(sc->charinfo->gw);
+return;
+    }
+
+    ci = gcalloc(1,sizeof(CharInfo));
+    ci->sc = sc;
+    ci->done = false;
 
     if ( !boxset ) {
 	extern GBox _ggadget_Default_Box;
@@ -1880,19 +1948,19 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
 	boxset = 1;
     }
 
-    if ( ci.gw==NULL ) {
+    if ( ci->gw==NULL ) {
 	memset(&wattrs,0,sizeof(wattrs));
 	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
 	wattrs.event_masks = ~(1<<et_charup);
-	wattrs.restrict_input_to_me = 1;
+	wattrs.restrict_input_to_me = false;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
 	wattrs.window_title = GStringGetResource( _STR_Charinfo,NULL );
-	wattrs.is_dlg = true;
+	wattrs.is_dlg = false;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,CI_Width));
 	pos.height = GDrawPointsToPixels(NULL,CI_Height);
-	ci.gw = GDrawCreateTopWindow(NULL,&pos,ci_e_h,&ci,&wattrs);
+	ci->gw = GDrawCreateTopWindow(NULL,&pos,ci_e_h,ci,&wattrs);
 
 	memset(&ugcd,0,sizeof(ugcd));
 	memset(&ulabel,0,sizeof(ulabel));
@@ -2011,7 +2079,7 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
 	memset(&pslabel,0,sizeof(pslabel));
 
 	for ( i=0; i<5; ++i ) {
-	    psgcd[i][0].gd.pos.x = 5; psgcd[i][0].gd.pos.y = 10;
+	    psgcd[i][0].gd.pos.x = 5; psgcd[i][0].gd.pos.y = 5;
 	    psgcd[i][0].gd.pos.width = CI_Width-28; psgcd[i][0].gd.pos.height = 7*12+10;
 	    psgcd[i][0].gd.flags = gg_visible | gg_enabled | gg_list_alphabetic;
 	    psgcd[i][0].gd.cid = CID_List+i*100;
@@ -2176,7 +2244,7 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
 	mgcd[4].gd.pos.x = -25; mgcd[4].gd.pos.y = mgcd[3].gd.pos.y+3;
 	mgcd[4].gd.pos.width = -1; mgcd[4].gd.pos.height = 0;
 	mgcd[4].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	mlabel[4].text = (unichar_t *) _STR_Cancel;
+	mlabel[4].text = (unichar_t *) _STR_Done;
 	mlabel[4].text_in_resource = true;
 	mgcd[4].gd.label = &mlabel[4];
 	mgcd[4].gd.mnemonic = 'C';
@@ -2184,20 +2252,15 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
 	mgcd[4].gd.cid = CID_Cancel;
 	mgcd[4].creator = GButtonCreate;
 
-	GGadgetsCreate(ci.gw,mgcd);
+	GGadgetsCreate(ci->gw,mgcd);
     }
 
-    CIFillup(&ci);
-    if ( !nextprev ) {
-	GGadgetSetEnabled(GWidgetGetControl(ci.gw,1),false);
-	GGadgetSetEnabled(GWidgetGetControl(ci.gw,-1),false);
-	GGadgetSetTitle(GWidgetGetControl(ci.gw,CID_Cancel),GStringGetResource(_STR_Cancel,NULL));
-    } else
-	GGadgetSetTitle(GWidgetGetControl(ci.gw,CID_Cancel),GStringGetResource(_STR_Done,NULL));
+    CIFillup(ci);
 
     GWidgetHidePalettes();
-    GDrawSetVisible(ci.gw,true);
-    while ( !ci.done )
-	GDrawProcessOneEvent(NULL);
-    GDrawSetVisible(ci.gw,false);
+    GDrawSetVisible(ci->gw,true);
+}
+
+void CharInfoDestroy(CharInfo *ci) {
+    GDrawDestroyWindow(ci->gw);
 }

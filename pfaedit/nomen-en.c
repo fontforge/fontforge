@@ -1009,6 +1009,8 @@ static unichar_t *str_Dx = { 0x2206, 'X', ':' };
 static unichar_t *str_Dy = { 0x2206, 'Y', ':' };
 static unichar_t *str_Dxa = { 0x2206, 'X','A','d','v','a','n','c','e', ':' };
 static unichar_t *str_Dya = { 0x2206, 'Y','A','d','v','a','n','c','e', ':' };
+static char *str_TooManyComponents = "Too Many Components";
+static char *str_SubsOnlyOne = "A simple substitution takes exactly one component, but you have provided several";
  /* Ligature feature tags */
 static char str_Required = "Required"
 static char str_Standard = "Standard"

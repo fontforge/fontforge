@@ -1268,7 +1268,7 @@ static void MVMenuCharInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	if ( mv->perchar[i].selected )
     break;
     if ( i!=-1 )
-	SCGetInfo(mv->perchar[i].sc,true);
+	SCGetInfo(mv->perchar[i].sc);
 }
 
 static void MVMenuShowDependents(GWindow gw,struct gmenuitem *mi,GEvent *e) {

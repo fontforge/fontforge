@@ -414,6 +414,8 @@ return(false);
 	    next = cv->next;
 	    GDrawDestroyWindow(cv->gw);
 	}
+	if ( sf->chars[i]->charinfo )
+	    CharInfoDestroy(sf->chars[i]->charinfo);
     }
     if ( sf->subfontcnt!=0 ) {
 	for ( j=0; j<sf->subfontcnt; ++j ) {
@@ -1320,7 +1322,7 @@ static void FVMenuCharInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( pos<0 || fv->cidmaster!=NULL )
 return;
     SFMakeChar(fv->sf,pos);
-    SCGetInfo(fv->sf->chars[pos],true);
+    SCGetInfo(fv->sf->chars[pos]);
 }
 
 static void FVMenuShowDependents(GWindow gw,struct gmenuitem *mi,GEvent *e) {

@@ -543,12 +543,11 @@ struct gfuncs gtabset_funcs = {
 };
 
 static int sendtoparent_eh(GWindow gw, GEvent *event) {
-    if ( event->type==et_controlevent ) {
+    switch ( event->type ) {
+      case et_controlevent: case et_char: case et_drop:
 	event->w = GDrawGetParentWindow(gw);
 	GDrawPostEvent(event);
-    } else if ( event->type==et_char ) {
-	event->w = GDrawGetParentWindow(gw);
-	GDrawPostEvent(event);
+      break;
     }
 
 return( true );
