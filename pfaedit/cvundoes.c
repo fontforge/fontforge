@@ -27,6 +27,7 @@
 #include "pfaeditui.h"
 #include <math.h>
 #include <ustring.h>
+#include <utype.h>
 
 extern char *coord_sep;
 
@@ -1489,6 +1490,26 @@ return;
     free(paste);
 }
 
+/* When we paste a composit character from one font to another the references */
+/*  refer to the glyphs in the new font. So the width should refer to the */
+/*  width of the glyphs in the new font as well */
+static int PasteGuessCorrectWidth(SplineFont *sf,Undoes *paster,int *vwidth) {
+    RefChar *ref;
+
+    if ( paster->u.state.vwidth == paster->u.state.copied_from->ascent+paster->u.state.copied_from->descent )
+	*vwidth = sf->ascent+sf->descent;
+    for ( ref=paster->u.state.refs; ref!=NULL; ref=ref->next ) {
+	SplineChar *sc = FindCharacter(sf,ref);
+	if ( sc==NULL || sc->unicodeenc==-1 || sc->unicodeenc>=0x10000 ||
+		!isalpha(sc->unicodeenc) || iscombining(sc->unicodeenc) )
+    continue;
+	*vwidth = sc->vwidth;
+return( sc->width );
+    }
+    *vwidth = paster->u.state.vwidth;
+return( paster->u.state.width );
+}
+
 static int anchor_lost_warning = false;
 
 static void APMerge(SplineChar *sc,AnchorPoint *anchor) {
@@ -1560,6 +1581,7 @@ return;
 static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
     DBounds bb;
     real transform[6];
+    int width, vwidth;
 
     switch ( paster->undotype ) {
       case ut_noop:
@@ -1567,8 +1589,14 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
       case ut_state: case ut_statehint: case ut_statename:
 	sc->parent->onlybitmaps = false;
 	SCPreserveState(sc,paster->undotype==ut_statehint);
-	SCSynchronizeWidth(sc,paster->u.state.width,sc->width,fv);
-	sc->vwidth = paster->u.state.vwidth;
+	width = paster->u.state.width;
+	vwidth = paster->u.state.vwidth;
+	if ( doclear && paster->u.state.copied_from!=sc->parent &&
+		paster->u.state.splines==NULL &&
+		paster->u.state.refs!=NULL )
+	    width = PasteGuessCorrectWidth(sc->parent,paster,&vwidth);
+	SCSynchronizeWidth(sc,width,sc->width,fv);
+	sc->vwidth = vwidth;
 	if ( doclear ) {
 	    SplinePointListsFree(sc->splines);
 	    sc->splines = NULL;
