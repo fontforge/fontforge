@@ -102,6 +102,13 @@ DEPENDENCIES
  PfaEdit also makes use of libuninameslist to be found at:
      http://libuninameslist.sf.net/
 
+ PfaEdit's truetype debugger is completely dependent on:
+     http://freetype.sf.net/
+ The default configuration is useful to PfaEdit, but more functionality
+ is obtained if you enable the bytecode interpreter (but note: you must
+ have a license from Apple to do this). Instructions for doing so are
+ in the file README.UNX in the freetype distribution.
+
  Finally, if you want to do autotracing you should install
      http://sourceforge.net/projects/autotrace/
 

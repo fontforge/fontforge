@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 9-Mar-2003 -->
+  <!-- AP: Last modified: 10-Mar-2003 -->
   <TITLE>Outline Character View</TITLE>
 </HEAD>
 <BODY>
@@ -427,7 +427,7 @@ The fifth button allows you to set a watch point. You select a point (or
 several points) in the left hand pane, and press this button. Thereafter,
 whenever one of those points is moved PfaEdit will stop the glyph program.
 <P>
-Flaw: Currently there is no good way watch several control points.
+Flaw: Currently there is no good way to watch several control points.
 <P>
 You can set a more conventional break point by clicking on an instruction.
 A little red stop sign will appear on top of the address area, and the program
@@ -439,7 +439,7 @@ function.
 <P>
 Flaw: Currently there is no way to examine the call stack.
 <P>
-The final button brings up a menu with which you can control which of various
+The sixth button brings up a menu with which you can control which of various
 debugging palettes are visible. The ones available so far are:
 <TABLE BORDER CELLPADDING="2" WIDTH=500>
   <TR VALIGN="Top">
@@ -461,6 +461,47 @@ debugging palettes are visible. The ones available so far are:
 <P>
 Flaw: most of these palettes should have scrollbars. For now just resize
 them to look at things off the bottom.
+<P>
+The final button will exit the debugger.
+<P>
+The debugger also responds to some single character commands comman to many
+debuggers:
+<TABLE BORDER CELLPADDING="2">
+  <TR>
+    <TD>s</TD>
+    <TD>step into</TD>
+  </TR>
+  <TR>
+    <TD>n</TD>
+    <TD>step over (next)</TD>
+  </TR>
+  <TR>
+    <TD>c</TD>
+    <TD>continue</TD>
+  </TR>
+  <TR>
+    <TD>r</TD>
+    <TD>restart (with same grid)</TD>
+  </TR>
+  <TR>
+    <TD>f</TD>
+    <TD>step out (finish routine)</TD>
+  </TR>
+  <TR>
+    <TD>k</TD>
+    <TD>kill the debugger</TD>
+  </TR>
+  <TR>
+    <TD>q</TD>
+    <TD>kill the debugger</TD>
+  </TR>
+</TABLE>
+<P>
+The Hints-&gt;Debug menu command can also be used to exit the debugger (by
+turning off the debug check box), or to restart the debugger with different
+values for the point size and resolution. This dlg can also control whether
+the fpgm and prep tables are debugged. Usually debugging will start when
+execution reaches the instructions associated with this glyph.
 <P ALIGN=Center>
 -- <A HREF="fontview.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
 <A HREF="bitmapview.html">Next</A> --

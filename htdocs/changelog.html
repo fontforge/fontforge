@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 9-Mar-2003 -->
+  <!-- AP: Last modified: 10-Mar-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -11,17 +11,52 @@
 </H1>
 <UL>
   <LI>
-    ??-Mar-2003
+    10-Mar-2003
     <UL>
       <LI>
 	Added a TrueType instruction debugger (actually an interface to FreeType's
 	truetype bytecode interpreter)
+	<TABLE BORDER CELLPADDING="6" WIDTH="50%" ALIGN=CENTER>
+	  <TR>
+	    <TD BGCOLOR="#ffff00">This command depend on your compiling freetype with
+	      the byte code interpreter enabled. This is disabled by default because it
+	      infringes on certain
+	      <A HREF="http://freetype.sourceforge.net/patents.html">patents granted to
+	      Apple</A>. If you have a license from Apple then you may enable the interpreter
+	      by setting the appropriate macro in .../include/freetype/config/ftoption.h
+	      before you build the library (see the README.UNX file on the top level of
+	      the freetype distribution).</TD>
+	  </TR>
+	</TABLE>
       <LI>
-	Added a Copy Grid Fit command (to put the grid fit splines into the clipboard)
+	Added an Edit-&gt;Copy Grid Fit command (to put the grid fit splines into
+	the clipboard)
       <LI>
 	Added a warning if the freetype library doesn't have a byte code interpreter
 	so that the user knows his/her splines have been autohinted (rather than
 	had the bytecode instructions run).
+      <LI>
+	Improved Edit-&gt;Merge in some cases that don't fit its constraints
+      <LI>
+	KANOU found some more underscores in character names
+      <LI>
+	And provided a new japanese ui
+      <LI>
+	Round to Int had problems on quadratic splines
+      <LI>
+	Added support for runtime loading of dynamic libraries on the mac.
+    </UL>
+  <LI>
+    03-Mar-2003
+    <UL>
+      <LI>
+	Memory got screwed up when converting TTF splines to PS ones
+      <LI>
+	KANOU suggested some changes to the quadratic spline UI
+      <LI>
+	I had the wrong makefile at top level so builds didn't
+      <LI>
+	syntax error on systems without freetype
     </UL>
   <LI>
     02-Mar-2003

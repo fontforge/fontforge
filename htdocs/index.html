@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 9-Mar-2003 -->
+  <!-- AP: Last modified: 10-Mar-2003 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -103,8 +103,8 @@ let me know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-030302.tgz">Download pfaedit linux-i386 Redhat 7.3
-    </A><A NAME="downloads">executable</A> Version: 02-Mar-2003
+    <A HREF="pfaedit-030310.tgz">Download pfaedit linux-i386 Redhat 7.3
+    </A><A NAME="downloads">executable</A> Version: 10-Mar-2003
   <LI>
     <A HREF="pfaedit-030226-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
     Version: 26-Feb-2003 (Redhat 7.3)
@@ -112,8 +112,8 @@ let me know when you do</A>.
     <A HREF="pfaedit-030226-1.ppc.rpm">Download pfaedit linux-ppc SUSE 7.1
     </A>binary rpm Version: 26-Feb-2003
   <LI>
-    <A HREF="pfaedit-solaris-030303.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 3-Mar-2003 (no XIM support)
+    <A HREF="pfaedit-solaris-030310.tgz">Download pfaedit Solaris 8.0
+    </A>executable Version: 10-Mar-2003 (no XIM support, no freetype)
   <LI>
     <A HREF="http://packages.debian.org/unstable/x11/pfaedit.html">A debian package
     is available at the debian site.</A>
@@ -122,7 +122,7 @@ let me know when you do</A>.
     netbsd package is available at the netbsd site.</A>
   <LI>
     <A HREF="MacOSX.html#binary">A Mac OS/X distribution</A> (with Caveats).
-    Version 3-Mar-2003<BR>
+    Version 10-Mar-2003<BR>
     &nbsp; &nbsp; How to install <A HREF="MacOSX.html#binary">PfaEdit on Mac
     OS/X</A>
   <LI>
@@ -149,9 +149,9 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-030226-1.src.rpm">source RPM</A>: Version:
 26-Feb-2003<BR>
-Or you can download the <A HREF="pfaedit_full-030302.tgz">entire source tree
+Or you can download the <A HREF="pfaedit_full-030310.tgz">entire source tree
 </A>in one .tgz file: Version
-02-Mar-2003<!--
+10-Mar-2003<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -199,13 +199,19 @@ have them and you want them they are available from:
   <LI>
     <A HREF="http://www.ijg.org/">libjpeg</A>
   <LI>
-    <A HREF="http://freetype.sf.net/">freetype</A><BR>
-    Some of PfaEdit's commands depend on your compiling freetype with the byte
-    code interpreter enabled. This is disabled by default because it infringes
-    on certain <A HREF="http://freetype.sourceforge.net/patents.html">patents
-    granted to Apple</A>. If you have a license from Apple then you may enable
-    the interpreter by setting the appropriate macro in
-    .../include/freetype/config/ftoption.h before you build the library.
+    <A HREF="http://freetype.sf.net/">freetype</A>
+    <TABLE BORDER CELLPADDING="6" WIDTH="50%" ALIGN=CENTER>
+      <TR>
+	<TD BGCOLOR="#ffff00">Some of PfaEdit's commands depend on your compiling
+	  freetype with the byte code interpreter enabled. This is disabled by default
+	  because it infringes on certain
+	  <A HREF="http://freetype.sourceforge.net/patents.html">patents granted to
+	  Apple</A>. If you have a license from Apple then you may enable the interpreter
+	  by setting the appropriate macro in .../include/freetype/config/ftoption.h
+	  before you build the library (see the README.UNX file on the top level of
+	  the freetype distribution).</TD>
+      </TR>
+    </TABLE>
 </UL>
 <P>
 PfaEdit can display unicode names and annotations if the libuninameslist
@@ -275,7 +281,7 @@ bitmap fonts that pfaedit uses
 </H2>
 <P>
 All the documentation files in this directory bundled up into one
-<A HREF="pfaedit_htdocs-030302.tgz">tgz file</A> 02-Mar-2003.<BR>
+<A HREF="pfaedit_htdocs-030310.tgz">tgz file</A> 10-Mar-2003.<BR>
 If you do the following then PfaEdit will find the docs for you when you
 press F1 (ie. PfaEdit it will look in /usr/local/share/doc/pfaedit before
 it looks on the web):
