@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 12-Jan-2002 -->
+  <!-- AP: Last modified: 14-Jan-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -72,8 +72,8 @@ you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-020112.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 12-Jan-2002
+    <A HREF="pfaedit-020114.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 14-Jan-2002
   <LI>
     <A HREF="pfaedit-solaris-020102.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 2-Jan-2002
@@ -87,7 +87,7 @@ you do</A>.
     <A HREF="Problems-MacOSX.html#binary">A Mac OS/X distribution</A> (with Caveats).
     Version 1-Dec-2001
   <LI>
-    <A HREF="pfaedit_cygwin-020112.tgz">A cygwin version</A>. Version: 12-Jan-2002
+    <A HREF="pfaedit_cygwin-020114.tgz">A cygwin version</A>. Version: 14-Jan-2002
   <LI>
     <A HREF="ftp://nchrem.tnw.tudelft.nl/pub/pfaedit/">An OpenVMS executable
     </A>(by Jacob Jansen): Version Approximately 23-Sept-2001<BR>
@@ -107,7 +107,7 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-011219-1.src.rpm">source RPM</A>: Version:
 19-Dec-2001<BR>
-Or you can download the following three packages. Version: 12-Jan-2002
+Or you can download the following three packages. Version: 14-Jan-2002
 <UL>
   <LI>
     <A HREF="libgunicode-020111.tgz">Unicode library source</A> (11-Jan-2002)<BR>
@@ -119,10 +119,10 @@ Or you can download the following three packages. Version: 12-Jan-2002
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-020112.tgz">Pfaedit source</A> (12-Jan-2002)<BR>
+    <A HREF="pfaedit_src-020114.tgz">Pfaedit source</A> (14-Jan-2002)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
-    <A HREF="pfaedit_full-020112.tgz">All three bundled together </A>(12-Jan-2002)
+    <A HREF="pfaedit_full-020114.tgz">All three bundled together </A>(14-Jan-2002)
 </UL>
 <P>
 If you want to do autotracing around character images you should also download
@@ -234,6 +234,21 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    14 Jan 2002
+    <UL>
+      <LI>
+	The 9 Jan metrics view fix caused crashes when changing the last character
+	displayed.
+      <LI>
+	The outline view now will display points at extrema in a different color
+	from other points if you want that.
+      <LI>
+	Added a command to the font view to clear out the backgrounds of all selected
+	characters.
+      <LI>
+	Fixed one more image freeing problem (see 29-Dec-2001)
+    </UL>
   <LI>
     12 Jan 2002
     <UL>
@@ -380,7 +395,7 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
 	View-&gt;Fill should now show the current setting.
       <LI>
 	If there were background images in a glyph then changing the Show/Hide rulers
-	made the display
+	made the display wrong
       <LI>
 	In the Outline view, the character's popup box would appear if the mouse
 	were over the menubar. Werner thought that inappropriate.

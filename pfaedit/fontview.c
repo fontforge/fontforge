@@ -728,6 +728,7 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define	MID_CharName		2124
 #define MID_RemoveUndoes	2114
 #define MID_CopyFgToBg	2115
+#define MID_ClearBackground	2116
 #define MID_Convert2CID	2800
 #define MID_Flatten	2801
 #define MID_InsertFont	2802
@@ -835,6 +836,21 @@ return;
     SCCharChangedUpdate(sc);
 }
 
+static void SCClearBackground(SplineChar *sc,FontView *fv) {
+
+    if ( sc==NULL )
+return;
+    if ( sc->backgroundsplines==NULL && sc->backimages==NULL )
+return;
+    SCPreserveBackground(sc);
+    SplinePointListsFree(sc->backgroundsplines);
+    sc->backgroundsplines = NULL;
+    ImageListsFree(sc->backimages);
+    sc->backimages = NULL;
+    SCOutOfDateBackground(sc);
+    SCCharChangedUpdate(sc);
+}
+
 static int UnselectedDependents(FontView *fv, SplineChar *sc) {
     struct splinecharlist *dep;
 
@@ -873,7 +889,7 @@ static void UnlinkThisReference(FontView *fv,SplineChar *sc) {
 	}
     }
 }
-    
+
 static void FVMenuClear(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int i;
@@ -917,6 +933,20 @@ static void FVMenuClear(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    for ( bdf=fv->sf->bitmaps; bdf!=NULL; bdf = bdf->next )
 		BCClearAll(bdf->chars[i],fv);
 	}
+    }
+}
+
+
+static void FVMenuClearBackground(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    SplineFont *sf = fv->sf;
+    int i;
+
+    if ( onlycopydisplayed && fv->filled!=fv->show )
+return;
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( fv->selected[i] && sf->chars[i]!=NULL ) {
+	SCClearBackground(sf->chars[i],fv);
     }
 }
 
@@ -1007,6 +1037,18 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_Paste: case MID_CopyRef: case MID_UnlinkRef:
 	  case MID_RemoveUndoes: case MID_CopyFgToBg:
 	    mi->ti.disabled = pos==-1;
+	  break;
+	  case MID_ClearBackground:
+	    mi->ti.disabled = true;
+	    if ( pos!=-1 && !( onlycopydisplayed && fv->filled!=fv->show )) {
+		for ( pos=0; pos<fv->sf->charcnt; ++pos )
+		    if ( fv->selected[pos] && fv->sf->chars[pos]!=NULL )
+			if ( fv->sf->chars[pos]->backimages!=NULL ||
+				fv->sf->chars[pos]->backgroundsplines!=NULL ) {
+			    mi->ti.disabled = false;
+		break;
+			}
+	    }
 	  break;
 	  case MID_Undo: case MID_Redo:
 	    mi->ti.disabled = true;
@@ -2145,6 +2187,7 @@ static GMenuItem edlist[] = {
     { { (unichar_t *) _STR_Copywidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'W' }, 'W', ksm_control, NULL, NULL, FVMenuCopyWidth, MID_CopyWidth },
     { { (unichar_t *) _STR_Paste, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'V', ksm_control, NULL, NULL, FVMenuPaste, MID_Paste },
     { { (unichar_t *) _STR_Clear, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, 0, 0, NULL, NULL, FVMenuClear, MID_Clear },
+    { { (unichar_t *) _STR_ClearBackground, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, 0, 0, NULL, NULL, FVMenuClearBackground, MID_ClearBackground },
     { { (unichar_t *) _STR_CopyFgToBg, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'C', ksm_control|ksm_shift, NULL, NULL, FVMenuCopyFgBg, MID_CopyFgToBg },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_SelectAll, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'A', ksm_control, NULL, NULL, FVMenuSelectAll },

@@ -48,7 +48,8 @@ struct cvshows CVShows = {
 	1,		/* show x minimum distances */
 	1,		/* show y minimum distances */
 	1,		/* show horizontal metrics */
-	0		/* show vertical metrics */
+	0,		/* show vertical metrics */
+	0		/* mark extrema */
 };
 Color nextcpcol = 0x007090;
 Color prevcpcol = 0xff00ff;
@@ -309,6 +310,11 @@ static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp, SplineSet *
     GRect r;
     int x, y, cx, cy;
     Color col = sp==spl->first ? 0x707000 : 0xff0000;
+
+    if ( cv->markextrema && !sp->nonextcp && !sp->noprevcp &&
+	    ((sp->nextcp.x==sp->me.x && sp->prevcp.x==sp->me.x) ||
+	     (sp->nextcp.y==sp->me.y && sp->prevcp.y==sp->me.y)) )
+	 col = 0xc00080;
 
     x =  cv->xoff + rint(sp->me.x*cv->scale);
     y = -cv->yoff + cv->height - rint(sp->me.y*cv->scale);
@@ -2400,6 +2406,7 @@ return( true );
 #define MID_NextDef	2012
 #define MID_PrevDef	2013
 #define MID_DisplayCompositions	2014
+#define MID_MarkExtrema	2015
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -2579,6 +2586,14 @@ static void CVMenuShowHide(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CVShows.showpoints = cv->showpoints = !cv->showpoints;
     GMenuBarSetItemName(cv->mb,MID_HidePoints,
 	    GStringGetResource(CVShows.showpoints?_STR_Hidepoints:_STR_Showpoints,NULL));
+    GDrawRequestExpose(cv->v,NULL,false);
+}
+
+static void CVMenuMarkExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    CVShows.markextrema = cv->markextrema = !cv->markextrema;
+    SavePrefs();
     GDrawRequestExpose(cv->v,NULL,false);
 }
 
@@ -2862,7 +2877,7 @@ static void CVDoClear(CharView *cv) {
 		    cv->sc->backimages = next;
 		else
 		    prev->next = next;
-		free(imgs);
+		chunkfree(imgs,sizeof(ImageList));
 		/* garbage collection of images????!!!! */
 	    }
 	}
@@ -3885,6 +3900,9 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    for ( pos = cv->sc->enc-1; pos>=0 && sf->chars[pos]==NULL; --pos );
 	    mi->ti.disabled = pos==-1;
 	  break;
+	  case MID_MarkExtrema:
+	    mi->ti.checked = cv->markextrema;
+	  break;
 	  case MID_Fill:
 	    mi->ti.checked = cv->showfilled;
 	  break;
@@ -4108,6 +4126,7 @@ static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_Goto, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'G' }, '>', ksm_shift|ksm_control, NULL, NULL, CVMenuGotoChar },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Hidepoints, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, 'D', ksm_control, NULL, NULL, CVMenuShowHide, MID_HidePoints },
+    { { (unichar_t *) _STR_MarkExtrema, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'M' }, '\0', ksm_control, NULL, NULL, CVMenuMarkExtrema, MID_MarkExtrema },
     { { (unichar_t *) _STR_Nextpoint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'e' }, '}', ksm_shift|ksm_control, NULL, NULL, CVMenuNextPrevPt, MID_NextPt },
     { { (unichar_t *) _STR_Prevpoint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'v' }, '{', ksm_shift|ksm_control, NULL, NULL, CVMenuNextPrevPt, MID_PrevPt },
     { { (unichar_t *) _STR_Fill, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'l' }, '\0', 0, NULL, NULL, CVMenuFill, MID_Fill },
@@ -4164,6 +4183,7 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv) {
     cv->showmdy = CVShows.showmdy;
     cv->showhmetrics = CVShows.showhmetrics;
     cv->showvmetrics = CVShows.showvmetrics;
+    cv->markextrema = CVShows.markextrema;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_ititle;

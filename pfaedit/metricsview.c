@@ -848,7 +848,7 @@ return;					/* Nothing changed */
 	}
     /* the change happened between i and ei, and between pt and ept */
     oldx = mv->perchar[i].dx;
-    if ( mv->perchar[i].show->xmin<0 )
+    if ( mv->perchar[i].show!=NULL && mv->perchar[i].show->xmin<0 )
 	oldx += mv->perchar[i].show->xmin;	/* Beware of negative lbearing */
     if ( i!=0 && oldx > mv->perchar[i-1].dx + mv->perchar[i-1].dwidth ) /* without kern */
 	oldx = mv->perchar[i-1].dx + mv->perchar[i-1].dwidth;
@@ -905,7 +905,9 @@ return;					/* Nothing changed */
 	free(hold);
     }
     r.x = mv->perchar[i].dx;
-    if ( mv->perchar[i].show->xmin<0 )
+   /* If i points to eol then mv->perchar[i].dx will be correct but .show will*/
+   /*  be NULL */
+    if ( mv->perchar[i].show!=NULL && mv->perchar[i].show->xmin<0 )
 	r.x += mv->perchar[i].show->xmin;		/* Beware of negative lbearing */
     if ( i!=0 && r.x > mv->perchar[i-1].dx + mv->perchar[i-1].dwidth ) /* without kern */
 	r.x = mv->perchar[i-1].dx + mv->perchar[i-1].dwidth;

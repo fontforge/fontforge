@@ -51,6 +51,7 @@ char *RecentFiles[RECENT_MAX] = { NULL };
 /* int local_encoding; */		/* in gresource.c *//* not a charset */
 int greekfixup = true;
 extern int onlycopydisplayed, copymetadata;
+extern struct cvshows CVShows;
 
 static GTextInfo localencodingtypes[] = {
     { (unichar_t *) _STR_Isolatin1, NULL, 0, 0, (void *) e_iso8859_1, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -119,6 +120,7 @@ static struct prefs_list {
 	{ "CopyMetaData", pr_bool, &copymetadata, NULL, NULL, '\0', NULL, 1 },
 	{ "ArrowMoveSize", pr_real, &arrowAmount, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupAA },
 	{ "SnapDistance", pr_real, &snapdistance, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupSD },
+	{ "MarkExtrema", pr_int, &CVShows.markextrema, NULL, NULL, '\0', NULL, 1 },
 	{ NULL }
 },
  oldnames[] = {

@@ -37,6 +37,7 @@ extern struct cvshows {
     int showrounds;		/* 0=>no, 1=>auto, 2=>always */
     int showmdx, showmdy;	/* minimum distances x,y */
     int showhmetrics, showvmetrics;	/* show advance width, baseline, etc. */
+    int markextrema;
 } CVShows;
 
 extern struct bvshows {
@@ -115,6 +116,7 @@ typedef struct charview {
     unsigned int showmdy:1;
     unsigned int showhmetrics:1;
     unsigned int showvmetrics:1;
+    unsigned int markextrema:1;
     unsigned int needsrasterize:1;		/* Rasterization (of fill or fontview) needed on mouse up */
     unsigned int recentchange:1;		/* a change happened in the grids or background. don't need to rasterize */
     unsigned int drawmode:2;
