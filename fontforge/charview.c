@@ -5533,9 +5533,13 @@ static void CVMenuTilePath(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void _CVMenuOverlap(CharView *cv,enum overlap_type ot) {
     /* We know it's more likely that we'll find a problem in the overlap code */
     /*  than anywhere else, so let's save the current state against a crash */
-    DoAutoSaves();
+    int layer = cv->drawmode == dm_grid ? -1 :
+		cv->drawmode == dm_back ? 0
+					: cv->layerheads[dm_fore] - cv->sc->layers;
 
-    CVPreserveState(cv);
+    DoAutoSaves();
+    if ( !SCRoundToCluster(cv->sc,layer,true,.01,.04))
+	CVPreserveState(cv);	/* SCRound2Cluster does this when it makes a change, not otherwise */
     if ( cv->drawmode==dm_fore ) {
 	MinimumDistancesFree(cv->sc->md);
 	cv->sc->md = NULL;
