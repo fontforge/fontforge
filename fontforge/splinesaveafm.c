@@ -1140,7 +1140,7 @@ void SFLigaturePrepare(SplineFont *sf) {
     /* Attach all the ligatures to the first character of their components */
     /* Figure out what the components are, and if they all exist */
     /* we're only interested in the lig if all components are worth outputting */
-    for ( i=0 ; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->possub!=NULL ) {
+    for ( i=0 ; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]->possub!=NULL ) {
 	for ( lig = sf->chars[i]->possub; lig!=NULL; lig=lig->next ) if ( lig->type==pst_ligature ) {
 	    ligstart = lig->u.lig.components;
 	    last = head = NULL; sc = NULL;
