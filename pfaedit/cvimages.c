@@ -460,12 +460,28 @@ return;
 
 /************************** Normal Image Import *******************************/
 
-static void ImageAlterClut(GImage *image) {
+static GImage *ImageAlterClut(GImage *image) {
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     GClut *clut;
 
-    if ( base->image_type!=it_mono )
-return;
+    if ( base->image_type!=it_mono ) {
+	/* png b&w images come through as indexed, not mono */
+	if ( base->clut!=NULL && base->clut->clut_len==2 ) {
+	    GImage *new = GImageCreate(it_mono,base->width,base->height);
+	    struct _GImage *nbase = new->u.image;
+	    int i,j;
+	    memset(nbase->data,0,nbase->height*nbase->bytes_per_line);
+	    for ( i=0; i<base->height; ++i ) for ( j=0; j<base->width; ++j )
+		if ( base->data[i*base->bytes_per_line+j] )
+		    nbase->data[i*nbase->bytes_per_line+(j>>3)] |= (0x80>>(j&7));
+	    nbase->clut = base->clut;
+	    base->clut = NULL;
+	    nbase->trans = base->trans;
+	    image = new;
+	    base = nbase;
+	} else
+return( image );
+    }
 
     clut = base->clut;
     if ( clut==NULL ) {
@@ -489,6 +505,7 @@ return;
 	clut->trans_index = 0;
 	base->trans = 0;
     }
+return( image );
 }
 
 void SCInsertBackImage(SplineChar *sc,GImage *image,real scale,real yoff,real xoff) {
@@ -520,7 +537,7 @@ static void ImportImage(CharView *cv,char *path) {
 	GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileName, path);
 return;
     }
-    ImageAlterClut(image);
+    image = ImageAlterClut(image);
     scale = (cv->sc->parent->ascent+cv->sc->parent->descent)/
 	    (real) GImageGetHeight(image);
     SCInsertBackImage(cv->sc,image,scale,cv->sc->parent->ascent,0);
