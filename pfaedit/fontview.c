@@ -4512,6 +4512,11 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		    fv->show->chars[index]==NULL && fv->sf->chars[index]!=NULL )
 		BDFPieceMeal(fv->show,index);
 
+	    if ( !SCWorthOutputting(fv->sf->chars[index]) ) {
+		box.x = j*fv->cbw+1; box.width = fv->cbw-1;
+		box.y = i*fv->cbh+14+2; box.height = box.width+1;
+		GDrawFillRect(pixmap,&box,0xb0b0d0);
+	    }
 	    if ( fv->show!=NULL && fv->show->chars[index]==NULL &&
 		    SCWorthOutputting(fv->sf->chars[index]) ) {
 		/* If we have an outline but no bitmap for this slot */
