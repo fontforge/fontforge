@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 17-Jan-2005 -->
+  <!-- AP: Last modified: 26-Jan-2005 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -11,6 +11,46 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    ???
+    <UL>
+      <LI>
+	Use freetype's FT_Outline_Get_Bitmap to make freetype rasterize from our
+	internal data structures. Use freetype by default for the fontview and
+	metricsview (except in some cases).
+      <LI>
+	The bitmap dlg didn't work for multilayered fonts when told to use freetype
+	to rasterize.
+      <LI>
+	If we had a contour nested inside another, and did an Overlap Exclude with
+	the nested contour selected, then that contour was not excluded.
+      <LI>
+	The []Correct Direction check box when importing PostScript, didn't do anything.
+	(or rather it did, but got overrulled later)
+      <LI>
+	In bitmap only fonts, bitmaps created without moving the width line would
+	get lost.
+      <LI>
+	Added a scripting command "SelectByColor"
+      <LI>
+	Don't apply transformations to glyphs which aren't worth outputting
+      <LI>
+	Moving control points with the get point info command had problems in quadratic
+	splines.
+      <LI>
+	When adding type42 support I broke multiple master support.
+      <LI>
+	Werner provided a patch to add a trailing newline to my type1 fonts.
+      <LI>
+	Support for PaintType==2 and stroked fonts.
+      <LI>
+	Various problems with the clustering command
+      <LI>
+	Oops, somehow a patch reverted and things didn't work on systems without
+	iconv
+      <LI>
+	worked on a couple of other configuration problems for the mac
+    </UL>
   <LI>
     17-Jan-2005
     <UL>
