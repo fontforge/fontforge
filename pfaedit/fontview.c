@@ -3159,16 +3159,16 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_OpenOutline:
-	    mi->ti.disabled = !anychars;
+	    mi->ti.disabled = anychars==-1;
 	  break;
 	  case MID_OpenBitmap:
-	    mi->ti.disabled = !anychars || fv->sf->bitmaps==NULL;
+	    mi->ti.disabled = anychars==-1 || fv->sf->bitmaps==NULL;
 	  break;
 	  case MID_Revert:
 	    mi->ti.disabled = fv->sf->origname==NULL;
 	  break;
 	  case MID_RevertGlyph:
-	    mi->ti.disabled = fv->sf->filename==NULL || !anychars;
+	    mi->ti.disabled = fv->sf->filename==NULL || anychars==-1;
 	  break;
 	  case MID_Recent:
 	    mi->ti.disabled = !RecentFilesAny();
