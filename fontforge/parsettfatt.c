@@ -1961,6 +1961,18 @@ static struct lookup *compactttflookups(struct feature *features,uint32 *feats, 
 	}
     }
 
+    for ( i=0; features[i].tag!=0; ++i ) {
+	struct scriptlist *sl, *slnext;
+	for ( sl = features[i].sl; sl!=NULL; sl=slnext ) {
+	    slnext = sl->next;
+	    free(sl);
+	}
+	for ( sl = features[i].reqsl; sl!=NULL; sl=slnext ) {
+	    slnext = sl->next;
+	    free(sl);
+	}
+    }
+	
     free( features );
     for ( i=0; i<cnt; ++i )
 	if ( lookups[i].tag!=0 )
