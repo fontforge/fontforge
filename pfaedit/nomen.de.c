@@ -47,8 +47,6 @@ static unichar_t mnemonic_SelectAll[] = 'n';
 
 static char str_Allfonts[] = "Alle Schriften";
 static unichar_t mnemonic_Allfonts[] = 'A';
-static char str_Fontmodifiers[] = "Schriftmodifizierer:";
-static unichar_t mnemonic_Fontmodifiers[] = 'S';
 static char *str_Styles = "Schriftschnitte";
 
 static char str_Yes[] = "Ja";

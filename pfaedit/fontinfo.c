@@ -38,7 +38,6 @@ struct gfi_data {
     int private_aspect, ttfv_aspect, panose_aspect, tn_aspect;
     int old_sel, old_aspect, old_lang, old_strid;
     int ttf_set, names_set;
-    int human_matches;		/* the human name matches the family name + modifiers and should update whenever one of those changes */
     struct psdict *private;
     struct ttflangname *names;
     struct ttflangname def;
@@ -331,10 +330,8 @@ static GTextInfo ttfnameids[] = {
 
 struct langstyle { int lang; const unichar_t *str; };
 static const unichar_t regulareng[] = { 'R','e','g','u','l','a','r',  '\0' };
-static const unichar_t demiboldeng[] = { 'D','e','m','i','-','B','o','l','d',  '\0' };
-static const unichar_t demiboldeng2[] = { 'D','e','m','i','B','o','l','d',  '\0' };
+static const unichar_t demiboldeng[] = { 'D','e','m','i','B','o','l','d',  '\0' };
 static const unichar_t demiboldeng3[] = { 'D','e','m','i',  '\0' };
-static const unichar_t demiboldeng4[] = { 'S','e','m','i','-','B','o','l','d',  '\0' };
 static const unichar_t demiboldeng5[] = { 'S','e','m','i','B','o','l','d',  '\0' };
 static const unichar_t boldeng[] = { 'B','o','l','d',  '\0' };
 static const unichar_t thineng[] = { 'T','h','i','n',  '\0' };
@@ -387,7 +384,7 @@ static struct langstyle books[] = { {0x409, bookeng}, { 0x407, bookgerm }, { 0 }
 static struct langstyle bolds[] = { {0x409, boldeng}, { 0x40c, boldfren }, { 0x407, boldgerm }, { 0x40a, boldspan}, { 0x419, boldru }, { 0 }};
 static struct langstyle italics[] = { {0x409, italiceng}, { 0x40c, italicfren }, { 0x407, italicgerm }, { 0x40a, italicspan}, { 0x419, italicru }, { 0 }};
 static struct langstyle obliques[] = { {0x409, obliqueeng}, { 0x40c, obliquefren }, { 0x407, obliquegerm }, { 0x419, obliqueru }, { 0 }};
-static struct langstyle demibolds[] = { {0x409, demiboldeng}, {0x409, demiboldeng2}, {0x409, demiboldeng3}, {0x409, demiboldeng4}, {0x409, demiboldeng5},
+static struct langstyle demibolds[] = { {0x409, demiboldeng}, {0x409, demiboldeng3}, {0x409, demiboldeng5},
 	{ 0x40c, demiboldfren }, { 0x407, demiboldgerm }, { 0x419, demiboldru }, { 0 }};
 static struct langstyle heavys[] = { {0x409, heavyeng}, { 0x419, heavyru }, { 0 }};
 static struct langstyle blacks[] = { {0x409, blackeng}, { 0x419, blackru }, { 0 }};
@@ -400,7 +397,7 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 
 #define CID_Encoding	1001
 #define CID_Family	1002
-#define CID_Modifiers	1003
+#define CID_Weight	1003
 #define CID_ItalicAngle	1004
 #define CID_UPos	1005
 #define CID_UWidth	1006
@@ -413,6 +410,7 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_HasVerticalMetrics	1013
 #define CID_VOriginLab	1014
 #define CID_VOrigin	1015
+#define CID_Fontname	1016
 
 #define CID_Make	1111
 #define CID_Delete	1112
@@ -1498,56 +1496,27 @@ static int GFI_Make(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static int HumanNameMatches(GWindow gw) {
-    const unichar_t *ufamily = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Family));
-    const unichar_t *umods = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Modifiers));
-    const unichar_t *human = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Human));
-    const unichar_t *pt, *hpt;
-
-    hpt = human; pt = ufamily;
-    while ( *hpt==*pt && *hpt!='\0' ) {
-	++hpt; ++pt;
-    }
-    if ( *pt!='\0' )
-return(false);
-    pt = umods;
-    if ( *pt!='\0' && *pt!='-' ) {
-	if ( *hpt==' ' )
-	    ++hpt;
-    }
-    while ( *hpt==*pt && *hpt!='\0' ) {
-	++hpt; ++pt;
-    }
-return( *hpt=='\0' && *pt=='\0' );
-}
+/* Use URW 4 letter abrieviations */
+static char *knownweights[] = { "Demi", "Bold", "Regu", "Medi", "Book", "Thin",
+	"Ligh", "Heav", "Blac", "Nord", "Norm", "Gras", "Stan", "Halb",
+	"Fett", "Mage", "Mitt", "Buch", NULL };
+static char *realweights[] = { "Demi", "Bold", "Regular", "Medium", "Book", "Thin",
+	"Light", "Heavy", "Black", "Nord", "Normal", "Gras", "Standard", "Halbfett",
+	"Fett", "Mager", "Mittel", "Buchschrift", NULL};
 
 static int GFI_NameChange(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	GWindow gw = GGadgetGetWindow(g);
-	struct gfi_data *gfi = GDrawGetUserData(gw);
-	const unichar_t *ufamily = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Family));
-	const unichar_t *umods = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Modifiers));
-	if ( gfi->human_matches ) {
-	    unichar_t *uhum = galloc((u_strlen(ufamily)+u_strlen(umods)+2)*sizeof(unichar_t));
-	    u_strcpy(uhum,ufamily);
-	    if ( *umods!='\0' ) {
-		if ( *umods!='-' )
-		    uc_strcat(uhum," ");
-		u_strcat(uhum,umods);
+	const unichar_t *uname = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Fontname));
+	unichar_t ubuf[50];
+	int i;
+	for ( i=0; knownweights[i]!=NULL; ++i ) {
+	    if ( uc_strstrmatch(uname,knownweights[i])!=NULL ) {
+		uc_strcpy(ubuf, realweights[i]);
+		GGadgetSetTitle(GWidgetGetControl(gw,CID_Weight),ubuf);
+	break;
 	    }
-	    GGadgetSetTitle(GWidgetGetControl(gw,CID_Human),uhum);
-	    free(uhum);
 	}
-	gfi->human_matches = HumanNameMatches(gw);
-    }
-return( true );
-}
-
-static int GFI_HumanChange(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
-	GWindow gw = GGadgetGetWindow(g);
-	struct gfi_data *gfi = GDrawGetUserData(gw);
-	gfi->human_matches = HumanNameMatches(gw);
     }
 return( true );
 }
@@ -1628,8 +1597,44 @@ return( pt );
 return ( pt );
 }
 
+static unichar_t *_uGetModifiers(unichar_t *fontname, unichar_t *familyname) {
+    unichar_t *pt, *fpt;
+    static unichar_t nullstr[] = { 0 };
+
+    /* URW fontnames don't match the familyname */
+    /* "NimbusSanL-Regu" vs "Nimbus Sans L" (note "San" vs "Sans") */
+    /* so look for a '-' if there is one and use that as the break point... */
+
+    if ( (pt=u_strchr(fontname,'-'))!=NULL )
+return( pt );
+
+    fpt = familyname;
+    if ( familyname==NULL )
+return( nullstr );
+
+    for ( pt = fontname; *fpt!='\0' && *pt!='\0'; ) {
+	if ( *fpt == *pt ) {
+	    ++fpt; ++pt;
+	} else if ( *fpt==' ' )
+	    ++fpt;
+	else if ( *pt==' ' )
+	    ++pt;
+	else
+return( pt );
+    }
+return ( pt );
+}
+
 char *SFGetModifiers(SplineFont *sf) {
 return( _GetModifiers(sf->fontname,sf->familyname));
+}
+
+static unichar_t *uGetModifiers(unichar_t *fontname, unichar_t *familyname) {
+    unichar_t *ret;
+
+    ret = u_copy( _uGetModifiers(fontname,familyname));
+    free( fontname );
+return( ret );
 }
 
 void SFSetFontName(SplineFont *sf, char *family, char *mods,char *full) {
@@ -1731,22 +1736,23 @@ void SFSetFontName(SplineFont *sf, char *family, char *mods,char *full) {
 
 static void SetFontName(GWindow gw, SplineFont *sf) {
     const unichar_t *ufamily = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Family));
-    const unichar_t *umods = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Modifiers));
+    const unichar_t *ufont = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Fontname));
+    const unichar_t *uweight = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Weight));
     const unichar_t *uhum = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Human));
-    char *family, *mods, *human;
 
-    if ( (sf->familyname!=NULL && uc_strcmp(ufamily,sf->familyname)==0) &&
-	    (sf->fullname!=NULL && uc_strcmp(uhum,sf->fullname)==0) &&
-	    uc_strcmp(umods,SFGetModifiers(sf))==0 )
-return;			/* Unchanged */
-    family = cu_copy(ufamily); mods = cu_copy(umods); human = cu_copy(uhum);
-    SFSetFontName(sf,family,mods,human);
-    free(mods); free(family); free(human);
+    free(sf->familyname);
+    free(sf->fontname);
+    free(sf->weight);
+    free(sf->fullname);
+    sf->familyname = cu_copy(ufamily);
+    sf->fontname = cu_copy(ufont);
+    sf->weight = cu_copy(uweight);
+    sf->fullname = cu_copy(uhum);
 }
 
 static int CheckNames(struct gfi_data *d) {
     const unichar_t *ufamily = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Family));
-    const unichar_t *umods = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Modifiers));
+    const unichar_t *ufont = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Fontname));
     unichar_t *end;
 
     if ( *ufamily=='\0' ) {
@@ -1773,21 +1779,21 @@ return( false );
 	++ufamily;
     }
 
-    u_strtod(umods,&end);
-    if ( (*end=='\0' || (isdigit(umods[0]) && u_strchr(umods,'#')!=NULL)) &&
-	    *umods!='\0' ) {
-	GWidgetErrorR(_STR_BadModifierName,_STR_PSNameNotNumber);
+    u_strtod(ufont,&end);
+    if ( (*end=='\0' || (isdigit(ufont[0]) && u_strchr(ufont,'#')!=NULL)) &&
+	    *ufont!='\0' ) {
+	GWidgetErrorR(_STR_BadFontName,_STR_PSNameNotNumber);
 return( false );
     }
-    while ( *umods ) {
-	if ( *umods<' ' || *umods>=0x7f ||
-		*umods=='(' || *umods=='[' || *umods=='{' || *umods=='<' ||
-		*umods==')' || *umods==']' || *umods=='}' || *umods=='>' ||
-		*umods=='%' || *umods=='/' ) {
-	    GWidgetErrorR(_STR_BadModifierName,_STR_BadPSName);
+    while ( *ufont ) {
+	if ( *ufont<=' ' || *ufont>=0x7f ||
+		*ufont=='(' || *ufont=='[' || *ufont=='{' || *ufont=='<' ||
+		*ufont==')' || *ufont==']' || *ufont=='}' || *ufont=='>' ||
+		*ufont=='%' || *ufont=='/' ) {
+	    GWidgetErrorR(_STR_BadFontName,_STR_BadPSName);
 return( false );
 	}
-	++umods;
+	++ufont;
     }
 return( true );
 }
@@ -2043,7 +2049,8 @@ static void DefaultLanguage(struct gfi_data *d) {
     d->def.names[ttf_copyright] = GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Notice));
     d->def.names[ttf_family] = GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Family));
     d->def.names[ttf_fullname] = GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Human));
-    d->def.names[ttf_subfamily] = GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Modifiers));
+    d->def.names[ttf_subfamily] = uGetModifiers(
+	    GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Fontname)),d->def.names[ttf_family]);
     if ( *d->def.names[ttf_subfamily]=='\0' ) {
 	free( d->def.names[ttf_subfamily]);
 	d->def.names[ttf_subfamily] = uc_copy("Regular");
@@ -2259,9 +2266,7 @@ static void TTFSetup(struct gfi_data *d) {
 	/*  get to one of the ttf aspects, it gives the user time to set the */
 	/*  name properly */
 	/* And on CURRENT values of ascent and descent */
-	const unichar_t *ufamily = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Family));
-	const unichar_t *umods = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Modifiers));
-	char *n = galloc(u_strlen(ufamily)+u_strlen(umods)+1);
+	char *n = cu_copy(_GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Fontname)));
 	const unichar_t *as = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Ascent));
 	const unichar_t *ds = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Descent));
 	unichar_t *aend, *dend;
@@ -2273,7 +2278,6 @@ static void TTFSetup(struct gfi_data *d) {
 		info.vlinegap = info.linegap;
 	}
 	lg = info.linegap; vlg = info.vlinegap;
-	cu_strcpy(n,ufamily); cu_strcat(n,umods);
 	SFDefaultOS2Info(&info,d->sf,n);
 	if ( lg != 0 )
 	    info.linegap = lg;
@@ -2340,8 +2344,8 @@ void FontInfo(SplineFont *sf) {
     GWindow gw;
     GWindowAttrs wattrs;
     GTabInfo aspects[9];
-    GGadgetCreateData mgcd[10], ngcd[11], egcd[12], psgcd[19], tngcd[7],   pgcd[8], vgcd[15], pangcd[22], comgcd[3];
-    GTextInfo mlabel[10], nlabel[11], elabel[12], pslabel[19], tnlabel[7], plabel[8], vlabel[15], panlabel[22], comlabel[3], *list;
+    GGadgetCreateData mgcd[10], ngcd[13], egcd[12], psgcd[19], tngcd[7],   pgcd[8], vgcd[15], pangcd[22], comgcd[3];
+    GTextInfo mlabel[10], nlabel[13], elabel[12], pslabel[19], tnlabel[7], plabel[8], vlabel[15], panlabel[22], comlabel[3], *list;
     struct gfi_data d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20], ncbuf[20],
 	    vbuf[20], uibuf[12], regbuf[100], vorig[20];
@@ -2369,41 +2373,41 @@ void FontInfo(SplineFont *sf) {
     memset(&nlabel,0,sizeof(nlabel));
     memset(&ngcd,0,sizeof(ngcd));
 
-    nlabel[0].text = (unichar_t *) _STR_Familyname;
+    nlabel[0].text = (unichar_t *) _STR_Fontname;
     nlabel[0].text_in_resource = true;
     ngcd[0].gd.label = &nlabel[0];
     ngcd[0].gd.mnemonic = 'F';
-    ngcd[0].gd.pos.x = 12; ngcd[0].gd.pos.y = 6; 
+    ngcd[0].gd.pos.x = 12; ngcd[0].gd.pos.y = 6+6; 
     ngcd[0].gd.flags = gg_visible | gg_enabled;
     ngcd[0].creator = GLabelCreate;
 
-    ngcd[1].gd.pos.x = 12; ngcd[1].gd.pos.y = ngcd[0].gd.pos.y+15; ngcd[1].gd.pos.width = 120;
+    ngcd[1].gd.pos.x = 115; ngcd[1].gd.pos.y = ngcd[0].gd.pos.y-6; ngcd[1].gd.pos.width = 137;
     ngcd[1].gd.flags = gg_visible | gg_enabled;
-    nlabel[1].text = (unichar_t *) (sf->familyname?sf->familyname:sf->fontname);
+    nlabel[1].text = (unichar_t *) sf->fontname;
     nlabel[1].text_is_1byte = true;
     ngcd[1].gd.label = &nlabel[1];
-    ngcd[1].gd.cid = CID_Family;
+    ngcd[1].gd.cid = CID_Fontname;
     ngcd[1].gd.handle_controlevent = GFI_NameChange;
     ngcd[1].creator = GTextFieldCreate;
 
-    nlabel[2].text = (unichar_t *) _STR_Fontmodifiers;
-    nlabel[2].text_in_resource = true;
-    ngcd[2].gd.label = &nlabel[2];
-    ngcd[2].gd.mnemonic = 'M';
-    ngcd[2].gd.pos.x = 133; ngcd[2].gd.pos.y = ngcd[0].gd.pos.y; 
-    ngcd[2].gd.flags = gg_visible | gg_enabled;
-    ngcd[2].creator = GLabelCreate;
+    nlabel[10].text = (unichar_t *) _STR_Familyname;
+    nlabel[10].text_in_resource = true;
+    ngcd[10].gd.label = &nlabel[10];
+    ngcd[10].gd.mnemonic = 'F';
+    ngcd[10].gd.pos.x = 12; ngcd[10].gd.pos.y = ngcd[0].gd.pos.y+26; 
+    ngcd[10].gd.flags = gg_visible | gg_enabled;
+    ngcd[10].creator = GLabelCreate;
 
-    ngcd[3].gd.pos.x = 133; ngcd[3].gd.pos.y = ngcd[1].gd.pos.y; ngcd[3].gd.pos.width = 120;
-    ngcd[3].gd.flags = gg_visible | gg_enabled;
-    nlabel[3].text = (unichar_t *) SFGetModifiers(sf);
-    nlabel[3].text_is_1byte = true;
-    ngcd[3].gd.label = &nlabel[3];
-    ngcd[3].gd.cid = CID_Modifiers;
-    ngcd[3].gd.handle_controlevent = GFI_NameChange;
-    ngcd[3].creator = GTextFieldCreate;
+    ngcd[11].gd.pos.x = ngcd[1].gd.pos.x; ngcd[11].gd.pos.y = ngcd[10].gd.pos.y-6; ngcd[11].gd.pos.width = 137;
+    ngcd[11].gd.flags = gg_visible | gg_enabled;
+    nlabel[11].text = (unichar_t *) (sf->familyname?sf->familyname:sf->fontname);
+    nlabel[11].text_is_1byte = true;
+    ngcd[11].gd.label = &nlabel[11];
+    ngcd[11].gd.cid = CID_Family;
+    /*ngcd[11].gd.handle_controlevent = GFI_NameChange;*/
+    ngcd[11].creator = GTextFieldCreate;
 
-    ngcd[4].gd.pos.x = 12; ngcd[4].gd.pos.y = ngcd[1].gd.pos.y+26+6;
+    ngcd[4].gd.pos.x = 12; ngcd[4].gd.pos.y = ngcd[11].gd.pos.y+26+6;
     nlabel[4].text = (unichar_t *) _STR_Humanname;
     nlabel[4].text_in_resource = true;
     ngcd[4].gd.label = &nlabel[4];
@@ -2417,10 +2421,26 @@ void FontInfo(SplineFont *sf) {
     nlabel[5].text_is_1byte = true;
     ngcd[5].gd.label = &nlabel[5];
     ngcd[5].gd.cid = CID_Human;
-    ngcd[5].gd.handle_controlevent = GFI_HumanChange;
+    /*ngcd[5].gd.handle_controlevent = GFI_HumanChange;*/
     ngcd[5].creator = GTextFieldCreate;
 
-    ngcd[8].gd.pos.x = 12; ngcd[8].gd.pos.y = ngcd[5].gd.pos.y+26+6;
+    nlabel[2].text = (unichar_t *) _STR_Weight;
+    nlabel[2].text_in_resource = true;
+    ngcd[2].gd.label = &nlabel[2];
+    ngcd[2].gd.mnemonic = 'W';
+    ngcd[2].gd.pos.x = ngcd[10].gd.pos.x; ngcd[2].gd.pos.y = ngcd[4].gd.pos.y+26; 
+    ngcd[2].gd.flags = gg_visible | gg_enabled;
+    ngcd[2].creator = GLabelCreate;
+
+    ngcd[3].gd.pos.x = ngcd[1].gd.pos.x; ngcd[3].gd.pos.y = ngcd[2].gd.pos.y-6; ngcd[3].gd.pos.width = 137;
+    ngcd[3].gd.flags = gg_visible | gg_enabled;
+    nlabel[3].text = (unichar_t *) (sf->weight?sf->weight:"Regular");
+    nlabel[3].text_is_1byte = true;
+    ngcd[3].gd.label = &nlabel[3];
+    ngcd[3].gd.cid = CID_Weight;
+    ngcd[3].creator = GTextFieldCreate;
+
+    ngcd[8].gd.pos.x = 12; ngcd[8].gd.pos.y = ngcd[3].gd.pos.y+30+6;
     nlabel[8].text = (unichar_t *) _STR_VersionC;
     nlabel[8].text_in_resource = true;
     ngcd[8].gd.label = &nlabel[8];
@@ -3229,7 +3249,6 @@ void FontInfo(SplineFont *sf) {
 	GGadgetResize(mgcd[3].ret,GDrawPointsToPixels(NULL,mgcd[3].gd.pos.width),
 		GDrawPointsToPixels(NULL,mgcd[3].gd.pos.height)+offset);
     }
-    d.human_matches = HumanNameMatches(gw);
     GWidgetIndicateFocusGadget(ngcd[1].ret);
     ProcessListSel(&d);
     /*GTextFieldSelect(gcd[1].ret,0,-1);*/
