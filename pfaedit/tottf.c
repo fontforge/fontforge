@@ -1407,6 +1407,8 @@ static uint8 *geninstrs(struct glyphinfo *gi, uint8 *instrs,StemInfo *hint,
 	    lasthint = testhint;
     }
     first = lasthint==NULL;
+    if ( hint->hasconflicts )
+	first = true;		/* if this hint has conflicts don't try to establish a minimum distance between it and the last stem, there might not be one */
 
     hbase = base = rint(hint->start); width = rint(hint->width);
     if ( !xdir ) {
@@ -1509,7 +1511,7 @@ return( instrs );
 /* Several DStemInfo hints may actually be colinear. This structure contains all on the line */
 typedef struct dstem {
     struct dstem *next;
-    BasePoint leftedgetop, rightedgetop, leftedgebottom, rightedgebottom;
+    BasePoint leftedgetop, leftedgebottom, rightedgetop, rightedgebottom;
     int pnum[4];
     struct dsteminfolist { struct dsteminfolist *next; DStemInfo *d; int pnum[4];} *dl;
     struct dstemlist { struct dstemlist *next; struct dstem *ds; BasePoint *is[4]; int pnum[4]; int done;} *intersects;
@@ -1523,19 +1525,49 @@ static int CoLinear(BasePoint *top1, BasePoint *bottom1,
     double scale, slope, y;
 
     if ( top1->y==bottom1->y )
-return( RealApprox(top1->y,top2->y) && RealApprox(top1->y,bottom2->y) );
+return( RealWithin(top1->y,top2->y,1) && RealWithin(top1->y,bottom2->y,1) );
     else if ( top2->y==bottom2->y )
-return( RealApprox(top2->y,top1->y) && RealApprox(top2->y,bottom1->y) );
+return( RealWithin(top2->y,top1->y,1) && RealWithin(top2->y,bottom1->y,1) );
 
     scale = (top2->y-bottom2->y)/(top1->y-bottom1->y);
     slope = (top1->y-bottom1->y)/(top1->x-bottom1->x);
-    if ( !RealApprox(top2->x,bottom2->x+(top1->x-bottom1->x)*scale) &&
-	    !RealApprox(top2->y,bottom2->y+slope*(top2->x-bottom2->x)) )
+    if ( !RealWithin(top2->x,bottom2->x+(top1->x-bottom1->x)*scale,10) &&
+	    !RealWithin(top2->y,bottom2->y+slope*(top2->x-bottom2->x),12) )
 return( false );
 
     y = bottom1->y + slope*(top2->x-bottom1->x);
-    if ( y>top2->y+.6 || y<top2->y-.6 )
+    if ( !RealWithin(y,top2->y,6) )
 return( false );
+
+return( true );
+}
+
+static int OnEdge(BasePoint *test, BasePoint *top, BasePoint *bottom) {
+    double slope;
+
+    if ( top->y==bottom->y ) {
+	if ( !RealWithin(test->y,top->y,1))
+return( false );
+	if ( top->x>bottom->x ) {
+	    if ( test->x<=bottom->x || test->x>=top->x )
+return( false );
+	} else {
+	    if ( test->x>=bottom->x || test->x<=top->x )
+return( false );
+	}
+    } else if ( top->x==bottom->x ) {
+	if ( !RealWithin(test->x,top->x,1))
+return( false );
+	if ( test->y<=bottom->y || test->y>=top->y )
+return( false );
+    } else {
+	slope = (top->y-bottom->y)/(top->x-bottom->x);
+	if ( !RealWithin(test->y,bottom->y+slope*(test->x-bottom->x),2) )
+return( false );
+
+	if ( test->y<=bottom->y || test->y>=top->y )
+return( false );
+    }
 
 return( true );
 }
@@ -1556,6 +1588,7 @@ static DStem *DStemMerge(DStemInfo *d, BasePoint *bp, int ptcnt) {
     struct dsteminfolist *dl;
     int i;
     BasePoint *top, *bottom;
+    DStem **map[2];
 
     for ( di=d; di!=NULL; di=di->next ) di->used = false;
     for ( di=d; di!=NULL; di=di->next ) if ( !di->used ) {
@@ -1565,38 +1598,60 @@ static DStem *DStemMerge(DStemInfo *d, BasePoint *bp, int ptcnt) {
 	cur->dl->d = di;
 	cur->leftedgetop = di->leftedgetop;
 	cur->dl->pnum[0] = cur->pnum[0] = BpIndex(&di->leftedgetop,bp,ptcnt);
-	cur->rightedgetop = di->rightedgetop;
-	cur->dl->pnum[1] = cur->pnum[1] = BpIndex(&di->rightedgetop,bp,ptcnt);
 	cur->leftedgebottom = di->leftedgebottom;
-	cur->dl->pnum[2] = cur->pnum[2] = BpIndex(&di->leftedgebottom,bp,ptcnt);
+	cur->dl->pnum[1] = cur->pnum[1] = BpIndex(&di->leftedgebottom,bp,ptcnt);
+	cur->rightedgetop = di->rightedgetop;
+	cur->dl->pnum[2] = cur->pnum[2] = BpIndex(&di->rightedgetop,bp,ptcnt);
 	cur->rightedgebottom = di->rightedgebottom;
 	cur->dl->pnum[3] = cur->pnum[3] = BpIndex(&di->rightedgebottom,bp,ptcnt);
 	cur->next = head;
 	head = cur;
 	for ( di2 = di->next; di2!=NULL; di2 = di2->next ) if ( !di2->used ) {
-	    if ( CoLinear(&di->leftedgetop, &di->leftedgebottom,
+	    if (( CoLinear(&di->leftedgetop, &di->leftedgebottom,
 			&di2->leftedgetop, &di2->leftedgebottom) &&
 		    CoLinear(&di->rightedgetop, &di->rightedgebottom,
-			&di2->rightedgetop, &di2->rightedgebottom) ) {
+			&di2->rightedgetop, &di2->rightedgebottom) ) ||
+		    (di->leftedgetop.x==di2->leftedgetop.x &&
+		     di->leftedgetop.y==di2->leftedgetop.y &&
+		     di->leftedgebottom.x==di2->leftedgebottom.x &&
+		     di->leftedgebottom.y==di2->leftedgebottom.y ) ||
+		    (di->rightedgetop.x==di2->rightedgetop.x &&
+		     di->rightedgetop.y==di2->rightedgetop.y &&
+		     di->rightedgebottom.x==di2->rightedgebottom.x &&
+		     di->rightedgebottom.y==di2->rightedgebottom.y )) {
 		dl = chunkalloc(sizeof(struct dsteminfolist));
 		dl->d = di2;
 		dl->next = cur->dl;
 		cur->dl = dl;
-		dl->pnum[0] = BpIndex(&di2->leftedgetop,bp,ptcnt);
-		dl->pnum[1] = BpIndex(&di2->rightedgetop,bp,ptcnt);
-		dl->pnum[2] = BpIndex(&di2->leftedgebottom,bp,ptcnt);
-		dl->pnum[3] = BpIndex(&di2->rightedgebottom,bp,ptcnt);
+		if ( di->leftedgetop.x==di2->leftedgetop.x &&
+			 di->leftedgetop.y==di2->leftedgetop.y &&
+			 di->leftedgebottom.x==di2->leftedgebottom.x &&
+			 di->leftedgebottom.y==di2->leftedgebottom.y ) {
+		     dl->pnum[0] = dl->pnum[1] = -1;
+		 } else {
+		    dl->pnum[0] = BpIndex(&di2->leftedgetop,bp,ptcnt);
+		    dl->pnum[1] = BpIndex(&di2->leftedgebottom,bp,ptcnt);
+		}
+		if ( di->rightedgetop.x==di2->rightedgetop.x &&
+			 di->rightedgetop.y==di2->rightedgetop.y &&
+			 di->rightedgebottom.x==di2->rightedgebottom.x &&
+			 di->rightedgebottom.y==di2->rightedgebottom.y ) {
+		    dl->pnum[2] = dl->pnum[3] = -1;
+		} else {
+		    dl->pnum[2] = BpIndex(&di2->rightedgetop,bp,ptcnt);
+		    dl->pnum[3] = BpIndex(&di2->rightedgebottom,bp,ptcnt);
+		}
 		if ( cur->leftedgetop.y<di2->leftedgetop.y ) {
 		    cur->leftedgetop = di2->leftedgetop;
 		    cur->pnum[0] = dl->pnum[0];
 		}
 		if ( cur->leftedgebottom.y>di2->leftedgebottom.y ) {
 		    cur->leftedgebottom = di2->leftedgebottom;
-		    cur->pnum[2] = dl->pnum[2];
+		    cur->pnum[1] = dl->pnum[1];
 		}
 		if ( cur->rightedgetop.y<di2->rightedgetop.y ) {
 		    cur->rightedgetop = di2->rightedgetop;
-		    cur->pnum[1] = dl->pnum[1];
+		    cur->pnum[2] = dl->pnum[2];
 		}
 		if ( cur->rightedgebottom.y>di2->rightedgebottom.y ) {
 		    cur->rightedgebottom = di2->rightedgebottom;
@@ -1607,65 +1662,84 @@ static DStem *DStemMerge(DStemInfo *d, BasePoint *bp, int ptcnt) {
 	}
     }
 
+    map[0] = gcalloc(ptcnt,sizeof(DStem *));
+    map[1] = gcalloc(ptcnt,sizeof(DStem *));
+    for ( cur = head; cur!=NULL; cur=cur->next ) {
+	for ( dl=cur->dl; dl!=NULL; dl=dl->next ) {
+	    for ( i=0; i<4; ++i ) if ( dl->pnum[i]!=-1 ) {
+		if ( map[0][dl->pnum[i]]==NULL ) map[0][dl->pnum[i]] = cur;
+		else map[1][dl->pnum[i]] = cur;
+	    }
+	}
+    }
+
     /* sometimes we don't find all the bits of a diagonal stem */
     /* "k" is an example, we don't notice the stub between the vertical stem and the lower diagonal stem */
     for ( cur = head; cur!=NULL; cur=cur->next ) {
 	for ( i=0; i<ptcnt-1; ++i ) {
+	    if ( map[1][i]!=NULL || map[1][i+1]!=NULL ||
+		    (map[0][i]!=NULL && map[0][i]==map[0][i+1] ))
+	continue;	/* These points are already on a diagonal, off just enough that we can't find a line... */
 	    if ( CoLinear(&cur->leftedgetop,&cur->leftedgebottom,&bp[i],&bp[i+1])) {
 		top = &bp[i]; bottom = &bp[i+1];
 		if ( top->y<bottom->y ) { top = bottom; bottom = &bp[i]; }
-		for ( dl=cur->dl; dl!=NULL; dl=dl->next )
-		    if ( dl->d->leftedgetop.y==top->y && dl->d->leftedgebottom.y==bottom->y )
-		break;
-		if ( dl!=NULL )
-	continue;
 		di = chunkalloc(sizeof(DStemInfo));
 		di->leftedgetop = *top;
 		di->leftedgebottom = *bottom;
+		di->rightedgetop.x = di->rightedgebottom.x = 0x80000000;
 		di->temporary = di->onlyleft = true;
 		dl = chunkalloc(sizeof(struct dsteminfolist));
+		memset(dl->pnum,-1,sizeof(dl->pnum));
 		dl->next = cur->dl;
 		dl->d = di;
 		cur->dl = dl;
 		dl->pnum[0] = top==&bp[i]?i:i+1;
-		dl->pnum[2] = bottom==&bp[i]?i:i+1;
+		dl->pnum[1] = bottom==&bp[i]?i:i+1;
 		if ( cur->leftedgetop.y<top->y ) {
 		    cur->leftedgetop = *top;
 		    cur->pnum[0] = dl->pnum[0];
 		}
 		if ( cur->leftedgebottom.y>bottom->y ) {
 		    cur->leftedgebottom = *bottom;
-		    cur->pnum[2] = dl->pnum[2];
+		    cur->pnum[1] = dl->pnum[1];
 		}
+		if ( map[0][i]==NULL ) map[0][i] = cur;
+		else map[1][i] = cur;
+		if ( map[0][i+1]==NULL ) map[0][i+1] = cur;
+		else map[1][i+1] = cur;
 	    } else if ( CoLinear(&cur->rightedgetop,&cur->rightedgebottom,&bp[i],&bp[i+1])) {
 		top = &bp[i]; bottom = &bp[i+1];
 		if ( top->y<bottom->y ) { top = bottom; bottom = &bp[i]; }
-		for ( dl=cur->dl; dl!=NULL; dl=dl->next )
-		    if ( dl->d->rightedgetop.y==top->y && dl->d->rightedgebottom.y==bottom->y )
-		break;
-		if ( dl!=NULL )
-	continue;
 		di = chunkalloc(sizeof(DStemInfo));
 		di->rightedgetop = *top;
 		di->rightedgebottom = *bottom;
+		di->leftedgetop.x = di->leftedgebottom.x = 0x80000000;
 		di->temporary = di->onlyright = true;
 		dl = chunkalloc(sizeof(struct dsteminfolist));
+		memset(dl->pnum,-1,sizeof(dl->pnum));
 		dl->next = cur->dl;
 		dl->d = di;
 		cur->dl = dl;
-		dl->pnum[1] = top==&bp[i]?i:i+1;
+		dl->pnum[2] = top==&bp[i]?i:i+1;
 		dl->pnum[3] = bottom==&bp[i]?i:i+1;
 		if ( cur->rightedgetop.y<top->y ) {
 		    cur->rightedgetop = *top;
-		    cur->pnum[1] = dl->pnum[1];
+		    cur->pnum[2] = dl->pnum[2];
 		}
 		if ( cur->rightedgebottom.y>bottom->y ) {
 		    cur->rightedgebottom = *bottom;
 		    cur->pnum[3] = dl->pnum[3];
 		}
+		if ( map[0][i]==NULL ) map[0][i] = cur;
+		else map[1][i] = cur;
+		if ( map[0][i+1]==NULL ) map[0][i+1] = cur;
+		else map[1][i+1] = cur;
 	    }
 	}
     }
+
+    free(map[0]);
+    free(map[1]);
 
 return( head );
 }
@@ -1699,10 +1773,12 @@ static struct dstemlist *BuildDStemIntersection(DStem *d,DStem *ds,
 
     if ( i1==NULL ) {
 	i1 = chunkalloc(sizeof(struct dstemlist));
+	memset(i1->pnum,-1,sizeof(i1->pnum));
 	i1->ds = ds;
 	i1->next = d->intersects;
 	d->intersects = i1;
 	*_i2 = i2 = chunkalloc(sizeof(struct dstemlist));
+	memset(i2->pnum,-1,sizeof(i2->pnum));
 	i2->ds = d;
 	i2->next = ds->intersects;
 	ds->intersects = i2;
@@ -1740,11 +1816,10 @@ static void DStemIntersect(DStem *d) {
 	    i1 = i2 = NULL;
 	    for ( dl=d->dl; dl!=NULL; dl = dl->next ) {
 		for ( dl2=ds->dl; dl2!=NULL; dl2 = dl2->next ) {
-		    for ( i=0; i<4; ++i ) for ( j=0; j<4; ++j ) {
-			if ( (&dl->d->leftedgetop)[i].x == (&dl2->d->leftedgetop)[j].x &&
-				(&dl->d->leftedgetop)[i].y == (&dl2->d->leftedgetop)[j].y ) {
+		    for ( i=0; i<4; ++i ) if ( dl->pnum[i]!=-1 ) for ( j=0; j<4; ++j ) if ( dl2->pnum[j]!=-1 ) {
+			if ( dl->pnum[i]==dl2->pnum[j] ) {
 			    i1 = BuildDStemIntersection(d,ds,i1,&i2,
-				    &(&dl->d->leftedgetop)[i],(i>=2)*2+(j>=2),dl2->pnum[j]);
+				    &(&dl->d->leftedgetop)[i],(i>=2)+2*(j>=2),dl2->pnum[j]);
 			}
 		    }
 		}
@@ -1755,31 +1830,38 @@ static void DStemIntersect(DStem *d) {
 }
 
 /* There is always the possibility that the top might intersect two different*/
-/*  dstems (an example would be the center point of a glyph showing a wheel */
-/*  with spokes) */
+/*  dstems (an example would be a misaligned X) */
 /* I'm going to ignore that case for now */
 static struct dstemlist *DStemTopAtIntersection(DStem *ds) {
-    struct dstemlist *dl;
+    struct dstemlist *dl, *found=NULL;
 
     for ( dl=ds->intersects; dl!=NULL; dl=dl->next ) {
 	/* check left and right top points */
 	if ( ds->pnum[0] == dl->pnum[in_ll] || ds->pnum[0]==dl->pnum[in_lr] || ds->pnum[0]==dl->pnum[in_rl] ||
-		ds->pnum[1] == dl->pnum[in_rr] || ds->pnum[1]==dl->pnum[in_lr] || ds->pnum[1]==dl->pnum[in_rl] )
-return( dl );
-    }
+		ds->pnum[2] == dl->pnum[in_rr] || ds->pnum[2]==dl->pnum[in_lr] || ds->pnum[2]==dl->pnum[in_rl] ) {
+	    if ( found!=NULL )
 return( NULL );
+	    else
+		found = dl;
+	}
+    }
+return( found );
 }
 
 static struct dstemlist *DStemBottomAtIntersection(DStem *ds) {
-    struct dstemlist *dl;
+    struct dstemlist *dl, *found=NULL;
 
     for ( dl=ds->intersects; dl!=NULL; dl=dl->next ) {
 	/* check left and right bottom points */
-	if ( ds->pnum[2] == dl->pnum[in_ll] || ds->pnum[2]==dl->pnum[in_lr] || ds->pnum[2]==dl->pnum[in_rl] ||
-		ds->pnum[3] == dl->pnum[in_rr] || ds->pnum[3]==dl->pnum[in_lr] || ds->pnum[3]==dl->pnum[in_rl] )
-return( dl );
-    }
+	if ( ds->pnum[1] == dl->pnum[in_ll] || ds->pnum[1]==dl->pnum[in_lr] || ds->pnum[1]==dl->pnum[in_rl] ||
+		ds->pnum[3] == dl->pnum[in_rr] || ds->pnum[3]==dl->pnum[in_lr] || ds->pnum[3]==dl->pnum[in_rl] ) {
+	    if ( found!=NULL )
 return( NULL );
+	    else
+		found = dl;
+	}
+    }
+return( found );
 }
 
 static int IsVStemIntersection(struct dstemlist *dl) {
@@ -1787,8 +1869,8 @@ static int IsVStemIntersection(struct dstemlist *dl) {
 
     /* We are passed an intersection at the end point of one stem. We want to */
     /*  know if the intersection is also at an end-point of the other stem */
-    /*  if it is at the end-point then it is a "V" intersection, otherwise a */
-    /*  "k". */
+    /*  if it is at the end-point then it is a "V" intersection, otherwise */
+    /*  it might be a "k". */
     if ( ds->pnum[0] == dl->pnum[in_ll] || ds->pnum[0]==dl->pnum[in_lr] || ds->pnum[0]==dl->pnum[in_rl] ||
 	    ds->pnum[1] == dl->pnum[in_rr] || ds->pnum[1]==dl->pnum[in_lr] || ds->pnum[1]==dl->pnum[in_rl] ||
 	    ds->pnum[2] == dl->pnum[in_ll] || ds->pnum[2]==dl->pnum[in_lr] || ds->pnum[2]==dl->pnum[in_rl] ||
@@ -1814,64 +1896,81 @@ return( rint(stemwidth));
 
 static int ExamineFreedom(int index,BasePoint *bp,int ptcnt,int def) {
     if ( index>0 && bp[index-1].x==bp[index].x )
-	def = 0;
+	def = 1;
     else if ( index>0 && bp[index-1].y==bp[index].y )
-	def = 1;
-    else if ( index<ptcnt-1 && bp[index+1].x==bp[index].x )
 	def = 0;
-    else if ( index<ptcnt-1 && bp[index+1].y==bp[index].y )
+    else if ( index==0 && bp[ptcnt-1].x==bp[index].x )
 	def = 1;
+    else if ( index==0 && bp[ptcnt-1].y==bp[index].y )
+	def = 0;
+    else if ( index<ptcnt-1 && bp[index+1].x==bp[index].x )
+	def = 1;
+    else if ( index<ptcnt-1 && bp[index+1].y==bp[index].y )
+	def = 0;
+    else if ( index==ptcnt-1 && bp[0].x==bp[index].x )
+	def = 1;
+    else if ( index==ptcnt-1 && bp[0].y==bp[index].y )
+	def = 0;
 return( def );
 }
 
 static uint8 *KStemMoveToEdge(struct glyphinfo *gi, uint8 *pt,
-	struct dstemlist *dl,DStem *ds,int top) {
+	struct dstemlist *dl,DStem *ds,int top,uint8 *touched) {
     /* we want to insure that either the top two points of ds or the bottom */
     /*  two are on the line specified by dl->ds */
     int e1, e2, m1, m2;
     real d1, d2;
     BasePoint *bp = top ? &ds->leftedgetop : &ds->leftedgebottom;
     int zerocvt = getcvtval(gi,0);
-    int data[6];
+    int data[7];
     int isword, i;
 
     d1 = (dl->ds->leftedgetop.y-dl->ds->leftedgebottom.y)*(bp->x-dl->ds->leftedgebottom.x) -
 	 (dl->ds->leftedgetop.x-dl->ds->leftedgebottom.x)*(bp->y-dl->ds->leftedgebottom.y);
-    d2 = (dl->ds->rightedgetop.y-dl->ds->rightedgebottom.y)*(bp->x-dl->ds->rightedgebottom.x) -
-	 (dl->ds->rightedgetop.x-dl->ds->rightedgebottom.x)*(bp->y-dl->ds->rightedgebottom.y);
+    d2 = (dl->ds->leftedgetop.y-dl->ds->leftedgebottom.y)*(bp->x-dl->ds->rightedgebottom.x) -
+	 (dl->ds->leftedgetop.x-dl->ds->leftedgebottom.x)*(bp->y-dl->ds->rightedgebottom.y);
     if ( d1<0 ) d1 = -d1;
     if ( d2<0 ) d2 = -d2;
 
     if ( d1<d2 ) {
 	e1 = dl->ds->pnum[0];
-	e2 = dl->ds->pnum[2];
+	e2 = dl->ds->pnum[1];
     } else {
-	e1 = dl->ds->pnum[1];
+	e1 = dl->ds->pnum[2];
 	e2 = dl->ds->pnum[3];
     }
-    m1 = ds->pnum[2*top];
-    m2 = ds->pnum[2*top+1];
+    m1 = ds->pnum[1-top];
+    m2 = ds->pnum[3-top];
 
     data[0] = e2;
     data[1] = e1;
-    data[2] = m1;
+    data[2] = e1;
     data[3] = zerocvt;
-    data[4] = m2;
+    data[4] = m1;
     data[5] = zerocvt;
+    data[6] = m2;
     isword = false;
-    for ( i=0; i<6 ; ++i )
+    for ( i=0; i<7 ; ++i )
 	if ( data[i]<0 || data[i]>255 ) {
 	    isword = true;
     break;
 	}
-    pt = pushheader(pt,isword,6);
-    for ( i=5; i>=0; --i )
+    pt = pushheader(pt,isword,7);
+    for ( i=6; i>=0; --i )
 	pt = addpoint(pt,isword,data[i]);
 
     *pt++ = 0x07;		/* SPVTL[orthog] */
     *pt++ = 0x0e;		/* SFVTP */
+    *pt++ = 0x10;		/* SRP0 */
     *pt++ = 0xe0;		/* MIRP[00000] */
     *pt++ = 0xe0;		/* MIRP[00000] */
+	/* If we set rnd then cvt cutin can screw us up */
+	/* If we set min then... well we won't get a 0 distance */
+
+    dl->done = true;
+
+    touched[m1] |= 7;
+    touched[m2] |= 7;
 return( pt );
 }
 
@@ -1885,11 +1984,11 @@ return;
     /* Routine 0 takes 7 args:
 	pt to move			(bottom of stack)
 	cvt for stem 2
-	top point of edge2
 	bottom of edge2
+	top point of edge2
 	cvt for stem 1
-	top point of edge1
 	bottom point of edge1
+	top point of edge1
        given two edges and a stem width for each edge, it moves four twilight
        points (two for each edge) to form parallel edges the stem width away
        from the originals. Then it intersects those two lines and moves the
@@ -1919,12 +2018,18 @@ return;
     putc(0x01,gi->fpgmf);		/*  1 */	/* Twighlight point 1 */
     putc(0x00,gi->fpgmf);		/*  0 */	/* Zone pointer 0 (twilight zone) */
     putc(0x14,gi->fpgmf);		/* SZP1 */
-    putc(0xe2,gi->fpgmf);		/* MIRP[01000] */ /* No round, min dist, grey */
+    putc(0x23,gi->fpgmf);		/* SWAP */
+    putc(0xe8,gi->fpgmf);		/* MIRP[01000] */ /* No round, min dist, grey */
 
     putc(0x10,gi->fpgmf);		/* SRP0 */
     putc(0xb0,gi->fpgmf);		/* PUSHB[1] */
     putc(0x02,gi->fpgmf);		/*  2 */	/* Twighlight point 2 */
-    putc(0xe2,gi->fpgmf);		/* MIRP[01000] */ /* No round, min dist, grey */
+    putc(0x23,gi->fpgmf);		/* SWAP */
+    putc(0xe8,gi->fpgmf);		/* MIRP[01000] */ /* No round, min dist, grey */
+
+    putc(0xb0,gi->fpgmf);		/* PUSHB[1] */
+    putc(0x01,gi->fpgmf);		/*  1 */	/* Zone pointer 1 (normal zone) */
+    putc(0x14,gi->fpgmf);		/* SZP1 */
 
     putc(0x20,gi->fpgmf);		/* DUP */
     putc(0xb0,gi->fpgmf);		/* PUSHB[1] */
@@ -1939,14 +2044,18 @@ return;
     putc(0x02,gi->fpgmf);		/*  2 */
     putc(0x25,gi->fpgmf);		/* CINDEX */
 	/* Get the cvt value for the stem width */
-    putc(0xb1,gi->fpgmf);		/* PUSHB[1] */
+    putc(0xb1,gi->fpgmf);		/* PUSHB[2] */
     putc(0x03,gi->fpgmf);		/*  3 */	/* Twighlight point 3 */
-    putc(0xe2,gi->fpgmf);		/* MIRP[01000] */ /* No round, min dist, grey */
+    putc(0x00,gi->fpgmf);		/*  0 */	/* Zone pointer 0 (twilight zone) */
+    putc(0x14,gi->fpgmf);		/* SZP1 */
+    putc(0x23,gi->fpgmf);		/* SWAP */
+    putc(0xe8,gi->fpgmf);		/* MIRP[01000] */ /* No round, min dist, grey */
 
     putc(0x10,gi->fpgmf);		/* SRP0 */
     putc(0xb0,gi->fpgmf);		/* PUSHB[1] */
-    putc(0x02,gi->fpgmf);		/*  4 */	/* Twighlight point 4 */
-    putc(0xe2,gi->fpgmf);		/* MIRP[01000] */ /* No round, min dist, grey */
+    putc(0x04,gi->fpgmf);		/*  4 */	/* Twighlight point 4 */
+    putc(0x23,gi->fpgmf);		/* SWAP */
+    putc(0xe8,gi->fpgmf);		/* MIRP[01000] */ /* No round, min dist, grey */
 
     putc(0xb4,gi->fpgmf);		/* PUSHB[5] */
     putc(0x01,gi->fpgmf);		/*  1 */	/* line1 */
@@ -1957,10 +2066,25 @@ return;
     putc(0x13,gi->fpgmf);		/* SZP0 */
     putc(0x0f,gi->fpgmf);		/* ISECT */
 
+	/* Untouch all four twilight points in both axes so we can use them */
+	/*  again. (The SFVTPV sets the freedom vector to a diagonal so the */
+	/*  untouch in in both x and y ) */
+    putc(0x0e,gi->fpgmf);		/* SFVTPV */
+    putc(0xb3,gi->fpgmf);		/* PUSHB[4] */
+    putc(0x01,gi->fpgmf);		/*  1 */	/* line1 */
+    putc(0x02,gi->fpgmf);		/*  2 */
+    putc(0x03,gi->fpgmf);		/*  3 */	/* line2 */
+    putc(0x04,gi->fpgmf);		/*  4 */
+    putc(0x29,gi->fpgmf);		/* UTP */
+    putc(0x29,gi->fpgmf);		/* UTP */
+    putc(0x29,gi->fpgmf);		/* UTP */
+    putc(0x29,gi->fpgmf);		/* UTP */
+
     putc(0xb0,gi->fpgmf);		/* PUSHB[1] */
     putc(0x01,gi->fpgmf);		/*  1 */	/* normal zone */
     putc(0x16,gi->fpgmf);		/* SZPS */
     putc(0x4d,gi->fpgmf);		/* FLIPON */
+    putc(0x03,gi->fpgmf);		/* SPVTCA[x] */
     putc(0x2d,gi->fpgmf);		/* ENDF */
 
     gi->fpgmlen = len = ftell(gi->fpgmf);
@@ -1977,6 +2101,39 @@ return;
     gi->maxp->maxTwilightPts = 5;
 }
 
+/* If the dot product of the freedom and projection vectors is negative */
+/*  then I am unable to understand truetype's behavior. So insure it is */
+/*  positive by flipping the stem used to compute it */
+static uint8 *fixProjectionDir(uint8 *pt,int **ppt,BasePoint *bp,int top,
+	int bottom, real freedomx, real freedomy, int *olddir) {
+    int dir;
+
+    dir = ((bp[top].y-bp[bottom].y)*freedomx - (bp[top].x-bp[bottom].x)*freedomy>0);
+    if ( dir==*olddir )
+return(pt);
+    *olddir = dir;
+    if ( dir ) {
+	int temp = bottom;
+	bottom = top;
+	top = temp;
+    }
+    *(*ppt)++ = bottom;
+    *(*ppt)++ = top;
+    *pt++ = 7;			/* SPVTL[orthog] */
+return( pt );
+}
+
+static uint8 *fixProjectionPtDir(uint8 *pt,int **ppt,BasePoint *bp,int top,
+	int bottom, int free1, int free2, int parallel, int *olddir) {
+    if ( parallel ) {
+return( fixProjectionDir(pt,ppt,bp,top,bottom,
+	bp[free1].x-bp[free2].x,bp[free1].y-bp[free2].y,olddir));
+    } else {
+return( fixProjectionDir(pt,ppt,bp,top,bottom,
+	bp[free1].y-bp[free2].y,bp[free2].x-bp[free1].x,olddir));
+    }
+}
+
 /* This is a simple stem (like "/" or "N" or "X") where none of the end points*/
 /*  are at intersections with other diagonal stems (there may be intersections*/
 /*  in the middle of the stem, but we're only interested in the edges so that */
@@ -1984,53 +2141,75 @@ return;
 /* I've extended it to handle the case of the lower stem in "k" where the stem*/
 /*  does end at an interesection, but that intersection is NOT the endpoint */
 /*  of the other stem */
+/* This routine has far too many cases. */
+/*  If either the top or bottom (or both) ends in another diagonal stem (I */
+/*   refer to this as a "kstem" because that's what the lower stem of k does) */
+/*   then we fix the two points at top or bottom so that they are on the */
+/*   other diagonal stem. */
+/*  Then we fix one edge (we choose the edge which is already most touched) */
+/*   we fix each point on that edge in both axes (assuming it hasn't already */
+/*   been fixed in that axis) */
+/*  The other edge is harder. */
+/*   We pick one of the two points on that edge, we prefer a point which is on*/
+/*    another edge (diagonal, horizontal, vertical) */
+/*   If we find an edge we will move the current point parallel to that edge */
+/*    until it is stemwidth from the other side of the diagonal we are fixing */
+/*   If we don't find an edge then move it perpendicular to our own diagonal */
+/*   Then do the same for the other point, except that if we don't have an */
+/*    edge then move the other point so that it is zero distance from the point*/
+/*    we fixed above */
 static uint8 *DStemFix(DStem *ds,struct glyphinfo *gi,uint8 *pt,uint8 *touched,
 	BasePoint *bp, int ptcnt) {
     int topvert, bottomvert;
     int topclosed, bottomclosed;
     int stemwidth = DStemWidth(ds);
     int stemcvt = getcvtval(gi,stemwidth);
-    int dx, dy;
+    int dx, dy, tdiff;
     int movement_axis[4];
     int freedom;
-    int t1,t2, b1,b2, rp0= -1, isword;
-    int pushes[16], *ppt = pushes;
-    uint8 tempinstrs[24], *ipt = tempinstrs;
+    int t1,t2, b1,b2, topfixed, rp0= -1, isword;
+    int pushes[40], *ppt = pushes;
+    uint8 tempinstrs[40], *ipt = tempinstrs;
     int i;
     int kstemtop, kstembottom;
+    int move, based;
+    int examined;
+    int projection_dir;
 
     if ( (dx = ds->rightedgetop.x - ds->leftedgetop.x )<0 ) dx = -dx;
     if ( (dy = ds->rightedgetop.y - ds->leftedgetop.y )<0 ) dy = -dy;
     topvert = dy>dx;
+    tdiff = dy+dx;
     if ( (dx = ds->rightedgebottom.x - ds->leftedgebottom.x )<0 ) dx = -dx;
     if ( (dy = ds->rightedgebottom.y - ds->leftedgebottom.y )<0 ) dy = -dy;
     bottomvert = dy>dx;
+    topfixed = ( tdiff < dy+dx );
 
     /* A stem which is closed (like that of / or x) where the two bottom(top) */
     /*  end points are connected is much easier to deal with than an open one */
     /*  like N where there is no connection */
-    topclosed = (ds->pnum[0]==ds->pnum[1]+1) || (ds->pnum[0]==ds->pnum[1]-1);
-    bottomclosed = (ds->pnum[2]==ds->pnum[3]+1) || (ds->pnum[2]==ds->pnum[3]-1);
+    topclosed = (ds->pnum[0]==ds->pnum[2]+1) || (ds->pnum[0]==ds->pnum[2]-1);
+    bottomclosed = (ds->pnum[1]==ds->pnum[3]+1) || (ds->pnum[1]==ds->pnum[3]-1);
 
-    movement_axis[0] = movement_axis[1] = topvert;
-    movement_axis[2] = movement_axis[3] = bottomvert;
+    movement_axis[0] = movement_axis[2] = topvert;
+    movement_axis[1] = movement_axis[3] = bottomvert;
     if ( !topclosed ) {
 	movement_axis[0] = ExamineFreedom(ds->pnum[0],bp,ptcnt,topvert);
-	movement_axis[1] = ExamineFreedom(ds->pnum[1],bp,ptcnt,topvert);
+	movement_axis[2] = ExamineFreedom(ds->pnum[2],bp,ptcnt,topvert);
     }
     if ( !bottomclosed ) {
-	movement_axis[2] = ExamineFreedom(ds->pnum[2],bp,ptcnt,bottomvert);
+	movement_axis[1] = ExamineFreedom(ds->pnum[1],bp,ptcnt,bottomvert);
 	movement_axis[3] = ExamineFreedom(ds->pnum[3],bp,ptcnt,bottomvert);
     }
 
     /* which of the two edges is most heavily positioned? */
-    if ( (touched[ds->pnum[0]]&(1<<movement_axis[0])) + (touched[ds->pnum[2]]&(1<<movement_axis[2])) >=
-	    (touched[ds->pnum[1]]&(1<<movement_axis[1])) + (touched[ds->pnum[3]]&(1<<movement_axis[3])) ) {
-	t1 = 0; t2 = 1;
-	b1 = 2; b2 = 3;
+    if ( (touched[ds->pnum[0]]&(1<<movement_axis[0])) + (touched[ds->pnum[1]]&(1<<movement_axis[1])) >=
+	    (touched[ds->pnum[2]]&(1<<movement_axis[2])) + (touched[ds->pnum[3]]&(1<<movement_axis[3])) ) {
+	t1 = 0; t2 = 2;
+	b1 = 1; b2 = 3;
     } else {
-	t1 = 1; t2 = 0;
-	b1 = 3; b2 = 2;
+	t1 = 2; t2 = 0;
+	b1 = 3; b2 = 1;
     }
 
     /* freedom vector starts in x direction */
@@ -2044,102 +2223,204 @@ static uint8 *DStemFix(DStem *ds,struct glyphinfo *gi,uint8 *pt,uint8 *touched,
     /*  the points may warp the edge meaning the projection won't be right... */
     kstemtop = (ds->top!=NULL && !IsVStemIntersection(ds->top));
     if ( kstemtop ) {
-	pt = KStemMoveToEdge(gi,pt,ds->top,ds,1);
+	pt = KStemMoveToEdge(gi,pt,ds->top,ds,1,touched);
 	freedom = 2;
-    } else if ( !(touched[ds->pnum[t1]]&(1<<movement_axis[t1])) ) {
-	if ( freedom!=movement_axis[t1] ) { *ipt = 5-movement_axis[t1]; freedom = movement_axis[t1]; }
-	if ( (touched[ds->pnum[t2]]&(1<<movement_axis[t1])) ) {
-	    /* if this point has not been touched, but it's opposite point */
-	    /*  has been then shift it by however much the other was shifted by*/
-	    /*  Note that we are interested in whether the opposite point has */
-	    /*  been touched in the direction that T1 is free to move, not the*/
-	    /*  dir t2 is free in */
-	    *ppt++ = ds->pnum[t2];
-	    *ipt++ = 0x11;		/* SRP1 */
-	    *ppt++ = ds->pnum[t1];
-	    *ipt++ = 0x33;		/* SHP[1] (rp1) */
-	} else {
-	    *ppt++ = ds->pnum[t1];
-	    *ipt++ = 0x2f;		/* MDAP[1round] */
-	    rp0 = ds->pnum[t1];
-	}
-	touched[ds->pnum[t1]] |= (1<<movement_axis[t1]);
     }
     kstembottom = (ds->bottom!=NULL && !IsVStemIntersection(ds->bottom));
     if ( kstembottom ) {
-	pt = KStemMoveToEdge(gi,pt,ds->bottom,ds,0);
+	pt = KStemMoveToEdge(gi,pt,ds->bottom,ds,0,touched);
 	freedom = 3;
-    } else if ( !(touched[ds->pnum[b1]]&(1<<movement_axis[b1])) ) {
-	if ( freedom!=movement_axis[b1] ) { *ipt = 5-movement_axis[b1]; freedom = movement_axis[b1]; }
-	if ( (touched[ds->pnum[b2]]&(1<<movement_axis[b1])) ) {
-	    *ppt++ = ds->pnum[b2];
-	    *ipt++ = 0x11;		/* SRP1 */
-	    *ppt++ = ds->pnum[b1];
-	    *ipt++ = 0x33;		/* SHP[1] (rp1) */
-	} else {
-	    *ppt++ = ds->pnum[b1];
-	    *ipt++ = 0x2f;		/* MDAP[1round] */
-	    rp0 = ds->pnum[b1];
-	}
-	touched[ds->pnum[b1]] |= (1<<movement_axis[b1]);
     }
-    /* I'm not going to force a touch in the other direction on the points */
-    /*  They should have been IUPed into position here */
+    for ( i=0; i<2; ++i ) {
+	if ( (touched[ds->pnum[t1]]&(1<<i)) || kstemtop )
+	    /* Don't worry about it, already fixed in this axis */;
+	else {
+	    if ( freedom!=i ) { *ipt++ = 1-i; freedom = i; }
+	    if ( i!=movement_axis[t1] ) {
+		*ppt++ = ds->pnum[t1];
+		*ipt++ = 0x2e;		/* MDAP [nornd] */
+	    } else if ( (touched[ds->pnum[t2]]&(1<<i)) ) {
+		/* if this point has not been touched, but it's opposite point */
+		/*  has been then reestablish the distance between them. */
+		/*  Note that we are interested in whether the opposite point has */
+		/*  been touched in the direction that T1 is free to move, not the*/
+		/*  dir t2 is free in */
+		*ppt++ = ds->pnum[t2];
+		*ipt++ = 0x10;		/* SRP0 */
+		*ppt++ = ds->pnum[t1];
+		*ipt++ = 0xcd;		/* MDRP [rp0, min, rnd, black] */
+	    } else {
+		*ppt++ = ds->pnum[t1];
+		*ipt++ = 0x2f;		/* MDAP[1round] */
+	    }
+	    rp0 = ds->pnum[t1];
+	    touched[ds->pnum[t1]] |= (1<<i)|4;
+	}
+	if ( (touched[ds->pnum[b1]]&(1<<i)) || kstembottom )
+	    /* Don't worry about it */;
+	else {
+	    if ( freedom!=i ) { *ipt++ = 1-i; freedom = i; }
+	    if ( i!=movement_axis[b1] ) {
+		*ppt++ = ds->pnum[b1];
+		*ipt++ = 0x2e;		/* MDAP [nornd] */
+	    } else if ( (touched[ds->pnum[b2]]&(1<<i)) ) {
+		*ppt++ = ds->pnum[b2];
+		*ipt++ = 0x10;		/* SRP0 */
+		*ppt++ = ds->pnum[b1];
+		*ipt++ = 0xdd;		/* MDRP [rp0, min, rnd, black] */
+	    } else {
+		*ppt++ = ds->pnum[b1];
+		*ipt++ = 0x2f;		/* MDAP[1round] */
+	    }
+	    rp0 = ds->pnum[b1];
+	    touched[ds->pnum[b1]] |= (1<<i)|4;
+	}
+    }
 
-    /* set the projection vector perpendicular to the edge */
-    *ppt++ = ds->pnum[b1];
-    *ppt++ = ds->pnum[t1];
-    *ipt++ = 7;			/* SPVTL[orthog] */
+    projection_dir = -1;
 
-    /* I used only to move points if they hadn't already been touched, but */
-    /*  now I always move them */
-    if ( kstemtop || rp0!=ds->pnum[b1] ) {
+    if ( kstemtop || ds->rightedgetop.x == ds->leftedgetop.x ||
+		ds->rightedgetop.y == ds->leftedgetop.y ||
+	    (topfixed && !(kstembottom || ds->rightedgebottom.x == ds->leftedgebottom.x ||
+		ds->rightedgetop.y == ds->leftedgetop.y )) ) {
+	examined = ExamineFreedom(ds->pnum[t2],bp,ptcnt,-1);
+	if ( examined==-1 || topclosed ) {
+	    if ( ds->rightedgetop.x == ds->leftedgetop.x )
+		examined = 1;
+	    else if ( ds->rightedgetop.y == ds->leftedgetop.y )
+		examined = 0;
+	}
 	if ( kstemtop ) {
 	    /* set the freedom vector along the edge of the other stem */
 	    *ppt++ = ds->top->ds->pnum[0];
-	    *ppt++ = ds->top->ds->pnum[2];
+	    *ppt++ = ds->top->ds->pnum[1];
 	    *ipt++ = 8;			/* SFVTL[parallel] */
 	    freedom = 3;
+	    ipt = fixProjectionPtDir(ipt,&ppt,bp,ds->pnum[t1],ds->pnum[b1],
+		    ds->top->ds->pnum[0],ds->top->ds->pnum[1],1,&projection_dir);
+	} else if ( examined!=-1 ) {
+	    if ( freedom!=examined ) { *ipt++ = 0x05-examined; freedom = examined; }
+	    ipt = fixProjectionDir(ipt,&ppt,bp,ds->pnum[t1],ds->pnum[b1],
+		    !freedom,freedom,&projection_dir);
 	} else {
-	    if ( freedom!=movement_axis[t2] ) { *ipt = 5-movement_axis[t2]; freedom = movement_axis[t2]; }
+	    ipt = fixProjectionPtDir(ipt,&ppt,bp,ds->pnum[t1],ds->pnum[b1],
+		    ds->pnum[t1],ds->pnum[b1],0,&projection_dir);
+	    *ipt++ = 0x0e;		/* SFVTPV */
+	    freedom = 4;
 	}
-	if ( rp0!=ds->pnum[t1] ) {
-	    *ppt++ = ds->pnum[t1];
-	    *ipt++ = 16;		/* SRP0 */
+	if ( freedom<2 ) movement_axis[t2] = freedom;
+	move = ds->pnum[t2];
+	based = ds->pnum[t1];
+    } else {
+	examined = ExamineFreedom(ds->pnum[b2],bp,ptcnt,-1);
+	if ( examined==-1 || bottomclosed ) {
+	    if ( ds->rightedgebottom.x == ds->leftedgebottom.x )
+		examined = 1;
+	    else if ( ds->rightedgebottom.y == ds->leftedgebottom.y )
+		examined = 0;
 	}
-	*ppt++ = stemcvt;
-	*ppt++ = ds->pnum[t2];
-	*ipt++ = 0xed;		/* MIRP[01101] */
-	touched[ds->pnum[t2]] |= (1<<movement_axis[t2]);
-    }
-    {
 	if ( kstembottom ) {
 	    /* set the freedom vector along the edge of the other stem */
 	    *ppt++ = ds->bottom->ds->pnum[0];
-	    *ppt++ = ds->bottom->ds->pnum[2];
+	    *ppt++ = ds->bottom->ds->pnum[1];
 	    *ipt++ = 8;			/* SFVTL[parallel] */
 	    freedom = 3;
+	    ipt = fixProjectionPtDir(ipt,&ppt,bp,ds->pnum[t1],ds->pnum[b1],
+		    ds->bottom->ds->pnum[0],ds->bottom->ds->pnum[1],1,
+		    &projection_dir);
+	} else if ( examined!=-1 ) {
+	    if ( freedom!=examined ) { *ipt++ = 0x05-examined; freedom = examined; }
+	    ipt = fixProjectionDir(ipt,&ppt,bp,ds->pnum[t1],ds->pnum[b1],
+		    !freedom,freedom,&projection_dir);
 	} else {
-	    if ( freedom!=movement_axis[b2] ) { *ipt = 5-movement_axis[b2]; freedom = movement_axis[b2]; }
+	    ipt = fixProjectionPtDir(ipt,&ppt,bp,ds->pnum[t1],ds->pnum[b1],
+		    ds->pnum[t1],ds->pnum[b1],0,&projection_dir);
+	    *ipt++ = 0x0e;		/* SFVTPV */
+	    freedom = 4;
 	}
-	if ( rp0!=ds->pnum[b1] ) {
-	    *ppt++ = ds->pnum[b1];
-	    *ipt++ = 16;		/* SRP0 */
-	}
-	*ppt++ = stemcvt;
-	*ppt++ = ds->pnum[b2];
-	*ipt++ = 0xed;		/* MIRP[01101] */
-	touched[ds->pnum[b2]] |= (1<<movement_axis[b2]);
+	if ( freedom<2 ) movement_axis[b2] = freedom;
+	move = ds->pnum[b2];
+	based = ds->pnum[b1];
     }
-    if ( !kstemtop && rp0==ds->pnum[b1] ) {
-	*ppt++ = ds->pnum[t1];
+    if ( rp0!=based ) {
+	*ppt++ = based;
 	*ipt++ = 16;		/* SRP0 */
-	*ppt++ = stemcvt;
-	*ppt++ = ds->pnum[t2];
-	*ipt++ = 0xed;		/* MIRP[01101] */
-	touched[ds->pnum[t2]] |= (1<<movement_axis[t2]);
     }
-    if ( freedom!=0 ) { *ipt = 5; freedom = 0; }	/* always leave it in x */
+    *ppt++ = stemcvt;
+    *ppt++ = move;
+    *ipt++ = 0xed;		/* MIRP[01101] */
+    if ( freedom==1 || freedom==0 )
+	touched[move] |= (1<<freedom)|4;
+    else
+	touched[move] |= 7;
+    if ( move==ds->pnum[t2] ) {
+	move = ds->pnum[b2];
+	based = ds->pnum[b1];
+	examined = ExamineFreedom(ds->pnum[b2],bp,ptcnt,-1);
+	if ( examined==-1 || bottomclosed ) {
+	    if ( ds->rightedgebottom.x == ds->leftedgebottom.x )
+		examined = 1;
+	    else if ( ds->rightedgebottom.y == ds->leftedgebottom.y )
+		examined = 0;
+	}
+	if ( kstembottom ) {
+	    /* set the freedom vector along the edge of the other stem */
+	    *ppt++ = ds->bottom->ds->pnum[0];
+	    *ppt++ = ds->bottom->ds->pnum[1];
+	    *ipt++ = 8;			/* SFVTL[parallel] */
+	    freedom = 3;
+	    ipt = fixProjectionPtDir(ipt,&ppt,bp,ds->pnum[t1],ds->pnum[b1],
+		    ds->bottom->ds->pnum[0],ds->bottom->ds->pnum[1],1,&projection_dir);
+	} else if ( examined!=-1 ) {
+	    if ( freedom!=examined ) { *ipt++ = 0x05-examined; freedom = examined; }
+	    ipt = fixProjectionDir(ipt,&ppt,bp,ds->pnum[t1],ds->pnum[b1],
+		    !freedom,freedom,&projection_dir);
+	} else {
+	    *ipt++ = 0x0e;		/* SFVTPV */
+	    freedom = 4;
+	    based = ds->pnum[t2];
+	    stemcvt = getcvtval(gi,0);
+	}
+	if ( freedom<2 ) movement_axis[b2] = freedom;
+    } else {
+	/* If the top were a kstem, or if either of the coord were equal */
+	/*  then we would not have taken this branch. The only choice if */
+	/*  we get here is the final case above where the best we can do */
+	/*  is make the point be on the stem */
+	*ipt++ = 0x0e;			/* SFVTPV */
+	freedom = 4;
+	based = ds->pnum[b2];
+	stemcvt = getcvtval(gi,0);
+	move = ds->pnum[t2];
+    }
+    *ppt++ = based;
+    *ipt++ = 16;		/* SRP0 */
+    *ppt++ = stemcvt;
+    *ppt++ = move;
+    *ipt++ = stemcvt!=getcvtval(gi,0)?0xed:0xe1;	/* MIRP[0??01] */
+    if ( freedom==1 || freedom==0 )
+	touched[move] |= (1<<freedom)|4;
+    else
+	touched[move] |= 7;
+
+    freedom = 5;	/* Actually the freedom vector might be ok, but the projection won't be and we are interested in both now */
+
+    /* Make sure all points are touched in both directions */
+    if ( touched[ds->pnum[t2]]&(1<<(1-movement_axis[t2])) ) {
+	if ( freedom!=1-movement_axis[t2] ) { *ipt++ = movement_axis[t2]; freedom = 1-movement_axis[t2]; }
+	*ppt++ = ds->pnum[t2];
+	*ipt++ = 0x2e;		/* MDAP[noround] */
+	touched[ds->pnum[t2]] |= (1<<(1-movement_axis[t2]));
+    }
+    if ( touched[ds->pnum[b2]]&(1<<(1-movement_axis[b2])) ) {
+	if ( freedom!=1-movement_axis[b2] ) { *ipt++ = movement_axis[b2]; freedom = 1-movement_axis[b2]; }
+	*ppt++ = ds->pnum[b2];
+	*ipt++ = 0x2e;		/* MDAP[noround] */
+	touched[ds->pnum[b2]] |= (1<<(1-movement_axis[b2]));
+    }
+	
+    if ( freedom!=0 )
+	*ipt++ = 1;			/* always leave both vectors in x */
 
     /* Ok, now figure out the instructions for the push stack */
     isword = false;
@@ -2170,6 +2451,10 @@ static uint8 *DStemFixConnected(DStem *ds,int top_is_inter,struct glyphinfo *gi,
     int isword, i;
     real dx, dy;
 
+return( pt );
+    /* This method doesn't work, I can't project backwards, or at least */
+    /*  freetype won't let me. That may be a bug on their part, but even if */
+    /*  it is I need to work around it */
     SetupFPGM(gi);
 
     pt = DStemFix(ds,gi,pt,touched,bp,ptcnt);
@@ -2179,43 +2464,43 @@ static uint8 *DStemFixConnected(DStem *ds,int top_is_inter,struct glyphinfo *gi,
 	nextds = dl->ds;
 	sw2 = DStemWidth(nextds);
 	if ( top_is_inter ) {
-	    if ( ds->pnum[0]==nextds->pnum[1] || ds->pnum[1]==nextds->pnum[0] ) {
+	    if ( ds->pnum[0]==nextds->pnum[2] || ds->pnum[2]==nextds->pnum[0] ) {
 		next_top_is_inter = true;
-		if ( ds->pnum[0]!=nextds->pnum[1] ) {
-		    inner = ds->pnum[1];
+		if ( ds->pnum[0]!=nextds->pnum[2] ) {
+		    inner = ds->pnum[2];
 		    outer1 = ds->pnum[0];
-		    outer2 = nextds->pnum[1];
-		    t1 = outer1; t2 = outer2; b1 = ds->pnum[2]; b2 = nextds->pnum[3];
-		} else if ( ds->pnum[1]!=nextds->pnum[0] ) {
+		    outer2 = nextds->pnum[2];
+		    t1 = outer1; t2 = outer2; b1 = ds->pnum[1]; b2 = nextds->pnum[3];
+		} else if ( ds->pnum[2]!=nextds->pnum[0] ) {
 		    inner = ds->pnum[0];
-		    outer1 = ds->pnum[1];
+		    outer1 = ds->pnum[2];
 		    outer2 = nextds->pnum[0];
-		    t1 = outer1; t2 = outer2; b1 = ds->pnum[3]; b2 = nextds->pnum[2];
+		    t1 = outer1; t2 = outer2; b1 = ds->pnum[3]; b2 = nextds->pnum[1];
 		} else if ( ds->leftedgetop.y>ds->rightedgetop.y ) {
-		    inner = ds->pnum[1];
+		    inner = ds->pnum[2];
 		    outer1 = outer2 = ds->pnum[0];
-		    t1 = t2 = outer1; b1 = ds->pnum[2]; b2 = nextds->pnum[3];
+		    t1 = t2 = outer1; b1 = ds->pnum[1]; b2 = nextds->pnum[3];
 		} else {
 		    inner = ds->pnum[0];
-		    outer1 = outer2 = ds->pnum[1];
-		    t1 = outer1; t2 = outer2; b1 = ds->pnum[2]; b2 = nextds->pnum[3];
+		    outer1 = outer2 = ds->pnum[2];
+		    t1 = outer1; t2 = outer2; b1 = ds->pnum[1]; b2 = nextds->pnum[3];
 		}
-	    } else if ( ds->pnum[0]==nextds->pnum[2] || ds->pnum[1] == nextds->pnum[3] ) {
+	    } else if ( ds->pnum[0]==nextds->pnum[1] || ds->pnum[2] == nextds->pnum[3] ) {
 		next_top_is_inter = false;
 		if ( ds->pnum[0]!=nextds->pnum[3] ) {
-		    inner = ds->pnum[1];
+		    inner = ds->pnum[2];
 		    outer1 = ds->pnum[0];
 		    outer2 = nextds->pnum[3];
-		    t1 = outer1; b2 = outer2; b1 = ds->pnum[2]; t2 = nextds->pnum[1];
-		} else if ( ds->pnum[1]!=nextds->pnum[2] ) {
+		    t1 = outer1; b2 = outer2; b1 = ds->pnum[1]; t2 = nextds->pnum[2];
+		} else if ( ds->pnum[2]!=nextds->pnum[1] ) {
 		    inner = ds->pnum[0];
-		    outer1 = ds->pnum[1];
-		    outer2 = nextds->pnum[2];
+		    outer1 = ds->pnum[2];
+		    outer2 = nextds->pnum[1];
 		    t1 = outer1; b2 = outer2; b1 = ds->pnum[3]; t2 = nextds->pnum[0];
 		} else {
 		    /* This case doesn't matter much, so don't work hard to get it right */
 		    inner = ds->pnum[0];
-		    outer1 = outer2 = ds->pnum[1];
+		    outer1 = outer2 = ds->pnum[2];
 		    t1 = outer1; b2 = outer2; b1 = ds->pnum[3]; t2 = nextds->pnum[0];
 		}
 	    } else {
@@ -2225,47 +2510,47 @@ return( pt );
 	    if ( inner == ds->pnum[0] ) sw1 = -sw1;
 	    else sw2 = -sw2;
 	} else {
-	    if ( ds->pnum[2]==nextds->pnum[3] || ds->pnum[3]==nextds->pnum[2] ) {
+	    if ( ds->pnum[1]==nextds->pnum[3] || ds->pnum[3]==nextds->pnum[1] ) {
 		next_top_is_inter = false;
-		if ( ds->pnum[2]!=nextds->pnum[3] ) {
+		if ( ds->pnum[1]!=nextds->pnum[3] ) {
 		    inner = ds->pnum[3];
-		    outer1 = ds->pnum[2];
+		    outer1 = ds->pnum[1];
 		    outer2 = nextds->pnum[3];
-		    b1 = outer1; b2 = outer2; t1 = ds->pnum[0]; t2 = nextds->pnum[1];
-		} else if ( ds->pnum[3]!=nextds->pnum[2] ) {
-		    inner = ds->pnum[2];
+		    b1 = outer1; b2 = outer2; t1 = ds->pnum[0]; t2 = nextds->pnum[2];
+		} else if ( ds->pnum[3]!=nextds->pnum[1] ) {
+		    inner = ds->pnum[1];
 		    outer1 = ds->pnum[3];
-		    outer2 = nextds->pnum[2];
-		    b1 = outer1; b2 = outer2; t1 = ds->pnum[1]; t2 = nextds->pnum[0];
+		    outer2 = nextds->pnum[1];
+		    b1 = outer1; b2 = outer2; t1 = ds->pnum[2]; t2 = nextds->pnum[0];
 		} else if ( ds->leftedgetop.y>ds->rightedgetop.y ) {
 		    inner = ds->pnum[3];
-		    outer1 = outer2 = ds->pnum[2];
-		    b1 = b2 = outer1; t1 = ds->pnum[0]; t2 = nextds->pnum[1];
+		    outer1 = outer2 = ds->pnum[1];
+		    b1 = b2 = outer1; t1 = ds->pnum[0]; t2 = nextds->pnum[2];
 		} else {
-		    inner = ds->pnum[2];
+		    inner = ds->pnum[1];
 		    outer1 = outer2 = ds->pnum[3];
-		    b1 = b2 = outer1; t1 = ds->pnum[1]; t2 = nextds->pnum[0];
+		    b1 = b2 = outer1; t1 = ds->pnum[2]; t2 = nextds->pnum[0];
 		}
-	    } else if ( ds->pnum[2]==nextds->pnum[0] || ds->pnum[3] == nextds->pnum[1] ) {
+	    } else if ( ds->pnum[1]==nextds->pnum[0] || ds->pnum[3] == nextds->pnum[2] ) {
 		next_top_is_inter = false;
-		if ( ds->pnum[2]!=nextds->pnum[1] ) {
+		if ( ds->pnum[1]!=nextds->pnum[2] ) {
 		    inner = ds->pnum[3];
-		    outer1 = ds->pnum[2];
-		    outer2 = nextds->pnum[1];
+		    outer1 = ds->pnum[1];
+		    outer2 = nextds->pnum[2];
 		} else if ( ds->pnum[3]!=nextds->pnum[0] ) {
-		    inner = ds->pnum[2];
+		    inner = ds->pnum[1];
 		    outer1 = ds->pnum[3];
 		    outer2 = nextds->pnum[0];
 		} else {
 		    /* This case doesn't matter much, so don't work hard to get it right */
-		    inner = ds->pnum[2];
+		    inner = ds->pnum[1];
 		    outer1 = outer2 = ds->pnum[3];
 		}
 	    } else {
 		GDrawIError( "Failed to find intersection in DStemFixConnected" );
 return( pt );
 	    }
-	    if ( inner == ds->pnum[2] ) sw1 = -sw1;
+	    if ( inner == ds->pnum[1] ) sw1 = -sw1;
 	    else sw2 = -sw2;
 	}
 	if ( outer1!=outer2 ) {
@@ -2279,25 +2564,28 @@ return( pt );
 	    if ( dx>dy ) {
 		pt = pushpointstem(pt,outer2,getcvtval(gi,bp[outer1].x-bp[outer2].x));
 		*pt++ = 0xe0+0x0d;	/* MIRP, minimum, rounded, black */
-		touched[outer2] |= 1;
+		touched[outer2] |= 1|4;
 	    } else {
 		*pt++ = 0x00;		/* SVTCA[y] */
 		pt = pushpointstem(pt,outer2,getcvtval(gi,bp[outer1].y-bp[outer2].y));
 		*pt++ = 0xe0+0x0d;	/* MIRP, minimum, rounded, black */
 		*pt++ = 0x01;		/* SVTCA[x] */
-		touched[outer2] |= 2;
+		touched[outer2] |= 2|4;
 	    }
 	}
 	pt = DStemFix(nextds,gi,pt,touched,bp,ptcnt);
 
+    /* I push the bottom then the top because that way the projection vector */
+    /*  dot the freedom vector is positive. It it is negative the bytecode */
+    /*  interpretters produce strange results */
 	/* Do Intersect */
 	pushes[0] = inner;
-	pushes[1] = _getcvtval(gi,sw1);
-	pushes[2] = t1;
+	pushes[1] = _getcvtval(gi,-sw1);
 	pushes[3] = b1;
-	pushes[4] = _getcvtval(gi,sw2);
-	pushes[5] = t2;
+	pushes[2] = t1;
+	pushes[4] = _getcvtval(gi,-sw2);
 	pushes[6] = b2;
+	pushes[5] = t2;
 	pushes[7] = 0;
 	isword = false;
 	for ( i=0; i<8 ; ++i )
@@ -2306,9 +2594,11 @@ return( pt );
 	break;
 	    }
 	pt = pushheader(pt,isword,8);
-	for ( i=7; i>=0; --i )
+	for ( i=0; i<8 ; ++i )
 	    pt = addpoint(pt,isword,pushes[i]);
 	*pt++ = 0x2b;			/* CALL (Function 0) */
+
+	dl->done = true;
 
 	ds = nextds;
 	sw1 = sw2;
@@ -2433,27 +2723,30 @@ static uint8 *DStemISectStem(uint8 *pt,DStem *ds,struct dstemlist *dl,
     int cnt, isword, i;
     struct dstemlist *dl2;
 
+
     for ( dl2 = dl->ds->intersects; dl2!=NULL && dl2->ds!=ds; dl2=dl2->next );
+    if ( dl2->done )
+return( pt );
     if ( dl2!=NULL ) dl2->done = true;
 
     /* I have to push things backwards */
-    for ( i=0; i<4; ++i ) if ( dl->is[i]!=NULL && dl->pnum[i]!=-1 ) {
-	touched[dl->pnum[i]] |= 3;
-	*ppt++ = dl->pnum[i];
+    for ( i=cnt=0; i<4; ++i ) if ( dl->is[i]!=NULL && dl->pnum[i]!=-1 ) {
 	if ( i&1 ) {
-	    *ppt++ = ds->pnum[1];
+	    *ppt++ = ds->pnum[2];
 	    *ppt++ = ds->pnum[3];
 	} else {
 	    *ppt++ = ds->pnum[0];
-	    *ppt++ = ds->pnum[2];
+	    *ppt++ = ds->pnum[1];
 	}
 	if ( i&2 ) {
-	    *ppt++ = dl->ds->pnum[1];
+	    *ppt++ = dl->ds->pnum[2];
 	    *ppt++ = dl->ds->pnum[3];
 	} else {
 	    *ppt++ = dl->ds->pnum[0];
-	    *ppt++ = dl->ds->pnum[2];
+	    *ppt++ = dl->ds->pnum[1];
 	}
+	touched[dl->pnum[i]] |= 3|4;
+	*ppt++ = dl->pnum[i];
 	++cnt;
     }
 
@@ -2484,12 +2777,68 @@ static uint8 *DStemISectMidPoints(uint8 *pt,DStem *ds,uint8 *touched) {
 return( pt );
 }
 
+static uint8 *SetPFVectorsToSlope(uint8 *pt,int e1, int e2) {
+    pt = pushpointstem(pt,e1,e2);
+    *pt++ = 0x07;		/* SPVTL[orthog] */
+    *pt++ = 0x0e;		/* SFVTP */
+return( pt );
+}
+
+/* There may be other points on the diagonal stems which aren't at intersections */
+/*  they still need to be moved so that they lie on the (new position of the) */
+/*  stem */
+static uint8 *DStemMakeColinear(struct glyphinfo *gi,uint8 *pt,DStem *ds,
+	uint8 *touched, BasePoint *bp, int ptcnt) {
+    int i, established, positioned, any=0;
+    int zerocvt = getcvtval(gi,0);
+
+    while ( ds!=NULL ) {
+	/* touched[]&4 indicates a diagonal touch, only interested in points */
+	/*  which have not been diagonally touched */
+	established = positioned = 0;
+	for ( i=0; i<ptcnt; ++i ) if ( !(touched[i]&4) && i!=ds->pnum[0] && i!=ds->pnum[1]) {
+	    if ( OnEdge(&bp[i],&ds->leftedgetop,&ds->leftedgebottom) ) {
+		if ( !established ) {
+		    pt = SetPFVectorsToSlope(pt,ds->pnum[0],ds->pnum[1]);
+		    pt = pushpoint(pt,ds->pnum[0]);
+		    *pt++ = 0x10;		/* SRP0 */
+		    established = any = true;
+		}
+		pt = pushpointstem(pt,i,zerocvt);
+		*pt++ = 0xe0;			/* MIRP[00000] */
+		touched[i] |= 4;
+	    }
+	}
+	for ( i=0; i<ptcnt; ++i ) if ( !(touched[i]&4) && i!=ds->pnum[2] && i!=ds->pnum[3]) {
+	    if ( OnEdge(&bp[i],&ds->rightedgetop,&ds->rightedgebottom) ) {
+		if ( !established ) {
+		    pt = SetPFVectorsToSlope(pt,ds->pnum[0],ds->pnum[1]);
+		    established = any = true;
+		}
+		if ( !positioned ) {
+		    pt = pushpoint(pt,ds->pnum[2]);
+		    *pt++ = 0x10;		/* SRP0 */
+		    positioned = true;
+		}
+		pt = pushpointstem(pt,i,zerocvt);
+		*pt++ = 0xe0;			/* MIRP[00000] */
+		touched[i] |= 4;
+	    }
+	}
+	ds = ds->next;
+    }
+    if ( any )
+	*pt++ = 0x01;				/* SVTCA[x] */
+return( pt );
+}
+
 static uint8 *DStemInfoGeninst(struct glyphinfo *gi,uint8 *pt,DStemInfo *d,
 	uint8 *touched, BasePoint *bp, int ptcnt) {
-    DStem *ds = DStemMerge(d,bp,ptcnt);
+    DStem *ds;
 
-    /* if ( ds==NULL ) */
+    /*if ( ds==NULL )*/
 return( pt );
+    ds = DStemMerge(d,bp,ptcnt);
 
     *pt++ = 0x30;	/* Interpolate Untouched Points y */
     *pt++ = 0x31;	/* Interpolate Untouched Points x */
@@ -2497,6 +2846,7 @@ return( pt );
     DStemIntersect(ds);
     pt = DStemEstablishEndPoints(gi,pt,ds,touched,bp,ptcnt);
     pt = DStemISectMidPoints(pt,ds,touched);
+    pt = DStemMakeColinear(gi,pt,ds,touched,bp,ptcnt);
     DStemFree(ds);
 return( pt );
 }
@@ -2521,43 +2871,60 @@ return( sp->ptindex );
 return( -1 );
 }
 
-static uint8 *gen_md_instrs(struct glyphinfo *gi, uint8 *instrs,MinimumDistance *md,
+/* Order of the md hints is important hence the double loop. */
+/* We only do a hint if one edge has been fixed (or if we have no choice) */
+static uint8 *gen_md_instrs(struct glyphinfo *gi, uint8 *instrs,MinimumDistance *_md,
 	SplineSet *ttfss, BasePoint *bp, int ptcnt, int xdir, uint8 *touched) {
     int mask = xdir ? 1 : 2;
     int pt1, pt2;
+    int any, graspatstraws=false, undone;
+    MinimumDistance *md;
 
-    while ( md!=NULL ) {
-	if ( md->x==xdir ) {
-	    pt1 = MapSP2Index(ttfss,md->sp1,ptcnt);
-	    pt2 = MapSP2Index(ttfss,md->sp2,ptcnt);
-	    if ( pt1==ptcnt+1 ) {
-		pt1 = pt2;
-		pt2 = ptcnt+1;
-	    }
-	    if ( pt1==-1 || pt2==-1 )
-		fprintf(stderr, "Internal Error: Failed to find point in minimum distance check\n" );
-	    else if ( pt1!=ptcnt+1 && (touched[pt1]&mask) &&
-		    pt2!=ptcnt+1 && (touched[pt2]&mask) )
-		/* Already done */;
-	    else if ( pt2==ptcnt+1 || !(touched[pt2]&mask)) {
-		instrs = pushpointstem(instrs,pt2,pt1);	/* Misnomer, I'm pushing two points */
-		if ( !(touched[pt1]&mask))
-		    *instrs++ = 0x2f;			/* MDAP[rnd] */
-		else
+    do {
+	any = false; undone = false;
+	for ( md=_md; md!=NULL; md=md->next ) {
+	    if ( md->x==xdir && !md->done ) {
+		pt1 = MapSP2Index(ttfss,md->sp1,ptcnt);
+		pt2 = MapSP2Index(ttfss,md->sp2,ptcnt);
+		if ( pt1==ptcnt+1 ) {
+		    pt1 = pt2;
+		    pt2 = ptcnt+1;
+		}
+		if ( pt1==-1 || pt2==-1 )
+		    fprintf(stderr, "Internal Error: Failed to find point in minimum distance check\n" );
+		else if ( pt1!=ptcnt+1 && (touched[pt1]&mask) &&
+			pt2!=ptcnt+1 && (touched[pt2]&mask) )
+		    md->done = true;	/* somebody else did it, might not be right for us, but... */
+		else if ( !graspatstraws &&
+			!(touched[pt1]&mask) &&
+			 (pt2==ptcnt+1 || !(touched[pt2]&mask)) )
+		     /* If neither edge has been touched, then don't process */
+		     /*  it now. hope that by filling in some other mds we will*/
+		     /*  establish one edge or the other, and then come back to*/
+		     /*  it */
+		    undone = true;
+		else if ( pt2==ptcnt+1 || !(touched[pt2]&mask)) {
+		    instrs = pushpointstem(instrs,pt2,pt1);	/* Misnomer, I'm pushing two points */
+		    if ( !(touched[pt1]&mask))
+			*instrs++ = 0x2f;			/* MDAP[rnd] */
+		    else
+			*instrs++ = 0x10;			/* SRP0 */
+		    *instrs++ = 0xcc;			/* MDRP[01100] min, rnd, grey */
+		    touched[pt1] |= mask;
+		    if ( pt2!=ptcnt+1 )
+			touched[pt2]|= mask;
+		    any = true;
+		} else {
+		    instrs = pushpointstem(instrs,pt1,pt2);	/* Misnomer, I'm pushing two points */
 		    *instrs++ = 0x10;			/* SRP0 */
-		*instrs++ = 0xcc;			/* MDRP[01100] min, rnd, grey */
-		touched[pt1] |= mask;
-		if ( pt2!=ptcnt+1 )
-		    touched[pt2]|= mask;
-	    } else {
-		instrs = pushpointstem(instrs,pt1,pt2);	/* Misnomer, I'm pushing two points */
-		*instrs++ = 0x10;			/* SRP0 */
-		*instrs++ = 0xcc;			/* MDRP[01100] min, rnd, grey */
-		touched[pt1] |= mask;
+		    *instrs++ = 0xcc;			/* MDRP[01100] min, rnd, grey */
+		    touched[pt1] |= mask;
+		    any = true;
+		}
 	    }
 	}
-	md = md->next;
-    }
+	graspatstraws = undone && !any;
+    } while ( undone );
 return(instrs);
 }
 
@@ -2590,7 +2957,7 @@ static uint8 *gen_extremum_instrs(struct glyphinfo *gi, uint8 *instrs,
     int i;
     real min, max;
 
-    min = 0x80000000; max = 0x7fffffff;
+    max = (int) 0x80000000; min = 0x7fffffff;
     for ( i=0; i<ptcnt; ++i ) {
 	if ( min>bp[i].y ) min = bp[i].y;
 	else if ( max<bp[i].y ) max = bp[i].y;
