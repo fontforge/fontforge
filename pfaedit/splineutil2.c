@@ -1425,8 +1425,9 @@ static void SPLForceLines(SplineChar *sc,SplineSet *ss,double bump_size) {
 		any = false;
 		if ( s->from->prev!=NULL ) {
 		    sp = s->from->prev->from;
+		    len2 = sqrt((sp->me.x-s->from->me.x)*(sp->me.x-s->from->me.x) + (sp->me.y-s->from->me.y)*(sp->me.y-s->from->me.y));
 		    diff = (sp->me.x-s->from->me.x)*unit.y - (sp->me.y-s->from->me.y)*unit.x;
-		    if ( fabs(diff)<=bump_size ) {
+		    if ( len2<len && fabs(diff)<=bump_size ) {
 			xoff = diff*unit.y; yoff = -diff*unit.x;
 			sp->me.x -= xoff; sp->me.y -= yoff;
 			sp->prevcp.x -= xoff; sp->prevcp.y -= yoff;
@@ -1440,6 +1441,7 @@ static void SPLForceLines(SplineChar *sc,SplineSet *ss,double bump_size) {
 			SplinePointMDFree(sc,s->from);
 			sp->next = s; s->from = sp;
 			SplineRefigure(s);
+			SplineRefigure(sp->prev);
 			any = true;
 		    }
 		}
@@ -1447,10 +1449,8 @@ static void SPLForceLines(SplineChar *sc,SplineSet *ss,double bump_size) {
 		    sp = s->to->next->to;
 		    /* If the next spline is a longer line than we are, then don't */
 		    /*  merge it to us, rather merge us into it next time through the loop */
-		    if ( sp->prev->knownlinear )
-			len2 = sqrt((sp->me.x-s->to->me.x)*(sp->me.x-s->to->me.x) + (sp->me.y-s->to->me.y)*(sp->me.y-s->to->me.y));
-		    else
-			len2 = len/2;
+		    /* Hmm. Don't merge out the bump in general if the "bump" is longer than we are */
+		    len2 = sqrt((sp->me.x-s->to->me.x)*(sp->me.x-s->to->me.x) + (sp->me.y-s->to->me.y)*(sp->me.y-s->to->me.y));
 		    diff = (sp->me.x-s->to->me.x)*unit.y - (sp->me.y-s->to->me.y)*unit.x;
 		    if ( len2<len && fabs(diff)<=bump_size ) {
 			xoff = diff*unit.y; yoff = -diff*unit.x;
@@ -1466,6 +1466,7 @@ static void SPLForceLines(SplineChar *sc,SplineSet *ss,double bump_size) {
 			SplinePointMDFree(sc,s->to);
 			sp->prev = s; s->to = sp;
 			SplineRefigure(s);
+			SplineRefigure(sp->next);
 			any = true;
 		    }
 		}
@@ -1506,12 +1507,12 @@ static int SPLSmoothControlPoints(SplineSet *ss,double tan_bounds,int vert_check
 		    if ( fabs(unit.x)>fabs(unit.y) ) {
 			/* Closer to horizontal */
 			if ( (unit.y<=0 && unit2.y>=0) || (unit.y>=0 && unit2.y<=0) ) {
-			    unit2.x = 1; unit2.y = 0;
+			    unit2.x = unit2.x<0 ? -1 : 1; unit2.y = 0;
 			    found = 1;
 			}
 		    } else {
 			if ( (unit.x<=0 && unit2.x>=0) || (unit.x>=0 && unit2.x<=0) ) {
-			    unit2.y = 1; unit2.x = 0;
+			    unit2.y = unit2.y<0 ? -1 : 1; unit2.x = 0;
 			    found = 1;
 			}
 		    }
@@ -1524,6 +1525,7 @@ static int SPLSmoothControlPoints(SplineSet *ss,double tan_bounds,int vert_check
 		sp->nextcp.y = sp->me.y + len*unit2.y;
 		sp->prevcp.x = sp->me.x - len2*unit2.x;
 		sp->prevcp.y = sp->me.y - len2*unit2.y;
+		sp->pointtype = pt_curve;
 		if ( sp->prev )
 		    SplineRefigure(sp->prev);
 		if ( sp->next )
