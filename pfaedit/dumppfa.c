@@ -39,6 +39,12 @@
 #include "psfont.h"
 #include "splinefont.h"
 
+#ifdef __CygWin
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <unistd.h>
+#endif
+
 extern int autohint_before_generate;
 
 typedef void (*DumpChar)(int ch,void *data);
@@ -1363,6 +1369,18 @@ int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags) {
     setlocale(LC_NUMERIC,oldloc);
     if ( ferror(out) || err)
 return( 0 );
+
+#ifdef __CygWin
+    /* Modern versions of windows want the execute bit set on a ttf file */
+    /*  It might also be needed for a postscript font, but I haven't checked */
+    /* I've no idea what this corresponds to in windows, nor any idea on */
+    /*  how to set it from the windows UI, but this seems to work */
+    {
+	struct stat buf;
+	fstat(fileno(ttf),&buf);
+	fchmod(fileno(ttf),S_IXUSR | buf.st_mode );
+    }
+#endif
 
 return( true );
 }

@@ -34,6 +34,12 @@
 #include <chardata.h>
 #include <gwidget.h>
 
+#ifdef __CygWin
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <unistd.h>
+#endif
+
 #include "ttf.h"
 
 int glyph_2_name_map=0;
@@ -4833,6 +4839,17 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
     setlocale(LC_NUMERIC,oldloc);
     if ( at.error || ferror(ttf))
 return( 0 );
+
+#ifdef __CygWin
+    /* Modern versions of windows want the execute bit set on a ttf file */
+    /* I've no idea what this corresponds to in windows, nor any idea on */
+    /*  how to set it from the windows UI, but this seems to work */
+    {
+	struct stat buf;
+	fstat(fileno(ttf),&buf);
+	fchmod(fileno(ttf),S_IXUSR | buf.st_mode );
+    }
+#endif
 
 return( 1 );
 }
