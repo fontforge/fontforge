@@ -3862,13 +3862,14 @@ return;
 /*  the order of the characters for right to left since pfaedit's convention */
 /*  is to follow writing order rather than to go left to right */
 void readttfkerns(FILE *ttf,struct ttfinfo *info) {
-    int tabcnt, len, coverage,i,j, npairs, version, format, flags_good;
+    int tabcnt, len, coverage,i,j, npairs, version, format, flags_good, tab;
     int left, right, offset, array, rowWidth;
     int header_size;
     KernPair *kp;
     KernClass *kc;
     uint32 begin_table;
     uint16 *class1, *class2;
+    int tupleIndex;
     int isv;
 
     fseek(ttf,info->kern_start,SEEK_SET);
@@ -3879,7 +3880,7 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 	version = getlong(ttf);
 	tabcnt = getlong(ttf);
     }
-    for ( i=0; i<tabcnt; ++i ) {
+    for ( tab=0; tab<tabcnt; ++tab ) {
 	begin_table = ftell(ttf);
 	if ( version==0 ) {
 	    /* version = */ getushort(ttf);
@@ -3888,6 +3889,7 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 	    format = coverage>>8;
 	    flags_good = ((coverage&7)<=1);
 	    isv = !(coverage&1);
+	    tupleIndex = 0;
 	    header_size = 6;
 	} else {
 	    len = getlong(ttf);
@@ -3896,7 +3898,9 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 	    format = (coverage&0xff);
 	    flags_good = ((coverage&0xff00)==0 || (coverage&0xff00)==0x8000);
 	    isv = coverage&0x8000? 1 : 0;
-	    /* tupleIndex = */ getushort(ttf);
+	    tupleIndex = getushort(ttf);
+	    if ( tupleIndex!=0 )	/* Only deal with default tuple until we parse variation tables */
+		flags_good = false;
 	    header_size = 8;
 	}
 	if ( flags_good && format==0 ) {
@@ -4009,8 +4013,6 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 	    }
 	    free(class1); free(class2);
 	    fseek(ttf,begin_table+len,SEEK_SET);
-	} else if ( flags_good && format==3 ) {
-	    fseek(ttf,len-header_size,SEEK_CUR);
 	} else {
 	    fseek(ttf,len-header_size,SEEK_CUR);
 	}
