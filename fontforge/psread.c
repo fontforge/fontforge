@@ -513,6 +513,10 @@ return( pt_number );
 	    }
 	} else {
 	    *val = strtod(tokbuf,&end);
+	    if ( isinf(*val) || isnan(*val) ) {
+		fprintf( stderr, "Bad number, infinity or nan: %s\n", tokbuf );
+		*val = 0;
+	    }
 	    if ( *end=='\0' )		/* It's a real */
 return( pt_number );
 	}
