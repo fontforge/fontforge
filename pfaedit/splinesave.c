@@ -1051,6 +1051,7 @@ static int TrySubrRefs(GrowBuf *gb, struct pschars *subrs, SplineChar *sc,
     RefChar *r;
     BasePoint current, *bp;
     DBounds sb, rb;
+    int first = true;
 
     SplineCharFindBounds(sc,&sb);
     for ( r=refs; r!=NULL; r=r->next ) {
@@ -1087,7 +1088,8 @@ return( false );
 	if ( gb->pt+20>=gb->end )
 	    GrowBuffer(gb);
 	bp = (BasePoint *) (subrs->keys[r->sc->ttf_glyph]);
-	if ( current.x!=bp[0].x+r->transform[4] || current.y!=bp[0].y+r->transform[5] ) {
+	if ( current.x!=bp[0].x+r->transform[4] || current.y!=bp[0].y+r->transform[5] || first ) {
+	    first = false;		/* Always need an initial move to */
 	    if ( current.x==bp[0].x+r->transform[4] ) {
 		AddNumber(gb,bp[0].y+r->transform[5]-current.y,round);
 		*(gb->pt)++ = 4;		/* v move to */
