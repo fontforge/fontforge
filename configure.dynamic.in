@@ -10,6 +10,9 @@ gww_nodynamic="no"
 gww_needsstatic="no"
 case "$host" in
 *-apple-darwin*) AC_DEFINE(NODYNAMIC)
+echo I cant get libtool to behave on my mac, so proceding with a static configure
+exec configure.static $*
+
 gww_nodynamic="yes"
 AC_DEFINE(_CursorsMustBe16x16)
 AC_DEFINE(_Keyboard,1)
@@ -60,7 +63,7 @@ AC_TRY_COMPILE([#include <gif_lib.h>], [ ExtensionBlock foo; foo.Function=3; ], 
 
 AC_CHECK_LIB(z, deflateEnd, : ,AC_DEFINE(_NO_LIBPNG), -lm) 
 AC_CHECK_LIB(png, png_create_read_struct, : ,[
- AC_CHECK_LIB(png12, png_create_read_struct, AC_DEFINE(_LIBPNG12), AC_DEFINE(_NO_LIBPNG), -lz -lm)] -lz -lm)
+ AC_CHECK_LIB(png12, png_create_read_struct, AC_DEFINE(_LIBPNG12), AC_DEFINE(_NO_LIBPNG), -lz -lm)], -lz -lm)
 AC_CHECK_LIB(jpeg, jpeg_CreateDecompress, :  ,AC_DEFINE(_NO_LIBJPEG)) 
 AC_CHECK_LIB(tiff, TIFFOpen, : , AC_DEFINE(_NO_LIBTIFF), -lm )
 AC_CHECK_LIB(freetype, FT_New_Face, : ,AC_DEFINE(_NO_FREETYPE)) 

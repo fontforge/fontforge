@@ -6869,6 +6869,9 @@ case "$host" in
 #define NODYNAMIC 1
 _ACEOF
 
+echo I cant get libtool to behave on my mac, so proceding with a static configure
+exec configure.static $*
+
 gww_nodynamic="yes"
 cat >>confdefs.h <<\_ACEOF
 #define _CursorsMustBe16x16 1
@@ -7409,7 +7412,7 @@ if test "${ac_cv_lib_png_png_create_read_struct+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="-lpng  $LIBS"
+LIBS="-lpng -lz -lm $LIBS"
 cat >conftest.$ac_ext <<_ACEOF
 #line $LINENO "configure"
 #include "confdefs.h"
@@ -7528,7 +7531,7 @@ else
 _ACEOF
 
 fi
- -lz -lm
+
 fi
 
 echo "$as_me:$LINENO: checking for jpeg_CreateDecompress in -ljpeg" >&5

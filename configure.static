@@ -2670,9 +2670,73 @@ echo "${ECHO_T}$ac_cv_lib_png_png_create_read_struct" >&6
 if test $ac_cv_lib_png_png_create_read_struct = yes; then
   :
 else
+
+ echo "$as_me:$LINENO: checking for png_create_read_struct in -lpng12" >&5
+echo $ECHO_N "checking for png_create_read_struct in -lpng12... $ECHO_C" >&6
+if test "${ac_cv_lib_png12_png_create_read_struct+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lpng12 -lz -lm $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char png_create_read_struct ();
+#ifdef F77_DUMMY_MAIN
+#  ifdef __cplusplus
+     extern "C"
+#  endif
+   int F77_DUMMY_MAIN() { return 1; }
+#endif
+int
+main ()
+{
+png_create_read_struct ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_png12_png_create_read_struct=yes
+else
+  echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+ac_cv_lib_png12_png_create_read_struct=no
+fi
+rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_png12_png_create_read_struct" >&5
+echo "${ECHO_T}$ac_cv_lib_png12_png_create_read_struct" >&6
+if test $ac_cv_lib_png12_png_create_read_struct = yes; then
+  cat >>confdefs.h <<\_ACEOF
+#define _LIBPNG12 1
+_ACEOF
+
+else
   cat >>confdefs.h <<\_ACEOF
 #define _NO_LIBPNG 1
 _ACEOF
+
+fi
 
 fi
 
@@ -4516,7 +4580,74 @@ fi
 X_11LIB=-lX11
 if test "$no_x" = "yes"; then
  X_11LIB=
+else
+
+ echo "$as_me:$LINENO: checking for XOpenDevice in -lXi" >&5
+echo $ECHO_N "checking for XOpenDevice in -lXi... $ECHO_C" >&6
+if test "${ac_cv_lib_Xi_XOpenDevice+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lXi $X_LIBS $X_PRE_LIBS $X_EXTRA_LIBS -lX11  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char XOpenDevice ();
+#ifdef F77_DUMMY_MAIN
+#  ifdef __cplusplus
+     extern "C"
+#  endif
+   int F77_DUMMY_MAIN() { return 1; }
+#endif
+int
+main ()
+{
+XOpenDevice ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_Xi_XOpenDevice=yes
+else
+  echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+ac_cv_lib_Xi_XOpenDevice=no
 fi
+rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_Xi_XOpenDevice" >&5
+echo "${ECHO_T}$ac_cv_lib_Xi_XOpenDevice" >&6
+if test $ac_cv_lib_Xi_XOpenDevice = yes; then
+  X_11LIB="-lXi -lX11"
+else
+  cat >>confdefs.h <<\_ACEOF
+#define _NO_XINPUT 1
+_ACEOF
+
+fi
+
+fi
+
 echo -n checking for long long ...
 cat >conftest.$ac_ext <<_ACEOF
 #line $LINENO "configure"
