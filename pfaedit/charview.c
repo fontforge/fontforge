@@ -2093,9 +2093,6 @@ static void CVMouseMove(CharView *cv, GEvent *event ) {
     FindSel fs;
     GEvent fake;
 
- printf( "dev=%s (%d,%d) 0x%x\n", event->u.mouse.device!=NULL?event->u.mouse.device:"<None>",
-     event->u.mouse.x, event->u.mouse.y, event->u.mouse.state);
-
     if ( event->u.mouse.device!=NULL )
 	CVToolsSetCursor(cv,event->u.mouse.state,event->u.mouse.device);
 
