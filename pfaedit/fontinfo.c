@@ -44,6 +44,8 @@ struct gfi_data {
     struct ttflangname *names;
     struct ttflangname def;
     int uplane;
+    unsigned int family_untitled: 1;
+    unsigned int human_untitled: 1;
 };
 
 GTextInfo encodingtypes[] = {
@@ -1562,6 +1564,7 @@ static char *realweights[] = { "Demi", "Bold", "Regular", "Medium", "Book", "Thi
 static int GFI_NameChange(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	GWindow gw = GGadgetGetWindow(g);
+	struct gfi_data *gfi = GDrawGetUserData(gw);
 	const unichar_t *uname = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Fontname));
 	unichar_t ubuf[50];
 	int i;
@@ -1572,6 +1575,41 @@ static int GFI_NameChange(GGadget *g, GEvent *e) {
 	break;
 	    }
 	}
+	if ( gfi->human_untitled )
+	    GGadgetSetTitle(GWidgetGetControl(gw,CID_Human),uname);
+	if ( gfi->family_untitled ) {
+	    const unichar_t *ept = uname+u_strlen(uname); unichar_t *temp;
+	    for ( i=0; knownweights[i]!=NULL; ++i ) {
+		if (( temp = uc_strstrmatch(uname,knownweights[i]))!=NULL && temp<ept && temp!=uname )
+		    ept = temp;
+	    }
+	    if (( temp = uc_strstrmatch(uname,"ital"))!=NULL && temp<ept && temp!=uname )
+		ept = temp;
+	    if (( temp = uc_strstrmatch(uname,"obli"))!=NULL && temp<ept && temp!=uname )
+		ept = temp;
+	    if (( temp = uc_strstrmatch(uname,"kurs"))!=NULL && temp<ept && temp!=uname )
+		ept = temp;
+	    if (( temp = u_strchr(uname,'-'))!=NULL && temp!=uname )
+		ept = temp;
+	    temp = u_copyn(uname,ept-uname);
+	    GGadgetSetTitle(GWidgetGetControl(gw,CID_Family),temp);
+	}
+    }
+return( true );
+}
+
+static int GFI_FamilyChange(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	struct gfi_data *gfi = GDrawGetUserData(GGadgetGetWindow(g));
+	gfi->family_untitled = false;
+    }
+return( true );
+}
+
+static int GFI_HumanChange(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	struct gfi_data *gfi = GDrawGetUserData(GGadgetGetWindow(g));
+	gfi->human_untitled = false;
     }
 return( true );
 }
@@ -2480,8 +2518,10 @@ void FontInfo(SplineFont *sf) {
     nlabel[11].text_is_1byte = true;
     ngcd[11].gd.label = &nlabel[11];
     ngcd[11].gd.cid = CID_Family;
-    /*ngcd[11].gd.handle_controlevent = GFI_NameChange;*/
+    ngcd[11].gd.handle_controlevent = GFI_FamilyChange;
     ngcd[11].creator = GTextFieldCreate;
+    if ( sf->familyname==NULL || strstr(sf->familyname,"Untitled")==sf->familyname )
+	d.family_untitled = true;
 
     ngcd[4].gd.pos.x = 12; ngcd[4].gd.pos.y = ngcd[11].gd.pos.y+26+6;
     nlabel[4].text = (unichar_t *) _STR_Humanname;
@@ -2497,8 +2537,10 @@ void FontInfo(SplineFont *sf) {
     nlabel[5].text_is_1byte = true;
     ngcd[5].gd.label = &nlabel[5];
     ngcd[5].gd.cid = CID_Human;
-    /*ngcd[5].gd.handle_controlevent = GFI_HumanChange;*/
+    ngcd[5].gd.handle_controlevent = GFI_HumanChange;
     ngcd[5].creator = GTextFieldCreate;
+    if ( sf->fullname==NULL || strstr(sf->fullname,"Untitled")==sf->fullname )
+	d.human_untitled = true;
 
     nlabel[2].text = (unichar_t *) _STR_Weight;
     nlabel[2].text_in_resource = true;
