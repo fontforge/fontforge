@@ -1343,9 +1343,12 @@ return;
 	cidmaster = cidmaster->cidmaster;
     /* This doesn't change the ordering, so no need for special tricks to */
     /*  preserve scrolling location. */
-    for ( i=max=0; i<cidmaster->subfontcnt; ++i )
+    for ( i=max=0; i<cidmaster->subfontcnt; ++i ) {
+	if (cidmaster->subfonts[i]->compacted )
+	    SFUncompactFont(cidmaster->subfonts[i]);
 	if ( max<cidmaster->subfonts[i]->charcnt )
 	    max = cidmaster->subfonts[i]->charcnt;
+    }
     chars = gcalloc(max,sizeof(SplineChar *));
     for ( j=0; j<max; ++j ) {
 	for ( i=0; i<cidmaster->subfontcnt; ++i ) {
@@ -1395,9 +1398,12 @@ return;
 
     SFFindNearTop(sf);
     curmax = 0;
-    for ( k=0; k<sf->subfontcnt; ++k )
+    for ( k=0; k<sf->subfontcnt; ++k ) {
+	if (sf->subfonts[k]->compacted )
+	    SFUncompactFont(sf->subfonts[k]);
 	if ( curmax < sf->subfonts[k]->charcnt )
 	    curmax = sf->subfonts[k]->charcnt;
+    }
 
     chars = NULL;
     warned = false;
