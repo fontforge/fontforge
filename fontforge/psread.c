@@ -2665,7 +2665,7 @@ void SFSetLayerWidthsStroked(SplineFont *sf, real strokewidth) {
     }
 }
 #else
-void SFSplinesFromLayers(SplineFont *sf) {
+void SFSplinesFromLayers(SplineFont *sf, int tostroke) {
 }
 #endif
 
