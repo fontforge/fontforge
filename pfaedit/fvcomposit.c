@@ -667,14 +667,43 @@ return( true );
 return( false );
 }
 
-int SFIsSomethingBuildable(SplineFont *sf,SplineChar *sc) {
+int hascomposing(SplineFont *sf,int u,SplineChar *sc) {
+    const unichar_t *upt = SFGetAlternate(sf,u,sc,false);
+
+    if ( upt!=NULL ) {
+	while ( *upt ) {
+	    if ( iscombining(*upt) || *upt==0xb7 ||	/* b7, centered dot is used as a combining accent for Ldot */
+		    *upt==0x0385 ||	/* dieresis/tonos */
+		    *upt==0x1ffe || *upt==0x1fbf || *upt==0x1fcf || *upt==0x1fdf ||
+		    *upt==0x1fbd || *upt==0x1fef || *upt==0x1fc0 || *upt==0x1fc1 ||
+		    *upt==0x1fee || *upt==0x1ffd || *upt==0x1fbe ||
+		    *upt==0x1fcd || *upt==0x1fdd || *upt==0x1fce || *upt==0x1fde )	/* Special greek accents */
+return( true );
+	    /* Only build Jongsung out of chosung when doing a build composit */
+	    /*  not when doing a build accented (that's what the upt[1]!='\0' */
+	    /*  means */
+	    if ( *upt>=0x1100 && *upt<0x11c7 && upt[1]!='\0' )
+return( true );
+	    ++upt;
+	}
+
+	if ( u>=0x1f70 && u<0x1f80 )
+return( true );			/* Yes. they do work, I don't care what it looks like */
+    }
+return( false );
+}
+
+int SFIsSomethingBuildable(SplineFont *sf,SplineChar *sc, int onlyaccents) {
     int unicodeenc = sc->unicodeenc;
 
     if ( iszerowidth(unicodeenc) ||
 	    (unicodeenc>=0x2000 && unicodeenc<=0x2015 ))
-return( true );
+return( !onlyaccents );
 
     if ( SFIsCompositBuildable(sf,unicodeenc,sc))
+return( !onlyaccents || hascomposing(sf,sc->unicodeenc,sc) );
+
+    if ( !onlyaccents && SCMakeDotless(sf,sc,false,false))
 return( true );
 
 return( SFIsRotatable(sf,sc));
@@ -1274,7 +1303,7 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 		else
 		    iyoff = bc->ymin - rbc->ymin;
 		if ( isupper(basech) && ch==0x342)
-		    xoff = bc->xmin -  rbc->xmin;
+		    ixoff = bc->xmin -  rbc->xmin;
 		else if ( pos&____LEFT )
 		    ixoff = bc->xmin - ispacing - rbc->xmax;
 		else if ( pos&____RIGHT ) {
@@ -1771,7 +1800,7 @@ void SCBuildComposit(SplineFont *sf, SplineChar *sc, int copybmp,FontView *fv) {
     /* This does not handle arabic ligatures at all. It would need to reverse */
     /*  the string and deal with <final>, <medial>, etc. info we don't have */
 
-    if ( !SFIsSomethingBuildable(sf,sc))
+    if ( !SFIsSomethingBuildable(sf,sc,false))
 return;
     SCPreserveState(sc,true);
     SplinePointListsFree(sc->splines);
