@@ -235,7 +235,7 @@ return( NULL );
 
 static void _SCAutoTrace(SplineChar *sc, char **args) {
     ImageList *images;
-    char *prog;
+    char *prog, *pt;
     SplineSet *new, *last;
     struct _GImage *ib;
     Color bgcol;
@@ -295,7 +295,11 @@ return;
 	    for ( i=0; args[i]!=NULL && ac<sizeof(arglist)/sizeof(arglist[0])-2; ++i )
 		arglist[ac++] = args[i];
 	}
-	arglist[ac++] = tempname;
+/* On windows potrace is now compiled with MinGW (whatever that is) which */
+/*  means it can't handle cygwin's idea of "/tmp". So cd to /tmp in the child */
+/*  and use the local filename rather than full pathspec. */
+	pt = strrchr(tempname,'/')==NULL?tempname:strrchr(tempname,'/')+1;
+	arglist[ac++] = pt;
 	arglist[ac] = NULL;
 	/* We can't use AutoTrace's own "background-color" ignorer because */
 	/*  it ignores counters as well as surrounds. So "O" would be a dark */
@@ -305,6 +309,10 @@ return;
 	    /* Child */
 	    close(1);
 	    dup2(fileno(ps),1);
+	    if ( strrchr(tempname,'/')!=NULL ) {	/* See comment above */
+		*strrchr(tempname,'/') = '\0';
+		chdir(tempname);
+	    }
 	    exit(execvp(prog,arglist)==-1);	/* If exec fails, then die */
 	} else if ( pid!=-1 ) {
 	    waitpid(pid,&status,0);
