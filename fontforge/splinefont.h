@@ -147,6 +147,7 @@ struct simplifyinfo {
     double tan_bounds;
     double linefixup;
     double linelenmax;		/* Don't simplify any straight lines longer than this */
+    int set_as_default;
 };
 
 typedef struct ipoint {

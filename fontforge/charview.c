@@ -5733,37 +5733,44 @@ static void CVMenuAddExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     _CVMenuAddExtrema(cv);
 }
 
-static void CVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    CharView *cv = (CharView *) GDrawGetUserData(gw);
-    static struct simplifyinfo smpl = { sf_normal,.75,.05,0 };
+static void CVSimplify(CharView *cv,int type) {
+    static struct simplifyinfo smpls[] = {
+	    { sf_normal },
+	    { sf_normal,.75,.05,0,-1 },
+	    { sf_normal,.75,.05,0,-1 }};
+    struct simplifyinfo *smpl = &smpls[type+1];
 
-    smpl.err = (cv->sc->parent->ascent+cv->sc->parent->descent)/1000.;
-    smpl.linelenmax = (cv->sc->parent->ascent+cv->sc->parent->descent)/100.;
+    if ( smpl->linelenmax==-1 || (type==0 && !smpl->set_as_default)) {
+	smpl->err = (cv->sc->parent->ascent+cv->sc->parent->descent)/1000.;
+	smpl->linelenmax = (cv->sc->parent->ascent+cv->sc->parent->descent)/100.;
+    }
+
+    if ( type==1 ) {
+	if ( !SimplifyDlg(cv->sc->parent,smpl))
+return;
+	if ( smpl->set_as_default )
+	    smpls[1] = *smpl;
+    }
+
     CVPreserveState(cv);
     cv->layerheads[cv->drawmode]->splines = SplineCharSimplify(cv->sc,cv->layerheads[cv->drawmode]->splines,
-	    &smpl);
+	    smpl);
     CVCharChangedUpdate(cv);
+}
+
+static void CVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    CVSimplify(cv,0);
 }
 
 static void CVMenuSimplifyMore(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    static struct simplifyinfo smpl = { sf_normal,.75,.05,0, -1 };
-
-    if ( smpl.linelenmax == -1 )
-	smpl.linelenmax = (cv->sc->parent->ascent+cv->sc->parent->descent)/100.;
-    if ( !SimplifyDlg(cv->sc->parent,&smpl))
-return;
-    CVPreserveState(cv);
-    cv->layerheads[cv->drawmode]->splines = SplineCharSimplify(cv->sc,cv->layerheads[cv->drawmode]->splines,&smpl);
-    CVCharChangedUpdate(cv);
+    CVSimplify(cv,1);
 }
 
 static void CVMenuCleanupGlyph(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    static struct simplifyinfo smpl = { sf_cleanup };
-    CVPreserveState(cv);
-    cv->layerheads[cv->drawmode]->splines = SplineCharSimplify(cv->sc,cv->layerheads[cv->drawmode]->splines,&smpl);
-    CVCharChangedUpdate(cv);
+    CVSimplify(cv,-1);
 }
 
 static void _CVMenuMakeFirst(CharView *cv) {
@@ -7688,19 +7695,6 @@ static void SVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     cv->layerheads[cv->drawmode]->splines = SplineCharSimplify(cv->sc,cv->layerheads[cv->drawmode]->splines,&smpl);
     CVCharChangedUpdate(cv);
 }
-
-#if 0
-static void SVMenuSimplifyMore(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    SearchView *sv = (SearchView *) GDrawGetUserData(gw);
-    CharView *cv = sv->cv_srch.inactive ? &sv->cv_rpl : &sv->cv_srch;
-    static struct simplifyinfo smpl = { sf_normal,.75,.05,0 };
-    if ( !SimplifyDlg(&smpl))
-return;
-    CVPreserveState(cv);
-    cv->layerheads[cv->drawmode]->splines = SplineCharSimplify(cv->sc,cv->layerheads[cv->drawmode]->splines,&smpl);
-    CVCharChangedUpdate(cv);
-}
-#endif
 
 static void SVMenuCleanupGlyph(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SearchView *sv = (SearchView *) GDrawGetUserData(gw);

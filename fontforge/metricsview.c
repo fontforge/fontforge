@@ -2003,14 +2003,22 @@ static void MVMenuWireframe(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void MVSimplify( MetricsView *mv,int type ) {
     int i;
-    static struct simplifyinfo smpl = { sf_normal,.75,.05,0 };
+    static struct simplifyinfo smpls[] = {
+	    { sf_normal },
+	    { sf_normal,.75,.05,0,-1 },
+	    { sf_normal,.75,.05,0,-1 }};
+    struct simplifyinfo *smpl = &smpls[type+1];
 
-    smpl.err = (mv->fv->sf->ascent+mv->fv->sf->descent)/1000.;
-    smpl.linelenmax = (mv->fv->sf->ascent+mv->fv->sf->descent)/100.;
+    if ( smpl->linelenmax==-1 ) {
+	smpl->err = (mv->fv->sf->ascent+mv->fv->sf->descent)/1000.;
+	smpl->linelenmax = (mv->fv->sf->ascent+mv->fv->sf->descent)/100.;
+    }
 
     if ( type==1 ) {
-	if ( !SimplifyDlg(mv->fv->sf,&smpl))
+	if ( !SimplifyDlg(mv->fv->sf,smpl))
 return;
+	if ( smpl->set_as_default )
+	    smpls[1] = *smpl;
     }
 
     for ( i=mv->charcnt-1; i>=0; --i )
@@ -2019,7 +2027,7 @@ return;
     if ( i!=-1 ) {
 	SplineChar *sc = mv->perchar[i].sc;
 	SCPreserveState(sc,false);
-	sc->layers[ly_fore].splines = SplineCharSimplify(sc,sc->layers[ly_fore].splines,&smpl);
+	sc->layers[ly_fore].splines = SplineCharSimplify(sc,sc->layers[ly_fore].splines,smpl);
 	SCCharChangedUpdate(sc);
     }
 }
