@@ -4020,6 +4020,9 @@ void SCAppendPosSub(SplineChar *sc,enum possub_type type, char **d,SplineFont *c
     int i, macfeat;
     uint16 flags;
 
+    if ( d==NULL )
+return;
+
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( sc->charinfo!=NULL && type<pst_kerning ) {
 	CI_DoPaste(sc->charinfo,d,type,copied_from);
