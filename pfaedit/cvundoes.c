@@ -1510,6 +1510,18 @@ return( sc->width );
 return( paster->u.state.width );
 }
 
+static double PasteFigureScale(SplineFont *newsf,SplineFont *oldsf) {
+    FontView *fv;
+
+    if ( newsf==oldsf )
+return( 1.0 );
+    for ( fv = fv_list; fv!=NULL && fv->sf!=oldsf; fv=fv->next );
+    if ( fv==NULL )		/* Font we copied from has been closed */
+return( 1.0 );
+
+return( (newsf->ascent+newsf->descent) / (double) (oldsf->ascent+oldsf->descent) );
+}
+
 static int anchor_lost_warning = false;
 
 static void APMerge(SplineChar *sc,AnchorPoint *anchor) {
@@ -1632,6 +1644,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 	if ( paster->u.state.refs!=NULL ) {
 	    RefChar *new, *refs;
 	    SplineChar *rsc;
+	    double scale = PasteFigureScale(sc->parent,paster->u.state.copied_from);
 	    for ( refs = paster->u.state.refs; refs!=NULL; refs=refs->next ) {
 		if ( sc->searcherdummy )
 		    rsc = FindCharacter(sc->views->searcher->fv->sf,refs);
@@ -1642,6 +1655,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 		else if ( rsc!=NULL ) {
 		    new = chunkalloc(sizeof(RefChar));
 		    *new = *refs;
+		    new->transform[4] *= scale; new->transform[5] *= scale;
 		    new->splines = NULL;
 		    new->sc = rsc;
 		    new->next = sc->refs;
