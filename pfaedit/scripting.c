@@ -3030,6 +3030,9 @@ static FILE *CopyNonSeekableFile(FILE *former) {
 
     if ( temp==NULL )
 return( former );
+    if ( istty )
+	printf( "Type in your script file. Processing will not begin until all the script\n" );
+	printf( " has been input (ie. until you have pressed ^D)\n" );
     while ( 1 ) {
 	if ( ch=='\n' && istty )
 	    printf( "> " );
@@ -3073,7 +3076,9 @@ static void ProcessScript(int argc, char *argv[], FILE *script) {
 	c.filename = "<stdin>";
 	c.script = stdin;
     }
-    if ( c.script!=NULL && ftell(c.script)==-1 )
+    /* On Mac OS/X fseek/ftell appear to be broken and return success even */
+    /*  for terminals. They should return -1, EBADF */
+    if ( c.script!=NULL && (ftell(c.script)==-1 || isatty(fileno(c.script))) )
 	c.script = CopyNonSeekableFile(c.script);
     if ( c.script==NULL )
 	error(&c, "No such file");
@@ -3095,7 +3100,7 @@ static void ProcessScript(int argc, char *argv[], FILE *script) {
 static void _CheckIsScript(int argc, char *argv[]) {
     if ( argc==1 )
 return;
-    if ( strcmp(argv[1],"-script")==0 )
+    if ( strcmp(argv[1],"-script")==0 || strcmp(argv[1],"--script")==0 )
 	ProcessScript(argc, argv,NULL);
     if ( access(argv[1],X_OK|R_OK)==0 ) {
 	FILE *temp = fopen(argv[1],"r");
@@ -3110,9 +3115,51 @@ return;
     }
 }
 
+#ifdef X_DISPLAY_MISSING
+static void _doscriptusage(void) {
+    printf( "pfaedit [options]\n" );
+    printf( "\t-usage\t\t\t (displays this message, and exits)\n" );
+    printf( "\t-help\t\t\t (displays this message, invokes a browser)\n\t\t\t\t  (Using the BROWSER environment variable)\n" );
+    printf( "\t-version\t\t (prints the version of pfaedit and exits)\n" );
+    printf( "\t-script scriptfile\t (executes scriptfile)\n" );
+    printf( "\n" );
+    printf( "If no scriptfile is given (or if it's \"-\") PfaEdit will read stdin\n" );
+    printf( "pfaedit will read postscript (pfa, pfb, ps, cid), opentype (otf),\n" );
+    printf( "\ttruetype (ttf,ttc), macintosh resource fonts (dfont,bin,hqx),\n" );
+    printf( "\tand bdf and pcf fonts. It will also read it's own format --\n" );
+    printf( "\tsfd files.\n" );
+    printf( "Any arguments after the script file will be passed to it.\n");
+    printf( "If the first argument is an executable filename, and that file's first\n" );
+    printf( "\tline contains \"pfaedit\" then it will be treated as a scriptfile.\n\n" );
+    printf( "For more information see:\n\thttp://pfaedit.sourceforge.net/\n" );
+    printf( "Send bug reports to:\tpfaedit-devel@lists.sourceforge.net\n" );
+}
+
+static void doscriptusage(void) {
+    _doscriptusage();
+exit(0);
+}
+
+static void doscripthelp(void) {
+    _doscriptusage();
+    help("overview.html");
+exit(0);
+}
+#endif
+
 void CheckIsScript(int argc, char *argv[]) {
     _CheckIsScript(argc, argv);
 #ifdef X_DISPLAY_MISSING
+    if ( argc==2 ) {
+	char *pt = argv[1];
+	if ( *pt=='-' && pt[1]=='-' ) ++pt;
+	if ( strcmp(pt,"-usage")==0 )
+	    doscriptusage();
+	else if ( strcmp(pt,"-help")==0 )
+	    doscripthelp();
+	else if ( strcmp(pt,"-version")==0 )
+	    doversion();
+    }
     ProcessScript(argc, argv,stdin);
 #endif
 }

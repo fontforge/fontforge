@@ -30,7 +30,7 @@
 
 extern const char *source_modtime_str;
 
-static void doversion(void) {
+void doversion(void) {
     extern const char *source_version_str;
     fprintf( stderr, "Copyright \251 2002 by George Williams.\n Executable based on sources from %s.\n",
 	    source_modtime_str );

@@ -824,12 +824,14 @@ int ttfcopyfile(FILE *ttf, FILE *other, int pos);
 
 extern void SCCopyFgToBg(SplineChar *sc,int show);
 
-int hasFreeType(void);
-void *FreeTypeFontContext(SplineFont *sf,SplineChar *sc,int doall);
-BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int depth);
-BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,
+extern int hasFreeType(void);
+extern void *FreeTypeFontContext(SplineFont *sf,SplineChar *sc,int doall);
+extern BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int depth);
+extern BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,
 	int pixelsize,int depth);
-void FreeTypeFreeContext(void *freetypecontext);
+extern void FreeTypeFreeContext(void *freetypecontext);
+
+extern void doversion(void);
 
 # if HANYANG
 extern void SFDDumpCompositionRules(FILE *sfd,struct compositionrules *rules);

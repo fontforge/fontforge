@@ -54,7 +54,7 @@ static void initadobeenc(void) {
     }
 }
 
-static void doversion(void) {
+void doversion(void) {
     extern const char *source_version_str;
     printf( "pfaedit %s\n", source_version_str );
 exit(0);
@@ -94,7 +94,7 @@ static void _dousage(void) {
     printf( "If the first argument is an executable filename, and that file's first\n" );
     printf( "\tline contains \"pfaedit\" then it will be treated as a scriptfile.\n\n" );
     printf( "For more information see:\n\thttp://pfaedit.sourceforge.net/\n" );
-    printf( "Send bug reports to:\tgww@silcom.com\n" );
+    printf( "Send bug reports to:\tpfaedit-devel@lists.sourceforge.net\n" );
 }
 
 static void dousage(void) {
