@@ -2543,32 +2543,50 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 return( dummy );
 }
 
+static char *AdobeLigatureFormat(char *name) {
+    /* I'm not checking to see if all the components are valid */
+    char *components, *pt;
+
+    if ( strchr(name,'_')==NULL )
+return( NULL );
+    pt = components = copy(name);
+    while ( (pt = strchr(pt,'_'))!=NULL )
+	*pt = ' ';
+return( components );
+}
+
 Ligature *SCLigDefault(SplineChar *sc) {
     const unichar_t *alt, *pt;
-    char *components;
+    char *components = NULL;
     int len;
     Ligature *lig;
     const unichar_t *uname;
 
     /* If it's not unicode we have no info on it */
-    if ( sc->unicodeenc==-1 )
+    /*  Unless it looks like one of adobe's special ligature names */
+    if ( sc->unicodeenc==-1 ) {
+	if ( strchr(sc->name,'_')==NULL )
 return( NULL );
-    if ( !isdecompositionnormative(sc->unicodeenc) ||
-	    unicode_alternates[sc->unicodeenc>>8]==NULL ||
-	    (alt = unicode_alternates[sc->unicodeenc>>8][sc->unicodeenc&0xff])==NULL )
+	components = AdobeLigatureFormat(sc->name);
+    } else {
+	if ( !isdecompositionnormative(sc->unicodeenc) ||
+		unicode_alternates[sc->unicodeenc>>8]==NULL ||
+		(alt = unicode_alternates[sc->unicodeenc>>8][sc->unicodeenc&0xff])==NULL )
 return( NULL );
-    for ( pt=alt; *pt; ++pt )
-	if ( iscombining(*pt))
+	for ( pt=alt; *pt; ++pt )
+	    if ( iscombining(*pt))
 return( NULL );			/* Don't treat accented letters as ligatures */
-    if ( alt[1]=='\0' )
+	if ( alt[1]=='\0' )
 return( NULL );			/* Single replacements aren't ligatures */
-    if ( UnicodeCharacterNames[sc->unicodeenc>>8]!=NULL &&
-	    (uname = UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff])!=NULL &&
-	    uc_strstr(uname,"LIGATURE")==NULL )
+	if ( UnicodeCharacterNames[sc->unicodeenc>>8]!=NULL &&
+		(uname = UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff])!=NULL &&
+		uc_strstr(uname,"LIGATURE")==NULL )
 return( NULL );
-	    
+    }
 
-    if ( sc->unicodeenc==0xfb03 )
+    if ( components!=NULL )
+	/* All done */;
+    else if ( sc->unicodeenc==0xfb03 )
 	components = copy("f f i; ff i");
     else if ( sc->unicodeenc==0xfb04 )
 	components = copy("f f l; ff l");
@@ -2697,7 +2715,11 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		buf[0] = '?';
 		if ( pt!=NULL ) {
 		    int i, n = pt-sc->name;
-		    for ( i=0; i<psunicodenames_cnt; ++i )
+		    char *end;
+		    if ( n==7 && sc->name[0]=='u' && sc->name[1]=='n' && sc->name[2]=='i' &&
+			    (i=strtol(sc->name+3,&end,16), end-sc->name==7))
+			buf[0] = i;
+		    else for ( i=0; i<psunicodenames_cnt; ++i )
 			if ( psunicodenames[i]!=NULL && strncmp(sc->name,psunicodenames[i],n)==0 ) {
 			    buf[0] = i;
 		    break;

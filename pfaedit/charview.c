@@ -50,6 +50,8 @@ struct cvshows CVShows = {
 	1,		/* show horizontal metrics */
 	0		/* show vertical metrics */
 };
+Color nextcpcol = 0x007090;
+Color prevcpcol = 0xff00ff;
 
 /* Positions on the info line */
 #define RPT_BASE	5		/* Place to draw the pointer icon */
@@ -318,16 +320,16 @@ return;
 	if ( !sp->nonextcp ) {
 	    cx =  cv->xoff + rint(sp->nextcp.x*cv->scale);
 	    cy = -cv->yoff + cv->height - rint(sp->nextcp.y*cv->scale);
-	    GDrawDrawLine(pixmap,x,y,cx,cy, 0);
-	    GDrawDrawLine(pixmap,cx-2,cy-2,cx+2,cy+2,0x0000ff);
-	    GDrawDrawLine(pixmap,cx+2,cy-2,cx-2,cy+2,0x0000ff);
+	    GDrawDrawLine(pixmap,x,y,cx,cy, nextcpcol);
+	    GDrawDrawLine(pixmap,cx-3,cy-3,cx+3,cy+3,nextcpcol);
+	    GDrawDrawLine(pixmap,cx+3,cy-3,cx-3,cy+3,nextcpcol);
 	}
 	if ( !sp->noprevcp ) {
 	    cx =  cv->xoff + rint(sp->prevcp.x*cv->scale);
 	    cy = -cv->yoff + cv->height - rint(sp->prevcp.y*cv->scale);
-	    GDrawDrawLine(pixmap,x,y,cx,cy, 0);
-	    GDrawDrawLine(pixmap,cx-2,cy-2,cx+2,cy+2,0x0000ff);
-	    GDrawDrawLine(pixmap,cx+2,cy-2,cx-2,cy+2,0x0000ff);
+	    GDrawDrawLine(pixmap,x,y,cx,cy, prevcpcol);
+	    GDrawDrawLine(pixmap,cx-3,cy-3,cx+3,cy+3,prevcpcol);
+	    GDrawDrawLine(pixmap,cx+3,cy-3,cx-3,cy+3,prevcpcol);
 	}
     }
 

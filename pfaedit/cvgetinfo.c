@@ -285,6 +285,19 @@ static int CI_OK(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static void LigatureNameCheck(GIData *ci, const unichar_t *name) {
+    /* I'm not checking to see if the components are known names... */
+    unichar_t *components, *pt;
+
+    if ( u_strchr(name,'_')==NULL )
+return;
+    pt = components = u_copy(name);
+    while ( (pt = u_strchr(pt,'_'))!=NULL )
+	*pt = ' ';
+    GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_Ligature),components);
+    free(components);
+}
+
 static int CI_SName(GGadget *g, GEvent *e) {	/* Set From Name */
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
@@ -321,6 +334,8 @@ static int CI_SName(GGadget *g, GEvent *e) {	/* Set From Name */
 	    ubuf[0] = '\0';
 	ubuf[1] = '\0';
 	GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_UChar),ubuf);
+	if ( i==-1 && u_strchr(ret,'_')!=NULL )
+	    LigatureNameCheck(ci,ret);
     }
 return( true );
 }
@@ -1063,7 +1078,13 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[24];
     GTextInfo label[24];
+    static GBox cur, nextcp, prevcp;
+    extern Color nextcpcol, prevcpcol;
 
+    cur.main_background = nextcp.main_background = prevcp.main_background = COLOR_DEFAULT;
+    cur.main_foreground = 0xff0000;
+    nextcp.main_foreground = nextcpcol;
+    prevcp.main_foreground = prevcpcol;
     gi.cv = cv;
     gi.cursp = sp;
     gi.curspl = spl;
@@ -1091,7 +1112,8 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	label[0].text_in_resource = true;
 	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5+6; 
-	gcd[0].gd.flags = gg_enabled|gg_visible;
+	gcd[0].gd.flags = gg_enabled|gg_visible|gg_dontcopybox;
+	gcd[0].gd.box = &cur;
 	gcd[0].creator = GLabelCreate;
 
 	gcd[1].gd.pos.x = 60; gcd[1].gd.pos.y = 5; gcd[1].gd.pos.width = 53;
@@ -1110,7 +1132,8 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	label[3].text_in_resource = true;
 	gcd[3].gd.label = &label[3];
 	gcd[3].gd.pos.x = 9; gcd[3].gd.pos.y = 35; 
-	gcd[3].gd.flags = gg_enabled|gg_visible;
+	gcd[3].gd.flags = gg_enabled|gg_visible|gg_dontcopybox;
+	gcd[3].gd.box = &prevcp;
 	gcd[3].creator = GLabelCreate;
 
 	gcd[4].gd.pos.x = 60; gcd[4].gd.pos.y = 35; gcd[4].gd.pos.width = 60;
@@ -1144,6 +1167,8 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[7].gd.label = &label[7];
 	gcd[7].gd.pos.x = gcd[3].gd.pos.x; gcd[7].gd.pos.y = 82; 
 	gcd[7].gd.flags = gg_enabled|gg_visible;
+	gcd[7].gd.flags = gg_enabled|gg_visible|gg_dontcopybox;
+	gcd[7].gd.box = &nextcp;
 	gcd[7].creator = GLabelCreate;
 
 	gcd[8].gd.pos.x = 60; gcd[8].gd.pos.y = 82;  gcd[8].gd.pos.width = 60;

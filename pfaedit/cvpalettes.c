@@ -35,6 +35,9 @@ static GWindow cvlayers, cvtools, bvlayers, bvtools;
 static GPoint cvtoolsoff = { -9999 }, cvlayersoff = { -9999 }, bvlayersoff = { -9999 }, bvtoolsoff = { -9999 };
 static int palettesmoved=0;
 
+static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
+static GFont *font;
+
 static GWindow CreatePalette(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs) {
     GWindow gw;
     GPoint pt, base;
@@ -334,12 +337,26 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
 			            { &GIcon_rotate, &GIcon_skew },
 			            { &GIcon_rect, &GIcon_poly},
 			            { &GIcon_elipse, &GIcon_star}};
+    static GImage *smalls[] = { &GIcon_smallpointer, &GIcon_smallmag,
+				    &GIcon_smallcurve, &GIcon_smallcorner,
+				    &GIcon_smalltangent, &GIcon_smallpen,
+			            &GIcon_smallknife, &GIcon_smallruler,
+			            &GIcon_smallscale, &GIcon_smallflip,
+			            &GIcon_smallrotate, &GIcon_smallskew,
+			            &GIcon_smallrect, &GIcon_smallpoly,
+			            &GIcon_smallelipse, &GIcon_smallstar };
+    static const unichar_t _Mouse[][9] = {
+	    { 'M', 's', 'e', '1',  '\0' },
+	    { '^', 'M', 's', 'e', '1',  '\0' },
+	    { 'M', 's', 'e', '2',  '\0' },
+	    { '^', 'M', 's', 'e', '2',  '\0' }};
     int i,j,norm, mi;
     int tool = cv->cntrldown?cv->cb1_tool:cv->b1_tool;
     int dither = GDrawSetDither(NULL,false);
+    GRect temp;
 
     GDrawPushClip(pixmap,r,&old);
-    for ( i=0; i<sizeof(buttons)/sizeof(buttons[0]); ++i ) for ( j=0; j<2; ++j ) {
+    for ( i=0; i<sizeof(buttons)/sizeof(buttons[0])-1; ++i ) for ( j=0; j<2; ++j ) {
 	mi = i;
 	if ( i==(cvt_rect)/2 && ((j==0 && rectelipse) || (j==1 && polystar)) )
 	    ++mi;
@@ -349,6 +366,13 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
 	GDrawDrawLine(pixmap,j*27,i*27,j*27,i*27+25,norm?0xe0e0e0:0x707070);
 	GDrawDrawLine(pixmap,j*27,i*27+25,j*27+25,i*27+25,norm?0x707070:0xe0e0e0);
 	GDrawDrawLine(pixmap,j*27+25,i*27,j*27+25,i*27+25,norm?0x707070:0xe0e0e0);
+    }
+    GDrawSetFont(pixmap,font);
+    temp.x = 52-16; temp.y = i*27; temp.width = 16; temp.height = 4*12;
+    GDrawFillRect(pixmap,&temp,GDrawGetDefaultBackground(NULL));
+    for ( j=0; j<4; ++j ) {
+	GDrawDrawText(pixmap,2,i*27+j*12+10,_Mouse[j],-1,NULL,0x000000);
+	GDrawDrawImage(pixmap,smalls[(&cv->b1_tool)[j]],NULL,52-16,i*27+j*12);
     }
     GDrawPopClip(pixmap,&old);
     GDrawSetDither(NULL,dither);
@@ -438,7 +462,8 @@ static void ToolsMouse(CharView *cv, GEvent *event) {
 	++mi;
     pos = mi*2 + j;
     GGadgetEndPopup();
-    if ( pos<0 || pos>=cvt_max )
+    /* we have two fewer buttons than commands as two bottons each control two commands */
+    if ( pos<0 || pos>=cvt_max-2 )
 	pos = cvt_none;
     if ( event->type == et_mousedown ) {
 	cv->pressed_tool = cv->pressed_display = pos;
@@ -471,16 +496,15 @@ static void ToolsMouse(CharView *cv, GEvent *event) {
 	    else if ( cv->had_control ) {
 		if ( cv->cb1_tool!=pos ) {
 		    cv->cb1_tool = pos;
-		    GDrawRequestExpose(cvtools,NULL,false);
 		}
 	    } else {
 		if ( cv->b1_tool!=pos ) {
 		    cv->b1_tool = pos;
-		    GDrawRequestExpose(cvtools,NULL,false);
 		}
 	    }
 	    cv->pressed_tool = cv->pressed_display = cvt_none;
 	}
+	GDrawRequestExpose(cvtools,NULL,false);
 	event->u.chr.state &= ~(1<<(7+event->u.mouse.button));
     }
     CVToolsSetCursor(cv,event->u.chr.state);
@@ -536,6 +560,7 @@ return( true );
 GWindow CVMakeTools(CharView *cv) {
     GRect r;
     GWindowAttrs wattrs;
+    FontRequest rq;
 
     if ( cvtools!=NULL )
 return( cvtools );
@@ -548,12 +573,19 @@ return( cvtools );
     wattrs.is_dlg = true;
     wattrs.window_title = GStringGetResource(_STR_Tools,NULL);
 
-    r.width = 53; r.height = 187;
+    r.width = 53; r.height = 187+4*12+2;
     if ( cvtoolsoff.x==-9999 ) {
 	cvtoolsoff.x = -r.width-6; cvtoolsoff.y = cv->mbh+20;
     }
     r.x = cvtoolsoff.x; r.y = cvtoolsoff.y;
     cvtools = CreatePalette( cv->gw, &r, cvtools_e_h, cv, &wattrs );
+
+    memset(&rq,0,sizeof(rq));
+    rq.family_name = helv;
+    rq.point_size = -10;
+    rq.weight = 400;
+    font = GDrawInstanciateFont(NULL,&rq);
+
     GDrawSetVisible(cvtools,true);
 return( cvtools );
 }
@@ -702,7 +734,6 @@ GWindow CVMakeLayers(CharView *cv) {
     GGadgetCreateData gcd[21];
     GTextInfo label[21];
     static GBox radio_box = { bt_none, bs_rect, 0, 0, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };
-    static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     GFont *font;
     FontRequest rq;
     int i, base;
@@ -720,7 +751,7 @@ return( cvlayers );
     r.width = 104; r.height = 162;
     if ( cvlayersoff.x==-9999 ) {
 	cvlayersoff.x = -r.width-6;
-	cvlayersoff.y = cv->mbh+187+45/*25*/;	/* 45 is right if there's decor, 25 when none. twm gives none, kde gives decor */
+	cvlayersoff.y = cv->mbh+187+50+45/*25*/;	/* 45 is right if there's decor, 25 when none. twm gives none, kde gives decor */
     }
     r.x = cvlayersoff.x; r.y = cvlayersoff.y;
     cvlayers = CreatePalette( cv->gw, &r, cvlayers_e_h, cv, &wattrs );

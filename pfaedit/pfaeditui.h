@@ -49,6 +49,12 @@ extern GImage GIcon_tangent, GIcon_curve, GIcon_corner, GIcon_ruler,
 	GIcon_rect, GIcon_elipse, GIcon_rrect, GIcon_poly, GIcon_star,
 	GIcon_pencil, GIcon_shift, GIcon_line, GIcon_hand,
 	GIcon_press2ptr;
+extern GImage GIcon_smallskew, GIcon_smallscale, GIcon_smallrotate,
+	GIcon_smallflip, GIcon_smalltangent, GIcon_smallcorner,
+	GIcon_smallcurve, GIcon_smallmag, GIcon_smallknife, GIcon_smallpen,
+	GIcon_smallpointer, GIcon_smallruler, GIcon_smallelipse,
+	GIcon_smallrect, GIcon_smallpoly, GIcon_smallstar;
+
 extern GTextInfo encodingtypes[];
 extern GTextInfo *EncodingTypesFindEnc(GTextInfo *encodingtypes, int enc);
 extern GTextInfo *GetEncodingTypes(void);

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 26-Nov-2001 -->
+  <!-- AP: Last modified: 3-Jan-2002 -->
   <TITLE>Outline Character View</TITLE>
 </HEAD>
 <BODY>
@@ -37,9 +37,10 @@ in cyan.
 The points of the character are of three types, corner points drawn as filled
 squares, curve points drawn as filled circles and tangent points drawn as
 filled triangles. If a point is selected then it will be drawn as an outlined
-square, circle or triangle and its control points are drawn as little blue
-xs at the end of a black line. (in a curved point the control points will
-be collinear).
+square, circle or triangle and its control points are drawn as little magenta
+or dull-cyan xs at the end of a similarly colored line. (in a curved point
+the control points will be collinear). (the "Next" control point will be
+drawn dull cyan, and the Prev point will be magenta).
 <P>
 There are also two independent palettes, one allowing you to control
 <A HREF="#Layers">which layers are visible</A>, and one a tool palette from
@@ -96,10 +97,14 @@ go to <A HREF="fontinfo.html#vertical">Element-&gt;FontInfo</A>.
   <A NAME="Tools">Tools</A>
 </H2>
 <P>
-<IMG SRC="tools.png" WIDTH="57" HEIGHT="191" ALIGN="Left">
+<IMG SRC="tools.png" WIDTH="57" HEIGHT="260" ALIGN="Left"> There are 14 different
+editing tools of which two (rectangle/ellipse and polygon/star) come in two
+forms.
 <P>
-There are 14 different editing tools of which two (rectangle/ellipse and
-polygon/star) come in two forms.
+At the bottom of the palette is a list of the current bindings of the mouse
+buttons. Here mouse button 1 is bound to the pointer tool, mouse button 1
+with the control key pressed is also bound to pointer, mouse button 2 is
+bound to magnify, and mouse button 2 with control is bound to ruler.
 <H3>
   The pointer tool
 </H3>
