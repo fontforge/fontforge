@@ -103,20 +103,20 @@ int main(int argc, char **argv) {
 	maxcid = cid;
 	if ( (cid>=17408 && cid<=17599) || cid==17604 || cid==17605 ) {
 	    if ( cid>=17408 && cid<=17505 )		/* proportional */
-		sprintf( buffer,"cid-%d.vert", cid-17408+1 );
+		sprintf( buffer,"CNS1.%d.vert", cid-17408+1 );
 	    else if ( cid>=17506 && cid<=17599 )	/* Half width */
-		sprintf( buffer,"cid-%d.vert", cid-17506+13648 );
+		sprintf( buffer,"CNS1.%d.vert", cid-17506+13648 );
 	    else if ( cid==17604 )
-		strcpy( buffer, "cid-17601.vert" );
+		strcpy( buffer, "CNS1.17601.vert" );
 	    else if ( cid==17605 )
-		strcpy( buffer, "cid-17603.vert" );
+		strcpy( buffer, "CNS1.17603.vert" );
 	    nonuni_names[cid] = strdup(buffer);
 	/* Adobe's CNS cids have the rotated and non-rotated forms intermixed */
 	} else if ( (cid>=120 && cid<=127 ) && (cid&1) ) {
-	    sprintf( buffer,"cid-%d.vert", cid-1 );
+	    sprintf( buffer,"CNS1.%d.vert", cid-1 );
 	    nonuni_names[cid] = strdup(buffer);
 	} else if ( (cid>=128 && cid<=159) && (cid&2) ) {
-	    sprintf( buffer,"cid-%d.vert", cid-2 );
+	    sprintf( buffer,"CNS1.%d.vert", cid-2 );
 	    nonuni_names[cid] = strdup(buffer);
 	} else if ( cid>=13648 && cid<=13741 ) {
 	    sprintf( buffer, "uni%04X.hw", cid-13648+' ' );
@@ -125,7 +125,7 @@ int main(int argc, char **argv) {
 	    strcpy( buffer, "uni203E.hw" );
 	} else if ( uni==-1 ) {
     continue;
-	    sprintf( buffer,"cid-%d", cid );
+	    sprintf( buffer,"CNS1.%d", cid );
 	    nonuni_names[cid] = strdup(buffer);
 	} else if ( uni>=VERTMARK ) {
 	    /* rotated */
@@ -146,7 +146,7 @@ int main(int argc, char **argv) {
 	if ( j==maxcid )
 	    sprintf( buffer, "uni%04X.vert", cid_2_rotunicode[i]);
 	else
-	    sprintf( buffer, "cid-%d.vert", j);
+	    sprintf( buffer, "CNS1.%d.vert", j);
 	nonuni_names[i] = strdup(buffer);
     }
 

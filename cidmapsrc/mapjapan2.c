@@ -102,7 +102,7 @@ int main(int argc, char **argv) {
 	maxcid = cid;
 	if ( uni==-1 ) {
     continue;
-	    sprintf( buffer,"cid-%d", cid );
+	    sprintf( buffer,"Japan2.%d", cid );
 	    nonuni_names[cid] = strdup(buffer);
 	} else if ( !used[uni] ) {
 	    used[uni] = 1;

@@ -115,18 +115,18 @@ int main(int argc, char **argv) {
 	    nonuni_names[cid] = strdup(buffer);
 	} else if ( cid>=18255 && cid<=18351 ) {
 	    /* rotated halfwidth latin */
-	    sprintf( buffer, "cid-%d.vert", cid-18255+8094 );
+	    sprintf( buffer, "Korea1.%d.vert", cid-18255+8094 );
 	    nonuni_names[cid] = strdup(buffer);
 	} else if ( cid>=18155 && cid<=18254 ) {
 	    /* rotated proportional latin */
-	    sprintf( buffer, "cid-%d.vert", cid-18155+1 );
+	    sprintf( buffer, "Korea1.%d.vert", cid-18155+1 );
 	    nonuni_names[cid] = strdup(buffer);
 	} else if ( uni>=VERTMARK ) {
 	    /* rotated */
 	    cid_2_rotunicode[cid] = uni-VERTMARK;
 	} else if ( uni==-1 ) {
     continue;
-	    sprintf( buffer,"cid-%d", cid );
+	    sprintf( buffer,"Korea1.%d", cid );
 	    nonuni_names[cid] = strdup(buffer);
 	} else if ( !used[uni] ) {
 	    used[uni] = 1;
@@ -144,7 +144,7 @@ int main(int argc, char **argv) {
 	if ( j==maxcid )
 	    sprintf( buffer, "uni%04X.vert", cid_2_rotunicode[i]);
 	else
-	    sprintf( buffer, "cid-%d.vert", j);
+	    sprintf( buffer, "Korea1.%d.vert", j);
 	nonuni_names[i] = strdup(buffer);
     }
 
