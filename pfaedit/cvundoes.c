@@ -865,6 +865,41 @@ static void CopyBufferFreeGrab(void) {
 static void noop(void *_copybuffer) {
 }
 
+static void *copybufferPt2str(void *_copybuffer,int32 *len) {
+    Undoes *cur = &copybuffer;
+    SplinePoint *sp;
+    char buffer[100];
+
+    while ( cur ) {
+	switch ( cur->undotype ) {
+	  case ut_multiple:
+	    cur = cur->u.multiple.mult;
+	  break;
+	  case ut_composit:
+	    cur = cur->u.composit.state;
+	  break;
+	  case ut_state: case ut_statehint:
+    goto out;
+	  default:
+	    cur = NULL;
+	  break;
+	}
+    }
+    out:
+    if ( cur==NULL || fv_list==NULL ||
+	    cur->u.state.splines==NULL || cur->u.state.refs!=NULL ||
+	    cur->u.state.splines->next!=NULL ||
+	    cur->u.state.splines->first->next!=NULL ) {
+	*len=0;
+return( copy(""));
+    }
+
+    sp = cur->u.state.splines->first;
+    sprintf(buffer,"(%g , %g)", sp->me.x, sp->me.y );
+    *len = strlen(buffer);
+return( copy(buffer));
+}
+
 static void *copybuffer2eps(void *_copybuffer,int32 *len) {
     Undoes *cur = &copybuffer;
     SplineChar dummy;
@@ -932,6 +967,12 @@ return;
 	  case ut_state: case ut_statehint:
 	    GDrawAddSelectionType(fv_list->gw,sn_clipboard,"image/eps",&copybuffer,0,sizeof(char),
 		    copybuffer2eps,noop);
+	    /* If the selection is one point, then export the coordinates as a string */
+	    if ( cur->u.state.splines!=NULL && cur->u.state.refs==NULL &&
+		    cur->u.state.splines->next==NULL &&
+		    cur->u.state.splines->first->next==NULL )
+		GDrawAddSelectionType(fv_list->gw,sn_clipboard,"STRING",&copybuffer,0,sizeof(char),
+			copybufferPt2str,noop);
 	    cur = NULL;
 	  break;
 	  default:
