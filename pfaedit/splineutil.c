@@ -301,12 +301,48 @@ void SplinePointListsFree(SplinePointList *head) {
     }
 }
 
+void ImageListsFree(ImageList *imgs) {
+    ImageList *inext;
+
+    while ( imgs!=NULL ) {
+	inext = imgs->next;
+	chunkfree(imgs,sizeof(ImageList));
+	imgs = inext;
+    }
+}
+
 void RefCharFree(RefChar *ref) {
+#ifdef PFAEDIT_CONFIG_TYPE3
+    int i;
 
     if ( ref==NULL )
 return;
+    for ( i=0; i<ref->layer_cnt; ++i ) {
+	SplinePointListsFree(ref->layers[i].splines);
+	ImageListsFree(ref->layers[i].images);
+    }
+    free(ref->layers);
+#else
+    if ( ref==NULL )
+return;
     SplinePointListsFree(ref->layers[0].splines);
+#endif
     chunkfree(ref,sizeof(RefChar));
+}
+
+RefChar *RefCharCreate(void) {
+    RefChar *ref = chunkalloc(sizeof(RefChar));
+#ifdef PFAEDIT_CONFIG_TYPE3
+    ref->layers = gcalloc(1,sizeof(struct reflayer));
+    ref->layers[0].fill_brush.opacity = ref->layers[0].stroke_pen.brush.opacity = 1.0;
+    ref->layers[0].fill_brush.col = ref->layers[0].stroke_pen.brush.col = COLOR_INHERITED;
+    ref->layers[0].stroke_pen.width = WIDTH_INHERITED;
+    ref->layers[0].stroke_pen.linecap = lc_inherited;
+    ref->layers[0].stroke_pen.linejoin = lj_inherited;
+    ref->layers[0].dofill = true;
+#endif
+    ref->layer_cnt = 1;
+return( ref );
 }
 
 void RefCharsFree(RefChar *ref) {
@@ -316,16 +352,6 @@ void RefCharsFree(RefChar *ref) {
 	rnext = ref->next;
 	RefCharFree(ref);
 	ref = rnext;
-    }
-}
-
-void ImageListsFree(ImageList *imgs) {
-    ImageList *inext;
-
-    while ( imgs!=NULL ) {
-	inext = imgs->next;
-	chunkfree(imgs,sizeof(ImageList));
-	imgs = inext;
     }
 }
 
@@ -602,20 +628,24 @@ void SplineSetFindBounds(SplinePointList *spl, DBounds *bounds) {
 
 void SplineCharFindBounds(SplineChar *sc,DBounds *bounds) {
     RefChar *rf;
+    int i,j;
 
     /* a char with no splines (ie. a space) must have an lbearing of 0 */
     bounds->minx = bounds->maxx = 0;
     bounds->miny = bounds->maxy = 0;
 
-    for ( rf=sc->layers[ly_fore].refs; rf!=NULL; rf = rf->next )
-	_SplineSetFindBounds(rf->layers[0].splines,bounds);
-
-    _SplineSetFindBounds(sc->layers[ly_fore].splines,bounds);
+    for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
+	for ( rf=sc->layers[i].refs; rf!=NULL; rf = rf->next ) {
+	    for ( j=0; j<rf->layer_cnt; ++j )
+		_SplineSetFindBounds(rf->layers[j].splines,bounds);
+	}
+	_SplineSetFindBounds(sc->layers[i].splines,bounds);
+    }
 }
 
 void SplineFontFindBounds(SplineFont *sf,DBounds *bounds) {
     RefChar *rf;
-    int i;
+    int i, j, k;
 
     bounds->minx = bounds->maxx = 0;
     bounds->miny = bounds->maxy = 0;
@@ -623,10 +653,14 @@ void SplineFontFindBounds(SplineFont *sf,DBounds *bounds) {
     for ( i = 0; i<sf->charcnt; ++i ) {
 	SplineChar *sc = sf->chars[i];
 	if ( sc!=NULL ) {
-	    for ( rf=sc->layers[ly_fore].refs; rf!=NULL; rf = rf->next )
-		_SplineSetFindBounds(rf->layers[0].splines,bounds);
+	    for ( k=ly_fore; k<sc->layer_cnt; ++k ) {
+		for ( rf=sc->layers[k].refs; rf!=NULL; rf = rf->next ) {
+		    for ( j=0; j<rf->layer_cnt; ++j )
+			_SplineSetFindBounds(rf->layers[j].splines,bounds);
+		}
 
-	    _SplineSetFindBounds(sc->layers[ly_fore].splines,bounds);
+		_SplineSetFindBounds(sc->layers[k].splines,bounds);
+	    }
 	}
     }
 }
@@ -696,17 +730,20 @@ void SplineSetQuickBounds(SplineSet *ss,DBounds *b) {
 
 void SplineCharQuickBounds(SplineChar *sc, DBounds *b) {
     RefChar *ref;
+    int i;
 
-    SplineSetQuickBounds(sc->layers[ly_fore].splines,b);
-    for ( ref = sc->layers[ly_fore].refs; ref!=NULL; ref = ref->next ) {
-	/*SplineSetQuickBounds(ref->layers[0].splines,&temp);*/
-	if ( b->minx==0 && b->maxx==0 && b->miny==0 && b->maxy == 0 )
-	    *b = ref->bb;
-	else if ( ref->bb.minx!=0 || ref->bb.maxx != 0 || ref->bb.maxy != 0 || ref->bb.miny!=0 ) {
-	    if ( ref->bb.minx < b->minx ) b->minx = ref->bb.minx;
-	    if ( ref->bb.miny < b->miny ) b->miny = ref->bb.miny;
-	    if ( ref->bb.maxx > b->maxx ) b->maxx = ref->bb.maxx;
-	    if ( ref->bb.maxy > b->maxy ) b->maxy = ref->bb.maxy;
+    for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
+	SplineSetQuickBounds(sc->layers[i].splines,b);
+	for ( ref = sc->layers[i].refs; ref!=NULL; ref = ref->next ) {
+	    /*SplineSetQuickBounds(ref->layers[0].splines,&temp);*/
+	    if ( b->minx==0 && b->maxx==0 && b->miny==0 && b->maxy == 0 )
+		*b = ref->bb;
+	    else if ( ref->bb.minx!=0 || ref->bb.maxx != 0 || ref->bb.maxy != 0 || ref->bb.miny!=0 ) {
+		if ( ref->bb.minx < b->minx ) b->minx = ref->bb.minx;
+		if ( ref->bb.miny < b->miny ) b->miny = ref->bb.miny;
+		if ( ref->bb.maxx > b->maxx ) b->maxx = ref->bb.maxx;
+		if ( ref->bb.maxy > b->maxy ) b->maxy = ref->bb.maxy;
+	    }
 	}
     }
 }
@@ -745,17 +782,20 @@ void SplineSetQuickConservativeBounds(SplineSet *ss,DBounds *b) {
 
 void SplineCharQuickConservativeBounds(SplineChar *sc, DBounds *b) {
     RefChar *ref;
+    int i;
 
-    SplineSetQuickConservativeBounds(sc->layers[ly_fore].splines,b);
-    for ( ref = sc->layers[ly_fore].refs; ref!=NULL; ref = ref->next ) {
-	/*SplineSetQuickConservativeBounds(ref->layers[0].splines,&temp);*/
-	if ( b->minx==0 && b->maxx==0 && b->miny==0 && b->maxy == 0 )
-	    *b = ref->bb;
-	else if ( ref->bb.minx!=0 || ref->bb.maxx != 0 || ref->bb.maxy != 0 || ref->bb.miny!=0 ) {
-	    if ( ref->bb.minx < b->minx ) b->minx = ref->bb.minx;
-	    if ( ref->bb.miny < b->miny ) b->miny = ref->bb.miny;
-	    if ( ref->bb.maxx > b->maxx ) b->maxx = ref->bb.maxx;
-	    if ( ref->bb.maxy > b->maxy ) b->maxy = ref->bb.maxy;
+    for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
+	SplineSetQuickConservativeBounds(sc->layers[i].splines,b);
+	for ( ref = sc->layers[i].refs; ref!=NULL; ref = ref->next ) {
+	    /*SplineSetQuickConservativeBounds(ref->layers[0].splines,&temp);*/
+	    if ( b->minx==0 && b->maxx==0 && b->miny==0 && b->maxy == 0 )
+		*b = ref->bb;
+	    else if ( ref->bb.minx!=0 || ref->bb.maxx != 0 || ref->bb.maxy != 0 || ref->bb.miny!=0 ) {
+		if ( ref->bb.minx < b->minx ) b->minx = ref->bb.minx;
+		if ( ref->bb.miny < b->miny ) b->miny = ref->bb.miny;
+		if ( ref->bb.maxx > b->maxx ) b->maxx = ref->bb.maxx;
+		if ( ref->bb.maxy > b->maxy ) b->maxy = ref->bb.maxy;
+	    }
 	}
     }
 }
@@ -1477,7 +1517,7 @@ SplineChar *MakeDupRef(SplineChar *base, int local_enc, int uni_enc) {
 
     /* Used not to bother for spaces, but SCDuplicate depends on the ref */
     /*if ( dup->sc->layers[ly_fore].refs!=NULL || dup->sc->layers[ly_fore].splines!=NULL )*/ {
-	RefChar *ref = chunkalloc(sizeof(RefChar));
+	RefChar *ref = RefCharCreate();
 	sc->layers[ly_fore].refs = ref;
 	ref->sc = base;
 	ref->local_enc = base->enc;
@@ -3449,6 +3489,17 @@ SplineChar *SplineCharCreate(void) {
     sc->orig_pos = 0xffff;
     sc->unicodeenc = -1;
     sc->layer_cnt = 2;
+#ifdef PFAEDIT_CONFIG_TYPE3
+    sc->layers = gcalloc(2,sizeof(Layer));
+    sc->layers[0].fill_brush.opacity = sc->layers[0].stroke_pen.brush.opacity = 1.0;
+    sc->layers[1].fill_brush.opacity = sc->layers[1].stroke_pen.brush.opacity = 1.0;
+    sc->layers[0].fill_brush.col = sc->layers[0].stroke_pen.brush.col = COLOR_INHERITED;
+    sc->layers[1].fill_brush.col = sc->layers[1].stroke_pen.brush.col = COLOR_INHERITED;
+    sc->layers[0].stroke_pen.width = sc->layers[1].stroke_pen.width = WIDTH_INHERITED;
+    sc->layers[0].stroke_pen.linecap = sc->layers[1].stroke_pen.linecap = lc_inherited;
+    sc->layers[0].stroke_pen.linejoin = sc->layers[1].stroke_pen.linejoin = lj_inherited;
+    sc->layers[0].dofill = sc->layers[1].dofill = true;
+#endif
 return( sc );
 }
 
@@ -3461,15 +3512,20 @@ void SplineCharListsFree(struct splinecharlist *dlist) {
 }
 
 void SplineCharFreeContents(SplineChar *sc) {
+    int i;
 
     if ( sc==NULL )
 return;
     free(sc->name);
-    SplinePointListsFree(sc->layers[ly_fore].splines);
-    SplinePointListsFree(sc->layers[ly_back].splines);
-    RefCharsFree(sc->layers[ly_fore].refs);
-    ImageListsFree(sc->layers[ly_back].images);
-    /* image garbage collection????!!!! */
+    for ( i=0; i<sc->layer_cnt; ++i ) {
+	SplinePointListsFree(sc->layers[i].splines);
+	RefCharsFree(sc->layers[i].refs);
+	ImageListsFree(sc->layers[i].images);
+	/* image garbage collection????!!!! */
+#ifdef PFAEDIT_CONFIG_TYPE3
+	free(sc->layers[i].name);
+#endif
+    }
     StemInfosFree(sc->hstem);
     StemInfosFree(sc->vstem);
     DStemInfosFree(sc->dstem);
@@ -3483,6 +3539,9 @@ return;
     PSTFree(sc->possub);
     free(sc->ttf_instrs);
     free(sc->countermasks);
+#ifdef PFAEDIT_CONFIG_TYPE3
+    free(sc->layers);
+#endif
 }
 
 void SplineCharFree(SplineChar *sc) {

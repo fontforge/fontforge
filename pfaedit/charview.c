@@ -3105,7 +3105,7 @@ return;
 		CVPreserveState(cv);
 		first =false;
 	    }
-	    new = chunkalloc(sizeof(RefChar));
+	    new = RefCharCreate();
 	    new->transform[0] = new->transform[3] = 1.0;
 	    new->layers[0].splines = NULL;
 	    new->sc = rsc;
@@ -3919,7 +3919,8 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = !RecentFilesAny();
 	  break;
 	  case MID_Display:
-	    mi->ti.disabled = cv->fv->sf->onlybitmaps && cv->fv->sf->bitmaps==NULL;
+	    mi->ti.disabled = (cv->fv->sf->onlybitmaps && cv->fv->sf->bitmaps==NULL) ||
+		    cv->fv->sf->multilayer;
 	  break;
 	}
     }
@@ -5996,6 +5997,7 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     SplinePoint *sp1, *sp2, *sp3, *sp4;
     int removeOverlap;
+    int multilayer = cv->sc->parent->multilayer;
 
     sp1 = sp2 = NULL;
     CVTwoForePointsSelected(cv,&sp1,&sp2);
@@ -6003,40 +6005,41 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_AutoHint:
+	    mi->ti.disabled = multilayer;
 	    removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);
 	    free(mi->ti.text);
 	    mi->ti.text = u_copy(GStringGetResource(removeOverlap?_STR_Autohint: _STR_FullAutohint,NULL));
 	  break;
 	  case MID_HintSubsPt: case MID_AutoCounter:
-	    mi->ti.disabled = cv->sc->parent->order2;
+	    mi->ti.disabled = cv->sc->parent->order2 || multilayer;
 	  break;
 	  case MID_DontAutoHint:
-	    mi->ti.disabled = cv->sc->parent->order2;
+	    mi->ti.disabled = cv->sc->parent->order2 || multilayer;
 	    mi->ti.checked = cv->sc->manualhints;
 	  break;
 	  case MID_AutoInstr:
-	    mi->ti.disabled = !cv->sc->parent->order2;
+	    mi->ti.disabled = !cv->sc->parent->order2 || multilayer;
 	  break;
 	  case MID_EditInstructions:
-	    mi->ti.disabled = !cv->fv->sf->order2;
+	    mi->ti.disabled = !cv->fv->sf->order2 || multilayer;
 	  break;
 	  case MID_Debug:
-	    mi->ti.disabled = !cv->fv->sf->order2 || !hasFreeTypeDebugger();
+	    mi->ti.disabled = !cv->fv->sf->order2 || multilayer || !hasFreeTypeDebugger();
 	  break;
 	  case MID_ClearInstr:
 	    mi->ti.disabled = cv->sc->ttf_instrs_len==0;
 	  break;
 	  case MID_AddHHint:
-	    mi->ti.disabled = sp2==NULL || sp2->me.y==sp1->me.y;
+	    mi->ti.disabled = sp2==NULL || sp2->me.y==sp1->me.y || multilayer;
 	  break;
 	  case MID_AddVHint:
-	    mi->ti.disabled = sp2==NULL || sp2->me.x==sp1->me.x;
+	    mi->ti.disabled = sp2==NULL || sp2->me.x==sp1->me.x || multilayer;
 	  break;
 	  case MID_AddDHint:
-	    mi->ti.disabled = !CVIsDiagonalable(sp1,sp2,&sp3,&sp4);
+	    mi->ti.disabled = !CVIsDiagonalable(sp1,sp2,&sp3,&sp4) || multilayer;
 	  break;
 	  case MID_ReviewHints:
-	    mi->ti.disabled = (cv->sc->hstem==NULL && cv->sc->vstem==NULL );
+	    mi->ti.disabled = (cv->sc->hstem==NULL && cv->sc->vstem==NULL ) || multilayer;
 	  break;
 	}
     }

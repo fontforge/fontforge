@@ -2790,7 +2790,8 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = !RecentFilesAny();
 	  break;
 	  case MID_Display:
-	    mi->ti.disabled = mv->fv->sf->onlybitmaps && mv->fv->sf->bitmaps==NULL;
+	    mi->ti.disabled = (mv->fv->sf->onlybitmaps && mv->fv->sf->bitmaps==NULL) ||
+		    mv->fv->sf->multilayer;
 	  break;
 	}
     }

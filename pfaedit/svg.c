@@ -217,25 +217,95 @@ static int svg_pathdump(FILE *file, SplineSet *spl, int lineout) {
 return( lineout );
 }
 
+#ifdef PFAEDIT_CONFIG_TYPE3
+static void svg_dumpstroke(FILE *file, struct pen *pen) {
+    static char *joins[] = { "miter", "round", "bevel", "inherit", NULL };
+    static char *caps[] = { "butt", "round", "square", "inherit", NULL };
+
+    if ( pen->brush.col!=COLOR_INHERITED )
+	fprintf( file, "stroke=\"#%02x%02x%02x\" ",
+		COLOR_RED(pen->brush.col), COLOR_GREEN(pen->brush.col), COLOR_BLUE(pen->brush.col));
+    else
+	fprintf( file, "stroke=\"currentColor\" " );
+    if ( pen->brush.opacity>=0 )
+	fprintf( file, "stroke-opacity=\"%g\" ", pen->brush.opacity);
+    if ( pen->width!=WIDTH_INHERITED )
+	fprintf( file, "stroke-width=\"%d\" ", pen->width );
+    if ( pen->linecap!=lc_inherited )
+	fprintf( file, "stroke-linecap=\"%s\" ", caps[pen->linecap] );
+    if ( pen->linejoin!=lc_inherited )
+	fprintf( file, "stroke-linejoin=\"%s\" ", joins[pen->linejoin] );
+}
+
+static void svg_dumpfill(FILE *file, struct brush *brush) {
+    if ( brush->col!=COLOR_INHERITED )
+	fprintf( file, "fill=\"#%02x%02x%02x\" ",
+		COLOR_RED(brush->col), COLOR_GREEN(brush->col), COLOR_BLUE(brush->col));
+    else
+	fprintf( file, "fill=\"currentColor\" " );
+    if ( brush->opacity>=0 )
+	fprintf( file, "fill-opacity=\"%g\" ", brush->opacity);
+}
+#endif
+
 static void svg_scpathdump(FILE *file, SplineChar *sc) {
+    int i,j;
     RefChar *ref;
     int lineout, any;
 
-    any = sc->layers[ly_fore].splines!=NULL;
-    for ( ref=sc->layers[ly_fore].refs ; ref!=NULL && !any; ref = ref->next )
-	any = ref->layers[0].splines!=NULL;
+    any = false;
+    for ( i=ly_fore; i<sc->layer_cnt && !any; ++i ) {
+	any = sc->layers[i].splines!=NULL;
+	for ( ref=sc->layers[i].refs ; ref!=NULL && !any; ref = ref->next )
+	    for ( j=0; j<ref->layer_cnt && !any; ++j )
+		any = ref->layers[j].splines!=NULL;
+    }
     if ( !any ) {
 	/* I think a space is represented by leaving out the d (path) entirely*/
 	/*  rather than having d="" */
-    } else {
+	fputs(" />\n",file);
+    } else if ( !sc->parent->multilayer ) {
 	fprintf( file,"d=\"");
 	lineout = svg_pathdump(file,sc->layers[ly_fore].splines,3);
 	for ( ref= sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
 	    lineout = svg_pathdump(file,ref->layers[0].splines,lineout);
 	if ( lineout>=255-4 ) putc('\n',file );
 	putc('"',file);
+	fputs(" />\n",file);
+    } else {
+	putc('>',file);
+#ifdef PFAEDIT_CONFIG_TYPE3
+	for ( i=ly_fore; i<sc->layer_cnt && !any; ++i ) {
+	    fprintf(file, "  <g " );
+	    if ( sc->layers[i].dostroke )
+		svg_dumpstroke(file,&sc->layers[i].stroke_pen);
+	    if ( sc->layers[i].dofill )
+		svg_dumpfill(file,&sc->layers[i].fill_brush);
+	    fprintf( file, ">\n" );
+	    if ( sc->layers[i].splines!=NULL ) {
+		fprintf(file, "  <path d=\"\n");
+		svg_pathdump(file,sc->layers[i].splines,12);
+		fprintf(file, "/>\n" );
+	    }
+	    for ( ref=sc->layers[i].refs ; ref!=NULL && !any; ref = ref->next ) {
+		for ( j=0; j<ref->layer_cnt && !any; ++j ) if ( ref->layers[j].splines!=NULL ) {
+		    fprintf(file, "   <g " );
+		    if ( ref->layers[j].dostroke )
+			svg_dumpstroke(file,&ref->layers[j].stroke_pen);
+		    if ( ref->layers[j].dofill )
+			svg_dumpfill(file,&ref->layers[j].fill_brush);
+		    fprintf( file, ">\n" );
+		    fprintf(file, "  <path d=\"\n");
+		    svg_pathdump(file,ref->layers[j].splines,12);
+		    fprintf(file, "/>\n" );
+		    fprintf(file, "   </g>\n" );
+		}
+	    }
+	    fprintf(file, "  </g>\n" );
+	}
+#endif
+	fputs(" </glyph>\n",file);
     }
-    fputs(" />\n",file);
 }
 
 static int LigCnt(SplineFont *sf,PST *lig,int32 *univals,int max) {

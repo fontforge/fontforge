@@ -3339,23 +3339,24 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int anychars = FVAnyCharSelected(fv);
     int removeOverlap;
+    int multilayer = fv->sf->multilayer;
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_AutoHint:
-	    mi->ti.disabled = anychars==-1;
+	    mi->ti.disabled = anychars==-1 || multilayer;
 	    removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);
 	    free(mi->ti.text);
 	    mi->ti.text = u_copy(GStringGetResource(removeOverlap?_STR_Autohint:_STR_FullAutohint,NULL));
 	  break;
 	  case MID_HintSubsPt: case MID_AutoCounter: case MID_DontAutoHint:
-	    mi->ti.disabled = fv->sf->order2 || anychars==-1;
+	    mi->ti.disabled = fv->sf->order2 || anychars==-1 || multilayer;
 	  break;
 	  case MID_AutoInstr: case MID_EditInstructions:
-	    mi->ti.disabled = !fv->sf->order2 || anychars==-1;
+	    mi->ti.disabled = !fv->sf->order2 || anychars==-1 || multilayer;
 	  break;
 	  case MID_Editfpgm: case MID_Editprep: case MID_Editcvt:
-	    mi->ti.disabled = !fv->sf->order2 ;
+	    mi->ti.disabled = !fv->sf->order2 || multilayer;
 	  break;
 	  case MID_ClearHints: case MID_ClearWidthMD: case MID_ClearInstrs:
 	    mi->ti.disabled = anychars==-1;
@@ -3392,7 +3393,8 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = fv->sf->onlybitmaps;
 	  break;
 	  case MID_Display:
-	    mi->ti.disabled = fv->sf->onlybitmaps && fv->sf->bitmaps==NULL;
+	    mi->ti.disabled = (fv->sf->onlybitmaps && fv->sf->bitmaps==NULL) ||
+			fv->sf->multilayer;
 	  break;
 	}
     }
@@ -4432,12 +4434,18 @@ return( -1 );
 
 SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
     static char namebuf[100];
+#ifdef PFAEDIT_CONFIG_TYPE3
+    static Layer layers[2];
+#endif
     Encoding *item=NULL;
     int j;
 
     memset(dummy,'\0',sizeof(*dummy));
     dummy->color = COLOR_DEFAULT;
     dummy->layer_cnt = 2;
+#ifdef PFAEDIT_CONFIG_TYPE3
+    dummy->layers = layers;
+#endif
     dummy->enc = i;
     if ( sf->compacted ) {
 	for ( j=i-1; j>=0; --j )

@@ -34,7 +34,7 @@ static RefChar *RefCharsCopy(RefChar *ref) {
     RefChar *rhead=NULL, *last=NULL, *cur;
 
     while ( ref!=NULL ) {
-	cur = chunkalloc(sizeof(RefChar));
+	cur = RefCharCreate();
 	*cur = *ref;
 	cur->layers[0].splines = NULL;	/* Leave the old sc, we'll fix it later */
 	cur->next = NULL;
@@ -987,7 +987,7 @@ static RefChar *InterpRefs(RefChar *base, RefChar *other, real amount, SplineCha
 	}
 	if ( test!=NULL ) {
 	    test->checked = true;
-	    cur = chunkalloc(sizeof(RefChar));
+	    cur = RefCharCreate();
 	    *cur = *base;
 	    cur->local_enc = cur->sc->enc;
 	    for ( i=0; i<6; ++i )

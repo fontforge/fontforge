@@ -605,7 +605,8 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_Em		1017
 #define CID_Scale	1018
 #define CID_IsOrder2	1019
-#define CID_Interpretation	1020
+#define CID_IsMultiLayer	1020
+#define CID_Interpretation	1021
 
 #define CID_Make	1111
 #define CID_Delete	1112
@@ -3925,6 +3926,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	GTextInfo *pfmfam, *fstype;
 	int32 len;
 	GTextInfo **ti;
+	int multilayer = false;
 
 	if ( !CheckNames(d))
 return( true );
@@ -3949,6 +3951,9 @@ return( true );
 return(true);
 	}
 	order2 = GGadgetIsChecked(GWidgetGetControl(gw,CID_IsOrder2));
+#ifdef PFAEDIT_CONFIG_TYPE3
+	multilayer = GGadgetIsChecked(GWidgetGetControl(gw,CID_IsMultiLayer));
+#endif
 	vmetrics = GGadgetIsChecked(GWidgetGetControl(gw,CID_HasVerticalMetrics));
 	upos = GetIntR(gw,CID_UPos, _STR_Upos,&err);
 	uwid = GetIntR(gw,CID_UWidth,_STR_Uheight,&err);
@@ -4001,6 +4006,11 @@ return(true);
 return( true );
 	if ( order2!=sf->order2 && !SFCloseAllInstrs(sf))
 return( true );
+	if ( multilayer!=sf->multilayer )
+	    sf->multilayer = multilayer;
+	    /* I think the layer panes should take care of themselves */
+	    /*  since the focus must be in this dlg, there shouldn't be any */
+	    /*  visible */
 	TTF_PSDupsChanged(gw,sf,d->names_set ? d->names : sf->names);
 	GDrawSetCursor(gw,ct_watch);
 	namechange = SetFontName(gw,sf);
@@ -4523,11 +4533,11 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GWindow gw;
     GWindowAttrs wattrs;
     GTabInfo aspects[15], conaspects[7], smaspects[5];
-    GGadgetCreateData mgcd[10], ngcd[13], egcd[14], psgcd[23], tngcd[7],
+    GGadgetCreateData mgcd[10], ngcd[13], egcd[14], psgcd[24], tngcd[7],
 	pgcd[8], vgcd[16], pangcd[22], comgcd[3], atgcd[7], txgcd[23],
 	congcd[3], csubgcd[fpst_max-pst_contextpos][6], smgcd[3], smsubgcd[4][6],
 	mfgcd[8], mcgcd[8];
-    GTextInfo mlabel[10], nlabel[13], elabel[14], pslabel[23], tnlabel[7],
+    GTextInfo mlabel[10], nlabel[13], elabel[14], pslabel[24], tnlabel[7],
 	plabel[8], vlabel[16], panlabel[22], comlabel[3], atlabel[7], txlabel[23],
 	csublabel[fpst_max-pst_contextpos][6], smsublabel[4][6],
 	mflabel[8], mclabel[8], *list;
@@ -5067,6 +5077,17 @@ return;
     psgcd[21].gd.cid = CID_IsOrder2;
     psgcd[21].creator = GCheckBoxCreate;
     psgcd[21].gd.popup_msg = GStringGetResource(_STR_PopupOrder2Splines,NULL);
+
+#ifdef PFAEDIT_CONFIG_TYPE3
+    psgcd[22].gd.pos.x = 12; psgcd[22].gd.pos.y = psgcd[21].gd.pos.y+16;
+    pslabel[22].text = (unichar_t *) _STR_MultiLayer;
+    pslabel[22].text_in_resource = true;
+    psgcd[22].gd.label = &pslabel[22];
+    psgcd[22].gd.flags = sf->multilayer ? (gg_visible | gg_enabled | gg_cb_on) : (gg_visible | gg_enabled);
+    psgcd[22].gd.cid = CID_IsMultiLayer;
+    psgcd[22].creator = GCheckBoxCreate;
+    psgcd[22].gd.popup_msg = GStringGetResource(_STR_PopupMultiLayer,NULL);
+#endif
 
     if ( sf->subfontcnt!=0 ) {
 	for ( i=0; i<=13; ++i )

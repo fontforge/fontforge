@@ -972,7 +972,7 @@ return( 0x70000000 );
 }
 
 static void _SCAddRef(SplineChar *sc,SplineChar *rsc,real transform[6]) {
-    RefChar *ref = chunkalloc(sizeof(RefChar));
+    RefChar *ref = RefCharCreate();
 
     ref->sc = rsc;
     ref->unicode_enc = rsc->unicodeenc;

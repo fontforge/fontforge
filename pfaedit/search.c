@@ -663,7 +663,7 @@ static void DoReplaceFull(SplineChar *sc,SearchView *s) {
 		r->transform[4];
 	subtrans[5] = transform[4]*r->transform[1] + transform[5]*r->transform[3] +
 		r->transform[5];
-	new = chunkalloc(sizeof(RefChar));
+	new = RefCharCreate();
 	*new = *r;
 	memcpy(new->transform,subtrans,sizeof(subtrans));
 	new->layers[ly_fore].splines = NULL;

@@ -1118,6 +1118,46 @@ return( false );
 return( true );
 }
 
+#ifdef PFAEDIT_CONFIG_TYPE3
+static int CheckIfTransparent(SplineFont *sf) {
+    /* Type3 doesn't support translucent fills */
+    int i,j;
+    static int buts[3] = { _STR_Yes, _STR_Cancel, 0 };
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	SplineChar *sc = sf->chars[i];
+	for ( j=ly_fore; j<sc->layer_cnt; ++j ) {
+	    if ( sc->layers[i].fill_brush.opacity!=0 || sc->layers[i].stroke_pen.brush.opacity!=0 ) {
+		if ( GWidgetAskR(_STR_BadDrawingOperation,buts,0,1,_STR_Type3NotTrans)==1 )
+return( true );
+
+return( false );
+	    }
+	}
+    }
+return( false );
+}
+
+static int CheckIfImages(SplineFont *sf) {
+    /* SVG doesn't support images (that I can figure out anyway) */
+    int i,j;
+    static int buts[3] = { _STR_Yes, _STR_Cancel, 0 };
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	SplineChar *sc = sf->chars[i];
+	for ( j=ly_fore; j<sc->layer_cnt; ++j ) {
+	    if ( sc->layers[i].fill_brush.opacity!=1.0 || sc->layers[i].stroke_pen.brush.opacity!=1.0 ) {
+		if ( GWidgetAskR(_STR_BadDrawingOperation,buts,0,1,_STR_SvgNoImages)==1 )
+return(true);
+
+return( false );
+	    }
+	}
+    }
+return( false );
+}
+#endif
+
 static char *SearchDirForWernerFile(char *dir,char *filename) {
     char buffer[1025], buf2[200];
     FILE *file;
@@ -1626,6 +1666,10 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 	    sf = sf->mm->instances[0];
 	  case ff_pfa: case ff_pfb: case ff_ptype3: case ff_ptype0:
 	  case ff_cid:
+#ifdef PFAEDIT_CONFIG_TYPE3
+	    if ( sf->multilayer && CheckIfTransparent(sf))
+return( true );
+#endif
 	    oerr = !WritePSFont(newname,sf,oldformatstate,flags);
 	  break;
 	  case ff_ttf: case ff_ttfsym: case ff_otf: case ff_otfcid:
@@ -1641,6 +1685,10 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 		    bmap,flags);
 	  break;
 	  case ff_svg:
+#ifdef PFAEDIT_CONFIG_TYPE3
+	    if ( sf->multilayer && CheckIfImages(sf))
+return( true );
+#endif
 	    oerr = !WriteSVGFont(newname,sf,oldformatstate,flags);
 	  break;
 	  case ff_none:		/* only if bitmaps, an sfnt wrapper for bitmaps */
@@ -2347,7 +2395,7 @@ static unichar_t *uStyleName(SplineFont *sf) {
 	strcpy(buffer," Plain");
 return( uc_copy(buffer+1));
 }
-	
+
 int SFGenerateFont(SplineFont *sf,int family) {
     GRect pos;
     GWindow gw;
@@ -2400,7 +2448,7 @@ int SFGenerateFont(SplineFont *sf,int family) {
 			badenc = fv->sf;
 		}
 	    }
-	if ( MacStyleCode(sf,NULL)!=0 || familycnt==0 ) {
+	if ( MacStyleCode(sf,NULL)!=0 || familycnt==0 || sf->multilayer ) {
 	    GWidgetErrorR(_STR_BadFamilyForMac,_STR_BadMacFamily);
 return( 0 );
 	} else if ( dup ) {
@@ -2520,6 +2568,27 @@ return( 0 );
 	ofs = ff_mmb;
     if ( sf->onlybitmaps )
 	ofs = ff_none;
+    if ( sf->multilayer ) {
+	formattypes[ff_pfa].disabled = true;
+	formattypes[ff_pfb].disabled = true;
+	formattypes[ff_pfbmacbin].disabled = true;
+	formattypes[ff_mma].disabled = true;
+	formattypes[ff_mmb].disabled = true;
+	formattypes[ff_multiple].disabled = true;
+	formattypes[ff_ptype0].disabled = true;
+	formattypes[ff_cff].disabled = true;
+	formattypes[ff_cid].disabled = true;
+	formattypes[ff_ttf].disabled = true;
+	formattypes[ff_ttfsym].disabled = true;
+	formattypes[ff_ttfmacbin].disabled = true;
+	formattypes[ff_ttfdfont].disabled = true;
+	formattypes[ff_otfdfont].disabled = true;
+	formattypes[ff_otf].disabled = true;
+	formattypes[ff_otfcid].disabled = true;
+	formattypes[ff_cffcid].disabled = true;
+	if ( ofs!=ff_svg )
+	    ofs = ff_ptype3;
+    }
     if ( family ) {
 	if ( ofs==ff_pfa || ofs==ff_pfb || ofs==ff_multiple || ofs==ff_ptype3 ||
 		ofs==ff_ptype0 || ofs==ff_mma || ofs==ff_mmb )
@@ -2543,6 +2612,7 @@ return( 0 );
 	formattypes[ff_otfcid].disabled = true;
 	formattypes[ff_cff].disabled = true;
 	formattypes[ff_cffcid].disabled = true;
+	formattypes[ff_svg].disabled = true;
     }
     for ( i=0; i<sizeof(formattypes)/sizeof(formattypes[0]); ++i )
 	formattypes[i].selected = false;

@@ -584,8 +584,27 @@ return(true);
 return( false );
 }
 
-static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
+static void SFDDumpRefs(FILE *sfd,RefChar *refs, char *name) {
     RefChar *ref;
+
+    for ( ref=refs; ref!=NULL; ref=ref->next ) if ( ref->sc!=NULL ) {
+	if ( ref->sc->enc==0 && ref->sc->layers[ly_fore].splines==NULL )
+	    fprintf( stderr, "Using a reference to character 0, removed. In %s\n", name);
+	else
+	    fprintf(sfd, "Ref: %d %d %c %g %g %g %g %g %g\n",
+		    ref->sc->enc, ref->sc->unicodeenc,
+		    ref->selected?'S':'N',
+		    ref->transform[0], ref->transform[1], ref->transform[2],
+		    ref->transform[3], ref->transform[4], ref->transform[5]);
+    }
+}
+
+#ifdef PFAEDIT_CONFIG_TYPE3
+static char *joins[] = { "miter", "round", "bevel", "inher", NULL };
+static char *caps[] = { "butt", "round", "square", "inher", NULL };
+#endif
+
+static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
     ImageList *img;
     KernPair *kp;
     PST *liga;
@@ -623,28 +642,42 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
     }
     if ( sc->ttf_instrs_len!=0 )
 	SFDDumpTtfInstrs(sfd,sc);
-    if ( sc->layers[ly_fore].splines!=NULL ) {
-	fprintf(sfd, "Fore\n" );
-	SFDDumpSplineSet(sfd,sc->layers[ly_fore].splines);
-	SFDDumpMinimumDistances(sfd,sc);
-    }
     SFDDumpAnchorPoints(sfd,sc);
-    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) if ( ref->sc!=NULL ) {
-	if ( ref->sc->enc==0 && ref->sc->layers[ly_fore].splines==NULL )
-	    fprintf( stderr, "Using a reference to character 0, removed. In %s\n", sc->name);
-	else
-	fprintf(sfd, "Ref: %d %d %c %g %g %g %g %g %g\n",
-		ref->sc->enc, ref->sc->unicodeenc,
-		ref->selected?'S':'N',
-		ref->transform[0], ref->transform[1], ref->transform[2],
-		ref->transform[3], ref->transform[4], ref->transform[5]);
-    }
     if ( sc->layers[ly_back].splines!=NULL ) {
 	fprintf(sfd, "Back\n" );
 	SFDDumpSplineSet(sfd,sc->layers[ly_back].splines);
     }
     for ( img=sc->layers[ly_back].images; img!=NULL; img=img->next )
 	SFDDumpImage(sfd,img);
+#ifdef PFAEDIT_CONFIG_TYPE3
+    if ( sc->parent->multilayer ) {
+	fprintf( sfd, "LayerCount: %d\n", sc->layer_cnt );
+	for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
+	    fprintf(sfd, "Layer: %d  %d %d %d  #%06x %g  #%06x %g %d %s %s\n",
+		    i, sc->layers[i].dofill, sc->layers[i].dostroke, sc->layers[i].fillfirst,
+		    sc->layers[i].fill_brush.col, sc->layers[i].fill_brush.opacity,
+		    sc->layers[i].stroke_pen.brush.col, sc->layers[i].stroke_pen.brush.opacity,
+		     sc->layers[i].stroke_pen.width, joins[sc->layers[i].stroke_pen.linejoin], caps[sc->layers[i].stroke_pen.linecap]);
+	    if ( sc->layers[i].name!=NULL ) {
+		fprintf( sfd, "LayerName: " );
+		SFDDumpUTF7Str(sfd,sc->layers[i].name);
+	    }
+	    for ( img=sc->layers[i].images; img!=NULL; img=img->next )
+		SFDDumpImage(sfd,img);
+	    fprintf(sfd, "SplineSet\n" );
+	    SFDDumpSplineSet(sfd,sc->layers[i].splines);
+	    SFDDumpRefs(sfd,sc->layers[i].refs,sc->name);
+	}
+    } else
+#endif
+    {
+	if ( sc->layers[ly_fore].splines!=NULL ) {
+	    fprintf(sfd, "Fore\n" );
+	    SFDDumpSplineSet(sfd,sc->layers[ly_fore].splines);
+	    SFDDumpMinimumDistances(sfd,sc);
+	}
+	SFDDumpRefs(sfd,sc->layers[ly_fore].refs,sc->name);
+    }
     if ( sc->kerns!=NULL ) {
 	fprintf( sfd, "KernsSLIF:" );
 	for ( kp = sc->kerns; kp!=NULL; kp=kp->next )
@@ -892,6 +925,8 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
     fprintf(sfd, "Descent: %d\n", sf->descent );
     if ( sf->order2 )
 	fprintf(sfd, "Order2: %d\n", sf->order2 );
+    if ( sf->multilayer )
+	fprintf(sfd, "MultiLayer: %d\n", sf->multilayer );
     if ( sf->hasvmetrics )
 	fprintf(sfd, "VerticalOrigin: %d\n", sf->vertical_origin );
     if ( sf->changed_since_xuidchanged )
@@ -1416,6 +1451,8 @@ static int gethex(FILE *sfd, int *val) {
     char *pt=tokbuf, *end = tokbuf+100-2;
 
     while ( isspace(ch = getc(sfd)));
+    if ( ch=='#' )
+	ch = getc(sfd);
     if ( ch=='-' || ch=='+' ) {
 	*pt++ = ch;
 	ch = getc(sfd);
@@ -2015,7 +2052,7 @@ static RefChar *SFDGetRef(FILE *sfd) {
     RefChar *rf;
     int enc=0, ch;
 
-    rf = chunkalloc(sizeof(RefChar));
+    rf = RefCharCreate();
     getint(sfd,&enc);
     rf->local_enc = enc;
     if ( getint(sfd,&enc))
@@ -2090,6 +2127,8 @@ static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf) {
     int isliga, ispos, issubs, ismult, islcar, ispair, temp, i;
     PST *last = NULL;
     uint32 script = 0;
+    int current_layer = ly_fore;
+    int multilayer = sf->multilayer;
 
     if ( getname(sfd,tok)!=1 )
 return( NULL );
@@ -2169,28 +2208,88 @@ return( NULL );
 	    lastap = SFDReadAnchorPoints(sfd,sc,lastap);
 	} else if ( strmatch(tok,"Fore")==0 ) {
 	    sc->layers[ly_fore].splines = SFDGetSplineSet(sf,sfd);
+	    current_layer = ly_fore;
 	} else if ( strmatch(tok,"MinimumDistance:")==0 ) {
 	    SFDGetMinimumDistances(sfd,sc);
 	} else if ( strmatch(tok,"Back")==0 ) {
 	    sc->layers[ly_back].splines = SFDGetSplineSet(sf,sfd);
+	    current_layer = ly_back;
+#ifdef PFAEDIT_CONFIG_TYPE3
+	} else if ( strmatch(tok,"LayerCount:")==0 ) {
+	    getint(sfd,&temp);
+	    if ( temp>sc->layer_cnt ) {
+		sc->layers = grealloc(sc->layers,temp*sizeof(Layer));
+		memset(sc->layers+sc->layer_cnt,0,(temp-sc->layer_cnt)*sizeof(Layer));
+	    }
+	    sc->layer_cnt = temp;
+	    current_layer = ly_fore;
+	} else if ( strmatch(tok,"Layer:")==0 ) {
+	    int layer, dofill, dostroke, fillfirst, fillcol, strokecol, strokewidth, linejoin, linecap;
+	    real fillopacity, strokeopacity;
+	    int i;
+	    getint(sfd,&layer);
+	    getint(sfd,&dofill);
+	    getint(sfd,&dostroke);
+	    getint(sfd,&fillfirst);
+	    gethex(sfd,&fillcol);
+	    getreal(sfd,&fillopacity);
+	    gethex(sfd,&strokecol);
+	    getreal(sfd,&strokeopacity);
+	    getint(sfd,&strokewidth);
+	    getname(sfd,tok);
+	    for ( i=0; joins[i]!=NULL; ++i )
+		if ( strmatch(joins[i],tok)==0 )
+	    break;
+	    if ( joins[i]==NULL ) --i;
+	    linejoin = i;
+	    getname(sfd,tok);
+	    for ( i=0; caps[i]!=NULL; ++i )
+		if ( strmatch(caps[i],tok)==0 )
+	    break;
+	    if ( caps[i]==NULL ) --i;
+	    linecap = i;
+	    if ( layer>=sc->layer_cnt ) {
+		sc->layers = grealloc(sc->layers,(layer+1)*sizeof(Layer));
+		memset(sc->layers+sc->layer_cnt,0,(layer+1-sc->layer_cnt)*sizeof(Layer));
+	    }
+	    current_layer = layer;
+	    sc->layers[current_layer].dofill = dofill;
+	    sc->layers[current_layer].dostroke = dostroke;
+	    sc->layers[current_layer].fillfirst = fillfirst;
+	    sc->layers[current_layer].fill_brush.col = fillcol;
+	    sc->layers[current_layer].fill_brush.opacity = fillopacity;
+	    sc->layers[current_layer].stroke_pen.brush.col = strokecol;
+	    sc->layers[current_layer].stroke_pen.brush.opacity = strokeopacity;
+	    sc->layers[current_layer].stroke_pen.width = strokewidth;
+	    sc->layers[current_layer].stroke_pen.linejoin = linejoin;
+	    sc->layers[current_layer].stroke_pen.linecap = linecap;
+	    lasti = NULL;
+	    lastr = NULL;
+	} else if ( strmatch(tok,"LayerName:")==0 ) {
+	    sc->layers[current_layer].name = SFDReadUTF7Str(sfd);
+	} else if ( strmatch(tok,"SplineSet")==0 ) {
+	    sc->layers[current_layer].splines = SFDGetSplineSet(sf,sfd);
+#endif
 	} else if ( strmatch(tok,"Ref:")==0 ) {
+	    if ( !multilayer ) current_layer = ly_fore;
 	    ref = SFDGetRef(sfd);
-	    if ( lastr==NULL )
-		sc->layers[ly_fore].refs = ref;
+	    if ( sc->layers[current_layer].refs==NULL )
+		sc->layers[current_layer].refs = ref;
 	    else
 		lastr->next = ref;
 	    lastr = ref;
+	} else if ( strmatch(tok,"Image:")==0 ) {
+	    if ( !multilayer ) current_layer = ly_back;
+	    img = SFDGetImage(sfd);
+	    if ( sc->layers[current_layer].images==NULL )
+		sc->layers[current_layer].images = img;
+	    else
+		lasti->next = img;
+	    lasti = img;
 	} else if ( strmatch(tok,"OrigType1:")==0 ) {	/* Accept, slurp, ignore contents */
 	    SFDGetType1(sfd,sc);
 	} else if ( strmatch(tok,"TtfInstrs:")==0 ) {
 	    SFDGetTtfInstrs(sfd,sc);
-	} else if ( strmatch(tok,"Image:")==0 ) {
-	    img = SFDGetImage(sfd);
-	    if ( lasti==NULL )
-		sc->layers[ly_back].images = img;
-	    else
-		lasti->next = img;
-	    lasti = img;
 	} else if ( strmatch(tok,"Kerns:")==0 ||
 		strmatch(tok,"KernsSLI:")==0 ||
 		strmatch(tok,"KernsSLIF:")==0 ||
@@ -3186,6 +3285,14 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    int temp;
 	    getint(sfd,&temp);
 	    sf->order2 = temp;
+	} else if ( strmatch(tok,"MultiLayer:")==0 ) {
+	    int temp;
+	    getint(sfd,&temp);
+#ifdef PFAEDIT_CONFIG_TYPE3
+	    sf->multilayer = temp;
+#else
+	    fprintf( stderr, "Warning: This version of PfaEdit does not contain extended type3/svg support\n needed for this font.\nReconfigure with --with-type3.\n" );
+#endif
 	} else if ( strmatch(tok,"NeedsXUIDChange:")==0 ) {
 	    int temp;
 	    getint(sfd,&temp);

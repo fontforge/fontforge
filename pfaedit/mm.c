@@ -624,7 +624,7 @@ return( 0 );
     }
     reflast = NULL;
     while ( all ) {
-	ref = chunkalloc(sizeof(RefChar));
+	ref = RefCharCreate();
 	*ref = *refs[0];
 	ref->layers[0].splines = NULL;
 	ref->next = NULL;

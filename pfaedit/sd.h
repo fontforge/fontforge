@@ -33,7 +33,7 @@
 #include "splinefont.h"
 #include "gdraw.h"
 
-typedef struct pen {
+typedef struct entpen {
     Color col;
     struct tile *tile;
     float scale;

@@ -119,6 +119,9 @@ void RefCharsFreeRef(RefChar *ref) {
     while ( ref!=NULL ) {
 	rnext = ref->next;
 	/* don't free the splines */
+#ifdef PFAEDIT_CONFIG_TYPE3
+	free(ref->layers);
+#endif
 	chunkfree(ref,sizeof(RefChar));
 	ref = rnext;
     }
@@ -961,7 +964,7 @@ static RefChar *IsRefable(RefChar *ref, int isps, real transform[6], RefChar *so
 	/*  because it will have to be dumped out as splines */
 	/* Type2 PS (opentype) is the same as truetype here */
 	/* Now that I allow refs to be subrs in type1, it also uses the ttf test */
-	sub = chunkalloc(sizeof(RefChar));
+	sub = RefCharCreate();
 	*sub = *ref;
 	sub->next = sofar;
 	/*sub->layers[0].splines = NULL;*/

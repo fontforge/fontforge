@@ -289,6 +289,7 @@ return(false);
     if ( !_WritePSFont(pi->fontfile,pi->sf,
 		is_mm?ff_mma:
 		pi->iscid?ff_cid:
+		pi->sf->multilayer?ff_ptype3:
 		pi->twobyte?ff_ptype0:
 		ff_pfa,0)) {
 	GProgressEndIndicator();

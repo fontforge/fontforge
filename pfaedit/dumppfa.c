@@ -38,6 +38,9 @@
 #include <time.h>
 #include "psfont.h"
 #include "splinefont.h"
+#ifdef PFAEDIT_CONFIG_TYPE3
+ #include <gdraw.h>		/* For image defn */
+#endif
 
 #ifdef __CygWin
  #include <sys/types.h>
@@ -397,10 +400,380 @@ return( false );
 return( true );
 }
 
-static void dumpproc(void (*dumpchar)(int ch,void *data), void *data, SplineChar *sc ) {
-    DBounds b;
+#ifdef PFAEDIT_CONFIG_TYPE3
+static void dumpbrush(void (*dumpchar)(int ch,void *data), void *data, struct brush *brush) {
+    if ( brush->col!=COLOR_INHERITED ) {
+	int r, g, b;
+	r = (brush->col>>16)&0xff;
+	g = (brush->col>>8 )&0xff;
+	b = (brush->col    )&0xff;
+	if ( r==g && b==g )
+	    dumpf(dumpchar,data,"%g setgray\n", r/255.0 );
+	else
+	    dumpf(dumpchar,data,"%g %g %g setrgbcolor\n", r/255.0, g/255.0, b/255.0 );
+    }
+}
+
+static void dumppen(void (*dumpchar)(int ch,void *data), void *data, struct pen *pen) {
+    dumpbrush(dumpchar,data,&pen->brush);
+
+    if ( pen->width!=WIDTH_INHERITED )
+	dumpf(dumpchar,data,"%d setlinewidth\n", pen->width );
+    if ( pen->linejoin!=lj_inherited )
+	dumpf(dumpchar,data,"%d setlinejoin\n", pen->linejoin );
+    if ( pen->linecap!=lc_inherited )
+	dumpf(dumpchar,data,"%d setlinecap\n", pen->linecap );
+}
+
+struct psfilter {
+    int ascii85encode, ascii85n, ascii85bytes_per_line;
+    void (*dumpchar)(int ch,void *data);
+    void *data;
+};
+    
+static void InitFilter(struct psfilter *ps,void (*dumpchar)(int ch,void *data), void *data) {
+    ps->ascii85encode = 0;
+    ps->ascii85n = 0;
+    ps->ascii85bytes_per_line = 0;
+    ps->dumpchar = dumpchar;
+    ps->data = data;
+}
+
+static void Filter(struct psfilter *ps,uint8 ch) {
+    ps->ascii85encode = (ps->ascii85encode<<8) | ch;
+    if ( ++ps->ascii85n == 4 ) {
+	int ch5, ch4, ch3, ch2, ch1;
+	uint32 val = ps->ascii85encode;
+	if ( val==0 ) {
+	    (ps->dumpchar)('z',ps->data);
+	    ps->ascii85n = 0;
+	    if ( ++ps->ascii85bytes_per_line >= 76 ) {
+		(ps->dumpchar)('\n',ps->data);
+		ps->ascii85bytes_per_line = 0;
+	    }
+	} else {
+	    ch5 = val%85; val /= 85;
+	    ch4 = val%85; val /= 85;
+	    ch3 = val%85; val /= 85;
+	    ch2 = val%85;
+	    ch1 = val/85;
+	    dumpf(ps->dumpchar, ps->data, "%c%c%c%c%c",
+		    ch1+'!', ch2+'!', ch3+'!', ch4+'!', ch5+'!' );
+	    ps->ascii85encode = 0;
+	    ps->ascii85n = 0;
+	    if (( ps->ascii85bytes_per_line+=5) >= 80 ) {
+		(ps->dumpchar)('\n',ps->data);
+		ps->ascii85bytes_per_line = 0;
+	    }
+	}
+    }
+}
+
+static void FlushFilter(struct psfilter *ps) {
+    uint32 val = ps->ascii85encode;
+    int n = ps->ascii85n;
+    if ( n!=0 ) {
+	int ch5, ch4, ch3, ch2, ch1;
+	while ( n++<4 )
+	    val<<=8;
+	ch5 = val%85; val /= 85;
+	ch4 = val%85; val /= 85;
+	ch3 = val%85; val /= 85;
+	ch2 = val%85;
+	ch1 = val/85;
+	(ps->dumpchar)(ch1+'!',ps->data);
+	(ps->dumpchar)(ch2+'!',ps->data);
+	if ( ps->ascii85n>=2 )
+	    (ps->dumpchar)(ch3+'!',ps->data);
+	if ( ps->ascii85n>=3 )
+	    (ps->dumpchar)(ch4+'!',ps->data);
+    }
+    (ps->dumpchar)('~',ps->data);
+    (ps->dumpchar)('>',ps->data);
+    (ps->dumpchar)('\n',ps->data);
+}
+
+static void PSBuildImageMonoString(void (*dumpchar)(int ch,void *data), void *data,
+	struct _GImage *base) {
+    register int j;
+    int i;
+    register uint8 *pt;
+    struct psfilter ps;
+
+    InitFilter(&ps,dumpchar,data);
+    for ( i=0; i<base->height; ++i ) {
+	pt = (uint8 *) (base->data + i*base->bytes_per_line);
+	for ( j=(base->width+7)/8-1; j>=0; ) {
+	    Filter(&ps,*pt++);
+	}
+    }
+    FlushFilter(&ps);
+}
+
+static void PSDrawMonoImg(void (*dumpchar)(int ch,void *data), void *data,
+	struct _GImage *base,int use_imagemask) {
+
+    dumpf(dumpchar,data, "<<\n" );
+    dumpf(dumpchar,data, "  /ImageType 1\n" );
+    dumpf(dumpchar,data, "  /Width %d\n", base->width );
+    dumpf(dumpchar,data, "  /Height %d\n", base->height );
+    dumpf(dumpchar,data, "  /ImageMatrix [%d 0 0 %d 0 %d]\n",
+	    base->width, -base->height, base->height);
+    dumpf(dumpchar,data, "  /MultipleDataSources false\n" );
+    dumpf(dumpchar,data, "  /BitsPerComponent 1\n" );
+    if ( base->trans != COLOR_UNKNOWN ) {
+	if ( base->trans==0 )
+	    dumpf(dumpchar,data, "  /Decode [1 0]\n" );
+	else
+	    dumpf(dumpchar,data, "  /Decode [0 1]\n" );
+    } else {
+	dumpf(dumpchar,data, "  /Decode [0 1]\n" );
+    }
+    dumpf(dumpchar,data, "  /Interpolate true\n" );
+    dumpf(dumpchar,data, "  /DataSource currentfile /ASCII85Decode filter\n" );
+    dumpf(dumpchar,data, ">> %s\n",
+	    use_imagemask?"imagemask":"image" );
+    PSBuildImageMonoString(dumpchar,data,base);
+}
+
+static void PSSetIndexColors(void (*dumpchar)(int ch,void *data), void *data,
+	GClut *clut) {
+    int i;
+
+    dumpf(dumpchar,data, "[/Indexed /DeviceRGB %d <\n", clut->clut_len-1 );
+    for ( i=0; i<clut->clut_len; ++i )
+	dumpf(dumpchar,data, "%02X%02X%02X%s", COLOR_RED(clut->clut[i]),
+		COLOR_GREEN(clut->clut[i]), COLOR_BLUE(clut->clut[i]),
+		i%11==10?"\n":" ");
+    dumpf(dumpchar,data,">\n] setcolorspace\n");
+}
+
+static void PSBuildImageIndexString(void (*dumpchar)(int ch,void *data), void *data,
+	struct _GImage *base) {
+    register int i,val;
+    register uint8 *pt, *end;
+    int clut_len = base->clut->clut_len;
+    struct psfilter ps;
+
+    InitFilter(&ps,dumpchar,data);
+    for ( i=0; i<base->height; ++i ) {
+	pt = (uint8 *) (base->data + i*base->bytes_per_line);
+	end = pt + base->width;
+	while ( pt<end ) {
+	    val = *pt++;
+	    if ( val>=clut_len )
+		val = clut_len-1;
+	    Filter(&ps,val);
+	}
+    }
+    FlushFilter(&ps);
+}
+
+static void PSBuildImageIndexDict(void (*dumpchar)(int ch,void *data), void *data,
+	struct _GImage *base) {
+    dumpf(dumpchar,data, "<<\n" );
+    dumpf(dumpchar,data, "  /ImageType 1\n" );
+    dumpf(dumpchar,data, "  /Width %d\n", base->width );
+    dumpf(dumpchar,data, "  /Height %d\n", base->height );
+    dumpf(dumpchar,data, "  /ImageMatrix [%d 0 0 %d 0 %d]\n",
+	    base->width, -base->height, base->height);
+    dumpf(dumpchar,data, "  /MultipleDataSources false\n" );
+    dumpf(dumpchar,data, "  /BitsPerComponent 8\n" );
+    dumpf(dumpchar,data, "  /Decode [0 255]\n" );
+    dumpf(dumpchar,data, "  /Interpolate false\n" );
+    dumpf(dumpchar,data, "  /DataSource currentfile /ASCII85Decode filter\n" );
+    dumpf(dumpchar,data, ">> image\n" );
+    PSBuildImageIndexString(dumpchar,data,base);
+}
+
+static void PSBuildImage24String(void (*dumpchar)(int ch,void *data), void *data,
+	struct _GImage *base) {
+    int i;
+    register long val;
+    register uint32 *pt, *end;
+    struct psfilter ps;
+
+    InitFilter(&ps,dumpchar,data);
+    for ( i=0; i<base->height; ++i ) {
+	pt = (uint32 *) (base->data + i*base->bytes_per_line);
+	end = pt + base->width;
+	while ( pt<end ) {
+	    val = *pt++;
+	    Filter(&ps,COLOR_RED(val));
+	    Filter(&ps,COLOR_GREEN(val));
+	    Filter(&ps,COLOR_BLUE(val));
+	}
+    }
+    FlushFilter(&ps);
+}
+
+static void PSDrawImg(void (*dumpchar)(int ch,void *data), void *data,
+	struct _GImage *base) {
+
+    if ( base->image_type == it_index ) {
+	PSSetIndexColors(dumpchar,data,base->clut);
+	PSBuildImageIndexDict(dumpchar,data,base);
+	dumpf(dumpchar,data, "[/DeviceRGB] setcolorspace\n" );
+    } else {
+	dumpf(dumpchar,data, "%d %d 8 [%d 0 0 %d 0 %d] ",
+		base->width, base->height,  base->width, -base->height, base->height);
+	    dumpf(dumpchar,data, "currentfile /ASCII85Decode filter " );
+	    dumpf(dumpchar,data, "false 3 colorimage\n" );
+	PSBuildImage24String(dumpchar,data,base);
+    }
+}
+
+static void dumpimage(void (*dumpchar)(int ch,void *data), void *data,
+	ImageList *imgl, int use_imagemask ) {
+    GImage *image = imgl->image;
+    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    dumpf( dumpchar, data, "  gsave %g %g translate %g %g scale\n",
+	    imgl->xoff, imgl->yoff,
+	    imgl->xscale*base->width, imgl->yscale*base->height );
+    if ( base->image_type==it_mono ) {
+	PSDrawMonoImg(dumpchar,data,base,use_imagemask);
+    } else {
+	/* Just draw the image, ignore the complexity of transparent images */
+	PSDrawImg(dumpchar,data,base);
+    }
+    dumpstr(dumpchar,data,"grestore\n");
+}
+#endif
+
+void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
+	SplineChar *sc, int refs_to_splines ) {
     RefChar *ref;
     real inverse[6];
+    int i,j;
+    SplineSet *temp;
+
+    for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
+	if ( sc->layers[i].splines!=NULL ) {
+	    temp = sc->layers[i].splines;
+	    if ( sc->parent->order2 ) temp = SplineSetsPSApprox(temp);
+#ifdef PFAEDIT_CONFIG_TYPE3
+	    if ( sc->parent->multilayer ) {
+		dumpstr(dumpchar,data,"gsave " );
+		dumpsplineset(dumpchar,data,temp);
+		if ( sc->layers[i].dofill && sc->layers[i].dostroke ) {
+		    dumpstr(dumpchar,data,"gsave " );
+		    if ( sc->layers[i].fillfirst ) {
+			dumpbrush(dumpchar,data, &sc->layers[i].fill_brush);
+			dumpstr(dumpchar,data,"fill grestore " );
+			dumppen(dumpchar,data, &sc->layers[i].stroke_pen);
+			dumpstr(dumpchar,data,"stroke " );
+		    } else {
+			dumppen(dumpchar,data, &sc->layers[i].stroke_pen);
+			dumpstr(dumpchar,data,"stroke grestore " );
+			dumpbrush(dumpchar,data, &sc->layers[i].fill_brush);
+			dumpstr(dumpchar,data,"fill " );
+		    }
+		} else if ( sc->layers[i].dofill ) {
+		    dumpbrush(dumpchar,data, &sc->layers[i].fill_brush);
+		    dumpstr(dumpchar,data,"fill " );
+		} else if ( sc->layers[i].dostroke ) {
+		    dumppen(dumpchar,data, &sc->layers[i].stroke_pen);
+		    dumpstr(dumpchar,data,"stroke " );
+		}
+		dumpstr(dumpchar,data,"grestore\n" );
+	    } else
+#endif
+		dumpsplineset(dumpchar,data,temp);
+	    if ( sc->parent->order2 ) SplinePointListFree(temp);
+	}
+	if ( sc->layers[i].refs!=NULL ) {
+#ifdef PFAEDIT_CONFIG_TYPE3
+	    if ( sc->parent->multilayer ) {
+		dumpstr(dumpchar,data,"gsave " );
+		if ( sc->layers[i].dofill )
+		    dumpbrush(dumpchar,data, &sc->layers[i].fill_brush);
+	    }
+#endif
+	    if ( refs_to_splines ) {
+		for ( ref = sc->layers[i].refs; ref!=NULL; ref=ref->next ) {
+		    for ( j=0; j<ref->layer_cnt; ++j ) {
+			temp = ref->layers[j].splines;
+			if ( sc->parent->order2 ) temp = SplineSetsPSApprox(temp);
+#ifdef PFAEDIT_CONFIG_TYPE3
+			if ( sc->parent->multilayer ) {
+			    dumpstr(dumpchar,data,"gsave " );
+			    dumpsplineset(dumpchar,data,temp);
+			    if ( ref->layers[j].dofill && ref->layers[j].dostroke ) {
+				dumpstr(dumpchar,data,"gsave " );
+				if ( ref->layers[j].fillfirst ) {
+				    dumpbrush(dumpchar,data, &ref->layers[j].fill_brush);
+				    dumpstr(dumpchar,data,"fill grestore " );
+				    dumppen(dumpchar,data, &ref->layers[j].stroke_pen);
+				    dumpstr(dumpchar,data,"stroke " );
+				} else {
+				    dumppen(dumpchar,data, &ref->layers[j].stroke_pen);
+				    dumpstr(dumpchar,data,"stroke grestore " );
+				    dumpbrush(dumpchar,data, &ref->layers[j].fill_brush);
+				    dumpstr(dumpchar,data,"fill " );
+				}
+			    } else if ( ref->layers[j].dofill ) {
+				dumpbrush(dumpchar,data, &ref->layers[j].fill_brush);
+				dumpstr(dumpchar,data,"fill " );
+			    } else if ( ref->layers[j].dostroke ) {
+				dumppen(dumpchar,data, &ref->layers[j].stroke_pen);
+				dumpstr(dumpchar,data,"stroke " );
+			    }
+			    dumpstr(dumpchar,data,"grestore\n" );
+			} else
+#endif
+			    dumpsplineset(dumpchar,data,temp);
+			if ( sc->parent->order2 ) SplinePointListFree(temp);
+		    }
+		}
+	    } else {
+		dumpstr(dumpchar,data,"    pop -1\n" );
+		for ( ref = sc->layers[i].refs; ref!=NULL; ref=ref->next ) {
+		    if ( ref->transform[0]!=1 || ref->transform[1]!=0 || ref->transform[2]!=0 ||
+			    ref->transform[3]!=1 || ref->transform[4]!=0 || ref->transform[5]!=0 ) {
+			if ( InvertTransform(inverse,ref->transform)) {
+			    if ( ref->transform[0]!=1 || ref->transform[1]!=0 ||
+				    ref->transform[2]!=0 || ref->transform[3]!=1 )
+				dumpf(dumpchar,data, "    [ %g %g %g %g %g %g ] concat ",
+				    ref->transform[0], ref->transform[1], ref->transform[2],
+				    ref->transform[3], ref->transform[4], ref->transform[5]);
+			    else
+				dumpf(dumpchar,data, "    %g %g translate ",
+				    ref->transform[4], ref->transform[5]);
+			    dumpf(dumpchar,data, "1 index /CharProcs get /%s get exec ",
+				ref->sc->name );
+			    if ( inverse[0]!=1 || inverse[1]!=0 ||
+				    inverse[2]!=0 || inverse[3]!=1 )
+				dumpf(dumpchar,data, "[ %g %g %g %g %g %g ] concat \n",
+				    inverse[0], inverse[1], inverse[2], inverse[3], inverse[4], inverse[5]
+				    );
+			    else
+				dumpf(dumpchar,data, "%g %g translate\n",
+				    inverse[4], inverse[5] );
+			}
+		    } else
+			dumpf(dumpchar,data, "    1 index /CharProcs get /%s get exec\n", ref->sc->name );
+		}
+	    }
+#ifdef PFAEDIT_CONFIG_TYPE3
+	    if ( sc->parent->multilayer )
+		dumpstr(dumpchar,data,"grestore\n" );
+#endif
+	}
+#ifdef PFAEDIT_CONFIG_TYPE3
+	if ( sc->layers[i].images!=NULL ) { ImageList *img;
+	    dumpstr(dumpchar,data,"gsave " );
+	    if ( sc->layers[i].dofill )
+		dumpbrush(dumpchar,data, &sc->layers[i].fill_brush);
+	    for ( img = sc->layers[i].images; img!=NULL; img=img->next )
+		dumpimage(dumpchar,data,img,sc->layers[i].dofill);
+	    dumpstr(dumpchar,data,"grestore\n" );
+	}
+#endif
+    }
+}
+
+static void dumpproc(void (*dumpchar)(int ch,void *data), void *data, SplineChar *sc ) {
+    DBounds b;
 
     SplineCharFindBounds(sc,&b);
     dumpf(dumpchar,data,"  /%s { ",sc->name);
@@ -413,37 +786,7 @@ static void dumpproc(void (*dumpchar)(int ch,void *data), void *data, SplineChar
 	dumpstr(dumpchar,data," } if\n");
     else
 	dumpstr(dumpchar,data,"\n");
-
-    dumpsplineset(dumpchar,data,sc->layers[ly_fore].splines);
-    if ( sc->layers[ly_fore].refs!=NULL ) {
-	dumpstr(dumpchar,data,"    pop -1\n" );
-	for ( ref = sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
-	    if ( ref->transform[0]!=1 || ref->transform[1]!=0 || ref->transform[2]!=0 ||
-		    ref->transform[3]!=1 || ref->transform[4]!=0 || ref->transform[5]!=0 ) {
-		if ( InvertTransform(inverse,ref->transform)) {
-		    if ( ref->transform[0]!=1 || ref->transform[1]!=0 ||
-			    ref->transform[2]!=0 || ref->transform[3]!=1 )
-			dumpf(dumpchar,data, "    [ %g %g %g %g %g %g ] concat ",
-			    ref->transform[0], ref->transform[1], ref->transform[2],
-			    ref->transform[3], ref->transform[4], ref->transform[5]);
-		    else
-			dumpf(dumpchar,data, "    %g %g translate ",
-			    ref->transform[4], ref->transform[5]);
-		    dumpf(dumpchar,data, "1 index /CharProcs get /%s get exec ",
-			ref->sc->name );
-		    if ( inverse[0]!=1 || inverse[1]!=0 ||
-			    inverse[2]!=0 || inverse[3]!=1 )
-			dumpf(dumpchar,data, "[ %g %g %g %g %g %g ] concat \n",
-			    inverse[0], inverse[1], inverse[2], inverse[3], inverse[4], inverse[5]
-			    );
-		    else
-			dumpf(dumpchar,data, "%g %g translate\n",
-			    inverse[4], inverse[5] );
-		}
-	    } else
-		dumpf(dumpchar,data, "    1 index /CharProcs get /%s get exec\n", ref->sc->name );
-	}
-    }
+    SC_PSDump(dumpchar,data,sc,false);
     dumpstr(dumpchar,data,"  } bind def\n" );
 }
 
@@ -1095,10 +1438,7 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 	    encoding[i] = ".notdef";
     for ( ; i<256; ++i )
 	encoding[i] = ".notdef";
-    /* I think I don't want to check sf->encoding_name because if the font */
-    /*  is incomplete (say it's missing "A") it will still have sf->encod... */
-    /*  equal to em_adobe... but the charstrings won't contain an "A" char */
-    if ( /*sf->encoding_name==em_adobestandard ||*/ isStdEncoding(encoding) )
+    if ( sf->encoding_name==em_adobestandard || isStdEncoding(encoding) )
 	dumpstr(dumpchar,data,"/Encoding StandardEncoding def\n");
     else {
 	dumpstr(dumpchar,data,"/Encoding 256 array\n" );
@@ -1117,7 +1457,8 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 	dumpstr(dumpchar,data,"%  do a setcachedevice, otherwise (for referenced chars) it will not. The\n" );
 	dumpstr(dumpchar,data,"%  fontdict argument is so a char can invoke a referenced char. BuildGlyph\n" );
 	dumpstr(dumpchar,data,"%  itself will remove the arguments from the stack, the CharProc will leave 'em\n" );
-	dumpstr(dumpchar,data,"/BuildGlyph { 2 copy exch /CharProcs get exch 2 copy known not { pop /.notdef} if get exch pop 0 exch exec 2 pop fill } bind def\n" );
+	dumpf(dumpchar,data,"/BuildGlyph { 2 copy exch /CharProcs get exch 2 copy known not { pop /.notdef} if get exch pop 0 exch exec 2 pop %s} bind def\n",
+		sf->multilayer ? "" : "fill " );
     }
 }
 

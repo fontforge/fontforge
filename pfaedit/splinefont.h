@@ -71,12 +71,28 @@ struct pschars {
 enum linejoin {
     lj_miter,		/* Extend lines until they meet */
     lj_round,		/* circle centered at the join of expand radius */
-    lj_bevel		/* Straight line between the ends of next and prev */
+    lj_bevel,		/* Straight line between the ends of next and prev */
+    lj_inherited
 };
 enum linecap {
     lc_butt,		/* equiv to lj_bevel, straight line extends from one side to other */
     lc_round,		/* semi-circle */
-    lc_square		/* Extend lines by radius, then join them */
+    lc_square,		/* Extend lines by radius, then join them */
+    lc_inherited
+};
+#define COLOR_INHERITED	0xfffffffe
+struct brush {
+    uint32 col;
+    /*void *pattern;*/		/* Don't know how to deal with these yet */
+    /*void *gradient;*/
+    float opacity;		/* number between [0,1], only for svg */
+};
+#define WIDTH_INHERITED	(-1)
+struct pen {
+    struct brush brush;
+    int16 width;
+    uint8 linejoin;
+    uint8 linecap;
 };
 
 struct spline;
@@ -522,6 +538,15 @@ typedef struct splinepointlist {
     struct splinepointlist *next;
 } SplinePointList, SplineSet;
 
+typedef struct imagelist {
+    struct gimage *image;
+    real xoff, yoff;		/* position in character space of upper left corner of image */
+    real xscale, yscale;	/* scale to convert one pixel of image to one unit of character space */
+    DBounds bb;
+    struct imagelist *next;
+    unsigned int selected: 1;
+} ImageList;
+
 typedef struct refchar {
     unsigned int checked: 1;
     unsigned int selected: 1;
@@ -532,9 +557,21 @@ typedef struct refchar {
     int local_enc;
     int unicode_enc;		/* used by paste */
     real transform[6];		/* transformation matrix (first 2 rows of a 3x3 matrix, missing row is 0,0,1) */
+#ifdef PFAEDIT_CONFIG_TYPE3
+    struct reflayer {
+	SplinePointList *splines;
+	ImageList *images;
+	struct brush fill_brush;
+	struct pen stroke_pen;
+	unsigned int dofill: 1;
+	unsigned int dostroke: 1;
+	unsigned int fillfirst: 1;
+    } *layers;
+#else
     struct reflayer {
 	SplinePointList *splines;
     } layers[1];
+#endif
     int layer_cnt;
     struct refchar *next;
     DBounds bb;
@@ -632,15 +669,6 @@ typedef struct bigdsteminfo {
     PointList *left, *right;
 } BigDStemInfo;
 
-typedef struct imagelist {
-    struct gimage *image;
-    real xoff, yoff;		/* position in character space of upper left corner of image */
-    real xscale, yscale;	/* scale to convert one pixel of image to one unit of character space */
-    DBounds bb;
-    struct imagelist *next;
-    unsigned int selected: 1;
-} ImageList;
-
 typedef struct minimumdistance {
     /* If either point is NULL it will be assumed to mean either the origin */
     /*  or the width point (depending on which is closer). This allows user */
@@ -657,6 +685,14 @@ typedef struct layer {
     ImageList *images;			/* Only in background or type3 layer(s) */
     Undoes *undoes;
     Undoes *redoes;
+#ifdef PFAEDIT_CONFIG_TYPE3
+    struct brush fill_brush;
+    struct pen stroke_pen;
+    unsigned int dofill: 1;
+    unsigned int dostroke: 1;
+    unsigned int fillfirst: 1;
+    unichar_t *name;
+#endif
 } Layer;
 
 enum layer_type { ly_back=0, ly_fore=1 };
@@ -672,7 +708,11 @@ typedef struct splinechar {
 				/* Always a temporary value */
     uint16 orig_pos;		/* Original position in the glyph list */
     int ttf_glyph;		/* only used when writing out a ttf or otf font */
+#ifdef PFAEDIT_CONFIG_TYPE3
+    Layer *layers;		/* layer[0] is background, layer[1-n] foreground */
+#else
     Layer layers[2];		/* layer[0] is background, layer[1] foreground */
+#endif
     int layer_cnt;
     StemInfo *hstem;		/* hstem hints have a vertical offset but run horizontally */
     StemInfo *vstem;		/* vstem hints have a horizontal offset but run vertically */
@@ -762,6 +802,8 @@ typedef struct splinefont {
     unsigned int compacted: 1;			/* Font is in a compacted glyph list */
     unsigned int encodingchanged: 1;		/* Font's encoding has changed since it was loaded */
     unsigned int order2: 1;			/* Font's data are order 2 bezier splines (truetype) rather than order 3 (postscript) */
+    unsigned int multilayer: 1;			/* only applies if TYPE3 is set, means this font can contain strokes & fills */
+						/*  I leave it in so as to avoid cluttering up code with #ifdefs */
     unsigned int new: 1;			/* A new and unsaved font */
     struct fontview *fv;
     enum charset encoding_name, old_encname;
@@ -949,6 +991,8 @@ extern struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds,int f
 enum bitmapformat { bf_bdf, bf_ttf, bf_sfnt_dfont, 
 	bf_nfntmacbin, /*bf_nfntdfont, */bf_fon, bf_otb, bf_none };
 extern SplineChar *SFFindExistingCharMac(SplineFont *,int unienc);
+extern void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
+	SplineChar *sc, int refs_to_splines );
 extern int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags);
 extern int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format,int flags);
 extern int WriteMacPSFont(char *fontname,SplineFont *sf,enum fontformat format,int flags);
@@ -1048,6 +1092,7 @@ extern void ImageListsFree(ImageList *imgs);
 extern void TTFLangNamesFree(struct ttflangname *l);
 extern void MinimumDistancesFree(MinimumDistance *md);
 extern SplineChar *SplineCharCreate(void);
+extern RefChar *RefCharCreate(void);
 extern void ScriptRecordFree(struct script_record *sr);
 extern void ScriptRecordListFree(struct script_record **script_lang);
 extern KernClass *KernClassCopy(KernClass *kc);

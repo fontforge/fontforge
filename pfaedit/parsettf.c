@@ -1154,7 +1154,7 @@ static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, 
 	    fprintf( stderr, "Bad flags value, implied MORE components at end of glyph %d\n", sc->enc );
     break;
 	}
-	cur = chunkalloc(sizeof(RefChar));
+	cur = RefCharCreate();
 	flags = getushort(ttf);
 	cur->local_enc = getushort(ttf);
 	if ( info->inuse!=NULL )

@@ -47,7 +47,7 @@ static RefChar *RefCharsCopyState(SplineChar *sc) {
     if ( sc->layers[ly_fore].refs==NULL )
 return( NULL );
     for ( crefs = sc->layers[ly_fore].refs; crefs!=NULL; crefs=crefs->next ) {
-	new = chunkalloc(sizeof(RefChar));
+	new = RefCharCreate();
 	*new = *crefs;
 	new->layers[0].splines = NULL;
 	new->next = NULL;
@@ -1240,7 +1240,7 @@ void CopyReference(SplineChar *sc) {
     copybuffer.was_order2 = sc->parent->order2;
     copybuffer.u.state.width = sc->width;
     copybuffer.u.state.vwidth = sc->vwidth;
-    copybuffer.u.state.refs = ref = chunkalloc(sizeof(RefChar));
+    copybuffer.u.state.refs = ref = RefCharCreate();
     copybuffer.u.state.copied_from = sc->parent;
     ref->unicode_enc = sc->unicodeenc;
     ref->local_enc = sc->enc;
@@ -1262,7 +1262,7 @@ void CopySelected(CharView *cv) {
     if ( cv->drawmode==dm_fore ) {
 	RefChar *refs, *new;
 	for ( refs = cv->sc->layers[ly_fore].refs; refs!=NULL; refs = refs->next ) if ( refs->selected ) {
-	    new = chunkalloc(sizeof(RefChar));
+	    new = RefCharCreate();
 	    *new = *refs;
 	    new->layers[0].splines = NULL;
 	    new->local_enc = new->sc->enc;
@@ -1337,7 +1337,7 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
 	} else {		/* Or just make a reference */
 	    sc = SCDuplicate(sc);
 	    cur->undotype = ut_state;
-	    cur->u.state.refs = ref = chunkalloc(sizeof(RefChar));
+	    cur->u.state.refs = ref = RefCharCreate();
 	    ref->unicode_enc = sc->unicodeenc;
 	    ref->local_enc = sc->enc;
 	    ref->adobe_enc = getAdobeEnc(sc->name);
@@ -1693,7 +1693,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 		if ( rsc!=NULL && SCDependsOnSC(rsc,sc))
 		    GWidgetErrorR(_STR_SelfRef,_STR_AttemptSelfRef);
 		else if ( rsc!=NULL ) {
-		    new = chunkalloc(sizeof(RefChar));
+		    new = RefCharCreate();
 		    *new = *refs;
 		    new->transform[4] *= scale; new->transform[5] *= scale;
 		    new->layers[0].splines = NULL;
@@ -1803,7 +1803,7 @@ return;
 		if ( sc!=NULL && SCDependsOnSC(sc,cvsc))
 		    GWidgetErrorR(_STR_SelfRef,_STR_AttemptSelfRef);
 		else if ( sc!=NULL ) {
-		    new = chunkalloc(sizeof(RefChar));
+		    new = RefCharCreate();
 		    *new = *refs;
 		    new->layers[0].splines = NULL;
 		    new->sc = sc;

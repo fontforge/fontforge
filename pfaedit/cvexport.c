@@ -34,38 +34,11 @@
 #include "gicons.h"
 #include <time.h>
 
-static void DumpSPL(FILE *eps,SplinePointList *spl) {
-    SplinePoint *first, *sp;
-
-    for ( ; spl!=NULL; spl=spl->next ) {
-	first = NULL;
-	for ( sp = spl->first; ; sp=sp->next->to ) {
-	    if ( first==NULL )
-		fprintf( eps, "%g %g moveto\n", sp->me.x, sp->me.y );
-	    else if ( sp->prev->knownlinear )
-		fprintf( eps, " %g %g lineto\n", sp->me.x, sp->me.y );
-	    else
-		fprintf( eps, " %g %g %g %g %g %g curveto\n",
-			sp->prev->from->nextcp.x, sp->prev->from->nextcp.y,
-			sp->prevcp.x, sp->prevcp.y,
-			sp->me.x, sp->me.y );
-	    if ( sp==first )
-	break;
-	    if ( first==NULL ) first = sp;
-	    if ( sp->next==NULL )
-	break;
-	}
-	if ( spl->first->prev!=NULL )
-	    fprintf( eps, "closepath\n" );
-    }
-}
-
 int _ExportEPS(FILE *eps,SplineChar *sc) {
     DBounds b;
     time_t now;
     struct tm *tm;
     int ret;
-    RefChar *rf;
     char *oldloc;
 
     oldloc = setlocale(LC_NUMERIC,"C");
@@ -84,23 +57,14 @@ int _ExportEPS(FILE *eps,SplineChar *sc) {
     fprintf( eps, "%%%%EndProlog\n" );
     fprintf( eps, "%%%%Page \"%s\" 1\n", sc->name );
 
-    fprintf( eps, "newpath\n" );
-    if ( !sc->parent->order2 ) {
-	DumpSPL(eps,sc->layers[ly_fore].splines);
-	for ( rf = sc->layers[ly_fore].refs; rf!=NULL; rf = rf->next )
-	    DumpSPL(eps,rf->layers[0].splines);
-    } else {
-	SplinePointList *temp;
-	temp = SplineSetsPSApprox(sc->layers[ly_fore].splines);
-	DumpSPL(eps,temp);
-	SplinePointListFree(temp);
-	for ( rf = sc->layers[ly_fore].refs; rf!=NULL; rf = rf->next ) {
-	    temp = SplineSetsPSApprox(rf->layers[0].splines);
-	    DumpSPL(eps,temp);
-	    SplinePointListFree(temp);
-	}
-    }
-    fprintf( eps, "fill\n" );
+    fprintf( eps, "gsave newpath\n" );
+    SC_PSDump((void (*)(int,void *)) fputc,eps,sc,true);
+#ifdef PFAEDIT_CONFIG_TYPE3
+    if ( sc->parent->multilayer )
+	fprintf( eps, "grestore\n" );
+    else
+#endif
+	fprintf( eps, "fill grestore\n" );
     fprintf( eps, "%%%%EOF\n" );
     ret = !ferror(eps);
     setlocale(LC_NUMERIC,oldloc);

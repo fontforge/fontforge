@@ -27,6 +27,18 @@
 #ifndef _CONFIG_PFAEDIT_H_
 #define _CONFIG_PFAEDIT_H_
 
+/* Making PfaEdit handle more of the capabilities of type3 & svg fonts is not */
+/*  something most people will want. It wastes space too. So I thought I'd    */
+/*  make it conditional. 						      */
+/*									      */
+/* #define PFAEDIT_CONFIG_TYPE3						      */
+/*									      */
+/* It allows people to have images in a font, multiple layers, strokes, fills */
+/*  transparencies, etc. (type3 doesn't support transparency, svg doesn't do  */
+/*  images)								      */
+/* Can be set from configure --with-multilayer				      */
+
+
 /* I doubt anyone but me will be interested in the tile path command, so I    */
 /*  don't include code for it by default, but if you do want it simply define */
 /*  the following macro							      */
@@ -36,6 +48,8 @@
 /* The tile path command uses the contents of the clipboard as a tile which is*/
 /*  applied to any selected paths, replacing them. It could be used to make a */
 /*  font whose stems were filled with celtic knotwork, for example */
+/* It's sort of an extension to the Expand Stroke command, only it strokes    */
+/*  with a pattern */
 
 
 /* I thought it would be fun to write a generalized non linear transformation */

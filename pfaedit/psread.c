@@ -1305,7 +1305,7 @@ printf( "-%s-\n", toknames[tok]);
 	  break;
 	  case pt_exec:
 	    if ( sp>0 && stack[sp-1].type == ps_lit ) {
-		ref = chunkalloc(sizeof(RefChar));
+		ref = RefCharCreate();
 		ref->sc = (SplineChar *) stack[--sp].u.str;
 		memcpy(ref->transform,transform,sizeof(transform));
 		if ( ec->refs==NULL )
@@ -2508,8 +2508,8 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
  seac:
 		if ( sp<5 ) fprintf(stderr, "Stack underflow on seac in %s\n", name );
 		/* stack[0] must be the lsidebearing of the accent. I'm not sure why */
-		r1 = chunkalloc(sizeof(RefChar));
-		r2 = chunkalloc(sizeof(RefChar));
+		r1 = RefCharCreate();
+		r2 = RefCharCreate();
 		r2->transform[0] = 1; r2->transform[3]=1;
 		r2->transform[4] = stack[1] - (stack[0]-ret->lsidebearing);
 		r2->transform[5] = stack[2];
