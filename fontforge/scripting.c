@@ -4693,6 +4693,19 @@ return( c->tok );
 	    else
 		cungetc(ch,c);
 	  break;
+	  case '\\':
+	    ch=cgetc(c);
+	    if ( ch=='\n' || ch=='\r' ) {
+		/* treat backslash newline as a space */
+		ch=cgetc(c);
+		if ( ch!='\n' && ch!='\r' )
+		    cungetc(ch,c);
+	break;
+	    } else {
+		cungetc(ch,c);
+		ch = '\\';
+		/* fall through */
+	    }
 	  default:
 	    fprintf( stderr, "%s:%d Unexpected character %c (%d)\n",
 		    c->filename, c->lineno, ch, ch);
