@@ -26,13 +26,14 @@
  */
 #include <stdlib.h>
 #include <string.h>
-#include "ustring.h"
-#include "utype.h"
-#include "gdraw.h"
-#include "gwidget.h"
-#include "ggadget.h"
-#include "charset.h"
-#include "chardata.h"
+#include <ustring.h>
+#include <utype.h>
+#include <gdraw.h>
+#include <gwidget.h>
+#include <ggadget.h>
+#include <charset.h>
+#include <chardata.h>
+#include <gresource.h>
 
 #define INSCHR_CharSet	1
 #define INSCHR_Char	2
@@ -172,7 +173,84 @@ struct namemap encodingnames[] = {
     {"Unicode", em_unicode },
     {"Symbol", em_symbol },
     {"Zapf Dingbats", em_zapfding },
-    {"User Defined", em_user },
+    {"Adobe Standard", em_user },
+    {"-", -1 },
+    {"Arabic", em_max+16 },
+    {"Arabic Ligatures A1", em_max+17 },
+    {"Arabic Ligatures A2", em_max+18 },
+    {"Arabic Ligatures A3", em_max+19 },
+    {"Arabic Ligatures B", em_max+20 },
+    {"Armenian", em_max+12 },
+    {"Armenian Ligatures", em_max+13 },
+    {"Arrows", em_max+56 },
+    {"Bengali", em_max+24 },
+    {"Block Elements", em_max+63 },
+    {"Box Drawing", em_max+62 },
+    {"Canadian Syllabics A", em_max+43 },
+    {"Canadian Syllabics B", em_max+44 },
+    {"Canadian Syllabics C", em_max+45 },
+    {"Cherokee", em_max+42 },
+    {"CJK Compatibility Forms", em_max+71 },
+    {"CJK Symbols and Punctuation", em_max+67 },
+    {"Combining Diacritics", em_max+8 },
+    {"Combining Symbol Diacritics", em_max+53 },
+    {"Control Pictures", em_max+59 },
+    {"Currency Symbols", em_max+52 },
+    {"Cyrillic", em_max+11 },
+    {"Devanagari", em_max+23 },
+    {"Dingbats", em_max+66 },
+    {"Enclosed Alphanumerics", em_max+61 },
+    {"Ethiopic A", em_max+40 },
+    {"Ethiopic B", em_max+41 },
+    {"Fullwidth Symbol Variants", em_max+73 },
+    {"General Punctuation", em_max+50 },
+    {"Geometric Shapes", em_max+64 },
+    {"Georgian", em_max+37 },
+    {"Greek & Coptic", em_max+9 },
+    {"Greek Additional Extensions", em_max+10 },
+    {"Gujarati", em_max+26 },
+    {"Gurmukhi", em_max+25 },
+    {"Halfwidth Katakana", em_max+70 },
+    {"Hangul Jamo", em_max+38 },
+    {"Hangul Jamo Halfwidth", em_max+39 },
+    {"Hebrew", em_max+14 },
+    {"Hebrew Ligatures", em_max+15 },
+    {"Hiragana", em_max+68 },
+    {"IPA Extensions", em_max+3 },
+    {"Kannada", em_max+30 },
+    {"Katakana", em_max+69 },
+    {"Khmer", em_max+48 },
+    {"Latin Additional Extensions", em_max+4 },
+    {"Latin Fullwidth", em_max+6 },
+    {"Latin Extended A", em_max+1 },
+    {"Latin Extended B", em_max+2 },
+    {"Latin Ligatures", em_max+5 },
+    {"Letterlike Symbols", em_max+54 },
+    {"Lao", em_max+34 },
+    {"Malayalam", em_max+31 },
+    {"Mathematical Operators", em_max+57 },
+    {"Miscellaneous Symbols", em_max+65 },
+    {"Miscellaneous Technical", em_max+58 },
+    {"Mongolian", em_max+49 },
+    {"Myanmar", em_max+36 },
+    {"Number Forms", em_max+55 },
+    {"OCR", em_max+60 },
+    {"Ogham", em_max+46 },
+    {"Oriya", em_max+27 },
+    {"Punctuation", em_max+50 },
+    {"Runic", em_max+47 },
+    {"Sinhala", em_max+32 },
+    {"Small Form Variants", em_max+72 },
+    {"Spacing Modifier Letters", em_max+7 },
+    {"Specials", em_max+74 },
+    {"Super & Sub scripts", em_max+51 },
+    {"Syriac", em_max+21 },
+    {"Tamil", em_max+28 },
+    {"Telugu", em_max+29 },
+    {"Thaana", em_max+22 },
+    {"Thai", em_max+33 },
+    {"Tibetan", em_max+35 },
+#if 0
     {"Latin Extended A", em_max+1 },
     {"Latin Extended B", em_max+2 },
     {"IPA Extensions", em_max+3 },
@@ -247,6 +325,7 @@ struct namemap encodingnames[] = {
     {"Small Form Variants", em_max+72 },
     {"Fullwidth Symbol Variants", em_max+73 },
     {"Specials", em_max+74 },
+#endif
     { NULL }};
 
 static int mapFromIndex(int i) {
@@ -595,7 +674,14 @@ static void InsChrSetCharset(int map) {
 
 static void InsChrCharset() {
     int map = mapFromIndex(GGadgetGetFirstListSelectedItem(GWidgetGetControl(inschr.icw,INSCHR_CharSet)));
-    InsChrSetCharset(map);
+    if ( map!=-1 )
+	InsChrSetCharset(map);
+    else {
+	int i;
+	for ( i=0; encodingnames[i].name!=NULL && encodingnames[i].map!=inschr.map; ++i );
+	if ( encodingnames[i].name!=NULL )
+	    GGadgetSelectOneListItem(GWidgetGetControl(inschr.icw,INSCHR_CharSet),i);
+    }
 }
 
 static void InsChrShow(void) {
@@ -837,6 +923,10 @@ static int inschr_e_h(GWindow gw, GEvent *event) {
       case et_mouseup:
 	  InsChrMouseUp(gw,event);
       break;
+      case et_char:
+	  if ( event->u.chr.chars[0]=='\r' )
+		InsChrShow();
+      break;
       case et_timer:
 	  InsChrTimer();
       break;
@@ -911,6 +1001,11 @@ void GWidgetCreateInsChar(void) {
 	{ GButtonCreate, {{ 196, 36, 50 }, NULL, 'l', 0, 0, 0, INSCHR_Close, &labels[9], NULL, gg_visible | gg_enabled | gg_but_cancel | gg_pos_use0 }},
 	{ GButtonCreate, {{ 196, 64, 50 }, NULL, 'S', 0, 0, 0, INSCHR_Show, &labels[10], NULL, gg_visible | gg_pos_use0 }},
 	{ NULL }};
+#define keyboard_width 15
+#define keyboard_height 9
+    static unsigned char keyboard_bits[] = {
+       0xff, 0x7f, 0x01, 0x40, 0x55, 0x55, 0x01, 0x40, 0xad, 0x5a, 0x01, 0x40,
+       0xd5, 0x55, 0x01, 0x40, 0xff, 0x7f};
     GRect pos;
     GWindowAttrs wattrs;
     int i;
@@ -925,8 +1020,12 @@ void GWidgetCreateInsChar(void) {
     } else {
 	memset(charsetnames,'\0',sizeof(charsetnames));
 	for ( i=0; encodingnames[i].name!=NULL; ++i ) {
-	    charsetnames[i].text = (unichar_t *) (encodingnames[i].name);
-	    charsetnames[i].text_is_1byte = true;
+	    if ( *encodingnames[i].name=='-' )
+		charsetnames[i].line = true;
+	    else {
+		charsetnames[i].text = (unichar_t *) (encodingnames[i].name);
+		charsetnames[i].text_is_1byte = true;
+	    }
 	}
 	gcd[1].gd.u.list = charsetnames;
 
@@ -936,16 +1035,19 @@ void GWidgetCreateInsChar(void) {
 	inschr.width = pos.width = 16*inschr.spacing+1;
 	inschr.height = pos.height = inschr.ybase + pos.width;
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_isdlg|wam_notrestricted;
+	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_isdlg|wam_notrestricted|wam_icon;
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.cursor = ct_pointer;
 	wattrs.window_title = inschar;
 	wattrs.is_dlg = true;
 	wattrs.not_restricted = true;
+	wattrs.icon = GDrawCreateBitmap(NULL,keyboard_width,keyboard_height,keyboard_bits);
 	inschr.icw = GDrawCreateTopWindow(NULL,&pos,inschr_e_h,&inschr,&wattrs);
 	GGadgetsCreate(inschr.icw,gcd);
 
-	rq.family_name = helv;
+	rq.family_name = uc_copy(GResourceFindString("InsChar.Family"));
+	if ( rq.family_name==NULL )
+	    rq.family_name = helv;
 	rq.point_size = /*15*/12;
 	rq.weight = 400;
 	rq.style = 0;
