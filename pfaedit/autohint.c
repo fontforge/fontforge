@@ -297,6 +297,7 @@ void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]) {
 void QuickBlues(SplineFont *_sf, BlueData *bd) {
     real xheight = -1e10, caph = -1e10, ascent = -1e10, descent = 1e10, max, min;
     real xheighttop = -1e10, caphtop = -1e10;
+    real base = -1e10, basebelow = -1e10;
     SplineFont *sf;
     SplinePoint *sp;
     SplineSet *spl;
@@ -335,24 +336,24 @@ void QuickBlues(SplineFont *_sf, BlueData *bd) {
 		    }
 		    if ( enc>0x400 ) {
 			/* Only use ascent and descent here if we don't have anything better */
-			if ( enc==0x41f ) caph = max;
-			else if ( enc==0x41e ) caphtop = max;
+			if ( enc==0x41f ) { caph = max; base = min; }
+			else if ( enc==0x41e ) { caphtop = max; basebelow = min; }
 			else if ( enc==0x43f && xheight<0 ) xheight = max;
 			else if ( enc==0x445 && xheight<0 ) xheight = max;
 			else if ( enc==0x43e ) xheighttop = max;
 			else if ( enc==0x452 && ascent<0 ) ascent = max;
 			else if ( enc==0x440 && descent>0 ) descent = min;
 		    } else if ( enc>0x300 ) {
-			if ( enc==0x399 ) caph = max;
-			else if ( enc==0x39f ) caphtop = max;
+			if ( enc==0x399 ) { caph = max; base = min; }
+			else if ( enc==0x39f ) { caphtop = max; basebelow = min; }
 			else if ( enc==0x3ba && xheight<0 ) xheight = max;
 			else if ( enc==0x3c7 && xheight<0 ) xheight = max;
 			else if ( enc==0x3bf ) xheighttop = max;
 			else if ( enc==0x3be && ascent<0 ) ascent = max;
 			else if ( enc==0x3c1 && descent>0 ) descent = min;
 		    } else {
-			if ( enc=='I' ) caph = max;
-			else if ( enc=='O' ) caphtop = max;
+			if ( enc=='I' ) { caph = max; base = min; }
+			else if ( enc=='O' ) { caphtop = max; basebelow = min; }
 			else if ( enc=='x' ) xheight = max;
 			else if ( enc=='o' ) xheighttop = max;
 			else if ( enc=='l' ) ascent = max;
@@ -365,10 +366,13 @@ void QuickBlues(SplineFont *_sf, BlueData *bd) {
     } while ( j<_sf->subfontcnt );
 
     if ( caphtop<caph ) caphtop = caph; else if ( caph==-1e10 ) caph=caphtop;
+    if ( basebelow>base ) basebelow = base; else if ( base==0 ) base=basebelow;
+    if ( base==-1e10 ) { base=basebelow = 0; }
     if ( xheighttop<xheight ) xheighttop = xheight; else if ( xheight==-1e10 ) xheight=xheighttop;
     bd->xheight = xheight; bd->xheighttop = xheighttop;
     bd->caph = caph; bd->caphtop = caphtop;
     bd->ascent = ascent; bd->descent = descent;
+    bd->base = base; bd->basebelow = basebelow;
 }
 
 void ElFreeEI(EIList *el) {

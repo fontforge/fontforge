@@ -1354,16 +1354,18 @@ return( instrs );
 return( instrs );
 }
 
-static real BDFindValue(real base, BlueData *bd ) {
+static real BDFindValue(real base, BlueData *bd, int isbottom ) {
     real replace = 0x80000000;
-    real fudge = bd->caphtop-bd->caph;
 
-    if ( base>= -fudge && base<=0 )
-	replace = 0;
-    else if ( base>=bd->caph && base<=bd->caphtop )
-	replace = bd->caph;
-    else if ( base>=bd->xheight && base<=bd->xheighttop )
-	replace = bd->xheight;
+    if ( isbottom ) {
+	if ( base>= bd->basebelow && base<=bd->base )
+	    replace = 0;
+    } else {
+	if ( base>=bd->caph && base<=bd->caphtop )
+	    replace = bd->caph;
+	else if ( base>=bd->xheight && base<=bd->xheighttop )
+	    replace = bd->xheight;
+    }
     /* I'm allowing ascent and descent's to wiggle */
 return( replace );
 }
@@ -1408,14 +1410,20 @@ static uint8 *geninstrs(struct glyphinfo *gi, uint8 *instrs,StemInfo *hint,
 
     hbase = base = rint(hint->start); width = rint(hint->width);
     if ( !xdir ) {
-	/* check the "bluevalues" for things like cap height and xheight */
-	if ( (newbase = BDFindValue(base,&gi->bd))!= 0x80000000 ) {
+	/* check the "bluevalues" for things like cap height, xheight and */
+	/*  baseline. But only check if the top of a stem is at capheight */
+	/*  or xheight, and only if the bottom is at baseline */
+	if ( width<0 ) {
+	    hbase = (base += width);
+	    width = -width;
+	}
+	if ( (newbase = BDFindValue(base,&gi->bd,true))!= 0x80000000 ) {
 	    base = newbase;
 	    basecvt = _getcvtval(gi,(int)base);
 	}
 	if ( basecvt == -1 && !hint->startdone ) {
 	    hbase = (base += width);
-	    if ( (newbase = BDFindValue(base,&gi->bd))!= 0x80000000 ) {
+	    if ( (newbase = BDFindValue(base,&gi->bd,false))!= 0x80000000 ) {
 		base = newbase;
 		basecvt = _getcvtval(gi,(int)base);
 	    }
@@ -1425,8 +1433,8 @@ static uint8 *geninstrs(struct glyphinfo *gi, uint8 *instrs,StemInfo *hint,
 		hbase = (base -= width);
 	}
     }
-    if ( width>0 && hint->enddone ) {
-	hbase = (base += width);
+    if ( hbase==rint(hint->start) && hint->enddone ) {
+	base = (hbase += width);
 	width = -width;
 	basecvt = -1;
     }
@@ -1508,6 +1516,12 @@ static uint8 *gendinstrs(struct glyphinfo *gi,uint8 *pt,DStemInfo *dstem,
     int rp0=-1, isword;
     int t1, t2, b1, b2;
 
+    /* this routine does what it is supposed to, but not what it should */
+    /*  I need a new algorithem to make it worth doing... */
+    /* Probably I need to look at lines as a whole and find intersection */
+    /*  points. */
+return(pt);
+
     /* first get the indexes of the points that make up the diagonal */
     for ( i=0; i<4; ++i ) corners[i] =-1;
     for ( i=0; i<ptcnt; ++i ) {
@@ -1525,7 +1539,7 @@ static uint8 *gendinstrs(struct glyphinfo *gi,uint8 *pt,DStemInfo *dstem,
 return( pt );
     /* At least one of the points should not have been touched in x */
     if ( ((touched[corners[0]]&1) + (touched[corners[2]]&1) + 
-	    (touched[corners[1]]&1) + (touched[corners[3]]&1))!=4 )
+	    (touched[corners[1]]&1) + (touched[corners[3]]&1))==4 )
 return( pt );
 
     /* The freedom vector should already be set to x */
@@ -1587,7 +1601,7 @@ return( pt );
     *ipt++ = 7;			/* SPVTL[orthog] */
     stemindex = getcvtval(gi,stemwidth);
 
-    if ( rp0!=corners[b1] && !(touched[corners[t2]]) ) {
+    if ( rp0!=corners[b1] && !(touched[corners[t2]]&1) ) {
 	if ( rp0==-1 ) {
 	    *ppt++ = corners[t1];
 	    *ipt++ = 16;		/* SRP0 */
@@ -1596,7 +1610,7 @@ return( pt );
 	*ppt++ = corners[t2];
 	*ipt++ = 0xed;		/* MIRP[01101] */
     }
-    if ( !(touched[corners[b2]]) ) {
+    if ( !(touched[corners[b2]]&1) ) {
 	if ( rp0!=corners[b1] ) {
 	    *ppt++ = corners[b1];
 	    *ipt++ = 16;		/* SRP0 */
@@ -1605,7 +1619,7 @@ return( pt );
 	*ppt++ = corners[b2];
 	*ipt++ = 0xed;		/* MIRP[01101] */
     }
-    if ( rp0==corners[b1] && !(touched[corners[t2]]) ) {
+    if ( rp0==corners[b1] && !(touched[corners[t2]]&1) ) {
 	*ppt++ = corners[t1];
 	*ipt++ = 16;		/* SRP0 */
 	*ppt++ = stemindex;
@@ -1715,6 +1729,24 @@ static uint8 *gen_rnd_instrs(struct glyphinfo *gi, uint8 *instrs,SplineSet *ttfs
 return( instrs );
 }
 
+static uint8 *gen_extremum_instrs(struct glyphinfo *gi, uint8 *instrs,
+	BasePoint *bp, int ptcnt, char *touched) {
+    int i;
+    real min, max;
+
+    min = 0x80000000; max = 0x7fffffff;
+    for ( i=0; i<ptcnt; ++i ) {
+	if ( min>bp[i].y ) min = bp[i].y;
+	else if ( max<bp[i].y ) max = bp[i].y;
+    }
+    for ( i=0; i<ptcnt; ++i ) if ( !(touched[i]&2) && (bp[i].y==min || bp[i].y==max) ) {
+	instrs = pushpoint(instrs,i);
+	*instrs++ = 0x2f;			/* MDAP[rnd] */
+	touched[i] |= 0x2;
+    }
+return( instrs );
+}
+
 static void initforinstrs(SplineChar *sc) {
     SplineSet *ss;
     SplinePoint *sp;
@@ -1781,6 +1813,7 @@ return;
     }
     pt = gen_md_instrs(gi,pt,sc->md,ttfss,bp,ptcnt,false,touched);
     pt = gen_rnd_instrs(gi,pt,ttfss,bp,ptcnt,false,touched);
+    pt = gen_extremum_instrs(gi,pt,bp,ptcnt,touched);
 
     /* next instruct vertical stems (=> movement in x) */
     if ( pt != instrs )

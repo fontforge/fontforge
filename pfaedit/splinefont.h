@@ -95,6 +95,7 @@ typedef struct dbounds {
 typedef struct bluedata {
     real xheight, xheighttop;		/* height of "x" and "o" */
     real caph, caphtop;			/* height of "I" and "O" */
+    real base, basebelow;		/* bottom of "I" and "O" */
     real ascent;			/* height of "l" */
     real descent;			/* depth of "p" */
 } BlueData;
@@ -282,6 +283,7 @@ typedef struct steminfo {
     struct steminfo *next;
     unsigned int hinttype: 2;	/* Only used by undoes */
     unsigned int ghost: 1;	/* this is a ghost stem hint. As such truetype should ignore it, type2 output should negate it, and type1 should use as is */
+		    /* stored width will be either 20 or 21 */
 		    /* Type2 says: -20 is "width" of top edge, -21 is "width" of bottom edge, type1 accepts either */
     unsigned int haspointleft:1;
     unsigned int haspointright:1;
