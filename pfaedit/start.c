@@ -306,6 +306,9 @@ int main( int argc, char **argv ) {
     else if ( *localeinfo.decimal_point!='.' ) coord_sep=" ";
     GResourceAddResourceString(NULL,argv[0]);
     LoadPrefs();
+    initadobeenc();
+    inituninameannot();
+    initrand();
     CheckIsScript(argc,argv);		/* Will run the script and exit if it is a script */
 
     for ( i=1; i<argc; ++i ) {
@@ -354,9 +357,6 @@ int main( int argc, char **argv ) {
 	else if ( strcmp(pt,"-version")==0 )
 	    doversion();
     }
-    initadobeenc();
-    inituninameannot();
-    initrand();
 
     GDrawCreateDisplays(display,argv[0]);
     InitCursors();
