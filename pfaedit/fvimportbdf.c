@@ -125,7 +125,10 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b) {
 	if ( i!=-1 && (sf->chars[i]==NULL || strcmp(sf->chars[i]->name,name)!=0 ))
 	    MakeEncChar(sf,enc,name);
     } else {
-	for ( i=sf->charcnt-1; i>=0 ; --i ) if ( sf->chars[i]!=NULL ) {
+	if ( enc<sf->charcnt && sf->chars[enc]!=NULL &&
+		strcmp(sf->chars[enc]->name,name)==0 )
+	    i = enc;
+	else for ( i=sf->charcnt-1; i>=0 ; --i ) if ( sf->chars[i]!=NULL ) {
 	    if ( strcmp(name,sf->chars[i]->name)==0 )
 	break;
 	}
@@ -135,6 +138,14 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b) {
 		i = -1;
 	    if ( i!=-1 )
 		SFMakeChar(sf,i);
+	}
+	if ( sf->onlybitmaps && sf->bitmaps==b && b->next==NULL &&
+		i!=enc && enc!=-1 && (enc>=b->charcnt || b->chars[enc]==NULL)) {
+	    i = enc;
+	    if ( !sf->dupnamewarn ) {
+		GWidgetErrorR(_STR_DuplicateName,_STR_DuplicateCharName,name);
+		sf->dupnamewarn = true;
+	    }
 	}
 	if ( i==-1 && sf->onlybitmaps && sf->bitmaps==b && b->next==NULL && enc!=-1 ) {
 	    MakeEncChar(sf,enc,name);
@@ -210,8 +221,9 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc, char *family, 
 	}
 	if ( strcmp(tok,"FONT")==0 ) {
 	    fscanf(bdf," -%*[^-]-%[^-]-%[^-]-%[^-]-%*[^-]-", family, weight, italic );
-	    while ( (ch = getc(bdf))!='-' && ch!=EOF );
-	    fscanf(bdf,"%d", &pixelsize );
+	    while ( (ch = getc(bdf))!='-' && ch!='\n' && ch!=EOF );
+	    if ( ch=='-' )
+		fscanf(bdf,"%d", &pixelsize );
 	} else if ( strcmp(tok,"SIZE")==0 && pixelsize==-1 ) {
 	    int size, res;
 	    fscanf(bdf, "%d %d", &size, &res );

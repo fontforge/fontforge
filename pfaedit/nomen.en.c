@@ -1014,6 +1014,8 @@ static char *str_NotBdfFileName = "Not a bdf file %.200hs"
 static char *str_NotPkFile = "Not a pk file"
 static char *str_NotPkFileName = "Not a (metafont) pk file %.200hs"
 static char *str_LoadingFrom = "Loading font from %.100hs";
+static char *str_DuplicateName = "Duplicate Name";
+static char *str_DuplicateCharName = "Duplicate character name (%hs) in font";
     /* problems */
 static char *str_ProbOpenPath = "The two selected points are the endpoints of an open path";
 static char *str_ProbPointsTooClose = "The selected points are too close to each other";
@@ -1246,5 +1248,7 @@ static char *str_BuildingKoreanFont = "Building Korean Font";
     /* Transform */
 static char *str_TransformBackground = "Transform Background Too";
 static char mnemonic_TransformBackground = 'B';
+    /* start (about box) */
+static char *str_FreePress = "A free press discriminates\nagainst the illiterate.";
 
 static int num_buttonsize = 55;

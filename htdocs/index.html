@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 7-Jan-2002 -->
+  <!-- AP: Last modified: 9-Jan-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -105,22 +105,22 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-011219-1.src.rpm">source RPM</A>: Version:
 19-Dec-2001<BR>
-Or you can download the following three packages. Version: 7-Jan-2002
+Or you can download the following three packages. Version: 9-Jan-2002
 <UL>
   <LI>
     <A HREF="libgunicode-020107.tgz">Unicode library source</A> (7-Jan-2002)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
-    <A HREF="libgdraw-020107.tgz">Unicode widget library source</A>
-    (7-Jan-2002)<BR>
+    <A HREF="libgdraw-020109.tgz">Unicode widget library source</A>
+    (9-Jan-2002)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-020107.tgz">Pfaedit source</A> (7-Jan-2002)<BR>
+    <A HREF="pfaedit_src-020109.tgz">Pfaedit source</A> (9-Jan-2002)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
-    <A HREF="pfaedit_full-020107.tgz">All three bundled together </A>(7-Jan-2002)
+    <A HREF="pfaedit_full-020109.tgz">All three bundled together </A>(9-Jan-2002)
 </UL>
 <P>
 If you want to do autotracing around character images you should also download
@@ -230,6 +230,31 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    9 Jan 2002
+    <UL>
+      <LI>
+	destroy window fix on 2 Jan was not enough, it popped up again. Hope I've
+	killed it this time
+      <LI>
+	PfaEdit had trouble reading bdf fonts that
+	<UL>
+	  <LI>
+	    did not have standard X font names (-vendor-family-weight-italic-...)
+	  <LI>
+	    had the same name used for different characters
+	</UL>
+      <LI>
+	The metrics view got confused by characters with negative lbearings.
+      <LI>
+	Added some Japanese (Kanji) text samples.
+    </UL>
+  <LI>
+    8 Jan 2002
+    <UL>
+      <LI>
+	Fixed a bug in gdf output
+    </UL>
   <LI>
     7 Jan 2002
     <UL>
@@ -752,7 +777,9 @@ The following people have helped debug pfaedit. Many thanks!
   <LI>
     Edward G.J. Lee
   <LI>
-    Werner LEMBERG<BR>
+    Werner LEMBERG
+  <LI>
+    Kuniko Arakawa<BR>
     &nbsp;
   <LI>
     And many others!

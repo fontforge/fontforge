@@ -433,6 +433,7 @@ typedef struct splinefont {
     unsigned int isserif: 1;			/* We have serifs. If neither set then we don't know. */
     unsigned int hasvmetrics: 1;		/* We've got vertical metric data and should output vhea/vmtx/VORG tables */
     unsigned int loading_cid_map: 1;
+    unsigned int dupnamewarn: 1;		/* Warn about duplicate names when loading bdf font */
     struct fontview *fv;
     enum charset encoding_name;
     SplinePointList *gridsplines;

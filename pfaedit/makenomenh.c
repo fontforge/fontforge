@@ -10,6 +10,8 @@
 #include <charset.h>
 #include <chardata.h>
 
+#define e_hexjis	100
+
 static char *istandard[] = { "buttonsize", NULL };
 
 static char *standard[] = { "Language", "OK", "Cancel", "Open", "Save",
@@ -224,6 +226,37 @@ return( ch1 );
 	ch1 = (ch1<<8) + ch2;
 	ch1 = unicode_from_big5[ch1-0xa100];
 return( ch1 );
+    } else if ( enc==e_johab ) {
+	ch1 = charval(buffer);
+	if ( ch1<0xa1 )
+return( ch1 );
+	ch2 = charval(buffer);
+	ch1 = (ch1<<8) + ch2;
+	ch1 = unicode_from_johab[ch1-0x8400];
+return( ch1 );
+    } else if ( enc==e_sjis ) {
+	ch1 = charval(buffer);
+	if ( ch1<0x80 )
+return( ch1 );
+	else if ( ch1>=161 && ch1<=223 )
+	    /* Katakana */
+return( unicode_from_jis201[ch1]);
+	ch2 = charval(buffer);
+	if ( ch1 >= 129 && ch1<= 159 )
+	    ch1 -= 112;
+	else
+	    ch1 -= 176;
+	ch1 <<= 1;
+	if ( ch2>=159 )
+	    ch2-= 126;
+	else if ( ch2>127 ) {
+	    --ch1;
+	    ch2 -= 32;
+	} else {
+	    --ch1;
+	    ch2 -= 31;
+	}
+return( unicode_from_jis208[(ch1-0x21)*94+(ch2-0x21)]);
     } else {
 	fprintf( stderr, "Don't support this encoding\n" );
 	exit( 1 );
@@ -391,6 +424,8 @@ static int getencoding(char *str) {
 	{ e_wansung, "e_wansung" },
 	{ e_big5, "e_big5" },
 	{ e_johab, "e_johab" },
+	{ e_sjis, "e_sjis" },
+	{ e_hexjis, "e_hexjis" },
 	{ 0, NULL}};
     int i;
     char *pt;
