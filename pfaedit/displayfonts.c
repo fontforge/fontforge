@@ -68,13 +68,11 @@ static GTextInfo *FontNames(SplineFont *cur_sf) {
 	if ( fv->nextsame==NULL ) {
 	    sf = fv->sf;
 	    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
-	    if ( hasFreeType() || sf->bitmaps!=NULL ) {
-		ti[cnt].text = uc_copy(sf->fontname);
-		ti[cnt].userdata = sf;
-		if ( sf==cur_sf )
-		    ti[cnt].selected = true;
-		++cnt;
-	    }
+	    ti[cnt].text = uc_copy(sf->fontname);
+	    ti[cnt].userdata = sf;
+	    if ( sf==cur_sf )
+		ti[cnt].selected = true;
+	    ++cnt;
 	}
 return( ti );
 }
@@ -524,7 +522,7 @@ void DisplayDlg(SplineFont *sf) {
     gcd[1].gd.mnemonic = 'A';
     gcd[1].gd.pos.x = 170; gcd[1].gd.pos.y = gcd[0].gd.pos.y+3; 
     gcd[1].gd.flags = gg_visible | gg_enabled | gg_cb_on;
-    if ( !hasfreetype || sf->onlybitmaps )
+    if ( sf->bitmaps!=NULL && ( !hasfreetype || sf->onlybitmaps ))
 	gcd[1].gd.flags = DSP_AAState(sf,bestbdf);
     gcd[1].gd.popup_msg = GStringGetResource(_STR_AAPopup,NULL);
     gcd[1].gd.handle_controlevent = DSP_AAChange;
@@ -541,7 +539,7 @@ void DisplayDlg(SplineFont *sf) {
     gcd[2].gd.cid = CID_SizeLab;
     gcd[2].creator = GLabelCreate;
 
-    if ( !hasfreetype || sf->onlybitmaps )
+    if ( bestbdf !=NULL && ( !hasfreetype || sf->onlybitmaps ))
 	sprintf( buf, "%d", bestbdf->pixelsize );
     else
 	strcpy(buf,"17");
