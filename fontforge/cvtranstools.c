@@ -90,7 +90,6 @@ void CVMouseUpTransform(CharView *cv) {
 	/* Nothing happened */
 	cv->needsrasterize = cv->recentchange = false;
 	CVRemoveTopUndo(cv);
-	cv->p.pressed = false;
 	SCUpdateAll(cv->sc);
     } else
 	CVUndoCleanup(cv);
