@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 2-Sep-2002 -->
-  <!-- AP: Last modified: 26-Mar-2003 -->
+  <!-- AP: Last modified: 1-Apr-2003 -->
   <TITLE>Preferences Dialog</TITLE>
 </HEAD>
 <BODY>
@@ -61,7 +61,7 @@
     PfaEdit will read <A HREF="xres.html">X Resources</A> from a property on
     the screen. But sometimes this isn't enough. You set this preference item
     to specify a file from which these resources should be read (those on the
-    screen will also be read and will supercede those in the file). 
+    screen will also be read and will supercede those in the file).
   <DT>
     <A NAME="HelpDir">HelpDir</A>
   <DD>
@@ -127,8 +127,16 @@
     <A NAME="UndoDepth">UndoDepth</A>
   <DD>
     Controls the maximum number of Undoes that may be retained in a character.
-    (In some rare occasions an Undo will be stored if this depth is
-    0)<BR Clear=all>
+    (In some rare occasions an Undo will be stored even if this depth is 0)
+  <DT>
+    <A NAME="StopAtJoin">StopAtJoin</A>
+  <DD>
+    When dragging points in the outline view, if the end point of one open contour
+    is moved onto the end point of another open contour then those two contours
+    will join. If you leave this Off then further motion will continue to move
+    the points, if you set this to On then PfaEdit will stop noticing mouse movements
+    (it pretends that you released the mouse button). This is useful if you hand
+    jitters a little on the mouse.<BR Clear=all>
 </DL>
 <P>
 <IMG SRC="prefs-font.png" WIDTH="282" HEIGHT="372" ALIGN="Right">
