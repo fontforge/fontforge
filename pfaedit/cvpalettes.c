@@ -163,11 +163,11 @@ static int popupsres[] = { _STR_Pointer, _STR_PopMag,
 			            _STR_PopRectElipse, _STR_PopPolyStar,
 			            _STR_PopRectElipse, _STR_PopPolyStar};
 static int editablelayers[] = { _STR_Fore, _STR_Back, _STR_Grid };
-static int rectelipse=0, polystar=0, regular_star=1;
-static int center_out = false;
-static real rr_radius=0;
-static int ps_pointcnt=6;
-static real star_percent=1.7320508;	/* Regular 6 pointed star */
+int rectelipse=0, polystar=0, regular_star=1;
+int center_out = false;
+real rr_radius=0;
+int ps_pointcnt=6;
+real star_percent=1.7320508;	/* Regular 6 pointed star */
 static StrokeInfo expand = { 25, lj_round, lc_butt, si_centerline,
 	    /* toobigwarn */  true,
 	    /* removeexternal */ false,
@@ -233,6 +233,7 @@ return( true );
 	d->done = true;
 	if ( !regular_star && d->isint )
 	    star_percent = val2/100;
+	SavePrefs();
     }
 return( true );
 }
@@ -441,6 +442,7 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
     GRect temp;
 
     GDrawPushClip(pixmap,r,&old);
+    GDrawFillRect(pixmap,r,GDrawGetDefaultBackground(NULL));
     for ( i=0; i<sizeof(buttons)/sizeof(buttons[0])-1; ++i ) for ( j=0; j<2; ++j ) {
 	mi = i;
 	if ( i==(cvt_rect)/2 && ((j==0 && rectelipse) || (j==1 && polystar)) )
@@ -562,14 +564,59 @@ void CVToolsSetCursor(CharView *cv, int state, char *device) {
     }
 }
 
+static int CVCurrentTool(CharView *cv, GEvent *event) {
+    if ( event->u.mouse.device!=NULL && strcmp(event->u.mouse.device,"eraser")==0 )
+return( cv->er_tool );
+    else if ( event->u.mouse.device!=NULL && strcmp(event->u.mouse.device,"stylus")==0 ) {
+	if ( event->u.mouse.button==2 )
+	    /* Only thing that matters is touch which maps to button 1 */;
+	else if ( cv->had_control )
+return( cv->s2_tool );
+	else
+return( cv->s1_tool );
+    }
+    if ( cv->had_control && event->u.mouse.button==2 )
+return( cv->cb2_tool );
+    else if ( event->u.mouse.button==2 )
+return( cv->b2_tool );
+    else if ( cv->had_control ) {
+return( cv->cb1_tool );
+    } else {
+return( cv->b1_tool );
+    }
+}
+
 static void ToolsMouse(CharView *cv, GEvent *event) {
     int i = (event->u.mouse.y/27), j = (event->u.mouse.x/27), mi=i;
     int pos;
     int isstylus = event->u.mouse.device!=NULL && strcmp(event->u.mouse.device,"stylus")==0;
     int styluscntl = isstylus && (event->u.mouse.state&0x200);
+    static int settings[2];
 
-    if ( i==(cvt_rect)/2 && ((j==0 && rectelipse) || (j==1 && polystar)) )
-	++mi;
+    if ( i==(cvt_rect)/2 ) {
+	int current = CVCurrentTool(cv,event);
+	int changed = false;
+	if ( event->type == et_mousedown && event->u.mouse.clicks>=2 ) {
+	    rectelipse = settings[0];
+	    polystar = settings[1];
+	} else if ( event->type == et_mousedown ) {
+	    settings[0] = rectelipse; settings[1] = polystar;
+	    /* A double click will change the type twice, which leaves it where it was, which is desired */
+	    if ( j==0 && ((!rectelipse && current==cvt_rect) || (rectelipse && current==cvt_elipse)) ) {
+		rectelipse = !rectelipse;
+		changed = true;
+	    } else if (j==1 && ((!polystar && current==cvt_poly) || (polystar && current==cvt_star)) ) {
+		polystar = !polystar;
+		changed = true;
+	    }
+	    if ( changed ) {
+		SavePrefs();
+		GDrawRequestExpose(cvtools,NULL,false);
+	    }
+	}
+	if ( (j==0 && rectelipse) || (j==1 && polystar) )
+	    ++mi;
+    }
     pos = mi*2 + j;
     GGadgetEndPopup();
     /* we have two fewer buttons than commands as two bottons each control two commands */

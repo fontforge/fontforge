@@ -97,6 +97,11 @@ int alwaysgenapple = false;
 #endif
 char *helpdir;
 
+extern int rectelipse, polystar, regular_star;	/* from cvpalettes.c */
+extern int center_out;				/* from cvpalettes.c */
+extern real rr_radius;				/* from cvpalettes.c */
+extern int ps_pointcnt;				/* from cvpalettes.c */
+extern real star_percent;			/* from cvpalettes.c */
 
 static int pointless;
 
@@ -407,6 +412,13 @@ static struct prefs_list {
 	{ "PrintCommand", pr_string, &printcommand, NULL, NULL, '\0', NULL, 1 },
 	{ "PageLazyPrinter", pr_string, &printlazyprinter, NULL, NULL, '\0', NULL, 1 },
 	{ "ShowRulers", pr_bool, &CVShows.showrulers, NULL, NULL, '\0', NULL, 1, _STR_PrefsPopupRulers },
+	{ "RegularStar", pr_bool, &regular_star, NULL, NULL, '\0', NULL, 1 },
+	{ "PolyStar", pr_bool, &polystar, NULL, NULL, '\0', NULL, 1 },
+	{ "RectEllipse", pr_bool, &rectelipse, NULL, NULL, '\0', NULL, 1 },
+	{ "RectEllipseCenterOut", pr_bool, &center_out, NULL, NULL, '\0', NULL, 1 },
+	{ "PolyStartPointCnt", pr_int, &ps_pointcnt, NULL, NULL, '\0', NULL, 1 },
+	{ "RoundRectRadius", pr_real, &rr_radius, NULL, NULL, '\0', NULL, 1 },
+	{ "StarPercent", pr_real, &star_percent, NULL, NULL, '\0', NULL, 1 },
 	{ NULL }
 },
  oldnames[] = {
