@@ -122,6 +122,8 @@ static char str_Findprobs[] = "Find Problems...";
 static unichar_t mnemonic_Findprobs[] = 'o';
 static char str_Getinfo[] = "Get Info...";
 static unichar_t mnemonic_Getinfo[] = 'I';
+static char str_ShowDependents[] = "Show Dependents...";
+static unichar_t mnemonic_ShowDependents[] = 'h';
 static char str_Bitmapsavail[] = "Bitmaps Available...";
 static unichar_t mnemonic_Bitmapsavail[] = 'A';
 static char str_Regenbitmaps[] = "Regenerate Bitmaps...";
@@ -587,7 +589,7 @@ static char *str_ModSpanish = "Español Español es_ES";
 static char *str_Swedish = "Svensk sv_SE";
 static char *str_Turkish = "Turkish tr_TR";
 static char *str_Ukrainian = "Ukrainian uk_UA";
-    /* Generate fonts */
+    /* Generate fonts */ /* savefontdlg */
 static char str_Format[] = "Format:";
 static char str_Savefailedtitle[] = "Save Failed";
 static char str_Outputafm[] = "Output AFM";
@@ -603,6 +605,8 @@ static char *str_SavingCIDFont = "Saving CID Font";
 static char *str_SavingAFM = "Saving AFM File";
 static char *str_SavingPFM = "Saving PFM File";
 static char *str_SavingBitmapFonts = "Saving Bitmap Font(s)";
+static char *str_NotCID = "Not a CID format";
+static char *str_NotCIDOk = "You are attempting to save a CID font in a non-CID format. This is ok, but it means that only the current sub-font will be saved.\nIs that what you want?";
     /* Goto character ... */
 static char str_Badnumberin[] = "Bad Number in ";
 static char str_Enternameofchar[] = "Enter the name of a character in the font";
@@ -672,8 +676,12 @@ static char str_Missingcomponantpost[] = " is not in this font,\012Is that what 
 static char str_Done[] = "Done";
 static unichar_t mnemonic_Done[] = 'D';
 static char str_Ligpop[] = "If this character is a ligature,\012then enter the names of the characters\012into which it decomposes";
-static char str_Show[] = "Show";
+static char *str_Show[] = "Show";
 static unichar_t mnemonic_Show[] = 'S';
+static char *str_PointInfo = "Point Info";
+static char *str_ImageInfo = "Image Info";
+static char *str_ReferenceInfo = "Reference Info";
+static char *str_Dependents = "Dependents";
     /* Import */
 static char str_Duppixelsize[] = "Duplicate pixelsize";
 /* "The font database already contains a bitmap\nfont with this pixelsize (%d)\nDo you want to overwrite it?" */

@@ -359,6 +359,7 @@ extern void CVStroke(CharView *cv);
 extern void FVStroke(FontView *fv);
 extern void SCGetInfo(SplineChar *sc,int nextprev);
 extern void CVGetInfo(CharView *cv);
+extern void SCRefBy(SplineChar *sc);
 extern void FVSetWidth(FontView *fv,enum widthtype wtype);
 extern void CVSetWidth(CharView *cv,enum widthtype wtype);
 extern void CVChangeSC(CharView *cv, SplineChar *sc );

@@ -216,7 +216,7 @@ SplinePoint *SplineBisect(Spline *spline, real t) {
     FigureSpline1(&ystart,0,t,ysp);
     FigureSpline1(&yend,t,1,ysp);
 
-    mid = calloc(1,sizeof(SplinePoint));
+    mid = chunkalloc(sizeof(SplinePoint));
     mid->me.x = xstart.s1;	mid->me.y = ystart.s1;
     mid->nextcp.x = xend.c0;	mid->nextcp.y = yend.c0;
     mid->prevcp.x = xstart.c1;	mid->prevcp.y = ystart.c1;
@@ -234,7 +234,7 @@ SplinePoint *SplineBisect(Spline *spline, real t) {
     old1->prevcpdef = false;
     SplineFree(spline);
 
-    spline1 = calloc(1,sizeof(Spline));
+    spline1 = chunkalloc(sizeof(Spline));
     spline1->splines[0] = xstart.sp;	spline1->splines[1] = ystart.sp;
     spline1->from = old0;
     spline1->to = mid;
@@ -247,7 +247,7 @@ SplinePoint *SplineBisect(Spline *spline, real t) {
     }
     SplineRefigure(spline1);
 
-    spline2 = calloc(1,sizeof(Spline));
+    spline2 = chunkalloc(sizeof(Spline));
     spline2->splines[0] = xend.sp;	spline2->splines[1] = xend.sp;
     spline2->from = mid;
     spline2->to = old1;
@@ -392,10 +392,10 @@ static TPoint *SplinesFigureTPsBetween(SplinePoint *from, SplinePoint *to,
 	extras += 4*cnt;
 	tcp = 1;
     }
-    tp = malloc((4*(cnt+1)+extras)*sizeof(TPoint)); i = 0;
+    tp = galloc((4*(cnt+1)+extras)*sizeof(TPoint)); i = 0;
 #endif
 
-    tp = malloc(10*(cnt+1)*sizeof(TPoint)); i = 0;
+    tp = galloc(10*(cnt+1)*sizeof(TPoint)); i = 0;
     lbase = 0;
     for ( np = from->next->to; ; np = np->next->to ) {
 	temp = (np->me.x-np->prev->from->me.x);
@@ -820,7 +820,7 @@ return( copy(buffer));
 
 SplineFont *SplineFontEmpty(void) {
     SplineFont *sf;
-    sf = calloc(1,sizeof(SplineFont));
+    sf = gcalloc(1,sizeof(SplineFont));
     sf->pfminfo.fstype = -1;
     sf->encoding_name = em_none;
 return( sf );
@@ -914,7 +914,7 @@ SplineFont *SplineFontNew(void) {
     sf->display_size = -default_fv_font_size;
     sf->onlybitmaps = true;
     for ( i=0; i<enclen && i<256; ++i ) {
-	SplineChar *sc = sf->chars[i] = calloc(1,sizeof(SplineChar));
+	SplineChar *sc = sf->chars[i] = chunkalloc(sizeof(SplineChar));
 	if ( table==NULL )
 	    uenc = i;
 	else if ( tlen==94*94 ) {
@@ -1414,8 +1414,8 @@ SplineSet *SplineSetsCorrect(SplineSet *base) {
     es.omin = b.minx*es.scale;
     es.omax = b.maxx*es.scale;
     es.cnt = (int) (es.mmax-es.mmin) + 1;
-    es.edges = calloc(es.cnt,sizeof(Edge *));
-    es.interesting = calloc(es.cnt,sizeof(char));
+    es.edges = gcalloc(es.cnt,sizeof(Edge *));
+    es.interesting = gcalloc(es.cnt,sizeof(char));
     es.sc = NULL;
     es.major = 1; es.other = 0;
     FindEdgesSplineSet(base,&es);

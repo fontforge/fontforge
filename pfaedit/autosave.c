@@ -30,6 +30,7 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <error.h>
 #include <stdlib.h>
 #include <pwd.h>
 #include <dirent.h>
@@ -128,6 +129,28 @@ return( false );
     }
     closedir(dir);
 return( any );
+}
+
+void CleanAutoRecovery(void) {
+    char buffer[1025];
+    char *recoverdir = getAutoDirName(buffer);
+    DIR *dir;
+    struct dirent *entry;
+
+    if ( recoverdir==NULL )
+return;
+    if ( (dir = opendir(recoverdir))==NULL )
+return;
+    while ( (entry=readdir(dir))!=NULL ) {
+	if ( strcmp(entry->d_name,".")==0 || strcmp(entry->d_name,"..")==0 )
+    continue;
+	sprintf(buffer,"%s/%s",recoverdir,entry->d_name);
+	if ( unlink(buffer)!=0 ) {
+	    fprintf( stderr, "Failed to clean " );
+	    perror(buffer);
+	}
+    }
+    closedir(dir);
 }
 
 void DoAutoSaves(void) {

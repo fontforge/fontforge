@@ -30,7 +30,7 @@
 static SplinePoint *SPMake(BasePoint *base,int pt) {
     SplinePoint *new;
 
-    new = gcalloc(1,sizeof(SplinePoint));
+    new = chunkalloc(sizeof(SplinePoint));
     new->me = *base;
     new->nextcp = *base;
     new->prevcp = *base;
@@ -55,7 +55,7 @@ void CVMouseDownShape(CharView *cv) {
     CVClearSel(cv);
     CVPreserveState(cv);
     CVSetCharChanged(cv,true);
-    cv->active_shape = galloc(sizeof(SplineSet));
+    cv->active_shape = chunkalloc(sizeof(SplineSet));
     cv->active_shape->next = *(cv->heads[cv->drawmode]);
     *cv->heads[cv->drawmode] = cv->active_shape;
     cv->active_shape->first = last = SPMake(&cv->info,pt_corner);

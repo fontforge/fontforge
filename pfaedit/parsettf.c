@@ -618,7 +618,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
     SplinePoint *sp;
 
     for ( path=i=0; path<path_cnt; ++path ) {
-	cur = gcalloc(1,sizeof(SplineSet));
+	cur = chunkalloc(sizeof(SplineSet));
 	if ( head==NULL )
 	    head = cur;
 	else
@@ -628,7 +628,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 	start = i;
 	while ( i<=endpt[path] ) {
 	    if ( flags[i]&_On_Curve ) {
-		sp = gcalloc(1,sizeof(SplinePoint));
+		sp = chunkalloc(sizeof(SplinePoint));
 		sp->me = sp->nextcp = sp->prevcp = pts[i];
 		sp->nonextcp = sp->noprevcp = true;
 		if ( last_off && cur->last!=NULL )
@@ -637,7 +637,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 	    } else if ( last_off ) {
 		/* two off curve points get a third on curve point created */
 		/* half-way between them. Now isn't that special */
-		sp = gcalloc(1,sizeof(SplinePoint));
+		sp = chunkalloc(sizeof(SplinePoint));
 		sp->me.x = (pts[i].x+pts[i-1].x)/2;
 		sp->me.y = (pts[i].y+pts[i-1].y)/2;
 		sp->nextcp = sp->prevcp = sp->me;
@@ -659,7 +659,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 	    ++i;
 	}
 	if ( !(flags[start]&_On_Curve) && !(flags[i-1]&_On_Curve) ) {
-	    sp = gcalloc(1,sizeof(SplinePoint));
+	    sp = chunkalloc(sizeof(SplinePoint));
 	    sp->me.x = (pts[start].x+pts[i-1].x)/2;
 	    sp->me.y = (pts[start].y+pts[i-1].y)/2;
 	    sp->nextcp = sp->prevcp = sp->me;
@@ -767,7 +767,7 @@ static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc) 
     int flags, arg1, arg2;
 
     do {
-	cur = gcalloc(1,sizeof(RefChar));
+	cur = chunkalloc(sizeof(RefChar));
 	flags = getushort(ttf);
 	cur->local_enc = getushort(ttf);
 	if ( info->inuse!=NULL )
@@ -809,7 +809,7 @@ static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc) 
 
 static SplineChar *readttfglyph(FILE *ttf,struct ttfinfo *info,int start, int end) {
     int path_cnt;
-    SplineChar *sc = gcalloc(1,sizeof(SplineChar));
+    SplineChar *sc = chunkalloc(sizeof(SplineChar));
 
     sc->unicodeenc = -1;
     /* sc->manualhints = 1; */ /* But only when I know how to read them in!!!! */
@@ -1488,7 +1488,7 @@ static struct topdicts *readcfftopdict(FILE *ttf, char *fontname, int len) {
 
     td->notice = td->copyright = td->fullname = td->familyname = td->weight = td->version = -1;
     td->postscript_code = td->basefontname = -1;
-    td->synthetic_base = -1;
+    td->synthetic_base = td->ros_registry = -1;
     td->fdarrayoff = td->fdselectoff = td->sid_fontname = -1;
 
     while ( ftell(ttf)<base+len ) {
@@ -2289,12 +2289,16 @@ static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
 
     fseek(ttf,info->hmetrics_start,SEEK_SET);
     for ( i=0; i<info->width_cnt && i<info->glyph_cnt; ++i ) {
-	if ( info->chars[i]!=NULL )		/* can happen in ttc files */
+	if ( info->chars[i]!=NULL ) {		/* can happen in ttc files */
 	    info->chars[i]->width = getushort(ttf);
+	    info->chars[i]->widthset = true;
+	}
 	/* lsb = */ getushort(ttf);
     }
-    for ( j=i; j<info->glyph_cnt; ++j )
+    for ( j=i; j<info->glyph_cnt; ++j ) {
 	info->chars[j]->width = info->chars[i-1]->width;
+	info->chars[j]->widthset = true;
+    }
 }
 
 static struct dup *makedup(SplineChar *sc, int uni, struct dup *prev) {
@@ -2674,7 +2678,7 @@ static uint16 *getCoverageTable(FILE *ttf, int coverage_offset) {
 	    ind = getushort(ttf);
 	    if ( ind+end-start+1 >= max ) {
 		max = ind+end-start+1;
-		glyphs = realloc(glyphs,max*sizeof(uint16));
+		glyphs = grealloc(glyphs,max*sizeof(uint16));
 	    }
 	    for ( j=start; j<=end; ++j )
 		glyphs[j-start+ind] = j;
@@ -2747,7 +2751,7 @@ static void readttfgsub(FILE *ttf,struct ttfinfo *info) {
     fseek(ttf,lookup_start,SEEK_SET);
 
     lu_cnt = getushort(ttf);
-    lu_offsets = malloc(lu_cnt*sizeof(uint16));
+    lu_offsets = galloc(lu_cnt*sizeof(uint16));
     for ( i=0; i<lu_cnt; ++i )
 	lu_offsets[i] = getushort(ttf);
     for ( i=0; i<lu_cnt; ++i ) {
@@ -2755,7 +2759,7 @@ static void readttfgsub(FILE *ttf,struct ttfinfo *info) {
 	lu_type = getushort(ttf);
 	flags = getushort(ttf);
 	cnt = getushort(ttf);
-	st_offsets = malloc(cnt*sizeof(uint16));
+	st_offsets = galloc(cnt*sizeof(uint16));
 	for ( j=0; j<cnt; ++j )
 	    st_offsets[j] = getushort(ttf);
 	for ( j=0; j<cnt; ++j ) {
@@ -2861,8 +2865,8 @@ return( true );
 }
 
 static SplineChar *SFMakeDupRef(SplineFont *sf, int local_enc, struct dup *dup) {
-    SplineChar *sc = gcalloc(1,sizeof(SplineChar));
-    RefChar *ref = gcalloc(1,sizeof(RefChar));
+    SplineChar *sc = chunkalloc(sizeof(SplineChar));
+    RefChar *ref = chunkalloc(sizeof(RefChar));
 
     sc->enc = local_enc;
     sc->unicodeenc = dup->enc;

@@ -704,9 +704,8 @@ static real EIFigurePos(EI *e,int other, int *hadpt ) {
 return( val );
 }
 
-static StemInfo *CleanupHints(StemInfo *stem) {
+StemInfo *HintCleanup(StemInfo *stem,int dosort) {
     StemInfo *s, *p=NULL, *t, *pt, *sn;
-    int dosort=false;
 
     for ( s=stem; s!=NULL; p=s, s=s->next ) {
 	if ( s->width<0 ) {
@@ -719,28 +718,36 @@ static StemInfo *CleanupHints(StemInfo *stem) {
 	    dosort = true;
     }
     if ( dosort ) {
-	for ( p=NULL, s=stem; s!=NULL; s = sn ) {
+	for ( p=NULL, s=stem; s!=NULL; p=s, s = sn ) {
 	    sn = s->next;
 	    for ( pt=s, t=sn; t!=NULL; pt=t, t=t->next ) {
 		if ( t->start<s->start ) {
 		    s->next = t->next;
-		    if ( pt==s )
+		    if ( pt==s ) {
 			t->next = s;
-		    else
+			sn = s;
+		    } else {
 			t->next = sn;
+			pt->next = s;
+		    }
 		    if ( p==NULL )
 			stem = t;
 		    else
 			p->next = t;
-		    if ( pt!=s )
-			pt->next = s;
-		    else
-			sn = s;
-		    pt = s;
+		    pt = s;	/* swap s and t */
 		    s = t;
 		    t = pt;
 		}
 	    }
+	}
+	/* Remove duplicates */
+	if ( stem!=NULL ) for ( p=stem, s=stem->next; s!=NULL; s = sn ) {
+	    sn = s->next;
+	    if ( p->start==s->start && p->width==s->width ) {
+		p->next = sn;
+		StemInfoFree(s);
+	    } else
+		p = s;
 	}
     }
 return( stem );
@@ -785,7 +792,7 @@ return( test );
 	}
     }
 
-    test = gcalloc(1,sizeof(StemInfo));
+    test = chunkalloc(sizeof(StemInfo));
     test->start = start;
     test->width = end-start;
     test->haspointleft = shadpt;
@@ -811,7 +818,7 @@ static void _StemAddBrief(StemInfo *new, real mstart, real mend ) {
 	if ( mend>thi->end ) thi->end = mend;
 return;
     }
-    hi = gcalloc(1,sizeof(HintInstance));
+    hi = chunkalloc(sizeof(HintInstance));
     hi->begin = mstart;
     hi->end = mend;
     hi->next = new->where;
@@ -836,7 +843,7 @@ static StemInfo *StemAddBrief(StemInfo *stems,EI *apt,EI *e,
     if ( new->where==NULL )
 	stems = StemInsert(stems,new);
     else if ( new->reordered )
-	stems = CleanupHints(stems);
+	stems = HintCleanup(stems,false);
     _StemAddBrief(new,mstart,mend);
 return( stems );
 }
@@ -850,7 +857,7 @@ static StemInfo *StemAddUpdate(StemInfo *stems,EI *apt,EI *e, int i, int major) 
 	stems = StemInsert(stems,new);
     else {
 	if ( new->reordered )
-	    stems = CleanupHints(stems);
+	    stems = HintCleanup(stems,false);
 	if ( new->where->end>=i ) {
 	    new->where->closed = false;
 return(stems);
@@ -861,7 +868,7 @@ return(stems);
 		!e->spline->from->nonextcp || !e->spline->to->noprevcp ) &&
 		IsNearHV(apt,e,i,&up,&down,major))
 return( StemAddBrief(stems,apt,e,i+down,i+up,major));
-	hi = gcalloc(1,sizeof(HintInstance));
+	hi = chunkalloc(sizeof(HintInstance));
 	hi->begin = i;
 	hi->end = i;
 	hi->next = new->where;
@@ -1293,7 +1300,7 @@ static DStemInfo *AddDiagStem(DStemInfo *dstems,EI *apt,EI *e) {
     if ( !MakeDStem(&d,apt,e))
 return( dstems );
     if ( dstems==NULL || d.leftedgetop.x < dstems->leftedgetop.x ) {
-	new = galloc(sizeof(DStemInfo));
+	new = chunkalloc(sizeof(DStemInfo));
 	*new = d;
 	new->next = dstems;
 return( new );
@@ -1306,7 +1313,7 @@ return( new );
 	    d.leftedgebottom.x==test->leftedgebottom.x && d.leftedgebottom.y==test->leftedgebottom.y &&
 	    d.rightedgebottom.x==test->rightedgebottom.x && d.rightedgebottom.y==test->rightedgebottom.y )
 return( dstems );
-    new = galloc(sizeof(DStemInfo));
+    new = chunkalloc(sizeof(DStemInfo));
     *new = d;
     new->next = test;
     prev->next = new;
@@ -1630,7 +1637,7 @@ HintInstance *HICopyTrans(HintInstance *hi, real mul, real offset) {
     HintInstance *first=NULL, *last, *cur, *p;
 
     while ( hi!=NULL ) {
-	cur = gcalloc(1,sizeof(HintInstance));
+	cur = chunkalloc(sizeof(HintInstance));
 	if ( mul>0 ) {
 	    cur->begin = hi->begin*mul+offset;
 	    cur->end = hi->end*mul+offset;
@@ -1715,7 +1722,7 @@ return(ghosts);		/* already recorded */
 	if ( s->start==base && s->width==width )
     break;
     if ( s==NULL ) {
-	s = gcalloc(1,sizeof(StemInfo));
+	s = chunkalloc(sizeof(StemInfo));
 	s->start = base;
 	s->width = width;
 	s->ghost = true;
@@ -1729,7 +1736,7 @@ return(ghosts);		/* already recorded */
 	    s->next = test;
 	}
     }
-    hi = gcalloc(1,sizeof(HintInstance));
+    hi = chunkalloc(sizeof(HintInstance));
     hi->begin = xstart;
     hi->end = xend;
     s->where = HIMerge(s->where,hi);
@@ -1913,7 +1920,7 @@ static void SCGuessHintInstances(SplineChar *sc, StemInfo *stem,int major) {
 		}
 	    }
 	    if ( sm || wm ) {
-		cur = gcalloc(1,sizeof(HintInstance));
+		cur = chunkalloc(sizeof(HintInstance));
 		if ( ob>oe ) { real temp=ob; ob=oe; oe=temp;}
 		cur->begin = ob;
 		cur->end = oe;
@@ -1963,7 +1970,7 @@ static void SCGuessHintInstances(SplineChar *sc, StemInfo *stem,int major) {
 	    if ( w2->begin>=t->begin )
 		t->begin = w2->begin;
 	    if ( w2->end<=t->end ) {
-		cur = gcalloc(1,sizeof(HintInstance));
+		cur = chunkalloc(sizeof(HintInstance));
 		cur->begin = w2->end;
 		cur->end = t->end;
 		cur->next = n;
@@ -1976,7 +1983,7 @@ static void SCGuessHintInstances(SplineChar *sc, StemInfo *stem,int major) {
 	if ( w2==NULL || w2->begin>=t->end ) {
 	    /* No match for t (or if there were it wasn't complete) get rid */
 	    /*  of what's left of t */
-	    free(t);
+	    chunkfree(t,sizeof(*t));
 	    if ( p==NULL )
 		s = n;
 	    else
@@ -1986,7 +1993,7 @@ static void SCGuessHintInstances(SplineChar *sc, StemInfo *stem,int major) {
     }
     while ( w!=NULL ) {
 	n = w->next;
-	free(w);
+	chunkfree(w,sizeof(*w));
 	w=n;
     }
     stem->where = s;
@@ -2030,7 +2037,7 @@ static void HIRemoveFrom(StemInfo *stem, HintInstance *cantuse) {
 		stem->where = t;
 	    else
 		p->next = t;
-	    free(hi);
+	    chunkfree(hi,sizeof(HintInstance));
 	    hi = t;
 	} else if ( cantuse->begin<=hi->begin ) {
 	    hi->begin = cantuse->end;
@@ -2041,7 +2048,7 @@ static void HIRemoveFrom(StemInfo *stem, HintInstance *cantuse) {
 	    hi = hi->next;
 	} else {
 	    /* cantuse breaks hi into two bits */
-	    t = gcalloc(1,sizeof(HintInstance));
+	    t = chunkalloc(sizeof(HintInstance));
 	    t->begin = cantuse->end;
 	    t->end = hi->end;
 	    t->next = hi->next;
@@ -2102,7 +2109,7 @@ void SCGuessHHintInstancesList(SplineChar *sc) {
     StemInfo *h;
     int any = false;
 
-    sc->hstem = CleanupHints(sc->hstem);
+    sc->hstem = HintCleanup(sc->hstem,false);
     for ( h= sc->hstem; h!=NULL; h=h->next )
 	if ( h->where==NULL ) {
 	    SCGuessHintInstances(sc,h,0);
@@ -2117,7 +2124,7 @@ void SCGuessVHintInstancesList(SplineChar *sc) {
     StemInfo *h;
     int any = false;
 
-    sc->vstem = CleanupHints(sc->vstem);
+    sc->vstem = HintCleanup(sc->vstem,false);
     for ( h= sc->vstem; h!=NULL; h=h->next )
 	if ( h->where==NULL ) {
 	    SCGuessHintInstances(sc,h,1);
@@ -2142,7 +2149,7 @@ static StemInfo *RefHintsMerge(StemInfo *into, StemInfo *rh, real mul, real offs
 	}
 	for ( h=into, prev=NULL; h!=NULL && (start>h->start || (start==h->start && width>h->width)); prev=h, h=h->next );
 	if ( h==NULL || (start!=h->start && width!=h->width) ) {
-	    n = gcalloc(1,sizeof(StemInfo));
+	    n = chunkalloc(sizeof(StemInfo));
 	    n->start = start; n->width = width;
 	    n->next = h;
 	    if ( prev==NULL )
@@ -2163,7 +2170,7 @@ static DStemInfo *RefDHintsMerge(DStemInfo *into, DStemInfo *rh, real xmul, real
     DStemInfo *prev, *n;
 
     for ( ; rh!=NULL; rh=rh->next ) {
-	new = galloc(sizeof(DStemInfo));
+	new = chunkalloc(sizeof(DStemInfo));
 	*new = *rh;
 	new->leftedgetop.x = xmul*new->leftedgetop.x + xoffset;
 	new->rightedgetop.x = xmul*new->rightedgetop.x + xoffset;
@@ -2437,6 +2444,7 @@ static int SplineCharIsFlexible(SplineChar *sc, int blueshift) {
 	    sp = np;
 	} while ( sp!=spl->first );
     }
+    sc->anyflexes = max>0;
 return( max );
 }
 

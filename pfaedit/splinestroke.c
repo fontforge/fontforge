@@ -93,7 +93,7 @@ return( angle );
 
 static SplinePoint *makequartercircle(real x, real y, real radius,
 	real xmul, real ymul,SplinePoint *prev) {
-    SplinePoint *here = gcalloc(1,sizeof(SplinePoint));
+    SplinePoint *here = chunkalloc(sizeof(SplinePoint));
 
     here->me.x = x;
     here->me.y = y;
@@ -134,12 +134,12 @@ static void StrokeEnd(SplinePoint *base, StrokeInfo *si, SplinePoint **_plus, Sp
 	    SplineMake(cur,plus);
 	    *_plus = *_minus = plus;
 	} else {
-	    *_plus = *_minus = cur = galloc(sizeof(SplinePoint));
+	    *_plus = *_minus = cur = chunkalloc(sizeof(SplinePoint));
 	    *cur = *base;
 	}
     } else {
-	plus = gcalloc(1,sizeof(SplinePoint));
-	minus = gcalloc(1,sizeof(SplinePoint));
+	plus = chunkalloc(sizeof(SplinePoint));
+	minus = chunkalloc(sizeof(SplinePoint));
 	plus->pointtype = pt_corner; minus->pointtype = pt_corner;
 	if ( base->next==NULL ) {	/* the prev spline moves toward base */
 	    SplineIsLinearMake(base->prev);
@@ -159,12 +159,12 @@ static void StrokeEnd(SplinePoint *base, StrokeInfo *si, SplinePoint **_plus, Sp
 	if ( si->cap==lc_butt ) {
 	    SplineMake(plus,minus);		/* draw a line between */
 	} else if ( si->cap==lc_square ) {
-	    mid1 = gcalloc(1,sizeof(SplinePoint));
+	    mid1 = chunkalloc(sizeof(SplinePoint));
 	    mid1->me.x = plus->me.x+ sign*(plus->me.y-base->me.y);
 	    mid1->me.y = plus->me.y- sign*(plus->me.x-base->me.x);
 	    mid1->nextcp = mid1->prevcp = mid1->me;
 	    mid1->nonextcp = mid1->noprevcp = true;
-	    mid2 = gcalloc(1,sizeof(SplinePoint));
+	    mid2 = chunkalloc(sizeof(SplinePoint));
 	    mid2->me.x = minus->me.x+ sign*(plus->me.y-base->me.y);
 	    mid2->me.y = minus->me.y- sign*(plus->me.x-base->me.x);
 	    mid2->nextcp = mid2->prevcp = mid2->me;
@@ -174,7 +174,7 @@ static void StrokeEnd(SplinePoint *base, StrokeInfo *si, SplinePoint **_plus, Sp
 	    SplineMake(mid1,mid2);
 	    SplineMake(mid2,minus);
 	} else if ( si->cap==lc_round ) {
-	    mid1 = gcalloc(1,sizeof(SplinePoint));
+	    mid1 = chunkalloc(sizeof(SplinePoint));
 	    mid1->me.x = base->me.x+ sign*(plus->me.y-base->me.y);
 	    mid1->me.y = base->me.y- sign*(plus->me.x-base->me.x);
 	    mid1->pointtype = pt_curve;
@@ -249,8 +249,8 @@ static void MakeJoints(JointPoint *ret,StrokeInfo *si,
     BasePoint temp;
     TPoint approx[4];
 
-    from = gcalloc(1,sizeof(SplinePoint));
-    to = gcalloc(1,sizeof(SplinePoint));
+    from = chunkalloc(sizeof(SplinePoint));
+    to = chunkalloc(sizeof(SplinePoint));
     from->pointtype = to->pointtype = pt_corner;
     from->me = *_from;
     to->me = *_to;
@@ -264,7 +264,7 @@ static void MakeJoints(JointPoint *ret,StrokeInfo *si,
 	from->nextcp = from->me;
 	to->prevcp = to->me;
 	from->nonextcp = to->noprevcp = true;
-	mid = gcalloc(1,sizeof(SplinePoint));
+	mid = chunkalloc(sizeof(SplinePoint));
 	mid->me = ret->inter;
 	mid->prevcp = mid->nextcp = mid->me;
 	mid->noprevcp = mid->nonextcp = true;
@@ -301,11 +301,11 @@ static void StrokeJoint(SplinePoint *base,StrokeInfo *si,JointPoint *plus,JointP
 	    RealNearish(pangle,nangle) ) {
 	/* If the two splines are tangent at the base, then everything is */
 	/*  simple, there is no join, things match up perfectly */
-	plus->from = plus->to = calloc(1,sizeof(SplinePoint));
+	plus->from = plus->to = chunkalloc(sizeof(SplinePoint));
 	plus->from->pointtype = pt_curve;
 	plus->from->me.x = (pplus.x + nplus.x)/2;
 	plus->from->me.y = (pplus.y + nplus.y)/2;
-	minus->from = minus->to = calloc(1,sizeof(SplinePoint));
+	minus->from = minus->to = chunkalloc(sizeof(SplinePoint));
 	minus->from->me.x = (pminus.x + nminus.x)/2;
 	minus->from->me.y = (pminus.y + nminus.y)/2;
 	minus->from->pointtype = pt_curve;
@@ -329,13 +329,13 @@ static void StrokeJoint(SplinePoint *base,StrokeInfo *si,JointPoint *plus,JointP
 	    SplineSetReverse(&junk);
 	    plus->from = junk.first; plus->to = junk.last;
 	    plus->tprev = 1; plus->tnext = 0;
-	    minus->from = minus->to = gcalloc(1,sizeof(SplinePoint));
+	    minus->from = minus->to = chunkalloc(sizeof(SplinePoint));
 	    minus->from->me = minus->inter;
 	    minus->from->pointtype = pt_corner;
 	} else {
 	    MakeJoints(minus,si,&nminus,&pminus,&base->me);
 	    minus->tprev = 1; minus->tnext = 0;
-	    plus->from = plus->to = gcalloc(1,sizeof(SplinePoint));
+	    plus->from = plus->to = chunkalloc(sizeof(SplinePoint));
 	    plus->from->me = plus->inter;
 	    plus->from->pointtype = pt_corner;
 	}
@@ -366,7 +366,7 @@ SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
 	m_tlast = first_minus.tnext;
     } else if ( spl->first->next==NULL ) {
 	/* Only one point in the SplineSet. */
-	ssplus = gcalloc(1,sizeof(SplineSet));
+	ssplus = chunkalloc(sizeof(SplineSet));
 	StrokeEnd(spl->first,si,&ssplus->first,&ssplus->last);
 return( ssplus );
     } else {
@@ -428,10 +428,10 @@ return( ssplus );
 	if ( first==NULL ) first = spline;
     }
 
-    ssplus = gcalloc(1,sizeof(SplineSet));
+    ssplus = chunkalloc(sizeof(SplineSet));
     ssplus->first = ssplus->last = plus;
     if ( spl->first==spl->last ) {
-	ssminus = gcalloc(1,sizeof(SplineSet));
+	ssminus = chunkalloc(sizeof(SplineSet));
 	ssminus->first = ssminus->last = minus;
 	if ( SplinePointListIsClockwise(ssplus))
 	    SplineSetReverse(ssplus);

@@ -75,7 +75,7 @@ return;
     fprintf( out, "#define _NUM_%s\t%d\n", buffer+off, npos );
     if ( ipos>=ilen ) {
 	ilen += 1000;
-	inames = realloc(inames,ilen*sizeof(unichar_t*));
+	inames = grealloc(inames,ilen*sizeof(unichar_t*));
     }
     inames[ipos++] = uc_copy(buffer+off);
 }
@@ -150,8 +150,8 @@ static int makenomenh() {
 	fprintf( out, "#define _STR_%s\t%d\n", buffer+off, npos );
 	if ( npos>=nlen ) {
 	    nlen += 1000;
-	    names = realloc(names,nlen*sizeof(unichar_t*));
-	    hadmn = realloc(hadmn,nlen);
+	    names = grealloc(names,nlen*sizeof(unichar_t*));
+	    hadmn = grealloc(hadmn,nlen);
 	    for ( i=nlen-1000; i<nlen; ++i ) hadmn[i] = 0;
 	}
 	names[npos++] = uc_copy(buffer+off);

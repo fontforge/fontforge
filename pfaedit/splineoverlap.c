@@ -709,8 +709,8 @@ static IntersectionList *SplineSetFindIntersections(SplineSet *base) {
     es.omin = b.minx*es.scale;
     es.omax = b.maxx*es.scale;
     es.cnt = (int) (es.mmax-es.mmin) + 1;
-    es.edges = calloc(es.cnt,sizeof(Edge *));
-    es.interesting = calloc(es.cnt,sizeof(char));
+    es.edges = gcalloc(es.cnt,sizeof(Edge *));
+    es.interesting = gcalloc(es.cnt,sizeof(char));
     es.sc = NULL;
     es.major = 1; es.other = 0;
     es.genmajoredges = true;
@@ -724,8 +724,8 @@ static IntersectionList *SplineSetFindIntersections(SplineSet *base) {
     es.omin = b.miny*es.scale;
     es.omax = b.maxy*es.scale;
     es.cnt = (int) (es.mmax-es.mmin) + 1;
-    es.edges = calloc(es.cnt,sizeof(Edge *));
-    es.interesting = calloc(es.cnt,sizeof(char));
+    es.edges = gcalloc(es.cnt,sizeof(Edge *));
+    es.interesting = gcalloc(es.cnt,sizeof(char));
     es.major = 0; es.other = 1;
     es.genmajoredges = true;
     FindEdgesSplineSet(base,&es);
@@ -823,8 +823,8 @@ static void SplineSetFindNeeded(SplineSet *base) {
     es.omin = b.minx*es.scale;
     es.omax = b.maxx*es.scale;
     es.cnt = (int) (es.mmax-es.mmin) + 1;
-    es.edges = calloc(es.cnt,sizeof(Edge *));
-    es.interesting = calloc(es.cnt,sizeof(char));
+    es.edges = gcalloc(es.cnt,sizeof(Edge *));
+    es.interesting = gcalloc(es.cnt,sizeof(char));
     es.sc = NULL;
     es.major = 1; es.other = 0;
     FindEdgesSplineSet(base,&es);
@@ -837,8 +837,8 @@ static void SplineSetFindNeeded(SplineSet *base) {
     es.omin = b.miny*es.scale;
     es.omax = b.maxy*es.scale;
     es.cnt = (int) (es.mmax-es.mmin) + 1;
-    es.edges = calloc(es.cnt,sizeof(Edge *));
-    es.interesting = calloc(es.cnt,sizeof(char));
+    es.edges = gcalloc(es.cnt,sizeof(Edge *));
+    es.interesting = gcalloc(es.cnt,sizeof(char));
     es.major = 0; es.other = 1;
     FindEdgesSplineSet(base,&es);
     _FindNeeded(&es);
@@ -861,7 +861,7 @@ static void ILDisconnect(IntersectionList *ilist) {
 	    if ( sl->spline->from->me.x == ilist->intersection.x &&
 		    sl->spline->from->me.y == ilist->intersection.y ) {
 		if ( sl->spline->from->prev!=sl->spline && sl->spline->from->prev != NULL ) {
-		    sp = gcalloc(1,sizeof(SplinePoint));
+		    sp = chunkalloc(sizeof(SplinePoint));
 		    *sp = *sl->spline->from;
 		    sl->spline->from->prev = NULL;
 		    sp->next = NULL;
@@ -871,7 +871,7 @@ static void ILDisconnect(IntersectionList *ilist) {
 	    if ( sl->spline->to->me.x == ilist->intersection.x &&
 		    sl->spline->to->me.y == ilist->intersection.y ) {
 		if ( sl->spline->to->next!=sl->spline && sl->spline->to->next != NULL ) {
-		    sp = gcalloc(1,sizeof(SplinePoint));
+		    sp = chunkalloc(sizeof(SplinePoint));
 		    *sp = *sl->spline->to;
 		    sl->spline->to->next = NULL;
 		    sp->prev = NULL;
@@ -911,7 +911,7 @@ static SplineSet *SplineSetCreate(SplinePoint *from, SplinePoint *to) {
 	GDrawIError("Bad choice of splines in SplineSetCreate");
     from->next->isticked = to->prev->isticked = true;
     SplinesMergeLists(to->prev,from->next);
-    spl = gcalloc(1,sizeof(SplineSet));
+    spl = chunkalloc(sizeof(SplineSet));
     spl->first = spl->last = to;
 return( spl );
 }
@@ -1086,7 +1086,7 @@ return( SplineSetCreate(good1->from,last->to));
 	if ( cur==NULL ) {
 	    SplinePointList *spl;
 	    GDrawIError("Found an intersection with no exit");
-	    spl = gcalloc(1,sizeof(SplinePointList));
+	    spl = chunkalloc(sizeof(SplinePointList));
 	    spl->first = good1->from; spl->last = last->to;
 return( spl );
 	}

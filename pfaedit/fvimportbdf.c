@@ -64,7 +64,7 @@ return( i );
 
 static void MakeEncChar(SplineFont *sf,int enc,char *name) {
     if ( sf->chars[enc]==NULL ) {
-	sf->chars[enc] = gcalloc(1,sizeof(SplineChar));
+	sf->chars[enc] = chunkalloc(sizeof(SplineChar));
 	sf->chars[enc]->parent = sf;
     }
     free(sf->chars[enc]->name);

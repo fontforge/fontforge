@@ -1566,7 +1566,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     GWindowAttrs wattrs;
     GGadgetData gd;
     GRect gsize;
-    MetricsView *mv = calloc(1,sizeof(MetricsView));
+    MetricsView *mv = gcalloc(1,sizeof(MetricsView));
     FontRequest rq;
     static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a', '\0' };
     static GWindow icon = NULL;

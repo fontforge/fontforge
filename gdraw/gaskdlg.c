@@ -549,7 +549,8 @@ return( true );
 
 static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
 	const unichar_t *question, va_list ap,
-	const unichar_t **choices, int cnt, int def,
+	const unichar_t **choices, int cnt,
+	int buts[2], int def,
 	int restrict_input, int center) {
     GTextInfo qlabels[GLINE_MAX+1], *llabels, blabel[2];
     GGadgetCreateData *gcd;
@@ -641,7 +642,7 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
     gcd[i].gd.pos.width = -1;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels |gg_but_default;
     gcd[i].gd.label = &blabel[0];
-    blabel[0].text = (unichar_t *) _STR_OK;
+    blabel[0].text = (unichar_t *) buts[0];
     blabel[0].text_in_resource = true;
     gcd[i].gd.cid = CID_OK;
     gcd[i++].creator = GButtonCreate;
@@ -652,7 +653,7 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
     gcd[i].gd.pos.width = -1;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels |gg_but_cancel;
     gcd[i].gd.label = &blabel[1];
-    blabel[1].text = (unichar_t *) _STR_Cancel;
+    blabel[1].text = (unichar_t *) buts[1];
     blabel[1].text_in_resource = true;
     gcd[i].gd.cid = CID_Cancel;
     gcd[i++].creator = GButtonCreate;
@@ -676,10 +677,28 @@ int GWidgetChoicesR(int title, const unichar_t **choices,int cnt, int def,int qu
     struct dlg_info d;
     GWindow gw;
     va_list ap;
+    static int buts[2] = { _STR_OK, _STR_Cancel };
 
     va_start(ap,question);
     gw = ChoiceDlgCreate(&d,GStringGetResource( title,NULL),GStringGetResource( question,NULL),ap,
-	    choices,cnt,def,true,false);
+	    choices,cnt,buts,def,true,false);
+    va_end(ap);
+    while ( !d.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+return(d.ret);
+}
+
+int GWidgetChoicesBR(int title, const unichar_t **choices, int buts[2],int cnt, int def,int question,...) {
+    struct dlg_info d;
+    GWindow gw;
+    va_list ap;
+
+    va_start(ap,question);
+    gw = ChoiceDlgCreate(&d,GStringGetResource( title,NULL),GStringGetResource( question,NULL),ap,
+	    choices,cnt,buts,def,true,false);
     va_end(ap);
     while ( !d.done )
 	GDrawProcessOneEvent(NULL);

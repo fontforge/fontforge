@@ -115,24 +115,24 @@ static SplineSet * slurpelipse(FILE *fig,SplineChar *sc, SplineSet *sofar) {
     dcx = cx*scale; dcy = (ascent-cy)*scale;
     drx = rx*scale; dry = ry*scale;
 
-    spl = gcalloc(1,sizeof(SplinePointList));
+    spl = chunkalloc(sizeof(SplinePointList));
     spl->next = sofar;
-    spl->first = sp = gcalloc(1,sizeof(SplinePoint));
+    spl->first = sp = chunkalloc(sizeof(SplinePoint));
     sp->me.x = dcx; sp->me.y = dcy+dry;
 	sp->nextcp.x = sp->me.x + .552*drx; sp->nextcp.y = sp->me.y;
 	sp->prevcp.x = sp->me.x - .552*drx; sp->prevcp.y = sp->me.y;
-    spl->last = sp = gcalloc(1,sizeof(SplinePoint));
+    spl->last = sp = chunkalloc(sizeof(SplinePoint));
     sp->me.x = dcx+drx; sp->me.y = dcy;
 	sp->nextcp.x = sp->me.x; sp->nextcp.y = sp->me.y - .552*dry;
 	sp->prevcp.x = sp->me.x; sp->prevcp.y = sp->me.y + .552*dry;
     SplineMake(spl->first,sp);
-    sp = gcalloc(1,sizeof(SplinePoint));
+    sp = chunkalloc(sizeof(SplinePoint));
     sp->me.x = dcx; sp->me.y = dcy-dry;
 	sp->nextcp.x = sp->me.x - .552*drx; sp->nextcp.y = sp->me.y;
 	sp->prevcp.x = sp->me.x + .552*drx; sp->prevcp.y = sp->me.y;
     SplineMake(spl->last,sp);
     spl->last = sp;
-    sp = gcalloc(1,sizeof(SplinePoint));
+    sp = chunkalloc(sizeof(SplinePoint));
     sp->me.x = dcx-drx; sp->me.y = dcy;
 	sp->nextcp.x = sp->me.x; sp->nextcp.y = sp->me.y + .552*dry;
 	sp->prevcp.x = sp->me.x; sp->prevcp.y = sp->me.y - .552*dry;
@@ -164,9 +164,9 @@ static SplineSet * slurppolyline(FILE *fig,SplineChar *sc, SplineSet *sofar) {
     else {
 	if ( sub!=1 && bps[cnt-1].x==bps[0].x && bps[cnt-1].y==bps[0].y )
 	    --cnt;
-	spl = gcalloc(1,sizeof(SplinePointList));
+	spl = chunkalloc(sizeof(SplinePointList));
 	for ( i=0; i<cnt; ++i ) {
-	    sp = gcalloc(1,sizeof(SplinePoint));
+	    sp = chunkalloc(sizeof(SplinePoint));
 	    sp->me = sp->nextcp = sp->prevcp = bps[i];
 	    sp->nonextcp = sp->noprevcp = true;
 	    sp->pointtype = pt_corner;
@@ -298,17 +298,17 @@ static SplineSet *ApproximateXSpline(struct xspline *xs) {
     int i, j;
     real t;
     TPoint mids[7];
-    SplineSet *spl = gcalloc(1,sizeof(SplineSet));
+    SplineSet *spl = chunkalloc(sizeof(SplineSet));
     SplinePoint *sp;
 
-    spl->first = spl->last = gcalloc(1,sizeof(SplinePoint));
+    spl->first = spl->last = chunkalloc(sizeof(SplinePoint));
     xsplineeval(&spl->first->me,0,xs);
     spl->first->pointtype = ( xs->s[0]==0 )?pt_corner:pt_curve;
     for ( i=0; i<xs->n-1; ++i ) {
 	if ( i==xs->n-2 && xs->closed )
 	    sp = spl->first;
 	else {
-	    sp = gcalloc(1,sizeof(SplinePoint));
+	    sp = chunkalloc(sizeof(SplinePoint));
 	    sp->pointtype = ( xs->s[i+1]==0 )?pt_corner:pt_curve;
 	    xsplineeval(&sp->me,i+1,xs);
 	}

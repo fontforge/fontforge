@@ -193,7 +193,7 @@ return;			/* We clicked on the active point, that's a no-op */
 	    GDrawIError("Base point not at end of splineset in CVMouseDownPoint");
 	if ( sp==NULL || (sp->next!=NULL && sp->prev!=NULL) || sp==base ) {
 	    /* Add a new point */
-	    sp = calloc(1,sizeof(SplinePoint));
+	    sp = chunkalloc(sizeof(SplinePoint));
 	    sp->me.x = cv->p.cx;
 	    sp->me.y = cv->p.cy;
 	    sp->nextcp = sp->me;
@@ -259,8 +259,8 @@ return;			/* We clicked on the active point, that's a no-op */
 	sp->selected = true;
 	ss = cv->p.spl;
     } else {
-	ss = calloc(1,sizeof(SplineSet));
-	sp = calloc(1,sizeof(SplinePoint));
+	ss = chunkalloc(sizeof(SplineSet));
+	sp = chunkalloc(sizeof(SplinePoint));
 	ss->first = ss->last = sp;
 	ss->next = *cv->heads[cv->drawmode];
 	*cv->heads[cv->drawmode] = ss;

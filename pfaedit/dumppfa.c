@@ -246,7 +246,7 @@ static void dumpdblmaxarray(void (*dumpchar)(int ch,void *data), void *data,
 }
 
 static void dumpdblarray(void (*dumpchar)(int ch,void *data), void *data,
-	char *name, real *arr, int len, char *modifiers) {
+	char *name, double *arr, int len, char *modifiers) {
     int i;
     dumpf( dumpchar,data,"/%s [",name);
     for ( i=0; i<len; ++i )
@@ -714,7 +714,7 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 	SplineFont *sf, int format ) {
     int cnt, i;
     time_t now;
-    real fm[6];
+    double fm[6];
     char *encoding[256];
     DBounds b;
     char *pt;
@@ -763,7 +763,7 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 
     dumpf(dumpchar,data,"%d dict begin\n", cnt );
     dumpf(dumpchar,data,"/FontType %d def\n", format==ff_ptype3?3:1 );
-    fm[0] = fm[3] = 1/((real) (sf->ascent+sf->descent));
+    fm[0] = fm[3] = 1.0/((sf->ascent+sf->descent));
     fm[1] = fm[2] = fm[4] = fm[5] = 0;
     dumpdblarray(dumpchar,data,"FontMatrix",fm,6,"readonly ");
     if ( sf->fontname!=NULL )

@@ -44,7 +44,7 @@ static RefChar *RefCharsCopyState(SplineChar *sc) {
     if ( sc->refs==NULL )
 return( NULL );
     for ( crefs = sc->refs; crefs!=NULL; crefs=crefs->next ) {
-	new = malloc(sizeof(RefChar));
+	new = chunkalloc(sizeof(RefChar));
 	*new = *crefs;
 	new->splines = NULL;
 	new->next = NULL;
@@ -64,7 +64,7 @@ static ImageList *ImagesCopyState(CharView *cv) {
     if ( cv->drawmode!=dm_back || cv->sc->backimages==NULL )
 return( NULL );
     for ( cimg = cv->sc->backimages; cimg!=NULL; cimg=cimg->next ) {
-	new = malloc(sizeof(RefChar));
+	new = chunkalloc(sizeof(RefChar));
 	*new = *cimg;
 	new->next = NULL;
 	if ( last==NULL )
@@ -283,7 +283,7 @@ void UndoesFree(Undoes *undo) {
 	    GDrawIError( "Unknown undo type in UndoesFree: %d", undo->undotype );
 	  break;
 	}
-	free(undo);
+	chunkfree(undo,sizeof(Undoes));
 	undo = unext;
     }
 }
@@ -321,7 +321,7 @@ return( AddUndo(undo,cv->uheads[cv->drawmode],cv->rheads[cv->drawmode]));
 }
 
 Undoes *CVPreserveState(CharView *cv) {
-    Undoes *undo = calloc(1,sizeof(Undoes));
+    Undoes *undo = chunkalloc(sizeof(Undoes));
 
     undo->undotype = ut_state;
     undo->u.state.width = cv->sc->width;
@@ -333,7 +333,7 @@ return( CVAddUndo(cv,undo));
 }
 
 Undoes *SCPreserveState(SplineChar *sc) {
-    Undoes *undo = calloc(1,sizeof(Undoes));
+    Undoes *undo = chunkalloc(sizeof(Undoes));
 
     undo->undotype = ut_state;
     undo->u.state.width = sc->width;
@@ -345,7 +345,7 @@ return( AddUndo(undo,&sc->undoes[0],&sc->redoes[0]));
 }
 
 Undoes *SCPreserveBackground(SplineChar *sc) {
-    Undoes *undo = calloc(1,sizeof(Undoes));
+    Undoes *undo = chunkalloc(sizeof(Undoes));
 
     undo->undotype = ut_state;
     undo->u.state.width = sc->width;
@@ -384,7 +384,7 @@ return( undo );
 }
 
 Undoes *CVPreserveWidth(CharView *cv,int width) {
-    Undoes *undo = calloc(1,sizeof(Undoes));
+    Undoes *undo = chunkalloc(sizeof(Undoes));
 
     undo->undotype = ut_width;
     undo->u.width = width;
@@ -392,7 +392,7 @@ return( CVAddUndo(cv,undo));
 }
 
 Undoes *SCPreserveWidth(SplineChar *sc) {
-    Undoes *undo = calloc(1,sizeof(Undoes));
+    Undoes *undo = chunkalloc(sizeof(Undoes));
 
     undo->undotype = ut_width;
     undo->u.state.width = sc->width;
@@ -400,7 +400,7 @@ return( AddUndo(undo,&sc->undoes[0],&sc->redoes[0]));
 }
 
 Undoes *BCPreserveState(BDFChar *bc) {
-    Undoes *undo = calloc(1,sizeof(Undoes));
+    Undoes *undo = chunkalloc(sizeof(Undoes));
 
     undo->undotype = ut_bitmap;
     /*undo->u.bmpstate.width = bc->width;*/
@@ -639,7 +639,7 @@ void CopyReference(SplineChar *sc) {
 
     copybuffer.undotype = ut_state;
     copybuffer.u.state.width = sc->width;
-    copybuffer.u.state.refs = ref = gcalloc(1,sizeof(RefChar));
+    copybuffer.u.state.refs = ref = chunkalloc(sizeof(RefChar));
     ref->unicode_enc = sc->unicodeenc;
     ref->local_enc = sc->enc;
     ref->adobe_enc = getAdobeEnc(sc->name);
@@ -656,7 +656,7 @@ void CopySelected(CharView *cv) {
     if ( cv->drawmode==dm_fore ) {
 	RefChar *refs, *new;
 	for ( refs = cv->sc->refs; refs!=NULL; refs = refs->next ) if ( refs->selected ) {
-	    new = galloc(sizeof(RefChar));
+	    new = chunkalloc(sizeof(RefChar));
 	    *new = *refs;
 	    new->splines = NULL;
 	    new->local_enc = new->sc->enc;
@@ -668,7 +668,7 @@ void CopySelected(CharView *cv) {
     if ( cv->drawmode==dm_back ) {
 	ImageList *imgs, *new;
 	for ( imgs = cv->sc->backimages; imgs!=NULL; imgs = imgs->next ) if ( imgs->selected ) {
-	    new = galloc(sizeof(RefChar));
+	    new = chunkalloc(sizeof(RefChar));
 	    *new = *imgs;
 	    new->next = copybuffer.u.state.images;
 	    copybuffer.u.state.images = new;
@@ -681,7 +681,7 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
     Undoes *cur;
     RefChar *ref;
 
-    cur = gcalloc(1,sizeof(Undoes));
+    cur = chunkalloc(sizeof(Undoes));
     if ( sc==NULL ) {
 	cur->undotype = ut_noop;
     } else {
@@ -692,7 +692,7 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
 	    cur->u.state.refs = RefCharsCopyState(sc);
 	    cur->u.state.images = NULL;
 	} else {		/* Or just make a reference */
-	    cur->u.state.refs = ref = gcalloc(1,sizeof(RefChar));
+	    cur->u.state.refs = ref = chunkalloc(sizeof(RefChar));
 	    ref->unicode_enc = sc->unicodeenc;
 	    ref->local_enc = sc->enc;
 	    ref->adobe_enc = getAdobeEnc(sc->name);
@@ -822,7 +822,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv) {
 		if ( rsc!=NULL && SCDependsOnSC(rsc,sc))
 		    GWidgetErrorR(_STR_SelfRef,_STR_AttemptSelfRef);
 		else if ( rsc!=NULL ) {
-		    new = galloc(sizeof(RefChar));
+		    new = chunkalloc(sizeof(RefChar));
 		    *new = *refs;
 		    new->splines = NULL;
 		    new->sc = rsc;
@@ -885,7 +885,7 @@ static void _PasteToCV(CharView *cv,Undoes *paster) {
 		if ( sc!=NULL && SCDependsOnSC(sc,cv->sc))
 		    GWidgetErrorR(_STR_SelfRef,_STR_AttemptSelfRef);
 		else if ( sc!=NULL ) {
-		    new = galloc(sizeof(RefChar));
+		    new = chunkalloc(sizeof(RefChar));
 		    *new = *refs;
 		    new->splines = NULL;
 		    new->sc = sc;
@@ -952,7 +952,7 @@ void BCCopySelected(BDFChar *bc,int pixelsize) {
 static Undoes *BCCopyAll(BDFChar *bc,int pixelsize) {
     Undoes *cur;
 
-    cur = calloc(1,sizeof(Undoes));
+    cur = chunkalloc(sizeof(Undoes));
     if ( bc==NULL )
 	cur->undotype = ut_noop;
     else {
@@ -1032,7 +1032,7 @@ void FVCopyWidth(FontView *fv) {
     CopyBufferFree();
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
-	cur = gcalloc(1,sizeof(Undoes));
+	cur = chunkalloc(sizeof(Undoes));
 	cur->undotype = ut_width;
 	if ( fv->sf->chars[i]!=NULL )
 	    cur->u.width = fv->sf->chars[i]->width;
@@ -1072,7 +1072,7 @@ void FVCopy(FontView *fv, int fullcopy) {
 		blast = bcur;
 	    }
 	    if ( bhead!=NULL || state!=NULL ) {
-		cur = gcalloc(1,sizeof(Undoes));
+		cur = chunkalloc(sizeof(Undoes));
 		cur->undotype = ut_composit;
 		cur->u.composit.state = state;
 		cur->u.composit.bitmaps = bhead;

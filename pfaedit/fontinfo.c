@@ -1169,9 +1169,9 @@ return( false );
 	enc_cnt = 65536;
     else if ( tlen == 94*94 )
 	enc_cnt = 94*96;
-    chars = calloc(enc_cnt+extras,sizeof(SplineChar *));
+    chars = gcalloc(enc_cnt+extras,sizeof(SplineChar *));
     for ( bdf=sf->bitmaps; bdf!=NULL; bdf = bdf->next )
-	bdf->temp = calloc(enc_cnt+extras,sizeof(BDFChar *));
+	bdf->temp = gcalloc(enc_cnt+extras,sizeof(BDFChar *));
     for ( i=0, epos=enc_cnt; i<sf->charcnt; ++i ) {
 	if ( sf->chars[i]==NULL )
 	    /* skip */;
@@ -1191,7 +1191,7 @@ return( false );
     if ( epos!=enc_cnt+extras ) GDrawIError( "Bad count in ReencodeFont");
     for ( i=0; i<256; ++i ) {
 	if ( chars[i]==NULL ) {
-	    SplineChar *sc = chars[i] = calloc(1,sizeof(SplineChar));
+	    SplineChar *sc = chars[i] = chunkalloc(sizeof(SplineChar));
 	    sc->enc = i;
 	    if ( table==NULL )
 		sc->unicodeenc = i;
@@ -1261,12 +1261,12 @@ return( false );
 	for ( i=0; i<sf->charcnt && is_unicode; ++i )
 	    if ( sf->chars[i]==NULL || sf->chars[i]->unicodeenc!=i )
 		is_unicode = false;
-	sf->chars = realloc(sf->chars,nchars*sizeof(SplineChar *));
+	sf->chars = grealloc(sf->chars,nchars*sizeof(SplineChar *));
 	for ( i=sf->charcnt; i<nchars; ++i )
 	    sf->chars[i] = NULL;
 #if 0
 	for ( i=sf->charcnt; i<nchars; ++i ) {
-	    SplineChar *sc = sf->chars[i] = calloc(1,sizeof(SplineChar));
+	    SplineChar *sc = sf->chars[i] = chunkalloc(sizeof(SplineChar));
 	    sc->enc = i;
 	    if ( is_unicode ) {
 		sc->unicodeenc = i;
@@ -1284,7 +1284,7 @@ return( false );
 #endif
 	sf->charcnt = nchars;
 	for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-	    bdf->chars = realloc(bdf->chars,nchars*sizeof(BDFChar *));
+	    bdf->chars = grealloc(bdf->chars,nchars*sizeof(BDFChar *));
 	    for ( i=bdf->charcnt; i<nchars; ++i )
 		bdf->chars[i] = NULL;
 	    bdf->charcnt = nchars;

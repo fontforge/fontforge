@@ -110,6 +110,7 @@ int GWidgetAskCenteredR_(int title, int *answers, int def, int cancel,const unic
 unichar_t *GWidgetAskStringR(int title, const unichar_t *def,int question,...);
 void GWidgetPostNoticeR(int title,int statement,...);
 int GWidgetChoicesR(int title, const unichar_t **choices,int cnt, int def,int question,...);
+int GWidgetChoicesBR(int title, const unichar_t **choices, int buts[2],int cnt, int def,int question,...);
 void GWidgetCreateInsChar(void);	/* takes input even when a modal dlg is active */
 		/* but is not modal itself */
 void GInsCharSetChar(unichar_t ch);	/* Sets current selection in ins char dlg */

@@ -665,6 +665,7 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_Round	2213
 #define MID_MergeFonts	2214
 #define MID_InterpolateFonts	2215
+#define MID_ShowDependents	2222
 #define MID_Center	2600
 #define MID_SetWidth	2601
 #define MID_SetLBearing	2602
@@ -929,6 +930,16 @@ static void FVMenuCharInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 return;
     SFMakeChar(fv->sf,pos);
     SCGetInfo(fv->sf->chars[pos],true);
+}
+
+static void FVMenuShowDependents(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    int pos = FVAnyCharSelected(fv);
+    if ( pos<0 )
+return;
+    if ( fv->sf->chars[pos]==NULL || fv->sf->chars[pos]->dependents==NULL )
+return;
+    SCRefBy(fv->sf->chars[pos]);
 }
 
 static int getorigin(void *d,BasePoint *base,int index) {
@@ -1350,6 +1361,10 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_CharInfo:
 	    mi->ti.disabled = anychars<0 || fv->cidmaster!=NULL;
 	  break;
+	  case MID_ShowDependents:
+	    mi->ti.disabled = anychars<0 || fv->sf->chars[anychars]==NULL ||
+		    fv->sf->chars[anychars]->dependents == NULL;
+	  break;
 	  case MID_FindProblems:
 	    mi->ti.disabled = anychars==-1;
 	  break;
@@ -1655,6 +1670,7 @@ static void FVInsertInCID(FontView *fv,SplineFont *sf) {
 	fv->selected = gcalloc(sf->charcnt,sizeof(char));
     }
     fv->sf = sf;
+    sf->fv = fv;
     FontViewReformat(fv);
     FVSetTitle(fv);
 }
@@ -1869,6 +1885,7 @@ static GMenuItem edlist[] = {
 static GMenuItem ellist[] = {
     { { (unichar_t *) _STR_Fontinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'F', ksm_control|ksm_shift, NULL, NULL, FVMenuFontInfo },
     { { (unichar_t *) _STR_Charinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'I', ksm_control, NULL, NULL, FVMenuCharInfo, MID_CharInfo },
+    { { (unichar_t *) _STR_ShowDependents, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, 'I', ksm_control|ksm_meta, NULL, NULL, FVMenuShowDependents, MID_ShowDependents },
     { { (unichar_t *) _STR_Findprobs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, 'E', ksm_control, NULL, NULL, FVMenuFindProblems, MID_FindProblems },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Bitmapsavail, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'B', ksm_control|ksm_shift, NULL, NULL, FVMenuBitmaps, MID_AvailBitmaps },
@@ -2301,7 +2318,7 @@ return( ssf->chars[i] );
 
     if ( (sc = sf->chars[i])==NULL ) {
 	SCBuildDummy(&dummy,sf,i);
-	sf->chars[i] = sc = galloc(sizeof(SplineChar));
+	sf->chars[i] = sc = chunkalloc(sizeof(SplineChar));
 	*sc = dummy;
 	sc->name = copy(sc->name);
 	sc->lig = SCLigDefault(sc);
@@ -2622,7 +2639,7 @@ static void FVMouse(FontView *fv,GEvent *event) {
 	sc = SCBuildDummy(&dummy,fv->sf,pos);
     if ( event->type == et_mouseup && event->u.mouse.clicks==2 ) {
 	if ( sc==&dummy ) {
-	    fv->sf->chars[pos] = sc = galloc(sizeof(SplineChar));
+	    fv->sf->chars[pos] = sc = chunkalloc(sizeof(SplineChar));
 	    *sc = dummy;
 	    sc->name = copy(sc->name);
 	    sc->parent = fv->sf;
@@ -2890,7 +2907,7 @@ FontView *FontViewCreate(SplineFont *sf) {
     GGadgetData gd;
     GGadget *sb;
     GRect gsize;
-    FontView *fv = calloc(1,sizeof(FontView));
+    FontView *fv = gcalloc(1,sizeof(FontView));
     FontRequest rq;
     /* sadly, clearlyu is too big for the space I've got */
     /*static unichar_t clearly_monospace[] = { 'c','l','e','a','r','l','y','u',',',' ','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',  '\0' };*/
@@ -3079,7 +3096,7 @@ SplineFont *LoadSplineFont(char *filename) {
     FontView *fv;
     SplineFont *sf;
     char *pt, *ept;
-    static char *extens[] = { ".sfd", ".pfa", ".pfb", ".ttf", ".otf", ".ps", ".PFA", ".PFB", ".TTF", ".OTF", NULL };
+    static char *extens[] = { ".sfd", ".pfa", ".pfb", ".ttf", ".otf", ".ps", ".cid", ".PFA", ".PFB", ".TTF", ".OTF", ".PS", ".CID", NULL };
     int i;
 
     if ( filename==NULL )
@@ -3087,19 +3104,30 @@ return( NULL );
 
     if (( pt = strrchr(filename,'/'))==NULL ) pt = filename;
     if ( strchr(pt,'.')==NULL ) {
-	pt = galloc(strlen(filename)+8);
-	strcpy(pt,filename);
-	ept = pt+strlen(pt);
-	for ( i=0; extens[i]!=NULL; ++i ) {
-	    strcpy(ept,extens[i]);
-	    if ( GFileExists(pt))
-	break;
+	/* They didn't give an extension. If there's a file with no extension */
+	/*  see if it's a valid postscript file (and if so use the extensionless */
+	/*  filename), otherwise guess at an extension */
+	int ok = false;
+	FILE *test = fopen(filename,"r");
+	if ( test!=NULL ) {
+	    if ( getc(test)=='%' ) ok = true;
+	    fclose(test);
 	}
-	if ( extens[i]!=NULL )
-	    filename = pt;
-	else {
-	    free(pt);
-	    pt = NULL;
+	if ( !ok ) {
+	    pt = galloc(strlen(filename)+8);
+	    strcpy(pt,filename);
+	    ept = pt+strlen(pt);
+	    for ( i=0; extens[i]!=NULL; ++i ) {
+		strcpy(ept,extens[i]);
+		if ( GFileExists(pt))
+	    break;
+	    }
+	    if ( extens[i]!=NULL )
+		filename = pt;
+	    else {
+		free(pt);
+		pt = NULL;
+	    }
 	}
     } else
 	pt = NULL;

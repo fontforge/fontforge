@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 8-Aug-2001 -->
+  <!-- AP: Last modified: 31-Aug-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -18,7 +18,8 @@ bitmap (bdf) fonts, or edit existing ones. Also lets you convert one format
 to another.
 <P>
 <FONT COLOR="Red"><STRONG><BIG><BIG>I shall be not be responding to bugs
-between 9-August-2001 and 21-August-2001.</BIG></BIG></STRONG></FONT>
+between 11-September-2001 and
+23-September-2001.</BIG></BIG></STRONG></FONT>
 <P>
 Contents
 <UL>
@@ -65,8 +66,8 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-010808.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 08-August-2001
+    <A HREF="pfaedit-010830.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 30-August-2001
   <LI>
     <A HREF="pfaedit-solaris-010624.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 24-June-2001
@@ -95,12 +96,12 @@ Or you can download the following three packages. Version: 8-August-2001
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
-    <A HREF="libgdraw-010804.tgz">Unicode widget library source</A>
-    (4-August-2001)<BR>
+    <A HREF="libgdraw-010830.tgz">Unicode widget library source</A>
+    (30-August-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-010808.tgz">Pfaedit source</A> (8-August-2001)<BR>
+    <A HREF="pfaedit_src-010830.tgz">Pfaedit source</A> (30-August-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
     If you want to do autotracing around character images you should also download
@@ -185,14 +186,114 @@ bitmap fonts that pfaedit uses
 </H2>
 <UL>
   <LI>
+    ???
+    <UL>
+      <LI>
+	Fixed some bugs in otf output:
+	<UL>
+	  <LI>
+	    hintmasks were being output incorrectly, omitting bytes of data. This could
+	    cause horrendous errors. If PfaEdit read in one of these fonts it would often
+	    report "stack underflow".
+	  <LI>
+	    Another hintmask problem caused characters to be offset from where they should
+	    be.
+	  <LI>
+	    Placing a hintmask between multiple [rhv]lineto s caused us to skip a line
+	    segment
+	  <LI>
+	    cleaned up generation of subroutines (used to be extraneous rmovetos)
+	  <LI>
+	    If the user gave bad input to certain Private values (BlueValues for instance),
+	    PfaEdit could go into an infinite loop.
+	</UL>
+      <LI>
+	Non-CID otf fonts did not get their encodings read
+      <LI>
+	Improved parsing of hints in a type1 font with hint substitution
+      <LI>
+	Fixed a crash bug in Inserting a font (or a blank font) into a CID font
+      <LI>
+	Generate font dialog would sometimes default to producing a CID keyed font
+	when it was not appropriate.
+      <LI>
+	I got the ulCodePageRange bits wrong of the CJK codepages (which meant that
+	windows thought the wrong characters were in the font)
+      <LI>
+	I generated a bad cmap (ttf encoding) table for CID keyed otf fonts.
+      <LI>
+	If a TTF/OTF font is encoded with KSC5601 or JIS208 then I will give it a
+	Wansung / SJIS encoding in the cmap (if a unicode encoding is desired then
+	reencode as unicode).
+      <LI>
+	Found format for afm files of CID fonts. Can now produce such for CID font
+	output.
+      <LI>
+	Improved reference handling in type1s. If a reference doesn't fit into a
+	"seac" then try to use subroutines. Subroutines are possible if:
+	<UL>
+	  <LI>
+	    None of the references in the character use hint substitution (or flex
+	    hints)<BR>
+	    &nbsp; &nbsp; &nbsp; - or -
+	  <LI>
+	    Only one of the references uses hint substitution and it isn't translated
+	    (not moved)
+	</UL>
+      <LI>
+	Improved reference handling in type2s (opentype). Allow a reference to a
+	character with hint substitutions to go into a subroutine if none of the
+	other referenced characters use any hints at all, and the character with
+	hint substitutions is not translated.
+      <LI>
+	Get Info was broken inside outline characters
+      <LI>
+	Made an attempt to speed up handling of larger fonts. Only noticeable difference
+	I've seen is that it speeds up freeing the font.
+      <LI>
+	Added a dialog to show what characters refer to the current character
+      <LI>
+	Made a feeble attempt to sort out the confusion engendered by adobe's naming
+	conventions for greek letters.
+	<UL>
+	  <LI>
+	    if a font contains either the of the characters U+00B5 or U+03BC then when
+	    saving the font PfaEdit ensures that characters with the names: "mu", "uni00B5"
+	    and "uni03BC" are all present. Similarly for Delta, uni0394 uni2206 and Omega,
+	    uni03A9 uni2126
+	</UL>
+      <LI>
+	Added support for command line arguments which begin with "--".
+      <LI>
+	Added -usage and -help arguments
+      <LI>
+	Added -recover={none,auto,clean} to give you control over the autorecovery
+	process.
+	<UL>
+	  <LI>
+	    -recover=none means that the current run will not perform auto recovery but
+	    will leave things so that the next run will do so. (Note: If you change a
+	    font that will be recovered later, the results are indeterminate).
+	  <LI>
+	    -recover=auto default behavior
+	  <LI>
+	    -recover=clean cleans out the autorecovery directory
+	</UL>
+      <LI>
+	extension guessing would do the wrong thing if we actually wanted to open
+	a font with no extension.
+    </UL>
+  <LI>
     8-August-2001
     <UL>
       <LI>
 	Some minor fixes to gchardlg.c
       <LI>
-	Try to upgrade the CJ translation tables to Unicode 3
+	Try to upgrade the CJK translation tables to Unicode 3
       <LI>
 	Improve processing of ttc files (I can actually read one no)
+      <LI>
+	chooser icon for cid-keyed fonts
     </UL>
   <LI>
     6-August-2001
@@ -1684,8 +1785,7 @@ now placed in graceful retirement by MacroMedia.
       <LI>
 	<A HREF="http://fonts.apple.com/TTRefMan/">Apple</A>
       <LI>
-	<A HREF="http://www.microsoft.com/typography/tt/tt.htm">Microsoft</A> (This
-	now describes OpenType)
+	<A HREF="http://www.microsoft.com/typography/tt/tt.htm">Microsoft</A>
       <LI>
 	<A HREF="http://www.truetype.demon.co.uk/ttspec.htm">random useful site</A>
       <LI>
@@ -1704,7 +1804,8 @@ now placed in graceful retirement by MacroMedia.
 	<A HREF="http://partners.adobe.com/asn/developer/opentype/appendices/ttoreg.html">script
 	&amp; language names for GSUB table</A>
       <LI>
-	<A HREF="http://www.microsoft.com/typography/tt/tt.htm">Microsoft's version</A>
+	<A HREF="http://www.microsoft.com/typography/otspec/default.htm">Microsoft's
+	version</A>
     </UL>
   <LI>
     <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5014.CMap_CIDFont_Spec.pdf">CID

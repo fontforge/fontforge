@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 29-Jul-2001 -->
+  <!-- AP: Last modified: 30-Aug-2001 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -37,6 +37,11 @@
     ask if I want to save the font? I didn't change anything.</A>
   <LI>
     <A HREF="#TeX">Why doesn't TeX work with my fonts?</A>
+  <LI>
+    <A HREF="#minify-iconify">Why does my window get iconified when I want to
+    minify the view?</A>
+  <LI>
+    <A HREF="#no-mu">Why isn't there a "mu" character in my greek font?</A>
 </UL>
 <P>
   <HR>
@@ -178,6 +183,26 @@
     base. So if you are having printing problems, missing glyphs, etc. Try changing
     the encoding of your font to TeX Base (Go to Element-&gt;Font Info, select
     the Encoding tab, select TeX Base from the pulldown list).
+  <DT>
+    <A NAME="minify-iconify">Why does my window get iconified when I want to
+    minify the view?</A>
+  <DD>
+    Some window managers (gnome-sawtooth for one) steal meta (alt) clicks from
+    PfaEdit. So you can't use meta-middle-click to minify a character, you have
+    to use the View menu-&gt;Zoom Out instead.
+  <DT>
+    <A NAME="no-mu">Why isn't there a "mu" character in my greek font?</A>
+  <DD>
+    Adobe was thinking more of backwards compatability than sense when they assigned
+    the names of the greek letters in their unicode encoding. Thus the name "mu"
+    refers to the Micro Sign (U+00B5) and not to the letter mu. They also assigned
+    Delta to Increment, and Omega to Ohm Sign. I have chosen to disregard these
+    latter two, but the definition of "mu" is embedded in the Latin1 encoding
+    and I can't reassign it with impunity.
+    <P>
+    In a half-hearted attempt to get around this problem I have caused PfaEdit
+    to generate characters with names "mu", "uni00B5" and "uni03BC" whenever
+    either U+00B5 or U+03BC is defined.
 </DL>
 <P>
 <P ALIGN=Center>

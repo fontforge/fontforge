@@ -104,11 +104,10 @@ return( sizes );
 }
 
 static int WriteAfmFile(char *filename,SplineFont *sf, int formattype) {
-    char *buf = malloc(strlen(filename)+6), *pt, *pt2;
+    char *buf = galloc(strlen(filename)+6), *pt, *pt2;
     FILE *afm;
     int ret;
     unichar_t *temp;
-    int iscid = ( formattype==ff_cid || formattype==ff_otfcid );
 
     strcpy(buf,filename);
     pt = strrchr(buf,'.');
@@ -122,17 +121,14 @@ static int WriteAfmFile(char *filename,SplineFont *sf, int formattype) {
     afm = fopen(buf,"w");
     if ( afm==NULL )
 return( false );
-    if ( iscid )
-	fprintf( stderr, "Don't know how to make an AFM file for a CID font yet.\n" );
-    else
-	ret = AfmSplineFont(afm,sf,formattype==ff_ptype0);
+    ret = AfmSplineFont(afm,sf,formattype);
     if ( fclose(afm)==-1 )
 return( 0 );
 return( ret );
 }
 
 static int WritePfmFile(char *filename,SplineFont *sf, int type0) {
-    char *buf = malloc(strlen(filename)+6), *pt, *pt2;
+    char *buf = galloc(strlen(filename)+6), *pt, *pt2;
     FILE *pfm;
     int ret;
     unichar_t *temp;
@@ -156,7 +152,7 @@ return( ret );
 }
 
 static int WriteBitmaps(char *filename,SplineFont *sf, real *sizes, int do_grey) {
-    char *buf = malloc(strlen(filename)+20), *pt, *pt2;
+    char *buf = galloc(strlen(filename)+20), *pt, *pt2;
     int i;
     BDFFont *bdf;
     unichar_t *temp;
@@ -210,6 +206,12 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
     temp = cu_copy(path);
     oldformatstate = GGadgetGetFirstListSelectedItem(d->pstype);
     iscid = oldformatstate==ff_cid || oldformatstate==ff_otfcid;
+    if ( !iscid && (d->sf->cidmaster!=NULL || d->sf->subfontcnt>1)) {
+	static int buts[] = { _STR_Yes, _STR_No, 0 };
+	if ( GWidgetAskR(_STR_NotCID,buts,0,1,_STR_NotCIDOk)==1 )
+return;
+    }
+
     GProgressStartIndicator(10,GStringGetResource(_STR_SavingFont,NULL),
 		GStringGetResource(oldformatstate==ff_ttf || oldformatstate==ff_ttfsym?_STR_SavingTTFont:
 		 oldformatstate==ff_otf?_STR_SavingOpenTypeFont:
@@ -228,7 +230,7 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
     }
     oldafmstate = GGadgetIsChecked(d->doafm);
     oldpfmstate = GGadgetIsChecked(d->dopfm);
-    if ( !err && oldafmstate && !iscid ) {
+    if ( !err && oldafmstate ) {
 	GProgressChangeLine1R(_STR_SavingAFM);
 	GProgressIncrementBy(-d->sf->charcnt);
 	if ( !WriteAfmFile(temp,d->sf,oldformatstate)) {
@@ -371,7 +373,7 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	static unichar_t nullstr[] = { 0 };
 
 	set = true;
-	if ( format==ff_ttf || format==ff_ttfsym || format==ff_otf || format==ff_none )
+	if ( format==ff_ttf || format==ff_ttfsym || format==ff_otf || format==ff_otfcid || format==ff_none )
 	    set = false;
 	GGadgetSetChecked(d->doafm,set);
 	if ( !set )				/* Don't default to generating pfms */
@@ -396,10 +398,10 @@ return( true );
 	if ( d->sf->cidmaster!=NULL ) {
 	    if ( format!=ff_none && format != ff_cid && format != ff_otfcid ) {
 		GGadgetSetTitle(d->bmpsizes,nullstr);
-		GGadgetSetVisible(d->doafm,true);
+		/*GGadgetSetVisible(d->doafm,true);*/
 		GGadgetSetVisible(d->dopfm,true);
 	    } else {
-		GGadgetSetVisible(d->doafm,false);
+		/*GGadgetSetVisible(d->doafm,false);*/
 		GGadgetSetVisible(d->dopfm,false);
 	    }
 	}
@@ -537,10 +539,8 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     formattypes[ff_otfcid].disabled = sf->cidmaster==NULL;
     ofs = oldformatstate;
     if (( ofs==ff_ptype0 && formattypes[ff_ptype0].disabled ) ||
-	    (ofs==ff_cid && formattypes[ff_cid].disabled))
+	    ((ofs==ff_cid || ofs==ff_otfcid) && formattypes[ff_cid].disabled))
 	ofs = ff_pfb;
-    else if ( ofs==ff_otfcid && formattypes[ff_otfcid].disabled )
-	ofs = ff_cid;
     else if ( (ofs!=ff_cid && ofs!=ff_otfcid) && sf->cidmaster!=NULL )
 	ofs = ff_otfcid;
     if ( sf->onlybitmaps )
@@ -594,7 +594,7 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     gcd[10].creator = GCheckBoxCreate;
 
     if ( ofs==ff_otfcid || ofs==ff_cid ) {
-	gcd[5].gd.flags &= ~gg_visible;
+	/*gcd[5].gd.flags &= ~gg_visible;*/
 	gcd[10].gd.flags &= ~gg_visible;
     }
 

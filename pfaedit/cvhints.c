@@ -247,7 +247,7 @@ return( true );			/* Eh? */
 	    hd->cv->sc->hconflicts = StemListAnyConflicts(hd->cv->sc->hstem);
 	else
 	    hd->cv->sc->vconflicts = StemListAnyConflicts(hd->cv->sc->vstem);
-	free( hd->active );
+	StemInfoFree( hd->active );
 	hd->active = prev;
 	SCOutOfDateBackground(hd->cv->sc);
 	RH_SetupHint(hd);
@@ -506,7 +506,7 @@ static int CH_OK(GGadget *g, GEvent *e) {
 	width = GetIntR(hd->gw,CID_Width,_STR_Size,&err);
 	if ( err )
 return(true);
-	h = calloc(1,sizeof(StemInfo));
+	h = chunkalloc(sizeof(StemInfo));
 	h->start = base;
 	h->width = width;
 	if ( hd->ishstem ) {

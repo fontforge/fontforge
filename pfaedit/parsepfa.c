@@ -588,12 +588,12 @@ static void setLatin1Enc(char *encoding[256]) {
 static struct fontdict *MakeEmptyFont(void) {
     struct fontdict *ret;
 
-    ret = calloc(1,sizeof(struct fontdict));
-    ret->fontinfo = calloc(1,sizeof(struct fontinfo));
-    ret->chars = calloc(1,sizeof(struct pschars));
-    ret->private = calloc(1,sizeof(struct private));
-    ret->private->subrs = calloc(1,sizeof(struct pschars));
-    ret->private->private = calloc(1,sizeof(struct psdict));
+    ret = gcalloc(1,sizeof(struct fontdict));
+    ret->fontinfo = gcalloc(1,sizeof(struct fontinfo));
+    ret->chars = gcalloc(1,sizeof(struct pschars));
+    ret->private = gcalloc(1,sizeof(struct private));
+    ret->private->subrs = gcalloc(1,sizeof(struct pschars));
+    ret->private->private = gcalloc(1,sizeof(struct psdict));
     ret->encoding_name = em_none;
     ret->fontinfo->fstype = -1;
 return( ret );
@@ -602,14 +602,14 @@ return( ret );
 static struct fontdict *PSMakeEmptyFont(void) {
     struct fontdict *ret;
 
-    ret = calloc(1,sizeof(struct fontdict));
-    ret->fontinfo = calloc(1,sizeof(struct fontinfo));
-    ret->chars = calloc(1,sizeof(struct pschars));
-    ret->private = calloc(1,sizeof(struct private));
-    ret->private->subrs = calloc(1,sizeof(struct pschars));
-    ret->private->private = calloc(1,sizeof(struct psdict));
+    ret = gcalloc(1,sizeof(struct fontdict));
+    ret->fontinfo = gcalloc(1,sizeof(struct fontinfo));
+    ret->chars = gcalloc(1,sizeof(struct pschars));
+    ret->private = gcalloc(1,sizeof(struct private));
+    ret->private->subrs = gcalloc(1,sizeof(struct pschars));
+    ret->private->private = gcalloc(1,sizeof(struct psdict));
     ret->private->leniv = 4;
-    ret->charprocs = calloc(1,sizeof(struct charprocs));
+    ret->charprocs = gcalloc(1,sizeof(struct charprocs));
     ret->encoding_name = em_none;
     ret->fontinfo->fstype = -1;
 return( ret );
@@ -648,7 +648,7 @@ static char *getstring(char *start) {
 	else if ( *end=='(' ) ++parencnt;
 	else if ( *end==')' ) --parencnt;
     }
-    ret = malloc(end-start+1);
+    ret = galloc(end-start+1);
     if ( end>start )
 	strncpy(ret,start,end-start);
     ret[end-start] = '\0';
@@ -672,7 +672,7 @@ static char *gettoken(char *start) {
     while ( *start!='\0' && *start!='/' ) ++start;
     if ( *start=='/' ) ++start;
     for ( end = start; *end!='\0' && !isspace(*end) && *end!='[' && *end!='/' && *end!='{' && *end!='(' ; ++end );
-    ret = malloc(end-start+1);
+    ret = galloc(end-start+1);
     if ( end>start )
 	strncpy(ret,start,end-start);
     ret[end-start] = '\0';
@@ -739,9 +739,9 @@ static void InitChars(struct pschars *chars,char *line) {
     while ( !isspace(*line) && *line!='\0' ) ++line;
     chars->cnt = strtol(line,NULL,10);
     if ( chars->cnt>0 ) {
-	chars->keys = calloc(chars->cnt,sizeof(char *));
-	chars->values = calloc(chars->cnt,sizeof(char *));
-	chars->lens = calloc(chars->cnt,sizeof(int));
+	chars->keys = gcalloc(chars->cnt,sizeof(char *));
+	chars->values = gcalloc(chars->cnt,sizeof(char *));
+	chars->lens = gcalloc(chars->cnt,sizeof(int));
 	GProgressChangeTotal(chars->cnt);
     }
 }
@@ -751,8 +751,8 @@ static void InitCharProcs(struct charprocs *cp, char *line) {
     while ( !isspace(*line) && *line!='\0' ) ++line;
     cp->cnt = strtol(line,NULL,10);
     if ( cp->cnt>0 ) {
-	cp->keys = calloc(cp->cnt,sizeof(char *));
-	cp->values = calloc(cp->cnt,sizeof(SplineChar *));
+	cp->keys = gcalloc(cp->cnt,sizeof(char *));
+	cp->values = gcalloc(cp->cnt,sizeof(SplineChar *));
 	GProgressChangeTotal(cp->cnt);
     }
 }
@@ -1131,7 +1131,7 @@ static void addinfo(struct fontparse *fp,char *line,char *tok,char *binstart,int
 	    int i = strtol(line+4,NULL,10);
 	    if ( i<chars->cnt ) {
 		chars->lens[i] = binlen;
-		chars->values[i] = malloc(binlen);
+		chars->values[i] = galloc(binlen);
 		memcpy(chars->values[i],binstart,binlen);
 		if ( i>=chars->next ) chars->next = i+1;
 	    } else
@@ -1150,7 +1150,7 @@ static void addinfo(struct fontparse *fp,char *line,char *tok,char *binstart,int
 	    int i = chars->next;
 	    chars->lens[i] = binlen;
 	    chars->keys[i] = strdup(tok);
-	    chars->values[i] = malloc(binlen);
+	    chars->values[i] = galloc(binlen);
 	    memcpy(chars->values[i],binstart,binlen);
 	    ++chars->next;
 	    GProgressNext();

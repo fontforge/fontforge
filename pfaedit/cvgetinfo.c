@@ -624,7 +624,6 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[12];
     GTextInfo label[12];
-    static unichar_t title[] = { 'R','e','f','e','r','e','n','c','e',' ','I','n','f','o',  '\0' };
     char namebuf[100], tbuf[6][40];
     int i;
 
@@ -638,7 +637,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-	wattrs.window_title = title;
+	wattrs.window_title = GStringGetResource(_STR_ReferenceInfo,NULL);
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width =GDrawPointsToPixels(NULL,RI_Width);
@@ -708,7 +707,6 @@ static void ImgGetInfo(CharView *cv, ImageList *img) {
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[12];
     GTextInfo label[12];
-    static unichar_t title[] = { 'I','m','a','g','e',' ','I','n','f','o',  '\0' };
     char posbuf[100], scalebuf[100];
 
     gi.cv = cv;
@@ -721,7 +719,7 @@ static void ImgGetInfo(CharView *cv, ImageList *img) {
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-	wattrs.window_title = title;
+	wattrs.window_title = GStringGetResource(_STR_ImageInfo,NULL);
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width =GDrawPointsToPixels(NULL,II_Width);
@@ -1002,7 +1000,6 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[22];
     GTextInfo label[22];
-    static unichar_t title[] = { 'P','o','i','n','t',' ','I','n','f','o',  '\0' };
 
     gi.cv = cv;
     gi.cursp = sp;
@@ -1017,7 +1014,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-	wattrs.window_title = title;
+	wattrs.window_title = GStringGetResource(_STR_PointInfo,NULL);
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width =GDrawPointsToPixels(NULL,PI_Width);
@@ -1186,7 +1183,7 @@ void CVGetInfo(CharView *cv) {
     ImageList *img;
 
     if ( !CVOneThingSel(cv,&sp,&spl,&ref,&img)) {
-	if ( cv->fv->cidmaster!=NULL )
+	if ( cv->fv->cidmaster==NULL )
 	    SCGetInfo(cv->sc,false);
     } else if ( ref!=NULL )
 	RefGetInfo(cv,ref);
@@ -1194,4 +1191,35 @@ void CVGetInfo(CharView *cv) {
 	ImgGetInfo(cv,img);
     else
 	PointGetInfo(cv,sp,spl);
+}
+
+void SCRefBy(SplineChar *sc) {
+    static int buts[] = { _STR_Show, _STR_Cancel };
+    int cnt,i,tot=0;
+    unichar_t **deps = NULL;
+    struct splinecharlist *d;
+
+    for ( i=0; i<2; ++i ) {
+	cnt = 0;
+	for ( d = sc->dependents; d!=NULL; d=d->next ) {
+	    if ( deps!=NULL )
+		deps[tot-cnt] = uc_copy(d->sc->name);
+	    ++cnt;
+	}
+	if ( cnt==0 )
+return;
+	if ( i==0 )
+	    deps = gcalloc(cnt+1,sizeof(unichar_t *));
+	tot = cnt-1;
+    }
+
+    i = GWidgetChoicesBR(_STR_Dependents,(const unichar_t **) deps, buts, cnt, 0, _STR_Dependents );
+    if ( i!=-1 ) {
+	i = tot-i;
+	for ( d = sc->dependents, cnt=0; d!=NULL && cnt<i; d=d->next, ++cnt );
+	CharViewCreate(d->sc,sc->parent->fv);
+    }
+    for ( i=0; i<=tot; ++i )
+	free( deps[i] );
+    free(deps);
 }

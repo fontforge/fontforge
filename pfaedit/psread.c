@@ -60,12 +60,12 @@ typedef struct growbuf {
 static void GrowBuffer(GrowBuf *gb,int len) {
     if ( len<400 ) len = 400;
     if ( gb->base==NULL ) {
-	gb->base = gb->pt = malloc(len);
+	gb->base = gb->pt = galloc(len);
 	gb->end = gb->base + len;
     } else {
 	int off = gb->pt-gb->base;
 	len += (gb->end-gb->base);
-	gb->base = realloc(gb->base,len);
+	gb->base = grealloc(gb->base,len);
 	gb->end = gb->base + len;
 	gb->pt = gb->base+off;
     }
@@ -416,7 +416,7 @@ return;
     s1 = sin(a1); s2 = sin(a2); c1 = cos(a1); c2 = cos(a2);
     temp.x = cx+r*c2; temp.y = cy+r*s2;
     base.x = cx+r*c1; base.y = cy+r*s1;
-    pt = calloc(1,sizeof(SplinePoint));
+    pt = chunkalloc(sizeof(SplinePoint));
     Transform(&pt->me,&temp,transform);
     cp.x = temp.x-cplen*s2; cp.y = temp.y + cplen*c2;
     if ( (cp.x-base.x)*(cp.x-base.x)+(cp.y-base.y)*(cp.y-base.y) >
@@ -875,7 +875,7 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 	  break;
 	  case pt_exec:
 	    if ( sp>0 && stack[sp-1].type == ps_lit ) {
-		ref = gcalloc(1,sizeof(RefChar));
+		ref = chunkalloc(sizeof(RefChar));
 		ref->sc = (SplineChar *) stack[--sp].u.str;
 		memcpy(ref->transform,transform,sizeof(transform));
 		if ( ec->refs==NULL )
@@ -899,11 +899,11 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 		    current.y = stack[sp-1].u.val;
 		    sp -= 2;
 		}
-		pt = calloc(1,sizeof(SplinePoint));
+		pt = chunkalloc(sizeof(SplinePoint));
 		Transform(&pt->me,&current,transform);
 		pt->noprevcp = true; pt->nonextcp = true;
 		if ( tok==pt_moveto || tok==pt_rmoveto ) {
-		    SplinePointList *spl = calloc(1,sizeof(SplinePointList));
+		    SplinePointList *spl = chunkalloc(sizeof(SplinePointList));
 		    spl->first = spl->last = pt;
 		    if ( cur!=NULL )
 			cur->next = spl;
@@ -935,7 +935,7 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 		    temp.x = stack[sp-6].u.val; temp.y = stack[sp-5].u.val;
 		    Transform(&cur->last->nextcp,&temp,transform);
 		    cur->last->nonextcp = false;
-		    pt = calloc(1,sizeof(SplinePoint));
+		    pt = chunkalloc(sizeof(SplinePoint));
 		    temp.x = stack[sp-4].u.val; temp.y = stack[sp-3].u.val;
 		    Transform(&pt->prevcp,&temp,transform);
 		    Transform(&pt->me,&current,transform);
@@ -959,14 +959,14 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 		temp.x = cx+r*cos(a1/180 * 3.1415926535897932);
 		temp.y = cy+r*sin(a1/180 * 3.1415926535897932);
 		if ( temp.x!=current.x || temp.y!=current.y ) {
-		    pt = calloc(1,sizeof(SplinePoint));
+		    pt = chunkalloc(sizeof(SplinePoint));
 		    Transform(&pt->me,&temp,transform);
 		    pt->noprevcp = true; pt->nonextcp = true;
 		    if ( cur!=NULL && cur->first!=NULL && (cur->first!=cur->last || cur->first->next==NULL) ) {
 			SplineMake(cur->last,pt);
 			cur->last = pt;
 		    } else {	/* if no current point, then start here */
-			SplinePointList *spl = calloc(1,sizeof(SplinePointList));
+			SplinePointList *spl = chunkalloc(sizeof(SplinePointList));
 			spl->first = spl->last = pt;
 			if ( cur!=NULL )
 			    cur->next = spl;
@@ -1001,7 +1001,7 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 			(current.x-x1)*(y2-y1) == (x2-x1)*(current.y-y1) ) {
 		    /* Degenerate case */
 		    current.x = x1; current.y = y1;
-		    pt = calloc(1,sizeof(SplinePoint));
+		    pt = chunkalloc(sizeof(SplinePoint));
 		    Transform(&pt->me,&current,transform);
 		    pt->noprevcp = true; pt->nonextcp = true;
 		    SplineMake(cur->last,pt);
@@ -1033,7 +1033,7 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 		    if ( xt1!=current.x || yt1!=current.y ) {
 			BasePoint temp;
 			temp.x = xt1; temp.y = yt1;
-			pt = calloc(1,sizeof(SplinePoint));
+			pt = chunkalloc(sizeof(SplinePoint));
 			Transform(&pt->me,&temp,transform);
 			pt->noprevcp = true; pt->nonextcp = true;
 			SplineMake(cur->last,pt);
@@ -1348,7 +1348,7 @@ void PSFontInterpretPS(FILE *ps,struct charprocs *cp) {
     while ( (tok = nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf)))!=pt_eof && tok!=pt_end ) {
 	if ( tok==pt_namelit ) {
 	    if ( cp->next<cp->cnt ) {
-		sc = gcalloc(1,sizeof(SplineChar));
+		sc = chunkalloc(sizeof(SplineChar));
 		cp->keys[cp->next] = copy(tokbuf);
 		cp->values[cp->next++] = sc;
 		SCInterpretPS(ps,sc);
@@ -1478,8 +1478,8 @@ return;		/* The "path" is just a single point created by a moveto */
 	    cur->first->noprevcp = false;
 	    oldlast->prev->from->next = NULL;
 	    cur->last = oldlast->prev->from;
-	    free(oldlast->prev);
-	    free(oldlast);
+	    chunkfree(oldlast->prev,sizeof(*oldlast));
+	    chunkfree(oldlast,sizeof(*oldlast));
 	}
 	SplineMake(cur->last,cur->first);
 	cur->last = cur->first;
@@ -1497,7 +1497,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	struct pschars *subrs, struct pschars *gsubrs, const char *name) {
     real stack[50]; int sp=0, v;		/* Type1 stack is about 25 long, Type2 stack is 48 */
     real transient[32];
-    SplineChar *ret = calloc(1,sizeof(SplineChar));
+    SplineChar *ret = chunkalloc(sizeof(SplineChar));
     SplinePointList *cur=NULL, *oldcur=NULL;
     RefChar *r1, *r2, *rlast=NULL;
     BasePoint current, oldcurrent;
@@ -1569,7 +1569,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	      break;
 	      case 1: /* vstem3 */	/* specifies three v hints zones at once */
 		if ( sp<6 ) fprintf(stderr, "Stack underflow on vstem3 in %s\n", name );
-		hint = calloc(1,sizeof(StemInfo));
+		hint = chunkalloc(sizeof(StemInfo));
 		hint->start = stack[0] + ret->lsidebearing;
 		hint->width = stack[1];
 		if ( ret->vstem==NULL )
@@ -1579,11 +1579,11 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		    hp->next = hint;
 		    hp = hint;
 		}
-		hint = calloc(1,sizeof(StemInfo));
+		hint = chunkalloc(sizeof(StemInfo));
 		hint->start = stack[2] + ret->lsidebearing;
 		hint->width = stack[3];
 		hp->next = hint; hp = hint;
-		hint = calloc(1,sizeof(StemInfo));
+		hint = chunkalloc(sizeof(StemInfo));
 		hint->start = stack[4] + ret->lsidebearing;
 		hint->width = stack[5];
 		hp->next = hint; 
@@ -1591,7 +1591,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	      break;
 	      case 2: /* hstem3 */	/* specifies three h hints zones at once */
 		if ( sp<6 ) fprintf(stderr, "Stack underflow on hstem3 in %s\n", name );
-		hint = calloc(1,sizeof(StemInfo));
+		hint = chunkalloc(sizeof(StemInfo));
 		hint->start = stack[0];
 		hint->width = stack[1];
 		if ( ret->hstem==NULL )
@@ -1601,11 +1601,11 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		    hp->next = hint;
 		    hp = hint;
 		}
-		hint = calloc(1,sizeof(StemInfo));
+		hint = chunkalloc(sizeof(StemInfo));
 		hint->start = stack[2];
 		hint->width = stack[3];
 		hp->next = hint; hp = hint;
-		hint = calloc(1,sizeof(StemInfo));
+		hint = chunkalloc(sizeof(StemInfo));
 		hint->start = stack[4];
 		hint->width = stack[5];
 		hp->next = hint; 
@@ -1615,8 +1615,8 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
  seac:
 		if ( sp<5 ) fprintf(stderr, "Stack underflow on seac in %s\n", name );
 		/* stack[0] must be the lsidebearing of the accent. I'm not sure why */
-		r1 = calloc(1,sizeof(RefChar));
-		r2 = calloc(1,sizeof(RefChar));
+		r1 = chunkalloc(sizeof(RefChar));
+		r2 = chunkalloc(sizeof(RefChar));
 		r2->transform[0] = 1; r2->transform[3]=1;
 		r2->transform[4] = stack[1] - (stack[0]-ret->lsidebearing);
 		r2->transform[5] = stack[2];
@@ -1712,9 +1712,10 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		    /* othersubrs 12,13 are for counter hints. We don't need to */
 		    /*  do anything to ignore them */
 		    if ( stack[sp-1]==3 ) {
-			/* we aren't capabable of hint replacement so we punt */
-			/*  we punt by putting 3 on the stack (T1 spec page 70) */
-			pops[popsp-1] = 3;
+			/* when we weren't capabable of hint replacement we */
+			/*  punted by putting 3 on the stack (T1 spec page 70) */
+			/*  subroutine 3 is a noop */
+			/*pops[popsp-1] = 3;*/
 			ret->manualhints = false;
 			/* We can manage hint substitution from hintmask though*/
 			/*  well enough that we needn't clear the manualhints bit */
@@ -1756,14 +1757,14 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 			    if ( cur!=NULL && cur->first!=NULL && (cur->first!=cur->last || cur->first->next==NULL) ) {
 				cur->last->nextcp = old_nextcp;
 				cur->last->nonextcp = false;
-				pt = calloc(1,sizeof(SplinePoint));
+				pt = chunkalloc(sizeof(SplinePoint));
 				pt->prevcp = mid_prevcp;
 				pt->me = mid;
 				pt->nextcp = mid_nextcp;
 			        /*pt->flex = pops[2];*/
 				SplineMake(cur->last,pt);
 				cur->last = pt;
-				pt = calloc(1,sizeof(SplinePoint));
+				pt = chunkalloc(sizeof(SplinePoint));
 				pt->prevcp = end_prevcp;
 				pt->me = end;
 				pt->nonextcp = true;
@@ -1775,7 +1776,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 			    /* Um, something's wrong. Let's just draw a line */
 			    /* do the simple method, which consists of creating */
 			    /*  the appropriate line */
-			    pt = calloc(1,sizeof(SplinePoint));
+			    pt = chunkalloc(sizeof(SplinePoint));
 			    pt->me.x = pops[1]; pt->me.y = pops[0];
 			    pt->noprevcp = true; pt->nonextcp = true;
 			    SplinePointListFree(oldcur->next); oldcur->next = NULL;
@@ -1907,7 +1908,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		    cur->last->nextcp = current;
 		    cur->last->nonextcp = false;
 		    current.x += dx2; current.y += dy2;
-		    pt = calloc(1,sizeof(SplinePoint));
+		    pt = chunkalloc(sizeof(SplinePoint));
 		    pt->prevcp = current;
 		    current.x += dx3; current.y += dy3;
 		    pt->me = current;
@@ -1919,7 +1920,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		    cur->last->nextcp = current;
 		    cur->last->nonextcp = false;
 		    current.x += dx5; current.y += dy5;
-		    pt = calloc(1,sizeof(SplinePoint));
+		    pt = chunkalloc(sizeof(SplinePoint));
 		    pt->prevcp = current;
 		    current.x += dx6; current.y += dy6;
 		    pt->me = current;
@@ -1945,7 +1946,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	    /* stack[1] is relative y for height of hint zone */
 	    coord = 0;
 	    while ( sp-base>=2 ) {
-		hint = calloc(1,sizeof(StemInfo));
+		hint = chunkalloc(sizeof(StemInfo));
 		hint->start = stack[base]+coord;
 		hint->width = stack[base+1];
 		if ( ret->hstem==NULL )
@@ -1983,7 +1984,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		/* stack[1] is relative x for height of hint zone */
 		coord = 0;
 		while ( sp-base>=2 ) {
-		    hint = calloc(1,sizeof(StemInfo));
+		    hint = chunkalloc(sizeof(StemInfo));
 		    hint->start = stack[base] + coord + ret->lsidebearing;
 		    hint->width = stack[base+1];
 		    if ( ret->vstem==NULL )
@@ -2059,7 +2060,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		}
 		++polarity;
 		current.x += dx; current.y += dy;
-		pt = calloc(1,sizeof(SplinePoint));
+		pt = chunkalloc(sizeof(SplinePoint));
 		pt->me = current;
 		pt->noprevcp = true; pt->nonextcp = true;
 		if ( v==4 || v==21 || v==22 ) {
@@ -2068,7 +2069,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 			cur->first->me = current;
 			SplinePointFree(pt);
 		    } else {
-			SplinePointList *spl = calloc(1,sizeof(SplinePointList));
+			SplinePointList *spl = chunkalloc(sizeof(SplinePointList));
 			spl->first = spl->last = pt;
 			if ( cur!=NULL )
 			    cur->next = spl;
@@ -2091,7 +2092,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	    base = 0;
 	    while ( sp>base+6 ) {
 		current.x += stack[base++]; current.y += stack[base++];
-		pt = calloc(1,sizeof(SplinePoint));
+		pt = chunkalloc(sizeof(SplinePoint));
 		pt->me = current;
 		pt->noprevcp = true; pt->nonextcp = true;
 		SplineMake(cur->last,pt);
@@ -2152,7 +2153,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		    cur->last->nextcp = current;
 		    cur->last->nonextcp = false;
 		    current.x += dx2; current.y += dy2;
-		    pt = calloc(1,sizeof(SplinePoint));
+		    pt = chunkalloc(sizeof(SplinePoint));
 		    pt->prevcp = current;
 		    current.x += dx3; current.y += dy3;
 		    pt->me = current;
@@ -2165,7 +2166,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	    if ( v==24 ) {
 		current.x += stack[base++]; current.y += stack[base++];
 		if ( cur!=NULL ) {	/* In legal code, cur can't be null here, but I got something illegal... */
-		    pt = calloc(1,sizeof(SplinePoint));
+		    pt = chunkalloc(sizeof(SplinePoint));
 		    pt->me = current;
 		    pt->noprevcp = true; pt->nonextcp = true;
 		    SplineMake(cur->last,pt);
@@ -2216,9 +2217,12 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	SplineSetReverse(cur);
     if ( ret->hstem==NULL && ret->vstem==NULL )
 	ret->manualhints = false;
+    ret->hstem = HintCleanup(ret->hstem,true);
+    ret->vstem = HintCleanup(ret->vstem,true);
     SCGuessHHintInstancesList(ret);
     SCGuessVHintInstancesList(ret);
     ret->hconflicts = StemListAnyConflicts(ret->hstem);
     ret->vconflicts = StemListAnyConflicts(ret->vstem);
+    ret->widthset = true;
 return( ret );
 }

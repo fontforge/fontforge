@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Dec-2000 -->
-  <!-- AP: Last modified: 4-Aug-2001 -->
+  <!-- AP: Last modified: 31-Aug-2001 -->
   <TITLE>The File Menu</TITLE>
 </HEAD>
 <BODY>
@@ -204,12 +204,14 @@
 	None
     </UL>
     <P>
-    TTF (and Open Type) fonts are generated in MicroSoft's Unicode encoding (unless
-    you specifically request TrueType Symbol), there will also be a tiny macintosh
-    encoding for the first 256 positions. Postscript fonts are generated in whatever
-    encoding the font is using (expect you take a two byte encoding and generate
-    a Type1 font (rather than a Type0) then only the first few characters will
-    be encoded).<BR>
+    TTF (and Open Type) fonts are usually generated in MicroSoft's Unicode encoding,
+    there will also be a tiny macintosh encoding for the first 256 positions
+    -- the exceptions are: symbol fonts will use the symbol encoding, KSC5601
+    fonts will use Wansung, and JIS208 will use SJIS. OpenType CID keyed fonts
+    will be saved with Unicode encoding.<BR>
+    Postscript fonts are generated in whatever encoding the font is using (expect
+    you take a two byte encoding and generate a Type1 font (rather than a Type0)
+    then only the first few characters will be encoded).<BR>
     PS CID and OpenType CID are saved with no encoding. The encodings live in
     seperate cmap files which are available from
     <A HREF="http://www.adobe.com/products/acrobat/acrrasianfontpack.html">adobe</A>

@@ -34,7 +34,7 @@ static RefChar *RefCharsCopy(RefChar *ref) {
     RefChar *rhead=NULL, *last=NULL, *cur;
 
     while ( ref!=NULL ) {
-	cur = galloc(sizeof(RefChar));
+	cur = chunkalloc(sizeof(RefChar));
 	*cur = *ref;
 	cur->splines = NULL;	/* Leave the old sc, we'll fix it later */
 	cur->next = NULL;
@@ -49,7 +49,7 @@ return( rhead );
 }
 
 SplineChar *SplineCharCopy(SplineChar *sc) {
-    SplineChar *nsc = galloc(sizeof(SplineChar));
+    SplineChar *nsc = chunkalloc(sizeof(SplineChar));
 
     *nsc = *sc;
     nsc->enc = -2;
@@ -519,7 +519,7 @@ static RefChar *InterpRefs(RefChar *base, RefChar *other, real amount, SplineCha
 	}
 	if ( test!=NULL ) {
 	    test->checked = true;
-	    cur = gcalloc(1,sizeof(RefChar));
+	    cur = chunkalloc(sizeof(RefChar));
 	    *cur = *base;
 	    cur->local_enc = cur->sc->enc;
 	    for ( i=0; i<6; ++i )
@@ -542,7 +542,7 @@ return( head );
 }
 
 static void InterpPoint(SplineSet *cur, SplinePoint *base, SplinePoint *other, real amount ) {
-    SplinePoint *p = galloc(sizeof(SplinePoint));
+    SplinePoint *p = chunkalloc(sizeof(SplinePoint));
 
     p->me.x = base->me.x + amount*(other->me.x-base->me.x);
     p->me.y = base->me.y + amount*(other->me.y-base->me.y);
@@ -565,7 +565,7 @@ static void InterpPoint(SplineSet *cur, SplinePoint *base, SplinePoint *other, r
 }
     
 static SplineSet *InterpSplineSet(SplineSet *base, SplineSet *other, real amount, SplineChar *sc) {
-    SplineSet *cur = gcalloc(1,sizeof(SplineSet));
+    SplineSet *cur = chunkalloc(sizeof(SplineSet));
     SplinePoint *bp, *op;
 
     for ( bp=base->first, op = other->first; ; ) {
@@ -627,7 +627,7 @@ static void InterpolateChar(SplineFont *new, int enc, SplineChar *base, SplineCh
 
     if ( base==NULL || other==NULL )
 return;
-    sc = galloc(sizeof(SplineChar));
+    sc = chunkalloc(sizeof(SplineChar));
     *sc = *base;
     sc->enc = enc;
     new->chars[enc] = sc;

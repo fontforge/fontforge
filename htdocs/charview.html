@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 2-Jul-2001 -->
+  <!-- AP: Last modified: 30-Aug-2001 -->
   <TITLE>Outline Character View</TITLE>
 </HEAD>
 <BODY>
@@ -117,6 +117,16 @@ same outline and bounding box, then holding down the meta key will allow
 you to move it once it is selected, without the meta key you will resize
 it).
 <P>
+If a point has no visible control points, then they are at the same location
+as the point itself. If you want to select one of the control points then
+first select the point (to make the control points active) then hold down
+the meta key and depress on the point. This should allow you to drag one
+of the control points (if you get the wrong point the first time drag it
+out of the way, repeat the process to get the other control and then put
+the first one back). Sadly some window managers (gnome-sawtooth for one)
+will steal meta-clicks. If this happens you will need to use Element-&gt;Get
+Info to set the control points.
+<P>
 Once something is selected you may drag it around. If you select something
 and then drag the mouse then it and everything else selected will be moved.
 If you drag an open path and one of the end points happens to fall on the
@@ -155,7 +165,9 @@ Each arrow will move the selection one em-unit in the obvious direction.
 <P>
 Clicking with the magnifying tool will magnify the view and center it around
 the point you clicked on. Holding down the Alt (Meta) key and clicking will
-minify the view, again centered around the point at which you clicked.
+minify the view, again centered around the point at which you clicked. Again
+some window managers will steal meta-clicks, so you may have to use the View
+menu to minify (It's called Zoom Out)
 <H3>
   Tools for adding curved, corner and tangent points.
 </H3>

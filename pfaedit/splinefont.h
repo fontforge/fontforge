@@ -267,7 +267,7 @@ typedef struct hintinstance {
 typedef struct steminfo {
     real start;			/* location at which the stem starts */
     real width;			/* or height */
-    HintInstance *where;		/* location(s) in the other coord */
+    HintInstance *where;	/* location(s) in the other coord */
     struct steminfo *next;
     unsigned int asedges:1;	/* only do a set of edge hints for this guy */
     				/*  or remove entirely if the edges overlap */
@@ -345,6 +345,7 @@ typedef struct splinechar {
     unsigned int widthset: 1;	/* needed so an emspace char doesn't disappear */
     unsigned int vconflicts: 1;	/* Any hint overlaps in the vstem list? */
     unsigned int hconflicts: 1;	/* Any hint overlaps in the hstem list? */
+    unsigned int anyflexes: 1;
     struct splinecharlist { struct splinechar *sc; struct splinecharlist *next;} *dependents;
 	    /* The dependents list is a list of all characters which refenence*/
 	    /*  the current character directly */
@@ -424,6 +425,9 @@ struct findsel;
 struct charprocs;
 enum charset;
 struct enc;
+
+extern void *chunkalloc(int size);
+extern void chunkfree(void *, int size);
 
 extern SplineFont *SplineFontFromPSFont(struct fontdict *fd);
 extern int CheckAfmOfPostscript(SplineFont *sf,char *psname);
@@ -570,10 +574,11 @@ extern int StemListAnyConflicts(StemInfo *stems);
 extern HintInstance *HICopyTrans(HintInstance *hi, real mul, real offset);
 extern void SplineCharAutoHint( SplineChar *sc,int removeOverlaps);
 extern void SplineFontAutoHint( SplineFont *sf);
+extern StemInfo *HintCleanup(StemInfo *stem,int dosort);
 extern int SplineFontIsFlexible(SplineFont *sf);
 extern int SCWorthOutputting(SplineChar *sc);
 extern int CIDWorthOutputting(SplineFont *cidmaster, int enc); /* Returns -1 on failure, font number on success */
-extern int AfmSplineFont(FILE *afm, SplineFont *sf,int type0);
+extern int AfmSplineFont(FILE *afm, SplineFont *sf,int formattype);
 extern int PfmSplineFont(FILE *pfm, SplineFont *sf,int type0);
 extern char *EncodingName(int map);
 extern void SFLigaturePrepare(SplineFont *sf);
@@ -619,6 +624,7 @@ extern int SFFindExistingChar(SplineFont *sf, int unienc, char *name );
 
 extern char *getPfaEditDir(char *buffer);
 extern void DoAutoSaves(void);
+extern void CleanAutoRecovery(void);
 extern int DoAutoRecovery(void);
 extern SplineFont *SFRecoverFile(char *autosavename);
 extern void SFAutoSave(SplineFont *sf);

@@ -1634,7 +1634,9 @@ return;
 	/* Constrained */
 
 	fake.u.mouse = event->u.mouse;
-	if ( (event->u.mouse.state&ksm_meta) && (cv->p.nextcp || cv->p.prevcp)) {
+	if ( ((event->u.mouse.state&ksm_meta) ||
+		    (!cv->cntrldown && (event->u.mouse.state&ksm_control))) &&
+		(cv->p.nextcp || cv->p.prevcp)) {
 	    real dot = (cv->p.cp.x-cv->p.constrain.x)*(p.cx-cv->p.constrain.x) +
 		    (cv->p.cp.y-cv->p.constrain.y)*(p.cy-cv->p.constrain.y);
 	    real len = (cv->p.cp.x-cv->p.constrain.x)*(cv->p.cp.x-cv->p.constrain.x)+
@@ -2250,6 +2252,7 @@ return( true );
 #define MID_Average	2219
 #define MID_SpacePts	2220
 #define MID_SpaceRegion	2221
+#define MID_ShowDependents	2222
 #define MID_Corner	2301
 #define MID_Tangent	2302
 #define MID_Curve	2303
@@ -3116,6 +3119,11 @@ static void CVMenuGetInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CVGetInfo(cv);
 }
 
+static void CVMenuShowDependents(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    SCRefBy(cv->sc);
+}
+
 static void CVMenuBitmaps(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     BitmapDlg(cv->fv,cv->sc,mi->mid==MID_AvailBitmaps );
@@ -3197,6 +3205,9 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		SplinePoint *sp; SplineSet *spl; RefChar *ref; ImageList *img;
 		mi->ti.disabled = !CVOneThingSel(cv,&sp,&spl,&ref,&img);
 	    }
+	  break;
+	  case MID_ShowDependents:
+	    mi->ti.disabled = cv->sc->dependents==NULL;
 	  break;
 	  case MID_Clockwise:
 	    mi->ti.disabled = !anypoints;
@@ -3286,7 +3297,7 @@ return;
     if ( mi->mid==MID_AddHHint ) {
 	if ( sp1->me.y==sp2->me.y )
 return;
-	h = calloc(1,sizeof(StemInfo));
+	h = chunkalloc(sizeof(StemInfo));
 	if ( sp2->me.y>sp1->me.y ) {
 	    h->start = sp1->me.y;
 	    h->width = sp2->me.y-sp1->me.y;
@@ -3299,7 +3310,7 @@ return;
     } else if ( mi->mid==MID_AddVHint ) {
 	if ( sp1->me.x==sp2->me.x )
 return;
-	h = calloc(1,sizeof(StemInfo));
+	h = chunkalloc(sizeof(StemInfo));
 	if ( sp2->me.x>sp1->me.x ) {
 	    h->start = sp1->me.x;
 	    h->width = sp2->me.x-sp1->me.x;
@@ -3324,7 +3335,7 @@ return;
 	    temp = sp1; sp1=sp3; sp3=temp;
 	    temp = sp2; sp2=sp4; sp4=temp;
 	}
-	d = gcalloc(1,sizeof(DStemInfo));
+	d = chunkalloc(sizeof(DStemInfo));
 	d->next = cv->sc->dstem;
 	cv->sc->dstem = d;
 	d->leftedgetop = sp1->me;
@@ -3518,6 +3529,7 @@ static GMenuItem allist[] = {
 static GMenuItem ellist[] = {
     { { (unichar_t *) _STR_Fontinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'F', ksm_control|ksm_shift, NULL, NULL, CVMenuFontInfo },
     { { (unichar_t *) _STR_Getinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'I', ksm_control, NULL, NULL, CVMenuGetInfo, MID_GetInfo },
+    { { (unichar_t *) _STR_ShowDependents, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, 'I', ksm_control|ksm_meta, NULL, NULL, CVMenuShowDependents, MID_ShowDependents },
     { { (unichar_t *) _STR_Findprobs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, 'E', ksm_control, NULL, NULL, CVMenuFindProblems },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Bitmapsavail, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'B', ksm_control|ksm_shift, NULL, NULL, CVMenuBitmaps, MID_AvailBitmaps },
@@ -3609,7 +3621,7 @@ static GMenuItem mblist[] = {
 };
 
 CharView *CharViewCreate(SplineChar *sc, FontView *fv) {
-    CharView *cv = calloc(1,sizeof(CharView));
+    CharView *cv = gcalloc(1,sizeof(CharView));
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
@@ -3693,9 +3705,9 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv) {
     cv->sfh = as+ds; cv->sas = as;
 
     cv->height = pos.height; cv->width = pos.width;
-    cv->gi.u.image = calloc(1,sizeof(struct _GImage));
+    cv->gi.u.image = gcalloc(1,sizeof(struct _GImage));
     cv->gi.u.image->image_type = it_mono;
-    cv->gi.u.image->clut = calloc(1,sizeof(GClut));
+    cv->gi.u.image->clut = gcalloc(1,sizeof(GClut));
     cv->gi.u.image->clut->trans_index = cv->gi.u.image->trans = 0;
     cv->gi.u.image->clut->clut_len = 2;
     cv->gi.u.image->clut->clut[0] = 0xffffff;

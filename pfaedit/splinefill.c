@@ -203,7 +203,7 @@ static void AddEdge(EdgeList *es, Spline *sp, real tmin, real tmax ) {
     e->tmin = tmin; e->tmax = tmax;
 
     if ( e->mmin<0 || e->mmin>=e->mmax )
-	GDrawIError("Grg!");
+	GDrawIError("Probably not serious, but we've got a zero length spline in AddEdge");
 
     if ( es->sc!=NULL ) for ( hint=es->hhints; hint!=NULL; hint=hint->next ) {
 	if ( hint->adjustb ) {
@@ -1059,6 +1059,7 @@ BDFFont *SplineFontRasterize(SplineFont *_sf, int pixelsize, int indicate) {
     int i,k;
     real scale;
     char csize[10]; unichar_t size[30];
+    unichar_t aa[200];
     int max;
     SplineFont *sf;	/* The complexity here is to pick the appropriate subfont of a CID font */
 
@@ -1070,12 +1071,18 @@ BDFFont *SplineFontRasterize(SplineFont *_sf, int pixelsize, int indicate) {
     }
     scale = pixelsize / (real) (sf->ascent+sf->descent);
 
-    sprintf(csize,"%d", pixelsize );
-    uc_strcpy(size,csize);
-    u_strcat(size,GStringGetResource(_STR_Pixels,NULL));
     if ( indicate ) {
+	sprintf(csize,"%d", pixelsize );
+	uc_strcpy(size,csize);
+	u_strcat(size,GStringGetResource(_STR_Pixels,NULL));
+	u_strcpy(aa,GStringGetResource(_STR_GenBitmap,NULL));
+	if ( sf->fontname!=NULL ) {
+	    uc_strcat(aa,": ");
+	    uc_strncat(aa,sf->fontname,sizeof(aa)/sizeof(aa[0])-u_strlen(aa));
+	    aa[sizeof(aa)/sizeof(aa[0])-1] = '\0';
+	}
 	GProgressStartIndicator(10,GStringGetResource(_STR_Rasterizing,NULL),
-		GStringGetResource(_STR_GenBitmap,NULL),size,sf->charcnt,1);
+		aa,size,sf->charcnt,1);
 	GProgressEnableStop(0);
     }
     bdf->sf = _sf;
@@ -1172,6 +1179,7 @@ BDFFont *SplineFontAntiAlias(SplineFont *_sf, int pixelsize, int linear_scale) {
     int i,k;
     real scale;
     char csize[10]; unichar_t size[30];
+    unichar_t aa[200];
     int max;
     SplineFont *sf;	/* The complexity here is to pick the appropriate subfont of a CID font */
 
@@ -1186,8 +1194,14 @@ BDFFont *SplineFontAntiAlias(SplineFont *_sf, int pixelsize, int linear_scale) {
     sprintf(csize,"%d", pixelsize );
     uc_strcpy(size,csize);
     u_strcat(size,GStringGetResource(_STR_Pixels,NULL));
+    u_strcpy(aa,GStringGetResource(_STR_GenAntiAlias,NULL));
+    if ( sf->fontname!=NULL ) {
+	uc_strcat(aa,": ");
+	uc_strncat(aa,sf->fontname,sizeof(aa)/sizeof(aa[0])-u_strlen(aa));
+	aa[sizeof(aa)/sizeof(aa[0])-1] = '\0';
+    }
     GProgressStartIndicator(10,GStringGetResource(_STR_Rasterizing,NULL),
-	    GStringGetResource(_STR_GenAntiAlias,NULL),size,sf->charcnt,1);
+	    aa,size,sf->charcnt,1);
     GProgressEnableStop(0);
 
     if ( linear_scale>16 ) linear_scale = 16;	/* can't deal with more than 256 levels of grey */

@@ -561,7 +561,7 @@ static int gmenu_key(struct gmenu *m, GEvent *event) {
     unichar_t keysym = event->u.chr.keysym;
 
     if ( islower(keysym)) keysym = toupper(keysym);
-    if ( event->u.chr.state&ksm_meta ) {
+    if ( event->u.chr.state&ksm_meta && !(event->u.chr.state&ksm_control)) {
 	/* Only look for mneumonics in the child */
 	while ( m->child!=NULL )
 	    m = m->child;
@@ -760,7 +760,7 @@ int GMenuBarCheckKey(GGadget *g, GEvent *event) {
 return( false );
 
     if ( islower(keysym)) keysym = toupper(keysym);
-    if ( event->u.chr.state&ksm_meta ) {
+    if ( event->u.chr.state&ksm_meta && !(event->u.chr.state&ksm_control)) {
 	/* Only look for mneumonics in the leaf of the displayed menu structure */
 	if ( mb->child!=NULL )
 return( gmenu_key(mb->child,event));	/* this routine will do shortcuts too */

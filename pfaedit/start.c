@@ -54,6 +54,40 @@ static void initadobeenc(void) {
     }
 }
 
+static void _dousage(void) {
+    fprintf( stderr, "pfaedit [options] [fontfiles]\n" );
+    fprintf( stderr, "\t-new\t\t\t (creates a new font)\n" );
+    fprintf( stderr, "\t-recover none|auto|clean (control error recovery)\n" );
+    fprintf( stderr, "\t-nosplash\t\t (no splash screen)\n" );
+    fprintf( stderr, "\t-display display-name\t (sets the X display)\n" );
+    fprintf( stderr, "\t-depth val\t\t (sets the display depth if possible)\n" );
+    fprintf( stderr, "\t-vc val\t\t\t (sets the visual class if possible)\n" );
+    fprintf( stderr, "\t-sync\t\t\t (syncs the display, debugging)\n" );
+#if MyMemory
+    fprintf( stderr, "\t-memory\t\t\t (turns on memory checks, debugging)\n" );
+#endif
+    fprintf( stderr, "\t-usage\t\t\t (displays this message, and exits)\n" );
+    fprintf( stderr, "\t-help\t\t\t (displays this message, invokes netscape)\n" );
+    fprintf( stderr, "\n" );
+    fprintf( stderr, "pfaedit will read postscript (pfa, pfb, ps, cid), opentype (otf),\n" );
+    fprintf( stderr, "\ttruetype (ttf) and bdf fonts. It will also read it's own format\n" );
+    fprintf( stderr, "\tsfd files.\n\n" );
+    fprintf( stderr, "If no fontfiles are specified (and -new is not either and there's nothing\n" );
+    fprintf( stderr, "\tto recover) then pfaedit will produce an open font dlg.\n\n" );
+    fprintf( stderr, "For more information see:\n\thttp://pfaedit.sourceforge.net/\n" );
+}
+
+static void dousage(void) {
+    _dousage();
+exit(0);
+}
+
+static void dohelp(void) {
+    _dousage();
+    system("netscape http://pfaedit.sourceforge.net/overview.html &");
+exit(0);
+}
+
 static void initrand(void) {
     struct timeval tv;
 
@@ -135,6 +169,7 @@ int main( int argc, char **argv ) {
     int splash = 1;
     int any;
     char *display = NULL;
+    int recover=1;
 
     fprintf( stderr, "Copyright \251 2000,2001 by George Williams.\n Executable based on sources from %s.\n",
 	    link_time_str );
@@ -149,20 +184,40 @@ int main( int argc, char **argv ) {
     LoadPrefs();
 
     for ( i=1; i<argc; ++i ) {
-	if ( strcmp(argv[i],"-sync")==0 )
+	char *pt = argv[i];
+	if ( pt[0]=='-' && pt[1]=='-' )
+	    ++pt;
+	if ( strcmp(pt,"-sync")==0 )
 	    GResourceAddResourceString("Gdraw.Synchronize: true",argv[0]);
 #if MyMemory
-	else if ( strcmp(argv[i],"-memory")==0 )
+	else if ( strcmp(pt,"-memory")==0 )
 	    __malloc_debug(5);
 #endif
-	else if ( strcmp(argv[i],"-depth")==0 && i<argc-1 )
+	else if ( strcmp(pt,"-depth")==0 && i<argc-1 )
 	    AddR(argv[0],"Gdraw.Depth", argv[++i]);
-	else if ( strcmp(argv[i],"-vc")==0 && i<argc-1 )
+	else if ( strcmp(pt,"-vc")==0 && i<argc-1 )
 	    AddR(argv[0],"Gdraw.VisualClass", argv[++i]);
-	else if ( strcmp(argv[i],"-nosplash")==0 )
+	else if ( strcmp(pt,"-nosplash")==0 )
 	    splash = 0;
-	else if ( strcmp(argv[i],"-display")==0 && i<argc-1 )
+	else if ( strcmp(pt,"-display")==0 && i<argc-1 )
 	    display = argv[++i];
+	else if ( strcmp(pt,"-recover")==0 && i<argc-1 ) {
+	    ++i;
+	    if ( strcmp(argv[i],"none")==0 )
+		recover=0;
+	    else if ( strcmp(argv[i],"clean")==0 )
+		recover= -1;
+	    else if ( strcmp(argv[i],"auto")==0 )
+		recover= 1;
+	    else {
+		fprintf( stderr, "Invalid argument to -recover, must be none, auto or clean\n" );
+		dousage();
+	    }
+	}
+	else if ( strcmp(pt,"-help")==0 )
+	    dohelp();
+	else if ( strcmp(pt,"-usage")==0 )
+	    dousage();
     }
     initadobeenc();
     initrand();
@@ -199,18 +254,27 @@ int main( int argc, char **argv ) {
     GDrawProcessPendingEvents(NULL);
     GDrawSetBuildCharHook(BuildCharHook);
 
-    any = DoAutoRecovery();
+    any = 0;
+    if ( recover==-1 )
+	CleanAutoRecovery();
+    else if ( recover )
+	any = DoAutoRecovery();
+
     for ( i=1; i<argc; ++i ) {
 	char buffer[1025];
+	char *pt = argv[i];
+
 	GDrawProcessPendingEvents(NULL);
-	if ( strcmp(argv[i],"-new")==0 ) {
+	if ( pt[0]=='-' && pt[1]=='-' )
+	    ++pt;
+	if ( strcmp(pt,"-new")==0 ) {
 	    FontNew();
 	    any = 1;
-	} else if ( strcmp(argv[i],"-sync")==0 || strcmp(argv[i],"-memory")==0 ||
-		strcmp(argv[i],"-nosplash")==0 )
+	} else if ( strcmp(pt,"-sync")==0 || strcmp(pt,"-memory")==0 ||
+		strcmp(pt,"-nosplash")==0 )
 	    /* Already done, needed to be before display opened */;
-	else if ( (strcmp(argv[i],"-depth")==0 || strcmp(argv[i],"-vc")==0 ||
-		    strcmp(argv[i],"-display")==0 ) &&
+	else if ( (strcmp(pt,"-depth")==0 || strcmp(pt,"-vc")==0 ||
+		    strcmp(pt,"-display")==0 || strcmp(pt,"-recover")==0 ) &&
 		i<argc-1 )
 	    ++i; /* Already done, needed to be before display opened */
 	else {

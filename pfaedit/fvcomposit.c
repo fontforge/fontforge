@@ -336,7 +336,7 @@ return( ymin );
 }
 	
 static void _SCAddRef(SplineChar *sc,SplineChar *rsc,real transform[6]) {
-    RefChar *ref = gcalloc(1,sizeof(RefChar));
+    RefChar *ref = chunkalloc(sizeof(RefChar));
 
     ref->sc = rsc;
     ref->unicode_enc = rsc->unicodeenc;
@@ -668,7 +668,7 @@ static void DoSpaces(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
 }
 
 static SplinePoint *MakeSP(real x, real y, SplinePoint *last) {
-    SplinePoint *new = gcalloc(1,sizeof(SplinePoint));
+    SplinePoint *new = chunkalloc(sizeof(SplinePoint));
 
     new->me.x = x; new->me.y = y;
     new->prevcp = new->nextcp = new->me;
@@ -737,7 +737,7 @@ static void DoRules(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
     sp = MakeSP(width-rbearing,ypos+height,sp);
     sp = MakeSP(width-rbearing,ypos,sp);
     SplineMake(sp,first);
-    sc->splines = gcalloc(1,sizeof(SplinePointList));
+    sc->splines = chunkalloc(sizeof(SplinePointList));
     sc->splines->first = sc->splines->last = first;
     sc->width = width;
     sc->widthset = true;
@@ -785,7 +785,7 @@ static int SCMakeRightToLeftLig(SplineChar *sc,SplineFont *sf,
 	    isarabfinal(sc->unicodeenc)) {
 	++cnt;
 	if ( isarabmedial(sc->unicodeenc)) ++cnt;
-	freeme = malloc((cnt+1)*sizeof(unichar_t));
+	freeme = galloc((cnt+1)*sizeof(unichar_t));
 	if ( isarabinitial(sc->unicodeenc)) {
 	    u_strcpy(freeme,start);
 	    freeme[cnt-2] = 0x200d; freeme[cnt-1] = 0;
@@ -801,11 +801,11 @@ static int SCMakeRightToLeftLig(SplineChar *sc,SplineFont *sf,
     }
 
     ++cnt;		/* for EOS */
-    bd.text = malloc(cnt*sizeof(unichar_t));
-    bd.level = malloc(cnt*sizeof(uint8));
-    bd.override = malloc(cnt*sizeof(uint8));
-    bd.type = malloc(cnt*sizeof(uint16));
-    bd.original = malloc(cnt*sizeof(unichar_t *));
+    bd.text = galloc(cnt*sizeof(unichar_t));
+    bd.level = galloc(cnt*sizeof(uint8));
+    bd.override = galloc(cnt*sizeof(uint8));
+    bd.type = galloc(cnt*sizeof(uint16));
+    bd.original = galloc(cnt*sizeof(unichar_t *));
     --cnt;
     bd.len = cnt;
     bd.base_right_to_left = true;

@@ -36,12 +36,72 @@
 
 /*#define DEBUG 1*/
 
+/* In an attempt to make allocation more efficient I just keep preallocated */
+/*  lists of certain common sizes. It doesn't seem to make much difference */
+/*  when allocating stuff, but does when freeing. If the extra complexity */
+/*  is bad then put:
+/*	#define chunkalloc(size)	gcalloc(1,size)
+/*	#define chunkfree(item,size)	free(item)
+/*  into splinefont.h after the (or instead of) the definition of chunkalloc()*/
+
+#ifndef chunkalloc
+#define ALLOC_CHUNK	100
+#define CHUNK_MAX	100
+
+struct chunk { struct chunk *next; };
+static struct chunk *chunklists[CHUNK_MAX/4] = { 0 };
+
+void *chunkalloc(int size) {
+# if ALLOC_CHUNK<=1
+return( gcalloc(1,size));
+# else
+    struct chunk *item;
+    int index;
+
+    if ( (size&0x3) || size>=CHUNK_MAX || size<=sizeof(struct chunk)) {
+	fprintf( stderr, "Attempt to allocate something of size %d\n", size );
+return( gcalloc(1,size));
+    }
+    index = size>>2;
+    if ( chunklists[index]==NULL ) {
+	char *pt, *end;
+	pt = galloc(ALLOC_CHUNK*size);
+	chunklists[index] = (struct chunk *) pt;
+	end = pt+(ALLOC_CHUNK-1)*size;
+	while ( pt<end ) {
+	    ((struct chunk *) pt)->next = (struct chunk *) (pt + size);
+	    pt += size;
+	}
+	((struct chunk *) pt)->next = NULL;
+    }
+    item = chunklists[index];
+    chunklists[index] = item->next;
+    memset(item,'\0',size);
+return( item );
+# endif
+}
+
+void chunkfree(void *item,int size) {
+# if ALLOC_CHUNK<=1
+    free(item);
+# else
+    if ( (size&0x3) || size>=CHUNK_MAX || size<=sizeof(struct chunk)) {
+	fprintf( stderr, "Attempt to free something of size %d\n", size );
+	free(item);
+    } else {
+	((struct chunk *) item)->next = chunklists[size>>2];
+	chunklists[size>>2] = (struct chunk *) item;
+    }
+# endif
+}
+#endif
+
 void LineListFree(LineList *ll) {
     LineList *next;
 
     while ( ll!=NULL ) {
 	next = ll->next;
-	free(ll);
+	chunkfree(ll,sizeof(LineList));
 	ll = next;
     }
 }
@@ -52,18 +112,18 @@ void LinearApproxFree(LinearApprox *la) {
     while ( la!=NULL ) {
 	next = la->next;
 	LineListFree(la->lines);
-	free(la);
+	chunkfree(la,sizeof(LinearApprox));
 	la = next;
     }
 }
 
 void SplineFree(Spline *spline) {
     LinearApproxFree(spline->approx);
-    free(spline);
+    chunkfree(spline,sizeof(Spline));
 }
 
 void SplinePointFree(SplinePoint *sp) {
-    free(sp);
+    chunkfree(sp,sizeof(SplinePoint));
 }
 
 void SplinePointListFree(SplinePointList *spl) {
@@ -80,7 +140,7 @@ return;
     }
     if ( spl->last!=spl->first || spl->first->next==NULL )
 	SplinePointFree(spl->first);
-    free(spl);
+    chunkfree(spl,sizeof(SplinePointList));
 }
 
 void SplinePointListsFree(SplinePointList *head) {
@@ -97,7 +157,7 @@ void RefCharFree(RefChar *ref) {
     if ( ref==NULL )
 return;
     SplinePointListsFree(ref->splines);
-    free(ref);
+    chunkfree(ref,sizeof(RefChar));
 }
 
 void RefCharsFree(RefChar *ref) {
@@ -169,7 +229,7 @@ void SplineRefigure(Spline *spline) {
 }
 
 Spline *SplineMake(SplinePoint *from, SplinePoint *to) {
-    Spline *spline = calloc(1,sizeof(Spline));
+    Spline *spline = chunkalloc(sizeof(Spline));
 
     spline->from = from; spline->to = to;
     from->next = to->prev = spline;
@@ -248,7 +308,7 @@ return;
 		 ( prev->here.y==next->here.y+1 || prev->here.y==next->here.y-1 )) ) {
 	    lines->here = next->here;
 	    lines->next = next->next;
-	    free(next);
+	    chunkfree(next,sizeof(*next));
 	} else {
 	    prev = lines;
 	    lines = next;
@@ -257,7 +317,7 @@ return;
     if ( prev!=NULL &&
 	    prev->here.x==lines->here.x && prev->here.y == lines->here.y ) {
 	prev->next = NULL;
-	free(lines);
+	chunkfree(lines,sizeof(*lines));
     }
 
     while ( (next = lines->next)!=NULL ) {
@@ -268,7 +328,7 @@ return;
 	    if ( y == lines->here.y ) {
 		lines->here = next->here;
 		lines->next = next->next;
-		free(next);
+		chunkfree(next,sizeof(*next));
 	    } else
 		lines = next;
 	} else
@@ -287,17 +347,17 @@ LinearApprox *SplineApproximate(Spline *spline, real scale) {
     if ( test!=NULL )
 return( test );
 
-    test = calloc( 1,sizeof(LinearApprox));
+    test = chunkalloc(sizeof(LinearApprox));
     test->scale = scale;
     test->next = spline->approx;
     spline->approx = test;
 
-    cur = calloc( 1,sizeof(LineList) );
+    cur = chunkalloc(sizeof(LineList) );
     cur->here.x = rint(spline->from->me.x*scale);
     cur->here.y = rint(spline->from->me.y*scale);
     test->lines = last = cur;
     if ( spline->knownlinear ) {
-	cur = calloc( 1,sizeof(LineList) );
+	cur = chunkalloc(sizeof(LineList) );
 	cur->here.x = rint(spline->to->me.x*scale);
 	cur->here.y = rint(spline->to->me.y*scale);
 	last->next = cur;
@@ -312,7 +372,7 @@ return( test );
 	tx = SolveCubic(spline->splines[0].a,spline->splines[0].b,0,0,.5/scale,0);
 	ty = SolveCubic(spline->splines[1].a,spline->splines[1].b,0,0,.5/scale,0);
 	t = (tx<ty)?tx:ty;
-	cur = calloc( 1,sizeof(LineList) );
+	cur = chunkalloc(sizeof(LineList) );
 	cur->here.x = rint( (((spline->splines[0].a*t+spline->splines[0].b)*t+spline->splines[0].c)*t + spline->splines[0].d)*scale );
 	cur->here.y = rint( (((spline->splines[1].a*t+spline->splines[1].b)*t+spline->splines[1].c)*t + spline->splines[1].d)*scale );
 	last->next = cur;
@@ -325,7 +385,7 @@ return( test );
 	    tx = SolveCubic(spline->splines[0].a,spline->splines[0].b,spline->splines[0].c-slpx,spline->splines[0].d-intx,.5/scale,t);
 	    ty = SolveCubic(spline->splines[1].a,spline->splines[1].b,spline->splines[1].c-slpy,spline->splines[1].d-inty,.5/scale,t);
 	    t = (tx<ty)?tx:ty;
-	    cur = calloc(1,sizeof(LineList));
+	    cur = chunkalloc(sizeof(LineList));
 	    cur->here.x = rint( (((spline->splines[0].a*t+spline->splines[0].b)*t+spline->splines[0].c)*t + spline->splines[0].d)*scale );
 	    cur->here.y = rint( (((spline->splines[1].a*t+spline->splines[1].b)*t+spline->splines[1].c)*t + spline->splines[1].d)*scale );
 	    last->next = cur;
@@ -334,7 +394,7 @@ return( test );
 
 	/* Now start at t=1 and work back to t=.5 */
 	prev = NULL;
-	cur = calloc( 1,sizeof(LineList) );
+	cur = chunkalloc(sizeof(LineList) );
 	cur->here.x = rint(spline->to->me.x*scale);
 	cur->here.y = rint(spline->to->me.y*scale);
 	prev = cur;
@@ -347,7 +407,7 @@ return( test );
 	    tx = SolveCubicBack(spline->splines[0].a,spline->splines[0].b,spline->splines[0].c-slpx,spline->splines[0].d-intx,.5/scale,t);
 	    ty = SolveCubicBack(spline->splines[1].a,spline->splines[1].b,spline->splines[1].c-slpy,spline->splines[1].d-inty,.5/scale,t);
 	    t = (tx>ty)?tx:ty;
-	    cur = calloc( 1,sizeof(LineList) );
+	    cur = chunkalloc(sizeof(LineList) );
 	    cur->here.x = rint( (((spline->splines[0].a*t+spline->splines[0].b)*t+spline->splines[0].c)*t + spline->splines[0].d)*scale );
 	    cur->here.y = rint( (((spline->splines[1].a*t+spline->splines[1].b)*t+spline->splines[1].c)*t + spline->splines[1].d)*scale );
 	    cur->next = prev;
@@ -641,17 +701,17 @@ static SplinePointList *SplinePointListCopy1(SplinePointList *spl) {
     SplinePoint *pt, *cpt, *first;
     Spline *spline;
 
-    cur = calloc(1,sizeof(SplinePointList));
+    cur = chunkalloc(sizeof(SplinePointList));
 
     first = NULL;
     for ( pt=spl->first; pt!=NULL && pt!=first; pt = pt->next->to ) {
-	cpt = malloc(sizeof(SplinePoint));
+	cpt = chunkalloc(sizeof(SplinePoint));
 	*cpt = *pt;
 	cpt->next = cpt->prev = NULL;
 	if ( cur->first==NULL )
 	    cur->first = cur->last = cpt;
 	else {
-	    spline = malloc(sizeof(Spline));
+	    spline = chunkalloc(sizeof(Spline));
 	    *spline = *pt->prev;
 	    spline->from = cur->last;
 	    cur->last->next = spline;
@@ -666,7 +726,7 @@ static SplinePointList *SplinePointListCopy1(SplinePointList *spl) {
     }
     if ( pt==first ) {
 	cpt = cur->first;
-	spline = malloc(sizeof(Spline));
+	spline = chunkalloc(sizeof(Spline));
 	*spline = *pt->prev;
 	spline->from = cur->last;
 	cur->last->next = spline;
@@ -708,7 +768,7 @@ static SplinePointList *SplinePointListCopySelected1(SplinePointList *spl) {
 	}
 	if ( start==NULL || start==first )
     break;
-	cur = calloc(1,sizeof(SplinePointList));
+	cur = chunkalloc(sizeof(SplinePointList));
 	if ( head==NULL )
 	    head = cur;
 	else
@@ -716,13 +776,13 @@ static SplinePointList *SplinePointListCopySelected1(SplinePointList *spl) {
 	last = cur;
 
 	while ( start!=NULL && start->selected && start!=first ) {
-	    cpt = malloc(sizeof(SplinePoint));
+	    cpt = chunkalloc(sizeof(SplinePoint));
 	    *cpt = *start;
 	    cpt->next = cpt->prev = NULL;
 	    if ( cur->first==NULL )
 		cur->first = cur->last = cpt;
 	    else {
-		spline = malloc(sizeof(Spline));
+		spline = chunkalloc(sizeof(Spline));
 		*spline = *start->prev;
 		spline->from = cur->last;
 		cur->last->next = spline;
@@ -822,7 +882,7 @@ static SplinePointList *SplinePointListSplit(SplinePointList *spl) {
 	    head = cur = spl;
 	    spl->first = spl->last = NULL;
 	} else {
-	    cur = calloc(1,sizeof(SplinePointList));
+	    cur = chunkalloc(sizeof(SplinePointList));
 	    last->next = cur;
 	}
 	last = cur;
@@ -1139,18 +1199,53 @@ static void SplineFontMetaData(SplineFont *sf,struct fontdict *fd) {
     sf->pfminfo.fstype = fd->fontinfo->fstype;
 }
 
+/* Adobe has (it seems to me) misnamed the greek letters so that "mu" actually*/
+/*  refers to the micro sign. Similar problems for Delta and Omega. When I get*/
+/*  a mu character I generate things named mu, uni00B5 and uni03BC. So here I */
+/*  check for instances where both mu and uni00B5 (which both map to 0xb5) I */
+/*  remove one of them */
+static void CleanupGreekNames(FontDict *fd) {
+    static char *namepairs[3][2] = {{ "mu", "uni00B5" /* 3bc */ },
+				    { "Delta", "uni0394" /* 2206 */ },
+				    { "Omega", "uni03A9" /* 2126 */ }};
+    int i,j,k;
+    struct pschars *chars = fd->chars;
+    char *namei, *namej;
+
+    for ( i=0; i<chars->cnt; ++i ) if ( (namei=chars->keys[i])!=NULL ) {
+	for ( k=0; k<3; ++k )
+	    if ( strcmp(namei,namepairs[k][0])==0 ) {
+		for ( j=0; j<chars->cnt; ++j ) if ( (namej=chars->keys[j])!=NULL ) {
+		    if ( strcmp(namej,namepairs[k][1])==0 ) {
+			if ( i>j ) --i;
+			free(chars->keys[j]);
+			free(chars->values[j]);
+			for ( k=j; k<chars->cnt-1; ++k ) {
+			    chars->keys[k] = chars->keys[k+1];
+			    chars->values[k] = chars->values[k+1];
+			    chars->lens[k] = chars->lens[k+1];
+			}
+			chars->keys[k] = NULL; chars->values[k] = NULL; chars->lens[k] = 0;
+		break;
+		    }
+		}
+	    }
+    }
+}
+
 static void SplineFontFromType1(SplineFont *sf, FontDict *fd) {
     int i;
     RefChar *refs, *next;
     char **encoding;
     int istype2 = fd->fonttype==2;		/* Easy enough to deal with even though it will never happen... */
 
+    CleanupGreekNames(fd);
     if ( istype2 )
 	fd->private->subrs->bias = fd->private->subrs->cnt<1240 ? 107 :
 	    fd->private->subrs->cnt<33900 ? 1131 : 32768;
     sf->charcnt = 256+CharsNotInEncoding(fd);
-    encoding = calloc(sf->charcnt,sizeof(char *));
-    sf->chars = calloc(sf->charcnt,sizeof(SplineChar *));
+    encoding = gcalloc(sf->charcnt,sizeof(char *));
+    sf->chars = gcalloc(sf->charcnt,sizeof(SplineChar *));
     for ( i=0; i<256; ++i )
 	encoding[i] = copy(fd->encoding[i]);
     if ( sf->charcnt>256 ) {
@@ -1763,9 +1858,9 @@ void StemInfoFree(StemInfo *h) {
 
     for ( hi=h->where; hi!=NULL; hi=n ) {
 	n = hi->next;
-	free(hi);
+	chunkfree(hi,sizeof(HintInstance));
     }
-    free(h);
+    chunkfree(h,sizeof(StemInfo));
 }
 
 void StemInfosFree(StemInfo *h) {
@@ -1775,10 +1870,10 @@ void StemInfosFree(StemInfo *h) {
     for ( ; h!=NULL; h = hnext ) {
 	for ( hi=h->where; hi!=NULL; hi=n ) {
 	    n = hi->next;
-	    free(hi);
+	    chunkfree(hi,sizeof(HintInstance));
 	}
 	hnext = h->next;
-	free(h);
+	chunkfree(h,sizeof(StemInfo));
     }
 }
 
@@ -1792,7 +1887,7 @@ void DStemInfosFree(DStemInfo *h) {
 
     for ( ; h!=NULL; h = hnext ) {
 	hnext = h->next;
-	free(h);
+	chunkfree(h,sizeof(DStemInfo));
     }
 }
 
@@ -1801,7 +1896,7 @@ StemInfo *StemInfoCopy(StemInfo *h) {
     HintInstance *hilast, *hicur, *hi;
 
     for ( ; h!=NULL; h = h->next ) {
-	cur = galloc(sizeof(StemInfo));
+	cur = chunkalloc(sizeof(StemInfo));
 	*cur = *h;
 	cur->next = NULL;
 	if ( head==NULL )
@@ -1812,7 +1907,7 @@ StemInfo *StemInfoCopy(StemInfo *h) {
 	}
 	cur->where = hilast = NULL;
 	for ( hi=h->where; hi!=NULL; hi=hi->next ) {
-	    hicur = galloc(sizeof(StemInfo));
+	    hicur = chunkalloc(sizeof(StemInfo));
 	    *hicur = *hi;
 	    hicur->next = NULL;
 	    if ( hilast==NULL )
@@ -1879,7 +1974,7 @@ return;
     free(sc->origtype1);
 #endif
     LigatureFree(sc->lig);
-    free(sc);
+    chunkfree(sc,sizeof(SplineChar));
 }
 
 void SplineFontFree(SplineFont *sf) {

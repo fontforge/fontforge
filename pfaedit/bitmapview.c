@@ -1314,7 +1314,7 @@ static unsigned char bitmap_bits[] = {
    0x30, 0x0c, 0xfc, 0x03, 0xfc, 0x03, 0x00, 0x00};
 
 BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv) {
-    BitmapView *bv = calloc(1,sizeof(BitmapView));
+    BitmapView *bv = gcalloc(1,sizeof(BitmapView));
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;

@@ -33,6 +33,40 @@
 #include "string.h"
 #include "utype.h"
 
+/* Let's talk about references. */
+/* If we are doing Type1 output, then the obvious way of doing them is seac */
+/*  but that's so limitting. It only works for exactly two characters both */
+/*  of which are in Adobe's Standard Enc. Only translations allowed. Only */
+/*  one reference may be translated */
+/*   The first extension we can make is to allow a single character reference */
+/*  by making the other character be a space */
+/*   But if we want to do more than that we must use subrs. If we have two */
+/*  refs in subrs then we can do translations by preceding the subr calls by */
+/*  appropriate rmovetos. Actually the specs say that only one rmoveto should */
+/*  precede a path, so that means we can't allow the subroutines to position */
+/*  themselves, they must just assume that they are called with the current */
+/*  position correct for the first point. But then we need to know where the */
+/*  first point should be placed, so we allocate a BasePoint to hold that info*/
+/*  and store it into the "keys" array (which the subrs don't use). Similarly */
+/*  we need to know where the subr will leave us, so we actually allocate 2 */
+/*  BasePoints, one containing the start point, one the end point */
+/*   But that's still not good enough, hints are defined in such a way that */
+/*  they are not relocateable. So our subrs can't include any hint definitions*/
+/*  (or if they do then that subr can't be translated at all). So hints must */
+/*  be set outside the subrs, and the subrs can't be for chars that need hint */
+/*  substitution. Unless... The subr will never be relocated. */
+/*   So we generate two types of reference subrs, one containing no hints, the*/
+/*  other containing all the hints, stems and flexes. The first type may be */
+/*  translated, the second cannot */
+/* Type2 doesn't allow any seacs */
+/*  So everything must go in subrs. We have a slightly different problem here:*/
+/*  hintmasks need to know exactly how many stem hints there are in the char */
+/*  so we can't include any hintmask operators inside a subr (unless we */
+/*  guarantee that all invocations of that subr are done with the same number */
+/*  of hints in the character). This again means that no char with hint subs- */
+/*  titutions may be put in a subr. UNLESS all the other references in a */
+/*  refering character contain no hints */
+
 typedef struct growbuf {
     unsigned char *pt;
     unsigned char *base;
@@ -41,12 +75,12 @@ typedef struct growbuf {
 
 static void GrowBuffer(GrowBuf *gb) {
     if ( gb->base==NULL ) {
-	gb->base = gb->pt = malloc(200);
+	gb->base = gb->pt = galloc(200);
 	gb->end = gb->base + 200;
     } else {
 	int len = (gb->end-gb->base) + 400;
 	int off = gb->pt-gb->base;
-	gb->base = realloc(gb->base,len);
+	gb->base = grealloc(gb->base,len);
 	gb->end = gb->base + len;
 	gb->pt = gb->base+off;
     }
@@ -394,14 +428,35 @@ return( true );
 return( false );
 }
 
+static void SubrsCheck(struct pschars *subrs) {
+	/* <subr number presumed to be on stack> 1 3 callother pop callsubr */
+    static uint8 special[] = { 1+139, 3+139, 12, 16, 12, 17, 10, 11 };
+
+    if ( subrs->next+(subrs->next==4)>=subrs->cnt ) {
+	subrs->cnt += 100;
+	subrs->values = grealloc(subrs->values,subrs->cnt*sizeof(uint8 *));
+	subrs->lens = grealloc(subrs->lens,subrs->cnt*sizeof(int));
+	if ( subrs->keys!=NULL ) {
+	    int i;
+	    subrs->keys = grealloc(subrs->keys,subrs->cnt*sizeof(char *));
+	    for ( i=subrs->cnt-100; i<subrs->cnt; ++i )
+		subrs->keys[i] = NULL;
+	}
+    }
+    if ( subrs->next==4 ) {
+	/* Add a special subr that invokes othersubr 3 */
+	subrs->values[4] = (uint8 *) copyn( (char *) special, sizeof(special));
+	subrs->lens[4] = sizeof(special);
+	++subrs->next;
+    }
+}
+
 /* Does the hintmask we need already exist in a subroutine? if so return that */
 /*  subr. Else build a new subr with the hints we need. Note we can only use */
 /*  *stem3 commands if there are no conflicts in that coordinate, it isn't cjk*/
 /*  and all the other conditions are met */
-static int FindOrBuildSubr(struct hintdb *hdb, uint8 mask[12], int round) {
+static int FindOrBuildHintSubr(struct hintdb *hdb, uint8 mask[12], int round) {
     struct mhlist *mh;
-	/* <subr number presumed to be on stack> 1 3 callother pop callsubr */
-    static uint8 special[] = { 1+139, 3+139, 12, 16, 12, 17, 10, 11 };
     GrowBuf gb;
     int i;
 
@@ -417,17 +472,7 @@ return( mh->subr );
 	if ( i==12 )
     break;
     }
-    if ( hdb->subrs->next+(hdb->subrs->next==4)>=hdb->subrs->cnt ) {
-	hdb->subrs->cnt += 100;
-	hdb->subrs->values = grealloc(hdb->subrs->values,hdb->subrs->cnt*sizeof(uint8 *));
-	hdb->subrs->lens = grealloc(hdb->subrs->lens,hdb->subrs->cnt*sizeof(int));
-    }
-    if ( hdb->subrs->next==4 ) {
-	/* Add a special subr that invokes othersubr 3 */
-	hdb->subrs->values[4] = (uint8 *) copyn( (char *) special, sizeof(special));
-	hdb->subrs->lens[4] = sizeof(special);
-	++hdb->subrs->next;
-    }
+    SubrsCheck(hdb->subrs);
 
     memset(&gb,0,sizeof(gb));
     if ( !hdb->sc->hconflicts )
@@ -460,6 +505,25 @@ return( mh->subr );
     free(gb.base);
 
 return( mh->subr );
+}
+
+static int BuildTranslatedHintSubr(struct pschars *subrs, SplineChar *sc,
+	RefChar *r, int round) {
+    GrowBuf gb;
+
+    memset(&gb,0,sizeof(gb));
+    CvtPsHints(&gb,r->sc->hstem,-r->transform[5],true,round,true);	/* I claim to be cjk to avoid getting h/vstem3 */
+    CvtPsHints(&gb,r->sc->vstem,sc->lsidebearing-r->transform[4],false,
+		    round,true);					/* which are illegal in hint replacement */
+    if ( gb.pt+1 >= gb.end )
+	GrowBuffer(&gb);
+    *gb.pt++ = 11;			/* return */
+
+    SubrsCheck(subrs);
+    subrs->values[subrs->next] = (uint8 *) copyn((char *) gb.base,gb.pt-gb.base);
+    subrs->lens[subrs->next] = gb.pt-gb.base;
+    free(gb.base);
+return( subrs->next++ );
 }
 
 static int NeedsNewHintMask(struct hintdb *hdb, SplinePoint *to ) {
@@ -581,7 +645,7 @@ static void HintSetup(GrowBuf *gb,struct hintdb *hdb, SplinePoint *to, int round
     if ( !FigureHintMask(hdb, to, mask ) )
 return;
 
-    s = FindOrBuildSubr(hdb,mask,round);
+    s = FindOrBuildHintSubr(hdb,mask,round);
     if ( hdb->cursub == s ) {			/* If we were able to redefine */
 	memcpy(hdb->mask,mask,sizeof(mask));	/* the subroutine currently */
 return;						/* active then we are done */
@@ -614,7 +678,8 @@ return(false);		/* Hint setup is trivial with no hints */
 
     for ( spl=sc->splines; spl!=NULL; spl=spl->next ) {
 	for ( sp = spl->first; ; ) {
-	    if ( OnHHint(sp,sc->hstem)!=NULL || OnVHint(sp,sc->vstem)!=NULL )
+	    if ( (sc->hconflicts && OnHHint(sp,sc->hstem)!=NULL) ||
+		    (sc->vconflicts && OnVHint(sp,sc->vstem)!=NULL ))
 return( FigureHintMask(hdb, sp, mask ) );
 	    if ( sp->next==NULL )
 	break;
@@ -660,7 +725,7 @@ return;
     else
 	CvtPsMasked(gb,hdb->sc->vstem,hdb->sc->lsidebearing,false,round,mask);
 #else
-    AddNumber(gb,FindOrBuildSubr(hdb,mask,round),round);
+    AddNumber(gb,FindOrBuildHintSubr(hdb,mask,round),round);
     if ( gb->pt+1 >= gb->end )
 	GrowBuffer(gb);
     *gb->pt++ = 10;			/* callsubr */
@@ -669,11 +734,9 @@ return;
     memcpy(hdb->mask,mask,sizeof(mask));
 }
 
-static void moveto(GrowBuf *gb,BasePoint *current,SplinePoint *_to,
+static void _moveto(GrowBuf *gb,BasePoint *current,BasePoint *to,
 	int line, int round, struct hintdb *hdb) {
-    BasePoint temp, *to = &_to->me;
-
-    if ( hdb!=NULL ) HintSetup(gb,hdb,_to,round);
+    BasePoint temp;
 
     if ( gb->pt+18 >= gb->end )
 	GrowBuffer(gb);
@@ -700,6 +763,13 @@ static void moveto(GrowBuf *gb,BasePoint *current,SplinePoint *_to,
 	to = &temp;
     }
     *current = *to;
+}
+
+static void moveto(GrowBuf *gb,BasePoint *current,SplinePoint *to,
+	int line, int round, struct hintdb *hdb) {
+
+    if ( hdb!=NULL ) HintSetup(gb,hdb,to,round);
+    _moveto(gb,current,&to->me,line,round,hdb);
 }
 
 static void curveto(GrowBuf *gb,BasePoint *current,Spline *spline,
@@ -823,9 +893,10 @@ static void flexto(GrowBuf *gb,BasePoint *current,Spline *pspline,int round,
 }
 
 static void CvtPsSplineSet(GrowBuf *gb, SplinePointList *spl, BasePoint *current,
-	int round, struct hintdb *hdb ) {
+	int round, struct hintdb *hdb, BasePoint *start ) {
     Spline *spline, *first;
     SplinePointList temp;
+    int init=true;
 
     for ( ; spl!=NULL; spl = spl->next ) {
 	first = NULL;
@@ -844,7 +915,12 @@ static void CvtPsSplineSet(GrowBuf *gb, SplinePointList *spl, BasePoint *current
 	    temp.first = temp.last = spl->first->next->to;
 	    spl = &temp;
 	}
-	moveto(gb,current,spl->first,false,round,hdb);
+	if ( start==NULL || !init )
+	    moveto(gb,current,spl->first,false,round,hdb);
+	else {
+	    *current = *start = spl->first->me;
+	    init = false;
+	}
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
 	    if ( first==NULL ) first = spline;
 	    if ( spline->to->flexx || spline->to->flexy ) {
@@ -884,14 +960,15 @@ static RefChar *IsRefable(RefChar *ref, int isps, real transform[6], RefChar *so
 		transform[5];
 
     if (( isps==1 && ref->adobe_enc!=-1 ) ||
-	    (isps!=1 && (ref->sc->splines!=NULL || ref->sc->refs==NULL))) {
+	    (/*isps!=1 &&*/ (ref->sc->splines!=NULL || ref->sc->refs==NULL))) {
 	/* If we're in postscript mode and the character we are refering to */
 	/*  has an adobe encoding then we are done. */
 	/* In TrueType mode, if the character has no refs itself then we are */
 	/*  done, but if it has splines as well as refs we are also done */
 	/*  because it will have to be dumped out as splines */
 	/* Type2 PS (opentype) is the same as truetype here */
-	sub = galloc(sizeof(RefChar));
+	/* Now that I allow refs to be subrs in type1, it also uses the ttf test */
+	sub = chunkalloc(sizeof(RefChar));
 	*sub = *ref;
 	sub->next = sofar;
 	sub->splines = NULL;
@@ -919,6 +996,8 @@ return( sofar );
 /* They way I do Type2 postscript I can have as many refs as I like, they */
 /*  can only have translations (no scale, skew, rotation), they can't be */
 /*  refs themselves. They can't use hintmask commands inside */
+/* I'm going to do something similar for Type1s now (use seac if I can, else */
+/*  use a subr if I can) */
 RefChar *SCCanonicalRefs(SplineChar *sc, int isps) {
     RefChar *ret = NULL, *ref;
     real noop[6];
@@ -944,7 +1023,7 @@ return( NULL );
 	    if ( ref->transform[0]!=1 || ref->transform[3]!=1 ||
 		    ref->transform[1]!=0 || ref->transform[2]!=0 )
     break;
-	    if ( isps==2 && (ref->sc->hconflicts || ref->sc->vconflicts ||
+	    if ( isps==2 && (/*ref->sc->hconflicts || ref->sc->vconflicts ||*/
 		    ref->sc->lsidebearing == 0x7fff))
     break;
 	} else {
@@ -962,7 +1041,70 @@ return( NULL );
 return( ret );
 }
 
-static int IsSeacable(GrowBuf *gb, SplineChar *sc, int round) {
+static int TrySubrRefs(GrowBuf *gb, struct pschars *subrs, SplineChar *sc,
+	RefChar *refs, int round) {
+    RefChar *r;
+    BasePoint current, *bp;
+    DBounds sb, rb;
+
+    SplineCharFindBounds(sc,&sb);
+    for ( r=refs; r!=NULL; r=r->next ) {
+	if ( r->sc->hconflicts || r->sc->vconflicts || r->sc->anyflexes )
+	    SplineCharFindBounds(r->sc,&rb);
+	if ( r->sc->ttf_glyph==0x7fff ||
+		(( r->sc->hconflicts || r->sc->vconflicts || r->sc->anyflexes ) &&
+			(r->transform[4]!=0 || r->transform[5]!=0 ||
+				sb.minx!=rb.minx))) {
+	    RefCharsFree(refs);
+return( false );
+	}
+    }
+
+    /* ok, we should be able to turn it into a series of subr calls */
+    /* we need to establish hints for each subr (and remember they may be */
+    /*  translated from those normally used by the character) */
+    /* Exception: If a reffed char has hint conflicts (and it isn't translated) */
+    /*  then it's subroutines are built in */
+    /* Then we need to do an rmoveto to do the appropriate translation */
+    current.x = round?rint(sb.minx):sb.minx; current.y = 0;
+    for ( r=refs; r!=NULL; r=r->next ) {
+	if ( r->sc->hconflicts || r->sc->vconflicts || r->sc->anyflexes )
+	    /* Hints already done */;
+	else if ( r->sc->hstem!=NULL || r->sc->vstem!=NULL ) {
+	    int s = BuildTranslatedHintSubr(subrs,sc,r,round);
+	    AddNumber(gb,s,round);
+	    AddNumber(gb,4,round);		/* subr 4 is (my) magic subr that does the hint subs call */
+	    if ( gb->pt+1 >= gb->end )
+		GrowBuffer(gb);
+	    *gb->pt++ = 10;			/* callsubr */
+ 
+	}
+	if ( gb->pt+20>=gb->end )
+	    GrowBuffer(gb);
+	bp = (BasePoint *) (subrs->keys[r->sc->ttf_glyph]);
+	if ( current.x!=bp[0].x+r->transform[4] || current.y!=bp[0].y+r->transform[5] ) {
+	    if ( current.x==bp[0].x+r->transform[4] ) {
+		AddNumber(gb,bp[0].y+r->transform[5]-current.y,round);
+		*(gb->pt)++ = 4;		/* v move to */
+	    } else if ( current.y==bp[0].y+r->transform[5] ) {
+		AddNumber(gb,bp[0].x+r->transform[4]-current.x,round);
+		*(gb->pt)++ = 22;		/* h move to */
+	    } else {
+		AddNumber(gb,bp[0].x+r->transform[4]-current.x,round);
+		AddNumber(gb,bp[0].y+r->transform[5]-current.y,round);
+		*(gb->pt)++ = 21;		/* r move to */
+	    }
+	}
+	AddNumber(gb,r->sc->ttf_glyph,round);
+	*gb->pt++ = 10;					/* callsubr */
+	current.x = r->transform[4] + bp[1].x; current.y = r->transform[5]+bp[1].y;
+    }
+
+    RefCharsFree(refs);
+return( true );
+}
+
+static int IsSeacable(GrowBuf *gb, struct pschars *subrs, SplineChar *sc, int round, int iscjk) {
     /* can be at most two chars in a seac (actually must be exactly 2, but */
     /*  I'll put in a space if there's only one */
     RefChar *r1, *r2, *rt, *refs;
@@ -971,8 +1113,17 @@ static int IsSeacable(GrowBuf *gb, SplineChar *sc, int round) {
     int i;
 
     refs = SCCanonicalRefs(sc,true);
-    if ( refs==NULL || ( refs->next!=NULL && refs->next->next!=NULL ))
+    if ( refs==NULL )
 return( false );
+/* CID fonts have no encodings. So we can't use seac to reference characters */
+/*  in them. The other requirements are just those of seac */
+    if ( (iscjk&0x100) || ( refs->next!=NULL && refs->next->next!=NULL ) ||
+	    refs->adobe_enc==-1 || ( refs->next!=NULL && refs->next->adobe_enc==-1) ||
+	    (refs->next!=NULL &&
+		((refs->transform[4]!=0 || refs->transform[5]!=0) &&
+		 (refs->next->transform[4]!=0 || refs->next->transform[5]!=0))))
+return( TrySubrRefs(gb,subrs,sc,refs,round));
+
     r1 = refs;
     if ((r2 = r1->next)==NULL ) {
 	r2 = &space;
@@ -992,12 +1143,6 @@ return( false );
     }
     if ( r1->adobe_enc==-1 || r2->adobe_enc==-1 )
 return( false );
-    if ( r1->transform[0]!=1 || r1->transform[1]!=0 || r1->transform[2]!=0 ||
-	    r1->transform[3]!=1 )
-return( false );
-    if ( r2->transform[0]!=1 || r2->transform[1]!=0 || r2->transform[2]!=0 ||
-	    r2->transform[3]!=1 )
-return( false );
     if ( r1->transform[4]!=0 || r1->transform[5]!=0 ) {
 	if ( r2->transform[4]!=0 || r2->transform[5]!=0 )
 return( false );			/* Only one can be translated */
@@ -1008,70 +1153,192 @@ return( false );			/* Only one can be translated */
 
     if ( gb->pt+43>gb->end )
 	GrowBuffer(gb);
-    if ( round ) b.minx = floor(b.minx);
+    if ( round ) b.minx = rint(b.minx);
     AddNumber(gb,b.minx,round);
     AddNumber(gb,r2->transform[4] + b.minx-sc->lsidebearing,round);
     AddNumber(gb,r2->transform[5],round);
     AddNumber(gb,r1->adobe_enc,round);
     AddNumber(gb,r2->adobe_enc,round);
     *(gb->pt)++ = 12;
-    *(gb->pt)++ = 6;
+    *(gb->pt)++ = 6;			/* seac 12,6 */
+
+    RefCharsFree(refs);
 return( true );
 }
 
 static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
-	struct pschars *subrs) {
+	struct pschars *subrs,BasePoint *startend) {
     DBounds b;
     GrowBuf gb;
     BasePoint current;
     RefChar *rf;
     unsigned char *ret;
     struct hintdb hintdb, *hdb;
-    int iscid = iscjk&0x100?1:0;
-
-    iscjk &= ~0x100;
 
     memset(&gb,'\0',sizeof(gb));
+    memset(&current,'\0',sizeof(current));
     SplineCharFindBounds(sc,&b);
-    AddNumber(&gb,b.minx,round);
-    AddNumber(&gb,sc->width,round);
-    *gb.pt++ = 13;				/* hsbw, lbearing & width */
+    sc->lsidebearing = current.x = round?rint(b.minx):b.minx;
+    if ( startend==NULL ) {
+	AddNumber(&gb,b.minx,round);
+	AddNumber(&gb,sc->width,round);
+	*gb.pt++ = 13;				/* hsbw, lbearing & width */
+    }
     NumberHints(sc);
-    current.x = round?floor(b.minx):b.minx; current.y = 0;
-    sc->lsidebearing = current.x;
 
-/* CID fonts have no encodings. So we can't use seac to reference characters */
-    if ( !iscid && IsSeacable(&gb,sc,round)) {
+    if ( IsSeacable(&gb,subrs,sc,round,iscjk)) {
 	/* All Done */;
     } else {
-	if ( sc->changedsincelasthinted && !sc->manualhints )
-	    SplineCharAutoHint(sc,true);
-	/* Type2 fonts don't support hints with negative widths */
-	if ( iscjk )
-	    CounterHints1(&gb,sc,round);	/* Must come immediately after hsbw */
-	if ( !sc->vconflicts && !sc->hconflicts ) {
-	    CvtPsHints(&gb,sc->hstem,0,true,round,iscjk);
-	    CvtPsHints(&gb,sc->vstem,sc->lsidebearing,false,round,iscjk);
-	    hdb = NULL;
-	} else {
-	    memset(&hintdb,0,sizeof(hintdb));
-	    hintdb.subrs = subrs; hintdb.iscjk = iscjk; hintdb.sc = sc;
-	    hdb = &hintdb;
-	    if ( sc->enc==488 )
-		sc->enc = 488;
-	    InitialHintSetup(&gb,hdb,round);
+	iscjk &= ~0x100;
+	hdb = NULL;
+	if ( sc->ttf_glyph==0x7fff || ( !sc->hconflicts && !sc->vconflicts && !sc->anyflexes )) {
+	    if ( sc->changedsincelasthinted && !sc->manualhints )
+		SplineCharAutoHint(sc,true);
+	    if ( iscjk )
+		CounterHints1(&gb,sc,round);	/* Must come immediately after hsbw */
+	    if ( !sc->vconflicts && !sc->hconflicts ) {
+		CvtPsHints(&gb,sc->hstem,0,true,round,iscjk);
+		CvtPsHints(&gb,sc->vstem,sc->lsidebearing,false,round,iscjk);
+	    } else {
+		memset(&hintdb,0,sizeof(hintdb));
+		hintdb.subrs = subrs; hintdb.iscjk = iscjk; hintdb.sc = sc;
+		hdb = &hintdb;
+		InitialHintSetup(&gb,hdb,round);
+	    }
 	}
-	CvtPsSplineSet(&gb,sc->splines,&current,round,hdb);
-	for ( rf = sc->refs; rf!=NULL; rf = rf->next )
-	    CvtPsSplineSet(&gb,rf->splines,&current,round,hdb);
+	if ( sc->ttf_glyph==0x7fff ) {
+	    CvtPsSplineSet(&gb,sc->splines,&current,round,hdb,startend);
+	    for ( rf = sc->refs; rf!=NULL; rf = rf->next )
+		CvtPsSplineSet(&gb,rf->splines,&current,round,hdb,NULL);
+	} else {
+	    _moveto(&gb,&current,&((BasePoint *) (subrs->keys[sc->ttf_glyph]))[0],false,round,NULL);
+	    AddNumber(&gb,sc->ttf_glyph,round);
+	    if ( gb.pt+1>=gb.end )
+		GrowBuffer(&gb);
+	    *gb.pt++ = 10;
+	}
     }
     if ( gb.pt+1>=gb.end )
 	GrowBuffer(&gb);
-    *gb.pt++ = 14;				/* endchar */
+    *gb.pt++ = startend==NULL ? 14 : 11;	/* endchar / return */
     ret = (unsigned char *) copyn((char *) gb.base,gb.pt-gb.base);
     *len = gb.pt-gb.base;
     free(gb.base);
+    if ( startend!=NULL )
+	startend[1] = current;
 return( ret );
+}
+
+static int AlwaysSeacable(SplineChar *sc) {
+    struct splinecharlist *d;
+    RefChar *r;
+    int iscid = sc->parent->cidmaster!=NULL;
+
+    for ( d=sc->dependents; d!=NULL; d = d->next ) {
+	if ( d->sc->splines!=NULL )	/* I won't deal with things with both splines and refs. */
+    continue;				/*  skip it */
+	for ( r=d->sc->refs; r!=NULL; r=r->next ) {
+	    if ( r->transform[0]!=1 || r->transform[1]!=0 ||
+		    r->transform[2]!=0 || r->transform[3]!=1 )
+	break;				/* Can't deal with it either way */
+	}
+	if ( r!=NULL )		/* Bad transform matrix */
+    continue;			/* Can't handle either way, skip */
+
+	for ( r=d->sc->refs; r!=NULL; r=r->next ) {
+	    if ( iscid || r->adobe_enc==-1 )
+return( false );			/* not seacable, but could go in subr */
+	}
+	r = d->sc->refs;
+	if ( r->next!=NULL && r->next->next!=NULL )
+return( false );		/* seac only takes 2 chars */
+	if ( r->next!=NULL &&
+		((r->transform[4]!=0 || r->transform[5]!=0) &&
+		 (r->next->transform[4]!=0 || r->next->transform[5]!=0)))
+return( false );		/* seac only allows one to be translated */
+    }
+    /* Either always can be represented by seac, or sometimes by neither */
+return( true );
+}
+
+/* normally we can't put a character with hint conflicts into a subroutine */
+/*  (because when we would have to invoke the hints within the subr and */
+/*   hints are expressed as absolute positions, so if the char has been */
+/*   translated we can't do the hints right). BUT if the character is not */
+/*  translated, and if it has the right lbearing, then the hints in the */
+/*  ref will match those in the character and we can use a subroutine for */
+/*  both */
+/* If at least one ref fits our requirements then return true */
+/* The same reasoning applies to flex hints. There are absolute expressions */
+/*  in them too. */
+static int SpecialCaseConflicts(SplineChar *sc) {
+    struct splinecharlist *d;
+    RefChar *r;
+    DBounds sb, db;
+
+    SplineCharFindBounds(sc,&sb);
+    for ( d=sc->dependents; d!=NULL; d = d->next ) {
+	SplineCharFindBounds(d->sc,&db);
+	if ( db.minx != sb.minx )
+    continue;
+	for ( r=d->sc->refs; r!=NULL; r=r->next )
+	    if ( r->sc == sc && r->transform[4]==0 && r->transform[5]==0 )
+return( true );
+    }
+return( false );
+}
+
+static void SplineFont2Subrs1(SplineFont *sf,int round, int iscjk,
+	struct pschars *subrs) {
+    int i,cnt;
+    SplineChar *sc;
+    uint8 *temp;
+    int len;
+    GrowBuf gb;
+
+    for ( i=cnt=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+	sc->ttf_glyph = 0x7fff;
+	if ( !SCWorthOutputting(sc) || sc->refs!=NULL )
+    continue;
+	/* If we've got one of the badly named greek characters then put it */
+	/*  into a subr because we're going to duplicate it. Also put the */
+	/*  character into a subr if it is referenced by other characters */
+	if ( sc->unicodeenc==0xb5 || sc->unicodeenc==0x3bc ||
+		sc->unicodeenc==0x394 || sc->unicodeenc==0x2206 ||
+		sc->unicodeenc==0x3a9 || sc->unicodeenc==0x2126 ||
+		(sc->dependents!=NULL &&
+		 ((!sc->hconflicts && !sc->vconflicts && !sc->anyflexes) ||
+		     SpecialCaseConflicts(sc)) &&
+		 !AlwaysSeacable(sc))) {
+	    BasePoint *bp = gcalloc(2,sizeof(BasePoint));
+		/* This contains the start and stop points of the splinesets */
+		/* we need this later when we invoke the subrs */
+
+	    /* None of the generated subrs starts with a moveto operator */
+	    /*  The invoker is expected to move to the appropriate place */
+	    if ( sc->hconflicts || sc->vconflicts || sc->anyflexes ) {
+		temp = SplineChar2PS(sc,&len,round,iscjk,subrs,bp);
+	    } else {
+		memset(&gb,'\0',sizeof(gb));
+		bp[1] = bp[0];
+		CvtPsSplineSet(&gb,sc->splines,&bp[1],round,NULL,&bp[0]);
+		if ( gb.pt+1>=gb.end )
+		    GrowBuffer(&gb);
+		*gb.pt++ = 11;				/* return */
+		temp = (unsigned char *) copyn((char *) gb.base,gb.pt-gb.base);
+		len = gb.pt-gb.base;
+		free(gb.base);
+	    }
+
+	    SubrsCheck(subrs);
+	    subrs->values[subrs->next] = temp;
+	    subrs->lens[subrs->next] = len;
+	    if ( subrs->keys==NULL )
+		subrs->keys = gcalloc(subrs->cnt,sizeof(char *));
+	    subrs->keys[subrs->next] = (void *) bp;
+	    sc->ttf_glyph = subrs->next++;
+	}
+    }
 }
 
 int SFOneWidth(SplineFont *sf) {
@@ -1113,28 +1380,97 @@ return( !SCWorthOutputting(SFGetChar(sf,'A',NULL)) &&
 return( false );
 }
 
+/* Adobe has decided that the name "mu" refers to the micro sign rather than */
+/*  the letter mu. But some font vendors use "mu" for the letter. So when we */
+/*  get a font with either "mu" or mu then make sure we output characters w/ */
+/*  name "mu", "uni00B5" or "uni03BC" */
+/* Same applies to "Delta", 394, 2206 and to "Omega", 3a9, 2126 */
+static int AddGreekDuplicates(struct pschars *chrs,SplineFont *sf,int cnt,
+	int round,int iscjk,struct pschars *subrs,int c1,int c2) {
+    int i1, i2, i;
+    const char *name; char uname[12];
+
+    i1 = SFFindChar(sf,c1,NULL);
+    i2 = SFFindChar(sf,c2,NULL);
+    if ( i1 == -1 && i2 == -1 )
+return(cnt);
+    if ( i1 == -1 ) {
+	if ( (name = psunicodenames[c1])==NULL ) {
+	    sprintf(uname,"uni%04X", c1);
+	    name = uname;
+	}
+	chrs->keys[cnt] = copy(name);
+	chrs->values[cnt] = SplineChar2PS(sf->chars[i2],&chrs->lens[cnt],
+		round,iscjk,subrs,NULL);
+	++cnt;
+    } else if ( i2 == -1 ) {
+	if ( (name = psunicodenames[c2])==NULL ) {
+	    sprintf(uname,"uni%04X", c2);
+	    name = uname;
+	}
+	chrs->keys[cnt] = copy(name);
+	chrs->values[cnt] = SplineChar2PS(sf->chars[i1],&chrs->lens[cnt],
+		round,iscjk,subrs,NULL);
+	++cnt;
+    }
+    if ( psunicodenames[c1]!=NULL ) {
+	sprintf(uname,"uni%04X", c1);
+	i = i1==-1?i2:i1;		/* Use i1 if possible */
+    } else if ( psunicodenames[c2]!=NULL ) {
+	sprintf(uname,"uni%04X", c2);
+	i = i2==-1?i1:i2;		/* Use i2 if possible */
+    }
+    chrs->keys[cnt] = copy(uname);
+    chrs->values[cnt] = SplineChar2PS(sf->chars[i],&chrs->lens[cnt],
+	    round,iscjk,subrs,NULL);
+    ++cnt;
+return( cnt );
+}
+
+static int GreekExists(char exists[6],SplineFont *sf) {
+    int cnt;
+
+    exists[0] = SCWorthOutputting(SFGetChar(sf,0xb5,NULL));
+    exists[1] = SCWorthOutputting(SFGetChar(sf,0x3bc,NULL));
+    exists[2] = SCWorthOutputting(SFGetChar(sf,0x394,NULL));
+    exists[3] = SCWorthOutputting(SFGetChar(sf,0x2206,NULL));
+    exists[4] = SCWorthOutputting(SFGetChar(sf,0x3a9,NULL));
+    exists[5] = SCWorthOutputting(SFGetChar(sf,0x2126,NULL));
+    cnt = 0;
+    if ( exists[0]!=exists[1] ) cnt+=2; else if ( exists[0]&&exists[1] ) ++cnt;
+    if ( exists[2]!=exists[3] ) cnt+=2; else if ( exists[2]&&exists[3] ) ++cnt;
+    if ( exists[4]!=exists[5] ) cnt+=2; else if ( exists[4]&&exists[5] ) ++cnt;
+return( cnt );
+}
+
 struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
 	struct pschars *subrs) {
-    struct pschars *chrs = calloc(1,sizeof(struct pschars));
+    struct pschars *chrs = gcalloc(1,sizeof(struct pschars));
     int i, cnt;
     char notdefentry[20];
+    char exists[6];
 
     cnt = 0;
-    for ( i=0; i<sf->charcnt; ++i )
+    for ( i=1; i<sf->charcnt; ++i )
 	if ( SCWorthOutputting(sf->chars[i]) )
 	    ++cnt;
     ++cnt;		/* one notdef entry */
+    /* special greek hacks */
+    cnt += GreekExists(exists,sf);
+
     chrs->cnt = cnt;
     chrs->keys = galloc(cnt*sizeof(char *));
     chrs->lens = galloc(cnt*sizeof(int));
     chrs->values = galloc(cnt*sizeof(unsigned char *));
+
+    SplineFont2Subrs1(sf,round,iscjk,subrs);
 
     i = cnt = 0;
     chrs->keys[0] = copy(".notdef");
     if ( sf->chars[0]!=NULL &&
 	    (sf->chars[0]->splines!=NULL || sf->chars[0]->widthset) &&
 	     sf->chars[0]->refs==NULL && strcmp(sf->chars[0]->name,".notdef")==0 ) {
-	    chrs->values[0] = SplineChar2PS(sf->chars[0],&chrs->lens[0],round,iscjk,subrs);
+	    chrs->values[0] = SplineChar2PS(sf->chars[0],&chrs->lens[0],round,iscjk,subrs,NULL);
 	i = 1;
     } else {
 	int w = sf->ascent+sf->descent; char *pt = notdefentry;
@@ -1167,18 +1503,24 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
     for ( ; i<sf->charcnt; ++i ) {
 	if ( SCWorthOutputting(sf->chars[i]) ) {
 	    chrs->keys[cnt] = copy(sf->chars[i]->name);
-		chrs->values[cnt] = SplineChar2PS(sf->chars[i],&chrs->lens[cnt],
-			round,iscjk,subrs);
+	    chrs->values[cnt] = SplineChar2PS(sf->chars[i],&chrs->lens[cnt],
+		    round,iscjk,subrs,NULL);
 	    ++cnt;
 	}
 	GProgressNext();
     }
+    if ( exists[0] || exists[1] )
+	cnt = AddGreekDuplicates(chrs,sf,cnt,round,iscjk,subrs,0xb5,0x3bc);
+    if ( exists[2] || exists[3] )
+	cnt = AddGreekDuplicates(chrs,sf,cnt,round,iscjk,subrs,0x394,0x2206);
+    if ( exists[4] || exists[5] )
+	cnt = AddGreekDuplicates(chrs,sf,cnt,round,iscjk,subrs,0x3a9,0x2126);
     chrs->next = cnt;
 return( chrs );
 }
 
 struct pschars *CID2Chrs(SplineFont *cidmaster,struct cidbytes *cidbytes) {
-    struct pschars *chrs = calloc(1,sizeof(struct pschars));
+    struct pschars *chrs = gcalloc(1,sizeof(struct pschars));
     int i, cnt, cid;
     char notdefentry[20];
     SplineFont *sf = NULL;
@@ -1189,6 +1531,12 @@ struct pschars *CID2Chrs(SplineFont *cidmaster,struct cidbytes *cidbytes) {
 	if ( cnt<cidmaster->subfonts[i]->charcnt )
 	    cnt = cidmaster->subfonts[i]->charcnt;
     cidbytes->cidcnt = cnt;
+
+    for ( i=0; i<cidmaster->subfontcnt; ++i ) {
+	sf = cidmaster->subfonts[i];
+	fd = &cidbytes->fds[i];
+	SplineFont2Subrs1(sf,true,fd->iscjk|0x100,fd->subrs);
+    }
 
     chrs->cnt = cnt;
     chrs->lens = galloc(cnt*sizeof(int));
@@ -1239,7 +1587,7 @@ struct pschars *CID2Chrs(SplineFont *cidmaster,struct cidbytes *cidbytes) {
 	    fd = &cidbytes->fds[i];
 	    cidbytes->fdind[cid] = i;
 	    chrs->values[cid] = SplineChar2PS(sf->chars[cid],&chrs->lens[cid],
-		    true,fd->iscjk|0x100,fd->subrs);
+		    true,fd->iscjk|0x100,fd->subrs,NULL);
 	}
 	GProgressNext();
     }
@@ -1422,7 +1770,7 @@ static Spline *lineto2(GrowBuf *gb,struct hintdb *hdb,Spline *spline, Spline *do
 	break;
 	}
 	if ( hvcnt==cnt || hvcnt>=2 ) {
-	    /* It's more efficeint to do some h/v linetos */
+	    /* It's more efficient to do some h/v linetos */
 	    for ( test=spline; ; test = test->to->next ) {
 		if ( NeedsNewHintMask(hdb,test->to))
 	    break;
@@ -1431,13 +1779,15 @@ static Spline *lineto2(GrowBuf *gb,struct hintdb *hdb,Spline *spline, Spline *do
 		else
 		    AddNumber2(gb,test->to->me.x-hdb->current.x);
 		hdb->current = test->to->me;
-		if ( test==lasthvgood )
+		if ( test==lasthvgood ) {
+		    test = test->to->next;
 	    break;
+		}
 	    }
 	    if ( gb->pt+1 >= gb->end )
 		GrowBuffer(gb);
 	    *(gb->pt)++ = spline->from->me.x==spline->to->me.x? 7 : 6;
-return( test->to->next );
+return( test );
 	}
     }
 
@@ -1447,13 +1797,15 @@ return( test->to->next );
 	AddNumber2(gb,test->to->me.x-hdb->current.x);
 	AddNumber2(gb,test->to->me.y-hdb->current.y);
 	hdb->current = test->to->me;
-	if ( test==lastgood )
+	if ( test==lastgood ) {
+	    test = test->to->next;
     break;
+	}
     }
     if ( gb->pt+1 >= gb->end )
 	GrowBuffer(gb);
     *(gb->pt)++ = 5;		/* r line to */
-return( test->to->next );
+return( test );
 }
 
 static Spline *curveto2(GrowBuf *gb,struct hintdb *hdb,Spline *spline, Spline *done) {
@@ -1570,9 +1922,11 @@ static void flexto2(GrowBuf *gb,struct hintdb *hdb,Spline *pspline) {
     hdb->current = *end;
 }
 
-static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl, struct hintdb *hdb) {
+static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl,
+	struct hintdb *hdb, BasePoint *start) {
     Spline *spline, *first;
     SplinePointList temp;
+    int init = true;
 
     for ( ; spl!=NULL; spl = spl->next ) {
 	first = NULL;
@@ -1591,7 +1945,12 @@ static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl, struct hintdb *hd
 	    temp.first = temp.last = spl->first->next->to;
 	    spl = &temp;
 	}
-	moveto2(gb,hdb,spl->first);
+	if ( start==NULL || !init )
+	    moveto2(gb,hdb,spl->first);
+	else {
+	    hdb->current = *start = spl->first->me;
+	    init = false;
+	}
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; ) {
 	    if ( first==NULL ) first = spline;
 	    if ( spline->to->flexx || spline->to->flexy ) {
@@ -1619,7 +1978,7 @@ static StemInfo *OrderHints(StemInfo *mh, StemInfo *h, real offset, real otherof
 	if ( test!=NULL && test->start==h->start+offset && test->width==h->width )
 	    test->mask |= mask;		/* Actually a bit */
 	else {
-	    new = galloc(sizeof(StemInfo));
+	    new = chunkalloc(sizeof(StemInfo));
 	    new->next = test;
 	    new->start = h->start+offset;
 	    new->width = h->width;
@@ -1679,12 +2038,12 @@ static void DumpHintMasked(GrowBuf *gb,RefChar *cur,StemInfo *h,StemInfo *v) {
 	GDrawIError("hintmask invoked when there are no hints");
     memset(masks,'\0',sizeof(masks));
     cnt = 0;
-    while ( h!=NULL && h->hintnumber ) {
+    while ( h!=NULL && h->hintnumber>=0 ) {
 	if ( h->mask&cur->adobe_enc )
 	    masks[h->hintnumber>>3] |= 0x80>>(h->hintnumber&7);
 	h = h->next; ++cnt;
     }
-    while ( v!=NULL && v->hintnumber ) {
+    while ( v!=NULL && v->hintnumber>=0 ) {
 	if ( v->mask&cur->adobe_enc )
 	    masks[v->hintnumber>>3] |= 0x80>>(v->hintnumber&7);
 	v = v->next; ++cnt;
@@ -1692,78 +2051,107 @@ static void DumpHintMasked(GrowBuf *gb,RefChar *cur,StemInfo *h,StemInfo *v) {
     AddMask2(gb,masks,cnt,19);		/* hintmask */
 }
 
-static void ExpandRefList2(GrowBuf *gb, RefChar *refs, struct pschars *subrs) {
+static void ExpandRefList2(GrowBuf *gb, RefChar *refs, RefChar *unsafe, struct pschars *subrs) {
     RefChar *r;
     int hsccnt=0;
     BasePoint current, *bpt;
     StemInfo *h=NULL, *v=NULL, *s;
     int cnt;
     /* The only refs I deal with have no hint conflicts within them */
+    /* Unless unsafe is set. In which case it will contain conflicts and */
+    /*  none of the other refs will contain any hints at all */
 
     memset(&current,'\0',sizeof(current));
 
-    for ( r=refs; r!=NULL; r=r->next )
-	if ( r->sc->hstem!=NULL || r->sc->vstem!=NULL )
-	    r->adobe_enc = 1<<hsccnt++;
-	else
-	    r->adobe_enc = 0;
-
-    for ( r=refs, h=v=NULL; r!=NULL; r=r->next ) {
-	h = OrderHints(h,r->sc->hstem,r->transform[5],r->transform[4],r->adobe_enc);
-	v = OrderHints(v,r->sc->vstem,r->transform[4],r->transform[5],r->adobe_enc);
+    if ( unsafe!=NULL ) {
+	/* All the hints live in this one reference, and its subroutine */
+	/*  contains them and it has its own rmoveto */
+	if ( unsafe->sc->lsidebearing==0x7fff )
+	    GDrawIError("Attempt to reference an unreferenceable glyph %s", unsafe->sc->name );
+	AddNumber2(gb,unsafe->sc->lsidebearing);
+	if ( gb->pt+1>=gb->end )
+	    GrowBuffer(gb);
+	*gb->pt++ = 10;					/* callsubr */
+	hsccnt = 0;
+	bpt = (BasePoint *) (subrs->keys[unsafe->sc->lsidebearing+subrs->bias]);
+	current = bpt[1];
+    } else {
+	for ( r=refs; r!=NULL; r=r->next )
+	    if ( r->sc->hstem!=NULL || r->sc->vstem!=NULL )
+		r->adobe_enc = 1<<hsccnt++;
+	    else
+		r->adobe_enc = 0;
+    
+	for ( r=refs, h=v=NULL; r!=NULL; r=r->next ) {
+	    h = OrderHints(h,r->sc->hstem,r->transform[5],r->transform[4],r->adobe_enc);
+	    v = OrderHints(v,r->sc->vstem,r->transform[4],r->transform[5],r->adobe_enc);
+	}
+	for ( s=h, cnt=0; s!=NULL; s=s->next, ++cnt )
+	    s->hintnumber = cnt>=96?-1:cnt;
+	for ( s=v, cnt=0; s!=NULL; s=s->next, ++cnt )
+	    s->hintnumber = cnt>=96?-1:cnt;
+    
+	if ( h!=NULL )
+	    DumpHints(gb,h,hsccnt>1?18:1);		/* hstemhm/hstem */
+	if ( v!=NULL )
+	    DumpHints(gb,v, hsccnt<=1 ? 3:-1);	/* vstem */
+	CounterHints2(gb,h,v);			/* Precedes first hintmask */
     }
-    for ( s=h, cnt=0; s!=NULL; s=s->next, ++cnt )
-	s->hintnumber = cnt>=96?-1:cnt;
-    for ( s=v, cnt=0; s!=NULL; s=s->next, ++cnt )
-	s->hintnumber = cnt>=96?-1:cnt;
 
-    if ( h!=NULL )
-	DumpHints(gb,h,hsccnt>1?18:1);		/* hstemhm/hstem */
-    if ( v!=NULL )
-	DumpHints(gb,v, hsccnt<=1 ? 3:-1);	/* vstem */
-    CounterHints2(gb,h,v);			/* Precedes first hintmask */
-
-    for ( r=refs; r!=NULL; r=r->next ) {
+    for ( r=refs; r!=NULL; r=r->next ) if ( r!=unsafe ) {
 	if ( hsccnt>1 )
 	    DumpHintMasked(gb,r,h,v);
-	if ( current.x!=r->transform[4] || current.y!=r->transform[5] ) {
-	    /* Translate from end of last character to where this one should */
-	    /*  start */
-	    if ( current.x!=r->transform[4] )
-		AddNumber2(gb,r->transform[4]-current.x);
-	    if ( current.y!=r->transform[5] )
-		AddNumber2(gb,r->transform[5]-current.y);
-	    if ( gb->pt+1>=gb->end )
-		GrowBuffer(gb);
-	    *gb->pt++ = current.x==r->transform[4]?4:	/* vmoveto */
-	    		current.y==r->transform[5]?22:	/* hmoveto */
-			21;				/* rmoveto */
-	}
+	/* Translate from end of last character to where this one should */
+	/*  start (we must have one moveto operator to start off, none */
+	/*  in the subr) */
+	bpt = (BasePoint *) (subrs->keys[r->sc->lsidebearing+subrs->bias]);
+	if ( current.x!=bpt[0].x+r->transform[4] )
+	    AddNumber2(gb,bpt[0].x+r->transform[4]-current.x);
+	if ( current.y!=bpt[0].y+r->transform[5] || current.x==bpt[0].x+r->transform[4] )
+	    AddNumber2(gb,bpt[0].y+r->transform[5]-current.y);
+	if ( gb->pt+1>=gb->end )
+	    GrowBuffer(gb);
+	*gb->pt++ = current.x==bpt[0].x+r->transform[4]?4:	/* vmoveto */
+		    current.y==bpt[0].y+r->transform[5]?22:	/* hmoveto */
+		    21;						/* rmoveto */
 	if ( r->sc->lsidebearing==0x7fff )
 	    GDrawIError("Attempt to reference an unreferenceable glyph %s", r->sc->name );
 	AddNumber2(gb,r->sc->lsidebearing);
 	if ( gb->pt+1>=gb->end )
 	    GrowBuffer(gb);
 	*gb->pt++ = 10;					/* callsubr */
-	bpt = (BasePoint *) (subrs->keys[r->sc->lsidebearing+subrs->bias]);
-	current.x = bpt->x+r->transform[4];
-	current.y = bpt->y+r->transform[5];
+	current.x = bpt[1].x+r->transform[4];
+	current.y = bpt[1].y+r->transform[5];
     }
     StemInfosFree(h); StemInfosFree(v);
 }
 
 static int IsRefable2(GrowBuf *gb, SplineChar *sc, struct pschars *subrs) {
-    RefChar *refs;
+    RefChar *refs, *r, *unsafe=NULL;
+    int allsafe=true, unsafecnt=0, allwithouthints=true, ret;
 
     refs = SCCanonicalRefs(sc,2);
     if ( refs==NULL )
 return( false );
-    ExpandRefList2(gb,refs,subrs);
+    for ( r=refs; r!=NULL; r=r->next ) {
+	if ( r->sc->hconflicts || r->sc->vconflicts ) {
+	    ++unsafecnt;
+	    allsafe = false;
+	    unsafe = r;
+	} else if ( r->sc->hstem!=NULL || r->sc->vstem!=NULL )
+	    allwithouthints = false;
+    }
+    if ( allsafe || ( unsafecnt==1 && allwithouthints )) {
+	ExpandRefList2(gb,refs,unsafe,subrs);
+	ret = true;
+    } else
+	ret = false;
     RefCharsFree(refs);
-return( true );
+return( ret );
 }
 
-static unsigned char *SplineChar2PSOutline2(SplineChar *sc,int *len, BasePoint *_current ) {
+static unsigned char *SplineChar2PSOutline2(SplineChar *sc,int *len,
+	BasePoint *startend ) {
     GrowBuf gb;
     struct hintdb hdb;
     RefChar *rf;
@@ -1773,20 +2161,21 @@ static unsigned char *SplineChar2PSOutline2(SplineChar *sc,int *len, BasePoint *
     memset(&hdb,'\0',sizeof(hdb));
     hdb.sc = sc;
 
-    CvtPsSplineSet2(&gb,sc->splines,&hdb);
+    CvtPsSplineSet2(&gb,sc->splines,&hdb,startend);
     for ( rf = sc->refs; rf!=NULL; rf = rf->next )
-	CvtPsSplineSet2(&gb,rf->splines,&hdb);
+	CvtPsSplineSet2(&gb,rf->splines,&hdb,NULL);
     if ( gb.pt+1>=gb.end )
 	GrowBuffer(&gb);
     *gb.pt++ = 11;				/* return */
     ret = (unsigned char *) copyn((char *) gb.base,gb.pt-gb.base);
     *len = gb.pt-gb.base;
     free(gb.base);
-    *_current = hdb.current;
+    startend[1] = hdb.current;
 return( ret );
 }
 
-static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid, int defwid, struct pschars *subrs) {
+static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid,
+	int defwid, struct pschars *subrs, BasePoint *startend ) {
     GrowBuf gb;
     RefChar *rf;
     unsigned char *ret;
@@ -1796,19 +2185,21 @@ static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid, int de
     memset(&gb,'\0',sizeof(gb));
 
     GrowBuffer(&gb);
-    /* store the width on the stack */
-    if ( sc->width==defwid )
-	/* Don't need to do anything for the width */;
-    else
-	AddNumber2(&gb,sc->width-nomwid);
+    if ( startend==NULL ) {
+	/* store the width on the stack */
+	if ( sc->width==defwid )
+	    /* Don't need to do anything for the width */;
+	else
+	    AddNumber2(&gb,sc->width-nomwid);
+    }
     if ( IsRefable2(&gb,sc,subrs))
 	/* All Done */;
-    else if ( sc->lsidebearing!=0x7fff ) {
+    else if ( startend==NULL && sc->lsidebearing!=0x7fff ) {
 	RefChar refs;
 	memset(&refs,'\0',sizeof(refs));
 	refs.sc = sc;
 	refs.transform[0] = refs.transform[3] = 1.0;
-	ExpandRefList2(&gb,&refs,subrs);
+	ExpandRefList2(&gb,&refs,sc->hconflicts||sc->vconflicts?&refs:NULL,subrs);
     } else {
 	memset(&hdb,'\0',sizeof(hdb));
 	hdb.sc = sc;
@@ -1819,27 +2210,55 @@ static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid, int de
 	HintDirection(sc->vstem);
 	hdb.cnt = NumberHints(sc);
 	DumpHints(&gb,sc->hstem,sc->hconflicts?18:1);
-	DumpHints(&gb,sc->vstem,sc->hconflicts?-1:3);
+	DumpHints(&gb,sc->vstem,sc->vconflicts || sc->hconflicts?-1:3);
 	CounterHints2(&gb, sc->hstem, sc->vstem);
 	if ( (sc->hconflicts || sc->vconflicts) && InitialHintMask(&hdb,mask)) {
 	    AddMask2(&gb,mask,hdb.cnt,19);		/* hintmask */
 	    memcpy(hdb.mask,mask,sizeof(mask));
 	}
-	CvtPsSplineSet2(&gb,sc->splines,&hdb);
+	CvtPsSplineSet2(&gb,sc->splines,&hdb,NULL);
 	for ( rf = sc->refs; rf!=NULL; rf = rf->next )
-	    CvtPsSplineSet2(&gb,rf->splines,&hdb);
+	    CvtPsSplineSet2(&gb,rf->splines,&hdb,NULL);
     }
     if ( gb.pt+1>=gb.end )
 	GrowBuffer(&gb);
-    *gb.pt++ = 14;				/* endchar */
+    *gb.pt++ = startend==NULL?14:11;		/* endchar / return */
+    if ( startend!=NULL )
+	startend[1] = hdb.current;
     ret = (unsigned char *) copyn((char *) gb.base,gb.pt-gb.base);
     *len = gb.pt-gb.base;
     free(gb.base);
 return( ret );
 }
 
+/* This char has hint conflicts. Check to see if we can put it into a subr */
+/*  in spite of that. If there is at least one dependent character which: */
+/*	refers to us without translating us */
+/*	and all its other refs contain no hints at all */
+static int Type2SpecialCase(SplineChar *sc) {
+    struct splinecharlist *d;
+    RefChar *r;
+
+    for ( d=sc->dependents; d!=NULL; d=d->next ) {
+	for ( r=d->sc->refs; r!=NULL; r = r->next ) {
+	    if ( r->sc!=NULL && r->sc->changedsincelasthinted && !r->sc->manualhints )
+		SplineCharAutoHint(r->sc,true);
+	    if ( r->transform[0]!=1 || r->transform[1]!=0 ||
+		    r->transform[2]!=0 || r->transform[3]!=1 )
+	break;
+	    if ( r->sc!=sc && (r->sc->hstem!=NULL || r->sc->vstem!=NULL))
+	break;
+	    if ( r->sc==sc && (r->transform[4]!=0 || r->transform[5]!=0))
+	break;
+	}
+	if ( r==NULL )
+return( true );
+    }
+return( false );
+}
+
 struct pschars *SplineFont2Subrs2(SplineFont *sf) {
-    struct pschars *subrs = calloc(1,sizeof(struct pschars));
+    struct pschars *subrs = gcalloc(1,sizeof(struct pschars));
     int i,cnt;
     SplineChar *sc;
 
@@ -1851,8 +2270,16 @@ struct pschars *SplineFont2Subrs2(SplineFont *sf) {
 	    SplineCharAutoHint(sc,true);
 	if ( sc==NULL )
 	    /* Do Nothing */;
-	else if ( SCWorthOutputting(sc) && !sc->hconflicts && !sc->vconflicts &&
-		sc->refs==NULL && sc->dependents!=NULL ) {
+	else if ( SCWorthOutputting(sc) &&
+	    (( sc->refs==NULL && sc->dependents!=NULL &&
+		    ( (!sc->hconflicts && !sc->vconflicts) ||
+			Type2SpecialCase(sc)) ) ||
+		    sc->unicodeenc==0xb5 || sc->unicodeenc==0x3bc ||
+		    sc->unicodeenc==0x394 || sc->unicodeenc==0x2206 ||
+		    sc->unicodeenc==0x3a9 || sc->unicodeenc==0x2126 )) {
+	/* If we've got one of the badly named greek characters then put it */
+	/*  into a subr because we're going to duplicate it. Also put the */
+	/*  character into a subr if it is referenced by other characters */
 	    ++cnt;
 	    sc->lsidebearing = 0;	/* anything other than 0x7fff */
 	} else
@@ -1862,21 +2289,24 @@ struct pschars *SplineFont2Subrs2(SplineFont *sf) {
     subrs->cnt = cnt;
     if ( cnt==0 )
 return( subrs);
-    subrs->lens = malloc(cnt*sizeof(int));
-    subrs->values = malloc(cnt*sizeof(unsigned char *));
-    subrs->keys = malloc(cnt*sizeof(BasePoint *));
+    subrs->lens = galloc(cnt*sizeof(int));
+    subrs->values = galloc(cnt*sizeof(unsigned char *));
+    subrs->keys = galloc(cnt*sizeof(BasePoint *));
     subrs->bias = cnt<1240 ? 107 :
 		  cnt<33900 ? 1131 : 32768;
-    
+
     for ( i=cnt=0; i<sf->charcnt; ++i ) {
 	sc = sf->chars[i];
 	if ( sc==NULL )
 	    /* Do Nothing */;
-	else if ( SCWorthOutputting(sc) && !sc->hconflicts && !sc->vconflicts &&
-		sc->refs==NULL && sc->dependents!=NULL && sc->lsidebearing!=0x7fff ) {
-	    subrs->keys[cnt] = galloc(sizeof(BasePoint));
-	    subrs->values[cnt] = SplineChar2PSOutline2(sc,&subrs->lens[cnt],
-		    (BasePoint *) (subrs->keys[cnt]));
+	else if ( sc->lsidebearing!=0x7fff ) {
+	    subrs->keys[cnt] = gcalloc(2,sizeof(BasePoint));
+	    if ( !sc->hconflicts && !sc->vconflicts )
+		subrs->values[cnt] = SplineChar2PSOutline2(sc,&subrs->lens[cnt],
+			(BasePoint *) (subrs->keys[cnt]));
+	    else
+		subrs->values[cnt] = SplineChar2PS2(sc,&subrs->lens[cnt],0,0,
+			subrs,(BasePoint *) (subrs->keys[cnt]));
 	    sc->lsidebearing = cnt++ - subrs->bias;
 	}
 	GProgressNext();
@@ -1886,7 +2316,7 @@ return( subrs );
     
 struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
 	struct pschars *subrs) {
-    struct pschars *chrs = calloc(1,sizeof(struct pschars));
+    struct pschars *chrs = gcalloc(1,sizeof(struct pschars));
     int i, cnt;
     char notdefentry[20];
     SplineChar *sc;
@@ -1899,15 +2329,15 @@ struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
     }
     ++cnt;		/* one notdef entry */
     chrs->cnt = cnt;
-    chrs->lens = malloc(cnt*sizeof(int));
-    chrs->values = malloc(cnt*sizeof(unsigned char *));
+    chrs->lens = galloc(cnt*sizeof(int));
+    chrs->values = galloc(cnt*sizeof(unsigned char *));
 
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
 	sf->chars[i]->ttf_glyph = 0;
     i = cnt = 0;
     if ( sf->chars[0]!=NULL && (sf->chars[0]->splines!=NULL || sf->chars[0]->widthset) &&
 	    sf->chars[0]->refs==NULL && strcmp(sf->chars[0]->name,".notdef")==0 ) {
-	chrs->values[0] = SplineChar2PS2(sf->chars[0],&chrs->lens[0],nomwid,defwid,subrs);
+	chrs->values[0] = SplineChar2PS2(sf->chars[0],&chrs->lens[0],nomwid,defwid,subrs,NULL);
 	sf->chars[0]->ttf_glyph = 0;
 	i = 1;
     } else {
@@ -1942,7 +2372,7 @@ struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
     for ( i=1; i<sf->charcnt; ++i ) {
 	sc = sf->chars[i];
 	if ( SCWorthOutputting(sc) ) {
-	    chrs->values[cnt] = SplineChar2PS2(sc,&chrs->lens[cnt],nomwid,defwid,subrs);
+	    chrs->values[cnt] = SplineChar2PS2(sc,&chrs->lens[cnt],nomwid,defwid,subrs,NULL);
 	    sf->chars[i]->ttf_glyph = cnt++;
 	}
 	GProgressNext();
@@ -1951,7 +2381,7 @@ return( chrs );
 }
     
 struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds) {
-    struct pschars *chrs = calloc(1,sizeof(struct pschars));
+    struct pschars *chrs = gcalloc(1,sizeof(struct pschars));
     int i, cnt, cid, max;
     char notdefentry[20];
     SplineChar *sc;
@@ -1973,8 +2403,8 @@ struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds) {
     }
 
     chrs->cnt = cnt;
-    chrs->lens = malloc(cnt*sizeof(int));
-    chrs->values = malloc(cnt*sizeof(unsigned char *));
+    chrs->lens = galloc(cnt*sizeof(int));
+    chrs->values = galloc(cnt*sizeof(unsigned char *));
 
     for ( i=0; i<cidmaster->subfontcnt; ++i ) {
 	sf = cidmaster->subfonts[i];
@@ -2025,7 +2455,7 @@ struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds) {
 	} else {
 	    sc = sf->chars[cid];
 	    chrs->values[cnt] = SplineChar2PS2(sc,&chrs->lens[cnt],
-		    fds[i].nomwid,fds[i].defwid,fds[i].subrs);
+		    fds[i].nomwid,fds[i].defwid,fds[i].subrs,NULL);
 	    sc->ttf_glyph = cnt++;
 	}
 	GProgressNext();

@@ -755,8 +755,8 @@ static void SFDCloseCheck(SplinePointList *spl) {
 	spl->first->noprevcp = false;
 	oldlast->prev->from->next = NULL;
 	spl->last = oldlast->prev->from;
-	free(oldlast->prev);
-	free(oldlast);
+	chunkfree(oldlast->prev,sizeof(*oldlast));
+	chunkfree(oldlast,sizeof(*oldlast));
 	SplineMake(spl->last,spl->first);
 	spl->last = spl->first;
     }
@@ -785,11 +785,11 @@ static SplineSet *SFDGetSplineSet(FILE *sfd) {
 		current.x = stack[sp-2];
 		current.y = stack[sp-1];
 		sp -= 2;
-		pt = calloc(1,sizeof(SplinePoint));
+		pt = chunkalloc(sizeof(SplinePoint));
 		pt->me = current;
 		pt->noprevcp = true; pt->nonextcp = true;
 		if ( ch=='m' ) {
-		    SplinePointList *spl = calloc(1,sizeof(SplinePointList));
+		    SplinePointList *spl = chunkalloc(sizeof(SplinePointList));
 		    spl->first = spl->last = pt;
 		    if ( cur!=NULL ) {
 			SFDCloseCheck(cur);
@@ -813,7 +813,7 @@ static SplineSet *SFDGetSplineSet(FILE *sfd) {
 		    cur->last->nextcp.x = stack[sp-6];
 		    cur->last->nextcp.y = stack[sp-5];
 		    cur->last->nonextcp = false;
-		    pt = calloc(1,sizeof(SplinePoint));
+		    pt = chunkalloc(sizeof(SplinePoint));
 		    pt->prevcp.x = stack[sp-4];
 		    pt->prevcp.y = stack[sp-3];
 		    pt->me = current;
@@ -855,7 +855,7 @@ static HintInstance *SFDReadHintInstances(FILE *sfd, StemInfo *stem) {
 return(NULL);
     }
     while ( getreal(sfd,&begin)==1 && getreal(sfd,&end)) {
-	cur = gcalloc(1,sizeof(HintInstance));
+	cur = chunkalloc(sizeof(HintInstance));
 	cur->begin = begin;
 	cur->end = end;
 	if ( head == NULL )
@@ -875,7 +875,7 @@ static StemInfo *SFDReadHints(FILE *sfd) {
     real start, width;
 
     while ( getreal(sfd,&start)==1 && getreal(sfd,&width)) {
-	cur = gcalloc(1,sizeof(StemInfo));
+	cur = chunkalloc(sizeof(StemInfo));
 	cur->start = start;
 	cur->width = width;
 	cur->where = SFDReadHintInstances(sfd,cur);
@@ -897,7 +897,7 @@ static DStemInfo *SFDReadDHints(FILE *sfd) {
 	    getreal(sfd,&d.rightedgetop.x)==1 && getreal(sfd,&d.rightedgetop.y) &&
 	    getreal(sfd,&d.leftedgebottom.x)==1 && getreal(sfd,&d.leftedgebottom.y) &&
 	    getreal(sfd,&d.rightedgebottom.x)==1 && getreal(sfd,&d.rightedgebottom.y) ) {
-	cur = galloc(sizeof(DStemInfo));
+	cur = chunkalloc(sizeof(DStemInfo));
 	*cur = d;
 	if ( head == NULL )
 	    head = cur;
@@ -912,7 +912,7 @@ static RefChar *SFDGetRef(FILE *sfd) {
     RefChar *rf;
     int enc=0, ch;
 
-    rf = gcalloc(1,sizeof(RefChar));
+    rf = chunkalloc(sizeof(RefChar));
     getint(sfd,&enc);
     rf->local_enc = enc;
     while ( isspace(ch=getc(sfd)));
@@ -939,7 +939,7 @@ return( NULL );
     if ( getname(sfd,tok)!=1 )
 return( NULL );
 
-    sc = gcalloc(1,sizeof(SplineChar));
+    sc = chunkalloc(sizeof(SplineChar));
     sc->name = copy(tok);
     while ( 1 ) {
 	if ( getname(sfd,tok)!=1 )

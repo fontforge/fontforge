@@ -45,7 +45,7 @@ return;					/* Nothing to cut */
     if ( p->spl->first!=p->spl->last )
 	if ( p->sp==p->spl->first || p->sp==p->spl->last )
 return;					/* Already cut here */
-    n = galloc(sizeof(SplinePoint));
+    n = chunkalloc(sizeof(SplinePoint));
     p->sp->pointtype = pt_corner;
     *n = *p->sp;
     p->sp->next = NULL;
@@ -55,7 +55,7 @@ return;					/* Already cut here */
 	p->spl->first = n;
 	p->spl->last = p->sp;
     } else {
-	SplinePointList *nspl = galloc(sizeof(SplinePointList));
+	SplinePointList *nspl = chunkalloc(sizeof(SplinePointList));
 	nspl->next = p->spl->next;
 	p->spl->next = nspl;
 	nspl->first = n;
