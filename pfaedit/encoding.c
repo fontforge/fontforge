@@ -508,7 +508,7 @@ int CID2NameEnc(struct cidmap *map,int cid, char *buffer, int len) {
 
 #if defined( _NO_SNPRINTF ) || defined( __VMS )
     if ( map==NULL )
-	sprintf(buffer,"cid_%d", cid);
+	sprintf(buffer,"cid-%d", cid);
     else if ( cid<map->namemax && map->name[cid]!=NULL )
 	strncpy(buffer,map->name[cid],len);
     else if ( cid==0 || (cid<map->namemax && map->unicode[cid]!=0 )) {
@@ -520,10 +520,10 @@ int CID2NameEnc(struct cidmap *map,int cid, char *buffer, int len) {
 	else
 	    sprintf(buffer,"u%04X", enc);
     } else
-	sprintf(buffer,"%s_%d", map->ordering, cid);
+	sprintf(buffer,"%s-%d", map->ordering, cid);
 #else
     if ( map==NULL )
-	snprintf(buffer,len,"cid_%d", cid);
+	snprintf(buffer,len,"cid-%d", cid);
     else if ( cid<map->namemax && map->name[cid]!=NULL )
 	strncpy(buffer,map->name[cid],len);
     else if ( cid==0 || (cid<map->namemax && map->unicode[cid]!=0 )) {
@@ -538,7 +538,7 @@ int CID2NameEnc(struct cidmap *map,int cid, char *buffer, int len) {
 	else
 	    snprintf(buffer,len,"u%04X", enc);
     } else
-	snprintf(buffer,len,"%s_%d", map->ordering, cid);
+	snprintf(buffer,len,"%s-%d", map->ordering, cid);
 #endif
 return( enc );
 }
