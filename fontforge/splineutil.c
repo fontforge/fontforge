@@ -1715,6 +1715,7 @@ static void SFInstanciateRefs(SplineFont *sf) {
 }
 
 static void GreekUnicodeCheck(SplineFont *sf) {
+#if 0
     int i, changed, j, fixup;
 
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
@@ -1784,6 +1785,7 @@ static void GreekUnicodeCheck(SplineFont *sf) {
 	    }
 	}
     }
+#endif
 }
 
 static void _SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext *pscontext) {
