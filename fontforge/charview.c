@@ -3977,6 +3977,7 @@ return( true );
 #define MID_SetVWidth	2606
 #define MID_RemoveVKerns	2607
 #define MID_KPCloseup	2608
+#define MID_AnchorsAway	2609
 #define MID_OpenBitmap	2700
 #define MID_Revert	2702
 #define MID_Recent	2703
@@ -6345,6 +6346,12 @@ static void mtlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_RemoveVKerns:
 	    mi->ti.disabled = cv->sc->vkerns==NULL;
 	  break;
+	  case MID_SetVWidth:
+	    mi->ti.disabled = !cv->sc->parent->hasvmetrics;
+	  break;
+	  case MID_AnchorsAway:
+	    mi->ti.disabled = cv->sc->anchor==NULL;
+	  break;
 	}
     }
 }
@@ -6611,6 +6618,22 @@ static void CVMenuKPCloseup(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
     KernPairD(cv->sc->parent,cv->sc,NULL,false);
+}
+
+static void CVMenuAnchorsAway(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    AnchorPoint *ap;
+
+    for ( ap = cv->sc->anchor; ap!=NULL && !ap->selected; ap = ap->next );
+    if ( ap==NULL ) ap= cv->sc->anchor;
+    if ( ap==NULL )
+return;
+
+    GDrawSetCursor(cv->v,ct_watch);
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+    AnchorControl(cv->sc,ap);
+    GDrawSetCursor(cv->v,ct_pointer);
 }
 
 static GMenuItem wnmenu[] = {
@@ -6916,6 +6939,8 @@ static GMenuItem mtlist[] = {
     { { (unichar_t *) _STR_KernPairCloseup, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuKPCloseup, MID_KPCloseup },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_SetVWidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuSetWidth, MID_SetVWidth },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_AnchorControl, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuAnchorsAway, MID_AnchorsAway },
     { NULL }
 };
 

@@ -1160,6 +1160,9 @@ extern void ShowKernClasses(SplineFont *sf,MetricsView *mv,int isv);
 extern void KCLD_End(struct kernclasslistdlg *kcld);
 extern void KCLD_MvDetach(struct kernclasslistdlg *kcld,MetricsView *mv);
 extern void KernPairD(SplineFont *sf,SplineChar *sc1,SplineChar *sc2,int isv);
+extern void KCD_DrawGlyph(GWindow pixmap,int x,int baseline,BDFChar *bdfc,int mag);
+
+extern void AnchorControl(SplineChar *sc,AnchorPoint *ap);
 
 extern void FVSelectByPST(FontView *fv);
 

@@ -422,6 +422,8 @@ static unichar_t mnemonic_Removekern[] = 'P';
 static char str_RemoveVKern[] = "Remove VKern Pairs";
 static char str_Mergekern[] = "Merge Kern Info...";
 static unichar_t mnemonic_Mergekern[] = 'M';
+static char str_AnchorControl = "Anchor Control...";
+static char mnemonic_AnchorControl = 'A';
 static char str_LabelGlyphBy = "Label Glyph By";
 static char mnemonic_LabelGlyphBy = 'L';
 static char str_GlyphImage = "Glyph Image";
@@ -3649,6 +3651,10 @@ static char *str_AtLeastOneName = "You must provide at least one name here"
 
     /* splineoverlap */
 static char *str_OverlapBadDir = "Glyph %.40hs contains an overlapped region where two contours with oposite orientations intersect. This will not be removed. In many cases doing Element->Correct Direction before Remove Overlap will improve matters."
+
+    /* anchorsaway */
+static char *str_Mag = "Mag:";
+static char *str_Cor = "Cor:";
 
     /* Adjectives, etc. that are sometimes masculine and sometimes feminine in french (perhaps other langs) */
 static char str_NewDDD_fem[] = "New...";
