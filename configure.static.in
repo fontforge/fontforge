@@ -106,8 +106,13 @@ fi
 
 test -d libs || mkdir libs
 
+cp Makefile.static.in Makefile.in
+cp Unicode/Makefile.static.in Unicode/Makefile.in
+cp gdraw/Makefile.static.in gdraw/Makefile.in
+cp pfaedit/Makefile.static.in pfaedit/Makefile.in
 AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile pfaedit/Makefile)
 if test -e toys >/dev/null 2>&1 ; then
+  cp toys/Makefile.static.in toys/Makefile.in
   AC_OUTPUT( toys/Makefile )
 fi
 
