@@ -241,15 +241,20 @@ static void _SplineFontSetUnChanged(SplineFont *sf) {
     for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	for ( i=0; i<bdf->charcnt; ++i ) if ( bdf->chars[i]!=NULL )
 	    bdf->chars[i]->changed = false;
-    if ( was && sf->fv->v!=NULL )
+    if ( was && sf->fv!=NULL && sf->fv->v!=NULL )
 	GDrawRequestExpose(sf->fv->v,NULL,false);
     for ( i=0; i<sf->subfontcnt; ++i )
 	_SplineFontSetUnChanged(sf->subfonts[i]);
 }
 
 void SplineFontSetUnChanged(SplineFont *sf) {
+    int i;
+
     if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+    if ( sf->mm!=NULL ) sf = sf->mm->normal;
     _SplineFontSetUnChanged(sf);
+    for ( i=0; i<sf->mm->instance_count; ++i )
+	_SplineFontSetUnChanged(sf->mm->instances[i]);
 }
 
 static void FVFlattenAllBitmapSelections(FontView *fv) {
@@ -349,12 +354,22 @@ return( 0 );
     FVFlattenAllBitmapSelections(fv);
     ok = SFDWrite(filename,fv->sf);
     if ( ok ) {
-	SplineFont *sf = fv->cidmaster?fv->cidmaster:fv->sf;
+	SplineFont *sf = fv->cidmaster?fv->cidmaster:fv->sf->mm!=NULL?fv->sf->mm->normal:fv->sf;
 	free(sf->filename);
 	sf->filename = filename;
 	free(sf->origname);
 	sf->origname = copy(filename);
 	sf->new = false;
+	if ( sf->mm!=NULL ) {
+	    int i;
+	    for ( i=0; i<sf->mm->instance_count; ++i ) {
+		free(sf->mm->instances[i]->filename);
+		sf->mm->instances[i]->filename = filename;
+		free(sf->mm->instances[i]->origname);
+		sf->mm->instances[i]->origname = copy(filename);
+		sf->mm->instances[i]->new = false;
+	    }
+	}
 	SplineFontSetUnChanged(sf);
 	FVSetTitle(fv);
     } else
@@ -407,7 +422,7 @@ void _FVCloseWindows(FontView *fv) {
     int i, j;
     BDFFont *bdf;
     MetricsView *mv, *mnext;
-    SplineFont *sf = fv->cidmaster?fv->cidmaster:fv->sf;
+    SplineFont *sf = fv->cidmaster?fv->cidmaster:fv->sf->mm!=NULL?fv->sf->mm->normal : fv->sf;
 
     if ( fv->nextsame==NULL && fv->sf->fv==fv && fv->sf->kcld!=NULL )
 	KCLD_End(fv->sf->kcld);
@@ -423,7 +438,21 @@ void _FVCloseWindows(FontView *fv) {
 	if ( sf->chars[i]->charinfo )
 	    CharInfoDestroy(sf->chars[i]->charinfo);
     }
-    if ( sf->subfontcnt!=0 ) {
+    if ( sf->mm!=NULL ) {
+	MMSet *mm = sf->mm;
+	for ( j=0; j<mm->instance_count; ++j ) {
+	    SplineFont *sf = mm->instances[j];
+	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+		CharView *cv, *next;
+		for ( cv = sf->chars[i]->views; cv!=NULL; cv = next ) {
+		    next = cv->next;
+		    GDrawDestroyWindow(cv->gw);
+		}
+		if ( sf->chars[i]->charinfo )
+		    CharInfoDestroy(sf->chars[i]->charinfo);
+	    }
+	}
+    } else if ( sf->subfontcnt!=0 ) {
 	for ( j=0; j<sf->subfontcnt; ++j ) {
 	    for ( i=0; i<sf->subfonts[j]->charcnt; ++i ) if ( sf->subfonts[j]->chars[i]!=NULL ) {
 		CharView *cv, *next;
@@ -452,6 +481,21 @@ void _FVCloseWindows(FontView *fv) {
     SVDetachFV(fv);
 }
 
+static int SFAnyChanged(SplineFont *sf) {
+    if ( sf->mm!=NULL ) {
+	MMSet *mm = sf->mm;
+	int i;
+	if ( mm->changed )
+return( true );
+	for ( i=0; i<mm->instance_count; ++i )
+	    if ( sf->mm->instances[i]->changed )
+return( true );
+	/* Changes to the blended font aren't real */
+return( false );
+    } else
+return( sf->changed );
+}
+
 static int _FVMenuClose(FontView *fv) {
     int i;
     SplineFont *sf = fv->cidmaster?fv->cidmaster:fv->sf;
@@ -461,7 +505,7 @@ return( false );
 
     if ( fv->nextsame!=NULL || fv->sf->fv!=fv ) {
 	/* There's another view, can close this one with no problems */
-    } else if ( sf->changed ) {
+    } else if ( SFAnyChanged(sf) ) {
 	i = AskChanged(fv->sf);
 	if ( i==2 )	/* Cancel */
 return( false );
@@ -665,7 +709,7 @@ void MenuSaveAll(GWindow base,struct gmenuitem *mi,GEvent *e) {
     FontView *fv;
 
     for ( fv = fv_list; fv!=NULL; fv = fv->next ) {
-	if ( fv->sf->changed && !_FVMenuSave(fv))
+	if ( SFAnyChanged(fv->sf) && !_FVMenuSave(fv))
 return;
     }
 }
@@ -6172,15 +6216,23 @@ return( NULL );
     GProgressEndIndicator();
 
     if ( sf!=NULL ) {
+	SplineFont *norm = sf->mm!=NULL ? sf->mm->normal : sf;
 	if ( sf->chosenname!=NULL && strippedname==filename ) {
-	    sf->origname = galloc(strlen(filename)+strlen(sf->chosenname)+8);
-	    strcpy(sf->origname,filename);
-	    strcat(sf->origname,"(");
-	    strcat(sf->origname,sf->chosenname);
-	    strcat(sf->origname,")");
+	    norm->origname = galloc(strlen(filename)+strlen(sf->chosenname)+8);
+	    strcpy(norm->origname,filename);
+	    strcat(norm->origname,"(");
+	    strcat(norm->origname,sf->chosenname);
+	    strcat(norm->origname,")");
 	} else
-	    sf->origname = copy(filename);
+	    norm->origname = copy(filename);
 	free( sf->chosenname ); sf->chosenname = NULL;
+	if ( sf->mm!=NULL ) {
+	    int j;
+	    for ( j=0; j<sf->mm->instance_count; ++j ) {
+		free(sf->mm->instances[j]->origname);
+		sf->mm->instances[j]->origname = copy(norm->origname);
+	    }
+	}
     } else if ( !GFileExists(filename) )
 	GWidgetErrorR(_STR_CouldntOpenFontTitle,_STR_NoSuchFontFile,GFileNameTail(filename));
     else if ( !GFileReadable(filename) )

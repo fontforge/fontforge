@@ -1249,7 +1249,7 @@ static void SFD_MMDump(FILE *sfd,SplineFont *sf) {
     putc('\n',sfd);
     for ( i=0; i<mm->axis_count; ++i ) {
 	fprintf( sfd, "MMAxisMap: %d %d", i, mm->axismaps[i].points );
-	for ( j=0; j<mm->axismaps[j].points; ++j )
+	for ( j=0; j<mm->axismaps[i].points; ++j )
 	    fprintf( sfd, " %g=>%g", mm->axismaps[i].blends[j], mm->axismaps[i].designs[j]);
 	fputc('\n',sfd);
     }
@@ -3646,8 +3646,14 @@ return( NULL );
     if ( SFDStartsCorrectly(sfd,tok) )
 	sf = SFD_GetFont(sfd,NULL,tok);
     setlocale(LC_NUMERIC,oldloc);
-    if ( sf!=NULL )
+    if ( sf!=NULL ) {
 	sf->filename = copy(filename);
+	if ( sf->mm!=NULL ) {
+	    int i;
+	    for ( i=0; i<sf->mm->instance_count; ++i )
+		sf->mm->instances[i]->filename = copy(filename);
+	}
+    }
     fclose(sfd);
 return( sf );
 }

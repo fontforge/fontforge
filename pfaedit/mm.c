@@ -1900,6 +1900,13 @@ static SplineFont *MMNewFont(MMSet *mm,int index,char *familyname) {
 	    free(sf->copyright);
 	    sf->copyright = copy(base->copyright);
 	}
+	/* Make sure we get the encoding exactly right */
+	for ( i=0; i<base->charcnt; ++i ) if ( base->chars[i]!=NULL ) {
+	    SplineChar *sc = SFMakeChar(sf,i), *bsc = base->chars[i];
+	    sc->width = bsc->width; sc->widthset = true;
+	    free(sc->name); sc->name = copy(bsc->name);
+	    sc->unicodeenc = bsc->unicodeenc;
+	}
     }
     sf->onlybitmaps = false;
     sf->order2 = false;
@@ -2063,6 +2070,17 @@ continue;
     }
     free(familyname);
     MMReblend(fv,setto);
+
+    /* Multi-Mastered bitmaps don't make much sense */
+    /* Well, maybe grey-scaled could be interpolated, but yuck */
+    for ( i=0; i<setto->instance_count; ++i ) {
+	BDFFont *bdf, *bnext;
+	for ( bdf = setto->instances[i]->bitmaps; bdf!=NULL; bdf = bnext ) {
+	    bnext = bdf->next;
+	    BDFFontFree(bdf);
+	}
+	setto->instances[i]->bitmaps = NULL;
+    }
 
     if ( fv==NULL )
 	fv = FontViewCreate(setto->normal);

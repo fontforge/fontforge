@@ -3689,6 +3689,9 @@ void SCFigureCounterMasks(SplineChar *sc) {
 
     /* I'm not supporting counter hints for mm fonts */
 
+    if ( sc==NULL )
+return;
+
     free(sc->countermasks);
     sc->countermask_cnt = 0;
     sc->countermasks = NULL;
@@ -3732,10 +3735,10 @@ void SCClearHintMasks(SplineChar *sc,int counterstoo) {
     else {
 	for ( i=0; i<mm->instance_count; ++i ) {
 	    if ( sc->enc<mm->instances[i]->charcnt )
-		_SCClearHintMasks(mm->instances[i]->chars[i],counterstoo);
+		_SCClearHintMasks(mm->instances[i]->chars[sc->enc],counterstoo);
 	}
 	if ( sc->enc<mm->normal->charcnt )
-	    _SCClearHintMasks(mm->normal->chars[i],counterstoo);
+	    _SCClearHintMasks(mm->normal->chars[sc->enc],counterstoo);
     }
 }
 
@@ -3986,12 +3989,20 @@ return( hints );
 	    } else
 		test->map[i] = h[i];
 	}
+    } else {
+	for ( i=0; i<instance_count; ++i )
+	    test->map[i]=h[i];
     }
 return( test );
 }
 
 static int CompareMMH(MMH *mmh1,MMH *mmh2, int instance_count) {
     int i;
+
+    if ( mmh1->map[0]==NULL )
+return( 1 );
+    if ( mmh2->map[0]==NULL )
+return( -1 );
 
     for ( i=0; i<instance_count; ++i ) {
 	if ( mmh1->map[i]->start!=mmh2->map[i]->start ) {
@@ -4055,12 +4066,16 @@ static int NumberMMH(MMH *mmh,int hstart,int instance_count) {
     while ( mmh!=NULL ) {
 	for ( i=0; i<instance_count; ++i ) {
 	    StemInfo *h = mmh->map[i];
-	    h->hintnumber = hstart++;
+	    if ( h==NULL )
+	continue;
+
+	    h->hintnumber = hstart;
 
 	    for ( hi=h->where; hi!=NULL; hi=n ) {
 		n = hi->next;
 		chunkfree(hi,sizeof(HintInstance));
 	    }
+	    h->where = NULL;
 	    for ( coords=mmh->where; coords!=NULL; coords = coords->next ) {
 		hi = chunkalloc(sizeof(HintInstance));
 		hi->next = h->where;
@@ -4069,6 +4084,8 @@ static int NumberMMH(MMH *mmh,int hstart,int instance_count) {
 		hi->end = coords->coords[i]+1;
 	    }
 	}
+	if ( mmh->map[0]!=NULL ) ++hstart;
+	mmh = mmh->next;
     }
 return( hstart );
 }
@@ -4086,7 +4103,7 @@ static void SortMMH2(SplineChar *scs[MmMax],MMH *mmh,int instance_count,int ish)
 	}
 	n = NULL;
 	for ( m = mmh ; m!=NULL; m=m->next ) {
-	    h = mmh->map[i];
+	    h = m->map[i];
 	    if ( n!=NULL )
 		n->next = h;
 	    else if ( ish )
@@ -4097,6 +4114,10 @@ static void SortMMH2(SplineChar *scs[MmMax],MMH *mmh,int instance_count,int ish)
 	}
 	if ( n!=NULL )
 	    n->next = NULL;
+	else if ( ish )
+	    scs[i]->hstem = NULL;
+	else
+	    scs[i]->vstem = NULL;
     }
 }
 
