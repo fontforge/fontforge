@@ -367,7 +367,7 @@ typedef struct minimumdistance {
 
 typedef struct splinechar {
     char *name;
-    int enc, unicodeenc;
+    int enc, unicodeenc, old_enc;
     int16 width, vwidth;
     int16 lsidebearing;		/* only used when reading in a type1 font */
 				/*  Or an otf font where it is the subr number of a refered character */
@@ -449,8 +449,9 @@ typedef struct splinefont {
     unsigned int hasvmetrics: 1;		/* We've got vertical metric data and should output vhea/vmtx/VORG tables */
     unsigned int loading_cid_map: 1;
     unsigned int dupnamewarn: 1;		/* Warn about duplicate names when loading bdf font */
+    unsigned int compacted: 1;			/* Font is in a compacted glyph list */
     struct fontview *fv;
-    enum charset encoding_name;
+    enum charset encoding_name, old_encname;
     SplinePointList *gridsplines;
     Undoes *gundoes, *gredoes;
 #if 0
@@ -545,6 +546,9 @@ extern void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontna
 extern int SFAddDelChars(SplineFont *sf, int nchars);
 extern int SFForceEncoding(SplineFont *sf,enum charset new_map);
 extern int SFReencodeFont(SplineFont *sf,enum charset new_map);
+extern int SFCompactFont(SplineFont *sf);
+extern int SFUncompactFont(SplineFont *sf);
+extern int CountOfEncoding(enum charset encoding_name);
 extern int SFMatchEncoding(SplineFont *sf,SplineFont *target);
 extern char *SFGetModifiers(SplineFont *sf);
 extern void SFSetFontName(SplineFont *sf, char *family, char *mods, char *full);

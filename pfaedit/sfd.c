@@ -496,6 +496,8 @@ return;
     }
     fprintf(sfd, "StartChar: %s\n", sc->name );
     fprintf(sfd, "Encoding: %d %d\n", sc->enc, sc->unicodeenc);
+    if ( sc->parent->compacted )
+	fprintf(sfd, "OldEncoding: %d\n", sc->old_enc);
     fprintf(sfd, "Width: %d\n", sc->width );
     if ( sc->vwidth!=sc->parent->ascent+sc->parent->descent )
 	fprintf(sfd, "VWidth: %d\n", sc->vwidth );
@@ -682,6 +684,8 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	fprintf(sfd, "Ordering: %s\n", sf->ordering );
 	fprintf(sfd, "Supplement: %d\n", sf->supplement );
 	fprintf(sfd, "CIDVersion: %g\n", sf->cidversion );	/* This is a number whereas "version" is a string */
+    } else if ( sf->compacted ) {
+	fprintf(sfd, "Encoding: compacted\n" );
     } else if ( sf->encoding_name>=em_unicodeplanes && sf->encoding_name<=em_unicodeplanesmax ) {
 	fprintf(sfd, "Encoding: UnicodePlane%d\n", sf->encoding_name-em_unicodeplanes );
     } else if ( sf->encoding_name>=em_base ) {
@@ -1367,6 +1371,8 @@ return( NULL );
 	if ( strmatch(tok,"Encoding:")==0 ) {
 	    getint(sfd,&sc->enc);
 	    getint(sfd,&sc->unicodeenc);
+	} else if ( strmatch(tok,"OldEncoding:")==0 ) {
+	    getint(sfd,&sc->old_enc);
 	} else if ( strmatch(tok,"Width:")==0 ) {
 	    getsint(sfd,&sc->width);
 	} else if ( strmatch(tok,"VWidth:")==0 ) {
@@ -1778,6 +1784,10 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 		if ( sf->encoding_name == em_none &&
 			sscanf(tok,"UnicodePlane%d",&val)==1 )
 		    sf->encoding_name = val+em_unicodeplanes;
+		if ( sf->encoding_name == em_none && strcmp(tok,"compacted")==0 ) {
+		    sf->encoding_name = em_none;
+		    sf->compacted = true;
+		}
 	    }
 	} else if ( strmatch(tok,"Registry:")==0 ) {
 	    geteol(sfd,tok);

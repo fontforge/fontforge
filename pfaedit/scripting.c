@@ -865,16 +865,19 @@ static void bSelect(Context *c) {
 }
 
 /* **** Element Menu **** */
+#define em_unknown (em_none-3)
 static void bReencode(Context *c) {
     Encoding *item=NULL;
     int i;
-    enum charset new_map = em_none;
+    enum charset new_map = em_unknown;
     FontView *fvs;
     int force = 0;
     static struct encdata {
 	int val;
 	char *name;
     } encdata[] = {
+	{ em_compacted, "compacted" },
+	{ em_custom, "custom" },
 	{ em_iso8859_1, "iso8859-1" },
 	{ em_iso8859_1, "isolatin1" },
 	{ em_iso8859_1, "latin1" },
@@ -933,20 +936,20 @@ static void bReencode(Context *c) {
 	    new_map = encdata[i].val;
     break;
 	}
-    if ( new_map == em_none ) {
+    if ( new_map == em_unknown ) {
 	for ( item=enclist; item!=NULL ; item=item->next )
 	    if ( strmatch(c->a.vals[1].u.sval,item->enc_name )==0 ) {
 		new_map = item->enc_num;
 	break;
 	    }
     }
-    if ( new_map==em_none && strstart(c->a.vals[1].u.sval,"unicode-plane-")!=NULL ) {
+    if ( new_map==em_unknown && strstart(c->a.vals[1].u.sval,"unicode-plane-")!=NULL ) {
 	int plane=0;
 	sscanf( c->a.vals[1].u.sval,"unicode-plane-%x", &plane );
 	if ( plane==0 ) new_map = em_unicode;
 	else new_map = em_unicodeplanes+plane;
     }
-    if ( new_map==em_none )
+    if ( new_map==em_unknown )
 	errors(c,"Unknown encoding", c->a.vals[1].u.sval);
     if ( force )
 	SFForceEncoding(c->curfv->sf,new_map);

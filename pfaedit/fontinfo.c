@@ -49,7 +49,8 @@ struct gfi_data {
 };
 
 GTextInfo encodingtypes[] = {
-    { (unichar_t *) _STR_Custom, NULL, 0, 0, (void *) em_none, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Custom, NULL, 0, 0, (void *) em_custom, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Compacted, NULL, 0, 0, (void *) em_compacted, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
     { (unichar_t *) _STR_Isolatin1, NULL, 0, 0, (void *) em_iso8859_1, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Isolatin0, NULL, 0, 0, (void *) em_iso8859_15, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -1212,8 +1213,8 @@ int SFForceEncoding(SplineFont *sf,enum charset new_map) {
 
     if ( sf->encoding_name==new_map )
 return(false);
-    if ( new_map==em_none ) {
-	sf->encoding_name=em_none;	/* Custom, it's whatever's there */
+    if ( new_map==em_custom || new_map==em_compacted ) {
+	sf->encoding_name=em_custom;	/* Custom, it's whatever's there */
 return(false);
     }
 
@@ -1275,8 +1276,8 @@ static int _SFReencodeFont(SplineFont *sf,enum charset new_map, SplineFont *targ
     if ( target==NULL ) {
 	if ( sf->encoding_name==new_map )
 return(false);
-	if ( new_map==em_none ) {
-	    sf->encoding_name=em_none;	/* Custom, it's whatever's there */
+	if ( new_map==em_custom ) {
+	    sf->encoding_name=em_custom;	/* Custom, it's whatever's there */
 return(false);
 	}
 	if ( new_map==em_unicodeplanes )
@@ -1405,6 +1406,11 @@ return( true );
 }
 
 int SFReencodeFont(SplineFont *sf,enum charset new_map) {
+    if ( new_map==em_compacted )
+return( SFCompactFont(sf));
+    else if ( sf->compacted && new_map==sf->old_encname )
+return( SFUncompactFont(sf));
+    else
 return( _SFReencodeFont(sf,new_map,NULL));
 }
 
@@ -1445,7 +1451,7 @@ return( false );
 	    RemoveSplineChar(sf,i);
 	}
 	sf->charcnt = nchars;
-	if ( nchars<256 ) sf->encoding_name = em_none;
+	if ( nchars<256 ) sf->encoding_name = em_custom;
 	for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
 	    bdf->charcnt = nchars;
 	    bdf->encoding_name = sf->encoding_name;
@@ -2801,7 +2807,7 @@ void FontInfo(SplineFont *sf) {
     egcd[1].gd.pos.x = 80; egcd[1].gd.pos.y = egcd[0].gd.pos.y-6;
     egcd[1].gd.flags = gg_visible | gg_enabled;
     egcd[1].gd.u.list = list = GetEncodingTypes();
-    egcd[1].gd.label = EncodingTypesFindEnc(list,sf->encoding_name);
+    egcd[1].gd.label = EncodingTypesFindEnc(list,sf->compacted?em_compacted:sf->encoding_name);
     if ( egcd[1].gd.label==NULL ) egcd[1].gd.label = &list[0];
     egcd[1].gd.cid = CID_Encoding;
     egcd[1].gd.handle_controlevent = GFI_SelectEncoding;
@@ -2836,7 +2842,7 @@ void FontInfo(SplineFont *sf) {
     egcd[4].gd.pos.x = (254-100)/2; egcd[4].gd.pos.y = egcd[3].gd.pos.y;
     egcd[4].gd.pos.width = 100; egcd[4].gd.pos.height = 0;
     egcd[4].gd.flags = gg_visible;
-    if ( sf->encoding_name==em_none || sf->charcnt>1500 ) egcd[4].gd.flags |= gg_enabled;
+    if ( sf->encoding_name==em_custom || sf->charcnt>1500 ) egcd[4].gd.flags |= gg_enabled;
     elabel[4].text = (unichar_t *) _STR_Makefromfont;
     elabel[4].text_in_resource = true;
     egcd[4].gd.mnemonic = 'k';

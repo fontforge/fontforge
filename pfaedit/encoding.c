@@ -1480,3 +1480,107 @@ return(NULL);
     FontViewReformatAll(sf);
 return( cidmaster );
 }
+
+int CountOfEncoding(enum charset encoding_name) {
+    Encoding *item=NULL;
+
+    if ( encoding_name == em_unicode4 )
+return( unicode4_size );
+    if ( encoding_name == em_unicode || encoding_name == em_big5 ||
+	    encoding_name == em_johab || encoding_name == em_wansung ||
+	    encoding_name == em_sjis ||
+	    (encoding_name >= em_unicodeplanes && encoding_name <= em_unicodeplanesmax ))
+return( 65536 );
+    else if ( encoding_name < em_first2byte )
+return( 256 );
+    else if ( encoding_name <= em_last94x94 )
+return( 96*94 );
+    else if ( encoding_name >= em_base ) {
+	for ( item=enclist; item!=NULL && item->enc_num!=encoding_name;
+		item=item->next );
+	if ( item!=NULL )
+return( item->char_cnt );
+    }
+return( 0 );
+}
+
+static void BDFsToo(SplineFont *sf,int cnt) {
+    BDFFont *bdf;
+    BDFChar **newbc;
+    int i;
+
+    for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	newbc = gcalloc(cnt,sizeof(BDFChar *));
+	for ( i=0; i<bdf->charcnt; ++i ) if ( bdf->chars[i]!=NULL ) {
+	    int pos = bdf->chars[i]->sc->enc;
+	    newbc[pos] = bdf->chars[i];
+	    newbc[pos]->enc = pos;
+	}
+	free(bdf->chars);
+	bdf->chars = newbc;
+	bdf->charcnt = cnt;
+	bdf->encoding_name = sf->encoding_name;
+    }
+}
+
+int SFCompactFont(SplineFont *sf) {
+    int cnt, i;
+    SplineChar **newchars;
+
+    if ( sf->compacted )
+return( false );
+
+    for ( i=cnt=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	sf->chars[i]->old_enc = i;
+	++cnt;
+    }
+    newchars = galloc(cnt*sizeof(SplineChar *));
+    for ( i=cnt=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	newchars[cnt] = sf->chars[i];
+	newchars[cnt]->enc = cnt++;
+    }
+    free(sf->chars);
+    sf->chars = newchars;
+    sf->charcnt = cnt;
+    sf->old_encname = sf->encoding_name;
+    sf->encoding_name = em_none;
+    sf->compacted = true;
+    BDFsToo(sf,cnt);
+return( true );
+}
+
+int SFUncompactFont(SplineFont *sf) {
+    int i,cnt;
+    SplineChar **newchars;
+
+    if ( !sf->compacted )
+return( false );
+    cnt = 0;
+    for ( i=sf->charcnt-1; i>=0; --i ) if ( sf->chars[i]!=NULL ) {
+	cnt = sf->chars[i]->old_enc+1;
+    break;
+    }
+    if ( cnt==0 )
+return( false );
+    if ( (i=CountOfEncoding(sf->old_encname))>cnt )
+	cnt = i;
+    newchars = gcalloc(cnt,sizeof(SplineChar *));
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	int enc = sf->chars[i]->old_enc;
+	if ( enc>=cnt ) {
+	    GDrawIError("Compacted font isn't" );
+	    free( newchars );
+return( false );
+	}
+	newchars[enc] = sf->chars[i];
+	newchars[enc]->enc = enc;
+    }
+    free(sf->chars);
+    sf->chars = newchars;
+    sf->charcnt = cnt;
+    sf->encoding_name = sf->old_encname;
+    sf->compacted = false;
+
+    BDFsToo(sf,cnt);
+return( true );
+}

@@ -1390,6 +1390,10 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     int i, old, ofs;
     int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid, spacing;
     SplineFont *temp;
+    int wascompacted = sf->compacted;
+
+    if ( wascompacted )
+	SFUncompactFont(sf);
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
@@ -1607,6 +1611,12 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     GDrawSetVisible(gw,true);
     while ( !d.done )
 	GDrawProcessOneEvent(NULL);
+    if ( wascompacted ) {
+	FontView *fvs;
+	SFCompactFont(sf);
+	for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame )
+	    GDrawRequestExpose(fvs->v,NULL,false);
+    }
     GDrawDestroyWindow(gw);
 return(d.ret);
 }

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 7-Aug-2002 -->
+  <!-- AP: Last modified: 8-Aug-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -89,23 +89,23 @@ let me know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-020807.tgz">Download pfaedit linux-i386 Redhat 7.3
-    </A><A NAME="downloads">executable</A> Version: 7-August-2002
+    <A HREF="pfaedit-020808.tgz">Download pfaedit linux-i386 Redhat 7.3
+    </A><A NAME="downloads">executable</A> Version: 8-August-2002
   <LI>
-    <A HREF="pfaedit-020709-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
-    Version: 9-July-2002 (Redhat 7.1)
+    <A HREF="pfaedit-020808-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
+    Version: 8-August-2002 (Redhat 7.3)
   <LI>
     <A HREF="pfaedit-020622-1.ppc.rpm">Download pfaedit linux-ppc SUSE 7.1
     </A>binary rpm Version: 22-June-2002
   <LI>
-    <A HREF="pfaedit-solaris-020803.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 3-August-2002 (no XIM support)
+    <A HREF="pfaedit-solaris-020808.tgz">Download pfaedit Solaris 8.0
+    </A>executable Version: 8-August-2002 (no XIM support)
   <LI>
     <A HREF="http://packages.debian.org/unstable/x11/pfaedit.html">A debian package
     is available at the debian site.</A>
   <LI>
     <A HREF="Problems-MacOSX.html#binary">A Mac OS/X distribution</A> (with Caveats).
-    Version 7-August-2002
+    Version 8-August-2002
   <LI>
     <A HREF="pfaedit_cygwin-020715.tgz">A cygwin version</A>. Version: 15-July-2002
   <LI>
@@ -125,11 +125,11 @@ If you want to edit CID keyed fonts you probably need these
   <A NAME="source">Source</A> distribution
 </H2>
 <P>
-You can download a <A HREF="pfaedit-020709-1.src.rpm">source RPM</A>: Version:
-9-July-2002<BR>
-Or you can download the <A HREF="pfaedit_full-020807.tgz">entire source tree
+You can download a <A HREF="pfaedit-020808-1.src.rpm">source RPM</A>: Version:
+8-August-2002<BR>
+Or you can download the <A HREF="pfaedit_full-020808.tgz">entire source tree
 </A>in one .tgz file: Version
-7-August-2002<!--
+8-August-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -316,6 +316,25 @@ to the script and processed (or not) by it.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    8-Aug-2002
+    <UL>
+      <LI>
+	After yesterday's fix textfields ignored backspaces
+      <LI>
+	More work on the metrics lines. There's now a dlg to control which ones get
+	drawn.
+      <LI>
+	FontInfo would sometimes crash after adding ttf names.
+      <LI>
+	Added minimal ability to dock palettes into their respective views.
+      <LI>
+	Added a way of looking at the fontview where there are now holes in the font
+	(ie. a compacted view where every cell contains a glyph). This is just another
+	encoding, but people have been asking for it and it is slightly easier to
+	get to than normal reencoding of a font. Note: It has no defined relationship
+	to the glyph array in a ttf file.
+    </UL>
   <LI>
     7-Aug-2002
     <UL>

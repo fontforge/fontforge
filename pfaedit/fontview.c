@@ -741,6 +741,8 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_PrevDef	2013
 #define MID_ShowHMetrics 2016
 #define MID_ShowVMetrics 2017
+#define MID_CompactedView 2018
+#define MID_EncodedView 2019
 #define MID_CharInfo	2201
 #define MID_FindProblems 2216
 #define MID_MetaFont	2217
@@ -1629,6 +1631,24 @@ static void FVMenuGotoChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int pos = GotoChar(fv->sf);
     FVChangeChar(fv,pos);
+}
+
+static void FVMenuCompact(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    FontView *fvs;
+    int fv_reformat;
+
+    if ( mi->mid==MID_CompactedView )
+	fv_reformat = SFCompactFont(fv->sf);
+    else
+	fv_reformat = SFUncompactFont(fv->sf);
+    if ( !fv_reformat )
+return;
+    FontViewReformatAll(fv->sf);
+    for ( fvs=fv->sf->fv; fvs!=NULL; fvs = fvs->nextsame ) {
+	free(fvs->selected);
+	fvs->selected = gcalloc(fv->sf->charcnt,sizeof(char));
+    }
 }
 
 static void FVChangeDisplayFont(FontView *fv,BDFFont *bdf) {
@@ -2556,6 +2576,9 @@ static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_PrevDefChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'a' }, '[', ksm_control|ksm_meta, NULL, NULL, FVMenuChangeChar, MID_PrevDef },
     { { (unichar_t *) _STR_Goto, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'G' }, '>', ksm_shift|ksm_control, NULL, NULL, FVMenuGotoChar },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_EncodedView, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'E' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuCompact, MID_EncodedView },
+    { { (unichar_t *) _STR_CompactedView, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuCompact, MID_CompactedView },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_ShowHMetrics, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuShowMetrics, MID_ShowHMetrics },
     { { (unichar_t *) _STR_ShowVMetrics, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuShowMetrics, MID_ShowVMetrics },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
@@ -2627,6 +2650,12 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	  case MID_PrevDef:
 	    for ( pos = anychars-1; pos>=0 && sf->chars[pos]==NULL; --pos );
 	    mi->ti.disabled = pos<0;
+	  break;
+	  case MID_EncodedView:
+	    mi->ti.checked = !fv->sf->compacted;
+	  break;
+	  case MID_CompactedView:
+	    mi->ti.checked = fv->sf->compacted;
 	  break;
 	  case MID_ShowHMetrics:
 	    /*mi->ti.checked = fv->showhmetrics;*/
@@ -2905,10 +2934,20 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
     extern unsigned short unicode_from_adobestd[256];
     static char namebuf[100];
     Encoding *item=NULL;
+    int j;
 
     memset(dummy,'\0',sizeof(*dummy));
     dummy->color = COLOR_DEFAULT;
     dummy->enc = i;
+    if ( sf->compacted ) {
+	for ( j=i-1; j>=0; --j )
+	    if ( sf->chars[j]!=NULL )
+	break;
+	if ( j>0 )
+	    dummy->old_enc = sf->chars[j]->old_enc+(i-j);
+	else
+	    dummy->old_enc = i;
+    }
     if ( sf->cidmaster!=NULL ) {
 	/* CID fonts don't have encodings, instead we must look up the cid */
 	if ( sf->cidmaster->loading_cid_map )

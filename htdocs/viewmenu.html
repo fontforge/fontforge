@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 7-Aug-2002 -->
+  <!-- AP: Last modified: 8-Aug-2002 -->
   <TITLE>The View Menu</TITLE>
 </HEAD>
 <BODY>
@@ -30,9 +30,13 @@
   <LI>
     <A HREF="#FindInFV">Find In Font View</A>
   <LI>
-    <A HREF="#HMetrics">View H. Metrics</A>
+    <A HREF="#Encoded">Encoded View</A>
   <LI>
-    <A HREF="#VMetrics">View V. Metrics</A>
+    <A HREF="#Compacted">Compacted View</A>
+  <LI>
+    <A HREF="#HMetrics">View H. Metrics...</A>
+  <LI>
+    <A HREF="#VMetrics">View V. Metrics...</A>
   <LI>
     <A HREF="#px24">24 pixel outline</A>
   <LI>
@@ -68,6 +72,10 @@
 	<A HREF="#Tools">Tools</A>
       <LI>
 	<A HREF="#Layers">Layers</A>
+      <LI>
+	<A HREF="viewmenu.html#Shades">Shades</A>
+      <LI>
+	<A HREF="#Dock">Dock</A>
     </UL>
   <LI>
     <A HREF="#Rulers">Show/Hide Rulers</A>
@@ -152,18 +160,30 @@
     font view so that the current character is displayed (and selected) in the
     fontview.
   <DT>
-    <A NAME="HMetrics">View H. Metrics</A>
+    <A NAME="Encoded">Encoded</A> View
   <DD>
-    In the font view this will control whether the horizontal metrics lines are
-    draw across the displayed glyphs. In the outline character view the same
-    functionality is available from one of the palettes.
+    Only in the font view. If this is selected then the font is displayed with
+    its normal encoding
   <DT>
-    <A NAME="VMetrics">View V. Metrics</A>
+    <A NAME="Compacted">Compacted</A> View
   <DD>
-    In the font view this will control whether the vertical metrics lines are
+    Only in the font view. If this is selected then the font is displayed in
+    a compacted form where there are no empty glyph cells in the display.
+  <DT>
+    <A NAME="HMetrics">View H. Metrics</A>...
+  <DD>
+    In the font view this will control which of the the horizontal metrics lines
+    are draw across the displayed glyphs. In the outline character view the same
+    functionality is available from one of the palettes.
+    <A HREF="fontview.html#metrics">See the font view for more information</A>
+  <DT>
+    <A NAME="VMetrics">View V. Metrics</A>...
+  <DD>
+    In the font view this will control which of the vertical metrics lines are
     draw across the displayed glyphs. In the outline character view the same
     functionality is available from one of the palettes. (This will be greyed
     out if your font does not have vertical metrics in it).
+    <A HREF="fontview.html#metrics">See the font view for more information</A>
   <DT>
     <A NAME="px24">24 pixel </A>outline
   <DD>
@@ -261,6 +281,16 @@
 	If this item is checked then the layers palette (in the outline and bitmap
 	views) is visible. Selecting it toggles whether the palette is visible or
 	not.
+      <DT>
+	<A NAME="Shades">Shades</A>
+      <DD>
+	Only in the bitmap view, and only if editing grey-scale (anti-aliased) fonts.
+	Controls whether the shades of grey palette is visible or not.
+      <DT>
+	<A NAME="Dock">Dock</A> Palettes
+      <DD>
+	Allows you to control whether you want the palettes free standing or docked
+	in the current view.
     </DL>
   <DT>
     Show/Hide <A NAME="Rulers">Rulers</A>

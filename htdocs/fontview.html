@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 7-Aug-2002 -->
+  <!-- AP: Last modified: 8-Aug-2002 -->
   <TITLE>The Font View</TITLE>
 </HEAD>
 <BODY>
@@ -43,9 +43,35 @@ CJK characters do not for example)
 You may also display any of the bitmap fonts you have generated from the
 outline characters. Simply go to the View menu and select the one you want.
 <P>
-You may display metrics lines (baseline, origin and advance width) in the
-font view. (View -&gt; Show H Metrics). If you do so, I suggest viewing the
-font at a large pixel size, otherwise the window looks too confusing.
+You may display <A NAME="metrics">metrics</A> lines (baseline, origin and
+advance width) in the font view. (View -&gt; Show H Metrics). If you do so,
+I suggest viewing the font at a large pixel size, otherwise the window looks
+too confusing.
+<TABLE BORDER CELLPADDING="2">
+  <TR>
+    <TD><P ALIGN=Center>
+      <IMG SRC="FVHMetrics.png" WIDTH="100" HEIGHT="116"></TD>
+    <TD><P ALIGN=Center>
+      <IMG SRC="FVVMetrics.png" WIDTH="100" HEIGHT="116"></TD>
+  </TR>
+  <TR VALIGN="Top">
+    <TD>A 96 pixel display showing the various horizontal metric lines.<BR>
+      The blue line is the baseline<BR>
+      The small red tick on the left marks the character origin.<BR>
+      The green line on the right shows where the advance width is<BR>
+      &nbsp;while the bottom green line shows how long it is.<BR>
+      &nbsp;(normally you will not display both at once)<BR>
+      The character is centered horizontally, and the font ascent is<BR>
+      the top of the box displaying it, while the descent is the bottom.</TD>
+    <TD>A 96 pixel display showing the various vertical metric lines.<BR>
+      The blue line down the center is the vertical baseline.<BR>
+      The red bar at the top (over writing the ascent line) is the<BR>
+      &nbsp;vertical origin.<BR>
+      The green line at the bottom shows where the vertical advance<BR>
+      &nbsp;is while the green line on the right shows how long it is.<BR>
+      &nbsp;(normally you will not display both at once)</TD>
+  </TR>
+</TABLE>
 <P>
 You may select any number of characters in the font by dragging through them.
 You may use shift-click to select (or deselect) additional characters. You
@@ -136,21 +162,21 @@ the one real character. All characters will have the same name. When PfaEdit
 generates a font it looks for this case and turns it into a font whose encoding
 vector contains multiple references to a glyph.
 <P>
-You may also create a custom encoding. (Custom encodings may not have more
-than 256 encoded characters). You may change the name of any character in
-the font with the Element-&gt;Char Info command. This will force the font
-to have a custom encoding.
+You may also create a custom encoding. (Generally, only the first 256 entries
+of a Custom encodings will actually be part of a font's encoding vector).
+You may change the name of any character in the font with the Element-&gt;Char
+Info command. This will force the font to have a custom encoding.
 <P>
 There are many standard encodings built in to the program. There are 14 ISO
 8859 encodings, the encoding used by the Macintosh for the US and Western
 Europe, the encoding used by MS Windows for the US and Europe (which is a
 slight extension of ISO 8859-1). There are also several 2-byte encodings
-built in. Two of these are unicode whose goal is to specify every character
-currently used by humans. There are 4 CJK (Chinese, Japanese, Korean) 94x94
-encodings (two bytes where each byte ranges over the 94 ASCII printable
-characters excluding the space character). And there are sjis (Japanese),
-big5 (Traditional Chinese), Wansung (Korean) and johab (Korean) . You can
-also add your own encodings with the
+built in. Several of these are subsets of unicode whose goal is to specify
+every character currently used by humans. There are 4 CJK (Chinese, Japanese,
+Korean) 94x94 encodings (two bytes where each byte ranges over the 94 ASCII
+printable characters excluding the space character). And there are sjis
+(Japanese), big5 (Traditional Chinese), Wansung (Korean) and johab (Korean)
+. You can also add your own encodings with the
 <A HREF="fontinfo.html">Element-&gt;Font Info</A> dialog. A brief description
 of what's in the encodings also appears <A HREF="fontinfo.html#Encodings">on
 that page</A>.
@@ -172,6 +198,11 @@ are designed to be associated with one or several cmap files which provide
 encodings in a general way. cmap files are beyond the scope of PfaEdit. Adobe
 has defined many which are freely
 <A HREF="http://www.adobe.com/products/acrobat/acrrasianfontpack.html">available</A>.
+<P>
+There is one final encoding called "Compacted". This encoding is just a
+contiguous list of glyphs with no empty slots in it. It is often easier to
+look at a CJK or unicode font without having to wade through thousands of
+unused code points.
 <H3>
   <A NAME="Unicode">Unicode</A> (ISO 10646)
 </H3>

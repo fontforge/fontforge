@@ -374,28 +374,12 @@ return( index );
 }
 
 static int SFEncodingCnt(SplineFont *sf) {
-    Encoding *item=NULL;
-
-    if ( sf->encoding_name == em_unicode4 )
-return( unicode4_size );
-    if ( sf->encoding_name == em_unicode || sf->encoding_name == em_big5 ||
-	    sf->encoding_name == em_johab || sf->encoding_name == em_wansung ||
-	    sf->encoding_name == em_sjis ||
-	    (sf->encoding_name >= em_unicodeplanes && sf->encoding_name <= em_unicodeplanesmax ))
-return( 65536 );
-    else if ( sf->encoding_name == em_none )
+    int cnt = CountOfEncoding(sf->encoding_name);
+    if ( sf->encoding_name == em_none )
 return( sf->charcnt );
-    else if ( sf->encoding_name < em_first2byte )
-return( 256 );
-    else if ( sf->encoding_name <= em_last94x94 )
-return( 96*94 );
-    else if ( sf->encoding_name >= em_base ) {
-	for ( item=enclist; item!=NULL && item->enc_num!=sf->encoding_name;
-		item=item->next );
-	if ( item!=NULL )
-return( item->char_cnt );
-    }
+    if ( cnt==0 )
 return( sf->charcnt );
+return( cnt );
 }
 
 void MergeFont(FontView *fv,SplineFont *other) {

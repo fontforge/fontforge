@@ -106,6 +106,10 @@ static char *str_ShowHMetrics="Show H. Metrics...";
 static char mnemonic_ShowHMetrics = 'H';
 static char *str_ShowVMetrics="Show V. Metrics...";
 static char mnemonic_ShowVMetrics = 'V';
+static char *str_EncodedView="Encoded View";
+static char mnemonic_EncodedView = 'E';
+static char *str_CompactedView="Compacted View";
+static char mnemonic_CompactedView = 'C';
 static char *str_FindInFontView="Find In Font View";
 static char mnemonic_FindInFontView = 'V';
 static char str_Fill[] = "Fill";
@@ -375,6 +379,7 @@ static char mnemonic_CIDFontInfo = 'I';
 
     /* Font Info dlg */
 static char str_Custom[] = "Custom";
+static char str_Compacted[] = "Compacted";
 static char str_Isolatin1[] = "ISO 8859-1  (Latin1)";
 static char str_Isolatin0[] = "ISO 8859-15  (Latin0)";
 static char str_Isolatin2[] = "ISO 8859-2  (Latin2)";
