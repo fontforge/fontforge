@@ -847,6 +847,24 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
     }
 }
 
+static int SCSetsColor(SplineChar *sc) {
+#ifdef FONTFORGE_CONFIG_TYPE3
+    int l;
+    RefChar *r;
+
+    for ( l=ly_fore ; l<sc->layer_cnt; ++l ) {
+	if ( sc->layers[l].fill_brush.col != COLOR_INHERITED )
+return( true );
+	if ( sc->layers[l].stroke_pen.brush.col != COLOR_INHERITED )
+return( true );
+	for ( r = sc->layers[l].refs; r!=NULL; r = r->next )
+	    if ( SCSetsColor(r->sc) )
+return( true );
+    }
+#endif
+return( false );
+}
+
 static void dumpproc(void (*dumpchar)(int ch,void *data), void *data, SplineChar *sc ) {
     DBounds b;
 
@@ -854,9 +872,15 @@ static void dumpproc(void (*dumpchar)(int ch,void *data), void *data, SplineChar
     dumpf(dumpchar,data,"  /%s { ",sc->name);
     if ( sc->dependents!=NULL )
 	dumpstr(dumpchar,data,"dup -1 ne { ");
-    dumpf(dumpchar,data,"%d 0 %d %d %d %d setcachedevice", 
-	    (int) sc->width, (int) floor(b.minx), (int) floor(b.miny),
-	    (int) ceil(b.maxx), (int) ceil(b.maxy) );
+    if ( !SCSetsColor(sc) ) {
+	dumpf(dumpchar,data,"%d 0 %d %d %d %d setcachedevice", 
+		(int) sc->width, (int) floor(b.minx), (int) floor(b.miny),
+		(int) ceil(b.maxx), (int) ceil(b.maxy) );
+    } else {
+	/* can't cache it if we set colour/grey within */
+	dumpf(dumpchar,data,"%d 0 setcharwidth", 
+		(int) sc->width );
+    }
     if ( sc->dependents!=NULL )
 	dumpstr(dumpchar,data," } if\n");
     else
