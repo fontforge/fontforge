@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 3-Sep-2001 -->
-  <!-- AP: Last modified: 21-Jun-2002 -->
+  <!-- AP: Last modified: 18-Aug-2002 -->
   <TITLE>TtfMod -- A TrueType&reg; Font Modifier</TITLE>
 </HEAD>
 <BODY>
@@ -50,9 +50,7 @@ access to certain features of TrueType that would be awkward to fold into
 PfaEdit's UI, specifically TrueType instructing (hinting). (It has helped
 me figure out why PfaEdit's TrueType instructing is so bad).
 <P>
-This program isn't finished yet. <FONT COLOR="Red"><STRONG><BIG>The Save
-and Save As commands may have problems. </BIG></STRONG></FONT>Let's pretend
-it's called ttfview for now...
+This program isn't finished yet.
 <P>
 TrueType is not standardized. It is an evolving specification with at least
 three groups working on it and changing it in different ways. The major players
@@ -92,6 +90,10 @@ None of these is entirely consistant with the others.
 	Old MS docs claim that in the cmap table the big5 encoding_id is 3 (and the
 	PRC encoding is 4), while the new docs claim it is 4 (and the PRC encoding
 	is 3).
+      <LI>
+	Apple and MS/Adobe have gone in different directions for some of the more
+	advanced typographic effects and the two ways these are described are completely
+	different.
     </UL>
 </UL>
 <P>
@@ -197,7 +199,7 @@ $ make
 </PRE>
 <UL>
   <LI>
-    <A HREF="../ttfmod_src-020621.tgz">Source</A> 21-June-2002
+    <A HREF="../ttfmod_src-020818.tgz">Source</A> 18-August-2002
     <!--  <LI>
     <A HREF="../ttfmod-011025.tgz">linux (redhat 7.1) executable</A>:
     25-Oct-2001<BR>
@@ -252,7 +254,10 @@ up with a reproduceable minimal case, that would be great. The executable
 has symbols in it so if you run it in gdb you should be able to get a stack
 trace... Do what you can.
 <P>
-<A HREF="mailto:gww@silcom.com">gww@silcom.com</A>
+<A HREF="mailto:pfaedit-ttfmod@lists.sourceforge.net">pfaedit-ttfmod@lists.sourceforge.net</A>
+<P>
+You may subscribe to it on sourceforge:
+<A HREF="http://sourceforge.net/mail/?group_id=25752">http://sourceforge.net/mail/?group_id=25752</A>
 <H3>
   Known bugs...
 </H3>
