@@ -475,7 +475,7 @@ return( item );
 }
 
 void LoadEncodingFile(void) {
-    static unichar_t filter[] = { '*','.','{','p','s',',','P','S',',','t','x','t',',','T','X','T','}',  '\0' };
+    static unichar_t filter[] = { '*','.','{','p','s',',','P','S',',','t','x','t',',','T','X','T',',','e','n','c',',','E','N','C','}',  '\0' };
     unichar_t *fn;
     char *filename;
 
