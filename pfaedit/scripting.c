@@ -689,7 +689,6 @@ static void bGenerateFamily(Context *c) {
     fmflags = c->a.vals[3].u.ival;
 
     fonts = c->a.vals[4].u.aval;
-    sfs = NULL;
     for ( i=0; i<fonts->argc; ++i ) {
 	if ( fonts->vals[i].type!=v_str )
 	    error(c,"Values in the fontname array must be strings");
@@ -734,6 +733,7 @@ static void bGenerateFamily(Context *c) {
 	if ( styles[0]==NULL )
 	    error(c,"At least one of the specified fonts must have a plain style");
     }
+    sfs = NULL;
     for ( i=47; i>=0; --i ) if ( styles[i]!=NULL ) {
 	cur = chunkalloc(sizeof(struct sflist));
 	cur->next = sfs;
@@ -745,7 +745,7 @@ static void bGenerateFamily(Context *c) {
 	error(c,"Save failed");
     for ( cur=sfs; cur!=NULL; cur=sfs ) {
 	sfs = cur->next;
-	free(cur);
+	chunkfree(cur,sizeof(struct sflist));
     }
 }
 
