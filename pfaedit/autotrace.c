@@ -214,6 +214,7 @@ return;
 		transform[5] = images->yoff - images->yscale*ib->height;
 		new = SplinePointListTransform(new,transform,true);
 		if ( new!=NULL ) {
+		    sc->parent->onlybitmaps = false;
 		    if ( !changed )
 			SCPreserveState(sc,false);
 		    for ( last=new; last->next!=NULL; last=last->next );

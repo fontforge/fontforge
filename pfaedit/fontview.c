@@ -69,7 +69,7 @@ FontView *fv_list=NULL;
 void FVToggleCharChanged(FontView *fv,SplineChar *sc) {
     int i, j;
 
-    if ( fv==NULL ) fv = sc->views->fv;
+    if ( fv==NULL ) fv = sc->parent->fv;
     if ( fv->sf!=sc->parent )		/* Can happen in CID fonts if char's parent is not currently active */
 return;
     i = sc->enc / fv->colcnt;
@@ -1425,8 +1425,11 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    }
 	    mi->ti.disabled = !anytraceable;
 	  break;
-	  case MID_MergeFonts: case MID_InterpolateFonts:
-	    mi->ti.disabled = fv->sf->bitmaps==NULL || fv->sf->onlybitmaps;
+	  case MID_MergeFonts:
+	    mi->ti.disabled = fv->sf->bitmaps!=NULL && fv->sf->onlybitmaps;
+	  break;
+	  case MID_InterpolateFonts:
+	    mi->ti.disabled = fv->sf->onlybitmaps;
 	  break;
 	}
     }

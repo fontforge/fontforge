@@ -21,4 +21,7 @@ CFLAGS = @CFLAGS@ $(Incs) $(WFLAGS) $(X_CFLAGS)
 	$(LIBTOOL) $(CC) $(CFLAGS) -c $<
 
 clean:
-	-rm -f *.o *.lo
+	-rm -f *.o ../libgunicode.la
+
+cleaner:
+	-rm -f *.o ../libgunicode.la Makefile

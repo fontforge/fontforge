@@ -29,6 +29,7 @@ cleaner:
 	( cd pfaedit ; $(MAKE) cleaner )
 	( cd Unicode ; $(MAKE) cleaner )
 	( cd gdraw ; $(MAKE) cleaner )
+	rm Makefile config.cache config.log config.status
 
 
 install: $(sharedir)
@@ -38,6 +39,7 @@ install: $(sharedir)
 	cp pfaedit/pfaedit $(bindir)
 	cp pfaedit/pfaedit.*.ui $(sharedir)
 	cp pfaedit/pfaedit.1 $(mandir)/man1
+#	cp *.cidmap $(sharedir)
 
 $(sharedir):
 	mkdir -p $(sharedir)

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 25-Sep-2001 -->
+  <!-- AP: Last modified: 1-Oct-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -66,20 +66,26 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-010924.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 24-Sept-2001
+    <A HREF="pfaedit-011001.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 1-Oct-2001
   <LI>
     <A HREF="pfaedit-solaris-010901.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 1-Sept-2001
   <LI>
-    <A HREF="pfaedit-010905-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
+    <A HREF="pfaedit-010906-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
     Version: 5-Sept-2001
+  <LI>
+    <A HREF="pfaedit-010925-1.ppc.rpm">Download pfaedit linux-ppc suse 7.1
+    </A>binary rpm Version: 25-Sept-2001
   <LI>
     <A HREF="http://packages.debian.org/unstable/x11/pfaedit.html">A debian package
     is available at the debian site.</A>
   <LI>
     <A HREF="Problems-MacOSX.html#binary">A Mac OS/X distribution</A> (with Caveats).
-    Version 24-Sept-2001<BR>
+    Version 24-Sept-2001
+  <LI>
+    <A HREF="ftp://nchrem.tnw.tudelft.nl/pub/pfaedit/">An OpenVMS executable
+    </A>(by Jacob Jansen): Version Approximately 23-Sept-2001<BR>
     &nbsp;
   <LI>
     If you want to do autotracing around character images you should also download
@@ -93,24 +99,24 @@ know when you do</A>.
   <A NAME="source">Source</A> distribution
 </H2>
 <P>
-You can download a <A HREF="pfaedit-010905-1.src.rpm">source RPM</A>: Version:
+You can download a <A HREF="pfaedit-010906-1.src.rpm">source RPM</A>: Version:
 5-Sept-2001<BR>
 Or you can download the following three packages. Version: 24-Sept-2001
 <UL>
   <LI>
-    <A HREF="libgunicode-010908.tgz">Unicode library source</A> (8-Sept-2001)<BR>
+    <A HREF="libgunicode-011001.tgz">Unicode library source</A> (1-Oct-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
-    <A HREF="libgdraw-010924.tgz">Unicode widget library source</A>
-    (24-Sept-2001)<BR>
+    <A HREF="libgdraw-011001.tgz">Unicode widget library source</A>
+    (1-Oct-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-010924.tgz">Pfaedit source</A> (24-Sept-2001)<BR>
+    <A HREF="pfaedit_src-011001.tgz">Pfaedit source</A> (1-Oct-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
-    <A HREF="pfaedit_full-010924.tgz">All three bundled together </A>(24-Sept-2001)
+    <A HREF="pfaedit_full-011001.tgz">All three bundled together </A>(1-Oct-2001)
   <LI>
     If you want to do autotracing around character images you should also download
     Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
@@ -183,7 +189,7 @@ bitmap fonts that pfaedit uses
 </UL>
 <P>
 <A NAME="docs">All</A> the documentation files in this directory bundled
-up into one <A HREF="pfaedit_htdocs-010924.tgz">tgz file</A> 24-Sept-2001.
+up into one <A HREF="pfaedit_htdocs-010925.tgz">tgz file</A> 25-Sept-2001.
 <BLOCKQUOTE>
   <BLOCKQUOTE>
     <A NAME="license">Copyright</A> &copy; 2000,2001 by George Williams
@@ -221,6 +227,22 @@ up into one <A HREF="pfaedit_htdocs-010924.tgz">tgz file</A> 24-Sept-2001.
 </H2>
 <UL>
   <LI>
+    30-Sept-2001/1-Oct-2001
+    <UL>
+      <LI>
+	Improved importing background bitmap fonts (scaling factor set more accurately,
+	pk characters whose bitmap width was a factor of 8 had problems).
+      <LI>
+	Import with from background bitmap fonts if the outline character is empty.
+      <LI>
+	Merge Fonts was disabled except under bizarre circumstances, should be fixed.
+      <LI>
+	Makefiles should create the *.ui files now.
+      <LI>
+	Mac encoding table should include the Euro character now (I was using an
+	old version which had the currency symbol instead).
+    </UL>
+  <LI>
     24-Sept-2001
     <UL>
       <LI>
@@ -234,7 +256,7 @@ up into one <A HREF="pfaedit_htdocs-010924.tgz">tgz file</A> 24-Sept-2001.
 	files, you've got to guess at the encoding before loading them).
       <LI>
 	Can now read kerning information from TeX .tfm files (Again, there's no encoding
-	in these guys, I just assume the fonts encoding matches the tfm)
+	in these guys, I just assume the font's encoding matches the tfm)
     </UL>
   <LI>
     22-Sept-2001
@@ -482,7 +504,7 @@ The following people have helped debug pfaedit. Many thanks!
   <LI>
     Olaf Rogalsky
   <LI>
-    Baruch Even
+    <A HREF="http://baruch.ev-en.org/">Baruch Even</A>
   <LI>
     Volker Gering
   <LI>
@@ -565,15 +587,6 @@ now placed in graceful retirement by MacroMedia.
   <LI>
     <A HREF="http://www.bitstream.com/categories/developer/truedoc/pfrspec.html">OpenDoc</A>.
     Sadly Proprietary so I shan't support it.
-  <LI>
-    TeX formats (I'm not going to attempt to understand mf format) both of these
-    were provided for me by Torsten Bronger
-    <UL>
-      <LI>
-	<A HREF="tftopl.pdf">tfm (TeX Font Metrics file)</A>
-      <LI>
-	<A HREF="pktype.pdf">pk (packed raster)</A>
-    </UL>
 </UL>
 <P>
 Other font links
@@ -632,6 +645,8 @@ Other Encodings
   <LI>
     <A HREF="http://www.unicode.org/Public/MAPPINGS/VENDORS/APPLE/">Mac
     Encodings</A>
+  <LI>
+    <A HREF="http://devworld.apple.com/techpubs/mac/Text/Text-516.html">MacRoman</A>
 </UL>
 <H2>
   Other <A NAME="tools">Tools</A>

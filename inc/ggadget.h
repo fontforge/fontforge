@@ -231,6 +231,8 @@ void GGadgetSetChecked(GGadget *g, int ison);
 int GGadgetIsChecked(GGadget *g);
 
 int GTabSetGetSel(GGadget *g);
+void GTabSetSetEnabled(GGadget *g,int pos, int enabled);
+GWindow GTabSetGetSubwindow(GGadget *g,int pos);
 
 int32 GScrollBarGetPos(GGadget *g);
 int32 GScrollBarSetPos(GGadget *g,int32 pos);

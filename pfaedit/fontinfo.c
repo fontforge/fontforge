@@ -412,6 +412,8 @@ static struct langstyle *stylelist[] = {regs, demibolds, bolds, heavys, blacks,
 #define CID_WidthClass		3002
 #define CID_PFMFamily		3003
 #define CID_FSType		3004
+#define CID_NoSubsetting	3005
+#define CID_OnlyBitmaps		3006
 
 #define CID_PanFamily		4001
 #define CID_PanSerifs		4002
@@ -1993,6 +1995,10 @@ return(true);
 	    sf->pfminfo.width = GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,CID_WidthClass))+1;
 	    sf->pfminfo.pfmfamily = (int) (GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_PFMFamily))->userdata);
 	    sf->pfminfo.fstype = (int) (GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_FSType))->userdata);
+	    if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_NoSubsetting)))
+		sf->pfminfo.fstype |=0x100;
+	    if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_OnlyBitmaps)))
+		sf->pfminfo.fstype |=0x200;
 	    for ( i=0; i<10; ++i )
 		sf->pfminfo.panose[i] = (int) (GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_PanFamily+i))->userdata);
 	    sf->pfminfo.pfmset = true;
@@ -2124,8 +2130,8 @@ void FontInfo(SplineFont *sf) {
     GWindow gw;
     GWindowAttrs wattrs;
     GTabInfo aspects[8];
-    GGadgetCreateData mgcd[10], ngcd[11], egcd[11], psgcd[16], tngcd[7],   pgcd[8], vgcd[10], pangcd[22];
-    GTextInfo mlabel[10], nlabel[11], elabel[11], pslabel[16], tnlabel[7], plabel[8], vlabel[10], panlabel[22], *list;
+    GGadgetCreateData mgcd[10], ngcd[11], egcd[11], psgcd[16], tngcd[7],   pgcd[8], vgcd[11], pangcd[22];
+    GTextInfo mlabel[10], nlabel[11], elabel[11], pslabel[16], tnlabel[7], plabel[8], vlabel[11], panlabel[22], *list;
     struct gfi_data d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20], ncbuf[20], vbuf[20], uibuf[12], regbuf[100];
     int i;
@@ -2618,6 +2624,28 @@ void FontInfo(SplineFont *sf) {
 	i = 3;
     fstype[i].selected = true;
     vgcd[7].gd.label = &fstype[i];
+
+    vgcd[8].gd.pos.x = 20; vgcd[8].gd.pos.y = vgcd[7].gd.pos.y+26;
+    vlabel[8].text = (unichar_t *) _STR_NoSubsetting;
+    vlabel[8].text_in_resource = true;
+    vgcd[8].gd.label = &vlabel[8];
+    vgcd[8].gd.flags = gg_visible | gg_enabled;
+    if ( sf->pfminfo.fstype!=-1 && (sf->pfminfo.fstype&0x100) )
+	vgcd[8].gd.flags |= gg_cb_on;
+    vgcd[8].gd.popup_msg = GStringGetResource(_STR_NoSubsettingPopup,NULL);
+    vgcd[8].gd.cid = CID_NoSubsetting;
+    vgcd[8].creator = GCheckBoxCreate;
+
+    vgcd[9].gd.pos.x = 110; vgcd[9].gd.pos.y = vgcd[8].gd.pos.y;
+    vlabel[9].text = (unichar_t *) _STR_OnlyBitmaps;
+    vlabel[9].text_in_resource = true;
+    vgcd[9].gd.label = &vlabel[9];
+    vgcd[9].gd.flags = gg_visible | gg_enabled;
+    if ( sf->pfminfo.fstype!=-1 && ( sf->pfminfo.fstype&0x200 ))
+	vgcd[9].gd.flags |= gg_cb_on;
+    vgcd[9].gd.popup_msg = GStringGetResource(_STR_OnlyBitmapsPopup,NULL);
+    vgcd[9].gd.cid = CID_OnlyBitmaps;
+    vgcd[9].creator = GCheckBoxCreate;
     
 
 /******************************************************************************/

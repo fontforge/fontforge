@@ -88,6 +88,8 @@ int GPaletteIsDocked(GWindow palette);
 struct ggadget *GWidgetGetControl(GWindow gw, int cid);
 GWindow GWidgetGetParent(GWindow gw);
 GWindow GWidgetGetTopWidget(GWindow gw);
+extern GDrawEH GWidgetGetEH(GWindow w);
+extern void GWidgetSetEH(GWindow w,GDrawEH e_h);
 
 	/* Built in dialogs */
 unichar_t *GWidgetOpenFile(const unichar_t *title, const unichar_t *defaultfile,

@@ -2302,7 +2302,8 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	platform = getushort(ttf);
 	specific = getushort(ttf);
 	offset = getlong(ttf);
-	if ( platform==3 && specific==1 ) {
+	if (( platform==3 && specific==1 ) || /* MS Unicode */
+		( platform==0 && (specific==0 || specific==3) && enc!=em_unicode )) {	/* Apple Unicode */
 	    enc = em_unicode;
 	    encoff = offset;
 	    mod = 0;
@@ -2316,7 +2317,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    encoff = offset;
 	    trans = unicode_from_mac;
 	} else if ( platform==3 && (specific==2 || specific==3 || specific==5) && enc!=em_unicode ) {
-	    enc = specific==2? em_ksc5601 : specific==5 ? em_jis208 : em_unicode;
+	    enc = specific==2? em_jis208 : specific==5 ? em_ksc5601 : em_unicode;
 	    mod = specific;
 	    encoff = offset;
 	}
@@ -2325,7 +2326,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	fseek(ttf,info->encoding_start+encoff,SEEK_SET);
 	format = getushort(ttf);
 	len = getushort(ttf);
-	/* language = */ getushort(ttf);
+	/* version/language = */ getushort(ttf);
 	if ( format==0 ) {
 	    for ( i=0; i<len-6; ++i )
 		table[i] = getc(ttf);
@@ -2508,7 +2509,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	    if ( val>=258 ) ++gcbig;
 	}
 
-	for ( i=0; i<gc && i<258; ++i ) if ( indexes[i]!=0 || i==0 ) {
+	for ( i=0; i<258; ++i ) if ( indexes[i]!=0 || i==0 ) {
 	    info->chars[indexes[i]]->name = copy(ttfstandardnames[i]);
 	    if ( info->chars[indexes[i]]->unicodeenc==-1 )
 		info->chars[indexes[i]]->unicodeenc = EncFromName(ttfstandardnames[i]);

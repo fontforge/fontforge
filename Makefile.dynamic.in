@@ -29,6 +29,7 @@ cleaner:
 	( cd pfaedit ; $(MAKE) cleaner )
 	( cd Unicode ; $(MAKE) cleaner )
 	( cd gdraw ; $(MAKE) cleaner )
+	rm Makefile config.cache config.log config.status
 
 install: $(sharedir)
 # You may need to be root to do the install
@@ -43,6 +44,7 @@ install: $(sharedir)
 	ln -s libgdraw.so.1 $(libdir)/libgdraw.so
 	ln -s libgunicode.so.1.0 $(libdir)/libgunicode.so.1
 	ln -s libgunicode.so.1 $(libdir)/libgunicode.so
+#	cp *.cidmap $(sharedir)
 
 $(sharedir):
 	mkdir -p $(sharedir)

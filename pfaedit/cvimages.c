@@ -479,6 +479,7 @@ void SCInsertBackImage(SplineChar *sc,GImage *image,real scale,real yoff,real xo
     im->bb.maxx = im->xoff + GImageGetWidth(im->image)*im->xscale;
     im->bb.miny = im->yoff - GImageGetHeight(im->image)*im->yscale;
     sc->backimages = im;
+    sc->parent->onlybitmaps = false;
     SCOutOfDateBackground(sc);
     SCCharChangedUpdate(sc,NULL);
 }

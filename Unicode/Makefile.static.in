@@ -27,4 +27,7 @@ all: ../libs/libgunicode.a
 #	ln -s libgunicode.so.1 ../libs/libgunicode.so
 
 clean:
-	-rm -f *.o
+	-rm -f *.o ../libs/libgunicode.a
+
+cleaner:
+	-rm -f *.o ../libs/libgunicode.a Makefile

@@ -122,8 +122,15 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b) {
 	    MakeEncChar(sf,enc,name);
 	    i = enc;
 	}
-	if ( i!=-1 && sf->onlybitmaps && sf->bitmaps==b && b->next==NULL && swidth!=-1 )
+	if ( i!=-1 && sf->onlybitmaps && sf->bitmaps==b && b->next==NULL && swidth!=-1 ) {
 	    sf->chars[i]->width = swidth;
+	    sf->chars[i]->widthset = true;
+	} else if ( i!=-1 && swidth!=-1 && sf->chars[i]!=NULL &&
+		sf->chars[i]->splines==NULL && sf->chars[i]->refs==NULL &&
+		!sf->chars[i]->widthset ) {
+	    sf->chars[i]->width = swidth;
+	    sf->chars[i]->widthset = true;
+	}
     }
     if ( i==-1 )	/* Can't guess the proper encoding, ignore it */
 return;
@@ -491,7 +498,8 @@ return( 0 );
     /* w,h is the width,height of the bounding box */
     /* dx is the advance width? */
     /* cc is the character code */
-    /* I'm not sure what to make of tfm or dy */
+    /* tfm is the advance width as a fraction of an em/2^20 so multiply by 1000/2^20 to get postscript values */
+    /* dy is the advance height for vertical text? */
 
     if ( cc >= sf->charcnt ) {
 	int new = ((sf->charcnt+255)>>8)<<8;
@@ -527,8 +535,14 @@ return( 0 );
     bc->xmax = w-1-hoff;
     bc->ymin = voff-h+1;
     bc->width = dx;
-    bc->bytes_per_line = (w>>3) + 1;
+    bc->bytes_per_line = ((w+7)>>3);
     bc->bitmap = gcalloc(bc->bytes_per_line*h,1);
+
+    if ( sf->chars[cc]->splines==NULL && sf->chars[cc]->refs==NULL &&
+	    !sf->chars[cc]->widthset ) {
+	sf->chars[cc]->width = (sf->ascent+sf->descent)*(double) tfm/(0x100000);
+	sf->chars[cc]->widthset = true;
+    }
 
     if ( w==0 && h==0 )
 	/* Nothing */;
@@ -778,7 +792,7 @@ static void FVAddToBackground(FontView *fv,BDFFont *bdf) {
 	    img = gcalloc(1,sizeof(GImage));
 	    img->u.image = base;
 
-	    scale = (sf->ascent+sf->descent)/(bdf->ascent+bdf->descent);
+	    scale = (sf->ascent+sf->descent)/(double) (bdf->ascent+bdf->descent);
 	    SCInsertBackImage(sc,img,scale,(bdfc->ymax+1)*scale,bdfc->xmin*scale);
 	}
     }

@@ -31,11 +31,20 @@ LDFLAGS = @LDFLAGS@
 LIBS = $(X_LIBS) ../libgdraw.la ../libgunicode.la \
     $(X_PRE_LIBS) -lX11 $(X_EXTRA_LIBS) @LIBS@ -L/usr/lib -lm
 
+all: pfaedit pfaedit.en.ui
+
 pfaedit: $(pfaedit_OBJECTS)
 	$(LIBTOOL) $(CC) -o pfaedit $(pfaedit_OBJECTS) $(LIBS)
 
+#this makes all the .ui files but wildcarding doesn't work too well if the
+# files don't exist.
+nomen.h pfaedit-ui.c pfaedit.en.ui: nomen.*.c makenomenh.c threaddummy.o
+	gcc -o makenomenh $(CFLAGS) makenomenh.c threaddummy.o $(LIBS)
+	makenomenh
+	mv pfaedit-ui.en.c pfaedit-ui.c
+
 clean:
-	-rm -f *.o pfaedit
+	-rm -f *.o pfaedit *.ui
 
 cleaner:
-	-rm -f *.o pfaedit Makefile
+	-rm -f *.o pfaedit *.ui Makefile

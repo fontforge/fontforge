@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 3-Sep-2001 -->
-  <!-- AP: Last modified: 9-Sep-2001 -->
+  <!-- AP: Last modified: 30-Sep-2001 -->
   <TITLE>TtfMod -- A TrueType&reg; Font Modifier</TITLE>
 </HEAD>
 <BODY>
@@ -39,6 +39,27 @@ file and allow you to edit some of the tables. This is primarily to provide
 access to certain features of TrueType that would be awkward to fold into
 PfaEdit's UI, specifically TrueType instructing (hinting). (And perhaps it
 will help me figure out why PfaEdit's TrueType instructing is so bad).
+<P>
+TrueType is not standardized. It is an evolving specification with at least
+three groups working on it and changing it in different ways. The major players
+are:
+<UL>
+  <LI>
+    <A HREF="http://fonts.apple.com/TTRefMan/">Apple</A>
+  <LI>
+    <A HREF="http://www.microsoft.com/typography/otspec/default.htm">MicroSoft</A>
+  <LI>
+    <A HREF="http://partners.adobe.com/asn/developer/opentype/">Adobe</A>
+</UL>
+<P>
+None of these is entirely consistant with the others. Most of the differences
+are small (for instance Apple and Adobe call a field in the cmap table
+"language", while Microsoft (who doesn't use it) calls it "version"), but
+some are quite large (for instance Apple calls the bitmap data table "bdat"
+while MicroSoft and Adobe call it "EBDT". This means that a font's bitmaps
+need to be specified twice to work on both systems).
+<P>
+This is unfortunate.
 <H3>
   <A NAME="TTFontView">TrueType Font View</A>
 </H3>

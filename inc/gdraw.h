@@ -351,6 +351,7 @@ extern Color GDrawGetDefaultBackground(GDisplay *);
 extern Color GDrawGetDefaultForeground(GDisplay *);
 extern GRect *GDrawGetSize(GWindow w, GRect *ret);
 extern GDrawEH GDrawGetEH(GWindow w);
+extern void GDrawSetEH(GWindow w,GDrawEH e_h);
 extern void GDrawGetPointerPosition(GWindow w, GEvent *mouse);
 extern void GDrawRaise(GWindow w);
 extern void GDrawRaiseAbove(GWindow w,GWindow below);
