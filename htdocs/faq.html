@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 13-Feb-2003 -->
+  <!-- AP: Last modified: 18-Feb-2003 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -37,6 +37,10 @@
     </UL>
   <LI>
     <A HREF="#windows">How do I edit fonts on MS windows?</A>
+    <UL>
+      <LI>
+	<A HREF="faq.html#Bad-Windows-Fonts">Why don't my fonts work on windows?</A>
+    </UL>
   <LI>
     <A HREF="#kern-info">Does Pfaedit read in the old kerning information from
     fonts?</A>
@@ -79,7 +83,7 @@
     about them?</A>
     <UL>
       <LI>
-	<A HREF="cidmenu.html#CID">(What is a CID-keyed font?)</A>
+	<A TARGET="_top" HREF="cidmenu.html#CID">(What is a CID-keyed font?)</A>
     </UL>
   <LI>
     <A HREF="#simplify">Does the simplify command lose accuracy?</A>
@@ -115,8 +119,8 @@
   <LI>
     <A HREF="#ttf2afm">Why does ttf2afm crash on PfaEdit ttf files?</A>
   <LI>
-    <A HREF="index.html#known-bugs">Where can I find a list of known bugs in
-    PfaEdit?</A>
+    <A TARGET="_top" HREF="index.html#known-bugs">Where can I find a list of
+    known bugs in PfaEdit?</A>
 </UL>
 <P>
   <HR>
@@ -205,8 +209,9 @@
 	<STRONG>Unix &amp; X</STRONG> (but not KDE)
       <DD>
 	I'd suggest that you look at the
-	<A HREF="http://www.linuxdoc.org/HOWTO/Font-HOWTO.html">linux font HOWTO
-	file</A>, and the <A HREF="http://www.linuxdoc.org/HOWTO/mini/FDU/">font
+	<A TARGET="_top" HREF="http://www.linuxdoc.org/HOWTO/Font-HOWTO.html">linux
+	font HOWTO file</A>, and the
+	<A TARGET="_top" HREF="http://www.linuxdoc.org/HOWTO/mini/FDU/">font
 	deuglification HOWTO</A> as good starting points. But I'll run over the
 	highlights
 	<P>
@@ -236,7 +241,7 @@ $ xset fp+ `pwd`
 	If you want to install <EM>postscript fonts</EM><BR>
 	You should generate them as postscript binary (.pfb) files, then move both
 	the .pfb and the .afm file into (one of) your font directory(ies) and run
-	<A HREF="http://rpmfind.net/linux/rpm2html/search.php?query=type1inst">type1inst</A>
+	<A TARGET="_top" HREF="http://rpmfind.net/linux/rpm2html/search.php?query=type1inst">type1inst</A>
 	in it.<BR>
 	type1inst will probably complain that your font doesn't have a foundry and
 	will probably get the encoding wrong. You can either:
@@ -253,7 +258,7 @@ $ xset fp+ `pwd`
 	If you want to install <EM>truetype fonts</EM><BR>
 	You move the .ttf file into your font directory and run mkttfdir and
 	mkfontdir.<BR>
-	(<A HREF="http://rpmfind.net/linux/rpm2html/search.php?query=mkttfdir">mkttfdir</A>
+	(<A TARGET="_top" HREF="http://rpmfind.net/linux/rpm2html/search.php?query=mkttfdir">mkttfdir</A>
 	has a small problem with fonts created by PfaEdit, it will almost invariably
 	complain that it doesn't recognize the foundry. You can safely ignore this,
 	but if it bothers you then add a line to ttmkfdir.c at 936<BR>
@@ -279,9 +284,9 @@ $ xset fp+ `pwd`
       <DD>
 	(I don't know KDE very well, so take my experience with a grain of salt)
 	Under KDE there is a tool called
-	<A HREF="http://www.cpdrummond.uklinux.net/kfontinst/">kfontinst</A> which
-	is supposed to do all the configuration work for you. I was only able to
-	get it to work as root and had to reconfigure my system to follow its
+	<A TARGET="_top" HREF="http://www.cpdrummond.uklinux.net/kfontinst/">kfontinst</A>
+	which is supposed to do all the configuration work for you. I was only able
+	to get it to work as root and had to reconfigure my system to follow its
 	conventions, but once that was done it installed X fonts quite handily. I
 	never did figure out how to get it to install ghostview fonts. (I experimented
 	with version 0.9.2)
@@ -305,10 +310,10 @@ $ xset fp+ `pwd`
 	own headers. Mac fonts aren't compatible with anybody else's. PfaEdit can
 	create a resource fork if it wraps the font up in a macbinary encoding. See
 	the <A HREF="faq.html#How-mac">following question</A> for more information.<BR>
-	I've also written <A HREF="http://fondu.sourceforge.net/">some utilities
-	</A>designed to convert from one format to another and they may prove
-	useful.<BR>
-	<A HREF="http://babel.uoregon.edu/yamada/fontconversionfaq.html">University
+	I've also written <A TARGET="_top" HREF="http://fondu.sourceforge.net/">some
+	utilities </A>designed to convert from one format to another and they may
+	prove useful.<BR>
+	<A TARGET="_top" HREF="http://babel.uoregon.edu/yamada/fontconversionfaq.html">University
 	of Oregon has some links that might be helpful</A>.<BR>
 	Once you've converted your fonts you just drop them into the System Folder
 	and they should be available after that.
@@ -374,8 +379,8 @@ $ xset fp+ `pwd`
 	<P>
 	<STRONG>Note:</STRONG> make sure you either replace the original font files,
 	or that you rename the font within pfaedit and (for postscript fonts) that
-	you give it a new unique id. See the <A HREF="fontinfo.html">Font Info</A>
-	dlg.
+	you give it a new unique id. See the <A TARGET="_top" HREF="fontinfo.html">Font
+	Info</A> dlg.
 	<P>
 	<STRONG>Caveat:</STRONG> A postscript font is useless on a macintosh unless
 	it is acompanied by at least one bitmap font. If you generate a postscript
@@ -383,7 +388,7 @@ $ xset fp+ `pwd`
 	<STRONG>Caveat:</STRONG> The mac is picky about the filename used to contain
 	a postscript file. It is based on the postscript font name but suffers a
 	transformation. Don't try to rename this file. Basically the rules are (see
-	<A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/0091.Mac_Fond.pdf">Adobe
+	<A TARGET="_top" HREF="http://partners.adobe.com/asn/developer/pdfs/tn/0091.Mac_Fond.pdf">Adobe
 	Technical Note 0091</A>):
 	<UL>
 	  <LI>
@@ -401,12 +406,13 @@ $ xset fp+ `pwd`
       <DT>
 	Mac OS/X
       <DD>
-	On Mac OS/X you can run <A HREF="MacOSX.html#Running">PfaEdit directly</A>
-	(if you've got <A HREF="MacOSX.html#binary">XDarwin installed</A>). OS/X
-	has several font formats, some fonts are stored in the old format (see above),
-	while others are stored as data fork resources. The data fork font files
-	generally have the extension ".dfont". On a Mac PfaEdit is able to edit both
-	formats directly. OS/X also supports normal .otf and .ttf font files.
+	On Mac OS/X you can run <A TARGET="_top" HREF="MacOSX.html#Running">PfaEdit
+	directly</A> (if you've got <A TARGET="_top" HREF="MacOSX.html#binary">XDarwin
+	installed</A>). OS/X has several font formats, some fonts are stored in the
+	old format (see above), while others are stored as data fork resources. The
+	data fork font files generally have the extension ".dfont". On a Mac PfaEdit
+	is able to edit both formats directly. OS/X also supports normal .otf and
+	.ttf font files.
     </DL>
   <DT>
     <B><A NAME="How-family">How do I create a mac font family? (How do I get
@@ -414,12 +420,13 @@ $ xset fp+ `pwd`
   <DD>
     For the Style menu in most mac applications to work on your fonts, you must
     create a font family. You do this with the
-    <A HREF="filemenu.html#GenerateMac">File-&gt;Generate Mac Family</A> command.
+    <A TARGET="_top" HREF="filemenu.html#GenerateMac">File-&gt;Generate Mac
+    Family</A> command.
     <P>
     All the fonts in a family must have the same Family name (See the
-    <A HREF="fontinfo.html">font info</A> dialog). Mac font families only support
-    Italic, Bold, Outline, Expanded, and Condensed styles, they do not support
-    "Black", "DemiBold", "Light" or "Thin" varients.
+    <A TARGET="_top" HREF="fontinfo.html">font info</A> dialog). Mac font families
+    only support Italic, Bold, Outline, Expanded, and Condensed styles, they
+    do not support "Black", "DemiBold", "Light" or "Thin" varients.
   <DT>
     <B><A NAME="Mac-ATM">Why doesn't ATM work on my fonts?</A></B>
   <DD>
@@ -436,11 +443,11 @@ $ xset fp+ `pwd`
     <B>How do I edit fonts on MS <A NAME="windows">windows</A>?</B>
   <DD>
     To run PfaEdit under MS windows you must first install the
-    <A HREF="http://www.cygwin.com/">cygwin environment</A>.
+    <A TARGET="_top" HREF="http://www.cygwin.com/">cygwin environment</A>.
     <UL>
       <LI>
 	First download the setup.exe program from
-	<A HREF="http://www.cygwin.com/">http://www.cygwin.com/</A>
+	<A TARGET="_top" HREF="http://www.cygwin.com/">http://www.cygwin.com/</A>
       <LI>
 	Run it. It will ask you what components of cygwin you wish to install
       <LI>
@@ -450,8 +457,8 @@ $ xset fp+ `pwd`
 	Once you have cygwin installed, start it. This should give you a terminal
 	window running bash (a unix shell)
       <LI>
-	Download the <A HREF="index.html#binary">cygwin version of PfaEdit</A>, and
-	move it to whatever directory you think most appropriate
+	Download the <A TARGET="_top" HREF="index.html#binary">cygwin version of
+	PfaEdit</A>, and move it to whatever directory you think most appropriate
 	(<CODE>/usr/local/bin</CODE> is a reasonable choice)
 	<BLOCKQUOTE>
 	  <PRE>$ mkdir -p /usr/local/share/pfaedit /usr/local/bin /usr/local/share/man
@@ -492,6 +499,14 @@ MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
     some other cygwin components, like gcc, the image processing libraries, freetype,
     etc.
   <DT>
+    <B><A NAME="Bad-Windows-Fonts">Why don't my fonts work on windows?</A></B>
+  <DD>
+    Here's one possibility: Windows sometimes (and I don't know when) insists
+    on having a name for the font in the appropriate language (ie. a Japanese
+    entry for a SJIS font). Try going to
+    <A TARGET="_top" HREF="fontinfo.html#TTF-Names">Element-&gt;Font Info-&gt;TTF
+    Names </A>and adding a set of strings for your language.
+  <DT>
     <B><A NAME="kern-info">Does Pfaedit read in the old kerning information from
     fonts?</A></B>
   <DD>
@@ -516,23 +531,26 @@ MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
       <DD>
 	No. Again the kerning information is not stored in the font file (it is stored
 	in a bitmap font file), but on the mac it is impossible to guess what name
-	to use for the associated bitmap file, and PfaEdit does not even try.<BR>
-	See the info below on FONDs.
+	to use for the associated bitmap file, and PfaEdit does not even try. <BR>
+	See the info below on how to load kerning from a
+	<A HREF="faq.html#FOND-kern">FOND</A>.
       <DT>
 	<B>AFM and TFM files.</B>
       <DD>
 	PfaEdit can read kerning information directly from these files and apply
 	those data to a font. See the
-	<A HREF="filemenu.html#Merge-kern">File-&gt;Merge Kern Info</A> menu command.
+	<A TARGET="_top" HREF="filemenu.html#Merge-kern">File-&gt;Merge Kern Info</A>
+	menu command.
       <DT>
 	<B>Mac resource files containing FOND resources.</B>
       <DD>
-	The mac stores kerning information in the FOND resource associated with a
-	bitmap font (it is not stored in the file with the postscript font). If you
-	wish kerning data for a mac postscript font, you must find a font file containing
-	a bitmap font with the same family and style as the postscript. PfaEdit can
-	read kerning information directly from these files and apply those data to
-	a font. See the <A HREF="filemenu.html#Merge-kern">File-&gt;Merge Kern Info</A>
+	The mac stores kerning information in the <A NAME="FOND-kern">FOND</A> resource
+	associated with a bitmap font (it is not stored in the file with the postscript
+	font). If you wish kerning data for a mac postscript font, you must find
+	a font file containing a bitmap font with the same family and style as the
+	postscript. PfaEdit can read kerning information directly from these files
+	and apply those data to a font. See the
+	<A TARGET="_top" HREF="filemenu.html#Merge-kern">File-&gt;Merge Kern Info</A>
 	menu command.
     </DL>
   <DT>
@@ -542,10 +560,10 @@ MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
   <DT>
     <A NAME="flex-hints"><B>How do I make Pfaedit use flex hints?</B></A>
   <DD>
-    PfaEdit will generate flex hints in situations where it is appropriate to
-    do so. You don't need to do anything. If flex hints are used then the necessary
-    subroutines will be added to the font. If they are not needed then the
-    subroutines will not be added.
+    It happens automagically. PfaEdit will generate flex hints in situations
+    where it is appropriate to do so. You don't need to do anything. If flex
+    hints are used then the necessary subroutines will be added to the font.
+    If they are not needed then the subroutines will not be added.
   <DT>
     <A NAME="fuzzy"><B>My characters are all perfectly hinted, why do some stems
     have different widths (or appear fuzzy, or fade away completely)?</B></A>
@@ -567,8 +585,8 @@ MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
     Figure out what your encoding looks like. Often this will involve searching
     around the web to find an example of that encoding. For instance if you want
     a devanagari encoding you might look at
-    <A HREF="http://www.cwi.nl/~dik/english/codes/indic.html">a site which shows
-    the ISCII encodings</A>
+    <A TARGET="_top" HREF="http://www.cwi.nl/~dik/english/codes/indic.html">a
+    site which shows the ISCII encodings</A>
     <P>
     These encodings only show the top 96 characters, presumably the others are
     the same as US ASCII. Look at the images and figure out how they map to unicode
@@ -723,13 +741,13 @@ MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
   <DD>
     Firstly because I believe that any attempt to copy a character's name will
     almost certainly be better done by defining a custom
-    <A HREF="fontinfo.html#Encoding">encoding</A>.<BR>
+    <A TARGET="_top" HREF="fontinfo.html#Encoding">encoding</A>.<BR>
     Secondly because most of the time you don't want the name copied.<BR>
     Thirdly because it is esthetically better that copy should only work with
     data and not meta-data.<BR>
     HOWEVER... enough people have asked this question that I've enabled a mode
-    in <A HREF="editmenu.html#CharName">Edit-&gt;Copy From-&gt;Char Name</A>
-    which allows you to change the default behavior.
+    in <A TARGET="_top" HREF="editmenu.html#CharName">Edit-&gt;Copy From-&gt;Char
+    Name</A> which allows you to change the default behavior.
   <DT>
     <A NAME="copy-names"><B>Why does Edit-&gt;Paste complain about name
     duplication?</B></A>
@@ -850,7 +868,8 @@ MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
     PfaEdit does not support these because when PfaEdit loads a TrueType font
     it loses all the TrueType instructions. So if PfaEdit were to generate a
     type 42 font the quality would be greatly reduced. You are much better off
-    using <A HREF="http://ftp.giga.or.at/pub/nih/ttftot42/">ttftot42</A>.
+    using
+    <A TARGET="_top" HREF="http://ftp.giga.or.at/pub/nih/ttftot42/">ttftot42</A>.
   <DT>
     <A NAME="otf-diffs"><B>I generated an opentype font and windows wouldn't
     install it. Why not?</B></A>
@@ -913,11 +932,11 @@ MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
   <DD>
     I don't know. The ttf2afm that was distributed with my redhat linux certainly
     does crash. When I downloaded the source from
-    <A HREF="http://www.ctan.org/tex-archive/obsolete/systems/pdftex/">pdftex</A>
+    <A TARGET="_top" HREF="http://www.ctan.org/tex-archive/obsolete/systems/pdftex/">pdftex</A>
     area of ctan and built it (with debug) the resultant program did not crash.
     Therefore I believe this is a bug in ttf2afm and that bug has been fixed.<BR>
     The afm files produced by ttf2afm don't conform to
-    <A HREF="http://partners.adobe.com/asn/developer/PDFS/TN/5004.AFM_Spec.pdf">Adobe's
+    <A TARGET="_top" HREF="http://partners.adobe.com/asn/developer/PDFS/TN/5004.AFM_Spec.pdf">Adobe's
     specifications</A>.
 </DL>
 <P>
