@@ -1714,7 +1714,9 @@ return;
 	    CVElide(cv->gw,NULL,NULL);
 	else
 	    CVMerge(cv->gw,NULL,NULL);
-    } else if ( event->u.chr.keysym == GK_Shift_L || event->u.chr.keysym == GK_Shift_R ) {
+    } else if ( event->u.chr.keysym == GK_Shift_L || event->u.chr.keysym == GK_Shift_R ||
+	     event->u.chr.keysym == GK_Alt_L || event->u.chr.keysym == GK_Alt_R ||
+	     event->u.chr.keysym == GK_Meta_L || event->u.chr.keysym == GK_Meta_R ) {
 	CVFakeMove(cv, event);
     } else if ( (event->u.chr.state&ksm_meta) &&
 	    !(event->u.chr.state&(ksm_control|ksm_shift)) ) {
@@ -1853,7 +1855,9 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
     }
 #else
     CVToolsSetCursor(cv,TrueCharState(event),NULL);
-    if ( event->u.chr.keysym == GK_Shift_L || event->u.chr.keysym == GK_Shift_R )
+    if ( event->u.chr.keysym == GK_Shift_L || event->u.chr.keysym == GK_Shift_R ||
+	     event->u.chr.keysym == GK_Alt_L || event->u.chr.keysym == GK_Alt_R ||
+	     event->u.chr.keysym == GK_Meta_L || event->u.chr.keysym == GK_Meta_R )
 	CVFakeMove(cv, event);
 #endif
 }
@@ -2569,6 +2573,8 @@ static void CVMouseMove(CharView *cv, GEvent *event ) {
 	CVUpdateInfo(cv, event);
 	if ( cv->showing_tool == cvt_pointer )
 	    CVCheckResizeCursors(cv);
+	else if ( cv->showing_tool == cvt_ruler )
+	    CVMouseMoveRuler(cv,event);
 return;
     }
 
@@ -2825,7 +2831,9 @@ static void CVTimer(CharView *cv,GEvent *event) {
     } else if ( cv->autorpt==event->u.timer.timer ) {
 	cv->autorpt = NULL;
 	CVToolsSetCursor(cv,cv->oldstate,NULL);
-	if ( cv->keysym==GK_Shift_L || cv->keysym == GK_Shift_R ) {
+	if ( cv->keysym == GK_Shift_L || cv->keysym == GK_Shift_R ||
+		 cv->keysym == GK_Alt_L || cv->keysym == GK_Alt_R ||
+		 cv->keysym == GK_Meta_L || cv->keysym == GK_Meta_R ) {
 	    GEvent e;
 	    e.w = cv->oldkeyw;
 	    e.u.chr.keysym = cv->keysym;

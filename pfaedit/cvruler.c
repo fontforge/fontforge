@@ -32,9 +32,12 @@ static void RulerText(CharView *cv, unichar_t *ubuf) {
     char buf[60];
     real xoff = cv->info.x-cv->p.cx, yoff = cv->info.y-cv->p.cy;
 
-    sprintf( buf, "%.1f %.0f\260 (%.0f,%.0f)", sqrt(xoff*xoff+yoff*yoff),
-	    atan2(yoff,xoff)*180/3.1415926535897932,
-	    xoff,yoff);
+    if ( !cv->p.pressed )	/* Give current location accurately */
+	sprintf( buf, "%f,%f", cv->info.x, cv->info.y);
+    else			/* Give displacement from press point */
+	sprintf( buf, "%.1f %.0f\260 (%.0f,%.0f)", sqrt(xoff*xoff+yoff*yoff),
+		atan2(yoff,xoff)*180/3.1415926535897932,
+		xoff,yoff);
     uc_strcpy(ubuf,buf);
 }
 
@@ -42,6 +45,8 @@ static int RulerText2(CharView *cv, unichar_t *ubuf) {
     char buf[60];
     double len;
 
+    if ( !cv->p.pressed )
+return( false );
     if ( cv->p.sp!=NULL && cv->info_sp!=NULL &&
 	    ((cv->p.sp->next!=NULL && cv->p.sp->next->to==cv->info_sp) ||
 	     (cv->p.sp->prev!=NULL && cv->p.sp->prev->from==cv->info_sp)) ) {
@@ -54,31 +59,6 @@ static int RulerText2(CharView *cv, unichar_t *ubuf) {
 return( true );
     }
 return( false );
-}
-	
-static void RulerPlace(CharView *cv, GEvent *event) {
-    unichar_t ubuf[60];
-    int width, x;
-    GRect size;
-    GPoint pt;
-    int h,w;
-
-    GDrawSetFont(cv->ruler_w,cv->rfont);
-    RulerText(cv,ubuf);
-    width = GDrawGetTextWidth(cv->ruler_w,ubuf,-1,NULL);
-    h = cv->rfh;
-    if ( RulerText2(cv,ubuf)) {
-	w = GDrawGetTextWidth(cv->ruler_w,ubuf,-1,NULL);
-	if ( width<w ) width = w;
-	h += cv->rfh;
-    }
-    GDrawGetSize(GDrawGetRoot(NULL),&size);
-    pt.x = event->u.mouse.x; pt.y = event->u.mouse.y;
-    GDrawTranslateCoordinates(cv->v,GDrawGetRoot(NULL),&pt);
-    x = pt.x + 26;
-    if ( x+width > size.width )
-	x = pt.x - width-30;
-    GDrawMoveResize(cv->ruler_w,x,pt.y-cv->ras-2,width+4,h+4);
 }
 
 static int ruler_e_h(GWindow gw, GEvent *event) {
@@ -97,8 +77,13 @@ static int ruler_e_h(GWindow gw, GEvent *event) {
     }
 return( true );
 }
-
-void CVMouseDownRuler(CharView *cv, GEvent *event) {
+	
+static void RulerPlace(CharView *cv, GEvent *event) {
+    unichar_t ubuf[60];
+    int width, x;
+    GRect size;
+    GPoint pt;
+    int h,w;
     GWindowAttrs wattrs;
     GRect pos;
     FontRequest rq;
@@ -124,17 +109,45 @@ void CVMouseDownRuler(CharView *cv, GEvent *event) {
 	GDrawFontMetrics(cv->rfont,&as,&ds,&ld);
 	cv->rfh = as+ds; cv->ras = as;
     }
+
+    GDrawSetFont(cv->ruler_w,cv->rfont);
+    RulerText(cv,ubuf);
+    width = GDrawGetTextWidth(cv->ruler_w,ubuf,-1,NULL);
+    h = cv->rfh;
+    if ( RulerText2(cv,ubuf)) {
+	w = GDrawGetTextWidth(cv->ruler_w,ubuf,-1,NULL);
+	if ( width<w ) width = w;
+	h += cv->rfh;
+    }
+    GDrawGetSize(GDrawGetRoot(NULL),&size);
+    pt.x = event->u.mouse.x; pt.y = event->u.mouse.y;
+    GDrawTranslateCoordinates(cv->v,GDrawGetRoot(NULL),&pt);
+    x = pt.x + 26;
+    if ( x+width > size.width )
+	x = pt.x - width-30;
+    GDrawMoveResize(cv->ruler_w,x,pt.y-cv->ras-2,width+4,h+4);
+}
+
+void CVMouseDownRuler(CharView *cv, GEvent *event) {
+
     RulerPlace(cv,event);
     GDrawSetVisible(cv->ruler_w,true);
 }
 
 void CVMouseMoveRuler(CharView *cv, GEvent *event) {
-    if ( !cv->p.pressed )
+    if ( !cv->p.pressed && !(event->u.mouse.state&ksm_meta) ) {
+	if ( cv->ruler_w!=NULL && GDrawIsVisible(cv->ruler_w)) {
+	    GDrawDestroyWindow(cv->ruler_w);
+	    cv->ruler_w = NULL;
+	}
 return;
+    }
     RulerPlace(cv,event);
+    if ( !cv->p.pressed )
+	GDrawSetVisible(cv->ruler_w,true);
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);		/* The resize needs to happen before the expose */
-    if ( !cv->p.pressed )			/* but a mouse up might sneak in... */
+    if ( !cv->p.pressed && !(event->u.mouse.state&ksm_meta) ) /* but a mouse up might sneak in... */
 return;
     GDrawRequestExpose(cv->ruler_w,NULL,false);
 }
