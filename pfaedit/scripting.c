@@ -37,6 +37,8 @@
 #include <math.h>
 #include <setjmp.h>
 
+static int verbose = -1;
+
 typedef struct val {
     enum val_type { v_int, v_str, v_unicode, v_lval, v_arr, v_arrfree, v_void } type;
     union {
@@ -99,6 +101,7 @@ typedef struct context {
     Val argsval;
     char *filename;
     int lineno;
+    int ungotch;
     FontView *curfv;
     jmp_buf *err_env;
 } Context;
@@ -521,6 +524,7 @@ static void bStrskipint(Context *c) {
 /* **** File menu **** */
 
 static void bQuit(Context *c) {
+    if ( verbose>0 ) putchar('\n');
     if ( c->a.argc==1 )
 exit(0);
     if ( c->a.argc>2 )
@@ -1974,15 +1978,31 @@ static void expr(Context*,Val *val);
 static void statement(Context*);
 
 static int cgetc(Context *c) {
-    int ch = getc(c->script);
+    int ch;
+    if ( c->ungotch ) {
+	ch = c->ungotch;
+	c->ungotch = 0;
+return( ch );
+    }
+    ch = getc(c->script);
+    if ( verbose>0 )
+	putchar(ch);
     if ( ch=='\r' ) {
 	int nch = getc(c->script);
 	if ( nch!='\n' )
 	    ungetc(nch,c->script);
+	else if ( verbose>0 )
+	    putchar('\n');
 	++c->lineno;
     } else if ( ch=='\n' )
 	++c->lineno;
 return( ch );
+}
+
+static void cungetc(int ch,Context *c) {
+    if ( c->ungotch )
+	fprintf( stderr, "Internal error: Attempt to unget two characters\n" );
+    c->ungotch = ch;
 }
 
 static enum token_type NextToken(Context *c) {
@@ -2000,14 +2020,14 @@ return( c->tok );
 	    int toolong = false;
 	    while ( (isalnum(ch) || ch=='$' || ch=='_' || ch=='.' || ch=='@' ) && pt<end ) {
 		*pt++ = ch;
-		ch = getc(c->script);
+		ch = cgetc(c);
 	    }
 	    *pt = '\0';
 	    while ( isalnum(ch) || ch=='$' || ch=='_' || ch=='.' ) {
-		ch = getc(c->script);
+		ch = cgetc(c);
 		toolong = true;
 	    }
-	    ungetc(ch,c->script);
+	    cungetc(ch,c);
 	    tok = tt_name;
 	    if ( toolong )
 		error( c, "Name too long" );
@@ -2025,16 +2045,16 @@ return( c->tok );
 	    if ( ch!='0' ) {
 		while ( isdigit(ch)) {
 		    val = 10*val+(ch-'0');
-		    ch = getc(c->script);
+		    ch = cgetc(c);
 		}
-	    } else if ( isdigit(ch=getc(c->script)) ) {
+	    } else if ( isdigit(ch=cgetc(c)) ) {
 		while ( isdigit(ch) && ch<'8' ) {
 		    val = 8*val+(ch-'0');
-		    ch = getc(c->script);
+		    ch = cgetc(c);
 		}
 	    } else if ( ch=='X' || ch=='x' || ch=='u' || ch=='U' ) {
 		if ( ch=='u' || ch=='U' ) tok = tt_unicode;
-		ch = getc(c->script);
+		ch = cgetc(c);
 		while ( isdigit(ch) || (ch>='a' && ch<='f') || (ch>='A'&&ch<='F')) {
 		    if ( isdigit(ch))
 			ch -= '0';
@@ -2043,22 +2063,22 @@ return( c->tok );
 		    else
 			ch += 10-'A';
 		    val = 16*val+ch;
-		    ch = getc(c->script);
+		    ch = cgetc(c);
 		}
 	    }
-	    ungetc(ch,c->script);
+	    cungetc(ch,c);
 	    c->tok_val.u.ival = val;
 	    c->tok_val.type = tok==tt_number ? v_int : v_unicode;
 	} else if ( ch=='\'' || ch=='"' ) {
 	    int quote = ch;
 	    char *pt = c->tok_text, *end = c->tok_text+TOK_MAX;
 	    int toolong = false;
-	    ch = getc(c->script);
+	    ch = cgetc(c);
 	    while ( ch!=EOF && ch!='\r' && ch!='\n' && ch!=quote ) {
 		if ( ch=='\\' ) {
-		    ch=getc(c->script);
+		    ch=cgetc(c);
 		    if ( ch=='\n' || ch=='\r' ) {
-			ungetc(ch,c->script);
+			cungetc(ch,c);
 			ch = '\\';
 		    } else if ( ch==EOF )
 			ch = '\\';
@@ -2067,11 +2087,11 @@ return( c->tok );
 		    *pt++ = ch;
 		else
 		    toolong = true;
-		ch = getc(c->script);
+		ch = cgetc(c);
 	    }
 	    *pt = '\0';
 	    if ( ch=='\n' || ch=='\r' )
-		ungetc(ch,c->script);
+		cungetc(ch,c);
 	    tok = tt_string;
 	    if ( toolong )
 		error( c, "String too long" );
@@ -2084,9 +2104,9 @@ return( c->tok );
 	  break;
 	  case '#':
 	    /* Ignore comments */
-	    while ( (ch=getc(c->script))!=EOF && ch!='\r' && ch!='\n' );
+	    while ( (ch=cgetc(c))!=EOF && ch!='\r' && ch!='\n' );
 	    if ( ch=='\r' || ch=='\n' )
-		ungetc(ch,c->script);
+		cungetc(ch,c);
 	  break;
 	  case '(':
 	    tok = tt_lparen;
@@ -2111,58 +2131,58 @@ return( c->tok );
 	  break;
 	  case '-':
 	    tok = tt_minus;
-	    ch=getc(c->script);
+	    ch=cgetc(c);
 	    if ( ch=='=' )
 		tok = tt_minuseq;
 	    else if ( ch=='-' )
 		tok = tt_decr;
 	    else
-		ungetc(ch,c->script);
+		cungetc(ch,c);
 	  break;
 	  case '+':
 	    tok = tt_plus;
-	    ch=getc(c->script);
+	    ch=cgetc(c);
 	    if ( ch=='=' )
 		tok = tt_pluseq;
 	    else if ( ch=='+' )
 		tok = tt_incr;
 	    else
-		ungetc(ch,c->script);
+		cungetc(ch,c);
 	  break;
 	  case '!':
 	    tok = tt_not;
-	    ch=getc(c->script);
+	    ch=cgetc(c);
 	    if ( ch=='=' )
 		tok = tt_ne;
 	    else
-		ungetc(ch,c->script);
+		cungetc(ch,c);
 	  break;
 	  case '~':
 	    tok = tt_bitnot;
 	  break;
 	  case '*':
 	    tok = tt_mul;
-	    ch=getc(c->script);
+	    ch=cgetc(c);
 	    if ( ch=='=' )
 		tok = tt_muleq;
 	    else
-		ungetc(ch,c->script);
+		cungetc(ch,c);
 	  break;
 	  case '%':
 	    tok = tt_mod;
-	    ch=getc(c->script);
+	    ch=cgetc(c);
 	    if ( ch=='=' )
 		tok = tt_modeq;
 	    else
-		ungetc(ch,c->script);
+		cungetc(ch,c);
 	  break;
 	  case '/':
-	    ch=getc(c->script);
+	    ch=cgetc(c);
 	    if ( ch=='/' ) {
 		/* another comment to eol */;
-		while ( (ch=getc(c->script))!=EOF && ch!='\r' && ch!='\n' );
+		while ( (ch=cgetc(c))!=EOF && ch!='\r' && ch!='\n' );
 		if ( ch=='\r' || ch=='\n' )
-		    ungetc(ch,c->script);
+		    cungetc(ch,c);
 	    } else if ( ch=='*' ) {
 		int found=false;
 		ch = cgetc(c);
@@ -2177,51 +2197,51 @@ return( c->tok );
 		tok = tt_diveq;
 	    } else {
 		tok = tt_div;
-		ungetc(ch,c->script);
+		cungetc(ch,c);
 	    }
 	  break;
 	  case '&':
 	    tok = tt_bitand;
-	    ch=getc(c->script);
+	    ch=cgetc(c);
 	    if ( ch=='&' )
 		tok = tt_and;
 	    else
-		ungetc(ch,c->script);
+		cungetc(ch,c);
 	  break;
 	  case '|':
 	    tok = tt_bitor;
-	    ch=getc(c->script);
+	    ch=cgetc(c);
 	    if ( ch=='|' )
 		tok = tt_or;
 	    else
-		ungetc(ch,c->script);
+		cungetc(ch,c);
 	  break;
 	  case '^':
 	    tok = tt_xor;
 	  break;
 	  case '=':
 	    tok = tt_assign;
-	    ch=getc(c->script);
+	    ch=cgetc(c);
 	    if ( ch=='=' )
 		tok = tt_eq;
 	    else
-		ungetc(ch,c->script);
+		cungetc(ch,c);
 	  break;
 	  case '>':
 	    tok = tt_gt;
-	    ch=getc(c->script);
+	    ch=cgetc(c);
 	    if ( ch=='=' )
 		tok = tt_ge;
 	    else
-		ungetc(ch,c->script);
+		cungetc(ch,c);
 	  break;
 	  case '<':
 	    tok = tt_lt;
-	    ch=getc(c->script);
+	    ch=cgetc(c);
 	    if ( ch=='=' )
 		tok = tt_le;
 	    else
-		ungetc(ch,c->script);
+		cungetc(ch,c);
 	  break;
 	  default:
 	    fprintf( stderr, "%s:%d Unexpected character %c (%d)\n",
@@ -3097,10 +3117,17 @@ return( former );
 return( temp );
 }
 
+static void VerboseCheck(void) {
+    if ( verbose==-1 )
+	verbose = getenv("PFAEDIT_VERBOSE")!=NULL;
+}
+
 static void ProcessScript(int argc, char *argv[], FILE *script) {
     int i,j;
     Context c;
     enum token_type tok;
+
+    VerboseCheck();
 
     i=1;
     if ( script!=NULL )
@@ -3221,6 +3248,8 @@ void ExecuteScriptFile(FontView *fv, char *filename) {
     enum token_type tok;
     jmp_buf env;
 
+    VerboseCheck();
+
     memset( &c,0,sizeof(c));
     c.a.argc = 1;
     c.a.vals = argv;
@@ -3311,6 +3340,7 @@ return( true );			/* Error return */
 		++ret;
 	    }
 	    rewind(c.script);
+	    VerboseCheck();
 	    c.lineno = 1;
 	    while ( !c.returned && (tok = NextToken(&c))!=tt_eof ) {
 		backuptok(&c);
