@@ -44,7 +44,7 @@ pfaedit: nomen.h $(pfaedit_OBJECTS)
 	$(LIBTOOL) $(CC) -o pfaedit $(pfaedit_OBJECTS) $(LIBS)
 
 sfddiff: $(DIFFOBJS)
-	$(CC) -o sfddiff $(DIFFOBJS) stamp.c $(DLIBS)
+	$(CC) -o sfddiff $(DIFFOBJS) $(srcdir)/stamp.c $(DLIBS)
 
 #this makes all the .ui files but wildcarding doesn't work too well if the
 # files don't exist.
