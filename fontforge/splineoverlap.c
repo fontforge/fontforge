@@ -972,6 +972,8 @@ static Intersection *FindIntersections(Monotonic *ms, enum overlap_type ot) {
 		     m2->s->splines[0].a==0 && m2->s->splines[1].a==0 )) {
 		if ( !wasc && SplinesIntersect(m1->s,m2->s,pts,t1s,t2s)<=0 )
 	continue;
+		if ( t1s[0]==.5 )
+		    t1s[0] = .5;		/* Debug */
 		for ( i=0; i<4 && t1s[i]!=-1; ++i ) {
 		    if ( t1s[i]>=m1->tstart && t1s[i]<=m1->tend &&
 			    t2s[i]>=m2->tstart && t2s[i]<=m2->tend ) {
@@ -1451,6 +1453,105 @@ static void FixupIntersectedSplines(Monotonic *ms) {
     }
 }
 
+static int BpClose(BasePoint *here, BasePoint *there, double error) {
+    double dx, dy;
+
+    if ( (dx = here->x-there->x)<0 ) dx= -dx;
+    if ( (dy = here->y-there->y)<0 ) dy= -dy;
+    if ( dx<error && dy<error )
+return( true );
+
+return( false );
+}
+
+static SplineSet *SSRemoveTiny(SplineSet *base) {
+    DBounds b;
+    double error, test, dx, dy;
+    SplineSet *prev = NULL, *head = base, *ssnext;
+    SplinePoint *sp, *nsp;
+
+    SplineSetQuickBounds(base,&b);
+    error = b.maxy-b.miny;
+    test = b.maxx-b.minx;
+    if ( test>error ) error = test;
+    if ( (test = b.maxy)<0 ) test = -test;
+    if ( test>error ) error = test;
+    if ( (test = b.maxx)<0 ) test = -test;
+    if ( test>error ) error = test;
+    error /= 30000;
+
+    while ( base!=NULL ) {
+	ssnext = base->next;
+	for ( sp=base->first; ; ) {
+	    if ( sp->next==NULL )
+	break;
+	    nsp = sp->next->to;
+	    if ( BpClose(&sp->me,&nsp->me,error) ) {
+		if ( BpClose(&sp->me,&sp->nextcp,2*error) &&
+			BpClose(&nsp->me,&nsp->prevcp,2*error)) {
+		    /* Remove the spline */
+		    if ( nsp==sp ) {
+			/* Only this spline in the contour, so remove the contour */
+			base->next = NULL;
+			SplinePointListFree(base);
+			if ( prev==NULL )
+			    head = ssnext;
+			else
+			    prev->next = ssnext;
+			base = NULL;
+	break;
+		    }
+		    SplineFree(sp->next);
+		    if ( nsp->nonextcp ) {
+			sp->nextcp = sp->me;
+			sp->nonextcp = true;
+		    } else {
+			sp->nextcp = nsp->nextcp;
+			sp->nonextcp = false;
+		    }
+		    sp->nextcpdef = nsp->nextcpdef;
+		    sp->next = nsp->next;
+		    if ( nsp->next!=NULL ) {
+			nsp->next->from = sp;
+			SplineRefigure(sp->next);
+		    }
+		    if ( nsp==base->last )
+			base->last = sp;
+		    if ( nsp==base->first )
+			base->first = sp;
+		    SplinePointFree(nsp);
+		    if ( sp->next==NULL )
+	break;
+		    nsp = sp->next->to;
+		} else {
+		    /* Leave the spline, but move the two points together */
+		    BasePoint new;
+		    new.x = (sp->me.x+nsp->me.x)/2;
+		    new.y = (sp->me.y+nsp->me.y)/2;
+		    dx = new.x-sp->me.x; dy = new.y-sp->me.y;
+		    sp->me = new;
+		    sp->nextcp.x += dx; sp->nextcp.y += dy;
+		    sp->prevcp.x += dx; sp->prevcp.y += dy;
+		    dx = new.x-nsp->me.x; dy = new.y-nsp->me.y;
+		    nsp->me = new;
+		    nsp->nextcp.x += dx; nsp->nextcp.y += dy;
+		    nsp->prevcp.x += dx; nsp->prevcp.y += dy;
+		    SplineRefigure(sp->next);
+		    if ( sp->prev ) SplineRefigure(sp->prev);
+		    if ( nsp->next ) SplineRefigure(nsp->next);
+		}
+	    }
+	    sp = nsp;
+	    if ( sp==base->first )
+	break;
+	}
+	if ( base!=NULL )
+	    prev = base;
+	base = ssnext;
+    }
+return( head );
+}
+
 SplineSet *SplineSetRemoveOverlap(SplineChar *sc, SplineSet *base,enum overlap_type ot) {
     Monotonic *ms;
     Intersection *ilist;
@@ -1459,6 +1560,7 @@ SplineSet *SplineSetRemoveOverlap(SplineChar *sc, SplineSet *base,enum overlap_t
     if ( sc!=NULL )
 	glyphname = sc->name;
 
+    base = SSRemoveTiny(base);
     ms = SSsToMContours(base,ot);
     ilist = FindIntersections(ms,ot);
     Validate(ms,ilist);

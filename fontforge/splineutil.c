@@ -3210,7 +3210,7 @@ int SplinesIntersect(Spline *s1, Spline *s2, BasePoint pts[9],
 	double t1s[10], double t2s[10]) {	/* One extra for a trailing -1 */
     BasePoint min1, max1, min2, max2;
     int soln = 0;
-    double x,y,s,t;
+    double x,y,s,t, ac0, ac1;
     double d;
     int i,j,found;
     Spline1D spline, temp;
@@ -3302,7 +3302,9 @@ return( false );
 		    s2->splines[0].c)*tempts[i]+s2->splines[0].d;
 	    y = ((s2->splines[1].a*tempts[i]+s2->splines[1].b)*tempts[i]+
 		    s2->splines[1].c)*tempts[i]+s2->splines[1].d;
-	    if ( s1->splines[0].c!=0 )
+	    if ( (ac0 = s1->splines[0].c)<0 ) ac0 = -ac0;
+	    if ( (ac1 = s1->splines[1].c)<0 ) ac1 = -ac1;
+	    if ( ac0>ac1 )
 		t = (x-s1->splines[0].d)/s1->splines[0].c;
 	    else
 		t = (y-s1->splines[1].d)/s1->splines[1].c;
