@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 26-Dec-2003 -->
+  <!-- AP: Last modified: 2-Jan-2004 -->
   <TITLE>Generate Font Dialog</TITLE>
 </HEAD>
 <BODY>
@@ -52,6 +52,9 @@ The outline types are:
     PostScript CID font, this is only available if your font is a
     <A HREF="cidmenu.html">CID font</A>. This produces a font in the old Type1
     CID format. You probably want to use the OpenType CID format...
+  <LI>
+    PostScript CFF font, this is the format that lives inside the 'CFF ' table
+    of an opentype font. It is a valid font format in its own right.
   <LI>
     True Type. The instructions (hinting) are probably not very good. No diagonal
     stems are hinted. Instructing is based on the hints used for postscript,
@@ -251,7 +254,7 @@ If you set neither, then only the 'kern' table will be generated, and it
 will only contain pair-wise kerning (no kerning classes, no kerning by state
 machine). This is the kind of kerning available in the original truetype
 spec (from which both Apple and OpenType have diverged, but which both still
-support).
+support). 
   <HR>
 <H2>
   Generate <A NAME="Mac-Family">Mac</A> Family

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 1-Jan-2004 -->
+  <!-- AP: Last modified: 2-Jan-2004 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -11,7 +11,7 @@
 </H1>
 <UL>
   <LI>
-    ???
+    2-Jan-2004
     <UL>
       <LI>
 	More accurate round joints in stroking.
@@ -23,6 +23,28 @@
 	Yet more problems counting ttf points
       <LI>
 	Update copyright notices.
+      <LI>
+	Add code to protect PfaEdit against reading bad Apple lookup tables (I think
+	the Zapfino.dfont that ships with 10.3 has two bad lookups, but perhaps I
+	just don't understand them).
+      <LI>
+	Try harder to avoid using 'DFLT' script when coming up with a default script
+	for glyphs with no inate script.
+      <LI>
+	Add a Find Problems to detect 'DFLT'
+      <LI>
+	I've been generating bad Simple Positioning subtables for GPOS all along.
+      <LI>
+	Be pickier about what glyph names I let the user choose.
+      <LI>
+	On cygwin (perhaps elsewhere, but I was never able to find the bug elsewhere)
+	if you invoked one command from the menu while another was still executing,
+	then pfaedit would probably crash.
+      <LI>
+	Support for reading and writing bare cff files.
+      <LI>
+	Build Accents crashed when asked to build accented chars for iacute, etc.
+	in a font without dotlessi.
     </UL>
   <LI>
     28-Dec-2003
