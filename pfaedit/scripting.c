@@ -1656,8 +1656,6 @@ static void bMergeFonts(Context *c) {
     if ( sf==NULL )
 	errors(c,"Can't find font", c->a.vals[1].u.sval);
     MergeFont(c->curfv,sf);
-    if ( sf->fv==NULL )
-	SplineFontFree(sf);
 }
 
 static void bAutoHint(Context *c) {

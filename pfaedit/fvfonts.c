@@ -342,6 +342,7 @@ return( -1 );
 
 static void MFixupSC(SplineFont *sf, SplineChar *sc,int i) {
     RefChar *ref;
+    FontView *fvs;
 
     sc->enc = i;
     sc->parent = sf;
@@ -357,7 +358,8 @@ static void MFixupSC(SplineFont *sf, SplineChar *sc,int i) {
     }
     /* I shan't automagically generate bitmaps for any bdf fonts */
     /*  but I have copied over the ones which match */
-    sf->fv->filled->chars[i] = SplineCharRasterize(sc,sf->fv->filled->pixelsize);
+    for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) if ( fvs->filled!=NULL )
+	fvs->filled->chars[i] = SplineCharRasterize(sc,fvs->filled->pixelsize);
 }
 
 static void MergeFixupRefChars(SplineFont *sf) {
@@ -454,16 +456,22 @@ return;
 		    }
 		for ( bdf = fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 		    bdf->chars = grealloc(bdf->chars,(emptypos+cnt)*sizeof(SplineChar *));
-		fv->filled->chars = grealloc(fv->filled->chars,(emptypos+cnt)*sizeof(SplineChar *));
+		for ( fvs = fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame )
+		    if ( fvs->filled!=NULL )
+			fvs->filled->chars = grealloc(fvs->filled->chars,(emptypos+cnt)*sizeof(SplineChar *));
 		for ( i=fv->sf->charcnt; i<emptypos+cnt; ++i ) {
 		    fv->sf->chars[i] = NULL;
 		    fv->selected[i] = false;
 		    for ( bdf = fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 			bdf->chars[i] = NULL;
-		    fv->filled->chars[i] = NULL;
+		    for ( fvs = fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame )
+			if ( fvs->filled!=NULL )
+			    fvs->filled->chars[i] = NULL;
 		}
 		fv->sf->charcnt = emptypos+cnt;
-		fv->filled->charcnt = emptypos+cnt;
+		for ( fvs = fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame )
+		    if ( fvs->filled!=NULL )
+			fvs->filled->charcnt = emptypos+cnt;
 		for ( bdf = fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 		    bdf->charcnt = emptypos+cnt;
 	    }
