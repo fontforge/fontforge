@@ -46,10 +46,14 @@ $ pfaedit font.pfa font2.pfb font3.ttf font4.otf font4.sfd
 $ pfaedit
  Brings up a file picker dlg.
 
+Either the Command (Apple, Cloverleaf) key or the Control key may be used for
+invoking menu items (that is both ^Q and Cmd-Q will cause PfaEdit to quit).
+
 CAVEATS
  1) PfaEdit does not conform to Apple's Human Interface Guidelines, and never
     will.
- 2) PfaEdit does not know how to read a font out of a resource file.
+ 2) PfaEdit does not know how to read a font out of a resource fork.
+    PfaEdit cannot create NFNTs with 2byte encodings (CJK)
  3) The default window manager (twm) does not work well with PfaEdit when
     run in Rootless mode.
     PfaEdit allows the window manager to position its windows for it, and
@@ -63,3 +67,12 @@ CAVEATS
 
 DOCUMENTATION
 	http://pfaedit.sourceforge.net/overview.html
+
+FONTS UNDER Mac OS/X
+ Fonts live in /Library/Fonts, /System/Library/Fonts or ~/Library/Fonts.
+ PfaEdit can read .dfont fonts, PfaEdit cannot edit resource fork fonts
+ directly.
+
+ If you see a font file where ls tells you the size is zero then it will
+ probably be a font in a resource fork. If you want to edit it, first package
+ it up in macbinary (or binhex) format.

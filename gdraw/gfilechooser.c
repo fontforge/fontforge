@@ -214,6 +214,8 @@ return( &_GIcon_ttf );
 return( &_GIcon_cid );
     if ( cu_strstartmatch("application/x-macbinary",m) || cu_strstartmatch("application/x-mac-binhex40",m) )
 return( &_GIcon_mac );
+    if ( cu_strstartmatch("application/x-mac-dfont",m) )
+return( &_GIcon_macttf );
 
 return( &_GIcon_unknown );
 }

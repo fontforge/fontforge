@@ -884,6 +884,17 @@ static struct _GImage ttf0_base = {
     1
 };
 
+static GClut macttf_clut = { 2, 0, 1,
+    0xff, 0xffffff };
+
+static struct _GImage macttf0_base = {
+    it_mono,
+    2069,16,16,2,
+    (uint8 *) ttf0_data,
+    &macttf_clut,
+    1
+};
+
 static uint8 cid0_data[] = {
     0xff, 0xff, 
     0xfb, 0xff, 
@@ -960,3 +971,4 @@ GImage _GIcon_video = { 0, &video0_base };
 GImage _GIcon_audio = { 0, &audio0_base };
 GImage _GIcon_cid = { 0, &cid0_base };
 GImage _GIcon_mac = { 0, &mac_base };
+GImage _GIcon_macttf = { 0, &macttf0_base };

@@ -31,15 +31,14 @@ NOTE:
     debug information after the optimizer has run.
 
 KNOWN BUILD PROBLEMS
-    * The configure script is new. If it doesn't work try using
+    * If the configure script doesn't work for you try using
 	$ make -f makefile.orig
-    * The gdraw package expects to find libjpeg, libtiff, libpng and libungif on
-      your system. If any of these is not present then define -D_NO_LIBUNGIF
-      etc. in the makefile (I hope the configure script can deal with this).
-    * the final link requests -ldl. On some systems (netbsd for instance)
-      libdl is part of libc and can't be found. Just remove it from the LIBS
-      list in the pfaedit/makefile and rebuild. (I hope the configure script
-      takes care of this now).
+	* The gdraw package expects to find libjpeg, libtiff, libpng and
+	  libungif on your system. If any of these is not present then define
+	  -D_NO_LIBUNGIF etc. in the makefile.
+	* the final link requests -ldl. On some systems (netbsd for instance)
+	  libdl is part of libc and can't be found. Just remove it from the
+	  LIBS list in the pfaedit/makefile and rebuild.
 
 INSTALLING
     Er, I'm not really sure of the best way to do this. If you su root (or

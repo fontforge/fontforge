@@ -1650,7 +1650,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		  case 9: if ( stack[sp-1]<0 ) stack[sp-1]= -stack[sp-1]; break;	/* abs */
 		  case 14: stack[sp-1] = -stack[sp-1]; break;		/* neg */
 		  case 26: stack[sp-1] = sqrt(stack[sp-1]); break;	/* sqrt */
-	        }
+		}
 	      break;
 	      case 3: case 4: case 10: case 11: case 12: case 15: case 24:
 		if ( sp<2 ) fprintf(stderr, "Stack underflow on binary operator in %s\n", name );
@@ -1761,7 +1761,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 				pt->prevcp = mid_prevcp;
 				pt->me = mid;
 				pt->nextcp = mid_nextcp;
-			        /*pt->flex = pops[2];*/
+				/*pt->flex = pops[2];*/
 				SplineMake(cur->last,pt);
 				cur->last = pt;
 				pt = chunkalloc(sizeof(SplinePoint));
@@ -1873,7 +1873,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	      case 35:	/* flex */
 	      case 36:	/* hflex1 */
 	      case 37:	/* flex1 */
-	        dy = dy2 = dy3 = dy4 = dy5 = dy6 = dx6 = 0;
+		dy = dy3 = dy4 = dy5 = dy6 = 0;
 		dx = stack[base++];
 		if ( v!=34 )
 		    dy = stack[base++];
@@ -1886,23 +1886,37 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		if ( v!=34 && v!=36 )
 		    dy4 = stack[base++];
 		dx5 = stack[base++];
-		if ( v!=34 )
-		    dy5 = stack[base++];
-		else
+		if ( v==34 )
 		    dy5 = -dy2;
-		if ( v!=37 )
-		    dx6 = stack[base++];
-		else {
-		    real xt = dx+dx2+dx3+dx4+dx5, yt = dy+dy2+dy3+dy4+dy5;
-		    if ( xt<0 ) xt= -xt;
-		    if ( yt<0 ) yt= -yt;
-		    if ( xt>yt )
-			dx6 = stack[base++]/*-xt*/;	/* Manual says we need -xt, seems hard to believe */
-		    else
-			dy6 = stack[base++]/*-yt*/;
+		else
+		    dy5 = stack[base++];
+		switch ( v ) {
+		    real xt, yt;
+		    case 35:    /* flex */
+			dx6 = stack[base++];
+			dy6 = stack[base++];
+			break;
+		    case 34:    /* hflex */
+			dx6 = stack[base++];
+			break;
+		    case 36:    /* hflex1 */
+			dx6 = stack[base++];
+			dy6 = -dy-dy2-dy5;
+			break;
+		    case 37:    /* flex1 */
+			xt = dx+dx2+dx3+dx4+dx5;
+			yt = dy+dy2+dy3+dy4+dy5;
+			if ( xt<0 ) xt= -xt;
+			if ( yt<0 ) yt= -yt;
+			if ( xt>yt ) {
+			    dx6 = stack[base++];
+			    dy6 = -dy-dy2-dy3-dy4-dy5;
+			} else {
+			    dy6 = stack[base++];
+			    dx6 = -dx-dx2-dx3-dx4-dx5;
+			}
+			break;
 		}
-		if ( v==35 )
-		    dy6 = stack[base++];
 		if ( cur!=NULL && cur->first!=NULL && (cur->first!=cur->last || cur->first->next==NULL) ) {
 		    current.x += dx; current.y += dy;
 		    cur->last->nextcp = current;

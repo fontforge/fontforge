@@ -538,7 +538,7 @@ void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e) {
 
 char *GetPostscriptFontName(int mult) {
     /* Some people use pf3 as an extension for postscript type3 fonts */
-    static unichar_t wild[] = { '*', '.', '{', 'p','f','a',',','p','f','b',',','s','f','d',',','t','t','f',',','b','d','f',',','o','t','f',',','p','f','3',',','t','t','c',',','g','s','f',',', 'c','i','d',',','b','i','n',',','h','q','x','}', 
+    static unichar_t wild[] = { '*', '.', '{', 'p','f','a',',','p','f','b',',','s','f','d',',','t','t','f',',','b','d','f',',','o','t','f',',','p','f','3',',','t','t','c',',','g','s','f',',', 'c','i','d',',','b','i','n',',','h','q','x',',','d','f','o','n','t','}', 
 	     '{','.','g','z',',','.','Z',',','.','b','z','2',',','}',  '\0' };
     unichar_t *ret = FVOpenFont(GStringGetResource(_STR_OpenPostscript,NULL),
 	    NULL,wild,NULL,mult,true);
@@ -552,7 +552,7 @@ void MergeKernInfo(SplineFont *sf) {
     static unichar_t wild[] = { '*', '.', '[','a','t',']', 'f','m',  '\0' };
     unichar_t *ret = GWidgetOpenFile(GStringGetResource(_STR_MergeKernInfo,NULL),NULL,wild,NULL);
     char *temp = cu_copy(ret);
-    int isafm = strstr(temp,".afm")!=NULL;
+    int isafm = strstrmatch(temp,".afm")!=NULL;
 
     if ( (isafm && !LoadKerningDataFromAfm(sf,temp)) ||
 	    (!isafm && !LoadKerningDataFromTfm(sf,temp)) )
@@ -3300,7 +3300,8 @@ return( NULL );
 	SFImportBDF(sf,filename,true, false);
 	sf->changed = false;
     } else if ( strmatch(filename+strlen(filename)-4, ".bin")==0 ||
-		strmatch(filename+strlen(filename)-4, ".hqx")==0 ) {
+		strmatch(filename+strlen(filename)-4, ".hqx")==0 ||
+		strmatch(filename+strlen(filename)-6, ".dfont")==0 ) {
 	sf = SFReadMacBinary(filename);
     } else if ( strmatch(filename+strlen(filename)-4, ".pfa")==0 ||
 		strmatch(filename+strlen(filename)-4, ".pfb")==0 ||
@@ -3320,6 +3321,7 @@ return( NULL );
 	    fclose(foo);
 	    if (( ch1==0 && ch2==1 && ch3==0 && ch4==0 ) ||
 		    (ch1=='O' && ch2=='T' && ch3=='T' && ch4=='O') ||
+		    (ch1=='t' && ch2=='r' && ch3=='u' && ch4=='e') ||
 		    (ch1=='t' && ch2=='t' && ch3=='c' && ch4=='f') ) {
 		sf = SFReadTTF(filename,0);
 	    } else if ( ch1=='%' && ch2=='!' ) {

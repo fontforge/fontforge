@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 27-Nov-2001 -->
+  <!-- AP: Last modified: 1-Dec-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -71,8 +71,8 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-011127.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 27-Nov-2001
+    <A HREF="pfaedit-011201.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 1-Dec-2001
   <LI>
     <A HREF="pfaedit-solaris-011102.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 2-Nov-2001
@@ -80,14 +80,14 @@ know when you do</A>.
     <A HREF="pfaedit-011102-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
     Version: 2-Nov-2001
   <LI>
-    <A HREF="pfaedit-010925-1.ppc.rpm">Download pfaedit linux-ppc suse 7.1
-    </A>binary rpm Version: 25-Sept-2001
+    <A HREF="pfaedit-011201-1.ppc.rpm">Download pfaedit linux-ppc suse 7.1
+    </A>binary rpm Version: 1-Dec-2001
   <LI>
     <A HREF="http://packages.debian.org/unstable/x11/pfaedit.html">A debian package
     is available at the debian site.</A>
   <LI>
     <A HREF="Problems-MacOSX.html#binary">A Mac OS/X distribution</A> (with Caveats).
-    Version 17-Nov-2001
+    Version 1-Dec-2001
   <LI>
     <A HREF="ftp://nchrem.tnw.tudelft.nl/pub/pfaedit/">An OpenVMS executable
     </A>(by Jacob Jansen): Version Approximately 23-Sept-2001<BR>
@@ -105,24 +105,24 @@ If you want to edit CID keyed fonts you need these
   <A NAME="source">Source</A> distribution
 </H2>
 <P>
-You can download a <A HREF="pfaedit-011102-1.src.rpm">source RPM</A>: Version:
-2-Nov-2001<BR>
-Or you can download the following three packages. Version: 26-Nov-2001
+You can download a <A HREF="pfaedit-011201-1.src.rpm">source RPM</A>: Version:
+1-Dec-2001<BR>
+Or you can download the following three packages. Version: 1-Dec-2001
 <UL>
   <LI>
     <A HREF="libgunicode-011123.tgz">Unicode library source</A> (23-Nov-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
-    <A HREF="libgdraw-011123.tgz">Unicode widget library source</A>
-    (23-Nov-2001)<BR>
+    <A HREF="libgdraw-011201.tgz">Unicode widget library source</A>
+    (1-Dec-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-011127.tgz">Pfaedit source</A> (27-Nov-2001)<BR>
+    <A HREF="pfaedit_src-011201.tgz">Pfaedit source</A> (1-Dec-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
-    <A HREF="pfaedit_full-011127.tgz">All three bundled together </A>(27-Nov-2001)
+    <A HREF="pfaedit_full-011201.tgz">All three bundled together </A>(1-Dec-2001)
 </UL>
 <P>
 If you want to do autotracing around character images you should also download
@@ -232,6 +232,17 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    1-Dec-2001
+    <UL>
+      <LI>
+	Figured out the format of mac .dfont files
+      <LI>
+	The mac Command (Apple, Cloverleaf) modifier key is now treated as if it
+	were the Control key (So users may exit PfaEdit with Command-Q as they expect).
+      <LI>
+	Another bug reading in flex hints from OTF. Fixed by Ulrich Klauer.
+    </UL>
   <LI>
     27-Nov-2001
     <UL>
@@ -825,6 +836,8 @@ now placed in graceful retirement by MacroMedia.
 	<A HREF="http://www.microsoft.com/typography/otspec/default.htm">Microsoft's
 	version</A>
     </UL>
+  <LI>
+    <A HREF="macformats.html">Macintosh font formats</A>
   <LI>
     <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5014.CMap_CIDFont_Spec.pdf">CID
     keyed fonts</A>

@@ -10,6 +10,14 @@ case "$host" in
 *-apple-darwin*) AC_DEFINE(NODYNAMIC)
 gww_nodynamic="yes"
 AC_DEFINE(_CursorsMustBe16x16)
+AC_DEFINE(_Keyboard,1)
+ ;;
+powerpc-*-*linux*)
+AC_DEFINE(_Keyboard,3)
+ ;;
+*sparc*)
+AC_DEFINE(_Keyboard,2)
+ ;;
 esac
 
 AC_SEARCH_LIBS(dlopen, dl) dnl some systems have this in libc

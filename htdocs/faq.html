@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 24-Nov-2001 -->
+  <!-- AP: Last modified: 30-Nov-2001 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -349,10 +349,11 @@ $ xset fp+ `pwd`
 	<STRONG>Macintosh OS 9</STRONG>
       <DD>
 	Oh dear. The mac sticks fonts into resource forks and wraps them up in its
-	own headers. Mac fonts aren't compatible with anybody else's, but see the
-	next section for some ideas.<BR>
+	own headers. Mac fonts aren't compatible with anybody else's. PfaEdit can
+	create a resource fork if it wraps the font up in a macbinary encoding. See
+	the <A HREF="faq.html#How-mac">following question</A> for more information.<BR>
 	I've also written <A HREF="http://fondu.sourceforge.net/">some utilities
-	</A>designed to convert from one format machine to another and they may prove
+	</A>designed to convert from one format to another and they may prove
 	useful.<BR>
 	<A HREF="http://babel.uoregon.edu/yamada/fontconversionfaq.html">University
 	of Oregon has some links that might be helpful</A>.<BR>
@@ -362,81 +363,96 @@ $ xset fp+ `pwd`
 	<STRONG>Macintosh OS X</STRONG>
       <DD>
 	On OS/X fonts should be placed either in the top-level Library/Fonts directory
-	(By default <CODE>/Mac OS X/Library/Fonts/</CODE>) or in the user's appropriate
-	fonts sub-directory of the user's home directory
+	(By default <CODE>/Mac OS X/Library/Fonts/</CODE>), in the System/Library/Fonts
+	directory, or in the user's appropriate fonts sub-directory
 	(<CODE>~/Library/Fonts</CODE>).<BR>
-	I've never actually attempted this.
+	Either a resource font (unwrapped from its macbinary wrapper) or a dfont
+	may be used. I'm not sure whether postscript Type1 resource fonts work, but
+	OpenType dfonts do (so if you want to use Postscript use OpenType).
     </DL>
   <DT>
     <A NAME="How-mac">How do I edit fonts from my macintoy?</A>
   <DD>
-    Traditionally the macintosh has stored fonts in the resource fork of files.
-    This causes problems for any machine other than a mac, because the very concept
-    of a resource fork is lacking.<BR>
-    There are several programs whose job it is to store all of a macintosh file
-    in one package that can be manipulated on other systems (mac binary and binhex
-    are the most common). PfaEdit knows how to read both of these formats and
-    can extract a postscript or truetype font from either. PfaEdit can also create
-    fonts in macbinary format (I see no reason to support both output formats,
-    and macbinary is slightly simpler).<BR>
-    So to edit a font on your mac:
-    <OL>
-      <LI>
-	Find the file in the System Folder:Fonts folder
-      <LI>
-	Copy the file over to your unix machine
+    <DL>
+      <DT>
+	Mac OS/9 (or less)
+      <DD>
+	Traditionally the macintosh has stored fonts in the resource fork of files.
+	This causes problems for any machine other than a mac, because the very concept
+	of a resource fork is lacking.<BR>
+	There are several programs whose job it is to store all of a macintosh file
+	in one package that can be manipulated on other systems (mac binary and binhex
+	are the most common). PfaEdit knows how to read both of these formats and
+	can extract a postscript or truetype font from either. PfaEdit can also create
+	fonts in macbinary format (I see no reason to support both output formats,
+	and macbinary is slightly simpler).<BR>
+	So to edit a font on your mac:
+	<OL>
+	  <LI>
+	    Find the file in the System Folder:Fonts folder
+	  <LI>
+	    Copy the file over to your unix machine
+	    <UL>
+	      <LI>
+		Use Fetch and specify macbinary format
+	      <LI>
+		Or use some tool like binhex which can create the file directly
+	    </UL>
+	  <LI>
+	    Open it in PfaEdit
+	  <LI>
+	    Edit it
+	  <LI>
+	    Save it back in macbinary format
+	  <LI>
+	    Copy it back to your mac
+	    <UL>
+	      <LI>
+		Fetch will automatically undo the macbinary wrappers and make it be correct
+	      <LI>
+		Or various other tools can unwrap it.
+	    </UL>
+	  <LI>
+	    Drop it back into your system folder (where it is automagically moved to
+	    Fonts)
+	</OL>
+	<P>
+	<STRONG>Caveat: </STRONG>I do not understand how to generate a font that
+	handles 2 byte encodings on the mac. All the docs I've read seem to imply
+	a 1 byte limitation. So all of these fonts will have a FOND that only knows
+	about the first 256 characters.<BR>
+	<STRONG>Caveat:</STRONG> A postscript font is useless on a macintosh unless
+	it is acompanied by at least one bitmap font. If you generate a postscript
+	font make sure you also generate an NFNT as well (this has the FOND).<BR>
+	<STRONG>Caveat:</STRONG> The mac is picky about the filename used to contain
+	a postscript file. It is based on the postscript font name but suffers a
+	transformation. Don't try to rename this file. Basically the rules are (see
+	<A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/0091.Mac_Fond.pdf">Adobe
+	Technical Note 0091</A>):
 	<UL>
 	  <LI>
-	    Use Fetch and specify macbinary format
+	    The fontname is broken into chunks where each chunk starts with a capital
+	    letter.
 	  <LI>
-	    Or use some tool like binhex which can create the file directly
+	    The first chunk may have four lower case letters following the initial capital
+	  <LI>
+	    Subsequent chunks may only have two lower case letters following the capital.
+	  <LI>
+	    Non-letter characters (or at least hyphens) vanish.<BR>
+	    So TimesBold =&gt; TimesBol, Helvetica-BoldItalic =&gt; HelveBolIta,
+	    NCenturySchoolbook =&gt; NCenSch
 	</UL>
-      <LI>
-	Open it in PfaEdit
-      <LI>
-	Edit it
-      <LI>
-	Save it back in macbinary format
-      <LI>
-	Copy it back to your mac
-	<UL>
-	  <LI>
-	    Fetch will automatically undo the macbinary wrappers and make it be correct
-	  <LI>
-	    Or various other tools can unwrap it.
-	</UL>
-      <LI>
-	Drop it back into your system folder (where it is automagically moved to
-	Fonts)
-    </OL>
-    <P>
-    <STRONG>Caveat: </STRONG>I do not understand how to generate a font that
-    handles 2 byte encodings on the mac. All the docs I've read seem to imply
-    a 1 byte limitation. So all of these fonts will have a FOND that only knows
-    about the first 256 characters. (I believe that some macs now support
-    true/opentype fonts in the data fork, and that might be one way of dealing
-    with the issue)<BR>
-    <STRONG>Caveat:</STRONG> A postscript font is useless on a macintosh unless
-    it is acompanied by at least one bitmap font. If you generate a postscript
-    font make sure you also generate an NFNT as well (this has the FOND).<BR>
-    <STRONG>Caveat:</STRONG> The mac is picky about the filename used to contain
-    a postscript file. It is based on the postscript font name but suffers a
-    transformation. Don't try to rename this file. Basically the rules are (see
-    <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/0091.Mac_Fond.pdf">Adobe
-    Technical Note 0091</A>):
-    <UL>
-      <LI>
-	The fontname is broken into chunks where each chunk starts with a capital
-	letter.
-      <LI>
-	The first chunk may have four lower case letters following the initial capital
-      <LI>
-	Subsequent chunks may only have two lower case letters following the capital.
-      <LI>
-	Non-letter characters (or at least hyphens) vanish.<BR>
-	So TimesBold =&gt; TimesBol, Helvetica-BoldItalic =&gt; HelveBolIta,
-	NCenturySchoolbook =&gt; NCenSch
-    </UL>
+      <DT>
+	Mac OS/X
+      <DD>
+	On Mac OS/X you can run PfaEdit directly (if you've got XDarwin installed).
+	OS/X has at least two font formats, some fonts are stored in the old format
+	(see above), while others are stored as data fork resources. The data fork
+	font files generally have the extension ".dfont", and PfaEdit can edit these
+	directly.<BR>
+	Editing old style fonts requires going through the same arcane procedures
+	described above.
+    </DL>
   <DT>
     Does the <A NAME="simplify">simplify</A> command lose accuracy?
   <DD>

@@ -437,7 +437,8 @@ return( 0 );
 	version = getlong(ttf);
     }
 
-    if ( (version)!=0x00010000 && version!=CHR('O','T','T','O'))
+    if ( (version)!=0x00010000 && version!=CHR('t','r','u','e') &&
+	    version!=CHR('O','T','T','O'))
 return( 0 );			/* Not version 1 of true type, nor Open Type */
     info->numtables = getushort(ttf);
     /* searchRange = */ getushort(ttf);
@@ -1529,7 +1530,7 @@ const char *cffnames[] = {
  "Medium",
  "Regular",
  "Roman",
- "SemiBold",
+ "Semibold",
  NULL
 };
 const int nStdStrings = sizeof(cffnames)/sizeof(cffnames[0])-1;
@@ -2617,7 +2618,7 @@ static void readttfvwidths(FILE *ttf,struct ttfinfo *info) {
     /*  the bounding box I'll just punt and pick a reasonable value */
     /* Of course I hope it will be over riden by the VORG table */
     if ( cnt!=0 )
-	info->vertical_origin = voff/cnt;
+	info->vertical_origin = (voff+cnt/2)/cnt;
     if ( info->vertical_origin==0 )
 	info->vertical_origin = info->ascent;
     if ( info->vorg_start!=0 ) {
@@ -2637,6 +2638,43 @@ return( d );
 }
 
 static int modenc(int enc,int modtype) {
+    if ( modtype==2 /* SJIS */ ) {
+	if ( enc<=127 ) {
+	    /* Latin */
+	    enc += 94*96;
+	} else if ( enc>=161 && enc<=223 ) {
+	    /* Katakana */
+	    enc += 96*96-160;
+	    enc = unicode_from_jis201[enc];
+	} else {
+	    int ch1 = enc>>8, ch2 = enc&0xff;
+	    if ( ch1 >= 129 && ch1<= 159 )
+		ch1 -= 112;
+	    else
+		ch1 -= 176;
+	    ch1 <<= 1;
+	    if ( ch2>=159 )
+		ch2-= 126;
+	    else if ( ch2>127 ) {
+		--ch1;
+		ch2 -= 32;
+	    } else {
+		--ch1;
+		ch2 -= 31;
+	    }
+	    enc = (ch1-0x21)*96+(ch2-0x20);
+	}
+    } else if ( modtype==5 /* Wansung == KSC 5601-1987, I hope */ ) {
+	if ( enc>0xa1a1 ) {
+	    enc -= 0xa1a1;
+	    enc = (enc>>8)*96 + (enc&0xff)+1;
+	} else if ( enc<0x100 )
+	    enc += 96*94;
+    }
+return( enc );
+}
+
+static int umodenc(int enc,int modtype) {
     if ( modtype==-1 )
 return( -1 );
     if ( modtype<=1 /* Unicode */ ) {
@@ -2714,21 +2752,31 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	specific = getushort(ttf);
 	offset = getlong(ttf);
 	if (( platform==3 && specific==1 ) || /* MS Unicode */
-		( platform==0 && (specific==0 || specific==3) && enc!=em_unicode )) {	/* Apple Unicode */
+/* Well I should only deal with apple unicode specific==0 (default) and 3 (U2.0 semantics) */
+/*  but apple ships dfonts with specific==1 (Unicode 1.1 semantics) */
+/*  which is stupid of them */
+		( platform==0 /*&& (specific==0 || specific==3)*/ && enc!=em_unicode )) {	/* Apple Unicode */
 	    enc = em_unicode;
 	    encoff = offset;
 	    mod = 0;
-	} else if ( platform==3 && specific==0 && enc==em_none ) {
+	} else if ( platform==3 && specific==0 && (enc==em_none||enc==-2) ) {
 	    /* Only select symbol if we don't have something better */
 	    enc = em_symbol;
 	    encoff = offset;
 	    trans = unicode_from_MacSymbol;
-	} else if ( platform==1 && specific==0 && (enc==em_none||enc==em_symbol) ) {
+/* Mac platform specific encodings are script numbers. 0=>roman, 1=>jap, 2=>big5, 3=>korean, 4=>arab, 5=>hebrew, 6=>greek, 7=>cyrillic, ... 25=>simplified chinese */
+	} else if ( platform==1 && specific==0 && (enc==em_none||enc==em_symbol||enc==-2) ) {
 	    enc = em_mac;
 	    encoff = offset;
 	    trans = unicode_from_mac;
-	} else if ( platform==3 && (specific==2 || specific==4 || specific==5 || specific==6 ) &&
-		enc!=em_unicode ) {
+	} else if ( platform==1 && (specific==2 ||specific==1) /*&& enc!=em_unicode*/ ) {
+	    /* I've seen an example of a big5 encoding so I know this is right*/
+	    /*  Japanese appears to be sjis */
+	    enc = specific==1?em_jis208:specific==2?em_big5:specific==3?em_ksc5601:em_gb2312;
+	    mod = specific==1?2:specific==2?4:specific==3?5:3;		/* convert to ms specific */
+	    encoff = offset;
+	} else if ( platform==3 && (specific==2 || specific==4 || specific==5 || specific==6 ) /*&&
+		enc!=em_unicode*/ ) {
 	    /* Old ms docs say that specific==3 => big 5, new docs say specific==4 => big5 */
 	    /*  Ain't that jus' great? */
 	    enc = specific==2? em_jis208 : specific==5 ? em_ksc5601 : specific==4? em_big5 : em_johab;
@@ -2791,10 +2839,10 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 			else if ( info->chars[(uint16) (j+delta[i])]==NULL )
 			    /* Do Nothing */;
 			else if ( info->chars[(uint16) (j+delta[i])]->unicodeenc==-1 ) {
-			    info->chars[(uint16) (j+delta[i])]->unicodeenc = modenc(j,mod);
-			    info->chars[(uint16) (j+delta[i])]->enc = j;
+			    info->chars[(uint16) (j+delta[i])]->unicodeenc = umodenc(j,mod);
+			    info->chars[(uint16) (j+delta[i])]->enc = modenc(j,mod);
 			} else
-			    info->dups = makedup(info->chars[(uint16) (j+delta[i])],modenc(j,mod),j,info->dups);
+			    info->dups = makedup(info->chars[(uint16) (j+delta[i])],umodenc(j,mod),modenc(j,mod),info->dups);
 		    }
 		} else if ( rangeOffset[i]!=0xffff ) {
 		    /* It isn't explicitly mentioned by a rangeOffset of 0xffff*/
@@ -2814,10 +2862,10 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 			    else if ( info->chars[index]==NULL )
 				/* Do Nothing */;
 			    else if ( info->chars[index]->unicodeenc==-1 ) {
-				info->chars[index]->unicodeenc = modenc(j,mod);
-				info->chars[index]->enc = j;
+				info->chars[index]->unicodeenc = umodenc(j,mod);
+				info->chars[index]->enc = modenc(j,mod);
 			    } else
-				info->dups = makedup(info->chars[index],modenc(j,mod),j,info->dups);
+				info->dups = makedup(info->chars[index],umodenc(j,mod),modenc(j,mod),info->dups);
 			}
 		    }
 		}
@@ -2885,7 +2933,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 			    /* Do Nothing */;
 			else if ( info->chars[index]->unicodeenc==-1 ) {
 			    info->chars[index]->unicodeenc = i;
-			    info->chars[index]->enc = i;
+			    info->chars[index]->enc = modenc(i,mod);
 			} else
 			    info->dups = makedup(info->chars[index],i,i,info->dups);
 		    }
@@ -2904,10 +2952,10 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 			    else if ( info->chars[index]==NULL )
 				/* Do Nothing */;
 			    else if ( info->chars[index]->unicodeenc==-1 ) {
-				info->chars[index]->unicodeenc = modenc(enc,mod);
-				info->chars[index]->enc = enc;
+				info->chars[index]->unicodeenc = umodenc(enc,mod);
+				info->chars[index]->enc = modenc(enc,mod);
 			    } else
-				info->dups = makedup(info->chars[index],modenc(enc,mod),enc,info->dups);
+				info->dups = makedup(info->chars[index],umodenc(enc,mod),modenc(enc,mod),info->dups);
 			}
 		    }
 		    if ( last==-1 ) last = i;
@@ -3557,21 +3605,28 @@ static void CheckEncoding(struct ttfinfo *info) {
 }
 
 static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
-    int istwobyte = false, i, oldcnt = info->glyph_cnt, extras=0, epos;
+    int istwobyte = false, i, oldcnt = info->glyph_cnt, extras=0, epos, max=96*94;
     SplineChar **oldchars = info->chars, **newchars;
     struct dup *dup;
 
     for ( i=0; i<oldcnt; ++i ) if ( oldchars[i]!=NULL ) {
-	if ( oldchars[i]->enc>=256 )
+	if ( oldchars[i]->enc>=256 ) {
 	    istwobyte = true;
-	else if ( oldchars[i]->enc==0 && i!=0 )
+	    if ( oldchars[i]->enc>max ) max = oldchars[i]->enc;
+	} else if ( oldchars[i]->enc==0 && i!=0 )
 	    ++extras;
 	oldchars[i]->parent = sf;
     }
     for ( dup=info->dups; dup!=NULL && !istwobyte; dup=dup->prev )
-	if ( dup->enc>=256 ) istwobyte = true;
+	if ( dup->enc>=256 ) {
+	    istwobyte = true;
+	    if ( dup->enc>max ) max = dup->enc;
+	}
 
-    epos = (istwobyte?65536:256);
+    if ( info->encoding_name>=em_first2byte && info->encoding_name<=em_last94x94 )
+	epos = ((max+95)/96)*96;
+    else
+	epos = istwobyte?65536:256;
     sf->charcnt = epos+extras;
     newchars = gcalloc(sf->charcnt,sizeof(SplineChar *));
     for ( i=0; i<oldcnt; ++i ) if ( oldchars[i]!=NULL ) {

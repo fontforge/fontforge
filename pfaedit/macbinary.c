@@ -134,8 +134,9 @@ static uint16 HashToId(char *fontname,SplineFont *sf) {
 	    /* hebrew */
 	    low = 0x4800; high = 0x49ff;
     break;
-	} else if (( sc->unicodeenc>=0x0370 && sc->unicodeenc<0x0400 ) ||
-		( sc->unicodeenc>=0x1f00 && sc->unicodeenc<0x2000 )) {
+	} else if ((( sc->unicodeenc>=0x0370 && sc->unicodeenc<0x0400 ) ||
+		( sc->unicodeenc>=0x1f00 && sc->unicodeenc<0x2000 )) &&
+		sc->unicodeenc!=0x3c0 ) {	/* In mac encoding */
 	    /* greek */
 	    low = 0x4a00; high = 0x4bff;
     break;
@@ -237,7 +238,7 @@ static struct resource *PSToResources(FILE *res,FILE *pfbfile) {
 
     fstat(fileno(pfbfile),&statb);
     cnt = 3*(statb.st_size+0x800)/(0x800-2)+1;		/* should be (usually) a vast over estimate */
-    resstarts = gcalloc(cnt,sizeof(struct resource));
+    resstarts = gcalloc(cnt+1,sizeof(struct resource));
 
     cnt = 0;
     forever {
@@ -564,20 +565,25 @@ return(rlenpos);
 }
 
 /* I presume this routine is called after all resources have been written */
-static void DumpResourceMap(FILE *res,struct resourcetype *rtypes) {
-    uint32 rfork_base = 128;	/* space for mac binary header */
-    uint32 resource_base = 128+0x100;
+static void DumpResourceMap(FILE *res,struct resourcetype *rtypes,enum fontformat format) {
+    uint32 rfork_base = format>=ff_ttfdfont?0:128;	/* space for mac binary header */
+    uint32 resource_base = rfork_base+0x100;
     uint32 rend, rtypesstart, mend, namestart;
     int i,j;
 
     fseek(res,0,SEEK_END);
     rend = ftell(res);
 
-    /* Duplicate resource header */
-    putlong(res,0x100);			/* start of resource data */
-    putlong(res,rend-rfork_base);	/* start of resource map */
-    putlong(res,rend-rfork_base-0x100);	/* length of resource data */
-    putlong(res,0);			/* don't know the length of the map section yet */
+    if ( format<ff_ttfdfont ) {
+	/* Duplicate resource header */
+	putlong(res,0x100);			/* start of resource data */
+	putlong(res,rend-rfork_base);		/* start of resource map */
+	putlong(res,rend-rfork_base-0x100);	/* length of resource data */
+	putlong(res,0);				/* don't know the length of the map section yet */
+    } else {
+	for ( i=0; i<16; ++i )			/* 16 bytes of zeroes */
+	    putc(0,res);
+    }
 
     putlong(res,0);			/* Some mac specific thing I don't understand */
     putshort(res,0);			/* another */
@@ -643,10 +649,15 @@ static void DumpResourceMap(FILE *res,struct resourcetype *rtypes) {
 
     fseek(res,rend,SEEK_SET);
     	/* Fixup duplicate header (and offset to the name list) */
-    putlong(res,0x100);			/* start of resource data */
-    putlong(res,rend-rfork_base);	/* start of resource map */
-    putlong(res,rend-rfork_base-0x100);	/* length of resource data */
-    putlong(res,mend-rend);		/* length of map section */
+    if ( format<ff_ttfdfont ) {
+	putlong(res,0x100);			/* start of resource data */
+	putlong(res,rend-rfork_base);		/* start of resource map */
+	putlong(res,rend-rfork_base-0x100);	/* length of resource data */
+	putlong(res,mend-rend);			/* length of map section */
+    } else {
+	for ( i=0; i<16; ++i )
+	    putc(0,res);
+    }
 
     putlong(res,0);			/* Some mac specific thing I don't understand */
     putshort(res,0);			/* another */
@@ -752,6 +763,16 @@ static void WriteDummyMacHeaders(FILE *res) {
 	putc(0,res);
 }
 
+static void WriteDummyDFontHeaders(FILE *res) {
+    /* Leave space for the mac resource file header (256 bytes) */
+    /*  dfonts have the format of a data fork resource file (which I've never */
+    /*  seen documented, but appears to be just like a resource fork except */
+    /*  the first 16 bytes are not duplicated at the map */
+    int i;
+    for ( i=0; i<256; ++i )
+	putc(0,res);
+}
+
 int WriteMacPSFont(char *filename,SplineFont *sf,enum fontformat format) {
     FILE *res, *temppfb;
     int ret = 1;
@@ -806,7 +827,7 @@ return( 0 );
     resources[0].tag = CHR('P','O','S','T');
     resources[0].res = PSToResources(res,temppfb);
     fclose(temppfb);
-    DumpResourceMap(res,resources);
+    DumpResourceMap(res,resources,format);
     free( resources[0].res );
 	
     header.macfilename = buffer;
@@ -834,7 +855,7 @@ int WriteMacTTFFont(char *filename,SplineFont *sf,enum fontformat format,
     if ( tempttf==NULL )
 return( 0 );
 
-    if ( _WriteTTFFont(tempttf,sf,ff_ttf,bsizes,bf)==0 || ferror(tempttf) ) {
+    if ( _WriteTTFFont(tempttf,sf,format-1,bsizes,bf)==0 || ferror(tempttf) ) {
 	fclose(tempttf);
 return( 0 );
     }
@@ -847,7 +868,10 @@ return( 0 );
 return( 0 );
     }
 
-    WriteDummyMacHeaders(res);
+    if ( format!=ff_ttfmacbin )
+	WriteDummyDFontHeaders(res);
+    else
+	WriteDummyMacHeaders(res);
     memset(rlist,'\0',sizeof(rlist));
     memset(resources,'\0',sizeof(resources));
     rewind(tempttf);
@@ -862,20 +886,22 @@ return( 0 );
     rlist[1][0].id = rlist[0][0].id;
     rlist[1][0].name = sf->familyname;
     fclose(tempttf);
-    DumpResourceMap(res,resources);
+    DumpResourceMap(res,resources,format);
 
-    header.macfilename = NULL;
-    header.binfilename = filename;
-	/* Fontographer uses the old suitcase format for both bitmaps and ttf */
-    header.type = CHR('F','F','I','L');
-    header.creator = CHR('D','M','O','V');
-    DumpMacBinaryHeader(res,&header);
+    if ( format==ff_ttfmacbin ) {
+	header.macfilename = NULL;
+	header.binfilename = filename;
+	    /* Fontographer uses the old suitcase format for both bitmaps and ttf */
+	header.type = CHR('F','F','I','L');
+	header.creator = CHR('D','M','O','V');
+	DumpMacBinaryHeader(res,&header);
+    }
     ret = !ferror(res);
     if ( fclose(res)==-1 ) ret = 0;
 return( ret );
 }
 
-int WriteMacBitmaps(char *filename,SplineFont *sf, real *sizes) {
+int WriteMacBitmaps(char *filename,SplineFont *sf, real *sizes, int is_dfont) {
     FILE *res;
     int ret = 1;
     struct resourcetype resources[3];
@@ -885,27 +911,30 @@ int WriteMacBitmaps(char *filename,SplineFont *sf, real *sizes) {
 
     /* The filename we've been given is for the outline font, which might or */
     /*  might not be stuffed inside a bin file */
-    binfilename = galloc(strlen(filename)+strlen(".bmap.bin")+1);
+    binfilename = galloc(strlen(filename)+strlen(".bmap.dfont")+1);
     strcpy(binfilename,filename);
     pt = strrchr(binfilename,'/');
     if ( pt==NULL ) pt = binfilename; else ++pt;
     dpt = strrchr(pt,'.');
     if ( dpt==NULL )
 	dpt = pt+strlen(pt);
-    else if ( strmatch(dpt,".bin")==0 ) {
+    else if ( strmatch(dpt,".bin")==0 || strmatch(dpt,".dfont")==0 ) {
 	*dpt = '\0';
 	dpt = strrchr(pt,'.');
 	if ( dpt==NULL )
 	    dpt = pt+strlen(pt);
     }
-    strcpy(dpt,".bmap.bin");
+    strcpy(dpt,is_dfont?".bmap.dfont":".bmap.bin");
 
     res = fopen(binfilename,"w+");
     if ( res==NULL ) {
 return( 0 );
     }
 
-    WriteDummyMacHeaders(res);
+    if ( is_dfont )
+	WriteDummyDFontHeaders(res);
+    else
+	WriteDummyMacHeaders(res);
     memset(rlist,'\0',sizeof(rlist));
     memset(resources,'\0',sizeof(resources));
 
@@ -916,14 +945,16 @@ return( 0 );
     rlist[1][0].id = HashToId(sf->fontname,sf);
     rlist[1][0].pos = SFToFOND(res,sf,rlist[1][0].id,false,sizes);
     rlist[1][0].name = sf->familyname;
-    DumpResourceMap(res,resources);
+    DumpResourceMap(res,resources,is_dfont?ff_ttfdfont:ff_ttfmacbin);
 
-    header.macfilename = NULL;
-    header.binfilename = binfilename;
-	/* Fontographer uses the old suitcase format for both bitmaps and ttf */
-    header.type = CHR('F','F','I','L');
-    header.creator = CHR('D','M','O','V');
-    DumpMacBinaryHeader(res,&header);
+    if ( !is_dfont ) {
+	header.macfilename = NULL;
+	header.binfilename = binfilename;
+	    /* Fontographer uses the old suitcase format for both bitmaps and ttf */
+	header.type = CHR('F','F','I','L');
+	header.creator = CHR('D','M','O','V');
+	DumpMacBinaryHeader(res,&header);
+    }
     ret = !ferror(res);
     if ( fclose(res)==-1 ) ret = 0;
     free(resources[0].res);
@@ -1090,8 +1121,10 @@ static SplineFont *SearchTtfResources(FILE *f,long rlistpos,int subcnt,long rdat
 	rewind(ttf);
 	sf = _SFReadTTF(ttf,0,NULL);
 	fclose(ttf);
-	if ( sf!=NULL )
+	if ( sf!=NULL ) {
+	    fseek(f,start,SEEK_SET);
 return( sf );
+	}
     }
     fseek(f,start,SEEK_SET);
 return( NULL );
@@ -1105,6 +1138,7 @@ static SplineFont *IsResourceFork(FILE *f, long offset) {
     /*  file, not at the beginning */
     unsigned char buffer[16], buffer2[16];
     long rdata_pos, map_pos, type_list, name_list, rpos;
+    int32 rdata_len, map_len;
     unsigned long tag;
     int i, cnt, subcnt;
     SplineFont *sf;
@@ -1114,13 +1148,25 @@ static SplineFont *IsResourceFork(FILE *f, long offset) {
 return( NULL );
     rdata_pos = offset + ((buffer[0]<<24)|(buffer[1]<<16)|(buffer[2]<<8)|buffer[3]);
     map_pos = offset + ((buffer[4]<<24)|(buffer[5]<<16)|(buffer[6]<<8)|buffer[7]);
+    rdata_len = ((buffer[8]<<24)|(buffer[9]<<16)|(buffer[10]<<8)|buffer[11]);
+    map_len = ((buffer[12]<<24)|(buffer[13]<<16)|(buffer[14]<<8)|buffer[15]);
+    if ( rdata_pos+rdata_len!=map_pos )
+return( NULL );
     fseek(f,map_pos,SEEK_SET);
     buffer2[15] = buffer[15]+1;	/* make it be different */
     if ( fread(buffer2,1,16,f)!=16 )
 return( NULL );
+
+/* Apple's data fork resources appear to have a bunch of zeroes here instead */
+/*  of a copy of the first 16 bytes */
     for ( i=0; i<16; ++i )
-	if ( buffer[i]!=buffer2[i] )
+	if ( buffer2[i]!=0 )
+    break;
+    if ( i!=16 ) {
+	for ( i=0; i<16; ++i )
+	    if ( buffer[i]!=buffer2[i] )
 return( NULL );
+    }
     getlong(f);		/* skip the handle to the next resource map */
     getushort(f);	/* skip the file resource number */
     getushort(f);	/* skip the attributes */

@@ -4431,6 +4431,7 @@ static int Needs816Enc(struct alltabs *at, SplineFont *sf) {
     uint16 *glyphs;
     uint16 tempglyphs[256];
     uint32 macpos;
+    int enccnt;
     /* This only works for big5, johab */
     int base, lbase, basebound, subheadcnt, planesize;
 
@@ -4544,17 +4545,33 @@ return( false );		/* Doesn't have the single byte entries */
     len = 3*sizeof(uint16) + 256*sizeof(uint16) + subheadcnt*sizeof(struct subhead) +
 	    pos*planesize*sizeof(uint16);
 
-    /* Two encoding table pointers, one for ms, one for mac */
+    /* Two/Three encoding table pointers, one for ms, one for mac, one for macunicode (if ms is unicode) */
+    enccnt = 3;
+    if ( sf->encoding_name==em_ksc5601 || sf->encoding_name==em_johab )
+	enccnt = 2;
+    
     putshort(at->cmap,0);		/* version */
-    putshort(at->cmap,2);		/* num tables */
+    putshort(at->cmap,enccnt);		/* num tables */
     putshort(at->cmap,3);		/* ms platform */
-    putshort(at->cmap,sf->encoding_name==em_big5?4:6);
-					/* plat specific enc, Big5/Johab */
-    putlong(at->cmap,2*sizeof(uint16)+2*(2*sizeof(uint16)+sizeof(uint32)));
+    putshort(at->cmap,
+	sf->encoding_name==em_jis208? 2 :	/* SJIS */
+	sf->encoding_name==em_big5? 4 :		/* Big5 */
+	 6 );					/* Johab */
+    putlong(at->cmap,2*sizeof(uint16)+enccnt*(2*sizeof(uint16)+sizeof(uint32)));
 					/* offset from tab start to sub tab start */
+    if ( enccnt==3 ) {
+	/* big mac table, just a copy of the ms table */
+	putshort(at->cmap,sf->encoding_name==em_big5||sf->encoding_name==em_jis208?1:0);
+					/* either mac or mac unicode platform */
+	putshort(at->cmap,
+	    sf->encoding_name==em_jis208? 1 :	/* SJIS */
+	    sf->encoding_name==em_big5? 2 :	/* Big5 */
+	    3);					/* Unicode 2.0 */
+	putlong(at->cmap,2*sizeof(uint16)+enccnt*(2*sizeof(uint16)+sizeof(uint32)));
+    }
     putshort(at->cmap,1);		/* mac platform */
     putshort(at->cmap,0);		/* plat specific enc, script=roman */
-    macpos = 2*sizeof(uint16)+2*(2*sizeof(uint16)+sizeof(uint32))+len;
+    macpos = 2*sizeof(uint16)+enccnt*(2*sizeof(uint16)+sizeof(uint32))+len;
     putlong(at->cmap,macpos);		/* offset from tab start to sub tab start */
 
     putshort(at->cmap,2);		/* 8/16 format */
@@ -4620,7 +4637,7 @@ return(  ((((ch1+1)>>1) + ro )<<8 )    |    (ch2+co) );
 static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format) {
     uint16 *avail = galloc(65536*sizeof(uint16));
     uint16 *sfind = NULL;
-    int i,j,k,l,charcnt;
+    int i,j,k,l,charcnt,enccnt;
     int segcnt, cnt=0, delta, rpos;
     struct cmapseg { uint16 start, end; uint16 delta; uint16 rangeoff; } *cmapseg;
     uint16 *ranges;
@@ -4750,9 +4767,12 @@ return;		/* All Done */
 	free(avail);
 	if ( _sf->subfontcnt!=0 ) free(sfind);
 
-	/* Two encoding table pointers, one for ms, one for mac */
+	/* Two/Three encoding table pointers, one for ms, one for mac (one for mac big, just a copy of ms) */
+	enccnt = 3;
+	if ( sf->encoding_name==em_ksc5601 || sf->encoding_name==em_johab )
+	    enccnt = 2;
 	putshort(at->cmap,0);		/* version */
-	putshort(at->cmap,2);		/* num tables */
+	putshort(at->cmap,enccnt);	/* num tables */
 	putshort(at->cmap,3);		/* ms platform */
 	putshort(at->cmap,		/* plat specific enc */
 		sf->encoding_name==em_ksc5601 ? 5 :	/* Wansung, korean */
@@ -4760,10 +4780,20 @@ return;		/* All Done */
 		sf->encoding_name==em_big5 ? 4 :	/* Big5, traditional Chinese */
 		sf->encoding_name==em_johab ? 6 :	/* Korean */
 		 1 );					/* Unicode */
-	putlong(at->cmap,2*sizeof(uint16)+2*(2*sizeof(uint16)+sizeof(uint32)));	/* offset from tab start to sub tab start */
+	putlong(at->cmap,2*sizeof(uint16)+enccnt*(2*sizeof(uint16)+sizeof(uint32)));	/* offset from tab start to sub tab start */
+	if ( enccnt==3 ) {
+	    /* big mac table, just a copy of the ms table */
+	    putshort(at->cmap,sf->encoding_name==em_big5||sf->encoding_name==em_jis208?1:0);
+					    /* either mac or mac unicode platform */
+	    putshort(at->cmap,
+		sf->encoding_name==em_jis208? 1 :	/* SJIS */
+		sf->encoding_name==em_big5? 2 :		/* Big5 */
+		3);					/* Unicode 2.0 */
+	    putlong(at->cmap,2*sizeof(uint16)+enccnt*(2*sizeof(uint16)+sizeof(uint32)));
+	}
 	putshort(at->cmap,1);		/* mac platform */
 	putshort(at->cmap,0);		/* plat specific enc, script=roman */
-	putlong(at->cmap,2*sizeof(uint16)+2*(2*sizeof(uint16)+sizeof(uint32))+(8+4*segcnt+rpos)*sizeof(int16));	/* offset from tab start to sub tab start */
+	putlong(at->cmap,2*sizeof(uint16)+enccnt*(2*sizeof(uint16)+sizeof(uint32))+(8+4*segcnt+rpos)*sizeof(int16));	/* offset from tab start to sub tab start */
 
 	putshort(at->cmap,4);		/* format */
 	putshort(at->cmap,(8+4*segcnt+rpos)*sizeof(int16));

@@ -46,3 +46,4 @@ extern GImage _GIcon_textps;
 extern GImage _GIcon_ttf;
 extern GImage _GIcon_cid;
 extern GImage _GIcon_mac;
+extern GImage _GIcon_macttf;

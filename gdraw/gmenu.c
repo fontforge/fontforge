@@ -25,17 +25,26 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include <stdlib.h>
-#include "gdraw.h"
+#include <gdraw.h>
 #include "ggadgetP.h"
-#include "gwidget.h"
-#include "ustring.h"
-#include "gkeysym.h"
-#include "utype.h"
+#include <gwidget.h>
+#include <ustring.h>
+#include <gkeysym.h>
+#include <utype.h>
+#include <gresource.h>
 
 static GBox menubar_box = { /* Don't initialize here */ 0 };
 static GBox menu_box = { /* Don't initialize here */ 0 };
 static FontInstance *menu_font = NULL;
 static int gmenubar_inited = false;
+#ifndef _Keyboard
+# define _Keyboard 0
+#endif
+static enum { kb_ibm, kb_mac, kb_sun, kb_ppc } keyboard = _Keyboard;
+/* Sigh. In XonX the command key is mapped to 0x20 and Option to 0x8 (meta) */
+/*  the option key conversions (option-c => ccidilla) are not done */
+/*  While in Suse PPC X, the command key is 0x8 (meta) and option is 0x2000 */
+/*  and the standard mac option conversions are done */
 
 static void GMenuBarChangeSelection(GMenuBar *mb, int newsel,GEvent *);
 static struct gmenu *GMenuCreateSubMenu(struct gmenu *parent,GMenuItem *mi);
@@ -43,6 +52,7 @@ static struct gmenu *GMenuCreatePulldownMenu(GMenuBar *mb,GMenuItem *mi);
 
 static void GMenuInit() {
     FontRequest rq;
+    char *keystr, *end;
 
     GGadgetInit();
     GDrawDecomposeFont(_ggadget_default_font,&rq);
@@ -57,6 +67,15 @@ static void GMenuInit() {
     menu_box.flags = box_foreground_border_outer;
     menu_font = _GGadgetInitDefaultBox("GMenuBar.",&menubar_box,menu_font);
     menu_font = _GGadgetInitDefaultBox("GMenu.",&menu_box,menu_font);
+    keystr = GResourceFindString("Keyboard");
+    if ( keystr!=NULL ) {
+	if ( strmatch(keystr,"mac")==0 ) keyboard = kb_mac;
+	else if ( strmatch(keystr,"sun")==0 ) keyboard = kb_sun;
+	else if ( strmatch(keystr,"ppc")==0 ) keyboard = kb_ppc;
+	else if ( strmatch(keystr,"ibm")==0 || strmatch(keystr,"pc")==0 ) keyboard = kb_ibm;
+	else if ( strtol(keystr,&end,10), *end=='\0' )
+	    keyboard = strtol(keystr,NULL,10);
+    }
     gmenubar_inited = true;
     _GGroup_Init();
 }
@@ -91,11 +110,11 @@ static void shorttext(GMenuItem *gi,unichar_t *buf) {
 return;
     }
     if ( gi->short_mask&ksm_meta ) {
-	uc_strcpy(pt,"Alt+");
+	uc_strcpy(pt,keyboard==kb_ibm?"Alt+":keyboard==kb_mac?"Opt+":keyboard==kb_ppc?"Cmd+":"Meta+");
 	pt += u_strlen(pt);
     }
     if ( gi->short_mask&ksm_control ) {
-	uc_strcpy(pt,"Ctl+");
+	uc_strcpy(pt,keyboard!=kb_mac?"Ctl+":"Cmd+");
 	pt += u_strlen(pt);
     }
     if ( gi->short_mask&ksm_shift ) {

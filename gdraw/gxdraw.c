@@ -2403,6 +2403,11 @@ return;
 	gdisp->last_event_time = event->xkey.time;
 	gevent.type = event->type==KeyPress?et_char:et_charup;
 	gevent.u.chr.state = event->xkey.state;
+/*#ifdef _CursorsMustBe16x16*/
+	/* On the mac, map the command key to the control key. So Comand-Q=>^Q=>Quit */
+	/* I don't think it hurts to leave this enabled... */
+	if ( event->xkey.state&0x20 ) gevent.u.chr.state |= ksm_control;
+/*#endif*/
 	gevent.u.chr.x = event->xkey.x;
 	gevent.u.chr.y = event->xkey.y;
 	if ((redirect = InputRedirection(gdisp->input,gw))== (GWindow)(-1) ) {

@@ -61,6 +61,7 @@ static void _dousage(void) {
     fprintf( stderr, "\t-depth val\t\t (sets the display depth if possible)\n" );
     fprintf( stderr, "\t-vc val\t\t\t (sets the visual class if possible)\n" );
     fprintf( stderr, "\t-sync\t\t\t (syncs the display, debugging)\n" );
+    fprintf( stderr, "\t-keyboard\tibm|mac|sun|ppc\t (generates appropriate hotkeys in menus)\n" );
 #if MyMemory
     fprintf( stderr, "\t-memory\t\t\t (turns on memory checks, debugging)\n" );
 #endif
@@ -194,6 +195,8 @@ int main( int argc, char **argv ) {
 	    AddR(argv[0],"Gdraw.Depth", argv[++i]);
 	else if ( strcmp(pt,"-vc")==0 && i<argc-1 )
 	    AddR(argv[0],"Gdraw.VisualClass", argv[++i]);
+	else if ( strcmp(pt,"-keyboard")==0 && i<argc-1 )
+	    AddR(argv[0],"Gdraw.Keyboard", argv[++i]);
 	else if ( strcmp(pt,"-nosplash")==0 )
 	    splash = 0;
 	else if ( strcmp(pt,"-display")==0 && i<argc-1 )
@@ -276,6 +279,7 @@ int main( int argc, char **argv ) {
 		strcmp(pt,"-recover=clean")==0 || strcmp(pt,"-recover=auto")==0 )
 	    /* Already done, needed to be before display opened */;
 	else if ( (strcmp(pt,"-depth")==0 || strcmp(pt,"-vc")==0 ||
+		    strcmp(pt,"-keyboard")==0 || 
 		    strcmp(pt,"-display")==0 || strcmp(pt,"-recover")==0 ) &&
 		i<argc-1 )
 	    ++i; /* Already done, needed to be before display opened */

@@ -46,7 +46,8 @@ struct gfc_data {
 };
 
 static char *extensions[] = { ".pfa", ".pfb", ".bin", ".ps", ".ps", ".cid",
-	".ttf", ".ttf", ".ttf.bin", ".otf", ".otf", NULL };
+	".ttf", ".ttf", ".ttf.bin", ".dfont", ".otf", ".otf.dfont", ".otf",
+	".otf.dfont", NULL };
 static GTextInfo formattypes[] = {
     { (unichar_t *) "PS Type 1 (Ascii)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "PS Type 1 (Binary)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
@@ -57,8 +58,11 @@ static GTextInfo formattypes[] = {
     { (unichar_t *) "True Type", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "True Type (Symbol)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "True Type (MacBin)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "True Type (Mac dfont)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "Open Type (PS)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "Open Type (Mac dfont)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "Open Type CID", NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "Open Type CID (dfont)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_Nooutlinefont, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }
 };
@@ -68,6 +72,7 @@ static GTextInfo bitmaptypes[] = {
     { (unichar_t *) "In TTF (Apple)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "GDF", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "NFNT (MacBin)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "NFNT (dfont)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_Nobitmapfonts, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }
 };
@@ -192,6 +197,7 @@ return( false );
 	    pt = NULL;
 	if ( pt==NULL )
 	    pt = buf+strlen(buf);
+	if ( strcmp(pt-4,".otf.dfont")==0 || strcmp(pt-4,".ttf.bin")==0 ) pt-=4;
 	sprintf( pt, "-%d.%s", bdf->pixelsize, bdf->clut==NULL?"bdf":"gdf" );
 	GProgressChangeLine2(temp=uc_copy(buf)); free(temp);
 	BDFFontDump(buf,bdf,EncodingName(sf->encoding_name));
@@ -212,7 +218,7 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
 
     temp = cu_copy(path);
     oldformatstate = GGadgetGetFirstListSelectedItem(d->pstype);
-    iscid = oldformatstate==ff_cid || oldformatstate==ff_otfcid;
+    iscid = oldformatstate==ff_cid || oldformatstate==ff_otfcid || oldformatstate==ff_otfciddfont;
     if ( !iscid && (d->sf->cidmaster!=NULL || d->sf->subfontcnt>1)) {
 	static int buts[] = { _STR_Yes, _STR_No, 0 };
 	if ( GWidgetAskR(_STR_NotCID,buts,0,1,_STR_NotCIDOk)==1 )
@@ -233,8 +239,8 @@ return;
 
     GProgressStartIndicator(10,GStringGetResource(_STR_SavingFont,NULL),
 		GStringGetResource(oldformatstate==ff_ttf || oldformatstate==ff_ttfsym?_STR_SavingTTFont:
-		 oldformatstate==ff_otf?_STR_SavingOpenTypeFont:
-		 oldformatstate==ff_cid || oldformatstate==ff_otfcid?_STR_SavingCIDFont:
+		 (oldformatstate==ff_otf || oldformatstate==ff_otfdfont) ?_STR_SavingOpenTypeFont:
+		 oldformatstate==ff_cid || oldformatstate==ff_otfcid || oldformatstate==ff_otfciddfont ?_STR_SavingCIDFont:
 		 _STR_SavingPSFont,NULL),
 	    path,d->sf->charcnt,1);
     GProgressEnableStop(false);
@@ -250,7 +256,7 @@ return;
 	  case ff_pfbmacbin:
 	    oerr = !WriteMacPSFont(temp,d->sf,oldformatstate);
 	  break;
-	  case ff_ttfmacbin:
+	  case ff_ttfmacbin: case ff_ttfdfont: case ff_otfdfont: case ff_otfciddfont:
 	    oerr = !WriteMacTTFFont(temp,d->sf,oldformatstate,sizes,
 		    oldbitmapstate);
 	  break;
@@ -283,8 +289,9 @@ return;
 	GProgressIncrementBy(-d->sf->charcnt);
 	if ( !WriteBitmaps(temp,d->sf,sizes,oldbitmapstate))
 	    err = true;
-    } else if ( oldbitmapstate==bf_nfntmacbin && !err ) {
-	if ( !WriteMacBitmaps(temp,d->sf,sizes))
+    } else if ( (oldbitmapstate==bf_nfntmacbin || oldbitmapstate==bf_nfntdfont) &&
+	    !err ) {
+	if ( !WriteMacBitmaps(temp,d->sf,sizes,oldbitmapstate==bf_nfntdfont))
 	    err = true;
     }
     free( sizes );
@@ -409,6 +416,7 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 
 	set = true;
 	if ( format==ff_ttf || format==ff_ttfsym || format==ff_otf ||
+		format==ff_ttfdfont || format==ff_otfdfont || format==ff_otfciddfont ||
 		format==ff_otfcid || format==ff_ttfmacbin || format==ff_none )
 	    set = false;
 	GGadgetSetChecked(d->doafm,set);
@@ -419,7 +427,7 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 return( true );
 
 	ret = GGadgetGetTitle(d->gfc);
-	dup = galloc((u_strlen(ret)+5)*sizeof(unichar_t));
+	dup = galloc((u_strlen(ret)+30)*sizeof(unichar_t));
 	u_strcpy(dup,ret);
 	free(ret);
 	pt = u_strrchr(dup,'.');
@@ -428,12 +436,13 @@ return( true );
 	    pt = NULL;
 	if ( pt==NULL ) pt = dup+u_strlen(dup);
 	if ( uc_strcmp(pt-4, ".ttf.bin" )==0 ) pt -= 4;
+	if ( uc_strcmp(pt-4, ".otf.dfont" )==0 ) pt -= 4;
 	uc_strcpy(pt,extensions[format]);
 	GGadgetSetTitle(d->gfc,dup);
 	free(dup);
 
 	if ( d->sf->cidmaster!=NULL ) {
-	    if ( format!=ff_none && format != ff_cid && format != ff_otfcid ) {
+	    if ( format!=ff_none && format != ff_cid && format != ff_otfcid && format!=ff_otfciddfont ) {
 		GGadgetSetTitle(d->bmpsizes,nullstr);
 		/*GGadgetSetVisible(d->doafm,true);*/
 		GGadgetSetVisible(d->dopfm,true);
@@ -590,11 +599,13 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
 	    ( sf->encoding_name<em_jis208 && sf->encoding_name>=em_base);
     formattypes[ff_cid].disabled = sf->cidmaster==NULL;
     formattypes[ff_otfcid].disabled = sf->cidmaster==NULL;
+    formattypes[ff_otfciddfont].disabled = sf->cidmaster==NULL;
+    formattypes[ff_otfciddfont].disabled = true;	/* Not ready for this yet! */
     ofs = oldformatstate;
     if (( ofs==ff_ptype0 && formattypes[ff_ptype0].disabled ) ||
-	    ((ofs==ff_cid || ofs==ff_otfcid) && formattypes[ff_cid].disabled))
+	    ((ofs==ff_cid || ofs==ff_otfcid || ofs==ff_otfciddfont) && formattypes[ff_cid].disabled))
 	ofs = ff_pfb;
-    else if ( (ofs!=ff_cid && ofs!=ff_otfcid) && sf->cidmaster!=NULL )
+    else if ( (ofs!=ff_cid && ofs!=ff_otfcid && ofs!=ff_otfciddfont) && sf->cidmaster!=NULL )
 	ofs = ff_otfcid;
     if ( sf->onlybitmaps )
 	ofs = ff_none;
@@ -609,7 +620,7 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     gcd[7].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
     gcd[7].creator = GGroupCreate;
 
-    gcd[8].gd.pos.x = 150; gcd[8].gd.pos.y = 190; gcd[8].gd.pos.width = 126;
+    gcd[8].gd.pos.x = 155; gcd[8].gd.pos.y = 190; gcd[8].gd.pos.width = 126;
     gcd[8].gd.flags = gg_visible | gg_enabled;
     gcd[8].gd.u.list = bitmaptypes;
     gcd[8].creator = GListButtonCreate;
@@ -630,12 +641,14 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
 	bitmaptypes[bf_bdf].disabled = true;
 	bitmaptypes[bf_ttf_ms].disabled = true;
 	bitmaptypes[bf_ttf_apple].disabled = true;
+	bitmaptypes[bf_nfntmacbin].disabled = true;
+	bitmaptypes[bf_nfntdfont].disabled = true;
     }
     bitmaptypes[old].selected = true;
     gcd[8].gd.label = &bitmaptypes[old];
     gcd[8].gd.handle_controlevent = GFD_Bitmap;
 
-    gcd[9].gd.pos.x = 150; gcd[9].gd.pos.y = 219; gcd[9].gd.pos.width = 126;
+    gcd[9].gd.pos.x = gcd[8].gd.pos.x; gcd[9].gd.pos.y = 219; gcd[9].gd.pos.width = gcd[8].gd.pos.width;
     gcd[9].gd.flags = gg_visible | gg_enabled;
     if ( oldbitmapstate==2 )
 	gcd[9].gd.flags &= ~gg_enabled;
@@ -650,7 +663,7 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     gcd[10].gd.label = &label[10];
     gcd[10].creator = GCheckBoxCreate;
 
-    if ( ofs==ff_otfcid || ofs==ff_cid ) {
+    if ( ofs==ff_otfcid || ofs==ff_cid || ofs==ff_otfciddfont) {
 	/*gcd[5].gd.flags &= ~gg_visible;*/
 	gcd[10].gd.flags &= ~gg_visible;
     }
@@ -662,7 +675,7 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     GFileChooserConnectButtons(gcd[0].ret,gcd[1].ret,gcd[2].ret);
     {
 	char *fn = sf->cidmaster==NULL? sf->fontname:sf->cidmaster->fontname;
-	unichar_t *temp = galloc(sizeof(unichar_t)*(strlen(fn)+8));
+	unichar_t *temp = galloc(sizeof(unichar_t)*(strlen(fn)+30));
 	uc_strcpy(temp,fn);
 	uc_strcat(temp,extensions[ofs]==NULL?".pfb":extensions[ofs]);
 	GGadgetSetTitle(gcd[0].ret,temp);

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Dec-2000 -->
-  <!-- AP: Last modified: 26-Nov-2001 -->
+  <!-- AP: Last modified: 29-Nov-2001 -->
   <TITLE>The File Menu</TITLE>
 </HEAD>
 <BODY>
@@ -186,14 +186,22 @@
 	small pointsizes (equivalent to PostScript's BlueValues).
       <LI>
 	True Type Symbol. Same as True Type, except it uses a symbol encoding scheme.
+	This is important on windows as symbol and dingbat encodings often include
+	characters (in the range 0x80-0x9f) which aren't mapped in normal encodings.
       <LI>
 	True Type macbinary format, a truetype font wrapped up in a mac resource,
-	wrapped up in a macbinary file. Designed to be used on a mac.
+	wrapped up in a macbinary file. Designed to be used for a mac.
+      <LI>
+	True Type dfont format, a truetype font wrapped up in a mac dfont (data fork
+	resource file). Mac OS/X font.
       <LI>
 	Open Type. Officially Open Type includes True Type, but Open Type True Type
 	fonts are no different from plain True Type fonts, so they might as well
 	just be called True Type. So by Open Type I mean Open Type with a CFF Postscript
 	Type 2 font inside it.
+      <LI>
+	Open Type dfont format, an open type font wrapped up in a mac dfont (data
+	fork resource file). Mac OS/X font.
       <LI>
 	Open Type CID, This is only available if your font is a
 	<A HREF="cidmenu.html">CID font</A>. It procudes an OpenType CID-keyed font.
@@ -223,14 +231,18 @@
 	NFNT (MacBin) -- Converts the bitmap fonts into Macintosh NFNT resources
 	and wraps them up in a mac binary file.
       <LI>
+	NFNT (dfont) -- Converts the bitmap fonts into Macintosh NFNT resources and
+	stores them in a mac (OS/X) dfont file.
+      <LI>
 	None
     </UL>
     <P>
     TTF (and Open Type) fonts are usually generated in MicroSoft's Unicode encoding,
     there will also be a tiny macintosh encoding for the first 256 positions
-    -- the exceptions are: symbol fonts will use the symbol encoding, KSC5601
-    fonts will use Wansung, and JIS208 will use SJIS, Big5 will use big5 encoding.
-    OpenType CID keyed fonts will be saved with Unicode encoding.<BR>
+    (and a macintosh copy of the unicode encoding) -- the exceptions are: symbol
+    fonts will use the symbol encoding, KSC5601 fonts will use Wansung, and JIS208
+    will use SJIS, Big5 will use big5 encoding. OpenType CID keyed fonts will
+    be saved with Unicode encoding.<BR>
     Postscript fonts are generated in whatever encoding the font is using (except
     if you take a two byte encoding and generate a Type1 font (rather than a
     Type0) then only the first few characters will be encoded).<BR>

@@ -59,6 +59,7 @@ unichar_t fontotf[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-',
 unichar_t fontcid[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','f','o','n','t','/','c','i','d', '\0' };
 unichar_t macbin[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','m','a','c','b','i','n','a','r','y', '\0' };
 unichar_t machqx[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','m','a','c','-','b','i','n','h','e','x','4','0', '\0' };
+unichar_t macdfont[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','m','a','c','-','d','f','o','n','t', '\0' };
 
 unichar_t *GIOguessMimeType(const unichar_t *path,int isdir) {
     unichar_t *pt;
@@ -118,6 +119,8 @@ return( object );
 return( macbin );
     else if ( uc_strmatch(pt,".hqx")==0 )
 return( machqx );
+    else if ( uc_strmatch(pt,".dfont")==0 )
+return( macdfont );
 
 return( unknown );
 }

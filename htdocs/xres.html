@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 21-Jan-2001 -->
-  <!-- AP: Last modified: 23-Nov-2001 -->
+  <!-- AP: Last modified: 1-Dec-2001 -->
   <TITLE>X Resources</TITLE>
 </HEAD>
 <BODY>
@@ -68,6 +68,28 @@ then the program will look at it.
     An integer (pixels)<BR>
     The maximum number of pixels the mouse is allowed to move between two clicks
     and have them still be considered a double click.
+  <DT>
+    <CODE>Gdraw.<A NAME="Keyboard">Keyboard</A></CODE>
+  <DD>
+    ibm | mac | sun | ppc | 0 | 1 | 2 | 3<BR>
+    Allows you to specify the type of keyboard. Currently this is only relevent
+    when generating menus. The modifier keys are in different locations on different
+    keyboards (under different operating systems) and if PfaEdit knows what keyboard
+    you are using it can make the hot-keys have better labels.
+    <UL>
+      <LI>
+	ibm | 0<BR>
+	Uses the Control and Alt keys
+      <LI>
+	mac | 1<BR>
+	Uses the Command and Option keys (Mac OS/X, Mac keyboard)
+      <LI>
+	ppc | 3<BR>
+	Uses the Control and Command keys (Suse ppc linux, Mac keyboard)
+      <LI>
+	sun | 2<BR>
+	Uses the Control and Meta keys
+    </UL>
   <DT>
     <CODE>Gdraw.SelectionNotifyTimeout</CODE>
   <DD>
