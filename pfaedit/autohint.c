@@ -1020,11 +1020,39 @@ return( stems );
 
 static StemInfo *StemAddUpdate(StemInfo *stems,EI *apt,EI *e, int i, int major,
 	struct pendinglist *pendings) {
-    StemInfo *new = StemsFind(stems,apt,e,major);
+    StemInfo *new;
     HintInstance *hi;
     real up, down;
     struct pendinglist *p;
-    int begun = i;
+    int begun = i, ap=i, ep=i;
+    double atcur = apt->tcur, aocur = apt->ocur, etcur = e->tcur, eocur = e->ocur;
+    Spline1D *sp;
+
+    /* This nasty bit of code is to get the hints at the top and bottom of "a" in n021004l.pfb */
+    if (( major && (apt->vertattmin || apt->vertattmax)) ||
+	    ( !major && (apt->horattmin || apt->horattmax))) {
+	if ( major )
+	    apt->tcur = apt->vertattmin ? apt->tmin : apt->tmax;
+	else
+	    apt->tcur = apt->horattmin ? apt->tmin : apt->tmax;
+	sp = &apt->spline->splines[!major];
+	apt->ocur = ((sp->a*apt->tcur+sp->b)*apt->tcur+sp->c)*apt->tcur+sp->d;
+	sp = &apt->spline->splines[major];
+	ap = ((sp->a*apt->tcur+sp->b)*apt->tcur+sp->c)*apt->tcur+sp->d;
+    }
+    if (( major && (e->vertattmin || e->vertattmax)) ||
+	    ( !major && (e->horattmin || e->horattmax))) {
+	if ( major )
+	    e->tcur = e->vertattmin ? e->tmin : e->tmax;
+	else
+	    e->tcur = e->horattmin ? e->tmin : e->tmax;
+	sp = &e->spline->splines[!major];
+	e->ocur = ((sp->a*e->tcur+sp->b)*e->tcur+sp->c)*e->tcur+sp->d;
+	sp = &e->spline->splines[major];
+	ep = ((sp->a*e->tcur+sp->b)*e->tcur+sp->c)*e->tcur+sp->d;
+    }
+    new = StemsFind(stems,apt,e,major);
+    apt->tcur = atcur; apt->ocur = aocur; e->tcur=etcur; e->ocur = eocur;
 
     if ( new->where==NULL ) {
 	if ( !new->haspointleft || !new->haspointright ) {
@@ -1053,17 +1081,22 @@ return(stems);
 	}
     }
     if ( new->where==NULL || (new->where->closed && new->where->end<i-1) ) {
+	if ( ep!=ap ) {
+	    if ( ep<ap ) { double temp = ep; ep=ap; ap=temp; }
+	    if ( begun-1<ap ) ap = begun-1;	/* My algorithem misses the end points */
+	    else if ( i+1>ep ) ep = i+1;	/*  so add/subtract 1 to make up for that */
+	}
 	if ( (!apt->spline->from->nonextcp || !apt->spline->to->noprevcp ||
 		!e->spline->from->nonextcp || !e->spline->to->noprevcp ) &&
 		IsNearHV(apt,e,i,&up,&down,major)) {
-	    if ( down<0 && i+down>begun ) down = begun-i;
-	    else if ( up<0 && i+up>begun ) up = begun-i;
+	    if ( down<0 && i+down>ap ) down = ap-i;
+	    else if ( up<0 && i+up>ep ) up = ep-i;
 	    _StemAddBrief(new,i+down,i+up);
 return( stems );
 	}
 	hi = chunkalloc(sizeof(HintInstance));
-	hi->begin = begun-1;	/* My algorithem misses the end points */
-	hi->end = i+1;		/*  so add/subtract 1 to make up for that */
+	hi->begin = ap;
+	hi->end = ep;
 	hi->next = new->where;
 	new->where = hi;
     } else {
@@ -1071,6 +1104,65 @@ return( stems );
 	    new->where->end = i+1;	/* see comment above */
 	new->where->closed = false;
     }
+return( stems );
+}
+
+static StemInfo *StemsOffsetHack(StemInfo *stems,EI *apt,EI *e, int major) {
+    double at, et, start, end;
+    StemInfo *new;
+
+    /* This nasty bit of code is to get the hints at the top and bottom of "a" in n021004l.pfb */
+    if ( major &&
+	    ((apt->vertattmin && apt->tmin==0) || (apt->vertattmax && apt->tmax==1.0)) &&
+	    ((e->vertattmin && e->tmin==0) || (e->vertattmax && e->tmax==1.0))) {
+	at = et = 0;
+	if ( apt->vertattmin && apt->vertattmax && apt->tmin==0 && apt->tmax==1.0 ) {
+	    if ( apt->tcur>.5 )
+		at = 1;
+	} else if ( apt->vertattmax && apt->tmax==1.0 )
+	    at = 1;
+	if ( e->vertattmin && e->vertattmax && e->tmin==0 && e->tmax==1.0 ) {
+	    if ( e->tcur>.5 )
+		et = 1;
+	} else if ( e->vertattmax && e->tmax==1.0 )
+	    et = 1;
+	start = (at==1)?apt->spline->to->me.x: apt->spline->from->me.x;
+	end = (et==1)?e->spline->to->me.x: e->spline->from->me.x;
+	if ( start>end ) { double temp = start; start = end; end = temp; }
+	new = _StemsFind(stems,start,end,true,true,false);
+	if ( new->where!=NULL )
+return( stems );
+	stems = StemInsert(stems,new);
+	start = (at==1)?apt->spline->to->me.y: apt->spline->from->me.y;
+	end = (et==1)?e->spline->to->me.y: e->spline->from->me.y;
+    } else if ( !major &&
+	    ((apt->horattmin && apt->tmin==0) || (apt->horattmax && apt->tmax==1.0)) &&
+	    ((e->horattmin && e->tmin==0) || (e->horattmax && e->tmax==1.0))) {
+	at = et = 0;
+	if ( apt->horattmin && apt->horattmax && apt->tmin==0 && apt->tmax==1.0 ) {
+	    if ( apt->tcur>.5 )
+		at = 1;
+	} else if ( apt->horattmax && apt->tmax==1.0 )
+	    at = 1;
+	if ( e->horattmin && e->horattmax && e->tmin==0 && e->tmax==1.0 ) {
+	    if ( e->tcur>.5 )
+		et = 1;
+	} else if ( e->horattmax && e->tmax==1.0 )
+	    et = 1;
+	start = (at==1)?apt->spline->to->me.y: apt->spline->from->me.y;
+	end = (et==1)?e->spline->to->me.y: e->spline->from->me.y;
+	if ( start>end ) { double temp = start; start = end; end = temp; }
+	new = _StemsFind(stems,start,end,true,true,false);
+	if ( new->where!=NULL )
+return( stems );
+	stems = StemInsert(stems,new);
+	start = (at==1)?apt->spline->to->me.x: apt->spline->from->me.x;
+	end = (et==1)?e->spline->to->me.x: e->spline->from->me.x;
+    } else
+return( stems );
+
+    if ( start>end ) { double temp = start; start = end; end = temp; }
+    _StemAddBrief(new,start,end);
 return( stems );
 }
 
@@ -1097,7 +1189,7 @@ static struct pendinglist *StemPending(struct pendinglist *pendings,
     struct pendinglist *t, *p;
     real wide, mdiff;
     StemInfo *new;
-
+	
     if ( checkme->tmin==0 && 
 	    ((checkme->up && checkme->coordmin[major]+2>mcur) ||
 	     (!checkme->up && checkme->coordmax[major]-2<mcur)) &&
@@ -1682,6 +1774,51 @@ static StemInfo *URWSerifChecker(SplineChar *sc,StemInfo *stems) {
 return( stems );
 }
 
+static StemInfo *MergePossible(StemInfo *stems,StemInfo *possible) {
+    StemInfo *next, *s, *prev;
+
+    prev = NULL;
+    if ( possible!=NULL )
+    for ( s=possible; s->next!=NULL; s=next ) {
+	next = s->next;
+	if ( s->start+s->width>=next->start ) {
+	    if ( /*s->width<next->width*/HIlen(s)<HIlen(next) ) {
+		s->next = next->next;
+		next->next = NULL;
+		StemInfoFree(next);
+		next = s;
+	    } else {
+		if ( prev==NULL )
+		    possible=next;
+		else
+		    prev->next = next;
+		s->next = NULL;
+		StemInfoFree(s);
+	    }
+	} else
+	    prev = s;
+    }
+
+    while ( possible!=NULL ) {
+	next = possible->next;
+	possible->next = NULL;
+	for ( s=stems; s!=NULL; s=s->next ) {
+	    if ( s->start==possible->start && s->width==possible->width )
+	break;
+	    if ((( s->start>=possible->start && s->start<=possible->start+possible->width ) ||
+		    (s->start+s->width>=possible->start && s->start+s->width<=possible->start+possible->width)) &&
+		    (HIlen(s)>s->width && s->linearedges))
+	break;
+	}
+	if ( s==NULL )
+	    stems = StemInsert(stems,possible);
+	else
+	    StemInfoFree(possible);
+	possible = next;
+    }
+return( stems );
+}
+
 static StemInfo *ELFindStems(EIList *el, int major, DStemInfo **dstems, MinimumDistance **mds ) {
     EI *active=NULL, *apt, *e, *p;
     int i, change, ahv, ehv, waschange;
@@ -1689,6 +1826,7 @@ static StemInfo *ELFindStems(EIList *el, int major, DStemInfo **dstems, MinimumD
     real up, down;
     struct pendinglist *pendings = NULL;
     int other = !major;
+    StemInfo *possible = NULL;
 
     waschange = false;
     for ( i=0; i<el->cnt; ++i ) {
@@ -1743,6 +1881,7 @@ static StemInfo *ELFindStems(EIList *el, int major, DStemInfo **dstems, MinimumD
 		stems = StemAddBrief(stems,apt,e,el->low+i+down,el->low+i+up,major);
 	    else if ( ( ehv && !e->hv ) || ( ahv && !apt->hv ) ) {
 		StemInfo *temp = stems;
+		possible = StemsOffsetHack(possible,apt,e,major);
 		pendings = StemPending(pendings,apt,e,ahv,major,&temp);
 		stems = temp;
 	    } else if ( dstems!=NULL &&
@@ -1759,6 +1898,7 @@ static StemInfo *ELFindStems(EIList *el, int major, DStemInfo **dstems, MinimumD
     for ( s=stems; s!=NULL; s=s->next )
 	s->where = HIReverse(s->where);
     PendingListFree(pendings);
+    stems = MergePossible(stems,possible);
     if ( major==0 )
 	stems = URWSerifChecker(el->sc,stems);
 return( stems );
