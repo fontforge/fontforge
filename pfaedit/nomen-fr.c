@@ -3350,6 +3350,11 @@ static unichar_t mnemonic_UpArrow = 'U';
 static unichar_t str_DownArrow = { 0x2193, 'B','a','s', 0 };
 static unichar_t str_LeftArrow = { 0x2190, 'G','a','u','c', 'h', 'e', 0 };
 
+static char *str_MissingGlyphName = "Nom de glyphe manquant";
+static char mnemonic_SelectAllPoints = 't';
+static char mnemonic_SelectAnchors = 'c';
+static char str_SelectAllPoints = "Sélectionner tous points et références";
+static char str_SelectAnchors = "Sélectionner ancres";
 
 static int num_buttonsize = 70 ;
 static int num_ScaleFactor = 140 ;
