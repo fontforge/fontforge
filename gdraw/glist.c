@@ -524,8 +524,8 @@ return( GGadgetDispatchEvent(&gl->vsb->g,event));
 	if ( GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y) && g->popup_msg )
 	    GGadgetPreparePopup(g->base,g->popup_msg);
 return( true );
-    } else if ( event->type==et_mouseup && gl->parentpressed &&
-	    !GGadgetInnerWithin(&gl->g,event->u.mouse.x,event->u.mouse.y)) {
+    } else if ( event->type==et_mouseup && gl->parentpressed /* &&
+	    !GGadgetInnerWithin(&gl->g,event->u.mouse.x,event->u.mouse.y)*/ ) {
 	gl->parentpressed = false;
 	GDrawPointerUngrab(GDrawGetDisplayOfWindow(gl->g.base));
     } else if ( event->type==et_mousemove && gl->parentpressed &&
