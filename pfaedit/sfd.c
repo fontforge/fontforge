@@ -550,7 +550,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
     PST *liga;
 
     fprintf(sfd, "StartChar: %s\n", sc->name );
-    fprintf(sfd, "Encoding: %d %d\n", sc->enc, sc->unicodeenc);
+    fprintf(sfd, "Encoding: %d %d %d\n", sc->enc, sc->unicodeenc, sc->ttf_glyph);
     if ( sc->parent->compacted )
 	fprintf(sfd, "OldEncoding: %d\n", sc->old_enc);
     fprintf(sfd, "Width: %d\n", sc->width );
@@ -1652,6 +1652,10 @@ return( NULL );
 	if ( strmatch(tok,"Encoding:")==0 ) {
 	    getint(sfd,&sc->enc);
 	    getint(sfd,&sc->unicodeenc);
+	    while ( (ch=getc(sfd))==' ' || ch=='\t' );
+	    ungetc(ch,sfd);
+	    if ( ch!='\n' && ch!='\r' )
+		getint(sfd,&sc->ttf_glyph);
 	} else if ( strmatch(tok,"OldEncoding:")==0 ) {
 	    getint(sfd,&sc->old_enc);
         } else if ( strmatch(tok,"Script:")==0 ) {
@@ -1967,12 +1971,16 @@ static void SFDFixupRefs(SplineFont *sf) {
     /*continue;*/
 	for ( prev = NULL, kp=sf->chars[i]->kerns; kp!=NULL; kp=next ) {
 	    next = kp->next;
-	    kp->sc = sf->chars[(int) (kp->sc)];
+	    if ( ((int) (kp->sc))>=sf->charcnt ) {
+		fprintf( stderr, "Warning: Bad kerning information in glyph %s\n", sf->chars[i]->name );
+		kp->sc = NULL;
+	    } else
+		kp->sc = sf->chars[(int) (kp->sc)];
 	    if ( kp->sc!=NULL )
 		prev = kp;
 	    else{
 		if ( prev==NULL )
-		    sf->chars[(int) (kp->sc)]->kerns = next;
+		    sf->chars[i]->kerns = next;
 		else
 		    prev->next = next;
 		chunkfree(kp,sizeof(KernPair));
@@ -2446,7 +2454,10 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
     } else {
 	glyph = 0;
 	while ( (sc = SFDGetChar(sfd,sf))!=NULL ) {
-	    sc->ttf_glyph = glyph++;
+	    if ( sc->ttf_glyph==-1 )
+		sc->ttf_glyph = glyph++;
+	    else
+		glyph = sc->ttf_glyph+1;
 	    GProgressNext();
 	}
 	if ( cidmaster==NULL ) {
