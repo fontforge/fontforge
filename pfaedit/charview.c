@@ -1417,23 +1417,18 @@ static void CVNewScale(CharView *cv) {
     CVUpdateInfo(cv,&e);
 }
 
-static void CVFit(CharView *cv) {
-    DBounds b;
+static void _CVFit(CharView *cv,DBounds *b) {
     real left, right, top, bottom, hsc, wsc;
     extern int palettes_docked;
     int offset = palettes_docked ? 90 : 0;
 
     if ( offset>cv->width ) offset = 0;
 
-    SplineCharFindBounds(cv->sc,&b);
-    bottom = b.miny;
-    top = b.maxy;
-    left = b.minx;
-    right = b.maxx;
+    bottom = b->miny;
+    top = b->maxy;
+    left = b->minx;
+    right = b->maxx;
 
-    if ( bottom>=0 ) bottom = -cv->sc->parent->descent;
-    if ( left>0 ) left = 0;
-    if ( right<cv->sc->width ) right = cv->sc->width;
     if ( top<bottom ) GDrawIError("Bottom bigger than top!");
     if ( right<left ) GDrawIError("Left bigger than right!");
     top -= bottom;
@@ -1455,6 +1450,16 @@ static void CVFit(CharView *cv) {
     cv->yoff = -(bottom - (top/10))*cv->scale;
 
     CVNewScale(cv);
+}
+
+static void CVFit(CharView *cv) {
+    DBounds b;
+
+    SplineCharFindBounds(cv->sc,&b);
+    if ( b.miny>=0 ) b.miny = -cv->sc->parent->descent;
+    if ( b.minx>0 ) b.minx = 0;
+    if ( b.maxx<cv->sc->width ) b.maxx = cv->sc->width;
+    _CVFit(cv,&b);
 }
 
 static void CVUnlinkView(CharView *cv ) {
@@ -2695,6 +2700,16 @@ return;
 	stop_motion = CVMouseMovePointer(cv);
       break;
       case cvt_magnify: case cvt_minify:
+	if ( !cv->p.rubberbanding ) {
+	    cv->p.ex = cv->p.cx;
+	    cv->p.ey = cv->p.cy;
+	}
+	if ( cv->p.rubberbanding )
+	    CVDrawRubberRect(cv->v,cv);
+	cv->p.ex = cv->info.x;
+	cv->p.ey = cv->info.y;
+	cv->p.rubberbanding = true;
+	CVDrawRubberRect(cv->v,cv);
       break;
       case cvt_hand:
 	CVMouseMoveHand(cv,event);
@@ -2799,12 +2814,31 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
       case cvt_curve: case cvt_corner: case cvt_tangent: case cvt_pen:
 	CVMouseUpPoint(cv,event);
       break;
-      case cvt_magnify: case cvt_minify: {
-	real cx, cy;
-	cx = (event->u.mouse.x-cv->xoff)/cv->scale ;
-	cy = (cv->height-event->u.mouse.y-cv->yoff)/cv->scale ;
-	CVMagnify(cv,cx,cy,event->u.mouse.state&ksm_meta?-1:1);
-      } break;
+      case cvt_magnify: case cvt_minify:
+	if ( cv->p.cx==cv->info.x && cv->p.cy==cv->info.y ) {
+	    real cx, cy;
+	    cx = (event->u.mouse.x-cv->xoff)/cv->scale ;
+	    cy = (cv->height-event->u.mouse.y-cv->yoff)/cv->scale ;
+	    CVMagnify(cv,cx,cy,event->u.mouse.state&ksm_meta?-1:1);
+        } else {
+	    DBounds b;
+	    if ( cv->p.cx>cv->info.x ) {
+		b.minx = cv->info.x;
+		b.maxx = cv->p.cx;
+	    } else {
+		b.minx = cv->p.cx;
+		b.maxx = cv->info.x;
+	    }
+	    if ( cv->p.cy>cv->info.y ) {
+		b.miny = cv->info.y;
+		b.maxy = cv->p.cy;
+	    } else {
+		b.miny = cv->p.cy;
+		b.maxy = cv->info.y;
+	    }
+	    _CVFit(cv,&b);
+	}
+      break;
       case cvt_rotate: case cvt_flip: case cvt_scale: case cvt_skew:
 	CVMouseUpTransform(cv);
       break;
