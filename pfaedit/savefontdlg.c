@@ -591,7 +591,9 @@ return( true );
 	} else {
 	    list[bf_ttf_ms]->disabled = false;
 	    list[bf_ttf_apple]->disabled = false;
-	    if ( format==ff_ttf || format==ff_ttfsym || format==ff_otf ||
+	    if ( bf==bf_none )
+		/* Do nothing, always appropriate */;
+	    else if ( format==ff_ttf || format==ff_ttfsym || format==ff_otf ||
 		    format==ff_otfcid )
 		GGadgetSelectOneListItem(d->bmptype,bf_ttf_ms);
 	    else
