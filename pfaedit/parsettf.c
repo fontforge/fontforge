@@ -3701,6 +3701,24 @@ return( 0 );
 return( true );
 }
 
+static char *FindUnusedNameTTF(SplineFont *sf,char *myname) {
+    char *buffer;
+    int i, j, len;
+
+    buffer = galloc((len = strlen(myname))+10);
+    strcpy(buffer,myname);
+    for ( i=0; i<10000; ++i ) {
+	sprintf( buffer+len,".%d", i);
+	for ( j=0; j<sf->charcnt; ++j ) if ( sf->chars[j]!=NULL )
+	    if ( strcmp(buffer,sf->chars[j]->name)==0 )
+	break;
+	if ( j==sf->charcnt )
+    break;
+    }
+    free(myname);
+return( buffer );
+}
+
 static SplineChar *SFMakeDupRef(SplineFont *sf, int local_enc, struct dup *dup) {
     SplineChar *sc = SplineCharCreate();
     RefChar *ref = chunkalloc(sizeof(RefChar));
@@ -3721,19 +3739,8 @@ static SplineChar *SFMakeDupRef(SplineFont *sf, int local_enc, struct dup *dup) 
     else
 	sprintf( buffer, "unencoded_%d", local_enc );
     sc->name = copy(buffer);
-    if ( strcmp(sc->name,dup->sc->name)==0 ) {
-	free(dup->sc->name);
-	if ( dup->sc->unicodeenc>=0 && dup->sc->unicodeenc<0x10000 &&
-		psunicodenames[dup->sc->unicodeenc]!=NULL )
-	    strcpy(buffer,psunicodenames[dup->sc->unicodeenc]);
-	else if ( dup->sc->unicodeenc>=0 )
-	    sprintf( buffer, "uni%04X", dup->sc->unicodeenc );
-	else if ( dup->sc->enc!=0 )
-	    sprintf( buffer, "nounicode_%x", dup->sc->enc);
-	else
-	    sprintf( buffer, "unencoded_%d", local_enc );
-	dup->sc->name = copy(buffer);
-    }
+    if ( strcmp(sc->name,dup->sc->name)==0 )
+	sc->name = FindUnusedNameTTF(sf,sc->name);
 
     ref->sc = dup->sc;
     ref->local_enc = dup->sc->enc;

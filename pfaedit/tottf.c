@@ -5790,7 +5790,10 @@ static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format)
 	putshort(at->post,0);		/* glyph 0 is named .notdef */
 	putshort(at->post,1);		/* glyphs 1&2 are tab and cr */
 	putshort(at->post,2);		/* or something */
-	for ( i=1, pos=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
+	i=1;
+	if ( sf->chars[i]!=NULL && strcmp(sf->chars[i]->name,".notdef")!=0 )
+	    i=0;
+	for ( pos=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
 	    if ( sf->chars[i]->unicodeenc<128 && sf->chars[i]->unicodeenc!=-1 )
 		putshort(at->post,sf->chars[i]->unicodeenc-32+3);
 	    else if ( strcmp(sf->chars[i]->name,".notdef")==0 )
@@ -6153,8 +6156,15 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
     uint16 *ranges;
     char table[256];
     SplineFont *sf = _sf;
-    SplineChar *sc;
+    SplineChar *sc, notdef;
     extern int greekfixup;
+
+    if ( sf->chars[0]==NULL ) {		/* Encode the default notdef char at 0 */
+	memset(&notdef,0,sizeof(notdef));
+	notdef.unicodeenc = -1;
+	notdef.name = ".notdef";
+	sf->chars[0] = &notdef;
+    }
 
     at->cmap = tmpfile();
 
@@ -6385,6 +6395,9 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
     at->cmaplen = ftell(at->cmap);
     if ( (at->cmaplen&2)!=0 )
 	putshort(at->cmap,0);
+
+    if ( sf->chars[0]==&notdef )
+	sf->chars[0] = NULL;
 }
 
 static int32 filecheck(FILE *file) {

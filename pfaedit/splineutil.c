@@ -679,18 +679,66 @@ void SplineSetQuickBounds(SplineSet *ss,DBounds *b) {
 
 void SplineCharQuickBounds(SplineChar *sc, DBounds *b) {
     RefChar *ref;
-    DBounds temp;
 
     SplineSetQuickBounds(sc->splines,b);
     for ( ref = sc->refs; ref!=NULL; ref = ref->next ) {
-	SplineSetQuickBounds(ref->splines,&temp);
+	/*SplineSetQuickBounds(ref->splines,&temp);*/
 	if ( b->minx==0 && b->maxx==0 && b->miny==0 && b->maxy == 0 )
-	    *b = temp;
-	else if ( temp.minx!=0 || temp.maxx != 0 || temp.maxy != 0 || temp.miny!=0 ) {
-	    if ( temp.minx < b->minx ) b->minx = temp.minx;
-	    if ( temp.miny < b->miny ) b->miny = temp.miny;
-	    if ( temp.maxx > b->maxx ) b->maxx = temp.maxx;
-	    if ( temp.maxy > b->maxy ) b->maxy = temp.maxy;
+	    *b = ref->bb;
+	else if ( ref->bb.minx!=0 || ref->bb.maxx != 0 || ref->bb.maxy != 0 || ref->bb.miny!=0 ) {
+	    if ( ref->bb.minx < b->minx ) b->minx = ref->bb.minx;
+	    if ( ref->bb.miny < b->miny ) b->miny = ref->bb.miny;
+	    if ( ref->bb.maxx > b->maxx ) b->maxx = ref->bb.maxx;
+	    if ( ref->bb.maxy > b->maxy ) b->maxy = ref->bb.maxy;
+	}
+    }
+}
+
+void SplineSetQuickConservativeBounds(SplineSet *ss,DBounds *b) {
+    SplinePoint *sp;
+
+    b->minx = b->miny = 1e10;
+    b->maxx = b->maxy = -1e10;
+    for ( ; ss!=NULL; ss=ss->next ) {
+	for ( sp=ss->first; ; ) {
+	    if ( sp->me.y < b->miny ) b->miny = sp->me.y;
+	    if ( sp->me.x < b->minx ) b->minx = sp->me.x;
+	    if ( sp->me.y > b->maxy ) b->maxy = sp->me.y;
+	    if ( sp->me.x > b->maxx ) b->maxx = sp->me.x;
+	    if ( sp->nextcp.y < b->miny ) b->miny = sp->nextcp.y;
+	    if ( sp->nextcp.x < b->minx ) b->minx = sp->nextcp.x;
+	    if ( sp->nextcp.y > b->maxy ) b->maxy = sp->nextcp.y;
+	    if ( sp->nextcp.x > b->maxx ) b->maxx = sp->nextcp.x;
+	    if ( sp->prevcp.y < b->miny ) b->miny = sp->prevcp.y;
+	    if ( sp->prevcp.x < b->minx ) b->minx = sp->prevcp.x;
+	    if ( sp->prevcp.y > b->maxy ) b->maxy = sp->prevcp.y;
+	    if ( sp->prevcp.x > b->maxx ) b->maxx = sp->prevcp.x;
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
+	}
+    }
+    if ( b->minx>65536 ) b->minx = 0;
+    if ( b->miny>65536 ) b->miny = 0;
+    if ( b->maxx<-65536 ) b->maxx = 0;
+    if ( b->maxy<-65536 ) b->maxy = 0;
+}
+
+void SplineCharQuickConservativeBounds(SplineChar *sc, DBounds *b) {
+    RefChar *ref;
+
+    SplineSetQuickConservativeBounds(sc->splines,b);
+    for ( ref = sc->refs; ref!=NULL; ref = ref->next ) {
+	/*SplineSetQuickConservativeBounds(ref->splines,&temp);*/
+	if ( b->minx==0 && b->maxx==0 && b->miny==0 && b->maxy == 0 )
+	    *b = ref->bb;
+	else if ( ref->bb.minx!=0 || ref->bb.maxx != 0 || ref->bb.maxy != 0 || ref->bb.miny!=0 ) {
+	    if ( ref->bb.minx < b->minx ) b->minx = ref->bb.minx;
+	    if ( ref->bb.miny < b->miny ) b->miny = ref->bb.miny;
+	    if ( ref->bb.maxx > b->maxx ) b->maxx = ref->bb.maxx;
+	    if ( ref->bb.maxy > b->maxy ) b->maxy = ref->bb.maxy;
 	}
     }
 }
@@ -1375,11 +1423,54 @@ static void CleanupGreekNames(FontDict *fd) {
     }
 }
 
+static char *FindUnusedName(char **encoding,char *myname,int charcnt) {
+    char *buffer;
+    int i, j, len;
+
+    buffer = galloc((len = strlen(myname))+10);
+    strcpy(buffer,myname);
+    for ( i=0; i<10000; ++i ) {
+	sprintf( buffer+len,".%d", i);
+	for ( j=0; j<charcnt; ++j )
+	    if ( strcmp(buffer,encoding[j])==0 )
+	break;
+	if ( j==charcnt )
+    break;
+    }
+    free(myname);
+return( buffer );
+}
+
+static SplineChar *DuplicateNameReference(SplineFont *sf,char **encoding,int encindex) {
+    SplineChar *sc = SplineCharCreate();
+    RefChar *ref;
+    int i;
+
+    for ( i=0; i<encindex; ++i )
+	if ( strcmp(encoding[i],encoding[encindex])==0 )
+    break;
+
+    encoding[encindex] = FindUnusedName(encoding,encoding[encindex],sf->charcnt);
+    sc->name = copy(encoding[encindex]);
+    sc->refs = ref = gcalloc(1,sizeof(RefChar));
+    ref->sc = sf->chars[i];
+    ref->transform[0] = ref->transform[3] = 1;
+    ref->local_enc = i;
+    for ( i=0; i<256; ++i )
+	if ( strcmp(ref->sc->name,AdobeStandardEncoding[i])==0 )
+    break;
+    ref->adobe_enc = i==256? -1 : i;
+    SCMakeDependent(sc,ref->sc);
+    ref->checked = true;
+return( sc );
+}
+
 static void SplineFontFromType1(SplineFont *sf, FontDict *fd) {
     int i;
     RefChar *refs, *next, *pr;
     char **encoding;
     int istype2 = fd->fonttype==2;		/* Easy enough to deal with even though it will never happen... */
+    uint8 *used = gcalloc(fd->chars->next,sizeof(uint8));
 
     CleanupGreekNames(fd);
     if ( istype2 )
@@ -1430,14 +1521,18 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd) {
 	    /* 0 500 hsbw endchar */
 	    sf->chars[i] = PSCharStringToSplines((uint8 *) "\213\370\210\015\016",5,false,fd->private->subrs,NULL,".notdef");
 	    sf->chars[i]->width = sf->ascent+sf->descent;
+	} else if ( used[k] && strcmp(encoding[i],".notdef")!=0 ) {
+	    sf->chars[i] = DuplicateNameReference(sf,encoding,i);
 	} else if ( k2==-1 ) {
 	    sf->chars[i] = PSCharStringToSplines(fd->chars->values[k],fd->chars->lens[k],
 		    istype2,fd->private->subrs,NULL,encoding[i]);
+	    used[k] = true;
 	} else {
 	    if ( fd->charprocs->values[k]->unicodeenc==-2 )
 		sf->chars[i] = fd->charprocs->values[k];
 	    else
 		sf->chars[i] = SplineCharCopy(fd->charprocs->values[k]);
+	    used[k] = true;
 	}
 	sf->chars[i]->vwidth = sf->ascent+sf->descent;
 	sf->chars[i]->enc = i;
