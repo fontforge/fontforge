@@ -2204,7 +2204,7 @@ return;
     data = gcalloc(cnt+1,sizeof(char *));
     for ( i=cnt=0; i<len; ++i )
 	if ( tis[i]->selected )
-	    data[i] = cu_copy(tis[i]->text);
+	    data[cnt++] = cu_copy(tis[i]->text);
     PosSubCopy(sel+1,data);
     CI_CanPaste(ci);
 }
@@ -2235,6 +2235,36 @@ static enum possub_type PSTGuess(char *data) {
 return( pst_null );
 
 return( type );
+}
+
+static unichar_t *uc_copy_sli_check(SplineChar *sc,char *data) {
+    SplineFont *sf = sc->parent;
+    int sli, new, i;
+    char *end;
+    unichar_t *to;
+    char buffer[20];
+
+    /* We've got a string. Don't know what font it came from, can't really */
+    /*  make the sli right. Best we can do is insure against crashes and hope */
+    /*  it was copied from us */
+    new = sli = strtol(data+9,&end,10);
+    if ( sf->script_lang==NULL )
+	new = SFAddScriptLangIndex(sf,SCScriptFromUnicode(sc),DEFAULT_LANG);
+    else {
+	for ( i=0; sf->script_lang[i]!=NULL; ++i );
+	if ( sli>=i )
+	    new = SFAddScriptLangIndex(sf,SCScriptFromUnicode(sc),DEFAULT_LANG);
+    }
+
+    if ( sli==new )
+return( uc_copy(data) );
+
+    sprintf( buffer, "%2d", new);
+    to = galloc((strlen(data)+strlen(buffer)+1)*sizeof(unichar_t));
+    uc_strcpy(to,data);
+    uc_strcpy(to+10,buffer);
+    uc_strcat(to,end);
+return( to );
 }
 
 static void CI_DoPaste(CharInfo *ci,char **data, enum possub_type type) {
@@ -2304,11 +2334,11 @@ return;
 	break;
 	if ( j<len ) {
 	    free(newlist[j]->text);
-	    newlist[j]->text = uc_copy(data[i]);
+	    newlist[j]->text = uc_copy_sli_check(ci->sc,data[i]);
 	} else {
 	    newlist[len+k] = gcalloc(1,sizeof(GTextInfo));
 	    newlist[len+k]->fg = newlist[len+k]->bg = COLOR_DEFAULT;
-	    newlist[len+k]->text = uc_copy(data[i]);
+	    newlist[len+k]->text = uc_copy_sli_check(ci->sc,data[i]);
 	    ++k;
 	}
     }

@@ -49,12 +49,63 @@ return( rhead );
 }
 
 
-PST *PSTCopy(PST *base,SplineChar *sc) {
+static int FixupSLI(int sli,SplineFont *from,SplineChar *sc) {
+    SplineFont *to = sc->parent;
+    int i,j,k;
+
+    /* Find a script lang index in the new font which matches that of the old */
+    /*  font. There are some cases when we don't know what the old font was. */
+    /*  well, just make a reasonable guess */
+
+    if ( from==to )
+return( sli );
+    if ( from==NULL )
+return( SFAddScriptLangIndex(to,SCScriptFromUnicode(sc),DEFAULT_LANG));
+
+    /* does the new font have exactly what we want? */
+    i = 0;
+    if ( to->script_lang!=NULL ) {
+	for ( i=0; to->script_lang[i]!=NULL; ++i ) {
+	    for ( j=0; to->script_lang[i][j].script!=0 &&
+		    to->script_lang[i][j].script==from->script_lang[sli][j].script; ++j ) {
+		for ( k=0; to->script_lang[i][j].langs[k]!=0 &&
+			to->script_lang[i][j].langs[k]==from->script_lang[sli][j].langs[k]; ++k );
+		if ( to->script_lang[i][j].langs[k]!=0 || from->script_lang[sli][j].langs[k]!=0 )
+	    break;
+	    }
+	    if ( to->script_lang[i][j].script==0 && from->script_lang[sli][j].script==0 )
+return( i );
+	}
+    }
+
+    /* Add it */
+    if ( to->script_lang==NULL )
+	to->script_lang = galloc(2*sizeof(struct script_record *));
+    else
+	to->script_lang = grealloc(to->script_lang,(i+2)*sizeof(struct script_record *));
+    to->script_lang[i+1] = NULL;
+    for ( j=0; from->script_lang[sli][j].script!=0; ++j );
+    to->script_lang[i] = galloc((j+1)*sizeof(struct script_record));
+    for ( j=0; from->script_lang[sli][j].script!=0; ++j ) {
+	to->script_lang[i][j].script = from->script_lang[sli][j].script;
+	for ( k=0; from->script_lang[sli][j].langs[k]!=0; ++k );
+	to->script_lang[i][j].langs = galloc((k+1)*sizeof(uint32));
+	for ( k=0; from->script_lang[sli][j].langs[k]!=0; ++k )
+	    to->script_lang[sli][j].langs[k] = from->script_lang[sli][j].langs[k];
+	to->script_lang[sli][j].langs[k] = 0;
+    }
+    to->script_lang[i][j].script = 0;
+return( i );
+}
+
+PST *PSTCopy(PST *base,SplineChar *sc,SplineFont *from) {
     PST *head=NULL, *last=NULL, *cur;
 
     for ( ; base!=NULL; base = base->next ) {
 	cur = chunkalloc(sizeof(PST));
 	*cur = *base;
+	if ( from!=sc->parent )
+	    cur->script_lang_index = FixupSLI(cur->script_lang_index,from,sc);
 	if ( cur->type==pst_ligature ) {
 	    cur->u.lig.components = copy(cur->u.lig.components);
 	    cur->u.lig.lig = sc;
@@ -72,10 +123,11 @@ PST *PSTCopy(PST *base,SplineChar *sc) {
 return( head );
 }
 
-SplineChar *SplineCharCopy(SplineChar *sc) {
+SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into) {
     SplineChar *nsc = SplineCharCreate();
 
     *nsc = *sc;
+    nsc->parent = into;
     nsc->enc = -2;
     nsc->name = copy(sc->name);
     nsc->splines = SplinePointListCopy(nsc->splines);
@@ -92,7 +144,9 @@ SplineChar *SplineCharCopy(SplineChar *sc) {
     nsc->backimages = NULL;
     nsc->undoes[0] = nsc->undoes[1] = nsc->redoes[0] = nsc->redoes[1] = NULL;
     nsc->kerns = NULL;
-    nsc->possub = PSTCopy(nsc->possub,nsc);
+    nsc->possub = PSTCopy(nsc->possub,nsc,sc->parent);
+    if ( sc->parent!=NULL && into->order2!=sc->parent->order2 )
+	SCConvertOrder(nsc,into->order2);
 return(nsc);
 }
 
@@ -575,9 +629,7 @@ static void _MergeFont(SplineFont *into,SplineFont *other) {
 			/* Bug here. Suppose someone has a reference to our empty */
 			/*  char */
 			SplineCharFree(into->chars[index]);
-			into->chars[index] = SplineCharCopy(o_sf->chars[i]);
-			if ( into->order2!=o_sf->order2 )
-			    SCConvertOrder(into->chars[index],into->order2);
+			into->chars[index] = SplineCharCopy(o_sf->chars[i],into);
 			if ( into->bitmaps!=NULL && other->bitmaps!=NULL )
 			    BitmapsCopy(bitmap_into,other,index,i);
 		    } else
@@ -662,9 +714,7 @@ static void CIDMergeFont(SplineFont *into,SplineFont *other) {
 		/* Don't bother to copy it */;
 	    else if ( SFHasCID(into,i)==-1 ) {
 		SplineCharFree(i_sf->chars[i]);
-		i_sf->chars[i] = SplineCharCopy(o_sf->chars[i]);
-		if ( i_sf->order2!=o_sf->order2 )
-		    SCConvertOrder(i_sf->chars[i],i_sf->order2);
+		i_sf->chars[i] = SplineCharCopy(o_sf->chars[i],i_sf);
 		if ( into->bitmaps!=NULL && other->bitmaps!=NULL )
 		    BitmapsCopy(into,other,i,i);
 	    }

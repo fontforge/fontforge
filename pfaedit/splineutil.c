@@ -1611,7 +1611,7 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd) {
 	    if ( fd->charprocs->values[k]->unicodeenc==-2 )
 		sf->chars[i] = fd->charprocs->values[k];
 	    else
-		sf->chars[i] = SplineCharCopy(fd->charprocs->values[k]);
+		sf->chars[i] = SplineCharCopy(fd->charprocs->values[k],sf);
 	    used[k] = true;
 	}
 	sf->chars[i]->ttf_glyph = k;

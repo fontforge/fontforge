@@ -514,7 +514,7 @@ return(NULL);
 	    undo->u.state.unicodeenc = sc->unicodeenc;
 	    undo->u.state.charname = copy(sc->name);
 	    undo->u.state.comment = u_copy(sc->comment);
-	    undo->u.state.possub = PSTCopy(sc->possub,sc);
+	    undo->u.state.possub = PSTCopy(sc->possub,sc,sc->parent);
 	}
     }
     undo->u.state.copied_from = sc->parent;
@@ -1309,7 +1309,7 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
 	    cur->u.state.unicodeenc = sc->unicodeenc;
 	    cur->u.state.charname = copymetadata ? copy(sc->name) : NULL;
 	    cur->u.state.comment = copymetadata ? u_copy(sc->comment) : NULL;
-	    cur->u.state.possub = copymetadata ? PSTCopy(sc->possub,NULL) : NULL;
+	    cur->u.state.possub = copymetadata ? PSTCopy(sc->possub,sc,sc->parent) : NULL;
 	} else {		/* Or just make a reference */
 	    cur->undotype = ut_state;
 	    cur->u.state.refs = ref = chunkalloc(sizeof(RefChar));
@@ -1604,6 +1604,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
     DBounds bb;
     real transform[6];
     int width, vwidth;
+    FontView *fvs;
 
     switch ( paster->undotype ) {
       case ut_noop:
@@ -1649,7 +1650,8 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 		    paster->u.state.unicodeenc==0xffff?-1:paster->u.state.unicodeenc,
 		    paster->u.state.comment);
 	    PSTFree(sc->possub);
-	    sc->possub = paster->u.state.possub;
+	    for ( fvs = fv_list; fvs!=NULL && fvs->sf!=paster->u.state.copied_from; fvs=fvs->next );
+	    sc->possub = PSTCopy(paster->u.state.possub,sc,fvs==NULL?NULL:fvs->sf);
 	}
 	if ( paster->u.state.refs!=NULL ) {
 	    RefChar *new, *refs;
