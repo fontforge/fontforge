@@ -500,7 +500,7 @@ static void bAskUser(Context *c) {
 	free(t1);
 	free(t2);
 	c->return_val.type = v_str;
-	c->return_val.u.sval = cu_copy(ret);
+	c->return_val.u.sval = u2script_copy(ret);
 	if ( ret==NULL )
 	    c->return_val.u.sval = copy("");
 	else
