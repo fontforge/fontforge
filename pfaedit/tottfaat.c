@@ -838,6 +838,35 @@ return( features);
 return( features);
 }
 
+static SplineChar *SCFromTTFGlyph(SplineFont *sf,int ttf_glyph ) {
+    int i;
+
+    if ( ttf_glyph==-1 )
+return( NULL );
+    if ( (i=ttf_glyph-2)<0 ) i=0;
+    for ( ; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	if ( sf->chars[i]->ttf_glyph==ttf_glyph )
+return( sf->chars[i] );
+	if ( sf->chars[i]->ttf_glyph>0 && sf->chars[i]->ttf_glyph>ttf_glyph )
+return( NULL );
+    }
+return( NULL );
+}
+
+static void orderglyphs(SplineChar **cglyphs,uint16 *map,int max) {
+    int i,j;
+    uint16 temp;
+    SplineChar *tempsc;
+
+    for ( i=0; i<max; ++i ) for ( j=i+1; j<max; ++j ) {
+	if ( cglyphs[i]->ttf_glyph > cglyphs[j]->ttf_glyph ) {
+	    tempsc = cglyphs[i]; temp = map[i];
+	    cglyphs[i] = cglyphs[j]; map[i] = map[j];
+	    cglyphs[j] = tempsc; map[j] = temp;
+	}
+    }
+}
+
 static void morx_dumpContGlyphFormFeature(FILE *temp,SplineChar **glyphs,
 	uint16 *forms[4], int gcnt,
 	struct alltabs *at, SplineFont *sf, uint32 script, int ignoremarks ) {
@@ -881,8 +910,8 @@ static void morx_dumpContGlyphFormFeature(FILE *temp,SplineChar **glyphs,
 
     for ( i=k=0; i<at->maxp.numGlyphs; ++i )
 	if ( used[i] ) ++k;
-    cglyphs = galloc((k+1)*sizeof(SplineChar *));
-    map = galloc((k+1)*sizeof(uint16));
+    cglyphs = galloc((2*k+1)*sizeof(SplineChar *));
+    map = galloc((2*k+1)*sizeof(uint16));
     j=0;
     for ( i=k=0; i<at->maxp.numGlyphs; ++i ) if ( used[i] ) {
 	for ( ; j<sf->charcnt; ++j )
@@ -910,8 +939,8 @@ static void morx_dumpContGlyphFormFeature(FILE *temp,SplineChar **glyphs,
     fseek(temp,0,SEEK_END);
 
     /* State 0,1 are start states */
-    /* State 2 means we have found one interesting letter, and marked it (so it will become either initial or isolated) */
-    /* State 3 means we have found two interesting letters, and marked (so the last will be either medial or final) */
+    /* State 2 means we have found one interesting letter, transformed current to 'init' and marked it (in case we need to make it isolated) */
+    /* State 3 means we have found two interesting letters, transformed current to 'medi' and marked (in case we need to make it final) */
     putshort(temp,0); putshort(temp,0); putshort(temp,0); putshort(temp,0);
 	putshort(temp,1); if ( anymarks ) putshort(temp,0);		/* 0 State */
     putshort(temp,0); putshort(temp,0); putshort(temp,0); putshort(temp,0);
@@ -922,26 +951,26 @@ static void morx_dumpContGlyphFormFeature(FILE *temp,SplineChar **glyphs,
 	putshort(temp,5); if ( anymarks ) putshort(temp,7);		/* 3 State */
 
     /* Transition 0 goes to state 0, no substitutions, no marks */
-    /* Transition 1 goes to state 2, no subs, marks glyph */
-    /* Transition 2 goes to state 3, marked glyph=>initial, marks glyph */
+    /* Transition 1 goes to state 2, current init subs, marks glyph */
+    /* Transition 2 goes to state 3, current glyph=>medial, marks glyph */
     /* Transition 3 goes to state 0, marked glyph=>isolated, no marks */
-    /* Transition 4 goes to state 2, no subs, no marks (for deleted) */
-    /* Transition 5 goes to state 3, marked glyph=>medial, marks glyph */
+    /* Transition 4 goes to state 2, no subs, no marks (for deleted/mark glyphs) */
+    /* Transition 5 goes to state 3, current glyph=>medial, marks glyph */
     /* Transition 6 goes to state 0, marked glyph=>final, no marks */
     /* Transition 7 goes to state 3, no subs, no marks (for deleted) */
     putshort(temp,0); putshort(temp,0x0000); putshort(temp,0xffff); putshort(temp,0xffff);
-    putshort(temp,2); putshort(temp,0x8000); putshort(temp,0xffff); putshort(temp,0xffff);
-    putshort(temp,3); putshort(temp,0x8000); putshort(temp,any[0]?0:0xffff); putshort(temp,0xffff);
-    putshort(temp,0); putshort(temp,0x0000); putshort(temp,any[1]?any[0]:0xffff); putshort(temp,0xffff);
-    putshort(temp,2); putshort(temp,0x0000); putshort(temp,0xffff); putshort(temp,0xffff);
-    putshort(temp,3); putshort(temp,0x8000); putshort(temp,any[2]?any[0]+any[1]:0xffff); putshort(temp,0xffff);
+    putshort(temp,2); putshort(temp,0x8000); putshort(temp,0xffff); putshort(temp,any[0]?0:0xffff);
+    putshort(temp,3); putshort(temp,0x8000); putshort(temp,0xffff); putshort(temp,any[1]?any[0]:0xffff);
     putshort(temp,0); putshort(temp,0x0000); putshort(temp,any[3]?any[0]+any[1]+any[2]:0xffff); putshort(temp,0xffff);
+    putshort(temp,2); putshort(temp,0x0000); putshort(temp,0xffff); putshort(temp,0xffff);
+    putshort(temp,3); putshort(temp,0x8000); putshort(temp,0xffff); putshort(temp,any[1]?any[0]:0xffff);
+    putshort(temp,0); putshort(temp,0x0000); putshort(temp,any[2]?any[0]+any[1]:0xffff); putshort(temp,0xffff);
     putshort(temp,3); putshort(temp,0x0000); putshort(temp,0xffff); putshort(temp,0xffff);
 
     /* Substitution 0 is initial */
-    /* Substitution 1 is isolated */
-    /* Substitution 2 is medial */
-    /* Substitution 3 is final */
+    /* Substitution 1 is medial */
+    /* Substitution 2 is final */	/* final must be prepared to convert both base chars and medial chars to isolated */
+    /* Substitution 3 is isolated */	/* isolated must be prepared to convert both base chars and initial chars to isolated */
     pos = ftell(temp);
     for ( i=0; i<any[0]+any[1]+any[2]+any[3]; ++i )
 	putlong(temp,0);		/* Fixup later */
@@ -956,6 +985,17 @@ static void morx_dumpContGlyphFormFeature(FILE *temp,SplineChar **glyphs,
 	for ( i=0; i<gcnt; ++i ) if ( forms[f][i]!=0 ) {
 	    cglyphs[k] = glyphs[i];
 	    map[k++] = forms[f][i];
+	}
+	if ( (f==2 && any[1]) || (f==3 && any[0])) {
+	    int otherf = f==2 ? 1 : 0;
+	    for ( i=0; i<gcnt; ++i ) {
+		if ( forms[f][i]!=0 && forms[otherf][i]!=0 &&
+			forms[otherf][i]!=glyphs[i]->ttf_glyph ) {
+		    cglyphs[k] = SCFromTTFGlyph(sf,forms[otherf][i]);
+		    map[k++] = forms[f][i];
+		}
+	    }
+	    orderglyphs(cglyphs,map,k);
 	}
 	cglyphs[k] = NULL;
 	morx_lookupmap(temp,cglyphs,map,k);	/* dump this substitution lookup table */
@@ -1011,6 +1051,10 @@ static struct feature *aat_dumpmorx_glyphforms(struct alltabs *at, SplineFont *s
 		any = true;
 	    }
 	    if ( any ) {
+		/* Currently I transform all isolated chars to initial first */
+		/*  so if the isolated char, is just the char unchanged, I have to change it back */
+		if ( forms[0][gcnt]!=0 && forms[3][gcnt]==0 ) forms[3][gcnt] = ssc->ttf_glyph;
+		if ( forms[1][gcnt]!=0 && forms[2][gcnt]==0 ) forms[2][gcnt] = ssc->ttf_glyph;
 		glyphs[gcnt++] = ssc;
 		for ( f=0; f<4; ++f) forms[f][gcnt] = 0;
 	    }
