@@ -70,7 +70,9 @@ extern int _GScrollBar_Width;
 
 int default_fv_font_size = 24, default_fv_antialias=false,
 	default_fv_showhmetrics=false, default_fv_showvmetrics=false;
-#define METRICS_COLOR 0x0000c0
+#define METRICS_BASELINE 0x0000c0
+#define METRICS_ORIGIN	 0xc00000
+#define METRICS_ADVANCE	 0x008000
 FontView *fv_list=NULL;
 
 void FVToggleCharChanged(SplineChar *sc) {
@@ -1673,12 +1675,131 @@ void FVChangeDisplayBitmap(FontView *fv,BDFFont *bdf) {
     fv->sf->display_size = fv->show->pixelsize;
 }
 
-static void FVMenuShowMetrics(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    if ( mi->mid==MID_ShowHMetrics )
-	default_fv_showhmetrics = fv->showhmetrics = !fv->showhmetrics;
-    else
-	default_fv_showvmetrics = fv->showvmetrics = !fv->showvmetrics;
+struct md_data {
+    int done;
+    int ish;
+    FontView *fv;
+};
+
+static int md_e_h(GWindow gw, GEvent *e) {
+    if ( e->type==et_close ) {
+	struct md_data *d = GDrawGetUserData(gw);
+	d->done = true;
+    } else if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct md_data *d = GDrawGetUserData(gw);
+	static int masks[] = { fvm_baseline, fvm_origin, fvm_advanceat, fvm_advanceto, -1 };
+	int i, metrics;
+	if ( GGadgetGetCid(e->u.control.g)==10 ) {
+	    metrics = 0;
+	    for ( i=0; masks[i]!=-1 ; ++i )
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,masks[i])))
+		    metrics |= masks[i];
+	    if ( d->ish )
+		default_fv_showhmetrics = d->fv->showhmetrics = metrics;
+	    else
+		default_fv_showvmetrics = d->fv->showvmetrics = metrics;
+	}
+	d->done = true;
+    } else if ( e->type==et_char ) {
+#if 0
+	if ( e->u.chr.keysym == GK_F1 || e->u.chr.keysym == GK_Help ) {
+	    help("fontinfo.html");
+return( true );
+	}
+#endif
+return( false );
+    }
+return( true );
+}
+
+static void FVMenuShowMetrics(GWindow fvgw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(fvgw);
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    struct md_data d;
+    GGadgetCreateData gcd[7];
+    GTextInfo label[6];
+    int metrics = mi->mid==MID_ShowHMetrics ? fv->showhmetrics : fv->showvmetrics;
+
+    d.fv = fv;
+    d.done = 0;
+    d.ish = mi->mid==MID_ShowHMetrics;
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.window_title = GStringGetResource(d.ish?_STR_ShowHMetrics:_STR_ShowVMetrics,NULL);
+    pos.x = pos.y = 0;
+    pos.width =GDrawPointsToPixels(NULL,GGadgetScale(170));
+    pos.height = GDrawPointsToPixels(NULL,130);
+    gw = GDrawCreateTopWindow(NULL,&pos,md_e_h,&d,&wattrs);
+
+    memset(&label,0,sizeof(label));
+    memset(&gcd,0,sizeof(gcd));
+
+    label[0].text = (unichar_t *) _STR_Baseline;
+    label[0].text_in_resource = true;
+    gcd[0].gd.label = &label[0];
+    gcd[0].gd.pos.x = 8; gcd[0].gd.pos.y = 8; 
+    gcd[0].gd.flags = gg_enabled|gg_visible|(metrics&fvm_baseline?gg_cb_on:0);
+    gcd[0].gd.cid = fvm_baseline;
+    gcd[0].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
+    gcd[0].creator = GCheckBoxCreate;
+
+    label[1].text = (unichar_t *) _STR_Origin;
+    label[1].text_in_resource = true;
+    gcd[1].gd.label = &label[1];
+    gcd[1].gd.pos.x = 8; gcd[1].gd.pos.y = gcd[0].gd.pos.y+16;
+    gcd[1].gd.flags = gg_enabled|gg_visible|(metrics&fvm_origin?gg_cb_on:0);
+    gcd[1].gd.cid = fvm_origin;
+    gcd[1].creator = GCheckBoxCreate;
+
+    label[2].text = (unichar_t *) _STR_AdvanceWidthAsLine;
+    label[2].text_in_resource = true;
+    gcd[2].gd.label = &label[2];
+    gcd[2].gd.pos.x = 8; gcd[2].gd.pos.y = gcd[1].gd.pos.y+16;
+    gcd[2].gd.flags = gg_enabled|gg_visible|(metrics&fvm_advanceat?gg_cb_on:0);
+    gcd[2].gd.cid = fvm_advanceat;
+    gcd[2].gd.popup_msg = GStringGetResource(_STR_AdvanceLinePopup,NULL);
+    gcd[2].creator = GCheckBoxCreate;
+
+    label[3].text = (unichar_t *) _STR_AdvanceWidthAsBar;
+    label[3].text_in_resource = true;
+    gcd[3].gd.label = &label[3];
+    gcd[3].gd.pos.x = 8; gcd[3].gd.pos.y = gcd[2].gd.pos.y+16; 
+    gcd[3].gd.flags = gg_enabled|gg_visible|(metrics&fvm_advanceto?gg_cb_on:0);
+    gcd[3].gd.cid = fvm_advanceto;
+    gcd[3].gd.popup_msg = GStringGetResource(_STR_AdvanceBarPopup,NULL);
+    gcd[3].creator = GCheckBoxCreate;
+
+    label[4].text = (unichar_t *) _STR_OK;
+    label[4].text_in_resource = true;
+    gcd[4].gd.label = &label[4];
+    gcd[4].gd.pos.x = 20-3; gcd[4].gd.pos.y = GDrawPixelsToPoints(NULL,pos.height)-35-3;
+    gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
+    gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    gcd[4].gd.cid = 10;
+    gcd[4].creator = GButtonCreate;
+
+    label[5].text = (unichar_t *) _STR_Cancel;
+    label[5].text_in_resource = true;
+    gcd[5].gd.label = &label[5];
+    gcd[5].gd.pos.x = -20; gcd[5].gd.pos.y = gcd[4].gd.pos.y+3;
+    gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
+    gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    gcd[5].creator = GButtonCreate;
+
+    GGadgetsCreate(gw,gcd);
+    
+    GDrawSetVisible(gw,true);
+    while ( !d.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
+
     SavePrefs();
     GDrawRequestExpose(fv->v,NULL,false);
 }
@@ -2435,8 +2556,8 @@ static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_PrevDefChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'a' }, '[', ksm_control|ksm_meta, NULL, NULL, FVMenuChangeChar, MID_PrevDef },
     { { (unichar_t *) _STR_Goto, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'G' }, '>', ksm_shift|ksm_control, NULL, NULL, FVMenuGotoChar },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_ShowHMetrics, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'H' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuShowMetrics, MID_ShowHMetrics },
-    { { (unichar_t *) _STR_ShowVMetrics, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'V' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuShowMetrics, MID_ShowVMetrics },
+    { { (unichar_t *) _STR_ShowHMetrics, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuShowMetrics, MID_ShowHMetrics },
+    { { (unichar_t *) _STR_ShowVMetrics, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuShowMetrics, MID_ShowVMetrics },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_24, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '2' }, '2', ksm_control, NULL, NULL, FVMenuSize, MID_24 },
     { { (unichar_t *) _STR_36, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '3' }, '3', ksm_control, NULL, NULL, FVMenuSize, MID_36 },
@@ -2508,10 +2629,10 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	    mi->ti.disabled = pos<0;
 	  break;
 	  case MID_ShowHMetrics:
-	    mi->ti.checked = fv->showhmetrics;
+	    /*mi->ti.checked = fv->showhmetrics;*/
 	  break;
 	  case MID_ShowVMetrics:
-	    mi->ti.checked = fv->showvmetrics;
+	    /*mi->ti.checked = fv->showvmetrics;*/
 	    mi->ti.disabled = !fv->sf->hasvmetrics;
 	  break;
 	  case MID_24:
@@ -3324,22 +3445,35 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 			    j*fv->cbw+(fv->cbw-1-base.width)/2,
 			    i*fv->cbh+FV_LAB_HEIGHT+1+fv->show->ascent-bdfc->ymax);
 		if ( fv->showhmetrics ) {
-		    int x0 = j*fv->cbw+(fv->cbw-1-fv->magnify*base.width)/2- bdfc->xmin*fv->magnify;
+		    int x1, x0 = j*fv->cbw+(fv->cbw-1-fv->magnify*base.width)/2- bdfc->xmin*fv->magnify;
 		    /* Draw advance width & horizontal origin */
-		    GDrawDrawLine(pixmap,x0,i*fv->cbh+FV_LAB_HEIGHT+1,x0,
-			    (i+1)*fv->cbh-1,METRICS_COLOR);
-		    x0 += bdfc->width;
-		    GDrawDrawLine(pixmap,x0,i*fv->cbh+FV_LAB_HEIGHT+1,x0,
-			    (i+1)*fv->cbh-1,METRICS_COLOR);
+		    if ( fv->showhmetrics&fvm_origin )
+			GDrawDrawLine(pixmap,x0,i*fv->cbh+FV_LAB_HEIGHT+yorg-3,x0,
+				i*fv->cbh+FV_LAB_HEIGHT+yorg+2,METRICS_ORIGIN);
+		    x1 = x0 + bdfc->width;
+		    if ( fv->showhmetrics&fvm_advanceat )
+			GDrawDrawLine(pixmap,x1,i*fv->cbh+FV_LAB_HEIGHT+1,x1,
+				(i+1)*fv->cbh-1,METRICS_ADVANCE);
+		    if ( fv->showhmetrics&fvm_advanceto )
+			GDrawDrawLine(pixmap,x0,(i+1)*fv->cbh-2,x1,
+				(i+1)*fv->cbh-2,METRICS_ADVANCE);
 		}
 		if ( fv->showvmetrics ) {
 		    int x0 = j*fv->cbw+(fv->cbw-1-fv->magnify*base.width)/2- bdfc->xmin*fv->magnify
 			    + fv->magnify*fv->show->pixelsize/2;
-		    int yvw = i*fv->cbh+FV_LAB_HEIGHT+yorg + fv->magnify*sc->vwidth*fv->show->pixelsize/em;
-		    GDrawDrawLine(pixmap,x0,i*fv->cbh+FV_LAB_HEIGHT+1,x0,
-			    (i+1)*fv->cbh-1,METRICS_COLOR);
-		    GDrawDrawLine(pixmap,j*fv->cbw,yvw,(j+1)*fv->cbw,
-			    yvw,METRICS_COLOR);
+		    int y0 = i*fv->cbh+FV_LAB_HEIGHT+yorg;
+		    int yvw = y0 + fv->magnify*sc->vwidth*fv->show->pixelsize/em;
+		    if ( fv->showvmetrics&fvm_baseline )
+			GDrawDrawLine(pixmap,x0,i*fv->cbh+FV_LAB_HEIGHT+1,x0,
+				(i+1)*fv->cbh-1,METRICS_BASELINE);
+		    if ( fv->showvmetrics&fvm_advanceat )
+			GDrawDrawLine(pixmap,j*fv->cbw,yvw,(j+1)*fv->cbw,
+				yvw,METRICS_ADVANCE);
+		    if ( fv->showvmetrics&fvm_advanceto )
+			GDrawDrawLine(pixmap,j*fv->cbw+2,y0,j*fv->cbw+2,
+				yvw,METRICS_ADVANCE);
+		    if ( fv->showvmetrics&fvm_origin )
+			GDrawDrawLine(pixmap,x0-3,i*fv->cbh+FV_LAB_HEIGHT+yorg,x0+2,i*fv->cbh+FV_LAB_HEIGHT+yorg,METRICS_ORIGIN);
 		}
 		GDrawPopClip(pixmap,&old2);
 	    }
@@ -3353,15 +3487,10 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	    }
 	}
     }
-    if ( fv->showhmetrics ) {
-	int baseline = (fv->sf->ascent*fv->magnify*fv->show->pixelsize)/em;
+    if ( fv->showhmetrics&fvm_baseline ) {
+	int baseline = (fv->sf->ascent*fv->magnify*fv->show->pixelsize)/em+1;
 	for ( i=0; i<=fv->rowcnt; ++i )
-	    GDrawDrawLine(pixmap,0,i*fv->cbh+FV_LAB_HEIGHT+baseline,fv->width,i*fv->cbh+FV_LAB_HEIGHT+baseline,METRICS_COLOR);
-    }
-    if ( fv->showhmetrics ) {
-	int yorg = fv->magnify*(fv->show->ascent-fv->sf->vertical_origin*fv->show->pixelsize/em);
-	for ( i=0; i<=fv->rowcnt; ++i )
-	    GDrawDrawLine(pixmap,0,i*fv->cbh+FV_LAB_HEIGHT+yorg,fv->width,i*fv->cbh+FV_LAB_HEIGHT+yorg,METRICS_COLOR);
+	    GDrawDrawLine(pixmap,0,i*fv->cbh+FV_LAB_HEIGHT+baseline,fv->width,i*fv->cbh+FV_LAB_HEIGHT+baseline,METRICS_BASELINE);
     }
     GDrawPopClip(pixmap,&old);
     GDrawSetDither(NULL, true);
