@@ -1117,6 +1117,13 @@ static int IsSeacable(GrowBuf *gb, struct pschars *subrs, SplineChar *sc, int ro
     DBounds b;
     int i;
 
+    if ( sc->ttf_glyph!=0x7fff ) {
+	refs = chunkalloc(sizeof(RefChar));
+	refs->sc = sc;
+	refs->transform[0] = refs->transform[3] = 1;
+return( TrySubrRefs(gb,subrs,sc,refs,round));
+    }
+
     refs = SCCanonicalRefs(sc,true);
     if ( refs==NULL )
 return( false );
@@ -1124,9 +1131,11 @@ return( false );
 /*  in them. The other requirements are just those of seac */
     if ( (iscjk&0x100) || ( refs->next!=NULL && refs->next->next!=NULL ) ||
 	    refs->adobe_enc==-1 || ( refs->next!=NULL && refs->next->adobe_enc==-1) ||
-	    (refs->next!=NULL &&
+	    ((refs->next==NULL &&
+		(refs->transform[4]!=0 || refs->transform[5]!=0 || refs->sc->width!=sc->width )) ||
+	     (refs->next!=NULL &&
 		((refs->transform[4]!=0 || refs->transform[5]!=0 || refs->sc->width!=sc->width ) &&
-		 (refs->next->transform[4]!=0 || refs->next->transform[5]!=0 || refs->next->sc->width!=sc->width))))
+		 (refs->next->transform[4]!=0 || refs->next->transform[5]!=0 || refs->next->sc->width!=sc->width)))))
 return( TrySubrRefs(gb,subrs,sc,refs,round));
 
     r1 = refs;
@@ -1264,9 +1273,12 @@ return( false );			/* not seacable, but could go in subr */
 	if ( r->next!=NULL && r->next->next!=NULL )
 return( false );		/* seac only takes 2 chars */
 	if ( r->next!=NULL &&
-		((r->transform[4]!=0 || r->transform[5]!=0) &&
-		 (r->next->transform[4]!=0 || r->next->transform[5]!=0)))
-return( false );		/* seac only allows one to be translated */
+		((r->transform[4]!=0 || r->transform[5]!=0 || r->sc->width!=d->sc->width) &&
+		 (r->next->transform[4]!=0 || r->next->transform[5]!=0 || r->next->sc->width!=d->sc->width)))
+return( false );		/* seac only allows one to be translated, and the untranslated one must have the right width */
+	if ( r->next==NULL &&
+		(r->transform[4]!=0 || r->transform[5]!=0 || r->sc->width!=d->sc->width))
+return( false );
     }
     /* Either always can be represented by seac, or sometimes by neither */
 return( true );
