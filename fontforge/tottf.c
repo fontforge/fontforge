@@ -3049,6 +3049,8 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *_sf,
     int i,j,cnt1,cnt2,first,last,avg1,avg2,k;
     SplineFont *sf = _sf;
     char *pt;
+    static int const weightFactors[26] = { 64, 14, 27, 35, 100, 20, 14, 42, 63,
+	3, 6, 35, 20, 56, 56, 17, 4, 49, 56, 71, 31, 10, 18, 3, 18, 2 };
 
     os2->version = 1;
     os2->weightClass = sf->pfminfo.weight;
@@ -3113,9 +3115,10 @@ docs are wrong.
 		if ( sf->chars[i]->width!=0 ) {
 		    avg2 += sf->chars[i]->width; ++cnt2;
 		}
-		if ( sf->chars[i]->unicodeenc==' ' ||
-			(sf->chars[i]->unicodeenc>='a' && sf->chars[i]->unicodeenc<='z')) {
-		    avg1 += sf->chars[i]->width; ++cnt1;
+		if ( sf->chars[i]->unicodeenc==' ') {
+		    avg1 += sf->chars[i]->width * 166; ++cnt1;
+		} else if (sf->chars[i]->unicodeenc>='a' && sf->chars[i]->unicodeenc<='z') {
+		    avg1 += sf->chars[i]->width * weightFactors[sf->chars[i]->unicodeenc-'a']; ++cnt1;
 		}
 	    }
 	}
@@ -3133,9 +3136,9 @@ docs are wrong.
     while ( pt<os2->achVendID ) *pt++ = ' ';	/* Pad with spaces not NUL */
 
     os2->avgCharWid = 500;
-    /*if ( cnt1==27 )
-	os2->avgCharWid = avg1/cnt1;
-    else*/ if ( cnt2!=0 )
+    if ( cnt1==27 )
+	os2->avgCharWid = avg1/1000;
+    else if ( cnt2!=0 )
 	os2->avgCharWid = avg2/cnt2;
     memcpy(os2->panose,sf->pfminfo.panose,sizeof(os2->panose));
     if ( format==ff_ttfsym ) {
@@ -3360,16 +3363,49 @@ static void redoos2(struct alltabs *at) {
 	putshort(at->os2f,0);
 }
 
-static void dumpgasp(struct alltabs *at) {
+static int icomp(const void *a, const void *b) {
+    return *(int *)a - *(int *)b;
+}
+
+static void dumpgasp(struct alltabs *at, SplineFont *sf) {
+    BDFFont *bdf;
+    int i, nbitmaps = 0, rangecnt = 0;
+    int *bitmapsizes;
+
+    for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next )
+	if ( BDFDepth(bdf)==1 ) nbitmaps++;
+    bitmapsizes = gcalloc( nbitmaps, sizeof(int) );
+    for ( i=0, bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next )
+	if ( BDFDepth(bdf)==1 ) bitmapsizes[i++] = bdf->pixelsize;
+    qsort ( bitmapsizes, nbitmaps, sizeof(int), icomp );
+    rangecnt = 1;
+    if ( nbitmaps>0 && bitmapsizes[0]>1 ) rangecnt++;
+    for ( i=0; i<nbitmaps; i++ ) {
+        if ( i>0 && bitmapsizes[i-1]+1<bitmapsizes[i] ) rangecnt++;
+	if ( i==nbitmaps-1 || bitmapsizes[i]+1<bitmapsizes[i+1] ) rangecnt++;
+    }
 
     at->gaspf = tmpfile();
     putshort(at->gaspf,0);	/* Version number */
-    putshort(at->gaspf,1);	/* One range */
+    putshort(at->gaspf,rangecnt);
+    for ( i=0; i<nbitmaps; i++ ) {
+	if ( (i==0 && bitmapsizes[i]>1) || 
+	     (i>0 && bitmapsizes[i-1]+1<bitmapsizes[i]) ) {
+	    putshort(at->gaspf,bitmapsizes[i]-1);
+	    putshort(at->gaspf,0x2);	/* Grey scale, no gridfitting */
+	}
+	if ( (i<nbitmaps-1 && bitmapsizes[i]+1<bitmapsizes[i+1]) ||
+	      i==nbitmaps-1 ) {
+	    putshort(at->gaspf,bitmapsizes[i]);
+	    putshort(at->gaspf,0x0);	/* No grey scale, no gridfitting */
+	}
+    }
     putshort(at->gaspf,0xffff);	/* Upper bound on pixels/em for this range */
     putshort(at->gaspf,0x2);	/* Grey scale, no gridfitting */
 				    /* No hints, so no grids to fit */
     at->gasplen = ftell(at->gaspf);
 	/* This table is always 32 bit aligned */
+    gfree(bitmapsizes);
 }
 
 #if 0
@@ -4741,7 +4777,7 @@ return( false );
     redoos2(at);
     if ( format!=ff_otf && format!=ff_otfcid && format!=ff_none ) {
 	if ( !SFHasInstructions(sf))
-	    dumpgasp(at);
+	    dumpgasp(at, sf);
 	at->fpgmf = dumpstoredtable(sf,CHR('f','p','g','m'),&at->fpgmlen);
 	at->prepf = dumpstoredtable(sf,CHR('p','r','e','p'),&at->preplen);
 	at->cvtf = dumpstoredtable(sf,CHR('c','v','t',' '),&at->cvtlen);
