@@ -32,6 +32,14 @@
 # include <stdarg.h>
 # include <stdio.h>
 # include <string.h>
+# include <stdlib.h>
+# include <ctype.h>
+# include <sys/stat.h>
+# include <sys/types.h>
+# include <unistd.h>
+# include <errno.h>
+# include <libintl.h>
+#  define _ gettext
 
 /* A set of extremely simple dlgs.
 	Post a notice (which vanishes after a bit)
@@ -258,18 +266,17 @@ static int _gwwv_choose_with_buttons(const char *title,
 		    NULL));
     gtk_tree_view_set_headers_visible( GTK_TREE_VIEW(list),FALSE );
     select = gtk_tree_view_get_selection( GTK_TREE_VIEW( list ));
+    gtk_tree_selection_set_mode( select, GTK_SELECTION_SINGLE);
     if ( def>=0 ) {
 	GtkTreePath *path = gtk_tree_path_new_from_indices(def,-1);
 	/* I don't understand this. If I use selection_single, I can't select */
 	/*  anything. If I use multiple it does what I expect single to do */
-	gtk_tree_selection_set_mode( select, GTK_SELECTION_MULTIPLE);
 	gtk_tree_selection_select_path(select,path);
- printf( "Path=%d\n", gtk_tree_path_get_indices(path)[0] );
+	gtk_tree_view_set_cursor(GTK_TREE_VIEW(list),path,NULL,FALSE);
 	gtk_tree_path_free(path);
     }
     gtk_widget_show(list);
     gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dlg)->vbox),list);
-    gtk_tree_selection_set_mode( select, GTK_SELECTION_SINGLE);
 
     result = gtk_dialog_run(GTK_DIALOG(dlg));
     if ( result==GTK_RESPONSE_REJECT || result==GTK_RESPONSE_NONE || result==GTK_RESPONSE_DELETE_EVENT)
@@ -307,4 +314,194 @@ int gwwv_choose(const char *title,
     va_start(va,msg);
 return( _gwwv_choose_with_buttons(title,choices,cnt,def,buts,msg,va));
 }
+
+/* *********************** FILE CHOOSER ROUTINES **************************** */
+
+/* gtk's default filter function doesn't handle "{}" wildcards, so... */
+/* this one handles *?{}[] wildcards */
+int gwwv_wild_match(char *pattern, const char *name,int ignorecase) {
+    char ch, *ppt, *ept;
+    const char *npt;
+
+    if ( pattern==NULL )
+return( TRUE );
+
+    while (( ch = *pattern)!='\0' ) {
+	if ( ch=='*' ) {
+	    for ( npt=name; ; ++npt ) {
+		if ( gwwv_wild_match(pattern+1,npt,ignorecase))
+return( TRUE );
+		if ( *npt=='\0' )
+return( FALSE );
+	    }
+	} else if ( ch=='?' ) {
+	    if ( *name=='\0' )
+return( FALSE );
+	    ++name;
+	} else if ( ch=='[' ) {
+	    /* [<char>...] matches the chars
+	    /* [<char>-<char>...] matches any char within the range (inclusive)
+	    /* the above may be concattenated and the resultant pattern matches
+	    /*		anything thing which matches any of them.
+	    /* [^<char>...] matches any char which does not match the rest of
+	    /*		the pattern
+	    /* []...] as a special case a ']' immediately after the '[' matches
+	    /*		itself and does not end the pattern */
+	    int found = 0, not=0;
+	    ++pattern;
+	    if ( pattern[0]=='^' ) { not = 1; ++pattern; }
+	    for ( ppt = pattern; (ppt!=pattern || *ppt!=']') && *ppt!='\0' ; ++ppt ) {
+		ch = *ppt;
+		if ( ppt[1]=='-' && ppt[2]!=']' && ppt[2]!='\0' ) {
+		    char ch2 = ppt[2];
+		    if ( (*name>=ch && *name<=ch2) ||
+			    (ignorecase && islower(ch) && islower(ch2) &&
+				    *name>=toupper(ch) && *name<=toupper(ch2)) ||
+			    (ignorecase && isupper(ch) && isupper(ch2) &&
+				    *name>=tolower(ch) && *name<=tolower(ch2))) {
+			if ( !not ) {
+			    found = 1;
+	    break;
+			}
+		    } else {
+			if ( not ) {
+			    found = 1;
+	    break;
+			}
+		    }
+		    ppt += 2;
+		} else if ( ch==*name || (ignorecase && tolower(ch)==tolower(*name)) ) {
+		    if ( !not ) {
+			found = 1;
+	    break;
+		    }
+		} else {
+		    if ( not ) {
+			found = 1;
+	    break;
+		    }
+		}
+	    }
+	    if ( !found )
+return( FALSE );
+	    while ( *ppt!=']' && *ppt!='\0' ) ++ppt;
+	    pattern = ppt;
+	    ++name;
+	} else if ( ch=='{' ) {
+	    /* matches any of a comma seperated list of substrings */
+	    for ( ppt = pattern+1; *ppt!='\0' ; ppt = ept ) {
+		for ( ept=ppt; *ept!='}' && *ept!=',' && *ept!='\0'; ++ept );
+		for ( npt = name; ppt<ept; ++npt, ++ppt ) {
+		    if ( *ppt != *npt && (!ignorecase || tolower(*ppt)!=tolower(*npt)) )
+		break;
+		}
+		if ( ppt==ept ) {
+		    char *ecurly = ept;
+		    while ( *ecurly!='}' && *ecurly!='\0' ) ++ecurly;
+		    if ( gwwv_wild_match(ecurly+1,npt,ignorecase))
+return( TRUE );
+		}
+		if ( *ept=='}' )
+return( FALSE );
+		if ( *ept==',' ) ++ept;
+	    }
+	} else if ( ch==*name ) {
+	    ++name;
+	} else if ( ignorecase && tolower(ch)==tolower(*name)) {
+	    ++name;
+	} else
+return( FALSE );
+	++pattern;
+    }
+    if ( *name=='\0' )
+return( TRUE );
+
+return( FALSE );
+}
+
+static gboolean gwwv_file_pattern_matcher(const GtkFileFilterInfo *info,
+	gpointer data) {
+    char *pattern = (char *) data;
+return( gwwv_wild_match(pattern, info->filename, TRUE));
+}
+
+char *gwwv_open_filename(const char *title, char *initial_filter) {
+    GtkWidget *dialog;
+    char *filename = NULL;
+    GtkFileFilter *filter;
+
+    dialog = gtk_file_chooser_dialog_new (title,
+					  NULL,
+					  GTK_FILE_CHOOSER_ACTION_OPEN,
+					  GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+					  GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+					  NULL);
+    if ( initial_filter!=NULL ) {
+	filter = gtk_file_filter_new();
+	gtk_file_filter_add_custom( filter,GTK_FILE_FILTER_FILENAME,
+		gwwv_file_pattern_matcher, initial_filter, NULL);
+	gtk_file_filter_set_name( filter,_("Initial Filter") );
+	gtk_file_chooser_add_filter( GTK_FILE_CHOOSER( dialog ), filter );
+	filter = gtk_file_filter_new();
+	gtk_file_filter_add_pattern( filter,"*" );
+	gtk_file_filter_set_name( filter,_("Everything") );
+	gtk_file_chooser_add_filter( GTK_FILE_CHOOSER( dialog ), filter );
+    }
+
+    if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)
+	filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
+
+    gtk_widget_destroy (dialog);
+return( filename );
+}
+
+char *gwwv_save_filename(const char *title,const char *def_name) {
+    GtkWidget *dialog;
+    char *filename = NULL;
+    int response;
+
+    dialog = gtk_file_chooser_dialog_new (title,
+					  NULL,
+					  GTK_FILE_CHOOSER_ACTION_SAVE,
+					  GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+					  GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+					  NULL);
+
+    if ( def_name!=NULL ) {
+	char *pt = strrchr( def_name,'/');
+	if ( pt!=NULL ) {
+	    char *dir = strndup(def_name,pt-def_name);
+	    gtk_file_chooser_set_current_folder( GTK_FILE_CHOOSER( dialog ), dir );
+	    gtk_file_chooser_set_current_name( GTK_FILE_CHOOSER( dialog ), pt+1 );
+	    free(dir);
+	} else
+	    gtk_file_chooser_set_current_name( GTK_FILE_CHOOSER( dialog ), def_name );
+    }
+
+    while ( gtk_dialog_run( GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT ) {
+	filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
+	if ( access( filename,F_OK )== -1 )
+    break;
+	else {
+	    const char *buts[3];
+	    buts[0] = _("_Replace");
+	    buts[1] = GTK_STOCK_CANCEL;
+	    buts[2] = NULL;
+	    if ( gwwv_ask(_("File Exists"), buts, 0, 1, _("File exists, do you want to replace it?" ))==0 )
+    break;
+	    free(filename);
+	}
+    }
+
+    gtk_widget_destroy (dialog);
+return( filename );
+}
 #endif
+
+int main( int argc, char **argv ) {
+
+    gtk_init (&argc, &argv);
+
+    printf( "%s\n", gwwv_save_filename("Save","foo"));
+    return 0;
+}

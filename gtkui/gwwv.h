@@ -3,4 +3,8 @@
 /* Headers for all my widgets */
 
 # include "gwwvmenubar.h"
+    /* Modified menubar which creates a sub-menu if some menus don't fit on */
+    /*  the window */
+# include "gwwvask.h"
+    /* series of standard dialogs to ask questions and post notices */
 #endif
