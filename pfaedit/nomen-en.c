@@ -132,6 +132,8 @@ static char *str_FindInFontView="Find In Font View";
 static char mnemonic_FindInFontView = 'V';
 static char str_Fill[] = "Fill";
 static unichar_t mnemonic_Fill[] = 'l';
+static char str_ShowGridFitDDD = "Show Grid Fit...";
+static char mnemonic_ShowGridFitDDD = 'w';
 static char str_Select[] = "Select";
 static unichar_t mnemonic_Select[] = 'S';
 static char str_DeselectAll[] = "Deselect All";
@@ -2104,6 +2106,12 @@ static char *str_BracketNumTooBig = "Bracketted value is too large"
 static char *str_InvalidShort = "A value must be between [-32768,32767]"
 static char *str_InstrChanged = "Instructions were changed";
 static char *str_AskInstrChanged = "The instructions for %.80hs have changed. Do you want to lose those changes?"
+    /* cvgridfit.c */
+static char *str_DPI = "DPI:";
+static char mnemonic_DPI = 'D';
+static char *str_ShowGridFit = "Show Grid Fit";
+static char mnemonic_ShowGridFit = 'G';
+static char *str_FreeTypeParams = "Grid Fit Parameters";
 
 static int num_buttonsize = 55;
 static int num_ScaleFactor = 100;

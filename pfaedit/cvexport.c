@@ -414,7 +414,7 @@ return( 0 );
     gi.u.image = &base;
 
     if ( bitsperpixel==1 ) {
-	if ( (freetypecontext = FreeTypeFontContext(sc->parent,sc,false))==NULL )
+	if ( (freetypecontext = FreeTypeFontContext(sc->parent,sc,NULL))==NULL )
 	    bdfc = SplineCharRasterize(sc,pixelsize);
 	else {
 	    bdfc = SplineCharFreeTypeRasterize(freetypecontext,sc->enc,pixelsize,1);
@@ -441,7 +441,7 @@ return( 0 );
 	    ret = GImageWriteBmp(&gi,filename);
 	BDFCharFree(bdfc);
     } else {
-	if ( (freetypecontext = FreeTypeFontContext(sc->parent,sc,false))==NULL )
+	if ( (freetypecontext = FreeTypeFontContext(sc->parent,sc,NULL))==NULL )
 	    bdfc = SplineCharAntiAlias(sc,pixelsize,(1<<(bitsperpixel/2)));
 	else {
 	    bdfc = SplineCharFreeTypeRasterize(freetypecontext,sc->enc,pixelsize,bitsperpixel);

@@ -1024,13 +1024,19 @@ int ttfcopyfile(FILE *ttf, FILE *other, int pos);
 extern void SCCopyFgToBg(SplineChar *sc,int show);
 
 extern int hasFreeType(void);
-extern void *_FreeTypeFontContext(SplineFont *sf,SplineChar *sc,int doall,
+extern int hasFreeTypeDebugger(void);
+extern void *_FreeTypeFontContext(SplineFont *sf,SplineChar *sc,struct fontview *fv,
 	enum fontformat ff,int flags,void *shared_ftc);
-extern void *FreeTypeFontContext(SplineFont *sf,SplineChar *sc,int doall);
+extern void *FreeTypeFontContext(SplineFont *sf,SplineChar *sc,struct fontview *fv);
 extern BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int depth);
 extern BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,
 	int pixelsize,int depth);
 extern void FreeTypeFreeContext(void *freetypecontext);
+extern SplineSet *FreeType_GridFitChar(void *single_glyph_context,
+	int enc, real ptsize, int dpi, int16 *width, SplineSet *splines);
+extern struct freetype_raster *FreeType_GetRaster(void *single_glyph_context,
+	int enc, real ptsize, int dpi);
+extern void FreeType_FreeRaster(struct freetype_raster *raster);
 
 extern int UniFromName(const char *name);
 extern int uUniFromName(const unichar_t *name);
@@ -1039,6 +1045,9 @@ extern void doversion(void);
 
 extern AnchorPos *AnchorPositioning(SplineChar *sc,unichar_t *ustr,SplineChar **sstr );
 extern void AnchorPosFree(AnchorPos *apos);
+
+extern int SFCloseAllInstrs(SplineFont *sf);
+extern void SCMarkInstrDlgAsChanged(SplineChar *sc);
 
 
 # if HANYANG

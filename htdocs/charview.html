@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 12-Feb-2003 -->
+  <!-- AP: Last modified: 2-Mar-2003 -->
   <TITLE>Outline Character View</TITLE>
 </HEAD>
 <BODY>
@@ -371,6 +371,23 @@ view the vertical metrics of the character are shown. You can change the
 vertical advance just as you changed the character's width (by selecting
 the pointer tool and draging the vertical advance line up or
 down).<BR Clear=Right>
+<H2>
+  <A NAME="GridFit">Grid Fit View</A>
+</H2>
+<P>
+<IMG SRC="GridFit.png" WIDTH="327" HEIGHT="368" ALIGN="Right">If you have
+the freetype library, then you can see the results of rasterizing your character.
+If you have freetype's bytecode interpreter enabled you can also see how
+the truetype instructions in the character have moved the points around (if
+you don't have the bytecode interpreter enabled you will see what freetype's
+autohinter does to points). This mode can be invoked with View-&gt;Show Grid
+Fit...
+<P>
+The Show Grid Fit command will ask you for some basic information first.
+It needs to know the pointsize and resolution for which you want the action
+performed (the example at right is 12pt on a 72dpi
+screen).<BR>
+<IMG SRC="ShowGridFit.png" WIDTH="268" HEIGHT="148"><BR CLEAR=ALL>
 <P ALIGN=Center>
 -- <A HREF="fontview.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
 <A HREF="bitmapview.html">Next</A> --

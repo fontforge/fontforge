@@ -2501,7 +2501,7 @@ return( NULL );
 	    int ff = fonttype==sftf_pfb ? ff_pfb :
 		     fonttype==sftf_ttf || fonttype==sftf_httf ? ff_ttf :
 		     ff_otf;
-	    ftc = _FreeTypeFontContext(sf,NULL,true,ff,flags,NULL);
+	    ftc = _FreeTypeFontContext(sf,NULL,NULL,ff,flags,NULL);
 	}
 	if ( ftc==NULL ) {
 	    free(ret);

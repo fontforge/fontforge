@@ -1346,3 +1346,11 @@ return( false );
     GDrawProcessPendingEvents(NULL);
 return( true );
 }
+
+void SCMarkInstrDlgAsChanged(SplineChar *sc) {
+    struct instrdata *id;
+
+    for ( id = sc->parent->instr_dlgs; id!=NULL && id->sc!=sc; id=id->next );
+    if ( id!=NULL )
+	id->changed = true;
+}

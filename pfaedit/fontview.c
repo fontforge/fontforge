@@ -2502,6 +2502,9 @@ static void FVMenuClearInstrs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SplineChar *sc;
     int i;
 
+    if ( !SFCloseAllInstrs(fv->sf))
+return;
+
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( (sc = fv->sf->chars[i])!=NULL ) {
 	if ( sc->ttf_instrs_len!=0 ) {
 	    free(sc->ttf_instrs);

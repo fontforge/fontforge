@@ -355,7 +355,7 @@ static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp, SplineSet *
 return;
 
     /* draw the control points if it's selected */
-    if ( sp->selected || cv->showpointnumbers) {
+    if ( sp->selected || cv->showpointnumbers || cv->show_ft_results ) {
 	int iscurrent = sp==(cv->p.sp!=NULL?cv->p.sp:cv->lastselpt);
 	if ( !sp->nonextcp ) {
 	    cx =  cv->xoff + rint(sp->nextcp.x*cv->scale);
@@ -369,7 +369,7 @@ return;
 	    GDrawDrawLine(pixmap,x,y,cx,cy, nextcpcol);
 	    GDrawDrawLine(pixmap,cx-3,cy-3,cx+3,cy+3,subcol);
 	    GDrawDrawLine(pixmap,cx+3,cy-3,cx-3,cy+3,subcol);
-	    if ( cv->showpointnumbers ) {
+	    if ( cv->showpointnumbers || cv->show_ft_results) {
 		pnum = sp->ttfindex+1;
 		if ( sp->ttfindex==0xffff ) {
 		    SplinePoint *np;
@@ -473,7 +473,7 @@ return;
 	else
 	    GDrawFillPoly(pixmap,gp,4,col);
     }
-    if ( cv->showpointnumbers && sp->ttfindex!=0xffff ) {
+    if ( (cv->showpointnumbers || cv->show_ft_results) && sp->ttfindex!=0xffff ) {
 	sprintf( buf,"%d", sp->ttfindex );
 	uc_strcpy(ubuf,buf);
 	GDrawDrawText(pixmap,x,y-6,ubuf,-1,NULL,col);
@@ -1068,68 +1068,117 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     clip.x = (event->u.expose.rect.x-cv->xoff)/cv->scale;
     clip.y = (cv->height-event->u.expose.rect.y-event->u.expose.rect.height-cv->yoff)/cv->scale;
 
-    /* if we've got bg images (and we're showing them) then the hints live in */
-    /*  the bg image pixmap (else they get overwritten by the pixmap) */
-    if ( (cv->showhhints || cv->showvhints || cv->showdhints) && ( cv->sc->backimages==NULL || !cv->showback) )
-	CVShowHints(cv,pixmap);
+    GDrawSetFont(pixmap,cv->small);
 
-    if (( cv->showback || cv->drawmode==dm_back ) && cv->sc->backimages!=NULL ) {
-	/* This really should be after the grids, but then it would completely*/
-	/*  hide them. */
-	GRect r;
-	if ( cv->backimgs==NULL )
-	    cv->backimgs = GDrawCreatePixmap(GDrawGetDisplayOfWindow(cv->v),cv->width,cv->height);
-	if ( cv->back_img_out_of_date ) {
-	    GDrawFillRect(cv->backimgs,NULL,GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(cv->v)));
-	    if ( cv->showhhints || cv->showvhints || cv->showdhints)
-		CVShowHints(cv,cv->backimgs);
-	    DrawImageList(cv,cv->backimgs,cv->sc->backimages);
-	    cv->back_img_out_of_date = false;
+    if ( !cv->show_ft_results ) {
+	/* if we've got bg images (and we're showing them) then the hints live in */
+	/*  the bg image pixmap (else they get overwritten by the pixmap) */
+	if ( (cv->showhhints || cv->showvhints || cv->showdhints) && ( cv->sc->backimages==NULL || !cv->showback) )
+	    CVShowHints(cv,pixmap);
+
+	if (( cv->showback || cv->drawmode==dm_back ) && cv->sc->backimages!=NULL ) {
+	    /* This really should be after the grids, but then it would completely*/
+	    /*  hide them. */
+	    GRect r;
+	    if ( cv->backimgs==NULL )
+		cv->backimgs = GDrawCreatePixmap(GDrawGetDisplayOfWindow(cv->v),cv->width,cv->height);
+	    if ( cv->back_img_out_of_date ) {
+		GDrawFillRect(cv->backimgs,NULL,GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(cv->v)));
+		if ( cv->showhhints || cv->showvhints || cv->showdhints)
+		    CVShowHints(cv,cv->backimgs);
+		DrawImageList(cv,cv->backimgs,cv->sc->backimages);
+		cv->back_img_out_of_date = false;
+	    }
+	    r.x = r.y = 0; r.width = cv->width; r.height = cv->height;
+	    GDrawDrawPixmap(pixmap,cv->backimgs,&r,0,0);
 	}
-	r.x = r.y = 0; r.width = cv->width; r.height = cv->height;
-	GDrawDrawPixmap(pixmap,cv->backimgs,&r,0,0);
-    }
-    if ( cv->showgrids || cv->drawmode==dm_grid ) {
-	CVDrawSplineSet(cv,pixmap,cv->fv->sf->gridsplines,0x808080,
-		cv->showpoints && cv->drawmode==dm_grid,&clip);
-    }
-    if ( cv->showhmetrics ) {
-	DrawVLine(cv,pixmap,0,0x808080,false);
-	DrawLine(cv,pixmap,-8096,0,8096,0,0x808080);
-	DrawLine(cv,pixmap,-8096,sf->ascent,8096,sf->ascent,0x808080);
-	DrawLine(cv,pixmap,-8096,-sf->descent,8096,-sf->descent,0x808080);
-    }
-    if ( cv->showvmetrics ) {
-	DrawLine(cv,pixmap,(sf->ascent+sf->descent)/2,-8096,(sf->ascent+sf->descent)/2,8096,0x808080);
-	DrawLine(cv,pixmap,-8096,sf->vertical_origin,8096,sf->vertical_origin,0x808080);
-    }
+	if ( cv->showgrids || cv->drawmode==dm_grid ) {
+	    CVDrawSplineSet(cv,pixmap,cv->fv->sf->gridsplines,0x808080,
+		    cv->showpoints && cv->drawmode==dm_grid,&clip);
+	}
+	if ( cv->showhmetrics ) {
+	    DrawVLine(cv,pixmap,0,0x808080,false);
+	    DrawLine(cv,pixmap,-8096,0,8096,0,0x808080);
+	    DrawLine(cv,pixmap,-8096,sf->ascent,8096,sf->ascent,0x808080);
+	    DrawLine(cv,pixmap,-8096,-sf->descent,8096,-sf->descent,0x808080);
+	}
+	if ( cv->showvmetrics ) {
+	    DrawLine(cv,pixmap,(sf->ascent+sf->descent)/2,-8096,(sf->ascent+sf->descent)/2,8096,0x808080);
+	    DrawLine(cv,pixmap,-8096,sf->vertical_origin,8096,sf->vertical_origin,0x808080);
+	}
 
-    if ( cv->showback || cv->drawmode==dm_back )
-	DrawSelImageList(cv,pixmap,cv->sc->backimages);
-    if (( cv->showfore || cv->drawmode==dm_fore ) && cv->showfilled ) {
-	/* Wrong order, I know. But it is useful to have the background */
-	/*  visible on top of the fill... */
-	GDrawDrawImage(pixmap, &cv->gi, NULL, cv->xoff + cv->filled->xmin,
-		-cv->yoff + cv->height-cv->filled->ymax);
+	if ( cv->showback || cv->drawmode==dm_back )
+	    DrawSelImageList(cv,pixmap,cv->sc->backimages);
+	if (( cv->showfore || cv->drawmode==dm_fore ) && cv->showfilled ) {
+	    /* Wrong order, I know. But it is useful to have the background */
+	    /*  visible on top of the fill... */
+	    GDrawDrawImage(pixmap, &cv->gi, NULL, cv->xoff + cv->filled->xmin,
+		    -cv->yoff + cv->height-cv->filled->ymax);
+	}
+    } else {
+	/* Draw FreeType Results */
+	if ( cv->showgrids ) {
+	    /* Draw ppem grid, and the raster */
+	    GRect pixel;
+	    real grid_spacing = (cv->sc->parent->ascent+cv->sc->parent->descent) / (real) cv->ft_ppem;
+	    int max,jmax,j;
+
+	    pixel.width = pixel.height = grid_spacing*cv->scale+1;
+	    if ( cv->raster!=NULL ) {
+		for ( i=0; i<cv->raster->rows; ++i ) {
+		    for ( j=0; j<cv->raster->cols; ++j ) {
+			if ( cv->raster->bitmap[i*cv->raster->bytes_per_row+(j>>3)] & (1<<(7-(j&7))) ) {
+			    pixel.x = (j+cv->raster->lb)*grid_spacing*cv->scale + cv->xoff;
+			    pixel.y = cv->height-cv->yoff - rint((cv->raster->as-i)*grid_spacing*cv->scale);
+			    GDrawFillRect(pixmap,&pixel,0xa0a0a0);
+			}
+		    }
+		}
+	    }
+
+	    for ( i = floor( clip.x/grid_spacing ), max = ceil((clip.x+clip.width)/grid_spacing);
+		    i<=max; ++i )
+		DrawLine(cv,pixmap,i*grid_spacing,-32768,i*grid_spacing,32767,i==0?0x808080:0xb0b0ff);
+	    for ( i = floor( clip.y/grid_spacing ), max = ceil((clip.y+clip.height)/grid_spacing);
+		    i<=max; ++i )
+		DrawLine(cv,pixmap,-32768,i*grid_spacing,32767,i*grid_spacing,i==0?0x808080:0xb0b0ff);
+	    if ( grid_spacing*cv->scale>=7 ) {
+		for ( i = floor( clip.x/grid_spacing ), max = ceil((clip.x+clip.width)/grid_spacing);
+			i<=max; ++i )
+		    for ( j = floor( clip.y/grid_spacing ), jmax = ceil((clip.y+clip.height)/grid_spacing);
+			    j<=jmax; ++j ) {
+			int x = (i+.5)*grid_spacing*cv->scale + cv->xoff;
+			int y = cv->height-cv->yoff - rint((j+.5)*grid_spacing*cv->scale);
+			GDrawDrawLine(pixmap,x-2,y,x+2,y,0xb0b0ff);
+			GDrawDrawLine(pixmap,x,y-2,x,y+2,0xb0b0ff);
+		    }
+	    }
+	}
+	if ( cv->showback ) {
+	    CVDrawSplineSet(cv,pixmap,cv->gridfit,0x009800,
+		    cv->showpoints,&clip);
+	}
     }
 
     if ( *cv->uheads[cv->drawmode]!=NULL && (*cv->uheads[cv->drawmode])->undotype==ut_tstate )
 	DrawOldState(cv,pixmap,*cv->uheads[cv->drawmode], &clip);
 
-    if ( cv->showback || cv->drawmode==dm_back ) {
-	/* Used to draw the image list here, but that's too slow. Optimization*/
-	/*  is to draw to pixmap, dump pixmap a bit earlier */
-	/* Then when we moved the fill image around, we had to deal with the */
-	/*  images before the fill... */
-	CVDrawSplineSet(cv,pixmap,cv->sc->backgroundsplines,0x009800,
-		cv->showpoints && cv->drawmode==dm_back,&clip);
-	if ( cv->template1!=NULL )
-	    CVDrawTemplates(cv,pixmap,cv->template1,&clip);
-	if ( cv->template2!=NULL )
-	    CVDrawTemplates(cv,pixmap,cv->template2,&clip);
+    if ( !cv->show_ft_results ) {
+	if ( cv->showback || cv->drawmode==dm_back ) {
+	    /* Used to draw the image list here, but that's too slow. Optimization*/
+	    /*  is to draw to pixmap, dump pixmap a bit earlier */
+	    /* Then when we moved the fill image around, we had to deal with the */
+	    /*  images before the fill... */
+	    CVDrawSplineSet(cv,pixmap,cv->sc->backgroundsplines,0x009800,
+		    cv->showpoints && cv->drawmode==dm_back,&clip);
+	    if ( cv->template1!=NULL )
+		CVDrawTemplates(cv,pixmap,cv->template1,&clip);
+	    if ( cv->template2!=NULL )
+		CVDrawTemplates(cv,pixmap,cv->template2,&clip);
+	}
     }
 
-    if ( cv->showfore || cv->drawmode==dm_fore ) {
+    if ( cv->showfore || (cv->drawmode==dm_fore && !cv->show_ft_results) ) {
 	CVDrawAnchorPoints(cv,pixmap);
 	for ( rf=cv->sc->refs; rf!=NULL; rf = rf->next ) {
 	    CVDrawRefName(cv,pixmap,rf,0);
@@ -1444,6 +1493,9 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
 	cv->expandedge = ee_none;
     }
 
+    SplinePointListsFree(cv->gridfit); cv->gridfit = NULL;
+    FreeType_FreeRaster(cv->raster); cv->raster = NULL;
+
     SCLigCaretCheck(sc,false);
 
     CVUnlinkView(cv);
@@ -1460,6 +1512,8 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     if ( cv->sc->parent->rules!=NULL && cv->sc->compositionunit )
 	Disp_DefaultTemplate(cv);
 #endif
+    if ( cv->show_ft_results )
+	CVGridFitChar(cv);
 
     CVNewScale(cv);
 
@@ -2249,6 +2303,7 @@ return;
 	    else if ( sp->ttfindex!=pnum || skipit ) {
 		free(sc->ttf_instrs); sc->ttf_instrs = NULL;
 		sc->ttf_instrs_len = 0;
+		SCMarkInstrDlgAsChanged(sc);
 return;
 	    } else
 		++pnum;
@@ -2273,9 +2328,6 @@ void CVSetCharChanged(CharView *cv,int changed) {
 	    sf->changed = true;
 	    if ( fv->cidmaster!=NULL )
 		fv->cidmaster->changed = true;
-#if 0
-	    SFFigureGrid(sf);
-#endif
 	}
     } else {
 	if ( cv->drawmode==dm_fore )
@@ -2290,6 +2342,8 @@ void CVSetCharChanged(CharView *cv,int changed) {
 		    fv->cidmaster->changed = true;
 		if ( changed && sc->ttf_instrs )
 		    instrcheck(sc);
+		if ( changed )
+		    SCDeGridFit(sc);
 	    }
 	}
 	if ( changed ) {
@@ -2328,6 +2382,8 @@ void _SCCharChangedUpdate(SplineChar *sc,int changed) {
 	SCRefreshTitles(sc);
 	if ( changed && sc->ttf_instrs )
 	    instrcheck(sc);
+	if ( changed )
+	    SCDeGridFit(sc);
     }
     sc->changedsincelasthinted = true;
     sc->changed_since_search = true;
@@ -3185,6 +3241,7 @@ return( true );
 #define MID_FindInFontView	2017
 #define MID_KernPairs	2018
 #define MID_AnchorPairs	2019
+#define MID_ShowGridFit 2020
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -3525,6 +3582,14 @@ static void CVMenuFill(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     GDrawRequestExpose(cv->v,NULL,false);
 }
 
+static void CVMenuShowGridFit(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    if ( !hasFreeType())
+return;
+    CVFtPpemDlg(cv);
+}
+
 static void CVMenuEditInstrs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
@@ -3539,6 +3604,7 @@ static void CVMenuClearInstrs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	cv->sc->ttf_instrs = NULL;
 	cv->sc->ttf_instrs_len = 0;
 	SCCharChangedUpdate(cv->sc);
+	SCMarkInstrDlgAsChanged(cv->sc);
     }
 }
 
@@ -5281,6 +5347,10 @@ static void cv_vwlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	    free(mi->ti.text);
 	    mi->ti.text = u_copy(GStringGetResource(cv->showrulers?_STR_Hiderulers:_STR_Showrulers,NULL));
 	  break;
+	  case MID_ShowGridFit:
+	    mi->ti.disabled = !hasFreeType() || cv->drawmode!=dm_fore;
+	    mi->ti.checked = cv->show_ft_results;
+	  break;
 	  case MID_Fill:
 	    mi->ti.checked = cv->showfilled;
 	  break;
@@ -5563,6 +5633,7 @@ static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_Hidepoints, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, 'D', ksm_control, NULL, NULL, CVMenuShowHide, MID_HidePoints },
     { { (unichar_t *) _STR_MarkExtrema, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'M' }, '\0', ksm_control, NULL, NULL, CVMenuMarkExtrema, MID_MarkExtrema },
     { { (unichar_t *) _STR_Fill, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'l' }, '\0', 0, NULL, NULL, CVMenuFill, MID_Fill },
+    { { (unichar_t *) _STR_ShowGridFitDDD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'l' }, '\0', 0, NULL, NULL, CVMenuShowGridFit, MID_ShowGridFit },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
     { { (unichar_t *) _STR_KernPairs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'K' }, '\0', 0, NULL, NULL, CVMenuKernPairs, MID_KernPairs },
     { { (unichar_t *) _STR_AnchoredPairs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, '\0', 0, NULL, NULL, CVMenuAnchorPairs, MID_AnchorPairs },
@@ -5702,6 +5773,8 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv) {
 
     cv->olde.x = -1;
 
+    cv->ft_dpi = 72; cv->ft_pointsize = 12.0; cv->ft_ppem = 12;
+
     /*GWidgetHidePalettes();*/
     /*cv->tools = CVMakeTools(cv);*/
     /*cv->layers = CVMakeLayers(cv);*/
@@ -5792,6 +5865,8 @@ void CharViewFree(CharView *cv) {
     if ( cv->jamodisplay!=NULL )
 	Disp_DoFinish(cv->jamodisplay,true);
 #endif
+    SplinePointListsFree(cv->gridfit);
+    FreeType_FreeRaster(cv->raster);
     free(cv);
 }
 

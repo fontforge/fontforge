@@ -2032,7 +2032,7 @@ static BDFFont *BitmapCreateCheck(FontView *fv,int *yestoall, int first, int pix
 	    yes= yes!=3;
     }
     if ( yes==1 || *yestoall ) {
-	void *freetypecontext = FreeTypeFontContext(fv->sf,NULL,true);
+	void *freetypecontext = FreeTypeFontContext(fv->sf,NULL,NULL);
 	if ( freetypecontext )
 	    bdf = SplineFontFreeTypeRasterize(freetypecontext,pixelsize,depth);
 	else

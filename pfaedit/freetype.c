@@ -34,7 +34,11 @@ int hasFreeType(void) {
 return( false );
 }
 
-void *_FreeTypeFontContext(SplineFont *sf,SplineChar *sc,int doall,
+int hasFreeTypeDebugger(void) {
+return( false );
+}
+
+void *_FreeTypeFontContext(SplineFont *sf,SplineChar *sc,FontView *fv,
 	enum fontformat ff,int flags, void *share) {
 return( NULL );
 }
@@ -48,6 +52,16 @@ return( NULL );
 }
 
 void FreeTypeFreeContext(void *freetypecontext) {
+}
+
+struct freetype_raster *FreeType_GetRaster(void *single_glyph_context,
+	int enc, real ptsize, int dpi) {
+return( NULL );
+}
+
+SplineSet *FreeType_GridFitChar(void *single_glyph_context,
+	int enc, real ptsize, int dpi, int *width) {
+return( NULL );
 }
 #else
 #include <ft2build.h>
@@ -70,10 +84,17 @@ static FT_Library context;
 #define _FT_New_Face FT_New_Face
 #define _FT_New_Memory_Face FT_New_Memory_Face
 #define _FT_Set_Pixel_Sizes FT_Set_Pixel_Sizes
+#define _FT_Set_Char_Size FT_Set_Char_Size
 #define _FT_Done_Face FT_Done_Face
 #define _FT_Load_Glyph FT_Load_Glyph
 #define _FT_Render_Glyph FT_Render_Glyph
 #define _FT_Outline_Decompose FT_Outline_Decompose
+
+# if FREETYPE_HAS_DEBUGGER
+#define _FT_Get_Module	FT_Get_Module
+#define _FT_Set_Debug_Hook FT_Set_Debug_Hook
+#define _FT_RunIns FT_RunIns
+# endif
 
 static int freetype_init_base() {
 return( true );
@@ -89,9 +110,16 @@ static FT_Error (*_FT_New_Face)( FT_Library, const char *, int, FT_Face * );
 static FT_Error (*_FT_New_Memory_Face)( FT_Library, const FT_Byte *, int, int, FT_Face * );
 static FT_Error (*_FT_Done_Face)( FT_Face );
 static FT_Error (*_FT_Set_Pixel_Sizes)( FT_Face, int, int);
+static FT_Error (*_FT_Set_Char_Size)( FT_Face, int wid/*=0*/, int height/* =ptsize*64*/, int hdpi, int vdpi);
 static FT_Error (*_FT_Load_Glyph)( FT_Face, int, int);
 static FT_Error (*_FT_Render_Glyph)( FT_GlyphSlot, int);
 static FT_Error (*_FT_Outline_Decompose)(FT_Outline *, const FT_Outline_Funcs *,void *);
+
+#if FREETYPE_HAS_DEBUGGER
+static FT_Module (*_FT_Get_Module)(FT_Library, const char *);
+static void (*_FT_Set_Debug_Hook)(FT_Library, FT_UInt, FT_DebugHook_Func);
+static FT_Error (*_TT_RunIns)( TT_ExecContext );
+#endif
 
 static int freetype_init_base() {
     libfreetype = dlopen("libfreetype.so",RTLD_LAZY);
@@ -102,10 +130,16 @@ return( false );
     _FT_New_Face = (FT_Error (*)(FT_Library, const char *, int, FT_Face * )) dlsym(libfreetype,"FT_New_Face");
     _FT_New_Memory_Face = (FT_Error (*)(FT_Library, const FT_Byte *, int, int, FT_Face * )) dlsym(libfreetype,"FT_New_Memory_Face");
     _FT_Set_Pixel_Sizes = (FT_Error (*)(FT_Face, int, int)) dlsym(libfreetype,"FT_Set_Pixel_Sizes");
+    _FT_Set_Char_Size = (FT_Error (*)(FT_Face, int, int, int, int)) dlsym(libfreetype,"FT_Set_Char_Size");
     _FT_Done_Face = (FT_Error (*)(FT_Face)) dlsym(libfreetype,"FT_Done_Face");
     _FT_Load_Glyph = (FT_Error (*)(FT_Face, int, int)) dlsym(libfreetype,"FT_Load_Glyph");
     _FT_Render_Glyph = (FT_Error (*)(FT_GlyphSlot, int)) dlsym(libfreetype,"FT_Render_Glyph");
     _FT_Outline_Decompose = (FT_Error (*)(FT_Outline *, const FT_Outline_Funcs *,void *)) dlsym(libfreetype,"FT_Outline_Decompose");
+#if FREETYPE_HAS_DEBUGGER
+    _FT_Get_Module = (FT_Module (*)(FT_Library, const char* )) dlsym(libfreetype,"FT_Get_Module");
+    _FT_Set_Debug_Hook = (void (*)(FT_Library, FT_UInt, FT_DebugHook_Func)) dlsym(libfreetype,"FT_Set_Debug_Hook");
+    _TT_RunIns = (FT_Error (*)(TT_ExecContext)) dlsym(libfreetype,"TT_RunIns");
+#endif
 return( true );
 }
 # endif
@@ -127,6 +161,17 @@ return( false );
 return( true );
 }
 
+int hasFreeTypeDebugger(void) {
+    if ( !hasFreeType())
+return( false );
+#if FREETYPE_HAS_DEBUGGER
+    if ( _FT_Set_Debug_Hook!=NULL && _TT_RunIns!=NULL )
+return( true );
+#endif
+
+return( false );
+}
+
 typedef struct freetypecontext {
     SplineFont *sf;
     FILE *file;
@@ -138,6 +183,8 @@ typedef struct freetypecontext {
 				/*  We have a new face, but that's it. This is so we can */
 			        /*  have multiple pointsizes without loading the font many */
 			        /*  times */
+    int isttf;
+    int em;
 } FTC;
 
 static void TransitiveClosureAdd(SplineChar **new,SplineChar **old,SplineChar *sc) {
@@ -176,16 +223,16 @@ return;
     free(ftc);
 }
     
-void *_FreeTypeFontContext(SplineFont *sf,SplineChar *sc,int doall,
+void *_FreeTypeFontContext(SplineFont *sf,SplineChar *sc,FontView *fv,
 	enum fontformat ff,int flags,void *shared_ftc) {
     /* build up a temporary font consisting of:
      *	sc!=NULL   => Just that character (and its references)
-     *  doall	   => the entire font
-     *  	   => only selected characters
+     *  fv!=NULL   => selected characters
+     *  else	   => the entire font
      */
     FTC *ftc;
     SplineChar **old, **new;
-    char *selected = sf->fv->selected;
+    char *selected = fv!=NULL ? fv->selected : NULL;
     int i,cnt;
 
     if ( !hasFreeType())
@@ -196,8 +243,10 @@ return( NULL );
 	*ftc = *(FTC *) shared_ftc;
 	ftc->face = NULL;
 	ftc->shared_ftc = shared_ftc;
+	ftc->em = ((FTC *) shared_ftc)->em;
     } else {
 	ftc->sf = sf;
+	ftc->em = sf->ascent+sf->descent;
 	ftc->file = NULL;
 
 	ftc->file = tmpfile();
@@ -207,7 +256,7 @@ return( NULL );
 	}
 
 	old = sf->chars;
-	if ( sc!=NULL || !doall ) {
+	if ( sc!=NULL || selected!=NULL ) {
 	    /* Build up a font consisting of those characters we actually use */
 	    new = gcalloc(sf->charcnt,sizeof(SplineChar *));
 	    if ( sc!=NULL )
@@ -230,7 +279,10 @@ return( NULL );
 	    if ( !_WritePSFont(ftc->file,sf,ff))
  goto fail;
 	  break;
-	  case ff_ttf: case ff_ttfsym: case ff_otf: case ff_otfcid:
+	  case ff_ttf: case ff_ttfsym:
+	    ftc->isttf = true;
+	    /* Fall through.... */
+	  case ff_otf: case ff_otfcid:
 	    if ( !_WriteTTFFont(ftc->file,sf,ff,NULL,bf_none,flags))
  goto fail;
 	  break;
@@ -370,7 +422,7 @@ BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int dep
 	    subftc = ftc;
 	} else {
 	    subsf = sf->subfonts[k];
-	    subftc = FreeTypeFontContext(subsf,NULL,true);
+	    subftc = FreeTypeFontContext(subsf,NULL,NULL);
 	}
 	for ( i=0; i<subsf->charcnt; ++i )
 	    if ( SCWorthOutputting(subsf->chars[i] ) ) {
@@ -393,8 +445,199 @@ BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int dep
     GProgressEndIndicator();
 return( bdf );
 }
+
+/* ************************************************************************** */
+struct ft_context {
+    SplinePointList *hcpl, *lcpl, *cpl;
+    SplinePoint *last;
+    double scale;
+    SplinePointList *orig_cpl;
+    SplinePoint *orig_sp;
+    int order2;
+};
+
+static void FT_ClosePath(struct ft_context *context) {
+    if ( context->cpl!=NULL ) {
+	if ( context->cpl->first->me.x != context->last->me.x ||
+		context->cpl->first->me.y != context->last->me.y )
+	    SplineMake(context->last,context->cpl->first,context->order2);
+	else {
+	    context->cpl->first->prevcp = context->last->nextcp;
+	    context->last->prev->to = context->cpl->first;
+	    SplinePointFree(context->last);
+	}
+	context->cpl->last = context->cpl->first;
+	context->last = NULL;
+	if ( context->orig_cpl!=NULL )
+	    context->orig_cpl = context->orig_cpl->next;
+	context->orig_sp = NULL;
+    }
+}
+
+static int FT_MoveTo(FT_Vector *to,void *user) {
+    struct ft_context *context = user;
+
+    FT_ClosePath(context);
+
+    context->cpl = chunkalloc(sizeof(SplinePointList));
+    if ( context->lcpl==NULL )
+	context->hcpl = context->cpl;
+    else
+	context->lcpl->next = context->cpl;
+    context->lcpl = context->cpl;
+
+    if ( context->orig_cpl!=NULL )
+	context->orig_sp = context->orig_cpl->first;
+
+    context->last = context->cpl->first = chunkalloc(sizeof(SplinePoint));
+    context->last->me.x = to->x*context->scale;
+    context->last->me.y = to->y*context->scale;
+    context->last->ttfindex = context->orig_sp?context->orig_sp->ttfindex: -2;
+return( 0 );
+}
+
+static int FT_LineTo(FT_Vector *to,void *user) {
+    struct ft_context *context = user;
+    SplinePoint *sp;
+
+    sp = SplinePointCreate( to->x*context->scale, to->y*context->scale );
+    sp->ttfindex = -1;
+    SplineMake(context->last,sp,context->order2);
+    context->last = sp;
+
+    if ( context->orig_sp!=NULL ) {
+	context->orig_sp = context->orig_sp->next->to;
+	if ( context->orig_sp!=NULL )
+	    sp->ttfindex = context->orig_sp->ttfindex;
+    }
+return( 0 );
+}
+
+static int FT_ConicTo(FT_Vector *_cp, FT_Vector *to,void *user) {
+    struct ft_context *context = user;
+    SplinePoint *sp;
+
+    sp = SplinePointCreate( to->x*context->scale, to->y*context->scale );
+    sp->noprevcp = false;
+    sp->prevcp.x = _cp->x*context->scale;
+    sp->prevcp.y = _cp->y*context->scale;
+    context->last->nextcp = sp->prevcp;
+    SplineMake2(context->last,sp);
+    context->last = sp;
+
+    if ( context->orig_sp!=NULL ) {
+	context->orig_sp = context->orig_sp->next->to;
+	if ( context->orig_sp!=NULL )
+	    sp->ttfindex = context->orig_sp->ttfindex;
+    }
+return( 0 );
+}
+
+static int FT_CubicTo(FT_Vector *cp1, FT_Vector *cp2,FT_Vector *to,void *user) {
+    struct ft_context *context = user;
+    SplinePoint *sp;
+
+    sp = SplinePointCreate( to->x*context->scale, to->y*context->scale );
+    sp->noprevcp = false;
+    sp->prevcp.x = cp2->x*context->scale;
+    sp->prevcp.y = cp2->y*context->scale;
+    context->last->nextcp.x = cp1->x*context->scale;
+    context->last->nextcp.y = cp1->y*context->scale;
+    SplineMake3(context->last,sp);
+    context->last = sp;
+
+    if ( context->orig_sp!=NULL ) {
+	context->orig_sp = context->orig_sp->next->to;
+	if ( context->orig_sp!=NULL )
+	    sp->ttfindex = context->orig_sp->ttfindex;
+    }
+return( 0 );
+}
+
+static FT_Outline_Funcs outlinefuncs = {
+    FT_MoveTo,
+    FT_LineTo,
+    FT_ConicTo,
+    FT_CubicTo,
+    0,0		/* I don't understand shift and delta */
+};
+
+SplineSet *FreeType_GridFitChar(void *single_glyph_context,
+	int enc, real ptsize, int dpi, int16 *width, SplineSet *splines) {
+    FT_GlyphSlot slot;
+    FTC *ftc = (FTC *) single_glyph_context;
+    struct ft_context outline_context;
+
+    if ( ftc->face==(void *) -1 )
+return( NULL );
+
+    if ( _FT_Set_Char_Size(ftc->face,0,(int) (ptsize*64), dpi, dpi))
+return( NULL );	/* Error Return */
+
+    if ( _FT_Load_Glyph(ftc->face,ftc->glyph_indeces[enc],FT_LOAD_NO_BITMAP))
+return( NULL );
+
+    slot = ftc->face->glyph;
+    memset(&outline_context,'\0',sizeof(outline_context));
+    /* The outline's position is expressed in 24.6 fixed numbers representing */
+    /*  pixels. I want to scale it back to the original coordinate system */
+    outline_context.scale = ftc->em/(64.0*ptsize*dpi/72.0);
+    outline_context.orig_cpl = splines;
+    outline_context.orig_sp = NULL;
+    outline_context.order2 = ftc->isttf;
+    if ( !_FT_Outline_Decompose(&slot->outline,&outlinefuncs,&outline_context)) {
+	FT_ClosePath(&outline_context);
+	*width = outline_context.scale*slot->advance.x;
+return( outline_context.hcpl );
+    }
+return( NULL );
+}
+
+struct freetype_raster *FreeType_GetRaster(void *single_glyph_context,
+	int enc, real ptsize, int dpi) {
+    FT_GlyphSlot slot;
+    struct freetype_raster *ret;
+    FTC *ftc = (FTC *) single_glyph_context;
+
+    if ( ftc->face==(void *) -1 )
+return( NULL );
+
+    if ( _FT_Set_Char_Size(ftc->face,0,(int) (ptsize*64), dpi, dpi))
+return( NULL );	/* Error Return */
+
+    if ( _FT_Load_Glyph(ftc->face,ftc->glyph_indeces[enc],FT_LOAD_NO_BITMAP))
+return( NULL );
+
+    slot = ((FT_Face) (ftc->face))->glyph;
+    if ( _FT_Render_Glyph(slot,ft_render_mode_mono))
+return( NULL );
+
+    if ( slot->bitmap.pixel_mode!=ft_pixel_mode_mono &&
+	    slot->bitmap.pixel_mode!=ft_pixel_mode_grays )
+return( NULL );
+    ret = galloc(sizeof(struct freetype_raster));
+
+    ret->rows = slot->bitmap.rows;
+    ret->cols = slot->bitmap.width;
+    ret->bytes_per_row = slot->bitmap.pitch;
+    ret->as = slot->bitmap_top;
+    ret->lb = slot->bitmap_left;
+    ret->num_greys = slot->bitmap.num_grays;
+	/* Can't find any description of freetype's bitendianness */
+	/* But the obvious seems to work */
+    ret->bitmap = galloc(ret->rows*ret->bytes_per_row);
+    memcpy(ret->bitmap,slot->bitmap.buffer,ret->rows*ret->bytes_per_row);
+return( ret );
+}
 #endif
 
-void *FreeTypeFontContext(SplineFont *sf,SplineChar *sc,int doall) {
-return( _FreeTypeFontContext(sf,sc,doall,sf->subfontcnt!=0?ff_otfcid:ff_pfb,0,NULL) );
+void *FreeTypeFontContext(SplineFont *sf,SplineChar *sc,FontView *fv) {
+return( _FreeTypeFontContext(sf,sc,fv,sf->subfontcnt!=0?ff_otfcid:ff_pfb,0,NULL) );
+}
+
+void FreeType_FreeRaster(struct freetype_raster *raster) {
+    if ( raster==NULL || raster==(void *) -1 )
+return;
+    free(raster->bitmap);
+    free(raster);
 }

@@ -105,6 +105,14 @@ typedef struct bvtfunc {
     int x,y;		/* used by skew and move */
 } BVTFunc;
 
+struct freetype_raster {
+    int16 rows, cols;
+    int16 as, lb;
+    int16 bytes_per_row;
+    int16 num_greys;
+    uint8 *bitmap;
+};
+
 typedef struct charview {
     SplineChar *sc;
     unsigned int showback:1;
@@ -121,7 +129,7 @@ typedef struct charview {
     unsigned int showmdy:1;
     unsigned int showhmetrics:1;
     unsigned int showvmetrics:1;
-    unsigned int showblues:1;
+    unsigned int showblues:1;	/* 16 */
     unsigned int showfamilyblues:1;
     unsigned int showanchor:1;
     unsigned int showpointnumbers:1;
@@ -136,6 +144,7 @@ typedef struct charview {
     unsigned int widthsel:1;
     unsigned int vwidthsel:1;
     unsigned int inactive:1;			/* When in a search view */
+    unsigned int show_ft_results: 1;	/* 32 */
     SplinePointList **heads[dm_max];
     Undoes **uheads[dm_max];
     Undoes **rheads[dm_max];
@@ -199,6 +208,11 @@ typedef struct charview {
     GIC *gic;
     PST *lcarets;
     int16 nearcaret;
+	/* freetype results display */
+    int16 ft_dpi, ft_ppem, ft_gridfitwidth;
+    real ft_pointsize;
+    SplineSet *gridfit;
+    struct freetype_raster *raster;
 } CharView;
 
 typedef struct bitmapview {
@@ -491,6 +505,7 @@ extern void BVToolsPopup(BitmapView *bv, GEvent *event);
 extern int CVPaletteIsVisible(CharView *cv,int which);
 extern void CVPaletteSetVisible(CharView *cv,int which,int visible);
 extern void CVPalettesRaise(CharView *cv);
+extern void CVLayersSet(CharView *cv);
 extern void CVPaletteActivate(CharView *cv);
 extern void CVPalettesHideIfMine(CharView *cv);
 extern int BVPaletteIsVisible(BitmapView *bv,int which);
@@ -761,7 +776,10 @@ extern void SFShowLigatures(SplineFont *sf);
 extern void SCNumberPoints(SplineChar *sc);
 extern void SCEditInstructions(SplineChar *sc);
 extern void SFEditTable(SplineFont *sf, uint32 tag);
-extern int SFCloseAllInstrs(SplineFont *sf);
+
+extern void CVGridFitChar(CharView *cv);
+extern void CVFtPpemDlg(CharView *cv);
+extern void SCDeGridFit(SplineChar *sc);
 
 extern GMenuItem helplist[];
 #endif

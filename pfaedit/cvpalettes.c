@@ -707,7 +707,7 @@ return( cvtools );
 #define CID_VBlues	1014
 #define CID_VAnchor	1015
 
-static void CVLayersSet(CharView *cv) {
+void CVLayersSet(CharView *cv) {
     GGadgetSetChecked(GWidgetGetControl(cvlayers,CID_VFore),cv->showfore);
     GGadgetSetChecked(GWidgetGetControl(cvlayers,CID_VBack),cv->showback);
     GGadgetSetChecked(GWidgetGetControl(cvlayers,CID_VGrid),cv->showgrids);
@@ -725,6 +725,9 @@ static void CVLayersSet(CharView *cv) {
     GGadgetSetEnabled(GWidgetGetControl(cvlayers,CID_VVMetricsLab),
 	    cv->sc->parent->hasvmetrics);
     GGadgetSetChecked(GWidgetGetControl(cvlayers,CID_VBlues),cv->showblues);
+
+    GGadgetSetEnabled(GWidgetGetControl(cvlayers,CID_EBack),!cv->show_ft_results);
+    GGadgetSetEnabled(GWidgetGetControl(cvlayers,CID_EGrid),!cv->show_ft_results);
 }
 
 static int cvlayers_e_h(GWindow gw, GEvent *event) {

@@ -3270,6 +3270,8 @@ return( true );
 return(true);
 	if ( order2!=sf->order2 && AskLoseUndoes())
 return( true );
+	if ( order2!=sf->order2 && !SFCloseAllInstrs(sf))
+return( true );
 	TTF_PSDupsChanged(gw,sf,d->names_set ? d->names : sf->names);
 	GDrawSetCursor(gw,ct_watch);
 	namechange = SetFontName(gw,sf);

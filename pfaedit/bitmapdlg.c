@@ -148,7 +148,7 @@ static void SFFigureBitmaps(SplineFont *sf,int32 *sizes,int usefreetype) {
 	if ( first && autohint_before_rasterize )
 	    SplineFontAutoHint(sf);
 	if ( first && usefreetype )
-	    freetypecontext = FreeTypeFontContext(sf,NULL,true);
+	    freetypecontext = FreeTypeFontContext(sf,NULL,NULL);
 	if ( freetypecontext )
 	    bdf = SplineFontFreeTypeRasterize(freetypecontext,sizes[i]&0xffff,sizes[i]>>16);
 	else
@@ -262,7 +262,7 @@ return( false );
     }
     if ( bd->which==bd_current && bd->sc!=NULL ) {
 	if ( usefreetype )
-	    freetypecontext = FreeTypeFontContext(bd->sc->parent,bd->sc,false);
+	    freetypecontext = FreeTypeFontContext(bd->sc->parent,bd->sc,fv);
 	ReplaceBDFC(bd->sc->parent,sizes,bd->sc->enc,freetypecontext);
 	if ( freetypecontext )
 	    FreeTypeFreeContext(freetypecontext);
@@ -274,7 +274,7 @@ return( false );
 		    if (( fv->selected[i] || bd->which == bd_all ) &&
 			    SCWorthOutputting(subsf->chars[i])) {
 			if ( usefreetype && freetypecontext==NULL )
-			    freetypecontext = FreeTypeFontContext(subsf,NULL,false);
+			    freetypecontext = FreeTypeFontContext(subsf,NULL,fv);
 			ReplaceBDFC(subsf,sizes,i,freetypecontext);
 		    }
 		}
@@ -286,7 +286,7 @@ return( false );
 	    for ( i=0; i<sf->charcnt; ++i ) {
 		if ( fv->selected[i] || bd->which == bd_all ) {
 		    if ( usefreetype && freetypecontext==NULL )
-			freetypecontext = FreeTypeFontContext(sf,NULL,false);
+			freetypecontext = FreeTypeFontContext(sf,NULL,fv);
 		    ReplaceBDFC(sf,sizes,i,freetypecontext);
 		}
 	    }
