@@ -1306,7 +1306,7 @@ static void bSetCharName(Context *c) {
 
     if ( c->a.argc!=2 && c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str || (c->a.argc==3 && c->a.vals[1].type!=v_int ))
+    else if ( c->a.vals[1].type!=v_str || (c->a.argc==3 && c->a.vals[2].type!=v_int ))
 	error(c,"Bad argument type");
     sc = GetOneSelChar(c);
     uni = sc->unicodeenc;
@@ -1339,7 +1339,7 @@ static void bSetUnicodeValue(Context *c) {
     if ( c->a.argc!=2 && c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
     else if ( (c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode) ||
-	    (c->a.argc==3 && c->a.vals[1].type!=v_int ))
+	    (c->a.argc==3 && c->a.vals[2].type!=v_int ))
 	error(c,"Bad argument type");
     sc = GetOneSelChar(c);
     uni = c->a.vals[1].u.ival;
