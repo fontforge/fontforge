@@ -142,7 +142,7 @@ void BCCharChangedUpdate(BDFChar *bc) {
 	if ( bdf!=NULL ) {
 	    FVRefreshChar(fv,bdf,bc->enc);
 	    if ( fv->sf->onlybitmaps && !waschanged )
-		FVToggleCharChanged(fv,fv->sf->chars[bc->enc]);
+		FVToggleCharChanged(fv->sf->chars[bc->enc]);
 	}
     }
 }

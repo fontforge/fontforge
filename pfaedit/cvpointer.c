@@ -64,7 +64,7 @@ return;
 		if ( !dlist->sc->changed ) {
 		    dlist->sc->changed = true;
 		    if ( fv!=NULL )
-			FVToggleCharChanged(fv,dlist->sc);
+			FVToggleCharChanged(dlist->sc);
 		}
 		SCUpdateAll(dlist->sc);
 	    }
