@@ -708,9 +708,16 @@ static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, Spline
 	++cnt;	/* isfixedpitch */
 	if ( sf->upos!=0 ) ++cnt;
 	if ( sf->uwidth!=0 ) ++cnt;
+	/* Fontographer also generates em, ascent and descent */
+	/*  em is redundant, we can get that from the fontmatrix */
+	/*  given em we only need one of ascent or descent */
+	/*  On the off chance that fontlab objects to them let's not generate them */
+	if ( sf->ascent != 8*(sf->ascent+sf->descent)/10 )
+	    ++cnt;		/* ascent */
+#if 0
 	++cnt;		/* em */
-	++cnt;		/* ascent */
 	++cnt;		/* descent */
+#endif
     }
 
     dumpf(dumpchar,data,"/FontInfo %d dict dup begin\n", cnt );
@@ -744,9 +751,12 @@ static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, Spline
 	    dumpf(dumpchar,data," /UnderlinePosition %g def\n", sf->upos );
 	if ( sf->uwidth )
 	    dumpf(dumpchar,data," /UnderlineThickness %g def\n", sf->uwidth );
+	if ( sf->ascent != 8*(sf->ascent+sf->descent)/10 )
+	    dumpf(dumpchar,data," /ascent %d def\n", sf->ascent );
+#if 0
 	dumpf(dumpchar,data," /em %d def\n", sf->ascent+sf->descent );
-	dumpf(dumpchar,data," /ascent %d def\n", sf->ascent );
 	dumpf(dumpchar,data," /descent %d def\n", sf->descent );
+#endif
     }
     dumpstr(dumpchar,data,"end readonly def\n");
 }

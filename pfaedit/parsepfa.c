@@ -985,7 +985,7 @@ return;
 		fprintf( stderr, "Index too big (must be <%d) |%s", subrs->cnt, line);
 	} else if ( strncmp(line, "readonly put", 12)==0 || strncmp(line, "ND", 2)==0 || strncmp(line, "|-", 2)==0 ) {
 	    fp->insubs = false;
-	} else if ( *line=='\n' ) {
+	} else if ( *line=='\n' || *line=='\0' ) {
 	    /* Ignore blank lines */;
 	} else if ( !fp->alreadycomplained ) {
 	    fprintf( stderr, "Didn't understand |%s", line );
@@ -996,7 +996,7 @@ return;
 	while ( isspace(*line)) ++line;
 	if ( strncmp(line,"end",3)==0 )
 	    fp->inchars = false;
-	else if ( *line!='\n' )
+	else if ( *line!='\n' || *line=='\0' )
 	    /* Ignore it */;
 	else if ( *line!='/' || !(isalpha(line[1]) || line[1]=='.'))
 	    fprintf( stderr, "No name for CharStrings dictionary |%s", line );
@@ -1359,6 +1359,8 @@ return( 0 );
 		fp->useshexstrings = willbehex;
 		rpt = NULL;
 	    }
+	} else if ( rpt!=NULL && ch==' ' ) {
+	    /* Extra spaces are ok */
 	} else if ( rpt!=NULL ) {
 	    rpt = NULL;
 	    willbehex = false;
