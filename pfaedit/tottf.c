@@ -5738,6 +5738,8 @@ static void AbortTTF(struct alltabs *at, SplineFont *sf) {
 	fclose(at->gi.vmtx);
     if ( at->gi.fpgmf!=NULL )
 	fclose(at->gi.fpgmf);
+    if ( at->gaspf!=NULL )
+	fclose(at->gaspf);
 
     if ( at->sidf!=NULL )
 	fclose(at->sidf);
@@ -5759,6 +5761,21 @@ static void AbortTTF(struct alltabs *at, SplineFont *sf) {
 	fclose(at->bdat);
     if ( at->bloc!=NULL )
 	fclose(at->bloc);
+    if ( at->ebsc!=NULL )
+	fclose(at->ebsc);
+
+    if ( at->prop!=NULL )
+	fclose(at->prop);
+    if ( at->opbd!=NULL )
+	fclose(at->opbd);
+    if ( at->acnt!=NULL )
+	fclose(at->acnt);
+    if ( at->lcar!=NULL )
+	fclose(at->lcar);
+    if ( at->feat!=NULL )
+	fclose(at->feat);
+    if ( at->morx!=NULL )
+	fclose(at->morx);
 
     for ( i=0; i<sf->subfontcnt; ++i ) {
 	if ( at->fds[i].private!=NULL )
