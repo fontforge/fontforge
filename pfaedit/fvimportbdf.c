@@ -125,7 +125,7 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b) {
 	if ( i!=-1 && (sf->chars[i]==NULL || strcmp(sf->chars[i]->name,name)!=0 ))
 	    MakeEncChar(sf,enc,name);
     } else {
-	if ( enc<sf->charcnt && sf->chars[enc]!=NULL &&
+	if ( enc!=-1 && enc<sf->charcnt && sf->chars[enc]!=NULL &&
 		strcmp(sf->chars[enc]->name,name)==0 )
 	    i = enc;
 	else for ( i=sf->charcnt-1; i>=0 ; --i ) if ( sf->chars[i]!=NULL ) {
@@ -163,7 +163,7 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b) {
     }
     if ( i==-1 )	/* Can't guess the proper encoding, ignore it */
 return;
-    if ( i!=enc && sf->onlybitmaps && sf->bitmaps==b && b->next==NULL && sf->chars[enc]!=NULL ) {
+    if ( i!=enc && enc!=-1 && sf->onlybitmaps && sf->bitmaps==b && b->next==NULL && sf->chars[enc]!=NULL ) {
 	free(sf->chars[enc]->name);
 	sf->chars[enc]->name = copy( ".notdef" );
 	sf->chars[enc]->unicodeenc = -1;
