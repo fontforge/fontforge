@@ -2030,6 +2030,19 @@ return( spline );
     while ( cnt<6 ) {
 	if ( NeedsNewHintMask(hdb,spline->to))
     break;
+	hv = -1;
+	if ( hdb->current.x==spline->from->nextcp.x &&
+		spline->to->prevcp.y==spline->to->me.y &&
+		spline->to->next!=NULL &&
+		spline->to->me.y==spline->to->nextcp.y &&
+		spline->to->next->to->prevcp.x==spline->to->next->to->me.x )
+    break;
+	else if ( hdb->current.y==spline->from->nextcp.y &&
+		spline->to->prevcp.x==spline->to->me.x &&
+		spline->to->next!=NULL &&
+		spline->to->me.x==spline->to->nextcp.x &&
+		spline->to->next->to->prevcp.y==spline->to->next->to->me.y )
+    break;
 	AddNumber2(gb,spline->from->nextcp.x-hdb->current.x);
 	AddNumber2(gb,spline->from->nextcp.y-hdb->current.y);
 	AddNumber2(gb,spline->to->prevcp.x-spline->from->nextcp.x);
