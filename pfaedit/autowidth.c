@@ -1824,6 +1824,10 @@ return( NULL );
 	if ( list[cnt]!=NULL )
 	    ++cnt;
     }
+    if ( cnt==0 ) {
+	free(list);
+	list = NULL;
+    }
 return( list );
 }
 
@@ -1903,8 +1907,8 @@ return;
 	    vkc->offsets = gcalloc((any1+1)*(any2+1),sizeof(int16));
 	    for ( i=0; i<kc->first_cnt; ++i ) if ( map1[i]!=0 ) {
 		for ( j=0; j<kc->second_cnt; ++j ) if ( map2[j]!=0 ) {
-		    vkc->offsets[map1[i]*vkc->first_cnt+map2[j]] =
-			    kc->offsets[i*kc->first_cnt+j];
+		    vkc->offsets[map1[i]*vkc->second_cnt+map2[j]] =
+			    kc->offsets[i*kc->second_cnt+j];
 		}
 	    }
 	}
