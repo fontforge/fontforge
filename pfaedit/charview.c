@@ -481,24 +481,7 @@ return;
 	    GDrawDrawLine(pixmap,cx-3,cy-3,cx+3,cy+3,subcol);
 	    GDrawDrawLine(pixmap,cx+3,cy-3,cx-3,cy+3,subcol);
 	    if ( cv->showpointnumbers || cv->show_ft_results || cv->dv ) {
-		pnum = sp->ttfindex+1;
-		if ( sp->ttfindex==0xffff ) {
-		    SplinePoint *np;
-		    int off = 0;
-		    np = sp;
-		    while ( 1 ) {
-			if ( np->ttfindex!=0xffff || np->next==NULL )
-		    break;
-			np = np->next->to;
-			if ( np==sp )
-		    break;
-			--off;
-		    }
-		    if ( np->ttfindex!=0xffff && np->ttfindex!=0 )
-			pnum = np->ttfindex+off;
-		    else
-			pnum = 0xffff;
-		}
+		pnum = sp->nextcpindex;
 		if ( pnum!=0xffff ) {
 		    sprintf( buf,"%d", pnum );
 		    uc_strcpy(ubuf,buf);
@@ -2565,11 +2548,12 @@ int SCNumberPoints(SplineChar *sc) {
     int pnum=0;
     SplineSet *ss;
     SplinePoint *sp;
-    int starts_with_cp;
+    int starts_with_cp, startcnt;
 
     for ( ss = sc->splines; ss!=NULL; ss=ss->next ) {
 	starts_with_cp = (ss->first->ttfindex == pnum+1 || ss->first->ttfindex==0xffff) &&
 		!ss->first->noprevcp;
+	startcnt = pnum;
 	if ( starts_with_cp ) ++pnum;
 	for ( sp=ss->first; ; ) {
 	    if ( ((sc->ttf_instrs!=NULL && sp->ttfindex==0xffff) ||
@@ -2581,21 +2565,26 @@ int SCNumberPoints(SplineChar *sc) {
 		sp->ttfindex = 0xffff;
 	    else
 		sp->ttfindex = pnum++;
-	    if ( !sp->nonextcp )
-		++pnum;
+	    if ( sc->ttf_instrs!=NULL && sp->nextcpindex!=0xffff ) {
+		if ( sp->nextcpindex!=startcnt || !starts_with_cp )
+		    sp->nextcpindex = pnum++;
+	    } else if ( !sp->nonextcp ) {
+		if ( sp->next==NULL || sp->next->to!=ss->first )
+		    sp->nextcpindex = pnum++;
+	    } else
+		sp->nextcpindex = 0xffff;
 	    if ( sp->next==NULL )
 	break;
 	    sp = sp->next->to;
 	    if ( sp==ss->first )
 	break;
 	}
-	if ( starts_with_cp ) --pnum;
     }
 return( pnum );
 }
 
 static void instrcheck(SplineChar *sc) {
-    int pnum=0, skipit;
+    int pnum=0, skipit, bad=false;
     SplineSet *ss;
     SplinePoint *sp;
     int starts_with_cp;
@@ -2615,20 +2604,22 @@ return;
 		    (sp->nextcp.y+sp->prevcp.y)/2 == sp->me.y;
 	    if ( sp->ttfindex==0xffff && skipit )
 		/* Doesn't count */;
-	    else if ( sp->ttfindex==pnum+1 && sp->noprevcp && !skipit )
-		/* Very occasionally we read in a control point which sits on */
-		/*  top of one of the endpoints. That is my mark for no cp */
-		/*  but if we just throw it out, we screw up the point count */
-		pnum += 2;
-	    else if ( sp->ttfindex!=pnum || skipit ) {
+	    else if ( sp->ttfindex!=pnum || skipit )
+		bad = true;
+	    else
+		++pnum;
+	    if ( sp->nonextcp && sp->nextcpindex==0xffff )
+		/* Doesn't count */;
+	    else if ( sp->nextcpindex==pnum )
+		++pnum;
+	    else
+		bad = true;
+	    if ( bad ) {
 		free(sc->ttf_instrs); sc->ttf_instrs = NULL;
 		sc->ttf_instrs_len = 0;
 		SCMarkInstrDlgAsChanged(sc);
 return;
-	    } else
-		++pnum;
-	    if ( !sp->nonextcp )
-		++pnum;
+	    }
 	    if ( sp->next==NULL )
 	break;
 	    sp = sp->next->to;

@@ -2793,10 +2793,10 @@ static void TTF_SetMortSubs(struct ttfinfo *info, int gnum, int gsubs) {
 return;
 
     if ( gnum<0 || gnum>=info->glyph_cnt ) {
-	fprintf( stderr, "Glyph out of bounds in 'mort' table %d\n", gnum );
+	fprintf( stderr, "Glyph out of bounds in 'mort'/'morx' table %d\n", gnum );
 return;
     } else if ( gsubs<0 || (gsubs>=info->glyph_cnt && gsubs!=0xffff)) {
-	fprintf( stderr, "Substitute glyph out of bounds in 'mort' table %d\n", gsubs );
+	fprintf( stderr, "Substitute glyph out of bounds in 'mort'/'morx' table %d\n", gsubs );
 return;
     } else if ( (sc=info->chars[gnum])==NULL ||
 	    (gsubs!=0xffff && (ssc=info->chars[gsubs])==NULL) )

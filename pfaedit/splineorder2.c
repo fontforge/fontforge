@@ -143,6 +143,7 @@ static SplinePoint *MakeQuadSpline(SplinePoint *start,Spline *ttf,real x,
 	x = oldend->me.x; y = oldend->me.y;	/* Want it to compare exactly */
     }
     end->ttfindex = 0xfffe;
+    end->nextcpindex = 0xfffe;
     end->me.x = end->nextcp.x = x;
     end->me.y = end->nextcp.y = y;
     end->nonextcp = true;
@@ -239,6 +240,7 @@ static SplinePoint *LinearSpline(Spline *ps,SplinePoint *start, real tmax) {
 	x = oldend->me.x; y = oldend->me.y;	/* Want it to compare exactly */
     }
     end->ttfindex = 0xfffe;
+    end->nextcpindex = 0xfffe;
     end->me.x = end->nextcp.x = end->prevcp.x = x;
     end->me.y = end->nextcp.y = end->prevcp.y = y;
     end->nonextcp = end->noprevcp = start->nonextcp = true;
@@ -308,6 +310,7 @@ static SplinePoint *_ttfapprox(Spline *ps,real tmin, real tmax, SplinePoint *sta
 	sp->me.x = ps->to->me.x; sp->me.y = ps->to->me.y;
 	sp->roundx = ps->to->roundx; sp->roundy = ps->to->roundy; sp->dontinterpolate = ps->to->dontinterpolate;
 	sp->ttfindex = 0xfffe;
+	sp->nextcpindex = 0xfffe;
 	sp->nonextcp = true;
 	spline = chunkalloc(sizeof(Spline));
 	spline->order2 = true;

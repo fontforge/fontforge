@@ -1751,6 +1751,10 @@ return( false );
 	else {
 	    if ( sf->chars[i]->enc==-1 )
 		sf->chars[i]->enc = epos++;
+	    if ( chars[sf->chars[i]->enc]!=NULL )
+		fprintf( stderr, "Warning: Two chars (%s,%s) mapped to the same encoding %d\n",
+			chars[sf->chars[i]->enc]->name, sf->chars[i]->name,
+			sf->chars[i]->enc );
 	    chars[sf->chars[i]->enc] = sf->chars[i];
 	    for ( bdf=sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
 		if ( i<bdf->charcnt && bdf->chars[i]!=NULL && sf->chars[i]!=NULL ) {

@@ -451,11 +451,12 @@ typedef struct splinepoint {
     unsigned int dontinterpolate: 1;	/* temporary in ttf output */
     unsigned int ticked: 1;
     unsigned int watched: 1;
-	/* 16+1 bits left... */
+	/* 1 bits left... */
     uint16 ptindex;		/* Temporary value used by metafont routine */
     uint16 ttfindex;		/* Truetype point index */
 	/* Special values 0xffff => point implied by averaging control points */
 	/*		  0xfffe => point created with no real number */
+    uint16 nextcpindex;		/* Truetype point index */
     struct spline *next;
     struct spline *prev;
 } SplinePoint;

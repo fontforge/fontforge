@@ -733,30 +733,27 @@ int SSPointCnt(SplineSet *ss,int startcnt, int has_instrs) {
     SplinePoint *sp, *first=NULL;
     int cnt, starts_with_cp, last_was_counted=false;
 
-    starts_with_cp = (ss->first->ttfindex == startcnt+1 || ss->first->ttfindex==0xffff) &&
-	    !ss->first->noprevcp && has_instrs;
-
     for ( sp=ss->first, cnt=startcnt; sp!=first ; ) {
 	if ( has_instrs && sp->ttfindex!=0xffff ) {
 	    cnt = sp->ttfindex+1;
-	    last_was_counted = true;
 	} else if ( !has_instrs &&
 		    ( sp==ss->first || sp->nonextcp || sp->noprevcp ||
 		    (sp->dontinterpolate || sp->roundx || sp->roundy) ||
 		    (sp->prevcp.x+sp->nextcp.x)/2!=sp->me.x ||
 		    (sp->prevcp.y+sp->nextcp.y)/2!=sp->me.y )) {
 	    ++cnt;
-	    last_was_counted = false;
 	}
-	if ( !sp->nonextcp ) ++cnt;
+	if ( has_instrs && sp->nextcpindex!=0xffff ) {
+	    if ( sp->nextcpindex!=startcnt )
+		cnt = sp->nextcpindex+1;
+	} else if ( !sp->nonextcp )
+	    ++cnt;
 	if ( sp->next==NULL )
     break;
 	if ( first==NULL ) first = sp;
 	sp = sp->next->to;
     }
 
-    if ( starts_with_cp && last_was_counted )	/* We'll have counted it twice */
-	--cnt;
 return( cnt );
 }
 
@@ -770,29 +767,19 @@ return( cnt );
 int SSAddPoints(SplineSet *ss,int ptcnt,BasePoint *bp, char *flags,
 	int has_instrs) {
     SplinePoint *sp, *first, *nextsp;
-    int starts_with_cp;
+    int startcnt = ptcnt;
 
-    starts_with_cp = (ss->first->ttfindex == ptcnt+1 || ss->first->ttfindex==0xffff) &&
-	    !ss->first->noprevcp && has_instrs;
-    if ( has_instrs && ss->first->ttfindex!=ptcnt && !starts_with_cp )
-	GDrawIError("Unexpected point count in SSAddPoints" );
-    if ( starts_with_cp ) {
+    if ( has_instrs && ss->first->prev!=NULL &&
+	    ss->first->prev->from->nextcpindex==startcnt ) {
 	if ( flags!=NULL ) flags[ptcnt] = 0;
 	bp[ptcnt].x = rint(ss->first->prevcp.x);
 	bp[ptcnt++].y = rint(ss->first->prevcp.y);
-    }
+    } else if ( has_instrs && ss->first->ttfindex!=ptcnt )
+	GDrawIError("Unexpected point count in SSAddPoints" );
 
     first = NULL;
     for ( sp=ss->first; sp!=first ; ) {
 	if ( has_instrs && sp->ttfindex!=0xffff ) {
-	    if ( ptcnt+1==sp->ttfindex && sp->noprevcp ) {
-		/* Very occasionally we get a control point which sits on  */
-		/*  top of one of the endpoints. That is my mark for no cp */
-		/*  but if we just throw it out, we screw up the point count */
-		if ( flags!=NULL ) flags[ptcnt] = 0;
-		bp[ptcnt].x = rint(sp->me.x);
-		bp[ptcnt++].y = rint(sp->me.y);
-	    }
 	    if ( flags!=NULL ) flags[ptcnt] = _On_Curve;
 	    bp[ptcnt].x = rint(sp->me.x);
 	    bp[ptcnt].y = rint(sp->me.y);
@@ -810,10 +797,11 @@ int SSAddPoints(SplineSet *ss,int ptcnt,BasePoint *bp, char *flags,
 	    sp->ttfindex = ptcnt++;
 	}
 	nextsp = sp->next!=NULL ? sp->next->to : NULL;
-	if ( starts_with_cp && nextsp==first )
+	if ( has_instrs && sp->nextcpindex == startcnt )
 	    /* This control point is actually our first point, not our last */
     break;
-	if ( !sp->nonextcp ) {
+	if ( (has_instrs && sp->nextcpindex !=0xffff ) ||
+		(!has_instrs && !sp->nonextcp )) {
 	    if ( flags!=NULL ) flags[ptcnt] = 0;
 	    bp[ptcnt].x = rint(sp->nextcp.x);
 	    bp[ptcnt++].y = rint(sp->nextcp.y);

@@ -908,6 +908,21 @@ static void FigureControls(SplinePoint *from, SplinePoint *to, BasePoint *cp,
 
     if ( is_order2 ) {
 	from->nextcp = to->prevcp = *cp;
+	if ( cp->x==to->me.x && cp->y==to->me.y ) {
+	    /* I would lose track of the proper location of this cp if I left */
+	    /* it here (would end up with from->nonextcp, which would mean I'd*/
+	    /* use from->me rather than to->me in tottf.c:SSAddPoints. So we  */
+	    /* distort it a little */
+	    BasePoint off;
+	    double len;
+	    off.x = from->me.x-to->me.x; off.y = from->me.y-to->me.y;
+	    len = sqrt(off.x*off.x+off.y*off.y);
+	    if ( len>3 ) {
+		/* move the cp slightly toward from, but on the line between the two */
+		from->nextcp.x = (to->prevcp.x += rint(off.x/len));
+		from->nextcp.y = (to->prevcp.y += rint(off.y/len));
+	    }
+	}
     } else {
 	d = from->me.x;
 	c = 2*cp->x - 2*from->me.x;
@@ -956,6 +971,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 		sp->me = sp->nextcp = sp->prevcp = pts[i];
 		sp->nonextcp = sp->noprevcp = true;
 		sp->ttfindex = i;
+		sp->nextcpindex = 0xffff;
 		if ( last_off && cur->last!=NULL )
 		    FigureControls(cur->last,sp,&pts[i-1],is_order2);
 		last_off = false;
@@ -968,10 +984,13 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 		sp->nextcp = sp->prevcp = sp->me;
 		sp->nonextcp = true;
 		sp->ttfindex = 0xffff;
+		sp->nextcpindex = i;
 		if ( last_off && cur->last!=NULL )
 		    FigureControls(cur->last,sp,&pts[i-1],is_order2);
 		/* last_off continues to be true */
 	    } else {
+		if ( cur->first!=NULL )
+		    cur->last->nextcpindex = i;
 		last_off = true;
 		sp = NULL;
 	    }
@@ -987,12 +1006,14 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 	if ( start==i-1 ) {
 	    /* MS chinese fonts have contours consisting of a single off curve*/
 	    /*  point. What on earth do they think that means? */
+	    /* Oh. I see. It's used to possition marks and such */
 	    sp = chunkalloc(sizeof(SplinePoint));
 	    sp->me.x = pts[start].x;
 	    sp->me.y = pts[start].y;
 	    sp->nextcp = sp->prevcp = sp->me;
 	    sp->nonextcp = sp->noprevcp = true;
 	    sp->ttfindex = i-1;
+	    sp->nextcpindex = 0xffff;
 	    cur->first = cur->last = sp;
 	} else if ( !(flags[start]&_On_Curve) && !(flags[i-1]&_On_Curve) ) {
 	    sp = chunkalloc(sizeof(SplinePoint));
@@ -1001,6 +1022,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 	    sp->nextcp = sp->prevcp = sp->me;
 	    sp->nonextcp = true;
 	    sp->ttfindex = 0xffff;
+	    sp->nextcpindex = start;
 	    FigureControls(cur->last,sp,&pts[i-1],is_order2);
 	    SplineMake(cur->last,sp,is_order2);
 	    cur->last = sp;
@@ -1123,7 +1145,7 @@ static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, 
 
     do {
 	if ( ftell(ttf)>=end ) {
-	    fprintf( stderr, "Bad flags value, implied MORE components at end of glyph\n" );
+	    fprintf( stderr, "Bad flags value, implied MORE components at end of glyph %d\n", sc->enc );
     break;
 	}
 	cur = chunkalloc(sizeof(RefChar));
