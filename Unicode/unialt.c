@@ -396,6 +396,7 @@ static const unichar_t str_3f1[] = { 0x03c1, 0 };
 static const unichar_t str_3f2[] = { 0x03c2, 0 };
 static const unichar_t str_3f4[] = { 0x0398, 0 };
 static const unichar_t str_3f5[] = { 0x03b5, 0 };
+static const unichar_t str_3f9[] = { 0x03a3, 0 };
 static const unichar_t str_400[] = { 0x0415, 0x0300, 0 };
 static const unichar_t str_401[] = { 0x0415, 0x0308, 0 };
 static const unichar_t str_403[] = { 0x0413, 0x0301, 0 };
@@ -883,6 +884,66 @@ static const unichar_t str_13df[] = { 0x0043, 0 };
 static const unichar_t str_13e2[] = { 0x0050, 0 };
 static const unichar_t str_13e6[] = { 0x004b, 0 };
 static const unichar_t str_13f4[] = { 0x0042, 0 };
+static const unichar_t str_1d2c[] = { 0x0041, 0 };
+static const unichar_t str_1d2d[] = { 0x00c6, 0 };
+static const unichar_t str_1d2e[] = { 0x0042, 0 };
+static const unichar_t str_1d30[] = { 0x0044, 0 };
+static const unichar_t str_1d31[] = { 0x0045, 0 };
+static const unichar_t str_1d32[] = { 0x018e, 0 };
+static const unichar_t str_1d33[] = { 0x0047, 0 };
+static const unichar_t str_1d34[] = { 0x0048, 0 };
+static const unichar_t str_1d35[] = { 0x0049, 0 };
+static const unichar_t str_1d36[] = { 0x004a, 0 };
+static const unichar_t str_1d37[] = { 0x004b, 0 };
+static const unichar_t str_1d38[] = { 0x004c, 0 };
+static const unichar_t str_1d39[] = { 0x004d, 0 };
+static const unichar_t str_1d3a[] = { 0x004e, 0 };
+static const unichar_t str_1d3c[] = { 0x004f, 0 };
+static const unichar_t str_1d3d[] = { 0x0222, 0 };
+static const unichar_t str_1d3e[] = { 0x0050, 0 };
+static const unichar_t str_1d3f[] = { 0x0052, 0 };
+static const unichar_t str_1d40[] = { 0x0054, 0 };
+static const unichar_t str_1d41[] = { 0x0055, 0 };
+static const unichar_t str_1d42[] = { 0x0057, 0 };
+static const unichar_t str_1d43[] = { 0x0061, 0 };
+static const unichar_t str_1d44[] = { 0x0250, 0 };
+static const unichar_t str_1d45[] = { 0x0251, 0 };
+static const unichar_t str_1d46[] = { 0x1d02, 0 };
+static const unichar_t str_1d47[] = { 0x0062, 0 };
+static const unichar_t str_1d48[] = { 0x0064, 0 };
+static const unichar_t str_1d49[] = { 0x0065, 0 };
+static const unichar_t str_1d4a[] = { 0x0259, 0 };
+static const unichar_t str_1d4b[] = { 0x025b, 0 };
+static const unichar_t str_1d4c[] = { 0x025c, 0 };
+static const unichar_t str_1d4d[] = { 0x0067, 0 };
+static const unichar_t str_1d4f[] = { 0x006b, 0 };
+static const unichar_t str_1d50[] = { 0x006d, 0 };
+static const unichar_t str_1d51[] = { 0x014b, 0 };
+static const unichar_t str_1d52[] = { 0x006f, 0 };
+static const unichar_t str_1d53[] = { 0x0254, 0 };
+static const unichar_t str_1d54[] = { 0x1d16, 0 };
+static const unichar_t str_1d55[] = { 0x1d17, 0 };
+static const unichar_t str_1d56[] = { 0x0070, 0 };
+static const unichar_t str_1d57[] = { 0x0074, 0 };
+static const unichar_t str_1d58[] = { 0x0075, 0 };
+static const unichar_t str_1d59[] = { 0x1d1d, 0 };
+static const unichar_t str_1d5a[] = { 0x026f, 0 };
+static const unichar_t str_1d5b[] = { 0x0076, 0 };
+static const unichar_t str_1d5c[] = { 0x1d25, 0 };
+static const unichar_t str_1d5d[] = { 0x03b2, 0 };
+static const unichar_t str_1d5e[] = { 0x03b3, 0 };
+static const unichar_t str_1d5f[] = { 0x03b4, 0 };
+static const unichar_t str_1d60[] = { 0x03c6, 0 };
+static const unichar_t str_1d61[] = { 0x03c7, 0 };
+static const unichar_t str_1d62[] = { 0x0069, 0 };
+static const unichar_t str_1d63[] = { 0x0072, 0 };
+static const unichar_t str_1d64[] = { 0x0075, 0 };
+static const unichar_t str_1d65[] = { 0x0076, 0 };
+static const unichar_t str_1d66[] = { 0x03b2, 0 };
+static const unichar_t str_1d67[] = { 0x03b3, 0 };
+static const unichar_t str_1d68[] = { 0x03c1, 0 };
+static const unichar_t str_1d69[] = { 0x03c6, 0 };
+static const unichar_t str_1d6a[] = { 0x03c7, 0 };
 static const unichar_t str_1e00[] = { 0x0041, 0x0325, 0 };
 static const unichar_t str_1e01[] = { 0x0061, 0x0325, 0 };
 static const unichar_t str_1e02[] = { 0x0042, 0x0307, 0 };
@@ -1479,6 +1540,7 @@ static const unichar_t str_2136[] = { 0x05d1, 0 };
 static const unichar_t str_2137[] = { 0x05d2, 0 };
 static const unichar_t str_2138[] = { 0x05d3, 0 };
 static const unichar_t str_2139[] = { 0x0069, 0 };
+static const unichar_t str_213b[] = { 0x0046, 0x0041, 0x0058, 0 };
 static const unichar_t str_213d[] = { 0x03b3, 0 };
 static const unichar_t str_213e[] = { 0x0393, 0 };
 static const unichar_t str_213f[] = { 0x03a0, 0 };
@@ -2223,6 +2285,8 @@ static const unichar_t str_3219[] = { 0x0028, 0x1110, 0x1161, 0x0029, 0 };
 static const unichar_t str_321a[] = { 0x0028, 0x1111, 0x1161, 0x0029, 0 };
 static const unichar_t str_321b[] = { 0x0028, 0x1112, 0x1161, 0x0029, 0 };
 static const unichar_t str_321c[] = { 0x0028, 0x110c, 0x116e, 0x0029, 0 };
+static const unichar_t str_321d[] = { 0x0028, 0x110b, 0x1169, 0x110c, 0x1165, 0x11ab, 0x0029, 0 };
+static const unichar_t str_321e[] = { 0x0028, 0x110b, 0x1169, 0x1112, 0x116e, 0x0029, 0 };
 static const unichar_t str_3220[] = { 0x0028, 0x4e00, 0x0029, 0 };
 static const unichar_t str_3221[] = { 0x0028, 0x4e8c, 0x0029, 0 };
 static const unichar_t str_3222[] = { 0x0028, 0x4e09, 0x0029, 0 };
@@ -2259,6 +2323,7 @@ static const unichar_t str_3240[] = { 0x0028, 0x796d, 0x0029, 0 };
 static const unichar_t str_3241[] = { 0x0028, 0x4f11, 0x0029, 0 };
 static const unichar_t str_3242[] = { 0x0028, 0x81ea, 0x0029, 0 };
 static const unichar_t str_3243[] = { 0x0028, 0x81f3, 0x0029, 0 };
+static const unichar_t str_3250[] = { 0x0050, 0x0054, 0x0045, 0 };
 static const unichar_t str_3251[] = { 0x0032, 0x0031, 0x20dd, 0 };
 static const unichar_t str_3252[] = { 0x0032, 0x0032, 0x20dd, 0 };
 static const unichar_t str_3253[] = { 0x0032, 0x0033, 0x20dd, 0 };
@@ -2302,6 +2367,8 @@ static const unichar_t str_3278[] = { 0x110f, 0x1161, 0x20dd, 0 };
 static const unichar_t str_3279[] = { 0x1110, 0x1161, 0x20dd, 0 };
 static const unichar_t str_327a[] = { 0x1111, 0x1161, 0x20dd, 0 };
 static const unichar_t str_327b[] = { 0x1112, 0x1161, 0x20dd, 0 };
+static const unichar_t str_327c[] = { 0x110e, 0x1161, 0x11b7, 0x1100, 0x1169, 0x20dd, 0 };
+static const unichar_t str_327d[] = { 0x110c, 0x116e, 0x110b, 0x1174, 0x20dd, 0 };
 static const unichar_t str_3280[] = { 0x4e00, 0x20dd, 0 };
 static const unichar_t str_3281[] = { 0x4e8c, 0x20dd, 0 };
 static const unichar_t str_3282[] = { 0x4e09, 0x20dd, 0 };
@@ -2378,6 +2445,10 @@ static const unichar_t str_32c8[] = { 0x0039, 0x6708, 0 };
 static const unichar_t str_32c9[] = { 0x0031, 0x0030, 0x6708, 0 };
 static const unichar_t str_32ca[] = { 0x0031, 0x0031, 0x6708, 0 };
 static const unichar_t str_32cb[] = { 0x0031, 0x0032, 0x6708, 0 };
+static const unichar_t str_32cc[] = { 0x0048, 0x0067, 0 };
+static const unichar_t str_32cd[] = { 0x0065, 0x0072, 0x0067, 0 };
+static const unichar_t str_32ce[] = { 0x0065, 0x0056, 0 };
+static const unichar_t str_32cf[] = { 0x004c, 0x0054, 0x0044, 0 };
 static const unichar_t str_32d0[] = { 0x30a2, 0x20dd, 0 };
 static const unichar_t str_32d1[] = { 0x30a4, 0x20dd, 0 };
 static const unichar_t str_32d2[] = { 0x30a6, 0x20dd, 0 };
@@ -2544,6 +2615,10 @@ static const unichar_t str_3373[] = { 0x0041, 0x0055, 0 };
 static const unichar_t str_3374[] = { 0x0062, 0x0061, 0x0072, 0 };
 static const unichar_t str_3375[] = { 0x006f, 0x0056, 0 };
 static const unichar_t str_3376[] = { 0x0070, 0x0063, 0 };
+static const unichar_t str_3377[] = { 0x0064, 0x006d, 0 };
+static const unichar_t str_3378[] = { 0x0064, 0x006d, 0x00b2, 0 };
+static const unichar_t str_3379[] = { 0x0064, 0x006d, 0x00b3, 0 };
+static const unichar_t str_337a[] = { 0x0049, 0x0055, 0 };
 static const unichar_t str_337b[] = { 0x5e73, 0x6210, 0 };
 static const unichar_t str_337c[] = { 0x662d, 0x548c, 0 };
 static const unichar_t str_337d[] = { 0x5927, 0x6b63, 0 };
@@ -2643,6 +2718,8 @@ static const unichar_t str_33da[] = { 0x0050, 0x0052, 0 };
 static const unichar_t str_33db[] = { 0x0073, 0x0072, 0 };
 static const unichar_t str_33dc[] = { 0x0053, 0x0076, 0 };
 static const unichar_t str_33dd[] = { 0x0057, 0x0062, 0 };
+static const unichar_t str_33de[] = { 0x0056, 0x2215, 0x006d, 0 };
+static const unichar_t str_33df[] = { 0x0041, 0x2215, 0x006d, 0 };
 static const unichar_t str_33e0[] = { 0x0031, 0x65e5, 0 };
 static const unichar_t str_33e1[] = { 0x0032, 0x65e5, 0 };
 static const unichar_t str_33e2[] = { 0x0033, 0x65e5, 0 };
@@ -2674,6 +2751,7 @@ static const unichar_t str_33fb[] = { 0x0032, 0x0038, 0x65e5, 0 };
 static const unichar_t str_33fc[] = { 0x0032, 0x0039, 0x65e5, 0 };
 static const unichar_t str_33fd[] = { 0x0033, 0x0030, 0x65e5, 0 };
 static const unichar_t str_33fe[] = { 0x0033, 0x0031, 0x65e5, 0 };
+static const unichar_t str_33ff[] = { 0x0067, 0x0061, 0x006c, 0 };
 static const unichar_t str_f634[] = { 0x0020, 0x0326, 0 };
 static const unichar_t str_f635[] = { 0x0020, 0x0326, 0 };
 static const unichar_t str_f636[] = { 0x03d6, 0 };
@@ -3979,6 +4057,8 @@ static const unichar_t str_fe41[] = { 0x300c, 0 };
 static const unichar_t str_fe42[] = { 0x300d, 0 };
 static const unichar_t str_fe43[] = { 0x300e, 0 };
 static const unichar_t str_fe44[] = { 0x300f, 0 };
+static const unichar_t str_fe47[] = { 0x005b, 0 };
+static const unichar_t str_fe48[] = { 0x005d, 0 };
 static const unichar_t str_fe49[] = { 0x203e, 0 };
 static const unichar_t str_fe4a[] = { 0x203e, 0 };
 static const unichar_t str_fe4b[] = { 0x203e, 0 };
@@ -4785,7 +4865,8 @@ str_3f1,
 str_3f2,
 0, str_3f4,
 str_3f5,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+0, 0, 0, str_3f9,
+0, 0, 0, 0, 0, 0, 0};
 
 static const unichar_t * const tab_4[] = {
 str_400,
@@ -5312,6 +5393,69 @@ str_13df,
 0, 0, 0, str_13e6,
 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_13f4,
 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+static const unichar_t * const tab_1d[] = {
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_1d2c,
+str_1d2d,
+str_1d2e,
+0, str_1d30,
+str_1d31,
+str_1d32,
+str_1d33,
+str_1d34,
+str_1d35,
+str_1d36,
+str_1d37,
+str_1d38,
+str_1d39,
+str_1d3a,
+0, str_1d3c,
+str_1d3d,
+str_1d3e,
+str_1d3f,
+str_1d40,
+str_1d41,
+str_1d42,
+str_1d43,
+str_1d44,
+str_1d45,
+str_1d46,
+str_1d47,
+str_1d48,
+str_1d49,
+str_1d4a,
+str_1d4b,
+str_1d4c,
+str_1d4d,
+0, str_1d4f,
+str_1d50,
+str_1d51,
+str_1d52,
+str_1d53,
+str_1d54,
+str_1d55,
+str_1d56,
+str_1d57,
+str_1d58,
+str_1d59,
+str_1d5a,
+str_1d5b,
+str_1d5c,
+str_1d5d,
+str_1d5e,
+str_1d5f,
+str_1d60,
+str_1d61,
+str_1d62,
+str_1d63,
+str_1d64,
+str_1d65,
+str_1d66,
+str_1d67,
+str_1d68,
+str_1d69,
+str_1d6a,
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 static const unichar_t * const tab_1e[] = {
 str_1e00,
@@ -5919,7 +6063,8 @@ str_2136,
 str_2137,
 str_2138,
 str_2139,
-0, 0, 0, str_213d,
+0, str_213b,
+0, str_213d,
 str_213e,
 str_213f,
 str_2140,
@@ -6699,7 +6844,9 @@ str_3219,
 str_321a,
 str_321b,
 str_321c,
-0, 0, 0, str_3220,
+str_321d,
+str_321e,
+0, str_3220,
 str_3221,
 str_3222,
 str_3223,
@@ -6735,7 +6882,8 @@ str_3240,
 str_3241,
 str_3242,
 str_3243,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_3251,
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_3250,
+str_3251,
 str_3252,
 str_3253,
 str_3254,
@@ -6778,7 +6926,9 @@ str_3278,
 str_3279,
 str_327a,
 str_327b,
-0, 0, 0, 0, str_3280,
+str_327c,
+str_327d,
+0, 0, str_3280,
 str_3281,
 str_3282,
 str_3283,
@@ -6854,7 +7004,11 @@ str_32c8,
 str_32c9,
 str_32ca,
 str_32cb,
-0, 0, 0, 0, str_32d0,
+str_32cc,
+str_32cd,
+str_32ce,
+str_32cf,
+str_32d0,
 str_32d1,
 str_32d2,
 str_32d3,
@@ -7023,7 +7177,11 @@ str_3373,
 str_3374,
 str_3375,
 str_3376,
-0, 0, 0, 0, str_337b,
+str_3377,
+str_3378,
+str_3379,
+str_337a,
+str_337b,
 str_337c,
 str_337d,
 str_337e,
@@ -7122,7 +7280,9 @@ str_33da,
 str_33db,
 str_33dc,
 str_33dd,
-0, 0, str_33e0,
+str_33de,
+str_33df,
+str_33e0,
 str_33e1,
 str_33e2,
 str_33e3,
@@ -7153,7 +7313,8 @@ str_33fb,
 str_33fc,
 str_33fd,
 str_33fe,
-0, 0};
+str_33ff,
+0};
 
 static const unichar_t * const tab_f6[] = {
 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_f634,
@@ -8485,7 +8646,9 @@ str_fe41,
 str_fe42,
 str_fe43,
 str_fe44,
-0, 0, 0, 0, str_fe49,
+0, 0, str_fe47,
+str_fe48,
+str_fe49,
 str_fe4a,
 str_fe4b,
 str_fe4c,
@@ -8905,7 +9068,8 @@ tab_f,
 tab_10,
 tab_11,
 up_allzeros, tab_13,
-up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, tab_1e,
+up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, tab_1d,
+tab_1e,
 tab_1f,
 tab_20,
 tab_21,

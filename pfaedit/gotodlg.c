@@ -31,7 +31,7 @@
 
 struct unicoderange {
     char *name;		/* The range's name */
-    int first, last, defined;
+    int32 first, last, defined;
     			/* The first codepoint, last codepoint in the range */
 			/*  and a codepoint which actually has a character */
 			/*  associated with it */
@@ -220,10 +220,10 @@ struct unicoderange {
     { "Gothic", 0x10330, 0x1034f, 0x10330 },
     { "Old Permic", 0x10350, 0x1037f, 0x10350 },
     { "Ugaritic", 0x10380, 0x1039f, -1 },
-    { "Deseret", 0x10400, 0x1044f },
-    { "Shavian", 0x10450, 0x1047f },
-    { "Osmanya", 0x10480, 0x104a9 },
-    { "Pollard", 0x104b0, 0x104d9 },
+    { "Deseret", 0x10400, 0x1044f, -1 },
+    { "Shavian", 0x10450, 0x1047f, -1 },
+    { "Osmanya", 0x10480, 0x104a9, -1 },
+    { "Pollard", 0x104b0, 0x104d9, -1 },
     { "Alphabetic and syllabic RTL scripts", 0x10800, 0x10fff, -1 },
     { "Cypriot", 0x10800, 0x1083f, 0x10800 },
     { "Meriotic", 0x10840, 0x1085f, 0x10840 },
@@ -256,7 +256,8 @@ struct unicoderange {
     { "Tag characters", 0xe0000, 0xe007f, -1 },
     { "Variation Selectors", 0xe0110, 0xe01ff, -1 },
 /* End of SSP */
-    { "Private/Corporate Use Area B", 0xf0000, 0x10ffff, -1 },
+    { "Supplementary Private Use Area-A", 0xfff80, 0xfffff, -1 },
+    { "Supplementary Private Use Area-B", 0x10ff80, 0x10ffff, -1 },
     { NULL }
 };
 
