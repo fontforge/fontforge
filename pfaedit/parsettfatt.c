@@ -773,6 +773,7 @@ static void g___ContextSubTable1(FILE *ttf, int stoffset,
     } *rules;
     FPST *fpst;
     struct fpst_rule *rule;
+    int warned = false;
 
     coverage = getushort(ttf);
     rcnt = getushort(ttf);		/* glyph count in coverage table */
@@ -791,10 +792,19 @@ static void g___ContextSubTable1(FILE *ttf, int stoffset,
 	for ( j=0; j<rules[i].scnt; ++j ) {
 	    fseek(ttf,rules[i].subrules[j].offset,SEEK_SET);
 	    rules[i].subrules[j].gcnt = getushort(ttf);
-	    rules[i].subrules[j].glyphs = galloc(rules[i].subrules[j].gcnt*sizeof(uint16));
+	    rules[i].subrules[j].glyphs = galloc((rules[i].subrules[j].gcnt+1)*sizeof(uint16));
 	    rules[i].subrules[j].glyphs[0] = glyphs[i];
-	    for ( k=1; k<rules[i].subrules[j].gcnt; ++k )
+	    for ( k=1; k<rules[i].subrules[j].gcnt; ++k ) {
 		rules[i].subrules[j].glyphs[k] = getushort(ttf);
+		if ( rules[i].subrules[j].glyphs[k]>=info->glyph_cnt ) {
+		    if ( !warned )
+			fprintf( stderr, "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)\n",
+				 rules[i].subrules[j].glyphs[k], info->glyph_cnt );
+		    warned = true;
+		     rules[i].subrules[j].glyphs[k] = 0;
+		 }
+	    }
+	    rules[i].subrules[j].glyphs[k] = 0xffff;
 	    rules[i].subrules[j].scnt = getushort(ttf);
 	    rules[i].subrules[j].sl = galloc(rules[i].subrules[j].scnt*sizeof(struct seqlookup));
 	    for ( k=0; k<rules[i].subrules[j].scnt; ++k ) {
@@ -908,7 +918,7 @@ static void g___ChainingSubTable1(FILE *ttf, int stoffset,
 
 	    for ( which = 0; which<3; ++which ) {
 		for ( k=0; k<(&rules[i].subrules[j].gcnt)[which]; ++k ) {
-		    if ( (&rules[i].subrules[j].glyphs)[which][k]>info->glyph_cnt ) {
+		    if ( (&rules[i].subrules[j].glyphs)[which][k]>=info->glyph_cnt ) {
 			if ( !warned )
 			    fprintf( stderr, "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)\n",
 				    (&rules[i].subrules[j].glyphs)[which][k], info->glyph_cnt );
