@@ -969,7 +969,7 @@ static void FVMenuSelectAll(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static void cflistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    /* FontView *fv = (FontView *) GDrawGetUserData(gw);*/
+    /*FontView *fv = (FontView *) GDrawGetUserData(gw);*/
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
@@ -3038,6 +3038,7 @@ static void FVMouse(FontView *fv,GEvent *event) {
 	    FVDeselectAll(fv);
 	if ( fv->pressed!=NULL )
 	    GDrawCancelTimer(fv->pressed);
+	fv->pressed_pos = fv->end_pos = pos;
 	FVShowInfo(fv);
 	if ( event->u.mouse.state&ksm_shift ) {
 	    fv->selected[pos] = !fv->selected[pos];
@@ -3046,7 +3047,6 @@ static void FVMouse(FontView *fv,GEvent *event) {
 	    fv->selected[pos] = true;
 	    FVToggleCharSelected(fv,pos);
 	}
-	fv->pressed_pos = fv->end_pos = pos;
 	if ( event->u.mouse.button==3 )
 	    GMenuCreatePopupMenu(fv->v,event, fvpopupmenu);
 	else
