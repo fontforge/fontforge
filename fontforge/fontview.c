@@ -7748,7 +7748,7 @@ return;
 	sprintf( buffer+strlen(buffer), "U+%04X", sc->unicodeenc );
     else
 	sprintf( buffer+strlen(buffer), "U+????" );
-    sprintf( buffer+strlen(buffer), "  %.*s", (int) sizeof(buffer)-strlen(buffer)-1,
+    sprintf( buffer+strlen(buffer), "  %.*s", (int) (sizeof(buffer)-strlen(buffer)-1),
 	    sc->name );
 
     strcat(buffer,"  ");
