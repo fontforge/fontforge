@@ -123,6 +123,10 @@ void GWidgetCreateInsChar(void);	/* takes input even when a modal dlg is active 
 		/* but is not modal itself */
 void GInsCharSetChar(unichar_t ch);	/* Sets current selection in ins char dlg */
 
+extern GIC *GWidgetCreateInputContext(GWindow w,enum gic_style def_style);
+extern GIC *GWidgetGetInputContext(GWindow w);
+
+
 #if 0
 Widget *CreateCenteredDialog(Widget *parent, WidgetData *wd,void *data);
 Widget *CreateDialog(Widget *parent, WidgetData *wd,void *data);

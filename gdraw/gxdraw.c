@@ -2306,7 +2306,9 @@ static void GXDrawSetGIC(GWindow w, GIC *_gic, int x, int y) {
     XVaNestedList listp, lists;
     GXDisplay *gdisp = (GXDisplay *) (w->display);
 
-    if ( gic!=NULL ) {
+    if ( x==10000 && y==x && gic!=NULL ) {
+	XUnsetICFocus(gic->ic);
+    } else if ( gic!=NULL ) {
 	gic->ploc.x = x;
 	gic->ploc.y = y;
 	gic->sloc.x = x;

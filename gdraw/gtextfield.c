@@ -1678,6 +1678,8 @@ static int gtextfield_focus(GGadget *g, GEvent *event) {
 	    GTextFieldSelect(&gt->g,0,-1);
 	if ( gt->gic!=NULL )
 	    GTPositionGIC(gt);
+	else if ( GWidgetGetInputContext(gt->g.base)!=NULL )
+	    GDrawSetGIC(gt->g.base,GWidgetGetInputContext(gt->g.base),10000,10000);
     }
     _ggadget_redraw(g);
     GTextFieldFocusChanged(gt,event->u.focus.gained_focus);
@@ -2355,7 +2357,7 @@ static GTextField *_GTextFieldCreate(GTextField *gt, struct gwindow *base, GGadg
 	_GGadgetCloseGroup(&gt->g);
     GWidgetIndicateFocusGadget(&gt->g);
     if ( gd->flags & gg_text_xim )
-	gt->gic = GDrawCreateInputContext(base,gic_overspot|gic_orlesser);
+	gt->gic = GWidgetCreateInputContext(base,gic_overspot|gic_orlesser);
 return( gt );
 }
 

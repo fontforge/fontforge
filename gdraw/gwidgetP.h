@@ -37,6 +37,7 @@ typedef struct gwidgetdata {
     GWindow w;
     struct gwidgetdata *next;			/* siblings */
     int (*e_h)(GWindow, GEvent *);		/* User's event function for window, our eh will call it */
+    GIC *gic;
     unsigned int has_focus: 1;
     /*unsigned int visible: 1;*/		/* this is in the window structure */
     unsigned int enabled: 1;
@@ -53,6 +54,7 @@ typedef struct gwidgetcontainerdata /* : GWidgetD */{
     GWindow w;
     struct gwidgetdata *next;			/* siblings */
     int (*e_h)(GWindow, GEvent *);		/* User's event function for window, our eh will call it */
+    GIC *gic;
     unsigned int has_focus: 1;
     /*unsigned int visible: 1;*/		/* this is in the window structure */
     unsigned int enabled: 1;
@@ -76,6 +78,7 @@ typedef struct gtopleveldata /* : GContainerD */{
     GWindow w;
     struct gwidgetdata *next;			/* siblings */
     int (*e_h)(GWindow, GEvent *);		/* User's event function for window, our eh will call it */
+    GIC *gic;
     unsigned int has_focus: 1;
     /*unsigned int visible: 1;*/		/* this is in the window structure */
     unsigned int enabled: 1;

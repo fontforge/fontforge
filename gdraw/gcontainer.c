@@ -1129,3 +1129,16 @@ void GWidgetReparentWindow(GWindow child,GWindow newparent, int x,int y) {
     }
     GDrawReparentWindow(child,newparent,x,y);
 }
+
+GIC *GWidgetCreateInputContext(GWindow w,enum gic_style def_style) {
+    GWidgetD *wd = (GWidgetD *) (w->widget_data);
+
+    if ( wd->gic==NULL )
+	wd->gic = GDrawCreateInputContext(w,def_style);
+return( wd->gic );
+}
+    
+GIC *GWidgetGetInputContext(GWindow w) {
+    GWidgetD *wd = (GWidgetD *) (w->widget_data);
+return( wd->gic );
+}
