@@ -849,6 +849,7 @@ Optional Packages:
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-freetype-src=dir   Specify freetype source directory
   --with-x                use the X Window System
+  --with-multilayer   Control whether we build with support for type3/svg fonts containing multilayered drawing with strokes, fills, images, etc.
 
 Some influential environment variables:
   CC          C compiler command
@@ -5823,6 +5824,22 @@ _ACEOF
 fi
 
 fi
+
+
+# Check whether --with-multilayer or --without-multilayer was given.
+if test "${with_multilayer+set}" = set; then
+  withval="$with_multilayer"
+
+    if test "$withval" != "no" >/dev/null 2>&1 ; then
+	cat >>confdefs.h <<\_ACEOF
+#define PFAEDIT_CONFIG_TYPE3 1
+_ACEOF
+
+    fi
+
+else
+  :
+fi;
 
 test -d libs || mkdir libs
 
