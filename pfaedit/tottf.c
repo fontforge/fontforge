@@ -1787,7 +1787,8 @@ int SFFigureDefWidth(SplineFont *sf, int *_nomwid) {
 return( defwid );
 }
 
-static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont) {
+static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont,
+	int subrcnt) {
     char *pt;
     FILE *private = subfont==-1?at->private:at->fds[subfont].private;
     int mi,i;
@@ -1902,7 +1903,8 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont) {
 	dumpintoper(private,1,(12<<8)|17);
     if ( (pt=PSDictHasEntry(sf->private,"ExpansionFactor"))!=NULL )
 	DumpStrDouble(pt,private,(12<<8)+18);
-    dumpsizedint(private,false,ftell(private)+3+1,19);	/* Subrs */
+    if ( subrcnt!=0 )
+	dumpsizedint(private,false,ftell(private)+3+1,19);	/* Subrs */
 
     if ( subfont==-1 )
 	at->privatelen = ftell(private);
@@ -2367,10 +2369,11 @@ static int dumptype2glyphs(SplineFont *sf,struct alltabs *at) {
     dumpcffnames(sf,at->cfff);
     dumpcffcharset(sf,at);
     GProgressChangeStages(2+at->gi.strikecnt);
-    dumpcffprivate(sf,at,-1);
     if ((subrs = SplineFont2Subrs2(sf,at->gi.flags))==NULL )
 return( false );
-    _dumpcffstrings(at->private,subrs);
+    dumpcffprivate(sf,at,-1,subrs->next);
+    if ( subrs->next!=0 )
+	_dumpcffstrings(at->private,subrs);
     GProgressNextStage();
     at->charstrings = dumpcffstrings(SplineFont2Chrs2(sf,at->nomwid,at->defwid,subrs,at->gi.flags));
     PSCharsFree(subrs);
@@ -2405,10 +2408,11 @@ static int dumpcidglyphs(SplineFont *sf,struct alltabs *at) {
     at->fds = gcalloc(sf->subfontcnt,sizeof(struct fd2data));
     for ( i=0; i<sf->subfontcnt; ++i ) {
 	at->fds[i].private = tmpfile();
-	dumpcffprivate(sf->subfonts[i],at,i);
 	if ( (at->fds[i].subrs = SplineFont2Subrs2(sf->subfonts[i],at->gi.flags))==NULL )
 return( false );
-	_dumpcffstrings(at->fds[i].private,at->fds[i].subrs);
+	dumpcffprivate(sf->subfonts[i],at,i,at->fds[i].subrs->next);
+	if ( at->fds[i].subrs->next!=0 )
+	    _dumpcffstrings(at->fds[i].private,at->fds[i].subrs);
     }
 
     dumpcffheader(sf,at->cfff);
