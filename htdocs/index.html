@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 20-Jan-2003 -->
+  <!-- AP: Last modified: 28-Jan-2003 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -97,31 +97,31 @@ let me know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-030120.tgz">Download pfaedit linux-i386 Redhat 7.3
-    </A><A NAME="downloads">executable</A> Version: 20-Jan-2003
+    <A HREF="pfaedit-030128.tgz">Download pfaedit linux-i386 Redhat 7.3
+    </A><A NAME="downloads">executable</A> Version: 28-Jan-2003
   <LI>
-    <A HREF="pfaedit-030116-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
-    Version: 16-Jan-2003 (Redhat 7.3)
+    <A HREF="pfaedit-030125-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
+    Version: 25-Jan-2003 (Redhat 7.3)
   <LI>
-    <A HREF="pfaedit-020910-1.ppc.rpm">Download pfaedit linux-ppc SUSE 7.1
-    </A>binary rpm Version: 10-Sept-2002
+    <A HREF="pfaedit-030125-1.ppc.rpm">Download pfaedit linux-ppc SUSE 7.1
+    </A>binary rpm Version: 25-Jan-2003
   <LI>
-    <A HREF="pfaedit-solaris-021223.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 23-Dec-2002 (no XIM support)
+    <A HREF="pfaedit-solaris-030125.tgz">Download pfaedit Solaris 8.0
+    </A>executable Version: 25-Jan-2003 (no XIM support)
   <LI>
     <A HREF="http://packages.debian.org/unstable/x11/pfaedit.html">A debian package
     is available at the debian site.</A>
   <LI>
-    <A HREF="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/fonts/pfaedit/README.html">A netbsd package
-    is available at the netbsd site.</A>
+    <A HREF="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/fonts/pfaedit/README.html">A
+    netbsd package is available at the netbsd site.</A>
   <LI>
     <A HREF="MacOSX.html#binary">A Mac OS/X distribution</A> (with Caveats).
-    Version 9-Jan-2003<BR>
-    &nbsp; &nbsp; How to install <A HREF="MacOSX.html#binary">PfaEdit
-    on Mac OS/X</A>
+    Version 25-Jan-2003<BR>
+    &nbsp; &nbsp; How to install <A HREF="MacOSX.html#binary">PfaEdit on Mac
+    OS/X</A>
   <LI>
-    <A HREF="pfaedit_cygwin-020910.tgz">A cygwin version</A>. Version:
-    10-Sept-2002<BR>
+    <A HREF="pfaedit_cygwin-030128.tgz">A cygwin version</A>. Version:
+    28-Jan-2003<BR>
     &nbsp; &nbsp; How to install <A HREF="faq.html#windows">PfaEdit under
     windows</A>
   <LI>
@@ -141,11 +141,11 @@ If you want to edit CID keyed fonts you probably need these
   <A NAME="source">Source</A> distribution
 </H2>
 <P>
-You can download a <A HREF="pfaedit-030116-1.src.rpm">source RPM</A>: Version:
-16-Jan-2003<BR>
-Or you can download the <A HREF="pfaedit_full-030120.tgz">entire source tree
+You can download a <A HREF="pfaedit-030125-1.src.rpm">source RPM</A>: Version:
+25-Jan-2003<BR>
+Or you can download the <A HREF="pfaedit_full-030128.tgz">entire source tree
 </A>in one .tgz file: Version
-20-Jan-2003<!--
+28-Jan-2003<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -165,7 +165,7 @@ Or you can go to the
 <A HREF="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/pfaedit/pfaedit/">cvs
 tree</A> and get the most recent version.
 <H2>
-Dependencies
+  Dependencies
 </H2>
 <P>
 If you want to do autotracing around character images you should also download
@@ -196,10 +196,11 @@ have them and you want them they are available from:
     <A HREF="http://freetype.sf.net/">freetype</A>
 </UL>
 <P>
-PfaEdit can display unicode names and annotations if the libuninameslist library
-is available.
+PfaEdit can display unicode names and annotations if the libuninameslist
+library is available.
 <UL>
-    <LI><A HREF="http://libuninameslist.sf.net">libuninameslist</A>
+  <LI>
+    <A HREF="http://libuninameslist.sf.net">libuninameslist</A>
 </UL>
 <P>
 Normally PfaEdit depends on the X11 windowing system, but if you are just
@@ -262,10 +263,10 @@ bitmap fonts that pfaedit uses
 </H2>
 <P>
 All the documentation files in this directory bundled up into one
-<A HREF="pfaedit_htdocs-030120.tgz">tgz file</A> 20-Jan-2003.<BR>
+<A HREF="pfaedit_htdocs-030128.tgz">tgz file</A> 28-Jan-2003.<BR>
 If you do the following then PfaEdit will find the docs for you when you
-press F1 (ie. PfaEdit it will look in /usr/local/share/doc/pfaedit before it looks
-on the web):
+press F1 (ie. PfaEdit it will look in /usr/local/share/doc/pfaedit before
+it looks on the web):
 <BLOCKQUOTE>
   <PRE>$ mkdir -p /usr/local/share/doc/pfaedit
 $ cd /usr/local/share/doc/pfaedit
@@ -465,9 +466,8 @@ and rarely appear on this list.
     When reading a ttc file with a GSUB table, pfaedit is likely to lose information
     from that table.
   <LI>
-    On cygwin I have
-    no idea how to find the (Windows) default browser. And probably no idea how
-    to invoke it if I did.
+    On cygwin I have no idea how to find the (Windows) default browser. And probably
+    no idea how to invoke it if I did.
   <LI>
     ???
 </UL>
@@ -717,9 +717,15 @@ which company has given me the free time to write this program.
   <LI>
     Windows raster font formats
     <UL>
-    <LI><A HREF="http://www.technoir.nu/hplx/hplx-l/9708/msg00404.html">FNT -- Windows version 2</A>
-    <LI><A HREF="http://support.microsoft.com/default.aspx?scid=KB;en-us;q65123">FNT -- Windows version 3</A>
-    <LI><A HREF="http://www.csn.ul.ie/~caolan/publink/winresdump/winresdump/doc/resfmt.txt">Some info on FON file format</A>
+      <LI>
+	<A HREF="http://www.technoir.nu/hplx/hplx-l/9708/msg00404.html">FNT -- Windows
+	version 2</A>
+      <LI>
+	<A HREF="http://support.microsoft.com/default.aspx?scid=KB;en-us;q65123">FNT
+	-- Windows version 3</A>
+      <LI>
+	<A HREF="http://www.csn.ul.ie/~caolan/publink/winresdump/winresdump/doc/resfmt.txt">Some
+	info on FON file format</A>
     </UL>
   <LI>
     X11 pcf format
@@ -821,14 +827,14 @@ Other font links
 	no meaning attached to the mapping)
     </UL>
   <LI>
-    <A HREF="http://www.unicode.org/charts/">Pictures of the
-    characters</A>
+    <A HREF="http://www.unicode.org/charts/">Pictures of the characters</A>
   <LI>
     <A HREF="http://partners.adobe.com/asn/developer/type/unicodegn.html">Postscript
     Unicode names</A>
     <UL>
-      <LI><A HREF="http://partners.adobe.com/asn/developer/type/otfdk/main.html">
-      Adobe provides some synonyms in their FDK</A>
+      <LI>
+	<A HREF="http://partners.adobe.com/asn/developer/type/otfdk/main.html">Adobe
+	provides some synonyms in their FDK</A>
     </UL>
   <LI>
     Linux issues
@@ -858,7 +864,8 @@ Other Encodings
   <LI>
     <A HREF="http://www2.arts.gla.ac.uk/IPA/fullchart.html">IPA</A>
   <LI>
-    <A HREF="http://www-106.ibm.com/developerworks/unicode/library/u-china.html?dwzone=unicode">GB 18030</A>
+    <A HREF="http://www-106.ibm.com/developerworks/unicode/library/u-china.html?dwzone=unicode">GB
+    18030</A>
 </UL>
 <H2>
   Related <A NAME="tools">Tools</A>
@@ -939,8 +946,8 @@ Other Encodings
 	<A HREF="http://ttf2pt1.sourceforge.net/">ttf2pt1</A> -- Converts truetype
 	to type1 postscript fonts and generates hints
       <LI>
-	<A HREF="http://ftp.giga.or.at/pub/nih/ttftot42/">ttftot42</A> -- Converts truetype
-	to type42 postscript fonts.
+	<A HREF="http://ftp.giga.or.at/pub/nih/ttftot42/">ttftot42</A> -- Converts
+	truetype to type42 postscript fonts.
       <LI>
 	<A HREF="http://textrace.sf.net/">type1fix</A> -- (part of the TeXtrace package).
 	Used to make some Type1 fonts work with ATM.
@@ -977,8 +984,8 @@ Other Encodings
 	<A HREF="http://developer.apple.com/fonts/Tools/">And Apple does too</A>
 	(mac only)
       <LI>
-	<A HREF="http://developer.apple.com/fonts/OSXTools.html">And some OS/X tools</A>
-	(mac only)
+	<A HREF="http://developer.apple.com/fonts/OSXTools.html">And some OS/X
+	tools</A> (mac only)
     </UL>
   <LI>
     Rasterizers

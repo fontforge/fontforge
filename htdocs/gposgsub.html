@@ -2,12 +2,12 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 20-Jan-2003 -->
+  <!-- AP: Last modified: 28-Jan-2003 -->
   <TITLE>The GPOS and GSUB opentype tables</TITLE>
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
-The <B><CODE>GPOS</CODE></B> and <B><CODE>GSUB</CODE></B> opentype tables
+  The <B><CODE>GPOS</CODE></B> and <B><CODE>GSUB</CODE></B> opentype tables
 </H1>
 <P>
 These two tables are used for positioning and substituting glyphs. The GPOS
@@ -15,200 +15,254 @@ table can control things like: kerning, accent positioning, cursive joining,
 etc. The GSUB table can control things like: ligatures, arabic forms, vertical
 rotation, conversion to small caps, indic glyph rearangment, etc.
 <P>
-This page assumes basic familiarity with the abilities of the tables, for more
-information on them read, study and inwardly digest the opentype docs on:
+This page assumes basic familiarity with the abilities of the tables, for
+more information on them read, study and inwardly digest the opentype docs
+on:
 <UL>
-<LI><A HREF="http://partners.adobe.com/asn/developer/opentype/appendices/chapter2.html">The header for both GPOS and GSUB</A>
-<LI><A HREF="http://partners.adobe.com/asn/developer/opentype/gpos.html">The GPOS table</A>, for positioning glyphs
-<LI><A HREF="http://partners.adobe.com/asn/developer/opentype/gsub.html">The GSUB table</A>, for substituting glyphs
-<LI><A HREF="http://partners.adobe.com/asn/developer/opentype/appendices/feattags.html">The list of feature tags supported by opentype</A>
-<LI><A HREF="http://partners.adobe.com/asn/developer/opentype/appendices/scripttags.html">The list of script tags supported by opentype</A>
-<LI><A HREF="http://partners.adobe.com/asn/developer/opentype/appendices/languagetags.html">The list of language tags supported by opentype</A> (PfaEdit does not currently support languages)
+  <LI>
+    <A HREF="http://partners.adobe.com/asn/developer/opentype/appendices/chapter2.html">The
+    header for both GPOS and GSUB</A>
+  <LI>
+    <A HREF="http://partners.adobe.com/asn/developer/opentype/gpos.html">The
+    GPOS table</A>, for positioning glyphs
+  <LI>
+    <A HREF="http://partners.adobe.com/asn/developer/opentype/gsub.html">The
+    GSUB table</A>, for substituting glyphs
+  <LI>
+    <A HREF="http://partners.adobe.com/asn/developer/opentype/gdef.html">The
+    GDEF table</A>, for classifying glyphs and for providing a ligature caret
+    table
+  <LI>
+    <A HREF="http://partners.adobe.com/asn/developer/opentype/appendices/feattags.html">The
+    list of feature tags supported by opentype</A>
+  <LI>
+    <A HREF="http://partners.adobe.com/asn/developer/opentype/appendices/scripttags.html">The
+    list of script tags supported by opentype</A>
+  <LI>
+    <A HREF="http://partners.adobe.com/asn/developer/opentype/appendices/languagetags.html">The
+    list of language tags supported by opentype</A> (PfaEdit does not currently
+    support languages)
 </UL>
 <P>
-The basic idea of both these tables is that each script (or language within a script) has
-a set of "features" that are available to it. A feature in turn is associated with
-a lookup which contains data for the feature. An example of a script is 'latn' for
-latin, 'arab' for arabic, 'hani' for chinese ideographs. Two examples of 
-features are 'kern' which provides kerning information between pairs of glyphs
-and 'init' which will transform one set of glyphs to another when those
-glyphs are at the beginning of a word.
+The basic idea of the GPOS and GSUB tables is that each script (or language
+within a script) has a set of "features" that are available to it. A feature
+in turn is associated with a lookup which contains data for the feature.
+An example of a script is 'latn' for latin, 'arab' for arabic, 'hani' for
+chinese ideographs. Two examples of features are 'kern' which provides kerning
+information between pairs of glyphs and 'init' which will transform one set
+of glyphs to another when those glyphs are at the beginning of a word.
 <P>
-PfaEdit does not support the full range of possibilities inherent in these two
-tables.
+PfaEdit does not support the full range of possibilities inherent in these
+two tables.
 <H2>
-The <B><CODE>GPOS</CODE></B> table
+  The <B><CODE>GPOS</CODE></B> table
 </H2>
 <P>
 PfaEdit will read the following sub tables of the GPOS table:
 <TABLE Border=1>
-<TR>
-<TD>1</TD>
-<TD>single adjustment</TD>
-<TD>This sub-table allows the font designer to change the metrics of a specific
-character. The feature tag will provide a context in which the change should
-occur. For instance the 'tnum' (tabular numbers) feature could change a proportionally
-spaced digit by adjusting its advance width to be some set value and then centering
-the digit (by adjusting the left side bearing) within the new width.</TD>
-<TD>These can be created with the <A HREF="charinfo.html">Element->Char Info</A>->Position command.</TD>
-</TR>
-<TR>
-<TD>2</TD>
-<TD>pair adjustment</TD>
-<TD>This sub-table allows the font designer to change the metrics of a specific
-pair of character. The most common use of this is for kerning where the advance
-width of the first character is altered depending on which character follows it.
-But the table is more general than that and could support mark (accent, vowel)
-positioning over a base character (though that is more efficeintly done with
-the mark to base subtable).</TD>
-<TD>Only the 'kern' feature is supported for this sub-table. These may be
-created from the <A HREF="metricsview.html">Metrics View</A></TD>
-</TR>
-<TR>
-<TD>3</TD>
-<TD>cursive attachment</TD>
-<TD>This sub-table allows the font designer to force adjacent characters to
-join at specific points. It can be used to generate the slanted script style
-needed for Urdu.</TD>
-<TD>Only the 'curs' feature is supported for this sub-table. These may be
-created with the <A HREF="pointmenu.html#AddAnchor">Points->Add Anchor</A> command</TD>
-</TR><TR>
-<TD>4</TD>
-<TD>mark to base</TD>
-<TD>This sub-table allows the font designer to specify how mark characters
-(accents, vowel signs, etc.) are positioned over base characters. Every character
-can have an attachment point and the mark's attachment point will be placed
-on the base's attachment point so the two join properly. See my <A HREF="overview.html#Anchors">example</A> in the overview.</TD>
-<TD>These may be
-created with the <A HREF="pointmenu.html#AddAnchor">Points->Add Anchor</A> command</TD>
-</TR><TR>
-<TD>5</TD>
-<TD>mark to ligature</TD>
-<TD>This sub-table is very similar to the previous one except that the base
-character is a ligature and may have several different points at which the
-same type of accent may be placed.</TD>
-<TD>These may be
-created with the <A HREF="pointmenu.html#AddAnchor">Points->Add Anchor</A> command</TD>
-</TR><TR>
-<TD>6</TD>
-<TD>mark to mark</TD>
-<TD>This sub-table is very similar to the previous two except that the base
-character is itself a mark. This may be used when a character has two accents
-each of which would normally be placed at the same attachment point on a
-base character. The second accent will be place relative to the first accent
-rather than to the base character.</TD>
-<TD>These may be
-created with the <A HREF="pointmenu.html#AddAnchor">Points->Add Anchor</A> command</TD>
-</TR><TR>
-<TD>7</TD>
-<TD>contextual positioning</TD>
-<TD>This sub-table allows the font designer to control the positioning of
-characters when they occur within a specific string (or class of strings).
-For instance this table could say "when you see a digit followed by the
-string "th" then raise the "th" into a superscript position"</TD>
-<TD>PfaEdit does not support this sub-table yet.</TD>
-</TR><TR>
-<TD>8</TD>
-<TD>chaining contextual positioning</TD>
-<TD>I haven't figured this one out yet</TD>
-<TD>PfaEdit does not support this sub-table yet.</TD>
-</TR><TR>
-<TD>9</TD>
-<TD>extension positioning</TD>
-<TD>This is used to allow for a GPOS table which is bigger than 64k. Its use
-should be quite invisible to the font designer</TD>
-<TD>PfaEdit should support this sub-table but I haven't seen a font containing it to check.</TD>
-</TR><TR>
-<TD>10+</TD>
-<TD>reserved for future use</TD>
-<TD></TD>
-<TD>PfaEdit does not support these sub-tables yet.<BR>(nor does anyone)</TD>
-</TR>
+  <TR>
+    <TD>1</TD>
+    <TD>single adjustment</TD>
+    <TD>This sub-table allows the font designer to change the metrics of a specific
+      character. The feature tag will provide a context in which the change should
+      occur. For instance the 'tnum' (tabular numbers) feature could change a
+      proportionally spaced digit by adjusting its advance width to be some set
+      value and then centering the digit (by adjusting the left side bearing) within
+      the new width.</TD>
+    <TD>These can be created with the <A HREF="charinfo.html">Element-&gt;Char
+      Info</A>-&gt;Position command.</TD>
+  </TR>
+  <TR>
+    <TD>2</TD>
+    <TD>pair adjustment</TD>
+    <TD>This sub-table allows the font designer to change the metrics of a specific
+      pair of character. The most common use of this is for kerning where the advance
+      width of the first character is altered depending on which character follows
+      it. But the table is more general than that and could support mark (accent,
+      vowel) positioning over a base character (though that is more efficeintly
+      done with the mark to base subtable).</TD>
+    <TD>Only the 'kern' feature is supported for this sub-table. These may be
+      created from the <A HREF="metricsview.html">Metrics View</A></TD>
+  </TR>
+  <TR>
+    <TD>3</TD>
+    <TD>cursive attachment</TD>
+    <TD>This sub-table allows the font designer to force adjacent characters
+      to join at specific points. It can be used to generate the slanted script
+      style needed for Urdu.</TD>
+    <TD>Only the 'curs' feature is supported for this sub-table. These may be
+      created with the <A HREF="pointmenu.html#AddAnchor">Points-&gt;Add Anchor</A>
+      command</TD>
+  </TR>
+  <TR>
+    <TD>4</TD>
+    <TD>mark to base</TD>
+    <TD>This sub-table allows the font designer to specify how mark characters
+      (accents, vowel signs, etc.) are positioned over base characters. Every character
+      can have an attachment point and the mark's attachment point will be placed
+      on the base's attachment point so the two join properly. See my
+      <A HREF="overview.html#Anchors">example</A> in the overview.</TD>
+    <TD>These may be created with the
+      <A HREF="pointmenu.html#AddAnchor">Points-&gt;Add Anchor</A> command</TD>
+  </TR>
+  <TR>
+    <TD>5</TD>
+    <TD>mark to ligature</TD>
+    <TD>This sub-table is very similar to the previous one except that the base
+      character is a ligature and may have several different points at which the
+      same type of accent may be placed.</TD>
+    <TD>These may be created with the
+      <A HREF="pointmenu.html#AddAnchor">Points-&gt;Add Anchor</A> command</TD>
+  </TR>
+  <TR>
+    <TD>6</TD>
+    <TD>mark to mark</TD>
+    <TD>This sub-table is very similar to the previous two except that the base
+      character is itself a mark. This may be used when a character has two accents
+      each of which would normally be placed at the same attachment point on a
+      base character. The second accent will be place relative to the first accent
+      rather than to the base character.</TD>
+    <TD>These may be created with the
+      <A HREF="pointmenu.html#AddAnchor">Points-&gt;Add Anchor</A> command</TD>
+  </TR>
+  <TR>
+    <TD>7</TD>
+    <TD>contextual positioning</TD>
+    <TD>This sub-table allows the font designer to control the positioning of
+      characters when they occur within a specific string (or class of strings).
+      For instance this table could say "when you see a digit followed by the string
+      "th" then raise the "th" into a superscript position"</TD>
+    <TD>PfaEdit does not support this sub-table yet.</TD>
+  </TR>
+  <TR>
+    <TD>8</TD>
+    <TD>chaining contextual positioning</TD>
+    <TD>I haven't figured this one out yet</TD>
+    <TD>PfaEdit does not support this sub-table yet.</TD>
+  </TR>
+  <TR>
+    <TD>9</TD>
+    <TD>extension positioning</TD>
+    <TD>This is used to allow for a GPOS table which is bigger than 64k. Its
+      use should be quite invisible to the font designer</TD>
+    <TD>PfaEdit should support this sub-table but I haven't seen a font containing
+      it to check.</TD>
+  </TR>
+  <TR>
+    <TD>10+</TD>
+    <TD>reserved for future use</TD>
+    <TD></TD>
+    <TD>PfaEdit does not support these sub-tables yet.<BR>
+      (nor does anyone)</TD>
+  </TR>
 </TABLE>
 <P>
-PfaEdit also has built into it knowledge on how to provide default values for
-some features that use these menus. See <A HREF="elementmenu.html#DefaultATT">Element->Default ATT</A>
-command for that.
+PfaEdit also has built into it knowledge on how to provide default values
+for some features that use these menus. See
+<A HREF="elementmenu.html#DefaultATT">Element-&gt;Default ATT</A> command
+for that.
 <H2>
-The <B><CODE>GSUB</CODE></B> table
+  The <B><CODE>GSUB</CODE></B> table
 </H2>
 <P>
 PfaEdit will read the following sub tables of the GSUB table:
 <TABLE Border=1>
-<TR>
-<TD>1</TD>
-<TD>single substitution</TD>
-<TD>This sub-table allows the font designer to change from one glyph to another,
-with a context provided by the feature tag. For example many scripts have letters
-which have a different form at the end of a word than they do within (this is
-true of every letter in arabic, several in hebrew, lower case sigma in greek,
-and the long-s/short-s pair in renaissance latin). So the 'fina' feature
-would map the normal form into the final form, and the word processing program
-would do a lookup at the end of each word to see if a transformation was needed.</TD>
-<TD>These can be created with the <A HREF="charinfo.html">Element->Char Info</A>->Substitution command.</TD>
-</TR><TR>
-<TD>2</TD>
-<TD>multiple substitution</TD>
-<TD>This sub-table allows the font designer to replace one glyph by a series
-of others. This is generally used for rather technical layout issues.</TD>
-<TD>These can be created with the <A HREF="charinfo.html">Element->Char Info</A>->Multiple Substitution command.</TD>
-</TR><TR>
-<TD>3</TD>
-<TD>alternate substitution</TD>
-<TD>This sub-table allows the font designer to have a series of "alternates" for
-each glyph. One common example would be an italic font which had several swash
-variants for each capital letter. The word processing program would allow the
-user to choose which variant was appropriate</TD>
-<TD>These can be created with the <A HREF="charinfo.html">Element->Char Info</A>->Alternate Substitution command.</TD>
-</TR><TR>
-<TD>4</TD>
-<TD>ligature substitution</TD>
-<TD>This sub-table allows the font designer to replace a string of characters
-with another glyph. A common example is a ligature where the string <IMG SRC="f+i.png" WIDTH=24 HEIGHT=25> is replaced
-by the <IMG SRC="fi.png" WIDTH=20 HEIGHT=25> ligature.</TD>
-<TD>These can be created with the <A HREF="charinfo.html">Element->Char Info</A>->Ligature command.</TD>
-</TR><TR>
-<TD>5</TD>
-<TD>contextual substitution</TD>
-<TD>This subtable allows for a string of glyphs to replace another string of
-glyphs (or class of strings of glyphs)</TD>
-<TD>PfaEdit does not support this sub-table yet.</TD>
-</TR><TR>
-<TD>6</TD>
-<TD>chaining contextual substitution</TD>
-<TD>I haven't figured this one out yet</TD>
-<TD>PfaEdit does not support this sub-table yet.</TD>
-</TR><TR>
-<TD>7</TD>
-<TD>extension positioning</TD>
-<TD>This is used to allow for a GSUB table which is bigger than 64k. Its use
-should be quite invisible to the font designer</TD>
-<TD>PfaEdit should support this sub-table but I haven't seen a font containing it to check.</TD>
-</TR><TR>
-<TD>8</TD>
-<TD>reverse chaining contextual single substitution</TD>
-<TD>I haven't figured this one out yet</TD>
-<TD>PfaEdit does not support this sub-table yet.</TD>
-</TR><TR>
-<TD>9+</TD>
-<TD>reserved for future use</TD>
-<TD></TD>
-<TD>PfaEdit does not support these sub-tables yet.<BR>(nor does anyone)</TD>
-</TR>
-</TR>
+  <TR>
+    <TD>1</TD>
+    <TD>single substitution</TD>
+    <TD>This sub-table allows the font designer to change from one glyph to another,
+      with a context provided by the feature tag. For example many scripts have
+      letters which have a different form at the end of a word than they do within
+      (this is true of every letter in arabic, several in hebrew, lower case sigma
+      in greek, and the long-s/short-s pair in renaissance latin). So the 'fina'
+      feature would map the normal form into the final form, and the word processing
+      program would do a lookup at the end of each word to see if a transformation
+      was needed.</TD>
+    <TD>These can be created with the <A HREF="charinfo.html">Element-&gt;Char
+      Info</A>-&gt;Substitution command.</TD>
+  </TR>
+  <TR>
+    <TD>2</TD>
+    <TD>multiple substitution</TD>
+    <TD>This sub-table allows the font designer to replace one glyph by a series
+      of others. This is generally used for rather technical layout issues.</TD>
+    <TD>These can be created with the <A HREF="charinfo.html">Element-&gt;Char
+      Info</A>-&gt;Multiple Substitution command.</TD>
+  </TR>
+  <TR>
+    <TD>3</TD>
+    <TD>alternate substitution</TD>
+    <TD>This sub-table allows the font designer to have a series of "alternates"
+      for each glyph. One common example would be an italic font which had several
+      swash variants for each capital letter. The word processing program would
+      allow the user to choose which variant was appropriate</TD>
+    <TD>These can be created with the <A HREF="charinfo.html">Element-&gt;Char
+      Info</A>-&gt;Alternate Substitution command.</TD>
+  </TR>
+  <TR>
+    <TD>4</TD>
+    <TD>ligature substitution</TD>
+    <TD>This sub-table allows the font designer to replace a string of characters
+      with another glyph. A common example is a ligature where the string
+      <IMG SRC="f+i.png" WIDTH=24 HEIGHT=25> is replaced by the
+      <IMG SRC="fi.png" WIDTH=20 HEIGHT=25> ligature.</TD>
+    <TD>These can be created with the <A HREF="charinfo.html">Element-&gt;Char
+      Info</A>-&gt;Ligature command.</TD>
+  </TR>
+  <TR>
+    <TD>5</TD>
+    <TD>contextual substitution</TD>
+    <TD>This subtable allows for a string of glyphs to replace another string
+      of glyphs (or class of strings of glyphs)</TD>
+    <TD>PfaEdit does not support this sub-table yet.</TD>
+  </TR>
+  <TR>
+    <TD>6</TD>
+    <TD>chaining contextual substitution</TD>
+    <TD>I haven't figured this one out yet</TD>
+    <TD>PfaEdit does not support this sub-table yet.</TD>
+  </TR>
+  <TR>
+    <TD>7</TD>
+    <TD>extension positioning</TD>
+    <TD>This is used to allow for a GSUB table which is bigger than 64k. Its
+      use should be quite invisible to the font designer</TD>
+    <TD>PfaEdit should support this sub-table but I haven't seen a font containing
+      it to check.</TD>
+  </TR>
+  <TR>
+    <TD>8</TD>
+    <TD>reverse chaining contextual single substitution</TD>
+    <TD>I haven't figured this one out yet</TD>
+    <TD>PfaEdit does not support this sub-table yet.</TD>
+  </TR>
+  <TR>
+    <TD>9+</TD>
+    <TD>reserved for future use</TD>
+    <TD></TD>
+    <TD>PfaEdit does not support these sub-tables yet.<BR>
+      (nor does anyone)</TD>
+  </TR>
 </TABLE>
 <P>
-PfaEdit also has built into it knowledge on how to provide default values for
-some features that use these menus. See <A HREF="elementmenu.html#DefaultATT">Element->Default ATT</A>
-command for that.
+PfaEdit also has built into it knowledge on how to provide default values
+for some features that use these menus. See
+<A HREF="elementmenu.html#DefaultATT">Element-&gt;Default ATT</A> command
+for that.
 <P>
 PfaEdit can produce some of these tables, but the text layout/word processing
-program used has to look up the tables and do the actual work of rearranging the
-glyphs.
+program used has to look up the tables and do the actual work of rearranging
+the glyphs.
+<H2>
+  The <B><CODE>GDEF </CODE></B>table
+</H2>
+<P>
+PfaEdit will read ligature carets out of a GDEF table.
+<P>
+It will generate a GDEF table containing a glyph class definition sub-table
+(if needed) or a ligature caret sub-table (if needed).
 <P>
 <P ALIGN=Center>
 -- <A HREF="generate.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
 <A HREF="filemenu.html">Next</A> --
 </BODY></HTML>
-</BODY>
-</HTML>
