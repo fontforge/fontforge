@@ -203,6 +203,10 @@ typedef struct bitmapview {
     int event_x, event_y;
     GFont *small;
     int16 sas, sfh;
+#if _ModKeysAutoRepeat
+    GTimer *autorpt;
+    int keysym, oldstate;
+#endif
 } BitmapView;
 
 typedef struct metricsview {
