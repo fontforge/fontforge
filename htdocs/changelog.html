@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 13-Dec-2004 -->
+  <!-- AP: Last modified: 18-Dec-2004 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -11,6 +11,22 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    ???
+    <UL>
+      <LI>
+	Added a raster debugger wndow
+      <LI>
+	Constraining the pen tool did not do what I expected
+      <LI>
+	If a glyph was encoded twice (or more) in a font, and an opentype font (or
+	perhaps a bitmap only sfnt) were generated, then any glyphs after the second
+	encoding would have the wrong width (ie. there would be an extra entry in
+	the horizontal metrics table corresponding to a (non-existant) copy of the
+	doubly encoded glyph)
+      <LI>
+	More changes (I hope improvements) to remove overlap
+    </UL>
   <LI>
     13-Dec-2004
     <UL>
