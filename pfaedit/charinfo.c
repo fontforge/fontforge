@@ -1414,6 +1414,11 @@ int uUniFromName(const unichar_t *name) {
 	i = u_strtol(name+1,&end,16);
 	if ( *end )
 	    i = -1;
+    } else if ( name[0]=='U' && name[1]=='+' && u_strlen(name)==6 ) {
+	/* Unifont uses this convention */
+	i = u_strtol(name+2,&end,16);
+	if ( *end )
+	    i = -1;
     }
     if ( i==-1 ) for ( i=psunicodenames_cnt-1; i>=0 ; --i ) {
 	if ( psunicodenames[i]!=NULL )
@@ -1422,7 +1427,7 @@ int uUniFromName(const unichar_t *name) {
     }
     if ( i==-1 ) for ( i=psaltuninames_cnt-1; i>=0 ; --i ) {
 	if ( uc_strcmp(name,psaltuninames[i].name)==0 )
-    break;
+return( psaltuninames[i].unicode );
     }
 return( i );
 }
@@ -1815,9 +1820,6 @@ static int CI_SName(GGadget *g, GEvent *e) {	/* Set From Name */
 	int i;
 	char buf[10]; unichar_t ubuf[2], *temp;
 	i = uUniFromName(ret);
-	for ( i=psunicodenames_cnt-1; i>=0; --i )
-	    if ( psunicodenames[i]!=NULL && uc_strcmp(ret,psunicodenames[i])==0 )
-	break;
 	if ( i==-1 ) {
 	    /* Adobe says names like uni00410042 represent a ligature (A&B) */
 	    /*  (that is "uni" followed by two 4-digit codes). */
