@@ -2282,7 +2282,7 @@ return( mf_afm );
 	    strstr((char *) buffer,"StarMasterFontMetrics")!=NULL )	/* ff had a bug and used this file header by mistake */
 return( mf_amfm );
     
-    if ( len >= 48 && sb.st_size == 2*((buffer[0]<<8)|buffer[1]) &&
+    if ( len >= 48 && sb.st_size == 4*((buffer[0]<<8)|buffer[1]) &&
 	    ((buffer[0]<<8)|buffer[1]) == 6 +
 		    ((buffer[2]<<8)|buffer[3]) +
 		    ( ((buffer[6]<<8)|buffer[7]) - ((buffer[4]<<8)|buffer[5]) + 1 ) +
