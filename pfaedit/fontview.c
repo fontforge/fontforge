@@ -725,21 +725,26 @@ return( temp );
 void MergeKernInfo(SplineFont *sf) {
 #ifndef __Mac
     static unichar_t wild[] = { '*', '.', '{','a','f','m',',','t','f','m',',','b','i','n',',','h','q','x','}',  '\0' };
+    static unichar_t wild2[] = { '*', '.', '{','a','f','m',',','a','m','f','m',',','t','f','m',',','b','i','n',',','h','q','x','}',  '\0' };
 #else
     static unichar_t wild[] = { '*', 0 };	/* Mac resource files generally don't have extensions */
+    static unichar_t wild2[] = { '*', 0 };
 #endif
-    unichar_t *ret = GWidgetOpenFile(GStringGetResource(_STR_MergeKernInfo,NULL),NULL,wild,NULL,NULL);
+    unichar_t *ret = GWidgetOpenFile(GStringGetResource(_STR_MergeKernInfo,NULL),
+	    NULL,sf->mm!=NULL?wild2:wild,NULL,NULL);
     char *temp = u2def_copy(ret);
-    int isafm, istfm;
+    int isamfm, isafm, istfm;
 
     if ( temp==NULL )		/* Cancelled */
 return;
 
+    isamfm = strstrmatch(temp,".amfm")!=NULL;
     isafm = strstrmatch(temp,".afm")!=NULL;
     istfm = strstrmatch(temp,".tfm")!=NULL;
     if ( (isafm && !LoadKerningDataFromAfm(sf,temp)) ||
+	    (isamfm && !LoadKerningDataFromAmfm(sf,temp)) ||
 	    (istfm && !LoadKerningDataFromTfm(sf,temp)) ||
-	    (!isafm && !istfm && !LoadKerningDataFromMacFOND(sf,temp)) )
+	    (!isafm && !istfm && !isamfm && !LoadKerningDataFromMacFOND(sf,temp)) )
 	GDrawError( "Failed to load kern data from %s", temp);
     free(ret); free(temp);
 }

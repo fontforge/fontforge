@@ -146,22 +146,106 @@ return( 0 );
 return( 1 );
 }
 
+static void CheckMMAfmFile(SplineFont *sf,char *amfm_filename,char *fontname) {
+    /* the afm file should be in the same directory as the amfm file */
+    /*  with the fontname as the filename */
+    char *temp, *pt;
+
+    free(sf->fontname);
+    sf->fontname = copy(fontname);
+
+    temp = galloc(strlen(amfm_filename)+strlen(fontname)+strlen(".afm")+1);
+    strcpy(temp, amfm_filename);
+    pt = strrchr(temp,'/');
+    if ( pt==NULL ) pt = temp;
+    else ++pt;
+    strcpy(pt,fontname);
+    pt += strlen(pt);
+    strcpy(pt,".afm");
+    if ( !LoadKerningDataFromAfm(sf,temp) ) {
+	strcpy(pt,".AFM");
+	LoadKerningDataFromAfm(sf,temp);
+    }
+    free(temp);
+}
+
+int LoadKerningDataFromAmfm(SplineFont *sf, char *filename) {
+    FILE *file=NULL;
+    char buffer[280], *pt, lastname[256];
+    int index, i;
+    MMSet *mm = sf->mm;
+
+    if ( mm!=NULL )
+	file = fopen(filename,"r");
+    pt = strstrmatch(filename,".amfm");
+    if ( pt!=NULL ) {
+	char *afmname = copy(filename);
+	strcpy(afmname+(pt-filename),isupper(pt[1])?".AFM":".afm");
+	LoadKerningDataFromAfm(mm->normal,afmname);
+	free(afmname);
+    }
+    if ( file==NULL )
+return( 0 );
+
+    GProgressChangeLine2R(_STR_ReadingAFM);
+    while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
+	if ( strstrmatch(buffer,"StartMaster")!=NULL )
+    break;
+    }
+    index = -1; lastname[0] = '\0';
+    while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
+	if ( strstrmatch(buffer,"EndMaster")!=NULL ) {
+	    if ( lastname[0]!='\0' && index!=-1 && index<mm->instance_count )
+		CheckMMAfmFile(mm->instances[index],filename,lastname);
+	    index = -1; lastname[0] = '\0';
+	} else if ( sscanf(buffer,"FontName %256s", lastname )== 1 ) {
+	    /* Do Nothing, all done */
+	} else if ( (pt = strstr(buffer,"WeightVector"))!=NULL ) {
+	    pt += strlen("WeightVector");
+	    while ( *pt==' ' || *pt=='[' ) ++pt;
+	    i = 0;
+	    while ( *pt!=']' && *pt!='\0' ) {
+		if ( *pt=='0' )
+		    ++i;
+		else if ( *pt=='1' ) {
+		    index = i;
+	    break;
+		}
+		++pt;
+	    }
+	}
+    }
+    fclose(file);
+return( true );
+}
+
 int CheckAfmOfPostscript(SplineFont *sf,char *psname) {
     char *new, *pt;
     int ret;
     int wasuc=false;
 
-    new = galloc(strlen(psname)+5);
+    new = galloc(strlen(psname)+6);
     strcpy(new,psname);
     pt = strrchr(new,'.');
     if ( pt==NULL ) pt = new+strlen(new);
     else wasuc = isupper(pt[1]);
-    strcpy(pt,wasuc?".AFM":".afm");
-    if ( !LoadKerningDataFromAfm(sf,new)) {
-	strcpy(pt,wasuc?".afm":".AFM");
-	ret = LoadKerningDataFromAfm(sf,new);
-    } else
-	ret = true;
+
+    if ( sf->mm!=NULL ) {
+	strcpy(pt,wasuc?".AMFM":".amfm");
+	if ( !LoadKerningDataFromAmfm(sf,new)) {
+	    strcpy(pt,wasuc?".amfm":".AMFM");
+	    ret = LoadKerningDataFromAmfm(sf,new);
+	} else
+	    ret = true;
+	/* The above routine reads from the afm file if one exist */
+    } else {
+	strcpy(pt,wasuc?".AFM":".afm");
+	if ( !LoadKerningDataFromAfm(sf,new)) {
+	    strcpy(pt,wasuc?".afm":".AFM");
+	    ret = LoadKerningDataFromAfm(sf,new);
+	} else
+	    ret = true;
+    }
     free(new);
 return( ret );
 }

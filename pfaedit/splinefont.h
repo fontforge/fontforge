@@ -911,6 +911,7 @@ extern void chunkfree(void *, int size);
 
 extern SplineFont *SplineFontFromPSFont(struct fontdict *fd);
 extern int CheckAfmOfPostscript(SplineFont *sf,char *psname);
+extern int LoadKerningDataFromAmfm(SplineFont *sf, char *filename);
 extern int LoadKerningDataFromAfm(SplineFont *sf, char *filename);
 extern int LoadKerningDataFromTfm(SplineFont *sf, char *filename);
 extern int LoadKerningDataFromMacFOND(SplineFont *sf, char *filename);
