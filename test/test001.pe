@@ -1,0 +1,53 @@
+#!/usr/local/bin/pfaedit
+Open("fonts/Caliban.sfd");
+Print( "...Opened Caliban")
+Generate("results/Caliban.ps","bdf",-1);
+Print( "...Generated type0")
+Generate("results/Caliban.ttf","ms",2);
+Print( "...Generated ttf w/ ms bitmaps")
+Generate("results/Caliban.ttf","apple",-1);
+Print( "...Generated ttf w/ apple bitmaps")
+Generate("results/Caliban.otf","ms",-1);
+Print( "...Generated otf w/ ms bitmaps")
+Generate("results/Caliban.dfont","sbit",-1);
+Print( "...Generated sbit")
+Generate("results/Caliban.dfont","dfont",-1);
+Print( "...Generated dfont w/ apple bitmaps")
+Open("results/Caliban.ps");
+Print( "...Read type0 (if PfaEdit didn't understand /CalibanBase that's ok)")
+Close();
+Open("results/Caliban.ttf");
+Print( "...Read ttf")
+Close();
+Open("results/Caliban.otf");
+Print( "...Read otf")
+Close();
+Open("results/Caliban.dfont");
+Print( "...Read dfont")
+Close();
+New();
+Save("results/foo.sfd");
+Print( "...Saved new font")
+Close();
+Open("results/Caliban-10.bdf");
+Generate("results/Caliban.dfont","sbit",-1);
+Print( "...Read bdf & Generated sbit")
+Close();
+Open("fonts/Munhwa-Regular.otf");
+Print( "...Read Munhwa-Regular.otf")
+Generate("results/Munhwa.otf");
+Print( "...Generated otf (cid)")
+Generate("results/Munhwa.cid");
+Print( "...Generated ps cid")
+Close();
+Open("fonts/gulim.ttc(Gulim)");
+Print( "...Read gulim.ttc(Gulim)")
+Generate("results/gulim.ttf","bdf");
+Print( "...Generated ttf")
+Close();
+Open("fonts/HYGoThic-Medium-Acro");
+Print( "...Read HYGoThic-Medium-Acro (ps cid)")
+Generate("results/HYGoThic.otf");
+Print( "...Generated otf (cid)")
+Close();
+Quit()

@@ -1,0 +1,20 @@
+#!/bin/sh
+if test "$1" = "" ; then
+ echo "Please specify the location of pfaedit"
+ exit 1
+fi
+pfaedit=`echo $1 | sed -e "s%^[^/]%$PWD/&%"`
+
+testdir=`echo $0 | sed -e 's^runtests^^'`
+if test "$testdir" \!= "" ; then
+ cd $testdir
+fi
+mkdir -p results
+
+for test in test*.pe ; do
+ echo ">>>>" $test
+ if ! ( $pfaedit -script $test ); then 
+  echo "!!!!" Test failed $test
+ fi
+ sh -c "rm -f results/*"
+done

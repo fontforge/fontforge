@@ -1,0 +1,12 @@
+#!/usr/local/bin/pfaedit
+Open("fonts/GillSans.dfont");
+SelectAll();
+Simplify();
+Print("....Simplified");
+ExpandStroke(20);
+Print("....Expanded");
+Scale(200,150);
+Print("....Scaled");
+RemoveOverlap();
+Print("....Simple Remove Overlap test");
+Quit()
