@@ -2207,7 +2207,7 @@ return( NULL );
 		if ( !hassli )
 		    sli = SFAddScriptLangIndex(sf,
 			    script!=0?script:SCScriptFromUnicode(sc),DEFAULT_LANG);
-		if ( sli>=sf->sli_cnt ) {
+		if ( sli>=sf->sli_cnt && sli!=SLI_NESTED) {
 		    static int complained=false;
 		    if ( !complained )
 			GDrawError("'%s' in %s has a script index out of bounds: %d",
@@ -2289,7 +2289,8 @@ return( NULL );
 		liga->macfeature = true;
 	    } else
 		ungetc(ch,sfd);
-	    if ( liga->script_lang_index>=sf->sli_cnt && liga->type!=pst_lcaret ) {
+	    if ( liga->script_lang_index>=sf->sli_cnt && liga->script_lang_index!=SLI_NESTED &&
+		    liga->type!=pst_lcaret ) {
 		static int complained=false;
 		if ( !complained )
 		    GDrawError("'%c%c%c%c' in %s has a script index out of bounds: %d",
@@ -2706,7 +2707,7 @@ static void SFDParseChainContext(FILE *sfd,SplineFont *sf,FPST *fpst, char *tok)
 		    strmatch(tok,"class")==0 ? pst_class :
 		    strmatch(tok,"coverage")==0 ? pst_coverage : pst_reversecoverage;
     fscanf(sfd, "%hu %hu", &fpst->flags, &fpst->script_lang_index );
-    if ( fpst->script_lang_index>=sf->sli_cnt ) {
+    if ( fpst->script_lang_index>=sf->sli_cnt && fpst->script_lang_index!=SLI_NESTED ) {
 	static int complained=false;
 	if ( sf->sli_cnt==0 )
 	    GDrawError("'%c%c%c%c' has a script index out of bounds: %d\nYou MUST fix this manually",
