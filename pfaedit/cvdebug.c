@@ -211,8 +211,10 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     unichar_t ubuffer[100];
     int i, y;
     FT_Vector *pts;
-    int n;
+    int n, n_watch;
+    char watched;
     TT_GlyphZoneRec *r;
+    uint8 *watches;
 
     GDrawFillRect(pixmap,&event->u.expose.rect,GDrawGetDefaultBackground(screen_display));
     if ( exc==NULL )
@@ -225,16 +227,19 @@ return;
     n = r->n_points;
     pts = show_current ? r->cur : r->org;
 
+    watches = DebuggerGetWatches(dv->dc,&n_watch);
+
     GDrawSetFont(pixmap,dv->ii.gfont);
     y = 3+dv->ii.as;
     for ( i=0; i<n; ++i ) {
+	watched = i<n_watch && !show_twilight && watches!=NULL && watches[i] ? 'W' : ' ';
 	if ( show_grid )
-	    sprintf(buffer, "%3d: %c%c %.2f,%.2f", i,
-		    r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ',
+	    sprintf(buffer, "%3d: %c%c%c %.2f,%.2f", i,
+		    r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ', watched,
 		    pts[i].x/64.0, pts[i].y/64.0 );
 	else
-	    sprintf(buffer, "%3d: %c%c %g,%g", i,
-		    r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ',
+	    sprintf(buffer, "%3d: %c%c%c %g,%g", i,
+		    r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ', watched,
 		    pts[i].x*dv->scale, pts[i].y*dv->scale );
 	uc_strcpy(ubuffer,buffer);
 	GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
@@ -346,6 +351,7 @@ return( head );
 }
 
 static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
+    int range = exc==NULL ? cr_none : exc->curRange;
 
     /* Code to look for proper function/idef rather than the full fpgm table */
     if ( exc==NULL ) {
@@ -358,6 +364,12 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
 	IIReinit(&dv->ii,exc->IP);
     } else
 	IIScrollTo(&dv->ii,exc->IP,true);
+
+    if ( dv->cv!=NULL && dv->cv->coderange!=range ) {
+	dv->cv->coderange = range;
+	CVInfoDraw(dv->cv,dv->cv->gw);
+    }
+    
 
     if ( exc!=NULL ) {
 	SplinePointListsFree(dv->cv->gridfit);
@@ -410,11 +422,13 @@ return( true );
 
 	for ( ss = dv->cv->sc->splines; ss!=NULL; ss=ss->next ) {
 	    for ( sp=ss->first; ; ) {
+		sp->watched = false;
 		if ( sp->ttfindex == 0xffff )
 		    /* Ignore it */;
 		else if ( sp->selected && sp->ttfindex<n) {
 		    watches[pnum=sp->ttfindex] = true;
 		    any = true;
+		    sp->watched = true;
 		}
 		if ( !sp->nonextcp ) {
 		    ++pnum;
@@ -433,6 +447,8 @@ return( true );
 	    watches = NULL;
 	}
 	DebuggerSetWatches(dv->dc,n,watches);
+	GDrawRequestExpose(dv->cv->v,NULL,false);
+	
     }
 return( true );
 }
@@ -857,6 +873,9 @@ return( true );
 void CVDebugFree(DebugView *dv) {
     if ( dv!=NULL ) {
 	CharView *cv = dv->cv;
+	SplineSet *ss;
+	SplinePoint *sp;
+
 	cv->show_ft_results = false;
 	DebuggerTerminate(dv->dc);
 	cv->dv = NULL;
@@ -876,6 +895,23 @@ void CVDebugFree(DebugView *dv) {
 	    GDrawRequestExpose(cv->v,NULL,false);
 	}
 	free(dv);
+
+	for ( ss = dv->cv->sc->splines; ss!=NULL; ss=ss->next ) {
+	    for ( sp=ss->first; ; ) {
+		sp->watched = false;
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==ss->first )
+	    break;
+	    }
+	}
+	GDrawRequestExpose(cv->v,NULL,false);
+
+	if ( cv->coderange!=cr_none ) {
+	    cv->coderange = cr_none;
+	    CVInfoDraw(cv,cv->gw);
+	}
     }
 }
 
@@ -1035,4 +1071,3 @@ return;
     }
 }
 #endif
-

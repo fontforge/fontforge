@@ -171,6 +171,7 @@ const int input_em_cnt = sizeof(input_em)/sizeof(input_em[0])-1;
 #define MAG_BASE	333		/* Place to draw magnification icon */
 #define MAG_DATA	344		/* Any text for it */
 #define LAYER_DATA	404		/* Text to show the current layer */
+#define CODERANGE_DATA	474		/* Text to show the current code range (if the debugger be active) */
 
 void CVDrawRubberRect(GWindow pixmap, CharView *cv) {
     GRect r;
@@ -605,8 +606,9 @@ return;
 	uc_strcpy(ubuf,buf);
 	GDrawDrawText(pixmap,x,y-6,ubuf,-1,NULL,col);
     }
-    if (( sp->roundx || sp->roundy ) &&
-	    (((cv->showrounds&1) && cv->scale>=.3) || (cv->showrounds&2)) ) {
+    if ((( sp->roundx || sp->roundy ) &&
+	     (((cv->showrounds&1) && cv->scale>=.3) || (cv->showrounds&2))) ||
+	    (sp->watched && cv->dv!=NULL) ) {
 	r.x = x-5; r.y = y-5;
 	r.width = r.height = 11;
 	GDrawDrawElipse(pixmap,&r,col);
@@ -1996,6 +1998,8 @@ static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
     GDrawFillRect(pixmap,&r,bg);
     r.x = LAYER_DATA; r.width = 60;
     GDrawFillRect(pixmap,&r,bg);
+    r.x = CODERANGE_DATA; r.width = 60;
+    GDrawFillRect(pixmap,&r,bg);
 
     if ( !cv->info_within )
 return;
@@ -2016,6 +2020,11 @@ return;
     GDrawDrawText(pixmap,LAYER_DATA,ybase,
 	    GStringGetResource(cv->drawmode==dm_fore ? _STR_Fore :
 				cv->drawmode==dm_back ? _STR_Back : _STR_Grid, NULL ),
+	    -1,NULL,0);
+    if ( cv->coderange!=cr_none )
+	GDrawDrawText(pixmap,CODERANGE_DATA,ybase,
+		GStringGetResource(cv->coderange==cr_fpgm ? _STR_Fpgm :
+				    cv->coderange==cr_prep ? _STR_Prep : _STR_Glyph, NULL ),
 	    -1,NULL,0);
     sp = cv->p.sp!=NULL ? cv->p.sp : cv->lastselpt;
     if ( sp==NULL ) if ( cv->active_tool==cvt_rect || cv->active_tool==cvt_elipse ||

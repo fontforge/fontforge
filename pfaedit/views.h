@@ -164,6 +164,8 @@ typedef struct debugview {
     int pts_head;
 } DebugView;
 
+enum dv_coderange { cr_none=0, cr_fpgm, cr_prep, cr_glyph };	/* cleverly chosen to match ttobjs.h */
+
 typedef struct charview {
     SplineChar *sc;
     unsigned int showback:1;
@@ -196,6 +198,7 @@ typedef struct charview {
     unsigned int vwidthsel:1;
     unsigned int inactive:1;			/* When in a search view */
     unsigned int show_ft_results: 1;	/* 32 */
+    unsigned int coderange: 2;			/* For the debugger */
     SplinePointList **heads[dm_max];
     Undoes **uheads[dm_max];
     Undoes **rheads[dm_max];
