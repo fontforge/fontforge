@@ -36,6 +36,9 @@
 #include <unistd.h>
 #include <math.h>
 #include <setjmp.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 static int verbose = -1;
 int no_windowing_ui = false;
@@ -1712,6 +1715,138 @@ return;
     c->curfv->sf->changed = true;
     c->curfv->sf->changed_since_autosave = true;
     c->curfv->sf->changed_since_xuidchanged = true;
+}
+
+static void bLoadTableFromFile(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+    uint32 tag;
+    char *tstr, *end;
+    struct ttf_table *tab;
+    FILE *file;
+    int len;
+    struct stat statb;
+
+    if ( c->a.argc!=3 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str && c->a.vals[2].type!=v_str )
+	error(c,"Bad argument type");
+
+    tstr = c->a.vals[1].u.sval;
+    end = tstr+strlen(tstr);
+    if ( *tstr=='\0' || end-tstr>4 )
+	error(c, "Bad tag");
+    tag = *tstr<<24;
+    tag |= (tstr+1<end ? tstr[1] : ' ')<<16;
+    tag |= (tstr+2<end ? tstr[2] : ' ')<<8 ;
+    tag |= (tstr+3<end ? tstr[3] : ' ')    ;
+
+    file = fopen(c->a.vals[2].u.sval,"r");
+    if ( file==NULL )
+	errors(c,"Could not open file: ", c->a.vals[2].u.sval );
+    if ( fstat(fileno(file),&statb)==-1 )
+	errors(c,"fstat() failed on: ", c->a.vals[2].u.sval );
+    len = statb.st_size;
+
+    for ( tab=sf->ttf_tab_saved; tab!=NULL && tab->tag!=tag; tab=tab->next );
+    if ( tab==NULL ) {
+	tab = chunkalloc(sizeof(struct ttf_table));
+	tab->tag = tag;
+	tab->next = sf->ttf_tab_saved;
+	sf->ttf_tab_saved = tab;
+    } else
+	free(tab->data);
+    tab->len = len;
+    tab->data = galloc(len);
+    fread(tab->data,1,len,file);
+    fclose(file);
+}
+
+static void bSaveTableToFile(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+    uint32 tag;
+    char *tstr, *end;
+    struct ttf_table *tab;
+    FILE *file;
+
+    if ( c->a.argc!=3 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str && c->a.vals[2].type!=v_str )
+	error(c,"Bad argument type");
+
+    tstr = c->a.vals[1].u.sval;
+    end = tstr+strlen(tstr);
+    if ( *tstr=='\0' || end-tstr>4 )
+	error(c, "Bad tag");
+    tag = *tstr<<24;
+    tag |= (tstr+1<end ? tstr[1] : ' ')<<16;
+    tag |= (tstr+2<end ? tstr[2] : ' ')<<8 ;
+    tag |= (tstr+3<end ? tstr[3] : ' ')    ;
+
+    file = fopen(c->a.vals[2].u.sval,"w");
+    if ( file==NULL )
+	errors(c,"Could not open file: ", c->a.vals[2].u.sval );
+
+    for ( tab=sf->ttf_tab_saved; tab!=NULL && tab->tag!=tag; tab=tab->next );
+    if ( tab==NULL )
+	errors(c,"No preserved table matches tag: ", tstr );
+    fwrite(tab->data,1,tab->len,file);
+    fclose(file);
+}
+
+static void bRemovePreservedTable(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+    uint32 tag;
+    char *tstr, *end;
+    struct ttf_table *tab, *prev;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str )
+	error(c,"Bad argument type");
+
+    tstr = c->a.vals[1].u.sval;
+    end = tstr+strlen(tstr);
+    if ( *tstr=='\0' || end-tstr>4 )
+	error(c, "Bad tag");
+    tag = *tstr<<24;
+    tag |= (tstr+1<end ? tstr[1] : ' ')<<16;
+    tag |= (tstr+2<end ? tstr[2] : ' ')<<8 ;
+    tag |= (tstr+3<end ? tstr[3] : ' ')    ;
+
+    for ( tab=sf->ttf_tab_saved, prev=NULL; tab!=NULL && tab->tag!=tag; prev=tab, tab=tab->next );
+    if ( tab==NULL )
+	errors(c,"No preserved table matches tag: ", tstr );
+    if ( prev==NULL )
+	sf->ttf_tab_saved = tab->next;
+    else
+	prev->next = tab->next;
+    free(tab->data);
+    chunkfree(tab,sizeof(*tab));
+}
+
+static void bHasPreservedTable(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+    uint32 tag;
+    char *tstr, *end;
+    struct ttf_table *tab;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str )
+	error(c,"Bad argument type");
+
+    tstr = c->a.vals[1].u.sval;
+    end = tstr+strlen(tstr);
+    if ( *tstr=='\0' || end-tstr>4 )
+	error(c, "Bad tag");
+    tag = *tstr<<24;
+    tag |= (tstr+1<end ? tstr[1] : ' ')<<16;
+    tag |= (tstr+2<end ? tstr[2] : ' ')<<8 ;
+    tag |= (tstr+3<end ? tstr[3] : ' ')    ;
+
+    for ( tab=sf->ttf_tab_saved; tab!=NULL && tab->tag!=tag; tab=tab->next );
+    c->return_val.type = v_int;
+    c->return_val.u.ival = (tab!=NULL);
 }
 
 static void bLoadEncodingFile(Context *c) {
@@ -4152,6 +4287,10 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
 /* Element Menu */
     { "Reencode", bReencode },
     { "SetCharCnt", bSetCharCnt },
+    { "LoadTableFromFile", bLoadTableFromFile, 1 },
+    { "SaveTableToFile", bSaveTableToFile, 1 },
+    { "RemovePreservedTable", bRemovePreservedTable, 1 },
+    { "HasPreservedTable", bHasPreservedTable, 1 },
     { "LoadEncodingFile", bLoadEncodingFile, 1 },
     { "SetFontOrder", bSetFontOrder },
     { "SetFontHasVerticalMetrics", bSetFontHasVerticalMetrics },

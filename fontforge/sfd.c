@@ -1284,6 +1284,8 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
     }
     for ( tab = sf->ttf_tables; tab!=NULL ; tab = tab->next )
 	SFDDumpTtfTable(sfd,tab);
+    for ( tab = sf->ttf_tab_saved; tab!=NULL ; tab = tab->next )
+	SFDDumpTtfTable(sfd,tab);
     for ( ln = sf->names; ln!=NULL; ln=ln->next )
 	SFDDumpLangName(sfd,ln);
     if ( sf->subfontcnt!=0 ) {
@@ -1838,10 +1840,11 @@ static void SFDGetTtfInstrs(FILE *sfd, SplineChar *sc) {
 	sc->ttf_instrs[i] = Dec85(&dec);
 }
 
-static struct ttf_table *SFDGetTtfTable(FILE *sfd, SplineFont *sf,struct ttf_table *lasttab) {
+static struct ttf_table *SFDGetTtfTable(FILE *sfd, SplineFont *sf,struct ttf_table *lasttab[2]) {
     /* We've read the TtfTable token, it is followed by a tag and a byte count */
     /* and then the instructions in enc85 format */
     int i,len, ch;
+    int which;
     struct enc85 dec;
     struct ttf_table *tab = chunkalloc(sizeof(struct ttf_table));
 
@@ -1853,16 +1856,25 @@ static struct ttf_table *SFDGetTtfTable(FILE *sfd, SplineFont *sf,struct ttf_tab
     tab->tag |= getc(sfd)<<8;
     tab->tag |= getc(sfd);
 
+    if ( tab->tag==CHR('f','p','g','m') || tab->tag==CHR('p','r','e','p') ||
+	    tab->tag==CHR('c','v','t',' ') || tab->tag==CHR('m','a','x','p'))
+	which = 0;
+    else
+	which = 1;
+
     getint(sfd,&len);
     tab->data = galloc(len);
     tab->len = len;
     for ( i=0; i<len; ++i )
 	tab->data[i] = Dec85(&dec);
 
-    if ( lasttab==NULL )
+    if ( lasttab[which]!=NULL )
+	lasttab[which]->next = tab;
+    else if ( which==0 )
 	sf->ttf_tables = tab;
     else
-	lasttab->next = tab;
+	sf->ttf_tab_saved = tab;
+    lasttab[i] = tab;
 return( tab );
 }
 
@@ -3347,13 +3359,15 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
     SplineChar *sc;
     int realcnt, i, eof, mappos=-1, ch, ch2, glyph;
     struct table_ordering *lastord = NULL;
-    struct ttf_table *lastttf = NULL;
+    struct ttf_table *lastttf[2];
     KernClass *lastkc=NULL, *kc, *lastvkc=NULL;
     FPST *lastfp=NULL;
     ASM *lastsm=NULL;
     struct axismap *lastaxismap = NULL;
     struct named_instance *lastnamedinstance = NULL;
     int pushedbacktok = false;
+
+    lastttf[0] = lastttf[1] = NULL;
 
     sf = SplineFontEmpty();
     sf->cidmaster = cidmaster;
@@ -3781,7 +3795,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 		ch = getc(sfd);
 	    }
 	} else if ( strmatch(tok,"TtfTable:")==0 ) {
-	    lastttf = SFDGetTtfTable(sfd,sf,lastttf);
+	    SFDGetTtfTable(sfd,sf,lastttf);
 	} else if ( strmatch(tok,"TableOrder:")==0 ) {
 	    int temp;
 	    struct table_ordering *ord;

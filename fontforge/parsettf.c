@@ -377,9 +377,39 @@ static int PickCFFFont(char **fontnames) {
 return( choice );
 }
 
+static void ParseSaveTablesPref(struct ttfinfo *info) {
+    extern char *SaveTablesPref;
+    char *pt, *spt;
+    int cnt;
+
+    info->savecnt = 0;
+    info->savetab = NULL;
+    if ( SaveTablesPref==NULL || *SaveTablesPref=='\0' )
+return;
+    for ( pt=SaveTablesPref, cnt=0; *pt; ++pt )
+	if ( *pt==',' )
+	    ++cnt;
+    info->savecnt = cnt+1;
+    info->savetab = gcalloc(cnt+1,sizeof(struct savetab));
+    for ( pt=spt=SaveTablesPref, cnt=0; ; ++pt ) {
+	if ( *pt==',' || *pt=='\0' ) {
+	    uint32 tag;
+	    tag  = ( ( spt  <pt )? spt[0] : ' ' )<<24;
+	    tag |= ( ( spt+1<pt )? spt[1] : ' ' )<<16;
+	    tag |= ( ( spt+2<pt )? spt[2] : ' ' )<<8 ;
+	    tag |= ( ( spt+3<pt )? spt[3] : ' ' )    ;
+	    info->savetab[cnt++].tag = tag;
+	    if ( *pt )
+		spt = pt+1;
+	    else
+    break;
+	}
+    }
+}
+
 static int readttfheader(FILE *ttf, struct ttfinfo *info,char *filename,
 	char **choosenname) {
-    int i;
+    int i, j;
     int tag, checksum, offset, length, version;
 
     version=getlong(ttf);
@@ -410,6 +440,8 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
     /* searchRange = */ getushort(ttf);
     /* entrySelector = */ getushort(ttf);
     /* rangeshift = */ getushort(ttf);
+
+    ParseSaveTablesPref(info);
 
     for ( i=0; i<info->numtables; ++i ) {
 	tag = getlong(ttf);
@@ -549,6 +581,12 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	    info->cvar_start = offset;
 	    info->cvar_len = length;
 	  break;
+
+	  default:
+	    for ( j=0; j<info->savecnt; ++j ) if ( info->savetab[j].tag == tag ) {
+		info->savetab[j].offset = offset;
+		info->savetab[j].len = length;
+	    }
 	}
     }
 return( true );
@@ -4140,6 +4178,7 @@ return;
 
 static int readttf(FILE *ttf, struct ttfinfo *info, char *filename) {
     char *oldloc;
+    int i;
 
 #if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressChangeStages(3);
@@ -4245,6 +4284,8 @@ return( 0 );
 	TtfCopyTableBlindly(info,ttf,info->fpgm_start,info->fpgm_len,CHR('f','p','g','m'));
 	TtfCopyTableBlindly(info,ttf,info->prep_start,info->prep_len,CHR('p','r','e','p'));
     }
+    for ( i=0; i<info->savecnt; ++i ) if ( info->savetab[i].offset!=0 )
+	TtfCopyTableBlindly(info,ttf,info->savetab[i].offset,info->savetab[i].len,info->savetab[i].tag);
     /* Do this before reading kerning info */
     if ( info->to_order2 && info->gvar_start!=0 && info->fvar_start!=0 )
 	readttfvariations(info,ttf);
@@ -4646,6 +4687,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     BDFFont *bdf;
     struct table_ordering *ord;
     SplineChar *sc;
+    struct ttf_table *last[2], *tab, *next;
 
     
     sf = SplineFontEmpty();
@@ -4717,7 +4759,27 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->gentags = info->gentags;
     sf->script_lang = info->script_lang;
     sf->sli_cnt = info->sli_cnt;
-    sf->ttf_tables = info->tabs;
+
+    last[0] = sf->ttf_tables;
+    last[1] = NULL;
+    for ( tab=info->tabs; tab!=NULL; tab = next ) {
+	next = tab->next;
+	if ( tab->tag==CHR('f','p','g','m') || tab->tag==CHR('p','r','e','p') ||
+		tab->tag==CHR('c','v','t',' ') || tab->tag==CHR('m','a','x','p')) {
+	    if ( last[0]==NULL )
+		sf->ttf_tables = tab;
+	    else
+		last[0]->next = tab;
+	    last[0] = tab;
+	} else {
+	    if ( last[0]==NULL )
+		sf->ttf_tab_saved = tab;
+	    else
+		last[1]->next = tab;
+	    last[1] = tab;
+	}
+    }
+
     if ( info->encoding_name==NULL )
 	info->encoding_name = &custom;		/* Can happen in a type42 */
     if ( info->encoding_name->only_1byte )
@@ -4803,6 +4865,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 	} while ( k<sf->subfontcnt );
     }
     SFRelativeWinAsDs(sf);
+    free(info->savetab);
 return( sf );
 }
 
