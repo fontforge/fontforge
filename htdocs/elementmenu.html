@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 6-Jun-2002 -->
+  <!-- AP: Last modified: 15-Jul-2002 -->
   <TITLE>The Element Menu</TITLE>
 </HEAD>
 <BODY>
@@ -436,7 +436,11 @@ This menu is not present in the Metrics View.
     Not in the bitmap view. Sets the direction of outermost paths to be clockwise.
     The next path crossed will be made counter-clockwise, the next clockwise,
     etc.<BR>
-    This command may produce unexpected results if two splines cross.
+    This command may produce unexpected results if two splines cross.<BR>
+    If a character contains a flipped reference, this command will be unable
+    to correct the contours inside of the reference directly, instead it will
+    offer to unlink the reference after which it can treat its (former) contours
+    like any others.
   <DT>
     Build <A NAME="Accented">Accented/Composite</A> Char
   <DD>

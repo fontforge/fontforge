@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 14-Jul-2002 -->
+  <!-- AP: Last modified: 15-Jul-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -83,8 +83,8 @@ let me know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-020714.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 14-July-2002
+    <A HREF="pfaedit-020715.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 15-July-2002
   <LI>
     <A HREF="pfaedit-020709-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
     Version: 9-July-2002 (Redhat 7.1)
@@ -92,8 +92,8 @@ let me know when you do</A>.
     <A HREF="pfaedit-020622-1.ppc.rpm">Download pfaedit linux-ppc SUSE 7.1
     </A>binary rpm Version: 22-June-2002
   <LI>
-    <A HREF="pfaedit-solaris-020709.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 9-July-2002
+    <A HREF="pfaedit-solaris-020715.tgz">Download pfaedit Solaris 8.0
+    </A>executable Version: 15-July-2002
   <LI>
     <A HREF="http://packages.debian.org/unstable/x11/pfaedit.html">A debian package
     is available at the debian site.</A>
@@ -101,7 +101,7 @@ let me know when you do</A>.
     <A HREF="Problems-MacOSX.html#binary">A Mac OS/X distribution</A> (with Caveats).
     Version 13-July-2002
   <LI>
-    <A HREF="pfaedit_cygwin-020622.tgz">A cygwin version</A>. Version: 22-June-2002
+    <A HREF="pfaedit_cygwin-020715.tgz">A cygwin version</A>. Version: 15-July-2002
   <LI>
     <A HREF="ftp://nchrem.tnw.tudelft.nl/pfaedit/">An OpenVMS executable </A>(by
     Jacob Jansen): Version Approximately 23-June-2002<BR>
@@ -121,9 +121,9 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-020709-1.src.rpm">source RPM</A>: Version:
 9-July-2002<BR>
-Or you can download the <A HREF="pfaedit_full-020714.tgz">entire source tree
+Or you can download the <A HREF="pfaedit_full-020715.tgz">entire source tree
 </A>in one .tgz file: Version
-14-July-2002<!--
+15-July-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -283,6 +283,26 @@ current)
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    15-July-2002
+    <UL>
+      <LI>
+	Correct Direction should now only set the changed bit when it actually changes
+	a character.
+      <LI>
+	Correct Direction will now warn about flipped references, and offer you the
+	chance to unlink them (after which it will be able to correct their direction)
+      <LI>
+	Added ability to scripting to check if a character has changed, and to get
+	a font's filename.
+      <LI>
+	Cleaned up build accented chars a bit.
+      <LI>
+	Another attempt to keep X from crashing on disappearing progress dlgs.
+      <LI>
+	Maximizing the fontview could make it bigger than the screen so that the
+	scroll bar was unusable.
+    </UL>
   <LI>
     14-July-2002
     <UL>

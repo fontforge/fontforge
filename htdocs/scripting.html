@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 9-Jul-2002 -->
+  <!-- AP: Last modified: 15-Jul-2002 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -284,7 +284,7 @@ to (some) already existing ones)
     the last one on the list)
   <LI>
     <CODE>$fontchanged</CODE> returns 1 if the current font has changed, 0 if
-    it has not changed since it was read in.
+    it has not changed since it was read in (or saved).
   <LI>
     <CODE>$fontname</CODE> the name contained in the postscript FontName field
   <LI>
@@ -296,6 +296,8 @@ to (some) already existing ones)
     <CODE>$weight </CODE>the name contained in the postscript Weight field
   <LI>
     <CODE>$copyright </CODE>the name contained in the postscript Notice field
+  <LI>
+    <CODE>$filename </CODE>the name of the file containing the font.
   <LI>
     <CODE>$cidfontname </CODE>returns the fontname of the top-level cid-keyed
     font (or the empty string if there is none)<BR>
@@ -775,8 +777,12 @@ a[4][0] = "Nested array";
     AutoTrace()
   <DD>
   <DT>
-    CorrectDirection()
+    CorrectDirection([unlinkrefs])
   <DD>
+    If the an argument is present it must be integral and is treated as a flag
+    controlling whether flipped references should be unlinked before the
+    CorrectDirection code runs. If the argument is not present, or if it has
+    a non-zero value then flipped references will be unlinked.
   <DT>
     BuildComposit()
   <DD>
@@ -890,8 +896,8 @@ a[4][0] = "Nested array";
 	"Comment" returns the character's comment (it will be converted from unicode
 	into the default encoding).
       <LI>
-	"Changed" returns whether the character has changed since last loaded or
-	saved.
+	"Changed" returns whether the character has been changed since the last save
+	or load.
     </UL>
     <P>
     Examples:

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 15-Dec-2001 -->
+  <!-- AP: Last modified: 15-Jul-2002 -->
   <TITLE>The Hints Menu</TITLE>
 </HEAD>
 <BODY>
@@ -69,7 +69,13 @@ Hints</A><BR>
   <DD>
     The Auto Hint command causes PfaEdit to throw away any existing hints for
     the character and guess an new ones. In the outline view this operates on
-    the current character, in the font view it operates on all selected characters.
+    the current character, in the font view it operates on all selected
+    characters.<BR>
+    PfaEdit will do a better job hinting a font if you have previously set the
+    BlueValues, StdVW and StdHW fields in
+    <A HREF="fontinfo.html#Private">Element-&gt;Font Info-&gt;PS Private</A>.
+    These in turn depend on the hints so it is best to autohint the entire font,
+    then set the above values, and then autohint the font again.
   <DT>
     <A NAME="ClearHints">Clear Hints</A>
   <DD>
