@@ -5783,8 +5783,8 @@ static void _CVMenuMakeLine(CharView *cv) {
 		    sp->nextcp = sp->me;
 		    sp->prevcp = sp->me;
 		    sp->nonextcp = sp->noprevcp = true;
-		    SplineRefigure(sp->prev);
-		    SplineRefigure(sp->next);
+		    if ( sp->prev!=NULL ) SplineRefigure(sp->prev);
+		    if ( sp->next!=NULL ) SplineRefigure(sp->next);
 		}
 		changed = true;
 	    }
