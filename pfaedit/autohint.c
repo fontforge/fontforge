@@ -1110,7 +1110,7 @@ static StemInfo *StemAddBrief(StemInfo *stems,EI *apt,EI *e,
 
     new = StemsFind(stems,apt,e,major);
     if ( new==NULL ) {
-	/* Do Nothing */;
+return;
     } else if ( new->where==NULL ) {
 	stems = StemInsert(stems,new);
     } else if ( new->reordered )
