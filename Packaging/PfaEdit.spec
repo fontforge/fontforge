@@ -1,13 +1,11 @@
 Name:        pfaedit
-Version:     010512
+Version:     011102
 Release:     1
 Summary:     A PostScript font editor
 Copyright:   BSD
 Group:       Applications/Publishing
 Icon:        fficon.gif
-Source0:     http://pfaedit.sourceforge.net/pfaedit_src-%{version}.tgz
-Source1:     http://pfaedit.sourceforge.net/libgunicode-070501.tgz
-Source2:     http://pfaedit.sourceforge.net/libgdraw-100501.tgz
+Source0:     http://pfaedit.sourceforge.net/pfaedit_full-%{version}.tgz
 Url:         http://pfaedit.sourceforge.net/
 Vendor:      George Williams <gww@silcom.com>, Scott Pakin <pakin@uiuc.edu>
 Prefix:      /usr
@@ -18,12 +16,10 @@ BuildPreReq: libjpeg-devel, libtiff-devel, libpng-devel, libungif-devel
 PfaEdit allows you to edit outline and bitmap fonts.  You can create
 new ones or modify old ones.  It is also a font format converter and
 can convert among PostScript (ASCII & binary Type 1, some Type 3s,
-some Type 0s), TrueType, and OpenType (Type2).
+some Type 0s), TrueType, OpenType (Type2) and CID-keyed fonts.
 
 %prep
 %setup -T -b 0 -n pfaedit
-%setup -T -b 1 -n pfaedit -D
-%setup -T -b 2 -n pfaedit -D
 
 %build
 CFLAGS="$RPM_OPT_FLAGS"
@@ -33,6 +29,7 @@ make
 %install
 mkdir -p ${RPM_BUILD_ROOT}%{_bindir}
 mkdir -p ${RPM_BUILD_ROOT}%{_mandir}/man1
+mkdir -p ${RPM_BUILD_ROOT}%{_bindir}/../share/pfaedit
 rm -rf ${RPM_BUILD_ROOT}%{_libdir}
 mkdir -p ${RPM_BUILD_ROOT}%{_libdir}
 touch ${RPM_BUILD_ROOT}%{_libdir}/libgdraw.so.1
@@ -41,6 +38,9 @@ touch ${RPM_BUILD_ROOT}%{_libdir}/libgunicode.so.1
 
 #%post
 #ldconfig
+echo If you are updating a pfaedit installation from before 5 Sept 2001
+echo you may need to delete "/usr/local/bin/pfaedit*.ui"
+sh -c "rm -f /usr/local/bin/pfaedit*.ui"
 
 #%postun
 #ldconfig
@@ -51,10 +51,14 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root)
 %{_bindir}/pfaedit
+%{_bindir}/../share/pfaedit/
 %{_mandir}/man1/pfaedit.1*
 %doc LICENSE README
 
 %changelog
+* Fri Nov  2 2001 George Williams <gww@silcom.com>
+- went from three source packages down to just one which includes the others
+
 * Thu May 10 2001 George Williams <gww@silcom.com>
 - My first attempt at rpm, updated to 10 May sources
 
