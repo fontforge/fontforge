@@ -1285,7 +1285,7 @@ static void _SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, SplineChar *rs
 	}
     }
     eta = false;
-    if ( ((basech>=0x1f20 && basech<=0x1f27) || basech==0x1f74 || basech==0x1f75 || basech==0x3b7 || basech==0x3ae) &&
+    if ( ((basech>=0x1f20 && basech<=0x1f27) || basech==0x1f74 || basech==0x1f75 || basech==0x1fc6 || basech==0x3b7 || basech==0x3ae) &&
 	    ch==0x345 ) {
 	bb.miny = 0;		/* ypogegrammeni rides below baseline, not below bottom stem */
 	eta = true;
