@@ -493,6 +493,8 @@ typedef struct fontview {
     struct gfi_data *fontinfo;
     SplineChar *sc_near_top;
     int sel_index;
+    uint32 cur_feat_tag;
+    int cur_sli;
 } FontView;
 
 typedef struct findsel {
@@ -1187,6 +1189,8 @@ extern void CVLayerChange(CharView *cv);
 
 extern void CVPointOfView(CharView *cv,struct pov_data *);
 extern int PointOfViewDlg(struct pov_data *pov,SplineFont *sf,int flags);
+
+extern SplineChar *FVMakeChar(FontView *fv,int i);
 
 #ifdef FONTFORGE_CONFIG_GDRAW
 extern GMenuItem helplist[];

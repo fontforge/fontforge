@@ -1728,8 +1728,11 @@ return( bdf );
 }
 
 BDFChar *BDFPieceMeal(BDFFont *bdf, int index) {
-    SplineChar *sc = bdf->sf->chars[index];
+    SplineChar *sc;
 
+    if ( index==-1 )
+return( NULL );
+    sc = bdf->sf->chars[index];
     if ( sc==NULL )
 return(NULL);
     if ( bdf->freetype_context )
