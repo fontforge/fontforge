@@ -3597,7 +3597,7 @@ static void TNNotePresence(struct gfi_data *d, int strid) {
     Color fore = GDrawGetDefaultForeground(NULL);
 
     for ( i=0; i<len; ++i ) {
-	lang = (int) ti[i]->userdata;
+	lang = (intpt) ti[i]->userdata;
 	for ( cur=d->names; cur!=NULL && cur->lang!=lang; cur=cur->next );
 	if ( strid==-1 )
 	    ti[i]->fg = cur==NULL ? fore : COLOR_CREATE(0,0x80,0);
@@ -3846,27 +3846,30 @@ static int GFI_LanguageChange(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static int LangSearch(GTextInfo **langs,const char *lang,int langlen) {
+static int LangSearch(GTextInfo **langs,const char *lang) {
     int i,reslen, found=-1, samelang=-1;
     const unichar_t *res;
+
+    if ( strlen(lang)<5 ) {
+	IError( "Bad language" );
+return( -1 );
+    }
     
     for ( i=0; langs[i]->text!=NULL; ++i ) {
 	res = langs[i]->text;
 	if ( res==NULL )
     continue;
 	reslen = u_strlen(res);
-	if ( langlen==2 ) {
-	    if ( uc_strcmp(res+reslen-2,lang)==0 || uc_strncmp(res+reslen-5,lang,2)==0 ) {
-		found = i;
-    break;
-	    }
-	} else {
-	    if ( uc_strncmp(res+reslen-5,lang,5)==0 ) {
+	if ( langs[i]->fg == COLOR_CREATE(0x00,0x80,0x00) ) {
+	    if ( reslen>=5 && uc_strncmp(res+reslen-5,lang,5)==0 ) {
 		found = i;
     break;
 	    /* Use the first locale of the language. It usually specifies the standard */
-	    } else if ( samelang==-1 && ( uc_strncmp(res+reslen-5,lang,2)==0 || uc_strncmp(res+reslen-2,lang,2)==0 ))
+	    } else if ( samelang==-1 &&
+		    (( reslen>=5 && uc_strncmp(res+reslen-5,lang,2)==0 ) ||
+		     ( reslen>=2 && uc_strncmp(res+reslen-2,lang,2)==0 ))) {
 		samelang = i;
+	    }
 	}
     }
     if ( found==-1 ) found = samelang;
@@ -3880,24 +3883,8 @@ static void DefaultLanguage(struct gfi_data *d) {
     GGadget *g = GWidgetGetControl(d->gw,CID_Language);
     unichar_t versionbuf[40];
     int32 len;
-    GTextInfo **langs = GGadgetGetList(g,&len);
-
-    for ( i=0; envs[i]!=NULL && lang==NULL; ++i )
-	lang = getenv(envs[i]);
-    if ( lang==NULL ) lang = "en_US";
-    langlen = strlen(lang);
-    found = LangSearch(langs,lang,langlen);
-    if ( langlen==2 ) {
-	char buffer[6];
-	int test;
-	/* Guess that the default locale has the same two letter code as language */
-	sprintf( buffer, "%s_%c%c", lang, toupper(lang[0]), toupper(lang[1]));
-	test = LangSearch(langs,buffer,5);
-	if ( test!=-1 )
-	    found = test;
-    }
-    if ( found==-1 ) found = 0;
-    GGadgetSelectOneListItem(g,found);
+    GTextInfo **langs;
+    char buffer[6];
 
     d->old_lang = -1;
     d->names_set = true;
@@ -3913,6 +3900,45 @@ static void DefaultLanguage(struct gfi_data *d) {
 	    _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Version)));
     d->def.names[ttf_version] = u_copy(versionbuf);
     DefaultTTFEnglishNames(&d->def, d->sf);
+    TNNotePresence(d,ttf_subfamily);		/* What languages are available? */
+
+    langs = GGadgetGetList(g,&len);
+    for ( i=0; envs[i]!=NULL; ++i ) {
+	lang = getenv(envs[i]);
+	if ( lang!=NULL ) {
+	    langlen = strlen(lang);
+	    if (( langlen>5 && lang[5]=='.' && lang[2]=='_' ) ||
+		    (langlen==5 && lang[2]=='_' ) ||
+		    (langlen==2))
+		/* I understand this language */
+    break;
+	}
+    }
+    if ( lang==NULL ) {
+	lang = "en_US";
+    } else if ( langlen==2 ) {
+	/* Guess that the default locale has the same two letter code as language */
+	sprintf( buffer, "%s_%c%c", lang, toupper(lang[0]), toupper(lang[1]));
+	lang = buffer;
+    }
+    found = LangSearch(langs,lang);
+    if ( found==-1 ) {
+	/* Search for English */
+	for ( found=len-1; found>=0; --found ) {
+	    if ( langs[found]->fg == COLOR_CREATE(0x00,0x80,0x00)) {
+		if ( (((intpt) (langs[found]->userdata)) & 0xff )== 0x09 )
+	break;
+	    }
+	}
+    }
+    if ( found==-1 ) {
+	for ( found=len-1; found>=0; --found )
+	    if ( langs[found]->fg == COLOR_CREATE(0x00,0x80,0x00))
+	break;
+    }
+    if ( found==-1 ) found = 0;
+    GGadgetSelectOneListItem(g,found);
+
     TNFinishFormer(d);
 }
 
