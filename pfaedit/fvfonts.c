@@ -547,7 +547,7 @@ static void InterpPoint(SplineSet *cur, SplinePoint *base, SplinePoint *other, d
     p->nextcpdef = base->nextcpdef && other->nextcpdef;
     p->selected = false;
     p->pointtype = (base->pointtype==other->pointtype)?base->pointtype:pt_corner;
-    p->flex = 0;
+    /*p->flex = 0;*/
     if ( cur->first==NULL )
 	cur->first = p;
     else

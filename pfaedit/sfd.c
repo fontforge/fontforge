@@ -357,9 +357,103 @@ static void SFDDumpPrivate(FILE *sfd,struct psdict *private) {
     fprintf( sfd, "EndPrivate\n" );
 }
 
+signed char inbase64[256] = {
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1, 63,
+        52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1, -1,
+        -1,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14,
+        15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, -1,
+        -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+        41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+};
+
+static void utf7_encode(FILE *sfd,long ch) {
+static char base64[64] = {
+ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+ 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
+ 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+ 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'};
+
+    putc(base64[(ch>>18)&0x3f],sfd);
+    putc(base64[(ch>>12)&0x3f],sfd);
+    putc(base64[(ch>>6)&0x3f],sfd);
+    putc(base64[ch&0x3f],sfd);
+}
+
+static void SFDDumpUTF7Str(FILE *sfd, const unichar_t *str) {
+    int ch, prev_cnt=0, prev=0, in;
+
+    putc('"',sfd);
+    if ( str!=NULL ) while ( (ch = *str++)!='\0' ) {
+	if ( ch<127 && ch!='\n' && ch!='\r' && ch!='\\' && ch!='~' &&
+		ch!='+' && ch!='=' && ch!='"' ) {
+	    if ( prev_cnt!=0 ) {
+		prev<<= (prev_cnt==1?16:8);
+		utf7_encode(sfd,prev);
+		prev_cnt=prev=0;
+	    }
+	    if ( in ) {
+		if ( inbase64[ch]!=-1 )
+		    putc('-',sfd);
+		in = 0;
+	    }
+	    putc(ch,sfd);
+	} else if ( ch=='+' && !in ) {
+	    putc('+',sfd);
+	    putc('-',sfd);
+	} else if ( prev_cnt== 0 ) {
+	    if ( !in ) {
+		putc('+',sfd);
+		in = 1;
+	    }
+	    prev = ch;
+	    prev_cnt = 2;		/* 2 bytes */
+	} else if ( prev_cnt==2 ) {
+	    prev<<=8;
+	    prev += (ch>>8)&0xff;
+	    utf7_encode(sfd,prev);
+	    prev = (ch&0xff);
+	    prev_cnt=1;
+	} else {
+	    prev<<=16;
+	    prev |= ch;
+	    utf7_encode(sfd,prev);
+	    prev_cnt = prev = 0;
+	}
+    }
+    if ( prev_cnt==2 ) {
+	prev<<=8;
+	utf7_encode(sfd,prev);
+    } else if ( prev_cnt==1 ) {
+	prev<<=16;
+	utf7_encode(sfd,prev);
+    }
+    putc('"',sfd);
+    putc(' ',sfd);
+}
+
+static void SFDDumpLangName(FILE *sfd, struct ttflangname *ln) {
+    int i, end;
+    fprintf( sfd, "LangName: %d ", ln->lang );
+    for ( end = ttf_namemax; end>0 && ln->names[end-1]==NULL; --end );
+    for ( i=0; i<end; ++i )
+	SFDDumpUTF7Str(sfd,ln->names[i]);
+    putc('\n',sfd);
+}
+
 static void SFDDump(FILE *sfd,SplineFont *sf) {
     int i, realcnt;
     BDFFont *bdf;
+    struct ttflangname *ln;
     static unichar_t saving[] = { 'S','a','v','i','n','g','.','.','.',  '\0' };
     static unichar_t savingdb[] = { 'S','a','v','i','n','g',' ','S','p','l','i','n','e',' ','F','o','n','t',' ','D','a','t','a','b','a','s','e',  '\0' };
     static unichar_t savingoutlines[] = { 'S','a','v','i','n','g',' ','O','u','t','l','i','n','e','s',  '\0' };
@@ -388,9 +482,16 @@ static void SFDDump(FILE *sfd,SplineFont *sf) {
     if ( sf->xuid!=NULL )
 	fprintf(sfd, "XUID: %s\n", sf->xuid );
     if ( sf->pfminfo.pfmset ) {
-	fprintf(sfd, "PfmFamily: %d\n", sf->pfminfo.family );
-	fprintf(sfd, "PfmWeight: %d\n", sf->pfminfo.weight );
+	fprintf(sfd, "PfmFamily: %d\n", sf->pfminfo.pfmfamily );
+	fprintf(sfd, "TTFWeight: %d\n", sf->pfminfo.weight );
+	fprintf(sfd, "TTFWidth: %d\n", sf->pfminfo.width );
+	fprintf(sfd, "Panose:" );
+	for ( i=0; i<10; ++i )
+	    fprintf( sfd, " %d", sf->pfminfo.panose[i]);
+	putc('\n',sfd);
     }
+    for ( ln = sf->names; ln!=NULL; ln=ln->next )
+	SFDDumpLangName(sfd,ln);
     if ( sf->encoding_name>=em_base ) {
 	Encoding *item;
 	for ( item = enclist; item!=NULL && item->enc_num!=sf->encoding_name; item = item->next );
@@ -448,9 +549,13 @@ return( !ferror(sfd) && fclose(sfd)==0 );
 }
 
 int SFDWriteBak(SplineFont *sf) {
-    char *buf, *pt, *bpt;
+    char *buf/*, *pt, *bpt*/;
 
     buf = galloc(strlen(sf->filename)+10);
+#if 1
+    strcpy(buf,sf->filename);
+    strcat(buf,"~");
+#else
     pt = strrchr(sf->filename,'.');
     if ( pt==NULL || pt<strrchr(sf->filename,'/'))
 	pt = sf->filename+strlen(sf->filename);
@@ -458,6 +563,7 @@ int SFDWriteBak(SplineFont *sf) {
     bpt = buf + (pt-sf->filename);
     *bpt++ = '~';
     strcpy(bpt,pt);
+#endif
     rename(sf->filename,buf);
     free(buf);
 
@@ -1130,6 +1236,85 @@ static void SFDGetSubrs(FILE *sfd,SplineFont *sf) {
 #endif
 }
 
+static unichar_t *SFDReadUTF7Str(FILE *sfd) {
+    int ch1, ch2, ch3, ch4, done;
+    unichar_t buffer[1024], *pt, *end = buffer+sizeof(buffer)/sizeof(unichar_t)-1;
+    int prev_cnt=0, prev=0, in=0;
+
+    ch1 = getc(sfd);
+    while ( isspace(ch1) && ch1!='\n' && ch1!='\r') ch1 = getc(sfd);
+    if ( ch1=='\n' || ch1=='\r' )
+	ungetc(ch1,sfd);
+    if ( ch1!='"' )
+return( NULL );
+    pt = buffer;
+    while ( (ch1=getc(sfd))!=EOF && ch1!='"' ) {
+	done = 0;
+	if ( !done && !in ) {
+	    if ( ch1=='+' ) {
+		ch1 = getc(sfd);
+		if ( ch1=='-' ) {
+		    if ( pt<end ) *pt++ = '+';
+		    done = true;
+		} else {
+		    in = true;
+		    prev_cnt = 0;
+		}
+	    } else
+		done = true;
+	}
+	if ( !done ) {
+	    if ( ch1=='-' ) {
+		in = false;
+	    } else if ( inbase64[ch1]==-1 ) {
+		in = false;
+		done = true;
+	    } else {
+		ch1 = inbase64[ch1];
+		ch2 = inbase64[getc(sfd)];
+		ch3 = inbase64[getc(sfd)];
+		ch4 = inbase64[getc(sfd)];
+		ch1 = (ch1<<18) | (ch2<<12) | (ch3<<6) | ch4;
+		if ( prev_cnt==0 ) {
+		    prev = ch1&0xff;
+		    ch1 >>= 8;
+		    prev_cnt = 1;
+		} else /* if ( prev_cnt == 1 ) */ {
+		    ch1 |= (prev<<24);
+		    prev = (ch1&0xffff);
+		    ch1 >>= 16;
+		    prev_cnt = 2;
+		}
+		done = true;
+	    }
+	}
+	if ( done && pt<end )
+	    *pt++ = ch1;
+	if ( prev_cnt==2 ) {
+	    prev_cnt = 0;
+	    if ( pt<end && prev!=0 )
+		*pt++ = prev;
+	}
+    }
+    *pt = '\0';
+
+return( buffer[0]=='\0' ? NULL : u_copy(buffer) );
+}
+    
+static struct ttflangname *SFDGetLangName(FILE *sfd,struct ttflangname *old) {
+    struct ttflangname *cur = gcalloc(1,sizeof(struct ttflangname)), *prev;
+    int i;
+
+    getint(sfd,&cur->lang);
+    for ( i=0; i<ttf_namemax; ++i )
+	cur->names[i] = SFDReadUTF7Str(sfd);
+    if ( old==NULL )
+return( cur );
+    for ( prev = old; prev->next !=NULL; prev = prev->next );
+    prev->next = cur;
+return( old );
+}
+    
 static SplineFont *SFDGetFont(FILE *sfd) {
     SplineFont *sf;
     char tok[200];
@@ -1181,12 +1366,26 @@ return( NULL );
 	} else if ( strmatch(tok,"PfmFamily:")==0 ) {
 	    int temp;
 	    getint(sfd,&temp);
-	    sf->pfminfo.family = temp;
+	    sf->pfminfo.pfmfamily = temp;
 	    sf->pfminfo.pfmset = true;
-	} else if ( strmatch(tok,"PfmWeight:")==0 ) {
+	} else if ( strmatch(tok,"LangName:")==0 ) {
+	    sf->names = SFDGetLangName(sfd,sf->names);
+	} else if ( strmatch(tok,"PfmWeight:")==0 || strmatch(tok,"TTFWeight:")==0 ) {
 	    int temp;
 	    getint(sfd,&temp);
 	    sf->pfminfo.weight = temp;
+	    sf->pfminfo.pfmset = true;
+	} else if ( strmatch(tok,"TTFWidth:")==0 ) {
+	    int temp;
+	    getint(sfd,&temp);
+	    sf->pfminfo.width = temp;
+	    sf->pfminfo.pfmset = true;
+	} else if ( strmatch(tok,"Panose:")==0 ) {
+	    int temp,i;
+	    for ( i=0; i<10; ++i ) {
+		getint(sfd,&temp);
+		sf->pfminfo.panose[i] = temp;
+	    }
 	    sf->pfminfo.pfmset = true;
 	} else if ( strmatch(tok,"DisplaySize:")==0 ) {
 	    getint(sfd,&sf->display_size);

@@ -343,6 +343,17 @@ Undoes *SCPreserveState(SplineChar *sc) {
 return( AddUndo(undo,&sc->undoes[0],&sc->redoes[0]));
 }
 
+Undoes *SCPreserveBackground(SplineChar *sc) {
+    Undoes *undo = calloc(1,sizeof(Undoes));
+
+    undo->undotype = ut_state;
+    undo->u.state.width = sc->width;
+    undo->u.state.splines = SplinePointListCopy(sc->backgroundsplines);
+    undo->u.state.refs = RefCharsCopyState(sc);
+    undo->u.state.images = NULL;
+return( AddUndo(undo,&sc->undoes[1],&sc->redoes[1]));
+}
+
 void SCUndoSetLBearingChange(SplineChar *sc,int lbc) {
     Undoes *undo = sc->undoes[0];
 

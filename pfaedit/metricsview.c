@@ -871,11 +871,6 @@ static void MVMenuFontInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     DelayEvent(FontMenuFontInfo,mv->fv);
 }
 
-static void MVMenuPrivateInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-    SFPrivateInfo(mv->fv->sf);
-}
-
 static void MVMenuBitmaps(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     int i;
@@ -1011,7 +1006,6 @@ static GMenuItem edlist[] = {
 
 static GMenuItem ellist[] = {
     { { (unichar_t *) _STR_Fontinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'F', ksm_control|ksm_shift, NULL, NULL, MVMenuFontInfo },
-    { { (unichar_t *) _STR_Privateinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'P', ksm_control|ksm_shift, NULL, NULL, MVMenuPrivateInfo },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Bitmapsavail, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'B', ksm_control|ksm_shift, NULL, NULL, MVMenuBitmaps, MID_AvailBitmaps },
     { { (unichar_t *) _STR_Regenbitmaps, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, 'B', ksm_control, NULL, NULL, MVMenuBitmaps, MID_RegenBitmaps },

@@ -62,6 +62,7 @@ struct ttfinfo {
     char *copyright;		/* from the name table, nameid=0 */
     char *familyname;		/* nameid=1 */
     char *fullname;		/* nameid=4 */
+    char *weight;
     char *version;		/* nameid=5 */
     char *fontname;		/* postscript font name, nameid=6 */
     char *xuid;			/* Only for open type cff fonts */
@@ -69,6 +70,8 @@ struct ttfinfo {
     int upos, uwidth;		/* underline pos, width from post table */
     struct psdict *private;	/* Only for open type cff fonts */
     enum charset encoding_name;/* from cmap */
+    struct pfminfo pfminfo;
+    struct ttflangname *names;
     SplineChar **chars;		/* from all over, glyf table for contours */
     				/* 		  cmap table for encodings */
 			        /*		  hmtx table for widths */
@@ -105,6 +108,8 @@ struct ttfinfo {
     int copyright_start;	/* copyright and fontname */
 		/* post */
     int postscript_start;	/* names for the glyphs, italic angle, etc. */
+		/* OS/2 */
+    int os2_start;
 
     struct dup *dups;
 };
@@ -219,6 +224,9 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	  case CHR('p','o','s','t'):
 	    info->postscript_start = offset;
 	  break;
+	  case CHR('O','S','/','2'):
+	    info->os2_start = offset;
+	  break;
 	}
     }
 return( true );
@@ -299,6 +307,22 @@ static char *readustring(FILE *ttf,int offset,int len) {
 return( str );
 }
 
+static unichar_t *_readustring(FILE *ttf,int offset,int len) {
+    long pos = ftell(ttf);
+    unichar_t *str, *pt;
+    int i, ch;
+
+    fseek(ttf,offset,SEEK_SET);
+    str = pt = galloc(len+2);
+    for ( i=0; i<len/2; ++i ) {
+	ch = getc(ttf)<<8;
+	*pt++ = ch | getc(ttf);
+    }
+    *pt = '\0';
+    fseek(ttf,pos,SEEK_SET);
+return( str );
+}
+
 static char *stripspaces(char *str) {
     char *str2 = str, *base = str;
 
@@ -310,6 +334,26 @@ static char *stripspaces(char *str) {
     }
     *str2 = '\0';
 return( base );
+}
+
+static void TTFAddLangStr(FILE *ttf, struct ttfinfo *info, int language, int id,
+	int strlen, int stroff) {
+    struct ttflangname *cur, *prev;
+
+    if ( id<0 || id>=ttf_namemax )
+return;
+
+    for ( prev=NULL, cur=info->names; cur!=NULL && cur->lang!=language; prev = cur, cur=cur->next );
+    if ( cur==NULL ) {
+	cur=gcalloc(1,sizeof(struct ttflangname));
+	cur->lang = language;
+	if ( prev==NULL )
+	    info->names = cur;
+	else
+	    prev->next = cur;
+    }
+    if ( cur->names[id]!=NULL ) free(cur->names[id]);
+    cur->names[id] = _readustring(ttf,stroff,strlen);
 }
 
 static void readttfcopyrights(FILE *ttf,struct ttfinfo *info) {
@@ -327,8 +371,14 @@ static void readttfcopyrights(FILE *ttf,struct ttfinfo *info) {
 	name = getushort(ttf);
 	strlen = getushort(ttf);
 	stroff = getushort(ttf);
+	if ( platform==3 && specific==1 )
+	    TTFAddLangStr(ttf,info,language,name,strlen,tableoff+stroff);
 	if ( (platform==3 && specific==1 && (language&0xff)==0x9) ||
-		(platform==0 && specific==0 && language==0) ) {
+		(platform==0 && /*specific==0 && */ language==0) ) {
+		/* MS Arial starts out with a bunch of platform=0, specific=3 */
+		/*  entries. platform 0 is Apple unicode which is said in the */
+		/*  docs not to use the specific entry (I assumed that meant */
+		/*  0, but it's 3. Oh Well. Language is 0 */
 	    switch ( name ) {
 	      case 0:
 		if ( info->copyright==NULL )
@@ -351,9 +401,6 @@ static void readttfcopyrights(FILE *ttf,struct ttfinfo *info) {
 		    info->fontname = readustring(ttf,tableoff+stroff,strlen);
 	      break;
 	    }
-	    if ( info->copyright && info->familyname && info->fullname &&
-		    info->version && info->fontname )
-    break;
 	} else if ( platform==1 && specific==0 && language==0 ) {
 	    switch ( name ) {
 	      case 0:
@@ -377,9 +424,6 @@ static void readttfcopyrights(FILE *ttf,struct ttfinfo *info) {
 		    info->fontname = readstring(ttf,tableoff+stroff,strlen);
 	      break;
 	    }
-	    if ( info->copyright && info->familyname && info->fullname &&
-		    info->version && info->fontname )
-    break;
 	}
     }
     if ( info->version==NULL ) info->version = copy("1.0");
@@ -1770,6 +1814,7 @@ static void cfffigure(struct ttfinfo *info, struct topdicts *dict,
 	info->copyright = copy(getsid(dict->notice,strings));
     info->familyname = copy(getsid(dict->familyname,strings));
     info->fullname = copy(getsid(dict->fullname,strings));
+    info->weight = copy(getsid(dict->weight,strings));
     info->version = copy(getsid(dict->version,strings));
     info->fontname = copy(dict->fontname);
     info->italicAngle = dict->italicangle;
@@ -2032,6 +2077,35 @@ return( i );
 return( i );
     }
 return( -1 );
+}
+
+static void readttfos2metrics(FILE *ttf,struct ttfinfo *info) {
+    int i;
+
+    fseek(ttf,info->os2_start,SEEK_SET);
+    /* version */ getushort(ttf);
+    /* avgWidth */ getushort(ttf);
+    info->pfminfo.weight = getushort(ttf);
+    info->pfminfo.width = getushort(ttf);
+    /* fstype */ getushort(ttf);
+    /* sub xsize */ getushort(ttf);
+    /* sub ysize */ getushort(ttf);
+    /* sub xoff */ getushort(ttf);
+    /* sub yoff */ getushort(ttf);
+    /* sup xsize */ getushort(ttf);
+    /* sup ysize */ getushort(ttf);
+    /* sup xoff */ getushort(ttf);
+    /* sup yoff */ getushort(ttf);
+    /* strike ysize */ getushort(ttf);
+    /* strike ypos */ getushort(ttf);
+    /* Family Class */ getushort(ttf);
+    for ( i=0; i<10; ++i )
+	info->pfminfo.panose[i] = getc(ttf);
+    info->pfminfo.pfmfamily = info->pfminfo.panose[0]==2 ? 0x11 :	/* might be 0x21 */ /* Text & Display maps to either serif 0x11 or sans 0x21 or monospace 0x31 */
+		      info->pfminfo.panose[0]==3 ? 0x41 :	/* Script */
+		      info->pfminfo.panose[0]==4 ? 0x51 :	/* Decorative */
+		      0x51;					/* And pictorial doesn't fit into pfm */
+    info->pfminfo.pfmset = true;
 }
 
 static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
@@ -2330,7 +2404,10 @@ return( 0 );
     if ( info->hmetrics_start!=0 )
 	readttfwidths(ttf,info);
     readttfencodings(ttf,info);
-    readttfpostnames(ttf,info);
+    if ( info->os2_start!=0 )
+	readttfos2metrics(ttf,info);
+    if ( info->postscript_start!=0 )
+	readttfpostnames(ttf,info);
     if ( info->kern_start!=0 )
 	readttfkerns(ttf,info);
     if ( info->gsub_start!=0 )
@@ -2437,7 +2514,7 @@ return( NULL );
     sf->fontname = info.fontname;
     sf->fullname = info.fullname;
     sf->familyname = info.familyname;
-    sf->weight = copy("");
+    sf->weight = info.weight ? info.weight : copy("");
     sf->copyright = info.copyright;
     sf->version = info.version;
     sf->italicangle = info.italicAngle;
@@ -2447,6 +2524,8 @@ return( NULL );
     sf->descent = info.descent;
     sf->private = info.private;
     sf->xuid = info.xuid;
+    sf->pfminfo = info.pfminfo;
+    sf->names = info.names;
     if ( info.encoding_name == em_symbol || info.encoding_name == em_mac )
 	/* Don't trust those encodings */
 	CheckEncoding(&info);

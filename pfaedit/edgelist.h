@@ -131,7 +131,9 @@ typedef struct eilist {
 
 extern void ElFreeEI(EIList *el);
 extern void ELFindEdges(SplineChar *sc, EIList *el);
+extern void ELOrder(EIList *el, int major );
 extern double EITOfNextMajor(EI *e, EIList *el, double sought_m );
+extern int EISameLine(EI *e, EI *n, double i, int major);
 extern EI *EIActiveEdgesFindStem(EI *apt, double i, int major);
 extern EI *EIActiveEdgesRefigure(EIList *el, EI *active,double i,int major,
 	int *_change);

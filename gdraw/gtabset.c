@@ -44,7 +44,7 @@ static void GTabSetInit() {
     gtabset_inited = true;
 }
 
-static void GTabSetChanged(GTabSet *gts) {
+static void GTabSetChanged(GTabSet *gts,int oldsel) {
     GEvent e;
 
     e.type = et_controlevent;
@@ -315,6 +315,7 @@ static void GTabSetRemetric(GTabSet *gts) {
 
 static void GTabSetChangeSel(GTabSet *gts, int sel) {
     int i, width;
+    int oldsel = gts->sel;
 
     if ( sel==-2 )		/* left arrow */
 	--gts->toff;
@@ -344,7 +345,11 @@ return;
 		gts->toff = i;
 	    }
 	}
-	GTabSetChanged(gts);
+	GTabSetChanged(gts,oldsel);
+	if ( gts->tabs[oldsel].w!=NULL )
+	    GDrawSetVisible(gts->tabs[oldsel].w,false);
+	if ( gts->tabs[gts->sel].w!=NULL )
+	    GDrawSetVisible(gts->tabs[gts->sel].w,true);
     }
     _ggadget_redraw(&gts->g);
 }
@@ -415,11 +420,13 @@ return( true );
     if (event->u.chr.keysym == GK_Left || event->u.chr.keysym == GK_KP_Left ) {
 	for ( i = gts->sel-1; i>0 && gts->tabs[i].disabled; --i );
 	GTabSetChangeSel(gts,i);
+return( true );
     } else if (event->u.chr.keysym == GK_Right || event->u.chr.keysym == GK_KP_Right ) {
 	for ( i = gts->sel+1; i<gts->tabcnt-1 && gts->tabs[i].disabled; ++i );
 	GTabSetChangeSel(gts,i);
-    }
 return( true );
+    }
+return( false );
 }
 
 static int gtabset_focus(GGadget *g, GEvent *event) {
@@ -437,11 +444,13 @@ static void gtabset_destroy(GGadget *g) {
     if ( gts==NULL )
 return;
     free(gts->rowstarts);
-    for ( i=0; i<gts->tabcnt; ++i )
+    for ( i=0; i<gts->tabcnt; ++i ) {
 	free(gts->tabs[i].name);
+/* This has already been done */
+/*	if ( gts->tabs[i].w!=NULL ) */
+/*	    GDrawDestroyWindow(gts->tabs[i].w); */
+    }
     free(gts->tabs);
-    if ( gts->w!=NULL )
-	GDrawDestroyWindow(gts->w);
     _ggadget_destroy(g);
 }
 
@@ -456,6 +465,45 @@ static FontInstance *GTabSetGetFont(GGadget *g) {
 return( gts->font );
 }
 
+static void _gtabset_redraw(GGadget *g) {
+    GTabSet *gts = (GTabSet *) g;
+    int i;
+
+    GDrawRequestExpose(g->base, &g->r, false);
+    i = gts->sel;
+    if ( gts->tabs[i].w!=NULL )
+	GDrawRequestExpose(gts->tabs[i].w, NULL, false);
+}
+
+static void _gtabset_move(GGadget *g, int32 x, int32 y ) {
+    GTabSet *gts = (GTabSet *) g;
+    int i;
+    int32 nx = x+g->inner.x-g->r.x, ny = y+g->inner.y-g->r.y;
+
+    for ( i=0; i<gts->tabcnt; ++i ) if ( gts->tabs[i].w!=NULL )
+	GDrawMove(gts->tabs[i].w,nx,ny);
+    _ggadget_move(g,x,y);
+}
+
+static void _gtabset_resize(GGadget *g, int32 width, int32 height ) {
+    GTabSet *gts = (GTabSet *) g;
+    int i;
+
+    _ggadget_resize(g,width,height);
+    for ( i=0; i<gts->tabcnt; ++i ) if ( gts->tabs[i].w!=NULL )
+	GDrawResize(gts->tabs[i].w,g->inner.width,g->inner.height);
+}
+
+static void _gtabset_setvisible(GGadget *g,int visible) {
+    GTabSet *gts = (GTabSet *) g;
+    int i;
+
+    _ggadget_setvisible(g,visible);
+    i = gts->sel;
+    if ( gts->tabs[i].w!=NULL )
+	GDrawSetVisible(gts->tabs[i].w, visible);
+}
+
 struct gfuncs gtabset_funcs = {
     0,
     sizeof(struct gfuncs),
@@ -468,11 +516,11 @@ struct gfuncs gtabset_funcs = {
     NULL,
     NULL,
 
-    _ggadget_redraw,
-    _ggadget_move,
-    _ggadget_resize,
-    _ggadget_setvisible,
-    _ggadget_setenabled,
+    _gtabset_redraw,
+    _gtabset_move,
+    _gtabset_resize,
+    _gtabset_setvisible,
+    _ggadget_setenabled,		/* Doesn't work right */
     _ggadget_getsize,
     _ggadget_getinnersize,
 
@@ -487,10 +535,25 @@ struct gfuncs gtabset_funcs = {
     GTabSetGetFont
 };
 
+static int sendtoparent_eh(GWindow gw, GEvent *event) {
+    if ( event->type==et_controlevent ) {
+	event->w = GDrawGetParentWindow(gw);
+	GDrawPostEvent(event);
+    } else if ( event->type==et_char )
+return( false );
+
+return( true );
+}
+
 GGadget *GTabSetCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     GTabSet *gts = gcalloc(1,sizeof(GTabSet));
     int i, bp;
     GRect r;
+    GWindowAttrs childattrs;
+
+    memset(&childattrs,0,sizeof(childattrs));
+    childattrs.mask = wam_events;
+    childattrs.event_masks = -1;
 
     if ( !gtabset_inited )
 	GTabSetInit();
@@ -514,7 +577,12 @@ GGadget *GTabSetCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     gts->tabcnt = i;
     gts->tabs = galloc(i*sizeof(struct tabs));
     for ( i=0; gd->u.tabs[i].text!=NULL; ++i ) {
-	gts->tabs[i].name = u_copy(gd->u.tabs[i].text);
+	if ( gd->u.tabs[i].text_in_resource )
+	    gts->tabs[i].name = u_copy(GStringGetResource((int) (gd->u.tabs[i].text),NULL));
+	else if ( gd->u.tabs[i].text_is_1byte )
+	    gts->tabs[i].name = uc_copy((char *) (gd->u.tabs[i].text));
+	else
+	    gts->tabs[i].name = u_copy(gd->u.tabs[i].text);
 	gts->tabs[i].disabled = gd->u.tabs[i].disabled;
 	if ( gd->u.tabs[i].selected && !gts->tabs[i].disabled )
 	    gts->sel = i;
@@ -533,11 +601,20 @@ GGadget *GTabSetCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 	gts->g.inner.y += bp; gts->g.inner.height -= bp;
     }
 
-    /* Create window with size of inner!!!!! */
-    /* fill window up with the ggadgets in each tab */
+    for ( i=0; gd->u.tabs[i].text!=NULL; ++i ) if ( gd->u.tabs[i].gcd!=NULL ) {
+	gts->tabs[i].w = GDrawCreateSubWindow(base,&gts->g.inner,sendtoparent_eh,GDrawGetUserData(base),&childattrs);
+	GGadgetsCreate(gts->tabs[i].w,gd->u.tabs[i].gcd);
+	if ( gts->sel==i )
+	    GDrawSetVisible(gts->tabs[i].w,true);
+    }
 
     if ( gd->flags & gg_group_end )
 	_GGadgetCloseGroup(&gts->g);
 
 return( &gts->g );
+}
+
+int GTabSetGetSel(GGadget *g) {
+    GTabSet *gts = (GTabSet *) g;
+return( gts->sel );
 }

@@ -62,9 +62,11 @@ typedef struct gmenuitem {
 
 typedef struct tabinfo {
     unichar_t *text;
-    struct gadgetcreatedata *gcd;
+    struct ggadgetcreatedata *gcd;
     unsigned int disabled: 1;
     unsigned int selected: 1;
+    unsigned int text_is_1byte: 1;		/* If passed in as 1byte (ie. iso-8859-1) text, will be converted */
+    unsigned int text_in_resource: 1;		/* the text field is actually an index into the string resource table */
 } GTabInfo;
 
 enum border_type { bt_none, bt_box, bt_raised, bt_lowered, bt_engraved,
@@ -224,6 +226,8 @@ void GGadgetSetListOrderer(GGadget *g,int (*orderer)(const void *, const void *)
 
 void GGadgetSetChecked(GGadget *g, int ison);
 int GGadgetIsChecked(GGadget *g);
+
+int GTabSetGetSel(GGadget *g);
 
 int32 GScrollBarGetPos(GGadget *g);
 int32 GScrollBarSetPos(GGadget *g,int32 pos);

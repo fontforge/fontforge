@@ -454,6 +454,7 @@ extern void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv);
 extern void DelayEvent(void (*func)(void *), void *data);
 
 extern void FindProblems(FontView *fv,CharView *cv);
+extern void MetaFont(FontView *fv,CharView *cv);
 
 extern GMenuItem helplist[];
 #endif

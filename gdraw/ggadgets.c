@@ -61,6 +61,7 @@ static int popup_delay=2000, popup_lifetime=10000;
 static GWindow popup;
 static GTimer *popup_timer, *popup_vanish_timer;
 static int popup_visible = false;
+static GRect popup_within;
 
 static unichar_t courier[] = { 'c', 'o', 'u', 'r', 'i', 'e', 'r',',','m','o','n','o','s','p','a','c','e', '\0' };
 static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',  '\0' };
@@ -362,7 +363,14 @@ return( false );
     GDrawFontMetrics(popup_font,&as, &ds, &ld);
     pos.width = width+2*GDrawPointsToPixels(popup,2);
     pos.height = lines*(as+ds) + 2*GDrawPointsToPixels(popup,2);
+
+    /* Is the cursor still in the window? */
     GDrawGetPointerPosition(root,&where);
+    if ( where.u.mouse.x<popup_within.x || where.u.mouse.y<popup_within.y ||
+	    where.u.mouse.x>popup_within.x+popup_within.width ||
+	    where.u.mouse.y>popup_within.y+popup_within.height )
+return( true );
+
     pos.x = where.u.mouse.x+10; pos.y = where.u.mouse.y+10;
     GDrawGetSize(root,&size);
     if ( pos.x + pos.width > size.width )
@@ -417,18 +425,19 @@ return;
 	GWindowAttrs pattrs;
 	GRect pos;
 
-	pattrs.mask = wam_events|wam_nodecor|wam_positioned|wam_cursor|wam_backcol|wam_transient;
+	pattrs.mask = wam_events|wam_nodecor|wam_positioned|wam_cursor|wam_backcol/*|wam_transient*/;
 	pattrs.event_masks = -1;
 	pattrs.nodecoration = true;
 	pattrs.positioned = true;
 	pattrs.cursor = ct_pointer;
 	pattrs.background_color = popup_background;
-	pattrs.transient = GWidgetGetTopWidget(base);
+	/*pattrs.transient = GWidgetGetTopWidget(base);*/
 	pos.x = pos.y = 0; pos.width = pos.height = 1;
 	popup = GDrawCreateTopWindow(GDrawGetDisplayOfWindow(base),&pos,
 		msgpopup_eh,NULL,&pattrs);
 	GDrawSetFont(popup,popup_font);
     }
+    GDrawGetSize(base,&popup_within);
     popup_timer = GDrawRequestTimer(popup,popup_delay,0,msg);
 }
 

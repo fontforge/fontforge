@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 2-Jul-2001 -->
+  <!-- AP: Last modified: 7-Jul-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -37,6 +37,8 @@ Contents
   <LI>
     <A HREF="#license">License</A>
   <LI>
+    <A HREF="future.html">Future Improvements</A>
+  <LI>
     <A HREF="#change-log">Change Log</A>
   <LI>
     <A HREF="index.html#Lacks">Things missing...</A>
@@ -57,8 +59,8 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-010630.tgz">Download pfaedit linux-i386 RedHat 7.0
-    </A><A NAME="downloads">executable</A> Version: 30-June-2001
+    <A HREF="pfaedit-010707.tgz">Download pfaedit linux-i386 RedHat 7.0
+    </A><A NAME="downloads">executable</A> Version: 7-July-2001
   <LI>
     <A HREF="pfaedit-solaris-010624.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 24-June-2001
@@ -84,12 +86,12 @@ Or you can download the following three packages. Version: 30-June-2001
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
-    <A HREF="libgdraw-010630.tgz">Unicode widget library source</A>
-    (30-June-2001)<BR>
+    <A HREF="libgdraw-010707.tgz">Unicode widget library source</A>
+    (7-July-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-010630.tgz">Pfaedit source</A> (30-June-2001)<BR>
+    <A HREF="pfaedit_src-010707.tgz">Pfaedit source</A> (7-July-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
     If you want to do autotracing around character images you should also download
@@ -163,6 +165,28 @@ bitmap fonts that pfaedit uses
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    7-July-2001
+    <UL>
+      <LI>
+	Fixed a crash when referring to a character whose encoding was bigger than
+	65535
+      <LI>
+	Rewrote the <A HREF="fontinfo.html">Font Info</A> dlg.
+	<UL>
+	  <LI>
+	    Made the dialog controlled by tabs instead of trying to show everything at
+	    once.
+	  <LI>
+	    Merged the private info dlg into it
+	  <LI>
+	    Provided access to some ttf settings which were previously hidden
+	  <LI>
+	    Provided access to the ttf name table (which allows you to give the font
+	    and its styles different names on different languages. So CaslonItalic could
+	    be CaslonItalique in French and CaslonKursive in German.
+	</UL>
+    </UL>
   <LI>
     30-June-2001
     <UL>
@@ -1519,6 +1543,9 @@ Other Encodings
 	<A HREF="http://www.gh.cs.su.oz.au/~matty/Spif/">spif</A> -- under development
       <LI>
 	<A HREF="http://www.levien.com/gfonted/">gfonted</A> -- under development
+      <LI>
+	<A HREF="http://cgm.cs.mcgill.ca/~luc/editors.html">Luc Devroye's page of
+	links to font creation programs</A>
     </UL>
   <LI>
     MetaFont the original computer vector font editor

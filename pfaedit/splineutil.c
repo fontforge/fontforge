@@ -568,6 +568,15 @@ void SplinePointCatagorize(SplinePoint *sp) {
     }
 }
 
+int SplinePointIsACorner(SplinePoint *sp) {
+    enum pointtype old = sp->pointtype, new;
+
+    SplinePointCatagorize(sp);
+    new = sp->pointtype;
+    sp->pointtype = old;
+return( new==pt_corner );
+}
+
 void SCCatagorizePoints(SplineChar *sc) {
     Spline *spline, *first, *last=NULL;
     SplinePointList *spl;
@@ -1387,6 +1396,66 @@ void SplineFindInflections(Spline1D *sp, double *_t1, double *_t2 ) {
     *_t1 = t1; *_t2 = t2;
 }
 
+/* Ok, if the above routine finds a point of inflection that less than 1 unit */
+/*  from an endpoint or another point of inflection, then many things are */
+/*  just going to skip over it, and other things will be confused by this */
+/*  so just remove it. It should be so close the difference won't matter */
+void SplineRemoveInflectionsTooClose(Spline1D *sp, double *_t1, double *_t2 ) {
+    double last, test;
+    double t1= *_t1, t2 = *_t2;
+
+    if ( t1>t2 && t2!=-1 ) {
+	t1 = t2;
+	t2 = *_t1;
+    }
+    last = sp->d;
+    if ( t1!=-1 ) {
+	test = ((sp->a*t1+sp->b)*t1+sp->c)*t1+sp->d;
+	if ( (test-last)*(test-last)<1 )
+	    t1 = -1;
+	else
+	    last = test;
+    }
+    if ( t2!=-1 ) {
+	test = ((sp->a*t2+sp->b)*t2+sp->c)*t2+sp->d;
+	if ( (test-last)*(test-last)<1 )
+	    t2 = -1;
+	else
+	    last = test;
+    }
+    test = sp->a+sp->b+sp->c+sp->d;
+    if ( (test-last)*(test-last)<1 ) {
+	if ( t2!=-1 )
+	    t2 = -1;
+	else if ( t1!=-1 )
+	    t1 = -1;
+	else
+	    /* Well we should just remove the whole spline? */;
+    }
+    *_t1 = t1; *_t2 = t2;
+}
+
+int SplineSolveFull(Spline1D *sp,double val, double ts[3]) {
+    double t1, t2;
+    int i=0;
+
+    SplineFindInflections(sp, &t1, &t2 );
+    if ( t1>0 && t1<1 ) {
+	ts[i] = SplineSolve(sp,0,t1,val,.0001);
+	if ( ts[i]!=-1 ) ++i;
+    } else
+	t1 = 0;
+    if ( t2>0 && t2<1 ) {
+	ts[i] = SplineSolve(sp,t1,t2,val,.0001);
+	if ( ts[i]!=-1 ) ++i;
+    } else
+	t2 = t1;
+    ts[i++] = SplineSolve(sp,t2,1,val,.0001);
+    while ( i<3 )
+	ts[i++] = -1;
+return( ts[0]!=-1 );
+}
+
 static int XSolve(Spline *spline,double tmin, double tmax,FindSel *fs) {
     Spline1D *yspline = &spline->splines[1], *xspline = &spline->splines[0];
     double t,x,y;
@@ -1664,6 +1733,19 @@ return;
     free(lig);
 }
 
+void TTFLangNamesFree(struct ttflangname *l) {
+    struct ttflangname *next;
+    int i;
+
+    while ( l!=NULL ) {
+	next = l->next;
+	for ( i=0; i<ttf_namemax; ++i )
+	    free(l->names[i]);
+	free(l);
+	l = next;
+    }
+}
+
 void SplineCharFree(SplineChar *sc) {
     struct splinecharlist *dlist, *dnext;
 
@@ -1713,8 +1795,6 @@ void SplineFontFree(SplineFont *sf) {
     UndoesFree(sf->gundoes);
     UndoesFree(sf->gredoes);
     PSDictFree(sf->private);
-#if 0
-    PSCharsFree(sf->subrs);
-#endif
+    TTFLangNamesFree(sf->names);
     free(sf);
 }

@@ -25,8 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#include "gwidget.h"
-#include "ustring.h"
+#include <gwidget.h>
+#include <ustring.h>
 #include <math.h>
 
 struct problems {

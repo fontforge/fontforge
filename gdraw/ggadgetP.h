@@ -301,7 +301,7 @@ typedef struct gmenubar {
 
 typedef struct gtabset {
     struct ggadget g;
-    struct tabs { unichar_t *name; GGadget *glist; int16 x, width, tw; unsigned int disabled: 1; } *tabs;
+    struct tabs { unichar_t *name; GGadget *glist; int16 x, width, tw; unsigned int disabled: 1; GWindow w; } *tabs;
     int16 *rowstarts;		/* for each row, index into tab array of its first tab, one extra entry at end with tabcnt */
     int16 tabcnt;		/* number of tabs */
     int16 sel;			/* active tab */
@@ -321,7 +321,6 @@ typedef struct gtabset {
     unsigned int filllines: 1;	/* If we have multiple lines then fill them so that each row takes up the entire width of the tabset */
     unsigned int fill1line: 1;
     FontInstance *font;
-    GWindow w;			/* Window in which nested gadgets show */
 } GTabSet;
 
 struct gdirentry;

@@ -1760,7 +1760,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 				pt->prevcp = mid_prevcp;
 				pt->me = mid;
 				pt->nextcp = mid_nextcp;
-			        pt->flex = pops[2];
+			        /*pt->flex = pops[2];*/
 				SplineMake(cur->last,pt);
 				cur->last = pt;
 				pt = calloc(1,sizeof(SplinePoint));

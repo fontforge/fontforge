@@ -911,12 +911,20 @@ void GWidgetRequestVisiblePalette(GWindow palette,int visible) {
 GGadget *GWidgetGetControl(GWindow gw, int cid) {
     GGadget *gadget;
     GContainerD *gd = (GContainerD *) (gw->widget_data);
+    GWidgetD *widg;
 
     if ( gd==NULL )
 return( NULL );
     for ( gadget = gd->gadgets; gadget!=NULL ; gadget=gadget->prev ) {
 	if ( gadget->cid == cid )
 return( gadget );
+    }
+    for ( widg = gd->widgets; widg!=NULL; widg = widg->next ) {
+	if ( widg->iscontainer ) {
+	    gadget = GWidgetGetControl(widg->w,cid);
+	    if ( gadget!=NULL )
+return( gadget );
+	}
     }
 return( NULL );
 }

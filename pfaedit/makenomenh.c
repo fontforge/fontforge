@@ -549,7 +549,7 @@ return;
 		fprintf( out, "\";\n" );
 	    } else {
 		fprintf( out, "static unichar_t str_%s[] = { ", cu_copy(names[i]));
-		for ( j=0; values[i][j]<256 && values[i][j]!=0; ++j ) {
+		for ( j=0; values[i][j]!=0; ++j ) {
 		    if (( (values[i][j]>=32 && values[i][j]<127) ||
 			    (values[i][j]>=0xa0 && values[i][j]<256)) &&
 			    values[i][j]!='"' && values[i][j]!='\\' )

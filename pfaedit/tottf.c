@@ -543,6 +543,28 @@ struct os2 {
     int16 yStrikeoutSize;	/* 102/2048 *emsize */
     int16 yStrikeoutPos;	/* 530/2048 *emsize */
     int16 sFamilyClass;	/* ??? 0 */
+	/* high order byte is the "class", low order byte the sub class */
+	/* class = 0 => no classification */
+	/* class = 1 => old style serifs */
+	/*	subclass 0, no class; 1 ibm rounded; 2 garalde; 3 venetian; 4 mod venitian; 5 dutch modern; 6 dutch trad; 7 contemporary; 8 caligraphic; 15 misc */
+	/* class = 2 => transitional serifs */
+	/*	subclass 0, no class; 1 drect line; 2 script; 15 misc */
+	/* class = 3 => modern serifs */
+	/*	subclass: 1, italian; 2, script */
+	/* class = 4 => clarendon serifs */
+	/*	subclass: 1, clarendon; 2, modern; 3 trad; 4 newspaper; 5 stub; 6 monotone; 7 typewriter */
+	/* class = 5 => slab serifs */
+	/*	subclass: 1, monotone; 2, humanist; 3 geometric; 4 swiss; 5 typewriter */
+	/* class = 7 => freeform serifs */
+	/*	subclass: 1, modern */
+	/* class = 8 => sans serif */
+	/*	subclass: 1, ibm neogrotesque; 2 humanist; 3 low-x rounded; 4 high-x rounded; 5 neo-grotesque; 6 mod neo-grot; 9 typewriter; 10 matrix */
+	/* class = 9 => ornamentals */
+	/*	subclass: 1, engraver; 2 black letter; 3 decorative; 4 3D */
+	/* class = 10 => scripts */
+	/*	subclass: 1, uncial; 2 brush joined; 3 formal joined; 4 monotone joined; 5 calligraphic; 6 brush unjoined; 7 formal unjoined; 8 monotone unjoined */
+	/* class = 12 => symbolic */
+	/*	subclass: 3 mixed serif; 6 old style serif; 7 neo-grotesque sans; */
     char panose[10];	/* can be set to zero */
     uint32 unicoderange[4];	
 	/* 1<<0=>ascii, 1<<1 => latin1, 2=>100-17f, 3=>180-24f, 4=>250-2af */
@@ -2572,38 +2594,111 @@ static void sethhead(struct hhead *hhead,struct alltabs *at, SplineFont *sf) {
     hhead->caretSlopeRise = 1;
 }
 
+void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname) {
+    int i, samewid= -1;
+
+    if ( !pfminfo->pfmset ) {
+	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	    if ( SCWorthOutputting(sf->chars[i]) ) {
+		if ( samewid==-1 )
+		    samewid = sf->chars[i]->width;
+		else if ( samewid!=sf->chars[i]->width )
+		    samewid = -2;
+	    }
+	}
+	pfminfo->pfmfamily = 0x10;
+	pfminfo->panose[0] = 2;
+	if ( samewid>0 )
+	    pfminfo->pfmfamily = 0x30;
+	else if ( strstrmatch(fontname,"sans")!=NULL )
+	    pfminfo->pfmfamily = 0x20;
+	else if ( strstrmatch(fontname,"script")!=NULL ) {
+	    pfminfo->pfmfamily = 0x40;
+	    pfminfo->panose[0] = 3;
+	}
+	pfminfo->pfmfamily |= 0x1;	/* Else it assumes monospace */
+
+	pfminfo->weight = 400;
+	pfminfo->panose[2] = 5;
+	if ( strstrmatch(fontname,"medium")!=NULL ) {
+	    pfminfo->weight = 500;
+	    pfminfo->panose[2] = 6;
+	} else if ( (strstrmatch(fontname,"demi")!=NULL ||
+		    strstrmatch(fontname,"semi")!=NULL) &&
+		strstrmatch(fontname,"bold")!=NULL ) {
+	    pfminfo->weight = 600;
+	    pfminfo->panose[2] = 7;
+	} else if ( strstrmatch(fontname,"bold")!=NULL ) {
+	    pfminfo->weight = 700;
+	    pfminfo->panose[2] = 8;
+	} else if ( strstrmatch(fontname,"heavy")!=NULL ) {
+	    pfminfo->weight = 800;
+	    pfminfo->panose[2] = 9;
+	} else if ( strstrmatch(fontname,"black")!=NULL ) {
+	    pfminfo->weight = 900;
+	    pfminfo->panose[2] = 10;
+	} else if ( strstrmatch(fontname,"nord")!=NULL ) {
+	    pfminfo->weight = 950;
+	    pfminfo->panose[2] = 11;
+	} else if ( strstrmatch(fontname,"thin")!=NULL ) {
+	    pfminfo->weight = 100;
+	    pfminfo->panose[2] = 2;
+	} else if ( strstrmatch(fontname,"extra")!=NULL ||
+		strstrmatch(fontname,"light")!=NULL ) {
+	    pfminfo->weight = 200;
+	    pfminfo->panose[2] = 3;
+	} else if ( strstrmatch(fontname,"light")!=NULL ) {
+	    pfminfo->weight = 300;
+	    pfminfo->panose[2] = 4;
+	}
+
+	pfminfo->width = 5;
+	pfminfo->panose[3] = 3;
+	if ( strstrmatch(fontname,"ultra")!=NULL &&
+		strstrmatch(fontname,"condensed")!=NULL ) {
+	    pfminfo->width = 1;
+	    pfminfo->panose[3] = 8;
+	} else if ( strstrmatch(fontname,"extra")!=NULL &&
+		strstrmatch(fontname,"condensed")!=NULL ) {
+	    pfminfo->width = 2;
+	    pfminfo->panose[3] = 8;
+	} else if ( strstrmatch(fontname,"semi")!=NULL &&
+		strstrmatch(fontname,"condensed")!=NULL ) {
+	    pfminfo->width = 4;
+	    pfminfo->panose[3] = 6;
+	} else if ( strstrmatch(fontname,"condensed")!=NULL ) {
+	    pfminfo->width = 3;
+	    pfminfo->panose[3] = 6;
+	} else if ( strstrmatch(fontname,"ultra")!=NULL &&
+		strstrmatch(fontname,"expanded")!=NULL ) {
+	    pfminfo->width = 9;
+	    pfminfo->panose[3] = 7;
+	} else if ( strstrmatch(fontname,"extra")!=NULL &&
+		strstrmatch(fontname,"expanded")!=NULL ) {
+	    pfminfo->width = 8;
+	    pfminfo->panose[3] = 7;
+	} else if ( strstrmatch(fontname,"semi")!=NULL &&
+		strstrmatch(fontname,"expanded")!=NULL ) {
+	    pfminfo->width = 6;
+	    pfminfo->panose[3] = 5;
+	} else if ( strstrmatch(fontname,"expanded")!=NULL ) {
+	    pfminfo->width = 7;
+	    pfminfo->panose[3] = 5;
+	}
+	if ( samewid>0 )
+	    pfminfo->panose[3] = 9;
+    }
+}
+
 static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *sf,
 	enum fontformat format) {
     int i,j,cnt1,cnt2,first,last,avg1,avg2;
 
-    os2->version = 1;
-    if ( strstrmatch(sf->fullname,"thin")!=NULL )
-	os2->weightClass = 100;
-    else if ( strstrmatch(sf->fullname,"-light")!=NULL )
-	os2->weightClass = 200;
-    else if ( strstrmatch(sf->fullname,"light")!=NULL )
-	os2->weightClass = 300;
-    else if ( strstrmatch(sf->fullname,"normal")!=NULL || strstrmatch(sf->fullname,"regular")!=NULL )
-	os2->weightClass = 400;
-    else if ( strstrmatch(sf->fullname,"Medium")!=NULL )
-	os2->weightClass = 500;
-    else if ( strstrmatch(sf->fullname,"semi")!=NULL && strstrmatch(sf->fullname,"bold")!=NULL )
-	os2->weightClass = 600;
-    else if ( strstrmatch(sf->fullname,"bold")!=NULL )
-	os2->weightClass = 700;
-    else if ( strstrmatch(sf->fullname,"extra")!=NULL && strstrmatch(sf->fullname,"bold")!=NULL )
-	os2->weightClass = 800;
-    else if ( strstrmatch(sf->fullname,"black")!=NULL )
-	os2->weightClass = 900;
-    else
-	os2->weightClass = 400;
+    SFDefaultOS2Info(&sf->pfminfo,sf,sf->fontname);
 
-    if ( strstrmatch(sf->fullname,"condensed")!=NULL )
-	os2->widthClass = 3;
-    else if ( strstrmatch(sf->fullname,"expanded")!=NULL )
-	os2->widthClass = 7;
-    else
-	os2->widthClass = 5;
+    os2->version = 1;
+    os2->weightClass = sf->pfminfo.weight;
+    os2->widthClass = sf->pfminfo.width;
     os2->fstype = 0x8;
     os2->ysubYSize = os2->ysubXSize = os2->ysubYOff = (sf->ascent+sf->descent)/5;
     os2->ysubXOff = os2->ysupXOff = 0;
@@ -2639,6 +2734,7 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *sf,
 	os2->avgCharWid = avg1/cnt1;
     else if ( cnt2!=0 )
 	os2->avgCharWid = avg2/cnt2;
+    memcpy(os2->panose,sf->pfminfo.panose,sizeof(os2->panose));
     os2->firstcharindex = first;
     os2->lastcharindex = last;
     if ( sf->encoding_name==em_iso8859_1 || sf->encoding_name==em_iso8859_15 ||
@@ -2946,15 +3042,14 @@ return;
 	dumpshort(at->kern,0);		/* pad it */
 }
 
-static void dumpstr(FILE *file,char *str) {
-    fwrite(str,sizeof(char),strlen(str)+1,file);
-}
-
-static void dumpustr(FILE *file,char *str) {
+static void dumpstr(FILE *file,unichar_t *str) {
     do {
-	putc('\0',file);
 	putc(*str,file);
     } while ( *str++!='\0' );
+}
+
+static void dumpustr(FILE *file,unichar_t *str) {
+    fwrite(str,sizeof(unichar_t),u_strlen(str)+1,file);
 }
 
 static void dumppstr(FILE *file,char *str) {
@@ -2964,72 +3059,89 @@ static void dumppstr(FILE *file,char *str) {
 
 static void dumpnames(struct alltabs *at, SplineFont *sf) {
     int pos=0,i,j;
-    char *str=NULL;
     char buffer[200];
     time_t now;
     struct tm *tm;
+    struct ttflangname dummy, *cur;
+    int strcnt=0;
+    int posses[ttf_namemax];
 
-    time(&now);
-    tm = localtime(&now);
-    sprintf( buffer, "PfaEdit 1.0 : %s : %d-%d-%d", sf->fullname, tm->tm_mday,
-	    tm->tm_mon, tm->tm_year+1970 );
+    memset(&dummy,'\0',sizeof(dummy));
+    for ( cur=sf->names; cur!=NULL; cur=cur->next ) {
+	if ( cur->lang!=0x409 ) {
+	    for ( i=0; i<ttf_namemax; ++i )
+		if ( cur->names[i]!=NULL ) ++strcnt;
+	} else
+	    dummy = *cur;
+    }
+    if ( dummy.names[0]==NULL ) dummy.names[0] = uc_copy(sf->copyright);
+    if ( dummy.names[1]==NULL ) dummy.names[1] = uc_copy(sf->familyname);
+    if ( dummy.names[2]==NULL )
+	dummy.names[2] = uc_copy(sf->weight?sf->weight:"Regular");
+    if ( dummy.names[3]==NULL ) {
+	time(&now);
+	tm = localtime(&now);
+	sprintf( buffer, "PfaEdit 1.0 : %s : %d-%d-%d", sf->fullname, tm->tm_mday,
+		tm->tm_mon, tm->tm_year+1970 );
+	dummy.names[3] = uc_copy(buffer);
+    }
+    if ( dummy.names[4]==NULL ) dummy.names[4] = uc_copy(sf->fullname);
+    if ( dummy.names[5]==NULL ) dummy.names[5] = uc_copy(sf->version);
+    if ( dummy.names[6]==NULL ) dummy.names[6] = uc_copy(sf->fontname);
+    for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL ) strcnt+=3;
+    	/* once of mac roman encoding, once for mac unicode and once for windows unicode 409 */
+
     at->name = tmpfile();
     dumpshort(at->name,0);	/* format */
-    dumpshort(at->name,14);	/* numrec */
-    dumpshort(at->name,(3+14*6)*sizeof(int16));	/* offset to strings */
-    for ( i=0; i<7; ++i ) {
+    dumpshort(at->name,strcnt);	/* numrec */
+    dumpshort(at->name,(3+strcnt*6)*sizeof(int16));	/* offset to strings */
+    for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL ) {
 	dumpshort(at->name,1);	/* apple */
 	dumpshort(at->name,0);	/*  */
 	dumpshort(at->name,0);	/* Roman alphabet */
-	switch ( i ) {
-	  case 0: str = sf->copyright; break;
-	  case 1: str = sf->familyname; break;
-	  case 2: str = sf->weight; break;
-	  case 3: str = buffer; break;
-	  case 4: str = sf->fullname; break;
-	  case 5: str = sf->version; break;
-	  case 6: str = sf->fontname; break;
-        }
-	if ( str==NULL ) str="";
 	dumpshort(at->name,i);
-	dumpshort(at->name,strlen(str));
+	dumpshort(at->name,u_strlen(dummy.names[i]));
 	dumpshort(at->name,pos);
-	pos += strlen(str)+1;
+	pos += u_strlen(dummy.names[i])+1;
     }
-    for ( i=0; i<7; ++i ) {
+    for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL ) {
+	dumpshort(at->name,0);	/* apple unicode */
+	dumpshort(at->name,3);	/* Docs say meaningless, but it seems to be 3 in other fonts */
+	dumpshort(at->name,0);	/*  */
+	dumpshort(at->name,i);
+	dumpshort(at->name,2*u_strlen(dummy.names[i]));
+	dumpshort(at->name,pos);
+	posses[i] = pos;
+	pos += 2*u_strlen(dummy.names[i])+2;
+    }
+    for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL ) {
 	dumpshort(at->name,3);	/* MS platform */
 	dumpshort(at->name,1);	/* not symbol */
 	dumpshort(at->name,0x0409);	/* american english language */
-	switch ( i ) {
-	  case 0: str = sf->copyright; break;
-	  case 1: str = sf->familyname; break;
-	  case 2: str = sf->weight; break;
-	  case 3: str = buffer; break;
-	  case 4: str = sf->fullname; break;
-	  case 5: str = sf->version; break;
-	  case 6: str = sf->fontname; break;
-        }
-	if ( str==NULL ) str="";
 	dumpshort(at->name,i);
-	dumpshort(at->name,2*strlen(str));
-	dumpshort(at->name,pos);
-	pos += 2*strlen(str)+2;
+	dumpshort(at->name,2*u_strlen(dummy.names[i]));
+	dumpshort(at->name,posses[i]);
     }
-    dumpstr(at->name,sf->copyright);
-    dumpstr(at->name,sf->familyname);
-    dumpstr(at->name,sf->weight);
-    dumpstr(at->name,buffer);
-    dumpstr(at->name,sf->fullname);
-    dumpstr(at->name,sf->version);
-    dumpstr(at->name,sf->fontname);
 
-    dumpustr(at->name,sf->copyright);
-    dumpustr(at->name,sf->familyname);
-    dumpustr(at->name,sf->weight);
-    dumpustr(at->name,buffer);
-    dumpustr(at->name,sf->fullname);
-    dumpustr(at->name,sf->version);
-    dumpustr(at->name,sf->fontname);
+    for ( cur=sf->names; cur!=NULL; cur=cur->next ) if ( cur->lang!=0x409 ) {
+	for ( i=0; i<ttf_namemax; ++i ) if ( cur->names[i]!=NULL ) {
+	    dumpshort(at->name,3);	/* MS platform */
+	    dumpshort(at->name,1);	/* not symbol */
+	    dumpshort(at->name,cur->lang);/* american english language */
+	    dumpshort(at->name,i);
+	    dumpshort(at->name,2*u_strlen(cur->names[i]));
+	    dumpshort(at->name,pos);
+	    pos += 2*u_strlen(dummy.names[i])+2;
+	}
+    }
+
+    for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL )
+	dumpstr(at->name,dummy.names[i]);
+    for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL )
+	dumpustr(at->name,dummy.names[i]);
+    for ( cur=sf->names; cur!=NULL; cur=cur->next ) if ( cur->lang!=0x409 )
+	for ( i=0; i<ttf_namemax; ++i ) if ( cur->names[i]!=NULL )
+	    dumpustr(at->name,cur->names[i]);
     at->namelen = ftell(at->name);
     if ( (at->namelen&3)!=0 )
 	for ( j= 4-(at->namelen&3); j>0; --j )

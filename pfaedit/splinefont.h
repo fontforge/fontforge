@@ -172,7 +172,7 @@ typedef struct splinepoint {
     unsigned int isintersection: 1;
     unsigned int flexy: 1;
     unsigned int flexx: 1;
-    uint16 flex;		/* This is a flex serif have to go through icky flex output */
+    uint16 ptindex;		/* Temporary value used by metafont routine */
     struct spline *next;
     struct spline *prev;
 } SplinePoint;
@@ -212,6 +212,7 @@ typedef struct spline {
     unsigned int knowncurved: 1;	/* We know that it curves */
     unsigned int knownlinear: 1;	/* it might have control points, but still traces out a line */
 	/* If neither knownlinear nor curved then we haven't checked */
+    unsigned int touched: 1;
     SplinePoint *from, *to;
     Spline1D splines[2];		/* splines[0] is the x spline, splines[1] is y */
     struct linearapprox *approx;
@@ -227,14 +228,14 @@ typedef struct splinepointlist {
 } SplinePointList, SplineSet;
 
 typedef struct refchar {
+    unsigned int checked: 1;
+    unsigned int selected: 1;
     int16 adobe_enc;
-    uint16 local_enc;
+    int local_enc;
     int unicode_enc;		/* used by paste */
     double transform[6];	/* transformation matrix (first 2 rows of a 3x3 matrix, missing row is 0,0,1) */
     SplinePointList *splines;
     struct refchar *next;
-    unsigned int checked: 1;
-    unsigned int selected: 1;
     DBounds bb;
     struct splinechar *sc;
 } RefChar;
@@ -252,6 +253,7 @@ typedef struct hintinstance {
     double begin;			/* location in the non-major direction*/
     double end;				/* width/height in non-major direction*/
     unsigned int closed: 1;
+    short int counternumber;
     struct hintinstance *next;
 } HintInstance;
 
@@ -344,14 +346,21 @@ typedef struct splinechar {
     Undoes *undoes[2];
     Undoes *redoes[2];
     KernPair *kerns;
-#if 0			/* If I do my own hint substitution, integrating with an old set of hint subroutines is too hard. give up on this feature */
-    uint8 *origtype1;		/* Original string from Type1 file (unencoded) (or type2 from cff) */
-    int origlen;		/* Length of string */
-#endif
     Ligature *lig;		/* If we are a ligature then this tells us what */
     LigList *ligofme;		/* If this is the first character of a ligature then this gives us the list of possible ones */
 				/*  this field must be regenerated before the font is saved */
 } SplineChar;
+
+enum ttfnames { ttf_copyright=0, ttf_family, ttf_subfamily, ttf_uniqueid,
+    ttf_fullname, ttf_version, ttf_postscriptname, ttf_trademark,
+    ttf_manufacturer, ttf_designer, ttf_descriptor, ttf_venderurl,
+    ttf_designerurl, ttf_license, ttf_licenseurl, ttf_idontknow, ttf_preffamilyname,
+    ttf_prefmodifiers, ttf_compatfull, ttf_sampletext, ttf_namemax };
+struct ttflangname {
+    int lang;
+    unichar_t *names[ttf_namemax];
+    struct ttflangname *next;
+};
 
 typedef struct splinefont {
     char *fontname, *fullname, *familyname, *weight;
@@ -386,9 +395,12 @@ typedef struct splinefont {
     char *xuid;
     struct pfminfo {
 	unsigned int pfmset: 1;
-	unsigned char family;
+	unsigned char pfmfamily;
 	unsigned short weight;
+	unsigned short width;
+	char panose[10];
     } pfminfo;
+    struct ttflangname *names;
 } SplineFont;
 
 struct fontdict;
@@ -413,6 +425,7 @@ enum fontformat { ff_pfa, ff_pfb, ff_ptype3, ff_ptype0, ff_ttf, ff_ttfsym,
 extern int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format);
 extern int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format);
 extern int WriteTTFFont(char *fontname,SplineFont *sf, enum fontformat format);
+extern void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname);
 extern int SFReencodeFont(SplineFont *sf,enum charset new_map);
 extern void SFSetFontName(SplineFont *sf, char *family, char *mods, char *full);
 
@@ -439,6 +452,7 @@ extern StemInfo *StemInfoCopy(StemInfo *h);
 extern SplineChar *SplineCharCopy(SplineChar *sc);
 extern BDFChar *BDFCharCopy(BDFChar *bc);
 extern void ImageListsFree(ImageList *imgs);
+extern void TTFLangNamesFree(struct ttflangname *l);
 extern void SplineCharFree(SplineChar *sc);
 extern void SplineFontFree(SplineFont *sf);
 extern void SplineRefigure(Spline *spline);
@@ -449,6 +463,7 @@ extern void SplineSetFindBounds(SplinePointList *spl, DBounds *bounds);
 extern void SplineCharFindBounds(SplineChar *sc,DBounds *bounds);
 extern void SplineFontFindBounds(SplineFont *sf,DBounds *bounds);
 extern void SplinePointCatagorize(SplinePoint *sp);
+extern int SplinePointIsACorner(SplinePoint *sp);
 extern void SCCatagorizePoints(SplineChar *sc);
 extern int UnicodeNameLookup(char *name);
 extern SplinePointList *SplinePointListCopy(SplinePointList *base);
@@ -478,7 +493,9 @@ extern void BDFCharFree(BDFChar *bdfc);
 extern void BDFFontFree(BDFFont *bdf);
 extern int  BDFFontDump(char *filename,BDFFont *font, char *encodingname);
 extern double SplineSolve(Spline1D *sp, double tmin, double tmax, double sought_y, double err);
+extern int SplineSolveFull(Spline1D *sp,double val, double ts[3]);
 extern void SplineFindInflections(Spline1D *sp, double *_t1, double *_t2 );
+extern void SplineRemoveInflectionsTooClose(Spline1D *sp, double *_t1, double *_t2 );
 extern int NearSpline(struct findsel *fs, Spline *spline);
 extern double SplineNearPoint(Spline *spline, BasePoint *bp, double fudge);
 extern void SCMakeDependent(SplineChar *dependent,SplineChar *base);
@@ -550,6 +567,7 @@ extern BDFChar *BDFMakeChar(BDFFont *bdf,int i);
 
 extern void SCUndoSetLBearingChange(SplineChar *sc,int lb);
 extern Undoes *SCPreserveState(SplineChar *sc);
+extern Undoes *SCPreserveBackground(SplineChar *sc);
 extern Undoes *SCPreserveWidth(SplineChar *sc);
 extern Undoes *BCPreserveState(BDFChar *bc);
 extern void BCDoRedo(BDFChar *bc,struct fontview *fv);
@@ -580,6 +598,7 @@ extern void SFClearAutoSave(SplineFont *sf);
 
 extern void PSCharsFree(struct pschars *chrs);
 extern void PSDictFree(struct psdict *chrs);
+extern struct psdict *PSDictCopy(struct psdict *dict);
 extern int PSDictFindEntry(struct psdict *dict, char *key);
 extern char *PSDictHasEntry(struct psdict *dict, char *key);
 extern int PSDictRemoveEntry(struct psdict *dict, char *key);

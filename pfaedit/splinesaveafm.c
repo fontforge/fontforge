@@ -494,36 +494,7 @@ int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0) {
     if ( cnt!=0 ) wid /= cnt;
     if ( kerncnt>=512 ) kerncnt = 512;
 
-    if ( !sf->pfminfo.pfmset ) {
-	sf->pfminfo.family = 0x10;
-	if ( samewid>0 )
-	    sf->pfminfo.family = 0x30;
-	else if ( strstrmatch(sf->fontname,"sans")!=NULL )
-	    sf->pfminfo.family = 0x20;
-	else if ( strstrmatch(sf->fontname,"script")!=NULL )
-	    sf->pfminfo.family = 0x40;
-	sf->pfminfo.family |= 0x1;		/* Else it assumes monospace */
-	sf->pfminfo.weight = 400;
-	if ( strstrmatch(sf->fontname,"medium")!=NULL )
-	    sf->pfminfo.weight = 500;
-	else if ( (strstrmatch(sf->fontname,"demi")!=NULL ||
-		    strstrmatch(sf->fontname,"semi")!=NULL) &&
-		strstrmatch(sf->fontname,"bold")!=NULL )
-	    sf->pfminfo.weight = 600;
-	else if ( strstrmatch(sf->fontname,"bold")!=NULL )
-	    sf->pfminfo.weight = 700;
-	else if ( strstrmatch(sf->fontname,"heavy")!=NULL )
-	    sf->pfminfo.weight = 800;
-	else if ( strstrmatch(sf->fontname,"black")!=NULL )
-	    sf->pfminfo.weight = 900;
-	else if ( strstrmatch(sf->fontname,"thin")!=NULL )
-	    sf->pfminfo.weight = 100;
-	else if ( strstrmatch(sf->fontname,"extra")!=NULL ||
-		strstrmatch(sf->fontname,"light")!=NULL )
-	    sf->pfminfo.weight = 200;
-	else if ( strstrmatch(sf->fontname,"light")!=NULL )
-	    sf->pfminfo.weight = 300;
-    }
+    SFDefaultOS2Info(&sf->pfminfo,sf,sf->fontname);
 
     putlshort(0x100,pfm);		/* format version number */
     size = ftell(pfm);
@@ -550,7 +521,7 @@ int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0) {
     putc(sf->encoding_name==em_symbol?2:0,pfm);	/* charset. I'm always saying windows roman (ANSI) or symbol because I don't know the other choices */
     putlshort(/*samewid<0?sf->ascent+sf->descent:samewid*/0,pfm);	/* width */
     putlshort(sf->ascent+sf->descent,pfm);	/* height */
-    putc(sf->pfminfo.family,pfm);	/* family */
+    putc(sf->pfminfo.pfmfamily,pfm);	/* family */
     putlshort(wid,pfm);			/* average width, Docs say "Width of "X", but that's wrong */
     putlshort(maxwid,pfm);		/* max width */
 

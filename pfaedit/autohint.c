@@ -439,14 +439,10 @@ static void EIAddSpline(Spline *spline, EIList *el) {
 
     ts[0] = 0; ts[5] = 1.0;
     SplineFindInflections(&spline->splines[0],&ts[1],&ts[2]);
-    SplineFindInflections(&spline->splines[1],&ts[3],&ts[4]);
     /* avoid teeny tiny segments, they just confuse us */
-    for ( i=1; i<5; ++i ) {
-	if ( ts[i]<.01 && ts[i]>=0 )
-	    ts[i] = -1;
-	if ( ts[i]>.99 && ts[i]<=1 )
-	    ts[i] = -1;
-    }
+    SplineRemoveInflectionsTooClose(&spline->splines[0],&ts[1],&ts[2]);
+    SplineFindInflections(&spline->splines[1],&ts[3],&ts[4]);
+    SplineRemoveInflectionsTooClose(&spline->splines[1],&ts[3],&ts[4]);
     for ( i=0; i<4; ++i ) for ( j=i+1; j<5; ++j ) {
 	if ( ts[i]>ts[j] ) {
 	    temp = ts[i];
@@ -454,7 +450,7 @@ static void EIAddSpline(Spline *spline, EIList *el) {
 	    ts[j] = temp;
 	}
     }
-    for ( base=0; ts[base]==-1; ++base );
+    for ( base=0; ts[base]==-1; ++base);
     for ( i=5; i>base ; --i ) {
 	if ( ts[i]==ts[i-1] ) {
 	    for ( j=i-1; j>base; --j )
@@ -518,7 +514,7 @@ return( bdo>0 );
 return( tdo/tdm > bdo/bdm );
 }
 
-static void ELOrder(EIList *el, int major ) {
+void ELOrder(EIList *el, int major ) {
     int other = !major;
     int pos;
     EI *ei, *prev, *test;
@@ -1091,10 +1087,10 @@ return( active );
 /* Ah, but also if they are at different intersections and are connected */
 /*  by a series of horizontal/vertical lines (whichever are invisible to major)*/
 /*  then we still should. */
-static int EISameLine(EI *e, EI *n, double i, int major) {
+int EISameLine(EI *e, EI *n, double i, int major) {
     EI *t;
 
-    if ( n!=NULL && n->up==e->up &&
+    if ( n!=NULL && /*n->up==e->up &&*/
 	    (ceil(e->coordmin[major])==i || floor(e->coordmin[major])==i || floor(e->coordmax[major])==i || ceil(e->coordmax[major])==i) &&
 	    (ceil(n->coordmin[major])==i || floor(n->coordmin[major])==i || floor(n->coordmax[major])==i || ceil(n->coordmax[major])==i) ) {
 	if (

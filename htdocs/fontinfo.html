@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 2-Jul-2001 -->
+  <!-- AP: Last modified: 7-Jul-2001 -->
   <TITLE>Font Info</TITLE>
 </HEAD>
 <BODY>
@@ -14,40 +14,32 @@
 <P>
 The Font Info dialog is available from all views. It allows you to name your
 font, to set its <A HREF="fontview.html#Encodings">encoding</A> and various
-other useful bits of information.
+other useful bits of information. The dialog is composed of 7 different sub
+dialogs.
+<H2>
+  <A NAME="Names">Names</A>
+</H2>
 <P>
 Postscript fonts have several different names, but basically there are two
 important ones: the family name (like Times) and the fontname (which is the
 family name with a bunch of modifiers like Bold Italic Condensed tacked on
 to the end. We support a third one, the FullName (designed to be read by
 humans, while the others are for machines), this name can contain spaces
-(like "New Century Schoolbook-Bold Condensed").
+(like "New Century Schoolbook-Bold Condensed"). All of these names should
+be in ASCII. If you wish to enter names with characters outside this range
+look at the <A HREF="#TTF-Names">TTF Names</A> Section.
 <P>
-The Italic Angle indicates the slant of the font. PfaEdit can attempt to
-guess a good value for you by looking at the stems of certain letters ("I"
-for instance).
+The copyright field can contain whatever you want to put there, but it's
+a good place to put a copyright.
+<H2>
+  <A NAME="Encoding">Encoding</A>
+</H2>
 <P>
-The sum of the ascent and descent describes the bounds of the em-square for
-the font, and in most postscript fonts will be1000 (this is convention, it
-does not need to be 1000), while in most TrueType fonts it will be 2048 (also
-a convention, but TrueType claims rasterization is faster if the sum is a
-power of 2). Since both TrueType and Type1 (postscript) fonts represent numbers
-as 16-bit integers ascent and descent must be less than 32767. TrueType is
-more restrictive and requires their sum to be less than 16384.
-<P>
-The copyright could be whatever you want to put there, but it's a good place
-to put a copyright.
-<P>
-The XUID field is a collection of numbers separated by spaces and enclosed
-in brackets. This allows you to specify the extended unique ID of the font.
-If you have set the XUID preference entry then PfaEdit will assign values
-to all new fonts (by appending a number unique to this font to the end of
-your preference item). Adobe recommends that the XUID be changed every time
-the font is changed, so each time you generate a postscript font, that font's
-XUID (if present) will be incremented by 1.
+This sub dialog allows you to specify the encoding for your font, and to
+teach PfaEdit about new encodings.
 <P>
 You may want to add characters to or removed characters from your font. You
-can specify how many characters you want in the font here. <STRONG></STRONG>
+can specify how many characters you want in the font here. 
 <P>
 <STRONG>Note</STRONG> some encodings have different numbers of characters,
 and it may be hard to guess how many will be used. But if you have changed
@@ -56,9 +48,9 @@ in the Number box will be ignored and the correct number will come from the
 encoding process.
 <P>
   <HR>
-<H2>
+<H3>
   Built in <A NAME="Encodings">Encodings</A>
-</H2>
+</H3>
 <P>
 PfaEdit knows about the following encodings by default:
 <UL>
@@ -93,7 +85,7 @@ PfaEdit knows about the following encodings by default:
     ISO-8859-8 (Hebrew) -- (and Yiddish)
   <LI>
     ISO-8859-11 (Thai) -- Also know as TIS 620<BR>
-    &lt;there is no ISO-8859-12&gt;
+    &lt;there is no ISO-8859-12&gt; 
       <HR>
   <LI>
     KOI8-R -- Cyrillic
@@ -106,10 +98,10 @@ PfaEdit knows about the following encodings by default:
   <LI>
     Symbol
   <LI>
-    TeX Base
+    TeX Base 
       <HR>
   <LI>
-    ISO-10646-1 (Unicode)
+    ISO-10646-1 (Unicode) 
       <HR>
   <LI>
     JIS 208 -- Japanese Kanji (first 8000 characters)
@@ -133,9 +125,9 @@ Encoding sources:
 in unicode</A>.
 <P>
   <HR>
-<H2>
+<H3>
   User Defined Encodings
-</H2>
+</H3>
 <P>
 You can also use the font info dialog to add new encodings to the set that
 PfaEdit knows about. There are three buttons that manipulate a set of user
@@ -186,15 +178,15 @@ It contains:
   <LI>
     TeXMathSymbolEncoding
   <LI>
-    TeXMathExtensionEncoding
+    TeXMathExtensionEncoding 
       <HR>
   <LI>
     IsoLatin -- (which specifies all the characters used in any of the ISO-Latin-*
-    fonts
+    fonts 
       <HR>
   <LI>
     AdobeExpert -- (Which contains things like lower case numbers, small caps,
-    fractions, sub/superscript numbers, etc.)
+    fractions, sub/superscript numbers, etc.) 
       <HR>
   <LI>
     CodePage1250 -- Microsoft's encoding for Central European characters
@@ -216,7 +208,7 @@ It contains:
   <LI>
     CodePage1258 -- Microsoft's Viet Namese encoding
   <LI>
-    CodePage874 -- Microsoft's Thai encoding
+    CodePage874 -- Microsoft's Thai encoding 
       <HR>
   <LI>
     MacCentralEuropean
@@ -225,13 +217,181 @@ It contains:
   <LI>
     MacGreek
   <LI>
-    MacHebrew
+    MacHebrew 
       <HR>
   <LI>
     US-ASCII -- Not realy useful by itself any more, but provides the first 128
     characters of almost every other encoding.
 </UL>
+<H2>
+  <A NAME="PS-General">PS General</A>
+</H2>
 <P>
+This sub dialog contains a rather random collection of settings.
+<P>
+The Ascent and Descent are (in this current definition) Macintosh concepts
+rather than Postscript, there sum, however, provides the size of the em-square
+and that is very much a postscript concept. For postscript fonts this number
+is set by strong convention to be 1000, while in most TrueType fonts it will
+be 2048 (also a convention, but TrueType claims rasterization is faster if
+the sum is a power of 2). Since both TrueType and Type1 (postscript) fonts
+represent numbers as 16-bit integers ascent and descent must be less than
+32767. TrueType is more restrictive and requires their sum to be less than
+16384.
+<P>
+The Italic Angle indicates the slant of the font. PfaEdit can attempt to
+guess a good value for you by looking at the stems of certain letters ("I"
+for instance).
+<P>
+The underline position and height provide a program using this font a hint
+as to where it should place a line if it wants to underline text printed
+in this font.
+<P>
+The XUID field is a collection of numbers separated by spaces and enclosed
+in brackets. This allows you to specify the extended unique ID of the font.
+If you have set the XUID preference entry then PfaEdit will assign values
+to all new fonts (by appending a number unique to this font to the end of
+your preference item). Adobe recommends that the XUID be changed every time
+the font is changed, so each time you generate a postscript font, that font's
+XUID (if present) will be incremented by 1.
+<H2>
+  <A NAME="TTF-Values">TTF Values</A>
+</H2>
+<P>
+This sub dialog contains a few settings important on Windows platforms.
+<P>
+The weight class provides a numeric value describing the boldness of the
+font. A normal face will usually have a boldness of 400, and a bold face
+will usually be 700. This must be a number between 100 and 900.
+<P>
+The width class allows you to provide a numeric value saying how condensed
+or expanded this font is.
+<P>
+The PFM Family is used when generating PFM files and classifies the font
+into some rather broad catagories (Serif, Sans, Monospace, Script, Decorative).
+<H2>
+  <A NAME="TTF-Names">TTF Names</A>
+</H2>
+<P>
+TrueType (and OpenType) fonts are allowed to have different names in different
+languages. So a French user might see CaslonItalic displayed as CaslonItalique
+in a font menu, while a German user might see CaslonKursive. There are about
+20 different strings which may be customized into various different languages.
+Customizing one string does not mean that you must customize the others (indeed,
+usually only the Style string is customized).
+<P>
+If you don't include any values here when PfaEdit saves a font as truetype
+it will create an entry with an American English language containing the
+postscript versions of the strings.
+<P>
+The various strings and a brief description of their meanings are:
+<DL>
+  <DT>
+    Copyright
+  <DD>
+    Allows you to specify the copyright message
+  <DT>
+    Family
+  <DD>
+    The font's family name
+  <DT>
+    Styles (SubFamily)
+  <DD>
+    This should (in English) have values like "BoldItalicCondensed". This is
+    the most likely string to change in different languages.
+  <DT>
+    Fullname
+  <DD>
+    The concatenation of the Family name and the Styles name
+  <DT>
+    UniqueID
+  <DD>
+    This is a string that uniquely identifies the font in a human readable fashion.
+    It's format is quite different from postscript's UniqueID and PfaEdit will
+    create an appropriate string if you don't specify one (rather than copying
+    from postscript).
+  <DT>
+    Version
+  <DD>
+    A string containing the version number of the font.
+  <DT>
+    Postscript Name
+  <DD>
+    (PfaEdit will not let you set this. It will always be set directly the the
+    postscript fontname, only one instance of the tag is allowed in the font
+    and it must be ASCII)
+  <DT>
+    Trademark
+  <DD>
+    A string containing any trademark information for the font.
+  <DT>
+    Manufacturer
+  <DD>
+    The name of the company that distributes the font.
+  <DT>
+    Designer
+  <DD>
+    The name of the person who designed the font.
+  <DT>
+    Descriptor
+  <DD>
+    A description of the font and its characteristics.
+  <DT>
+    VenderURL
+  <DD>
+    An URL pointing to the font's vender.
+  <DT>
+    DesignerURL
+  <DD>
+    An URL (often an e-mail address) pointing to the font's designer
+  <DT>
+    License
+  <DD>
+    A string describing the license terms under which the font is marketted
+  <DT>
+    License
+  <DD>
+    An URL pointing to a page describing the terms of the license
+  <DT>
+    Prefered Family
+  <DD>
+    This is to get around a quirk of windows where only four Style names are
+    allowed per family, so font families with more than four styles would get
+    different family names above, but the preferred family name would be the
+    same. This should only be specified if it differs from the family
+  <DT>
+    Prefered Style
+  <DD>
+    This is similar to the above, except it applies to the style.
+  <DT>
+    Compatible Full
+  <DD>
+    This is to get around a quirk on the Mac.
+  <DT>
+    Sample Text
+  <DD>
+    Whatever.
+</DL>
+<P>
+These are described in the
+<A HREF="http://fonts.apple.com/TTRefMan/RM06/Chap6name.html">original true
+type docs</A>, but they apply to
+<A HREF="http://partners.adobe.com/asn/developer/opentype/recom.html">open
+type</A> as well.
+<P>
+Generally fonts will have a fairly complete set of strings in the American
+English entry, with the Style string (and nothing else) translated into different
+languages.
+<H2>
+  <A NAME="Panose">Panose</A>
+</H2>
+<P>
+This sub-dialog allows you to describe your font in 10 different dimensions.
+The exact meanings of many of these entries are not clear to me, I have merely
+typed them in as specified in the
+<A HREF="http://fonts.apple.com/TTRefMan/RM06/Chap6OS2.html">true type
+docs</A>. These same docs refer to another document, <I>PANOSE v2.0 Numerical
+Evaluation</I> which I cannot find.
 <P>
 <P ALIGN=Center>
 -- <A HREF="elementmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A>
