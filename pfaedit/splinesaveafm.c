@@ -66,16 +66,6 @@ return( NULL );
 return( buffer );
 }
 
-static SplineChar *SFFindName(SplineFont *sf,char *name) {
-    int i;
-
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
-	if ( strcmp(sf->chars[i]->name,name)==0 )
-return( sf->chars[i] );
-
-return( NULL );
-}
-
 static void KPInsert( SplineChar *sc1, SplineChar *sc2, int off, int isv ) {
     KernPair *kp;
 
@@ -117,21 +107,21 @@ return( 0 );
 	    for ( pt=buffer+3; isspace(*pt); ++pt);
 	    for ( ept = pt; *ept!='\0' && !isspace(*ept); ++ept );
 	    ch = *ept; *ept = '\0';
-	    sc1 = SFFindName(sf,pt);
+	    sc1 = SFGetChar(sf,-1,pt);
 	    *ept = ch;
 	    for ( pt=ept; isspace(*pt); ++pt);
 	    for ( ept = pt; *ept!='\0' && !isspace(*ept); ++ept );
 	    ch = *ept; *ept = '\0';
-	    sc2 = SFFindName(sf,pt);
+	    sc2 = SFGetChar(sf,-1,pt);
 	    *ept = ch;
 	    off = strtol(ept,NULL,10);
 	    KPInsert(sc1,sc2,off,isv);
 	} else if ( sscanf( buffer, "C %*d ; WX %*d ; N %40s ; B %*d %*d %*d %*d ; L %40s %40s",
 		name, second, lig)==3 ) {
-	    sc1 = SFFindName(sf,lig);
-	    sc2 = SFFindName(sf,name);
+	    sc1 = SFGetChar(sf,-1,lig);
+	    sc2 = SFGetChar(sf,-1,name);
 	    if ( sc2==NULL )
-		sc2 = SFFindName(sf,second);
+		sc2 = SFGetChar(sf,-1,second);
 	    if ( sc1!=NULL ) {
 		sprintf( buffer, "%s %s", name, second);
 		for ( liga=sc1->possub; liga!=NULL; liga=liga->next ) {
