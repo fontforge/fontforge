@@ -101,11 +101,12 @@ unichar_t alts[MAXC][MAXA+1];
 static void FigureAlternates(unichar_t index, char *apt, int normative) {
     int alt, i;
     char *end;
-    int isisolated=0;
+    int isisolated=0, iscircled;
 
     for ( i=0; ; ++i ) {
 	while ( *apt=='<' ) {
 	    isisolated = strncmp(apt,"<isolated>",strlen("<isolated>"))==0;
+	    iscircled = strncmp(apt,"<circle>",strlen("<circle>"))==0;
 	    while ( *apt && *apt!='>' ) ++apt;
 	    if ( *apt=='>' ) ++apt;
 	    while ( *apt==' ' ) ++apt;
@@ -118,6 +119,10 @@ static void FigureAlternates(unichar_t index, char *apt, int normative) {
 	    alts[index][i] = alt;
 	    alts[index][i+1] = 0;
 	}
+    }
+    if ( iscircled && i<MAXA ) {
+	alts[index][i] = 0x20dd;
+	alts[index][++i] = 0;
     }
     if ( i>MAXA )
 	fprintf( stderr, "%d is too many alternates for U+%04X\n", i, index );
