@@ -1795,6 +1795,13 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
 		paster->u.state.splines==NULL &&
 		paster->u.state.refs!=NULL )
 	    width = PasteGuessCorrectWidth(sc->parent,paster,&vwidth);
+	if (( pasteinto!=1 || paster->u.state.splines!=NULL ) && sc->ttf_instrs!=NULL ) {
+	    free(sc->ttf_instrs); sc->ttf_instrs = NULL;
+	    sc->ttf_instrs_len = 0;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+	    SCMarkInstrDlgAsChanged(sc);
+#endif	/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+	}
 	if ( !pasteinto ) {
 	    if ( !sc->parent->onlybitmaps )
 		SCSynchronizeWidth(sc,width,sc->width,fv);
