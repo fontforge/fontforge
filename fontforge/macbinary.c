@@ -2380,6 +2380,8 @@ static unichar_t *BuildName(char *family,int style) {
     char buffer[350];
 
     strncpy(buffer,family,200);
+    if ( style!=0 )
+	strcat(buffer,"-");
     if ( style&sf_bold )
 	strcat(buffer,"Bold");
     if ( style&sf_italic )
@@ -2395,6 +2397,18 @@ static unichar_t *BuildName(char *family,int style) {
     if ( style&sf_extend )
 	strcat(buffer,"Extended");
 return( uc_copy(buffer));
+}
+
+static int GuessStyle(char *fontname,int *styles,int style_cnt) {
+    int which, style;
+    char *stylenames = _GetModifiers(fontname,NULL,NULL);
+
+    style = _MacStyleCode(stylenames,NULL,NULL);
+    for ( which = style_cnt; which>=0; --which )
+	if ( styles[which] == style )
+return( which );
+
+return( -1 );
 }
 
 static FOND *PickFOND(FOND *fondlist,char *filename,char **name, int *style) {
@@ -2442,6 +2456,8 @@ static FOND *PickFOND(FOND *fondlist,char *filename,char **name, int *style) {
 	for ( which=cnt-1; which>=0; --which )
 	    if ( uc_strcmp(names[which],find)==0 )
 	break;
+	if ( which==-1 && strstrmatch(find,test->fondname)!=NULL )
+	    which = GuessStyle(find,styles,cnt);
 	if ( which==-1 ) {
 	    char *fn = copy(filename);
 	    fn[lparen-filename] = '\0';

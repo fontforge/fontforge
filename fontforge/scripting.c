@@ -1192,15 +1192,23 @@ static void bExport(Context *c) {
 }
 
 static void bMergeKern(Context *c) {
-    int isafm;
+    int isamfm, isafm, istfm;
+    char *temp;
 
     if ( c->a.argc!=2 )
 	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_str )
 	error( c, "Bad type of arguments");
-    isafm = strstrmatch(c->a.vals[1].u.sval,".afm")!=NULL;
-    if ( (isafm && !LoadKerningDataFromAfm(c->curfv->sf,c->a.vals[1].u.sval)) ||
-	    (!isafm && !LoadKerningDataFromTfm(c->curfv->sf,c->a.vals[1].u.sval)) )
+    temp = c->a.vals[1].u.sval;
+    isafm = strstrmatch(temp,".afm")!=NULL;
+    isamfm = strstrmatch(temp,".amfm")!=NULL;
+    isafm = strstrmatch(temp,".afm")!=NULL;
+    istfm = strstrmatch(temp,".tfm")!=NULL;
+    if ( (isafm && !LoadKerningDataFromAfm(c->curfv->sf,temp)) ||
+	    (isamfm && !LoadKerningDataFromAmfm(c->curfv->sf,temp)) ||
+	    (istfm && !LoadKerningDataFromTfm(c->curfv->sf,temp)) ||
+	    (!isafm && !istfm && !isamfm &&
+		!LoadKerningDataFromMacFOND(c->curfv->sf,temp)) )
 	error( c, "Failed to find kern info in file" );
 }
 

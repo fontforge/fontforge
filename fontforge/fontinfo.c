@@ -3182,7 +3182,7 @@ static char *modifierlistfull[] = { "Italic", "Oblique", "Kursive", "Cursive", "
 static char **mods[] = { knownweights, modifierlist, NULL };
 static char **fullmods[] = { realweights, modifierlistfull, NULL };
 
-static char *_GetModifiers(char *fontname, char *familyname,char *weight) {
+char *_GetModifiers(char *fontname, char *familyname,char *weight) {
     char *pt, *fpt;
     int i, j;
 

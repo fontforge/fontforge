@@ -1057,6 +1057,7 @@ extern int SFCompactFont(SplineFont *sf);
 extern int SFUncompactFont(SplineFont *sf);
 extern int CountOfEncoding(enum charset encoding_name);
 extern int SFMatchEncoding(SplineFont *sf,SplineFont *target);
+extern char *_GetModifiers(char *fontname, char *familyname,char *weight);
 extern char *SFGetModifiers(SplineFont *sf);
 extern void SFSetFontName(SplineFont *sf, char *family, char *mods, char *full);
 extern void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes);
