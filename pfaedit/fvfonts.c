@@ -93,8 +93,8 @@ return( i );
 	for ( k=0; from->script_lang[sli][j].langs[k]!=0; ++k );
 	to->script_lang[i][j].langs = galloc((k+1)*sizeof(uint32));
 	for ( k=0; from->script_lang[sli][j].langs[k]!=0; ++k )
-	    to->script_lang[sli][j].langs[k] = from->script_lang[sli][j].langs[k];
-	to->script_lang[sli][j].langs[k] = 0;
+	    to->script_lang[i][j].langs[k] = from->script_lang[sli][j].langs[k];
+	to->script_lang[i][j].langs[k] = 0;
     }
     to->script_lang[i][j].script = 0;
 return( i );
