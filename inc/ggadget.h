@@ -155,6 +155,10 @@ enum editor_commands { ec_cut, ec_clear, ec_copy, ec_paste, ec_undo, ec_redo,
     /* return values from file chooser filter functions */
 enum fchooserret { fc_hide, fc_show, fc_showdisabled };
 
+struct gdirentry;
+typedef enum fchooserret (*GFileChooserFilterType)(GGadget *g,struct gdirentry *ent,
+	const unichar_t *dir);
+
 #define _STR_NULL	(-1)		/* Null string resource */
 #define _STR_Language	0
 #define _STR_OK		1
@@ -257,10 +261,12 @@ void GFileChooserRefreshList(GGadget *g);
 int GFileChooserFilterEh(GGadget *g,GEvent *e);
 void GFileChooserConnectButtons(GGadget *g,GGadget *ok, GGadget *filter);
 void GFileChooserSetFilterText(GGadget *g,const unichar_t *filter);
+void GFileChooserSetFilterFunc(GGadget *g,GFileChooserFilterType filter);
 void GFileChooserSetDir(GGadget *g,unichar_t *dir);
 struct giocontrol *GFileChooserReplaceIO(GGadget *g,struct giocontrol *gc);
 unichar_t *GFileChooserGetDir(GGadget *g);
 unichar_t *GFileChooserGetFilterText(GGadget *g);
+GFileChooserFilterType GFileChooserGetFilterFunc(GGadget *g);
 void GFileChooserSetMimetypes(GGadget *g,unichar_t **mimetypes);
 unichar_t **GFileChooserGetMimetypes(GGadget *g);
 void GFileChooserGetChildren(GGadget *g,GGadget **pulldown, GGadget **list, GGadget **tf);
@@ -270,9 +276,9 @@ extern void GGadgetPreparePopupR(GWindow base,int msg);
 extern void GGadgetEndPopup(void);
 
 /* Handles *?{}[] wildcards */
-struct gdirentry;
 int GGadgetWildMatch(unichar_t *pattern, unichar_t *name,int ignorecase);
-enum fchooserret GFileChooserDefFilter(GGadget *g,struct gdirentry *ent);
+enum fchooserret GFileChooserDefFilter(GGadget *g,struct gdirentry *ent,
+	const unichar_t *dir);
 
 GWindow GMenuCreatePopupMenu(GWindow owner,GEvent *event, GMenuItem *mi);
 

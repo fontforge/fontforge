@@ -481,7 +481,7 @@ static int Prefs_ScriptBrowse(GGadget *g, GEvent *e) {
 	static unichar_t filter[] = { '*','.','p','e',  0 };
 
 	if ( *cur=='\0' ) cur=NULL;
-	ret = GWidgetOpenFile(GStringGetResource(_STR_CallScript,NULL), cur, filter, NULL);
+	ret = GWidgetOpenFile(GStringGetResource(_STR_CallScript,NULL), cur, filter, NULL,NULL);
 	if ( ret==NULL )
 return(true);
 	GGadgetSetTitle(tf,ret);

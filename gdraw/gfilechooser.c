@@ -139,7 +139,7 @@ return( true );
 return( false );
 }
 
-enum fchooserret GFileChooserDefFilter(GGadget *g,GDirEntry *ent) {
+enum fchooserret GFileChooserDefFilter(GGadget *g,GDirEntry *ent,const unichar_t *dir) {
     GFileChooser *gfc = (GFileChooser *) g;
     int i;
     unichar_t *mime;
@@ -230,14 +230,15 @@ return( &_GIcon_textfontbdf );
 return( &_GIcon_unknown );
 }
 
-static void GFileChooserFillList(GFileChooser *gfc,GDirEntry *first) {
+static void GFileChooserFillList(GFileChooser *gfc,GDirEntry *first,
+	const unichar_t *dir) {
     GDirEntry *e;
     int len;
     GTextInfo **ti;
 
     len = 0;
     for ( e=first; e!=NULL; e=e->next ) {
-	e->fcdata = (gfc->filter)(&gfc->g,e);
+	e->fcdata = (gfc->filter)(&gfc->g,e,dir);
 	if ( e->fcdata!=fc_hide )
 	    ++len;
     }
@@ -267,7 +268,7 @@ static void GFileChooserFillList(GFileChooser *gfc,GDirEntry *first) {
 static void GFileChooserIntermediateDir(GIOControl *gc) {
     GFileChooser *gfc = (GFileChooser *) (gc->userdata);
 
-    GFileChooserFillList(gfc,GIOgetDirData(gc));
+    GFileChooserFillList(gfc,GIOgetDirData(gc),gc->path);
 }
 
 static void GFileChooserReceiveDir(GIOControl *gc) {
@@ -279,7 +280,7 @@ static void GFileChooserReceiveDir(GIOControl *gc) {
 	free(gfc->lastname);
 	gfc->lastname=NULL;
     }
-    GFileChooserFillList(gfc,GIOgetDirData(gc));
+    GFileChooserFillList(gfc,GIOgetDirData(gc),gc->path);
     GIOclose(gc);
     gfc->outstanding = NULL;
     GDrawSetCursor(gfc->g.base,gfc->old_cursor);
@@ -626,6 +627,18 @@ void GFileChooserSetFilterText(GGadget *g,const unichar_t *wildcard) {
 unichar_t *GFileChooserGetFilterText(GGadget *g) {
     GFileChooser *gfc = (GFileChooser *) g;
 return( gfc->wildcard );
+}
+
+void GFileChooserSetFilterFunc(GGadget *g,GFileChooserFilterType filter) {
+    GFileChooser *gfc = (GFileChooser *) g;
+    if ( filter==NULL )
+	filter = GFileChooserDefFilter;
+    gfc->filter = filter;
+}
+
+GFileChooserFilterType GFileChooserGetFilterFunc(GGadget *g) {
+    GFileChooser *gfc = (GFileChooser *) g;
+return( gfc->filter );
 }
 
 void GFileChooserSetMimetypes(GGadget *g,unichar_t **mimetypes) {

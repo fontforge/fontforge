@@ -29,6 +29,7 @@
 
 #include "gdraw.h"
 #include "gprogress.h"
+#include "ggadget.h"
 
 struct ggadget;
 struct ggadgetcreatedata;
@@ -94,9 +95,9 @@ extern void GWidgetSetEH(GWindow w,GDrawEH e_h);
 
 	/* Built in dialogs */
 unichar_t *GWidgetOpenFile(const unichar_t *title, const unichar_t *defaultfile,
-	const unichar_t *initial_filter, unichar_t **mimetypes);
+	const unichar_t *initial_filter, unichar_t **mimetypes,GFileChooserFilterType filter);
 unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfile,
-	const unichar_t *initial_filter, unichar_t **mimetypes);
+	const unichar_t *initial_filter, unichar_t **mimetypes,GFileChooserFilterType filter );
 int GWidgetAsk(const unichar_t *title, const unichar_t **answers, const unichar_t *mn,
 	int def, int cancel,const unichar_t *question,...);
 int GWidgetAskCentered(const unichar_t *title,

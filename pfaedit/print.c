@@ -1431,7 +1431,7 @@ return(true);
 	if ( pi->printtype==pt_file ) {
 	    sprintf(buf,"pr-%.90s.ps", pi->sf->fontname );
 	    uc_strcpy(ubuf,buf);
-	    ret = GWidgetSaveAsFile(GStringGetResource(_STR_PrintToFile,NULL),ubuf,filter,NULL);
+	    ret = GWidgetSaveAsFile(GStringGetResource(_STR_PrintToFile,NULL),ubuf,filter,NULL,NULL);
 	    if ( ret==NULL )
 return(true);
 	    file = cu_copy(ret);

@@ -3024,7 +3024,7 @@ static int SD_Call(GGadget *g, GEvent *e) {
 	unichar_t *fn;
 	unichar_t *insert;
     
-	fn = GWidgetOpenFile(GStringGetResource(_STR_CallScript,NULL), NULL, filter, NULL);
+	fn = GWidgetOpenFile(GStringGetResource(_STR_CallScript,NULL), NULL, filter, NULL, NULL);
 	if ( fn==NULL )
 return(true);
 	insert = galloc((u_strlen(fn)+10)*sizeof(unichar_t));

@@ -337,7 +337,8 @@ typedef struct gfilechooser {
     unichar_t **mimetypes;
     unichar_t *wildcard;
     unichar_t *lastname;
-    enum fchooserret (*filter)(GGadget *chooser,struct gdirentry *file);
+    GFileChooserFilterType filter;
+    /*enum fchooserret (*filter)(GGadget *chooser,struct gdirentry *file,const unichar_t *dir);*/
     struct giocontrol *outstanding;
     GCursor old_cursor;
 } GFileChooser;

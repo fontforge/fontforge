@@ -67,7 +67,8 @@ return( true );
 }
 
 unichar_t *GWidgetOpenFile(const unichar_t *title, const unichar_t *defaultfile,
-	const unichar_t *initial_filter, unichar_t **mimetypes) {
+	const unichar_t *initial_filter, unichar_t **mimetypes,
+	GFileChooserFilterType filter) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
@@ -138,6 +139,7 @@ unichar_t *GWidgetOpenFile(const unichar_t *title, const unichar_t *defaultfile,
 
     GFileChooserConnectButtons(gcd[0].ret,gcd[1].ret,gcd[2].ret);
     GFileChooserSetFilterText(gcd[0].ret,initial_filter);
+    GFileChooserSetFilterFunc(gcd[0].ret,filter);
     GFileChooserSetMimetypes(gcd[0].ret,mimetypes);
     GGadgetSetTitle(gcd[0].ret,defaultfile);
 

@@ -1308,7 +1308,7 @@ return( true );
 	    InitCharPairs(wi);
 	} else {
 	    static unichar_t filter[] = { '*','.','t', 'x', 't', '\0' };
-	    unichar_t *fn = GWidgetOpenFile(GStringGetResource(_STR_LoadKernPairs,NULL), NULL, filter, NULL);
+	    unichar_t *fn = GWidgetOpenFile(GStringGetResource(_STR_LoadKernPairs,NULL), NULL, filter, NULL,NULL);
 	    if ( fn==NULL )
 return( true );
 	    if ( !ReadKernPairFile(fn,wi))
