@@ -2902,7 +2902,7 @@ static void WinBB(SplineFont *_sf,uint16 *winascent,uint16 *windescent,struct al
 	    }
 	}
     } else {
-	for ( k=0; k<_sf->subfontcnt; ++i ) {
+	for ( k=0; k<_sf->subfontcnt; ++k ) {
 	    SplineFont *sf = _sf->subfonts[k];
 	    for ( i=0; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i])) {
 		int uni = sf->chars[i]->unicodeenc;
