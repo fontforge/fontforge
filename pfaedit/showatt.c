@@ -1684,7 +1684,7 @@ static void BuildTop(struct att_dlg *att) {
 		} else {
 		    hasgsub = true;
 		    if ( SLIHasDefault(sf,pst->script_lang_index) &&
-			    OTTagToMacFeature(pst->type,&feat,&set))
+			    OTTagToMacFeature(pst->tag,&feat,&set))
 			hasmorx = true;
 		}
 	    }
