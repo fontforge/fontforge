@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 21-Jan-2005 -->
+  <!-- AP: Last modified: 2-Feb-2005 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -373,7 +373,8 @@ endloop
 </BLOCKQUOTE>
 <P>
 The built in <A NAME="procedures">procedures</A> are very similar to the
-menu items with the same names.
+menu items with the same names. Often the description here is sketchy, look
+at the menu item for more information.
 <DL>
   <DT>
     Print(arg1,arg2,arg3,...)
@@ -484,6 +485,53 @@ a[4][0] = "Nested array";
     and the value set will be val/val2. The NewCharset preference item may be
     set to a magic number as provided by GetPref, or by one of the encoding strings
     accepted by Reencode()
+  <DT>
+    DefaultOtherSubrs()
+  <DD>
+    Returns to using Adobe's versions of the OtherSubrs subroutines.
+  <DT>
+    <A NAME="ReadOtherSubrsFile">ReadOtherSubrsFile</A>(filename)
+  <DD>
+    Reads new PostScript subroutines to be used in the OtherSubrs array of a
+    type1 font. The file format is a little more complicated than it should be
+    (because I can't figure out how to parse the OtherSubrs array into individual
+    subroutines).
+    <UL>
+      <LI>
+	The subroutine list should not be enclosed in a [ ] pair
+      <LI>
+	Each subroutine should be preceded by a line starting with '%%%%' (there
+	may be more stuff after that)
+      <LI>
+	Subroutines should come in the obvious order, and must have the expected
+	meaning.
+      <LI>
+	If you don't wish to support flex hints set the first three subroutines to
+	"{}"
+      <LI>
+	You may specify at most 14 subroutines (0-13)
+      <LI>
+	Any text before the first subroutine will be treated as a copyright notice.
+    </UL>
+    <BLOCKQUOTE>
+      <PRE>% Copyright (c) 1987-1990 Adobe Systems Incorporated.
+% All Rights Reserved
+% This code to be used for Flex and Hint Replacement
+% Version 1.1
+%%%%%%
+{systemdict /internaldict known
+1183615869 systemdict /internaldict get exec
+...
+%%%%%%
+{gsave currentpoint newpath moveto} executeonly
+%%%%%%
+{currentpoint grestore gsave currentpoint newpath moveto} executeonly
+%%%%%%
+{systemdict /internaldict known not
+{pop 3}
+...
+</PRE>
+    </BLOCKQUOTE>
   <DT>
     GetEnv(str)
   <DD>
