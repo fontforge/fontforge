@@ -2312,7 +2312,7 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = mv->fv->sf->bitmaps==NULL;
 	  break;
 	  case MID_CharInfo:
-	    mi->ti.disabled = sc==NULL || mv->fv->cidmaster!=NULL;
+	    mi->ti.disabled = sc==NULL /*|| mv->fv->cidmaster!=NULL*/;
 	  break;
 	  case MID_ShowDependents:
 	    mi->ti.disabled = sc==NULL || sc->dependents == NULL;
@@ -3101,6 +3101,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
     gd.handle_controlevent = MV_SLIChanged;
     gd.u.list = SFLangList(mv->fv->sf,true);
+    gd.label = NULL;
     mv->sli_list = GListButtonCreate(gw,&gd,mv);
 
     MVMakeLabels(mv);

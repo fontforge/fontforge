@@ -945,6 +945,8 @@ void ShowAtt(SplineFont *sf) {
     GTextInfo label[4];
     int sbsize = GDrawPointsToPixels(NULL,_GScrollBar_Width);
 
+    if ( sf->cidmaster ) sf = sf->cidmaster;
+
     memset( &att,0,sizeof(att));
     att.sf = sf;
 

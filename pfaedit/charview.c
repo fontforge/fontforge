@@ -5080,9 +5080,11 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
+#if 0
 	  case MID_CharInfo:
 	    mi->ti.disabled = ( cv->fv->cidmaster!=NULL );
 	  break;
+#endif
 	  case MID_GetInfo:
 	    {
 		SplinePoint *sp; SplineSet *spl; RefChar *ref; ImageList *img;

@@ -3545,12 +3545,13 @@ struct feature {
     uint32 offset;
     uint32 tag;
     struct scriptlist *sl;
-    int script_lang_index;
+    /*int script_lang_index;*/
     int lcnt;
     uint16 *lookups;
 };
 struct lookup {
     uint32 tag;
+    struct scriptlist *sl;
     int script_lang_index;
     uint16 flags;
     uint16 lookup;
@@ -4367,12 +4368,13 @@ static void gsubExtensionSubTable(FILE *ttf, int stoffset,
 	fprintf( stderr, "This font is erroneous it has a GSUB extension subtable that points to\nanother extension sub-table.\n" );
       break;
     }
-
+#if 0
     if ( !info->extensionrequested ) {
 	info->extensionrequested = true;
 	fprintf( stderr, "Hi. This font uses GSUB extension sub-tables, and I've never seen one that\ndoes. I'd like to be able to look at it to test my code. Would you\nsend a copy of %s to\n   gww@silcom.com\nThanks!\n",
 		info->fontname );
     }
+#endif
 }
 
 static struct feature *readttffeatures(FILE *ttf,int32 pos,int isgpos, struct ttfinfo *info) {
@@ -4407,37 +4409,82 @@ return( NULL );
 return( features );
 }
 
+static struct scriptlist *ScriptListCopy(const struct scriptlist *sl) {
+    struct scriptlist *head=NULL, *last=NULL, *new;
+
+    while ( sl ) {
+	new = galloc(sizeof(struct scriptlist));
+	*new = *sl;
+	if ( head==NULL )
+	    head = new;
+	else
+	    last->next = new;
+	last = new;
+	sl = sl->next;
+    }
+return( head );
+}
+
+static struct scriptlist *ScriptListMerge(struct scriptlist *into,const struct scriptlist *from) {
+    struct scriptlist *sl, *new;
+    int i,j;
+
+    while ( from ) {
+	for ( sl=into; sl!=NULL && sl->script!=from->script; sl=sl->next );
+	if ( sl==NULL ) {
+	    new = galloc(sizeof(struct scriptlist));
+	    *new = *from;
+	    new->next = into;
+	    into = new;
+	} else {
+	    for ( i=0; i<from->lang_cnt; ++i ) {
+		if ( sl->lang_cnt<MAX_LANG ) {
+		    for ( j=0; j<sl->lang_cnt && sl->langs[j]!=from->langs[i]; ++j );
+		    if ( j>=sl->lang_cnt )
+			sl->langs[sl->lang_cnt++] = from->langs[i];
+		}
+	    }
+	}
+	from = from->next;
+    }
+return( into );
+}
+
 static struct lookup *compactttflookups(struct feature *features,uint32 *feats) {
     /* go through the feature table we read, and return an array containing */
     /*  all lookup indeces which match the feature tag */
     int cnt;
-    int i,j,k,l,m;
+    int i,j,k,l;
     struct lookup *lookups;
 
-    cnt = 0;
+    cnt = -1;
     for ( i=0; features[i].tag!=0; ++i )
-	cnt += features[i].lcnt;
+	for ( k=0; k<features[i].lcnt; ++k )
+	    if ( cnt<features[i].lookups[k] ) cnt = features[i].lookups[k];
+    ++cnt;
 
     lookups = gcalloc(cnt+1,sizeof(struct lookup));
-    j=0;
     for ( i=0; features[i].tag!=0; ++i ) {
 	for ( k=0; k<features[i].lcnt; ++k ) {
-	    lookups[j].tag = features[i].tag;
-	    lookups[j].script_lang_index = features[i].script_lang_index;
-	    lookups[j++].lookup = features[i].lookups[k];
+	    j = features[i].lookups[k];
+	    if ( lookups[j].tag==0 ) {
+		lookups[j].tag = features[i].tag;
+		lookups[j].sl = ScriptListCopy(features[i].sl);
+		lookups[j].lookup = j;
+	    } else {
+		if ( lookups[j].tag!=features[i].tag )
+		    fprintf( stderr, "Warning: Lookup %d is referenced from at least two features with different tags.\n This confuses PfaEdit and it will only remember one tag. '%c%c%c%c' and '%c%c%c%c'\n",
+			    lookups[j].tag>>24, (lookups[j].tag>>16)&0xff, (lookups[j].tag>>8)&0xff, lookups[j].tag&0xff,
+			    features[i].tag>>24, (features[i].tag>>16)&0xff, (features[i].tag>>8)&0xff, features[i].tag&0xff );
+		lookups[j].sl = ScriptListMerge(lookups[j].sl,features[i].sl);
+	    }
 	}
 	free( features[i].lookups );
     }
-    /* Some lookups may appear in several features, so remove duplicates */
-    /* !!! Our script/language list won't be accurate !!! */
-    for ( k=0; k<j; ++k ) {
-	for ( l=k+1; l<j; ++l ) {
-	    if ( lookups[k].lookup == lookups[l].lookup ) {
-		--j;
-		for ( m=l; m<j; ++m )
-		    lookups[m] = lookups[m+1];
-	    }
-	}
+    /* Some lookups may not be "interesting" so remove holes */
+    for ( i=j=0; i<cnt; ++i ) {
+	if ( lookups[i].tag!=0 )
+	    lookups[j++] = lookups[i];
     }
 
     free( features );
@@ -4570,26 +4617,26 @@ return( false );
 return( true );
 }
 
-static void FigureScriptIndeces(struct ttfinfo *info,struct feature *features) {
+static void FigureScriptIndeces(struct ttfinfo *info,struct lookup *lookups) {
     int i,j,k;
     struct scriptlist *sl, *snext;
 
-    for ( i=0; features[i].tag!=0; ++i );
+    for ( i=0; lookups[i].tag!=0; ++i );
     if ( info->script_lang==NULL ) {
 	info->script_lang = gcalloc(i+1,sizeof(struct script_record *));
     } else {
 	for ( j=0; info->script_lang[j]!=NULL; ++j );
 	info->script_lang = grealloc(info->script_lang,(i+j+1)*sizeof(struct script_record *));
     }
-    for ( i=0; features[i].tag!=0; ++i ) {
+    for ( i=0; lookups[i].tag!=0; ++i ) {
 	for ( j=0; info->script_lang[j]!=NULL; ++j )
-	    if ( SLMatch(info->script_lang[j],features[i].sl))
+	    if ( SLMatch(info->script_lang[j],lookups[i].sl))
 	break;
-	features[i].script_lang_index = j;
+	lookups[i].script_lang_index = j;
 	if ( info->script_lang[j]==NULL ) {
-	    for ( k=0, sl=features[i].sl; sl!=NULL; sl=sl->next, ++k );
+	    for ( k=0, sl=lookups[i].sl; sl!=NULL; sl=sl->next, ++k );
 	    info->script_lang[j] = galloc((k+1)*sizeof(struct script_record));
-	    for ( k=0, sl=features[i].sl; sl!=NULL; sl=sl->next, ++k ) {
+	    for ( k=0, sl=lookups[i].sl; sl!=NULL; sl=sl->next, ++k ) {
 		info->script_lang[j][k].script = sl->script;
 		info->script_lang[j][k].langs = galloc((sl->lang_cnt+1)*sizeof(uint32));
 		memcpy(info->script_lang[j][k].langs,sl->langs,sl->lang_cnt*sizeof(uint32));
@@ -4598,7 +4645,7 @@ static void FigureScriptIndeces(struct ttfinfo *info,struct feature *features) {
 	    info->script_lang[j][k].script = 0;
 	    info->script_lang[j+1] = NULL;
 	}
-	for ( sl=features[i].sl; sl!=NULL; sl=snext ) {
+	for ( sl=lookups[i].sl; sl!=NULL; sl=snext ) {
 	    snext = sl->next;
 	    free( sl );
 	}
@@ -4623,10 +4670,10 @@ static void ProcessGPOSGSUB(FILE *ttf,struct ttfinfo *info,int gpos,int inusetyp
     if ( features==NULL )		/* None of the data we care about */
 return;
     tagTtfFeaturesWithScript(ttf,base+script_off,features);
-    FigureScriptIndeces(info,features);
     lookups = compactttflookups( features,info->feats[gpos] );
     if ( lookups==NULL )
 return;
+    FigureScriptIndeces(info,lookups);
     
     fseek(ttf,lookup_start,SEEK_SET);
 

@@ -344,6 +344,13 @@ return( true );
     if ( lig_tags[i]==0 )
 return( false );
 
+    if ( sf->cidmaster!=NULL ) sf=sf->cidmaster;
+
+    if ( sf->script_lang==NULL ) {
+	GDrawIError("How can there be ligatures with no script/lang list?");
+return( lig_script==CHR('*',' ',' ',' ') && lig_lang==CHR('*',' ',' ',' ') );
+    }
+
     sr = sf->script_lang[lig->script_lang_index];
     for ( i=0; sr[i].script!=0; ++i ) {
 	if ( sr[i].script==lig_script || lig_script==CHR('*',' ',' ',' ')) {

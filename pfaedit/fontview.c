@@ -2398,7 +2398,7 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_CharInfo:
-	    mi->ti.disabled = anychars<0 || fv->cidmaster!=NULL;
+	    mi->ti.disabled = anychars<0 /*|| fv->cidmaster!=NULL*/;
 	  break;
 	  case MID_ShowDependents:
 	    mi->ti.disabled = anychars<0 || fv->sf->chars[anychars]==NULL ||
