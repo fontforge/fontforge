@@ -2321,6 +2321,8 @@ static FOND *PickFOND(FOND *fondlist,char *filename,char **name, int *style) {
 	free(find);
     } else if ( cnt==1 )
 	which = 0;
+    else if ( screen_display==NULL )
+	which = 0;
     else
 	which = GWidgetChoicesR(_STR_PickFont,(const unichar_t **) names,cnt,0,_STR_MultipleFontsPick);
 
