@@ -2415,6 +2415,7 @@ static void AnchorClassNameDecompose(AnchorClass *ac,const unichar_t *line) {
 	line += 5;
     }
     ac->script_lang_index = u_strtol(line,&end,10);
+    ac->merge_with = u_strtol(end,&end,10);
     while ( *end==' ' ) ++end;
     ac->name = u_copy(end);
 }
