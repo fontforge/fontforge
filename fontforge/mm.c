@@ -1570,7 +1570,7 @@ static int MMCB_OKApple(GGadget *g, GEvent *e) {
 	MMSet *mm = mmcb->mm;
 
 	for ( i=0; i<mm->axis_count; ++i )
-	    newcoords[i] = GetRealR(mmcb->gw,1000+i,axistablab[i],&err);
+	    newcoords[i] = rint(GetRealR(mmcb->gw,1000+i,axistablab[i],&err)*8096)/8096;
 	if ( err )
 return( true );
 	/* Now normalize each */
@@ -2057,7 +2057,7 @@ static int ESD_OK(GGadget *g, GEvent *e) {
 	unichar_t *name, *style;
 
 	for ( i=0; i<esd->mmw->axis_count && i<4; ++i )
-	    coords[i] = GetRealR(esd->gw,1000+i,axistablab[i],&err);
+	    coords[i] = rint(GetRealR(esd->gw,1000+i,axistablab[i],&err)*8096)/8096;
 	if ( err )
 return( true );
 	axis_count = i;
@@ -2865,7 +2865,7 @@ static void MMW_ParseNamedStyles(MMSet *setto,MMW *mmw) {
 	    upt = u_strchr(ti[i]->text,'[');
 	    if ( upt!=NULL ) {
 		for ( j=0, ++upt; j<setto->axis_count; ++j ) {
-		    setto->named_instances[i].coords[j] = u_strtod(upt,&end);
+		    setto->named_instances[i].coords[j] = rint(u_strtod(upt,&end)*8096)/8096;
 		    if ( *end==' ' ) ++end;
 		    upt = end;
 		}
@@ -3178,10 +3178,12 @@ return;		    /* Failure */
 		    _STR_Begin,&err);
 	    end = GetRealR(mmw->subwins[mmw_axes],CID_AxisEnd+i*100,
 		    _STR_End,&err);
-	    if ( isapple )
-		def = GetRealR(mmw->subwins[mmw_axes],CID_AxisDefault+i*100,
-			_STR_Default,&err);
-	    else
+	    if ( isapple ) {
+		def = rint(GetRealR(mmw->subwins[mmw_axes],CID_AxisDefault+i*100,
+			_STR_Default,&err)*8096)/8096;
+		start = rint(start*8096)/8096;
+		end = rint(end*8096)/8096;
+	    } else
 		def = start;
 	    if ( start>=end || def<start || def>end ) {
 		GTabSetSetSel(GWidgetGetControl(mmw->subwins[mmw_axes],CID_WhichAxis),
