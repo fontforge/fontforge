@@ -65,6 +65,8 @@ typedef struct strokedlg {
 #define CID_Pressure2	1019
 #define CID_WidthTxt	1020
 #define CID_PressureTxt	1021
+	/* For Kanou */
+#define CID_RmInternal	1022
 
 static void CVStrokeIt(void *_cv, StrokeInfo *si) {
     CharView *cv = _cv;
@@ -185,6 +187,7 @@ static int Stroke_OK(GGadget *g, GEvent *e) {
 	si->join = GGadgetIsChecked( GWidgetGetControl(sw,CID_BevelJoin))?lj_bevel:
 		GGadgetIsChecked( GWidgetGetControl(sw,CID_RoundJoin))?lj_round:
 		lj_miter;
+	si->removeinternal = GGadgetIsChecked( GWidgetGetControl(sw,CID_RmInternal));
 	si->caligraphic = GGadgetIsChecked( GWidgetGetControl(sw,CID_Caligraphic));
 	si->radius = GetRealR(sw,CID_Width,_STR_StrokeWidth,&err)/2;
 	if ( si->caligraphic ) {
@@ -251,6 +254,7 @@ static void StrokeSetup(StrokeDlg *sd, int calig) {
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_BevelJoin), calig==0);
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_RoundJoin), calig==0);
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_MiterJoin), calig==0);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_RmInternal), calig==0);
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_PenAngle), calig==1);
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_PenAngleTxt), calig==1);
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_ThicknessRatio), calig==1);
@@ -354,7 +358,7 @@ return( true );
 }
 
 #define SD_Width	230
-#define SD_Height	226
+#define SD_Height	241
 #define FH_Height	(SD_Height+75)
 
 static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeInfo *si) {
@@ -363,10 +367,10 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[30];
-    GTextInfo label[30];
+    GGadgetCreateData gcd[31];
+    GTextInfo label[31];
     int yoff=0;
-    int gcdoff;
+    int gcdoff, stroke_gcd;
     static StrokeInfo defaults = { 25, lj_round, lc_butt, false, false, false, 3.1415926535897932/4, .2, 50 };
     StrokeInfo *def = si?si:&defaults;
     char anglebuf[20], ratiobuf[20], widthbuf[20], width2buf[20],
@@ -400,269 +404,277 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	memset(&label,0,sizeof(label));
 	memset(&gcd,0,sizeof(gcd));
 
-	label[0].text = (unichar_t *) _STR_LineCap;
-	label[0].text_in_resource = true;
-	gcd[0].gd.label = &label[0];
-	gcd[0].gd.pos.x = 10; gcd[0].gd.pos.y = 23+yoff;
-	gcd[0].gd.flags = gg_enabled | gg_visible;
-	gcd[0].gd.cid = CID_LineCapTxt;
-	gcd[0].creator = GLabelCreate;
-
-	gcd[1].gd.pos.x = 6; gcd[1].gd.pos.y = gcd[0].gd.pos.y+6;
-	gcd[1].gd.pos.width = SD_Width-12; gcd[1].gd.pos.height = 25;
-	gcd[1].gd.flags = gg_enabled | gg_visible;
-	gcd[1].creator = GGroupCreate;
-
-	label[2].text = (unichar_t *) _STR_Butt;
-	label[2].text_in_resource = true;
-	label[2].image = &GIcon_buttcap;
-	gcd[2].gd.mnemonic = 'B';
-	gcd[2].gd.label = &label[2];
-	gcd[2].gd.pos.x = 15; gcd[2].gd.pos.y = gcd[0].gd.pos.y+12;
-	gcd[2].gd.flags = gg_enabled | gg_visible | (def->cap==lc_butt?gg_cb_on:0);
-	gcd[2].gd.cid = CID_ButtCap;
-	gcd[2].creator = GRadioCreate;
-
-	label[3].text = (unichar_t *) _STR_Round;
-	label[3].text_in_resource = true;
-	label[3].image = &GIcon_roundcap;
-	gcd[3].gd.mnemonic = 'R';
-	gcd[3].gd.label = &label[3];
-	gcd[3].gd.pos.x = 80; gcd[3].gd.pos.y = gcd[2].gd.pos.y;
-	gcd[3].gd.flags = gg_enabled | gg_visible | (def->cap==lc_round?gg_cb_on:0);
-	gcd[3].gd.cid = CID_RoundCap;
-	gcd[3].creator = GRadioCreate;
-
-	label[4].text = (unichar_t *) _STR_Squareq;
-	label[4].text_in_resource = true;
-	label[4].image = &GIcon_squarecap;
-	gcd[4].gd.mnemonic = 'q';
-	gcd[4].gd.label = &label[4];
-	gcd[4].gd.pos.x = 150; gcd[4].gd.pos.y = gcd[2].gd.pos.y;
-	gcd[4].gd.flags = gg_enabled | gg_visible | (def->cap==lc_square?gg_cb_on:0);
-	gcd[4].gd.cid = CID_SquareCap;
-	gcd[4].creator = GRadioCreate;
-
-	label[5].text = (unichar_t *) _STR_LineJoin;
-	label[5].text_in_resource = true;
-	gcd[5].gd.label = &label[5];
-	gcd[5].gd.pos.x = gcd[0].gd.pos.x; gcd[5].gd.pos.y = gcd[2].gd.pos.y+25;
-	gcd[5].gd.flags = gg_enabled | gg_visible;
-	gcd[5].gd.cid = CID_LineJoinTxt;
-	gcd[5].creator = GLabelCreate;
-
-	gcd[6].gd.pos.x = gcd[1].gd.pos.x; gcd[6].gd.pos.y = gcd[5].gd.pos.y+6;
-	gcd[6].gd.pos.width = SD_Width-12; gcd[6].gd.pos.height = 25;
-	gcd[6].gd.flags = gg_enabled | gg_visible;
-	gcd[6].creator = GGroupCreate;
-
-	label[7].text = (unichar_t *) _STR_Miter;
-	label[7].text_in_resource = true;
-	label[7].image = &GIcon_miterjoin;
-	gcd[7].gd.mnemonic = 'M';
-	gcd[7].gd.label = &label[7];
-	gcd[7].gd.pos.x = gcd[2].gd.pos.x; gcd[7].gd.pos.y = gcd[5].gd.pos.y+12;
-	gcd[7].gd.flags = gg_enabled | gg_visible | (def->join==lj_miter?gg_cb_on:0);
-	gcd[7].gd.cid = CID_MiterJoin;
-	gcd[7].creator = GRadioCreate;
-
-	label[8].text = (unichar_t *) _STR_Roundu;
-	label[8].text_in_resource = true;
-	label[8].image = &GIcon_roundjoin;
-	gcd[8].gd.mnemonic = 'u';
-	gcd[8].gd.label = &label[8];
-	gcd[8].gd.pos.x = gcd[3].gd.pos.x; gcd[8].gd.pos.y = gcd[7].gd.pos.y;
-	gcd[8].gd.flags = gg_enabled | gg_visible | (def->join==lj_round?gg_cb_on:0);
-	gcd[8].gd.cid = CID_RoundJoin;
-	gcd[8].creator = GRadioCreate;
-
-	label[9].text = (unichar_t *) _STR_Bevel;
-	label[9].text_in_resource = true;
-	label[9].image = &GIcon_beveljoin;
-	gcd[9].gd.mnemonic = 'v';
-	gcd[9].gd.label = &label[9];
-	gcd[9].gd.pos.x = gcd[4].gd.pos.x; gcd[9].gd.pos.y = gcd[7].gd.pos.y;
-	gcd[9].gd.flags = gg_enabled | gg_visible | (def->join==lj_bevel?gg_cb_on:0);
-	gcd[9].gd.cid = CID_BevelJoin;
-	gcd[9].creator = GRadioCreate;
-
-	gcd[10].gd.pos.x = 30-3; gcd[10].gd.pos.y = (strokeit!=NULL?SD_Height:FH_Height)-30-3;
-	gcd[10].gd.pos.width = -1;
-	gcd[10].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[10].text = (unichar_t *) _STR_OK;
-	label[10].text_in_resource = true;
-	gcd[10].gd.mnemonic = 'O';
-	gcd[10].gd.label = &label[10];
-	gcd[10].gd.handle_controlevent = Stroke_OK;
-	gcd[10].creator = GButtonCreate;
-
-	gcd[11].gd.pos.x = -30; gcd[11].gd.pos.y = gcd[10].gd.pos.y+3;
-	gcd[11].gd.pos.width = -1;
-	gcd[11].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[11].text = (unichar_t *) _STR_Cancel;
-	label[11].text_in_resource = true;
-	gcd[11].gd.label = &label[11];
-	gcd[11].gd.mnemonic = 'C';
-	gcd[11].gd.handle_controlevent = Stroke_Cancel;
-	gcd[11].creator = GButtonCreate;
-
 	gcdoff = 0;
 	if ( strokeit==NULL ) {
-	    label[12].text = (unichar_t *) _STR_CenterLine;
-	    label[12].text_in_resource = true;
-	    gcd[12].gd.mnemonic = 'D';
-	    gcd[12].gd.label = &label[12];
-	    gcd[12].gd.pos.x = 5; gcd[12].gd.pos.y = 5;
-	    gcd[12].gd.flags = gg_enabled | gg_visible | (def->centerline ? gg_cb_on : 0 );
-	    gcd[12].gd.cid = CID_CenterLine;
-	    gcd[12].gd.handle_controlevent = Stroke_CenterLine;
-	    gcd[12].creator = GRadioCreate;
+	    label[0].text = (unichar_t *) _STR_CenterLine;
+	    label[0].text_in_resource = true;
+	    gcd[0].gd.label = &label[0];
+	    gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5;
+	    gcd[0].gd.flags = gg_enabled | gg_visible | (def->centerline ? gg_cb_on : 0 );
+	    gcd[0].gd.cid = CID_CenterLine;
+	    gcd[0].gd.handle_controlevent = Stroke_CenterLine;
+	    gcd[0].creator = GRadioCreate;
 	    gcdoff = 1;
 	}
 
-	label[12+gcdoff].text = (unichar_t *) _STR_Strok;
-	label[12+gcdoff].text_in_resource = true;
-	gcd[12+gcdoff].gd.mnemonic = 'S';
-	gcd[12+gcdoff].gd.label = &label[12+gcdoff];
-	gcd[12+gcdoff].gd.pos.x = 5; gcd[12+gcdoff].gd.pos.y = 5+yoff;
-	gcd[12+gcdoff].gd.flags = gg_enabled | gg_visible | (!def->caligraphic && !def->centerline? gg_cb_on : 0);
-	gcd[12+gcdoff].gd.cid = CID_Stroke;
-	gcd[12+gcdoff].gd.handle_controlevent = Stroke_Stroke;
-	gcd[12+gcdoff].creator = GRadioCreate;
+	label[gcdoff].text = (unichar_t *) _STR_Strok;
+	label[gcdoff].text_in_resource = true;
+	gcd[gcdoff].gd.mnemonic = 'S';
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = 5+yoff;
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (!def->caligraphic && !def->centerline? gg_cb_on : 0);
+	gcd[gcdoff].gd.cid = CID_Stroke;
+	gcd[gcdoff].gd.handle_controlevent = Stroke_Stroke;
+	gcd[gcdoff++].creator = GRadioCreate;
 
-	label[13+gcdoff].text = (unichar_t *) _STR_Caligraphic;
-	label[13+gcdoff].text_in_resource = true;
-	gcd[13+gcdoff].gd.mnemonic = 'C';
-	gcd[13+gcdoff].gd.label = &label[13+gcdoff];
-	gcd[13+gcdoff].gd.pos.x = 5; gcd[13+gcdoff].gd.pos.y = gcd[5].gd.pos.y+38;
-	gcd[13+gcdoff].gd.flags = gg_enabled | gg_visible | (def->caligraphic ? gg_cb_on : 0);
-	gcd[13+gcdoff].gd.cid = CID_Caligraphic;
-	gcd[13+gcdoff].gd.handle_controlevent = Stroke_Caligraphic;
-	gcd[13+gcdoff].creator = GRadioCreate;
+	stroke_gcd = gcdoff;
+	gcd[gcdoff].gd.pos.x = 1; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+6;
+	gcd[gcdoff].gd.pos.width = SD_Width-2; gcd[gcdoff].gd.pos.height = 99;
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+	gcd[gcdoff++].creator = GGroupCreate;
 
-	gcd[14+gcdoff].gd.pos.x = 1; gcd[14+gcdoff].gd.pos.y = gcd[12+gcdoff].gd.pos.y+6;
-	gcd[14+gcdoff].gd.pos.width = SD_Width-2; gcd[14+gcdoff].gd.pos.height = 84;
-	gcd[14+gcdoff].gd.flags = gg_enabled | gg_visible;
-	gcd[14+gcdoff].creator = GGroupCreate;
+	label[gcdoff].text = (unichar_t *) _STR_LineCap;
+	label[gcdoff].text_in_resource = true;
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.pos.x = 10; gcd[gcdoff].gd.pos.y = 23+yoff;
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+	gcd[gcdoff].gd.cid = CID_LineCapTxt;
+	gcd[gcdoff++].creator = GLabelCreate;
 
-	gcd[15+gcdoff].gd.pos.x = 1; gcd[15+gcdoff].gd.pos.y = gcd[13+gcdoff].gd.pos.y+6;
-	gcd[15+gcdoff].gd.pos.width = SD_Width-2; gcd[15+gcdoff].gd.pos.height = 58;
-	gcd[15+gcdoff].gd.flags = gg_enabled | gg_visible;
-	gcd[15+gcdoff].creator = GGroupCreate;
+	gcd[gcdoff].gd.pos.x = 6; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+6;
+	gcd[gcdoff].gd.pos.width = SD_Width-12; gcd[gcdoff].gd.pos.height = 25;
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+	gcd[gcdoff++].creator = GGroupCreate;
 
-	label[16+gcdoff].text = (unichar_t *) _STR_PenAngle;
-	label[16+gcdoff].text_in_resource = true;
-	gcd[16+gcdoff].gd.mnemonic = 'A';
-	gcd[16+gcdoff].gd.label = &label[16+gcdoff];
-	gcd[16+gcdoff].gd.pos.x = gcd[2].gd.pos.x; gcd[16+gcdoff].gd.pos.y = gcd[13+gcdoff].gd.pos.y+15+3;
-	gcd[16+gcdoff].gd.flags = gg_visible;
-	gcd[16+gcdoff].gd.cid = CID_PenAngleTxt;
-	gcd[16+gcdoff].creator = GLabelCreate;
+	label[gcdoff].text = (unichar_t *) _STR_Butt;
+	label[gcdoff].text_in_resource = true;
+	label[gcdoff].image = &GIcon_buttcap;
+	gcd[gcdoff].gd.mnemonic = 'B';
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.pos.x = 15; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y+12;
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (def->cap==lc_butt?gg_cb_on:0);
+	gcd[gcdoff].gd.cid = CID_ButtCap;
+	gcd[gcdoff++].creator = GRadioCreate;
+
+	label[gcdoff].text = (unichar_t *) _STR_Round;
+	label[gcdoff].text_in_resource = true;
+	label[gcdoff].image = &GIcon_roundcap;
+	gcd[gcdoff].gd.mnemonic = 'R';
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.pos.x = 80; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y;
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (def->cap==lc_round?gg_cb_on:0);
+	gcd[gcdoff].gd.cid = CID_RoundCap;
+	gcd[gcdoff++].creator = GRadioCreate;
+
+	label[gcdoff].text = (unichar_t *) _STR_Squareq;
+	label[gcdoff].text_in_resource = true;
+	label[gcdoff].image = &GIcon_squarecap;
+	gcd[gcdoff].gd.mnemonic = 'q';
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.pos.x = 150; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y;
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (def->cap==lc_square?gg_cb_on:0);
+	gcd[gcdoff].gd.cid = CID_SquareCap;
+	gcd[gcdoff++].creator = GRadioCreate;
+
+	label[gcdoff].text = (unichar_t *) _STR_LineJoin;
+	label[gcdoff].text_in_resource = true;
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.pos.x = gcd[gcdoff-5].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-3].gd.pos.y+25;
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+	gcd[gcdoff].gd.cid = CID_LineJoinTxt;
+	gcd[gcdoff++].creator = GLabelCreate;
+
+	gcd[gcdoff].gd.pos.x = gcd[gcdoff-5].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+6;
+	gcd[gcdoff].gd.pos.width = SD_Width-12; gcd[gcdoff].gd.pos.height = 25;
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+	gcd[gcdoff++].creator = GGroupCreate;
+
+	label[gcdoff].text = (unichar_t *) _STR_Miter;
+	label[gcdoff].text_in_resource = true;
+	label[gcdoff].image = &GIcon_miterjoin;
+	gcd[gcdoff].gd.mnemonic = 'M';
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.pos.x = gcd[gcdoff-5].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y+12;
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (def->join==lj_miter?gg_cb_on:0);
+	gcd[gcdoff].gd.cid = CID_MiterJoin;
+	gcd[gcdoff++].creator = GRadioCreate;
+
+	label[gcdoff].text = (unichar_t *) _STR_Roundu;
+	label[gcdoff].text_in_resource = true;
+	label[gcdoff].image = &GIcon_roundjoin;
+	gcd[gcdoff].gd.mnemonic = 'u';
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.pos.x = gcd[gcdoff-5].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y;
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (def->join==lj_round?gg_cb_on:0);
+	gcd[gcdoff].gd.cid = CID_RoundJoin;
+	gcd[gcdoff++].creator = GRadioCreate;
+
+	label[gcdoff].text = (unichar_t *) _STR_Bevel;
+	label[gcdoff].text_in_resource = true;
+	label[gcdoff].image = &GIcon_beveljoin;
+	gcd[gcdoff].gd.mnemonic = 'v';
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.pos.x = gcd[gcdoff-5].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y;
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (def->join==lj_bevel?gg_cb_on:0);
+	gcd[gcdoff].gd.cid = CID_BevelJoin;
+	gcd[gcdoff++].creator = GRadioCreate;
+
+	label[gcdoff].text = (unichar_t *) _STR_RmInternalContour;
+	label[gcdoff].text_in_resource = true;
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.pos.x = gcd[gcdoff-4].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+20;
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (def->removeinternal?gg_cb_on:0);
+	gcd[gcdoff].gd.cid = CID_RmInternal;
+	gcd[gcdoff++].creator = GCheckBoxCreate;
+
+	label[gcdoff].text = (unichar_t *) _STR_Caligraphic;
+	label[gcdoff].text_in_resource = true;
+	gcd[gcdoff].gd.mnemonic = 'C';
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[stroke_gcd].gd.pos.y+gcd[stroke_gcd].gd.pos.height+4;
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (def->caligraphic ? gg_cb_on : 0);
+	gcd[gcdoff].gd.cid = CID_Caligraphic;
+	gcd[gcdoff].gd.handle_controlevent = Stroke_Caligraphic;
+	gcd[gcdoff++].creator = GRadioCreate;
+
+	gcd[gcdoff].gd.pos.x = 1; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+6;
+	gcd[gcdoff].gd.pos.width = SD_Width-2; gcd[gcdoff].gd.pos.height = 58;
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+	gcd[gcdoff++].creator = GGroupCreate;
+
+	label[gcdoff].text = (unichar_t *) _STR_PenAngle;
+	label[gcdoff].text_in_resource = true;
+	gcd[gcdoff].gd.mnemonic = 'A';
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.pos.x = gcd[stroke_gcd+3].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y+15+3;
+	gcd[gcdoff].gd.flags = gg_visible;
+	gcd[gcdoff].gd.cid = CID_PenAngleTxt;
+	gcd[gcdoff++].creator = GLabelCreate;
 
 	sprintf( anglebuf, "%g", def->penangle*180/3.1415926535897932 );
-	label[17+gcdoff].text = (unichar_t *) anglebuf;
-	label[17+gcdoff].text_is_1byte = true;
-	gcd[17+gcdoff].gd.mnemonic = 'A';
-	gcd[17+gcdoff].gd.label = &label[17+gcdoff];
-	gcd[17+gcdoff].gd.pos.x = 80; gcd[17+gcdoff].gd.pos.y = gcd[13+gcdoff].gd.pos.y+15;
-	gcd[17+gcdoff].gd.flags = gg_visible;
-	gcd[17+gcdoff].gd.cid = CID_PenAngle;
-	gcd[17+gcdoff].creator = GTextFieldCreate;
+	label[gcdoff].text = (unichar_t *) anglebuf;
+	label[gcdoff].text_is_1byte = true;
+	gcd[gcdoff].gd.mnemonic = 'A';
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.pos.x = 80; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y-3;
+	gcd[gcdoff].gd.flags = gg_visible;
+	gcd[gcdoff].gd.cid = CID_PenAngle;
+	gcd[gcdoff++].creator = GTextFieldCreate;
 
-	label[18+gcdoff].text = (unichar_t *) _STR_PenHeightRatio;
-	label[18+gcdoff].text_in_resource = true;
-	gcd[18+gcdoff].gd.mnemonic = 'H';
-	gcd[18+gcdoff].gd.label = &label[18+gcdoff];
-	gcd[18+gcdoff].gd.pos.x = gcd[2].gd.pos.x; gcd[18+gcdoff].gd.pos.y = gcd[16+gcdoff].gd.pos.y+24;
-	gcd[18+gcdoff].gd.flags = gg_visible;
-	gcd[18+gcdoff].gd.cid = CID_ThicknessRatioTxt;
-	gcd[18+gcdoff].gd.popup_msg = GStringGetResource(_STR_PenHeightRatioPopup,NULL);
-	gcd[18+gcdoff].creator = GLabelCreate;
+	label[gcdoff].text = (unichar_t *) _STR_PenHeightRatio;
+	label[gcdoff].text_in_resource = true;
+	gcd[gcdoff].gd.mnemonic = 'H';
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.pos.x = gcd[gcdoff-2].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y+24;
+	gcd[gcdoff].gd.flags = gg_visible;
+	gcd[gcdoff].gd.cid = CID_ThicknessRatioTxt;
+	gcd[gcdoff].gd.popup_msg = GStringGetResource(_STR_PenHeightRatioPopup,NULL);
+	gcd[gcdoff++].creator = GLabelCreate;
 
 	sprintf( ratiobuf, "%g", def->ratio );
-	label[19+gcdoff].text = (unichar_t *) ratiobuf;
-	label[19+gcdoff].text_is_1byte = true;
-	gcd[19+gcdoff].gd.mnemonic = 'H';
-	gcd[19+gcdoff].gd.label = &label[19+gcdoff];
-	gcd[19+gcdoff].gd.pos.x = gcd[17+gcdoff].gd.pos.x; gcd[19+gcdoff].gd.pos.y = gcd[17+gcdoff].gd.pos.y+24;
-	gcd[19+gcdoff].gd.flags = gg_visible;
-	gcd[19+gcdoff].gd.cid = CID_ThicknessRatio;
-	gcd[19+gcdoff].gd.popup_msg = GStringGetResource(_STR_PenHeightRatioPopup,NULL);
-	gcd[19+gcdoff].creator = GTextFieldCreate;
+	label[gcdoff].text = (unichar_t *) ratiobuf;
+	label[gcdoff].text_is_1byte = true;
+	gcd[gcdoff].gd.mnemonic = 'H';
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.pos.x = gcd[gcdoff-2].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y+24;
+	gcd[gcdoff].gd.flags = gg_visible;
+	gcd[gcdoff].gd.cid = CID_ThicknessRatio;
+	gcd[gcdoff].gd.popup_msg = GStringGetResource(_STR_PenHeightRatioPopup,NULL);
+	gcd[gcdoff++].creator = GTextFieldCreate;
 
-	label[20+gcdoff].text = (unichar_t *) _STR_StrokeWidth;
-	label[20+gcdoff].text_in_resource = true;
-	gcd[20+gcdoff].gd.mnemonic = 'W';
-	gcd[20+gcdoff].gd.label = &label[20+gcdoff];
-	gcd[20+gcdoff].gd.pos.x = 5; gcd[20+gcdoff].gd.pos.y = 166+3+yoff;
-	gcd[20+gcdoff].gd.flags = gg_enabled | gg_visible;
-	gcd[20+gcdoff].gd.cid = CID_WidthTxt;
-	gcd[20+gcdoff].creator = GLabelCreate;
+	label[gcdoff].text = (unichar_t *) _STR_StrokeWidth;
+	label[gcdoff].text_in_resource = true;
+	gcd[gcdoff].gd.mnemonic = 'W';
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+31;
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+	gcd[gcdoff].gd.cid = CID_WidthTxt;
+	gcd[gcdoff++].creator = GLabelCreate;
 
 	sprintf( widthbuf, "%g", 2*def->radius );
-	label[21+gcdoff].text = (unichar_t *) widthbuf;
-	label[21+gcdoff].text_is_1byte = true;
-	gcd[21+gcdoff].gd.mnemonic = 'W';
-	gcd[21+gcdoff].gd.label = &label[21+gcdoff];
-	gcd[21+gcdoff].gd.pos.x = 80; gcd[21+gcdoff].gd.pos.y = gcd[20+gcdoff].gd.pos.y-3;
-	gcd[21+gcdoff].gd.flags = gg_enabled | gg_visible;
-	gcd[21+gcdoff].gd.cid = CID_Width;
-	gcd[21+gcdoff].creator = GTextFieldCreate;
+	label[gcdoff].text = (unichar_t *) widthbuf;
+	label[gcdoff].text_is_1byte = true;
+	gcd[gcdoff].gd.mnemonic = 'W';
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.pos.x = 80; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y-3;
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+	gcd[gcdoff].gd.cid = CID_Width;
+	gcd[gcdoff++].creator = GTextFieldCreate;
 
 	if ( si!=NULL ) {
-	    gcd[21+gcdoff].gd.pos.width = 50;
+	    gcd[gcdoff-1].gd.pos.width = 50;
 
 	    sprintf( width2buf, "%g", 2*def->radius2 );
-	    label[22+gcdoff].text = (unichar_t *) width2buf;
-	    label[22+gcdoff].text_is_1byte = true;
-	    gcd[22+gcdoff].gd.label = &label[22+gcdoff];
-	    gcd[22+gcdoff].gd.pos.x = 140; gcd[22+gcdoff].gd.pos.y = gcd[21+gcdoff].gd.pos.y;
-	    gcd[22+gcdoff].gd.flags = gg_visible;
+	    label[gcdoff].text = (unichar_t *) width2buf;
+	    label[gcdoff].text_is_1byte = true;
+	    gcd[gcdoff].gd.label = &label[gcdoff];
+	    gcd[gcdoff].gd.pos.x = 140; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y;
+	    gcd[gcdoff].gd.flags = gg_visible;
 	    if ( def->pressure1!=def->pressure2 )
-		gcd[22+gcdoff].gd.flags = gg_enabled | gg_visible;
-	    gcd[22+gcdoff].gd.cid = CID_Width2;
-	    gcd[22+gcdoff].creator = GTextFieldCreate;
-	    gcd[22+gcdoff].gd.pos.width = 50;
+		gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+	    gcd[gcdoff].gd.cid = CID_Width2;
+	    gcd[gcdoff].creator = GTextFieldCreate;
+	    gcd[gcdoff++].gd.pos.width = 50;
 
 	    sd->r1.x = GDrawPointsToPixels(NULL,90);
 	    sd->r1.width=sd->r1.height=GDrawPointsToPixels(NULL,20);
-	    sd->r1.y = GDrawPointsToPixels(NULL,gcd[22+gcdoff].gd.pos.y+26);
+	    sd->r1.y = GDrawPointsToPixels(NULL,gcd[gcdoff-1].gd.pos.y+26);
 	    sd->r2 = sd->r1;
 	    sd->r2.x = GDrawPointsToPixels(NULL,150);
 
-	    label[23+gcdoff].text = (unichar_t *) _STR_Pressure;
-	    label[23+gcdoff].text_in_resource = true;
-	    gcd[23+gcdoff].gd.mnemonic = 'P';
-	    gcd[23+gcdoff].gd.label = &label[23+gcdoff];
-	    gcd[23+gcdoff].gd.pos.x = 5;
-	    gcd[23+gcdoff].gd.pos.y = GDrawPixelsToPoints(NULL,sd->r1.y+sd->r1.height)+5+3;
-	    gcd[23+gcdoff].gd.flags = gg_enabled | gg_visible;
-	    gcd[23+gcdoff].gd.cid = CID_PressureTxt;
-	    gcd[23+gcdoff].creator = GLabelCreate;
+	    label[gcdoff].text = (unichar_t *) _STR_Pressure;
+	    label[gcdoff].text_in_resource = true;
+	    gcd[gcdoff].gd.mnemonic = 'P';
+	    gcd[gcdoff].gd.label = &label[gcdoff];
+	    gcd[gcdoff].gd.pos.x = 5;
+	    gcd[gcdoff].gd.pos.y = GDrawPixelsToPoints(NULL,sd->r1.y+sd->r1.height)+5+3;
+	    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+	    gcd[gcdoff].gd.cid = CID_PressureTxt;
+	    gcd[gcdoff++].creator = GLabelCreate;
 
 	    sprintf( pressurebuf, "%d", def->pressure1 );
-	    label[24+gcdoff].text = (unichar_t *) pressurebuf;
-	    label[24+gcdoff].text_is_1byte = true;
-	    gcd[24+gcdoff].gd.mnemonic = 'W';
-	    gcd[24+gcdoff].gd.label = &label[24+gcdoff];
-	    gcd[24+gcdoff].gd.pos.x = gcd[21+gcdoff].gd.pos.x; gcd[24+gcdoff].gd.pos.y = gcd[23+gcdoff].gd.pos.y-3;
-	    gcd[24+gcdoff].gd.flags = gg_enabled | gg_visible;
-	    gcd[24+gcdoff].gd.cid = CID_Pressure1;
-	    gcd[24+gcdoff].gd.handle_controlevent = Stroke_PressureChange;
-	    gcd[24+gcdoff].creator = GTextFieldCreate;
-	    gcd[24+gcdoff].gd.pos.width = 50;
+	    label[gcdoff].text = (unichar_t *) pressurebuf;
+	    label[gcdoff].text_is_1byte = true;
+	    gcd[gcdoff].gd.mnemonic = 'W';
+	    gcd[gcdoff].gd.label = &label[gcdoff];
+	    gcd[gcdoff].gd.pos.x = gcd[gcdoff-3].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y-3;
+	    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+	    gcd[gcdoff].gd.cid = CID_Pressure1;
+	    gcd[gcdoff].gd.handle_controlevent = Stroke_PressureChange;
+	    gcd[gcdoff].creator = GTextFieldCreate;
+	    gcd[gcdoff++].gd.pos.width = 50;
 
 	    sprintf( pressure2buf, "%d", def->pressure2 );
-	    label[25+gcdoff].text = (unichar_t *) pressure2buf;
-	    label[25+gcdoff].text_is_1byte = true;
-	    gcd[25+gcdoff].gd.label = &label[25+gcdoff];
-	    gcd[25+gcdoff].gd.pos.x = gcd[22+gcdoff].gd.pos.x; gcd[25+gcdoff].gd.pos.y = gcd[24+gcdoff].gd.pos.y;
-	    gcd[25+gcdoff].gd.flags = gg_enabled | gg_visible;
-	    gcd[25+gcdoff].gd.cid = CID_Pressure2;
-	    gcd[25+gcdoff].gd.handle_controlevent = Stroke_PressureChange;
-	    gcd[25+gcdoff].creator = GTextFieldCreate;
-	    gcd[25+gcdoff].gd.pos.width = 50;
+	    label[gcdoff].text = (unichar_t *) pressure2buf;
+	    label[gcdoff].text_is_1byte = true;
+	    gcd[gcdoff].gd.label = &label[gcdoff];
+	    gcd[gcdoff].gd.pos.x = gcd[gcdoff-3].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y;
+	    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+	    gcd[gcdoff].gd.cid = CID_Pressure2;
+	    gcd[gcdoff].gd.handle_controlevent = Stroke_PressureChange;
+	    gcd[gcdoff].creator = GTextFieldCreate;
+	    gcd[gcdoff++].gd.pos.width = 50;
 	}
+
+	gcd[gcdoff].gd.pos.x = 30-3; gcd[gcdoff].gd.pos.y = (strokeit!=NULL?SD_Height:FH_Height)-30-3;
+	gcd[gcdoff].gd.pos.width = -1;
+	gcd[gcdoff].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	label[gcdoff].text = (unichar_t *) _STR_OK;
+	label[gcdoff].text_in_resource = true;
+	gcd[gcdoff].gd.mnemonic = 'O';
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.handle_controlevent = Stroke_OK;
+	gcd[gcdoff++].creator = GButtonCreate;
+
+	gcd[gcdoff].gd.pos.x = -30; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+3;
+	gcd[gcdoff].gd.pos.width = -1;
+	gcd[gcdoff].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	label[gcdoff].text = (unichar_t *) _STR_Cancel;
+	label[gcdoff].text_in_resource = true;
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.mnemonic = 'C';
+	gcd[gcdoff].gd.handle_controlevent = Stroke_Cancel;
+	gcd[gcdoff].creator = GButtonCreate;
 
 	GGadgetsCreate(gw,gcd);
     }

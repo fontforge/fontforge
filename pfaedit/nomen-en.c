@@ -1866,6 +1866,7 @@ static char *str_CenterLinePopup = "The splines drawn with the freehand tool wil
 static char *str_Pressure = "Pressure:";
 static char *mnemonic_Pressure = 'P';
 static char *str_PressurePopup = "Press in this square with a wacom pressure sensitive tool\nto set the pressure end-point";
+static char *str_RmInternalContour = "Remove Internal Contour";
     /* Auto Width/Kern */
 static char *str_EnterTwoCharRange = "Enter two character ranges";
 static char *str_ToBeAdjusted = "to be adjusted.";
