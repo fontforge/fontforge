@@ -1,4 +1,4 @@
-/* Copyright (C) 2000-2002 by George Williams */
+/* Copyright (C) 2000-2003 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -270,9 +270,13 @@ int main( int argc, char **argv ) {
     static unichar_t times[] = { 't', 'i', 'm', 'e', 's',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t', '\0' };
     int ds, ld;
 
-
-    fprintf( stderr, "Copyright \251 2000-2002 by George Williams.\n Executable based on sources from %s.\n",
+#if __Mac
+    fprintf( stderr, "Copyright (c) 2000-2003 by George Williams.\n Executable based on sources from %s.\n",
 	    source_modtime_str );
+#else
+    fprintf( stderr, "Copyright \251 2000-2003 by George Williams.\n Executable based on sources from %s.\n",
+	    source_modtime_str );
+#endif
     setlocale(LC_ALL,"");
     localeinfo = *localeconv();
     coord_sep = ",";

@@ -1,4 +1,4 @@
-/* Copyright (C) 2001-2002 by George Williams */
+/* Copyright (C) 2000-2003 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
