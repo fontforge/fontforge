@@ -1044,6 +1044,7 @@ return( NULL );
     if ( gw == gdisp->groot ) {
 	XWMHints wm_hints;
 	XSizeHints s_h;
+	XClassHint ch;
 	wm_hints.flags = InputHint | StateHint;
 	wm_hints.input = True;
 	wm_hints.initial_state = NormalState;
@@ -1096,6 +1097,9 @@ return( NULL );
 	nw->is_toplevel = true;
 	XChangeProperty(display,nw->w,gdisp->atoms.wm_protocols,XA_ATOM,32,
 		PropModeReplace,(unsigned char *) &gdisp->atoms.wm_del_window, 1);
+	ch.res_class = GResourceProgramName;
+	ch.res_name = GResourceProgramName;
+	XSetClassHint(display,nw->w,&ch);
     }
     XSaveContext(display,nw->w,gdisp->mycontext,(void *) nw);
     if ( eh!=NULL ) {
