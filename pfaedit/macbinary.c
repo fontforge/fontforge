@@ -530,9 +530,39 @@ static struct resource *BuildDummyNFNTlist(FILE *res, SplineFont *sf, real *size
 return(resstarts);
 }
 
+enum style_flags { sf_bold = 1, sf_italic = 2, sf_underline = 4, sf_outline = 8,
+	sf_shadow = 0x10, sf_condense = 0x20, sf_extend = 0x40 };
+enum psstyle_flags { psf_bold = 1, psf_italic = 2, psf_outline = 4,
+	psf_shadow = 0x8, psf_condense = 0x10, psf_extend = 0x20 };
+
+static unsigned short getstylecode( SplineFont *sf ) {
+    unsigned short stylecode= 0;
+
+    if ( strstr( sf->fontname, "Bold" ) || strstr(sf->fontname,"Demi") ||
+/* A few fonts have German/French styles in their names */
+	    strstr( sf->fontname,"Fett") || strstr(sf->fontname,"Gras") ) {
+	stylecode = sf_bold;
+    }
+    /* URW uses four leter abbreviations of Italic and Oblique */
+    if ( strstr( sf->fontname, "Ital" ) || strstr( sf->fontname, "Obli" ) ||
+	    strstr(sf->fontname, "Kurs")) {
+	stylecode |= sf_italic;
+    }
+    if ( strstr( sf->fontname, "Outl" ) ) {
+	stylecode |= sf_outline;
+    }
+    if ( strstr( sf->fontname, "Cond" ) ) {
+	stylecode |= sf_condense;
+    }
+    if ( strstr( sf->fontname, "Exte" ) ) {
+	stylecode |= sf_extend;
+    }
+return( stylecode );
+}
+
 static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,real *sizes) {
     uint32 rlenpos = ftell(res), widoffpos, widoffloc, kernloc, styleloc, end;
-    int i,k,cnt, strcnt, fontclass;
+    int i,k,cnt, strcnt, fontclass, stylecode;
     KernPair *kp;
     DBounds b;
     char *pt;
@@ -557,22 +587,31 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,real *sizes)
     putshort(res,2);			/* FOND version */
 
     /* Font association table */
+    stylecode = getstylecode( sf );
     for ( i=0; sizes!=NULL && sizes[i]!=0; ++i );
     if ( dottf ) {
 	putshort(res,i+1-1);		/* Number of faces */
 	putshort(res,0);		/* it's scaleable */
+#if USE_STYLECODE
+	putshort(res,stylecode);
+#else
 	putshort(res,0);		/* plain style, No matter what it really is, pretend it's plain */
 	    /* This is because the menu system gets confused if there isn't */
 	    /* a plain font in a given fond. Can't claim to be italic until */
 	    /* we've got the entire family gathered around, but my generate */
 	    /* fonts only works on one font at a time. */
+#endif
 	putshort(res,id);		/* Give it the same ID as the fond */
     } else
 	putshort(res,i-1);		/* Number of faces */
     if ( sizes!=NULL ) {
 	for ( i=0; sizes[i]!=0; ++i ) {
 	    putshort(res,sizes[i]);
+#if USE_STYLECODE
+	    putshort(res,stylecode);
+#else
 	    putshort(res,0);		/* plain style, No matter what it really is, pretend it's plain */
+#endif
 	    putshort(res,id+sizes[i]);	/* make up a unique ID */
 	}
     }
@@ -592,7 +631,11 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,real *sizes)
 
     widoffloc = ftell(res);
     putshort(res,1-1);			/* One style in the width table too */
+#if USE_STYLECODE
+    putshort(res,stylecode);
+#else
     putshort(res,0);			/* plain style, No matter what it really is, pretend it's plain */
+#endif
     for ( k=0; k<=256; ++k ) {
 	if ( k>=sf->charcnt || k==256 || sf->chars[k]==NULL )
 	    putshort(res,1<<12);	/* 1 em is default size */
@@ -619,11 +662,11 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,real *sizes)
     /* Fontographer referenced a postscript font even in truetype FONDs */
     styleloc = ftell(res);
     fontclass = 0x1;
-    /*if ( fam->psfaces[psf_outline]==NULL )*/ fontclass |= 4;
-    /* if ( fam->psfaces[psf_bold]!=NULL )*/ fontclass |= 0x8;
-    /*if ( fam->psfaces[psf_italic]!=NULL ) fontclass |= 0x40;*/
-    /*if ( fam->psfaces[psf_condense]!=NULL ) fontclass |= 0x80;*/
-    /*if ( fam->psfaces[psf_extend]!=NULL ) fontclass |= 0x100;*/
+    if ( !(stylecode&sf_outline) ) fontclass |= 4;
+    if ( stylecode&sf_bold ) fontclass |= 0x8;
+    if ( stylecode&psf_italic ) fontclass |= 0x40;
+    if ( stylecode&psf_condense ) fontclass |= 0x80;
+    if ( stylecode&psf_extend ) fontclass |= 0x100;
     putshort(res,fontclass);		/* fontClass */
     putlong(res,0);			/* Offset to glyph encoding table (which we don't use) */
     putlong(res,0);			/* Reserved, MBZ */
