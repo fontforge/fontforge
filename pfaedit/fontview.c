@@ -2102,7 +2102,7 @@ return;
 	fvs->sf = new;
 	FVSetTitle(fvs);
     }
-    FontViewReformatAll(fvs->sf);
+    FontViewReformatAll(fv->sf);
     SplineFontFree(cidmaster);
 }
 
