@@ -881,26 +881,80 @@ static void FillOutline(SplineSet *spl,FT_Outline *outline,int *pmax,int *cmax,
     }
 }
 
+static SplineSet *LayerAllOutlines(Layer *layer) {
+    SplineSet *head, *last, *cur;
+    RefChar *r;
+
+    if ( layer->refs==NULL )
+return( layer->splines );
+    head = SplinePointListCopy(layer->splines);
+    if ( head!=NULL )
+	for ( last=head; last->next!=NULL; last=last->next );
+    for ( r=layer->refs; r!=NULL; r=r->next ) {
+	cur = SplinePointListCopy(r->layers[0].splines);
+	if ( cur==NULL )
+	    /* Do Nothing */;
+	else if ( head==NULL ) {
+	    head = cur;
+	    for ( last=head; last->next!=NULL; last=last->next );
+	} else {
+	    last->next = cur;
+	    for ( ; last->next!=NULL; last=last->next );
+	}
+    }
+return( head );
+}
+
 static SplineSet *StrokeOutline(Layer *layer,SplineChar *sc) {
     StrokeInfo si;
+    RefChar *r;
+    SplineSet *head=NULL, *tail=NULL, *c;
 
     memset(&si,0,sizeof(si));
     if ( sc->parent->strokedfont ) {
 	si.radius = sc->parent->strokewidth/2;
 	si.join = lj_bevel;
 	si.cap = lc_butt;
+	si.stroke_type = si_std;
+	head = SSStroke(layer->splines,&si,sc);
+	if ( head!=NULL )
+	    for ( tail=head; tail->next!=NULL; tail=tail->next );
+	for ( r=layer->refs; r!=NULL; r=r->next ) {
+	    c = SSStroke(r->layers[0].splines,&si,sc);
+	    if ( c==NULL )
+		/* Do Nothing */;
+	    else if ( head==NULL ) {
+		head = c;
+		for ( tail=head; tail->next!=NULL; tail=tail->next );
+	    } else {
+		tail->next = c;
+		for ( ; tail->next!=NULL; tail=tail->next );
+	    }
+	}
+return( head );
 #ifdef FONTFORGE_CONFIG_TYPE3
     } else {
 	si.radius = layer->stroke_pen.width/2;
 	si.join = layer->stroke_pen.linejoin;
 	si.cap = layer->stroke_pen.linecap;
+	si.stroke_type = si_std;
+return( SSStroke(layer->splines,&si,sc));
 #endif
     }
+}
+
+#ifdef FONTFORGE_CONFIG_TYPE3
+static SplineSet *RStrokeOutline(struct reflayer *layer,SplineChar *sc) {
+    StrokeInfo si;
+
+    memset(&si,0,sizeof(si));
+    si.radius = layer->stroke_pen.width/2;
+    si.join = layer->stroke_pen.linejoin;
+    si.cap = layer->stroke_pen.linecap;
     si.stroke_type = si_std;
 return( SSStroke(layer->splines,&si,sc));
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 static void MergeBitmaps(FT_Bitmap *bitmap,FT_Bitmap *newstuff,uint32 col) {
     int i, j;
 
@@ -942,6 +996,7 @@ BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,
     BDFChar *bdfc;
     int err;
     DBounds b;
+    SplineSet *all;
 
     if ( !hasFreeType())
 return( NULL );
@@ -979,6 +1034,7 @@ return( NULL );
     if ( sc->parent->multilayer && !(sc->layer_cnt==1 &&
 	    !sc->layers[ly_fore].dostroke &&
 	    sc->layers[ly_fore].dofill &&
+	    sc->layers[ly_fore].refs==NULL &&
 	    (sc->layers[ly_fore].fill_brush.col==COLOR_INHERITED ||
 	     sc->layers[ly_fore].fill_brush.col==0x000000)) ) {
 	temp = bitmap;
@@ -995,20 +1051,27 @@ return( NULL );
 	FillOutline(stroked,&outline,&pmax,&cmax,
 		scale,&b,sc->parent->order2);
 	err |= (_FT_Outline_Get_Bitmap)(context,&outline,&bitmap);
-	SplinePointListFree(stroked);
+	SplinePointListsFree(stroked);
     } else 
 #ifndef FONTFORGE_CONFIG_TYPE3
     {
-	FillOutline(sc->layers[ly_fore].splines,&outline,&pmax,&cmax,
+	all = LayerAllOutlines(&sc->layers[ly_fore]);
+	FillOutline(all,&outline,&pmax,&cmax,
 		scale,&b,sc->parent->order2);
 	err = (_FT_Outline_Get_Bitmap)(context,&outline,&bitmap);
+	if ( sc->layers[ly_fore].splines!=all )
+	    SplinePointListFree(all);
     }
 #else
     if ( temp.buffer==NULL ) {
-	FillOutline(sc->layers[ly_fore].splines,&outline,&pmax,&cmax,
+	all = LayerAllOutlines(&sc->layers[ly_fore]);
+	FillOutline(all,&outline,&pmax,&cmax,
 		scale,&b,sc->parent->order2);
 	err = (_FT_Outline_Get_Bitmap)(context,&outline,&bitmap);
+	if ( sc->layers[ly_fore].splines!=all )
+	    SplinePointListsFree(all);
     } else {
+	int j; RefChar *r;
 	err = 0;
 	for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
 	    if ( sc->layers[i].dofill ) {
@@ -1026,6 +1089,26 @@ return( NULL );
 		err |= (_FT_Outline_Get_Bitmap)(context,&outline,&temp);
 		MergeBitmaps(&bitmap,&temp,sc->layers[i].stroke_pen.brush.col);
 		SplinePointListFree(stroked);
+	    }
+	    for ( r = sc->layers[i].refs; r!=NULL; r=r->next ) {
+		for ( j=0; j<r->layer_cnt; ++j ) {
+		    if ( r->layers[j].dofill ) {
+			memset(temp.buffer,0,temp.pitch*temp.rows);
+			FillOutline(r->layers[j].splines,&outline,&pmax,&cmax,
+				scale,&b,sc->parent->order2);
+			err |= (_FT_Outline_Get_Bitmap)(context,&outline,&temp);
+			MergeBitmaps(&bitmap,&temp,r->layers[j].fill_brush.col);
+		    }
+		    if ( r->layers[j].dostroke ) {
+			SplineSet *stroked = RStrokeOutline(&r->layers[j],sc);
+			memset(temp.buffer,0,temp.pitch*temp.rows);
+			FillOutline(stroked,&outline,&pmax,&cmax,
+				scale,&b,sc->parent->order2);
+			err |= (_FT_Outline_Get_Bitmap)(context,&outline,&temp);
+			MergeBitmaps(&bitmap,&temp,r->layers[j].stroke_pen.brush.col);
+			SplinePointListFree(stroked);
+		    }
+		}
 	    }
 	}
 	free(temp.buffer);
