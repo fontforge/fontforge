@@ -1239,6 +1239,15 @@ static void bSetItalicAngle(Context *c) {
 	error(c,"Bad argument type");
     c->curfv->sf->italicangle = c->a.vals[1].u.ival;
 }
+ 
+static void bSetUniqueID(Context *c) {
+
+    if ( c->a.argc==2 )
+	error( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_int )
+	error(c,"Bad argument type");
+    c->curfv->sf->uniqueid = c->a.vals[1].u.ival;
+}
 
 static SplineChar *GetOneSelChar(Context *c) {
     SplineFont *sf = c->curfv->sf;
@@ -2002,6 +2011,7 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "SetCharCnt", bSetCharCnt },
     { "SetFontNames", bSetFontNames },
     { "SetItalicAngle", bSetItalicAngle },
+    { "SetUniqueID", bSetUniqueID },
     { "SetCharName", bSetCharName },
     { "SetUnicodeValue", bSetUnicodeValue },
     { "SetCharColor", bSetCharColor },
