@@ -253,6 +253,15 @@ return( isrighttoleft(sc->unicodeenc ));
 return( ScriptIsRightToLeft(SCScriptFromUnicode(sc)));
 }
 
+int SLIContainsR2L(SplineFont *sf,int sli) {
+    struct script_record *sr;
+
+    if ( sf->cidmaster!=NULL )
+	sf = sf->cidmaster;
+    sr = sf->script_lang[sli];
+return( ScriptIsRightToLeft(sr[0].script) );
+}
+
 static KernPair *KernListMatch(KernPair *kerns,int sli) {
     KernPair *kp;
 
@@ -660,7 +669,8 @@ static void dumpgposkerndata(FILE *gpos,SplineFont *sf,int sli,
     cnt=0;
     if ( glyphs!=NULL ) {
 	for ( ; glyphs[cnt]!=NULL; ++cnt );
-	at->os2.maxContext = 2;
+	if ( at->os2.maxContext<2 )
+	    at->os2.maxContext = 2;
     }
 
     putshort(gpos,1);		/* format 1 of the pair adjustment subtable */
@@ -2230,6 +2240,8 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 	    new = chunkalloc(sizeof(struct lookup));
 	    new->feature_tag = isv ? CHR('v','k','r','n') : CHR('k','e','r','n');
 	    /* new->flags = pst_ignorecombiningmarks; */	/* yudit doesn't like this flag to be set 2.7.2 */
+	    if ( SLIContainsR2L(sf,ligtags[j].script_lang_index))
+		new->flags = pst_r2l;
 	    new->script_lang_index = ligtags[j].script_lang_index;
 	    new->lookup_type = 2;		/* Pair adjustment subtable type */
 	    new->offset = ftell(lfile);
@@ -2822,7 +2834,7 @@ static struct feature *CoalesceLookups(SplineFont *sf, struct lookup *lookups) {
 	    slumax = lcnt;
 	}
 	lcnt = 0; which = 0;
-	for ( l=lookups; l!=NULL && l->feature_tag==lookups->feature_tag; l = l->feature_next ) {
+	for ( l=lookups; l!=NULL && l->feature_tag==lookups->feature_tag; l = l->feature_next, ++which ) {
 	    struct script_record *sr = sf->script_lang[l->script_lang_index];
 	    for ( s=0; sr[s].script!=0; ++s ) for ( lang=0; sr[s].langs[lang]!=0; ++lang ) {
 		pos = FindSL(slu,lcnt,sr[s].script,sr[s].langs[lang]);
