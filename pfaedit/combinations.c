@@ -110,7 +110,7 @@ typedef struct kpdata {
     SplineChar *sc;		/* If set then restrict to kerns of this char */
 				/*  in either position */
     struct kerns *kerns;	/* All the kerns we care about */
-    int kcnt;
+    int kcnt, firstcnt;
     BDFFont *bdf;
     int header_height;
     int sb_width;
@@ -181,7 +181,7 @@ static void KPSortEm(KPData *kpd,enum sortby sort_func) {
 }
 
 static void KPBuildKernList(KPData *kpd) {
-    int i, cnt;
+    int i, cnt, firstcnt=0;
     KernPair *kp;
 
     if ( kpd->sc!=NULL ) {
@@ -215,10 +215,11 @@ static void KPBuildKernList(KPData *kpd) {
 return;
 	    kpd->kerns = galloc((cnt+1)*sizeof(struct kerns));
 	    kpd->kcnt = cnt;
+	    kpd->firstcnt = 1;
 	}
     } else {
 	while ( 1 ) {
-	    for ( cnt=i=0; i<kpd->sf->charcnt; ++i ) if ( kpd->sf->chars[i]!=NULL ) {
+	    for ( firstcnt=cnt=i=0; i<kpd->sf->charcnt; ++i ) if ( kpd->sf->chars[i]!=NULL ) {
 		for ( kp = kpd->sf->chars[i]->kerns; kp!=NULL; kp=kp->next ) {
 		    if ( kpd->kerns!=NULL ) {
 			kpd->kerns[cnt].first = kpd->sf->chars[i];
@@ -228,6 +229,8 @@ return;
 		    }
 		    ++cnt;
 		}
+		if ( kpd->sf->chars[i]->kerns!=NULL )
+		    ++firstcnt;
 	    }
 	    if ( kpd->kerns!=NULL )
 	break;
@@ -235,6 +238,7 @@ return;
 return;
 	    kpd->kerns = galloc((cnt+1)*sizeof(struct kerns));
 	    kpd->kcnt = cnt;
+	    kpd->firstcnt = firstcnt;
 	}
     }
     KPSortEm(kpd,sb_first);
@@ -611,11 +615,12 @@ static int KP_Cancel(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static unichar_t upopupbuf[100];
+
 static int kpdv_e_h(GWindow gw, GEvent *event) {
     KPData *kpd = GDrawGetUserData(gw);
     int index, old_sel, temp;
     char buffer[100];
-    static unichar_t ubuf[100];
 
     switch ( event->type ) {
       case et_expose:
@@ -665,8 +670,8 @@ static int kpdv_e_h(GWindow gw, GEvent *event) {
 		    kpd->kerns[index].second->unicodeenc );
 	    if ( kpd->kerns[index].second->unicodeenc==-1 )
 		strcpy(buffer+strlen(buffer)-4, "????");
-	    uc_strcpy(ubuf,buffer);
-	    GGadgetPreparePopup(gw,ubuf);
+	    uc_strcpy(upopupbuf,buffer);
+	    GGadgetPreparePopup(gw,upopupbuf);
 	    KP_Cursor(kpd,event);
 	} else if ( kpd->pressed && kpd->pressed_x!=-1 ) {
 	    if ( index==kpd->selected ) {
@@ -689,10 +694,21 @@ static int kpdv_e_h(GWindow gw, GEvent *event) {
 return( true );
 }
 
+static void kpdpopup(KPData *kpd) {
+    char buffer[100];
+
+    sprintf( buffer, "total kern pairs=%d\nchars starting kerns=%d",
+	    kpd->kcnt, kpd->firstcnt );
+    uc_strcpy(upopupbuf,buffer);
+    GGadgetPreparePopup(kpd->gw,upopupbuf);
+}
+
 static int kpd_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	KPData *kpd = GDrawGetUserData(gw);
 	kpd->done = true;
+    } else if ( event->type == et_mousemove ) {
+	kpdpopup(GDrawGetUserData(gw));
     } else if ( event->type == et_expose ) {
 	KPData *kpd = GDrawGetUserData(gw);
 	GDrawDrawLine(gw,0,kpd->header_height-1,
