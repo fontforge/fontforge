@@ -315,9 +315,9 @@ int _FVMenuSaveAs(FontView *fv) {
     int ok;
 
     if ( fv->cidmaster!=NULL && fv->cidmaster->filename!=NULL )
-	temp=uc_copy(fv->cidmaster->filename);
+	temp=def2u_copy(fv->cidmaster->filename);
     else if ( fv->sf->filename!=NULL )
-	temp=uc_copy(fv->sf->filename);
+	temp=def2u_copy(fv->sf->filename);
     else {
 	SplineFont *sf = fv->cidmaster?fv->cidmaster:fv->sf;
 	temp = galloc(sizeof(unichar_t)*(strlen(sf->fontname)+8));
@@ -2299,7 +2299,7 @@ static void FVMenuClearWidthMD(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 void FVSetTitle(FontView *fv) {
-    unichar_t *title, *ititle;
+    unichar_t *title, *ititle, *temp;
     char *file=NULL;
     int len;
 
@@ -2312,7 +2312,9 @@ void FVSetTitle(FontView *fv) {
     uc_strcpy(title,fv->sf->fontname);
     if ( file!=NULL ) {
 	uc_strcat(title,"  ");
-	uc_strcat(title,GFileNameTail(file));
+	temp = def2u_copy(GFileNameTail(file));
+	u_strcat(title,temp);
+	free(temp);
     }
     ititle = uc_copy(fv->sf->fontname);
     GDrawSetWindowTitles(fv->gw,title,ititle);

@@ -259,6 +259,7 @@ typedef struct gtextfield {
     unsigned int dobitext: 1;	/* has at least one right to left character */
     unsigned int password: 1;
     unsigned int dontdraw: 1;	/* Used when the tf is part of a larger control, and the control determines when to draw the tf */
+    unsigned int donthook: 1;	/* Used when the tf is part of a the gchardlg.c */
     uint8 fh;
     uint8 as;
     uint8 nw;			/* Width of one character (an "n") */

@@ -475,7 +475,7 @@ static void GTextFieldGrabSelection(GTextField *gt, enum selnames sel ) {
 		sizeof(char),
 		NULL,NULL);
 
-	if ( ctemp2!=NULL && strlen(ctemp2)==gt->sel_end-gt->sel_start )
+	if ( ctemp2!=NULL && *ctemp2!='\0' /*strlen(ctemp2)==gt->sel_end-gt->sel_start*/ )
 	    GDrawAddSelectionType(gt->g.base,sel,"STRING",ctemp2,strlen(ctemp2),
 		    sizeof(char),
 		    NULL,NULL);
@@ -1558,7 +1558,7 @@ return( true );
 		GTextFieldPaste(gt,sn_primary);
 	    if ( gt->sel_start==gt->sel_end )
 		GTextField_Show(gt,gt->sel_start);
-	    if ( gt->sel_start<gt->sel_end && _GDraw_InsCharHook!=NULL )
+	    if ( gt->sel_start<gt->sel_end && _GDraw_InsCharHook!=NULL && !gt->donthook )
 		(_GDraw_InsCharHook)(GDrawGetDisplayOfWindow(gt->g.base),
 			gt->text[gt->sel_start]);
 	}
@@ -2285,6 +2285,8 @@ static GTextField *_GTextFieldCreate(GTextField *gt, struct gwindow *base, GGadg
 	gt->font = gd->label->font;
     if ( (gd->flags & gg_textarea_wrap) && gt->multi_line )
 	gt->wrap = true;
+    else if ( (gd->flags & gg_textarea_wrap) )	/* only used by gchardlg.c no need to make it look nice */
+	gt->donthook = true;
     GTextFieldFit(gt);
     _GGadget_FinalPosition(&gt->g,base,gd);
     GTextFieldRefigureLines(gt,0);

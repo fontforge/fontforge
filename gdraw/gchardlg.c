@@ -900,7 +900,7 @@ void GWidgetCreateInsChar(void) {
 	{ GLabelCreate, {{ 6, 6 }, NULL, 'e', 0, 0, 0, 0, &labels[0], NULL, gg_visible | gg_enabled | gg_pos_use0 }},
 	{ GListButtonCreate, {{ 6, 21, 168 }, NULL, 'e', 0, 0, 0, INSCHR_CharSet, NULL, NULL, gg_visible | gg_enabled | gg_pos_use0 }},
 	{ GLabelCreate, {{ 6, 50 }, NULL, 'C', 0, 0, 0, 0, &labels[1], NULL, gg_visible | gg_enabled | gg_pos_use0 }},
-	{ GTextFieldCreate, {{ 6, 64, 65 }, NULL, 'C', 0, 0, 0, INSCHR_Char, NULL, NULL, gg_visible | gg_enabled | gg_pos_use0 }},
+	{ GTextFieldCreate, {{ 6, 64, 65 }, NULL, 'C', 0, 0, 0, INSCHR_Char, NULL, NULL, gg_visible | gg_enabled | gg_pos_use0 | gg_textarea_wrap }}, /* gg_textarea_wrap means (here) that we should not invoke the InsChar Hook for selections */
 	{ GRadioCreate, {{ 85, 48 }, NULL, 'H', 0, 0, 0, INSCHR_Hex, &labels[2], NULL, gg_visible | gg_enabled | gg_cb_on | gg_pos_use0 }},
 	{ GRadioCreate, {{ 85, 68 }, NULL, 'D', 0, 0, 0, INSCHR_Dec, &labels[3], NULL, gg_visible | gg_enabled | gg_pos_use0 }},
 	{ GRadioCreate, {{ 127, 48 }, NULL, 'U', 0, 0, 0, INSCHR_Unicode, &labels[4], NULL, gg_visible | gg_enabled | gg_pos_use0 }},

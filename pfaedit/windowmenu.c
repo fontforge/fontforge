@@ -138,7 +138,7 @@ return;
 	    mi->ti.userdata = RecentFiles[i];
 	    mi->ti.bg = mi->ti.fg = COLOR_DEFAULT;
 	    mi->invoke = RecentSelect;
-	    mi->ti.text = uc_copy(GFileNameTail(RecentFiles[i]));
+	    mi->ti.text = def2u_copy(GFileNameTail(RecentFiles[i]));
 	}
     }
     if ( cnt!=cnt1 )

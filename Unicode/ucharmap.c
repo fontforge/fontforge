@@ -255,34 +255,34 @@ return( NULL );
 	    if ( *ufrom<0x80 ) {
 		if ( n<=1 )
 	break;
-		*to++ = *ufrom;
+		*pt++ = *ufrom;
 		--n;
 	    } else if ( *ufrom<0x800 ) {
 		if ( n<=2 )
 	break;
-		*to++ = 0xc0 | (*ufrom>>6);
-		*to++ = 0x80 | (*ufrom&0x3f);
+		*pt++ = 0xc0 | (*ufrom>>6);
+		*pt++ = 0x80 | (*ufrom&0x3f);
 		n -= 2;
 	    } else if ( *ufrom>=0xd800 && *ufrom<0xdc00 && ufrom[1]>=0xdc00 && ufrom[1]<0xe000 ) {
 		int u = ((*ufrom>>6)&0xf)+1, y = ((*ufrom&3)<<4) | ((ufrom[1]>>6)&0xf);
 		if ( n<=4 )
 	    break;
-		*to++ = 0xf0 | (u>>2);
-		*to++ = 0x80 | ((u&3)<<4) | ((*ufrom>>2)&0xf);
-		*to++ = 0x80 | y;
-		*to++ = 0x80 | (ufrom[1]&0x3f);
+		*pt++ = 0xf0 | (u>>2);
+		*pt++ = 0x80 | ((u&3)<<4) | ((*ufrom>>2)&0xf);
+		*pt++ = 0x80 | y;
+		*pt++ = 0x80 | (ufrom[1]&0x3f);
 		n -= 4;
 	    } else {
 		if ( n<=3 )
 	    break;
-		*to++ = 0xe0 | (*ufrom>>12);
-		*to++ = 0x80 | ((*ufrom>>6)&0x3f);
-		*to++ = 0x80 | (*ufrom&0x3f);
+		*pt++ = 0xe0 | (*ufrom>>12);
+		*pt++ = 0x80 | ((*ufrom>>6)&0x3f);
+		*pt++ = 0x80 | (*ufrom&0x3f);
 	    }
 	    ++ufrom;
 	}
 	if ( n>1 )
-	    *to = '\0';
+	    *pt = '\0';
     } else
 return( NULL );
 
