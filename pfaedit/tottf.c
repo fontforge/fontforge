@@ -237,7 +237,7 @@ static SplinePoint *_ttfapprox(Spline *ps,real tmin, real tmax, SplinePoint *sta
     SplinePoint *sp;
     real cx, cy;
     Spline ttf;
-    int cnt = -1, forceit;
+    int cnt = -1, forceit, unforceable;
     BasePoint end, rend, dend;
 
     if ( RealNearish(ps->splines[0].a,0) && RealNearish(ps->splines[1].a,0) ) {
@@ -316,6 +316,7 @@ return( start );
     dt = (tmax-tmin)/ddim;
     forceit = false;
  force_end:
+    unforceable = false;
     for ( t=tmax; t>tmin+dt/128; t-= dt ) {		/* dt/128 is a hack to avoid rounding errors */
 	x = ((ps->splines[0].a*t+ps->splines[0].b)*t+ps->splines[0].c)*t+ps->splines[0].d;
 	y = ((ps->splines[1].a*t+ps->splines[1].b)*t+ps->splines[1].c)*t+ps->splines[1].d;
@@ -353,6 +354,8 @@ return( sp );
 	  }
     continue;
 	}
+	if ( t==tmax && dxdt==0 )
+	    unforceable = true;
 	if ( dxdt==0 )
 	    cx=x;
 	else if ( dxdtmin==0 )
@@ -371,7 +374,7 @@ return( sp );
 	ttf.splines[1].c = 2*(cy-ymin);
 	ttf.splines[1].b = ymin+y-2*cy;
 	if ( forceit || comparespline(ps,&ttf,tmin,t) ) {
-	    if ( !forceit && (rend.x-x)*(rend.x-x)+(rend.y-y)*(rend.y-y)<4*4 ) {
+	    if ( !forceit && !unforceable && (rend.x-x)*(rend.x-x)+(rend.y-y)*(rend.y-y)<4*4 ) {
 		forceit = true;
  goto force_end;
 	    }
