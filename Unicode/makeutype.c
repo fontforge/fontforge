@@ -101,7 +101,7 @@ unichar_t alts[MAXC][MAXA+1];
 static void FigureAlternates(unichar_t index, char *apt, int normative) {
     int alt, i;
     char *end;
-    int isisolated=0, iscircled;
+    int isisolated=0, iscircled=0;
 
     for ( i=0; ; ++i ) {
 	while ( *apt=='<' ) {
