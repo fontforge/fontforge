@@ -643,13 +643,14 @@ int SSPointCnt(SplineSet *ss,int has_instrs) {
     int cnt;
 
     for ( sp=ss->first, cnt=0; sp!=first ; ) {
-	if ( (has_instrs && sp->ttfindex!=0xffff) ||
-		(!has_instrs &&
+	if ( has_instrs && sp->ttfindex!=0xffff )
+	    cnt = sp->ttfindex+1;
+	else if ( !has_instrs &&
 		    ( sp==ss->first || sp->nonextcp || sp->noprevcp ||
 		    (sp->dontinterpolate || sp->roundx || sp->roundy) ||
 		    (has_instrs && sp->ttfindex!=0xffff) ||
 		    (sp->prevcp.x+sp->nextcp.x)/2!=sp->me.x ||
-		    (sp->prevcp.y+sp->nextcp.y)/2!=sp->me.y )))
+		    (sp->prevcp.y+sp->nextcp.y)/2!=sp->me.y ))
 	    ++cnt;
 	if ( !sp->nonextcp ) ++cnt;
 	if ( sp->next==NULL )
@@ -672,13 +673,25 @@ int SSAddPoints(SplineSet *ss,int ptcnt,BasePoint *bp, char *flags,int has_instr
 
     first = NULL;
     for ( sp=ss->first; sp!=first ; ) {
-	if ( (has_instrs && sp->ttfindex!=0xffff) ||
-		(!has_instrs &&
+	if ( has_instrs && sp->ttfindex!=0xffff ) {
+	    if ( ptcnt+1==sp->ttfindex && sp->noprevcp ) {
+		/* Very occasionally we get a control point which sits on  */
+		/*  top of one of the endpoints. That is my mark for no cp */
+		/*  but if we just throw it out, we screw up the point count */
+		if ( flags!=NULL ) flags[ptcnt] = 0;
+		bp[ptcnt].x = rint(sp->me.x);
+		bp[ptcnt++].y = rint(sp->me.y);
+	    }
+	    if ( flags!=NULL ) flags[ptcnt] = _On_Curve;
+	    bp[ptcnt].x = rint(sp->me.x);
+	    bp[ptcnt].y = rint(sp->me.y);
+	    sp->ttfindex = ptcnt++;
+	} else if ( !has_instrs &&
 		    ( sp==ss->first || sp->nonextcp || sp->noprevcp ||
 		    (sp->dontinterpolate || sp->roundx || sp->roundy) ||
 		    (has_instrs && sp->ttfindex!=0xffff) ||
 		    (sp->prevcp.x+sp->nextcp.x)/2!=sp->me.x ||
-		    (sp->prevcp.y+sp->nextcp.y)/2!=sp->me.y ))) {
+		    (sp->prevcp.y+sp->nextcp.y)/2!=sp->me.y )) {
 	    /* If an on curve point is midway between two off curve points*/
 	    /*  it may be omitted and will be interpolated on read in */
 	    if ( flags!=NULL ) flags[ptcnt] = _On_Curve;

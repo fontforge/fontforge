@@ -2427,6 +2427,11 @@ return;
 		    (sp->nextcp.y+sp->prevcp.y)/2 == sp->me.y;
 	    if ( sp->ttfindex==0xffff && skipit )
 		/* Doesn't count */;
+	    else if ( sp->ttfindex==pnum+1 && sp->noprevcp && !skipit )
+		/* Very occasionally we read in a control point which sits on */
+		/*  top of one of the endpoints. That is my mark for no cp */
+		/*  but if we just throw it out, we screw up the point count */
+		pnum += 2;
 	    else if ( sp->ttfindex!=pnum || skipit ) {
 		free(sc->ttf_instrs); sc->ttf_instrs = NULL;
 		sc->ttf_instrs_len = 0;
