@@ -1802,5 +1802,8 @@ extern struct compositionrules *SFDReadCompositionRules(FILE *sfd);
 extern void SFModifyComposition(SplineFont *sf);
 extern void SFBuildSyllables(SplineFont *sf);
 # endif
+
+extern void DefaultOtherSubrs(void);
+extern int ReadOtherSubrsFile(char *filename);
 #endif
 

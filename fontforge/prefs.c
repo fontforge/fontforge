@@ -103,6 +103,7 @@ int alwaysgenapple = false;
 int alwaysgenopentype = true;
 #endif
 char *helpdir;
+char *othersubrsfile;
 extern MacFeat *default_mac_feature_map,	/* from macenc.c */
 		*user_mac_feature_map;
 int updateflex = false;
@@ -275,6 +276,7 @@ static struct prefs_list {
 	{ "GreekNames", pr_bool, &greeknames, NULL, NULL, 'G', NULL, 0, _STR_PrefsPopupGN },
 	{ "ResourceFile", pr_file, &xdefs_filename, NULL, NULL, 'R', NULL, 0, _STR_PrefsPopupXRF },
 	{ "HelpDir", pr_file, &helpdir, NULL, NULL, 'R', NULL, 0, _STR_PrefsPopupHLP },
+	{ "OtherSubrsFile", pr_file, &othersubrsfile, NULL, NULL, 'O', NULL, 0, _STR_PrefsPopupOSF },
 	{ NULL }
 },
   editing_list[] = {
@@ -908,6 +910,9 @@ return;
     if ( xdefs_filename!=NULL )
 	GResourceAddResourceFile(xdefs_filename,GResourceProgramName);
 #endif
+    if ( othersubrsfile!=NULL && ReadOtherSubrsFile(othersubrsfile)<=0 )
+	fprintf( stderr, "Failed to read OtherSubrs from %s\n", othersubrsfile );
+	
     if ( glyph_2_name_map ) {
 	old_ttf_flags |= ttf_flag_glyphmap;
 	old_otf_flags |= ttf_flag_glyphmap;
@@ -1532,6 +1537,8 @@ return( true );
 	    for ( fv=fv_list ; fv!=NULL; fv=fv->next )
 		SFRemoveUndoes(fv->sf,NULL);
 	}
+	if ( othersubrsfile!=NULL && ReadOtherSubrsFile(othersubrsfile)<=0 )
+	    fprintf( stderr, "Failed to read OtherSubrs from %s\n", othersubrsfile );
     }
 return( true );
 }

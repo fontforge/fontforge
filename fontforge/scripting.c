@@ -600,6 +600,23 @@ static void bSetPrefs(Context *c) {
 	errors( c, "Bad type for preference variable",  c->a.vals[1].u.sval);
 }
 
+static void bDefaultOtherSubrs(Context *c) {
+
+    if ( c->a.argc!=1 )
+	error( c, "Wrong number of arguments" );
+    DefaultOtherSubrs();
+}
+
+static void bReadOtherSubrsFile(Context *c) {
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_str )
+	error( c, "Bad type for argument" );
+    if ( ReadOtherSubrsFile(c->a.vals[1].u.sval)<=0 )
+	errors( c,"Failed to read OtherSubrs from %s", c->a.vals[1].u.sval );
+}
+
 static void bGetEnv(Context *c) {
     char *env;
 
@@ -4333,6 +4350,8 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SavePrefs", bSavePrefs, 1 },
     { "GetPref", bGetPrefs, 1 },
     { "SetPref", bSetPrefs, 1 },
+    { "DefaultOtherSubrs", bDefaultOtherSubrs, 1 },
+    { "ReadOtherSubrsFile", bReadOtherSubrsFile, 1 },
     { "GetEnv", bGetEnv, 1 },
     { "UnicodeFromName", bUnicodeFromName, 1 },
     { "Chr", bChr, 1 },
