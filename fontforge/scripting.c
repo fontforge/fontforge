@@ -4712,10 +4712,10 @@ return;
 		c->return_val.u.aval->vals = galloc(4*sizeof(Val));
 		for ( i=0; i<4; ++i )
 		    c->return_val.u.aval->vals[i].type = v_real;
-		c->return_val.u.aval->vals[0].u.ival = b.minx;
-		c->return_val.u.aval->vals[1].u.ival = b.miny;
-		c->return_val.u.aval->vals[2].u.ival = b.maxx;
-		c->return_val.u.aval->vals[3].u.ival = b.maxy;
+		c->return_val.u.aval->vals[0].u.fval = b.minx;
+		c->return_val.u.aval->vals[1].u.fval = b.miny;
+		c->return_val.u.aval->vals[2].u.fval = b.maxx;
+		c->return_val.u.aval->vals[3].u.fval = b.maxy;
 	    } else
 		errors(c,"Unknown tag", c->a.vals[1].u.sval);
 	}
