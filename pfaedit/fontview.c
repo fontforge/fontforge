@@ -276,6 +276,8 @@ static void FVMenuGenerate(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     _FVMenuGenerate(fv);
 }
 
+static void FVSetTitle(FontView *fv);
+
 int _FVMenuSaveAs(FontView *fv) {
     unichar_t *temp;
     unichar_t *ret;
@@ -307,6 +309,7 @@ return( 0 );
 	free(sf->origname);
 	sf->origname = copy(filename);
 	SplineFontSetUnChanged(sf);
+	FVSetTitle(fv);
     } else
 	free(filename);
 return( ok );
@@ -504,6 +507,7 @@ return;
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
     fv->sf = temp;
+    temp->fv = fv;
     FontViewReformat(fv);
     SplineFontFree(old);
 }
@@ -1742,11 +1746,25 @@ static void FVMenuClearWidthMD(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static void FVSetTitle(FontView *fv) {
-    unichar_t *title;
+    unichar_t *title, *ititle;
+    char *file=NULL;
+    int len;
 
-    title = uc_copy(fv->sf->fontname);
-    GDrawSetWindowTitles(fv->gw,title,title);
+    len = strlen(fv->sf->fontname);
+    if ( (file = fv->sf->filename)==NULL )
+	file = fv->sf->origname;
+    if ( file!=NULL )
+	len += 2+strlen(file);
+    title = galloc((len+1)*sizeof(unichar_t));
+    uc_strcpy(title,fv->sf->fontname);
+    if ( file!=NULL ) {
+	uc_strcat(title,"  ");
+	uc_strcat(title,GFileNameTail(file));
+    }
+    ititle = uc_copy(fv->sf->fontname);
+    GDrawSetWindowTitles(fv->gw,title,ititle);
     free(title);
+    free(ititle);
 }
 
 static void FVMenuShowSubFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -3024,23 +3042,24 @@ void SCPreparePopup(GWindow gw,SplineChar *sc) {
 	    (enc<=em_zapfding || (enc>=em_big5 && enc<=em_unicode)))
 	upos = sc->enc;
     else {
-	uc_strncpy(space,sc->name,sizeof(space)/sizeof(unichar_t)-2);
+	sprintf( cspace, "%d U+???? \"%.25s\" ", sc->enc, sc->name==NULL?"":sc->name );
+	uc_strcpy(space,cspace);
 	GGadgetPreparePopup(gw,space);
 return;
     }
     if ( UnicodeCharacterNames[upos>>8][upos&0xff]!=NULL ) {
-	sprintf( cspace, "%04x \"%.25s\" ", upos, sc->name==NULL?"":sc->name );
+	sprintf( cspace, "%d U+%04x \"%.25s\" ", sc->enc, upos, sc->name==NULL?"":sc->name );
 	uc_strcpy(space,cspace);
 	u_strcat(space,UnicodeCharacterNames[upos>>8][upos&0xff]);
     } else if ( upos>=0xAC00 && upos<=0xD7A3 ) {
-	sprintf( cspace, "%04x \"%.25s\" Hangul Syllable %s%s%s",
-		upos, sc->name==NULL?"":sc->name,
+	sprintf( cspace, "%d U+%04x \"%.25s\" Hangul Syllable %s%s%s",
+		sc->enc, upos, sc->name==NULL?"":sc->name,
 		chosung[(upos-0xAC00)/(21*28)],
 		jungsung[(upos-0xAC00)/28%21],
 		jongsung[(upos-0xAC00)%28] );
 	uc_strcpy(space,cspace);
     } else {
-	sprintf( cspace, "%04x \"%.25s\" %.20s", upos, sc->name==NULL?"":sc->name,
+	sprintf( cspace, "%d U+%04x \"%.25s\" %.20s", sc->enc, upos, sc->name==NULL?"":sc->name,
 	    upos=='\0'				? "Null":
 	    upos=='\t'				? "Tab":
 	    upos=='\r'				? "Return":
@@ -3384,16 +3403,15 @@ FontView *FontViewCreate(SplineFont *sf) {
     fv->magnify = 1;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_icon;
+    wattrs.mask = wam_events|wam_cursor|wam_icon;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = uc_copy(sf->fontname);
     wattrs.icon = icon;
     pos.x = pos.y = 0;
     pos.width = 16*fv->cbw+1;
     pos.height = 4*fv->cbh+1;
     fv->gw = gw = GDrawCreateTopWindow(NULL,&pos,fv_e_h,fv,&wattrs);
-    free((unichar_t *) wattrs.window_title);
+    FVSetTitle(fv);
 
     memset(&gd,0,sizeof(gd));
     gd.flags = gg_visible | gg_enabled;

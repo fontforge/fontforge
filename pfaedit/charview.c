@@ -1127,6 +1127,8 @@ return;
 
 static void CVClear(GWindow,GMenuItem *mi, GEvent *);
 static void CVMouseMove(CharView *cv, GEvent *event );
+static void CVHScroll(CharView *cv,struct sbevent *sb);
+static void CVVScroll(CharView *cv,struct sbevent *sb);
 
 void CVChar(CharView *cv, GEvent *event ) {
 
@@ -1189,11 +1191,20 @@ void CVChar(CharView *cv, GEvent *event ) {
 		dy = -1;
 	      break;
 	    }
-	    CVPreserveState(cv);
-	    CVMoveSelection(cv,dx,dy);
-	    /* Check for merge!!!! */
-	    CVCharChangedUpdate(cv);
-	    CVInfoDraw(cv,cv->gw);
+	    if ( event->u.chr.state & (ksm_meta|ksm_control) ) {
+		struct sbevent sb;
+		sb.type = dy>0 || dx<0 ? et_sb_halfup : et_sb_halfdown;
+		if ( dx==0 )
+		    CVVScroll(cv,&sb);
+		else
+		    CVHScroll(cv,&sb);
+	    } else {
+		CVPreserveState(cv);
+		CVMoveSelection(cv,dx,dy);
+		/* Check for merge!!!! */
+		CVCharChangedUpdate(cv);
+		CVInfoDraw(cv,cv->gw);
+	    }
 	}
     } else if ( !(event->u.chr.state&(ksm_control|ksm_meta)) &&
 	    event->type == et_char &&
@@ -2197,6 +2208,12 @@ static void CVHScroll(CharView *cv,struct sbevent *sb) {
       case et_sb_thumbrelease:
         newpos = -sb->pos;
       break;
+      case et_sb_halfup:
+        newpos += cv->width/30;
+      break;
+      case et_sb_halfdown:
+        newpos -= cv->width/30;
+      break;
     }
     if ( newpos>8000*cv->scale-cv->width )
         newpos = 8000*cv->scale-cv->width;
@@ -2240,6 +2257,12 @@ static void CVVScroll(CharView *cv,struct sbevent *sb) {
       case et_sb_thumb:
       case et_sb_thumbrelease:
         newpos = sb->pos;
+      break;
+      case et_sb_halfup:
+        newpos -= cv->height/30;
+      break;
+      case et_sb_halfdown:
+        newpos += cv->height/30;
       break;
     }
     if ( newpos>8000*cv->scale-cv->height )

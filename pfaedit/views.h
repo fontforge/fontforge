@@ -229,6 +229,7 @@ typedef struct metricsview {
     unsigned int pressedwidth: 1;
     unsigned int pressedkern: 1;
     unsigned int showgrid: 1;
+    unsigned int antialias: 1;
     int cursor;
 } MetricsView;
 

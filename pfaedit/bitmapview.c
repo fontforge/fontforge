@@ -227,6 +227,8 @@ return;
 }
 
 static void BVDoClear(BitmapView *bv);
+static void BVHScroll(BitmapView *bv,struct sbevent *sb);
+static void BVVScroll(BitmapView *bv,struct sbevent *sb);
 
 void BVChar(BitmapView *bv, GEvent *event ) {
 
@@ -266,15 +268,24 @@ void BVChar(BitmapView *bv, GEvent *event ) {
 		yoff = bv->bc->ymin-bv->bc->selection->ymin;
 	    }
 	}
-	BCPreserveState(bv->bc);
-	if ( bv->bc->selection==NULL ) {
-	    bv->bc->xmin += xoff;  bv->bc->xmax += xoff;
-	    bv->bc->ymin += yoff;  bv->bc->ymax += yoff;
+	if ( event->u.chr.state & (ksm_meta|ksm_control) ) {
+	    struct sbevent sb;
+	    sb.type = yoff>0 || xoff<0 ? et_sb_halfup : et_sb_halfdown;
+	    if ( xoff==0 )
+		BVVScroll(bv,&sb);
+	    else
+		BVHScroll(bv,&sb);
 	} else {
-	    bv->bc->selection->xmin += xoff;  bv->bc->selection->xmax += xoff;
-	    bv->bc->selection->ymin += yoff;  bv->bc->selection->ymax += yoff;
+	    BCPreserveState(bv->bc);
+	    if ( bv->bc->selection==NULL ) {
+		bv->bc->xmin += xoff;  bv->bc->xmax += xoff;
+		bv->bc->ymin += yoff;  bv->bc->ymax += yoff;
+	    } else {
+		bv->bc->selection->xmin += xoff;  bv->bc->selection->xmax += xoff;
+		bv->bc->selection->ymin += yoff;  bv->bc->selection->ymax += yoff;
+	    }
+	    BCCharChangedUpdate(bv->bc,bv->fv);
 	}
-	BCCharChangedUpdate(bv->bc,bv->fv);
     } else if ( !(event->u.chr.state&(ksm_control|ksm_meta)) &&
 	    event->type == et_char &&
 	    event->u.chr.chars[0]!='\0' && event->u.chr.chars[1]=='\0' ) {
@@ -535,6 +546,12 @@ static void BVHScroll(BitmapView *bv,struct sbevent *sb) {
       case et_sb_thumbrelease:
         newpos = -sb->pos;
       break;
+      case et_sb_halfup:
+        newpos += bv->width/30;
+      break;
+      case et_sb_halfdown:
+        newpos -= bv->width/30;
+      break;
     }
     if ( newpos>6*fh*bv->scale-bv->width )
         newpos = 6*fh*bv->scale-bv->width;
@@ -573,6 +590,12 @@ static void BVVScroll(BitmapView *bv,struct sbevent *sb) {
       case et_sb_thumb:
       case et_sb_thumbrelease:
         newpos = sb->pos;
+      break;
+      case et_sb_halfup:
+        newpos -= bv->width/30;
+      break;
+      case et_sb_halfdown:
+        newpos += bv->width/30;
       break;
     }
     if ( newpos>4*fh*bv->scale-bv->height )

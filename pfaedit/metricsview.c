@@ -32,6 +32,8 @@
 #include <utype.h>
 #include <math.h>
 
+static int mv_antialias = true;
+
 static void MVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
     GRect old, *clip, r, old2;
     int x,y,ybase, width,height, i;
@@ -103,12 +105,28 @@ return;
 	    memset(&base,'\0',sizeof(base));
 	    memset(&clut,'\0',sizeof(clut));
 	    gi.u.image = &base;
-	    base.image_type = it_mono;
 	    base.clut = &clut;
-	    clut.clut_len = 2;
-	    clut.clut[0] = 0xffffff;
-	    if ( mv->perchar[i].selected )
-		clut.clut[1] = 0x808080;
+	    if ( !bdfc->byte_data ) {
+		base.image_type = it_mono;
+		clut.clut_len = 2;
+		clut.clut[0] = 0xffffff;
+		if ( mv->perchar[i].selected )
+		    clut.clut[1] = 0x808080;
+	    } else {
+		int scale = 3000/mv->pixelsize, l;
+		Color fg, bg;
+		if ( scale>4 ) scale = 4; else if ( scale==3 ) scale= 2;
+		base.image_type = it_index;
+		clut.clut_len = 1<<scale;
+		bg = GDrawGetDefaultBackground(NULL);
+		fg = ( mv->perchar[i].selected ) ? 0x808080 : 0x000000;
+		for ( l=0; l<(1<<scale); ++l )
+		    clut.clut[l] =
+			COLOR_CREATE(
+			 COLOR_RED(bg) + (l*(COLOR_RED(fg)-COLOR_RED(bg)))/((1<<scale)-1),
+			 COLOR_GREEN(bg) + (l*(COLOR_GREEN(fg)-COLOR_GREEN(bg)))/((1<<scale)-1),
+			 COLOR_BLUE(bg) + (l*(COLOR_BLUE(fg)-COLOR_BLUE(bg)))/((1<<scale)-1) );
+	    }
 	    base.data = bdfc->bitmap;
 	    base.bytes_per_line = bdfc->bytes_per_line;
 	    base.width = width;
@@ -295,6 +313,34 @@ void MVReKern(MetricsView *mv) {
     GDrawRequestExpose(mv->gw,NULL,false);
 }
 
+static BDFChar *MVRasterize(MetricsView *mv,SplineChar *sc) {
+    BDFChar *bdfc;
+
+    if ( mv->antialias && mv->pixelsize<1000 ) {
+	int scale = 3000/mv->pixelsize;
+	if ( scale>4 ) scale=4;
+	if ( scale==3 ) scale = 2;
+	bdfc = SplineCharAntiAlias(sc,mv->pixelsize,scale);
+    } else
+	bdfc = SplineCharRasterize(sc,mv->pixelsize);
+return( bdfc );
+}
+
+static void MVReRasterize(MetricsView *mv) {
+    int i;
+
+    if ( mv->bdf==NULL ) {
+	for ( i=0; i<mv->charcnt; ++i ) {
+	    BDFChar *bc = MVRasterize(mv,mv->perchar[i].sc);
+	    BDFCharFree(mv->perchar[i].show);
+	    mv->perchar[i].show = bc;
+	    mv->perchar[i].dwidth = bc->width;
+	    if ( i+1<mv->charcnt )
+		mv->perchar[i+1].dx = mv->perchar[i].dx + bc->width + mv->perchar[i].kernafter;
+	}
+    }
+}
+
 void MVRegenChar(MetricsView *mv, SplineChar *sc) {
     int i;
     BDFChar *bdfc;
@@ -305,7 +351,7 @@ void MVRegenChar(MetricsView *mv, SplineChar *sc) {
 	mv->perchar[i].dx += xoff;
 	if ( mv->perchar[i].sc == sc ) {
 	    if ( mv->bdf==NULL ) {
-		bdfc = SplineCharRasterize(sc,mv->pixelsize);
+		bdfc = MVRasterize(mv,sc);
 		oldxmax = mv->perchar[i].show->xmax;
 		oldxmin = mv->perchar[i].show->xmin;
 		BDFCharFree(mv->perchar[i].show);
@@ -344,7 +390,7 @@ return;
 	}
     } else if ( bdf==NULL ) {
 	for ( i=0; i<mv->charcnt; ++i ) {
-	    mv->perchar[i].show = SplineCharRasterize(mv->perchar[i].sc,mv->pixelsize);
+	    mv->perchar[i].show = MVRasterize(mv,mv->perchar[i].sc);
 	}
     }
     mv->bdf = bdf;
@@ -609,7 +655,7 @@ static void MVSetPos(MetricsView *mv,int i,SplineChar *sc) {
     }
     mv->perchar[i].sc = sc;
     if ( mv->bdf==NULL ) {
-	bdfc = SplineCharRasterize(sc,mv->pixelsize);
+	bdfc = MVRasterize(mv,sc);
 	BDFCharFree(mv->perchar[i].show);
 	mv->perchar[i].show = bdfc;
     } else
@@ -885,6 +931,7 @@ return( true );
 #define MID_ShowGrid	2008
 #define MID_NextDef	2012
 #define MID_PrevDef	2013
+#define MID_AntiAlias	2014
 #define MID_AvailBitmaps	2210
 #define MID_RegenBitmaps	2211
 #define MID_Center	2600
@@ -1072,6 +1119,13 @@ static void MVMenuShowGrid(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     GDrawRequestExpose(mv->gw,NULL,false);
 }
 
+static void MVMenuAA(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    mv_antialias = mv->antialias = !mv->antialias;
+    MVReRasterize(mv);
+    GDrawRequestExpose(mv->gw,NULL,false);
+}
+
 static void MVMenuShowBitmap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     BDFFont *bdf = mi->ti.userdata;
@@ -1159,6 +1213,7 @@ static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_PrevDefChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'a' }, '[', ksm_control|ksm_meta, NULL, NULL, MVMenuChangeChar, MID_PrevDef },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Hidegrid, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'G' }, '\0', ksm_control, NULL, NULL, MVMenuShowGrid, MID_ShowGrid },
+    { { (unichar_t *) _STR_Antialias, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'A' }, '5', ksm_control, NULL, NULL, MVMenuAA, MID_AntiAlias },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Outline, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'O' }, '\0', ksm_control, NULL, NULL, MVMenuShowBitmap, MID_Outline },
     { NULL },			/* Some extra room to show bitmaps */
@@ -1210,8 +1265,13 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
 
     for ( i=0; vwlist[i].mid!=MID_Outline; ++i )
-	if ( vwlist[i].mid==MID_ShowGrid )
+	if ( vwlist[i].mid==MID_ShowGrid ) {
 	    vwlist[i].ti.text = (unichar_t *) GStringGetResource(mv->showgrid?_STR_Hidegrid:_STR_Showgrid,NULL);
+	    vwlist[i].ti.text_in_resource = false;
+	} else if ( vwlist[i].mid==MID_AntiAlias ) {
+	    vwlist[i].ti.checked = mv->antialias;
+	    vwlist[i].ti.disabled = mv->bdf!=NULL;
+	}
     base = i+1;
     for ( i=base; vwlist[i].ti.text!=NULL; ++i ) {
 	free( vwlist[i].ti.text);
@@ -1290,16 +1350,7 @@ return;
     GGadgetMove(mv->rbearinglab,2,mv->displayend+2+3*(mv->fh+4));
     GGadgetMove(mv->kernlab,2,mv->displayend+2+4*(mv->fh+4));
 
-    if ( mv->bdf==NULL ) {
-	for ( i=0; i<mv->charcnt; ++i ) {
-	    BDFChar *bc = SplineCharRasterize(mv->perchar[i].sc,mv->pixelsize);
-	    BDFCharFree(mv->perchar[i].show);
-	    mv->perchar[i].show = bc;
-	    mv->perchar[i].dwidth = bc->width;
-	    if ( i+1<mv->charcnt )
-		mv->perchar[i+1].dx = mv->perchar[i].dx + bc->width + mv->perchar[i].kernafter;
-	}
-    }
+    MVReRasterize(mv);
 
     GDrawRequestExpose(mv->gw,NULL,true);
 }
@@ -1311,6 +1362,9 @@ static void MVChar(MetricsView *mv,GEvent *event) {
 }
 
 static int hitsbit(BDFChar *bc, int x, int y) {
+    if ( bc->byte_data )
+return( bc->bitmap[y*bc->bytes_per_line+x] );
+    else
 return( bc->bitmap[y*bc->bytes_per_line+(x>>3)]&(1<<(7-(x&7))) );
 }
 
@@ -1617,6 +1671,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     mv->fv = fv;
     mv->bdf = bdf;
     mv->showgrid = true;
+    mv->antialias = mv_antialias;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_icon;

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 16-Sep-2001 -->
-  <!-- AP: Last modified: 16-Dec-2001 -->
+  <!-- AP: Last modified: 4-Jan-2002 -->
   <TITLE>Older changes to PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,144 @@
 <A HREF="index.html#change-log">Current changes</A>
 <P>
 <UL>
+  <LI>
+    27-Nov-2001
+    <UL>
+      <LI>
+	Build Accented Character failed to update bitmaps in CID keyed fonts
+      <LI>
+	Build Accented Character will generate rotated characters when appropriate
+	for CID keyed fonts
+	<UL>
+	  <LI>
+	    If a character's name is "vertcid_&lt;cid&gt;" where &lt;cid&gt; should be
+	    replaced by a number, then that character will be replaced by a rotated version
+	    of &lt;cid&gt;
+	  <LI>
+	    If a character's name is "vertuni&lt;uni&gt;" where &lt;uni&gt; should be
+	    replaced by a 4 hex-digit number, then that character will be replaced by
+	    a rotated version of the unicode character &lt;uni&gt;.
+	</UL>
+      <LI>
+	When saving a font with rotated characters PfaEdit will now generate a vrt2
+	feature in the GSUB table (this lets the font's users find out about the
+	rotated glyphs.
+      <LI>
+	Before this PfaEdit would only read entries in the 'name' table which were
+	in unicode (or macroman). PfaEdit is a bit more general now and will read
+	the other encodings it knows about.
+      <LI>
+	Oops. Another screw up reading in open type.
+      <LI>
+	If the character at encoding 0 was not .notdef then PfaEdit would omit it
+	when generating a postscript/opentype font.
+    </UL>
+  <LI>
+    26-Nov-2001
+    <UL>
+      <LI>
+	Adobe has upgraded their cid version for traditional chinese, so I generated
+	a new cidmap to reflect that. I've also cleaned up most of the others.
+      <LI>
+	Initial version of vertical metric support.
+	<UL>
+	  <LI>
+	    (only in true/open type fonts)
+	  <LI>
+	    Added ability to set the vertical advance of each character
+	  <LI>
+	    Added ability to set the vertical origin (as an offset from the origin in
+	    the design coordinate system (which happens to be the origin for horizontal
+	    metrics)).
+	  <LI>
+	    Added ability to set the line gap (er, column gap?)
+	  <LI>
+	    What else do I need?
+	</UL>
+    </UL>
+  <LI>
+    24-Nov-2001
+    <UL>
+      <LI>
+	Oops. Urich Klauer found a bug in my parsing of ttf/otf tables (introduced
+	by the linegap change on 8 Nov) and sent a patch.
+      <LI>
+	PfaEdit was erroneously complaining that all ttf composit glyphs were too
+	big (when reading them in, introduced 15 Nov).
+      <LI>
+	PfaEdit stored StdHW and StdVW in the wrong format when reading opentype
+	fonts and any .pfa/b fonts generated from that db caused ghostview problems.
+    </UL>
+  <LI>
+    23-Nov-2001
+    <UL>
+      <LI>
+	Fixed a potential crash from popups in the fontview.
+      <LI>
+	Fixed three crashes in remove overlap (there are more problems)
+      <LI>
+	Added support for reading/writing mixed 8/16 bit encodings. (used in some
+	CJK fonts)
+      <LI>
+	Added support for big5, johab (johab is untested, big5 minimally)
+      <LI>
+	Improved treatment of ttf encodings we don't understand.
+      <LI>
+	Added a command to move to the next defined character (useful in CJK encodings
+	with great holes in the middle. Unicode too I suppose)
+      <LI>
+	Added a resource (<A HREF="xres.html">pfaedit.FontView.FontFamily</A>) to
+	control the font for the character labels that appear above every user defined
+	character.
+      <LI>
+	PfaEdit now supports multi-line copyright notices (must be less that 2000
+	ascii characters though).
+    </UL>
+  <LI>
+    17-Nov-2001
+    <UL>
+      <LI>
+	Changed the configure script to deal with Mac OS/X properly (I hope)
+    </UL>
+  <LI>
+    15-Nov-2001
+    <UL>
+      <LI>
+	PfaEdit had a bug when loading some ttc files which caused it to crash.
+      <LI>
+	PfaEdit wasn't prepared for the erroneous truetype found in wcl-02.ttf, this
+	caused a crash. PfaEdit should do better now.
+      <LI>
+	PfaEdit's scrollbars didn't work very well. Should be much improved now.
+      <LI>
+	PfaEdit used to generate an entire antialiased bitmap font to display in
+	the fontview window. Now it only generates the images when it needs them.
+	This speeds up the loading of large fonts and reduces their memory requirements.
+    </UL>
+  <LI>
+    12-Nov-2001
+    <UL>
+      <LI>
+	Some nearly horizontal (but non-linear) splines could not be selected.
+      <LI>
+	Changed the point info dlg so that users could set points back to have default
+	control points.
+      <LI>
+	There was a pathway whereby points could be marked as having default control
+	points even when they didn't. That one is plugged.
+      <LI>
+	The chinese font, kaui contains some interesting bugs which we've had to
+	work around:
+	<UL>
+	  <LI>
+	    Glyph 257 contains a contour consisting of one off-curve point.
+	  <LI>
+	    The encoding cmap refers to non-existant glyphs
+	  <LI>
+	    The fpgm attempts to move points around (it isn't allowed to do that according
+	    to the docs)
+	</UL>
+    </UL>
   <LI>
     11-Nov-2001
     <UL>

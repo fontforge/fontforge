@@ -3699,7 +3699,7 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
 
     sf->chars = oldchars;
     for ( dup=info->dups; dup!=NULL; dup=dup->prev )
-	if ( sf->chars[dup->enc]==NULL )
+	if ( newchars[dup->enc]==NULL )
 	    newchars[dup->enc] = SFMakeDupRef(sf,dup->enc,dup);
     sf->chars = newchars;
     free(oldchars);

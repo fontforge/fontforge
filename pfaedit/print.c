@@ -1974,20 +1974,22 @@ static unichar_t _norwegianjohn2[] = { 'H','a','n',' ','v','a','r',' ','i',' ','
 static unichar_t _norwegianjohn3[] = { 'A','l','t',' ','e','r',' ','b','l','i','t','t',' ','t','i','l',' ','v','e','d',' ','h','a','m',';',' ','u','t','e','n',' ','h','a','m',' ','e','r',' ','i','k','k','e',' ','n','o','e',' ','b','l','i','t','t',' ','t','i','l',' ','a','v',' ','a','l','t',' ','s','o','m',' ','e','r',' ','t','i','l','.',  '\0' };
 static unichar_t *norwegianjohn[] = { _norwegianjohn1, _norwegianjohn2, _norwegianjohn3, NULL };
 /* ?old? norwegian */
-static unichar_t _oldnorwegianjohn1[] = { 'I',' ','o','p','p','h','a','v','e','t',' ','v','a','r',' ','O','r','d','e','t',',',' ','o','g',' ','O','r','d','e','t',' ','v','a','r',' ','h','j', 0xe5, ' ','G','u','d',',',' ','o','g',' ','O','r','d','e','t',' ','v','a','r',' ','G','u','d','.',  '\0' };
-static unichar_t _oldnorwegianjohn2[] = { 'H','a','n',' ','v','a','r',' ','i',
+static unichar_t _nnorwegianjohn1[] = { 'I',' ','o','p','p','h','a','v','e','t',' ','v','a','r',' ','O','r','d','e','t',',',' ','o','g',' ','O','r','d','e','t',' ','v','a','r',' ','h','j', 0xe5, ' ','G','u','d',',',' ','o','g',' ','O','r','d','e','t',' ','v','a','r',' ','G','u','d','.',  '\0' };
+static unichar_t _nnorwegianjohn2[] = { 'H','a','n',' ','v','a','r',' ','i',
 	' ','o','p','p','h','a','v','e','t',' ','h','j', 0xe5, ' ','G','u','d',
 	'.',   '\0' };
-static unichar_t *oldnorwegianjohn[] = { _oldnorwegianjohn1, _oldnorwegianjohn2, NULL };
-#if 0
+static unichar_t *nnorwegianjohn[] = { _nnorwegianjohn1, _nnorwegianjohn2, NULL };
 /* old church slavonic */
-static unichar_t _churchjohn1[] = { 0x411, ?, ' ',
-    0x43d, 0x430, 0x447, ?, 0x301, ?, 0x463, ' ',
-    0x431, 0x301, 0x463, ' ',
-    
-static unichar_t _churchjohn2[] = { 
-static unichar_t *churchjohn[] = { _churchjohn1, _churchjohn2, NULL };
-#endif
+static unichar_t _churchjohn1[] = { 0x412,0x44a,0x20,0x43d,0x430,0x447,0x430,
+    0x43b,0x463,0x20,0x431,0x463,0x20,0x421,0x43b,0x43e, 0x432,0x43e,0x20,
+    438,0x20,0x421,0x43b,0x43e,0x432,0x43e,0x20,0x421,0x43b,0x43e,0x432,0x43e,
+    0x20,0x43a,0x44a,0x20,0x411,0x433,0x483,',', '\0' };
+static unichar_t _churchjohn2[] = { 0x433,0x483,' ',0x44a,0x431,0x463,0x20,0x421,
+    0x43b,0x43e,0x432,0x43e,0x20,'.', '\0' };
+static unichar_t _churchjohn3[] = { 0x432,0x483,' ',0x421,0x435,0x439,0x20,
+	0x431,0x463,0x20,0x438,0x441,0x43a,0x43e,0x43d,0x438,0x20,0x43a,
+	0x44a,0x20,0x411,'.','\0' };
+static unichar_t *churchjohn[] = { _churchjohn1, _churchjohn2, _churchjohn3, NULL };
 /* swedish */
 static unichar_t _swedishjohn1[] = { 'I',' ','b','e','g','y','n','n','e','l','s','e','n',' ','v','a','r',' ','O','r','d','e','t',',',' ','o','c','h',' ','O','r','d','e','t',' ','v','a','r',' ','h','o','s',' ','G','u','d',',',' ','o','c','h',' ','O','r','d','e','t',' ','v','a','r',' ','G','u','d','.',  '\0' };
 static unichar_t _swedishjohn2[] = { 'H','a','n',' ','v','a','r',' ','i',' ','b','e','g','y','n','n','e','l','s','e','n',' ','h','o','s',' ','G','u','d','.',  '\0' };
@@ -2028,8 +2030,9 @@ static unichar_t *thaijohn[] = { _thaijohn1, NULL };
 static unichar_t **sample[] = { simple, simplecyrill, faust, pheadra, antigone,
 	annakarenena, debello, hebrew, hangulsijo, donquixote, inferno, beorwulf, muchado,
 	mabinogion, goodsoldier, macedonian, bulgarian, belorussianjohn,
+	churchjohn,
 	lithuanian, polish, slovene, irishjohn, basquejohn, portjohn,
-	icelandicjohn, danishjohn, swedishjohn, norwegianjohn, oldnorwegianjohn,
+	icelandicjohn, danishjohn, swedishjohn, norwegianjohn, nnorwegianjohn,
 	dutchjohn, finnishjohn,
 	cherokeejohn, thaijohn, georgianjohn, swahilijohn,
 	NULL };
