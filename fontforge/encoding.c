@@ -205,6 +205,8 @@ return( &unicodefull );
 	iconv_name = "EUC-KR";
     else if ( strcmp(name,"gb2312pk")==0 )
 	iconv_name = "EUC-CN";
+    else if ( strcmp(name,"AdobeStandardEncoding")==0 )
+	iconv_name = "AdobeStandard";
 
 /* Escape sequences:					*/
 /*	ISO-2022-CN:     \e $ ) A ^N			*/
