@@ -1270,18 +1270,8 @@ static struct contexttree *_FPST2Tree(FPST *fpst,struct contexttree *parent,int 
 return( me );
 }
 
-static struct contexttree *FPST2Tree(SplineFont *sf,FPST *fpst) {
-    struct contexttree *ret;
-    int i,j,off;
-
-    if ( fpst->format != pst_class )
-return( NULL );
-
-    /* I could check for subclasses rather than ClassesMatch, but then I'd have */
-    /* to make sure that class 0 was used (if at all) consistently */
-    if ( (fpst->bccnt!=0 && !ClassesMatch(fpst->bccnt,fpst->bclass,fpst->nccnt,fpst->nclass)) ||
-	    (fpst->fccnt!=0 && !ClassesMatch(fpst->fccnt,fpst->fclass,fpst->nccnt,fpst->nclass)))
-return( NULL );
+static void FPSTBuildAllClasses(FPST *fpst) {
+    int i, off,j;
 
     for ( i=0; i<fpst->rule_cnt; ++i ) {
 	fpst->rules[i].u.class.allclasses = galloc((fpst->rules[i].u.class.bcnt+
@@ -1298,6 +1288,30 @@ return( NULL );
 	    fpst->rules[i].u.class.allclasses[off+j] = fpst->rules[i].u.class.fclasses[j];
 	fpst->rules[i].u.class.allclasses[off+j] = 0xffff;	/* End of rule marker */
     }
+}
+
+static void FPSTFreeAllClasses(FPST *fpst) {
+    int i;
+
+    for ( i=0; i<fpst->rule_cnt; ++i ) {
+	free( fpst->rules[i].u.class.allclasses );
+	fpst->rules[i].u.class.allclasses = NULL;
+    }
+}
+
+static struct contexttree *FPST2Tree(SplineFont *sf,FPST *fpst) {
+    struct contexttree *ret;
+
+    if ( fpst->format != pst_class )
+return( NULL );
+
+    /* I could check for subclasses rather than ClassesMatch, but then I'd have */
+    /* to make sure that class 0 was used (if at all) consistently */
+    if ( (fpst->bccnt!=0 && !ClassesMatch(fpst->bccnt,fpst->bclass,fpst->nccnt,fpst->nclass)) ||
+	    (fpst->fccnt!=0 && !ClassesMatch(fpst->fccnt,fpst->fclass,fpst->nccnt,fpst->nclass)))
+return( NULL );
+
+    FPSTBuildAllClasses(fpst);
 	
     ret = _FPST2Tree(fpst,NULL,0);
 
@@ -1306,8 +1320,7 @@ return( NULL );
 	ret = NULL;
     }
 
-    for ( i=0; i<fpst->rule_cnt; ++i )
-	free( fpst->rules[i].u.class.allclasses );
+    FPSTFreeAllClasses(fpst);
 
     TreeLabelState(ret,1);	/* actually, it's states 0&1, but this will do */
 
@@ -1461,7 +1474,9 @@ static int Transition2Find(struct contexttree *cur,int classnum,
     for ( i=0; i<cur->branch_cnt; ++i ) {
 	if ( cur->branches[i].classnum==classnum ) {
 return( Transition2(cur->branches[i].branch->state,
-		cur->branches[i].branch->markme,
+		cur->branches[i].branch->state!=0
+		    ? cur->branches[i].branch->markme?0x8000:0x0000
+		    : cur->branches[i].branch->markme?0xc000:0x4000,
 		cur->branches[i].branch->marked_index,
 		cur->branches[i].branch->cur_index,
 		transitions, tcur));
@@ -1470,10 +1485,43 @@ return( Transition2(cur->branches[i].branch->state,
 
     /* If we're at the end of a match apply any substitutions we found */
     if ( cur->ends_here!=NULL )
-return( Transition2(0, false, cur->marked_index, cur->cur_index,
+return( Transition2(0, 0x4000, cur->marked_index, cur->cur_index,
 		transitions, tcur));
 
 return( 0 );
+}
+
+static int AnyActiveSubstrings(struct contexttree *tree,
+	struct contexttree *cur,int class, uint16 *tlist, int classcnt) {
+    struct fpc *any = &cur->rules[0].rule->u.class;
+    int i,rc,j, b;
+
+    for ( i=1; i<=cur->depth; ++i ) {
+	for ( rc=0; rc<tree->rule_cnt; ++rc ) {
+	    struct fpc *r = &tree->rules[rc].rule->u.class;
+	    int ok = true;
+	    for ( j=0; j<=cur->depth-i; ++j ) {
+		if ( any->allclasses[j+i]!=r->allclasses[j] ) {
+		    ok = false;
+	    break;
+		}
+	    }
+	    if ( ok && r->allclasses[j]==class ) {
+		struct contexttree *sub = tree;
+		for ( j=0; j<=cur->depth-i; ++j ) {
+		    for ( b=0; b<sub->branch_cnt; ++b ) {
+			if ( sub->branches[b].classnum==r->allclasses[j] ) {
+			    sub = sub->branches[b].branch;
+		    break;
+			}
+		    }
+		}
+		if ( tlist[sub->state*classcnt+class+3]!=0 )
+return( tlist[sub->state*classcnt+class+3] );
+	    }
+	}
+    }
+return( tlist[class+3] );		/* Else try state 0 */
 }
 
 static int morx_dumpContGlyphFeatureFromClass(FILE *temp,FPST *fpst,
@@ -1578,31 +1626,41 @@ static int morx_dumpContGlyphFeatureFromClass(FILE *temp,FPST *fpst,
     tmax = 3*tree->next_state+4;		/* but give ourselves some slop */
     transitions = galloc(tmax*sizeof(struct transitions2));
     /* transition 0 is used on failure. Goes back to initial state */
-    transitions[0].next_state = 1; transitions[0].markit = false;
+    transitions[0].next_state = 1; transitions[0].markit = 0x0000;
 	transitions[0].mark_index = transitions[0].cur_index = 0xffff;
     tcur = 1;
     first = true;
-    tlist = galloc(class_cnt*sizeof(uint16));
+    tlist = galloc(class_cnt*tree->next_state*sizeof(uint16));
     for ( cur = tree; cur!=NULL; cur = TreeNext(cur)) if ( cur->state!=0 ) {
-	tlist[0] = 0;						/* end of text */
-	tlist[1] = Transition2Find(cur,0,transitions,&tcur);	/* out of bounds */
-	tlist[2] = Transition2(cur->state,0,0xffff,0xffff,transitions,&tcur);	/* stay here, deleted glyph */
-	tlist[3] = 0;						/* End of line */
+	int off = cur->state*class_cnt;
+	tlist[off+0] = 0;					/* end of text */
+	tlist[off+1] = Transition2Find(cur,0,transitions,&tcur);/* out of bounds */
+	tlist[off+2] = Transition2(cur->state,0,0xffff,0xffff,transitions,&tcur);	/* stay here, deleted glyph */
+	tlist[off+3] = 0;					/* End of line */
 	for ( i=1; i<fpst->nccnt; ++i )
-	    tlist[3+i] = Transition2Find(cur,i,transitions,&tcur);
+	    tlist[off+3+i] = Transition2Find(cur,i,transitions,&tcur);
 	if ( fpst->flags & pst_ignorecombiningmarks )
-	    tlist[3+i] = tlist[2];				/* marks get ignored like delete chars */
-	for ( i=0; i<class_cnt; ++i )
-	    putshort(temp,tlist[i]);
+	    tlist[off+3+i] = tlist[2];				/* marks get ignored like delete chars */
 	if ( first ) {
 	    /* classes 0 and 1 should look the same as far as I'm concerned */
 	    for ( i=0; i<class_cnt; ++i )
-		putshort(temp,tlist[i]);
+		tlist[i] = tlist[off+i];
 	    first = false;
 	}
     }
-    free(tlist);
     if ( tcur>tmax ) GDrawIError("Too many transitions in morx_dumpContGlyphFeatureFromClass" );
+    /* Do a sort of transitive closure on states, so if we are looking for */
+    /*  either "abcd" or "bce", don't lose the "bce" inside "abce" */
+    FPSTBuildAllClasses(fpst);
+    for ( cur = tree; cur!=NULL; cur = TreeNext(cur)) if ( cur->state>1 ) {
+	int off = cur->state*class_cnt;
+	for ( i=1; i<fpst->nccnt; ++i ) if ( tlist[off+3+i]==0 )
+	    tlist[off+3+i] = AnyActiveSubstrings(tree,cur,i, tlist,class_cnt);
+    }
+    for ( i=0; i<class_cnt*tree->next_state; ++i )
+	putshort(temp,tlist[i]);
+    free(tlist);
+    FPSTFreeAllClasses(fpst);
 
 
     here = ftell(temp);
@@ -1613,7 +1671,7 @@ static int morx_dumpContGlyphFeatureFromClass(FILE *temp,FPST *fpst,
     /* Now the transitions */
     for ( i=0; i<tcur; ++i ) {
 	putshort(temp,transitions[i].next_state);
-	putshort(temp,transitions[i].markit ? 0x8000 : 0 );
+	putshort(temp,transitions[i].markit);
 	putshort(temp,transitions[i].mark_index );
 	putshort(temp,transitions[i].cur_index );
     }
@@ -1744,7 +1802,7 @@ static int morx_dumpContGlyphFeatureFromCoverage(FILE *temp,FPST *fpst,
 	struct alltabs *at, SplineFont *sf ) {
     SplineChar ***tables, **glyphs;
     int **classes, class_cnt, gcnt;
-    int i, j, k, match_len;
+    int i, j, k, k2, match_len;
     struct fpst_rule *r = &fpst->rules[0];
     int subspos = r->u.coverage.bcnt+r->lookups[0].seq, hasfinal = false;
     int substag = r->lookups[0].lookup_tag, finaltag=-1;
@@ -1818,14 +1876,18 @@ return( false );
 	for ( j=1; j<match_len; ++j ) {
 	    for ( i=0; i<class_cnt; ++i ) {
 		for ( k=0; classes[j][k]!=0xffff && classes[j][k]!=i; ++k );
-		putshort(temp,classes[j][k]==i?j+1:0);
+		if ( classes[j][k]==0xffff )
+		    for ( k2=0; classes[0][k2]!=0xffff && classes[0][k2]!=i; ++k2 );
+		putshort(temp,classes[j][k]==i?j+1:classes[j][k2]==i?1:0);
 	    }
 	}
     } else {
 	for ( j=1; j<match_len; ++j ) {
 	    for ( i=0; i<class_cnt-1; ++i ) {
 		for ( k=0; classes[j][k]!=0xffff && classes[j][k]!=i; ++k );
-		putshort(temp,classes[j][k]==i?j+1:0);
+		if ( classes[j][k]==0xffff )
+		    for ( k2=0; classes[0][k2]!=0xffff && classes[0][k2]!=i; ++k2 );
+		putshort(temp,classes[j][k]==i?j+1:classes[j][k2]==i?1:0);
 	    }
 	    putshort(temp,subspos==j?match_len+1:j);	/* a mark leaves us in the same class */
 	}
@@ -1841,9 +1903,9 @@ return( false );
 	putshort(temp,j+2); putshort(temp,subspos==j?0x8000:0x0000); putshort(temp,0xffff); putshort(temp,0xffff);
     }
     if ( subspos==j ) {
-	putshort(temp,0); putshort(temp,0x0000); putshort(temp,0xffff); putshort(temp,0);
+	putshort(temp,0); putshort(temp,0x4000); putshort(temp,0xffff); putshort(temp,0);
     } else {
-	putshort(temp,0); putshort(temp,0x0000); putshort(temp,0); putshort(temp,hasfinal?1:0xffff);
+	putshort(temp,0); putshort(temp,0x4000); putshort(temp,0); putshort(temp,hasfinal?1:0xffff);
     }
     if ( fpst->flags & pst_ignorecombiningmarks ) {
 	putshort(temp,subspos); putshort(temp,0x0000); putshort(temp,0xffff); putshort(temp,0xffff);

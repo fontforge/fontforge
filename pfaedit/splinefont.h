@@ -235,10 +235,10 @@ typedef struct generic_fpst {
     char **nclass, **bclass, **fclass;
     struct fpst_rule {
 	union {
-	    struct { char *names, *back, *fore; } glyph;
-	    struct { int ncnt, bcnt, fcnt; uint16 *nclasses, *bclasses, *fclasses, *allclasses; } class;
-	    struct { int ncnt, bcnt, fcnt; char **ncovers, **bcovers, **fcovers; } coverage;
-	    struct { int always1, bcnt, fcnt; char **ncovers, **bcovers, **fcovers; char *replacements; } rcoverage;
+	    struct fpg { char *names, *back, *fore; } glyph;
+	    struct fpc { int ncnt, bcnt, fcnt; uint16 *nclasses, *bclasses, *fclasses, *allclasses; } class;
+	    struct fpv { int ncnt, bcnt, fcnt; char **ncovers, **bcovers, **fcovers; } coverage;
+	    struct fpr { int always1, bcnt, fcnt; char **ncovers, **bcovers, **fcovers; char *replacements; } rcoverage;
 	} u;
 	int lookup_cnt;
 	struct seqlookup {
