@@ -142,6 +142,7 @@ static void GMenuDrawCheckMark(struct gmenu *m, Color fg, int ybase, int r2l) {
     int pt = GDrawPointsToPixels(m->w,1);
     int x = r2l ? m->width-m->tioff+2*pt : m->tickoff;
 
+    if ( 2*pt>=as/3 ) --pt;
     GDrawSetLineWidth(m->w,pt);
     GDrawDrawLine(m->w,x+2*pt,ybase-as/3,x+as/3,ybase-2*pt,fg);
     GDrawDrawLine(m->w,x+2*pt,ybase-as/3-pt,x+as/3,ybase-3*pt,fg);
