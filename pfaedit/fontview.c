@@ -928,6 +928,10 @@ static void FVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     int i, cnt=0;
     static unichar_t over[] = { 'R','e','m','o','v','i','n','g',' ','o','v','e','l','a','p','s',  '\0' };
 
+    /* We know it's more likely that we'll find a problem in the overlap code */
+    /*  than anywhere else, so let's save the current state against a crash */
+    DoAutoSaves();
+
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
 	++cnt;
     GProgressStartIndicator(10,over,over,NULL,cnt,1);
