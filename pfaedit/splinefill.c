@@ -77,10 +77,7 @@ real TOfNextMajor(Edge *e, EdgeList *es, real sought_m ) {
 return( e->up?1.0:0.0 );
     }
 
-    if ( e->up )
-	new_t = SplineSolve(msp,e->t_cur,e->t_mmax,(sought_m+es->mmin)/es->scale,.001);
-    else
-	new_t = SplineSolve(msp,e->t_mmax,e->t_cur,(sought_m+es->mmin)/es->scale,.001);
+    new_t = SplineSolve(msp,e->t_mmin,e->t_mmax,(sought_m+es->mmin)/es->scale,.001);
     if ( new_t==-1 )
 	GDrawIError( "No Solution");
     e->m_cur = (((msp->a*new_t + msp->b)*new_t+msp->c)*new_t + msp->d)*es->scale - es->mmin;

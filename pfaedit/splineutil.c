@@ -2026,9 +2026,9 @@ return( ts[i] );
     /*  approach if it fails */
     low = ((temp.a*tmin+temp.b)*tmin+temp.c)*tmin+temp.d;
     high = ((temp.a*tmax+temp.b)*tmax+temp.c)*tmax+temp.d;
-    if ( low==0 )
+    if ( low<err && low>-err )
 return(tmin);
-    if ( high==0 )
+    if ( high<err && high>-err )
 return(tmax);
     if (( low<0 && high>0 ) ||
 	    ( low>0 && high<0 )) {
