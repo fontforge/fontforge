@@ -1146,6 +1146,7 @@ extern int IntersectLinesClip(BasePoint *inter,
 	BasePoint *line1_1, BasePoint *line1_2,
 	BasePoint *line2_1, BasePoint *line2_2);
 
+extern void SSBisectTurners(SplineSet *spl);
 extern SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc);
 extern SplineSet *SSStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc);
 extern SplineSet *SplineSetRemoveOverlap(SplineChar *sc,SplineSet *base,enum overlap_type);

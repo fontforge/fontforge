@@ -1557,6 +1557,41 @@ return( ssplus );
 return( ssplus );
 }
 
+static void BisectTurners(SplineSet *spl) {
+    Spline *first, *s, *next;
+    double len,lenf,lent, dott,dotf;
+
+    /* Also if we have a spline which turns through about 180 degrees */
+    /*  our approximations degrade. So bisect any such splines */
+    first = NULL;
+    for ( s = spl->first->next; s!=NULL && s!=first; s=next ) {
+	next = s->to->next;
+	if ( first==NULL ) first = s;
+	len = sqrt( (s->from->me.x-s->to->me.x)*(s->from->me.x-s->to->me.x) +
+		    (s->from->me.y-s->to->me.y)*(s->from->me.y-s->to->me.y) );
+	lenf= sqrt( (s->from->me.x-s->from->nextcp.x)*(s->from->me.x-s->from->nextcp.x) +
+		    (s->from->me.y-s->from->nextcp.y)*(s->from->me.y-s->from->nextcp.y) );
+	dotf = ((s->from->me.x-s->to->me.x)*(s->from->me.x-s->from->nextcp.x) +
+		(s->from->me.y-s->to->me.y)*(s->from->me.y-s->from->nextcp.y))/
+		(len*lenf);
+	lent= sqrt( (s->to->prevcp.x-s->to->me.x)*(s->to->prevcp.x-s->to->me.x) +
+		    (s->to->prevcp.y-s->to->me.y)*(s->to->prevcp.y-s->to->me.y) );
+	dott = ((s->from->me.x-s->to->me.x)*(s->to->prevcp.x-s->to->me.x) +
+		(s->from->me.y-s->to->me.y)*(s->to->prevcp.y-s->to->me.y))/
+		(len*lent);
+	dotf = acos(dotf); dott = acos(dott);
+	if ( dotf+dott > PI/2 )
+	    SplineBisect(s,.5);
+    }
+}
+
+void SSBisectTurners(SplineSet *spl) {
+    while ( spl!=NULL ) {
+	BisectTurners(spl);
+	spl = spl->next;
+    }
+}
+
 static SplineSet *SSRemoveUTurns(SplineSet *base) {
     /* My stroking algorithem gets confused by sharp turns. For example */
     /*  if we have a spline which is all in a line, but the control points */
@@ -1566,7 +1601,6 @@ static SplineSet *SSRemoveUTurns(SplineSet *base) {
     Spline *first, *s, *next;
     double dx,dy, offx,offy, diff;
     int linear;
-    double len,lenf,lent, dott,dotf;
 
     first = NULL;
     for ( s = spl->first->next; s!=NULL && s!=first; s=s->to->next ) {
@@ -1646,28 +1680,7 @@ static SplineSet *SSRemoveUTurns(SplineSet *base) {
 	}
     }
 
-    /* Also if we have a spline which turns through about 180 degrees */
-    /*  our approximations degrade. So bisect any such splines */
-    first = NULL;
-    for ( s = spl->first->next; s!=NULL && s!=first; s=next ) {
-	next = s->to->next;
-	if ( first==NULL ) first = s;
-	len = sqrt( (s->from->me.x-s->to->me.x)*(s->from->me.x-s->to->me.x) +
-		    (s->from->me.y-s->to->me.y)*(s->from->me.y-s->to->me.y) );
-	lenf= sqrt( (s->from->me.x-s->from->nextcp.x)*(s->from->me.x-s->from->nextcp.x) +
-		    (s->from->me.y-s->from->nextcp.y)*(s->from->me.y-s->from->nextcp.y) );
-	dotf = ((s->from->me.x-s->to->me.x)*(s->from->me.x-s->from->nextcp.x) +
-		(s->from->me.y-s->to->me.y)*(s->from->me.y-s->from->nextcp.y))/
-		(len*lenf);
-	lent= sqrt( (s->to->prevcp.x-s->to->me.x)*(s->to->prevcp.x-s->to->me.x) +
-		    (s->to->prevcp.y-s->to->me.y)*(s->to->prevcp.y-s->to->me.y) );
-	dott = ((s->from->me.x-s->to->me.x)*(s->to->prevcp.x-s->to->me.x) +
-		(s->from->me.y-s->to->me.y)*(s->to->prevcp.y-s->to->me.y))/
-		(len*lent);
-	dotf = acos(dotf); dott = acos(dott);
-	if ( dotf+dott > 3*PI/4 )
-	    SplineBisect(s,.5);
-    }
+    BisectTurners(spl);
 return( base );
 }
 
@@ -1685,7 +1698,9 @@ SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
 	trans[4] = trans[5] = 0;
 	factor = si->radius/si->minorradius;
 	trans[0] *= factor; trans[1] *= factor;
-	temp = SplinePointListTransform(SplinePointListCopy(spl),trans,true);
+	temp = SplinePointListCopy(spl);
+	BisectTurners(temp);
+	temp = SplinePointListTransform(temp,trans,true);
 	si2 = *si;
 	si2.stroke_type = si_std;
 	ret = SplineSetStroke(temp,&si2,sc);
