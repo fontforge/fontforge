@@ -1441,7 +1441,9 @@ static void SPLForceLines(SplineChar *sc,SplineSet *ss,double bump_size) {
 			SplinePointMDFree(sc,s->from);
 			sp->next = s; s->from = sp;
 			SplineRefigure(s);
-			SplineRefigure(sp->prev);
+			if ( sp->prev!=NULL )
+			    SplineRefigure(sp->prev);
+			sp->pointtype = pt_corner;
 			any = true;
 		    }
 		}
@@ -1466,7 +1468,9 @@ static void SPLForceLines(SplineChar *sc,SplineSet *ss,double bump_size) {
 			SplinePointMDFree(sc,s->to);
 			sp->prev = s; s->to = sp;
 			SplineRefigure(s);
-			SplineRefigure(sp->next);
+			if ( sp->next!=NULL )
+			    SplineRefigure(sp->next);
+			sp->pointtype = pt_corner;
 			any = true;
 		    }
 		}
@@ -1485,13 +1489,18 @@ static int SPLSmoothControlPoints(SplineSet *ss,double tan_bounds,int vert_check
     int changed=false, found;
 
     for ( sp = ss->first; ; ) {
-	if ( !sp->nonextcp && !sp->noprevcp && sp->pointtype==pt_corner ) {
-	    unit.x = sp->nextcp.x-sp->me.x;
-	    unit.y = sp->nextcp.y-sp->me.y;
+	if (( !sp->nonextcp && !sp->noprevcp && sp->pointtype==pt_corner ) ||
+		((sp->pointtype==pt_corner || sp->pointtype==pt_curve) &&
+		 (( !sp->nonextcp && sp->noprevcp && sp->prev!=NULL && sp->prev->knownlinear ) ||
+		  ( !sp->noprevcp && sp->nonextcp && sp->next!=NULL && sp->next->knownlinear )))) {
+	    BasePoint *next = sp->nonextcp ? &sp->next->to->me : &sp->nextcp;
+	    BasePoint *prev = sp->noprevcp ? &sp->prev->to->me : &sp->prevcp;
+	    unit.x = next->x-sp->me.x;
+	    unit.y = next->y-sp->me.y;
 	    len = sqrt(unit.x*unit.x + unit.y*unit.y);
 	    unit.x /= len; unit.y /= len;
-	    para = (sp->me.x-sp->prevcp.x)*unit.x + (sp->me.y-sp->prevcp.y)*unit.y;
-	    norm = (sp->me.x-sp->prevcp.x)*unit.y - (sp->me.y-sp->prevcp.y)*unit.x;
+	    para = (sp->me.x-prev->x)*unit.x + (sp->me.y-prev->y)*unit.y;
+	    norm = (sp->me.x-prev->x)*unit.y - (sp->me.y-prev->y)*unit.x;
 	    if ( para==0 )
 		tn = 1000;
 	    else
@@ -1517,7 +1526,17 @@ static int SPLSmoothControlPoints(SplineSet *ss,double tan_bounds,int vert_check
 			}
 		    }
 		}
-		if ( !found ) {
+		/* If we're next to a line, we must extend the line. No choice */
+		if ( sp->nonextcp ) {
+		    if ( len<len2 )
+	continue;
+		    found = true;
+		    unit2 = unit;
+		} else if ( sp->noprevcp ) {
+		    if ( len2<len )
+	continue;
+		    found = true;
+		} else if ( !found ) {
 		    unit2.x = (unit.x*len + unit2.x*len2)/(len+len2);
 		    unit2.y = (unit.y*len + unit2.y*len2)/(len+len2);
 		}
