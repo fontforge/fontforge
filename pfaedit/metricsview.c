@@ -350,6 +350,8 @@ static int MVSetAnchor(MetricsView *mv) {
 		j = base+1+apos->base_index;
 		newx = mv->perchar[j].xoff - (mv->perchar[i].dx-mv->perchar[j].dx) +
 			test->x * mv->pixelsize / emsize;
+		if ( mv->right_to_left )
+		    newx = -mv->perchar[j].sc->width * mv->pixelsize/emsize - newx;
 		newy = mv->perchar[j].yoff + test->y * mv->pixelsize / emsize;
 		if ( mv->perchar[i].xoff != newx || mv->perchar[i].yoff != newy ) {
 		    mv->perchar[i].xoff = newx; mv->perchar[i].yoff = newy;
