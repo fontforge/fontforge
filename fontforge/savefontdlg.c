@@ -37,6 +37,8 @@
 #include <gkeysym.h>
 #include "psfont.h"
 
+static int nfnt_warned = false;
+
 #define CID_Family	2000
 
 #define CID_OK		1001
@@ -2016,6 +2018,14 @@ return;
 	sizes = ParseBitmapSizes(d->bmpsizes,_STR_PixelList,&err);
     if ( err )
 return;
+    if ( oldbitmapstate==bf_nfntmacbin && oldformatstate!=ff_pfbmacbin && !nfnt_warned ) {
+	nfnt_warned = true;
+	GWidgetPostNoticeR(_STR_NFNTObsoleteTit,_STR_NFNTObsolete);
+    } else if ( oldformatstate==ff_pfbmacbin &&
+	    (oldbitmapstate!=bf_nfntmacbin || sizes[0]==0)) {
+	GWidgetErrorR(_STR_Type1NeedsNFNTTit,_STR_Type1NeedsNFNT);
+return;
+    }
 
     if ( d->family ) {
 	cur = chunkalloc(sizeof(struct sflist));
