@@ -3226,9 +3226,7 @@ static void dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     gi->fudge = (sf->ascent+sf->descent)/500;	/* fudge factor for hint matches */
 
     i=0, cnt=0;
-    if ( sf->chars[0]!=NULL &&
-	    (sf->chars[0]->splines!=NULL || (sf->chars[0]->widthset && fixed==-1)) &&
-	    sf->chars[0]->refs==NULL && strcmp(sf->chars[0]->name,".notdef")==0 )
+    if ( SCIsNotdef(sf->chars[0],fixed) )
 	sf->chars[i++]->ttf_glyph = cnt++;
     for ( cnt=3; i<sf->charcnt; ++i )
 	if ( SCWorthOutputting(sf->chars[i]) )
@@ -3244,9 +3242,7 @@ static void dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     FigureFullMetricsEnd(sf,gi);
 
     i = 0;
-    if ( sf->chars[0]!=NULL &&
-	    (sf->chars[0]->splines!=NULL || (sf->chars[0]->widthset && fixed==-1)) &&
-	    sf->chars[0]->refs==NULL && strcmp(sf->chars[0]->name,".notdef")==0 )
+    if ( SCIsNotdef(sf->chars[0],fixed) )
 	dumpglyph(sf->chars[i++],gi);
     else
 	dumpmissingglyph(sf,gi,fixed);
@@ -3486,7 +3482,7 @@ static void dumpcffcharset(SplineFont *sf,struct alltabs *at) {
 
     /* First element must be ".notdef" and is omitted */
     /* So if glyph 0 isn't notdef do something special */
-    if ( SCWorthOutputting(sf->chars[0]) && strcmp(sf->chars[0]->name,".notdef")!=0 )
+    if ( SCIsNotdef(sf->chars[0],-1) )
 	putshort(at->charset,storesid(at,sf->chars[0]->name));
 
     for ( i=1; i<sf->charcnt; ++i )
@@ -3576,7 +3572,7 @@ static void dumpcffencoding(SplineFont *sf,struct alltabs *at) {
     /* And I put in 255 of them (with the encoding for 0 implied, I hope) */
 
     offset = 0;
-    if ( SCWorthOutputting(sf->chars[0]) && strcmp(sf->chars[0]->name,".notdef")!=0 )
+    if ( SCIsNotdef(sf->chars[0],-1))
 	offset = 1;
 
     for ( i=pos=1; i<sf->charcnt && i<256; ++i )
@@ -4090,7 +4086,7 @@ static void dumpcffhmtx(struct alltabs *at,SplineFont *sf,int bitmaps) {
     if ( dovmetrics )
 	at->gi.vmtx = tmpfile();
     FigureFullMetricsEnd(sf,&at->gi);
-    if ( SCWorthOutputting(sf->chars[0]) && strcmp(sf->chars[0]->name,".notdef")==0 ) {
+    if ( SCIsNotdef(sf->chars[0],-1)) {
 	putshort(at->gi.hmtx,sf->chars[0]->width);
 	SplineCharFindBounds(sf->chars[0],&b);
 	putshort(at->gi.hmtx,b.minx);
@@ -5791,7 +5787,7 @@ static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format)
 	putshort(at->post,1);		/* glyphs 1&2 are tab and cr */
 	putshort(at->post,2);		/* or something */
 	i=1;
-	if ( sf->chars[i]!=NULL && strcmp(sf->chars[i]->name,".notdef")!=0 )
+	if ( sf->chars[0]!=NULL && strcmp(sf->chars[0]->name,".notdef")!=0 )
 	    i=0;
 	for ( pos=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
 	    if ( sf->chars[i]->unicodeenc<128 && sf->chars[i]->unicodeenc!=-1 )
@@ -6156,14 +6152,22 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
     uint16 *ranges;
     char table[256];
     SplineFont *sf = _sf;
-    SplineChar *sc, notdef;
+    SplineChar *sc, notdef, nonmarkingreturn;
     extern int greekfixup;
+    int alreadyprivate = false;
 
     if ( sf->chars[0]==NULL ) {		/* Encode the default notdef char at 0 */
 	memset(&notdef,0,sizeof(notdef));
 	notdef.unicodeenc = -1;
 	notdef.name = ".notdef";
 	sf->chars[0] = &notdef;
+    }
+    if ( sf->chars[13]==NULL ) {		/* Encode the default notdef char at 0 */
+	memset(&nonmarkingreturn,0,sizeof(notdef));
+	nonmarkingreturn.unicodeenc = 13;
+	nonmarkingreturn.name = "nonmarkingreturn";
+	nonmarkingreturn.ttf_glyph = 2;
+	sf->chars[13] = &nonmarkingreturn;
     }
 
     at->cmap = tmpfile();
@@ -6185,18 +6189,30 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 		table[sf->chars[i]->enc] = sf->chars[i]->ttf_glyph;
 	table[0] = table[8] = table[13] = table[29] = 1;
 	table[9] = 3;
-	/* Two encoding table pointers, one for ms, one for mac */
-	putshort(at->cmap,0);		/* version */
-	putshort(at->cmap,2);		/* num tables */
-
-	    /* Encodings are supposed to be ordered */
-	putshort(at->cmap,1);		/* mac platform */
-	putshort(at->cmap,32);		/* plat specific enc, uninterpretted */
-	putlong(at->cmap,2*sizeof(uint16)+2*(2*sizeof(uint16)+sizeof(uint32)));	/* offset from tab start to sub tab start */
-	putshort(at->cmap,3);		/* ms platform */
-	putshort(at->cmap,0);		/* plat specific enc, symbol */
-	putlong(at->cmap,2*sizeof(uint16)+2*(2*sizeof(uint16)+sizeof(uint32)));	/* offset from tab start to sub tab start */
-    } else if ( (sf->encoding_name==em_big5 ||
+	/* if the user has read in a ttf symbol file then it will already have */
+	/*  the right private use encoding, and we don't want to mess it up. */
+	/*  The alreadyprivate flag should detect this case */
+	alreadyprivate = true;
+	for ( i=0; i<sf->charcnt; ++i ) {
+	    if ( sf->chars[i]!=&notdef && sf->chars[i]!=&nonmarkingreturn &&
+		    sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 &&
+		    !SCIsNotdef(sf->chars[i],-1) && i<=0xffff )
+		if ( i<0xf000 || i>0xf0ff )
+		    alreadyprivate = false;
+	}
+	if ( !alreadyprivate ) {
+	    for ( i=0; i<sf->charcnt && i<256; ++i ) if ( sf->chars[i]!=&notdef && sf->chars[i]!=&nonmarkingreturn && sf->chars[i]!=NULL ) {
+		sf->chars[i]->enc = sf->chars[i]->unicodeenc;
+		sf->chars[i]->unicodeenc = 0xf000 + i;
+	    }
+	    for ( ; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+		sf->chars[i]->enc = sf->chars[i]->unicodeenc;
+		sf->chars[i]->unicodeenc = -1;
+	    }
+	}
+    }
+    if ( format!=ff_ttfsym &&
+		   (sf->encoding_name==em_big5 ||
 		    sf->encoding_name==em_johab ||
 		    sf->encoding_name==em_sjis ||
 		    sf->encoding_name==em_wansung ) && Needs816Enc(at,sf)) {
@@ -6344,6 +6360,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	}
 	putshort(at->cmap,3);		/* ms platform */
 	putshort(at->cmap,		/* plat specific enc */
+		format==ff_ttfsym || sf->encoding_name==em_symbol ? 0 :
 		sf->encoding_name==em_ksc5601 ? 5 :	/* Wansung, korean */
 		sf->encoding_name==em_wansung ? 5 :	/* Wansung, korean */
 		sf->encoding_name==em_jis208 ? 2 :	/* SJIS */
@@ -6396,8 +6413,18 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
     if ( (at->cmaplen&2)!=0 )
 	putshort(at->cmap,0);
 
+    if ( format==ff_ttfsym || sf->encoding_name==em_symbol ) {
+	if ( !alreadyprivate ) {
+	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=&notdef && sf->chars[i]!=&nonmarkingreturn && sf->chars[i]!=NULL ) {
+		sf->chars[i]->unicodeenc = sf->chars[i]->enc;
+		sf->chars[i]->enc = i;
+	    }
+	}
+    }
     if ( sf->chars[0]==&notdef )
 	sf->chars[0] = NULL;
+    if ( sf->chars[13]==&nonmarkingreturn )
+	sf->chars[13] = NULL;
 }
 
 static int32 filecheck(FILE *file) {

@@ -447,7 +447,7 @@ static void dumpcharprocs(void (*dumpchar)(int ch,void *data), void *data, Splin
 
     dumpf(dumpchar,data,"/CharProcs %d dict def\nCharProcs begin\n", cnt );
     i = 0;
-    if ( SCWorthOutputting(sf->chars[0]) && strcmp(sf->chars[0]->name,".notdef")==0 )
+    if ( SCWorthOutputting(sf->chars[0]) && SCIsNotdef(sf->chars[0],-1 ))
 	dumpproc(dumpchar,data,sf->chars[i++]);
     else
 	dumpf(dumpchar, data, "  /.notdef { %d 0 0 0 0 0 setcachedevice } bind def\n",

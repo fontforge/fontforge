@@ -1554,9 +1554,7 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
 	if ( SCWorthOutputting(sf->chars[i]) )
 	    ++cnt;
 /* only honor the width on .notdef in non-fixed pitch fonts (or ones where there is an actual outline in notdef) */
-    zero_is_notdef = (sf->chars[0]!=NULL &&
-	    (sf->chars[0]->splines!=NULL || (sf->chars[0]->widthset && fixed==-1)) &&
-	     sf->chars[0]->refs==NULL && strcmp(sf->chars[0]->name,".notdef")==0 );
+    zero_is_notdef = SCIsNotdef(sf->chars[0],fixed);
     if ( !zero_is_notdef )
 	++cnt;		/* one notdef entry */
     /* special greek hacks */
@@ -2449,9 +2447,7 @@ struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
 	    ++cnt;
     }
 /* only honor the width on .notdef in non-fixed pitch fonts (or ones where there is an actual outline in notdef) */
-    zero_is_notdef = (sf->chars[0]!=NULL &&
-	    (sf->chars[0]->splines!=NULL || (sf->chars[0]->widthset && fixed==-1)) &&
-	     sf->chars[0]->refs==NULL && strcmp(sf->chars[0]->name,".notdef")==0 );
+    zero_is_notdef = SCIsNotdef(sf->chars[0],fixed);
     if ( !zero_is_notdef )
 	++cnt;		/* one notdef entry */
     chrs->cnt = cnt;

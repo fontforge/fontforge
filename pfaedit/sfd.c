@@ -394,11 +394,13 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
     ImageList *img;
     KernPair *kp;
 
-    if ( sc->splines==NULL && sc->refs==NULL && sc->hstem==NULL && sc->vstem==NULL &&
-	    sc->backgroundsplines==NULL && sc->backimages==NULL &&
-	    !sc->widthset && sc->width==sc->parent->ascent+sc->parent->descent ) {
-	if ( strcmp(sc->name,".notdef")==0 ||
-		(sc->enc==sc->unicodeenc && (sc->enc<32 || (sc->enc>=0x7f && sc->enc<0xa0))) )
+    if ( sc->splines==NULL && sc->refs==NULL && 
+	    sc->backgroundsplines==NULL && sc->backimages==NULL ) {
+	if ( strcmp(sc->name,".null")==0 || strcmp(sc->name,"nonmarkingreturn")==0 )
+return;
+	if ( !sc->widthset && sc->width==sc->parent->ascent+sc->parent->descent &&
+		(strcmp(sc->name,".notdef")==0 || sc->enc==sc->unicodeenc ||
+		 strcmp(sc->name,".null")==0 || strcmp(sc->name,"nonmarkingreturn")==0 ))
 return;
     }
     fprintf(sfd, "StartChar: %s\n", sc->name );

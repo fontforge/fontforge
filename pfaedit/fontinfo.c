@@ -1052,7 +1052,7 @@ return( true );
 	}
     }
     if ( sc->unicodeenc==-1 ) {
-	if ( sc->enc==0 && strcmp(sc->name,".notdef")==0 && table[0]==0 && !(used[0]&1)) {
+	if ( SCIsNotdef(sc,-1) && table[0]==0 && !(used[0]&1)) {
 	    used[0] |= 1;
 return( true );			/* .notdef goes to encoding 0 */
 	} else if ( item!=NULL && item->psnames!=NULL ) {
