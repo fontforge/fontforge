@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 4-Nov-2004 -->
+  <!-- AP: Last modified: 16-Nov-2004 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -191,7 +191,7 @@ another fontforge script file, this file will be invoked (since filenames
 can contain characters not legal in name tokens it is important to allow
 general strings to specify filenames). If the procedure name does not contain
 a directory then it is assumed to be in the same directory as the current
-script file.
+script file. At most 25 arguments can be passed to a procedure.
 <P>
 Arrays are passed by reference, strings and integers are passed by value.
 <P>
@@ -859,7 +859,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     respectively. Units are in 1/72 inches (almost points), so 8.5x11" paper
     is 612,792 and A4 paper is (about) 595,842.
   <DT>
-    PrintFont(type[,pointsize[,sample-text-file[,output-file]]])
+    PrintFont(type[,pointsize[,sample-text/filename[,output-file]]])
   <DD>
     Prints the current font according to the
     <A HREF="scripting.html#PrintSetup">PrintSetup</A>. The values for type are
@@ -872,11 +872,14 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
       <LI>
 	2 =&gt; Prints selected glyphs at multiple pointsizes
       <LI>
-	3 =&gt; Prints a text sample at the given pointsize(s)
+	3 =&gt; Prints a text sample read from a file at the given pointsize(s)
+      <LI>
+	4 =&gt; Prints a text sample, except that instead of treating the third argument
+	as a file name it represents the sample itself (in utf-8 encoding)
     </UL>
     <P>
     The pointsize is either a single integer or an array of integers. It is only
-    meaningful for types 0 and 3. If omitted or set to 0 a default value will
+    meaningful for types 0, 3 and 4. If omitted or set to 0 a default value will
     be chosen. The font display will only look at one value.
     <P>
     If you selected print type 3 then you may provide the name of a file containing
@@ -1952,8 +1955,13 @@ ApplySubstitution("*","*","vrt2")
   <DT>
     WorthOutputting(arg)
   <DD>
+    Arg is as above. This returns true if the glyph contains any splines, references,
+    images or has had its width set.
+  <DT>
+    DrawsSomething(arg)
+  <DD>
     Arg is as above. This returns true if the glyph contains any splines, references
-    or has had its width set.
+    or references.
   <DT>
     CharInfo(str)<BR>
     CharInfo("Kern",glyph-spec)<BR>
