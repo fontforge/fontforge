@@ -15,6 +15,8 @@
 extern char *psunicodenames[];
 extern int psunicodenames_cnt;
 
+static int includestrokes = false;
+
 #define true	1
 #define false	0
 
@@ -291,7 +293,10 @@ return(sc);
 	/*  size is too small then just stroke, otherwise fill?) */
 	/* Every character has them... */
 	/*fprintf( stderr, "There are some stroked paths in %s, you should run\n  Element->Expand Stroke on this character\n", sc->name );*/
-	/*sc->splines =*/ ReadSplineSets(file,flags,/*sc->splines*/NULL,false);
+	if ( includestrokes )
+	    sc->splines = ReadSplineSets(file,flags,sc->splines,false);
+	else
+	    ReadSplineSets(file,flags,NULL,false);	/* read and ignore */
 	verb = getc(file);
     }
     if ( verb!=EOF && verb&(1<<3)) {
@@ -886,7 +891,9 @@ int main(int argc, char **argv) {
 	    pt = argv[i]+1;
 	    if ( *pt=='-' )
 		++pt;
-	    if ( strcmp(pt,"version")==0 )
+	    if ( strcmp(pt,"includestrokes")==0 )
+		includestrokes = true;
+	    else if ( strcmp(pt,"version")==0 )
 		doversion();
 	    else if ( strlen(pt)<=4 && strncmp(pt,"help",strlen(pt))==0 )
 		dohelp();
