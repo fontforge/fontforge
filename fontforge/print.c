@@ -432,6 +432,7 @@ static void pdf_dump_type1(PI *pi) {
 
 static int pdf_charproc(PI *pi, SplineChar *sc) {
     int ret = pi->next_object;
+#ifdef FONTFORGE_CONFIG_TYPE3
     long streamstart, streamlength;
     int i;
 
@@ -464,6 +465,9 @@ static int pdf_charproc(PI *pi, SplineChar *sc) {
     pdf_addobject(pi);
     fprintf( pi->out, " %ld\n", streamlength );
     fprintf( pi->out, "endobj\n\n" );
+#else
+    IError("This should never get called");
+#endif
 return( ret );
 }
 
