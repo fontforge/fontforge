@@ -515,6 +515,25 @@ static real SSFindMinXAtY(SplineSet *spl,real y,real min) {
 return( min );
 }
 
+static real SSIsMinXAtYCurved(SplineSet *spl,real y,real oldmin,int *curved) {
+    Spline *sp, *first;
+    real min;
+
+    while ( spl!=NULL ) {
+	first = NULL;
+	for ( sp = spl->first->next; sp!=NULL && sp!=first; sp = sp->to->next ) {
+	    min = SplineFindMinXAtY(sp,y,oldmin);
+	    if ( min!=oldmin ) {
+		oldmin = min;
+		*curved = !sp->knownlinear;
+	    }
+	    if ( first==NULL ) first = sp;
+	}
+	spl = spl->next;
+    }
+return( oldmin );
+}
+
 static void SSFindEdges(SplineSet *spl,struct charone *ch, WidthInfo *wi) {
     Spline *sp, *first;
 
@@ -536,6 +555,17 @@ static real SCFindMinXAtY(SplineChar *sc,real y) {
     for ( ref=sc->refs; ref!=NULL; ref=ref->next )
 	min = SSFindMinXAtY(ref->splines,y,min);
 return( min );
+}
+
+static int SCIsMinXAtYCurved(SplineChar *sc,real y) {
+    real min = NOTREACHED;
+    int curved = false;
+    RefChar *ref;
+
+    min = SSFindMinXAtY(sc->splines,y,NOTREACHED);
+    for ( ref=sc->refs; ref!=NULL; ref=ref->next )
+	min = SSIsMinXAtYCurved(ref->splines,y,min,&curved);
+return( curved );
 }
 
 static void SCFindEdges(struct charone *ch,WidthInfo *wi) {
@@ -753,10 +783,12 @@ static void FindFontParameters(WidthInfo *wi) {
 		    ybottom = y;
 	    }
 	}
-	if ( ytop<=bb.miny+.5 )
+	/* If "I" has a curved stem then it's probably in a script style and */
+	/*  serifs don't really make sense (or not the simplistic ones I deal with) */
+	if ( ytop<=bb.miny+.5 || SCIsMinXAtYCurved(sf->chars[si],caph/2) )
 	    serifsize = 0;
 	else if ( ytop>caph/4 )
-	    serifsize = .06*(sf->ascent+sf->descent);
+	    serifsize = /*.06*(sf->ascent+sf->descent)*/ 0;
 	else
 	    serifsize = ytop-bb.miny;
 
