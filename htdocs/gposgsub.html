@@ -2,13 +2,27 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 28-Jan-2003 -->
-  <TITLE>The GPOS and GSUB opentype tables</TITLE>
+  <!-- AP: Last modified: 1-Feb-2003 -->
+  <TITLE>Advanced Typography tables</TITLE>
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
-  The <B><CODE>GPOS</CODE></B> and <B><CODE>GSUB</CODE></B> opentype tables
+  Advanced Typograph Tables
 </H1>
+<P>
+These differ between OpenType and Apple. My support for Apple is minimal
+as yet. My support for OpenType is not complete.
+<UL>
+  <LI>
+    <A HREF="#opentype">The <B><CODE>GPOS</CODE></B> and
+    <B><CODE>GSUB</CODE></B> opentype tables</A>
+  <LI>
+    <A HREF="#AAT">Apple Advanced Typography</A>
+</UL>
+<H2>
+  The <B><CODE>GPOS,</CODE></B> <B><CODE>GSUB</CODE></B> and
+  <B><CODE>GDEF</CODE></B> <A NAME="opentype">opentype</A> tables
+</H2>
 <P>
 These two tables are used for positioning and substituting glyphs. The GPOS
 table can control things like: kerning, accent positioning, cursive joining,
@@ -54,9 +68,9 @@ of glyphs to another when those glyphs are at the beginning of a word.
 <P>
 PfaEdit does not support the full range of possibilities inherent in these
 two tables.
-<H2>
+<H3>
   The <B><CODE>GPOS</CODE></B> table
-</H2>
+</H3>
 <P>
 PfaEdit will read the following sub tables of the GPOS table:
 <TABLE Border=1>
@@ -161,9 +175,9 @@ PfaEdit also has built into it knowledge on how to provide default values
 for some features that use these menus. See
 <A HREF="elementmenu.html#DefaultATT">Element-&gt;Default ATT</A> command
 for that.
-<H2>
+<H3>
   The <B><CODE>GSUB</CODE></B> table
-</H2>
+</H3>
 <P>
 PfaEdit will read the following sub tables of the GSUB table:
 <TABLE Border=1>
@@ -253,14 +267,44 @@ for that.
 PfaEdit can produce some of these tables, but the text layout/word processing
 program used has to look up the tables and do the actual work of rearranging
 the glyphs.
-<H2>
+<H3>
   The <B><CODE>GDEF </CODE></B>table
-</H2>
+</H3>
 <P>
 PfaEdit will read ligature carets out of a GDEF table.
 <P>
 It will generate a GDEF table containing a glyph class definition sub-table
 (if needed) or a ligature caret sub-table (if needed).
+<H2>
+  <A NAME="AAT">Apple</A> Advanced Typography
+</H2>
+<P>
+PfaEdit will current read and produce (if Apple mode is set in font generation)
+the following tables:
+<TABLE BORDER CELLPADDING="2">
+  <TR>
+    <TD><CODE>'kern'</CODE></TD>
+    <TD>kerning table</TD>
+    <TD>PfaEdit will read pairwise horizontal kerning</TD>
+    <TD>PfaEdit will produce this if the font contains kerning data</TD>
+  </TR>
+  <TR>
+    <TD><CODE>'lcar'</CODE></TD>
+    <TD>ligature caret table</TD>
+    <TD>PfaEdit will read ligature carets</TD>
+    <TD>PfaEdit will produce this table if the user has specified ligature carets</TD>
+  </TR>
+  <TR>
+    <TD><CODE>'prop'</CODE></TD>
+    <TD>glyph properties table</TD>
+    <TD>PfaEdit will read this table to figure out which glyphs are hebrew and
+      arabic, and which have 'r2la' substitutions.</TD>
+    <TD>PfaEdit will generate this table if the font contains some right to left
+      characters.</TD>
+  </TR>
+</TABLE>
+<P>
+More useful tables may follow.
 <P>
 <P ALIGN=Center>
 -- <A HREF="generate.html">Prev</A> -- <A HREF="overview.html">TOC</A> --

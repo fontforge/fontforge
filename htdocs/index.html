@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 28-Jan-2003 -->
+  <!-- AP: Last modified: 1-Feb-2003 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -97,8 +97,8 @@ let me know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-030128.tgz">Download pfaedit linux-i386 Redhat 7.3
-    </A><A NAME="downloads">executable</A> Version: 28-Jan-2003
+    <A HREF="pfaedit-030201.tgz">Download pfaedit linux-i386 Redhat 7.3
+    </A><A NAME="downloads">executable</A> Version: 01-Feb-2003
   <LI>
     <A HREF="pfaedit-030125-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
     Version: 25-Jan-2003 (Redhat 7.3)
@@ -120,8 +120,8 @@ let me know when you do</A>.
     &nbsp; &nbsp; How to install <A HREF="MacOSX.html#binary">PfaEdit on Mac
     OS/X</A>
   <LI>
-    <A HREF="pfaedit_cygwin-030128.tgz">A cygwin version</A>. Version:
-    28-Jan-2003<BR>
+    <A HREF="pfaedit_cygwin-030130.tgz">A cygwin version</A>. Version:
+    30-Jan-2003<BR>
     &nbsp; &nbsp; How to install <A HREF="faq.html#windows">PfaEdit under
     windows</A>
   <LI>
@@ -143,9 +143,9 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-030125-1.src.rpm">source RPM</A>: Version:
 25-Jan-2003<BR>
-Or you can download the <A HREF="pfaedit_full-030128.tgz">entire source tree
+Or you can download the <A HREF="pfaedit_full-030201.tgz">entire source tree
 </A>in one .tgz file: Version
-28-Jan-2003<!--
+01-Feb-2003<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -263,7 +263,7 @@ bitmap fonts that pfaedit uses
 </H2>
 <P>
 All the documentation files in this directory bundled up into one
-<A HREF="pfaedit_htdocs-030128.tgz">tgz file</A> 28-Jan-2003.<BR>
+<A HREF="pfaedit_htdocs-030201.tgz">tgz file</A> 01-Feb-2003.<BR>
 If you do the following then PfaEdit will find the docs for you when you
 press F1 (ie. PfaEdit it will look in /usr/local/share/doc/pfaedit before
 it looks on the web):
@@ -463,11 +463,9 @@ and rarely appear on this list.
     Under kde, iconifying a PfaEdit window crashes the button bar at the bottom
     of the screen. Personally I consider this a bug in kde.
   <LI>
-    When reading a ttc file with a GSUB table, pfaedit is likely to lose information
-    from that table.
-  <LI>
-    On cygwin I have no idea how to find the (Windows) default browser. And probably
-    no idea how to invoke it if I did.
+    When reading a ttc file with a GSUB/GPOS table, pfaedit ignores the more
+    complex subtables. See the <A HREF="gposgsub.html">section on those tables</A>
+    for more info.
   <LI>
     ???
 </UL>
@@ -496,17 +494,17 @@ can.
       <LI>
 	English I take care of
       <LI>
-	Russian Valek handles
+	Russian is provided by Valek Filippov.
       <LI>
 	Japanese is provided by KANOU Hiroki.
       <LI>
-	A French translation is underway.
+	French is provided by Pierre Hanser.
       <LI>
-	I've also created a very minimal German translations that lapse into English,
+	I've also created a very minimal German translations that lapses into English,
 	anyone who wants to take this on is encouraged to do so.
       <LI>
-	Anything other language additions would be great (the entire UI does not
-	need to be translated, any subset is a help)
+	Any other language additions would be great (the entire UI does not need
+	to be translated, any subset is a help)
     </UL>
   <LI>
     <EM>Different font formats</EM><BR>
@@ -539,12 +537,12 @@ can.
     <UL>
       <LI>
 	Is not designed to allow font editors to understand the tables. I have spent
-	some time trying to figure out how to decompile apple's 'mort' table and
-	it appears that the only way to figure it out is to run the state machine
-	with all possible inputs. And see what happens. I'm not willing (yet) to
-	go to that effort, but if someone has code that parses the ligature sub-tables
-	and returns a list of ligature glyphs and their respective components I'd
-	love to make use of it.
+	some time trying to figure out how to decompile apple's 'mort' (or 'morx'
+	which is essentially the same) table and it appears that the only way to
+	figure it out is to run the state machine with all possible inputs. And see
+	what happens. I'm not willing (yet) to go to that effort, but if someone
+	has code that parses the ligature sub-tables and returns a list of ligature
+	glyphs and their respective components I'd love to make use of it.
     </UL>
   <LI>
     <I>Tests</I>

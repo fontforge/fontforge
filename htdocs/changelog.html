@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 28-Jan-2003 -->
+  <!-- AP: Last modified: 1-Feb-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,42 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    01-Feb-2003
+    <UL>
+      <LI>
+	Add some support for Apple Advanced Typograph tables ('prop', 'lcar')
+      <LI>
+	Popup menus in textfields failed to refresh the text field
+      <LI>
+	KANOU provides a patch for sfd files with long Alternate Subs
+      <LI>
+	FontView didn't deselect properly after doing a drag and drop.
+      <LI>
+	Should now deal with the case where (under cygwin) the user sets BROWSER
+	to 'netscape' with no path spec.
+      <LI>
+	Ligature carets introduced a crash bug.
+    </UL>
+  <LI>
+    30-Jan-2003
+    <UL>
+      <LI>
+	Should figure out the default windows browser under cygwin now.
+      <LI>
+	Should handle the case where a user sets the BROWSER variable to something
+	with a DOS pathspec
+      <LI>
+	Apply KANOU's patch to turn off more autohinting.
+    </UL>
+  <LI>
+    29-Jan-2003
+    <UL>
+      <LI>
+	Fix a crash introduced yesterday.
+      <LI>
+	scripting didn't work for $familyname fix from Alex Raftis
+    </UL>
   <LI>
     28-Jan-2003
     <UL>

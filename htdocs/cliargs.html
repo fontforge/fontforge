@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Jan-2002 -->
-  <!-- AP: Last modified: 20-Oct-2002 -->
+  <!-- AP: Last modified: 31-Jan-2003 -->
   <TITLE>Command Line Arguments</TITLE>
 </HEAD>
 <BODY>
@@ -134,10 +134,12 @@ PfaEdit recognizes the following options:
 PfaEdit examines the following environment variables:
 <DL>
   <DT>
-    <CODE>BROWSER</CODE>
+    <CODE><A NAME="BROWSER">BROWSER</A></CODE>
   <DD>
     Specifies the name of a browser program for examining documentation (must
-    be able to read a local or remote html file and display it reasonably)
+    be able to read a local or remote html file and display it reasonably). On
+    CygWin systems browsers that work in the windows world (as opposed to the
+    cygwin sub-system) must be specified by a full path spec.
   <DT>
     <CODE>AUTOTRACE</CODE>
   <DD>
