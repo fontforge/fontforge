@@ -61,7 +61,7 @@ BUILDING
     Move it somewhere appropriate (/usr/local/src perhaps?) and type:
 	$ gunzip pfaedit_full-*.tgz ; tar xf pfaedit_full-*.tar
 	$ cd pfaedit
-	$ configure
+	$ configure.static
 	$ make
 	$ su
 	# make install
