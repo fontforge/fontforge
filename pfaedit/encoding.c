@@ -871,7 +871,7 @@ void SFEncodeToMap(SplineFont *sf,struct cidmap *map) {
 	    max += anyextras;
 	}
     }
-    SFApplyEnc(sf, max);
+    SFApplyEnc(sf, max+1);
 }
 
 struct block {
@@ -1461,10 +1461,10 @@ return(NULL);
     cidmaster->cidversion = 1.0;
     cidmaster->display_antialias = sf->display_antialias;
     cidmaster->display_size = sf->display_size;
-    cidmaster->ascent = 800;
-    cidmaster->descent = 200;
+    cidmaster->ascent = sf->ascent /*880*/;
+    cidmaster->descent = sf->descent /*120*/;
     cidmaster->changed = cidmaster->changed_since_autosave = true;
-    for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->next )
+    for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame )
 	fvs->cidmaster = cidmaster;
     cidmaster->fv = sf->fv;
     sf->cidmaster = cidmaster;
