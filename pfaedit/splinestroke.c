@@ -354,12 +354,16 @@ static void MakeJoints(JointPoint *ret,StrokeInfo *si,
 	SplineMake3(mid,to);
     } else {
 	from->pointtype = to->pointtype = pt_curve;
+	from->nextcp.x = from->me.x - si->radius*cos(nangle);
+	from->nextcp.y = from->me.y - si->radius*sin(nangle);
+	to->prevcp.x = to->me.x + si->radius*cos(pangle);
+	to->prevcp.y = to->me.y + si->radius*sin(pangle);
 	CirclePoint(&approx[0],center,&ret->inter,factor*si->radius); approx[0].t = .5;
 	temp.x = (ret->inter.x+from->me.x)/2; temp.y = (ret->inter.y+from->me.y)/2;
 	CirclePoint(&approx[1],center,&temp,factor*si->radius); approx[1].t = .25;
 	temp.x = (ret->inter.x+to->me.x)/2; temp.y = (ret->inter.y+to->me.y)/2;
 	CirclePoint(&approx[2],center,&temp,factor*si->radius); approx[2].t = .75;
-	ApproximateSplineFromPoints(from,to,approx,3);
+	ApproximateSplineFromPointsSlopes(from,to,approx,3);
     }
 }
 
