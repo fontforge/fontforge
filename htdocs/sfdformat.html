@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 2-Mar-2004 -->
+  <!-- AP: Last modified: 10-Mar-2004 -->
   <TITLE>Spline Font Database File Format</TITLE>
 </HEAD>
 <BODY>
@@ -902,7 +902,7 @@ will be 5 subfonts (one for each instance, and one for the blended font).
 The font header looks like:
 <BLOCKQUOTE>
   <PRE>SplineFontDB: 1.0
-MMCounts: 4 2
+MMCounts: 4 2 0 0
 MMAxis: Weight Width
 MMPositions: 0 0 1 0 0 1 1 1
 MMWeights: 0.31502 0.13499 0.38499 0.16499
@@ -928,13 +928,14 @@ BeginMMFonts: 5 0
 </BLOCKQUOTE>
 <P>
 The "MMCounts" line gives the number of instances (4) and the number of axes
-(2) in this font. The "MMAxis" line gives the names of the axes. The MMPositions
-line is an array of real numbers (with instance_count*axis_count elements)
-describing the coordinates of each instance along each axis. The MMWeights
-line provides the weights (blends) of the instance fonts to which, when
-interpolated, yield the default font. There will be one AxisMap line for
-each axis, it provides the mapping from design space to normalized space.
-The first line
+(2) in this font also whether it is an apple distortable font (0) and if
+so the number of named styles (0) in that font. The "MMAxis" line gives the
+names of the axes. The MMPositions line is an array of real numbers (with
+instance_count*axis_count elements) describing the coordinates of each instance
+along each axis. The MMWeights line provides the weights (blends) of the
+instance fonts to which, when interpolated, yield the default font. There
+will be one AxisMap line for each axis, it provides the mapping from design
+space to normalized space. The first line
 <BLOCKQUOTE>
   <PRE>MMAxisMap: 0 2 0=&gt;50 1=&gt;1450
 </PRE>
@@ -946,7 +947,40 @@ and corresponds to design position 50, the other is at normalized position
 here, both are simple postscript. The first is the /NormalizeDesignVector
 routine and the second is the /ConvertDesignVector routine.
 <P>
-Finally we have the actual instance fonts.
+Finally we have the actual instance fonts. 
+  <HR>
+<P>
+Fonts with information for Apple's '*var' tables ('fvar', 'gvar', 'avar'
+and 'cvar') have a slightly different format:
+<BLOCKQUOTE>
+  <PRE>MMCounts: 8 2 1 10
+MMAxis: Weight Width
+MMPositions: 1 0 -1 0 0 1 0 -1 -1 -1 1 -1 1 1 -1 1
+MMWeights: 0 0 0 0 0 0 0 0
+MMAxisMap: 0 3 -1=&gt;0.479996 0=&gt;1 1=&gt;3.2
+MacName: 0 0 6 "Weight"
+MacName: 0 1 15 "Type de graisse"
+...
+MMAxisMap: 1 3 -1=&gt;0.619995 0=&gt;1 1=&gt;1.3
+MacName: 0 0 5 "Width"
+MacName: 0 1 7 "Largeur"
+...
+MMNamedInstance: 0  3.2 1
+MacName: 0 0 5 "Black"
+MacName: 0 1 9 "Tr\217s gras"
+...
+</PRE>
+</BLOCKQUOTE>
+<P>
+In Adobe's format coordinates range between [0,1], while in Apple's format
+they range [-1,1]. Adobe generally specifies 2 instances per axis (at the
+extrema) while Apple expects 3 (the extrema and the default setting at 0).
+So a two axis font for Adobe will normally contain 4 instances and a default
+version, while one for Apple will contain 8 instances and a default version.
+The MMWeights field is irrelevant for Apple. Each axis has a set of names,
+for that axis translated into various languages. Finally Apple allows certain
+points in design space to be given names, here the point Weight=3.2, Width=1
+is named "Black" or "Tr&eacute;s gras".
 <H2>
   <A NAME="Autosave-Format">Autosave Format</A>
 </H2>

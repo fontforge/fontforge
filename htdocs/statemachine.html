@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Sep-2003 -->
-  <!-- AP: Last modified: 2-Mar-2004 -->
+  <!-- AP: Last modified: 7-Mar-2004 -->
   <TITLE>The Mac State Machine dialog</TITLE>
 </HEAD>
 <BODY>
@@ -85,7 +85,17 @@ machine.
     For contextual transitions the two lines specify the names (as 4 character
     tags) of nested substitutions. The first one is applied to the last glyph
     marked and the second one to the current glyph (if a line is blank, no
-    substitution is applied to that glyph here).
+    substitution is applied to that glyph here).<BR>
+    If a transition has both a "marked substitution" and the "mark current glyph"
+    flag, I believe the substitution applies to the glyph that was previously
+    marked, and not to the current glyph. (Apple doesn't document
+    this)<FONT COLOR="Red"><BR>
+    <STRONG>Caveat: </STRONG></FONT>Apple's 'mort' format was not designed to
+    allow fonteditors to figure out what a state machine did. FontForge can usually
+    make a good guess of what substitutions do which apply to the current glyph,
+    but it will often include extraneous glyph substitutions when a substitution
+    applies to a marked glyph. These should not be harmful (they should never
+    get invoked) but they are annoying ('morx' tables should not have this problem).
   <LI>
     For insertion transitions the lines specify the glyphs that are to be inserted.
     The first line applies to the marked glyph, the second line to current glyph

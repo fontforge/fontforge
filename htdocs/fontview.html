@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 2-Mar-2004 -->
+  <!-- AP: Last modified: 10-Mar-2004 -->
   <TITLE>The Font View</TITLE>
 </HEAD>
 <BODY>
@@ -16,22 +16,25 @@ The font view is a list of all the characters available in the given font.
 <P>
 You may chose to display it at various sizes, by default it will be displayed
 with the outline font rasterized on a 24 pixel em square. You may display
-it at 36 and 48 pixel sizes as well. You may also choose to look at an
-anti-aliased greymap (the above image is anti-aliased). These are slower
+it at 36, 48, 72 and 96 pixel sizes as well. You may also choose to look
+at an anti-aliased greymap (the above image is anti-aliased). These are slower
 to generate but look nicer (<A HREF="AA-Comparison.html">Comparison</A>).
 <P>
 If you have an encoding which has nothing in it (as opposed to an encoding
 which maps to a space glyph) then that will be shown by a faint red X drawn
 across the box.
 <P>
+If one of your characters has something in its background layer then this
+will be indicated visually (currently by darkening the background of the
+character label).
+<P>
+You may also display any of the bitmap fonts you have generated from the
+outline characters. Simply go to the View menu and select the one you want.
+<P>
 If you look at a bitmap version of the font, and it does not contain a character
 for which there is an outline character (ie. the font needs its bitmaps
 regenerated) then the missing character will be outlined in red to bring
 it to your attention more easily.
-<P>
-If one of your characters has something in its background layer then this
-will be indicated visually (currently by darkening the background of the
-character label).
 <P>
 Small bitmap fonts will be magnified. If the pixelsize of the font is less
 than 10 it will be shown 3 times normal size, if less than 20 twice normal
@@ -44,8 +47,9 @@ unicode character). Next the postscript name for the character, and finally
 the unicode name. Not all unicode characters will have unicode names (the
 CJK characters do not for example)
 <P>
-You may also display any of the bitmap fonts you have generated from the
-outline characters. Simply go to the View menu and select the one you want.
+If you move the cursor to a glyph and let it rest there a small popup window
+will appear containing information about that glyph. If you depress the control
+key then this window is locked in place until you move the mouse.
 <P>
 You may display <A NAME="metrics">metrics</A> lines (baseline, origin and
 advance width) in the font view. (View -&gt; Show H Metrics). If you do so,

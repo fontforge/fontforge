@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 5-Feb-2004 -->
-  <!-- AP: Last modified: 2-Mar-2004 -->
+  <!-- AP: Last modified: 21-Mar-2004 -->
   <TITLE>Multiple Master Dialog</TITLE>
 </HEAD>
 <BODY>
@@ -19,9 +19,10 @@ A multiple master font is a
 (<A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5015.Type1_Supp.pdf">PostScript
 Type1</A>) font which contains, in one font description several extreme styles
 of a font family and code for interpolating between them to produce intermediate
-designs (Apple has a
+designs. Apple has a
 <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6fvar.html">similar
-concept </A>for TrueType which FontForge does not yet support).
+concept </A>for TrueType -- The only name I've seen given to this is "Apple
+Distortable Font" -- I call both multiple master.
 <P>
 A multiple master font has several axes along which variation may occur.
 For example a font might allow variation along the Weight axis (everything
@@ -53,8 +54,43 @@ A font designer may also add intermediate designs as well.
 From these extreme designs PostScript is able to interpolate any intermediate
 style desired (as Normal Normal 12pt).
 <P>
+Apple has a slightly different format, not only must the extreme designs
+be specified but the default designs must be as well (so Apple requires 3
+designs per axis as opposed to 2 for PostScript). In the above example there
+would be 27 designs:
+<UL>
+  <LI>
+    Thin Condensed 6pt
+  <LI>
+    Thin Condensed 12pt
+  <LI>
+    Thin Condensed 72pt
+  <LI>
+    Thin 6pt
+  <LI>
+    Thin 12pt
+  <LI>
+    Thin 72pt
+  <LI>
+    Thin Extended 6pt
+  <LI>
+    Thin Extended 12pt
+  <LI>
+    Thin Extended 72pt
+  <LI>
+    Regular Condensed 6pt
+  <LI>
+    ...
+  <LI>
+    Black Extended 72pt
+</UL>
+<P>
+Apple also allows for intermediate designs, but FontForge does not currently
+support this.
+<P>
 A font designer first determines how many axes s/he will need. PostScript
-allows a maximum of 4 axes in a Type1 font.
+allows a maximum of 4 axes in a Type1 font. FontForge only supports 4 axes
+for Apple's fonts too.
 <P>
 Then s/he provides information about each axis, specifically:
 <UL>
@@ -63,21 +99,25 @@ Then s/he provides information about each axis, specifically:
   <LI>
     The range of design values over which this axis will vary<BR>
     Typically 1-999 for Weight and Width (1 being extremely thin or condensed,
-    999 being extremely black or extended) or 6-72 for Optical Size
+    999 being extremely black or extended) or 6-72 for Optical Size<BR>
+    Apple fonts seem to have a different default range, .05-2.0
   <LI>
     A mapping from the design value range to the range [0 1] called the normalized
-    range.<BR>
+    range. (Apple maps to [-1,1] with the default design mapped to 0)<BR>
     This mapping is piecewise linear. Generally it will just be the obvious
     (1=&gt;0.0, 999=&gt;1.0) but it is possible to add intermediate points so
     that 500=&gt;.3 which would give a different scaling between 1&amp;500 than
     between 500&amp;999.
+  <LI>
+    In an apple distortable font, each axis must be given a name which may be
+    translated into multiple languages.
 </UL>
 <P>
 Then s/he determines the number of designs needed. In a Type1 font there
 may be at most 16, and at least 2^axis-count. So in a 3 axis font there must
 be at least 8 designs, one for each extreme.
 <P>
-Then s/he needs to write two postscript functions
+For Type1 fonts s/he needs to write two postscript functions
 <DL>
   <DT>
     NormalizeDesignVector
@@ -101,21 +141,30 @@ information being provided. It should describe the normal variant of the
 font. The sum of all the weights must be 1.0. In the above example, if we
 take [400 500 12] as our definition of "normal" this vector might look like:
 [.273 .027 .273 .027 .182 .018 .182 .018].
+<P>
+Apple distortable fonts do not need the postscript functions, nor the default
+weight vector mentioned above. Instead they need a set of named styles which
+map a particular coordinate in design space to a name (which may be provided
+in several languages).
 <H2>
   The Dialog
 </H2>
 <P>
 This dialog is used for creating and modifying multiple master fonts. It
-contains 4 sub-dialogs which must be processed in sequence, and follows pretty
-closely to the process described above.
+contains several sub-dialogs which must be processed in sequence, and follows
+pretty closely to the process described above. I will first show the sequence
+for Adobe's fonts, and then explain Apple's fonts.
 <P>
 <IMG SRC="mmcounts.png" WIDTH="476" HEIGHT="448" ALIGN="Right">The first
-screen allows you to choose the number of axes in your font, and the number
-of master designs.<BR CLEAR=ALL>
+screen allows you to choose the type of distortable font you wish to generate
+(Adobe Multiple Master, or Apple), the number of axes in your font, and the
+number of master designs, and a family name (which will be used for creating
+new fonts, if you need any new ones).<BR CLEAR=ALL>
 <P>
 <IMG SRC="mmaxes.png" WIDTH="476" HEIGHT="448" ALIGN="Right">The second screen
 gives you control of each axis. There are a few standard axis types defined
-by Adobe (and one by Apple), but you could define your own.<BR CLEAR=ALL>
+by Adobe (and by Apple), but you could define your own. Note that there are
+fields which are disabled here, they only apply to Apple's fonts.<BR CLEAR=ALL>
 <P>
 <IMG SRC="mmdesigns.png" WIDTH="476" HEIGHT="448" ALIGN="Right">Then you
 must assign a font to each of the master designs. You can either have FontForge
@@ -137,9 +186,23 @@ manually.<BR CLEAR=ALL>
 <P>
 <IMG SRC="mmfinal.png" WIDTH="476" HEIGHT="448" ALIGN="Right">The last screen
 shows the default weights (which you may either enter directly or as coordinates
-along the design axes), the ForceBoldThreshold private dictionary entry,
-and a family name (which will be used for creating new fonts, if you need
-any new ones).<BR CLEAR=ALL>
+along the design axes), the ForceBoldThreshold private dictionary
+entry).<BR CLEAR=ALL>
+<H3>
+  An Apple distortable font.
+</H3>
+<P>
+<IMG SRC="mmappleaxes.png" WIDTH="476" HEIGHT="448" ALIGN="Right">The dialog
+looks very similar, but there are a few differences. In the Axis pane of
+the dlg, you must also specify a default value for the axis, and a translatable
+name.<BR Clear=ALL>
+<P>
+<IMG SRC="mmnamedstyles.png" WIDTH="476" HEIGHT="448" ALIGN="Right">Apple
+allows coordinates in design space to be named. Here the name "Black" is
+given to the location where Weight=3.2 (the darkest value) and
+<IMG SRC="mmnamingastyle.png" WIDTH="368" HEIGHT="470" ALIGN="Left">Width=1
+(the default value). Again these names can be translated into multiple
+languages.<BR Clear=ALL>
 <H2>
   A suggestion
 </H2>

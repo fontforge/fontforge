@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 2-Mar-2004 -->
+  <!-- AP: Last modified: 11-Mar-2004 -->
   <TITLE>The Element Menu</TITLE>
 </HEAD>
 <BODY>
@@ -34,7 +34,13 @@
 	<A HREF="#Retag-Feat">Retag Feature(s)...</A>
     </UL>
   <LI>
-    <A HREF="#Dependencies">Show Dependencies</A>
+    Show Dependencies
+    <UL>
+      <LI>
+	<A HREF="elementmenu.html#Dependencies">References</A>
+      <LI>
+	<A HREF="#DepSubs">Substitutions</A>
+    </UL>
   <LI>
     <A HREF="#Problems">Find Problems...</A>
   <LI>
@@ -204,6 +210,8 @@ compiling FontForge.
 	    Using this command you can tell FontForge to associate a given suffix with
 	    a feature tag. (in the above example you could associate ".swash" with 'swsh'
 	    -- except you don't need to, because FontForge already knows about that one).
+	    Select the letter "A", then enter the command, then "A" will be linked to
+	    "A.swash" as a 'swsh'.
 	</DL>
       <DT>
 	<A NAME="Rm-All-Feat">Remove All Features</A>
@@ -228,12 +236,23 @@ compiling FontForge.
 	retag kerning information).
     </DL>
   <DT>
-    Show <A NAME="Dependencies">Dependencies</A>
-  <DD>
-    This dialog is not available in the bitmap view. It shows you what characters
-    contain a reference to the current character. You can open a window looking
-    at any of the dependent characters by selecting that character and pressing
-    the [Show] button.
+    Show Dependencies
+    <DL>
+      <DT>
+	<A NAME="Dependencies">References</A>...
+      <DD>
+	This dialog is not available in the bitmap view. It shows you what characters
+	contain a reference to the current character. You can open a window looking
+	at any of the dependent characters by selecting that character and pressing
+	the [Show] button.
+      <DT>
+	<A NAME="DepSubs">Substitutions</A>...
+      <DD>
+	Show any glyphs that have substitutions (ligatures, multiple subs, etc.)
+	which depend on the current glyph. So if you select "i", you might see that
+	"fi" depended on it as a ligature, and if you select "A.swash" you might
+	see that "A" depended on it as a 'swsh' alternate subs.
+    </DL>
   <DT>
     Find <A NAME="Problems">Problems</A>...
   <DD>
