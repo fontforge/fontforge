@@ -749,6 +749,8 @@ return( ssplus );
 	    }
 #endif
 	}
+	if ( reversed )		/* restore original, just in case we want it */
+	    SplineSetReverse(spl);
     } else {
 	/*SplineSetFixRidiculous(ssplus);*/
 	SplineSetFixCPs(ssplus);
@@ -775,11 +777,11 @@ SplineSet *SSStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
 	    head = cur;
 	else
 	    last->next = cur;
-	while ( cur->next!=NULL ) {
-	    if ( !was_clock )
-		SplineSetReverse(cur);
-	    cur = cur->next;
-	}
+#if 0
+	if ( was_clock==0 ) 	/* there'd better be only one spl in cur */
+	    SplineSetReverse(cur);
+#endif
+	while ( cur->next!=NULL ) cur = cur->next;
 	last = cur;
     }
 return( head );
