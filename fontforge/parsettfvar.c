@@ -33,6 +33,19 @@
 #include <gwidget.h>
 #include "ttf.h"
 
+/***************************************************************************/
+/*                                                                         */
+/* Apple documents these tables at                                         */
+/*    http:// developer.apple.com/fonts/TTRefMan/RM06/Chap6[fgca]var.html  */
+/* The documentation for fvar is inconsistant. At one point it says that   */
+/*  countSizePairs should be 3, at another point 2. It should be 2.        */
+/* The documentation for gvar is not intelligable, cvar refers you to gvar */
+/*  and is thus also incomprehensible                                      */
+/* The documentation for avar appears correct, but as Apple has no fonts   */
+/*  with an 'avar' table, so it's hard to test.                            */
+/*                                                                         */
+/***************************************************************************/
+
 /* Parse Apple's variation tables (font, glyph, cvt and axis) */
 /* To be interesting a font must have an fvar and a gvar */
 /* If it's hinted it better have a cvar */
