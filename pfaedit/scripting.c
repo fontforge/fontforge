@@ -2005,6 +2005,19 @@ static void cungetc(int ch,Context *c) {
     c->ungotch = ch;
 }
 
+static long ctell(Context *c) {
+    long pos = ftell(c->script);
+    if ( c->ungotch )
+	--pos;
+return( pos );
+}
+
+static void cseek(Context *c,long pos) {
+    fseek(c->script,pos,SEEK_SET);
+    c->ungotch = 0;
+    c->backedup = false;
+}
+
 static enum token_type NextToken(Context *c) {
     int ch;
     enum token_type tok = tt_error;
@@ -2899,7 +2912,7 @@ static void expr(Context *c,Val *val) {
 }
 
 static void doforeach(Context *c) {
-    long here = ftell(c->script);
+    long here = ctell(c);
     int lineno = c->lineno;
     enum token_type tok;
     int i, selsize;
@@ -2926,7 +2939,7 @@ static void doforeach(Context *c) {
 	c->curfv->selected[i] = false;
 	if ( tok==tt_eof )
 	    error(c,"End of file found in foreach loop" );
-	fseek(c->script,here,SEEK_SET);
+	cseek(c,here);
 	c->lineno = lineno;
 	++i;
     }
@@ -2945,7 +2958,7 @@ static void doforeach(Context *c) {
 }
 
 static void dowhile(Context *c) {
-    long here = ftell(c->script);
+    long here = ctell(c);
     int lineno = c->lineno;
     enum token_type tok;
     Val val;
@@ -2969,7 +2982,7 @@ static void dowhile(Context *c) {
 	}
 	if ( tok==tt_eof )
 	    error(c,"End of file found in while loop" );
-	fseek(c->script,here,SEEK_SET);
+	cseek(c,here);
 	c->lineno = lineno;
     }
 
