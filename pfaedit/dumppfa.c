@@ -1027,6 +1027,7 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 	    SFIncrementXUID(sf);
     }
     dumpf(dumpchar,data,"/PaintType %d def\n", 0/*fd->painttype*/ );
+    dumpfontinfo(dumpchar,data,sf,format);
     if ( format==ff_mma || format==ff_mmb ) {
 	MMSet *mm = sf->mm;
 	int j,k;
@@ -1072,20 +1073,20 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 	    dumpstr(dumpchar,data,makeblendedfont[j]);
 	    (dumpchar)('\n',data);
 	}
-	for ( j=0; mmfindfont[j]!=NULL; ++j ) {
-	    dumpstr(dumpchar,data,mmfindfont[j]);
-	    (dumpchar)('\n',data);
-	}
 
-	dumpstr(dumpchar,data," /NormalizeDesignVector\n" );
+	dumpstr(dumpchar,data,"\n /NormalizeDesignVector\n" );
 	dumpstr(dumpchar,data, mm->ndv );
 	dumpstr(dumpchar,data," bind def\n" );
 
 	dumpstr(dumpchar,data," /ConvertDesignVector\n" );
 	dumpstr(dumpchar,data, mm->cdv );
-	dumpstr(dumpchar,data," bind def\n" );
+	dumpstr(dumpchar,data," bind def\n\n" );
+
+	for ( j=0; mmfindfont[j]!=NULL; ++j ) {
+	    dumpstr(dumpchar,data,mmfindfont[j]);
+	    (dumpchar)('\n',data);
+	}
     }
-    dumpfontinfo(dumpchar,data,sf,format);
 
     for ( i=0; i<256 && i<sf->charcnt; ++i )
 	if ( SCWorthOutputting(sf->chars[i]) )

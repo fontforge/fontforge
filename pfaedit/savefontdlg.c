@@ -2465,7 +2465,7 @@ return( 0 );
 	ofs = ff_pfb;
     else if ( (ofs!=ff_cid && ofs!=ff_cffcid && ofs!=ff_otfcid && ofs!=ff_otfciddfont) && sf->cidmaster!=NULL )
 	ofs = ff_otfcid;
-    else if ( !formattypes[ff_mmb].disabled )
+    else if ( !formattypes[ff_mmb].disabled && ofs!=ff_mma )
 	ofs = ff_mmb;
     if ( sf->onlybitmaps )
 	ofs = ff_none;
