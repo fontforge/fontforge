@@ -2874,9 +2874,9 @@ static void FVOverlap(FontView *fv,enum overlap_type ot) {
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
-	MinimumDistancesFree(sc->md);
-	if ( !SCRoundToCluster(sc,-2,false,.01,.04))
+	if ( !SCRoundToCluster(sc,-2,false,.03,.12))
 	    SCPreserveState(sc,false);
+	MinimumDistancesFree(sc->md);
 	sc->md = NULL;
 	for ( layer = ly_fore; layer<sc->layer_cnt; ++layer )
 	    sc->layers[layer].splines = SplineSetRemoveOverlap(sc,sc->layers[layer].splines,ot);
