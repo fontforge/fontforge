@@ -3810,7 +3810,7 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 	else
 	    dummy->unicodeenc = CID2NameEnc(FindCidMap(sf->cidmaster->cidregistry,sf->cidmaster->ordering,sf->cidmaster->supplement,sf->cidmaster),
 		    i,namebuf,sizeof(namebuf));
-    } else if ( sf->encoding_name==em_unicode || sf->encoding_name==em_iso8859_1 )
+    } else if ( sf->encoding_name==em_unicode )
 	dummy->unicodeenc = i<65536 ? i : -1;
     else if ( sf->encoding_name==em_unicode4 )
 	dummy->unicodeenc = i<=0x7fffffff ? i : -1;
@@ -3917,9 +3917,9 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 	    if ( dummy->unicodeenc==0x2d )
 		dummy->name = "hyphen-minus";
 	    else if ( dummy->unicodeenc==0xad )
-		dummy->name = copy("softhyphen");
+		dummy->name = "softhyphen";
 	    else if ( dummy->unicodeenc==0x00 )
-		dummy->name = copy(".notdef");
+		dummy->name = ".notdef";
 	    else if ( dummy->unicodeenc==0xa0 )
 		dummy->name = "nonbreakingspace";
 	    else {
@@ -3932,8 +3932,18 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 	}
     } else if ( item!=NULL && item->psnames!=NULL )
 	dummy->name = item->psnames[i];
-    if ( dummy->name==NULL )
-	dummy->name = ".notdef";
+    if ( dummy->name==NULL ) {
+	if ( dummy->unicodeenc!=-1 || i<256 )
+	    dummy->name = ".notdef";
+	else {
+	    int j;
+	    sprintf( namebuf, "NameMe-%d", i);
+	    j=0;
+	    while ( SFGetChar(sf,-1,namebuf)!=NULL )
+		sprintf( namebuf, "NameMe-%d.%d", i, ++j);
+	    dummy->name = namebuf;
+	}
+    }
     dummy->width = dummy->vwidth = sf->ascent+sf->descent;
     if ( dummy->unicodeenc>0 && dummy->unicodeenc<0x10000 &&
 	    iscombining(dummy->unicodeenc))
