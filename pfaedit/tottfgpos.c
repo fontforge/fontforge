@@ -1550,10 +1550,10 @@ void otf_dumpgdef(struct alltabs *at, SplineFont *sf) {
 	if ( glyphs!=NULL )
     break;
 	glyphs = galloc((lcnt+1)*sizeof(SplineChar *));
+	glyphs[lcnt] = NULL;
     }
     if ( ac==NULL && lcnt==0 )
 return;					/* No anchor positioning, no ligature carets */
-    glyphs[lcnt] = NULL;
 
     at->gdef = tmpfile();
     putlong(at->gdef,0x00010000);		/* Version */
