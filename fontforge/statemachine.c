@@ -238,6 +238,10 @@ return( any );
 
 static void TreeFree(struct contexttree *tree) {
     int i;
+
+    if ( tree==NULL )
+return;
+
     for ( i=0; i<tree->branch_cnt; ++i )
 	TreeFree(tree->branches[i].branch);
 
@@ -978,9 +982,11 @@ static void SMSetState(struct asm_state *trans,struct contexttree *cur,int class
     for ( i=0; i<cur->branch_cnt; ++i ) {
 	if ( cur->branches[i].classnum==class ) {
 	    trans->next_state = cur->branches[i].branch->state;
-	    trans->flags = cur->branches[i].branch->state!=0
-		    ? cur->branches[i].branch->markme?0x8000:0x0000
-		    : cur->branches[i].branch->markme?0xc000:0x4000;
+	    trans->flags = cur->branches[i].branch->ends_here 
+		     ? cur->branches[i].branch->markme?0x8000:0x0000
+		    : cur->branches[i].branch->state!=0
+		     ? cur->branches[i].branch->markme?0x8000:0x0000
+		     : cur->branches[i].branch->markme?0xc000:0x4000;
 	    trans->u.context.mark_tag = cur->branches[i].branch->applymarkedsubs;
 	    trans->u.context.cur_tag = cur->branches[i].branch->applycursubs;
 return;
@@ -1028,7 +1034,13 @@ return( &trans[sub->state*classcnt+class+3] );
 	    }
 	}
     }
-return( &trans[class+3] );
+return( NULL );
+}
+
+static int FailureTrans( struct asm_state *trans ) {
+return( trans->next_state==0 &&
+	    trans->u.context.mark_tag==0 &&
+	    trans->u.context.cur_tag==0 );
 }
 
 static ASM *ASMFromClassFPST(SplineFont *sf,FPST *fpst, struct contexttree *tree) {
@@ -1068,8 +1080,12 @@ static ASM *ASMFromClassFPST(SplineFont *sf,FPST *fpst, struct contexttree *tree
     FPSTBuildAllClasses(fpst);
     for ( cur = tree; cur!=NULL; cur = TreeNext(cur)) if ( cur->state>1 ) {
 	int off = cur->state*sm->class_cnt;
-	for ( i=1; i<fpst->nccnt; ++i ) if ( sm->state[off+3+i].next_state==0 )
-	    sm->state[off+3+i] = *AnyActiveSubstrings(tree,cur,i, sm->state,sm->class_cnt);
+	for ( i=1; i<fpst->nccnt; ++i ) if ( FailureTrans(&sm->state[off+3+i]) ) {
+	    struct asm_state *trans =
+		    AnyActiveSubstrings(tree,cur,i, sm->state,sm->class_cnt);
+	    if ( trans!=NULL )
+		sm->state[off+3+i] = *trans;
+	}
     }
     FPSTFreeAllClasses(fpst);
 return( sm );
