@@ -318,7 +318,10 @@ return( sp );
 	    cx=xmin;
 	else
 	    cx = -(ymin-(dydtmin/dxdtmin)*xmin-y+(dydt/dxdt)*x)/(dydtmin/dxdtmin-dydt/dxdt);
-	cy = (dydt/dxdt)*(cx-x)+y;
+	if ( dxdt ==0 )
+	    cy = y;
+	else
+	    cy = (dydt/dxdt)*(cx-x)+y;
 	/* Make the quadratic spline from (xmin,ymin) through (cx,cy) to (x,y)*/
 	ttf.splines[0].d = xmin;
 	ttf.splines[0].c = 2*(cx-xmin);

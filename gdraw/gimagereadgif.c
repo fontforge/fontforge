@@ -32,7 +32,7 @@
 
 #ifdef _NO_LIBUNGIF
 static int a_file_must_define_something=0;	/* ANSI says so */
-#elif !defined(_STATIC_LIBUNGIF)	/* I don't know how to deal with dynamic libs on mac OS/X, hence this */
+#elif !defined(_STATIC_LIBUNGIF) && !defined(NODYNAMIC)	/* I don't know how to deal with dynamic libs on mac OS/X, hence this */
 #include <dlfcn.h>
 #include <string.h>
 
