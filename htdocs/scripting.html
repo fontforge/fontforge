@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 14-May-2002 -->
+  <!-- AP: Last modified: 5-Jun-2002 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -435,8 +435,6 @@ a[4][0] = "Nested array";
       <LI>
 	sbit (for bdat table in truetype without any outline font)
       <LI>
-	gdf
-      <LI>
 	bin (for nfnt in macbinary)
       <LI>
 	dfont (for nfnt in dfont)
@@ -631,7 +629,10 @@ a[4][0] = "Nested array";
     an array of sizes. If a size is specified which is not in the font database
     it will be generated. If a size is not specified which is in the font database
     it will be removed. A size which is specifed and present in the font database
-    will not be touched.
+    will not be touched.<BR>
+    If you want to specify greymap fonts then the low-order 16 bits will be the
+    pixel size and the high order 16 bits will specify the bits/pixel. Thus 0x8000c
+    would be a 12 pixel font with 8 bits per pixel.
   <DT>
     BitmapsRegen(sizes)
   <DD>

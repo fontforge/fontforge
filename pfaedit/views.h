@@ -196,6 +196,8 @@ typedef struct bitmapview {
     unsigned int cntrldown:1;
     unsigned int recentchange:1;
     unsigned int clearing:1;
+    unsigned int shades_hidden:1;
+    unsigned int shades_down:1;
     /*GWindow tools, layers;*/
     GGadget *recalc;
     int8 b1_tool, cb1_tool, b2_tool, cb2_tool;		/* Button 3 does a popup */
@@ -428,6 +430,8 @@ extern int BVPaletteIsVisible(BitmapView *bv,int which);
 extern void BVPaletteSetVisible(BitmapView *bv,int which,int visible);
 extern void BVPaletteActivate(BitmapView *bv);
 extern void BVPalettesHideIfMine(BitmapView *bv);
+extern void BVPaletteColorChange(BitmapView *bv);
+extern void BVPaletteChangedChar(BitmapView *bv);
 extern void CVPaletteDeactivate(void);
 extern void BackgroundImageTransform(SplineChar *sc, ImageList *img,real transform[6]);
 extern void CVTransFunc(CharView *cv,real transform[6],int doback);

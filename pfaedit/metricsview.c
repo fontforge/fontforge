@@ -116,6 +116,8 @@ return;
 		int scale = 3000/mv->pixelsize, l;
 		Color fg, bg;
 		if ( scale>4 ) scale = 4; else if ( scale==3 ) scale= 2;
+		if ( mv->bdf!=NULL && mv->bdf->clut!=NULL )
+		    scale = BDFDepth(mv->bdf);
 		base.image_type = it_index;
 		clut.clut_len = 1<<scale;
 		bg = GDrawGetDefaultBackground(NULL);
@@ -1759,7 +1761,7 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     int i, base;
     BDFFont *bdf;
-    char buffer[50];
+    unichar_t buffer[60];
     extern void GMenuItemArrayFree(GMenuItem *mi);
     extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
 
@@ -1782,8 +1784,12 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	for ( bdf = mv->fv->sf->bitmaps, i=base;
 		i<sizeof(vwlist)/sizeof(vwlist[0])-1 && bdf!=NULL;
 		++i, bdf = bdf->next ) {
-	    sprintf( buffer, "%d pixel bitmap", bdf->pixelsize );
-	    vwlist[i].ti.text = uc_copy(buffer);
+	    if ( BDFDepth(bdf)==1 )
+		u_sprintf( buffer, GStringGetResource(_STR_DPixelBitmap,NULL), bdf->pixelsize );
+	    else
+		u_sprintf( buffer, GStringGetResource(_STR_DdPixelBitmap,NULL),
+			bdf->pixelsize, BDFDepth(bdf) );
+	    vwlist[i].ti.text = u_copy(buffer);
 	    vwlist[i].ti.checkable = true;
 	    vwlist[i].ti.checked = bdf==mv->bdf;
 	    vwlist[i].ti.userdata = bdf;

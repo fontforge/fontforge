@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 8-Apr-2002 -->
+  <!-- AP: Last modified: 6-Jun-2002 -->
   <TITLE>The Element Menu</TITLE>
 </HEAD>
 <BODY>
@@ -203,7 +203,16 @@ This menu is not present in the Metrics View.
     by scaling the (bitmap) font displayed in the font view.
     <P>
     In CID keyed fonts there will not be a set of bitmaps for each sub font,
-    instead the entire complex of sub-fonts share bitmaps.
+    instead the entire complex of sub-fonts share bitmaps.<BR Clear=Right>
+    <P>
+    <IMG SRC="greymapsavail.png" WIDTH="263" HEIGHT="366" ALIGN="Right">PfaEdit
+    also supports anti-aliased bitmap fonts, and you can use this dialog to generate
+    them. If you want to generate a 12 point anti-aliased font with 8 bits per
+    pixel you would type 12@8 into the dialog above. PfaEdit supports 1, 2, 4
+    and 8 bit per pixel fonts (a 1 bit per pixel font is a standard bitmap, the
+    others are greymaps).<BR>
+    (New greymaps can not be created by scaling old greymaps, if you wish to
+    generate a greymap font, you must have an outline font).
   <DT>
     <A NAME="Regenerate">Regenerate</A> Bitmaps...
   <DD>
@@ -213,7 +222,9 @@ This menu is not present in the Metrics View.
     view you can regenerate all selected characters, while in the bitmap and
     outline views you can regenerate the current character. You can pick what
     pixel sizes should be regenerated too (unlike the above command, removing
-    a bitmap size from the regenerate list will not delete it).
+    a bitmap size from the regenerate list will not delete it).<BR>
+    As before, if you wish to change a greymap you should refer to it by
+    &lt;pixel-size&gt;@&lt;bits-per-pixel&gt;.
   <DT>
     <A NAME="Transform">Transform</A>...
   <DD>

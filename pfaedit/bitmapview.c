@@ -38,6 +38,7 @@ struct bvshows BVShows = { 1, 1, 1, 0 };
 
 #define RPT_BASE	3		/* Place to draw the pointer icon */
 #define RPT_DATA	24		/* x,y text after above */
+#define RPT_COLOR	40		/* Blob showing the foreground color */
 
 static void BVNewScale(BitmapView *bv) {
     int fh = bv->bdf->ascent+bv->bdf->descent;
@@ -210,6 +211,8 @@ void BVChangeBC(BitmapView *bv, BDFChar *bc, int fitit ) {
     title = BVMakeTitles(bv,bc,ubuf);
     GDrawSetWindowTitles(bv->gw,ubuf,title);
     free(title);
+
+    BVPaletteChangedChar(bv);
 }
 
 static void BVChangeChar(BitmapView *bv, int i, int fitit ) {
@@ -488,7 +491,7 @@ static void BVInfoDrawText(BitmapView *bv, GWindow pixmap ) {
 
     GDrawSetFont(pixmap,bv->small);
     r.x = bv->infoh+RPT_DATA; r.width = 39;
-    r.y = bv->mbh; r.height = bv->infoh-1;
+    r.y = bv->mbh; r.height = 36 /* bv->infoh-1 */;
     GDrawFillRect(pixmap,&r,bg);
 
     sprintf(buffer,"%d%s%d", bv->info_x, localeinfo.thousands_sep, bv->info_y );
@@ -549,6 +552,14 @@ return;
 	GDrawDrawImage(pixmap,&GIcon_rightpointer,NULL,bv->infoh+RPT_BASE,bv->mbh+8);
 	GDrawDrawImage(pixmap,&GIcon_press2ptr,NULL,bv->infoh+RPT_BASE,bv->mbh+18+bv->sfh);
 	BVInfoDrawText(bv,pixmap );
+
+	r.x = bv->infoh+RPT_DATA; r.y = bv->mbh+36;
+	r.width = 20; r.height = 10;
+	GDrawFillRect(pixmap,&r,
+		bv->bdf->clut==NULL ? GDrawGetDefaultBackground(NULL) :
+		bv->bdf->clut->clut[bv->color/( 255/((1<<BDFDepth(bv->bdf))-1) )] );
+
+	GDrawDrawImage(pixmap,&GIcon_press2ptr,NULL,bv->infoh+RPT_BASE,bv->mbh+18+bv->sfh);
     }
     GDrawDrawLine(pixmap,0,bv->mbh+bv->infoh-1,bv->width+300,bv->mbh+bv->infoh-1,0);
 
@@ -742,7 +753,7 @@ return;
     bv->recentchange = false;
     switch ( bv->active_tool ) {
       case bvt_eyedropper:
-	if ( bc->byte_data )
+	if ( bc->byte_data ) {
 	    ny = bc->ymax-y;
 	    if ( x>=bc->xmin && x<=bc->xmax && ny>=0 && ny<=bc->ymax-bc->ymin )
 		bv->color = bc->bitmap[(bc->ymax-y)*bc->bytes_per_line + x-bc->xmin] *
@@ -750,6 +761,8 @@ return;
 	    else
 		bv->color = 0;
 	    /* Store color as a number between 0 and 255 no matter what the clut size is */
+	    BVPaletteColorChange(bv);
+	}
       break;
       case bvt_pencil: case bvt_line:
       case bvt_rect: case bvt_filledrect:
@@ -1046,6 +1059,7 @@ return( true );
 #define MID_RegenBitmaps	2211
 #define MID_Tools	2501
 #define MID_Layers	2502
+#define MID_Shades	2503
 #define MID_Revert	2702
 #define MID_Recent	2703
 #define MID_SetWidth	2601
@@ -1191,7 +1205,7 @@ static void BVMenuGotoChar(GWindow gw,struct gmenuitem *mi,GEvent *g) {
 static void BVMenuPaletteShow(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
 
-    BVPaletteSetVisible(bv, mi->mid==MID_Tools, !BVPaletteIsVisible(bv, mi->mid==MID_Tools));
+    BVPaletteSetVisible(bv, mi->mid==MID_Tools?1:mi->mid==MID_Shades?2:0, !BVPaletteIsVisible(bv, mi->mid==MID_Tools?1:mi->mid==MID_Shades?2:0));
 }
 
 static void BVUndo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1354,6 +1368,11 @@ static void pllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_Layers:
 	    mi->ti.checked = BVPaletteIsVisible(bv,0);
 	  break;
+	  case MID_Shades:
+	    mi->ti.disabled = BDFDepth(bv->bdf)==1;
+	    if ( !mi->ti.disabled )
+		mi->ti.checked = BVPaletteIsVisible(bv,2);
+	  break;
 	}
     }
 }
@@ -1459,6 +1478,7 @@ static GMenuItem ellist[] = {
 static GMenuItem pllist[] = {
     { { (unichar_t *) _STR_Tools, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'T' }, '\0', ksm_control, NULL, NULL, BVMenuPaletteShow, MID_Tools },
     { { (unichar_t *) _STR_Layers, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'L' }, '\0', ksm_control, NULL, NULL, BVMenuPaletteShow, MID_Layers },
+    { { (unichar_t *) _STR_Shades, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'S' }, '\0', ksm_control, NULL, NULL, BVMenuPaletteShow, MID_Shades },
     { NULL }
 };
 
