@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 16-Nov-2004 -->
+  <!-- AP: Last modified: 3-Dec-2004 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -1110,6 +1110,27 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
   <DT>
     LoadEncodingFile(filename)
   <DD>
+  <DT>
+    LoadTableFromFile(tag,filename)
+  <DD>
+    Both arguments should be strings, the first should be a 4 letter table tag.
+    The file will be read and preserved in the font as the contents of the table
+    with the specified tag. Don't use a tag that ff thinks it understands!
+  <DT>
+    SaveTableToFile(tag,filename)
+  <DD>
+    Both arguments should be strings, the first should be a 4 letter table tag.
+    The list of preserved tables will be searched for a table with the given
+    tag, and saved to the file.
+  <DT>
+    RemovePreservedTable(tag)
+  <DD>
+    Searches for a preserved table with the given tag, and removes it from the
+    font.
+  <DT>
+    HasPreservedTable(tag)
+  <DD>
+    Returns true if the font contains a preserved table with the given tag.
   <DT>
     SetFontOrder(order)
   <DD>

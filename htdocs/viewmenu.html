@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 13-Oct-2004 -->
+  <!-- AP: Last modified: 2-Dec-2004 -->
   <TITLE>The View Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -18,19 +18,21 @@
   <LI>
     <A HREF="#In">Zoom In</A>
   <LI>
-    <A HREF="#InsBefore">Insert Char Before...</A>
+    <A HREF="#InsBefore">Insert Glyph Before...</A>
   <LI>
-    <A HREF="#InsAfter">Insert Char After...</A>
+    <A HREF="#InsAfter">Insert Glyph After...</A>
   <LI>
-    <A HREF="#Goto">Replace Char...</A>
+    <A HREF="#Goto">Replace Glyph...</A>
   <LI>
-    <A HREF="#Next">Next Char</A>
+    <A HREF="#Next">Next Glyph</A>
   <LI>
-    <A HREF="#Prev">Prev Char</A>
+    <A HREF="#Prev">Prev Glyph</A>
   <LI>
-    <A HREF="#NextDef">Next Defined Char</A>
+    <A HREF="#NextDef">Next Defined Glyph</A>
   <LI>
-    <A HREF="#PrevDef">Prev Defined Char</A>
+    <A HREF="#PrevDef">Prev Defined Glyph</A>
+  <LI>
+    <A HREF="viewmenu.html#Former">Former Glyph</A>
   <LI>
     <A HREF="#Substitutions">Substitutions</A>
   <LI>
@@ -150,7 +152,7 @@
     Not in the font view. Centered on the middle selection if there is one, else
     the middle of the view.
   <DT>
-    <A NAME="Next">Next</A> Char
+    <A NAME="Next">Next</A> Glyph
   <DD>
     In the metrics, outline and bitmap view this changes the current glyph to
     be the next one in the font.
@@ -158,7 +160,7 @@
     In the font view this selects the next glyph in the font (and scrolls, if
     necessary, to display that glyph).
   <DT>
-    <A NAME="Prev">Prev</A> Char
+    <A NAME="Prev">Prev</A> Glyph
   <DD>
     In the metrics, outline and bitmap view this changes the current glyph to
     be the previous one in the font.
@@ -168,12 +170,17 @@
   <DT>
     <A NAME="NextDef">Next Defined Glyph</A>
   <DD>
-    Similar to Next Char, except it moves to the next glyph defined in the font.
+    Similar to Next Glyph, except it moves to the next glyph defined in the font.
   <DT>
     <A NAME="PrevDef">Prev Defined Glyph</A>
   <DD>
-    Similar to Prev Char, except it moves to the previous glyph defined in the
+    Similar to Prev Glyph, except it moves to the previous glyph defined in the
     font.
+  <DT>
+    <A NAME="Former">Former Glyph</A>
+  <DD>
+    Changes the glyph window to look at whatever glyph was being edited there
+    before this one (one level of history).
   <DT>
     <A NAME="Substitutions">Substitutions</A>
   <DD>
@@ -182,11 +189,11 @@
     you to change the glyph as directed by the substitution. Also contains an
     entry to return you to the original glyph.
     <P>
-    Substitutions may be set with the <A HREF="charinfo.html">Element-&gt;Char
+    Substitutions may be set with the <A HREF="charinfo.html">Element-&gt;Glyph
     Info</A> command.
   <DT>
     <A NAME="Goto">Goto</A><BR>
-    Replace Char...
+    Replace Glyph...
   <DD>
     In the Font, Outline, Bitmap and Metrics views this brings up a dialog in
     which you may type either:
@@ -197,8 +204,8 @@
 	A number (in either decimal or hex) indicating the glyph you are interested
 	in, in the current encoding
       <LI>
-	A hex number ,preceded by "U+" or "uni" or "u", indicating the character you
-	are interested in in unicode.
+	A hex number ,preceded by "U+" or "uni" or "u", indicating the character
+	you are interested in in unicode.
       <LI>
 	A decimal number, preceded by "glyph" ,indicating the glyph index in the
 	original glyph list.
@@ -224,8 +231,8 @@
     In the bitmap, outline and metrics views, the current glyph will change to
     be the one specified.
   <DT>
-    <A NAME="InsBefore">Insert Char Before...</A><BR>
-    <A NAME="InsAfter">Insert Char After...</A>
+    <A NAME="InsBefore">Insert Glyph Before...</A><BR>
+    <A NAME="InsAfter">Insert Glyph After...</A>
   <DD>
     In the metrics view this brings up a dialog similar to the previous one allowing
     you to enter a glyph by name or encoding either before or after the currently
