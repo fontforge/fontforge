@@ -327,7 +327,7 @@ void SplineRefigure(Spline *spline) {
     spline->knownlinear = spline->islinear;
     SplineIsLinear(spline);
     spline->isquadratic = false;
-    if ( !spline->islinear && xsp->a==0 && ysp->a==0 )
+    if ( !spline->knownlinear && xsp->a==0 && ysp->a==0 )
 	spline->isquadratic = true;	/* Only likely if we read in a TTF */
 }
 
@@ -2225,7 +2225,7 @@ return( false );
     soln = CheckEndpoint(&s2->to->me,s1,1,pts,t2s,t1s,soln);
 #endif
 
-    if ( s1->islinear ) {
+    if ( s1->knownlinear ) {
 	spline.d = s1->splines[1].c*(s2->splines[0].d-s1->splines[0].d)-
 		s1->splines[0].c*(s2->splines[1].d-s1->splines[1].d);
 	spline.c = s1->splines[1].c*s2->splines[0].c - s1->splines[0].c*s2->splines[1].c;
