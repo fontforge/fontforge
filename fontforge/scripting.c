@@ -220,7 +220,7 @@ static void calldatafree(Context *c) {
 static void traceback(Context *c) {
     int cnt = 0;
     while ( c!=NULL ) {
-	if ( cnt==1 ) printf( "Called from...\n" );
+	if ( cnt==1 ) fprintf( stderr, "Called from...\n" );
 	if ( cnt>0 ) fprintf( stderr, " %s: %d\n", c->filename, c->lineno );
 	calldatafree(c);
 	if ( c->err_env!=NULL )
