@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 5-Jul-2003 -->
+  <!-- AP: Last modified: 14-Sep-2003 -->
   <TITLE>Spline Font Database File Format</TITLE>
 </HEAD>
 <BODY>
@@ -334,9 +334,54 @@ specifying the vertical advance width.
 The entry <CODE>Fore</CODE> starts the foreground
 <A NAME="splineset">splines</A>, they are encoded as postscript commands
 with moveto abbreviated to m, curveto to c and lineto to l (lower case el).
-The digit after after the letter indicates whether the point is curve (0),
-corner (1) or tangent (2). A set of splines in the background is similar,
-it will be introduced by a <CODE>Back</CODE> entry.
+The digit after after the letter is a set of flags whose bits have the following
+meanings:
+<TABLE CELLPADDING="2">
+  <TR>
+    <TH>mask</TH>
+    <TH>meaning</TH>
+  </TR>
+  <TR>
+    <TD>0x3</TD>
+    <TD>indicates whether the point is curve (0), corner (1) or tangent (2).</TD>
+  </TR>
+  <TR>
+    <TD>0x4</TD>
+    <TD>point selected</TD>
+  </TR>
+  <TR>
+    <TD>0x8</TD>
+    <TD>point has default next control point</TD>
+  </TR>
+  <TR>
+    <TD>0x10</TD>
+    <TD>pont has default prev control point</TD>
+  </TR>
+  <TR>
+    <TD>0x20</TD>
+    <TD>point is to be rounded in x</TD>
+  </TR>
+  <TR>
+    <TD>0x40</TD>
+    <TD>point is to be rounded in y</TD>
+  </TR>
+  <TR>
+    <TD>0x80</TD>
+    <TD>point was interpolated between two control points (when<BR>
+      read from a ttf file) and so has no point number of its own</TD>
+  </TR>
+  <TR>
+    <TD>0x100</TD>
+    <TD>point should have a flex hint in x</TD>
+  </TR>
+  <TR>
+    <TD>0x200</TD>
+    <TD>point should have a flex hint in y</TD>
+  </TR>
+</TABLE>
+<P>
+A set of splines in the background is similar, it will be introduced by a
+<CODE>Back</CODE> entry.
 <P>
 While a background image is stored in the following horrible format:
 <BLOCKQUOTE>

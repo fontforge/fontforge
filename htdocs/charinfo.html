@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 1-Sep-2003 -->
+  <!-- AP: Last modified: 27-Sep-2003 -->
   <TITLE>Char Info</TITLE>
 </HEAD>
 <BODY>
@@ -29,11 +29,12 @@ generated fonts. You may also assign a color to a character to make it stand
 out in the font view.<BR CLEAR=ALL>
 <P>
 <IMG SRC="charinfo-pos.png" WIDTH="305" HEIGHT="400" ALIGN="Right">There
-are 6 seperate sub-dialogs to help you edit the <A HREF="gposgsub.html">GPOS
-and GSUB</A> tables (some of these data can be converted into various of
-Apple's AAT tables, particularly 'morx'). The first of these is the alternate
-position dialog which allows you to associate certain modifications to a
-character's metrics with a feature in the GPOS table.
+are 6 seperate sub-dialogs to help you edit the
+<A NAME="features">features</A> of the <A HREF="gposgsub.html">GPOS and
+GSUB</A> tables (some of these data can be converted into various of Apple's
+AAT tables, particularly 'morx'). The first of these is the alternate position
+dialog which allows you to associate certain modifications to a character's
+metrics with a feature in the GPOS table.
 <P>
 In the example at right the 'fwid' feature (full width) adds 400 units to
 the character's advance width and moves it horizontally by 200 units.
@@ -124,8 +125,11 @@ impedimentia that go along with it. They are used by
 substitutions, positions, and ligatures, as well as by
 <A HREF="fontinfo.html#Anchors">Font Info</A> to specify anchor classes.
 <P>
-In addition to a feature tag (see the section on <A HREF="gposgsub.html">GPOS
-and GSUB</A> for feature tags), you must specify a set of flags and a collection
+You must either specify an opentype feature tag (a four character tag like
+'liga', see the section on <A HREF="gposgsub.html">GPOS and GSUB</A> for
+feature tags), or an apple feature/setting value (Something like
+&lt;2,2&gt; where the first number is the feature and the second the setting
+for that feature). In addition you must specify a set of flags and a collection
 of scripts and languages for which the substitution will be active. In the
 example above the substitution is active for the greek script and the default
 language (which here means all languages as none have been singled out for
@@ -145,10 +149,12 @@ disabled), however there is no point in having it active for cyrillic users
 as they will never see that combination of characters. On the other hand
 the es-zet ligature (German double-s, &szlig;) has fallen by the wayside
 in all (I think) languages but German so that ligature should only be active
-for the latin script, german language. And there are some characters that
-don't fall into one single script. The same digits are used for latin, cyrillic,
-greek, hebrew, (sometimes arabic) and many other script systems, so any ligatures
-of the digits (such as fractions) should be available in all script systems.
+for the latin script, german language. 
+<P>
+And there are some characters that don't fall into one single script. The
+same digits are used for latin, cyrillic, greek, hebrew, (sometimes arabic)
+and many other script systems, so any ligatures of the digits (such as fractions)
+should be available in all script systems.
 <P>
 The script names used by PfaEdit are those specified by
 <A HREF="http://partners.adobe.com/asn/tech/type/opentype/appendices/scripttags.jsp">Microsoft

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 2-Sep-2002 -->
-  <!-- AP: Last modified: 30-Jul-2003 -->
+  <!-- AP: Last modified: 27-Sep-2003 -->
   <TITLE>Preferences Dialog</TITLE>
 </HEAD>
 <BODY>
@@ -126,7 +126,17 @@
     will join. If you leave this Off then further motion will continue to move
     the points, if you set this to On then PfaEdit will stop noticing mouse movements
     (it pretends that you released the mouse button). This is useful if you hand
-    jitters a little on the mouse.<BR Clear=all>
+    jitters a little on the mouse.
+  <DT>
+    <A NAME="UpdateFlex">UpdateFlex</A>
+  <DD>
+    Figure out what points will be part of flex hints after every change to a
+    character. Points which are at the center of a flex hint will have a green
+    halo drawn around them. The criteria for flex hints are given on pages 72-73
+    of Adobe's
+    <A HREF="http://partners.adobe.com/asn/developer/PDFS/TN/T1_SPEC.PDF">T1_Spec.pdf</A>.
+    This setting can be used to show you when those criteria are not
+    met.<BR Clear=all>
 </DL>
 <DL>
   <DT>
@@ -254,11 +264,41 @@ to be invoked. The "..." button allows you to browse for script files, which
 I think have extension .pe (but which can have whatever extension you prefer
 if you don't like my conventions).<BR Clear=All>
 <P>
-<IMG SRC="prefs-macfeat.png" WIDTH="282" HEIGHT="372" ALIGN="Left"><IMG SRC="prefs-macset.png"
-    WIDTH="282" HEIGHT="372" ALIGN="Right">The <A NAME="Mac">Mac</A> Features
-and Settings dialog allows you to define a mapping between OTF
-<CODE>GSUB</CODE> feature tags (which are what PfaEdit uses to identify
-substitutions internally) and Apple's
+<IMG SRC="prefs-macfeat.png" WIDTH="282" HEIGHT="372" ALIGN="Right">The
+<A NAME="Mac">Mac</A> Features dialog allows you to define a set of default
+names (in many languages) for mac features and settings. These names are
+placed in the 'name' table whenever a feature/setting is used in a generated
+'morx' table. (Thus if you have some common ligatures in your font, then
+the "ligature" feature names, and the "common ligature" setting names will
+be added to the 'name' table).
+<P>
+You may also use this dialog to establish which setting(s) should be on by
+default in a given feature and whether the feature only allows one setting
+to be on at a time (the settings are mutually exclusive). All of this data
+may be overridden by the similar dialog in the
+<A HREF="fontinfo.html#Mac-Features">Element-&gt;Font Info </A>dialog.
+<P>
+<IMG SRC="MacFeature.png" WIDTH="258" HEIGHT="369" ALT="Mac Feature dialog"
+    ALIGN="Left">To edit an existing feature double click on that feature in
+the list (at right) this will bring up the dialog on the left. Each feature
+must be assigned a unique number. You should indicate whether it has mutually
+exclusive features or not. You should provide names for the feature in various
+languages, and you should provide settings for the feature.
+<P>
+To add a new name press the [New] button under the name list and you will
+be prompted for a language and a name.
+<P>
+To add a new setting press the [New] button under the setting list. The setting
+dialog contains the numeric value of this setting (Apple has decreed that
+if the feature is not mutually exclusive, all settings must be even numbers),
+whether this setting is on by default, and then a list of names for the setting
+in as many languages as you like.<BR CLEAR=ALL>
+<IMG SRC="MacFeatName.png" ALIGN="Right" WIDTH="263" HEIGHT="125"><IMG SRC="macFeatureSetting.png"
+    WIDTH="263" HEIGHT="216" ALIGN="Left"><BR CLEAR=ALL>
+<P>
+<IMG SRC="prefs-macmap.png" WIDTH="282" HEIGHT="372" ALIGN="Right">The Mac
+Mapping dialog allows you to define a mapping between OTF <CODE>GSUB</CODE>
+feature tags and Apple's
 <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6morx.html"><CODE>mort/morx
 </CODE></A>Feature/Setting codes.
 <P>
@@ -268,17 +308,12 @@ used by current fonts are not found in it).
 <P>
 A four letter OTF feature tag may correspond to a mac feature/setting
 combination. If you wish to create a new mapping you must first insure that
-the mac feature you desire is present in the feature list (at left), and
-then you may add the mapping in the settings list (at right).
+the mac feature setting you desire is present in the feature list (above),
+and then you may add the mappings.
 <P>
-You must specify a mac feature (which must already be defined), a mac setting
-code, a name for the setting, a setting code to turn the feature off (or
--1 if there is none), a name for the off setting, a four letter otf tag,
-and two flags: whether this setting should be on by default, and whether
-all the settings in this feature form a mutually exclusive system (like a
-radio button).
-<P>
-<IMG SRC="macFeatureSetting.png" WIDTH="337" HEIGHT="245">
+<IMG SRC="MacMapping.png" WIDTH="337" HEIGHT="198" ALIGN="Left">You must
+specify a mac feature (which must already be defined), a mac setting code
+and a 4 character opentype tag.<BR CLEAR=ALL>
 <H2>
   Other ways of configuring
 </H2>

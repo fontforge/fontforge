@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 3-Sep-2003 -->
+  <!-- AP: Last modified: 14-Sep-2003 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -62,6 +62,10 @@
     <A HREF="#hint-subs">How do I make it use hint substitution?</A>
   <LI>
     <A HREF="#flex-hints">How do I make it use flex hints?</A>
+    <UL>
+      <LI>
+	<A HREF="#flex2">How can I tell if it is going to use flex hints?</A>
+    </UL>
   <LI>
     <A HREF="#fuzzy">My characters are all perfectly hinted, why do some stems
     have different widths (or appear fuzzy, or fade away completely)?</A>
@@ -689,6 +693,13 @@ MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
     where it is appropriate to do so. You don't need to do anything. If flex
     hints are used then the necessary subroutines will be added to the font.
     If they are not needed then the subroutines will not be added.
+  <DT>
+    <B><A NAME="flex2">How can I tell if it is going to use flex hints?</A></B>
+  <DD>
+    If you want to see whether PfaEdit is going to use flex hints, turn on the
+    <A HREF="prefs.html#UpdateFlex">UpdateFlex</A> preference item and open a
+    view on the character. PfaEdit displays a green halo around the center point
+    of a flex hint.
   <DT>
     <A NAME="fuzzy"><B>My characters are all perfectly hinted, why do some stems
     have different widths (or appear fuzzy, or fade away completely)?</B></A>

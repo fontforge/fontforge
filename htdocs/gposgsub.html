@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 31-Aug-2003 -->
+  <!-- AP: Last modified: 27-Sep-2003 -->
   <TITLE>Advanced Typography tables</TITLE>
 </HEAD>
 <BODY>
@@ -11,8 +11,8 @@
 </H1>
 <P>
 These differ between OpenType (originally called TrueType Open) and Apple
-(GX or Apple Advanced Typography). My support for Apple is minimal as yet.
-My support for OpenType is not complete.
+(GX or Apple Advanced Typography). My support for both OpenType and Apple
+is incomplete.
 <UL>
   <LI>
     <A HREF="#opentype">The <B><CODE>GPOS</CODE></B>,
@@ -20,8 +20,8 @@ My support for OpenType is not complete.
   <LI>
     <A HREF="#AAT">Apple Advanced Typography</A>
   <LI>
-    <A HREF="gposgsub.html#sometimes">Why do contextual substitutions only sometimes
-    get converted to AAT?</A>
+    <A HREF="#Conversion">What features can be converted between OpenType and
+    AAT?</A>
   <LI>
     <A HREF="TrueOpenTables.html">other true type and open type tables</A>
   <LI>
@@ -408,16 +408,18 @@ the following tables:
 </TABLE>
 <P>
 <P>
-PfaEdit has minimal support now for the <CODE>'mort'</CODE> and
+PfaEdit has support for the <CODE>'mort'</CODE> and
 <CODE>'<A NAME="morx">morx</A>'</CODE> tables (Glyph metamorphosis and extended
 glyph metamorphosis tables). These correspond vaguely to the
-<A HREF="#GSUB">GSUB</A> table. Note: Currently only feature type/setting
-combinations which correspond directly to an open type feature are saved
-(use <A HREF="prefs.html#Mac">File-&gt;Preferences</A> to extend PfaEdit's
-mapping from feature type/setting to opentype tags).
+<A HREF="#GSUB">GSUB</A> table. Note: Any feature type/setting combinations
+which correspond directly to an open type feature will be converted to the
+opentype tag when read in. It will be converted back to a feature/setting
+when an apple font is generated (use
+<A HREF="prefs.html#Mac">File-&gt;Preferences</A> to extend PfaEdit's mapping
+from feature type/setting to opentype tags).
 <TABLE BORDER CELLPADDING="2">
   <CAPTION>
-    Sub tables of <CODE>'mort'</CODE> or <CODE>'morx'</CODE> currently supported
+    Sub tables of <CODE>'mort'</CODE> or <CODE>'morx'</CODE>
   </CAPTION>
   <TR>
     <TH></TH>
@@ -428,51 +430,277 @@ mapping from feature type/setting to opentype tags).
   <TR>
     <TD>0</TD>
     <TD>Indic style rearrangement</TD>
-    <TD>Not supported</TD>
-    <TD>Not supported</TD>
+    <TD>PfaEdit can read these and stores them as state machines (which can be
+      edited with <A HREF="fontinfo.html#Mac-SM">Font Info</A>)</TD>
+    <TD>Any indic state machines will be output in the generated font.</TD>
   </TR>
   <TR>
     <TD>1</TD>
     <TD>contextual glyph substitution</TD>
-    <TD>Not supported</TD>
-    <TD>PfaEdit will generate a <A NAME="cursive-connection">cursive connection
-      </A>feature using this subtable type if the font contains 'init', 'medi',
-      'fina' or 'isol' simple substitutions.
-      <P>
-      In <A HREF="gposgsub.html#sometimes">some cases</A> PfaEdit is able to convert
-      an OpenType Contextual/Chaining substitution table into an Apple contextual
-      glyph substitution table.</TD>
+    <TD>PfaEdit can read these and stores them as state machines (which can be
+      edited with <A HREF="fontinfo.html#Mac-SM">Font Info</A>)</TD>
+    <TD>If the font contains any state machines they will be output here. If
+      there are no state machines then the following conversions of opentype features
+      will be done:
+      <UL>
+	<LI>
+	  PfaEdit will generate a <A NAME="cursive-connection">cursive connection
+	  </A>feature using this subtable type if the font contains 'init', 'medi',
+	  'fina' or 'isol' simple substitutions.
+	<LI>
+	  In <A HREF="gposgsub.html#sometimes">some cases</A> PfaEdit is able to convert
+	  an OpenType Contextual/Chaining substitution table into an Apple contextual
+	  glyph substitution table.
+      </UL>
+    </TD>
   </TR>
   <TR>
     <TD>2</TD>
     <TD>ligature substitution</TD>
     <TD>PfaEdit can read these and stores them as opentype ligatures. PfaEdit
-      will ignore any contextual information.</TD>
-    <TD>PfaEdit will output this sub-table if the font contains supported ligatures.</TD>
+      will ignore any contextual ligature information. (which can be edited with
+      <A HREF="charinfo.html#features">Char Info</A>)</TD>
+    <TD>If there are any ligatures with an apple feature/setting (or which have
+      an opentype tag which can be converted to an apple feature/setting) then
+      this table will be output.</TD>
   </TR>
   <TR>
     <TD>4</TD>
     <TD>non-contextual glyph substitution</TD>
-    <TD>PfaEdit can read these and stores them as opentype simple substitutions</TD>
-    <TD>PfaEdit will output this sub-table if the font contains supported
-      substitutions.</TD>
+    <TD>PfaEdit can read these and stores them as opentype simple substitutions
+      (which can be edited with <A HREF="charinfo.html#features">Char Info</A>)</TD>
+    <TD>If there are any substitutions with an apple feature/setting (or which
+      have an opentype tag which can be converted to an apple feature/setting)
+      then this table will be output.</TD>
   </TR>
   <TR>
     <TD>5</TD>
     <TD>contextual glyph insertion</TD>
-    <TD>Not supported</TD>
-    <TD>Not supported</TD>
+    <TD>PfaEdit can read these and stores them as state machines (which can be
+      edited with <A HREF="fontinfo.html#Mac-SM">Font Info</A>)</TD>
+    <TD>Any glyph insertion state machines will be output in the generated font.</TD>
   </TR>
 </TABLE>
 <H3>
-  Why do contextual substitutions only <A NAME="sometimes">sometimes</A> get
-  generated in AAT?
+  What features can be interconverted between OpenType and AAT?
 </H3>
+<P>
+Some features have almost the same meaning in OpenType and AAT (although
+they are expressed quite differently), others are similar enough that they
+can sometimes be converted, and others have essentially no common ground.
+<P>
+<TABLE BORDER CELLPADDING="2">
+  <TR>
+    <TH>OT Table</TH>
+    <TH>AAT Table</TH>
+    <TH><P ALIGN=Left>
+      Description</TH>
+  </TR>
+  <TR>
+    <TD VALIGN="Top"><P ALIGN=Center>
+      GDEF</TD>
+    <TD VALIGN="Top"><P ALIGN=Center>
+      lcar</TD>
+    <TD>The ligature caret information in both 'GDEF' and 'lcar' is essentially
+      identical and PfaEdit has no trouble reading both and converting from one
+      to the other.</TD>
+  </TR>
+  <TR>
+    <TD><P ALIGN=Center>
+      GPOS</TD>
+    <TD><P ALIGN=Center>
+      kern</TD>
+    <TD>In most cases kerning information can be converted from one format to
+      another. Both provide support for vertical kerning and right to left kerning.
+      Both provide support for kerning by glyph pair and kerning by classes.
+      <P>
+      Apple's documentation mentions that the 'kern' table supports kerning by
+      state machine (ie. conditional kerning). PfaEdit does not (currently) read
+      such sub-tables. Apple also mentions another kerning format (format 3) which
+      they do not document. PfaEdit does not support that either.
+      <P>
+      OpenType allows kerning data to under a conditional/chaining selection (ie.
+      conditional kerning). PfaEdit does support this.</TD>
+  </TR>
+  <TR>
+    <TD><P ALIGN=Center>
+      GPOS</TD>
+    <TD><P ALIGN=Center>
+      opbd</TD>
+    <TD>The GPOS features 'lfbd' and 'rtbd' provide the information needed to
+      generate an Apple opbd table. If PfaEdit reads a font with an opbd table
+      it will generate appropriate 'lfbd' and 'rtbd' features. If PfaEdit generates
+      a font in apple mode that has these features it will create an opbd table.</TD>
+  </TR>
+  <TR>
+    <TD><P ALIGN=Center>
+      GPOS</TD>
+    <TD>
+	<HR>
+    </TD>
+    <TD>I am not aware of any way to convert other GPOS features to AAT.</TD>
+  </TR>
+  <TR>
+    <TD><P ALIGN=Center>
+      GSUB</TD>
+    <TD><P ALIGN=Center>
+      morx</TD>
+    <TD ROWSPAN=2>The 'mort' and 'morx' tables have the same capabilities ('mort'
+      tables are an old format and Apple currently encourages that 'morx' tables
+      be used instead). PfaEdit can read either one, but only generates 'morx'
+      tables. Interconversion depends on specific feature types and the sub-table
+      formats, see below</TD>
+  </TR>
+  <TR>
+    <TD><P ALIGN=Center>
+      GSUB</TD>
+    <TD><P ALIGN=Center>
+      mort</TD>
+  </TR>
+</TABLE>
+<H4>
+  An analysis of GSUB and morx sub-tables and feature tags
+</H4>
+<P>
+OpenType uses a four character feature tag (like 'liga') while Apple uses
+two numbers to represent a feature setting (&lt;1,2&gt;). For PfaEdit to
+be able to inter-convert an OpenType feature into an Apple feature there
+must first be a correspondance between the two naming conventions. Sometimes
+there is an easy direct conversion (above 'liga' and &lt;1,2&gt; both represent
+"Common Ligatures") but far more often there is none. See
+<A HREF="gposgsub.html#OT-Mac-features">below</A> for a list of the tags
+and feature settings that PfaEdit considers similar enough to interconvert.
+<P>
+GSUB tables have 7 sub-table formats, while morx tables have 5.
+<TABLE BORDER CELLPADDING="2">
+  <TR>
+    <TH>GSUB<BR>
+      sub-<BR>
+      table</TH>
+    <TH>morx<BR>
+      sub-<BR>
+      table</TH>
+    <TH><P ALIGN=Left>
+      Description</TH>
+  </TR>
+  <TR>
+    <TD VALIGN="Top"><P ALIGN=Center>
+      Single</TD>
+    <TD VALIGN="Top"><P ALIGN=Center>
+      Non-<BR>
+      Contextual<BR>
+      Glyph</TD>
+    <TD>These two sub-tables have almost exactly the same capabilities. Each
+      allows one glyph to be substituted for another. The morx sub-table also allows
+      a glyph to be deleted, while the GSUB sub-table does not.</TD>
+  </TR>
+  <TR>
+    <TD VALIGN="Top"><P ALIGN=Center>
+      Multiple</TD>
+    <TD></TD>
+    <TD>This GSUB subtable allows a single glyph to be replaced by multiple glyphs.
+      It has some similarities to Apple's Glyph Insertion sub-table except:
+      <UL>
+	<LI>
+	  the 'morx' sub-table always leaves the current glyph in the glyph stream,
+	  while this sub-table need not
+	<LI>
+	  the 'morx' sub-table is contextual while this sub-table is never. (But if
+	  this sub-table is wrapped inside a Context or Chaining Context subtable the
+	  result can be contextual).
+      </UL>
+    </TD>
+  </TR>
+  <TR>
+    <TD></TD>
+    <TD VALIGN="Top"><P ALIGN=Center>
+      Glyph<BR>
+      Insertion</TD>
+    <TD>This morx subtable allows a string of glyphs to be inserted before or
+      after the current glyph (the current glyph always remains). This sub-table
+      is contextual (ie. the insertion can be restricted to certain contexts).
+      It bears some similaries to the GSUB Multiple subtable above.</TD>
+  </TR>
+  <TR>
+    <TD VALIGN="Top">Alternate</TD>
+    <TD></TD>
+    <TD>This GSUB subtable allows a single glyph to be replaced by any one of
+      several alternatives (presumably with help from a word processor's UI). An
+      example of this would be a character which had several swash variants. There
+      is nothing like this in the 'morx' table.</TD>
+  </TR>
+  <TR>
+    <TD VALIGN="Top"><P ALIGN=Center>
+      Ligature</TD>
+    <TD VALIGN="Top"><P ALIGN=Center>
+      Ligature</TD>
+    <TD>Both formats have ligature sub-tables. The 'GSUB' version is unconditional
+      (the ligature is always applied). The 'morx' version can be contextual (though
+      in all fonts I have examined it is also uncontextual). PfaEdit only supports
+      unconditional ligatures. 
+      <P>
+      PfaEdit can read all the unconditional ligatures from a 'morx' sub-table.
+      PfaEdit loses all contextual ligatures.
+      <P>
+      In OpenType, contextual ligatures can be built by wrapping a ligature sub-table
+      inside a Context or Chaining Context subtable.</TD>
+  </TR>
+  <TR>
+    <TD></TD>
+    <TD VALIGN="Top"><P ALIGN=Center>
+      Contextual<BR>
+      Glyph</TD>
+    <TD>This morx subtable allows single glyph substitutions to be applied within
+      certain contexts. At first glance it seems that this could be converted into
+      an opentype Context subtable, <A HREF="gposgsub.html#sometimes">but this
+      is rarely the case</A>.</TD>
+  </TR>
+  <TR>
+    <TD><P ALIGN=Center>
+      Context</TD>
+    <TD></TD>
+    <TD ROWSPAN="2" VALIGN="Top">These GSUB subtables allow any collection of
+      other substitutions to be applied contextually. At first glance one might
+      think that these (with appropriate nested substitutions) might be converted
+      to 'morx' contextual glyph substitutions, contextual ligatures, or even glyph
+      insertion. <A HREF="gposgsub.html#sometimes">Unfortunately this is rarely
+      the case</A>.</TD>
+  </TR>
+  <TR>
+    <TD><P ALIGN=Center>
+      Chaining<BR>
+      Context</TD>
+    <TD></TD>
+  </TR>
+  <TR VALIGN="Top">
+    <TD><P ALIGN=Center>
+      Reverse<BR>
+      Chaining<BR>
+      Context</TD>
+    <TD></TD>
+    <TD>This GSUB subtable is applied backwards to the stream of glyphs, it allows
+      a single glyph substitution per contextual match. There is nothing like it
+      in 'morx'.</TD>
+  </TR>
+  <TR VALIGN="Top">
+    <TD></TD>
+    <TD><P ALIGN=Center>
+      Indic<BR>
+      Rearrange-<BR>
+      ment</TD>
+    <TD>This 'morx' subtable allows for several glyphs to interchange their positions
+      in the glyph stream. There is nothing like it in GSUB (or GPOS for that matter).</TD>
+  </TR>
+</TABLE>
+<H4>
+  Why do contextual glyph substitutions only <A NAME="sometimes">sometimes</A>
+  get generated in AAT?
+</H4>
 <P>
 Sadly OpenType and AAT provide disjoint capabilities when it comes to contextual
 matching. AAT is more capable in some areas, OpenType more capable in others.
 PfaEdit is able to convert an OpenType contextual substitution into an AAT
-if PfaEdit can detect that the OpenType substitution does not use capabilies
+one if PfaEdit can detect that the OpenType substitution does not use capabilies
 beyond those of AAT. Currently this means:
 <UL>
   <LI>
@@ -595,7 +823,7 @@ beyond those of AAT. Currently this means:
     </OL>
 </UL>
 <P>
-PfaEdit does not even try to parse an AAT contextual glyph substitution
+PfaEdit does not even try to convert an AAT contextual glyph substitution
 sub-table, too few of these can be expressed in OpenType to make it worth
 while.
 <H4>
@@ -603,40 +831,25 @@ while.
 </H4>
 <P>
 There is a subtle bug involved in converting a chaining contextual substitution
-into an Apple contextual glyph substitution. In AAT any given substitution
-will start at the beginning of input and run to the end of input, while OT
-will start at the beginning of input and apply all substitutions at once
-to each character. This means that an OT substitution will expect characters
-in the backtrack list to have had substitutions applied to them while in
-AAT they will not have been, or that OT will expect substitutions not to
-have been applied to the lookahead list that may already have been done in
-AAT.
+into an Apple contextual glyph substitution. AAT does not have the concept
+of a backtrack list, this means that substitutions may occur in a different
+order.
 <H4>
-  Example:
-</H4>
-<BLOCKQUOTE>
-  <SMALL>Suppose we have a simple substitution <BR>
-  <CODE>&nbsp; { r =&gt; r.alt</CODE> }<BR>
-  and a chaining substitution<BR>
-  <CODE>&nbsp; { a r.alt [b] =&gt; {b =&gt; b.alt}}</CODE><BR>
-  (where "a" and "r.alt" are on the backtrack list, and "b" is the match
-  string)<BR>
-  On an opentype platform this will work as expected because by the time the
-  current character becomes "b" and the substitution starts we will already
-  have changed "r" into "r.alt", but on the Mac the substitution will start
-  at glyph "a" and the { r =&gt; r.alt } will not yet have executed and the
-  match will fail.</SMALL>
-</BLOCKQUOTE>
-<H4>
-  Why can't all contextual/chaining tables be converted?
+  Why can't all contextual/chaining tables be
+  <A NAME="not-converted">converted</A>?
 </H4>
 <P>
 Well, obviously there are some thing that just aren't present. The concept
 of contextual positioning is missing from AAT, while Indic rearrangement
 is missing from OpenType. So let's concentrate on contextual substitutions,
-which both appear to support. But even here, there is a very basic mismatch
-in concepts between the way OpenType and Apple specify contextual substitutions.
-Consider the following contextual sustitution in a glyph list format:
+which both appear to support. The argument that follows is based on the
+capabilities of contextual matching, it applies equally to contextual ligatures,
+glyph insertion and glyph substitution, the examples given are only of glyph
+substitution because it is easier to represent (and because PfaEdit is only
+willing to contvert contextual glyph substitutions) But even here, there
+is a very basic mismatch in concepts between the way OpenType and Apple specify
+contextual substitutions. Consider the following contextual sustitution in
+a glyph list format:
 <TABLE BORDER CELLPADDING="2">
   <TR>
     <TH>Initial Sequence</TH>
@@ -705,7 +918,7 @@ Consider the following table with two glyph strings
 </TABLE>
 <P>
 So replace the "b" if the final "d" is present, otherwise replace the "c".
-Again this cannot be expressed in Apple's state machines. 
+Again this cannot be expressed in Apple's state machines.
 <P>
 Finally consider
 <TABLE BORDER CELLPADDING="2">
@@ -765,6 +978,11 @@ or following a whitespace character. But OpenType has no way of expressing
 "start of input" (or end of input) in a contextual/chaining context, whereas
 Apple's state machines do.
 <P>
+Since Apple's glyph substitutions can delete glyphs a contextual glyph
+substitution table can create two character ligatures (one glyph is converted
+to the ligature and the other is deleted), while OpenType tables can must
+use a ligature substitution to do this.
+<P>
 Finally an AAT state machine can match a general regular expression, while
 OpenType tables can only match fixed length strings. Suppose you were typesetting
 mathematics and wanted a substitution which would convert an arbetrary digit
@@ -778,21 +996,6 @@ one) they are. But they illustrate the point that the two formats have very
 different expressive capabilities and it is NOT possible to write a converter
 which will take any input in one format and produce an equivalent output
 in the other.
-<H4>
-  Musings on other 'morx' sub-table types
-</H4>
-<P>
-Some very simple cases of Indic positioning can be expressed with a contextual
-kerning table (ie. instead of swapping the glyphs in the internal sequence,
-you could kern them so far that they moved past each other).
-<P>
-Conditional glyph insertion could be done with an OpenType contextual table
-and a multiple substitution.
-<P>
-I don't yet see how to use a state machine to do an OpenType contextual ligature
-table. There are two matches that need to be done at the same time and the
-ligature substitution can only be applied if both succeed. Perhaps if the
-'clig' were specified as glyph sequences it would be doable.
 <H3>
   Apple and OpenType features
 </H3>
@@ -819,33 +1022,8 @@ ligature substitution can only be applied if both succeed. Perhaps if the
   </TR>
   <TR>
     <TD>Rare Ligatures</TD>
-    <TD>Discretionary/Historic Ligs.</TD>
-    <TD>dlig/hlig</TD>
-  </TR>
-  <TR>
-    <TD>Logo Ligatures</TD>
-    <TD></TD>
-    <TD>MLOG<A HREF="#mine">*</A></TD>
-  </TR>
-  <TR>
-    <TD>Rebus Pictures</TD>
-    <TD></TD>
-    <TD>MREB<A HREF="#mine">*</A></TD>
-  </TR>
-  <TR>
-    <TD>Diphthong Ligatures</TD>
-    <TD></TD>
-    <TD>MDLG<A HREF="#mine">*</A></TD>
-  </TR>
-  <TR>
-    <TD>Square Ligatures</TD>
-    <TD></TD>
-    <TD>MSLG<A HREF="#mine">*</A></TD>
-  </TR>
-  <TR>
-    <TD>Abbrev. Square Ligatures</TD>
-    <TD></TD>
-    <TD>MALG<A HREF="#mine">*</A></TD>
+    <TD>Discretionary</TD>
+    <TD>dlig</TD>
   </TR>
   <TR>
     <TD>Fractions</TD>
@@ -929,12 +1107,6 @@ ligature substitution can only be applied if both succeed. Perhaps if the
   </TR>
 </TABLE>
 <P>
-<A NAME="mine">*</A> Tags which are entirely in upper case have been added
-by me. They do not correspond to any known opentype tag, and are used solely
-for supporting macintoys. You may adjust this conversion table (by adding
-your own tags for various mac feature/settings) from the
-<A HREF="prefs.html#Mac">preference dialog</A>.
-<P>
 PfaEdit will retain the order of features in the morx table, and the user
 may adjust it with the <A HREF="fontinfo.html#Order">Element-&gt;Font Info</A>
 command. (this is the same list as that used for GSUB table. GSUB features
@@ -968,23 +1140,12 @@ tables</A>.
 </H3>
 <UL>
   <LI>
-    PfaEdit only supports apple features where there is a mapping between that
-    feature and an opentype feature tag. Use the
-    <A HREF="prefs.html#Mac">File-&gt;Preference dialog</A> to extend PfaEdit's
-    default mapping.
+    PfaEdit will never generate a 'mort' table. It can read 'mort' tables, but
+    it will only produce 'morx' tables.
   <LI>
-    PfaEdit does not support Indic rearrangement or contextual glyph insertion
-    in 'mort'/'morx' tables.
-  <LI>
-    PfaEdit will generate (but not read) a contextual glyph substitution sub-table
-    for the specific case of arabic forms, and for some specific contextual
-    substitution opentype features.
-  <LI>
-    PfaEdit supports no other contextual glyph substitution sub-tables.
-  <LI>
-    PfaEdit will never generate a 'mort' table. It can read 'mort' tables (as
-    well as it can read 'morx' tables that is), but it will only produce 'morx'
-    tables.
+    PfaEdit is unable to parse contextual ligatures. It can find ligatures which
+    start from state 0, but it will not find ligatures which start from other
+    states (that is, which are contextual)
   <LI>
     PfaEdit does not support the following Apple specific tables
     <UL>

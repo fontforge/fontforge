@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 3-Sep-2003 -->
+  <!-- AP: Last modified: 28-Sep-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -12,6 +12,69 @@
 <UL>
   <LI>
     ???
+    <UL>
+      <LI>
+	When a path was both stroked and filled (in a postscript/eps file), pfaedit
+	would ignore the stroke.
+      <LI>
+	I forgot that the stroke linewidth needs to be transformed by the current
+	transformation matrix. This meant that when a path should have been stroked
+	by an ellipse (when reading a ps/eps file) pfaedit would blithely stroke
+	it with a circle.
+      <LI>
+	Added some support for reading the /Metrics array.
+      <LI>
+	If there were a sharp corner (where the "radius of curvature" of the corner
+	was less than the radius of the pen used to stroke the path) then PfaEdit
+	would generate an incorrect path.
+      <LI>
+	Round line joins were not a good approximation to circular arcs.
+      <LI>
+	When filling the outline character view, rounding errors caused the fill
+	bitmap to stray from the outline.
+      <LI>
+	Extend the functionality of the magnifying (or minifying) tool so that if
+	the user drags out a rectangle with it then the view will be shifted and
+	scaled so that rectangle fits in the window.
+      <LI>
+	PfaEdit will no longer auto-generate hints on non-integral boundries. In
+	Type1 fonts such hints become meaningless and just confuse things.
+      <LI>
+	PfaEdit will now draw a halo around points which will be part of a flex hint.
+	See the <A HREF="prefs.html#UpdateFlex">UpdateFlex</A> preference item.
+      <LI>
+	PfaEdit now has as set of commands for manipulating typographic features
+	in large lumps rather than one at a time.
+	<UL>
+	  <LI>
+	    Copy features from one font to another
+	  <LI>
+	    Remove certain features
+	  <LI>
+	    Give features a new tag
+	</UL>
+      <LI>
+	I have greatly rewritten the code for dealing with AAT fonts
+	<UL>
+	  <LI>
+	    PfaEdit now supports mac feature/setting values to be used as feature tags
+	    as well as opentype 4 letter tags
+	  <LI>
+	    PfaEdit will now read any feature in even if it doesn't map to an opentype
+	    tag
+	  <LI>
+	    PfaEdit understands the most of the state machines in the morx/mort tables
+	    (it does not understand ligature state machines, it parses these for all
+	    unconditional ligatures, but it will miss any condtional ones).
+	  <LI>
+	    PfaEdit now lets you edit apple state machines
+	  <LI>
+	    PfaEdit lets you specify feature/setting names in the font to override the
+	    default values specified in preferences
+	</UL>
+    </UL>
+  <LI>
+    4-Sept-2003
     <UL>
       <LI>
 	the 17-Aug addition of context/chaining broke anchor classes. Should be fixed

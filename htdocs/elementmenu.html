@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 4-Sep-2003 -->
+  <!-- AP: Last modified: 27-Sep-2003 -->
   <TITLE>The Element Menu</TITLE>
 </HEAD>
 <BODY>
@@ -20,7 +20,21 @@ This menu is not present in the Metrics View.
   <LI>
     <A HREF="#Info">Get Info</A>
   <LI>
-    <A HREF="#DefaultATT">Default ATT</A> (Advanced Typographic Tables)
+    Typographic Features
+    <UL>
+      <LI>
+	<A HREF="#Copy-Feat">Copy Feature(s) to Font</A>...
+      <LI>
+	<A HREF="#DefaultATT">Default ATT</A> (Advanced Typographic Tables)
+      <LI>
+	<A HREF="#Rm-All-Feat">Remove All Features</A>
+      <LI>
+	<A HREF="#Rm-Feat">Remove Feature(s)...</A>
+      <LI>
+	<A HREF="#Rm-Unused-Feat">Remove Unused Nested Features</A>
+      <LI>
+	<A HREF="#Retag-Feat">Retag Feature(s)...</A>
+    </UL>
   <LI>
     <A HREF="#Dependencies">Show Dependencies</A>
   <LI>
@@ -142,31 +156,67 @@ compiling PfaEdit.
     dialogs</A> (Point Info, Image Info, Reference Info, Anchor Point Info) depending
     on what is selected.
   <DT>
-    Default <A NAME="DefaultATT">ATT</A>
+    Typographic Features
   <DD>
-    In the font view this is a sub-menu which allows you to generate default
-    values for various features of the
-    <A HREF="http://partners.adobe.com/asn/tech/type/opentype/gpos.jsp">GPOS</A>
-    and
-    <A HREF="http://partners.adobe.com/asn/tech/type/opentype/gsub.jsp">GSUB</A>
-    tables.
-    <P>
-    The sub-menu consists of a list of feature names (and a few more generic
-    names like "All" which will provide defaults for everything it can figure
-    out, and "Ligatures" which will provide defaults for all ligatures). PfaEdit
-    will look for defaults for all selected characters. There is also one special
-    entry:
+    This sub-menu is only present in the font view and allows you to manipulate
+    GSUB/GPOS/morx features. If you wish to create them you should use
+    <A HREF="fontinfo.html">Font Info</A> or <A HREF="charinfo.html#Character">Char
+    Info</A>.
     <DL>
       <DT>
-	Suffix to Tag...
+	Copy <A NAME="Copy-Feat">Feature</A> to Font...
       <DD>
-	In adobe's glyph naming conventions, alternate forms of glyphs may be named
-	by appending a suffix to the normal glyph's name. Thus a swash variant of
-	"A" might be named "A.swash".
+	<A HREF="typofeat.html#Copy-Feat">This dialog</A> allows you to copy a set
+	of features from one font to another. (This does not currently copy kerning
+	information).
+      <DT>
+	Default <A NAME="DefaultATT">ATT</A>
+      <DD>
+	In the font view this is a sub-menu which allows you to generate default
+	values for various features of the
+	<A HREF="http://partners.adobe.com/asn/tech/type/opentype/gpos.jsp">GPOS</A>
+	and
+	<A HREF="http://partners.adobe.com/asn/tech/type/opentype/gsub.jsp">GSUB</A>
+	tables.
 	<P>
-	Using this command you can tell PfaEdit to associate a given suffix with
-	a feature tag. (in the above example you could associate ".swash" with 'swsh'
-	-- except you don't need to, because PfaEdit already knows about that one).
+	The sub-menu consists of a list of feature names (and a few more generic
+	names like "All" which will provide defaults for everything it can figure
+	out, and "Ligatures" which will provide defaults for all ligatures). PfaEdit
+	will look for defaults for all selected characters. There is also one special
+	entry:
+	<DL>
+	  <DT>
+	    Suffix to Tag...
+	  <DD>
+	    In adobe's glyph naming conventions, alternate forms of glyphs may be named
+	    by appending a suffix to the normal glyph's name. Thus a swash variant of
+	    "A" might be named "A.swash".
+	    <P>
+	    Using this command you can tell PfaEdit to associate a given suffix with
+	    a feature tag. (in the above example you could associate ".swash" with 'swsh'
+	    -- except you don't need to, because PfaEdit already knows about that one).
+	</DL>
+      <DT>
+	<A NAME="Rm-All-Feat">Remove All Features</A>
+      <DD>
+	Removes all typographic features.
+      <DT>
+	<A NAME="Rm-Feat">Remove Feature(s)...</A>
+      <DD>
+	<A HREF="typofeat.html#Rm-Feat">This dialog</A> allows you to select which
+	features to remove. (This does not remove kerning information).
+      <DT>
+	<A NAME="Rm-Nested-Feat">Remove Unused Nested Features</A>
+      <DD>
+	If there are any nested features which are not referred to within any
+	contextual/chaining feature nor apple state machine then this command will
+	remove them.
+      <DT>
+	<A NAME="Retag-Feat">Retag Feature(s)...</A>
+      <DD>
+	<A HREF="typofeat.html#Retag-Feat">This dialog</A> allows you to change the
+	opentype tag (or apple feature/setting) on a given feature.(This does not
+	retag kerning information).
     </DL>
   <DT>
     Show <A NAME="Dependencies">Dependencies</A>
