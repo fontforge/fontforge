@@ -265,7 +265,7 @@ return;
 return;
 
     x /= hist->barwidth;
-    if ( x + hist->hoff > hist->h->high )
+    if ( x + hist->hoff > hist->h->high || x + hist->hoff - hist->h->low<0 )
 return;
 
     h = &hist->h->hist[x + hist->hoff - hist->h->low];
