@@ -23,7 +23,7 @@ INSTALLATION NOTES:
 			languages
     You should:
 	$ gunzip pfaedit_MacOSX*.tgz; tar xf pfaedit_MacOSX*.tar
-    	$ sudo
+    	$ sudo -s
 	# mkdir -p /usr/local/bin /usr/local/man/man1 /usr/local/share/pfaedit
 	# mv pfaedit /usr/local/bin
 	# mv pfaedit.1 /usr/local/man/man1
@@ -49,7 +49,7 @@ BUILDING
 	$ cd pfaedit
 	$ configure.static
 	$ make
-	$ sudo
+	$ sudo -s
 	# make install
 
 More complex installations
