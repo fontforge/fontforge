@@ -1907,7 +1907,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	memset(&hgcd,0,sizeof(hgcd));
 	memset(&mgcd,0,sizeof(mgcd));
 	memset(&mlabel,0,sizeof(mlabel));
-	memset(&aspects,0,sizeof(mlabel));
+	memset(&aspects,0,sizeof(aspects));
 
 	j=0;
 	label[j].text = (unichar_t *) _STR_Base;
