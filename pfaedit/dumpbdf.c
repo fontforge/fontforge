@@ -127,6 +127,57 @@ static int AllSame(BDFFont *font,int *avg,int *cnt) {
 return(common!=-2);
 }
 
+static int GenerateGlyphRanges(BDFFont *font, FILE *file) {
+#ifdef PFAEDIT_CONFIG_BDF_GLYPH_RANGES
+    char buffer[300], *pt, *end, add[30];
+    int i, j, max, cnt=0;
+
+    /* I gather that the _XFREE86_GLYPH_RANGES property has been dropped */
+    /*  because it was felt that the metrics data would allow users to */
+    /*  determine whether a character was in the font or not. I'm not in */
+    /*  complete agreement with that argument because there are several */
+    /*  zero-width spaces whose presence is not specified by the metrics */
+    /*  but it is almost irrelevant whether they are present or not (though */
+    /*  guessing wrong would present you with a "DEFAULT_CHAR" rather than */
+    /*  nothing) */
+
+    if ( font->encoding_name==em_unicode )
+	max = 65536;
+    else if ( font->encoding_name==em_unicode4 )
+	max = unicode4_size;
+    else
+return( 0 );
+    pt = buffer; end = pt+sizeof(buffer);
+    for ( i=0; i<font->charcnt && i<max; ++i ) if ( !IsntBDFChar(font->chars[i]) ) {
+	for ( j=i+1; j<font->charcnt && j<max && !IsntBDFChar(font->chars[j]); ++j );
+	--j;
+	if ( j==i )
+	    sprintf( add, "%d ", i );
+	else
+	    sprintf( add, "%d_%d ", i, j );
+	i = j;
+	if ( pt+strlen(add) >= end ) {
+	    pt[-1] = '\0';		/* was a space */
+	    if ( file!=NULL )
+		fprintf(file, "_XFREE86_GLYPH_RANGES \"%s\"\n", buffer );
+	    pt = buffer;
+	    ++cnt;
+	}
+	strcpy(pt,add);
+	pt += strlen(pt);
+    }
+    if ( pt!=buffer ) {
+	pt[-1] = '\0';		/* was a space */
+	if ( file!=NULL )
+	    fprintf(file, "_XFREE86_GLYPH_RANGES \"%s\"\n", buffer );
+	++cnt;
+    }
+return( cnt );
+#else
+return( 0 );
+#endif		/* PFAEDIT_CONFIG_BDF_GLYPH_RANGES */
+}
+
 static void calculate_bounding_box(BDFFont *font,
 	int *fbb_width,int *fbb_height,int *fbb_lbearing, int *fbb_descent) {
     int height=0, width=0, descent=900, lbearing=900; 
@@ -310,6 +361,7 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding, int res) {
 	def_ch = 0;
 
     fprintf( file, "STARTPROPERTIES %d\n", 23+(x_h!=-1)+(cap_h!=-1)+
+	    GenerateGlyphRanges(font,NULL)+
 	    (def_ch!=-1)+(font->clut!=NULL));
     fprintf( file, "FONT_NAME \"%s\"\n", font->sf->fontname );
     fprintf( file, "FONT_ASCENT %d\n", font->ascent );
@@ -418,6 +470,10 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding, int res) {
 	    }
 	}
     }
+    /* Normally this does nothing, but pfaedit may be configured to generate */
+    /*  the obsolete _XFREE86_GLYPH_RANGES property, and if so this will */
+    /*  generate them */
+    GenerateGlyphRanges(font,file);
     fprintf( file, "ENDPROPERTIES\n", buffer );
     fprintf( file, "CHARS %d\n", cnt );
 }

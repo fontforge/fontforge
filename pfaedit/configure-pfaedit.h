@@ -37,4 +37,13 @@
 /*  applied to any selected paths, replacing them. It could be used to make a */
 /*  font whose stems were filled with celtic knotwork, for example */
 
+
+/* There used to be a property _XFREE86_GLYPH_RANGES (in bdf/pcf) fonts which */
+/*  gave a quick view about what glyphs were in a bdf font. From what I gather*/
+/*  this property has been dropped because it was redundant.  If you would    */
+/*  like pfaedit to generate it						      */
+/*									      */
+/* #define PFAEDIT_CONFIG_BDF_GLYPH_RANGES				      */
+/*									      */
+
 #endif
