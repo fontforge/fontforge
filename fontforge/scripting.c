@@ -2169,7 +2169,7 @@ static void bSetItalicAngle(Context *c) {
     }
     if ( c->a.vals[1].type==v_real )
 	num = c->a.vals[1].u.fval;
-    else if ( c->a.vals[1].type!=v_int )
+    else if ( c->a.vals[1].type==v_int )
 	num = c->a.vals[1].u.ival;
     else
 	error(c,"Bad argument type");
@@ -3197,7 +3197,7 @@ static void _AddHint(Context *c,int ish) {
 	start = c->a.vals[1].u.fval;
     else
 	error( c, "Bad argument type" );
-    if ( c->a.vals[2].type!=v_int )
+    if ( c->a.vals[2].type==v_int )
 	width = c->a.vals[2].u.ival;
     else if ( c->a.vals[2].type==v_real )
 	start = c->a.vals[2].u.fval;
@@ -4750,7 +4750,7 @@ static void cseek(Context *c,long pos) {
 }
 
 static enum token_type NextToken(Context *c) {
-    int ch;
+    int ch, nch;
     enum token_type tok = tt_error;
 
     if ( c->backedup ) {
@@ -4759,7 +4759,8 @@ return( c->tok );
     }
     do {
 	ch = cgetc(c);
-	if ( isalpha(ch) || ch=='$' || ch=='_' || /*ch=='.' ||*/ ch=='@' ) {
+	nch = cgetc(c); cungetc(nch,c);
+	if ( isalpha(ch) || ch=='$' || ch=='_' || (ch=='.' && !isdigit(nch)) || ch=='@' ) {
 	    char *pt = c->tok_text, *end = c->tok_text+TOK_MAX;
 	    int toolong = false;
 	    while ( (isalnum(ch) || ch=='$' || ch=='_' || ch=='.' || ch=='@' ) && pt<end ) {
@@ -4787,7 +4788,8 @@ return( c->tok );
 	    int val=0;
 	    double fval = 0, dval, div;
 	    tok = tt_number;
-	    if ( ch!='0' ) {
+	    nch = cgetc(c); cungetc(nch,c);
+	    if ( ch!='0' || nch=='.' ) {
 		while ( isdigit(ch)) {
 		    val = 10*val+(ch-'0');
 		    ch = cgetc(c);
