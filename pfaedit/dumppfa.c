@@ -698,7 +698,7 @@ static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, Spline
 	dumpf(dumpchar,data," /FSType %d def\n", sf->pfminfo.fstype );
     if ( sf->subfontcnt==0 ) {
 	dumpf(dumpchar,data," /ItalicAngle %g def\n", sf->italicangle );
-	dumpf(dumpchar,data," /isFixedPitch %s def\n", SFOneWidth(sf)?"true":"false" );
+	dumpf(dumpchar,data," /isFixedPitch %s def\n", SFOneWidth(sf)!=-1?"true":"false" );
 	if ( sf->upos )
 	    dumpf(dumpchar,data," /UnderlinePosition %g def\n", sf->upos );
 	if ( sf->uwidth )

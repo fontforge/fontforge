@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 1-Oct-2001 -->
+  <!-- AP: Last modified: 3-Oct-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -66,8 +66,8 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-011001.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 1-Oct-2001
+    <A HREF="pfaedit-011003.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 3-Oct-2001
   <LI>
     <A HREF="pfaedit-solaris-010901.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 1-Sept-2001
@@ -101,7 +101,7 @@ know when you do</A>.
 <P>
 You can download a <A HREF="pfaedit-010906-1.src.rpm">source RPM</A>: Version:
 5-Sept-2001<BR>
-Or you can download the following three packages. Version: 24-Sept-2001
+Or you can download the following three packages. Version: 3-Oct-2001
 <UL>
   <LI>
     <A HREF="libgunicode-011001.tgz">Unicode library source</A> (1-Oct-2001)<BR>
@@ -113,10 +113,10 @@ Or you can download the following three packages. Version: 24-Sept-2001
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-011001.tgz">Pfaedit source</A> (1-Oct-2001)<BR>
+    <A HREF="pfaedit_src-011003.tgz">Pfaedit source</A> (3-Oct-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
-    <A HREF="pfaedit_full-011001.tgz">All three bundled together </A>(1-Oct-2001)
+    <A HREF="pfaedit_full-011003.tgz">All three bundled together </A>(3-Oct-2001)
   <LI>
     If you want to do autotracing around character images you should also download
     Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
@@ -226,6 +226,22 @@ up into one <A HREF="pfaedit_htdocs-010925.tgz">tgz file</A> 25-Sept-2001.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    3-Oct-2001
+    <UL>
+      <LI>
+	Added support for saving bitmaps into ttf files. I don't know that I've got
+	it right. Windows Me ignores the bitmaps I put in. Windows may ignore all
+	bitmaps, or I may have done something wrong... There are so few files to
+	test bitmaps on though...
+      <LI>
+	Some older systems have problems taking the cubed root of 0. This can pop
+	up in the Cubic Solution code now (when doing simplify for example). There
+	should be a work-around in place now.
+      <LI>
+	On monospaced fonts PfaEdit generated a .notdef character whose width was
+	the em-square rather than the size of the rest of the font.
+    </UL>
   <LI>
     1-Oct-2001
     <UL>

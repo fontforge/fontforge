@@ -1027,7 +1027,7 @@ static void dumpinstrs(struct glyphinfo *gi,uint8 *instrs,int cnt) {
 	putc( instrs[i],gi->glyphs );
 }
 
-static void dumpmissingglyph(SplineFont *sf,struct glyphinfo *gi) {
+static void dumpmissingglyph(SplineFont *sf,struct glyphinfo *gi,int fixedwidth) {
     struct glyphhead gh;
     BasePoint bp[10];
     uint8 instrs[50];
@@ -1117,7 +1117,10 @@ static void dumpmissingglyph(SplineFont *sf,struct glyphinfo *gi) {
 
     dumppointarrays(gi,bp,NULL,8);
 
-    putshort(gi->hmtx,gh.xmax + 2*stem);
+    if ( fixedwidth==-1 )
+	putshort(gi->hmtx,gh.xmax + 2*stem);
+    else
+	putshort(gi->hmtx,fixedwidth);
     putshort(gi->hmtx,stem);
 }
 
@@ -1638,6 +1641,7 @@ static void dumpglyph(SplineChar *sc, struct glyphinfo *gi) {
 static void dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     int i, cnt;
     RefChar *refs;
+    int fixed = SFOneWidth(sf);
 
     GProgressChangeStages(2+gi->strikecnt);
     FindBlues(sf,gi->blues,NULL);
@@ -1648,7 +1652,7 @@ static void dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
 
     i=0, cnt=0;
     if ( sf->chars[0]!=NULL &&
-	    (sf->chars[0]->splines!=NULL || sf->chars[0]->widthset) &&
+	    (sf->chars[0]->splines!=NULL || (sf->chars[0]->widthset && fixed==-1)) &&
 	    sf->chars[0]->refs==NULL && strcmp(sf->chars[0]->name,".notdef")==0 )
 	sf->chars[i++]->ttf_glyph = cnt++;
     for ( cnt=3; i<sf->charcnt; ++i )
@@ -1663,11 +1667,11 @@ static void dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
 
     i = 0;
     if ( sf->chars[0]!=NULL &&
-	    (sf->chars[0]->splines!=NULL || sf->chars[0]->widthset) &&
+	    (sf->chars[0]->splines!=NULL || (sf->chars[0]->widthset && fixed==-1)) &&
 	    sf->chars[0]->refs==NULL && strcmp(sf->chars[0]->name,".notdef")==0 )
 	dumpglyph(sf->chars[i++],gi);
     else
-	dumpmissingglyph(sf,gi);
+	dumpmissingglyph(sf,gi,fixed);
     dumpblankglyph(gi,sf);	/* I'm not sure exactly why but there seem */
     dumpblankglyph(gi,sf);	/* to be a couple of blank glyphs at the start*/
     for ( cnt=0; i<sf->charcnt; ++i ) {
@@ -2211,7 +2215,7 @@ static void dumpcfftopdict(SplineFont *sf,struct alltabs *at) {
     dumpsid(cfff,at,sf->fullname,2);
     dumpsid(cfff,at,sf->familyname,3);
     dumpsid(cfff,at,sf->weight,4);
-    if ( SFOneWidth(sf)) dumpintoper(cfff,1,(12<<8)|1);
+    if ( SFOneWidth(sf)!=-1 ) dumpintoper(cfff,1,(12<<8)|1);
     if ( sf->italicangle!=0 ) dumpdbloper(cfff,sf->italicangle,(12<<8)|2);
     if ( sf->upos!=-100 ) dumpdbloper(cfff,sf->upos,(12<<8)|3);
     if ( sf->uwidth!=50 ) dumpdbloper(cfff,sf->uwidth,(12<<8)|4);
@@ -2708,18 +2712,17 @@ static void sethhead(struct hhead *hhead,struct alltabs *at, SplineFont *_sf) {
     hhead->descender = -_sf->descent;
     hhead->linegap = 0;
     width = 0x80000000; rbearing = 0x7fffffff;
-    at->isfixed = true;
     j=0;
     do {
 	sf = ( _sf->subfontcnt==0 ) ? _sf : _sf->subfonts[j];
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	for ( i=0; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i]) ) {
 	    SplineCharFindBounds(sf->chars[i],&bb);
-	    if ( width!=0x80000000 && sf->chars[i]->width!=width ) at->isfixed = false;
 	    if ( sf->chars[i]->width>width ) width = sf->chars[i]->width;
 	    if ( sf->chars[i]->width-bb.maxx < rbearing ) rbearing = sf->chars[i]->width-bb.maxx;
 	}
 	++j;
     } while ( j<_sf->subfontcnt );
+    at->isfixed = SFOneWidth(sf)!=-1;
     hhead->maxwidth = width;
     hhead->minlsb = at->head.xmin;
     hhead->minrsb = rbearing;

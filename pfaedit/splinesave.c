@@ -1344,15 +1344,18 @@ static void SplineFont2Subrs1(SplineFont *sf,int round, int iscjk,
 int SFOneWidth(SplineFont *sf) {
     int width, i;
 
-    width = -1;
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && strcmp(sf->chars[i]->name,".notdef")!=0 ) {
-	if ( width==-1 ) width = sf->chars[i]->width;
+    width = -2;
+    for ( i=0; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i]) &&
+	    (strcmp(sf->chars[i]->name,".notdef")!=0 || sf->chars[i]->splines!=NULL)) {
+	/* Only trust the width of notdef if it's got some content */
+	/* (at least as far as fixed pitch determination goes) */
+	if ( width==-2 ) width = sf->chars[i]->width;
 	else if ( width!=sf->chars[i]->width ) {
-	    width = -2;
+	    width = -1;
     break;
 	}
     }
-return(width!=-2);
+return(width);
 }
 
 int SFIsCJK(SplineFont *sf) {
@@ -1449,6 +1452,10 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
     int i, cnt;
     char notdefentry[20];
     char exists[6];
+    int fixed = SFOneWidth(sf), notdefwidth;
+
+    notdefwidth = fixed;
+    if ( notdefwidth==-1 ) notdefwidth = sf->ascent+sf->descent;
 
     cnt = 0;
     for ( i=1; i<sf->charcnt; ++i )
@@ -1467,30 +1474,31 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
 
     i = cnt = 0;
     chrs->keys[0] = copy(".notdef");
+/* only honor the width on .notdef in non-fixed pitch fonts (or ones where there is an actual outline in notdef) */
     if ( sf->chars[0]!=NULL &&
-	    (sf->chars[0]->splines!=NULL || sf->chars[0]->widthset) &&
+	    (sf->chars[0]->splines!=NULL || (sf->chars[0]->widthset && fixed==-1)) &&
 	     sf->chars[0]->refs==NULL && strcmp(sf->chars[0]->name,".notdef")==0 ) {
 	    chrs->values[0] = SplineChar2PS(sf->chars[0],&chrs->lens[0],round,iscjk,subrs,NULL);
     } else {
-	int w = sf->ascent+sf->descent; char *pt = notdefentry;
+	char *pt = notdefentry;
 	*pt++ = '\213';		/* 0 */
-	if ( w>=-107 && w<=107 )
-	    *pt++ = w+139;
-	else if ( w>=108 && w<=1131 ) {
-	    w -= 108;
-	    *pt++ = (w>>8)+247;
-	    *pt++ = w&0xff;
-	} else if ( w>=-1131 && w<=-108 ) {
-	    w = -w;
-	    w -= 108;
-	    *pt++ = (w>>8)+251;
-	    *pt++ = w&0xff;
+	if ( notdefwidth>=-107 && notdefwidth<=107 )
+	    *pt++ = notdefwidth+139;
+	else if ( notdefwidth>=108 && notdefwidth<=1131 ) {
+	    notdefwidth -= 108;
+	    *pt++ = (notdefwidth>>8)+247;
+	    *pt++ = notdefwidth&0xff;
+	} else if ( notdefwidth>=-1131 && notdefwidth<=-108 ) {
+	    notdefwidth = -notdefwidth;
+	    notdefwidth -= 108;
+	    *pt++ = (notdefwidth>>8)+251;
+	    *pt++ = notdefwidth&0xff;
 	} else {
 	    *pt++ = '\377';
-	    *pt++ = (w>>24)&0xff;
-	    *pt++ = (w>>16)&0xff;
-	    *pt++ = (w>>8)&0xff;
-	    *pt++ = w&0xff;
+	    *pt++ = (notdefwidth>>24)&0xff;
+	    *pt++ = (notdefwidth>>16)&0xff;
+	    *pt++ = (notdefwidth>>8)&0xff;
+	    *pt++ = notdefwidth&0xff;
 	}
 	*pt++ = '\015';	/* hsbw */
 	*pt++ = '\016';	/* endchar */
@@ -2319,6 +2327,10 @@ struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
     int i, cnt;
     char notdefentry[20];
     SplineChar *sc;
+    int fixed = SFOneWidth(sf), notdefwidth;
+
+    notdefwidth = fixed;
+    if ( notdefwidth==-1 ) notdefwidth = sf->ascent+sf->descent;
 
     cnt = 0;
     for ( i=1; i<sf->charcnt; ++i ) {
@@ -2334,32 +2346,34 @@ struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
 	sf->chars[i]->ttf_glyph = 0;
     i = cnt = 0;
-    if ( sf->chars[0]!=NULL && (sf->chars[0]->splines!=NULL || sf->chars[0]->widthset) &&
+/* only honour the width on .notdef in non-fixed pitch fonts (or ones where there is an actual outline in notdef) */
+    if ( sf->chars[0]!=NULL &&
+	    (sf->chars[0]->splines!=NULL || (sf->chars[0]->widthset && fixed==-1)) &&
 	    sf->chars[0]->refs==NULL && strcmp(sf->chars[0]->name,".notdef")==0 ) {
 	chrs->values[0] = SplineChar2PS2(sf->chars[0],&chrs->lens[0],nomwid,defwid,subrs,NULL);
 	sf->chars[0]->ttf_glyph = 0;
 	i = 1;
     } else {
-	int w = sf->ascent+sf->descent; char *pt = notdefentry;
-	if ( w==defwid )
+	char *pt = notdefentry;
+	if ( notdefwidth==defwid )
 	    /* Don't need to specify it */;
 	else {
-	    w -= nomwid;
-	    if ( w>=-107 && w<=107 )
-		*pt++ = w+139;
-	    else if ( w>=108 && w<=1131 ) {
-		w -= 108;
-		*pt++ = (w>>8)+247;
-		*pt++ = w&0xff;
-	    } else if ( w>=-1131 && w<=-108 ) {
-		w = -w;
-		w -= 108;
-		*pt++ = (w>>8)+251;
-		*pt++ = w&0xff;
+	    notdefwidth -= nomwid;
+	    if ( notdefwidth>=-107 && notdefwidth<=107 )
+		*pt++ = notdefwidth+139;
+	    else if ( notdefwidth>=108 && notdefwidth<=1131 ) {
+		notdefwidth -= 108;
+		*pt++ = (notdefwidth>>8)+247;
+		*pt++ = notdefwidth&0xff;
+	    } else if ( notdefwidth>=-1131 && notdefwidth<=-108 ) {
+		notdefwidth = -notdefwidth;
+		notdefwidth -= 108;
+		*pt++ = (notdefwidth>>8)+251;
+		*pt++ = notdefwidth&0xff;
 	    } else {
 		*pt++ = 28;
-		*pt++ = (w>>8)&0xff;
-		*pt++ = w&0xff;
+		*pt++ = (notdefwidth>>8)&0xff;
+		*pt++ = notdefwidth&0xff;
 	    }
 	}
 	*pt++ = '\016';	/* endchar */

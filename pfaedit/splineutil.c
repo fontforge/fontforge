@@ -1528,9 +1528,9 @@ static int _CubicSolve(Spline1D *sp,real ts[3]) {
 	if ( d>0 ) {
 	    temp = sqrt(d);
 	    t2 = (-yN-temp)/(2*sp->a);
-	    t2 = (t2<0) ? -pow(-t2,1./3.) : pow(t2,1./3.);
+	    t2 = (t2==0) ? 0 : (t2<0) ? -pow(-t2,1./3.) : pow(t2,1./3.);
 	    t3 = (-yN+temp)/(2*sp->a);
-	    t3 = (t3<0) ? -pow(-t3,1./3.) : pow(t3,1./3.);
+	    t3 = t3==0 ? 0 : (t3<0) ? -pow(-t3,1./3.) : pow(t3,1./3.);
 	    ts[0] = xN + t2 + t3;
 	} else if ( d<0 ) {
 	    if ( delta2>=0 ) {
@@ -1547,7 +1547,7 @@ static int _CubicSolve(Spline1D *sp,real ts[3]) {
 	    }
 	} else if ( /* d==0 && */ delta2!=0 ) {
 	    delta = yN/(2*sp->a);
-	    delta = delta>=0 ? pow(delta,1./3.) : -pow(-delta,1./3.);
+	    delta = delta==0 ? 0 : delta>0 ? pow(delta,1./3.) : -pow(-delta,1./3.);
 	    ts[i++] = xN + delta;	/* this root twice, but that's irrelevant to me */
 	    ts[i++] = xN - 2*delta;
 	} else if ( /* d==0 && */ delta2==0 ) {
