@@ -2893,6 +2893,10 @@ return;
 	gevent.u.crossing.time = event->xcrossing.time;
       break;
       case ConfigureNotify:
+	/* Eat up multiple resize notifications in case the window manager */
+	/*  does animated resizes */
+	while ( XCheckTypedWindowEvent(event->xconfigure.display,
+		event->xconfigure.window,ConfigureNotify,event));
 	gevent.type = et_resize;
 	gevent.u.resize.size.x = event->xconfigure.x;
 	gevent.u.resize.size.y = event->xconfigure.y;
