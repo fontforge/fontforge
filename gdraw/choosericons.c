@@ -911,6 +911,33 @@ static struct _GImage cid0_base = {
     1
 };
 
+static uint8 mac_data[] = {
+    0xff, 0xff, 
+    0xc0, 0x3, 
+    0xdf, 0xfb, 
+    0xd0, 0xb, 
+    0xd7, 0xeb, 
+    0xd5, 0xab, 
+    0xd7, 0xeb, 
+    0xd5, 0xab, 
+    0xd6, 0x6b, 
+    0xd7, 0xeb, 
+    0xd0, 0xb, 
+    0xdf, 0xfb, 
+    0xdf, 0xb, 
+    0xdf, 0xfb, 
+    0xc0, 0x3, 
+    0xff, 0xff, 
+};
+
+static struct _GImage mac_base = {
+    it_mono,
+    15420,16,16,2,
+    (uint8 *) mac_data,
+    NULL,
+    1
+};
+
 GImage _GIcon_ttf = { 0, &ttf0_base };
 GImage _GIcon_unknown = { 0, &unknown0_base };
 GImage _GIcon_texthtml = { 0, &texthtml0_base };
@@ -932,3 +959,4 @@ GImage _GIcon_image = { 0, &image0_base };
 GImage _GIcon_video = { 0, &video0_base };
 GImage _GIcon_audio = { 0, &audio0_base };
 GImage _GIcon_cid = { 0, &cid0_base };
+GImage _GIcon_mac = { 0, &mac_base };

@@ -28,7 +28,11 @@
 #include "gfile.h"
 #include "ustring.h"
 
-/* .tar, .gz, .Z, .tgz, .zip, .hqx, .bin, .sea  (README)*/
+/* .tar application/x-tar */
+/* .gz application/x-compressed */
+/* .Z application/x-compressed */
+/* .tgz application/x-compressed */
+/* .zip application/x-compressed */
 
 unichar_t unknown[] = { '*','/','*', '\0' };
 unichar_t textplain[] = { 't','e','x','t','/','p','l','a','i','n', '\0' };
@@ -53,6 +57,8 @@ unichar_t core[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','c'
 unichar_t fontttf[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','f','o','n','t','/','t','t','f', '\0' };
 unichar_t fontotf[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','f','o','n','t','/','o','t','f', '\0' };
 unichar_t fontcid[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','f','o','n','t','/','c','i','d', '\0' };
+unichar_t macbin[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','m','a','c','b','i','n','a','r','y', '\0' };
+unichar_t machqx[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','m','a','c','-','b','i','n','h','e','x','4','0', '\0' };
 
 unichar_t *GIOguessMimeType(const unichar_t *path,int isdir) {
     unichar_t *pt;
@@ -108,6 +114,10 @@ return( videoquick );
 return( audiowav );
     else if ( uc_strmatch(pt,".o")==0 || uc_strmatch(pt,".obj")==0 )
 return( object );
+    else if ( uc_strmatch(pt,".bin")==0 )
+return( macbin );
+    else if ( uc_strmatch(pt,".hqx")==0 )
+return( machqx );
 
 return( unknown );
 }

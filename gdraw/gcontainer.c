@@ -857,8 +857,8 @@ return( gw );
 /*  Palettes go invisible when the owner loses focus, and become visible when it gains focus */
 GWindow GWidgetCreatePalette(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs) {
     GWindow gw;
-    GPoint pt;
-    GRect newpos;
+    GPoint pt, base;
+    GRect newpos, ownerpos, screensize;
     struct gtopleveldata *gd, *od;
     GWindow root;
 
@@ -867,8 +867,17 @@ return( false );
 
     pt.x = pos->x; pt.y = pos->y;
     root = GDrawGetRoot(w->display);
+    GDrawGetSize(w,&ownerpos);
+    GDrawGetSize(root,&screensize);
     GDrawTranslateCoordinates(w,root,&pt);
-    if ( pt.x<0 ) pt.x=0;
+    base.x = base.y = 0;
+    GDrawTranslateCoordinates(w,root,&base);
+    if ( pt.x<0 ) {
+	if ( base.x+ownerpos.width+20+pos->width+20 > screensize.width )
+	    pt.x=0;
+	else
+	    pt.x = base.x+ownerpos.width+20;
+    }
     if ( pt.y<0 ) pt.y=0;
     if ( pt.x+pos->width>root->pos.width )
 	pt.x = root->pos.width-pos->width;
