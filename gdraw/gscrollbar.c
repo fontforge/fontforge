@@ -251,7 +251,7 @@ return( false );
     
     if ( event->type == et_mousedown && GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y)) {
 	GDrawCancelTimer(gsb->pressed); gsb->pressed = NULL;
-	if ( event->u.mouse.button==3 ) {
+	if ( event->u.mouse.button!=1 ) {
 	    gsb->thumbpressed = true;
 	    gsb->thumboff = 0;
 	    active_pos = event->u.mouse.y-g->inner.y;
