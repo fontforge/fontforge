@@ -1617,7 +1617,7 @@ return;
 	fwrite(paste,1,len,temp);
 	rewind(temp);
 	if ( type==3 ) {
-	    SCImportPSFile(sc,layer,temp,doclear);
+	    SCImportPSFile(sc,layer,temp,doclear,-1);
 	} else {
 #ifndef _NO_LIBPNG
 	    if ( type==1 )

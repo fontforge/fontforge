@@ -2554,10 +2554,9 @@ SplinePointList *SplinesFromEntities(Entity *ent,int *flags) {
 return( SplinesFromEntityChar(&ec,flags));
 }
 
-SplinePointList *SplinePointListInterpretPS(FILE *ps) {
+SplinePointList *SplinePointListInterpretPS(FILE *ps,int flags) {
     EntityChar ec;
     SplineChar sc;
-    int flags = -1;
 
     memset(&ec,'\0',sizeof(ec));
     memset(&sc,0,sizeof(sc)); sc.name = "<No particular character>";
