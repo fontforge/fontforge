@@ -295,6 +295,7 @@ static void BCExpandBitmap(BDFChar *bc, int x, int y) {
     uint8 *bitmap;
     int i,j,nj;
     uint8 *pt, *npt;
+    SplineChar *sc;
 
     if ( x<bc->xmin || x>bc->xmax || y<bc->ymin || y>bc->ymax ) {
 	xmin = x<bc->xmin?x:bc->xmin;
@@ -327,6 +328,10 @@ static void BCExpandBitmap(BDFChar *bc, int x, int y) {
 	bc->bitmap = bitmap;
 	bc->xmin = xmin; bc->xmax = xmax; bc->bytes_per_line = bpl;
 	bc->ymin = ymin; bc->ymax = ymax;
+
+	sc = bc->sc;
+	if ( sc->parent->onlybitmaps )
+	    sc->widthset = true;	/* Mark it as used */
     }
 }
 
