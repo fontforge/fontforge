@@ -927,9 +927,11 @@ int SCDefaultSLI(SplineFont *sf, SplineChar *default_script) {
 	    SFAddScriptLangIndex(sf,script,DEFAULT_LANG);
 	def_sli = -1;
 	if ( default_script!=NULL ) {
-	    for ( pst=default_script->possub; pst!=NULL; pst=pst->next ) if ( pst->type!=pst_lcaret ) {
-		def_sli = pst->script_lang_index;
+	    for ( pst=default_script->possub; pst!=NULL; pst=pst->next ) {
+		if ( pst->type!=pst_lcaret && pst->script_lang_index!=SLI_NESTED ) {
+		    def_sli = pst->script_lang_index;
 	    break;
+		}
 	    }
 	    if ( def_sli==-1 && default_script->kerns!=NULL )
 		def_sli = default_script->kerns->sli;
@@ -992,6 +994,8 @@ GTextInfo *SFLangList(SplineFont *sf,int addfinal,SplineChar *default_script) {
 	    ti[i].text = (unichar_t *) sli_names[k];
 	    ti[i].text_in_resource = true;
 	    ti[i].userdata = (void *) sli_ud[k];
+	    if ( sli_ud[k]==def_sli )
+		ti[i].selected = true;
 	    ++i;
 	}
     }
@@ -2741,6 +2745,8 @@ static int LigCheck(SplineChar *sc,enum possub_type type,
     unichar_t *pt, *start, ch;
     PST *pst;
     SplineFont *sf = sc->parent;
+    SplineChar *found;
+    char *temp;
 
     if ( components==NULL || *components=='\0' )
 return( true );
@@ -2761,15 +2767,15 @@ return( GWidgetAskR(_STR_Multiple,buts,0,1,_STR_AlreadyLigature,sf->chars[i]->na
 	pt = u_strchr(start+1,' ');
 	if ( pt==NULL ) pt = start+u_strlen(start);
 	ch = *pt; *pt = '\0';
-	if ( uc_strcmp(start,sc->name)==0 ) {
+	if ( uc_strcmp(start,sc->name)==0 && type == pst_ligature ) {
 	    GWidgetErrorR(_STR_Badligature,_STR_SelfReferential );
 	    *pt = ch;
 return( false );
 	}
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
-	    if ( uc_strcmp(start,sf->chars[i]->name)==0 )
-	break;
-	if ( i==sf->charcnt ) {
+	temp = cu_copy(start);
+	found = SFGetChar(sf,-1,temp);
+	free(temp);
+	if ( found==NULL ) {
 	    int ret = GWidgetAskR(_STR_Multiple,buts,0,1,_STR_MissingComponent,start);
 	    *pt = ch;
 return( ret==0 );
