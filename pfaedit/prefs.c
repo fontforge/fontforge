@@ -257,6 +257,46 @@ return( true );
 return( false );
 }
 
+static int CheckLangNoLibsDir(char *full,int sizefull,char *dir, const char *loc) {
+    int ret;
+
+    if ( loc==NULL || dir==NULL || strstr(dir,"/.libs")==NULL )
+return(false);
+
+    dir = copy(dir);
+    *strstr(dir,"/.libs") = '\0';
+
+    ret = CheckLangDir(full,sizefull,dir,loc);
+    free(dir);
+return( ret );
+}
+
+static void CheckLang(void) {
+    /*const char *loc = setlocale(LC_MESSAGES,NULL);*/ /* This always returns "C" for me, even when it shouldn't be */
+    const char *loc = getenv("LC_ALL");
+    char buffer[100], full[1024];
+
+    if ( loc==NULL ) loc = getenv("LC_MESSAGES");
+    if ( loc==NULL ) loc = getenv("LANG");
+
+    if ( loc==NULL )
+return;
+
+    strcpy(buffer,"pfaedit.");
+    strcat(buffer,loc);
+    strcat(buffer,".ui");
+    if ( !CheckLangDir(full,sizeof(full),GResourceProgramDir,loc) &&
+	    !CheckLangNoLibsDir(full,sizeof(full),GResourceProgramDir,loc) &&
+#ifdef SHAREDIR
+	    !CheckLangDir(full,sizeof(full),SHAREDIR,loc) &&
+#endif
+	    !CheckLangDir(full,sizeof(full),getPfaEditShareDir(),loc) &&
+	    !CheckLangDir(full,sizeof(full),"/usr/share/pfaedit",loc) )
+return;
+
+    GStringSetResourceFile(full);
+}
+
 static int encmatch(const char *enc) {
     static struct { char *name; int enc; } encs[] = {
 	{ "ISO-8859-1", e_iso8859_1 },
@@ -317,31 +357,6 @@ return( e_iso8859_1 );
 return( e_iso8859_1 );
 
 return( enc );
-}
-
-static void CheckLang(void) {
-    /*const char *loc = setlocale(LC_MESSAGES,NULL);*/ /* This always returns "C" for me, even when it shouldn't be */
-    const char *loc = getenv("LC_ALL");
-    char buffer[100], full[1024];
-
-    if ( loc==NULL ) loc = getenv("LC_MESSAGES");
-    if ( loc==NULL ) loc = getenv("LANG");
-
-    if ( loc==NULL )
-return;
-
-    strcpy(buffer,"pfaedit.");
-    strcat(buffer,loc);
-    strcat(buffer,".ui");
-    if ( !CheckLangDir(full,sizeof(full),GResourceProgramDir,loc) &&
-#ifdef SHAREDIR
-	    !CheckLangDir(full,sizeof(full),SHAREDIR,loc) &&
-#endif
-	    !CheckLangDir(full,sizeof(full),getPfaEditShareDir(),loc) &&
-	    !CheckLangDir(full,sizeof(full),"/usr/share/pfaedit",loc) )
-return;
-
-    GStringSetResourceFile(full);
 }
 
 static void GreekHack(void) {
