@@ -4245,7 +4245,7 @@ static void uc_annot_strncat(unichar_t *to, const char *from, int len) {
 void SCPreparePopup(GWindow gw,SplineChar *sc) {
     static unichar_t space[810];
     char cspace[100];
-    int upos;
+    int upos=-1;
     int enc = sc->parent->encoding_name;
     int done = false;
     int localenc = sc->enc;
@@ -4301,7 +4301,7 @@ void SCPreparePopup(GWindow gw,SplineChar *sc) {
 	    	UnicodeRange(upos));
 	uc_strcpy(space,cspace);
     }
-    if ( upos<0x110000 && _UnicodeNameAnnot!=NULL &&
+    if ( upos>=0 && upos<0x110000 && _UnicodeNameAnnot!=NULL &&
 	    _UnicodeNameAnnot[upos>>16][(upos>>8)&0xff][upos&0xff].annot!=NULL ) {
 	int left = sizeof(space)/sizeof(space[0]) - u_strlen(space)-1;
 	if ( left>4 ) {
