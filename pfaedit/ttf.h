@@ -500,6 +500,7 @@ extern void otf_orderlangs(SplineFont *sf);
 extern void otf_dumpgpos(struct alltabs *at, SplineFont *sf);
 extern void otf_dumpgsub(struct alltabs *at, SplineFont *sf);
 extern void otf_dumpgdef(struct alltabs *at, SplineFont *sf);
+extern int gdefclass(SplineChar *sc);
 
 extern int TTFFeatureIndex( uint32 tag, struct table_ordering *ord );
 
