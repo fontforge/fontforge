@@ -226,7 +226,7 @@ static int FDDrawChar(GWindow pixmap,FontData *fd,int enc,int x,int y,Color col)
 	    fd->base.bytes_per_line = bdfc->bytes_per_line;
 	    fd->base.width = bdfc->xmax-bdfc->xmin+1;
 	    fd->base.height = bdfc->ymax-bdfc->ymin+1;
-	    GDrawDrawImage(pixmap,&fd->gi,NULL,x, y-bdfc->ymax);
+	    GDrawDrawImage(pixmap,&fd->gi,NULL,x+bdfc->xmin, y-bdfc->ymax);
 	    fd->base.clut->trans_index = -1;
 	}
 	x += bdfc->width;
