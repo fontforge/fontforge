@@ -2927,6 +2927,12 @@ return;
 	int ent = sm->data[offset+class];
 	int newState = memushort(sm->data,sm->entryOffset+4*ent);
 	int flags = memushort(sm->data,sm->entryOffset+4*ent+2);
+	/* If we have the same entry as state 0, then presumably we are */
+	/*  ignoring the components read so far and starting over with a new */
+	/*  lig (similarly for state 1) */
+	if (( state!=0 && sm->data[sm->stateOffset+class] == ent ) ||
+		(state>1 && sm->data[sm->stateOffset+sm->nClasses+class]==ent ))
+    continue;
 	if ( flags&0x8000 )	/* Set component */
 	    sm->lig_comp_classes[sm->lcp++] = class;
 	if ( flags&0x3fff ) {
@@ -3006,6 +3012,12 @@ static void follow_morx_state(struct statemachine *sm,int state,int class) {
 
     if ( state<0 || state>=sm->smax || sm->states_in_use[state] || sm->lcp>=MAX_LIG_COMP )
 return;
+    ++ sm->cnt;
+    if ( sm->cnt>=10000 ) {
+	if ( sm->cnt==10000 )
+	    fprintf(stderr,"In an attempt to process the ligatures of this font, I've concluded\nthat the state machine in Apple's mort/morx table is\n(like the learned constable) too cunning to be understood.\nI shall give up on it. Your ligatures may be incomplete.\n" );
+return;
+    }
     sm->states_in_use[state] = true;
 
     if ( class==-1 ) { class_bottom = 0; class_top = sm->nClasses; }
@@ -3015,6 +3027,12 @@ return;
 	int newState = memushort(sm->data,sm->entryOffset+6*ent);
 	int flags = memushort(sm->data,sm->entryOffset+6*ent+2);
 	int ligindex = memushort(sm->data,sm->entryOffset+6*ent+4);
+	/* If we have the same entry as state 0, then presumably we are */
+	/*  ignoring the components read so far and starting over with a new */
+	/*  lig (similarly for state 1) */
+	if (( state!=0 && memushort(sm->data, sm->stateOffset + 2*class) == ent ) ||
+		(state>1 && memushort(sm->data, sm->stateOffset + 2*(sm->nClasses+class))==ent ))
+    continue;
 	if ( flags&0x8000 )	/* Set component */
 	    sm->lig_comp_classes[sm->lcp++] = class;
 	if ( flags&0x2000 ) {
