@@ -744,6 +744,12 @@ static void ProcessSubLookups(FILE *ttf,struct ttfinfo *info,int gpos,
     int i;
 
     i = sl->lookup_tag;
+    if ( i>=info->lookup_cnt ) {
+	fprintf( stderr, "Attempt to reference lookup %d (within a contextual lookup), but there are\n only %d lookups in %s\n",
+		i, info->lookup_cnt, gpos ? "'GPOS'" : "'GSUB'" );
+	sl->lookup_tag = CHR('!','!','!','!');
+return;
+    }
     if ( alllooks[i].subtag==0 ) {
 	alllooks[i].make_subtag = true;
 	ProcessGPOSGSUBlookup(ttf,info,gpos,&alllooks[i],git_normal,alllooks);
@@ -772,7 +778,7 @@ static void g___ContextSubTable1(FILE *ttf, int stoffset,
     } *rules;
     FPST *fpst;
     struct fpst_rule *rule;
-    int warned = false;
+    int warned = false, warned2 = false;
 
     coverage = getushort(ttf);
     rcnt = getushort(ttf);		/* glyph count in coverage table */
@@ -808,6 +814,12 @@ static void g___ContextSubTable1(FILE *ttf, int stoffset,
 	    rules[i].subrules[j].sl = galloc(rules[i].subrules[j].scnt*sizeof(struct seqlookup));
 	    for ( k=0; k<rules[i].subrules[j].scnt; ++k ) {
 		rules[i].subrules[j].sl[k].seq = getushort(ttf);
+		if ( rules[i].subrules[j].sl[k].seq >= rules[i].subrules[j].gcnt+1 )
+		    if ( !warned2 ) {
+			fprintf( stderr, "Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d max=%d\n",
+				rules[i].subrules[j].sl[k].seq, rules[i].subrules[j].gcnt );
+			warned2 = true;
+		    }
 		rules[i].subrules[j].sl[k].lookup_tag = getushort(ttf);
 	    }
 	}
@@ -817,9 +829,10 @@ static void g___ContextSubTable1(FILE *ttf, int stoffset,
 	for ( i=0; i<rcnt; ++i ) {
 	    for ( j=0; j<rules[i].scnt; ++j ) {
 		for ( k=0; k<rules[i].subrules[j].scnt; ++k )
-		    ProcessGPOSGSUBlookup(ttf,info,gpos,
-			    &alllooks[rules[i].subrules[j].sl[k].lookup_tag],
-			    justinuse,alllooks);
+		    if ( rules[i].subrules[j].sl[k].lookup_tag<info->lookup_cnt )
+			ProcessGPOSGSUBlookup(ttf,info,gpos,
+				&alllooks[rules[i].subrules[j].sl[k].lookup_tag],
+				justinuse,alllooks);
 	    }
 	}
     } else {
@@ -878,7 +891,7 @@ static void g___ChainingSubTable1(FILE *ttf, int stoffset,
     } *rules;
     FPST *fpst;
     struct fpst_rule *rule;
-    int warned = false;
+    int warned = false, warned2 = false;
 
     coverage = getushort(ttf);
     rcnt = getushort(ttf);		/* glyph count in coverage table */
@@ -931,6 +944,12 @@ static void g___ChainingSubTable1(FILE *ttf, int stoffset,
 	    rules[i].subrules[j].sl = galloc(rules[i].subrules[j].scnt*sizeof(struct seqlookup));
 	    for ( k=0; k<rules[i].subrules[j].scnt; ++k ) {
 		rules[i].subrules[j].sl[k].seq = getushort(ttf);
+		if ( rules[i].subrules[j].sl[k].seq >= rules[i].subrules[j].gcnt+1 )
+		    if ( !warned2 ) {
+			fprintf( stderr, "Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d max=%d\n",
+				rules[i].subrules[j].sl[k].seq, rules[i].subrules[j].gcnt );
+			warned2 = true;
+		    }
 		rules[i].subrules[j].sl[k].lookup_tag = getushort(ttf);
 	    }
 	}
@@ -940,9 +959,10 @@ static void g___ChainingSubTable1(FILE *ttf, int stoffset,
 	for ( i=0; i<rcnt; ++i ) {
 	    for ( j=0; j<rules[i].scnt; ++j ) {
 		for ( k=0; k<rules[i].subrules[j].scnt; ++k )
-		    ProcessGPOSGSUBlookup(ttf,info,gpos,
-			    &alllooks[rules[i].subrules[j].sl[k].lookup_tag],
-			    justinuse,alllooks);
+		    if ( rules[i].subrules[j].sl[k].lookup_tag<info->lookup_cnt )
+			ProcessGPOSGSUBlookup(ttf,info,gpos,
+				&alllooks[rules[i].subrules[j].sl[k].lookup_tag],
+				justinuse,alllooks);
 	    }
 	}
     } else {
@@ -1006,6 +1026,7 @@ static void g___ContextSubTable2(FILE *ttf, int stoffset,
     FPST *fpst;
     struct fpst_rule *rule;
     uint16 *class;
+    int warned2 = false;
 
     coverage = getushort(ttf);
     classoff = getushort(ttf);
@@ -1032,6 +1053,12 @@ static void g___ContextSubTable2(FILE *ttf, int stoffset,
 	    rules[i].subrules[j].sl = galloc(rules[i].subrules[j].scnt*sizeof(struct seqlookup));
 	    for ( k=0; k<rules[i].subrules[j].scnt; ++k ) {
 		rules[i].subrules[j].sl[k].seq = getushort(ttf);
+		if ( rules[i].subrules[j].sl[k].seq >= rules[i].subrules[j].ccnt )
+		    if ( !warned2 ) {
+			fprintf( stderr, "Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d max=%d\n",
+				rules[i].subrules[j].sl[k].seq, rules[i].subrules[j].ccnt-1);
+			warned2 = true;
+		    }
 		rules[i].subrules[j].sl[k].lookup_tag = getushort(ttf);
 	    }
 	}
@@ -1041,9 +1068,10 @@ static void g___ContextSubTable2(FILE *ttf, int stoffset,
 	for ( i=0; i<rcnt; ++i ) {
 	    for ( j=0; j<rules[i].scnt; ++j ) {
 		for ( k=0; k<rules[i].subrules[j].scnt; ++k )
-		    ProcessGPOSGSUBlookup(ttf,info,gpos,
-			    &alllooks[rules[i].subrules[j].sl[k].lookup_tag],
-			    justinuse,alllooks);
+		    if ( rules[i].subrules[j].sl[k].lookup_tag<info->lookup_cnt )
+			ProcessGPOSGSUBlookup(ttf,info,gpos,
+				&alllooks[rules[i].subrules[j].sl[k].lookup_tag],
+				justinuse,alllooks);
 	    }
 	}
     } else {
@@ -1107,6 +1135,7 @@ static void g___ChainingSubTable2(FILE *ttf, int stoffset,
     FPST *fpst;
     struct fpst_rule *rule;
     uint16 *class;
+    int warned2 = false;
 
     coverage = getushort(ttf);
     bclassoff = getushort(ttf);
@@ -1145,6 +1174,12 @@ static void g___ChainingSubTable2(FILE *ttf, int stoffset,
 	    rules[i].subrules[j].sl = galloc(rules[i].subrules[j].scnt*sizeof(struct seqlookup));
 	    for ( k=0; k<rules[i].subrules[j].scnt; ++k ) {
 		rules[i].subrules[j].sl[k].seq = getushort(ttf);
+		if ( rules[i].subrules[j].sl[k].seq >= rules[i].subrules[j].ccnt )
+		    if ( !warned2 ) {
+			fprintf( stderr, "Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d max=%d\n",
+				rules[i].subrules[j].sl[k].seq, rules[i].subrules[j].ccnt-1);
+			warned2 = true;
+		    }
 		rules[i].subrules[j].sl[k].lookup_tag = getushort(ttf);
 	    }
 	}
@@ -1154,9 +1189,10 @@ static void g___ChainingSubTable2(FILE *ttf, int stoffset,
 	for ( i=0; i<rcnt; ++i ) {
 	    for ( j=0; j<rules[i].scnt; ++j ) {
 		for ( k=0; k<rules[i].subrules[j].scnt; ++k )
-		    ProcessGPOSGSUBlookup(ttf,info,gpos,
-			    &alllooks[rules[i].subrules[j].sl[k].lookup_tag],
-			    justinuse,alllooks);
+		    if ( rules[i].subrules[j].sl[k].lookup_tag<info->lookup_cnt )
+			ProcessGPOSGSUBlookup(ttf,info,gpos,
+				&alllooks[rules[i].subrules[j].sl[k].lookup_tag],
+				justinuse,alllooks);
 	    }
 	}
     } else {
@@ -1224,6 +1260,7 @@ static void g___ContextSubTable3(FILE *ttf, int stoffset,
     uint16 *glyphs;
     FPST *fpst;
     struct fpst_rule *rule;
+    int warned2 = false;
 
     gcnt = getushort(ttf);
     scnt = getushort(ttf);
@@ -1233,14 +1270,20 @@ static void g___ContextSubTable3(FILE *ttf, int stoffset,
     sl = galloc(scnt*sizeof(struct seqlookup));
     for ( k=0; k<scnt; ++k ) {
 	sl[k].seq = getushort(ttf);
+	if ( sl[k].seq >= gcnt && !warned2 ) {
+	    fprintf( stderr, "Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d, max=%d\n",
+		    sl[k].seq, gcnt-1 );
+	    warned2 = true;
+	}
 	sl[k].lookup_tag = getushort(ttf);
     }
 
     if ( justinuse==git_justinuse ) {
 	for ( k=0; k<scnt; ++k )
-	    ProcessGPOSGSUBlookup(ttf,info,gpos,
-		    &alllooks[sl[k].lookup_tag],
-		    justinuse,alllooks);
+	    if ( sl[k].lookup_tag<info->lookup_cnt )
+		ProcessGPOSGSUBlookup(ttf,info,gpos,
+			&alllooks[sl[k].lookup_tag],
+			justinuse,alllooks);
     } else {
 	fpst = chunkalloc(sizeof(FPST));
 	fpst->type = gpos ? pst_contextpos : pst_contextsub;
@@ -1278,6 +1321,7 @@ static void g___ChainingSubTable3(FILE *ttf, int stoffset,
     uint16 *glyphs;
     FPST *fpst;
     struct fpst_rule *rule;
+    int warned2 = false;
 
     bcnt = getushort(ttf);
     bcoverage = galloc(bcnt*sizeof(uint16));
@@ -1295,14 +1339,20 @@ static void g___ChainingSubTable3(FILE *ttf, int stoffset,
     sl = galloc(scnt*sizeof(struct seqlookup));
     for ( k=0; k<scnt; ++k ) {
 	sl[k].seq = getushort(ttf);
+	if ( sl[k].seq >= gcnt && !warned2 ) {
+	    fprintf( stderr, "Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d, max=%d\n",
+		    sl[k].seq, gcnt-1 );
+	    warned2 = true;
+	}
 	sl[k].lookup_tag = getushort(ttf);
     }
 
     if ( justinuse==git_justinuse ) {
 	for ( k=0; k<scnt; ++k )
-	    ProcessGPOSGSUBlookup(ttf,info,gpos,
-		    &alllooks[sl[k].lookup_tag],
-		    justinuse,alllooks);
+	    if ( sl[k].lookup_tag<info->lookup_cnt )
+		ProcessGPOSGSUBlookup(ttf,info,gpos,
+			&alllooks[sl[k].lookup_tag],
+			justinuse,alllooks);
     } else {
 	fpst = chunkalloc(sizeof(FPST));
 	fpst->type = gpos ? pst_chainpos : pst_chainsub;
@@ -2334,7 +2384,10 @@ static void ProcessGPOSGSUBlookup(FILE *ttf,struct ttfinfo *info,int gpos,
 
     if ( lookup->offset==0 )
 return;
-    fseek(ttf,lookup->offset,SEEK_SET);
+    if ( fseek(ttf,lookup->offset,SEEK_SET)==-1 ) {
+	fprintf( stderr, "Bad seek when processing lookup\n" );
+return;
+    }
     lu_type = getushort(ttf);
     lookup->flags = getushort(ttf);
     cnt = getushort(ttf);
@@ -2391,7 +2444,7 @@ return;
 
     fseek(ttf,lookup_start,SEEK_SET);
 
-    lu_cnt = getushort(ttf);
+    info->lookup_cnt = lu_cnt = getushort(ttf);
     for ( i=0; i<lu_cnt; ++i ) {
 	offset = getushort(ttf);
 	for ( k=0; lookups[k].lookup!=(uint16) -1; ++k ) {

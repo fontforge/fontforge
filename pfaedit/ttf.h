@@ -182,6 +182,7 @@ struct ttfinfo {
     struct gentagtype gentags;
     char *chosenname;
     int macstyle;
+    int lookup_cnt;		/* Max lookup in current GPOS/GSUB table */
 };
 
 #define MAX_TAB	32
