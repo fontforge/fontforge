@@ -40,7 +40,7 @@ static unichar_t nullstr[] = { 0 }, nstr[] = { 'n', 0 },
 	newlinestr[] = { '\n', 0 }, tabstr[] = { '\t', 0 };
 
 static void GListFieldSelected(GGadget *g, int i);
-static void GTextField_Show(GTextField *gt, int pos);
+static int GTextField_Show(GTextField *gt, int pos);
 
 static void GTextFieldChanged(GTextField *gt,int src) {
     GEvent e;
@@ -321,9 +321,10 @@ return( sel );
 return( i );
 }
 
-static void GTextField_Show(GTextField *gt, int pos) {
+static int GTextField_Show(GTextField *gt, int pos) {
     int i, ll, m, xoff, loff;
     unichar_t *bitext = gt->dobitext || gt->password?gt->bidata.text:gt->text;
+    int refresh=false;
 
     if ( pos < 0 ) pos = 0;
     if ( pos > u_strlen(gt->text)) pos = u_strlen(gt->text);
@@ -361,12 +362,15 @@ static void GTextField_Show(GTextField *gt, int pos) {
 	gt->xoff_left = xoff;
 	if ( gt->hsb!=NULL )
 	    GScrollBarSetPos(&gt->hsb->g,xoff);
+	refresh = true;
     }
     if ( loff!=gt->loff_top ) {
 	gt->loff_top = loff;
 	if ( gt->vsb!=NULL )
 	    GScrollBarSetPos(&gt->vsb->g,loff);
+	refresh = true;
     }
+return( refresh );
 }
 
 static void *genunicodedata(void *_gt,int32 *len) {
@@ -688,11 +692,10 @@ return( true );
 	    } else {
 		gt->sel_end = gt->sel_base = gt->sel_start;
 	    }
-	    GTextField_Show(gt,gt->sel_start);
-	    if ( gt->sel_start!=gt->sel_end || wasselected ) {
+	    if ( GTextField_Show(gt,gt->sel_start) ||
+		    gt->sel_start!=gt->sel_end || wasselected )
 		_ggadget_redraw(&gt->g);
 return( false );
-	    }
 	  break;
 	  case GK_Right: case GK_KP_Right:
 	    if ( gt->sel_start==gt->sel_end ) {
@@ -708,11 +711,10 @@ return( false );
 	    } else {
 		gt->sel_start = gt->sel_base = gt->sel_end;
 	    }
-	    GTextField_Show(gt,gt->sel_end);
-	    if ( gt->sel_start!=gt->sel_end || wasselected ) {
+	    if ( GTextField_Show(gt,gt->sel_end) ||
+		    gt->sel_start!=gt->sel_end || wasselected )
 		_ggadget_redraw(&gt->g);
 return( false );
-	    }
 	  break;
 	  case GK_Up: case GK_KP_Up:
 	    if ( !gt->multi_line )
@@ -740,11 +742,10 @@ return( false );
 		    gt->sel_start = gt->sel_end = gt->sel_base = pos;
 		}
 	    }
-	    GTextField_Show(gt,gt->sel_start);
-	    if ( gt->sel_start!=gt->sel_end || wasselected ) {
+	    if ( GTextField_Show(gt,gt->sel_start) ||
+		    gt->sel_start!=gt->sel_end || wasselected )
 		_ggadget_redraw(&gt->g);
 return( false );
-	    }
 	  break;
 	  case GK_Down: case GK_KP_Down:
 	    if ( !gt->multi_line )
@@ -772,11 +773,10 @@ return( false );
 		    gt->sel_start = gt->sel_end = gt->sel_base = pos;
 		}
 	    }
-	    GTextField_Show(gt,gt->sel_start);
-	    if ( gt->sel_start!=gt->sel_end || wasselected ) {
+	    if ( GTextField_Show(gt,gt->sel_start) ||
+		    gt->sel_start!=gt->sel_end || wasselected )
 		_ggadget_redraw(&gt->g);
 return( false );
-	    }
 	  break;
 	  case GK_Home: case GK_Begin: case GK_KP_Home: case GK_KP_Begin:
 	    if ( !(event->u.chr.state&ksm_shift) ) {
@@ -784,11 +784,10 @@ return( false );
 	    } else {
 		gt->sel_start = 0; gt->sel_end = gt->sel_base;
 	    }
-	    GTextField_Show(gt,gt->sel_start);
-	    if ( gt->sel_start!=gt->sel_end || wasselected ) {
+	    if ( GTextField_Show(gt,gt->sel_start) ||
+		    gt->sel_start!=gt->sel_end || wasselected )
 		_ggadget_redraw(&gt->g);
 return( false );
-	    }
 	  break;
 	  /* Move to eol. (if already at eol, move to next eol) */
 	  case 'E': case 'e':
@@ -804,11 +803,10 @@ return( false );
 	    } else {
 		gt->sel_start = gt->sel_base; gt->sel_end = upt-gt->text;
 	    }
-	    GTextField_Show(gt,gt->sel_end);
-	    if ( gt->sel_start!=gt->sel_end || wasselected ) {
+	    if ( GTextField_Show(gt,gt->sel_start) ||
+		    gt->sel_start!=gt->sel_end || wasselected )
 		_ggadget_redraw(&gt->g);
 return( false );
-	    }
 	  break;
 	  case GK_End: case GK_KP_End:
 	    if ( !(event->u.chr.state&ksm_shift) ) {
@@ -816,11 +814,10 @@ return( false );
 	    } else {
 		gt->sel_start = gt->sel_base; gt->sel_end = u_strlen(gt->text);
 	    }
-	    GTextField_Show(gt,gt->sel_end);
-	    if ( gt->sel_start!=gt->sel_end || wasselected ) {
+	    if ( GTextField_Show(gt,gt->sel_start) ||
+		    gt->sel_start!=gt->sel_end || wasselected )
 		_ggadget_redraw(&gt->g);
 return( false );
-	    }
 	  break;
 	  case 'A': case 'a':
 	    if ( event->u.chr.state&ksm_control ) {	/* Select All */
