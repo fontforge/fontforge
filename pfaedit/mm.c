@@ -28,7 +28,7 @@
 #include <ustring.h>
 #include <math.h>
 
-static char *MMAxisAbrev(char *axis_name) {
+char *MMAxisAbrev(char *axis_name) {
     if ( strcmp(axis_name,"Weight")==0 )
 return( "wt" );
     if ( strcmp(axis_name,"Width")==0 )

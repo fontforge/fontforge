@@ -200,6 +200,12 @@ static int WriteAfmFile(char *filename,SplineFont *sf, int formattype) {
     FILE *afm;
     int ret;
     unichar_t *temp;
+    int subtype = formattype;
+
+    if ( (formattype==ff_mma || formattype==ff_mmb) && sf->mm!=NULL ) {
+	sf = sf->mm->normal;
+	subtype = ff_pfb;
+    }
 
     strcpy(buf,filename);
     pt = strrchr(buf,'.');
@@ -215,9 +221,54 @@ static int WriteAfmFile(char *filename,SplineFont *sf, int formattype) {
     free(buf);
     if ( afm==NULL )
 return( false );
-    ret = AfmSplineFont(afm,sf,formattype);
+    ret = AfmSplineFont(afm,sf,subtype);
     if ( fclose(afm)==-1 )
-return( 0 );
+return( false );
+    if ( !ret )
+return( false );
+
+    if ( (formattype==ff_mma || formattype==ff_mmb) && sf->mm!=NULL ) {
+	MMSet *mm = sf->mm;
+	int i;
+	for ( i=0; i<mm->instance_count; ++i ) {
+	    sf = mm->instances[i];
+	    buf = galloc(strlen(filename)+strlen(sf->fontname)+4+1);
+	    strcpy(buf,filename);
+	    pt = strrchr(buf,'/');
+	    if ( pt==NULL ) pt = buf;
+	    else ++pt;
+	    strcpy(pt,sf->fontname);
+	    strcat(pt,".afm");
+	    GProgressChangeLine2(temp=uc_copy(buf)); free(temp);
+	    afm = fopen(buf,"w");
+	    free(buf);
+	    if ( afm==NULL )
+return( false );
+	    ret = AfmSplineFont(afm,sf,subtype);
+	    if ( fclose(afm)==-1 )
+return( false );
+	    if ( !ret )
+return( false );
+	}
+	buf = galloc(strlen(filename)+8);
+
+	strcpy(buf,filename);
+	pt = strrchr(buf,'.');
+	if ( pt!=NULL && (pt2=strrchr(buf,'/'))!=NULL && pt<pt2 )
+	    pt = NULL;
+	if ( pt==NULL )
+	    strcat(buf,".amfm");
+	else
+	    strcpy(pt,".amfm");
+	GProgressChangeLine2(temp=uc_copy(buf)); free(temp);
+	afm = fopen(buf,"w");
+	free(buf);
+	if ( afm==NULL )
+return( false );
+	ret = AmfmSplineFont(afm,mm,formattype);
+	if ( fclose(afm)==-1 )
+return( false );
+    }
 return( ret );
 }
 

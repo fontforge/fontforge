@@ -1235,6 +1235,7 @@ extern SplineChar *SCDuplicate(SplineChar *sc);
 extern int SCIsNotdef(SplineChar *sc,int isfixed);
 extern int IsntBDFChar(BDFChar *bdfc);
 extern int CIDWorthOutputting(SplineFont *cidmaster, int enc); /* Returns -1 on failure, font number on success */
+extern int AmfmSplineFont(FILE *afm, MMSet *mm,int formattype);
 extern int AfmSplineFont(FILE *afm, SplineFont *sf,int formattype);
 extern int PfmSplineFont(FILE *pfm, SplineFont *sf,int type0);
 extern int TfmSplineFont(FILE *afm, SplineFont *sf,int formattype);
@@ -1460,6 +1461,7 @@ extern int32 EncFromSF(int32 uni, SplineFont *sf);
 enum psstrokeflags { sf_toobigwarn=1, sf_removeoverlap=2, sf_handle_eraser=4 };
 extern enum psstrokeflags PsStrokeFlagsDlg(void);
 
+extern char *MMAxisAbrev(char *axis_name);
 extern char *MMMakeMasterFontname(MMSet *mm,int ipos,char **fullname);
 extern char *MMGuessWeight(MMSet *mm,int ipos,char *def);
 extern char *MMExtractNth(char *pt,int ipos);
