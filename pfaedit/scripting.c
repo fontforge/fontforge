@@ -1231,7 +1231,7 @@ return;
 static void _SetFontNames(Context *c,SplineFont *sf) {
     int i;
 
-    if ( c->a.argc==1 || c->a.argc>6 )
+    if ( c->a.argc==1 || c->a.argc>7 )
 	error( c, "Wrong number of arguments");
     for ( i=1; i<c->a.argc; ++i )
 	if ( c->a.vals[i].type!=v_str )
@@ -1255,6 +1255,10 @@ static void _SetFontNames(Context *c,SplineFont *sf) {
     if ( c->a.argc>5 && *c->a.vals[5].u.sval!='\0' ) {
 	free(sf->copyright);
 	sf->copyright = copy(c->a.vals[5].u.sval);
+    }
+    if ( c->a.argc>6 && *c->a.vals[6].u.sval!='\0' ) {
+	free(sf->version);
+	sf->version = copy(c->a.vals[6].u.sval);
     }
 }
 
@@ -2627,7 +2631,8 @@ static void handlename(Context *c,Val *val) {
 		val->u.sval = copy(sf==NULL?"":sf->fontname);
 	    } else if ( strcmp(name,"$fontname")==0 || strcmp(name,"$familyname")==0 ||
 		    strcmp(name,"$fullname")==0 || strcmp(name,"$weight")==0 ||
-		    strcmp(name,"$copyright")==0 || strcmp(name,"$filename")==0 ) {
+		    strcmp(name,"$copyright")==0 || strcmp(name,"$filename")==0 ||
+		    strcmp(name,"$fontversion")==0 ) {
 		if ( c->curfv==NULL ) error(c,"No current font");
 		val->type = v_str;
 		val->u.sval = copy(strcmp(name,"$fontname")==0?c->curfv->sf->fontname:
@@ -2635,7 +2640,8 @@ static void handlename(Context *c,Val *val) {
 			name[2]=='u'?c->curfv->sf->fullname:
 			name[2]=='e'?c->curfv->sf->weight:
 			name[2]=='i'?c->curfv->sf->origname:
-				     c->curfv->sf->copyright);
+			name[2]=='p'?c->curfv->sf->copyright:
+				    c->curfv->sf->version);
 	    } else if ( strcmp(name,"$cidfontname")==0 || strcmp(name,"cidfamilyname")==0 ||
 		    strcmp(name,"$cidfullname")==0 || strcmp(name,"$cidweight")==0 ||
 		    strcmp(name,"$cidcopyright")==0 ) {
