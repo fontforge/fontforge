@@ -600,26 +600,14 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,real *sizes)
     if ( dottf ) {
 	putshort(res,i+1-1);		/* Number of faces */
 	putshort(res,0);		/* it's scaleable */
-#if USE_STYLECODE
 	putshort(res,stylecode);
-#else
-	putshort(res,0);		/* plain style, No matter what it really is, pretend it's plain */
-	    /* This is because the menu system gets confused if there isn't */
-	    /* a plain font in a given fond. Can't claim to be italic until */
-	    /* we've got the entire family gathered around, but my generate */
-	    /* fonts only works on one font at a time. */
-#endif
 	putshort(res,id);		/* Give it the same ID as the fond */
     } else
 	putshort(res,i-1);		/* Number of faces */
     if ( sizes!=NULL ) {
 	for ( i=0; sizes[i]!=0; ++i ) {
 	    putshort(res,sizes[i]);
-#if USE_STYLECODE
 	    putshort(res,stylecode);
-#else
-	    putshort(res,0);		/* plain style, No matter what it really is, pretend it's plain */
-#endif
 	    putshort(res,id+sizes[i]);	/* make up a unique ID */
 	}
     }
@@ -639,11 +627,7 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,real *sizes)
 
     widoffloc = ftell(res);
     putshort(res,1-1);			/* One style in the width table too */
-#if USE_STYLECODE
     putshort(res,stylecode);
-#else
-    putshort(res,0);			/* plain style, No matter what it really is, pretend it's plain */
-#endif
     for ( k=0; k<=256; ++k ) {
 	if ( k>=sf->charcnt || k==256 || sf->chars[k]==NULL )
 	    putshort(res,1<<12);	/* 1 em is default size */
