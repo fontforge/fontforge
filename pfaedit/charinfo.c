@@ -73,7 +73,7 @@ static GTextInfo std_colors[] = {
     { NULL, NULL }
 };
 
-static GTextInfo scripts[] = {
+GTextInfo scripts[] = {
     { (unichar_t *) _STR_Arab, NULL, 0, 0, (void *) CHR('a','r','a','b'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_Armn, NULL, 0, 0, (void *) CHR('a','r','m','n'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_Beng, NULL, 0, 0, (void *) CHR('b','e','n','g'), NULL, false, false, false, false, false, false, false, true },
@@ -116,7 +116,7 @@ static GTextInfo scripts[] = {
     { NULL }
 };
 
-static GTextInfo languages[] = {
+GTextInfo languages[] = {
     { (unichar_t *) _STR_OTFAbaza, NULL, 0, 0, (void *) CHR('A','B','A',' '), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_OTFAbkhazian, NULL, 0, 0, (void *) CHR('A','B','K',' '), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_OTFAdyghe, NULL, 0, 0, (void *) CHR('A','D','Y',' '), NULL, false, false, false, false, false, false, false, true },
@@ -635,7 +635,7 @@ static GTextInfo multiplesubs_tags[] = {
     { NULL }
 };
 
-static GTextInfo *pst_tags[] = {
+GTextInfo *pst_tags[] = {
     simplepos_tags, simplesubs_tags, alternatesubs_tags, multiplesubs_tags,
     ligature_tags
 };

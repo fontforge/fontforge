@@ -120,6 +120,8 @@ static char *str_EncodedView="Encoded View";
 static char mnemonic_EncodedView = 'E';
 static char *str_CompactedView="Compacted View";
 static char mnemonic_CompactedView = 'C';
+static char *str_ShowAtt = "Show ATT";
+static char mnemonic_ShowAtt = 'S';
 static char *str_Combinations="Combinations";
 static char mnemonic_Combinations = 'b';
 static char *str_KernPairs="Kern Pairs";
@@ -2551,6 +2553,8 @@ static char *str_Original = "Original";
 static char *str_GridUnit = "Grid";
 static char *str_EmUnit = "Em Units"
 static char *str_ExitDebugger = "Exit Debugger"
-
+    /* showatt */
+static char *str_NoAdvancedTypography = "No Advanced Typography";
+static char *str_AppleAdvancedTypography = "Apple Advanced Typography";
 static int num_buttonsize = 55;
 static int num_ScaleFactor = 100;
