@@ -79,7 +79,7 @@ real GetCalmRealR(GWindow gw,int cid,int namer,int *err) {
 
     txt = _GGadgetGetTitle(GWidgetGetControl(gw,cid));
     val = u_strtod(txt,&end);
-    if ( *txt=='-' && end==txt )
+    if ( *txt=='-' && end==txt && txt[1]=='\0' )
 return( 0 );
     if ( *end!='\0' ) {
 	ProtestR(namer);

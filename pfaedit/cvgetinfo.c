@@ -995,9 +995,9 @@ static int PI_BaseChanged(GGadget *g, GEvent *e) {
 	SplinePoint *cursp = ci->cursp;
 
 	if ( GGadgetGetCid(g)==CID_BaseX )
-	    dx = GetRealR(ci->gw,CID_BaseX,_STR_BaseX,&err)-cursp->me.x;
+	    dx = GetCalmRealR(ci->gw,CID_BaseX,_STR_BaseX,&err)-cursp->me.x;
 	else
-	    dy = GetRealR(ci->gw,CID_BaseY,_STR_BaseY,&err)-cursp->me.y;
+	    dy = GetCalmRealR(ci->gw,CID_BaseY,_STR_BaseY,&err)-cursp->me.y;
 	if ( (dx==0 && dy==0) || err )
 return( true );
 	cursp->me.x += dx;
