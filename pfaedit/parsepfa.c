@@ -55,6 +55,7 @@ struct fontparse {
     unsigned int iscff: 1;
     unsigned int useshexstrings: 1;
     unsigned int doneencoding: 1;
+    unsigned int ignore: 1;
     int instring;
     int fdindex;
     char **pending_parse;
@@ -1319,7 +1320,9 @@ return;
 	    char *ept;
 	    for ( line += 4; *line==' '; ++line );
 	    i = strtol(line,&ept,10);
-	    if ( i<subrs->cnt ) {
+	    if ( fp->ignore )
+		/* Do Nothing */;
+	    else if ( i<subrs->cnt ) {
 		findstring(fp,subrs,i,NULL,ept);
 	    } else if ( !fp->alreadycomplained ) {
 		fprintf( stderr, "Index too big (must be <%d) |%s", subrs->cnt, rmbinary(line));
@@ -1327,6 +1330,7 @@ return;
 	    }
 	} else if ( strncmp(line, "readonly put", 12)==0 || strncmp(line, "ND", 2)==0 || strncmp(line, "|-", 2)==0 ) {
 	    fp->insubs = false;
+	    fp->ignore = false;
 	} else if ( *line=='\n' || *line=='\0' ) {
 	    /* Ignore blank lines */;
 	} else if ( !fp->alreadycomplained ) {
@@ -1337,12 +1341,14 @@ return;
 	struct pschars *chars = fp->fd->chars;
 	while ( isspace(*line)) ++line;
 	if ( strncmp(line,"end",3)==0 )
-	    fp->inchars = false;
+	    fp->ignore = fp->inchars = false;
 	else if ( *line!='\n' || *line=='\0' )
 	    /* Ignore it */;
 	else if ( *line!='/' || !(isalpha(line[1]) || line[1]=='.')) {
 	    fprintf( stderr, "No name for CharStrings dictionary |%s", rmbinary(line) );
 	    fp->alreadycomplained = true;
+	} else if ( fp->ignore ) {
+	    /* Do Nothing */;
 	} else if ( chars->next>=chars->cnt )
 	    fprintf( stderr, "Too many entries in CharStrings dictionary |%s", rmbinary(line) );
 	else {
@@ -1485,18 +1491,25 @@ return;
 	} else
 	    AddValue(fp,subdict,line,endtok);
     } else if ( fp->inprivate ) {
-	if ( strstr(line,"/CharStrings")!=NULL ) {
-	    if ( strstr(line,"dict")==NULL )		/* In my type0 fonts, the string "/CharStrings" pops up many times, only first time is meaningful */
-return;
-	    if ( fp->fd->chars->next==0 )
+	if ( strstr(line,"/CharStrings")!=NULL && strstr(line,"dict")!=NULL ) {
+	    if ( fp->fd->chars->next==0 ) {
 		InitChars(fp->fd->chars,line);
+		fp->ignore = false;
+	    } else {
+		fp->ignore = true;
+		fprintf( stderr, "Ignoring duplicate /CharStrings entry\n" );
+	    }
 	    fp->inchars = 1;
 	    fp->insubs = 0;
 return;
 	} else if ( strstr(line,"/Subrs")!=NULL ) {
-	    if ( fp->fd->private->subrs->next>0 )
-return;
-	    InitChars(fp->fd->private->subrs,line);
+	    if ( fp->fd->private->subrs->next>0 ) {
+		fp->ignore = true;
+		fprintf( stderr, "Ignoring duplicate /Subrs entry\n" );
+	    } else {
+		InitChars(fp->fd->private->subrs,line);
+		fp->ignore = false;
+	    }
 	    fp->insubs = 1;
 	    fp->inchars = 0;
 return;
@@ -1568,11 +1581,14 @@ return;
 	    fp->infi = fp->inblendprivate = fp->inblendfi = false;
 	    fp->inblend = true;
 return;
-	} else if ( strstr(line,"/CharStrings")!=NULL ) {
-	    if ( strstr(line,"dict")==NULL )		/* In my type0 fonts, the string "/CharStrings" pops up many times, only first time is meaningful */
-return;
-	    if ( fp->fd->chars->next==0 )
+	} else if ( strstr(line,"/CharStrings")!=NULL && strstr(line,"dict")!=NULL ) {
+	    if ( fp->fd->chars->next==0 ) {
 		InitChars(fp->fd->chars,line);
+		fp->ignore = false;
+	    } else {
+		fp->ignore = true;
+		fprintf( stderr, "Ignoring duplicate /CharStrings entry\n" );
+	    }
 	    fp->inchars = 1;
 	    fp->insubs = 0;
 	    fp->infi = fp->inprivate = fp->inbb = fp->inmetrics = fp->inmetrics2 = false;
@@ -1720,7 +1736,11 @@ static void addinfo(struct fontparse *fp,char *line,char *tok,char *binstart,int
 	while ( isspace(*line)) ++line;
 	if ( strncmp(line,"dup ",4)==0 ) {
 	    int i = strtol(line+4,NULL,10);
-	    if ( i<chars->cnt ) {
+	    if ( fp->ignore )
+		/* Do Nothing */;
+	    else if ( i<chars->cnt ) {
+		if ( chars->values[i]!=NULL )
+		    fprintf( stderr, "Duplicate definition of subroutine %d\n", i );
 		chars->lens[i] = binlen;
 		chars->values[i] = galloc(binlen);
 		memcpy(chars->values[i],binstart,binlen);
@@ -1737,6 +1757,8 @@ static void addinfo(struct fontparse *fp,char *line,char *tok,char *binstart,int
 	struct pschars *chars = fp->fd->chars;
 	if ( *tok=='\0' )
 	    fprintf( stderr, "No name for CharStrings dictionary |%s", rmbinary(line) );
+	else if ( fp->ignore )
+	    /* Do Nothing */;
 	else if ( chars->next>=chars->cnt )
 	    fprintf( stderr, "Too many entries in CharStrings dictionary |%s", rmbinary(line) );
 	else {

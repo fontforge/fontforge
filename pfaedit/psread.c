@@ -2575,9 +2575,12 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 			/* Let's punt a little less, and actually figure out */
 			/*  the appropriate rrcurveto commands and put in a */
 			/*  dished serif */
-			oldcurrent = current;
-			oldcur = cur;
-			cur->next = NULL;
+			if ( cur!=NULL ) {
+			    oldcurrent = current;
+			    oldcur = cur;
+			    cur->next = NULL;
+			} else
+			    fprintf(stderr, "Bad flex subroutine in %s\n", name );
 		      } break;
 		      case 2: {
 			/* No op */;
@@ -2625,7 +2628,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 			    pt = chunkalloc(sizeof(SplinePoint));
 			    pt->me.x = pops[1]; pt->me.y = pops[0];
 			    pt->noprevcp = true; pt->nonextcp = true;
-			    SplinePointListFree(oldcur->next); oldcur->next = NULL;
+			    SplinePointListFree(oldcur->next); oldcur->next = NULL; spl = NULL;
 			    cur = oldcur;
 			    if ( cur!=NULL && cur->first!=NULL && (cur->first!=cur->last || cur->first->next==NULL) ) {
 				SplineMake3(cur->last,pt);
@@ -2638,7 +2641,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 			SplinePointListFree(spl);
 			oldcur = NULL;
 		      } else
-			fprintf(stderr, "Bad flex subroutine\n" );
+			fprintf(stderr, "Bad flex subroutine in %s\n", name );
 		      break;
 		      case 14: 		/* results in 1 blended value */
 		      case 15:		/* results in 2 blended values */
