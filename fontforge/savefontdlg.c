@@ -1102,7 +1102,7 @@ static int CheckIfTransparent(SplineFont *sf) {
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	SplineChar *sc = sf->chars[i];
 	for ( j=ly_fore; j<sc->layer_cnt; ++j ) {
-	    if ( sc->layers[i].fill_brush.opacity!=0 || sc->layers[i].stroke_pen.brush.opacity!=0 ) {
+	    if ( sc->layers[j].fill_brush.opacity!=1 || sc->layers[j].stroke_pen.brush.opacity!=1 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 		if ( GWidgetAskR(_STR_BadDrawingOperation,buts,0,1,_STR_Type3NotTrans)==1 )
 #elif defined(FONTFORGE_CONFIG_GTK)
