@@ -77,7 +77,7 @@ static void RunError() {
     errinfo.dismissed = false;
     GDrawSetVisible(error,true);
     while ( !errinfo.dismissed )
-	GDrawProcessPendingEvents(NULL);
+	GDrawProcessOneEvent(NULL);
     GDrawSetVisible(error,false);
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
