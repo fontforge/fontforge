@@ -1,10 +1,10 @@
 Name:        fontforge
-Version:     040301
+Version:     20040321
 Release:     1
 Summary:     An outline font editor
 Copyright:   BSD
 Group:       Applications/Publishing
-Icon:        pfaicon.gif
+Icon:        ffanvil32.gif
 Source0:     http://fontforge.sourceforge.net/fontforge_full-%{version}.tgz
 Source1:     fontforge.desktop
 Url:         http://fontforge.sourceforge.net/
