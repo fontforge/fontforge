@@ -3439,7 +3439,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    getint(sfd,&temp); kc->sli = temp;
 	    getint(sfd,&temp); kc->flags = temp;
 	    kc->firsts = galloc(kc->first_cnt*sizeof(char *));
-	    kc->seconds = galloc(kc->first_cnt*sizeof(char *));
+	    kc->seconds = galloc(kc->second_cnt*sizeof(char *));
 	    kc->offsets = galloc(kc->first_cnt*kc->second_cnt*sizeof(int16));
 	    kc->firsts[0] = NULL;
 	    for ( i=1; i<kc->first_cnt; ++i ) {
