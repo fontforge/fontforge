@@ -802,7 +802,7 @@ static uint16 _WinLangFromMac[] = {
 	0x40b,		/* Finnish */
 	0x408,		/* Greek */
 	0x40f,		/* Icelandic */
-	0xffff,		/* Maltese */
+	0x43a,		/* Maltese */
 	0x41f,		/* Turkish */
 	0x41a,		/* Croatian */
 	0x404,		/* Traditional Chinese */
@@ -821,7 +821,7 @@ static uint16 _WinLangFromMac[] = {
 	0x419,		/* Russian */
 	0x804,		/* Simplified Chinese */
 	0x813,		/* Flemish */
-	0xffff,		/* Irish Gaelic */
+	0x43c,		/* Irish Gaelic */
 	0x41c,		/* albanian */
 	0x418,		/* Romanian */
 	0x405,		/* Czech */
@@ -835,49 +835,49 @@ static uint16 _WinLangFromMac[] = {
 	0x423,		/* Byelorussian */
 	0x843,		/* Uzbek */
 	0x43f,		/* Kazakh */
-	0xffff,		/* Axerbaijani (Cyrillic) */
-/*50*/	0xffff,		/* Axerbaijani (Arabic) */
+	0x42c,		/* Azerbaijani (Cyrillic) */
+/*50*/	0x82c,		/* Azerbaijani (Arabic) */
 	0x42b,		/* Armenian */
 	0x437,		/* Georgian */
 	0x818,		/* Moldavian */
-	0xffff,		/* Kirghiz */
-	0xffff,		/* Tajiki */
-	0xffff,		/* Turkmen */
-	0xffff,		/* Mongolian (Mongolian) */
-	0xffff,		/* Mongolian (cyrillic) */
-	0xffff,		/* Pashto */
+	0x440,		/* Kirghiz */
+	0x428,		/* Tajiki */
+	0x442,		/* Turkmen */
+	0x450,		/* Mongolian (Mongolian) */
+	0x850,		/* Mongolian (cyrillic) */
+	0x463,		/* Pashto */
 /*60*/	0xffff,		/* Kurdish */
 	0x860,		/* Kashmiri */
 	0x459,		/* Sindhi */
 	0xffff,		/* Tibetan */
 	0x461,		/* Nepali */
 	0x43b,		/* Sanskrit */
-	0xffff,		/* Marathi */
+	0x44e,		/* Marathi */
 	0x445,		/* Bengali */
 	0x44d,		/* Assamese */
 	0x447,		/* Gujarati */
 /*70*/	0x446,		/* Punjabi */
 	0x448,		/* Oriya */
-	0xffff,		/* Malayalam */
+	0x44c,		/* Malayalam */
 	0x44b,		/* Kannada */
 	0x449,		/* Tamil */
 	0x44a,		/* Telugu */
-	0xffff,		/* Sinhalese */
-	0xffff,		/* Burmese */
-	0xffff,		/* Khmer */
-	0xffff,		/* Lao */
+	0x45b,		/* Sinhalese */
+	0x455,		/* Burmese */
+	0x453,		/* Khmer */
+	0x454,		/* Lao */
 /*80*/	0x42a,		/* Vietnamese */
 	0x421,		/* Indonesian */
-	0xffff,		/* Tagalog */
-	0x43e,		/* Malay (roman) */
-	0xffff,		/* Malay (arabic) */
-	0xffff,		/* Amharic */
-	0xffff,		/* Tigrinya */
-	0xffff,		/* Galla */
-	0xffff,		/* Somali */
+	0x464,		/* Tagalog */
+	0x43e,		/* Malay (latin) */
+	0x83e,		/* Malay (arabic) */
+	0x45e,		/* Amharic */
+	0x473,		/* Tigrinya */
+	0x472,		/* Galla, oromo, afan */
+	0x477,		/* Somali */
 	0x441,		/* Swahili */
 /*90*/	0xffff,		/* Kinyarwanda/Ruanda */
-	0xffff,		/* Rundi */
+	0xffff,		/* Rundi/Kirundi */
 	0xffff,		/* Nyanja/Chewa */
 	0xffff,		/* Malagasy */
 /*94*/	0xffff,		/* Esperanto */
@@ -914,25 +914,25 @@ static uint16 _WinLangFromMac[] = {
 	0xffff,
 	0xffff,
 	0xffff,
-/*128*/	0xffff,		/* Welsh */
+/*128*/	0x452,		/* Welsh */
 	0x42d,		/* Basque */
 /*130*/	0x403,		/* Catalan */
-	0xffff,		/* Latin */
+	0x476,		/* Latin */
 	0xffff,		/* Quechua */
-	0xffff,		/* Guarani */
+	0x474,		/* Guarani */
 	0xffff,		/* Aymara */
 	0x444,		/* Tatar */
 	0xffff,		/* Uighur */
-	0xffff,		/* Dzongkha */
+	0xffff,		/* Dzongkha/Bhutani */
 	0xffff,		/* Javanese (roman) */
 	0xffff,		/* Sundanese (roman) */
-/*140*/	0xffff,		/* Galician */
+/*140*/	0x456,		/* Galician */
 	0x436,		/* Afrikaans */
 	0xffff,		/* Breton */
-	0xffff,		/* Inuktitut */
-	0xffff,		/* Scottish Gaelic */
-	0xffff,		/* Manx Gaelic */
-	0xffff,		/* Irish Gaelic (with dot) */
+	0x45d,		/* Inuktitut */
+	0x43c,		/* Scottish Gaelic */
+	0xc3c,		/* Manx Gaelic */
+	0x83c,		/* Irish Gaelic (with dot) */
 	0xffff,		/* Tongan */
 	0xffff,		/* Greek (polytonic) */
 	0xffff,		/* Greenlandic */	/* Presumably icelandic? */
@@ -990,8 +990,8 @@ static char *LanguageCodesFromMacLang[] = {
 	"be",		/* Byelorussian */
 	"uz",		/* Uzbek */
 	"kk",		/* Kazakh */
-	NULL,		/* Axerbaijani (Cyrillic) */
-/*50*/	NULL,		/* Axerbaijani (Arabic) */
+	"az",		/* Axerbaijani (Cyrillic) */
+/*50*/	"az",		/* Axerbaijani (Arabic) */
 	"hy",		/* Armenian */
 	"ka",		/* Georgian */
 	"mo",		/* Moldavian */
@@ -1011,7 +1011,7 @@ static char *LanguageCodesFromMacLang[] = {
 	"bn",		/* Bengali */
 	"as",		/* Assamese */
 	"gu",		/* Gujarati */
-/*70*/	NULL,		/* Punjabi */
+/*70*/	"pa",		/* Punjabi */
 	"or",		/* Oriya */
 	"mal",		/* Malayalam */
 	"kn",		/* Kannada */
@@ -1028,7 +1028,7 @@ static char *LanguageCodesFromMacLang[] = {
 	"ms",		/* Malay (arabic) */
 	"am",		/* Amharic */
 	"ti",		/* Tigrinya */
-	"gl",		/* Galla */
+	"om",		/* Galla */
 	"so",		/* Somali */
 	"sw",		/* Swahili */
 /*90*/	"rw",		/* Kinyarwanda/Ruanda */
@@ -1081,12 +1081,12 @@ static char *LanguageCodesFromMacLang[] = {
 	"dz",		/* Dzongkha */
 	"jv",		/* Javanese (roman) */
 	"su",		/* Sundanese (roman) */
-/*140*/	NULL,		/* Galician */
+/*140*/	"gl",		/* Galician */
 	"af",		/* Afrikaans */
 	"be",		/* Breton */
-	NULL,		/* Inuktitut */
-	"gae",		/* Scottish Gaelic */
-	"max",		/* Manx Gaelic */
+	"iu",		/* Inuktitut */
+	"gd",		/* Scottish Gaelic */
+	"gv",		/* Manx Gaelic */
 	NULL,		/* Irish Gaelic (with dot) */
 	"to",		/* Tongan */
 	"grc",		/* Greek (polytonic) */
