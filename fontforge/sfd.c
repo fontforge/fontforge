@@ -156,11 +156,33 @@ static void SFDDumpUTF7Str(FILE *sfd, const unichar_t *str) {
 }
 
 #if defined(FONTFORGE_CONFIG_GTK)
+static char *utf8_addc(char *pt,int ch1) {
+
+    if ( ch1<=127 )
+	*pt ++ = ch1;
+    else if ( ch1<=0x7ff ) {
+	*pt++ = 0xc0 | (ch1>>6);
+	*pt++ = 0x80 | (ch1&0x3f);
+    } else if ( ch1<=0xffff ) {
+	*pt++ = 0xe0 | (ch1>>12);
+	*pt++ = 0x80 | ((ch1>>6)&0x3f);
+	*pt++ = 0x80 | (ch1&0x3f);
+    } else {
+	uint32 val = ch1-0x10000;
+	int u = ((val&0xf0000)>>16)+1, z=(val&0x0f000)>>12, y=(val&0x00fc0)>>6, x=val&0x0003f;
+	*pt++ = 0xf0 | (u>>2);
+	*pt++ = 0x80 | ((u&3)<<4) | z;
+	*pt++ = 0x80 | y;
+	*pt++ = 0x80 | x;
+    }
+return( pt );
+}
+
 static char *SFDReadUTF7Str(FILE *sfd) {
-    char buffer[4096], *pt, *end = buffer+sizeof(buffer)/sizeof(unichar_t)-1;
+    char *buffer = NULL, *pt, *end = NULL;
 #else
 static unichar_t *SFDReadUTF7Str(FILE *sfd) {
-    unichar_t buffer[1024], *pt, *end = buffer+sizeof(buffer)/sizeof(unichar_t)-1;
+    unichar_t *buffer = NULL, *pt, *end = NULL;
 #endif
     int ch1, ch2, ch3, ch4, done;
     int prev_cnt=0, prev=0, in=0;
@@ -171,7 +193,7 @@ static unichar_t *SFDReadUTF7Str(FILE *sfd) {
 	ungetc(ch1,sfd);
     if ( ch1!='"' )
 return( NULL );
-    pt = buffer;
+    pt = NULL;
     while ( (ch1=getc(sfd))!=EOF && ch1!='"' ) {
 	done = 0;
 	if ( !done && !in ) {
@@ -213,38 +235,51 @@ return( NULL );
 	    }
 	}
 #if defined(FONTFORGE_CONFIG_GTK)
-	if ( done ) {
-	    if ( ch1<=127 && pt<end )
-		*pt ++ = ch;
-	    else if ( ch1<=0x7ff && pt+1<end ) {
-		*pt++ = 0xc0 | (ch1>>6);
-		*pt++ = 0x80 | (ch1&0x3f);
-	    } else if ( ch1<=0xffff && pt+2<end ) {
-		*pt++ = 0xe0 | (ch1>>12);
-		*pt++ = 0x80 | ((ch1>>6)&0x3f);
-		*pt++ = 0x80 | (ch1&0x3f);
-	    } else if ( pt+3<end ) {
-		uint32 val = ch1-0x10000;
-		int u = ((val&0xf0000)>>16)+1, z=(val&0x0f000)>>12, y=(val&0x00fc0)>>6, x=val&0x0003f;
-		*pt++ = 0xf0 | (u>>2);
-		*pt++ = 0x80 | ((u&3)<<4) | z;
-		*pt++ = 0x80 | y;
-		*pt++ = 0x80 | x;
+	if ( pt+10>=end ) {
+	    if ( buffer==NULL ) {
+		pt = buffer = galloc(400);
+		end = buffer+400;
+	    } else {
+		char *temp = grealloc(buffer,end-buffer+400);
+		pt = temp+(pt-buffer);
+		end = temp+(end-buffer+400);
+		buffer = temp;
 	    }
 	}
-#else
-	if ( done && pt<end )
-	    *pt++ = ch1;
-#endif
+	if ( done )
+	    pt = utf8_addc(pt,ch1);
 	if ( prev_cnt==2 ) {
 	    prev_cnt = 0;
-	    if ( pt<end && prev!=0 )
+	    if ( prev!=0 )
+		pt = utf8_addc(pt,prev);
+	}
+#else
+	if ( pt+3>=end ) {
+	    if ( buffer==NULL ) {
+		pt = buffer = galloc(400*sizeof(unichar_t));
+		end = buffer+400;
+	    } else {
+		unichar_t *temp = grealloc(buffer,(end-buffer+400)*sizeof(unichar_t));
+		pt = temp+(pt-buffer);
+		end = temp+(end-buffer+400);
+		buffer = temp;
+	    }
+	}
+	if ( done )
+	    *pt++ = ch1;
+	if ( prev_cnt==2 ) {
+	    prev_cnt = 0;
+	    if ( prev!=0 )
 		*pt++ = prev;
 	}
+#endif
     }
+    if ( buffer==NULL )
+return( NULL );
     *pt = '\0';
-
-return( buffer[0]=='\0' ? NULL : u_copy(buffer) );
+    pt = u_copy(buffer);
+    free(buffer );
+return( pt );
 }
 
 struct enc85 {
