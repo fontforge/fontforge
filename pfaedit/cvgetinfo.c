@@ -923,6 +923,7 @@ static int PI_Next(GGadget *g, GEvent *e) {
 	}
 	ci->cursp->selected = true;
 	PIFillup(ci,0);
+	CVShowPoint(cv,ci->cursp);
 	SCUpdateAll(cv->sc);
     }
 return( true );
@@ -949,7 +950,9 @@ static int PI_Prev(GGadget *g, GEvent *e) {
 		ci->cursp = ci->cursp->prev->from;
 	}
 	ci->cursp->selected = true;
+	cv->p.nextcp = cv->p.prevcp = false;
 	PIFillup(ci,0);
+	CVShowPoint(cv,ci->cursp);
 	SCUpdateAll(cv->sc);
     }
 return( true );
