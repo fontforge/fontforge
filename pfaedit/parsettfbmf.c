@@ -35,6 +35,7 @@
 
 struct ttfsizehead {
     int ppem;
+    int depth;
     int firstglyph, endglyph;
     int indexSubTableArrayOffset;
     int numIndexSubTables;
@@ -129,29 +130,82 @@ return;
     bdfc->xmax = bdfc->xmin+metrics->width-1;
     bdfc->ymax = metrics->hbearingY-1;
     bdfc->ymin = bdfc->ymax-metrics->height+1;
-    bdfc->bytes_per_line = (metrics->width+7)/8;
+    if ( bdf->clut==NULL )
+	bdfc->bytes_per_line = (metrics->width+7)/8;
+    else {
+	bdfc->bytes_per_line = metrics->width;
+	bdfc->byte_data = true;
+    }
     bdfc->bitmap = gcalloc(metrics->height*bdfc->bytes_per_line,sizeof(uint8));
 
-    if ( imageformat==1 || imageformat==6 ) {
-	/* each row is byte aligned */
-	for ( i=0; i<metrics->height; ++i )
-	    fread(bdfc->bitmap+i*bdfc->bytes_per_line,1,bdfc->bytes_per_line,ttf);
-    } else if ( imageformat==2 || imageformat==5 || imageformat==7 ) {
-	/* each row is bit aligned, but each glyph is byte aligned */
-	for ( i=0; i<(metrics->height*metrics->width+7)/8; ++i ) {
-	    ch = getc(ttf);
-	    for ( j=0; j<8; ++j ) {
-		l = (i*8+j)/metrics->width;
-		p = (i*8+j)%metrics->width;
-		if ( l<metrics->height && (ch&(1<<(7-j))) )
-		    bdfc->bitmap[l*bdfc->bytes_per_line+(p>>3)] |= (1<<(7-(p&7)));
-	    }
-	}
-    } else if ( imageformat==8 || imageformat==9 ) {
+    if ( imageformat==8 || imageformat==9 ) {
 	/* composite, we don't support (but we will parse enough to skip over) */
 	num = getushort(ttf);
 	for ( i=0; i<num; ++i )
 	    getlong(ttf);	/* composed of short glyphcode, byte xoff,yoff */
+    } else if ( imageformat==1 || imageformat==6 ) {
+	/* each row is byte aligned */
+	if ( bdf->clut==NULL || bdf->clut->clut_len==256 ) {
+	    for ( i=0; i<metrics->height; ++i )
+		fread(bdfc->bitmap+i*bdfc->bytes_per_line,1,bdfc->bytes_per_line,ttf);
+	} else if ( bdf->clut->clut_len==4 ) {
+	    for ( i=0; i<metrics->height; ++i ) {
+		for ( j=0; j<metrics->width; j+=4 ) {
+		    ch = getc(ttf);
+		    bdfc->bitmap[i*bdfc->bytes_per_line+j] = (ch>>6);
+		    if ( j+1 < metrics->width )
+			bdfc->bitmap[i*bdfc->bytes_per_line+j+1] = (ch>>4)&3;
+		    if ( j+2 < metrics->width )
+			bdfc->bitmap[i*bdfc->bytes_per_line+j+2] = (ch>>2)&3;
+		    if ( j+3 < metrics->width )
+			bdfc->bitmap[i*bdfc->bytes_per_line+j+3] = ch&3;
+		}
+	    }
+	} else if ( bdf->clut->clut_len==16 ) {
+	    for ( i=0; i<metrics->height; ++i ) {
+		for ( j=0; j<metrics->width; j+=2 ) {
+		    ch = getc(ttf);
+		    bdfc->bitmap[i*bdfc->bytes_per_line+j] = (ch>>4);
+		    if ( j+1 < metrics->width )
+			bdfc->bitmap[i*bdfc->bytes_per_line+j+1] = ch&0xf;
+		}
+	    }
+	}
+    } else if ( imageformat==2 || imageformat==5 || imageformat==7 ) {
+	/* each row is bit aligned, but each glyph is byte aligned */
+	if ( bdf->clut==NULL ) {
+	    for ( i=0; i<(metrics->height*metrics->width+7)/8; ++i ) {
+		ch = getc(ttf);
+		for ( j=0; j<8; ++j ) {
+		    l = (i*8+j)/metrics->width;
+		    p = (i*8+j)%metrics->width;
+		    if ( l<metrics->height && (ch&(1<<(7-j))) )
+			bdfc->bitmap[l*bdfc->bytes_per_line+(p>>3)] |= (1<<(7-(p&7)));
+		}
+	    }
+	} else if ( bdf->clut->clut_len==256 ) {
+	    /* well, yeah, it's bit aligned, but since pixels are bytes, it's byte aligned */
+	    for ( i=0; i<metrics->height; ++i )
+		fread(bdfc->bitmap+i*bdfc->bytes_per_line,1,bdfc->bytes_per_line,ttf);
+	} else if ( bdf->clut->clut_len==4 ) {
+	    for ( i=0; i<metrics->height*metrics->width; i+=4 ) {
+		ch = getc(ttf);
+		bdfc->bitmap[(i/metrics->width)*bdfc->bytes_per_line+i%metrics->width] = (ch>>6);
+		if ( i+1 < metrics->width*metrics->height )
+		    bdfc->bitmap[((i+1)/metrics->width)*bdfc->bytes_per_line+(i+1)%metrics->width] = (ch>>4)&3;
+		if ( i+2 < metrics->width*metrics->height )
+		    bdfc->bitmap[((i+2)/metrics->width)*bdfc->bytes_per_line+(i+2)%metrics->width] = (ch>>2)&3;
+		if ( i+3 < metrics->width*metrics->height )
+		    bdfc->bitmap[((i+3)/metrics->width)*bdfc->bytes_per_line+(i+3)%metrics->width] = ch&3;
+	    }
+	} else if ( bdf->clut->clut_len==16 ) {
+	    for ( i=0; i<metrics->height*metrics->width; i+=2 ) {
+		ch = getc(ttf);
+		bdfc->bitmap[(i/metrics->width)*bdfc->bytes_per_line+i%metrics->width] = (ch>>4);
+		if ( i+1 < metrics->width*metrics->height )
+		    bdfc->bitmap[((i+1)/metrics->width)*bdfc->bytes_per_line+(i+1)%metrics->width] = ch&0xf;
+	    }
+	}
     }
     GProgressNext();
 }
@@ -278,7 +332,7 @@ void TTFLoadBitmaps(FILE *ttf,struct ttfinfo *info,int onlyone) {
     cnt = getlong(ttf);
     sizes = galloc(cnt*sizeof(struct ttfsizehead));
     /* we may not like all the possible bitmaps. Some might be designed for */
-    /*  non-square pixels, others might be grey scale, others might be */
+    /*  non-square pixels, others might be color, others might be */
     /*  vertical data. So only pick out the ones we can use */
     bigval = biggest = -1;
     for ( i = j = 0; i<cnt; ++i ) {
@@ -295,7 +349,8 @@ void TTFLoadBitmaps(FILE *ttf,struct ttfinfo *info,int onlyone) {
 	sizes[j].ppem = getc(ttf);		/* X */
 	if ( /* ppemY */ getc(ttf) != sizes[j].ppem )
 	    good = false;
-	if ( /* bitDepth */ getc(ttf) != 1 )
+	if ( (sizes[j].depth = getc(ttf)) != 1 && sizes[j].depth!=2 &&
+		sizes[j].depth!=4 && sizes[j].depth!=8 )
 	    good = false;
 	if ( /* flags */ !(getc(ttf)&1) )		/* !Horizontal */
 	    good = false;
@@ -315,14 +370,17 @@ return;
     choices = gcalloc(cnt+1,sizeof(unichar_t *));
     sel = gcalloc(cnt,sizeof(char));
     for ( i=0; i<cnt; ++i ) {
-	sprintf(buf,"%d", sizes[i].ppem );
+	if ( sizes[i].depth==1 )
+	    sprintf(buf,"%d", sizes[i].ppem );
+	else
+	    sprintf(buf,"%d@%d", sizes[i].ppem, sizes[i].depth );
 	choices[i] = uc_copy(buf);
     }
     if ( screen_display==NULL ) {
 	if ( onlyone ) {
 	    biggest=0;
 	    for ( i=1; i<cnt; ++i )
-		if ( sizes[i].ppem>sizes[biggest].ppem )
+		if ( sizes[i].ppem>sizes[biggest].ppem && sizes[i].depth==1 )
 		    biggest = i;
 	    sel[biggest] = true;
 	} else {
@@ -357,6 +415,8 @@ return;
 	bdf->pixelsize = sizes[i].ppem;
 	bdf->ascent = (info->ascent*bdf->pixelsize + info->emsize/2)/info->emsize;
 	bdf->descent = bdf->pixelsize - bdf->ascent;
+	if ( sizes[i].depth!=1 )
+	    BDFClut(bdf,1<<(sizes[i].depth/2));
 	if ( last==NULL )
 	    info->bitmaps = bdf;
 	else
@@ -454,10 +514,7 @@ static void BDFCleanupDefaultGlyphs(BDFFont *bdf) {
     glyph0.bitmap = NULL;
 }
 
-static int32 ttfdumpf2bchar(FILE *bdat, BDFChar *bc) {
-    /* format 2 character dump. small metrics, bit aligned data */
-    int32 pos = ftell(bdat);
-    int r,c,ch,bit;
+static void ttfdumpsmallmetrics(FILE *bdat, BDFChar *bc) {
 
     /* dump small metrics */
     putc(bc->ymax-bc->ymin+1,bdat);		/* height */
@@ -465,17 +522,71 @@ static int32 ttfdumpf2bchar(FILE *bdat, BDFChar *bc) {
     putc(bc->xmin,bdat);			/* horiBearingX */
     putc(bc->ymax+1,bdat);			/* horiBearingY */
     putc(bc->width,bdat);			/* advance width */
+}
+
+static int32 ttfdumpf1bchar(FILE *bdat, BDFChar *bc,BDFFont *bdf) {
+    /* format 1 character dump. small metrics, byte aligned data */
+    int32 pos = ftell(bdat);
+    int r,c,val;
+
+    ttfdumpsmallmetrics(bdat,bc);
 
     /* dump image */
-    ch = 0; bit = 0x80;
+    for ( r=0; r<=bc->ymax-bc->ymin; ++r ) {
+	if ( bdf->clut==NULL || bdf->clut->clut_len==256 ) {
+	    for ( c=0; c<bc->bytes_per_line; ++c )
+		putc(bc->bitmap[r*bc->bytes_per_line+c],bdat);
+	} else if ( bdf->clut->clut_len==4 ) {
+	    for ( c=0; c<bc->bytes_per_line; c+=2 ) {
+		val = bc->bitmap[r*bc->bytes_per_line+c]<<4;
+		if ( c+1<bc->bytes_per_line )
+		    val += bc->bitmap[r*bc->bytes_per_line+c+1];
+		putc(val,bdat);
+	    }
+	} else {
+	    for ( c=0; c<bc->bytes_per_line; c+=4 ) {
+		val = bc->bitmap[r*bc->bytes_per_line+c]<<6;
+		if ( c+1<bc->bytes_per_line )
+		    val += bc->bitmap[r*bc->bytes_per_line+c+1]<<4;
+		if ( c+2<bc->bytes_per_line )
+		    val += bc->bitmap[r*bc->bytes_per_line+c+2]<<2;
+		if ( c+3<bc->bytes_per_line )
+		    val += bc->bitmap[r*bc->bytes_per_line+c+3];
+		putc(val,bdat);
+	    }
+	}
+    }
+return( pos );
+}
+
+static int32 ttfdumpf2bchar(FILE *bdat, BDFChar *bc,BDFFont *bdf) {
+    /* format 2 character dump. small metrics, bit aligned data */
+    int32 pos = ftell(bdat);
+    int r,c,ch,bit,sh;
+
+    ttfdumpsmallmetrics(bdat,bc);
+
+    /* dump image */
+    ch = 0; bit = 0x80; sh=7;
     for ( r=0; r<=bc->ymax-bc->ymin; ++r ) {
 	for ( c = 0; c<=bc->xmax-bc->xmin; ++c ) {
-	    if ( bc->bitmap[r*bc->bytes_per_line+(c>>3)] & (1<<(7-(c&7))) )
-		ch |= bit;
-	    bit >>= 1;
+	    if ( bdf->clut==NULL ) {
+		if ( bc->bitmap[r*bc->bytes_per_line+(c>>3)] & (1<<(7-(c&7))) )
+		    ch |= bit;
+		bit >>= 1;
+	    } else if ( bdf->clut->clut_len==4 ) {
+		ch |= (bc->bitmap[r*bc->bytes_per_line+c]<<(sh-1));
+		sh-=2;
+		bit >>= 2;
+	    } else {
+		ch |= (bc->bitmap[r*bc->bytes_per_line+c]<<(sh-3));
+		sh-=4;
+		bit >>= 4;
+	    }
 	    if ( bit==0 ) {
 		putc(ch,bdat);
 		ch = 0;
+		sh = 7;
 		bit = 0x80;
 	    }
 	}
@@ -491,57 +602,69 @@ struct mymets {
     int width;			/* xmax-xmin+1 */
 };
 
-static int32 ttfdumpf5bchar(FILE *bdat, BDFChar *bc, struct mymets *mets) {
+static int32 ttfdumpf5bchar(FILE *bdat, BDFChar *bc, struct mymets *mets,BDFFont *bdf) {
     /* format 5 character dump. no metrics, bit aligned data */
     /* now it may be that some of the character we are dumping have bitmaps */
     /*  that are a little smaller than the size specified in mymets. But that's*/
     /*  ok, we just pad them out with null bits */
     int32 pos = ftell(bdat);
-    int r,c,ch,bit;
+    int r,c,ch,bit, sh;
+    int depth = BDFDepth(bdf);
 
     /* dump image */
-    ch = 0; bit = 0x80;
+    ch = 0; bit = 0x80; sh = 7;
     for ( r=bc->ymax+1; r<=mets->ymax; ++r ) {
 	for ( c=0; c<mets->width; ++c ) {
-	    bit >>= 1;
+	    bit >>= depth;
+	    sh -= depth;
 	    if ( bit==0 ) {
 		putc(ch,bdat);
 		ch = 0;
-		bit = 0x80;
+		sh = 7; bit = 0x80;
 	    }
 	}
     }
     for ( r=0; r<=bc->ymax-bc->ymin; ++r ) {
 	for ( c = mets->xmin; c<bc->xmin; ++c ) {
-	    bit >>= 1;
+	    bit >>= depth;
+	    sh -= depth;
 	    if ( bit==0 ) {
 		putc(ch,bdat);
 		ch = 0;
-		bit = 0x80;
+		sh = 7; bit = 0x80;
 	    }
 	}
 	for ( c = 0; c<=bc->xmax-bc->xmin; ++c ) {
-	    if ( bc->bitmap[r*bc->bytes_per_line+(c>>3)] & (1<<(7-(c&7))) )
-		ch |= bit;
-	    bit >>= 1;
+	    if ( depth==1 ) {
+		if ( bc->bitmap[r*bc->bytes_per_line+(c>>3)] & (1<<(7-(c&7))) )
+		    ch |= bit;
+	    } else if ( depth==8 )
+		ch = bc->bitmap[r*bc->bytes_per_line+c];
+	    else if ( depth==2 )
+		ch |= (bc->bitmap[r*bc->bytes_per_line+c]<<(sh-1));
+	    else if ( depth==4 )
+		ch |= (bc->bitmap[r*bc->bytes_per_line+c]<<(sh-3));
+	    bit >>= depth;
+	    sh -= depth;
 	    if ( bit==0 ) {
 		putc(ch,bdat);
 		ch = 0;
-		bit = 0x80;
+		sh = 7; bit = 0x80;
 	    }
 	}
 	for ( c = bc->xmax+1; c<=mets->xmax; ++c ) {
-	    bit >>= 1;
+	    bit >>= depth;
+	    sh -= depth;
 	    if ( bit==0 ) {
 		putc(ch,bdat);
 		ch = 0;
-		bit = 0x80;
+		sh = 7; bit = 0x80;
 	    }
 	}
     }
     for ( r=bc->ymin-1; r>=mets->ymin; --r ) {
 	for ( c=0; c<mets->width; ++c ) {
-	    bit >>= 1;
+	    bit >>= depth;
 	    if ( bit==0 ) {
 		putc(ch,bdat);
 		ch = 0;
@@ -604,7 +727,7 @@ static struct bitmapSizeTable *ttfdumpstrikelocs(FILE *bloc,FILE *bdat,BDFFont *
 return(NULL);
     }
     size->flags = 0x01;		/* horizontal */
-    size->bitdepth = 1;
+    size->bitdepth = BDFDepth(bdf);
     size->ppemX = size->ppemY = bdf->ascent+bdf->descent;
     size->endGlyph = bdf->chars[j]->sc->ttf_glyph;
     size->startGlyph = bdf->chars[i]->sc->ttf_glyph;
@@ -718,12 +841,21 @@ return(NULL);
 
 	if ( !bc->widthgroup ) {
 	    putshort(subtables,1);	/* index format, 4byte offset, no metrics here */
-	    putshort(subtables,2);	/* data format, short metrics, bit aligned */
+	    if ( BDFDepth(bdf)!=8 )
+		putshort(subtables,2);	/* data format, short metrics, bit aligned */
+	    else
+		putshort(subtables,1);	/* data format, short metrics, byte aligned */
 	    base = ftell(bdat);
 	    putlong(subtables,base);	/* start of glyphs in bdat */
-	    putlong(subtables,ttfdumpf2bchar(bdat,bc)-base);
+	    if ( BDFDepth(bdf)!=8 )
+		putlong(subtables,ttfdumpf2bchar(bdat,bc,bdf)-base);
+	    else
+		putlong(subtables,ttfdumpf1bchar(bdat,bc,bdf)-base);
 	    for ( j=i+1; j<=final ; ++j ) if ( (bc2=bdf->chars[j])!=NULL ) {
-		putlong(subtables,ttfdumpf2bchar(bdat,bc2)-base);
+		if ( BDFDepth(bdf)!=8 )
+		    putlong(subtables,ttfdumpf2bchar(bdat,bc2,bdf)-base);
+		else
+		    putlong(subtables,ttfdumpf1bchar(bdat,bc2,bdf)-base);
 	    }
 	    putlong(subtables,ftell(bdat)-base);	/* Length of last entry */
 	} else {
@@ -749,9 +881,9 @@ return(NULL);
 	    putc(-bc->width/2,subtables);		/* vertBearingX */
 	    putc(0,subtables);				/* vertBearingY */
 	    putc(bdf->ascent+bdf->descent,subtables);	/* advance height */
-	    ttfdumpf5bchar(bdat,bc,&met);
+	    ttfdumpf5bchar(bdat,bc,&met,bdf);
 	    for ( j=i+1; j<=final ; ++j ) if ( (bc2=bdf->chars[j])!=NULL ) {
-		ttfdumpf5bchar(bdat,bc2,&met);
+		ttfdumpf5bchar(bdat,bc2,&met,bdf);
 	    }
 	}
 	i = final;
@@ -795,7 +927,7 @@ static void dumpbitmapSizeTable(FILE *bloc,struct bitmapSizeTable *size) {
     putc(size->flags,bloc);
 }
 
-void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,real *sizes) {
+void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes) {
     int i;
     static struct bitmapSizeTable space;
     struct bitmapSizeTable *head=NULL, *cur, *last;
@@ -827,7 +959,9 @@ void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,real *sizes) {
     GProgressChangeLine1R(_STR_SavingBitmapFonts);
     for ( i=0; sizes[i]!=0; ++i ) {
 	GProgressNextStage();
-	for ( bdf=sf->bitmaps; bdf!=NULL && bdf->pixelsize!=sizes[i]; bdf=bdf->next );
+	for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=(sizes[i]&0xffff) || BDFDepth(bdf)!=(sizes[i]>>16)); bdf=bdf->next );
+	if ( bdf==NULL )
+    continue;
 	BDFAddDefaultGlyphs(bdf);
 	cur = ttfdumpstrikelocs(at->bloc,at->bdat,bdf);
 	BDFCleanupDefaultGlyphs(bdf);

@@ -509,19 +509,19 @@ extern struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds);
 enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_ptype3, ff_ptype0, ff_cid,
 	ff_ttf, ff_ttfsym, ff_ttfmacbin, ff_ttfdfont, ff_otf, ff_otfdfont,
 	ff_otfcid, ff_otfciddfont, ff_none };
-enum bitmapformat { bf_bdf, bf_ttf_ms, bf_ttf_apple, bf_sfnt_dfont, bf_gdf,
+enum bitmapformat { bf_bdf, bf_ttf_ms, bf_ttf_apple, bf_sfnt_dfont, 
 	bf_nfntmacbin, bf_nfntdfont, bf_none };
 extern SplineChar *SFFindExistingCharMac(SplineFont *,int unienc);
 extern int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format);
 extern int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format);
 extern int WriteMacPSFont(char *fontname,SplineFont *sf,enum fontformat format);
 extern int _WriteTTFFont(FILE *ttf,SplineFont *sf, enum fontformat format,
-	real *bsizes, enum bitmapformat bf);
+	int32 *bsizes, enum bitmapformat bf);
 extern int WriteTTFFont(char *fontname,SplineFont *sf, enum fontformat format,
-	real *bsizes, enum bitmapformat bf);
+	int32 *bsizes, enum bitmapformat bf);
 extern int WriteMacTTFFont(char *fontname,SplineFont *sf, enum fontformat format,
-	real *bsizes, enum bitmapformat bf);
-extern int WriteMacBitmaps(char *filename,SplineFont *sf, real *sizes,int is_dfont);
+	int32 *bsizes, enum bitmapformat bf);
+extern int WriteMacBitmaps(char *filename,SplineFont *sf, int32 *sizes,int is_dfont);
 extern struct ttflangname *TTFLangNamesCopy(struct ttflangname *old);
 extern void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf);
 extern void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]);
@@ -531,7 +531,7 @@ extern int SFReencodeFont(SplineFont *sf,enum charset new_map);
 extern int SFMatchEncoding(SplineFont *sf,SplineFont *target);
 extern char *SFGetModifiers(SplineFont *sf);
 extern void SFSetFontName(SplineFont *sf, char *family, char *mods, char *full);
-extern void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,real *sizes);
+extern void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes);
 
 extern int RealNear(real a,real b);
 extern int RealNearish(real a,real b);

@@ -434,7 +434,7 @@ extern void skewselect(BVTFunc *bvtf,real t);
 extern void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *,int),
 	int (*getorigin)(void *,BasePoint *,int), int enableback);
 extern void BitmapDlg(FontView *fv,SplineChar *sc, int isavail);
-extern int BitmapControl(FontView *fv,real *sizes,int isavail);
+extern int BitmapControl(FontView *fv,int32 *sizes,int isavail);
 extern void CVReviewHints(CharView *cv);
 extern void CVCreateHint(CharView *cv,int ishstem);
 extern void SCClearRounds(SplineChar *sc);

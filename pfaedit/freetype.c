@@ -288,8 +288,7 @@ BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,
     bdfc->bytes_per_line = slot->bitmap.pitch;
     bdfc->bitmap = galloc(slot->bitmap.rows*bdfc->bytes_per_line);
     memcpy(bdfc->bitmap,slot->bitmap.buffer,slot->bitmap.rows*bdfc->bytes_per_line);
-    if ( depth==1 )
-	BCCompressBitmap(bdfc);
+    BCCompressBitmap(bdfc);
     if ( depth!=1 && depth!=8 )
 	BCTruncateToDepth(bdfc,depth);
 return( bdfc );

@@ -492,7 +492,7 @@ static uint32 DummyNFNT(FILE *res, BDFFont *bdf) {
 return(rlenpos);
 }
 
-static struct resource *SFToNFNTs(FILE *res, SplineFont *sf, real *sizes) {
+static struct resource *SFToNFNTs(FILE *res, SplineFont *sf, int32 *sizes) {
     int i, baseresid = HashToId(sf->fontname,sf);
     struct resource *resstarts;
     BDFFont *bdf;
@@ -503,7 +503,9 @@ static struct resource *SFToNFNTs(FILE *res, SplineFont *sf, real *sizes) {
     resstarts = gcalloc(i+1,sizeof(struct resource));
 
     for ( i=0; sizes[i]!=0; ++i ) {
-	for ( bdf=sf->bitmaps; bdf!=NULL && bdf->pixelsize!=sizes[i]; bdf=bdf->next );
+	if ( (sizes[i]>>16)!=1 )
+    continue;
+	for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=(sizes[i]&0xffff) || BDFDepth(bdf)!=1); bdf=bdf->next );
 	if ( bdf==NULL )
     continue;
 	resstarts[i].id = baseresid+bdf->pixelsize;
@@ -513,7 +515,7 @@ static struct resource *SFToNFNTs(FILE *res, SplineFont *sf, real *sizes) {
 return(resstarts);
 }
 
-static struct resource *BuildDummyNFNTlist(FILE *res, SplineFont *sf, real *sizes, int baseresid) {
+static struct resource *BuildDummyNFNTlist(FILE *res, SplineFont *sf, int32 *sizes, int baseresid) {
     int i;
     struct resource *resstarts;
     BDFFont *bdf;
@@ -524,7 +526,9 @@ static struct resource *BuildDummyNFNTlist(FILE *res, SplineFont *sf, real *size
     resstarts = gcalloc(i+1,sizeof(struct resource));
 
     for ( i=0; sizes[i]!=0; ++i ) {
-	for ( bdf=sf->bitmaps; bdf!=NULL && bdf->pixelsize!=sizes[i]; bdf=bdf->next );
+	if ( (sizes[i]>>16)!=1 )
+    continue;
+	for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=(sizes[i]&0xffff) || BDFDepth(bdf)!=1); bdf=bdf->next );
 	if ( bdf==NULL )
     continue;
 	resstarts[i].id = baseresid++;
@@ -572,9 +576,9 @@ uint16 MacStyleCode( SplineFont *sf ) {
 return( stylecode );
 }
 
-static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,real *sizes) {
+static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,int32 *sizes) {
     uint32 rlenpos = ftell(res), widoffpos, widoffloc, kernloc, styleloc, end;
-    int i,k,cnt, strcnt, fontclass, stylecode;
+    int i,j,k,cnt, strcnt, fontclass, stylecode;
     KernPair *kp;
     DBounds b;
     char *pt;
@@ -600,19 +604,21 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,real *sizes)
 
     /* Font association table */
     stylecode = MacStyleCode( sf );
-    for ( i=0; sizes!=NULL && sizes[i]!=0; ++i );
+    for ( i=j=0; sizes!=NULL && sizes[i]!=0; ++i )
+	if ( (sizes[i]>>16)==1 )
+	    ++j;
     if ( dottf ) {
-	putshort(res,i+1-1);		/* Number of faces */
+	putshort(res,j+1-1);		/* Number of faces */
 	putshort(res,0);		/* it's scaleable */
 	putshort(res,stylecode);
 	putshort(res,id);		/* Give it the same ID as the fond */
     } else
 	putshort(res,i-1);		/* Number of faces */
     if ( sizes!=NULL ) {
-	for ( i=0; sizes[i]!=0; ++i ) {
-	    putshort(res,sizes[i]);
+	for ( i=0; sizes[i]!=0; ++i ) if (( sizes[i]>>16) == 1 ) {
+	    putshort(res,sizes[i]&0xffff);
 	    putshort(res,stylecode);
-	    putshort(res,id+sizes[i]);	/* make up a unique ID */
+	    putshort(res,id+(sizes[i]&0xffff));	/* make up a unique ID */
 	}
     }
 
@@ -1040,7 +1046,7 @@ return( ret );
 }
 
 int WriteMacTTFFont(char *filename,SplineFont *sf,enum fontformat format,
-	real *bsizes, enum bitmapformat bf) {
+	int32 *bsizes, enum bitmapformat bf) {
     FILE *res, *tempttf;
     int ret = 1, r;
     struct resourcetype resources[4];
@@ -1111,7 +1117,7 @@ return( 0 );
 return( ret );
 }
 
-int WriteMacBitmaps(char *filename,SplineFont *sf, real *sizes, int is_dfont) {
+int WriteMacBitmaps(char *filename,SplineFont *sf, int32 *sizes, int is_dfont) {
     FILE *res;
     int ret = 1;
     struct resourcetype resources[3];

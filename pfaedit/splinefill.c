@@ -684,71 +684,6 @@ static void InitializeHints(SplineChar *sc, EdgeList *es) {
     }
 }
 
-void BCCompressBitmap(BDFChar *bdfc) {
-    /* Now we may have allocated a bit more than we need to the bitmap */
-    /*  check to see if there are any unused rows or columns.... */
-    int i,j,any, off, last;
-
-    for ( i=0; i<bdfc->ymax-bdfc->ymin; ++i ) {
-	any = 0;
-	for ( j=0; j<bdfc->bytes_per_line; ++j )
-	    if ( bdfc->bitmap[i*bdfc->bytes_per_line+j]!=0 ) any = 1;
-	if ( any )
-    break;
-    }
-    if ( i!=0 ) {
-	bdfc->ymax -= i;
-	memcpy(bdfc->bitmap,bdfc->bitmap+i*bdfc->bytes_per_line,(bdfc->ymax-bdfc->ymin+1)*bdfc->bytes_per_line );
-    }
-
-    for ( i=bdfc->ymax-bdfc->ymin; i>0; --i ) {
-	any = 0;
-	for ( j=0; j<bdfc->bytes_per_line; ++j )
-	    if ( bdfc->bitmap[i*bdfc->bytes_per_line+j]!=0 ) any = 1;
-	if ( any )
-    break;
-    }
-    if ( i!=bdfc->ymax-bdfc->ymin ) {
-	bdfc->ymin += bdfc->ymax-bdfc->ymin-i;
-    }
-
-    for ( j=0; j<bdfc->xmax-bdfc->xmin; ++j ) {
-	any = 0;
-	for ( i=0; i<bdfc->ymax-bdfc->ymin+1; ++i )
-	    if ( bdfc->bitmap[i*bdfc->bytes_per_line+(j>>3)] & (1<<(7-(j&7))) )
-		any = 1;
-	if ( any )
-    break;
-    }
-    if ( j!=0 ) {
-	off = j;
-	for ( i=0; i<bdfc->ymax-bdfc->ymin+1; ++i ) {
-	    last = 0;
-	    for ( j=bdfc->bytes_per_line-1; j>=0; --j ) {
-		int index = i*bdfc->bytes_per_line+j;
-		int temp = bdfc->bitmap[index]>>(8-off);
-		bdfc->bitmap[index] = (bdfc->bitmap[index]<<off)|last;
-		last = temp;
-	    }
-	    if ( last!=0 )
-		GDrawIError("Sigh");
-	}
-	bdfc->xmin += off;
-    }
-
-    for ( j=bdfc->xmax-bdfc->xmin; j>0; --j ) {
-	any = 0;
-	for ( i=0; i<bdfc->ymax-bdfc->ymin+1; ++i )
-	    if ( bdfc->bitmap[i*bdfc->bytes_per_line+(j>>3)] & (1<<(7-(j&7))) )
-		any = 1;
-	if ( any )
-    break;
-    }
-    if ( j!=bdfc->xmax+bdfc->xmin ) {
-	bdfc->xmax -= bdfc->xmax-bdfc->xmin-j;
-    }
-}
-
 /* After a bitmap has been compressed, it's sizes may not complie with the */
 /*  expectations for saving images */
 void BCRegularizeBitmap(BDFChar *bdfc) {
@@ -776,6 +711,108 @@ void BCRegularizeGreymap(BDFChar *bdfc) {
 	free(bdfc->bitmap);
 	bdfc->bitmap= bitmap;
 	bdfc->bytes_per_line = bpl;
+    }
+}
+
+void BCCompressBitmap(BDFChar *bdfc) {
+    /* Now we may have allocated a bit more than we need to the bitmap */
+    /*  check to see if there are any unused rows or columns.... */
+    int i,j,any, off, last;
+
+    /* we can use the same code to lop off rows wether we deal with bytes or bits */
+    for ( i=0; i<bdfc->ymax-bdfc->ymin; ++i ) {
+	any = 0;
+	for ( j=0; j<bdfc->bytes_per_line; ++j )
+	    if ( bdfc->bitmap[i*bdfc->bytes_per_line+j]!=0 ) any = 1;
+	if ( any )
+    break;
+    }
+    if ( i!=0 ) {
+	bdfc->ymax -= i;
+	memcpy(bdfc->bitmap,bdfc->bitmap+i*bdfc->bytes_per_line,(bdfc->ymax-bdfc->ymin+1)*bdfc->bytes_per_line );
+    }
+
+    for ( i=bdfc->ymax-bdfc->ymin; i>0; --i ) {
+	any = 0;
+	for ( j=0; j<bdfc->bytes_per_line; ++j )
+	    if ( bdfc->bitmap[i*bdfc->bytes_per_line+j]!=0 ) any = 1;
+	if ( any )
+    break;
+    }
+    if ( i!=bdfc->ymax-bdfc->ymin ) {
+	bdfc->ymin += bdfc->ymax-bdfc->ymin-i;
+    }
+
+    if ( !bdfc->byte_data ) {
+	for ( j=0; j<bdfc->xmax-bdfc->xmin; ++j ) {
+	    any = 0;
+	    for ( i=0; i<bdfc->ymax-bdfc->ymin+1; ++i )
+		if ( bdfc->bitmap[i*bdfc->bytes_per_line+(j>>3)] & (1<<(7-(j&7))) )
+		    any = 1;
+	    if ( any )
+	break;
+	}
+	if ( j!=0 ) {
+	    off = j;
+	    for ( i=0; i<bdfc->ymax-bdfc->ymin+1; ++i ) {
+		last = 0;
+		for ( j=bdfc->bytes_per_line-1; j>=0; --j ) {
+		    int index = i*bdfc->bytes_per_line+j;
+		    int temp = bdfc->bitmap[index]>>(8-off);
+		    bdfc->bitmap[index] = (bdfc->bitmap[index]<<off)|last;
+		    last = temp;
+		}
+		if ( last!=0 )
+		    GDrawIError("Sigh");
+	    }
+	    bdfc->xmin += off;
+	}
+
+	for ( j=bdfc->xmax-bdfc->xmin; j>0; --j ) {
+	    any = 0;
+	    for ( i=0; i<bdfc->ymax-bdfc->ymin+1; ++i )
+		if ( bdfc->bitmap[i*bdfc->bytes_per_line+(j>>3)] & (1<<(7-(j&7))) )
+		    any = 1;
+	    if ( any )
+	break;
+	}
+	if ( j!=bdfc->xmax+bdfc->xmin ) {
+	    bdfc->xmax -= bdfc->xmax-bdfc->xmin-j;
+	}
+	BCRegularizeBitmap(bdfc);
+    } else {
+	for ( j=0; j<bdfc->xmax-bdfc->xmin; ++j ) {
+	    any = 0;
+	    for ( i=0; i<bdfc->ymax-bdfc->ymin+1; ++i )
+		if ( bdfc->bitmap[i*bdfc->bytes_per_line+j] != 0 )
+		    any = 1;
+	    if ( any )
+	break;
+	}
+	if ( j!=0 ) {
+	    off = j;
+	    for ( i=0; i<bdfc->ymax-bdfc->ymin+1; ++i ) {
+		memcpy(bdfc->bitmap+i*bdfc->bytes_per_line,
+			bdfc->bitmap+i*bdfc->bytes_per_line+off,
+			bdfc->bytes_per_line-off);
+		memset(bdfc->bitmap+i*bdfc->bytes_per_line+bdfc->bytes_per_line-off,
+			0, off);
+	    }
+	    bdfc->xmin += off;
+	}
+
+	for ( j=bdfc->xmax-bdfc->xmin; j>0; --j ) {
+	    any = 0;
+	    for ( i=0; i<bdfc->ymax-bdfc->ymin+1; ++i )
+		if ( bdfc->bitmap[i*bdfc->bytes_per_line+j] != 0 )
+		    any = 1;
+	    if ( any )
+	break;
+	}
+	if ( j!=bdfc->xmax+bdfc->xmin ) {
+	    bdfc->xmax -= bdfc->xmax-bdfc->xmin-j;
+	}
+	BCRegularizeGreymap(bdfc);
     }
 }
 

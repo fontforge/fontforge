@@ -2461,7 +2461,11 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	for ( bdf = fv->sf->bitmaps, i=base;
 		i<sizeof(vwlist)/sizeof(vwlist[0])-1 && bdf!=NULL;
 		++i, bdf = bdf->next ) {
-	    u_sprintf( buffer, GStringGetResource(_STR_DPixelBitmap,NULL), bdf->pixelsize );
+	    if ( BDFDepth(bdf)==1 )
+		u_sprintf( buffer, GStringGetResource(_STR_DPixelBitmap,NULL), bdf->pixelsize );
+	    else
+		u_sprintf( buffer, GStringGetResource(_STR_DdPixelBitmap,NULL),
+			bdf->pixelsize, BDFDepth(bdf) );
 	    vwlist[i].ti.text = u_copy(buffer);
 	    vwlist[i].ti.checkable = true;
 	    vwlist[i].ti.checked = bdf==fv->show;

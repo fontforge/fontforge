@@ -672,12 +672,18 @@ static void BVVScroll(BitmapView *bv,struct sbevent *sb) {
 static int BVRecalc(GGadget *g, GEvent *e) {
     BitmapView *bv;
     BDFChar *bdfc;
+    void *freetypecontext=NULL;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	bv = GDrawGetUserData(GGadgetGetWindow(g));
 	BCPreserveState(bv->bc);
 	BCFlattenFloat(bv->bc);
-	bdfc = SplineCharRasterize(bv->bc->sc,bv->bdf->pixelsize);
+	freetypecontext = FreeTypeFontContext(bv->bc->sc->parent,bv->bc->sc,false);
+	if ( freetypecontext!=NULL ) {
+	    bdfc = SplineCharFreeTypeRasterize(freetypecontext,bv->bc->sc->enc,bv->bdf->pixelsize,BDFDepth(bv->bdf));
+	    FreeTypeFreeContext(freetypecontext);
+	} else
+	    bdfc = SplineCharAntiAlias(bv->bc->sc,bv->bdf->pixelsize,(1<<(BDFDepth(bv->bdf)/2)));
 	free(bv->bc->bitmap);
 	bv->bc->bitmap = bdfc->bitmap; bdfc->bitmap = NULL;
 	bv->bc->width = bdfc->width;
@@ -1141,18 +1147,13 @@ return;
 static void BVMenuChangePixelSize(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     BDFFont *best=NULL, *bdf;
-    int mysize = bv->bdf->pixelsize;
+    /* Bigger will find either a bigger pixelsize or a font with same pixelsize and greater depth */
 
     if ( mi->mid == MID_Bigger ) {
-	for ( bdf=bv->fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-	    if ( bdf->pixelsize>mysize && ( best==NULL || bdf->pixelsize<best->pixelsize))
-		best = bdf;
-	}
+	best = bv->bdf->next;		/* I rely on the bitmap list being ordered */
     } else {
-	for ( bdf=bv->fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-	    if ( bdf->pixelsize<mysize && ( best==NULL || bdf->pixelsize>best->pixelsize))
-		best = bdf;
-	}
+	for ( bdf=bv->fv->sf->bitmaps; bdf!=NULL && bdf->next!=bv->bdf; bdf=bdf->next );
+	best = bdf;
     }
     if ( best!=NULL && bv->bdf!=best ) {
 	bv->bdf = best;
@@ -1342,7 +1343,6 @@ static void pllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
-    int mysize = bv->bdf->pixelsize;
     BDFFont *bdf;
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
@@ -1354,11 +1354,10 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.checked = bv->scale==1;
 	  break;
 	  case MID_Bigger:
-	    for ( bdf = bv->fv->sf->bitmaps; bdf!=NULL && bdf->pixelsize<=mysize; bdf=bdf->next );
-	    mi->ti.disabled = bdf==NULL;
+	    mi->ti.disabled = bv->bdf->next==NULL;
 	  break;
 	  case MID_Smaller:
-	    for ( bdf = bv->fv->sf->bitmaps; bdf!=NULL && bdf->pixelsize>=mysize; bdf=bdf->next );
+	    for ( bdf=bv->fv->sf->bitmaps; bdf!=NULL && bdf->next!=bv->bdf; bdf=bdf->next );
 	    mi->ti.disabled = bdf==NULL;
 	  break;
 	}

@@ -26,6 +26,7 @@
  */
 #include "pfaeditui.h"
 #include <stdlib.h>
+#include <math.h>
 #include <string.h>
 #include "ustring.h"
 #include "gfile.h"
@@ -85,7 +86,6 @@ static GTextInfo bitmaptypes[] = {
     { (unichar_t *) "In TTF (MS)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "In TTF (Apple)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "sbits only (dfont)", NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "GDF", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
 #if __Mac
     { (unichar_t *) "NFNT (Resource)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
 #else
@@ -100,10 +100,10 @@ static int oldafmstate = -1, oldpfmstate = false;
 int oldformatstate = ff_pfb;
 int oldbitmapstate = 0;
 
-static real *ParseBitmapSizes(GGadget *g,int *err) {
+static int32 *ParseBitmapSizes(GGadget *g,int *err) {
     const unichar_t *val = _GGadgetGetTitle(g), *pt; unichar_t *end, *end2;
     int i;
-    real *sizes;
+    int32 *sizes;
 
     *err = false;
     end2 = NULL;
@@ -115,10 +115,14 @@ static real *ParseBitmapSizes(GGadget *g,int *err) {
 	pt = end+1;
 	end2 = NULL;
     }
-    sizes = galloc((i+1)*sizeof(real));
+    sizes = galloc((i+1)*sizeof(int32));
 
     for ( i=0, pt = val; *pt!='\0' ; ) {
-	sizes[i]=u_strtod(pt,&end);
+	sizes[i]=rint(u_strtod(pt,&end));
+	if ( *end!='@' )
+	    sizes[i] |= 0x10000;
+	else
+	    sizes[i] |= (u_strtol(end+1,&end,10)<<16);
 	if ( sizes[i]>0 ) ++i;
 	if ( *end!=' ' && *end!=',' && *end!='\0' ) {
 	    free(sizes);
@@ -181,6 +185,7 @@ return( 0 );
 return( ret );
 }
 
+#if 0
 static int ad_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	int *done = GDrawGetUserData(gw);
@@ -300,45 +305,31 @@ return( 4 );
     /*if ( GGadgetIsChecked(GWidgetGetControl(gw,8)) )*/
 return( 8 );
 }
+#endif
 
-static int WriteBitmaps(char *filename,SplineFont *sf, real *sizes, int do_grey) {
-    char *buf = galloc(strlen(filename)+20), *pt, *pt2;
+static int WriteBitmaps(char *filename,SplineFont *sf, int32 *sizes) {
+    char *buf = galloc(strlen(filename)+30), *pt, *pt2;
     int i;
     BDFFont *bdf;
     unichar_t *temp;
     char buffer[100];
-    void *freetypecontext = NULL;
-    int depth;
 
     if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
 
     for ( i=0; sizes[i]!=0; ++i );
     GProgressChangeStages(i);
-    if ( do_grey ) {
-	if (( depth = AskDepth())==-1 )
-return( false );
-	freetypecontext = FreeTypeFontContext(sf,NULL,true);
-    }
     for ( i=0; sizes[i]!=0; ++i ) {
 	buffer[0] = '\0';
-	if ( do_grey ) {
-	    if ( freetypecontext==NULL )
-		bdf = SplineFontAntiAlias(sf,(int) sizes[i],depth);
-	    else
-		bdf = SplineFontFreeTypeRasterize(freetypecontext,sizes[i],depth);
-	    if ( bdf==NULL )
-		sprintf(buffer,"Couldn't generate an anti-aliased font at the requested size (%d)", (int) sizes[i]);
-	} else {
-	    for ( bdf=sf->bitmaps; bdf!=NULL && bdf->pixelsize!=sizes[i]; bdf=bdf->next );
-	    if ( bdf==NULL )
-		sprintf(buffer,"Attempt to save a pixel size that has not been created (%d)", (int) sizes[i]);
-	}
+	for ( bdf=sf->bitmaps; bdf!=NULL &&
+		(bdf->pixelsize!=(sizes[i]&0xffff) || BDFDepth(bdf)!=(sizes[i]>>16));
+		bdf=bdf->next );
+	if ( bdf==NULL )
+	    sprintf(buffer,"Attempt to save a pixel size that has not been created (%d@%d)", sizes[i]&0xffff, sizes[i]>>16);
 	if ( buffer[0]!='\0' ) {
 	    temp = uc_copy(buffer);
 	    GWidgetPostNotice(temp,temp);
 	    free(temp);
 	    free(buf);
-	    FreeTypeFreeContext(freetypecontext);
 return( false );
 	}
 	strcpy(buf,filename);
@@ -351,20 +342,17 @@ return( false );
 	if ( bdf->clut==NULL )
 	    sprintf( pt, "-%d.bdf", bdf->pixelsize );
 	else
-	    sprintf( pt, "-%d@%d.gdf", bdf->pixelsize, BDFDepth(bdf) );
+	    sprintf( pt, "-%d@%d.bdf", bdf->pixelsize, BDFDepth(bdf) );
 	
 	GProgressChangeLine2(temp=uc_copy(buf)); free(temp);
 	BDFFontDump(buf,bdf,EncodingName(sf->encoding_name));
-	if ( do_grey )
-	    BDFFontFree(bdf);
 	GProgressNextStage();
     }
-    FreeTypeFreeContext(freetypecontext);
     free(buf);
 return( true );
 }
 
-static int _DoSave(SplineFont *sf,char *newname,real *sizes) {
+static int _DoSave(SplineFont *sf,char *newname,int32 *sizes) {
     unichar_t *path;
     int err=false;
     int iscid = oldformatstate==ff_cid || oldformatstate==ff_otfcid || oldformatstate==ff_otfciddfont;
@@ -418,10 +406,10 @@ static int _DoSave(SplineFont *sf,char *newname,real *sizes) {
 	    err = true;
 	}
     }
-    if ( (oldbitmapstate==bf_bdf || oldbitmapstate==bf_gdf) && !err ) {
+    if ( oldbitmapstate==bf_bdf && !err ) {
 	GProgressChangeLine1R(_STR_SavingBitmapFonts);
 	GProgressIncrementBy(-sf->charcnt);
-	if ( !WriteBitmaps(newname,sf,sizes,oldbitmapstate))
+	if ( !WriteBitmaps(newname,sf,sizes))
 	    err = true;
     } else if ( (oldbitmapstate==bf_nfntmacbin || oldbitmapstate==bf_nfntdfont) &&
 	    !err ) {
@@ -437,8 +425,8 @@ return( err );
 
 int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags) {
     int i;
-    static char *bitmaps[] = {"bdf", "ms", "apple", "sbit", "gdf", "bin", "dfont", NULL };
-    real *sizes=NULL;
+    static char *bitmaps[] = {"bdf", "ms", "apple", "sbit", "bin", "dfont", NULL };
+    int32 *sizes=NULL;
     char *end = filename+strlen(filename);
 
     for ( i=0; extensions[i]!=NULL; ++i ) {
@@ -501,12 +489,12 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags) 
 	    cnt = 0;
 	    for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
 		if ( sizes!=NULL )
-		    sizes[cnt] = bdf->pixelsize;
+		    sizes[cnt] = bdf->pixelsize | (BDFDepth(bdf)<<16);
 		++cnt;
 	    }
 	    if ( i==1 )
 	break;
-	    sizes = galloc((cnt+1)*sizeof(real));
+	    sizes = galloc((cnt+1)*sizeof(int32));
 	}
 	sizes[cnt] = 0;
     }
@@ -516,7 +504,7 @@ return( !_DoSave(sf,filename,sizes));
 static void DoSave(struct gfc_data *d,unichar_t *path) {
     int err=false;
     char *temp;
-    real *sizes=NULL;
+    int32 *sizes=NULL;
     int iscid;
     Encoding *item=NULL;
 
@@ -786,10 +774,13 @@ static unichar_t *BitmapList(SplineFont *sf) {
     unichar_t *uret;
 
     for ( bdf=sf->bitmaps, i=0; bdf!=NULL; bdf=bdf->next, ++i );
-    pt = cret = galloc((i+1)*10);
+    pt = cret = galloc((i+1)*20);
     for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
 	if ( pt!=cret ) *pt++ = ',';
-	sprintf( pt, "%d", bdf->pixelsize );
+	if ( bdf->clut==NULL )
+	    sprintf( pt, "%d", bdf->pixelsize );
+	else
+	    sprintf( pt, "%d@%d", bdf->pixelsize, BDFDepth(bdf) );
 	pt += strlen(pt);
     }
     *pt = '\0';
@@ -928,7 +919,6 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     old = oldbitmapstate;
     if ( sf->onlybitmaps ) {
 	old = 0;
-	bitmaptypes[bf_gdf].disabled = true;
 	bitmaptypes[bf_ttf_ms].disabled = true;
 	bitmaptypes[bf_ttf_apple].disabled = true;
     }

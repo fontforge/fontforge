@@ -763,6 +763,7 @@ static char *str_ClearDependent = "You are attempting to clear %.30hs which is r
 static char *str_UnlinkAll = "Unlink All";
 static char *str_Unlink = "Unlink";
 static char *str_dPixelBitmap = "%d pixel bitmap";
+static char *str_ddPixelBitmap = "%d@%d pixel bitmap";
 static char *str_RestrictedRightsFont = "This font is marked with an FSType of 2 (Restricted\nLicense). That means it is not editable without the\npermission of the legal owner.\n\nDo you have such permission?";
 static char *str_RestrictedFont = "Restricted Font";
 static char *str_CloseFont = "Please close font";
@@ -956,6 +957,7 @@ static char *str_WinSizes = "Win";
 static char *str_MacSizes = "Mac";
 static char *str_UseFreeType = "Use FreeType";
 static char *str_ScalingBitmaps = "Scaling Bitmaps";
+static char *str_CantScaleGreymap = "Can't scale a greymap font";
     /* Bitmap view */
 /* "%s at %d from %s", charactername, pixelsize, fontname */
 static char *str_bvat = " at ";

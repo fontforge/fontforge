@@ -621,7 +621,7 @@ static void bGenerate(Context *c) {
 }
 
 static void Bitmapper(Context *c,int isavail) {
-    real *sizes;
+    int32 *sizes;
     int i;
 
     if ( c->a.argc!=2 )
@@ -632,9 +632,12 @@ static void Bitmapper(Context *c,int isavail) {
 	if ( c->a.vals[1].u.aval->vals[i].type!=v_int ||
 		c->a.vals[1].u.aval->vals[i].u.ival<=2 )
 	    error( c, "Bad type of array component");
-    sizes = galloc((c->a.vals[1].u.aval->argc+1)*sizeof(real));
-    for ( i=0; i<c->a.vals[1].u.aval->argc; ++i )
+    sizes = galloc((c->a.vals[1].u.aval->argc+1)*sizeof(int32));
+    for ( i=0; i<c->a.vals[1].u.aval->argc; ++i ) {
 	sizes[i] = c->a.vals[1].u.aval->vals[i].u.ival;
+	if ( (sizes[i]>>16)==0 )
+	    sizes[i] |= 0x10000;
+    }
     sizes[i] = 0;
     
     if ( !BitmapControl(c->curfv,sizes,isavail) )

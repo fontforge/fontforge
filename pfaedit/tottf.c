@@ -6382,7 +6382,7 @@ static int32 filecheck(FILE *file) {
 return( sum );
 }
 
-static void AssignTTFGlyph(SplineFont *sf,real *bsizes) {
+static void AssignTTFGlyph(SplineFont *sf,int32 *bsizes) {
     int i, tg, j;
     BDFFont *bdf;
 
@@ -6392,7 +6392,7 @@ static void AssignTTFGlyph(SplineFont *sf,real *bsizes) {
     /*  We generate them automagically */
 
     for ( bdf = sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-	for ( j=0; bsizes[j]!=0 && bsizes[j]!=bdf->pixelsize; ++j );
+	for ( j=0; bsizes[j]!=0 && ((bsizes[j]&0xffff)!=bdf->pixelsize || (bsizes[j]>>16)!=BDFDepth(bdf)); ++j );
 	if ( bsizes[j]==0 )
     continue;
 	for ( i=0; i<bdf->charcnt; ++i ) if ( !IsntBDFChar(bdf->chars[i]) )
@@ -6405,7 +6405,7 @@ static void AssignTTFGlyph(SplineFont *sf,real *bsizes) {
 }
     
 static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
-	real *bsizes, enum bitmapformat bf) {
+	int32 *bsizes, enum bitmapformat bf) {
     int i, j, pos;
     BDFFont *bdf;
 
@@ -6420,7 +6420,7 @@ static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format
 	bsizes = NULL;
     if ( bsizes!=NULL ) {
 	for ( i=j=0; bsizes[i]!=0; ++i ) {
-	    for ( bdf=sf->bitmaps; bdf!=NULL && bdf->pixelsize!=bsizes[i]; bdf=bdf->next );
+	    for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=(bsizes[i]&0xffff) || BDFDepth(bdf)!=(bsizes[i]>>16)); bdf=bdf->next );
 	    if ( bdf!=NULL )
 		bsizes[j++] = bsizes[i];
 	}
@@ -6749,7 +6749,7 @@ static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
 }
 
 int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
-	real *bsizes, enum bitmapformat bf) {
+	int32 *bsizes, enum bitmapformat bf) {
     struct alltabs at;
     char *oldloc;
 
@@ -6769,7 +6769,7 @@ return( 1 );
 }
 
 int WriteTTFFont(char *fontname,SplineFont *sf,enum fontformat format,
-	real *bsizes, enum bitmapformat bf) {
+	int32 *bsizes, enum bitmapformat bf) {
     FILE *ttf;
     int ret;
 
