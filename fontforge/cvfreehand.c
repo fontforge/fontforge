@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <math.h>
 
 const int min_line_cnt = 10;		/* line segments must be at least this many datapoints to be distinguished */
@@ -893,3 +894,4 @@ return;
     fclose(foo);
 }
 #endif
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

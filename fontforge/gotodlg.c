@@ -26,6 +26,7 @@
  */
 
 #include "pfaeditui.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <ustring.h>
 #include <utype.h>
 
@@ -633,3 +634,4 @@ return( enc );
 return( gd.ret );
     }
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

@@ -449,6 +449,7 @@ static Undoes *AddUndo(Undoes *undo,Undoes **uhead,Undoes **rhead) {
 return( undo );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static Undoes *CVAddUndo(CharView *cv,Undoes *undo) {
 return( AddUndo(undo,&cv->layerheads[cv->drawmode]->undoes,
 	&cv->layerheads[cv->drawmode]->redoes));
@@ -491,6 +492,7 @@ return(NULL);
 #endif
 return( CVAddUndo(cv,undo));
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 Undoes *SCPreserveLayer(SplineChar *sc,int layer, int dohints) {
     Undoes *undo;
@@ -556,6 +558,7 @@ return;
     undo->u.state.lbearingchange = lbc;
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 Undoes *CVPreserveTState(CharView *cv) {
     Undoes *undo;
     int anyrefs;
@@ -614,6 +617,7 @@ return(NULL);
     undo->u.width = vwidth;
 return( CVAddUndo(cv,undo));
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 Undoes *SCPreserveWidth(SplineChar *sc) {
     Undoes *undo;
@@ -746,6 +750,7 @@ static void SCUndoAct(SplineChar *sc,int layer, Undoes *undo) {
     }
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 void CVDoUndo(CharView *cv) {
     Undoes *undo = cv->layerheads[cv->drawmode]->undoes;
 
@@ -775,6 +780,7 @@ return;
     cv->lastselpt = NULL;
 return;
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void SCDoUndo(SplineChar *sc,int layer) {
     Undoes *undo = sc->layers[layer].undoes;
@@ -804,6 +810,7 @@ return;
 return;
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 /* Used when doing incremental transformations. If I just keep doing increments*/
 /*  then rounding errors will mount. Instead I go back to the original state */
 /*  each time */
@@ -860,6 +867,7 @@ void CVRemoveTopUndo(CharView *cv) {
     undo->next = NULL;
     UndoesFree(undo);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static void BCUndoAct(BDFChar *bc,Undoes *undo) {
 
@@ -944,10 +952,13 @@ void CopyBufferFree(void) {
 
 static void CopyBufferFreeGrab(void) {
     CopyBufferFree();
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( fv_list!=NULL && screen_display!=NULL )
 	GDrawGrabSelection(fv_list->gw,sn_clipboard);	/* Grab the selection to one of my windows, doesn't matter which, aren't going to export it, but just want to clear things out so no one else thinks they have the selection */
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void noop(void *_copybuffer) {
 }
 
@@ -1151,6 +1162,7 @@ return;
 	}
     }
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void ClipboardClear(void) {
     CopyBufferFree();
@@ -1260,9 +1272,12 @@ void CopyReference(SplineChar *sc) {
     ref->adobe_enc = getAdobeEnc(sc->name);
     ref->transform[0] = ref->transform[3] = 1.0;
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     XClipCheckEps();
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 void CopySelected(CharView *cv) {
 
     CopyBufferFreeGrab();
@@ -1341,6 +1356,7 @@ return;
 
     XClipCheckEps();
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 #ifdef FONTFORGE_CONFIG_TYPE3
 static Undoes *SCCopyAllLayer(SplineChar *sc,int full,int layer) {
@@ -1448,9 +1464,11 @@ void SCCopyWidth(SplineChar *sc,enum undotype ut) {
     }
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 void CopyWidth(CharView *cv,enum undotype ut) {
     SCCopyWidth(cv->sc,ut);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static SplineChar *FindCharacter(SplineFont *sf,RefChar *rf) {
     extern char *AdobeStandardEncoding[256];
@@ -1565,6 +1583,7 @@ static void PasteNonExistantRefCheck(SplineChar *sc,Undoes *paster,RefChar *ref,
     }
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void SCCheckXClipboard(GWindow awindow,SplineChar *sc,int layer,int doclear) {
     int type, len;
     char *paste;
@@ -1611,6 +1630,7 @@ return;
     }
     free(paste);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 /* When we paste a composit character from one font to another the references */
 /*  refer to the glyphs in the new font. So the width should refer to the */
@@ -1859,15 +1879,17 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto) 
 	    SplineChar *rsc;
 	    double scale = PasteFigureScale(sc->parent,paster->u.state.copied_from);
 	    for ( refs = paster->u.state.refs; refs!=NULL; refs=refs->next ) {
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 		if ( sc->searcherdummy )
 		    rsc = FindCharacter(sc->views->searcher->fv->sf,refs);
 		else
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 		    rsc = FindCharacter(sc->parent,refs);
 		if ( rsc!=NULL && SCDependsOnSC(rsc,sc))
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		    GWidgetErrorR(_STR_SelfRef,_STR_AttemptSelfRef);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 		    gwwv_post_error(_("Self-referential character"),_("Attempt to make a character that refers to itself"));
+#else
+		    GWidgetErrorR(_STR_SelfRef,_STR_AttemptSelfRef);
 #endif
 		else if ( rsc!=NULL ) {
 		    new = RefCharCreate();
@@ -1909,10 +1931,10 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto) 
       break;
       case ut_vwidth:
 	if ( !sc->parent->hasvmetrics )
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_NoVerticalMetrics,_STR_FontNoVerticalMetrics);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled\nUse Element->Font Info to enable them."));
+#else
+	    GWidgetErrorR(_STR_NoVerticalMetrics,_STR_FontNoVerticalMetrics);
 #endif
 	else {
 	    SCPreserveVWidth(sc);
@@ -1973,6 +1995,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto) 
 }
 #endif
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void _PasteToCV(CharView *cv,SplineChar *cvsc,Undoes *paster) {
     int refstate = 0;
     DBounds bb;
@@ -2154,6 +2177,7 @@ void PasteToCV(CharView *cv) {
 	    _PasteToCV(cv,mm->instances[j]->chars[enc],&copybuffer);
     }
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 
 SplineSet *ClipBoardToSplineSet(void) {
@@ -2190,6 +2214,7 @@ return( NULL );
 return( NULL );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 void BCCopySelected(BDFChar *bc,int pixelsize,int depth) {
 
     CopyBufferFreeGrab();
@@ -2204,6 +2229,7 @@ void BCCopySelected(BDFChar *bc,int pixelsize,int depth) {
     copybuffer.u.bmpstate.pixelsize = pixelsize;
     copybuffer.u.bmpstate.depth = depth;
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static Undoes *BCCopyAll(BDFChar *bc,int pixelsize, int depth) {
     Undoes *cur;
@@ -2379,9 +2405,12 @@ return;
     copybuffer.undotype = ut_multiple;
     copybuffer.u.multiple.mult = head;
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     XClipCheckEps();
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 void MVCopyChar(MetricsView *mv, SplineChar *sc, int fullcopy) {
     BDFFont *bdf;
     Undoes *cur=NULL;
@@ -2421,6 +2450,7 @@ return;
 
     XClipCheckEps();
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static BDFFont *BitmapCreateCheck(FontView *fv,int *yestoall, int first, int pixelsize, int depth) {
     int yes = 0;
@@ -2489,6 +2519,7 @@ return;
     }
 
     if ( copybuffer.undotype == ut_none ) {
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	j = -1;
 	forever {
 	    for ( i=0; i<sf->charcnt; ++i ) if ( fv->selected[i] )
@@ -2498,6 +2529,7 @@ return;
 	break;
 	    sf = mm->instances[j];
 	}
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 return;
     }
 
@@ -2613,6 +2645,7 @@ return;
 	free(oldsel);
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 void PasteIntoMV(MetricsView *mv,SplineChar *sc, int doclear) {
     Undoes *cur=NULL, *bmp;
     BDFFont *bdf;
@@ -2676,6 +2709,7 @@ return;
       break;
     }
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 /* Look through the copy buffer. If it wasn't copied from the given font, then */
 /*  we can stop. Otherwise: */
@@ -2730,7 +2764,9 @@ void PosSubCopy(enum possub_type type, char **data,SplineFont *sf) {
     copybuffer.u.possub.data = data;
     copybuffer.u.possub.more_pst = NULL;
     copybuffer.u.possub.copied_from = sf;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     XClipCheckEps();
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 }
 
 void CopyPSTStart(SplineFont *sf) {

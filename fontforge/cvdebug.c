@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <gkeysym.h>
 #include <ustring.h>
 
@@ -1301,3 +1302,4 @@ return;
     }
 }
 #endif
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

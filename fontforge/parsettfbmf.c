@@ -405,15 +405,30 @@ return;
 	    for ( i=0; i<cnt; ++i )
 		sel[i] = true;
 	}
+#if defined(FONTFORGE_CONFIG_GTK)
+    } else if ( onlyone ) {
+	biggest=gwwv_choose_with_buttons(_("Load Bitmap Fonts"), choices,cnt,biggest,buttons,
+		_("Do you want to load the bitmap fonts embedded in this true/open type file?\n(And if so, which)"));
+	if ( biggest!=-1 ) sel[biggest] = true;
+    } else {
+	biggest = gwwv_choose_multiple_with_buttons(_("Load Bitmap Fonts"), choices,sel,cnt,buttons,
+		_("Do you want to load the bitmap fonts embedded in this true/open type file?\n(And if so, which)"));
+#elif defined(FONTFORGE_CONFIG_GDRAW)
     } else if ( onlyone ) {
 	biggest=GWidgetChoicesBR(_STR_LoadBitmapFonts, choices,cnt,biggest,buttons,_STR_LoadTTFBitmaps);
 	if ( biggest!=-1 ) sel[biggest] = true;
     } else {
 	biggest = GWidgetChoicesBRM(_STR_LoadBitmapFonts, choices,sel,cnt,buttons,_STR_LoadTTFBitmaps);
+#else
+    } else if ( onlyone ) {
+	if ( biggest!=-1 ) sel[biggest] = true;
+    } else {
+	biggest = -2;
+#endif
     }
     for ( i=0; i<cnt; ++i ) free( (unichar_t *) (choices[i]));
     free(choices);
-    if ( biggest==-1 ) {		/* Cancelled */
+    if ( biggest<0 ) {		/* Cancelled */
 	free(sizes); free(sel);
 return;
     }

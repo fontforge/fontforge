@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <gkeysym.h>
 #include <ustring.h>
 
@@ -722,3 +723,4 @@ void DisplayDlg(SplineFont *sf) {
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(di.gw);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

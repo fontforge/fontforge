@@ -27,6 +27,7 @@
 #include "pfaeditui.h"
 #include <ustring.h>
 #include <chardata.h>
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <utype.h>
 #include <gkeysym.h>
 #include <math.h>
@@ -720,6 +721,7 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_MacAutomatic	16000
 #define CID_MacStyles		16001
 #define CID_MacFOND		16002
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 struct psdict *PSDictCopy(struct psdict *dict) {
     struct psdict *ret;
@@ -733,8 +735,8 @@ return( NULL );
     ret->keys = gcalloc(ret->cnt,sizeof(char *));
     ret->values = gcalloc(ret->cnt,sizeof(char *));
     for ( i=0; i<dict->next; ++i ) {
-	ret->keys[i] = copy(dict->keys[i]);
-	ret->values[i] = copy(dict->values[i]);
+	ret->keys[i] = strdup(dict->keys[i]);
+	ret->values[i] = strdup(dict->values[i]);
     }
 
 return( ret );
@@ -804,15 +806,16 @@ return( -1 );
 	    dict->keys = grealloc(dict->keys,dict->cnt*sizeof(char *));
 	    dict->values = grealloc(dict->values,dict->cnt*sizeof(char *));
 	}
-	dict->keys[dict->next] = copy(key);
+	dict->keys[dict->next] = strdup(key);
 	dict->values[dict->next] = NULL;
 	++dict->next;
     }
     free(dict->values[i]);
-    dict->values[i] = copy(newval);
+    dict->values[i] = strdup(newval);
 return( i );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 /* These are Postscript names, and as such should not be translated */
 enum { pt_number, pt_boolean, pt_array, pt_code };
 static struct { const char *name; short type, arr_size, present; } KnownPrivates[] = {
@@ -1355,6 +1358,7 @@ static int PI_ListSel(GGadget *g, GEvent *e) {
     }
 return( true );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static int infont(SplineChar *sc, const unsigned short *table, int tlen,
 	Encoding *item, uint8 *used, int new_map) {
@@ -1500,18 +1504,21 @@ return( sc->enc!=-1 );
 }
 
 static void RemoveSplineChar(SplineFont *sf, int enc) {
-    CharView *cv, *next;
     struct splinecharlist *dep, *dnext;
     BDFFont *bdf;
     BDFChar *bfc;
     SplineChar *sc = sf->chars[enc];
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    CharView *cv, *next;
     BitmapView *bv, *bvnext;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     RefChar *refs, *rnext;
     FontView *fvs;
     KernPair *kp, *kprev;
     int i;
 
     if ( sc!=NULL ) {
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	if ( sc->views ) {
 	    for ( cv = sc->views; cv!=NULL; cv=next ) {
 		next = cv->next;
@@ -1522,6 +1529,7 @@ static void RemoveSplineChar(SplineFont *sf, int enc) {
 	    GDrawSync(NULL);
 	    GDrawProcessPendingEvents(NULL);
 	}
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	for ( dep=sc->dependents; dep!=NULL; dep=dnext ) {
 	    SplineChar *dsc = dep->sc;
 	    RefChar *rf, *rnext;
@@ -1535,6 +1543,7 @@ static void RemoveSplineChar(SplineFont *sf, int enc) {
 	    }
 	}
 	for ( fvs=sc->parent->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    if ( fvs->sv!=NULL ) {
 		RefChar *rf, *rnext;
 		for ( rf = fvs->sv->sc_srch.layers[ly_fore].refs; rf!=NULL; rf=rnext ) {
@@ -1548,6 +1557,7 @@ static void RemoveSplineChar(SplineFont *sf, int enc) {
 			SCRefToSplines(&fvs->sv->sc_rpl,rf);
 		}
 	    }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	    /* Are there any kerning pairs that look at this character? */
 	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 		for ( kprev=NULL, kp=sf->chars[i]->kerns; kp!=NULL; kprev = kp, kp=kp->next ) {
@@ -1575,6 +1585,7 @@ static void RemoveSplineChar(SplineFont *sf, int enc) {
     for ( bdf=sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
 	if ( (bfc = bdf->chars[enc])!= NULL ) {
 	    bdf->chars[enc] = NULL;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    if ( bfc->views!=NULL ) {
 		for ( bv= bfc->views; bv!=NULL; bv=bvnext ) {
 		    bvnext = bv->next;
@@ -1585,6 +1596,7 @@ static void RemoveSplineChar(SplineFont *sf, int enc) {
 		GDrawSync(NULL);
 		GDrawProcessPendingEvents(NULL);
 	    }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	    BDFCharFree(bfc);
 	}
     }
@@ -1673,6 +1685,7 @@ return( true );
 }
 
 void SFFindNearTop(SplineFont *sf) {
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     FontView *fv;
     int i,k;
 
@@ -1698,9 +1711,11 @@ void SFFindNearTop(SplineFont *sf) {
 	    }
 	}
     }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 }
 
 void SFRestoreNearTop(SplineFont *sf) {
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     FontView *fv;
 
     for ( fv=sf->fv; fv!=NULL; fv=fv->nextsame ) if ( fv->sc_near_top!=NULL ) {
@@ -1710,6 +1725,7 @@ void SFRestoreNearTop(SplineFont *sf) {
 	GScrollBarSetPos(fv->vsb,fv->rowoff);
 	/* Don't ask for an expose event yet. We'll get one soon enough */
     }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 }
 
 /* see also SplineFontNew in splineutil2.c */
@@ -1724,7 +1740,9 @@ static int __SFReencodeFont(SplineFont *sf,enum charset new_map,
     Encoding *item=NULL;
     uint8 *used;
     RefChar *refs;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     CharView *cv;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
     if ( target==NULL ) {
 	if ( sf->encoding_name==new_map )
@@ -1842,10 +1860,12 @@ return( false );
 		} else
 		    ++extras;
 	    }
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    if ( sc!=NULL ) {
 		for ( cv=sc->views; cv!=NULL; cv=cv->next )
 		    cv->template1 = cv->template2 = NULL;
 	    }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	}
 	free(used);
     }
@@ -1892,8 +1912,10 @@ return( false );
     sf->remap = NULL;
     sf->encodingchanged = true;
     sf->compacted = false;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
 	SCRefreshTitles(sf->chars[i]);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 return( true );
 }
 
@@ -1925,6 +1947,7 @@ return( SFUncompactFont(sf));
 return( _SFReencodeFont(sf,new_map,NULL));
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 int SFMatchEncoding(SplineFont *sf,SplineFont *target) {
 return( _SFReencodeFont(sf,em_none,target));
 }
@@ -6464,3 +6487,4 @@ void FontInfoDestroy(FontView *fv) {
     if ( fv->fontinfo )
 	GFI_CancelClose( (struct gfi_data *) (fv->fontinfo) );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <ustring.h>
 #include <gkeysym.h>
 #include <math.h>
@@ -149,12 +150,14 @@ static void FVStrokeIt(void *_fv, StrokeInfo *si) {
 	    sc->layers[layer].splines = temp;
 	}
 	SCCharChangedUpdate(sc);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !GProgressNext())
 #elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
 #endif
     break;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
 #if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressEndIndicator();
@@ -1412,3 +1415,4 @@ int LayerDialog(Layer *layer) {
 return( ld.ok );
 }
 #endif
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

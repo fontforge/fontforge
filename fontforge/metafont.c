@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include "edgelist.h"
 #include <gwidget.h>
 #include <ustring.h>
@@ -1932,12 +1933,14 @@ return( true );
 		for ( i=0; i<meta->fv->sf->charcnt; ++i )
 		    if ( meta->fv->sf->chars[i]!=NULL && meta->fv->selected[i] ) {
 			_MetaFont(meta,meta->fv->sf->chars[i]);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
 			if ( !GProgressNext())
 #elif defined(FONTFORGE_CONFIG_GTK)
 			if ( !gwwv_progress_next())
 #endif
 		break;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 		    }
 #if defined(FONTFORGE_CONFIG_GDRAW)
 		GProgressEndIndicator();
@@ -2226,3 +2229,4 @@ void MetaFont(FontView *fv,CharView *cv,SplineChar *sc) {
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(meta.gw);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

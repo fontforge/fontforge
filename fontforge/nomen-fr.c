@@ -2430,8 +2430,8 @@ static char *str_BadEncFormat = "Format du fichier de codage incorrect" ;
 static char *str_PleaseNameEnc = "SVP, nommer ce codage" ;
    /* Either insert first, second or third, or the number followed by the "th" string (5th, 6th, etc.) */
    /* Please name the %d/first/second/third encoding in this file" */
-static char *str_PleaseNameEncPre = "SVP, donnez un nom au " ;
-static char *str_PleaseNameEncPost = " codage dans ce fichier" ;
+static char *str_PleaseNameEncNamed = "SVP, donnez un nom au %s codage dans ce fichier" ;
+static char *str_PleaseNameEncNumeric = "SVP, donnez un nom au %de codage dans ce fichier" ;
 static char *str_First = "Premier" ;
 static char mnemonic_First = 'P';
 static char str_Last = "Dernier";

@@ -165,9 +165,9 @@ return;
 }
 
 static void FVToggleCharSelected(FontView *fv,int enc) {
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     int i, j;
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( fv->v==NULL || fv->colcnt==0 )	/* Can happen in scripts */
 return;
 
@@ -214,6 +214,7 @@ void FVDeselectAll(FontView *fv) {
     fv->sel_index = 0;
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void FVSelectAll(FontView *fv) {
     int i;
 
@@ -292,13 +293,19 @@ static void FVReselect(FontView *fv, int newpos) {
 	}
     }
     fv->end_pos = newpos;
+# ifdef FONTFORGE_CONFIG_GDRAW
     if ( newpos>=0 && newpos<fv->sf->charcnt && fv->sf->chars[newpos]!=NULL &&
 	    fv->sf->chars[newpos]->unicodeenc>=0 && fv->sf->chars[newpos]->unicodeenc<0x10000 )
 	GInsCharSetChar(fv->sf->chars[newpos]->unicodeenc);
+# endif
 }
+#endif
 
 static void _SplineFontSetUnChanged(SplineFont *sf) {
-    int i, was = sf->changed;
+    int i;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    int was = sf->changed;
+#endif
     BDFFont *bdf;
 
     sf->changed = false;
@@ -306,7 +313,9 @@ static void _SplineFontSetUnChanged(SplineFont *sf) {
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
 	if ( sf->chars[i]->changed ) {
 	    sf->chars[i]->changed = false;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    SCRefreshTitles(sf->chars[i]);
+#endif
 	}
     for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	for ( i=0; i<bdf->charcnt; ++i ) if ( bdf->chars[i]!=NULL )
@@ -431,7 +440,6 @@ void FontViewMenu_GenerateFamily(GtkMenuItem *menuitem, gpointer user_data) {
     _FVMenuGenerate(fv,true);
 }
 # endif
-#endif
 
 int _FVMenuSaveAs(FontView *fv) {
     unichar_t *temp;
@@ -496,7 +504,6 @@ return( 0 );
 return( ok );
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuSaveAs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -510,7 +517,6 @@ void FontViewMenu_SaveAs(GtkMenuItem *menuitem, gpointer user_data) {
     _FVMenuSaveAs(fv);
 }
 # endif
-#endif
 
 int _FVMenuSave(FontView *fv) {
     int ret = 0;
@@ -546,7 +552,6 @@ int _FVMenuSave(FontView *fv) {
 return( ret );
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuSave(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -646,6 +651,7 @@ void _FVCloseWindows(FontView *fv) {
 #endif
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static int SFAnyChanged(SplineFont *sf) {
     if ( sf->mm!=NULL ) {
 	MMSet *mm = sf->mm;
@@ -693,7 +699,6 @@ return(false);
 return( true );
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
 void MenuNew(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontNew();
@@ -762,7 +767,6 @@ static void FVReattachCVs(SplineFont *old,SplineFont *new) {
 	}
     }
 }
-#endif
 
 void FVRevert(FontView *fv) {
     SplineFont *temp, *old = fv->cidmaster?fv->cidmaster:fv->sf;
@@ -770,7 +774,8 @@ void FVRevert(FontView *fv) {
     BDFChar *bc;
     BitmapView *bv, *bvnext;
     MetricsView *mv, *mvnext;
-    int i, enc;
+    int enc;
+    int i;
     FontView *fvs;
 
     if ( old->origname==NULL )
@@ -850,7 +855,6 @@ return;
     SplineFontFree(old);
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuRevert(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -966,6 +970,7 @@ return;
 }
 #endif
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void _MenuExit(void *junk) {
     FontView *fv, *next;
 
@@ -981,7 +986,6 @@ return;
     exit(0);
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GTK
 static void MenuExit(GtkMenuItem *menuitem, gpointer user_data) {
     _MenuExit(NULL);
@@ -1474,6 +1478,7 @@ return( -2 );
 return( val );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static int FVAllSelected(FontView *fv) {
     int i, any = false;
     /* Is everything real selected? */
@@ -1486,7 +1491,6 @@ return( false );
 return( any );
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuCopyFrom(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     /*FontView *fv = (FontView *) GDrawGetUserData(gw);*/
@@ -1697,7 +1701,9 @@ return;
     BCFlattenFloat(bc);
     memset(bc->bitmap,'\0',bc->bytes_per_line*(bc->ymax-bc->ymin+1));
     BCCompressBitmap(bc);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     BCCharChangedUpdate(bc);
+#endif
 }
 
 void SCClearContents(SplineChar *sc) {
@@ -2418,6 +2424,7 @@ return;
 }
 #endif
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static int getorigin(void *d,BasePoint *base,int index) {
     /*FontView *fv = (FontView *) d;*/
 
@@ -2434,6 +2441,7 @@ return( false );
     }
 return( true );
 }
+#endif
 
 void TransHints(StemInfo *stem,real mul1, real off1, real mul2, real off2, int round_to_int ) {
     HintInstance *hi;
@@ -2635,12 +2643,14 @@ void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
 		    BCTrans(bdf,bdf->chars[i],bvts,fv);
 	    }
 	}
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
 	if ( !GProgressNext())
 # elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
 # endif
     break;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
 # ifdef FONTFORGE_CONFIG_GDRAW
     GProgressEndIndicator();
@@ -2818,12 +2828,14 @@ static void FVOverlap(FontView *fv,enum overlap_type ot) {
 	for ( layer = ly_fore; layer<sc->layer_cnt; ++layer )
 	    sc->layers[layer].splines = SplineSetRemoveOverlap(sc,sc->layers[layer].splines,ot);
 	SCCharChangedUpdate(sc);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
 	if ( !GProgressNext())
 # elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
 # endif
     break;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
 # ifdef FONTFORGE_CONFIG_GDRAW
     GProgressEndIndicator();
@@ -2931,12 +2943,14 @@ void _FVSimplify(FontView *fv,struct simplifyinfo *smpl) {
 	for ( layer = ly_fore; layer<sc->layer_cnt; ++layer )
 	    sc->layers[layer].splines = SplineCharSimplify(sc,sc->layers[layer].splines,smpl);
 	SCCharChangedUpdate(sc);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
 	if ( !GProgressNext())
 # elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
 # endif
     break;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
 # ifdef FONTFORGE_CONFIG_GDRAW
     GProgressEndIndicator();
@@ -2945,6 +2959,7 @@ void _FVSimplify(FontView *fv,struct simplifyinfo *smpl) {
 # endif
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void FVSimplify(FontView *fv,int type) {
     static struct simplifyinfo smpl = { sf_normal,.75,.05,0 };
 
@@ -2982,6 +2997,7 @@ void FontViewMenu_Cleanup(GtkMenuItem *menuitem, gpointer user_data) {
     FVSimplify( (FontView *) FV_From_MI(menuitem), -1);
 }
 #endif
+#endif
 
 static void FVAddExtrema(FontView *fv) {
     int i, cnt=0, layer;
@@ -3000,12 +3016,14 @@ static void FVAddExtrema(FontView *fv) {
 	for ( layer = ly_fore; layer<sc->layer_cnt; ++layer )
 	    SplineCharAddExtrema(sc->layers[layer].splines,false);
 	SCCharChangedUpdate(sc);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
 	if ( !GProgressNext())
 # elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
 # endif
     break;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
 # ifdef FONTFORGE_CONFIG_GDRAW
     GProgressEndIndicator();
@@ -3089,12 +3107,14 @@ return;
 	}
 	if ( changed || refchanged )
 	    SCCharChangedUpdate(sc);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
 	if ( !GProgressNext())
 # elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
 # endif
     break;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
 # ifdef FONTFORGE_CONFIG_GDRAW
     GProgressEndIndicator();
@@ -3118,12 +3138,14 @@ static void FVRound2Int(FontView *fv) {
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SCPreserveState(fv->sf->chars[i],false);
 	SCRound2Int( fv->sf->chars[i]);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
 	if ( !GProgressNext())
 # elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
 # endif
     break;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
 # ifdef FONTFORGE_CONFIG_GDRAW
     GProgressEndIndicator();
@@ -3184,12 +3206,14 @@ void FVBuildAccent(FontView *fv,int onlyaccents) {
 	    sc = SFMakeChar(fv->sf,i);
 	    SCBuildComposit(fv->sf,sc,!onlycopydisplayed,fv);
 	}
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
 	if ( !GProgressNext())
 # elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
 # endif
     break;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
 # ifdef FONTFORGE_CONFIG_GDRAW
     GProgressEndIndicator();
@@ -3354,6 +3378,7 @@ void FontViewMenu_Interpolate(GtkMenuItem *menuitem, gpointer user_data) {
 }
 #endif
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 void FVScrollToChar(FontView *fv,int i) {
 
     if ( fv->v==NULL || fv->colcnt==0 )	/* Can happen in scripts */
@@ -3387,7 +3412,6 @@ void FVChangeChar(FontView *fv,int i) {
     }
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -4021,12 +4045,14 @@ static void FVAutoHint(FontView *fv,int removeOverlap) {
 	SplineChar *sc = fv->sf->chars[i];
 	sc->manualhints = false;
 	SplineCharAutoHint(sc,removeOverlap);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
 	if ( !GProgressNext())
 # elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
 # endif
     break;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
 # ifdef FONTFORGE_CONFIG_GDRAW
     GProgressEndIndicator();
@@ -4065,12 +4091,14 @@ return;
 	SplineChar *sc = fv->sf->chars[i];
 	SCFigureHintMasks(sc);
 	SCUpdateAll(sc);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
 	if ( !GProgressNext())
 # elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
 # endif
     break;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
 # ifdef FONTFORGE_CONFIG_GDRAW
     GProgressEndIndicator();
@@ -4105,12 +4133,14 @@ static void FVAutoCounter(FontView *fv) {
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
 	SCFigureCounterMasks(sc);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
 	if ( !GProgressNext())
 # elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
 # endif
     break;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
 # ifdef FONTFORGE_CONFIG_GDRAW
     GProgressEndIndicator();
@@ -4168,11 +4198,13 @@ static void FVAutoInstr(FontView *fv) {
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
 	SCAutoInstr(sc,&bd);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
 	if ( !GProgressNext())
 # elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
 # endif
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     break;
     }
 # ifdef FONTFORGE_CONFIG_GDRAW
@@ -4493,6 +4525,7 @@ return;
 }
 #endif
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void FVInsertInCID(FontView *fv,SplineFont *sf) {
     SplineFont *cidmaster = fv->cidmaster;
     SplineFont **subs;
@@ -4516,11 +4549,12 @@ static void FVInsertInCID(FontView *fv,SplineFont *sf) {
     }
     fv->sf = sf;
     sf->fv = fv;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     FontViewReformatOne(fv);
     FVSetTitle(fv);
+#endif
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuInsertFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -5820,7 +5854,7 @@ void FontViewMenu_ActivateEdit(GtkMenuItem *menuitem, gpointer user_data) {
     if ( w!=NULL )
 	gtk_widget_set_sensitive(w,pos!=-1 && fv->sf->hasvmetrics);
 
-    w = lookup_widget( menuitem, "copy_features1" );
+    w = lookup_widget( menuitem, "copy_glyph_features1" );
     if ( w!=NULL )
 	gtk_widget_set_sensitive(w,pos!=-1 && SCAnyFeatures(fv->sf->chars[pos]);
 
@@ -6260,6 +6294,7 @@ void FontViewMenu_ActivateMM(GtkMenuItem *menuitem, gpointer user_data) {
 }
 #endif
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 void FVRefreshChar(FontView *fv,BDFFont *bdf,int enc) {
     BDFChar *bdfc = bdf->chars[enc];
     int i, j;
@@ -6358,6 +6393,7 @@ return;
     for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next )
 	FVRegenChar(fv,dlist->sc);
 }
+#endif
 
 int32 UniFromEnc(int enc, enum charset encname) {
     int32 uni = -1;
@@ -6758,6 +6794,7 @@ SplineChar *SFMakeChar(SplineFont *sf,int i) {
 return( _SFMakeChar(sf,i));
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static GImage *GImageCropAndRotate(GImage *unrot) {
     struct _GImage *unbase = unrot->u.image, *rbase;
     int xmin = unbase->width, xmax = -1, ymin = unbase->height, ymax = -1;
@@ -8113,6 +8150,7 @@ static void FontViewOpenKids(FontView *fv) {
 	++k;
     } while ( k<sf->subfontcnt );
 }
+#endif
 
 FontView *_FontViewCreate(SplineFont *sf) {
     FontView *fv = gcalloc(1,sizeof(FontView));
@@ -8154,6 +8192,7 @@ FontView *FontViewCreate(SplineFont *sf) {
     PangoFont *font;
     PangoFontMetrics *fm;
     int as, ds;
+    BDFFont *bdf;
 
     fv->gw = create_FontView();
     g_object_set_data (G_OBJECT (fv->gw), "data", fv );
@@ -8188,9 +8227,9 @@ FontView *FontViewCreate(SplineFont *sf) {
     static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     static unichar_t *fontnames=NULL;
     static GWindow icon = NULL;
-    BDFFont *bdf;
     static int nexty=0;
     GRect size;
+    BDFFont *bdf;
 
     if ( icon==NULL )
 #ifdef BIGICONS
@@ -8254,6 +8293,7 @@ FontView *FontViewCreate(SplineFont *sf) {
 #endif
     fv->showhmetrics = default_fv_showhmetrics;
     fv->showvmetrics = default_fv_showvmetrics && sf->hasvmetrics;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( fv->nextsame!=NULL ) {
 	fv->filled = fv->nextsame->filled;
 	bdf = fv->nextsame->show;
@@ -8273,6 +8313,7 @@ FontView *FontViewCreate(SplineFont *sf) {
     }
     fv->cbw = -1;
     FVChangeDisplayFont(fv,bdf);
+#endif
 
 #if defined(FONTFORGE_CONFIG_GTK)
     gtk_widget_show(fv->gw);
@@ -8403,6 +8444,8 @@ return( NULL );
     buf[100+len] = '\0';
     gwwv_progress_start_indicator(fv_list==NULL?0:10,_("Loading..."),buf,_("Reading Glyphs"),NULL),0,1);
     gwwv_progress_enable_stop(0);
+#else
+    len = 0;
 #endif
     if ( fv_list==NULL && screen_display!=NULL ) { GDrawSync(NULL); GDrawProcessPendingEvents(NULL); }
 
@@ -8522,22 +8565,22 @@ return( NULL );
 	    }
 	}
     } else if ( !GFileExists(filename) )
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_CouldntOpenFontTitle,_STR_NoSuchFontFile,GFileNameTail(filename));
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Couldn't open font"),_("The requested file, %.100s, does not exist"),GFileNameTail(filename));
+#else
+	GWidgetErrorR(_STR_CouldntOpenFontTitle,_STR_NoSuchFontFile,GFileNameTail(filename));
 #endif
     else if ( !GFileReadable(filename) )
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_CouldntOpenFontTitle,_STR_FontFileNotReadable,GFileNameTail(filename));
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Couldn't open font"),_("You do not have permission to read %.100s"),GFileNameTail(filename));
+#else
+	GWidgetErrorR(_STR_CouldntOpenFontTitle,_STR_FontFileNotReadable,GFileNameTail(filename));
 #endif
     else
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_CouldntOpenFontTitle,_STR_CouldntParseFont,GFileNameTail(filename));
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Couldn't open font"),_("%.100s is not in a known format (or is so badly corrupted as to be unreadable)"),GFileNameTail(filename));
+#else
+	GWidgetErrorR(_STR_CouldntOpenFontTitle,_STR_CouldntParseFont,GFileNameTail(filename));
 #endif
 
     if ( tmpfile!=NULL ) {
@@ -8560,6 +8603,8 @@ return( NULL );
 #elif defined(FONTFORGE_CONFIG_GTK)
 	static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
 	if ( gwwv_ask(_("Restricted Font"),buts,1,1,_("This font is marked with an FSType of 2 (Restricted\nLicense). That means it is not editable without the\npermission of the legal owner.\n\nDo you have such permission?"))==1 ) {
+#else
+	if ( true ) {		/* In a script, if they didn't explicitly say so, fail */
 #endif
 	    SplineFontFree(sf);
 return( NULL );
@@ -8668,6 +8713,7 @@ return( NULL );
 return( sf );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 FontView *ViewPostscriptFont(char *filename) {
     SplineFont *sf = LoadSplineFont(filename,0);
     if ( sf==NULL )
@@ -8685,6 +8731,7 @@ return( FontViewCreate(sf));	/* Always make a new view now */
 FontView *FontNew(void) {
 return( FontViewCreate(SplineFontNew()));
 }
+#endif
 
 void FontViewFree(FontView *fv) {
     int i;
@@ -8772,9 +8819,11 @@ void FVFakeMenus(FontView *fv,int cmd) {
       case 100:
 	FVOverlap(fv,over_remove);
       break;
+#if 0		/* Not used any more */
       case 101:
 	FVSimplify(fv,false);
       break;
+#endif
       case 102:
 	FVAddExtrema(fv);
       break;

@@ -1431,6 +1431,9 @@ extern SplineFont *SFReadMacBinary(char *filename,int flags);
 extern SplineFont *SFReadWinFON(char *filename,int toback);
 extern SplineFont *LoadSplineFont(char *filename,enum openflags);
 extern SplineFont *ReadSplineFont(char *filename,enum openflags);	/* Don't use this, use LoadSF instead */
+extern SplineFont *SFFromBDF(char *filename,int ispk,int toback);
+extern SplineFont *SFFromMF(char *filename);
+extern BDFFont *SFImportBDF(SplineFont *sf, char *filename, int ispk, int toback);
 extern uint16 _MacStyleCode( char *styles, SplineFont *sf, uint16 *psstyle );
 extern uint16 MacStyleCode( SplineFont *sf, uint16 *psstyle );
 extern SplineFont *SFReadIkarus(char *fontname);

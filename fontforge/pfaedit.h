@@ -27,19 +27,19 @@
 #ifndef _PFAEDIT_H_
 #define _PFAEDIT_H_
 
-#include "basics.h"
 #include "configure-pfaedit.h"
-#include <stdio.h>
-#include <string.h>
 #if defined( FONTFORGE_CONFIG_GTK )
+# include "gtkbasics.h"
 # include <gtk/gtk.h>
-#elif defined( FONTFORGE_CONFIG_GDRAW )
+# include <gwwv.h>
+#else /*if defined( FONTFORGE_CONFIG_GDRAW )*/
+# include <basics.h>
+# include <stdio.h>
+# include <string.h>
 # include <gprogress.h>
-#endif
-#include "splinefont.h"
-#if !defined( FONTFORGE_CONFIG_GTK )
 # include "nomen.h"
 #endif
+#include "splinefont.h"
 
 typedef struct enc {
     int enc_num;

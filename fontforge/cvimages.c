@@ -25,13 +25,14 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#include <gkeysym.h>
 #include <math.h>
-#include <ustring.h>
-#include <utype.h>
 #include <sys/types.h>
 #include <dirent.h>
 #include "sd.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+#include <gkeysym.h>
+#include <ustring.h>
+#include <utype.h>
 
 
 static unichar_t wildimg[] = { '*', '.', '{',
@@ -237,6 +238,7 @@ return( oldflags );
     GDrawDestroyWindow(gw);
 return( oldflags );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 #ifdef FONTFORGE_CONFIG_TYPE3
 void SCAppendEntityLayers(SplineChar *sc, Entity *ent) {
@@ -307,6 +309,7 @@ return;
     SCCharChangedUpdate(sc);
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void ImportPS(CharView *cv,char *path) {
     FILE *ps = fopen(path,"r");
 
@@ -315,6 +318,7 @@ return;
     SCImportPSFile(cv->sc,CVLayer(cv),ps,false);
     fclose(ps);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static void SCImportPS(SplineChar *sc,char *path) {
     FILE *ps = fopen(path,"r");
@@ -361,9 +365,11 @@ return;
     SCCharChangedUpdate(sc);
 }
 
+# ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void ImportSVG(CharView *cv,char *path) {
     SCImportSVG(cv->sc,CVLayer(cv),path,false);
 }
+# endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 #endif
 
 /**************************** Fig File Import *********************************/
@@ -822,6 +828,7 @@ return(sofar);
 return( sofar );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void ImportFig(CharView *cv,char *path) {
     FILE *fig;
     char buffer[100];
@@ -861,6 +868,7 @@ return;
     }
     fclose(fig);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 /************************** Normal Image Import *******************************/
 
@@ -944,6 +952,7 @@ void SCAddScaleImage(SplineChar *sc,GImage *image,int doclear, int layer) {
     SCInsertImage(sc,image,scale,sc->parent->ascent,0,layer);
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void ImportImage(CharView *cv,char *path) {
     GImage *image;
     int layer;
@@ -1045,6 +1054,7 @@ return(false);
     BCCharChangedUpdate(bc);
 return( true );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 int FVImportImages(FontView *fv,char *path,int format) {
     GImage *image;
@@ -1097,16 +1107,16 @@ return(false);
 	start = endpath+1;
     }
     if ( tot==0 )
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_NothingSelected,_STR_NothingSelected);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Nothing Selected"),_("Nothing Selected"));
+#else
+	GWidgetErrorR(_STR_NothingSelected,_STR_NothingSelected);
 #endif
     else if ( endpath!=NULL )
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_MoreImagesThanSelected,_STR_MoreImagesThanSelected);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("More Images Than Selected Characters"),_("More Images Than Selected Characters"));
+#else
+	GWidgetErrorR(_STR_MoreImagesThanSelected,_STR_MoreImagesThanSelected);
 #endif
 return( true );
 }
@@ -1254,6 +1264,7 @@ return( true );
 }
 
 /****************************** Import picker *********************************/
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 
 static int last_format, flast_format;
 struct gfc_data {
@@ -1550,3 +1561,4 @@ void BVImport(BitmapView *bv) {
 void FVImport(FontView *fv) {
     _Import(NULL,NULL,fv);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

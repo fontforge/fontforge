@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <gkeysym.h>
 #include <string.h>
 #include <ustring.h>
@@ -1893,6 +1894,7 @@ void KCLD_MvDetach(KernClassListDlg *kcld,MetricsView *mv) {
     if ( kcld==NULL )
 return;
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 int KernClassContains(KernClass *kc, char *name1, char *name2, int ordered ) {
     int infirst=0, insecond=0, scpos1, kwpos1, scpos2, kwpos2;

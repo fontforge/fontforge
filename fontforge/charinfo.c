@@ -29,9 +29,10 @@
 #include <ustring.h>
 #include <math.h>
 #include <utype.h>
-#include <gkeysym.h>
 #include <chardata.h>
 #include "ttf.h"		/* For MAC_DELETED_GLYPH_NAME */
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+#include <gkeysym.h>
 
 typedef struct charinfo {
     CharView *cv;
@@ -801,6 +802,7 @@ static int editstrings[] = { _STR_EditPosition, _STR_EditPair,
 	_STR_EditAlternate, _STR_EditMultiple, _STR_EditLigature };
 
 static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 int SFAddScriptLangIndex(SplineFont *sf,uint32 script,uint32 lang) {
     int i;
@@ -1034,6 +1036,7 @@ int SLICount(SplineFont *sf) {
 return( i );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static int sli_names[] = { _STR_AnyScript, _STR_HHDefaultHH, _STR_Nested, _STR_EditLangList };
 static int sli_ud[] = { SLI_UNKNOWN, SLI_UNKNOWN, SLI_NESTED, -1 };
 
@@ -1103,6 +1106,7 @@ struct sl_dlg {
     SplineFont *sf;
     GGadget *list;
 };
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 struct script_record *SRParse(const unichar_t *line) {
     int scnt, lcnt, i, j, k;
@@ -1129,10 +1133,10 @@ return( NULL );
 	}
 	if ( *pt!='{' ) {
 	    ScriptRecordFree(sr);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_SLError,_STR_SLErrorText);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Cant Parse Scripts"),_("A script language list consists of a list of\n4 letter script tags each followed by a '{'\nand a list of 4 letter language tags seperated\nby commas. As:\nlatn{DEU ,dflt} cyrl{dflt}"));
+#else
+	    GWidgetErrorR(_STR_SLError,_STR_SLErrorText);
 #endif
 return( NULL );
 	}
@@ -1141,10 +1145,10 @@ return( NULL );
 	    if ( *lpt==',' ) ++lcnt;
 	if ( *lpt=='\0' ) {
 	    ScriptRecordFree(sr);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_SLError,_STR_SLErrorText);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Cant Parse Scripts"),_("A script language list consists of a list of\n4 letter script tags each followed by a '{'\nand a list of 4 letter language tags seperated\nby commas. As:\nlatn{DEU ,dflt} cyrl{dflt}"));
+#else
+	    GWidgetErrorR(_STR_SLError,_STR_SLErrorText);
 #endif
 return( NULL );
 	}
@@ -1174,10 +1178,10 @@ return( NULL );
 
     if ( *pt!='\0' ) {
 	ScriptRecordFree(sr);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_SLError,_STR_SLErrorText);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Cant Parse Scripts"),_("A script language list consists of a list of\n4 letter script tags each followed by a '{'\nand a list of 4 letter language tags seperated\nby commas. As:\nlatn{DEU ,dflt} cyrl{dflt}"));
+#else
+	GWidgetErrorR(_STR_SLError,_STR_SLErrorText);
 #endif
 return( NULL );
     }
@@ -1206,6 +1210,7 @@ return( NULL );
 return( sr );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static struct script_record **SRParseList(GGadget *list,int *sel) {
     int32 len, i;
     GTextInfo **ti = GGadgetGetList(list,&len);
@@ -1796,6 +1801,7 @@ return(true);
     }
 return( true );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 unichar_t *ClassName(const unichar_t *name,uint32 feature_tag,
 	uint16 flags, int script_lang_index,int merge_with,int act_type,
@@ -1895,6 +1901,7 @@ unichar_t *DecomposeClassName(const unichar_t *clsnm, unichar_t **name,
 return( end );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 GTextInfo *AddMacFeatures(GTextInfo *opentype,enum possub_type type,SplineFont *sf) {
     MacFeat *from_p, *from_f;
     struct macsetting *s;
@@ -3385,6 +3392,7 @@ return( true );
     }
 return( false );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 uint16 PSTDefaultFlags(enum possub_type type,SplineChar *sc ) {
     uint16 flags = 0;
@@ -3405,6 +3413,7 @@ uint16 PSTDefaultFlags(enum possub_type type,SplineChar *sc ) {
 return( flags );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void CI_DoNew(CharInfo *ci, unichar_t *def) {
     int len, i, sel;
     GTextInfo **old, **new;
@@ -3888,6 +3897,7 @@ static void SetNameFromUnicode(GWindow gw,int cid,int val) {
     GGadgetSetTitle(GWidgetGetControl(gw,cid),temp);
     free(temp);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void SCInsertPST(SplineChar *sc,PST *new) {
 #if 0
@@ -3940,10 +3950,10 @@ static int ParseVR(unichar_t *end,struct vr *vr,unichar_t **done) {
     if ( *pt=='=' )
 	++pt;
     else {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_BadPOSSUB,_STR_ExpectedEquals);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad GPOS/GSUB"),_("Bad format for position data, expected four = characters with data"));
+#else
+	GWidgetErrorR(_STR_BadPOSSUB,_STR_ExpectedEquals);
 #endif
 return(false);
     }
@@ -4015,20 +4025,20 @@ return;
 		cend[6]==' ' )
 	    /* Don't check any further */;
 	else if ( strlen(data)<10 || data[4]!=' ' || data[9]!=' ' ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_BadPOSSUB,_STR_BadPOSSUBPaste);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad GPOS/GSUB"),_("The string must start with a 4 character type field, be followed by a space, and then contain the information"));
+#else
+	    GWidgetErrorR(_STR_BadPOSSUB,_STR_BadPOSSUBPaste);
 #endif
 return;
 	}
 	if ( type==pst_null ) {
 	    type = PSTGuess(data);
 	    if ( type==pst_null ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_BadPOSSUB,_STR_BadPOSSUB);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad GPOS/GSUB"),_("Bad GPOS/GSUB"));
+#else
+		GWidgetErrorR(_STR_BadPOSSUB,_STR_BadPOSSUB);
 #endif
 return;
 	    }
@@ -4080,10 +4090,10 @@ return;
 		for ( end=pt+u_strlen(pt)-1; *pt==' '; --pt )
 		    *pt = '\0';
 		if ( type==pst_substitution && u_strchr(pt,' ')!=NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		    GWidgetErrorR(_STR_BadPOSSUB,_STR_SimpleSubsOneComponent);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 		    gwwv_post_error(_("Bad GPOS/GSUB"),_("A simple substitution must have exactly one component"));
+#else
+		    GWidgetErrorR(_STR_BadPOSSUB,_STR_SimpleSubsOneComponent);
 #endif
 		    free(rest);
 return;
@@ -4174,6 +4184,7 @@ return( false );
 return( true );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static int CI_ProcessPosSubs(CharInfo *ci) {
     int i, j, len;
     GTextInfo **tis;
@@ -4350,6 +4361,7 @@ static int CI_OK(GGadget *g, GEvent *e) {
     }
 return( true );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
     const unichar_t *alt=NULL, *pt;
@@ -4651,6 +4663,7 @@ PST *AddSubs(PST *last,uint32 tag,char *name,uint16 flags,
 return( sub );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static SplineChar *SuffixCheck(SplineChar *sc,char *suffix) {
     SplineChar *alt = NULL;
     SplineFont *sf = sc->parent;
@@ -4988,6 +5001,7 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
     }
 return( last );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static void SCMergePSList(SplineChar *sc,PST *list) {
     PST *test, *next, *prev;
@@ -5110,6 +5124,7 @@ return;
     carets->u.lcaret.cnt = lig_comp_max;
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static int CI_SName(GGadget *g, GEvent *e) {	/* Set From Name */
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
@@ -5279,6 +5294,7 @@ static int CI_CommentChanged(GGadget *g, GEvent *e) {
     }
 return( true );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 unichar_t *PST2Text(PST *pst) {
     char buffer[400];
@@ -5333,6 +5349,7 @@ unichar_t *Kern2Text(SplineChar *other,KernPair *kp,int isv) {
 return( uc_copy( buffer ));
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void CIFillup(CharInfo *ci) {
     SplineChar *sc = ci->sc;
     SplineFont *sf = sc->parent;
@@ -6405,6 +6422,7 @@ void FVSelectByPST(FontView *fv) {
     }
     GDrawSetVisible(gw,false);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 int SCAnyFeatures(SplineChar *sc) {
     PST *pst;
@@ -6453,7 +6471,9 @@ void SCCopyFeatures(SplineChar *sc) {
     char *sel;
     unichar_t **choices;
     uint32 *tags;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     static int buts[] = { _STR_OK, _STR_Cancel, 0 };
+#endif
 
     if ( sc==NULL )
 return;
@@ -6502,6 +6522,7 @@ return;
     qsort(tags,cnt,sizeof(uint32),compare_tag);
     for ( i=0; i<cnt; ++i )
 	choices[i] = TagFullName(sf,tags[i],-1);
+#if defined(FONTFORGE_CONFIG_GDRAW)
     if ( haslk )
 	choices[i++] = u_copy( GStringGetResource(_STR_KernsInitial,NULL));
     if ( haslv )
@@ -6513,6 +6534,19 @@ return;
     if ( GWidgetChoicesBRM(_STR_CopyFeatures,(const unichar_t **) choices,sel,i,buts,
 	    _STR_CopyWhichFeatures)==-1 )
 return;
+#elif defined(FONTFORGE_CONFIG_GTK)
+    if ( haslk )
+	choices[i++] = copy( _("Kern Pairs with this as the initial glyph"));
+    if ( haslv )
+	choices[i++] = copy( _("Vertical Kern Pairs with this as the initial glyph"));
+    if ( hask )
+	choices[i++] = copy( _("Kern Pairs with this as the final glyph"));
+    if ( hasv )
+	choices[i++] = copy( _("Vertical Kern Pairs with this as the final glyph"));
+    if ( gwwv_choose_multiple(_("Copy Which Features?"),(const char **) choices,sel,i
+	    _("Copy Which Features?"))==-1 )
+return;
+#endif
     CopyPSTStart(sf);
     for ( i=0; i<cnt; ++i ) if ( sel[i] ) {
 	for ( pst = sc->possub; pst!=NULL; pst=pst->next )

@@ -25,7 +25,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <ustring.h>
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 typedef struct createwidthdata {
     unsigned int done: 1;
@@ -39,6 +41,7 @@ typedef struct createwidthdata {
     enum widthtype wtype;
 } CreateWidthData;
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #define CID_Set		1001
 #define CID_Incr	1002
 #define CID_Scale	1003
@@ -264,6 +267,7 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	GDrawProcessOneEvent(NULL);
     GDrawSetVisible(cwd.gw,false);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static void DoChar(SplineChar *sc,CreateWidthData *wd, FontView *fv) {
     real transform[6];
@@ -336,6 +340,7 @@ static void FVDoit(CreateWidthData *wd) {
     wd->done = true;
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void CVDoit(CreateWidthData *wd) {
     CharView *cv = (CharView *) (wd->_fv);
 
@@ -378,6 +383,7 @@ void CVSetWidth(CharView *cv,enum widthtype wtype) {
     SCDefWidthVal(buf,cv->sc,wtype);
     FVCreateWidth(cv,CVDoit,wtype,buf);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void FVSetWidthScript(FontView *fv,enum widthtype wtype,int val,int incr) {
     CreateWidthData wd;

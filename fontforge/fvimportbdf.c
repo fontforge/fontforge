@@ -133,7 +133,9 @@ static void ExtendSF(SplineFont *sf, int enc, int set) {
 		free(fvs->selected);
 		fvs->selected = gcalloc(sf->charcnt,1);
 	    }
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    FontViewReformatAll(sf);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	}
     }
 }
@@ -247,7 +249,6 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,int depth,
     int enc=-1, width=defs->dwidth, xmin=0, xmax=0, ymin=0, ymax=0, hsz, vsz;
     int swidth= defs->swidth, swidth1=defs->swidth1;
     int i,ch;
-    BitmapView *bv;
     uint8 *pt, *end, *eol;
 
     gettoken(bdf,name,sizeof(tok));
@@ -345,8 +346,12 @@ return;
 	break;
 	}
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+	{ BitmapView *bv;
 	for ( bv=bc->views; bv!=NULL; bv=bv->next )
 	    GDrawRequestExpose(bv->v,NULL,false);
+	}
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     } else {
 	int cnt;
 	if ( depth==1 )
@@ -1707,6 +1712,7 @@ return( true );
 
 /* ************************* End Bitmap Formats ***************************** */
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static int askusersize(char *filename) {
     char *pt;
     int guess;
@@ -1779,6 +1785,7 @@ static int alreadyexists(int pixelsize) {
 
 return( ret );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 BDFFont *SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback) {
     FILE *bdf;
@@ -1802,10 +1809,10 @@ BDFFont *SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback) {
 	ispk = 3;
     bdf = fopen(filename,"rb");
     if ( bdf==NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_CouldNotOpenFile, _STR_CouldNotOpenFileName, filename );
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Couldn't open file"), _("Couldn't open file %.200s"), filename );
+#else
+	GWidgetErrorR(_STR_CouldNotOpenFile, _STR_CouldNotOpenFileName, filename );
 #endif
 return( NULL );
     }
@@ -1813,10 +1820,10 @@ return( NULL );
 	pixelsize = pk_header(bdf,&ascent,&descent,&enc,family,mods,full, filename);
 	if ( pixelsize==-2 ) {
 	    fclose(bdf);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_NotPkFile, _STR_NotPkFileName, filename );
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Not a pk file"), _("Not a (metafont) pk file %.200s"), filename );
+#else
+	    GWidgetErrorR(_STR_NotPkFile, _STR_NotPkFileName, filename );
 #endif
 return( NULL );
 	}
@@ -1824,48 +1831,50 @@ return( NULL );
 	pixelsize = gf_postamble(bdf,&ascent,&descent,&enc,family,mods,full, filename);
 	if ( pixelsize==-2 ) {
 	    fclose(bdf);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_NotGfFile, _STR_NotGfFileName, filename );
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Not a gf file"), _("Not a (metafont) gf file %.200s"), filename );
+#else
+	    GWidgetErrorR(_STR_NotGfFile, _STR_NotGfFileName, filename );
 #endif
 return( NULL );
 	}
     } else if ( ispk==2 ) {		/* pcf */
 	if (( toc = pcfReadTOC(bdf))== NULL ) {
 	    fclose(bdf);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_NotPcfFile, _STR_NotPcfFileName, filename );
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Not a pcf file"), _("Not an X11 pcf file %.200s"), filename );
+#else
+	    GWidgetErrorR(_STR_NotPcfFile, _STR_NotPcfFileName, filename );
 #endif
 return( NULL );
 	}
 	pixelsize = pcf_properties(bdf,toc,&ascent,&descent,&enc,family,mods,full);
 	if ( pixelsize==-2 ) {
 	    fclose(bdf); free(toc);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_NotPcfFile, _STR_NotPcfFileName, filename );
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Not a pcf file"), _("Not an X11 pcf file %.200s"), filename );
+#else
+	    GWidgetErrorR(_STR_NotPcfFile, _STR_NotPcfFileName, filename );
 #endif
 return( NULL );
 	}
     } else {
 	if ( gettoken(bdf,tok,sizeof(tok))==-1 || strcmp(tok,"STARTFONT")!=0 ) {
 	    fclose(bdf);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_NotBdfFile, _STR_NotBdfFileName, filename );
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Not a bdf file"), _("Not a bdf file %.200s"), filename );
+#else
+	    GWidgetErrorR(_STR_NotBdfFile, _STR_NotBdfFileName, filename );
 #endif
 return( NULL );
 	}
 	pixelsize = slurp_header(bdf,&ascent,&descent,&enc,family,mods,full,
 		&depth,foundry,fontname,comments,&defs,&upos,&uwidth);
     }
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( pixelsize==-1 )
 	pixelsize = askusersize(filename);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     if ( pixelsize==-1 ) {
 	fclose(bdf); free(toc);
 return( NULL );
@@ -1894,12 +1903,14 @@ return( NULL );
     b = NULL;
     if ( !toback )
 	for ( b=sf->bitmaps; b!=NULL && (b->pixelsize!=pixelsize || BDFDepth(b)!=depth); b=b->next );
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( b!=NULL ) {
 	if ( !alreadyexists(pixelsize)) {
 	    fclose(bdf); free(toc);
 return( NULL );
 	}
     }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     if ( b==NULL ) {
 	if ( ascent==-1 && descent==-1 )
 	    ascent = rint(pixelsize*sf->ascent/(real) (sf->ascent+sf->descent));
@@ -1932,10 +1943,10 @@ return( NULL );
 	while ( gf_char(bdf,sf,b));
     } else if ( ispk==2 ) {
 	if ( !PcfParse(bdf,toc,sf,b,enc) ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_NotPcfFile, _STR_NotPcfFileName, filename );
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Not a pcf file"), _("Not an X11 pcf file %.200s"), filename );
+#else
+	    GWidgetErrorR(_STR_NotPcfFile, _STR_NotPcfFileName, filename );
 #endif
 	}
     } else {
@@ -2033,8 +2044,10 @@ static void SFMergeBitmaps(SplineFont *sf,BDFFont *strikes) {
 	    strikes->next = sf->bitmaps;
 	    sf->bitmaps = strikes;
 	    SFSetupBitmap(sf,strikes);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	} else if ( !alreadyexists(strikes->pixelsize)) {
 	    BDFFontFree(strikes);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	} else {
 	    strikes->next = b->next;
 	    if ( prev==NULL )
@@ -2118,7 +2131,9 @@ int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
 	    free(fvs->selected);
 	    fvs->selected = gcalloc(fvs->sf->charcnt,sizeof(char));
 	}
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	FontViewReformatAll(fv->sf);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
     if ( anyb==NULL ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)

@@ -25,10 +25,12 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#include <math.h>
 #include "ustring.h"
 #include "utype.h"
-#include <math.h>
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <gkeysym.h>
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 #define THIRDS_IN_WIDTH 0
 
@@ -73,6 +75,7 @@ Autokern has similar ideas, but is simpler:
     No, I think it is better not to propigate kerning.
 */
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static GTextInfo widthlist[] = {
     { (unichar_t *) _STR_StdCharRange, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_StdCharRangeGreek, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -97,6 +100,7 @@ static GTextInfo kernrlist[] = {
     { (unichar_t *) _STR_All, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Selected, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     NULL };
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static SplineFont *old_sf=NULL;
 static int old_spaceguess;
@@ -236,7 +240,7 @@ return( 0 );
 return( (max+sum/cnt)/2-left->rmax );
     }
 }
-#endif
+#endif		/* Not used */
 
 static void FigureLR(WidthInfo *wi) {
     int i;
@@ -373,7 +377,6 @@ static void AutoKern(WidthInfo *wi) {
     SplineChar *lsc, *rsc;
     int i, diff;
     KernPair *kp;
-    MetricsView *mv;
 
     for ( i=0; i<wi->pcnt; ++i ) {
 	cp = wi->pairs[i];
@@ -399,8 +402,13 @@ static void AutoKern(WidthInfo *wi) {
 	    wi->sf->changed = true;
 	}
     }
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    {
+    MetricsView *mv;
     for ( mv=wi->sf->fv->metrics; mv!=NULL; mv=mv->next )
 	MVReKern(mv);
+    }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 }
 
 static real SplineFindMinXAtY(Spline *spline,real y,real min) {
@@ -1027,7 +1035,9 @@ return( 0 );
 static void KernRemoveBelowThreshold(SplineFont *sf,int threshold) {
     int i;
     KernPair *kp, *prev, *next;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     MetricsView *mv;
+#endif
 
     if ( threshold==0 )
 return;
@@ -1047,10 +1057,13 @@ return;
 	    }
 	}
     }
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     for ( mv=sf->fv->metrics; mv!=NULL; mv=mv->next )
 	MVReKern(mv);
+#endif
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #define CID_Spacing	1001
 #define CID_Total	1002
 #define CID_Threshold	1003
@@ -1058,6 +1071,7 @@ return;
 #define CID_Right	1020
 #define CID_Browse	2001
 #define CID_OK		2002
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static struct charone *MakeCharOne(SplineChar *sc) {
     struct charone *ch = gcalloc(1,sizeof(struct charone));
@@ -1067,6 +1081,7 @@ static struct charone *MakeCharOne(SplineChar *sc) {
 return( ch );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void ReplaceGlyphWith(SplineFont *sf, struct charone **ret, int cnt, int ch1, int ch2 ) {
     int s,e,j;
 
@@ -1189,6 +1204,7 @@ static struct charone **BuildCharList(SplineFont *sf,GWindow gw, int base,
     *rtot = rcnt;
 return( ret );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 struct kernsets {
     unichar_t *ch1;
@@ -1411,10 +1427,10 @@ static int ReadKernPairFile(unichar_t *fn,WidthInfo *wi) {
     free(fn);
     file = fopen(filename,"r");
     if ( file==NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_CouldNotOpenFile, _STR_CouldNotOpenFileName, filename );
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Couldn't open file"), _("Couldn't open file %.200s"), filename );
+#else
+	GWidgetErrorR(_STR_CouldNotOpenFile, _STR_CouldNotOpenFileName, filename );
 #endif
 	free( filename );
 return( false );
@@ -1438,10 +1454,10 @@ return( false );
 
     fclose(file);
     if ( !figurekernsets(wi,&ks)) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_NoKernPairs, _STR_NoKernPairsFile, filename );
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("No Kern Pairs"), _("No kerning pairs found in %.200s"), filename );
+#else
+	GWidgetErrorR(_STR_NoKernPairs, _STR_NoKernPairsFile, filename );
 #endif
 	free( filename );
 	kernsetsfree(&ks);
@@ -1452,6 +1468,7 @@ return( false );
 return( true );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static int AW_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GWindow gw = GGadgetGetWindow(g);
@@ -1774,12 +1791,12 @@ void FVAutoKern(FontView *fv) {
 void FVAutoWidth(FontView *fv) {
     AutoWKDlg(fv->sf,false);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void FVRemoveKerns(FontView *fv) {
     int i;
     SplineChar *sc;
     int changed = false;
-    MetricsView *mv;
 
     KernClassListFree(fv->sf->kerns); fv->sf->kerns = NULL;
 
@@ -1791,9 +1808,14 @@ void FVRemoveKerns(FontView *fv) {
 	}
     }
     if ( changed ) {
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+	MetricsView *mv;
 	fv->sf->changed = true;
 	for ( mv=fv->metrics; mv!=NULL; mv=mv->next )
 	    MVReKern(mv);
+#else
+	fv->sf->changed = true;
+#endif
     }
 }
 
@@ -1801,7 +1823,6 @@ void FVRemoveVKerns(FontView *fv) {
     int i;
     SplineChar *sc;
     int changed = false;
-    MetricsView *mv;
 
     KernClassListFree(fv->sf->vkerns); fv->sf->vkerns = NULL;
 
@@ -1813,9 +1834,14 @@ void FVRemoveVKerns(FontView *fv) {
 	}
     }
     if ( changed ) {
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+	MetricsView *mv;
 	fv->sf->changed = true;
 	for ( mv=fv->metrics; mv!=NULL; mv=mv->next )
 	    MVReKern(mv);
+#else
+	fv->sf->changed = true;
+#endif
     }
 }
 

@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <math.h>
 #include <utype.h>
 
@@ -1061,3 +1062,4 @@ void CVMouseUpPointer(CharView *cv ) {
 	SCSynchronizeLBearing(cv->sc,NULL,cv->info.x-cv->p.cx);
     }
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

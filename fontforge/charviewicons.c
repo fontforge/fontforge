@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "gdraw.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include "views.h"
 
 static GClut clut = { 2, 0, 1,
@@ -162,3 +163,4 @@ GImage GIcon_distance = { 0, &distance0_base };
 GImage GIcon_selectedpoint = { 0, &selectedpoint0_base };
 GImage GIcon_sel2ptr = { 0, &sel2ptr0_base };
 GImage GIcon_rightpointer = { 0, &rightpointer0_base };
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

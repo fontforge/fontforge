@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <ustring.h>
 #include <math.h>
 #include <utype.h>
@@ -2376,10 +2377,17 @@ void CVPGetInfo(CharView *cv) {
 }
 
 void SCRefBy(SplineChar *sc) {
-    static int buts[] = { _STR_Show, _STR_Cancel };
     int cnt,i,tot=0;
     unichar_t **deps = NULL;
     struct splinecharlist *d;
+#if defined(FONTFORGE_CONFIG_GDRAW)
+    static int buts[] = { _STR_Show, _STR_Cancel };
+#elif defined(FONTFORGE_CONFIG_GTK)
+    int buts[3];
+    buts[0] = _("Show");
+    buts[1] = GTK_STOCK_CANCEL;
+    buts[2] = NULL;
+#endif
 
     for ( i=0; i<2; ++i ) {
 	cnt = 0;
@@ -2395,7 +2403,11 @@ return;
 	tot = cnt-1;
     }
 
+#if defined(FONTFORGE_CONFIG_GDRAW)
     i = GWidgetChoicesBR(_STR_Dependents,(const unichar_t **) deps, cnt, 0, buts, _STR_Dependents );
+#elif defined(FONTFORGE_CONFIG_GTK)
+    i = gwwv_choose_with_buttons(_("Dependents"),(const char **) deps, cnt, 0, buts, _("Dependents") );
+#endif
     if ( i!=-1 ) {
 	i = tot-i;
 	for ( d = sc->dependents, cnt=0; d!=NULL && cnt<i; d=d->next, ++cnt );
@@ -2444,13 +2456,20 @@ return( false );
 }
 
 void SCSubBy(SplineChar *sc) {
-    static int buts[] = { _STR_Show, _STR_Cancel };
     int i,j,k,tot;
     unichar_t **deps = NULL;
     SplineChar **depsc;
     unichar_t ubuf[100];
     SplineFont *sf, *_sf;
     PST *pst;
+#if defined(FONTFORGE_CONFIG_GDRAW)
+    static int buts[] = { _STR_Show, _STR_Cancel };
+#elif defined(FONTFORGE_CONFIG_GTK)
+    int buts[3];
+    buts[0] = _("Show");
+    buts[1] = GTK_STOCK_CANCEL;
+    buts[2] = NULL;
+#endif
 
     if ( sc==NULL )
 return;
@@ -2494,8 +2513,12 @@ return;
 	}
     }
 
-    i = GWidgetChoicesBR(_STR_DependentSubstitutions,(const unichar_t **) deps, tot, 0, buts, _STR_Dependents );
-    if ( i!=-1 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
+    i = GWidgetChoicesBR(_STR_DependentSubstitutions,(const unichar_t **) deps, tot, 0, buts, _STR_DependentSubstitutions );
+#elif defined(FONTFORGE_CONFIG_GTK)
+    i = gwwv_choose_with_buttons(_("Dependent Substitutions",(const char **) deps, tot, 0, buts, _("Dependent Substitutions") );
+#endif
+    if ( i>-1 ) {
 	CharViewCreate(depsc[i],sc->parent->fv);
     }
     for ( i=0; i<=tot; ++i )
@@ -2503,3 +2526,4 @@ return;
     free(deps);
     free(depsc);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

@@ -2117,6 +2117,7 @@ struct macname *MacNameCopy(struct macname *mn) {
 return( head );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static struct macsetting *MacSettingCopy(struct macsetting *ms) {
     struct macsetting *head=NULL, *last, *cur;
 
@@ -3475,4 +3476,4 @@ void Prefs_ReplaceMacFeatures(GGadget *list) {
     user_mac_feature_map = GGadgetGetUserData(list);
     default_mac_feature_map = user_mac_feature_map;
 }
-    
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
