@@ -2299,7 +2299,7 @@ void SFLayerChange(SplineFont *sf) {
     if ( cvtools==NULL )
 return;					/* No charviews open */
     old = GDrawGetUserData(cvtools);
-    if ( old->sc->parent!=sf )		/* Irrelevant */
+    if ( old==NULL || old->sc->parent!=sf )	/* Irrelevant */
 return;
     _CVPaletteActivate(old,true);
 }

@@ -1993,7 +1993,7 @@ static void SVGParseGlyphBody(SplineChar *sc, xmlNodePtr glyph,int *flags) {
 	if ( sc->layer_cnt==1 ) ++sc->layer_cnt;
 	sc->parent->multilayer = true;
 #else
-	sc->layers[ly_fore].splines = SplinesFromEntities(ent,flags);
+	sc->layers[ly_fore].splines = SplinesFromEntities(ent,flags,false);
 #endif
     }
 }
@@ -2767,9 +2767,9 @@ return( NULL );
 return( ret );
 }
 
-SplineSet *SplinePointListInterpretSVG(char *filename,int em_size,int ascent) {
+SplineSet *SplinePointListInterpretSVG(char *filename,int em_size,int ascent,int is_stroked) {
     Entity *ret = EntityInterpretSVG(filename, em_size, ascent);
     int flags = -1;
-return( SplinesFromEntities(ret,&flags));
+return( SplinesFromEntities(ret,&flags,is_stroked));
 }
 #endif
