@@ -702,6 +702,10 @@ return( false );
 int SFIsSomethingBuildable(SplineFont *sf,SplineChar *sc, int onlyaccents) {
     int unicodeenc = sc->unicodeenc;
 
+    if ( onlyaccents &&		/* Don't build greek accents out of latin ones */
+	    (unicodeenc==0x1fbd || unicodeenc==0x1fbe || unicodeenc==0x1fbf ||
+	     unicodeenc==0x1fef || unicodeenc==0x1ffd || unicodeenc==0x1ffe))
+return( false );
     if ( iszerowidth(unicodeenc) ||
 	    (unicodeenc>=0x2000 && unicodeenc<=0x2015 ))
 return( !onlyaccents );

@@ -4862,8 +4862,7 @@ static void CVMenuBuildAccent(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     if ( SFIsRotatable(cv->fv->sf,cv->sc))
 	/* It's ok */;
-    else if ( !SFIsCompositBuildable(cv->fv->sf,cv->sc->unicodeenc,cv->sc) ||
-	    !hascomposing(cv->fv->sf,cv->sc->unicodeenc,cv->sc) )
+    else if ( !SFIsSomethingBuildable(cv->fv->sf,cv->sc,true) )
 return;
     SCBuildComposit(cv->fv->sf,cv->sc,!onlycopydisplayed,cv->fv);
 }
