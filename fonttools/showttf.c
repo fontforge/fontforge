@@ -547,7 +547,7 @@ static void readttfname(FILE *ttf, FILE *util, struct ttfinfo *info) {
 		id==8?"Manufacturer\n":
 		id==9?"Designer\n":
 		id==10?"Descriptor\n":
-		id==11?"Vendor URL\n":
+		id==11?"Vender URL\n":
 		id==12?"Designer URL\n":
 /* Guesse  based on ARIAL.TTF usage. Not documented that I've seen */
 		id==13?"License\n":
@@ -563,8 +563,19 @@ static void readttfname(FILE *ttf, FILE *util, struct ttfinfo *info) {
 	printf( "\t strlen=%d ", strlen=getushort(ttf));
 	printf( " stroff=%d\t   ", stroff=getushort(ttf));
 	fseek(util,info->copyright_start+taboff+stroff,SEEK_SET);
-	for ( j=0; j<strlen; ++j )
-	    putchar(getc(util));
+	for ( j=0; j<strlen; ++j ) {
+	    int ch = getc(util);
+	    if ( ch<' ' ) {
+		putchar('^');
+		putchar(ch+'@');
+	    } else if ( ch=='\177' ) {
+		putchar('^');
+		putchar('?');
+	    } else if ( ch>=0x80 && ch<0xa0 ) {
+		printf("<%2X>", ch );
+	    } else
+		putchar(ch);
+	}
 	putchar('\n');
     }
 }
@@ -2116,6 +2127,7 @@ static void showfeaturelist(FILE *ttf,int feature_start ) {
     }
     printf( "\t--\n" );
     for ( i=0; i<cnt; ++i ) {
+	fseek(ttf,feature_start+feature_record_offsets[i],SEEK_SET);
 	printf( "\t Feature Table[%d] '%c%c%c%c'\n", i,
 		(feature_record_names[i]>>24)&0xff,
 		(feature_record_names[i]>>16)&0xff,
@@ -2661,7 +2673,7 @@ static void readttfgdef(FILE *ttf, FILE *util, struct ttfinfo *info) {
 static void readttfkern_context(FILE *ttf, FILE *util, struct ttfinfo *info, int stab_len);
 static void readttfkern(FILE *ttf, FILE *util, struct ttfinfo *info) {
     int version, ntables;
-    int header_size, len, coverage, i;
+    int header_size, len, coverage, i, j;
     uint32 begin;
     int left, right, array, n;
 
@@ -2691,6 +2703,28 @@ static void readttfkern(FILE *ttf, FILE *util, struct ttfinfo *info) {
 		    ( coverage&4 ) ? " cross-stream" : "",
 		    ( coverage&8 ) ? " override" : "",
 		    ( coverage>>8 ));
+	    if ( (coverage>>8)==0 ) {
+		/* Kern pairs */
+		int n = getushort(ttf);
+		int sr = getushort(ttf);
+		int es = getushort(ttf);
+		int rs = getushort(ttf);
+		printf( "\t   npairs=%d searchRange=%d entrySelector=%d rangeShift=%d\n",
+			n, sr, es, rs );
+		for ( i=0; i<n; ++i ) {
+		    int left, right, val;
+		    left = getushort(ttf);
+		    right = getushort(ttf);
+		    val = (short) getushort(ttf);
+		    if ( info->glyph_names!=NULL && left<info->glyph_cnt && right<info->glyph_cnt ) {
+			printf( "\t\t%s %s %d\n", info->glyph_names[left],
+				info->glyph_names[right], val );
+		    } else {
+			printf( "\t\t%d %d %d\n", left, right, val );
+		    }
+		}
+	    }
+	    fseek(ttf,begin+header_size,SEEK_SET);
 	} else {
 	    len = getlong(ttf);
 	    coverage = getushort(ttf);
@@ -2714,7 +2748,7 @@ static void readttfkern(FILE *ttf, FILE *util, struct ttfinfo *info) {
 		printf( "\t   first Glyph=%d\n", getushort(ttf) );
 		printf( "\t   number of glyphs=%d\n", n = getushort(ttf) );
 		printf( "\t   " );
-		for ( i=0; i<n; ++i )
+		for ( j=0; j<n; ++j )
 		    printf( " %d", getushort(ttf));
 		printf( "\n" );
 		fseek(ttf,begin+right,SEEK_SET);
@@ -2722,7 +2756,7 @@ static void readttfkern(FILE *ttf, FILE *util, struct ttfinfo *info) {
 		printf( "\t   first Glyph=%d\n", getushort(ttf) );
 		printf( "\t   number of glyphs=%d\n", n = getushort(ttf) );
 		printf( "\t   " );
-		for ( i=0; i<n; ++i )
+		for ( j=0; j<n; ++j )
 		    printf( " %d", getushort(ttf));
 		printf( "\n" );
 	      break;
@@ -5808,12 +5842,12 @@ int main(int argc, char **argv) {
 	    if ( filename!=NULL )
 		printf( "\n\n\n******************** %s *****************\n\n\n", argv[i]);
 	    filename = argv[i];
-	    ttf = fopen(filename,"r");
+	    ttf = fopen(filename,"rb");
 	    if ( ttf==NULL ) {
 		fprintf( stderr, "Can't open %s\n", argv[1]);
 return( 1 );
 	    }
-	    util = fopen(filename,"r");
+	    util = fopen(filename,"rb");
 
 	    readit(ttf,util);
 	    fclose(ttf);
