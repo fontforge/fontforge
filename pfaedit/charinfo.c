@@ -834,6 +834,7 @@ return( i );
     sf->script_lang[i][0].langs[0] = lang;
     sf->script_lang[i][0].langs[1] = 0;
     sf->script_lang[i+1] = NULL;
+    sf->sli_cnt = i+1;
 return( i );
 }
 
@@ -871,6 +872,7 @@ static void SFGuessScriptList(SplineFont *sf) {
 return;
     sf->script_lang = gcalloc(2,sizeof(struct script_record *));
     sf->script_lang[0] = gcalloc(scnt+1,sizeof(struct script_record));
+    sf->sli_cnt = 1;
     for ( j=0; j<scnt; ++j ) {
 	sf->script_lang[0][j].script = scripts[j];
 	sf->script_lang[0][j].langs = galloc(2*sizeof(uint32));
@@ -931,6 +933,7 @@ return( i );
     sf->script_lang = grealloc(sf->script_lang,(i+2)*sizeof(struct script_record *));
     sf->script_lang[i] = sr;
     sf->script_lang[i+1] = NULL;
+    sf->sli_cnt = i+1;
 return( i );
 }
 

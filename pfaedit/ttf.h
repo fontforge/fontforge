@@ -167,6 +167,7 @@ struct ttfinfo {
     KernClass *khead, *klast, *vkhead, *vklast;
 
     struct script_record **script_lang;
+    int16 sli_cnt;
 
     uint32 mort_subs_tag;
     int mort_r2l, mort_tag_mac, mort_feat, mort_setting, mort_is_nested;

@@ -836,6 +836,7 @@ typedef struct splinefont {
     char *chosenname;			/* Set for files with multiple fonts in them */
     struct mmset *mm;			/* If part of a multiple master set */
     int16 macstyle;
+    int16 sli_cnt;
 } SplineFont;
 
 /* I am going to simplify my life and not encourage intermediate designs */

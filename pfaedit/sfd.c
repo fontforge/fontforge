@@ -2200,7 +2200,7 @@ return( NULL );
 		    (hassli==2 && fscanf(sfd,"%d %d %d %d", &index, &off, &sli, &flags )==4) ||
 		    (hassli==0 && fscanf(sfd,"%d %d", &index, &off )==2) ) {
 		if ( !hassli )
-		    sli = SFAddScriptLangIndex(sc->parent,
+		    sli = SFAddScriptLangIndex(sf,
 			    script!=0?script:SCScriptFromUnicode(sc),DEFAULT_LANG);
 		kp = chunkalloc(sizeof(KernPair));
 		kp->sc = (SplineChar *) index;
@@ -2252,8 +2252,26 @@ return( NULL );
 		getusint(sfd,&liga->script_lang_index);
 		while ( (ch=getc(sfd))==' ' || ch=='\t' );
 	    } else
-		liga->script_lang_index = SFAddScriptLangIndex(sc->parent,
+		liga->script_lang_index = SFAddScriptLangIndex(sf,
 			script!=0?script:SCScriptFromUnicode(sc),DEFAULT_LANG);
+	    if ( liga->script_lang_index>=sf->sli_cnt && liga->type!=pst_lcaret ) {
+		static int complained=false;
+		if ( sf->sli_cnt==0 )
+		    GDrawError("'%c%c%c%c' in %s has a script index out of bounds: %d\nYou MUST fix this manually",
+			    (liga->tag>>24), (liga->tag>>16)&0xff, (liga->tag>>8)&0xff, liga->tag&0xff,
+			    sc->name, liga->script_lang_index );
+		else if ( !complained )
+		    GDrawError("'%c%c%c%c' in %s has a script index out of bounds: %d",
+			    (liga->tag>>24), (liga->tag>>16)&0xff, (liga->tag>>8)&0xff, liga->tag&0xff,
+			    sc->name, liga->script_lang_index );
+		else
+		    fprintf( stderr, "Internal Error: '%c%c%c%c' in %s has a script index out of bounds: %d\n",
+			    (liga->tag>>24), (liga->tag>>16)&0xff, (liga->tag>>8)&0xff, liga->tag&0xff,
+			    sc->name, liga->script_lang_index );
+		if ( sf->sli_cnt!=0 )
+		    liga->script_lang_index = sf->sli_cnt-1;
+		complained = true;
+	    }
 	    if ( ch=='\'' ) {
 		liga->tag = getc(sfd)<<24;
 		liga->tag |= getc(sfd)<<16;
@@ -2673,6 +2691,24 @@ static void SFDParseChainContext(FILE *sfd,SplineFont *sf,FPST *fpst, char *tok)
 		    strmatch(tok,"class")==0 ? pst_class :
 		    strmatch(tok,"coverage")==0 ? pst_coverage : pst_reversecoverage;
     fscanf(sfd, "%hu %hu", &fpst->flags, &fpst->script_lang_index );
+    if ( fpst->script_lang_index>=sf->sli_cnt ) {
+	static int complained=false;
+	if ( sf->sli_cnt==0 )
+	    GDrawError("'%c%c%c%c' has a script index out of bounds: %d\nYou MUST fix this manually",
+		    (fpst->tag>>24), (fpst->tag>>16)&0xff, (fpst->tag>>8)&0xff, fpst->tag&0xff,
+		    fpst->script_lang_index );
+	else if ( !complained )
+	    GDrawError("'%c%c%c%c' has a script index out of bounds: %d",
+		    (fpst->tag>>24), (fpst->tag>>16)&0xff, (fpst->tag>>8)&0xff, fpst->tag&0xff,
+		    fpst->script_lang_index );
+	else
+	    fprintf( stderr, "Internal Error: '%c%c%c%c' has a script index out of bounds: %d\n",
+		    (fpst->tag>>24), (fpst->tag>>16)&0xff, (fpst->tag>>8)&0xff, fpst->tag&0xff,
+		    fpst->script_lang_index );
+	if ( sf->sli_cnt!=0 )
+	    fpst->script_lang_index = sf->sli_cnt-1;
+	complained = true;
+    }
     while ( (ch=getc(sfd))==' ' || ch=='\t' );
     if ( ch=='\'' ) {
 	fpst->tag = getc(sfd)<<24;
@@ -3189,6 +3225,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    int i,j,k;
 	    int imax, jmax, kmax;
 	    getint(sfd,&imax);
+	    sf->sli_cnt = imax;
 	    sf->script_lang = galloc((imax+1)*sizeof(struct script_record *));
 	    sf->script_lang[imax] = NULL;
 	    for ( i=0; i<imax; ++i ) {

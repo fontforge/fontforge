@@ -55,6 +55,7 @@ return( j );
     info->script_lang[j][0].script = script;
     info->script_lang[j][0].langs = gcalloc(2,sizeof(uint32));
     info->script_lang[j][0].langs[0] = lang;
+    info->sli_cnt = j+1;
 return( j );
 }
 
@@ -2163,6 +2164,7 @@ static void FigureScriptIndeces(struct ttfinfo *info,struct lookup *lookups) {
 	    }
 	    info->script_lang[j][k].script = 0;
 	    info->script_lang[j+1] = NULL;
+	    info->sli_cnt = j+1;
 	}
 	for ( sl=lookups[i].sl; sl!=NULL; sl=snext ) {
 	    snext = sl->next;

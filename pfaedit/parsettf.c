@@ -4170,6 +4170,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->features = info->features;
     sf->gentags = info->gentags;
     sf->script_lang = info->script_lang;
+    sf->sli_cnt = info->sli_cnt;
     sf->ttf_tables = info->tabs;
     if ( info->encoding_name == em_symbol || info->encoding_name == em_mac )
 	/* Don't trust those encodings */
