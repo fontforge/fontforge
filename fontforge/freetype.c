@@ -933,15 +933,18 @@ static SplineSet *StrokeOutline(Layer *layer,SplineChar *sc) {
 	    }
 	}
 return( head );
+    } else
 #ifdef FONTFORGE_CONFIG_TYPE3
-    } else {
+    {
 	si.radius = layer->stroke_pen.width/2;
 	si.join = layer->stroke_pen.linejoin;
 	si.cap = layer->stroke_pen.linecap;
 	si.stroke_type = si_std;
 return( SSStroke(layer->splines,&si,sc));
-#endif
     }
+#else
+return( layer->splines );
+#endif
 }
 
 #ifdef FONTFORGE_CONFIG_TYPE3
