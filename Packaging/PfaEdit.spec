@@ -1,10 +1,10 @@
 Name:        pfaedit
-Version:     020220
+Version:     020312
 Release:     1
 Summary:     A PostScript font editor
 Copyright:   BSD
 Group:       Applications/Publishing
-Icon:        fficon.gif
+Icon:        pfaicon.gif
 Source0:     http://pfaedit.sourceforge.net/pfaedit_full-%{version}.tgz
 Url:         http://pfaedit.sourceforge.net/
 Vendor:      George Williams <gww@silcom.com>, Scott Pakin <pakin@uiuc.edu>
@@ -47,10 +47,8 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root)
 %{_bindir}/pfaedit
-%{_bindir}/sfddiff
 %{_bindir}/../share/pfaedit/
 %{_mandir}/man1/pfaedit.1*
-%{_mandir}/man1/sfddiff.1*
 %doc LICENSE README
 
 %changelog
