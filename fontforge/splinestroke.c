@@ -169,6 +169,7 @@ static void SinglePointStroke(SplinePoint *base, StrokeInfo *si, SplinePoint **_
     } else {
 	*_plus = *_minus = cur = chunkalloc(sizeof(SplinePoint));
 	*cur = *base;
+	cur->next = cur->prev = NULL;
 	cur->hintmask = NULL;
     }
 }
@@ -1683,7 +1684,7 @@ static SplineSet *SSRemoveUTurns(SplineSet *base) {
     for ( s = spl->first->next; s!=NULL && s!=first; s=next ) {
 	if ( first==NULL ) first = s;
 	next = s->to->next;
-	if ( s->from->nonextcp && s->to->noprevcp &&
+	if ( s->from->nonextcp && s->to->noprevcp && s!=next &&
 		s->from->me.x >= s->to->me.x-.1 && s->from->me.x <= s->to->me.x+.1 &&
 		s->from->me.y >= s->to->me.y-.1 && s->from->me.y <= s->to->me.y+.1 ) {
 	    s->from->next = next;
@@ -1700,6 +1701,8 @@ static SplineSet *SSRemoveUTurns(SplineSet *base) {
 		else
 		    spl->first = spl->last = s->from;
 	    }
+	    if ( spl->first==s->to ) spl->first = s->from;
+	    if ( spl->last==s->to ) spl->last = s->from;
 	    SplinePointFree(s->to);
 	    SplineFree(s);
 	    if ( first==s ) first = NULL;
