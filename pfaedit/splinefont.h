@@ -531,6 +531,7 @@ extern void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf);
 extern void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]);
 extern void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname);
 extern int SFAddDelChars(SplineFont *sf, int nchars);
+extern int SFForceEncoding(SplineFont *sf,enum charset new_map);
 extern int SFReencodeFont(SplineFont *sf,enum charset new_map);
 extern int SFMatchEncoding(SplineFont *sf,SplineFont *target);
 extern char *SFGetModifiers(SplineFont *sf);

@@ -1204,7 +1204,7 @@ static void RemoveSplineChar(SplineFont *sf, int enc) {
     }
 }
 
-static int SFForceEncoding(SplineFont *sf,enum charset new_map) {
+int SFForceEncoding(SplineFont *sf,enum charset new_map) {
     int enc_cnt=256,i;
     BDFFont *bdf;
     Encoding *item=NULL;

@@ -850,6 +850,7 @@ static void bReencode(Context *c) {
     int i;
     enum charset new_map = em_none;
     FontView *fvs;
+    int force = 0;
     static struct encdata {
 	int val;
 	char *name;
@@ -901,10 +902,12 @@ static void bReencode(Context *c) {
 	{ em_unicode, "iso10646-1" },
 	{ em_unicode4, "ucs4" },
 	{ 0, NULL}};
-    if ( c->a.argc!=2 )
+    if ( c->a.argc!=2 && c->a.argc!=3 )
 	error( c, "Wrong number of arguments to Reencode");
-    else if ( c->a.vals[1].type!=v_str )
+    else if ( c->a.vals[1].type!=v_str || ( c->a.argc==3 && c->a.vals[2].type!=v_int ))
 	error(c,"Bad argument type in Reencode");
+    if ( c->a.argc==3 )
+	force = c->a.vals[2].u.ival;
     for ( i=0; encdata[i].name!=NULL; ++i )
 	if ( strmatch(encdata[i].name,c->a.vals[1].u.sval)==0 ) {
 	    new_map = encdata[i].val;
@@ -925,7 +928,10 @@ static void bReencode(Context *c) {
     }
     if ( new_map==em_none )
 	errors(c,"Unknown encoding", c->a.vals[1].u.sval);
-    SFReencodeFont(c->curfv->sf,new_map);
+    if ( force )
+	SFForceEncoding(c->curfv->sf,new_map);
+    else
+	SFReencodeFont(c->curfv->sf,new_map);
     for ( fvs=c->curfv->sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
 	free( fvs->selected );
 	fvs->selected = gcalloc(fvs->sf->charcnt,1);
