@@ -89,6 +89,19 @@ static void AddOldSplines(Spline *spline,double t,IntersectionList *il) {
     il->oldsplines = new;
 }
 
+static IntersectionList *FindIntersectionAt(IntersectionList *old,double xpos,double ypos) {
+    IntersectionList *il;
+    const double err = 1.0 / 64.0;
+
+    for ( il=old; il!=NULL; il=il->next ) {
+	if ( il->intersection.x-xpos>-err && il->intersection.x-xpos<err &&
+		il->intersection.y-ypos>-err && il->intersection.y-ypos<err ) {
+return( il );
+	}
+    }
+return( NULL );
+}
+
 static IntersectionList *AddIntersection(IntersectionList *old,
 	Spline *lefts, Spline *rights, double lt, double rt,
 	double xpos, double ypos ) {
@@ -898,14 +911,17 @@ static EI *CountDuplicates(SplineChar *sc,enum overlap_type ot,
     if ( ot == over_remove ) {
 	if (( cnt==0 && tot==0 ) ||		/* The two (or more) lines cancel out */
 		(cnt!=0 && cnt+tot!=0)) {	/* Normal case of internal lines */
+#if DEBUG
 	    if ( needed!=NULL && !needed->spline->isunneeded )
 		GDrawIError( c==1?
 		    "A spline is both needed and unneeded in CountDuplicates#1 in %s":
 		    "A set of tangent splines is both needed and unneeded in CountDuplicates#1 in %s",
 		    sc!=NULL?sc->name:"<nameless char>");
+#endif
 	    for ( test=apt; test!=NULL && ExactlySame(apt,test); test=test->aenext )
 		test->spline->isunneeded = true;
 	} else /* if (( cnt==0 && tot!=0 ) || (cnt!=0 && cnt+tot==0))*/ {
+#if DEBUG
 	    if ( needed )
 		/* Already done */;
 	    else if ( notunneeded==NULL )
@@ -913,6 +929,7 @@ static EI *CountDuplicates(SplineChar *sc,enum overlap_type ot,
 		    "A spline is both needed and unneeded in CountDuplicates#2 in %s":
 		    "A set of tangent splines is both needed and unneeded in CountDuplicates#2 in %s",
 		    sc!=NULL?sc->name:"<nameless char>");
+#endif
 	    for ( test=apt; test!=NULL && ExactlySame(apt,test); test=test->aenext ) {
 		test->spline->isunneeded = true;
 		test->spline->isneeded = false;
@@ -939,14 +956,17 @@ static EI *CountDuplicates(SplineChar *sc,enum overlap_type ot,
 	if ( ( ecnt!=0 && ecnt+etot!=0 ) ||
 		( cnt==0 && tot==0 ) ||
 		( cnt!=0 && cnt+tot!=0 && ecnt==0 && etot==0 ) ) {
+#if DEBUG
 	    if ( needed!=NULL && !needed->spline->isunneeded )
 		GDrawIError( c==1?
 		    "A spline is both needed and unneeded in CountDuplicates#3 in %s":
 		    "A set of tangent splines is both needed and unneeded in CountDuplicates#3 in %s",
 		    sc!=NULL?sc->name:"<nameless char>");
+#endif
 	    for ( test=apt; test!=NULL && ExactlySame(apt,test); test=test->aenext )
 		test->spline->isunneeded = true;
 	} else {
+#if DEBUG
 	    if ( needed )
 		/* Already done */;
 	    else if ( notunneeded==NULL )
@@ -954,6 +974,7 @@ static EI *CountDuplicates(SplineChar *sc,enum overlap_type ot,
 		    "A spline is both needed and unneeded in CountDuplicates#4 in %s":
 		    "A set of tangent splines is both needed and unneeded in CountDuplicates#4 in %s",
 		    sc!=NULL?sc->name:"<nameless char>");
+#endif
 	    for ( test=apt; test!=NULL && ExactlySame(apt,test); test=test->aenext ) {
 		test->spline->isunneeded = true;
 		test->spline->isneeded = false;
@@ -1549,6 +1570,356 @@ static SplineSet *SSRemoveAllNeeded(SplineChar *sc,SplineSet **base, Intersectio
 return( head );
 }
 
+/* We rotated the character's splineset so that the current spline at the */
+/*  current point is parallel to the x-axis. Then we are only interested in */
+/*  splines which intersect the vertical line through the current point */
+
+static int IsInteresting(Spline *s,double tmin,double tmax,BasePoint *me) {
+    Spline1D *s1 = &s->splines[0];
+    double xtmin = ((s1->a*tmin+s1->b)*tmin+s1->c)*tmin+s1->d;
+    double xtmax = ((s1->a*tmax+s1->b)*tmax+s1->c)*tmax+s1->d;
+    double t, test;
+
+    if (( xtmin<me->x && xtmax<me->x ) || ( xtmin>me->x && xtmax>me->x ))
+return( false );
+    if ( xtmin!=me->x && xtmax!=me->x )
+return( true );
+    if ( xtmin==me->x ) {
+	if ( tmin>0 ) {
+	    if ( (t = tmin-.0001)<0 ) t=0;
+	} else {
+	    s1 = &s->from->prev->splines[0];
+	    t = .9999;
+	}
+	test = ((s1->a*t+s1->b)*t+s1->c)*t+s1->d;
+	if (( test<xtmin && xtmax<xtmin ) || ( test>xtmin && xtmax>xtmin ))
+return( false );		/* Point of inflection */
+    } else {
+	if ( tmax<1 ) {
+	    if ( (t = tmax+.0001)>1 ) t=1;
+	} else {
+	    s1 = &s->to->next->splines[0];
+	    t = .0001;
+	}
+	if (( test<xtmax && xtmin<xtmax ) || ( test>xtmax && xtmin>xtmax ))
+return( false );		/* Point of inflection */
+    }
+return( true );
+}
+
+static int CountCrossings(SplineSet *spl,BasePoint *pt,double me_t, Spline *exceptme) {
+    Spline *s, *first;
+    double ts[4], t, y, xmin, xmax;
+    int i, bcnt;
+
+    ts[0] = 0;
+    bcnt = 0;
+    while ( spl!=NULL ) {
+	if ( spl->first->prev!=NULL ) {
+	    first = NULL;
+	    for ( s=spl->first->next ; s!=first ; s = s->to->next ) if ( s!=exceptme ) {
+		SplineFindExtrema(&s->splines[0],&ts[1],&ts[2]);
+		if ( ts[1]==-1 ) ts[1] = 1;
+		else if ( ts[2]==-1 ) ts[2] = 1;
+		else ts[3] = 1;
+		for ( i=0; ts[i]!=1; ++i ) {
+		    if ( IsInteresting(s,ts[i], ts[i+1], pt)) {
+			t = SplineSolve(&s->splines[0],ts[i],ts[i+1], pt->x, .0001);
+			if ( t==-1 )		/* can't happen */
+return( -1 );
+			if ( t==ts[i] || t==ts[i+1] )	/* Things get too complicated at the ends of splines */
+return( -1 );
+			y = ((s->splines[1].a*t+s->splines[1].b)*t+s->splines[1].c)*t+s->splines[1].d;
+			if ( y==pt->y )
+			    /* Ignore anything coincident */;
+			else if ( y<pt->y ) {
+			    xmin = ((s->splines[0].a*ts[i]+s->splines[0].b)*ts[i]+s->splines[0].c)*ts[i]+s->splines[0].d;
+			    xmax = ((s->splines[0].a*ts[i+1]+s->splines[0].b)*ts[i+1]+s->splines[0].c)*ts[i+1]+s->splines[0].d;
+			    if ( xmax>xmin )
+				++bcnt;
+			    else
+				--bcnt;
+			}
+		    }
+		}
+		if ( first==NULL )
+		    first = s;
+	    }
+	}
+	spl = spl->next;
+    }
+    if ( bcnt!=0 && exceptme!=NULL ) {
+	ts[0] = me_t-.01; ts[1] = me_t+.01;
+	s = exceptme;
+	xmin = ((s->splines[0].a*ts[0]+s->splines[0].b)*ts[0]+s->splines[0].c)*ts[0]+s->splines[0].d;
+	xmax = ((s->splines[0].a*ts[1]+s->splines[0].b)*ts[1]+s->splines[0].c)*ts[1]+s->splines[0].d;
+	if ( xmax>xmin )
+	    ++bcnt;
+	else
+	    --bcnt;
+    }
+return( bcnt<0 ? -bcnt : bcnt );
+}
+
+static Spline *FindMe(SplineSet *spl,real trans[6],Spline *s) {
+    SplinePoint to, from;
+    Spline *test, *first;
+
+    to.me.x = rint(1024*(s->to->me.x*trans[0] + s->to->me.y*trans[2]))/1024;
+    to.me.y = rint(1024*(s->to->me.x*trans[1] + s->to->me.y*trans[3]))/1024;
+    to.prevcp.x = rint(1024*(s->to->prevcp.x*trans[0] + s->to->prevcp.y*trans[2]))/1024;
+    to.prevcp.y = rint(1024*(s->to->prevcp.x*trans[1] + s->to->prevcp.y*trans[3]))/1024;
+    from.me.x = rint(1024*(s->from->me.x*trans[0] + s->from->me.y*trans[2]))/1024;
+    from.me.y = rint(1024*(s->from->me.x*trans[1] + s->from->me.y*trans[3]))/1024;
+    from.nextcp.x = rint(1024*(s->from->nextcp.x*trans[0] + s->from->nextcp.y*trans[2]))/1024;
+    from.nextcp.y = rint(1024*(s->from->nextcp.x*trans[1] + s->from->nextcp.y*trans[3]))/1024;
+
+    while ( spl!=NULL ) {
+	if ( spl->first->prev!=NULL ) {
+	    first = NULL;
+	    for ( test = spl->first->next; test!=first ; test=test->to->next ) {
+		if ( first==NULL ) first = test;
+		if ( RealNear(test->from->me.x,from.me.x) &&
+			RealNear(test->from->me.y,from.me.y) &&
+			RealNear(test->from->nextcp.x,from.nextcp.x) &&
+			RealNear(test->from->nextcp.y,from.nextcp.y) &&
+			RealNear(test->to->prevcp.x,to.prevcp.x) &&
+			RealNear(test->to->prevcp.y,to.prevcp.y) &&
+			RealNear(test->to->me.x,to.me.x) &&
+			RealNear(test->to->me.y,to.me.y) )
+return( test );
+	    }
+	}
+	spl = spl->next;
+    }
+    GDrawIError("Failed to find transformed spline" );
+return( NULL );
+}
+
+static int IsExternalEdge(Spline *s,double t,SplineSet *base ) {
+    SplineSet *altered=NULL;
+    double theta;
+    double slopex, slopey;
+    BasePoint here, rpt;
+    int cnt;
+    real trans[6];
+
+    slopex = (3*s->splines[0].a*t+2*s->splines[0].b)*t+s->splines[0].c;
+    slopey = (3*s->splines[1].a*t+2*s->splines[1].b)*t+s->splines[1].c;
+    here.x = ((s->splines[0].a*t+s->splines[0].b)*t+s->splines[0].c)*t+s->splines[0].d;
+    here.y = ((s->splines[1].a*t+s->splines[1].b)*t+s->splines[1].c)*t+s->splines[1].d;
+    if ( slopex==0 && slopey==0 )
+return( -1 );
+    theta = atan2(slopey,slopex);
+
+    trans[0] = trans[3] = cos(theta);
+    trans[2] = sin(theta);
+    trans[1] = -trans[2];
+    trans[4] = trans[5] = 0;
+    altered = SplinePointListTransform(SplinePointListCopy(base),trans,true);
+    rpt.x = rint(1024*(here.x*trans[0] + here.y*trans[2]))/1024;
+    rpt.y = rint(1024*(here.x*trans[1] + here.y*trans[3]))/1024;
+    cnt = CountCrossings(altered,&rpt,t,FindMe(altered,trans,s));
+    SplinePointListsFree(altered);
+return( cnt==-1 ? -1 : cnt==0 );
+}
+
+static void ForceAllnu(SplinePoint *csp,SplinePoint *nsp,int isneeded) {
+    Spline *s;
+
+    for ( s=csp->next ; ; s = s->to->next ) {
+	s->isneeded = isneeded;
+	s->isunneeded = !isneeded;
+	if ( s->to == nsp )
+    break;
+    }
+}
+
+static int PathIsGood(Spline *s) {
+    /* Are all splines on this path either needed or unneeded, but never both? */
+    int isn = s->isneeded;
+
+    forever {
+	if ( s->isneeded && s->isunneeded )
+return( false );
+	if ( !s->isneeded && !s->isunneeded )
+return( false );
+	if ( s->isneeded!=isn )
+return( false );
+	if ( s->to->isintersection )
+return( true );
+	s = s->to->next;
+    }
+}
+
+static int CountGoodNeededPaths(IntersectionList *il,Spline *ignoreme) {
+    int cnt=0;
+    SplineList *l;
+
+    for ( l=il->splines; l!=NULL; l=l->next ) if ( l->spline!=ignoreme ) {
+	if ( !PathIsGood(l->spline))
+return( -1 );
+	else if ( l->spline->isneeded )
+	    ++cnt;
+    }
+return( cnt );
+}
+
+static int AllIntersectionsEven(IntersectionList *ilist) {
+    IntersectionList *il;
+    int cnt;
+
+    for ( il=ilist; il!=NULL; il=il->next ) {
+	cnt = CountGoodNeededPaths(il,NULL);
+	if ( cnt==-1 || (cnt&1))
+return( false );
+    }
+return( true );
+}
+
+static void ForceAllSame(SplinePoint *csp,SplinePoint *nsp,SplineChar *sc,
+	SplineSet * base, IntersectionList *ilist) {
+    int ncnt, ucnt;
+    int cntc, cntn;
+    Spline *s;
+    IntersectionList *cil, *nil;
+    int i, div;
+
+    ncnt = ucnt = 0;
+    for ( s=csp->next ; ; s = s->to->next ) {
+	if ( s->isneeded ) ++ncnt;
+	if ( s->isunneeded ) ++ucnt;
+	if ( s->to == nsp )
+    break;
+    }
+    if ( (ncnt==0 || ucnt==0 ) && ncnt!=ucnt )
+return;
+    if ( csp->isintersection ) {	/* This might be false if we are dealing with an entire contour */
+	cil = FindIntersectionAt(ilist,csp->me.x,csp->me.y);
+	nil = FindIntersectionAt(ilist,nsp->me.x,nsp->me.y);
+	if ( cil==NULL || nil==NULL )
+	    GDrawIError("Failed to find intersection");
+	else if ( cil==nil ) {
+	    /* Can't guess whether this path is needed or unneeded. Since */
+	    /*  it starts and ends at the same point, either way will work */
+	} else {
+	    cntc = CountGoodNeededPaths(cil,csp->next);
+	    cntn = CountGoodNeededPaths(nil,nsp->prev);
+	    if ( cntc==-1 || cntc==-1 )
+		/* Can't tell */;
+	    else if ( (cntc&1)==0 && (cntn&1)==0 )
+		ForceAllnu(csp,nsp,0);		/* Both intersections have an */
+		    /* even number of paths (ignoring this one) so adding this*/
+		    /* one would make an uneven number, which would be wrong */
+	    else if ( (cntc&1)==1 && (cntn&1)==1 )
+		ForceAllnu(csp,nsp,1);
+	}
+    }
+
+    for ( div=3; div<20; div += 2 ) {
+	ncnt = ucnt = 0;
+	for ( s=csp->next ; ; s = s->to->next ) {
+	    for ( i=1; i<=div; ++i ) {
+		int isee = IsExternalEdge(s,i/((double) (div+1)),base);
+		if ( isee==-1 )
+      goto tryagain;
+		if ( isee )
+		    ++ncnt;
+		else
+		    ++ucnt;
+	    }
+	    if ( s->to == nsp )
+	break;
+	}
+	if ( ncnt>=2*ucnt ) {
+	    ForceAllnu(csp,nsp,1);
+return;
+	} else if ( ucnt>=2*ncnt ) {
+	    ForceAllnu(csp,nsp,0);
+return;
+	}
+      tryagain:;
+    }
+    GDrawIError("Couldn't guess needed/unneeded in ForceAllSame");
+}
+
+static void RefigureNeeded(SplineSet *base) {
+    int i;
+    SplineSet *spl;
+    Spline *s, *first;
+
+    for ( spl=base; spl!=NULL; spl=spl->next ) if ( spl->first->prev!=NULL ) {
+	first = NULL;
+	for ( s = spl->first->next; s!=first; s = s->to->next ) {
+	    if ( first==NULL ) first = s;
+	    for ( i=1; i<5; ++i ) {
+		int isee = IsExternalEdge(s,i/5.,base);
+		if ( isee==1 )
+		    s->isneeded = true;
+		else if ( isee==0 )
+		    s->isunneeded = true;
+	    }
+	}
+    }
+}
+
+static int AllSame(SplinePoint *csp,SplinePoint *nsp) {
+    int ncnt, ucnt;
+    Spline *s;
+
+    ncnt = ucnt = 0;
+    for ( s=csp->next ; ; s = s->to->next ) {
+	if ( !s->isneeded && !s->isunneeded )
+return( false );
+	if ( s->isneeded ) ++ncnt;
+	if ( s->isunneeded ) ++ucnt;
+	if ( s->to == nsp )
+    break;
+    }
+return(ncnt==0 || ucnt==0 );
+}
+
+static void CleanupNeededUn(SplineChar *sc,SplineSet *base, IntersectionList *ilist) {
+    SplineSet *spl;
+    SplinePoint *sp, *csp, *nsp;
+    int i, anyproblems;
+    /* First check if we have any inconsistant paths (both needed & unneeded) */
+    /*  If not, return */
+    /*  If so, do a slower method of calculating the needed bits, and then */
+    /*   check the conflicting paths more closely */
+    /* (we refigure all the needed bits, not just the conflicting ones because*/
+    /*  we sometimes miss a conflict) */
+
+    for ( i=0; i<2; ++i ) {
+	for ( spl=base; spl!=NULL; spl = spl->next ) if ( spl->first->prev!=NULL ) {
+	    for ( sp = spl->first; !sp->isintersection ; ) {
+		sp = sp->next->to;
+		if ( sp==spl->first )
+	    break;
+	    }
+	    for ( csp = sp; ; ) {
+		for ( nsp = csp->next->to; !nsp->isintersection && nsp!=sp; nsp = nsp->next->to );
+		if ( i==0 ) {
+		    anyproblems = !AllSame(csp,nsp);
+		    if ( anyproblems )
+      goto break_out;
+		} else {
+		    ForceAllSame(csp,nsp,sc,base,ilist);
+		}
+		if ( nsp==sp )
+	    break;
+		csp = nsp;
+	    }
+	}
+      break_out:
+	if ( i==0 ) {
+	    if ( !anyproblems && AllIntersectionsEven(ilist))
+return;
+	    RefigureNeeded(base);
+	}
+    }
+}
+
 static void SSValidate(SplineChar *sc,SplineSet *spl) {
     Spline *spline, *first;
     
@@ -1568,7 +1939,7 @@ static void SSValidate(SplineChar *sc,SplineSet *spl) {
 			    spline->from->me.x, spline->from->me.y,
 			    spline->to->me.x, spline->to->me.y,
 			    sc!=NULL?sc->name:"<nameless char>");
-		spline->isunneeded = !spline->isunneeded;
+		/*spline->isunneeded = !spline->isunneeded;*/
 	    }
 	    if ( first==NULL ) first = spline;
 	}
@@ -1743,6 +2114,7 @@ SplineSet *SplineSetRemoveOverlap(SplineChar *sc, SplineSet *base,enum overlap_t
 	base = RemoveBacktracks(sc,base,ilist);
 	SplineSetFindNeeded(sc,base,ot);
 	RemoveDuplicates(ilist);
+	CleanupNeededUn(sc,base,ilist);
 #ifdef DEBUG
 	ShowIntersections(ilist);
 #endif
