@@ -2080,14 +2080,16 @@ return( NULL );
 
     /* Clean up hintmasks. We always create a hintmask on the first point */
     /*  only keep them if we actually have conflicts.			  */
-    for ( i=0; i<mm->normal->charcnt; ++i ) if ( mm->normal->chars[i]!=NULL ) {
+    for ( i=0; i<mm->normal->charcnt; ++i )
+	    if ( mm->normal->chars[i]!=NULL &&
+		    mm->normal->chars[i]->layers[ly_fore].splines != NULL ) {
 	for ( item=0; item<mm->instance_count; ++item )
 	    if ( mm->instances[item]->chars[i]->vconflicts ||
 		    mm->instances[item]->chars[i]->hconflicts )
 	break;
 	if ( item==mm->instance_count ) {	/* No conflicts */
 	    for ( item=0; item<mm->instance_count; ++item ) {
-		free( mm->instances[item]->chars[i]->layers[ly_fore].splines->first->hintmask );
+		chunkfree( mm->instances[item]->chars[i]->layers[ly_fore].splines->first->hintmask, sizeof(HintMask) );
 		mm->instances[item]->chars[i]->layers[ly_fore].splines->first->hintmask = NULL;
 	    }
 	    chunkfree( mm->normal->chars[i]->layers[ly_fore].splines->first->hintmask, sizeof(HintMask) );
