@@ -796,6 +796,9 @@ static char *str_TwoFontsSameStyle = "There are two open fonts with the current 
 static char *str_DifferentEncodings = "The font %1$.30hs has a different encoding than that of %2$.30hs";
 static char *str_NotdefName = "Notdef name";
 static char *str_NotdefChar = "The character at encoding %d is named \".notdef\" but contains an outline. Because it is called \".notdef\" it will not be included in the generated font. You may give it a new name using Element->Char Info. Do you wish to continue font generation (and omit this character)?";
+static char *str_EmSizeBad = "Non-standard Em-Size";
+static char *str_PSEmSize1000 = "The convention is that PostScript fonts should have an Em-Size of 1000. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->PS General dialog.\nDo you wish to continue to generate your font in spite of this?";
+static char *str_TTFEmSize2 = "The convention is that TrueType fonts should have an Em-Size which is a power of 2. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->PS General dialog.\nDo you wish to continue to generate your font in spite of this?";
     /* Goto character ... */
 static char str_Badnumberin[] = "Bad Number in ";
 static char str_Enternameofchar[] = "Enter the name of a character in the font";

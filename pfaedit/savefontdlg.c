@@ -1195,6 +1195,7 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
     Encoding *item=NULL;
     struct sflist *sfs=NULL, *cur;
     static int buts[] = { _STR_Yes, _STR_No, 0 };
+    static int psscalewarned=0, ttfscalewarned=0;
 
     for ( i=d->sf->charcnt-1; i>=1; --i )
 	if ( d->sf->chars[i]!=NULL && strcmp(d->sf->chars[i]->name,".notdef")==0 &&
@@ -1212,6 +1213,27 @@ return;
 	if ( GWidgetAskR(_STR_NotCID,buts,0,1,_STR_NotCIDOk)==1 )
 return;
     }
+
+    if ( oldformatstate<=ff_cid || (oldformatstate>=ff_otf && oldformatstate<=ff_otfciddfont)) {
+	if ( d->sf->ascent+d->sf->descent!=1000 && !psscalewarned ) {
+	    if ( GWidgetAskR(_STR_EmSizeBad,buts,0,1,_STR_PSEmSize1000,
+		    d->sf->ascent+d->sf->descent)==1 )
+return;
+	    psscalewarned = true;
+	}
+    } else if ( oldformatstate!=ff_none ) {
+	int val = d->sf->ascent+d->sf->descent;
+	int bit;
+	for ( bit=0x800000; bit!=0; bit>>=1 )
+	    if ( bit==val )
+	break;
+	if ( bit==0 && !ttfscalewarned ) {
+	    if ( GWidgetAskR(_STR_EmSizeBad,buts,0,1,_STR_TTFEmSize2,val)==1 )
+return;
+	    ttfscalewarned = true;
+	}
+    }
+
     if ( d->sf->encoding_name>=em_base )
 	for ( item=enclist; item!=NULL && item->enc_num!=d->sf->encoding_name; item=item->next );
     if ( ((oldformatstate<ff_ptype0 && oldformatstate!=ff_multiple) || oldformatstate==ff_ttfsym) &&
