@@ -96,6 +96,7 @@ return( i );
 
 static void ExtendSF(SplineFont *sf, int enc, int set) {
     BDFFont *b;
+    FontView *fvs;
 
     if ( enc>=sf->charcnt ) {
 	int i,n = enc;
@@ -112,9 +113,11 @@ static void ExtendSF(SplineFont *sf, int enc, int set) {
 	    b->charcnt = n;
 	}
 	if ( sf->fv!=NULL ) {
-	    free(sf->fv->selected);
-	    sf->fv->selected = gcalloc(sf->charcnt,1);
-	    FontViewReformat(sf->fv);
+	    for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+		free(fvs->selected);
+		fvs->selected = gcalloc(sf->charcnt,1);
+	    }
+	    FontViewReformatAll(sf);
 	}
     }
 }
@@ -1492,9 +1495,12 @@ int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
     } while ( fpt!=NULL );
     GProgressEndIndicator();
     if ( oldcharcnt != fv->sf->charcnt ) {
-	free(fv->selected);
-	fv->selected = gcalloc(fv->sf->charcnt,sizeof(char));
-	FontViewReformat(fv);
+	FontView *fvs;
+	for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+	    free(fvs->selected);
+	    fvs->selected = gcalloc(fvs->sf->charcnt,sizeof(char));
+	}
+	FontViewReformatAll(fv->sf);
     }
     if ( anyb==NULL ) {
 	GWidgetErrorR( _STR_NoBitmapFont, _STR_NoBitmapFontIn, filename );

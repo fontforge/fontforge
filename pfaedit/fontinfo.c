@@ -2240,7 +2240,7 @@ return(true);
 	    sf->pfminfo.pfmset = true;
 	}
 	if ( reformat_fv )
-	    FontViewReformat(sf->fv);
+	    FontViewReformatAll(sf);
 	sf->changed = true;
 	sf->changed_since_autosave = true;
 	d->done = true;
@@ -3312,8 +3312,11 @@ void FontInfo(SplineFont *sf) {
     TTFLangNamesFree(d.names);
 
     if ( oldcnt!=sf->charcnt && sf->fv!=NULL && sf->fv->sf==sf ) {
-	free(sf->fv->selected);
-	sf->fv->selected = gcalloc(sf->charcnt,sizeof(char));
+	FontView *fvs;
+	for ( fvs=sf->fv; fvs!=NULL; fvs = fvs->nextsame ) {
+	    free(fvs->selected);
+	    fvs->selected = gcalloc(sf->charcnt,sizeof(char));
+	}
     }
     if ( sf->fv!=NULL && sf->fv->v!=NULL )
 	GDrawRequestExpose(sf->fv->v,NULL,false);

@@ -397,8 +397,9 @@ return( sf->charcnt );
 }
 
 void MergeFont(FontView *fv,SplineFont *other) {
-    int i,cnt, doit, emptypos, index, enc_cnt;
+    int i,cnt, doit, emptypos, index, enc_cnt, j;
     BDFFont *bdf;
+    FontView *fvs;
 
     if ( fv->sf==other ) {
 	GWidgetErrorR(_STR_MergingProb,_STR_MergingFontSelf);
@@ -434,7 +435,12 @@ return;
 	if ( !doit ) {
 	    if ( emptypos+cnt >= fv->sf->charcnt ) {
 		fv->sf->chars = grealloc(fv->sf->chars,(emptypos+cnt)*sizeof(SplineChar *));
-		fv->selected = grealloc(fv->selected,emptypos+cnt);
+		for ( fvs = fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame )
+		    if ( fvs->sf == fv->sf ) {
+			fvs->selected = grealloc(fvs->selected,emptypos+cnt);
+			for ( j=fv->sf->charcnt; j<emptypos+cnt; ++j )
+			    fvs->selected[j] = false;
+		    }
 		for ( bdf = fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 		    bdf->chars = grealloc(bdf->chars,(emptypos+cnt)*sizeof(SplineChar *));
 		fv->filled->chars = grealloc(fv->filled->chars,(emptypos+cnt)*sizeof(SplineChar *));
@@ -456,7 +462,7 @@ return;
     if ( other->fv==NULL )
 	SplineFontFree(other);
     fv->sf->changed = true;
-    FontViewReformat(fv);
+    FontViewReformatAll(fv->sf);
 }
 
 static void MergeAskFilename(FontView *fv) {

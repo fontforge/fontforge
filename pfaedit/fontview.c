@@ -71,36 +71,38 @@ extern int _GScrollBar_Width;
 int default_fv_font_size = 24, default_fv_antialias=false;
 FontView *fv_list=NULL;
 
-void FVToggleCharChanged(FontView *fv,SplineChar *sc) {
+void FVToggleCharChanged(SplineChar *sc) {
     int i, j;
     int pos;
+    FontView *fv;
 
-    if ( fv==NULL ) fv = sc->parent->fv;
+    fv = sc->parent->fv;
     if ( fv->sf!=sc->parent )		/* Can happen in CID fonts if char's parent is not currently active */
 return;
     if ( fv->v==NULL )			/* Can happen in scripts */
 return;
-
-    pos = sc->enc;
-    if ( fv->mapping!=NULL ) {
-	for ( i=0; i<fv->mapcnt; ++i )
-	    if ( fv->mapping[i]==pos )
-	break;
-	if ( i==fv->mapcnt )		/* Not currently displayed */
-return;
-	pos = i;
-    }
-    i = pos / fv->colcnt;
-    j = pos - i*fv->colcnt;
-    i -= fv->rowoff;
-    if ( i>=0 && i<fv->rowcnt ) {
-	GRect r;
-	r.x = j*fv->cbw+1; r.width = fv->cbw-1;
-	r.y = i*fv->cbh+1; r.height = FV_LAB_HEIGHT-1;
-	GDrawSetXORBase(fv->v,GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(fv->v)));
-	GDrawSetXORMode(fv->v);
-	GDrawFillRect(fv->v,&r,0x000000);
-	GDrawSetCopyMode(fv->v);
+    for ( ; fv!=NULL ; fv = fv->nextsame ) {
+	pos = sc->enc;
+	if ( fv->mapping!=NULL ) {
+	    for ( i=0; i<fv->mapcnt; ++i )
+		if ( fv->mapping[i]==pos )
+	    break;
+	    if ( i==fv->mapcnt )		/* Not currently displayed */
+    continue;
+	    pos = i;
+	}
+	i = pos / fv->colcnt;
+	j = pos - i*fv->colcnt;
+	i -= fv->rowoff;
+	if ( i>=0 && i<fv->rowcnt ) {
+	    GRect r;
+	    r.x = j*fv->cbw+1; r.width = fv->cbw-1;
+	    r.y = i*fv->cbh+1; r.height = FV_LAB_HEIGHT-1;
+	    GDrawSetXORBase(fv->v,GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(fv->v)));
+	    GDrawSetXORMode(fv->v);
+	    GDrawFillRect(fv->v,&r,0x000000);
+	    GDrawSetCopyMode(fv->v);
+	}
     }
 }
 
@@ -362,7 +364,9 @@ static int _FVMenuClose(FontView *fv) {
     MetricsView *mv, *mnext;
     SplineFont *sf = fv->cidmaster?fv->cidmaster:fv->sf;
 
-    if ( sf->changed ) {
+    if ( fv->nextsame!=NULL || fv->sf->fv!=fv ) {
+	/* There's another view, can close this one with no problems */
+    } else if ( sf->changed ) {
 	i = AskChanged(fv->sf);
 	if ( i==2 )	/* Cancel */
 return( false );
@@ -459,6 +463,7 @@ void FVRevert(FontView *fv) {
     BitmapView *bv, *bvnext;
     MetricsView *mv, *mvnext;
     int i, enc;
+    FontView *fvs;
 
     if ( old->origname==NULL )
 return;
@@ -512,9 +517,10 @@ return;
     SFClearAutoSave(old);
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
-    fv->sf = temp;
-    temp->fv = fv;
-    FontViewReformat(fv);
+    temp->fv = fv->sf->fv;
+    for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame )
+	fvs->sf = temp;
+    FontViewReformatAll(fv->sf);
     SplineFontFree(old);
 }
 
@@ -1610,7 +1616,7 @@ return;
 }
 
 static void FVMenuSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    FontView *fv = (FontView *) GDrawGetUserData(gw), *fvs, *fvss;
     int dspsize = fv->filled->pixelsize;
     int changealias = false;
 
@@ -1631,17 +1637,27 @@ static void FVMenuSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	changealias = true;
     }
     if ( fv->filled!=fv->show || fv->filled->pixelsize != dspsize || changealias ) {
-	BDFFont *new;
-	new = SplineFontPieceMeal(fv->sf,dspsize,fv->antialias);
-#if 0
-	if ( fv->antialias )
-	    new = SplineFontAntiAlias(fv->sf,dspsize,4);
-	else
-	    new = SplineFontRasterize(fv->sf,dspsize,true);
-#endif
-	BDFFontFree(fv->filled);
-	fv->filled = new;
-	FVChangeDisplayFont(fv,new);
+	BDFFont *new, *old;
+	for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame )
+	    fvs->touched = false;
+	while ( 1 ) {
+	    for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame )
+		if ( !fvs->touched )
+	    break;
+	    if ( fvs==NULL )
+	break;
+	    old = fvs->filled;
+	    new = SplineFontPieceMeal(fvs->sf,dspsize,fvs->antialias);
+	    for ( fvss=fvs; fvss!=NULL; fvss = fvss->nextsame ) {
+		if ( fvss->filled==old ) {
+		    fvss->filled = new;
+		    if ( fvss->show==old || fvss==fv )
+			FVChangeDisplayFont(fvss,new);
+		    fvss->touched = true;
+		}
+	    }
+	    BDFFontFree(old);
+	}
 	fv->sf->display_size = -dspsize;
 	if ( fv->cidmaster!=NULL ) {
 	    int i;
@@ -1655,14 +1671,17 @@ static void FVMenuShowBitmap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     BDFFont *bdf = mi->ti.userdata;
 
-    FVChangeDisplayFont(fv,bdf);
+    FVChangeDisplayFont(fv,bdf);		/* Let's not change any of the others */
     fv->sf->display_size = fv->show->pixelsize;
 }
 
 void FVShowFilled(FontView *fv) {
+    FontView *fvs;
+
     fv->magnify = 1;
-    if ( fv->show!=fv->filled )
-	FVChangeDisplayFont(fv,fv->filled);
+    for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame )
+	if ( fvs->show!=fvs->filled )
+	    FVChangeDisplayFont(fvs,fvs->filled);
     fv->sf->display_size = -fv->filled->pixelsize;
 }
 
@@ -1969,11 +1988,11 @@ static void FVMenuShowSubFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
     fv->sf = new;
     FVSetTitle(fv);
-    FontViewReformat(fv);
+    FontViewReformatOne(fv);
 }
 
 static void FVMenuConvert2CID(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    FontView *fv = (FontView *) GDrawGetUserData(gw), *fvs;
     SplineFont *cidmaster = fv->cidmaster;
     struct cidmap *map;
 
@@ -1995,7 +2014,7 @@ return;
     cidmaster->display_size = fv->sf->display_size;
     cidmaster->changed = cidmaster->changed_since_autosave = true;
     fv->cidmaster = cidmaster;
-    cidmaster->fv = fv;
+    cidmaster->fv = fv->sf->fv;
     fv->sf->cidmaster = cidmaster;
     cidmaster->subfontcnt = 1;
     cidmaster->subfonts = gcalloc(2,sizeof(SplineFont *));
@@ -2005,13 +2024,16 @@ return;
 	fv->sf->private = gcalloc(1,sizeof(struct psdict));
     if ( !PSDictHasEntry(fv->sf->private,"lenIV"))
 	PSDictChangeEntry(fv->sf->private,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
-    free(fv->selected);
-    fv->selected = gcalloc(fv->sf->charcnt,sizeof(char));
-    FontViewReformat(fv);
+    for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+	free(fvs->selected);
+	fvs->selected = gcalloc(fvs->sf->charcnt,sizeof(char));
+    }
+    FontViewReformatAll(fv->sf);
 }
 
 static void FVMenuFlatten(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
+    FontView *fvs;
     SplineFont *cidmaster = fv->cidmaster;
     SplineFont *new;
     char buffer[20];
@@ -2062,15 +2084,17 @@ return;
 	    }
 	}
     }
-    fv->cidmaster = NULL;
-    if ( fv->sf->charcnt!=new->charcnt ) {
-	free(fv->selected);
-	fv->selected = gcalloc(new->charcnt,sizeof(char));
+    for ( fvs=new->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+	fvs->cidmaster = NULL;
+	if ( fvs->sf->charcnt!=new->charcnt ) {
+	    free(fvs->selected);
+	    fvs->selected = gcalloc(new->charcnt,sizeof(char));
+	}
+	fvs->sf = new;
+	FVSetTitle(fvs);
     }
-    fv->sf = new;
-    FontViewReformat(fv);
+    FontViewReformatAll(fvs->sf);
     SplineFontFree(cidmaster);
-    FVSetTitle(fv);
 }
 
 static void FVInsertInCID(FontView *fv,SplineFont *sf) {
@@ -2096,7 +2120,7 @@ static void FVInsertInCID(FontView *fv,SplineFont *sf) {
     }
     fv->sf = sf;
     sf->fv = fv;
-    FontViewReformat(fv);
+    FontViewReformatOne(fv);
     FVSetTitle(fv);
 }
 
@@ -2154,10 +2178,11 @@ return;
 
 static void FVMenuRemoveFontFromCID(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    SplineFont *cidmaster = fv->cidmaster, *sf = fv->sf;
+    SplineFont *cidmaster = fv->cidmaster, *sf = fv->sf, *replace;
     static int buts[] = { _STR_Remove, _STR_Cancel, 0 };
     int i;
     MetricsView *mv, *mnext;
+    FontView *fvs;
 
     if ( cidmaster==NULL || cidmaster->subfontcnt<=1 )	/* Can't remove last font */
 return;
@@ -2186,21 +2211,25 @@ return;
     for ( i=0; i<cidmaster->subfontcnt; ++i )
 	if ( cidmaster->subfonts[i]==sf )
     break;
-    fv->sf = i==0?cidmaster->subfonts[1]:cidmaster->subfonts[i-1];
+    replace = i==0?cidmaster->subfonts[1]:cidmaster->subfonts[i-1];
     while ( i<cidmaster->subfontcnt-1 ) {
 	cidmaster->subfonts[i] = cidmaster->subfonts[i+1];
 	++i;
     }
     --cidmaster->subfontcnt;
 
-    if ( fv->sf->charcnt!=sf->charcnt ) {
-	free(fv->selected);
-	fv->selected = gcalloc(fv->sf->charcnt,sizeof(char));
+    for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+	if ( fvs->sf==sf ) {
+	    fvs->sf = replace;
+	    if ( replace->charcnt!=sf->charcnt ) {
+		free(fvs->selected);
+		fvs->selected = gcalloc(replace->charcnt,sizeof(char));
+	    }
+	    FVSetTitle(fv);
+	}
     }
-    
+    FontViewReformatAll(fv->sf);
     SplineFontFree(sf);
-    FontViewReformat(fv);
-    FVSetTitle(fv);
 }
 
 static void FVMenuCIDFontInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2620,65 +2649,67 @@ void FVRefreshChar(FontView *fv,BDFFont *bdf,int enc) {
     if ( fv->v==NULL )			/* Can happen in scripts */
 return;
 
-    for ( mv=fv->metrics; mv!=NULL; mv=mv->next )
-	MVRefreshChar(mv,fv->sf->chars[enc]);
-    if ( fv->show != bdf )
-return;
-    i = enc / fv->colcnt;
-    j = enc - i*fv->colcnt;
-    i -= fv->rowoff;
-    if ( i>=0 && i<fv->rowcnt ) {
-	struct _GImage base;
-	GImage gi;
-	GClut clut;
-	GRect old, box;
+    for ( fv=fv->sf->fv; fv!=NULL; fv = fv->nextsame ) {
+	for ( mv=fv->metrics; mv!=NULL; mv=mv->next )
+	    MVRefreshChar(mv,fv->sf->chars[enc]);
+	if ( fv->show != bdf )
+    continue;
+	i = enc / fv->colcnt;
+	j = enc - i*fv->colcnt;
+	i -= fv->rowoff;
+	if ( i>=0 && i<fv->rowcnt ) {
+	    struct _GImage base;
+	    GImage gi;
+	    GClut clut;
+	    GRect old, box;
 
-	if ( bdfc==NULL )
-	    bdfc = BDFPieceMeal(bdf,enc);
+	    if ( bdfc==NULL )
+		bdfc = BDFPieceMeal(bdf,enc);
 
-	memset(&gi,'\0',sizeof(gi));
-	memset(&base,'\0',sizeof(base));
-	if ( bdfc->byte_data ) {
-	    gi.u.image = &base;
-	    base.image_type = it_index;
-	    base.clut = bdf->clut;
-	    GDrawSetDither(NULL, false);
-	    base.trans = -1;		/* on 8 bit displays we don't want any dithering */
-	    /*base.clut->trans_index = 0;*/
-	} else {
-	    memset(&clut,'\0',sizeof(clut));
-	    gi.u.image = &base;
-	    base.image_type = it_mono;
-	    base.clut = &clut;
-	    clut.clut_len = 2;
-	    clut.clut[0] = GDrawGetDefaultBackground(NULL);
+	    memset(&gi,'\0',sizeof(gi));
+	    memset(&base,'\0',sizeof(base));
+	    if ( bdfc->byte_data ) {
+		gi.u.image = &base;
+		base.image_type = it_index;
+		base.clut = bdf->clut;
+		GDrawSetDither(NULL, false);
+		base.trans = -1;		/* on 8 bit displays we don't want any dithering */
+		/*base.clut->trans_index = 0;*/
+	    } else {
+		memset(&clut,'\0',sizeof(clut));
+		gi.u.image = &base;
+		base.image_type = it_mono;
+		base.clut = &clut;
+		clut.clut_len = 2;
+		clut.clut[0] = GDrawGetDefaultBackground(NULL);
+	    }
+
+	    base.data = bdfc->bitmap;
+	    base.bytes_per_line = bdfc->bytes_per_line;
+	    base.width = bdfc->xmax-bdfc->xmin+1;
+	    base.height = bdfc->ymax-bdfc->ymin+1;
+	    box.x = j*fv->cbw+1; box.width = fv->cbw-1;
+	    box.y = i*fv->cbh+FV_LAB_HEIGHT+1; box.height = fv->cbw;
+	    GDrawPushClip(fv->v,&box,&old);
+	    GDrawFillRect(fv->v,&box,GDrawGetDefaultBackground(NULL));
+	    if ( fv->magnify>1 ) {
+		GDrawDrawImageMagnified(fv->v,&gi,NULL,
+			j*fv->cbw+(fv->cbw-1-fv->magnify*base.width)/2,
+			i*fv->cbh+FV_LAB_HEIGHT+1+fv->magnify*(fv->show->ascent-bdfc->ymax),
+			fv->magnify*base.width,fv->magnify*base.height);
+	    } else
+		GDrawDrawImage(fv->v,&gi,NULL,
+			j*fv->cbw+(fv->cbw-1-base.width)/2,
+			i*fv->cbh+FV_LAB_HEIGHT+1+fv->show->ascent-bdfc->ymax);
+	    GDrawPopClip(fv->v,&old);
+	    if ( fv->selected[enc] ) {
+		GDrawSetXORBase(fv->v,GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(fv->v)));
+		GDrawSetXORMode(fv->v);
+		GDrawFillRect(fv->v,&box,XOR_COLOR);
+		GDrawSetCopyMode(fv->v);
+	    }
+	    GDrawSetDither(NULL, true);
 	}
-
-	base.data = bdfc->bitmap;
-	base.bytes_per_line = bdfc->bytes_per_line;
-	base.width = bdfc->xmax-bdfc->xmin+1;
-	base.height = bdfc->ymax-bdfc->ymin+1;
-	box.x = j*fv->cbw+1; box.width = fv->cbw-1;
-	box.y = i*fv->cbh+FV_LAB_HEIGHT+1; box.height = fv->cbw;
-	GDrawPushClip(fv->v,&box,&old);
-	GDrawFillRect(fv->v,&box,GDrawGetDefaultBackground(NULL));
-	if ( fv->magnify>1 ) {
-	    GDrawDrawImageMagnified(fv->v,&gi,NULL,
-		    j*fv->cbw+(fv->cbw-1-fv->magnify*base.width)/2,
-		    i*fv->cbh+FV_LAB_HEIGHT+1+fv->magnify*(fv->show->ascent-bdfc->ymax),
-		    fv->magnify*base.width,fv->magnify*base.height);
-	} else
-	    GDrawDrawImage(fv->v,&gi,NULL,
-		    j*fv->cbw+(fv->cbw-1-base.width)/2,
-		    i*fv->cbh+FV_LAB_HEIGHT+1+fv->show->ascent-bdfc->ymax);
-	GDrawPopClip(fv->v,&old);
-	if ( fv->selected[enc] ) {
-	    GDrawSetXORBase(fv->v,GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(fv->v)));
-	    GDrawSetXORMode(fv->v);
-	    GDrawFillRect(fv->v,&box,XOR_COLOR);
-	    GDrawSetCopyMode(fv->v);
-	}
-	GDrawSetDither(NULL, true);
     }
 }
 
@@ -2695,14 +2726,6 @@ return;
     else
 	BDFCharFree(fv->filled->chars[sc->enc]);
     fv->filled->chars[sc->enc] = NULL;
-#if 0
-    if ( fv->antialias )
-	bdfc = SplineCharAntiAlias(sc,fv->filled->pixelsize,4);
-    else
-	bdfc = SplineCharRasterize(sc,fv->filled->pixelsize);
-    BDFCharFree(fv->filled->chars[sc->enc]);
-    fv->filled->chars[sc->enc] = bdfc;
-#endif
 		/* FVRefreshChar does NOT do this for us */
     for ( mv=fv->metrics; mv!=NULL; mv=mv->next )
 	MVRegenChar(mv,sc);
@@ -3761,8 +3784,9 @@ return;
     GDrawRequestExpose(fv->v,NULL,true);
 }
 
-void FontViewReformat(FontView *fv) {
+void FontViewReformatOne(FontView *fv) {
     BDFFont *new;
+    FontView *fvs;
 
     if ( fv->v==NULL )			/* Can happen in scripts */
 return;
@@ -3775,19 +3799,57 @@ return;
 	if ( fv->rowoff<0 ) fv->rowoff =0;
 	GScrollBarSetPos(fv->vsb,fv->rowoff);
     }
-    new = SplineFontPieceMeal(fv->sf,fv->filled->pixelsize,fv->antialias);
-#if 0
-    if ( fv->antialias )
-	new = SplineFontAntiAlias(fv->sf,fv->filled->pixelsize,4);
+    for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame )
+	if ( fvs!=fv && fvs->sf==fv->sf )
+    break;
+    if ( fvs!=NULL )
+	new = fvs->filled;
     else
-	new = SplineFontRasterize(fv->sf,fv->filled->pixelsize,true);
-#endif
+	new = SplineFontPieceMeal(fv->sf,fv->filled->pixelsize,fv->antialias);
     BDFFontFree(fv->filled);
     if ( fv->filled == fv->show )
 	fv->show = new;
     fv->filled = new;
     GDrawRequestExpose(fv->v,NULL,false);
     GDrawSetCursor(fv->v,ct_pointer);
+}
+
+void FontViewReformatAll(SplineFont *sf) {
+    BDFFont *new, *old;
+    FontView *fvs, *fv;
+
+    if ( sf->fv->v==NULL )			/* Can happen in scripts */
+return;
+
+    for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame )
+	fvs->touched = false;
+    while ( 1 ) {
+	for ( fv=sf->fv; fv!=NULL && fv->touched; fv=fv->nextsame );
+	if ( fv==NULL )
+    break;
+	old = fv->filled;
+	new = SplineFontPieceMeal(sf,fv->filled->pixelsize,fv->antialias);
+	for ( fvs=fv; fvs!=NULL; fvs=fvs->nextsame )
+	    if ( fvs->filled == old ) {
+		fvs->filled = new;
+		if ( fvs->show == old )
+		    fvs->show = new;
+		fvs->touched = true;
+	    }
+	BDFFontFree(old);
+    }
+    for ( fv=sf->fv; fv!=NULL; fv=fv->nextsame ) {
+	GDrawSetCursor(fv->v,ct_watch);
+	fv->rowltot = (fv->sf->charcnt+fv->colcnt-1)/fv->colcnt;
+	GScrollBarSetBounds(fv->vsb,0,fv->rowltot,fv->rowcnt);
+	if ( fv->rowoff>fv->rowltot-fv->rowcnt ) {
+	    fv->rowoff = fv->rowltot-fv->rowcnt;
+	    if ( fv->rowoff<0 ) fv->rowoff =0;
+	    GScrollBarSetPos(fv->vsb,fv->rowoff);
+	}
+	GDrawRequestExpose(fv->v,NULL,false);
+	GDrawSetCursor(fv->v,ct_pointer);
+    }
 }
 
 static int fv_e_h(GWindow gw, GEvent *event) {
@@ -3837,6 +3899,7 @@ FontView *_FontViewCreate(SplineFont *sf) {
     FontView *fv = gcalloc(1,sizeof(FontView));
     int i;
 
+    fv->nextsame = sf->fv;
     sf->fv = fv;
     if ( sf->subfontcnt==0 )
 	fv->sf = sf;
@@ -3920,28 +3983,22 @@ FontView *FontViewCreate(SplineFont *sf) {
     rq.style = fs_italic;
     fv->iheader = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
     GDrawSetFont(fv->v,fv->header);
-    bdf = SplineFontPieceMeal(fv->sf,sf->display_size<0?-sf->display_size:default_fv_font_size,
-	    fv->antialias );
-#if 0
-    if ( fv->antialias )
-	bdf = SplineFontAntiAlias(fv->sf,
-		sf->display_size<0?-sf->display_size:default_fv_font_size,4);
-    else
-	bdf = SplineFontRasterize(fv->sf,
-		sf->display_size<0?-sf->display_size:default_fv_font_size,true);
-#endif
-    fv->filled = bdf;
-    if ( sf->display_size>0 ) {
-	for ( bdf=sf->bitmaps; bdf!=NULL && bdf->pixelsize!=sf->display_size ;
-		bdf=bdf->next );
-	if ( bdf==NULL )
-	    bdf = fv->filled;
+    if ( fv->nextsame!=NULL ) {
+	fv->filled = fv->nextsame->filled;
+	bdf = fv->nextsame->show;
+    } else {
+	bdf = SplineFontPieceMeal(fv->sf,sf->display_size<0?-sf->display_size:default_fv_font_size,
+		fv->antialias );
+	fv->filled = bdf;
+	if ( sf->display_size>0 ) {
+	    for ( bdf=sf->bitmaps; bdf!=NULL && bdf->pixelsize!=sf->display_size ;
+		    bdf=bdf->next );
+	    if ( bdf==NULL )
+		bdf = fv->filled;
+	}
     }
     fv->cbw = -1;
     FVChangeDisplayFont(fv,bdf);
-    GMenuBarSetItemChecked(fv->mb,default_fv_font_size==24?MID_24:
-				  default_fv_font_size==36?MID_36:
-				  MID_48,true);
 
     /*GWidgetHidePalettes();*/
     GDrawSetVisible(gw,true);
@@ -4212,12 +4269,14 @@ FontView *ViewPostscriptFont(char *filename) {
     SplineFont *sf = LoadSplineFont(filename);
     if ( sf==NULL )
 return( NULL );
+#if 0
     if ( sf->fv!=NULL ) {
 	GDrawSetVisible(sf->fv->gw,true);
 	GDrawRaise(sf->fv->gw);
 return( sf->fv );
     }
-return( FontViewCreate(sf));
+#endif
+return( FontViewCreate(sf));	/* Always make a new view now */
 }
 
 FontView *FontNew(void) {
@@ -4225,8 +4284,31 @@ return( FontViewCreate(SplineFontNew()));
 }
 
 void FontViewFree(FontView *fv) {
-    SplineFontFree(fv->cidmaster?fv->cidmaster:fv->sf);
-    BDFFontFree(fv->filled);
+    int i;
+    FontView *prev;
+    FontView *fvs;
+
+    if ( fv->nextsame==NULL && fv->sf->fv==fv ) {
+	SplineFontFree(fv->cidmaster?fv->cidmaster:fv->sf);
+	BDFFontFree(fv->filled);
+    } else {
+	for ( fvs=fv->sf->fv, i=0 ; fvs!=NULL; fvs = fvs->nextsame )
+	    if ( fvs->filled==fv->filled ) ++i;
+	if ( i==1 )
+	    BDFFontFree(fv->filled);
+	if ( fv->sf->fv==fv ) {
+	    if ( fv->cidmaster==NULL )
+		fv->sf->fv = fv->nextsame;
+	    else {
+		fv->cidmaster->fv = fv->nextsame;
+		for ( i=0; i<fv->cidmaster->subfontcnt; ++i )
+		    fv->cidmaster->subfonts[i]->fv = fv->nextsame;
+	    }
+	} else {
+	    for ( prev = fv->sf->fv; prev->nextsame!=fv; prev=prev->nextsame );
+	    prev->nextsame = fv->nextsame;
+	}
+    }
     DictionaryFree(fv->fontvars);
     free(fv->fontvars);
     free(fv->selected);

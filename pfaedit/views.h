@@ -246,7 +246,6 @@ typedef struct metricsview {
     int cursor;
 } MetricsView;
 
-
 typedef struct fontview {
     SplineFont *sf;
     BDFFont *show, *filled;
@@ -258,7 +257,8 @@ typedef struct fontview {
     int cbw,cbh;		/* width/height of a character box */
     GFont *header, *iheader;
     GGadget *vsb, *mb;
-    struct fontview *next;
+    struct fontview *next;		/* Next on list of open fontviews */
+    struct fontview *nextsame;		/* Next fv looking at this font */
     int pressed_pos, end_pos;
     GTimer *pressed;
     char *selected;
@@ -266,6 +266,7 @@ typedef struct fontview {
     unsigned int antialias:1;
     unsigned int wasonlybitmaps:1;
     unsigned int refstate: 3;	/* 0x1 => paste orig of all non exist refs, 0x2=>don't, 0x3 => don't warn about non-exist refs with no source font */
+    unsigned int touched: 1;
     int16 magnify;
     SplineFont *cidmaster;
     int32 *mapping;	/* an array mapping grid cells (0=upper left) to font indeces (enc, 0=NUL) */
@@ -293,7 +294,7 @@ extern void SplineFontSetUnChanged(SplineFont *sf);
 extern FontView *ViewPostscriptFont(char *filename);
 extern FontView *FontNew(void);
 extern void FontViewFree(FontView *fv);
-extern void FVToggleCharChanged(FontView *fv,SplineChar *sc);
+extern void FVToggleCharChanged(SplineChar *sc);
 extern void FVRefreshChar(FontView *fv,BDFFont *bdf,int enc);
 extern void FVRegenChar(FontView *fv,SplineChar *sc);
 extern int _FVMenuSave(FontView *fv);
@@ -316,7 +317,8 @@ extern void LoadEncodingFile(void);
 extern struct enc *MakeEncoding(SplineFont *sf);
 extern void RemoveEncoding(void);
 extern void SFPrivateInfo(SplineFont *sf);
-extern void FontViewReformat(FontView *fv);
+extern void FontViewReformatAll(SplineFont *sf);
+extern void FontViewReformatOne(FontView *fv);
 extern void FVShowFilled(FontView *fv);
 extern void SCPreparePopup(GWindow gw,SplineChar *sc);
 extern void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,

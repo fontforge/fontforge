@@ -846,6 +846,7 @@ static void bReencode(Context *c) {
     Encoding *item=NULL;
     int i;
     enum charset new_map = em_none;
+    FontView *fvs;
     static struct encdata {
 	int val;
 	char *name;
@@ -922,16 +923,19 @@ static void bReencode(Context *c) {
     if ( new_map==em_none )
 	errors(c,"Unknown encoding", c->a.vals[1].u.sval);
     SFReencodeFont(c->curfv->sf,new_map);
-    free( c->curfv->selected );
-    c->curfv->selected = gcalloc(c->curfv->sf->charcnt,1);
+    for ( fvs=c->curfv->sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+	free( fvs->selected );
+	fvs->selected = gcalloc(fvs->sf->charcnt,1);
+    }
     if ( screen_display!=NULL )
-	FontViewReformat(c->curfv);
+	FontViewReformatAll(c->curfv->sf);
     c->curfv->sf->changed = true;
     c->curfv->sf->changed_since_autosave = true;
 }
 
 static void bSetCharCnt(Context *c) {
     int oldcnt = c->curfv->sf->charcnt, i;
+    FontView *fvs;
 
     if ( c->a.argc!=2 )
 	error( c, "Wrong number of arguments");
@@ -944,11 +948,13 @@ static void bSetCharCnt(Context *c) {
 return;
 
     SFAddDelChars(c->curfv->sf,c->a.vals[1].u.ival);
-    c->curfv->selected = grealloc(c->curfv->selected,c->a.vals[1].u.ival);
-    for ( i=oldcnt; i<c->a.vals[1].u.ival; ++i )
-	c->curfv->selected[i] = false;
+    for ( fvs=c->curfv->sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+	fvs->selected = grealloc(fvs->selected,c->a.vals[1].u.ival);
+	for ( i=oldcnt; i<c->a.vals[1].u.ival; ++i )
+	    fvs->selected[i] = false;
+    }
     if ( screen_display!=NULL )
-	FontViewReformat(c->curfv);
+	FontViewReformatAll(c->curfv->sf);
     c->curfv->sf->changed = true;
     c->curfv->sf->changed_since_autosave = true;
 }
@@ -1495,13 +1501,16 @@ static void bCIDChangeSubFont(Context *c) {
 	GDrawProcessPendingEvents(NULL);
     }
     if ( sf->charcnt!=new->charcnt ) {
-	free(c->curfv->selected);
-	c->curfv->selected = gcalloc(new->charcnt,sizeof(char));
+	FontView *fvs;
+	for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+	    free(fvs->selected);
+	    fvs->selected = gcalloc(new->charcnt,sizeof(char));
+	}
     }
     c->curfv->sf = new;
     if ( screen_display!=NULL ) {
 	FVSetTitle(c->curfv);
-	FontViewReformat(c->curfv);
+	FontViewReformatAll(c->curfv->sf);
     }
 }
 
