@@ -95,6 +95,20 @@ return;
     GDrawSetDashedLine(pixmap,0,0,0);
 }
 
+static void CVDrawRubberLine(GWindow pixmap, CharView *cv) {
+    int x,y, xend,yend;
+    if ( !cv->p.rubberlining )
+return;
+    x =  cv->xoff + rint(cv->p.cx*cv->scale);
+    y = -cv->yoff + cv->height - rint(cv->p.cy*cv->scale);
+    xend =  cv->xoff + rint(cv->info.x*cv->scale);
+    yend = -cv->yoff + cv->height - rint(cv->info.y*cv->scale);
+    GDrawSetXORMode(pixmap);
+    GDrawSetXORBase(pixmap,GDrawGetDefaultBackground(NULL));
+    GDrawDrawLine(pixmap,x,y,xend,yend,0x000000);
+    GDrawSetCopyMode(pixmap);
+}
+
 static void CVDrawBB(CharView *cv, GWindow pixmap, DBounds *bb) {
     GRect r;
     int off = cv->xoff+cv->height-cv->yoff;
@@ -995,6 +1009,8 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 
     if ( cv->p.rubberbanding )
 	CVDrawRubberRect(pixmap,cv);
+    if ( cv->p.rubberlining )
+	CVDrawRubberLine(pixmap,cv);
     if (( cv->active_tool >= cvt_scale && cv->active_tool <= cvt_skew ) &&
 	    cv->p.pressed )
 	DrawTransOrigin(cv,pixmap);
@@ -2238,6 +2254,9 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
     if ( cv->p.rubberbanding ) {
 	CVDrawRubberRect(cv->v,cv);
 	cv->p.rubberbanding = false;
+    } else if ( cv->p.rubberlining ) {
+	CVDrawRubberLine(cv->v,cv);
+	cv->p.rubberlining = false;
     }
     switch ( cv->active_tool ) {
       case cvt_pointer:

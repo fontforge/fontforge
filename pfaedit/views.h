@@ -62,6 +62,7 @@ typedef struct pressedOn {
 /*    unsigned int vwidth: 1;	/* we're moving the width rather than a spline */
     unsigned int pressed: 1;
     unsigned int rubberbanding: 1;
+    unsigned int rubberlining: 1;
     unsigned int transany: 1;
     unsigned int transanyrefs: 1;
     Spline *spline;
