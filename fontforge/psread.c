@@ -3001,9 +3001,13 @@ return( head );
 		    encs[i] = 0;
 		    if ( i<32 || (i>=0x7f && i<0xa0))
 			encs[i] = i;
-		} else if ( (enc=UniFromName(tokbuf,ui_none,&custom))!=-1 )
+		} else if ( (enc=UniFromName(tokbuf,ui_none,&custom))!=-1 ) {
 		    encs[i] = enc;
-		else {
+		    /* Used not to do this, but there are several legal names */
+		    /*  for some slots and people get unhappy (rightly) if we */
+		    /*  use the wrong one */
+		    names[i] = copy(tokbuf);
+		} else {
 		    names[i] = copy(tokbuf);
 		    any = 1;
 		}
