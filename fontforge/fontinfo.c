@@ -1751,11 +1751,7 @@ return(false);
 	bdf->encoding_name = new_map;
     }
 
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    if ( sf->encoding_name==em_unicode4 && (sf->uni_interp==ui_ams || sf->uni_interp==ui_trad_chinese))
-#else
     if ( sf->encoding_name->is_unicodefull && (sf->uni_interp==ui_ams || sf->uni_interp==ui_trad_chinese))
-#endif
 	SFFromPUA(sf);
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	for ( refs=sf->chars[i]->layers[ly_fore].refs; refs!=NULL; refs = refs->next )
