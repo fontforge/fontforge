@@ -368,8 +368,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	    /* caligraphic */ false,
 	    /* centerline */  false,
 	    /* toobigwarn */  false,
-	    /* removeexternal */ false,
 	    /* removeinternal */ false,
+	    /* removeexternal */ false,
 	    /* removeoverlapif*/ true,
 	    /* gottoobig */    false,
 	    3.1415926535897932/4, .2, 50 };
@@ -672,7 +672,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	label[gcdoff].text_in_resource = true;
 	gcd[gcdoff].gd.label = &label[gcdoff];
 	gcd[gcdoff].gd.pos.x = gcd[gcdoff-1].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+15;
-	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (def->removeexternal?gg_cb_on:0);
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (def->removeoverlapifneeded?gg_cb_on:0);
 	gcd[gcdoff].gd.cid = CID_CleanupSelfIntersect;
 	gcd[gcdoff].gd.popup_msg = GStringGetResource(_STR_CleanupSelfIntersectPopup,NULL);
 	gcd[gcdoff++].creator = GCheckBoxCreate;
