@@ -1138,13 +1138,14 @@ static void FVMenuClearBackground(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void FVJoin(FontView *fv) {
     SplineFont *sf = fv->sf;
     int i,changed;
+    extern float joinsnap;
 
     if ( onlycopydisplayed && fv->filled!=fv->show )
 return;
 
     for ( i=0; i<sf->charcnt; ++i ) if ( fv->selected[i] && sf->chars[i]!=NULL ) {
 	SCPreserveState(sf->chars[i],false);
-	sf->chars[i]->splines = SplineSetJoin(sf->chars[i]->splines,true,0,&changed);
+	sf->chars[i]->splines = SplineSetJoin(sf->chars[i]->splines,true,joinsnap,&changed);
 	if ( changed )
 	    SCCharChangedUpdate(sf->chars[i]);
     }

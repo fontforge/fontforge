@@ -3739,10 +3739,11 @@ static void CVElide(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void _CVJoin(CharView *cv) {
     int anyp = 0, changed;
+    extern float joinsnap;
 
     CVAnySel(cv,&anyp,NULL,NULL,NULL);
     CVPreserveState(cv);
-    *cv->heads[cv->drawmode] = SplineSetJoin(*cv->heads[cv->drawmode],!anyp,0,&changed);
+    *cv->heads[cv->drawmode] = SplineSetJoin(*cv->heads[cv->drawmode],!anyp,joinsnap/cv->scale,&changed);
     if ( changed )
 	CVCharChangedUpdate(cv);
 }

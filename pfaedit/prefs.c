@@ -48,6 +48,7 @@ int GraveAcuteCenterBottom = 1;
 int ask_user_for_resolution = true;
 float arrowAmount=1;
 float snapdistance=3.5;
+float joinsnap=0;
 char *BDFFoundry=NULL;
 char *TTFFoundry=NULL;
 char *xuid=NULL;
@@ -148,6 +149,8 @@ static struct prefs_list {
 	{ "AcuteCenterBottom", pr_bool, &GraveAcuteCenterBottom, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupGA },
 	{ "ArrowMoveSize", pr_real, &arrowAmount, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupAA },
 	{ "SnapDistance", pr_real, &snapdistance, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupSD },
+	{ "JoinSnap", pr_real, &joinsnap, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupJS },
+	{ "CopyMetaData", pr_bool, &copymetadata, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupCMD },
 	{ NULL }
 },
  args_list[] = {
@@ -174,7 +177,6 @@ static struct prefs_list {
 	{ "DefaultFVShowVmetrics", pr_int, &default_fv_showvmetrics, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultFVSize", pr_enum, &default_fv_font_size, NULL, NULL, 'S', fvsize_enums, 1 },
 	{ "OnlyCopyDisplayed", pr_bool, &onlycopydisplayed, NULL, NULL, '\0', NULL, 1 },
-	{ "CopyMetaData", pr_bool, &copymetadata, NULL, NULL, '\0', NULL, 1 },
 	{ "PalettesDocked", pr_bool, &palettes_docked, NULL, NULL, '\0', NULL, 1 },
 	{ "MarkExtrema", pr_int, &CVShows.markextrema, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultScreenDpiSystem", pr_int, &oldsystem, NULL, NULL, '\0', NULL, 1 },

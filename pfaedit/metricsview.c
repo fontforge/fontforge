@@ -1318,6 +1318,7 @@ return;
 static void MVMenuJoin(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     int i, changed;
+    extern float joinsnap;
 
     if ( GWindowGetFocusGadgetOfWindow(gw)!=NULL )
 return;
@@ -1327,7 +1328,7 @@ return;
     if ( i==-1 )
 return;
     SCPreserveState(mv->perchar[i].sc,false);
-    mv->perchar[i].sc->splines = SplineSetJoin(mv->perchar[i].sc->splines,true,0,&changed);
+    mv->perchar[i].sc->splines = SplineSetJoin(mv->perchar[i].sc->splines,true,joinsnap,&changed);
     if ( changed )
 	SCCharChangedUpdate(mv->perchar[i].sc);
 }
