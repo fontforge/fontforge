@@ -2623,7 +2623,7 @@ static char *str_ProbBadSubs = "This character contains a substitution or ligatu
 static char *str_ProbBadSubs2 = "'%2$c%3$c%4$c%5$c' refers to an empty character \"%1$.20hs\"";
 static char *str_ProbMultiUni = "This glyph has the same unicode code point as the glyph named";
 static char *str_ProbMultiUni2 = "%.40hs";
-static char *str_ProbMultiName = "The this glyph has the same name as the glyph at encoding";
+static char *str_ProbMultiName = "This glyph has the same name as the glyph at encoding";
 static char *str_ProbMultiName2 = "%d"
 static char *str_ProbExplain = "Problem explanation";
 static char *str_GlyphPSTTag = "Glyph %1$.50hs with a %2$hs with tag '%3$c%4$c%5$c%6$c'";
@@ -2750,7 +2750,7 @@ static char *str_AdvanceVWidthPopup = "Check for characters whose vertical advan
 static char *str_SubsToEmptyChar = "Check subtitutions for empty chars";
 static char *str_SubsToEmptyCharPopup = "Check for characters which contain 'GSUB' entries which refer to empty characters"
 static char *str_MultipleUnicode = "Check multiple Unicode";
-static char *str_MultipleUnicodePopup = "Check for muliple characters which use the same unicode code point\nOnly one glyph at a time (the one to be encoded) should have a given\nunicode code point";
+static char *str_MultipleUnicodePopup = "Check for multiple characters which use the same unicode code point\nOnly one glyph at a time (the one to be encoded) should have a given\nunicode code point";
 static char *str_MultipleName = "Check multiple Names";
 static char *str_MultipleNamePopup = "Check for muliple characters which with the same name";
 
