@@ -1326,7 +1326,8 @@ static char str_Indus = "Indus (Harappan)";
 static char str_OldItalic = "Old Italic (Etruscan, Oscan, etc.)";
 static char str_Javanese = "Javanese";
 static char str_KayahLi = "Kayah Li";
-static unichar_t str_Kharosthi = { 'K','h','a','r','o',0x219,0x21b,'h','i', 0 };
+static unichar_t str_Kharosthi = { 'K','h','a','r','o',0x1e63,0x1e6d,'h',0x12b, 0 };
+tdot 0x1e6d, sdot 1e63
 static char str_kana = "Hiragana & Katakana";
 static char str_knda = "Kannada";
 static char str_khmr = "Khmer";

@@ -1400,6 +1400,9 @@ static int sld_e_h(GWindow gw, GEvent *event) {
 return( true );
 	}
 return( false );
+    } else if ( event->type==et_controlevent && event->u.control.subtype == et_listselected ) {
+	GGadgetSetEnabled(GWidgetGetControl(gw,_STR_Edit),
+		GGadgetGetFirstListSelectedItem(sld->list)!=-1);
     } else if ( event->type==et_controlevent && event->u.control.subtype == et_listdoubleclick ) {
 	ti = GGadgetGetListItemSelected(sld->list);
 	if ( ti!=NULL )
@@ -1488,7 +1491,7 @@ return;
 
 	gcd[i].gd.pos.x = -30; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y;
 	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
-	gcd[i].gd.flags = gg_visible | gg_enabled;
+	gcd[i].gd.flags = gg_visible /*| gg_enabled*/;
 	label[i].text = (unichar_t *) _STR_Edit;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
