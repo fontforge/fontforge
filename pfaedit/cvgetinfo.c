@@ -345,12 +345,13 @@ return;
 
 int UniFromName(const char *name) {
     int i = -1;
+    char *end;
 
-    if ( strncmp(name,"uni",3)==0 ) { char *end;
+    if ( strncmp(name,"uni",3)==0 ) {
 	i = strtol(name+3,&end,16);
 	if ( *end || end-name!=7 )	/* uniXXXXXXXX means a ligature of uniXXXX and uniXXXX */
 	    i = -1;
-    } else if ( name[0]=='u' ) { char *end;
+    } else if ( name[0]=='u' && strlen(name)>=5 ) {
 	i = strtol(name+1,&end,16);
 	if ( *end )
 	    i = -1;
@@ -383,7 +384,7 @@ int uUniFromName(const unichar_t *name) {
 	i = u_strtol(name+3,&end,16);
 	if ( *end || end-name!=7 )	/* uniXXXXXXXX means a ligature of uniXXXX and uniXXXX */
 	    i = -1;
-    } else if ( name[0]=='u' ) {
+    } else if ( name[0]=='u' && u_strlen(name)>=5 ) {
 	i = u_strtol(name+1,&end,16);
 	if ( *end )
 	    i = -1;
