@@ -155,10 +155,18 @@ Pages:
 "charview-vert.png" Up="" Style="" Title="" Type="image/png" 1
 "fontinfo-comment.png" Up="" Style="" Title="" Type="image/png" 1
 "corpchar.txt" Up="" Style="" Title="" Type="text/plain" 1
+"otherlinks.html" Up="" Style="" Title="Other software that might be of interest..." Type="text/html" 1
+"pcf-format.html" Up="" Style="" Title="Format for X11 pcf bitmap font files" Type="text/html" 1
 Ghosts:
 "http://sourceforge.net/projects/autotrace/" Up="" Style="" Title="" Type="text/html" 0
 Refs:
 "index.html"
+	1 "pcf-format.html"
+	1 "pfaedit-020204.tgz"
+	0 "pfaedit_full-020204.tgz"
+	1 "http://developer.apple.com/fonts/Tools/"
+	1 "http://textrace.sf.net/"
+	1 "otherlinks.html"
 	1 "http://www.microsoft.com/typography/developers/dsig/dsig.htm"
 	1 "cidmaps.tgz"
 	3 "corpchar.html"
@@ -222,7 +230,6 @@ Refs:
 	1 "http://www.gnu.org/software/gfe/gfe.html"
 	1 "http://www.gzip.org/zlib/"
 	1 "http://www.ijg.org/"
-	1 "http://www.inf.bme.hu/~pts/textrace/"
 	1 "http://www.killesreiter.de/"
 	1 "http://www.lcdf.org/type/"
 	1 "http://www.levien.com/gfonted/"
@@ -251,7 +258,6 @@ Refs:
 	1 "mailto:gww@silcom.com"
 	1 "oldchangelog.html"
 	1 "overview.html"
-	1 "pfaedit-solaris-020117.tgz"
 	1 "pfaedit_htdocs-011116.tgz"
 	1 "Problems-MacOSX.html"
 	1 "scripting.html"
@@ -259,9 +265,10 @@ Refs:
 	3 "sfds/index.html"
 	1 "pfaedit-020123-1.i386.rpm"
 	0 "pfaedit-020123-1.src.rpm"
-	1 "pfaedit_cygwin-020125.tgz"
-	0 "pfaedit_full-020125.tgz"
-	1 "pfaedit-020125.tgz"
+	1 "pfaedit-solaris-020130.tgz"
+	1 "pfaedit_cygwin-020130.tgz"
+	1 "http://ucsb.edu/"
+	1 "http://ftp.x.org/pub/R6.4/xc/lib/font/bitmap/"
 "overview.html"
 	2 "AmbrosiaFV.png"
 	1 "bezier.html"
@@ -867,3 +874,11 @@ Refs:
 "charview-vert.png"
 "fontinfo-comment.png"
 "corpchar.txt"
+"otherlinks.html"
+	1 "http://www.gimp.org/"
+	1 "http://gug.sunsite.dk/"
+"pcf-format.html"
+	0 "http://ftp.x.org/pub/R6.4/xc/lib/font/bitmap/"
+	0 "pcf-format.html"
+	1 "http://www.tsg.ne.jp/GANA/S/pcf2bdf/pcf.pdf"
+	1 "http://myhome.hananet.net/~bumchul/xfont/pcf.txt"

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 18-Jan-2002 -->
+  <!-- AP: Last modified: 4-Feb-2002 -->
   <TITLE>PfaEdit -- A postscript&reg; font editor</TITLE>
 </HEAD>
 <BODY>
@@ -562,9 +562,10 @@ reference characters or all splines.
 <P>
 In PostScript characters refered to must be in the Adobe Standard Encoding,
 which includes all of the Ascii characters, a collection of accents and certain
-ligatures. One of the referenced characters may be translated, but they may
-not be rotated, skewed or scaled. Finally there must be exactly two referenced
-characters.
+ligatures. One of the referenced characters may be translated, but neither
+may be rotated, skewed or scaled. There must be exactly two referenced
+characters, and the reference character which is not translated must have
+the same width as the one being built.
 <BLOCKQUOTE>
   <STRONG><SMALL><SMALL>Technical and confusing:</SMALL></SMALL></STRONG> PfaEdit
   has some tricks it can use to improve things. If you are working on U+04D2

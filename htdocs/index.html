@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 29-Jan-2002 -->
+  <!-- AP: Last modified: 4-Feb-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -78,11 +78,11 @@ you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-020129.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 29-Jan-2002
+    <A HREF="pfaedit-020204.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 4-Feb-2002
   <LI>
-    <A HREF="pfaedit-solaris-020117.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 17-Jan-2002
+    <A HREF="pfaedit-solaris-020130.tgz">Download pfaedit Solaris 8.0
+    </A>executable Version: 30-Jan-2002
   <LI>
     <A HREF="pfaedit-020123-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
     Version: 23-Jan-2002 (Redhat 7.1)
@@ -93,7 +93,7 @@ you do</A>.
     <A HREF="Problems-MacOSX.html#binary">A Mac OS/X distribution</A> (with Caveats).
     Version 1-Dec-2001
   <LI>
-    <A HREF="pfaedit_cygwin-020129.tgz">A cygwin version</A>. Version: 29-Jan-2002
+    <A HREF="pfaedit_cygwin-020130.tgz">A cygwin version</A>. Version: 30-Jan-2002
   <LI>
     <A HREF="ftp://nchrem.tnw.tudelft.nl/pub/pfaedit/">An OpenVMS executable
     </A>(by Jacob Jansen): Version Approximately 23-Sept-2001<BR>
@@ -113,9 +113,9 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-020123-1.src.rpm">source RPM</A>: Version:
 23-Jan-2002<BR>
-Or you can download the <A HREF="pfaedit_full-020129.tgz">entire source tree
+Or you can download the <A HREF="pfaedit_full-020204.tgz">entire source tree
 </A>in one .tgz file: Version
-29-Jan-2002<!--
+4-Feb-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -241,6 +241,56 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    4-Feb-2002
+    <UL>
+      <LI>
+	Oops. PfaEdit was misusing the type1 "seac" command in some cases. I had
+	not realized that the character being built needed to have the same width
+	as the base (non-accent) character. This has been fixed.
+      <LI>
+	When using the charinfo dlg to change the name of a char, and that name was
+	in use, and you cancelled the dlg after being warned about it then PfaEdit
+	would crash (it would muck up memory).
+      <LI>
+	PfaEdit wasn't always calling subroutines (in postscript) when a character
+	was in a subr.
+      <LI>
+	PfaEdit will now read in X11 pcf font files (they can be compressed, if so
+	PfaEdit will decompress them first).
+      <LI>
+	Bug in wildcard processing for file chooser window.
+    </UL>
+  <LI>
+    1-Feb-2002
+    <UL>
+      <LI>
+	Nifty! SUSE ships some greek (bitmap) fonts with iso8859-1 encodings rather
+	than iso8859-7. PfaEdit is now alert and when it sees a bitmap font with
+	foundary "greek" and encoding "iso8859-1" it will pretend it has encoding
+	"iso8859-7".
+      <LI>
+	PfaEdit got confused by some fonts produced by type1fix.pl. Should be fixed.
+      <LI>
+	Build Composit Characters will now check the user defined ligature string
+	to see what characters to use to build a ligature.
+    </UL>
+  <LI>
+    31-Jan-2002
+    <UL>
+      <LI>
+	Conversion tables between JIS0201 (Katakana) and Unicode were wrong. KANOU
+	Hiroki provided correct ones.
+    </UL>
+  <LI>
+    30-Jan-2002
+    <UL>
+      <LI>
+	Oops. I'd left diagonal stems enabled in ttf generation. Caused problems.
+	Disabled now.
+      <LI>
+	More work on accented characters.
+    </UL>
   <LI>
     29-Jan-2002
     <UL>
@@ -814,8 +864,8 @@ The build script will do an install to /usr/local/bin if you want it to.
   Running it
 </H2>
 <P>
-<KBD>$ pfaedit font.pfa font2.pfb font3.sfd font4.ttf font5.otf font6.bdf</KBD>
-<BR>
+<KBD>$ pfaedit font.pfa font2.pfb font3.sfd font4.ttf font5.otf font6.gsf
+font7.bdf</KBD> <BR>
 will start pfaedit looking at the fonts you specify on the command line.
 It can read either pfb or pfa fonts, and some ps fonts (type 0 fonts based
 on a type 1 dictionary) as well as truetype fonts, non-CID open type fonts
@@ -840,11 +890,12 @@ can.
 </H2>
 <UL>
   <LI>
-    My writing leaves much to be desired. Anyone who can make my documentation
-    more readable is encouraged to do so.
+    <EM>My writing leaves much to be desired</EM>. Anyone who can make my
+    documentation more readable is encouraged to do so. (or who wishes to translate
+    it into other languages)
   <LI>
-    The UI can be translated into different languages. Unfortunately it does
-    not use gnu gettext.
+    <EM>The UI can be translated into different languages.</EM> Unfortunately
+    it does not use gnu gettext.
     <UL>
       <LI>
 	English I take care of
@@ -853,9 +904,25 @@ can.
       <LI>
 	I've also created very minimal French &amp; German translations that lapse
 	into English, anyone who wants to take these on is encouraged to do so.
+      <LI>
+	Anything other language additions would be great (the entire UI does not
+	need to be translated)
     </UL>
   <LI>
-    There are certain commands which don't work very well...
+    <EM>Different font formats</EM><BR>
+    PfaEdit supports Type1, truetype and opentype fonts (to greater and lesser
+    extents), also bdf and NFNT for bitmaps<BR>
+    But there are other formats out there that I can't find descriptions of:
+    <UL>
+      <LI>
+	Microsoft FON files (bitmap font resource files for windows)
+      <LI>
+	And I can't find any description of how mac NFNT and FOND resources are extended
+	to handle double byte encodings.
+    </UL>
+  <LI>
+    There are certain c<EM>ommands which don't work very well </EM>and if someone
+    else wanted to they might code them better than I...
     <UL>
       <LI>
 	Remove overlap
@@ -883,7 +950,7 @@ The following people have helped debug pfaedit. Many thanks!
   <LI>
     Alexander Kotelnikov
   <LI>
-    University of California, Santa Barbara<BR>
+    <A HREF="http://ucsb.edu/">University of California, Santa Barbara</A><BR>
     (which has several times let me use some of their machines to do builds and
     find bugs if I didn't have the requisit system at home).
   <LI>
@@ -1006,6 +1073,16 @@ now placed in graceful retirement by MacroMedia.
   <LI>
     <A HREF="macformats.html">Macintosh font formats</A>
   <LI>
+    X11 pcf format
+    <UL>
+      <LI>
+	Sadly there is no real standard for this.
+	<A HREF="http://ftp.x.org/pub/R6.4/xc/lib/font/bitmap/">There's the source
+	code used by X11</A>.
+      <LI>
+	<A HREF="pcf-format.html">So I wrote my own description...</A>
+    </UL>
+  <LI>
     <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5014.CMap_CIDFont_Spec.pdf">CID
     keyed fonts</A>
   <LI>
@@ -1108,6 +1185,9 @@ Other Encodings
       <LI>
 	<A HREF="http://cgm.cs.mcgill.ca/~luc/editors.html">Luc Devroye's page of
 	links to font creation programs</A>
+      <LI>
+	<A HREF="http://www.macromedia.com/software/fontographer/">Fontographer</A>
+	-- my favorite, but commercial, and no longer updated
     </UL>
   <LI>
     MetaFont the original computer vector font editor &amp; other TeX utilities
@@ -1115,8 +1195,8 @@ Other Encodings
       <LI>
 	<A HREF="http://www.tug.org/">(available with the TeX package)</A>
       <LI>
-	<A HREF="http://www.inf.bme.hu/~pts/textrace/">TeXTrace</A>, generates pfb
-	fonts from TeX fonts by rasterizing at high res and then autotracing them
+	<A HREF="http://textrace.sf.net/">TeXTrace</A>, generates pfb fonts from
+	TeX fonts by rasterizing at high res and then autotracing them
       <LI>
 	<A HREF="ftp://ftp.radio-msu.net/pub/tex/tex-archive/fonts/utilities/mf2ps/">mftops</A>,
 	similar
@@ -1135,10 +1215,13 @@ Other Encodings
 	&amp; multiple master utilities
       <LI>
 	<A HREF="ftp://metalab.unc.edu/pub/Linux/X11/xutils/type1inst-0.6.1.tar.gz">Type1inst</A>
-	-- helps to instal type 1 fonts under X and ghostscript
+	-- helps to install type 1 fonts under X and ghostscript
       <LI>
 	<A HREF="http://ttf2pt1.sourceforge.net/">ttf2pt1</A> -- Converts truetype
-	to type1 postscript fonts and preserves hints
+	to type1 postscript fonts and generates hints
+      <LI>
+	<A HREF="http://textrace.sf.net/">type1fix</A> -- (part of the TeXtrace package).
+	Used to make some Type1 fonts work with ATM.
       <LI>
 	<A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/MyToys.html">my stuff
 	</A>-- Type 1 decoders and converters. True Type &amp; open type decoder.
@@ -1161,6 +1244,9 @@ Other Encodings
 	    signer</A> (will produce a DSIG (digital signature) table for the font. You
 	    need to get a key from verisign first)
 	</UL>
+      <LI>
+	<A HREF="http://developer.apple.com/fonts/Tools/">And Apple does too</A>
+	(mac only)
     </UL>
   <LI>
     Rasterizers
@@ -1172,6 +1258,8 @@ Other Encodings
 	<A HREF="http://www.neuroinformatik.ruhr-uni-bochum.de/ini/PEOPLE/rmz/t1lib/t1lib.html">t1lib</A>
 	-- Type1 Rasterizer
     </UL>
+  <LI>
+    <A HREF="otherlinks.html">Other related links...</A>
 </UL>
 <P ALIGN=Center>
 <P ALIGN=Center>
