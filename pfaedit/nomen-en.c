@@ -2627,6 +2627,9 @@ static char *str_BadEncoding = "Bad Encoding";
 static char *str_ExtraneousSingleByte = "There is a single byte character (%d) using one of the slots needed for double byte characters";
 static char *str_OutOfEncoding = "There is a character (%d) which cannot be encoded";
 static char *str_NotNormallyEncoded = "There is a character (%d) which is not normally in the encoding";
+static char *str_NoEncodedChars = "No Encoded Characters";
+static char *str_NoUnicodeEncoding = "This font contains no characters with unicode encodings.\nYou will probably not be able to use the output.";
+static char *str_NoUnicodeEncodingUseSymbol = "This font contains no characters with unicode encodings.\nWould you like to use a \"Symbol\" encoding instead of Unicode?";
 	/* tottfgpos */
 static char *str_MultipleLookup = "Multiple Lookups";
 static char *str_MultipleLookupLong = "Multiple lookups were generated for nested anchor tag '%s', only one will be used";

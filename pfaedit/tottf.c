@@ -3899,6 +3899,20 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
     SplineChar *sc, notdef, nonmarkingreturn;
     int alreadyprivate = false;
 
+    if ( sf->subfontcnt==0 && format!=ff_ttfsym) {
+	for ( i=sf->charcnt-1; i>0 ; --i )
+	    if ( sf->chars[i]!=NULL && sf->chars[i]->unicodeenc!=-1 )
+	break;
+	if ( i==0 ) {
+	    if ( sf->charcnt<=256 ) {
+		static int buts[] = { _STR_Yes, _STR_No, 0 };
+		if ( GWidgetAskR(_STR_NoEncodedChars,buts,0,1,_STR_NoUnicodeEncodingUseSymbol)==0 )
+		    format = ff_ttfsym;
+	    } else
+		GWidgetErrorR(_STR_NoEncodedChars,_STR_NoUnicodeEncoding);
+	}
+    }
+
     if ( sf->subfontcnt==0 && sf->chars[0]==NULL ) {	/* Encode the default notdef char at 0 */
 	memset(&notdef,0,sizeof(notdef));
 	notdef.unicodeenc = -1;
