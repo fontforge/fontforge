@@ -1590,6 +1590,10 @@ static void bSetFontOrder(Context *c) {
 	error(c,"Bad argument type");
     else if ( c->a.vals[1].u.ival!=2 && c->a.vals[1].u.ival!=3 )
 	error(c,"Order must be 2 or 3");
+
+    c->return_val.type = v_int;
+    c->return_val.u.ival = c->curfv->sf->order2?2:3;
+
     if ( c->a.vals[1].u.ival==(c->curfv->sf->order2?2:3))
 	/* No Op */;
     else {
@@ -1599,6 +1603,21 @@ static void bSetFontOrder(Context *c) {
 	} else
 	    SFConvertToOrder3(c->curfv->sf);
     }
+}
+
+static void bSetFontHasVerticalMetrics(Context *c) {
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_int )
+	error(c,"Bad argument type");
+
+    c->return_val.type = v_int;
+    c->return_val.u.ival = c->curfv->sf->hasvmetrics;
+
+    if ( c->curfv->sf->hasvmetrics!=(c->a.vals[1].u.ival!=0) && screen_display!=NULL )
+	CVPaletteDeactivate();
+    c->curfv->sf->hasvmetrics = (c->a.vals[1].u.ival!=0);
 }
 
 static void _SetFontNames(Context *c,SplineFont *sf) {
@@ -3463,6 +3482,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SetCharCnt", bSetCharCnt },
     { "LoadEncodingFile", bLoadEncodingFile, 1 },
     { "SetFontOrder", bSetFontOrder },
+    { "SetFontHasVerticalMetrics", bSetFontHasVerticalMetrics },
     { "SetFontNames", bSetFontNames },
     { "SetTTFName", bSetTTFName },
     { "GetTTFName", bGetTTFName },
