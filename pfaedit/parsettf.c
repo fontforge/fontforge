@@ -1303,12 +1303,14 @@ static void readttfglyphs(FILE *ttf,struct ttfinfo *info) {
 	}
     } else {
 	/* only read the glyphs we actually use in this font */
-	/* this is complicated by references, we can't just rely on the encoding */
-	/*  to tell us what is used */
+	/* this is complicated by references (and substitutions), */
+	/* we can't just rely on the encoding to tell us what is used */
 	info->inuse = gcalloc(info->glyph_cnt,sizeof(char));
 	readttfencodings(ttf,info,true);
 	if ( info->gsub_start!=0 )		/* Some glyphs may appear in substitutions and not in the encoding... */
 	    readttfgsubUsed(ttf,info);
+	    /* I don't bother to read the morx table because mac doesn't */
+	    /*  support ttc files */
 	anyread = true;
 	while ( anyread ) {
 	    anyread = false;
@@ -1320,6 +1322,7 @@ static void readttfglyphs(FILE *ttf,struct ttfinfo *info) {
 		}
 	    }
 	}
+	free(info->inuse); info->inuse = NULL;
     }
     free(goffsets);
     for ( i=0; i<info->glyph_cnt ; ++i )

@@ -1427,7 +1427,7 @@ return;
 		which = format==1 ? (uint16) (glyphs[i]+delta) : glyph2s[i];
 		if ( info->chars[which]->name==NULL ) {
 		    char *basename = info->chars[glyphs[i]]->name;
-		    char *str = galloc(strlen(basename)+6);
+		    char *str;
 		    char tag[5], *pt=tag;
 		    for ( j=0; tagstr[j].tag!=0 && tagstr[j].tag!=lookup->tag; ++j );
 		    if ( tagstr[j].tag!=0 )
