@@ -135,9 +135,9 @@ struct macsettingname macfeat_otftag[] = {
     /* 2, 1, partially connected cursive */
     { 2, 2, CHR('i','s','o','l') },	/* Arabic forms */
     { 2, 2, CHR('c','a','l','t') },	/* ??? */
-    /* 3, 2, all caps */
-    /* 3, 3, all lower */
-    { 3, 4, CHR('s','m','c','p') },	/* small caps */
+    /* 3, 1, all caps */
+    /* 3, 2, all lower */
+    { 3, 3, CHR('s','m','c','p') },	/* small caps */
     /* 3, 4, initial caps */
     /* 3, 5, initial caps, small caps */
     { 4, 0, CHR('v','r','t','2') },	/* vertical forms => vertical rotation */
