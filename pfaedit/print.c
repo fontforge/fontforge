@@ -2172,28 +2172,23 @@ static unichar_t **sample[] = { simple, simplecyrill, faust, pheadra, antigone,
 	cherokeejohn, thaijohn, georgianjohn, swahilijohn,
 	NULL };
 
-static int AllChars( SplineFont *sf, unichar_t *str) {
+static int AllChars( SplineFont *sf, unichar_t *str, int istwobyte) {
     int i, ch;
-    /* The accented characters above get sign-extended, which is wrong for */
-    /*  unicode. Just truncate them. We won't use any characters in the 0xff00 */
-    /*  area anyway so this is safe */
-    /* We now do use characters in the 0xff00 so we can't do that any more */
 
     if ( sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4 ) {
 	while ( (ch = *str)!='\0' ) {
-	    /*if ( (ch&0xff00)==0xff00 ) ch &= 0xff;*/
 	    if ( !SCWorthOutputting(sf->chars[ch]))
 return( false );
 	    ++str;
 	}
     } else if ( sf->subfontcnt==0 ) {
 	while ( (ch = *str)!='\0' ) {
-	    /*if ( (ch&0xff00)==0xff00 ) ch &= 0xff;*/
 	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 		if ( sf->chars[i]->unicodeenc == ch )
 	    break;
 	    }
-	    if ( i==sf->charcnt || !SCWorthOutputting(sf->chars[i]))
+	    if ( i==sf->charcnt || !SCWorthOutputting(sf->chars[i]) ||
+		    (i>256 && !istwobyte) )
 return( false );
 	    ++str;
 	}
@@ -2202,7 +2197,6 @@ return( false );
 	for ( i=0; i<sf->subfontcnt; ++i )
 	    if ( sf->subfonts[i]->charcnt>max ) max = sf->subfonts[i]->charcnt;
 	while ( (ch = *str)!='\0' ) {
-	    /*if ( (ch&0xff00)==0xff00 ) ch &= 0xff;*/
 	    for ( i=0; i<max; ++i ) {
 		for ( j=0; j<sf->subfontcnt; ++j )
 		    if ( i<sf->subfonts[j]->charcnt && sf->subfonts[j]->chars[i]!=NULL )
@@ -2229,7 +2223,7 @@ static void u_stupidstrcpy( unichar_t *pt1, unichar_t *pt2 ) {
     *pt1++ = '\0';
 }
 
-static unichar_t *BuildDef( SplineFont *sf) {
+static unichar_t *BuildDef( SplineFont *sf, int istwobyte ) {
     int i, j, gotem, len, any=0;
     unichar_t *ret=NULL, **cur;
 
@@ -2244,7 +2238,7 @@ static unichar_t *BuildDef( SplineFont *sf) {
 	    gotem = true;
 	    cur = sample[i];
 	    for ( j=0; cur[j]!=NULL && gotem; ++j )
-		gotem = AllChars(sf,cur[j]);
+		gotem = AllChars(sf,cur[j],istwobyte);
 	    if ( !gotem && sample[i]==simple ) {
 		gotem = true;
 		simple[0] = _simple1;
@@ -2252,7 +2246,7 @@ static unichar_t *BuildDef( SplineFont *sf) {
 		cur = LiiBairShort;
 		gotem = true;
 		for ( j=0; cur[j]!=NULL && gotem; ++j )
-		    gotem = AllChars(sf,cur[j]);
+		    gotem = AllChars(sf,cur[j],istwobyte);
 	    }
 	    if ( gotem ) {
 		++any;
@@ -2329,8 +2323,9 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     else
 	pi.sf = mv->fv->sf;
     if ( pi.sf->cidmaster!=NULL ) pi.sf = pi.sf->cidmaster;
-    pi.twobyte = pi.sf->encoding_name>=e_first2byte;
-    pi.iscjk = pi.sf->encoding_name>=e_first2byte &&
+    pi.twobyte = (pi.sf->encoding_name>=e_first2byte && pi.sf->encoding_name<em_base) ||
+		pi.sf->encoding_name>=em_unicodeplanes;
+    pi.iscjk = (pi.sf->encoding_name>=e_first2byte && pi.sf->encoding_name<em_base) &&
 	    pi.sf->encoding_name!=em_unicode && pi.sf->encoding_name!=em_unicode4;
     pi.iscid = pi.sf->subfontcnt!=0;
     pi.pointsize = pdefs[di].pointsize;
@@ -2426,7 +2421,7 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
 
     label[6].text = pdefs[di].text;
     if ( label[6].text==NULL || pi.sf->encoding_name!=pdefs[di].last_cs )
-	label[6].text = BuildDef(pi.sf);
+	label[6].text = BuildDef(pi.sf,pi.twobyte);
     gcd[6].gd.label = &label[6];
     gcd[6].gd.mnemonic = 'T';
     gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = 13+gcd[5].gd.pos.y; 
