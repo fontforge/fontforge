@@ -1614,6 +1614,7 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd) {
 		sf->chars[i] = SplineCharCopy(fd->charprocs->values[k]);
 	    used[k] = true;
 	}
+	sf->chars[i]->ttf_glyph = k;
 	sf->chars[i]->vwidth = sf->ascent+sf->descent;
 	sf->chars[i]->enc = i;
 	sf->chars[i]->unicodeenc = UniFromName(encoding[i]);
@@ -1707,6 +1708,7 @@ return( NULL );
 	chars[i]->vwidth = sf->subfonts[j]->ascent+sf->subfonts[j]->descent;
 	chars[i]->unicodeenc = uni;
 	chars[i]->enc = i;
+	chars[i]->ttf_glyph = i;
 	/* There better not be any references (seac's) because we have no */
 	/*  encoding on which to base any fixups */
 	if ( chars[i]->refs!=NULL )

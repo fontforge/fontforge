@@ -3803,6 +3803,7 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 	dummy->name = ".notdef";
     dummy->width = dummy->vwidth = sf->ascent+sf->descent;
     dummy->parent = sf;
+    dummy->ttf_glyph = -1;
 return( dummy );
 }
 

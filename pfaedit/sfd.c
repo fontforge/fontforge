@@ -2145,7 +2145,7 @@ static void SFDCleanupFont(SplineFont *sf) {
 static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
     SplineFont *sf;
     SplineChar *sc;
-    int realcnt, i, eof, mappos=-1, ch;
+    int realcnt, i, eof, mappos=-1, ch, glyph;
     struct table_ordering *lastord = NULL;
     struct ttf_table *lastttf = NULL;
 
@@ -2412,10 +2412,24 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
     }
 
     if ( sf->subfontcnt!=0 ) {
+	int max,k;
 	for ( i=0; i<sf->subfontcnt; ++i )
 	    sf->subfonts[i] = SFD_GetFont(sfd,sf,tok);
+	max = 0;
+	for ( i=0; i<sf->subfontcnt; ++i )
+	    if ( sf->subfonts[i]->charcnt>max ) max = sf->subfonts[i]->charcnt;
+	for ( k=0; k<max; ++k ) {
+	    for ( i=0; i<sf->subfontcnt; ++i )
+		if ( k<sf->subfonts[i]->charcnt &&
+			sf->subfonts[i]->chars[k]!=NULL ) {
+		    sf->subfonts[i]->chars[k]->ttf_glyph = k;
+	    break;
+		}
+	}
     } else {
+	glyph = 0;
 	while ( (sc = SFDGetChar(sfd,sf))!=NULL ) {
+	    sc->ttf_glyph = glyph++;
 	    GProgressNext();
 	}
 	if ( cidmaster==NULL ) {

@@ -149,6 +149,8 @@ struct ttfinfo {
     unsigned int onlystrikes: 1;	/* Only read in the bitmaps, not the outlines */
     unsigned int onlyonestrike: 1;	/* Only read in one bitmap (strike) */
 
+    int platform, specific;		/* values of the encoding we chose to use */
+
     int anchor_class_cnt;		/* For GPOS */
     AnchorClass *ahead, *alast;
 
