@@ -527,6 +527,16 @@ return( sf->script_lang[pst->script_lang_index]->script );
 return( ScriptFromUnicode( sc->unicodeenc,sf ));
 }
 
+int SCRightToLeft(SplineChar *sc) {
+    uint32 script;
+
+    if ( sc->unicodeenc>=0x10800 && sc->unicodeenc<=0x10fff )
+return( true );		/* Supplemental Multilingual Plane, RTL scripts */
+
+    script = SCScriptFromUnicode(sc);
+return( script==CHR('a','r','a','b') || script==CHR('h','e','b','r') );
+}
+
 int SFAddScriptLangIndex(SplineFont *sf,uint32 script,uint32 lang) {
     int i;
 
@@ -566,3 +576,27 @@ return( NULL );
 
 void SFConvertToOrder2(SplineFont *_sf) {}
 void SFConvertToOrder3(SplineFont *_sf) {}
+
+static int UnicodeContainsCombiners(int uni) {
+
+    if ( uni<0 || uni>0xffff )
+return( -1 );
+return( false );
+}
+
+uint16 PSTDefaultFlags(enum possub_type type,SplineChar *sc ) {
+    uint16 flags = 0;
+
+    if ( sc!=NULL ) {
+	if ( SCRightToLeft(sc))
+	    flags = pst_r2l;
+	if ( type==pst_ligature ) {
+	    int script = SCScriptFromUnicode(sc);
+	    if ( script==CHR('h','e','b','r') || script==CHR('a','r','a','b')) {
+		if ( !UnicodeContainsCombiners(sc->unicodeenc))
+		    flags |= pst_ignorecombiningmarks;
+	    }
+	}
+    }
+return( flags );
+}

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 14-Jun-2003 -->
+  <!-- AP: Last modified: 15-Jun-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -11,7 +11,7 @@
 </H1>
 <UL>
   <LI>
-    ???
+    15-June-2003
     <UL>
       <LI>
 	Cleaned up the spelling of some scripts.
@@ -40,6 +40,21 @@
       <LI>
 	Added "Edit-&gt;Select-&gt;Select by ATT", to allow user to select characters
 	depending on advanced typographic features.
+      <LI>
+	<FONT COLOR="Red"><STRONG>PfaEdit always used to set the "ignore-combining-marks"
+	flag bit for all ligatures. But yudit (and probably gedit) will not process
+	the substitution if that bit is set. On the other hand I believe some arabic
+	ligatures may depend on it (at least arabtype-volt.ttf uses it). So... now
+	we only set this bit for arabic ligatures which do not contain combining
+	marks. Dunno if that is right either.</STRONG></FONT>
+	<UL>
+	  <LI>
+	    I have created a little tool,
+	    <A HREF="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/pfaedit/pfaedit/fonttools/rmligamarks.c">rmligamarks</A>,
+	    which will take an sfd file with the "ignore combining marks" bit in ligatures
+	    and turn it off. It does not try to guess what should be done, it ALWAYS
+	    turns the bit off.
+	</UL>
     </UL>
   <LI>
     5-June-2003

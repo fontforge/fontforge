@@ -277,6 +277,9 @@ Ghosts:
 "scripts" Up="" Style="" Title="" Type="application/x-navidir" 0
 Refs:
 "index.html"
+	0 "pfaedit_htdocs-030615.tgz"
+	0 "pfaedit_full-030615.tgz"
+	1 "pfaedit-030615.tgz"
 	0 "pfaedit-030605-1.src.rpm"
 	1 "pfaedit-solaris-030605.tgz"
 	1 "pfaedit-030605-1.i386.rpm"
@@ -373,10 +376,7 @@ Refs:
 	1 "changelog.html"
 	1 "bibliography.html"
 	1 "acorn2sfd.html"
-	1 "pfaedit-030605.tgz"
 	1 "pfaedit_cygwin-030605.tgz"
-	0 "pfaedit_full-030605.tgz"
-	0 "pfaedit_htdocs-030605.tgz"
 "overview.html"
 	1 "xres.html"
 	1 "windowmenu.html"
@@ -1210,6 +1210,7 @@ Refs:
 	1 "editmenu.html"
 	1 "charinfo.html"
 	1 "showatt.html"
+	1 "http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/pfaedit/pfaedit/fonttools/rmligamarks.c"
 "tilepath.html"
 	0 "TilePath.png"
 	0 "tilepath-ts.png"
