@@ -3419,7 +3419,7 @@ struct sd_data {
 
 static int SD_Call(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	static unichar_t filter[] = { '*','.','p','e',  0 };
+	static unichar_t filter[] = { '*',/*'.','p','e',*/  0 };
 	unichar_t *fn;
 	unichar_t *insert;
     
