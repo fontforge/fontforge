@@ -241,12 +241,14 @@ static SplineSet * slurppolyline(FILE *fig,SplineChar *sc, SplineSet *sofar) {
     int ch;
     int sub, cnt, fa, ba, radius;	/* radius of roundrects (sub==4) */
     BasePoint *bps;
+    BasePoint topleft, bottomright;
     SplinePointList *spl=NULL;
     SplinePoint *sp;
     int i;
 
     fscanf(fig, "%d %*d %*d %*d %*d %*d %*d %*d %*f %*d %*d %d %d %d %d",
 	    &sub, &radius, &fa, &ba, &cnt );
+    /* sub==1 => polyline, 2=>box, 3=>polygon, 4=>arc-box, 5=>imported eps bb */
     while ((ch=getc(fig))!='\n' && ch!=EOF);
     /* I ignore arrow lines */
     if ( fa )
@@ -260,22 +262,63 @@ static SplineSet * slurppolyline(FILE *fig,SplineChar *sc, SplineSet *sofar) {
 	if ( sub!=1 && bps[cnt-1].x==bps[0].x && bps[cnt-1].y==bps[0].y )
 	    --cnt;
 	spl = chunkalloc(sizeof(SplinePointList));
-	for ( i=0; i<cnt; ++i ) {
-	    sp = chunkalloc(sizeof(SplinePoint));
-	    sp->me = sp->nextcp = sp->prevcp = bps[i];
-	    sp->nonextcp = sp->noprevcp = true;
-	    sp->pointtype = pt_corner;
-	    if ( spl->first==NULL )
-		spl->first = sp;
-	    else
-		SplineMake(spl->last,sp);
-	    spl->last = sp;
+	if ( cnt==4 && sub==4/*arc-box*/ && radius!=0 ) {
+	    SplineFont *sf = sc->parent;
+	    real scale = sf->ascent/(8.5*1200.0), r = radius*scale;
+	    if ( bps[0].x>bps[2].x ) {
+		topleft.x = bps[2].x;
+		bottomright.x = bps[0].x;
+	    } else {
+		topleft.x = bps[0].x;
+		bottomright.x = bps[2].x;
+	    }
+	    if ( bps[0].y<bps[2].y ) {
+		topleft.y = bps[2].y;
+		bottomright.y = bps[0].y;
+	    } else {
+		topleft.y = bps[0].y;
+		bottomright.y = bps[2].y;
+	    }
+	    spl->first = SplinePointCreate(topleft.x,topleft.y-r); spl->first->pointtype = pt_tangent;
+	    spl->first->nextcp.y += .552*r; spl->first->nonextcp = false;
+	    spl->last = sp = SplinePointCreate(topleft.x+r,topleft.y); sp->pointtype = pt_tangent;
+	    sp->prevcp.x -= .552*r; sp->noprevcp = false;
+	    SplineMake(spl->first,sp);
+	    sp = SplinePointCreate(bottomright.x-r,topleft.y); sp->pointtype = pt_tangent;
+	    sp->nextcp.x += .552*r; sp->nonextcp = false;
+	    SplineMake(spl->last,sp); spl->last = sp;
+	    sp = SplinePointCreate(bottomright.x,topleft.y-r); sp->pointtype = pt_tangent;
+	    sp->prevcp.y += .552*r; sp->noprevcp = false;
+	    SplineMake(spl->last,sp); spl->last = sp;
+	    sp = SplinePointCreate(bottomright.x,bottomright.y+r); sp->pointtype = pt_tangent;
+	    sp->nextcp.y -= .552*r; sp->nonextcp = false;
+	    SplineMake(spl->last,sp); spl->last = sp;
+	    sp = SplinePointCreate(bottomright.x-r,bottomright.y); sp->pointtype = pt_tangent;
+	    sp->prevcp.x += .552*r; sp->noprevcp = false;
+	    SplineMake(spl->last,sp); spl->last = sp;
+	    sp = SplinePointCreate(topleft.x+r,bottomright.y); sp->pointtype = pt_tangent;
+	    sp->nextcp.x -= .552*r; sp->nonextcp = false;
+	    SplineMake(spl->last,sp); spl->last = sp;
+	    sp = SplinePointCreate(topleft.x,bottomright.y+r); sp->pointtype = pt_tangent;
+	    sp->prevcp.y -= .552*r; sp->noprevcp = false;
+	    SplineMake(spl->last,sp); spl->last = sp;
+	} else {
+	    for ( i=0; i<cnt; ++i ) {
+		sp = chunkalloc(sizeof(SplinePoint));
+		sp->me = sp->nextcp = sp->prevcp = bps[i];
+		sp->nonextcp = sp->noprevcp = true;
+		sp->pointtype = pt_corner;
+		if ( spl->first==NULL )
+		    spl->first = sp;
+		else
+		    SplineMake(spl->last,sp);
+		spl->last = sp;
+	    }
 	}
 	if ( sub!=1 ) {
 	    SplineMake(spl->last,spl->first);
 	    spl->last = spl->first;
 	}
-	/* Note: I don't do round-rect boxes. Ah well */
 	spl->next = sc->splines;
 	spl->next = sofar;
     }
