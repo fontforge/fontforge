@@ -5501,7 +5501,7 @@ static void assign(Context *c,Val *val) {
 		strcat(ret,temp);
 		if ( other.type==v_str ) free(other.u.sval);
 		free(val->u.lval->u.sval);
-		val->u.sval = ret;
+		val->u.lval->u.sval = ret;
 	    } else
 		error( c, "Invalid types in assignment");
 	}
