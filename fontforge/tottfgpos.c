@@ -152,7 +152,6 @@ return( false );
 
 uint32 ScriptFromUnicode(int u,SplineFont *sf) {
     int s, k;
-    int enc;
 
     if ( u!=-1 ) {
 	for ( s=0; scripts[s][0]!=0; ++s ) {
@@ -168,7 +167,6 @@ return( scripts[s][0] );
 
     if ( sf==NULL )
 return( 0 );
-    enc = sf->encoding_name;
     if ( sf->cidmaster!=NULL || sf->subfontcnt!=0 ) {
 	if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
 	if ( strmatch(sf->ordering,"Identity")==0 )
@@ -178,29 +176,6 @@ return( CHR('h','a','n','g'));
 	else
 return( CHR('h','a','n','i') );
     }
-
-#if 0
-    if ( enc==em_jis208 || enc==em_jis212 || enc==em_gb2312 || enc==em_big5 ||
-	    enc == em_big5hkscs || enc==em_sjis || enc==em_jisgb )
-return( CHR('h','a','n','i') );
-    else if ( enc==em_ksc5601 || enc==em_johab || enc==em_wansung )
-return( CHR('j','a','m','o') );
-    else if ( enc==em_iso8859_11 )
-return( CHR('t','h','a','i'));
-    else if ( enc==em_iso8859_8 )
-return( CHR('h','e','b','r'));
-    else if ( enc==em_iso8859_7 )
-return( CHR('g','r','e','k'));
-    else if ( enc==em_iso8859_6 )
-return( CHR('a','r','a','b'));
-    else if ( enc==em_iso8859_5 || enc==em_koi8_r )
-return( CHR('c','y','r','l'));
-    else if ( enc==em_jis201 )
-return( CHR('k','a','n','a'));
-    else if ( (enc>=em_iso8859_1 && enc<=em_iso8859_15 ) || enc==em_mac ||
-	    enc==em_win || enc==em_adobestandard )
-return( CHR('l','a','t','n'));
-#endif
 
 return( DEFAULT_SCRIPT );
 }
@@ -222,8 +197,13 @@ return( ScriptFromUnicode( sc->unicodeenc,sf ));
     for ( pt=sc->name; *pt!='\0' && *pt!='_' && *pt!='.'; ++pt );
     if ( *pt!='\0' ) {
 	char *str = copyn(sc->name,pt-sc->name);
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 	int uni = sf==NULL ? UniFromName(str,ui_none,em_custom) :
 			    UniFromName(str,sf->uni_interp,sf->encoding_name);
+#else
+	int uni = sf==NULL ? UniFromName(str,ui_none,&custom) :
+			    UniFromName(str,sf->uni_interp,sf->encoding_name);
+#endif
 	free(str);
 	if ( uni!=-1 )
 return( ScriptFromUnicode( uni,sf ));

@@ -473,6 +473,7 @@ return( 0 );
 return( 1 );
 }
 
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 char *EncodingName(int map) {
 
     if ( map>=em_unicodeplanes && map<=em_unicodeplanesmax ) {
@@ -546,6 +547,48 @@ return( item->enc_name );
 return( "FontSpecific" );
     }
 }
+#else
+char *EncodingName(Encoding *map) {
+    char *name = map->iconv_name != NULL ? map->iconv_name : map->enc_name;
+    int len = strlen(name);
+    char *pt;
+
+    if ( strmatch(name,"AdobeStandard")==0 )
+return( "AdobeStandardEncoding" );
+    if (( strstr(name,"8859")!=NULL && name[len-1]=='1' &&
+	     (!isdigit(name[len-2]) || name[len-2]=='9') ) ||
+	    strstrmatch(name,"latin1")!=NULL )
+return( "ISOLatin1Encoding" );
+    else if ( map->is_unicodebmp || map->is_unicodefull )
+return( "ISO10646-1" );
+    else if ( strmatch(name,"mac")==0 || strmatch(name,"macintosh")==0 ||
+	    strmatch(name,"macroman")==0 )
+return( "MacRoman" );
+    else if ( strmatch(name,"ms-ansi")==0 || strstrmatch(name,"1252")!=NULL )
+return( "WinRoman" );
+    else if ( strmatch(name,"sjis")==0 ||
+	    ((pt = strstrmatch(name,"jp"))!=NULL && pt[2]=='\0' &&
+		    strstr(name,"646")==NULL ))
+return( "JISX0208.1997" );
+    else if ( map->is_japanese )
+return( "JISX0212.1990" );
+    else if ( strmatch(name,"johab")==0 )
+return( "Johab" );
+    else if ( map->is_korean )
+return( "KSC5601.1992" );
+    else if ( map->is_simplechinese )
+return( "GB2312.1980" );
+    else if ( strstrmatch(name,"hkscs")!=NULL )
+return( "BIG5HKSCS.2001" );
+    else if ( map->is_tradchinese )
+return( "BIG5" );			/* 2002? */
+
+    if ( map->is_custom || map->is_original || map->is_compact )
+return( "FontSpecific" );
+
+return( name );
+}
+#endif
 
 static int ScriptLangMatchLigOuts(PST *lig,SplineFont *sf) {
     int i,j;
@@ -939,8 +982,13 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype) {
     }
 
     anyzapf = false;
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     if ( type0 && (sf->encoding_name==em_unicode ||
 	    sf->encoding_name==em_unicode4)) {
+#else
+    if ( type0 && (sf->encoding_name->is_unicodebmp ||
+	    sf->encoding_name->is_unicodefull)) {
+#endif
 	for ( i=0x2700; i<sf->charcnt && i<encmax && i<=0x27ff; ++i )
 	    if ( SCWorthOutputting(sf->chars[i]) ) 
 		anyzapf = true;
@@ -962,12 +1010,13 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype) {
 	    if ( SCWorthOutputting(sc) || (i==0 && sc!=NULL) )
 		AfmCIDChar(afm, sc, i);
 	}
-    } else if ( type0 && sf->encoding_name>=em_jis208 && sf->encoding_name<=em_gb2312 ) {
-	for ( i=0; i<sf->charcnt && i<encmax; ++i )
-	    if ( SCWorthOutputting(sf->chars[i]) ) {
-		AfmSplineCharX(afm,sf->chars[i],i);
-	    }
-    } else if ( type0 ) {
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
+    } else if ( type0 && (sf->encoding_name==em_unicode ||
+	    sf->encoding_name==em_unicode4)) {
+#else
+    } else if ( type0 && (sf->encoding_name->is_unicodebmp ||
+	    sf->encoding_name->is_unicodefull)) {
+#endif
 	for ( i=0; i<sf->charcnt && i<encmax && i<0x2700; ++i )
 	    if ( SCWorthOutputting(sf->chars[i]) ) {
 		AfmSplineCharX(afm,sf->chars[i],i);
@@ -978,6 +1027,11 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype) {
 	    i += 0x2700;
 	}
 	for ( ; i<sf->charcnt && i<encmax; ++i )
+	    if ( SCWorthOutputting(sf->chars[i]) ) {
+		AfmSplineCharX(afm,sf->chars[i],i);
+	    }
+    } else if ( type0 ) {
+	for ( i=0; i<sf->charcnt && i<encmax; ++i )
 	    if ( SCWorthOutputting(sf->chars[i]) ) {
 		AfmSplineCharX(afm,sf->chars[i],i);
 	    }
@@ -1462,6 +1516,7 @@ int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0) {
     putc(0,pfm);			/* underline */
     putc(0,pfm);			/* strikeout */
     putlshort(sf->pfminfo.weight,pfm);	/* weight */
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     if ( sf->encoding_name==em_jis208 || sf->encoding_name==em_jis212 ||
 	    sf->encoding_name==em_sjis ||
 	    (sf->cidmaster!=NULL && strnmatch(sf->cidmaster->ordering,"Japan",5)==0 ))
@@ -1478,6 +1533,22 @@ int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0) {
 	putc(134,pfm);
     else
 	putc(sf->encoding_name==em_symbol?2:0,pfm);	/* charset. I'm always saying windows roman (ANSI) or symbol because I don't know the other choices */
+#else
+    if ( sf->encoding_name->is_japanese ||
+	    (sf->cidmaster!=NULL && strnmatch(sf->cidmaster->ordering,"Japan",5)==0 ))
+	putc(128,pfm);
+    else if ( sf->encoding_name->is_korean ||
+	    (sf->cidmaster!=NULL && strnmatch(sf->cidmaster->ordering,"Korea",5)==0 ))
+	putc(129,pfm);
+    else if ( sf->encoding_name->is_tradchinese ||
+	    (sf->cidmaster!=NULL && strnmatch(sf->cidmaster->ordering,"CNS",3)==0 ))
+	putc(136,pfm);
+    else if ( sf->encoding_name->is_simplechinese ||
+	    (sf->cidmaster!=NULL && strnmatch(sf->cidmaster->ordering,"GB",2)==0 ))
+	putc(134,pfm);
+    else
+	putc(strmatch(sf->encoding_name->enc_name,"symbol")==0?2:0,pfm);	/* charset. I'm always saying windows roman (ANSI) or symbol because I don't know the other choices */
+#endif
     putlshort(/*samewid<0?sf->ascent+sf->descent:samewid*/0,pfm);	/* width */
     putlshort(sf->ascent+sf->descent,pfm);	/* height */
     putc(sf->pfminfo.pfmfamily,pfm);	/* family */
@@ -2020,7 +2091,11 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
     /*  that doesn't work. People use non-standard names */
     if ( sf->texdata.type==tex_math ) encname = "TEX MATH SYMBOLS";
     else if ( sf->texdata.type==tex_mathext ) encname = "TEX MATH EXTENSION";
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     else if ( sf->subfontcnt==0 && sf->encoding_name!=em_custom && !sf->compacted )
+#else
+    else if ( sf->subfontcnt==0 && sf->encoding_name!=&custom && !sf->compacted )
+#endif
 	encname = EncodingName(sf->encoding_name );
     if ( encname==NULL ) {
 	full = galloc(strlen(sf->fontname)+10);

@@ -33,12 +33,14 @@
 #include <locale.h>
 #include <gwidget.h>
 
+/* I will retain this list in case there are still some really old sfd files */
+/*  including numeric encodings.  This table maps them to string encodings */
 static const char *charset_names[] = {
     "custom",
-    "iso8859_1", "iso8859_2", "iso8859_3", "iso8859_4", "iso8859_5",
-    "iso8859_6", "iso8859_7", "iso8859_8", "iso8859_9", "iso8859_10",
-    "iso8859_11", "iso8859_13", "iso8859_14", "iso8859_15",
-    "koi8_r",
+    "iso8859-1", "iso8859-2", "iso8859-3", "iso8859-4", "iso8859-5",
+    "iso8859-6", "iso8859-7", "iso8859-8", "iso8859-9", "iso8859-10",
+    "iso8859-11", "iso8859-13", "iso8859-14", "iso8859-15",
+    "koi8-r",
     "jis201",
     "win", "mac", "symbol", "zapfding", "adobestandard",
     "jis208", "jis212", "ksc5601", "gb2312", "big5", "big5hkscs", "johab",
@@ -881,6 +883,11 @@ static void putstring(FILE *sfd, char *header, char *body) {
     putc('\n',sfd);
 }
 
+#ifdef FONTFORGE_CONFIG_ICONV_ENCODING
+const char *EncName(Encoding *encname) {
+return( encname->enc_name );
+}
+#else
 const char *EncName(int encname) {
     static char buffer[40];
 
@@ -909,7 +916,13 @@ return( NULL );
     } else
 return( charset_names[encname+1]);
 }
+#endif
 
+#ifdef FONTFORGE_CONFIG_ICONV_ENCODING
+static void SFDDumpEncoding(FILE *sfd,Encoding *encname,char *keyword) {
+    fprintf(sfd, "%s: %s\n", keyword, encname->enc_name );
+}
+#else
 static void SFDDumpEncoding(FILE *sfd,int encname,char *keyword) {
     const char *name = EncName(encname);
 
@@ -920,6 +933,7 @@ static void SFDDumpEncoding(FILE *sfd,int encname,char *keyword) {
     } else
 	fprintf(sfd, "%s: %s\n", keyword, name );
 }
+#endif
 
 static void SFDDumpMacName(FILE *sfd,struct macname *mn) {
     char *pt;
@@ -2851,6 +2865,40 @@ return( cur );
 return( old );
 }
 
+#ifdef FONTFORGE_CONFIG_ICONV_ENCODING
+static Encoding *SFDGetEncoding(FILE *sfd, char *tok, SplineFont *sf) {
+    Encoding *enc = NULL;
+    int encname;
+
+    if ( getint(sfd,&encname) ) {
+	if ( encname<sizeof(charset_names)/sizeof(charset_names[0]) )
+	    enc = FindOrMakeEncoding(charset_names[encname]);
+    } else {
+	geteol(sfd,tok);
+	enc = FindOrMakeEncoding(tok);
+    }
+    if ( enc==NULL )
+	enc = &custom;
+    if ( enc->is_compact )
+	sf->compacted = true;
+return( enc );
+}
+#else
+/* Sadly I used underscores to name encodings where iconv uses hyphens */
+/*  I've switched over, but I want to be compatible with old sfd files */
+static int fixunderscore(const char *str1, const char *str2 ) {
+    while ( *str1 || *str2 ) {
+	if ( *str1==*str2 ||
+		((*str1=='-' || *str1=='_') && (*str2=='-' || *str2=='_')))
+	    /* Matches */;
+	else
+return( *str1-*str2 );
+	++str1;
+	++str2;
+    }
+return( 0 );
+}
+
 static enum charset SFDGetEncoding(FILE *sfd, char *tok, SplineFont *sf) {
     int encname = em_none;
     int i;
@@ -2881,16 +2929,22 @@ static enum charset SFDGetEncoding(FILE *sfd, char *tok, SplineFont *sf) {
 	    else if ( strmatch(tok,"Original")==0 )
 		encname = em_original;
 	}
+	if ( encname==em_none )
+	    for ( i=0; charset_names[i]!=NULL; ++i )
+		if ( fixunderscore(tok,charset_names[i])==0 ) {
+		    encname = i-1;
+	    break;
+		}
     }
 return( encname );
 }
+#endif
 
 static enum uni_interp SFDGetUniInterp(FILE *sfd, char *tok, SplineFont *sf) {
     int uniinterp = ui_none;
     int i;
 
     geteol(sfd,tok);
-    uniinterp = em_none;
     for ( i=0; unicode_interp_names[i]!=NULL; ++i )
 	if ( strcmp(tok,unicode_interp_names[i])==0 ) {
 	    uniinterp = i;
@@ -3279,6 +3333,19 @@ static void SFDCleanupAnchorClasses(SplineFont *sf) {
 #undef S_MAX
 }
 
+#ifdef FONTFORGE_CONFIG_ICONV_ENCODING
+enum uni_interp interp_from_encoding(Encoding *enc,enum uni_interp interp) {
+    if ( enc->is_japanese )
+	interp = ui_japanese;
+    else if ( enc->is_korean )
+	interp = ui_korean;
+    else if ( enc->is_tradchinese )
+	interp = ui_trad_chinese;
+    else if ( enc->is_simplechinese )
+	interp = ui_simp_chinese;
+return( interp );
+}
+#else
 enum uni_interp interp_from_encoding(enum charset enc,enum uni_interp interp) {
 
     switch ( enc ) {
@@ -3300,6 +3367,7 @@ enum uni_interp interp_from_encoding(enum charset enc,enum uni_interp interp) {
     }
 return( interp );
 }
+#endif
 
 static void SFDCleanupFont(SplineFont *sf) {
     SFDCleanupAnchorClasses(sf);
@@ -4130,16 +4198,32 @@ return( sc );
 }
 
 static int ModSF(FILE *asfd,SplineFont *sf) {
-    int newmap, cnt, order2=0;
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
+    int newmap;
+#else
+    Encoding *newmap;
+#endif
+    int cnt, order2=0;
     char tok[200];
     int i,k;
     SplineChar *sc;
     SplineFont *ssf;
     SplineFont temp;
 
+    memset(&temp,0,sizeof(temp));
+    temp.ascent = sf->ascent; temp.descent = sf->descent;
+    temp.order2 = sf->order2;
+    temp.multilayer = sf->multilayer;
+    temp.sli_cnt = sf->sli_cnt;
+    temp.script_lang = sf->script_lang;
+
     if ( getname(asfd,tok)!=1 || strcmp(tok,"Encoding:")!=0 )
 return(false);
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     getint(asfd,&newmap);
+#else
+    newmap = SFDGetEncoding(asfd,tok,&temp);
+#endif
     if ( getname(asfd,tok)!=1 )
 return( false );
     if ( strcmp(tok,"UnicodeInterp:")==0 ) {
@@ -4163,13 +4247,6 @@ return( false );
     if ( strcmp(tok,"BeginChars:")!=0 )
 return(false);
     SFRemoveDependencies(sf);
-
-    memset(&temp,0,sizeof(temp));
-    temp.ascent = sf->ascent; temp.descent = sf->descent;
-    temp.order2 = sf->order2;
-    temp.multilayer = sf->multilayer;
-    temp.sli_cnt = sf->sli_cnt;
-    temp.script_lang = sf->script_lang;
 
     getint(asfd,&cnt);
     if ( cnt>sf->charcnt ) {
@@ -4282,7 +4359,11 @@ return;
     oldloc = setlocale(LC_NUMERIC,"C");
     if ( !sf->new && sf->origname!=NULL )	/* might be a new file */
 	fprintf( asfd, "Base: %s\n", sf->origname );
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     fprintf( asfd, "Encoding: %d\n", sf->encoding_name );
+#else
+    fprintf( asfd, "Encoding: %s\n", sf->encoding_name->enc_name );
+#endif
     fprintf( asfd, "UnicodeInterp: %s\n", unicode_interp_names[sf->uni_interp]);
     if ( sf->order2 )
 	fprintf( asfd, "Order2: %d\n", sf->order2 );

@@ -683,8 +683,12 @@ void DisplayDlg(SplineFont *sf) {
     else if ( sf->onlybitmaps ) gcd[9].gd.flags = gg_visible;
 
 
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     twobyte = (sf->encoding_name>=e_first2byte && sf->encoding_name<em_base) ||
 		sf->encoding_name>=em_unicodeplanes;
+#else
+    twobyte = sf->encoding_name->has_2byte;
+#endif
     label[10].text = PrtBuildDef(sf,twobyte);
     gcd[10].gd.label = &label[10];
     gcd[10].gd.mnemonic = 'T';

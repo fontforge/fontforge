@@ -42,7 +42,11 @@
 
 int adjustwidth = true;
 int adjustlbearing = true;
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 int default_encoding = em_iso8859_1;
+#else
+Encoding *default_encoding = NULL;
+#endif
 int autohint_before_rasterize = 1;
 int autohint_before_generate = 1;
 int ItalicConstrained=true;
@@ -68,8 +72,10 @@ extern int default_fv_glyphlabel;	/* in fontview */
 extern int palettes_docked;		/* in cvpalettes */
 extern int maxundoes;			/* in cvundoes */
 extern int prefer_cjk_encodings;	/* in parsettf */
+#if !defined(FONTFORGE_CONFIG_ICONV_ENCODING)
 /* int local_encoding; */		/* in gresource.c *//* not a charset */
 static int prefs_encoding = e_unknown;
+#endif
 int greeknames = false;
 extern int onlycopydisplayed, copymetadata;
 extern struct cvshows CVShows;
@@ -266,7 +272,9 @@ static struct prefs_list {
     int popup;
 } general_list[] = {
 	{ "AutoHint", pr_bool, &autohint_before_rasterize, NULL, NULL, 'A', NULL, 0, _STR_PrefsPopupAH },
+#if !defined(FONTFORGE_CONFIG_ICONV_ENCODING)
 	{ "LocalEncoding", pr_encoding, &prefs_encoding, NULL, NULL, 'L', NULL, 0, _STR_PrefsPopupLoc },
+#endif
 	{ "NewCharset", pr_encoding, &default_encoding, NULL, NULL, 'N', NULL, 0, _STR_PrefsPopupForNewFonts },
 	{ "NewEmSize", pr_int, &new_em_size, NULL, NULL, 'S', NULL, 0, _STR_PrefsPopupNES },
 	{ "NewFontsQuadratic", pr_bool, &new_fonts_are_order2, NULL, NULL, 'Q', NULL, 0, _STR_PrefsPopupNOT },
@@ -352,7 +360,9 @@ static struct prefs_list {
 },
  oldnames[] = {
 	{ "DumpGlyphMap", pr_bool, &glyph_2_name_map, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupG2N },
+#if !defined(FONTFORGE_CONFIG_ICONV_ENCODING)
 	{ "LocalCharset", pr_encoding, &prefs_encoding, NULL, NULL, 'L', NULL, 0, _STR_PrefsPopupLoc },
+#endif
 	{ "DefaultTTFApple", pr_int, &pointless, NULL, NULL, '\0', NULL, 1 },
 	{ "AcuteCenterBottom", pr_bool, &GraveAcuteCenterBottom, NULL, NULL, '\0', NULL, 1, _STR_PrefsPopupGA },
 	{ NULL }
@@ -377,15 +387,27 @@ int GetPrefs(char *name,Val *val) {
     for ( i=0; prefs_list[i]!=NULL; ++i ) for ( j=0; prefs_list[i][j].name!=NULL; ++j ) {
 	if ( strcmp(prefs_list[i][j].name,name)==0 ) {
 	    struct prefs_list *pf = &prefs_list[i][j];
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 	    if ( pf->type == pr_bool || pf->type == pr_int || pf->type == pr_encoding ) {
 		val->type = v_int;
 		val->u.ival = *((int *) (pf->val));
-	    } else if ( pf->type == pr_real ) {
-		val->type = v_int;
-		val->u.ival = *((float *) (pf->val));
 	    } else if ( pf->type == pr_string || pf->type == pr_file ) {
 		val->type = v_str;
 		val->u.sval = copy( *((char **) (pf->val)));
+#else
+	    if ( pf->type == pr_bool || pf->type == pr_int ) {
+		val->type = v_int;
+		val->u.ival = *((int *) (pf->val));
+	    } else if ( pf->type == pr_string || pf->type == pr_file ) {
+		val->type = v_str;
+		val->u.sval = copy( *((char **) (pf->val)));
+	    } else if ( pf->type == pr_encoding ) {
+		val->type = v_str;
+		val->u.sval = copy( (*((Encoding **) (pf->val)))->enc_name );
+#endif
+	    } else if ( pf->type == pr_real ) {
+		val->type = v_int;
+		val->u.ival = *((float *) (pf->val));
 	    } else
 return( false );
 
@@ -417,6 +439,7 @@ return( -1 );
 	    } else if ( pf->type == pr_encoding ) {
 		if ( val2!=NULL )
 return( -1 );
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 		else if ( val1->type==v_int || val1->type==v_unicode )
 		    *((int *) (pf->val)) = val1->u.ival;
 		else if ( val1->type==v_str && pf->val == &default_encoding) {
@@ -424,6 +447,13 @@ return( -1 );
 		    if ( enc==(em_none-3) )
 return( -1 );
 		    *((int *) (pf->val)) = enc;
+#else
+		else if ( val1->type==v_str && pf->val == &default_encoding) {
+		    Encoding *enc = FindOrMakeEncoding(val1->u.sval);
+		    if ( enc==NULL )
+return( -1 );
+		    *((Encoding **) (pf->val)) = enc;
+#endif
 		} else
 return( -1 );
 	    } else
@@ -541,6 +571,10 @@ return;
     GStringSetResourceFileV(full,PfaEditNomenChecksum);
 }
 
+#if !defined(FONTFORGE_CONFIG_GTK)
+# ifdef FONTFORGE_CONFIG_ICONV_ENCODING
+#  include <charset.h>		/* we still need the charsets & encoding to set local_encoding */
+# endif
 static int encmatch(const char *enc,int subok) {
     static struct { char *name; int enc; } encs[] = {
 	{ "US-ASCII", e_usascii },
@@ -702,6 +736,7 @@ return( e_iso8859_1 );
 
 return( enc );
 }
+#endif
 
 static unichar_t *utf8_copy(char *src) {
     unichar_t *ret = galloc((strlen(src)+1)*sizeof(unichar_t)), *pt=ret;
@@ -864,6 +899,7 @@ return;
 	}
 	switch ( pl->type ) {
 	  case pr_encoding:
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 	    if ( sscanf( pt, "%d", (int *) pl->val )!=1 ) {
 		Encoding *item;
 		for ( item = enclist; item!=NULL && strcmp(item->enc_name,pt)!=0; item = item->next );
@@ -872,6 +908,13 @@ return;
 		else
 		    *((int *) (pl->val)) = item->enc_num;
 	    }
+#else
+	    { Encoding *enc = FindOrMakeEncoding(pt);
+		if ( enc==NULL )
+		    enc = FindOrMakeEncoding("ISO-8859-1");
+		*((Encoding **) (pl->val)) = enc;
+	    }
+#endif
 	  break;
 	  case pr_bool: case pr_int:
 	    sscanf( pt, "%d", (int *) pl->val );
@@ -889,10 +932,16 @@ return;
 	}
     }
     fclose(p);
+#if defined(FONTFORGE_CONFIG_GTK)
+    /* Nothing */;
+#elif defined( FONTFORGE_CONFIG_ICONV_ENCODING )
+    local_encoding = DefaultEncoding();
+#else
     if ( prefs_encoding==e_unknown )
 	local_encoding = DefaultEncoding();
     else
 	local_encoding = prefs_encoding;
+#endif
 #if defined(FONTFORGE_CONFIG_GDRAW)
     if ( xdefs_filename!=NULL )
 	GResourceAddResourceFile(xdefs_filename,GResourceProgramName);
@@ -906,7 +955,11 @@ return;
 void _SavePrefs(void) {
     char *prefs = getPfaEditPrefs();
     FILE *p;
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     int i, j, val;
+#else
+    int i, j;
+#endif
     char *temp;
     struct prefs_list *pl;
 
@@ -919,6 +972,7 @@ return;
 	pl = &prefs_list[j][i];
 	switch ( pl->type ) {
 	  case pr_encoding:
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 	    val = *(int *) (pl->val);
 	    if ( val<em_base || val>=em_unicodeplanes )
 		fprintf( p, "%s:\t%d\n", pl->name, val );
@@ -927,6 +981,9 @@ return;
 		for ( item = enclist; item!=NULL && item->enc_num!=val; item=item->next );
 		fprintf( p, "%s:\t%s\n", pl->name, item==NULL?"-1":item->enc_name );
 	    }
+#else
+	    fprintf( p, "%s:\t%s\n", pl->name, (*((Encoding **) (pl->val)))->enc_name );
+#endif
 	  break;
 	  case pr_bool: case pr_int:
 	    fprintf( p, "%s:\t%d\n", pl->name, *(int *) (pl->val) );
@@ -1394,8 +1451,10 @@ static int Prefs_Ok(GGadget *g, GEvent *e) {
     struct pref_data *p;
     GWindow gw;
     const unichar_t *ret;
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     int lc=-1;
     GTextInfo *ti;
+#endif
     const unichar_t *names[SCRIPT_MENU_MAX], *scripts[SCRIPT_MENU_MAX];
     struct prefs_list *pl;
     GTextInfo **list;
@@ -1443,6 +1502,7 @@ return( true );
 		GetInt(gw,j*1000+1000+i,pl->name,&err);
 	    } else if ( pl->type==pr_int ) {
 		GetReal(gw,j*1000+1000+i,pl->name,&err);
+#if !defined(FONTFORGE_CONFIG_ICONV_ENCODING)
 	    } else if ( pl->val == &prefs_encoding ) {
 		enc = GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,j*1000+1000+i));
 		lc = (int) (localencodingtypes[enc].userdata);
@@ -1453,14 +1513,17 @@ return( true );
 		    prefs_encoding = e_unknown;
 		} else
 		    lc = local_encoding;
+#endif
 	    }
 	}
 	if ( err )
 return( true );
 
+#if !defined(FONTFORGE_CONFIG_ICONV_ENCODING)
 	if ( lc!=-1 ) {
 	    local_encoding = lc;		/* must be done early, else strings don't convert */
 	}
+#endif
 
 	for ( j=0; visible_prefs_list[j].tab_name!=0; ++j ) for ( i=0; visible_prefs_list[j].pl[i].name!=NULL; ++i ) {
 	    pl = &visible_prefs_list[j].pl[i];
@@ -1477,11 +1540,20 @@ return( true );
 	        *((float *) (pl->val)) = GetReal(gw,j*1000+1000+i,pl->name,&err);
 	      break;
 	      case pr_encoding:
+#if !defined(FONTFORGE_CONFIG_ICONV_ENCODING)
 		if ( pl->val==&prefs_encoding )
 	continue;
 		enc = GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,j*1000+1000+i));
 		ti = GGadgetGetListItem(GWidgetGetControl(gw,j*1000+1000+i),enc);
 		*((int *) (pl->val)) = (int) (ti->userdata);
+#else
+		{ Encoding *e;
+		    e = ParseEncodingNameFromList(GWidgetGetControl(gw,j*1000+1000+i));
+		    if ( e!=NULL )
+			*((Encoding **) (pl->val)) = e;
+		    enc = 1;	/* So gcc doesn't complain about unused. It is unused, but why add the ifdef and make the code even messier? */
+		}
+#endif
 	      break;
 	      case pr_string: case pr_file:
 	        ret = _GGadgetGetTitle(GWidgetGetControl(gw,j*1000+1000+i));
@@ -1810,21 +1882,35 @@ void DoPrefs(void) {
 		y += 26;
 	      break;
 	      case pr_encoding:
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 		if ( pl->val==&prefs_encoding ) {
 		    pgcd[gc].gd.u.list = localencodingtypes;
 		    pgcd[gc].gd.label = EncodingTypesFindEnc(localencodingtypes,
-			    *(int *) pl->val);
+			    false,*(int *) pl->val);
 		} else {
 		    pgcd[gc].gd.u.list = GetEncodingTypes();
 		    pgcd[gc].gd.label = EncodingTypesFindEnc(pgcd[gc].gd.u.list,
-			    *(int *) pl->val);
+			    false,*(int *) pl->val);
 		}
 		for ( ii=0; pgcd[gc].gd.u.list[ii].text!=NULL ||pgcd[gc].gd.u.list[ii].line; ++ii )
-		    if ( pgcd[gc].gd.u.list[ii].userdata==(void *) em_unicodeplanes )
+		    if ( pgcd[gc].gd.u.list[ii].userdata==(void *) em_unicodeplanes ||
+			    pgcd[gc].gd.u.list[ii].userdata==(void *) em_original ||
+			    pgcd[gc].gd.u.list[ii].userdata==(void *) em_compacted )
 			pgcd[gc].gd.u.list[ii].disabled = true;
+		pgcd[gc].creator = GListButtonCreate;
+#else
+		pgcd[gc].gd.u.list = GetEncodingTypes();
+		pgcd[gc].gd.label = EncodingTypesFindEnc(pgcd[gc].gd.u.list,
+			false,*(Encoding **) pl->val);
+		for ( ii=0; pgcd[gc].gd.u.list[ii].text!=NULL ||pgcd[gc].gd.u.list[ii].line; ++ii )
+		    if ( strcmp(pgcd[gc].gd.u.list[ii].userdata,"Compacted")==0 ||
+			    strcmp(pgcd[gc].gd.u.list[ii].userdata,"Original")==0 )
+			pgcd[gc].gd.u.list[ii].disabled = true;
+		pgcd[gc].creator = GListFieldCreate;
+#endif
 		pgcd[gc].gd.pos.width = 160;
 		if ( pgcd[gc].gd.label==NULL ) pgcd[gc].gd.label = &encodingtypes[0];
-		pgcd[gc++].creator = GListButtonCreate;
+		++gc;
 		y += 28;
 	      break;
 	      case pr_string: case pr_file:

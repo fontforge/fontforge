@@ -2064,7 +2064,14 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont,
 	dumpintoper(private,1,(12<<8)|14);
     if ( (pt=PSDictHasEntry(sf->private,"LanguageGroup"))!=NULL )
 	DumpStrDouble(pt,private,(12<<8)+17);
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     else if ( sf->encoding_name>=em_first2byte && sf->encoding_name<em_unicode )
+#else
+    else if ( sf->encoding_name->is_japanese ||
+	      sf->encoding_name->is_korean ||
+	      sf->encoding_name->is_tradchinese ||
+	      sf->encoding_name->is_simplechinese )
+#endif
 	dumpintoper(private,1,(12<<8)|17);
     if ( (pt=PSDictHasEntry(sf->private,"ExpansionFactor"))!=NULL )
 	DumpStrDouble(pt,private,(12<<8)+18);
@@ -2248,10 +2255,21 @@ static void dumpcffcidtopdict(SplineFont *sf,struct alltabs *at) {
     /* Offset to FDSelect (oper=12,37) needed here */
 }
 
+static int isStdEncoding(SplineFont *sf) {
+    int i;
+
+    for ( i=0; i<256; ++i ) if ( sf->chars[i]!=NULL )
+	if ( sf->chars[i]->unicodeenc!=-1 )
+	    if ( sf->chars[i]->unicodeenc!=unicode_from_adobestd[i] )
+return( 0 );
+
+return( 1 );
+}
+
 static void finishup(SplineFont *sf,struct alltabs *at) {
     int strlen, shlen, glen,enclen,csetlen,cstrlen,prvlen;
     int base, eotop, strhead;
-    int output_enc = ( at->format==ff_cff && sf->encoding_name!=em_adobestandard );
+    int output_enc = ( at->format==ff_cff && !isStdEncoding(sf));
 
     storesid(at,NULL);		/* end the strings index */
     strlen = ftell(at->sidf) + (shlen = ftell(at->sidh));
@@ -2555,7 +2573,7 @@ return( false );
     PSCharsFree(subrs);
     if ( at->charstrings == NULL )
 return( false );
-    if ( at->format==ff_cff && sf->encoding_name!=em_adobestandard )
+    if ( at->format==ff_cff && !isStdEncoding(sf))
 	dumpcffencoding(sf,at);		/* Do this after we've assigned glyph ids */
     dumpcfftopdict(sf,at);
     finishup(sf,at);
@@ -2929,6 +2947,7 @@ void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
     int i, k;
 
     CodePage[0] = CodePage[1] = 0;
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     if ( sf->encoding_name==em_iso8859_1 || sf->encoding_name==em_iso8859_15 ||
 	    sf->encoding_name==em_win )
 	CodePage[0] |= 1<<0;	/* latin1 */
@@ -2963,6 +2982,7 @@ void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
 	CodePage[0] |= 1<<29;	/* mac */
     else if ( sf->encoding_name==em_symbol )
 	CodePage[0] |= 1U<<31;	/* symbol */
+#endif
 
     k=0; _sf = sf;
     do {
@@ -3581,7 +3601,11 @@ typedef struct {
     FILE *strings;
     int cur, max;
     enum fontformat format;
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     int encoding_name;
+#else
+    Encoding *encoding_name;
+#endif
     NameEntry *entries;
     int applemode;
 } NamTab;
@@ -3653,6 +3677,7 @@ static void AddEncodedName(NamTab *nt,unichar_t *uniname,uint16 lang,uint16 stri
 	}
     }
 
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     specific =  nt->encoding_name==em_ksc5601 ? 5 :	/* Wansung, korean */
 		nt->encoding_name==em_wansung ? 5 :	/* Wansung, korean */
 		nt->encoding_name==em_jis208 ? 2 :	/* SJIS */
@@ -3662,6 +3687,13 @@ static void AddEncodedName(NamTab *nt,unichar_t *uniname,uint16 lang,uint16 stri
 		nt->encoding_name==em_big5 ? 4 :	/* Big5, traditional Chinese */
 		nt->encoding_name==em_big5hkscs ? 4 :
 		nt->encoding_name==em_johab ? 6 : -1;	/* Korean */
+#else
+    specific =  nt->encoding_name->is_korean ? 5 :	/* Wansung, korean */
+		nt->encoding_name->is_japanese ? 2 :	/* SJIS */
+		nt->encoding_name->is_simplechinese ? 3 :/* packed gb2312, don't know the real name */
+		nt->encoding_name->is_tradchinese ? 4 :	/* Big5, traditional Chinese */
+			-1;
+#endif
     if ( specific != -1 ) {
 	ne->platform = 3;		/* windows */
 	ne->specific = specific;	/* whatever */
@@ -3675,6 +3707,7 @@ static void AddEncodedName(NamTab *nt,unichar_t *uniname,uint16 lang,uint16 stri
 	    ne->offset = ne[-1].offset;
 	    ne->len    = ne[-1].len;
 	} else {
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 	    int len, enc;
 	    char *space;
 	    ne->offset  = ftell(nt->strings);
@@ -3690,6 +3723,24 @@ static void AddEncodedName(NamTab *nt,unichar_t *uniname,uint16 lang,uint16 stri
 	    len = 3*u_strlen(uniname)+10;
 	    space = galloc(len);
 	    u2encoding_strncpy(space,uniname,len,enc);
+#else
+	    char *space, *encname, *in, *out;
+	    Encoding *enc;
+	    size_t inlen, outlen;
+	    ne->offset  = ftell(nt->strings);
+	    encname     = nt->encoding_name->is_japanese ? "SJIS" :
+			strmatch(nt->encoding_name->enc_name,"JOHAB")==0 ? "JOHAB" :
+			nt->encoding_name->is_korean ? "EUC-KR" :
+			nt->encoding_name->is_simplechinese ? "EUC-CN" :
+			    nt->encoding_name->enc_name;
+	    enc = FindOrMakeEncoding(encname);
+	    outlen = 3*u_strlen(uniname)+10;
+	    out = space = galloc(outlen+2);
+	    in = (char *) uniname; inlen = 2*u_strlen(uniname);
+	    iconv(enc->fromunicode,NULL,NULL,NULL,NULL);	/* should not be needed, but just in case */
+	    iconv(enc->fromunicode,&in,&inlen,&out,&outlen);
+	    out[0] = '\0'; out[1] = '\0';
+#endif
 	    ne->offset = ftell(nt->strings);
 	    ne->len    = strlen(space);
 	    dumpstr(nt->strings,space);
@@ -3891,7 +3942,7 @@ static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format)
 }
 
 static FILE *Needs816Enc(SplineFont *sf,int *tlen) {
-    int i, j, complained, pos, k, subheadindex, jj;
+    int i, j, complained, pos, k, subheadindex, jj, isbig5=false;
     uint16 table[256];
     struct subhead subheads[128];
     uint16 *glyphs;
@@ -3899,42 +3950,74 @@ static FILE *Needs816Enc(SplineFont *sf,int *tlen) {
     int base, lbase, basebound, subheadcnt, planesize, plane0size;
     int base2, base2bound;
     FILE *sub;
+#ifdef FONTFORGE_CONFIG_ICONV_ENCODING
+    char *encname = sf->encoding_name->iconv_name!=NULL ? sf->encoding_name->iconv_name : sf->encoding_name->enc_name;
+#endif
 
     *tlen = 0;
     if ( sf->cidmaster!=NULL || sf->subfontcnt!=0 )
 return( NULL );
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     if ( sf->encoding_name!=em_big5 && sf->encoding_name!=em_big5hkscs &&
 		    sf->encoding_name!=em_johab &&
 		    sf->encoding_name!=em_jisgb &&
 		    sf->encoding_name!=em_sjis && sf->encoding_name!=em_wansung )
 return( NULL );
-
+#else
+    if ( !(strstrmatch(encname,"big")!=NULL && strchr(encname,'5')!=NULL) &&
+	    strstrmatch(encname,"johab")==NULL &&
+	    strstrmatch(encname,"sjis")==NULL &&
+	    strstrmatch(encname,"euc-kr")==NULL &&
+	    strstrmatch(encname,"euc-cn")==NULL )
+return( NULL );
+#endif
     base2 = -1; base2bound = -2;
-    if ( sf->encoding_name==em_big5 ) {
-	base = 0xa1;
-	basebound = 0xf9;	/* wcl-02.ttf's cmap claims to go up to fc, but everything after f9 is invalid (according to what I know of big5, f9 should be the end) */
-	subheadcnt = basebound-base+1;
-	lbase = 0x40;
-	planesize = 191;
-    } else if ( sf->encoding_name==em_big5hkscs ) {
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
+    if ( sf->encoding_name==em_big5hkscs ) {
+#else
+    if ( sf->encoding_name->is_tradchinese && strstrmatch(encname,"hkscs")!=NULL ) {
+#endif
 	base = 0x81;
 	basebound = 0xfe;
 	subheadcnt = basebound-base+1;
 	lbase = 0x40;
 	planesize = 191;
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
+    } else if ( sf->encoding_name==em_big5 ) {
+#else
+    } else if ( sf->encoding_name->is_tradchinese ) {
+#endif
+	base = 0xa1;
+	basebound = 0xf9;	/* wcl-02.ttf's cmap claims to go up to fc, but everything after f9 is invalid (according to what I know of big5, f9 should be the end) */
+	subheadcnt = basebound-base+1;
+	lbase = 0x40;
+	planesize = 191;
+	isbig5 = true;
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     } else if ( sf->encoding_name==em_wansung || sf->encoding_name==em_jisgb ) {
+#else
+    } else if ( strstrmatch(encname,"euc")!=NULL ) {
+#endif
 	base = 0xa1;
 	basebound = 0xfd;
 	lbase = 0xa1;
 	subheadcnt = basebound-base+1;
 	planesize = 0xfe - lbase +1;
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     } else if ( sf->encoding_name==em_johab ) {
+#else
+    } else if ( strstrmatch(encname,"johab")!=NULL ) {
+#endif
 	base = 0x84;
 	basebound = 0xf9;
 	lbase = 0x31;
 	subheadcnt = basebound-base+1;
 	planesize = 0xfe -0x31+1;	/* Stupid gcc bug, thinks 0xfe- is ambiguous (exponant) */
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     } else if ( sf->encoding_name==em_sjis ) {
+#else
+    } else if ( strstrmatch(encname,"sjis")!=NULL ) {
+#endif
 	base = 129;
 	basebound = 159;
 	lbase = 64;
@@ -3948,7 +4031,11 @@ return( NULL );
 	base2bound >>= 8;
 	subheadcnt = basebound-base + 1 + base2bound-base2 + 1;
     } else {
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 	fprintf( stderr, "Unsupported 8/16 encoding %d\n", sf->encoding_name );
+#else
+	fprintf( stderr, "Unsupported 8/16 encoding %s\n", sf->encoding_name->enc_name );
+#endif
 return( NULL );
     }
     plane0size = base2==-1? base : base2;
@@ -4059,7 +4146,7 @@ return( NULL );		/* Doesn't have the single byte entries */
 #endif
 		complained = true;
 	    }
-	if ( sf->encoding_name==em_big5 ) {
+	if ( isbig5 ) {
 	    /* big5 has a gap here. Does johab? */
 	    for ( i=0x7f; i<0xa1; ++i )
 		if ( !complained && SCWorthOutputting(sf->chars[i+j])) {
@@ -4140,6 +4227,7 @@ static FILE *NeedsUCS4Table(SplineFont *sf,int *ucs4len) {
     FILE *format12;
     SplineChar *sc;
     
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     if ( sf->encoding_name==em_unicode4 ) {
 	for ( i=0x10000; i<sf->charcnt; ++i )
 	    if ( SCWorthOutputting(sf->chars[i]))
@@ -4148,6 +4236,12 @@ static FILE *NeedsUCS4Table(SplineFont *sf,int *ucs4len) {
 	for ( i=0; i<sf->charcnt; ++i )
 	    if ( SCWorthOutputting(sf->chars[i]))
 	break;
+#else
+    if ( sf->encoding_name->is_unicodefull ) {
+	for ( i=0x10000; i<sf->charcnt; ++i )
+	    if ( SCWorthOutputting(sf->chars[i]))
+	break;
+#endif
     } else
 return( NULL );
 	if ( i>=sf->charcnt )
@@ -4424,7 +4518,11 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	    enccnt = 2;
 	    hasmac = 0;
 	} else if ( format2!=NULL ) {
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 	    if ( sf->encoding_name==em_johab ) {
+#else
+	    if ( strstrmatch(sf->encoding_name->enc_name,"johab")!=NULL ) {
+#endif
 		enccnt=4;
 	    } else {
 		enccnt=5;
@@ -4453,12 +4551,19 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	    /* big mac table, just a copy of the ms table */
 	    putshort(at->cmap,1);	/* mac platform */
 	    putshort(at->cmap,
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 		sf->encoding_name==em_jis208? 1 :	/* SJIS */
 		sf->encoding_name==em_sjis? 1 :		/* SJIS */
 		sf->encoding_name==em_ksc5601? 3 :	/* Korean */
 		sf->encoding_name==em_wansung? 3 :	/* Korean */
 		sf->encoding_name==em_jisgb? 25 :	/* Simplified Chinese */
 		2 );					/* Big5 */
+#else
+		sf->encoding_name->is_japanese? 1 :	/* SJIS */
+		sf->encoding_name->is_korean? 3 :	/* Korean */
+		sf->encoding_name->is_simplechinese? 25 :/* Simplified Chinese */
+		2 );					/* Big5 */
+#endif
 	    putlong(at->cmap,cjkpos);
 	}
 
@@ -4471,6 +4576,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	if ( format2!=NULL ) {
 	    putshort(at->cmap,3);		/* ms platform */
 	    putshort(at->cmap,		/* plat specific enc */
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 		    sf->encoding_name==em_ksc5601 ? 5 :	/* Wansung, korean */
 		    sf->encoding_name==em_wansung ? 5 :	/* Wansung, korean */
 		    sf->encoding_name==em_jis208 ? 2 :	/* SJIS */
@@ -4480,6 +4586,13 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 		    sf->encoding_name==em_big5 ? 4 :	/* Big5, traditional Chinese */
 		    sf->encoding_name==em_big5hkscs ? 4 :
 		    /*sf->encoding_name==em_johab ?*/ 6);/* Korean */
+#else
+		    strstrmatch(sf->encoding_name->enc_name,"johab")!=NULL ? 6 :
+		    sf->encoding_name->is_korean ?			     5 :
+		    sf->encoding_name->is_japanese ?			     2 :
+		    sf->encoding_name->is_simplechinese ?		     3 :
+		    		4);	/* Big5 */
+#endif
 	    putlong(at->cmap,cjkpos);		/* offset from tab start to sub tab start */
 	}
 
@@ -4768,7 +4881,11 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
     int i, j, aborted, ebdtpos, eblcpos, offset;
     BDFFont *bdf;
 
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     if ( sf->encoding_name == em_symbol && format==ff_ttf )
+#else
+    if ( strmatch(sf->encoding_name->enc_name,"symbol")==0 && format==ff_ttf )
+#endif
 	format = ff_ttfsym;
 
     SFDefaultOS2Info(&sf->pfminfo,sf,sf->fontname);

@@ -2757,7 +2757,11 @@ return( head );
 		    encs[i] = 0;
 		    if ( i<32 || (i>=0x7f && i<0xa0))
 			encs[i] = i;
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 		} else if ( (enc=UniFromName(tokbuf,ui_none,em_custom))!=-1 )
+#else
+		} else if ( (enc=UniFromName(tokbuf,ui_none,&custom))!=-1 )
+#endif
 		    encs[i] = enc;
 		else {
 		    names[i] = copy(tokbuf);

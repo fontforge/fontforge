@@ -616,7 +616,11 @@ static void bUnicodeFromName(Context *c) {
     else if ( c->a.vals[1].type!=v_str )
 	error( c, "Bad type for argument" );
     c->return_val.type = v_int;
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     c->return_val.u.ival = UniFromName(c->a.vals[1].u.sval,ui_none,em_custom);
+#else
+    c->return_val.u.ival = UniFromName(c->a.vals[1].u.sval,ui_none,&custom);
+#endif
 }
 
 static void bChr(Context *c) {
@@ -1633,6 +1637,7 @@ static void bSelectByATT(Context *c) {
 }
 
 /* **** Element Menu **** */
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 #define em_unknown (em_none-3)
 int FontEncodingByName(char *name) {
     Encoding *item=NULL;
@@ -1755,6 +1760,38 @@ static void bReencode(Context *c) {
     c->curfv->sf->changed_since_autosave = true;
     c->curfv->sf->changed_since_xuidchanged = true;
 }
+#else
+static void bReencode(Context *c) {
+    Encoding *new_map;
+    FontView *fvs;
+    int force = 0;
+
+    if ( c->a.argc!=2 && c->a.argc!=3 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str || ( c->a.argc==3 && c->a.vals[2].type!=v_int ))
+	error(c,"Bad argument type");
+    if ( c->a.argc==3 )
+	force = c->a.vals[2].u.ival;
+    new_map = FindOrMakeEncoding(c->a.vals[1].u.sval);
+    if ( new_map==NULL )
+	errors(c,"Unknown encoding", c->a.vals[1].u.sval);
+    if ( force )
+	SFForceEncoding(c->curfv->sf,new_map);
+    else
+	SFReencodeFont(c->curfv->sf,new_map);
+    for ( fvs=c->curfv->sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+	free( fvs->selected );
+	fvs->selected = gcalloc(fvs->sf->charcnt,1);
+    }
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    if ( !no_windowing_ui )
+	FontViewReformatAll(c->curfv->sf);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+    c->curfv->sf->changed = true;
+    c->curfv->sf->changed_since_autosave = true;
+    c->curfv->sf->changed_since_xuidchanged = true;
+}
+#endif
 
 static void bSetCharCnt(Context *c) {
     int oldcnt = c->curfv->sf->charcnt, i;
@@ -5332,6 +5369,11 @@ static void ProcessScript(int argc, char *argv[], FILE *script) {
 
     no_windowing_ui = true;
     running_script = true;
+
+#ifdef FONTFORGE_CONFIG_ICONV_ENCODING
+    if ( default_encoding==NULL )
+	default_encoding = FindOrMakeEncoding("ISO-8859-1");
+#endif
 
     VerboseCheck();
 

@@ -27,6 +27,7 @@
 #ifndef _CONFIG_FONTFORGE_H_
 #define _CONFIG_FONTFORGE_H_
 
+/*  !!!!!!!!!!!!!!!!! Experimental. Don't try to use it yet !!!!!!!!!!!!!!!!! */
 /* FontForge can be configured with a windowing UI based on my widgets (gdraw)*/
 /*  the gtk widget set, or finally with no windowing UI.                      */
 /*  It is probably best to used gtk if it is available			      */
@@ -44,6 +45,18 @@
 #elif !defined(FONTFORGE_CONFIG_GDRAW)
 /* If nothing defined, default to traditional setting. At least for now       */
 # define FONTFORGE_CONFIG_GDRAW
+#endif
+
+/*  !!!!!!!!!!!!!!!!! Experimental. But please try this one !!!!!!!!!!!!!!!!! */
+/* FontForge can use the encodings built into gdraw, or it can use the iconv  */
+/*  encodings.						                      */
+/*									      */
+/* #define FONTFORGE_CONFIG_ICONV_ENCODING				      */
+/*									      */
+/* Can be set from configure --with-iconv				      */
+#ifdef FONTFORGE_CONFIG_GTK	/* If gdraw is not available, must use iconv */
+# undef FONTFORGE_CONFIG_ICONV_ENCODING
+# define FONTFORGE_CONFIG_ICONV_ENCODING
 #endif
 
 /* Making FontForge handle more of the capabilities of type3 & svg fonts is not*/

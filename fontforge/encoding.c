@@ -34,8 +34,6 @@
 #include <gio.h>
 #include <gresource.h>
 
-static int enc_num = em_base;
-
 static int32 tex_base_encoding[] = {
     0x0000, 0x02d9, 0xfb01, 0xfb02, 0x2044, 0x02dd, 0x0141, 0x0142,
     0x02db, 0x02da, 0x000a, 0x02d8, 0x2212, 0x000d, 0x017d, 0x017e,
@@ -70,8 +68,251 @@ static int32 tex_base_encoding[] = {
     0x00f0, 0x00f1, 0x00f2, 0x00f3, 0x00f4, 0x00f5, 0x00f6, 0x00f7,
     0x00f8, 0x00f9, 0x00fa, 0x00fb, 0x00fc, 0x00fd, 0x00fe, 0x00ff
 };
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
+
+static int enc_num = em_base;
+
 static Encoding texbase = { em_base, "TeX-Base-Encoding", 256, tex_base_encoding, NULL, NULL, 1 };
 Encoding *enclist = &texbase;
+#else
+static int32 unicode_from_MacSymbol[] = {
+  0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007,
+  0x0008, 0x0009, 0x000a, 0x000b, 0x000c, 0x000d, 0x000e, 0x000f,
+  0x0010, 0x0011, 0x0012, 0x0013, 0x0014, 0x0015, 0x0016, 0x0017,
+  0x0018, 0x0019, 0x001a, 0x001b, 0x001c, 0x001d, 0x001e, 0x001f,
+  0x0020, 0x0021, 0x2200, 0x0023, 0x2203, 0x0025, 0x0026, 0x220d,
+  0x0028, 0x0029, 0x2217, 0x002b, 0x002c, 0x2212, 0x002e, 0x002f,
+  0x0030, 0x0031, 0x0032, 0x0033, 0x0034, 0x0035, 0x0036, 0x0037,
+  0x0038, 0x0039, 0x003a, 0x003b, 0x003c, 0x003d, 0x003e, 0x003f,
+  0x2245, 0x0391, 0x0392, 0x03a7, 0x0394, 0x0395, 0x03a6, 0x0393,
+  0x0397, 0x0399, 0x03d1, 0x039a, 0x039b, 0x039c, 0x039d, 0x039f,
+  0x03a0, 0x0398, 0x03a1, 0x03a3, 0x03a4, 0x03a5, 0x03c2, 0x03a9,
+  0x039e, 0x03a8, 0x0396, 0x005b, 0x2234, 0x005d, 0x22a5, 0x005f,
+  0xf8e5, 0x03b1, 0x03b2, 0x03c7, 0x03b4, 0x03b5, 0x03c6, 0x03b3,
+  0x03b7, 0x03b9, 0x03d5, 0x03ba, 0x03bb, 0x03bc, 0x03bd, 0x03bf,
+  0x03c0, 0x03b8, 0x03c1, 0x03c3, 0x03c4, 0x03c5, 0x03d6, 0x03c9,
+  0x03be, 0x03c8, 0x03b6, 0x007b, 0x007c, 0x007d, 0x223c, 0x007f,
+  0x0080, 0x0081, 0x0082, 0x0083, 0x0084, 0x0085, 0x0086, 0x0087,
+  0x0088, 0x0089, 0x008a, 0x008b, 0x008c, 0x008d, 0x008e, 0x008f,
+  0x0090, 0x0091, 0x0092, 0x0093, 0x0094, 0x0095, 0x0096, 0x0097,
+  0x0098, 0x0099, 0x009a, 0x009b, 0x009c, 0x009d, 0x009e, 0x009f,
+  0x0000, 0x03d2, 0x2032, 0x2264, 0x2044, 0x221e, 0x0192, 0x2663,
+  0x2666, 0x2665, 0x2660, 0x2194, 0x2190, 0x2191, 0x2192, 0x2193,
+  0x00b0, 0x00b1, 0x2033, 0x2265, 0x00d7, 0x221d, 0x2202, 0x2022,
+  0x00f7, 0x2260, 0x2261, 0x2248, 0x2026, 0xf8e6, 0xf8e7, 0x21b5,
+  0x2135, 0x2111, 0x211c, 0x2118, 0x2297, 0x2295, 0x2205, 0x2229,
+  0x222a, 0x2283, 0x2287, 0x2284, 0x2282, 0x2286, 0x2208, 0x2209,
+  0x2220, 0x2207, 0x00ae, 0x00a9, 0x2122, 0x220f, 0x221a, 0x22c5,
+  0x00ac, 0x2227, 0x2228, 0x21d4, 0x21d0, 0x21d1, 0x21d2, 0x21d3,
+  0x22c4, 0x2329, 0xf8e8, 0xf8e9, 0xf8ea, 0x2211, 0xf8eb, 0xf8ec,
+  0xf8ed, 0xf8ee, 0xf8ef, 0xf8f0, 0xf8f1, 0xf8f2, 0xf8f3, 0xf8f4,
+  0xf8ff, 0x232a, 0x222b, 0x2320, 0xf8f5, 0x2321, 0xf8f6, 0xf8f7,
+  0xf8f8, 0xf8f9, 0xf8fa, 0xf8fb, 0xf8fc, 0xf8fd, 0xf8fe, 0x02c7
+};
+
+/* I don't think iconv provides encodings for zapfdingbats nor jis201 */
+/*  Perhaps I should list them here for compatability, but I think I'll just */
+/*  leave them out. I doubt they get used.				     */
+static Encoding texbase = { "TeX-Base-Encoding", 256, tex_base_encoding, NULL, NULL, 1, 1, 1, 1 };
+       Encoding custom = { "Custom", 0, NULL, NULL, &texbase,			  1, 1, 0, 0, 0, 0, 0, 1, 0, 0 };
+static Encoding original = { "Original", 0, NULL, NULL, &custom,		  1, 1, 0, 0, 0, 0, 0, 0, 1, 0 };
+static Encoding compact = { "Compacted", 0, NULL, NULL, &original,		  1, 1, 0, 0, 0, 0, 0, 0, 0, 1 };
+static Encoding unicodebmp = { "UnicodeBmp", 65536, NULL, NULL, &compact, 	  1, 1, 0, 0, 1, 1, 0, 0, 0, 0 };
+static Encoding unicodefull = { "UnicodeFull", 17*65536, NULL, NULL, &unicodebmp, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0 };
+static Encoding adobestd = { "AdobeStandard", 256, unicode_from_adobestd, AdobeStandardEncoding, &unicodefull,
+										  1, 1, 1, 1, 0, 0, 1, 0, 0, 0 };
+static Encoding symbol = { "Symbol", 256, unicode_from_MacSymbol, NULL, &adobestd,1, 1, 1, 1, 0, 0, 1, 0, 0, 0 };
+Encoding *enclist = &symbol;
+
+static int TryEscape( Encoding *enc,char *escape_sequence ) {
+    char from[20], ucs2[20];
+    size_t fromlen, tolen;
+    char *fpt, *upt;
+    int i, j, low;
+    int esc_len = strlen(escape_sequence);
+
+    strcpy(from,escape_sequence);
+
+    enc->has_2byte = false;
+    low = -1;
+    for ( i=0; i<256; ++i ) if ( i!=escape_sequence[0] ) {
+	for ( j=0; j<256; ++j ) {
+	    from[esc_len] = i; from[esc_len+1] = j; from[esc_len+2] = 0;
+	    fromlen = esc_len+2;
+	    fpt = from;
+	    upt = ucs2;
+	    tolen = sizeof(ucs2);
+	    if ( iconv( enc->tounicode , &fpt, &fromlen, &upt, &tolen )!= (size_t) (-1) &&
+		    upt-ucs2==2 /* Exactly one character */ ) {
+		if ( low==-1 ) {
+		    enc->low_page = low = i;
+		    enc->has_2byte = true;
+		}
+		enc->high_page = i;
+	break;
+	    }
+	}
+    }
+    if ( enc->low_page==enc->high_page )
+	enc->has_2byte = false;
+    if ( enc->has_2byte ) {
+	strcpy(enc->iso_2022_escape, escape_sequence);
+	enc->iso_2022_escape_len = esc_len;
+    }
+return( enc->has_2byte );
+}
+
+Encoding *FindOrMakeEncoding(const char *name) {
+    Encoding *enc;
+    char buffer[20];
+    const char *iconv_name;
+    Encoding temp;
+    uint8 good[256];
+    int i, j, any, all;
+    char from[8], ucs2[20];
+    uint fromlen, tolen;
+    char *fpt, *upt;
+    /* iconv is not case sensitive */
+
+    if ( strncmp(name,"iso8859_",8)==0 || strncmp(name,"koi8_",5)==0 ) {
+	/* Fixup for old naming conventions */
+	strncpy(buffer,name,sizeof(buffer));
+	*strchr(buffer,'_') = '-';
+	name = buffer;
+    }
+    for ( enc=enclist; enc!=NULL; enc=enc->next )
+	if ( strmatch(name,enc->enc_name)==0 ||
+		(enc->iconv_name!=NULL && strmatch(name,enc->iconv_name)==0))
+return( enc );
+    if ( strmatch(name,"unicode")==0 )
+return( &unicodebmp );
+    if ( strmatch(name,"unicode4")==0 )
+return( &unicodefull );
+
+    iconv_name = name;
+    /* Mac seems to work ok */
+    if ( strcmp(name,"win")==0 )
+	iconv_name = "MS-ANSI";		/* "WINDOWS-1252";*/
+    else if ( strcmp(name,"jis208")==0 )
+	iconv_name = "ISO-2022-JP";
+    else if ( strcmp(name,"jis212")==0 )
+	iconv_name = "ISO-2022-JP-2";
+    else if ( strcmp(name,"ksc5601")==0 )
+	iconv_name = "ISO-2022-KR";
+    else if ( strcmp(name,"gb2312pk")==0 )
+	iconv_name = "ISO-2022-CN";
+    else if ( strcmp(name,"wansung")==0 )
+	iconv_name = "EUC-KR";
+    else if ( strcmp(name,"gb2312pk")==0 )
+	iconv_name = "EUC-CN";
+
+/* Escape sequences:					*/
+/*	ISO-2022-CN:     \e $ ) A ^N			*/
+/*	ISO-2022-KR:     \e $ ) C ^N			*/
+/*	ISO-2022-JP:     \e $ B				*/
+/*	ISO-2022-JP-2:   \e $ ( D			*/
+/*	ISO-2022-JP-3:   \e $ ( O			*/ /* Capital "O", not zero */
+/*	ISO-2022-CN-EXT: \e $ ) E ^N			*/ /* Not sure about this, also uses CN escape */
+
+    memset(&temp,0,sizeof(temp));
+    temp.builtin = true;
+    temp.tounicode = iconv_open("UCS2",iconv_name);
+    if ( temp.tounicode==NULL )
+return( NULL );			/* Iconv doesn't recognize this name */
+    temp.fromunicode = iconv_open(iconv_name,"UCS2");
+
+    memset(good,0,sizeof(good));
+    any = false; all = true;
+    for ( i=1; i<256; ++i ) {
+	from[0] = i; from[1] = 0;
+	fromlen = 1;
+	fpt = from;
+	upt = ucs2;
+	tolen = sizeof(ucs2);
+	if ( iconv( temp.tounicode , &fpt, &fromlen, &upt, &tolen )!= (size_t) (-1)) {
+	    good[i] = true;
+	    any = true;
+	} else
+	    all = false;
+    }
+    if ( any )
+	temp.has_1byte = true;
+    if ( all )
+	temp.only_1byte = true;
+
+    if ( !all ) {
+	for ( i=temp.has_1byte; i<256; ++i ) if ( !good[i] ) {
+	    for ( j=0; j<256; ++j ) {
+		from[0] = i; from[1] = j; from[2] = 0;
+		fromlen = 2;
+		fpt = from;
+		upt = ucs2;
+		tolen = sizeof(ucs2);
+		if ( iconv( temp.tounicode , &fpt, &fromlen, &upt, &tolen )!= (size_t) (-1) &&
+			upt-ucs2==2 /* Exactly one character */ ) {
+		    if ( temp.low_page==-1 )
+			temp.low_page = i;
+		    temp.high_page = i;
+		    temp.has_2byte = true;
+	    break;
+		}
+	    }
+	}
+	if ( temp.low_page==temp.high_page ) {
+	    temp.has_2byte = false;
+	    temp.low_page = temp.high_page = -1;
+	}
+	if ( !temp.has_2byte && !good[033]/* escape */ ) {
+	    if ( strstr(iconv_name,"2022")!=NULL &&
+		    strstr(iconv_name,"JP3")!=NULL &&
+		    TryEscape( &temp,"\33$(O" ))
+		;
+	    else if ( strstr(iconv_name,"2022")!=NULL &&
+		    strstr(iconv_name,"JP2")!=NULL &&
+		    TryEscape( &temp,"\33$(D" ))
+		;
+	    else if ( strstr(iconv_name,"2022")!=NULL &&
+		    strstr(iconv_name,"JP")!=NULL &&
+		    TryEscape( &temp,"\33$B" ))
+		;
+	    else if ( strstr(iconv_name,"2022")!=NULL &&
+		    strstr(iconv_name,"KR")!=NULL &&
+		    TryEscape( &temp,"\33$)C\16" ))
+		;
+	    else if ( strstr(iconv_name,"2022")!=NULL &&
+		    strstr(iconv_name,"CN")!=NULL &&
+		    TryEscape( &temp,"\33$)A\16" ))
+		;
+	}
+    }
+    if ( !temp.has_1byte && !temp.has_2byte )
+return( NULL );
+
+    enc = chunkalloc(sizeof(Encoding));
+    *enc = temp;
+    enc->enc_name = copy(name);
+    if ( iconv_name!=name )
+	enc->iconv_name = copy(name);
+    enc->next = enclist;
+    enc->builtin = true;
+    enclist = enc;
+    if ( enc->has_2byte )
+	enc->char_cnt = (enc->high_page<<8) + 256;
+    else {
+	enc->char_cnt = 256;
+	enc->only_1byte = true;
+    }
+    if ( strstrmatch(iconv_name,"JP")!=NULL )
+	enc->is_japanese = true;
+    else if ( strstrmatch(iconv_name,"KR")!=NULL )
+	enc->is_korean = true;
+    else if ( strstrmatch(iconv_name,"CN")!=NULL )
+	enc->is_simplechinese = true;
+    else if ( strstrmatch(iconv_name,"BIG")!=NULL && strstrmatch(iconv_name,"5")!=NULL )
+	enc->is_tradchinese = true;
+return( enc );
+}
+#endif
 
 static char *getPfaEditEncodings(void) {
     static char *encfile=NULL;
@@ -192,7 +433,9 @@ return;
     }
 
     for ( i=0, prev=NULL, item=head; item!=NULL; prev = item, item=item->next, ++i ) {
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 	item->enc_num = ++enc_num;
+#endif
 	if ( item->enc_name==NULL ) {
 	    if ( no_windowing_ui ) {
 		GWidgetErrorR(_STR_BadEncFormat,_STR_UnnamableEncoding);
@@ -322,6 +565,7 @@ static void DeleteEncoding(Encoding *me) {
     if ( me->builtin )
 return;
 
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     if ( default_encoding == me->enc_num )
 	default_encoding = e_iso8859_1;
     for ( fv = fv_list; fv!=NULL; fv = fv->next ) {
@@ -331,6 +575,17 @@ return;
 		bdf->encoding_name = em_none;
 	}
     }
+#else
+    if ( default_encoding == me )
+	default_encoding = FindOrMakeEncoding("iso8859-1");
+    for ( fv = fv_list; fv!=NULL; fv = fv->next ) {
+	if ( fv->sf->encoding_name==me ) {
+	    fv->sf->encoding_name = &custom;
+	    for ( bdf=fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
+		bdf->encoding_name = &custom;
+	}
+    }
+#endif
     if ( me==enclist )
 	enclist = me->next;
     else {
@@ -494,14 +749,21 @@ Encoding *MakeEncoding(SplineFont *sf) {
     int i;
     Encoding *item, *temp;
 
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     if ( sf->encoding_name!=em_none || sf->charcnt>=1500 )
 return(NULL);
+#else
+    if ( sf->encoding_name!=&custom || sf->charcnt>=1500 )
+return(NULL);
+#endif
 
     name = GWidgetAskStringR(_STR_PleaseNameEnc,NULL,_STR_PleaseNameEnc);
     if ( name==NULL )
 return(NULL);
     item = gcalloc(1,sizeof(Encoding));
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     item->enc_num = ++enc_num;
+#endif
     item->enc_name = cu_copy(name);
     free(name);
     item->char_cnt = sf->charcnt;
@@ -1460,7 +1722,11 @@ return(NULL);
     new->changed = new->changed_since_autosave = true;
     new->display_antialias = cidmaster->display_antialias;
     new->fv = cidmaster->fv;
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     new->encoding_name = em_none;
+#else
+    new->encoding_name = &custom;
+#endif
     /* Don't copy the grid splines, there won't be anything meaningfull at top level */
     /*  and won't know which font to copy from below */
     new->bitmaps = cidmaster->bitmaps;		/* should already be flattened */
@@ -1801,6 +2067,7 @@ return(NULL);
 return( cidmaster );
 }
 
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 int CountOfEncoding(enum charset encoding_name) {
     Encoding *item=NULL;
 
@@ -1823,6 +2090,11 @@ return( item->char_cnt );
     }
 return( 0 );
 }
+#else
+int CountOfEncoding(Encoding *encoding_name) {
+return( encoding_name->char_cnt );
+}
+#endif
 
 static void BDFsToo(SplineFont *sf,int cnt) {
     BDFFont *bdf;
@@ -1861,7 +2133,11 @@ static void _SFCompactFont(SplineFont *sf) {
     sf->chars = newchars;
     sf->charcnt = cnt;
     sf->old_encname = sf->encoding_name;
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     sf->encoding_name = em_none;
+#else
+    sf->encoding_name = &compact;
+#endif
     sf->compacted = true;
     sf->encodingchanged = true;
     BDFsToo(sf,cnt);
@@ -1960,6 +2236,7 @@ char *SFEncodingName(SplineFont *sf) {
 	sprintf( buffer, "%.50s-%.50s-%d", sf->cidregistry, sf->ordering, sf->supplement );
 return( copy( buffer ));
     }
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     switch ( sf->encoding_name ) {
       case em_custom:
 return( copy( "Custom" ));
@@ -1970,4 +2247,7 @@ return( copy( "Original" ));
       default:
 return( copy( EncodingName(sf->encoding_name)));
     }
+#else
+return( copy( sf->encoding_name->enc_name ));
+#endif
 }

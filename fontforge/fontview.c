@@ -3560,20 +3560,56 @@ void FontViewMenu_ChangeChar(GtkMenuItem *menuitem, gpointer user_data) {
 	else if ( _CC_ISNextDef ) {
 	    for ( ++pos; pos<sf->charcnt && sf->chars[pos]==NULL; ++pos );
 	    if ( pos>=sf->charcnt ) {
-		if ( sf->encoding_name==em_big5 && FVAnyCharSelected(fv)<0xa140 )
+		int selpos = FVAnyCharSelected(fv);
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
+		if ( sf->encoding_name==em_big5 && selpos<0xa140 )
 		    pos = 0xa140;
-		else if ( sf->encoding_name==em_big5hkscs && FVAnyCharSelected(fv)<0x8140 )
+		else if ( sf->encoding_name==em_big5hkscs && selpos<0x8140 )
 		    pos = 0x8140;
-		else if ( sf->encoding_name==em_johab && FVAnyCharSelected(fv)<0x8431 )
+		else if ( sf->encoding_name==em_johab && selpos<0x8431 )
 		    pos = 0x8431;
-		else if ( sf->encoding_name==em_wansung && FVAnyCharSelected(fv)<0xa1a1 )
+		else if ( sf->encoding_name==em_wansung && selpos<0xa1a1 )
 		    pos = 0xa1a1;
-		else if ( sf->encoding_name==em_jisgb && FVAnyCharSelected(fv)<0xa1a1 )
+		else if ( sf->encoding_name==em_jisgb && selpos<0xa1a1 )
 		    pos = 0xa1a1;
-		else if ( sf->encoding_name==em_sjis && FVAnyCharSelected(fv)<0x8100 )
+		else if ( sf->encoding_name==em_sjis && selpos<0x8100 )
 		    pos = 0x8100;
-		else if ( sf->encoding_name==em_sjis && FVAnyCharSelected(fv)<0xb000 )
+		else if ( sf->encoding_name==em_sjis && selpos<0xb000 )
 		    pos = 0xe000;
+#else
+		char *iconv_name = sf->encoding_name->iconv_name ? sf->encoding_name->iconv_name :
+			sf->encoding_name->enc_name;
+		if ( strstr(iconv_name,"2022")!=NULL && selpos<0x2121 )
+		    pos = 0x2121;
+		else if ( strstr(iconv_name,"EUC")!=NULL && selpos<0xa1a1 )
+		    pos = 0xa1a1;
+		else if ( sf->encoding_name->is_tradchinese ) {
+		    if ( strstrmatch(sf->encoding_name->enc_name,"HK")!=NULL &&
+			    selpos<0x8140 )
+			pos = 0x8140;
+		    else
+			pos = 0xa140;
+		} else if ( sf->encoding_name->is_japanese ) {
+		    if ( strstrmatch(iconv_name,"SJIS")!=NULL ||
+			    (strstrmatch(iconv_name,"JIS")!=NULL && strstrmatch(iconv_name,"SHIFT")!=NULL )) {
+			if ( selpos<0x8100 )
+			    pos = 0x8100;
+			else if ( selpos<0xb000 )
+			    pos = 0xb000;
+		    }
+		} else if ( sf->encoding_name->is_korean ) {
+		    if ( strstrmatch(iconv_name,"JOHAB")!=NULL ) {
+			if ( selpos<0x8431 )
+			    pos = 0x8431;
+		    } else {	/* Wansung, EUC-KR */
+			if ( selpos<0xa1a1 )
+			    pos = 0xa1a1;
+		    }
+		} else if ( sf->encoding_name->is_simplechinese ) {
+		    if ( strmatch(iconv_name,"EUC-CN")==0 && selpos<0xa1a1 )
+			selpos = 0xa1a1;
+		}
+#endif
 		if ( pos>=sf->charcnt )
 return;
 	    }
@@ -4030,14 +4066,14 @@ static void FVMenuGlyphLabel(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     GDrawRequestExpose(fv->v,NULL,false);
 # elif defined(FONTFORGE_CONFIG_GTK)
-void FontViewMenu_PixelSize(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_GlyphLabel(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     G_CONST_RETURN gchar *name = gtk_widget_get_name(menuitem);
 
     fv->magnify = 1;
-    if ( strstr(name,"glyphimage")!=NULL )
+    if ( strstr(name,"glyph_image")!=NULL )
 	default_fv_glyphlabel = fv->glyphlabel = gl_glyph;
-    else if ( strstr(name,"glyphname")!=NULL )
+    else if ( strstr(name,"glyph_name")!=NULL )
 	default_fv_glyphlabel = fv->glyphlabel = gl_name;
     else if ( strstr(name,"unicode")!=NULL )
 	default_fv_glyphlabel = fv->glyphlabel = gl_unicode;
@@ -4793,7 +4829,11 @@ void FontViewMenu_InsertBlank(GtkMenuItem *menuitem, gpointer user_data) {
     if ( cidmaster==NULL || cidmaster->subfontcnt>=255 )	/* Open type allows 1 byte to specify the fdselect */
 return;
     map = FindCidMap(cidmaster->cidregistry,cidmaster->ordering,cidmaster->supplement,cidmaster);
+#if !defined(FONTFORGE_CONFIG_ICONV_ENCODING)
     sf = SplineFontBlank(em_none,MaxCID(map));
+#else
+    sf = SplineFontBlank(&custom,MaxCID(map));
+#endif
     sf->cidmaster = cidmaster;
     sf->display_antialias = fv->sf->display_antialias;
     sf->display_bbsized = fv->sf->display_bbsized;
@@ -6696,6 +6736,7 @@ return;
 }
 #endif
 
+#if !defined(FONTFORGE_CONFIG_ICONV_ENCODING)
 int32 UniFromEnc(int enc, enum charset encname) {
     int32 uni = -1;
 
@@ -6924,6 +6965,89 @@ return( -1 );
     }
 return( ret );
 }
+#else
+int32 UniFromEnc(int enc, Encoding *encname) {
+    char from[20];
+    short to[20];
+    char *fpt, *tpt;
+    size_t fromlen, tolen;
+
+    if ( encname->is_custom || encname->is_original || encname->is_compact )
+return( -1 );
+    if ( enc>=encname->char_cnt )
+return( -1 );
+    if ( encname->is_unicodebmp || encname->is_unicodefull )
+return( enc );
+    if ( encname->unicode!=NULL )
+return( encname->unicode[enc] );
+    else if ( encname->tounicode ) {
+	fpt = from; tpt = (char *) to; tolen = sizeof(to);
+	if ( encname->has_1byte && enc<256 ) {
+	    *fpt = enc;
+	    fromlen = 1;
+	} else if ( encname->has_2byte ) {
+	    if ( encname->iso_2022_escape_len )
+		strncpy(from,encname->iso_2022_escape,encname->iso_2022_escape_len );
+	    fromlen = encname->iso_2022_escape_len;
+	    from[fromlen++] = enc>>8;
+	    from[fromlen++] = enc&0xff;
+	}
+	if ( iconv(encname->tounicode,&fpt,&fromlen,&tpt,&tolen)==(size_t) -1 )
+return( -1 );
+	if ( tpt-(char *) to == 2 )
+return( to[0] );
+	else if ( tpt-(char *) to == 4 )
+return( ((to[0]-0xd800)<<10) + (to[1]-0xdc00) + 0x10000 );
+    }
+return( -1 );
+}
+
+int32 EncFromUni(int32 uni, Encoding *enc) {
+    short from[20];
+    unsigned char to[20];
+    char *fpt, *tpt;
+    size_t fromlen, tolen;
+    int i;
+
+    if ( enc->is_custom || enc->is_original || enc->is_compact )
+return( -1 );
+    if ( enc->is_unicodebmp || enc->is_unicodefull )
+return( uni<enc->char_cnt ? uni : -1 );
+
+    if ( enc->unicode!=NULL ) {
+	for ( i=0; i<enc->char_cnt; ++i ) {
+	    if ( enc->unicode[i]==uni )
+return( i );
+	}
+return( -1 );
+    } else if ( enc->fromunicode!=NULL ) {
+	if ( uni<0x10000 ) {
+	    from[0] = uni;
+	    fromlen = 2;
+	} else {
+	    uni -= 0x10000;
+	    from[0] = 0xd800 + (uni>>10);
+	    from[1] = 0xdc00 + (uni&0x3ff);
+	    fromlen = 4;
+	}
+	fpt = (char *) from; tpt = (char *) to; tolen = sizeof(to);
+	iconv(enc->fromunicode,NULL,NULL,NULL,NULL);	/* reset shift in/out, etc. */
+	if ( iconv(enc->fromunicode,&fpt,&fromlen,&tpt,&tolen)==(size_t) -1 )
+return( -1 );
+	if ( tpt-(char *) to == 1 )
+return( to[0] );
+	if ( enc->iso_2022_escape_len!=0 ) {
+	    if ( tpt-(char *) to == enc->iso_2022_escape_len+2 &&
+		    strncmp((char *) to,enc->iso_2022_escape,enc->iso_2022_escape_len)==0 )
+return( (to[enc->iso_2022_escape_len]<<8) | to[enc->iso_2022_escape_len+1] );
+	} else {
+	    if ( tpt-(char *) to == 2 )
+return( (to[0]<<8) | to[1] );
+	}
+    }
+return( -1 );
+}
+#endif
 
 int32 EncFromSF(int32 uni, SplineFont *sf) {
     int enc = EncFromUni(uni,sf->encoding_name);
@@ -7088,7 +7212,11 @@ return( ssf->chars[i] );
     }
 
     if ( (sc = sf->chars[i])==NULL ) {
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 	if (( sf->encoding_name == em_unicode || sf->encoding_name == em_unicode4 ) &&
+#else
+	if (( sf->encoding_name->is_unicodebmp || sf->encoding_name->is_unicodefull ) &&
+#endif
 		( i>=0xe000 && i<=0xf8ff ) &&
 		( sf->uni_interp==ui_ams || sf->uni_interp==ui_trad_chinese ) &&
 		( real_uni = (sf->uni_interp==ui_ams ? amspua : cns14pua)[i-0xe000])!=0 ) {
@@ -7271,6 +7399,7 @@ return( NULL );
 return( rot );
 }
 
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 static int Use2ByteEnc(FontView *fv,SplineChar *sc, unichar_t *buf,FontMods *mods) {
     int ch1 = sc->enc>>8, ch2 = sc->enc&0xff, newch;
     int enc = fv->sf->encoding_name;
@@ -7401,6 +7530,7 @@ return( false );
  goto retry;
     }
 }
+#endif
 
 /* Mathmatical Alphanumeric Symbols in the 1d400-1d7ff range are styled */
 /*  variants on latin, greek, and digits				*/
@@ -7556,7 +7686,9 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	    unichar_t buf[60]; char cbuf[8];
 	    Color fg = 0;
 	    FontMods *mods=NULL;
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 	    static FontMods for_charset;
+#endif
 	    extern const int amspua[];
 	    int uni;
 	    if ( sc==NULL )
@@ -7580,7 +7712,12 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		styles = _uni_sans;
 	      break;
 	      case gl_encoding:
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 		if ( fv->sf->encoding_name<em_first2byte || fv->sf->encoding_name>=em_base )
+#else
+		if ( fv->sf->encoding_name->only_1byte ||
+			(fv->sf->encoding_name->has_1byte && index<256))
+#endif
 		    sprintf(cbuf,"%02x",index);
 		else
 		    sprintf(cbuf,"%04x",index);
@@ -7590,8 +7727,10 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	      case gl_glyph:
 		if ( uni==0xad )
 		    buf[0] = '-';
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 		else if ( Use2ByteEnc(fv,sc,buf,&for_charset))
 		    mods = &for_charset;
+#endif
 		else if ( uni!=-1 && uni<65536 )
 		    buf[0] = uni;
 		else if ( uni>=0x1d400 && uni<=0x1d7ff ) {
@@ -7860,7 +7999,12 @@ return;
 	    ++map;
 	}
 	sprintf( buffer, "%-5u (0x%04x) ", localenc, localenc );
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     } else if ( sf->encoding_name<em_first2byte || sf->encoding_name>=em_base )
+#else
+    } else if ( sf->encoding_name->only_1byte ||
+	    (sf->encoding_name->has_1byte && fv->end_pos<256))
+#endif
 	sprintf( buffer, "%-3d (0x%02x) ", fv->end_pos, fv->end_pos );
     else
 	sprintf( buffer, "%-5d (0x%04x) ", fv->end_pos, fv->end_pos );
@@ -8121,7 +8265,9 @@ void SCPreparePopup(GWindow gw,SplineChar *sc) {
     static unichar_t space[810];
     char cspace[162];
     int upos=-1;
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     int enc = sc->parent->encoding_name;
+#endif
     int done = false;
     int localenc = sc->enc;
     struct remap *map = sc->parent->remap;
@@ -8148,10 +8294,12 @@ void SCPreparePopup(GWindow gw,SplineChar *sc) {
 	    upos = 0x11a8 + sc->jamo-(19+21+1);
     }
 #endif
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     else if (( sc->enc<32 || (sc->enc>=127 && sc->enc<160) ) &&
 	    (enc = sc->parent->encoding_name)!=em_none &&
 	    (enc<=em_zapfding || (enc>=em_big5 && enc<=em_unicode)))
 	upos = sc->enc;
+#endif
     else {
 #if defined( _NO_SNPRINTF ) || defined( __VMS )
 	sprintf( cspace, "%u 0x%x U+???? \"%.25s\" ", localenc, localenc, sc->name==NULL?"":sc->name );
@@ -8384,8 +8532,6 @@ static void FVResize(FontView *fv,GEvent *event) {
 
     if ( fv->colcnt!=0 )
 	topchar = fv->rowoff*fv->colcnt;
-    else if ( fv->sf->encoding_name>=em_jis208 && fv->sf->encoding_name<=em_gb2312 )
-	topchar = 1;
     else if ( fv->sf->top_enc!=-1 && fv->sf->top_enc<fv->sf->charcnt )
 	topchar = fv->sf->top_enc;
     else {

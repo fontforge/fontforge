@@ -2033,7 +2033,7 @@ SplineFont *SplineFontEmpty(void) {
 #ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     sf->encoding_name = em_none;
 #else
-    sf->encoding_name = em_none;
+    sf->encoding_name = &custom;
 #endif
     sf->top_enc = -1;
     sf->macstyle = -1;
@@ -2099,9 +2099,9 @@ SplineFont *SplineFontNew(void) {
     SplineFont *sf;
     /* Create an ISO 8859-1 (Latin1) font, actually whatever default_encoding is */
     int enclen=256;
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     Encoding *item=NULL;
 
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     if ( default_encoding>=em_base ) {
 	for ( item=enclist; item!=NULL && item->enc_num!=default_encoding; item=item->next );
 	if ( item==NULL )

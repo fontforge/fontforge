@@ -125,7 +125,11 @@ typedef struct fontdict {
     struct private *private;
     unsigned int wasbinary: 1;
     unsigned int wascff: 1;
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     enum charset encoding_name;
+#else
+    Encoding *encoding_name;
+#endif
 /* CID stuff */
     int fdcnt;			/* For the underlying dictionaries */
     struct fontdict **fds;

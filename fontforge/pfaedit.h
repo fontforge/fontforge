@@ -43,19 +43,10 @@
 #endif
 #include "splinefont.h"
 
-typedef struct enc {
-    int enc_num;
-    char *enc_name;
-    int char_cnt;
-    int32 *unicode;
-    char **psnames;
-    struct enc *next;
-    unsigned int builtin: 1;
-} Encoding;
-
 static const int unicode4_size = 17*65536;
     /* Unicode goes up to 0x10ffff */
 
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 enum { em_base = 0x100,		/* an addition to enum charset, used as the base value for the encoding list above */
 	em_sjis = em_max,
 	em_wansung,
@@ -68,6 +59,7 @@ enum { em_base = 0x100,		/* an addition to enum charset, used as the base value 
 	em_compacted = (em_none-1),
 	em_original = (em_compacted-1)
     };
+#endif
 
 extern void IError(const char *fmt,...);
 
@@ -76,7 +68,11 @@ extern void CheckIsScript(int argc, char *argv[]);
 extern char *AdobeStandardEncoding[256];
 extern int psunicodenames_cnt;
 extern const char *psunicodenames[];
-extern unsigned short unicode_from_adobestd[256];
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
+extern uint16 unicode_from_adobestd[256];
+#else
+extern int32 unicode_from_adobestd[256];
+#endif
 extern struct psaltnames {
     char *name;
     int unicode;
@@ -92,7 +88,11 @@ extern const struct unicode_nameannot * const *const *_UnicodeNameAnnot;
 extern int default_fv_font_size;
 extern int default_fv_antialias;
 extern int default_fv_bbsized;
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 extern int default_encoding;
+#else
+extern Encoding *default_encoding, custom;
+#endif
 extern int adjustwidth;
 extern int adjustlbearing;
 extern int autohint_before_rasterize;

@@ -97,12 +97,21 @@ typedef struct printinfo {
     int lastfont, intext;
 } PI;
 
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 static struct printdefaults {
     enum charset last_cs;
     enum printtype pt;
     int pointsize;
     unichar_t *text;
 } pdefs[] = { { em_none, pt_fontdisplay }, { em_none, pt_chars }, { em_none, pt_fontsample }};
+#else
+static struct printdefaults {
+    Encoding *last_cs;
+    enum printtype pt;
+    int pointsize;
+    unichar_t *text;
+} pdefs[] = { { &custom, pt_fontdisplay }, { &custom, pt_chars }, { &custom, pt_fontsample }};
+#endif
 /* defaults for print from fontview, charview, metricsview */
 
 static void pdf_addobject(PI *pi) {
@@ -202,7 +211,6 @@ static int figure_fontdesc(PI *pi, struct fontdesc *fd, int fonttype, int fontst
     int capcnt=0, xhcnt=0, wcnt=0;
     double samewidth;
     int beyond_std = false;
-    extern unsigned short unicode_from_adobestd[];
     int fd_num = pi->next_object;
     int cidmax;
 
@@ -946,7 +954,11 @@ return;
     else
 	fprintf( pi->out, "%%%%Title: Character Displays from %s\n", pi->sf->fullname );
     fprintf( pi->out, "%%%%DocumentNeededResources: font Times-Bold\n" );
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     if ( pi->sf->encoding_name == em_unicode || pi->sf->encoding_name==em_unicode4 ) 
+#else
+    if ( pi->sf->encoding_name->is_unicodebmp || pi->sf->encoding_name->is_unicodefull )
+#endif
 	fprintf( pi->out, "%%%%DocumentNeededResources: font ZapfDingbats\n" );
     if ( pi->iscid && pi->fontfile!=NULL )
 	fprintf( pi->out, "%%%%DocumentNeededResources: ProcSet (CIDInit)\n" );
@@ -1489,6 +1501,7 @@ static SplineChar *findchar(PI *pi, int ch) {
 
     if ( ch<0 )
 return(NULL);
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     if ( sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4) {
 	if ( SCWorthOutputting(sf->chars[ch]))
 return( sf->chars[ch]);
@@ -1496,6 +1509,11 @@ return( sf->chars[ch]);
 	i = ch-((sf->encoding_name-em_unicodeplanes)<<16);
 	if ( SCWorthOutputting(sf->chars[i]))
 return( sf->chars[i]);
+#else
+    if ( sf->encoding_name->is_unicodebmp || sf->encoding_name->is_unicodefull) {
+	if ( SCWorthOutputting(sf->chars[ch]))
+return( sf->chars[ch]);
+#endif
     } else if ( ch>=65536 ) {
 return( NULL );
     } else if ( !pi->iscid ) {
@@ -3684,9 +3702,15 @@ return;
 }
 
 static int AllChars( SplineFont *sf, unichar_t *str, int istwobyte) {
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     int i, ch;
 
     if ( sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4 ) {
+#else
+    int i, ch;
+
+    if ( sf->encoding_name->is_unicodebmp || sf->encoding_name->is_unicodefull ) {
+#endif
 	while ( (ch = *str)!='\0' ) {
 	    if ( !SCWorthOutputting(sf->chars[ch]))
 return( false );
@@ -3787,8 +3811,12 @@ unichar_t *PrtBuildDef( SplineFont *sf, int istwobyte ) {
 		    ret[len] = '\n';
 		++len;
 	    }
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 	    if ( sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4 ||
 		    sf->encoding_name==em_koi8_r || sf->encoding_name==em_iso8859_5 ) {
+#else
+	    if ( SFGetChar(sf,0x411,NULL)!=NULL ) {
+#endif
 		if ( ret )
 		    ret[len] = '\n';
 		++len;
@@ -3837,11 +3865,16 @@ static void PIInit(PI *pi,FontView *fv,SplineChar *sc,void *mv) {
 	pi->sf = mv->fv->sf;
 #endif
     if ( pi->sf->cidmaster!=NULL ) pi->sf = pi->sf->cidmaster;
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     pi->twobyte = (pi->sf->encoding_name>=e_first2byte && pi->sf->encoding_name<em_base) ||
 		pi->sf->encoding_name>=em_unicodeplanes;
-    pi->wastwobyte = pi->twobyte;
     pi->isunicode = pi->sf->encoding_name==em_unicode;
-    pi->istype42cid = pi->sf->order2 && pi->sf->encoding_name==em_unicode;
+#else
+    pi->twobyte = pi->sf->encoding_name->has_2byte;
+    pi->isunicode = pi->sf->encoding_name->is_unicodebmp;
+#endif
+    pi->wastwobyte = pi->twobyte;
+    pi->istype42cid = pi->sf->order2 && pi->isunicode;
     pi->iscid = pi->sf->subfontcnt!=0 || pi->istype42cid;
     pi->pointsize = pdefs[di].pointsize;
     if ( pi->pointsize==0 )
