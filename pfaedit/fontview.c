@@ -2773,7 +2773,7 @@ static void FVShowInfo(FontView *fv) {
 }
 
 static void FVChar(FontView *fv,GEvent *event) {
-    int i,pos;
+    int i,pos, cnt;
 
 #if MyMemory
     if ( event->u.chr.keysym == GK_F2 ) {
@@ -2786,6 +2786,8 @@ static void FVChar(FontView *fv,GEvent *event) {
 #endif
 
     if ( event->u.chr.keysym == GK_Left ||
+	    event->u.chr.keysym == GK_Tab ||
+	    event->u.chr.keysym == GK_BackTab ||
 	    event->u.chr.keysym == GK_Up ||
 	    event->u.chr.keysym == GK_Right ||
 	    event->u.chr.keysym == GK_Down ||
@@ -2798,6 +2800,28 @@ static void FVChar(FontView *fv,GEvent *event) {
 	    event->u.chr.keysym == GK_End ||
 	    event->u.chr.keysym == GK_KP_End ) {
 	switch ( event->u.chr.keysym ) {
+	  case GK_Tab:
+	    pos = fv->end_pos;
+	    do {
+		if ( event->u.chr.state&ksm_shift )
+		    --pos;
+		else
+		    ++pos;
+		if ( pos>=fv->sf->charcnt ) pos = 0;
+		else if ( pos<0 ) pos = fv->sf->charcnt-1;
+	    } while ( pos!=fv->end_pos && !SCWorthOutputting(fv->sf->chars[pos]));
+	    if ( pos==fv->end_pos ) ++pos;
+	  break;
+#if GK_Tab!=GK_BackTab
+	  case GK_BackTab:
+	    pos = fv->end_pos;
+	    do {
+		--pos;
+		if ( pos<0 ) pos = fv->sf->charcnt-1;
+	    } while ( pos!=fv->end_pos && !SCWorthOutputting(fv->sf->chars[pos]));
+	    if ( pos==fv->end_pos ) --pos;
+	  break;
+#endif
 	  case GK_Left: case GK_KP_Left:
 	    pos = fv->end_pos-1;
 	  break;
@@ -2828,7 +2852,7 @@ static void FVChar(FontView *fv,GEvent *event) {
 	}
 	if ( pos<0 ) pos = 0;
 	if ( pos>=fv->sf->charcnt ) pos = fv->sf->charcnt-1;
-	if ( event->u.chr.state&ksm_shift ) {
+	if ( event->u.chr.state&ksm_shift && event->u.chr.keysym!=GK_Tab && event->u.chr.keysym!=GK_BackTab ) {
 	    FVReselect(fv,pos);
 	} else {
 	    FVDeselectAll(fv);
@@ -2841,7 +2865,20 @@ static void FVChar(FontView *fv,GEvent *event) {
 	FVScrollToChar(fv,pos);
     } else if ( event->u.chr.keysym == GK_Help ) {
 	MenuHelp(NULL,NULL,NULL);	/* Menu does F1 */
-    } else if ( event->u.chr.chars[0]=='\0' || event->u.chr.chars[1]!='\0' ) {
+    } else if ( event->u.chr.chars[0]=='\r' || event->u.chr.chars[0]=='\n' ) {
+	for ( i=cnt=0; i<fv->sf->charcnt && cnt<10; ++i ) if ( fv->selected[i] ) {
+	    SplineChar *sc = SFMakeChar(fv->sf,i);
+	    if ( fv->show==fv->filled ) {
+		CharViewCreate(sc,fv);
+	    } else {
+		BDFFont *bdf = fv->show;
+		if ( bdf->chars[pos]==NULL )
+		    bdf->chars[pos] = SplineCharRasterize(sc,bdf->pixelsize);
+		BitmapViewCreate(bdf->chars[pos],bdf,fv);
+	    }
+	    ++cnt;
+	}
+    } else if ( event->u.chr.chars[0]<=' ' || event->u.chr.chars[1]!='\0' ) {
 	/* Do Nothing */;
     } else {
 	if ( fv->sf->encoding_name==em_unicode || fv->sf->encoding_name==em_iso8859_1 ) {
@@ -2949,12 +2986,8 @@ static void FVMouse(FontView *fv,GEvent *event) {
 	    CharViewCreate(sc,fv);
 	} else {
 	    BDFFont *bdf = fv->show;
-	    if ( bdf->chars[pos]==NULL ) {
-		if ( fv->antialias )
-		    bdf->chars[pos] = SplineCharAntiAlias(sc,bdf->pixelsize,4);
-		else
-		    bdf->chars[pos] = SplineCharRasterize(sc,bdf->pixelsize);
-	    }
+	    if ( bdf->chars[pos]==NULL )
+		bdf->chars[pos] = SplineCharRasterize(sc,bdf->pixelsize);
 	    BitmapViewCreate(bdf->chars[pos],bdf,fv);
 	}
     } else if ( event->type == et_mousemove ) {
@@ -3146,8 +3179,8 @@ void FontViewReformat(FontView *fv) {
     GDrawSetCursor(fv->v,ct_watch);
     fv->rowltot = (fv->sf->charcnt+fv->colcnt-1)/fv->colcnt;
     GScrollBarSetBounds(fv->vsb,0,fv->rowltot,fv->rowcnt);
-    if ( fv->rowoff>=fv->rowltot-fv->rowcnt ) {
-        fv->rowoff = fv->rowltot-fv->rowcnt-1;
+    if ( fv->rowoff>fv->rowltot-fv->rowcnt ) {
+        fv->rowoff = fv->rowltot-fv->rowcnt;
 	if ( fv->rowoff<0 ) fv->rowoff =0;
 	GScrollBarSetPos(fv->vsb,fv->rowoff);
     }
