@@ -1688,6 +1688,7 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 		    (alt = SFGetChar(sf,(&(ArabicForms[sc->unicodeenc-0x600].initial))[i],NULL))!=NULL )
 		last=AddSubs(last,form_tags[i],alt->name,0);
 	}
+#if 0		/* Silvan Toledo tells me that Hebrew doesn't need (and shouldn't have) this tag */
     } else if ( sc->unicodeenc>=0x5db && sc->unicodeenc<=0x5e6 &&
 	    (tag==0 || tag==CHR('f','i','n','a')) ) {
 	/* Hebrew finals */
@@ -1704,6 +1705,7 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 	    alt = SFGetChar(sf,0x5e5,NULL);
 	if ( alt!=NULL )
 	    last=AddSubs(last,CHR('f','i','n','a'),alt->name,0);
+#endif
     } else if ( sc->unicodeenc>=0x3c3 &&
 	    (tag==0 || tag==CHR('f','i','n','a')) ) {
 	/* Greek final sigma */
