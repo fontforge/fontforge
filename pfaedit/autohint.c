@@ -417,7 +417,7 @@ void QuickBlues(SplineFont *_sf, BlueData *bd) {
     } while ( j<_sf->subfontcnt );
 
     if ( caphtop<caph ) caphtop = caph; else if ( caph==-1e10 ) caph=caphtop;
-    if ( basebelow>base ) basebelow = base; else if ( base==0 ) base=basebelow;
+    if ( basebelow>base ) basebelow = base; else if ( base==-1e10 ) base=basebelow;
     if ( base==-1e10 ) { base=basebelow = 0; }
     if ( xheighttop<xheight ) xheighttop = xheight; else if ( xheight==-1e10 ) xheight=xheighttop;
     bd->xheight = xheight; bd->xheighttop = xheighttop;
