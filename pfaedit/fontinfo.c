@@ -2699,8 +2699,6 @@ static int GFI_ContextEditData(GGadget *g, GEvent *e) {
 	int i;
 	if ( d->ccd )
 return( true );
-	if ( ((FPST *) (old[sel]->userdata))->format==pst_class )
-return( true );
 	if ( (d->ccd = ContextChainEdit(d->sf,(FPST *) (old[sel]->userdata),d,NULL))!=NULL ) {
 	    for ( i=0; i<fpst_max-pst_contextpos; ++i ) {
 		GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextDel+i*100),false);
