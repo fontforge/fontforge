@@ -4701,7 +4701,8 @@ void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *_sf,char *fontname) {
 		strstrmatch(fontname,"condensed")!=NULL ) {
 	    pfminfo->width = 4;
 	    pfminfo->panose[3] = 6;
-	} else if ( strstrmatch(fontname,"condensed")!=NULL ) {
+	} else if ( strstrmatch(fontname,"condensed")!=NULL ||
+		strstrmatch(fontname,"narrow")!=NULL ) {
 	    pfminfo->width = 3;
 	    pfminfo->panose[3] = 6;
 	} else if ( strstrmatch(fontname,"ultra")!=NULL &&
