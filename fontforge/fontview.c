@@ -9210,9 +9210,9 @@ static SplineFont *AbsoluteNameCheck(char *filename) {
 
     GFileGetAbsoluteName(filename,buffer,sizeof(buffer)); 
     for ( fv=fv_list; fv!=NULL ; fv=fv->next ) {
-	if ( fv->sf->filename!=NULL && strcmp(fv->sf->filename,filename)==0 )
+	if ( fv->sf->filename!=NULL && strcmp(fv->sf->filename,buffer)==0 )
 return( fv->sf );
-	else if ( fv->sf->origname!=NULL && strcmp(fv->sf->origname,filename)==0 )
+	else if ( fv->sf->origname!=NULL && strcmp(fv->sf->origname,buffer)==0 )
 return( fv->sf );
     }
 return( NULL );
