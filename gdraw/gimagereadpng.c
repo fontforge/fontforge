@@ -202,6 +202,19 @@ return( NULL );
     /* Note png b&w images come out as indexed */
 return( ret );
 }
+
+GImage *GImageReadPng(char *filename) {
+    GImage *ret=NULL;
+    FILE *fp;
+
+    fp = fopen(filename, "rb");
+    if (!fp)
+return( NULL );
+
+    ret = GImageRead_Png(fp);
+    fclose(fp);
+return( ret );
+}
 #else
 #include <png.h>
 
@@ -323,7 +336,6 @@ return( NULL );
     /* Note png b&w images come out as indexed */
 return( ret );
 }
-#endif
 
 GImage *GImageReadPng(char *filename) {
     GImage *ret=NULL;
@@ -337,3 +349,4 @@ return( NULL );
     fclose(fp);
 return( ret );
 }
+#endif
