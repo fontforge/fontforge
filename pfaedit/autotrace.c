@@ -41,12 +41,18 @@
 #include <errno.h>		/* for errors */
 #include <dirent.h>		/* for opendir,etc. */
 
+int preferpotrace = false;
+
 /* Interface to Martin Weber's autotrace program   */
 /*  http://homepages.go.com/~martweb/AutoTrace.htm */
 /*  Oops, now at http://sourceforge.net/projects/autotrace/ */
 
+/* Also interface to Peter Selinger's potrace program (which does the same thing */
+/*  and has a cleaner interface) */
+/* http://potrace.sf.net/ */
 
-static SplinePointList *SplinesFromEntities(Entity *ent, Color bgcol) {
+
+static SplinePointList *SplinesFromEntities(Entity *ent, Color bgcol, int ispotrace) {
     Entity *enext;
     SplinePointList *head=NULL, *last, *test, *next, *prev, *new, *nlast, *temp;
     int clockwise;
@@ -63,6 +69,9 @@ static SplinePointList *SplinesFromEntities(Entity *ent, Color bgcol) {
     /*  do want to contour, but we want it to be counterclockwise. */
     /* So first turn all background contours counterclockwise, and flatten */
     /*  the list */
+    /* potrace does not have this problem */
+    /* But potrace does not close its paths (well, it closes the last one) */
+    /*  and as with standard postscript fonts I need to reverse the splines */
     int bgr = COLOR_RED(bgcol), bgg = COLOR_GREEN(bgcol), bgb = COLOR_BLUE(bgcol);
 
     memset(&sc,'\0',sizeof(sc));
@@ -92,21 +101,38 @@ static SplinePointList *SplinesFromEntities(Entity *ent, Color bgcol) {
 		head = new;
 	    else
 		last->next = new;
-	    for ( test = new; test!=NULL; test=test->next ) {
-		clockwise = SplinePointListIsClockwise(test);
-		/* colors may get rounded a little as we convert from RGB to */
-		/*  a postscript color and back. */
-		if ( COLOR_RED(ent->u.splines.fill.col)>=bgr-2 && COLOR_RED(ent->u.splines.fill.col)<=bgr+2 &&
-			COLOR_GREEN(ent->u.splines.fill.col)>=bgg-2 && COLOR_GREEN(ent->u.splines.fill.col)<=bgg+2 &&
-			COLOR_BLUE(ent->u.splines.fill.col)>=bgb-2 && COLOR_BLUE(ent->u.splines.fill.col)<=bgb+2 ) {
-		    if ( clockwise )
-			SplineSetReverse(test);
-		} else {
-		    if ( !clockwise )
-			SplineSetReverse(test);
-		    clockwise = SplinePointListIsClockwise(test);
+	    if ( ispotrace ) {
+		for ( test = new; test!=NULL; test=test->next ) {
+		    if ( test->first!=test->last &&
+			    RealNear(test->first->me.x,test->last->me.x) &&
+			    RealNear(test->first->me.y,test->last->me.y)) {
+			test->first->prevcp = test->last->prevcp;
+			test->first->noprevcp = test->last->noprevcp;
+			test->first->prevcpdef = test->last->prevcpdef;
+			test->first->prev = test->last->prev;
+			test->last->prev->to = test->first;
+			SplinePointFree(test->last);
+			test->last=test->first;
+		    }
+		    SplineSetReverse(test);
 		}
-		last = test;
+	    } else {
+		for ( test = new; test!=NULL; test=test->next ) {
+		    clockwise = SplinePointListIsClockwise(test);
+		    /* colors may get rounded a little as we convert from RGB to */
+		    /*  a postscript color and back. */
+		    if ( COLOR_RED(ent->u.splines.fill.col)>=bgr-2 && COLOR_RED(ent->u.splines.fill.col)<=bgr+2 &&
+			    COLOR_GREEN(ent->u.splines.fill.col)>=bgg-2 && COLOR_GREEN(ent->u.splines.fill.col)<=bgg+2 &&
+			    COLOR_BLUE(ent->u.splines.fill.col)>=bgb-2 && COLOR_BLUE(ent->u.splines.fill.col)<=bgb+2 ) {
+			if ( clockwise )
+			    SplineSetReverse(test);
+		    } else {
+			if ( !clockwise )
+			    SplineSetReverse(test);
+			clockwise = SplinePointListIsClockwise(test);
+		    }
+		    last = test;
+		}
 	    }
 	}
 	free(ent);
@@ -114,7 +140,7 @@ static SplinePointList *SplinesFromEntities(Entity *ent, Color bgcol) {
 
     /* Then remove all counter-clockwise (background) contours which are at */
     /*  the edge of the character */
-    do {
+    if ( !ispotrace ) do {
 	removed = false;
 	sc.splines = head;
 	SplineCharFindBounds(&sc,&bb);
@@ -148,6 +174,8 @@ return( head );
 /* I think this is total paranoia. but it's annoying to have linker complaints... */
 static int mytempnam(char *buffer) {
     char *dir;
+    int fd;
+    char *old;
 
     if ( (dir=getenv("TMPDIR"))!=NULL )
 	strcpy(buffer,dir);
@@ -157,7 +185,13 @@ static int mytempnam(char *buffer) {
     else
 	strcpy(buffer,P_tmpdir);
     strcat(buffer,"/PfaEdXXXXXX");
-return( mkstemp(buffer));
+    fd = mkstemp(buffer);
+    old = copy(buffer);
+    strcat(buffer,".bmp");
+    if ( rename(old,buffer)==-1 )
+	strcpy(buffer,old);
+    free(old);
+return( fd );
 }
 
 static char *mytempdir(void) {
@@ -199,12 +233,14 @@ static void _SCAutoTrace(SplineChar *sc, char **args) {
     int ac,i;
     FILE *ps;
     int pid, status, fd;
+    int ispotrace;
 
     if ( sc->backimages==NULL )
 return;
     prog = FindAutoTraceName();
     if ( prog==NULL )
 return;
+    ispotrace = (strstrmatch(prog,"potrace")!=NULL );
     for ( images = sc->backimages; images!=NULL; images=images->next ) {
 /* the linker tells me not to use tempnam(). Which does almost exactly what */
 /*  I want. So we go through a much more complex set of machinations to make */
@@ -230,13 +266,21 @@ return;
 
 	ac = 0;
 	arglist[ac++] = prog;
-	arglist[ac++] = tempname;
-	arglist[ac++] = "--output-format=eps";
-	arglist[ac++] = "--input-format=BMP";
+	if ( ispotrace ) {
+	    /* If I use the long names (--cleartext, --output) potrace hangs) */
+	    /*  version 1.1 */
+	    arglist[ac++] = "-c";
+	    arglist[ac++] = "-o";		/* output to stdout */
+	    arglist[ac++] = "-";
+	} else {
+	    arglist[ac++] = "--output-format=eps";
+	    arglist[ac++] = "--input-format=BMP";
+	}
 	if ( args ) {
 	    for ( i=0; args[i]!=NULL && ac<sizeof(arglist)/sizeof(arglist[0])-2; ++i )
 		arglist[ac++] = args[i];
 	}
+	arglist[ac++] = tempname;
 	arglist[ac] = NULL;
 	/* We can't use AutoTrace's own "background-color" ignorer because */
 	/*  it ignores counters as well as surrounds. So "O" would be a dark */
@@ -251,11 +295,23 @@ return;
 	    waitpid(pid,&status,0);
 	    if ( WIFEXITED(status)) {
 		rewind(ps);
-		new = SplinesFromEntities(EntityInterpretPS(ps),bgcol);
+		new = SplinesFromEntities(EntityInterpretPS(ps),bgcol,ispotrace);
 		transform[0] = images->xscale; transform[3] = images->yscale;
 		transform[1] = transform[2] = 0;
 		transform[4] = images->xoff;
 		transform[5] = images->yoff - images->yscale*ib->height;
+		if ( ispotrace ) {
+		    /* potrace seems to generate a coordinate system with */
+		    /*  no bearing to anything I can figure out */
+		    /* So find the bounds of the returned splines */
+		    /* note this fails if there is white space around the image */
+		    DBounds d;
+		    SplineSetFindBounds(new,&d);
+		    if ( d.maxy-d.miny>1 ) {
+			transform[0] *= (ib->height)/(d.maxy-d.miny);
+			transform[3] *= (ib->height)/(d.maxy-d.miny);
+		    }
+		}
 		new = SplinePointListTransform(new,transform,true);
 		if ( sc->parent->order2 ) {
 		    SplineSet *o2 = SplineSetsTTFApprox(new);
@@ -465,17 +521,32 @@ return( NULL );
 
 char *FindAutoTraceName(void) {
     static int searched=0;
+    static int waspotraceprefered;
     static char *name = NULL;
     char buffer[1025];
 
-    if ( searched )
+    if ( searched && waspotraceprefered==preferpotrace )
 return( name );
 
     searched = true;
+    waspotraceprefered = preferpotrace;
+    if ( preferpotrace ) {
+	if (( name = getenv("POTRACE"))!=NULL )
+return( name );
+    }
     if (( name = getenv("AUTOTRACE"))!=NULL )
 return( name );
-    if ( ProgramExists("autotrace",buffer)!=NULL )
+    if (( name = getenv("POTRACE"))!=NULL )
+return( name );
+
+    if ( preferpotrace ) {
+	if ( ProgramExists("potrace",buffer)!=NULL )
+	    name = "potrace";
+    }
+    if ( name==NULL && ProgramExists("autotrace",buffer)!=NULL )
 	name = "autotrace";
+    if ( name==NULL && ProgramExists("potrace",buffer)!=NULL )
+	name = "potrace";
 return( name );
 }
 

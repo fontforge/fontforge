@@ -78,6 +78,7 @@ extern int old_ttf_flags;		/* in savefontdlg.c */
 extern int old_ps_flags;		/* in savefontdlg.c */
 extern int old_otf_flags;		/* in savefontdlg.c */
 extern int oldsystem;			/* in bitmapdlg.c */
+extern int preferpotrace;		/* in autotrace.c */
 extern int autotrace_ask;		/* in autotrace.c */
 extern int mf_ask;			/* in autotrace.c */
 extern int mf_clearbackgrounds;		/* in autotrace.c */
@@ -377,6 +378,7 @@ static struct prefs_list {
 	{ NULL }
 },
  args_list[] = {
+	{ "PreferPotrace", pr_bool, &preferpotrace, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupPPT },
 	{ "AutotraceArgs", pr_string, NULL, GetAutoTraceArgs, SetAutoTraceArgs, '\0', NULL, 0, _STR_PrefsPopupATA },
 	{ "AutotraceAsk", pr_bool, &autotrace_ask, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupATK },
 	{ "MfArgs", pr_string, &mf_args, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupMFA },
