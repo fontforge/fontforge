@@ -84,6 +84,27 @@ return( NULL );
 return( SCImagesCopyState(cv->sc));
 }
 
+static MinimumDistance *MDsCopyState(SplineChar *sc,SplineSet *rpl) {
+    MinimumDistance *head=NULL, *last, *md, *cur;
+
+    if ( sc->md==NULL )
+return( NULL );
+
+    for ( md = sc->md; md!=NULL; md=md->next ) {
+	cur = chunkalloc(sizeof(MinimumDistance));
+	*cur = *md;
+	if ( head==NULL )
+	    head = cur;
+	else
+	    last->next = cur;
+	last = cur;
+    }
+    cur->next = NULL;
+
+    MDReplace(head,sc->splines,rpl);
+return( head );
+}
+
 static int RefCharsMatch(RefChar *urefs,RefChar *crefs) {
     /* I assume they are in the same order */
     while ( urefs!=NULL && crefs!=NULL ) {
@@ -368,12 +389,13 @@ void UndoesFree(Undoes *undo) {
 	unext = undo->next;
 	switch ( undo->undotype ) {
 	  case ut_noop:
-	  case ut_width:
+	  case ut_width: case ut_vwidth: case ut_lbearing: case ut_rbearing:
 	    /* Nothing else to free */;
 	  break;
 	  case ut_state: case ut_tstate: case ut_statehint: case ut_statename:
 	    SplinePointListsFree(undo->u.state.splines);
 	    RefCharsFree(undo->u.state.refs);
+	    MDsFree(undo->u.state.md);
 	    if ( undo->undotype==ut_statehint || undo->undotype==ut_statename )
 		UHintListFree(undo->u.state.u.hints);
 	    else
@@ -439,8 +461,10 @@ Undoes *CVPreserveState(CharView *cv) {
     undo->u.state.width = cv->sc->width;
     undo->u.state.vwidth = cv->sc->vwidth;
     undo->u.state.splines = SplinePointListCopy(*cv->heads[cv->drawmode]);
-    if ( cv->drawmode==dm_fore )
+    if ( cv->drawmode==dm_fore ) {
 	undo->u.state.refs = RefCharsCopyState(cv->sc);
+	undo->u.state.md = MDsCopyState(cv->sc,undo->u.state.splines);
+    }
     undo->u.state.u.images = ImagesCopyState(cv);
 return( CVAddUndo(cv,undo));
 }
@@ -453,6 +477,7 @@ Undoes *SCPreserveState(SplineChar *sc,int dohints) {
     undo->u.state.vwidth = sc->vwidth;
     undo->u.state.splines = SplinePointListCopy(sc->splines);
     undo->u.state.refs = RefCharsCopyState(sc);
+    undo->u.state.md = MDsCopyState(sc,undo->u.state.splines);
     undo->u.state.u.images = NULL;
     if ( dohints ) {
 	undo->undotype = ut_statehint;
@@ -579,6 +604,11 @@ static void CVUndoAct(CharView *cv,Undoes *undo) {
 	    undo->u.state.vwidth = vwidth;
 	}
 	*cv->heads[cv->drawmode] = undo->u.state.splines;
+	if ( cv->drawmode==dm_fore ) {
+	    MinimumDistance *md = sc->md;
+	    sc->md = undo->u.state.md;
+	    undo->u.state.md = md;
+	}
 	if ( cv->drawmode==dm_fore && !RefCharsMatch(undo->u.state.refs,sc->refs)) {
 	    RefChar *refs = RefCharsCopyState(cv->sc);
 	    FixupRefChars(sc,undo->u.state.refs);

@@ -798,9 +798,37 @@ static void ImgGetInfo(CharView *cv, ImageList *img) {
     GDrawDestroyWindow(gi.gw);
 }
 
+void MDReplace(MinimumDistance *md,SplineSet *old,SplineSet *rpl) {
+    /* Replace all the old points with the ones in rpl in the minimu distance hints */
+    SplinePoint *osp, *rsp;
+    MinimumDistance *test;
+
+    while ( old!=NULL && rpl!=NULL ) {
+	osp = old->first; rsp = rpl->first;
+	while ( 1 ) {
+	    for ( test=md; test!=NULL ; test=test->next ) {
+		if ( test->sp1==osp )
+		    test->sp1 = rsp;
+		if ( test->sp2==osp )
+		    test->sp2 = rsp;
+	    }
+	    if ( osp->next==NULL )
+	break;
+	    osp = osp->next->to;
+	    rsp = rsp->next->to;
+	    if ( osp==old->first )
+	break;
+	}
+	old = old->next;
+	rpl = rpl->next;
+    }
+}
+
 static void PI_DoCancel(GIData *ci) {
     CharView *cv = ci->cv;
     ci->done = true;
+    if ( cv->drawmode==dm_fore )
+	MDReplace(cv->sc->md,cv->sc->splines,ci->oldstate);
     SplinePointListsFree(*cv->heads[cv->drawmode]);
     *cv->heads[cv->drawmode] = ci->oldstate;
     CVRemoveTopUndo(cv);

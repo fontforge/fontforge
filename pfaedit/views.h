@@ -399,6 +399,7 @@ extern void CVFindCenter(CharView *cv, BasePoint *bp, int nosel);
 extern void CVStroke(CharView *cv);
 extern void FVStroke(FontView *fv);
 extern void FVStrokeItScript(FontView *fv, StrokeInfo *si);
+extern void MDReplace(MinimumDistance *md,SplineSet *old,SplineSet *rpl);
 extern void SCGetInfo(SplineChar *sc,int nextprev);
 extern void CVGetInfo(CharView *cv);
 extern void SCRefBy(SplineChar *sc);

@@ -120,6 +120,7 @@ typedef struct undoes {
 	    char *lig;				/* only for ut_statename */
 	    struct splinepointlist *splines;
 	    struct refchar *refs;
+	    struct minimumdistance *md;
 	    union {
 		struct imagelist *images;
 		void *hints;			/* ut_statehint, ut_statename */
@@ -537,6 +538,7 @@ extern void LineListFree(LineList *ll);
 extern void LinearApproxFree(LinearApprox *la);
 extern void SplineFree(Spline *spline);
 extern void SplinePointFree(SplinePoint *sp);
+extern void MDsFree(MinimumDistance *md);
 extern void SplinePointMDFree(SplineChar *sc,SplinePoint *sp);
 extern void SplinePointListFree(SplinePointList *spl);
 extern void SplinePointListMDFree(SplineChar *sc,SplinePointList *spl);
