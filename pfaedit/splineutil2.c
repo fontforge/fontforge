@@ -840,8 +840,12 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
     tounit.x = to->prevcp.x-to->me.x; tounit.y = to->prevcp.y-to->me.y;
     tlen = sqrt(tounit.x*tounit.x + tounit.y*tounit.y);
     if ( tlen==0 ) {
-	tounit.x = -( (3*to->prev->splines[0].a*.9999+2*to->prev->splines[0].b)*.9999+to->prev->splines[0].c );
-	tounit.y = -( (3*to->prev->splines[1].a*.9999+2*to->prev->splines[1].b)*.9999+to->prev->splines[1].c );
+	if ( to->pointtype==pt_curve && to->next && !to->nonextcp ) {
+	    tounit.x = to->me.x-to->nextcp.x; tounit.y = to->me.y-to->nextcp.y;
+	} else {
+	    tounit.x = -( (3*to->prev->splines[0].a*.9999+2*to->prev->splines[0].b)*.9999+to->prev->splines[0].c );
+	    tounit.y = -( (3*to->prev->splines[1].a*.9999+2*to->prev->splines[1].b)*.9999+to->prev->splines[1].c );
+	}
 	tlen = sqrt(tounit.x*tounit.x + tounit.y*tounit.y);
     }
     tounit.x /= tlen; tounit.y /= tlen;
@@ -849,8 +853,12 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
     fromunit.x = from->nextcp.x-from->me.x; fromunit.y = from->nextcp.y-from->me.y;
     flen = sqrt(fromunit.x*fromunit.x + fromunit.y*fromunit.y);
     if ( flen==0 ) {
-	fromunit.x = -( (3*from->next->splines[0].a*.0001+2*from->next->splines[0].b)*.0001+from->next->splines[0].c );
-	fromunit.y = -( (3*from->next->splines[1].a*.0001+2*from->next->splines[1].b)*.0001+from->next->splines[1].c );
+	if ( from->pointtype==pt_curve && from->prev && !from->noprevcp ) {
+	    fromunit.x = from->me.x-from->prevcp.x; fromunit.y = from->me.y-from->prevcp.y;
+	} else {
+	    fromunit.x = -( (3*from->next->splines[0].a*.0001+2*from->next->splines[0].b)*.0001+from->next->splines[0].c );
+	    fromunit.y = -( (3*from->next->splines[1].a*.0001+2*from->next->splines[1].b)*.0001+from->next->splines[1].c );
+	}
 	flen = sqrt(fromunit.x*fromunit.x + fromunit.y*fromunit.y);
     }
     fromunit.x /= flen; fromunit.y /= flen;
