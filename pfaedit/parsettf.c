@@ -698,7 +698,7 @@ return;
     if ( str==NULL )		/* we didn't understand the encoding */
 return;
 
-    if ( plat==1 )
+    if ( plat==0 || plat==1 )
 	language = WinLangFromMac(language);
     if ( (language&0xff00)==0 ) language |= 0x400;
 
