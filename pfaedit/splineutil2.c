@@ -1515,7 +1515,7 @@ SplineSet *SplineSetJoin(SplineSet *start,int doall,real fudge,int *changed) {
 			    prev->next = spl2->next;
 			else
 			    start = spl2->next;
-			SplinePointListFree(spl2);
+			chunkfree(spl2,sizeof(SplineSet));
 			SplineSetMakeLoop(spl,fudge);
 			*changed = true;
 		break;
