@@ -1185,6 +1185,7 @@ return;
     }
 }
 
+/* cleanup may be: -1 => lines become lines, 0 => simplify & retain slopes, 1=> simplify and discard slopes */
 SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,int cleanup) {
     SplineSet *spl, *prev, *snext;
     int anysel=0;
@@ -1739,6 +1740,10 @@ return;
     if ( base->pointtype == pt_curve ) {
 	if ( prev!=NULL && (base->prevcpdef || base->noprevcp)) {
 	    pangle = atan2( prev->me.y-base->me.y , prev->me.x-base->me.x );
+	    if ( pangle<0 && angle>0 && angle-pangle>=3.1415926 )
+		pangle += 2*3.1415926535897932;
+	    else if ( pangle>0 && angle<0 && pangle-angle>=3.1415926 )
+		angle += 2*3.1415926535897932;
 	    angle = (angle+pangle)/2;
 	    plen = sqrt((base->prevcp.x-base->me.x)*(base->prevcp.x-base->me.x) +
 		    (base->prevcp.y-base->me.y)*(base->prevcp.y-base->me.y));
@@ -1750,7 +1755,7 @@ return;
 	    base->prevcp.y = base->me.y + plen*sin(angle);
 	    SplineRefigure(base->prev);
 	} else if ( prev!=NULL ) {
-	    /* The prev control point is fixed. So we got to use the same */
+	    /* The prev control point is fixed. So we've got to use the same */
 	    /*  angle it uses */
 	    angle = atan2( base->prevcp.y-base->me.y , base->prevcp.x-base->me.x );
 	}
@@ -1809,6 +1814,10 @@ return;
     if ( base->pointtype == pt_curve ) {
 	if ( next!=NULL && (base->nextcpdef || base->nonextcp)) {
 	    nangle = atan2( next->me.y-base->me.y , next->me.x-base->me.x );
+	    if ( nangle<0 && angle>0 && angle-nangle>=3.1415926 )
+		nangle += 2*3.1415926535897932;
+	    else if ( nangle>0 && angle<0 && nangle-angle>=3.1415926 )
+		angle += 2*3.1415926535897932;
 	    angle = (angle+nangle)/2;
 	    nlen = sqrt((base->nextcp.x-base->me.x)*(base->nextcp.x-base->me.x) +
 		    (base->nextcp.y-base->me.y)*(base->nextcp.y-base->me.y));
