@@ -516,6 +516,7 @@ SplineSet *SSttfApprox(SplineSet *ss) {
 	if ( ret->last!=ret->first ) {
 	    ret->first->prevcp = ret->last->prevcp;
 	    ret->first->noprevcp = ret->last->noprevcp;
+	    ret->first->prev = ret->last->prev;
 	    ret->last->prev->to = ret->first;
 	    SplinePointFree(ret->last);
 	    ret->last = ret->first;
