@@ -2502,7 +2502,8 @@ static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,
     uint32 here;
     uint32 base = ftell(ttf);
 
-    switch ( format = getushort(ttf)) {
+    format = getushort(ttf);
+    switch ( format ) {
       case 0:	/* Simple array */
 	apply_values(info,0,info->glyph_cnt-1,ttf);
       break;
@@ -2516,10 +2517,15 @@ static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,
 	for ( i=0; i<cnt; ++i ) {
 	    last = getushort(ttf);
 	    first = getushort(ttf);
-	    if ( apply_default!=NULL )
-		apply_default(info,prev,first-1,def);
-	    apply_value(info,first,last,ttf);
-	    prev = last+1;
+	    if ( last<first || last>=info->glyph_cnt ) {
+		fprintf( stderr, "Bad lookup table format=2 (%d/%d), first=%d last=%d total glyphs in font=%d\n",
+			i,cnt,first,last,info->glyph_cnt );
+	    } else {
+		if ( apply_default!=NULL )
+		    apply_default(info,prev,first-1,def);
+		apply_value(info,first,last,ttf);
+		prev = last+1;
+	    }
 	}
       break;
       case 4:	/* Segment multiple */
@@ -2533,13 +2539,18 @@ static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,
 	    last = getushort(ttf);
 	    first = getushort(ttf);
 	    data_off = getushort(ttf);
-	    here = ftell(ttf);
-	    if ( apply_default!=NULL )
-		apply_default(info,prev,first-1,def);
-	    fseek(ttf,base+data_off,SEEK_SET);
-	    apply_values(info,first,last,ttf);
-	    fseek(ttf,here,SEEK_SET);
-	    prev = last+1;
+	    if ( last<first || last>=info->glyph_cnt ) {
+		fprintf( stderr, "Bad lookup table format=4 (%d/%d), first=%d last=%d total glyphs in font=%d\n",
+			i,cnt,first,last,info->glyph_cnt );
+	    } else {
+		here = ftell(ttf);
+		if ( apply_default!=NULL )
+		    apply_default(info,prev,first-1,def);
+		fseek(ttf,base+data_off,SEEK_SET);
+		apply_values(info,first,last,ttf);
+		fseek(ttf,here,SEEK_SET);
+		prev = last+1;
+	    }
 	}
       break;
       case 6:	/* Single table */
@@ -2551,20 +2562,30 @@ static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,
 	prev = 0;
 	for ( i=0; i<cnt; ++i ) {
 	    first = getushort(ttf);
-	    if ( apply_default!=NULL )
-		apply_default(info,prev,first-1,def);
-	    apply_value(info,first,first,ttf);
-	    prev = first+1;
+	    if ( first>=info->glyph_cnt ) {
+		fprintf( stderr, "Bad lookup table format=6, first=%d total glyphs in font=%d\n",
+			first,info->glyph_cnt );
+	    } else {
+		if ( apply_default!=NULL )
+		    apply_default(info,prev,first-1,def);
+		apply_value(info,first,first,ttf);
+		prev = first+1;
+	    }
 	}
       break;
       case 8:	/* Simple array */
 	first = getushort(ttf);
 	cnt = getushort(ttf);
-	if ( apply_default!=NULL ) {
-	    apply_default(info,0,first-1,def);
-	    apply_default(info,first+cnt,info->glyph_cnt-1,def);
+	if ( first+cnt>=info->glyph_cnt ) {
+	    fprintf( stderr, "Bad lookup table format=8, first=%d cnt=%d total glyphs in font=%d\n",
+		    first,cnt,info->glyph_cnt );
+	} else {
+	    if ( apply_default!=NULL ) {
+		apply_default(info,0,first-1,def);
+		apply_default(info,first+cnt,info->glyph_cnt-1,def);
+	    }
+	    apply_values(info,first,first+cnt-1,ttf);
 	}
-	apply_values(info,first,first+cnt-1,ttf);
       break;
       default:
 	fprintf( stderr, "Invalid lookup table format. %d\n", format );
