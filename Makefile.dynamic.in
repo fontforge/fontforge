@@ -57,8 +57,8 @@ install: $(sharedir) all install_libs
 	mkdir -p $(sharedir)
 	$(LIBTOOL) $(INSTALL) -c fontforge/fontforge $(bindir)
 	$(LIBTOOL) $(INSTALL) -c fontforge/sfddiff $(bindir)
-#	-rm -f $(bindir)/pfaedit
-#	(cd $(bindir) ; ln -s fontforge pfaedit)
+	-rm -f $(bindir)/pfaedit
+	(cd $(bindir) ; ln -s fontforge pfaedit)
 	cp fontforge/pfaedit-*.ui $(sharedir)
 #The next line will fail for most installs. If you have downloaded the cidmaps
 # this will install them. If you haven't it won't. You only need the cidmaps
