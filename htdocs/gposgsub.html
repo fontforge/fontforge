@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 21-Aug-2003 -->
+  <!-- AP: Last modified: 26-Aug-2003 -->
   <TITLE>Advanced Typography tables</TITLE>
 </HEAD>
 <BODY>
@@ -446,7 +446,8 @@ mapping from feature type/setting to opentype tags).
   <TR>
     <TD>2</TD>
     <TD>ligature substitution</TD>
-    <TD>PfaEdit can read these and stores them as opentype ligatures</TD>
+    <TD>PfaEdit can read these and stores them as opentype ligatures. PfaEdit
+      will ignore any contextual information.</TD>
     <TD>PfaEdit will output this sub-table if the font contains supported ligatures.</TD>
   </TR>
   <TR>
@@ -469,20 +470,129 @@ mapping from feature type/setting to opentype tags).
 </H3>
 <P>
 Sadly OpenType and AAT provide disjoint capabilities when it comes to contextual
-positioning. AAT is more capable in some areas, OpenType more capable in
-others. PfaEdit is able to convert an OpenType contextual substitution into
-an AAT if PfaEdit can detect that the OpenType substitution does not use
-capabilies beyond those of AAT. Currently this means:
+matching. AAT is more capable in some areas, OpenType more capable in others.
+PfaEdit is able to convert an OpenType contextual substitution into an AAT
+if PfaEdit can detect that the OpenType substitution does not use capabilies
+beyond those of AAT. Currently this means:
 <UL>
   <LI>
     There is an apple feature which matches the otf tag
   <LI>
-    The sub-table is in coverage format
-  <LI>
-    The sub-table contains either exactly one nested single glyph replacement
-    substitution, or<BR>
-    it contains exactly two single glyph replacements and one of them refers
-    to the last glyph matched (and the other does not)
+    And one of the following is true:
+    <OL>
+      <LI>
+	Either
+	<UL>
+	  <LI>
+	    The sub-table is in coverage format
+	  <LI>
+	    The sub-table contains either exactly one nested single glyph replacement
+	    substitution, or<BR>
+	    it contains exactly two single glyph replacements and one of them refers
+	    to the last glyph matched (and the other does not)
+	</UL>
+      <LI>
+	or
+	<UL>
+	  <LI>
+	    The sub-table is in either glyph or class format
+	  <LI>
+	    If in class format then either the backtrack and lookahead classes must be
+	    the same as the main class, or they must not be used.
+	  <LI>
+	    If a rule has a substitution at a given glyph position, then all rules which
+	    match the current rule up to that glyph position must also have a substitution
+	    at that position.
+	  <LI>
+	    A rule with exactly one substitution is acceptable<BR>
+	    A rule with one substitution in the middle and one substitution on the last
+	    character is acceptable.<BR>
+	    A rule may contain more substitutions only if there is another rule which
+	    matches it exactly up to the internal substitution.<BR>
+	    So the following rule set is valid:
+	    <TABLE BORDER CELLPADDING="2">
+	      <TR>
+		<TH>Rule</TH>
+		<TD>a</TD>
+		<TD>b</TD>
+		<TD>c</TD>
+		<TD>d</TD>
+		<TD>e</TD>
+		<TD>f</TD>
+	      </TR>
+	      <TR>
+		<TH>Rule</TH>
+		<TD>a</TD>
+		<TD>b</TD>
+		<TD>c</TD>
+		<TD>d</TD>
+		<TD></TD>
+		<TD></TD>
+	      </TR>
+	      <TR>
+		<TH>Rule</TH>
+		<TD>a</TD>
+		<TD>b</TD>
+		<TD></TD>
+		<TD></TD>
+		<TD></TD>
+		<TD></TD>
+	      </TR>
+	      <TR>
+		<TH>Substitutions</TH>
+		<TD>A</TD>
+		<TD>B</TD>
+		<TD>C</TD>
+		<TD>D</TD>
+		<TD>E</TD>
+		<TD>F</TD>
+	      </TR>
+	    </TABLE>
+	    <P>
+	    So the third rule will match an "ab" and convert them to "AB" (and this is
+	    valid because we have one internal and one final substitution and that's
+	    ok), then if that "ab" is followed by "cd" then rule 2 kicks in and will
+	    replace the "cd" with "CD" (again this has one internal and one final
+	    substitution, which is ok), and if that is followed by "ef" then they will
+	    be converted to "EF".
+	    <P>
+	    The following is not valid:
+	    <TABLE BORDER CELLPADDING="2">
+	      <TR>
+		<TH>Substitution</TH>
+		<TD></TD>
+		<TD>B</TD>
+		<TD></TD>
+	      </TR>
+	      <TR>
+		<TH>Rule</TH>
+		<TD>a</TD>
+		<TD>b</TD>
+		<TD>c</TD>
+	      </TR>
+	      <TR>
+		<TD COLSPAN=4>
+		    <HR>
+		</TD>
+	      </TR>
+	      <TR>
+		<TH>Rule</TH>
+		<TD>a</TD>
+		<TD>b</TD>
+		<TD></TD>
+	      </TR>
+	      <TR>
+		<TH>Substitution</TH>
+		<TD>A</TD>
+		<TD></TD>
+		<TD></TD>
+	      </TR>
+	    </TABLE>
+	    <P>
+	    The two rules have substitutions at different places and that can't be expressed
+	    in an Apple state machine given that they have the same characters.
+	</UL>
+    </OL>
 </UL>
 <P>
 PfaEdit does not even try to parse an AAT contextual glyph substitution
@@ -544,7 +654,7 @@ Consider the following contextual sustitution in a glyph list format:
 Now in OpenType this means if you find the sequence "abcd" then replace the
 "b" with "B" and the "c" with "C". But this can't be expressed in an Apple
 state machine. In OpenType the match is done first, and then the substitutions
-occur. In a state machines the sustitutions have to be done (almost) concurrently
+occur. In a state machine the sustitutions have to be done (almost) concurrently
 with the match and so must happen whether the final "d" is present or not.
 <P>
 Consider the following table with two glyph strings
@@ -573,7 +683,7 @@ Consider the following table with two glyph strings
       b</TD>
     <TD><P ALIGN=Center>
       c</TD>
-    <TD>&nbsp;</TD>
+    <TD>e&nbsp;</TD>
   </TR>
   <TR>
     <TH>Replace With</TH>
@@ -586,14 +696,15 @@ Consider the following table with two glyph strings
 </TABLE>
 <P>
 So replace the "b" if the final "d" is present, otherwise replace the "c".
-Again this cannot be expressed in Apple's state machines.
+Again this cannot be expressed in Apple's state machines. 
   <HR>
 On the other hand, Apple's state machines can express things that OpenType
 tables cannot (again I'm restricting myself to contextual substitutions).
-Consider the case of a swash character at the begining of a word. Let us
-say that a word begins when a letter appears at the start of input or following
-a whitespace character. But OpenType has no way of expressing "start of input"
-in a contextual/chaining context, whereas Apple's state machines do.
+Consider the case of a swash character at the begining (or end) of a word.
+Let us say that a word begins when a letter appears at the start of input
+or following a whitespace character. But OpenType has no way of expressing
+"start of input" (or end of input) in a contextual/chaining context, whereas
+Apple's state machines do.
 <P>
 Finally a state machine can match a general regular expression, while OpenType
 tables can only match fixed length strings. Suppose you were typesetting
@@ -608,6 +719,16 @@ one) they are. But they illustrate the point that the two formats have very
 different expressive capabilities and it is NOT possible to write a converter
 which will take any input in one format and produce an equivalent output
 in the other.
+<H4>
+  Musings on other 'morx' sub-table types
+</H4>
+<P>
+Some very simple cases of Indic positioning can be expressed with a contextual
+kerning table (ie. instead of swapping the glyphs in the internal sequence,
+you could kern them so far that they moved past each other).
+<P>
+Conditional glyph insertion could be done with an OpenType contextual table
+and a multiple substitution.
 <H3>
   Apple and OpenType features
 </H3>
@@ -666,6 +787,16 @@ in the other.
     <TD>Fractions</TD>
     <TD>Fractions</TD>
     <TD>frac</TD>
+  </TR>
+  <TR>
+    <TD COLSPAN=3>
+	<HR>
+    </TD>
+  </TR>
+  <TR>
+    <TD>Contextual Alternatives</TD>
+    <TD>Cursive connection</TD>
+    <TD>calt</TD>
   </TR>
   <TR>
     <TD COLSPAN=3>
@@ -773,8 +904,8 @@ tables</A>.
 </H3>
 <UL>
   <LI>
-    PfaEdit only supports apple features if it has a mapping between that feature
-    and an opentype feature tag. Use the
+    PfaEdit only supports apple features where there is a mapping between that
+    feature and an opentype feature tag. Use the
     <A HREF="prefs.html#Mac">File-&gt;Preference dialog</A> to extend PfaEdit's
     default mapping.
   <LI>
@@ -787,8 +918,9 @@ tables</A>.
   <LI>
     PfaEdit supports no other contextual glyph substitution sub-tables.
   <LI>
-    PfaEdit will never generate a 'mort' table. It can read 'mort' tables, but
-    it will only produce 'morx' tables.
+    PfaEdit will never generate a 'mort' table. It can read 'mort' tables (as
+    well as it can read 'morx' tables that is), but it will only produce 'morx'
+    tables.
   <LI>
     PfaEdit does not support the following Apple specific tables
     <UL>
