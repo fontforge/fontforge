@@ -68,10 +68,10 @@ static void inituninameannot(void) {
 #else
     void *libuninames=NULL;
 # ifdef LIBDIR
-    libuninames = dlopen( LIBDIR "/libuninameslist.a",RTLD_LAZY);
+    libuninames = dlopen( LIBDIR "/libuninameslist.so",RTLD_LAZY);
 # endif
     if ( libuninames==NULL )
-	libuninames = dlopen( "libuninameslist.a",RTLD_LAZY);
+	libuninames = dlopen( "libuninameslist.so",RTLD_LAZY);
     if ( libuninames!=NULL )
 	_UnicodeNameAnnot = dlsym(libuninames,"UnicodeNameAnnot");
 #endif
