@@ -4201,15 +4201,29 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
     SplineFont *sf = _sf;
     SplineChar *sc, notdef, nonmarkingreturn;
     int alreadyprivate = false;
+    int anyglyphs = 0;
 #ifdef FONTFORGE_CONFIG_TYPE3
     Layer layers[2];
 #endif
 
+    for ( i=sf->charcnt-1; i>0 ; --i ) {
+	if ( SCWorthOutputting(sf->chars[i])) {
+	    if ( sf->chars[i]->unicodeenc!=-1 )
+    break;
+	    anyglyphs = true;
+	}
+    }
+    if ( SCWorthOutputting(sf->chars[0]) && !SCIsNotdef(sf->chars[0],at->gi.fixed_width))
+	anyglyphs = true;
+    if ( !anyglyphs ) {
+#if defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("No Encoded Glyphs"),_("This font contains no glyphs at all."));
+#else
+	GWidgetErrorR(_STR_NoEncodedGlyphs,_STR_NoGlyphs);
+#endif
+    }
     if ( sf->subfontcnt==0 && format!=ff_ttfsym) {
-	for ( i=sf->charcnt-1; i>0 ; --i )
-	    if ( sf->chars[i]!=NULL && sf->chars[i]->unicodeenc!=-1 )
-	break;
-	if ( i==0 ) {
+	if ( i==0 && anyglyphs ) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    if ( sf->charcnt<=256 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
