@@ -779,9 +779,21 @@ static char str_Boolquest[] = "Expected boolean\012Procede anyway?";
 static char str_Codequest[] = "Expected code\012Procede anyway?";
 static char str_Badtype[] = "Bad type";
 static char str_Delete[] = "Delete";
-static unichar_t mnemonic_Delete[] = 'D';
+static char mnemonic_Delete[] = 'D';
     /* Prefs */
 static char str_Default[] = "Default";
+static char *str_PrefsPopupAWS[] = "Changing the width of a character\nchanges the widths of all accented\ncharacters based on it.";
+static char *str_PrefsPopupALS[] = "Changing the left side bearing\nof a character adjusts the lbearing\nof other references in all accented\ncharacters based on it.'";
+static char *str_PrefsPopupForNewFonts[] = "Default encoding for\nnew fonts";
+static char *str_PrefsPopupLoc[] = "Character set used by the local\nclipboard, filesystem, etc. (only\n8bit charsets currently supported\nhere)";
+static char *str_PrefsPopupAH[] = "AutoHint before rasterizing";
+static char *str_PrefsPopupFN[] = "Name used for foundry field in bdf\nfont generation";
+static char *str_PrefsPopupXU[] = "If specified this should be a space seperated list of integers each\nless than 16777216 which uniquely identify your organization\nPfaEdit will generate a random number for the final componant.";
+static char *str_PrefsPopupRulers[] = "Display rulers in the Outline Character View";
+static char *str_PrefsPopupSepHints[] = "Have seperate controls for display horizontal and vertical hints.";
+static char *str_PrefsPopupIC[] = "In the Outline View, the Shift key constrains motion to be parallel to the ItalicAngle rather than the vertical.";
+static char *str_PrefsPopupAO[] = "The percentage of an em by which an accent is offset from its base character in Build Accent";
+static char *str_PrefsPopupGF[] = "Adobe has assigned the names Delta, Omega and mu\nto Increment, Ohm and micro signs respectively\nThis seems very odd to Greek font designers who use\nthe names to refer to letters of the alphabet.\nSo there is ambiguity as to what the names mean.\nSetting this flag tries to deal with the ambiguity\nby generating fonts with extra glyphs.";
     /* Hints */
 static char *str_base = "Base:";
 static unichar_t mnemonic_base = 'B';

@@ -47,26 +47,11 @@ char *RecentFiles[RECENT_MAX] = { NULL };
 /* int default_fv_font_size = 24; */	/* in fontview */
 /* int default_fv_antialias = false */	/* in fontview */
 /* int local_encoding; */		/* in gresource.c *//* not a charset */
+int greekfixup = true;
 
 /* don't use mnemonics 'C' or 'O' (Cancel & OK) */
 enum pref_types { pr_int, pr_bool, pr_enum, pr_encoding, pr_string };
 struct enums { char *name; int value; };
-
-static const unichar_t aws[] = { 'C','h','a','n','g','i','n','g',' ','t','h','e',' ','w','i','d','t','h',' ','o','f',' ','a',' ','c','h','a','r','a','c','t','e','r','\n','c','h','a','n','g','e','s',' ','t','h','e',' ','w','i','d','t','h','s',' ','o','f',' ','a','l','l',' ','a','c','c','e','n','t','e','d','\n','c','h','a','r','a','c','t','e','r','s',' ','b','a','s','e','d',' ','o','n',' ','i','t','.',  '\0' };
-static const unichar_t als[] = { 'C','h','a','n','g','i','n','g',' ','t','h','e',' ','l','e','f','t',' ','s','i','d','e',' ','b','e','a','r','i','n','g','\n','o','f',' ','a',' ','c','h','a','r','a','c','t','e','r',' ','a','d','j','u','s','t','s',' ','t','h','e',' ','l','b','e','a','r','i','n','g','\n','o','f',' ','o','t','h','e','r',' ','r','e','f','e','r','e','n','c','e','s',' ','i','n',' ','a','l','l',' ','a','c','c','e','n','t','e','d','\n','c','h','a','r','a','c','t','e','r','s',' ','b','a','s','e','d',' ','o','n',' ','i','t','.',  '\0' };
-static const unichar_t fornewfonts[] = { 'D','e','f','a','u','l','t',' ','e','n','c','o','d','i','n','g',' ','f', 'o', 'r', '\n', 'n', 'e', 'w', ' ', 'f', 'o', 'n', 't', 's',  '\0' };
-static const unichar_t loc[] = { 'C','h','a','r','a','c','t','e','r',' ','s','e','t',' ','u','s','e','d',' ','b','y',' ','t','h','e',' ','l','o','c','a','l','\n','c','l','i','p','b','o','a','r','d',',',' ','f','i','l','e','s','y','s','t','e','m',',',' ','e','t','c','.',' ','(','o','n','l','y','\n','8','b','i','t',' ','c','h','a','r','s','e','t','s',' ','c','u','r','r','e','n','t','l','y',' ','s','u','p','p','o','r','t','e','d','\n','h','e','r','e',')',  '\0' };
-static const unichar_t ah[] = { 'A','u','t','o','H','i','n','t',' ','b','e','f','o','r','e',' ','r','a','s','t','e','r','i','z','i','n','g',  '\0' };
-static const unichar_t fn[] = { 'N','a','m','e',' ','u','s','e','d',' ','f','o','r',' ','f','o','u','n','d','r','y',' ','f','i','e','l','d',' ','i','n',' ','b','d','f','\n','f','o','n','t',' ','g','e','n','e','r','a','t','i','o','n',  '\0' };
-#if 1
-static const unichar_t xu[] = { 'I','f',' ','s','p','e','c','i','f','i','e','d',' ','t','h','i','s',' ','s','h','o','u','l','d',' ','b','e',' ','a',' ','s','p','a','c','e',' ','s','e','p','e','r','a','t','e','d',' ','l','i','s','t',' ','o','f',' ','i','n','t','e','g','e','r','s',' ','e','a','c','h','\n','l','e','s','s',' ','t','h','a','n',' ','1','6','7','7','7','2','1','6',' ','w','h','i','c','h',' ','u','n','i','q','u','e','l','y',' ','i','d','e','n','t','i','f','y',' ','y','o','u','r',' ','o','r','g','a','n','i','z','a','t','i','o','n','\n','P','f','a','E','d','i','t',' ','w','i','l','l',' ','g','e','n','e','r','a','t','e',' ','a',' ','r','a','n','d','o','m',' ','n','u','m','b','e','r',' ','f','o','r',' ','t','h','e',' ','f','i','n','a','l',' ','c','o','m','p','o','n','a','n','t','.',  '\0' };
-#else
-static const unichar_t xu[] = { 'I','f',' ','s','p','e','c','i','f','i','e','d',' ','t','h','i','s',' ','s','h','o','u','l','d',' ','b','e',' ','a',' ','s','p','a','c','e',' ','s','e','p','e','r','a','t','e','d',' ','l','i','s','t',' ','o','f',' ','i','n','t','e','g','e','r','s',' ','e','a','c','h','\n','l','e','s','s',' ','t','h','a','n',' ','1','6','7','7','7','2','1','6',' ','w','h','i','c','h',' ','u','n','i','q','u','e','l','y',' ','i','d','e','n','t','i','f','y',' ','y','o','u','r',' ','o','r','g','a','n','i','z','a','t','i','o','n','\n','P','f','a','E','d','i','t',' ','w','i','l','l',' ','h','a','s','h',' ','t','h','e',' ','f','o','n','t','n','a','m','e',' ','t','o',' ','g','e','n','e','r','a','t','e',' ','a',' ','f','i','n','a','l',' ','n','u','m','b','e','r','.',  '\0' };
-#endif
-static const unichar_t rulers[] = { 'D','i','s','p','l','a','y',' ','r','u','l','e','r','s',' ','i','n',' ','t','h','e',' ','O','u','t','l','i','n','e',' ','C','h','a','r','a','c','t','e','r',' ','V','i','e','w',  '\0' };
-static const unichar_t sephints[] = { 'H','a','v','e',' ','s','e','p','e','r','a','t','e',' ','c','o','n','t','r','o','l','s',' ','f','o','r',' ','d','i','s','p','l','a','y',' ','h','o','r','i','z','o','n','t','a','l',' ','a','n','d',' ','v','e','r','t','i','c','a','l',' ','h','i','n','t','s','.',  '\0' };
-static const unichar_t ic[] = { 'I','n',' ','t','h','e',' ','O','u','t','l','i','n','e',' ','V','i','e','w',',',' ','t','h','e',' ','S','h','i','f','t',' ','k','e','y',' ','c','o','n','s','t','r','a','i','n','s',' ','m','o','t','i','o','n',' ','t','o',' ','b','e',' ','p','a','r','a','l','l','e','l',' ','t','o',' ','t','h','e',' ','I','t','a','l','i','c','A','n','g','l','e',' ','r','a','t','h','e','r',' ','t','h','a','n',' ','t','h','e',' ','v','e','r','t','i','c','a','l','.',  '\0' };
-static const unichar_t ao[] = {'T','h','e',' ','p','e','r','c','e','n','t','a','g','e',' ','o','f',' ','a','n',' ','e','m',' ','b','y',' ','w','h','i','c','h',' ','a','n',' ','a','c','c','e','n','t',' ','i','s',' ','o','f','f','s','e','t',' ','f','r','o','m',' ','i','t','s',' ','b','a','s','e',' ','c','h','a','r','a','c','t','e','r',' ','i','n',' ','B','u','i','l','d',' ','A','c','c','e','n','t',  '\0' };
 
 struct enums fvsize_enums[] = { NULL };
 
@@ -79,24 +64,25 @@ static struct prefs_list {
     char mn;
     struct enums *enums;
     unsigned int dontdisplay: 1;
-    const unichar_t *popup;
+    int popup;
 } prefs_list[] = {
-	{ "AutoWidthSync", pr_bool, &adjustwidth, NULL, NULL, '\0', NULL, 0, aws },
-	{ "AutoLBearingSync", pr_bool, &adjustlbearing, NULL, NULL, '\0', NULL, 0, als },
+	{ "AutoWidthSync", pr_bool, &adjustwidth, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupAWS },
+	{ "AutoLBearingSync", pr_bool, &adjustlbearing, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupALS },
 	{ "DefaultFVSize", pr_enum, &default_fv_font_size, NULL, NULL, 'S', fvsize_enums, 1 },
 	{ "AntiAlias", pr_bool, &default_fv_antialias, NULL, NULL, '\0', NULL, 1 },
-	{ "AutoHint", pr_bool, &autohint_before_rasterize, NULL, NULL, 'A', NULL, 0, ah },
-	{ "LocalCharset", pr_encoding, &local_encoding, NULL, NULL, 'L', NULL, 0, loc },
-	{ "NewCharset", pr_encoding, &default_encoding, NULL, NULL, 'N', NULL, 0, fornewfonts },
-	{ "ShowRulers", pr_bool, &CVShows.showrulers, NULL, NULL, '\0', NULL, 0, rulers },
-	{ "FoundryName", pr_string, &BDFFoundry, NULL, NULL, '\0', NULL, 0, fn },
-	{ "XUID-Base", pr_string, &xuid, NULL, NULL, '\0', NULL, 0, xu },
+	{ "AutoHint", pr_bool, &autohint_before_rasterize, NULL, NULL, 'A', NULL, 0, _STR_PrefsPopupAH },
+	{ "LocalCharset", pr_encoding, &local_encoding, NULL, NULL, 'L', NULL, 0, _STR_PrefsPopupLoc },
+	{ "NewCharset", pr_encoding, &default_encoding, NULL, NULL, 'N', NULL, 0, _STR_PrefsPopupForNewFonts },
+	{ "ShowRulers", pr_bool, &CVShows.showrulers, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupRulers },
+	{ "FoundryName", pr_string, &BDFFoundry, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupFN },
+	{ "XUID-Base", pr_string, &xuid, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupXU },
 	{ "PageWidth", pr_int, &pagewidth, NULL, NULL, '\0', NULL, 1 },
 	{ "PageHeight", pr_int, &pageheight, NULL, NULL, '\0', NULL, 1 },
 	{ "PrintType", pr_int, &printtype, NULL, NULL, '\0', NULL, 1 },
-	{ "ItalicConstrained", pr_bool, &ItalicConstrained, NULL, NULL, '\0', NULL, 0, ic },
-	{ "AccentOffsetPercent", pr_int, &accent_offset, NULL, NULL, '\0', NULL, 0, ao },
+	{ "ItalicConstrained", pr_bool, &ItalicConstrained, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupIC },
+	{ "AccentOffsetPercent", pr_int, &accent_offset, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupAO },
 	{ "AutotraceArgs", pr_string, NULL, GetAutoTraceArgs, SetAutoTraceArgs, '\0', NULL, 1 },
+	{ "GreekFixup", pr_bool, &greekfixup, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupGF },
 	{ NULL }
 };
 
@@ -188,7 +174,22 @@ return;
 
     GStringSetResourceFile(full);
 }
-    
+
+static void GreekHack(void) {
+    if ( greekfixup ) {
+	psunicodenames[0x2206] = NULL;		/* Increment */
+	psunicodenames[0x2126] = NULL;		/* Ohm sign */
+	psunicodenames[0x0394] = "Delta";	/* Delta */
+	psunicodenames[0x2126] = "Omega";	/* Omega */
+    } else {
+	psunicodenames[0x2206] = "Delta";	/* Increment */
+	psunicodenames[0x2126] = "Omega";	/* Ohm sign */
+	psunicodenames[0x0394] = NULL;		/* Delta */
+	psunicodenames[0x2126] = NULL;		/* Omega */
+    }
+    /* I'm leaving mu at 00b5 (rather than 03bc) */
+}
+
 void LoadPrefs(void) {
     char *prefs = getPfaEditPrefs();
     FILE *p;
@@ -199,6 +200,7 @@ void LoadPrefs(void) {
     PfaEditSetFallback();
     LoadPfaEditEncodings();
     CheckLang();
+    GreekHack();
 
     if ( prefs==NULL )
 return;
@@ -247,6 +249,7 @@ return;
 	}
     }
     fclose(p);
+    GreekHack();
 }
 
 void SavePrefs(void) {
@@ -388,7 +391,7 @@ void DoPrefs(void) {
     GGadgetCreateData *gcd;
     GTextInfo *label, **list;
     struct pref_data p;
-    int i, gc, j, line, llen;
+    int i, gc, j, line, llen, y;
     char buf[20];
 
     for ( i=line=gc=0; prefs_list[i].name!=NULL; ++i ) {
@@ -409,7 +412,7 @@ void DoPrefs(void) {
     wattrs.window_title = GStringGetResource(_STR_Prefs,NULL);
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,260);
-    pos.height = GDrawPointsToPixels(NULL,line*30+45);
+    pos.height = GDrawPointsToPixels(NULL,line*26+45);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&p,&wattrs);
 
     gcd = gcalloc(gc+4,sizeof(GGadgetCreateData));
@@ -421,25 +424,25 @@ void DoPrefs(void) {
     gcd[gc].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
     gcd[gc++].creator = GGroupCreate;
 
-    for ( i=line=0; prefs_list[i].name!=NULL; ++i ) {
+    for ( i=line=0, y=8; prefs_list[i].name!=NULL; ++i ) {
 	if ( prefs_list[i].dontdisplay )
     continue;
 	label[gc].text = (unichar_t *) prefs_list[i].name;
 	label[gc].text_is_1byte = true;
 	gcd[gc].gd.label = &label[gc];
 	gcd[gc].gd.mnemonic = prefs_list[i].mn;
-	gcd[gc].gd.popup_msg = prefs_list[i].popup;
+	gcd[gc].gd.popup_msg = GStringGetResource(prefs_list[i].popup,NULL);
 	gcd[gc].gd.pos.x = 8;
-	gcd[gc].gd.pos.y = 8+30*line + 6;
+	gcd[gc].gd.pos.y = y + 6;
 	gcd[gc].gd.flags = gg_visible | gg_enabled;
 	gcd[gc++].creator = GLabelCreate;
 
 	label[gc].text_is_1byte = true;
 	gcd[gc].gd.label = &label[gc];
 	gcd[gc].gd.mnemonic = prefs_list[i].mn;
-	gcd[gc].gd.popup_msg = prefs_list[i].popup;
+	gcd[gc].gd.popup_msg = GStringGetResource(prefs_list[i].popup,NULL);
 	gcd[gc].gd.pos.x = 110;
-	gcd[gc].gd.pos.y = 8+30*line;
+	gcd[gc].gd.pos.y = y;
 	gcd[gc].gd.flags = gg_visible | gg_enabled;
 	gcd[gc].gd.cid = 1000+i;
 	switch ( prefs_list[i].type ) {
@@ -457,11 +460,13 @@ void DoPrefs(void) {
 	    else
 		gcd[gc].gd.flags |= gg_cb_on;
 	    ++gc;
+	    y += 22;
 	  break;
 	  case pr_int:
 	    sprintf(buf,"%d", *((int *) prefs_list[i].val));
 	    label[gc].text = (unichar_t *) copy( buf );
 	    gcd[gc++].creator = GTextFieldCreate;
+	    y += 26;
 	  break;
 	  case pr_encoding:
 	    if ( prefs_list[i].val==&local_encoding ) {
@@ -472,10 +477,11 @@ void DoPrefs(void) {
 		gcd[gc].gd.u.list = GetEncodingTypes();
 		gcd[gc].gd.label = EncodingTypesFindEnc(gcd[gc].gd.u.list,
 			*(int *) prefs_list[i].val);
-		gcd[gc].gd.pos.width = 143;
 	    }
+	    gcd[gc].gd.pos.width = 145;
 	    if ( gcd[gc].gd.label==NULL ) gcd[gc].gd.label = &encodingtypes[0];
 	    gcd[gc++].creator = GListButtonCreate;
+	    y += 28;
 	  break;
 	  case pr_string:
 	    if ( *((char **) prefs_list[i].val)!=NULL )
@@ -486,12 +492,13 @@ void DoPrefs(void) {
 		label[gc].text = def2u_copy( "" );
 	    label[gc].text_is_1byte = false;
 	    gcd[gc++].creator = GTextFieldCreate;
+	    y += 26;
 	  break;
 	}
 	++line;
     }
 
-    gcd[gc].gd.pos.x = 30-3; gcd[gc].gd.pos.y = 8+line*30+5-3;
+    gcd[gc].gd.pos.x = 30-3; gcd[gc].gd.pos.y = y+5-3;
     gcd[gc].gd.pos.width = -1; gcd[gc].gd.pos.height = 0;
     gcd[gc].gd.flags = gg_visible | gg_enabled | gg_but_default;
     label[gc].text = (unichar_t *) _STR_OK;
@@ -511,7 +518,12 @@ void DoPrefs(void) {
     gcd[gc].gd.handle_controlevent = Prefs_Cancel;
     gcd[gc++].creator = GButtonCreate;
 
+    y = GDrawPointsToPixels(NULL,y+37);
+    gcd[0].gd.pos.height = y-4;
+
     GGadgetsCreate(gw,gcd);
+    if ( y!=pos.height )
+	GDrawResize(gw,pos.width,y );
 
     for ( gc=1,i=0; prefs_list[i].name!=NULL; ++i ) {
 	if ( prefs_list[i].dontdisplay )
@@ -554,6 +566,7 @@ void DoPrefs(void) {
     while ( !p.done )
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(gw);
+    GreekHack();
 }
 
 void RecentFilesRemember(char *filename) {

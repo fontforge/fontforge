@@ -459,7 +459,7 @@ return(resstarts);
 
 static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,real *sizes) {
     uint32 rlenpos = ftell(res), widoffpos, widoffloc, kernloc, styleloc, end;
-    int i,k,cnt, strcnt;
+    int i,k,cnt, strcnt, fontclass;
     KernPair *kp;
     DBounds b;
     char *pt;
@@ -545,26 +545,31 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,real *sizes)
 
     /* Fontographer referenced a postscript font even in truetype FONDs */
     styleloc = ftell(res);
-    putshort(res,0xd);			/* fontClass */
+    fontclass = 0x1;
+    /*if ( fam->psfaces[psf_outline]==NULL )*/ fontclass |= 4;
+    /* if ( fam->psfaces[psf_bold]!=NULL )*/ fontclass |= 0x8;
+    /*if ( fam->psfaces[psf_italic]!=NULL ) fontclass |= 0x40;*/
+    /*if ( fam->psfaces[psf_condense]!=NULL ) fontclass |= 0x80;*/
+    /*if ( fam->psfaces[psf_extend]!=NULL ) fontclass |= 0x100;*/
+    putshort(res,fontclass);		/* fontClass */
     putlong(res,0);			/* Offset to glyph encoding table (which we don't use) */
     putlong(res,0);			/* Reserved, MBZ */
     if ( strnmatch(sf->familyname,sf->fontname,strlen(sf->familyname))!=0 )
-	strcnt = 2;
+	strcnt = 1;
     else if ( strmatch(sf->familyname,sf->fontname)==0 )
-	strcnt = 2;
+	strcnt = 1;
     else 
 	strcnt = 3;
     for ( k=0; k<48; ++k )
-	putc(strcnt-1,res);		/* All indeces point to this font */
-    putshort(res,strcnt-1);		/* strcnt strings */
+	putc(strcnt,res);		/* All indeces point to this font */
+    putshort(res,strcnt);		/* strcnt strings */
     pt = sf->fontname+strlen(sf->familyname);
-    if ( strcnt==2 ) {
+    if ( strcnt==1 ) {
 	putc(strlen(sf->fontname),res);	/* basename is full name */
 	/* Mac expects this to be upper case */
 	if ( islower(*sf->fontname)) putc(toupper(*sf->fontname),res);
 	else putc(*sf->fontname,res);
 	fwrite(sf->fontname+1,1,strlen(sf->fontname+1),res);
-	putc(0,res);			/* plain name is basename with no additions */
     } else {
 	putc(strlen(sf->familyname),res);/* basename */
 	if ( islower(*sf->familyname)) putc(toupper(*sf->familyname),res);
@@ -572,8 +577,8 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,real *sizes)
 	fwrite(sf->familyname+1,1,strlen(sf->familyname+1),res);
 	putc(strlen(pt),res);		/* basename */
 	fwrite(pt,1,strlen(pt),res);	/* everything else */
-	putc(1,res);			/* plain name is basename with string 1 */
-	putc(1,res);
+	putc(1,res);			/* index string is one byte long */
+	putc(2,res);			/* plain name is basename with string 2 */
     }
 
     end = ftell(res);
@@ -825,7 +830,7 @@ return( 0 );
 	if ( isupper(*spt)) {
 	    *pt++ = *spt;
 	    lcpt = (spt==sf->fontname?spt+5:spt+3);
-	} else if ( islower(*spt) && spt<lcpt )
+	} else if ( islower(*spt) && spt<lcpt )	/* what happens to digits? */
 	    *pt++ = *spt;
     }
     *pt = '\0';
@@ -904,11 +909,11 @@ return( 0 );
     resources[0].res = rlist[0];
     rlist[0][0].pos = TTFToResource(res,tempttf);
     rlist[0][0].id = HashToId(sf->fontname,sf);
-    rlist[0][0].flags = 0x20;	/* sfnts generally have resource flags 0x20 */
+    rlist[0][0].flags = 0x00;	/* sfnts generally have resource flags 0x20 */
     resources[1].tag = CHR('F','O','N','D');
     resources[1].res = rlist[1];
     rlist[1][0].pos = SFToFOND(res,sf,rlist[0][0].id,true,bsizes);
-    rlist[1][0].flags = 0x20;	/* I've seen FONDs with resource flags 0, 0x20, 0x60 */
+    rlist[1][0].flags = 0x00;	/* I've seen FONDs with resource flags 0, 0x20, 0x60 */
     rlist[1][0].id = rlist[0][0].id;
     rlist[1][0].name = sf->familyname;
     fclose(tempttf);

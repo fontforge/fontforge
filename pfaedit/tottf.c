@@ -4646,6 +4646,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
     char table[256];
     SplineFont *sf = _sf;
     SplineChar *sc;
+    extern int greekfixup;
 
     at->cmap = tmpfile();
 
@@ -4705,7 +4706,8 @@ return;		/* All Done */
 	    } while ( k<_sf->subfontcnt );
 	}
 	if ( _sf->encoding_name!=em_jis208 && _sf->encoding_name!=em_ksc5601 &&
-		_sf->encoding_name!=em_big5 && _sf->encoding_name!=em_johab ) {
+		_sf->encoding_name!=em_big5 && _sf->encoding_name!=em_johab &&
+		!greekfixup ) {
 	    /* Duplicate glyphs for greek */	/* Only meaningful if unicode */
 	    if ( avail[0xb5]==0xffffffff && avail[0x3bc]!=0xffffffff )
 		SetTo(avail,sfind,0xb5,0x3bc);

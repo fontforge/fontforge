@@ -33,6 +33,8 @@
 #include "string.h"
 #include "utype.h"
 
+extern int greekfixup;
+
 /* Let's talk about references. */
 /* If we are doing Type1 output, then the obvious way of doing them is seac */
 /*  but that's so limitting. It only works for exactly two characters both */
@@ -1410,43 +1412,49 @@ return( false );
 /* Same applies to "Delta", 394, 2206 and to "Omega", 3a9, 2126 */
 static int AddGreekDuplicates(struct pschars *chrs,SplineFont *sf,int cnt,
 	int round,int iscjk,struct pschars *subrs,int c1,int c2) {
-    int i1, i2, i;
+    int i1, i2, hasrealname1=false, hasrealname2=false, hasrealname;
     const char *name; char uname[12];
+
+    if ( !greekfixup )
+return( cnt );
 
     i1 = SFFindChar(sf,c1,NULL);
     i2 = SFFindChar(sf,c2,NULL);
     if ( i1 == -1 && i2 == -1 )
 return(cnt);
-    if ( i1 == -1 ) {
-	if ( (name = psunicodenames[c1])==NULL ) {
+    if ( i1!=-1 && *sf->chars[i1]->name!='u' )
+	hasrealname1 = true;
+    if ( i2!=-1 && *sf->chars[i2]->name!='u' )
+	hasrealname2 = true;
+    hasrealname = hasrealname1 || hasrealname2;
+    if ( i1 == -1 || hasrealname1 ) {
+	if ( hasrealname || (name = psunicodenames[c1])==NULL ) {
 	    sprintf(uname,"uni%04X", c1);
 	    name = uname;
 	}
 	chrs->keys[cnt] = copy(name);
-	chrs->values[cnt] = SplineChar2PS(sf->chars[i2],&chrs->lens[cnt],
+	chrs->values[cnt] = SplineChar2PS(sf->chars[i1==-1?i2:i1],&chrs->lens[cnt],
 		round,iscjk,subrs,NULL);
 	++cnt;
-    } else if ( i2 == -1 ) {
-	if ( (name = psunicodenames[c2])==NULL ) {
+    }
+    if ( i2 == -1 || hasrealname2 ) {
+	if ( hasrealname || (name = psunicodenames[c2])==NULL ) {
 	    sprintf(uname,"uni%04X", c2);
 	    name = uname;
 	}
 	chrs->keys[cnt] = copy(name);
-	chrs->values[cnt] = SplineChar2PS(sf->chars[i1],&chrs->lens[cnt],
+	chrs->values[cnt] = SplineChar2PS(sf->chars[i2==-1?i1:i2],&chrs->lens[cnt],
 		round,iscjk,subrs,NULL);
 	++cnt;
     }
-    if ( psunicodenames[c1]!=NULL ) {	/* one of them will have a real name */
-	sprintf(uname,"uni%04X", c1);
-	i = i1==-1?i2:i1;		/* Use i1 if possible */
-    } else if ( psunicodenames[c2]!=NULL ) {
-	sprintf(uname,"uni%04X", c2);
-	i = i2==-1?i1:i2;		/* Use i2 if possible */
+    if ( !hasrealname ) {
+	if ( (name = psunicodenames[c1])==NULL )
+	    name = psunicodenames[c2];
+	chrs->keys[cnt] = copy(name);
+	chrs->values[cnt] = SplineChar2PS(sf->chars[i1==-1?i2:i1],&chrs->lens[cnt],
+		round,iscjk,subrs,NULL);
+	++cnt;
     }
-    chrs->keys[cnt] = copy(uname);
-    chrs->values[cnt] = SplineChar2PS(sf->chars[i],&chrs->lens[cnt],
-	    round,iscjk,subrs,NULL);
-    ++cnt;
 return( cnt );
 }
 
@@ -1459,6 +1467,9 @@ static int GreekExists(char exists[6],SplineFont *sf) {
     exists[3] = SCWorthOutputting(SFGetChar(sf,0x2206,NULL));
     exists[4] = SCWorthOutputting(SFGetChar(sf,0x3a9,NULL));
     exists[5] = SCWorthOutputting(SFGetChar(sf,0x2126,NULL));
+    if ( !greekfixup )
+return( 0 );
+
     cnt = 0;
     if ( exists[0]!=exists[1] ) cnt+=2; else if ( exists[0]&&exists[1] ) ++cnt;
     if ( exists[2]!=exists[3] ) cnt+=2; else if ( exists[2]&&exists[3] ) ++cnt;

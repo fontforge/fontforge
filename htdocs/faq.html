@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 30-Nov-2001 -->
+  <!-- AP: Last modified: 10-Dec-2001 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -316,7 +316,18 @@ $ xset fp+ `pwd`
 	You should generate them as postscript binary (.pfb) files, then move both
 	the .pfb and the .afm file into (one of) your font directory(ies) and run
 	<A HREF="http://rpmfind.net/linux/rpm2html/search.php?query=type1inst">type1inst</A>
-	in it.
+	in it.<BR>
+	type1inst will probably complain that your font doesn't have a foundry and
+	will probably get the encoding wrong. You can either:
+	<UL>
+	  <LI>
+	    Ignore it and nothing bad will happen
+	  <LI>
+	    Manually edit fonts.scale after running type1inst to fix these entries
+	  <LI>
+	    Make your font's Copyright be reasonable, and then edit type1inst and add
+	    your foundry (directions for this are in type1inst itself)
+	</UL>
 	<P>
 	If you want to install <EM>truetype fonts</EM><BR>
 	You move the .ttf file into your font directory and run mkttfdir and
@@ -330,7 +341,10 @@ $ xset fp+ `pwd`
 	Some versions of X (ie, those shipped by redhat) rely on the x font server
 	to do font work rather than the X server itself. You may want to use chkfontpath
 	to add your new directory to the font server's font path (rather than xset
-	fp).
+	fp).<BR>
+	You may also need to insure that the font directory (and all its parent
+	directories) are readable to world. (the font server runs as a non-priviledged
+	user)
 	<P>
 	As far as I know no version of X supports <EM>opentype</EM> fonts yet.
 	<P>

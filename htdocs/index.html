@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 3-Dec-2001 -->
+  <!-- AP: Last modified: 10-Dec-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -71,8 +71,8 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-011203.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 3-Dec-2001
+    <A HREF="pfaedit-011209.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 9-Dec-2001
   <LI>
     <A HREF="pfaedit-solaris-011102.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 2-Nov-2001
@@ -96,7 +96,7 @@ know when you do</A>.
 <P>
 If you want to do autotracing around character images you should also download
 Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
-program.</A>
+program.</A> (there's a new version as of Dec 2001)
 <P>
 If you want to edit CID keyed fonts you need these
 <A HREF="cidmaps.tgz">character set descriptions</A>. (These were last updated
@@ -107,7 +107,7 @@ If you want to edit CID keyed fonts you need these
 <P>
 You can download a <A HREF="pfaedit-011201-1.src.rpm">source RPM</A>: Version:
 1-Dec-2001<BR>
-Or you can download the following three packages. Version: 3-Dec-2001
+Or you can download the following three packages. Version: 9-Dec-2001
 <UL>
   <LI>
     <A HREF="libgunicode-011203.tgz">Unicode library source</A> (3-Dec-2001)<BR>
@@ -119,15 +119,15 @@ Or you can download the following three packages. Version: 3-Dec-2001
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-011203.tgz">Pfaedit source</A> (3-Dec-2001)<BR>
+    <A HREF="pfaedit_src-011209.tgz">Pfaedit source</A> (9-Dec-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
-    <A HREF="pfaedit_full-011203.tgz">All three bundled together </A>(3-Dec-2001)
+    <A HREF="pfaedit_full-011209.tgz">All three bundled together </A>(9-Dec-2001)
 </UL>
 <P>
 If you want to do autotracing around character images you should also download
 Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
-program.</A>
+program.</A>(there's a new version as of Dec 2001)
 <P>
 If you want to edit CID keyed fonts you need these
 <A HREF="cidmaps.tgz">character set descriptions</A>. (These were last updated
@@ -232,6 +232,20 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    9-Dec-2001
+    <UL>
+      <LI>
+	Added proper names for Hangul Syllables
+      <LI>
+	The Greek fixup wasn't working as it should (sometimes would generate two
+	characters named "Delta" in pfb files). Should be fixed. Should also be
+	controlable by Preference item (ie. you can turn it off if you want to)
+      <LI>
+	The metrics view did not display changes
+      <LI>
+	The metrics view's cursor sometimes got stuck in the wrong shape
+    </UL>
   <LI>
     3-Dec-2001
     <UL>
@@ -673,6 +687,10 @@ prepared to save frequently and always work on a copy of the original.
   <A NAME="known-bugs">Bugs</A>
 </H2>
 <UL>
+  <LI>
+    After adding the Johab encoding, any old fonts which had a unicode encoding
+    will suddenly claim to have a Johab encoding. I don't see a way around this
+    at the moment. Just reencode them as unicode and all should be well.
   <LI>
     When reading in TrueType PfaEdit will not get the correct offset for composit
     glyphs where offsets are specified by point matching rather than as x,y values.
