@@ -2265,11 +2265,13 @@ return( found );
 int StemListAnyConflicts(StemInfo *stems) {
     StemInfo *s;
     int any= false;
+    double end;
 
     for ( s=stems; s!=NULL ; s=s->next )
 	s->hasconflicts = false;
     while ( stems!=NULL ) {
-	for ( s=stems->next; s!=NULL && s->start<stems->start+stems->width; s=s->next ) {
+	end = stems->width<0 ? stems->start : stems->start+stems->width;
+	for ( s=stems->next; s!=NULL && (s->width>0 ? s->start : s->start+s->width)<end; s=s->next ) {
 	    stems->hasconflicts = true;
 	    s->hasconflicts = true;
 	    any = true;
@@ -2379,20 +2381,43 @@ static StemInfo *StemRemoveConflictingBigHint(StemInfo *stems,real big) {
     /*  whole character then it doesn't do much good */
     /* Unless it is needed for blue zones?... */
     /*  It should be a ghost instead */
-    StemInfo *p=NULL, *head=stems, *n;
+    StemInfo *p=NULL, *head=stems, *n, *biggest, *bp, *s;
+    int any=true, conflicts;
+    double max;
 
-    while ( stems!=NULL ) {
-	n = stems->next;
-	if ( stems->hasconflicts && stems->width>=big ) {
-	    /* Die! */
-	    if ( p==NULL )
-		head = n;
-	    else
-		p->next = n;
-	    StemInfoFree(stems);
-	} else
-	    p = stems;
-	stems = n;
+    while ( any ) {
+	any = false;
+	stems = head;
+	while ( stems!=NULL ) {
+	    max = stems->width<0 ? stems->start : stems->start+stems->width;
+	    biggest = stems;
+	    bp = p;
+	    conflicts = false;
+	    for ( p = stems, s=stems->next;
+		    s!=NULL && (s->width<0 ? s->start+s->width : s->start) < max ;
+		    p = s, s=s->next ) {
+		conflicts = true;
+		if ( (s->width<0 ? s->start : s->start+s->width)>max )
+		    max = (s->width<0 ? s->start : s->start+s->width);
+		if ( fabs(s->width) > fabs(biggest->width) ) {
+		    biggest = s;
+		    bp = p;
+		}
+	    }
+	    if ( conflicts && biggest->width>big ) {
+		any = true;
+		n = biggest->next;
+		/* Die! */
+		if ( bp==NULL )
+		    head = n;
+		else
+		    bp->next = n;
+		if ( biggest==p )
+		    p = bp;
+		StemInfoFree(biggest);
+	    }
+	    stems = s;
+	}
     }
 #if 0
     /* if we have a hint which controls no points, conflicts with another hint*/
