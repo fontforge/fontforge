@@ -1746,12 +1746,21 @@ static void bMove(Context *c) {
 
 static void bScaleToEm(Context *c) {
     int i;
+    int ascent, descent;
 
-    if ( c->a.argc!=3 )
+    if ( c->a.argc!=3 && c->a.argc!=2 )
 	error( c, "Wrong number of arguments");
     for ( i=1; i<c->a.argc; ++i )
 	if ( c->a.vals[i].type!=v_int || c->a.vals[i].u.ival<0 || c->a.vals[i].u.ival>16384 )
 	    error(c,"Bad argument type");
+    if ( c->a.argc==3 ) {
+	ascent = c->a.vals[1].u.ival;
+	descent = c->a.vals[2].u.ival;
+    } else {
+	ascent = rint(c->a.vals[1].u.ival* ((double) c->curfv->sf->ascent)/
+		(c->curfv->sf->ascent+c->curfv->sf->descent));
+	descent = c->a.vals[1].u.ival-ascent;
+    }
     SFScaleToEm(c->curfv->sf,c->a.vals[1].u.ival,c->a.vals[2].u.ival);
 }
 
