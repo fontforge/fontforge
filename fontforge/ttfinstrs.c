@@ -1700,7 +1700,7 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 
     if ( tab==NULL && sf->mm!=NULL && sf->mm->apple )
 	tab = SFFindTable(sf->mm->normal,tag);
-    if ( tab==NULL ) {
+    if ( tab!=NULL ) {
 	sv->len = tab->len;
 	sv->edits = galloc(tab->len+1);
 	for ( i=0; i<tab->len/2; ++i )
