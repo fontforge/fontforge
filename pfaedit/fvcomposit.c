@@ -402,6 +402,42 @@ return( NULL );
 return( sf->chars[i] );
 }
 
+static unichar_t *SFAlternateFromLigature(SplineFont *sf, int base) {
+    static unichar_t space[30];
+    unichar_t *spt, *send = space+sizeof(space)/sizeof(space[0])-1;
+    SplineChar *sc;
+    char *ligstart, *semi, *pt, sch, ch;
+    int j;
+
+    if ( base<0 || base>=sf->charcnt || (sc=sf->chars[base])==NULL ||
+	    sc->lig==NULL )
+return( NULL );
+
+    ligstart=sc->lig->components;
+    semi = strchr(ligstart,';');
+    if ( semi==NULL ) semi = ligstart+strlen(ligstart);
+    sch = *semi; *semi = '\0';
+    spt = space;
+    for ( pt = ligstart; *pt!='\0'; ) {
+	char *start = pt;
+	for ( ; *pt!='\0' && *pt!=' '; ++pt );
+	ch = *pt; *pt = '\0';
+	for ( j=0; j<sf->charcnt; ++j )
+	    if ( sf->chars[j]!=NULL && strcmp(sf->chars[j]->name,start)==0 )
+	break;
+	*pt = ch;
+	if ( j>=sf->charcnt || sf->chars[j]->unicodeenc==-1 || spt>=send ) {
+	    *semi = sch;
+return( NULL );
+	}
+	*spt++ = sf->chars[j]->unicodeenc;
+	if ( ch!='\0' ) ++pt;
+    }
+    *spt ='\0';
+    *semi = sch;
+return( space );
+}
+
 const unichar_t *SFGetAlternate(SplineFont *sf, int base) {
     static unichar_t greekalts[5];
     const unichar_t *upt, *pt; unichar_t *gpt;
@@ -418,10 +454,9 @@ return( NULL );
 	greekalts[3] = 0;
 return( greekalts );
     }
-    if ( unicode_alternates[base>>8]==NULL )
-return( NULL );
-    if ( (upt = unicode_alternates[base>>8][base&0xff])==NULL )
-return( NULL );
+    if ( unicode_alternates[base>>8]==NULL ||
+	    (upt = unicode_alternates[base>>8][base&0xff])==NULL )
+return( SFAlternateFromLigature(sf,base));
 
 	    /* The definitions of some of the greek letters may make some */
 	    /*  linguistic sense, but I can't use it to place the accents */
