@@ -74,6 +74,10 @@ return( PixelToPoint(pixels,100));
 return( PixelToPoint(pixels,gw->display->res));
 }
 
+void GDrawSetDefaultIcon(GWindow icon) {
+    (icon->display->funcs->setDefaultIcon)(icon);
+}
+
 GWindow GDrawCreateTopWindow(GDisplay *gdisp, GRect *pos,
 	int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs) {
     if ( gdisp==NULL ) gdisp = screen_display;

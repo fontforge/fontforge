@@ -332,6 +332,7 @@ int main( int argc, char **argv ) {
     initrand();
 
     GDrawCreateDisplays(display,argv[0]);
+    InitCursors();
 
     /* the splash screen used not to have a title bar (wam_nodecor) */
     /*  but I found I needed to know how much the window manager moved */
@@ -365,11 +366,9 @@ int main( int argc, char **argv ) {
 	GDrawSetVisible(splashw,true);
 	GDrawSync(NULL);
 	GDrawProcessPendingEvents(NULL);
-	InitCursors();
 	GDrawProcessPendingEvents(NULL);
 	splasht = GDrawRequestTimer(splashw,1000,1000,NULL);
-    } else
-	InitCursors();
+    }
     autosave_timer=GDrawRequestTimer(splashw,60*1000,30*1000,NULL);
 
     GDrawProcessPendingEvents(NULL);

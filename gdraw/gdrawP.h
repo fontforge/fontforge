@@ -147,6 +147,8 @@ struct displayfuncs {
     void (*term)(GDisplay *);
     void *(*nativeDisplay)(GDisplay *);
 
+    void (*setDefaultIcon)(GWindow);
+
     GWindow (*createTopWindow)(GDisplay *, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *);
     GWindow (*createSubWindow)(GWindow, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *);
     GWindow (*createPixmap)(GDisplay *, uint16 width, uint16 height);

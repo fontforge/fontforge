@@ -919,6 +919,12 @@ static GGC *_GXDraw_NewGGC() {
 return( ggc );
 }
 
+static void GXDrawSetDefaultIcon(GWindow icon) {
+    GXDisplay *gdisp = (GXDisplay *) (icon->display);
+
+    gdisp->default_icon = (GXWindow) icon;
+}
+
 static Window MakeIconWindow(GXDisplay *gdisp, GXWindow pixmap) {
     XSetWindowAttributes attrs;
     unsigned long wmask = 0;
@@ -1058,13 +1064,15 @@ return( NULL );
 	wm_hints.flags = InputHint | StateHint;
 	wm_hints.input = True;
 	wm_hints.initial_state = NormalState;
-	if ( (wattrs->mask&wam_icon) && wattrs->icon!=NULL ) {
-	    wm_hints.icon_pixmap = ((GXWindow) (wattrs->icon))->w;
+	if ( ((wattrs->mask&wam_icon) && wattrs->icon!=NULL ) ||
+		( !(wattrs->mask&wam_icon) && gdisp->default_icon!=NULL )) {
+	    GXWindow icon = (wattrs->mask&wam_icon)? (GXWindow) (wattrs->icon) : gdisp->default_icon;
+	    wm_hints.icon_pixmap = icon->w;
 	    wm_hints.flags |= IconPixmapHint;
-	    if ( !wattrs->icon->ggc->bitmap_col && gdisp->depth!=1 ) {
+	    if ( !icon->ggc->bitmap_col && gdisp->depth!=1 ) {
 		/* X Icons are bitmaps. If we want a pixmap we create a dummy */
 		/*  window with the pixmap as background */
-		wm_hints.icon_window = MakeIconWindow(gdisp,(GXWindow) (wattrs->icon));
+		wm_hints.icon_window = MakeIconWindow(gdisp,icon);
 		wm_hints.flags |= IconWindowHint;
 	    }
 	}
@@ -3822,6 +3830,8 @@ static struct displayfuncs xfuncs = {
     GXDrawInit,
     GXDrawTerm,
     GXDrawNativeDisplay,
+
+    GXDrawSetDefaultIcon,
 
     GXDrawCreateTopWindow,
     GXDrawCreateSubWindow,

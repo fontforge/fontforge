@@ -266,6 +266,7 @@ typedef struct gxdisplay /* : GDisplay */ {
     struct wacom_state *wacom_state;
     int wacom_fd;
 #endif
+    GXWindow default_icon;
 } GXDisplay;
 
 #define Pixel32(gdisp,col) Pixel16(gdisp,col)

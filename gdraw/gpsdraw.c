@@ -54,6 +54,9 @@ static void *PSDrawNativeDisplay(GDisplay *gdisp) {
 return( NULL );
 }
 
+static void PSDrawSetDefaultIcon(GWindow icon) {
+}
+
 static GWindow PSDrawCreateSubWindow(GWindow w, GRect *pos,
 	int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs) {
     fprintf( stderr, "CreateSubWindow not implemented for postscript\n" );
@@ -1241,6 +1244,8 @@ static struct displayfuncs psfuncs = {
     PSDrawInit,
     PSDrawTerm,
     PSDrawNativeDisplay,
+
+    PSDrawSetDefaultIcon,
 
     PSDrawCreateTopWindow,
     PSDrawCreateSubWindow,
