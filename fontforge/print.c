@@ -4083,9 +4083,8 @@ return( space );
 }
 
 void ScriptPrint(FontView *fv,int type,int32 *pointsizes,char *samplefile,
-	char *outputfile) {
+	unichar_t *sample, char *outputfile) {
     PI pi;
-    unichar_t *sample=NULL;
     char buf[100];
 
     PIInit(&pi,fv,NULL,NULL);
@@ -4095,7 +4094,7 @@ void ScriptPrint(FontView *fv,int type,int32 *pointsizes,char *samplefile,
     }
     pi.pt = type;
     if ( type==pt_fontsample ) {
-	if ( samplefile!=NULL )
+	if ( samplefile!=NULL && *samplefile!='\0' )
 	    sample = FileToUString(samplefile,65536);
 	if ( sample==NULL )
 	    sample = PrtBuildDef(pi.sf,pi.twobyte);

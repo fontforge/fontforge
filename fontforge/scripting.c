@@ -1285,15 +1285,20 @@ static void bPrintSetup(Context *c) {
 }
 
 static void bPrintFont(Context *c) {
-    int type, i;
+    int type, i, inlinesample = false;
     int32 *pointsizes=NULL;
-    char *sample=NULL, *output=NULL;
+    char *samplefile=NULL, *output=NULL;
+    unichar_t *sample=NULL;
 
     if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=4 && c->a.argc!=5 )
 	error( c, "Wrong number of arguments");
     type = c->a.vals[1].u.ival;
-    if ( c->a.vals[1].type!=v_int || type<0 || type>3 )
+    if ( c->a.vals[1].type!=v_int || type<0 || type>4 )
 	error( c, "Bad type for first argument");
+    if ( type==4 ) {
+	type=3;
+	inlinesample = true;
+    }
     if ( c->a.argc>=3 ) {
 	if ( c->a.vals[2].type==v_int ) {
 	    if ( c->a.vals[2].u.ival>0 ) { 
@@ -1315,8 +1320,13 @@ static void bPrintFont(Context *c) {
     if ( c->a.argc>=4 ) {
 	if ( c->a.vals[3].type!=v_str )
 	    error( c, "Bad type for third argument");
-	else if ( *c->a.vals[3].u.sval!='\0' )
-	    sample = c->a.vals[3].u.sval;
+	else if ( *c->a.vals[3].u.sval!='\0' ) {
+	    samplefile = c->a.vals[3].u.sval;
+	    if ( inlinesample ) {
+		sample = utf82u_copy(samplefile);
+		samplefile = NULL;
+	    }
+	}
     }
     if ( c->a.argc>=5 ) {
 	if ( c->a.vals[4].type!=v_str )
@@ -1324,8 +1334,9 @@ static void bPrintFont(Context *c) {
 	else if ( *c->a.vals[4].u.sval!='\0' )
 	    output = c->a.vals[4].u.sval;
     }
-    ScriptPrint(c->curfv,type,pointsizes,sample,output);
+    ScriptPrint(c->curfv,type,pointsizes,samplefile,sample,output);
     free(pointsizes);
+    /* ScriptPrint frees sample for us */
 }
 
 /* **** Edit menu **** */

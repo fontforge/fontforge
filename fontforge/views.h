@@ -771,7 +771,7 @@ extern int DebuggingFpgm(struct debugger_context *dc);
 extern int BitmapControl(FontView *fv,int32 *sizes,int isavail);
 
 extern void ScriptPrint(FontView *fv,int type,int32 *pointsizes,char *samplefile,
-	char *outputfile);
+	unichar_t *sample, char *outputfile);
 
 #if defined(FONTFORGE_CONFIG_GTK)
 extern char *Kern2Text(SplineChar *other,KernPair *kp,int isv);
