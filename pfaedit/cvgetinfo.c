@@ -239,13 +239,13 @@ static void LigSet(SplineChar *sc,char *lig) {
 int SCSetMetaData(SplineChar *sc,char *name,int unienc,char *lig) {
     SplineFont *sf = sc->parent;
     int i, mv=0;
-    int isnotdef;
+    int isnotdef, samename=false;
 
     if ( !LigCheck(sf,sc,lig))
 return( false );
 
     if ( sc->unicodeenc == unienc && strcmp(name,sc->name)==0 ) {
-	/* No change, it must be good */
+	samename = true;	/* No change, it must be good */
     } else {
 	isnotdef = strcmp(name,".notdef")==0;
 	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]!=sc ) {
@@ -276,6 +276,8 @@ return( false );
     if ( (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4) &&
 	    unienc==sc->enc && unienc>=0xe000 && unienc<=0xf8ff )
 	/* Ok to name things in the private use area */;
+    else if ( samename )
+	/* Ok to name it itself */;
     else if ( (sf->encoding_name<e_first2byte && sc->enc<256) ||
 	    (sf->encoding_name>=em_big5 && sf->encoding_name<=em_unicode && sc->enc<65536 ) ||
 	    (sf->encoding_name>=e_first2byte && sf->encoding_name<em_unicode && sc->enc<94*96 ) ||
@@ -625,6 +627,7 @@ return( true );
 static int CI_CommentChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	/* Let's give things with comments a white color. This may not be a good idea */
 	if ( ci->first && ci->sc->color==COLOR_DEFAULT &&
 		0==GGadgetGetFirstListSelectedItem(GWidgetGetControl(ci->gw,CID_Color)) )
 	    GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_Color),1);
