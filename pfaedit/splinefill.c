@@ -870,6 +870,7 @@ return( NULL );
     } else {
 #if 1
 	/* Some truetype fonts have open paths that should be ignored */
+	SCNumberPoints(sc);
 	open = SplineSetsExtractOpen(&sc->splines);
 #endif
 	SplineCharFindBounds(sc,&b);
