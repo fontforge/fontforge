@@ -465,7 +465,8 @@ typedef struct searchview {
 #endif
 } SearchView;
 
-enum fvtrans_flags { fvt_dobackground=1, fvt_round_to_int=2, fvt_dontsetwidth=4 };
+enum fvtrans_flags { fvt_dobackground=1, fvt_round_to_int=2,
+	fvt_dontsetwidth=4, fvt_dontmovewidth=8 };
 
 extern void FVSetTitle(FontView *fv);
 extern FontView *_FontViewCreate(SplineFont *sf);

@@ -4740,12 +4740,14 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
 	    SCUndoSetLBearingChange(cv->sc,(int) rint(transform[4]));
 	    SCSynchronizeLBearing(cv->sc,NULL,transform[4]);
 	}
-	if ( transform[0]>0 && transform[3]>0 && transform[1]==0 &&
-		transform[2]==0 && cv->widthsel && transform[4]!=0 )
-	    SCSynchronizeWidth(cv->sc,cv->sc->width*transform[0]+transform[4],cv->sc->width,NULL);
-	if ( transform[0]==1 && transform[3]==1 && transform[1]==0 &&
-		transform[2]==0 && cv->vwidthsel && transform[5]!=0 )
-	    cv->sc->vwidth+=transform[5];
+	if ( !(flags&fvt_dontmovewidth) && (cv->widthsel || !anysel))
+	    if ( transform[0]>0 && transform[3]>0 && transform[1]==0 &&
+		    transform[2]==0 && transform[4]!=0 )
+		SCSynchronizeWidth(cv->sc,cv->sc->width*transform[0]+transform[4],cv->sc->width,NULL);
+	if ( !(flags&fvt_dontmovewidth) && (cv->vwidthsel || !anysel))
+	    if ( transform[0]==1 && transform[3]==1 && transform[1]==0 &&
+		    transform[2]==0 && transform[5]!=0 )
+		cv->sc->vwidth+=transform[5];
 	if ( (flags&fvt_dobackground) && !anysel ) {
 	    SCPreserveBackground(cv->sc);
 	    for ( img = cv->sc->backimages; img!=NULL; img=img->next )
@@ -5847,7 +5849,7 @@ static void CVMenuCenter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( transform[4]!=0 ) {
 	cv->p.transany = false;
 	CVPreserveState(cv);
-	CVTransFunc(cv,transform,false);
+	CVTransFunc(cv,transform,fvt_dontmovewidth);
 	CVCharChangedUpdate(cv);
     }
     cv->drawmode = drawmode;

@@ -1596,11 +1596,12 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], uint8 *sel,
     real t[6];
 
     SCPreserveState(sc,true);
-    if ( transform[0]>0 && transform[3]>0 && transform[1]==0 && transform[2]==0 ) {
-	int widthset = sc->widthset;
-	SCSynchronizeWidth(sc,sc->width*transform[0]+transform[4],sc->width,fv);
-	if ( flags&fvt_dontsetwidth ) sc->widthset = widthset;
-    }
+    if ( !(flags&fvt_dontmovewidth) )
+	if ( transform[0]>0 && transform[3]>0 && transform[1]==0 && transform[2]==0 ) {
+	    int widthset = sc->widthset;
+	    SCSynchronizeWidth(sc,sc->width*transform[0]+transform[4],sc->width,fv);
+	    if ( !(flags&fvt_dontsetwidth) ) sc->widthset = widthset;
+	}
     SplinePointListTransform(sc->splines,transform,true);
     for ( refs = sc->refs; refs!=NULL; refs=refs->next ) {
 	if ( sel!=NULL && sel[refs->sc->enc] ) {
@@ -2627,7 +2628,7 @@ void FVMetricsCenter(FontView *fv,int docenter) {
 	else
 	    transform[4] = (sc->width-(bb.maxx-bb.minx))/3 - bb.minx;
 	if ( transform[4]!=0 )
-	    FVTrans(fv,sc,transform,NULL,false);
+	    FVTrans(fv,sc,transform,NULL,fvt_dontmovewidth);
     }
 }
 
