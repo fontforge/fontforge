@@ -2185,8 +2185,13 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		    stack[0] = stack[1]; stack[1] = stack[2]; --sp;
 		}
 		closepath(cur,true);
-	    } else if ( cur!=NULL && cur->first->prev==NULL )
+	    }
+#if 0	/* This doesn't work. It breaks type1 flex hinting */
+	/* There's now a special hack just before returning which closes any */
+	/*  open paths */
+	    else if ( cur!=NULL && cur->first->prev==NULL )
 		closepath(cur,false);		/* Even in type1 fonts closepath is optional */
+#endif
 	  case 5: /* rlineto */
 	  case 6: /* hlineto */
 	  case 7: /* vlineto */
@@ -2363,6 +2368,13 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	fprintf(stderr, "end of subroutine reached with no return in %s\n", name );
     SCCatagorizePoints(ret);
 
+    /* Even in type1 fonts all paths should be closed. But if we close them at*/
+    /*  the obvious moveto, that breaks flex hints. So we have a hack here at */
+    /*  the end which closes any open paths. */
+    if ( !is_type2 ) for ( cur = ret->splines; cur!=NULL; cur = cur->next ) if ( cur->first->prev==NULL ) {
+	SplineMake(cur->last,cur->first);
+	cur->last = cur->first;
+    }
     /* For some reason, when I read splines in, I get their clockwise nature */
     /*  backwards ... at least backwards from fontographer ... so reverse 'em*/
     for ( cur = ret->splines; cur!=NULL; cur = cur->next )
