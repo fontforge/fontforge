@@ -2102,9 +2102,7 @@ static char str_TooManyTags = "Se especificaron demasiada etiquetas";
 static char str_NoMatch = "No characters matched";
     /* Import */
 static char str_Duppixelsize[] = "Duplicar tamaño del pixel";
-/* "The font database already contains a bitmap\nfont with this pixelsize (%d)\nDo you want to overwrite it?" */
-static char str_Duppixelsizepre[] = "La base de datos de la fuente ya contiene una fuente de mapa de bits\012con este tamaño en pixeles (";
-static char str_Duppixelsizepost[] = ")\012¿Desea sobreescribirla?";
+static char str_DupPixelSizeLong = "La base de datos de la fuente ya contiene una fuente de mapa de bits\012con este tamaño en pixeles (%d)\012¿Desea sobreescribirla?";
 static char str_NoBitmapFont = "No hay fuentes de mapa de bits";
 static char str_NoBitmapFontIn = "No se pudo encontrar una fuente en mapa de bits en %hs";
     /* Private Info */
