@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 14-Jan-2003 -->
+  <!-- AP: Last modified: 20-Jan-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,23 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    20-Jan-2003
+    <UL>
+	<LI>Put in a number of errors and warnings related to a glyph not having a script.
+	<LI>Fixed a crash bug when generating a popup for a glyph with no unicode encoding
+	<LI>Support for scroll wheels.
+	<LI>I hope I've now fixed the problems related to the GSUB table and ttc
+	    files. Now does a pass through the GSUB table to see what glyphs
+	    can be introduced by it when it figures out what glyphs to read from
+	    the glyph table (ttc files have more than one font sharing the table,
+	    don't want to read all glyphs).
+	<LI>Added support for extension subtables of GPOS/GSUB.
+	<LI>Making a selection in the textfield of the Display dlg was broken
+	    when the selection was scrolled.
+	<LI>Valek wants a Paste Into command.
+	<LI>Uninitialized variable in GSUB output caused erratic ligature behavior
+    </UL>
   <LI>
     16-Jan-2003
     <UL>

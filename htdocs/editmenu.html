@@ -34,6 +34,8 @@ in text fields.
   <LI>
     <A HREF="#Paste">Paste</A>
   <LI>
+    <A HREF="#PasteInto">Paste Into</A>
+  <LI>
     <A HREF="#Clear">Clear</A>
   <LI>
     <A HREF="#Background">Clear Background</A>
@@ -200,7 +202,8 @@ view this menu will be disabled when one of the text fields has the focus.
   <DD>
     In the Font View this command will paste whatever is in the clipboard into
     the foregrounds of all selected characters (exception: if the clipboard contains
-    an image it will not go into the foreground). If there are more selected
+    an image it will not go into the foreground), clearing out whatever was there.
+    If there are more selected
     characters than there is information in the clipboard then the clipboard
     will be repeated until all selected characters have had something pasted
     in them (that is if characters A and B were selected when the copy happened
@@ -239,6 +242,11 @@ view this menu will be disabled when one of the text fields has the focus.
     </TABLE>
     <P>
     See the section on <A HREF="selections.html">selections</A>
+  <DT>
+    <A NAME="PasteInto">Paste Into</A>
+  <DD>
+    Only available in the fontview. Just like Paste, except it does not clear
+    the contents of the character before adding to it.
   <DT>
     <A NAME="Clear">Clear</A>
   <DD>
