@@ -1280,7 +1280,7 @@ return;
     sf->chars[into] = sf->chars[from];
     sf->chars[from] = NULL;
     sf->chars[into]->enc = into;
-    for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+    for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) if ( bdf->chars[from]!=NULL ) {
 	bdf->chars[into] = bdf->chars[from];
 	bdf->chars[from] = NULL;
 	bdf->chars[into]->enc = into;
