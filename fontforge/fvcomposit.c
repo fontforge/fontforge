@@ -1655,31 +1655,39 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
 	char *uc_accent;
 	SplineChar *test = NULL;
 	char buffer[80];
-	char *suffix;
+	char *suffixes[4];
+	int scnt=0, i;
 
 	uc_accent = galloc(strlen(rsc->name)+11);
 	strcpy(uc_accent,rsc->name);
+	memset(suffixes,0,sizeof(suffixes));
 	if ( basech>=0x400 && basech<=0x52f ) {
 	    if ( isupper(basech) )
-		suffix = "cyrcap";
-	    else
-		suffix = "cyr";
-	} else
-	    suffix = "cap";
+		suffixes[scnt++] = "cyrcap";
+	    suffixes[scnt++] = "cyr";
+	}
+	if ( isupper(basech))
+	    suffixes[scnt++] = "cap";
 
-	if ( test==NULL && uni>=BottomAccent && uni<=TopAccent ) {
-	    apt = accents[uni-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
-	    while ( test==NULL && apt<end ) {
-		if ( psunicodenames[*apt]!=NULL )
-		    sprintf( buffer,"%.70s.%s", psunicodenames[*apt], suffix);
-		else
-		    sprintf( buffer,"uni%04X.%s", *apt, suffix);
-		if ( (test = SFGetChar(sf,-1,buffer))!=NULL )
-		    rsc = test;
-		++apt;
+	for ( i=0; test==NULL && i<scnt; ++i ) {
+	    if ( uni>=BottomAccent && uni<=TopAccent ) {
+		apt = accents[uni-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
+		while ( test==NULL && apt<end ) {
+		    if ( psunicodenames[*apt]!=NULL ) {
+			sprintf( buffer,"%.70s.%s", psunicodenames[*apt], suffixes[i]);
+			if ( (test = SFGetChar(sf,-1,buffer))!=NULL )
+			    rsc = test;
+		    }
+		    if ( test==NULL ) {
+			sprintf( buffer,"uni%04X.%s", *apt, suffixes[i]);
+			if ( (test = SFGetChar(sf,-1,buffer))!=NULL )
+			    rsc = test;
+		    }
+		    ++apt;
+		}
 	    }
 	}
-	if ( test==NULL && uni>=BottomAccent && uni<=TopAccent ) {
+	if ( test==NULL && uni>=BottomAccent && uni<=TopAccent && isupper(basech)) {
 	    apt = accents[uni-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
 	    while ( test==NULL && apt<end ) {
 		if ( psunicodenames[*apt]!=NULL ) {
@@ -1693,7 +1701,7 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
 		++apt;
 	    }
 	}
-	if ( uni>=BottomAccent && uni<BottomAccent+sizeof(uc_accent_names)/sizeof(uc_accent_names[0]) &&
+	if ( test==NULL && uni>=BottomAccent && uni<BottomAccent+sizeof(uc_accent_names)/sizeof(uc_accent_names[0]) &&
 		uc_accent_names[uni-BottomAccent]!=NULL && isupper(basech))
 	    if ( (test = SFGetChar(sf,-1,uc_accent_names[uni-BottomAccent]))!=NULL )
 		rsc = test;
