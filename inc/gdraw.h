@@ -277,6 +277,7 @@ typedef struct gevent {
 	    void *userdata;
 	} user;
     } u;
+    void *native_window;
 } GEvent;
 
 typedef enum cursor_types { ct_default, ct_pointer, ct_backpointer, ct_hand,
@@ -370,6 +371,7 @@ extern GCursor GDrawCreateCursor(GWindow src,GWindow mask,Color fg,Color bg,
 	int16 x, int16 y );
 extern void GDrawDestroyWindow(GWindow w);
 extern void GDrawDestroyCursor(GDisplay *gdisp, GCursor ct);
+extern int  GDrawNativeWindowExists(GDisplay *gdisp, void *native);
 extern void GDrawSetZoom(GWindow w, GRect *zoomsize, enum gzoom_flags);
 extern void GDrawSetWindowBorder(GWindow w, int width, Color color);
 extern int  GDrawSetDither(GDisplay *gdisp, int dither);
