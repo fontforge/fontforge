@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 1-Aug-2004 -->
+  <!-- AP: Last modified: 8-Aug-2004 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -11,6 +11,55 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    8-Aug-2004
+    <UL>
+      <LI>
+	Zhang Lin-bo reports two bugs (which were really three)
+	<UL>
+	  <LI>
+	    Expand Stroke failed when given a path consisting of a single point had a
+	    zero length spline returning to itself.
+	  <LI>
+	    AddExtrema falls into an infinite loop if the initial spline of a path needs
+	    an extremum added to it.
+	  <LI>
+	    Expand Stroke generates garbage output in some very obscure conditions.
+	  <LI>
+	    AutoHint crashes when given garbage input.
+	</UL>
+      <LI>
+	Michael G&auml;hrken points out that ExpandStroke scripting command doesn't
+	work for caligraphic stroking, provides a patch and an extension.
+      <LI>
+	KANOU provides a patch for BDFMakeChar in CID keyed fonts.
+      <LI>
+	Change the Shades palette in the bitmap view so that it shows what grey level
+	is underneath the cursor.
+      <LI>
+	When the width is huge, then moving it causes it to wrap into negative values.
+	It should probably stick at SHRT_MAX instead.
+      <LI>
+	If one moves to a negative width and releases the mouse, an error message
+	pops up warning of this. If you move the cursor around the width continued
+	to change.
+      <LI>
+	If one moves to a negative width, and in response to the width warning says
+	[No] then the width reverted to the wrong value.
+      <LI>
+	ff would crash on a postscript sequence containing "{}" if that was the first
+	function defined.
+      <LI>
+	I got the locale wrong for Hong Kong
+      <LI>
+	If nothing was selected in the import dlg (or any of the file open dlgs)
+	and the user pressed [OK], then the directory would be returned.
+      <LI>
+	Improved error message for Import dlg.
+      <LI>
+	In spanish various dlgs had buttons that were too close together (and similar
+	problems)
+    </UL>
   <LI>
     01-Aug-2004
     <UL>
