@@ -249,6 +249,81 @@ typedef struct generic_fpst {
     uint8 ticked;
 } FPST;
 
+enum asm_type { asm_indic, asm_context, asm_lig, asm_simple=4, asm_insert };
+enum asm_flags { asm_vert=0x8000, asm_descending=0x4000, asm_always=0x2000 };
+
+typedef struct generic_asm {		/* Apple State Machine */
+    struct generic_asm *next;
+    uint16 /*enum asm_type*/ type;
+    uint16 feature, setting;
+    uint16 flags;
+    uint8 ticked;
+
+    uint16 class_cnt, state_cnt;
+    char **classes;
+    struct asm_state {
+	uint16 next_state;
+	uint16 flags;
+	union {
+	    struct {
+		uint32 mark_tag;	/* for contextual glyph subs (tag of a nested lookup) */
+		uint32 cur_tag;		/* for contextual glyph subs */
+	    } context;
+	    struct {
+		char *mark_ins;
+		char *cur_ins;
+	    } insert;
+	} u;
+    } state;
+} ASM;
+/* State Flags:
+ Indic:
+	0x8000	mark current glyph as first in rearrangement
+	0x4000	don't advance to next glyph
+	0x2000	mark current glyph as last
+	0x000f	verb
+		0 = no change		8 = AxCD => CDxA
+		1 = Ax => xA		9 = AxCD => DCxA
+		2 = xD => Dx		a = ABxD => DxAB
+		3 = AxD => DxA		b = ABxD => DxBA
+		4 = ABx => xAB		c = ABxCD => CDxAB
+		5 = ABx => xBA		d = ABxCD => CDxBA
+		6 = xCD => CDx		e = ABxCD => DCxAB
+		7 = xCD => DCx		f = ABxCD => DCxBA
+ Contextual:
+	0x8000	mark current glyph
+	0x4000	don't advance to next glyph
+ Insert:
+	0x8000	mark current glyph
+	0x4000	don't advance to next glyph
+	0x2000	current is Kashida like
+	0x1000	mark is Kashida like
+	0x0800	current insert before
+	0x0400	mark insert before
+	0x03e0	count of chars to be inserted at current (31 max)
+	0x001f	count of chars to be inserted at mark (31 max)
+*/
+
+struct macname {
+    struct macname *next;
+    uint16 enc;		/* Platform specific encoding. 0=>mac roman, 1=>sjis, 7=>russian */
+    uint16 lang;	/* Mac languages 0=>english, 1=>french, 2=>german */
+    uint16 strid;
+    char *name;		/* Not a unicode string */
+};
+
+typedef struct macfeat {
+    struct macfeat *next;
+    uint16 feature;
+    uint8 ismutex;
+    uint8 default_setting;		/* Apple's docs say both that this is a byte and a short. It's a byte */
+    struct macname *featname;
+    struct macsetting {
+	struct macsetting *next;
+	uint16 setting;
+	struct macname *setname;
+    } *settings;
+} MacFeat;
 
 typedef struct undoes {
     struct undoes *next;
@@ -715,6 +790,8 @@ typedef struct splinefont {
 	} *tagtype;
     } gentags;
     FPST *possub;
+    ASM *sm;				/* asm is a keyword */
+    MacFeat *features;
     char *chosenname;			/* Set for files with multiple fonts in them */
 } SplineFont;
 
