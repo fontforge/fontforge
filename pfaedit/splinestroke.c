@@ -47,6 +47,12 @@ static real SplineExpand(Spline *spline,real t,StrokeInfo *si,BasePoint *plus, B
     BasePoint base;
     real angle, lineangle, c,s;
 
+    if ( xslope==0 && yslope==0 ) {
+	real faket = (t>.5) ? t-.01 : t+.01;
+	xslope = (3*xsp->a*faket+2*xsp->b)*faket + xsp->c;
+	yslope = (3*ysp->a*faket+2*ysp->b)*faket + ysp->c;
+    }
+
     base.x = ((xsp->a*t+xsp->b)*t+xsp->c)*t + xsp->d;
     base.y = ((ysp->a*t+ysp->b)*t+ysp->c)*t + ysp->d;
 
