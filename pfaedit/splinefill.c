@@ -956,6 +956,7 @@ BDFFont *SplineFontAntiAlias(SplineFont *sf, int pixelsize, int linear_scale) {
     sprintf(csize,"%d pixels", pixelsize );
     uc_strcpy(size,csize);
     GProgressStartIndicator(10,rasterizing,aamap,size,sf->charcnt,1);
+    GProgressEnableStop(0);
 
     if ( linear_scale>16 ) linear_scale = 16;	/* can't deal with more than 256 levels of grey */
     if ( linear_scale<=1 ) linear_scale = 2;

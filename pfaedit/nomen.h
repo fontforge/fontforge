@@ -32,8 +32,8 @@
 #define _STR_Fit	35
 #define _STR_Zoomin	36
 #define _STR_Zoomout	37
-#define _STR_Next	38
-#define _STR_Prev	39
+#define _STR_NextChar	38
+#define _STR_PrevChar	39
 #define _STR_Goto	40
 #define _STR_Hidepoints	41
 #define _STR_Showpoints	42
@@ -302,6 +302,56 @@
 #define _STR_DHints	296
 #define _STR_Bitmap	297
 #define _STR_ShapeType	298
+#define _STR_ProbOpenPath	299
+#define _STR_ProbPointsTooClose	300
+#define _STR_ProbMissingExtreme	301
+#define _STR_ProbXNear	302
+#define _STR_ProbYNear	303
+#define _STR_ProbYBase	304
+#define _STR_ProbYXHeight	305
+#define _STR_ProbYCapHeight	306
+#define _STR_ProbYAs	307
+#define _STR_ProbYDs	308
+#define _STR_ProbLineHor	309
+#define _STR_ProbLineVert	310
+#define _STR_ProbLineItal	311
+#define _STR_ProbPtNearHHint	312
+#define _STR_ProbPtNearVHint	313
+#define _STR_ProbHintHWidth	314
+#define _STR_ProbHintVWidth	315
+#define _STR_ProbHintControl	316
+#define _STR_ProbExplain	317
+#define _STR_Stop	318
+#define _STR_Next	319
+#define _STR_OpenPaths	320
+#define _STR_OpenPathsPopup	321
+#define _STR_Points2Close	322
+#define _STR_Points2ClosePopup	323
+/*static char *str_MissingExtrema = "Missing Extrema";
+/*static char *mnemonic_MissingExtrema = 'E';
+/*static char *str_MissingExtremaPopup = "Ghostview (perhaps other interpreters) has a problem when a\nhint exists without any points that lie on it. Usually this is because\nthere are no points at the extrema";*/
+#define _STR_XNear	324
+#define _STR_XNearPopup	325
+#define _STR_YNear	326
+#define _STR_YNearPopup	327
+#define _STR_YNearStd	328
+#define _STR_YNearStdPopup	329
+#define _STR_LineStd	330
+#define _STR_LineStd2	331
+#define _STR_LineStdPopup	332
+#define _STR_HintNoPt	333
+#define _STR_HintNoPtPopup	334
+#define _STR_PtNearHint	335
+#define _STR_PtNearHintPopup	336
+#define _STR_HintWidth	337
+#define _STR_HintWidthPopup	338
+#define _STR_PointsNear	339
+#define _STR_Near	340
+#define _STR_ExplainErr	341
+/* "Found %g, expected %g" */
+#define _STR_Found	342
+#define _STR_Expected	343
+
 
 
 #endif

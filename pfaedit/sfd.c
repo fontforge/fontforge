@@ -196,6 +196,7 @@ return;
     fprintf(sfd, "%s", key );
     for ( ; h!=NULL; h=h->next ) {
 	fprintf(sfd, "%g %g", h->start,h->width );
+	if ( h->ghost ) putc('G',sfd);
 	if ( h->where!=NULL ) {
 	    putc('<',sfd);
 	    for ( hi=h->where; hi!=NULL; hi=hi->next )
@@ -749,12 +750,16 @@ static SplineSet *SFDGetSplineSet(FILE *sfd) {
 return( head );
 }
 
-static HintInstance *SFDReadHintInstances(FILE *sfd) {
+static HintInstance *SFDReadHintInstances(FILE *sfd, StemInfo *stem) {
     HintInstance *head=NULL, *last=NULL, *cur;
     double begin, end;
     int ch;
 
     while ( (ch=getc(sfd))==' ' || ch=='\t' );
+    if ( ch=='G' ) {
+	stem->ghost = true;
+	while ( (ch=getc(sfd))==' ' || ch=='\t' );
+    }
     if ( ch!='<' ) {
 	ungetc(ch,sfd);
 return(NULL);
@@ -783,7 +788,7 @@ static StemInfo *SFDReadHints(FILE *sfd) {
 	cur = gcalloc(1,sizeof(StemInfo));
 	cur->start = start;
 	cur->width = width;
-	cur->where = SFDReadHintInstances(sfd);
+	cur->where = SFDReadHintInstances(sfd,cur);
 	if ( head == NULL )
 	    head = cur;
 	else

@@ -95,6 +95,7 @@ void FindBlues( SplineFont *sf, double blues[14], double otherblues[10]) {
 	    const unichar_t *upt;
 	    if ( isalnum(enc) &&
 		    ((enc>=32 && enc<128 ) || enc == 0xfe || enc==0xf0 || enc==0xdf ||
+		      enc==0x131 ||
 		     (enc>=0x391 && enc<=0x3f3 ) ||
 		     (enc>=0x400 && enc<=0x4e9 ) )) {
 		/* no accented characters (or ligatures) */
@@ -288,6 +289,71 @@ void FindBlues( SplineFont *sf, double blues[14], double otherblues[10]) {
 	    blues[k+1] = temp;
 	}
     }
+}
+
+/* Quick and dirty (and sometimes wrong) approach to figure out the common */
+/* alignment zones in latin (greek, cyrillic) alphabets */
+void QuickBlues(SplineFont *sf, BlueData *bd) {
+    double xheight = -1e10, caph = -1e10, ascent = -1e10, descent = 1e10, max, min;
+    double xheighttop = -1e10, caphtop = -1e10;
+    SplinePoint *sp;
+    SplineSet *spl;
+    int i;
+    SplineChar *t;
+
+    /* Get the alignment zones we care most about */
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	int enc = sf->chars[i]->unicodeenc;
+	if ( enc=='I' || enc=='O' || enc=='x' || enc=='o' || enc=='p' || enc=='l' ||
+		enc==0x399 || enc==0x39f || enc==0x3ba || enc==0x3bf || enc==0x3c1 || enc==0x3be ||
+		enc==0x41f || enc==0x41e || enc==0x43e || enc==0x43f || enc==0x440 || enc==0x452 ) {
+	    t = sf->chars[i];
+	    while ( t->splines==NULL && t->refs!=NULL )
+		t = t->refs->sc;
+	    max = -1e10; min = 1e10;
+	    if ( t->splines!=NULL ) {
+		for ( spl=t->splines; spl!=NULL; spl=spl->next ) {
+		    for ( sp=spl->first; ; ) {
+			if ( sp->me.y > max ) max = sp->me.y;
+			if ( sp->me.y < min ) min = sp->me.y;
+			if ( sp->next==NULL )
+		    break;
+			sp = sp->next->to;
+			if ( sp==spl->first )
+		    break;
+		    }
+		}
+		if ( enc>0x400 ) {
+		    /* Only use ascent and descent here if we don't have anything better */
+		    if ( enc==0x41f ) caph = max;
+		    else if ( enc==0x41e ) caphtop = max;
+		    else if ( enc==0x43f && xheight<0 ) xheight = max;
+		    else if ( enc==0x43e ) xheighttop = max;
+		    else if ( enc==0x452 && ascent<0 ) ascent = max;
+		    else if ( enc==0x440 && descent>0 ) descent = min;
+		} else if ( enc>0x300 ) {
+		    if ( enc==0x399 ) caph = max;
+		    else if ( enc==0x39f ) caphtop = max;
+		    else if ( enc==0x3ba && xheight<0 ) xheight = max;
+		    else if ( enc==0x3bf ) xheighttop = max;
+		    else if ( enc==0x3be && ascent<0 ) ascent = max;
+		    else if ( enc==0x3c1 && descent>0 ) descent = min;
+		} else {
+		    if ( enc=='I' ) caph = max;
+		    else if ( enc=='O' ) caphtop = max;
+		    else if ( enc=='x' ) xheight = max;
+		    else if ( enc=='o' ) xheighttop = max;
+		    else if ( enc=='l' ) ascent = max;
+		    else descent = min;
+		}
+	    }
+	}
+    }
+    if ( caphtop<caph ) caphtop = caph; else if ( caph==-1e10 ) caph=caphtop;
+    if ( xheighttop<xheight ) xheighttop = xheight; else if ( xheight==-1e10 ) xheight=xheighttop;
+    bd->xheight = xheight; bd->xheighttop = xheighttop;
+    bd->caph = caph; bd->caphtop = caphtop;
+    bd->ascent = ascent; bd->descent = descent;
 }
 
 typedef struct edgeinfo {
@@ -1681,61 +1747,29 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
     /*  the baseline to the top of a capital I, or the x-height of lower i */
     /*  If we find any such hints we must remove them, and replace them with */
     /*  ghost hints. The bottom hint has height 21, and the top -20 */
-    double xheight = -1e10, caph = -1e10, descent = 1e10, max, min;
-    double xheighttop = -1e10, caphtop = -1e10;
+    BlueData bd;
     SplinePoint *sp;
     SplineFont *sf = sc->parent;
-    int i;
-    SplineChar *t;
     StemInfo *prev, *s, *n, *snext, *ghosts = NULL;
     SplineSet *spl;
     Spline *spline, *first;
     double base, width;
 
     /* Get the two alignment zones we care most about */
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	if ( sf->chars[i]->unicodeenc=='I' || sf->chars[i]->unicodeenc=='O' ||
-		sf->chars[i]->unicodeenc=='x' || sf->chars[i]->unicodeenc=='o' ||
-		sf->chars[i]->unicodeenc=='p') {
-	    t = sf->chars[i];
-	    while ( t->splines==NULL && t->refs!=NULL )
-		t = t->refs->sc;
-	    max = -1e10; min = 1e10;
-	    if ( t->splines!=NULL ) {
-		for ( spl=t->splines; spl!=NULL; spl=spl->next ) {
-		    for ( sp=spl->first; ; ) {
-			if ( sp->me.y > max ) max = sp->me.y;
-			if ( sp->me.y < min ) min = sp->me.y;
-			if ( sp->next==NULL )
-		    break;
-			sp = sp->next->to;
-			if ( sp==spl->first )
-		    break;
-		    }
-		}
-		if ( sf->chars[i]->unicodeenc=='I' ) caph = max;
-		else if ( sf->chars[i]->unicodeenc=='O' ) caphtop = max;
-		else if ( sf->chars[i]->unicodeenc=='x' ) xheight = max;
-		else if ( sf->chars[i]->unicodeenc=='o' ) xheighttop = max;
-		else descent = min;
-	    }
-	}
-    }
-    if ( caphtop<caph ) caphtop = caph; else if ( caph==-1e10 ) caph=caphtop;
-    if ( xheighttop<xheight ) xheighttop = xheight; else if ( xheight==-1e10 ) xheight=xheighttop;
+    QuickBlues(sf,&bd);
 
     /* look for any stems stretching from one zone to another and remove them */
     /*  (I used to turn them into ghost hints here, but that didn't work (for */
-    /*  example on "E" where we don't need any ghosts from be big stem because*/
+    /*  example on "E" where we don't need any ghosts from the big stem because*/
     /*  the narrow stems provide the hints that PS needs */
     for ( prev=NULL, s=stems; s!=NULL; s=snext ) {
 	snext = s->next;
-	if (( s->start==0 || (s->start>=caph && s->start<=caphtop) ||
-		(s->start>=xheight && s->start<=xheighttop) || s->start==descent ) &&
+	if (( s->start==0 || (s->start>=bd.caph && s->start<=bd.caphtop) ||
+		(s->start>=bd.xheight && s->start<=bd.xheighttop) || s->start==bd.descent ) &&
 		(s->start+s->width==0 ||
-		 (s->start+s->width>=caph && s->start+s->width<=caphtop) ||
-		 (s->start+s->width>=xheight  && s->start+s->width<=xheighttop) ||
-		 s->start+s->width==descent)) {
+		 (s->start+s->width>=bd.caph && s->start+s->width<=bd.caphtop) ||
+		 (s->start+s->width>=bd.xheight  && s->start+s->width<=bd.xheighttop) ||
+		 s->start+s->width==bd.descent)) {
 	    if ( prev==NULL )
 		stems = snext;
 	    else
@@ -1753,8 +1787,8 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = spline->to->next ) {
 	    base = spline->from->me.y;
 	    if ( spline->knownlinear && base == spline->to->me.y &&
-		    (base == 0 || (base >= xheight && base<=xheighttop) ||
-		     (base>=caph && base<=caphtop) || base==descent ) &&
+		    (base == 0 || (base >= bd.xheight && base<=bd.xheighttop) ||
+		     (base>=bd.caph && base<=bd.caphtop) || base==bd.descent ) &&
 		    spline->from->prev!=NULL && spline->to->next!=NULL &&
 		    (spline->from->prev->from->me.y > base) ==
 			(spline->to->next->to->me.y > base)) {

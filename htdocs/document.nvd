@@ -97,20 +97,22 @@ Pages:
 "locale.html" Up="" Style="" Title="Localization" Type="text/html" 1
 "MetaFont.html" Up="" Style="" Title="MetaFont -- Standard Transformations on Fonts" Type="text/html" 1
 "sfds" Up="" Style="" Title="" Type="application/x-navidoc" 1
+"problems.html" Up="" Style="" Title="Finding common font problems automagically" Type="text/html" 1
 Ghosts:
 Refs:
 "index.html"
+	0 "pfaedit-010628.src.rpm"
+	1 "pfaedit_src-010628.tgz"
+	1 "pfaedit-010628-1.i386.rpm"
+	1 "pfaedit-010628.tgz"
+	1 "problems.html"
 	1 "sfds/index.html"
 	0 "sfds"
 	1 "http://bibliofile.mc.duke.edu/gww/fonts/Caliban/index.html"
 	1 "http://bibliofile.mc.duke.edu/gww/fonts/Monospace/index.html"
 	1 "libgunicode-010627.tgz"
 	1 "libgdraw-010627.tgz"
-	1 "pfaedit_src-010627.tgz"
-	1 "pfaedit-010627.tgz"
 	1 "pfaedit-solaris-010624.tgz"
-	0 "pfaedit-010613.src.rpm"
-	1 "pfaedit-010613-1.i386.rpm"
 	1 "hinting.html"
 	2 "http://bibliofile.mc.duke.edu/gww/FreeWare/../uparrow.gif"
 	1 "http://www.neuroinformatik.ruhr-uni-bochum.de/ini/PEOPLE/rmz/t1lib/t1lib.html"
@@ -243,6 +245,7 @@ Refs:
 	2 "fontinfo.png"
 	0 "fontinfo.html"
 	2 "newfont.png"
+	0 "problems.html"
 "HebrewMetrics.png"
 "MetricsView.png"
 "BitmapView.png"
@@ -373,6 +376,7 @@ Refs:
 	5 "private.html"
 	5 "fontinfo.html"
 	1 "elementmenu.html"
+	1 "problems.html"
 "pointmenu.html"
 	4 "overview.html"
 	5 "windowmenu.html"
@@ -527,3 +531,9 @@ Refs:
 "MetaFont.html"
 	2 "ItalicComp.png"
 "sfds"
+"problems.html"
+	2 "findprobs.png"
+	2 "phi-nohints-outline.png"
+	2 "phi-nohints-filled.png"
+	2 "phi-hints-outline.png"
+	2 "phi-hints-filled.png"

@@ -86,6 +86,13 @@ typedef struct dbounds {
     double miny, maxy;
 } DBounds;
 
+typedef struct bluedata {
+    double xheight, xheighttop;		/* height of "x" and "o" */
+    double caph, caphtop;		/* height of "I" and "O" */
+    double ascent;			/* height of "l" */
+    double descent;			/* depth of "p" */
+} BlueData;
+
 typedef struct bdffloat {
     int16 xmin,xmax,ymin,ymax;
     int16 bytes_per_line;
@@ -281,7 +288,7 @@ typedef struct steminfo {
 				/*  what bit to set for this hint */
     int mask;			/* Mask of all references that use this hint */
 				/*  in type2 output */
-} StemInfo ;
+} StemInfo;
 
 typedef struct dsteminfo {
     BasePoint leftedgetop, rightedgetop, leftedgebottom, rightedgebottom;
@@ -506,6 +513,7 @@ extern SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc);
 extern SplineSet *SplineSetRemoveOverlap(SplineSet *base);
 
 extern void FindBlues( SplineFont *sf, double blues[14], double otherblues[10]);
+extern void QuickBlues(SplineFont *sf, BlueData *bd);
 extern void FindHStems( SplineFont *sf, double snaps[12], double cnt[12]);
 extern void FindVStems( SplineFont *sf, double snaps[12], double cnt[12]);
 extern void SCGuessHHintInstancesAndAdd(SplineChar *sc, StemInfo *stem);
