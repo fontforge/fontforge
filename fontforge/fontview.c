@@ -1421,6 +1421,7 @@ static void FontViewMenu_MetaFont(GtkMenuItem *menuitem, gpointer user_data) {
 #define MID_SameGlyphAs	2130
 #define MID_RplRef	2131
 #define MID_PasteAfter	2132
+#define MID_CopyFeatures	2133
 #define MID_Convert2CID	2800
 #define MID_Flatten	2801
 #define MID_InsertFont	2802
@@ -1565,6 +1566,20 @@ return;
     FVCopyWidth(fv,ut_rbearing);
 }
 # endif
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuCopyFeatures(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_CopyFeatures(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    int ch = FVAnyCharSelected(fv);
+
+    if ( ch<0 || fv->sf->chars[ch]==NULL )
+return;
+    SCCopyFeatures(fv->sf->chars[ch]);
+}
 
 # ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuPaste(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2202,7 +2217,7 @@ static void sllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 # ifdef FONTFORGE_CONFIG_GDRAW
 static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int pos = FVAnyCharSelected(fv);
+    int pos = FVAnyCharSelected(fv), i;
     int not_pasteable = pos==-1 ||
 		    (!CopyContainsSomething() &&
 #ifndef _NO_LIBPNG
@@ -2227,6 +2242,9 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = not_pasteable || base==NULL || fv->cidmaster!=NULL ||
 		    fv->selected[base->local_enc];	/* Can't be self-referential */
 	  break;
+	  case MID_CopyFeatures:
+	    mi->ti.disabled = pos<0 || !SCAnyFeatures(fv->sf->chars[pos]);
+	  break;
 	  case MID_Join:
 	  case MID_Cut: case MID_Copy: case MID_Clear:
 	  case MID_CopyWidth: case MID_CopyLBearing: case MID_CopyRBearing:
@@ -2241,28 +2259,28 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_ClearBackground:
 	    mi->ti.disabled = true;
 	    if ( pos!=-1 && !( onlycopydisplayed && fv->filled!=fv->show )) {
-		for ( pos=0; pos<fv->sf->charcnt; ++pos )
-		    if ( fv->selected[pos] && fv->sf->chars[pos]!=NULL )
-			if ( fv->sf->chars[pos]->layers[ly_back].images!=NULL ||
-				fv->sf->chars[pos]->layers[ly_back].splines!=NULL ) {
+		for ( i=0; i<fv->sf->charcnt; ++i )
+		    if ( fv->selected[i] && fv->sf->chars[i]!=NULL )
+			if ( fv->sf->chars[i]->layers[ly_back].images!=NULL ||
+				fv->sf->chars[i]->layers[ly_back].splines!=NULL ) {
 			    mi->ti.disabled = false;
 		break;
 			}
 	    }
 	  break;
 	  case MID_Undo:
-	    for ( pos=0; pos<fv->sf->charcnt; ++pos )
-		if ( fv->selected[pos] && fv->sf->chars[pos]!=NULL )
-		    if ( fv->sf->chars[pos]->layers[ly_fore].undoes!=NULL )
+	    for ( i=0; i<fv->sf->charcnt; ++i )
+		if ( fv->selected[i] && fv->sf->chars[i]!=NULL )
+		    if ( fv->sf->chars[i]->layers[ly_fore].undoes!=NULL )
 	    break;
-	    mi->ti.disabled = pos==fv->sf->charcnt;
+	    mi->ti.disabled = i==fv->sf->charcnt;
 	  break;
 	  case MID_Redo:
-	    for ( pos=0; pos<fv->sf->charcnt; ++pos )
-		if ( fv->selected[pos] && fv->sf->chars[pos]!=NULL )
-		    if ( fv->sf->chars[pos]->layers[ly_fore].redoes!=NULL )
+	    for ( i=0; i<fv->sf->charcnt; ++i )
+		if ( fv->selected[i] && fv->sf->chars[i]!=NULL )
+		    if ( fv->sf->chars[i]->layers[ly_fore].redoes!=NULL )
 	    break;
-	    mi->ti.disabled = pos==fv->sf->charcnt;
+	    mi->ti.disabled = i==fv->sf->charcnt;
 	  break;
 	}
     }
@@ -4614,6 +4632,7 @@ static GMenuItem edlist[] = {
     { { (unichar_t *) _STR_CopyVWidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, '\0', ksm_control, NULL, NULL, FVMenuCopyWidth, MID_CopyVWidth },
     { { (unichar_t *) _STR_CopyLBearing, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'p' }, '\0', ksm_control, NULL, NULL, FVMenuCopyWidth, MID_CopyLBearing },
     { { (unichar_t *) _STR_CopyRBearing, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'g' }, '\0', ksm_control, NULL, NULL, FVMenuCopyWidth, MID_CopyRBearing },
+    { { (unichar_t *) _STR_CopyFeatures, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuCopyFeatures, MID_CopyFeatures },
     { { (unichar_t *) _STR_Paste, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'V', ksm_control, NULL, NULL, FVMenuPaste, MID_Paste },
     { { (unichar_t *) _STR_PasteInto, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, 'V', ksm_control|ksm_shift, NULL, NULL, FVMenuPasteInto, MID_PasteInto },
 #ifdef FONTFORGE_CONFIG_PASTEAFTER

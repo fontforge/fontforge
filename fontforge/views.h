@@ -807,9 +807,16 @@ extern void CVTile(CharView *cv);
 extern void FVTile(FontView *fv);
 extern void SCTile(SplineChar *sc);
 extern void MDReplace(MinimumDistance *md,SplineSet *old,SplineSet *rpl);
-extern void SCAppendPosSub(SplineChar *sc,enum possub_type type, char **d);
+extern void SCAppendPosSub(SplineChar *sc,enum possub_type type, char **d,SplineFont *copied_from);
 extern void SCCharInfo(SplineChar *sc);
 extern void CharInfoDestroy(struct charinfo *ci);
+#if defined(FONTFORGE_CONFIG_GTK)
+extern char *Kern2Text(SplineChar *other,KernPair *kp,int isv);
+extern char *PST2Text(PST *pst);
+#elif defined(FONTFORGE_CONFIG_GDRAW)
+extern unichar_t *Kern2Text(SplineChar *other,KernPair *kp,int isv);
+extern unichar_t *PST2Text(PST *pst);
+#endif
 extern void PI_ShowHints(SplineChar *sc, GGadget *list, int set);
 extern GTextInfo *SCHintList(SplineChar *sc,HintMask *);
 extern void CVGetInfo(CharView *cv);
@@ -882,7 +889,8 @@ extern enum undotype CopyUndoType(void);
 extern int CopyContainsSomething(void);
 extern int CopyContainsBitmap(void);
 extern RefChar *CopyContainsRef(SplineFont *);
-extern char **CopyGetPosSubData(enum possub_type *type);
+extern char **CopyGetPosSubData(enum possub_type *type,SplineFont **copied_from,
+	int pst_depth);
 extern void CopyReference(SplineChar *sc);
 extern void CopySelected(CharView *cv);
 extern void CVCopyGridFit(CharView *cv);
@@ -892,7 +900,9 @@ extern void PasteToCV(CharView *cv);
 extern void PasteRemoveSFAnchors(SplineFont *);
 extern void PasteAnchorClassMerge(SplineFont *sf,AnchorClass *into,AnchorClass *from);
 extern void PasteRemoveAnchorClass(SplineFont *sf,AnchorClass *dying);
-extern void PosSubCopy(enum possub_type type, char **data);
+extern void PosSubCopy(enum possub_type type, char **data,SplineFont *sf);
+extern void CopyPSTStart(SplineFont *sf);
+extern void CopyPSTAppend(enum possub_type type, unichar_t *text );
 extern void ClipboardClear(void);
 extern SplineSet *ClipBoardToSplineSet(void);
 extern void BCCopySelected(BDFChar *bc,int pixelsize,int depth);
@@ -1022,6 +1032,7 @@ extern void SVDetachFV(FontView *fv);
 extern void ShowAtt(SplineFont *sf);
 extern void SFShowKernPairs(SplineFont *sf,SplineChar *sc,AnchorClass *ac);
 extern void SFShowLigatures(SplineFont *sf,SplineChar *sc);
+extern unichar_t *TagFullName(SplineFont *sf,uint32 tag, int ismac);
 
 extern void SCEditInstructions(SplineChar *sc);
 extern void SFEditTable(SplineFont *sf, uint32 tag);
@@ -1062,6 +1073,9 @@ extern void FVSelectByPST(FontView *fv);
 extern int FVParseSelectByPST(FontView *fv,int type,
 	const unichar_t *tags,const unichar_t *contents,
 	int search_type);
+
+extern int SCAnyFeatures(SplineChar *sc);
+extern void SCCopyFeatures(SplineChar *sc);
 
 enum hist_type { hist_hstem, hist_vstem, hist_blues };
 struct psdict;

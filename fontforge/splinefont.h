@@ -228,7 +228,11 @@ enum possub_type { pst_null, pst_position, pst_pair,
 	pst_kerning = pst_max, pst_vkerning, pst_anchors,
 	/* And these are fpsts */
 	pst_contextpos, pst_contextsub, pst_chainpos, pst_chainsub,
-	pst_reversesub, fpst_max
+	pst_reversesub, fpst_max,
+	/* And these are used to specify a kerning pair where the current */
+	/*  char is the final glyph rather than the initial one */
+	/* A kludge used when cutting and pasting features */
+	pst_kernback, pst_vkernback
 	};
 typedef struct generic_pst {
     /* enum possub_type*/ unsigned int type: 7;
@@ -436,6 +440,9 @@ typedef struct undoes {
 	struct {
 	    enum possub_type pst;
 	    char **data;		/* First 4 bytes is tag, then space then data */
+	    struct undoes *more_pst;
+	    struct splinefont *copied_from;
+	    short cnt,max;		/* Not always set */
 	} possub;
 	uint8 *bitmap;
     } u;
@@ -1537,6 +1544,8 @@ extern int SFAddScriptLangRecord(SplineFont *sf,struct script_record *sr);
 extern int SFAddScriptLangIndex(SplineFont *sf,uint32 script,uint32 lang);
 extern int ScriptLangMatch(struct script_record *sr,uint32 script,uint32 lang);
 extern int SRMatch(struct script_record *sr1,struct script_record *sr2);
+extern int SFConvertSLI(SplineFont *fromsf,int sli,SplineFont *tosf,
+	SplineChar *default_script);
 
 struct cidmap;			/* private structure to encoding.c */
 extern int CIDFromName(char *name,SplineFont *cidmaster);

@@ -1321,6 +1321,94 @@ static void bCopyRBearing(Context *c) {
     doEdit(c,12);
 }
 
+static void bCopyGlyphFeatures(Context *c) {
+    Array *a;
+    uint32 tag;
+    int i, j, pos = -1, start;
+    unsigned char *pt;
+    FontView *fv = c->curfv;
+    SplineFont *sf = fv->sf;
+    SplineChar *sc;
+    KernPair *kp;
+    PST *pst;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_str ) {
+	a = &c->a;
+	start = 1;
+    } else if ( c->a.vals[1].type!=v_arr )
+	error( c, "Bad type for argument");
+    else {
+	a = c->a.vals[1].u.aval;
+	start = 0;
+    }
+
+    for ( i=sf->charcnt-1; i>=0 ; --i ) if ( fv->selected[i] ) {
+	if ( pos==-1 )
+	    pos = i;
+	else
+	    error( c, "More than one glyph selected");
+    }
+    if ( pos==-1 )
+	error( c, "No characters selected");
+    sc = sf->chars[pos];
+
+    CopyPSTStart(sf);
+    if ( sc==NULL )
+return;			/* Glyph hasn't been created yet=>no features */
+
+    for ( i=start; i<a->argc; ++i ) {
+	if ( a->vals[i].type==v_int )
+	    tag = a->vals[i].u.ival;
+	else if ( a->vals[i].type!=v_str )
+	    error( c, "Bad type for array element");
+	else if ( *(pt = (unsigned char *) a->vals[i].u.sval)=='<' ) {
+	    int feat,set;
+	    if ( sscanf((char *) pt,"<%d,%d>", &feat, &set)!=2 )
+		error( c, "Bad mac feature/setting specification" );
+	    tag = (feat<<16)|set;
+	} else if ( strlen((char *) pt)>4 || *pt=='\0' )
+	    error( c, "Bad OpenType tag specification" );
+	else {
+	    tag = (pt[0]<<24);
+	    if ( pt[1]!='\0' ) {
+		tag |= (pt[1]<<16);
+		if ( pt[2]!='\0' ) {
+		    tag |= (pt[2]<<8);
+		    if ( pt[3]!='\0' )
+			tag |= pt[3];
+		    else
+			tag |= ' ';
+		} else
+		    tag |= ( ' '<<8 ) | ' ';
+	    } else
+		tag |= (' ' << 16) | ( ' '<<8 ) | ' ';
+	}
+	if ( tag==CHR('k','e','r','n') ) {
+	    for ( kp=sc->kerns; kp!=NULL; kp=kp->next ) if ( kp->off!=0 )
+		CopyPSTAppend(pst_kerning,Kern2Text(kp->sc,kp,false));
+	} else if ( tag==CHR('v','k','r','n') ) {
+	    for ( kp=sc->vkerns; kp!=NULL; kp=kp->next ) if ( kp->off!=0 )
+		CopyPSTAppend(pst_vkerning,Kern2Text(kp->sc,kp,false));
+	} else if ( tag==CHR('_','k','r','n') ) {
+	    for ( j=0; j<sf->charcnt; ++j ) if ( sf->chars[j]!=NULL )
+		for ( kp=sf->chars[j]->kerns; kp!=NULL; kp=kp->next )
+		    if ( kp->off!=0 && kp->sc==sc )
+			CopyPSTAppend(pst_kernback,Kern2Text(sf->chars[j],kp,false));
+	} else if ( tag==CHR('_','v','k','n') ) {
+	    for ( j=0; j<sf->charcnt; ++j ) if ( sf->chars[j]!=NULL )
+		for ( kp=sf->chars[j]->vkerns; kp!=NULL; kp=kp->next )
+		    if ( kp->off!=0 && kp->sc==sc )
+			CopyPSTAppend(pst_vkernback,Kern2Text(sf->chars[j],kp,true));
+	} else {
+	    for ( pst = sc->possub; pst!=NULL; pst=pst->next )
+		if ( pst->tag == tag && pst->type!=pst_lcaret )
+		    CopyPSTAppend(pst->type,PST2Text(pst));
+	}
+    }
+}
+
 static void bPaste(Context *c) {
     doEdit(c,4);
 }
@@ -3688,6 +3776,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "CopyVWidth", bCopyVWidth },
     { "CopyLBearing", bCopyLBearing },
     { "CopyRBearing", bCopyRBearing },
+    { "CopyGlyphFeatures", bCopyGlyphFeatures },
     { "Paste", bPaste },
     { "PasteInto", bPasteInto },
     { "SameGlyphAs", bSameGlyphAs },

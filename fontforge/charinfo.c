@@ -3646,7 +3646,7 @@ return;
     for ( i=cnt=0; i<len; ++i )
 	if ( tis[i]->selected )
 	    data[cnt++] = cu_copy(tis[i]->text);
-    PosSubCopy(sel+1,data);
+    PosSubCopy(sel+1,data,ci->sc->parent);
     CI_CanPaste(ci);
 }
 
@@ -3682,9 +3682,11 @@ return( pst_null );
 return( type );
 }
 
-static unichar_t *SLICheck(SplineChar *sc,unichar_t *data) {
-    SplineFont *sf = sc->parent;
-    int new, i;
+static unichar_t *SLICheck(SplineChar *sc,unichar_t *data,SplineFont *copied_from) {
+    /* We've got a string. Don't know what font it came from, can't really */
+    /*  make the sli right. Best we can do is insure against crashes and hope */
+    /*  it was copied from us */
+    int new;
     int merge, act, macfeat;
     uint32 tag;
     uint16 flags, sli;
@@ -3692,19 +3694,7 @@ static unichar_t *SLICheck(SplineChar *sc,unichar_t *data) {
 
     DecomposeClassName(data,&name,&tag,&macfeat,&flags,&sli,&merge,&act);
 
-    /* We've got a string. Don't know what font it came from, can't really */
-    /*  make the sli right. Best we can do is insure against crashes and hope */
-    /*  it was copied from us */
-    new = sli;
-    if ( sf->cidmaster ) sf = sf->cidmaster;
-    else if ( sf->mm!=NULL ) sf=sf->mm->normal;
-    if ( sf->script_lang==NULL )
-	new = SFAddScriptLangIndex(sf,SCScriptFromUnicode(sc),DEFAULT_LANG);
-    else {
-	for ( i=0; sf->script_lang[i]!=NULL; ++i );
-	if ( sli>=i )
-	    new = SFAddScriptLangIndex(sf,SCScriptFromUnicode(sc),DEFAULT_LANG);
-    }
+    new = SFConvertSLI(copied_from,sli,sc->parent,sc);
 
     if ( sli==new ) {
 	free(name);
@@ -3716,100 +3706,109 @@ return( data );
 return( ret );
 }
 
-static void CI_DoPaste(CharInfo *ci,char **data, enum possub_type type) {
+static void CI_DoPaste(CharInfo *ci,char **data, enum possub_type type,SplineFont *copied_from) {
     GGadget *list;
     int sel, i,j,k, len, cnt;
     uint32 tag;
     GTextInfo **tis, **newlist;
-    char **tempdata=NULL, *paste = NULL;
+    char **tempdata, *paste;
     char *pt;
-    int lcnt;
+    int lcnt, pst_depth;
 
-    sel = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_Tabs))-2;
-    list = GWidgetGetControl(ci->gw,CID_List+sel*100);
-    if ( list==NULL ) {
-	GGadgetActiveGadgetEditCmd(ci->gw,ec_paste);
+    pst_depth = data==NULL ? 0 : -1;
+    forever {
+	tempdata = NULL; paste = NULL;
+	if ( data==NULL )
+	    data = CopyGetPosSubData(&type,&copied_from,pst_depth);
+	if ( data==NULL && pst_depth!=0 )
 return;
-    }
-    tis = GGadgetGetList(list,&len);
-    if ( data==NULL )
-	data = CopyGetPosSubData(&type);
-    if ( data==NULL ) {
-	int plen;
-	paste = GDrawRequestSelection(ci->gw,sn_clipboard,"STRING",&plen);
-	if ( paste==NULL || plen==0 )
+	if ( data==NULL ) {
+	    int plen;
+	    sel = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_Tabs))-2;
+	    paste = GDrawRequestSelection(ci->gw,sn_clipboard,"STRING",&plen);
+	    if ( paste==NULL || plen==0 )
 return;
-	if ( paste[strlen(paste)-1]=='\n' ) paste[strlen(paste)-1] = '\0';
-	for ( pt=paste, lcnt=1; *pt; ++pt )
-	    if ( *pt=='\n' ) ++lcnt;
-	tempdata = gcalloc(lcnt+1,sizeof(char *));
-	tempdata[0] = paste;
-	for ( pt=paste, lcnt=1; *pt; ++pt )
-	    if ( *pt=='\n' ) {
-		tempdata[lcnt++] = pt+1;
-		*pt = '\0';
-	    }
-	data = tempdata;
-	if ( paste[0]=='<' )
-	    type = pst_null;
-	else {
-	    tag = (((uint8 *) paste)[0]<<24) | (((uint8 *) paste)[1]<<16 ) |
-			(((uint8 *) paste)[2]<<8) | ((uint8 *) paste)[3];
-	    type = pst_null;
-	    if ( sel+1>pst_null && sel+1<pst_max ) {
-		for ( i=0; pst_tags[sel][i].text!=NULL; ++i )
-		    if ( (uint32) pst_tags[sel][i].userdata == tag ) {
-			type = sel+1;
-		break;
+	    if ( paste[strlen(paste)-1]=='\n' ) paste[strlen(paste)-1] = '\0';
+	    for ( pt=paste, lcnt=1; *pt; ++pt )
+		if ( *pt=='\n' ) ++lcnt;
+	    tempdata = gcalloc(lcnt+1,sizeof(char *));
+	    tempdata[0] = paste;
+	    for ( pt=paste, lcnt=1; *pt; ++pt )
+		if ( *pt=='\n' ) {
+		    tempdata[lcnt++] = pt+1;
+		    *pt = '\0';
+		}
+	    data = tempdata;
+	    if ( paste[0]=='<' )
+		type = pst_null;
+	    else {
+		tag = (((uint8 *) paste)[0]<<24) | (((uint8 *) paste)[1]<<16 ) |
+			    (((uint8 *) paste)[2]<<8) | ((uint8 *) paste)[3];
+		type = pst_null;
+		if ( sel+1>pst_null && sel+1<pst_max ) {
+		    for ( i=0; pst_tags[sel][i].text!=NULL; ++i )
+			if ( (uint32) pst_tags[sel][i].userdata == tag ) {
+			    type = sel+1;
+		    break;
+		    }
 		}
 	    }
-	}
-	if ( type==pst_null )
-	    type = PSTGuess(paste);
-	if ( type==pst_null ) {
-	    free(paste); free(tempdata);
+	    if ( type==pst_null )
+		type = PSTGuess(paste);
+	    if ( type==pst_null ) {
+		free(paste); free(tempdata);
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_BadPOSSUB,_STR_BadPOSSUB);
+		GWidgetErrorR(_STR_BadPOSSUB,_STR_BadPOSSUB);
 #elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("Bad GPOS/GSUB"),_("Bad GPOS/GSUB"));
+		gwwv_post_error(_("Bad GPOS/GSUB"),_("Bad GPOS/GSUB"));
 #endif
 return;
+	    }
 	}
-    }
 
-    for ( cnt=0; data[cnt]!=NULL; ++cnt );
-    newlist = galloc((len+cnt+1)*sizeof(GTextInfo *));
-    for ( i=0; i<len; ++i ) {
-	newlist[i] = galloc(sizeof(GTextInfo));
-	*newlist[i] = *tis[i];
-	newlist[i]->text = u_copy(tis[i]->text);
-    }
-    k = 0;
-    for ( i=0; i<cnt; ++i ) {
-	unichar_t *udata = uc_copy(data[i]);
-	unichar_t *upt = DecomposeClassName(udata,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
-	for ( j=0; j<len; ++j )
-	    if ( u_strncmp(newlist[j]->text,udata,upt-udata)==0 )
-	break;
-	if ( j<len ) {
-	    free(newlist[j]->text);
-	    newlist[j]->text = SLICheck(ci->sc,udata);
-	} else {
-	    newlist[len+k] = gcalloc(1,sizeof(GTextInfo));
-	    newlist[len+k]->fg = newlist[len+k]->bg = COLOR_DEFAULT;
-	    newlist[len+k]->text = SLICheck(ci->sc,udata);
-	    ++k;
+	list = GWidgetGetControl(ci->gw,CID_List+(type-1)*100);
+	if ( list==NULL )
+    continue;
+	tis = GGadgetGetList(list,&len);
+
+	for ( cnt=0; data[cnt]!=NULL; ++cnt );
+	newlist = galloc((len+cnt+1)*sizeof(GTextInfo *));
+	for ( i=0; i<len; ++i ) {
+	    newlist[i] = galloc(sizeof(GTextInfo));
+	    *newlist[i] = *tis[i];
+	    newlist[i]->text = u_copy(tis[i]->text);
 	}
+	k = 0;
+	for ( i=0; i<cnt; ++i ) {
+	    unichar_t *udata = uc_copy(data[i]);
+	    unichar_t *upt = DecomposeClassName(udata,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
+	    for ( j=0; j<len; ++j )
+		if ( u_strncmp(newlist[j]->text,udata,upt-udata)==0 )
+	    break;
+	    if ( j<len ) {
+		free(newlist[j]->text);
+		newlist[j]->text = SLICheck(ci->sc,udata,copied_from);
+	    } else {
+		newlist[len+k] = gcalloc(1,sizeof(GTextInfo));
+		newlist[len+k]->fg = newlist[len+k]->bg = COLOR_DEFAULT;
+		newlist[len+k]->text = SLICheck(ci->sc,udata,copied_from);
+		++k;
+	    }
+	}
+	newlist[len+k] = gcalloc(1,sizeof(GTextInfo));
+	GGadgetSetList(list,newlist,false);
+	free(paste); free(tempdata);
+	data = NULL;
+	if ( pst_depth==-1 )
+return;
+	++pst_depth;
     }
-    newlist[len+k] = gcalloc(1,sizeof(GTextInfo));
-    GGadgetSetList(list,newlist,false);
-    free(paste); free(tempdata);
 }
 
 static int CI_Paste(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate )
-	CI_DoPaste( GDrawGetUserData(GGadgetGetWindow(g)),NULL,pst_null );
+	CI_DoPaste( GDrawGetUserData(GGadgetGetWindow(g)),NULL,pst_null,NULL );
 return( true );
 }
 
@@ -3953,7 +3952,49 @@ return(false);
 return( true );
 }
 
-void SCAppendPosSub(SplineChar *sc,enum possub_type type, char **d) {
+static void SCAppendKernPST(SplineChar *sc,char *data,enum possub_type type,SplineFont *copied_from) {
+    SplineChar *first, *second, *other;
+    SplineFont *sf = sc->parent;
+    char name[400];
+    KernPair **head, *kp;
+    int sli, flags, offset;
+    char *pt;
+
+    pt = data+5;
+    flags = 0;
+    if ( pt[0]=='r' ) flags = pst_r2l;
+    if ( pt[1]=='b' ) flags = pst_ignorebaseglyphs;
+    if ( pt[2]=='l' ) flags = pst_ignoreligatures;
+    if ( pt[3]=='m' ) flags = pst_ignorecombiningmarks;
+    if ( sscanf( pt+5, "%d %s offset=%d", &sli, name, &offset )!=3 )
+return;
+    sli = SFConvertSLI(copied_from,sli,sc->parent,sc);
+    other = SFGetCharDup(sf,-1,name);
+    if ( other==NULL )
+return;
+    if ( type==pst_kerning || type==pst_vkerning ) {
+	first = sc;
+	second = other;
+    } else {
+	first = other;
+	second = sc;
+    }
+    head = ( type==pst_kerning || type==pst_kernback ) ? &first->kerns : &first->vkerns;
+    for ( kp=*head; kp!=NULL; kp=kp->next )
+	if ( kp->sc == second )
+    break;
+    if ( kp==NULL ) {
+	kp = chunkalloc(sizeof(KernPair));
+	kp->next = *head;
+	kp->sc = second;
+	*head = kp;
+    }
+    kp->off = offset;
+    kp->sli = sli;
+    kp->flags = flags;
+}
+
+void SCAppendPosSub(SplineChar *sc,enum possub_type type, char **d,SplineFont *copied_from) {
     PST *new;
     char *data;
     unichar_t *pt, *end, *rest, *udata, *other, *spt, *tpt;
@@ -3961,8 +4002,8 @@ void SCAppendPosSub(SplineChar *sc,enum possub_type type, char **d) {
     int i, macfeat;
     uint16 flags;
 
-    if ( sc->charinfo!=NULL ) {
-	CI_DoPaste(sc->charinfo,d,type);
+    if ( sc->charinfo!=NULL && type<pst_kerning ) {
+	CI_DoPaste(sc->charinfo,d,type,copied_from);
 	GDrawRaise(sc->charinfo->gw);
 return;
     }
@@ -3992,74 +4033,78 @@ return;
 return;
 	    }
 	}
+	if ( type==pst_kerning || type==pst_vkerning ||
+		type==pst_kernback || type == pst_vkernback )
+	    SCAppendKernPST(sc,data,type,copied_from);
+	else {
+	    new = chunkalloc(sizeof(PST));
+	    new->type = type;
+	    udata = uc_copy(data);
+	    DecomposeClassName(udata,&rest,&new->tag,&macfeat,
+		    &flags, &new->script_lang_index,
+		    NULL,NULL);
+	    new->script_lang_index = SFConvertSLI(copied_from,new->script_lang_index,sc->parent,sc);
+	    new->flags = flags;
+	    new->macfeature = macfeat;
+	    free(udata);
 
-	new = chunkalloc(sizeof(PST));
-	new->type = type;
-	udata = uc_copy(data);
-	DecomposeClassName(udata,&rest,&new->tag,&macfeat,
-		&flags, &new->script_lang_index,
-		NULL,NULL);
-	new->flags = flags;
-	new->macfeature = macfeat;
-	free(udata);
-
-	if ( type==pst_position ) {
-	    if ( !ParseVR(rest,&new->u.pos,&end)) {
-		chunkfree(new,sizeof(PST));
-		free(rest);
+	    if ( type==pst_position ) {
+		if ( !ParseVR(rest,&new->u.pos,&end)) {
+		    chunkfree(new,sizeof(PST));
+		    free(rest);
 return;
-	    }
-	} else if ( type==pst_pair ) {
-	    for ( pt=rest; *pt==' ' ; ++pt );
-	    other = pt;
-	    while ( *pt!=' ' && *pt!='\0' ) ++pt;
-	    new->u.pair.paired = cu_copyn(other,pt-other);
-	    new->u.pair.vr = chunkalloc(sizeof(struct vr [2]));
-	    if ( !ParseVR(pt,&new->u.pair.vr[0],&end)) {
-		free(new->u.pair.paired);
-		chunkfree(new->u.pair.vr,sizeof(struct vr [2]));
-		chunkfree(new,sizeof(PST));
-		free(rest);
-return;
-	    }
-	    if ( !ParseVR(end,&new->u.pair.vr[1],&end)) {
-		free(new->u.pair.paired);
-		chunkfree(new->u.pair.vr,sizeof(struct vr [2]));
-		chunkfree(new,sizeof(PST));
-		free(rest);
-return;
-	    }
-	    
-	} else {
-	    /* remove leading/training spaces */
-	    for ( pt=rest; *pt==' '; ++pt );
-	    for ( end=pt+u_strlen(pt)-1; *pt==' '; --pt )
-		*pt = '\0';
-	    if ( type==pst_substitution && u_strchr(pt,' ')!=NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_BadPOSSUB,_STR_SimpleSubsOneComponent);
-#elif defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_error(_("Bad GPOS/GSUB"),_("A simple substitution must have exactly one component"));
-#endif
-		free(rest);
-return;
-	    }
-	    /* Remove multiple spaces */
-	    for ( spt=tpt=pt; *spt; ++spt ) {
-		*tpt++ = *spt;
-		if ( *spt==' ' ) {
-		    while ( *spt==' ' ) ++spt;
-		    --spt;
 		}
+	    } else if ( type==pst_pair ) {
+		for ( pt=rest; *pt==' ' ; ++pt );
+		other = pt;
+		while ( *pt!=' ' && *pt!='\0' ) ++pt;
+		new->u.pair.paired = cu_copyn(other,pt-other);
+		new->u.pair.vr = chunkalloc(sizeof(struct vr [2]));
+		if ( !ParseVR(pt,&new->u.pair.vr[0],&end)) {
+		    free(new->u.pair.paired);
+		    chunkfree(new->u.pair.vr,sizeof(struct vr [2]));
+		    chunkfree(new,sizeof(PST));
+		    free(rest);
+return;
+		}
+		if ( !ParseVR(end,&new->u.pair.vr[1],&end)) {
+		    free(new->u.pair.paired);
+		    chunkfree(new->u.pair.vr,sizeof(struct vr [2]));
+		    chunkfree(new,sizeof(PST));
+		    free(rest);
+return;
+		}
+	    } else {
+		/* remove leading/training spaces */
+		for ( pt=rest; *pt==' '; ++pt );
+		for ( end=pt+u_strlen(pt)-1; *pt==' '; --pt )
+		    *pt = '\0';
+		if ( type==pst_substitution && u_strchr(pt,' ')!=NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
+		    GWidgetErrorR(_STR_BadPOSSUB,_STR_SimpleSubsOneComponent);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    gwwv_post_error(_("Bad GPOS/GSUB"),_("A simple substitution must have exactly one component"));
+#endif
+		    free(rest);
+return;
+		}
+		/* Remove multiple spaces */
+		for ( spt=tpt=pt; *spt; ++spt ) {
+		    *tpt++ = *spt;
+		    if ( *spt==' ' ) {
+			while ( *spt==' ' ) ++spt;
+			--spt;
+		    }
+		}
+		*tpt = '\0';
+		new->u.subs.variant = cu_copy(pt);
+		if ( type==pst_ligature )
+		    new->u.lig.lig = sc;
 	    }
-	    *tpt = '\0';
-	    new->u.subs.variant = cu_copy(pt);
-	    if ( type==pst_ligature )
-		new->u.lig.lig = sc;
-	}
 
-	SCInsertPST(sc,new);
-	free(rest);
+	    SCInsertPST(sc,new);
+	    free(rest);
+	}
     }
     if ( i!=0 )
 	sc->parent->changed = true;
@@ -4154,7 +4199,7 @@ static int CI_ProcessPosSubs(CharInfo *ci) {
 	    for ( j=0; j<len; ++j )
 		data[j] = cu_copy(tis[j]->text);
 	    data[j] = NULL;
-	    SCAppendPosSub(ci->sc,i+1,data);
+	    SCAppendPosSub(ci->sc,i+1,data,ci->sc->parent);
 	    for ( j=0; j<len; ++j )
 		free(data[j]);
 	    free(data);
@@ -5235,6 +5280,59 @@ static int CI_CommentChanged(GGadget *g, GEvent *e) {
 return( true );
 }
 
+unichar_t *PST2Text(PST *pst) {
+    char buffer[400];
+
+    if ( pst->type==pst_position || pst->type==pst_pair ) {
+	if ( pst->type==pst_position ) {
+	    sprintf(buffer,"          %3d dx=%d dy=%d dx_adv=%d dy_adv=%d",
+		    pst->script_lang_index,
+		    pst->u.pos.xoff, pst->u.pos.yoff,
+		    pst->u.pos.h_adv_off, pst->u.pos.v_adv_off );
+	} else if ( pst->type==pst_pair ) {
+	    sprintf(buffer,"          %3d %s dx=%d dy=%d dx_adv=%d dy_adv=%d | dx=%d dy=%d dx_adv=%d dy_adv=%d",
+		    pst->script_lang_index,
+		    pst->u.pair.paired,
+		    pst->u.pair.vr[0].xoff, pst->u.pair.vr[0].yoff,
+		    pst->u.pair.vr[0].h_adv_off, pst->u.pair.vr[0].v_adv_off,
+		    pst->u.pair.vr[1].xoff, pst->u.pair.vr[1].yoff,
+		    pst->u.pair.vr[1].h_adv_off, pst->u.pair.vr[1].v_adv_off );
+	}
+	buffer[0] = pst->tag>>24;
+	buffer[1] = (pst->tag>>16)&0xff;
+	buffer[2] = (pst->tag>>8)&0xff;
+	buffer[3] = (pst->tag)&0xff;
+	buffer[4] = ' ';
+	buffer[5] = pst->flags&pst_r2l?'r':' ';
+	buffer[6] = pst->flags&pst_ignorebaseglyphs?'b':' ';
+	buffer[7] = pst->flags&pst_ignoreligatures?'l':' ';
+	buffer[8] = pst->flags&pst_ignorecombiningmarks?'m':' ';
+	buffer[9] = ' ';
+return( uc_copy( buffer ));
+    } else {
+	unichar_t *temp = uc_copy(pst->u.subs.variant);
+	unichar_t *ret  = ClassName(temp,pst->tag,pst->flags,
+		pst->script_lang_index,-1,-1,pst->macfeature);
+	free(temp);
+return( ret );
+    }
+}
+
+unichar_t *Kern2Text(SplineChar *other,KernPair *kp,int isv) {
+    char buffer[400];
+
+    sprintf(buffer,"%s %c%c%c%c %3d %s offset=%d",
+	    isv ? "vkrn" : "kern",
+	    kp->flags&pst_r2l?'r':' ',
+	    kp->flags&pst_ignorebaseglyphs?'b':' ',
+	    kp->flags&pst_ignoreligatures?'l':' ',
+	    kp->flags&pst_ignorecombiningmarks?'m':' ',
+	    kp->sli,
+	    other->name,
+	    kp->off );
+return( uc_copy( buffer ));
+}
+
 static void CIFillup(CharInfo *ci) {
     SplineChar *sc = ci->sc;
     SplineFont *sf = sc->parent;
@@ -5295,39 +5393,7 @@ static void CIFillup(CharInfo *ci) {
     for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
 	j = cnts[pst->type]++;
 	arrays[pst->type][j] = gcalloc(1,sizeof(GTextInfo));
-	if ( pst->type==pst_position || pst->type==pst_pair ) {
-	    if ( pst->type==pst_position ) {
-		sprintf(buffer,"          %3d dx=%d dy=%d dx_adv=%d dy_adv=%d",
-			pst->script_lang_index,
-			pst->u.pos.xoff, pst->u.pos.yoff,
-			pst->u.pos.h_adv_off, pst->u.pos.v_adv_off );
-		arrays[pst->type][j]->text = uc_copy(buffer);
-	    } else if ( pst->type==pst_pair ) {
-		sprintf(buffer,"          %3d %s dx=%d dy=%d dx_adv=%d dy_adv=%d | dx=%d dy=%d dx_adv=%d dy_adv=%d",
-			pst->script_lang_index,
-			pst->u.pair.paired,
-			pst->u.pair.vr[0].xoff, pst->u.pair.vr[0].yoff,
-			pst->u.pair.vr[0].h_adv_off, pst->u.pair.vr[0].v_adv_off,
-			pst->u.pair.vr[1].xoff, pst->u.pair.vr[1].yoff,
-			pst->u.pair.vr[1].h_adv_off, pst->u.pair.vr[1].v_adv_off );
-		arrays[pst->type][j]->text = uc_copy(buffer);
-	    }
-	    arrays[pst->type][j]->text[0] = pst->tag>>24;
-	    arrays[pst->type][j]->text[1] = (pst->tag>>16)&0xff;
-	    arrays[pst->type][j]->text[2] = (pst->tag>>8)&0xff;
-	    arrays[pst->type][j]->text[3] = (pst->tag)&0xff;
-	    arrays[pst->type][j]->text[4] = ' ';
-	    arrays[pst->type][j]->text[5] = pst->flags&pst_r2l?'r':' ';
-	    arrays[pst->type][j]->text[6] = pst->flags&pst_ignorebaseglyphs?'b':' ';
-	    arrays[pst->type][j]->text[7] = pst->flags&pst_ignoreligatures?'l':' ';
-	    arrays[pst->type][j]->text[8] = pst->flags&pst_ignorecombiningmarks?'m':' ';
-	    arrays[pst->type][j]->text[9] = ' ';
-	} else {
-	    unichar_t *temp = uc_copy(pst->u.subs.variant);
-	    arrays[pst->type][j]->text = ClassName(temp,pst->tag,pst->flags,
-		    pst->script_lang_index,-1,-1,pst->macfeature);
-	    free(temp);
-	}
+	arrays[pst->type][j]->text = PST2Text(pst);
 	arrays[pst->type][j]->fg = arrays[pst->type][j]->bg = COLOR_DEFAULT;
     }
     for ( i=pst_null+1; i<pst_lcaret /* == pst_max-1 */; ++i ) {
@@ -5435,7 +5501,7 @@ return( true );
 	    CI_DoCopy(ci);
 return( true );
 	} else if ( event->u.chr.keysym=='v' && (event->u.chr.state&ksm_control)) {
-	    CI_DoPaste(ci,NULL,pst_null);
+	    CI_DoPaste(ci,NULL,pst_null,NULL);
 return( true );
 	} else if ( event->u.chr.keysym=='q' && (event->u.chr.state&ksm_control)) {
 	    if ( event->u.chr.state&ksm_shift )
@@ -6338,4 +6404,156 @@ void FVSelectByPST(FontView *fv) {
     if ( sld.ok ) {
     }
     GDrawSetVisible(gw,false);
+}
+
+int SCAnyFeatures(SplineChar *sc) {
+    PST *pst;
+    KernPair *kp;
+    int i;
+    SplineFont *sf;
+
+    if ( sc==NULL )
+return( false );
+
+    for ( kp = sc->kerns; kp!=NULL; kp=kp->next )
+	if ( kp->off!=0 )
+return( true );
+    for ( kp = sc->vkerns; kp!=NULL; kp=kp->next )
+	if ( kp->off!=0 )
+return( true );
+
+    for ( pst = sc->possub; pst!=NULL; pst=pst->next )
+	if ( pst->type!=pst_lcaret )
+return( true );
+
+    sf = sc->parent;
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	for ( kp = sf->chars[i]->kerns; kp!=NULL; kp=kp->next )
+	    if ( kp->sc == sc && kp->off!=0 )
+return( true );
+	for ( kp = sf->chars[i]->kerns; kp!=NULL; kp=kp->next )
+	    if ( kp->sc == sc && kp->off!=0 )
+return( true );
+    }
+
+return( false );
+}
+
+static int compare_tag(const void *_n1, const void *_n2) {
+    const uint32 *t1 = _n1, *t2 = _n2;
+return( *t1 > *t2 ? 1 : *t1 == *t2 ? 0 : -1 );
+}
+
+void SCCopyFeatures(SplineChar *sc) {
+    PST *pst;
+    KernPair *kp;
+    int i,j;
+    SplineFont *sf;
+    int cnt, haslk, haslv, hask, hasv;
+    char *sel;
+    unichar_t **choices;
+    uint32 *tags;
+    static int buts[] = { _STR_OK, _STR_Cancel, 0 };
+
+    if ( sc==NULL )
+return;
+
+    cnt = 0;
+    haslk = haslv = false;
+    for ( kp = sc->kerns; kp!=NULL; kp=kp->next )
+	if ( kp->off!=0 ) {
+	    haslk = true;
+    break;
+	}
+    for ( kp = sc->vkerns; kp!=NULL; kp=kp->next )
+	if ( kp->off!=0 ) {
+	    haslv = true;
+    break;
+	}
+    cnt += haslk + haslv;
+
+    sf = sc->parent;
+    hask = hasv = false;
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	for ( kp = sf->chars[i]->kerns; kp!=NULL; kp=kp->next )
+	    if ( kp->sc == sc && kp->off!=0 ) hask = true;
+	for ( kp = sf->chars[i]->kerns; kp!=NULL; kp=kp->next )
+	    if ( kp->sc == sc && kp->off!=0 ) hasv = true;
+    }
+    cnt += hask + hasv;
+
+    for ( pst = sc->possub; pst!=NULL; pst=pst->next )
+	if ( pst->type!=pst_lcaret )
+	    ++cnt;
+
+    choices = gcalloc(cnt+1,sizeof(unichar_t *));
+    tags = gcalloc(cnt+1,sizeof(uint32));
+    sel = gcalloc(cnt,sizeof(char));
+
+    cnt = 0;
+    for ( pst = sc->possub; pst!=NULL; pst=pst->next )
+	if ( pst->type!=pst_lcaret ) {
+	    for ( i=0; i<cnt; ++i )
+		if ( pst->tag==tags[i] )
+	    break;
+	    if ( i==cnt )
+		tags[cnt++] = pst->tag;
+	}
+    qsort(tags,cnt,sizeof(uint32),compare_tag);
+    for ( i=0; i<cnt; ++i )
+	choices[i] = TagFullName(sf,tags[i],-1);
+    if ( haslk )
+	choices[i++] = u_copy( GStringGetResource(_STR_KernsInitial,NULL));
+    if ( haslv )
+	choices[i++] = u_copy( GStringGetResource(_STR_VKernsInitial,NULL));
+    if ( hask )
+	choices[i++] = u_copy( GStringGetResource(_STR_KernsFinal,NULL));
+    if ( hasv )
+	choices[i++] = u_copy( GStringGetResource(_STR_VKernsFinal,NULL));
+    if ( GWidgetChoicesBRM(_STR_CopyFeatures,(const unichar_t **) choices,sel,i,buts,
+	    _STR_CopyWhichFeatures)==-1 )
+return;
+    CopyPSTStart(sf);
+    for ( i=0; i<cnt; ++i ) if ( sel[i] ) {
+	for ( pst = sc->possub; pst!=NULL; pst=pst->next )
+	    if ( pst->tag == tags[i] && pst->type!=pst_lcaret )
+		CopyPSTAppend(pst->type,PST2Text(pst));
+    }
+    if ( haslk ) {
+	if ( sel[i] ) {
+	    for ( kp=sc->kerns; kp!=NULL; kp=kp->next ) if ( kp->off!=0 )
+		CopyPSTAppend(pst_kerning,Kern2Text(kp->sc,kp,false));
+	}
+	++i;
+    }
+    if ( haslv ) {
+	if ( sel[i] ) {
+	    for ( kp=sc->vkerns; kp!=NULL; kp=kp->next ) if ( kp->off!=0 )
+		CopyPSTAppend(pst_vkerning,Kern2Text(kp->sc,kp,true));
+	}
+	++i;
+    }
+    if ( hask ) {
+	if ( sel[i] ) {
+	    for ( j=0; j<sf->charcnt; ++j ) if ( sf->chars[j]!=NULL )
+		for ( kp=sf->chars[j]->kerns; kp!=NULL; kp=kp->next )
+		    if ( kp->off!=0 && kp->sc==sc )
+			CopyPSTAppend(pst_kernback,Kern2Text(sf->chars[j],kp,false));
+	}
+	++i;
+    }
+    if ( hasv ) {
+	if ( sel[i] ) {
+	    for ( j=0; j<sf->charcnt; ++j ) if ( sf->chars[j]!=NULL )
+		for ( kp=sf->chars[j]->vkerns; kp!=NULL; kp=kp->next )
+		    if ( kp->off!=0 && kp->sc==sc )
+			CopyPSTAppend(pst_vkernback,Kern2Text(sf->chars[j],kp,true));
+	}
+	++i;
+    }
+    free(tags);
+    free(sel);
+    for ( j=0; j<i; ++j )
+	free(choices[j]);
+    free(choices);
 }

@@ -197,6 +197,7 @@ static char str_CopyLBearing[] = "Copy LBearing";
 static unichar_t mnemonic_CopyLBearing[] = 'p';
 static char str_CopyRBearing[] = "Copy RBearing";
 static unichar_t mnemonic_CopyRBearing[] = 'g';
+static char str_CopyFeatures[] = "Copy Glyph Features...";
 static char str_Copyref[] = "Copy Reference";
 static unichar_t mnemonic_Copyref[] = 'o';
 static char str_Paste[] = "Paste";
@@ -2104,6 +2105,11 @@ static char str_RestrictSelectionPopup = "Only search the selected characters, a
 static char str_UnknownAnchorClass = "Unknown Anchor Class: %.70s";
 static char str_TooManyTags = "Too many tags specified";
 static char str_NoMatch = "No characters matched";
+static char str_KernsInitial = "Kern Pairs with this as the initial glyph"
+static char str_VKernsInitial = "Vertical Kern Pairs with this as the initial glyph"
+static char str_KernsFinal = "Kern Pairs with this as the final glyph"
+static char str_VKernsFinal = "Vertical Kern Pairs with this as the final glyph"
+static char str_CopyWhichFeatures = "Copy Which Features?";
     /* Import */
 static char str_Duppixelsize[] = "Duplicate pixelsize";
 /* "The font database already contains a bitmap\nfont with this pixelsize (%d)\nDo you want to overwrite it?" */
