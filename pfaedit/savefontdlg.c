@@ -78,7 +78,7 @@ static GTextInfo bitmaptypes[] = {
     { NULL }
 };
 
-static int oldafmstate = true, oldpfmstate = false;
+static int oldafmstate = -1, oldpfmstate = false;
 int oldformatstate = ff_pfb;
 int oldbitmapstate = 0;
 
@@ -699,6 +699,14 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     gcd[4].gd.label = &label[4];
     gcd[4].gd.handle_controlevent = GFD_NewDir;
     gcd[4].creator = GButtonCreate;
+
+    if ( oldafmstate==-1 ) {
+	oldafmstate = true;
+	if ( oldformatstate==ff_ttf || oldformatstate==ff_ttfsym || oldformatstate==ff_otf ||
+		oldformatstate==ff_ttfdfont || oldformatstate==ff_otfdfont || oldformatstate==ff_otfciddfont ||
+		oldformatstate==ff_otfcid || oldformatstate==ff_ttfmacbin || oldformatstate==ff_none )
+	    oldafmstate = false;
+    }
 
     gcd[5].gd.pos.x = 12; gcd[5].gd.pos.y = 214; gcd[5].gd.pos.width = 0; gcd[5].gd.pos.height = 0;
     gcd[5].gd.flags = gg_visible | gg_enabled | (oldafmstate ?gg_cb_on : 0 );
