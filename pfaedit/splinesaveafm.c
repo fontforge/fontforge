@@ -37,6 +37,10 @@ extern short zapfwx[];
 extern short zapfbb[][4];
 extern char zapfexists[];
 
+int lig_script = CHR('*',' ',' ',' ');
+int lig_lang = DEFAULT_LANG;
+int *lig_tags=NULL;
+
 static void *mygets(FILE *file,char *buffer,int size) {
     char *end = buffer+size-1;
     char *pt = buffer;
@@ -313,6 +317,35 @@ return( "FontSpecific" );
     }
 }
 
+static int ScriptLangMatchLigOuts(PST *lig,SplineFont *sf) {
+    int i,j;
+    struct script_record *sr;
+
+    if ( lig_tags==NULL ) {
+	lig_tags = gcalloc(3,sizeof(uint32));
+	lig_tags[0] = CHR('l','i','g','a');
+	lig_tags[1] = CHR('r','l','i','g');
+	lig_tags[2] = 0;
+    }
+
+    for ( i=0; lig_tags[i]!=0 && lig_tags[i]!=lig->tag; ++i );
+    if ( lig_tags[i]==0 )
+return( false );
+
+    sr = sf->script_lang[lig->script_lang_index];
+    for ( i=0; sr[i].script!=0; ++i ) {
+	if ( sr[i].script==lig_script || lig_script==CHR('*',' ',' ',' ')) {
+	    for ( j=0; sr[i].langs[j]!=0; ++j ) {
+		if ( sr[i].langs[j]==lig_lang || lig_lang==CHR('*',' ',' ',' '))
+return( true );
+	    }
+	    if ( lig_script!=CHR('*',' ',' ',' ') )
+return( false );
+	}
+    }
+return( false );
+}
+
 static void AfmLigOut(FILE *afm, SplineChar *sc) {
     LigList *ll;
     PST *lig;
@@ -320,6 +353,8 @@ static void AfmLigOut(FILE *afm, SplineChar *sc) {
 
     for ( ll=sc->ligofme; ll!=NULL; ll=ll->next ) {
 	lig = ll->lig;
+	if ( !ScriptLangMatchLigOuts(lig,sc->parent))
+    continue;
 	pt = strchr(lig->u.lig.components,' ');
 	eos = strrchr(lig->u.lig.components,' ');
 	if ( pt!=NULL && eos==pt )

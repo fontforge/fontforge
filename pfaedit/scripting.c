@@ -749,6 +749,76 @@ static void bGenerateFamily(Context *c) {
     }
 }
 
+static void bControlAfmLigatureOutput(Context *c) {
+    extern int lig_script, lig_lang, *lig_tags;
+    uint32 tags[2];
+    int i,cnt;
+    char *str, *pt;
+    char temp[4];
+
+    if ( c->a.argc!=4 )
+	error( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str || c->a.vals[3].type!=v_str )
+	error( c, "Bad type of argument");
+    for ( i=0; i<2; ++i ) {
+	str = c->a.vals[i+1].u.sval;
+	memset(temp,' ',4);
+	if ( *str ) {
+	    temp[0] = *str;
+	    if ( str[1] ) {
+		temp[1] = str[1];
+		if ( str[2] ) {
+		    temp[2] = str[2];
+		    if ( str[3] ) {
+			temp[3] = str[3];
+			if ( str[4] )
+			    error(c,"Scripts/Languages are represented by strings which are at most 4 characters long");
+		    }
+		}
+	    }
+	}
+	tags[i] = (temp[0]<<24)|(temp[1]<<16)|(temp[2]<<8)|temp[3];
+    }
+    lig_script = tags[0]; lig_lang = tags[1];
+
+    pt = str = c->a.vals[3].u.sval;
+    cnt = 0;
+    while ( (pt=strchr(pt,','))!=NULL ) {
+	++cnt;
+	++pt;
+    }
+    if ( lig_tags!=NULL ) free(lig_tags);
+    lig_tags = galloc((cnt+2)*sizeof(uint32));
+    i =0;
+    while ( *str ) {
+	memset(temp,' ',4);
+	if ( *str && *str!=',' ) {
+	    temp[0] = *str;
+	    if ( str[1] && str[1]!=',' ) {
+		temp[1] = str[1];
+		if ( str[2] && str[2]!=',' ) {
+		    temp[2] = str[2];
+		    if ( str[3] && str[3]!=',' ) {
+			temp[3] = str[3];
+			if ( str[4] && str[4]!=',' )
+			    error(c,"Tags are represented by strings which are at most 4 characters long");
+		    }
+		}
+	    }
+	}
+	if ( i<=cnt )
+	    lig_tags[i++] = (temp[0]<<24)|(temp[1]<<16)|(temp[2]<<8)|temp[3];
+	else
+	    GDrawIError("Bad ligature tag count");
+	pt = strchr(str,',');
+	if ( pt==NULL )
+	    str += strlen(str);
+	else
+	    str = pt+1;
+    }
+    lig_tags[i] = 0;
+}
+
 static void Bitmapper(Context *c,int isavail) {
     int32 *sizes;
     int i;
@@ -2170,6 +2240,7 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "Save", bSave },
     { "Generate", bGenerate },
     { "GenerateFamily", bGenerateFamily },
+    { "ControlAfmLigatureOutput", bControlAfmLigatureOutput },
 #ifdef PFAEDIT_CONFIG_WRITE_PFM
     { "WritePfm", bWritePfm },
 #endif
