@@ -36,7 +36,7 @@ AC_DEFINE(_ModKeysAutoRepeat)
 AC_DEFINE(__CygWin,1)
 AC_DEFINE(NODYNAMIC)
 gww_nodynamic="yes"
-gww_needsstatic="yes"
+#gww_needsstatic="yes"
 
 dnl Although present on my cygwin system the Xi library does not load
 dnl and crashes gdb if we attempt to use it.
@@ -259,6 +259,13 @@ AC_ARG_WITH(multilayer,
  ], : )
 
 test -d libs || mkdir libs
+
+AC_SUBST(WFLAGS)
+if test "$GCC" = yes; then
+  WFLAGS="-Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type -Wparentheses -Wformat -Wchar-subscripts"
+else
+  WFLAGS=""
+fi
 
 cp Makefile.dynamic.in Makefile.in
 cp Unicode/Makefile.dynamic.in Unicode/Makefile.in

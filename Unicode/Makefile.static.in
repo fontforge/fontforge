@@ -11,9 +11,7 @@ libgunicode_OBJECTS =  ArabicForms.o alphabet.o backtrns.o char.o \
  cjk.o memory.o ucharmap.o unialt.o ustring.o utype.o usprintf.o
 
 Incs = -I$(top_srcdir)/inc -I/usr/pkg/include -I/usr/pkg/include/giflib
-WFLAGS = -Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type -Wparentheses \
-	-Wformat -Wchar-subscripts 
-CFLAGS = @CFLAGS@ $(Incs) $(WFLAGS) @DEFS@
+CFLAGS = @CFLAGS@ $(Incs) @WFLAGS@ @DEFS@
 
 all: ../libs/libgunicode.a
 

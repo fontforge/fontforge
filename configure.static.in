@@ -182,8 +182,11 @@ if test "$gww_nodynamic" = "yes"; then
  if test "$ac_cv_lib_jpeg_jpeg_CreateDecompress" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -ljpeg"
  fi
- if test "$ac_cv_lib_freetype_FT_New_Face" = "yes"; then
+ if test "$ac_cv_lib_freetype_FT_New_Memory_Face" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -lfreetype"
+ fi
+ if test "$ac_cv_lib_xml2_xmlParseFile" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lxml2"
  fi
  AC_CHECK_LIB(uninameslist, UnicodeNameAnnot, [
    STATIC_LIBS="$STATIC_LIBS -luninameslist"
@@ -199,6 +202,13 @@ AC_ARG_WITH(multilayer,
  ], : )
 
 test -d libs || mkdir libs
+
+AC_SUBST(WFLAGS)
+if test "$GCC" = yes; then
+  WFLAGS="-Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type -Wparentheses -Wformat -Wchar-subscripts"
+else
+  WFLAGS=""
+fi
 
 cp Makefile.static.in Makefile.in
 cp Unicode/Makefile.static.in Unicode/Makefile.in

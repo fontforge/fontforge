@@ -260,6 +260,13 @@ AC_ARG_WITH(multilayer,
 
 test -d libs || mkdir libs
 
+AC_SUBST(WFLAGS)
+if test "$GCC" = yes; then
+  WFLAGS="-Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type -Wparentheses -Wformat -Wchar-subscripts"
+else
+  WFLAGS=""
+fi
+
 cp Makefile.dynamic.in Makefile.in
 cp Unicode/Makefile.dynamic.in Unicode/Makefile.in
 cp gdraw/Makefile.dynamic.in gdraw/Makefile.in

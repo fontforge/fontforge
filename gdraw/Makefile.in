@@ -32,9 +32,7 @@ libgdraw_OBJECTS =  choosericons.lo divisors.lo drawboxborder.lo \
  gtextfield.lo gtextinfo.lo gwidgets.lo gxdraw.lo
 
 Incs = -I$(top_srcdir)/inc -I/usr/pkg/include -I/usr/pkg/include/giflib
-WFLAGS = -Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type -Wparentheses \
-	-Wformat -Wchar-subscripts 
-CFLAGS = @CFLAGS@ $(Incs) $(WFLAGS) $(X_CFLAGS) -DNOTHREADS @DEFS@ -DLIBDIR='"$(libdir)"'
+CFLAGS = @CFLAGS@ $(Incs) @WFLAGS@ $(X_CFLAGS) -DNOTHREADS @DEFS@ -DLIBDIR='"$(libdir)"'
 
 ../libgdraw.la: $(libgdraw_OBJECTS)
 	$(LIBTOOL) $(CC) $(CFLAGS) -o ../libgdraw.la $(libgdraw_OBJECTS) \
