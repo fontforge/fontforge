@@ -515,59 +515,6 @@ return( -32768 );
 return( val );
 }
 
-static void SPSmoothJoint(SplinePoint *sp) {
-    BasePoint unitn, unitp;
-    double len, dot, dotn, dotp;
-    if ( sp->prev==NULL || sp->next==NULL || sp->pointtype==pt_corner )
-return;
-
-    if ( sp->pointtype==pt_curve && !sp->nonextcp && !sp->noprevcp ) {
-	unitn.x = sp->nextcp.x-sp->me.x;
-	unitn.y = sp->nextcp.y-sp->me.y;
-	len = sqrt(unitn.x*unitn.x + unitn.y*unitn.y);
-	if ( len==0 )
-return;
-	unitn.x /= len; unitn.y /= len;
-	unitp.x = sp->me.x - sp->prevcp.x;
-	unitp.y = sp->me.y - sp->prevcp.y;
-	len = sqrt(unitp.x*unitp.x + unitp.y*unitp.y);
-	if ( len==0 )
-return;
-	unitp.x /= len; unitp.y /= len;
-	dotn = unitp.y*(sp->nextcp.x-sp->me.x) - unitp.x*(sp->nextcp.y-sp->me.y);
-	dotp = unitn.y*(sp->me.x - sp->prevcp.x) - unitn.x*(sp->me.y - sp->prevcp.y);
-	sp->nextcp.x -= dotn*unitp.y/2;
-	sp->nextcp.y -= -dotn*unitp.x/2;
-	sp->prevcp.x += dotp*unitn.y/2;
-	sp->prevcp.y += -dotp*unitn.x/2;
-	SplineRefigure(sp->prev); SplineRefigure(sp->next);
-    }
-    if ( sp->pointtype==pt_tangent && !sp->nonextcp ) {
-	unitp.x = sp->me.x - sp->prev->from->me.x;
-	unitp.y = sp->me.y - sp->prev->from->me.y;
-	len = sqrt(unitp.x*unitp.x + unitp.y*unitp.y);
-	if ( len!=0 ) {
-	    unitp.x /= len; unitp.y /= len;
-	    dot = unitp.y*(sp->nextcp.x-sp->me.x) - unitp.x*(sp->nextcp.y-sp->me.y);
-	    sp->nextcp.x -= dot*unitp.y;
-	    sp->nextcp.y -= -dot*unitp.x;
-	    SplineRefigure(sp->next);
-	}
-    }
-    if ( sp->pointtype==pt_tangent && !sp->noprevcp ) {
-	unitn.x = sp->nextcp.x-sp->me.x;
-	unitn.y = sp->nextcp.y-sp->me.y;
-	len = sqrt(unitn.x*unitn.x + unitn.y*unitn.y);
-	if ( len!=0 ) {
-	    unitn.x /= len; unitn.y /= len;
-	    dot = unitn.y*(sp->me.x-sp->prevcp.x) - unitn.x*(sp->me.y-sp->prevcp.y);
-	    sp->prevcp.x += dot*unitn.y;
-	    sp->prevcp.y += -dot*unitn.x;
-	    SplineRefigure(sp->prev);
-	}
-    }
-}
-
 static void NLTransPoint(SplinePoint *sp,struct context *c) {
 
     c->x = sp->me.x; c->y = sp->me.y;
