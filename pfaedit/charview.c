@@ -189,6 +189,7 @@ return;
 	r.height = -r.height;
     }
     GDrawSetDashedLine(pixmap,2,2,0);
+    GDrawSetLineWidth(pixmap,0);
     GDrawSetXORMode(pixmap);
     GDrawSetXORBase(pixmap,GDrawGetDefaultBackground(NULL));
     GDrawDrawRect(pixmap,&r,0x000000);
@@ -205,6 +206,7 @@ return;
     xend =  cv->xoff + rint(cv->info.x*cv->scale);
     yend = -cv->yoff + cv->height - rint(cv->info.y*cv->scale);
     GDrawSetXORMode(pixmap);
+    GDrawSetLineWidth(pixmap,0);
     GDrawSetXORBase(pixmap,GDrawGetDefaultBackground(NULL));
     GDrawDrawLine(pixmap,x,y,xend,yend,0x000000);
     GDrawSetCopyMode(pixmap);
@@ -1201,6 +1203,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     clip.y = (cv->height-event->u.expose.rect.y-event->u.expose.rect.height-cv->yoff)/cv->scale;
 
     GDrawSetFont(pixmap,cv->small);
+    GDrawSetLineWidth(pixmap,0);
 
     if ( !cv->show_ft_results && cv->dv==NULL ) {
 	/* if we've got bg images (and we're showing them) then the hints live in */
@@ -2021,6 +2024,7 @@ static void CVInfoDrawRulers(CharView *cv, GWindow pixmap ) {
     int rstart = cv->mbh+cv->infoh;
     GDrawSetXORMode(pixmap);
     GDrawSetXORBase(pixmap,GDrawGetDefaultBackground(NULL));
+    GDrawSetLineWidth(pixmap,0);
     if ( cv->olde.x!=-1 ) {
 	GDrawDrawLine(pixmap,cv->olde.x+cv->rulerh,rstart,cv->olde.x+cv->rulerh,rstart+cv->rulerh,0xff0000);
 	GDrawDrawLine(pixmap,0,cv->olde.y+rstart+cv->rulerh,cv->rulerh,cv->olde.y+rstart+cv->rulerh,0xff0000);
@@ -3144,6 +3148,7 @@ static void CVExposeRulers(CharView *cv, GWindow pixmap ) {
     GDrawFillRect(pixmap,&rect,GDrawGetDefaultBackground(NULL));
     rect.y = ybase; rect.height = cv->height+cv->rulerh; rect.x = 0; rect.width = cv->rulerh;
     GDrawFillRect(pixmap,&rect,GDrawGetDefaultBackground(NULL));
+    GDrawSetLineWidth(pixmap,0);
     GDrawDrawLine(pixmap,cv->rulerh,cv->mbh+cv->infoh+cv->rulerh-1,8096,cv->mbh+cv->infoh+cv->rulerh-1,0x000000);
     GDrawDrawLine(pixmap,cv->rulerh-1,cv->mbh+cv->infoh+cv->rulerh,cv->rulerh-1,8096,0x000000);
 
@@ -3188,6 +3193,7 @@ static void InfoExpose(CharView *cv, GWindow pixmap, GEvent *expose) {
 return;
 
     GDrawPushClip(pixmap,&expose->u.expose.rect,&old1);
+    GDrawSetLineWidth(pixmap,0);
     if ( expose->u.expose.rect.y< cv->mbh+cv->infoh ) {
 	r.x = 0; r.width = 8096;
 	r.y = cv->mbh; r.height = cv->infoh;
@@ -3407,7 +3413,7 @@ void LogoExpose(GWindow pixmap,GEvent *event, GRect *r,enum drawmode dm) {
 	GDrawDrawImage(pixmap,which,NULL,
 		r->x+(xoff-xoff/2),r->y+(yoff-yoff/2));
 	GDrawPopClip(pixmap,&old);
-	GDrawDrawLine(pixmap,r->x+sbsize-1,r->y,r->x+sbsize-1,r->y+sbsize,0x000000);
+	/*GDrawDrawLine(pixmap,r->x+sbsize-1,r->y,r->x+sbsize-1,r->y+sbsize,0x000000);*/
     }
 }
 

@@ -834,6 +834,7 @@ static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
     static unichar_t nums[] = { '0', '0', '0', '0', '0', '0', '\0' };
 
     GDrawSetFont(pixmap,ii->gfont);
+    GDrawSetLineWidth(pixmap,0);
     addr_end = 0;
     if ( ii->showaddr )
 	addr_end = GDrawGetTextWidth(pixmap,nums,4,NULL)+EDGE_SPACING;

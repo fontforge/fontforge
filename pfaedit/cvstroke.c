@@ -379,6 +379,7 @@ return( false );
 	}
     } else if ( event->type == et_expose ) {
 	StrokeDlg *sd = GDrawGetUserData(gw);
+	GDrawSetLineWidth(gw,0);
 	if ( sd->si ) {
 	    GDrawDrawRect(gw,&sd->r1,0x000000);
 	    GDrawDrawRect(gw,&sd->r2,0x000000);

@@ -1053,6 +1053,7 @@ void SVChar(SearchView *sv, GEvent *event) {
 static void SVDraw(SearchView *sv, GWindow pixmap, GEvent *event) {
     GRect r;
 
+    GDrawSetLineWidth(pixmap,0);
     if ( sv->cv_srch.inactive )
 	GDrawSetFont(pixmap,sv->plain);
     else

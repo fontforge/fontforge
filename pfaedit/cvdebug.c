@@ -249,6 +249,7 @@ return;
 }
 
 static void DVPointsExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
+    GDrawSetLineWidth(pixmap,0);
     GDrawDrawLine(pixmap,event->u.expose.rect.x,dv->pts_head-1,event->u.expose.rect.x+event->u.expose.rect.width,dv->pts_head-1,0x000000);
 }
 
@@ -502,6 +503,7 @@ return( true );
 }
 
 static void DVExpose(GWindow pixmap, DebugView *dv,GEvent *event) {
+    GDrawSetLineWidth(pixmap,0);
     GDrawDrawLine(pixmap, 0, dv->toph-1, dv->dwidth, dv->toph-1, 0x000000 );
 }
 

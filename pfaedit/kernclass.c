@@ -882,6 +882,7 @@ return;
 
     GDrawPushClip(pixmap,area,&old1);
     GDrawSetFont(pixmap,kcd->font);
+    GDrawSetLineWidth(pixmap,0);
     rect.x = kcd->xstart; rect.y = kcd->ystart;
     rect.width = kcd->width+(kcd->xstart2-kcd->xstart);
     rect.height = kcd->height+(kcd->ystart2-kcd->ystart);

@@ -2223,6 +2223,7 @@ return;
 
     GDrawPushClip(pixmap,area,&old1);
     GDrawSetFont(pixmap,smd->font);
+    GDrawSetLineWidth(pixmap,0);
     rect.x = smd->xstart; rect.y = smd->ystart;
     rect.width = smd->width+(smd->xstart2-smd->xstart);
     rect.height = smd->height+(smd->ystart2-smd->ystart);

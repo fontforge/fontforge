@@ -4366,6 +4366,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
     }
 
     GDrawSetFont(pixmap,fv->header);
+    GDrawSetLineWidth(pixmap,0);
     GDrawPushClip(pixmap,&event->u.expose.rect,&old);
     GDrawFillRect(pixmap,NULL,GDrawGetDefaultBackground(NULL));
     for ( i=0; i<=fv->rowcnt; ++i ) {

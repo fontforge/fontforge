@@ -561,6 +561,7 @@ static void KP_ExposeKerns(KPData *kpd,GWindow pixmap,GRect *rect) {
 
     GDrawPushClip(pixmap,rect,&old);
     GDrawSetFont(pixmap,kpd->font);
+    GDrawSetLineWidth(pixmap,0);
     GDrawFillRect(pixmap,rect,GDrawGetDefaultBackground(NULL));
     subclip = *rect;
     for ( i=first; i<=last && i+kpd->off_top<kpd->kcnt; ++i ) {
@@ -626,6 +627,7 @@ static void KP_RefreshSel(KPData *kpd,int index) {
 return;
     sel.x = 0; sel.width = kpd->vwidth-1;
     sel.y = (index-kpd->off_top)*kpd->uh; sel.height = kpd->uh-2;
+    GDrawSetLineWidth(kpd->v,0);
     GDrawDrawRect(kpd->v,&sel,col);
 }
 
@@ -1024,6 +1026,7 @@ static int kpd_e_h(GWindow gw, GEvent *event) {
 	kpdpopup(GDrawGetUserData(gw));
     } else if ( event->type == et_expose ) {
 	KPData *kpd = GDrawGetUserData(gw);
+	GDrawSetLineWidth(gw,0);
 	GDrawDrawLine(gw,0,kpd->header_height-1,
 		event->u.expose.rect.x+event->u.expose.rect.width,kpd->header_height-1,
 		0x000000);

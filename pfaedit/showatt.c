@@ -2096,6 +2096,7 @@ static void AttExpose(struct att_dlg *att,GWindow pixmap,GRect *rect) {
     Color fg;
 
     GDrawFillRect(pixmap,rect,GDrawGetDefaultBackground(NULL));
+    GDrawSetLineWidth(pixmap,0);
 
     r.height = r.width = att->as;
     y = (rect->y/att->fh) * att->fh + att->as;

@@ -247,6 +247,7 @@ static int STDrawText(SFTextArea *st,GWindow pixmap,int x,int y,
     if ( fl==NULL )
 return(x);
 
+    GDrawSetLineWidth(pixmap,0);
     if ( !st->dobitext ) {
 	while ( len>0 ) {
 	    if ( pos>=fl->end )
@@ -1462,6 +1463,7 @@ static void SFTextAreaDrawLineSel(GWindow pixmap, SFTextArea *st, int line, Colo
     e = st->sel_end>st->lines[line+1] && st->lines[line+1]!=-1?st->lines[line+1]-1:
 	    st->sel_end;
 
+    GDrawSetLineWidth(pixmap,0);
     if ( !st->dobitext ) {
 	if ( st->sel_start>st->lines[line] )
 	    selr.x += STGetTextWidth(st,st->lines[line],st->sel_start-st->lines[line])-
@@ -1520,6 +1522,7 @@ return( false );
     GDrawPushClip(pixmap,&g->inner,&old2);
     GDrawSetFont(pixmap,st->font);
     GDrawSetDither(NULL, false);	/* on 8 bit displays we don't want any dithering */
+    GDrawSetLineWidth(pixmap,0);
 
     fg = g->state==gs_disabled?g->box->disabled_foreground:
 		    g->box->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap)):

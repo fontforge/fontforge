@@ -402,6 +402,7 @@ static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
     RefChar *refs;
 
     GDrawPushClip(pixmap,&event->u.expose.rect,&old);
+    GDrawSetLineWidth(pixmap,0);
     if ( bv->showfore ) {
 	/* fore ground is a misnomer. it's what we're interested in but we */
 	/*  actually need to draw it first, otherwise it obscures everything */
@@ -528,6 +529,7 @@ return;
 	temp.y = bv->mbh;
     }
     GDrawPushClip(pixmap,&temp,&old);
+    GDrawSetLineWidth(pixmap,0);
 
     if ( event->u.expose.rect.x<6+bdfc->xmax-bdfc->xmin ) {
 	box.x = 0; box.width = bv->infoh;

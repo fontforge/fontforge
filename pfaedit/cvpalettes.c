@@ -443,6 +443,7 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
 
     GDrawPushClip(pixmap,r,&old);
     GDrawFillRect(pixmap,r,GDrawGetDefaultBackground(NULL));
+    GDrawSetLineWidth(pixmap,0);
     for ( i=0; i<sizeof(buttons)/sizeof(buttons[0])-1; ++i ) for ( j=0; j<2; ++j ) {
 	mi = i;
 	if ( i==(cvt_rect)/2 && ((j==0 && rectelipse) || (j==1 && polystar)) )
@@ -1545,6 +1546,7 @@ static void BVShadesExpose(GWindow pixmap, BitmapView *bv, GRect *r) {
     Color bg = GDrawGetDefaultBackground(NULL);
     int greybg = (3*COLOR_RED(bg)+6*COLOR_GREEN(bg)+COLOR_BLUE(bg))/10;
 
+    GDrawSetLineWidth(pixmap,0);
     BVShadesDecompose(bv,&lay);
     GDrawPushClip(pixmap,r,&old);
     for ( i=0; i<=lay.cnt; ++i ) {
@@ -1672,6 +1674,7 @@ static void BVToolsExpose(GWindow pixmap, BitmapView *bv, GRect *r) {
     int dither = GDrawSetDither(NULL,false);
 
     GDrawPushClip(pixmap,r,&old);
+    GDrawSetLineWidth(pixmap,0);
     for ( i=0; i<sizeof(buttons)/sizeof(buttons[0]); ++i ) for ( j=0; j<2; ++j ) {
 	GDrawDrawImage(pixmap,buttons[i][j],NULL,j*27+1,i*27+1);
 	norm = (i*2+j!=tool);

@@ -166,6 +166,7 @@ static void MVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
     if ( clip->y+clip->height < mv->topend )
 return;
     GDrawPushClip(pixmap,clip,&old);
+    GDrawSetLineWidth(pixmap,0);
     for ( x=mv->mwidth; x<mv->width; x+=mv->mwidth ) {
 	GDrawDrawLine(pixmap,x,mv->displayend,x,ke,0x000000);
 	GDrawDrawLine(pixmap,x+mv->mwidth/2,ke,x+mv->mwidth/2,mv->height-mv->sbh,0x000000);
