@@ -73,6 +73,7 @@
 #define CID_InsMark	409
 #define CID_TagCur	410
 #define CID_TagMark	411
+#define CID_Kerns	412
 
 #define SMDE_WIDTH	200
 #define SMDE_HEIGHT	220
@@ -123,6 +124,13 @@ static void StatesFree(struct asm_state *old,int old_class_cnt,int old_state_cnt
 		free(this->u.insert.cur_ins);
 	    }
 	}
+    } else if ( type==asm_kern ) {
+	for ( i=0; i<old_state_cnt ; ++i ) {
+	    for ( j=0; j<old_class_cnt; ++j ) {
+		struct asm_state *this = &old[i*old_class_cnt+j];
+		free(this->u.kern.kerns);
+	    }
+	}
     }
     free(old);
 }
@@ -135,12 +143,21 @@ static struct asm_state *StateCopy(struct asm_state *old,int old_class_cnt,int o
 
     for ( i=0; i<old_state_cnt && i<new_state_cnt; ++i ) {
 	memcpy(new+i*new_class_cnt, old+i*old_class_cnt, minclass*sizeof(struct asm_state));
-	if ( type==asm_insert )
+	if ( type==asm_insert ) {
 	    for ( j=0; j<minclass; ++j ) {
 		struct asm_state *this = &new[i*new_class_cnt+j];
 		this->u.insert.mark_ins = copy(this->u.insert.mark_ins);
 		this->u.insert.cur_ins = copy(this->u.insert.cur_ins);
 	    }
+	} else {
+	    for ( j=0; j<minclass; ++j ) {
+		struct asm_state *this = &new[i*new_class_cnt+j];
+		int16 *temp;
+		temp = galloc(this->u.kern.kcnt*sizeof(int16));
+		memcpy(temp,this->u.kern.kerns,this->u.kern.kcnt*sizeof(int16));
+		this->u.kern.kerns = temp;
+	    }
+	}
     }
     for ( ; i<new_state_cnt; ++i )
 	new[i*new_class_cnt+2].next_state = i;		/* Deleted glyphs should be treated as noops */
@@ -169,6 +186,8 @@ return;
 	    else if ( smd->sm->type==asm_insert ) {
 		free(smd->states[i*smd->class_cnt+j].u.insert.mark_ins);
 		free(smd->states[i*smd->class_cnt+j].u.insert.cur_ins);
+	    } else if ( smd->sm->type==asm_kern ) {
+		free(smd->states[i*smd->class_cnt+j].u.kern.kerns);
 	    }
 	}
     }
@@ -1585,7 +1604,7 @@ static void SMD_EditState(SMD *smd) {
     GRect pos;
     int j, k, listk;
     struct asm_state *this = &smd->states[smd->st_pos];
-    char buf[20];
+    char buf[20], kerns[60];
     unichar_t utag1[8], utag2[8];
 
     smd->edit_done = smd->edit_ok = false;
@@ -1631,7 +1650,9 @@ static void SMD_EditState(SMD *smd) {
     gcd[k].gd.cid = CID_Flag4000;
     gcd[k++].creator = GCheckBoxCreate;
 
-    label[k].text = (unichar_t *) (smd->sm->type!=asm_indic?_STR_MarkCurrentGlyph:_STR_MarkCurrentGlyphAsFirst);
+    label[k].text = (unichar_t *) (smd->sm->type==asm_kern?_STR_PushCurrentGlyph:
+				   smd->sm->type!=asm_indic?_STR_MarkCurrentGlyph:
+					    _STR_MarkCurrentGlyphAsFirst);
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+16;
@@ -1718,6 +1739,26 @@ static void SMD_EditState(SMD *smd) {
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_InsCur;
 	gcd[k++].creator = GTextFieldCreate;
+    } else if ( smd->sm->type==asm_kern ) {
+	label[k].text = (unichar_t *) _STR_KernValues;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+26;
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k++].creator = GLabelCreate;
+
+	kerns[0] = '\0';
+	for ( j=0; j<this->u.kern.kcnt; ++j )
+	    sprintf( kerns+strlen(kerns), "%d ", this->u.kern.kerns[j]);
+	if ( kerns[0]!='\0' && kerns[strlen(kerns)-1]==' ' )
+	    kerns[strlen(kerns)-1] = '\0';
+	label[k].text = (unichar_t *) kerns;
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = gcd[1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k].gd.cid = CID_Kerns;
+	gcd[k++].creator = GTextFieldCreate;
     } else {
 	label[k].text = (unichar_t *) _STR_MarkSubs;
 	label[k].text_in_resource = true;
@@ -1799,6 +1840,10 @@ static void SMD_EditState(SMD *smd) {
 	char *mins, *cins;
 	uint32 mtag, ctag;
 	const unichar_t *ret;
+	unichar_t *end;
+	int16 kbuf[9];
+	int kerns;
+	int oddcomplain=false;
 
 	smd->edit_ok = smd->edit_done = false;
 
@@ -1813,6 +1858,38 @@ static void SMD_EditState(SMD *smd) {
 	    flags |= GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,CID_IndicVerb));
 	    this->next_state = ns;
 	    this->flags = flags;
+	} else if ( smd->sm->type==asm_kern ) {
+	    ret = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Kerns));
+	    kerns=0;
+	    while ( *ret!='\0' ) {
+		while ( *ret==' ' ) ++ret;
+		if ( *ret=='\0' )
+	    break;
+		kbuf[kerns] = u_strtol(ret,&end,10);
+		if ( end==ret ) {
+		    ProtestR(_STR_KernValues);
+ goto retry;
+		} else if ( kerns>=8 ) {
+		    GWidgetErrorR(_STR_TooManyKerns,_STR_AtMost8Kerns);
+ goto retry;
+		} else if ( kbuf[kerns]&1 ) {
+		    kbuf[kerns] &= ~1;
+		    if ( !oddcomplain )
+			GWidgetPostNoticeR(_STR_KernsMustBeEven,_STR_KernsMustBeEven);
+		    oddcomplain = true;
+		}
+		++kerns;
+	    }
+	    this->next_state = ns;
+	    this->flags = flags;
+	    free(this->u.kern.kerns);
+	    this->u.kern.kcnt = kerns;
+	    if ( kerns==0 )
+		this->u.kern.kerns = NULL;
+	    else {
+		this->u.kern.kerns = galloc(kerns*sizeof(int16));
+		memcpy(this->u.kern.kerns,kbuf,kerns*sizeof(int16));
+	    }
 	} else if ( smd->sm->type==asm_context ) {
 	    mtag = ctag = 0;
 	    ret = _GGadgetGetTitle(GWidgetGetControl(gw,CID_TagMark));
@@ -2212,7 +2289,7 @@ static void SMD_Expose(SMD *smd,GWindow pixmap,GEvent *event) {
     GRect *area = &event->u.expose.rect;
     GRect rect;
     GRect clip,old1,old2;
-    int len, off, i, j, x, y;
+    int len, off, i, j, x, y, kddd=false;
     unichar_t ubuf[8];
     char buf[100];
 
@@ -2279,6 +2356,8 @@ return;
 		ubuf,-1,NULL,0x000000);
 
 	    ubuf[0] = (this->flags&0x8000)? 'M' : ' ';
+	    if ( smd->sm->type==asm_kern && (this->flags&0x8000))
+		ubuf[0] = 'P';
 	    ubuf[1] = (this->flags&0x4000)? ' ' : 'A';
 	    ubuf[2] = '\0';
 	    if ( smd->sm->type==asm_indic ) {
@@ -2308,6 +2387,7 @@ return;
 		    buf[0] = '\0';
 		    for ( j=0; j<this->u.kern.kcnt; ++j )
 			sprintf(buf+strlen(buf),"%d ", this->u.kern.kerns[j]);
+		    kddd = ( strlen(buf)>5 );
 		    buf[5] = '\0';
 		    uc_strcpy(ubuf,buf);
 		}
@@ -2329,7 +2409,8 @@ return;
 		if ( this->u.insert.cur_ins!=NULL )
 		    uc_strncpy(ubuf,this->u.insert.cur_ins,5);
 	    } else { /* kern */
-		ubuf[0] = '\0';
+		if ( kddd ) uc_strcpy(ubuf,"...");
+		else ubuf[0] = '\0';
 	    }
 	    len = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
 	    GDrawDrawText(pixmap,x+(smd->statew-len)/2,y+3*smd->fh+smd->as+1,
@@ -2668,6 +2749,11 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     gcd[k].gd.flags = gg_enabled|gg_visible | (sm->flags&0x4000?gg_cb_on:0);
     gcd[k].gd.cid = CID_RightToLeft;
     gcd[k++].creator = GCheckBoxCreate;
+    if ( smd->sm->type == asm_kern ) {
+	gcd[k-1].gd.flags = gg_enabled;		/* I'm not sure why kerning doesn't have an r2l bit */
+	gcd[k-2].gd.flags = gg_enabled;
+	gcd[k-3].gd.flags = gg_enabled;
+    }
 
     label[k].text = (unichar_t *) _STR_VerticalOnly;
     label[k].text_in_resource = true;

@@ -2906,7 +2906,10 @@ static GTextInfo *SMList(SplineFont *sf,enum asm_type type) {
 	    ++len;
     ti = gcalloc(len+1,sizeof(GTextInfo));
     for ( len=0, sm = sf->sm; sm!=NULL; sm=sm->next ) if ( sm->type==type ) {
-	ti[len].text = FeatSetName(sf,sm->feature,sm->setting);
+	if ( type==asm_kern )
+	    ti[len].text = u_copy(GStringGetResource(_STR_Kerning,NULL));
+	else
+	    ti[len].text = FeatSetName(sf,sm->feature,sm->setting);
 	ti[len].fg = ti[len].bg = COLOR_DEFAULT;
 	ti[len++].userdata = sm;
     }
@@ -2932,7 +2935,8 @@ void GFI_FinishSMNew(struct gfi_data *d,ASM *sm, int success) {
 
     if ( success ) {
 	off = sm->type == asm_indic ? 000 :
-		sm->type == asm_context ? 100 : 200;
+		sm->type == asm_context ? 100 :
+		sm->type == asm_insert ? 200 : 300;
 	list = GWidgetGetControl(d->gw,CID_SMList+off);
 	GListAppendLine(list,FeatSetName(d->sf,sm->feature,sm->setting),false)->userdata = sm;
     } else {
@@ -2952,7 +2956,7 @@ static int GFI_SMNew(GGadget *g, GEvent *e) {
 return( true );
 
 	sm = chunkalloc(sizeof(ASM));
-	sm->type = which==0 ? asm_indic : which==1 ? asm_context : asm_insert;
+	sm->type = which==0 ? asm_indic : which==1 ? asm_context : which==2 ? asm_insert : asm_kern;
 	if ( (d->smd = StateMachineEdit(d->sf,sm,d))!=NULL ) {
 	    for ( i=0; i<3; ++i ) {
 		GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_SMDel+i*100),false);
@@ -4397,14 +4401,14 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GTabInfo aspects[15], conaspects[7], smaspects[4];
+    GTabInfo aspects[15], conaspects[7], smaspects[5];
     GGadgetCreateData mgcd[10], ngcd[13], egcd[14], psgcd[23], tngcd[7],
 	pgcd[8], vgcd[16], pangcd[22], comgcd[3], atgcd[7], txgcd[23],
-	congcd[3], csubgcd[fpst_max-pst_contextpos][6], smgcd[3], smsubgcd[3][6],
+	congcd[3], csubgcd[fpst_max-pst_contextpos][6], smgcd[3], smsubgcd[4][6],
 	mfgcd[8], ogcd[8];
     GTextInfo mlabel[10], nlabel[13], elabel[14], pslabel[23], tnlabel[7],
 	plabel[8], vlabel[16], panlabel[22], comlabel[3], atlabel[7], txlabel[23],
-	csublabel[fpst_max-pst_contextpos][6], smsublabel[3][6],
+	csublabel[fpst_max-pst_contextpos][6], smsublabel[4][6],
 	mflabel[8], olabel[8], *list;
     struct gfi_data *d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20], ncbuf[20],
@@ -4418,8 +4422,8 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GFont *font;
     static int connames[] = { _STR_ContextPos, _STR_ContextSub, _STR_ChainPos, _STR_ChainSub, _STR_ReverseChainSub, 0 };
     static int contypes[] = { pst_contextpos, pst_contextsub, pst_chainpos, pst_chainsub, pst_reversesub, 0 };
-    static int smnames[] = { _STR_Indic, _STR_ContextSub, _STR_ContextIns, 0 };
-    static int smtypes[] = { asm_indic, asm_context, asm_insert };
+    static int smnames[] = { _STR_Indic, _STR_ContextSub, _STR_ContextIns, _STR_Kerning, 0 };
+    static int smtypes[] = { asm_indic, asm_context, asm_insert, asm_kern };
 
     for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
 	if ( fvs->fontinfo ) {
@@ -5546,7 +5550,7 @@ return;
     memset(&smgcd,0,sizeof(smgcd));
     memset(&smaspects,'\0',sizeof(smaspects));
 
-    for ( i=0; i<3; ++i ) {
+    for ( i=0; i<4; ++i ) {
 	smaspects[i].text = (unichar_t *) smnames[i];
 	smaspects[i].text_in_resource = true;
 	smaspects[i].gcd = smsubgcd[i];

@@ -79,10 +79,13 @@ return( true );
 return( false );
 }
 
+static int morx_dumpASM(FILE *temp,ASM *sm, struct alltabs *at, SplineFont *sf );
+
 void ttf_dumpkerns(struct alltabs *at, SplineFont *sf) {
-    int i, cnt, vcnt, j, k, m, kccnt=0, vkccnt=0, c, mh, mv;
+    int i, cnt, vcnt, j, k, m, kccnt=0, vkccnt=0, ksm=0, c, mh, mv;
     KernPair *kp;
     KernClass *kc;
+    ASM *sm;
     uint16 *glnum, *offsets;
     int version;
     int isv;
@@ -106,27 +109,31 @@ void ttf_dumpkerns(struct alltabs *at, SplineFont *sf) {
 		++vcnt, ++j;
 	if ( j>mv ) mv=j;
     }
-    kccnt = 0;
-    for ( kc=sf->kerns; kc!=NULL; kc = kc->next ) if ( SLIHasDefault(sf,kc->sli) )
-	++kccnt;
-    for ( kc=sf->vkerns; kc!=NULL; kc = kc->next ) if ( SLIHasDefault(sf,kc->sli) )
-	++vkccnt;
-    if ( cnt==0 && kccnt==0 && vcnt==0 && vkccnt==0 )
+    if ( at->applemode ) {	/* if we aren't outputting Apple's extensions to kerning (by classes, and by state machine) then don't check for those extensions */
+	for ( kc=sf->kerns; kc!=NULL; kc = kc->next ) if ( SLIHasDefault(sf,kc->sli) )
+	    ++kccnt;
+	for ( kc=sf->vkerns; kc!=NULL; kc = kc->next ) if ( SLIHasDefault(sf,kc->sli) )
+	    ++vkccnt;
+	for ( sm=sf->sm; sm!=NULL; sm=sm->next )
+	    if ( sm->type == asm_kern )
+		++ksm;
+    }
+    if ( cnt==0 && kccnt==0 && vcnt==0 && vkccnt==0 && ksm==0 )
 return;
 
     /* Old kerning format (version 0) uses 16 bit quantities */
     /* Apple's new format (version 0x00010000) uses 32 bit quantities */
     at->kern = tmpfile();
-    if ( kccnt==0 && vkccnt==0 ) {
+    if ( kccnt==0 && vkccnt==0 && ksm==0 ) {
 	/* MS does not support format 1,2,3 kern sub-tables so if we have them */
 	/*  we might as well admit that this table is for apple only and use */
 	/*  the new format apple recommends. Otherwise, use the old format */
-	putshort(at->kern,0);		/* version */
-	putshort(at->kern,1);		/* number of subtables */
+	putshort(at->kern,0);			/* version */
+	putshort(at->kern,(cnt!=0)+(vcnt!=0));	/* number of subtables */
 	version = 0;
     } else {
 	putlong(at->kern,0x00010000);
-	putlong(at->kern,kccnt+vkccnt+(cnt!=0)+(vcnt!=0));
+	putlong(at->kern,kccnt+vkccnt+(cnt!=0)+(vcnt!=0)+ksm);
 	version = 1;
     }
     for ( isv=0; isv<2; ++isv ) {
@@ -212,6 +219,22 @@ return;
 	    class2 = ClassesFromNames(sf,kc->seconds,kc->second_cnt,at->maxp.numGlyphs,NULL);
 	    DumpKernClass(at->kern,class2,at->maxp.numGlyphs,0,sizeof(uint16));
 	    free(class2);
+
+	    pos = ftell(at->kern);
+	    fseek(at->kern,len_pos,SEEK_SET);
+	    putlong(at->kern,pos-len_pos);
+	    fseek(at->kern,pos,SEEK_SET);
+	}
+    }
+
+    if ( ksm!=0 ) {
+	for ( sm=sf->sm; sm!=NULL; sm=sm->next ) if ( sm->type == asm_kern ) {
+	    uint32 len_pos = ftell(at->kern), pos;
+
+	    putlong(at->kern,0); 		/* subtable length */
+	    putshort(at->kern,(sm->flags&0x8000)?0x8001:1);	/* format 2, horizontal/vertical flags (coverage) */
+	    putshort(at->kern,0);		/* tuple index, whatever that means */
+	    morx_dumpASM(at->kern,sm,at,sf);
 
 	    pos = ftell(at->kern);
 	    fseek(at->kern,len_pos,SEEK_SET);
@@ -350,6 +373,26 @@ static void morxfeaturesfree(struct feature *features) {
 	n = features->next;
 	chunkfree( features,sizeof(*features) );
     }
+}
+
+static void mort_classes(FILE *temp,SplineFont *sf) {
+    int first, last, i, cnt;
+    /* Mort tables just have a trimmed byte array for the classes */
+
+    for ( first=0; first<sf->charcnt; ++first ) if ( sf->chars[first]!=NULL && sf->chars[first]->lsidebearing!=1 )
+    break;
+    for ( last=sf->charcnt-1; last>first; --last ) if ( sf->chars[last]!=NULL && sf->chars[last]->lsidebearing!=1 )
+    break;
+    cnt = 0;
+    for ( i=first; i<=last; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 )
+	++cnt;
+
+    putshort(temp,sf->chars[first]->ttf_glyph);
+    putshort(temp,cnt);
+    for ( i=first; i<=last; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 )
+	putc(sf->chars[i]->lsidebearing,temp);
+    if ( cnt&1 )
+	putc(1,temp);			/* Pad to a word boundary */
 }
 
 static void morx_lookupmap(FILE *temp,SplineChar **glyphs,uint16 *maps,int gcnt) {
@@ -898,16 +941,18 @@ return( ret );
 }
 
 static int morx_dumpASM(FILE *temp,ASM *sm, struct alltabs *at, SplineFont *sf ) {
-    int i, j, gcnt, ch;
+    int i, j, k, gcnt, ch;
     char *pt, *end;
     uint16 *map;
     SplineChar **glyphs, *sc;
     int stcnt, tcnt;
     struct ins { char *names; uint16 len,pos; uint16 *glyphs; } *subsins=NULL;
     uint32 *substags=NULL;
-    uint32 start, here, substable_pos;
+    uint32 start, here, substable_pos, state_offset;
     struct transdata { uint16 transition, mark_index, cur_index; } *transdata;
     struct trans { uint16 ns, flags, mi, ci; } *trans;
+    int ismort = sm->type == asm_kern;
+    FILE *kernvalues;
 
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
 	sf->chars[i]->lsidebearing = 1;
@@ -995,6 +1040,31 @@ static int morx_dumpASM(FILE *temp,ASM *sm, struct alltabs *at, SplineFont *sf )
 		transdata[j].cur_index = subsins[i].pos;
 	    }
 	}
+    } else if ( sm->type==asm_kern ) {
+	int off=0;
+	kernvalues = tmpfile();
+	for ( j=0; j<sm->state_cnt*sm->class_cnt; ++j ) {
+	    struct asm_state *this = &sm->state[j];
+	    transdata[j].mark_index = 0xffff;
+	    if ( this->u.kern.kcnt!=0 ) {
+		for ( k=0; k<j; ++k )
+		    if ( sm->state[k].u.kern.kcnt==this->u.kern.kcnt &&
+			    memcmp(sm->state[k].u.kern.kerns,this->u.kern.kerns,
+				    this->u.kern.kcnt*sizeof(int16))==0 )
+		break;
+		if ( k!=j )
+		    transdata[j].mark_index = transdata[k].mark_index;
+		else {
+		    transdata[j].mark_index = off;
+		    off += this->u.kern.kcnt*sizeof(int16);
+		    /* kerning values must be output backwards */
+		    for ( k=this->u.kern.kcnt-1; k>=1; --k )
+			putshort(kernvalues,this->u.kern.kerns[k]&~1);
+		    /* And the last one must be odd */
+		    putshort(kernvalues,this->u.kern.kerns[0]|1);
+		}
+	    }
+	}
     }
 
     trans = galloc(sm->state_cnt*sm->class_cnt*sizeof(struct trans));
@@ -1014,46 +1084,83 @@ static int morx_dumpASM(FILE *temp,ASM *sm, struct alltabs *at, SplineFont *sf )
 	}
 	transdata[j].transition = i;
     }
-    
+
 
     /* Output the header */
     start = ftell(temp);
-    putlong(temp,sm->class_cnt);
-    if ( sm->type==asm_indic ) {
-	putlong(temp,4*sizeof(uint32));		/* class offset */
-	putlong(temp,0);			/* state offset */
-	putlong(temp,0);			/* transition entry offset */
+    if ( ismort /* old format still used for kerning */ ) {
+	putshort(temp,sm->class_cnt);
+	putshort(temp,5*sizeof(uint16));	/* class offset */
+	putshort(temp,0);			/* state offset */
+	putshort(temp,0);			/* transition entry offset */
+	putshort(temp,0);			/* kerning values offset */
+	mort_classes(temp,sf);			/* dump the class table */
     } else {
-	putlong(temp,5*sizeof(uint32));		/* class offset */
-	putlong(temp,0);			/* state offset */
-	putlong(temp,0);			/* transition entry offset */
-	putlong(temp,0);			/* substitution/insertion table offset */
+	putlong(temp,sm->class_cnt);
+	if ( sm->type==asm_indic ) {
+	    putlong(temp,4*sizeof(uint32));	/* class offset */
+	    putlong(temp,0);			/* state offset */
+	    putlong(temp,0);			/* transition entry offset */
+	} else {
+	    putlong(temp,5*sizeof(uint32));	/* class offset */
+	    putlong(temp,0);			/* state offset */
+	    putlong(temp,0);			/* transition entry offset */
+	    putlong(temp,0);			/* substitution/insertion table offset */
+	}
+	morx_lookupmap(temp,glyphs,map,gcnt);/* dump the class lookup table */
     }
-    morx_lookupmap(temp,glyphs,map,gcnt);/* dump the class lookup table */
     free(glyphs); free(map);
 
 
-    here = ftell(temp);
-    fseek(temp,start+2*sizeof(uint32),SEEK_SET);
-    putlong(temp,here-start);			/* Point to start of state arrays */
+    state_offset = ftell(temp)-start;
+    if ( ismort ) {
+	fseek(temp,start+2*sizeof(uint16),SEEK_SET);
+	putshort(temp,state_offset);		/* Point to start of state arrays */
+    } else {
+	fseek(temp,start+2*sizeof(uint32),SEEK_SET);
+	putlong(temp,state_offset);		/* Point to start of state arrays */
+    }
     fseek(temp,0,SEEK_END);
 
-    for ( j=0; j<sm->state_cnt*sm->class_cnt; ++j )
-	putshort(temp,transdata[j].transition);
+    if ( ismort ) {
+	for ( j=0; j<sm->state_cnt*sm->class_cnt; ++j )
+	    putc(transdata[j].transition,temp);
+	if ( ftell(temp)&1 )
+	    putc(0,temp);			/* Pad to a word boundry */
+    } else {
+	for ( j=0; j<sm->state_cnt*sm->class_cnt; ++j )
+	    putshort(temp,transdata[j].transition);
+    }
     free(transdata);
 
     here = ftell(temp);
-    fseek(temp,start+3*sizeof(uint32),SEEK_SET);
-    putlong(temp,here-start);			/* Point to start of transition arrays */
+    if ( ismort ) {
+	fseek(temp,start+3*sizeof(uint16),SEEK_SET);
+	putshort(temp,here-start);		/* Point to start of transition arrays */
+    } else {
+	fseek(temp,start+3*sizeof(uint32),SEEK_SET);
+	putlong(temp,here-start);		/* Point to start of transition arrays */
+    }
     fseek(temp,0,SEEK_END);
 
     /* Now the transitions */
-    for ( i=0; i<tcnt; ++i ) {
-	putshort(temp,trans[i].ns);
-	putshort(temp,trans[i].flags);
-	if ( sm->type!=asm_indic ) {
-	    putshort(temp,trans[i].mi );
-	    putshort(temp,trans[i].ci );
+    if ( sm->type==asm_kern ) {
+	substable_pos = here+tcnt*2*sizeof(int16);
+	for ( i=0; i<tcnt; ++i ) {
+	    /* mort tables use an offset rather than the state number */
+	    putshort(temp,trans[i].ns*sm->class_cnt+state_offset);
+	    if ( trans[i].mi!=0xffff )
+		trans[i].flags |= substable_pos-start+trans[i].mi;
+	    putshort(temp,trans[i].flags);
+	}
+    } else {
+	for ( i=0; i<tcnt; ++i ) {
+	    putshort(temp,trans[i].ns);
+	    putshort(temp,trans[i].flags);
+	    if ( sm->type!=asm_indic && sm->type!=asm_kern ) {
+		putshort(temp,trans[i].mi );
+		putshort(temp,trans[i].ci );
+	    }
 	}
     }
     free(trans);
@@ -1087,6 +1194,13 @@ static int morx_dumpASM(FILE *temp,ASM *sm, struct alltabs *at, SplineFont *sf )
 	    free(subsins[i].glyphs);
 	}
 	free(subsins);
+    } else if ( sm->type==asm_kern ) {
+	if ( substable_pos!=ftell(temp) )
+	    fprintf(stderr, "Internal Error: Kern Values table in wrong place.\n" );
+	fseek(temp,start+4*sizeof(uint16),SEEK_SET);
+	putshort(temp,substable_pos-start);		/* Point to start of insertions */
+	fseek(temp,0,SEEK_END);
+	if ( !ttfcopyfile(temp,kernvalues,substable_pos)) at->error = true;
     }
 return( true );
 }
@@ -1096,7 +1210,7 @@ static struct feature *aat_dumpmorx_asm(struct alltabs *at, SplineFont *sf,
     ASM *sm;
     struct feature *cur;
 
-    for ( sm = sf->sm; sm!=NULL; sm=sm->next ) {
+    for ( sm = sf->sm; sm!=NULL; sm=sm->next ) if ( sm->type!=asm_kern ) {
 	cur = chunkalloc(sizeof(struct feature));
 	if ( sm->opentype_tag==0 )
 	    cur->otftag = (sm->feature<<16)|sm->setting;

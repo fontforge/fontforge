@@ -1191,6 +1191,8 @@ static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, 
 	    /*static int asked = 0;*/
 	    /* This is not what Apple documents on their website. But it is */
 	    /*  what appears to match the behavior of their rasterizer */
+	    /* Apple has changed their documentation (without updating their */
+	    /*  changelog), but I believe they are still incorrect */
 	    cur->transform[4] *= sqrt(cur->transform[0]*cur->transform[0]+
 		    cur->transform[1]*cur->transform[1]);
 	    cur->transform[5] *= sqrt(cur->transform[2]*cur->transform[2]+

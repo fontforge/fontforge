@@ -985,7 +985,10 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	fprintf( sfd, "EndFPST\n" );
     }
     for ( sm=sf->sm; sm!=NULL; sm=sm->next ) {
-	static char *keywords[] = { "MacIndic:", "MacContext:", "MacLigature:", "unused", "MacSimple:", "MacInsert:", NULL };
+	static char *keywords[] = { "MacIndic:", "MacContext:", "MacLigature:", "unused", "MacSimple:", "MacInsert:",
+	    "unused", "unused", "unused", "unused", "unused", "unused",
+	    "unused", "unused", "unused", "unused", "unused", "MacKern:",
+	    NULL };
 	fprintf( sfd, "%s %d,%d %d %d %d\n",
 		keywords[sm->type-asm_indic],
 		sm->feature, sm->setting,
@@ -1023,6 +1026,10 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 		else
 		    fprintf( sfd, "%d %s ", strlen(sm->state[i].u.insert.cur_ins),
 			    sm->state[i].u.insert.cur_ins );
+	    } else if ( sm->type == asm_kern ) {
+		fprintf( sfd, "%d ", sm->state[i].u.kern.kcnt );
+		for ( j=0; j<sm->state[i].u.kern.kcnt; ++j )
+		    fprintf( sfd, "%d ", sm->state[i].u.kern.kerns[j]);
 	    }
 	    putc('\n',sfd);
 	}
@@ -2642,7 +2649,8 @@ static void SFDParseStateMachine(FILE *sfd,SplineFont *sf,ASM *sm, char *tok) {
     sm->type = strmatch(tok,"MacIndic:")==0 ? asm_indic :
 		strmatch(tok,"MacContext:")==0 ? asm_context :
 		strmatch(tok,"MacLigature:")==0 ? asm_lig :
-		strmatch(tok,"MacSimple:")==0 ? asm_simple : asm_insert;
+		strmatch(tok,"MacSimple:")==0 ? asm_simple :
+		strmatch(tok,"MacKern:")==0 ? asm_kern : asm_insert;
     getusint(sfd,&sm->feature);
     getc(sfd);		/* Skip comma */
     getusint(sfd,&sm->setting);
@@ -2683,6 +2691,15 @@ static void SFDParseStateMachine(FILE *sfd,SplineFont *sf,ASM *sm, char *tok) {
 		sm->state[i].u.insert.cur_ins = galloc(temp+1); sm->state[i].u.insert.cur_ins[temp] = '\0';
 		getc(sfd);	/* skip space */
 		fread(sm->state[i].u.insert.cur_ins,1,temp,sfd);
+	    }
+	} else if ( sm->type == asm_kern ) {
+	    int j;
+	    getint(sfd,&sm->state[i].u.kern.kcnt);
+	    if ( sm->state[i].u.kern.kcnt!=0 )
+		sm->state[i].u.kern.kerns = galloc(sm->state[i].u.kern.kcnt*sizeof(int16));
+	    for ( j=0; j<sm->state[i].u.kern.kcnt; ++j ) {
+		getint(sfd,&temp);
+		sm->state[i].u.kern.kerns[j] = temp;
 	    }
 	}
     }
@@ -3075,7 +3092,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    SFDParseChainContext(sfd,sf,fpst,tok);
 	} else if ( strmatch(tok,"MacIndic:")==0 || strmatch(tok,"MacContext:")==0 ||
 		strmatch(tok,"MacLigature:")==0 || strmatch(tok,"MacSimple:")==0 ||
-		strmatch(tok,"MacInsert:")==0 ) {
+		strmatch(tok,"MacKern:")==0 || strmatch(tok,"MacInsert:")==0 ) {
 	    ASM *sm = chunkalloc(sizeof(ASM));
 	    if ( lastsm==NULL )
 		sf->sm = sm;

@@ -2829,6 +2829,8 @@ return( (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4 );
 
 int memushort(uint8 *data,int offset) {
     int ch1 = data[offset], ch2 = data[offset+1];
+    if ( offset<0 )
+	fprintf( stderr, "Internal error\n" );
 return( (ch1<<8)|ch2 );
 }
 
@@ -3332,23 +3334,67 @@ return( NULL );
 return( str );
 }
 
+#if 0
+static void RunStateFindKernDepth_(ASM *as,int state,int kdepth,uint8 *used) {
+    int j, kd;
+
+    if ( used[state] )
+return;
+    used[state] = true;
+
+    for ( j=0; j<as->class_cnt; ++j ) {
+	kd = kdepth;
+	flags = as->state[state*as->class_cnt+j];
+	if ( flags&0x8000 )
+	    ++kd;
+	if ( (flags&0x3fff)!=0 ) {
+	    as->state[state*as->class_cnt+j].u.kern.kcnt = kd;
+	    kd = 0;
+	}
+	RunStateFindKernDepth_(as,as->state[state*as->class_cnt+j].next_state,kd,used);
+    }
+}
+
+static void RunStateFindKernDepth(ASM *as) {
+    uint8 *used = gcalloc(as->class_cnt);
+    int i;
+
+    for ( i=0; i<as->class_cnt*as->state_cnt; ++i ) {
+	as->state[i].u.kern.kerns = NULL;
+	as->state[i].u.kern.kcnt = (as->state[i].flags&0x3fff)==0 ? 0 : -1;
+    }
+    RunStateFindKernDepth_(as,0,0,used);
+    RunStateFindKernDepth_(as,1,0,used);
+}
+#endif
+
 static void KernReadKernList(FILE *ttf,uint32 pos, struct asm_state *trans) {
 /* Apple does not document how to detect the end of the list */
 /* They say "an odd value that depends on coverage" */
-/*  There are at most 8 glyphs so let's use that limit for now */
-    int i;
-    int buffer[8];		/* At most 8 kerns are supported */
+/* They should say "an odd value". Any odd value terminates the list. */
+/*  coverage is irrelevant */
+/* Note: List is backwards (glyphs are popped of LIFO so last glyph on */
+/*  in stack gets first kern value) */
+/*  There are at most 8 glyphs */
+    int i,j,k;
+    int16 buffer[8];		/* At most 8 kerns are supported */
 
     fseek(ttf,pos,SEEK_SET);
     for ( i=0; i<8; ++i ) {
-	if ( (buffer[i]=(int16) getushort(ttf))==0 )
+	buffer[i]=(int16) getushort(ttf);
+	if ( buffer[i]&1 ) {
+	    buffer[i] &= ~1;
+	    ++i;
     break;
+	}
     }
-    if ( i==0 )
-return;
-
-    trans->u.kern.kerns = galloc(i*sizeof(int16));
-    memcpy(trans->u.kern.kerns,buffer,i*sizeof(int16));
+    if ( i==0 ) {
+	trans->u.kern.kerns = NULL;
+    } else {
+	trans->u.kern.kerns = galloc(i*sizeof(int16));
+	for ( j=i-1, k=0; k<i; ++k, --j )
+	    trans->u.kern.kerns[k] = buffer[j];
+    }
     trans->u.kern.kcnt = i;
 }
 
@@ -3419,7 +3465,7 @@ static uint32 TagFromInfo(struct ttfinfo *info,int i) {
 return( tag );
 }
 
-static void readttf_mortx_asm(FILE *ttf,struct ttfinfo *info,int ismorx,
+static ASM *readttf_mortx_asm(FILE *ttf,struct ttfinfo *info,int ismorx,
 	uint32 subtab_len,enum asm_type type,int extras,
 	uint32 coverage) {
     struct statetable *st;
@@ -3429,7 +3475,7 @@ static void readttf_mortx_asm(FILE *ttf,struct ttfinfo *info,int ismorx,
 
     st = read_statetable(ttf,extras,ismorx,info);
     if ( st==NULL )
-return;
+return(NULL);
 
     as = chunkalloc(sizeof(ASM));
     as->type = type;
@@ -3449,8 +3495,10 @@ return;
 	    as->state[i].next_state = (memushort(st->transitions,trans*st->entry_size)-st->state_offset)/st->nclasses;
 	}
 	as->state[i].flags = memushort(st->transitions,trans*st->entry_size+2);
-	as->state[i].u.context.mark_tag = memushort(st->transitions,trans*st->entry_size+2+2);
-	as->state[i].u.context.cur_tag = memushort(st->transitions,trans*st->entry_size+2+2+2);
+	if ( extras>0 )
+	    as->state[i].u.context.mark_tag = memushort(st->transitions,trans*st->entry_size+2+2);
+	if ( extras>1 )
+	    as->state[i].u.context.cur_tag = memushort(st->transitions,trans*st->entry_size+2+2+2);
     }
     /* Indic tables have no attached subtables, just a verb in the flag field */
     /*  so for them we are done. For the others... */
@@ -3565,14 +3613,20 @@ return;
 	info->gentags.tt_cur += lookup_max;
     } else if ( type == asm_kern ) {
 	for ( i=0; i<st->nclasses*st->nstates; ++i ) {
-	    if ( (as->state[i].flags&0x3fff)!=0 )
+	    if ( (as->state[i].flags&0x3fff)!=0 ) {
 		KernReadKernList(ttf,here+(as->state[i].flags&0x3fff),
 			&as->state[i]);
+		as->state[i].flags &= ~0x3fff;
+	    } else {
+		as->state[i].u.kern.kcnt = 0;
+		as->state[i].u.kern.kerns = NULL;
+	    }
 	}
     }
     as->next = info->sm;
     info->sm = as;
     statetablefree(st);
+return( as );
 }
 
 static void FeatMarkAsEnabled(struct ttfinfo *info,int featureType,
@@ -3787,11 +3841,13 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 	} else if ( flags_good && format==1 ) {
 	    /* format 1 is an apple state machine which can handle weird cases */
 	    /*  OpenType's spec doesn't document this */
-	    /* Apple's docs do not provide enough information to detect the */
-	    /*  end of the kerning data. So for now just ignore this */
-#if 0
+	    /* Apple's docs are wrong about this table, they claim */
+	    /*  there is a special value which marks the end of the kerning */
+	    /*  lists. In fact there is no such value, the list is as long */
+	    /*  as there are things on the kern stack */
+#if 1
 	    readttf_mortx_asm(ttf,info,false,len-header_size,asm_kern,0,
-		0 /* coverage doesn't apply */);
+		isv ? 0x80000000 : 0 /* coverage doesn't really apply */);
 	    fseek(ttf,begin_table+len,SEEK_SET);
 #else
 	    fseek(ttf,len-header_size,SEEK_CUR);
