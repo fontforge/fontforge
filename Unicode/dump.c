@@ -52,7 +52,7 @@ char *cjk[] = { "JIS0208.TXT", "JIS0212.TXT", "BIG5.TXT", "GB2312.TXT",
 	"HANGUL.TXT", "Big5HKSCS.txt", NULL };
 /* I'm only paying attention to Wansung encoding (in HANGUL.TXT) which is 94x94 */
 /* I used to look at OLD5601, but that maps to Unicode 1.0, and Hangul's moved*/
-char *adobecjk[] = { "aj14cid2code.txt", "aj20cid2code.txt", "ac13cid2code.txt",
+char *adobecjk[] = { "aj15cid2code.txt", "aj20cid2code.txt", "ac14cid2code.txt",
 	"ag14cid2code.txt", "ak12cid2code.txt", NULL };
 /* I'm told that most of the mappings provided on the Unicode site go to */
 /*  Unicode 1.* and that CJK have been moved radically since. So instead */
@@ -296,7 +296,7 @@ static void dumpjis(FILE *output,FILE *header) {
     long _orig, _unicode;
     unichar_t unicode208[94*94], unicode212[94*94];
     unichar_t *table[256], *plane;
-    char buffer[200];
+    char buffer[400];
 
     memset(table,0,sizeof(table));
 
@@ -312,9 +312,13 @@ static void dumpjis(FILE *output,FILE *header) {
 	    _orig = getnth(buffer,2);
 	    if ( _orig==-1 )
 	continue;
-	    _unicode = getnth(buffer,18);
+	    _unicode = getnth(buffer,22);
 	    if ( _unicode==-1 ) {
 		fprintf( stderr, "Eh? JIS 208-1997 %x is unencoded\n", _orig );
+	continue;
+	    }
+	    if ( _unicode>0xffff ) {
+		fprintf( stderr, "Eh? JIS 208-1997 %x is outside of BMP\n", _orig );
 	continue;
 	    }
 	    if ( table[_unicode>>8]==NULL )
@@ -347,9 +351,13 @@ static void dumpjis(FILE *output,FILE *header) {
 	    _orig = getnth(buffer,2);
 	    if ( _orig==-1 )
 	continue;
-	    _unicode = getnth(buffer,4);
+	    _unicode = getnth(buffer,7);
 	    if ( _unicode==-1 ) {
 		fprintf( stderr, "Eh? JIS 212-1990 %x is unencoded\n", _orig );
+	continue;
+	    }
+	    if ( _unicode>0xffff ) {
+		fprintf( stderr, "Eh? JIS 212-1990 %x is out of BMP %x\n", _orig, _unicode );
 	continue;
 	    }
 	    if ( table[_unicode>>8]==NULL )
@@ -431,7 +439,7 @@ static void dumpbig5(FILE *output,FILE *header) {
     long _orig, _unicode;
     unichar_t unicode[0x6000];
     unichar_t *table[256], *plane;
-    char buffer[200];
+    char buffer[400];
 
     j = 2;
 
@@ -448,7 +456,7 @@ static void dumpbig5(FILE *output,FILE *header) {
 	    _orig = getnth(buffer,3);
 	    if ( /*_orig==-1*/ _orig<0xa100 )
 	continue;
-	    _unicode = getnth(buffer,8);
+	    _unicode = getnth(buffer,11);
 	    if ( _unicode==-1 ) {
 		if ( _orig==0xa1c3 )
 		    _unicode = 0xFFE3;
@@ -467,6 +475,10 @@ static void dumpbig5(FILE *output,FILE *header) {
 	    }
 	    if ( _unicode==-1 ) {
 		fprintf( stderr, "Eh? BIG5 %x is unencoded\n", _orig );
+	continue;
+	    }
+	    if ( _unicode>0xffff ) {
+		fprintf( stderr, "Eh? BIG5 %x is out of BMP %x\n", _orig, _unicode );
 	continue;
 	    }
 	    unicode[_orig-0xa100] = _unicode;
@@ -529,7 +541,7 @@ static void dumpbig5hkscs(FILE *output,FILE *header) {
     long _orig, _unicode;
     unichar_t unicode[0x8000];
     unichar_t *table[256], *plane;
-    char buffer[200];
+    char buffer[400];
 
     j=5;
 
@@ -611,7 +623,7 @@ static void dumpWansung(FILE *output,FILE *header) {
     long _orig, _unicode, _johab;
     unichar_t unicode[94*94], junicode[0x7c00];
     unichar_t *table[256], *plane, *jtable[256];
-    char buffer[200];
+    char buffer[400];
     /* Johab high=[0x84-0xf9] low=[0x31-0xfe] */
 
 	memset(table,0,sizeof(table));
@@ -628,12 +640,19 @@ static void dumpWansung(FILE *output,FILE *header) {
 	    continue;
 		_johab = getnth(buffer,7);
 		_orig = getnth(buffer,2);
-		_unicode = getnth(buffer,8);
+		_unicode = getnth(buffer,11);
 		if ( _unicode==-1 ) {
 		    if ( _orig>=0x2121 && (_orig&0xff)>=0x21 && _orig<=0x7e7e && (_orig&0xff)<=0x7e )
 			fprintf( stderr, "Eh? Wansung %x is unencoded\n", _orig );
 		    else if ( _johab>=0x8431 && _johab<=0xf9fe )
 			fprintf( stderr, "Eh? Johab %x is unencoded\n", _johab );
+	    continue;
+		}
+		if ( _unicode>0xffff ) {
+		    if ( _orig>=0x2121 && (_orig&0xff)>=0x21 && _orig<=0x7e7e && (_orig&0xff)<=0x7e )
+			fprintf( stderr, "Eh? Wansung %x is out of BMP %x\n", _orig, _unicode );
+		    else if ( _johab>=0x8431 && _johab<=0xf9fe )
+			fprintf( stderr, "Eh? Johab %x is out of BMP %x\n", _johab, _unicode );
 	    continue;
 		}
 		if ( _orig>=0x2121 && (_orig&0xff)>=0x21 && _orig<=0x7e7e && (_orig&0xff)<=0x7e ) {
@@ -765,7 +784,7 @@ static void dumpgb2312(FILE *output,FILE *header) {
     long _orig, _unicode;
     unichar_t unicode[94*94];
     unichar_t *table[256], *plane;
-    char buffer[200];
+    char buffer[400];
 
     memset(table,0,sizeof(table));
 
@@ -781,9 +800,13 @@ static void dumpgb2312(FILE *output,FILE *header) {
 		_orig = getnth(buffer,2);
 		if ( _orig==-1 )
 	    continue;
-		_unicode = getnth(buffer,11);
+		_unicode = getnth(buffer,14);
 		if ( _unicode==-1 ) {
 		    fprintf( stderr, "Eh? GB2312-80 %x is unencoded\n", _orig );
+	    continue;
+		}
+		if ( _unicode>0xffff ) {
+		    fprintf( stderr, "Eh? GB2312-80 %x is out of BMP %x\n", _orig, _unicode );
 	    continue;
 		}
 		if ( table[_unicode>>8]==NULL )
