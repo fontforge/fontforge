@@ -279,6 +279,10 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,int depth,
 	} else if ( strcmp(tok,"BITMAP")==0 )
     break;
     }
+    if ( xmax<xmin || ymax<ymin ) {
+	fprintf( stderr, "Bad bounding box for %s.\n", name );
+return;
+    }
     i = figureProperEncoding(sf,b,enc,name,swidth,swidth1,encname);
     if ( i!=-1 ) {
 	if ( (bc=b->chars[i])!=NULL ) {
