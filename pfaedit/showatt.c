@@ -960,7 +960,10 @@ static void BuildASM(struct node *node,struct att_dlg *att) {
     char buf[200], *space;
     static char *type[] = { "Indic Reordering", "Contextual Substitution",
 	    "Ligatures", "<undefined>", "Simple Substitution",
-	    "Glyph Insertion" };
+	    "Glyph Insertion", "<undefined>",  "<undefined>", "<undefined>",
+	    "<undefined>", "<undefined>", "<undefined>","<undefined>",
+	    "<undefined>", "<undefined>", "<undefined>", "<undefined>",
+	    "Kern by State" };
     uint32 *subs=NULL;
 
     if ( sm->type == asm_context ) {
@@ -1799,12 +1802,13 @@ return;
 			        BuildGSUBscript;
 	scriptnodes[i].parent = node;
     }
+
     /* Sadly I have no script for the morx state machines */
     if ( ismorx && _sf->sm!=NULL ) {
-	for ( j=0, sm=_sf->sm; sm!=NULL; sm=sm->next, ++j );
+	for ( j=0, sm=_sf->sm; sm!=NULL; sm=sm->next ) if ( sm->type!=asm_kern ) ++j;
 	scriptnodes = grealloc(scriptnodes,(i+j+1)*sizeof(scriptnodes[0]));
 	memset(scriptnodes+i,0,(j+1)*sizeof(scriptnodes[0]));
-	for ( j=0, sm=_sf->sm; sm!=NULL; sm=sm->next, ++j ) {
+	for ( j=0, sm=_sf->sm; sm!=NULL; sm=sm->next ) if ( sm->type!=asm_kern ) {
 	    scriptnodes[i+j].macfeat = true;
 	    scriptnodes[i+j].parent = node;
 	    scriptnodes[i+j].build = BuildASM;
@@ -1819,6 +1823,23 @@ return;
 	    uc_strcpy(scriptnodes[i+j].label,buf);
 	    u_strcat(scriptnodes[i+j].label,setname);
 	    free(setname);
+	    ++j;
+	}
+	qsort(scriptnodes+i,j,sizeof(struct node),compare_tag);
+	i += j;
+    }
+
+    /* Nor have I a script for the kern state machines */
+    if ( iskern && _sf->sm!=NULL ) {
+	for ( j=0, sm=_sf->sm; sm!=NULL; sm=sm->next, ++j );
+	scriptnodes = grealloc(scriptnodes,(i+j+1)*sizeof(scriptnodes[0]));
+	memset(scriptnodes+i,0,(j+1)*sizeof(scriptnodes[0]));
+	for ( j=0, sm=_sf->sm; sm!=NULL; sm=sm->next ) if ( sm->type==asm_kern ) {
+	    scriptnodes[i+j].parent = node;
+	    scriptnodes[i+j].build = BuildASM;
+	    scriptnodes[i+j].u.sm = sm;
+	    scriptnodes[i+j].label = uc_copy("Kern by State Machine");
+	    ++j;
 	}
 	qsort(scriptnodes+i,j,sizeof(struct node),compare_tag);
 	i += j;
@@ -1840,6 +1861,7 @@ static void BuildTop(struct att_dlg *att) {
     AnchorClass *ac;
     KernClass *kc;
     FPST *fpst;
+    ASM *sm;
 
     k=0;
     do {
@@ -1906,8 +1928,12 @@ static void BuildTop(struct att_dlg *att) {
 	if ( sf->sm==NULL && FPSTisMacable(sf,fpst,true))
 	    hasmorx = true;
     }
-    if ( sf->sm != NULL )
-	hasmorx = true;
+    for ( sm=sf->sm; sm!=NULL; sm=sm->next ) {
+	if ( sm->type == asm_kern )
+	    haskern = true;
+	else
+	    hasmorx = true;
+    }
 
     if ( hasgsub+hasgpos+hasgdef+hasmorx+haskern+haslcar+hasopbd+hasprop==0 ) {
 	tables = gcalloc(2,sizeof(struct node));
