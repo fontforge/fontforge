@@ -4217,6 +4217,32 @@ void SCPreparePopup(GWindow gw,SplineChar *sc) {
     GGadgetPreparePopup(gw,space);
 }
 
+static void noop(void *_fv) {
+}
+
+static void *ddgencharlist(void *_fv,int *len) {
+    int i,j,cnt;
+    FontView *fv = (FontView *) _fv;
+    SplineFont *sf = fv->sf;
+    char *data;
+
+    for ( i=cnt=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && fv->selected[i])
+	cnt += strlen(sf->chars[i]->name)+1;
+    data = galloc(cnt+1); data[0] = '\0';
+    for ( cnt=0, j=1 ; j<=fv->sel_index; ++j ) {
+	for ( i=0; i<sf->charcnt; ++i )
+	    if ( sf->chars[i]!=NULL && fv->selected[i]==j ) {
+		strcpy(data+cnt,sf->chars[i]->name);
+		cnt += strlen(sf->chars[i]->name);
+		strcpy(data+cnt++," ");
+	    }
+    }
+    if ( cnt>0 )
+	data[--cnt] = '\0';
+    *len = cnt;
+return( data );
+}
+
 static void FVMouse(FontView *fv,GEvent *event) {
     int pos = (event->u.mouse.y/fv->cbh + fv->rowoff)*fv->colcnt + event->u.mouse.x/fv->cbw;
     SplineChar *sc, dummy;
@@ -4252,28 +4278,60 @@ static void FVMouse(FontView *fv,GEvent *event) {
 	    SCPreparePopup(fv->v,sc);
     }
     if ( event->type == et_mousedown ) {
-	if ( !(event->u.mouse.state&ksm_shift) /*&&
-		(fv->sf->chars[pos]==NULL || !fv->selected[pos] )*/)
-	    FVDeselectAll(fv);
-	if ( !(event->u.mouse.state&ksm_shift))
-	    fv->sel_index = 1;
-	else if ( fv->sel_index<255 )
-	    ++fv->sel_index;
-	if ( fv->pressed!=NULL )
-	    GDrawCancelTimer(fv->pressed);
+	if ( fv->drag_and_drop ) {
+	    GDrawSetCursor(fv->v,ct_mypointer);
+	    fv->drag_and_drop = false;
+	}
+	if ( !(event->u.mouse.state&ksm_shift) ) {
+	    if ( !fv->selected[pos] )
+		FVDeselectAll(fv);
+	    else if ( event->u.mouse.button!=3 ) {
+		fv->drag_and_drop = fv->has_dd_no_cursor = true;
+		GDrawSetCursor(fv->v,ct_prohibition);
+		GDrawGrabSelection(fv->v,sn_drag_and_drop);
+		GDrawAddSelectionType(fv->v,sn_drag_and_drop,"STRING",fv,0,sizeof(char),
+			ddgencharlist,noop);
+	    }
+	}
 	fv->pressed_pos = fv->end_pos = pos;
 	FVShowInfo(fv);
-	if ( event->u.mouse.state&ksm_shift ) {
-	    fv->selected[pos] = fv->selected[pos] ? 0 : fv->sel_index;
-	    FVToggleCharSelected(fv,pos);
-	} else if ( !fv->selected[pos] ) {
-	    fv->selected[pos] = fv->sel_index;
-	    FVToggleCharSelected(fv,pos);
+	if ( !fv->drag_and_drop ) {
+	    if ( !(event->u.mouse.state&ksm_shift))
+		fv->sel_index = 1;
+	    else if ( fv->sel_index<255 )
+		++fv->sel_index;
+	    if ( fv->pressed!=NULL )
+		GDrawCancelTimer(fv->pressed);
+	    else if ( event->u.mouse.state&ksm_shift ) {
+		fv->selected[pos] = fv->selected[pos] ? 0 : fv->sel_index;
+		FVToggleCharSelected(fv,pos);
+	    } else if ( !fv->selected[pos] ) {
+		fv->selected[pos] = fv->sel_index;
+		FVToggleCharSelected(fv,pos);
+	    }
+	    if ( event->u.mouse.button==3 )
+		GMenuCreatePopupMenu(fv->v,event, fvpopupmenu);
+	    else
+		fv->pressed = GDrawRequestTimer(fv->v,200,100,NULL);
 	}
-	if ( event->u.mouse.button==3 )
-	    GMenuCreatePopupMenu(fv->v,event, fvpopupmenu);
-	else
-	    fv->pressed = GDrawRequestTimer(fv->v,200,100,NULL);
+    } else if ( fv->drag_and_drop ) {
+	if ( event->u.mouse.x>=0 && event->u.mouse.y>=-fv->mbh-fv->infoh-4 &&
+		event->u.mouse.x<=fv->width+20 && event->u.mouse.y<fv->height ) {
+	    if ( !fv->has_dd_no_cursor ) {
+		fv->has_dd_no_cursor = true;
+		GDrawSetCursor(fv->v,ct_prohibition);
+	    }
+	} else {
+	    if ( fv->has_dd_no_cursor ) {
+		fv->has_dd_no_cursor = false;
+		GDrawSetCursor(fv->v,ct_ddcursor);
+	    }
+	    GDrawPostDragEvent(fv->v,event,event->type==et_mouseup?et_drop:et_drag);
+	}
+	if ( event->type==et_mouseup ) {
+	    fv->drag_and_drop = fv->has_dd_no_cursor = false;
+	    GDrawSetCursor(fv->v,ct_mypointer);
+	}
     } else if ( fv->pressed!=NULL ) {
 	int showit = pos!=fv->end_pos;
 	FVReselect(fv,pos);

@@ -1537,7 +1537,7 @@ static void MVResetText(MetricsView *mv) {
     new = galloc((mv->charcnt+1)*sizeof(unichar_t));
     si=-1;
     for ( pt=new, i=0; i<mv->charcnt; ++i ) {
-	if ( mv->perchar[i].sc->unicodeenc==-1 )
+	if ( mv->perchar[i].sc->unicodeenc==-1 || mv->perchar[i].sc->unicodeenc>=0x10000 )
 	    *pt++ = 0xfffd;
 	else
 	    *pt++ = mv->perchar[i].sc->unicodeenc;
@@ -2344,6 +2344,85 @@ return;
     }
 }
 
+static void MVDrop(MetricsView *mv,GEvent *event) {
+    int x,ex = event->u.drag_drop.x + mv->xoff;
+    int within, i, cnt, ch;
+    int32 len;
+    char *cnames, *start, *pt;
+    unichar_t *newtext;
+    const unichar_t *oldtext;
+    SplineChar **founds;
+    /* We should get a list of character names. Add them before the character */
+    /*  on which they are dropped */
+
+    if ( !GDrawSelectionHasType(mv->gw,sn_drag_and_drop,"STRING"))
+return;
+    cnames = GDrawRequestSelection(mv->gw,sn_drag_and_drop,"STRING",&len);
+    if ( cnames==NULL )
+return;
+
+    within = mv->charcnt;
+    for ( i=0; i<mv->charcnt; ++i ) {
+	x = mv->perchar[i].dx;
+	if ( mv->right_to_left )
+	    x = mv->width - x - mv->perchar[i].dwidth - + mv->perchar[i].kernafter;
+	if ( ex >= x && ex < x+mv->perchar[i].dwidth+ mv->perchar[i].kernafter ) {
+	    within = i;
+    break;
+	}
+    }
+
+    founds = galloc(len*sizeof(SplineChar *));	/* Will be a vast over-estimate */
+    start = cnames;
+    for ( i=0; *start; ) {
+	while ( *start==' ' ) ++start;
+	if ( *start=='\0' )
+    break;
+	for ( pt=start; *pt && *pt!=' '; ++pt );
+	ch = *pt; *pt = '\0';
+	if ( (founds[i]=SFGetChar(mv->fv->sf,-1,start))!=NULL )
+	    ++i;
+	*pt = ch;
+	start = pt;
+    }
+    cnt = i;
+    free( cnames );
+    if ( cnt==0 )
+return;
+
+    if ( mv->charcnt+cnt>=mv->max ) {
+	int oldmax=mv->max;
+	mv->max = mv->charcnt+cnt+10;
+	mv->perchar = grealloc(mv->perchar,mv->max*sizeof(struct metricchar));
+	memset(mv->perchar+oldmax,'\0',(mv->max-oldmax)*sizeof(struct metricchar));
+    }
+    oldtext = _GGadgetGetTitle(mv->text);
+    newtext = galloc((mv->charcnt+cnt+1)*sizeof(unichar_t));
+    u_strcpy(newtext,oldtext);
+    newtext[mv->charcnt+cnt]='\0';
+    for ( i=mv->charcnt+cnt-1; i>=within+cnt; --i ) {
+	newtext[i] = newtext[i-cnt];
+	mv->perchar[i].sc = mv->perchar[i-cnt].sc;
+	mv->perchar[i].show = mv->perchar[i-cnt].show;
+	mv->perchar[i-cnt].show = NULL;
+    }
+    for ( i=within; i<within+cnt; ++i ) {
+	mv->perchar[i].sc = founds[i-within];
+	newtext[i] = (founds[i-within]->unicodeenc>=0 && founds[i-within]->unicodeenc<0x10000)?
+		founds[i-within]->unicodeenc : 0xfffd;
+    }
+    mv->charcnt += cnt;
+    for ( i=within; i<mv->charcnt; ++i )
+	MVSetPos(mv,i,mv->perchar[i].sc);
+    free(founds);
+
+    GGadgetSetTitle(mv->text,newtext);
+    free(newtext);
+
+    GDrawRequestExpose(mv->gw,NULL,false);
+    MVSetSb(mv);
+}
+
 static int mv_e_h(GWindow gw, GEvent *event) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
 
@@ -2363,6 +2442,9 @@ static int mv_e_h(GWindow gw, GEvent *event) {
       break;
       case et_mouseup: case et_mousemove: case et_mousedown:
 	MVMouse(mv,event);
+      break;
+      case et_drop:
+	MVDrop(mv,event);
       break;
       case et_controlevent:
 	switch ( event->u.control.subtype ) {
@@ -2465,7 +2547,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
 
     mv->perchar = gcalloc(mv->max=20,sizeof(struct metricchar));
     if ( sc!=NULL ) {
-	ubuf[0] = sc->unicodeenc==-1 ? 0xfffd: sc->unicodeenc;
+	ubuf[0] = sc->unicodeenc==-1 ||sc->unicodeenc>=0x10000 ? 0xfffd: sc->unicodeenc;
 	mv->perchar[0].sc = sc;
 	cnt = 1;
     } else {
@@ -2473,7 +2555,8 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
 	    for ( i=0; i<fv->sf->charcnt && cnt<15; ++i ) {
 		if ( fv->selected[i]==j && fv->sf->chars[i]!=NULL ) {
 		    mv->perchar[cnt].sc = fv->sf->chars[i];
-		    ubuf[cnt++] = fv->sf->chars[i]->unicodeenc==-1 ? 0xfffd: fv->sf->chars[i]->unicodeenc;
+		    ubuf[cnt++] = fv->sf->chars[i]->unicodeenc==-1 || fv->sf->chars[i]->unicodeenc>=0x10000?
+			    0xfffd: fv->sf->chars[i]->unicodeenc;
 		}
 	    }
 	}

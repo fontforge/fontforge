@@ -36,6 +36,7 @@ GCursor ct_rect, ct_elipse, ct_poly, ct_star, ct_pencil, ct_shift, ct_line,
 	ct_myhand, ct_filledrect, ct_filledelipse, ct_setwidth, ct_eyedropper;
 GCursor ct_updown, ct_leftright, ct_nesw, ct_nwse;
 GCursor ct_rbearing, ct_kerning, ct_lbearing;
+GCursor ct_prohibition, ct_ddcursor;
 GWindow logo_icon;
 
 #define magplus_width 16
@@ -479,6 +480,28 @@ static unsigned char logo_bits[] = {
    0x48, 0x02, 0xf8, 0x01, 0x48, 0x1c, 0x48, 0x12, 0x48, 0x12, 0x48, 0x12,
    0x5c, 0x2c, 0x40, 0x00, 0x30, 0x00, 0x00, 0x00};
 
+#define prohibition_width 16
+#define prohibition_height 16
+#define prohibition_x_hot 7
+#define prohibition_y_hot 7
+static unsigned char prohibition_bits[] = {
+   0xc0, 0x01, 0x30, 0x06, 0x0c, 0x18, 0x0c, 0x10, 0x12, 0x20, 0x22, 0x20,
+   0x41, 0x40, 0x81, 0x40, 0x01, 0x41, 0x02, 0x22, 0x02, 0x24, 0x04, 0x18,
+   0x0c, 0x18, 0x30, 0x06, 0xc0, 0x01, 0x00, 0x00};
+static unsigned char prohibitionmask_bits[] = {
+   0xc0, 0x01, 0xf0, 0x07, 0xfc, 0x1f, 0xfc, 0x1f, 0xfe, 0x3f, 0xfe, 0x3f,
+   0xff, 0x7f, 0xff, 0x7f, 0xff, 0x7f, 0xfe, 0x3f, 0xfe, 0x3f, 0xfc, 0x1f,
+   0xfc, 0x1f, 0xf0, 0x07, 0xc0, 0x01, 0x00, 0x00};
+#define ddcursor_width 16
+#define ddcursor_height 16
+#define ddcursor_x_hot 0
+#define ddcursor_y_hot 0
+static unsigned char ddcursor_bits[] = {
+   0x0f, 0x00, 0x03, 0x00, 0x05, 0x00, 0x09, 0x00, 0x10, 0x00, 0x00, 0x00,
+   0x00, 0x02, 0x00, 0x02, 0x60, 0xc6, 0x50, 0x2a, 0x50, 0x2a, 0xa0, 0xc6,
+   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+
 void InitCursors(void) {
     GWindow mask, image;
     /* The XServer shipping with redhat 7.1 seems to suffer a protocol change */
@@ -647,4 +670,16 @@ void InitCursors(void) {
 
     logo_icon = GDrawCreateBitmap(NULL,logo_width,logo_height,logo_bits);
     GDrawSetDefaultIcon(logo_icon);
+
+    image = GDrawCreateBitmap(NULL,prohibition_width,prohibition_height,prohibition_bits);
+    mask = GDrawCreateBitmap(NULL,prohibition_width,prohibition_height,prohibitionmask_bits);
+    ct_prohibition = GDrawCreateCursor(image,mask,0xff0000,0xffffff,prohibition_x_hot,
+	    prohibition_y_hot);
+    GDrawDestroyWindow(image);
+    GDrawDestroyWindow(mask);
+    image = GDrawCreateBitmap(NULL,ddcursor_width,ddcursor_height,ddcursor_bits);
+    ct_ddcursor = GDrawCreateCursor(image,image,0xff0000,0xffffff,ddcursor_x_hot,
+	    ddcursor_y_hot);
+    GDrawDestroyWindow(image);
+    GDrawDestroyWindow(mask);
 }
