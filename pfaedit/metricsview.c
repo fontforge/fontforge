@@ -3090,6 +3090,7 @@ static int mv_e_h(GWindow gw, GEvent *event) {
 	ClipboardClear();
       break;
       case et_expose:
+	GDrawSetLineWidth(gw,0);
 	MVExpose(mv,gw,event);
       break;
       case et_resize:

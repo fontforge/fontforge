@@ -957,6 +957,7 @@ return( GGadgetDispatchEvent(bv->vsb,event));
 	ClipboardClear();
       break;
       case et_expose:
+	GDrawSetLineWidth(gw,0);
 	BVExpose(bv,gw,event);
       break;
       case et_crossing:
@@ -1007,6 +1008,7 @@ return( GGadgetDispatchEvent(bv->vsb,event));
 
     switch ( event->type ) {
       case et_expose:
+	GDrawSetLineWidth(gw,0);
 	BVMainExpose(bv,gw,event);
       break;
       case et_char:

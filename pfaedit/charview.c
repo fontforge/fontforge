@@ -2913,6 +2913,7 @@ return( GGadgetDispatchEvent(cv->vsb,event));
 
     switch ( event->type ) {
       case et_expose:
+	GDrawSetLineWidth(gw,0);
 	CVExpose(cv,gw,event);
       break;
       case et_crossing:
@@ -3330,6 +3331,7 @@ return( GGadgetDispatchEvent(cv->vsb,event));
 	ClipboardClear();
       break;
       case et_expose:
+	GDrawSetLineWidth(gw,0);
 	InfoExpose(cv,gw,event);
 	CVLogoExpose(cv,gw,event);
       break;

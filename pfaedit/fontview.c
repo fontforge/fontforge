@@ -5123,6 +5123,7 @@ return( GGadgetDispatchEvent(fv->vsb,event));
 
     switch ( event->type ) {
       case et_expose:
+	GDrawSetLineWidth(gw,0);
 	FVExpose(fv,gw,event);
       break;
       case et_char:
@@ -5234,6 +5235,7 @@ return( GGadgetDispatchEvent(fv->vsb,event));
 	ClipboardClear();
       break;
       case et_expose:
+	GDrawSetLineWidth(gw,0);
 	FVDrawInfo(fv,gw,event);
       break;
       case et_resize:
