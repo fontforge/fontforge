@@ -48,7 +48,7 @@ LIBS = -L../libs $(X_LIBS) ../libs/libgdraw.a ../libs/libgunicode.a \
     $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS) @LIBS@ $(STATIC_LIBS) -lm
 DLIBS = ../libs/libgunicode.a @LIBS@ -lm
 
-all: pfaedit-en.ui fontforge sfddiff acorn2sfd
+all: pfaedit-en.ui fontforge sfddiff
 
 fontforge: nomen.h $(fontforge_OBJECTS)
 	$(CC) -o fontforge $(fontforge_OBJECTS) $(LIBS)
