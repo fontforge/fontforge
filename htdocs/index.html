@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 12-Feb-2003 -->
+  <!-- AP: Last modified: 13-Feb-2003 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -168,7 +168,7 @@ Or you can go to the
 <A HREF="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/pfaedit/pfaedit/">cvs
 tree</A> and get the most recent version.
 <H2>
-  Dependencies
+  <A NAME="Dependencies">Dependencies</A>
 </H2>
 <P>
 If you want to do autotracing around character images you should also download
@@ -285,7 +285,7 @@ should install them properly for you 8-Feb-2002.
 Or you can just browse the <A HREF="overview.html">docs online</A>. (Always
 current)
 <H2>
-  Building it
+  <A NAME="Building">Building</A> it
 </H2>
 <BLOCKQUOTE>
   <PRE>$ gunzip pfaedit_full-*.tgz
@@ -304,7 +304,7 @@ errors when asked to generate PIC code, as Mac OS/X does for me) then use<BR>
 <CODE>&nbsp; &nbsp; &nbsp; &nbsp; $ configure.static</CODE><BR>
 instead and things should be configured for static libraries.
 <H2>
-  Installing it
+  <A NAME="Installing">Installing</A> it
 </H2>
 <P>
 The executable tarball contains a shell script doinstall
@@ -391,10 +391,12 @@ prepared to save frequently and always work on a copy of the original.
     fonts (such as those made by itself), will get confused if there's more than
     one font with a chars dictionary.
   <LI>
-    PfaEdit's support for the GPOS/GSUB/VORG table output is limited. Other advanced
-    opentype tables aren't supported at all.
+    PfaEdit's support for the <A HREF="gposgsub.html">GPOS/GSUB/GDEF</A>/VORG
+    table output is limited. Other advanced opentype tables aren't supported
+    at all.
   <LI>
-    PfaEdit's support for Apple's Advanced Typography tables (AAT) is non-existent.
+    PfaEdit's support for <A HREF="gposgsub.html#AAT">Apple's Advanced Typography
+    tables</A> (AAT) is limited.
 </UL>
 <H2>
   <A NAME="Mail">Mailing Lists</A>
@@ -685,7 +687,8 @@ which company has given me the free time to write this program.
     parts of the standard, be warned)
     <UL>
       <LI>
-	<A HREF="http://fonts.apple.com/TTRefMan/">Apple</A>
+	<A HREF="http://fonts.apple.com/TTRefMan/">Apple</A> (I find Apple's prose
+	incomplete)
       <LI>
 	<A HREF="http://www.microsoft.com/typography/tt/tt.htm">Microsoft</A>
       <LI>

@@ -416,6 +416,7 @@ extern void MenuSaveAll(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuOpen(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuHelp(GWindow base,struct gmenuitem *mi,GEvent *e);
+extern void MenuIndex(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuAbout(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuNew(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void MergeKernInfo(SplineFont *sf);

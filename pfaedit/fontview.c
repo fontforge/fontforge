@@ -744,6 +744,10 @@ void MenuHelp(GWindow base,struct gmenuitem *mi,GEvent *e) {
     help("overview.html");
 }
 
+void MenuIndex(GWindow base,struct gmenuitem *mi,GEvent *e) {
+    help("IndexFS.html");
+}
+
 void MenuAbout(GWindow base,struct gmenuitem *mi,GEvent *e) {
     ShowAboutScreen();
 }
@@ -3313,6 +3317,7 @@ static void cdlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 
 GMenuItem helplist[] = {
     { { (unichar_t *) _STR_Help, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, GK_F1, 0, NULL, NULL, MenuHelp },
+    { { (unichar_t *) _STR_Index, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, GK_F1, ksm_control, NULL, NULL, MenuIndex },
     { { (unichar_t *) _STR_About, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, '\0', 0, NULL, NULL, MenuAbout },
     { NULL }
 };
