@@ -1979,13 +1979,10 @@ static void bAddExtrema(Context *c) {
 }
 
 static void bRoundToInt(Context *c) {
-    double err = .75;
-    int flags = 0;
 
-    if ( c->a.argc==3 ) {
-    } else if ( c->a.argc!=1 )
+    if ( c->a.argc!=1 )
 	error( c, "Wrong number of arguments");
-    _FVSimplify(c->curfv,flags,err);
+    FVFakeMenus(c->curfv,103);
 }
 
 static void bAutotrace(Context *c) {
