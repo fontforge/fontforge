@@ -4004,9 +4004,9 @@ return;
 
     strcat(buffer,"  ");
     uc_strcpy(ubuffer,buffer);
-    if ( sc->unicodeenc!=-1 && sc->unicodeenc<65536 &&
-	    UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff]!=NULL ) {
-	u_strncat(ubuffer, UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff], 80);
+    if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x110000 && _UnicodeNameAnnot!=NULL &&
+	    _UnicodeNameAnnot[sc->unicodeenc>>16][(sc->unicodeenc>>8)&0xff][sc->unicodeenc&0xff].name!=NULL ) {
+	uc_strncat(ubuffer, _UnicodeNameAnnot[sc->unicodeenc>>16][(sc->unicodeenc>>8)&0xff][sc->unicodeenc&0xff].name, 80);
     } else if ( sc->unicodeenc>=0xAC00 && sc->unicodeenc<=0xD7A3 ) {
 	sprintf( buffer, "Hangul Syllable %s%s%s",
 		chosung[(sc->unicodeenc-0xAC00)/(21*28)],
@@ -4226,8 +4226,24 @@ static void FVChar(FontView *fv,GEvent *event) {
     }
 }
 
+static void uc_annot_strncat(unichar_t *to, const char *from, int len) {
+    register unichar_t ch;
+
+    to += u_strlen(to);
+    while ( (ch = *(unsigned char *) from++) != '\0' && --len>=0 ) {
+	if ( from[-2]=='\t' ) {
+	    if ( ch=='*' ) ch = 0x2022;
+	    else if ( ch=='x' ) ch = 0x2192;
+	    else if ( ch==':' ) ch = 0x224d;
+	    else if ( ch=='#' ) ch = 0x2245;
+	}
+	*(to++) = ch;
+    }
+    *to = 0;
+}
+
 void SCPreparePopup(GWindow gw,SplineChar *sc) {
-    static unichar_t space[410];
+    static unichar_t space[810];
     char cspace[100];
     int upos;
     int enc = sc->parent->encoding_name;
@@ -4268,10 +4284,11 @@ void SCPreparePopup(GWindow gw,SplineChar *sc) {
     }
     if ( done )
 	/* Do Nothing */;
-    else if ( upos<65536 && UnicodeCharacterNames[upos>>8][upos&0xff]!=NULL ) {
-	sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" ", localenc, localenc, upos, sc->name==NULL?"":sc->name );
+    else if ( upos<0x110000 && _UnicodeNameAnnot!=NULL &&
+	    _UnicodeNameAnnot[upos>>16][(upos>>8)&0xff][upos&0xff].name!=NULL ) {
+	sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" %.100s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
+		_UnicodeNameAnnot[upos>>16][(upos>>8)&0xff][upos&0xff].name);
 	uc_strcpy(space,cspace);
-	u_strcat(space,UnicodeCharacterNames[upos>>8][upos&0xff]);
     } else if ( upos>=0xAC00 && upos<=0xD7A3 ) {
 	sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" Hangul Syllable %s%s%s",
 		localenc, localenc, upos, sc->name==NULL?"":sc->name,
@@ -4281,14 +4298,16 @@ void SCPreparePopup(GWindow gw,SplineChar *sc) {
 	uc_strcpy(space,cspace);
     } else {
 	sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" %.50s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
-	    upos=='\0'				? "Null":
-	    upos=='\t'				? "Tab":
-	    upos=='\r'				? "Return":
-	    upos=='\n'				? "LineFeed":
-	    upos=='\f'				? "FormFeed":
-	    upos=='\33'				? "Escape":
 	    	UnicodeRange(upos));
 	uc_strcpy(space,cspace);
+    }
+    if ( upos<0x110000 && _UnicodeNameAnnot!=NULL &&
+	    _UnicodeNameAnnot[upos>>16][(upos>>8)&0xff][upos&0xff].annot!=NULL ) {
+	int left = sizeof(space)/sizeof(space[0]) - u_strlen(space)-1;
+	if ( left>4 ) {
+	    uc_strcat(space,"\n");
+	    uc_annot_strncat(space,_UnicodeNameAnnot[upos>>16][(upos>>8)&0xff][upos&0xff].annot,left-2);
+	}
     }
     if ( sc->comment!=NULL ) {
 	int left = sizeof(space)/sizeof(space[0]) - u_strlen(space)-1;

@@ -5,7 +5,7 @@ VPATH = @srcdir@
 prefix = @prefix@
 bindir = @bindir@
 
-GU_VERSION=1
+GU_VERSION=2
 GU_REVISION=0
 GU_AGE=0
 
@@ -13,7 +13,7 @@ LIBTOOL = @LIBTOOL@
 CC = @CC@
 
 libgunicode_OBJECTS =  ArabicForms.lo alphabet.lo backtrns.lo char.lo \
- cjk.lo memory.lo ucharmap.lo unialt.lo uninames.lo ustring.lo utype.lo \
+ cjk.lo memory.lo ucharmap.lo unialt.lo ustring.lo utype.lo \
  usprintf.lo
 
 Incs = -I$(top_srcdir)/inc -I/usr/pkg/include -I/usr/pkg/include/giflib

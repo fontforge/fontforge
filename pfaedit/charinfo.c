@@ -1223,11 +1223,11 @@ static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
     const unichar_t *alt=NULL, *pt;
     char *components = NULL;
     int len;
-    const unichar_t *uname;
+    const char *uname;
 
     /* If it's not unicode we have no info on it */
     /*  Unless it looks like one of adobe's special ligature names */
-    if ( uni==-1 || uni>=65536 )
+    if ( uni==-1 || uni>=0x110000 )
 	/* Nope */;
     else if ( isdecompositionnormative(uni) &&
 		unicode_alternates[uni>>8]!=NULL &&
@@ -1236,10 +1236,10 @@ static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
 	    alt = NULL;		/* Single replacements aren't ligatures */
 	else if ( iscombining(alt[1]) && ( alt[2]=='\0' || iscombining(alt[2])))
 	    alt = NULL;		/* Don't treat accented letters as ligatures */
-	else if ( UnicodeCharacterNames[uni>>8]!=NULL &&
-		(uname = UnicodeCharacterNames[uni>>8][uni&0xff])!=NULL &&
-		uc_strstr(uname,"LIGATURE")==NULL &&
-		uc_strstr(uname,"VULGAR FRACTION")==NULL )
+	else if ( _UnicodeNameAnnot!=NULL &&
+		(uname = _UnicodeNameAnnot[uni>>16][(uni>>8)&0xff][uni&0xff].name)!=NULL &&
+		strstr(uname,"LIGATURE")==NULL &&
+		strstr(uname,"VULGAR FRACTION")==NULL )
 	    alt = NULL;
     }
     if ( alt==NULL ) {
@@ -1354,14 +1354,6 @@ int UniFromName(const char *name) {
 	if ( buck!=NULL )
 	    i = buck->uni;
     }
-#if 0
-    if ( i==-1 ) {
-	for ( i=65535; i>=0; --i )
-	    if ( UnicodeCharacterNames[i>>8][i&0xff]!=NULL &&
-		    uc_strcmp(UnicodeCharacterNames[i>>8][i&0xff],name)==0 )
-	break;
-    }
-#endif
 return( i );
 }
 
@@ -1387,14 +1379,6 @@ int uUniFromName(const unichar_t *name) {
 	if ( uc_strcmp(name,psaltuninames[i].name)==0 )
     break;
     }
-#if 0
-    if ( i==-1 ) {
-	for ( i=65535; i>=0; --i )
-	    if ( UnicodeCharacterNames[i>>8][i&0xff]!=NULL &&
-		    u_strcmp(name,UnicodeCharacterNames[i>>8][i&0xff])==0 )
-	break;
-    }
-#endif
 return( i );
 }
 
@@ -1799,12 +1783,6 @@ static int CI_SName(GGadget *g, GEvent *e) {	/* Set From Name */
 		else		/* Make sure it is properly capitalized */
 		    SetNameFromUnicode(ci->gw,CID_UName,i);
 	    }
-	}
-	if ( i==-1 ) {
-	    for ( i=65535; i>=0; --i )
-		if ( UnicodeCharacterNames[i>>8][i&0xff]!=NULL &&
-			u_strcmp(ret,UnicodeCharacterNames[i>>8][i&0xff])==0 )
-	    break;
 	}
 
 	sprintf(buf,"U+%04x", i);

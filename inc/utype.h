@@ -93,10 +93,6 @@ extern const unsigned long ____utype2[];
 #define combiningposmask(ch) (____utype2[(ch)+1]&____COMBININGPOSMASK)
 
 
-extern const unsigned short *const *const UnicodeCharacterNames[];
-	/* An array of 256 arrays of 256 strings of 2byte unicode chars */
-	/* containing the names of all non-algorithmically named unicode chars */
-
 extern struct arabicforms {
     unsigned short initial, medial, final, isolated;
     unsigned int isletter: 1;

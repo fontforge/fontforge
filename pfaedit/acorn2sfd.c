@@ -154,14 +154,6 @@ static int UnicodeFromName(char *name) {
 	if ( strcmp(name,psaltuninames[i].name)==0 )
     break;
     }
-#if 0
-    if ( i==-1 ) {
-	for ( i=65535; i>=0; --i )
-	    if ( UnicodeCharacterNames[i>>8][i&0xff]!=NULL &&
-		    uc_strcmp(UnicodeCharacterNames[i>>8][i&0xff],name)==0 )
-	break;
-    }
-#endif
 return( i );
 }
 

@@ -32,10 +32,14 @@
 #include <locale.h>
 #include <unistd.h>
 #include <ustring.h>
+#if !defined(_NO_LIBUNINAMESLIST) && !defined(_STATIC_LIBUNINAMESLIST) && !defined(NODYNAMIC)
+#  include <dlfcn.h>
+#endif
 
 unsigned short unicode_from_adobestd[256];
 struct lconv localeinfo;
 char *coord_sep = ",";		/* Not part of locale data */
+const struct unicode_nameannot * const *const *_UnicodeNameAnnot = NULL;
 
 static void initadobeenc(void) {
     int i,j;
@@ -53,6 +57,23 @@ static void initadobeenc(void) {
 	    unicode_from_adobestd[i] = j;
 	}
     }
+}
+
+static void inituninameannot(void) {
+#if _NO_LIBUNINAMESLIST
+    _UnicodeNameAnnot = NULL;
+#elif defined(_STATIC_LIBUNINAMESLIST) || defined(NODYNAMIC)
+    _UnicodeNameAnnot = &UnicodeNameAnnot;
+#else
+    void *libuninames=NULL;
+# ifdef LIBDIR
+    libuninames = dlopen( LIBDIR "/libuninameslist.so",RTLD_LAZY);
+# endif
+    if ( libuninames==NULL )
+	libuninames = dlopen( "libuninameslist.so",RTLD_LAZY);
+    if ( libuninames!=NULL )
+	_UnicodeNameAnnot = dlsym(libuninames,"UnicodeNameAnnot");
+#endif
 }
 
 void doversion(void) {
@@ -333,6 +354,7 @@ int main( int argc, char **argv ) {
 	    doversion();
     }
     initadobeenc();
+    inituninameannot();
     initrand();
 
     GDrawCreateDisplays(display,argv[0]);

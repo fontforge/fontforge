@@ -663,6 +663,7 @@ static void dump() {
 
     fclose( data );
 
+#if 0
     data = fopen( "uninames.c", "w");
     if ( data==NULL ) {
 	fprintf( stderr, "Cannot open uninames.c for output\n" );
@@ -707,6 +708,7 @@ static void dump() {
     fprintf( header, "\nextern const unsigned short *const *const UnicodeCharacterNames[];\n" );
     fprintf( header, "\t/* An array of 256 arrays of 256 strings of 2byte unicode chars */\n" );
     fprintf( header, "\t/* containing the names of all non-algorithmically named unicode chars */\n" );
+#endif
 
     dumparabicdata(header);
     fprintf( header, "\n#define _SOFT_HYPHEN\t0xad\n" );

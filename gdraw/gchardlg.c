@@ -34,6 +34,14 @@
 #include <charset.h>
 #include <chardata.h>
 #include <gresource.h>
+#if !defined(_NO_LIBUNINAMESLIST) && !defined(_STATIC_LIBUNINAMESLIST) && !defined(NODYNAMIC)
+#  include <dlfcn.h>
+#endif
+
+struct unicode_nameannot {
+    const char *name, *annot;
+};
+static const struct unicode_nameannot * const *const *_UnicodeNameAnnot = NULL;
 
 #define INSCHR_CharSet	1
 #define INSCHR_Char	2
@@ -327,6 +335,23 @@ struct namemap encodingnames[] = {
     {"Specials", em_max+74 },
 #endif
     { NULL }};
+
+static void inituninameannot(void) {
+#if _NO_LIBUNINAMESLIST
+    _UnicodeNameAnnot = NULL;
+#elif defined(_STATIC_LIBUNINAMESLIST) || defined(NODYNAMIC)
+    _UnicodeNameAnnot = &UnicodeNameAnnot;
+#else
+    void *libuninames=NULL;
+# ifdef LIBDIR
+    libuninames = dlopen( LIBDIR "/libuninameslist.so",RTLD_LAZY);
+# endif
+    if ( libuninames==NULL )
+	libuninames = dlopen( "libuninameslist.so",RTLD_LAZY);
+    if ( libuninames!=NULL )
+	_UnicodeNameAnnot = dlsym(libuninames,"UnicodeNameAnnot");
+#endif
+}
 
 static int mapFromIndex(int i) {
 return( encodingnames[i].map );
@@ -842,6 +867,22 @@ return;
     InsChrFigureShow();
 }
 
+static void uc_annot_strncat(unichar_t *to, const char *from, int len) {
+    register unichar_t ch;
+
+    to += u_strlen(to);
+    while ( (ch = *(unsigned char *) from++) != '\0' && --len>=0 ) {
+	if ( from[-2]=='\t' ) {
+	    if ( ch=='*' ) ch = 0x2022;
+	    else if ( ch=='x' ) ch = 0x2192;
+	    else if ( ch==':' ) ch = 0x224d;
+	    else if ( ch=='#' ) ch = 0x2245;
+	}
+	*(to++) = ch;
+    }
+    *to = 0;
+}
+
 static void InsChrMouseMove(GWindow gw, GEvent *event) {
     int x, y;
     GGadgetEndPopup();
@@ -850,11 +891,12 @@ static void InsChrMouseMove(GWindow gw, GEvent *event) {
     y= (event->u.mouse.y-inschr.ybase)/inschr.spacing;
     if ( !inschr.mouse_down && event->u.mouse.y>inschr.ybase ) {
 	int uch = InsChrMapChar(16*y + x);
-	static unichar_t space[200];
+	static unichar_t space[600];
 	char cspace[40];
 
-	if ( UnicodeCharacterNames[uch>>8][uch&0xff]!=NULL ) {
-	    u_strcpy(space,UnicodeCharacterNames[uch>>8][uch&0xff]);
+	if ( _UnicodeNameAnnot!=NULL &&
+		_UnicodeNameAnnot[uch>>16][(uch>>8)&0xff][uch&0xff].name!=NULL ) {
+	    uc_strcpy(space,_UnicodeNameAnnot[uch>>16][(uch>>8)&0xff][uch&0xff].name);
 	    sprintf( cspace, " U+%04X", uch );
 	    uc_strcpy(space+u_strlen(space),cspace);
 	} else {
@@ -877,6 +919,14 @@ static void InsChrMouseMove(GWindow gw, GEvent *event) {
 	    else
 		sprintf(cspace, "Unencoded Unicode U+%04X ", uch);
 	    uc_strcpy(space,cspace);
+	}
+	if ( uch<0x110000 && _UnicodeNameAnnot!=NULL &&
+		_UnicodeNameAnnot[uch>>16][(uch>>8)&0xff][uch&0xff].annot!=NULL ) {
+	    int left = sizeof(space)/sizeof(space[0]) - u_strlen(space)-1;
+	    if ( left>4 ) {
+		uc_strcat(space,"\n");
+		uc_annot_strncat(space,_UnicodeNameAnnot[uch>>16][(uch>>8)&0xff][uch&0xff].annot,left-2);
+	    }
 	}
 	GGadgetPreparePopup(gw,space);
     } else if ( inschr.mouse_down ) {
@@ -1012,7 +1062,12 @@ void GWidgetCreateInsChar(void) {
     FontRequest rq;
     int as, ds, ld;
     static unichar_t helv[] = { 'u','n','i','f','o','n','t',',', 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a', ',', 'c','a','l','i','b','a','n',',','c', 'l', 'e', 'a', 'r', 'l', 'y', 'u', ',', 'c', 'a', 's', 'l', 'o', 'n',',','u','n','i','f','o','n','t',  '\0' };
+    static int inited= false;
 
+    if ( !inited ) {
+	inituninameannot();
+	inited = true;
+    }
     if ( inschr.icw!=NULL ) {
 	inschr.hidden = false;
 	GDrawSetVisible(inschr.icw,true);

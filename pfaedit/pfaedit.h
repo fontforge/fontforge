@@ -46,7 +46,7 @@ typedef struct enc {
 } Encoding;
 
 static const int unicode4_size = 17*65536;
-    /* I think Unicode goes up to 0x10ffff */
+    /* Unicode goes up to 0x10ffff */
 
 enum { em_base = 0x100,		/* an addition to enum charset, used as the base value for the encoding list above */
 	em_sjis = em_max,
@@ -72,6 +72,11 @@ extern struct psaltnames {
     int unicode;
 } psaltuninames[];
 extern int psaltuninames_cnt;
+
+struct unicode_nameannot {
+    const char *name, *annot;
+};
+extern const struct unicode_nameannot * const *const *_UnicodeNameAnnot;
 
 extern int default_fv_font_size;
 extern int default_fv_antialias;

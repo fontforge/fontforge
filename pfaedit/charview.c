@@ -1365,10 +1365,10 @@ static unichar_t *CVMakeTitles(CharView *cv,unichar_t *ubuf) {
     if ( sc->changed )
 	uc_strcat(ubuf," *");
     title = u_copy(ubuf);
-    if ( sc->unicodeenc!=-1 && sc->unicodeenc<65536 &&
-	    UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff]!=NULL ) {
-	uc_strcat(ubuf," ");
-	u_strcat(ubuf, UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff]);
+    if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x110000 && _UnicodeNameAnnot!=NULL &&
+	    _UnicodeNameAnnot[sc->unicodeenc>>16][(sc->unicodeenc>>8)&0xff][sc->unicodeenc&0xff].name!=NULL ) {
+	uc_strcat(ubuf, " ");
+	uc_strcat(ubuf, _UnicodeNameAnnot[sc->unicodeenc>>16][(sc->unicodeenc>>8)&0xff][sc->unicodeenc&0xff].name);
     }
 return( title );
 }

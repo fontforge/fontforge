@@ -36,7 +36,7 @@ struct unicoderange {
 			/*  and a codepoint which actually has a character */
 			/*  associated with it */
 } unicoderange[] = {
-    /* { "Unicode", 0, 0x7fffffff, ' ' }, */
+    /* { "Unicode", 0, 0x10ffff, ' ' }, */
     { "Unicode Basic Multilingual Plane", 0, 0xffff, ' ' },
     { "Basic Multilingual Plane", 0, 0xffff, ' ' },
     { "Alphabetic", 0, 0x1fff, 'A' },
@@ -220,6 +220,7 @@ struct unicoderange {
     { "Gothic", 0x10330, 0x1034f, 0x10330 },
     { "Old Permic", 0x10350, 0x1037f, 0x10350 },
     { "Ugaritic", 0x10380, 0x1039f, -1 },
+    { "Deseret", 0x10400, 0x1044f },
     { "Alphabetic and syllabic RTL scripts", 0x10800, 0x10fff, -1 },
     { "Cypriot", 0x10800, 0x1083f, 0x10800 },
     { "Meriotic", 0x10840, 0x1085f, 0x10840 },
@@ -237,10 +238,13 @@ struct unicoderange {
     { "Sumerian pictograms", 0x16c00, 0x16fff, -1 },
     { "Large Asian Scripts", 0x17000, 0x1b5ff, -1 },
     { "Notational systems", 0x1d000, 0x1ffd, -1 },
+    { "Byzantine Musical Symbols", 0x1d000, 0x1d0ff },
+    { "Musical Symbols", 0x1d100, 0x1d1ff },
+    { "Mathematical Alphanumeric Symbols", 0x1d400, 0x1d7ff },
 /* End of SMP, Start of SIP */
     { "Unicode Supplementary Ideographic Plane", 0x20000, 0x2ffff, -1 },
     { "Supplementary Ideographic Plane", 0x20000, 0x2ffff, -1 },
-    { "CJK Unified Ideographs Extension B", 0x20000, 0x2a6ff, -1 },
+    { "CJK Unified Ideographs Extension B", 0x20000, 0x2a6d6, -1 },
     { "CJK Compatibility Ideographs Supplement", 0x2f800, 0x2fa1f, -1 },
 /* End of SIP, Start of SSP */
     { "Unicode Supplementary Special-purpose Plane", 0xe0000, 0xeffff, -1 },
@@ -422,12 +426,6 @@ static int NameToEncoding(SplineFont *sf,const unichar_t *name) {
 			    uni = specialnames[i].first;
 		    break;
 			}
-		}
-		if ( uni<0 ) {
-		    for ( uni=65535; uni>=0 ; --uni )
-			if ( UnicodeCharacterNames[uni>>8][uni&0xff]!=NULL )
-			    if ( u_strmatch(name,UnicodeCharacterNames[uni>>8][uni&0xff])== 0 )
-		    break;
 		}
 		if ( uni<0 && name[1]=='\0' )
 		    uni = name[0];
