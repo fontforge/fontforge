@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 10-Feb-2004 -->
+  <!-- AP: Last modified: 12-Feb-2004 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -1490,13 +1490,29 @@ ApplySubstitution("*","*","vrt2")
     ClearHints()
   <DD>
   <DT>
-    AddHint(is_horizontal_flag,start,width)
+    AddHHint(start,width)
   <DD>
-    Adds either a horizontal or vertical stem hint to any selected characters.
-    The hint starts at location "start" and is width wide. A hint will be added
-    to all selected characters.
+    Adds horizontal stem hint to any selected characters. The hint starts at
+    location "start" and is width wide. A hint will be added to all selected
+    characters.
   <DT>
-    ReplaceCounterMasks(array)
+    AddVHint(start,width)
+  <DD>
+    Adds a vertical stem hint to any selected characters. The hint starts at
+    location "start" and is width wide. A hint will be added to all selected
+    characters.
+  <DT>
+    ClearCharCounterMasks()
+  <DD>
+    Clears any counter masks from the (one) selected character.
+  <DT>
+    SetCharCounterMask(cg,hint-index,hint-index,...)
+  <DD>
+    Creates or sets the counter mask at index cg to contain the hints listed.
+    Hint index 0 corresponds to the first hstem hint, index 1 to the second hstem
+    hint, etc. vstem hints follow hstems.
+  <DT>
+    ReplaceCharCounterMasks(array)
   <DD>
     This requires that there be exactly one character selected. It will create
     a set of counter masks for that character. The single argument must be an

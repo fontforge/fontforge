@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 11-Feb-2004 -->
+  <!-- AP: Last modified: 12-Feb-2004 -->
   <TITLE>Spline Font Database File Format</TITLE>
 </HEAD>
 <BODY>
@@ -692,9 +692,20 @@ EndChar
 </PRE>
 </BLOCKQUOTE>
 <P>
-Here there is one counter group, (that's what the "1" on the countermasks
-line means), and in it the third (0x20), fourth (0x10) and fifth (0x08) hints
-are active, the three vertical stems.
+The CounterMasks line in this example declares one counter group (first
+argument). The "38" (and any other values following it) is a bitmask, given
+in hex, that describes a group. The size of the bitmask is always a multiple
+of eight (i.e. always an even number of hex digits). The highest-order bit
+in the mask specifies whether the first stem hint is present (1) or absent
+(0) in the counter group. The second-highest-order bit does the same for
+the second hint, and so on. Any extra low-order bits not corresponding to
+any hint are ignored. (I know, starting from the high bit instead of the
+low bit seems strange, but that was Adobe's design decision.) Here, the third
+(0x20), fourth (0x10) and fifth (0x08) stem hints (i.e. the three vertical
+stems) are in the group, yielding a counter mask of 0x38. If we were to add
+four more VStem hints to the glyph, making nine hints in all, then the mask
+would have to be given as 0x3800 (because two bytes are needed to accomodate
+nine bits).
 <P>
 If a font has been loaded from a truetype file it may containing hinting
 information (PfaEdit does not attempt to understand truetype hints, just
