@@ -1,79 +1,77 @@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
 
-sharedir = @prefix@/share/pfaedit
-srcdir = @srcdir@
-top_srcdir = @top_srcdir@
-top_builddir = ..
-VPATH = @srcdir@
 bindir = @bindir@
 libdir = @libdir@
+mandir = @mandir@
+includedir = @includedir@
+sharedir = $(prefix)/share/pfaedit
+
+srcdir = @srcdir@
+top_builddir = .
 
 LIBTOOL = @LIBTOOL@
-CC = @CC@
+INSTALL = @INSTALL@
 
-X_CFLAGS = @X_CFLAGS@
-X_LIBS = @X_LIBS@
-X_11LIB = @X_11LIB@
-X_EXTRA_LIBS = @X_EXTRA_LIBS@
-X_PRE_LIBS = @X_PRE_LIBS@
-STATIC_LIBS = @STATIC_LIBS@
+all: pfaedit
 
-pfaedit_OBJECTS =  autohint.o autosave.o autowidth.o bitmapdlg.o \
- bitmapview.o bvedit.o charview.o charviewicons.o cursors.o \
- cvaddpoints.o cvexport.o cvgetinfo.o cvhints.o cvimages.o cvknife.o \
- cvpalettes.o cvpointer.o cvruler.o cvshapes.o cvstroke.o cvtranstools.o \
- cvundoes.o dumpbdf.o dumppfa.o fontinfo.o fontview.o fvcomposit.o \
- fvfonts.o fvimportbdf.o fvmetrics.o images.o metricsview.o \
- parsepfa.o parsettf.o prefs.o psread.o psunicodenames.o savefontdlg.o \
- sfd.o splashimage.o splinefill.o splineoverlap.o splinesave.o \
- splinesaveafm.o splinestroke.o splineutil.o splineutil2.o stamp.o \
- start.o tottf.o transform.o uiutil.o utils.o windowmenu.o  \
- zapfnomen.o othersubrs.o autotrace.o openfontdlg.o encoding.o print.o \
- problems.o pfaedit-ui.o metafont.o alignment.o parsettfbmf.o \
- macbinary.o crctab.o scripting.o freetype.o gotodlg.o search.o \
- combinations.o tilepath.o sftextfield.o displayfonts.o ikarus.o \
- cvhand.o cvfreehand.o simplifydlg.o winfonts.o tottfgpos.o \
- tottfaat.o charinfo.o splineorder2.o genttfinstrs.o
-DIFFOBJS = sfddiff.o sfd.o diffstubs.o stamp.o
-ACORNOBJS = acorn2sfd.o sfd.o diffstubs.o psunicodenames.o stamp.o
+libs: libgunicode libgdraw
 
-WFLAGS = -Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type -Wparentheses
-CFLAGS = @CFLAGS@ -I$(top_srcdir)/inc -I$(srcdir) -I. $(WFLAGS) $(X_CFLAGS) \
-    @DEFS@ '-DSHAREDIR="$(sharedir)"' -DLIBDIR='"$(libdir)"'
+pfaedit: libgunicode libgdraw
+	( cd pfaedit ; $(MAKE) )
 
-LIBS = -rpath $(libdir) $(X_LIBS) ../libgdraw.la ../libgunicode.la \
-    $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS) @LIBS@ $(STATIC_LIBS) -L/usr/lib -lm
-DLIBS = -rpath $(libdir) ../libgunicode.la -lm
+libgunicode:
+	( cd Unicode ; $(MAKE) )
 
-all: pfaedit-en.ui pfaedit sfddiff
-
-pfaedit: nomen.h $(pfaedit_OBJECTS)
-	$(LIBTOOL) $(CC) -o pfaedit $(pfaedit_OBJECTS) $(LIBS)
-
-sfddiff: $(DIFFOBJS)
-	$(LIBTOOL) $(CC) -o sfddiff $(DIFFOBJS) $(DLIBS)
-
-acorn2sfd: $(ACORNOBJS)
-	$(LIBTOOL) $(CC) -o acorn2sfd $(ACORNOBJS) $(DLIBS)
-
-#this makes all the .ui files but wildcarding doesn't work too well if the
-# files don't exist.
-nomen.h pfaedit-ui.c pfaedit-en.ui: $(srcdir)/nomen-*.c makenomenh.c
-	$(LIBTOOL) $(CC) -o makenomenh $(CFLAGS) $(srcdir)/makenomenh.c $(LIBS)
-	-ln -s $(srcdir)/nomen-*.c .
-	./makenomenh
-	mv pfaedit-ui-en.c pfaedit-ui.c
+libgdraw:
+	( cd gdraw ; $(MAKE) )
 
 clean:
-	-rm -f *.o pfaedit *.ui nomen.h pfaedit-ui.c makenomenh _nomen-*.c sfddiff
+	( cd pfaedit ; $(MAKE) clean )
+	( cd Unicode ; $(MAKE) clean )
+	( cd gdraw ; $(MAKE) clean )
 	-rm -rf .libs
 
-distclean cleaner: clean
-	-rm -f Makefile
-	-for i in nomen-*.c; do \
-	  test -L $$i && rm $$i; \
-	done;
+distclean cleaner:
+	( cd pfaedit ; $(MAKE) distclean )
+	( cd Unicode ; $(MAKE) distclean )
+	( cd gdraw ; $(MAKE) distclean )
+	-rm -rf .libs
+	-rm Makefile config.cache config.log config.status libtool
 
-install:
-	( cd .. ; make install )
+install_libs: libs
+# You may need to be root to do the install
+	mkdir -p $(libdir)
+	#-rm $(libdir)/libgdraw.so* $(libdir)/libgunicode.so.*
+	$(LIBTOOL) $(INSTALL) -c libgdraw.la $(libdir)/libgdraw.la
+	$(LIBTOOL) $(INSTALL) -c libgunicode.la $(libdir)/libgunicode.la
+	#cp .libs/*.so.*.* $(libdir)
+	$(LIBTOOL) --finish $(libdir)
+
+install: $(sharedir) all install_libs
+# You may need to be root to do the install
+	mkdir -p $(bindir)
+	mkdir -p $(mandir)/man1
+	mkdir -p $(sharedir)
+	$(LIBTOOL) $(INSTALL) -c pfaedit/pfaedit $(bindir)
+	$(LIBTOOL) $(INSTALL) -c pfaedit/sfddiff $(bindir)
+	cp pfaedit/pfaedit-*.ui $(sharedir)
+#The next line will fail for most installs. If you have downloaded the cidmaps
+# this will install them. If you haven't it won't. You only need the cidmaps
+# if you are editing CID keyed files (and even then you can live without them
+	-cp $(srcdir)/cidmap/*.cidmap $(sharedir) >/dev/null 2>&1
+	cp $(srcdir)/pfaedit/pfaedit.1 $(mandir)/man1
+	cp $(srcdir)/pfaedit/sfddiff.1 $(mandir)/man1
+
+uninstall:
+	-rm $(bindir)/pfaedit
+	-rm $(bindir)/sfddiff
+	-rm $(sharedir)/pfaedit.*.ui
+	-rm $(mandir)/man1/pfaedit.1
+	-rm $(mandir)/man1/sfddiff.1
+	-rm $(libdir)/libgdraw.so*
+	-rm $(libdir)/libgunicode.so*
+	-rm $(sharedir)/*.cidmap
+
+$(sharedir):
+	mkdir -p $(sharedir)
