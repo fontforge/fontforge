@@ -59,6 +59,7 @@ struct cvshows CVShows = {
 static Color pointcol = 0xff0000;
 static Color firstpointcol = 0x707000;
 static Color selectedpointcol = 0xffff00;
+static int selectedpointwidth = 2;
 static Color extremepointcol = 0xc00080;
 Color nextcpcol = 0x007090;
 Color prevcpcol = 0xff00ff;
@@ -101,6 +102,7 @@ static void CVColInit( void ) {
 	{ "PointColor", rt_color, &pointcol },
 	{ "FirstPointColor", rt_color, &firstpointcol },
 	{ "SelectedPointColor", rt_color, &selectedpointcol },
+	{ "SelectedPointWidth", rt_int, &selectedpointwidth },
 	{ "ExtremePointColor", rt_color, &extremepointcol },
 	{ "NextCPColor", rt_color, &nextcpcol },
 	{ "PrevCPColor", rt_color, &prevcpcol },
@@ -500,7 +502,7 @@ return;
     r.y = y-2;
     r.width = r.height = 5;
     if ( sp->selected )
-	GDrawSetLineWidth(pixmap,2);
+	GDrawSetLineWidth(pixmap,selectedpointwidth);
     if ( sp->pointtype==pt_curve ) {
 	--r.x; --r.y; r.width +=2; r.height += 2;
 	if ( sp->selected )
