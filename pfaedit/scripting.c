@@ -2932,7 +2932,7 @@ return;
 	}
     }
     ftag = (tag[0]<<24)|(tag[1]<<16)|(tag[2]<<8)|tag[3];
-    if ( strcmp(str,"*"))
+    if ( strcmp(str,"*")==0 )
 	ftag = 0;			/* Everything */
 
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && c->curfv->selected[i]) {
