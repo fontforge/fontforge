@@ -1801,6 +1801,7 @@ static unichar_t _simple1[] = { ' ','A',' ','q','u','i','c','k',' ','b',
 static unichar_t _simple2[] = { 'F','e','w',' ','z','e','b','r','a','s',' ','v',
 	'a','l','i','d','a','t','e',' ','m','y',' ','p','a','r','a','d','o','x',
 	',',' ','q','u','o','t','h',' ','J','a','c','k',' ','X','e','n','o', 0 };
+/* Swedish */
 static unichar_t _simple3[] = { 'f','l','y','g','a','n','d','e',' ','b',(uint8)(uint8)'ä','c',
 	'k','a','s','i','n','e','r',' ','s',(uint8)(uint8)'ö','k','a',' ','h','w','i','l','a',
 	' ','p',(uint8)'å',' ','m','j','u','k','a',' ','t','u','v','o','r',  '\0' };
@@ -1810,8 +1811,86 @@ static unichar_t _simple4[] = { ' ','A',' ','q','u','i','c','k',' ','b',
 static unichar_t _simple5[] = { ' ','T','h','e',' ','q','u','i','c','k',' ','b',
 	'l','o','n','d','e',' ','d','o','x','y',' ','j','u','m','p','s',' ','o','v',
 	'e','r',' ','a','n',' ','u','n','f','a','z','e','d',' ','w','a','g','.',  '\0' };
-static unichar_t *simplechoices[] = { _simple1, _simple2, _simple3, _simple4, _simple5, NULL };
+/* German (from http://shiar.net/misc/txt/pangram.en) */
+/* Twelve boxing fighters hunted Eva across the great dike of Sylt */
+static unichar_t _simple6[] = { 'z','w',(uint8)'ö','l','f',' ','B','o','x','k',(uint8)'ä','m','p','f','e','r',
+	' ','j','a','g','t','e','n',' ','E','v','a',' ','q','u','e','r',
+	' ',(uint8)'ü','b','e','r',' ','d','e','n',' ','g','r','o',(uint8)'ß','e','n',
+	' ','S','y','l','t','e','r',' ','D','e','i','c','h', 0 }; 
+/* French (from http://shiar.net/misc/txt/pangram.en) */
+/* Carry this old wisky to the blond smoking judge */
+static unichar_t _simple7[] = { 'p','o','r','t','e','z',' ','c','e',
+	' ','v','i','e','u','x',' ','w','h','i','s','k','y',' ','a','u',
+	' ','j','u','g','e',' ','b','l','o','n','d',' ','q','u','i',
+	' ','f','u','m','e', 0 };
+static unichar_t _simple8[] = { 'L','e','s',' ','n','a',(uint8)'ï','f','s',' ',
+	(uint8)'æ','g','i','t','h','a','l','e','s',' ','h',(uint8)'â','t','i','f','s',
+	' ','p','o','n','d','a','n','t',' ',(uint8)'à',' ','N','o',(uint8)'ë','l',
+	' ','o',(uint8)'ù',' ','i','l',' ','g',(uint8)'è','l','e',' ',
+	's','o','n','t',' ','s',(uint8)'û','r','s',' ','d','\'',
+	(uint8)'ê','t','r','e',' ','d',(uint8)'é',(uint8)'ç','u','s',' ',
+	'e','t',' ','d','e',' ','v','o','i','r',' ','l','e','u','r','s',' ',
+	'd','r',(uint8)'ô','l','e','s',' ','d','\'',0x153,'u','f','s',' ',
+	'a','b',(uint8)'î','m',(uint8)'é','s','.', 0 };
+/* Dutch (from http://shiar.net/misc/txt/pangram.en) */
+/* Sexy by body, though scared by the swimsuit */
+static unichar_t _simple9[] = { ' ', 's','e','x','y',' ','q','u','a',' ',
+	'l','i','j','f',',',' ','d','o','c','h',' ','b','a','n','g',' ',
+	'v','o','o','r',' ','\'','t',' ','z','w','e','m','p','a','k', 0 };
+/* Polish (from http://shiar.net/misc/txt/pangram.en) */
+/* to push a hedgehog or eight bins of figs in this boat */
+static unichar_t _simple10[] = { ' ', 'p', 'c', 'h', 'n', 0x105, 0x107, ' ',
+	'w', ' ', 't', 0x119, ' ', 0x142, (uint8)'ó', 'd', 0x17a, ' ',
+	'j', 'e', 0x17c, 'a', ' ', 'l', 'u', 'b', ' ', 'o', 0x15b, 'm', ' ',
+	's', 'k', 'r', 'z', 'y', 0x144, ' ', 'f', 'i', 'g', ' ', 0 };
+/* Slovaka (from http://shiar.net/misc/txt/pangram.en) */
+static unichar_t _simple11[] = { ' ', 's', 't', 'a', 'r', (uint8)'ý', ' ',
+	'k', (uint8)'ô', 0x148, ' ', 'n', 'a', ' ', 'h', 0x155, 'b', 'e', ' ',
+	'k', 'n', (uint8)'í', 'h', ' ', 0x17e, 'u', 'j', 'e', ' ',
+	't', (uint8)'í', 0x161, 'k', 'o', ' ',
+	'p', 'o', 'v', (uint8)'ä', 'd', 'n', 'u', 't', (uint8)'é', ' ',
+	'r', 'u', 0x17e, 'e', ',', ' ', 'n', 'a', ' ', 's', 't', 0x13a, 'p', 'e', ' ',
+	's', 'a', ' ', 0x10f, 'a', 't', 'e', 0x13e, ' ',
+	'u', 0x10d, (uint8)'í', ' ', 'k', 'v', (uint8)'á', 'k', 'a', 0x165, ' ',
+	'n', 'o', 'v', (uint8)'ú', ' ', (uint8)'ó', 'd', 'u', ' ', 'o', ' ',
+	0x17e, 'i', 'v', 'o', 't', 'e', ' ', 0 };
+/* Czech (from http://shiar.net/misc/txt/pangram.en) */
+static unichar_t _simple12[] = {  ' ', 'p', 0x159, (uint8)'í', 'l', 'i', 0x161,
+	' ', 0x17e, 'l', 'u', 0x165, 'o', 'u', 0x10d, 'k', (uint8)'ý', ' ',
+	'k', 0x16f, 0x148, ' ', (uint8)'ú', 'p', 0x11b, 'l', ' ', 0x10f,
+	(uint8)'á', 'b', 'e', 'l', 's', 'k', (uint8)'é', ' ', 'k', (uint8)'ó',
+	'd', 'y', ' ', 0 };
+
+static unichar_t *simplechoices[] = { _simple1, _simple2, _simple3, _simple4,
+	_simple5, _simple6, _simple7, _simple8, _simple9, _simple10, _simple11,
+	_simple12, NULL };
 static unichar_t *simple[] = { _simple1, NULL };
+/* Hebrew (from http://shiar.net/misc/txt/pangram.en) */
+static unichar_t _simplehebrew1[] = { ' ', '?', 0x5d3, 0x5d2, ' ', 0x5e1,
+	0x5e7, 0x5e8, 0x5df, ' ', 0x5e9, 0x5d8, ' ', 0x5d1, 0x5d9, 0x5dd, ' ',
+	0x5de, 0x5d0, 0x5d5, 0x5db, 0x5d6, 0x5d1, ' ', 0x5d5, 0x5dc, 0x5e4,
+	0x5ea, 0x5e2, ' ', 0x5de, 0x5e6, 0x5d0, ' ', 0x5dc, 0x5d5, ' ', 0x5d7, 0x5d1, 0x5e8, 0x5d4, ' ', 0x5d0, 0x5d9, 0x5da, ' ', 0x5d4, 0x5e7, 0x5dc, 0x5d9, 0x5d8, 0x5d4, ' ', 0 };
+static unichar_t *simplehebrew[] = { _simplehebrew1, NULL };
+/* Katakana (from http://shiar.net/misc/txt/pangram.en) */
+static unichar_t _simplekata1[] = { ' ', 0x30a4, 0x30ed, 0x30cf, 0x30cb, 0x30db,
+	0x30d8, 0x30c8, ' ', 0x30c1, 0x30ea, 0x30cc, 0x30eb, 0x30f2, ' ',
+	0x30ef, 0x30ab, 0x30e8, 0x30bf, 0x30ec, 0x30bd, ' ', 0x30c4, 0x30cd,
+	0x30ca, 0x30e9, 0x30e0, '/', 
+	' ', 0x30a6, 0x30f0, 0x30ce, 0x30aa, 0x30af, 0x30e4, 0x30de, ' ',
+	0x30b1, 0x30d5, 0x30b3, 0x30a8, 0x30c6, ' ', 0x30a2, 0x30b5, 0x30ad,
+	0x30e6, 0x30e1, 0x30df, 0x30b7, ' ', 0x30f1, 0x30d2, 0x30e2, 0x30bb,
+	0x30b9, 0x30f3, ' ', '\0' };
+static unichar_t *simplekata[] = { _simplekata1, NULL };
+/* Hiragana (from http://shiar.net/misc/txt/pangram.en) */
+static unichar_t _simplehira1[] = { ' ', 0x3044, 0x308d, 0x306f, 0x306b, 0x307b,
+	0x3078, 0x3068, 0x3061, 0x308a, 0x306c, 0x308b, 0x3092, '/',
+	' ', 0x308f, 0x304b, 0x3088, 0x305f, 0x308c, 0x305d, 0x3064, 0x306d,
+	0x306a, 0x3089, 0x3080, '/',
+	' ', 0x3046, 0x3090, 0x306e, 0x304a, 0x304f, 0x3084, 0x307e, 0x3051,
+	0x3075, 0x3053, 0x3048, 0x3066, '/',
+	' ', 0x3042, 0x3055, 0x304d, 0x3086, 0x3081, 0x307f, 0x3057, 0x3091,
+	0x3072, 0x3082, 0x305b, 0x3059, ' ', 0 }; 
+static unichar_t *simplehira[] = { _simplehira1, NULL };
 /* Russian */
 static unichar_t _simplecyrill1[] = {' ', 0x421, 0x44a, 0x435, 0x448, 0x44c, ' ',
 	0x435, 0x449, 0x451, ' ', 0x44d, 0x442, 0x438, 0x445, ' ', 0x43c,
@@ -2492,7 +2571,8 @@ static unichar_t *thaijohn[] = { _thaijohn1, NULL };
 
 #if 1 /* http://www.ethnologue.com/iso639/codes.asp */
 enum scripts { sc_latin, sc_greek, sc_cyrillic, sc_georgian, sc_hebrew,
-	sc_arabic, sc_hangul, sc_chinesetrad, sc_chinesemod, sc_kanji
+	sc_arabic, sc_hangul, sc_chinesetrad, sc_chinesemod, sc_kanji,
+	sc_hiragana, sc_katakana
 };
 static struct langsamples {
     unichar_t **sample;
@@ -2501,6 +2581,9 @@ static struct langsamples {
 } sample[] = {
     { simple, "various", sc_latin },
     { simplecyrill, "various", sc_cyrillic },
+    { simplehebrew, "he", sc_hebrew },
+    { simplekata, "ja", sc_hebrew },
+    { simplehira, "ja", sc_hebrew },
     { faust, "de", sc_latin },
     { pheadra, "fr", sc_latin },
     { antigone, "el", sc_greek },
