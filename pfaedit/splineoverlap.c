@@ -689,32 +689,32 @@ static void CleanupSplines(IntersectionList *ilist,IntersectionList *ilbase) {
 	for ( sl2 = sl1->next; sl2!=NULL ; sl2 = sl2->next ) {
 	    if ( sl2->spline->from->me.x==sl1->spline->from->me.x &&
 		    sl2->spline->from->me.y==sl1->spline->from->me.y ) {
-		if ( RealApprox(sl2->spline->from->nextcp.x,sl1->spline->from->nextcp.x) &&
-			RealApprox(sl2->spline->from->nextcp.y,sl1->spline->from->nextcp.y)) {
+		if ( RealWithin(sl2->spline->from->nextcp.x,sl1->spline->from->nextcp.x,.1) &&
+			RealWithin(sl2->spline->from->nextcp.y,sl1->spline->from->nextcp.y,.1)) {
 		    sl2->spline->from->nextcp = sl1->spline->from->nextcp;
 		    if ( sl2->spline->order2 ) sl2->spline->to->prevcp = sl2->spline->from->nextcp;
 		    SplineRefigure(sl2->spline);
 		}
 	    } else if ( sl2->spline->from->me.x==sl1->spline->to->me.x &&
 		    sl2->spline->from->me.y==sl1->spline->to->me.y ) {
-		if ( RealApprox(sl2->spline->from->nextcp.x,sl1->spline->to->prevcp.x) &&
-			RealApprox(sl2->spline->from->nextcp.y,sl1->spline->to->prevcp.y)) {
+		if ( RealWithin(sl2->spline->from->nextcp.x,sl1->spline->to->prevcp.x,.1) &&
+			RealWithin(sl2->spline->from->nextcp.y,sl1->spline->to->prevcp.y,.1)) {
 		    sl2->spline->from->nextcp = sl1->spline->to->prevcp;
 		    if ( sl2->spline->order2 ) sl2->spline->to->prevcp = sl2->spline->from->nextcp;
 		    SplineRefigure(sl2->spline);
 		}
 	    } else if ( sl2->spline->to->me.x==sl1->spline->from->me.x &&
 		    sl2->spline->to->me.y==sl1->spline->from->me.y ) {
-		if ( RealApprox(sl2->spline->to->prevcp.x,sl1->spline->from->nextcp.x) &&
-			RealApprox(sl2->spline->to->prevcp.y,sl1->spline->from->nextcp.y)) {
+		if ( RealWithin(sl2->spline->to->prevcp.x,sl1->spline->from->nextcp.x,.1) &&
+			RealWithin(sl2->spline->to->prevcp.y,sl1->spline->from->nextcp.y,.1)) {
 		    sl2->spline->to->prevcp = sl1->spline->from->nextcp;
 		    if ( sl2->spline->order2 ) sl2->spline->from->nextcp = sl2->spline->to->prevcp;
 		    SplineRefigure(sl2->spline);
 		}
 	    } else if ( sl2->spline->to->me.x==sl1->spline->to->me.x &&
 		    sl2->spline->to->me.y==sl1->spline->to->me.y ) {
-		if ( RealApprox(sl2->spline->to->prevcp.x,sl1->spline->to->prevcp.x) &&
-			RealApprox(sl2->spline->to->prevcp.y,sl1->spline->to->prevcp.y)) {
+		if ( RealWithin(sl2->spline->to->prevcp.x,sl1->spline->to->prevcp.x,.1) &&
+			RealWithin(sl2->spline->to->prevcp.y,sl1->spline->to->prevcp.y,.1)) {
 		    sl2->spline->to->prevcp = sl1->spline->to->prevcp;
 		    if ( sl2->spline->order2 ) sl2->spline->from->nextcp = sl2->spline->to->prevcp;
 		    SplineRefigure(sl2->spline);
