@@ -1985,8 +1985,8 @@ static void readcffprivate(FILE *ttf, struct topdicts *td) {
 	    if ( ret!=0 && sp<45 )
 		++sp;
 	}
-	if ( sp==0 )
-	    fprintf( stderr, "No argument to operator\n" );
+	if ( sp==0 && oval!=6 && oval!=7 && oval!=8 && oval!=9 && oval !=(12<<8)+12 && oval !=(12<<8)+13)
+	    fprintf( stderr, "No argument to operator %d in private dict\n", oval );
 	else if ( ret==3 ) switch( oval ) {
 	  case 6:
 	    for ( i=0; i<sp && i<14; ++i ) {

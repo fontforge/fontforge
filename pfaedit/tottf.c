@@ -3930,7 +3930,7 @@ static void dumpcffdictindex(SplineFont *sf,struct alltabs *at) {
     int pos;
 
     putshort(at->fdarray,sf->subfontcnt);
-    putc('\2',at->fdarray);		/* DICTs aren't very big, and there are at most 255 */\
+    putc('\2',at->fdarray);		/* DICTs aren't very big, and there are at most 255 */
     putshort(at->fdarray,1);		/* Offset to first dict */
     for ( i=0; i<sf->subfontcnt; ++i )
 	putshort(at->fdarray,0);	/* Dump offset placeholders (note there's one extra to mark the end) */
@@ -4328,7 +4328,7 @@ static int dumpcidglyphs(SplineFont *sf,struct alltabs *at) {
     for ( i=0; i<sf->subfontcnt; ++i ) {
 	at->fds[i].private = tmpfile();
 	dumpcffprivate(sf->subfonts[i],at,i);
-	if ( (at->fds[i].subrs = SplineFont2Subrs2(sf->subfonts[i]))!=NULL )
+	if ( (at->fds[i].subrs = SplineFont2Subrs2(sf->subfonts[i]))==NULL )
 return( false );
 	_dumpcffstrings(at->fds[i].private,at->fds[i].subrs);
     }
@@ -7154,8 +7154,13 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
     }
     if ( initTables(&at,sf,format,bsizes,bf,flags))
 	dumpttf(ttf,&at,format);
+    else
+	at.error = true;
     setlocale(LC_NUMERIC,oldloc);
-    if ( ferror(ttf))
+    if ( at.error ) {
+	GDrawIError("Failed to save in TTF/OTF format");
+    }
+    if ( at.error || ferror(ttf))
 return( 0 );
 
 return( 1 );
