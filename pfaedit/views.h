@@ -249,7 +249,6 @@ typedef struct fontview {
     GTimer *pressed;
     char *selected;
     MetricsView *metrics;
-    unsigned int onlycopydisplayed: 1;
     unsigned int antialias:1;
     unsigned int wasonlybitmaps:1;
     unsigned int refstate: 3;	/* 0x1 => paste orig of all non exist refs, 0x2=>don't, 0x3 => don't warn about non-exist refs with no source font */

@@ -371,13 +371,17 @@ void UndoesFree(Undoes *undo) {
 	  case ut_width:
 	    /* Nothing else to free */;
 	  break;
-	  case ut_state: case ut_tstate: case ut_statehint:
+	  case ut_state: case ut_tstate: case ut_statehint: case ut_statename:
 	    SplinePointListsFree(undo->u.state.splines);
 	    RefCharsFree(undo->u.state.refs);
-	    if ( undo->undotype==ut_statehint )
+	    if ( undo->undotype==ut_statehint || undo->undotype==ut_statename )
 		UHintListFree(undo->u.state.u.hints);
 	    else
 		ImageListsFree(undo->u.state.u.images);
+	    if ( undo->undotype==ut_statename ) {
+		free( undo->u.state.charname );
+		free( undo->u.state.lig );
+	    }
 	  break;
 	  case ut_bitmap:
 	    free(undo->u.bmpstate.bitmap);
@@ -829,6 +833,7 @@ void CopySelected(CharView *cv) {
 static Undoes *SCCopyAll(SplineChar *sc,int full) {
     Undoes *cur;
     RefChar *ref;
+    extern int copymetadata;
 
     cur = chunkalloc(sizeof(Undoes));
     if ( sc==NULL ) {
@@ -837,10 +842,13 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
 	cur->u.state.width = sc->width;
 	cur->u.state.vwidth = sc->vwidth;
 	if ( full ) {
-	    cur->undotype = ut_statehint;
+	    cur->undotype = copymetadata ? ut_statename : ut_statehint;
 	    cur->u.state.splines = SplinePointListCopy(sc->splines);
 	    cur->u.state.refs = RefCharsCopyState(sc);
 	    cur->u.state.u.hints = UHintCopy(sc,true);
+	    cur->u.state.unicodeenc = sc->unicodeenc;
+	    cur->u.state.charname = copymetadata ? copy(sc->name) : NULL;
+	    cur->u.state.lig = copymetadata && sc->lig? copy(sc->lig->components) : NULL;
 	} else {		/* Or just make a reference */
 	    cur->undotype = ut_state;
 	    cur->u.state.refs = ref = chunkalloc(sizeof(RefChar));
@@ -963,7 +971,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv) {
     switch ( paster->undotype ) {
       case ut_noop:
       break;
-      case ut_state: case ut_statehint:
+      case ut_state: case ut_statehint: case ut_statename:
 	sc->parent->onlybitmaps = false;
 	SCPreserveState(sc,paster->undotype==ut_statehint);
 	SCSynchronizeWidth(sc,paster->u.state.width,sc->width,fv);
@@ -974,8 +982,12 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv) {
 	    sc->splines = SplinePointListCopy(paster->u.state.splines);
 	/* Ignore any images, can't be in foreground level */
 	/* but might be hints */
-	if ( paster->undotype==ut_statehint )
+	if ( paster->undotype==ut_statehint || paster->undotype==ut_statename )
 	    ExtractHints(sc,paster->u.state.u.hints,true);
+	if ( paster->undotype==ut_statename )
+	    SCSetMetaData(sc,paster->u.state.charname,
+		    paster->u.state.unicodeenc==0xffff?-1:paster->u.state.unicodeenc,
+		    paster->u.state.lig);
 	SCRemoveDependents(sc);
 	if ( paster->u.state.refs!=NULL ) {
 	    RefChar *new, *refs;
@@ -1228,11 +1240,12 @@ void FVCopy(FontView *fv, int fullcopy) {
     Undoes *head=NULL, *last=NULL, *cur;
     Undoes *bhead=NULL, *blast=NULL, *bcur;
     Undoes *state;
+    extern int onlycopydisplayed;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
-	if ( fv->onlycopydisplayed && fv->filled==fv->show ) {
+	if ( onlycopydisplayed && fv->filled==fv->show ) {
 	    cur = SCCopyAll(fv->sf->chars[i],fullcopy);
-	} else if ( fv->onlycopydisplayed ) {
+	} else if ( onlycopydisplayed ) {
 	    cur = BCCopyAll(fv->show->chars[i],fv->show->pixelsize);
 	} else {
 	    state = SCCopyAll(fv->sf->chars[i],fullcopy);
@@ -1304,6 +1317,7 @@ void PasteIntoFV(FontView *fv) {
     int i, cnt=0;
     int yestoall=0, first=true;
     char *oldsel = fv->selected;
+    extern int onlycopydisplayed;
 
     fv->refstate = 0;
 
@@ -1333,7 +1347,7 @@ void PasteIntoFV(FontView *fv) {
     /*  references. Say we are pasting into both "i" and dotlessi (and */
     /*  dotlessi isn't defined yet) without this the paste to "i" will */
     /*  search for dotlessi, not find it and ignore the reference */
-    if ( cur->undotype==ut_state ||
+    if ( cur->undotype==ut_state || cur->undotype==ut_statehint || cur->undotype==ut_statename ||
 	    (cur->undotype==ut_composit && cur->u.composit.state!=NULL)) {
 	for ( i=0; i<fv->sf->charcnt; ++i )
 	    if ( fv->selected[i] && fv->sf->chars[i]==NULL )
@@ -1351,10 +1365,11 @@ void PasteIntoFV(FontView *fv) {
 	  case ut_noop:
 	  break;
 	  case ut_state: case ut_width: case ut_vwidth:
+	  case ut_statehint: case ut_statename:
 	    PasteToSC(SFMakeChar(fv->sf,i),cur,fv);
 	  break;
 	  case ut_bitmapsel: case ut_bitmap:
-	    if ( fv->onlycopydisplayed && fv->show!=fv->filled )
+	    if ( onlycopydisplayed && fv->show!=fv->filled )
 		_PasteToBC(BDFMakeChar(fv->show,i),fv->show->pixelsize,cur,true,fv);
 	    else {
 		for ( bdf=fv->sf->bitmaps; bdf!=NULL && bdf->pixelsize!=cur->u.bmpstate.pixelsize; bdf=bdf->next );

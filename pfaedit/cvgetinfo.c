@@ -150,7 +150,7 @@ static int LigCheck(SplineFont *sf,SplineChar *sc,char *components) {
     if ( components==NULL || *components=='\0' )
 return( true );
 
-    buts[2]=NULL;
+    buts[2] = NULL;
     buts[0] = GStringGetResource( _STR_OK, &ocmn[0]);
     buts[1] = GStringGetResource( _STR_Cancel, &ocmn[1]);
 
@@ -212,60 +212,67 @@ static void LigSet(SplineChar *sc,char *lig) {
     }
 }
 
-static int _CI_OK(GIData *ci) {
-    const unichar_t *ret;
-    int val, i, mv=0;
-    SplineFont *sf = ci->sc->parent;
+int SCSetMetaData(SplineChar *sc,char *name,int unienc,char *lig) {
+    SplineFont *sf = sc->parent;
+    int i, mv=0;
     int isnotdef;
-    char *lig;
+
+    if ( !LigCheck(sf,sc,lig))
+return( false );
+
+    if ( sc->unicodeenc == unienc && strcmp(name,sc->name)==0 ) {
+	/* No change, it must be good */
+    } else {
+	isnotdef = strcmp(name,".notdef")==0;
+	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]!=sc ) {
+	    if ( unienc!=-1 && sf->chars[i]->unicodeenc==unienc ) {
+		if ( !mv && !MultipleValues(sf->chars[i]->name,i)) {
+		    free(lig);
+return( false );
+		}
+		mv = 1;
+	    } else if ( !isnotdef && strcmp(name,sf->chars[i]->name)==0 ) {
+		if ( !MultipleNames()) {
+		    free(lig);
+return( false );
+		}
+		free(sf->chars[i]->name);
+		sf->chars[i]->name = sc->name;
+		sc->name = NULL;
+	    break;
+	    }
+	}
+    }
+    sc->unicodeenc = unienc;
+    free(sc->name);
+    sc->name = copy(name);
+    sf->changed = true;
+    if ( sf->encoding_name==em_unicode && unienc==sc->enc &&
+	    unienc>=0xe000 && unienc<=0xf8ff )
+	/* Ok to name things in the private use area */;
+    else if ( (sf->encoding_name<e_first2byte && sc->enc<256) ||
+	    (sf->encoding_name==em_unicode && sc->enc<65536 ) ||
+	    (sf->encoding_name>=e_first2byte && sf->encoding_name!=em_unicode && sc->enc<94*96 ) ||
+	    sc->unicodeenc!=-1 )
+	sf->encoding_name = em_none;
+    LigSet(sc,lig);
+return( true );
+}
+
+static int _CI_OK(GIData *ci) {
+    int val;
+    int ret;
+    char *lig, *name;
 
     val = ParseUValue(ci->gw,CID_UValue,true);
     if ( val==-2 )
 return( false );
     lig = cu_copy( _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_Ligature)) );
-    if ( !LigCheck(sf,ci->sc,lig)) {
-	free(lig);
-return( false );
-    }
-    ret = _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_UName));
-    if ( ci->sc->unicodeenc == val && uc_strcmp(ret,ci->sc->name)==0 ) {
-	/* No change, it must be good */
-	LigSet(ci->sc,lig);
-return( true );
-    }
-    isnotdef = uc_strcmp(ret,".notdef")==0;
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]!=ci->sc ) {
-	if ( val!=-1 && sf->chars[i]->unicodeenc==val ) {
-	    if ( !mv && !MultipleValues(sf->chars[i]->name,i)) {
-		free(lig);
-return( false );
-	    }
-	    mv = 1;
-	} else if ( !isnotdef && uc_strcmp(ret,sf->chars[i]->name)==0 ) {
-	    if ( !MultipleNames()) {
-		free(lig);
-return( false );
-	    }
-	    free(sf->chars[i]->name);
-	    sf->chars[i]->name = ci->sc->name;
-	    ci->sc->name = NULL;
-	break;
-	}
-    }
-    ci->sc->unicodeenc = val;
-    free(ci->sc->name);
-    ci->sc->name = cu_copy(ret);
-    sf->changed = true;
-    if ( sf->encoding_name==em_unicode && val==ci->sc->enc &&
-	    val>=0xe000 && val<=0xf8ff )
-	/* Ok to name things in the private use area */;
-    else if ( (sf->encoding_name<e_first2byte && ci->sc->enc<256) ||
-	    (sf->encoding_name==em_unicode && ci->sc->enc<65536 ) ||
-	    (sf->encoding_name>=e_first2byte && sf->encoding_name!=em_unicode && ci->sc->enc<94*96 ) ||
-	    ci->sc->unicodeenc!=-1 )
-	sf->encoding_name = em_none;
-    LigSet(ci->sc,lig);
-return( true );
+    name = cu_copy( _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_UName)) );
+    ret = SCSetMetaData(ci->sc,name,val,lig);
+    free(name);
+    free(lig);
+return( ret );
 }
 
 static int CI_OK(GGadget *g, GEvent *e) {

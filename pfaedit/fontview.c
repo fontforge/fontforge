@@ -35,6 +35,9 @@
 #include <gresource.h>
 #include "nomen.h"
 
+int onlycopydisplayed = 0;
+int copymetadata = 0;
+
 #define XOR_COLOR	0x505050
 #define	FV_LAB_HEIGHT	15
 
@@ -709,8 +712,9 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_Undo	2109
 #define MID_Redo	2110
 #define MID_CopyWidth	2111
-#define MID_AllFonts	2112
-#define MID_DisplayedFont	2113
+#define MID_AllFonts		2122
+#define MID_DisplayedFont	2123
+#define	MID_CharName		2124
 #define MID_RemoveUndoes	2114
 #define MID_CopyFgToBg	2115
 #define MID_Convert2CID	2800
@@ -738,9 +742,13 @@ return( val );
 }
 
 static void FVMenuCopyFrom(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    /*FontView *fv = (FontView *) GDrawGetUserData(gw);*/
 
-    fv->onlycopydisplayed = (mi->mid==MID_DisplayedFont);
+    if ( mi->mid==MID_CharName )
+	copymetadata = !copymetadata;
+    else
+	onlycopydisplayed = (mi->mid==MID_DisplayedFont);
+    SavePrefs();
 }
 
 static void FVMenuCopy(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -865,7 +873,7 @@ static void FVMenuClear(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     /* refstate==0 => ask, refstate==1 => clearall, refstate==-1 => skip all */
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
-	if ( !fv->onlycopydisplayed || fv->filled==fv->show ) {
+	if ( !onlycopydisplayed || fv->filled==fv->show ) {
 	    /* If we are messing with the outline character, check for dependencies */
 	    if ( refstate<=0 && fv->sf->chars[i]!=NULL &&
 		    fv->sf->chars[i]->dependents!=NULL ) {
@@ -889,9 +897,9 @@ static void FVMenuClear(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    }
 	}
 
-	if ( fv->onlycopydisplayed && fv->filled==fv->show ) {
+	if ( onlycopydisplayed && fv->filled==fv->show ) {
 	    SCClearAll(fv->sf->chars[i],fv);
-	} else if ( fv->onlycopydisplayed ) {
+	} else if ( onlycopydisplayed ) {
 	    BCClearAll(fv->show->chars[i],fv);
 	} else {
 	    SCClearAll(fv->sf->chars[i],fv);
@@ -966,10 +974,13 @@ static void cflistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_AllFonts:
-	    mi->ti.checked = !fv->onlycopydisplayed;
+	    mi->ti.checked = !onlycopydisplayed;
 	  break;
 	  case MID_DisplayedFont:
-	    mi->ti.checked = fv->onlycopydisplayed;
+	    mi->ti.checked = onlycopydisplayed;
+	  break;
+	  case MID_CharName:
+	    mi->ti.checked = copymetadata;
 	  break;
 	}
     }
@@ -1105,7 +1116,7 @@ static void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
 
-	if ( fv->onlycopydisplayed && fv->show!=fv->filled ) {
+	if ( onlycopydisplayed && fv->show!=fv->filled ) {
 	    if ( fv->show->chars[i]!=NULL )
 		BCTrans(bdf,fv->show->chars[i],bvts,fv);
 	} else {
@@ -1119,7 +1130,7 @@ static void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
 		    (transform[1]*base.x+transform[3]*base.y);
 	    }
 	    FVTrans(fv,sc,transform,fv->selected,dobackground);
-	    if ( !fv->onlycopydisplayed ) {
+	    if ( !onlycopydisplayed ) {
 		for ( bdf = fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next ) if ( bdf->chars[i]!=NULL )
 		    BCTrans(bdf,bdf->chars[i],bvts,fv);
 	    }
@@ -1277,7 +1288,7 @@ static void FVMenuBuildAccent(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		(SFIsCompositBuildable(fv->sf,sc->unicodeenc) &&
 		 (!onlyaccents || hascomposing(fv->sf,sc->unicodeenc)))) {
 	    sc = SFMakeChar(fv->sf,i);
-	    SCBuildComposit(fv->sf,sc,!fv->onlycopydisplayed,fv);
+	    SCBuildComposit(fv->sf,sc,!onlycopydisplayed,fv);
 	}
 	if ( !GProgressNext())
     break;
@@ -2068,6 +2079,8 @@ static GMenuItem fllist[] = {
 static GMenuItem cflist[] = {
     { { (unichar_t *) _STR_Allfonts, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'A' }, '\0', ksm_control, NULL, NULL, FVMenuCopyFrom, MID_AllFonts },
     { { (unichar_t *) _STR_Displayedfont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'D' }, '\0', ksm_control, NULL, NULL, FVMenuCopyFrom, MID_DisplayedFont },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_CharName, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'N' }, '\0', ksm_control, NULL, NULL, FVMenuCopyFrom, MID_CharName },
     { NULL }
 };
 

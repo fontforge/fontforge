@@ -108,17 +108,20 @@ typedef struct bdffloat {
 
 typedef struct undoes {
     struct undoes *next;
-    enum undotype { ut_none=0, ut_state, ut_tstate, ut_statehint, ut_width, ut_vwidth,
+    enum undotype { ut_none=0, ut_state, ut_tstate, ut_statehint, ut_statename, ut_width, ut_vwidth,
 	    ut_bitmap, ut_bitmapsel, ut_composit, ut_multiple, ut_noop } undotype;
     union {
 	struct {
 	    int16 width, vwidth;
 	    int16 lbearingchange;
+	    uint16 unicodeenc;			/* only for ut_statename */
+	    char *charname;			/* only for ut_statename */
+	    char *lig;				/* only for ut_statename */
 	    struct splinepointlist *splines;
 	    struct refchar *refs;
 	    union {
 		struct imagelist *images;
-		void *hints;
+		void *hints;			/* ut_statehint, ut_statename */
 	    } u;
 	    struct splinefont *copied_from;
 	} state;
@@ -317,7 +320,11 @@ typedef struct steminfo {
 typedef struct dsteminfo {
     struct dsteminfo *next;	/* First two fields match those in steminfo */
     unsigned int hinttype: 2;	/* Only used by undoes */
-    BasePoint leftedgetop, rightedgetop, leftedgebottom, rightedgebottom;
+    unsigned int temporary: 1;	/* used only be tottf.c:gendinstrs to mark a hint that should be freed at end */
+    unsigned int used: 1;	/* used only be tottf.c:gendinstrs to mark a hint that has been dealt with */
+    unsigned int onlyleft: 1;	/* used only be tottf.c:gendinstrs to mark a hint where we only found half the stem */
+    unsigned int onlyright: 1;	/* used only be tottf.c:gendinstrs to mark a hint where we only found half the stem */
+    BasePoint leftedgetop, leftedgebottom, rightedgetop, rightedgebottom;	/* this order is important in tottf.c: DStemInteresect */
 } DStemInfo;
 
 typedef struct imagelist {
@@ -652,6 +659,7 @@ extern int PfmSplineFont(FILE *pfm, SplineFont *sf,int type0);
 extern char *EncodingName(int map);
 extern void SFLigaturePrepare(SplineFont *sf);
 extern void SFLigatureCleanup(SplineFont *sf);
+extern int SCSetMetaData(SplineChar *sc,char *name,int unienc,char *lig);
 
 extern int SFDWrite(char *filename,SplineFont *sf);
 extern int SFDWriteBak(SplineFont *sf);

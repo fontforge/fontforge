@@ -48,6 +48,7 @@ char *RecentFiles[RECENT_MAX] = { NULL };
 /* int default_fv_antialias = false */	/* in fontview */
 /* int local_encoding; */		/* in gresource.c *//* not a charset */
 int greekfixup = true;
+extern int onlycopydisplayed, copymetadata;
 
 static GTextInfo localencodingtypes[] = {
     { (unichar_t *) _STR_Isolatin1, NULL, 0, 0, (void *) e_iso8859_1, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -112,6 +113,8 @@ static struct prefs_list {
 	{ "AccentOffsetPercent", pr_int, &accent_offset, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupAO },
 	{ "AutotraceArgs", pr_string, NULL, GetAutoTraceArgs, SetAutoTraceArgs, '\0', NULL, 1 },
 	{ "GreekFixup", pr_bool, &greekfixup, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupGF },
+	{ "OnlyCopyDisplayed", pr_bool, &onlycopydisplayed, NULL, NULL, '\0', NULL, 1 },
+	{ "CopyMetaData", pr_bool, &copymetadata, NULL, NULL, '\0', NULL, 1 },
 	{ NULL }
 },
  oldnames[] = {

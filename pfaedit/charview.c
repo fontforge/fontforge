@@ -2511,6 +2511,7 @@ static void CVMenuShowHideRulers(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	cv->height += cv->rulerh;
 	cv->width += cv->rulerh;
     }
+    cv->back_img_out_of_date = true;
     pos.width = cv->width; pos.height = cv->height;
     GDrawMoveResize(cv->v,pos.x,pos.y,pos.width,pos.height);
     GDrawSync(NULL);
@@ -3268,12 +3269,14 @@ static void CVMenuAutotrace(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVMenuBuildAccent(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     int onlyaccents = e==NULL || !(e->u.mouse.state&ksm_shift);
+    extern int onlycopydisplayed;
+
     if ( SFIsRotatable(cv->fv->sf,cv->sc))
 	/* It's ok */;
     else if ( !SFIsCompositBuildable(cv->fv->sf,cv->sc->unicodeenc) ||
 	    (onlyaccents && !hascomposing(cv->fv->sf,cv->sc->unicodeenc)))
 return;
-    SCBuildComposit(cv->fv->sf,cv->sc,!cv->fv->onlycopydisplayed,cv->fv);
+    SCBuildComposit(cv->fv->sf,cv->sc,!onlycopydisplayed,cv->fv);
 }
 
 static void CVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -3748,6 +3751,9 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    for ( pos = cv->sc->enc-1; pos>=0 && sf->chars[pos]==NULL; --pos );
 	    mi->ti.disabled = pos==-1;
 	  break;
+	  case MID_Fill:
+	    mi->ti.checked = cv->showfilled;
+	  break;
 #if HANYANG
 	  case MID_DisplayCompositions:
 	    mi->ti.disabled = !cv->sc->compositionunit || cv->sc->parent->rules==NULL;
@@ -3969,7 +3975,7 @@ static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_Hidepoints, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, 'D', ksm_control, NULL, NULL, CVMenuShowHide, MID_HidePoints },
     { { (unichar_t *) _STR_Nextpoint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'e' }, '}', ksm_shift|ksm_control, NULL, NULL, CVMenuNextPrevPt, MID_NextPt },
     { { (unichar_t *) _STR_Prevpoint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'v' }, '{', ksm_shift|ksm_control, NULL, NULL, CVMenuNextPrevPt, MID_PrevPt },
-    { { (unichar_t *) _STR_Fill, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, '\0', 0, NULL, NULL, CVMenuFill, MID_Fill },
+    { { (unichar_t *) _STR_Fill, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'l' }, '\0', 0, NULL, NULL, CVMenuFill, MID_Fill },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
     { { (unichar_t *) _STR_Palettes, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', 0, pllist, pllistcheck },
     { { (unichar_t *) _STR_Hiderulers, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, '\0', ksm_control, NULL, NULL, CVMenuShowHideRulers, MID_HideRulers },
