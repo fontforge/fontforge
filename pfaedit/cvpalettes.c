@@ -674,7 +674,7 @@ return( true );
       case et_close:
 	GDrawSetVisible(gw,false);
       break;
-      case et_char:
+      case et_char: case et_charup:
 	PostCharToWindow(cv->gw,event);
       break;
       case et_controlevent:
@@ -1040,7 +1040,7 @@ return( true );
       case et_close:
 	GDrawSetVisible(gw,false);
       break;
-      case et_char:
+      case et_char: case et_charup:
 	PostCharToWindow(bv->gw,event);
       break;
       case et_controlevent:
