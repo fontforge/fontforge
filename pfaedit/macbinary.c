@@ -742,12 +742,12 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,int32 *sizes
 	kernloc = ftell(res);
 	putshort(res,1-1);		/* One style in the width table too */
 	putshort(res,0);		/* plain style, No matter what it really is, pretend it's plain */
-	putshort(res,cnt);		/* Count of kerning pairs */
+	putshort(res,cnt-1);		/* Count of kerning pairs */
 	for ( k=0; k<256 && k<sf->charcnt; ++k ) if ( sf->chars[k]!=NULL ) {
 	    for ( kp=sf->chars[k]->kerns; kp!=NULL; kp=kp->next )
 		if ( kp->sc->enc<256 ) {
-		    putshort(res,k);
-		    putshort(res,kp->sc->enc);
+		    putc(k,res);
+		    putc(kp->sc->enc,res);
 		    putshort(res,kp->off*(1<<12)/(sf->ascent+sf->descent));
 		}
 	}
@@ -935,12 +935,12 @@ static uint32 SFsToFOND(FILE *res,struct sflist *sfs,uint32 id,int format,int bf
 	putshort(res,kcnt-1);		/* Number of styles with kern pairs */
 	for ( i=0; i<96; ++i ) if ( faces[i]!=NULL &&( cnt = SFMacAnyKerns(sf))>0 ) {
 	    putshort(res,i);		/* plain style, No matter what it really is, pretend it's plain */
-	    putshort(res,cnt);		/* Count of kerning pairs */
+	    putshort(res,cnt-1);	/* Count of kerning pairs */
 	    for ( k=0; k<256 && k<faces[i]->sf->charcnt; ++k ) if ( faces[i]->sf->chars[k]!=NULL ) {
 		for ( kp=faces[i]->sf->chars[k]->kerns; kp!=NULL; kp=kp->next )
 		    if ( kp->sc->enc<256 ) {
-			putshort(res,k);
-			putshort(res,kp->sc->enc);
+			putc(k,res);
+			putc(kp->sc->enc,res);
 			putshort(res,kp->off*(1<<12)/(sf->ascent+sf->descent));
 		    }
 	    }
@@ -1958,7 +1958,7 @@ static void FondListFree(FOND *list) {
 /*  to get the style flags */
 /* http://developer.apple.com/techpubs/mac/Text/Text-269.html */
 static FOND *BuildFondList(FILE *f,long rlistpos,int subcnt,long rdata_pos,
-	long name_list) {
+	long name_list,int flags) {
     long here, start = ftell(f);
     long offset;
     int rname = -1;
@@ -2027,10 +2027,7 @@ static FOND *BuildFondList(FILE *f,long rlistpos,int subcnt,long rdata_pos,
 		    cur->stylewidths[j].widthtab[k] = getushort(f);
 	    }
 	}
-#if 0
-	if ( kernoff!=0 && doafm ) {
-	    /* The only point of generating an afm file is to make the kerning*/
-	    /*  info available to pfaedit. So we only do this if there is kern*/
+	if ( kernoff!=0 && (flags&ttf_onlykerns) ) {
 	    fseek(f,kernoff,SEEK_SET);
 	    cnt = getushort(f)+1;
 	    cur->stylekerncnt = cnt;
@@ -2045,9 +2042,7 @@ static FOND *BuildFondList(FILE *f,long rlistpos,int subcnt,long rdata_pos,
 		    cur->stylekerns[j].kerns[k].offset = getushort(f);
 		}
 	    }
-	    MakeAfmFiles(cur,f,styleoff,isfixed);
 	}
-#endif
 	fseek(f,here,SEEK_SET);
     }
     fseek(f,start,SEEK_SET);
@@ -2168,27 +2163,19 @@ static unichar_t *BuildName(char *family,int style) {
 return( uc_copy(buffer));
 }
 
-static SplineFont *SearchBitmapResources(FILE *f,long rlistpos,int subcnt,long rdata_pos,
-	long name_list,char *filename,FOND *fondlist,int flags) {
-    long here, start = ftell(f);
-    long roff;
-    int rname = -1;
-    int ch1, ch2;
+static FOND *PickFOND(FOND *fondlist,char *filename,char **name, int *style) {
     int i,j;
-    int res_id;
     FOND *test;
     uint8 stylesused[96];
-    unichar_t **names; char *name;
+    unichar_t **names;
     FOND **fonds, *fond;
-    int *styles, style;
+    int *styles;
     int cnt, which;
-    SplineFont *sf;
     char *pt;
-    int find_id;
 
     /* The file may contain multiple families, and each family may contain */
-    /*  multiple styles (and each style may contain multiple sizes, but we */
-    /*  can handle multiple sizes) */
+    /*  multiple styles (and each style may contain multiple sizes, but that's */
+    /*  not an issue for us) */
     names = NULL;
     for ( i=0; i<2; ++i ) {
 	cnt = 0;
@@ -2234,13 +2221,34 @@ static SplineFont *SearchBitmapResources(FILE *f,long rlistpos,int subcnt,long r
 
     if ( which!=-1 ) {
 	fond = fonds[which];
-	name = cu_copy(names[which]);
-	style = styles[which];
+	*name = cu_copy(names[which]);
+	*style = styles[which];
     }
-    for ( i=0; i<subcnt; ++i )
+    for ( i=0; i<cnt; ++i )
 	free(names[i]);
     free(names); free(fonds); free(styles);
     if ( which==-1 )
+return( NULL );
+
+return( fond );
+}
+
+static SplineFont *SearchBitmapResources(FILE *f,long rlistpos,int subcnt,long rdata_pos,
+	long name_list,char *filename,FOND *fondlist,int flags) {
+    long here, start = ftell(f);
+    long roff;
+    int rname = -1;
+    int ch1, ch2;
+    int i,j;
+    int res_id;
+    char *name;
+    FOND *fond;
+    int style;
+    SplineFont *sf;
+    int find_id;
+
+    fond = PickFOND(fondlist,filename,&name,&style);
+    if ( fond==NULL )
 return( NULL );
 
     find_id=-1;
@@ -2297,6 +2305,47 @@ return( NULL );
 return( sf );
 }
 
+/* Look for kerning info and merge it into the currently existing font "into" */
+static SplineFont *FindFamilyStyleKerns(SplineFont *into,FOND *fondlist,char *filename) {
+    char *name;
+    int style;
+    FOND *fond;
+    int i,j;
+    int ch1, ch2, offset;
+    KernPair *kp;
+    SplineChar *sc1, *sc2;
+
+    fond = PickFOND(fondlist,filename,&name,&style);
+    if ( fond==NULL || into==NULL )
+return( NULL );
+    for ( i=0; i<fond->stylekerncnt; ++i )
+	if ( fond->stylekerns[i].style==style )
+    break;
+    if ( i==fond->stylekerncnt ) {
+	fprintf(stderr,"No kerning table for %s\n", name );
+	free(name);
+return( NULL );
+    }
+    for ( j=0; j<fond->stylekerns[i].kernpairs; ++j ) {
+	ch1 = fond->stylekerns[i].kerns[j].ch1;
+	ch2 = fond->stylekerns[i].kerns[j].ch2;
+	offset = (fond->stylekerns[i].kerns[j].offset*(into->ascent+into->descent)+(1<<11))>>12;
+	sc1 = SFMakeChar(into,ch1);
+	sc2 = SFMakeChar(into,ch2);
+	for ( kp=sc1->kerns; kp!=NULL; kp=kp->next )
+	    if ( kp->sc==sc2 )
+	break;
+	if ( kp==NULL ) {
+	    kp = galloc(sizeof(KernPair));
+	    kp->sc = sc2;
+	    kp->next = sc1->kerns;
+	    sc1->kerns = kp;
+	}
+	kp->off = offset;
+    }
+return( into );
+}
+
 /* Look for a bare truetype font in a binhex/macbinary wrapper */
 static SplineFont *MightBeTrueType(FILE *binary,int32 pos,int32 dlen,int flags) {
     FILE *temp = tmpfile();
@@ -2320,7 +2369,8 @@ static SplineFont *MightBeTrueType(FILE *binary,int32 pos,int32 dlen,int flags) 
 return( sf );
 }
 
-static SplineFont *IsResourceFork(FILE *f, long offset,char *filename,int flags) {
+static SplineFont *IsResourceFork(FILE *f, long offset,char *filename,int flags,
+	SplineFont *into) {
     /* If it is a good resource fork then the first 16 bytes are repeated */
     /*  at the location specified in bytes 4-7 */
     /* We include an offset because if we are looking at a mac binary file */
@@ -2373,9 +2423,9 @@ return( NULL );
 	subcnt = getushort(f)+1;
 	rpos = type_list+getushort(f);
 	sf = NULL;
-	if ( tag==CHR('P','O','S','T') && !(flags&ttf_onlystrikes))		/* No FOND */
+	if ( tag==CHR('P','O','S','T') && !(flags&(ttf_onlystrikes|ttf_onlykerns)))		/* No FOND */
 	    sf = SearchPostscriptResources(f,rpos,subcnt,rdata_pos,name_list);
-	else if ( tag==CHR('s','f','n','t'))
+	else if ( tag==CHR('s','f','n','t') && !(flags&ttf_onlykerns))
 	    sf = SearchTtfResources(f,rpos,subcnt,rdata_pos,name_list,filename,flags);
 	else if ( tag==CHR('N','F','N','T') ) {
 	    nfnt_pos = rpos;
@@ -2390,6 +2440,13 @@ return( NULL );
 	if ( sf!=NULL )
 return( sf );
     }
+    if ( flags&ttf_onlykerns ) {		/* For kerns */
+	if ( fond_subcnt!=0 )
+	    fondlist = BuildFondList(f,fond_pos,fond_subcnt,rdata_pos,name_list,flags);
+	into = FindFamilyStyleKerns(into,fondlist,filename);
+	FondListFree(fondlist);
+return( into );
+    }
     /* Ok. If no outline font, try for a bitmap */
     if ( nfnt_subcnt==0 ) {
 	nfnt_pos = font_pos;
@@ -2397,7 +2454,7 @@ return( sf );
     }
     if ( nfnt_subcnt!=0 ) {
 	if ( fond_subcnt!=0 )
-	    fondlist = BuildFondList(f,fond_pos,fond_subcnt,rdata_pos,name_list);
+	    fondlist = BuildFondList(f,fond_pos,fond_subcnt,rdata_pos,name_list,flags);
 	sf = SearchBitmapResources(f,nfnt_pos,nfnt_subcnt,rdata_pos,name_list,
 		filename,fondlist,flags);
 	FondListFree(fondlist);
@@ -2408,7 +2465,7 @@ return( (SplineFont *) -1 );	/* It's a valid resource file, but just has no font
 }
 
 #if __Mac
-static SplineFont *HasResourceFork(char *filename,int flags) {
+static SplineFont *HasResourceFork(char *filename,int flags,SplineFont *into) {
     /* If we're on a mac, we can try to see if we've got a real resource fork */
     /* (if we do, copy it into a temporary data file and then manipulate that)*/
     FSRef ref;
@@ -2440,13 +2497,13 @@ return( NULL );
     free(buf);
     FSClose(res);
     rewind(temp);
-    ret = IsResourceFork(temp,0,filename,flags);
+    ret = IsResourceFork(temp,0,filename,flags,into);
     fclose(temp);
 return( ret );
 }
 #endif
 
-static SplineFont *IsResourceInBinary(FILE *f,char *filename,int flags) {
+static SplineFont *IsResourceInBinary(FILE *f,char *filename,int flags,SplineFont *into) {
     unsigned char header[128];
     unsigned long offset, dlen, rlen;
 
@@ -2469,7 +2526,7 @@ return( NULL );
 		(header[0]==0 && header[1]==1 && header[2]==0 && header[3]==0))
 return( MightBeTrueType(f,pos,dlen,flags));
     }
-return( IsResourceFork(f,offset,filename,flags));
+return( IsResourceFork(f,offset,filename,flags,into));
 }
 
 static int lastch=0, repeat = 0;
@@ -2494,7 +2551,7 @@ static void outchr(FILE *binary, int ch) {
     }
 }
 
-static SplineFont *IsResourceInHex(FILE *f,char *filename,int flags) {
+static SplineFont *IsResourceInHex(FILE *f,char *filename,int flags,SplineFont *into) {
     /* convert file from 6bit to 8bit */
     /* interesting data is enclosed between two colons */
     FILE *binary = tmpfile();
@@ -2572,13 +2629,13 @@ return( ret );
 return( NULL );
     }
 
-    ret = IsResourceFork(binary,ftell(binary)+dlen+2,filename,flags);
+    ret = IsResourceFork(binary,ftell(binary)+dlen+2,filename,flags,into);
 
     fclose(binary);
 return( ret );
 }
 
-static SplineFont *IsResourceInFile(char *filename,int flags) {
+static SplineFont *IsResourceInFile(char *filename,int flags,SplineFont *into) {
     FILE *f;
     char *spt, *pt;
     SplineFont *sf;
@@ -2598,33 +2655,33 @@ return( NULL );
     pt = strrchr(spt,'.');
     if ( pt!=NULL && (pt[1]=='b' || pt[1]=='B') && (pt[2]=='i' || pt[2]=='I') &&
 	    (pt[3]=='n' || pt[3]=='N') && pt[4]=='\0' ) {
-	if ( (sf = IsResourceInBinary(f,filename,flags))) {
+	if ( (sf = IsResourceInBinary(f,filename,flags,into))) {
 	    fclose(f);
 return( sf );
 	}
     } else if ( pt!=NULL && (pt[1]=='h' || pt[1]=='H') && (pt[2]=='q' || pt[2]=='Q') &&
 	    (pt[3]=='x' || pt[3]=='X') && pt[4]=='\0' ) {
-	if ( (sf = IsResourceInHex(f,filename,flags))) {
+	if ( (sf = IsResourceInHex(f,filename,flags,into))) {
 	    fclose(f);
 return( sf );
 	}
     }
 
-    sf = IsResourceFork(f,0,filename,flags);
+    sf = IsResourceFork(f,0,filename,flags,into);
     fclose(f);
 #if __Mac
     if ( sf==NULL )
-	sf = HasResourceFork(filename,flags);
+	sf = HasResourceFork(filename,flags,into);
 #endif
 return( sf );
 }
 
-static SplineFont *FindResourceFile(char *filename,int flags) {
+static SplineFont *FindResourceFile(char *filename,int flags,SplineFont *into) {
     char *spt, *pt, *dpt;
     char buffer[1400];
     SplineFont *sf;
 
-    if ( (sf = IsResourceInFile(filename,flags)))
+    if ( (sf = IsResourceInFile(filename,flags,into)))
 return( sf );
 
     /* Well, look in the resource fork directory (if it exists), the resource */
@@ -2635,7 +2692,7 @@ return( sf );
     else { ++spt; pt = filename + (spt-buffer); }
     strcpy(spt,"resource.frk/");
     strcat(spt,pt);
-    if ( (sf=IsResourceInFile(buffer,flags)))
+    if ( (sf=IsResourceInFile(buffer,flags,into)))
 return( sf );
 
     /* however the resource fork does not appear to do long names properly */
@@ -2656,11 +2713,11 @@ return( sf );
 	*dpt++ = '1';
 	strcpy(dpt,exten);
     }
-return( IsResourceInFile(buffer,flags));
+return( IsResourceInFile(buffer,flags,into));
 }
 
 SplineFont *SFReadMacBinary(char *filename,int flags) {
-    SplineFont *sf = FindResourceFile(filename,flags);
+    SplineFont *sf = FindResourceFile(filename,flags,NULL);
 
     if ( sf==NULL )
 	fprintf( stderr, "Couldn't find a font file named %s\n", filename );
@@ -2669,4 +2726,11 @@ SplineFont *SFReadMacBinary(char *filename,int flags) {
 	sf = NULL;
     }
 return( sf );
+}
+
+int LoadKerningDataFromMacFOND(SplineFont *sf, char *filename) {
+    if ( FindResourceFile(filename,ttf_onlykerns,sf)==NULL )
+return ( false );
+
+return( true );
 }

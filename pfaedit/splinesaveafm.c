@@ -114,14 +114,16 @@ return( 1 );
 int CheckAfmOfPostscript(SplineFont *sf,char *psname) {
     char *new, *pt;
     int ret;
+    int wasuc=false;
 
     new = galloc(strlen(psname)+5);
     strcpy(new,psname);
     pt = strrchr(new,'.');
     if ( pt==NULL ) pt = new+strlen(new);
-    strcpy(pt,".afm");
+    else wasuc = isupper(pt[1]);
+    strcpy(pt,wasuc?".AFM":".afm");
     if ( !LoadKerningDataFromAfm(sf,new)) {
-	strcpy(pt,".AFM");
+	strcpy(pt,wasuc?".afm":".AFM");
 	ret = LoadKerningDataFromAfm(sf,new);
     } else
 	ret = true;
