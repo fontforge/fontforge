@@ -2646,6 +2646,10 @@ static Bool allevents(Display *display, XEvent *event, char *arg) {
 return( true );
 }
 
+static Bool windowevents(Display *display, XEvent *event, char *arg) {
+return( event->xany.window == (Window) arg );
+}
+
 static void GXDrawProcessOneEvent(GDisplay *gdisp) {
     XEvent event;
     Display *display = ((GXDisplay *) gdisp)->display;
@@ -2692,6 +2696,15 @@ static void GXDrawProcessPendingEvents(GDisplay *gdisp) {
     GXDrawCheckPendingTimers((GXDisplay *) gdisp);
     while ( XCheckIfEvent(display,&event,allevents,NULL))
 	dispatchEvent((GXDisplay *) gdisp, &event);
+}
+
+static void GXDrawProcessWindowEvents(GWindow w) {
+    XEvent event;
+    GXWindow gw = (GXWindow) w;
+    Display *display = gw->display->display;
+
+    while ( XCheckIfEvent(display,&event,windowevents,(char *) (gw->w)))
+	dispatchEvent(gw->display, &event);
 }
 
 static void GXDrawSync(GDisplay *gdisp) {
@@ -3405,6 +3418,7 @@ static struct displayfuncs xfuncs = {
     GXDrawSync,
     GXDrawSkipMouseMoveEvents,
     GXDrawProcessPendingEvents,
+    GXDrawProcessWindowEvents,
     GXDrawProcessOneEvent,
     GXDrawEventLoop,
     GXDrawPostEvent,

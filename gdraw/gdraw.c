@@ -533,6 +533,10 @@ void GDrawProcessPendingEvents(GDisplay *gdisp) {
     (gdisp->funcs->processPendingEvents)(gdisp);
 }
 
+void GDrawProcessWindowEvents(GWindow w) {
+    (w->display->funcs->processWindowEvents)(w);
+}
+
 void GDrawEventLoop(GDisplay *gdisp) {
     if ( gdisp==NULL ) gdisp=screen_display;
     (gdisp->funcs->eventLoop)(gdisp);

@@ -255,7 +255,7 @@ return;
 	if ( glb->popup ) {
 	    GDrawDestroyWindow(glb->popup);
 	    GDrawSync(NULL);
-	    GDrawProcessPendingEvents(NULL);	/* popup's destroy routine must execute before we die */
+	    GDrawProcessWindowEvents(glb->popup);	/* popup's destroy routine must execute before we die */
 	}
 	GTextInfoArrayFree(glb->ti);
     }

@@ -221,6 +221,9 @@ static void PSDrawSkipMouseMoveEvents(GWindow gw, GEvent *last) {
 static void PSDrawProcessPendingEvents(GDisplay *gdisp) {
 }
 
+static void PSDrawProcessWindowEvents(GWindow gw) {
+}
+
 static void PSDrawEventLoop(GDisplay *gd) {
 }
 
@@ -1287,6 +1290,7 @@ static struct displayfuncs psfuncs = {
     PSDrawSync,
     PSDrawSkipMouseMoveEvents,
     PSDrawProcessPendingEvents,
+    PSDrawProcessWindowEvents,
     PSDrawProcessPendingEvents,		/* Same as for OneEvent */
     PSDrawEventLoop,
     PSDrawPostEvent,
