@@ -25,6 +25,8 @@ clean:
 
 install:
 # You may need to be root to do the install
+# remove any files from old installs that put the ui in bin
+	-rm -f $(bindir)/pfaedit*.ui
 	cp pfaedit/pfaedit $(bindir)
 	cp pfaedit/pfaedit.*.ui $(bindir)
 	cp pfaedit/pfaedit.1 $(mandir)/man1
