@@ -3031,7 +3031,8 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	gi.u.image = &base;
 	base.image_type = it_index;
 	base.clut = fv->show->clut;
-	base.trans = -1;
+	base.trans = 0;
+	base.clut->trans_index = 0;
     } else {
 	memset(&clut,'\0',sizeof(clut));
 	gi.u.image = &base;
