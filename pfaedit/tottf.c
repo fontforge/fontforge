@@ -227,7 +227,7 @@ return( NULL );
 return( MakeQuadSpline(start,&ttf,xmax,ymax,tmax,ps->to));
 }
 
-static SplinePoint *ttfapprox(Spline *ps,real tmin, real tmax, SplinePoint *start) {
+static SplinePoint *_ttfapprox(Spline *ps,real tmin, real tmax, SplinePoint *start) {
     int dim=0, other;
     real dx, dy, ddim, dt, t;
     real x,y, xmin, ymin;
@@ -236,8 +236,9 @@ static SplinePoint *ttfapprox(Spline *ps,real tmin, real tmax, SplinePoint *star
     real cx, cy;
     Spline ttf;
     int cnt = -1;
+    BasePoint end, dend;
 
-    if ( RealNear(ps->splines[0].a,0) && RealNear(ps->splines[1].a,0) ) {
+    if ( RealNearish(ps->splines[0].a,0) && RealNearish(ps->splines[1].a,0) ) {
 	/* Already Quadratic, just need to find the control point */
 	/* Or linear, in which case we don't need to do much of anything */
 	Spline *spline;
@@ -264,7 +265,12 @@ static SplinePoint *ttfapprox(Spline *ps,real tmin, real tmax, SplinePoint *star
 return( sp );
     }
 
+    end.x = rint( ((ps->splines[0].a*tmax+ps->splines[0].b)*tmax+ps->splines[0].c)*tmax + ps->splines[0].d );
+    end.y = rint( ((ps->splines[1].a*tmax+ps->splines[1].b)*tmax+ps->splines[1].c)*tmax + ps->splines[1].d );
+    dend.x = (3*ps->splines[0].a*tmax+2*ps->splines[0].b)*tmax+ps->splines[0].c;
+    dend.y = (3*ps->splines[1].a*tmax+2*ps->splines[1].b)*tmax+ps->splines[1].c;
     memset(&ttf,'\0',sizeof(ttf));
+
   tail_recursion:
     ++cnt;
 
@@ -288,13 +294,16 @@ return( sp );
     }
     other = !dim;
 
-    if ( ddim<2 ) {
+    if ( ddim<2 ||
+	    (dend.x==0 && rint(start->me.x)==end.x && dy<=10 && cnt!=0) ||
+	    (dend.y==0 && rint(start->me.y)==end.y && dx<=10 && cnt!=0) ) {
 	if ( cnt==0 || start->noprevcp )
 return( LinearSpline(ps,start,tmax));
 	/* If the end point is very close to where we want to be, then just */
 	/*  pretend it's right */
 	start->prev->splines[0].b += ps->to->me.x-start->me.x;
 	start->prev->splines[1].b += ps->to->me.y-start->me.y;
+	/* should I fix up the control point? I hope it won't matter much */
 	start->me = ps->to->me;
 return( start );
     }
@@ -378,7 +387,42 @@ return( sp );
     start = LinearSpline(ps,start,tmin);
   goto tail_recursion;
 }
-    
+
+static SplinePoint *ttfapprox(Spline *ps,real tmin, real tmax, SplinePoint *start) {
+    real inflect[2];
+    int i=0;
+    /* no points of inflection in quad splines */
+
+    if ( ps->splines[0].a!=0 ) {
+	inflect[i] = -ps->splines[0].b/(3*ps->splines[0].b);
+	if ( inflect[i]>tmin && inflect[i]<tmax )
+	    ++i;
+    }
+    if ( ps->splines[1].a!=0 ) {
+	inflect[i] = -ps->splines[1].b/(3*ps->splines[1].b);
+	if ( inflect[i]>tmin && inflect[i]<tmax )
+	    ++i;
+    }
+    if ( i==2 ) {
+	if ( RealNearish(inflect[0],inflect[1]) )
+	    --i;
+	else if ( inflect[0]>inflect[1] ) {
+	    real temp = inflect[0];
+	    inflect[0] = inflect[1];
+	    inflect[1] = temp;
+	}
+    }
+    if ( i!=0 ) {
+	start = _ttfapprox(ps,tmin,inflect[0],start);
+	tmin = inflect[0];
+	if ( i==2 ) {
+	    start = _ttfapprox(ps,tmin,inflect[1],start);
+	    tmin = inflect[1];
+	}
+    }
+return( _ttfapprox(ps,tmin,tmax,start));
+}
+
 static SplineSet *SSttfApprox(SplineSet *ss) {
     SplineSet *ret = chunkalloc(sizeof(SplineSet));
     Spline *spline, *first;
