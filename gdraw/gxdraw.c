@@ -1332,6 +1332,16 @@ static void GXDrawResize(GWindow w, int32 width, int32 height) {
     GXWindow gw = (GXWindow) w;
 
     XResizeWindow(gw->display->display,gw->w,width,height);
+    if ( gw->is_toplevel ) {
+	/* Save the current position in the size hints. Otherwise some */
+	/*  (if unmapped) window managers will pop it up where originally */
+	/*  positioned or if unpositioned ask user to position it. Ug */
+	XSizeHints s_h;
+	s_h.flags = USSize;
+	s_h.width = width;
+	s_h.height = height;
+	XSetNormalHints(gw->display->display,gw->w,&s_h);
+    }
 }
 
 static void GXDrawMoveResize(GWindow w, int32 x, int32 y, int32 width, int32 height) {
