@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 9-Feb-2004 -->
+  <!-- AP: Last modified: 11-Feb-2004 -->
   <TITLE>Spline Font Database File Format</TITLE>
 </HEAD>
 <BODY>
@@ -610,6 +610,20 @@ Splines for a truetype font will have two additional numbers after the flags.
 These are the truetype point numbers for the point itself and for the subsequent
 control point. If the value is -1 then this point has no number.
 <P>
+Splines for a font with hint substitution will have a hint mask after any
+point before which hint substitution occurs,
+<BLOCKQUOTE>
+  <PRE>459 422 m 1xc0
+ 339 442 l 1xa0
+ 312 243 l 1
+</PRE>
+</BLOCKQUOTE>
+<P>
+So the first two points have hint masks "xc0" and "xa0", these masks may
+be (almost) arbetrarily long, depending on the number of hints in the glyph.
+"xc0" means that the first two hints are active (0x80 &amp; 0x40) while "xa0"
+means that the first and third are (0x80 and 0x20).
+<P>
 A set of splines in the background is similar, it will be introduced by a
 <CODE>Back</CODE> entry.
 <P>
@@ -664,6 +678,23 @@ is the local encoding of the character being refered to, the N says the referenc
 is not selected, the remaining 6 numbers are a postscript transformation
 matrix, the one for comma (44) is the identity matrix, while the one for
 period (46) just translates it vertically 414 units.
+<P>
+A postscript glyph may also contain countermasks:
+<BLOCKQUOTE>
+  <PRE>StartChar: m
+Encoding: 109 109 77
+Width: 785
+HStem: 0 18&lt;28 224 292 488 566 752&gt; 445 27&lt;280 296 542 558&gt;
+VStem: 98 56&lt;45 376&gt; 362 56&lt;45 378&gt; 626 56&lt;45 378&gt;
+CounterMasks: 1 38
+...
+EndChar
+</PRE>
+</BLOCKQUOTE>
+<P>
+Here there is one counter group, (that's what the "1" on the countermasks
+line means), and in it the third (0x20), fourth (0x10) and fifth (0x08) hints
+are active, the three vertical stems.
 <P>
 If a font has been loaded from a truetype file it may containing hinting
 information (PfaEdit does not attempt to understand truetype hints, just
