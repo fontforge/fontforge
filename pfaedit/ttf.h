@@ -523,6 +523,7 @@ struct contexttree {
 	struct contexttree *branch;/* if the rule ends here this will be null */
 	uint16 thisclassnum;
     } *rules;
+    int pending_pos;
     uint32 applymarkedsubs;
     uint32 applycursubs;
     uint16 marked_index, cur_index;

@@ -1178,6 +1178,7 @@ return( tag );
 static int TreeFollowBranches(SplineFont *sf,struct contexttree *me,int pending_pos) {
     int i, j;
 
+    me->pending_pos = pending_pos;
     if ( me->ends_here!=NULL ) {
 	/* If any rule ends here then we have to be able to apply all current */
 	/*  and pending substitutions */
@@ -1205,7 +1206,7 @@ return( false );
 	    break;
 	    if ( j<me->rule_cnt ) {
 		if ( pending_pos==-1 ) {
-		    pending_pos = me->depth;
+		    pending_pos = me->pending_pos = me->depth;
 		    me->markme = true;
 		} else
 return( false );
@@ -1516,7 +1517,8 @@ static int AnyActiveSubstrings(struct contexttree *tree,
 			}
 		    }
 		}
-		if ( tlist[sub->state*classcnt+class+3]!=0 )
+		if ( tlist[sub->state*classcnt+class+3]!=0 &&
+			(sub->pending_pos+i == cur->pending_pos || sub->pending_pos == -1 ))
 return( tlist[sub->state*classcnt+class+3] );
 	    }
 	}
