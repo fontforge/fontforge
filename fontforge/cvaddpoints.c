@@ -367,6 +367,9 @@ return;			/* We clicked on the active point, that's a no-op */
     CVSetCharChanged(cv,true);
     CVInfoDraw(cv,cv->gw);
     SCUpdateAll(sc);
+
+    if ( cv->active_tool == cvt_pen )
+	cv->p.constrain = sp->me;
 }
 
 static void AdjustControls(SplinePoint *sp) {
