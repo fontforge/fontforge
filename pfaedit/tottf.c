@@ -4496,6 +4496,8 @@ static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
     if ( at->opbd!=NULL )
 	if ( !ttfcopyfile(ttf,at->opbd,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( !ttfcopyfile(ttf,at->post,at->tabdir.tabs[i++].offset)) at->error = true;
+    if ( at->prepf!=NULL )
+	if ( !ttfcopyfile(ttf,at->prepf,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( at->prop!=NULL )
 	if ( !ttfcopyfile(ttf,at->prop,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( at->vheadf!=NULL ) {
