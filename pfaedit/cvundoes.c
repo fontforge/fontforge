@@ -1818,7 +1818,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 
 #ifdef PFAEDIT_CONFIG_TYPE3
 static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
-    if ( paster->undotype==ut_layers ) {
+    if ( paster->undotype==ut_layers && sc->parent->multilayer ) {
 	int lc, start, layer;
 	Undoes *pl;
 	for ( lc=0, pl = paster->u.multiple.mult; pl!=NULL; pl=pl->next, ++lc );
@@ -1841,6 +1841,11 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 	}
 	for ( lc=0, pl = paster->u.multiple.mult; pl!=NULL; pl=pl->next, ++lc );
 	    _PasteToSC(sc,pl,fv,doclear,start+lc);
+	SCMoreLayers(sc);
+    } else if ( paster->undotype==ut_layers ) {
+	Undoes *pl;
+	for ( pl = paster->u.multiple.mult; pl!=NULL; pl=pl->next );
+	    _PasteToSC(sc,pl,fv,doclear,ly_fore);
     } else
 	_PasteToSC(sc,paster,fv,doclear,ly_fore);
 }

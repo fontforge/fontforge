@@ -3926,7 +3926,9 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	GTextInfo *pfmfam, *fstype;
 	int32 len;
 	GTextInfo **ti;
+#ifdef PFAEDIT_CONFIG_TYPE3
 	int multilayer = false;
+#endif
 
 	if ( !CheckNames(d))
 return( true );
@@ -4006,16 +4008,16 @@ return(true);
 return( true );
 	if ( order2!=sf->order2 && !SFCloseAllInstrs(sf))
 return( true );
+#ifdef PFAEDIT_CONFIG_TYPE3
 	if ( multilayer!=sf->multilayer ) {
 	    sf->multilayer = multilayer;
 	    if ( !multilayer )
 		SFSplinesFromLayers(sf);
 	    else
 		SFReinstanciateRefs(sf);
-	    /* I think the layer panes should take care of themselves */
-	    /*  since the focus must be in this dlg, there shouldn't be any */
-	    /*  visible */
+	    SFLayerChange(sf);
 	}
+#endif
 	TTF_PSDupsChanged(gw,sf,d->names_set ? d->names : sf->names);
 	GDrawSetCursor(gw,ct_watch);
 	namechange = SetFontName(gw,sf);

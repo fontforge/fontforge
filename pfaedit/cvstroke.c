@@ -852,7 +852,7 @@ void FreeHandStrokeDlg(StrokeInfo *si) {
 #ifdef PFAEDIT_CONFIG_TYPE3
 
 #define LY_Width	300
-#define LY_Height	340
+#define LY_Height	310
 
 #define CID_FillColor		2001
 #define CID_FillCInherit	2002
@@ -867,7 +867,6 @@ void FreeHandStrokeDlg(StrokeInfo *si) {
 #define CID_InheritCap		2011
 #define CID_InheritJoin		2012
 #define CID_Fill		2013
-#define CID_Name		2014
 
 struct layer_dlg {
     int done;
@@ -954,8 +953,6 @@ return( true );
 	ld->layer->dofill = temp.dofill;
 	ld->layer->dostroke = temp.dostroke;
 	ld->layer->fillfirst = temp.fillfirst;
-	free(ld->layer->name);
-	ld->layer->name = GGadgetGetTitle(GWidgetGetControl(gw,CID_Name));
     }
 return( true );
 }
@@ -1028,7 +1025,7 @@ int LayerDialog(Layer *layer) {
     label[gcdoff].text_in_resource = true;
     gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = 5+yoff;
-    gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->dostroke? gg_cb_on : 0);
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->dofill? gg_cb_on : 0);
     gcd[gcdoff].gd.cid = CID_Fill;
     gcd[gcdoff++].creator = GCheckBoxCreate;
 
@@ -1334,22 +1331,6 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.cid = CID_InheritCap;
     gcd[gcdoff++].creator = GRadioCreate;
 
-    label[gcdoff].text = (unichar_t *) _STR_Name;
-    label[gcdoff].text_in_resource = true;
-    gcd[gcdoff].gd.mnemonic = 'W';
-    gcd[gcdoff].gd.label = &label[gcdoff];
-    gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+34;
-    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
-    gcd[gcdoff++].creator = GLabelCreate;
-
-    if ( layer->name!=NULL ) {
-	label[gcdoff].text = layer->name;
-	gcd[gcdoff].gd.label = &label[gcdoff];
-    }
-    gcd[gcdoff].gd.pos.x = 80; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y-3;
-    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
-    gcd[gcdoff].gd.cid = CID_Name;
-    gcd[gcdoff++].creator = GTextFieldCreate;
 
     gcd[gcdoff].gd.pos.x = 30-3; gcd[gcdoff].gd.pos.y = LY_Height-30-3;
     gcd[gcdoff].gd.pos.width = -1;

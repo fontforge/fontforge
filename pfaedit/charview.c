@@ -1790,6 +1790,7 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     cv->lastselpt = NULL; cv->p.sp = NULL;
     CVInfoDraw(cv,cv->gw);
     free(title);
+    _CVPaletteActivate(cv,true);
 }
 
 static void CVChangeChar(CharView *cv, int i ) {
@@ -2749,6 +2750,9 @@ void _SCCharChangedUpdate(SplineChar *sc,int changed) {
     if ( updateflex && sc->views!=NULL )
 	SplineCharIsFlexible(sc);
     SCUpdateAll(sc);
+#ifdef PFAEDIT_CONFIG_TYPE3
+    SCLayersChange(sc);
+#endif
     SCRegenFills(sc);
     if ( sf->fv!=NULL )
 	FVRegenChar(sf->fv,sc);
@@ -2762,6 +2766,9 @@ void _CVCharChangedUpdate(CharView *cv,int changed) {
     extern int updateflex;
 
     CVSetCharChanged(cv,changed);
+#ifdef PFAEDIT_CONFIG_TYPE3
+    CVLayerChange(cv);
+#endif
     if ( cv->needsrasterize ) {
 	SCRegenDependents(cv->sc);		/* All chars linked to this one need to get the new splines */
 	if ( updateflex )

@@ -1144,6 +1144,80 @@ return( NULL );
 return( head );
 }
 
+#ifdef PFAEDIT_CONFIG_TYPE3
+static uint32 InterpColor( uint32 col1,uint32 col2, real amount ) {
+    int r1, g1, b1, r2, b2, g2;
+
+    r1 = (col1>>16)&0xff;
+    r2 = (col2>>16)&0xff;
+    g1 = (col1>>8 )&0xff;
+    g2 = (col2>>8 )&0xff;
+    b1 = (col1    )&0xff;
+    b2 = (col2    )&0xff;
+    r1 += amount * (r2-r1);
+    g1 += amount * (g2-g1);
+    b1 += amount * (b2-b1);
+return( (r1<<16) | (g1<<8) | b1 );
+}
+
+static void LayerInterpolate(Layer *to,Layer *base,Layer *other,real amount,SplineChar *sc, int lc) {
+
+    /* to already has things set to default values, so when an error occurs */
+    /*  I just leave things as the default (and don't need to set it again) */
+    if ( base->dostroke==other->dostroke )
+	to->dostroke = base->dostroke;
+    else
+	fprintf( stderr, "Different settings on whether to stroke in layer %d of %s\n", lc, sc->name );
+    if ( base->dofill==other->dofill )
+	to->dofill = base->dofill;
+    else
+	fprintf( stderr, "Different settings on whether to fill in layer %d of %s\n", lc, sc->name );
+    if ( base->fill_brush.col==COLOR_INHERITED && other->fill_brush.col==COLOR_INHERITED )
+	to->fill_brush.col = COLOR_INHERITED;
+    else if ( base->fill_brush.col!=COLOR_INHERITED && other->fill_brush.col!=COLOR_INHERITED )
+	to->fill_brush.col = InterpColor( base->fill_brush.col,other->fill_brush.col, amount );
+    else
+	fprintf( stderr, "Different settings on whether to inherit fill color in layer %d of %s\n", lc, sc->name );
+    if ( base->fill_brush.opacity<0 && other->fill_brush.opacity<0 )
+	to->fill_brush.opacity = WIDTH_INHERITED;
+    else if ( base->fill_brush.opacity>=0 && other->fill_brush.opacity>=0 )
+	to->fill_brush.opacity = base->fill_brush.opacity + amount*(other->fill_brush.opacity-base->fill_brush.opacity);
+    else
+	fprintf( stderr, "Different settings on whether to inherit fill opacity in layer %d of %s\n", lc, sc->name );
+    if ( base->stroke_pen.brush.col==COLOR_INHERITED && other->stroke_pen.brush.col==COLOR_INHERITED )
+	to->stroke_pen.brush.col = COLOR_INHERITED;
+    else if ( base->stroke_pen.brush.col!=COLOR_INHERITED && other->stroke_pen.brush.col!=COLOR_INHERITED )
+	to->stroke_pen.brush.col = InterpColor( base->stroke_pen.brush.col,other->stroke_pen.brush.col, amount );
+    else
+	fprintf( stderr, "Different settings on whether to inherit fill color in layer %d of %s\n", lc, sc->name );
+    if ( base->stroke_pen.brush.opacity<0 && other->stroke_pen.brush.opacity<0 )
+	to->stroke_pen.brush.opacity = WIDTH_INHERITED;
+    else if ( base->stroke_pen.brush.opacity>=0 && other->stroke_pen.brush.opacity>=0 )
+	to->stroke_pen.brush.opacity = base->stroke_pen.brush.opacity + amount*(other->stroke_pen.brush.opacity-base->stroke_pen.brush.opacity);
+    else
+	fprintf( stderr, "Different settings on whether to inherit stroke opacity in layer %d of %s\n", lc, sc->name );
+    if ( base->stroke_pen.width<0 && other->stroke_pen.width<0 )
+	to->stroke_pen.width = WIDTH_INHERITED;
+    else if ( base->stroke_pen.width>=0 && other->stroke_pen.width>=0 )
+	to->stroke_pen.width = base->stroke_pen.width + amount*(other->stroke_pen.width-base->stroke_pen.width);
+    else
+	fprintf( stderr, "Different settings on whether to inherit stroke width in layer %d of %s\n", lc, sc->name );
+    if ( base->stroke_pen.linecap==other->stroke_pen.linecap )
+	to->stroke_pen.linecap = base->stroke_pen.linecap;
+    else
+	fprintf( stderr, "Different settings on stroke linecap in layer %d of %s\n", lc, sc->name );
+    if ( base->stroke_pen.linejoin==other->stroke_pen.linejoin )
+	to->stroke_pen.linejoin = base->stroke_pen.linejoin;
+    else
+	fprintf( stderr, "Different settings on stroke linejoin in layer %d of %s\n", lc, sc->name );
+
+    to->splines = InterpSplineSets(base->splines,other->splines,amount,sc);
+    to->refs = InterpRefs(base->refs,other->refs,amount,sc);
+    if ( base->images!=NULL || other->images!=NULL )
+	fprintf( stderr, "I can't even imagine how to attempt to interpolate images in layer %d of %s\n", lc, sc->name );
+}
+#endif
+
 static void InterpolateChar(SplineFont *new, int enc, SplineChar *base, SplineChar *other, real amount) {
     SplineChar *sc;
 
@@ -1168,8 +1242,26 @@ return;
     sc->width = base->width + amount*(other->width-base->width);
     sc->vwidth = base->vwidth + amount*(other->vwidth-base->vwidth);
     sc->lsidebearing = base->lsidebearing + amount*(other->lsidebearing-base->lsidebearing);
-    sc->layers[ly_fore].splines = InterpSplineSets(base->layers[ly_fore].splines,other->layers[ly_fore].splines,amount,sc);
-    sc->layers[ly_fore].refs = InterpRefs(base->layers[ly_fore].refs,other->layers[ly_fore].refs,amount,sc);
+#ifdef PFAEDIT_CONFIG_TYPE3
+    if ( base->parent->multilayer && other->parent->multilayer ) {
+	int lc = base->layer_cnt,i;
+	if ( lc!=other->layer_cnt ) {
+	    fprintf( stderr, "Different numbers of layers in %s\n", base->name );
+	    if ( other->layer_cnt<lc ) lc = other->layer_cnt;
+	}
+	if ( lc>2 ) {
+	    sc->layers = grealloc(sc->layers,lc*sizeof(Layer));
+	    for ( i=ly_fore+1; i<lc; ++i )
+		LayerDefault(&sc->layers[i]);
+	}
+	for ( i=ly_fore; i<lc; ++i )
+	    LayerInterpolate(&sc->layers[i],&base->layers[i],&other->layers[i],amount,sc,i);
+    } else
+#endif
+    {
+	sc->layers[ly_fore].splines = InterpSplineSets(base->layers[ly_fore].splines,other->layers[ly_fore].splines,amount,sc);
+	sc->layers[ly_fore].refs = InterpRefs(base->layers[ly_fore].refs,other->layers[ly_fore].refs,amount,sc);
+    }
     sc->changedsincelasthinted = true;
     sc->widthset = base->widthset;
     sc->glyph_class = base->glyph_class;
@@ -1209,6 +1301,12 @@ return;
 	GWidgetErrorR(_STR_InterpolatingProb,_STR_InterpolatingFontsDiffOrder);
 return;
     }
+#ifdef PFAEDIT_CONFIG_TYPE3
+    else if ( base->multilayer && other->multilayer ) {
+	GWidgetErrorR(_STR_InterpolatingProb,_STR_InterpolatingFontsDiffLayers);
+return;
+    }
+#endif
     new = SplineFontBlank(base->encoding_name,base->charcnt);
     new->ascent = base->ascent + amount*(other->ascent-base->ascent);
     new->descent = base->descent + amount*(other->descent-base->descent);

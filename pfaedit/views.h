@@ -603,6 +603,7 @@ extern int CVPaletteIsVisible(CharView *cv,int which);
 extern void CVPaletteSetVisible(CharView *cv,int which,int visible);
 extern void CVPalettesRaise(CharView *cv);
 extern void CVLayersSet(CharView *cv);
+extern void _CVPaletteActivate(CharView *cv,int force);
 extern void CVPaletteActivate(CharView *cv);
 extern void CVPalettesHideIfMine(CharView *cv);
 extern int BVPaletteIsVisible(BitmapView *bv,int which);
@@ -970,6 +971,10 @@ extern void MMChangeBlend(MMSet *mm,FontView *fv);
 extern void MMWizard(MMSet *mm);
 
 extern int LayerDialog(Layer *layer);
+extern void SCMoreLayers(SplineChar *);
+extern void SCLayersChange(SplineChar *sc);
+extern void CVLayerChange(CharView *cv);
+extern void SFLayerChange(SplineFont *sf);
 
 extern GMenuItem helplist[];
 #endif

@@ -706,9 +706,6 @@ typedef struct layer /* : reflayer */{
     RefChar *refs;			/* Only in foreground layer(s) */
     Undoes *undoes;
     Undoes *redoes;
-#ifdef PFAEDIT_CONFIG_TYPE3
-    unichar_t *name;
-#endif
 } Layer;
 
 enum layer_type { ly_grid= -1, ly_back=0, ly_fore=1 /* Possibly other foreground layers for multi-layered things */ };
@@ -1178,6 +1175,7 @@ extern BDFFont *SplineFontToBDFHeader(SplineFont *_sf, int pixelsize, int indica
 extern BDFFont *SplineFontRasterize(SplineFont *sf, int pixelsize, int indicate);
 extern BDFChar *SplineCharAntiAlias(SplineChar *sc, int pixelsize,int linear_scale);
 extern BDFFont *SplineFontAntiAlias(SplineFont *sf, int pixelsize,int linear_scale);
+extern struct clut *_BDFClut(int linear_scale);
 extern void BDFClut(BDFFont *bdf, int linear_scale);
 extern int BDFDepth(BDFFont *bdf);
 extern BDFChar *BDFPieceMeal(BDFFont *bdf, int index);

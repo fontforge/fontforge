@@ -247,6 +247,7 @@ return;
 	free(e);
     }
     sc->layer_cnt += cnt;
+    SCMoreLayers(sc);
 }
 #endif
 

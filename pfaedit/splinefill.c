@@ -54,6 +54,7 @@ static void _FreeEdgeList(EdgeList *es) {
 		next = e->esnext;
 		free(e);
 	    }
+	    es->edges[i] = NULL;
 	}
     }
 }
@@ -944,12 +945,14 @@ static void StrokeLine(uint8 *bytemap,IPoint *from, IPoint *to,EdgeList *es,int 
 	    for ( i=0; i<width; ++i )
 		Bresenham(bytemap,es,x1,x2,y1+i,y2+i,grey);
 	} else if ( y2>y1 ) {
+	    width *= 1.414; w2 = width/2;
 	    x1-=w2/2; y1+=w2/2; x2-=w2/2; y2+=w2/2;
 	    for ( i=0; 2*i<width; ++i ) {
 		Bresenham(bytemap,es,x1+i,x2+i,y1-i,y2-i,grey);
 		Bresenham(bytemap,es,x1+i+1,x2+i+1,y1-i,y2-i,grey);
 	    }
 	} else {
+	    width *= 1.414; w2 = width/2;
 	    x1-=w2/2; y1-=w2/2; x2-=w2/2; y2-=w2/2;
 	    for ( i=0; 2*i<width; ++i ) {
 		Bresenham(bytemap,es,x1+i,x2+i,y1+i,y2+i,grey);
@@ -1094,6 +1097,7 @@ static void ProcessLayer(uint8 *bytemap,EdgeList *es,Layer *layer,
 	FindEdgesSplineSet(layer->splines,es);
 	FillChar(es);
 	SetByteMapToGrey(bytemap,es,layer,alt);
+	_FreeEdgeList(es);
     }
     for ( img = layer->images; img!=NULL; img=img->next )
 	FillImages(bytemap,es,img,layer,alt);
@@ -1567,13 +1571,13 @@ return;
     *bc = new;
 }
 
-void BDFClut(BDFFont *bdf, int linear_scale) {
+GClut *_BDFClut(int linear_scale) {
     int scale = linear_scale*linear_scale, i;
     Color bg = screen_display==NULL?0xffffff:GDrawGetDefaultBackground(NULL);
     int bgr=COLOR_RED(bg), bgg=COLOR_GREEN(bg), bgb=COLOR_BLUE(bg);
     GClut *clut;
 
-    bdf->clut = clut = gcalloc(1,sizeof(GClut));
+    clut = gcalloc(1,sizeof(GClut));
     clut->clut_len = scale;
     clut->is_grey = (bgr==bgg && bgb==bgr);
     clut->trans_index = -1;
@@ -1584,6 +1588,11 @@ void BDFClut(BDFFont *bdf, int linear_scale) {
 				bgb- (i*(bgb))/(scale-1));
     }
     clut->clut[scale-1] = 0;	/* avoid rounding errors */
+return( clut );
+}
+
+void BDFClut(BDFFont *bdf, int linear_scale) {
+    bdf->clut = _BDFClut(linear_scale);
 }
 
 int BDFDepth(BDFFont *bdf) {

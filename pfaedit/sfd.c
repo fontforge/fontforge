@@ -660,10 +660,6 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
 		     sc->layers[i].stroke_pen.width, joins[sc->layers[i].stroke_pen.linejoin], caps[sc->layers[i].stroke_pen.linecap],
 		    sc->layers[i].stroke_pen.trans[0], sc->layers[i].stroke_pen.trans[1],
 		    sc->layers[i].stroke_pen.trans[2], sc->layers[i].stroke_pen.trans[3] );
-	    if ( sc->layers[i].name!=NULL ) {
-		fprintf( sfd, "LayerName: " );
-		SFDDumpUTF7Str(sfd,sc->layers[i].name);
-	    }
 	    for ( img=sc->layers[i].images; img!=NULL; img=img->next )
 		SFDDumpImage(sfd,img);
 	    if ( sc->layers[i].splines!=NULL ) {
@@ -2276,8 +2272,6 @@ return( NULL );
 	    memcpy(sc->layers[current_layer].stroke_pen.trans,trans,sizeof(trans));
 	    lasti = NULL;
 	    lastr = NULL;
-	} else if ( strmatch(tok,"LayerName:")==0 ) {
-	    sc->layers[current_layer].name = SFDReadUTF7Str(sfd);
 	} else if ( strmatch(tok,"SplineSet")==0 ) {
 	    sc->layers[current_layer].splines = SFDGetSplineSet(sf,sfd);
 #endif

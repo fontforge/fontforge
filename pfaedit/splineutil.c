@@ -2415,6 +2415,7 @@ void SCRefToSplines(SplineChar *sc,RefChar *rf) {
 	    sc->layers[sc->layer_cnt+layer].dostroke = rf->layers[layer].dostroke;
 	    sc->layers[sc->layer_cnt+layer].fillfirst = rf->layers[layer].fillfirst;
 	}
+	SCMoreLayers(sc);
     } else {
 #else
     {
@@ -3862,9 +3863,8 @@ return;
 	RefCharsFree(sc->layers[i].refs);
 	ImageListsFree(sc->layers[i].images);
 	/* image garbage collection????!!!! */
-#ifdef PFAEDIT_CONFIG_TYPE3
-	free(sc->layers[i].name);
-#endif
+	UndoesFree(sc->layers[i].undoes);
+	UndoesFree(sc->layers[i].redoes);
     }
     StemInfosFree(sc->hstem);
     StemInfosFree(sc->vstem);
@@ -3873,8 +3873,6 @@ return;
     KernPairsFree(sc->kerns);
     KernPairsFree(sc->vkerns);
     AnchorPointsFree(sc->anchor);
-    UndoesFree(sc->layers[ly_fore].undoes); UndoesFree(sc->layers[ly_back].undoes);
-    UndoesFree(sc->layers[ly_fore].redoes); UndoesFree(sc->layers[ly_back].redoes);
     SplineCharListsFree(sc->dependents);
     PSTFree(sc->possub);
     free(sc->ttf_instrs);
