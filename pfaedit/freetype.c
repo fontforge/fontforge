@@ -352,11 +352,17 @@ return( NULL );
 		i = 1;
 	    }
 	    for ( ; i<sf->charcnt; ++i ) {
-		if ( SCWorthOutputting(sf->chars[i])) {
+		if ( SCWorthOutputting(sf->chars[i]) && SCDuplicate(sf->chars[i])==sf->chars[i] ) {
 		    if ( ff==ff_pfa || ff==ff_pfb )
 			ftc->glyph_indeces[i] = cnt++;
 		    else
 			ftc->glyph_indeces[i] = sf->chars[i]->ttf_glyph;
+		}
+	    }
+	    for ( i=1 ; i<sf->charcnt; ++i ) {
+		if ( SCWorthOutputting(sf->chars[i]) && SCDuplicate(sf->chars[i])!=sf->chars[i] ) {
+		    SplineChar *sc = SCDuplicate(sf->chars[i]);
+		    ftc->glyph_indeces[i] = ftc->glyph_indeces[sc->enc];
 		}
 	    }
 	}
