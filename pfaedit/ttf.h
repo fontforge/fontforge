@@ -468,6 +468,8 @@ struct alltabs {
     struct glyphinfo gi;
     int isfixed;
     struct fd2data *fds;
+
+    struct feat_name { int strid; char *name; } *feat_name;
 };
 
 struct subhead { uint16 first, cnt, delta, rangeoff; };	/* a sub header in 8/16 cmap table */

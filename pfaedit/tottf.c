@@ -5242,6 +5242,12 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
     }
     /* once of mac roman encoding, once for mac unicode and once for windows unicode 409 */
 
+    /* The examples I've seen of the feature table only contain mac roman english */
+    if ( at->feat_name!=NULL ) {
+	for ( i=0; at->feat_name[i].strid!=0; ++i )
+	    ++strcnt;
+    }
+
     at->name = tmpfile();
     putshort(at->name,0);	/* format */
     putshort(at->name,strcnt);	/* numrec */
@@ -5272,6 +5278,18 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
 	putshort(at->name,pos);
 	pos += u_strlen(dummy.names[i])+1;
 	++cnt;
+    }
+    if ( at->feat_name!=NULL ) {
+	for ( i=0; at->feat_name[i].strid!=0; ++i ) {
+	    putshort(at->name,1);	/* apple */
+	    putshort(at->name,0);	/*  */
+	    putshort(at->name,0);	/* Roman alphabet */
+	    putshort(at->name,at->feat_name[i].strid);
+	    putshort(at->name,strlen(at->feat_name[i].name));
+	    putshort(at->name,pos);
+	    pos += strlen(at->feat_name[i].name)+1;
+	    ++cnt;
+	}
     }
     if ( format==ff_ttfsym ) {
 	for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL && (i!=6 || !at->applemode) ) {
@@ -5378,6 +5396,10 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
 	dumpustr(at->name,dummy.names[i]);
     for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL )
 	dumpmacstr(at->name,dummy.names[i]);
+    if ( at->feat_name!=NULL ) {
+	for ( i=0; at->feat_name[i].strid!=0; ++i )
+	    dumpstr(at->name,at->feat_name[i].name);
+    }
     if ( format==ff_ttfsym ) {
 	for ( cur=sf->names; cur!=NULL; cur=cur->next ) if ( cur->lang!=0x409 )
 	    for ( i=0; i<ttf_namemax; ++i ) if ( cur->names[i]!=NULL )
@@ -5401,6 +5423,7 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
     for ( i=0; i<ttf_namemax; ++i )
 	if ( useng==NULL || dummy.names[i]!=useng->names[i] )
 	    free( dummy.names[i]);
+    free( at->feat_name );
 }
 
 static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format) {
@@ -6261,7 +6284,6 @@ return( false );
     sethhead(&at->hhead,&at->vhead,at,sf);
     setvorg(&at->vorg,sf);
     setos2(&at->os2,at,sf,format);	/* should precede kern/ligature output */
-    dumpnames(at,sf,format);
     if ( at->gi.glyph_len<0x20000 )
 	at->head.locais32 = 0;
     if ( format!=ff_otf && format!=ff_otfcid && (format!=ff_none || at->msbitmaps) )
@@ -6285,6 +6307,7 @@ return( false );
 	aat_dumpopbd(at,sf);
 	aat_dumpprop(at,sf);
     }
+    dumpnames(at,sf,format);		/* Must be after dumpmorx which may create extra names */
     redoos2(at);
     redocvt(at);
     if ( (flags&ttf_flag_nohints) && format!=ff_otf && format!=ff_otfcid )

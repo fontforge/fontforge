@@ -135,6 +135,10 @@ void aat_dumplcar(struct alltabs *at, SplineFont *sf) {
     int i, j, k, l, seg_cnt, tot, last, offset;
     PST *pst;
     FILE *lcar=NULL;
+    /* We do four passes. The first just calculates how much space we will need */
+    /*  the second provides the top-level lookup table structure */
+    /*  the third provides the arrays of offsets needed for type 4 lookup tables */
+    /*  the fourth provides the actual data on the ligature carets */
 
     for ( k=0; k<4; ++k ) {
 	for ( i=seg_cnt=tot=0; i<sf->charcnt; ++i )
@@ -207,7 +211,424 @@ return;
 /* *************************      (and 'feat')      ************************* */
 /* ************************************************************************** */
 
+/* Some otf tags may map to more than one type,setting ('fwid' maps to several) */
+/*  I think I shall ignore this complication. 'fwid' will just map to the general Full Width Text and ignore the more specific options */
+/* Some type,settings may control more than one otf_tag */
+/* I'm also going to break ligatures up into seperate sub-tables depending on */
+/*  script, so again there may be multiple tags */
+struct feature {
+    uint32 otftag;
+    int16 featureType, featureSetting, offSetting;
+    char *name, *offname;
+    unsigned int ismutex: 1;
+    unsigned int defaultOn: 1;
+    unsigned int vertOnly: 1;
+    uint8 subtable_type;
+    int chain;
+    int32 flag;
+    uint32 feature_start;
+    uint32 feature_len;		/* Does not include header yet */
+    struct feature *next;
+};
+
+static char *FeatureNameFromType(int featureType);
+static struct feature *featureFromTag(uint32 tag);
+
+static void morxfeaturesfree(struct feature *features) {
+    struct feature *n;
+
+    for ( ; features!=NULL; features=n ) {
+	n = features->next;
+	free( features );
+    }
+}
+
+static void morx_dumpSubsFeature(FILE *temp,SplineChar **glyphs,SplineChar **maps,int gcnt) {
+    int i, j, k, l, seg_cnt, tot, last, offset;
+    /* We do four passes. The first just calculates how much space we will need (if any) */
+    /*  the second provides the top-level lookup table structure */
+    /*  the third provides the arrays of offsets needed for type 4 lookup tables */
+
+    for ( k=0; k<3; ++k ) {
+	for ( i=seg_cnt=tot=0; i<gcnt; ++i ) {
+	    if ( k==1 )
+		tot = 0;
+	    else if ( k==2 ) {
+		putshort(temp,maps[i]->ttf_glyph);
+	    }
+	    for ( j=i+1, ++tot; j<gcnt && glyphs[j]->ttf_glyph==glyphs[i]->ttf_glyph+j-i; ++j ) {
+		++tot;
+		last = j;
+		if ( k==2 ) {
+		    putshort(temp,maps[j]->ttf_glyph);
+		}
+	    }
+	    if ( k==1 ) {
+		putshort(temp,glyphs[last]->ttf_glyph);
+		putshort(temp,glyphs[i]->ttf_glyph);
+		putshort(temp,offset);
+		offset += 2*tot;
+	    }
+	    ++seg_cnt;
+	    i = j-1;
+	}
+	if ( k==0 ) {
+	    if ( seg_cnt==0 )
+return;
+	    putshort(temp,4);		/* Lookup table format 4 */
+		/* Binary search header */
+	    putshort(temp,6);		/* Entry size */
+	    putshort(temp,seg_cnt);	/* Number of segments */
+	    for ( j=0,l=1; l<=seg_cnt; l<<=1, ++j );
+	    --j; l>>=1;
+	    putshort(temp,6*l);
+	    putshort(temp,j);
+	    putshort(temp,6*(seg_cnt-l));
+	    offset = 4+7*2 + seg_cnt*6 + 6;
+	} else if ( k==1 ) {		/* flag entry */
+	    putshort(temp,0xffff);
+	    putshort(temp,0xffff);
+	    putshort(temp,0);
+	}
+    }
+}
+
+static struct feature *aat_dumpmorx_substitutions(struct alltabs *at, SplineFont *sf,
+	FILE *temp, struct feature *features) {
+    int i, max, cnt, j, k, gcnt;
+    uint32 *subtags;
+    int ft, fs;
+    SplineChar *sc, *msc, **glyphs, **maps;
+    struct feature *cur;
+    PST *pst;
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
+	sf->chars[i]->ticked= false;
+
+    max = 30; cnt = 0;
+    subtags = galloc(max*sizeof(uint32));
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL && sc->ttf_glyph!=-1) {
+	for ( pst=sc->possub; pst!=NULL; pst=pst->next ) if ( pst->type == pst_substitution ) {
+	    if ( OTTagToMacFeature(pst->tag,&ft,&fs)) {
+		for ( j=cnt-1; j>=0 && subtags[j]!=pst->tag; --j );
+		if ( j>=0 ) {
+		    if ( cnt>=max )
+			subtags = grealloc(subtags,(max+=30)*sizeof(uint32));
+		    subtags[cnt++] = pst->tag;
+		}
+	    }
+	}
+    }
+
+    if ( cnt!=0 ) {
+	for ( j=0; j<cnt; ++j ) {
+	    for ( k=0; k<2; ++k ) {
+		gcnt = 0;
+		for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL && sc->ttf_glyph!=-1) {
+		    for ( pst=sc->possub; pst!=NULL && pst->tag!=subtags[j]; pst=pst->next );
+		    if ( pst!=NULL ) {
+			if ( k==1 ) {
+			    msc = SFGetChar(sf,-1,pst->u.subs.variant);
+			    if ( msc!=NULL && msc->ttf_glyph!=-1 ) {
+				glyphs[gcnt] = sc;
+			        maps[gcnt++] = msc;
+			    }
+			} else
+			    ++gcnt;
+		    }
+		}
+		if ( k==0 ) {
+		    glyphs = galloc((gcnt+1)*sizeof(SplineChar *));
+		    maps = galloc((gcnt+1)*sizeof(SplineChar *));
+		} else {
+		    glyphs[gcnt] = maps[gcnt] = NULL;
+		}
+	    }
+	    cur = featureFromTag(subtags[j]);
+	    cur->next = features;
+	    features = cur;
+	    cur->subtable_type = 4;
+	    cur->feature_start = ftell(temp);
+	    morx_dumpSubsFeature(temp,glyphs,maps,gcnt);
+	    if ( (ftell(temp)-cur->feature_start)&1 )
+		putc('\0',temp);
+	    if ( (ftell(temp)-cur->feature_start)&2 )
+		putshort(temp,0);
+	    cur->feature_len = ftell(temp)-cur->feature_start;
+	    free(glyphs); free(maps);
+	}
+    }
+    free(subtags);
+return( features);
+}
+
+
+static struct feature *aat_dumpmorx_ligatures(struct alltabs *at, SplineFont *sf,
+	FILE *temp, struct feature *features) {
+    SFLigaturePrepare(sf);
+    
+    SFLigatureCleanup(sf);
+return( features);
+}
+
+static struct feature *featuresOrderByType(struct feature *features) {
+    struct feature *f, **all;
+    int i, j, cnt;
+
+    for ( cnt=0, f=features; f!=NULL; f=f->next, ++cnt );
+    if ( cnt==1 )
+return( features );
+    all = galloc(cnt*sizeof(struct feature *));
+    for ( i=0, f=features; f!=NULL; f=f->next, ++i )
+	all[i] = f;
+    for ( i=0; i<cnt-1; ++i ) for ( j=i+1; j<cnt; ++j ) {
+	if ( all[i]->featureType>all[j]->featureType ||
+		(all[i]->featureType==all[j]->featureType && all[i]->featureSetting>all[j]->featureSetting )) {
+	    f = all[i];
+	    all[i] = all[j];
+	    all[j] = f;
+	}
+    }
+    for ( i=0; i<cnt; ++i ) {
+	if ( all[i]->ismutex && (i==cnt-1 || all[i]->featureType!=all[i+1]->featureType))
+	    all[i]->ismutex = false;
+	else {
+	    while ( i<cnt-1 && all[i]->featureType==all[i+1]->featureType )
+		++i;
+	}
+    }
+    for ( i=0; i<cnt-1; ++i )
+	all[i]->next = all[i+1];
+    all[cnt-1]->next = NULL;
+    features = all[0];
+    free( all );
+return( features );
+}
+
+static void aat_dumpfeat(struct alltabs *at, struct feature *feature) {
+    int scnt, fcnt, cnt;
+    struct feature *f, *n, *p;
+    int k;
+    uint32 offset;
+    int strid = 256;
+    int fn=0;
+    /* Dump the 'feat' table which is a connection between morx features and */
+    /*  the name table */
+    /* We do three passes. The first just calculates how much space we will need */
+    /*  the second provides names for the feature types */
+    /*  and the third provides names for the feature settings */
+    /* As we fill up the feat table we also create an array of strings */
+    /*  (strid, char *pointer) which will be used by the 'name' table to */
+    /*  give names to the features and their settings */
+
+    if ( feature==NULL )
+return;
+
+    for ( k=0; k<3; ++k ) {
+	for ( f=feature; f!=NULL; f=n ) {
+	    cnt=1;
+	    if ( !f->ismutex && f->offname!=NULL ) cnt = 2;
+	    if ( k!=2 ) {
+		for ( p=f, n=p->next; n!=NULL && n->featureType==f->featureType; p=n, n=n->next ) {
+		    ++cnt;
+		    if ( !n->ismutex && n->offname!=NULL ) ++cnt;
+		}
+	    } else {
+		for ( p=f; p!=NULL && p->featureType==f->featureType; p=p->next ) {
+		    putshort(at->feat,p->featureSetting);
+		    putshort(at->feat,strid);
+		    at->feat_name[fn].name = p->name;
+		    at->feat_name[fn++].strid = strid++;
+		    if ( !p->ismutex ) {
+			putshort(at->feat,p->offSetting);
+			putshort(at->feat,strid);
+			at->feat_name[fn].name = p->offname;
+			at->feat_name[fn++].strid = strid++;
+		    }
+		}
+		n = p;
+	    }
+	    if ( k==0 ) {
+		++fcnt;
+		scnt += cnt;
+	    } else if ( k==1 ) {
+		putshort(at->feat,f->featureType);
+		putshort(at->feat,cnt);
+		putshort(at->feat,offset);
+		putshort(at->feat,f->ismutex?0xc000:0);
+		putshort(at->feat,strid);
+		at->feat_name[fn].name = FeatureNameFromType(f->featureType);
+		at->feat_name[fn++].strid = strid++;
+		offset += 12;
+	    }
+	}
+	if ( k==0 ) {
+	    ++fcnt;		/* Add one for "All Typographic Features" */
+	    scnt += 1;		/* Add one for All Features Off */
+	    at->feat = tmpfile();
+	    at->feat_name = galloc(fcnt+scnt+1);
+	    putlong(at->feat,0x00010000);
+	    putshort(at->feat,fcnt);
+	    putshort(at->feat,0);
+	    putlong(at->feat,0);
+	    offset = 12 /* header */ + fcnt*12;
+		/* FeatureName entry for All Typographics */
+	    putshort(at->feat,0);
+	    putshort(at->feat,1);
+	    putshort(at->feat,offset);
+	    putshort(at->feat,0x0000);	/* non exclusive */
+	    putshort(at->feat,strid);
+	    at->feat_name[fn].name = "All Typographic Features";
+	    at->feat_name[fn++].strid = strid++;
+	    offset += 12;
+	} else if ( k==1 ) {
+		/* Setting Name Array for All Typographic Features */
+	    putshort(at->feat,1);
+	    putshort(at->feat,strid);
+	    at->feat_name[fn].name = "No Features";
+	    at->feat_name[fn++].strid = strid++;
+	}
+    }
+    memset( &at->feat_name[fn],0,sizeof(struct feat_name));
+    at->featlen = ftell(at->feat);
+    if ( at->featlen&2 )
+	putshort(at->feat,0);
+}
+
+static int featuresAssignFlagsChains(struct feature *feature) {
+    int bit=0, cnt, chain = 0;
+    struct feature *f, *n;
+
+    if ( feature==NULL )
+return( 0 );
+
+    for ( f=feature; f!=NULL; f=n ) {
+	cnt=0;
+	for ( n=f; n!=NULL && n->featureType==f->featureType; n=n->next ) ++cnt;
+	if ( bit+cnt>=32 ) {
+	    ++chain;
+	    bit = 0;
+	}
+	for ( n=f; n!=NULL && n->featureType==f->featureType; n=n->next ) {
+	    n->flag = 1<<(bit++);
+	    n->chain = chain;
+	}
+    }
+return( chain+1 );
+}
+
+static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,FILE *temp) {
+    uint32 def_flags=0;
+    struct feature *f, *n;
+    int subcnt=0, scnt=0;
+    uint32 chain_start, end;
+    char *buf;
+    int len, tot;
+
+    for ( f=features; f!=NULL; f=n ) {
+	if ( f->chain==chain ) {
+	    for ( n=f; n!=NULL && n->featureType==f->featureType; n=n->next ) {
+		++subcnt;
+		if ( n->defaultOn )
+		    def_flags |= n->flag;
+		++scnt;
+		if ( !n->ismutex && n->offname!=NULL ) ++scnt;
+	    }
+	} else
+	    n = f->next;
+    }
+
+    /* Chain header */
+    chain_start = ftell(at->morx);
+    putlong(at->morx,def_flags);
+    putlong(at->morx,0);		/* Fix up length later */
+    putlong(at->morx,scnt+1);		/* extra for All Typo features */
+    putlong(at->morx,subcnt);		/* subtable cnt */
+
+    /* Features */
+    for ( f=features; f!=NULL; f=n ) {
+	if ( f->chain==chain ) {
+	    for ( n=f; n!=NULL && n->featureType==f->featureType; n=n->next ) {
+		putshort(at->morx,n->featureType);
+		putshort(at->morx,n->featureSetting);
+		putlong(at->morx,n->flag);
+		putlong(at->morx,0xffffffff);
+		if ( !n->ismutex && n->offname!=NULL ) {
+		    putshort(at->morx,n->featureType);
+		    putshort(at->morx,n->offSetting);
+		    putlong(at->morx,0);
+		    putlong(at->morx,~n->flag);
+		}
+	    }
+	} else
+	    n = f->next;
+    }
+    putshort(at->morx,0);		/* All Typo Features */
+    putshort(at->morx,1);		/* No Features */
+    putlong(at->morx,0);		/* enable */
+    putlong(at->morx,0);		/* disable */
+
+    buf = galloc(16*1024);
+    /* Subtables */
+    for ( f=features; f!=NULL; f=f->next ) if ( f->chain==chain ) {
+	putlong(at->morx,f->feature_len+12);		/* Size of header needs to be added */
+	putlong(at->morx,(f->vertOnly?0x80000000:0x20000000) | f->subtable_type);
+	putlong(at->morx,n->flag);
+	tot = f->feature_len;
+	fseek(temp, f->feature_start, SEEK_SET);
+	while ( tot!=0 ) {
+	    len = tot;
+	    if ( len>16*1024 ) len = 16*1024;
+	    len = fread(buf,1,len,temp);
+	    len = fwrite(buf,1,len,at->morx);
+	    if ( len<=0 ) {
+		fprintf( stderr, "Disk error\n" );
+	break;
+	    }
+	    tot -= len;
+	}
+    }
+
+    /* Pad chain to a multiple of four */
+    if ( (ftell(at->morx)-chain_start)&1 )
+	putc('\0',at->morx);
+    if ( (ftell(at->morx)-chain_start)&2 )
+	putshort(at->morx,0);
+    end = ftell(at->morx);
+    fseek(at->morx,chain_start+4,SEEK_SET);
+    putlong(at->morx,end-chain_start);
+    fseek(at->morx,0,SEEK_END);
+}
+
 void aat_dumpmorx(struct alltabs *at, SplineFont *sf) {
+    FILE *temp = tmpfile();
+    struct feature *features = NULL;
+    int nchains, i;
+
+    features = aat_dumpmorx_ligatures(at,sf,temp,features);
+    features = aat_dumpmorx_substitutions(at,sf,temp,features);
+    if ( features==NULL ) {
+	fclose(temp);
+return;
+    }
+    features = featuresOrderByType(features);
+    aat_dumpfeat(at, features);
+    nchains = featuresAssignFlagsChains(features);
+
+    at->morx = tmpfile();
+    putlong(at->morx,0x00020000);
+    putlong(at->morx,nchains);
+    for ( i=0; i<nchains; ++i )
+	morxDumpChain(at,features,i,temp);
+    fclose(temp);
+    morxfeaturesfree(features);
+    
+    at->morxlen = ftell(at->morx);
+    if ( at->morxlen&1 )
+	putc('\0',at->morx);
+    if ( (at->morxlen+1)&2 )
+	putshort(at->morx,0);
 }
 
 /* ************************************************************************** */
@@ -239,6 +660,10 @@ void aat_dumpopbd(struct alltabs *at, SplineFont *sf) {
     int i, j, k, l, seg_cnt, tot, last, offset;
     PST *left, *right;
     FILE *opbd=NULL;
+    /* We do four passes. The first just calculates how much space we will need (if any) */
+    /*  the second provides the top-level lookup table structure */
+    /*  the third provides the arrays of offsets needed for type 4 lookup tables */
+    /*  the fourth provides the actual data on the optical bounds */
 
     for ( k=0; k<4; ++k ) {
 	for ( i=seg_cnt=tot=0; i<sf->charcnt; ++i )
@@ -323,20 +748,15 @@ static uint16 *props_array(SplineFont *sf,struct alltabs *at) {
     props = gcalloc(at->maxp.numGlyphs,sizeof(uint16));
     for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL && sc->ttf_glyph!=-1 ) {
 	dir = 0;
-	if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 &&
-		isarabnumeric(sc->unicodeenc))
-	    dir = 6;
-	else if ( sc->script==CHR('a','r','a','b') )
-	    dir = 2;
-	else if ( sc->script==CHR('h','e','b','r') )
-	    dir = 1;
-	else if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 ) {
+	if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 ) {
 	    if ( iseuronumeric(sc->unicodeenc) )
 		dir = 3;
 	    else if ( iseuronumsep(sc->unicodeenc))
 		dir = 4;
 	    else if ( iseuronumterm(sc->unicodeenc))
 		dir = 5;
+	    else if ( isarabnumeric(sc->unicodeenc))
+		dir = 6;
 	    else if ( iscommonsep(sc->unicodeenc))
 		dir = 7;
 	    else if ( isspace(sc->unicodeenc))
@@ -345,11 +765,19 @@ static uint16 *props_array(SplineFont *sf,struct alltabs *at) {
 		dir = 0;
 	    else if ( isrighttoleft(sc->unicodeenc) )
 		dir = 1;
+	    else if ( sc->script==CHR('a','r','a','b') )
+		dir = 2;
+	    else if ( sc->script==CHR('h','e','b','r') )
+		dir = 1;
 	    else
 		dir = 11;		/* Other neutrals */
 	    /* Not dealing with unicode 3 classes */
 	    /* nor block seperator/ segment seperator */
-	}
+	} else if ( sc->script==CHR('a','r','a','b') )
+	    dir = 2;
+	else if ( sc->script==CHR('h','e','b','r') )
+	    dir = 1;
+
 	if ( dir==1 || dir==2 ) doit = true;
 	isfloat = false;
 	if ( sc->width==0 &&
@@ -457,50 +885,106 @@ return;
 
 static struct {
     int mac_feature_type;
+    char *feature_name;
+} feature_type_to_name[] = {
+    { 0, "All Features" },
+    { 1, "Ligatures" },
+    { 2, "Cursive Connection" },
+    { 3, "Letter Case" },
+    { 4, "Vertical Substitution" },
+    { 5, "Linguistic Rearrangement" },
+    { 6, "Number Spacing" },
+    { 8, "Smart Swash" },
+    { 9, "Diacritics" },
+    { 10, "Vertical Position" },
+    { 11, "Fractions" },
+    { 13, "Overlapping Characters" },
+    { 14, "Typographic Extras" },
+    { 15, "Mathematical Extras" },
+    { 16, "Ornament Sets" },
+    { 17, "Character Alternates" },
+    { 18, "Design Complexity" },
+    { 19, "Style Options" },
+    { 20, "Character Shape" },
+    { 21, "Number Case" },
+    { 22, "Text Spacing" },
+    { 23, "Transliteration" },
+    { 24, "Annotation" },
+    { 25, "Kana Spacing" },
+    { 26, "Ideographic Spacing" },
+    { 27, "Unicode Decomposition" },
+    { 103, "CJK Roman Spacing" },
+    { -1, NULL }
+};
+
+static char *FeatureNameFromType(int featureType) {
+    int i;
+
+    for ( i=0; feature_type_to_name[i].mac_feature_type!=-1; ++i )
+	if ( feature_type_to_name[i].mac_feature_type==featureType )
+return( feature_type_to_name[i].feature_name );
+
+return( "" );
+}
+
+static struct {
+    int mac_feature_type;
     int mac_feature_setting;
+    int off_setting;
+    unsigned int ismutex: 1;
+    unsigned int defaultOn: 1;
     uint32 otf_tag;
+    char *on_name;
+    char *off_name;
 } macfeat_otftag[] = {
-    { 1, 0, CHR('r','l','i','g') },	/* Required ligatures */
-    { 1, 2, CHR('l','i','g','a') },	/* Common ligatures */
-    { 1, 4, CHR('d','l','i','g') },	/* rare ligatures => discretionary */
-    { 1, 4, CHR('h','l','i','g') },	/* rare ligatures => historic */
-    /* 1, 6, logos */
-    /* 1, 8, rebus pictures */
-    /* 1, 10, diphthong ligatures */
-    /* 1, 12, squared ligatures */
-    /* 1, 14, abrev squared ligatures */
+    { 1, 0, 1, 0, 1, CHR('r','l','i','g'), "Required Ligatures", "No Required Ligatures" },	/* Required ligatures */
+    { 1, 2, 3, 0, 1, CHR('l','i','g','a'), "Common Ligatures", "No Common Ligatures" },	/* Common ligatures */
+    { 1, 4, 5, 0, 0, CHR('d','l','i','g'), "Rare Ligatures", "No Rare Ligatures" },	/* rare ligatures => discretionary */
+    { 1, 4, 5, 0, 0, CHR('h','l','i','g'), "Rare Ligatures", "No Rare Ligatures" },	/* rare ligatures => historic */
+    { 1, 6, 7, 0, 0, CHR('M','L','O','G'), "Logos", "No Logos" },
+    { 1, 8, 9, 0, 0, CHR('M','R','E','B'), "Rebus Pictures", "No Rebus Pictures" },
+    { 1, 10, 11, 0, 0, CHR('M','D','L','G'), "Diphthong Ligatures", "No Diphthong Ligatures" },
+    { 1, 12, 13, 0, 0, CHR('M','S','L','G'), "Square Ligatures", "No Square Ligatures" },
+    { 1, 14, 15, 0, 0, CHR('M','A','L','G'), "Abbreviated Square Ligatures", "No Abbreviated Square Ligatures" },
     /* 2, 1, partially connected cursive */
     /* 2, 2, connected cursive */
     /* 3, 2, all caps */
     /* 3, 3, all lower */
-    { 3, 4, CHR('s','m','c','p') },	/* small caps */
+    { 3, 4, 0, 1, 0, CHR('s','m','c','p'), "Small Caps", "Upper and Lower Case" },	/* small caps */
     /* 3, 4, initial caps */
     /* 3, 5, initial caps, small caps */
-    { 4, 0, CHR('v','r','t','2') },	/* vertical forms => vertical rotation */
-    { 4, 0, CHR('v','k','n','a') },	/* vertical forms => vertical kana */
-    { 6, 0, CHR('t','n','u','m') },	/* monospace numbers => Tabular numbers */
-    /* 8, ?, swashes */
-    { 10, 1, CHR('s','u','p','s') },	/* superior vertical position => superscript */
-    { 10, 3, CHR('s','u','p','s') },	/* ordinal vertical position => superscript */
-    { 10, 2, CHR('s','u','b','s') },	/* inferior vertical position => subscript */
-    { 11, 1, CHR('f','r','a','c') },	/* vertical fraction => fraction ligature */
-    { 20, 0, CHR('t','r','a','d') },	/* tradictional characters => traditional forms */
-    { 20, 0, CHR('t','n','a','m') },	/* tradictional characters => traditional names */
-    { 20, 1, CHR('s','m','p','l') },	/* simplified characters */
-    { 20, 2, CHR('j','p','7','8') },	/* jis 1978 */
-    { 20, 3, CHR('j','p','8','3') },	/* jis 1983 */
-    { 20, 4, CHR('j','p','9','0') },	/* jis 1990 */
-    { 21, 0, CHR('o','n','u','m') },	/* lower case number => old style numbers */
-    { 22, 0, CHR('p','w','i','d') },	/* proportional text => proportional widths */
-    { 22, 2, CHR('h','w','i','d') },	/* half width text => half widths */
-    { 22, 3, CHR('f','w','i','d') },	/* full width text => full widths */
-    { 25, 0, CHR('f','w','i','d') },	/* full width kana => full widths */
-    { 25, 1, CHR('p','w','i','d') },	/* proportional kana => proportional widths */
-    { 26, 0, CHR('f','w','i','d') },	/* full width ideograph => full widths */
-    { 26, 1, CHR('p','w','i','d') },	/* proportional ideograph => proportional widths */
-    { 103, 0, CHR('h','w','i','d') },	/* half width cjk roman => half widths */
-    { 103, 1, CHR('p','w','i','d') },	/* proportional cjk roman => proportional widths */
-    { 103, 3, CHR('f','w','i','d') },	/* full width cjk roman => full widths */
+    { 4, 0, 1, 0, 1, CHR('v','r','t','2'), "Vertical Forms", "No Vertical Forms" },	/* vertical forms => vertical rotation */
+    { 4, 0, 1, 0, 1, CHR('v','k','n','a'), "Vertical Forms", "No Vertical Forms" },	/* vertical forms => vertical kana */
+    { 6, 0, 1, 1, 0, CHR('t','n','u','m'), "Monospaced Numbers", "Proportional Numbers" },	/* monospace numbers => Tabular numbers */
+    { 8, 0, 1, 0, 0, CHR('M','S','W','I'), "Word Initial Swash", "No Word Initial Swash" },
+    { 8, 2, 3, 0, 1, CHR('M','S','W','F'), "Word Final Swash", "No Word Final Swash" },
+    { 8, 4, 5, 0, 1, CHR('M','S','L','I'), "Line Initial Swash", "No Line Initial Swash" },
+    { 8, 6, 7, 0, 1, CHR('M','S','L','F'), "Line Final Swash", "No Line Final Swash" },
+    { 8, 8, 9, 0, 0, CHR('M','S','N','F'), "Non-Final Swash", "No Non-Final Swash" },
+    { 10, 1, 0, 1, 0, CHR('s','u','p','s'), "Superscript", "Normal Position" },	/* superior vertical position => superscript */
+    { 10, 3, 0, 1, 0, CHR('s','u','p','s'), "Superscript", "Normal Position" },	/* ordinal vertical position => superscript */
+    { 10, 2, 0, 1, 0, CHR('s','u','b','s'), "Subscript", "Normal Position" },	/* inferior vertical position => subscript */
+    { 11, 1, 0, 1, 1, CHR('f','r','a','c'), "Fraction Ligatures", "No Fractions" },	/* vertical fraction => fraction ligature */
+    { 16, 1, 0, 1, 0, CHR('o','r','n','m'), "Dingbats", "No Ornaments" },	/* vertical fraction => fraction ligature */
+    { 20, 0, -1, 1, 0, CHR('t','r','a','d'), "Traditional Characters", NULL },	/* tradictional characters => traditional forms */
+    { 20, 0, -1, 1, 0, CHR('t','n','a','m'), "Traditional Characters", NULL },	/* tradictional characters => traditional names */
+    { 20, 1, 0, 1, 0, CHR('s','m','p','l'), "Simplified Characters", "Traditional Characters" },	/* simplified characters */
+    { 20, 2, -1, 1, 0, CHR('j','p','7','8'), "JIS 1978 Characters", NULL },	/* jis 1978 */
+    { 20, 3, -1, 1, 0, CHR('j','p','8','3'), "JIS 1983 Characters", NULL },	/* jis 1983 */
+    { 20, 4, -1, 1, 0, CHR('j','p','9','0'), "JIS 1990 Characters", NULL },	/* jis 1990 */
+    { 21, 0, 1, 1, 0, CHR('o','n','u','m'), "Lower Case Number", "Upper Case Number" },	/* lower case number => old style numbers */
+    { 22, 0, -1, 1, 1, CHR('p','w','i','d'), "Proportional Text", NULL },	/* proportional text => proportional widths */
+    { 22, 1, 0, 1, 0, CHR('M','W','I','D'), "Monospace Text", "Proportional Text" },	/* proportional text => proportional widths */
+    { 22, 2, 0, 1, 0, CHR('h','w','i','d'), "Half Width Text", "Proportional Text" },	/* half width text => half widths */
+    { 22, 3, 0, 1, 0, CHR('f','w','i','d'), "Full Width Text", "Proportional Text" },	/* full width text => full widths */
+    { 25, 0, -1, 1, 1, CHR('f','w','i','d'), "Full Width Kana", NULL },	/* full width kana => full widths */
+    { 25, 1, 0, 0, 1, CHR('p','w','i','d'), "Proportional Kana", "Full Width Kana"  },	/* proportional kana => proportional widths */
+    { 26, 0, -1, 1, 1, CHR('f','w','i','d'), "Full Width Ideograph", NULL },	/* full width ideograph => full widths */
+    { 26, 1, 0, 1, 0, CHR('p','w','i','d'), "Proportional Ideograph", "Full Width Ideograph" },	/* proportional ideograph => proportional widths */
+    { 103, 0, -1, 1, 1, CHR('h','w','i','d'), "Half Width CJK Roman", NULL },	/* half width cjk roman => half widths */
+    { 103, 1, 0, 1, 0, CHR('p','w','i','d'), "Proportional CJK Roman", "Half Width CJK Roman"  },	/* proportional cjk roman => proportional widths */
+    { 103, 2, 0, 1, 0, CHR('M','W','I','D'), "Monospace CJK Roman", "Half Width CJK Roman" },	/* proportional text => proportional widths */
+    { 103, 3, 0, 1, 0, CHR('f','w','i','d'), "Full Width CJK Roman", "Half Width CJK Roman" },	/* full width cjk roman => full widths */
     { 0, 0, 0 }
 };
 
@@ -529,3 +1013,24 @@ return( true );
     *featureSetting = 0;
 return( 0 );
 }
+
+static struct feature *featureFromTag(uint32 tag ) {
+    int i;
+    struct feature *feat;
+
+    for ( i=0; macfeat_otftag[i].otf_tag!=0; ++i )
+	if ( macfeat_otftag[i].otf_tag == tag ) {
+	    feat = chunkalloc(sizeof(struct feature));
+	    feat->otftag = tag;
+	    feat->featureType = macfeat_otftag[i].mac_feature_type;
+	    feat->featureSetting = macfeat_otftag[i].mac_feature_setting;
+	    feat->offSetting = macfeat_otftag[i].off_setting;
+	    feat->ismutex = macfeat_otftag[i].ismutex;
+	    feat->defaultOn = macfeat_otftag[i].defaultOn;
+	    feat->vertOnly = tag==CHR('v','r','t','2') || tag==CHR('v','k','n','a');
+return( feat );
+	}
+
+return( NULL );
+}
+
