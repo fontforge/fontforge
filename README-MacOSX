@@ -21,7 +21,7 @@ INSTALLATION NOTES:
  the cidmap package from http://pfaedit.sf.net/cidmaps.tgz and move the
  contents to /usr/share/pfaedit also.
 
-BITMAP FONTS
+BITMAP FONTS (for PfaEdit's use, not to edit)
  The program sort of assumes you've got some unicode fonts lying around. I'm
  not exactly sure what is needed, the program sort of picks and chooses
  depending on what's available. I noticed it used my unicode fonts
@@ -53,7 +53,9 @@ CAVEATS
  1) PfaEdit does not conform to Apple's Human Interface Guidelines, and never
     will.
  2) PfaEdit does not know how to read a font out of a resource fork.
-    PfaEdit cannot create NFNTs with 2byte encodings (CJK)
+    You cannot create an NFNT with 2byte encodings (CJK), use the "sbit"
+    bitmap format instead (which is only available if No Outline Font is
+    generated. (I can't test this well, it works in my simple tests)
  3) The default window manager (twm) does not work well with PfaEdit when
     run in Rootless mode.
     PfaEdit allows the window manager to position its windows for it, and
@@ -75,4 +77,12 @@ FONTS UNDER Mac OS/X
 
  If you see a font file where ls tells you the size is zero then it will
  probably be a font in a resource fork. If you want to edit it, first package
- it up in macbinary (or binhex) format.
+ it up in macbinary (or binhex) format, PfaEdit can read it out of the package.
+
+FONTS UNDER Mac OS/9
+ Note Bene: As far as I know PfaEdit has not been ported to Mac OS/9 (or 8 or 7)
+
+ Fonts live in :System Folder:Fonts: They are stored in resource forks, which
+ means that if you want to work with them you must first wrap them up with
+ either macbinary or binhex (Fetch may be used to do either conversion as you
+ transfer the font to a different system to edit it).

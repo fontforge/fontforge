@@ -597,8 +597,8 @@ static struct bitmapSizeTable *ttfdumpstrikelocs(FILE *bloc,FILE *bdat,BDFFont *
     int32 pos = ftell(bloc), startofsubtables, base;
     BDFChar *bc, *bc2;
 
-    for ( i=0; i<bdf->charcnt && (bdf->chars[i]==NULL || bdf->chars[i]->sc->ttf_glyph==0); ++i );
-    for ( j=bdf->charcnt-1; j>=0 && (bdf->chars[j]==NULL || bdf->chars[j]->sc->ttf_glyph==0); --j );
+    for ( i=0; i<bdf->charcnt && (bdf->chars[i]==NULL || bdf->chars[i]->sc->ttf_glyph==-1); ++i );
+    for ( j=bdf->charcnt-1; j>=0 && (bdf->chars[j]==NULL || bdf->chars[j]->sc->ttf_glyph==-1); --j );
     if ( j==-1 ) {
 	GDrawIError("No characters to output in strikes");
 return(NULL);
@@ -610,6 +610,7 @@ return(NULL);
     size->startGlyph = bdf->chars[i]->sc->ttf_glyph;
     /* I shall ignore vertical metrics */
     size->hori.caretRise = 1; /* other caret fields may be 0 */
+    size->vert.caretRise = 1; /* other caret fields may be 0 */
     first = true;
     for ( ; i<bdf->charcnt ; ++i ) if ( (bc=bdf->chars[i])!=NULL ) {
 	if ( first ) {
@@ -633,6 +634,22 @@ return(NULL);
     }
     size->subtableoffset = pos;
 
+    /* There are some very cryptic pictures supposed to document the meaning */
+    /*  of the metrics fields. MS and Apple use the same picture. The data */
+    /*  present in font files do not match my understanding of those pictures */
+    /*  But that's ok because different font files contain wildly different */
+    /*  values for the same data, so they don't match each other either */
+    /* GRRRRR */
+#if 0
+    size->vert.minoriginsb = size->hori.maxbeforebl;
+    size->vert.minAdvancesb = size->hori.minafterbl;
+    /* Apple seems to say that the vertical ascender/descender are half the */
+    /*  pixel size (which makes sense), but MS does something else */
+    size->vert.ascender = bdf->pixelsize/2;
+    size->vert.descender = bdf->pixelsize/2;
+    size->vert.widthMax = bdf->pixelsize;
+#endif
+
     /* First figure out sequences of characters which all have about the same metrics */
     /* then we dump out the subtables (to temp file) */
     /* then we dump out the indexsubtablearray (to bloc) */
@@ -643,12 +660,12 @@ return(NULL);
 	BCCompressBitmap(bdf->chars[i]);
     }
     for ( i=0; i<bdf->charcnt; ++i ) {
-	if ( (bc=bdf->chars[i])!=NULL && bc->sc->ttf_glyph!=0 &&
+	if ( (bc=bdf->chars[i])!=NULL && bc->sc->ttf_glyph!=1 &&
 		bc->xmin>=0 && bc->xmax<=bc->width &&
 		bc->ymax<bdf->ascent && bc->ymin>=-bdf->descent ) {
 	    cnt = 1;
 	    for ( j=i+1; j<bdf->charcnt; ++j )
-		    if ( (bc2=bdf->chars[i])!=NULL && bc2->sc->ttf_glyph!=0 ) {
+		    if ( (bc2=bdf->chars[i])!=NULL && bc2->sc->ttf_glyph!=-1 ) {
 		if ( bc2->xmin<0 || bc2->xmax>bc->width || bc2->ymin<-bdf->descent ||
 		    bc2->ymax>=bdf->ascent || bc2->width!=bc->width ||
 		    bc2->sc->ttf_glyph!=bc->sc->ttf_glyph+cnt )
@@ -659,7 +676,7 @@ return(NULL);
 		bc->widthgroup = true;
 		cnt = 1;
 		for ( j=i+1; j<bdf->charcnt; ++j )
-			if ( (bc2=bdf->chars[i])!=NULL && bc2->sc->ttf_glyph!=0 ) {
+			if ( (bc2=bdf->chars[i])!=NULL && bc2->sc->ttf_glyph!=-1 ) {
 		    if ( bc2->xmin<0 || bc2->xmax>bc->width || bc2->ymin<-bdf->descent ||
 			bc2->ymax>=bdf->ascent || bc2->width!=bc->width ||
 			bc2->sc->ttf_glyph!=bc->sc->ttf_glyph+cnt )
@@ -673,7 +690,7 @@ return(NULL);
 
     /* Now the pointers */
     for ( i=0; i<bdf->charcnt; ++i )
-	    if ( (bc=bdf->chars[i])!=NULL && bc->sc->ttf_glyph!=0) {
+	    if ( (bc=bdf->chars[i])!=NULL && bc->sc->ttf_glyph!=-1) {
 	cur = galloc(sizeof(struct indexarray));
 	cur->next = NULL;
 	if ( last==NULL ) head = cur;
@@ -789,13 +806,17 @@ void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,real *sizes) {
     /* aside from the names the version number is about the only difference */
     /*  I'm aware of. Oh MS adds a couple new sub-tables, but I haven't seen */
     /*  them used, and Apple also has a subtable MS doesn't support, but so what? */
-    if ( at->msbitmaps ) {
+    /* Oh, of course. Apple documents version 0x10000, but it actually uses */
+    /*  version 0x20000. How silly of me to think the docs might be right */
+    /*if ( at->msbitmaps ) {*/
 	putlong(at->bdat,0x20000);
 	putlong(at->bloc,0x20000);
+#if 0
     } else {
 	putlong(at->bdat,0x10000);
 	putlong(at->bloc,0x10000);
     }
+#endif
     putlong(at->bloc,at->gi.strikecnt);
 
     /* leave space for the strike array at start of file */

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 7-Feb-2002 -->
+  <!-- AP: Last modified: 8-Feb-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -78,22 +78,22 @@ you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-020205.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 5-Feb-2002
+    <A HREF="pfaedit-020208.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 8-Feb-2002
   <LI>
-    <A HREF="pfaedit-solaris-020130.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 30-Jan-2002
+    <A HREF="pfaedit-solaris-020208.tgz">Download pfaedit Solaris 8.0
+    </A>executable Version: 8-Feb-2002
   <LI>
-    <A HREF="pfaedit-020123-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
-    Version: 23-Jan-2002 (Redhat 7.1)
+    <A HREF="pfaedit-020208-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
+    Version: 8-Feb-2002 (Redhat 7.1)
   <LI>
     <A HREF="http://packages.debian.org/unstable/x11/pfaedit.html">A debian package
     is available at the debian site.</A>
   <LI>
     <A HREF="Problems-MacOSX.html#binary">A Mac OS/X distribution</A> (with Caveats).
-    Version 1-Dec-2001
+    Version 8-Feb-2001
   <LI>
-    <A HREF="pfaedit_cygwin-020130.tgz">A cygwin version</A>. Version: 30-Jan-2002
+    <A HREF="pfaedit_cygwin-020208.tgz">A cygwin version</A>. Version: 8-Feb-2002
   <LI>
     <A HREF="ftp://nchrem.tnw.tudelft.nl/pub/pfaedit/">An OpenVMS executable
     </A>(by Jacob Jansen): Version Approximately 23-Sept-2001<BR>
@@ -111,11 +111,11 @@ If you want to edit CID keyed fonts you probably need these
   <A NAME="source">Source</A> distribution
 </H2>
 <P>
-You can download a <A HREF="pfaedit-020123-1.src.rpm">source RPM</A>: Version:
-23-Jan-2002<BR>
-Or you can download the <A HREF="pfaedit_full-020205.tgz">entire source tree
+You can download a <A HREF="pfaedit-020208-1.src.rpm">source RPM</A>: Version:
+8-Feb-2002<BR>
+Or you can download the <A HREF="pfaedit_full-020208.tgz">entire source tree
 </A>in one .tgz file: Version
-5-Feb-2002<!--
+8-Feb-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -242,13 +242,25 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
 </H2>
 <UL>
   <LI>
+    8-Feb-2002
+    <UL>
+      <LI>
+	PfaEdit would crash when generating a PostScript font from ARIAL.TTF.
+      <LI>
+	Changed the bitmap dlgs so that they allow you to specify some control over
+	interesting screen resolutions. (before just support X standard res. of 75
+	and 100, now support MS 96&amp;120 and Mac 72).
+      <LI>
+	Oops, Apple now documents that the bdat and bloc tables should have version
+	number 0x20000. But when I last looked it said 0x10000 and that didn't work.
+    </UL>
+  <LI>
     7-Feb-2002
     <UL>
       <LI>
 	I think I've figured out how Apple does asian bitmaps now. They don't use
 	NFNTs at all (or they do, but those NFNT are tiny stubs with no real data
-	in them). All the data are in the sfnt. I should produce them properly
-	now.<BR>
+	in them). All the data are in the sfnt. I should produce them properly now.<BR>
 	-- Except I don't.
       <LI>
 	I've also added the ability to create bitmap only sfnts for the mac.<BR>
@@ -795,9 +807,6 @@ can.
     <UL>
       <LI>
 	Microsoft FON files (bitmap font resource files for windows)
-      <LI>
-	And I can't find any description of how mac FOND resources are extended to
-	handle double byte encodings.
     </UL>
   <LI>
     There are certain c<EM>ommands which don't work very well </EM>and if someone

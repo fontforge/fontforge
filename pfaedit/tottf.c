@@ -4327,6 +4327,9 @@ static void sethead(struct head *head,SplineFont *_sf) {
 	head->dirhint = -2;
     else
 	head->dirhint = 2;
+    if ( rl )
+	head->flags |= (1<<9);		/* Apple documents this */
+    /* if there are any indic characters, set bit 10 */
 
     time(&now);		/* seconds since 1970, need to convert to seconds since 1904 */
     now1904[0] = now1904[1] = now1904[2] = now1904[3] = 0;

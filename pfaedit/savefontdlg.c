@@ -70,7 +70,7 @@ static GTextInfo bitmaptypes[] = {
     { (unichar_t *) "BDF", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "In TTF (MS)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "In TTF (Apple)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "In sfnt (dfont)", NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "sbits only (dfont)", NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "GDF", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "NFNT (MacBin)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "NFNT (dfont)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
@@ -281,7 +281,7 @@ return( err );
 
 int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype) {
     int i;
-    static char *bitmaps[] = {"bdf", "ms", "apple", "sfnt", "gdf", "bin", "dfont", NULL };
+    static char *bitmaps[] = {"bdf", "ms", "apple", "sbit", "gdf", "bin", "dfont", NULL };
     real *sizes=NULL;
 
     for ( i=0; extensions[i]!=NULL; ++i ) {

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 19-Jan-2002 -->
+  <!-- AP: Last modified: 8-Feb-2002 -->
   <TITLE>The Element Menu</TITLE>
 </HEAD>
 <BODY>
@@ -123,13 +123,15 @@ This menu is not present in the Metrics View.
     <A NAME="Bitmaps">Bitmaps</A> Available...
   <DD>
     This brings up a list of pixel sizes for bitmap fonts.<BR>
-    <IMG SRC="bitmapsavail.png" WIDTH="263" HEIGHT="298"><BR>
+    <IMG SRC="bitmapsavail.png" WIDTH="263" HEIGHT="333"><BR>
     If you have bitmap fonts this will show their pixel sizes. If you remove
     a size that is in the list then that font will be deleted from the sfd file.
     If you add a size then that size font will be created and stored in the sfd
-    file. Note that on X the conversion between pixel size and point size is
-    dependent on the screen resolution. Two common resolutions are used on X:
-    75dpi and 100dpi. This dialog provides the conversion between pixel size
+    file. Note that on different systems have different standard resolutions
+    and the resolution affects the mapping from pixel to pointsize. This dlg
+    tries to provide you with the common resolutions under X, MS Windows and
+    Macintosh. On X these are 75 and 100dpi, on MS Windows 96 and 120dpi, and
+    on the Mac 72dpi. This dialog provides the conversion between pixel size
     and point sizes at these resolutions.
     <P>
     Normally the new characters are created by rasterizing the outline font,

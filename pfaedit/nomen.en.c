@@ -904,6 +904,12 @@ static char *str_AddingSizeScale = " Adding a size will create it by scaling.";
 static char *str_SpecifyRegenSizes = "Specify bitmap sizes to be regenerated";
 static char *str_PointSizes75 = "Point sizes on a 75 dpi screen";
 static char *str_PointSizes100 = "Point sizes on a 100 dpi screen";
+static char *str_PointSizes96 = "Point sizes on a 96 dpi screen";
+static char *str_PointSizes120 = "Point sizes on a 120 dpi screen";
+static char *str_PointSizes72 = "Point sizes on a 72 dpi screen";
+static char *str_XSizes = "X";
+static char *str_WinSizes = "Win";
+static char *str_MacSizes = "Mac";
 static char *str_ScalingBitmaps = "Scaling Bitmaps";
     /* Bitmap view */
 /* "%s at %d from %s", charactername, pixelsize, fontname */
