@@ -2435,6 +2435,46 @@ static void bClearHints(Context *c) {
     FVFakeMenus(c->curfv,201);
 }
 
+static void bAddHint(Context *c) {
+    int i, any;
+    int start, width, ish;
+    SplineFont *sf = c->curfv->sf;
+    StemInfo *h;
+
+    if ( c->a.argc!=4 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int || c->a.vals[3].type!=v_int )
+	error( c, "Bad argument type" );
+    ish = c->a.vals[1].u.ival;
+    start = c->a.vals[2].u.ival;
+    width = c->a.vals[3].u.ival;
+    if ( width<=0 && width!=-20 && width!=-21 )
+	error( c, "Bad hint width" );
+    any = false;
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && c->curfv->selected[i] ) {
+	SplineChar *sc = sf->chars[i];
+
+	h = chunkalloc(sizeof(StemInfo));
+	h->start = start;
+	h->width = width;
+	if ( ish ) {
+	    SCGuessHHintInstancesAndAdd(sc,h,0x80000000,0x80000000);
+	    sc->hconflicts = StemListAnyConflicts(sc->hstem);
+	} else {
+	    SCGuessVHintInstancesAndAdd(sc,h,0x80000000,0x80000000);
+	    sc->vconflicts = StemListAnyConflicts(sc->vstem);
+	}
+	sc->manualhints = true;
+	SCClearHintMasks(sc,true);
+	SCOutOfDateBackground(sc);
+	SCUpdateAll(sc);
+	any = true;
+    }
+    if ( !any )
+	fprintf(stderr, "Warning: No characters selected in AddHint(%d,%d,%d)\n",
+		ish, start, width);
+}
+
 static void bClearPrivateEntry(Context *c) {
     if ( c->a.argc!=2 )
 	error( c, "Wrong number of arguments");
@@ -3537,6 +3577,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "bDontAutoHint", bDontAutoHint },
     { "AutoInstr", bAutoInstr },
     { "ClearHints", bClearHints },
+    { "AddHint", bAddHint },
     { "ClearPrivateEntry", bClearPrivateEntry },
     { "ChangePrivateEntry", bChangePrivateEntry },
     { "GetPrivateEntry", bGetPrivateEntry },
