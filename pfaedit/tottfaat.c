@@ -1378,7 +1378,7 @@ static void aat_dumpfeat(struct alltabs *at, SplineFont *sf, struct feature *fea
 
     if ( feature==NULL )
 return;
-    feature = reversefeatures(feature);
+    /*feature = reversefeatures(feature);*/
 
     fcnt = scnt = 0;
     for ( k=0; k<3; ++k ) {

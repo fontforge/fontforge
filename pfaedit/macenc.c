@@ -1290,7 +1290,7 @@ MacFeat *FindMacFeature(SplineFont *sf, int feat, MacFeat **secondary) {
 
     for ( from_f = sf->features; from_f!=NULL && from_f->feature!=feat; from_f=from_f->next );
     for ( from_p = default_mac_feature_map; from_p!=NULL && from_p->feature!=feat; from_p=from_p->next );
-    if ( from_f==NULL ) {
+    if ( from_f!=NULL ) {
 	if ( secondary!=NULL ) *secondary = from_p;
 return( from_f );
     }
