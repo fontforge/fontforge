@@ -214,7 +214,98 @@ void aat_dumpmorx(struct alltabs *at, SplineFont *sf) {
 /* *************************    The 'opbd' table    ************************* */
 /* ************************************************************************** */
 
+
+static int haslrbounds(SplineChar *sc, PST **left, PST **right) {
+    PST *pst;
+
+    *left = *right = NULL;
+    for ( pst=sc->possub; pst!=NULL ; pst=pst->next ) {
+	if ( pst->type == pst_position ) {
+	    if ( pst->tag==CHR('l','f','b','d') ) {
+		*left = pst;
+		if ( *right )
+return( true );
+	    } else if ( pst->tag==CHR('r','t','b','d') ) {
+		*right = pst;
+		if ( *left )
+return( true );
+	    }
+	}
+    }
+return( *left!=NULL || *right!=NULL );
+}
+
 void aat_dumpopbd(struct alltabs *at, SplineFont *sf) {
+    int i, j, k, l, seg_cnt, tot, last, offset;
+    PST *left, *right;
+    FILE *opbd=NULL;
+
+    for ( k=0; k<4; ++k ) {
+	for ( i=seg_cnt=tot=0; i<sf->charcnt; ++i )
+		if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 &&
+		    haslrbounds(sf->chars[i],&left,&right) ) {
+	    if ( k==1 )
+		tot = 0;
+	    else if ( k==2 ) {
+		putshort(opbd,offset);
+		offset += 8;
+	    } else if ( k==3 ) {
+		putshort(opbd,left!=NULL?left->u.pos.xoff:0);
+		putshort(opbd,0);		/* top */
+		putshort(opbd,right!=NULL?-right->u.pos.h_adv_off:0);
+		putshort(opbd,0);		/* bottom */
+	    }
+	    for ( j=i+1, ++tot; j<sf->charcnt; ++j ) if ( sf->chars[j]!=NULL && sf->chars[j]->ttf_glyph!=-1 ) {
+		if ( !haslrbounds(sf->chars[j],&left,&right) )
+	    break;
+		++tot;
+		last = j;
+		if ( k==2 ) {
+		    putshort(opbd,offset);
+		    offset += 8;
+		} else if ( k==3 ) {
+		    putshort(opbd,left!=NULL?left->u.pos.xoff:0);
+		    putshort(opbd,0);		/* top */
+		    putshort(opbd,right!=NULL?-right->u.pos.h_adv_off:0);
+		    putshort(opbd,0);		/* bottom */
+		}
+	    }
+	    if ( k==1 ) {
+		putshort(opbd,sf->chars[last]->ttf_glyph);
+		putshort(opbd,sf->chars[i]->ttf_glyph);
+		putshort(opbd,offset);
+		offset += 2*tot;
+	    }
+	    ++seg_cnt;
+	    i = j-1;
+	}
+	if ( k==0 ) {
+	    if ( seg_cnt==0 )
+return;
+	    opbd = tmpfile();
+	    putlong(opbd, 0x00010000);	/* version */
+	    putshort(opbd,0);		/* data are distances (not points) */
+
+	    putshort(opbd,4);		/* Lookup table format 4 */
+		/* Binary search header */
+	    putshort(opbd,6);		/* Entry size */
+	    putshort(opbd,seg_cnt);	/* Number of segments */
+	    for ( j=0,l=1; l<=seg_cnt; l<<=1, ++j );
+	    --j; l>>=1;
+	    putshort(opbd,6*l);
+	    putshort(opbd,j);
+	    putshort(opbd,6*(seg_cnt-l));
+	    offset = 4+7*2 + seg_cnt*6 + 6;
+	} else if ( k==1 ) {		/* flag entry */
+	    putshort(opbd,0xffff);
+	    putshort(opbd,0xffff);
+	    putshort(opbd,0);
+	}
+    }
+    at->opbd = opbd;
+    at->opbdlen = ftell(at->opbd);
+    if ( at->opbdlen&2 )
+	putshort(at->opbd,0);
 }
 
 /* ************************************************************************** */

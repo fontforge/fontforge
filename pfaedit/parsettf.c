@@ -4618,7 +4618,7 @@ static void TTF_SetLcaret(struct ttfinfo *info, int gnum, int offset, FILE *ttf)
     int cnt, i;
 
     if ( gnum<0 || gnum>=info->glyph_cnt ) {
-	fprintf( stderr, "Glyph out of bounds in 'prop' table %d\n", gnum );
+	fprintf( stderr, "Glyph out of bounds in 'lcar' table %d\n", gnum );
 return;
     } else if ( (sc=info->chars[gnum])==NULL )
 return;
@@ -4661,6 +4661,86 @@ static void readttflcar(FILE *ttf,struct ttfinfo *info) {
 return;				/*  indicated by points */
     readttf_applelookup(ttf,info,info->lcar_start,
 	    lcar_apply_values,lcar_apply_value,NULL,NULL);
+}
+
+static void TTF_SetOpticalBounds(struct ttfinfo *info, int gnum, int left, int right) {
+    PST *pst;
+    SplineChar *sc;
+
+    if ( left==0 && right==0 )
+return;
+
+    if ( gnum<0 || gnum>=info->glyph_cnt ) {
+	fprintf( stderr, "Glyph out of bounds in 'opbd' table %d\n", gnum );
+return;
+    } else if ( (sc=info->chars[gnum])==NULL )
+return;
+
+    if ( left!=0 ) {
+	pst = chunkalloc(sizeof(PST));
+	pst->type = pst_position;
+	pst->tag = CHR('l','f','b','d');
+	pst->next = sc->possub;
+	sc->possub = pst;
+	pst->u.pos.xoff = left;
+	pst->u.pos.h_adv_off = left;
+    }
+    if ( right!=0 ) {
+	pst = chunkalloc(sizeof(PST));
+	pst->type = pst_position;
+	pst->tag = CHR('r','t','b','d');
+	pst->next = sc->possub;
+	sc->possub = pst;
+	pst->u.pos.h_adv_off = -right;
+    }
+}
+
+static void opbd_apply_values(struct ttfinfo *info, int gfirst, int glast,FILE *ttf) {
+    int i, left, right, offset;
+    uint32 here;
+    /* the apple docs say that the bounds live in the lookup table */
+    /* the picture in the docs shows the bounds pointed to */
+    /* the example shows the bounds pointed to */
+    /* We conclude the original authors were bad writers */
+
+    for ( i=gfirst; i<=glast; ++i ) {
+	offset = getushort(ttf);
+	here = ftell(ttf);
+	fseek(ttf,info->opbd_start+offset,SEEK_SET);
+	left = (int16) getushort(ttf);
+	/* top = (int16) */ getushort(ttf);
+	right = (int16) getushort(ttf);
+	/* bottom = (int16) */ getushort(ttf);
+	fseek(ttf,here,SEEK_SET);
+	TTF_SetOpticalBounds(info,i, left, right);
+    }
+}
+
+static void opbd_apply_value(struct ttfinfo *info, int gfirst, int glast,FILE *ttf) {
+    int i, left, right, offset;
+    uint32 here;
+
+    offset = getushort(ttf);
+    here = ftell(ttf);
+    fseek(ttf,info->opbd_start+offset,SEEK_SET);
+    left = (int16) getushort(ttf);
+    /* top = (int16) */ getushort(ttf);
+    right = (int16) getushort(ttf);
+    /* bottom = (int16) */ getushort(ttf);
+    fseek(ttf,here,SEEK_SET);
+
+    for ( i=gfirst; i<=glast; ++i )
+	TTF_SetOpticalBounds(info,i, left, right);
+}
+    
+static void readttfopbd(FILE *ttf,struct ttfinfo *info) {
+
+    fseek(ttf,info->opbd_start,SEEK_SET);
+    /* version = */ getlong(ttf);
+    if ( getushort(ttf)!=0 )	/* A format type of 1 has the bounds */
+return;				/*  indicated by points */
+    readttf_applelookup(ttf,info,info->opbd_start,
+	    opbd_apply_values,opbd_apply_value,NULL,NULL);
 }
 
 static void UnfigureControls(Spline *spline,BasePoint *pos) {
@@ -4808,8 +4888,6 @@ return( 0 );
 	readttfos2metrics(ttf,info);
     if ( info->postscript_start!=0 )
 	readttfpostnames(ttf,info);
-    if ( info->kern_start!=0 )
-	readttfkerns(ttf,info);
     if ( info->gdef_start!=0 )		/* ligature caret positioning info */
 	readttfgdef(ttf,info);
     else {
@@ -4820,6 +4898,12 @@ return( 0 );
     }
     if ( info->gpos_start!=0 )		/* kerning info may live in the gpos table too */
 	readttfgpossub(ttf,info,true);
+    else {
+	if ( info->kern_start!=0 )
+	    readttfkerns(ttf,info);
+	if ( info->opbd_start!=0 )
+	    readttfopbd(ttf,info);
+    }
     if ( info->gsub_start!=0 )
 	readttfgpossub(ttf,info,false);
     else
