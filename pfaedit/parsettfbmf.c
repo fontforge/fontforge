@@ -481,21 +481,27 @@ static struct bdfcharlist *BDFAddDefaultGlyphs(BDFFont *bdf) {
 	sc0.widthset = true;
 	glyph0.sc = &sc0;
 	glyph0.width = w;
-	glyph0.xmin = (w==4)?0:1;
-	glyph0.xmax = w-1;
-	glyph0.ymin = 0;
-	glyph0.ymax = 8*bdf->ascent/10;
-	glyph0.bytes_per_line = (glyph0.xmax-glyph0.xmin+8)/8;
-	glyph0.bitmap = gcalloc((glyph0.ymax-glyph0.ymin+1)*glyph0.bytes_per_line,1);
-	j = (glyph0.xmax-glyph0.xmin)>>3;
-	bit = 0x80>>((glyph0.xmax-glyph0.xmin)&7);
-	for ( i=0; i<=glyph0.ymax; ++i ) {
-	    glyph0.bitmap[i*glyph0.bytes_per_line] |= 0x80;
-	    glyph0.bitmap[i*glyph0.bytes_per_line+j] |= bit;
-	}
-	for ( i=0; i<glyph0.xmax-glyph0.xmin; ++i ) {
-	    glyph0.bitmap[i>>3] |= (0x80>>(i&7));
-	    glyph0.bitmap[glyph0.ymax*glyph0.bytes_per_line+(i>>3)] |= (0x80>>(i&7));
+	if ( BDFDepth(bdf)!=1 ) {
+	    glyph0.bytes_per_line = 1;	/* Needs to be 1 or BCRegularizeBitmap gets upset */
+	    glyph0.ymax = 1;
+	    glyph0.bitmap = gcalloc(8,1);
+	} else {
+	    glyph0.xmin = (w==4)?0:1;
+	    glyph0.xmax = w-1;
+	    glyph0.ymin = 0;
+	    glyph0.ymax = 8*bdf->ascent/10;
+	    glyph0.bytes_per_line = (glyph0.xmax-glyph0.xmin+8)/8;
+	    glyph0.bitmap = gcalloc((glyph0.ymax-glyph0.ymin+1)*glyph0.bytes_per_line,1);
+	    j = (glyph0.xmax-glyph0.xmin)>>3;
+	    bit = 0x80>>((glyph0.xmax-glyph0.xmin)&7);
+	    for ( i=0; i<=glyph0.ymax; ++i ) {
+		glyph0.bitmap[i*glyph0.bytes_per_line] |= 0x80;
+		glyph0.bitmap[i*glyph0.bytes_per_line+j] |= bit;
+	    }
+	    for ( i=0; i<glyph0.xmax-glyph0.xmin; ++i ) {
+		glyph0.bitmap[i>>3] |= (0x80>>(i&7));
+		glyph0.bitmap[glyph0.ymax*glyph0.bytes_per_line+(i>>3)] |= (0x80>>(i&7));
+	    }
 	}
 	if ( bdf->chars[0]==NULL )
 	    bdf->chars[0] = &glyph0;
@@ -517,6 +523,8 @@ static struct bdfcharlist *BDFAddDefaultGlyphs(BDFFont *bdf) {
     glyph1.enc = 1; glyph2.enc = 2;
     if ( bdf->chars[1]==NULL )
 	bdf->chars[1] = &glyph1;
+    else if ( (bdf->chars[0]!=NULL && bdf->chars[0]->sc->ttf_glyph==1) || bdf->chars[1]->sc->ttf_glyph==1 )
+	/* Do nothing, ignore this dummy glyph */;
     else {
 	if ( blpos!=0 )
 	    bl[blpos-1].next = &bl[blpos];
@@ -524,6 +532,8 @@ static struct bdfcharlist *BDFAddDefaultGlyphs(BDFFont *bdf) {
     }
     if ( bdf->chars[2]==NULL )
 	bdf->chars[2] = &glyph2;
+    else if ( (bdf->chars[1]!=NULL && bdf->chars[1]->sc->ttf_glyph==2) || bdf->chars[2]->sc->ttf_glyph==2 )
+	/* Do nothing, ignore this dummy glyph */;
     else {
 	if ( blpos!=0 )
 	    bl[blpos-1].next = &bl[blpos];
