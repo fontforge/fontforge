@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Feb-2002 -->
-  <!-- AP: Last modified: 16-Apr-2004 -->
+  <!-- AP: Last modified: 3-Jul-2004 -->
   <TITLE>Building Accented and other Composit Characters</TITLE>
 </HEAD>
 <BODY>
@@ -11,14 +11,14 @@
 </H1>
 <P>
 You can use the Element-&gt;Build Accented Char command to build up accented
-characters (and some other composites). Or you can hold down the shift key
-when invoking the menu and build slightly more general composite characters.
-The accented version will not create ligatures and will not replace Alpha
-with A. The composite version will do both these things. My assumption is
-that ligatures (like the "fi" ligature) usually need a bit of work on the
-user's part to get them to look good, in the case of "fi" the dot on the
-"i" needs to be fused into the hook of the "f", and if you are careless with
-the command you might destroy your work inadvertently.
+characters. Or you can use Element-&gt;Build Composite and build slightly
+more general composite characters (ligatures and so forth). The accented
+version will not create ligatures and will not replace Alpha with A. The
+composite version will do both these things. My assumption is that ligatures
+(like the "fi" ligature) usually need a bit of work on the user's part to
+get them to look good, in the case of "fi" the dot on the "i" needs to be
+fused into the hook of the "f", and if you are careless with the command
+you might destroy your work inadvertently.
 <P>
 What can be built?
 <UL>
@@ -105,9 +105,14 @@ accented character is in the Adobe Standard Encoding, which means either
 using accents around 0x2d0 or ascii characters. FontForge will first attempt
 to find an accent around 0x2d0, then in ascii and finally in the 0x300-0x340
 range. Even worse, Unicode unifies the greek and latin accents, so for greek
-letters- rather than looking for accents around 0x300- FontForge will look
-for accents around 0x1fbd (FontForge will also require the presence of the
-double accents like 0x1fdd).
+letters FontForge will look for accents around 0x1fbd (FontForge will also
+require the presence of the double accents like 0x1fdd).
+<P>
+Some of Adobe's fonts have accents designed for use over upper case letters
+(the nomal accents are designed for lower case), and accents designed for
+use over cyrillic letters. So in such a font, if you attempt to build "Agrave"
+FontForge will build it out of "A" and "Grave" (or "grave.cap", not the standard
+"grave").
 <P>
 Not all accents should be centered above the base character, a cedilla is
 (usually) centered underneath the base, while other accents need to be placed
