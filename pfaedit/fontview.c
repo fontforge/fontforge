@@ -853,6 +853,7 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_AddExtrema	2224
 #define MID_CleanupChar	2225
 #define MID_TilePath	2226
+#define MID_BuildComposite	2227
 #define MID_Center	2600
 #define MID_Thirds	2601
 #define MID_SetWidth	2602
@@ -1656,7 +1657,13 @@ static void FVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     /*  than anywhere else, so let's save the current state against a crash */
     DoAutoSaves();
 
-    FVOverlap(fv,e!=NULL && (e->u.mouse.state&ksm_shift));
+    FVOverlap(fv,false);
+}
+
+static void FVMenuFindIntersections(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    FVOverlap(fv,true);
 }
 
 void _FVSimplify(FontView *fv,int type, double err) {
@@ -1826,8 +1833,11 @@ void FVBuildAccent(FontView *fv,int onlyaccents) {
 }
 
 static void FVMenuBuildAccent(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    int onlyaccents = e==NULL || !(e->u.mouse.state&ksm_shift);
-    FVBuildAccent( (FontView *) GDrawGetUserData(gw), onlyaccents );
+    FVBuildAccent( (FontView *) GDrawGetUserData(gw), true );
+}
+
+static void FVMenuBuildComposite(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FVBuildAccent( (FontView *) GDrawGetUserData(gw), false );
 }
 
 #if HANYANG
@@ -2224,7 +2234,6 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int anychars = FVAnyCharSelected(fv);
     int anybuildable, anytraceable;
-    int onlyaccents;
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
@@ -2250,6 +2259,7 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_Simplify:
 	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps;
+#if 0
 	    free(mi->ti.text);
 	    if ( e==NULL || !(e->u.mouse.state&ksm_shift) ) {
 		mi->ti.text = u_copy(GStringGetResource(_STR_Simplify,NULL));
@@ -2260,15 +2270,18 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		mi->short_mask = (ksm_control|ksm_meta|ksm_shift);
 		mi->invoke = FVMenuSimplifyMore;
 	    }
+#endif
 	  break;
 	  case MID_RmOverlap:
 	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps;
+#if 0
 	    if ( !mi->ti.disabled ) {
 		if ( e==NULL || !(e->u.mouse.state&ksm_shift) )
 		    mi->ti.text = u_copy(GStringGetResource(_STR_Rmoverlap,NULL));
 		else
 		    mi->ti.text = u_copy(GStringGetResource(_STR_FindIntersections,NULL));
 	    }
+#endif
 	  break;
 	  case MID_Stroke:
 	  case MID_Round: case MID_Correct:
@@ -2284,7 +2297,6 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_BuildAccent:
 	    anybuildable = false;
-	    onlyaccents = e==NULL || !(e->u.mouse.state&ksm_shift);
 	    if ( anychars!=-1 ) {
 		int i;
 		for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
@@ -2292,15 +2304,13 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		    sc = fv->sf->chars[i];
 		    if ( sc==NULL )
 			sc = SCBuildDummy(&dummy,fv->sf,i);
-		    if ( SFIsSomethingBuildable(fv->sf,sc,onlyaccents)) {
+		    if ( SFIsSomethingBuildable(fv->sf,sc,false)) {
 			anybuildable = true;
 		break;
 		    }
 		}
 	    }
 	    mi->ti.disabled = !anybuildable;
-	    free(mi->ti.text);
-	    mi->ti.text = u_copy(GStringGetResource(onlyaccents?_STR_Buildaccent:_STR_Buildcomposit,NULL));
 	  break;
 	  case MID_Autotrace:
 	    anytraceable = false;
@@ -2815,6 +2825,29 @@ static GMenuItem hglist[] = {
 };
 #endif
 
+static void balistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+        if ( mi->mid==MID_BuildAccent || mi->mid==MID_BuildComposite ) {
+	    int anybuildable = false;
+	    int onlyaccents = mi->mid==MID_BuildAccent;
+	    int i;
+	    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
+		SplineChar *sc, dummy;
+		sc = fv->sf->chars[i];
+		if ( sc==NULL )
+		    sc = SCBuildDummy(&dummy,fv->sf,i);
+		if ( SFIsSomethingBuildable(fv->sf,sc,onlyaccents)) {
+		    anybuildable = true;
+	    break;
+		}
+	    }
+	    mi->ti.disabled = !anybuildable;
+	}
+    }
+}
+
 static GMenuItem dummyitem[] = { { (unichar_t *) _STR_New, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, NULL };
 static GMenuItem fllist[] = {
     { { (unichar_t *) _STR_New, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, 'N', ksm_control, NULL, NULL, MenuNew },
@@ -2935,6 +2968,25 @@ static GMenuItem aatlist[] = {
     { NULL }
 };
 
+static GMenuItem smlist[] = {
+    { { (unichar_t *) _STR_Simplify, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 'M', ksm_control|ksm_shift, NULL, NULL, FVMenuSimplify, MID_Simplify },
+    { { (unichar_t *) _STR_SimplifyMore, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 'M', ksm_control|ksm_shift|ksm_meta, NULL, NULL, FVMenuSimplifyMore },
+    { { (unichar_t *) _STR_CleanupChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'n' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuCleanup, MID_CleanupChar },
+    { NULL }
+};
+
+static GMenuItem rmlist[] = {
+    { { (unichar_t *) _STR_Rmoverlap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'O' }, 'O', ksm_control|ksm_shift, NULL, NULL, FVMenuOverlap, MID_RmOverlap },
+    { { (unichar_t *) _STR_FindIntersections, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuFindIntersections },
+    { NULL }
+};
+
+static GMenuItem balist[] = {
+    { { (unichar_t *) _STR_Buildaccent, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, 'A', ksm_control|ksm_shift, NULL, NULL, FVMenuBuildAccent, MID_BuildAccent },
+    { { (unichar_t *) _STR_Buildcomposit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuBuildComposite, MID_BuildComposite },
+    { NULL }
+};
+
 static GMenuItem ellist[] = {
     { { (unichar_t *) _STR_Fontinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'F', ksm_control|ksm_shift, NULL, NULL, FVMenuFontInfo },
     { { (unichar_t *) _STR_Charinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'I', ksm_control, NULL, NULL, FVMenuCharInfo, MID_CharInfo },
@@ -2950,9 +3002,8 @@ static GMenuItem ellist[] = {
 #ifdef PFAEDIT_CONFIG_TILEPATH
     { { (unichar_t *) _STR_TilePath, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuTilePath, MID_TilePath },
 #endif
-    { { (unichar_t *) _STR_Rmoverlap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'O' }, 'O', ksm_control|ksm_shift, NULL, NULL, FVMenuOverlap, MID_RmOverlap },
-    { { (unichar_t *) _STR_Simplify, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 'M', ksm_control|ksm_shift, NULL, NULL, FVMenuSimplify, MID_Simplify },
-    { { (unichar_t *) _STR_CleanupChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'n' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuCleanup, MID_CleanupChar },
+    { { (unichar_t *) _STR_Rmoverlap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'O' }, '\0', ksm_control|ksm_shift, rmlist, NULL, NULL, MID_RmOverlap },
+    { { (unichar_t *) _STR_Simplify, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, '\0', ksm_control|ksm_shift, smlist, NULL, NULL, MID_Simplify },
     { { (unichar_t *) _STR_AddExtrema, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'x' }, 'X', ksm_control|ksm_shift, NULL, NULL, FVMenuAddExtrema, MID_AddExtrema },
     { { (unichar_t *) _STR_Round2int, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '_', ksm_control|ksm_shift, NULL, NULL, FVMenuRound2Int, MID_Round },
     { { (unichar_t *) _STR_MetaFont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, '!', ksm_control|ksm_shift, NULL, NULL, FVMenuMetaFont, MID_MetaFont },
@@ -2960,7 +3011,7 @@ static GMenuItem ellist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Correct, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, 'D', ksm_control|ksm_shift, NULL, NULL, FVMenuCorrectDir, MID_Correct },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Buildaccent, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, 'A', ksm_control|ksm_shift, NULL, NULL, FVMenuBuildAccent, MID_BuildAccent },
+    { { (unichar_t *) _STR_Build, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, balist, balistcheck, NULL, MID_BuildAccent },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Mergefonts, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuMergeFonts, MID_MergeFonts },
     { { (unichar_t *) _STR_Interp, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'p' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuInterpFonts, MID_InterpolateFonts },

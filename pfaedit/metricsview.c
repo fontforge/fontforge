@@ -1102,6 +1102,7 @@ return( true );
 #define MID_AddExtrema	2224
 #define MID_CleanupChar	2225
 #define MID_TilePath	2226
+#define MID_BuildComposite	2227
 #define MID_Center	2600
 #define MID_OpenBitmap	2700
 #define MID_OpenOutline	2701
@@ -1499,8 +1500,7 @@ static void MVMenuTilePath(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 #endif
 
-static void MVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+static void _MVMenuOverlap(MetricsView *mv,int interesct) {
     int i;
 
     for ( i=mv->charcnt-1; i>=0; --i )
@@ -1511,9 +1511,19 @@ static void MVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	SCPreserveState(sc,false);
 	MinimumDistancesFree(sc->md);
 	sc->md = NULL;
-	sc->splines = SplineSetRemoveOverlap(sc->splines,e!=NULL && (e->u.mouse.state&ksm_shift));
+	sc->splines = SplineSetRemoveOverlap(sc->splines,interesct);
 	SCCharChangedUpdate(sc);
     }
+}
+
+static void MVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    _MVMenuOverlap(mv,false);
+}
+
+static void MVMenuFindIntersections(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    _MVMenuOverlap(mv,false);
 }
 
 static void MVSimplify( MetricsView *mv,int type ) {
@@ -1642,10 +1652,8 @@ return;
     }
 }
 
-static void MVMenuBuildAccent(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+static void _MVMenuBuildAccent(MetricsView *mv,int onlyaccents) {
     int i;
-    int onlyaccents = e==NULL || !(e->u.mouse.state&ksm_shift);
     extern int onlycopydisplayed;
 
     for ( i=mv->charcnt-1; i>=0; --i )
@@ -1656,6 +1664,16 @@ static void MVMenuBuildAccent(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	if ( SFIsSomethingBuildable(mv->fv->sf,sc,onlyaccents) )
 	    SCBuildComposit(mv->fv->sf,sc,!onlycopydisplayed,mv->fv);
     }
+}
+
+static void MVMenuBuildAccent(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    _MVMenuBuildAccent(mv,false);
+}
+
+static void MVMenuBuildComposite(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    _MVMenuBuildAccent(mv,true);
 }
 
 static void MVResetText(MetricsView *mv) {
@@ -2005,6 +2023,47 @@ static GMenuItem edlist[] = {
     { NULL }
 };
 
+static GMenuItem smlist[] = {
+    { { (unichar_t *) _STR_Simplify, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 'M', ksm_control|ksm_shift, NULL, NULL, MVMenuSimplify, MID_Simplify },
+    { { (unichar_t *) _STR_SimplifyMore, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 'M', ksm_control|ksm_shift|ksm_meta, NULL, NULL, MVMenuSimplifyMore },
+    { { (unichar_t *) _STR_CleanupChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'n' }, '\0', ksm_control|ksm_shift, NULL, NULL, MVMenuCleanup, MID_CleanupChar },
+    { NULL }
+};
+
+static GMenuItem rmlist[] = {
+    { { (unichar_t *) _STR_Rmoverlap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'O' }, 'O', ksm_control|ksm_shift, NULL, NULL, MVMenuOverlap, MID_RmOverlap },
+    { { (unichar_t *) _STR_FindIntersections, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'O' }, '\0', ksm_control|ksm_shift, NULL, NULL, MVMenuFindIntersections },
+    { NULL }
+};
+
+static GMenuItem balist[] = {
+    { { (unichar_t *) _STR_Buildaccent, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, 'A', ksm_control|ksm_shift, NULL, NULL, MVMenuBuildAccent, MID_BuildAccent },
+    { { (unichar_t *) _STR_Buildcomposit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, MVMenuBuildComposite, MID_BuildComposite },
+    { NULL }
+};
+
+static void balistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    int i;
+    SplineChar *sc;
+
+    for ( i=mv->charcnt-1; i>=0; --i )
+	if ( mv->perchar[i].selected )
+    break;
+    if ( i==-1 ) sc = NULL; else sc = mv->perchar[i].sc;
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_BuildAccent:
+	    mi->ti.disabled = sc==NULL || !SFIsSomethingBuildable(sc->parent,sc,true);
+	  break;
+	  case MID_BuildComposite:
+	    mi->ti.disabled = sc==NULL || !SFIsSomethingBuildable(sc->parent,sc,false);
+	  break;
+        }
+    }
+}
+
 static GMenuItem ellist[] = {
     { { (unichar_t *) _STR_Fontinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'F', ksm_control|ksm_shift, NULL, NULL, MVMenuFontInfo },
     { { (unichar_t *) _STR_Charinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'I', ksm_control, NULL, NULL, MVMenuCharInfo, MID_CharInfo },
@@ -2019,9 +2078,8 @@ static GMenuItem ellist[] = {
 #ifdef PFAEDIT_CONFIG_TILEPATH
     { { (unichar_t *) _STR_TilePath, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, MVMenuTilePath, MID_TilePath },
 #endif
-    { { (unichar_t *) _STR_Rmoverlap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'O' }, 'O', ksm_control|ksm_shift, NULL, NULL, MVMenuOverlap, MID_RmOverlap },
-    { { (unichar_t *) _STR_Simplify, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 'M', ksm_control|ksm_shift, NULL, NULL, MVMenuSimplify, MID_Simplify },
-    { { (unichar_t *) _STR_CleanupChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'n' }, '\0', ksm_control|ksm_shift, NULL, NULL, MVMenuCleanup, MID_CleanupChar },
+    { { (unichar_t *) _STR_Rmoverlap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'O' }, '\0', ksm_control|ksm_shift, rmlist, NULL, NULL, MID_RmOverlap },
+    { { (unichar_t *) _STR_Simplify, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, '\0', ksm_control|ksm_shift, smlist, NULL, NULL, MID_Simplify },
     { { (unichar_t *) _STR_AddExtrema, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'x' }, 'X', ksm_control|ksm_shift, NULL, NULL, MVMenuAddExtrema, MID_AddExtrema },
     { { (unichar_t *) _STR_Round2int, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '_', ksm_control|ksm_shift, NULL, NULL, MVMenuRound2Int, MID_Round },
     { { (unichar_t *) _STR_MetaFont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, '!', ksm_control|ksm_shift, NULL, NULL, MVMenuMetaFont, MID_MetaFont },
@@ -2029,7 +2087,7 @@ static GMenuItem ellist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Correct, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, 'D', ksm_control|ksm_shift, NULL, NULL, MVMenuCorrectDir, MID_Correct },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Buildaccent, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, 'A', ksm_control|ksm_shift, NULL, NULL, MVMenuBuildAccent, MID_BuildAccent },
+    { { (unichar_t *) _STR_Build, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, 'A', ksm_control|ksm_shift, balist, balistcheck, NULL, MID_BuildAccent },
     { NULL }
 };
 
@@ -2188,7 +2246,7 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-    int i, anybuildable, onlyaccents;
+    int i, anybuildable;
     SplineChar *sc;
 
     for ( i=mv->charcnt-1; i>=0; --i )
@@ -2214,12 +2272,14 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_RmOverlap:
 	    mi->ti.disabled = sc==NULL || mv->fv->sf->onlybitmaps;
+#if 0
 	    if ( !mi->ti.disabled ) {
 		if ( e==NULL || !(e->u.mouse.state&ksm_shift) )
 		    mi->ti.text = u_copy(GStringGetResource(_STR_Rmoverlap,NULL));
 		else
 		    mi->ti.text = u_copy(GStringGetResource(_STR_FindIntersections,NULL));
 	    }
+#endif
 	  break;
 	  case MID_AddExtrema:
 	  case MID_Stroke:
@@ -2233,6 +2293,7 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #endif
 	  case MID_Simplify:
 	    mi->ti.disabled = sc==NULL || mv->fv->sf->onlybitmaps;
+#if 0
 	    free(mi->ti.text);
 	    if ( e==NULL || !(e->u.mouse.state&ksm_shift) ) {
 		mi->ti.text = u_copy(GStringGetResource(_STR_Simplify,NULL));
@@ -2243,15 +2304,13 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		mi->short_mask = (ksm_control|ksm_meta|ksm_shift);
 		mi->invoke = MVMenuSimplifyMore;
 	    }
+#endif
 	  break;
 	  case MID_BuildAccent:
 	    anybuildable = false;
-	    onlyaccents = e==NULL || !(e->u.mouse.state&ksm_shift);
-	    if ( sc!=NULL && SFIsSomethingBuildable(mv->fv->sf,sc,onlyaccents) )
+	    if ( sc!=NULL && SFIsSomethingBuildable(mv->fv->sf,sc,false) )
 		anybuildable = true;
 	    mi->ti.disabled = !anybuildable;
-	    free(mi->ti.text);
-	    mi->ti.text = u_copy(GStringGetResource(onlyaccents?_STR_Buildaccent:_STR_Buildcomposit,NULL));
 	  break;
 	  case MID_Autotrace:
 	    mi->ti.disabled = !(FindAutoTraceName()!=NULL && sc!=NULL &&
