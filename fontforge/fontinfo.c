@@ -4353,7 +4353,7 @@ return(true);
 	GetIntR(gw,CID_Em,_STR_EmSize,&err);	/* just check for errors. redundant info */
 	as = GetIntR(gw,CID_Ascent,_STR_Ascent,&err);
 	des = GetIntR(gw,CID_Descent,_STR_Descent,&err);
-	nchar = GetIntR(gw,CID_NChars,_STR_Numchars,&err);
+	nchar = GetIntR(gw,CID_NChars,_STR_NumGlyphs,&err);
 	uniqueid = GetIntR(gw,CID_UniqueID,_STR_UniqueID,&err);
 	force_enc = GGadgetIsChecked(GWidgetGetControl(gw,CID_ForceEncoding));
 	if ( sf->subfontcnt!=0 )
@@ -5307,7 +5307,7 @@ return;
     egcd[7].gd.pos.x = 12; egcd[7].gd.pos.y = egcd[6].gd.pos.y+24+6;
     egcd[7].gd.flags = gg_visible | gg_enabled;
     egcd[7].gd.mnemonic = 'N';
-    elabel[7].text = (unichar_t *) _STR_Numchars;
+    elabel[7].text = (unichar_t *) _STR_NumGlyphs;
     elabel[7].text_in_resource = true;
     egcd[7].gd.label = &elabel[7];
     egcd[7].creator = GLabelCreate;

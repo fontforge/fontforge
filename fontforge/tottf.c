@@ -4220,18 +4220,18 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	    if ( sf->charcnt<=256 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 		static int buts[] = { _STR_Yes, _STR_No, 0 };
-		if ( GWidgetAskR(_STR_NoEncodedChars,buts,0,1,_STR_NoUnicodeEncodingUseSymbol)==0 )
+		if ( GWidgetAskR(_STR_NoEncodedGlyphs,buts,0,1,_STR_NoUnicodeEncodingUseSymbol)==0 )
 #elif defined(FONTFORGE_CONFIG_GTK)
 		static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
-		if ( gwwv_ask(_("No Encoded Characters"),buts,0,1,_("This font contains no characters with unicode encodings.\nWould you like to use a \"Symbol\" encoding instead of Unicode?"))==0 )
+		if ( gwwv_ask(_("No Encoded Glyphs"),buts,0,1,_("This font contains no glyphs with unicode encodings.\nWould you like to use a \"Symbol\" encoding instead of Unicode?"))==0 )
 #endif
 		    format = ff_ttfsym;
 	    } else
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 #if defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_error(_("No Encoded Characters"),_("This font contains no characters with unicode encodings.\nYou will probably not be able to use the output."));
+		gwwv_post_error(_("No Encoded Glyphs"),_("This font contains no glyphs with unicode encodings.\nYou will probably not be able to use the output."));
 #else
-		GWidgetErrorR(_STR_NoEncodedChars,_STR_NoUnicodeEncoding);
+		GWidgetErrorR(_STR_NoEncodedGlyphs,_STR_NoUnicodeEncoding);
 #endif
 	}
     }

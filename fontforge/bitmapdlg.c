@@ -53,9 +53,9 @@ enum { bd_all, bd_selected, bd_current };
 static int lastwhich = bd_selected;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static GTextInfo which[] = {
-    { (unichar_t *) _STR_AllChars, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_SelChars, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_CurChar, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_AllGlyphs, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_SelGlyphs, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_CurGlyph, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};
 
 static void RemoveBDFWindows(BDFFont *bdf) {

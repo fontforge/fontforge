@@ -1318,9 +1318,9 @@ static void PIFontDisplay(PI *pi) {
     
 	if ( pi->chline==0 )
 #if defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_notice(_("Print Failed"),_("Warning: Font contained no characters"));
+	    gwwv_post_notice(_("Print Failed"),_("Warning: Font contained no glyphs"));
 #else
-	    GWidgetPostNoticeR(_STR_PrintFailed,_STR_NoCharacters);
+	    GWidgetPostNoticeR(_STR_PrintFailed,_STR_NoGlyphs);
 #endif
 	else
 	    dump_trailer(pi);
@@ -3901,7 +3901,7 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
 	cnt = FVSelCount(fv);
     else if ( mv!=NULL )
 	cnt = mv->charcnt;
-    label[1].text = (unichar_t *) (cnt==1?_STR_FullPageChar:_STR_FullPageChars);
+    label[1].text = (unichar_t *) (cnt==1?_STR_FullPageGlyph:_STR_FullPageGlyphs);
     label[1].text_in_resource = true;
     gcd[1].gd.label = &label[1];
     gcd[1].gd.mnemonic = 'C';
@@ -3910,13 +3910,13 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     gcd[1].gd.cid = CID_Chars;
     gcd[1].gd.handle_controlevent = PRT_RadioSet;
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[1].gd.popup_msg = GStringGetResource(_STR_FullPageCharPopup,NULL);
+    gcd[1].gd.popup_msg = GStringGetResource(_STR_FullPageGlyphPopup,NULL);
 #elif defined(FONTFORGE_CONFIG_GTK)
     gcd[1].gd.popup_msg = _("Displays all the selected characters, each on its own page, at an extremely large point size");
 #endif
     gcd[1].creator = GRadioCreate;
 
-    label[2].text = (unichar_t *) (cnt==1?_STR_MultiSizeChar:_STR_MultiSizeChars);
+    label[2].text = (unichar_t *) (cnt==1?_STR_MultiSizeGlyph:_STR_MultiSizeGlyphs);
     label[2].text_in_resource = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.mnemonic = 'M';
@@ -3925,7 +3925,7 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     gcd[2].gd.cid = CID_MultiSize;
     gcd[2].gd.handle_controlevent = PRT_RadioSet;
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[2].gd.popup_msg = GStringGetResource(_STR_MultiSizeCharPopup,NULL);
+    gcd[2].gd.popup_msg = GStringGetResource(_STR_MultiSizeGlyphPopup,NULL);
 #elif defined(FONTFORGE_CONFIG_GTK)
     gcd[2].gd.popup_msg = _("Displays all the selected characters, at several different point sizes");
 #endif

@@ -1877,7 +1877,7 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32 tag,
     wattrs.centered = 1;
     wattrs.cursor = ct_pointer;
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_MissingGlyph,NULL);
+    wattrs.window_title = GStringGetResource(_STR_MissingGlyphCheck,NULL);
 #elif defined(FONTFORGE_CONFIG_GTK)
     wattrs.window_title = _("Check for missing glyph names");
 #endif
@@ -3113,14 +3113,14 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     memset(&alabel,0,sizeof(alabel));
     memset(&agcd,0,sizeof(agcd));
 
-    alabel[0].text = (unichar_t *) _STR_MissingGlyph;
+    alabel[0].text = (unichar_t *) _STR_MissingGlyphCheck;
     alabel[0].text_in_resource = true;
     agcd[0].gd.label = &alabel[0];
     agcd[0].gd.pos.x = 3; agcd[0].gd.pos.y = 6;
     agcd[0].gd.flags = gg_visible | gg_enabled;
     if ( missingglyph ) agcd[0].gd.flags |= gg_cb_on;
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    agcd[0].gd.popup_msg = GStringGetResource(_STR_MissingGlyphPopup,NULL);
+    agcd[0].gd.popup_msg = GStringGetResource(_STR_MissingGlyphCheckPopup,NULL);
 #elif defined(FONTFORGE_CONFIG_GTK)
     agcd[0].gd.popup_msg = _("Check whether a substitution, kerning class, etc. uses a glyph name which does not match any glyph in the font");
 #endif

@@ -1037,10 +1037,10 @@ void SFEncodeToMap(SplineFont *sf,struct cidmap *map) {
     if ( anyextras ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	static int buttons[] = { _STR_Delete, _STR_Add, 0 };
-	if ( GWidgetAskR(_STR_ExtraCharsTitle,buttons,0,1,_STR_ExtraChars)==1 ) {
+	if ( GWidgetAskR(_STR_ExtraGlyphsTitle,buttons,0,1,_STR_ExtraGlyphs)==1 ) {
 #elif defined(FONTFORGE_CONFIG_GTK)
 	static char *buttons[] = { GTK_STOCK_DELETE, GTK_STOCK_ADD, NULL };
-	if ( gwwv_ask(_("Extraneous characters"),buttons,0,1,_("The current encoding contains characters which I cannot map to CIDs.\nShould I delete them or add them to the end (where they may conflict with future ros definitions)?"))==1 ) {
+	if ( gwwv_ask(_("Extraneous glyphs"),buttons,0,1,_("The current encoding contains glyphs which I cannot map to CIDs.\nShould I delete them or add them to the end (where they may conflict with future ros definitions)?"))==1 ) {
 #endif
 	    if ( map!=NULL && max<map->cidmax ) max = map->cidmax;
 	    anyextras = 0;
@@ -1693,10 +1693,10 @@ static void SFEncodeToCMap(SplineFont *cidmaster,SplineFont *sf,struct cmap *cma
     if ( anyextras ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	static int buttons[] = { _STR_Delete, _STR_Add, 0 };
-	if ( GWidgetAskR(_STR_ExtraCharsTitle,buttons,0,1,_STR_ExtraChars)==1 ) {
+	if ( GWidgetAskR(_STR_ExtraGlyphsTitle,buttons,0,1,_STR_ExtraGlyphs)==1 ) {
 #elif defined(FONTFORGE_CONFIG_GTK)
 	static char *buttons[] = { GTK_STOCK_DELETE, GTK_STOCK_ADD, NULL };
-	if ( gwwv_ask(_("Extraneous characters"),buttons,0,1,_("The current encoding contains characters which I cannot map to CIDs.\nShould I delete them or add them to the end (where they may conflict with future ros definitions)?"))==1 ) {
+	if ( gwwv_ask(_("Extraneous glyphs"),buttons,0,1,_("The current encoding contains glyphs which I cannot map to CIDs.\nShould I delete them or add them to the end (where they may conflict with future ros definitions)?"))==1 ) {
 #endif
 	    if ( cmap!=NULL && max<cmap->total ) max = cmap->total;
 	    anyextras = 0;

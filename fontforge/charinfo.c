@@ -75,7 +75,7 @@ static GTextInfo glyphclasses[] = {
     { (unichar_t *) _STR_Automatic, NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_NoClass, NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_BaseGlyph, NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_LigatureL, NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_BaseLigature, NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_MarkGlyph, NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_Component, NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, false, true },
     { NULL, NULL }
@@ -709,7 +709,7 @@ GTextInfo alternatesubs_tags[] = {
     { (unichar_t *) _STR_Swash, NULL, 0, 0, (void *) CHR('s','w','s','h'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_TraditionalForms, NULL, 0, 0, (void *) CHR('t','r','a','d'), NULL, false, false, false, false, false, false, false, true },
 /* My own invention, to provide data for tfm files for TeX's characters (like parens) which come in multiple sizes */
-    { (unichar_t *) _STR_TeXCharList, NULL, 0, 0, (void *) CHR('T','C','H','L'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_TeXGlyphList, NULL, 0, 0, (void *) CHR('T','C','H','L'), NULL, false, false, false, false, false, false, false, true },
 /* My hack to identify required features */
     { (unichar_t *) _STR_RQD, NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, false, true },
     { NULL }
@@ -2857,7 +2857,7 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 	    gcd[i].gd.cid = i+1;
 	    gcd[i++].creator = GTextFieldCreate;
 
-	    label[i].text = (unichar_t *) _STR_PairedChar;
+	    label[i].text = (unichar_t *) _STR_PairedGlyph;
 	    label[i].text_in_resource = true;
 	    gcd[i].gd.label = &label[i];
 	    gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-6].gd.pos.y+26;
@@ -3831,10 +3831,10 @@ return( true );
 static int MultipleValues(char *name, int local) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
     static int buts[] = { _STR_Yes, _STR_Cancel, 0 };
-    if ( GWidgetAskR(_STR_Multiple,buts,0,1,_STR_AlreadyCharUnicode,name,local)==0 )
+    if ( GWidgetAskR(_STR_Multiple,buts,0,1,_STR_AlreadyGlyphUnicode,name,local)==0 )
 #elif defined(FONTFORGE_CONFIG_GTK)
     static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_CANCEL, NULL };
-    if ( gwwv_ask(_("Multiple"),buts,0,1,_("There is already a character with this Unicode encoding,\n(named %1$.40s, at local encoding %2$d)\nIs that what you want?"),name,local)==0 )
+    if ( gwwv_ask(_("Multiple"),buts,0,1,_("There is already a glyph with this Unicode encoding,\n(named %1$.40s, at local encoding %2$d)\nIs that what you want?"),name,local)==0 )
 #endif
 return( true );
 
@@ -3844,10 +3844,10 @@ return( false );
 static int MultipleNames(void) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
     static int buts[] = { _STR_Yes, _STR_Cancel, 0 };
-    if ( GWidgetAskR(_STR_Multiple,buts,0,1,_STR_Alreadycharnamed)==0 )
+    if ( GWidgetAskR(_STR_Multiple,buts,0,1,_STR_AlreadyGlyphNamed)==0 )
 #elif defined(FONTFORGE_CONFIG_GTK)
     static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_CANCEL, NULL };
-    if ( gwwv_ask(_("Multiple"),buts,0,1,_("There is already a character with this name,\ndo you want to swap names?"))==0 )
+    if ( gwwv_ask(_("Multiple"),buts,0,1,_("There is already a glyph with this name,\ndo you want to swap names?"))==0 )
 #endif
 return( true );
 
@@ -5398,14 +5398,14 @@ static void CIFillup(CharInfo *ci) {
     PST *pst;
 
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    u_sprintf(ubuf,GStringGetResource(_STR_CharInfoFor,NULL),sc->name);
+    u_sprintf(ubuf,GStringGetResource(_STR_GlyphInfoFor,NULL),sc->name);
 #elif defined(FONTFORGE_CONFIG_GTK)
-    u_sprintf(ubuf,_("Char Info for %.40s"),sc->name);
+    u_sprintf(ubuf,_("Glyph Info for %.40s"),sc->name);
 #endif
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    GDrawSetWindowTitles(ci->gw, ubuf, GStringGetResource(_STR_Charinfo,NULL));
+    GDrawSetWindowTitles(ci->gw, ubuf, GStringGetResource(_STR_GlyphInfo,NULL));
 #elif defined(FONTFORGE_CONFIG_GTK)
-    GDrawSetWindowTitles(ci->gw, ubuf, _("Char Info..."));
+    GDrawSetWindowTitles(ci->gw, ubuf, _("Glyph Info..."));
 #endif
 
     if ( ci->oldsc!=NULL && ci->oldsc->charinfo==ci )
@@ -5615,7 +5615,7 @@ return;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	wattrs.window_title = GStringGetResource( _STR_Charinfo,NULL );
+	wattrs.window_title = GStringGetResource( _STR_GlyphInfo,NULL );
 #elif defined(FONTFORGE_CONFIG_GTK)
 	wattrs.window_title =  _("Char Info...");
 #endif
@@ -6115,9 +6115,9 @@ int FVParseSelectByPST(FontView *fv,int type,
 	    md.kernwith = SFGetCharDup(md.sf,-1,md.contains);
 	    if ( md.kernwith==NULL )
 #if defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_error(_("Select By ATT..."),_("Could not find the character: %.70s"),md.contains);
+		gwwv_post_error(_("Select By ATT..."),_("Could not find the glyph: %.70s"),md.contains);
 #else
-		GWidgetErrorR(_STR_SelectByATT,_STR_Couldntfindchar,md.contains);
+		GWidgetErrorR(_STR_SelectByATT,_STR_CouldntfindGlyph,md.contains);
 #endif
 	    free(md.contains);
 	    md.contains = NULL;

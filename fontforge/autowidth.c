@@ -77,26 +77,26 @@ Autokern has similar ideas, but is simpler:
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static GTextInfo widthlist[] = {
-    { (unichar_t *) _STR_StdCharRange, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_StdCharRangeGreek, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_StdCharRangeCyr, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_StdGlyphRange, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_StdGlyphRangeGreek, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_StdGlyphRangeCyr, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_All, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Selected, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     NULL };
 static GTextInfo kernllist[] = {
-    { (unichar_t *) _STR_StdCharRangeKernL, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_StdCharRangeGreek, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_StdCharRangeCyr, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_StdGlyphRangeKernL, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_StdGlyphRangeGreek, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_StdGlyphRangeCyr, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_All, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Selected, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     NULL };
 static GTextInfo kernrlist[] = {
-    { (unichar_t *) _STR_StdCharRangeKernR, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_StdCharRangeKernR2, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_StdCharRangeKernRGreek, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_StdCharRangeKernR2Greek, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_StdCharRangeKernRCyr, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_StdCharRangeKernR2Cyr, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_StdGlyphRangeKernR, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_StdGlyphRangeKernR2, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_StdGlyphRangeKernRGreek, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_StdGlyphRangeKernR2Greek, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_StdGlyphRangeKernRCyr, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_StdGlyphRangeKernR2Cyr, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_All, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Selected, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     NULL };
@@ -1500,9 +1500,9 @@ return( true );
 		FreeCharList(wi->left);
 		FreeCharList(wi->right);
 #if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_NoCharsSelected,_STR_NoCharsSelected);
+		GWidgetErrorR(_STR_NoGlyphsSelected,_STR_NoGlyphsSelected);
 #elif defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_error(_("No characters selected."),_("No characters selected."));
+		gwwv_post_error(_("No glyphs selected."),_("No glyphs selected."));
 #endif
 return( true );
 	    }
@@ -1567,9 +1567,9 @@ return( true );
 static int MakeSelGadgets(GGadgetCreateData *gcd, GTextInfo *label,
 	int i, int base, int labr, int y, int pixel_width, GWindow gw,
 	int toomany, int autokern ) {
-    int std = !autokern ? _STR_StdCharRange :
-		base==CID_Left ? _STR_StdCharRangeKernL :
-		_STR_StdCharRangeKernR;
+    int std = !autokern ? _STR_StdGlyphRange :
+		base==CID_Left ? _STR_StdGlyphRangeKernL :
+		_STR_StdGlyphRangeKernR;
     int epos;
 
     label[i].text = (unichar_t *) labr;
@@ -1653,7 +1653,7 @@ static void AutoWKDlg(SplineFont *sf,int autokern) {
 
     i = 0;
 
-    label[i].text = (unichar_t *) _STR_EnterTwoCharRange;
+    label[i].text = (unichar_t *) _STR_EnterTwoGlyphRange;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 6;
@@ -1667,10 +1667,10 @@ static void AutoWKDlg(SplineFont *sf,int autokern) {
     gcd[i].gd.flags = gg_visible | gg_enabled;
     gcd[i++].creator = GLabelCreate;
 
-    i = MakeSelGadgets(gcd, label, i, CID_Left, _STR_CharsLeft, 33,
+    i = MakeSelGadgets(gcd, label, i, CID_Left, _STR_GlyphsLeft, 33,
 	    pos.width, gw, toomany, autokern );
     selfield = i-1;
-    i = MakeSelGadgets(gcd, label, i, CID_Right, _STR_CharsRight, 33+SelHeight+9,
+    i = MakeSelGadgets(gcd, label, i, CID_Right, _STR_GlyphsRight, 33+SelHeight+9,
 	    pos.width, gw, toomany, autokern );
     y = 32+2*(SelHeight+9);
 

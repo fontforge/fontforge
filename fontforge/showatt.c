@@ -162,9 +162,9 @@ static void BuildBase(struct node *node,SplineChar **bases,enum anchor_type at, 
 
     node->parent = parent;
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    node->label = u_copy(GStringGetResource(at==at_basechar?_STR_BaseCharacters:
+    node->label = u_copy(GStringGetResource(at==at_basechar?_STR_BaseGlyphs:
 #elif defined(FONTFORGE_CONFIG_GTK)
-    node->label = u_copy(at==at_basechar?_("Base Characters")
+    node->label = u_copy(at==at_basechar?_("Base Glyphs")
 #endif
 					    at==at_baselig?_STR_BaseLigatures:
 			                    _STR_BaseMarks,NULL));
