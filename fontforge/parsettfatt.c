@@ -3484,7 +3484,8 @@ static void KernReadKernList(FILE *ttf,uint32 pos, struct asm_state *trans) {
 }
 
 static void read_perglyph_subs(FILE *ttf,struct ttfinfo *info,
-	int subs_base,int subs_end,struct statetable *st, uint8 *classes_subbed) {
+	int subs_base,int subs_end,struct statetable *st,
+	uint8 *classes_subbed, int evermarked, uint8 *used) {
     /* The file is positioned at the start of a per-glyph substitution table */
     /* Sadly great chunks of this table have been omitted. We are where glyph */
     /*  0 would be if it were present. We've no idea what has been omitted */
@@ -3492,6 +3493,13 @@ static void read_perglyph_subs(FILE *ttf,struct ttfinfo *info,
     /*   substitutions then we know it is ignorable. */
     /*  If the current glyph is not in the list of glyphs which could ever */
     /*   be substituted then we know it is ignorable. */
+    /*  Note: the above list is easily figured for substitutions on the current*/
+    /*   glyph, but if a substitution ever happens to a marked glyph then we */
+    /*   can't guess. We could check for all classes that get marked, but that*/
+    /*   doesn't work if there is a current substitution before the class is */
+    /*   marked, after that we don't know what class the glyph might have */
+    /*   Instead, for marked subs, we keep track of all locations which were */
+    /*   used in a current-only sub, and assume that they aren't valid for us */
     /*  If the putative substitution glyph is not a valid glyph then we know */
     /*   it is ignorable */
     int i, subs, was = info->mort_tag_mac;
@@ -3503,12 +3511,17 @@ static void read_perglyph_subs(FILE *ttf,struct ttfinfo *info,
 	subs = getushort(ttf);
 	if ( subs>=info->glyph_cnt && subs!=0xffff )	/* 0xffff means delete the substituted glyph */
     continue;
+	if ( subs==0 )			/* A little risky, one could substitute notdef */
+    continue;				/*  but they shouldn't */
 	if ( here<subs_base )
     continue;
 	if ( here>=subs_end )
     break;
-	if ( i<st->first_glyph || i>=st->first_glyph+st->nglyphs ) {
-	    if ( !classes_subbed[1]) {		/* Out of bounds class */
+	if ( evermarked ) {
+	    if ( used[(here-subs_base)/2] )
+    continue;
+	} else if ( i<st->first_glyph || i>=st->first_glyph+st->nglyphs ) {
+	    if ( !classes_subbed[1]) {	/* Out of bounds class */
 		if ( i>=st->first_glyph+st->nglyphs )
     break;
     continue;
@@ -3517,7 +3530,9 @@ static void read_perglyph_subs(FILE *ttf,struct ttfinfo *info,
 	    if ( !classes_subbed[st->classes[i-st->first_glyph]] )
     continue;
 	}
-	
+
+	if ( !evermarked )
+	    used[(here-subs_base)/2] = true;
 	TTF_SetMortSubs(info, i, subs);
     }
     info->mort_tag_mac = was;
@@ -3631,6 +3646,9 @@ return(NULL);
 	/*  (if it ever has a mark set on it or has a current substitution)*/
 	/*  if not, then I can ignore any putative substitutions for class */
 	/*  1 glyphs (actually I should do this for all classes)*/
+	/* Damn. That doesn't work for marks. Because a current substitution*/
+	/*  may be applied, and then the glyph gets marked. So we've no idea*/
+	/*  what class the newly marked glyph might live in		   */
 	/* Apple's docs say the substitutions are offset from the "state   */
 	/*  subtable", but it seems much more likely that they are offset  */
 	/*  from the substitution table (given that Apple's docs are often */
@@ -3639,15 +3657,13 @@ return(NULL);
 	uint8 *classes_subbed = gcalloc(st->nclasses,1);
 	int lookup_max = -1, index;
 	int32 *lookups = galloc(st->nclasses*st->nstates*sizeof(int32));
+	uint8 *evermarked = gcalloc(st->nclasses*st->nstates,sizeof(uint8));
+	uint8 *used;
 
-	for ( i=0; i<st->nstates; ++i ) for ( j=0; j<st->nclasses; ++j ) {
-	    if ( (as->state[i*st->nclasses+j].flags&0x8000) ||	/* Set Mark */
-		    as->state[i*st->nclasses+j].u.context.cur_tag!= 0 )
-		classes_subbed[j] = true;
-	}
 	for ( i=0; i<st->nclasses*st->nstates; ++i ) {
 	    if ( as->state[i].u.context.mark_tag!=0 ) {
 		index = sm_lookupfind(lookups,&lookup_max,(int16) as->state[i].u.context.mark_tag);
+		evermarked[index] = true;
 		as->state[i].u.context.mark_tag = TagFromInfo(info,index);
 	    }
 	    if ( as->state[i].u.context.cur_tag!=0 ) {
@@ -3655,16 +3671,28 @@ return(NULL);
 		as->state[i].u.context.cur_tag = TagFromInfo(info,index);
 	    }
 	}
-	for ( i=0; i<=lookup_max; ++i ) {
+	used = gcalloc((subtab_len-st->extra_offsets[0])/2,sizeof(uint8));
+	/* first figure things that only appear in current subs */
+	/*  then go back and work on things that apply to things which are also in marked subs */
+	for ( j=0; j<2; ++j ) for ( i=0; i<=lookup_max; ++i ) if ( evermarked[i]==j ) {
 	    info->mort_subs_tag = TagFromInfo(info,i);
 	    info->mort_is_nested = true;
+	    if ( !evermarked[i] ) { int k,l;
+		memset(classes_subbed,0,st->nclasses);
+		for ( k=0; k<st->nstates; ++k ) for ( l=0; l<st->nclasses; ++l ) {
+		    if ( as->state[k*st->nclasses+l].u.context.cur_tag == info->mort_subs_tag )
+			classes_subbed[l] = true;
+		}
+	    }
 	    fseek(ttf,here/*+st->extra_offsets[0]*/+lookups[i]*2,SEEK_SET);
 	    read_perglyph_subs(ttf,info,here+st->extra_offsets[0],here+subtab_len,
-		    st,classes_subbed);
+		    st,classes_subbed,evermarked[i],used);
 	}
 	info->mort_is_nested = false;
 	free(classes_subbed);
 	free(lookups);
+	free(used);
+	free(evermarked);
 	info->gentags.tt_cur += lookup_max+1;
     } else if ( ismorx && type == asm_context ) {
 	int lookup_max= -1;
