@@ -1951,7 +1951,7 @@ static int CI_SName(GGadget *g, GEvent *e) {	/* Set From Name */
 	CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
 	const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_UName));
 	int i;
-	char buf[10]; unichar_t ubuf[2], *temp;
+	char buf[40], *pt; unichar_t ubuf[2], *temp;
 	i = uUniFromName(ret);
 	if ( i==-1 ) {
 	    /* Adobe says names like uni00410042 represent a ligature (A&B) */
@@ -1972,7 +1972,20 @@ static int CI_SName(GGadget *g, GEvent *e) {	/* Set From Name */
 	GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_UValue),temp);
 	free(temp);
 
-	SetScriptFromUnicode(ci->gw,i,ci->sc->parent);
+	if ( i!=-1 )
+	    SetScriptFromUnicode(ci->gw,i,ci->sc->parent);
+	else {
+	    cu_strncpy(buf,ret,sizeof(buf));
+	    pt = strchr(buf,'.');
+	    if ( pt!=NULL ) *pt='\0';
+	    pt = strchr(buf,'_');
+	    if ( pt!=NULL ) *pt='\0';
+	    if ( strlen(buf)>=11 && buf[0]=='u' && buf[1]=='n' && buf[2]=='i' )
+		buf[7] = '\0';
+	    i = UniFromName(buf);
+	    SetScriptFromUnicode(ci->gw,i,ci->sc->parent);
+	    i = -1;
+	}
 
 	ubuf[0] = i;
 	if ( i==-1 || i>0xffff )
