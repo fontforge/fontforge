@@ -3557,7 +3557,7 @@ static void handlename(Context *c,Val *val) {
 			name[2]=='i'?c->curfv->sf->origname:
 			name[2]=='p'?c->curfv->sf->copyright:
 				    c->curfv->sf->version);
-	    } else if ( strcmp(name,"$cidfontname")==0 || strcmp(name,"cidfamilyname")==0 ||
+	    } else if ( strcmp(name,"$cidfontname")==0 || strcmp(name,"$cidfamilyname")==0 ||
 		    strcmp(name,"$cidfullname")==0 || strcmp(name,"$cidweight")==0 ||
 		    strcmp(name,"$cidcopyright")==0 ) {
 		if ( c->curfv==NULL ) error(c,"No current font");
