@@ -829,12 +829,14 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	fprintf( sfd, "DisplaySize: %d\n", sf->display_size );
     if ( sf->display_antialias!=0 )
 	fprintf( sfd, "AntiAlias: %d\n", sf->display_antialias );
-    if ( sf->fv!=NULL ) {
-	int rc, cc, te = FVWinInfo(sf->fv,&cc,&rc);
-	fprintf( sfd, "WinInfo: %d %d %d\n", te, cc, rc );
-    } else if ( sf->top_enc!=-1 )
-	fprintf( sfd, "WinInfo: %d %d %d\n", sf->top_enc, sf->desired_col_cnt,
+    {
+	int rc, cc, te;
+	if ( (te = FVWinInfo(sf->fv,&cc,&rc))!= -1 )
+	    fprintf( sfd, "WinInfo: %d %d %d\n", te, cc, rc );
+	else if ( sf->top_enc!=-1 )
+	    fprintf( sfd, "WinInfo: %d %d %d\n", sf->top_enc, sf->desired_col_cnt,
 		sf->desired_row_cnt);
+    }
     if ( sf->onlybitmaps!=0 )
 	fprintf( sfd, "OnlyBitmaps: %d\n", sf->onlybitmaps );
     if ( sf->private!=NULL )
@@ -2126,6 +2128,9 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    getint(sfd,&sf->top_enc);
 	    getint(sfd,&temp1);
 	    getint(sfd,&temp2);
+	    if ( sf->top_enc<=0 ) sf->top_enc=-1;
+	    if ( temp1<=0 ) temp1 = 16;
+	    if ( temp2<=0 ) temp2 = 4;
 	    sf->desired_col_cnt = temp1;
 	    sf->desired_row_cnt = temp2;
 	} else if ( strmatch(tok,"AntiAlias:")==0 ) {

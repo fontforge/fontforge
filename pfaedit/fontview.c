@@ -2003,7 +2003,6 @@ return;
 	if ( samesize ) {
 	    GDrawRequestExpose(fv->v,NULL,false);
 	} else if ((( bdf->pixelsize<=fv->sf->display_size || bdf->pixelsize<=-fv->sf->display_size ) &&
-		 fv->sf->desired_col_cnt!=0 && fv->sf->desired_row_cnt!=0 &&
 		 fv->sf->top_enc!=-1 /* Not defaulting */ ) ||
 		bdf->pixelsize<=48 ) {
 	    GDrawResize(fv->gw,
@@ -5432,8 +5431,10 @@ void FVFakeMenus(FontView *fv,int cmd) {
 }
 
 int FVWinInfo(FontView *fv, int *cc, int *rc) {
-    if ( fv==NULL )
+    if ( fv==NULL || fv->colcnt==0 || fv->rowcnt==0 ) {
+	*cc = 16; *rc = 4;
 return( -1 );
+    }
 
     *cc = fv->colcnt;
     *rc = fv->rowcnt;
