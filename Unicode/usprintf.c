@@ -115,6 +115,7 @@ static void formatarg(struct state *state,int arg) {
     char *trans;
     int radix, neg; unsigned long val;
     unichar_t buf[20], *pt;
+    char cbuf[20];
     int i, precision, fieldwidth;
 
     if ( arg<0 || arg>=state->argmax )
@@ -187,7 +188,23 @@ return;
 	    padstr(state,arg,state->args[arg].uval,fieldwidth,precision);
       break;
       case 'e': case 'E': case 'f': case 'F': case 'g': case 'G': case 'a': case 'A':
-	/* I'm not interested in doubles now. and they are too hard anyway */
+	/* This doesn't really do a good job!!!! */
+	switch ( state->args[arg].format ) {
+	  case 'e': case 'E':
+	    sprintf(cbuf,"%e",state->args[arg].dval);
+	  break;
+	  case 'f': case 'F':
+	    sprintf(cbuf,"%f",state->args[arg].dval);
+	  break;
+	  case 'g': case 'G':
+	    sprintf(cbuf,"%g",state->args[arg].dval);
+	  break;
+	  case 'a': case 'A':
+	    sprintf(cbuf,"%a",state->args[arg].dval);
+	  break;
+        }
+	uc_strcpy(buf,cbuf);
+	padvalue(state,arg,buf,fieldwidth);
       break;
       /* a 'p' conversion is converted into the equivalent 'x' conversion earlier */
     }
