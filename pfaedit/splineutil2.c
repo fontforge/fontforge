@@ -195,7 +195,6 @@ static void FigureSpline1(Spline1 *sp1,double t0, double t1, Spline1D *sp ) {
 	sp1->sp.d = sp->d + t0*sp->c;
 	sp1->sp.c = s*sp->c;
 	sp1->sp.b = sp1->sp.a = 0;
-	sp1->c0 = sp1->sp.d; sp1->c1 = sp1->sp.c+sp1->sp.d;
     } else {
 	sp1->sp.d = sp->d + t0*(sp->c + t0*(sp->b + t0*sp->a));
 	sp1->sp.c = s*(sp->c + t0*(2*sp->b + 3*sp->a*t0));
@@ -207,9 +206,9 @@ static void FigureSpline1(Spline1 *sp1,double t0, double t1, Spline1D *sp ) {
 		!RealNear(sp1->sp.d,sp1->s0))
 	    GDrawIError( "Created spline does not work in FigureSpline1");
 #endif
-	sp1->c0 = sp1->sp.c/3 + sp1->sp.d;
-	sp1->c1 = sp1->c0 + (sp1->sp.b+sp1->sp.c)/3;
     }
+    sp1->c0 = sp1->sp.c/3 + sp1->sp.d;
+    sp1->c1 = sp1->c0 + (sp1->sp.b+sp1->sp.c)/3;
 }
 
 SplinePoint *SplineBisect(Spline *spline, double t) {
