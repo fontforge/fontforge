@@ -342,9 +342,14 @@ return( enc );
 	    if ( *end!='\0' )
 		uni = -1;
 	} else if ( name[0]=='g' && name[1]=='l' && name[2]=='y' && name[3]=='p' && name[4]=='h' ) {
-	    enc = strtol(name+5,&end,10);
+	    int orig = strtol(name+5,&end,10);
 	    if ( *end!='\0' )
-		enc = -1;
+		orig = -1;
+	    if ( orig!=-1 ) {
+		for ( enc=sf->charcnt-1; enc>=0; --enc )
+		    if ( sf->chars[enc]!=NULL && sf->chars[enc]->orig_pos==orig )
+		break;
+	    }
 	} else if ( isdigit(*name)) {
 	    enc = strtoul(name,&end,0);
 	    if ( *end==',' && ((sf->encoding_name>=em_jis208 && sf->encoding_name<=em_last94x94) ||
