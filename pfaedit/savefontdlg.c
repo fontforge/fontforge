@@ -282,7 +282,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype) {
     real *sizes=NULL;
 
     for ( i=0; extensions[i]!=NULL; ++i ) {
-	if ( strmatch(filename-strlen(extensions[i]),extensions[i])==0 )
+	if ( strmatch(filename+strlen(filename)-strlen(extensions[i]),extensions[i])==0 )
     break;
     }
     if ( extensions[i]==NULL ) i = ff_pfb;
