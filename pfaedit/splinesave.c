@@ -29,9 +29,10 @@
 #include <math.h>
 #include "splinefont.h"
 #include "psfont.h"
-#include "ustring.h"
-#include "string.h"
-#include "utype.h"
+#include <ustring.h>
+#include <string.h>
+#include <utype.h>
+#include <gwidget.h>
 
 extern int greekfixup;
 
@@ -1746,6 +1747,8 @@ return( chrs );
 /* ********************** Type2 PostScript CharStrings ********************** */
 /* ************************************************************************** */
 
+static int real_warn = false;
+
 static void AddNumber2(GrowBuf *gb, real pos) {
     int val;
     unsigned char *str;
@@ -1757,6 +1760,11 @@ static void AddNumber2(GrowBuf *gb, real pos) {
 
     str = gb->pt;
     if ( pos!=floor(pos )) {
+	if ( !real_warn ) {
+	    GWidgetPostNoticeR(_STR_NotIntegral,_STR_TryRoundToInt);
+	    real_warn = true;
+	}
+
 	val = pos*65536;
 #ifdef PSFixed_Is_TTF	/* The type2 spec is contradictory. It says this is a */
 			/*  two's complement number, but it also says it is a */
@@ -2416,6 +2424,8 @@ struct pschars *SplineFont2Subrs2(SplineFont *sf) {
     int i,cnt;
     SplineChar *sc;
 
+    real_warn = false;
+
     /* We don't allow refs to refs. It confuses the hintmask operators */
     /*  instead we track down to the base ref */
     for ( i=cnt=0; i<sf->charcnt; ++i ) {
@@ -2482,6 +2492,8 @@ struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
     int fixed = SFOneWidth(sf), notdefwidth;
     int zero_is_notdef;
 
+    /* real_warn = false; */ /* Should have been done by SplineFont2Subrs2 */
+
     notdefwidth = fixed;
     if ( notdefwidth==-1 ) notdefwidth = sf->ascent+sf->descent;
 
@@ -2543,7 +2555,7 @@ struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
     cnt = 1;
     for ( ; i<sf->charcnt; ++i ) {
 	sc = sf->chars[i];
-#if 0 && HANYANG			/* Too much stuff knows the glyph cnt, can't refigure it here at the end */
+#if 0 && HANYANG			/* Too many places know the glyph cnt, can't refigure it here at the end */
 	if ( sc!=NULL && sc->compositionunit )
 	    /* don't output it, should be in a subroutine */;
 	else
@@ -2570,6 +2582,8 @@ struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds) {
     /* In a cid-keyed font, cid 0 is defined to be .notdef so there are no */
     /*  special worries. If it is defined we use it. If it is not defined */
     /*  we add it. */
+
+    real_warn = false;
 
     max = 0;
     for ( i=0; i<cidmaster->subfontcnt; ++i )
