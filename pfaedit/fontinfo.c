@@ -2120,7 +2120,7 @@ return( true );
 return( true );
 	if ( d->names_set )
 	    TNFinishFormer(d);
-	
+
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Family));
 	if ( !isalpha(*txt)) {
 	    BadFamily();
@@ -2661,7 +2661,7 @@ void FontInfo(SplineFont *sf) {
     psgcd[0].gd.label = &pslabel[0];
     psgcd[0].creator = GLabelCreate;
 
-    psgcd[1].gd.pos.x = 103; psgcd[1].gd.pos.y = psgcd[0].gd.pos.y-6; psgcd[1].gd.pos.width = 45;
+    psgcd[1].gd.pos.x = 103; psgcd[1].gd.pos.y = psgcd[0].gd.pos.y-6; psgcd[1].gd.pos.width = 47;
     psgcd[1].gd.flags = gg_visible | gg_enabled;
     sprintf( asbuf, "%d", sf->ascent );
     pslabel[1].text = (unichar_t *) asbuf;
@@ -2678,7 +2678,7 @@ void FontInfo(SplineFont *sf) {
     psgcd[2].gd.label = &pslabel[2];
     psgcd[2].creator = GLabelCreate;
 
-    psgcd[3].gd.pos.x = 200; psgcd[3].gd.pos.y = psgcd[1].gd.pos.y; psgcd[3].gd.pos.width = 45;
+    psgcd[3].gd.pos.x = 200; psgcd[3].gd.pos.y = psgcd[1].gd.pos.y; psgcd[3].gd.pos.width = 47;
     psgcd[3].gd.flags = gg_visible | gg_enabled;
     sprintf( dsbuf, "%d", sf->descent );
     pslabel[3].text = (unichar_t *) dsbuf;
@@ -2700,7 +2700,7 @@ void FontInfo(SplineFont *sf) {
     psgcd[5].creator = GLabelCreate;
 
     psgcd[4].gd.pos.x = 103; psgcd[4].gd.pos.y = psgcd[5].gd.pos.y-6;
-    psgcd[4].gd.pos.width = 45;
+    psgcd[4].gd.pos.width = 47;
     psgcd[4].gd.flags = gg_visible | gg_enabled;
     sprintf( iabuf, "%g", sf->italicangle );
     pslabel[4].text = (unichar_t *) iabuf;
@@ -2734,7 +2734,7 @@ void FontInfo(SplineFont *sf) {
     psgcd[8].gd.label = &pslabel[8];
     psgcd[8].creator = GLabelCreate;
 
-    psgcd[7].gd.pos.x = 103; psgcd[7].gd.pos.y = psgcd[8].gd.pos.y-6; psgcd[7].gd.pos.width = 45;
+    psgcd[7].gd.pos.x = 103; psgcd[7].gd.pos.y = psgcd[8].gd.pos.y-6; psgcd[7].gd.pos.width = 47;
     psgcd[7].gd.flags = gg_visible | gg_enabled;
     sprintf( upbuf, "%g", sf->upos );
     pslabel[7].text = (unichar_t *) upbuf;
@@ -2751,7 +2751,7 @@ void FontInfo(SplineFont *sf) {
     psgcd[9].gd.label = &pslabel[9];
     psgcd[9].creator = GLabelCreate;
 
-    psgcd[10].gd.pos.x = 200; psgcd[10].gd.pos.y = psgcd[7].gd.pos.y; psgcd[10].gd.pos.width = 45;
+    psgcd[10].gd.pos.x = 200; psgcd[10].gd.pos.y = psgcd[7].gd.pos.y; psgcd[10].gd.pos.width = 47;
     psgcd[10].gd.flags = gg_visible | gg_enabled;
     sprintf( uwbuf, "%g", sf->uwidth );
     pslabel[10].text = (unichar_t *) uwbuf;
