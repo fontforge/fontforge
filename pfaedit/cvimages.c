@@ -890,8 +890,9 @@ static unichar_t wildbdf[] = { '*', '.', 'b', 'd','{', 'f', ',','f','.','g','z',
 static unichar_t wildpcf[] = { '*', '.', 'p', 'c','{', 'f', ',','f','.','g','z',',','f','.','Z',',','f','.','b','z','2','}',  '\0' };
 static unichar_t wildttf[] = { '*', '.', '{', 't', 't','f',',','o','t','f',',','t','t','c','}',  '\0' };
 static unichar_t wildpk[] = { '*', '{', 'p', 'k', ',', 'g', 'f', '}',  '\0' };		/* pk fonts can have names like cmr10.300pk, not a normal extension */
+static unichar_t wildmac[] = { '*', '{', 'b', 'i', 'n', ',', 'h', 'q', 'x', ',', 'd','f','o','n','t', '}',  '\0' };		/* pk fonts can have names like cmr10.300pk, not a normal extension */
 static unichar_t *wildchr[] = { wildimg, wildps, wildfig };
-static unichar_t *wildfnt[] = { wildbdf, wildttf, wildpk, wildpcf, wildimg, wildtemplate, wildps, wildepstemplate };
+static unichar_t *wildfnt[] = { wildbdf, wildttf, wildpk, wildpcf, wildmac, wildimg, wildtemplate, wildps, wildepstemplate };
 
 static GTextInfo formats[] = {
     { (unichar_t *) _STR_Image, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
@@ -899,12 +900,13 @@ static GTextInfo formats[] = {
     { (unichar_t *) "XFig", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};
 
-enum fvformats { fv_bdf, fv_ttf, fv_pk, fv_pcf, fv_image, fv_imgtemplate, fv_eps, fv_epstemplate };
+enum fvformats { fv_bdf, fv_ttf, fv_pk, fv_pcf, fv_mac, fv_image, fv_imgtemplate, fv_eps, fv_epstemplate };
 static GTextInfo fvformats[] = {
     { (unichar_t *) "BDF", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 1, 0, 1 },
     { (unichar_t *) "TTF", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_TeXBitmap, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "PCF", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_MacBitmap, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_Image, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_Template, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "EPS", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
@@ -928,21 +930,23 @@ static int GFD_ImportOk(GGadget *g, GEvent *e) {
 	    int toback = GGadgetIsChecked(d->background);
 	    if ( toback && strchr(temp,';')!=NULL && format<3 )
 		GWidgetErrorR(_STR_OnlyOneFont,_STR_OnlyOneFontBackground);
-	    else if ( format==0 )
+	    else if ( format==fv_bdf )
 		d->done = FVImportBDF(d->fv,temp,false, toback);
-	    else if ( format==1 )
-		d->done = FVImportTTF(d->fv,temp,toback);
-	    else if ( format==2 )		/* pk */
+	    else if ( format==fv_ttf )
+		d->done = FVImportMult(d->fv,temp,toback,bf_ttf);
+	    else if ( format==fv_pk )		/* pk */
 		d->done = FVImportBDF(d->fv,temp,true, toback);
-	    else if ( format==3 )		/* pcf */
+	    else if ( format==fv_pcf )		/* pcf */
 		d->done = FVImportBDF(d->fv,temp,2, toback);
-	    else if ( format==4 )
+	    else if ( format==fv_mac )
+		d->done = FVImportMult(d->fv,temp,toback,bf_nfntdfont);
+	    else if ( format==fv_image )
 		d->done = FVImportImages(d->fv,temp,1);
-	    else if ( format==5 )
+	    else if ( format==fv_imgtemplate )
 		d->done = FVImportImageTemplate(d->fv,temp,1);
-	    else if ( format==6 )
+	    else if ( format==fv_eps )
 		d->done = FVImportImages(d->fv,temp,0);
-	    else if ( format==7 )
+	    else if ( format==fv_epstemplate )
 		d->done = FVImportImageTemplate(d->fv,temp,0);
 	} else if ( d->bv!=NULL )
 	    d->done = BVImportImage(d->bv,temp);
@@ -977,13 +981,13 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	GFileChooserSetFilterText(d->gfc,d->fv==NULL?wildchr[format]:wildfnt[format]);
 	GFileChooserRefreshList(d->gfc);
 	if ( d->fv!=NULL ) {
-	    if ( format==0 || format==1 || format==3 ) {/* bdf, TTF, pcf */
+	    if ( format==fv_bdf || format==fv_ttf || format==fv_pcf || format==fv_mac ) {
 		GGadgetSetChecked(d->background,false);
 		GGadgetSetEnabled(d->background,true);
-	    } else if ( format==2 ) {	/* pk */
+	    } else if ( format==fv_pk ) {
 		GGadgetSetChecked(d->background,true);
 		GGadgetSetEnabled(d->background,true);
-	    } else if ( format==6 || format==7 ) {	/* eps */
+	    } else if ( format==fv_eps || format==fv_epstemplate ) {
 		GGadgetSetChecked(d->background,false);
 		GGadgetSetEnabled(d->background,false);
 	    } else {			/* Images */

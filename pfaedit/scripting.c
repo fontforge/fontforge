@@ -792,7 +792,7 @@ static void bImport(Context *c) {
     else if ( format==5 )
 	ok = FVImportBDF(c->curfv,filename,2, back);
     else if ( format==1 )
-	ok = FVImportTTF(c->curfv,filename, back);
+	ok = FVImportMult(c->curfv,filename, back, bf_ttf);
     else if ( format==2 )
 	ok = FVImportBDF(c->curfv,filename,true, back);
     else if ( format==3 )

@@ -1143,6 +1143,7 @@ static char *str_EncodingNotInFont = "Encoding value not in font";
 static char *str_EncodingValueNotInFont = "Encoding value (%x) not in font, ignored";
 static char *str_Image = "Image";
 static char *str_TeXBitmap = "TeX Bitmap";
+static char *str_MacBitmap = "Mac Bitmap";
 static char *str_Template = "Image Template";
 static char *str_EPSTemplate = "EPS Template";
 static char *str_AsBackground = "As Background";

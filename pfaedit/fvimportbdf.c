@@ -1969,7 +1969,7 @@ static void SFAddToBackground(SplineFont *sf,BDFFont *bdf) {
     BDFFontFree(bdf);
 }
 
-int FVImportTTF(FontView *fv, char *filename, int toback) {
+int FVImportMult(FontView *fv, char *filename, int toback, int bf) {
     SplineFont *strikeholder, *sf = fv->sf;
     BDFFont *strikes;
     unichar_t ubuf[100];
@@ -1978,7 +1978,10 @@ int FVImportTTF(FontView *fv, char *filename, int toback) {
     GProgressStartIndicator(10,GStringGetResource(_STR_Loading,NULL),ubuf,GStringGetResource(_STR_ReadingGlyphs,NULL),0,2);
     GProgressEnableStop(false);
 
-    strikeholder = SFReadTTF(filename,toback?ttf_onlyonestrike|ttf_onlystrikes:ttf_onlystrikes);
+    if ( bf == bf_ttf )
+	strikeholder = SFReadTTF(filename,toback?ttf_onlyonestrike|ttf_onlystrikes:ttf_onlystrikes);
+    else
+	strikeholder = SFReadMacBinary(filename,toback?ttf_onlyonestrike|ttf_onlystrikes:ttf_onlystrikes);
 
     if ( strikeholder==NULL || (strikes = strikeholder->bitmaps)==NULL ) {
 	SplineFontFree(strikeholder);
