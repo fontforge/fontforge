@@ -230,9 +230,9 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding) {
 	    BDFFoundry==NULL?"PfaEdit":BDFFoundry,
 	    family_name, weight_name, slant, squeeze, stylename,
 	    font->pixelsize, pnt, res, res, mono, avg, encoding );
-	strcpy(fontname,font->sf->fontname);
 	if ( strchr(encoding,'-')==NULL )
-	    strcat(fontname,"-0");
+	    strcat(buffer,"-0");
+	strcpy(fontname,font->sf->fontname);
     }
 
     fprintf( file, "STARTFONT 2.1\n" );
@@ -284,7 +284,7 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding) {
 	fprintf( file, "CHARSET_REGISTRY \"ISO10646\"\n" );
     else
 	fprintf( file, "CHARSET_REGISTRY \"%s\"\n", encoding );
-    if (( pt = strrchr(encoding,'-'))==NULL ) pt = "-1";
+    if (( pt = strrchr(encoding,'-'))==NULL ) pt = "-0";
     fprintf( file, "CHARSET_ENCODING \"%s\"\n", pt+1 );
 
     OS2FigureCodePages(font->sf,codepages);
