@@ -483,7 +483,7 @@ return;
 	base.image_type = it_mono;
 	base.clut = &clut;
 	clut.clut_len = 2;
-	clut.clut[0] = 0xffffff;
+	clut.clut[0] = GDrawGetDefaultBackground(NULL);
 	base.data = bdfc->bitmap;
 	base.bytes_per_line = bdfc->bytes_per_line;
 	base.width = bdfc->xmax-bdfc->xmin+1;
