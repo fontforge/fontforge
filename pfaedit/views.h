@@ -309,6 +309,7 @@ typedef struct fontview {
     GTimer *resize;
     void *fontinfo;
     SplineChar *sc_near_top;
+    int sel_index;
 } FontView;
 
 typedef struct findsel {

@@ -2415,7 +2415,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     char buffer[100];
     unichar_t ubuf[100];
     GTextInfo label;
-    int i,cnt;
+    int i,j,cnt;
     int as,ds,ld;
 
     if ( icon==NULL )
@@ -2469,10 +2469,12 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
 	mv->perchar[0].sc = sc;
 	cnt = 1;
     } else {
-	for ( i=cnt=0; i<fv->sf->charcnt && cnt<15; ++i ) {
-	    if ( fv->selected[i] && fv->sf->chars[i]!=NULL ) {
-		mv->perchar[cnt].sc = fv->sf->chars[i];
-		ubuf[cnt++] = fv->sf->chars[i]->unicodeenc==-1 ? 0xfffd: fv->sf->chars[i]->unicodeenc;
+	for ( cnt=0, j=1; j<=fv->sel_index && cnt<15; ++j ) {
+	    for ( i=0; i<fv->sf->charcnt && cnt<15; ++i ) {
+		if ( fv->selected[i]==j && fv->sf->chars[i]!=NULL ) {
+		    mv->perchar[cnt].sc = fv->sf->chars[i];
+		    ubuf[cnt++] = fv->sf->chars[i]->unicodeenc==-1 ? 0xfffd: fv->sf->chars[i]->unicodeenc;
+		}
 	    }
 	}
     }
@@ -2499,9 +2501,11 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     if ( sc!=NULL ) {
 	MVSetPos(mv,0,sc);
     } else {
-	for ( i=cnt=0; i<fv->sf->charcnt && cnt<15; ++i ) {
-	    if ( fv->selected[i] && fv->sf->chars[i]!=NULL ) {
-		MVSetPos(mv,cnt++,fv->sf->chars[i]);
+	for ( cnt=0, j=1; j<=fv->sel_index && cnt<15; ++j ) {
+	    for ( i=0; i<fv->sf->charcnt && cnt<15; ++i ) {
+		if ( fv->selected[i]==j && fv->sf->chars[i]!=NULL ) {
+		    MVSetPos(mv,cnt++,fv->sf->chars[i]);
+		}
 	    }
 	}
     }

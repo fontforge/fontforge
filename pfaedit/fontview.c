@@ -177,7 +177,7 @@ static void FVReselect(FontView *fv, int newpos) {
     if ( fv->pressed_pos<fv->end_pos ) {
 	if ( newpos>fv->end_pos ) {
 	    for ( i=fv->end_pos+1; i<=newpos; ++i ) if ( !fv->selected[i] ) {
-		fv->selected[i] = true;
+		fv->selected[i] = fv->sel_index;
 		FVToggleCharSelected(fv,i);
 	    }
 	} else if ( newpos<fv->pressed_pos ) {
@@ -186,7 +186,7 @@ static void FVReselect(FontView *fv, int newpos) {
 		FVToggleCharSelected(fv,i);
 	    }
 	    for ( i=fv->pressed_pos-1; i>=newpos; --i ) if ( !fv->selected[i] ) {
-		fv->selected[i] = true;
+		fv->selected[i] = fv->sel_index;
 		FVToggleCharSelected(fv,i);
 	    }
 	} else {
@@ -198,7 +198,7 @@ static void FVReselect(FontView *fv, int newpos) {
     } else {
 	if ( newpos<fv->end_pos ) {
 	    for ( i=fv->end_pos-1; i>=newpos; --i ) if ( !fv->selected[i] ) {
-		fv->selected[i] = true;
+		fv->selected[i] = fv->sel_index;
 		FVToggleCharSelected(fv,i);
 	    }
 	} else if ( newpos>fv->pressed_pos ) {
@@ -207,7 +207,7 @@ static void FVReselect(FontView *fv, int newpos) {
 		FVToggleCharSelected(fv,i);
 	    }
 	    for ( i=fv->pressed_pos+1; i<=newpos; ++i ) if ( !fv->selected[i] ) {
-		fv->selected[i] = true;
+		fv->selected[i] = fv->sel_index;
 		FVToggleCharSelected(fv,i);
 	    }
 	} else {
@@ -4255,15 +4255,19 @@ static void FVMouse(FontView *fv,GEvent *event) {
 	if ( !(event->u.mouse.state&ksm_shift) /*&&
 		(fv->sf->chars[pos]==NULL || !fv->selected[pos] )*/)
 	    FVDeselectAll(fv);
+	if ( !(event->u.mouse.state&ksm_shift))
+	    fv->sel_index = 1;
+	else if ( fv->sel_index<255 )
+	    ++fv->sel_index;
 	if ( fv->pressed!=NULL )
 	    GDrawCancelTimer(fv->pressed);
 	fv->pressed_pos = fv->end_pos = pos;
 	FVShowInfo(fv);
 	if ( event->u.mouse.state&ksm_shift ) {
-	    fv->selected[pos] = !fv->selected[pos];
+	    fv->selected[pos] = fv->selected[pos] ? 0 : fv->sel_index;
 	    FVToggleCharSelected(fv,pos);
 	} else if ( !fv->selected[pos] ) {
-	    fv->selected[pos] = true;
+	    fv->selected[pos] = fv->sel_index;
 	    FVToggleCharSelected(fv,pos);
 	}
 	if ( event->u.mouse.button==3 )
