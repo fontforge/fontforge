@@ -100,7 +100,7 @@ int SimplifyDlg(double *err) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = GStringGetResource(_STR_Reviewhints,NULL);
+    wattrs.window_title = GStringGetResource(_STR_Simplify,NULL);
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,170));
