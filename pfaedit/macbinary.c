@@ -639,6 +639,7 @@ uint16 MacStyleCode( SplineFont *sf, uint16 *psstylecode ) {
     /* URW uses four leter abbreviations of Italic and Oblique */
     /* Somebody else uses two letter abbrevs */
     if ( strstrmatch( styles, "Ital" ) || strstrmatch( styles, "Obli" ) ||
+	    strstrmatch(styles, "Slanted") ||
 	    strstrmatch(styles, "Kurs") ||
 	    strstr( styles,"It" ) ) {
 	stylecode |= sf_italic;

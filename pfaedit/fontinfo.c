@@ -1862,6 +1862,8 @@ static int GFI_NameChange(GGadget *g, GEvent *e) {
 		ept = temp;
 	    if (( temp = uc_strstrmatch(uname,"kurs"))!=NULL && temp<ept && temp!=uname )
 		ept = temp;
+	    if (( temp = uc_strstrmatch(uname,"slanted"))!=NULL && temp<ept && temp!=uname )
+		ept = temp;
 	    if (( temp = u_strchr(uname,'-'))!=NULL && temp!=uname )
 		ept = temp;
 	    temp = u_copyn(uname,ept-uname);
@@ -2371,9 +2373,9 @@ static void BadFamily() {
     GWidgetErrorR(_STR_Badfamily,_STR_Badfamilyn);
 }
 
-static char *modifierlist[] = { "Ital", "Obli", "Kursive", "Cursive",
+static char *modifierlist[] = { "Ital", "Obli", "Kursive", "Cursive", "Slanted",
 	"Expa", "Cond", NULL };
-static char *modifierlistfull[] = { "Italic", "Oblique", "Kursive", "Cursive",
+static char *modifierlistfull[] = { "Italic", "Oblique", "Kursive", "Cursive", "Slanted",
     "Expanded", "Condensed", NULL };
 static char **mods[] = { knownweights, modifierlist, NULL };
 static char **fullmods[] = { realweights, modifierlistfull, NULL };

@@ -62,6 +62,8 @@ static void decomposename(BDFFont *font, char *fontname, char *family_name, char
 	    strcpy(slant,"I");
 	else if (( ital = strstr(fontname,"Obli"))!=NULL )
 	    strcpy(slant,"O");
+	else if (( ital = strstr(fontname,"Slanted"))!=NULL )
+	    strcpy(slant,"O");
     
 	if (( bold = strstr(fontname,"Bold"))==NULL &&
 		( bold = strstr(fontname,"Ligh"))==NULL &&

@@ -1076,6 +1076,8 @@ int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0) {
 /* I don't check for "italic" and "oblique" because URW truncates them to 4 characters */
     putc(sf->italicangle!=0 ||
 	    strstrmatch(sf->fontname,"ital")!=NULL ||
+	    strstrmatch(sf->fontname,"kurs")!=NULL ||
+	    strstrmatch(sf->fontname,"slanted")!=NULL ||
 	    strstrmatch(sf->fontname,"obli")!=NULL,pfm);	/* is italic */
     putc(0,pfm);			/* underline */
     putc(0,pfm);			/* strikeout */

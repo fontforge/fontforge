@@ -583,6 +583,7 @@ static void IkarusFontname(SplineFont *sf,char *fullname,char *fnam) {
 	*pt='\0';
     }
     while ( (pt=strstr(fullname,"Ital"))!=NULL ||
+	    (pt=strstr(fullname,"Slanted"))!=NULL ||
 	    (pt=strstr(fullname,"Obli"))!=NULL ||
 	    (pt=strstr(fullname,"Roma"))!=NULL ||
 	    (pt=strstr(fullname,"Cond"))!=NULL ||

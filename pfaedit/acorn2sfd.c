@@ -81,7 +81,7 @@ static char *knownweights[] = { "Demi", "Bold", "Regu", "Medi", "Book", "Thin",
 static char *realweights[] = { "Demi", "Bold", "Regular", "Medium", "Book", "Thin",
 	"Light", "Heavy", "Black", "Ultra", "Nord", "Normal", "Gras", "Standard", "Halbfett",
 	"Fett", "Mager", "Mittel", "Buchschrift", NULL};
-static char *modifierlist[] = { "Ital", "Obli", "Kursive", "Cursive",
+static char *modifierlist[] = { "Ital", "Obli", "Kursive", "Cursive", "Slanted",
 	"Expa", "Cond", NULL };
 static char **mods[] = { knownweights, modifierlist, NULL };
 #if 0
