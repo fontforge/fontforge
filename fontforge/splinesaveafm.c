@@ -2066,7 +2066,7 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
 			fprintf( stderr, "Internal error generating lig/kern array, jump too far.\n" );
 		}
 		former[i] = lkcnt;
-		lkarray[lkcnt++] = ((lk->next==NULL?128:0)<<24) |
+		lkarray[lkcnt++] = ((lk->next==NULL?128U:0U)<<24) |
 				    (lk->other_char<<16) |
 				    (lk->op<<8) |
 				    lk->remainder;
@@ -2080,7 +2080,7 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
 	for ( i=0; i<256; ++i ) if ( ligkerns[i]!=NULL ) {
 	    lkindex[i] = lkcnt;
 	    /* long pointer into big ligkern array */
-	    lkarray[lkcnt++] = (129<<24) |
+	    lkarray[lkcnt++] = (129U<<24) |
 				(0<<16) |
 			        lkcnt2;
 	    for ( lk = ligkerns[i]; lk!=NULL; lk=lknext ) {

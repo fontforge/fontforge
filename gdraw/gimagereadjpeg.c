@@ -57,14 +57,22 @@ static int loadjpeg() {
 	GDrawIError("%s", dlerror());
 return( 0 );
     }
-    _jpeg_std_error = dlsym(libjpeg,"jpeg_std_error");
-    _jpeg_destroy_decompress = dlsym(libjpeg,"jpeg_destroy_decompress");
-    _jpeg_create_decompress = dlsym(libjpeg,"jpeg_CreateDecompress");
-    _jpeg_stdio_src = dlsym(libjpeg,"jpeg_stdio_src");
-    _jpeg_read_header = dlsym(libjpeg,"jpeg_read_header");
-    _jpeg_start_decompress = dlsym(libjpeg,"jpeg_start_decompress");
-    _jpeg_read_scanlines = dlsym(libjpeg,"jpeg_read_scanlines");
-    _jpeg_finish_decompress = dlsym(libjpeg,"jpeg_finish_decompress");
+    _jpeg_std_error = (struct jpeg_error_mgr *(*)(struct jpeg_error_mgr *))
+		dlsym(libjpeg,"jpeg_std_error");
+    _jpeg_destroy_decompress = (void (*)(j_decompress_ptr))
+		dlsym(libjpeg,"jpeg_destroy_decompress");
+    _jpeg_create_decompress = (void (*)(j_decompress_ptr,int,size_t))
+		dlsym(libjpeg,"jpeg_CreateDecompress");
+    _jpeg_stdio_src = (void (*)(j_decompress_ptr, FILE *))
+		dlsym(libjpeg,"jpeg_stdio_src");
+    _jpeg_read_header = (int (*)(j_decompress_ptr,boolean))
+		dlsym(libjpeg,"jpeg_read_header");
+    _jpeg_start_decompress = (boolean (*)(j_decompress_ptr))
+		dlsym(libjpeg,"jpeg_start_decompress");
+    _jpeg_read_scanlines = (boolean (*)(j_decompress_ptr, JSAMPARRAY, JDIMENSION))
+		dlsym(libjpeg,"jpeg_read_scanlines");
+    _jpeg_finish_decompress = (boolean (*)(j_decompress_ptr))
+		dlsym(libjpeg,"jpeg_finish_decompress");
     if ( _jpeg_std_error && _jpeg_destroy_decompress && _jpeg_create_decompress &&
 	    _jpeg_stdio_src && _jpeg_read_header && _jpeg_start_decompress &&
 	    _jpeg_read_scanlines && _jpeg_finish_decompress )

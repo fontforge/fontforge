@@ -230,7 +230,7 @@ return;
     wattrs.redirect_from = NULL;
     pos.x = pos.y = 0;
     new->gw = GDrawCreateTopWindow(NULL,&pos,progress_eh,new,&wattrs);
-    free(wattrs.window_title);
+    free((void *) wattrs.window_title);
 
     memset(&gd,'\0',sizeof(gd)); memset(&label,'\0',sizeof(label));
     gd.pos.width = GDrawPointsToPixels(new->gw,50);

@@ -1880,7 +1880,7 @@ return( file );
 
 int SFFigureDefWidth(SplineFont *sf, int *_nomwid) {
     uint16 *widths; uint32 *cumwid;
-    int nomwid, defwid, i, sameval=0x80000000, maxw=0, allsame=true;
+    int nomwid, defwid, i, sameval=(int) 0x80000000, maxw=0, allsame=true;
     int cnt,j;
 
     for ( i=0; i<sf->charcnt; ++i )
@@ -2955,14 +2955,14 @@ void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
     else if ( sf->encoding_name==em_mac )
 	CodePage[0] |= 1<<29;	/* mac */
     else if ( sf->encoding_name==em_symbol )
-	CodePage[0] |= 1<<31;	/* symbol */
+	CodePage[0] |= 1U<<31;	/* symbol */
 
     k=0; _sf = sf;
     do {
 	sf = ( _sf->subfontcnt==0 ) ? _sf : _sf->subfonts[k];
 	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	    if ( sf->chars[i]->unicodeenc=='A' )
-		CodePage[1] |= 1<<31;		/* US (Ascii I assume) */
+		CodePage[1] |= 1U<<31;		/* US (Ascii I assume) */
 	    else if ( sf->chars[i]->unicodeenc==0xde ) {
 		CodePage[0] |= 1<<0;		/* latin1 */
 		CodePage[1] |= 1<<30;		/* WE/Latin1 */
@@ -3009,7 +3009,7 @@ void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
 	    else if ( sf->chars[i]->unicodeenc==0xacf4 )
 		CodePage[0] |= 1<<21;		/* korean Johab */
 	    else if ( sf->chars[i]->unicodeenc==0x21d4 )
-		CodePage[0] |= 1<<31;		/* symbol */
+		CodePage[0] |= 1U<<31;		/* symbol */
 	}
 	++k;
     } while ( k<_sf->subfontcnt );

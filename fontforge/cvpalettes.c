@@ -43,7 +43,7 @@ static GPoint cvtoolsoff = { -9999 }, cvlayersoff = { -9999 }, bvlayersoff = { -
 static int palettesmoved=0;
 int palettes_docked=0;
 int palettes_fixed=1;
-static enum cvtools tools[cvt_max+1] = { cvt_none };
+static GCursor tools[cvt_max+1] = { cvt_none };
 
 static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
 static GFont *font;

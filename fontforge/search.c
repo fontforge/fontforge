@@ -170,7 +170,7 @@ return( false );
 		    real yscale = (np_sp->me.y-p_sp->me.y) / (nsc_sp->me.y-sc_sp->me.y);
 		    scale = (np_sp->me.x-p_sp->me.x) / (nsc_sp->me.x-sc_sp->me.x);
 		    if ( scale<.99*yscale || scale>1.01*yscale )
-    return( false );
+return( false );
 		}
 		rot = 0;
 	    } else {

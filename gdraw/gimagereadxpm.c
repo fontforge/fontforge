@@ -301,7 +301,7 @@ return( NULL );
     else if ( strstr((char *) buf,"/*")!=NULL && strstr((char *) buf,"XPM")!=NULL && strstr((char *) buf,"*/")!=NULL )
 	getdata = getstring;
     if ( getdata==NULL ||
-	    !getdata((char *) buf,sizeof(buf),fp) ||
+	    !getdata( buf,sizeof(buf),fp) ||
 	    sscanf((char *) buf,"%d %d %d %d", &width, &height, &cols, &nchar)!=4 ) {
 	fclose(fp);
 return( NULL );

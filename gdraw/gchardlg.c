@@ -1024,17 +1024,17 @@ static unichar_t inschar[] = { 'I', 'n', 's', 'e', 'r', 't', ' ', 'C', 'h', 'a',
 void GWidgetCreateInsChar(void) {
     GTextInfo charsetnames[sizeof(encodingnames)/sizeof(struct namemap)];
     static GTextInfo labels[11] = {
-	{ (unichar_t *) "Character Set", NULL, -1, -1, NULL, NULL, 0,0,0,0,0,0, 1 },
-	{ (unichar_t *) "Character", NULL, -1, -1, NULL, NULL, 0,0,0,0,0,0, 1 },
-	{ (unichar_t *) "Hex", NULL, -1, -1, NULL, NULL, 0,0,0,0,0,0, 1 },
-	{ (unichar_t *) "Dec", NULL, -1, -1, NULL, NULL, 0,0,0,0,0,0, 1 },
-	{ (unichar_t *) "Unicode", NULL, -1, -1, NULL, NULL, 0,0,0,0,0,0, 1 },
-	{ (unichar_t *) "Ku Ten", NULL, -1, -1, NULL, NULL, 0,0,0,0,0,0, 1 },
-	{ (unichar_t *) "< Prev", NULL, -1, -1, NULL, NULL, 0,0,0,0,0,0, 1 },
-	{ (unichar_t *) "Next >", NULL, -1, -1, NULL, NULL, 0,0,0,0,0,0, 1 },
-	{ (unichar_t *) "Insert", NULL, -1, -1, NULL, NULL, 0,0,0,0,0,0, 1 },
-	{ (unichar_t *) "Close", NULL, -1, -1, NULL, NULL, 0,0,0,0,0,0, 1 },
-	{ (unichar_t *) "Show", NULL, -1, -1, NULL, NULL, 0,0,0,0,0,0, 1 }};
+	{ (unichar_t *) "Character Set", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1 },
+	{ (unichar_t *) "Character", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1 },
+	{ (unichar_t *) "Hex", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1 },
+	{ (unichar_t *) "Dec", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1 },
+	{ (unichar_t *) "Unicode", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1 },
+	{ (unichar_t *) "Ku Ten", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1 },
+	{ (unichar_t *) "< Prev", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1 },
+	{ (unichar_t *) "Next >", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1 },
+	{ (unichar_t *) "Insert", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1 },
+	{ (unichar_t *) "Close", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1 },
+	{ (unichar_t *) "Show", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1 }};
     static GGadgetCreateData gcd[] = {
 	{ GLabelCreate, {{ 6, 6 }, NULL, 'e', 0, 0, 0, 0, &labels[0], NULL, gg_visible | gg_enabled | gg_pos_use0 }},
 	{ GListButtonCreate, {{ 6, 21, 168 }, NULL, 'e', 0, 0, 0, INSCHR_CharSet, NULL, NULL, gg_visible | gg_enabled | gg_pos_use0 }},
@@ -1090,7 +1090,7 @@ void GWidgetCreateInsChar(void) {
 	inschr.height = pos.height = inschr.ybase + pos.width;
 	memset(&wattrs,0,sizeof(wattrs));
 	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_isdlg|wam_notrestricted|wam_icon;
-	wattrs.event_masks = -1;
+	wattrs.event_masks = 0xffffffff;
 	wattrs.cursor = ct_pointer;
 	wattrs.window_title = inschar;
 	wattrs.is_dlg = true;

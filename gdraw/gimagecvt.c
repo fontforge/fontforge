@@ -201,7 +201,7 @@ static GImage *GImage8to8(struct _GImage *base,GRect *src, GClut *nclut, RevCMap
     struct _GImage *rbase;
     uint8 *pt;
     uint8 *ipt;
-    int from_trans=COLOR_UNKNOWN, to_trans;
+    uint32 from_trans=COLOR_UNKNOWN, to_trans;
     int i,j;
 
     to_trans = nclut->trans_index;
@@ -262,7 +262,7 @@ static GImage *GImage32to8(struct _GImage *base,GRect *src, GClut *nclut, RevCMa
     struct _GImage *rbase;
     uint32 *pt;
     uint8 *ipt;
-    int from_trans=COLOR_UNKNOWN, to_trans;
+    uint32 from_trans=COLOR_UNKNOWN, to_trans;
     int i,j;
     short *red_dith, *green_dith, *blue_dith;
     short *r_d, *g_d, *b_d;
@@ -386,7 +386,7 @@ static GImage *GImage8to1(struct _GImage *base,GRect *src, GClut *nclut) {
     struct _GImage *rbase;
     uint8 *pt;
     uint8 *ipt;
-    int from_trans=COLOR_UNKNOWN, to_trans;
+    uint32 from_trans=COLOR_UNKNOWN, to_trans;
     struct gcol gclut[256];
     int bit;
     short *grey_dith;
@@ -452,7 +452,7 @@ static GImage *GImage32to1(struct _GImage *base,GRect *src, GClut *nclut) {
     struct _GImage *rbase;
     uint32 *pt;
     uint8 *ipt;
-    int from_trans=COLOR_UNKNOWN, to_trans;
+    uint32 from_trans=COLOR_UNKNOWN, to_trans;
     int bit;
     short *grey_dith;
     short *g_d;
@@ -588,7 +588,7 @@ static void GImageInsert1to1(GImage *from,struct _GImage *tobase, GRect *src,
     struct _GImage *fbase = from->u.image;
     uint8 *pt;
     uint8 *ipt;
-    int from_trans=COLOR_UNKNOWN, to_trans;
+    uint32 from_trans=COLOR_UNKNOWN, to_trans;
     uint8 ones, zeros;
     int i,j, bit, ibit, index;
 
@@ -645,7 +645,7 @@ static void GImageInsert8to8(GImage *from,struct _GImage *tobase, GRect *src, Re
     register Color *clut = from->u.image->clut->clut;
     uint8 *pt;
     uint8 *ipt;
-    int from_trans=COLOR_UNKNOWN, to_trans;
+    uint32 from_trans=COLOR_UNKNOWN, to_trans;
     struct gcol gclut[256];
     short *red_dith, *green_dith, *blue_dith;
     short *r_d, *g_d, *b_d;
@@ -696,7 +696,7 @@ static void GImageInsert32to32(GImage *from,struct _GImage *tobase, GRect *src,
     struct _GImage *fbase = from->u.image;
     uint32 *pt;
     uint32 *ipt;
-    int from_trans=COLOR_UNKNOWN, to_trans;
+    uint32 from_trans=COLOR_UNKNOWN, to_trans;
     int i,j,index;
 
     to_trans = tobase->trans;

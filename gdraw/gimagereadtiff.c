@@ -52,10 +52,12 @@ static int loadtiff() {
 	GDrawIError("%s", dlerror());
 return( 0 );
     }
-    _TIFFOpen = dlsym(libtiff,"TIFFOpen");
-    _TIFFGetField = dlsym(libtiff,"TIFFGetField");
-    _TIFFReadRGBAImage = dlsym(libtiff,"TIFFReadRGBAImage");
-    _TIFFClose = dlsym(libtiff,"TIFFClose");
+    _TIFFOpen = (TIFF *(*)(char *, char *)) dlsym(libtiff,"TIFFOpen");
+    _TIFFGetField = (void (*)(TIFF *, int, uint32 *))
+		dlsym(libtiff,"TIFFGetField");
+    _TIFFReadRGBAImage = (int (*)(TIFF *, uint32, uint32, uint32 *, int))
+		dlsym(libtiff,"TIFFReadRGBAImage");
+    _TIFFClose = (int (*)(TIFF *)) dlsym(libtiff,"TIFFClose");
     if ( _TIFFOpen && _TIFFGetField && _TIFFReadRGBAImage && _TIFFClose )
 return( 1 );
     dlclose(libtiff);
