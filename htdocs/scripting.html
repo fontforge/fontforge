@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 13-Dec-2004 -->
+  <!-- AP: Last modified: 22-Dec-2004 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -1722,11 +1722,14 @@ ApplySubstitution("*","*","vrt2")
       </TR>
     </TABLE>
   <DT>
-    ReplaceWithReference()
+    ReplaceWithReference([num,denom])
   <DD>
     Finds any glyph which contains an inline copy of one of the selected glyphs,
     and converts that copy into a reference to the appropriate glyph. Selection
     is changed to the set of glyphs which the command alters.
+    <P>
+    If specified the num and denom arguments specify the error allowed for coordinate
+    differences.
   <DT>
     MergeFonts(other-font-name[,flags])
   <DD>
@@ -2097,7 +2100,7 @@ verta = CharInfo("Substitution","*","dflt","vrt2")
 </H2>
 <UL>
   <LI>
-    <A HREF="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/pfaedit/pfaedit/test/">FontForge's
+    <A HREF="http://cvs.sourceforge.net/viewcvs.cgi/pfaedit/pfaedit/test/">FontForge's
     testsuite</A> (such as it is)
   <LI>
     <A HREF="scripts/">Directory of donated scripts</A>
