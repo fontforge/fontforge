@@ -308,7 +308,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT RANLIB ac_ct_RANLIB build build_cpu build_vendor build_os host host_cpu host_vendor host_os CPP EGREP X_CFLAGS X_PRE_LIBS X_LIBS X_EXTRA_LIBS X_11LIB STATIC_LIBS LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT RANLIB ac_ct_RANLIB build build_cpu build_vendor build_os host host_cpu host_vendor host_os CPP EGREP X_CFLAGS X_PRE_LIBS X_LIBS X_EXTRA_LIBS X_11LIB STATIC_LIBS WFLAGS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -5752,8 +5752,11 @@ if test "$gww_nodynamic" = "yes"; then
  if test "$ac_cv_lib_jpeg_jpeg_CreateDecompress" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -ljpeg"
  fi
- if test "$ac_cv_lib_freetype_FT_New_Face" = "yes"; then
+ if test "$ac_cv_lib_freetype_FT_New_Memory_Face" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -lfreetype"
+ fi
+ if test "$ac_cv_lib_xml2_xmlParseFile" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lxml2"
  fi
  echo "$as_me:$LINENO: checking for UnicodeNameAnnot in -luninameslist" >&5
 echo $ECHO_N "checking for UnicodeNameAnnot in -luninameslist... $ECHO_C" >&6
@@ -5842,6 +5845,13 @@ else
 fi;
 
 test -d libs || mkdir libs
+
+
+if test "$GCC" = yes; then
+  WFLAGS="-Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type -Wparentheses -Wformat -Wchar-subscripts"
+else
+  WFLAGS=""
+fi
 
 cp Makefile.static.in Makefile.in
 cp Unicode/Makefile.static.in Unicode/Makefile.in
@@ -6509,6 +6519,7 @@ s,@X_LIBS@,$X_LIBS,;t t
 s,@X_EXTRA_LIBS@,$X_EXTRA_LIBS,;t t
 s,@X_11LIB@,$X_11LIB,;t t
 s,@STATIC_LIBS@,$STATIC_LIBS,;t t
+s,@WFLAGS@,$WFLAGS,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t
 s,@LTLIBOBJS@,$LTLIBOBJS,;t t
 CEOF
@@ -7406,6 +7417,7 @@ s,@X_LIBS@,$X_LIBS,;t t
 s,@X_EXTRA_LIBS@,$X_EXTRA_LIBS,;t t
 s,@X_11LIB@,$X_11LIB,;t t
 s,@STATIC_LIBS@,$STATIC_LIBS,;t t
+s,@WFLAGS@,$WFLAGS,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t
 s,@LTLIBOBJS@,$LTLIBOBJS,;t t
 CEOF
