@@ -3959,7 +3959,16 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     }
     if ( sf->fullname==NULL ) sf->fullname = copy( sf->fontname );
     if ( sf->familyname==NULL ) sf->familyname = copy( sf->fontname );
-    sf->weight = info->weight ? info->weight : copy("");
+    sf->weight = info->weight ? info->weight : 
+		copy( info->pfminfo.weight <= 100 ? "Thin" :
+			info->pfminfo.weight <= 200 ? "Extra-Light" :
+			info->pfminfo.weight <= 300 ? "Light" :
+			info->pfminfo.weight <= 400 ? "Book" :
+			info->pfminfo.weight <= 500 ? "Medium" :
+			info->pfminfo.weight <= 600 ? "Demi" :
+			info->pfminfo.weight <= 700 ? "Bold" :
+			info->pfminfo.weight <= 800 ? "Heavy" :
+			    "Black" );
     sf->copyright = info->copyright;
     sf->version = info->version;
     sf->italicangle = info->italicAngle;
