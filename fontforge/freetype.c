@@ -321,6 +321,8 @@ static void *__FreeTypeFontContext(FT_Library context,
 
     if ( !hasFreeType())
 return( NULL );
+    if ( sf->multilayer )
+return( NULL );
 
     ftc = gcalloc(1,sizeof(FTC));
     if ( shared_ftc!=NULL ) {
@@ -769,41 +771,30 @@ return( NULL );
 return( ret );
 }
 
-BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,
-	int pixelsize,int depth) {
-    FT_Outline outline;
-    FT_Bitmap bitmap;
-    int ccnt, pcnt, k, j;
-    SplineSet *ss;
+static void FillOutline(SplineSet *spl,FT_Outline *outline,int *pmax,int *cmax,
+	real scale, DBounds *bb, int order2) {
+    int k;
+    int pcnt,ccnt;
     SplinePoint *sp;
-    real scale = pixelsize*(1<<6)/(double) (sc->parent->ascent+sc->parent->descent);
-    int xmin, xmax, ymin, ymax;
-    BDFChar *bdfc;
-    int err;
+    SplineSet *ss;
 
-    if ( !hasFreeType())
-return( NULL );
-
-    memset(&outline,0,sizeof(outline));
-    memset(&bitmap,0,sizeof(bitmap));
-    
-    if ( sc->parent->order2 ) {
+    if ( order2 ) {
 	for ( k=0; k<2; ++k ) {
 	    pcnt = ccnt = 0;
-	    for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+	    for ( ss = spl ; ss!=NULL; ss=ss->next ) {
 		for ( sp=ss->first; ; ) {
 		    if ( k ) {
-			outline.points[pcnt].x = rint(sp->me.x*scale);
-			outline.points[pcnt].y = rint(sp->me.y*scale);
-			outline.tags[pcnt] = 1;	/* On curve */
+			outline->points[pcnt].x = rint(sp->me.x*scale)-bb->minx;
+			outline->points[pcnt].y = rint(sp->me.y*scale)-bb->miny;
+			outline->tags[pcnt] = 1;	/* On curve */
 		    }
 		    ++pcnt;
 		    if ( sp->next==NULL )
 		break;
 		    if ( !sp->nonextcp ) {
 			if ( k ) {
-			    outline.points[pcnt].x = rint(sp->nextcp.x*scale);
-			    outline.points[pcnt].y = rint(sp->nextcp.y*scale);
+			    outline->points[pcnt].x = rint(sp->nextcp.x*scale)-bb->minx;
+			    outline->points[pcnt].y = rint(sp->nextcp.y*scale)-bb->miny;
 			}
 			++pcnt;
 		    }
@@ -812,39 +803,46 @@ return( NULL );
 		break;
 		}
 		if ( k )
-		    outline.contours[ccnt] = pcnt-1;
+		    outline->contours[ccnt] = pcnt-1;
 		++ccnt;
 	    }
 	    if ( !k ) {
-		outline.n_contours = ccnt;
-		outline.n_points = pcnt;
-		outline.points = galloc(pcnt*sizeof(FT_Vector));
-		outline.tags = gcalloc(pcnt,sizeof(char));
-		outline.contours = galloc(ccnt*sizeof(short));
-		outline.flags = ft_outline_none;
+		outline->n_contours = ccnt;
+		outline->n_points = pcnt;
+		if ( pcnt > *pmax || *pmax==0 ) {
+		    *pmax = pcnt==0 ? 1 : pcnt;
+		    outline->points = grealloc(outline->points,*pmax*sizeof(FT_Vector));
+		    outline->tags = grealloc(outline->tags,*pmax*sizeof(char));
+		}
+		memset(outline->tags,0,pcnt);
+		if ( ccnt > *cmax || *cmax==0 ) {
+		    *cmax = ccnt==0 ? 1 : ccnt;
+		    outline->contours = grealloc(outline->contours,*cmax*sizeof(short));
+		}
+		outline->flags = ft_outline_none;
 	    }
 	}
     } else {
 	for ( k=0; k<2; ++k ) {
 	    pcnt = ccnt = 0;
-	    for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+	    for ( ss = spl ; ss!=NULL; ss=ss->next ) {
 		for ( sp=ss->first; ; ) {
 		    if ( k ) {
-			outline.points[pcnt].x = rint(sp->me.x*scale);
-			outline.points[pcnt].y = rint(sp->me.y*scale);
-			outline.tags[pcnt] = 1;	/* On curve */
+			outline->points[pcnt].x = rint(sp->me.x*scale)-bb->minx;
+			outline->points[pcnt].y = rint(sp->me.y*scale)-bb->miny;
+			outline->tags[pcnt] = 1;	/* On curve */
 		    }
 		    ++pcnt;
 		    if ( sp->next==NULL )
 		break;
 		    if ( !sp->nonextcp || !sp->next->to->noprevcp ) {
 			if ( k ) {
-			    outline.points[pcnt].x = rint(sp->nextcp.x*scale);
-			    outline.points[pcnt].y = rint(sp->nextcp.y*scale);
-			    outline.tags[pcnt] = 2;	/* cubic control */
-			    outline.points[pcnt+1].x = rint(sp->next->to->prevcp.x*scale);
-			    outline.points[pcnt+1].y = rint(sp->next->to->prevcp.y*scale);
-			    outline.tags[pcnt+1] = 2;	/* cubic control */
+			    outline->points[pcnt].x = rint(sp->nextcp.x*scale)-bb->minx;
+			    outline->points[pcnt].y = rint(sp->nextcp.y*scale)-bb->miny;
+			    outline->tags[pcnt] = 2;	/* cubic control */
+			    outline->points[pcnt+1].x = rint(sp->next->to->prevcp.x*scale)-bb->minx;
+			    outline->points[pcnt+1].y = rint(sp->next->to->prevcp.y*scale)-bb->miny;
+			    outline->tags[pcnt+1] = 2;	/* cubic control */
 			}
 			pcnt += 2;
 		    }
@@ -853,42 +851,105 @@ return( NULL );
 		break;
 		}
 		if ( k )
-		    outline.contours[ccnt] = pcnt-1;
+		    outline->contours[ccnt] = pcnt-1;
 		++ccnt;
 	    }
 	    if ( !k ) {
-		outline.n_contours = ccnt;
-		outline.n_points = pcnt;
-		outline.points = galloc(pcnt*sizeof(FT_Vector));
-		outline.tags = gcalloc(pcnt,sizeof(char));
-		outline.contours = galloc(ccnt*sizeof(short));
+		outline->n_contours = ccnt;
+		outline->n_points = pcnt;
+		if ( pcnt > *pmax || *pmax==0 ) {
+		    *pmax = pcnt==0 ? 1 : pcnt;
+		    outline->points = grealloc(outline->points,*pmax*sizeof(FT_Vector));
+		    outline->tags = grealloc(outline->tags,*pmax*sizeof(char));
+		}
+		memset(outline->tags,0,pcnt);
+		if ( ccnt > *cmax || *cmax==0 ) {
+		    *cmax = ccnt==0 ? 1 : ccnt;
+		    outline->contours = grealloc(outline->contours,*cmax*sizeof(short));
+		}
 		/* You might think we should set ft_outline_reverse_fill here */
 		/*  because this is a postscript font. But ff stores fonts */
 		/*  internally in truetype order, and we didn't reverse it */
 		/*  above (the way we would if we were really generating PS) */
-		outline.flags = ft_outline_none;
+		outline->flags = ft_outline_none;
 	    }
 	}
     }
+}
 
-    if ( outline.n_points==0 )
-	xmin = xmax = ymin = ymax = 0;
-    else {
-	xmin = xmax = outline.points[0].x;
-	ymin = ymax = outline.points[0].y;
+#ifdef FONTFORGE_CONFIG_TYPE3
+static SplineSet *StrokeOutline(Layer *layer,SplineChar *sc) {
+    StrokeInfo si;
+
+    memset(&si,0,sizeof(si));
+    si.radius = layer->stroke_pen.width/2;
+    si.join = layer->stroke_pen.linejoin;
+    si.cap = layer->stroke_pen.linecap;
+    si.stroke_type = si_std;
+return( SSStroke(layer->splines,&si,sc));
+}
+
+static void MergeBitmaps(FT_Bitmap *bitmap,FT_Bitmap *newstuff,uint32 col) {
+    int i, j;
+
+    if ( col == COLOR_INHERITED ) col = 0x000000;
+    col = 3*((col>>16)&0xff) + 6*((col>>8)&0xff) + 1*(col&0xff);
+    col = 0xff - col;
+
+    if ( bitmap->num_grays == 256 ) {
+	for ( i=0; i<bitmap->rows; ++i ) for ( j=0; j<bitmap->pitch; ++j ) {
+	    bitmap->buffer[i*bitmap->pitch+j] =
+		    (newstuff->buffer[i*bitmap->pitch+j]*col +
+		     (255-newstuff->buffer[i*bitmap->pitch+j])*bitmap->buffer[i*bitmap->pitch+j] +
+		     127)/255;
+	}
+    } else if ( col>=0x80 ) {
+	/* Bitmap set */
+	for ( i=0; i<bitmap->rows; ++i ) for ( j=0; j<bitmap->pitch; ++j ) {
+	    bitmap->buffer[i*bitmap->pitch+j] |=  newstuff->buffer[i*bitmap->pitch+j];
+	}
+    } else {
+	/* Bitmap clear */
+	for ( i=0; i<bitmap->rows; ++i ) for ( j=0; j<bitmap->pitch; ++j ) {
+	    bitmap->buffer[i*bitmap->pitch+j] &= ~newstuff->buffer[i*bitmap->pitch+j];
+	}
     }
-    for ( pcnt=1; pcnt<outline.n_points; ++pcnt ) {
-	if ( outline.points[pcnt].x < xmin ) xmin = outline.points[pcnt].x;
-	if ( outline.points[pcnt].x > xmax ) xmax = outline.points[pcnt].x;
-	if ( outline.points[pcnt].y < ymin ) ymin = outline.points[pcnt].y;
-	if ( outline.points[pcnt].y > ymax ) ymax = outline.points[pcnt].y;
+}
+#endif
+
+BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,
+	int pixelsize,int depth) {
+    FT_Outline outline;
+    FT_Bitmap bitmap;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    FT_Bitmap temp;
+#endif
+    int i, k, j;
+    int cmax, pmax;
+    real scale = pixelsize*(1<<6)/(double) (sc->parent->ascent+sc->parent->descent);
+    BDFChar *bdfc;
+    int err;
+    DBounds b;
+
+    if ( !hasFreeType())
+return( NULL );
+#ifdef FONTFORGE_CONFIG_TYPE3
+    if ( sc->parent->order2 && sc->parent->multilayer ) {
+	/* I don't support stroking of order2 splines */
+	for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
+	    if ( sc->layers[i].dostroke )
+return( NULL );
+	}
     }
-    for ( pcnt=0; pcnt<outline.n_points; ++pcnt ) {
-	outline.points[pcnt].x -= xmin;
-	outline.points[pcnt].y -= ymin;
-    }
-    bitmap.rows = ((ymax-ymin)>>6)+2;
-    bitmap.width = ((xmax-xmin)>>6)+2;
+#endif
+
+    SplineCharFindBounds(sc,&b);
+    b.minx *= scale; b.maxx *= scale;
+    b.miny *= scale; b.maxy *= scale;
+
+    memset(&bitmap,0,sizeof(bitmap));
+    bitmap.rows = (((int) (b.maxy-b.miny))>>6)+2;
+    bitmap.width = (((int) (b.maxx-b.minx))>>6)+2;
     if ( depth==1 ) {
 	bitmap.pitch = (bitmap.width+7)>>3;
 	bitmap.num_grays = 2;
@@ -899,25 +960,111 @@ return( NULL );
 	bitmap.pixel_mode = ft_pixel_mode_grays;
     }
     bitmap.buffer = gcalloc(bitmap.pitch*bitmap.rows,sizeof(uint8));
+#ifdef FONTFORGE_CONFIG_TYPE3
+    memset(&temp,0,sizeof(temp));
+    if ( sc->parent->multilayer && !(sc->layer_cnt==1 &&
+	    !sc->layers[ly_fore].dostroke &&
+	    sc->layers[ly_fore].dofill &&
+	    (sc->layers[ly_fore].fill_brush.col==COLOR_INHERITED ||
+	     sc->layers[ly_fore].fill_brush.col==0x000000)) ) {
+	temp = bitmap;
+	temp.buffer = galloc(bitmap.pitch*bitmap.rows);
+    }
+#endif
 
+    memset(&outline,0,sizeof(outline));
+    pmax = cmax = 0;
+
+#ifndef FONTFORGE_CONFIG_TYPE3
+    FillOutline(sc->layers[ly_fore].splines,&outline,&pmax,&cmax,
+	    scale,&b,sc->parent->order2);
     err = (_FT_Outline_Get_Bitmap)(context,&outline,&bitmap);
+#else
+    if ( temp.buffer==NULL ) {
+	FillOutline(sc->layers[ly_fore].splines,&outline,&pmax,&cmax,
+		scale,&b,sc->parent->order2);
+	err = (_FT_Outline_Get_Bitmap)(context,&outline,&bitmap);
+    } else {
+	err = 0;
+	for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
+	    if ( sc->layers[i].dofill ) {
+		memset(temp.buffer,0,temp.pitch*temp.rows);
+		FillOutline(sc->layers[i].splines,&outline,&pmax,&cmax,
+			scale,&b,sc->parent->order2);
+		err |= (_FT_Outline_Get_Bitmap)(context,&outline,&temp);
+		MergeBitmaps(&bitmap,&temp,sc->layers[i].fill_brush.col);
+	    }
+	    if ( sc->layers[i].dostroke ) {
+		SplineSet *stroked = StrokeOutline(&sc->layers[i],sc);
+		memset(temp.buffer,0,temp.pitch*temp.rows);
+		FillOutline(stroked,&outline,&pmax,&cmax,
+			scale,&b,sc->parent->order2);
+		err |= (_FT_Outline_Get_Bitmap)(context,&outline,&temp);
+		MergeBitmaps(&bitmap,&temp,sc->layers[i].stroke_pen.brush.col);
+		SplinePointListFree(stroked);
+	    }
+	}
+	free(temp.buffer);
+    }
+#endif
 
     free(outline.points);
     free(outline.tags);
     free(outline.contours);
     bdfc = NULL;
     if ( !err ) {
-	for ( k=0; k<(ymax-ymin)>>6; ++k ) {
+	for ( k=0; k<(((int) (b.maxy-b.miny))>>6); ++k ) {
 	    for ( j=bitmap.pitch-1; j>=0 && bitmap.buffer[k*bitmap.pitch+j]==0; --j );
 	    if ( j!=-1 )
 	break;
 	}
-	if ( k!=ymax-ymin )
-	    ymax += k<<6;
-	bdfc = BdfCFromBitmap(&bitmap, (xmin+0x20)>>6, (ymax+0x20)>>6, pixelsize, depth, sc);
+	if ( k!=(((int) (b.maxy-b.miny))>>6) )
+	    b.maxy += k<<6;
+	bdfc = BdfCFromBitmap(&bitmap, (((int) b.minx)+0x20)>>6, (((int) b.maxy)+0x20)>>6, pixelsize, depth, sc);
     }
     free( bitmap.buffer );
 return( bdfc );
+}
+
+BDFFont *SplineFontFreeTypeRasterizeNoHints(SplineFont *sf,int pixelsize,int depth) {
+    SplineFont *subsf;
+    int i,k;
+    BDFFont *bdf = SplineFontToBDFHeader(sf,pixelsize,true);
+
+    if ( depth!=1 )
+	BDFClut(bdf, 1<<(depth/2) );
+
+    k=0;
+    do {
+	if ( sf->subfontcnt==0 ) {
+	    subsf = sf;
+	} else {
+	    subsf = sf->subfonts[k];
+	}
+	for ( i=0; i<subsf->charcnt; ++i )
+	    if ( SCWorthOutputting(subsf->chars[i] ) ) {
+		bdf->chars[i] = SplineCharFreeTypeRasterizeNoHints(subsf->chars[i],pixelsize,depth);
+		if ( bdf->chars[i]!=NULL )
+		    /* Done */;
+		else if ( depth==1 )
+		    bdf->chars[i] = SplineCharRasterize(subsf->chars[i],pixelsize);
+		else
+		    bdf->chars[i] = SplineCharAntiAlias(subsf->chars[i],pixelsize,(1<<(depth/2)));
+#if defined(FONTFORGE_CONFIG_GDRAW)
+		GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_progress_next();
+#endif
+	    } else
+		bdf->chars[i] = NULL;
+	++k;
+    } while ( k<sf->subfontcnt );
+#if defined(FONTFORGE_CONFIG_GDRAW)
+    GProgressEndIndicator();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+#endif
+return( bdf );
 }
 #endif
 

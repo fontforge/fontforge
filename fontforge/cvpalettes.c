@@ -3031,10 +3031,16 @@ void BVPaletteActivate(BitmapView *bv) {
 	    SaveOffsets(cv->gw,cvtools,&cvtoolsoff);
 	    SaveOffsets(cv->gw,cvlayers,&cvlayersoff);
 	    GDrawSetUserData(cvtools,NULL);
-	    GDrawSetUserData(cvlayers,NULL);
+	    if ( cvlayers!=NULL )
+		GDrawSetUserData(cvlayers,NULL);
+	    if ( cvlayers2!=NULL )
+		GDrawSetUserData(cvlayers2,NULL);
 	}
 	GDrawSetVisible(cvtools,false);
-	GDrawSetVisible(cvlayers,false);
+	if ( cvlayers!=NULL )
+	    GDrawSetVisible(cvlayers,false);
+	if ( cvlayers2!=NULL )
+	    GDrawSetVisible(cvlayers2,false);
     }
 }
 

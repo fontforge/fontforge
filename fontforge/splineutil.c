@@ -657,7 +657,8 @@ void SplineCharFindBounds(SplineChar *sc,DBounds *bounds) {
     int i;
 #ifdef FONTFORGE_CONFIG_TYPE3
     ImageList *img;
-    real extra=0,e;
+    real e;
+    DBounds b;
 #endif
 
     /* a char with no splines (ie. a space) must have an lbearing of 0 */
@@ -675,8 +676,9 @@ void SplineCharFindBounds(SplineChar *sc,DBounds *bounds) {
 		if ( rf->bb.maxy > bounds->maxy ) bounds->maxy = rf->bb.maxy;
 	    }
 	}
-	_SplineSetFindBounds(sc->layers[i].splines,bounds);
 #ifdef FONTFORGE_CONFIG_TYPE3
+	memset(&b,0,sizeof(b));
+	_SplineSetFindBounds(sc->layers[i].splines,&b);
 	for ( img=sc->layers[i].images; img!=NULL; img=img->next )
 	    _ImageFindBounds(img,bounds);
 	if ( sc->layers[i].dostroke ) {
@@ -684,14 +686,21 @@ void SplineCharFindBounds(SplineChar *sc,DBounds *bounds) {
 		e = sc->layers[i].stroke_pen.width*sc->layers[i].stroke_pen.trans[0];
 	    else
 		e = sc->layers[i].stroke_pen.trans[0];
-	    if ( e>extra ) extra = e;
+	    b.minx -= e; b.maxx += e;
+	    b.miny -= e; b.maxy += e;
 	}
+    if ( bounds->minx==0 && bounds->maxx==0 && bounds->miny==0 && bounds->maxy == 0 )
+	*bounds = b;
+    else if ( b.minx!=0 || b.maxx != 0 || b.maxy != 0 || b.miny!=0 ) {
+	if ( b.minx < bounds->minx ) bounds->minx = b.minx;
+	if ( b.miny < bounds->miny ) bounds->miny = b.miny;
+	if ( b.maxx > bounds->maxx ) bounds->maxx = b.maxx;
+	if ( b.maxy > bounds->maxy ) bounds->maxy = b.maxy;
+    }
+#else
+	_SplineSetFindBounds(sc->layers[i].splines,bounds);
 #endif
     }
-#ifdef FONTFORGE_CONFIG_TYPE3
-    bounds->minx -= extra; bounds->miny -= extra;
-    bounds->maxx += extra; bounds->maxy += extra;
-#endif
 }
 
 void SplineFontFindBounds(SplineFont *sf,DBounds *bounds) {
