@@ -1833,6 +1833,7 @@ return( 0 );
 	gcd[10].gd.flags &= ~gg_visible;
     }
 
+    k = 14;
     if ( family ) {
 	y = 250;
 	k = 14;
