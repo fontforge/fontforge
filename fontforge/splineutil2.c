@@ -1538,7 +1538,7 @@ return( false );
 return( false );
 	    } else if ( !RealRatio((from->me.y-to->me.y)/(from->me.x-to->me.x),
 				(mid->me.y-to->me.y)/(mid->me.x-to->me.x),
-			        .01) ) {
+			        .05) ) {
 return( false );
 	    }
 	} else if ( mid->prev->knownlinear ) {
