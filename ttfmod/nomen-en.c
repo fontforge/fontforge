@@ -125,6 +125,8 @@ static char *str_TablesOpen = "Tables Open";
 static char *str_TablesOpenSave = "There are editor windows open looking at tables in font %.100s\nWould you like them to be parsed for changes and the font saved if it needs to be?";
 static char *str_TablesOpenSavem = "There are editor windows open looking at tables in the file containing font %.100s\nWould you like them to be parsed for changes and the font saved it needs to be?";
 static char *str_TablesOpenProcess = "There are editor windows open looking at tables in this file.\nWould you like the tables parsed before the file is saved?";
+static char *str_TableNameMismatch = "Table name mismatch";
+static char *str_TableMismatch = "You are attempting to replace the selected table with one of a different type.\nIs that really what you want to do?";
     /* ttffile.c */
 static char *str_RestrictedRightsFont = "This font is marked with an FSType of 2 (Restricted\nLicense). That means it is not editable without the\npermission of the legal owner.\n\nDo you have such permission?";
 static char *str_RestrictedFont = "Restricted Font";

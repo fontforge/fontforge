@@ -271,7 +271,7 @@ int _TFVMenuSaveAs(TtfView *tfv) {
     if ( !CheckTableViews(tfv))
 return( false );
 
-    ret = GWidgetSaveAsFile(GStringGetResource(_STR_SaveAs,NULL),temp,filter,NULL);
+    ret = GWidgetSaveAsFile(GStringGetResource(_STR_SaveAs,NULL),temp,filter,NULL,NULL);
     free(temp);
     if ( ret==NULL )
 return( false );
@@ -298,9 +298,21 @@ return( true );
 return( false );
 }
 
+static void TFVScrollBarSetBounds(TtfView *tfv) {
+    int i, lh;
+
+    for ( i=0, lh=0; i<tfv->ttf->font_cnt; ++i )
+	lh += 1 + tfv->ttf->fonts[i]->tbl_cnt;
+    tfv->lheight = lh;
+    GScrollBarSetBounds(tfv->vsb,0,lh,tfv->vheight/tfv->fh);
+    if ( tfv->lpos + tfv->vheight/tfv->fh > lh )
+	tfv->lpos = lh-tfv->vheight/tfv->fh;
+    GScrollBarSetPos(tfv->vsb,tfv->lpos);
+}
+
 int _TFVMenuRevert(TtfView *tfv) {
     static int buts[] = { _STR_Yes, _STR_Cancel, 0 };
-    int i,j,lh,k,any;
+    int i,j,k,any;
     TtfFont *font; TtfFile *oldfont;
 
     if ( GWidgetAskR(_STR_ReallyRevert,buts,0,1,_STR_ReallyRevert)==1 )
@@ -351,14 +363,7 @@ return( 0 );
 return( 0 );
     }
     TTFFileFree(oldfont);
-
-    for ( i=0, lh=0; i<tfv->ttf->font_cnt; ++i )
-	lh += 1 + tfv->ttf->fonts[i]->tbl_cnt;
-    tfv->lheight = lh;
-    GScrollBarSetBounds(tfv->vsb,0,lh,tfv->vheight/tfv->fh);
-    if ( tfv->lpos + tfv->vheight/tfv->fh > lh )
-	tfv->lpos = lh-tfv->vheight/tfv->fh;
-    GScrollBarSetPos(tfv->vsb,tfv->lpos);
+    TFVScrollBarSetBounds(tfv);
 return( true );
 }
 
@@ -418,7 +423,7 @@ return;
 	for ( i=0; i<tfv->ttf->font_cnt; ++i )
 	    if ( tfv->ttf->fonts[i]->enc==oldenc ) {
 		tfv->ttf->fonts[i]->enc = NULL;	/* Part of the table data which got freed */
-		readttfencodings(tfv->ttf->file,tfv->ttf->fonts[i]);
+		readttfencodings(tfv->ttf->fonts[i]);
 	    }
     }
     GDrawRequestExpose(tfv->v,NULL,false);
@@ -550,6 +555,160 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
+static Table *pastetab;
+
+static void TFVMenuCopy(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    TtfView *tfv = (TtfView *) GDrawGetUserData(gw);
+
+    if ( tfv->sel_tab==NULL || (tfv->sel_tab->changed && tfv->sel_tab->table_data!=NULL ))
+return;
+
+    if ( pastetab==NULL )
+	pastetab = gcalloc(1,sizeof(Table));
+    free(pastetab->data);
+    pastetab->name = tfv->sel_tab->name;
+    TableFillup(tfv->sel_tab);
+    pastetab->newlen = tfv->sel_tab->newlen==0? tfv->sel_tab->len : tfv->sel_tab->newlen;
+    pastetab->data = galloc((pastetab->newlen+3)&~3);
+    memcpy(pastetab->data,tfv->sel_tab->data,(pastetab->newlen+3)&~3);
+}
+
+static void TFVMenuCut(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    TtfView *tfv = (TtfView *) GDrawGetUserData(gw);
+    int i,j,k, cnt, anyothers;
+    Table *tab;
+    TtfFont *font;
+
+    if ( tfv->sel_tab==NULL || (tfv->sel_tab->changed && tfv->sel_tab->table_data!=NULL ))
+return;
+
+    TFVMenuCopy(gw,mi,e);
+    cnt = 0;
+    for ( k=0; k<tfv->ttf->font_cnt; ++k ) {
+	if ( cnt+tfv->ttf->fonts[k]->tbl_cnt > tfv->sel_line )
+    break;
+	cnt += tfv->ttf->fonts[k]->tbl_cnt;
+    }
+    font = tfv->ttf->fonts[k];
+
+    anyothers = false;
+    for ( i=0; i<tfv->ttf->font_cnt && !anyothers; ++i ) if ( i!=k ) {
+	for ( j=0; j<tfv->ttf->fonts[i]->tbl_cnt; ++j ) {
+	    if ( tfv->ttf->fonts[i]->tbls[j]->name==tfv->sel_tab->name ) {
+		anyothers = true;
+	break;
+	    }
+	}
+    }
+
+    i = tfv->sel_line-cnt;
+    --font->tbl_cnt;
+    memcpy(font->tbls+i,font->tbls+i+1,(font->tbl_cnt-i)*sizeof(Table *));
+    tfv->sel_line = -1;
+    if ( !anyothers ) {
+	if ( tfv->sel_tab->tv!=NULL )
+	    (tfv->sel_tab->tv->virtuals->closeme)(tab->tv);
+	free(tfv->sel_tab->data);
+	if ( tfv->sel_tab->table_data )
+	    (tfv->sel_tab->free_tabledata)(tfv->sel_tab->table_data);
+	free(tfv->sel_tab);
+    }
+    tfv->sel_tab = NULL;
+    tfv->ttf->changed = true;
+    TFVScrollBarSetBounds(tfv);
+    GDrawRequestExpose(tfv->v,NULL,false);
+}
+
+static void TFVMenuPaste(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    TtfView *tfv = (TtfView *) GDrawGetUserData(gw);
+    Table *tab = NULL;
+    TtfFont *font=NULL;
+    int i,j,k,cnt;
+    static int yescancel[] = { _STR_Yes, _STR_Cancel, 0 };
+
+    if ( pastetab==NULL )
+return;
+
+    if ( tfv->sel_tab!=NULL ) {
+	if ( tfv->sel_tab->name!=pastetab->name )
+	if ( GWidgetAskR(_STR_TableNameMismatch,yescancel,0,1,
+		_STR_TableMismatch )==1 )
+return;
+	tab = tfv->sel_tab;
+	cnt = 0;
+	for ( k=0; k<tfv->ttf->font_cnt; ++k ) {
+	    if ( cnt+tfv->ttf->fonts[k]->tbl_cnt > tfv->sel_line ) {
+		font = tfv->ttf->fonts[k];
+	break;
+	    }
+	    cnt += tfv->ttf->fonts[k]->tbl_cnt;
+	}
+    } else {
+	for ( i=0; i<tfv->ttf->font_cnt && tab==NULL; ++i ) {
+	    font = tfv->ttf->fonts[i];
+	    for ( j=0; j<font->tbl_cnt; ++j ) {
+		if ( font->tbls[j]->name==pastetab->name ) {
+		    tab = font->tbls[j];
+	    break;
+		}
+	    }
+	}
+    }
+    if ( tab==NULL ) {
+	tab = gcalloc(1,sizeof(Table));
+	tab->name = pastetab->name;
+	font = tfv->ttf->fonts[0];
+	if ( font->tbl_cnt>=font->tbl_max ) {
+	    font->tbl_max += 10;
+	    font->tbls = grealloc(font->tbls,font->tbl_max*sizeof(Table *));
+	}
+	for ( i=font->tbl_cnt-1; i>=0 ; --i ) {
+	    if ( tab->name>font->tbls[i]->name )
+	break;
+	    font->tbls[i+1] = font->tbls[i];
+	}
+	if ( i==-1 ) i=0;
+	font->tbls[i] = tab;
+	++font->tbl_cnt;
+    } else {
+	if ( tab->tv!=NULL )
+	    (tab->tv->virtuals->closeme)(tab->tv);
+	free(tab->data);
+	tab->data = NULL;
+	if ( tab->table_data ) {
+	    (tab->free_tabledata)(tab->table_data);
+	    tab->table_data = NULL;
+	    tab->free_tabledata = NULL;
+	    tab->write_tabledata = NULL;
+	}
+    }
+    tab->start = -1;
+    tab->newlen = pastetab->newlen;
+    tab->data = galloc(pastetab->newlen+3);
+    memcpy(tab->data,pastetab->data,(tab->newlen+3)&~3);
+    tab->changed = true;
+    tfv->ttf->changed = true;
+    if ( tab->name==CHR('c','m','a','p') )
+	readttfencodings(font);
+    TFVScrollBarSetBounds(tfv);
+    GDrawRequestExpose(tfv->v,NULL,false);
+}
+
+static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    TtfView *tfv = (TtfView *) GDrawGetUserData(gw);
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_Copy: case MID_Cut:
+	    mi->ti.disabled = tfv->sel_tab==NULL || (tfv->sel_tab->changed && tfv->sel_tab->table_data!=NULL);
+	  break;
+	  case MID_Paste:
+	    mi->ti.disabled = pastetab==NULL;
+	  break;
+	}
+    }
+}
+
 static GMenuItem dummyitem[] = { { (unichar_t *) _STR_Recent, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, NULL };
 static GMenuItem fllist[] = {
     { { (unichar_t *) _STR_Open, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'O' }, 'O', ksm_control, NULL, NULL, MenuOpen },
@@ -571,9 +730,9 @@ static GMenuItem edlist[] = {
     { { (unichar_t *) _STR_Undo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'U' }, 'Z', ksm_control, NULL, NULL },
     { { (unichar_t *) _STR_Redo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, 'Y', ksm_control, NULL, NULL },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Cut, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 't' }, 'X', ksm_control, NULL, NULL, NULL, MID_Cut },
-    { { (unichar_t *) _STR_Copy, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, 'C', ksm_control, NULL, NULL, NULL, MID_Copy },
-    { { (unichar_t *) _STR_Paste, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'V', ksm_control, NULL, NULL, NULL, MID_Paste },
+    { { (unichar_t *) _STR_Cut, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 't' }, 'X', ksm_control, NULL, NULL, TFVMenuCut, MID_Cut },
+    { { (unichar_t *) _STR_Copy, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, 'C', ksm_control, NULL, NULL, TFVMenuCopy, MID_Copy },
+    { { (unichar_t *) _STR_Paste, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'V', ksm_control, NULL, NULL, TFVMenuPaste, MID_Paste },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_SelectAll, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'A', ksm_control, NULL, NULL, NULL },
     { NULL }
@@ -586,22 +745,24 @@ GMenuItem helplist[] = {
 
 static GMenuItem mblist[] = {
     { { (unichar_t *) _STR_File, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 0, 0, fllist, fllistcheck },
-    { { (unichar_t *) _STR_Edit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'E' }, 0, 0, edlist },
+    { { (unichar_t *) _STR_Edit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'E' }, 0, 0, edlist, edlistcheck },
     { { (unichar_t *) _STR_Window, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'W' }, 0, 0, NULL, WindowMenuBuild, NULL },
     { { (unichar_t *) _STR_Help, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, 0, 0, helplist, NULL },
     { NULL }
 };
 
 static void TFVChar(TtfView *tfv,GEvent *e) {
+    if ( e->u.chr.keysym==GK_Escape ) {
+	tfv->sel_tab = NULL;
 #if MyMemory
-    if ( e->u.chr.keysym==GK_F2 ) {
+    } else if ( e->u.chr.keysym==GK_F2 ) {
 	printf( "Memory Check On\n" );
 	__malloc_debug(5);
     } else if ( e->u.chr.keysym==GK_F3 ) {
 	__malloc_debug(0);
 	printf( "Memory Check Off\n" );
-    }
 #endif
+    }
 }
 
 static void TFVMouse(TtfView *tfv,GEvent *e) {
@@ -728,7 +889,7 @@ static void TFVExpose(TtfView *tfv,GWindow pixmap,GRect *rect) {
 		buffer[2] = (font->tbls[j]->name>>8)&0xff;
 		buffer[3] = (font->tbls[j]->name   )&0xff;
 		u_sprintf(buffer+4, spec,
-			font->tbls[j]->start, font->tbls[j]->len );
+			font->tbls[j]->start, font->tbls[j]->data==NULL ? font->tbls[j]->len: font->tbls[j]->newlen);
 		GDrawSetFont(pixmap, font->tbls[j]->changed ? tfv->bold : tfv->font);
 		GDrawDrawText(pixmap,3,(l-tfv->lpos)*tfv->fh+tfv->as+2,buffer,-1,NULL,0);
 	    }

@@ -128,7 +128,7 @@ void ptputlong(uint8 *data, uint32 val);
 void ptputfixed(uint8 *data,real val);
 void ptputvfixed(uint8 *data,real val);
 
-void readttfencodings(FILE *ttf,struct ttffont *font);
+void readttfencodings(struct ttffont *font);
 void TTFFileFreeData(TtfFile *ttf);
 void TTFFileFree(TtfFile *ttf);
 extern TtfFile *ReadTtfFont(char *filename);

@@ -345,7 +345,7 @@ static void write_enctabledata(FILE *tottf,Table *cmap) {
     /* !!!! */
 }
 
-void readttfencodings(FILE *ttf,struct ttffont *font) {
+void readttfencodings(struct ttffont *font) {
     int i,j;
     int nencs, version;
     int len;
@@ -357,6 +357,7 @@ void readttfencodings(FILE *ttf,struct ttffont *font) {
     const unichar_t *trans=NULL;
     struct enctab *enc, *last=NULL, *best=NULL;
     int bestval=0;
+    int fpos;
 
 /* find the cmap (encoding) table */
     for ( i=0; i<font->tbl_cnt; ++i )
@@ -366,16 +367,16 @@ void readttfencodings(FILE *ttf,struct ttffont *font) {
 return;
     tab = font->tbls[i];
 
-  if ( tab->table_data == NULL ) {
-/* Find out what encodings are defined and where they live */
-    fseek(ttf,tab->start,SEEK_SET);
-    version = getushort(ttf);
-    nencs = getushort(ttf);
+    TableFillup(tab);
+
+    version = tgetushort(tab,0);
+    nencs = tgetushort(tab,2);
+    fpos = 4;
     for ( i=0; i<nencs; ++i ) {
 	enc = gcalloc(1,sizeof(struct enctab));
-	enc->platform = getushort(ttf);
-	enc->specific = getushort(ttf);
-	enc->offset = getlong(ttf);
+	enc->platform = tgetushort(tab,fpos); fpos += 2;
+	enc->specific = tgetushort(tab,fpos); fpos += 2;
+	enc->offset = tgetlong(tab,fpos); fpos += 4;
 	if ( last==NULL )
 	    tab->table_data = enc;
 	else
@@ -390,41 +391,47 @@ return;
 	enc->cnt = font->glyph_cnt;
 	enc->enc = galloc(enc->cnt*sizeof(unichar_t));
 	memset(enc->enc,'\377',enc->cnt*sizeof(unichar_t));
-	fseek(ttf,tab->start+enc->offset,SEEK_SET);
-	enc->format = getushort(ttf);
-	enc->len = getushort(ttf);
-	enc->language = getushort(ttf);		/* or version for ms */
+	fpos = enc->offset;
+	enc->format = tgetushort(tab,fpos); fpos += 2;
+	enc->len = tgetushort(tab,fpos); fpos += 2;
+	enc->language = tgetushort(tab,fpos); fpos += 2;	/* or version for ms */
 	if ( enc->format==0 ) {
 	    for ( i=0; i<enc->len-6; ++i )
-		table[i] = getc(ttf);
+		table[i] = tab->data[fpos++];
 	    for ( i=0; i<256 && table[i]<enc->cnt && i<enc->len-6; ++i )
 		enc->enc[table[i]] = i;
 	} else if ( enc->format==4 ) {
-	    segCount = getushort(ttf)/2;
-	    /* searchRange = */ getushort(ttf);
-	    /* entrySelector = */ getushort(ttf);
-	    /* rangeShift = */ getushort(ttf);
+	    segCount = tgetushort(tab,fpos)/2; fpos+=2;
+	    /* searchRange = */ tgetushort(tab,fpos); fpos+=2;
+	    /* entrySelector = */ tgetushort(tab,fpos); fpos+=2;
+	    /* rangeShift = */ tgetushort(tab,fpos); fpos+=2;
 	    endchars = galloc(segCount*sizeof(uint16));
-	    for ( i=0; i<segCount; ++i )
-		endchars[i] = getushort(ttf);
-	    if ( getushort(ttf)!=0 )
+	    for ( i=0; i<segCount; ++i ) {
+		endchars[i] = tgetushort(tab,fpos); fpos+=2;
+	    }
+	    if ( tgetushort(tab,fpos)!=0 )
 		GDrawIError("Expected 0 in true type font");
+	    fpos += 2;
 	    startchars = galloc(segCount*sizeof(uint16));
-	    for ( i=0; i<segCount; ++i )
-		startchars[i] = getushort(ttf);
+	    for ( i=0; i<segCount; ++i ) {
+		startchars[i] = tgetushort(tab,fpos); fpos+=2;
+	    }
 	    delta = galloc(segCount*sizeof(uint16));
-	    for ( i=0; i<segCount; ++i )
-		delta[i] = getushort(ttf);
+	    for ( i=0; i<segCount; ++i ) {
+		delta[i] = tgetushort(tab,fpos); fpos+=2;
+	    }
 	    rangeOffset = galloc(segCount*sizeof(uint16));
-	    for ( i=0; i<segCount; ++i )
-		rangeOffset[i] = getushort(ttf);
+	    for ( i=0; i<segCount; ++i ) {
+		rangeOffset[i] = tgetushort(tab,fpos); fpos+=2;
+	    }
 	    len = enc->len- 8*sizeof(uint16) +
 		    4*segCount*sizeof(uint16);
 	    /* that's the amount of space left in the subtable and it must */
 	    /*  be filled with glyphIDs */
 	    glyphs = galloc(len);
-	    for ( i=0; i<len/2; ++i )
-		glyphs[i] = getushort(ttf);
+	    for ( i=0; i<len/2; ++i ) {
+		glyphs[i] = tgetushort(tab,fpos); fpos+=2;
+	    }
 	    for ( i=0; i<segCount; ++i ) {
 		if ( rangeOffset[i]==0 && startchars[i]==0xffff )
 		    /* Done */;
@@ -458,10 +465,10 @@ return;
 	} else if ( enc->format==6 ) {
 	    /* Apple's unicode format */
 	    int first, count;
-	    first = getushort(ttf);
-	    count = getushort(ttf);
+	    first = tgetushort(tab,fpos); fpos+=2;
+	    count = tgetushort(tab,fpos); fpos+=2;
 	    for ( i=0; i<count; ++i ) {
-		j = getushort(ttf);
+		j = tgetushort(tab,fpos); fpos+=2;
 		enc->enc[j] = first+i;
 	    }
 	} else if ( enc->format==2 ) {
@@ -469,25 +476,27 @@ return;
 	    struct subhead *subheads;
 
 	    for ( i=0; i<256; ++i ) {
-		table[i] = getushort(ttf)/8;	/* Sub-header keys */
+		table[i] = tgetushort(tab,fpos)/8; fpos+=2;	/* Sub-header keys */
 		if ( table[i]>max_sub_head_key )
 		    max_sub_head_key = table[i];	/* The entry is a byte pointer, I want a pointer in units of struct subheader */
 	    }
 	    subheads = galloc((max_sub_head_key+1)*sizeof(struct subhead));
 	    for ( i=0; i<=max_sub_head_key; ++i ) {
-		subheads[i].first = getushort(ttf);
-		subheads[i].cnt = getushort(ttf);
-		subheads[i].delta = getushort(ttf);
-		subheads[i].rangeoff = (getushort(ttf)-
+		subheads[i].first = tgetushort(tab,fpos); fpos+=2;
+		subheads[i].cnt = tgetushort(tab,fpos); fpos+=2;
+		subheads[i].delta = tgetushort(tab,fpos); fpos+=2;
+		subheads[i].rangeoff = (tgetushort(tab,fpos)-
 				(max_sub_head_key-i)*sizeof(struct subhead)-
 				sizeof(short))/sizeof(short);
+		fpos += 2;
 	    }
-	    cnt = (enc->len-(ftell(ttf)-(tab->start+enc->offset)))/sizeof(short);
+	    cnt = (enc->len-(fpos-enc->offset))/sizeof(short);
 	    /* The count is the number of glyph indexes to read. it is the */
 	    /*  length of the entire subtable minus that bit we've read so far */
 	    glyphs = galloc(cnt*sizeof(short));
-	    for ( i=0; i<cnt; ++i )
-		glyphs[i] = getushort(ttf);
+	    for ( i=0; i<cnt; ++i ) {
+		glyphs[i] = tgetushort(tab,fpos); fpos+=2;
+	    }
 	    last = -1;
 	    for ( i=0; i<256; ++i ) {
 		if ( table[i]==0 ) {
@@ -595,14 +604,14 @@ return;
 	}
 	if ( type==em_unicode )
 	    enc->uenc = enc->enc;
+	else if ( type==em_symbol )	/* not really symbol */
+	    enc->uenc = enc->enc;
 	else if ( type!=em_none ) {
 	    enc->uenc = galloc(enc->cnt*sizeof(unichar_t));
 	    memset(enc->uenc,'\377',enc->cnt*sizeof(unichar_t));
 	    trans = NULL;
 	    if ( type==em_mac )
 		trans = unicode_from_mac;
-	    else if ( type==em_symbol )
-		trans = unicode_from_MacSymbol;
 	    for ( i=0; i<enc->cnt; ++i ) if ( enc->enc[i]!=0xffff ) {
 		if ( trans!=NULL )
 		    enc->uenc[i] = trans[enc->enc[i]];
@@ -663,7 +672,6 @@ return;
 	    }
 	}
     }
-  }
 
 /* Find the best table we can */
     for ( enc = tab->table_data; enc!=NULL; enc=enc->next ) {
@@ -673,15 +681,14 @@ return;
 		(enc->platform==0 && (enc->specific==0 || enc->specific==3))) {	/* Apple unicode */
 	    bestval = 3;
 	    best = enc;
-	} else if ( enc->platform==3 && enc->specific==0 && best==NULL ) {
-	    /* Only select symbol if we don't have something better */
-	    best = enc;
-	    bestval = 1;
-	} else if ( ((enc->platform==1 && enc->specific==0 ) || enc->platform==3 ) &&
-		bestval!=3 ) {
-	    /* Mac 8bit/CJK if no unicode */
+	} else if ( enc->platform==3 && bestval!=3 ) {
+	    /* second best is symbol/cjk */
 	    best = enc;
 	    bestval = 2;
+	} else if ( (enc->platform==1 && enc->specific==0 ) && bestval<2 ) {
+	    /* Mac 8bit if no unicode */
+	    best = enc;
+	    bestval = 1;
 	}
     }
     font->enc = best;
@@ -742,7 +749,7 @@ static TtfFont *_readttfheader(FILE *ttf,TtfFile *f) {
     if ( tf->fontname==NULL )
 	fprintf(stderr, "This font has no name. That will cause problems\n" );
     tf->glyph_cnt = TTFGetGlyphCnt(ttf,tf);
-    readttfencodings(ttf,tf);
+    readttfencodings(tf);
 return( tf );
 }
 
