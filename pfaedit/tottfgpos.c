@@ -34,7 +34,7 @@
 /*  attendant subtables */
 
 struct lookup {
-    int script;
+    /*int script;*/
     int feature_tag;
     int lookup_type;
     int lookup_cnt;
@@ -760,7 +760,6 @@ return( lookups );
 	glyphs = GlyphsOfScript(entryexit,i);
 	for ( cnt=0; glyphs[cnt]!=NULL; ++cnt );
 	new = chunkalloc(sizeof(struct lookup));
-	new->script = SCScriptFromUnicode(glyphs[0]);
 	new->feature_tag = ac->feature_tag;
 	new->flags = ac->flags;
 	new->script_lang_index = ac->script_lang_index;
@@ -1250,7 +1249,6 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
     SplineChar ***marks;
     int *subcnts;
     SplineChar **base, **lig, **mkmk, ***map, **glyphs;
-    SplineChar *sc;
     AnchorClass *ac, *p, *ac2;
     struct tagflaglang *ligtags;
     int cmax, classcnt;
@@ -1286,7 +1284,6 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 	    glyphs = generateGlyphTypeList(sf,type,&ligtags[j],&map);
 	    if ( glyphs!=NULL && glyphs[0]!=NULL ) {
 		new = LookupFromTagFlagLang(&ligtags[j]);
-		new->script = SCScriptFromUnicode(sc);
 		new->lookup_type = 1;
 		new->offset = ftell(lfile);
 		new->next = lookups;
@@ -1587,8 +1584,7 @@ static struct lookup *orderlookups(struct lookup **_lookups,
     /* sort by feature */
     for ( i=0; i<cnt-1; ++i ) for ( j=i+1; j<cnt; ++j ) {
 	if ( array[i]->feature_tag > array[j]->feature_tag ||
-		(array[i]->feature_tag==array[j]->feature_tag &&
-		    array[i]->script>array[j]->script )) {
+		(array[i]->feature_tag==array[j]->feature_tag )) {
 	    temp = array[i];
 	    array[i] = array[j];
 	    array[j] = temp;
