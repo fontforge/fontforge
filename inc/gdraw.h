@@ -481,7 +481,7 @@ extern GWindow GPrinterStartJob(GDisplay *gdisp,void *user_data,GPrinterAttrs *a
 extern void GPrinterNextPage(GWindow w);
 extern int  GPrinterEndJob(GWindow w,int cancel);
 
-extern void GDrawSetBuildCharHook(void (*hook)(GDisplay *));
+extern void GDrawSetBuildCharHooks(void (*hook)(GDisplay *), void (*inshook)(GDisplay *,unichar_t));
 
 extern void GDrawFatalError(const char *fmt,...);
 extern void GDrawIError(const char *fmt,...);

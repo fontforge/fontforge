@@ -217,6 +217,9 @@ static void FVReselect(FontView *fv, int newpos) {
 	}
     }
     fv->end_pos = newpos;
+    if ( newpos>=0 && newpos<fv->sf->charcnt && fv->sf->chars[newpos]!=NULL &&
+	    fv->sf->chars[newpos]->unicodeenc>=0 && fv->sf->chars[newpos]->unicodeenc<0x10000 )
+	GInsCharSetChar(fv->sf->chars[newpos]->unicodeenc);
 }
 
 static void _SplineFontSetUnChanged(SplineFont *sf) {

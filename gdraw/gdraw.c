@@ -35,6 +35,7 @@
 GDisplay *screen_display = NULL;
 GDisplay *printer_display = NULL;
 void (*_GDraw_BuildCharHook)(GDisplay *) = NULL;
+void (*_GDraw_InsCharHook)(GDisplay *,unichar_t) = NULL;
 
 #if 0
 void GDrawInit(GDisplay *disp) {
@@ -625,8 +626,9 @@ int GPrinterEndJob(GWindow w,int cancel) {
 return( (w->display->funcs->endJob)(w,cancel) );
 }
 
-void GDrawSetBuildCharHook(void (*hook)(GDisplay *)) {
+void GDrawSetBuildCharHooks(void (*hook)(GDisplay *),void (*inshook)(GDisplay *,unichar_t)) {
     _GDraw_BuildCharHook = hook;
+    _GDraw_InsCharHook = inshook;
 }
 
 /* We are in compose characters mode. The gdisp->mykey_state argument tells us*/

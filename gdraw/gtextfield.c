@@ -32,6 +32,8 @@
 #include "ustring.h"
 #include "utype.h"
 
+extern void (*_GDraw_InsCharHook)(GDisplay *,unichar_t);
+
 static GBox gtextfield_box = { /* Don't initialize here */ 0 };
 static FontInstance *gtextfield_font = NULL;
 static int gtextfield_inited = false;
@@ -1533,6 +1535,9 @@ return( true );
 		GTextFieldPaste(gt,sn_primary);
 	    if ( gt->sel_start==gt->sel_end )
 		GTextField_Show(gt,gt->sel_start);
+	    if ( gt->sel_start<gt->sel_end && _GDraw_InsCharHook!=NULL )
+		(_GDraw_InsCharHook)(GDrawGetDisplayOfWindow(gt->g.base),
+			gt->text[gt->sel_start]);
 	}
 	if ( gt->sel_end > u_strlen( gt->text ))
 	    fprintf( stderr, "About to crash\n" );

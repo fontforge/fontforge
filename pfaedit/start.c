@@ -119,6 +119,10 @@ static void BuildCharHook(GDisplay *gd) {
     GWidgetCreateInsChar();
 }
 
+static void InsCharHook(GDisplay *gd,unichar_t ch) {
+    GInsCharSetChar(ch);
+}
+
 extern GImage splashimage;
 static GWindow splashw;
 static GTimer *autosave_timer, *splasht;
@@ -370,7 +374,7 @@ int main( int argc, char **argv ) {
     autosave_timer=GDrawRequestTimer(splashw,60*1000,30*1000,NULL);
 
     GDrawProcessPendingEvents(NULL);
-    GDrawSetBuildCharHook(BuildCharHook);
+    GDrawSetBuildCharHooks(BuildCharHook,InsCharHook);
 
     any = 0;
     if ( recover==-1 )

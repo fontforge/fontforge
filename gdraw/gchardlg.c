@@ -353,10 +353,10 @@ return( 0x20 );
 }
 
 static long InsChrUniVal(void) {
-    unichar_t *str, *pt, *pos;
+    const unichar_t *str, *pt; unichar_t *pos;
     long val, val2;
 
-    str = GGadgetGetTitle(GWidgetGetControl(inschr.icw,INSCHR_Char));
+    str = _GGadgetGetTitle(GWidgetGetControl(inschr.icw,INSCHR_Char));
     for ( pt = str; isspace(*pt); ++pt );
     if ( *pt=='\0' )
 return( -1 );
@@ -388,7 +388,7 @@ return( -1 );
 return( InsChrToUni(val));
 }
 
-static int InsChrFigureShow() {
+static int InsChrInCurrentEncoding(void) {
     int enable = false;
     long ch;
     long resch;
@@ -432,6 +432,28 @@ return(0);
 		 (resch=plane[ch&0xff])!=0 ))
 	    enable = true;;
     }
+return( enable );
+}
+
+static int InsChrFigureShow() {
+    long ch;
+    const unichar_t *str;
+    int enable = true;
+
+    if ( inschr.icw==NULL )
+return(false);
+    if ( InsChrInCurrentEncoding() )
+	enable = true;
+    else {
+	str = _GGadgetGetTitle(GWidgetGetControl(inschr.icw,INSCHR_Char));
+	if ( *str!='u' && *str!='U' )
+	    enable = false;
+	else if ( str[1]!='+' )
+	    enable = false;
+	else if ((ch = InsChrUniVal())<=0 || ch>=0x10000 )
+	    enable = false;
+    }
+
     if ( enable!=inschr.show_enabled ) {
 	inschr.show_enabled = enable;
 	GGadgetSetEnabled(GWidgetGetControl(inschr.icw,INSCHR_Show),enable);
@@ -535,8 +557,7 @@ static void InsChrSetFormat(enum dsp_mode format) {
     }
 }
 
-static void InsChrCharset() {
-    int map = mapFromIndex(GGadgetGetFirstListSelectedItem(GWidgetGetControl(inschr.icw,INSCHR_CharSet)));
+static void InsChrSetCharset(int map) {
     int enabled;
     long ch;
 
@@ -572,11 +593,24 @@ static void InsChrCharset() {
     }
 }
 
+static void InsChrCharset() {
+    int map = mapFromIndex(GGadgetGetFirstListSelectedItem(GWidgetGetControl(inschr.icw,INSCHR_CharSet)));
+    InsChrSetCharset(map);
+}
+
 static void InsChrShow(void) {
     long ch = InsChrUniVal();
+    int i;
 
-    if ( ch>0 )
+    if ( ch>0 ) {
+	if ( !InsChrInCurrentEncoding() ) {
+	    InsChrSetCharset(em_unicode);
+	    for ( i=0; encodingnames[i].name!=NULL && strcmp(encodingnames[i].name,"Unicode")!=0; ++i );
+	    if ( encodingnames[i].name!=NULL )
+		GGadgetSelectOneListItem(GWidgetGetControl(inschr.icw,INSCHR_CharSet),i);
+	}
 	_InsChrSetSelChar(ch, true);
+    }
 }
 
 static void InsChrInsert(void) {
@@ -838,7 +872,7 @@ static int inschr_e_h(GWindow gw, GEvent *event) {
 				    d_kuten);
 	} else if ( event->u.control.subtype == et_textchanged ) {
 	    if ( !InsChrFigureShow())
-		GDrawBeep(NULL);
+		/*GDrawBeep(NULL)*/;
 	} else if ( event->u.control.subtype == et_listselected ) {
 	    InsChrCharset();
 	}

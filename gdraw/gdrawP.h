@@ -248,4 +248,5 @@ extern const GCol *_GImage_GetIndexedPixel(Color col,RevCMap *rev);
 extern const GCol *_GImage_GetIndexedPixelPrecise(Color col,RevCMap *rev);
 
 extern void (*_GDraw_BuildCharHook)(GDisplay *);
+extern void (*_GDraw_InsCharHook)(GDisplay *,unichar_t);
 #endif
