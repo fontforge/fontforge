@@ -1031,12 +1031,16 @@ return( 0 );
     fclose(temppfb);
     DumpResourceMap(res,resources,format);
     free( resources[0].res );
-	
+
+#if __Mac
     header.macfilename = galloc(strlen(filename)+strlen(buffer)+1);
     strcpy(header.macfilename,filename);
     pt = strrchr(header.macfilename,'/');
     if ( pt==NULL ) pt=header.macfilename-1;
     strcpy(pt+1,buffer);
+#else
+    header.macfilename = buffer;
+#endif
 	/* Adobe uses a creator of ASPF (Adobe Systems Postscript Font I assume) */
 	/* Fontographer uses ACp1 (Altsys Corp. Postscript type 1???) */
 	/* Both include an FREF, BNDL, ICON* and comment */
@@ -1046,6 +1050,9 @@ return( 0 );
     ret = DumpMacBinaryHeader(res,&header);
     if ( ferror(res) ) ret = 0;
     if ( fclose(res)==-1 ) ret = 0;
+#if __Mac
+    free(header.macfilename);
+#endif
 return( ret );
 }
 
