@@ -149,7 +149,7 @@ static struct asm_state *StateCopy(struct asm_state *old,int old_class_cnt,int o
 		this->u.insert.mark_ins = copy(this->u.insert.mark_ins);
 		this->u.insert.cur_ins = copy(this->u.insert.cur_ins);
 	    }
-	} else {
+	} else if ( type==asm_kern ) {
 	    for ( j=0; j<minclass; ++j ) {
 		struct asm_state *this = &new[i*new_class_cnt+j];
 		int16 *temp;
