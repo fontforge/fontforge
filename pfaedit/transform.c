@@ -554,6 +554,7 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	    GGadget *tf = GWidgetGetControl(td.tblock[i],selcid[index]);
 	    GWidgetIndicateFocusGadget(tf);
 	    GTextFieldSelect(tf,0,-1);
+    break;
 	}
     }
 
