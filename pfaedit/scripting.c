@@ -606,18 +606,22 @@ static void bGenerate(Context *c) {
     SplineFont *sf = c->curfv->sf;
     char *bitmaptype = "";
     int fmflags = -1;
+    int res = -1;
 
-    if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=4 )
+    if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=4 && c->a.argc!=5 )
 	error( c, "Wrong number of arguments to Generate");
     if ( c->a.vals[1].type!=v_str ||
 	    (c->a.argc>=3 && c->a.vals[2].type!=v_str ) ||
-	    (c->a.argc>=4 && c->a.vals[3].type!=v_int ))
+	    (c->a.argc>=4 && c->a.vals[3].type!=v_int ) ||
+	    (c->a.argc>=5 && c->a.vals[4].type!=v_int ))
 	error( c, "Bad type of argument");
     if ( c->a.argc>=3 )
 	bitmaptype = c->a.vals[2].u.sval;
     if ( c->a.argc>=4 )
 	fmflags = c->a.vals[3].u.ival;
-    if ( !GenerateScript(sf,c->a.vals[1].u.sval,bitmaptype,fmflags) )
+    if ( c->a.argc>=4 )
+	res = c->a.vals[4].u.ival;
+    if ( !GenerateScript(sf,c->a.vals[1].u.sval,bitmaptype,fmflags,res) )
 	error(c,"Save failed");
 }
 

@@ -954,7 +954,7 @@ static void FigureFullMetricsEnd(SplineFont *sf,struct glyphinfo *gi) {
 			if ( i<sf->subfonts[j]->charcnt && sf->subfonts[j]->chars[i]!=NULL )
 		    break;
 		    if ( j<sf->subfontcnt && SCWorthOutputting(sf->subfonts[j]->chars[i])) {
-			if ( sf->chars[i]->vwidth!=vwidth )
+			if ( sf->subfonts[j]->chars[i]->vwidth!=vwidth )
 		break;
 			else
 			    lastv = i;

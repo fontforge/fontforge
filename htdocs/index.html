@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 23-Jun-2002 -->
+  <!-- AP: Last modified: 9-Jul-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -11,6 +11,9 @@
       src="http://sourceforge.net/sflogo.php?group_id=25752&amp;type=1" width="88"
       height="31" border="0" alt="SourceForge Logo" ALIGN=right> </A> PfaEdit
 </H1>
+<!--<P ALIGN=Center>
+<FONT COLOR="Red"><BIG><B>I will not be responding to bug reports/feature
+requests/etc. between 28 June and 9 July.</B></BIG></FONT>-->
 <P>
 <FONT COLOR="Red"><STRONG>PfaEdit</STRONG></FONT> -- A postscript font editor
 that lets you create your own postscript, truetype, opentype, cid-keyed and
@@ -73,24 +76,24 @@ Contents
 </UL>
 <P>
 I have no one to do QA for me except users on the net, so this is essentially
-beta software. Expect to find bugs. <A HREF="#bugs">Please let me know when
-you do</A>.
+(and eternally) beta software. Expect to find bugs. <A HREF="#bugs">Please
+let me know when you do</A>.
 <H2>
   <A NAME="binary">Binary</A> distributions:
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-020622.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 22-June-2002
+    <A HREF="pfaedit-020709.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 9-July-2002
   <LI>
     <A HREF="pfaedit-020622-1.ppc.rpm">Download pfaedit linux-ppc SUSE 7.1
     </A>binary rpm Version: 22-June-2002
   <LI>
-    <A HREF="pfaedit-solaris-020622.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 22-June-2002
+    <A HREF="pfaedit-solaris-020709.tgz">Download pfaedit Solaris 8.0
+    </A>executable Version: 9-July-2002
   <LI>
-    <A HREF="pfaedit-020622-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
-    Version: 22-June-2002 (Redhat 7.1)
+    <A HREF="pfaedit-020709-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
+    Version: 9-July-2002 (Redhat 7.1)
   <LI>
     <A HREF="http://packages.debian.org/unstable/x11/pfaedit.html">A debian package
     is available at the debian site.</A>
@@ -100,8 +103,8 @@ you do</A>.
   <LI>
     <A HREF="pfaedit_cygwin-020622.tgz">A cygwin version</A>. Version: 22-June-2002
   <LI>
-    <A HREF="ftp://nchrem.tnw.tudelft.nl/pub/pfaedit/">An OpenVMS executable
-    </A>(by Jacob Jansen): Version Approximately 23-Sept-2001<BR>
+    <A HREF="ftp://nchrem.tnw.tudelft.nl/pfaedit/">An OpenVMS executable </A>(by
+    Jacob Jansen): Version Approximately 23-June-2002<BR>
     &nbsp;
 </UL>
 <P>
@@ -116,11 +119,11 @@ If you want to edit CID keyed fonts you probably need these
   <A NAME="source">Source</A> distribution
 </H2>
 <P>
-You can download a <A HREF="pfaedit-020622-1.src.rpm">source RPM</A>: Version:
-22-June-2002<BR>
-Or you can download the <A HREF="pfaedit_full-020623.tgz">entire source tree
+You can download a <A HREF="pfaedit-020709-1.src.rpm">source RPM</A>: Version:
+9-July-2002<BR>
+Or you can download the <A HREF="pfaedit_full-020709.tgz">entire source tree
 </A>in one .tgz file: Version
-23-June-2002<!--
+9-July-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -223,7 +226,7 @@ bitmap fonts that pfaedit uses
 </H2>
 <P>
 All the documentation files in this directory bundled up into one
-<A HREF="pfaedit_htdocs-020622.tgz">tgz file</A> 22-June-2002.<BR>
+<A HREF="pfaedit_htdocs-020626.tgz">tgz file</A> 26-June-2002.<BR>
 If you do the following then PfaEdit will find the docs for you when you
 press F1 (ie. PfaEdit it will look in /usr/share/doc/pfaedit before it looks
 on the web):
@@ -281,7 +284,33 @@ current)
 </H2>
 <UL>
   <LI>
-    23-June-2003
+    9-July-2002
+    <UL>
+      <LI>
+	Bug in generating ttf fonts with embedded bitmaps.
+      <LI>
+	Open Font dlg will now try again if it can't load a valid font.
+      <LI>
+	Scripting had problems when user preference was set to ask for bdf resolution.
+      <LI>
+	Generate() scripting built in now takes an optional resolution argument
+      <LI>
+	Problems generating the vertical metrics tables in cid keyed otf fonts
+    </UL>
+  <LI>
+    27-June-2002
+    <UL>
+      <LI>
+	A couple more vms patches
+    </UL>
+  <LI>
+    26-June-2002
+    <UL>
+      <LI>
+	Merged in Jouk Jansen changes for OpenVMS
+    </UL>
+  <LI>
+    23-June-2002
     <UL>
       <LI>
 	Valek wanted to be able to add comments to characters and to flag characters
@@ -483,210 +512,6 @@ current)
 	Added a <A HREF="search.html">Find/Replace</A> feature
     </UL>
   <LI>
-    16-Apr-2002
-    <UL>
-      <LI>
-	BDF fonts did not mark the missing (.notdef, undefined, etc.) character properly.
-      <LI>
-	otf fonts had the default and normative widths reversed on output
-      <LI>
-	Added marginally better support for non-latin ligatures in GPOS/GSUB tables.
-      <LI>
-	Added support for arabic forms in the GSUB table (ie. we now produce 'init',
-	'medi', 'fina', and 'isol' features)
-      <LI>
-	Build composit should now note whether arabic ligatures are
-	&lt;initial&gt;, &lt;final&gt;, &lt;medial&gt; or &lt;isolated&gt;
-      <LI>
-	It is now possible to have multiple font views looking at one font. I expect
-	this will be a rich source of bugs, especially for CID keyed fonts.
-    </UL>
-  <LI>
-    9-Apr-2002
-    <UL>
-      <LI>
-	Under KDE we could get two textfields flashing cursors (thinking they had
-	focus) should be fixed.
-      <LI>
-	Added Undo/Redo to metricsview
-      <LI>
-	Added Undo/Redo to fontview
-      <LI>
-	Added Element menu to metricsview
-      <LI>
-	Added [Fix] button to (some of) Find Problems
-    </UL>
-  <LI>
-    5-Apr-2002
-    <UL>
-      <LI>
-	Applied various patches from KANOU Hiroki
-      <LI>
-	Changes to metricsview
-	<UL>
-	  <LI>
-	    Fixed some minor bugs
-	  <LI>
-	    Double clicking on a character will open that character
-	  <LI>
-	    Enabled Copy/(CopyRef/CopyWidth/)Paste but not Cut
-	</UL>
-      <LI>
-	PfaEdit had problems when there were exactly two X resources.
-      <LI>
-	Made the Point Info dlg wider.
-      <LI>
-	Improved printing text samples at large point sizes.
-      <LI>
-	I was generating flex hints incorrectly.
-      <LI>
-	Extended postscript interpretter slightly to recognize the eps files (called
-	"art") produced by fontographer
-      <LI>
-	Additions to the scripting language
-	<UL>
-	  <LI>
-	    CenterInWidth
-	  <LI>
-	    AutoWidth (from Andreas P&aring;hlsson)
-	  <LI>
-	    AutoKern
-	</UL>
-      <LI>
-	The Expand Stroke fix for 4-Mar-2001 was too extreme.
-      <LI>
-	Added a field to Char Info that shows the components out of which this character
-	(accented, ligature, hangul sylable, etc.) may be built.
-    </UL>
-  <LI>
-    3-Apr-2002
-    <UL>
-      <LI>
-	Various scrollbar enhancements
-	<UL>
-	  <LI>
-	    thumb now has a bigger minimum size
-	  <LI>
-	    fontview/charview both respond to page up and page down requests
-	  <LI>
-	    right mouse button may be used to position thumb
-	</UL>
-      <LI>
-	Installed James A. Crippen makefile patch so that distclean reports success
-	even if there are no files to clean.
-      <LI>
-	PfaEdit had problems guessing default ligatures for characters outside of
-	BMP.
-      <LI>
-	In the outline character view, double clicking with one of the point tools
-	(curve, corner, tangent, pen) will add a point and then bring up a
-	<A HREF="getinfo.html">Point Info</A> dialog
-      <LI>
-	If you edit in a textfield (so that the mouse pointer vanishes) and then
-	tabbed into another text field the mouse pointer would never reappear.
-      <LI>
-	Merge Fonts left memory in a bad state and would often cause a crash.
-      <LI>
-	Merge Fonts used a string for a title which was ascii when unicode was expected.
-	This could cause strange characters to be displayed.
-      <LI>
-	More fixes for build accented characters (for inverted breve and Oslash).
-    </UL>
-  <LI>
-    14-Mar-2002
-    <UL>
-      <LI>
-	Nifty. The modifier keys auto-repeat under cygwin (if Control is down one
-	gets a series of Press/Release, Press/Release... while normal X just gives
-	one Press.) This meant we'd keep refreshing the tools palette, which meant
-	an annoying flicker and slowed things down.
-      <LI>
-	Raise the palettes after a resize
-      <LI>
-	PfaEdit didn't handle 8bit colormaps well. I've improved the behavior, and
-	added an x resource to give the user some control over behavior.
-    </UL>
-  <LI>
-    10-Mar-2002
-    <UL>
-      <LI>
-	Oops. I broke CID-keyed postscript input (ie. none-otf) when I added the
-	6-Mar fix for type1utils
-      <LI>
-	Applied another patch from KANOU Hiroki, on otf cid support
-    </UL>
-  <LI>
-    9-Mar-2002
-    <UL>
-      <LI>
-	added docs for sfddiff.
-    </UL>
-  <LI>
-    8-Mar-2002
-    <UL>
-      <LI>
-	Added a new program, <A HREF="sfddiff.html">sfddiff</A>, to compare fonts
-	and show their differences.
-    </UL>
-  <LI>
-    6-Mar-2002
-    <UL>
-      <LI>
-	Small change to the format of cidmap files (to bring names into conformance
-	with adobe's spec on modifed unicode names), and corresponding changes to
-	a few routines.
-      <LI>
-	Add support for the type1 format produced by GNU type1utils. Which is vaguely
-	like that used by ghostview.
-    </UL>
-  <LI>
-    4-Mar-2002
-    <UL>
-      <LI>
-	Fixed more problems with reading eps files (these were mostly within Expand
-	Stroke, so presumably also problems with Element-&gt;Expand Stroke)
-      <LI>
-	And one more problem with the file chooser.
-      <LI>
-	Scripting additions:
-	<UL>
-	  <LI>
-	    Ability to generate a pfm file from script
-	  <LI>
-	    Ability to Merge Kerning Info from a script
-	  <LI>
-	    Ability to Remove All Kerning info from a script
-	</UL>
-      <LI>
-	  <HR>
-	Will now display something useful for rotated and italic cids
-    </UL>
-  <LI>
-    3-Mar-2002
-    <UL>
-      <LI>
-	Fixed a number of problems involved in reading in eps files.
-      <LI>
-	28-Feb Mac work introduced a bug in the file picker dlg (in wildcarding).
-    </UL>
-  <LI>
-    2-Mar-2002
-    <UL>
-      <LI>
-	Rounding errors could accumulate when generating Type1 fonts.
-      <LI>
-	Fix for some overlap problems due to KANOU Hiroki
-      <LI>
-	If PfaEdit crashed (or was interrupted) after making some (unsaved) changes
-	to a font, and that font was subsequently deleted, the PfaEdit's autorecovery
-	would complain about a missing file each time it was started. Now it will
-	notice the problem and ask whether it should delete the recovery file (whereupon
-	it will stop complaining).
-      <LI>
-	Enabled a fix from Greg Ford so that PfaEdit set the mac style bits
-	appropriately.
-    </UL>
-  <LI>
     <A HREF="oldchangelog.html">Earlier Changes </A>
 </UL>
 <H2>
@@ -836,6 +661,18 @@ can.
       <LI>
 	generating instructions to do hinting in truetype (especially hints for diagonal
 	stems)
+    </UL>
+  <LI>
+    <I>TrueType AAT</I> (Apple Advanced Typography Tables)
+    <UL>
+      <LI>
+	Is not designed to allow font editors to understand the tables. I have spent
+	some time trying to figure out how to decompile apple's 'mort' table and
+	it appears that the only way to figure it out is to run the state machine
+	with all possible inputs. And see what happens. I'm not willing to go to
+	that effort, but if someone has code that parses the ligature sub-tables
+	and returns a list of ligature glyphs and their respective components I'd
+	love to make use of it.
     </UL>
 </UL>
 <H2>

@@ -47,17 +47,29 @@ void GDrawTerm(GDisplay *disp) {
 }
 
 int GDrawGetRes(GWindow gw) {
-    if ( gw==NULL ) gw = screen_display->groot;
+    if ( gw==NULL ) {
+	if ( screen_display==NULL )
+return( 100 );
+	gw = screen_display->groot;
+    }
 return( gw->display->res );
 }
 
 int GDrawPointsToPixels(GWindow gw,int points) {
-    if ( gw==NULL ) gw = screen_display->groot;
+    if ( gw==NULL ) {
+	if ( screen_display==NULL )
+return( PointToPixel(points,100));
+	gw = screen_display->groot;
+    }
 return( PointToPixel(points,gw->display->res));
 }
 
 int GDrawPixelsToPoints(GWindow gw,int pixels) {
-    if ( gw==NULL ) gw = screen_display->groot;
+    if ( gw==NULL ) {
+	if ( screen_display==NULL )
+return( PixelToPoint(pixels,100));
+	gw = screen_display->groot;
+    }
 return( PixelToPoint(pixels,gw->display->res));
 }
 

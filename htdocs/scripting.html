@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 23-Jun-2002 -->
+  <!-- AP: Last modified: 9-Jul-2002 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -419,7 +419,10 @@ a[4][0] = "Nested array";
   <DD>
     This makes the font named by filename be the current font. If filename has
     not yet been loaded into memory it will be loaded now. It can execute with
-    no current font.
+    no current font.<BR>
+    When loading from a ttc file, a particular font may be selected by placing
+    the fontname in parens and appending it to the filename, as
+    <CODE>Open("gulim.ttc(Dotum)")</CODE>
   <DT>
     New()
   <DD>
@@ -436,10 +439,34 @@ a[4][0] = "Nested array";
     sfd file (if the font has no sfd file then this is an error). With one argument
     it executes a SaveAs command, saving the current font to that filename.
   <DT>
-    Generate(filename[,bitmaptype[,fmflags]])
+    Generate(filename[,bitmaptype[,fmflags[,res]]])
   <DD>
     Generates a font. The type of font is determined by the extension of the
-    filename. If present, bitmaptype may be one of:
+    filename. Valid extensions are:
+    <UL>
+      <LI>
+	pfa
+      <LI>
+	pfb
+      <LI>
+	bin (a mac postscript (pfb) resource in a mac binary wrapper)
+      <LI>
+	ps (type 0)
+      <LI>
+	cid (non-otf cid font)
+      <LI>
+	ttf
+      <LI>
+	ttf.bin (a mac truetype resource in a mac binary wrapper)
+      <LI>
+	dfont (a mac truetype resource in a dfont file)
+      <LI>
+	otf (either cid or not depending on the font)
+      <LI>
+	otf.dfont (a mac opentype resource in a dfont file)
+    </UL>
+    <P>
+    If present, bitmaptype may be one of:
     <UL>
       <LI>
 	bdf
@@ -469,6 +496,9 @@ a[4][0] = "Nested array";
       <LI>
 	fmflags&amp;2 =&gt; generate a pfm file
     </UL>
+    <P>
+    res controls the resolution of generated bdf fonts. A value of -1 means pfaedit
+    will guess for each strike.
   <DT>
     Import
   <DD>

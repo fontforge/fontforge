@@ -340,6 +340,9 @@ static int AskResolution() {
     GTextInfo label[10];
     int done=-3;
 
+    if ( screen_display==NULL )
+return( -1 );
+
     if ( gw==NULL ) {
 	memset(&wattrs,0,sizeof(wattrs));
 	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
@@ -466,13 +469,13 @@ return( -1 );
     }
 }
 
-static int WriteBitmaps(char *filename,SplineFont *sf, int32 *sizes) {
+static int WriteBitmaps(char *filename,SplineFont *sf, int32 *sizes,int res) {
     char *buf = galloc(strlen(filename)+30), *pt, *pt2;
     int i;
     BDFFont *bdf;
     unichar_t *temp;
     char buffer[100];
-    int res = -1;		/* Guess depending on pixel size of font */
+    /* res = -1 => Guess depending on pixel size of font */
     extern int ask_user_for_resolution;
 
     if ( ask_user_for_resolution ) {
@@ -521,7 +524,7 @@ return( false );
 return( true );
 }
 
-static int _DoSave(SplineFont *sf,char *newname,int32 *sizes) {
+static int _DoSave(SplineFont *sf,char *newname,int32 *sizes,int res) {
     unichar_t *path;
     int err=false;
     int iscid = oldformatstate==ff_cid || oldformatstate==ff_otfcid || oldformatstate==ff_otfciddfont;
@@ -578,7 +581,7 @@ static int _DoSave(SplineFont *sf,char *newname,int32 *sizes) {
     if ( oldbitmapstate==bf_bdf && !err ) {
 	GProgressChangeLine1R(_STR_SavingBitmapFonts);
 	GProgressIncrementBy(-sf->charcnt);
-	if ( !WriteBitmaps(newname,sf,sizes))
+	if ( !WriteBitmaps(newname,sf,sizes,res))
 	    err = true;
     } else if ( (oldbitmapstate==bf_nfntmacbin || oldbitmapstate==bf_nfntdfont) &&
 	    !err ) {
@@ -592,7 +595,7 @@ static int _DoSave(SplineFont *sf,char *newname,int32 *sizes) {
 return( err );
 }
 
-int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags) {
+int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags, int res) {
     int i;
     static char *bitmaps[] = {"bdf", "ms", "apple", "sbit", "bin", "dfont", NULL };
     int32 *sizes=NULL;
@@ -667,7 +670,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags) 
 	}
 	sizes[cnt] = 0;
     }
-return( !_DoSave(sf,filename,sizes));
+return( !_DoSave(sf,filename,sizes,res));
 }
 
 static void DoSave(struct gfc_data *d,unichar_t *path) {
@@ -701,7 +704,7 @@ return;
     oldafmstate = GGadgetIsChecked(d->doafm);
     oldpfmstate = GGadgetIsChecked(d->dopfm);
 
-    err = _DoSave(d->sf,temp,sizes);
+    err = _DoSave(d->sf,temp,sizes,-1);
 
     free(temp);
     d->done = !err;
