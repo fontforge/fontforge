@@ -160,7 +160,7 @@ static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
 	}
 	if ( sf->onlybitmaps && i!=-1 &&
 		((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) &&
-		i!=enc && enc!=-1 && (enc>=b->charcnt || b->chars[enc]==NULL)) {
+		i!=enc && enc!=-1 && (enc>=sf->charcnt || sf->chars[enc]==NULL)) {
 	    i = -1;
 	    if ( !sf->dupnamewarn ) {
 		/*GWidgetErrorR(_STR_DuplicateName,_STR_DuplicateCharName,name);*/
@@ -1505,6 +1505,8 @@ return( false );
     if ( PCF_GLYPH_PAD(format)==1 ) {
 	for ( i=0; i<cnt; ++i ) {
 	    BDFChar *bc = b->chars[i];
+	    if ( i<cnt-1 && offsets[i+1]-offsets[i]!=bc->bytes_per_line * (bc->ymax-bc->ymin+1))
+		GDrawIError("Bad PCF glyph bitmap size");
 	    memcpy(bc->bitmap,bitmap+offsets[i],
 		    bc->bytes_per_line * (bc->ymax-bc->ymin+1));
 	    GProgressNext();
@@ -1598,8 +1600,8 @@ static int PcfParse(FILE *file,struct toc *toc,SplineFont *sf,BDFFont *b) {
     int metrics_cnt;
     struct pcfmetrics *metrics = pcfGetMetricsTable(file,toc,PCF_METRICS,&metrics_cnt);
     int mcnt = metrics_cnt;
-    BDFChar **new;
-    int i;
+    BDFChar **new, **mult;
+    int i, multcnt;
 
     if ( metrics==NULL )
 return( false );
@@ -1608,9 +1610,11 @@ return( false );
     for ( i=0; i<mcnt; ++i ) {
 	b->chars[i] = chunkalloc(sizeof(BDFChar));
 	b->chars[i]->xmin = metrics[i].lsb;
-	b->chars[i]->xmax = metrics[i].rsb;
+	b->chars[i]->xmax = metrics[i].rsb-1;
+	if ( metrics[i].rsb==0 ) b->chars[i]->xmax = 0;
 	b->chars[i]->ymin = -metrics[i].descent;
 	b->chars[i]->ymax = metrics[i].ascent-1;
+	/*if ( metrics[i].ascent==0 ) b->chars[i]->ymax = 0;*/ /*??*/
 	b->chars[i]->width = metrics[i].width;
 	b->chars[i]->bytes_per_line = ((b->chars[i]->xmax-b->chars[i]->xmin)>>3) + 1;
 	b->chars[i]->bitmap = galloc(b->chars[i]->bytes_per_line*(b->chars[i]->ymax-b->chars[i]->ymin+1));
@@ -1624,14 +1628,29 @@ return( false );
     if ( sf->onlybitmaps )
 	PcfReadSWidths(file,toc,b);
     new = gcalloc(sf->charcnt,sizeof(BDFChar *));
+    mult = gcalloc(mcnt+1,sizeof(BDFChar *)); multcnt=0;
     for ( i=0; i<mcnt; ++i ) {
 	BDFChar *bc = b->chars[i];
+ int j; for ( j=i+1; j<mcnt; ++j ) if ( b->chars[j]!=NULL && b->chars[j]->enc==bc->enc )
+  printf( "Duplicate encoding. Both %d and %d map to %d\n", i, j, bc->enc );
 	if ( bc->enc==-1 || bc->enc>=sf->charcnt )
 	    BDFCharFree(bc);
-	else
+	else if ( new[bc->enc]==NULL )
 	    new[bc->enc] = bc;
+	else
+	    mult[multcnt++] = bc;
+    }
+    if ( multcnt!=0 ) {
+	for ( multcnt=0; mult[multcnt]!=NULL; multcnt++ ) {
+	    for ( i=0; i<sf->charcnt; ++i )
+		if ( new[i]==NULL ) {
+		    new[i] = mult[multcnt];
+	    break;
+		}
+	}
     }
     free( b->chars );
+    free( mult );
     b->chars = new;
     b->charcnt = sf->charcnt;
 return( true );
