@@ -1746,8 +1746,11 @@ return(NULL);
 	bdf->chars[index] = SplineCharFreeTypeRasterize(bdf->freetype_context,
 		sc->enc,bdf->truesize,bdf->clut?8:1);
     else {
-	bdf->chars[index] = SplineCharFreeTypeRasterizeNoHints(sc,
-		bdf->truesize,bdf->clut?4:1);
+	if ( !sc->parent->multilayer )
+	    bdf->chars[index] = SplineCharFreeTypeRasterizeNoHints(sc,
+		    bdf->truesize,bdf->clut?4:1);
+	else
+	    bdf->chars[index] = NULL;
 	if ( bdf->chars[index]==NULL ) {
 	    if ( bdf->clut )
 		bdf->chars[index] = SplineCharAntiAlias(sc,bdf->truesize,4);

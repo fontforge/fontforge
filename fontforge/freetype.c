@@ -773,7 +773,7 @@ BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,
 	int pixelsize,int depth) {
     FT_Outline outline;
     FT_Bitmap bitmap;
-    int ccnt, pcnt, k;
+    int ccnt, pcnt, k, j;
     SplineSet *ss;
     SplinePoint *sp;
     real scale = pixelsize*(1<<6)/(double) (sc->parent->ascent+sc->parent->descent);
@@ -887,10 +887,8 @@ return( NULL );
 	outline.points[pcnt].x -= xmin;
 	outline.points[pcnt].y -= ymin;
     }
-    xmin >>=6; ymin >>= 6;
-    xmax = (xmax+0x3f)>>6; ymax = (ymax+0x3f)>>6;
-    bitmap.rows = ymax-ymin+2;
-    bitmap.width = xmax-xmin+2;
+    bitmap.rows = ((ymax-ymin)>>6)+2;
+    bitmap.width = ((xmax-xmin)>>6)+2;
     if ( depth==1 ) {
 	bitmap.pitch = (bitmap.width+7)>>3;
 	bitmap.num_grays = 2;
@@ -908,8 +906,16 @@ return( NULL );
     free(outline.tags);
     free(outline.contours);
     bdfc = NULL;
-    if ( !err )
-	bdfc = BdfCFromBitmap(&bitmap, xmin, ymax, pixelsize, depth, sc);
+    if ( !err ) {
+	for ( k=0; k<(ymax-ymin)>>6; ++k ) {
+	    for ( j=bitmap.pitch-1; j>=0 && bitmap.buffer[k*bitmap.pitch+j]==0; --j );
+	    if ( j!=-1 )
+	break;
+	}
+	if ( k!=ymax-ymin )
+	    ymax += k<<6;
+	bdfc = BdfCFromBitmap(&bitmap, (xmin+0x20)>>6, (ymax+0x20)>>6, pixelsize, depth, sc);
+    }
     free( bitmap.buffer );
 return( bdfc );
 }
