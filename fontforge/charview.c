@@ -74,6 +74,8 @@ static Color widthselcol = 0x00ff00;
 static Color widthgridfitcol = 0x009800;
 static Color lcaretcol = 0x909040;
 static Color rastercol = 0xa0a0a0;
+static Color rasternewcol = 0x909090;
+static Color rasteroldcol = 0xc0c0c0;
 static Color rastergridcol = 0xb0b0ff;
 static Color italiccoordcol = 0x909090;
 static Color metricslabelcol = 0x00000;
@@ -119,6 +121,8 @@ static void CVColInit( void ) {
 	{ "GridFitWidthColor", rt_color, &widthgridfitcol },
 	{ "LigatureCaretColor", rt_color, &lcaretcol },
 	{ "RasterColor", rt_color, &rastercol },
+	{ "RasterNewColor", rt_color, &rasternewcol },
+	{ "RasterOldColor", rt_color, &rasteroldcol },
 	{ "RasterGridColor", rt_color, &rastergridcol },
 	{ "ItalicCoordColor", rt_color, &italiccoordcol },
 	{ "MetricsLabelColor", rt_color, &metricslabelcol },
@@ -1394,12 +1398,19 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 
 	    pixel.width = pixel.height = grid_spacing*cv->scale+1;
 	    if ( cv->raster!=NULL ) {
+		int hasor = cv->oldraster!=NULL &&
+			cv->oldraster->lb==cv->raster->lb &&
+			cv->oldraster->as==cv->raster->as &&
+			cv->oldraster->rows==cv->raster->rows &&
+			cv->oldraster->cols==cv->raster->cols;
 		for ( i=0; i<cv->raster->rows; ++i ) {
 		    for ( j=0; j<cv->raster->cols; ++j ) {
-			if ( cv->raster->bitmap[i*cv->raster->bytes_per_row+(j>>3)] & (1<<(7-(j&7))) ) {
+			int r = cv->raster->bitmap[i*cv->raster->bytes_per_row+(j>>3)] & (1<<(7-(j&7)));
+			int or = hasor ? cv->oldraster->bitmap[i*cv->raster->bytes_per_row+(j>>3)] & (1<<(7-(j&7))) : r;
+			if ( r || or ) {
 			    pixel.x = (j+cv->raster->lb)*grid_spacing*cv->scale + cv->xoff;
 			    pixel.y = cv->height-cv->yoff - rint((cv->raster->as-i)*grid_spacing*cv->scale);
-			    GDrawFillRect(pixmap,&pixel,rastercol);
+			    GDrawFillRect(pixmap,&pixel,(r && or) ? rastercol : r ? rasternewcol : rasteroldcol );
 			}
 		    }
 		}
@@ -1797,6 +1808,7 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     }
 
     SplinePointListsFree(cv->gridfit); cv->gridfit = NULL;
+    FreeType_FreeRaster(cv->oldraster); cv->oldraster = NULL;
     FreeType_FreeRaster(cv->raster); cv->raster = NULL;
 
     SCLigCaretCheck(sc,false);
@@ -7511,6 +7523,7 @@ void CharViewFree(CharView *cv) {
     CVDebugFree(cv->dv);
 
     SplinePointListsFree(cv->gridfit);
+    FreeType_FreeRaster(cv->oldraster);
     FreeType_FreeRaster(cv->raster);
 
     CVDebugFree(cv->dv);

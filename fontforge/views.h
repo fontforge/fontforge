@@ -317,7 +317,7 @@ typedef struct charview {
     int16 ft_dpi, ft_ppem, ft_gridfitwidth;
     real ft_pointsize;
     SplineSet *gridfit;
-    struct freetype_raster *raster;
+    struct freetype_raster *raster, *oldraster;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     DebugView *dv;
 #endif
