@@ -39,8 +39,12 @@ struct gfc_data {
 static int GFD_Ok(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	d->done = true;
-	d->ret = GGadgetGetTitle(d->gfc);
+	GGadget *tf;
+	GFileChooserGetChildren(d->gfc,NULL,NULL,&tf);
+	if ( *_GGadgetGetTitle(tf)!='\0' ) {
+	    d->done = true;
+	    d->ret = GGadgetGetTitle(d->gfc);
+	}
     }
 return( true );
 }

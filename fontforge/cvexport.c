@@ -787,11 +787,15 @@ static void GFD_exists(GIOControl *gio) {
 static int GFD_SaveOk(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	unichar_t *ret = GGadgetGetTitle(d->gfc);
+	GGadget *tf;
+	GFileChooserGetChildren(d->gfc,NULL,NULL,&tf);
+	if ( *_GGadgetGetTitle(tf)!='\0' ) {
+	    unichar_t *ret = GGadgetGetTitle(d->gfc);
 
-	GIOfileExists(GFileChooserReplaceIO(d->gfc,
-		GIOCreate(ret,d,GFD_exists,GFD_doesnt)));
-	free(ret);
+	    GIOfileExists(GFileChooserReplaceIO(d->gfc,
+		    GIOCreate(ret,d,GFD_exists,GFD_doesnt)));
+	    free(ret);
+	}
     }
 return( true );
 }

@@ -1311,7 +1311,11 @@ static int GFD_ImportOk(GGadget *g, GEvent *e) {
 	char *temp = u2def_copy(ret);
 	int pos = GGadgetGetFirstListSelectedItem(d->format);
 	int format = (int) (GGadgetGetListItemSelected(d->format)->userdata);
+	GGadget *tf;
 
+	GFileChooserGetChildren(d->gfc,NULL,NULL,&tf);
+	if ( *_GGadgetGetTitle(tf)=='\0' )
+return( true );
 	GDrawSetCursor(GGadgetGetWindow(g),ct_watch);
 	if ( d->fv!=NULL )
 	    flast_format = pos;
