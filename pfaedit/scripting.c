@@ -2770,12 +2770,13 @@ void ScriptDlg(FontView *fv) {
 
     if ( gw==NULL ) {
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
+	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict|wam_isdlg;
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
 	wattrs.window_title = GStringGetResource(_STR_ExecuteScript,NULL);
+	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GDrawPointsToPixels(NULL,GGadgetScale(SD_Width));
 	pos.height = GDrawPointsToPixels(NULL,SD_Height);
