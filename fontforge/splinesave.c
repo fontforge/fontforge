@@ -75,8 +75,6 @@ typedef struct growbuf {
     unsigned char *end;
 } GrowBuf;
 
-static int CanBeSeaced(SplineChar *scs[MmMax], int instance_count, int iscjk);
-
 static void GrowBuffer(GrowBuf *gb) {
     if ( gb->base==NULL ) {
 	gb->base = gb->pt = galloc(200);
@@ -1138,8 +1136,7 @@ return( false );
 	if ( gb->pt+20>=gb->end )
 	    GrowBuffer(gb);
 	bp = (BasePoint *) (subrs->keys[refs[0]->sc->ttf_glyph]);
-	if ( !CanBeSeaced(&refs[0]->sc,1,0) )
-	    refmoveto(gb,current,bp,instance_count,false,round,NULL,refs);
+	refmoveto(gb,current,bp,instance_count,false,round,NULL,refs);
 	AddNumber(gb,refs[0]->sc->ttf_glyph,round);
 	*gb->pt++ = 10;				/* callsubr */
 	for ( j=0; j<instance_count; ++j ) {
@@ -1183,78 +1180,8 @@ static RefChar *RefFindAdobe(RefChar *r, RefChar *t) {
 return( t );
 }
 
-static int CanBeSeaced(SplineChar *scs[MmMax], int instance_count, int iscjk) {
-    /* can be at most two chars in a seac (actually must be exactly 2, but */
-    /*  I'll put in a space if there's only one */
-    RefChar *r1, *r2, *rt, *refs;
-    RefChar space, t1, t2;
-    int i, j, swap;
-
-    for ( j=0 ; j<instance_count; ++j )
-	if ( !IsPSRefable(scs[j]))
-return( false );
-
-    refs = scs[0]->layers[ly_fore].refs;
-    if ( refs==NULL )
-return( false );
-
-    r1 = refs;
-    if ((r2 = r1->next)==NULL ) {
-	r2 = &space;
-	memset(r2,'\0',sizeof(space));
-	space.adobe_enc = ' ';
-	space.transform[0] = space.transform[3] = 1.0;
-	for ( i=0; i<scs[0]->parent->charcnt; ++i )
-	    if ( scs[0]->parent->chars[i]!=NULL &&
-		    strcmp(scs[0]->parent->chars[i]->name,"space")==0 )
-	break;
-	if ( i==scs[0]->parent->charcnt )
-	    r2 = NULL;			/* No space???? */
-	else {
-	    space.sc = scs[0]->parent->chars[i];
-	    if ( space.sc->layers[ly_fore].splines!=NULL || space.sc->layers[ly_fore].refs!=NULL )
-		r2 = NULL;
-	}
-    } else if ( r2->next!=NULL )
-	r2 = NULL;
-
-    /* check for something like "AcyrillicBreve" which has a ref to Acyril */
-    /*  (which doesn't have an adobe enc) which in turn has a ref to A (which */
-    /*  does) */
-    if ( r2!=NULL ) {
-	if ( r1->adobe_enc==-1 )
-	    r1 = RefFindAdobe(r1,&t1);
-	if ( r2->adobe_enc==-1 )
-	    r2 = RefFindAdobe(r2,&t2);
-    }
-
-/* CID fonts have no encodings. So we can't use seac to reference characters */
-/*  in them. The other requirements are just those of seac */
-    if ( (iscjk&0x100) || r2==NULL ||
-	    r1->adobe_enc==-1 ||
-	    r2->adobe_enc==-1 ||
-	    ((r1->transform[4]!=0 || r1->transform[5]!=0 || r1->sc->width!=scs[0]->width ) &&
-		 (r2->transform[4]!=0 || r2->transform[5]!=0 || r2->sc->width!=scs[0]->width)) )
-return( false );
-
-    swap = false;
-    if ( r1->transform[4]!=0 || r1->transform[5]!=0 ) {
-	rt = r1; r1 = r2; r2 = rt;
-	swap = !swap;
-    }
-    if ( r1->sc->width!=scs[0]->width && r2->sc->width==scs[0]->width &&
-	    r2->transform[4]==0 && r2->transform[5]==0 ) {
-	rt = r1; r1 = r2; r2 = rt;
-	swap = !swap;
-    }
-    if ( r1->sc->width!=scs[0]->width || r1->transform[4]!=0 || r1->transform[5]!=0 )
-return( false );
-
-return( true );
-}
-
 static int IsSeacable(GrowBuf *gb, struct pschars *subrs, SplineChar *scs[MmMax],
-    int instance_count, int round, int iscjk) {
+    int instance_count, int round, int dontseac) {
     /* can be at most two chars in a seac (actually must be exactly 2, but */
     /*  I'll put in a space if there's only one */
     RefChar *r1, *r2, *rt, *refs;
@@ -1306,7 +1233,7 @@ return( false );
 
 /* CID fonts have no encodings. So we can't use seac to reference characters */
 /*  in them. The other requirements are just those of seac */
-    if ( (iscjk&0x100) || r2==NULL ||
+    if ( dontseac || r2==NULL ||
 	    r1->adobe_enc==-1 ||
 	    r2->adobe_enc==-1 ||
 	    ((r1->transform[4]!=0 || r1->transform[5]!=0 || r1->sc->width!=scs[0]->width ) &&
@@ -1451,7 +1378,12 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
     }
     NumberHints(scs,instance_count);
 
-    if ( IsSeacable(&gb,subrs,scs,instance_count,round,iscjk)) {
+    /* If this char is being placed in a subroutine, then we don't want to */
+    /*  use seac because somebody is going to call that subroutine and */
+    /*  add another reference to it later. CID keyed fonts also can't use */
+    /*  seac (they have no encoding so it doesn't work), that's what iscjk&0x100 */
+    /*  tests for */
+    if ( IsSeacable(&gb,subrs,scs,instance_count,round,startend!=NULL || (iscjk&0x100))) {
 	/* All Done */;
 	/* All should share the same refs, so all should be seac-able if one is */
     } else {
