@@ -1,3 +1,7 @@
+CAVEAT
+ PfaEdit is changing its name to FontForge. Future releases will be found
+ at http://fontforge.sf.net/
+
 INSTALLATION NOTES:
  This distribution may be in two formats, either it contains dynamic libraries
  or it does not.

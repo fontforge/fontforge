@@ -196,6 +196,9 @@ static void SplashLayout() {
 	lines[linecnt++] = pt;
 	if ( *pt ) ++pt;
     }
+    uc_strcpy(pt, "PfaEdit is changing its name to FontForge.");
+    pt += u_strlen(pt);
+    lines[linecnt++] = pt;
     uc_strcpy(pt,"  Version: ");;
     uc_strcat(pt,source_modtime_str);
     uc_strcat(pt," (");
@@ -309,7 +312,7 @@ int main( int argc, char **argv ) {
 
     fprintf( stderr, "Copyright (c) 2000-2004 by George Williams.\n Executable based on sources from %s.\n",
 	    source_modtime_str );
-    fprintf( stderr, "PfaEdit is changing its name to FontForge\n" );
+    fprintf( stderr, "PfaEdit is changing its name to FontForge.\n" );
     setlocale(LC_ALL,"");
     localeinfo = *localeconv();
     coord_sep = ",";

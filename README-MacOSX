@@ -1,3 +1,7 @@
+CAVEAT
+ PfaEdit is changing its name to FontForge. Future releases will be found
+ at http://fontforge.sf.net/
+
 BEFORE INSTALLATION
  Before you install pfaedit under Mac OS/X you should first install the X
  window system. This is available at:
