@@ -60,10 +60,12 @@ struct gfc_data {
 static char *extensions[] = { ".pfa", ".pfb", "", ".mult", ".ps", ".ps", ".cid",
 	".ttf", ".ttf", ".suit", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", NULL };
+static char *bitmapextensions[] = { ".*bdf", ".ttf", ".dfont", ".bmap", ".dfont", ".none", NULL };
 #else
 static char *extensions[] = { ".pfa", ".pfb", ".bin", ".mult", ".ps", ".ps", ".cid",
 	".ttf", ".ttf", ".ttf.bin", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", NULL };
+static char *bitmapextensions[] = { ".*bdf", ".ttf", ".dfont", ".bmap.bin", ".dfont", ".none", NULL };
 #endif
 static GTextInfo formattypes[] = {
     { (unichar_t *) "PS Type 1 (Ascii)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
@@ -1396,6 +1398,31 @@ return( true );
 return( true );
 }
 
+static void BitmapName(struct gfc_data *d) {
+    int bf = GGadgetGetFirstListSelectedItem(d->bmptype);
+    unichar_t *ret = GGadgetGetTitle(d->gfc);
+    unichar_t *dup, *pt, *tpt;
+    int format = GGadgetGetFirstListSelectedItem(d->pstype);
+
+    if ( format!=ff_none )
+return;
+
+    dup = galloc((u_strlen(ret)+30)*sizeof(unichar_t));
+    u_strcpy(dup,ret);
+    free(ret);
+    pt = u_strrchr(dup,'.');
+    tpt = u_strrchr(dup,'/');
+    if ( pt<tpt )
+	pt = NULL;
+    if ( pt==NULL ) pt = dup+u_strlen(dup);
+    if ( uc_strcmp(pt-5, ".bmap.bin" )==0 ) pt -= 5;
+    if ( uc_strcmp(pt-4, ".ttf.bin" )==0 ) pt -= 4;
+    if ( uc_strcmp(pt-4, ".otf.dfont" )==0 ) pt -= 4;
+    uc_strcpy(pt,bitmapextensions[bf]);
+    GGadgetSetTitle(d->gfc,dup);
+    free(dup);
+}
+
 static int GFD_Format(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
@@ -1438,6 +1465,7 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	if ( format==ff_none ) {
 	    if ( temp->bitmaps!=NULL )
 		list[bf_sfnt_dfont]->disabled = false;
+	    BitmapName(d);
 return( true );
 	}
 
@@ -1450,6 +1478,7 @@ return( true );
 	if ( pt<tpt )
 	    pt = NULL;
 	if ( pt==NULL ) pt = dup+u_strlen(dup);
+	if ( uc_strcmp(pt-5, ".bmap.bin" )==0 ) pt -= 5;
 	if ( uc_strcmp(pt-4, ".ttf.bin" )==0 ) pt -= 4;
 	if ( uc_strcmp(pt-4, ".otf.dfont" )==0 ) pt -= 4;
 	uc_strcpy(pt,extensions[format]);
@@ -1510,7 +1539,6 @@ return( true );
 static int GFD_BitmapFormat(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	unichar_t *pt, *dup, *tpt, *ret;
 	/*int format = GGadgetGetFirstListSelectedItem(d->pstype);*/
 	int bf = GGadgetGetFirstListSelectedItem(d->bmptype);
 	int i;
@@ -1521,23 +1549,9 @@ static int GFD_BitmapFormat(GGadget *g, GEvent *e) {
 		GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Family+10*i+1),
 			bf!=bf_none);
 	}
-	if ( bf==bf_sfnt_dfont ) {
-	    ret = GGadgetGetTitle(d->gfc);
-	    dup = galloc((u_strlen(ret)+30)*sizeof(unichar_t));
-	    u_strcpy(dup,ret);
-	    free(ret);
-	    pt = u_strrchr(dup,'.');
-	    tpt = u_strrchr(dup,'/');
-	    if ( pt<tpt )
-		pt = NULL;
-	    if ( pt==NULL ) pt = dup+u_strlen(dup);
-	    if ( uc_strcmp(pt-4, ".ttf.bin" )==0 ) pt -= 4;
-	    if ( uc_strcmp(pt-4, ".otf.dfont" )==0 ) pt -= 4;
-	    uc_strcpy(pt,".dfont");
-	    GGadgetSetTitle(d->gfc,dup);
-	    free(dup);
+	BitmapName(d);
+	if ( bf==bf_sfnt_dfont )
 	    GGadgetSetChecked(d->ttfapple,true);
-	}
     }
 return( true );
 }
@@ -1958,7 +1972,7 @@ return( 0 );
 	char *fn = sf->cidmaster==NULL? sf->fontname:sf->cidmaster->fontname;
 	unichar_t *temp = galloc(sizeof(unichar_t)*(strlen(fn)+30));
 	uc_strcpy(temp,fn);
-	uc_strcat(temp,extensions[ofs]==NULL?".pfb":extensions[ofs]);
+	uc_strcat(temp,extensions[ofs]!=NULL?extensions[ofs]:bitmapextensions[old]);
 	GGadgetSetTitle(gcd[0].ret,temp);
 	free(temp);
     }
