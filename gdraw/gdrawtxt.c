@@ -2247,6 +2247,7 @@ void GDrawBiText1(GBiText *bd, const unichar_t *text, int32 cnt) {
     }
     bd->len = pos;
     bd->text[pos] = '\0';
+    bd->original[pos] = (unichar_t *) (text+cnt);
 }
 
 /* This routine must be called for each line after GDrawBiText1 has been called */
