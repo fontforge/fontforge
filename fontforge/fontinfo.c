@@ -5871,15 +5871,18 @@ return;
 
     d->ttfv_aspect = i;
     aspects[i].text = (unichar_t *) _STR_TTFValues;
+    if ( sf->cidmaster!=NULL ) aspects[i].disabled = true;
     aspects[i].text_in_resource = true;
     aspects[i++].gcd = vgcd;
 
     d->tn_aspect = i;
+    if ( sf->cidmaster!=NULL ) aspects[i].disabled = true;
     aspects[i].text = (unichar_t *) _STR_TTFNames;
     aspects[i].text_in_resource = true;
     aspects[i++].gcd = tngcd;
 
     d->panose_aspect = i;
+    if ( sf->cidmaster!=NULL ) aspects[i].disabled = true;
     aspects[i].text = (unichar_t *) _STR_Panose;
     aspects[i].text_in_resource = true;
     aspects[i++].gcd = pangcd;

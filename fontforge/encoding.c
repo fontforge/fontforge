@@ -1344,6 +1344,8 @@ return(NULL);
     new->sli_cnt = cidmaster->sli_cnt;
     new->kerns = cidmaster->kerns; new->vkerns = cidmaster->vkerns;
     cidmaster->kerns = cidmaster->vkerns = NULL;
+    new->names = cidmaster->names; cidmaster->names = NULL;
+    new->pfminfo = cidmaster->pfminfo;
     new->texdata = cidmaster->texdata;
     new->gentags = cidmaster->gentags;
     memset(&cidmaster->gentags,0,sizeof(cidmaster->gentags));
