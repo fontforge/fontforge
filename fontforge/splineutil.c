@@ -1533,12 +1533,9 @@ static void SplineFontMetaData(SplineFont *sf,struct fontdict *fd) {
     sf->display_antialias = default_fv_antialias;
     if ( fd->fontinfo!=NULL ) {
 	if ( sf->fontname==NULL && fd->fontinfo->fullname!=NULL ) { char *from, *to;
-	    sf->fontname = copy(fd->fontinfo->fullname);
-	    for ( from=to=sf->fontname; *from; ++from )
-		if ( *from!=' ' ) *to++ = *from;
-	    *to ='\0';
+	    sf->fontname = EnforcePostScriptName(fd->fontinfo->fullname);
 	}
-	if ( sf->fontname==NULL ) sf->fontname = copy(fd->fontinfo->familyname);
+	if ( sf->fontname==NULL ) sf->fontname = EnforcePostScriptName(fd->fontinfo->familyname);
 	sf->fullname = copyparse(fd->fontinfo->fullname);
 	sf->familyname = copyparse(fd->fontinfo->familyname);
 	sf->weight = copyparse(fd->fontinfo->weight);

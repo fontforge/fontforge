@@ -2391,7 +2391,7 @@ return( NULL );
     if ( sf->familyname==NULL )
 	sf->familyname = copy(sf->fontname);
     if ( sf->fontname==NULL )
-	sf->fontname = copy(sf->familyname);
+	sf->fontname = EnforcePostScriptName(sf->familyname);
     sf->fullname = copy(sf->fontname);
 
     /* Give ourselves an xuid, just in case they want to convert to PostScript*/

@@ -1694,6 +1694,8 @@ extern void MMKern(SplineFont *sf,SplineChar *first,SplineChar *second,int diff,
 extern int MMBlendChar(MMSet *mm, int enc);
 extern int MMReblend(struct fontview *fv, MMSet *mm);
 
+extern char *EnforcePostScriptName(char *old);
+
 # if HANYANG
 extern void SFDDumpCompositionRules(FILE *sfd,struct compositionrules *rules);
 extern struct compositionrules *SFDReadCompositionRules(FILE *sfd);

@@ -756,6 +756,124 @@ return;
     }
 }
 
+static void uValidatePostScriptFontName(unichar_t *str) {
+    unichar_t *end, *pt, *npt;
+    int complained = false;
+
+    u_strtod(str,&end);
+    if ( (*end=='\0' || (isdigit(str[0]) && u_strchr(str,'#')!=NULL)) &&
+	    *str!='\0' ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
+	GWidgetErrorR(_STR_BadFontName,_STR_PSNameNotNumber);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Bad Font Name"),_("A Postscript name may not be a number"));
+#endif
+	*str = 'a';
+	complained = true;
+    }
+    for ( pt=str; *pt; ++pt ) {
+	if ( *pt<=' ' || *pt>=0x7f ||
+		*pt=='(' || *pt=='[' || *pt=='{' || *pt=='<' ||
+		*pt==')' || *pt==']' || *pt=='}' || *pt=='>' ||
+		*pt=='%' || *pt=='/' ) {
+	    if ( !complained ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
+		GWidgetErrorR(_STR_BadFontName,_STR_BadPSName2,str);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad Font Name"),_("The Postscript font name \"%.63s\" is invalid.\nIt should be printable ASCII,\nmust not contain (){}[]<>%%/ or space\nand must be shorted than 63 characters",str));
+#endif
+	    }
+	    complained = true;
+	    for ( npt=pt; npt[1]; ++npt )
+		*npt = npt[1];
+	    *npt = '\0';
+	}
+    }
+    if ( u_strlen(str)>63 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
+	GWidgetErrorR(_STR_BadFontName,_STR_BadPSName2,str);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Bad Font Name"),_("The Postscript font name \"%.63s\" is invalid.\nIt should be printable ASCII,\nmust not contain (){}[]<>%%/ or space\nand must be shorted than 63 characters",str));
+#endif
+	str[63] = '\0';
+    }
+}
+
+static void ValidatePostScriptFontName(char *str) {
+    char *end, *pt, *npt;
+    int complained = false;
+    unichar_t *temp = NULL;
+
+    strtod(str,&end);
+    if ( (*end=='\0' || (isdigit(str[0]) && strchr(str,'#')!=NULL)) &&
+	    *str!='\0' ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
+	GWidgetErrorR(_STR_BadFontName,_STR_PSNameNotNumber);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Bad Font Name"),_("A Postscript name may not be a number"));
+#endif
+	*str = 'a';
+	complained = true;
+    }
+    for ( pt=str; *pt; ++pt ) {
+	if ( *pt<=' ' || *pt>=0x7f ||
+		*pt=='(' || *pt=='[' || *pt=='{' || *pt=='<' ||
+		*pt==')' || *pt==']' || *pt=='}' || *pt=='>' ||
+		*pt=='%' || *pt=='/' ) {
+	    if ( !complained ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
+		temp = uc_copy(str);
+		GWidgetErrorR(_STR_BadFontName,_STR_BadPSName2,temp);
+		free(temp);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad Font Name"),_("The Postscript font name \"%.63s\" is invalid.\nIt should be printable ASCII,\nmust not contain (){}[]<>%%/ or space\nand must be shorted than 63 characters",str));
+#endif
+	    }
+	    complained = true;
+	    for ( npt=pt; npt[1]; ++npt )
+		*npt = npt[1];
+	    *npt = '\0';
+	}
+    }
+    if ( strlen(str)>63 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
+	temp = uc_copy(str);
+	GWidgetErrorR(_STR_BadFontName,_STR_BadPSName2,temp);
+	free(temp);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Bad Font Name"),_("The Postscript font name \"%.63s\" is invalid.\nIt should be printable ASCII,\nmust not contain (){}[]<>%%/ or space\nand must be shorted than 63 characters",str));
+#endif
+	str[63] = '\0';
+    }
+}
+
+char *EnforcePostScriptName(char *old) {
+    char *end, *pt, *npt, *str = copy(old);
+    unichar_t *temp = NULL;
+
+    strtod(str,&end);
+    if ( (*end=='\0' || (isdigit(str[0]) && strchr(str,'#')!=NULL)) &&
+	    *str!='\0' ) {
+	free(str);
+	str=galloc(strlen(old)+2);
+	*str = 'a';
+	strcpy(str+1,new);
+    }
+    for ( pt=str; *pt; ++pt ) {
+	if ( *pt<=' ' || *pt>=0x7f ||
+		*pt=='(' || *pt=='[' || *pt=='{' || *pt=='<' ||
+		*pt==')' || *pt==']' || *pt=='}' || *pt=='>' ||
+		*pt=='%' || *pt=='/' ) {
+	    for ( npt=pt; npt[1]; ++npt )
+		*npt = npt[1];
+	    *npt = '\0';
+	}
+    }
+    if ( strlen(str)>63 )
+	str[63] = '\0';
+return( str );
+}
+
 static void TTFAddLangStr(FILE *ttf, struct ttfinfo *info, int id,
 	int strlen, int stroff,int plat,int spec,int language) {
     struct ttflangname *cur, *prev;
@@ -774,6 +892,8 @@ return;
 	free(str);
 return;
     }
+    if ( id==ttf_postscriptname )
+	uValidatePostScriptFontName(str);
 
     if ( plat==1 || plat==0 )
 	language = WinLangFromMac(language);
@@ -2098,6 +2218,9 @@ static struct topdicts *readcfftopdict(FILE *ttf, char *fontname, int len) {
     long base = ftell(ttf);
     int ival, oval, sp, ret, i;
     real stack[50];
+
+    if ( fontname!=NULL )
+	ValidatePostScriptFontName(fontname);
 
     td->fontname = fontname;
     td->underlinepos = -100;
@@ -4537,10 +4660,10 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->order2 = info->to_order2;
     sf->comments = info->fontcomments;
     if ( sf->fontname==NULL ) {
-	sf->fontname = copy(sf->fullname);
+	sf->fontname = EnforcePostScriptName(sf->fullname);
 	if ( sf->fontname==NULL )
-	    sf->fontname = copy(sf->familyname);
-	if ( sf->fontname==NULL ) sf->fontname = copy("UntitledTTF");
+	    sf->fontname = EnforcePostScriptName(sf->familyname);
+	if ( sf->fontname==NULL ) sf->fontname = EnforcePostScriptName("UntitledTTF");
     }
     if ( sf->fullname==NULL ) sf->fullname = copy( sf->fontname );
     if ( sf->familyname==NULL ) sf->familyname = copy( sf->fontname );
