@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#include <math.h>
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <ustring.h>
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
@@ -269,10 +270,14 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-static void DoChar(SplineChar *sc,CreateWidthData *wd, FontView *fv) {
+static void DoChar(SplineChar *sc,CreateWidthData *wd, FontView *fv,
+	BDFChar *bc) {
     real transform[6];
     DBounds bb;
+    IBounds ib;
     int width=0;
+    BVTFunc bvts[2];
+    BDFFont *bdf;
 
     if ( wd->wtype == wt_width ) {
 	if ( wd->type==st_set )
@@ -287,26 +292,55 @@ static void DoChar(SplineChar *sc,CreateWidthData *wd, FontView *fv) {
 	    SCSynchronizeWidth(sc,width,sc->width,fv);
 	}
     } else if ( wd->wtype == wt_lbearing ) {
-	SplineCharFindBounds(sc,&bb);
 	transform[0] = transform[3] = 1.0;
 	transform[1] = transform[2] = transform[5] = 0;
-	if ( wd->type==st_set )
-	    transform[4] = wd->setto-bb.minx;
-	else if ( wd->type == st_incr )
-	    transform[4] = wd->increment;
-	else
-	    transform[4] = bb.minx*wd->scale/100 - bb.minx;
-	if ( transform[4]!=0 )
-	    FVTrans(fv,sc,transform,NULL,false);
+	bvts[1].func = bvt_none;
+	bvts[0].func = bvt_transmove; bvts[0].y = 0;
+	if ( bc==NULL ) {
+	    SplineCharFindBounds(sc,&bb);
+	    if ( wd->type==st_set )
+		transform[4] = wd->setto-bb.minx;
+	    else if ( wd->type == st_incr )
+		transform[4] = wd->increment;
+	    else
+		transform[4] = bb.minx*wd->scale/100 - bb.minx;
+	} else {
+	    double scale = (fv->sf->ascent+fv->sf->descent)/(double) (fv->show->pixelsize);
+	    BDFCharFindBounds(bc,&ib);
+	    if ( wd->type==st_set )
+		transform[4] = wd->setto-ib.minx*scale;
+	    else if ( wd->type == st_incr )
+		transform[4] = wd->increment;
+	    else
+		transform[4] = scale*ib.minx*wd->scale/100 - ib.minx;
+	}
+	if ( transform[4]!=0 ) {
+	    FVTrans(fv,sc,transform,NULL,fvt_dontmovewidth);
+	    bvts[0].x = transform[4];
+	    for ( bdf = fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next ) if ( bdf->chars[sc->enc]!=NULL )
+		BCTrans(bdf,bdf->chars[sc->enc],bvts,fv);
+	}
 return;
     } else if ( wd->wtype == wt_rbearing ) {
-	SplineCharFindBounds(sc,&bb);
-	if ( wd->type==st_set )
-	    width = bb.maxx + wd->setto;
-	else if ( wd->type == st_incr )
-	    width = sc->width+wd->increment;
-	else
-	    width = (sc->width-bb.maxx) * wd->scale/100 + bb.maxx;
+	if ( bc==NULL ) {
+	    SplineCharFindBounds(sc,&bb);
+	    if ( wd->type==st_set )
+		width = bb.maxx + wd->setto;
+	    else if ( wd->type == st_incr )
+		width = sc->width+wd->increment;
+	    else
+		width = (sc->width-bb.maxx) * wd->scale/100 + bb.maxx;
+	} else {
+	    double scale = (fv->sf->ascent+fv->sf->descent)/(double) (fv->show->pixelsize);
+	    BDFCharFindBounds(bc,&ib);
+	    ++ib.maxx;
+	    if ( wd->type==st_set )
+		width = rint(ib.maxx*scale + wd->setto);
+	    else if ( wd->type == st_incr )
+		width = rint(sc->width+wd->increment);
+	    else
+		width = rint(scale * (bc->width-ib.maxx) * wd->scale/100 + ib.maxx*scale);
+	}
 	if ( width!=sc->width ) {
 	    SCPreserveWidth(sc);
 	    SCSynchronizeWidth(sc,width,sc->width,fv);
@@ -329,13 +363,25 @@ return;
 static void FVDoit(CreateWidthData *wd) {
     FontView *fv = (FontView *) (wd->_fv);
     int i;
+    BDFChar *bc;
 
+    if ( fv->sf->onlybitmaps ) {
+	double scale = (fv->sf->ascent+fv->sf->descent)/(double) fv->show->pixelsize;
+	wd->setto *= scale;
+	wd->increment *= scale;
+    }
+    bc = NULL;
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
 
 	if ( sc==NULL )
 	    sc = SFMakeChar(fv->sf,i);
-	DoChar(sc,wd,fv);
+	if ( fv->sf->onlybitmaps ) {
+	    bc = fv->show->chars[i];
+	    if ( bc==NULL )
+		bc = BDFMakeChar(fv->show,i);
+	}
+	DoChar(sc,wd,fv,bc);
     }
     wd->done = true;
 }
@@ -344,8 +390,24 @@ static void FVDoit(CreateWidthData *wd) {
 static void CVDoit(CreateWidthData *wd) {
     CharView *cv = (CharView *) (wd->_fv);
 
-    DoChar(cv->sc,wd,cv->fv);
+    DoChar(cv->sc,wd,cv->fv,NULL);
     wd->done = true;
+}
+
+static void BCDefWidthVal(char *buf,BDFChar *bc, FontView *fv, enum widthtype wtype) {
+    IBounds bb;
+
+    if ( wtype==wt_width )
+	sprintf( buf, "%d", bc->width );
+    else if ( wtype==wt_vwidth )
+	sprintf( buf, "%d", fv->show->pixelsize );
+    else {
+	BDFCharFindBounds(bc,&bb);
+	if ( wtype==wt_lbearing )
+	    sprintf( buf, "%d", bb.minx );
+	else
+	    sprintf( buf, "%d", bc->width-bb.maxx-1 );
+    }
 }
 
 static void SCDefWidthVal(char *buf,SplineChar *sc, enum widthtype wtype) {
@@ -366,14 +428,21 @@ static void SCDefWidthVal(char *buf,SplineChar *sc, enum widthtype wtype) {
 
 void FVSetWidth(FontView *fv,enum widthtype wtype) {
     char buffer[12];
+    int em = fv->sf->ascent + fv->sf->descent;
     int i;
 
-    strcpy(buffer,wtype==wt_width?"600":wtype==wt_vwidth?"1000": "100" );
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] && fv->sf->chars[i]!=NULL ) {
-	SCDefWidthVal(buffer,fv->sf->chars[i],wtype);
-    break;
+    if ( !fv->sf->onlybitmaps ) {
+	sprintf(buffer,"%d",wtype==wt_width?6*em/10:wtype==wt_vwidth?em: em/10 );
+	for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] && fv->sf->chars[i]!=NULL ) {
+	    SCDefWidthVal(buffer,fv->sf->chars[i],wtype);
+	break;
+	}
+    } else {
+	for ( i=0; i<fv->show->charcnt; ++i ) if ( fv->selected[i] && fv->show->chars[i]!=NULL ) {
+	    BCDefWidthVal(buffer,fv->show->chars[i],fv,wtype);
+	break;
+	}
     }
-
     FVCreateWidth(fv,FVDoit,wtype,buffer);
 }
 

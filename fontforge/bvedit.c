@@ -245,8 +245,8 @@ return;
     BCPreserveState(bc);
     for ( i=0; bvts[i].func!=bvt_none; ++i ) {
 	if ( bvts[i].func==bvt_transmove ) {
-	    xoff = rint(bvts[i].x*bdf->pixelsize/(fv->sf->ascent+fv->sf->descent));
-	    yoff = rint(bvts[i].y*bdf->pixelsize/(fv->sf->ascent+fv->sf->descent));
+	    xoff = rint(bvts[i].x*bdf->pixelsize/(double) (fv->sf->ascent+fv->sf->descent));
+	    yoff = rint(bvts[i].y*bdf->pixelsize/(double) (fv->sf->ascent+fv->sf->descent));
 	} else if ( bvts[i].func==bvt_skew ) {
 	    xoff = bvts[i].x;
 	    yoff = bvts[i].y;
@@ -693,6 +693,46 @@ void BCPasteInto(BDFChar *bc,BDFChar *rbc,int ixoff,int iyoff, int invert, int c
 	}
     }
     BCCompressBitmap(bc);
+}
+
+void BDFCharFindBounds(BDFChar *bc,IBounds *bb) {
+    int r,c,first=true;
+
+    if ( bc->byte_data ) {
+	for ( r=0; r<=bc->ymax-bc->ymin; ++r ) {
+	    for ( c=0; c<=bc->xmax-bc->xmin; ++c ) {
+		if ( bc->bitmap[r*bc->bytes_per_line+c] ) {
+		    if ( first ) {
+			bb->minx = bb->maxx = bc->xmin+c;
+			bb->miny = bb->maxy = bc->ymax-r;
+			first = false;
+		    } else {
+			if ( bc->xmin+c<bb->minx ) bb->minx = bc->xmin+c;
+			if ( bc->xmin+c>bb->maxx ) bb->maxx = bc->xmin+c;
+			bb->miny = bc->ymax-r;
+		    }
+		}
+	    }
+	}
+    } else {
+	for ( r=0; r<=bc->ymax-bc->ymin; ++r ) {
+	    for ( c=0; c<=bc->xmax-bc->xmin; ++c ) {
+		if ( bc->bitmap[r*bc->bytes_per_line+(c>>3)]&(0x80>>(c&7)) ) {
+		    if ( first ) {
+			bb->minx = bb->maxx = bc->xmin+c;
+			bb->miny = bb->maxy = bc->ymax-r;
+			first = false;
+		    } else {
+			if ( bc->xmin+c<bb->minx ) bb->minx = bc->xmin+c;
+			if ( bc->xmin+c>bb->maxx ) bb->maxx = bc->xmin+c;
+			bb->miny = bc->ymax-r;
+		    }
+		}
+	    }
+	}
+    }
+    if ( first )
+	memset(bb,0,sizeof(*bb));
 }
 
 static BDFChar *BCScale(BDFChar *old,int from, int to) {
