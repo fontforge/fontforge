@@ -993,7 +993,7 @@ static void fillrealarray(real *array,char *start,int maxentries) {
     if ( *start=='[' || *start=='{' ) ++start;
     for ( i=0; i<maxentries && *start!=']' && *start!='}'; ++i ) {
 	while ( isspace( *start )) ++start;
-	if ( isdigit(*start))
+	if ( isdigit(*start) || *start=='-' || *start=='.' )
 	    array[i] = strtod(start,&end);
 	else if ( strncmp(start,"div",3)==0 && i>=2 ) {
 	    /* Some of Luc Devroye's fonts have a "div" in the FontMatrix */
