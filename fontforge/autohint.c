@@ -156,7 +156,7 @@ void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]) {
 		    otherdigits[0] += b.maxy;
 		    otherdigits[1] += b.maxy*b.maxy;
 		    ++otherdigits[2];
-		} else if ( isupper(enc)) {
+		} else if ( isupper(enc) && enc!=0x462 && enc!=0x490 ) {
 		    caph[0] += b.maxy;
 		    caph[1] += b.maxy*b.maxy;
 		    ++caph[2];
