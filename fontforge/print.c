@@ -1392,21 +1392,21 @@ static void SCPrintPage(PI *pi,SplineChar *sc) {
     pi->yoff = page.miny - b.miny*pi->scale;
 
     if ( pi->printtype!=pt_pdf ) {
-	fprintf(pi->out,"save .2 setlinewidth\n" );
+	fprintf(pi->out,"gsave .2 setlinewidth\n" );
 	fprintf(pi->out,"%g %g moveto %g %g lineto stroke\n", page.minx, pi->yoff, page.maxx, pi->yoff );
 	fprintf(pi->out,"%g %g moveto %g %g lineto stroke\n", pi->xoff, page.miny, pi->xoff, page.maxy );
 	fprintf(pi->out,"%g %g moveto %g %g lineto stroke\n", page.minx, sc->parent->ascent*pi->scale+pi->yoff, page.maxx, sc->parent->ascent*pi->scale+pi->yoff );
 	fprintf(pi->out,"%g %g moveto %g %g lineto stroke\n", page.minx, -sc->parent->descent*pi->scale+pi->yoff, page.maxx, -sc->parent->descent*pi->scale+pi->yoff );
 	fprintf(pi->out,"%g %g moveto %g %g lineto stroke\n", pi->xoff+sc->width*pi->scale, page.miny, pi->xoff+sc->width*pi->scale, page.maxy );
-	fprintf(pi->out,"restore\n" );
-	fprintf(pi->out,"save \n %g %g scale\n", pi->scale, pi->scale );
-	fprintf(pi->out," %g %g translate\n", pi->xoff, pi->yoff );
+	fprintf(pi->out,"grestore\n" );
+	fprintf(pi->out,"gsave\n %g %g translate\n", pi->xoff, pi->yoff );
+	fprintf(pi->out," %g %g scale\n", pi->scale, pi->scale );
 	SC_PSDump((void (*)(int,void *)) fputc,pi->out,sc,true,false);
 #ifdef FONTFORGE_CONFIG_TYPE3
 	if ( !sc->parent->multilayer )
 #endif
 	    fprintf( pi->out, "fill\n" );
-	fprintf(pi->out,"restore\n" );
+	fprintf(pi->out,"grestore\n" );
     } else {
 	fprintf(pi->out,"q .2 w\n" );
 	fprintf(pi->out,"%g %g m %g %g l S\n", page.minx, pi->yoff, page.maxx, pi->yoff );
