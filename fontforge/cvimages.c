@@ -264,6 +264,8 @@ return;
 	if ( e->type == et_splines ) {
 	    sc->layers[pos].dofill = e->u.splines.fill.col != 0xffffffff;
 	    sc->layers[pos].dostroke = e->u.splines.stroke.col != 0xffffffff;
+	    if ( !sc->layers[pos].dofill && !sc->layers[pos].dostroke )
+		sc->layers[pos].dofill = true;		/* If unspecified, assume an implied fill in BuildGlyph */
 	    sc->layers[pos].fill_brush.col = e->u.splines.fill.col==0xffffffff ? COLOR_INHERITED : e->u.splines.fill.col;
 	    sc->layers[pos].stroke_pen.brush.col = e->u.splines.stroke.col==0xffffffff ? COLOR_INHERITED : e->u.splines.stroke.col;
 	    sc->layers[pos].stroke_pen.width = e->u.splines.stroke_width;
