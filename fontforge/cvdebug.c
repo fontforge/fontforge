@@ -306,7 +306,7 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 	GDrawSetFont(pixmap,dv->ii.gfont);
 	y = 3+dv->ii.as-dv->points_offtop*dv->ii.fh;
 	for ( i=0; i<n; ++i ) {
-	    if ( i==r->contours[c] ) {
+	    if ( r->contours!=NULL && i==r->contours[c] ) {	/* No contours in twilight */
 		++c;
 		if ( y>0 )
 		    GDrawDrawLine(pixmap,0,y+dv->ii.fh-dv->ii.as,
