@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Dec-2000 -->
-  <!-- AP: Last modified: 28-Jan-2002 -->
+  <!-- AP: Last modified: 5-Feb-2002 -->
   <TITLE>The File Menu</TITLE>
 </HEAD>
 <BODY>
@@ -286,16 +286,15 @@
     <A NAME="Import">Import</A>...
   <DD>
     In the Font View this allows you to import one or several bitmap fonts (from
-    a .bdf file or a ttf/otf/ttc file, or a TeX pk file) and merge it into the
-    list of bitmap sizes stored in the database. You may also load one bitmap
-    font into the backgrounds of the outline characters (So "A" from the bitmap
-    font goes into the background of the "A" outline character), this is to make
-    tracing characters easier. Be careful, you need to load a big bitmap for
-    autotrace to be useful. <FONT COLOR="Red"><SMALL><STRONG>NOTE:
-    </STRONG></SMALL></FONT>PfaEdit is unable to read an encoding from pk files,
-    it is your responsibility to ensure that the encoding of your font matches
-    that of the pk file <EM>BEFORE</EM> loading the file. This is unfortunate,
-    sorry.<BR>
+    a .bdf file or a ttf/otf/ttc file, TeX pk file, or an X11 .pcf file) and
+    merge it into the list of bitmap sizes stored in the database. You may also
+    load one bitmap font into the backgrounds of the outline characters (So "A"
+    from the bitmap font goes into the background of the "A" outline character),
+    this is to make tracing characters easier. Be careful, you need to load a
+    big bitmap for autotrace to be useful.
+    <FONT COLOR="Red"><SMALL><STRONG>NOTE: </STRONG></SMALL></FONT>PfaEdit is
+    unable to read an encoding from pk files, you will may need to set it with
+    "Force Encoding" after you've loaded the pk file.<BR>
     You may also load images into the character backgrounds. There are two ways
     to do this, you may either select several image files and they will be loaded
     consecutively into selected characters, or you may select an image template

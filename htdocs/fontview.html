@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 11-Jan-2002 -->
+  <!-- AP: Last modified: 5-Feb-2002 -->
   <TITLE>The Font View</TITLE>
 </HEAD>
 <BODY>
@@ -131,7 +131,7 @@ There are many standard encodings built in to the program. There are 14 ISO
 8859 encodings, the encoding used by the Macintosh for the US and Western
 Europe, the encoding used by MS Windows for the US and Europe (which is a
 slight extension of ISO 8859-1). There are also 7 2-byte encodings built
-in. One of these is unicode whose goal is to specify every character currently
+in. Two of these are unicode whose goal is to specify every character currently
 used by humans. There are 4 CJK (Chinese, Japanese, Korean) 94x94 encodings
 (two bytes where each byte ranges over the 94 ASCII printable characters
 excluding the space character). And there are big5 (Taiwanese) and johab
@@ -178,7 +178,22 @@ from that specified for unicode. I cannot explain the reasoning behind this.
 PfaEdit does not use PostScript's ISOLatin1 Encoding vector, instead it uses
 the first 256 code positions of the unicode encoding vector (slightly modified
 by me to conform to Unicode conventions rather than PostScript. So I include
-nobreak space and the soft-hyphen)..
+nobreak space and the soft-hyphen).
+<P>
+PfaEdit supports two slightly different unicode encodings. The first contains
+only the first 65536 characters of unicode (those in the
+<A HREF="http://www.unicode.org/roadmaps/bmp-3-1.html">Basic Multilingual
+Plane</A>, or BMP), while the second can contain as many characters as you
+have memory for. Very few characters have been defined outside of the BMP
+so at the moment you probably want to use just the BMP (the full encoding
+isn't completely supported yet anyway). Currently there are only definitions
+for plane 0 (BMP, U+0000-U+ffff), Plane 1
+(<A HREF="http://www.unicode.org/roadmaps/smp-3-1.html">SMP, Secondary
+Multilingual Plane</A>, U+10000-U+1ffff), Plane 2
+(<A HREF="http://www.unicode.org/roadmaps/sip-3-0.html">SIP, Supplementary
+Ideographic Plane</A>, U+20000-U+2ffff), and Plane 14
+(<A HREF="http://www.unicode.org/roadmaps/ssp-3-1.html">SSP Supplementary
+Special-purpose Plane</A>, U+e0000-U+effff).
 <H2>
   <A NAME="CID">CID keyed fonts</A>
 </H2>
