@@ -1426,8 +1426,9 @@ SplineFont *SplineFontEmpty(void) {
     SplineFont *sf;
     sf = gcalloc(1,sizeof(SplineFont));
     sf->pfminfo.fstype = -1;
-    sf->top_enc = -1;
     sf->encoding_name = em_none;
+    sf->top_enc = -1;
+    sf->desired_row_cnt = 4; sf->desired_col_cnt = 16;
 return( sf );
 }
 

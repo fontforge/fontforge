@@ -722,10 +722,12 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	fprintf( sfd, "DisplaySize: %d\n", sf->display_size );
     if ( sf->display_antialias!=0 )
 	fprintf( sfd, "AntiAlias: %d\n", sf->display_antialias );
-    if ( sf->fv!=NULL )
-	fprintf( sfd, "TopEncoding: %d\n", FVTopEncoding(sf->fv));
-    else if ( sf->top_enc!=-1 )
-	fprintf( sfd, "TopEncoding: %d\n", sf->top_enc);
+    if ( sf->fv!=NULL ) {
+	int rc, cc, te = FVWinInfo(sf->fv,&cc,&rc);
+	fprintf( sfd, "WinInfo: %d %d %d\n", te, cc, rc );
+    } else if ( sf->top_enc!=-1 )
+	fprintf( sfd, "WinInfo: %d %d %d\n", sf->top_enc, sf->desired_col_cnt,
+		sf->desired_row_cnt);
     if ( sf->onlybitmaps!=0 )
 	fprintf( sfd, "OnlyBitmaps: %d\n", sf->onlybitmaps );
     if ( sf->gridsplines!=NULL ) {
@@ -1788,8 +1790,15 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    sf->pfminfo.pfmset = true;
 	} else if ( strmatch(tok,"DisplaySize:")==0 ) {
 	    getint(sfd,&sf->display_size);
-	} else if ( strmatch(tok,"TopEncoding:")==0 ) {
+	} else if ( strmatch(tok,"TopEncoding:")==0 ) {	/* Obsolete */
 	    getint(sfd,&sf->top_enc);
+	} else if ( strmatch(tok,"WinInfo:")==0 ) {
+	    int temp1, temp2;
+	    getint(sfd,&sf->top_enc);
+	    getint(sfd,&temp1);
+	    getint(sfd,&temp2);
+	    sf->desired_col_cnt = temp1;
+	    sf->desired_row_cnt = temp2;
 	} else if ( strmatch(tok,"AntiAlias:")==0 ) {
 	    int temp;
 	    getint(sfd,&temp);

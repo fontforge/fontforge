@@ -492,7 +492,7 @@ typedef struct splinefont {
     BDFFont *bitmaps;
     char *origname;		/* filename of font file (ie. if not an sfd) */
     char *autosavename;
-    int display_size;
+    int display_size;		/* a val <0 => Generate our own images from splines, a value >0 => find a bdf font of that size */
     struct psdict *private;		/* read in from type1 file or provided by user */
     /*struct pschars *subrs;		/* actually an array, but this will do */
     char *xuid;
@@ -520,6 +520,7 @@ typedef struct splinefont {
     struct remap *remap;
     int tempuniqueid;
     int top_enc;
+    uint16 desired_row_cnt, desired_col_cnt;
 } SplineFont;
 
 /* mac styles. Useful idea we'll just steal it */
@@ -858,7 +859,7 @@ extern int hascomposing(SplineFont *sf,int u,SplineChar *sc);
 #if 0
 extern void SFFigureGrid(SplineFont *sf);
 #endif
-extern int FVTopEncoding(struct fontview *);
+extern int FVWinInfo(struct fontview *,int *cc,int *rc);
 
 struct cidmap;			/* private structure to encoding.c */
 extern int CID2NameEnc(struct cidmap *map,int cid, char *buffer, int len);

@@ -1897,10 +1897,12 @@ return;
 	fv->cbh = (bdf->pixelsize*fv->magnify)+1+FV_LAB_HEIGHT+1;
 	if ( samesize ) {
 	    GDrawRequestExpose(fv->v,NULL,false);
-	} else if ( bdf->pixelsize<=48 ) {
+	} else if ((( bdf->pixelsize<=fv->sf->display_size || bdf->pixelsize<=-fv->sf->display_size ) &&
+		 fv->sf->top_enc!=-1 /* Not defaulting */ ) ||
+		bdf->pixelsize<=48 ) {
 	    GDrawResize(fv->gw,
-		    16*fv->cbw+1+GDrawPointsToPixels(fv->gw,_GScrollBar_Width),
-		    4*fv->cbh+1+fv->mbh+fv->infoh);
+		    fv->sf->desired_col_cnt*fv->cbw+1+GDrawPointsToPixels(fv->gw,_GScrollBar_Width),
+		    fv->sf->desired_row_cnt*fv->cbh+1+fv->mbh+fv->infoh);
 	} else if ( bdf->pixelsize<96 ) {
 	    GDrawResize(fv->gw,
 		    8*fv->cbw+1+GDrawPointsToPixels(fv->gw,_GScrollBar_Width),
@@ -4716,8 +4718,8 @@ FontView *FontViewCreate(SplineFont *sf) {
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.cursor = ct_pointer;
     wattrs.icon = icon;
-    pos.width = 16*fv->cbw+1;
-    pos.height = 4*fv->cbh+1;
+    pos.width = sf->desired_col_cnt*fv->cbw+1;
+    pos.height = sf->desired_row_cnt*fv->cbh+1;
     pos.x = size.width-pos.width-30; pos.y = nexty;
     nexty += 2*fv->cbh+50;
     if ( nexty+pos.height > size.height )
@@ -5196,9 +5198,12 @@ void FVFakeMenus(FontView *fv,int cmd) {
     }
 }
 
-int FVTopEncoding(FontView *fv) {
+int FVWinInfo(FontView *fv, int *cc, int *rc) {
     if ( fv==NULL )
 return( -1 );
+
+    *cc = fv->colcnt;
+    *rc = fv->rowcnt;
 
 return( fv->rowoff*fv->colcnt );
 }

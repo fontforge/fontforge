@@ -2377,7 +2377,7 @@ static void cffprivatefillup(struct psdict *private, struct topdicts *dict) {
 }
 
 static SplineFont *cffsffillup(struct topdicts *subdict, char **strings ) {
-    SplineFont *sf = gcalloc(1,sizeof(SplineFont));
+    SplineFont *sf = SplineFontEmpty();
     int emsize;
     static int nameless;
 
