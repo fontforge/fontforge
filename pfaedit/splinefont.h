@@ -504,4 +504,5 @@ extern int PSDictRemoveEntry(struct psdict *dict, char *key);
 extern int PSDictChangeEntry(struct psdict *dict, char *key, char *newval);
 
 extern void SCRound2Int(SplineChar *sc,struct fontview *);
+extern int hascomposing(SplineFont *sf,int u);
 #endif

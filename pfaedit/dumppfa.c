@@ -32,6 +32,7 @@
 #include <ustring.h>
 #include <utype.h>
 #include <unistd.h>
+#include <locale.h>
 #include <pwd.h>
 #include <stdarg.h>
 #include <time.h>
@@ -1019,12 +1020,16 @@ static void dumptype0stuff(FILE *out,SplineFont *sf) {
 
 int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format) {
     FILE *out;
+    char *oldloc;
 
     if (( out=fopen(fontname,"w"))==NULL )
 return( 0 );
+    /* make sure that all doubles get output with '.' for decimal points */
+    oldloc = setlocale(LC_NUMERIC,"C");
     dumpfontdict(out,sf,format);
     if ( format==ff_ptype0 )
 	dumptype0stuff(out,sf);
+    setlocale(LC_NUMERIC,oldloc);
     if ( ferror(out)) {
 	fclose(out);
 return( 0 );

@@ -26,6 +26,7 @@
  */
 #include "pfaeditui.h"
 #include <math.h>
+#include <locale.h>
 #include <string.h>
 #include "ustring.h"
 #include "gfile.h"
@@ -65,11 +66,14 @@ static int ExportEPS(char *filename,SplineChar *sc) {
     FILE *eps;
     int ret;
     RefChar *rf;
+    char *oldloc;
 
     eps = fopen(filename,"w");
     if ( eps==NULL ) {
 return(0);
     }
+
+    oldloc = setlocale(LC_NUMERIC,"C");
 
     fprintf( eps, "%%!PS-Adobe-3.0 EPSF-3.0\n" );
     SplineCharFindBounds(sc,&b);
@@ -93,6 +97,7 @@ return(0);
     fprintf( eps, "%%%%EOF\n" );
     ret = !ferror(eps);
     fclose(eps);
+    setlocale(LC_NUMERIC,oldloc);
 return( ret );
 }
 

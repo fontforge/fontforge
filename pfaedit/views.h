@@ -259,10 +259,10 @@ extern int _FVMenuSave(FontView *fv);
 extern int _FVMenuSaveAs(FontView *fv);
 extern int _FVMenuGenerate(FontView *fv);
 extern char *GetPostscriptFontName(int mult);
-extern void MenuPrefs(GWindow base,struct gmenuitem *mi);
-extern void MenuExit(GWindow base,struct gmenuitem *mi);
-extern void MenuOpen(GWindow base,struct gmenuitem *mi);
-extern void MenuNew(GWindow gw,struct gmenuitem *mi);
+extern void MenuPrefs(GWindow base,struct gmenuitem *mi,GEvent *e);
+extern void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e);
+extern void MenuOpen(GWindow base,struct gmenuitem *mi,GEvent *e);
+extern void MenuNew(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void MergeKernInfo(SplineFont *sf);
 extern int FontMenuGeneratePostscript(SplineFont *sf);
 extern void FontMenuFontInfo(SplineFont *sf,FontView *fv);
@@ -389,8 +389,8 @@ extern void FVCopyWidth(FontView *fv);
 extern void FVCopy(FontView *fv, int fullcopy);
 extern void PasteIntoFV(FontView *fv);
 
-extern void WindowMenuBuild(GWindow base,struct gmenuitem *mi);
-extern void MenuRecentBuild(GWindow base,struct gmenuitem *mi);
+extern void WindowMenuBuild(GWindow base,struct gmenuitem *mi,GEvent *);
+extern void MenuRecentBuild(GWindow base,struct gmenuitem *mi,GEvent *);
 extern int RecentFilesAny(void);
 
 extern GImage GIcon_sel2ptr, GIcon_rightpointer, GIcon_angle, GIcon_distance,
@@ -404,7 +404,7 @@ extern void BCFlattenFloat(BDFChar *bc);
 extern BDFFloat *BDFFloatCreate(BDFChar *bc,int xmin,int xmax,int ymin,int ymax, int clear);
 extern BDFFloat *BDFFloatCopy(BDFFloat *sel);
 extern void BDFFloatFree(BDFFloat *sel);
-extern void BVMenuRotateInvoked(GWindow gw,struct gmenuitem *mi);
+extern void BVMenuRotateInvoked(GWindow gw,struct gmenuitem *mi, GEvent *e);
 extern void BCTrans(BDFFont *bdf,BDFChar *bc,BVTFunc *bvts,FontView *fv );
 extern void BVRotateBitmap(BitmapView *bv,enum bvtools type );
 extern void BCSetPoint(BDFChar *bc, int x, int y, int clear);

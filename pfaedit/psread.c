@@ -26,6 +26,7 @@
  */
 #include "pfaedit.h"
 #include <math.h>
+#include <locale.h>
 #include <ustring.h>
 #include "utype.h"
 #include "psfont.h"
@@ -520,6 +521,9 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
     Color fore=0;
     int linecap=lc_butt, linejoin=lj_miter; double linewidth=1;
     Entity *ent;
+    char *oldloc;
+
+    oldloc = setlocale(LC_NUMERIC,"C");
 
     wrapper.top = NULL;
     pushio(&wrapper,ps,NULL);
@@ -1255,6 +1259,7 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 	ec->splines = ent;
     }
     ECCatagorizePoints(ec);
+    setlocale(LC_NUMERIC,oldloc);
 }
 
 static SplinePointList *SplinesFromEntities(EntityChar *ec) {

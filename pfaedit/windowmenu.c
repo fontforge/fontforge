@@ -29,7 +29,7 @@
 #include "splinefont.h"
 #include "ustring.h"
 
-static void WindowSelect(GWindow base,struct gmenuitem *mi) {
+static void WindowSelect(GWindow base,struct gmenuitem *mi,GEvent *e) {
     GDrawRaise(mi->ti.userdata);
 }
 
@@ -44,7 +44,7 @@ static void AddMI(GMenuItem *mi,GWindow gw,int changed, int top) {
 }
 
 /* Builds up a menu containing the titles of all the major windows */
-void WindowMenuBuild(GWindow base,struct gmenuitem *mi) {
+void WindowMenuBuild(GWindow base,struct gmenuitem *mi,GEvent *e) {
     int i, cnt;
     FontView *fv;
     CharView *cv;
@@ -99,12 +99,12 @@ return;
     mi->sub = sub;
 }
 
-static void RecentSelect(GWindow base,struct gmenuitem *mi) {
+static void RecentSelect(GWindow base,struct gmenuitem *mi,GEvent *e) {
     ViewPostscriptFont((char *) (mi->ti.userdata));
 }
 
 /* Builds up a menu containing the titles of all the unused recent files */
-void MenuRecentBuild(GWindow base,struct gmenuitem *mi) {
+void MenuRecentBuild(GWindow base,struct gmenuitem *mi,GEvent *e) {
     int i, cnt, cnt1;
     FontView *fv;
     extern void GMenuItemArrayFree(struct gmenuitem *mi);

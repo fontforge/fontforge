@@ -874,47 +874,47 @@ return( true );
 #define MID_Revert	2702
 #define MID_Recent	2703
 
-static void BVMenuClose(GWindow gw,struct gmenuitem *mi) {
+static void BVMenuClose(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     GDrawDestroyWindow(gw);
 }
 	
-static void BVMenuOpenOutline(GWindow gw,struct gmenuitem *mi) {
+static void BVMenuOpenOutline(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
 
     CharViewCreate(bv->bc->sc,bv->fv);
 }
 
-static void BVMenuOpenMetrics(GWindow gw,struct gmenuitem *mi) {
+static void BVMenuOpenMetrics(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     MetricsViewCreate(bv->fv,bv->bc->sc,bv->bdf);
 }
 
-static void BVMenuSave(GWindow gw,struct gmenuitem *mi) {
+static void BVMenuSave(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     _FVMenuSave(bv->fv);
 }
 
-static void BVMenuSaveAs(GWindow gw,struct gmenuitem *mi) {
+static void BVMenuSaveAs(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     _FVMenuSaveAs(bv->fv);
 }
 
-static void BVMenuGenerate(GWindow gw,struct gmenuitem *mi) {
+static void BVMenuGenerate(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     _FVMenuGenerate(bv->fv);
 }
 
-static void BVMenuExport(GWindow gw,struct gmenuitem *mi) {
+static void BVMenuExport(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     BVExport(bv);
 }
 
-static void BVMenuImport(GWindow gw,struct gmenuitem *mi) {
+static void BVMenuImport(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     BVImport(bv);
 }
 
-static void BVMenuRevert(GWindow gw,struct gmenuitem *mi) {
+static void BVMenuRevert(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     FVDelay(bv->fv,FVRevert);		/* The revert command can potentially */
 			    /* destroy our window (if the char weren't in the */
@@ -922,7 +922,7 @@ static void BVMenuRevert(GWindow gw,struct gmenuitem *mi) {
 			    /* we get a crash. So delay till after the menu completes */
 }
 
-static void fllistcheck(GWindow gw,struct gmenuitem *mi) {
+static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
@@ -951,7 +951,7 @@ static void BVMagnify(BitmapView *bv, int midx, int midy, int bigger) {
     BVNewScale(bv);
 }
 
-static void BVMenuScale(GWindow gw,struct gmenuitem *mi) {
+static void BVMenuScale(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
 
     if ( mi->mid == MID_Fit ) {
@@ -963,7 +963,7 @@ static void BVMenuScale(GWindow gw,struct gmenuitem *mi) {
     }
 }
 
-static void BVMenuChangeChar(GWindow gw,struct gmenuitem *mi) {
+static void BVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     int pos = -1;
 
@@ -976,7 +976,7 @@ static void BVMenuChangeChar(GWindow gw,struct gmenuitem *mi) {
 	BVChangeChar(bv,pos,false);
 }
 
-static void BVMenuChangePixelSize(GWindow gw,struct gmenuitem *mi) {
+static void BVMenuChangePixelSize(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     BDFFont *best=NULL, *bdf;
     int mysize = bv->bdf->pixelsize;
@@ -1000,7 +1000,7 @@ static void BVMenuChangePixelSize(GWindow gw,struct gmenuitem *mi) {
     }
 }
 
-static void BVMenuGotoChar(GWindow gw,struct gmenuitem *mi) {
+static void BVMenuGotoChar(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     int pos = GotoChar(bv->fv->sf);
 
@@ -1008,7 +1008,7 @@ static void BVMenuGotoChar(GWindow gw,struct gmenuitem *mi) {
 	BVChangeChar(bv,pos,false);
 }
 
-static void BVMenuPaletteShow(GWindow gw,struct gmenuitem *mi) {
+static void BVMenuPaletteShow(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     GWindow palette = mi->mid==MID_Tools ? bv->tools : bv->layers;
 
@@ -1017,21 +1017,21 @@ return;
     GDrawSetVisible(palette,!GDrawIsVisible(palette));
 }
 
-static void BVUndo(GWindow gw,struct gmenuitem *mi) {
+static void BVUndo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     if ( bv->bc->undoes==NULL )
 return;
     BCDoUndo(bv->bc,bv->fv);
 }
 
-static void BVRedo(GWindow gw,struct gmenuitem *mi) {
+static void BVRedo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     if ( bv->bc->redoes==NULL )
 return;
     BCDoRedo(bv->bc,bv->fv);
 }
 
-static void BVCopy(GWindow gw,struct gmenuitem *mi) {
+static void BVCopy(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     BCCopySelected(bv->bc,bv->bdf->pixelsize);
 }
@@ -1045,26 +1045,26 @@ static void BVDoClear(BitmapView *bv) {
     }
 }
 
-static void BVClear(GWindow gw,struct gmenuitem *mi) {
+static void BVClear(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     BVDoClear(bv);
 }
 
-static void BVPaste(GWindow gw,struct gmenuitem *mi) {
+static void BVPaste(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     if ( CopyContainsBitmap())
 	PasteToBC(bv->bc,bv->bdf->pixelsize,bv->fv);
 }
 
-static void BVCut(GWindow gw,struct gmenuitem *mi) {
+static void BVCut(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     if ( bv->bc->selection==NULL )
 return;
-    BVCopy(gw,mi);
+    BVCopy(gw,mi,e);
     BVDoClear(bv);
 }
 
-static void BVSelectAll(GWindow gw,struct gmenuitem *mi) {
+static void BVSelectAll(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     BDFChar *bc = bv->bc;
 
@@ -1072,32 +1072,32 @@ static void BVSelectAll(GWindow gw,struct gmenuitem *mi) {
     BCCharUpdate(bc);
 }
 
-static void BVMenuFontInfo(GWindow gw,struct gmenuitem *mi) {
+static void BVMenuFontInfo(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     FontMenuFontInfo(bv->fv->sf,bv->fv);
 }
 
-static void BVMenuPrivateInfo(GWindow gw,struct gmenuitem *mi) {
+static void BVMenuPrivateInfo(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     SFPrivateInfo(bv->fv->sf);
 }
 
-static void BVMenuGetInfo(GWindow gw,struct gmenuitem *mi) {
+static void BVMenuGetInfo(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     SCGetInfo(bv->bc->sc,false);
 }
 
-static void BVMenuBitmaps(GWindow gw,struct gmenuitem *mi) {
+static void BVMenuBitmaps(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     BitmapDlg(bv->fv,bv->bc->sc,mi->mid==MID_AvailBitmaps );
 }
 
-void BVMenuRotateInvoked(GWindow gw,struct gmenuitem *mi) {
+void BVMenuRotateInvoked(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     BVRotateBitmap(bv,mi->mid);
 }
 
-static void edlistcheck(GWindow gw,struct gmenuitem *mi) {
+static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
@@ -1119,7 +1119,7 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi) {
     }
 }
 
-static void pllistcheck(GWindow gw,struct gmenuitem *mi) {
+static void pllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
@@ -1134,7 +1134,7 @@ static void pllistcheck(GWindow gw,struct gmenuitem *mi) {
     }
 }
 
-static void vwlistcheck(GWindow gw,struct gmenuitem *mi) {
+static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     int mysize = bv->bdf->pixelsize;
     BDFFont *bdf;

@@ -142,7 +142,7 @@ static int Trans_OK(GGadget *g, GEvent *e) {
 		if ( GGadgetIsChecked( GWidgetGetControl(tw,CID_Clockwise)) )
 		    angle = -angle;
 		if ( fmod(angle,90)!=0 )
-		    bvts[bvpos++].func = bvt_none;
+		    bvts[0].func = bvt_none;		/* Bad trans=> No trans */
 		else {
 		    angle = fmod(angle,360);
 		    if ( angle<0 ) angle+=360;
@@ -156,12 +156,12 @@ static int Trans_OK(GGadget *g, GEvent *e) {
 	      break;
 	      case 3:		/* Scale Uniformly */
 		trans[0] = trans[3] = GetDouble(tw,CID_Scale,"Scale Factor",&err)/100.0;
-		bvts[bvpos++].func = bvt_none;
+		bvts[0].func = bvt_none;		/* Bad trans=> No trans */
 	      break;
 	      case 4:		/* Scale */
 		trans[0] = GetDouble(tw,CID_XScale,"X Scale Factor",&err)/100.0;
 		trans[3] = GetDouble(tw,CID_YScale,"Y Scale Factor",&err)/100.0;
-		bvts[bvpos++].func = bvt_none;
+		bvts[0].func = bvt_none;		/* Bad trans=> No trans */
 	      break;
 	      case 5:		/* Flip */
 		if ( GGadgetIsChecked( GWidgetGetControl(tw,CID_Horizontal)) ) {
@@ -212,7 +212,7 @@ return(true);
      transform[0], transform[1], transform[2], transform[3], transform[4], transform[5]);
 #endif
 	}
-	bvts[bvpos++].func = bvt_none;
+	bvts[bvpos++].func = bvt_none;		/* Done */
 	for ( i=0; i<6; ++i )
 	    if ( DoubleNear(transform[i],0)) transform[i] = 0;
 	transform[4] += base.x;

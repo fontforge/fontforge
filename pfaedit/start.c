@@ -188,7 +188,7 @@ int main( int argc, char **argv ) {
 	}
     }
     if ( !any )
-	MenuOpen(NULL,NULL);
+	MenuOpen(NULL,NULL,NULL);
     GDrawEventLoop(NULL);
 return( 0 );
 }

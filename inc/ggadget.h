@@ -54,8 +54,8 @@ typedef struct gmenuitem {
     unichar_t shortcut;
     short short_mask;
     struct gmenuitem *sub;
-    void (*moveto)(struct gwindow *base,struct gmenuitem *mi);	/* called before creating submenu */
-    void (*invoke)(struct gwindow *base,struct gmenuitem *mi);	/* called on mouse release */
+    void (*moveto)(struct gwindow *base,struct gmenuitem *mi,GEvent *);	/* called before creating submenu */
+    void (*invoke)(struct gwindow *base,struct gmenuitem *mi,GEvent *);	/* called on mouse release */
     int mid;
 } GMenuItem;
 
