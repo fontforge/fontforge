@@ -711,7 +711,8 @@ return( ret );
 }
 
 static int getreal(FILE *sfd, real *val) {
-    char tokbuf[100], ch;
+    char tokbuf[100];
+    int ch;
     char *pt=tokbuf, *end = tokbuf+100-2, *nend;
 
     while ( isspace(ch = getc(sfd)));
@@ -1705,7 +1706,7 @@ return(true);
 }
 
 static SplineFont *SlurpRecovery(FILE *asfd) {
-    char tok[1025], *pt, ch;
+    char tok[1025], *pt; int ch;
     SplineFont *sf;
 
     ch=getc(asfd);
