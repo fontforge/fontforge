@@ -944,7 +944,8 @@ return( NULL );
 	    if ( ref->transform[0]!=1 || ref->transform[3]!=1 ||
 		    ref->transform[1]!=0 || ref->transform[2]!=0 )
     break;
-	    if ( isps==2 && (ref->sc->hconflicts || ref->sc->vconflicts))
+	    if ( isps==2 && (ref->sc->hconflicts || ref->sc->vconflicts ||
+		    ref->sc->lsidebearing == 0x7fff))
     break;
 	} else {
 	    if ( ref->transform[0]>=2 || ref->transform[0]<=-2 ||
@@ -1536,7 +1537,7 @@ static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl, struct hintdb *hd
     }
 }
 
-static StemInfo *OrderHints(StemInfo *mh, StemInfo *h, double offset, int mask) {
+static StemInfo *OrderHints(StemInfo *mh, StemInfo *h, double offset, double otheroffset, int mask) {
     StemInfo *prev, *new, *test;
 
     while ( h!=NULL ) {
@@ -1551,6 +1552,7 @@ static StemInfo *OrderHints(StemInfo *mh, StemInfo *h, double offset, int mask) 
 	    new->next = test;
 	    new->start = h->start+offset;
 	    new->width = h->width;
+	    new->where = HICopyTrans(h->where,1,otheroffset);
 	    new->mask = mask;
 	    if ( prev==NULL )
 		mh = new;
@@ -1623,7 +1625,7 @@ static void ExpandRefList2(GrowBuf *gb, RefChar *refs, struct pschars *subrs) {
     RefChar *r;
     int hsccnt=0;
     BasePoint current, *bpt;
-    StemInfo *h, *v, *s;
+    StemInfo *h=NULL, *v=NULL, *s;
     int cnt;
     /* The only refs I deal with have no hint conflicts within them */
 
@@ -1636,8 +1638,8 @@ static void ExpandRefList2(GrowBuf *gb, RefChar *refs, struct pschars *subrs) {
 	    r->adobe_enc = 0;
 
     for ( r=refs, h=v=NULL; r!=NULL; r=r->next ) {
-	h = OrderHints(h,r->sc->hstem,r->transform[5],r->adobe_enc);
-	v = OrderHints(v,r->sc->vstem,r->transform[4],r->adobe_enc);
+	h = OrderHints(h,r->sc->hstem,r->transform[5],r->transform[4],r->adobe_enc);
+	v = OrderHints(v,r->sc->vstem,r->transform[4],r->transform[5],r->adobe_enc);
     }
     for ( s=h, cnt=0; s!=NULL; s=s->next, ++cnt )
 	s->hintnumber = cnt>=96?-1:cnt;
@@ -1667,7 +1669,7 @@ static void ExpandRefList2(GrowBuf *gb, RefChar *refs, struct pschars *subrs) {
 			21;				/* rmoveto */
 	}
 	if ( r->sc->lsidebearing==0x7fff )
-	    GDrawIError("Attempt to reference and unreferenceable glyph %s", r->sc->name );
+	    GDrawIError("Attempt to reference an unreferenceable glyph %s", r->sc->name );
 	AddNumber2(gb,r->sc->lsidebearing);
 	if ( gb->pt+1>=gb->end )
 	    GrowBuffer(gb);
@@ -1698,6 +1700,7 @@ static unsigned char *SplineChar2PSOutline2(SplineChar *sc,int *len, BasePoint *
 
     memset(&gb,'\0',sizeof(gb));
     memset(&hdb,'\0',sizeof(hdb));
+    hdb.sc = sc;
 
     CvtPsSplineSet2(&gb,sc->splines,&hdb);
     for ( rf = sc->refs; rf!=NULL; rf = rf->next )
@@ -1778,9 +1781,10 @@ struct pschars *SplineFont2Subrs2(SplineFont *sf) {
 	if ( sc==NULL )
 	    /* Do Nothing */;
 	else if ( SCWorthOutputting(sc) && !sc->hconflicts && !sc->vconflicts &&
-		sc->refs==NULL && sc->dependents!=NULL )
+		sc->refs==NULL && sc->dependents!=NULL ) {
 	    ++cnt;
-	else
+	    sc->lsidebearing = 0;	/* anything other than 0x7fff */
+	} else
 	    sc->lsidebearing = 0x7fff;
     }
 
@@ -1798,7 +1802,7 @@ return( subrs);
 	if ( sc==NULL )
 	    /* Do Nothing */;
 	else if ( SCWorthOutputting(sc) && !sc->hconflicts && !sc->vconflicts &&
-		sc->refs==NULL && sc->dependents!=NULL ) {
+		sc->refs==NULL && sc->dependents!=NULL && sc->lsidebearing!=0x7fff ) {
 	    subrs->keys[cnt] = galloc(sizeof(BasePoint));
 	    subrs->values[cnt] = SplineChar2PSOutline2(sc,&subrs->lens[cnt],
 		    (BasePoint *) (subrs->keys[cnt]));

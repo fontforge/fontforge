@@ -264,6 +264,7 @@ static char str_Koi8cyrillic[] = "KOI8-R (Cyrillic)";
 static char str_Isoarabic[] = "ISO 8859-6 (Arabic)";
 static char str_Isogreek[] = "ISO 8859-7 (Greek)";
 static char str_Isohebrew[] = "ISO 8859-8 (Hebrew)";
+static char str_Isothai[] = "ISO 8859-11 (Thai)";
 static char str_Mac[] = "Macintosh Latin";
 static char str_Win[] = "Windows Latin (\042ANSI\042)";
 static char str_Adobestd[] = "Adobe Standard";
@@ -456,5 +457,28 @@ static char *str_BadXFigFile = "Bad xfig file";
 static char *str_BadImageFile = "Bad image file";
 static char *str_BadImageFileNotBitmap = "Bad image file, not a bitmap";
 static char *str_Image = "Image";
+    /* CV Palettes */
+static char *str_SizeOfPoints="Size of Points";
+static char *str_Regular="Regular";
+static char *str_Points="Points:";
+static char *str_RRRad="Round Rectangle Radius";
+static char *str_Polygon="Polygon";
+static char *str_Star="Star";
+static char *str_NumPSVert="Number of star points/Polygon verteces";
+/* V is an abbreviation for "Visible", and E for Editable */
+static char *str_V="V";
+static char *str_E="E";
+static char *str_Layer="Layer";
+static char *str_IsEdit="Is Layer Editable?";
+static char *str_IsVis="Is Layer Visible?";
+/* For Foreground. Should be short */
+static char *str_Fore="Fore";
+static char *str_Back="Back";
+static char *str_Grid="Grid";
+static char *str_HHints="HHints";
+static char *str_VHints="VHints";
+static char *str_DHints="DHints";
+static char *str_Bitmap="Bitmap";
+static char *str_ShapeType = "Shape Type";
 
 static int num_buttonsize = 55;

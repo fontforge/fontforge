@@ -1710,7 +1710,10 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 	dummy->unicodeenc = i>=256?-1:unicode_from_alphabets[sf->encoding_name+3][i];
     if ( dummy->unicodeenc==0 && i!=0 )
 	dummy->unicodeenc = -1;
-    if ( dummy->unicodeenc!=-1 ) {
+    if ( dummy->unicodeenc!=-1 &&
+	    !(dummy->unicodeenc<' ' ||
+	     (dummy->unicodeenc>=0x7f && dummy->unicodeenc<0xa0)) ) {
+	dummy->unicodeenc = -1;	/* standard controls */
 	if ( dummy->unicodeenc<psunicodenames_cnt )
 	    dummy->name = (char *) psunicodenames[dummy->unicodeenc];
 	if ( dummy->name==NULL ) {
@@ -2480,7 +2483,7 @@ return( NULL );
     if ( pt!=NULL ) for ( i=0; compressors[i].ext!=NULL; ++i )
 	if ( strcmp(compressors[i].ext,pt+1)==0 )
     break;
-    if ( i!=-1 && compressors[i].ext==NULL ) i=-1;
+    if ( i==-1 || compressors[i].ext==NULL ) i=-1;
     else {
 	sprintf( buf, "%s %s", compressors[i].decomp, filename );
 	if ( system(buf)==0 )

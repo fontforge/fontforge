@@ -1552,7 +1552,7 @@ static StemInfo *StemRemoveConflictingBigHint(StemInfo *stems,double big) {
 return( head );
 }
 
-static HintInstance *HICopyTrans(HintInstance *hi, double mul, double offset) {
+HintInstance *HICopyTrans(HintInstance *hi, double mul, double offset) {
     HintInstance *first=NULL, *last, *cur, *p;
 
     while ( hi!=NULL ) {

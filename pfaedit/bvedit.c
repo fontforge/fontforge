@@ -483,7 +483,7 @@ void BCFlattenFloat(BDFChar *bc ) {
     }
 }
 
-void BCPasteInto(BDFChar *bc,BDFChar *rbc,int ixoff,int iyoff, int invert) {
+void BCPasteInto(BDFChar *bc,BDFChar *rbc,int ixoff,int iyoff, int invert, int cleartoo) {
     int x,y;
     uint8 *bpt, *rpt;
 
@@ -499,7 +499,7 @@ void BCPasteInto(BDFChar *bc,BDFChar *rbc,int ixoff,int iyoff, int invert) {
 	    int bx = x+ixoff-bc->xmin, rx = x-rbc->xmin;
 	    if ( rpt[rx>>3]&(1<<(7-(rx&7))) )
 		bpt[bx>>3] |= (1<<(7-(bx&7)));
-	    else
+	    else if ( cleartoo )
 		bpt[bx>>3] &= ~(1<<(7-(bx&7)));
 	}
     }

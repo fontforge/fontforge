@@ -307,6 +307,10 @@ return;
 	} else if ( info->type == rt_double ) {
 	    char *end;
 	    double val = strtod(_GResource_Res[pos].val,&end);
+	    if ( *end=='.' || *end==',' ) {
+		*end = (*end==',')?'.':',';
+		val = strtod(_GResource_Res[pos].val,&end);
+	    }
 	    if ( *end!='\0' )
 		fprintf( stderr, "Can't convert %s to a double for resource: %s\n",
 			_GResource_Res[pos].val, info->resname );

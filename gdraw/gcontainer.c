@@ -422,7 +422,8 @@ static int _GWidget_TopLevel_Key(GWindow top, GWindow ew, GEvent *event) {
 		handled = (topd->wfocus->eh)(topd->wfocus,event);
 	} else if ( topd->wfocus->widget_data->e_h!=NULL )
 	    handled = (topd->wfocus->widget_data->e_h)(topd->wfocus,event);
-    } else {
+    }
+    if ( !handled ) {
 	if ( ew->widget_data==NULL ) {
 	    if ( ew->eh!=NULL )
 		handled = (ew->eh)(ew,event);

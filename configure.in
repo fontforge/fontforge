@@ -8,6 +8,7 @@ AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
 
 AC_SEARCH_LIBS(dlopen, dl) dnl some systems have this in libc
+AC_SEARCH_LIBS(inet_aton, resolv) dnl some systems have this in libc
 
 dnl Some old versions of lib(un)gif don't work for us, they've got the
 dnl Function argument in the wrong place. So two checks for gif.

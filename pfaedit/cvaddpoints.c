@@ -322,8 +322,10 @@ void CVMergeSplineSets(CharView *cv, SplinePoint *active, SplineSet *activess,
     active->nonextcp = merge->nonextcp;
     active->nextcpdef = merge->nextcpdef;
     active->next = merge->next;
-    active->next->from = active;
-    activess->last = mergess->last;
+    if ( merge->next!= NULL ) {
+	active->next->from = active;
+	activess->last = mergess->last;
+    }
     merge->next = NULL;
     if ( mergess==activess ) {
 	activess->first = activess->last = active;

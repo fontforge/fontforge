@@ -495,7 +495,7 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
     else if ( pos&____LEFT )
 	xoff = bb.minx - spacing - rbb.maxx;
     else if ( pos&____RIGHT ) {
-	xoff = bb.maxx - rbb.minx;
+	xoff = bb.maxx - rbb.minx+spacing/2;
 	if ( !( pos&____TOUCHING) )
 	    xoff += spacing;
     } else {
@@ -543,7 +543,7 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 		else if ( pos&____LEFT )
 		    ixoff = bc->xmin - ispacing - rbc->xmax;
 		else if ( pos&____RIGHT ) {
-		    ixoff = bc->xmax - rbc->xmin;
+		    ixoff = bc->xmax - rbc->xmin + ispacing/2;
 		    if ( !( pos&____TOUCHING) )
 			ixoff += ispacing;
 		} else {
@@ -559,7 +559,7 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 			ixoff = bc->xmin - rbc->xmin + ((bc->xmax-bc->xmin)-(rbc->xmax-rbc->xmin))/2;
 		}
 		ixoff += rint(italicoff*bdf->pixelsize/(double) (sf->ascent+sf->descent));
-		BCPasteInto(bc,rbc,ixoff,iyoff, invert);
+		BCPasteInto(bc,rbc,ixoff,iyoff, invert, false);
 	    }
 	}
     }
@@ -580,7 +580,7 @@ static void SCPutRefAfter(SplineChar *sc,SplineFont *sf,int ch, int copybmp) {
 		BCFlattenFloat(rbc);
 		BCCompressBitmap(rbc);
 		BCCompressBitmap(bc);
-		BCPasteInto(bc,rbc,bc->width,0,false);
+		BCPasteInto(bc,rbc,bc->width,0,false, false);
 		bc->width += rbc->width;
 	    }
 	}
@@ -800,7 +800,7 @@ return;
 
     pt= SFGetAlternate(sf,sc->unicodeenc);
     ch = *pt++;
-    if ( ch=='i' || ch=='j' ) {
+    if ( ch=='i' || ch=='j' || ch==0x456 ) {
 	/* if we're combining i (or j) with an accent that would interfere */
 	/*  with the dot, then get rid of the dot. (use dotlessi) */
 	for ( apt = pt; *apt && combiningposmask(*apt)!=____ABOVE; ++apt);

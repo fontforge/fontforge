@@ -439,6 +439,8 @@ static const unichar_t str_458[] = { 0x006a, 0 };
 static const unichar_t str_45c[] = { 0x043a, 0x0301, 0 };
 static const unichar_t str_45d[] = { 0x0438, 0x0300, 0 };
 static const unichar_t str_45e[] = { 0x0443, 0x0306, 0 };
+static const unichar_t str_470[] = { 0x03a8, 0 };
+static const unichar_t str_471[] = { 0x03c8, 0 };
 static const unichar_t str_476[] = { 0x0474, 0x030f, 0 };
 static const unichar_t str_477[] = { 0x0475, 0x030f, 0 };
 static const unichar_t str_4ae[] = { 0x0059, 0 };
@@ -4485,7 +4487,9 @@ str_458,
 0, 0, 0, str_45c,
 str_45d,
 str_45e,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_476,
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_470,
+str_471,
+0, 0, 0, 0, str_476,
 str_477,
 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_4ae,
 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_4c0,

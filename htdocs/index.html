@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 24-Jun-2001 -->
+  <!-- AP: Last modified: 27-Jun-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -24,6 +24,16 @@ Contents
     <A HREF="http://sourceforge.net/projects/pfaedit/">SourceForge Project page</A>
   <LI>
     <A HREF="#downloads">Downloads</A>
+    <UL>
+      <LI>
+	<A HREF="index.html#binary">Binary</A>
+      <LI>
+	<A HREF="index.html#source">Source</A>
+      <LI>
+	<A HREF="index.html#suggested-fonts">Suggested fonts</A>
+      <LI>
+	<A HREF="sfds/index.html">A library sfd fonts</A>
+    </UL>
   <LI>
     <A HREF="#license">License</A>
   <LI>
@@ -47,8 +57,8 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-010624.tgz">Download pfaedit linux-i386 RedHat 7.0
-    </A><A NAME="downloads">executable</A> Version: 24-June-2001
+    <A HREF="pfaedit-010627.tgz">Download pfaedit linux-i386 RedHat 7.0
+    </A><A NAME="downloads">executable</A> Version: 27-June-2001
   <LI>
     <A HREF="pfaedit-solaris-010624.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 24-June-2001
@@ -67,19 +77,19 @@ know when you do</A>.
 <P>
 You can download a <A HREF="pfaedit-010613.src.rpm">source RPM</A>: Version:
 13-June-2001<BR>
-Or you can download the following three packages. Version: 21-June-2001
+Or you can download the following three packages. Version: 27-June-2001
 <UL>
   <LI>
-    <A HREF="libgunicode-010624.tgz">Unicode library source</A> (24-June-2001)<BR>
+    <A HREF="libgunicode-010627.tgz">Unicode library source</A> (27-June-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
-    <A HREF="libgdraw-010624.tgz">Unicode widget library source</A>
-    (24-June-2001)<BR>
+    <A HREF="libgdraw-010627.tgz">Unicode widget library source</A>
+    (27-June-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-010624.tgz">Pfaedit source</A> (24-June-2001)<BR>
+    <A HREF="pfaedit_src-010627.tgz">Pfaedit source</A> (27-June-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
     If you want to do autotracing around character images you should also download
@@ -87,11 +97,15 @@ Or you can download the following three packages. Version: 21-June-2001
     <A HREF="http://homepages.go.com/~martweb/AutoTrace.htm">autotrace program.</A>
 </UL>
 <P>
-You might also want to pull down some unicode bitmap fonts that pfaedit uses
+<A NAME="suggested-fonts">You</A> might also want to pull down some unicode
+bitmap fonts that pfaedit uses
 <UL>
   <LI>
-    <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/../fonts/Monospace/index.html">my
+    <A HREF="http://bibliofile.mc.duke.edu/gww/fonts/Monospace/index.html">my
     monospace fonts</A>
+  <LI>
+    <A HREF="http://bibliofile.mc.duke.edu/gww/fonts/Caliban/index.html">my
+    sans-serif font</A>
   <LI>
     <A HREF="http://czyborra.com/unifont/">The unifont</A>
   <LI>
@@ -136,11 +150,28 @@ You might also want to pull down some unicode bitmap fonts that pfaedit uses
 </H2>
 <UL>
   <LI>
+    27-June-2001
+    <UL>
+      <LI>
+	When generating truetype (or opentype) fonts, PfaEdit failed to set the
+	ulCodePageRange for encodings other than latin1/latin2. Should do a better
+	job now.
+      <LI>
+	Fixed a crash introduced by decompress.
+      <LI>
+	Fixed a crash when trying to merge two paths (by moving them with the mouse)
+	when the stationary "path" consisted of exactly one point.
+      <LI>
+	Sometimes control characters would be named "uni0001" (etc.) rather than
+	".notdef". Appropriate, but inconsistant. They should now always be called
+	".notdef" (unless explicitly renamed).
+    </UL>
+  <LI>
     24-June-2001
     <UL>
       <LI>
 	Change configure script to work on solaris
-      </UL>
+    </UL>
   <LI>
     23-June-2001
     <UL>
@@ -1320,6 +1351,10 @@ The following people have helped debug pfaedit. Many thanks!
     <A HREF="http://www-csag.cs.uiuc.edu/individual/pakin">Scott Pakin</A>
   <LI>
     Robert Brady
+  <LI>
+    Dung Ta Quang
+  <LI>
+    Sivan Toledo
 </UL>
 <P>
 PfaEdit was inspired by AltSys's

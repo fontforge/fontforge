@@ -883,7 +883,9 @@ static void visualalts(void) {
     alts[0x456][0] = 'i';
     alts[0x458][0] = 'j';
 
-    alts[0x4ae][0] = 'Y';		/* extended cyrillic */
+    alts[0x470][0] = 0x3a8;		/* extended cyrillic */
+    alts[0x471][0] = 0x3c8;
+    alts[0x4ae][0] = 'Y';
     alts[0x4c0][0] = 'I';
     alts[0x4d4][0] = 0xc6;
     alts[0x4d5][0] = 0xe6;

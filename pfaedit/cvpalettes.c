@@ -150,7 +150,7 @@ struct ask_info {
     GGadget *rb1;
     GGadget *reg;
     int isint;
-    char *lab;
+    int lab;
 };
 #define CID_ValText		1001
 #define CID_PointPercent	1002
@@ -161,11 +161,11 @@ static int TA_OK(GGadget *g, GEvent *e) {
 	double val, val2=0;
 	int err=0;
 	if ( d->isint ) {
-	    val = GetInt(d->gw,CID_ValText,d->lab,&err);
+	    val = GetIntR(d->gw,CID_ValText,d->lab,&err);
 	    if ( !(regular_star = GGadgetIsChecked(d->reg)))
-		val2 = GetDouble(d->gw,CID_PointPercent,"Size of Points",&err);
+		val2 = GetDoubleR(d->gw,CID_PointPercent,_STR_SizeOfPoints,&err);
 	} else
-	    val = GetDouble(d->gw,CID_ValText,d->lab,&err);
+	    val = GetDoubleR(d->gw,CID_ValText,d->lab,&err);
 	if ( err )
 return( true );
 	*d->val = val;
@@ -196,10 +196,9 @@ static int toolask_e_h(GWindow gw, GEvent *event) {
 return( event->type!=et_char );
 }
 
-static int Ask(char *rb1, char *rb2, int rb, char *lab, double *val, int isint ) {
+static int Ask(int rb1, int rb2, int rb, int lab, double *val, int isint ) {
     struct ask_info d;
     char buffer[20], buf[20];
-    static unichar_t title[] = { 'S','h','a','p','e',' ','T','y','p','e',  '\0' };
     GRect pos;
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[11];
@@ -218,7 +217,7 @@ static int Ask(char *rb1, char *rb2, int rb, char *lab, double *val, int isint )
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-	wattrs.window_title = title;
+	wattrs.window_title = GStringGetResource(_STR_ShapeType,NULL);
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width =GDrawPointsToPixels(NULL,190);
@@ -229,21 +228,21 @@ static int Ask(char *rb1, char *rb2, int rb, char *lab, double *val, int isint )
 	memset(&gcd,0,sizeof(gcd));
 
 	label[0].text = (unichar_t *) rb1;
-	label[0].text_is_1byte = true;
+	label[0].text_in_resource = true;
 	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5; 
 	gcd[0].gd.flags = gg_enabled|gg_visible | (rb==0?gg_cb_on:0);
 	gcd[0].creator = GRadioCreate;
 
 	label[1].text = (unichar_t *) rb2;
-	label[1].text_is_1byte = true;
+	label[1].text_in_resource = true;
 	gcd[1].gd.label = &label[1];
 	gcd[1].gd.pos.x = isint?65:75; gcd[1].gd.pos.y = 5; 
 	gcd[1].gd.flags = gg_enabled|gg_visible | (rb==1?gg_cb_on:0);
 	gcd[1].creator = GRadioCreate;
 
 	label[2].text = (unichar_t *) lab;
-	label[2].text_is_1byte = true;
+	label[2].text_in_resource = true;
 	gcd[2].gd.label = &label[2];
 	gcd[2].gd.pos.x = 5; gcd[2].gd.pos.y = 25; 
 	gcd[2].gd.flags = gg_enabled|gg_visible ;
@@ -279,15 +278,15 @@ static int Ask(char *rb1, char *rb2, int rb, char *lab, double *val, int isint )
 	gcd[5].creator = GButtonCreate;
 
 	if ( isint ) {
-	    label[6].text = (unichar_t *) "Regular";
-	    label[6].text_is_1byte = true;
+	    label[6].text = (unichar_t *) _STR_Regular;
+	    label[6].text_in_resource = true;
 	    gcd[6].gd.label = &label[6];
 	    gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = 70; 
 	    gcd[6].gd.flags = gg_enabled|gg_visible | (rb==0?gg_cb_on:0);
 	    gcd[6].creator = GRadioCreate;
 
-	    label[7].text = (unichar_t *) "Points:";
-	    label[7].text_is_1byte = true;
+	    label[7].text = (unichar_t *) _STR_Points;
+	    label[7].text_in_resource = true;
 	    gcd[7].gd.label = &label[7];
 	    gcd[7].gd.pos.x = 65; gcd[7].gd.pos.y = 70; 
 	    gcd[7].gd.flags = gg_enabled|gg_visible | (rb==1?gg_cb_on:0);
@@ -322,15 +321,15 @@ return( d.ret );
 }
 
 static void CVRectElipse(CharView *cv) {
-    rectelipse = Ask("Rectangle","Elipse",rectelipse,
-	    "Round Rectangle Radius",&rr_radius,false);
+    rectelipse = Ask(_STR_Rectangle,_STR_Elipse,rectelipse,
+	    _STR_RRRad,&rr_radius,false);
     GDrawRequestExpose(cvtools,NULL,false);
 }
 
 static void CVPolyStar(CharView *cv) {
     double temp = ps_pointcnt;
-    polystar = Ask("Polygon","Star",polystar,
-	    "Number of star points/Polygon verteces",&temp,true);
+    polystar = Ask(_STR_Polygon,_STR_Star,polystar,
+	    _STR_NumPSVert,&temp,true);
     ps_pointcnt = temp;
 }
 
@@ -544,7 +543,6 @@ return( true );
 GWindow CVMakeTools(CharView *cv) {
     GRect r;
     GWindowAttrs wattrs;
-    unichar_t title[] = { 'T', 'o', 'o', 'l', 's', '\0' };
 
     if ( cvtools!=NULL )
 return( cvtools );
@@ -555,7 +553,7 @@ return( cvtools );
     wattrs.cursor = ct_mypointer;
     wattrs.positioned = true;
     wattrs.is_dlg = true;
-    wattrs.window_title = title;
+    wattrs.window_title = GStringGetResource(_STR_Tools,NULL);
 
     r.width = 53; r.height = 187;
     if ( cvtoolsoff.x==-9999 ) {
@@ -687,13 +685,10 @@ return( true );
 GWindow CVMakeLayers(CharView *cv) {
     GRect r;
     GWindowAttrs wattrs;
-    unichar_t title[] = { 'L', 'a', 'y', 'e', 'r', 's', '\0' };
     GGadgetCreateData gcd[17];
     GTextInfo label[17];
     static GBox radio_box = { bt_none, bs_rect, 0, 0, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };
-    static unichar_t isvis[] =  { 'I', 's', ' ', 'L', 'a', 'y', 'e', 'r', ' ', 'V', 'i', 's', 'i', 'b', 'l', 'e', '?',  '\0' };
-    static unichar_t isedit[] = { 'I', 's', ' ', 'L', 'a', 'y', 'e', 'r', ' ', 'E', 'd', 'i', 't', 'a', 'b', 'l', 'e', '?',  '\0' };
-    static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a', '\0' };
+    static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',  '\0' };
     GFont *font;
     FontRequest rq;
     int i, base;
@@ -706,7 +701,7 @@ return( cvlayers );
     wattrs.cursor = ct_mypointer;
     wattrs.positioned = true;
     wattrs.is_dlg = true;
-    wattrs.window_title = title;
+    wattrs.window_title = GStringGetResource(_STR_Layers,NULL);
 
     r.width = 85; r.height = 128;
     if ( cvlayersoff.x==-9999 ) {
@@ -727,123 +722,123 @@ return( cvlayers );
     for ( i=0; i<sizeof(label)/sizeof(label[0]); ++i )
 	label[i].font = font;
 
-    label[0].text = (unichar_t *) "V";
-    label[0].text_is_1byte = true;
+    label[0].text = (unichar_t *) _STR_V;
+    label[0].text_in_resource = true;
     gcd[0].gd.label = &label[0];
     gcd[0].gd.pos.x = 7; gcd[0].gd.pos.y = 5; 
     gcd[0].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
-    gcd[0].gd.popup_msg = isvis;
+    gcd[0].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
     gcd[0].creator = GLabelCreate;
 
-    label[1].text = (unichar_t *) "E";
-    label[1].text_is_1byte = true;
+    label[1].text = (unichar_t *) _STR_E;
+    label[1].text_in_resource = true;
     gcd[1].gd.label = &label[1];
     gcd[1].gd.pos.x = 30; gcd[1].gd.pos.y = 5; 
     gcd[1].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
-    gcd[1].gd.popup_msg = isedit;
+    gcd[1].gd.popup_msg = GStringGetResource(_STR_IsEdit,NULL);
     gcd[1].creator = GLabelCreate;
 
-    label[2].text = (unichar_t *) "Layer";
-    label[2].text_is_1byte = true;
+    label[2].text = (unichar_t *) _STR_Layer;
+    label[2].text_in_resource = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.pos.x = 47; gcd[2].gd.pos.y = 5; 
     gcd[2].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
-    gcd[2].gd.popup_msg = isedit;
+    gcd[2].gd.popup_msg = GStringGetResource(_STR_IsEdit,NULL);
     gcd[2].creator = GLabelCreate;
 
     gcd[3].gd.pos.x = 5; gcd[3].gd.pos.y = 21; 
     gcd[3].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[3].gd.cid = CID_VFore;
-    gcd[3].gd.popup_msg = isvis;
+    gcd[3].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
     gcd[3].gd.box = &radio_box;
     gcd[3].creator = GCheckBoxCreate;
 
     gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = 38; 
     gcd[4].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[4].gd.cid = CID_VBack;
-    gcd[4].gd.popup_msg = isvis;
+    gcd[4].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
     gcd[4].gd.box = &radio_box;
     gcd[4].creator = GCheckBoxCreate;
 
     gcd[5].gd.pos.x = 5; gcd[5].gd.pos.y = 55; 
     gcd[5].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[5].gd.cid = CID_VGrid;
-    gcd[5].gd.popup_msg = isvis;
+    gcd[5].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
     gcd[5].gd.box = &radio_box;
     gcd[5].creator = GCheckBoxCreate;
 
     gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = 72; 
     gcd[6].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[6].gd.cid = CID_VHHints;
-    gcd[6].gd.popup_msg = isvis;
+    gcd[6].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
     gcd[6].gd.box = &radio_box;
     gcd[6].creator = GCheckBoxCreate;
 
     gcd[7].gd.pos.x = 5; gcd[7].gd.pos.y = 89; 
     gcd[7].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[7].gd.cid = CID_VVHints;
-    gcd[7].gd.popup_msg = isvis;
+    gcd[7].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
     gcd[7].gd.box = &radio_box;
     gcd[7].creator = GCheckBoxCreate;
 
     gcd[8].gd.pos.x = 5; gcd[8].gd.pos.y = 106; 
     gcd[8].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[8].gd.cid = CID_VDHints;
-    gcd[8].gd.popup_msg = isvis;
+    gcd[8].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
     gcd[8].gd.box = &radio_box;
     gcd[8].creator = GCheckBoxCreate;
     base = 9;
 
 
-    label[base].text = (unichar_t *) "Fore";
-    label[base].text_is_1byte = true;
+    label[base].text = (unichar_t *) _STR_Fore;
+    label[base].text_in_resource = true;
     gcd[base].gd.label = &label[base];
     gcd[base].gd.pos.x = 27; gcd[base].gd.pos.y = 21; 
     gcd[base].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[base].gd.cid = CID_EFore;
-    gcd[base].gd.popup_msg = isedit;
+    gcd[base].gd.popup_msg = GStringGetResource(_STR_IsEdit,NULL);
     gcd[base].gd.box = &radio_box;
     gcd[base].creator = GRadioCreate;
 
-    label[base+1].text = (unichar_t *) "Back";
-    label[base+1].text_is_1byte = true;
+    label[base+1].text = (unichar_t *) _STR_Back;
+    label[base+1].text_in_resource = true;
     gcd[base+1].gd.label = &label[base+1];
     gcd[base+1].gd.pos.x = 27; gcd[base+1].gd.pos.y = 38; 
     gcd[base+1].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[base+1].gd.cid = CID_EBack;
-    gcd[base+1].gd.popup_msg = isedit;
+    gcd[base+1].gd.popup_msg = GStringGetResource(_STR_IsEdit,NULL);
     gcd[base+1].gd.box = &radio_box;
     gcd[base+1].creator = GRadioCreate;
 
-    label[base+2].text = (unichar_t *) "Grid";
-    label[base+2].text_is_1byte = true;
+    label[base+2].text = (unichar_t *) _STR_Grid;
+    label[base+2].text_in_resource = true;
     gcd[base+2].gd.label = &label[base+2];
     gcd[base+2].gd.pos.x = 27; gcd[base+2].gd.pos.y = 55; 
     gcd[base+2].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[base+2].gd.cid = CID_EGrid;
-    gcd[base+2].gd.popup_msg = isedit;
+    gcd[base+2].gd.popup_msg = GStringGetResource(_STR_IsEdit,NULL);
     gcd[base+2].gd.box = &radio_box;
     gcd[base+2].creator = GRadioCreate;
 
     gcd[base+cv->drawmode].gd.flags |= gg_cb_on;
     base += 3;
 
-    label[base].text = (unichar_t *) "HHints";
-    label[base].text_is_1byte = true;
+    label[base].text = (unichar_t *) _STR_HHints;
+    label[base].text_in_resource = true;
     gcd[base].gd.label = &label[base];
     gcd[base].gd.pos.x = 47; gcd[base].gd.pos.y = 72; 
     gcd[base].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[base++].creator = GLabelCreate;
 
-    label[base].text = (unichar_t *) "VHints";
-    label[base].text_is_1byte = true;
+    label[base].text = (unichar_t *) _STR_VHints;
+    label[base].text_in_resource = true;
     gcd[base].gd.label = &label[base];
     gcd[base].gd.pos.x = 47; gcd[base].gd.pos.y = 89; 
     gcd[base].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[base++].creator = GLabelCreate;
 
-    label[base].text = (unichar_t *) "DHints";
-    label[base].text_is_1byte = true;
+    label[base].text = (unichar_t *) _STR_DHints;
+    label[base].text_in_resource = true;
     gcd[base].gd.label = &label[base];
     gcd[base].gd.pos.x = 47; gcd[base].gd.pos.y = 106; 
     gcd[base].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
@@ -982,12 +977,10 @@ return( true );
 GWindow BVMakeLayers(BitmapView *bv) {
     GRect r;
     GWindowAttrs wattrs;
-    unichar_t title[] = { 'L', 'a', 'y', 'e', 'r', 's', '\0' };
     GGadgetCreateData gcd[8];
     GTextInfo label[8];
     static GBox radio_box = { bt_none, bs_rect, 0, 0, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };
-    static unichar_t isvis[] =  { 'I', 's', ' ', 'L', 'a', 'y', 'e', 'r', ' ', 'V', 'i', 's', 'i', 'b', 'l', 'e', '?',  '\0' };
-    static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a', '\0' };
+    static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',  '\0' };
     GFont *font;
     FontRequest rq;
     int i;
@@ -1000,7 +993,7 @@ return(bvlayers);
     wattrs.cursor = ct_mypointer;
     wattrs.positioned = true;
     wattrs.is_dlg = true;
-    wattrs.window_title = title;
+    wattrs.window_title = GStringGetResource(_STR_Layers,NULL);
 
     r.width = 73; r.height = 73;
     r.x = -r.width-6; r.y = bv->mbh+81+45/*25*/;	/* 45 is right if there's decor, is in kde, not in twm. Sigh */
@@ -1017,12 +1010,12 @@ return(bvlayers);
     for ( i=0; i<sizeof(label)/sizeof(label[0]); ++i )
 	label[i].font = font;
 
-    label[0].text = (unichar_t *) "V";
-    label[0].text_is_1byte = true;
+    label[0].text = (unichar_t *) _STR_V;
+    label[0].text_in_resource = true;
     gcd[0].gd.label = &label[0];
     gcd[0].gd.pos.x = 7; gcd[0].gd.pos.y = 5; 
     gcd[0].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
-    gcd[0].gd.popup_msg = isvis;
+    gcd[0].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
     gcd[0].creator = GLabelCreate;
 
     gcd[1].gd.pos.x = 1; gcd[1].gd.pos.y = 1;
@@ -1031,41 +1024,41 @@ return(bvlayers);
     gcd[1].creator = GGroupCreate;
 
     label[2].text = (unichar_t *) "Layer";
-    label[2].text_is_1byte = true;
+    label[2].text_in_resource = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.pos.x = 23; gcd[2].gd.pos.y = 5; 
     gcd[2].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
-    gcd[2].gd.popup_msg = isvis;
+    gcd[2].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
     gcd[2].creator = GLabelCreate;
 
     gcd[3].gd.pos.x = 5; gcd[3].gd.pos.y = 21; 
     gcd[3].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[3].gd.cid = CID_VFore;
-    gcd[3].gd.popup_msg = isvis;
+    gcd[3].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
     gcd[3].gd.box = &radio_box;
     gcd[3].creator = GCheckBoxCreate;
-    label[3].text = (unichar_t *) "Bitmap";
-    label[3].text_is_1byte = true;
+    label[3].text = (unichar_t *) _STR_Bitmap;
+    label[3].text_in_resource = true;
     gcd[3].gd.label = &label[3];
 
     gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = 37; 
     gcd[4].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[4].gd.cid = CID_VBack;
-    gcd[4].gd.popup_msg = isvis;
+    gcd[4].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
     gcd[4].gd.box = &radio_box;
     gcd[4].creator = GCheckBoxCreate;
-    label[4].text = (unichar_t *) "Outline";
-    label[4].text_is_1byte = true;
+    label[4].text = (unichar_t *) _STR_Outline;
+    label[4].text_in_resource = true;
     gcd[4].gd.label = &label[4];
 
     gcd[5].gd.pos.x = 5; gcd[5].gd.pos.y = 53; 
     gcd[5].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[5].gd.cid = CID_VGrid;
-    gcd[5].gd.popup_msg = isvis;
+    gcd[5].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
     gcd[5].gd.box = &radio_box;
     gcd[5].creator = GCheckBoxCreate;
-    label[5].text = (unichar_t *) "Grid";
-    label[5].text_is_1byte = true;
+    label[5].text = (unichar_t *) _STR_Grid;
+    label[5].text_in_resource = true;
     gcd[5].gd.label = &label[5];
 
     if ( bv->showfore ) gcd[3].gd.flags |= gg_cb_on;
@@ -1234,7 +1227,6 @@ return( true );
 GWindow BVMakeTools(BitmapView *bv) {
     GRect r;
     GWindowAttrs wattrs;
-    unichar_t title[] = { 'T', 'o', 'o', 'l', 's', '\0' };
 
     if ( bvtools!=NULL )
 return( bvtools );
@@ -1244,7 +1236,7 @@ return( bvtools );
     wattrs.cursor = ct_mypointer;
     wattrs.positioned = true;
     wattrs.is_dlg = true;
-    wattrs.window_title = title;
+    wattrs.window_title = GStringGetResource(_STR_Tools,NULL);
 
     r.width = 53; r.height = 80;
     r.x = -r.width-6; r.y = bv->mbh+20;

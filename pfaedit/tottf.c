@@ -557,7 +557,8 @@ struct os2 {
     uint16 winascent;	/* ymax */
     uint16 windescent;	/* ymin */
     uint32 ulCodePage[2];
-	/* 1<<0 => latin1, 1<<1=>latin2 */
+	/* 1<<0 => latin1, 1<<1=>latin2, cyrillic, greek, turkish, hebrew, arabic */
+	/* 1<<30 => mac, 1<<31 => symbol */
     /* OTF stuff (version 2 of OS/2) */
     short xHeight;
     short capHeight;
@@ -2640,10 +2641,66 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *sf,
 	os2->avgCharWid = avg2/cnt2;
     os2->firstcharindex = first;
     os2->lastcharindex = last;
-    if ( sf->encoding_name==em_iso8859_1 || sf->encoding_name==em_unicode )
-	os2->ulCodePage[0] |= 1;
-    if ( sf->encoding_name==em_iso8859_2 || sf->encoding_name==em_unicode )
-	os2->ulCodePage[0] |= 2;
+    if ( sf->encoding_name==em_iso8859_1 || sf->encoding_name==em_iso8859_15 ||
+	    sf->encoding_name==em_win )
+	os2->ulCodePage[0] |= 1<<0;	/* latin1 */
+    else if ( sf->encoding_name==em_iso8859_2 )
+	os2->ulCodePage[0] |= 1<<1;	/* latin2 */
+    else if ( sf->encoding_name==em_iso8859_9 )
+	os2->ulCodePage[0] |= 1<<4;	/* turkish */
+    else if ( sf->encoding_name==em_iso8859_4 )
+	os2->ulCodePage[0] |= 1<<7;	/* baltic */
+    else if ( sf->encoding_name==em_iso8859_5 || sf->encoding_name==em_koi8_r )
+	os2->ulCodePage[0] |= 1<<2;	/* cyrillic */
+    else if ( sf->encoding_name==em_iso8859_7 )
+	os2->ulCodePage[0] |= 1<<3;	/* greek */
+    else if ( sf->encoding_name==em_iso8859_8 )
+	os2->ulCodePage[0] |= 1<<5;	/* hebrew */
+    else if ( sf->encoding_name==em_iso8859_8 )
+	os2->ulCodePage[0] |= 1<<6;	/* arabic */
+    else if ( sf->encoding_name==em_iso8859_11 )
+	os2->ulCodePage[0] |= 1<<17;	/* thai */
+    else if ( sf->encoding_name==em_jis201 || sf->encoding_name==em_jis208 ||
+	    sf->encoding_name==em_jis212 )
+	os2->ulCodePage[0] |= 1<<18;	/* japanese */
+    else if ( sf->encoding_name==em_gb2312 )
+	os2->ulCodePage[0] |= 1<<19;	/* simplified chinese */
+    else if ( sf->encoding_name==em_ksc5601 )
+	os2->ulCodePage[0] |= 1<<20;	/* korean */
+    else if ( sf->encoding_name==em_mac )
+	os2->ulCodePage[0] |= 1<<30;	/* mac */
+    else if ( sf->encoding_name==em_symbol )
+	os2->ulCodePage[0] |= 1<<31;	/* symbol */
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	if ( sf->chars[i]->unicodeenc==0xde )
+	    os2->ulCodePage[0] |= 1<<0;		/* latin1 */
+	else if ( sf->chars[i]->unicodeenc==0x13d )
+	    os2->ulCodePage[0] |= 1<<1;		/* latin2 */
+	else if ( sf->chars[i]->unicodeenc==0x411 )
+	    os2->ulCodePage[0] |= 1<<2;		/* cyrillic */
+	else if ( sf->chars[i]->unicodeenc==0x386 )
+	    os2->ulCodePage[0] |= 1<<3;		/* greek */
+	else if ( sf->chars[i]->unicodeenc==0x130 )
+	    os2->ulCodePage[0] |= 1<<4;		/* turkish */
+	else if ( sf->chars[i]->unicodeenc==0x5d0 )
+	    os2->ulCodePage[0] |= 1<<5;		/* hebrew */
+	else if ( sf->chars[i]->unicodeenc==0x631 )
+	    os2->ulCodePage[0] |= 1<<6;		/* arabic */
+	else if ( sf->chars[i]->unicodeenc==0x157 )
+	    os2->ulCodePage[0] |= 1<<7;		/* baltic */
+	else if ( sf->chars[i]->unicodeenc==0xe45 )
+	    os2->ulCodePage[0] |= 1<<17;	/* thai */
+	else if ( sf->chars[i]->unicodeenc==0x30a8 )
+	    os2->ulCodePage[0] |= 1<<18;	/* japanese */
+	else if ( sf->chars[i]->unicodeenc==0x3105 )
+	    os2->ulCodePage[0] |= 1<<19;	/* simplified chinese */
+	else if ( sf->chars[i]->unicodeenc==0x3131 )
+	    os2->ulCodePage[0] |= 1<<20;	/* korean */
+	else if ( sf->chars[i]->unicodeenc==0x21d4 )
+	    os2->ulCodePage[0] |= 1<<31;	/* symbol */
+    }
+
     if ( os2->ulCodePage[0]==0 )
 	os2->ulCodePage[0] |= 1;
     if ( format==ff_otf ) {
