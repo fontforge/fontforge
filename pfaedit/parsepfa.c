@@ -1927,24 +1927,28 @@ return( 1 );
 static int nrandombytes[4];
 #define EODMARKLEN	16
 
-static void decrypteexec(FILE *in,FILE *temp, int hassectionheads) {
+#define bgetc(extra,in)	(*(extra)=='\0' ? getc(in) : (unsigned char ) *(extra)++ )
+
+static void decrypteexec(FILE *in,FILE *temp, int hassectionheads,char *extra) {
     int ch1, ch2, ch3, ch4, binary;
     int zcnt;
     unsigned char zeros[EODMARKLEN+6+1];
     int sect_len;
 
-    while ( (ch1=getc(in))!=EOF && isspace(ch1));
+    if ( extra==(void *) 5 ) extra = "";
+
+    while ( (ch1=bgetc(extra,in))!=EOF && isspace(ch1));
     if ( ch1==0200 && hassectionheads ) {
 	/* skip the 6 byte section header in pfb files that follows eexec */
-	ch1 = getc(in);
-	sect_len = getc(in);
-	sect_len |= getc(in)<<8;
-	sect_len |= getc(in)<<16;
-	sect_len |= getc(in)<<24;
+	ch1 = bgetc(extra,in);
+	sect_len = bgetc(extra,in);
+	sect_len |= bgetc(extra,in)<<8;
+	sect_len |= bgetc(extra,in)<<16;
+	sect_len |= bgetc(extra,in)<<24;
 	sect_len -= 3;
-	ch1 = getc(in);
+	ch1 = bgetc(extra,in);
     }
-    ch2 = getc(in); ch3 = getc(in); ch4 = getc(in);
+    ch2 = bgetc(extra,in); ch3 = bgetc(extra,in); ch4 = bgetc(extra,in);
     binary = 0;
     if ( ch1<'0' || (ch1>'9' && ch1<'A') || ( ch1>'F' && ch1<'a') || (ch1>'f') ||
 	     ch2<'0' || (ch2>'9' && ch2<'A') || (ch2>'F' && ch2<'a') || (ch2>'f') ||
@@ -1962,15 +1966,15 @@ return;
 	nrandombytes[2] = decode(ch3);
 	nrandombytes[3] = decode(ch4);
 	zcnt = 0;
-	while (( ch1=getc(in))!=EOF ) {
+	while (( ch1=bgetc(extra,in))!=EOF ) {
 	    --sect_len;
 	    if ( hassectionheads ) {
 		if ( sect_len==0 && ch1==0200 ) {
-		    ch1 = getc(in);
-		    sect_len = getc(in);
-		    sect_len |= getc(in)<<8;
-		    sect_len |= getc(in)<<16;
-		    sect_len |= getc(in)<<24;
+		    ch1 = bgetc(extra,in);
+		    sect_len = bgetc(extra,in);
+		    sect_len |= bgetc(extra,in)<<8;
+		    sect_len |= bgetc(extra,in)<<16;
+		    sect_len |= bgetc(extra,in)<<24;
 		    sect_len += 1;
 		    if ( ch1=='\1' )
 	break;
@@ -1992,13 +1996,13 @@ return;
     } else {
 	nrandombytes[0] = decode(hex(ch1,ch2));
 	nrandombytes[1] = decode(hex(ch3,ch4));
-	ch1 = getc(in); ch2 = getc(in); ch3 = getc(in); ch4 = getc(in);
+	ch1 = bgetc(extra,in); ch2 = bgetc(extra,in); ch3 = bgetc(extra,in); ch4 = bgetc(extra,in);
 	nrandombytes[2] = decode(hex(ch1,ch2));
 	nrandombytes[3] = decode(hex(ch3,ch4));
 	zcnt = 0;
-	while (( ch1=getc(in))!=EOF ) {
-	    while ( ch1!=EOF && isspace(ch1)) ch1 = getc(in);
-	    while ( (ch2=getc(in))!=EOF && isspace(ch2));
+	while (( ch1=bgetc(extra,in))!=EOF ) {
+	    while ( ch1!=EOF && isspace(ch1)) ch1 = bgetc(extra,in);
+	    while ( (ch2=bgetc(extra,in))!=EOF && isspace(ch2));
 	    if ( ch1=='0' && ch2=='0' ) ++zcnt; else { dumpzeros(temp,zeros,zcnt); zcnt = 0;}
 	    if ( zcnt>EODMARKLEN )
 	break;
@@ -2008,7 +2012,7 @@ return;
 		zeros[zcnt-1] = decode(hex(ch1,ch2));
 	}
     }
-    while (( ch1=getc(in))=='0' || isspace(ch1) );
+    while (( ch1=bgetc(extra,in))=='0' || isspace(ch1) );
     if ( ch1!=EOF ) ungetc(ch1,in);
 }
 
@@ -2246,7 +2250,7 @@ return;
 	/* used by both CID fonts and CFF fonts (and chameleons, whatever they are) */
 	dodata(fp,in,temp);
     } else {
-	decrypteexec(in,temp,hassectionheads);
+	decrypteexec(in,temp,hassectionheads,strstr(buffer, "eexec")+5);
 	rewind(temp);
 	decryptagain(fp,temp,rdtok);
 	while ( myfgets(buffer,sizeof(buffer),in)!=NULL ) {
