@@ -993,7 +993,7 @@ static SplineSet *SSRemoveUTurns(SplineSet *base) {
     double dx,dy, offx,offy, diff;
     int linear;
 
-    for ( spl=base; spl!=NULL; spl=spl->next ) {
+    /*for ( spl=base; spl!=NULL; spl=spl->next )*/ spl = base; {
 	first = NULL;
 	for ( s = spl->first->next; s!=NULL && s!=first; s=s->to->next ) {
 	    if ( first==NULL ) first = s;
@@ -1004,8 +1004,8 @@ static SplineSet *SSRemoveUTurns(SplineSet *base) {
 	    if ( offx*dx + offy*dy<0 ) {
 		diff = offx*dy-offy*dx;
 		linear = ( diff<1 && diff>-1 );
-		if ( offx<0 ) offx=0;
-		if ( offy<0 ) offy=0;
+		if ( offx<0 ) offx = -offx;
+		if ( offy<0 ) offy = -offy;
 		if ( offx+offy<1 || linear ) {
 		    s->from->nextcp = s->from->me;
 		    s->from->nonextcp = true;
@@ -1025,8 +1025,8 @@ static SplineSet *SSRemoveUTurns(SplineSet *base) {
 	    if ( offx*dx + offy*dy<0 ) {
 		diff = offx*dy-offy*dx;
 		linear = ( diff<1 && diff>-1 );
-		if ( offx<0 ) offx=0;
-		if ( offy<0 ) offy=0;
+		if ( offx<0 ) offx = -offx;
+		if ( offy<0 ) offy = -offy;
 		if ( offx+offy<1 || linear ) {
 		    s->to->prevcp = s->to->me;
 		    s->to->noprevcp = true;
