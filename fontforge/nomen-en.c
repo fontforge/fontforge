@@ -1231,6 +1231,7 @@ static char *str_PfEdComments = "Save Comments";
 static char *str_PfEdCommentsPopup = "Save glyph comments in the PfEd table"
 static char *str_PfEdColors = "Save Colors";
 static char *str_PfEdColorsPopup = "Save glyph colors in the PfEd table"
+static char *str_OutputGlyphMap = "Output Glyph Map";
 static char *str_NFNTObsolete = "The 'NFNT' bitmap format is not used under OS/X (though you still need to create a (useless) bitmap font if you are saving a type1 PostScript resource)"
 static char *str_NFNTObsoleteTit = "The 'NFNT' bitmap format is obsolete"
 static char *str_POSTDepreciatedTit = "The 'POST' type1 format is probably depreciated"
