@@ -1675,16 +1675,14 @@ static StemInfo *StemRemoveSerifOverlaps(StemInfo *stems) {
 	next = serif->next;
 	for ( main=serif->next; main!=NULL && main->start<serif->start+serif->width;
 		main = main->next ) {
-	    real left, right, mh, sh, top, bottom;
+	    real left, right, sh, top, bottom;
 	    left = main->start-serif->start;
 	    right = serif->start+serif->width - (main->start+main->width);
 	    if ( left-right<-5 || left-right>5 )
 	continue;
 	    /* In "H" the main stem is broken in two */
-	    mh = 0;
 	    bottom = main->where->begin; top = main->where->end;
 	    for ( hi = main->where; hi!=NULL; hi=hi->next ) {
-		mh += hi->end-hi->begin;
 		if ( bottom>hi->begin ) bottom = hi->begin;
 		if ( top < hi->end ) top = hi->end;
 	    }
@@ -1696,7 +1694,7 @@ static StemInfo *StemRemoveSerifOverlaps(StemInfo *stems) {
 	    }
 	    if ( hi!=NULL )
 	continue;	/* serif in middle => not serif */
-	    if ( 4*sh>mh )
+	    if ( 3*sh>(top-bottom) )
 	continue;
 	    if ( serif->where!=NULL && serif->where->next!=NULL && serif->where->next->next!=NULL )
 	continue;	/* No more that two serifs, top & bottom */
