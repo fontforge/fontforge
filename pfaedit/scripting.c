@@ -1840,6 +1840,7 @@ static void bExpandStroke(Context *c) {
 	error(c,"Bad argument type");
     memset(&si,0,sizeof(si));
     si.radius = c->a.vals[1].u.ival/2.;
+    si.stroke_type = si_std;
     if ( c->a.argc==2 ) {
 	si.join = lj_round;
 	si.cap = lc_butt;
@@ -1858,7 +1859,7 @@ static void bExpandStroke(Context *c) {
 	if ( c->a.vals[5].u.ival&4 )
 	    si.removeoverlapifneeded = true;
     } else {
-	si.caligraphic = true;
+	si.stroke_type = si_caligraphic;
 	si.penangle = 3.1415926535897932*c->a.vals[2].u.ival/180;
 	si.ratio = c->a.vals[3].u.ival / (double) c->a.vals[4].u.ival;
     }

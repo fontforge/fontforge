@@ -74,12 +74,12 @@ enum linecap {
 };
 
 struct spline;
+enum si_type { si_std, si_caligraphic, si_elipse, si_centerline };
 typedef struct strokeinfo {
     real radius;			/* or major axis of pen */
     enum linejoin join;
     enum linecap cap;
-    unsigned int caligraphic: 1;
-    unsigned int centerline: 1;		/* For freehand tool */
+    enum si_type stroke_type;
     unsigned int toobigwarn: 1;
     unsigned int removeinternal: 1;
     unsigned int removeexternal: 1;
@@ -87,6 +87,8 @@ typedef struct strokeinfo {
     unsigned int gottoobig: 1;
     real penangle;
     real ratio;				/* ratio of minor pen axis to major */
+/* For eplipse */
+    real minorradius;
 /* For freehand tool */
     real radius2;
     int pressure1, pressure2;
@@ -454,7 +456,7 @@ typedef struct bigsteminfo {
 typedef struct dsteminfo {
     struct dsteminfo *next;	/* First two fields match those in steminfo */
     unsigned int hinttype: 2;	/* Only used by undoes */
-    unsigned int used: 1;	/* used only be tottf.c:gendinstrs to mark a hint that has been dealt with */
+    unsigned int used: 1;	/* used only by tottf.c:gendinstrs, metafont.c to mark a hint that has been dealt with */
     unsigned int bigsteminfo: 1;/* See following structure */
     BasePoint leftedgetop, leftedgebottom, rightedgetop, rightedgebottom;	/* this order is important in tottf.c: DStemInteresect */
 } DStemInfo;
@@ -915,6 +917,7 @@ extern void SplineCharDefaultPrevCP(SplinePoint *base);
 extern void SplineCharDefaultNextCP(SplinePoint *base);
 extern void SplineCharTangentNextCP(SplinePoint *sp);
 extern void SplineCharTangentPrevCP(SplinePoint *sp);
+extern void SPSmoothJoint(SplinePoint *sp);
 extern int PointListIsSelected(SplinePointList *spl);
 extern void SplineSetsUntick(SplineSet *spl);
 extern void SFOrderBitmapList(SplineFont *sf);

@@ -91,7 +91,7 @@ static double SplineExpand(Spline *spline,real t,real toff, StrokeInfo *si,
 	factor = (si->factor)(si->data,spline,t);
 
     lineangle = SplineAngle(spline,t+toff);
-    if ( !si->caligraphic ) {
+    if ( si->stroke_type != si_caligraphic ) {
 	c = si->radius*factor*cos(lineangle+PI/2);
 	s = si->radius*factor*sin(lineangle+PI/2);
 	plus->y = base.y+s;
@@ -122,6 +122,7 @@ static SplinePoint *makequartercircle(real x, real y, real radius,
 	here->nextcp.x = x + .552*xmul*radius;
 	here->prevcp.x = x - .552*xmul*radius;
     }
+    here->nonextcp = here->noprevcp = false;
     if ( prev!=NULL )
 	SplineMake3(prev,here);
 return( here );
@@ -153,7 +154,7 @@ static void StrokeEnd(SplinePoint *base, StrokeInfo *si, SplinePoint **_plus, Sp
 		here too
 	*/
 	/* We don't have a spline, so don't try guessing factor */
-	if ( si->caligraphic ) {
+	if ( si->stroke_type == si_caligraphic ) {
 	    plus = SplinePointCreate(base->me.x+si->xoff[0],base->me.y+si->yoff[0]);
 	    plus->pointtype = pt_corner;
 	    cur = makeline(plus,base->me.x+si->xoff[1],base->me.y+si->yoff[1]);
@@ -172,7 +173,7 @@ static void StrokeEnd(SplinePoint *base, StrokeInfo *si, SplinePoint **_plus, Sp
 	    *_plus = *_minus = cur = chunkalloc(sizeof(SplinePoint));
 	    *cur = *base;
 	}
-    } else if ( si->caligraphic ) {
+    } else if ( si->stroke_type == si_caligraphic ) {
 	double lineangle;
 	int corner, incr;
 	if ( base->next==NULL ) {	/* prev spine */
@@ -306,7 +307,7 @@ static void MakeJoints(JointPoint *ret,StrokeInfo *si,
     from = SplinePointCreate(_from->x,_from->y); from->pointtype = pt_corner;
     to = SplinePointCreate(_to->x,_to->y); to->pointtype = pt_corner;
     ret->from = from; ret->to = to;
-    if ( si->caligraphic ) {
+    if ( si->stroke_type == si_caligraphic ) {
 	cstart = PenCorner(pangle,si);
 	cend = PenCorner(nangle,si);
 	if ( cstart==cend ) {
@@ -554,7 +555,7 @@ static SplineSet *SSFixupOverlap(StrokeInfo *si,SplineChar *sc,
 return( ssplus );
 }
     
-SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
+static SplineSet *_SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
     JointPoint first_plus, first_minus, cur_plus, cur_minus;
     SplineSet *ssplus, *ssminus;
     SplinePoint *plus, *minus;		/* plus expects splines added on prev */
@@ -634,7 +635,7 @@ return( ssplus );
 	    SplineMake3(minus,mto);
 	    if ( plus->nonextcp && plus->noprevcp ) plus->pointtype = pt_corner;
 	    if ( minus->nonextcp && minus->noprevcp ) minus->pointtype = pt_corner;
-	} else if ( si->caligraphic ) {
+	} else if ( si->stroke_type == si_caligraphic ) {
 	    /* At each t where the spline is tangent to one of the pen-angles */
 	    /*  we need to figure out which side is inner and which is outer */
 	    /*  the outer side gets a copy of the appropriate pen side (with corner points tangent) */
@@ -702,8 +703,17 @@ return( ssplus );
 		pmids[i].x = p.x; pmids[i].y = p.y;
 		mmids[i].x = m.x; mmids[i].y = m.y;
 	    }
-	    ApproximateSplineFromPoints(pto,plus,pmids,4);
-	    ApproximateSplineFromPoints(minus,mto,mmids,4);
+	    pto->nextcp.x = pto->me.x+(spline->to->prevcp.x-spline->to->me.x);
+	    pto->nextcp.y = pto->me.y+(spline->to->prevcp.y-spline->to->me.y);
+	    plus->prevcp.x = plus->me.x+(spline->from->nextcp.x-spline->from->me.x);
+	    plus->prevcp.y = plus->me.y+(spline->from->nextcp.y-spline->from->me.y);
+	    pto->pointtype = mto->pointtype = spline->to->pointtype;
+	    ApproximateSplineFromPointsSlopes(pto,plus,pmids,4);
+	    mto->prevcp.x = mto->me.x+(spline->to->prevcp.x-spline->to->me.x);
+	    mto->prevcp.y = mto->me.y+(spline->to->prevcp.y-spline->to->me.y);
+	    minus->nextcp.x = minus->me.x+(spline->from->nextcp.x-spline->from->me.x);
+	    minus->nextcp.y = minus->me.y+(spline->from->nextcp.y-spline->from->me.y);
+	    ApproximateSplineFromPointsSlopes(minus,mto,mmids,4);
 	}
 	if ( spline->to->next!=NULL ) {
 	    plus = cur_plus.from;
@@ -761,6 +771,35 @@ return( ssplus );
 	    SplineSetReverse(ssplus);
     }
 return( ssplus );
+}
+
+SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
+    SplineSet *ret, *temp;
+
+    if ( si->stroke_type == si_elipse ) {
+	real trans[6], factor;
+	StrokeInfo si2;
+	trans[0] = trans[3] = si->c;
+	trans[1] = -si->s;
+	trans[2] = si->s;
+	trans[4] = trans[5] = 0;
+	factor = si->radius/si->minorradius;
+	trans[0] *= factor; trans[1] *= factor;
+	temp = SplinePointListTransform(SplinePointListCopy(spl),trans,true);
+	si2 = *si;
+	si2.stroke_type = si_std;
+	ret = SplineSetStroke(temp,&si2,sc);
+	SplinePointListFree(temp);
+	trans[0] = trans[3] = si->c;
+	trans[1] = si->s;
+	trans[2] = -si->s;
+	trans[4] = trans[5] = 0;
+	factor = si->minorradius/si->radius;
+	trans[0] *= factor; trans[1] *= factor;
+	ret = SplinePointListTransform(ret,trans,true);
+    } else
+	ret = _SplineSetStroke(spl,si,sc);
+return( ret );
 }
 
     /* for angles between [penangle,penangle+90] use (-r,t/2) rotated by penangle */

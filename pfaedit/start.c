@@ -66,7 +66,7 @@ static void inituninameannot(void) {
     extern const struct unicode_nameannot * const * const UnicodeNameAnnot[];
     _UnicodeNameAnnot = UnicodeNameAnnot;
 #else
-    void *libuninames=NULL;
+    const void *libuninames=NULL;
 # ifdef LIBDIR
     libuninames = dlopen( LIBDIR "/libuninameslist" SO_EXT,RTLD_LAZY);
 # endif

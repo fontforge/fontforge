@@ -828,10 +828,10 @@ Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
     if ( ( !from->nonextcp && ( from->nextcp.x==from->me.x || from->nextcp.y==from->me.y)) ||
 	    (!to->noprevcp && ( to->prevcp.x==to->me.x || to->prevcp.y==to->me.y)) )
 	/* Preserve the slope */;
-    else if ( (from->pointtype == pt_corner ||
+    else if ( ((from->pointtype == pt_corner && from->nonextcp) ||
 		(from->pointtype == pt_tangent &&
 			((from->nonextcp && from->noprevcp) || !from->noprevcp))) &&
-	    (to->pointtype == pt_corner ||
+	    ((to->pointtype == pt_corner && to->noprevcp) ||
 		(to->pointtype == pt_tangent &&
 			((to->nonextcp && to->noprevcp) || !to->nonextcp))) ) {
 	from->pointtype = to->pointtype = pt_corner;
@@ -865,6 +865,18 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
 
     spline = ApproximateSplineFromPoints(from,to,mid,cnt);
     prevcp = to->prevcp; nextcp = to->nextcp;
+
+    /* Hack to preserve some kind of slope here */
+    if ( from->nonextcp && flen!=0 ) {
+	from->nextcp.x += fromunit.x * flen/10.0;
+	from->nextcp.y += fromunit.y * flen/10.0;
+	from->nonextcp = false;
+    }
+    if ( to->noprevcp && flen!=0 ) {
+	to->prevcp.x += tounit.x * tlen/10.0;
+	to->prevcp.y += tounit.y * tlen/10.0;
+	to->noprevcp = false;
+    }
 
     tlen = (to->prevcp.x-to->me.x)*tounit.x + (to->prevcp.y-to->me.y)*tounit.y;
     flen = (from->nextcp.x-from->me.x)*fromunit.x + (from->nextcp.y-from->me.y)*fromunit.y;
@@ -1949,7 +1961,7 @@ void SFRandomChangeXUID(SplineFont *sf) {
 void SPWeightedAverageCps(SplinePoint *sp) {
     double pangle, nangle, angle, plen, nlen, c, s;
     if ( sp->noprevcp || sp->nonextcp )
-	SPAverageCps(sp);
+	/*SPAverageCps(sp)*/;		/* Expand Stroke wants this case to hold still */
     else if ( sp->pointtype==pt_curve && sp->prev && sp->next ) {
 	pangle = atan2(sp->me.y-sp->prevcp.y,sp->me.x-sp->prevcp.x);
 	nangle = atan2(sp->nextcp.y-sp->me.y,sp->nextcp.x-sp->me.x);
@@ -2218,6 +2230,59 @@ return;
 	base->prevcp.y = rint(base->prevcp.y*1024)/1024;
 	if ( base->prev!=NULL )
 	    SplineRefigureFixup(base->prev);
+    }
+}
+
+void SPSmoothJoint(SplinePoint *sp) {
+    BasePoint unitn, unitp;
+    double len, dot, dotn, dotp;
+    if ( sp->prev==NULL || sp->next==NULL || sp->pointtype==pt_corner )
+return;
+
+    if ( sp->pointtype==pt_curve && !sp->nonextcp && !sp->noprevcp ) {
+	unitn.x = sp->nextcp.x-sp->me.x;
+	unitn.y = sp->nextcp.y-sp->me.y;
+	len = sqrt(unitn.x*unitn.x + unitn.y*unitn.y);
+	if ( len==0 )
+return;
+	unitn.x /= len; unitn.y /= len;
+	unitp.x = sp->me.x - sp->prevcp.x;
+	unitp.y = sp->me.y - sp->prevcp.y;
+	len = sqrt(unitp.x*unitp.x + unitp.y*unitp.y);
+	if ( len==0 )
+return;
+	unitp.x /= len; unitp.y /= len;
+	dotn = unitp.y*(sp->nextcp.x-sp->me.x) - unitp.x*(sp->nextcp.y-sp->me.y);
+	dotp = unitn.y*(sp->me.x - sp->prevcp.x) - unitn.x*(sp->me.y - sp->prevcp.y);
+	sp->nextcp.x -= dotn*unitp.y/2;
+	sp->nextcp.y -= -dotn*unitp.x/2;
+	sp->prevcp.x += dotp*unitn.y/2;
+	sp->prevcp.y += -dotp*unitn.x/2;
+	SplineRefigure(sp->prev); SplineRefigure(sp->next);
+    }
+    if ( sp->pointtype==pt_tangent && !sp->nonextcp ) {
+	unitp.x = sp->me.x - sp->prev->from->me.x;
+	unitp.y = sp->me.y - sp->prev->from->me.y;
+	len = sqrt(unitp.x*unitp.x + unitp.y*unitp.y);
+	if ( len!=0 ) {
+	    unitp.x /= len; unitp.y /= len;
+	    dot = unitp.y*(sp->nextcp.x-sp->me.x) - unitp.x*(sp->nextcp.y-sp->me.y);
+	    sp->nextcp.x -= dot*unitp.y;
+	    sp->nextcp.y -= -dot*unitp.x;
+	    SplineRefigure(sp->next);
+	}
+    }
+    if ( sp->pointtype==pt_tangent && !sp->noprevcp ) {
+	unitn.x = sp->nextcp.x-sp->me.x;
+	unitn.y = sp->nextcp.y-sp->me.y;
+	len = sqrt(unitn.x*unitn.x + unitn.y*unitn.y);
+	if ( len!=0 ) {
+	    unitn.x /= len; unitn.y /= len;
+	    dot = unitn.y*(sp->me.x-sp->prevcp.x) - unitn.x*(sp->me.y-sp->prevcp.y);
+	    sp->prevcp.x += dot*unitn.y;
+	    sp->prevcp.y += -dot*unitn.x;
+	    SplineRefigure(sp->prev);
+	}
     }
 }
 

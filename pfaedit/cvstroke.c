@@ -69,6 +69,12 @@ typedef struct strokedlg {
 #define CID_RmInternal	1022
 #define CID_RmExternal	1023
 #define CID_CleanupSelfIntersect	1024
+	/* Elipses */
+#define CID_Elipse	1025
+#define CID_PenAngle2	1026
+#define CID_PenAngle2Txt 1027
+#define CID_MinorAxis	1028
+#define CID_MinorAxisTxt 1029
 
 static void CVStrokeIt(void *_cv, StrokeInfo *si) {
     CharView *cv = _cv;
@@ -156,14 +162,20 @@ static int Stroke_OK(GGadget *g, GEvent *e) {
 	if ( (si = sd->si)==NULL ) {
 	    memset(&strokeinfo,'\0',sizeof(strokeinfo));
 	    si = &strokeinfo;
-	} else {
-	    si->centerline = GGadgetIsChecked( GWidgetGetControl(sw,CID_CenterLine));
-	    if ( !si->centerline ) {
-		si->pressure1 = GetRealR(sw,CID_Pressure1,_STR_Pressure,&err);
-		si->pressure2 = GetRealR(sw,CID_Pressure2,_STR_Pressure,&err);
-		if ( si->pressure1!=si->pressure2 )
-		    si->radius2 = GetRealR(sw,CID_Width2,_STR_StrokeWidth,&err)/2;
-	    }
+	}
+	si->stroke_type = si_std;
+	if ( GGadgetIsChecked( GWidgetGetControl(sw,CID_Caligraphic)) )
+	    si->stroke_type = si_caligraphic;
+	else if ( GGadgetIsChecked( GWidgetGetControl(sw,CID_Elipse)) )
+	    si->stroke_type = si_elipse;
+	else if ( si!= &strokeinfo &&
+		GGadgetIsChecked( GWidgetGetControl(sw,CID_CenterLine)) )
+	    si->stroke_type = si_centerline;
+	if ( si!=&strokeinfo && si->stroke_type!=si_centerline ) {
+	    si->pressure1 = GetRealR(sw,CID_Pressure1,_STR_Pressure,&err);
+	    si->pressure2 = GetRealR(sw,CID_Pressure2,_STR_Pressure,&err);
+	    if ( si->pressure1!=si->pressure2 )
+		si->radius2 = GetRealR(sw,CID_Width2,_STR_StrokeWidth,&err)/2;
 	}
 	si->cap = GGadgetIsChecked( GWidgetGetControl(sw,CID_ButtCap))?lc_butt:
 		GGadgetIsChecked( GWidgetGetControl(sw,CID_RoundCap))?lc_round:
@@ -178,9 +190,25 @@ static int Stroke_OK(GGadget *g, GEvent *e) {
 	    GWidgetErrorR(_STR_BadValue,_STR_NotInternalAndExternal);
 	    err = true;
 	}
-	si->caligraphic = GGadgetIsChecked( GWidgetGetControl(sw,CID_Caligraphic));
 	si->radius = GetRealR(sw,CID_Width,_STR_StrokeWidth,&err)/2;
-	if ( si->caligraphic ) {
+	if ( si->stroke_type == si_elipse ) {
+	    si->penangle = GetRealR(sw,CID_PenAngle2,_STR_PenAngle,&err);
+	    if ( si->penangle>180 || si->penangle < -180 ) {
+		si->penangle = fmod(si->penangle,360);
+		if ( si->penangle>180 )
+		    si->penangle -= 360;
+		else if ( si->penangle<-180 )
+		    si->penangle += 360;
+	    }
+	    si->penangle *= 3.1415926535897932/180;
+	    si->cap = lc_butt;
+	    si->join = lj_bevel;
+	    si->ratio = GetRealR(sw,CID_ThicknessRatio,_STR_PenHeightRatio,&err);
+	    si->s = sin(si->penangle);
+	    si->c = cos(si->penangle);
+	    si->cap = lc_round; si->join = lj_round;
+	    si->minorradius = GetRealR(sw,CID_MinorAxis,_STR_MinorAxis,&err)/2;
+	} else if ( si->stroke_type == si_caligraphic ) {
 	    si->penangle = GetRealR(sw,CID_PenAngle,_STR_PenAngle,&err);
 	    if ( si->penangle>180 || si->penangle < -180 ) {
 		si->penangle = fmod(si->penangle,360);
@@ -232,40 +260,52 @@ static void StrokePressureCheck(StrokeDlg *sd) {
 	    !err && p1!=p2 && !sd->dontexpand);
 }
 
-static void StrokeSetup(StrokeDlg *sd, int calig) {
+static void StrokeSetup(StrokeDlg *sd, enum si_type stroke_type) {
 
-    sd->dontexpand = ( calig==-1 );
+    sd->dontexpand = ( stroke_type==si_centerline );
 
-    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_LineCapTxt), calig==0);
-    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_ButtCap), calig==0);
-    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_RoundCap), calig==0);
-    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_SquareCap), calig==0);
-    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_LineJoinTxt), calig==0);
-    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_BevelJoin), calig==0);
-    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_RoundJoin), calig==0);
-    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_MiterJoin), calig==0);
-    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_PenAngle), calig==1);
-    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_PenAngleTxt), calig==1);
-    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_ThicknessRatio), calig==1);
-    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_ThicknessRatioTxt), calig==1);
-    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_WidthTxt), calig!=-1);
-    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_Width), calig!=-1);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_LineCapTxt), stroke_type==si_std);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_ButtCap), stroke_type==si_std);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_RoundCap), stroke_type==si_std);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_SquareCap), stroke_type==si_std);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_LineJoinTxt), stroke_type==si_std);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_BevelJoin), stroke_type==si_std);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_RoundJoin), stroke_type==si_std);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_MiterJoin), stroke_type==si_std);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_PenAngle), stroke_type==si_caligraphic);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_PenAngleTxt), stroke_type==si_caligraphic);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_ThicknessRatio), stroke_type==si_caligraphic);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_ThicknessRatioTxt), stroke_type==si_caligraphic);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_PenAngle2), stroke_type==si_elipse);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_PenAngle2Txt), stroke_type==si_elipse);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_MinorAxis), stroke_type==si_elipse);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_MinorAxisTxt), stroke_type==si_elipse);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_WidthTxt), stroke_type!=-si_caligraphic);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_Width), stroke_type!=-si_caligraphic);
     if ( sd->si!=NULL ) {
 	StrokePressureCheck(sd);
-	GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_PressureTxt), calig!=-1);
-	GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_Pressure1), calig!=-1);
-	GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_Pressure2), calig!=-1);
+	GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_PressureTxt), stroke_type!=si_centerline);
+	GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_Pressure1), stroke_type!=si_centerline);
+	GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_Pressure2), stroke_type!=si_centerline);
     }
 #if 0
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_RmInternal), true);
-    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_RmExternal), calig==0);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_RmExternal), stroke_type==si_std);
 #endif
 }
 
 static int Stroke_CenterLine(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	StrokeDlg *sd = GDrawGetUserData(GGadgetGetWindow(g));
-	StrokeSetup(sd,-1);
+	StrokeSetup(sd,si_centerline);
+    }
+return( true );
+}
+
+static int Stroke_Elipse(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	StrokeDlg *sd = GDrawGetUserData(GGadgetGetWindow(g));
+	StrokeSetup(sd,si_elipse);
     }
 return( true );
 }
@@ -273,7 +313,7 @@ return( true );
 static int Stroke_Caligraphic(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	StrokeDlg *sd = GDrawGetUserData(GGadgetGetWindow(g));
-	StrokeSetup(sd,true);
+	StrokeSetup(sd,si_caligraphic);
     }
 return( true );
 }
@@ -281,7 +321,7 @@ return( true );
 static int Stroke_Stroke(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	StrokeDlg *sd = GDrawGetUserData(GGadgetGetWindow(g));
-	StrokeSetup(sd,false);
+	StrokeSetup(sd,si_std);
     }
 return( true );
 }
@@ -351,7 +391,7 @@ return( true );
 }
 
 #define SD_Width	230
-#define SD_Height	271
+#define SD_Height	335
 #define FH_Height	(SD_Height+75)
 
 static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeInfo *si) {
@@ -360,13 +400,11 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[32];
-    GTextInfo label[32];
+    GGadgetCreateData gcd[38];
+    GTextInfo label[38];
     int yoff=0;
     int gcdoff, stroke_gcd, width_pos;
-    static StrokeInfo defaults = { 25, lj_round, lc_butt,
-	    /* caligraphic */ false,
-	    /* centerline */  false,
+    static StrokeInfo defaults = { 25, lj_round, lc_butt, si_std,
 	    /* toobigwarn */  false,
 	    /* removeinternal */ false,
 	    /* removeexternal */ false,
@@ -375,7 +413,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	    3.1415926535897932/4, .2, 50 };
     StrokeInfo *def = si?si:&defaults;
     char anglebuf[20], ratiobuf[20], widthbuf[20], width2buf[20],
-	    pressurebuf[20], pressure2buf[20];
+	    pressurebuf[20], pressure2buf[20], axisbuf[20];
 
     if ( strokeit!=NULL )
 	sd = &strokedlg;
@@ -411,7 +449,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	    label[0].text_in_resource = true;
 	    gcd[0].gd.label = &label[0];
 	    gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5;
-	    gcd[0].gd.flags = gg_enabled | gg_visible | (def->centerline ? gg_cb_on : 0 );
+	    gcd[0].gd.flags = gg_enabled | gg_visible | (def->stroke_type==si_centerline ? gg_cb_on : 0 );
 	    gcd[0].gd.cid = CID_CenterLine;
 	    gcd[0].gd.handle_controlevent = Stroke_CenterLine;
 	    gcd[0].creator = GRadioCreate;
@@ -423,7 +461,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.mnemonic = 'S';
 	gcd[gcdoff].gd.label = &label[gcdoff];
 	gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = 5+yoff;
-	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (!def->caligraphic && !def->centerline? gg_cb_on : 0);
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (def->stroke_type==si_std? gg_cb_on : 0);
 	gcd[gcdoff].gd.cid = CID_Stroke;
 	gcd[gcdoff].gd.handle_controlevent = Stroke_Stroke;
 	gcd[gcdoff++].creator = GRadioCreate;
@@ -435,18 +473,34 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.mnemonic = 'C';
 	gcd[gcdoff].gd.label = &label[gcdoff];
 	gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+6+84+4;
-	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (def->caligraphic ? gg_cb_on : 0);
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (def->stroke_type == si_caligraphic ? gg_cb_on : 0);
 	gcd[gcdoff].gd.cid = CID_Caligraphic;
 	gcd[gcdoff].gd.handle_controlevent = Stroke_Caligraphic;
 	gcd[gcdoff++].creator = GRadioCreate;
 
+	    /* ditto */
+	label[gcdoff].text = (unichar_t *) _STR_ElipseM;
+	label[gcdoff].text_in_resource = true;
+	gcd[gcdoff].gd.mnemonic = 'E';
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+6+58+4;
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (def->stroke_type == si_elipse ? gg_cb_on : 0);
+	gcd[gcdoff].gd.cid = CID_Elipse;
+	gcd[gcdoff].gd.handle_controlevent = Stroke_Elipse;
+	gcd[gcdoff++].creator = GRadioCreate;
+
 	stroke_gcd = gcdoff;
-	gcd[gcdoff].gd.pos.x = 1; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y+6;
+	gcd[gcdoff].gd.pos.x = 1; gcd[gcdoff].gd.pos.y = gcd[gcdoff-3].gd.pos.y+6;
 	gcd[gcdoff].gd.pos.width = SD_Width-2; gcd[gcdoff].gd.pos.height = 84;
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
 	gcd[gcdoff++].creator = GGroupCreate;
 
-	gcd[gcdoff].gd.pos.x = 1; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y+6;
+	gcd[gcdoff].gd.pos.x = 1; gcd[gcdoff].gd.pos.y = gcd[gcdoff-3].gd.pos.y+6;
+	gcd[gcdoff].gd.pos.width = SD_Width-2; gcd[gcdoff].gd.pos.height = 58;
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+	gcd[gcdoff++].creator = GGroupCreate;
+
+	gcd[gcdoff].gd.pos.x = 1; gcd[gcdoff].gd.pos.y = gcd[gcdoff-3].gd.pos.y+6;
 	gcd[gcdoff].gd.pos.width = SD_Width-2; gcd[gcdoff].gd.pos.height = 58;
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
 	gcd[gcdoff++].creator = GGroupCreate;
@@ -537,11 +591,12 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.cid = CID_BevelJoin;
 	gcd[gcdoff++].creator = GRadioCreate;
 
+	    /* Caligraphic */
 	label[gcdoff].text = (unichar_t *) _STR_PenAngle;
 	label[gcdoff].text_in_resource = true;
 	gcd[gcdoff].gd.mnemonic = 'A';
 	gcd[gcdoff].gd.label = &label[gcdoff];
-	gcd[gcdoff].gd.pos.x = gcd[stroke_gcd+4].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[stroke_gcd-1].gd.pos.y+15+3;
+	gcd[gcdoff].gd.pos.x = gcd[stroke_gcd+5].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[stroke_gcd-2].gd.pos.y+15+3;
 	gcd[gcdoff].gd.flags = gg_visible;
 	gcd[gcdoff].gd.cid = CID_PenAngleTxt;
 	gcd[gcdoff++].creator = GLabelCreate;
@@ -576,6 +631,47 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.cid = CID_ThicknessRatio;
 	gcd[gcdoff].gd.popup_msg = GStringGetResource(_STR_PenHeightRatioPopup,NULL);
 	gcd[gcdoff++].creator = GTextFieldCreate;
+
+	    /* Elipse */
+	label[gcdoff].text = (unichar_t *) _STR_PenAngle;
+	label[gcdoff].text_in_resource = true;
+	gcd[gcdoff].gd.mnemonic = 'A';
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.pos.x = gcd[stroke_gcd+5].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[stroke_gcd-1].gd.pos.y+15+3;
+	gcd[gcdoff].gd.flags = gg_visible;
+	gcd[gcdoff].gd.cid = CID_PenAngle2Txt;
+	gcd[gcdoff++].creator = GLabelCreate;
+
+	sprintf( anglebuf, "%g", def->penangle*180/3.1415926535897932 );
+	label[gcdoff].text = (unichar_t *) anglebuf;
+	label[gcdoff].text_is_1byte = true;
+	gcd[gcdoff].gd.mnemonic = 'A';
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.pos.x = 80; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y-3;
+	gcd[gcdoff].gd.flags = gg_visible;
+	gcd[gcdoff].gd.cid = CID_PenAngle2;
+	gcd[gcdoff++].creator = GTextFieldCreate;
+
+	label[gcdoff].text = (unichar_t *) _STR_MinorAxis;
+	label[gcdoff].text_in_resource = true;
+	gcd[gcdoff].gd.mnemonic = 'H';
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.pos.x = gcd[gcdoff-2].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y+24;
+	gcd[gcdoff].gd.flags = gg_visible;
+	gcd[gcdoff].gd.cid = CID_MinorAxisTxt;
+	gcd[gcdoff++].creator = GLabelCreate;
+
+	sprintf( axisbuf, "%g", def->minorradius );
+	label[gcdoff].text = (unichar_t *) axisbuf;
+	label[gcdoff].text_is_1byte = true;
+	gcd[gcdoff].gd.mnemonic = 'H';
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.pos.x = gcd[gcdoff-2].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y+24;
+	gcd[gcdoff].gd.flags = gg_visible;
+	gcd[gcdoff].gd.cid = CID_MinorAxis;
+	gcd[gcdoff].gd.popup_msg = GStringGetResource(_STR_PenHeightRatioPopup,NULL);
+	gcd[gcdoff++].creator = GTextFieldCreate;
+	/* End radio area */
 
 	width_pos = gcdoff;
 	label[gcdoff].text = (unichar_t *) _STR_StrokeWidth;
@@ -707,9 +803,12 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
     GWidgetHidePalettes();
     GWidgetIndicateFocusGadget(GWidgetGetControl(sd->gw,CID_Width));
     if ( si==NULL )
-	StrokeSetup(sd,GGadgetIsChecked( GWidgetGetControl(sd->gw,CID_Caligraphic)) );
+	StrokeSetup(sd,GGadgetIsChecked( GWidgetGetControl(sd->gw,CID_Caligraphic))?si_caligraphic:
+		GGadgetIsChecked( GWidgetGetControl(sd->gw,CID_Stroke))?si_std:
+		GGadgetIsChecked( GWidgetGetControl(sd->gw,CID_Elipse))?si_elipse:
+		si_centerline);
     else
-	StrokeSetup(sd,def->centerline?-1:def->caligraphic);
+	StrokeSetup(sd,def->stroke_type);
     GDrawSetVisible(sd->gw,true);
     while ( !sd->done )
 	GDrawProcessOneEvent(NULL);

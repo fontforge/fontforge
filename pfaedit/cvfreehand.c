@@ -610,7 +610,7 @@ static SplineSet *TraceCurve(CharView *cv) {
     free(mids);
 
     si = CVFreeHandInfo();
-    if ( !si->centerline ) {
+    if ( si->stroke_type!=si_centerline ) {
 	si->factor = ( si->pressure1==si->pressure2 ) ? NULL : Trace_Factor;
 	si->data = cv;
 	spl->next = SplineSetStroke(spl,si,cv->sc);
@@ -839,7 +839,7 @@ return;
 		sf_normal,.75/cv->scale);
 #endif
 	CVPreserveState(cv);
-	if ( CVFreeHandInfo()->centerline ) {
+	if ( CVFreeHandInfo()->stroke_type==si_centerline ) {
 	    cv->freehand.current_trace->next = *cv->heads[cv->drawmode];
 	    *cv->heads[cv->drawmode] = cv->freehand.current_trace;
 	} else {
