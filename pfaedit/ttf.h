@@ -115,8 +115,3 @@ struct ttfinfo {
 };
 
 #define CHR(ch1,ch2,ch3,ch4) (((ch1)<<24)|((ch2)<<16)|((ch3)<<8)|(ch4))
-
-int getushort(FILE *ttf);
-int32 getlong(FILE *ttf);
-real getfixed(FILE *ttf);
-real get2dot14(FILE *ttf);

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Dec-2000 -->
-  <!-- AP: Last modified: 22-Sep-2001 -->
+  <!-- AP: Last modified: 24-Sep-2001 -->
   <TITLE>The File Menu</TITLE>
 </HEAD>
 <BODY>
@@ -36,6 +36,8 @@
     <A HREF="#Export">Export...</A>
   <LI>
     <A HREF="#Import">Import...</A>
+  <LI>
+    <A HREF="#Merge-kern">Merge Kern Info...</A>
   <LI>
     <A HREF="#Print">Print...</A>
   <LI>
@@ -244,11 +246,16 @@
     <A NAME="Import">Import</A>...
   <DD>
     In the Font View this allows you to import one or several bitmap fonts (from
-    a .bdf file or a ttf/otf/ttc file) and merge it into the list of bitmap sizes
-    stored in the database. You may also load one bitmap font into the backgrounds
-    of the outline characters (So "A" from the bitmap font goes into the background
-    of the "A" outline character), this is to make tracing characters easier.
-    Be careful, you need to load a big bitmap for autotrace to be useful.
+    a .bdf file or a ttf/otf/ttc file, or a TeX pk file) and merge it into the
+    list of bitmap sizes stored in the database. You may also load one bitmap
+    font into the backgrounds of the outline characters (So "A" from the bitmap
+    font goes into the background of the "A" outline character), this is to make
+    tracing characters easier. Be careful, you need to load a big bitmap for
+    autotrace to be useful. <FONT COLOR="Red"><SMALL><STRONG>NOTE:
+    </STRONG></SMALL></FONT>PfaEdit is unable to read an encoding from pk files,
+    it is your responsibility to ensure that the encoding of your font matches
+    that of the pk file <EM>BEFORE</EM> loading the file. This is unfortunate,
+    sorry.
     <P>
     In the Outline View this allows you to import an image into the background,
     or import encapsulated postscript or fig files into the foreground (the xfig
@@ -261,6 +268,19 @@
     In the font view you may select multiple files (by holding down the shift
     or control keys when clicking on them), and all selected bitmap fonts will
     be imported into the sfd.
+  <DT>
+    <A NAME="Merge-kern">Merge Kern Info...</A>
+  <DD>
+    Only available in the font view window. This command will allow you to search
+    for an afm (or tfm) file containing kerning pairs for the specified font.
+    In many cases it will not be needed because when PfaEdit opens a .pfa or
+    .pfb font it will automagically search for an appropriate .afm file in the
+    same place. But sometimes afm files are stored in other directories. And
+    sometimes you want to import information from TeX.<BR>
+    <FONT COLOR="Red"><SMALL><STRONG>NOTE: </STRONG></SMALL></FONT>PfaEdit is
+    unable to read an encoding from tfm files, it is your responsibility to ensure
+    that the encoding of your font matches that of the tfm file <EM>BEFORE</EM>
+    merging kerning information. This is unfortunate, sorry.
   <DT>
     <A NAME="Print">Print</A>...
   <DD>

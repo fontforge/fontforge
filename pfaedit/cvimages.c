@@ -464,13 +464,13 @@ return;
     }
 }
 
-void SCInsertBackImage(SplineChar *sc,GImage *image,real scale,real yoff) {
+void SCInsertBackImage(SplineChar *sc,GImage *image,real scale,real yoff,real xoff) {
     ImageList *im;
 
     SCPreserveBackground(sc);
     im = galloc(sizeof(ImageList));
     im->image = image;
-    im->xoff = 0;
+    im->xoff = xoff;
     im->yoff = yoff;
     im->xscale = im->yscale = scale;
     im->selected = true;
@@ -495,7 +495,7 @@ return;
     ImageAlterClut(image);
     scale = (cv->sc->parent->ascent+cv->sc->parent->descent)/
 	    (real) GImageGetHeight(image);
-    SCInsertBackImage(cv->sc,image,scale,cv->sc->parent->ascent);
+    SCInsertBackImage(cv->sc,image,scale,cv->sc->parent->ascent,0);
 }
 
 static int BCImportImage(BDFChar *bc,char *path) {
@@ -561,7 +561,7 @@ static unichar_t wildps[] = { '*', '.', '{', 'p','s',',', 'e','p','s',',','}', '
 static unichar_t wildfig[] = { '*', '.', '{', 'f','i','g',',','x','f','i','g','}',  '\0' };
 static unichar_t wildbdf[] = { '*', '.', 'b', 'd','f',  '\0' };
 static unichar_t wildttf[] = { '*', '.', '{', 't', 't','f',',','o','t','f',',','t','t','c','}',  '\0' };
-static unichar_t wildpk[] = { '*', '.', 'p', 'k',  '\0' };
+static unichar_t wildpk[] = { '*', 'p', 'k',  '\0' };		/* pk fonts can have names like cmr10.300pk, not a normal extension */
 static unichar_t *wildchr[] = { wildimg, wildps, wildfig };
 static unichar_t *wildfnt[] = { wildbdf, wildttf, wildpk };
 
@@ -574,7 +574,7 @@ static GTextInfo formats[] = {
 static GTextInfo fvformats[] = {
     { (unichar_t *) "BDF", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 1, 0, 1 },
     { (unichar_t *) "TTF", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    /* { (unichar_t *) "pk", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 }, */
+    { (unichar_t *) "pk", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};
 
 static int GFD_ImportOk(GGadget *g, GEvent *e) {
@@ -595,9 +595,11 @@ static int GFD_ImportOk(GGadget *g, GEvent *e) {
 	    if ( toback && strchr(temp,';')!=NULL )
 		GWidgetErrorR(_STR_OnlyOneFont,_STR_OnlyOneFontBackground);
 	    else if ( format==0 )
-		d->done = FVImportBDF(d->fv,temp,toback);
+		d->done = FVImportBDF(d->fv,temp,false, toback);
 	    else if ( format==1 )
 		d->done = FVImportTTF(d->fv,temp,toback);
+	    else
+		d->done = FVImportBDF(d->fv,temp,true, toback);
 	} else if ( d->bc!=NULL )
 	    d->done = BCImportImage(d->bc,temp);
 	else {

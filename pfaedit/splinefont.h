@@ -436,6 +436,7 @@ extern void chunkfree(void *, int size);
 extern SplineFont *SplineFontFromPSFont(struct fontdict *fd);
 extern int CheckAfmOfPostscript(SplineFont *sf,char *psname);
 extern int LoadKerningDataFromAfm(SplineFont *sf, char *filename);
+extern int LoadKerningDataFromTfm(SplineFont *sf, char *filename);
 extern int SFOneWidth(SplineFont *sf);
 extern int SFIsCJK(SplineFont *sf);
 extern struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
@@ -660,5 +661,11 @@ extern int MaxCID(struct cidmap *map);
 extern struct cidmap *FindCidMap(char *registry,char *ordering,int supplement);
 extern void SFEncodeToMap(SplineFont *sf,struct cidmap *map);
 extern struct cidmap *AskUserForCIDMap(SplineFont *sf);
+
+int getushort(FILE *ttf);
+int32 getlong(FILE *ttf);
+int get3byte(FILE *ttf);
+real getfixed(FILE *ttf);
+real get2dot14(FILE *ttf);
 #endif
 

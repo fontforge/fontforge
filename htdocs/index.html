@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 22-Sep-2001 -->
+  <!-- AP: Last modified: 24-Sep-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -66,8 +66,8 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-010922.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 22-Sept-2001
+    <A HREF="pfaedit-010924.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 24-Sept-2001
   <LI>
     <A HREF="pfaedit-solaris-010901.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 1-Sept-2001
@@ -92,7 +92,7 @@ know when you do</A>.
 <P>
 You can download a <A HREF="pfaedit-010905-1.src.rpm">source RPM</A>: Version:
 5-Sept-2001<BR>
-Or you can download the following three packages. Version: 22-Sept-2001
+Or you can download the following three packages. Version: 24-Sept-2001
 <UL>
   <LI>
     <A HREF="libgunicode-010908.tgz">Unicode library source</A> (8-Sept-2001)<BR>
@@ -104,10 +104,10 @@ Or you can download the following three packages. Version: 22-Sept-2001
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-010922.tgz">Pfaedit source</A> (22-Sept-2001)<BR>
+    <A HREF="pfaedit_src-010924.tgz">Pfaedit source</A> (24-Sept-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
-    <A HREF="pfaedit_full-010922.tgz">All three bundled together </A>(22-Sept-2001)
+    <A HREF="pfaedit_full-010924.tgz">All three bundled together </A>(24-Sept-2001)
   <LI>
     If you want to do autotracing around character images you should also download
     Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
@@ -209,6 +209,16 @@ bitmap fonts that pfaedit uses
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    24-Sept-2001
+    <UL>
+      <LI>
+	Can now read metafont pk files as bitmap fonts (Warning: No encoding on these
+	files, you've got to guess at the encoding before loading them).
+      <LI>
+	Can now read kerning information from TeX .tfm files (Again, there's no encoding
+	in these guys, I just assume the fonts encoding matches the tfm)
+    </UL>
   <LI>
     22-Sept-2001
     <UL>
@@ -457,7 +467,9 @@ The following people have helped debug pfaedit. Many thanks!
   <LI>
     Baruch Even
   <LI>
-    Volker Gering<BR>
+    Volker Gering
+  <LI>
+    Torsten Bronger<BR>
     &nbsp;
   <LI>
     And many others!
@@ -634,6 +646,8 @@ Other Encodings
       <LI>
 	<A HREF="http://www.inf.bme.hu/~pts/textrace/">TeXTrace</A>, generates pfb
 	fonts from TeX fonts by rasterizing at high res and then autotracing them
+      <LI>
+	<A HREF="ftp://ftp.radio-msu.net/pub/tex/tex-archive/fonts/utilities/mf2ps/">mftops</A>
     </UL>
   <LI>
     Postscript utilities

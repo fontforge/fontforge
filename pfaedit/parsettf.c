@@ -51,7 +51,7 @@ return( EOF );
 return( (ch1<<8)|ch2 );
 }
 
-static int get3byte(FILE *ttf) {
+int get3byte(FILE *ttf) {
     int ch1 = getc(ttf);
     int ch2 = getc(ttf);
     int ch3 = getc(ttf);

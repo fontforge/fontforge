@@ -64,11 +64,27 @@ return( sf->chars[i] );
 return( NULL );
 }
 
+static void KPInsert( SplineChar *sc1, SplineChar *sc2, int off ) {
+    KernPair *kp;
+
+    if ( sc1!=NULL && sc2!=NULL ) {
+	for ( kp=sc1->kerns; kp!=NULL && kp->sc!=sc2; kp = kp->next );
+	if ( kp!=NULL )
+	    kp->off = off;
+	else if ( off!=0 ) {
+	    kp = gcalloc(1,sizeof(KernPair));
+	    kp->sc = sc2;
+	    kp->off = off;
+	    kp->next = sc1->kerns;
+	    sc1->kerns = kp;
+	}
+    }
+}
+
 int LoadKerningDataFromAfm(SplineFont *sf, char *filename) {
     FILE *file = fopen(filename,"r");
     char buffer[200], *pt, *ept, ch;
     SplineChar *sc1, *sc2;
-    KernPair *kp;
     int off;
 
     if ( file==NULL )
@@ -86,18 +102,7 @@ return( 0 );
 	    sc2 = SFFindName(sf,pt);
 	    *ept = ch;
 	    off = strtol(ept,NULL,10);
-	    if ( sc1!=NULL && sc2!=NULL ) {
-		for ( kp=sc1->kerns; kp!=NULL && kp->sc!=sc2; kp = kp->next );
-		if ( kp!=NULL )
-		    kp->off = off;
-		else if ( off!=0 ) {
-		    kp = gcalloc(1,sizeof(KernPair));
-		    kp->sc = sc2;
-		    kp->off = off;
-		    kp->next = sc1->kerns;
-		    sc1->kerns = kp;
-		}
-	    }
+	    KPInsert(sc1,sc2,off);
 	}
     }
     fclose(file);
@@ -120,6 +125,88 @@ int CheckAfmOfPostscript(SplineFont *sf,char *psname) {
 	ret = true;
     free(new);
 return( ret );
+}
+
+static void tfmDoLigKern(SplineFont *sf, int enc, int lk_index,
+	uint8 *ligkerntab, uint8 *kerntab) {
+    int next;
+    int enc2, k_index;
+    SplineChar *sc1, *sc2;
+    real off;
+
+    if ( enc>=sf->charcnt || (sc1=sf->chars[enc])==NULL )
+return;
+
+    while ( 1 ) {
+	enc2 = ligkerntab[lk_index*4+1];
+	if ( enc2<sf->charcnt && (sc2=sf->chars[enc2])!=NULL &&
+		ligkerntab[lk_index*4+2]>=128 ) {
+	    k_index = ((ligkerntab[lk_index*4+2]-128)*256+ligkerntab[lk_index*4+3])*4;
+	    off = (sf->ascent+sf->descent) *
+		    ((kerntab[k_index]<<24) + (kerntab[k_index+1]<<16) +
+			(kerntab[k_index+2]<<8) + kerntab[k_index+3])/
+		    (double) 0x100000;
+ /* printf( "%s(%d) %s(%d) -> %g\n", sc1->name, sc1->enc, sc2->name, sc2->enc, off); */
+	    KPInsert(sc1,sc2,off);
+	}
+	if ( ligkerntab[lk_index*4]>=128 )
+    break;
+	next = lk_index + ligkerntab[lk_index*4];
+	if ( next==lk_index ) ++next;	/* I guess */
+	lk_index = next;
+    }
+}
+
+int LoadKerningDataFromTfm(SplineFont *sf, char *filename) {
+    FILE *file = fopen(filename,"r");
+    int i, tag, left;
+    uint8 *ligkerntab, *kerntab;
+    int head_len, first, last, width_size, height_size, depth_size, italic_size,
+	    ligkern_size, kern_size;
+
+    if ( file==NULL )
+return( 0 );
+    /* file length = */ getushort(file);
+    head_len = getushort(file);
+    first = getushort(file);
+    last = getushort(file);
+    width_size = getushort(file);
+    height_size = getushort(file);
+    depth_size = getushort(file);
+    italic_size = getushort(file);
+    ligkern_size = getushort(file);
+    kern_size = getushort(file);
+    /* extensible char tab size = getushort(file); */
+    /* font param size = getushort(file); */
+    if ( first-1>last || last>=256 ) {
+	fclose(file);
+return( 0 );
+    }
+    if ( ligkern_size==0 || kern_size==0 ) {
+	fclose(file);
+return( 1 );	/* we successfully read no data */
+    }
+    kerntab = gcalloc(kern_size,sizeof(int32));
+    ligkerntab = gcalloc(ligkern_size,sizeof(int32));
+    fseek( file,
+	    (6+head_len+(last-first+1)+width_size+height_size+depth_size+italic_size)*sizeof(int32),
+	    SEEK_SET);
+    fread( ligkerntab,1,ligkern_size*sizeof(int32),file);
+    fread( kerntab,1,kern_size*sizeof(int32),file);
+
+    fseek( file, (6+head_len)*sizeof(int32), SEEK_SET);
+    for ( i=first; i<=last; ++i ) {
+	/* width = */ getc(file);
+	/* height<<4 | depth indeces = */ getc( file );
+	tag = (getc(file)&3);
+	left = getc(file);
+	if ( tag==1 )
+	    tfmDoLigKern(sf,i,left,ligkerntab,kerntab);
+    }
+
+    free( ligkerntab); free(kerntab);
+    fclose(file);
+return( 1 );
 }
 
 char *EncodingName(int map) {

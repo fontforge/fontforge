@@ -903,6 +903,8 @@ static char *str_CouldNotOpenFile = "Couldn't open file"
 static char *str_CouldNotOpenFileName = "Couldn't open file %.200hs"
 static char *str_NotBdfFile = "Not a bdf file"
 static char *str_NotBdfFileName = "Not a bdf file %.200hs"
+static char *str_NotPkFile = "Not a pk file"
+static char *str_NotPkFileName = "Not a (metafont) pk file %.200hs"
 static char *str_LoadingFrom = "Loading font from %.100hs";
     /* problems */
 static char *str_ProbOpenPath = "The selected path does not form a closed loop";

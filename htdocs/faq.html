@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 6-Sep-2001 -->
+  <!-- AP: Last modified: 24-Sep-2001 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -45,6 +45,9 @@
   <LI>
     <A HREF="#no-copy-names">Why doesn't Edit-&gt;Copy copy character names as
     well as glyph info?</A>
+  <LI>
+    <A HREF="#cidmaps">What on earth are the cidmap files, and should I care
+    about them?</A>
 </UL>
 <P>
   <HR>
@@ -217,6 +220,43 @@
     Secondly because most of the time you don't want the name copied.<BR>
     Thirdly because it is esthetically better that copy should only work with
     data and not meta-data.
+  <DT>
+    <A NAME="cidmaps">What on earth are cidmap files and should I care about
+    them?</A>
+  <DD>
+    Some background:
+    <P>
+    When postscript was invented every character in a font was given a name,
+    and an encoding which was specified by a 256 element array mapping character
+    codes to names.
+    <P>
+    Then they started thinking about CJK fonts (and perhaps Unicode), which have
+    huge character sets, and coming up with reasonable ASCII names for 10,000
+    characters was <SMALL>a)</SMALL> a waste of space, <SMALL>b)</SMALL> fairly
+    meaningless. So then adobe created CID-keyed fonts which have no character
+    names and no encodings. Every character has an index (a CID), which is just
+    a number, and this is sort of treated as a name. Then external to the font
+    is another resource (a cmap) which provides the encoding for the font (and
+    can support really grungy encoding schemes like SJIS), by mapping a sequence
+    of input bytes to a CID.
+    <P>
+    Adobe provides certain standard cmap resources (ie. one for SJIS, one for
+    JIS, one for Extended Unix whatever). Because these files are fairly painful
+    to write Adobe has assigned standard meanings to CIDs so that everyone can
+    use the same cmap file. -- Well actually there are 5 or 6 different standards,
+    Japanese (JIS208), Japanese (JIS212), Korean, Chinese (Hong Kong, Taiwan),
+    Chinese (Mainland, Singapore), Identity (Unicode) -- So CID 1 might be space,
+    CID 2 might be "!", CID 935 might be "Katakana ka", etc.
+    <P>
+    So my cidmap files just give me a mapping between Adobe's CIDs and Unicode.
+    So that PfaEdit will know what character it is working on. If they aren't
+    present things should work ok, but PfaEdit would fill the font view with
+    "?" rather than the appropriate character. And PfaEdit wouldn't be able to
+    reencode the font into Unicode or anything else.
+    <P>
+    <P>
+    So the cidmap files are only useful for people working on CID keyed CJK fonts.
+    So most europeans/americans won't need them.
 </DL>
 <P>
 <P ALIGN=Center>

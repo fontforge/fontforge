@@ -538,11 +538,13 @@ return( temp );
 }
 
 void MergeKernInfo(SplineFont *sf) {
-    static unichar_t wild[] = { '*', '.', 'a', 'f','m',  '\0' };
+    static unichar_t wild[] = { '*', '.', '[','a','t',']', 'f','m',  '\0' };
     unichar_t *ret = GWidgetOpenFile(GStringGetResource(_STR_MergeKernInfo,NULL),NULL,wild,NULL);
     char *temp = cu_copy(ret);
+    int isafm = strstr(temp,".afm")!=NULL;
 
-    if ( !LoadKerningDataFromAfm(sf,temp))
+    if ( (isafm && !LoadKerningDataFromAfm(sf,temp)) ||
+	    (!isafm && !LoadKerningDataFromTfm(sf,temp)) )
 	GDrawError( "Failed to load kern data from %s", temp);
     free(ret); free(temp);
 }
@@ -3054,7 +3056,11 @@ return( NULL );
 	sf = SFReadTTF(filename,0);
     } else if ( strmatch(filename+strlen(filename)-4, ".bdf")==0 ) {
 	sf = SplineFontNew();
-	SFImportBDF(sf,filename,false);
+	SFImportBDF(sf,filename,false, false);
+	sf->changed = false;
+    } else if ( strmatch(filename+strlen(filename)-4, ".pk")==0 ) {
+	sf = SplineFontNew();
+	SFImportBDF(sf,filename,true, false);
 	sf->changed = false;
     } else {
 	GProgressChangeStages(2);
