@@ -2267,6 +2267,8 @@ SplineFont *SplineFontBlank(Encoding *encoding_name,int charcnt) {
     sf->upos = -rint(new_em_size*.1); sf->uwidth = rint(new_em_size*.05);		/* defaults for cff */
     sf->charcnt = charcnt;
     sf->chars = gcalloc(charcnt,sizeof(SplineChar *));
+    if ( encoding_name==NULL )
+	encoding_name = &custom;
     sf->encoding_name = encoding_name;
     sf->uni_interp = interp_from_encoding(encoding_name,greeknames ? ui_greek : ui_none);
     sf->pfminfo.fstype = -1;

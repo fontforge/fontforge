@@ -533,6 +533,8 @@ int main( int argc, char **argv ) {
 	LoadPrefs();
     if ( default_encoding==NULL )
 	default_encoding=FindOrMakeEncoding("ISO8859-1");
+    if ( default_encoding==NULL )
+	default_encoding=&custom;	/* In case iconv is broken */
     initadobeenc();
     inituninameannot();
     initrand();

@@ -1561,6 +1561,8 @@ return;
 	    fp->fd->encoding_name = &custom;
 	    fp->inencoding = 1;
 	}
+	if ( fp->fd->encoding_name==NULL )
+	    fp->fd->encoding_name = &custom;
 	fp->infi = fp->inprivate = fp->inbb = fp->inmetrics = fp->inmetrics2 = false;
 	fp->doneencoding = true;
     } else if ( mycmp("BoundingBoxes",line+1,endtok)==0 ) {

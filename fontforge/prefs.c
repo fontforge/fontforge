@@ -882,6 +882,8 @@ return;
 	    { Encoding *enc = FindOrMakeEncoding(pt);
 		if ( enc==NULL )
 		    enc = FindOrMakeEncoding("ISO8859-1");
+		if ( enc==NULL )
+		    enc = &custom;
 		*((Encoding **) (pl->val)) = enc;
 	    }
 	  break;

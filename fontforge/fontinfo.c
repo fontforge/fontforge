@@ -2207,8 +2207,10 @@ static void RegenerateEncList(struct gfi_data *d) {
 	    ti[i]->text = u_copy(ti[i]->text);
 	}
 	ti[i]->bg = ti[i]->fg = COLOR_DEFAULT;
-	if ( !ti[i]->line )
-	    ti[i]->selected = d->sf->encoding_name == FindOrMakeEncoding(ti[i]->userdata);
+	if ( !ti[i]->line ) {
+	    Encoding *this = _FindOrMakeEncoding(ti[i]->userdata,false);
+	    ti[i]->selected = d->sf->encoding_name == this;
+	}
 	if ( ti[i]->selected )
 	    title = ti[i]->text;
     }

@@ -154,9 +154,14 @@ static Encoding *enc_from_platspec(int platform,int specific) {
 	    /* adobe_custom */;
     }
     e = FindOrMakeEncoding(enc);
-    if ( e==NULL )
-	fprintf( stderr, "The truetype encoding specified by platform=%d specific=%d (which we map to %s) is not supported by your version of iconv(3).\n",
-		platform, specific, enc );
+    if ( e==NULL ) {
+	static int p = -1,s = -1;
+	if ( p!=platform || s!=specific ) {
+	    fprintf( stderr, "The truetype encoding specified by platform=%d specific=%d (which we map to %s) is not supported by your version of iconv(3).\n",
+		    platform, specific, enc );
+	    p = platform; s = specific;
+	}
+    }
 return( e );
 }
 
@@ -183,6 +188,8 @@ static unichar_t *_readencstring(FILE *ttf,int offset,int len,
 	free(cstr);
     } else {
 	enc = enc_from_platspec(platform,specific);
+	if ( enc==NULL )
+return( NULL );
 	if ( enc->is_unicodebmp ) {
 	    str = pt = galloc(len+2);
 	    for ( i=0; i<len/2; ++i ) {
@@ -250,6 +257,8 @@ return( NULL );
 	len = getushort(ttf);
 	off = getushort(ttf);
 	enc = enc_from_platspec(plat,spec);
+	if ( enc==NULL )
+    continue;
 	val = 0;
     /* I really want an english name */
 	if ( (plat==0 || plat==1) && !enc->is_custom && lang==0 )
@@ -1054,11 +1063,14 @@ struct otfname *FindAllLangEntries(FILE *ttf, struct ttfinfo *info, int id ) {
 	    stroff = getushort(ttf);
 
 	    if ( platform==3 && name==id ) {
-		cur = chunkalloc(sizeof(struct otfname));
-		cur->next = head;
-		head = cur;
-		cur->lang = language;
-		cur->name = _readencstring(ttf,tableoff+stroff,str_len,platform,specific,language);
+		unichar_t *temp = _readencstring(ttf,tableoff+stroff,str_len,platform,specific,language);
+		if ( temp!=NULL ) {
+		    cur = chunkalloc(sizeof(struct otfname));
+		    cur->next = head;
+		    head = cur;
+		    cur->lang = language;
+		    cur->name = temp;
+		}
 	    }
 	}
 	fseek(ttf,here,SEEK_SET);
@@ -2653,6 +2665,8 @@ return;
 	char **enc = dict->encodingoff==0 ? AdobeStandardEncoding : AdobeExpertEncoding;
 	info->encoding_name = FindOrMakeEncoding( dict->encodingoff==0 ?
 		"AdobeStandard" : "Custom" );
+	if ( info->encoding_name==NULL )
+	    info->encoding_name = &custom;
 	next = 256;
 	for ( i=0; i<info->glyph_cnt; ++i ) {
 	    for ( pos=0; pos<256; ++pos )
@@ -3508,7 +3522,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    mod = 0;
 	} else if ( platform==3 && specific==0 && enc->is_custom ) {
 	    /* Only select symbol if we don't have something better */
-	    enc = FindOrMakeEncoding("Symbol");
+	    enc = temp;
 	    encoff = offset;
 	    info->platform = platform; info->specific = specific;
 	    /* Now I had assumed this would be a 1 byte encoding, but it turns*/
