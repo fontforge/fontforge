@@ -59,19 +59,24 @@ static int RulerText2(CharView *cv, unichar_t *ubuf) {
     char buf[80];
     double len;
 
-    if ( !cv->p.pressed )
-return( false );
-    if ( cv->p.sp!=NULL && cv->info_sp!=NULL &&
-	    ((cv->p.sp->next!=NULL && cv->p.sp->next->to==cv->info_sp) ||
-	     (cv->p.sp->prev!=NULL && cv->p.sp->prev->from==cv->info_sp)) ) {
-	if ( cv->p.sp->next!=NULL && cv->p.sp->next->to==cv->info_sp )
-	    len = SplineLength(cv->p.sp->next);
-	else
-	    len = SplineLength(cv->p.sp->prev);
-	if ( len>1 )
-	    sprintf( buf, "Spline Length=%.1f", len);
-	else
-	    sprintf( buf, "Spline Length=%g", len);
+    if ( cv->p.pressed ) {
+	if ( cv->p.sp!=NULL && cv->info_sp!=NULL &&
+		((cv->p.sp->next!=NULL && cv->p.sp->next->to==cv->info_sp) ||
+		 (cv->p.sp->prev!=NULL && cv->p.sp->prev->from==cv->info_sp)) ) {
+	    if ( cv->p.sp->next!=NULL && cv->p.sp->next->to==cv->info_sp )
+		len = SplineLength(cv->p.sp->next);
+	    else
+		len = SplineLength(cv->p.sp->prev);
+	    if ( len>1 )
+		sprintf( buf, "Spline Length=%.1f", len);
+	    else
+		sprintf( buf, "Spline Length=%g", len);
+	    uc_strcpy(ubuf,buf);
+return( true );
+	}
+    } else if ( cv->dv!=NULL || cv->gridfit!=NULL ) {
+	double scale = scale = (cv->sc->parent->ascent+cv->sc->parent->descent)/(rint(cv->ft_pointsize*cv->ft_dpi/72.0));
+	sprintf( buf, "%.2f,%.2f", cv->info.x/scale, cv->info.y/scale);
 	uc_strcpy(ubuf,buf);
 return( true );
     }
@@ -128,7 +133,8 @@ static void RulerPlace(CharView *cv, GEvent *event) {
 	cv->rfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cv->ruler_w),&rq);
 	GDrawFontMetrics(cv->rfont,&as,&ds,&ld);
 	cv->rfh = as+ds; cv->ras = as;
-    }
+    } else
+	GDrawRaise(cv->ruler_w);
 
     GDrawSetFont(cv->ruler_w,cv->rfont);
     RulerText(cv,ubuf);

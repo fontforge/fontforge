@@ -1931,13 +1931,14 @@ void CVDebugPointPopup(CharView *cv) {
     extern float snapdistance;
 
     if ( exc==NULL )
-return;
+  goto no_point;
     r = &exc->pts;
     n = r->n_points;
     pts = r->cur;
 
     x = rint(cv->info.x/dv->scale);
     y = rint(cv->info.y/dv->scale);
+
     fudge = rint(snapdistance/cv->scale/dv->scale);
     for ( i=n-1; i>=0; --i ) {
 	if ( x>=pts[i].x-fudge && x<=pts[i].x+fudge &&
@@ -1967,7 +1968,7 @@ return;
 	    }
 	}
 	if ( i==-1 )
-return;
+  goto no_point;
 #if defined( _NO_SNPRINTF ) || defined( __VMS )
 	sprintf(cspace,
 #else
@@ -1980,7 +1981,17 @@ return;
 		(r->org[i].x+r->org[l].x)*dv->scale/2.0, (r->org[i].y+r->org[l].y)*dv->scale/2.0 );
     }
     uc_strcpy(space,cspace);
-    
+
+    GGadgetPreparePopup(cv->v,space);
+return;
+  no_point:
+#if defined( _NO_SNPRINTF ) || defined( __VMS )
+    sprintf(cspace,
+#else
+    snprintf(cspace,sizeof(cspace),
+#endif
+		"%.2f, %.2f", cv->info.x/dv->scale/64.0, cv->info.y/dv->scale/64.0 );
+    uc_strcpy(space,cspace);
     GGadgetPreparePopup(cv->v,space);
 }
 #endif
