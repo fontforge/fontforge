@@ -449,6 +449,10 @@ static void OrientEdges(SplineSet *base,SplineChar *sc) {
     dummy.layers[ly_fore].splines = base;
     if ( sc!=NULL ) dummy.name = sc->name;
     ELFindEdges(&dummy,&el);
+    if ( el.coordmax[1]-el.coordmin[1] > 1.e6 ) {
+	fprintf( stderr, "Warning: Unreasonably big splines. They will be ignored.\n" );
+return;
+    }
     el.major = 1;
     ELOrder(&el,el.major);
 

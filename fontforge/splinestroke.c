@@ -1372,7 +1372,7 @@ static struct strokedspline *_SplineSetApprox(SplineSet *spl,StrokeInfo *si,Spli
 
 	    p_to = cur->plusto;
 	    m_from = cur->minusfrom;
-	    for ( i=j=0; i<approx; ++i ) {
+	    for ( i=0, j=1; i<approx; ++i ) {
 		if ( knots[i]&kt_knot ) {
 		    for ( k=i+1; k<approx && !(knots[k]&kt_knot); ++k );
 		    if ( i>0 && (knots[i-1]&kt_mgood) ) {
@@ -1381,10 +1381,9 @@ static struct strokedspline *_SplineSetApprox(SplineSet *spl,StrokeInfo *si,Spli
 			else
 			    m_to = SplinePointCreate(mmids[i].x,mmids[i].y);
 			m_to->pointtype = pt_corner;
-			if ( j!=0 )
-			    SPFigureCP(m_from,(j)/(approx+1),spline,true);
+			SPFigureCP(m_from,(j)/(approx+1),spline,true);
 			SPFigureCP(m_to,(i+1)/(approx+1),spline,false);
-			NormalizeT(mmids+j,i-j,j==0?0:mmids[j-1].t,mmids[i].t);
+			NormalizeT(mmids+j,i-j,mmids[j-1].t,mmids[i].t);
 			ApproximateSplineFromPointsSlopes(m_from,m_to,mmids+j,i-j,false);
 			m_from = m_to;
 		    }
@@ -1395,10 +1394,9 @@ static struct strokedspline *_SplineSetApprox(SplineSet *spl,StrokeInfo *si,Spli
 			else
 			    p_from = SplinePointCreate(pmids[i].x,pmids[i].y);
 			p_from->pointtype = pt_corner;
-			if ( j!=0 )	/* Really should use mmids[].t, pmids[].t is backwards */
-			    SPFigurePlusCP(p_to,j/(approx+1),spline,false);
+			SPFigurePlusCP(p_to,j/(approx+1),spline,false);
 			SPFigurePlusCP(p_from,(i+1)/(approx+1),spline,true);
-			NormalizeT(pmids+j,i-j,pmids[i].t,j==0?1.0:pmids[j-1].t);
+			NormalizeT(pmids+j,i-j,pmids[i].t,pmids[j-1].t);
 			ApproximateSplineFromPointsSlopes(p_from,p_to,pmids+j,i-j,false);
 			p_to = p_from;
 		    }
