@@ -834,18 +834,34 @@ static void bGenerate(Context *c) {
 	SFCompactFont(sf);
 }
 
+static int strtailcmp(char *needle, char *haystack) {
+    int nlen = strlen(needle), hlen = strlen(haystack);
+
+    if ( nlen>hlen )
+return( -1 );
+
+    if ( *needle=='/' )
+return( strcmp(needle,haystack));
+
+return( strcmp(needle,haystack+hlen-nlen));
+}
+
+typedef SplineFont *SFArray[48];
+
 static void bGenerateFamily(Context *c) {
     SplineFont *sf = NULL;
     char *bitmaptype = "";
     int fmflags = -1;
-    struct sflist *sfs, *cur;
+    struct sflist *sfs, *cur, *lastsfs;
     Array *fonts;
     FontView *fv;
-    int i;
+    int i, j, fc, added;
     uint16 psstyle;
-    SplineFont *styles[48];
+    int fondcnt = 0, fondmax = 10;
+    SFArray *familysfs=NULL;
 
-    memset(styles,0,sizeof(styles));
+    familysfs = galloc((fondmax=10)*sizeof(SFArray));
+
     if ( c->a.argc!=5 )
 	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str ||
@@ -860,8 +876,8 @@ static void bGenerateFamily(Context *c) {
 	if ( fonts->vals[i].type!=v_str )
 	    error(c,"Values in the fontname array must be strings");
 	for ( fv=fv_list; fv!=NULL; fv=fv->next ) if ( fv->sf!=sf )
-	    if ( strcmp(fonts->vals[i].u.sval,fv->sf->origname)==0 ||
-		    (fv->sf->filename!=NULL && strcmp(fonts->vals[i].u.sval,fv->sf->origname)==0 ))
+	    if ( strtailcmp(fonts->vals[i].u.sval,fv->sf->origname)==0 ||
+		    (fv->sf->filename!=NULL && strtailcmp(fonts->vals[i].u.sval,fv->sf->origname)==0 ))
 	break;
 	if ( fv==NULL )
 	    for ( fv=fv_list; fv!=NULL; fv=fv->next ) if ( fv->sf!=sf )
@@ -884,29 +900,64 @@ static void bGenerateFamily(Context *c) {
 	if ( psstyle>=48 ) {
 	    fprintf( stderr, "%s(%s)\n", fv->sf->origname, fv->sf->fontname );
 	    error( c, "A font can't be both Condensed and Expanded" );
-	} else if ( styles[psstyle]==NULL || styles[psstyle]==fv->sf)
-	    styles[psstyle] = fv->sf;
-	else {
-	    fprintf( stderr, "%s(%s) and %s(%s) 0x%x\n",
-		    styles[psstyle]->origname, styles[psstyle]->fontname,
-		    fv->sf->origname, fv->sf->fontname,
-		    psstyle );
-	    error( c, "Two array entries given with the same style (in the Mac's postscript style set)" );
+	}
+	added = false;
+	if ( fv->sf->fondname==NULL ) {
+	    if ( fondcnt>0 ) {
+		for ( j=0; j<48; ++j )
+		    if ( familysfs[0][j]!=NULL )
+		break;
+		if ( familysfs[0][j]->fondname==NULL ) {
+		    if ( familysfs[0][psstyle]==NULL || familysfs[0][psstyle]==fv->sf ) {
+			familysfs[0][psstyle] = fv->sf;
+			added = true;
+		    }
+		}
+	    }
+	} else {
+	    for ( fc=0; fc<fondcnt; ++fc ) {
+		for ( j=0; j<48; ++j )
+		    if ( familysfs[fc][j]!=NULL )
+		break;
+		if ( familysfs[fc][j]->fondname!=NULL &&
+			strcmp(familysfs[fc][j]->fondname,fv->sf->fondname)==0 ) {
+		    if ( familysfs[fc][psstyle]==NULL || familysfs[fc][psstyle]==fv->sf ) {
+			familysfs[fc][psstyle] = fv->sf;
+			added = true;
+		    } else {
+			fprintf( stderr, "%s(%s) and %s(%s) 0x%x in FOND %s\n",
+				familysfs[fc][psstyle]->origname, familysfs[fc][psstyle]->fontname,
+				fv->sf->origname, fv->sf->fontname,
+				psstyle, fv->sf->fondname );
+			error( c, "Two array entries given with the same style (in the Mac's postscript style set)" );
+		    }
+		}
+	    }
+	}
+	if ( !added ) {
+	    if ( fondcnt>=fondmax )
+		familysfs = grealloc(familysfs,(fondmax+=10)*sizeof(SFArray));
+	    memset(familysfs[fondcnt],0,sizeof(SFArray));
+	    familysfs[fondcnt++][psstyle] = fv->sf;
 	}
     }
-    if ( styles[0]==NULL ) {
+    if ( familysfs[0][0]==NULL ) {
 	if ( MacStyleCode(c->curfv->sf,NULL)==0 && strcmp(c->curfv->sf->familyname,sf->familyname)!=0 )
-	    styles[0] = c->curfv->sf;
-	if ( styles[0]==NULL )
+	    familysfs[0][0] = c->curfv->sf;
+	if ( familysfs[0][0]==NULL )
 	    error(c,"At least one of the specified fonts must have a plain style");
     }
-    sfs = NULL;
-    for ( i=47; i>=0; --i ) if ( styles[i]!=NULL ) {
-	cur = chunkalloc(sizeof(struct sflist));
-	cur->next = sfs;
-	sfs = cur;
-	cur->sf = styles[i];
+    sfs = lastsfs = NULL;
+    for ( fc=0; fc<fondcnt; ++fc ) {
+	for ( j=0; j<48; ++j ) if ( familysfs[fc][j]!=NULL ) {
+	    cur = chunkalloc(sizeof(struct sflist));
+	    if ( sfs==NULL ) sfs = cur;
+	    else lastsfs->next = cur;
+	    lastsfs = cur;
+	    cur->sf = familysfs[fc][j];
+	}
     }
+    free(familysfs);
 
     if ( !GenerateScript(sf,c->a.vals[1].u.sval,bitmaptype,fmflags,-1,NULL,sfs) )
 	error(c,"Save failed");
