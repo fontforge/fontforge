@@ -3152,6 +3152,18 @@ static void dumpglyph(SplineChar *sc, struct glyphinfo *gi) {
     char *fs;
     uint8 *touched;
 
+/* I haven't seen this documented, but ttf rasterizers are unhappy with a */
+/*  glyph that consists of a single point. Glyphs containing two single points*/
+/*  are ok, glyphs with a single point and anything else are ok, glyphs with */
+/*  a line are ok. But a single point is not ok. Dunno why */
+    if (( sc->splines==NULL && sc->refs==NULL ) ||
+	    ( sc->refs==NULL &&
+	     (sc->splines->first->next==NULL ||
+	      sc->splines->first->next->to == sc->splines->first)) ) {
+	dumpspace(sc,gi);
+return;
+    }
+
     gi->loca[gi->next_glyph++] = ftell(gi->glyphs);
 
     if ( sc->changedsincelasthinted && !sc->manualhints )
@@ -3240,16 +3252,6 @@ static void dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
 	if ( SCWorthOutputting(sf->chars[i]) ) {
 	    if ( (refs = SCCanonicalRefs(sf->chars[i],false))!=NULL )
 		dumpcomposit(sf->chars[i],refs,gi);
-	    else if ( sf->chars[i]->splines==NULL && sf->chars[i]->refs==NULL )
-		dumpspace(sf->chars[i],gi);
-/* I haven't seen this documented, but ttf rasterizers are unhappy with a */
-/*  glyph that consists of a single point. Glyphs containing two single points*/
-/*  are ok, glyphs with a single point and anything else are ok, glyphs with */
-/*  a line are ok. But a single point is not ok. Dunno why */
-	    else if ( sf->chars[i]->refs==NULL &&
-		    (sf->chars[i]->splines->first->next==NULL ||
-		     sf->chars[i]->splines->first->next->to == sf->chars[i]->splines->first))
-		dumpspace(sf->chars[i],gi);
 	    else
 		dumpglyph(sf->chars[i],gi);
 	}
