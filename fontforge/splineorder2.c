@@ -113,7 +113,7 @@ return( false );
 return( false );
 	    sq = sqrt(sq);
 	    ttf_t = (-ttf->splines[dim].c-sq)/(2*ttf->splines[dim].b);
-	    if ( ttf_t>=0 && ttf_t<=1.0 ) {
+	    if ( ttf_t>=-0.0001 && ttf_t<=1.0001 ) {	/* Optimizer gives us rounding errors */
 		val = (ttf->splines[other].b*ttf_t+ttf->splines[other].c)*ttf_t+
 			    ttf->splines[other].d;
 		if ( val>o-err && val<o+err )
@@ -170,10 +170,9 @@ static int buildtestquads(Spline *ttf,real xmin,real ymin,real cx,real cy,
     real fudge;
 
     /* test the control points are reasonable */
-    fudge = (psbb->maxx-psbb->minx)/10;
+    fudge = (psbb->maxx-psbb->minx) + (psbb->maxy-psbb->miny);
     if ( cx<psbb->minx-fudge || cx>psbb->maxx+fudge )
 return( false );
-    fudge = (psbb->maxy-psbb->miny)/10;
     if ( cy<psbb->miny-fudge || cy>psbb->maxy+fudge )
 return( false );
 
