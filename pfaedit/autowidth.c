@@ -307,12 +307,12 @@ static void ApplyChanges(WidthInfo *wi) {
     struct charone *ch;
     DBounds bb;
 
-    for ( i=0; i<wi->rcnt; ++i )
+    for ( i=0; i<wi->real_rcnt; ++i )
 	rsel[wi->right[i]->sc->enc] = true;
     transform[0] = transform[3] = 1.0;
     transform[1] = transform[2] = transform[5] = 0;
 
-    for ( i=0; i<wi->rcnt; ++i ) {
+    for ( i=0; i<wi->real_rcnt; ++i ) {
 	ch = wi->right[i];
 	transform[4] = ch->newl-ch->lbearing;
 	if ( transform[4]!=0 ) {
@@ -322,7 +322,7 @@ static void ApplyChanges(WidthInfo *wi) {
     }
     free(rsel);
 
-    for ( i=0; i<wi->lcnt; ++i ) {
+    for ( i=0; i<wi->real_lcnt; ++i ) {
 	ch = wi->left[i];
 	SplineCharFindBounds(ch->sc,&bb);
 	width = rint(bb.maxx + ch->newr);
@@ -1031,7 +1031,11 @@ static struct charone **BuildCharList(SplineFont *sf,GWindow gw, int base,
 	    ret = galloc((cnt+2)*sizeof(struct charone *));
 	else {
 	    rcnt = cnt;
-	    if ( iswidth ) {		/* I always want 'I' in the character list when doing widths */
+	    if ( iswidth &&		/* I always want 'I' in the character list when doing widths */
+					/*  or at least when doing widths of LGC alphabets where */
+			                /*  concepts like serifs make sense */
+		    (( ret[0]->sc->unicodeenc>='A' && ret[0]->sc->unicodeenc<0x530) ||
+		     ( ret[0]->sc->unicodeenc>=0x1d00 && ret[0]->sc->unicodeenc<0x2000)) ) {
 		for ( s=0; s<cnt; ++s )
 		    if ( ret[s]->sc->unicodeenc=='I' )
 		break;
@@ -1159,6 +1163,21 @@ return;
     }
 }
 
+static void ScriptSerifChecker(WidthInfo *wi) {
+    /* If not LGC (latin, greek, cyrillic) then ignore serif checks */
+    /*  What about letterlike-symbols? */
+    if (( wi->left[0]->sc->unicodeenc>='A' && wi->left[0]->sc->unicodeenc<0x530) ||
+	     ( wi->left[0]->sc->unicodeenc>=0x1d00 && wi->left[0]->sc->unicodeenc<0x2000)) {
+	 /* They are working with letters where serif checks are reasonable */
+    } else {
+	wi->serifsize = wi->seriflength = 0;
+	wi->serifs[0][0] = wi->serifs[0][1] = NOTREACHED;
+	wi->serifs[1][0] = wi->serifs[1][1] = NOTREACHED;
+	wi->serifs[2][0] = wi->serifs[2][1] = NOTREACHED;
+	wi->serifs[3][0] = wi->serifs[3][1] = NOTREACHED;
+    }
+}
+
 static int figurekernsets(WidthInfo *wi,struct kernsets *ks) {
     int i,j,k,cnt,lcnt,max;
     unichar_t *ch2s;
@@ -1217,6 +1236,7 @@ return( false );
 	free(wi->right); wi->right = NULL;
 return( false );
     }
+    ScriptSerifChecker(wi);
 
     wi->pairs = galloc(max*sizeof(struct charpair *));
     for ( i=lcnt=cnt=0; i<ks->cur; ++i ) if ( ks->ch1[i]!='\0' ) {
@@ -1324,6 +1344,7 @@ return( true );
 		GWidgetErrorR(_STR_NoCharsSelected,_STR_NoCharsSelected);
 return( true );
 	    }
+	    ScriptSerifChecker(wi);
 	    InitCharPairs(wi);
 	} else {
 	    static unichar_t filter[] = { '*','.','t', 'x', 't', '\0' };
@@ -1667,7 +1688,11 @@ static struct charone **autowidthBuildCharList(SplineFont *sf, int base,
 	ret = galloc((cnt+2)*sizeof(struct charone *));
       else {
 	*rtot = cnt;
-	if ( iswidth ) {		/* I always want 'I' in the character list when doing widths */
+	if ( iswidth &&		/* I always want 'I' in the character list when doing widths */
+				    /*  or at least when doing widths of LGC alphabets where */
+				    /*  concepts like serifs make sense */
+		(( ret[0]->sc->unicodeenc>='A' && ret[0]->sc->unicodeenc<0x530) ||
+		 ( ret[0]->sc->unicodeenc>=0x1d00 && ret[0]->sc->unicodeenc<0x2000)) ) {
 	    for ( s=0; s<cnt; ++s )
 		if ( ret[s]->sc->unicodeenc=='I' )
 	    break;
@@ -1705,6 +1730,7 @@ int AutoWidthScript(SplineFont *sf,int spacing) {
 	FreeCharList(wi.right);
 return( 0 );
     }
+    ScriptSerifChecker(&wi);
     wi.done = true;
     InitCharPairs(&wi);
     BuildCharPairs(&wi);
@@ -1734,6 +1760,7 @@ int AutoKernScript(SplineFont *sf,int spacing, int threshold,char *kernfile) {
 	    FreeCharList(wi.right);
 return( false );
 	}
+	ScriptSerifChecker(&wi);
 	InitCharPairs(&wi);
     } else {
 	if ( !ReadKernPairFile(uc_copy(kernfile),&wi))
