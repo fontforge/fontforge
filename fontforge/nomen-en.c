@@ -1245,11 +1245,8 @@ static char str_CouldntFindSubstitution = "Could not find substitution character
 static char str_Dontsave[] = "Don't Save";
 static unichar_t mnemonic_Dontsave[] = 'D';
 static char str_Fontchange[] = "Font changed";
-/* Font %.70s in file %.70s has been changed.\nDo you want to save it? */
-static char str_Fontchangepre[] = "Font ";
-static char str_Fontchangemid[] = " in file ";
-static char str_Fontchangepost[] = " has been changed.\012Do you want to save it?";
-static char str_Fontchangerevertpost[] = " has been changed.\012Reverting the file will lose those changes.\012Is that what you want?";
+static char str_FontChangedMsg = "Font %1$.40hs in file %2$.40hs has been changed.\nDo you want to save it?"
+static char str_FontChangedRevertMsg = "Font %1$.40hs in file %2$.40hs has been changed.\012Reverting the file will lose those changes.\012Is that what you want?";
     /* General messages from fontview.c */
 static char str_Revert[] = "Revert";
 static unichar_t mnemonic_Revert[] = 'R';

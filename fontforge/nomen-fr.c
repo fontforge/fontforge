@@ -1228,11 +1228,8 @@ static char str_CouldntFindSubstitution = "Glyphe de substitution introuvable : 
 static char str_Dontsave[] = "Ne pas enregistrer" ;
 static unichar_t mnemonic_Dontsave[] = 'N' ;
 static char str_Fontchange[] = "Fonte modifiée" ;
-   /* Font %.70s in file %.70s has been changed.\nDo you want to save it ? */
-static char str_Fontchangepre[] = "La fonte " ;
-static char str_Fontchangemid[] = " dans le fichier " ;
-static char str_Fontchangepost[] = " a été modifiée.\012Voulez vous l'enregistrer ?" ;
-static char str_Fontchangerevertpost[] = " a été modifiée.\012Revenir vous fera perdre toutes les modifications.\012Voulez vous vraiment revenir ?" ;
+static char str_FontChangedMsg = "La fonte %1$.40s dans le fichier %2$.40s a été modifiée.\012Voulez vous l'enregistrer ?";
+static char str_FontChangedRevertMsg = "La fonte %1$.40s dans le fichier %2$.40s a été modifiée.\012Revenir vous fera perdre toutes les modifications.\012Voulez vous vraiment revenir ?" ;
  /* General messages from fontview.c */
 static char str_Revert[] = "Revenir" ;
 static unichar_t mnemonic_Revert[] = 'R' ;

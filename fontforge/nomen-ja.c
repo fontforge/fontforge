@@ -1227,11 +1227,8 @@ static char str_CouldntFindSubstitution = "置き換え文字%.40hsが見つかりません."
 static char str_Dontsave[] = "保存しない(D)";
 static unichar_t mnemonic_Dontsave[] = 'D';
 static char str_Fontchange[] = "フォントが変更されています.";
-/* Font %.70s in file %.70s has been changed.\nDo you want to save it? */
-static char str_Fontchangepre[] = "フォント '";
-static char str_Fontchangemid[] = "' (ファイル名 '";
-static char str_Fontchangepost[] = "') は変更されています.\012保存しますか?";
-static char str_Fontchangerevertpost[] = " は変更されています.\nファイルを元に戻すといくつかの編集操作の結果が失われます.\n元に戻してよろしいですか?";
+static char str_FontChangedMsg[] = "フォント '%1$.40hs' (ファイル名 '%2$.40hs') は変更されています.\012保存しますか?";
+static char str_FontChangedRevertMsg[] = "フォント '%1$.40hs' (ファイル名 '%2$.40hs') は変更されています.\nファイルを元に戻すといくつかの編集操作の結果が失われます.\n元に戻してよろしいですか?";
     /* General messages from fontview.c */
 static char str_Revert[] = "元に戻す(R)";
 static unichar_t mnemonic_Revert[] = 'R';
