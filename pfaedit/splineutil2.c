@@ -1203,14 +1203,12 @@ static void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint 
 static void RemoveZeroLengthSplines(SplineSet *spl, int onlyselected) {
     SplinePoint *curp, *next, *prev;
 
-    if ( spl->first->next!=NULL && spl->first->next->to==spl->first &&
-	    spl->first->nonextcp && spl->first->noprevcp )
-return;
-
     for ( curp = spl->first, prev=NULL; curp!=NULL ; curp=next ) {
 	next = NULL;
 	if ( curp->next!=NULL )
 	    next = curp->next->to;
+	if ( curp==next )	/* Once we've worked a contour down to a single point we can't do anything more here. Someone else will have to free the contour */
+return;
 	/* Zero length splines give us NaNs */
 	if ( curp!=NULL && (curp->selected || !onlyselected) &&
 		((curp->prev!=NULL && curp->me.x==curp->prev->from->me.x && curp->me.y==curp->prev->from->me.y ) ||
