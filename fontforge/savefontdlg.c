@@ -1969,6 +1969,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    if ( fmflags&0x20 ) old_ttf_flags |= ttf_flag_pfed_comments;
 	    if ( fmflags&0x40 ) old_ttf_flags |= ttf_flag_pfed_colors;
 	    if ( fmflags&0x80 ) old_ttf_flags |= ttf_flag_applemode|ttf_flag_otmode;
+	    if ( fmflags&0x100 ) old_ttf_flags |= ttf_flag_glyphmap;
 	} else {
 	    old_otf_flags = 0;
 		/* Applicable postscript flags */
@@ -1984,6 +1985,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    if ( fmflags&0x20 ) old_otf_flags |= ttf_flag_pfed_comments;
 	    if ( fmflags&0x40 ) old_otf_flags |= ttf_flag_pfed_colors;
 	    if ( fmflags&0x80 ) old_otf_flags |= ttf_flag_applemode|ttf_flag_otmode;
+	    if ( fmflags&0x100 ) old_otf_flags |= ttf_flag_glyphmap;
 	}
     }
 
