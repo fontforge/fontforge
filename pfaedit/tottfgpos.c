@@ -625,7 +625,7 @@ static void dumpgposkerndata(FILE *gpos,SplineFont *sf,int sli,
 	putshort(gpos,0);
     for ( i=0; i<cnt; ++i ) {
 	offsets[i] = ftell(gpos)-coverage_pos+2;
-	for ( pcnt = 0, kp = glyphs[i]->kerns; kp!=NULL; kp=kp->next )
+	for ( pcnt = 0, kp = isv ? glyphs[i]->vkerns : glyphs[i]->kerns; kp!=NULL; kp=kp->next )
 	    if ( kp->sli==sli ) ++pcnt;
 	putshort(gpos,pcnt);
 	if ( pcnt>=max ) {
@@ -633,7 +633,7 @@ static void dumpgposkerndata(FILE *gpos,SplineFont *sf,int sli,
 	    seconds = grealloc(seconds,max*sizeof(int));
 	    changes = grealloc(changes,max*sizeof(int));
 	}
-	for ( pcnt = 0, kp = glyphs[i]->kerns; kp!=NULL; kp=kp->next ) {
+	for ( pcnt = 0, kp = isv ? glyphs[i]->vkerns : glyphs[i]->kerns; kp!=NULL; kp=kp->next ) {
 	    if ( kp->sli==sli ) {
 		seconds[pcnt] = kp->sc->ttf_glyph;
 		changes[pcnt++] = kp->off;
@@ -718,7 +718,7 @@ return( glyphs );
 }
 
 static void DumpClass(FILE *gpos,uint16 *class,int numGlyphs) {
-    int ranges, i, cur, first, last, istart;
+    int ranges, i, cur, first= -1, last, istart;
 
     for ( i=ranges=0; i<numGlyphs; ) {
 	istart = i;

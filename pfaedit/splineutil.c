@@ -3221,6 +3221,7 @@ SplineChar *SplineCharCreate(void) {
     SplineChar *sc = chunkalloc(sizeof(SplineChar));
     sc->color = COLOR_DEFAULT;
     sc->orig_pos = 0xffff;
+    sc->unicodeenc = -1;
 return( sc );
 }
 

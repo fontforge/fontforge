@@ -1125,7 +1125,7 @@ return( 0 );
     if ( insecond==0 || insecond>3 )
 return( 0 );
     if ( (infirst&1) && (insecond&2) ) {
-	if ( kc->offsets[scpos1*kc->second_cnt+kwpos1]!=0 )
+	if ( kc->offsets[scpos1*kc->second_cnt+kwpos2]!=0 )
 return( kc->offsets[scpos1*kc->second_cnt+kwpos2] );
     }
     if ( !ordered ) {

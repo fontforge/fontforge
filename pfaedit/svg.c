@@ -73,7 +73,7 @@ static int svg_outfontheader(FILE *file, SplineFont *sf) {
     fprintf( file, "<svg>\n<defs>\n" );
     fprintf( file, "<font id=\"%s\" horiz-adv-x=\"%d\" ", sf->fontname, defwid );
     if ( sf->hasvmetrics )
-	fprintf( file, "vert-adv-y=%d ", sf->ascent+sf->descent );
+	fprintf( file, "vert-adv-y=\"%d\" ", sf->ascent+sf->descent );
     putc('>',file); putc('\n',file);
     fprintf( file, "  <font-face \n" );
     fprintf( file, "    font-family=\"%s\"\n", sf->familyname );
@@ -209,8 +209,9 @@ static void svg_scpathdump(FILE *file, SplineChar *sc) {
 	for ( ref= sc->refs; ref!=NULL; ref=ref->next )
 	    lineout = svg_pathdump(file,ref->splines,lineout);
 	if ( lineout>=255-4 ) putc('\n',file );
+	putc('"',file);
     }
-    fputs("\" />\n",file);
+    fputs(" />\n",file);
 }
 
 static int LigCnt(SplineFont *sf,PST *lig,int32 *univals,int max) {
@@ -350,13 +351,13 @@ static void svg_dumpkerns(FILE *file,SplineFont *sf,int isv) {
 		kp!=NULL; kp = kp->next )
 	    if ( kp->off!=0 && SCWorthOutputting(kp->sc)) {
 		fprintf( file, isv ? "    <vkern " : "    <hkern " );
-		if ( sf->chars[i]->unicodeenc!=-1 || HasLigature(sf->chars[i]))
+		if ( sf->chars[i]->unicodeenc==-1 || HasLigature(sf->chars[i]))
 		    fprintf( file, "g1=\"%s\" ", sf->chars[i]->name );
 		else if ( sf->chars[i]->unicodeenc>='A' || sf->chars[i]->unicodeenc<='z' )
 		    fprintf( file, "u1=\"%c\" ", sf->chars[i]->unicodeenc );
 		else
 		    fprintf( file, "u1=\"&#x%x\" ", sf->chars[i]->unicodeenc );
-		if ( kp->sc->unicodeenc!=-1 || HasLigature(kp->sc))
+		if ( kp->sc->unicodeenc==-1 || HasLigature(kp->sc))
 		    fprintf( file, "g2=\"%s\" ", kp->sc->name );
 		else if ( kp->sc->unicodeenc>='A' || kp->sc->unicodeenc<='z' )
 		    fprintf( file, "u2=\"%c\" ", kp->sc->unicodeenc );
@@ -374,7 +375,7 @@ static void svg_dumpkerns(FILE *file,SplineFont *sf,int isv) {
 		fprintf( file, "\"\n\tg2=\"" );
 		fputkerns( file, kc->seconds[j]);
 		fprintf( file, "\"\n\tk=\"%d\" />\n",
-			kc->offsets[i*kc->first_cnt+j]);
+			-kc->offsets[i*kc->first_cnt+j]);
 	    }
 	}
     }
@@ -410,6 +411,8 @@ static void svg_sfdump(FILE *file,SplineFont *sf) {
 	    svg_scdump(file, sf->chars[i],defwid);
     }
     for ( i=0; i<sf->charcnt; ++i ) {
+	if ( i==0 && SCIsNotdef(sf->chars[i],-1 ))
+    continue;
 	if ( SCWorthOutputting(sf->chars[i]) && !HasLigature(sf->chars[i]) &&
 		(sf->chars[i]->unicodeenc==-1 || sf->chars[i]->unicodeenc>=0x10000 ||
 		!(isarabinitial(sf->chars[i]->unicodeenc) ||
@@ -1822,7 +1825,7 @@ static char *SVGGetNames(SplineFont *sf,xmlChar *g,xmlChar *utf8,SplineChar **sc
 	for ( i=0; u[i]!=0; ++i ) {
 	    temp = SFGetChar(sf,u[i],NULL);
 	    if ( temp!=NULL ) {
-		if ( *sc!=NULL ) *sc = temp;
+		if ( *sc==NULL ) *sc = temp;
 		len = strlen(temp->name)+1;
 	    }
 	}

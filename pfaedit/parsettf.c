@@ -3775,7 +3775,7 @@ static uint16 *getClassDefTable(FILE *ttf, int classdef_offset, int cnt) {
     if ( format==1 ) {
 	start = getushort(ttf);
 	glyphcnt = getushort(ttf);
-	if ( start+glyphcnt>cnt ) {
+	if ( start+(int) glyphcnt>cnt ) {
 	    fprintf( stderr, "Bad class def table. start=%d cnt=%d, max glyph=%d\n", start, glyphcnt, cnt );
 	    glyphcnt = cnt-start;
 	}
@@ -3943,7 +3943,7 @@ return;
 	c2_cnt = getushort(ttf);
 	if ( isv!=2 ) {
 	    if ( isv ) {
-		if ( info->khead==NULL )
+		if ( info->vkhead==NULL )
 		    info->vkhead = kc = chunkalloc(sizeof(KernClass));
 		else
 		    kc = info->vklast->next = chunkalloc(sizeof(KernClass));
@@ -3965,10 +3965,12 @@ return;
 		for ( j=0; j<c2_cnt; ++j) {
 		    readvaluerecord(&vr1,vf1,ttf);
 		    readvaluerecord(&vr2,vf2,ttf);
-		    if ( lookup->flags&1 )	/* R2L */
-			kc->offsets[i*c2_cnt+j] = vr2.xadvance+vr1.xplacement;
+		    if ( isv )
+			kc->offsets[i*c2_cnt+j] = vr1.yadvance;
+		    else if ( lookup->flags&1 )	/* R2L */
+			kc->offsets[i*c2_cnt+j] = vr2.xadvance;
 		    else
-			kc->offsets[i*c2_cnt+j] = vr1.xadvance+vr2.xplacement;
+			kc->offsets[i*c2_cnt+j] = vr1.xadvance;
 		}
 	    }
 	} else {
@@ -6320,6 +6322,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->names = info->names;
     sf->anchor = info->ahead;
     sf->kerns = info->khead;
+    sf->vkerns = info->vkhead;
     sf->script_lang = info->script_lang;
     sf->ttf_tables = info->tabs;
     if ( info->encoding_name == em_symbol || info->encoding_name == em_mac )
