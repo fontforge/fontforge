@@ -71,6 +71,7 @@ char *GFileGetAbsoluteName(char *name, char *result, int rsiz) {
 		spt = pt;
 	}
 	name = buffer;
+	if ( rsiz>sizeof(buffer)) rsiz = sizeof(buffer);	/* Else valgrind gets unhappy */
     }
     if (result!=name) {
 	strncpy(result,name,rsiz);
@@ -90,18 +91,30 @@ char *GFileBuildName(char *dir,char *fname,char *buffer,int size) {
     int len;
 
     if ( dir==NULL || *dir=='\0' ) {
-	strncpy(buffer,fname,size-1);
-	buffer[size-1]='\0';
+	if ( strlen( fname )<size-1 )		/* valgrind didn't like my strncpies but this complication makes it happy */
+	    strcpy(buffer,fname);
+	else {
+	    strncpy(buffer,fname,size-1);
+	    buffer[size-1]='\0';
+	}
     } else {
 	if ( buffer!=dir ) {
-	    strncpy(buffer,dir,size-3);
-	    buffer[size-3]='\0';
+	    if ( strlen( dir )<size-3 )
+		strcpy(buffer,dir);
+	    else {
+		strncpy(buffer,dir,size-3);
+		buffer[size-3]='\0';
+	    }
 	}
 	len = strlen(buffer);
 	if ( buffer[len-1]!='/' )
 	    buffer[len++] = '/';
-	strncpy(buffer+len,fname,size-len-1);
-	buffer[size-1]='\0';
+	if ( strlen( fname )<size-1 )
+	    strcpy(buffer+len,fname);
+	else {
+	    strncpy(buffer+len,fname,size-len-1);
+	    buffer[size-1]='\0';
+	}
     }
 return( buffer );
 }
