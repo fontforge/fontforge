@@ -82,6 +82,7 @@ typedef struct monotonic {
     double other;
     struct monotonic *linked;		/* singly linked list of all monotonic*/
     					/*  segments, no contour indication */
+    double when_set;			/* Debugging */
 } Monotonic;
 
 typedef struct mlist {
@@ -990,8 +991,6 @@ static Intersection *FindIntersections(Monotonic *ms, enum overlap_type ot) {
 		     m2->s->splines[0].a==0 && m2->s->splines[1].a==0 )) {
 		if ( !wasc && SplinesIntersect(m1->s,m2->s,pts,t1s,t2s)<=0 )
 	continue;
-		if ( t1s[0]==.5 )
-		    t1s[0] = .5;		/* Debug */
 		for ( i=0; i<4 && t1s[i]!=-1; ++i ) {
 		    if ( t1s[i]>=m1->tstart && t1s[i]<=m1->tend &&
 			    t2s[i]>=m2->tstart && t2s[i]<=m2->tend ) {
@@ -1109,8 +1108,43 @@ static void FigureNeeds(Monotonic *ms,int which, double test, Monotonic **space,
 	    space[i++] = m;
 	}
     }
-    space[i] = NULL;
+    space[i] = NULL; space[i+1] = NULL;
     qsort(space,i,sizeof(Monotonic *),mcmp);
+
+#if 0		/* Really slow, and it fixes some problems at the expense of causing others */
+    for ( i=0; space[i+1]!=NULL; ++i ) {
+	/* If two splines are very close to each other, we may miss an */
+	/*  intersection. If that has happened, reorder the splines */
+	if ( space[i+1]->other - space[i]->other < .1 ) {
+	    double oi, oi1, ti, ti1, test2;
+	    if ( which==1 ) {
+		if ( space[i+1]->b.miny > space[i]->b.miny )
+		    test2 = space[i]->b.miny;
+		else
+		    test2 = space[i+1]->b.miny;
+	    } else {
+		if ( space[i+1]->b.minx > space[i]->b.minx )
+		    test2 = space[i]->b.minx;
+		else
+		    test2 = space[i+1]->b.minx;
+	    }
+	    ti = BoundIterateSplineSolve(&space[i]->s->splines[which],
+		    space[i]->tstart,space[i]->tend,test2,error);
+	    ti1= BoundIterateSplineSolve(&space[i+1]->s->splines[which],
+		    space[i+1]->tstart,space[i+1]->tend,test2,error);
+	    oi = ((space[i]->s->splines[nw].a*ti+space[i]->s->splines[nw].b)*ti+
+		    space[i]->s->splines[nw].c)*ti+space[i]->s->splines[nw].d;
+	    oi1= ((space[i+1]->s->splines[nw].a*ti1+space[i+1]->s->splines[nw].b)*ti1+
+		    space[i+1]->s->splines[nw].c)*ti1+space[i+1]->s->splines[nw].d;
+	    if ( oi1<oi ) {
+		m = space[i];
+		space[i] = space[i+1];
+		space[i+1] = m;
+ fprintf( stderr, "Flipped\n" );
+	    }
+	}
+    }
+#endif
 
     winding = 0; ew = 0;
     for ( i=0; space[i]!=NULL; ++i ) {
@@ -1170,6 +1204,7 @@ static void FigureNeeds(Monotonic *ms,int which, double test, Monotonic **space,
 	}
 	if ( !m->isneeded && !m->isunneeded ) {
 	    m->isneeded = needed; m->isunneeded = unneeded;
+	    m->when_set = test;		/* Debugging */
 	} else if ( m->isneeded!=needed || m->isunneeded!=unneeded )
 	    SOError( "monotonic is both needed and unneeded.\n" );
 	winding = nwinding;
@@ -1190,7 +1225,7 @@ static void FindNeeded(Monotonic *ms,enum overlap_type ot) {
     ends[1] = FindOrderedEndpoints(ms,1);
 
     for ( m=ms, cnt=0; m!=NULL; m=m->linked, ++cnt );
-    space = galloc((cnt+1)*sizeof(Monotonic*));
+    space = galloc((cnt+2)*sizeof(Monotonic*));
 
     for ( m=ms; m!=NULL; m=m->linked ) if ( !m->isneeded && !m->isunneeded ) {
 	if ( m->b.maxx-m->b.minx > m->b.maxy-m->b.miny ) {
