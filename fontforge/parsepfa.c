@@ -908,6 +908,29 @@ return( NULL );
 return( str );
 }
 
+static char *myfgetsNoNulls(char *str, int len, FILE *file) {
+    char *pt, *end;
+    int ch=0;
+
+    for ( pt = str, end = str+len-1; pt<end && (ch=getc(file))!=EOF && ch!='\r' && ch!='\n'; ) {
+	if ( ch!='\0' )
+	    *pt++ = ch;
+    }
+    if ( ch=='\n' )
+	*pt++ = '\n';
+    else if ( ch=='\r' ) {
+	*pt++ = '\r';
+	if ((ch=getc(file))!='\n' )
+	    ungetc(ch,file);
+	else
+	    *pt++ = '\n';
+    }
+    if ( pt==str )
+return( NULL );
+    *pt = '\0';
+return( str );
+}
+
 static char *getstring(char *start,FILE *in) {
     char *end, *ret;
     int parencnt=0, len=0;
@@ -916,7 +939,7 @@ static char *getstring(char *start,FILE *in) {
     forever {
 	while ( *start!='\0' && *start!='(' ) ++start;
 	if ( *start=='\0' ) {
-	    if ( myfgets(buffer,sizeof(buffer),in)==NULL )
+	    if ( myfgetsNoNulls(buffer,sizeof(buffer),in)==NULL )
 return( copy(""));
 	    start = buffer;
 	} else
@@ -942,7 +965,7 @@ return( copy(""));
 	}
 	if ( *end!='\0' )
     break;
-	if ( myfgets(buffer,sizeof(buffer),in)==NULL )
+	if ( myfgetsNoNulls(buffer,sizeof(buffer),in)==NULL )
 return( ret );
 	start = buffer;
     }
