@@ -210,6 +210,7 @@ static int Trans_OK(GGadget *g, GEvent *e) {
 		angle2 = GetRealR(tw,CID_YAxis,_STR_RotationAboutYAxis,&err) * 3.1415926535897932/180;
 		trans[0] = cos(angle2);
 		trans[3] = cos(angle );
+		bvts[0].func = bvt_none;		/* Bad trans=> No trans */
 	      break;
 	      default:
 		IError("Unexpected selection in Transform");
