@@ -1641,8 +1641,10 @@ static void dumpcffcharset(SplineFont *sf,struct alltabs *at) {
 
     /* First element must be ".notdef" and is omitted */
     /* So if glyph 0 isn't notdef do something special */
-    if ( !SCIsNotdef(sf->chars[0],at->gi.fixed_width) && SCWorthOutputting(sf->chars[0]) )
-	putshort(at->charset,storesid(at,sf->chars[0]->name));
+    if ( !SCIsNotdef(sf->chars[0],at->gi.fixed_width) && SCWorthOutputting(sf->chars[0]) ) {
+	at->gn_sid[0] = storesid(at,sf->chars[0]->name);
+	putshort(at->charset,at->gn_sid[0]);
+    }
 
     for ( i=1; i<sf->charcnt; ++i )
 	if ( SCWorthOutputting(sf->chars[i]) ) {
@@ -1725,7 +1727,7 @@ static void dumpcfffdselect(SplineFont *sf,struct alltabs *at) {
 }
 
 static void dumpcffencoding(SplineFont *sf,struct alltabs *at) {
-    int i,j, last, anydups;
+    int i, cnt, anydups;
     uint32 start_pos = ftell(at->encoding);
     SplineChar *sc;
 
@@ -1733,25 +1735,23 @@ static void dumpcffencoding(SplineFont *sf,struct alltabs *at) {
     /* I always use a format 0 encoding. ie. an array of glyph indexes */
     putc(0xff,at->encoding);		/* fixup later */
 
-    last = 0;
+    cnt = 0;
     anydups = 0;
     for ( i=0; i<256 && i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
 	if ( sc != SCDuplicate(sc) ) {
 	    if ( SCDuplicate(sc)->ttf_glyph<255 )
 		++anydups;
-	} else if ( sc->ttf_glyph>0 && sc->ttf_glyph>last ) {
-	    if ( sc->ttf_glyph>=255 )
+	} else if ( sc->ttf_glyph>0 ) {
+	    if ( sc->ttf_glyph>255 || cnt>=255 )
     break;
-	    for ( j=last+1; j<sc->ttf_glyph && j<255; ++j )
-		putc(0,at->encoding);
 	    putc(i,at->encoding);
-	    last = sc->ttf_glyph;
+	    ++cnt;
 	}
     }
     if ( anydups ) {
 	fseek(at->encoding,start_pos,SEEK_SET);
 	putc(0x80,at->encoding);
-	putc(last+1,at->encoding);
+	putc(cnt,at->encoding);
 	fseek(at->encoding,0,SEEK_END);
 	putc(anydups,at->encoding);
 	for ( i=0; i<256 && i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
@@ -1762,7 +1762,7 @@ static void dumpcffencoding(SplineFont *sf,struct alltabs *at) {
 	}
     } else {
 	fseek(at->encoding,start_pos+1,SEEK_SET);
-	putc(last+1,at->encoding);
+	putc(cnt,at->encoding);
 	fseek(at->encoding,0,SEEK_END);
     }
     free( at->gn_sid );
