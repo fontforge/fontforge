@@ -371,7 +371,7 @@ return( sf );
 return( NULL );			/* failed */
 }
 
-static FILE *MakeSingleRecordPdb(char *filename) {
+static FILE *MakeFewRecordPdb(char *filename,int cnt) {
     FILE *file;
     char *fn = galloc(strlen(filename)+8), *pt1, *pt2;
     long now;
@@ -417,10 +417,15 @@ return( NULL );
 
     /* Record list */
     putlong(file,0);				/* next record id */
-    putshort(file,1);				/* numRecords */
+    putshort(file,cnt);				/* numRecords */
 
-    putlong(file,ftell(file)+8);		/* offset to data */
+    putlong(file,ftell(file)+8*cnt);		/* offset to data */
     putlong(file,0);
+
+    for ( i=1; i<cnt; ++i ) {
+	putlong(file,0);
+	putlong(file,0);
+    }
 return(file);
 }
     
@@ -432,7 +437,7 @@ return( bdf );
 }
 
 struct FontTag {
-  int16 fontType;
+  uint16 fontType;
   int16 firstChar;
   int16 lastChar;
   int16 maxWidth;
@@ -458,9 +463,9 @@ return( true );
 
     if ( test==base && base->charcnt>=256 )
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_BadMetrics,_STR_OnlyFirst256);
+	GWidgetPostNoticeR(_STR_BadMetrics,_STR_OnlyFirst256);
 #elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Bad Metrics"),_("Only the first 256 glyphs in the encoding will be used"));
+	gwwv_post_notice(_("Bad Metrics"),_("Only the first 256 glyphs in the encoding will be used"));
 #endif
 
     for ( i=0; i<base->charcnt && i<256; ++i ) if ( test->chars[i]!=NULL || base->chars[i]!=NULL ) {
@@ -469,7 +474,7 @@ return( true );
 	    GWidgetErrorR(_STR_BadMetrics,_STR_NoCorrespondingGlyph,
 		    test->pixelsize,base->pixelsize, i);
 #elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("Bad Metrics"),_("One of the fonts %d,%d is missing glyph %d"),
+	    gwwv_post_notice(_("Bad Metrics"),_("One of the fonts %d,%d is missing glyph %d"),
 		    temp->pixelsize,base->pixelsize,i);
 #endif
 return( false );
@@ -480,7 +485,7 @@ return( false );
 		 test->chars[i]->ymax>=test->ascent ||
 		 test->chars[i]->ymin<-test->descent)) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_BadMetrics,_STR_GlyphKernsBadly,
+	    GWidgetPostNoticeR(_STR_BadMetrics,_STR_GlyphKernsBadly,
 		    test->pixelsize,test->chars[i]->sc->name);
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad Metrics"),_("In font %d the glyph %.30s either starts before 0, or extends after the advance width or is above the ascent or below the descent"),
@@ -490,10 +495,10 @@ return( false );
 	}
 	if ( !wwarned && test->chars[i]->width!=den*base->chars[i]->width ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_BadMetrics,_STR_AdvanceWidthBad,
+	    GWidgetPostNoticeR(_STR_BadMetrics,_STR_AdvanceWidthBad,
 		    test->pixelsize,test->chars[i]->sc->name);
 #elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("Bad Metrics"),_("In font %d the advance width of glyph %.30s does not scale the base advance width properly, it shall be forced to the proper value"),
+	    gwwv_post_notice(_("Bad Metrics"),_("In font %d the advance width of glyph %.30s does not scale the base advance width properly, it shall be forced to the proper value"),
 		    temp->pixelsize,test->chars[i]->sc->name);
 #endif
 	    wwarned = true;
@@ -604,12 +609,13 @@ int WritePalmBitmaps(char *filename,SplineFont *sf, int32 *sizes) {
     BDFFont *base=NULL, *temp;
     BDFFont *densities[4];	/* Be prepared for up to quad density */
     				/* Ignore 1.5 density. No docs on how odd metrics get rounded */
-    int i, j, k, den, dencnt;
+    int i, j, k, f, den, dencnt;
     struct FontTag fn;
     uint16 *images[4];
     int *offsets, *widths;
     int owbase, owpos, font_start, density_starts;
     FILE *file;
+    int fontcnt, fonttype;
 
     if ( sizes==NULL || sizes[0]==0 )
 return(false);
@@ -644,8 +650,36 @@ return( false );
 	if ( densities[i]) ++dencnt;
     }
 
+    fontcnt = 1;
+    if ( no_windowing_ui && dencnt>1 )
+	fonttype = 3;
+    else if ( dencnt>1 ) {
+	const unichar_t *choices[5];
+#if defined(FONTFORGE_CONFIG_GDRAW)
+	choices[0] = GStringGetResource(_STR_MultiDenFont,NULL);
+	choices[1] = GStringGetResource(_STR_HighDenFont,NULL);
+	choices[2] = GStringGetResource(_STR_SingleDenMultiDenFont,NULL);
+	choices[3] = GStringGetResource(_STR_SingleDenHighDenFont,NULL);
+	choices[4] = NULL;
+	fonttype = GWidgetChoicesR(_STR_WhatTypePalmFont,choices,4,3,
+		_STR_WhatTypePalmFont);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	choices[0] = _("Multiple-Density Font");
+	choices[1] = _("High-Density Font");
+	choices[2] = _("Single and Multi-Density Fonts");
+	choices[3] = _("Single and High-Density Fonts");
+	choices[4] = NULL;
+	fonttype = gwwv_choose(_("Choose a file format..."),(const unichar_t **) choices,4,3,_("What type(s) of palm font records do you want?"));
+#endif
+	if ( fonttype==-1 )
+return( false );
+	if ( fonttype>=2 )
+	    fontcnt = 2;
+    } else
+	fonttype = 4;
+	
     memset(&fn,0,sizeof(fn));
-    fn.fontType = dencnt>1 ? 0x9200 : 0x9000;
+    fn.fontType = 0x9000;
     fn.firstChar = -1;
     fn.fRectHeight = base->pixelsize;
     fn.ascent = base->ascent;
@@ -663,7 +697,7 @@ return( false );
 	}
     }
 	    
-    file = MakeSingleRecordPdb(filename);
+    file = MakeFewRecordPdb(filename,fontcnt);
     if ( file==NULL )
 return( false );
 
@@ -671,68 +705,81 @@ return( false );
     for ( i=1; i<4; ++i )
 	images[i] = BDF2Image(&fn,densities[i],NULL,NULL,NULL,base);
 
-    font_start = ftell(file);
+    for ( f=0; f<2; ++f ) if (( f==0 && fonttype>=2 ) || (f==1 && fonttype!=4)) {
+	font_start = ftell(file);
 
-    putshort(file,fn.fontType);
-    putshort(file,fn.firstChar);
-    putshort(file,fn.lastChar);
-    putshort(file,fn.maxWidth);
-    putshort(file,fn.kernMax);
-    putshort(file,fn.nDescent);
-    putshort(file,fn.fRectWidth);
-    putshort(file,fn.fRectHeight);
-    owbase = ftell(file);
-    putshort(file,fn.owTLoc);
-    putshort(file,fn.ascent);
-    putshort(file,fn.descent);
-    putshort(file,fn.leading);
-    putshort(file,fn.rowWords);
+	fn.fontType = f==0 ? 0x9000 : 0x9200;
+	putshort(file,fn.fontType);
+	putshort(file,fn.firstChar);
+	putshort(file,fn.lastChar);
+	putshort(file,fn.maxWidth);
+	putshort(file,fn.kernMax);
+	putshort(file,fn.nDescent);
+	putshort(file,fn.fRectWidth);
+	putshort(file,fn.fRectHeight);
+	owbase = ftell(file);
+	putshort(file,fn.owTLoc);
+	putshort(file,fn.ascent);
+	putshort(file,fn.descent);
+	putshort(file,fn.leading);
+	putshort(file,fn.rowWords);
 
-    if ( dencnt==1 ) {
-	for ( i=0; i<fn.fRectHeight*fn.rowWords; ++i )
-	    putshort(file,images[0][i]);
-	free(images[0]);
-    } else {
-	putshort(file,1);		/* Extended version field */
-	putshort(file,dencnt);
-	density_starts = ftell(file);
-	for ( i=0; i<4; ++i ) if ( densities[i]!=NULL ) {
-	    putshort(file,(i+1)*72);
-	    putlong(file,0);
-	}
-    }
-    for ( i=fn.firstChar; i<=fn.lastChar+2; ++i )
-	putshort(file,offsets[i-fn.firstChar]);
-    free(offsets);
-    owpos = ftell(file);
-    fseek(file,owbase,SEEK_SET);
-    putshort(file,(owpos-owbase)/2);
-    fseek(file,owpos,SEEK_SET);
-    for ( i=fn.firstChar; i<=fn.lastChar; ++i ) {
-	if ( base->chars[i]==NULL ) {
-	    putc(-1,file);
-	    putc(-1,file);
+	if ( f==0 ) {
+	    for ( i=0; i<fn.fRectHeight*fn.rowWords; ++i )
+		putshort(file,images[0][i]);
 	} else {
-	    putc(0,file);
-	    putc(base->chars[i]->width,file);
+	    putshort(file,1);		/* Extended version field */
+	    putshort(file,fonttype==0 || fonttype==2 ? dencnt : dencnt-1 );
+	    density_starts = ftell(file);
+	    for ( i=0; i<4; ++i ) {
+		if ( densities[i]!=NULL && (i!=0 || fonttype==0 || fonttype==2)) {
+		    putshort(file,(i+1)*72);
+		    putlong(file,0);
+		}
+	    }
 	}
-    }
-    putc(0,file);		/* offset/width for notdef */
-    putc(widths[i-fn.firstChar],file);
-    free(widths);
+	for ( i=fn.firstChar; i<=fn.lastChar+2; ++i )
+	    putshort(file,offsets[i-fn.firstChar]);
+	owpos = ftell(file);
+	fseek(file,owbase,SEEK_SET);
+	putshort(file,(owpos-owbase)/2);
+	fseek(file,owpos,SEEK_SET);
+	for ( i=fn.firstChar; i<=fn.lastChar; ++i ) {
+	    if ( base->chars[i]==NULL ) {
+		putc(-1,file);
+		putc(-1,file);
+	    } else {
+		putc(0,file);
+		putc(base->chars[i]->width,file);
+	    }
+	}
+	putc(0,file);		/* offset/width for notdef */
+	putc(widths[i-fn.firstChar],file);
 
-    if ( dencnt>1 ) {
-	for ( i=j=0; i<4; ++i ) if ( densities[i]!=NULL ) {
+	if ( f==1 ) {
+	    for ( i=j=0; i<4; ++i ) {
+		if ( densities[i]!=NULL && (i!=0 || fonttype==0 || fonttype==2)) {
+		    int here = ftell(file);
+		    fseek(file,density_starts+j*6+2,SEEK_SET);
+		    putlong(file,here-font_start);
+		    fseek(file,here,SEEK_SET);
+		    for ( k=0; k<(i+1)*(i+1)*fn.fRectHeight*fn.rowWords; ++k )
+			putshort(file,images[i][k]);
+		    ++j;
+		}
+	    }
+	}
+	if ( f==0 && fontcnt==2 ) {
 	    int here = ftell(file);
-	    fseek(file,density_starts+j*6+2,SEEK_SET);
-	    putlong(file,here-font_start);
+	    fseek(file,font_start-8,SEEK_SET);
+	    putlong(file,here);
 	    fseek(file,here,SEEK_SET);
-	    for ( k=0; k<(i+1)*(i+1)*fn.fRectHeight*fn.rowWords; ++k )
-		putshort(file,images[i][k]);
-	    ++j;
-	    free(images[i]);
 	}
     }
     fclose(file);
+    free(offsets);
+    free(widths);
+    for ( i=0; i<4; ++i )
+	free(images[i]);
 return( true );
 }

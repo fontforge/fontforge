@@ -3704,6 +3704,18 @@ static char *str_GlyphKernsBadly = "In font %d the glyph %.30hs either starts be
 static char *str_AdvanceWidthBad = "In font %d the advance width of glyph %.30hs does not scale the base advance width properly, it shall be forced to the proper value"
 static char *str_AdvanceWidthTooBig = "Advance width of glyph %.30hs must be less than 127"
 static char *str_OnlyFirst256 = "Only the first 256 glyphs in the encoding will be used";
+/* On the palm, the word "density" is used to mean resolution */
+/* There are two flavors of fonts: low-res fonts (used on old palms) and */
+/*  multi-res fonts used on new palms. But new palms all seem to have high-res*/
+/*  displays, so there is no real point to having a multi-res font (or rather */
+/*  we want a multi-res font that only contains a high-res image). What we do */
+/*  want is two fonts: a low res font and a multi-res font containing only the*/
+/*  high res image */
+static char *str_WhatTypePalmFont = "What type(s) of palm font records do you want?"
+static char *str_MultiDenFont = "Multiple-Density Font"
+static char *str_SingleDenHighDenFont = "Single and High-Density Fonts"
+static char *str_SingleDenMultiDenFont = "Single and Multi-Density Fonts"
+static char *str_HighDenFont = "High-Density Font"
 
     /* Adjectives, etc. that are sometimes masculine and sometimes feminine in french (perhaps other langs) */
 static char str_NewDDD_fem[] = "New...";
