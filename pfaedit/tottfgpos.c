@@ -369,6 +369,7 @@ void AnchorClassDecompose(SplineFont *sf,AnchorClass *_ac, int classcnt, int *su
 
     memset(heads,0,sizeof(heads));
     memset(subcnts,0,classcnt*sizeof(int));
+    memset(marks,0,classcnt*sizeof(SplineChar **));
     for ( j=0; j<2; ++j ) {
 	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	    for ( ac = _ac, k=0; k<classcnt; ++k, ac=ac->next ) {
