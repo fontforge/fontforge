@@ -1013,7 +1013,7 @@ return( 0 );
 	pl = getlong(pk);
 	cc = getlong(pk);
 	char_end = ftell(pk) + pl;
-	tfm = get3byte(pk);
+	tfm = getlong(pk);
 	dx = getlong(pk)>>16;
 	dy = getlong(pk)>>16;
 	w = getlong(pk);
