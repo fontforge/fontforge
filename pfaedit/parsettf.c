@@ -3816,6 +3816,7 @@ static void CheckEncoding(struct ttfinfo *info) {
     free(info->chars);
     info->chars = chars;
     info->glyph_cnt = 256+extras;
+    info->is_onebyte = true;
 }
 
 static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
@@ -3827,13 +3828,24 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
     RefChar *rf;
     int newcharcnt;
 
-    for ( i=0; i<oldcnt; ++i ) if ( oldchars[i]!=NULL ) {
-	if ( oldchars[i]->enc>=256 ) {
-	    istwobyte = true;
-	    if ( oldchars[i]->enc>max ) max = oldchars[i]->enc;
-	} else if ( oldchars[i]->enc==0 && i!=0 )
-	    ++extras;
-	oldchars[i]->parent = sf;
+    if ( info->is_onebyte ) {
+	/* We did most of this in CheckEncoding */
+	max = 256;
+	for ( i=0; i<oldcnt; ++i ) if ( oldchars[i]!=NULL ) {
+	    if ( oldchars[i]->enc>=256 )
+		++extras;
+	    oldchars[i]->parent = sf;
+	}
+    } else {
+	istwobyte = true;
+	for ( i=0; i<oldcnt; ++i ) if ( oldchars[i]!=NULL ) {
+	    if ( oldchars[i]->enc>=256 ) {
+		istwobyte = true;
+		if ( oldchars[i]->enc>max ) max = oldchars[i]->enc;
+	    } else if ( oldchars[i]->enc==0 && i!=0 )
+		++extras;
+	    oldchars[i]->parent = sf;
+	}
     }
     for ( dup=info->dups; dup!=NULL && !istwobyte; dup=dup->prev )
 	if ( dup->enc>=256 ) {

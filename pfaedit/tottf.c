@@ -6346,6 +6346,9 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	}
 	putshort(at->cmap,1);		/* mac platform */
 	putshort(at->cmap,0);		/* plat specific enc, script=roman */
+	    /* Even the symbol font on the mac claims a mac roman encoding */
+	    /* although it actually contains a symbol encoding. There is an*/
+	    /* "RSymbol" language listed for Mac (specific=8) but it isn't used*/
 	putlong(at->cmap,ucs4pos+ucs4len);	/* offset from tab start to sub tab start */
 	if ( cjkenc && hasmac ) {
 	    /* big mac table, just a copy of the ms table */
