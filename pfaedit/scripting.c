@@ -3327,9 +3327,14 @@ static void ProcessScript(int argc, char *argv[], FILE *script) {
     VerboseCheck();
 
     i=1;
-    if ( script!=NULL )
-	i = 0;
-    else if ( strcmp(argv[1],"-script")==0 )
+    if ( script!=NULL ) {
+	if ( argc<2 || strcmp(argv[1],"-")!=0 )
+	    i = 0;
+    } else if ( strcmp(argv[1],"-nosplash")==0 || strcmp(argv[1],"--nosplash")==0 ) {
+	++i;
+	if ( strcmp(argv[2],"-script")==0 || strcmp(argv[2],"--script")==0 )
+	    ++i;
+    } else if ( strcmp(argv[1],"-script")==0 || strcmp(argv[1],"--script")==0 )
 	++i;
     memset( &c,0,sizeof(c));
     c.a.argc = argc-i;
@@ -3376,6 +3381,9 @@ static void _CheckIsScript(int argc, char *argv[]) {
 return;
     if ( strcmp(argv[1],"-script")==0 || strcmp(argv[1],"--script")==0 )
 	ProcessScript(argc, argv,NULL);
+    else if ( (strcmp(argv[1],"-nosplash")==0 || strcmp(argv[1],"--nosplash")==0) &&
+	    argc>=3 && ( strcmp(argv[2],"-script")==0 || strcmp(argv[2],"--script")==0 ))
+	ProcessScript(argc, argv,NULL);
     if ( access(argv[1],X_OK|R_OK)==0 ) {
 	FILE *temp = fopen(argv[1],"r");
 	char buffer[200];
@@ -3387,6 +3395,8 @@ return;
 	if ( buffer[0]=='#' && buffer[1]=='!' && strstr(buffer,"pfaedit")!=NULL )
 	    ProcessScript(argc, argv,NULL);
     }
+    if ( strcmp(argv[1],"-")==0 )	/* Someone thought that, of course, "-" meant read from a script. I guess it makes no sense with anything else... */
+	ProcessScript(argc, argv,stdin);
 }
 
 #ifdef X_DISPLAY_MISSING

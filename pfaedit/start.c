@@ -104,6 +104,7 @@ static void _dousage(void) {
     printf( "\t-help\t\t\t (displays this message, invokes a browser)\n\t\t\t\t  (Using the BROWSER environment variable)\n" );
     printf( "\t-version\t\t (prints the version of pfaedit and exits)\n" );
     printf( "\t-script scriptfile\t (executes scriptfile)\n" );
+    printf( "\t\tmust be the first option. All others passed to scriptfile.\n" );
     printf( "\n" );
     printf( "pfaedit will read postscript (pfa, pfb, ps, cid), opentype (otf),\n" );
     printf( "\ttruetype (ttf,ttc), macintosh resource fonts (dfont,bin,hqx),\n" );
