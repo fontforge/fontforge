@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Dec-2000 -->
-  <!-- AP: Last modified: 12-May-2003 -->
+  <!-- AP: Last modified: 19-Jun-2003 -->
   <TITLE>B&eacute;zier Splines</TITLE>
 </HEAD>
 <BODY>
@@ -17,8 +17,12 @@ B&eacute;zier splines, in these there is only one control point between two
 end points and that point determines the slope of the spline at both end
 points.
 <P>
-It is also possible to have higher degree B&eacute;zier splines. For a quartic
-spline there would be 3 control points, for a quintic 4 control points, etc.
+<IMG SRC="quadbezier.png" WIDTH="113" HEIGHT="88" ALIGN="Right">It is also
+possible to have other degree B&eacute;zier splines. For a quadratic spline
+there would be 1 control point, quartic spline 3 control points, for a quintic
+4 control points, etc. Of these only the quadratic spline is interesting
+to us-- quadratic splines are used by TrueType. As the example at right shows
+one control point is used to determine the slopes at both end points.
 <P>
 In general if there are n+1 points labeled P<SUB>0</SUB>, P<SUB>1</SUB>,
 ... P<SUB>n</SUB>, with P<SUB>0</SUB> and P<SUB>n</SUB> the end points (and

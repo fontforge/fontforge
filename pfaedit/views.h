@@ -364,7 +364,7 @@ typedef struct fontview {
     struct fontview *nextsame;		/* Next fv looking at this font */
     int pressed_pos, end_pos;
     GTimer *pressed;
-    char *selected;
+    uint8 *selected;
     MetricsView *metrics;
     unsigned int antialias:1;
     unsigned int bbsized:1;		/* displayed bitmap should be scaled by bounding box rather than emsize */
@@ -407,7 +407,7 @@ typedef struct searchview {
     SplineFont dummy_sf;
     SplineChar sc_srch, sc_rpl;
     SplineChar *chars[2];
-    char sel[2];
+    uint8 sel[2];
     CharView cv_srch, cv_rpl;
     CharView *lastcv;
 /* ****** */
@@ -523,7 +523,7 @@ extern int SFScaleToEm(SplineFont *sf, int ascent, int descent);
 extern void TransHints(StemInfo *stem,real mul1, real off1, real mul2, real off2, int round_to_int );
 extern void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
 	enum fvtrans_flags );
-extern void FVTrans(FontView *fv,SplineChar *sc,real transform[6],char *sel,
+extern void FVTrans(FontView *fv,SplineChar *sc,real transform[6],uint8 *sel,
 	enum fvtrans_flags);
 extern int SFNLTrans(FontView *fv,char *x_expr,char *y_expr);
 extern void FVApplySubstitution(FontView *fv,uint32 script, uint32 lang, uint32 tag);
@@ -886,6 +886,11 @@ extern void FVSelectByPST(FontView *fv);
 extern int FVParseSelectByPST(FontView *fv,int type,
 	const unichar_t *tags,const unichar_t *contents,
 	int search_type);
+
+enum hist_type { hist_hstem, hist_vstem, hist_blues };
+struct psdict;
+extern void SFHistogram(SplineFont *sf,struct psdict *private,uint8 *selected,
+	enum hist_type which);
 
 extern GMenuItem helplist[];
 #endif

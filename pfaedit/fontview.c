@@ -883,6 +883,9 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_Editfpgm	2506
 #define MID_Editprep	2507
 #define MID_ClearInstrs	2508
+#define MID_HStemHist	2509
+#define MID_VStemHist	2510
+#define MID_BlueValuesHist	2511
 #define MID_OpenBitmap	2700
 #define MID_OpenOutline	2701
 #define MID_Revert	2702
@@ -1230,7 +1233,7 @@ static void FVMenuUnlinkRef(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVUnlinkRef( (FontView *) GDrawGetUserData(gw));
 }
 
-void SFRemoveUndoes(SplineFont *sf,char *selected) {
+void SFRemoveUndoes(SplineFont *sf,uint8 *selected) {
     SplineFont *main = sf->cidmaster? sf->cidmaster : sf, *ssf;
     int i,k, max;
     SplineChar *sc;
@@ -1513,7 +1516,7 @@ void TransHints(StemInfo *stem,real mul1, real off1, real mul2, real off2, int r
     }
 }
 
-void FVTrans(FontView *fv,SplineChar *sc,real transform[6], char *sel,
+void FVTrans(FontView *fv,SplineChar *sc,real transform[6], uint8 *sel,
 	enum fvtrans_flags flags) {
     RefChar *refs;
     real t[6];
@@ -1633,7 +1636,7 @@ int SFScaleToEm(SplineFont *sf, int as, int des) {
     double scale;
     real transform[6];
     BVTFunc bvts;
-    char *oldselected = sf->fv->selected;
+    uint8 *oldselected = sf->fv->selected;
     int i;
     KernPair *kp;
     PST *pst;
@@ -2785,6 +2788,14 @@ static void FVMenuClearWidthMD(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
+static void FVMenuHistograms(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    SFHistogram(fv->sf, NULL, FVAnyCharSelected(fv)!=-1?fv->selected:NULL,
+			mi->mid==MID_HStemHist ? hist_hstem :
+			mi->mid==MID_VStemHist ? hist_vstem :
+				hist_blues);
+}
+
 void FVSetTitle(FontView *fv) {
     unichar_t *title, *ititle, *temp;
     char *file=NULL;
@@ -3516,6 +3527,13 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     }
 }
 
+static GMenuItem histlist[] = {
+    { { (unichar_t *) _STR_HStem, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuHistograms, MID_HStemHist },
+    { { (unichar_t *) _STR_VStem, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuHistograms, MID_VStemHist },
+    { { (unichar_t *) "BlueValues", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuHistograms, MID_BlueValuesHist },
+    { NULL }
+};
+
 static GMenuItem htlist[] = {
     { { (unichar_t *) _STR_Autohint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, 'H', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoHint, MID_AutoHint },
     { { (unichar_t *) _STR_AutoInstr, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'T', ksm_control, NULL, NULL, FVMenuAutoInstr, MID_AutoInstr },
@@ -3526,6 +3544,8 @@ static GMenuItem htlist[] = {
     { { (unichar_t *) _STR_ClearHints, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuClearHints, MID_ClearHints },
     { { (unichar_t *) _STR_ClearWidthMD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuClearWidthMD, MID_ClearWidthMD },
     { { (unichar_t *) _STR_ClearInstructions, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuClearInstrs, MID_ClearInstrs },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_Histograms, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_shift|ksm_control, histlist },
     { NULL }
 };
 

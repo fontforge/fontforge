@@ -2189,7 +2189,7 @@ void PasteIntoFV(FontView *fv,int doclear) {
     BDFFont *bdf;
     int i, cnt=0;
     int yestoall=0, first=true;
-    char *oldsel = fv->selected;
+    uint8 *oldsel = fv->selected;
     extern int onlycopydisplayed;
 
     fv->refstate = 0;

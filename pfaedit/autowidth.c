@@ -329,7 +329,7 @@ static void CheckOutOfBounds(WidthInfo *wi) {
 }
 
 static void ApplyChanges(WidthInfo *wi) {
-    char *rsel = gcalloc(wi->sf->charcnt,sizeof(char));
+    uint8 *rsel = gcalloc(wi->sf->charcnt,sizeof(char));
     int i, width;
     real transform[6];
     struct charone *ch;
@@ -1562,7 +1562,7 @@ return( cnt );
 
 static int SFCountSel(SplineFont *sf) {
     int i, cnt;
-    char *sel = sf->fv->selected;
+    uint8 *sel = sf->fv->selected;
 
     for ( i=cnt=0; i<sf->charcnt; ++i )
 	if ( sel[i] && sf->chars[i]!=NULL &&

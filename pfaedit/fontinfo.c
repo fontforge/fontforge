@@ -579,6 +579,7 @@ static GTextInfo mark_tags[] = {
 #define	CID_Add			2003
 #define CID_Guess		2004
 #define CID_Remove		2005
+#define CID_Hist		2006
 
 #define CID_WeightClass		3001
 #define CID_WidthClass		3002
@@ -991,6 +992,7 @@ return;
     if ( sel==-1 ) {
 	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Remove),false);
 	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Guess),false);
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Hist),false);
 	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_PrivateValues),false);
 	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_PrivateValues),nullstr);
     } else {
@@ -1000,10 +1002,13 @@ return;
 		strcmp(private->keys[sel],"StdHW")==0 ||
 		strcmp(private->keys[sel],"StemSnapH")==0 ||
 		strcmp(private->keys[sel],"StdVW")==0 ||
-		strcmp(private->keys[sel],"StemSnapV")==0 )
+		strcmp(private->keys[sel],"StemSnapV")==0 ) {
 	    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Guess),true);
-	else
+	    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Hist),true);
+	} else {
 	    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Guess),false);
+	    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Hist),false);
+	}
 	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_PrivateValues),true);
 	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_PrivateValues),
 		temp = uc_copy( private->values[sel]));
@@ -1123,6 +1128,43 @@ return( true );
 	    PIPrivateCheck(d);
 	    SnapSet(d->private,stemsnap,snapcnt,"StdVW","StemSnapV");
 	}
+	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_PrivateValues),
+		temp = uc_copy( d->private->values[sel]));
+	free( temp );
+    }
+return( true );
+}
+
+static int PI_Hist(GGadget *g, GEvent *e) {
+    GWindow gw;
+    struct gfi_data *d;
+    GGadget *list;
+    int sel;
+    SplineFont *sf;
+    struct psdict *private;
+    enum hist_type h;
+    unichar_t *temp;
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	gw = GGadgetGetWindow(g);
+	d = GDrawGetUserData(gw);
+	sf = d->sf;
+	PIPrivateCheck(d);
+	private = d->private ? d->private : sf->private;
+	list = GWidgetGetControl(d->gw,CID_PrivateEntries);
+	sel = GGadgetGetFirstListSelectedItem(list);
+	if ( strcmp(private->keys[sel],"BlueValues")==0 ||
+		strcmp(private->keys[sel],"OtherBlues")==0 )
+	    h = hist_blues;
+	else if ( strcmp(private->keys[sel],"StdHW")==0 ||
+		strcmp(private->keys[sel],"StemSnapH")==0 )
+	    h = hist_hstem;
+	else if ( strcmp(private->keys[sel],"StdVW")==0 ||
+		strcmp(private->keys[sel],"StemSnapV")==0 )
+	    h = hist_vstem;
+	else
+return( true );		/* can't happen */
+	SFHistogram(sf,private,NULL,h);
 	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_PrivateValues),
 		temp = uc_copy( d->private->values[sel]));
 	free( temp );
@@ -4035,7 +4077,7 @@ return;
     pgcd[1].gd.cid = CID_PrivateValues;
     pgcd[1].creator = GTextAreaCreate;
 
-    pgcd[2].gd.pos.x = 20; pgcd[2].gd.pos.y = 300-35-30;
+    pgcd[2].gd.pos.x = 10; pgcd[2].gd.pos.y = 300-35-30;
     pgcd[2].gd.pos.width = -1; pgcd[2].gd.pos.height = 0;
     pgcd[2].gd.flags = gg_visible | gg_enabled ;
     plabel[2].text = (unichar_t *) _STR_Add;
@@ -4046,7 +4088,7 @@ return;
     pgcd[2].gd.cid = CID_Add;
     pgcd[2].creator = GButtonCreate;
 
-    pgcd[3].gd.pos.x = (260-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor))/2;
+    pgcd[3].gd.pos.x = (260)/2-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor)-5;
     pgcd[3].gd.pos.y = pgcd[2].gd.pos.y;
     pgcd[3].gd.pos.width = -1; pgcd[3].gd.pos.height = 0;
     pgcd[3].gd.flags = gg_visible ;
@@ -4058,16 +4100,29 @@ return;
     pgcd[3].gd.cid = CID_Guess;
     pgcd[3].creator = GButtonCreate;
 
-    pgcd[4].gd.pos.x = -20; pgcd[4].gd.pos.y = pgcd[2].gd.pos.y;
+    pgcd[4].gd.pos.x = -(260/2-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor)-5);
+    pgcd[4].gd.pos.y = pgcd[2].gd.pos.y;
     pgcd[4].gd.pos.width = -1; pgcd[4].gd.pos.height = 0;
-    pgcd[4].gd.flags = gg_visible | gg_enabled ;
-    plabel[4].text = (unichar_t *) _STR_Remove;
+    pgcd[4].gd.flags = gg_visible ;
+    plabel[4].text = (unichar_t *) _STR_Hist;
     plabel[4].text_in_resource = true;
     pgcd[4].gd.label = &plabel[4];
-    pgcd[4].gd.mnemonic = 'R';
-    pgcd[4].gd.handle_controlevent = PI_Delete;
-    pgcd[4].gd.cid = CID_Remove;
+    pgcd[4].gd.mnemonic = 'G';
+    pgcd[4].gd.handle_controlevent = PI_Hist;
+    pgcd[4].gd.cid = CID_Hist;
+    pgcd[4].gd.popup_msg = GStringGetResource(_STR_HistPopup,NULL);
     pgcd[4].creator = GButtonCreate;
+
+    pgcd[5].gd.pos.x = -10; pgcd[5].gd.pos.y = pgcd[2].gd.pos.y;
+    pgcd[5].gd.pos.width = -1; pgcd[5].gd.pos.height = 0;
+    pgcd[5].gd.flags = gg_visible | gg_enabled ;
+    plabel[5].text = (unichar_t *) _STR_Remove;
+    plabel[5].text_in_resource = true;
+    pgcd[5].gd.label = &plabel[5];
+    pgcd[5].gd.mnemonic = 'R';
+    pgcd[5].gd.handle_controlevent = PI_Delete;
+    pgcd[5].gd.cid = CID_Remove;
+    pgcd[5].creator = GButtonCreate;
 /******************************************************************************/
     memset(&vlabel,0,sizeof(vlabel));
     memset(&vgcd,0,sizeof(vgcd));

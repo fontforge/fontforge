@@ -268,7 +268,7 @@ static void *__FreeTypeFontContext(FT_Library context,
      */
     FTC *ftc;
     SplineChar **old, **new;
-    char *selected = fv!=NULL ? fv->selected : NULL;
+    uint8 *selected = fv!=NULL ? fv->selected : NULL;
     int i,cnt;
 
     if ( !hasFreeType())

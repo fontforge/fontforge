@@ -4665,7 +4665,7 @@ static int selpst_e_h(GWindow gw, GEvent *event) {
 	sld->ok = false;
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("filemenu.html#Select-By-ATT");
+	    help("selectbyatt.html");
 return( true );
 	}
 return( false );

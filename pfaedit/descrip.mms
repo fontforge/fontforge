@@ -19,7 +19,8 @@ pfaedit_OBJECTS2=displayfonts.obj,combinations.obj,sftextfield.obj,ikarus.obj,\
         cvfreehand.obj,cvhand.obj,simplifydlg.obj,winfonts.obj,freetype.obj,\
 	gotodlg.obj,search.obj,tottfgpos.obj,charinfo.obj,tottfaat.obj,\
 	splineorder2.obj,genttfinstrs.obj,ttfinstrs.obj,cvgridfit.obj,\
-	cvdebug.obj,showatt.obj,kernclass.obj,nonlineartrans.obj,effects.obj
+	cvdebug.obj,showatt.obj,kernclass.obj,nonlineartrans.obj,effects.obj,\
+	histograms.obj
 
 pfaedit.exe : nomen.h $(pfaedit_OBJECTS) $(pfaedit_OBJECTS2) xlib.opt
         library/create tmp.olb $(pfaedit_OBJECTS)

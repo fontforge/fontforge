@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 14-May-2003 -->
+  <!-- AP: Last modified: 19-Jun-2003 -->
   <TITLE>Font Info</TITLE>
 </HEAD>
 <BODY>
@@ -332,7 +332,7 @@ seeing what your truetype font will look like may outweigh that.<BR Clear=ALL>
   <A NAME="Private">Private</A> -- <SMALL>(font-wide postscript hinting)</SMALL>
 </H2>
 <P>
-<IMG SRC="fontinfo-private.png" WIDTH="369" HEIGHT="472" ALIGN="Right">This
+<IMG SRC="fontinfo-private.png" WIDTH="376" HEIGHT="544" ALIGN="Right">This
 sub-dialog shows most entries in the font's Private dictionary. The interesting
 things in this dictionary are mostly concerned with hints appropriate for
 the entire font. I shall not go into detail about the meanings of the various
@@ -352,9 +352,8 @@ of the font in a vertical direction. For instance it might contain the baseline
 serif, the x-height serif, the cap-height serif. It is expressed as an array
 of numbers, grouped in pairs. The first number of a pair is the low end of
 the region and the second is the high end. So in the example at right, the
-value of <CODE>BlueValues</CODE> is <CODE>[-15 0 692 707 490 502 668 680
-742 742]</CODE> (some of the array is not shown, and the scroll bar must
-be used to display it).
+value of <CODE>BlueValues</CODE> is <CODE>[-20 0 437 457 583 603 623
+643</CODE>.
 <P>
 When the <CODE>[Guess]</CODE> button is enabled PfaEdit thinks it can make
 a reasonable guess for the value of the currently selected entry. Often two
@@ -362,6 +361,11 @@ entries in the dictionary will be closely linked and guessing at one will
 also guess at the value of the other (PfaEdit will warn you of this). In
 this case if PfaEdit were to guess the value of <CODE>BlueValues</CODE> it
 would also guess the value of <CODE>OtherBlues</CODE>.
+<P>
+The [Hist] button is similar, it will bring up a
+<A HREF="histogram.html">dialog showing a histogram</A> of the values of
+an attribute of the font. The hope is that this will allow you to pick a
+good value for the entry.
 <P>
 You may also delete an entry from the dictionary with the <CODE>[Remove]
 </CODE>button. Some entries (such as <CODE>BlueValues</CODE>) are required
@@ -648,7 +652,7 @@ languages.
 </TABLE>
 <P>
 (Any help in expanding/correcting the above table would be greatly appreciated
-<A HREF="mailto:pfaedit&#64;users.sourceforge.net">pfaedit&#64;users.sourceforge.net</A>)
+<A HREF="mailto:pfaedit@users.sourceforge.net">pfaedit@users.sourceforge.net</A>)
 <P>
 When you are setting the Style string in American English another button
 appears in the dialog, labelled "Translate Style". If you press this button

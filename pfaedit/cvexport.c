@@ -405,7 +405,7 @@ return( 0 );
 	if ( !AskSizeBits(&pixelsize,&bitsperpixel) )
 return( 0 );
     }
-    if ( autohint_before_rasterize )
+    if ( autohint_before_rasterize && sc->changedsincelasthinted && !sc->manualhints )
 	SplineCharAutoHint(sc,true);
 
     memset(&gi,'\0', sizeof(gi));
