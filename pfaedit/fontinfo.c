@@ -3087,7 +3087,7 @@ void FontInfo(SplineFont *sf) {
     memset(&comgcd,0,sizeof(comgcd));
 
     comgcd[0].gd.pos.x = 10; comgcd[0].gd.pos.y = 10;
-    comgcd[0].gd.pos.width = 220; comgcd[0].gd.pos.height = 180;
+    comgcd[0].gd.pos.width = ngcd[7].gd.pos.width; comgcd[0].gd.pos.height = 230;
     comgcd[0].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
     comgcd[0].gd.cid = CID_Comment;
     comlabel[0].text = (unichar_t *) sf->comments;
