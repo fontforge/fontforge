@@ -49,8 +49,12 @@ typedef struct quartic {
 /*  into splinefont.h after (or instead of) the definition of chunkalloc()*/
 
 #ifndef chunkalloc
-#define ALLOC_CHUNK	100
-#define CHUNK_MAX	140
+#define ALLOC_CHUNK	100		/* Number of small chunks to malloc at a time */
+#define CHUNK_MAX	40		/* Maximum size (in chunk units) that we are prepared to allocate */
+					/* The size of our data structures */
+# define CHUNK_UNIT	sizeof(void *)	/*  will vary with the word size of */
+					/*  the machine. if pointers are 64 bits*/
+					/*  we may need twice as much space as for 32 bits */
 
 #ifdef FLAG
 #undef FLAG
@@ -64,7 +68,7 @@ static int chunkdebug = 0;	/* When this is set we never free anything, insuring 
 #if ALLOC_CHUNK>1
 struct chunk { struct chunk *next; };
 struct chunk2 { struct chunk2 *next; int flag; };
-static struct chunk *chunklists[CHUNK_MAX/4] = { 0 };
+static struct chunk *chunklists[CHUNK_MAX] = { 0 };
 #endif
 
 #if defined(FLAG) && ALLOC_CHUNK>1
@@ -72,7 +76,7 @@ void chunktest(void) {
     int i;
     struct chunk2 *c;
 
-    for ( i=2; i<CHUNK_MAX/4; ++i )
+    for ( i=2; i<CHUNK_MAX; ++i )
 	for ( c=(struct chunk2 *) chunklists[i]; c!=NULL; c=c->next )
 	    if ( c->flag!=FLAG ) {
 		fprintf( stderr, "Chunk memory list has been corrupted\n" );
@@ -88,18 +92,14 @@ return( gcalloc(1,size));
     struct chunk *item;
     int index;
 
-    if ( (size&0x3) || size>=CHUNK_MAX || size<=sizeof(struct chunk)) {
+    if ( (size&(CHUNK_UNIT-1)) || size>=CHUNK_MAX*CHUNK_UNIT || size<=sizeof(struct chunk)) {
 	fprintf( stderr, "Attempt to allocate something of size %d\n", size );
 return( gcalloc(1,size));
     }
 #ifdef FLAG
     chunktest();
 #endif
-    if ( sizeof(int *)==8 ) {
-	size = ((size+7)>>3)<<3;
-	index = size>>3;
-    } else
-	index = size>>2;
+    index = (size+CHUNK_UNIT-1)/CHUNK_UNIT;
     if ( chunklists[index]==NULL ) {
 	char *pt, *end;
 	pt = galloc(ALLOC_CHUNK*size);
@@ -125,6 +125,7 @@ return( item );
 }
 
 void chunkfree(void *item,int size) {
+    int index = (size+CHUNK_UNIT-1)/CHUNK_UNIT;
 #ifdef CHUNKDEBUG
     if ( chunkdebug )
 return;
@@ -134,27 +135,24 @@ return;
 # else
     if ( item==NULL )
 return;
-    if ( (size&0x3) || size>=CHUNK_MAX || size<=sizeof(struct chunk)) {
+    if ( (size&(CHUNK_UNIT-1)) || size>=CHUNK_MAX*CHUNK_UNIT || size<=sizeof(struct chunk)) {
 	fprintf( stderr, "Attempt to free something of size %d\n", size );
 	free(item);
-    } else if ( sizeof(int *)==8 ) {
-	((struct chunk *) item)->next = chunklists[size>>3];
-	chunklists[size>>3] = (struct chunk *) item;
     } else {
 #ifdef LOCAL_DEBUG
-	if ( (char *) (chunklists[size>>2]) == (char *) item ||
-		( ((char *) (chunklists[size>>2]))<(char *) item &&
-		  ((char *) (chunklists[size>>2]))+size>(char *) item) ||
-		( ((char *) (chunklists[size>>2]))>(char *) item &&
-		  ((char *) (chunklists[size>>2]))<((char *) item)+size))
+	if ( (char *) (chunklists[index]) == (char *) item ||
+		( ((char *) (chunklists[index]))<(char *) item &&
+		  ((char *) (chunklists[index]))+size>(char *) item) ||
+		( ((char *) (chunklists[index]))>(char *) item &&
+		  ((char *) (chunklists[index]))<((char *) item)+size))
 	      GDrawIError( "Memory mixup. Chunk list is wrong!!!" );
 #endif
-	((struct chunk *) item)->next = chunklists[size>>2];
+	((struct chunk *) item)->next = chunklists[index];
 #  ifdef FLAG
 	if ( size>=sizeof(struct chunk2))
 	    ((struct chunk2 *) item)->flag = FLAG;
 #  endif
-	chunklists[size>>2] = (struct chunk *) item;
+	chunklists[index] = (struct chunk *) item;
     }
 #  ifdef FLAG
     chunktest();
