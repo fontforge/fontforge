@@ -696,7 +696,10 @@ static char str_NewInsert = "New Contextual Glyph Insertion";
 static char str_EditInsert = "Edit Contextual Glyph Insertion";
 static char str_Underline = "Underline";
 static char str_Italic = "Italic";
+static char str_ShadowNoMn = "Shadow";
 static char str_MacStyleSet = "Mac Style Set:";
+static char str_BadStyle = "Bad Style";
+static char str_NotBothCondenseExtend = "A style may not have both condense and extend set (it makes no sense)";
 
  /* Names of otf tags for GPOS features for anchor */
 static char *str_abvm = "Above Base Mark";

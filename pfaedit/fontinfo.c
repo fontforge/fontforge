@@ -121,7 +121,7 @@ GTextInfo macstyles[] = {
     { (unichar_t *) _STR_Expand, NULL, 0, 0, (void *) sf_extend, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Underline, NULL, 0, 0, (void *) sf_underline, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Outline, NULL, 0, 0, (void *) sf_outline, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Shadow, NULL, 0, 0, (void *) sf_shadow, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_ShadowNoMn, NULL, 0, 0, (void *) sf_shadow, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
 static GTextInfo widthclass[] = {
     { (unichar_t *) _STR_UltraCondensed, NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -3983,6 +3983,18 @@ return(true);
 	    GWidgetErrorR(_STR_Badascentdescent,_STR_Badascentdescentn);
 return( true );
 	}
+	mcs = -1;
+	if ( !GGadgetIsChecked(GWidgetGetControl(d->gw,CID_MacAutomatic)) ) {
+	    mcs = 0;
+	    ti = GGadgetGetList(GWidgetGetControl(d->gw,CID_MacStyles),&len);
+	    for ( i=0; i<len; ++i )
+		if ( ti[i]->selected )
+		    mcs |= (int) (intpt) ti[i]->userdata;
+	    if ( (mcs&sf_condense) && (mcs&sf_extend)) {
+		GWidgetErrorR(_STR_BadStyle,_STR_NotBothCondenseExtend);
+return( true );
+	    }
+	}
 	if ( nchar<sf->charcnt && AskTooFew())
 return(true);
 	if ( order2!=sf->order2 && AskLoseUndoes())
@@ -4017,16 +4029,6 @@ return(true);
 	    sf->xuid = *txt=='\0'?NULL:cu_copy(txt);
 	}
 
-	mcs = -1;
-	if ( !GGadgetIsChecked(GWidgetGetControl(d->gw,CID_MacAutomatic)) ) {
-	    mcs = 0;
-	    ti = GGadgetGetList(GWidgetGetControl(d->gw,CID_MacStyles),&len);
-	    for ( i=0; i<len; ++i )
-		if ( ti[i]->selected )
-		    mcs |= (int) (intpt) ti[i]->userdata;
-	}
-	sf->macstyle = mcs;
-
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Notice));
 	free(sf->copyright); sf->copyright = cu_copy(txt);
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Comment));
@@ -4054,6 +4056,7 @@ return(true);
 		sf->pfminfo.os2_windescent *= scale;
 	    }
 	}
+	sf->macstyle = mcs;
 	sf->italicangle = ia;
 	sf->upos = upos;
 	sf->uwidth = uwid;
