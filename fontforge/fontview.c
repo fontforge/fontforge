@@ -7564,7 +7564,24 @@ static GFont *FVCheckFont(FontView *fv,int type) {
     }
 return( fv->fontset[type] );
 }
-    
+
+extern unichar_t adobes_pua_alts[0x200][3];
+
+static void do_Adobe_Pua(unichar_t *buf,int sob,int uni) {
+    int i, j;
+
+    for ( i=j=0; j<sob-1 && i<3; ++i ) {
+	int ch = adobes_pua_alts[uni-0xf600][i];
+	if ( ch==0 )
+    break;
+	if ( ch>=0xf600 && ch<=0xf7ff && adobes_pua_alts[ch-0xf600]!=0 ) {
+	    do_Adobe_Pua(buf+j,sob-j,ch);
+	    while ( buf[j]!=0 ) ++j;
+	} else
+	    buf[j++] = ch;
+    }
+    buf[j] = 0;
+}
 
 static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
     int i, j, width;
@@ -7661,6 +7678,9 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		else if ( Use2ByteEnc(fv,sc,buf,&for_charset))
 		    mods = &for_charset;
 #endif
+		else if ( fv->sf->uni_interp==ui_adobe && uni>=0xf600 && uni<=0xf7ff &&
+			adobes_pua_alts[uni-0xf600]!=0 )
+		    do_Adobe_Pua(buf,sizeof(buf),uni);
 		else if ( uni!=-1 && uni<65536 )
 		    buf[0] = uni;
 		else if ( uni>=0x1d400 && uni<=0x1d7ff ) {

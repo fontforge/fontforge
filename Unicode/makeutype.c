@@ -1373,7 +1373,7 @@ static void visualalts(void) {
 
 
 static void cheat(void) {
-
+#if 0
 	    /* Adobe's private use symbols (some) */
     alts[0xf6de][0] = '-';		/* 3/4 em dash */
 
@@ -1513,6 +1513,7 @@ static void cheat(void) {
     mytolower[0xf6bf] = 0xf6c0;		/* Adobe's LL character */
     mytoupper[0xf6c0] = 0xf6bf;		/* Adobe's ll character */
     mytotitle[0xf6c0] = 0xf6bf;
+#endif
 
     mymirror['('] = ')';
     mymirror[')'] = '(';
@@ -1564,7 +1565,9 @@ int main() {
     visualalts();
     readin();
     /* Apple's file contains no interesting information that I can see */
-    readcorpfile("ADOBE ", "AdobeCorporateuse.txt");
+    /* Adobe's file is interesting, but should only be used conditionally */
+    /*  so apply at a different level */
+    /* readcorpfile("ADOBE ", "AdobeCorporateuse.txt"); */
     cheat();
     dump();
     dump_alttable();
