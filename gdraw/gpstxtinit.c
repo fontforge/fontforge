@@ -29,7 +29,12 @@
 #include <string.h>
 #include <dirent.h>
 
-#include <X11/Xatom.h>
+#ifndef X_DISPLAY_MISSING
+# include <X11/Xatom.h>
+#else
+# define XA_X_HEIGHT	1
+# define XA_CAP_HEIGHT	2
+#endif
 
 #include "fontP.h"
 #include "gpsdrawP.h"

@@ -27,9 +27,11 @@
 #ifndef _XDRAW_H
 #define _XDRAW_H
 
-#include <X11/X.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
+#ifndef X_DISPLAY_MISSING
+# include <X11/X.h>
+# include <X11/Xlib.h>
+# include <X11/Xutil.h>
+#endif
 
 #ifndef NOTHREADS
 # include <pthread.h>
@@ -53,6 +55,7 @@ typedef struct gcstate {
     struct font_data *cur_font;
 } GCState;
 
+#ifndef X_DISPLAY_MISSING
 typedef struct gxwindow /* :GWindow */ {
     GGC *ggc;
     struct gxdisplay *display;
@@ -223,6 +226,15 @@ typedef struct gxdisplay /* : GDisplay */ {
 #define Pixel16(gdisp,col) ( ((((col)>>(gdisp)->cs.red_bits_shift)&(gdisp)->cs.red_bits_mask)<<(gdisp)->cs.red_shift) | ((((col)>>(gdisp)->cs.green_bits_shift)&(gdisp)->cs.green_bits_mask)<<(gdisp)->cs.green_shift) | (((col>>(gdisp)->cs.blue_bits_shift)&(gdisp)->cs.blue_bits_mask)<<(gdisp)->cs.blue_shift) )
 #define FixEndian16(col)	((((col)&0xff)<<8) | ((col>>8)&0xff))
 #define FixEndian32(col)	((((col)&0xff)<<24) | ((col&0xff00)<<8) | ((col>>8)&0xff00))
+
+#else /* No X */
+
+#define gxwindow gwindow
+#define gxdisplay gdisplay
+typedef struct gwindow *GXWindow;
+typedef struct gdisplay GXDisplay;
+
+#endif
 
 extern void _GXDraw_Image(GWindow, GImage *, GRect *src, int32 x, int32 y);
 extern void _GXDraw_TileImage(GWindow, GImage *, GRect *src, int32 x, int32 y);

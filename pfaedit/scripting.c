@@ -2072,7 +2072,7 @@ static void docall(Context *c,char *name,Val *val) {
 	    }
 	    sub.script = fopen(sub.filename,"r");
 	    if ( sub.script==NULL )
-		error(&sub, "No such file");
+		error(&sub, "No such script-file or buildin function");
 	    else {
 		sub.lineno = 1;
 		while ( !sub.returned && (tok = NextToken(&sub))!=tt_eof ) {
@@ -2752,13 +2752,15 @@ static void statement(Context *c) {
 	error( c, "Unterminated statement" );
 }
 
-static void ProcessScript(int argc, char *argv[]) {
+static void ProcessScript(int argc, char *argv[], FILE *script) {
     int i,j;
     Context c;
     enum token_type tok;
 
     i=1;
-    if ( strcmp(argv[1],"-script")==0 )
+    if ( script!=NULL )
+	i = 0;
+    else if ( strcmp(argv[1],"-script")==0 )
 	++i;
     memset( &c,0,sizeof(c));
     c.a.argc = argc-i;
@@ -2768,10 +2770,14 @@ static void ProcessScript(int argc, char *argv[]) {
 	c.a.vals[j-i].type = v_str;
 	c.a.vals[j-i].u.sval = copy(argv[j]);
     }
-    c.filename = argv[i];
     c.return_val.type = v_void;
-
-    c.script = fopen(c.filename,"r");
+    if ( script==NULL ) {
+	c.filename = argv[i];
+	c.script = fopen(c.filename,"r");
+    } else {
+	c.filename = "<stdin>";
+	c.script = script;
+    }
     if ( c.script==NULL )
 	error(&c, "No such file");
     else {
@@ -2789,11 +2795,11 @@ static void ProcessScript(int argc, char *argv[]) {
     exit(0);
 }
 
-void CheckIsScript(int argc, char *argv[]) {
+static void _CheckIsScript(int argc, char *argv[]) {
     if ( argc==1 )
 return;
     if ( strcmp(argv[1],"-script")==0 && argc>2 )
-	ProcessScript(argc, argv);
+	ProcessScript(argc, argv,NULL);
     if ( access(argv[1],X_OK|R_OK)==0 ) {
 	FILE *temp = fopen(argv[1],"r");
 	char buffer[200];
@@ -2803,8 +2809,15 @@ return;
 	fgets(buffer,sizeof(buffer),temp);
 	fclose(temp);
 	if ( buffer[0]=='#' && buffer[1]=='!' && strstr(buffer,"pfaedit")!=NULL )
-	    ProcessScript(argc, argv);
+	    ProcessScript(argc, argv,NULL);
     }
+}
+
+void CheckIsScript(int argc, char *argv[]) {
+    _CheckIsScript(argc, argv);
+#ifdef X_DISPLAY_MISSING
+    ProcessScript(argc, argv,stdin);
+#endif
 }
 
 void ExecuteScriptFile(FontView *fv, char *filename) {

@@ -82,6 +82,7 @@ good they are.
 */
 
 static long LookupXColorName(char *name) {
+#ifndef X_DISPLAY_MISSING
     XColor ret;
     Display *display;
 
@@ -92,6 +93,7 @@ return( COLOR_UNKNOWN );
     if ( XParseColor(display,DefaultColormap(display,DefaultScreen(display)),
 	    name,&ret))
 return( ((ret.red>>8)<<16) | (ret.green&0xff00) | (ret.blue>>8) );
+#endif	/* NO X */
 
 return( COLOR_UNKNOWN );
 }

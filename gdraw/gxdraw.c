@@ -26,9 +26,6 @@
  */
 #include <stdlib.h>
 #include <math.h>
-#include <X11/Xatom.h>
-#include <X11/keysym.h>
-#include <X11/cursorfont.h>
 
 #include <sys/types.h>		/* for timers & select */
 #include <sys/time.h>		/* for timers & select */
@@ -47,6 +44,11 @@
 #include "gresource.h"
 
 enum cm_type { cmt_default=-1, cmt_current, cmt_copy, cmt_private };
+
+#ifndef X_DISPLAY_MISSING
+#include <X11/Xatom.h>
+#include <X11/keysym.h>
+#include <X11/cursorfont.h>
 
 /*#define GREEK_BUG	1*/
 
@@ -3582,3 +3584,14 @@ return( (GDisplay *) gdisp);
 void _XSyncScreen() {
     XSync(((GXDisplay *) screen_display)->display,false);
 }
+
+#else	/* NO X */
+
+GDisplay *_GXDraw_CreateDisplay(char *displayname,char *programname) {
+    fprintf( stderr, "This program was not compiled with X11, and cannot open the display\n" );
+    exit(1);
+}
+
+void _XSyncScreen() {
+}
+#endif

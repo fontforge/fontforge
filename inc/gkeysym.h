@@ -1,6 +1,7 @@
 #ifndef _GKEYSYM_H_
 #define _GKEYSYM_H_
 
+#ifndef X_DISPLAY_MISSING
 #include <X11/keysym.h>
 /* Based on the X keysymdef file */
 /***********************************************************
@@ -168,7 +169,128 @@ SOFTWARE.
 #define GK_Super_L		XK_Super_L	
 #define GK_Super_R		XK_Super_R	
 #define GK_Hyper_L		XK_Hyper_L	
-#define GK_Hyper_R		XK_Hyper_R	 
+#define GK_Hyper_R		XK_Hyper_R
 
+#else		/* No X */
+
+#define GK_Special		0xfe00	/* keysyms above this value aren't unicode */
+#define GK_TypeAhead		0x0000	/* no single keysym, unicode value in event string */
+
+#define GK_BackSpace		0xff01
+#define GK_Tab			0xff02
+#define GK_BackTab		0xff03
+#define GK_Linefeed		0xff04
+#define GK_Clear		0xff05
+#define GK_Return		0xff06
+#define GK_Pause		0xff07
+#define GK_Scroll_Lock		0xff08
+#define GK_Sys_Req		0xff09
+#define GK_Escape		0xff0a
+#define GK_Delete		0xff0b
+                                                
+#define GK_Home			0xff0c		
+#define GK_Left			0xff0d		
+#define GK_Up			0xff0e		
+#define GK_Right		0xff0f	
+#define GK_Down			0xff10		
+#define GK_Prior		0xff11	
+#define GK_Page_Up		0xff12	
+#define GK_Next			0xff13		
+#define GK_Page_Down		0xff14	
+#define GK_End			0xff15		
+#define GK_Begin		0xff16	
+
+#define GK_Menu			0xff17
+#define GK_Help			0xff18
+
+#define GK_KP_Home		0xff19	
+#define GK_KP_Left		0xff1a	
+#define GK_KP_Up		0xff1b	
+#define GK_KP_Right		0xff1c	
+#define GK_KP_Down		0xff1d	
+#define GK_KP_Prior		0xff1e	
+#define GK_KP_Page_Up		0xff1f	
+#define GK_KP_Next		0xff20	
+#define GK_KP_Page_Down		0xff21	
+#define GK_KP_End		0xff22	
+#define GK_KP_Begin		0xff23	
+                                                
+#define GK_F1			0		
+#define GK_F2			0		
+#define GK_F3			0		
+#define GK_F4			0		
+#define GK_F5			0		
+#define GK_F6			0		
+#define GK_F7			0		
+#define GK_F8			0		
+#define GK_F9			0		
+#define GK_F10			0		
+#define GK_F11			0		
+#define GK_L1			0		
+#define GK_F12			0		
+#define GK_L2			0		
+#define GK_F13			0		
+#define GK_L3			0		
+#define GK_F14			0		
+#define GK_L4			0		
+#define GK_F15			0		
+#define GK_L5			0		
+#define GK_F16			0		
+#define GK_L6			0		
+#define GK_F17			0		
+#define GK_L7			0		
+#define GK_F18			0		
+#define GK_L8			0		
+#define GK_F19			0		
+#define GK_L9			0		
+#define GK_F20			0		
+#define GK_L10			0		
+#define GK_F21			0		
+#define GK_R1			0		
+#define GK_F22			0		
+#define GK_R2			0		
+#define GK_F23			0		
+#define GK_R3			0		
+#define GK_F24			0		
+#define GK_R4			0		
+#define GK_F25			0		
+#define GK_R5			0		
+#define GK_F26			0		
+#define GK_R6			0		
+#define GK_F27			0		
+#define GK_R7			0		
+#define GK_F28			0		
+#define GK_R8			0		
+#define GK_F29			0		
+#define GK_R9			0		
+#define GK_F30			0		
+#define GK_R10			0		
+#define GK_F31			0		
+#define GK_R11			0		
+#define GK_F32			0		
+#define GK_R12			0		
+#define GK_F33			0		
+#define GK_R13			0		
+#define GK_F34			0		
+#define GK_R14			0		
+#define GK_F35			0		
+#define GK_R15			0		
+                                                
+#define GK_Shift_L		0	
+#define GK_Shift_R		0	
+#define GK_Control_L		0	
+#define GK_Control_R		0	
+#define GK_Caps_Lock		0	
+#define GK_Shift_Lock		0	
+                                                
+#define GK_Meta_L		0	
+#define GK_Meta_R		0	
+#define GK_Alt_L		0	
+#define GK_Alt_R		0	
+#define GK_Super_L		0	
+#define GK_Super_R		0	
+#define GK_Hyper_L		0	
+#define GK_Hyper_R		0
+#endif	/* No X */
 
 #endif

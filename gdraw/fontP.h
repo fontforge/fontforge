@@ -27,7 +27,80 @@
 #ifndef _FONTP_H
 #define _FONTP_H
 
-#include <X11/Xlib.h>		/* For XFontStruct */
+#ifndef X_DISPLAY_MISSING
+# include <X11/Xlib.h>		/* For XFontStruct */
+#else
+/* Taken from ... */
+    /* $TOG: Xlib.h /main/122 1998/03/22 18:22:09 barstow $ */
+    /* 
+
+    Copyright 1985, 1986, 1987, 1991, 1998  The Open Group
+
+    All Rights Reserved.
+
+    The above copyright notice and this permission notice shall be included in
+    all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+    OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+    AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+    Except as contained in this notice, the name of The Open Group shall not be
+    used in advertising or otherwise to promote the sale, use or other dealings
+    in this Software without prior written authorization from The Open Group.
+
+    */
+    /* $XFree86: xc/lib/X11/Xlib.h,v 3.17 2000/11/28 18:49:27 dawes Exp $ */
+
+
+    /*
+     *	Xlib.h - Header definition and support file for the C subroutine
+     *	interface library (Xlib) to the X Window System Protocol (V11).
+     *	Structures and symbols starting with "_" are private to the library.
+     */
+typedef int Atom;
+typedef int Bool;
+
+typedef struct {
+    short	lbearing;	/* origin to left edge of raster */
+    short	rbearing;	/* origin to right edge of raster */
+    short	width;		/* advance to next char's origin */
+    short	ascent;		/* baseline to top edge of raster */
+    short	descent;	/* baseline to bottom edge of raster */
+    unsigned short attributes;	/* per char flags (not predefined) */
+} XCharStruct;
+
+typedef struct {
+    Atom name;
+    unsigned long card32;
+} XFontProp;
+
+typedef struct {
+    int 	fid;		/* Font id for this font */
+    unsigned	direction;	/* hint about direction the font is painted */
+    unsigned	min_char_or_byte2;/* first character */
+    unsigned	max_char_or_byte2;/* last character */
+    unsigned	min_byte1;	/* first row that exists */
+    unsigned	max_byte1;	/* last row that exists */
+    Bool	all_chars_exist;/* flag if all characters have non-zero size*/
+    unsigned	default_char;	/* char to print for undefined character */
+    int         n_properties;   /* how many properties there are */
+    XFontProp	*properties;	/* pointer to array of additional properties*/
+    XCharStruct	min_bounds;	/* minimum bounds over all existing char*/
+    XCharStruct	max_bounds;	/* maximum bounds over all existing char*/
+    XCharStruct	*per_char;	/* first_char to last_char information */
+    int		ascent;		/* log. extent above baseline for spacing */
+    int		descent;	/* log. descent below baseline for spacing */
+} XFontStruct;
+
+typedef struct {		/* normal 16 bit characters are two bytes */
+    unsigned char byte1;
+    unsigned char byte2;
+} XChar2b;
+#endif		/* NO X */
 
 #include "gdrawP.h"
 #include "charset.h"

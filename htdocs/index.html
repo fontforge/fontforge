@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 6-May-2002 -->
+  <!-- AP: Last modified: 14-May-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -121,9 +121,9 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-020312-1.src.rpm">source RPM</A>: Version:
 12-Mar-2002<BR>
-Or you can download the <A HREF="pfaedit_full-020506.tgz">entire source tree
+Or you can download the <A HREF="pfaedit_full-020514.tgz">entire source tree
 </A>in one .tgz file: Version
-6-May-2002<!--
+14-May-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -167,6 +167,10 @@ have them and you want them they are available from:
   <LI>
     <A HREF="http://freetype.sf.net/">freetype</A>
 </UL>
+<P>
+Normally PfaEdit depends on the X11 windowing system, but if you are just
+interested in the scripting engine (with no user interface), it may be built
+on systems without X (the configure script should figure this out).
 <P>
 PfaEdit has been ported to the following systems (at some point in its life)
 <UL>
@@ -279,7 +283,33 @@ Or you can just browse the <A HREF="overview.html">docs online</A>.
 </H2>
 <UL>
   <LI>
-    ???
+    14-May-2002
+    <UL>
+      <LI>
+	Made pfaedit work without X (ie. the scripting engine can be linked without
+	requiring that X be present. Possibly useful for Mac OS/X, Cygwin)
+    </UL>
+  <LI>
+    13-May-2002
+    <UL>
+      <LI>
+	Various fixes for greek accented characters
+    </UL>
+  <LI>
+    7-May-2002
+    <UL>
+      <LI>
+	PfaEdit would crash when attempting to Flatten a CID keyed font (introduced
+	16-Apr with the multiple fontview support)
+      <LI>
+	PfaEdit did not process panose information correctly (broken 21-Jan, comment
+	change)
+      <LI>
+	PfaEdit did not create new ttf names properly when they were for a language
+	which had not been used before in the font.
+    </UL>
+  <LI>
+    6-May-2002
     <UL>
       <LI>
 	Oops. Adobe describes two naming conventions for ligatures and I only supported

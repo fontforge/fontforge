@@ -24,6 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#ifndef X_DISPLAY_MISSING
 #include "gxdrawP.h"
 
 /* On the cygwin X server masking with mono images is broken */
@@ -2251,3 +2252,6 @@ return( NULL );
     XDestroyImage(xi);
 return( gi );
 }
+#else	/* NO X */
+int gimagexdraw_a_file_must_define_something=3;
+#endif
