@@ -174,6 +174,7 @@ typedef struct charview {
     GTimer *autorpt;
     int keysym, oldstate;
 #endif
+    void *searcher;
 } CharView;
 
 typedef struct bitmapview {

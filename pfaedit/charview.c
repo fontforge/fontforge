@@ -2545,6 +2545,7 @@ return( true );
 #define MID_PrevDef	2013
 #define MID_DisplayCompositions	2014
 #define MID_MarkExtrema	2015
+#define MID_Goto	2016
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -2787,6 +2788,8 @@ static void CVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SplineFont *sf = cv->sc->parent;
     int pos = -1;
 
+    if ( cv->searcher!=NULL )
+return;
     if ( mi->mid == MID_Next ) {
 	pos = cv->sc->enc+1;
     } else if ( mi->mid == MID_Prev ) {
@@ -3161,7 +3164,8 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = cv->sc->splines==NULL;
 	  break;
 	  case MID_Paste:
-	    mi->ti.disabled = !CopyContainsSomething();
+	    mi->ti.disabled = !CopyContainsSomething() /*||
+		    (cv->searcher!=NULL && CopyContainsRefs())*/;	/* !!!! restore */
 	  break;
 	  case MID_Undo:
 	    mi->ti.disabled = *cv->uheads[cv->drawmode]==NULL;
@@ -3173,7 +3177,7 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = *cv->rheads[cv->drawmode]==NULL && *cv->uheads[cv->drawmode]==NULL;
 	  break;
 	  case MID_CopyRef:
-	    mi->ti.disabled = cv->drawmode!=dm_fore;
+	    mi->ti.disabled = cv->drawmode!=dm_fore || cv->searcher!=NULL;
 	  break;
 	  case MID_UnlinkRef:
 	    mi->ti.disabled = cv->drawmode!=dm_fore || cv->sc->refs==NULL;
@@ -3583,8 +3587,8 @@ static void CVMenuBuildAccent(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     if ( SFIsRotatable(cv->fv->sf,cv->sc))
 	/* It's ok */;
-    else if ( !SFIsCompositBuildable(cv->fv->sf,cv->sc->unicodeenc) ||
-	    (onlyaccents && !hascomposing(cv->fv->sf,cv->sc->unicodeenc)))
+    else if ( !SFIsCompositBuildable(cv->fv->sf,cv->sc->unicodeenc,cv->sc) ||
+	    (onlyaccents && !hascomposing(cv->fv->sf,cv->sc->unicodeenc,cv->sc)))
 return;
     SCBuildComposit(cv->fv->sf,cv->sc,!onlycopydisplayed,cv->fv);
 }
@@ -3740,7 +3744,7 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    if ( onlyaccents ) {
 		if ( SFIsRotatable(cv->fv->sf,cv->sc))
 		    /* It's ok */;
-		else if ( !hascomposing(cv->fv->sf,cv->sc->unicodeenc))
+		else if ( !hascomposing(cv->fv->sf,cv->sc->unicodeenc,cv->sc))
 		    mi->ti.disabled = true;
 	    }
 	    free(mi->ti.text);
@@ -4094,11 +4098,14 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	switch ( mi->mid ) {
 	  case MID_NextDef:
 	    for ( pos = cv->sc->enc+1; pos<sf->charcnt && sf->chars[pos]==NULL; ++pos );
-	    mi->ti.disabled = pos==sf->charcnt;
+	    mi->ti.disabled = pos==sf->charcnt || cv->searcher!=NULL;
 	  break;
 	  case MID_PrevDef:
 	    for ( pos = cv->sc->enc-1; pos>=0 && sf->chars[pos]==NULL; --pos );
-	    mi->ti.disabled = pos==-1;
+	    mi->ti.disabled = pos==-1 || cv->searcher!=NULL;
+	  break;
+	  case MID_Next: case MID_Prev: case MID_Goto:
+	    mi->ti.disabled = cv->searcher!=NULL;
 	  break;
 	  case MID_MarkExtrema:
 	    mi->ti.checked = cv->markextrema;
@@ -4341,7 +4348,7 @@ static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_PrevChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '[', ksm_control, NULL, NULL, CVMenuChangeChar, MID_Prev },
     { { (unichar_t *) _STR_NextDefChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, ']', ksm_control|ksm_meta, NULL, NULL, CVMenuChangeChar, MID_NextDef },
     { { (unichar_t *) _STR_PrevDefChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'a' }, '[', ksm_control|ksm_meta, NULL, NULL, CVMenuChangeChar, MID_PrevDef },
-    { { (unichar_t *) _STR_Goto, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'G' }, '>', ksm_shift|ksm_control, NULL, NULL, CVMenuGotoChar },
+    { { (unichar_t *) _STR_Goto, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'G' }, '>', ksm_shift|ksm_control, NULL, NULL, CVMenuGotoChar, MID_Goto },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Hidepoints, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, 'D', ksm_control, NULL, NULL, CVMenuShowHide, MID_HidePoints },
     { { (unichar_t *) _STR_MarkExtrema, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'M' }, '\0', ksm_control, NULL, NULL, CVMenuMarkExtrema, MID_MarkExtrema },

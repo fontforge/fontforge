@@ -292,20 +292,14 @@ return( true );
 
 static void LigatureNameCheck(GIData *ci, int uni, const unichar_t *name) {
     /* I'm not checking to see if the components are known names... */
-    unichar_t *components=NULL, *pt;
+    unichar_t *components=NULL;
+    char *namtemp = cu_copy(name);
+    char *temp = LigDefaultStr(uni,namtemp);
 
-    if ( uni!=-1 ) {
-	char *temp = LigDefaultStr(uni,NULL);
-	if ( temp!=NULL )
-	    components = uc_copy(temp);
-    }
-    if ( components==NULL ) {
-	if ( u_strchr(name,'_')==NULL )
+    free(namtemp);
+    if ( temp==NULL )
 return;
-	pt = components = u_copy(name);
-	while ( (pt = u_strchr(pt,'_'))!=NULL )
-	    *pt = ' ';
-    }
+    components = uc_copy(temp);
     GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_Ligature),components);
     free(components);
 }
@@ -320,7 +314,12 @@ static int CI_SName(GGadget *g, GEvent *e) {	/* Set From Name */
 	    if ( psunicodenames[i]!=NULL && uc_strcmp(ret,psunicodenames[i])==0 )
 	break;
 	if ( i==-1 ) {
-	    if ( ret[0]=='u' && ret[1]=='n' && ret[2]=='i' ) {
+	    /* Adobe says names like uni00410042 represent a ligature (A&B) */
+	    /*  (that is "uni" followed by two 4-digit codes). Adobe does not */
+	    /*  name things outside BMP, but logically they'd be uniXXXXXX. */
+	    /*  currently unicode doesn't go up to XXXXXXXX so there is no */
+	    /*  ambiguity */
+	    if ( ret[0]=='u' && ret[1]=='n' && ret[2]=='i' && u_strlen(ret)<3+8 ) {
 		unichar_t *end;
 		i = u_strtol(ret+3,&end,16);
 		if ( *end )
@@ -431,10 +430,10 @@ static void CIFillup(GIData *ci) {
     GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_Ligature),temp);
     free(temp);
 
-    bits = SFGetAlternate(sc->parent,sc->unicodeenc);
+    bits = SFGetAlternate(sc->parent,sc->unicodeenc,sc);
     GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_ComponentMsg),GStringGetResource(
 	bits==NULL ? _STR_NoComponents :
-	hascomposing(sc->parent,sc->unicodeenc) ? _STR_AccentedComponents :
+	hascomposing(sc->parent,sc->unicodeenc,sc) ? _STR_AccentedComponents :
 	    _STR_CompositComponents, NULL));
     if ( bits==NULL ) {
 	ubuf[0] = '\0';

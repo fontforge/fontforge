@@ -1439,9 +1439,9 @@ static void MVMenuBuildAccent(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( i!=-1 ) {
 	SplineChar *sc = mv->perchar[i].sc;
 	if ( SFIsRotatable(mv->fv->sf,sc) ||
-		(SCMakeDotless(mv->fv->sf,sc,false,true) && !onlyaccents) ||
-		(SFIsCompositBuildable(mv->fv->sf,sc->unicodeenc) &&
-		 (!onlyaccents || hascomposing(mv->fv->sf,sc->unicodeenc)))) {
+		(SCMakeDotless(mv->fv->sf,sc,false,false) && !onlyaccents) ||
+		(SFIsCompositBuildable(mv->fv->sf,sc->unicodeenc,sc) &&
+		 (!onlyaccents || hascomposing(mv->fv->sf,sc->unicodeenc,sc)))) {
 	    SCBuildComposit(mv->fv->sf,sc,!onlycopydisplayed,mv->fv);
 	}
     }
@@ -1738,9 +1738,9 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    anybuildable = false;
 	    onlyaccents = e==NULL || !(e->u.mouse.state&ksm_shift);
 	    if ( sc!=NULL && ( SFIsRotatable(mv->fv->sf,sc) ||
-			(SCMakeDotless(mv->fv->sf,sc,false,true) && !onlyaccents) ||
-			(SFIsCompositBuildable(mv->fv->sf,sc->unicodeenc) &&
-			 (!onlyaccents || hascomposing(mv->fv->sf,sc->unicodeenc))) ) ) {
+			(SCMakeDotless(mv->fv->sf,sc,false,false) && !onlyaccents) ||
+			(SFIsCompositBuildable(mv->fv->sf,sc->unicodeenc,sc) &&
+			 (!onlyaccents || hascomposing(mv->fv->sf,sc->unicodeenc,sc))) ) ) {
 		anybuildable = true;
 	    }
 	    mi->ti.disabled = !anybuildable;

@@ -141,7 +141,7 @@ return( index );
 }
 
 int SFFindChar(SplineFont *sf, int unienc, char *name ) {
-    int index;
+    int index=-1;
 
     if ( (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4) &&
 	    unienc!=-1 ) {
@@ -161,7 +161,7 @@ int SFFindChar(SplineFont *sf, int unienc, char *name ) {
 	    if ( sf->chars[index]->unicodeenc==unienc )
 	break;
 	}
-    } else {
+    } else if ( name!=NULL ) {
 	for ( index = sf->charcnt-1; index>=0; --index ) if ( sf->chars[index]!=NULL ) {
 	    if ( strcmp(sf->chars[index]->name,name)==0 )
 	break;
@@ -177,7 +177,9 @@ return( SFFindChar(sf,index,name));
  /* Ok. The character is not in the font, but that might be because the font */
  /*  has a hole. check to see if it is in the encoding */
     if ( index==-1 && unienc>=0 && unienc<=65535 && sf->encoding_name!=em_none ) {
-	if ( sf->encoding_name>=em_base ) {
+	if ( sf->encoding_name==em_none )
+	    index = -1;
+	else if ( sf->encoding_name>=em_base ) {
 	    Encoding *item=NULL;
 	    for ( item=enclist; item!=NULL && item->enc_num!=sf->encoding_name; item=item->next );
 	    if ( item!=NULL ) {
@@ -189,7 +191,7 @@ return( SFFindChar(sf,index,name));
 	    for ( index=255; index>=0; --index )
 		if ( unicode_from_adobestd[index]==unienc )
 	    break;
-	} else if ( sf->encoding_name<=em_first2byte ) {
+	} else if ( sf->encoding_name<em_first2byte ) {
 	    unichar_t * table = unicode_from_alphabets[sf->encoding_name+3];
 	    for ( index=255; index>=0; --index )
 		if ( table[index]==unienc )

@@ -702,6 +702,7 @@ extern const char *UnicodeRange(int unienc);
 extern SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i);
 extern SplineChar *SFMakeChar(SplineFont *sf,int i);
 extern char *LigDefaultStr(int uni, char *name);
+extern char *AdobeLigatureFormat(char *name);
 extern Ligature *SCLigDefault(SplineChar *sc);
 extern BDFChar *BDFMakeChar(BDFFont *bdf,int i);
 
@@ -714,13 +715,13 @@ extern Undoes *BCPreserveState(BDFChar *bc);
 extern void BCDoRedo(BDFChar *bc,struct fontview *fv);
 extern void BCDoUndo(BDFChar *bc,struct fontview *fv);
 
-extern int SFIsCompositBuildable(SplineFont *sf,int unicodeenc);
+extern int SFIsCompositBuildable(SplineFont *sf,int unicodeenc,SplineChar *sc);
 extern int SFIsSomethingBuildable(SplineFont *sf,SplineChar *sc);
 extern int SFIsRotatable(SplineFont *sf,SplineChar *sc);
 extern int SCMakeDotless(SplineFont *sf, SplineChar *dotless, int copybmp, int doit);
 extern void SCBuildComposit(SplineFont *sf, SplineChar *sc, int copybmp,
 	struct fontview *fv);
-extern const unichar_t *SFGetAlternate(SplineFont *sf, int base);
+extern const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc);
 
 extern int getAdobeEnc(char *name);
 
@@ -755,7 +756,7 @@ extern int PSDictRemoveEntry(struct psdict *dict, char *key);
 extern int PSDictChangeEntry(struct psdict *dict, char *key, char *newval);
 
 extern void SCRound2Int(SplineChar *sc,struct fontview *);
-extern int hascomposing(SplineFont *sf,int u);
+extern int hascomposing(SplineFont *sf,int u,SplineChar *sc);
 #if 0
 extern void SFFigureGrid(SplineFont *sf);
 #endif

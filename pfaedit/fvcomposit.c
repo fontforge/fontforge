@@ -475,15 +475,17 @@ return(arabicalts);
 return( upt );
 }
 
-static const unichar_t *SFAlternateFromLigature(SplineFont *sf, int base) {
+static const unichar_t *SFAlternateFromLigature(SplineFont *sf, int base,SplineChar *sc) {
     static unichar_t space[30];
     unichar_t *spt, *send = space+sizeof(space)/sizeof(space[0])-1;
-    SplineChar *sc;
     char *ligstart, *semi, *pt, sch, ch, *dpt;
     int j;
 
-    if ( base<0 || base>=sf->charcnt || (sc=sf->chars[base])==NULL ||
-	    sc->lig==NULL )
+    if ( sc==NULL && base>=0 ) {
+	int pos = SFFindExistingChar(sf,base,NULL);
+	if ( pos==-1 ) sc = NULL; else sc = sf->chars[pos];
+    }
+    if ( sc==NULL || sc->lig==NULL )
 return( NULL );
 
     ligstart=sc->lig->components;
@@ -530,7 +532,7 @@ return( arabicfixup(sf,space,ini,final));
 return( space );
 }
 
-const unichar_t *SFGetAlternate(SplineFont *sf, int base) {
+const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc) {
     static unichar_t greekalts[5];
     const unichar_t *upt, *pt; unichar_t *gpt;
 
@@ -553,7 +555,7 @@ return( greekalts );
 
     if ( base==-1 || base>=65536 || unicode_alternates[base>>8]==NULL ||
 	    (upt = unicode_alternates[base>>8][base&0xff])==NULL )
-return( SFAlternateFromLigature(sf,base));
+return( SFAlternateFromLigature(sf,base,sc));
 
 	    /* The definitions of some of the greek letters may make some */
 	    /*  linguistic sense, but I can't use it to place the accents */
@@ -594,17 +596,20 @@ return( arabicfixup(sf,upt,isarabisolated(base)||isarabinitial(base),
 return( upt );
 }
 
-int SFIsCompositBuildable(SplineFont *sf,int unicodeenc) {
+int SFIsCompositBuildable(SplineFont *sf,int unicodeenc,SplineChar *sc) {
     const unichar_t *pt, *apt, *end; unichar_t ch;
     SplineChar *one, *two;
 
     if ( unicodeenc==0x131 || unicodeenc==0xf6be )
 return( SCMakeDotless(sf,SFGetOrMakeChar(sf,unicodeenc,NULL),false,false));
 
-    if (( pt = SFGetAlternate(sf,unicodeenc))==NULL )
+    if (( pt = SFGetAlternate(sf,unicodeenc,sc))==NULL )
 return( false );
 
-    one=SFGetOrMakeChar(sf,unicodeenc,NULL);
+    if ( sc!=NULL )
+	one = sc;
+    else
+	one=SFGetOrMakeChar(sf,unicodeenc,NULL);
     
     for ( ; *pt; ++pt ) {
 	ch = *pt;
@@ -668,7 +673,7 @@ int SFIsSomethingBuildable(SplineFont *sf,SplineChar *sc) {
 	    (unicodeenc>=0x2000 && unicodeenc<=0x2015 ))
 return( true );
 
-    if ( SFIsCompositBuildable(sf,unicodeenc))
+    if ( SFIsCompositBuildable(sf,unicodeenc,sc))
 return( true );
 
 return( SFIsRotatable(sf,sc));
@@ -1037,7 +1042,7 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
     /* When we center an accent on Uhorn, we don't really want it centered */
     /*  on the combination, we want it centered on "U". So if basech is itself*/
     /*  a combo, find what it is based on */
-    if ( (temp = SFGetAlternate(sf,basech))!=NULL && haschar(sf,*temp))
+    if ( (temp = SFGetAlternate(sf,basech,NULL))!=NULL && haschar(sf,*temp))
 	baserch = *temp;
     /* Similarly in Ø or ø, we really want to base the accents on O or o */
     if ( baserch==0xf8 ) baserch = 'o';
@@ -1660,7 +1665,7 @@ static int SCMakeRightToLeftLig(SplineChar *sc,SplineFont *sf,
 	    /*  do know that the "unformed" character exists (because we checked)*/
 	    /*  so go back to using it if we must */
 	    if ( !haschar(sf,ch) ) {
-		const unichar_t *temp = SFGetAlternate(sf,ch);
+		const unichar_t *temp = SFGetAlternate(sf,ch,NULL);
 		if ( temp!=NULL ) ch = *temp;
 	    }
 	    SCPutRefAfter(sc,sf,ch,copybmp);
@@ -1781,7 +1786,7 @@ return;
 	ia = SFGuessItalicAngle(sf);
     ia *= 3.1415926535897932/180;
 
-    pt= SFGetAlternate(sf,sc->unicodeenc);
+    pt= SFGetAlternate(sf,sc->unicodeenc,sc);
     ch = *pt++;
     if ( ch=='i' || ch=='j' || ch==0x456 ) {
 	/* if we're combining i (or j) with an accent that would interfere */

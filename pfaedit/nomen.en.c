@@ -786,8 +786,8 @@ static char str_Alreadyligmid[] = " at local encoding ";
 static char str_Alreadyligpost[] = ")\012Is that what you want?";
 static char str_Badligature[] = "A ligature may not be made up of itself";
 /* "The component %.20s is not in this font,\nIs that what you want?" */
-static char str_Missingcomponantpre[] = "The component ";
-static char str_Missingcomponantpost[] = " is not in this font,\012Is that what you want?";
+static char str_Missingcomponantpre[] = "The component \"";
+static char str_Missingcomponantpost[] = "\" is not in this font,\012Is that what you want?";
 static char str_Done[] = "Done";
 static unichar_t mnemonic_Done[] = 'D';
 static char str_Ligpop[] = "If this character is a ligature,\012then enter the names of the characters\012into which it decomposes";

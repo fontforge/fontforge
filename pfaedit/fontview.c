@@ -1416,8 +1416,8 @@ static void FVMenuAutotrace(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVAutoTrace(fv,e!=NULL && (e->u.mouse.state&ksm_shift));
 }
 
-int hascomposing(SplineFont *sf,int u) {
-    const unichar_t *upt = SFGetAlternate(sf,u);
+int hascomposing(SplineFont *sf,int u,SplineChar *sc) {
+    const unichar_t *upt = SFGetAlternate(sf,u,sc);
 
     if ( upt!=NULL ) {
 	while ( *upt ) {
@@ -1460,9 +1460,9 @@ void FVBuildAccent(FontView *fv,int onlyaccents) {
     continue;
 	}
 	if ( SFIsRotatable(fv->sf,sc) ||
-		(SCMakeDotless(fv->sf,sc,false,true) && !onlyaccents) ||
-		(SFIsCompositBuildable(fv->sf,sc->unicodeenc) &&
-		 (!onlyaccents || hascomposing(fv->sf,sc->unicodeenc)))) {
+		(SCMakeDotless(fv->sf,sc,false,false) && !onlyaccents) ||
+		(SFIsCompositBuildable(fv->sf,sc->unicodeenc,sc) &&
+		 (!onlyaccents || hascomposing(fv->sf,sc->unicodeenc,sc)))) {
 	    sc = SFMakeChar(fv->sf,i);
 	    SCBuildComposit(fv->sf,sc,!onlycopydisplayed,fv);
 	}
@@ -1744,9 +1744,9 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		    if ( sc==NULL )
 			sc = SCBuildDummy(&dummy,fv->sf,i);
 		    if ( SFIsRotatable(fv->sf,sc) ||
-			    (SCMakeDotless(fv->sf,sc,false,true) && !onlyaccents) ||
-			    (SFIsCompositBuildable(fv->sf,sc->unicodeenc) &&
-			     (!onlyaccents || hascomposing(fv->sf,sc->unicodeenc))) ) {
+			    (SCMakeDotless(fv->sf,sc,false,false) && !onlyaccents) ||
+			    (SFIsCompositBuildable(fv->sf,sc->unicodeenc,sc) &&
+			     (!onlyaccents || hascomposing(fv->sf,sc->unicodeenc,sc))) ) {
 			anybuildable = true;
 		break;
 		    }
@@ -2873,9 +2873,37 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 return( dummy );
 }
 
-static char *AdobeLigatureFormat(char *name) {
+char *AdobeLigatureFormat(char *name) {
+    /* There are two formats for ligs: <glyph-name>_<glyph-name>{...} or */
+    /*  uni<code><code>{...} (only works for BMP) */
     /* I'm not checking to see if all the components are valid */
-    char *components, *pt;
+    char *components, *pt, buffer[12];
+    const char *next;
+    int len = strlen(name), uni;
+
+    if ( strncmp(name,"uni",3)==0 && (len-3)%4==0 && len>7 ) {
+	pt = name+3;
+	components = galloc(1); *components = '\0';
+	while ( *pt ) {
+	    if ( sscanf(pt,"%4x", &uni )==0 ) {
+		free(components); components = NULL;
+	break;
+	    }
+	    if ( uni<psunicodenames_cnt && psunicodenames[uni]!=NULL )
+		next = psunicodenames[uni];
+	    else {
+		sprintf(buffer,"uni%04X", uni );
+		next = buffer;
+	    }
+	    components = grealloc(components,strlen(components) + strlen(next) + 2);
+	    if ( *components!='\0' )
+		strcat(components," ");
+	    strcat(components,next);
+	    pt += 4;
+	}
+	if ( components!=NULL )
+return( components );
+    }
 
     if ( strchr(name,'_')==NULL )
 return( NULL );
@@ -2896,9 +2924,8 @@ char *LigDefaultStr(int uni, char *name) {
     if ( uni==-1 || uni>=65536 ) {
 	if ( name==NULL )
 return( NULL );
-	if ( strchr(name,'_')==NULL )
-return( NULL );
 	components = AdobeLigatureFormat(name);
+	alt = NULL;
     } else {
 	if ( !isdecompositionnormative(uni) ||
 		unicode_alternates[uni>>8]==NULL ||
@@ -2921,7 +2948,7 @@ return( NULL );
 	components = copy("f f i; ff i");
     else if ( uni==0xfb04 )
 	components = copy("f f l; ff l");
-    else {
+    else if ( alt!=NULL ) {
 	components=NULL;
 	while ( 1 ) {
 	    len = 0;
