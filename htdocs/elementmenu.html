@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 14-Nov-2002 -->
+  <!-- AP: Last modified: 13-Dec-2002 -->
   <TITLE>The Element Menu</TITLE>
 </HEAD>
 <BODY>
@@ -96,13 +96,16 @@ This menu is not present in the Metrics View.
     just the current sub-font, which is what this command does) from
     <A HREF="cidmenu.html#FontInfo">CID-&gt;CID Font Info</A>.
   <DT>
-    Get/Char <A NAME="Info">Info</A>
+    Char <A NAME="CharInfo">Info</A>
   <DD>
-    In the outline view this brings up <A HREF="getinfo.html">one of four different
-    dialogs</A> (Point Info, Image Info, Reference Info or Character Info) depending
-    on what is selected.<BR>
-    In the other views this only brings up the
+    In the all views views this brings up the
     <A HREF="getinfo.html#Character">Character Info dialog</A>.
+  <DT>
+    Get <A NAME="Info">Info</A>
+  <DD>
+    In the outline view this brings up <A HREF="getinfo.html">one of three different
+    dialogs</A> (Point Info, Image Info, Reference Info) depending
+    on what is selected.<BR>
   <DT>
     Show <A NAME="Dependencies">Dependencies</A>
   <DD>
@@ -445,12 +448,18 @@ This menu is not present in the Metrics View.
   <DD>
     Only in the outline view. If all selected paths have a clockwise direction
     then this will be checked. Selecting it will make all paths be clockwise.
+    <P>
+    If not paths are selected, or if all selected paths are open this will be
+    greyed out. I a selected path intersects itself results are indeterminate.
   <DT>
     <A NAME="Counter">Counter</A>-Clockwise
   <DD>
     Only in the outline view. If all selected paths have a counter-clockwise
     direction then this will be checked. Selecting it will make all paths be
     counter-clockwise.
+    <P>
+    If not paths are selected, or if all selected paths are open this will be
+    greyed out. I a selected path intersects itself results are indeterminate.
   <DT>
     <A NAME="Correct">Correct</A> Direction
   <DD>
