@@ -167,11 +167,14 @@ static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
 	    }
 	}
     }
-    if ( i==-1 ) {
+    if ( i==-1 || i>=sf->charcnt ) {
 	/* try adding it to the end of the font */
+	int j;
 	int encmax = CountOfEncoding(sf->encoding_name);
-	for ( i=sf->charcnt-1; i>=encmax && sf->chars[i]==NULL; --i );
-	++i;
+	for ( j=sf->charcnt-1; j>=encmax && sf->chars[j]==NULL; --j );
+	++j;
+	if ( i<j )
+	    i = j;
 	MakeEncChar(sf,i,name);
     }
 
