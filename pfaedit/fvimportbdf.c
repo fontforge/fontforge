@@ -192,7 +192,12 @@ static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
 	    ((sf->bitmaps==b && b->next==NULL ) || sf->bitmaps==NULL) ) {
 	/* try adding it to the end of the font */
 	if ( enc>=sf->charcnt ) i=enc;
-	else i = sf->charcnt;
+	else {
+	    int cnt = CountOfEncoding(sf->encoding_name);
+	    i = sf->charcnt;
+	    while ( i>cnt && i>0 && sf->chars[i-1]==NULL )
+		--i;
+	}
 	MakeEncChar(sf,i,name);
     }
     if ( i==-1 )	/* Can't guess the proper encoding, ignore it */
@@ -217,15 +222,26 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,int depth, struct m
     char name[40], tok[100];
     int enc=-1, width=defs->dwidth, xmin=0, xmax=0, ymin=0, ymax=0, hsz, vsz;
     int swidth= defs->swidth, swidth1=defs->swidth1;
-    int i;
+    int i,ch;
     BitmapView *bv;
     uint8 *pt, *end, *eol;
 
     gettoken(bdf,name,sizeof(tok));
     while ( gettoken(bdf,tok,sizeof(tok))!=-1 ) {
-	if ( strcmp(tok,"ENCODING")==0 )
+	if ( strcmp(tok,"ENCODING")==0 ) {
 	    fscanf(bdf,"%d",&enc);
-	else if ( strcmp(tok,"DWIDTH")==0 )
+	    /* Adobe says that enc is value for Adobe Standard */
+	    /* But people don't use it that way. Adobe also says that if */
+	    /* there is no mapping in adobe standard the -1 may be followed */
+	    /* by another value, the local encoding. */
+	    if ( enc==-1 ) {
+		ch = getc(bdf);
+		if ( ch==' ' || ch=='\t' )
+		    fscanf(bdf,"%d",&enc);
+		else
+		    ungetc(ch,bdf);
+	    }
+	} else if ( strcmp(tok,"DWIDTH")==0 )
 	    fscanf(bdf,"%d %*d",&width);
 	else if ( strcmp(tok,"SWIDTH")==0 )
 	    fscanf(bdf,"%d %*d",&swidth);
@@ -384,11 +400,16 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc,
     break;
 	}
 	if ( strcmp(tok,"FONT")==0 ) {
-	    fscanf(bdf," -%*[^-]-%[^-]-%[^-]-%[^-]-%*[^-]-", family, weight, italic );
-	    while ( (ch = getc(bdf))!='-' && ch!='\n' && ch!=EOF );
-	    if ( ch=='-' ) {
-		fscanf(bdf,"%d", &pixelsize );
-		if ( pixelsize<0 ) pixelsize = -pixelsize;	/* An extra - screwed things up once... */
+	    if ( fscanf(bdf," -%*[^-]-%[^-]-%[^-]-%[^-]-%*[^-]-", family, weight, italic )!=0 ) {
+		while ( (ch = getc(bdf))!='-' && ch!='\n' && ch!=EOF );
+		if ( ch=='-' ) {
+		    fscanf(bdf,"%d", &pixelsize );
+		    if ( pixelsize<0 ) pixelsize = -pixelsize;	/* An extra - screwed things up once... */
+		}
+	    } else {
+		gettoken(bdf,tok,sizeof(tok));
+		if ( *tok!='\0' && !isdigit(*tok))
+		    strcpy(family,tok);
 	    }
 	} else if ( strcmp(tok,"SIZE")==0 ) {
 	    int size, res;

@@ -276,6 +276,7 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding, int res) {
     char *pt;
     uint32 codepages[2];
     int i;
+    char *sffn = *font->sf->fontname ? font->sf->fontname : "Untitled";
 
     if ( AllSame(font,&avg,&cnt))
 	mono="M";
@@ -295,7 +296,7 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding, int res) {
     if ( strcmp(encoding,"ISOLatin1Encoding")==0 )
 	encoding = "ISO8859-1";
 
-    decomposename(font, font->sf->fontname, family_name, weight_name, slant,
+    decomposename(font, sffn, family_name, weight_name, slant,
 	    stylename, squeeze, font->sf->familyname, font->sf->weight);
     if ( *font->sf->fontname=='-' ) {
 	strcpy(buffer,font->sf->fontname);
