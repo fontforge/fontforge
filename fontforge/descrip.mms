@@ -145,3 +145,4 @@ splinerefigure.obj : splinerefigure.c
 mm.obj : mm.c
 parsettfvar.obj : parsettfvar.c
 tottfvar.obj : tottfvar.c
+pua.obj: pua.c

@@ -31,6 +31,9 @@
 #include <utype.h>
 #include "psfont.h"
 #include "sd.h"
+#if defined(FONTFORGE_CONFIG_TYPE3) && !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
+# include "views.h"		/* For CharView */
+#endif
 
 /* This is not a "real" structure. It is a temporary hack that encompasses */
 /*  various possibilities, the combination of which won't occur in reality */
@@ -2346,7 +2349,7 @@ static SplinePointList *SplinesFromLayers(SplineChar *sc,int *flags) {
 		if ( last!=NULL )
 		    for ( ; last->next!=NULL; last=last->next );
 	    } else {
-		new = sc->layers[layer].splines;
+		new = SplinePointListCopy(sc->layers[layer].splines);
 		if ( head==NULL )
 		    head = new;
 		else
@@ -2364,6 +2367,9 @@ void SFSplinesFromLayers(SplineFont *sf) {
     int i, layer;
     int flags= -1;
     Layer *new;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    CharView *cv;
+#endif
 
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	SplineChar *sc = sf->chars[i];
@@ -2385,13 +2391,19 @@ void SFSplinesFromLayers(SplineFont *sf) {
 	new[ly_fore].splines = splines;
 	new[ly_fore].refs = head;
 	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
-	    SplinePointListsFree(sc->layers[layer].splines);
+	    SplinePointListsMDFree(sc,sc->layers[layer].splines);
 	    RefCharsFree(sc->layers[layer].refs);
 	    ImageListsFree(sc->layers[layer].images);
 	}
 	free(sc->layers);
 	sc->layers = new;
 	sc->layer_cnt = 2;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+	for ( cv=sc->views; cv!=NULL; cv=cv->next ) {
+	    cv->layerheads[dm_back] = &sc->layers[ly_back];
+	    cv->layerheads[dm_fore] = &sc->layers[ly_fore];
+	}
+#endif
     }
     SFReinstanciateRefs(sf);
 }
