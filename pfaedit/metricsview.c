@@ -3816,7 +3816,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
 	mv->perchar[0].sc = sc;
 	cnt = 1;
     } else {
-	for ( cnt=0, j=1; j<=fv->sel_index && cnt<15; ++j ) {
+	for ( cnt=0, j=1; (j<=fv->sel_index || j<1) && cnt<15; ++j ) {
 	    for ( i=0; i<fv->sf->charcnt && cnt<15; ++i ) {
 		if ( fv->selected[i]==j && fv->sf->chars[i]!=NULL ) {
 		    mv->perchar[cnt].sc = fv->sf->chars[i];

@@ -141,6 +141,7 @@ static void FVDeselectAll(FontView *fv) {
 	    FVToggleCharSelected(fv,i);
 	}
     }
+    fv->sel_index = 0;
 }
 
 static void FVSelectAll(FontView *fv) {
@@ -152,10 +153,11 @@ static void FVSelectAll(FontView *fv) {
 	    FVToggleCharSelected(fv,i);
 	}
     }
+    fv->sel_index = 1;
 }
 
 static void FVSelectColor(FontView *fv, uint32 col, int door) {
-    int i;
+    int i, any=0;
     uint32 sccol;
     SplineChar **chars = fv->sf->chars;
 
@@ -164,9 +166,11 @@ static void FVSelectColor(FontView *fv, uint32 col, int door) {
 	if ( (door && !fv->selected[i] && sccol==col) ||
 		(!door && fv->selected[i]!=(sccol==col)) ) {
 	    fv->selected[i] = !fv->selected[i];
+	    if ( fv->selected[i] ) any = true;
 	    FVToggleCharSelected(fv,i);
 	}
     }
+    fv->sel_index = any;
 }
 
 static void FVReselect(FontView *fv, int newpos) {
@@ -2166,6 +2170,7 @@ void FVChangeChar(FontView *fv,int i) {
     if ( i!=-1 ) {
 	FVDeselectAll(fv);
 	fv->selected[i] = true;
+	fv->sel_index = 1;
 	fv->end_pos = fv->pressed_pos = i;
 	FVToggleCharSelected(fv,i);
 	FVScrollToChar(fv,i);
@@ -4970,6 +4975,7 @@ static void FVChar(FontView *fv,GEvent *event) {
 	    fv->selected[pos] = true;
 	    FVToggleCharSelected(fv,pos);
 	    fv->pressed_pos = pos;
+	    fv->sel_index = 1;
 	}
 	fv->end_pos = pos;
 	FVShowInfo(fv);
