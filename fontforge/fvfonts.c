@@ -364,7 +364,7 @@ return( index );
 }
 
 int SFFindChar(SplineFont *sf, int unienc, const char *name ) {
-    int index=-1;
+    int index=-1, i;
     char *end;
 
     if ( (sf->encoding_name->is_custom || sf->encoding_name->is_compact ||
@@ -394,10 +394,21 @@ int SFFindChar(SplineFont *sf, int unienc, const char *name ) {
 	    }
 	    if ( unienc!=-1 )
 return( SFFindChar(sf,unienc,NULL));
+	    if ( sf->encoding_name->psnames!=NULL ) {
+		for ( index = sf->encoding_name->char_cnt-1; index>=0; --index )
+		    if ( sf->encoding_name->psnames[i]!=NULL &&
+			    strcmp(sf->encoding_name->psnames[i],name)==0 )
+return( index );
+	    }
 	    for ( unienc=psunicodenames_cnt-1; unienc>=0; --unienc )
 		if ( psunicodenames[unienc]!=NULL &&
 			strcmp(psunicodenames[unienc],name)==0 )
 return( SFFindChar(sf,unienc,NULL));
+	    for ( i=0; psaltuninames[i].name!=NULL; ++i )
+		if ( strcmp(psaltuninames[i].name,name)==0 )
+return( SFFindChar(sf,psaltuninames[i].unicode,NULL));
+	    if ( strcmp(name,".notdef")==0 )
+return( SFFindChar(sf,0,NULL));
 	}
     }
 
