@@ -61,7 +61,6 @@ extern int adjustlbearing;
 extern int autohint_before_rasterize;
 extern int seperate_hint_controls;
 extern int ItalicConstrained;
-extern int palettesdocked;
 
 extern char *BDFFoundry;
 extern char *xuid;

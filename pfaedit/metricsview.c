@@ -1287,6 +1287,7 @@ return;
 	    SCPreparePopup(mv->gw,sc);
 /* Don't allow any editing when displaying a bitmap font */
     } else if ( event->type == et_mousedown && mv->bdf==NULL ) {
+	CVPaletteDeactivate();
 	if ( sc!=NULL ) {
 	    GDrawSetCursor(mv->gw,ct_leftright);
 	    for ( j=0; j<mv->charcnt; ++j )
@@ -1464,6 +1465,12 @@ static int mv_e_h(GWindow gw, GEvent *event) {
 	    n->next = mv->next;
 	}
 	MetricsViewFree(mv);
+      break;
+      case et_focus:
+#if 0
+	if ( event->u.focus.gained_focus )
+	    CVPaletteDeactivate();
+#endif
       break;
     }
 return( true );

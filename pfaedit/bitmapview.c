@@ -202,6 +202,7 @@ static void BVDoClear(BitmapView *bv);
 
 void BVChar(BitmapView *bv, GEvent *event ) {
 
+    BVPaletteActivate(bv);
     BVToolsSetCursor(bv,TrueCharState(event));
     if ( !(event->u.chr.state&(ksm_control|ksm_meta)) &&
 	    event->u.chr.keysym == GK_BackSpace ) {
@@ -790,6 +791,7 @@ static int v_e_h(GWindow gw, GEvent *event) {
 	BVToolsSetCursor(bv,event->u.mouse.state);
       break;
       case et_mousedown:
+	BVPaletteActivate(bv);
 	BVMouseDown(bv,event);
       break;
       case et_mousemove:
@@ -806,6 +808,12 @@ static int v_e_h(GWindow gw, GEvent *event) {
 	BVToolsSetCursor(bv,TrueCharState(event));
       break;
       case et_timer:
+      break;
+      case et_focus:
+#if 0
+	if ( event->u.focus.gained_focus )
+	    BVPaletteActivate(bv);
+#endif
       break;
     }
 return( true );
@@ -837,16 +845,30 @@ static int bv_e_h(GWindow gw, GEvent *event) {
       break;
       case et_destroy:
 	BVUnlinkView(bv);
+	BVPalettesHideIfMine(bv);
 	BitmapViewFree(bv);
+      break;
+      case et_map:
+	if ( event->u.map.is_visible )
+	    BVPaletteActivate(bv);
+	else
+	    BVPalettesHideIfMine(bv);
       break;
       case et_close:
 	GDrawDestroyWindow(gw);
       break;
       case et_mouseup: case et_mousedown:
 	GGadgetEndPopup();
+	BVPaletteActivate(bv);
       break;
       case et_mousemove:
 	SCPreparePopup(bv->gw,bv->bc->sc);
+      break;
+      case et_focus:
+#if 0
+	if ( event->u.focus.gained_focus )
+	    BVPaletteActivate(bv);
+#endif
       break;
     }
 return( true );
@@ -1010,11 +1032,8 @@ static void BVMenuGotoChar(GWindow gw,struct gmenuitem *mi,GEvent *g) {
 
 static void BVMenuPaletteShow(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
-    GWindow palette = mi->mid==MID_Tools ? bv->tools : bv->layers;
 
-    if ( palette==NULL )
-return;
-    GDrawSetVisible(palette,!GDrawIsVisible(palette));
+    BVPaletteSetVisible(bv, mi->mid==MID_Tools, BVPaletteIsVisible(bv, mi->mid==MID_Tools));
 }
 
 static void BVUndo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1125,10 +1144,10 @@ static void pllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_Tools:
-	    mi->ti.checked = bv->tools!=NULL && GDrawIsVisible(bv->tools);
+	    mi->ti.checked = BVPaletteIsVisible(bv,1);
 	  break;
 	  case MID_Layers:
-	    mi->ti.checked = bv->tools!=NULL && GDrawIsVisible(bv->layers);
+	    mi->ti.checked = BVPaletteIsVisible(bv,0);
 	  break;
 	}
     }
@@ -1411,8 +1430,8 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv) {
     bv->pressed_tool = bv->pressed_display = bv->active_tool = bvt_none;
 
     /*GWidgetHidePalettes();*/
-    bv->tools = BVMakeTools(bv);
-    bv->layers = BVMakeLayers(bv);
+    /*bv->tools = BVMakeTools(bv);*/
+    /*bv->layers = BVMakeLayers(bv);*/
 
     memset(&rq,0,sizeof(rq));
     rq.family_name = fixed;

@@ -2119,6 +2119,8 @@ static void FVMouse(FontView *fv,GEvent *event) {
     SplineChar *sc, dummy;
 
     GGadgetEndPopup();
+    if ( event->type==et_mousedown )
+	CVPaletteDeactivate();
     if ( pos<0 )
 	pos = 0;
     else if ( pos>=fv->sf->charcnt )
@@ -2264,6 +2266,12 @@ static int v_e_h(GWindow gw, GEvent *event) {
       break;
       case et_timer:
 	FVTimer(fv,event);
+      break;
+      case et_focus:
+#if 0
+	if ( event->u.focus.gained_focus )
+	    CVPaletteDeactivate();
+#endif
       break;
     }
 return( true );

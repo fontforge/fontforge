@@ -31,7 +31,38 @@
 #include "ustring.h"
 
 int seperate_hint_controls=1;
-int palettesdocked = 0;
+
+static int cvvisible[2] = { 1, 1}, bvvisible[2]= { 1,1 };
+static GWindow cvlayers, cvtools, bvlayers, bvtools;
+
+static GWindow CreatePalette(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs) {
+    GWindow gw;
+    GPoint pt;
+    GRect newpos;
+    GWindow root;
+    GRect screensize;
+
+    pt.x = pos->x; pt.y = pos->y;
+    root = GDrawGetRoot(NULL);
+    GDrawGetSize(root,&screensize);
+    GDrawTranslateCoordinates(w,root,&pt);
+    if ( pt.x<0 ) pt.x=0;
+    if ( pt.y<0 ) pt.y=0;
+    if ( pt.x+pos->width>screensize.width )
+	pt.x = screensize.width-pos->width;
+    if ( pt.y+pos->height>screensize.height )
+	pt.y = screensize.height-pos->height;
+
+    newpos.x = pt.x; newpos.y = pt.y; newpos.width = pos->width; newpos.height = pos->height;
+    if ( !(wattrs->mask&wam_transient)) {
+	wattrs->mask |= wam_transient;
+	wattrs->transient = GWidgetGetTopWidget(w);
+    }
+    wattrs->mask |= wam_positioned;
+    wattrs->positioned = true;
+    gw = GDrawCreateTopWindow(NULL,&newpos,eh,user_data,wattrs);
+return( gw );
+}
 
 static unichar_t poppointer[] = { 'P','o','i','n','t','e','r',  '\0' };
 static unichar_t popmag[] = { 'M','a','g','n','i','f','y',' ','(','M','i','n','i','f','y',' ','w','i','t','h',' ','a','l','t',')',  '\0' };
@@ -262,7 +293,7 @@ return( d.ret );
 static void CVRectElipse(CharView *cv) {
     rectelipse = Ask("Rectangle","Elipse",rectelipse,
 	    "Round Rectangle Radius",&rr_radius,false);
-    GDrawRequestExpose(cv->tools,NULL,false);
+    GDrawRequestExpose(cvtools,NULL,false);
 }
 
 static void CVPolyStar(CharView *cv) {
@@ -368,14 +399,14 @@ void CVToolsSetCursor(CharView *cv, int state) {
 	shouldshow = cvt_minify;
     if ( shouldshow!=cv->showing_tool ) {
 	GDrawSetCursor(cv->v,tools[shouldshow]);
-	GDrawSetCursor(cv->tools,tools[shouldshow]);
+	GDrawSetCursor(cvtools,tools[shouldshow]);
 	cv->showing_tool = shouldshow;
     }
 
     cntrl = (state&ksm_control)?1:0;
     if ( cntrl != cv->cntrldown ) {
 	cv->cntrldown = cntrl;
-	GDrawRequestExpose(cv->tools,NULL,false);
+	GDrawRequestExpose(cvtools,NULL,false);
     }
 }
 
@@ -396,7 +427,7 @@ static void ToolsMouse(CharView *cv, GEvent *event) {
     } else if ( event->type == et_mousemove ) {
 	if ( cv->pressed_tool==cvt_none && pos!=cvt_none )
 	    /* Not pressed */
-	    GGadgetPreparePopup(cv->tools,popups[pos]);
+	    GGadgetPreparePopup(cvtools,popups[pos]);
 	else if ( pos!=cv->pressed_tool || cv->had_control != ((event->u.mouse.state&ksm_control)?1:0) )
 	    cv->pressed_display = cvt_none;
 	else
@@ -420,12 +451,12 @@ static void ToolsMouse(CharView *cv, GEvent *event) {
 	    else if ( cv->had_control ) {
 		if ( cv->cb1_tool!=pos ) {
 		    cv->cb1_tool = pos;
-		    GDrawRequestExpose(cv->tools,NULL,false);
+		    GDrawRequestExpose(cvtools,NULL,false);
 		}
 	    } else {
 		if ( cv->b1_tool!=pos ) {
 		    cv->b1_tool = pos;
-		    GDrawRequestExpose(cv->tools,NULL,false);
+		    GDrawRequestExpose(cvtools,NULL,false);
 		}
 	    }
 	    cv->pressed_tool = cv->pressed_display = cvt_none;
@@ -473,7 +504,9 @@ GWindow CVMakeTools(CharView *cv) {
     GRect r;
     GWindowAttrs wattrs;
     unichar_t title[] = { 'T', 'o', 'o', 'l', 's', '\0' };
-    GWindow tools;
+
+    if ( cvtools!=NULL )
+return( cvtools );
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_positioned|wam_wtitle;
@@ -482,18 +515,11 @@ GWindow CVMakeTools(CharView *cv) {
     wattrs.positioned = true;
     wattrs.window_title = title;
 
-    r.width = 53; r.height = 188;
-    if ( palettesdocked ) {
-	r.x = (cv->showrulers?cv->rulerh:0); r.y = cv->mbh+cv->infoh+(cv->showrulers?cv->rulerh:0);
-	tools = GWidgetCreateSubWindow(cv->gw,&r,cvtools_e_h,cv,&wattrs);
-	GDrawSetVisible(tools,true);
-	cv->palettesdocked = true;
-    } else {
-	r.x = -r.width-6; r.y = cv->mbh+20;
-	tools = GWidgetCreatePalette( cv->gw, &r, cvtools_e_h, cv, &wattrs );
-	GWidgetRequestVisiblePalette(tools,true);
-    }
-return( tools );
+    r.width = 53; r.height = 187;
+    r.x = -r.width-6; r.y = cv->mbh+20;
+    cvtools = CreatePalette( cv->gw, &r, cvtools_e_h, cv, &wattrs );
+    GDrawSetVisible(cvtools,true);
+return( cvtools );
 }
 
 static void CVPopupInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
@@ -506,12 +532,12 @@ static void CVPopupInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
     if ( cv->had_control ) {
 	if ( cv->cb1_tool!=pos ) {
 	    cv->cb1_tool = pos;
-	    GDrawRequestExpose(cv->tools,NULL,false);
+	    GDrawRequestExpose(cvtools,NULL,false);
 	}
     } else {
 	if ( cv->b1_tool!=pos ) {
 	    cv->b1_tool = pos;
-	    GDrawRequestExpose(cv->tools,NULL,false);
+	    GDrawRequestExpose(cvtools,NULL,false);
 	}
     }
     CVToolsSetCursor(cv,cv->had_control?ksm_control:0);
@@ -543,6 +569,17 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 #define CID_EFore	1007
 #define CID_EBack	1008
 #define CID_EGrid	1009
+
+static void CVLayersSet(CharView *cv) {
+    GGadgetSetChecked(GWidgetGetControl(cvlayers,CID_VFore),cv->showfore);
+    GGadgetSetChecked(GWidgetGetControl(cvlayers,CID_VBack),cv->showback);
+    GGadgetSetChecked(GWidgetGetControl(cvlayers,CID_VGrid),cv->showgrids);
+    GGadgetSetChecked(GWidgetGetControl(cvlayers,CID_VVHints),cv->showvhints);
+    GGadgetSetChecked(GWidgetGetControl(cvlayers,CID_VHHints),cv->showhhints);
+    GGadgetSetChecked(GWidgetGetControl(cvlayers,
+		cv->drawmode==dm_fore?CID_EFore:
+		cv->drawmode==dm_back?CID_EBack:CID_EGrid ),true);
+}
 
 static int cvlayers_e_h(GWindow gw, GEvent *event) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
@@ -606,7 +643,6 @@ GWindow CVMakeLayers(CharView *cv) {
     GRect r;
     GWindowAttrs wattrs;
     unichar_t title[] = { 'L', 'a', 'y', 'e', 'r', 's', '\0' };
-    GWindow layers;
     GGadgetCreateData gcd[15];
     GTextInfo label[15];
     static GBox radio_box = { bt_none, bs_rect, 0, 0, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };
@@ -617,6 +653,8 @@ GWindow CVMakeLayers(CharView *cv) {
     FontRequest rq;
     int i, base;
 
+    if ( cvlayers!=NULL )
+return( cvlayers );
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_positioned|wam_wtitle;
     wattrs.event_masks = -1;
@@ -626,14 +664,8 @@ GWindow CVMakeLayers(CharView *cv) {
 
     r.width = 85; r.height = 94;
     if ( seperate_hint_controls ) { r.height += 17; r.width += 7; }
-    if ( palettesdocked ) {
-	r.x = (cv->showrulers?cv->rulerh:0);
-	r.y = cv->mbh+cv->infoh+187+(cv->showrulers?cv->rulerh:0);
-	layers = GWidgetCreateSubWindow(cv->gw,&r,cvlayers_e_h,cv,&wattrs);
-    } else {
-	r.x = -r.width-6; r.y = cv->mbh+188+45/*25*/;	/* 45 is right if there's decor, 25 when none. twm gives none, kde gives decor */
-	layers = GWidgetCreatePalette( cv->gw, &r, cvlayers_e_h, cv, &wattrs );
-    }
+    r.x = -r.width-6; r.y = cv->mbh+187+45/*25*/;	/* 45 is right if there's decor, 25 when none. twm gives none, kde gives decor */
+    cvlayers = CreatePalette( cv->gw, &r, cvlayers_e_h, cv, &wattrs );
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
@@ -642,7 +674,7 @@ GWindow CVMakeLayers(CharView *cv) {
     rq.family_name = helv;
     rq.point_size = -12;
     rq.weight = 400;
-    font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(layers),&rq);
+    font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cvlayers),&rq);
     for ( i=0; i<sizeof(label)/sizeof(label[0]); ++i )
 	label[i].font = font;
 
@@ -787,12 +819,73 @@ GWindow CVMakeLayers(CharView *cv) {
     } else
 	if ( cv->showhhints || cv->showvhints ) gcd[6].gd.flags |= gg_cb_on;
 
-    GGadgetsCreate(layers,gcd);
-    if ( palettesdocked )
-	GDrawSetVisible(layers,true);
-    else
-	GWidgetRequestVisiblePalette(layers,true);
-return( layers );
+    GGadgetsCreate(cvlayers,gcd);
+    GDrawSetVisible(cvlayers,true);
+return( cvlayers );
+}
+
+static void CVPaletteCheck(CharView *cv) {
+    if ( cvtools==NULL ) {
+	CVMakeTools(cv);
+	CVMakeLayers(cv);
+    }
+}
+
+int CVPaletteIsVisible(CharView *cv,int which) {
+    CVPaletteCheck(cv);
+    if ( which==1 )
+return( cvtools!=NULL && GDrawIsVisible(cvtools) );
+
+return( cvlayers!=NULL && GDrawIsVisible(cvlayers) );
+}
+
+void CVPaletteSetVisible(CharView *cv,int which,int visible) {
+    CVPaletteCheck(cv);
+    if ( which==1 && cvtools!=NULL)
+	GDrawSetVisible(cvtools,visible );
+    else if ( which==0 && cvlayers!=NULL )
+	GDrawSetVisible(cvlayers,visible );
+    cvvisible[which] = visible;
+}
+
+void CVPaletteActivate(CharView *cv) {
+    CVPaletteCheck(cv);
+    if ( GDrawGetUserData(cvtools)!=cv ) {
+	GDrawSetUserData(cvtools,cv);
+	GDrawSetUserData(cvlayers,cv);
+	GDrawSetVisible(cvtools,cvvisible[1]);
+	GDrawSetVisible(cvlayers,cvvisible[0]);
+	if ( cvvisible[1]) {
+	    cv->showing_tool = cvt_none;
+	    CVToolsSetCursor(cv,0);
+	    GDrawRequestExpose(cvtools,NULL,false);
+	}
+	if ( cvvisible[0])
+	    CVLayersSet(cv);
+    }
+    if ( bvtools!=NULL ) {
+	GDrawSetVisible(bvtools,false);
+	GDrawSetVisible(bvlayers,false);
+    }
+}
+
+void CVPalettesHideIfMine(CharView *cv) {
+    if ( cvtools==NULL )
+return;
+    if ( GDrawGetUserData(cvtools)==cv ) {
+	GDrawSetVisible(cvtools,false);
+	GDrawSetVisible(cvlayers,false);
+    }
+}
+
+/* ************************************************************************** */
+/* **************************** Bitmap Palettes ***************************** */
+/* ************************************************************************** */
+
+static void BVLayersSet(BitmapView *bv) {
+    GGadgetSetChecked(GWidgetGetControl(bvlayers,CID_VFore),bv->showfore);
+    GGadgetSetChecked(GWidgetGetControl(bvlayers,CID_VBack),bv->showoutline);
+    GGadgetSetChecked(GWidgetGetControl(bvlayers,CID_VGrid),bv->showgrid);
 }
 
 static int bvlayers_e_h(GWindow gw, GEvent *event) {
@@ -829,7 +922,6 @@ GWindow BVMakeLayers(BitmapView *bv) {
     GRect r;
     GWindowAttrs wattrs;
     unichar_t title[] = { 'L', 'a', 'y', 'e', 'r', 's', '\0' };
-    GWindow layers;
     GGadgetCreateData gcd[8];
     GTextInfo label[8];
     static GBox radio_box = { bt_none, bs_rect, 0, 0, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };
@@ -839,6 +931,8 @@ GWindow BVMakeLayers(BitmapView *bv) {
     FontRequest rq;
     int i;
 
+    if ( bvlayers!=NULL )
+return(bvlayers);
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_positioned|wam_wtitle;
     wattrs.event_masks = -1;
@@ -848,7 +942,7 @@ GWindow BVMakeLayers(BitmapView *bv) {
 
     r.width = 73; r.height = 73;
     r.x = -r.width-6; r.y = bv->mbh+81+45/*25*/;	/* 45 is right if there's decor, is in kde, not in twm. Sigh */
-    layers = GWidgetCreatePalette( bv->gw, &r, bvlayers_e_h, bv, &wattrs );
+    bvlayers = CreatePalette( bv->gw, &r, bvlayers_e_h, bv, &wattrs );
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
@@ -857,7 +951,7 @@ GWindow BVMakeLayers(BitmapView *bv) {
     rq.family_name = helv;
     rq.point_size = -12;
     rq.weight = 400;
-    font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(layers),&rq);
+    font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(bvlayers),&rq);
     for ( i=0; i<sizeof(label)/sizeof(label[0]); ++i )
 	label[i].font = font;
 
@@ -916,9 +1010,9 @@ GWindow BVMakeLayers(BitmapView *bv) {
     if ( bv->showoutline ) gcd[4].gd.flags |= gg_cb_on;
     if ( bv->showgrid ) gcd[5].gd.flags |= gg_cb_on;
 
-    GGadgetsCreate(layers,gcd);
-    GWidgetRequestVisiblePalette(layers,true);
-return( layers );
+    GGadgetsCreate(bvlayers,gcd);
+    GDrawSetVisible(bvlayers,true);
+return( bvlayers );
 }
 
 static unichar_t *bvpopups[] = { poppointer, popmag,
@@ -984,14 +1078,14 @@ void BVToolsSetCursor(BitmapView *bv, int state) {
 	shouldshow = bvt_minify;
     if ( shouldshow!=bv->showing_tool ) {
 	GDrawSetCursor(bv->v,tools[shouldshow]);
-	GDrawSetCursor(bv->tools,tools[shouldshow]);
+	GDrawSetCursor(bvtools,tools[shouldshow]);
 	bv->showing_tool = shouldshow;
     }
 
     cntrl = (state&ksm_control)?1:0;
     if ( cntrl != bv->cntrldown ) {
 	bv->cntrldown = cntrl;
-	GDrawRequestExpose(bv->tools,NULL,false);
+	GDrawRequestExpose(bvtools,NULL,false);
     }
 }
 
@@ -1010,7 +1104,7 @@ static void BVToolsMouse(BitmapView *bv, GEvent *event) {
     } else if ( event->type == et_mousemove ) {
 	if ( bv->pressed_tool==bvt_none && pos!=bvt_none )
 	    /* Not pressed */
-	    GGadgetPreparePopup(bv->tools,bvpopups[pos]);
+	    GGadgetPreparePopup(bvtools,bvpopups[pos]);
 	else if ( pos!=bv->pressed_tool || bv->had_control != ((event->u.mouse.state&ksm_control)?1:0) )
 	    bv->pressed_display = bvt_none;
 	else
@@ -1026,12 +1120,12 @@ static void BVToolsMouse(BitmapView *bv, GEvent *event) {
 	    else if ( bv->had_control ) {
 		if ( bv->cb1_tool!=pos ) {
 		    bv->cb1_tool = pos;
-		    GDrawRequestExpose(bv->tools,NULL,false);
+		    GDrawRequestExpose(bvtools,NULL,false);
 		}
 	    } else {
 		if ( bv->b1_tool!=pos ) {
 		    bv->b1_tool = pos;
-		    GDrawRequestExpose(bv->tools,NULL,false);
+		    GDrawRequestExpose(bvtools,NULL,false);
 		}
 	    }
 	    bv->pressed_tool = bv->pressed_display = bvt_none;
@@ -1079,8 +1173,9 @@ GWindow BVMakeTools(BitmapView *bv) {
     GRect r;
     GWindowAttrs wattrs;
     unichar_t title[] = { 'T', 'o', 'o', 'l', 's', '\0' };
-    GWindow tools;
 
+    if ( bvtools!=NULL )
+return( bvtools );
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_positioned|wam_wtitle;
     wattrs.event_masks = -1;
@@ -1090,9 +1185,9 @@ GWindow BVMakeTools(BitmapView *bv) {
 
     r.width = 53; r.height = 80;
     r.x = -r.width-6; r.y = bv->mbh+20;
-    tools = GWidgetCreatePalette( bv->gw, &r, bvtools_e_h, bv, &wattrs );
-    GWidgetRequestVisiblePalette(tools,true);
-return( tools );
+    bvtools = CreatePalette( bv->gw, &r, bvtools_e_h, bv, &wattrs );
+    GDrawSetVisible(bvtools,true);
+return( bvtools );
 }
 
 static void BVPopupInvoked(GWindow v, GMenuItem *mi,GEvent *e) {
@@ -1103,12 +1198,12 @@ static void BVPopupInvoked(GWindow v, GMenuItem *mi,GEvent *e) {
     if ( bv->had_control ) {
 	if ( bv->cb1_tool!=pos ) {
 	    bv->cb1_tool = pos;
-	    GDrawRequestExpose(bv->tools,NULL,false);
+	    GDrawRequestExpose(bvtools,NULL,false);
 	}
     } else {
 	if ( bv->b1_tool!=pos ) {
 	    bv->b1_tool = pos;
-	    GDrawRequestExpose(bv->tools,NULL,false);
+	    GDrawRequestExpose(bvtools,NULL,false);
 	}
     }
     BVToolsSetCursor(bv,bv->had_control?ksm_control:0);
@@ -1170,4 +1265,69 @@ void BVToolsPopup(BitmapView *bv, GEvent *event) {
     }
     bv->had_control = (event->u.mouse.state&ksm_control)?1:0;
     GMenuCreatePopupMenu(bv->v,event, mi);
+}
+
+static void BVPaletteCheck(BitmapView *bv) {
+    if ( bvtools==NULL ) {
+	BVMakeTools(bv);
+	BVMakeLayers(bv);
+    }
+}
+
+int BVPaletteIsVisible(BitmapView *bv,int which) {
+    BVPaletteCheck(bv);
+    if ( which==1 )
+return( bvtools!=NULL && GDrawIsVisible(bvtools) );
+
+return( bvlayers!=NULL && GDrawIsVisible(bvlayers) );
+}
+
+void BVPaletteSetVisible(BitmapView *bv,int which,int visible) {
+    BVPaletteCheck(bv);
+    if ( which==1 && bvtools!=NULL)
+	GDrawSetVisible(bvtools,visible );
+    else if ( which==0 && bvlayers!=NULL )
+	GDrawSetVisible(bvlayers,visible );
+    bvvisible[which] = visible;
+}
+
+void BVPaletteActivate(BitmapView *bv) {
+    BVPaletteCheck(bv);
+    if ( GDrawGetUserData(bvtools)!=bv ) {
+	GDrawSetUserData(bvtools,bv);
+	GDrawSetUserData(bvlayers,bv);
+	GDrawSetVisible(bvtools,bvvisible[1]);
+	GDrawSetVisible(bvlayers,bvvisible[0]);
+	if ( bvvisible[1]) {
+	    bv->showing_tool = bvt_none;
+	    BVToolsSetCursor(bv,0);
+	    GDrawRequestExpose(bvtools,NULL,false);
+	}
+	if ( bvvisible[0])
+	    BVLayersSet(bv);
+    }
+    if ( cvtools!=NULL ) {
+	GDrawSetVisible(cvtools,false);
+	GDrawSetVisible(cvlayers,false);
+    }
+}
+
+void BVPalettesHideIfMine(BitmapView *bv) {
+    if ( bvtools==NULL )
+return;
+    if ( GDrawGetUserData(bvtools)==bv ) {
+	GDrawSetVisible(bvtools,false);
+	GDrawSetVisible(bvlayers,false);
+    }
+}
+
+void CVPaletteDeactivate(void) {
+    if ( cvtools!=NULL ) {
+	GDrawSetVisible(cvtools,false);
+	GDrawSetVisible(cvlayers,false);
+    }
+    if ( bvtools!=NULL ) {
+	GDrawSetVisible(bvtools,bvvisible[1]);
+	GDrawSetVisible(bvlayers,bvvisible[0]);
+    }
 }

@@ -725,7 +725,7 @@ static void CVFit(CharView *cv) {
     right -= left;
     if ( top==0 ) top = 1000;
     if ( right==0 ) right = 1000;
-    wsc = (cv->width-(cv->palettesdocked?60:0)) / right;
+    wsc = cv->width / right;
     hsc = cv->height / top;
     if ( wsc<hsc ) hsc = wsc;
 
@@ -736,7 +736,7 @@ static void CVFit(CharView *cv) {
 	cv->scale = 1/ceil(1/cv->scale);
     }
 
-    cv->xoff = -(left - (right/10))*cv->scale + (cv->palettesdocked?60:0);
+    cv->xoff = -(left - (right/10))*cv->scale;
     cv->yoff = -(bottom - (top/10))*cv->scale;
 
     CVNewScale(cv);
@@ -876,6 +876,7 @@ static void CVMouseMove(CharView *cv, GEvent *event );
 
 void CVChar(CharView *cv, GEvent *event ) {
 
+    CVPaletteActivate(cv);
     CVToolsSetCursor(cv,TrueCharState(event));
     if ( event->u.chr.keysym == GK_Shift_L || event->u.chr.keysym == GK_Shift_R ) {
 	GEvent e;
@@ -1044,8 +1045,7 @@ void CVInfoDraw(CharView *cv, GWindow pixmap ) {
 }
 
 static void CVCrossing(CharView *cv, GEvent *event ) {
-    if ( cv->tools!=NULL )
-	CVToolsSetCursor(cv,event->u.mouse.state);
+    CVToolsSetCursor(cv,event->u.mouse.state);
     cv->info_within = event->u.crossing.entered;
     cv->info.x = (event->u.crossing.x-cv->xoff)/cv->scale;
     cv->info.y = (cv->height-event->u.crossing.y-cv->yoff)/cv->scale;
@@ -1657,6 +1657,7 @@ static int v_e_h(GWindow gw, GEvent *event) {
 	CVCrossing(cv,event);
       break;
       case et_mousedown:
+	CVPaletteActivate(cv);
 	CVMouseDown(cv,event);
       break;
       case et_mousemove:
@@ -1675,6 +1676,12 @@ static int v_e_h(GWindow gw, GEvent *event) {
       break;
       case et_timer:
 	CVTimer(cv,event);
+      break;
+      case et_focus:
+#if 0
+	if ( event->u.focus.gained_focus )
+	    CVPaletteActivate(cv);
+#endif
       break;
     }
 return( true );
@@ -1962,8 +1969,15 @@ static int cv_e_h(GWindow gw, GEvent *event) {
 	  break;
 	}
       break;
+      case et_map:
+	if ( event->u.map.is_visible )
+	    CVPaletteActivate(cv);
+	else
+	    CVPalettesHideIfMine(cv);
+      break;
       case et_destroy:
 	CVUnlinkView(cv);
+	CVPalettesHideIfMine(cv);
 	if ( cv->backimgs!=NULL ) {
 	    GDrawDestroyWindow(cv->backimgs);
 	    cv->backimgs = NULL;
@@ -1979,9 +1993,16 @@ static int cv_e_h(GWindow gw, GEvent *event) {
       break;
       case et_mouseup: case et_mousedown:
 	GGadgetEndPopup();
+	CVPaletteActivate(cv);
       break;
       case et_mousemove:
 	SCPreparePopup(cv->gw,cv->sc);
+      break;
+      case et_focus:
+#if 0
+	if ( event->u.focus.gained_focus )
+	    CVPaletteActivate(cv);
+#endif
       break;
     }
 return( true );
@@ -2407,39 +2428,10 @@ static void CVMenuGotoChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	CVChangeChar(cv,pos);
 }
 
-#if 0
-static void CVMenuPaletteControl(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    CharView *cv = (CharView *) GDrawGetUserData(gw);
-    GWindow palette = mi->mid<MID_LayersFree ? cv->tools : cv->layers;
-
-    switch ( mi->mid%10 ) {
-      case MID_ToolsFree%10:
-	if ( palette==cv->tools )
-	    GPaletteUndock(palette,-60,cv->mbh+20);
-	else
-	    GPaletteUndock(palette,-91,cv->mbh+187+45);
-	GDrawSetVisible(palette,true);
-      break;
-      case MID_ToolsDocked%10:
-	if ( palette==cv->tools )
-	    GPaletteDock(palette,(cv->showrulers?cv->rulerh:0),
-		    cv->mbh+cv->infoh+(cv->showrulers?cv->rulerh:0));
-	else
-	    GPaletteDock(palette,(cv->showrulers?cv->rulerh:0),
-		    cv->mbh+cv->infoh+187+(cv->showrulers?cv->rulerh:0));
-	GDrawSetVisible(palette,true);
-      break;
-      case MID_ToolsHidden%10:
-	GDrawSetVisible(palette,false);
-      break;
-    }
-}
-#endif
-
 static void CVMenuPaletteShow(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    GWindow palette = mi->mid==MID_Tools ? cv->tools : cv->layers;
-    GDrawSetVisible(palette,!GDrawIsVisible(palette));
+
+    CVPaletteSetVisible(cv, mi->mid==MID_Tools, CVPaletteIsVisible(cv, mi->mid==MID_Tools));
 }
 
 static void pllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2448,10 +2440,10 @@ static void pllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_Tools:
-	    mi->ti.checked = GDrawIsVisible(cv->tools);
+	    mi->ti.checked = CVPaletteIsVisible(cv,1);
 	  break;
 	  case MID_Layers:
-	    mi->ti.checked = GDrawIsVisible(cv->layers);
+	    mi->ti.checked = CVPaletteIsVisible(cv,0);
 	  break;
 	}
     }
@@ -3451,8 +3443,8 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv) {
     GMenuBarSetItemChecked(cv->mb,MID_Fill,CVShows.showfilled);
 
     /*GWidgetHidePalettes();*/
-    cv->tools = CVMakeTools(cv);
-    cv->layers = CVMakeLayers(cv);
+    /*cv->tools = CVMakeTools(cv);*/
+    /*cv->layers = CVMakeLayers(cv);*/
 
     CVFit(cv);
     GDrawSetVisible(cv->v,true);

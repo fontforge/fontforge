@@ -111,7 +111,6 @@ typedef struct charview {
     unsigned int info_within: 1;		/* cursor is within main window */
     unsigned int back_img_out_of_date: 1;	/* Force redraw of back image pixmap */
     unsigned int cntrldown:1;
-    unsigned int palettesdocked:1;
     SplinePointList **heads[dm_max];
     Undoes **uheads[dm_max];
     Undoes **rheads[dm_max];
@@ -134,7 +133,7 @@ typedef struct charview {
     GWindow icon;
     PressedOn p;
     SplinePoint *lastselpt;
-    GWindow tools, layers;
+    /*GWindow tools, layers;*/
     int8 b1_tool, cb1_tool, b2_tool, cb2_tool;		/* Button 3 does a popup */
     int8 showing_tool, pressed_tool, pressed_display, had_control, active_tool;
     SplinePointList *active_spl;
@@ -170,7 +169,7 @@ typedef struct bitmapview {
     unsigned int cntrldown:1;
     unsigned int recentchange:1;
     unsigned int clearing:1;
-    GWindow tools, layers;
+    /*GWindow tools, layers;*/
     GGadget *recalc;
     int8 b1_tool, cb1_tool, b2_tool, cb2_tool;		/* Button 3 does a popup */
     int8 showing_tool, pressed_tool, pressed_display, had_control, active_tool;
@@ -301,6 +300,15 @@ extern void BVToolsSetCursor(BitmapView *bv, int state);
 extern void CVToolsSetCursor(CharView *cv, int state);
 extern void CVToolsPopup(CharView *cv, GEvent *event);
 extern void BVToolsPopup(BitmapView *bv, GEvent *event);
+extern int CVPaletteIsVisible(CharView *cv,int which);
+extern void CVPaletteSetVisible(CharView *cv,int which,int visible);
+extern void CVPaletteActivate(CharView *cv);
+extern void CVPalettesHideIfMine(CharView *cv);
+extern int BVPaletteIsVisible(BitmapView *bv,int which);
+extern void BVPaletteSetVisible(BitmapView *bv,int which,int visible);
+extern void BVPaletteActivate(BitmapView *bv);
+extern void BVPalettesHideIfMine(BitmapView *bv);
+extern void CVPaletteDeactivate(void);
 extern void CVTransFunc(CharView *cv,double transform[6]);
 extern void TransformDlgCreate(void *data,void (*transfunc)(void *,double *,int,BVTFunc *),
 	int (*getorigin)(void *,BasePoint *,int));
