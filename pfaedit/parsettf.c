@@ -3495,19 +3495,38 @@ return( j );
 }
 
 static void readttfkerns(FILE *ttf,struct ttfinfo *info) {
-    int tabcnt, len, coverage,i,j, npairs;
+    int tabcnt, len, coverage,i,j, npairs, version, format, flags_good;
     int left, right, offset;
+    int header_size;
     KernPair *kp;
 
     fseek(ttf,info->kern_start,SEEK_SET);
-    /* version = */ getushort(ttf);
+    version = getushort(ttf);
     tabcnt = getushort(ttf);
+    if ( version!=0 ) {
+	fseek(ttf,info->kern_start,SEEK_SET);
+	version = getlong(ttf);
+	tabcnt = getlong(ttf);
+    }
     for ( i=0; i<tabcnt; ++i ) {
-	/* version = */ getushort(ttf);
-	len = getushort(ttf);
-	coverage = getushort(ttf);
-	if ( (coverage&7)==0x1 && (coverage&0xff00)==0 ) {
-	    /* format 0, horizontal kerning data not perpendicular */
+	if ( version==0 ) {
+	    /* version = */ getushort(ttf);
+	    len = getushort(ttf);
+	    coverage = getushort(ttf);
+	    format = coverage>>8;
+	    flags_good = ((coverage&7)==1);
+	    header_size = 6;
+	} else {
+	    len = getlong(ttf);
+	    coverage = getushort(ttf);
+	    /* Apple has reordered the bits */
+	    format = (coverage&0xff);
+	    flags_good = ((coverage&0xff00)==0);
+	    /* tupleIndex = */ getushort(ttf);
+	    header_size = 8;
+	}
+	if ( flags_good && format==0 ) {
+	    /* format 0, horizontal kerning data (as pairs) not perpendicular */
 	    npairs = getushort(ttf);
 	    /* searchRange = */ getushort(ttf);
 	    /* entrySelector = */ getushort(ttf);
@@ -3527,8 +3546,27 @@ static void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 		    fprintf( stderr, "Bad kern pair glyphs %d & %d must be less than %d\n",
 			    left, right, info->glyph_cnt );
 	    }
+	} else if ( flags_good && format==1 ) {
+	    /* format 1 is an apple state machine which can handle weird cases */
+	    /*  OpenType's spec doesn't document this */
+	    /*  I shan't support it */
+	    fseek(ttf,len-header_size,SEEK_CUR);
+	} else if ( flags_good && format==2 ) {
+	    /* format 2, horizontal kerning data (as classes) not perpendicular */
+	    /*  OpenType's spec documents this, but says windows won't support it */
+	    /*  OpenType's spec also contradicts Apple's as to the data stored */
+	    /*  OTF says class indeces are stored, Apple says byte offsets into array */
+	    /*  Apple says offsets are stored in uint8, otf says indeces are in uint16 */
+	    /* Bleah!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+    fprintf( stderr, "This font has a format 2 kerning table. I've never seen that and don't know\nhow to parse it. Could you send a copy of %s to gww@silcom.com?\nThanks!\n",
+	info->fontname );
+	    fseek(ttf,len-header_size,SEEK_CUR);
+	} else if ( flags_good && format==3 ) {
+	    /* format 3, horizontal kerning data (as classes limited to 256 entries) not perpendicular */
+	    /*  OpenType's spec doesn't document this */
+	    fseek(ttf,len-header_size,SEEK_CUR);
 	} else {
-	    fseek(ttf,len-6,SEEK_CUR);
+	    fseek(ttf,len-header_size,SEEK_CUR);
 	}
     }
 }

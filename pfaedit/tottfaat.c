@@ -65,11 +65,14 @@ void ttf_dumpkerns(struct alltabs *at, SplineFont *sf) {
     if ( cnt==0 )
 return;
 
+    /* Old kerning format (version 0) uses 16 bit quantities */
+    /* Apple's new format (version 0x00010000) uses 32 bit quantities */
     at->kern = tmpfile();
     putshort(at->kern,0);		/* version */
     putshort(at->kern,1);		/* number of subtables */
     putshort(at->kern,0);		/* subtable version */
     putshort(at->kern,(7+3*cnt)*sizeof(uint16)); /* subtable length */
+    /* Apple's new format has a completely different coverage format */
     putshort(at->kern,1);		/* coverage, flags&format */
     putshort(at->kern,cnt);
     for ( i=1,j=0; i<=cnt; i<<=1, ++j );
