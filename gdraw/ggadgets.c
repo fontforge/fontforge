@@ -689,6 +689,7 @@ void _ggadget_underlineMnemonic(GWindow gw,int32 x,int32 y,unichar_t *label,
     unichar_t *pt;
     int point = GDrawPointsToPixels(gw,1);
     int width;
+    GRect clip;
 
     pt = u_strchr(label,mnemonic);
     if ( pt==NULL && isupper(mnemonic))
@@ -698,7 +699,11 @@ return;
     x += GDrawGetBiTextWidth(gw,label,pt-label,-1,NULL);
     width = GDrawGetTextWidth(gw,pt,1,NULL);
     GDrawSetLineWidth(gw,point);
-    GDrawDrawLine(gw,x,y+2*point,x+width,y+2*point,fg);
+    y += 2*point;
+    GDrawGetClip(gw,&clip);
+    if ( y+point-1 >= clip.y+clip.height )
+	y = clip.y+clip.height-point;
+    GDrawDrawLine(gw,x,y,x+width,y,fg);
 }
 
 void _ggadget_move(GGadget *g, int32 x, int32 y ) {
