@@ -2488,8 +2488,13 @@ return;
 	    fp->skipping_mbf = false;
     break;
 	}
+	/* Hmm. These lines were put in to handle parsing type42 fonts, but */
+	/*  they break multimaster fonts, and they don't seem to be needed */
+	/*  for type42s any more either. So... Away with them */
+#if 0
 	if ( strstr(buffer,"definefont")!=NULL )
     break;
+#endif
     }
 
     if ( strstr(buffer,"%%BeginData: ")!=NULL ) {
