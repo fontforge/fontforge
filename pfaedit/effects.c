@@ -475,7 +475,8 @@ return(NULL);
     for ( spl=base; spl!=NULL; spl=spl->next ) if ( spl->first->prev!=NULL && spl->first->prev->from!=spl->first ) {
 	if ( !wireframe ) {
 	    /* Make duplicates of any ticked points and move them over */
-	    for ( sp = spl->first; ; ) {
+	    found = spl->first;
+	    for ( sp = found; ; ) {
 		if ( sp->next->rightedge && sp->prev->rightedge ) {
 		    sp->me.x += shadow_length;
 		    sp->nextcp.x += shadow_length;
@@ -505,6 +506,7 @@ return(NULL);
 			new->nextcp = new->me;
 			SplineMake(new,sp,sp->next->order2);
 			SplineRefigure(new->prev);
+			if ( sp==found ) found = new;
 		    }
 		}
 		sp = sp->next->to;
@@ -559,22 +561,75 @@ static void SSSelectAll(SplineSet *spl,int select) {
 
 static void SSCleanup(SplineSet *spl) {
     SplinePoint *sp;
+    Spline *s, *first;
     /* look for likely rounding errors (caused by the two rotations) and */
     /*  get rid of them */
 
     while ( spl!=NULL ) {
 	for ( sp=spl->first; ; ) {
-	    sp->me.x = rint(sp->me.x*1024)/1024.;
-	    sp->me.y = rint(sp->me.y*1024)/1024.;
-	    sp->nextcp.x = rint(sp->nextcp.x*1024)/1024.;
-	    sp->nextcp.y = rint(sp->nextcp.y*1024)/1024.;
-	    sp->prevcp.x = rint(sp->prevcp.x*1024)/1024.;
-	    sp->prevcp.y = rint(sp->prevcp.y*1024)/1024.;
+	    sp->me.x = rint(sp->me.x*64)/64.;
+	    sp->me.y = rint(sp->me.y*64)/64.;
+	    sp->nextcp.x = rint(sp->nextcp.x*64)/64.;
+	    sp->nextcp.y = rint(sp->nextcp.y*64)/64.;
+	    sp->prevcp.x = rint(sp->prevcp.x*64)/64.;
+	    sp->prevcp.y = rint(sp->prevcp.y*64)/64.;
 	    if ( sp->next==NULL )
 	break;
 	    sp = sp->next->to;
 	    if ( sp==spl->first )
 	break;
+	}
+	first = NULL;
+	/* look for things which should be horizontal or vertical lines and make them so */
+	for ( s=spl->first->next; s!=NULL && s!=first; s=s->to->next ) {
+	    real xdiff = s->to->me.x-s->from->me.x, ydiff = s->to->me.y-s->from->me.y;
+	    real x,y;
+	    if (( xdiff<.01 && xdiff>-.01 ) && (ydiff<-10 || ydiff>10)) {
+		xdiff /= 2;
+		s->to->me.x = (s->from->me.x += xdiff);
+		s->from->prevcp.x += xdiff;
+		s->from->nextcp.x += xdiff;
+		s->to->prevcp.x -= xdiff;
+		s->to->nextcp.x -= xdiff;
+		if ( s->to->nonextcp ) s->to->nextcp.x = s->to->me.x;
+		if ( s->to->noprevcp ) s->to->prevcp.x = s->to->me.x;
+	    } else if (( ydiff<.01 && ydiff>-.01 ) && (xdiff<-10 || xdiff>10)) {
+		ydiff /= 2;
+		s->to->me.y = (s->from->me.y += ydiff);
+		s->from->prevcp.y += ydiff;
+		s->from->nextcp.y += ydiff;
+		s->to->prevcp.y -= ydiff;
+		s->to->nextcp.y -= ydiff;
+		if ( s->to->nonextcp ) s->to->nextcp.y = s->to->me.y;
+		if ( s->to->noprevcp ) s->to->prevcp.y = s->to->me.y;
+	    }
+	    xdiff = s->from->nextcp.x-s->from->me.x; ydiff = s->from->nextcp.y-s->from->me.y;
+	    if (( xdiff<.01 && xdiff>-.01 ) && (ydiff<-10 || ydiff>10))
+		s->from->nextcp.x = s->from->me.x;
+	    if (( ydiff<.01 && ydiff>-.01 ) && (xdiff<-10 || xdiff>10))
+		s->from->nextcp.y = s->from->me.y;
+	    xdiff = s->to->prevcp.x-s->to->me.x; ydiff = s->to->prevcp.y-s->to->me.y;
+	    if (( xdiff<.01 && xdiff>-.01 ) && (ydiff<-10 || ydiff>10))
+		s->to->prevcp.x = s->to->me.x;
+	    if (( ydiff<.01 && ydiff>-.01 ) && (xdiff<-10 || xdiff>10))
+		s->to->prevcp.y = s->to->me.y;
+	    x = s->from->me.x; y = s->from->me.y;
+	    if ( x==s->from->nextcp.x && x==s->to->prevcp.x && x==s->to->me.x &&
+		    ((y<s->to->me.y && s->from->nextcp.y>=y && s->from->nextcp.y<=s->to->prevcp.y && s->to->prevcp.y<=s->to->me.y) ||
+		     (y>=s->to->me.y && s->from->nextcp.y<=y && s->from->nextcp.y>=s->to->prevcp.y && s->to->prevcp.y>=s->to->me.y))) {
+		s->from->nonextcp = true; s->to->noprevcp = true;
+		s->from->nextcp = s->from->me;
+		s->to->prevcp = s->to->me;
+	    }
+	    if ( y==s->from->nextcp.y && y==s->to->prevcp.y && y==s->to->me.y &&
+		    ((x<s->to->me.x && s->from->nextcp.x>=x && s->from->nextcp.x<=s->to->prevcp.x && s->to->prevcp.x<=s->to->me.x) ||
+		     (x>=s->to->me.x && s->from->nextcp.x<=x && s->from->nextcp.x>=s->to->prevcp.x && s->to->prevcp.x>=s->to->me.x))) {
+		s->from->nonextcp = true; s->to->noprevcp = true;
+		s->from->nextcp = s->from->me;
+		s->to->prevcp = s->to->me;
+	    }
+	    SplineRefigure(s);
+	    if ( first==NULL ) first = s;
 	}
 	spl = spl->next;
     }
@@ -585,6 +640,7 @@ static SplineSet *SSShadow(SplineSet *spl,real angle, real outline_width,
     real trans[6];
     StrokeInfo si;
     SplineSet *internal, *temp, *frame, *fatframe, *outline, *mask;
+    int isfore = spl==sc->splines;
 
     if ( spl==NULL )
 return( NULL );
@@ -594,6 +650,7 @@ return( NULL );
     trans[1] = -trans[2];
     trans[4] = trans[5] = 0;
     spl = SplinePointListTransform(spl,trans,true);
+    SSCleanup(spl);
 
     internal = NULL;
     if ( outline_width!=0 && !wireframe ) {
@@ -618,7 +675,7 @@ return( NULL );
 	    SplinePointListsFree(frame); frame = fatframe;
 	    outline = SSStroke(spl,&si,sc);
 	    SSSelectAll(frame,false);
-#if 1		/* doesn't work !!!! */
+#if 0		/* doesn't work */
 	    si.radius = outline_width/3;
 	    si.removeinternal = true;
 	    mask = SSStroke(spl,&si,sc);
@@ -626,6 +683,9 @@ return( NULL );
 	    for ( temp=mask; temp->next!=NULL; temp=temp->next);
 	    temp->next = frame;
 	    frame = SplineSetRemoveOverlap(mask,over_exclude);
+#else
+#endif
+#if 0
 	    SplinePointListsFree(spl);
 	    for ( temp=outline; temp->next!=NULL; temp=temp->next);
 	    temp->next = frame;
@@ -650,6 +710,16 @@ return( NULL );
     trans[1] = -trans[1]; trans[2] = -trans[2];
     spl = SplinePointListTransform(spl,trans,true);	/* rotate back */
     SSCleanup(spl);
+    if ( isfore ) {
+	sc->width += fabs(trans[0]*shadow_length);
+	if ( trans[0]<0 ) {
+	    trans[4] = -trans[0]*shadow_length;
+	    trans[0] = trans[3] = 1;
+	    trans[1] = trans[2] = 0;
+	    spl = SplinePointListTransform(spl,trans,true);
+	}
+    }
+
 return( spl );
 }
     
@@ -714,7 +784,8 @@ return(true);
 	def_outline_width = width;
 	def_shadow_len = len;
 	def_sun_angle = angle;
-	angle *= 3.1415926535897932/180;
+	angle *= -3.1415926535897932/180;
+	angle -= 3.1415926535897932/2;
 	if ( od->fv!=NULL )
 	    FVShadow(od->fv,angle,width,len,od->wireframe);
 	else if ( od->cv!=NULL )
