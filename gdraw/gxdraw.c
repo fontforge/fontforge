@@ -1203,6 +1203,16 @@ static void GXDestroyCursor(GDisplay *gdisp,GCursor ct) {
     XFreeCursor(((GXDisplay *) gdisp)->display, ct-ct_user);
 }
 
+static void GXDrawSetWindowBorder(GWindow w,int width,Color col) {
+    GXWindow gw = (GXWindow) w;
+
+    if ( width>=0 )
+	XSetWindowBorderWidth(gw->display->display,gw->w,width);
+    if ( col!=COLOR_DEFAULT )
+	XSetWindowBorder(gw->display->display,gw->w,
+		_GXDraw_GetScreenPixel(gw->display,col));
+}
+
 static int GXSetDither(GDisplay *gdisp,int dither) {
     int old = ((GXDisplay *) gdisp)->do_dithering;
     ((GXDisplay *) gdisp)->do_dithering = dither;
@@ -1263,7 +1273,27 @@ static void _GXDraw_CleanUpWindow( GWindow w ) {
 static void GXDrawReparentWindow(GWindow child,GWindow newparent, int x,int y) {
     GXWindow gchild = (GXWindow) child, gpar = (GXWindow) newparent;
     GXDisplay *gdisp = gchild->display;
+    /* Gnome won't let me reparent a top level window */
+    /* It only pays attention to override-redirect if the window hasn't been mapped */
+#if 0
+    int reset = false;
+    XSetWindowAttributes sattr;
+    XWindowAttributes attr;
+
+    if ( gchild->is_toplevel && (GXWindow) newparent!=gdisp->groot ) {
+	XGetWindowAttributes(gdisp->display,gchild->w,&attr);
+	reset = !attr.override_redirect;
+	sattr.override_redirect = true;
+	XChangeWindowAttributes(gdisp->display,gchild->w,CWOverrideRedirect,&sattr);
+    }
+#endif
     XReparentWindow(gdisp->display,gchild->w,gpar->w,x,y);
+#if 0
+    if ( reset ) {
+	sattr.override_redirect = true;
+	XChangeWindowAttributes(gdisp->display,gchild->w,CWOverrideRedirect,&sattr);
+    }
+#endif
 }
 
 static void GXDrawSetVisible(GWindow w, int visible) {
@@ -3595,6 +3625,7 @@ static struct displayfuncs xfuncs = {
     GXDrawCreateCursor,
     GXDrawDestroyWindow,
     GXDestroyCursor,
+    GXDrawSetWindowBorder,
     GXSetDither,
 
     GXDrawReparentWindow,

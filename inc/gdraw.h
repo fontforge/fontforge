@@ -344,6 +344,7 @@ extern GCursor GDrawCreateCursor(GWindow src,GWindow mask,Color fg,Color bg,
 	int16 x, int16 y );
 extern void GDrawDestroyWindow(GWindow w);
 extern void GDrawDestroyCursor(GDisplay *gdisp, GCursor ct);
+extern void GDrawSetWindowBorder(GWindow w, int width, Color color);
 extern int  GDrawSetDither(GDisplay *gdisp, int dither);
 extern void GDrawReparentWindow(GWindow child,GWindow newparent, int x,int y);
 extern void GDrawSetVisible(GWindow w, int visible);

@@ -153,6 +153,7 @@ struct displayfuncs {
     GCursor (*createCursor)(GWindow src, GWindow mask, Color fg, Color bg, int16 x, int16 y);
     void (*destroyWindow)(GWindow);
     void (*destroyCursor)(GDisplay *,GCursor);
+    void (*setWindowBorder)(GWindow,int width,Color);
     int (*setDither)(GDisplay *,int);
 
     void (*reparentWindow)(GWindow,GWindow,int,int);

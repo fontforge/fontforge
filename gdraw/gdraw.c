@@ -108,6 +108,10 @@ void GDrawDestroyCursor(GDisplay *gdisp, GCursor ct) {
     (gdisp->funcs->destroyCursor)(gdisp,ct);
 }
 
+void GDrawSetWindowBorder(GWindow w,int width,Color col) {
+    (w->display->funcs->setWindowBorder)(w,width,col);
+}
+
 int GDrawSetDither(GDisplay *gdisp, int dither) {
     if ( gdisp==NULL ) gdisp = screen_display;
 return( (gdisp->funcs->setDither)(gdisp,dither) );

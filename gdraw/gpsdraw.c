@@ -76,6 +76,10 @@ static void PSDestroyCursor(GDisplay *gdisp,GCursor ct ) {
     fprintf( stderr, "DestroyCursor not implemented for postscript\n" );
 }
 
+static void PSSetWindowBorder(GWindow w,int width, Color col ) {
+    fprintf( stderr, "SetWindowBorder not implemented for postscript\n" );
+}
+
 static int PSSetDither(GDisplay *gdisp,int dither ) {
     fprintf( stderr, "SetDither not implemented for postscript\n" );
 return( true );
@@ -1236,6 +1240,7 @@ static struct displayfuncs psfuncs = {
     PSDrawCreateCursor,
     PSDrawDestroyWindow,
     PSDestroyCursor,
+    PSSetWindowBorder,
     PSSetDither,
 
     PSDrawReparentWindow,

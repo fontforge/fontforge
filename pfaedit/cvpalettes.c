@@ -40,11 +40,29 @@ int palettes_fixed=1;
 static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
 static GFont *font;
 
+#define CV_TOOLS_WIDTH		53
 #define CV_TOOLS_HEIGHT		(187+4*12+2)
 #define CV_LAYERS_HEIGHT	162
+#define BV_TOOLS_WIDTH		53
 #define BV_TOOLS_HEIGHT		80
 #define BV_LAYERS_HEIGHT	73
 #define BV_SHADES_HEIGHT	(8+9*16)
+
+static void ReparentFixup(GWindow child,GWindow parent, int x, int y, int width, int height ) {
+    /* This is so nice */
+    /* KDE does not honor my request for a border for top level windows */
+    /* KDE does not honor my request for size (for narrow) top level windows */
+    /* Gnome gets very confused by reparenting */
+	/* If we've got a top level window, then reparenting it removes gnome's */
+	/* decoration window, but sets the new parent to root (rather than what */
+	/* we asked for */
+	/* I have tried reparenting it twice, unmapping & reparenting. Nothing works */
+
+    GDrawReparentWindow(child,parent,x,y);
+    if ( width!=0 )
+	GDrawResize(child,width,height);
+    GDrawSetWindowBorder(child,1,GDrawGetDefaultForeground(NULL));
+}
 
 static GWindow CreatePalette(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs, GWindow v) {
     GWindow gw;
@@ -82,7 +100,7 @@ static GWindow CreatePalette(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *),
     wattrs->positioned = true;
     gw = GDrawCreateTopWindow(NULL,&newpos,eh,user_data,wattrs);
     if ( palettes_docked )
-	GDrawReparentWindow(gw,v,0,pos->y);
+	ReparentFixup(gw,v,0,pos->y,pos->width,pos->height);
 return( gw );
 }
 
@@ -604,7 +622,7 @@ return( cvtools );
     wattrs.is_dlg = true;
     wattrs.window_title = GStringGetResource(_STR_Tools,NULL);
 
-    r.width = 53; r.height = CV_TOOLS_HEIGHT;
+    r.width = CV_TOOLS_WIDTH; r.height = CV_TOOLS_HEIGHT;
     if ( cvtoolsoff.x==-9999 ) {
 	cvtoolsoff.x = -r.width-6; cvtoolsoff.y = cv->mbh+20;
     }
@@ -1027,8 +1045,8 @@ void CVPaletteActivate(CharView *cv) {
 	GDrawSetUserData(cvtools,cv);
 	GDrawSetUserData(cvlayers,cv);
 	if ( palettes_docked ) {
-	    GDrawReparentWindow(cvtools,cv->v,0,0);
-	    GDrawReparentWindow(cvlayers,cv->v,0,CV_TOOLS_HEIGHT+2);
+	    ReparentFixup(cvtools,cv->v,0,0,CV_TOOLS_WIDTH,CV_TOOLS_HEIGHT);
+	    ReparentFixup(cvlayers,cv->v,0,CV_TOOLS_HEIGHT+2,0,0);
 	} else {
 	    if ( cvvisible[0])
 		RestoreOffsets(cv->gw,cvlayers,&cvlayersoff);
@@ -1539,7 +1557,7 @@ return( bvtools );
     wattrs.is_dlg = true;
     wattrs.window_title = GStringGetResource(_STR_Tools,NULL);
 
-    r.width = 53; r.height = BV_TOOLS_HEIGHT;
+    r.width = BV_TOOLS_WIDTH; r.height = BV_TOOLS_HEIGHT;
     r.x = -r.width-6; r.y = bv->mbh+20;
     if ( palettes_fixed || palettes_docked ) {
 	r.x = 0; r.y = 0;
@@ -1671,9 +1689,9 @@ void BVPaletteActivate(BitmapView *bv) {
 	GDrawSetUserData(bvlayers,bv);
 	GDrawSetUserData(bvshades,bv);
 	if ( palettes_docked ) {
-	    GDrawReparentWindow(bvtools,bv->v,0,0);
-	    GDrawReparentWindow(bvlayers,bv->v,0,BV_TOOLS_HEIGHT+2);
-	    GDrawReparentWindow(bvshades,bv->v,0,BV_LAYERS_HEIGHT+BV_TOOLS_HEIGHT+4);
+	    ReparentFixup(bvtools,bv->v,0,0,BV_TOOLS_WIDTH,BV_TOOLS_HEIGHT);
+	    ReparentFixup(bvlayers,bv->v,0,BV_TOOLS_HEIGHT+2,0,0);
+	    ReparentFixup(bvshades,bv->v,0,BV_TOOLS_HEIGHT+BV_TOOLS_HEIGHT+4,0,0);
 	} else {
 	    if ( bvvisible[0])
 		RestoreOffsets(bv->gw,bvlayers,&bvlayersoff);
@@ -1777,16 +1795,16 @@ void PalettesChangeDocking(void) {
 	if ( cvtools!=NULL ) {
 	    CharView *cv = GDrawGetUserData(cvtools);
 	    if ( cv!=NULL ) {
-		GDrawReparentWindow(cvtools,cv->v,0,0);
-		GDrawReparentWindow(cvlayers,cv->v,0,CV_TOOLS_HEIGHT+2);
+		ReparentFixup(cvtools,cv->v,0,0,CV_TOOLS_WIDTH,CV_TOOLS_HEIGHT);
+		ReparentFixup(cvlayers,cv->v,0,CV_TOOLS_HEIGHT+2,0,0);
 	    }
 	}
 	if ( bvtools!=NULL ) {
 	    BitmapView *bv = GDrawGetUserData(bvtools);
 	    if ( bv!=NULL ) {
-		GDrawReparentWindow(bvtools,bv->v,0,0);
-		GDrawReparentWindow(bvlayers,bv->v,0,BV_TOOLS_HEIGHT+2);
-		GDrawReparentWindow(bvshades,bv->v,0,BV_TOOLS_HEIGHT+BV_LAYERS_HEIGHT+4);
+		ReparentFixup(bvtools,bv->v,0,0,BV_TOOLS_WIDTH,BV_TOOLS_HEIGHT);
+		ReparentFixup(bvlayers,bv->v,0,BV_TOOLS_HEIGHT+2,0,0);
+		ReparentFixup(bvshades,bv->v,0,BV_TOOLS_HEIGHT+BV_LAYERS_HEIGHT+4,0,0);
 	    }
 	}
     } else {
