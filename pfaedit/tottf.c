@@ -4255,7 +4255,7 @@ return( false );
     pos += ((at->cmaplen+3)>>2)<<2;
 
     if ( format!=ff_otf && format!=ff_otfcid && (format!=ff_none || at->msbitmaps) ) {
-	if ( format!=ff_none ) {
+	if ( format!=ff_none && at->cvtf!=NULL ) {
 	    at->tabdir.tabs[i].tag = CHR('c','v','t',' ');
 	    at->tabdir.tabs[i].checksum = filecheck(at->cvtf);
 	    at->tabdir.tabs[i].offset = pos;
@@ -4464,7 +4464,7 @@ static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
     }
     if ( !ttfcopyfile(ttf,at->cmap,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( format!=ff_otf && format!= ff_otfcid && (format!=ff_none || at->msbitmaps) ) {
-	if ( format!=ff_none ) {
+	if ( format!=ff_none && at->cvtf!=NULL ) {
 	    if ( !ttfcopyfile(ttf,at->cvtf,at->tabdir.tabs[i++].offset)) at->error = true;
 	}
     }
