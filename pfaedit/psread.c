@@ -1887,7 +1887,7 @@ static SplinePointList *SplinesFromEntities(EntityChar *ec) {
     for ( ent=ec->splines; ent!=NULL; ent = next ) {
 	next = ent->next;
 	if ( ent->type == et_splines ) {
-	    if ( ent->u.splines.fill.col==0xffffffff && ent->u.splines.stroke.col!=0xffffffff ) {
+	    if ( ent->u.splines.stroke.col!=0xffffffff ) {
 		memset(&si,'\0',sizeof(si));
 		si.toobigwarn = toobigwarn;
 		si.join = ent->u.splines.join;
@@ -1903,7 +1903,12 @@ static SplinePointList *SplinesFromEntities(EntityChar *ec) {
 		    if ( temp!=NULL )
 			for ( nlast=temp; nlast->next!=NULL; nlast=nlast->next );
 		}
-		SplinePointListFree(ent->u.splines.splines);
+		if ( ent->u.splines.fill.col==0xffffffff )
+		    SplinePointListFree(ent->u.splines.splines);
+		else if ( new==NULL )
+		    new = ent->u.splines.splines;
+		else
+		    nlast->next = ent->u.splines.splines;
 		toobigwarn = si.toobigwarn;
 	    } else {
 		new = ent->u.splines.splines;
