@@ -2943,9 +2943,11 @@ static void CVMouseMove(CharView *cv, GEvent *event ) {
 
     if ( !cv->p.pressed ) {
 	CVUpdateInfo(cv, event);
-	if ( cv->showing_tool == cvt_pointer )
+	if ( cv->showing_tool == cvt_pointer ) {
 	    CVCheckResizeCursors(cv);
-	else if ( cv->showing_tool == cvt_ruler )
+	    if ( cv->dv!=NULL )
+		CVDebugPointPopup(cv);
+	} else if ( cv->showing_tool == cvt_ruler )
 	    CVMouseMoveRuler(cv,event);
 return;
     }

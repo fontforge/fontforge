@@ -26,6 +26,7 @@
  */
 #include "pfaeditui.h"
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+#include <math.h>
 #include <gkeysym.h>
 #include <ustring.h>
 
@@ -1470,6 +1471,71 @@ return;
 	if (( exc = DebuggerGetEContext(dv->dc))!=NULL )
 	    DVFigureNewState(dv,exc);
     }
+}
+
+void CVDebugPointPopup(CharView *cv) {
+    DebugView *dv = cv->dv;
+    TT_ExecContext exc = DebuggerGetEContext(dv->dc);
+    TT_GlyphZoneRec *r;
+    FT_Vector *pts;
+    int i,l,n;
+    int32 x,y,fudge;
+    char cspace[110];
+    static unichar_t space[110];
+    extern float snapdistance;
+
+    if ( exc==NULL )
+return;
+    r = &exc->pts;
+    n = r->n_points;
+    pts = r->cur;
+
+    x = rint(cv->info.x/dv->scale);
+    y = rint(cv->info.y/dv->scale);
+    fudge = rint(snapdistance/cv->scale/dv->scale);
+    for ( i=n-1; i>=0; --i ) {
+	if ( x>=pts[i].x-fudge && x<=pts[i].x+fudge &&
+		y>=pts[i].y-fudge && y<=pts[i].y+fudge )
+    break;
+    }
+    if ( i!=-1 ) {
+#if defined( _NO_SNPRINTF ) || defined( __VMS )
+	sprintf(cspace,
+#else
+	snprintf(cspace,sizeof(cspace),
+#endif
+		"Point %d %s-curve\nCur (em): %7.2f,%7.2f\nCur (px): %7.2f,%7.2f\nOrg (em): %7.2f,%7.2f",
+		i, r->tags[i]&FT_Curve_Tag_On?"On":"Off",
+		pts[i].x*dv->scale, pts[i].y*dv->scale,
+		pts[i].x/64.0, pts[i].y/64.0,
+		r->org[i].x*dv->scale, r->org[i].y*dv->scale );
+    } else {
+	int xx, yy;
+	for ( i=n-1; i>=0; --i ) {
+	    l = i==0?n-1:i-1;
+	    if ( !(r->tags[i]&FT_Curve_Tag_On) && !(r->tags[l]&FT_Curve_Tag_On)) {
+		xx = (pts[i].x+pts[l].x)/2; yy = (pts[i].y+pts[l].y)/2;
+		if ( x>=xx-fudge && x<=xx+fudge &&
+			y>=yy-fudge && y<=yy+fudge )
+	break;
+	    }
+	}
+	if ( i==-1 )
+return;
+#if defined( _NO_SNPRINTF ) || defined( __VMS )
+	sprintf(cspace,
+#else
+	snprintf(cspace,sizeof(cspace),
+#endif
+		"Interpolated between %d %d\nCur (em): %7.2f,%7.2f\nCur (px): %7.2f,%7.2f\nOrg (em): %7.2f,%7.2f",
+		l,i,
+		xx*dv->scale, yy*dv->scale,
+		xx/64.0, yy/64.0,
+		(r->org[i].x+r->org[l].x)*dv->scale/2.0, (r->org[i].y+r->org[l].y)*dv->scale/2.0 );
+    }
+    uc_strcpy(space,cspace);
+    
+    GGadgetPreparePopup(cv->v,space);
 }
 #endif
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
