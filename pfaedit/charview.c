@@ -49,7 +49,9 @@ struct cvshows CVShows = {
 	1,		/* show y minimum distances */
 	1,		/* show horizontal metrics */
 	0,		/* show vertical metrics */
-	0		/* mark extrema */
+	0,		/* mark extrema */
+	1,		/* show blue values */
+	1		/* show family blues too */
 };
 Color nextcpcol = 0x007090;
 Color prevcpcol = 0xff00ff;
@@ -636,6 +638,63 @@ return;
     GDrawSetDashedLine(pixmap,0,0,0);
 }
 
+static void CVDrawBlues(CharView *cv,GWindow pixmap,char *bluevals,char *others,
+	Color col) {
+    double blues[24];
+    char *pt, *end;
+    int i=0, bcnt=0;
+    GRect r;
+
+    if ( bluevals!=NULL ) {
+	for ( pt = bluevals; isspace( *pt ) || *pt=='['; ++pt);
+	while ( i<14 && *pt!='\0' && *pt!=']' ) {
+	    blues[i] = strtod(pt,&end);
+	    if ( pt==end )
+	break;
+	    ++i;
+	    pt = end;
+	    while ( isspace( *pt )) ++pt;
+	}
+	if ( i&1 ) --i;
+    }
+    if ( others!=NULL ) {
+	for ( pt = others; isspace( *pt ) || *pt=='['; ++pt);
+	while ( i<24 && *pt!='\0' && *pt!=']' ) {
+	    blues[i] = strtod(pt,&end);
+	    if ( pt==end )
+	break;
+	    ++i;
+	    pt = end;
+	    while ( isspace( *pt )) ++pt;
+	}
+	if ( i&1 ) --i;
+    }
+    bcnt = i;
+    if ( i==0 )
+return;
+
+    r.x = 0; r.width = cv->width;
+    for ( i=0; i<bcnt; i += 2 ) {
+	int other;
+	r.y = -cv->yoff + cv->height - rint(blues[i]*cv->scale);
+	other = -cv->yoff + cv->height - rint(blues[i+1]*cv->scale);
+	if ( ( r.y<0 && other<0 ) || (r.y>cv->height && other>cv->height))
+    continue;
+	if ( r.y<0 ) r.y = 0;
+	else if ( r.y>cv->height ) r.y = cv->height;
+	if ( other<0 ) other = 0;
+	else if ( other>cv->height ) other = cv->height;
+	if ( other<r.y ) {
+	    r.height = r.y-other;
+	    r.y = other;
+	} else
+	    r.height = other-r.y;
+	GDrawSetStippled(pixmap,2, 0,0);
+	GDrawFillRect(pixmap,&r,col);
+	GDrawSetStippled(pixmap,0, 0,0);
+    }
+}
+
 static void CVShowHints(CharView *cv, GWindow pixmap) {
     StemInfo *hint;
     GRect r;
@@ -644,6 +703,15 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
     Color col;
     DStemInfo *dstem;
     MinimumDistance *md;
+    char *blues, *others;
+    struct psdict *private = cv->sc->parent->private;
+
+    blues = PSDictHasEntry(private,"BlueValues"); others = PSDictHasEntry(private,"OtherBlues");
+    if ( cv->showblues && (blues!=NULL || others!=NULL))
+	CVDrawBlues(cv,pixmap,blues,others,0x8080ff);
+    blues = PSDictHasEntry(private,"FamilyBlues"); others = PSDictHasEntry(private,"FamilyOtherBlues");
+    if ( cv->showfamilyblues && (blues!=NULL || others!=NULL))
+	CVDrawBlues(cv,pixmap,blues,others,0xff7070);
 
     if ( cv->showdhints ) for ( dstem = cv->sc->dstem; dstem!=NULL; dstem = dstem->next ) {
 	CVShowDHint(cv,pixmap,dstem);
@@ -4636,6 +4704,8 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv) {
     cv->showhmetrics = CVShows.showhmetrics;
     cv->showvmetrics = CVShows.showvmetrics;
     cv->markextrema = CVShows.markextrema;
+    cv->showblues = CVShows.showblues;
+    cv->showfamilyblues = CVShows.showfamilyblues;
 
     cv->infoh = 13;
     cv->rulerh = 13;

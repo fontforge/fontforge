@@ -1123,6 +1123,7 @@ static GWindow GXDrawCreatePixmap(GDisplay *gdisp, uint16 width, uint16 height) 
     if ( gw==NULL )
 return( NULL );
     gw->ggc = _GXDraw_NewGGC();
+    gw->ggc->bg = ((GXDisplay *) gdisp)->def_background;
     if ( gw->ggc==NULL ) {
 	gfree(gw);
 return( NULL );
@@ -1624,11 +1625,11 @@ static int GXDrawSetcolfunc(GXDisplay *gdisp, GGC *mine) {
 	mask |= GCBackground;
 	gcs->back_col = mine->bg;
     }
-    if ( mine->ts != gcs->ts ||
+    if ( mine->ts != gcs->ts || mine->ts != 0 ||
 	    mine->ts_xoff != gcs->ts_xoff ||
 	    mine->ts_yoff != gcs->ts_yoff ) {
 	if ( mine->ts!=0 ) {
-	    vals.stipple = gdisp->grey_stipple;
+	    vals.stipple = mine->ts==1?gdisp->grey_stipple: gdisp->fence_stipple;
 	    mask |= GCStipple;
 	}
 	vals.fill_style = (mine->ts?FillStippled:FillSolid);
@@ -1692,8 +1693,13 @@ static int GXDrawSetline(GXDisplay *gdisp, GGC *mine) {
 	    mine->ts_xoff != gcs->ts_xoff ||
 	    mine->ts_yoff != gcs->ts_yoff ) {
 	if ( mine->ts!=0 ) {
-	    vals.stipple = gdisp->grey_stipple;
+	    vals.stipple = mine->ts==1 ? gdisp->grey_stipple : gdisp->fence_stipple;
 	    mask |= GCStipple;
+	    if ( !mine->bitmap_col ) {
+		/* For reasons inexplicable to me, X sometimes draws with OpaqueStippled */
+		vals.background = _GXDraw_GetScreenPixel(gdisp,gcs->back_col);
+		mask |= GCBackground;
+	    }
 	}
 	vals.fill_style = (mine->ts?FillStippled:FillSolid);
 	vals.ts_x_origin = mine->ts_xoff;
@@ -3725,6 +3731,7 @@ GDisplay *_GXDraw_CreateDisplay(char *displayname,char *programname) {
     Window focus;
     int revert;
     static unsigned char grey_init[8] = { 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa };
+    static unsigned char fence_init[8] = { 0x55, 0x22, 0x55, 0x88, 0x55, 0x22, 0x55, 0x88};
 #ifndef NOTHREADS
     static pthread_mutex_t defmutex = PTHREAD_MUTEX_INITIALIZER;
 #endif
@@ -3772,6 +3779,7 @@ return( NULL );
 	gdisp->mycontext = XUniqueContext();
 
     gdisp->grey_stipple = XCreatePixmapFromBitmapData(display,gdisp->root,(char *) grey_init,8,8,1,0,1);
+    gdisp->fence_stipple = XCreatePixmapFromBitmapData(display,gdisp->root,(char *) fence_init,8,8,1,0,1);
 
     XGetInputFocus(display,&focus,&revert);
     if ( focus==PointerRoot )

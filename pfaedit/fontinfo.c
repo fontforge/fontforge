@@ -2567,6 +2567,15 @@ return(true);
 	sf->changed = true;
 	sf->changed_since_autosave = true;
 	d->done = true;
+	/* Just in case they changed the blue values and we are showing blues */
+	/*  in outline views... */
+	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	    CharView *cv;
+	    for ( cv = sf->chars[i]->views; cv!=NULL; cv=cv->next ) {
+		cv->back_img_out_of_date = true;
+		GDrawRequestExpose(cv->v,NULL,false);
+	    }
+	}
     }
 return( true );
 }

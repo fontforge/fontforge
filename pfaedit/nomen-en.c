@@ -1107,6 +1107,7 @@ static char *str_VHints="VHints";
 static char *str_DHints="DHints";
 static char *str_HMetrics="HMetrics";
 static char *str_VMetrics="VMetrics";
+static char *str_Blues="Blues";
 static char *str_Bitmap="Bitmap";
 static char *str_ShapeType = "Shape Type";
 /* Popups */

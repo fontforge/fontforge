@@ -205,6 +205,7 @@ typedef struct gxdisplay /* : GDisplay */ {
 	int32 iwidth, iheight;
     } gg;
     Pixmap grey_stipple;
+    Pixmap fence_stipple;
     int32 mycontext;
     int16 top_window_count;
     GTimer *timers;

@@ -248,6 +248,7 @@ return(true);
 	GRect old;
 	
 	pixmap = _GWidget_GetPixmap(gw,&event->u.expose.rect);
+	pixmap->ggc->bg = gw->ggc->bg;
 	GDrawPushClip(pixmap,&event->u.expose.rect,&old);
 	if ( gd->e_h!=NULL ) {
 	    pixmap->user_data = gw->user_data;
