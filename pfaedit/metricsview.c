@@ -325,8 +325,8 @@ static int MVSetAnchor(MetricsView *mv) {
 	mv->perchar[i].aps = NULL;
     }
     mv->sstr[i] = NULL;
-    if ( mv->perchar[i].xoff!=0 || mv->perchar[i].yoff!=0 ) {
-	mv->perchar[i].xoff = mv->perchar[i].yoff = 0;
+    if ( mv->perchar[0].xoff!=0 || mv->perchar[0].yoff!=0 ) {
+	mv->perchar[0].xoff = mv->perchar[0].yoff = 0;
 	changed = true;
     }
     for ( i=0; i<mv->charcnt; ++i ) {
@@ -770,6 +770,7 @@ static void MVSetPos(MetricsView *mv,int i,SplineChar *sc) {
 	memset(mv->perchar+oldmax,'\0',(mv->max-oldmax)*sizeof(struct metricchar));
     }
     mv->perchar[i].sc = sc;
+    mv->perchar[i].active_pos = NULL;
     if ( mv->bdf==NULL ) {
 	bdfc = MVRasterize(mv,sc);
 	BDFCharFree(mv->perchar[i].show);
@@ -1071,6 +1072,7 @@ return( true );
 #define MID_PrevDef	2013
 #define MID_AntiAlias	2014
 #define MID_FindInFontView	2015
+#define MID_Substitutions	2016
 #define MID_Ligatures	2020
 #define MID_KernPairs	2021
 #define MID_AnchorPairs	2022
@@ -1789,6 +1791,162 @@ static void MVMenuCenter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
+static void PosSubsMenuFree(GMenuItem *mi) {
+    int i;
+
+    if ( mi==NULL )
+return;
+    for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.line; ++i ) {
+	if ( !mi[i].ti.text_in_resource )
+	    free( mi[i].ti.text );
+	if ( mi[i].sub!=NULL )
+	    PosSubsMenuFree(mi[i].sub);
+    }
+    free(mi);
+}
+
+static void MVSubsInvoked(GWindow gw, GMenuItem *mi, GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    int i;
+
+    for ( i=0; i<mv->charcnt; ++i ) if ( mv->perchar[i].selected ) {
+	char *name = mi->ti.userdata, *pt;
+	SplineChar *sc;
+	pt = strchr(name,' ');
+	if ( pt!=NULL ) *pt = '\0';
+	sc = SFGetChar(mv->fv->sf,-1,name);
+	if ( pt!=NULL ) *pt = ' ';
+
+	if ( sc==NULL )
+	    GWidgetErrorR(_STR_Couldntfindchar, _STR_CouldntFindSubstitution, name);
+	else {
+	    MVSetPos(mv,i,sc);
+	    /* Should I update the text field??? */
+	    MVSetAnchor(mv);
+	    GDrawRequestExpose(mv->gw,NULL,false);
+	}
+    break;
+    }
+}
+
+static void GMenuFillWithTag(GMenuItem *mi,GTextInfo *tags,uint32 tag) {
+    int j;
+    unichar_t ubuf[8];
+
+    for ( j=0; tags[j].text!=NULL; ++j )
+	if ( (uint32) (tags[j].userdata)==tag )
+    break;
+    if ( tags[j].text==NULL ) {
+	ubuf[0] = tag>>24;
+	ubuf[1] = (tag>>16) & 0xff;
+	ubuf[2] = (tag>>8 ) & 0xff;
+	ubuf[3] = (tag    ) & 0xff;
+	ubuf[4] = 0;
+	mi->ti.text = u_copy(ubuf);
+    } else {
+	mi->ti.text = tags[j].text;
+	mi->ti.text_in_resource = true;
+    }
+    mi->ti.fg = COLOR_DEFAULT;
+    mi->ti.bg = COLOR_DEFAULT;
+}
+
+static void GMenuMakeSubSub(GMenuItem *mi,char *start,char *pt) {
+    mi->ti.text = uc_copyn(start,pt-start);
+    mi->ti.fg = COLOR_DEFAULT;
+    mi->ti.bg = COLOR_DEFAULT;
+    mi->ti.userdata = start;
+    mi->invoke = MVSubsInvoked;
+}
+
+static GMenuItem *SubsMenuBuild(SplineChar *sc) {
+    PST *pst;
+    GMenuItem *mi;
+    int cnt, i, j;
+    char *pt, *start;
+    extern GTextInfo simplesubs_tags[];
+    extern GTextInfo alternatesubs_tags[];
+
+    for ( cnt = 0, pst=sc->possub; pst!=NULL ; pst=pst->next )
+	if ( pst->type==pst_substitution || pst->type==pst_alternate )
+	    ++cnt;
+    if ( cnt==0 )
+return( NULL );
+    mi = gcalloc(cnt+2,sizeof(GMenuItem));
+    for ( i = 0, pst=sc->possub; pst!=NULL ; pst=pst->next ) {
+	if ( pst->type==pst_substitution ) {
+	    GMenuFillWithTag(&mi[i],simplesubs_tags,pst->tag);
+	    mi[i].ti.userdata = pst->u.subs.variant;
+	    mi[i++].invoke = MVSubsInvoked;
+	} else if ( pst->type==pst_alternate ) {
+	    GMenuFillWithTag(&mi[i],alternatesubs_tags,pst->tag);
+	    if ( strchr(pst->u.alt.components,' ')==NULL ) {
+		mi[i].ti.userdata = pst->u.alt.components;
+		mi[i++].invoke = MVSubsInvoked;
+	    } else {
+		for ( pt = pst->u.alt.components, j=0; *pt; ++pt )
+		    if ( *pt ==' ' ) ++j;
+		mi[i].sub = gcalloc(j+2,sizeof(GMenuItem));
+		for ( pt = start = pst->u.alt.components, j=0; *pt; ++pt ) if ( *pt ==' ' ) {
+		    GMenuMakeSubSub(&mi[i].sub[j],start,pt);
+		    start = pt+1;
+		    ++j;
+		}
+		GMenuMakeSubSub(&mi[i].sub[j],start,pt);
+		++i;
+	    }
+	}
+    }
+return( mi );
+}
+
+static void MVPopupInvoked(GWindow gw, GMenuItem *mi, GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    int i;
+
+    for ( i=0; i<mv->charcnt; ++i ) if ( mv->perchar[i].selected ) {
+	mv->perchar[i].active_pos = mi->ti.userdata;
+	MVSetAnchor(mv);
+	MVRedrawI(mv,i,0,0);
+    break;
+    }
+}
+
+static void MVPopupMenu(MetricsView *mv,GEvent *event,int sel) {
+    PST *pst;
+    int cnt, i;
+    GMenuItem *mi;
+    extern GTextInfo simplepos_tags[];
+
+    for ( cnt=0, pst=mv->perchar[sel].sc->possub; pst!=NULL; pst=pst->next )
+	if ( pst->type == pst_position )
+	    ++cnt;
+    mi = gcalloc(cnt+4,sizeof(GMenuItem));
+
+    mi[0].ti.text = (unichar_t *) _STR_Plain;
+    mi[0].ti.text_in_resource = true;
+    mi[0].ti.fg = COLOR_DEFAULT;
+    mi[0].ti.bg = COLOR_DEFAULT;
+    mi[0].invoke = MVPopupInvoked;
+
+    if ( cnt!=0 ) {
+	mi[1].ti.fg = COLOR_DEFAULT;
+	mi[1].ti.bg = COLOR_DEFAULT;
+	mi[1].ti.line = true;
+    }
+
+    i = 2;
+    for ( pst=mv->perchar[sel].sc->possub; pst!=NULL; pst=pst->next ) {
+	if ( pst->type == pst_position ) {
+	    GMenuFillWithTag(&mi[i],simplepos_tags,pst->tag);
+	    mi[i].ti.userdata = pst;
+	    mi[i++].invoke = MVPopupInvoked;
+	}
+    }
+    GMenuCreatePopupMenu(mv->gw,event, mi);
+    PosSubsMenuFree(mi);
+}
+
 static GMenuItem dummyitem[] = { { (unichar_t *) _STR_New, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, NULL };
 static GMenuItem fllist[] = {
     { { (unichar_t *) _STR_New, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, 'N', ksm_control, NULL, NULL, MenuNew },
@@ -1935,6 +2093,7 @@ static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_NextDefChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, ']', ksm_control|ksm_meta, NULL, NULL, MVMenuChangeChar, MID_NextDef },
     { { (unichar_t *) _STR_PrevDefChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'a' }, '[', ksm_control|ksm_meta, NULL, NULL, MVMenuChangeChar, MID_PrevDef },
     { { (unichar_t *) _STR_FindInFontView, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, '<', ksm_shift|ksm_control, NULL, NULL, MVMenuFindInFontView, MID_FindInFontView },
+    { { (unichar_t *) _STR_Substitutions, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, '\0', ksm_shift|ksm_control, NULL, NULL, NULL, MID_Substitutions },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Combinations, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'b' }, '\0', ksm_shift|ksm_control, cblist, cblistcheck },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
@@ -2129,6 +2288,16 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_NextDef:
 	  case MID_PrevDef:
 	    vwlist[i].ti.disabled = !aselection;
+	  break;
+	  case MID_Substitutions:
+	    if ( !aselection || mv->perchar[j].sc->possub==NULL )
+		vwlist[i].ti.disabled = false;
+	    else {
+		PosSubsMenuFree(vwlist[i].sub);
+		vwlist[i].sub = SubsMenuBuild(mv->perchar[j].sc);
+		vwlist[i].ti.disabled = (vwlist[i].sub == NULL);
+	    }
+	  break;
 	}
     base = i+1;
     for ( i=base; vwlist[i].ti.text!=NULL; ++i ) {
@@ -2410,7 +2579,10 @@ return;
 		    MVDeselectChar(mv,j);
 	    MVSelectChar(mv,i);
 	    GWindowClearFocusGadgetOfWindow(mv->gw);
-	    mv->pressed = true;
+	    if ( event->u.mouse.button==3 )
+		MVPopupMenu(mv,event,i);
+	    else
+		mv->pressed = true;
 	} else if ( within!=-1 ) {
 	    mv->pressedwidth = onwidth;
 	    mv->pressedkern = onkern;
@@ -2611,11 +2783,13 @@ return;
     for ( i=mv->charcnt+cnt-1; i>=within+cnt; --i ) {
 	newtext[i] = newtext[i-cnt];
 	mv->perchar[i].sc = mv->perchar[i-cnt].sc;
+	mv->perchar[i].active_pos = mv->perchar[i-cnt].active_pos;
 	mv->perchar[i].show = mv->perchar[i-cnt].show;
 	mv->perchar[i-cnt].show = NULL;
     }
     for ( i=within; i<within+cnt; ++i ) {
 	mv->perchar[i].sc = founds[i-within];
+	mv->perchar[i].active_pos = NULL;
 	newtext[i] = (founds[i-within]->unicodeenc>=0 && founds[i-within]->unicodeenc<0x10000)?
 		founds[i-within]->unicodeenc : 0xfffd;
     }

@@ -96,6 +96,8 @@ static char str_NextDefChar[] = "Next Defined Char";
 static unichar_t mnemonic_NextDefChar[] = 'D';
 static char str_PrevDefChar[] = "Prev Defined Char";
 static unichar_t mnemonic_PrevDefChar[] = 'a';
+static char str_Substitutions = "Substitutions";
+static char mnemonic_Substitutions = 'S';
 static char str_Goto[] = "Goto";
 static unichar_t mnemonic_Goto[] = 'G';
 static char str_Hidepoints[] = "Hide Points";
@@ -845,6 +847,7 @@ static char *str_TTFEmSize2 = "The convention is that TrueType fonts should have
 static char str_Badnumberin[] = "Bad Number in ";
 static char str_Enternameofchar[] = "Enter the name of a character in the font";
 static char str_Couldntfindchar[] = "Could not find the character: ";
+static char str_CouldntFindSubstitution = "Could not find substitution character: %.40hs";
     /* Font has changed dlg */
 static char str_Dontsave[] = "Don't Save";
 static unichar_t mnemonic_Dontsave[] = 'D';
@@ -1521,6 +1524,7 @@ static char *str_ScaleWidthBy = "Scale Width By:";
 static char *str_ScaleLBearingBy = "Scale LBearing By:";
 static char *str_ScaleRBearingBy = "Scale RBearing By:";
 static char *str_ScaleVWidthBy =   "Scale VAdvance By:";
+static char *str_Plain = "Plain";
     /* Import bdf */
 static char *str_PixelSizeFont = "What is the pixel size of the font in this file?";
 static char *str_CouldNotOpenFile = "Couldn't open file"

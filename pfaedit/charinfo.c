@@ -144,7 +144,7 @@ static GTextInfo ligature_tags[] = {
     { NULL }
 };
 
-static GTextInfo simplepos_tags[] = {
+GTextInfo simplepos_tags[] = {
     { (unichar_t *) _STR_CaseSensForms, NULL, 0, 0, (void *) CHR('c','a','s','e'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_CapitalSpacing, NULL, 0, 0, (void *) CHR('c','p','s','p'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_FullWidths, NULL, 0, 0, (void *) CHR('f','w','i','d'), NULL, false, false, false, false, false, false, false, true },
@@ -221,7 +221,7 @@ GTextInfo simplesubs_tags[] = {
     { NULL }
 };
 
-static GTextInfo alternatesubs_tags[] = {
+GTextInfo alternatesubs_tags[] = {
     { (unichar_t *) _STR_AllAlt, NULL, 0, 0, (void *) CHR('a','a','l','t'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_FinalGlyphLine, NULL, 0, 0, (void *) CHR('f','a','l','t'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_Hanja2Hangul, NULL, 0, 0, (void *) CHR('h','n','g','l'), NULL, false, false, false, false, false, false, false, true },
@@ -968,7 +968,7 @@ static void SetScriptFromUnicode(GWindow gw,int uni,SplineFont *sf) {
 
 void SCAppendPosSub(SplineChar *sc,enum possub_type type, char **d) {
     PST *new, *old;
-    char *pt, *end, *data;
+    char *pt, *end, *data, *spt, *tpt;
     int i;
 
     if ( sc->charinfo!=NULL ) {
@@ -1016,11 +1016,24 @@ return;
 	    }
 	    new->u.pos.v_adv_off = strtol(pt,&end,10);
 	} else {
-	    if ( type==pst_substitution && strchr(data+9,' ')!=NULL ) {
+	    /* remove leading/training spaces */
+	    for ( pt=data+9; *pt==' '; ++pt );
+	    for ( end=pt+strlen(pt)-1; *pt==' '; --pt )
+		*pt = '\0';
+	    if ( type==pst_substitution && strchr(pt,' ')!=NULL ) {
 		GWidgetErrorR(_STR_BadPOSSUB,_STR_SimpleSubsOneComponent);
 return;
 	    }
-	    new->u.subs.variant = copy(data+9);
+	    /* Remove multiple spaces */
+	    for ( spt=tpt=pt; *spt; ++spt ) {
+		*tpt++ = *spt;
+		if ( *spt==' ' ) {
+		    while ( *spt==' ' ) ++spt;
+		    --spt;
+		}
+	    }
+	    *tpt = '\0';
+	    new->u.subs.variant = copy(pt);
 	    if ( type==pst_ligature )
 		new->u.lig.lig = sc;
 	}
@@ -1130,6 +1143,7 @@ static int CI_ProcessPosSubs(CharInfo *ci) {
     char **data;
 
     ci->sc->possub = NULL;
+    ci->sc->charinfo = NULL;	/* Without this we put them back into the charinfo dlg */
     for ( i=0; i<5; ++i ) {
 	tis = GGadgetGetList(GWidgetGetControl(ci->gw,CID_List+i*100),&len);
 	if ( len!=0 ) {
@@ -1143,6 +1157,7 @@ static int CI_ProcessPosSubs(CharInfo *ci) {
 	    free(data);
 	}
     }
+    ci->sc->charinfo = ci;
     PSTFree(old);
 return( true );
 }
