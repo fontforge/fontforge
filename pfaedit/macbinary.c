@@ -578,7 +578,7 @@ return( stylecode );
 
 static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,int32 *sizes) {
     uint32 rlenpos = ftell(res), widoffpos, widoffloc, kernloc, styleloc, end;
-    int i,j,k,cnt, strcnt, fontclass, stylecode;
+    int i,j,k,cnt, strcnt, fontclass, stylecode, glyphenc, geoffset;
     KernPair *kp;
     DBounds b;
     char *pt;
@@ -670,7 +670,8 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,int32 *sizes
     if ( stylecode&psf_condense ) fontclass |= 0x80;
     if ( stylecode&psf_extend ) fontclass |= 0x100;
     putshort(res,fontclass);		/* fontClass */
-    putlong(res,0);			/* Offset to glyph encoding table (which we don't use) */
+    geoffset = ftell(res);
+    putlong(res,0);			/* Offset to glyph encoding table */ /* Fill in later */
     putlong(res,0);			/* Reserved, MBZ */
     if ( strnmatch(sf->familyname,sf->fontname,strlen(sf->familyname))!=0 )
 	strcnt = 1;
@@ -698,6 +699,14 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,int32 *sizes
 	putc(1,res);			/* index string is one byte long */
 	putc(2,res);			/* plain name is basename with string 2 */
     }
+    /* Greg: record offset for glyph encoding table */
+    /* We assume that the bitmap and postscript fonts are encoded similarly */
+    /*  and so a null vector will do. */
+    glyphenc = ftell( res );
+    fseek(res,geoffset,SEEK_SET);
+    putlong(res,glyphenc);
+    fseek(res,glyphenc,SEEK_SET);
+    putshort(res,0); /* Greg: an empty Glyph encoding table */
 
     end = ftell(res);
     fseek(res,widoffpos,SEEK_SET);
