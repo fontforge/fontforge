@@ -116,7 +116,7 @@ static void SFDDumpUTF7Str(FILE *sfd, const unichar_t *str) {
 		prev_cnt=prev=0;
 	    }
 	    if ( in ) {
-		if ( inbase64[ch]!=-1 )
+		if ( inbase64[ch]!=-1 || ch=='-' )
 		    putc('-',sfd);
 		in = 0;
 	    }
