@@ -61,6 +61,8 @@ struct problems {
     unsigned int missingglyph: 1;
     unsigned int missinglookuptag: 1;
     unsigned int toomanypoints: 1;
+    unsigned int toomanyhints: 1;
+    unsigned int toodeeprefs: 1;
     unsigned int explain: 1;
     unsigned int done: 1;
     unsigned int doneexplain: 1;
@@ -72,7 +74,7 @@ struct problems {
     real xheight, caph, ascent, descent;
     real irrelevantfactor;
     int advancewidthval, vadvancewidthval;
-    int pointsmax;
+    int pointsmax, hintsmax, refdepthmax;
     GWindow explainw;
     GGadget *explaintext, *explainvals, *ignoregadg;
     SplineChar *lastcharopened;
@@ -96,6 +98,7 @@ static int hintwidth=0, direction=0, flippedrefs=1, bitmaps=0;
 static int cidblank=0, cidmultiple=1, advancewidth=0, vadvancewidth=0;
 static int irrelevantcp=1, missingglyph=0, missinglookuptag=0;
 static int badsubs=1, toomanypoints=1, pointsmax = 1500;
+static int toomanyhints=1, hintsmax=96, toodeeprefs=1, refdepthmax=9;
 static int stem3=0, showexactstem3=0;
 static real near=3, xval=0, yval=0, widthval=50, advancewidthval=0, vadvancewidthval=0;
 static real irrelevantfactor = .005;
@@ -140,6 +143,10 @@ static real irrelevantfactor = .005;
 #define CID_MissingLookupTag	1032
 #define CID_TooManyPoints	1033
 #define CID_PointsMax		1034
+#define CID_TooManyHints	1035
+#define CID_HintsMax		1036
+#define CID_TooDeepRefs		1037
+#define CID_RefDepthMax		1038
 
 
 static void FixIt(struct problems *p) {
@@ -776,6 +783,51 @@ return( false );
 return( false );
 }
 
+static int RefDepth(RefChar *r) {
+    RefChar *ref;
+    int cur, max=0;
+
+    for ( ref= r->sc->refs; ref!=NULL; ref=ref->next ) {
+	cur = RefDepth(ref);
+	if ( cur>max ) max = cur;
+    }
+return( max+1 );
+}
+
+static int SCRefDepth(SplineChar *sc) {
+    RefChar *ref;
+    int cur, max=0;
+
+    for ( ref= sc->refs; ref!=NULL; ref=ref->next ) {
+	cur = RefDepth(ref);
+	if ( cur>max ) max = cur;
+    }
+return( max );
+}
+
+static int SPLPointCnt(SplinePointList *spl) {
+    SplinePoint *sp;
+    int cnt=0;
+
+    for ( ; spl!=NULL; spl = spl->next ) {
+	for ( sp = spl->first; ; ) {
+	    ++cnt;
+	    if ( sp->prev!=NULL && !sp->prev->knownlinear ) {
+		if ( sp->prev->order2 )
+		    ++cnt;
+		else
+		    cnt += 2;
+	    }
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	}
+    }
+return( cnt );
+}
+
 static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     SplineSet *spl, *test;
     Spline *spline, *first;
@@ -1291,29 +1343,41 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	}
     }
 
+    if ( p->toodeeprefs && !p->finish ) {
+	int cnt=SCRefDepth(sc);
+	if ( cnt>p->refdepthmax ) {
+	    changed = true;
+	    ExplainIt(p,sc,_STR_ProbTooDeepRefs,cnt,p->refdepthmax);
+	    if ( p->ignorethis )
+		p->toodeeprefs = false;
+	}
+    }
+
     if ( p->toomanypoints && !p->finish ) {
 	int cnt=0;
-	for ( spl = sc->splines; spl!=NULL; spl = spl->next ) {
-	    for ( sp = spl->first; ; ) {
-		++cnt;
-		if ( sp->prev!=NULL && !sp->prev->knownlinear ) {
-		    if ( sp->prev->order2 )
-			++cnt;
-		    else
-			cnt += 2;
-		}
-		if ( sp->next==NULL )
-	    break;
-		sp = sp->next->to;
-		if ( sp==spl->first )
-	    break;
-	    }
-	}
-	if ( cnt>=p->pointsmax ) {
+	RefChar *r;
+	cnt = SPLPointCnt(sc->splines);
+	for ( r=sc->refs; r!=NULL ; r=r->next )
+	    cnt += SPLPointCnt(r->splines);
+	if ( cnt>p->pointsmax ) {
 	    changed = true;
 	    ExplainIt(p,sc,_STR_ProbTooManyPoints,cnt,p->pointsmax);
 	    if ( p->ignorethis )
 		p->toomanypoints = false;
+	}
+    }
+
+    if ( p->toomanyhints && !p->finish ) {
+	int cnt=0;
+	for ( h=sc->hstem; h!=NULL; h=h->next )
+	    ++cnt;
+	for ( h=sc->vstem; h!=NULL; h=h->next )
+	    ++cnt;
+	if ( cnt>p->hintsmax ) {
+	    changed = true;
+	    ExplainIt(p,sc,_STR_ProbTooManyHints,cnt,p->hintsmax);
+	    if ( p->ignorethis )
+		p->toomanyhints = false;
 	}
     }
 
@@ -2025,6 +2089,7 @@ static int Prob_DoAll(GGadget *g, GEvent *e) {
 	    CID_CpOdd, CID_FlippedRefs, CID_Bitmaps, CID_AdvanceWidth,
 	    CID_MissingGlyph, CID_MissingLookupTag,
 	    CID_Stem3, CID_IrrelevantCP, CID_TooManyPoints,
+	    CID_TooManyHints, CID_TooDeepRefs,
 	    0 };
 	int i;
 	if ( p->fv->cidmaster!=NULL ) {
@@ -2066,6 +2131,8 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	missingglyph = p->missingglyph = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingGlyph));
 	missinglookuptag = p->missinglookuptag = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingLookupTag));
 	toomanypoints = p->toomanypoints = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooManyPoints));
+	toomanyhints = p->toomanyhints = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooManyHints));
+	toodeeprefs = p->toodeeprefs = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooDeepRefs));
 	stem3 = p->stem3 = GGadgetIsChecked(GWidgetGetControl(gw,CID_Stem3));
 	if ( stem3 )
 	    showexactstem3 = p->showexactstem3 = GGadgetIsChecked(GWidgetGetControl(gw,CID_ShowExactStem3));
@@ -2090,6 +2157,10 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	    vadvancewidthval = p->vadvancewidthval = GetIntR(gw,CID_VAdvanceWidthVal,_STR_HintWidth,&errs);
 	if ( toomanypoints )
 	    p->pointsmax = pointsmax = GetIntR(gw,CID_PointsMax,_STR_MorePointsThan,&errs);
+	if ( toomanyhints )
+	    p->hintsmax = hintsmax = GetIntR(gw,CID_HintsMax,_STR_MoreHintsThan,&errs);
+	if ( toodeeprefs )
+	    p->refdepthmax = refdepthmax = GetIntR(gw,CID_RefDepthMax,_STR_RefsDeeperThan,&errs);
 	if ( irrelevantcp )
 	    p->irrelevantfactor = irrelevantfactor = GetRealR(gw,CID_IrrelevantFactor,_STR_IrrelevantFactor,&errs)/100.0;
 	near = p->near = GetRealR(gw,CID_Near,_STR_Near,&errs);
@@ -2103,7 +2174,8 @@ return( true );
 		direction || p->cidmultiple || p->cidblank || p->flippedrefs ||
 		p->bitmaps || p->advancewidth || p->vadvancewidth || p->stem3 ||
 		p->irrelevantcontrolpoints || p->badsubs || p->missingglyph ||
-		p->missinglookuptag || p->toomanypoints ) {
+		p->missinglookuptag || p->toomanypoints || p->toomanyhints ||
+		p->toodeeprefs ) {
 	    DoProbs(p);
 	}
 	p->done = true;
@@ -2146,12 +2218,12 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData pgcd[13], pagcd[7], hgcd[7], rgcd[7], cgcd[5], mgcd[10], agcd[5];
-    GTextInfo plabel[13], palabel[7], hlabel[7], rlabel[7], clabel[5], mlabel[10], alabel[5];
-    GTabInfo aspects[9];
+    GGadgetCreateData pgcd[13], pagcd[7], hgcd[9], rgcd[7], cgcd[5], mgcd[10], agcd[5], rfgcd[5];
+    GTextInfo plabel[13], palabel[7], hlabel[9], rlabel[7], clabel[5], mlabel[10], alabel[5], rflabel[5];
+    GTabInfo aspects[8];
     struct problems p;
     char xnbuf[20], ynbuf[20], widthbuf[20], nearbuf[20], awidthbuf[20],
-	    vawidthbuf[20], irrel[20], pmax[20];
+	    vawidthbuf[20], irrel[20], pmax[20], hmax[20], rmax[20];
     int i;
     SplineFont *sf;
     /*static GBox smallbox = { bt_raised, bs_rect, 2, 1, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };*/
@@ -2340,38 +2412,65 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pagcd[2].gd.cid = CID_Direction;
     pagcd[2].creator = GCheckBoxCreate;
 
-    palabel[3].text = (unichar_t *) _STR_CheckFlippedRefs;
+    palabel[3].text = (unichar_t *) _STR_MorePointsThan;
     palabel[3].text_in_resource = true;
     pagcd[3].gd.label = &palabel[3];
     pagcd[3].gd.mnemonic = 'r';
-    pagcd[3].gd.pos.x = 3; pagcd[3].gd.pos.y = pagcd[2].gd.pos.y+17; 
+    pagcd[3].gd.pos.x = 3; pagcd[3].gd.pos.y = pagcd[2].gd.pos.y+21; 
     pagcd[3].gd.flags = gg_visible | gg_enabled;
-    if ( flippedrefs ) pagcd[3].gd.flags |= gg_cb_on;
-    pagcd[3].gd.popup_msg = GStringGetResource(_STR_CheckFlippedRefsPopup,NULL);
-    pagcd[3].gd.cid = CID_FlippedRefs;
+    if ( toomanypoints ) pagcd[3].gd.flags |= gg_cb_on;
+    pagcd[3].gd.popup_msg = GStringGetResource(_STR_MorePointsThanPopup,NULL);
+    pagcd[3].gd.cid = CID_TooManyPoints;
     pagcd[3].creator = GCheckBoxCreate;
 
-    palabel[4].text = (unichar_t *) _STR_MorePointsThan;
-    palabel[4].text_in_resource = true;
-    pagcd[4].gd.label = &palabel[4];
-    pagcd[4].gd.mnemonic = 'r';
-    pagcd[4].gd.pos.x = 3; pagcd[4].gd.pos.y = pagcd[3].gd.pos.y+21; 
-    pagcd[4].gd.flags = gg_visible | gg_enabled;
-    if ( toomanypoints ) pagcd[4].gd.flags |= gg_cb_on;
-    pagcd[4].gd.popup_msg = GStringGetResource(_STR_MorePointsThanPopup,NULL);
-    pagcd[4].gd.cid = CID_TooManyPoints;
-    pagcd[4].creator = GCheckBoxCreate;
-
     sprintf( pmax, "%d", pointsmax );
-    palabel[5].text = (unichar_t *) pmax;
-    palabel[5].text_is_1byte = true;
-    pagcd[5].gd.label = &palabel[5];
-    pagcd[5].gd.pos.x = 105; pagcd[5].gd.pos.y = pagcd[4].gd.pos.y-3;
-    pagcd[5].gd.pos.width = 50; 
-    pagcd[5].gd.flags = gg_visible | gg_enabled;
-    pagcd[5].gd.popup_msg = GStringGetResource(_STR_MorePointsThanPopup,NULL);
-    pagcd[5].gd.cid = CID_PointsMax;
-    pagcd[5].creator = GTextFieldCreate;
+    palabel[4].text = (unichar_t *) pmax;
+    palabel[4].text_is_1byte = true;
+    pagcd[4].gd.label = &palabel[4];
+    pagcd[4].gd.pos.x = 105; pagcd[4].gd.pos.y = pagcd[3].gd.pos.y-3;
+    pagcd[4].gd.pos.width = 50; 
+    pagcd[4].gd.flags = gg_visible | gg_enabled;
+    pagcd[4].gd.popup_msg = GStringGetResource(_STR_MorePointsThanPopup,NULL);
+    pagcd[4].gd.cid = CID_PointsMax;
+    pagcd[4].creator = GTextFieldCreate;
+
+/* ************************************************************************** */
+
+    memset(&rflabel,0,sizeof(rflabel));
+    memset(&rfgcd,0,sizeof(rfgcd));
+
+    rflabel[0].text = (unichar_t *) _STR_CheckFlippedRefs;
+    rflabel[0].text_in_resource = true;
+    rfgcd[0].gd.label = &rflabel[0];
+    rfgcd[0].gd.mnemonic = 'r';
+    rfgcd[0].gd.pos.x = 3; rfgcd[0].gd.pos.y = 6; 
+    rfgcd[0].gd.flags = gg_visible | gg_enabled;
+    if ( flippedrefs ) rfgcd[0].gd.flags |= gg_cb_on;
+    rfgcd[0].gd.popup_msg = GStringGetResource(_STR_CheckFlippedRefsPopup,NULL);
+    rfgcd[0].gd.cid = CID_FlippedRefs;
+    rfgcd[0].creator = GCheckBoxCreate;
+
+    rflabel[1].text = (unichar_t *) _STR_RefsDeeperThan;
+    rflabel[1].text_in_resource = true;
+    rfgcd[1].gd.label = &rflabel[1];
+    rfgcd[1].gd.mnemonic = 'r';
+    rfgcd[1].gd.pos.x = 3; rfgcd[1].gd.pos.y = rfgcd[0].gd.pos.y+21; 
+    rfgcd[1].gd.flags = gg_visible | gg_enabled;
+    if ( toodeeprefs ) rfgcd[1].gd.flags |= gg_cb_on;
+    rfgcd[1].gd.popup_msg = GStringGetResource(_STR_RefsDeeperThanPopup,NULL);
+    rfgcd[1].gd.cid = CID_TooDeepRefs;
+    rfgcd[1].creator = GCheckBoxCreate;
+
+    sprintf( rmax, "%d", refdepthmax );
+    rflabel[2].text = (unichar_t *) rmax;
+    rflabel[2].text_is_1byte = true;
+    rfgcd[2].gd.label = &rflabel[2];
+    rfgcd[2].gd.pos.x = 105; rfgcd[2].gd.pos.y = rfgcd[1].gd.pos.y-3;
+    rfgcd[2].gd.pos.width = 50; 
+    rfgcd[2].gd.flags = gg_visible | gg_enabled;
+    rfgcd[2].gd.popup_msg = GStringGetResource(_STR_RefsDeeperThanPopup,NULL);
+    rfgcd[2].gd.cid = CID_RefDepthMax;
+    rfgcd[2].creator = GTextFieldCreate;
 
 /* ************************************************************************** */
 
@@ -2445,6 +2544,27 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hgcd[5].gd.popup_msg = GStringGetResource(_STR_ShowExactHint3Popup,NULL);
     hgcd[5].gd.cid = CID_ShowExactStem3;
     hgcd[5].creator = GCheckBoxCreate;
+
+    hlabel[6].text = (unichar_t *) _STR_MoreHintsThan;
+    hlabel[6].text_in_resource = true;
+    hgcd[6].gd.label = &hlabel[6];
+    hgcd[6].gd.pos.x = 3; hgcd[6].gd.pos.y = hgcd[5].gd.pos.y+21; 
+    hgcd[6].gd.flags = gg_visible | gg_enabled;
+    if ( toomanyhints ) hgcd[6].gd.flags |= gg_cb_on;
+    hgcd[6].gd.popup_msg = GStringGetResource(_STR_MoreHintsThanPopup,NULL);
+    hgcd[6].gd.cid = CID_TooManyHints;
+    hgcd[6].creator = GCheckBoxCreate;
+
+    sprintf( hmax, "%d", hintsmax );
+    hlabel[7].text = (unichar_t *) hmax;
+    hlabel[7].text_is_1byte = true;
+    hgcd[7].gd.label = &hlabel[7];
+    hgcd[7].gd.pos.x = 105; hgcd[7].gd.pos.y = hgcd[6].gd.pos.y-3;
+    hgcd[7].gd.pos.width = 50; 
+    hgcd[7].gd.flags = gg_visible | gg_enabled;
+    hgcd[7].gd.popup_msg = GStringGetResource(_STR_MoreHintsThanPopup,NULL);
+    hgcd[7].gd.cid = CID_HintsMax;
+    hgcd[7].creator = GTextFieldCreate;
 
 /* ************************************************************************** */
 
@@ -2590,6 +2710,10 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     aspects[i].text = (unichar_t *) _STR_Paths;
     aspects[i].text_in_resource = true;
     aspects[i++].gcd = pagcd;
+
+    aspects[i].text = (unichar_t *) _STR_Refs;
+    aspects[i].text_in_resource = true;
+    aspects[i++].gcd = rfgcd;
 
     aspects[i].text = (unichar_t *) _STR_Hints;
     aspects[i].text_in_resource = true;
