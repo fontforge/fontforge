@@ -39,6 +39,16 @@
 /* Can be set from configure --with-multilayer				      */
 
 
+/* Sometimes I want to create a glyph which is a word, and this command       */
+/*  makes that easy                                                           */
+/*									      */
+/* #define FONTFORGE_CONFIG_PASTEAFTER					      */
+/*									      */
+/* The paste after command pastes the contents of the clipboard into the      */
+/*  current glyph, translates that by the advance width of the current glyph  */
+/*  and increments the advance width by the advance width of the clipboard    */
+
+
 /* I doubt anyone but me will be interested in the tile path command, so I    */
 /*  don't include code for it by default, but if you do want it simply define */
 /*  the following macro							      */

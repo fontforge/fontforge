@@ -803,7 +803,7 @@ extern void PasteToBC(BDFChar *bc,int pixelsize,int depth,FontView *fv);
 extern void FVCopyWidth(FontView *fv,enum undotype ut);
 extern void FVCopy(FontView *fv, int fullcopy);
 extern void MVCopyChar(MetricsView *mv, SplineChar *sc, int fullcopy);
-extern void PasteIntoFV(FontView *fv, int doclear);
+extern void PasteIntoFV(FontView *fv, int pasteinto);
 void PasteIntoMV(MetricsView *mv,SplineChar *sc, int doclear);
 
 extern void CVShowPoint(CharView *cv, SplinePoint *sp);
