@@ -1510,6 +1510,7 @@ static void TestForBadDirections(Intersection *ilist) {
 	    ++cnt;
 	    if ( ml->m->isneeded ) ++ncnt;
 	}
+#if 0
 	if ( cnt>=4 && ncnt==cnt ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetPostNoticeR(_STR_Warning,_STR_OverlapBadDir,glyphname);
@@ -1522,6 +1523,7 @@ static void TestForBadDirections(Intersection *ilist) {
 		    ilist->inter.x, ilist->inter.y );
     break;
 	}
+#endif
 	ilist = ilist->next;
     }
 }
