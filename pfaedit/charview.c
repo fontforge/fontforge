@@ -2794,6 +2794,7 @@ return( true );
 #define MID_CopyLBearing	2124
 #define MID_CopyRBearing	2125
 #define MID_CopyVWidth	2126
+#define MID_Join	2127
 #define MID_Clockwise	2201
 #define MID_Counter	2202
 #define MID_GetInfo	2203
@@ -3333,6 +3334,21 @@ static void CVElide(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     _CVMerge(cv,true);
 }
 
+static void _CVJoin(CharView *cv) {
+    int anyp = 0, changed;
+
+    CVAnySel(cv,&anyp,NULL,NULL);
+    CVPreserveState(cv);
+    *cv->heads[cv->drawmode] = SplineSetJoin(*cv->heads[cv->drawmode],!anyp,0,&changed);
+    if ( changed )
+	CVCharChangedUpdate(cv);
+}
+
+static void CVJoin(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    _CVJoin(cv);
+}
+
 static void _CVCut(CharView *cv) {
 
     if ( !CVAnySel(cv,NULL,NULL,NULL))
@@ -3425,6 +3441,9 @@ static void cv_edlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
+	  case MID_Join:
+	    mi->ti.disabled = !anypoints;
+	  break;
 	  case MID_Merge:
 	    mi->ti.disabled = !anypoints;
 	    free(mi->ti.text);
@@ -4651,6 +4670,7 @@ static GMenuItem edlist[] = {
     { { (unichar_t *) _STR_Paste, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'V', ksm_control, NULL, NULL, CVPaste, MID_Paste },
     { { (unichar_t *) _STR_Clear, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, GK_Delete, 0, NULL, NULL, CVClear, MID_Clear },
     { { (unichar_t *) _STR_Merge, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 'M', ksm_control, NULL, NULL, CVMerge, MID_Merge },
+    { { (unichar_t *) _STR_Join, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'J' }, 'J', ksm_control|ksm_shift, NULL, NULL, CVJoin, MID_Join },
     { { (unichar_t *) _STR_CopyFgToBg, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'C', ksm_control|ksm_shift, NULL, NULL, CVCopyFgBg, MID_CopyFgToBg },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Select, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 0, ksm_control, sllist, sllistcheck },
@@ -5157,6 +5177,12 @@ static void SVElide(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     _CVMerge(cv,true);
 }
 
+static void SVJoin(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    SearchView *sv = (SearchView *) GDrawGetUserData(gw);
+    CharView *cv = sv->cv_srch.inactive ? &sv->cv_rpl : &sv->cv_srch;
+    _CVJoin(cv);
+}
+
 static void SVUnlinkRef(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SearchView *sv = (SearchView *) GDrawGetUserData(gw);
     CharView *cv = sv->cv_srch.inactive ? &sv->cv_rpl : &sv->cv_srch;
@@ -5361,6 +5387,7 @@ static GMenuItem sv_edlist[] = {
     { { (unichar_t *) _STR_Paste, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'V', ksm_control, NULL, NULL, SVPaste, MID_Paste },
     { { (unichar_t *) _STR_Clear, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, GK_Delete, 0, NULL, NULL, SVClear, MID_Clear },
     { { (unichar_t *) _STR_Merge, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 'M', ksm_control, NULL, NULL, SVMerge, MID_Merge },
+    { { (unichar_t *) _STR_Join, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'J' }, 'J', ksm_control|ksm_shift, NULL, NULL, SVJoin, MID_Join },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Select, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 0, ksm_control, sv_sllist, sv_sllistcheck },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},

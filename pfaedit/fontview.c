@@ -800,6 +800,7 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_CopyLBearing	2125
 #define MID_CopyRBearing	2126
 #define MID_CopyVWidth	2127
+#define MID_Join	2128
 #define MID_Convert2CID	2800
 #define MID_Flatten	2801
 #define MID_InsertFont	2802
@@ -1041,6 +1042,25 @@ static void FVMenuClearBackground(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVClearBackground( (FontView *) GDrawGetUserData(gw) );
 }
 
+static void FVJoin(FontView *fv) {
+    SplineFont *sf = fv->sf;
+    int i,changed;
+
+    if ( onlycopydisplayed && fv->filled!=fv->show )
+return;
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( fv->selected[i] && sf->chars[i]!=NULL ) {
+	SCPreserveState(sf->chars[i],false);
+	sf->chars[i]->splines = SplineSetJoin(sf->chars[i]->splines,true,0,&changed);
+	if ( changed )
+	    SCCharChangedUpdate(sf->chars[i]);
+    }
+}
+
+static void FVMenuJoin(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FVJoin( (FontView *) GDrawGetUserData(gw) );
+}
+
 static void FVUnlinkRef(FontView *fv) {
     int i;
     SplineChar *sc;
@@ -1163,6 +1183,7 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/bmp") &&
 		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/eps"));
 	  break;
+	  case MID_Join:
 	  case MID_Cut: case MID_Copy: case MID_Clear:
 	  case MID_CopyWidth: case MID_CopyLBearing: case MID_CopyRBearing:
 	  case MID_CopyRef: case MID_UnlinkRef:
@@ -2652,6 +2673,7 @@ static GMenuItem edlist[] = {
     { { (unichar_t *) _STR_Clear, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, 0, 0, NULL, NULL, FVMenuClear, MID_Clear },
     { { (unichar_t *) _STR_ClearBackground, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, 0, 0, NULL, NULL, FVMenuClearBackground, MID_ClearBackground },
     { { (unichar_t *) _STR_CopyFgToBg, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'C', ksm_control|ksm_shift, NULL, NULL, FVMenuCopyFgBg, MID_CopyFgToBg },
+    { { (unichar_t *) _STR_Join, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'J' }, 'J', ksm_control|ksm_shift, NULL, NULL, FVMenuJoin, MID_Join },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_SelectAll, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'A', ksm_control, NULL, NULL, FVMenuSelectAll },
     { { (unichar_t *) _STR_SelectColor, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, sclist },
@@ -4971,6 +4993,9 @@ void FVFakeMenus(FontView *fv,int cmd) {
       break;
       case 12:
 	FVCopyWidth(fv,ut_rbearing);
+      break;
+      case 13:
+	FVJoin(fv);
       break;
 
       case 100:

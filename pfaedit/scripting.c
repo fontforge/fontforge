@@ -863,6 +863,10 @@ static void bUnlinkReference(Context *c) {
     doEdit(c,8);
 }
 
+static void bJoin(Context *c) {
+    doEdit(c,13);
+}
+
 static void bSelectAll(Context *c) {
     if ( c->a.argc!=1 )
 	error( c, "Wrong number of arguments to SelectAll");
@@ -1864,6 +1868,7 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "ClearBackground", bClearBackground },
     { "CopyFgToBg", bCopyFgToBg },
     { "UnlinkReference", bUnlinkReference },
+    { "Join", bJoin },
     { "SelectAll", bSelectAll },
     { "SelectNone", bSelectNone },
     { "SelectMore", bSelectMore },

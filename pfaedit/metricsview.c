@@ -988,6 +988,7 @@ return( true );
 #define MID_CopyLBearing	2125
 #define MID_CopyRBearing	2126
 #define MID_CopyVWidth	2127
+#define MID_Join	2128
 #define MID_Center	2600
 #define MID_Thirds	2604
 #define MID_Recent	2703
@@ -1185,6 +1186,23 @@ return;
 		   mi->mid==MID_CopyVWidth?ut_vwidth:
 		   mi->mid==MID_CopyLBearing?ut_lbearing:
 					 ut_rbearing);
+}
+
+static void MVMenuJoin(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    int i, changed;
+
+    if ( GWindowGetFocusGadgetOfWindow(gw)!=NULL )
+return;
+    for ( i=mv->charcnt-1; i>=0; --i )
+	if ( mv->perchar[i].selected )
+    break;
+    if ( i==-1 )
+return;
+    SCPreserveState(mv->perchar[i].sc,false);
+    mv->perchar[i].sc->splines = SplineSetJoin(mv->perchar[i].sc->splines,true,0,&changed);
+    if ( changed )
+	SCCharChangedUpdate(mv->perchar[i].sc);
 }
 
 static void MVPaste(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1657,6 +1675,7 @@ static GMenuItem edlist[] = {
     { { (unichar_t *) _STR_CopyRBearing, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'g' }, '\0', ksm_control, NULL, NULL, MVMenuCopyWidth, MID_CopyRBearing },
     { { (unichar_t *) _STR_Paste, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'V', ksm_control, NULL, NULL, MVPaste, MID_Paste },
     { { (unichar_t *) _STR_Clear, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, 0, 0, NULL, NULL, MVClear, MID_Clear },
+    { { (unichar_t *) _STR_Join, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'J' }, 'J', ksm_control|ksm_shift, NULL, NULL, MVMenuJoin, MID_Join },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_SelectAll, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'A', ksm_control, NULL, NULL, MVSelectAll, MID_SelAll },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
@@ -1785,6 +1804,7 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
+	  case MID_Join:
 	  case MID_Copy: case MID_CopyRef: case MID_CopyWidth:
 	  case MID_CopyLBearing: case MID_CopyRBearing:
 	  case MID_Cut: case MID_Clear:

@@ -1215,6 +1215,83 @@ SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,int cleanup) {
 return( head );
 }
 
+static int SplineSetMakeLoop(SplineSet *spl,real fudge) {
+    if ( spl->first!=spl->last &&
+	    (spl->first->me.x >= spl->last->me.x-fudge &&
+		spl->first->me.x <= spl->last->me.x+fudge &&
+		spl->first->me.y >= spl->last->me.y-fudge &&
+		spl->first->me.y <= spl->last->me.y+fudge )) {
+	spl->first->prev = spl->last->prev;
+	spl->first->prev->to = spl->first;
+	spl->first->prevcp = spl->last->prevcp;
+	spl->first->noprevcp = spl->last->noprevcp;
+	spl->first->prevcpdef = spl->last->prevcpdef;
+	SplinePointFree(spl->last);
+	spl->last = spl->first;
+return( true );
+    }
+return( false );
+}
+
+SplineSet *SplineSetJoin(SplineSet *start,int doall,real fudge,int *changed) {
+    SplineSet *spl, *spl2, *prev;
+
+    *changed = false;
+    for ( spl=start; spl!=NULL; spl=spl->next ) {
+	if ( spl->first->prev==NULL &&
+		(doall || PointListIsSelected(spl)) ) {
+	    if ( SplineSetMakeLoop(spl,fudge) ) {
+		*changed = true;
+	    } else {
+		prev = NULL;
+		for ( spl2=start ; spl2!=NULL; prev = spl2, spl2=spl2->next ) if ( spl2!=spl ) {
+		    if (!( spl->first->me.x >= spl2->last->me.x-fudge &&
+			    spl->first->me.x <= spl2->last->me.x+fudge &&
+			    spl->first->me.y >= spl2->last->me.y-fudge &&
+			    spl->first->me.y <= spl2->last->me.y+fudge )) {
+			if (( spl->last->me.x >= spl2->last->me.x-fudge &&
+				spl->last->me.x <= spl2->last->me.x+fudge &&
+				spl->last->me.y >= spl2->last->me.y-fudge &&
+				spl->last->me.y <= spl2->last->me.y+fudge ) ||
+			    ( spl->last->me.x >= spl2->first->me.x-fudge &&
+				spl->last->me.x <= spl2->first->me.x+fudge &&
+				spl->last->me.y >= spl2->first->me.y-fudge &&
+				spl->last->me.y <= spl2->first->me.y+fudge ))
+			    SplineSetReverse(spl);
+		    }
+		    if ( spl->first->me.x >= spl2->first->me.x-fudge &&
+			    spl->first->me.x <= spl2->first->me.x+fudge &&
+			    spl->first->me.y >= spl2->first->me.y-fudge &&
+			    spl->first->me.y <= spl2->first->me.y+fudge )
+			SplineSetReverse(spl2);
+		    if ( spl->first->me.x >= spl2->last->me.x-fudge &&
+			    spl->first->me.x <= spl2->last->me.x+fudge &&
+			    spl->first->me.y >= spl2->last->me.y-fudge &&
+			    spl->first->me.y <= spl2->last->me.y+fudge ) {
+			spl->first->prev = spl2->last->prev;
+			spl->first->prev->to = spl->first;
+			spl->first->prevcp = spl2->last->prevcp;
+			spl->first->noprevcp = spl2->last->noprevcp;
+			spl->first->prevcpdef = spl2->last->prevcpdef;
+			SplinePointFree(spl2->last);
+			spl->first = spl2->first;
+			spl2->first = spl2->last = NULL;
+			if ( prev!=NULL )
+			    prev->next = spl2->next;
+			else
+			    start = spl2->next;
+			SplinePointListFree(spl2);
+			SplineSetMakeLoop(spl,fudge);
+			*changed = true;
+		break;
+		    }
+		}
+	    }
+	}
+    }
+return(start);
+}
+
 SplineSet *SplineCharRemoveTiny(SplineChar *sc,SplineSet *head) {
     SplineSet *spl, *snext, *pr;
     Spline *spline, *next, *first;
