@@ -37,6 +37,7 @@ struct dlg_info {
     int done;
     int ret;
     int multi;
+    int exposed;
 };
 
 static int d_e_h(GWindow gw, GEvent *event) {
@@ -49,8 +50,21 @@ static int d_e_h(GWindow gw, GEvent *event) {
 	    event->u.control.subtype == et_buttonactivate ) {
 	d->done = true;
 	d->ret = GGadgetGetCid(event->u.control.g);
+    } else if ( event->type == et_expose ) {
+	d->exposed = true;
     } else if ( event->type == et_char ) {
 return( false );
+    } else if ( event->type == et_resize && !d->exposed ) {
+	GRect pos,rootsize;
+	GDrawGetSize(gw,&pos);
+	GDrawGetSize(GDrawGetRoot(NULL),&rootsize);
+	if ( pos.x+pos.width>=rootsize.width || pos.y+pos.height>=rootsize.height ) {
+	    if ( pos.x+pos.width>=rootsize.width )
+		if (( pos.x = rootsize.width - pos.width )<0 ) pos.x = 0;
+	    if ( pos.y+pos.height>=rootsize.height )
+		if (( pos.y = rootsize.height - pos.height )<0 ) pos.y = 0;
+	    GDrawMove(gw,pos.x,pos.y);
+	}
     } else if ( event->type == et_map ) {
 	/* Above palettes */
 	GDrawRaise(gw);
@@ -246,11 +260,11 @@ static GWindow DlgCreate(const unichar_t *title,const unichar_t *question,va_lis
 	pos.height += fh + GDrawPointsToPixels(gw,16);
     GDrawResize(gw,pos.width,pos.height);
     GWidgetHidePalettes();
-    GDrawSetVisible(gw,true);
     if ( d!=NULL ) {
-	memset(d,'\0',sizeof(d));
+	memset(d,'\0',sizeof(*d));
 	d->ret = cancel;
     }
+    GDrawSetVisible(gw,true);
     free(blabels);
     free(gcd);
     for ( i=0; i<lb; ++i )

@@ -217,8 +217,11 @@ static int _GWidget_Container_eh(GWindow gw, GEvent *event) {
     if ( gd==NULL )			/* dying */
 return(true);
 
-    for ( parent = gw; parent->parent!=NULL && !parent->is_toplevel; parent = parent->parent );
+    for ( parent = gw; parent->parent!=NULL && parent->parent->widget_data!=NULL &&
+	    !parent->is_toplevel; parent = parent->parent );
     topd = (GTopLevelD *) (parent->widget_data);
+    if ( topd==NULL )
+	fprintf( stderr, "No top level window found\n" );
 
     if ( event->type == et_expose ) {
 	GRect old;
@@ -240,7 +243,7 @@ return(true);
 	_GWidget_RestorePixmap(gw,pixmap,&event->u.expose.rect);
 return( true );
     } else if ( event->type >= et_mousemove && event->type <= et_crossing ) {
-	if ( topd->popupowner!=NULL ) {
+	if ( topd!=NULL && topd->popupowner!=NULL ) {
 	    handled = (topd->popupowner->funcs->handle_mouse)(topd->popupowner,event);
 return( handled );
 	}
@@ -277,7 +280,8 @@ return( handled );
 		(gd->lastwiggle->funcs->handle_mouse)(gd->lastwiggle,event);
 	}
     } else if ( event->type == et_char || event->type == et_charup ) {
-	handled = (topd->handle_key)(parent,gw,event);
+	if ( topd!=NULL )
+	    handled = (topd->handle_key)(parent,gw,event);
     } else if ( event->type == et_drag || event->type == et_dragout || event->type==et_drop ) {
 	GGadget *lastdd = NULL;
 	GEvent e;
