@@ -1196,8 +1196,7 @@ static void BuildTop(struct att_dlg *att) {
 	    if (( sc->unicodeenc>=0x10800 && sc->unicodeenc<=0x103ff ) ||
 		    ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10fff &&
 			isrighttoleft(sc->unicodeenc)) ||
-		    SCScriptFromUnicode(sc)==CHR('a','r','a','b') ||
-		    SCScriptFromUnicode(sc)==CHR('h','e','b','r')) {
+			ScriptIsRightToLeft(SCScriptFromUnicode(sc)) ) {
 		hasprop = true;
 	    }
 	    for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {

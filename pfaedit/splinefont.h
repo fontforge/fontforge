@@ -732,6 +732,7 @@ extern void TTF_PSDupsDefault(SplineFont *sf);
 extern void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf);
 extern void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]);
 extern void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname);
+extern int ScriptIsRightToLeft(uint32 script);
 extern uint32 ScriptFromUnicode(int u,SplineFont *sf);
 extern uint32 SCScriptFromUnicode(SplineChar *sc);
 extern int SCRightToLeft(SplineChar *sc);

@@ -750,6 +750,10 @@ return( false );
 return( true );
 }
 
+static int SRIsRightToLeft(struct script_record *sr) {
+return( ScriptIsRightToLeft(sr[0].script) );
+}
+
 int SFFindScriptLangRecord(SplineFont *sf,struct script_record *sr) {
     int i;
 
@@ -1757,8 +1761,11 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	else {
 	    for ( script_lang_index=0; !gcd[5].gd.u.list[script_lang_index].selected &&
 		    gcd[5].gd.u.list[script_lang_index].text!=NULL; ++script_lang_index );
-	    if ( gcd[5].gd.u.list[script_lang_index].text!=NULL )
+	    if ( gcd[5].gd.u.list[script_lang_index].text!=NULL ) {
 		acd.sli = script_lang_index;
+		if ( flags==0 && SRIsRightToLeft(sf->script_lang[acd.sli]))
+		    flags = pst_r2l;
+	    }
 	}
 	gcd[5].gd.label = &gcd[5].gd.u.list[script_lang_index];
 	gcd[5].creator = GListButtonCreate;
@@ -2092,8 +2099,11 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 	else {
 	    for ( script_lang_index=0; !gcd[i].gd.u.list[script_lang_index].selected &&
 		    gcd[i].gd.u.list[script_lang_index].text!=NULL; ++script_lang_index );
-	    if ( gcd[i].gd.u.list[script_lang_index].text!=NULL )
+	    if ( gcd[i].gd.u.list[script_lang_index].text!=NULL ) {
 		ptd.sli = script_lang_index;
+		if ( flags==0 && SRIsRightToLeft(sf->script_lang[ptd.sli]))
+		    flags = pst_r2l;
+	    }
 	}
 	gcd[i].gd.label = &gcd[i].gd.u.list[script_lang_index];
 	gcd[i].gd.cid = i+1;
@@ -2280,7 +2290,7 @@ uint16 PSTDefaultFlags(enum possub_type type,SplineChar *sc ) {
 #if 0		/* Better not. Yudit doesn't support the ligature substitution if the bit is set */
 	if ( type==pst_ligature ) {
 	    int script = SCScriptFromUnicode(sc);
-	    if ( script==CHR('h','e','b','r') || script==CHR('a','r','a','b')) {
+	    if ( ScriptIsRightToLeft(script) ) {
 		if ( !UnicodeContainsCombiners(sc->unicodeenc))
 		    flags |= pst_ignorecombiningmarks;
 	    }

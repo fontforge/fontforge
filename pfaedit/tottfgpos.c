@@ -123,6 +123,14 @@ static uint32 scripts[][15] = {
 		{ 0 }
 };
 
+int ScriptIsRightToLeft(uint32 script) {
+    if ( script==CHR('a','r','a','b') || script==CHR('h','e','b','r') ||
+	    script==CHR('c','p','m','n') || script==CHR('k','h','a','r') )
+return( true );
+
+return( false );
+}
+
 uint32 ScriptFromUnicode(int u,SplineFont *sf) {
     int s, k;
     int enc;
@@ -212,15 +220,13 @@ return( ScriptFromUnicode( sc->unicodeenc,sf ));
 }
 
 int SCRightToLeft(SplineChar *sc) {
-    uint32 script;
 
     if ( sc->unicodeenc>=0x10800 && sc->unicodeenc<=0x10fff )
 return( true );		/* Supplemental Multilingual Plane, RTL scripts */
     if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 )
 return( isrighttoleft(sc->unicodeenc ));
 
-    script = SCScriptFromUnicode(sc);
-return( script==CHR('a','r','a','b') || script==CHR('h','e','b','r') );
+return( ScriptIsRightToLeft(SCScriptFromUnicode(sc)));
 }
 
 static KernPair *KernListMatch(KernPair *kerns,int sli) {
@@ -569,7 +575,7 @@ static void dumpgposkerndata(FILE *gpos,SplineFont *sf,int sli,
     putshort(gpos,1);		/* format 1 of the pair adjustment subtable */
     coverage_pos = ftell(gpos);
     putshort(gpos,0);		/* offset to coverage table */
-    if ( script==CHR('a','r','a','b') || script==CHR('h','e','b','r') ) {
+    if ( ScriptIsRightToLeft(script) ) {
 	/* Right to left kerns modify the second character's width */
 	/*  this doesn't make sense to me, but who am I to argue */
 	putshort(gpos,0x0000);	/* leave first char alone */
@@ -723,7 +729,7 @@ static void dumpgposkernclass(FILE *gpos,SplineFont *sf,KernClass *kc,
 
     putshort(gpos,2);		/* format 2 of the pair adjustment subtable */
     putshort(gpos,0);		/* offset to coverage table */
-    if ( script==CHR('a','r','a','b') || script==CHR('h','e','b','r') ) {
+    if ( ScriptIsRightToLeft(script) ) {
 	/* Right to left kerns modify the second character's width */
 	/*  this doesn't make sense to me, but who am I to argue */
 	putshort(gpos,0x0000);	/* leave first char alone */
