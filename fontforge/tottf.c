@@ -42,8 +42,6 @@
 
 #include "ttf.h"
 
-int glyph_2_name_map=0;
-
 /* This file produces a ttf file given a splinefont. */
 
 /* ************************************************************************** */
@@ -5382,7 +5380,7 @@ int WriteTTFFont(char *fontname,SplineFont *sf,enum fontformat format,
     if (( ttf=fopen(fontname,"wb+"))==NULL )
 return( 0 );
     ret = _WriteTTFFont(ttf,sf,format,bsizes,bf,flags);
-    if ( ret && glyph_2_name_map )
+    if ( ret && (flags&ttf_flag_glyphmap) )
 	DumpGlyphToNameMap(fontname,sf);
     if ( fclose(ttf)==-1 )
 return( 0 );

@@ -58,6 +58,7 @@ static int nfnt_warned = false, post_warned = false;
 #define CID_TTF_PfEdColors	1105
 #define CID_TTF_PfEd		1106
 #define CID_TTF_OpenTypeMode	1107
+#define CID_TTF_GlyphMap	1108
 
 
 struct gfc_data {
@@ -457,6 +458,8 @@ return( false );
 		    d->ttf_flags |= ttf_flag_pfed_comments;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors)) )
 		    d->ttf_flags |= ttf_flag_pfed_colors;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_GlyphMap)) )
+		    d->ttf_flags |= ttf_flag_glyphmap;
 	    } else if ( d->sod_which==2 ) {				/* OpenType */
 		d->otf_flags = 0;
 		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_FullPS)) )
@@ -469,6 +472,8 @@ return( false );
 		    d->otf_flags |= ttf_flag_pfed_comments;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors)) )
 		    d->otf_flags |= ttf_flag_pfed_colors;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_GlyphMap)) )
+		    d->otf_flags |= ttf_flag_glyphmap;
 
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_AFM)) )
 		    d->otf_flags |= ps_flag_afm;
@@ -503,6 +508,8 @@ return( false );
 		    d->psotb_flags |= ttf_flag_pfed_comments;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors)) )
 		    d->psotb_flags |= ttf_flag_pfed_colors;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_GlyphMap)) )
+		    d->psotb_flags |= ttf_flag_glyphmap;
 	    }
 	    d->sod_invoked = true;
 	}
@@ -546,6 +553,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
 
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_PfEdComments),flags&ttf_flag_pfed_comments);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors),flags&ttf_flag_pfed_colors);
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_GlyphMap),flags&ttf_flag_glyphmap);
 
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Hints),which!=1);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_HintSubs),which!=1);
@@ -571,6 +579,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEd),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEdComments),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEdColors),which!=0);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_GlyphMap),which!=0);
 }
 
 #define OPT_Width	230
@@ -581,7 +590,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     int k,group,group2;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[23];
+    GGadgetCreateData gcd[24];
     GTextInfo label[23];
     GRect pos;
 
@@ -595,11 +604,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_Options,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Options");
-#endif
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,OPT_Width));
@@ -632,11 +637,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_Round;
     label[k].text_in_resource = true;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_PSRoundPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[k].gd.popup_msg = _("Do you want to round coordinates to integers (this saves space)?");
-#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_Round;
     gcd[k++].creator = GCheckBoxCreate;
@@ -645,11 +646,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_Hints;
     label[k].text_in_resource = true;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_PSHintsPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[k].gd.popup_msg = _("Do you want the font file to contain PostScript hints?");
-#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.handle_controlevent = OPT_PSHints;
     gcd[k].gd.cid = CID_PS_Hints;
@@ -659,11 +656,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_FlexHints;
     label[k].text_in_resource = true;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_FlexHintsPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[k].gd.popup_msg = _("Do you want the font file to contain PostScript flex hints?");
-#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_Flex;
     gcd[k++].creator = GCheckBoxCreate;
@@ -672,11 +665,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = 0 ;
     label[k].text = (unichar_t *) _STR_HintSubs;
     label[k].text_in_resource = true;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_HintSubsPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[k].gd.popup_msg = _("Do you want the font file to do hint substitution?");
-#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_HintSubs;
     gcd[k++].creator = GCheckBoxCreate;
@@ -685,11 +674,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = 0 ;
     label[k].text = (unichar_t *) _STR_First256;
     label[k].text_in_resource = true;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_First256Popup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[k].gd.popup_msg = _("Limit the font so that only the first 256 (encoded) characters\nwill be included in the file");
-#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_Restrict256;
     gcd[k++].creator = GCheckBoxCreate;
@@ -698,11 +683,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_Outputafm;
     label[k].text_in_resource = true;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_OutputAfmPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[k].gd.popup_msg = _("The AFM file contains metrics information that many word-processors will read when using a PostScript® font.");
-#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_AFM;
     gcd[k++].creator = GCheckBoxCreate;
@@ -711,11 +692,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_Outputpfm;
     label[k].text_in_resource = true;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_OutputPfmPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[k].gd.popup_msg = _("The PFM file contains information Windows needs to install a PostScript® font.");
-#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_PFM;
     gcd[k++].creator = GCheckBoxCreate;
@@ -724,11 +701,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_Outputtfm;
     label[k].text_in_resource = true;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_OutputTfmPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[k].gd.popup_msg = _("The tfm and enc files contain information TeX needs to install a PostScript® font.");
-#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_TFM;
     gcd[k++].creator = GCheckBoxCreate;
@@ -751,11 +724,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_Hints;
     label[k].text_in_resource = true;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_TTFHintsPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[k].gd.popup_msg = _("Do you want the font file to contain truetype hints? This will not\ngenerate new instructions, it will just make use of whatever is associated\nwith each character.");
-#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_Hints;
     gcd[k++].creator = GCheckBoxCreate;
@@ -764,11 +733,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_PSNames;
     label[k].text_in_resource = true;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_PSNamesPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[k].gd.popup_msg = _("Do you want the font file to contain the names of each character in the font?");
-#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_FullPS;
     gcd[k++].creator = GCheckBoxCreate;
@@ -777,11 +742,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_AppleMode;
     label[k].text_in_resource = true;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_AppleModePopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[k].gd.popup_msg = _("Apple and MS/Adobe differ about the format of truetype and opentype files\nThis allows you to select which standard to follow for your font.\nThe main differences are:\n The requirements for the 'postscript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite characters are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop");
-#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_AppleMode;
     gcd[k++].creator = GCheckBoxCreate;
@@ -790,11 +751,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_OpenTypeMode;
     label[k].text_in_resource = true;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_OpenTypeModePopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[k].gd.popup_msg = _("Apple and MS/Adobe differ about the format of truetype and opentype files\nThis allows you to select which standard to follow for your font.\nThe main differences are:\n The requirements for the 'postscript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite characters are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop");
-#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_OpenTypeMode;
     gcd[k++].creator = GCheckBoxCreate;
@@ -803,11 +760,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_PfaEditTable;
     label[k].text_in_resource = true;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_PfaEditTablePopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[k].gd.popup_msg = _("The PfaEdit table is an extension to the TrueType format\nand contains various data used by FontForge");
-#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_PfEd;
     gcd[k++].creator = GLabelCreate;
@@ -816,11 +769,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_PfEdComments;
     label[k].text_in_resource = true;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_PfEdCommentsPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[k].gd.popup_msg = _("Save glyph comments in the PfEd table");
-#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_PfEdComments;
     gcd[k++].creator = GCheckBoxCreate;
@@ -829,13 +778,18 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_PfEdColors;
     label[k].text_in_resource = true;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_PfEdColorsPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[k].gd.popup_msg = _("Save glyph colors in the PfEd table");
-#endif
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_PfEdColors;
+    gcd[k++].creator = GCheckBoxCreate;
+
+    gcd[k].gd.pos.x = gcd[k-3].gd.pos.x; gcd[k].gd.pos.y = gcd[k-4].gd.pos.y;
+    gcd[k].gd.flags = gg_visible ;
+    label[k].text = (unichar_t *) _STR_OutputGlyphMap;
+    label[k].text_in_resource = true;
+    gcd[k].gd.popup_msg = GStringGetResource(_STR_PrefsPopupG2N,NULL);
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_TTF_GlyphMap;
     gcd[k++].creator = GCheckBoxCreate;
 
     gcd[k].gd.pos.x = 30-3; gcd[k].gd.pos.y = gcd[group2].gd.pos.y+gcd[group2].gd.pos.height+10-3;

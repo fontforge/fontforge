@@ -84,7 +84,7 @@ extern int mf_ask;			/* in autotrace.c */
 extern int mf_clearbackgrounds;		/* in autotrace.c */
 extern int mf_showerrors;		/* in autotrace.c */
 extern char *mf_args;			/* in autotrace.c */
-extern int glyph_2_name_map;		/* in tottf.c */
+static int glyph_2_name_map=0;		/* was in tottf.c, now a flag in savefont options dlg */
 extern int coverageformatsallowed;	/* in tottfgpos.c */
 unichar_t *script_menu_names[SCRIPT_MENU_MAX];
 char *script_filenames[SCRIPT_MENU_MAX];
@@ -309,7 +309,6 @@ static struct prefs_list {
 	{ "TTFFoundry", pr_string, &TTFFoundry, NULL, NULL, 'T', NULL, 0, _STR_PrefsPopupTFN },
 	{ "XUID-Base", pr_string, &xuid, NULL, NULL, 'X', NULL, 0, _STR_PrefsPopupXU },
 	{ "AskBDFResolution", pr_bool, &ask_user_for_resolution, NULL, NULL, 'B', NULL, 0, _STR_PrefsPopupBR },
-	{ "DumpGlyphMap", pr_bool, &glyph_2_name_map, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupG2N },
 	{ "PreferCJKEncodings", pr_bool, &prefer_cjk_encodings, NULL, NULL, 'C', NULL, 0, _STR_PrefsPopupPCE },
 	{ "HintForGen", pr_bool, &autohint_before_generate, NULL, NULL, 'H', NULL, 0, _STR_PrefsPopupAHG },
 	{ "AlwaysGenApple", pr_bool, &alwaysgenapple, NULL, NULL, 'A', NULL, 0, _STR_PrefsPopupAGA },
@@ -350,6 +349,7 @@ static struct prefs_list {
 	{ NULL }
 },
  oldnames[] = {
+	{ "DumpGlyphMap", pr_bool, &glyph_2_name_map, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupG2N },
 	{ "LocalCharset", pr_encoding, &prefs_encoding, NULL, NULL, 'L', NULL, 0, _STR_PrefsPopupLoc },
 	{ "DefaultTTFApple", pr_int, &pointless, NULL, NULL, '\0', NULL, 1 },
 	{ "AcuteCenterBottom", pr_bool, &GraveAcuteCenterBottom, NULL, NULL, '\0', NULL, 1, _STR_PrefsPopupGA },
@@ -881,6 +881,10 @@ return;
 	local_encoding = prefs_encoding;
     if ( xdefs_filename!=NULL )
 	GResourceAddResourceFile(xdefs_filename,GResourceProgramName);
+    if ( glyph_2_name_map ) {
+	old_ttf_flags |= ttf_flag_glyphmap;
+	old_otf_flags |= ttf_flag_glyphmap;
+    }
 }
 
 void SavePrefs(void) {
