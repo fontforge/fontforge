@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 14-Sep-2003 -->
+  <!-- AP: Last modified: 14-Nov-2003 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -25,16 +25,17 @@
 	<A HREF="#write">Why did I write it?</A>
       <LI>
 	<A HREF="#give">Why do I give it away?</A>
-    </UL>
-  <LI>
-    <A HREF="#widget-set">Why is PfaEdit based on a non-standard widget set?</A>
-    <UL>
+      <LI>
+	<A HREF="#widget-set">Why is PfaEdit based on a non-standard widget set?</A>
       <LI>
 	<A HREF="#C-plus-plus">Why isn't PfaEdit written in C++? (or <I>Why C++ is
 	not my favorite language</I>)</A>
     </UL>
   <LI>
     <A HREF="#legal">Is it legal to modify a font? Is it ethical?</A>
+  <LI>
+    <A HREF="#pointsize">What is a 12point font?</A> (What measurement of the
+    font determines the point size)
   <LI>
     <A HREF="#font-install">How do I install the fonts once I've made them?</A>
   <LI>
@@ -304,8 +305,40 @@
 	Font names may be trademarked.
     </UL>
     <P>
+    My understanding is that in most European countries there are laws against
+    copying the design (the shape) of a font.
+    <P>
     I would welcome any additions or corrections here, as well as info on the
     laws governing fonts in other countries.
+  <DT>
+    <A NAME="pointsize"><B>What is a 12 point font?</B></A> <B>(What measurement
+    of the font determines the point size?)</B>
+  <DD>
+    <IMG SRC="pointsize.png" WIDTH="147" HEIGHT="96" ALIGN="Right">A font is
+    12 points high if the distance between the baselines of two adjacent lines
+    of (unleaded) text is 12 points.
+    <P>
+    The pointsize is not based on the sizes of any of the glyphs of the font.
+    <P>
+    Back when fonts were made out of metal, the pointsize of the font was the
+    height of the metal slugs used for that font.
+    <P>
+    In some sense this is not a very good measure of the size of a font (some
+    fonts may allow more room for accents or ascenders or descenders than others
+    meaning that the height of the actual glyphs will be smaller).
+    <P>
+    There is also a measurement scheme based on the x-height of the glyphs.
+    <P>
+    In England and the US a point has traditionally meant the pica point (1/72.27th
+    of an inch), while in Europe the point has been the didot point (1/67.54th
+    of an inch). The Europeans have a slightly larger point, but the glyphs of
+    English and European fonts appear the same size. English does not use accents
+    (except in very rare cases) while most European languages do, and the slight
+    increase in the size of the point allows more room for accents.
+    <P>
+    (Of course now most Europeans are probably forced to use the pica point by
+    their desktop software, while must computer fonts now contain accented glyphs,
+    so the distinction and the reason for it may have vanished).
   <DT>
     <A NAME="font-install"><B>How do I install the fonts once I've made
     them?</B></A>
@@ -409,7 +442,11 @@ $ xset fp+ `pwd`
 	<STRONG><A NAME="Windows-Install">Windows</A></STRONG>
       <DD>
 	You install truetype fonts on windows by dropping them into the \Windows\Fonts
-	directory on your machine.<BR>
+	directory on your machine. <BR>
+	<FONT COLOR="Red"><STRONG>Do <BIG>NOT</BIG> generate the font directly into
+	\Windows\Fonts</STRONG></FONT>, this doesn't seem to work (at least on under
+	my XP machine). You must generate the font into another directory and drag
+	&amp; drop it to \Windows\Fonts .<BR>
 	If you want to use type1 fonts you will need to install adobe type manager
 	and follow its instructions.<BR>
 	If you want to install opentype fonts then on old systems (before windows
@@ -442,18 +479,28 @@ $ xset fp+ `pwd`
 	Either a resource font (unwrapped from its macbinary wrapper) or a dfont
 	may be used. I'm not sure whether postscript Type1 resource fonts work, but
 	OpenType dfonts do (so if you want to use Postscript use OpenType). You can
-	also use straight ttf and otf files.
+	also use straight ttf and otf files (ie. the same file you might use on Unix
+	or MS).<BR>
+	As far as I can tell the old NFNT bitmap resources do not work on my OS 10.2.
+	If you want to use bitmap fonts wrap them up in a ttf file or an sfnt.
     </DL>
   <DT>
     <A NAME="Bad-Windows-Install"><B>Why won't PfaEdit's fonts install on some
     MS Windows machines?</B></A>
   <DD>
-    I am told that fonts produced by PfaEdit will not install on Windows 2000
-    systems. I don't have a machine to test this on. Fonts install fine on Windows
-    ME.
+    Do <FONT COLOR="Red"><STRONG>NOT</STRONG></FONT> generate a font directly
+    into the \windows\fonts directory. Generate the font into a different directory
+    and then use windows drag and drop to install the font. (Windows appears
+    to do magic when it moves the font into that directory).
     <P>
-    One user tells me that setting "Full Control" for the current user helps,
-    as does setting the "Read &amp; Execute" setting.
+    I am told that fonts produced by old versions of PfaEdit will not install
+    on Windows 2000 (and XP) systems.
+    <P>
+    I believe this problem is fixed now (as of 20-Oct-2003). If you have an older
+    version please upgrade.<BR>
+    If you are copying a font from another machine make sure the execute bit
+    is set in the permissions of the font file (I don't know how to do this with
+    the Windows UI, under cygwin you say <CODE>$ chmod +x foo.ttf</CODE>
   <DT>
     <A NAME="How-mac"><B>How do I edit fonts from my macintoy?</B></A>
   <DD>
@@ -900,13 +947,8 @@ MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
     Adobe was thinking more of backwards compatibility than sense when they assigned
     the names of the greek letters in their unicode encoding. Thus the name "mu"
     refers to the Micro Sign (U+00B5) and not to the letter mu. They also assigned
-    Delta to Increment, and Omega to Ohm Sign. I have chosen to disregard these
-    latter two, but the definition of "mu" is embedded in the Latin1 encoding
-    and I can't reassign it with impunity.
+    Delta to Increment, and Omega to Ohm Sign.
     <P>
-    In a half-hearted attempt to get around this problem I have caused PfaEdit
-    to generate characters with names "mu", "uni00B5" and "uni03BC" whenever
-    either U+00B5 or U+03BC is defined (and similarly for Omega and Delta).
     <P>
     Adobe has also decided that the character at U+03D6 (said by the Unicode
     consortium to refer to "GREEK PI SYMBOL") should be named "omega1", when

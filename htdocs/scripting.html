@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 3-Sep-2003 -->
+  <!-- AP: Last modified: 3-Dec-2003 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -315,6 +315,9 @@ to (some) already existing ones)
   <LI>
     <CODE>$cidfamilyname, $cidfullname, $cidweight, $cidcopyright </CODE>similar
     to above
+  <LI>
+    <CODE>$mmcount </CODE>returns 0 for non multiple master fonts, returns the
+    number of instances in a multiple master font.
   <LI>
     <CODE>$italicangle </CODE>the value of the postscript italic angle field
   <LI>
@@ -1023,6 +1026,26 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     then angle will be divided by denom before setting the italic angle field
     (a hack to get real values). The angle should be in degrees.
   <DT>
+    SetTTFName(lang,nameid,utf8-string)
+  <DD>
+    Sets the indicated truetype name in the MS platform. Lang must be one of
+    the
+    <A HREF="http://partners.adobe.com/asn/tech/type/opentype/name.jsp#lang3">language/locales</A>
+    supported by MS, and nameid must be one of the
+    <A HREF="http://partners.adobe.com/asn/tech/type/opentype/name.jsp#enc4">small
+    integers used to indicate a standard name</A>, while the final argument should
+    be a utf8 encoded string which will become the value of that entry. A null
+    string ("") may be used to clear an entry.<BR>
+    Example: To set the SubFamily string in the American English
+    language/locale<BR>
+    <CODE>&nbsp; &nbsp;SetTTFName(0x409,2,"Bold Oblique")</CODE>
+  <DT>
+    GetTTFName(lang,nameid)
+  <DD>
+    The lang and nameid arguments are as above. This returns the current value
+    as a utf8 encoded string. Combinations which are not present will be returned
+    as "".
+  <DT>
     SetPanose(array)<BR>
     SetPanose(index,value)
   <DD>
@@ -1423,6 +1446,24 @@ ApplySubstitution("*","*","vrt2")
   <DD>
     Removes all vertical kern pairs and classes from the current font.
   <DD>
+      <HR>
+  <DT>
+    MMInstanceNames()
+  <DD>
+    Returns an array containing the names of all instance fonts in a multi master
+    set.
+  <DT>
+    MMWeightedName()
+  <DD>
+    Returns the name of the weighted font in a multi master set.
+  <DT>
+    MMChangeInstance(instance)
+  <DD>
+    Where instance is either a font name or a small integer. If passed a string
+    PfaEdit searches through all fonts in the multi master font set (instance
+    fonts and the weighted font) and changes the current font to the indicated
+    one. If passed a small integer, then -1 indicates the weighted font and values
+    between [0,$mmcount) represent that specific instance in the font set. 
       <HR>
   <DT>
     CIDChangeSubFont(new-sub-font-name)

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 10-Nov-2003 -->
+  <!-- AP: Last modified: 5-Dec-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,45 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    5-Dec-2003
+    <UL>
+      <LI>
+	When changing the ascent/descent with fontinfo or scaletoem some of the OS/2
+	fields did not get updated properly.
+      <LI>
+	The OS/2 TypoDescent field was set positive instead of negative.
+      <LI>
+	Added two scripting functions SetTTFName and GetTTFName to give scripts access
+	to the truetype names as well as the PS ones
+      <LI>
+	Patch from Kazuyuki. SetPanose didn't work when argument was an array.
+      <LI>
+	New French translations from Pierre
+      <LI>
+	$copyright didn't return the correct thing (Patch from Giuseppe Ghibo)
+      <LI>
+	Kerning pair data for non-ASCII unicode characters did not get output properly
+	into SVG fonts
+      <LI>
+	The AddATT scripting command did not add ligatures correctly leading to problems
+	when time came to generate a font.
+    </UL>
+  <LI>
+    23-Nov-2003
+    <UL>
+      <LI>
+	PfaEdit would crash if given an encoding for the locale which it didn't
+	understand
+      <LI>
+	Center/Thirds in width from the font view would change the width
+      <LI>
+	There was a synchronization problem and the truetype debugger window could
+	deadlock
+      <LI>
+	PfaEdit failed to read a Contextual (but not Contextual chaining) Coverage
+	lookup properly.
+    </UL>
   <LI>
     10-Nov-2003
     <UL>
