@@ -277,18 +277,25 @@ BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,
     sc = ftc->sf->chars[enc];
     bdfc = gcalloc(1,sizeof(BDFChar));
     bdfc->sc = sc;
-    bdfc->xmin = slot->bitmap_left;
     bdfc->ymax = slot->bitmap_top-1;
     bdfc->ymin = slot->bitmap_top-slot->bitmap.rows;
+    if ( slot->bitmap.rows==0 )
+	bdfc->ymax = bdfc->ymin;
+    bdfc->xmin = slot->bitmap_left;
     bdfc->xmax = slot->bitmap_left+slot->bitmap.width-1;
+    if ( slot->bitmap.width==0 )
+	bdfc->xmax = bdfc->xmin;
     bdfc->byte_data = (depth!=1);
     if ( sc!=NULL ) {
 	bdfc->width = rint(sc->width*pixelsize / (real) (sc->parent->ascent+sc->parent->descent));
 	bdfc->enc = enc;
     }
     bdfc->bytes_per_line = slot->bitmap.pitch;
-    bdfc->bitmap = galloc(slot->bitmap.rows*bdfc->bytes_per_line);
-    memcpy(bdfc->bitmap,slot->bitmap.buffer,slot->bitmap.rows*bdfc->bytes_per_line);
+    bdfc->bitmap = galloc((bdfc->ymax-bdfc->ymin+1)*bdfc->bytes_per_line);
+    if ( slot->bitmap.rows==0 || slot->bitmap.width==0 )
+	memset(bdfc->bitmap,0,(bdfc->ymax-bdfc->ymin+1)*bdfc->bytes_per_line);
+    else
+	memcpy(bdfc->bitmap,slot->bitmap.buffer,slot->bitmap.rows*bdfc->bytes_per_line);
     BCCompressBitmap(bdfc);
     if ( depth!=1 && depth!=8 )
 	BCTruncateToDepth(bdfc,depth);
