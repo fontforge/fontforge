@@ -176,6 +176,9 @@ void GProgressStartIndicator(
     struct timeval tv;
     GTextInfo label;
 
+    if ( screen_display==NULL )
+return;
+
     new = gcalloc(1,sizeof(GProgress));
     new->line1 = u_copy(line1);
     new->line2 = u_copy(line2);

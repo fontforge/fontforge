@@ -110,7 +110,7 @@ static void ProcessText(unichar_t *ubuf,char *buf, enum err_type et) {
 void _GDraw_InitError(GDisplay *gd) {
     GRect screen, pos;
     static unichar_t title[]= { 'E', 'r', 'r', 'o', 'r', '\0' };
-    unichar_t courier[10] = { 'c', 'o', 'u', 'r', 'i', 'e', 'r', '\0' };
+    static unichar_t courier[] = { 'c', 'o', 'u', 'r', 'i', 'e', 'r', '\0' };
     GWindowAttrs wattrs;
     FontRequest rq;
 

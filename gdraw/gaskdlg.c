@@ -147,6 +147,14 @@ static GWindow DlgCreate(const unichar_t *title,const unichar_t *question,va_lis
     unichar_t ubuf[300];
 
     u_vsnprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),question,ap);
+    if ( screen_display==NULL ) {
+	char *temp;
+	fprintf(stderr, "%s\n", temp=u2def_copy(ubuf));
+	free(temp);
+	d->done = true;
+return( NULL );
+    }
+
     memset(qlabels,'\0',sizeof(qlabels));
     lb = FindLineBreaks(ubuf,qlabels);
     for ( bcnt=0; answers[bcnt]!=NULL; ++bcnt);
@@ -279,6 +287,9 @@ int GWidgetAsk(const unichar_t *title,
     GWindow gw;
     va_list ap;
 
+    if ( screen_display==NULL )
+return( def );
+
     va_start(ap,question);
     gw = DlgCreate(title,question,ap,answers,mn,def,cancel,&d,false,true,false);
     va_end(ap);
@@ -297,6 +308,9 @@ int GWidgetAskCentered(const unichar_t *title,
     struct dlg_info d;
     GWindow gw;
     va_list ap;
+
+    if ( screen_display==NULL )
+return( def );
 
     va_start(ap,question);
     gw = DlgCreate(title,question,ap,answers,mn,def,cancel,&d,false,true,true);
@@ -317,6 +331,9 @@ int GWidgetAskR(int title, int *answers, int def, int cancel,int question,...) {
     int i;
     va_list ap;
     GWindow gw;
+
+    if ( screen_display==NULL )
+return( def );
 
     for ( i=0; answers[i]!=0 && answers[i]!=0x80000000; ++i );
     ans = gcalloc(i+1,sizeof(unichar_t *));
@@ -345,6 +362,9 @@ int GWidgetAskR_(int title, int *answers, int def, int cancel,const unichar_t *q
     GWindow gw;
     va_list ap;
 
+    if ( screen_display==NULL )
+return( def );
+
     for ( i=0; answers[i]!=0 && answers[i]!=0x80000000; ++i );
     ans = gcalloc(i+1,sizeof(unichar_t *));
     mn = gcalloc(i,sizeof(unichar_t));
@@ -372,6 +392,9 @@ int GWidgetAskCenteredR_(int title, int *answers, int def, int cancel,const unic
     GWindow gw;
     va_list ap;
 
+    if ( screen_display==NULL )
+return( def );
+
     for ( i=0; answers[i]!=0 && answers[i]!=0x80000000; ++i );
     ans = gcalloc(i+1,sizeof(unichar_t *));
     mn = gcalloc(i,sizeof(unichar_t));
@@ -397,6 +420,9 @@ int GWidgetAskCenteredR(int title, int *answers, int def, int cancel,int questio
     int i;
     GWindow gw;
     va_list ap;
+
+    if ( screen_display==NULL )
+return( def );
 
     for ( i=0; answers[i]!=0 && answers[i]!=0x80000000; ++i );
     ans = gcalloc(i+1,sizeof(unichar_t *));
@@ -425,6 +451,9 @@ unichar_t *GWidgetAskString(const unichar_t *title,const unichar_t *def,
     const unichar_t *ocb[3]; unichar_t ocmn[2];
     va_list ap;
 
+    if ( screen_display==NULL )
+return( u_copy(def ));
+
     ocb[2]=NULL;
     ocb[0] = GStringGetResource( _STR_OK, &ocmn[0]);
     ocb[1] = GStringGetResource( _STR_Cancel, &ocmn[1]);
@@ -449,6 +478,9 @@ unichar_t *GWidgetAskStringR(int title,const unichar_t *def,int question,...) {
     unichar_t *ret = NULL;
     const unichar_t *ocb[3]; unichar_t ocmn[2];
     va_list ap;
+
+    if ( screen_display==NULL )
+return( u_copy(def ));
 
     ocb[2]=NULL;
     ocb[0] = GStringGetResource( _STR_OK, &ocmn[0]);
@@ -479,7 +511,8 @@ void GWidgetPostNotice(const unichar_t *title,const unichar_t *statement,...) {
     va_start(ap,statement);
     gw = DlgCreate(title,statement,ap,ob,omn,0,0,NULL,false,false,true);
     va_end(ap);
-    GDrawRequestTimer(gw,40*1000,0,NULL);
+    if ( gw!=NULL ) 
+	GDrawRequestTimer(gw,40*1000,0,NULL);
     /* Continue merrily on our way. Window will destroy itself in 40 secs */
     /*  or when user kills it. We can ignore it */
 }
@@ -495,7 +528,8 @@ void GWidgetPostNoticeR(int title,int statement,...) {
     gw = DlgCreate(GStringGetResource(title,NULL),GStringGetResource(statement,NULL),ap,
 	    oc,omn,0,0,NULL,false,false,true);
     va_end(ap);
-    GDrawRequestTimer(gw,40*1000,0,NULL);
+    if ( gw!=NULL )
+	GDrawRequestTimer(gw,40*1000,0,NULL);
     /* Continue merrily on our way. Window will destroy itself in 40 secs */
     /*  or when user kills it. We can ignore it */
 }
@@ -511,9 +545,11 @@ void GWidgetError(const unichar_t *title,const unichar_t *statement, ...) {
     va_start(ap,statement);
     gw = DlgCreate(title,statement,ap,ob,omn,0,0,&d,false,true,true);
     va_end(ap);
-    while ( !d.done )
-	GDrawProcessOneEvent(NULL);
-    GDrawDestroyWindow(gw);
+    if ( gw!=NULL ) {
+	while ( !d.done )
+	    GDrawProcessOneEvent(NULL);
+	GDrawDestroyWindow(gw);
+    }
 }
 
 void GWidgetErrorR(int title,int statement, ...) {
@@ -528,9 +564,11 @@ void GWidgetErrorR(int title,int statement, ...) {
     gw = DlgCreate(GStringGetResource(title,NULL),GStringGetResource(statement,NULL),ap,
 	    oc,omn,0,0,&d,false,true,true);
     va_end(ap);
-    while ( !d.done )
-	GDrawProcessOneEvent(NULL);
-    GDrawDestroyWindow(gw);
+    if ( gw!=NULL ) {
+	while ( !d.done )
+	    GDrawProcessOneEvent(NULL);
+	GDrawDestroyWindow(gw);
+    }
 }
 
 /* ************************************************************************** */
@@ -740,6 +778,9 @@ int GWidgetChoicesR(int title, const unichar_t **choices,int cnt, int def,
     va_list ap;
     static int buts[2] = { _STR_OK, _STR_Cancel };
 
+    if ( screen_display==NULL )
+return( -2 );
+
     va_start(ap,question);
     gw = ChoiceDlgCreate(&d,GStringGetResource( title,NULL),GStringGetResource( question,NULL),ap,
 	    choices,cnt,NULL,buts,def,true,false);
@@ -757,6 +798,9 @@ int GWidgetChoicesBR(int title, const unichar_t **choices, int cnt, int def,
     struct dlg_info d;
     GWindow gw;
     va_list ap;
+
+    if ( screen_display==NULL )
+return( -2 );
 
     va_start(ap,question);
     gw = ChoiceDlgCreate(&d,GStringGetResource( title,NULL),GStringGetResource( question,NULL),ap,
@@ -778,6 +822,9 @@ int GWidgetChoicesBRM(int title, const unichar_t **choices,char *sel,
     GGadget *list;
     GTextInfo **lsel;
     int i, len;
+
+    if ( screen_display==NULL )
+return( -2 );
 
     va_start(ap,question);
     gw = ChoiceDlgCreate(&d,GStringGetResource( title,NULL),GStringGetResource( question,NULL),ap,
