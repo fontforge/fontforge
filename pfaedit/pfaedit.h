@@ -75,4 +75,9 @@ extern Encoding *enclist;
 #define RECENT_MAX	4
 extern char *RecentFiles[RECENT_MAX];
 
+#define SCRIPT_MENU_MAX	10
+extern unichar_t *script_menu_names[SCRIPT_MENU_MAX];
+extern char *script_filenames[SCRIPT_MENU_MAX];
+
+
 #endif

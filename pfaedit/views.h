@@ -456,6 +456,7 @@ extern void PasteIntoFV(FontView *fv, int doclear);
 
 extern void WindowMenuBuild(GWindow base,struct gmenuitem *mi,GEvent *);
 extern void MenuRecentBuild(GWindow base,struct gmenuitem *mi,GEvent *);
+extern void MenuScriptsBuild(GWindow base,struct gmenuitem *mi,GEvent *);
 extern int RecentFilesAny(void);
 
 extern GImage GIcon_sel2ptr, GIcon_rightpointer, GIcon_angle, GIcon_distance,
@@ -514,6 +515,7 @@ extern void CVConstrainSelection(CharView *cv,int type);
 extern void CVMakeParallel(CharView *cv);
 
 extern void ScriptDlg(FontView *fv);
+extern void ExecuteScriptFile(FontView *fv, char *filename);
 
 # if HANYANG
 extern void MenuNewComposition(GWindow gw, struct gmenuitem *, GEvent *);

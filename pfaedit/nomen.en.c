@@ -822,6 +822,14 @@ static char *str_PrefsPopupAO[] = "The percentage of an em by which an accent is
 static char *str_PrefsPopupAA[] = "The number of em-units by which an arrow key will move a selected point";
 static char *str_PrefsPopupGF[] = "Adobe has assigned the names Delta, Omega and mu\nto Increment, Ohm and micro signs respectively\nThis seems very odd to Greek font designers who use\nthe names to refer to letters of the alphabet.\nSo there is ambiguity as to what the names mean.\nSetting this flag tries to deal with the ambiguity\nby generating fonts with extra glyphs.";
 static char *str_PrefsPopupSD[] = "When the mouse pointer is within this many pixels\nof one of the various interesting features (baseline,\nwidth, grid splines, etc.) the pointer will snap\nto that feature.";
+static char *str_Generic[] = "Generic";
+static char *str_ScriptMenu[] = "Script Menu";
+static char *str_MenuName[] = "Menu Name";
+static char *str_ScriptMenuPopup[] = "You may create a script menu containing up to 10 frequently used scripts\nEach entry in the menu needs both a name to display in the menu and\na script file to execute. The menu name may contain any unicode characters.\nThe button labeled \"...\" will allow you to browse for a script file.";
+static char *str_ScriptFile[] = "Script File";
+static char *str_BrowseForFile[] = "...";
+static char *str_MenuNameWithNoScript[] = "Menu name with no associated script";
+static char *str_ScriptWithNoMenuName[] = "Script with no associated menu name";
     /* Hints */
 static char *str_base = "Base:";
 static unichar_t mnemonic_base = 'B';

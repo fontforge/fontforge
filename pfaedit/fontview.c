@@ -718,6 +718,7 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_Revert	2702
 #define MID_Recent	2703
 #define MID_Print	2704
+#define MID_ScriptMenu	2705
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -2182,6 +2183,9 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_Recent:
 	    mi->ti.disabled = !RecentFilesAny();
 	  break;
+	  case MID_ScriptMenu:
+	    mi->ti.disabled = script_menu_names[0]==NULL;
+	  break;
 	  case MID_Print:
 	    mi->ti.disabled = fv->sf->onlybitmaps;
 	  break;
@@ -2233,6 +2237,7 @@ static GMenuItem fllist[] = {
     { { (unichar_t *) _STR_Print, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'P', ksm_control, NULL, NULL, FVMenuPrint, MID_Print },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_ExecuteScript, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'x' }, '.', ksm_control, NULL, NULL, FVMenuExecute },
+    { { (unichar_t *) _STR_ScriptMenu, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'x' }, '\0', ksm_control, dummyitem, MenuScriptsBuild, NULL, MID_ScriptMenu },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Prefs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'e' }, '\0', ksm_control, NULL, NULL, MenuPrefs },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
@@ -3065,6 +3070,14 @@ static void FVChar(FontView *fv,GEvent *event) {
 	    FVSimplify(fv,1);
 	else if ( (event->u.chr.state&ksm_shift))
 	    FVSimplify(fv,0);
+    } else if ( isdigit(event->u.chr.keysym) && (event->u.chr.state&ksm_control) &&
+	    (event->u.chr.state&ksm_meta) ) {
+	/* The Script menu isn't always up to date, so we might get one of */
+	/*  the shortcuts here */
+	int index = event->u.chr.keysym-'1';
+	if ( index<0 ) index = 9;
+	if ( script_filenames[index]!=NULL )
+	    ExecuteScriptFile(fv,script_filenames[index]);
     } else if ( event->u.chr.keysym == GK_Left ||
 	    event->u.chr.keysym == GK_Tab ||
 	    event->u.chr.keysym == GK_BackTab ||

@@ -284,6 +284,54 @@ static void bPrint(Context *c) {
     printf( "\n" );
 }
 
+static void bError(Context *c) {
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_str )
+	error( c, "Expected string argument" );
+
+    error( c, c->a.vals[1].u.sval );
+}
+
+static void bAskUser(Context *c) {
+    char *quest, *def="";
+
+    if ( c->a.argc!=2 && c->a.argc!=3 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_str || ( c->a.argc==3 &&  c->a.vals[2].type!=v_str) )
+	error( c, "Expected string argument" );
+    quest = c->a.vals[1].u.sval;
+    if ( c->a.argc==3 )
+	def = c->a.vals[2].u.sval;
+    if ( screen_display==NULL ) {
+	char buffer[300];
+	printf( "%s", quest );
+	buffer[0] = '\0';
+	c->return_val.type = v_str;
+	if ( fgets(buffer,sizeof(buffer),stdin)==NULL ) {
+	    clearerr(stdin);
+	    c->return_val.u.sval = copy("");
+	} else if ( buffer[0]=='\0' )
+	    c->return_val.u.sval = copy(def);
+	else
+	    c->return_val.u.sval = copy(buffer);
+    } else {
+	unichar_t *t1, *t2, *ret;
+	static unichar_t format[] = { '%','s', 0 };
+	t1 = uc_copy(quest);
+	ret = GWidgetAskString(t1,t2=uc_copy(def),format, t1);
+	free(t1);
+	free(t2);
+	c->return_val.type = v_str;
+	c->return_val.u.sval = cu_copy(ret);
+	if ( ret==NULL )
+	    c->return_val.u.sval = copy("");
+	else
+	    free(ret);
+    }
+}
+
 static void bArray(Context *c) {
     int i;
 
@@ -385,6 +433,42 @@ static void bStrcasecmp(Context *c) {
 
     c->return_val.type = v_int;
     c->return_val.u.ival = strmatch(c->a.vals[1].u.sval,c->a.vals[2].u.sval);
+}
+
+static void bStrtol(Context *c) {
+    int base = 10;
+
+    if ( c->a.argc!=2 && c->a.argc!=3 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_str || (c->a.argc==3 && c->a.vals[2].type!=v_int) )
+	error( c, "Bad type for argument" );
+    else if ( c->a.argc==3 ) {
+	base = c->a.vals[2].u.ival;
+	if ( base<0 || base==1 || base>36 )
+	    error( c, "Argument out of bounds" );
+    }
+
+    c->return_val.type = v_int;
+    c->return_val.u.ival = strtol(c->a.vals[1].u.sval,NULL,base);
+}
+
+static void bStrskipint(Context *c) {
+    int base = 10;
+    char *end;
+
+    if ( c->a.argc!=2 && c->a.argc!=3 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_str || (c->a.argc==3 && c->a.vals[2].type!=v_int) )
+	error( c, "Bad type for argument" );
+    else if ( c->a.argc==3 ) {
+	base = c->a.vals[2].u.ival;
+	if ( base<0 || base==1 || base>36 )
+	    error( c, "Argument out of bounds" );
+    }
+
+    c->return_val.type = v_int;
+    strtol(c->a.vals[1].u.sval,&end,base);
+    c->return_val.u.ival = end-c->a.vals[1].u.sval;
 }
 
 /* **** File menu **** */
@@ -1376,6 +1460,8 @@ static void bCharInfo(Context *c) {
 struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[] = {
 /* Generic utilities */
     { "Print", bPrint, 1 },
+    { "Error", bError, 1 },
+    { "AskUser", bAskUser, 1 },
     { "Array", bArray, 1 },
     { "Strsub", bStrsub, 1 },
     { "Strlen", bStrlen, 1 },
@@ -1383,6 +1469,8 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "Strrstr", bStrrstr, 1 },
     { "Strcasestr", bStrcasestr, 1 },
     { "Strcasecmp", bStrcasecmp, 1 },
+    { "Strtol", bStrtol, 1 },
+    { "Strskipint", bStrskipint, 1 },
 /* File menu */
     { "Quit", bQuit, 1 },
     { "Open", bOpen, 1 },
@@ -2518,6 +2606,39 @@ return;
 	fclose(temp);
 	if ( buffer[0]=='#' && buffer[1]=='!' && strstr(buffer,"pfaedit")!=NULL )
 	    ProcessScript(argc, argv);
+    }
+}
+
+void ExecuteScriptFile(FontView *fv, char *filename) {
+    Context c;
+    Val argv[1];
+    Array *dontfree[1];
+    enum token_type tok;
+    jmp_buf env;
+
+    memset( &c,0,sizeof(c));
+    c.a.argc = 1;
+    c.a.vals = argv;
+    c.dontfree = dontfree;
+    argv[0].type = v_str;
+    argv[0].u.sval = filename;
+    c.filename = filename;
+    c.return_val.type = v_void;
+    c.err_env = &env;
+    c.curfv = fv;
+    if ( setjmp(env)!=0 )
+return;				/* Error return */
+
+    c.script = fopen(c.filename,"r");
+    if ( c.script==NULL )
+	error(&c, "No such file");
+    else {
+	c.lineno = 1;
+	while ( !c.returned && (tok = NextToken(&c))!=tt_eof ) {
+	    backuptok(&c);
+	    statement(&c);
+	}
+	fclose(c.script);
     }
 }
 

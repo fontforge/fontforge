@@ -39,7 +39,7 @@ int adjustlbearing = true;
 int default_encoding = em_iso8859_1;
 int autohint_before_rasterize = 1;
 int ItalicConstrained=true;
-int accent_offset = 4;
+int accent_offset = 6;
 float arrowAmount=1;
 float snapdistance=3.5;
 char *BDFFoundry=NULL;
@@ -52,6 +52,8 @@ char *RecentFiles[RECENT_MAX] = { NULL };
 int greekfixup = true;
 extern int onlycopydisplayed, copymetadata;
 extern struct cvshows CVShows;
+unichar_t *script_menu_names[SCRIPT_MENU_MAX];
+char *script_filenames[SCRIPT_MENU_MAX];
 
 static GTextInfo localencodingtypes[] = {
     { (unichar_t *) _STR_Isolatin1, NULL, 0, 0, (void *) e_iso8859_1, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -106,7 +108,7 @@ static struct prefs_list {
 	{ "AutoHint", pr_bool, &autohint_before_rasterize, NULL, NULL, 'A', NULL, 0, _STR_PrefsPopupAH },
 	{ "LocalEncoding", pr_encoding, &local_encoding, NULL, NULL, 'L', NULL, 0, _STR_PrefsPopupLoc },
 	{ "NewCharset", pr_encoding, &default_encoding, NULL, NULL, 'N', NULL, 0, _STR_PrefsPopupForNewFonts },
-	{ "ShowRulers", pr_bool, &CVShows.showrulers, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupRulers },
+	{ "ShowRulers", pr_bool, &CVShows.showrulers, NULL, NULL, '\0', NULL, 1, _STR_PrefsPopupRulers },
 	{ "FoundryName", pr_string, &BDFFoundry, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupFN },
 	{ "XUID-Base", pr_string, &xuid, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupXU },
 	{ "PageWidth", pr_int, &pagewidth, NULL, NULL, '\0', NULL, 1 },
@@ -264,11 +266,51 @@ static void GreekHack(void) {
     /* I'm leaving mu at 00b5 (rather than 03bc) */
 }
 
+static unichar_t *utf8_copy(char *src) {
+    unichar_t *ret = galloc((strlen(src)+1)*sizeof(unichar_t)), *pt=ret;
+
+    while ( *src!='\0' ) {
+	int ch1, ch2;
+	ch1 = *src++;
+	if ( ch1<=0x7f )
+	    *pt++ = ch1;
+	else if ( (ch1&0xf0)==0xc0 ) {
+	    *pt++ = (ch1&0x1f)<<6 | (*src++&0x3f);
+	} else {
+	    ch2 = *src++;
+	    *pt++ = (ch1&0xf)<<6 | ((ch2&0x3f)<<6) | (*src++&0x3f);
+	}
+    }
+    *pt = '\0';
+return( ret );
+}
+
+static char *cutf8_copy(unichar_t *src) {
+    char *ret = galloc(3*u_strlen(src)+1), *pt=ret;
+
+    while ( *src!='\0' ) {
+	int ch;
+	ch = *src++;
+	if ( ch<=0x7f )
+	    *pt++ = ch;
+	else if ( ch<0x03ff ) {
+	    *pt++ = 0xc0|(ch>>6);
+	    *pt++ = 0x80|(ch&0x3f);
+	} else {
+	    *pt++ = 0xe0|(ch>>12);
+	    *pt++ = 0x80|((ch>>6)&0x3f);
+	    *pt++ = 0x80|(ch&0x3f);
+	}
+    }
+    *pt = '\0';
+return( ret );
+}
+
 void LoadPrefs(void) {
     char *prefs = getPfaEditPrefs();
     FILE *p;
     char line[1100];
-    int i, ri=0;
+    int i, ri=0, mn=0, ms=0;
     char *pt;
     struct prefs_list *pl;
 
@@ -308,6 +350,10 @@ return;
 	if ( pl==NULL ) {
 	    if ( strncmp(line,"Recent:",strlen("Recent:"))==0 && ri<RECENT_MAX )
 		RecentFiles[ri++] = copy(pt);
+	    else if ( strncmp(line,"MenuScript:",strlen("MenuScript:"))==0 && ms<SCRIPT_MENU_MAX )
+		script_filenames[ms++] = copy(pt);
+	    else if ( strncmp(line,"MenuName:",strlen("MenuName:"))==0 && mn<SCRIPT_MENU_MAX )
+		script_menu_names[mn++] = utf8_copy(pt);
     continue;
 	}
 	switch ( pl->type ) {
@@ -384,6 +430,11 @@ return;
 
     for ( i=0; i<RECENT_MAX && RecentFiles[i]!=NULL; ++i )
 	fprintf( p, "Recent:\t%s\n", RecentFiles[i]);
+    for ( i=0; i<SCRIPT_MENU_MAX && script_filenames[i]!=NULL; ++i ) {
+	fprintf( p, "MenuScript:\t%s\n", script_filenames[i]);
+	fprintf( p, "MenuName:\t%s\n", temp = cutf8_copy(script_menu_names[i]));
+	free(temp);
+    }
 
     fclose(p);
 }
@@ -392,18 +443,56 @@ struct pref_data {
     int done;
 };
 
+static int Prefs_ScriptBrowse(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GWindow gw = GGadgetGetWindow(g);
+	GGadget *tf = GWidgetGetControl(gw,GGadgetGetCid(g)-100);
+	const unichar_t *cur = _GGadgetGetTitle(tf); unichar_t *ret;
+	static unichar_t filter[] = { '*','.','p','e',  0 };
+
+	if ( *cur=='\0' ) cur=NULL;
+	ret = GWidgetOpenFile(GStringGetResource(_STR_CallScript,NULL), cur, filter, NULL);
+	if ( ret==NULL )
+return(true);
+	GGadgetSetTitle(tf,ret);
+	free(ret);
+    }
+return( true );
+}
+
 static int Prefs_Ok(GGadget *g, GEvent *e) {
-    int i;
+    int i, mi;
     int err=0, enc;
     struct pref_data *p;
     GWindow gw;
     const unichar_t *ret;
     int lc=-1;
     GTextInfo *ti;
+    const unichar_t *names[SCRIPT_MENU_MAX], *scripts[SCRIPT_MENU_MAX];
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	gw = GGadgetGetWindow(g);
 	p = GDrawGetUserData(gw);
+	for ( i=0; i<SCRIPT_MENU_MAX; ++i ) {
+	    names[i] = _GGadgetGetTitle(GWidgetGetControl(gw,5000+i));
+	    scripts[i] = _GGadgetGetTitle(GWidgetGetControl(gw,5100+i));
+	    if ( *names[i]=='\0' ) names[i] = NULL;
+	    if ( *scripts[i]=='\0' ) scripts[i] = NULL;
+	    if ( scripts[i]==NULL && names[i]!=NULL ) {
+		GWidgetErrorR(_STR_MenuNameWithNoScript,_STR_MenuNameWithNoScript);
+return( true );
+	    } else if ( scripts[i]!=NULL && names[i]==NULL ) {
+		GWidgetErrorR(_STR_ScriptWithNoMenuName,_STR_ScriptWithNoMenuName);
+return( true );
+	    }
+	}
+	for ( i=mi=0; i<SCRIPT_MENU_MAX; ++i ) {
+	    if ( names[i]!=NULL ) {
+		names[mi] = names[i];
+		scripts[mi] = scripts[i];
+		++mi;
+	    }
+	}
 	for ( i=0; prefs_list[i].name!=NULL; ++i ) {
 	    /* before assigning values, check for any errors */
 	    /* if any errors, then NO values should be assigned, in case they cancel */
@@ -454,6 +543,14 @@ return( true );
 	      break;
 	    }
 	}
+	for ( i=0; i<SCRIPT_MENU_MAX; ++i ) {
+	    free(script_menu_names[i]); script_menu_names[i] = NULL;
+	    free(script_filenames[i]); script_filenames[i] = NULL;
+	}
+	for ( i=0; i<mi; ++i ) {
+	    script_menu_names[i] = u_copy(names[i]);
+	    script_filenames[i] = u2def_copy(scripts[i]);
+	}
 	p->done = true;
 	SavePrefs();
     }
@@ -482,11 +579,13 @@ void DoPrefs(void) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData *gcd;
-    GTextInfo *label, **list;
+    GGadgetCreateData *pgcd, gcd[5], sgcd[40];
+    GTextInfo *plabel, **list, label[5], slabel[40];
+    GTabInfo aspects[4];
     struct pref_data p;
-    int i, gc, j, line, llen, y;
+    int i, gc, j, line, llen, y, y2;
     char buf[20];
+    static unichar_t nullstr[] = { 0 };
 
     for ( i=line=gc=0; prefs_list[i].name!=NULL; ++i ) {
 	if ( prefs_list[i].dontdisplay )
@@ -505,98 +604,179 @@ void DoPrefs(void) {
     wattrs.cursor = ct_pointer;
     wattrs.window_title = GStringGetResource(_STR_Prefs,NULL);
     pos.x = pos.y = 0;
-    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,260));
-    pos.height = GDrawPointsToPixels(NULL,line*26+45);
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,268));
+    pos.height = GDrawPointsToPixels(NULL,line*26+69);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&p,&wattrs);
 
-    gcd = gcalloc(gc+4,sizeof(GGadgetCreateData));
-    label = gcalloc(gc+4,sizeof(GTextInfo));
+    memset(sgcd,0,sizeof(sgcd));
+    memset(slabel,0,sizeof(slabel));
 
     gc = 0;
-    gcd[gc].gd.pos.x = gcd[gc].gd.pos.y = 2;
-    gcd[gc].gd.pos.width = pos.width-4; gcd[gc].gd.pos.height = pos.height-2;
-    gcd[gc].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-    gcd[gc++].creator = GGroupCreate;
+    y2=5;
 
-    for ( i=line=0, y=8; prefs_list[i].name!=NULL; ++i ) {
+    slabel[gc].text = (unichar_t *) _STR_MenuName;
+    slabel[gc].text_in_resource = true;
+    sgcd[gc].gd.label = &slabel[gc];
+    sgcd[gc].gd.popup_msg = GStringGetResource(_STR_ScriptMenuPopup,NULL);
+    sgcd[gc].gd.pos.x = 8;
+    sgcd[gc].gd.pos.y = y2;
+    sgcd[gc].gd.flags = gg_visible | gg_enabled;
+    sgcd[gc++].creator = GLabelCreate;
+
+    slabel[gc].text = (unichar_t *) _STR_ScriptFile;
+    slabel[gc].text_in_resource = true;
+    sgcd[gc].gd.label = &slabel[gc];
+    sgcd[gc].gd.popup_msg = GStringGetResource(_STR_ScriptMenuPopup,NULL);
+    sgcd[gc].gd.pos.x = 110;
+    sgcd[gc].gd.pos.y = y2;
+    sgcd[gc].gd.flags = gg_visible | gg_enabled;
+    sgcd[gc++].creator = GLabelCreate;
+
+    y2 += 14;
+
+    for ( i=0; i<SCRIPT_MENU_MAX; ++i ) {
+	sgcd[gc].gd.pos.x = 8; sgcd[gc].gd.pos.y = y2;
+	sgcd[gc].gd.flags = gg_visible | gg_enabled;
+	slabel[gc].text = script_menu_names[i]==NULL?nullstr:script_menu_names[i];
+	sgcd[gc].gd.label = &slabel[gc];
+	sgcd[gc].gd.cid = i+5000;
+	sgcd[gc++].creator = GTextFieldCreate;
+
+	sgcd[gc].gd.pos.x = 110; sgcd[gc].gd.pos.y = y2;
+	sgcd[gc].gd.flags = gg_visible | gg_enabled;
+	slabel[gc].text = (unichar_t *) (script_filenames[i]==NULL?"":script_filenames[i]);
+	slabel[gc].text_is_1byte = true;
+	sgcd[gc].gd.label = &slabel[gc];
+	sgcd[gc].gd.cid = i+5100;
+	sgcd[gc++].creator = GTextFieldCreate;
+
+	sgcd[gc].gd.pos.x = 210; sgcd[gc].gd.pos.y = y2;
+	sgcd[gc].gd.flags = gg_visible | gg_enabled;
+	slabel[gc].text = (unichar_t *) _STR_BrowseForFile;
+	slabel[gc].text_in_resource = true;
+	sgcd[gc].gd.label = &slabel[gc];
+	sgcd[gc].gd.cid = i+5200;
+	sgcd[gc].gd.handle_controlevent = Prefs_ScriptBrowse;
+	sgcd[gc++].creator = GButtonCreate;
+
+	y2 += 26;
+    }
+
+    pgcd = gcalloc(gc+4,sizeof(GGadgetCreateData));
+    plabel = gcalloc(gc+4,sizeof(GTextInfo));
+
+    gc = 0;
+    for ( i=line=0, y=5; prefs_list[i].name!=NULL; ++i ) {
 	if ( prefs_list[i].dontdisplay )
     continue;
-	label[gc].text = (unichar_t *) prefs_list[i].name;
-	label[gc].text_is_1byte = true;
-	gcd[gc].gd.label = &label[gc];
-	gcd[gc].gd.mnemonic = prefs_list[i].mn;
-	gcd[gc].gd.popup_msg = GStringGetResource(prefs_list[i].popup,NULL);
-	gcd[gc].gd.pos.x = 8;
-	gcd[gc].gd.pos.y = y + 6;
-	gcd[gc].gd.flags = gg_visible | gg_enabled;
-	gcd[gc++].creator = GLabelCreate;
+	plabel[gc].text = (unichar_t *) prefs_list[i].name;
+	plabel[gc].text_is_1byte = true;
+	pgcd[gc].gd.label = &plabel[gc];
+	pgcd[gc].gd.mnemonic = prefs_list[i].mn;
+	pgcd[gc].gd.popup_msg = GStringGetResource(prefs_list[i].popup,NULL);
+	pgcd[gc].gd.pos.x = 8;
+	pgcd[gc].gd.pos.y = y + 6;
+	pgcd[gc].gd.flags = gg_visible | gg_enabled;
+	pgcd[gc++].creator = GLabelCreate;
 
-	label[gc].text_is_1byte = true;
-	gcd[gc].gd.label = &label[gc];
-	gcd[gc].gd.mnemonic = prefs_list[i].mn;
-	gcd[gc].gd.popup_msg = GStringGetResource(prefs_list[i].popup,NULL);
-	gcd[gc].gd.pos.x = 110;
-	gcd[gc].gd.pos.y = y;
-	gcd[gc].gd.flags = gg_visible | gg_enabled;
-	gcd[gc].gd.cid = 1000+i;
+	plabel[gc].text_is_1byte = true;
+	pgcd[gc].gd.label = &plabel[gc];
+	pgcd[gc].gd.mnemonic = prefs_list[i].mn;
+	pgcd[gc].gd.popup_msg = GStringGetResource(prefs_list[i].popup,NULL);
+	pgcd[gc].gd.pos.x = 110;
+	pgcd[gc].gd.pos.y = y;
+	pgcd[gc].gd.flags = gg_visible | gg_enabled;
+	pgcd[gc].gd.cid = 1000+i;
 	switch ( prefs_list[i].type ) {
 	  case pr_bool:
-	    label[gc].text = (unichar_t *) "On";
-	    gcd[gc++].creator = GRadioCreate;
-	    gcd[gc] = gcd[gc-1];
-	    gcd[gc].gd.pos.x += 50;
-	    gcd[gc].gd.cid = 0;
-	    gcd[gc].gd.label = &label[gc];
-	    label[gc].text = (unichar_t *) "Off";
-	    label[gc].text_is_1byte = true;
+	    plabel[gc].text = (unichar_t *) "On";
+	    pgcd[gc++].creator = GRadioCreate;
+	    pgcd[gc] = pgcd[gc-1];
+	    pgcd[gc].gd.pos.x += 50;
+	    pgcd[gc].gd.cid = 0;
+	    pgcd[gc].gd.label = &plabel[gc];
+	    plabel[gc].text = (unichar_t *) "Off";
+	    plabel[gc].text_is_1byte = true;
 	    if ( *((int *) prefs_list[i].val))
-		gcd[gc-1].gd.flags |= gg_cb_on;
+		pgcd[gc-1].gd.flags |= gg_cb_on;
 	    else
-		gcd[gc].gd.flags |= gg_cb_on;
+		pgcd[gc].gd.flags |= gg_cb_on;
 	    ++gc;
 	    y += 22;
 	  break;
 	  case pr_int:
 	    sprintf(buf,"%d", *((int *) prefs_list[i].val));
-	    label[gc].text = (unichar_t *) copy( buf );
-	    gcd[gc++].creator = GTextFieldCreate;
+	    plabel[gc].text = (unichar_t *) copy( buf );
+	    pgcd[gc++].creator = GTextFieldCreate;
 	    y += 26;
 	  break;
 	  case pr_real:
 	    sprintf(buf,"%g", *((float *) prefs_list[i].val));
-	    label[gc].text = (unichar_t *) copy( buf );
-	    gcd[gc++].creator = GTextFieldCreate;
+	    plabel[gc].text = (unichar_t *) copy( buf );
+	    pgcd[gc++].creator = GTextFieldCreate;
 	    y += 26;
 	  break;
 	  case pr_encoding:
 	    if ( prefs_list[i].val==&local_encoding ) {
-		gcd[gc].gd.u.list = localencodingtypes;
-		gcd[gc].gd.label = EncodingTypesFindEnc(localencodingtypes,
+		pgcd[gc].gd.u.list = localencodingtypes;
+		pgcd[gc].gd.label = EncodingTypesFindEnc(localencodingtypes,
 			*(int *) prefs_list[i].val);
 	    } else {
-		gcd[gc].gd.u.list = GetEncodingTypes();
-		gcd[gc].gd.label = EncodingTypesFindEnc(gcd[gc].gd.u.list,
+		pgcd[gc].gd.u.list = GetEncodingTypes();
+		pgcd[gc].gd.label = EncodingTypesFindEnc(pgcd[gc].gd.u.list,
 			*(int *) prefs_list[i].val);
 	    }
-	    gcd[gc].gd.pos.width = 145;
-	    if ( gcd[gc].gd.label==NULL ) gcd[gc].gd.label = &encodingtypes[0];
-	    gcd[gc++].creator = GListButtonCreate;
+	    pgcd[gc].gd.pos.width = 145;
+	    if ( pgcd[gc].gd.label==NULL ) pgcd[gc].gd.label = &encodingtypes[0];
+	    pgcd[gc++].creator = GListButtonCreate;
 	    y += 28;
 	  break;
 	  case pr_string:
 	    if ( *((char **) prefs_list[i].val)!=NULL )
-		label[gc].text = /* def2u_*/ uc_copy( *((char **) prefs_list[i].val));
+		plabel[gc].text = /* def2u_*/ uc_copy( *((char **) prefs_list[i].val));
 	    else if ( ((char **) prefs_list[i].val)==&BDFFoundry )
-		label[gc].text = /* def2u_*/ uc_copy( "PfaEdit" );
+		plabel[gc].text = /* def2u_*/ uc_copy( "PfaEdit" );
 	    else
-		label[gc].text = /* def2u_*/ uc_copy( "" );
-	    label[gc].text_is_1byte = false;
-	    gcd[gc++].creator = GTextFieldCreate;
+		plabel[gc].text = /* def2u_*/ uc_copy( "" );
+	    plabel[gc].text_is_1byte = false;
+	    pgcd[gc++].creator = GTextFieldCreate;
 	    y += 26;
 	  break;
 	}
 	++line;
     }
+    if ( y>y2 ) y2 = y;
+
+    memset(&label,0,sizeof(label));
+    memset(&gcd,0,sizeof(gcd));
+    memset(&aspects,'\0',sizeof(aspects));
+
+    i = 0;
+
+    aspects[i].text = (unichar_t *) _STR_Generic;
+    aspects[i].selected = true;
+    aspects[i].text_in_resource = true;
+    aspects[i++].gcd = pgcd;
+
+    aspects[i].text = (unichar_t *) _STR_ScriptMenu;
+    aspects[i].text_in_resource = true;
+    aspects[i++].gcd = sgcd;
+
+    gc = 0;
+
+    gcd[gc].gd.pos.x = gcd[gc].gd.pos.y = 2;
+    gcd[gc].gd.pos.width = pos.width-4; gcd[gc].gd.pos.height = pos.height-2;
+    gcd[gc].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+    gcd[gc++].creator = GGroupCreate;
+
+    gcd[gc].gd.pos.x = 4; gcd[gc].gd.pos.y = 6;
+    gcd[gc].gd.pos.width = 260;
+    gcd[gc].gd.pos.height = y2+20+4;
+    gcd[gc].gd.u.tabs = aspects;
+    gcd[gc].gd.flags = gg_visible | gg_enabled;
+    gcd[gc++].creator = GTabSetCreate;
+
+    y = gcd[gc-1].gd.pos.y+gcd[gc-1].gd.pos.height;
 
     gcd[gc].gd.pos.x = 30-3; gcd[gc].gd.pos.y = y+5-3;
     gcd[gc].gd.pos.width = -1; gcd[gc].gd.pos.height = 0;
@@ -625,7 +805,7 @@ void DoPrefs(void) {
     if ( y!=pos.height )
 	GDrawResize(gw,pos.width,y );
 
-    for ( gc=1,i=0; prefs_list[i].name!=NULL; ++i ) {
+    for ( gc=0,i=0; prefs_list[i].name!=NULL; ++i ) {
 	if ( prefs_list[i].dontdisplay )
     continue;
 	switch ( prefs_list[i].type ) {
@@ -633,7 +813,7 @@ void DoPrefs(void) {
 	    ++gc;
 	  break;
 	  case pr_encoding: {
-	    GGadget *g = gcd[gc+1].ret;
+	    GGadget *g = pgcd[gc+1].ret;
 	    list = GGadgetGetList(g,&llen);
 	    for ( j=0; j<llen ; ++j ) {
 		if ( list[j]->text!=NULL &&
@@ -642,18 +822,18 @@ void DoPrefs(void) {
 		else
 		    list[j]->selected = false;
 	    }
-	    if ( gcd[gc+1].gd.u.list!=encodingtypes && gcd[gc+1].gd.u.list!=localencodingtypes )
-		GTextInfoListFree(gcd[gc+1].gd.u.list);
+	    if ( pgcd[gc+1].gd.u.list!=encodingtypes && pgcd[gc+1].gd.u.list!=localencodingtypes )
+		GTextInfoListFree(pgcd[gc+1].gd.u.list);
 	  } break;
 	  case pr_string: case pr_int: case pr_real:
-	    free(label[gc+1].text);
+	    free(plabel[gc+1].text);
 	  break;
 	}
 	gc += 2;
     }
 
-    free(gcd);
-    free(label);
+    free(pgcd);
+    free(plabel);
 
     GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
