@@ -59,6 +59,7 @@ struct att_dlg {
     GGadget *vsb, *cancel;
     int fh, as;
     GFont *font;
+    struct node *current;
 };
 
 static void nodesfree(struct node *node) {
@@ -79,6 +80,10 @@ return( n1->tag-n2->tag );
 }
 
 static void BuildAnchorLists(struct node *node,struct att_dlg *att,uint32 script, AnchorClass *ac) {
+    node->children = gcalloc(2,sizeof(struct node));
+    node->cnt = 1;
+    node->children[0].label = uc_copy("Not yet implemented");
+    node->children[0].parent = node;
 }
 
 static void BuildKerns2(struct node *node,struct att_dlg *att,
@@ -704,6 +709,7 @@ static void BuildTop(struct att_dlg *att) {
     }
 
     att->tables = tables;
+    att->current = tables;
 }
 
 static int _SizeCnt(struct att_dlg *att,struct node *node, int lpos) {
@@ -759,10 +765,26 @@ return( NULL );
     }
 }
 
+static struct node *NodePrev(struct att_dlg *att, struct node *node,int *depth) {
+    while ( node->parent!=NULL && node==node->parent->children ) {
+	node = node->parent;
+	--*depth;
+    }
+    if ( node->parent==NULL && node==att->tables )
+return( NULL );
+    --node;
+    while ( node->open ) {
+	node = &node->children[node->cnt-1];
+	++*depth;
+    }
+return( node );
+}
+
 static void AttExpose(struct att_dlg *att,GWindow pixmap,GRect *rect) {
     int depth, y;
     struct node *node;
     GRect r;
+    Color fg;
 
     GDrawFillRect(pixmap,rect,GDrawGetDefaultBackground(NULL));
 
@@ -774,17 +796,45 @@ static void AttExpose(struct att_dlg *att,GWindow pixmap,GRect *rect) {
     while ( node!=NULL ) {
 	r.y = y-att->as+1;
 	r.x = 5+8*depth;
+	fg = node==att->current ? 0xff0000 : 0x000000;
 	if ( node->build || node->children ) {
-	    GDrawDrawRect(pixmap,&r,0x000000);
+	    GDrawDrawRect(pixmap,&r,fg);
 	    GDrawDrawLine(pixmap,r.x+2,r.y+att->as/2,r.x+att->as-2,r.y+att->as/2,
-		    0x000000);
+		    fg);
 	    if ( !node->open )
 		GDrawDrawLine(pixmap,r.x+att->as/2,r.y+2,r.x+att->as/2,r.y+att->as-2,
-			0x000000);
+			fg);
 	}
-	GDrawDrawText(pixmap,r.x+r.width+5,y,node->label,-1,NULL,0x000000);
+	GDrawDrawText(pixmap,r.x+r.width+5,y,node->label,-1,NULL,fg);
 	node = NodeNext(node,&depth);
 	y += att->fh;
+    }
+}
+
+static void ATTChangeCurrent(struct att_dlg *att,struct node *node) {
+    int oldl = att->current->lpos, newl;
+    GRect r;
+    if ( node==NULL )
+return;
+    newl = node->lpos;
+    att->current = node;
+    r.x =0; r.width = 3000;
+    if ( newl<att->off_top || newl>=att->off_top+att->lines_page ) {
+	att->off_top = newl-att->lines_page/3;
+	if ( att->off_top<0 ) att->off_top = 0;
+	GScrollBarSetPos(att->vsb,att->off_top);
+	GDrawRequestExpose(att->v,NULL,false);
+    } else if ( newl==oldl+1 ) {
+	r.y = (oldl-att->off_top)*att->fh; r.height = 2*att->fh;
+	GDrawRequestExpose(att->v,&r,false);
+    } else if ( newl==oldl-1 ) {
+	r.y = (newl-att->off_top)*att->fh; r.height = 2*att->fh;
+	GDrawRequestExpose(att->v,&r,false);
+    } else {
+	r.y = (newl-att->off_top)*att->fh; r.height = att->fh;
+	GDrawRequestExpose(att->v,&r,false);
+	r.y = (oldl-att->off_top)*att->fh; r.height = att->fh;
+	GDrawRequestExpose(att->v,&r,false);
     }
 }
 
@@ -796,13 +846,18 @@ static void AttMouse(struct att_dlg *att,GEvent *event) {
     if ( event->type!=et_mouseup )
 return;
     l = (event->u.mouse.y/att->fh);
-    if ( event->u.mouse.y > l*att->fh+att->as )
-return;			/* Not in +/- rectangle */
     depth=0;
     node = NodeFindLPos(att->tables,l+att->off_top,&depth);
+    if ( event->u.mouse.y > l*att->fh+att->as ||
+	    event->u.mouse.x<5+8*depth ||
+	    event->u.mouse.x>=5+8*depth+att->as || node==NULL ) {
+	ATTChangeCurrent(att,node);
+return;			/* Not in +/- rectangle */
+    }
     if ( event->u.mouse.x<5+8*depth || event->u.mouse.x>=5+8*depth+att->as || node==NULL )
 return;
     node->open = !node->open;
+    att->current = node;
 
     cnt = SizeCnt(att,att->tables,0);
     GScrollBarSetBounds(att->vsb,0,cnt,att->lines_page);
@@ -870,6 +925,53 @@ static void AttResize(struct att_dlg *att,GEvent *event) {
     GDrawRequestExpose(att->gw,NULL,true);
 }
 
+static int ATTChar(struct att_dlg *att,GEvent *event) {
+    int depth = 0;
+
+    switch (event->u.chr.keysym) {
+      case GK_F1: case GK_Help:
+	help("showatt.html");
+return( true );
+      case GK_Return: case GK_KP_Enter:
+	att->current->open = !att->current->open;
+
+	att->open_cnt = SizeCnt(att,att->tables,0);
+	GScrollBarSetBounds(att->vsb,0,att->open_cnt,att->lines_page);
+
+	GDrawRequestExpose(att->v,NULL,false);
+return( true );
+      case GK_Down: case GK_KP_Down:
+	ATTChangeCurrent(att,NodeNext(att->current,&depth));
+return( true );
+      case GK_Up: case GK_KP_Up:
+	ATTChangeCurrent(att,NodePrev(att,att->current,&depth));
+return( true );
+      case GK_Left: case GK_KP_Left:
+	ATTChangeCurrent(att,att->current->parent);
+return( true );
+      case GK_Right: case GK_KP_Right:
+	if ( !att->current->open ) {
+	    att->current->open = !att->current->open;
+
+	    att->open_cnt = SizeCnt(att,att->tables,0);
+	    GScrollBarSetBounds(att->vsb,0,att->open_cnt,att->lines_page);
+	    if ( att->current->children!=NULL )
+		att->current = att->current->children;
+
+	    GDrawRequestExpose(att->v,NULL,false);
+	} else
+	    ATTChangeCurrent(att,att->current->children);
+return( true );
+      case GK_Home: case GK_KP_Home:
+	ATTChangeCurrent(att,att->tables);
+return( true );
+      case GK_End: case GK_KP_End:
+	ATTChangeCurrent(att,NodeFindLPos(att->tables,att->open_cnt-1,&depth));
+return( true );
+    }
+return( false );
+}
+
 static int attv_e_h(GWindow gw, GEvent *event) {
     struct att_dlg *att = (struct att_dlg *) GDrawGetUserData(gw);
 
@@ -883,11 +985,7 @@ return( GGadgetDispatchEvent(att->vsb,event));
 	AttExpose(att,gw,&event->u.expose.rect);
       break;
       case et_char:
-	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("showatt.html");
-return( true );
-	}
-return( false );
+return( ATTChar(att,event));
       case et_mouseup:
 	AttMouse(att,event);
       break;
@@ -907,11 +1005,7 @@ return( GGadgetDispatchEvent(att->vsb,event));
       case et_expose:
       break;
       case et_char:
-	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("showatt.html");
-return( true );
-	}
-return( false );
+return( ATTChar(att,event));
       break;
       case et_resize:
 	if ( event->u.resize.sized )
