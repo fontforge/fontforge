@@ -99,7 +99,7 @@ static int makenomenh() {
     for ( i=0; istandard[i]!=NULL; ++i )
 	inames[i] = uc_copy(istandard[i]);
 
-    in = fopen("nomen.en.c","r");
+    in = fopen("nomen-en.c","r");
     out = fopen("nomen.h","w");
     fprintf( out, "#ifndef _NOMEN_H\n" );
     fprintf( out, "#define _NOMEN_H\n" );
@@ -742,15 +742,15 @@ int main(int argc, char **argv) {
     if ( makenomenh())
 return( 1 );
 
-    /* read all nomen.??*.c files in the current directory */
+    /* read all nomen-??*.c files in the current directory */
     here = opendir(".");
     if ( here==NULL )
 return( 1 );
     while ( (file = readdir(here))!=NULL ) {
-	if ( strncmp(file->d_name,"nomen.",6)!=0 )
+	if ( strncmp(file->d_name,"nomen-",6)!=0 )
     continue;
 	len = strlen(file->d_name);
-	if ( len<strlen("nomen.en.c") )
+	if ( len<strlen("nomen-en.c") )
     continue;
 	if ( strcmp(file->d_name+len-2,".c")!=0 )
     continue;

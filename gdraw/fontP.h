@@ -27,6 +27,9 @@
 #ifndef _FONTP_H
 #define _FONTP_H
 
+#ifdef __VMS
+#include <vms_x_fix.h>
+#endif
 #ifndef X_DISPLAY_MISSING
 # include <X11/Xlib.h>		/* For XFontStruct */
 #else

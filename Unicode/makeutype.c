@@ -689,7 +689,7 @@ static void dump() {
 	    fprintf(data, "};\n" );
 	}
     }
-    fprintf( data, "static const unsigned short *const __NULL[] = {\n" );
+    fprintf( data, "static const unsigned short *const __NULLALL[] = {\n" );
     for ( j=0; j<255; ++j ) fprintf( data, "\tNULL,\n" );
     fprintf( data, "\tNULL\n};\n" );
     fprintf( data, "\nunsigned const short *const*const UnicodeCharacterNames[] = {\n" );
@@ -699,7 +699,7 @@ static void dump() {
 	if ( any )
 	    fprintf( data, "\t__%04x%s\n", i, i==0xff00?"":"," );
 	else
-	    fprintf( data, "\t__NULL%s\n", i==0xff00?"":"," );
+	    fprintf( data, "\t__NULLALL%s\n", i==0xff00?"":"," );
     }
     fprintf( data, "};\n" );
     fclose( data );

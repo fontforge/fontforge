@@ -196,11 +196,11 @@ static int CheckLangDir(char *full,int sizefull,char *dir, const char *loc) {
     if ( loc==NULL || dir==NULL )
 return(false);
 
-    strcpy(buffer,"pfaedit.");
+    strcpy(buffer,"pfaedit-");
     strcat(buffer,loc);
     strcat(buffer,".ui");
 
-    /*first look for full locale string (pfaedit.en_us.iso8859-1.ui) */
+    /*first look for full locale string (pfaedit-en_us.iso8859-1.ui) */
     GFileBuildName(dir,buffer,full,sizefull);
     /* Look for language_territory */
     if ( GFileExists(full))

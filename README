@@ -23,6 +23,10 @@ BUILDING
 	$ configure
 	$ make pfaedit
 
+BUILDING for OpenVMS
+    Jouk Jansen has provided me with OpenVMS makefile scripts. There should
+    be mms files in all the appropriate directories.
+
 NOTE:
     During the beta process I have the program linked with static versions of
     libgdraw and libgunicode. I intend to link with the dynamic ones once

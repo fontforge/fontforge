@@ -1290,9 +1290,10 @@ return( NULL );
     wattrs.event_masks = -1;
     wattrs.cursor = ct_pointer;
     /*wattrs.icon = icon;*/
-    pos.x = pos.y = 0;
     pos.width = 600;
     pos.height = 400;
+    pos.x = GGadgetScale(104)+6;
+    DefaultY(&pos);
     sv->gw = gw = GDrawCreateTopWindow(NULL,&pos,sv_e_h,sv,&wattrs);
     SVSetTitle(sv);
 

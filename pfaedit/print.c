@@ -152,10 +152,14 @@ static void dump_prologue(PI *pi) {
 	    "Clean7Bit":"Binary" );
 /* Can all be commented out if no pwd routines */
     pwd = getpwuid(getuid());
+#ifdef __VMS
+    if ( pwd!=NULL && pwd->pw_name!=NULL && *pwd->pw_name!='\0' )
+#else
     if ( pwd!=NULL && pwd->pw_gecos!=NULL && *pwd->pw_gecos!='\0' )
 	fprintf( pi->out, "%%%%For: %s\n", pwd->pw_gecos );
     else if ( pwd!=NULL && pwd->pw_name!=NULL && *pwd->pw_name!='\0' )
-	fprintf( pi->out, "%%%%For: %s\n", pwd->pw_name );
+#endif
+        fprintf( pi->out, "%%%%For: %s\n", pwd->pw_name );
     else if ( (pt=getenv("USER"))!=NULL )
 	fprintf( pi->out, "%%%%For: %s\n", pt );
     endpwent();

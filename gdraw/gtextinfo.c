@@ -409,13 +409,13 @@ static unichar_t fileexists[] = { 'F','i','l','e',' ','E','x','i','s','t','s',  
 static unichar_t fileexistspre[] = { 'F','i','l','e',',',' ',  '\0' };
 static unichar_t fileexistspost[] = { ',',' ','e','x','i','s','t','s','.',' ','R','e','p','l','a','c','e',' ','i','t','?',  '\0' };
 static unichar_t createdir[] = { 'C','r','e','a','t','e',' ','d','i','r','e','c','t','o','r','y','.','.','.',  '\0' };
-static unichar_t dirname[] = { 'D','i','r','e','c','t','o','r','y',' ','n','a','m','e','?',  '\0' };
+static unichar_t dirname_[] = { 'D','i','r','e','c','t','o','r','y',' ','n','a','m','e','?',  '\0' };
 static unichar_t couldntcreatedir[] = { 'C','o','u','l','d','n','\'','t',' ','c','r','e','a','t','e',' ','d','i','r','e','c','t','o','r','y',  '\0' };
 static unichar_t selectall[] = { 'S','e','l','e','c','t',' ','A','l','l',  '\0' };
 static unichar_t none[] = { 'N','o','n','e',  '\0' };
 static const unichar_t *deffall[] = { lang, ok, cancel, _open, save, filter, new,
 	replace, fileexists, fileexistspre, fileexistspost, createdir,
-	dirname, couldntcreatedir, selectall, none, NULL };
+	dirname_, couldntcreatedir, selectall, none, NULL };
 static const unichar_t deffallmn[] = { 0, 'O', 'C', 'O', 'S', 'F', 'N', 'R', 0, 0, 0, 'A', 'N' };
 static const int deffallint[] = { 55, 100 };
 

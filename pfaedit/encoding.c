@@ -503,7 +503,7 @@ static struct cidmap *cidmaps = NULL;
 int CID2NameEnc(struct cidmap *map,int cid, char *buffer, int len) {
     int enc = -1;
 
-#ifdef _NO_SNPRINTF
+#if defined( _NO_SNPRINTF ) || defined( __VMS )
     if ( map==NULL )
 	sprintf(buffer,"cid_%d", cid);
     else if ( cid<map->namemax && map->name[cid]!=NULL )
@@ -752,7 +752,7 @@ return( maybe );
 
     if ( file==NULL ) {
 	unichar_t *uret;
-#ifdef _NO_SNPRINTF
+#if defined( _NO_SNPRINTF ) || defined( __VMS )
 	sprintf(buf,"%s-%s-*.cidmap", registry, ordering );
 #else
 	snprintf(buf,sizeof(buf),"%s-%s-*.cidmap", registry, ordering );

@@ -29,6 +29,9 @@
 #include <string.h>
 #include <dirent.h>
 
+#ifdef __VMS
+# include <vms_x_fix.h>
+#endif
 #ifndef X_DISPLAY_MISSING
 # include <X11/Xatom.h>
 #else

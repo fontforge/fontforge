@@ -38,7 +38,7 @@ LIBS = -L../libs $(X_LIBS) ../libs/libgdraw.a ../libs/libgunicode.a \
     $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS) @LIBS@ $(STATIC_LIBS) -lm
 DLIBS = ../libs/libgunicode.a -lm
 
-all: pfaedit.en.ui pfaedit sfddiff
+all: pfaedit-en.ui pfaedit sfddiff
 
 pfaedit: nomen.h $(pfaedit_OBJECTS)
 	$(CC) -o pfaedit $(pfaedit_OBJECTS) $(LIBS)
@@ -48,14 +48,14 @@ sfddiff: $(DIFFOBJS)
 
 #this makes all the .ui files but wildcarding doesn't work too well if the
 # files don't exist.
-nomen.h pfaedit-ui.c pfaedit.en.ui: $(srcdir)/nomen.*.c makenomenh.c
+nomen.h pfaedit-ui.c pfaedit-en.ui: $(srcdir)/nomen-*.c makenomenh.c
 	$(CC) -o makenomenh $(CFLAGS) $(srcdir)/makenomenh.c $(LIBS)
-	-ln -s $(srcdir)/nomen.*.c .
+	-ln -s $(srcdir)/nomen-*.c .
 	./makenomenh
-	mv pfaedit-ui.en.c pfaedit-ui.c
+	mv pfaedit-ui-en.c pfaedit-ui.c
 
 clean:
-	-rm -f *.o pfaedit *.ui nomen.h pfaedit-ui.c makenomenh _nomen.*.c sfddiff
+	-rm -f *.o pfaedit *.ui nomen.h pfaedit-ui.c makenomenh _nomen-*.c sfddiff
 
 distclean cleaner: clean
 	-rm -f Makefile

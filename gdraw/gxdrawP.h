@@ -27,6 +27,9 @@
 #ifndef _XDRAW_H
 #define _XDRAW_H
 
+#ifdef __VMS
+#include <vms_x_fix.h>
+#endif
 #ifndef X_DISPLAY_MISSING
 # include <X11/X.h>
 # include <X11/Xlib.h>

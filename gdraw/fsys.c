@@ -32,7 +32,7 @@
 #include <sys/stat.h>		/* for mkdir */
 #include <unistd.h>
 
-static char dirname[1024];
+static char dirname_[1024];
 
 char *GFileGetAbsoluteName(char *name, char *result, int rsiz) {
     /* result may be the same as name */
@@ -41,10 +41,10 @@ char *GFileGetAbsoluteName(char *name, char *result, int rsiz) {
     if ( *name!='/' ) {
 	char *pt, *spt, *rpt, *bpt;
 
-	if ( dirname[0]=='\0' ) {
-	    getcwd(dirname,sizeof(dirname));
+	if ( dirname_[0]=='\0' ) {
+	    getcwd(dirname_,sizeof(dirname_));
 	}
-	strcpy(buffer,dirname);
+	strcpy(buffer,dirname_);
 	if ( buffer[strlen(buffer)-1]!='/' )
 	    strcat(buffer,"/");
 	strcat(buffer,name);
@@ -221,10 +221,10 @@ unichar_t *u_GFileGetAbsoluteName(unichar_t *name, unichar_t *result, int rsiz) 
     if ( *name!='/' ) {
 	unichar_t *pt, *spt, *rpt, *bpt;
 
-	if ( dirname[0]=='\0' ) {
-	    getcwd(dirname,sizeof(dirname));
+	if ( dirname_[0]=='\0' ) {
+	    getcwd(dirname_,sizeof(dirname_));
 	}
-	uc_strcpy(buffer,dirname);
+	uc_strcpy(buffer,dirname_);
 	if ( buffer[u_strlen(buffer)-1]!='/' )
 	    uc_strcat(buffer,"/");
 	u_strcat(buffer,name);

@@ -756,9 +756,13 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
     dumpf(dumpchar,data,"%%%%CreationDate: %s", ctime(&now));
 /* Can all be commented out if no pwd routines */
     pwd = getpwuid(getuid());
+#ifndef __VMS
     if ( pwd!=NULL && pwd->pw_gecos!=NULL && *pwd->pw_gecos!='\0' )
 	dumpf(dumpchar,data,"%%%%Creator: %s\n", pwd->pw_gecos);
     else if ( pwd!=NULL && pwd->pw_name!=NULL && *pwd->pw_name!='\0' )
+#else
+    if ( pwd!=NULL && pwd->pw_name!=NULL && *pwd->pw_name!='\0' )
+#endif
 	dumpf(dumpchar,data,"%%%%Creator: %s\n", pwd->pw_name);
     else if ( (pt=getenv("USER"))!=NULL )
 	dumpf(dumpchar,data,"%%%%Creator: %s\n", pt);

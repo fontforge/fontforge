@@ -1263,9 +1263,13 @@ SplineFont *SplineFontBlank(int encoding_name,int charcnt) {
     sf->weight = copy("Medium");
 /* Can all be commented out if no pwd routines */
     pwd = getpwuid(getuid());
+#ifndef __VMS
     if ( pwd!=NULL && pwd->pw_gecos!=NULL && *pwd->pw_gecos!='\0' )
 	sprintf( buffer, "Created by %.50s with PfaEdit 1.0 (http://pfaedit.sf.net)", pwd->pw_gecos );
     else if ( pwd!=NULL && pwd->pw_name!=NULL && *pwd->pw_name!='\0' )
+#else
+    if ( pwd!=NULL && pwd->pw_name!=NULL && *pwd->pw_name!='\0' )
+#endif
 	sprintf( buffer, "Created by %.50s with PfaEdit 1.0 (http://pfaedit.sf.net)", pwd->pw_name );
     else if ( (pt=getenv("USER"))!=NULL )
 	sprintf( buffer, "Created by %.50s with PfaEdit 1.0 (http://pfaedit.sf.net)", pt );
