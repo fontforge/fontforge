@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 1-Apr-2003 -->
+  <!-- AP: Last modified: 4-Apr-2003 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -1050,6 +1050,33 @@ ApplySubstitution("*","*","vrt2")
     controlling whether flipped references should be unlinked before the
     CorrectDirection code runs. If the argument is not present, or if it has
     a non-zero value then flipped references will be unlinked.
+  <DT>
+    DefaultATT(tag)
+  <DD>
+    For all selected characters make a guess as to what might be an appropriate
+    value for the given tag. If the tag is "*" then PfaEdit will apply guesses
+    for all features it can.
+  <DT>
+    AddATT(type,script-lang,tag,flags,variant)<BR>
+    AddATT("Position",script-lang,tag,flags,xoff,yoff,h_adv_off,v_adv_off)
+  <DD>
+    Allows you to add an Advanced Typography feature to a single selected character.
+    The first argument may be either: Position, Substitution, AltSubs, MultSubs
+    or Ligature. The second argument should be a script-lang list where each
+    4-character script name is followed by a comma seperated list of 4 character
+    language names (with the languages enclosed in curly braces). As:<BR>
+    <CODE>&nbsp; &nbsp; grek{dflt} latn{dflt,VIT ,ROM }</CODE><BR>
+    The third arg should be a 4 character opentype feature tag. The fourth argument
+    should be the otf flags (or -1 to make PfaEdit guess appropriate flags).
+    The remaining argument(s) vary depending on the value of the first (type)
+    argument. For Position tags there are 4 integral arguments which specify
+    how this feature modifies the metrics of this character. For substitution
+    tags the fifth argument is the name of another glyph which will replace the
+    current one. For an AltSubs tag the argument is a space seperated list of
+    glyph names any of which will replace the current one. For a MultSubs the
+    argument is a space seperated list of names all of which will replace the
+    current one. For a Ligature the argument is a space seperated list of glyph
+    names all of which will be replaced by the current glyph.
   <DT>
     BuildComposit()
   <DD>

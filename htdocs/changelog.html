@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 1-Apr-2003 -->
+  <!-- AP: Last modified: 4-Apr-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,50 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    ??-Apr-2003
+    <UL>
+      <LI>
+	autosave sometimes lost track of which font it should be applying changes
+	to.t
+      <LI>
+	Add Extrema (or just adding a point in the middle of a spline) would generate
+	incorrect splines if the spline were linear in one but not both of the two
+	dimensions
+      <LI>
+	One more change to Merge/Simplify. Deal with the case of a curve point with
+	no control point (use the control point in the opposite direction to get
+	the slope).
+      <LI>
+	Typo in 2-Apr script/lang fix caused crashes.
+      <LI>
+	TeXBaseEncoding (T1) changed in Oct-2002. Updated my version (also updated
+	the other TeX encodings I've got and included the cyrillic ones into
+	Encodings.ps.gz)
+      <LI>
+	Sometimes we failed to remove the dot when creating a dotless i/j character.
+      <LI>
+	Merge/Simplify had caniptions when given a zero length spline.
+      <LI>
+	Added "DefaultATT" and "AddATT" scripting command to allow user to add Advanced
+	Typography features to characters.
+    </UL>
+  <LI>
+    2-Apr-2003
+    <UL>
+      <LI>
+	Problems with script/lang when: Pasting or Merging ligatures and substitutions
+	from one font to another
+      <LI>
+	PfaEdit could generate points (within a ttf simple glyph) in a different
+	than the original glyph, meaning that the instructions would move the wrong
+	point resulting in blots. I have fixed this (or at least the cases I found).
+      <LI>
+	PfaEdit would always give ASCII characters their standard names in a ttf
+	post table. This was wrong if the character did not have its standard name.
+      <LI>
+	PfaEdit could go into an infinite loop on some simplifies.
+    </UL>
   <LI>
     1-Apr-2003 (April Fish!)
     <UL>
