@@ -483,6 +483,7 @@ typedef struct fontview {
 	/*  maximized for example), but we depend on the resize request to    */
 	/*  fix up the window. We do get a configure notify, but the window   */
 	/*  stays the same size, so kludge things */
+    unsigned int glyphlabel: 2;
     int16 magnify;
     SplineFont *cidmaster;
     int32 *mapping;	/* an array mapping grid cells (0=upper left) to font indeces (enc, 0=NUL) */
