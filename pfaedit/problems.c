@@ -2313,7 +2313,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData pgcd[13], pagcd[7], hgcd[9], rgcd[7], cgcd[5], mgcd[10], agcd[6], rfgcd[5];
+    GGadgetCreateData pgcd[13], pagcd[7], hgcd[9], rgcd[7], cgcd[5], mgcd[11], agcd[6], rfgcd[5];
     GTextInfo plabel[13], palabel[7], hlabel[9], rlabel[7], clabel[5], mlabel[10], alabel[6], rflabel[5];
     GTabInfo aspects[8];
     struct problems p;
@@ -2560,8 +2560,8 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rflabel[2].text = (unichar_t *) rmax;
     rflabel[2].text_is_1byte = true;
     rfgcd[2].gd.label = &rflabel[2];
-    rfgcd[2].gd.pos.x = 105; rfgcd[2].gd.pos.y = rfgcd[1].gd.pos.y-3;
-    rfgcd[2].gd.pos.width = 50; 
+    rfgcd[2].gd.pos.x = 140; rfgcd[2].gd.pos.y = rfgcd[1].gd.pos.y-3;
+    rfgcd[2].gd.pos.width = 40; 
     rfgcd[2].gd.flags = gg_visible | gg_enabled;
     rfgcd[2].gd.popup_msg = GStringGetResource(_STR_RefsDeeperThanPopup,NULL);
     rfgcd[2].gd.cid = CID_RefDepthMax;
@@ -2887,30 +2887,37 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     mgcd[5].gd.cid = CID_Near;
     mgcd[5].creator = GTextFieldCreate;
 
-    mgcd[6].gd.pos.x = 15-3; mgcd[6].gd.pos.y = mgcd[5].gd.pos.y+26;
-    mgcd[6].gd.pos.width = -1; mgcd[6].gd.pos.height = 0;
-    mgcd[6].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    mlabel[6].text = (unichar_t *) _STR_OK;
+    mlabel[6].text = (unichar_t *) _STR_EmUnits;
     mlabel[6].text_in_resource = true;
-    mgcd[6].gd.mnemonic = 'O';
     mgcd[6].gd.label = &mlabel[6];
-    mgcd[6].gd.handle_controlevent = Prob_OK;
-    mgcd[6].creator = GButtonCreate;
+    mgcd[6].gd.pos.x = mgcd[5].gd.pos.x+mgcd[5].gd.pos.width+4; mgcd[6].gd.pos.y = mgcd[4].gd.pos.y;
+    mgcd[6].gd.flags = gg_visible | gg_enabled;
+    mgcd[6].creator = GLabelCreate;
 
-    mgcd[7].gd.pos.x = -15; mgcd[7].gd.pos.y = mgcd[6].gd.pos.y+3;
+    mgcd[7].gd.pos.x = 15-3; mgcd[7].gd.pos.y = mgcd[5].gd.pos.y+26;
     mgcd[7].gd.pos.width = -1; mgcd[7].gd.pos.height = 0;
-    mgcd[7].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    mlabel[7].text = (unichar_t *) _STR_Cancel;
+    mgcd[7].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    mlabel[7].text = (unichar_t *) _STR_OK;
     mlabel[7].text_in_resource = true;
+    mgcd[7].gd.mnemonic = 'O';
     mgcd[7].gd.label = &mlabel[7];
-    mgcd[7].gd.mnemonic = 'C';
-    mgcd[7].gd.handle_controlevent = Prob_Cancel;
+    mgcd[7].gd.handle_controlevent = Prob_OK;
     mgcd[7].creator = GButtonCreate;
 
-    mgcd[8].gd.pos.x = 2; mgcd[8].gd.pos.y = 2;
-    mgcd[8].gd.pos.width = pos.width-4; mgcd[8].gd.pos.height = pos.height-2;
-    mgcd[8].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-    mgcd[8].creator = GGroupCreate;
+    mgcd[8].gd.pos.x = -15; mgcd[8].gd.pos.y = mgcd[7].gd.pos.y+3;
+    mgcd[8].gd.pos.width = -1; mgcd[8].gd.pos.height = 0;
+    mgcd[8].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    mlabel[8].text = (unichar_t *) _STR_Cancel;
+    mlabel[8].text_in_resource = true;
+    mgcd[8].gd.label = &mlabel[8];
+    mgcd[8].gd.mnemonic = 'C';
+    mgcd[8].gd.handle_controlevent = Prob_Cancel;
+    mgcd[8].creator = GButtonCreate;
+
+    mgcd[9].gd.pos.x = 2; mgcd[9].gd.pos.y = 2;
+    mgcd[9].gd.pos.width = pos.width-4; mgcd[9].gd.pos.height = pos.height-2;
+    mgcd[9].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+    mgcd[9].creator = GGroupCreate;
 
     GGadgetsCreate(gw,mgcd);
 
