@@ -309,6 +309,7 @@ int main( int argc, char **argv ) {
     FontRequest rq;
     static unichar_t times[] = { 't', 'i', 'm', 'e', 's',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t', '\0' };
     int ds, ld;
+    int next_recent=0;
 
 #if __Mac
     fprintf( stderr, "Copyright (c) 2000-2003 by George Williams.\n Executable based on sources from %s.\n",
@@ -440,6 +441,10 @@ int main( int argc, char **argv ) {
 	    MenuNewComposition(NULL,NULL,NULL);
 	    any = 1;
 #endif
+	} else if ( strcmp(pt,"-last")==0 ) {
+	    if ( next_recent<RECENT_MAX && RecentFiles[next_recent]!=NULL )
+		if ( ViewPostscriptFont(RecentFiles[next_recent++]))
+		    any = 1;
 	} else if ( strcmp(pt,"-sync")==0 || strcmp(pt,"-memory")==0 ||
 		strcmp(pt,"-nosplash")==0 || strcmp(pt,"-recover=none")==0 ||
 		strcmp(pt,"-recover=clean")==0 || strcmp(pt,"-recover=auto")==0 )
