@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Dec-2000 -->
-  <!-- AP: Last modified: 5-Feb-2004 -->
+  <!-- AP: Last modified: 24-Feb-2004 -->
   <TITLE>The File Menu</TITLE>
 </HEAD>
 <BODY>
@@ -222,12 +222,12 @@
     <A NAME="Export">Export</A>...
   <DD>
     In the Outline view this allows you to export the splines that make up the
-    character into an encapsulated postscript (.eps), svg or xfig format (.fig
-    -- the conversion to fig format is not the best) file. You may also have
-    the character rasterized and output in either .xbm or .bmp formats (PfaEdit
-    will prompt you for a pixelsize. bmp also allows you to generate an anti-aliased
-    image, and you will be prompted for bits per pixel. 1 bit per pixel is a
-    bitmap).
+    character into an encapsulated postscript (.eps), pdf, svg or xfig format
+    (.fig -- the conversion to fig format is not the best) file. You may also
+    have the character rasterized and output in either .xbm or .bmp (or png if
+    you have that library) formats (PfaEdit will prompt you for a pixelsize.
+    bmp also allows you to generate an anti-aliased image, and you will be prompted
+    for bits per pixel. 1 bit per pixel is a bitmap).
     <P>
     In the Bitmap view this allows you to export the current character as either
     a .xbm or a .bmp (always as a bitmap) file.
@@ -257,6 +257,10 @@
     number will be loaded and placed in the appropriate place. Files named "enc*"
     or "cid*" are handled similarly except that they specify the current encoding
     (and the number must be in decimal rather than hex).
+    <P>
+    If you are editing a <A HREF="multilayer.html">multi-layered font</A> (and
+    have a version of PfaEdit configured for it) then you can also import an
+    image into one of the foreground layers.
     <P>
     <SMALL>PfaEdit does best when given <A NAME="bitmapfiles">bitmap</A> images.
     It will grey out the foreground and make the background transparent. It will

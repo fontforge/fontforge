@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 8-Feb-2004 -->
+  <!-- AP: Last modified: 24-Feb-2004 -->
   <TITLE>PfaEdit -- An outline font editor for PostScript&reg;, TrueType and
   OpenType fonts</TITLE>
 </HEAD>
@@ -344,15 +344,16 @@ What is a postscript font? What is a bitmap font?
 <P>
 Each character (or to be more precise, each glyph) in a font has a shape
 and there are various ways of describing that shape on a computer. Postscript
-fonts generally describe the outline of the shape and then color in the interior
-of that outline, this coloring process is called rasterizing. On the other
-hand a bitmap font describes each character by drawing a picture of that
-character on a rectangular grid of pixels. There is a third type, a stroked
-font, where each stem of the character is represented by one line down the
-center of the stem, and the line is later drawn with a certain width. We
-will not deal with stroked fonts directly (the
+and truetype fonts generally describe the outline of the shape and then color
+in the interior of that outline, this coloring process is called rasterizing.
+On the other hand a bitmap font describes each character by drawing a picture
+of that character on a rectangular grid of pixels. There is a third type,
+a stroked font, where each stem of the character is represented by one line
+down the center of the stem, and the line is later drawn with a certain width.
+Most of the time we will not deal with stroked fonts directly (the
 <A HREF="elementmenu.html#Expand">Expand Stroke</A> command can be used to
-turn them into outlines).
+turn them into outlines), but if you wish to edit stroked fonts, see the
+section on <A HREF="multilayer.html">multi-layered editing</A>.
 <TABLE BORDER CELLPADDING="2">
   <TR>
     <TD><P ALIGN=Center>
@@ -369,10 +370,10 @@ turn them into outlines).
   </TR>
 </TABLE>
 <P>
-An outline is composed of a set of paths. In the picture on the above left
-the letter A is described by three different paths. The main one is on the
-outside and the two smaller ones are internal. Each of these paths is composed
-of a series of splines and line segments. Each cubic
+An outline is composed of a set of contours or paths. In the picture on the
+above left the letter A is described by three different paths. The main one
+is on the outside and the two smaller ones are internal. Each of these paths
+is composed of a series of splines and line segments. Each cubic
 <A NAME="spline">spline</A> is defined by four points, two of which mark
 the end points of the spline and two more to describe the slope of the spline
 at those end points. Here are <A HREF="bezier.html">two splines</A> with
@@ -407,10 +408,10 @@ can also edit <A NAME="quadratic">quadratic</A> splines (these are the splines
 used in truetype fonts), here there is only one control point, and it controls
 the slopes at both end-points. Because of this quadratic splines cannot bend
 in as many ways as cubic splines (the first spline above left would need
-two quadratic splines to draw), and you will often need more splines to achieve
-the same curve. You can control whether a font contains cubic or quadratic
-splines with the <A HREF="fontinfo.html#PS-General">Element-&gt;Font Info
-</A>command.
+at least two quadratic splines to draw), and you will often need more splines
+to achieve the same curve. You can control whether a font contains cubic
+or quadratic splines with the
+<A HREF="fontinfo.html#PS-General">Element-&gt;Font Info </A>command.
 <P>
 A path is closed when it comes back and joins its start. All paths in an
 outline font should be closed. Once a path is closed in may be said to have
@@ -418,8 +419,9 @@ a direction, essentially this may be thought of as "Was the path created
 in a clockwise or a counter-clockwise fashion?" (this is actually a little
 simplistic, if a path intersects itself, as in a figure 8, then the direction
 cannot be described as either clockwise or counter-clockwise, but most paths
-do not self-intersect and we will simplify our life by pretending that we
-can call paths clockwise or counter).
+do not self-intersect (and paths in a font SHOULD not self-intersect) and
+we will simplify our life by pretending that we can call paths clockwise
+or counter).
 <P>
 When time comes to draw our outline character we want to make dark everything
 in the interior of the outline. But let's look at the outline of our A above.
@@ -444,9 +446,13 @@ rounds to the nearest integer when generating a font file.
 <P>
 The horizontal distance between the origin and the leftmost edge of the character
 is called the left side bearing (it may be negative, positive or zero). All
-characters have a width, this is the distance from the current character's
-origin to the origin of the next character. The distance between the right
-edge of the character and the width is called the right side bearing.
+characters have a width (sometimes called an advance width), this is the
+distance from the current character's origin to the origin of the next character.
+The distance between the right edge of the character and the width is called
+the right side bearing.
+<P>
+CJK text (Chinese, Japanese or Korean) is often written vertically, and so
+CJK fonts also have a vertical advance width.
 <P>
 A character like "g" or "y" extends below the baseline, this is called a
 descender, while a character like "k" or "l" extends above it, this is called
@@ -472,7 +478,7 @@ of the final size at which the font will be draw. By convention in postscript
 the sum of the ascent and descent is 1000 units, while in TrueType it is
 usually a power of two, often 2048.
 <H3>
-  <A NAME="PT">TrueType</A> vs. PostScript vs OpenType fonts
+  <A NAME="PT">TrueType</A> vs. PostScript vs OpenType vs SVG fonts
 </H3>
 <P>
 PfaEdit can produce both TrueType and PostScript fonts. What's the difference?
@@ -496,10 +502,39 @@ while TrueType calls it "Instructing" a font.
 <P>
 What's OpenType?
 <P>
-Open Type is just a postscript font put into a truetype format -- It looks
-like a truetype font except that the outline descriptions are postscript
-Type2 font descriptions rather than TrueType. (Actually any truetype font
-can be called an OpenType font. OpenType is a superset of TrueType)
+Open Type is just a postscript font put into a truetype format -- From the
+outside it looks like a truetype font except that the outline descriptions
+are postscript Type2 font descriptions rather than TrueType. (Actually any
+truetype font can be called an OpenType font. OpenType is a superset of TrueType)
+<P>
+What's SVG?
+<P>
+SVG (Scalable Vector Graphics) provides a relatively new font format, written
+in an xml dialect. SVG fonts can be either cubic or quadratic (or can use
+both, but PfaEdit is limited and will force a font to be either all cubic
+or all quadratic). SVG allows for two different types of fonts, one corresponds
+roughly to PostScript Type1 fonts, and the other, roughly to PostScript Type3
+fonts (except that images are not allowed in svg fonts -- or I haven't figured
+them out if they are).
+<P>
+What are Type3 fonts?
+<P>
+Back in the early days of PostScript, the Type1 format was proprietary, only
+Adobe could make Type1 fonts, but anyone could make Type3 fonts. Type3 fonts
+were unhinted, but could include any postscript command and so could produce
+a wider range of pictures (multi-colored glyphs, stroked glyphs, glyphs based
+on scaled images, etc.). Most of the time these extensions are unnecessary,
+and the disadvantage of being unhinted is onerous. If you compile PfaEdit
+with multilayer set you will be able to create type3 fonts.
+<P>
+What are Type1 fonts?
+<P>
+These are the standard PostScript fonts.
+<P>
+What are Type2 fonts?
+<P>
+These use a slightly different internal format to express the same information
+as type1.
 <H3>
   <A NAME="Hints">Hints</A>
 </H3>
@@ -713,7 +748,7 @@ and none of the other references may have any hints at all.
 </H3>
 <P>
 A script is a collection of letter shapes and rules for putting letters togther.
-For instance latin is a script consisting for the letters A-Z, writen left
+For instance latin is a script consisting for the letters A-Z, written left
 to right, along with a transformation from upper to lower case in most instances,
 a few ligatures and rules for generating accents. Arabic is a script consisting
 of its own character set, written right to left, along with transformations
@@ -758,7 +793,7 @@ different area), instead it provides information with the
 do the composition.
 <P>
 The example above is unlikely to be very useful since most latin fonts contain
-pre-composed a grave characters, but the same concepts apply to arabic and
+pre-composed a-grave characters, but the same concepts apply to arabic and
 hebrew where the number of varients is larger and the precomposed characters
 fewer.
 <P>
@@ -821,11 +856,12 @@ Anchor points may be selected, dragged, transformed, cut, copied and pasted.
   <A NAME="FontView">Font View</A>
 </H3>
 <P>
-The font view displays all the characters in the font (or all that will fit
-in the window). Every line has two parts, at the top are small clear letters,
-underneath that, somewhat larger is a 24 pixel rasterization of the font
-you have designed. As you edit a character in an <A HREF="#CharView">outline
-character view</A> its small version in the font view will change with it.
+The <A HREF="fontview.html">font view</A> displays all the characters in
+the font (or all that will fit in the window). Every line has two parts,
+at the top are small clear letters, underneath that, somewhat larger is a
+24 pixel rasterization of the font you have designed. As you edit a character
+in an <A HREF="#CharView">outline character view</A> its small version in
+the font view will change with it.
 <P>
 Double-clicking on a character will bring up an outline character view of
 that character which will allow you to edit it.
@@ -848,9 +884,9 @@ Another Wadalab font encapsulated in a CID keyed font
   <A NAME="CharView">Outline Character View</A>
 </H3>
 <P>
-The outline view is probably the most complex view in PfaEdit. This is where
-you actually edit the postscript splines (<A HREF="bezier.html">B&eacute;zier
-splines</A>).
+The <A HREF="charview.html">outline view</A> is probably the most complex
+view in PfaEdit. This is where you actually edit the splines
+(<A HREF="bezier.html">B&eacute;zier splines</A>) that make up your glyphs.
 <P>
 You may have a background image loaded into the view to help you trace out
 the shape you are working on (it is displayed in grey). There are various
@@ -873,8 +909,8 @@ what layers (foreground, background, grid, hints) are visible and editable.
   <A NAME="BitmapView">Bitmap View</A>
 </H3>
 <P>
-This is similar to the outline view above. It also has a tools and layer
-palette.
+The <A HREF="bitmapview.html">bitmap view</A> is similar to the outline view
+above. It also has a tools and layer palette.
 <P>
 This allows you to edit bitmap versions of the outline characters you create
 above.
@@ -890,7 +926,8 @@ your bitmap character.
   <A NAME="MetricsView">Metrics View</A>
 </H3>
 <P>
-Allows you to see how the characters look together.
+The <A HREF="metricsview.html">metrics view</A> allows you to see how the
+characters look together.
 <P>
 You can change the width and left/right bearings of a character, either by
 dragging in the upper part of the window or by entering an appropriate number
@@ -900,10 +937,13 @@ You can also provide kerning information for any two adjacent characters.
 <P>
 <IMG SRC="MetricsView.png" WIDTH="478" HEIGHT="323">
 <P>
-Note that in Hebrew, or Arabic (or any other right to left alphabet) the
-characters will start on the right and run to the left.
+<IMG SRC="VerticalMetrics.png" WIDTH="270" HEIGHT="573" ALIGN="Right">Note
+that in Hebrew, or Arabic (or any other right to left alphabet) the characters
+will start on the right and run to the left. While in CJK fonts you may want
+to see things aranged vertically.
 <P>
 <IMG SRC="HebrewMetrics.png" WIDTH="511" HEIGHT="323">
+<P>
 <P>
 <P ALIGN=Center>
 -- <A HREF="editexample.html">Next</A> --

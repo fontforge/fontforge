@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 12-Feb-2004 -->
+  <!-- AP: Last modified: 21-Feb-2004 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -556,6 +556,8 @@ a[4][0] = "Nested array";
       <LI>
 	mm.pfb (multiple master font in binary format)
       <LI>
+	pt3 (type 3)
+      <LI>
 	ps (type 0)
       <LI>
 	cid (non-otf cid font)
@@ -752,6 +754,12 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
       <LI>
 	eps -- the selected characters will have their splines output into eps files.
 	The files will be named "&lt;glyph-name&gt;_&lt;font-name&gt;.eps".
+      <LI>
+	pdf -- the selected characters will have their splines output into pdf files.
+	The files will be named "&lt;glyph-name&gt;_&lt;font-name&gt;.pdf".
+      <LI>
+	svg -- the selected characters will have their splines output into svg files.
+	The files will be named "&lt;glyph-name&gt;_&lt;font-name&gt;.svg".
       <LI>
 	fig -- the selected characters will have their splines converted (badly)
 	into xfig files. The files will be named

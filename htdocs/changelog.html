@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 11-Feb-2004 -->
+  <!-- AP: Last modified: 24-Feb-2004 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,38 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    ???
+    <UL>
+      <LI>
+	Remove the AddHint command and replace it with AddHHint and AddVHint.
+      <LI>
+	PfaEdit would crash when generating a mac family with NFNT bitmaps.
+      <LI>
+	Added support of exporting a character into PDF format.
+      <LI>
+	Oh dear, I was figuring out hintmasks in the wrong direction (because PS
+	splines get reversed before output, so I now reverse them during the hintmask
+	calculation too).
+      <LI>
+	At Werner's suggestion, added code to show what hints are currently active
+	at a point.
+      <LI>
+	At Werner's suggestion added code to show what points are affected by a hintmask
+      <LI>
+	Added support for real editing of type3 (and svg) fonts. Support for editing
+	stroked paths, different fill colors, multiple stroke/fill operations, etc.
+	Because this involves a lot of extra overhead it is wrong for people who
+	want to edit CJK fonts, so this mode is off by default. It may be turned
+	on by
+	<BLOCKQUOTE>
+	  <PRE>$ configure --with-multilayer
+</PRE>
+	</BLOCKQUOTE>
+      <LI>
+	PfaEdit failed to interpret h/vstem3 commands properly when building a hintmask
+	(when reading a type1 font with hint substitution)
+    </UL>
   <LI>
     11-Feb-2004
     <UL>
