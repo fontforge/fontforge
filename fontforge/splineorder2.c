@@ -167,11 +167,14 @@ return( end );
 
 static int buildtestquads(Spline *ttf,real xmin,real ymin,real cx,real cy,
 	real x,real y,real tmin,real t,real err,Spline *ps, DBounds *psbb) {
+    real fudge;
 
     /* test the control points are reasonable */
-    if ( cx<psbb->minx || cx>psbb->maxx )
+    fudge = (psbb->maxx-psbb->minx)/10;
+    if ( cx<psbb->minx-fudge || cx>psbb->maxx+fudge )
 return( false );
-    if ( cy<psbb->miny || cy>psbb->maxy )
+    fudge = (psbb->maxy-psbb->miny)/10;
+    if ( cy<psbb->miny-fudge || cy>psbb->maxy+fudge )
 return( false );
 
     ttf->splines[0].d = xmin;
