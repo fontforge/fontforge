@@ -97,7 +97,7 @@ return( false );
 			g->box->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap)):
 			g->box->main_foreground;
 	_ggadget_underlineMnemonic(pixmap,x,g->inner.y + gr->as + gr->yoff,gr->label,
-		g->mnemonic,fg);
+		g->mnemonic,fg,g->inner.y+g->inner.height);
 	x += GDrawDrawBiText(pixmap,x,g->inner.y + gr->as + gr->yoff,gr->label,-1,NULL,
 		fg );
 	x += GDrawPointsToPixels(pixmap,_GGadget_TextImageSkip);

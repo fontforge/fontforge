@@ -125,7 +125,7 @@ return( iheight );
 }
 
 int GTextInfoDraw(GWindow base,int x,int y,GTextInfo *ti,
-	FontInstance *font,Color fg, Color sel) {
+	FontInstance *font,Color fg, Color sel, int ymax) {
     int fh=0, as=0, ds=0, ld;
     int iwidth=0, iheight=0;
     int height, skip = 0;
@@ -188,7 +188,7 @@ int GTextInfoDraw(GWindow base,int x,int y,GTextInfo *ti,
 	if ( ti->text!=NULL ) {
 	    int ypos = y+as+(height>fh?(height-fh)/2:0);
 	    int width = GDrawDrawBiText(base,x,ypos,ti->text,-1,NULL,fg);
-	    _ggadget_underlineMnemonic(base,x,ypos,ti->text,ti->mnemonic,fg);
+	    _ggadget_underlineMnemonic(base,x,ypos,ti->text,ti->mnemonic,fg,ymax);
 	    x += width + skip;
 	}
 	if ( ti->image!=NULL && !ti->image_precedes )

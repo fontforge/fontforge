@@ -388,7 +388,7 @@ extern void _GGadgetCopyDefaultBox(GBox *box);
 extern FontInstance *_GGadgetInitDefaultBox(char *class,GBox *box,FontInstance *deffont);
 extern void GGadgetInit(void);
 extern void _ggadget_underlineMnemonic(GWindow gw,int32 x,int32 y,unichar_t *label,
-	unichar_t mneumonic, Color fg);
+	unichar_t mneumonic, Color fg,int ymax);
 extern void _ggadgetFigureSize(GWindow gw, GBox *design, GRect *r, int isdef);
 extern void _GGadgetCloseGroup(GGadget *g);
 extern void _ggadget_redraw(GGadget *g);
@@ -421,7 +421,7 @@ extern int GTextInfoGetHeight(GWindow base,GTextInfo *ti,FontInstance *font);
 extern int GTextInfoGetMaxHeight(GWindow base,GTextInfo **ti,FontInstance *font,int *allsame);
 extern int GTextInfoGetAs(GWindow base,GTextInfo *ti, FontInstance *font);
 extern int GTextInfoDraw(GWindow base,int x,int y,GTextInfo *ti,
-	FontInstance *font,Color fg,Color sel);
+	FontInstance *font,Color fg,Color sel,int ymax);
 extern GTextInfo *GTextInfoCopy(GTextInfo *ti);
 extern GTextInfo **GTextInfoArrayFromList(GTextInfo *ti, uint16 *cnt);
 extern GTextInfo **GTextInfoArrayCopy(GTextInfo **ti);

@@ -457,7 +457,8 @@ return( false );
     for ( l = gl->loff; y<ymax && l<gl->ltot; ++l ) {
 	if ( y+gl->hmax > event->u.expose.rect.y )
 	    y += GTextInfoDraw(pixmap,g->inner.x-gl->xoff,y,gl->ti[l],
-		    gl->font,gl->ti[l]->disabled?dfg:fg,g->box->active_border);
+		    gl->font,gl->ti[l]->disabled?dfg:fg,g->box->active_border,
+		    ymax);
 	else if ( gl->sameheight )
 	    y += gl->hmax;
 	else

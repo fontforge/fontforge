@@ -222,7 +222,8 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y) {
 	fg = GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(m->w));
 
     h = GTextInfoDraw(m->w,m->tioff,y,&mi->ti,m->font,
-	    mi->ti.disabled?m->box->disabled_foreground:fg, m->box->active_border);
+	    mi->ti.disabled?m->box->disabled_foreground:fg,
+	    m->box->active_border,new.y+new.height);
 
     if ( mi->ti.checkable ) {
 	if ( mi->ti.checked )
@@ -918,7 +919,7 @@ static int gmenubar_expose(GWindow pixmap, GGadget *g, GEvent *expose) {
 	GDrawPushClip(pixmap,&r,&old3);
 	GTextInfoDraw(pixmap,r.x,r.y,&mb->mi[i].ti,mb->font,
 		mb->mi[i].ti.disabled?mb->g.box->disabled_foreground:fg,
-		mb->g.box->active_border);
+		mb->g.box->active_border,r.y+r.height);
 	GDrawPopClip(pixmap,&old3);
     }
     if ( i<mb->mtot ) {

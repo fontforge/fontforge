@@ -685,11 +685,11 @@ return( true );
 }
 
 void _ggadget_underlineMnemonic(GWindow gw,int32 x,int32 y,unichar_t *label,
-	unichar_t mnemonic, Color fg) {
+	unichar_t mnemonic, Color fg, int maxy) {
     unichar_t *pt;
     int point = GDrawPointsToPixels(gw,1);
     int width;
-    GRect clip;
+    /*GRect clip;*/
 
     pt = u_strchr(label,mnemonic);
     if ( pt==NULL && isupper(mnemonic))
@@ -700,10 +700,10 @@ return;
     width = GDrawGetTextWidth(gw,pt,1,NULL);
     GDrawSetLineWidth(gw,point);
     y += 2*point;
-    GDrawGetClip(gw,&clip);
-    if ( y+point-1 >= clip.y+clip.height )
-	y = clip.y+clip.height-point;
+    if ( y+point-1 >= maxy )
+	y = maxy-point;
     GDrawDrawLine(gw,x,y,x+width,y,fg);
+    GDrawSetLineWidth(gw,0);
 }
 
 void _ggadget_move(GGadget *g, int32 x, int32 y ) {
