@@ -2963,6 +2963,12 @@ static void WinBB(SplineFont *_sf,uint16 *winascent,uint16 *windescent,struct al
     /* The windows ascent/descent is calculated on the ymin/max of the */
     /*  glyphs in the so called ANSI character set. I'm going to pretend */
     /*  that's Latin1 with a few additions */
+    /* Well, that's what is documented, but the documentation says contradictory */
+    /*  things. I believe that winAscent should be the same as hhea.ascent */
+#if 1
+    *winascent = at->head.ymax;
+    *windescent = -at->head.ymin;		/* Should be positive */
+#else
     int i,k;
     int first = true;
     DBounds b, c;
@@ -3011,6 +3017,7 @@ static void WinBB(SplineFont *_sf,uint16 *winascent,uint16 *windescent,struct al
 	*winascent = rint(b.maxy);
 	*windescent = -rint(b.miny);		/* Should be positive */
     }
+#endif
 }
 
 static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *_sf,
