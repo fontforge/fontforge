@@ -4322,11 +4322,10 @@ static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
 		(alt = unicode_alternates[uni>>8][uni&0xff])!=NULL ) {
 	if ( alt[1]=='\0' )
 	    alt = NULL;		/* Single replacements aren't ligatures */
-#if 0
-	else if ( iscombining(alt[1]) && ( alt[2]=='\0' || iscombining(alt[2])))
-	    alt = NULL;		/* Don't treat accented letters as ligatures */
-#endif	/* The mac does treat accented letters as ligatures (Unicode decomposition) */
-	else if ( _UnicodeNameAnnot!=NULL &&
+	else if ( iscombining(alt[1]) && ( alt[2]=='\0' || iscombining(alt[2]))) {
+	    if ( alt_lig != -10 )	/* alt_lig = 10 => mac unicode decomp */
+		alt = NULL;		/* Otherwise, don't treat accented letters as ligatures */
+	} else if ( _UnicodeNameAnnot!=NULL &&
 		(uname = _UnicodeNameAnnot[uni>>16][(uni>>8)&0xff][uni&0xff].name)!=NULL &&
 		strstr(uname,"LIGATURE")==NULL &&
 		strstr(uname,"VULGAR FRACTION")==NULL &&
@@ -4350,7 +4349,7 @@ return( AdobeLigatureFormat(name));
 	    u_strcpy(hack,alt);
 	    hack[1] = '/';
 	    alt = hack;
-	} else if ( alt_lig )
+	} else if ( alt_lig>0 )
 return( NULL );
 
 	if ( isarabisolated(uni) || isarabinitial(uni) || isarabmedial(uni) || isarabfinal(uni) ) {
@@ -4568,7 +4567,7 @@ uint32 LigTagFromUnicode(int uni) {
 		    unicode_alternates[uni>>8]!=NULL &&
 		(alt = unicode_alternates[uni>>8][uni&0xff])!=NULL ) {
 	    if ( iscombining(alt[1]) && ( alt[2]=='\0' || iscombining(alt[2])))
-		tag = CHR('M','U','C','M');
+		tag = ((27<<16)|1);
 	}
     }
 #endif
@@ -4632,6 +4631,43 @@ static SplineChar *SuffixCheck(SplineChar *sc,char *suffix) {
 return( alt );
 }
 
+static SplineChar *SuffixCheckCase(SplineChar *sc,char *suffix, int cvt2lc ) {
+    SplineChar *alt = NULL;
+    SplineFont *sf = sc->parent;
+    char namebuf[100];
+
+    if ( *suffix=='.' ) ++suffix;
+    if ( sf->cidmaster!=NULL )
+return( NULL );
+
+    /* Small cap characters are sometimes named "a.sc" */
+    /*  and sometimes "A.small" */
+    /* So if I want a 'smcp' feature I must convert "a" to "A.small" */
+    /* And if I want a 'c2sc' feature I must convert "A" to "a.sc" */
+    if ( cvt2lc ) {
+	if ( alt==NULL && sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 &&
+		isupper(sc->unicodeenc)) {
+	    sprintf( namebuf, "uni%04X.%s", tolower(sc->unicodeenc), suffix );
+	    alt = SFGetChar(sf,-1,namebuf);
+	}
+	if ( alt==NULL && isupper(*sc->name)) {
+	    sprintf( namebuf, "%c%s.%s", tolower(*sc->name), sc->name+1, suffix );
+	    alt = SFGetChar(sf,-1,namebuf);
+	}
+    } else {
+	if ( alt==NULL && sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 &&
+		islower(sc->unicodeenc)) {
+	    sprintf( namebuf, "uni%04X.%s", toupper(sc->unicodeenc), suffix );
+	    alt = SFGetChar(sf,-1,namebuf);
+	}
+	if ( alt==NULL && islower(*sc->name)) {
+	    sprintf( namebuf, "%c%s.%s", toupper(*sc->name), sc->name+1, suffix );
+	    alt = SFGetChar(sf,-1,namebuf);
+	}
+    }
+return( alt );
+}
+
 static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
     /* This fills in default ligatures as the name suggests */
     /* it also builds up various other default gpos/gsub tables */
@@ -4671,6 +4707,30 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 	}
     }
 
+    if ( tag==((27<<16)|1) && sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 ) {
+	const unichar_t *alt=NULL;
+	int uni = sc->unicodeenc;
+	if ( isdecompositionnormative(uni) &&
+		    unicode_alternates[uni>>8]!=NULL &&
+		(alt = unicode_alternates[uni>>8][uni&0xff])!=NULL ) {
+	    if ( iscombining(alt[1]) && ( alt[2]=='\0' || iscombining(alt[2]))) {
+		components = LigDefaultStr(sc->unicodeenc,sc->name,-10);
+		if ( components!=NULL ) {
+		    lig = chunkalloc(sizeof(PST));
+		    lig->tag = tag;
+		    lig->flags = PSTDefaultFlags(pst_ligature,sc);
+		    lig->script_lang_index = SFAddScriptLangIndex(sc->parent,
+				SCScriptFromUnicode(sc),DEFAULT_LANG);
+		    lig->type = pst_ligature;
+		    lig->next = last;
+		    last = lig;
+		    lig->u.lig.lig = sc;
+		    lig->u.lig.components = components;
+		}
+	    }
+	}
+    }
+
 	/* Look for left to right mirrored characters */
     if ( tag==0 || tag==CHR('r','t','l','a') ) {
 	if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 && tomirror(sc->unicodeenc)!=0 ) {
@@ -4687,15 +4747,26 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 	    last=AddSubs(last,CHR('v','r','t','2'),alt->name, 0x0,SLI_UNKNOWN,sc);
     }
 
-	/* Look for small caps */
+	/* Look for small caps (Lower Case -> Small Caps)*/
     if ( tag==0 || tag==CHR('s','m','c','p') ) {
 	alt = SuffixCheck(sc,"sc");
+	if ( alt==NULL )
+	    alt = SuffixCheckCase(sc,"small",false);
 #if 0		/* Adobe says oldstyles can be included in smallcaps */
 	if ( alt==NULL )
 	    alt = SuffixCheck(sc,"oldstyle");
 #endif
 	if ( alt!=NULL )
 	    last=AddSubs(last,CHR('s','m','c','p'),alt->name, 0x0,SLI_UNKNOWN,sc);
+    }
+
+	/* Look for small caps (UC->Small Caps) */
+    if ( tag==0 || tag==CHR('c','2','s','c') ) {
+	alt = SuffixCheck(sc,"small");
+	if ( alt==NULL )
+	    alt = SuffixCheckCase(sc,"sc",true);
+	if ( alt!=NULL )
+	    last=AddSubs(last,CHR('c','2','s','c'),alt->name, 0x0,SLI_UNKNOWN,sc);
     }
 
 	/* And for oldstyle */
@@ -4915,7 +4986,7 @@ void SCLigDefault(SplineChar *sc) {
 	    prev = pst;
     }
 
-    if ( LigTagFromUnicode(sc->unicodeenc)!=CHR('M','U','C','M') ) {
+    if ( LigTagFromUnicode(sc->unicodeenc)!=((27<<16)|1) ) {
 	pst = LigDefaultList(sc,0xffffffff);
 	if ( pst!=NULL ) {
 	    for ( n=pst; n->next!=NULL ; n=n->next );
