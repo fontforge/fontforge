@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 21-Jun-2002 -->
+  <!-- AP: Last modified: 23-Jun-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -80,25 +80,25 @@ you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-020621.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 21-June-2002
+    <A HREF="pfaedit-020622.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 22-June-2002
   <LI>
-    <A HREF="pfaedit-020312-1.ppc.rpm">Download pfaedit linux-ppc SUSE 7.1
-    </A>binary rpm Version: 12-Mar-2002
+    <A HREF="pfaedit-020622-1.ppc.rpm">Download pfaedit linux-ppc SUSE 7.1
+    </A>binary rpm Version: 22-June-2002
   <LI>
-    <A HREF="pfaedit-solaris-020621.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 21-June-2002
+    <A HREF="pfaedit-solaris-020622.tgz">Download pfaedit Solaris 8.0
+    </A>executable Version: 22-June-2002
   <LI>
-    <A HREF="pfaedit-020312-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
-    Version: 12-Mar-2002 (Redhat 7.1)
+    <A HREF="pfaedit-020622-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
+    Version: 22-June-2002 (Redhat 7.1)
   <LI>
     <A HREF="http://packages.debian.org/unstable/x11/pfaedit.html">A debian package
     is available at the debian site.</A>
   <LI>
     <A HREF="Problems-MacOSX.html#binary">A Mac OS/X distribution</A> (with Caveats).
-    Version 12-Mar-2002
+    Version 22-June-2002
   <LI>
-    <A HREF="pfaedit_cygwin-020611.tgz">A cygwin version</A>. Version: 11-June-2002
+    <A HREF="pfaedit_cygwin-020622.tgz">A cygwin version</A>. Version: 22-June-2002
   <LI>
     <A HREF="ftp://nchrem.tnw.tudelft.nl/pub/pfaedit/">An OpenVMS executable
     </A>(by Jacob Jansen): Version Approximately 23-Sept-2001<BR>
@@ -116,11 +116,11 @@ If you want to edit CID keyed fonts you probably need these
   <A NAME="source">Source</A> distribution
 </H2>
 <P>
-You can download a <A HREF="pfaedit-020312-1.src.rpm">source RPM</A>: Version:
-12-Mar-2002<BR>
-Or you can download the <A HREF="pfaedit_full-020621.tgz">entire source tree
+You can download a <A HREF="pfaedit-020622-1.src.rpm">source RPM</A>: Version:
+22-June-2002<BR>
+Or you can download the <A HREF="pfaedit_full-020623.tgz">entire source tree
 </A>in one .tgz file: Version
-21-June-2002<!--
+23-June-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -223,7 +223,7 @@ bitmap fonts that pfaedit uses
 </H2>
 <P>
 All the documentation files in this directory bundled up into one
-<A HREF="pfaedit_htdocs-020416.tgz">tgz file</A> 16-Apr-2002.<BR>
+<A HREF="pfaedit_htdocs-020622.tgz">tgz file</A> 22-June-2002.<BR>
 If you do the following then PfaEdit will find the docs for you when you
 press F1 (ie. PfaEdit it will look in /usr/share/doc/pfaedit before it looks
 on the web):
@@ -237,9 +237,10 @@ $ rm pfaedit_htdocs-*.tar
 </BLOCKQUOTE>
 <P>
 Or you can download an <A HREF="pfaedit-doc-020208-1.i386.rpm">rpm</A> which
-should install them properly for you.
+should install them properly for you 8-Feb-2002.
 <P>
-Or you can just browse the <A HREF="overview.html">docs online</A>.
+Or you can just browse the <A HREF="overview.html">docs online</A>. (Always
+current)
 <H2>
   License
 </H2>
@@ -280,6 +281,26 @@ Or you can just browse the <A HREF="overview.html">docs online</A>.
 </H2>
 <UL>
   <LI>
+    23-June-2003
+    <UL>
+      <LI>
+	Valek wanted to be able to add comments to characters and to flag characters
+	with some visible mark. The <A HREF="getinfo.html#Character">Char Info </A>dlg
+	has been extended to do this.
+    </UL>
+  <LI>
+    22-June-2002
+    <UL>
+      <LI>
+	Yesterday's unicode sprintf change introduced another bug. Fixed
+      <LI>
+	Valek points out that if you have a bitmap only font and you attempt
+	simultaneously to scale it and delete all the bitmaps, then PfaEdit would
+	crash. (Same thing would happen if you just removed all the bitmaps).
+      <LI>
+	Valek provided some additional russian translations.
+    </UL>
+  <LI>
     21-June-2002
     <UL>
       <LI>
@@ -294,6 +315,8 @@ Or you can just browse the <A HREF="overview.html">docs online</A>.
 	Added scripting access to Force-Encoding
       <LI>
 	PfaEdit memory allocation optimizations didn't work if sizeof(int *)==8
+      <LI>
+	Bug in unicode sprintf routine when sizeof(long)==8
       <LI>
 	In some cases when reading a ttf font with a (unicode) cmap which assigned
 	one glyph to two encodings, and if that glyph happened to be in the

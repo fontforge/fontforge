@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 5-Apr-2002 -->
+  <!-- AP: Last modified: 23-Jun-2002 -->
   <TITLE>Get Info</TITLE>
 </HEAD>
 <BODY>
@@ -35,14 +35,19 @@ point itself will be drawn in red, the previous control point will be drawn
 in magenta and the next control point will be drawn in dull cyan.
 <BR Clear=All>
 <H2>
+  <IMG SRC="charinfo.png" WIDTH="276" HEIGHT="533" ALIGN="Right">
   <A NAME="Character">Character</A> Info
 </H2>
 <P>
-<IMG SRC="charinfo.png" WIDTH="276" HEIGHT="362" ALIGN="Right"> This dialog
-allows you to set the name and unicode encoding of a given character. If
-you know the name of the character then PfaEdit can tell you the encoding
+This dialog allows you to set the name and unicode encoding of a given character.
+If you know the name of the character then PfaEdit can tell you the encoding
 (if you press Set From Name), similarly if you know the encoding then PfaEdit
 can tell you the name.
+<P>
+You can assign an arbetrary (unicode) comment to the character. Simply type
+any text into this field. The comment is for your use, it will not go into
+any generated fonts. You may also assign a color to a character to make it
+stand out in the font view.
 <P>
 The ligature field allows you to tell PfaEdit that the current character
 is a ligature composed of several other characters. PfaEdit will often be
@@ -59,14 +64,15 @@ are the components of the current character, if those componants are in the
 font then you can use PfaEdit's Element-&gt;Build Accented or
 Element-&gt;Build Composit commands to create the current character. The
 information displayed here is informative only, you may not change this field
-directly. 
+directly.
 <P>
 In the font view the Next and Prev buttons are not greyed out and you can
 change move on to the next character (if, for example, you need to enter
 encodings for a range of characters).
 <P>
-The Cancel (or Done) button only Cancels work in the current character. If
-you used Next or Prev then those changes will not be cancelled.
+The Done (or Cancel) button only Cancels work in the current character. If
+you have already used Next or Prev then those earlier changes will not be
+cancelled.
 <H2>
   Reference Info
 </H2>
