@@ -982,12 +982,15 @@ GTextInfo *SFLangList(SplineFont *sf,int addfinal,SplineChar *default_script) {
     if ( sf->cidmaster ) sf = sf->cidmaster;
     def_sli = SCDefaultSLI(sf,default_script);
 
-    for ( i=0; sf->script_lang[i]!=NULL; ++i );
+    i = 0;
+    if ( sf->script_lang!=NULL )
+	for ( i=0; sf->script_lang[i]!=NULL; ++i );
     ti = gcalloc(i+4,sizeof( GTextInfo ));
-    for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
-	ti[i].text = ScriptLangLine(sf->script_lang[i]);
-	ti[i].userdata = (void *) i;
-    }
+    if ( sf->script_lang!=NULL )
+	for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
+	    ti[i].text = ScriptLangLine(sf->script_lang[i]);
+	    ti[i].userdata = (void *) i;
+	}
     if ( def_sli!=-1 && def_sli<i )
 	ti[def_sli].selected = true;
     for ( k=0, j=sizeof(sli_names)/sizeof(sli_names[0])-1, bit = 1<<j; j>=0; --j, ++k, bit>>=1 ) {
@@ -1019,8 +1022,7 @@ static GTextInfo **SFLangArray(SplineFont *sf,int addfinal) {
     for ( k=0, j=sizeof(sli_names)/sizeof(sli_names[0])-1, bit = 1<<j; j>=0; --j, ++k, bit>>=1 ) {
 	if ( addfinal&bit ) {
 	    ti[i] = gcalloc(1,sizeof( GTextInfo));
-	    ti[i]->text = (unichar_t *) sli_names[k];
-	    ti[i]->text_in_resource = true;
+	    ti[i]->text = u_copy(GStringGetResource(sli_names[k],NULL));;
 	    ti[i]->userdata = (void *) sli_ud[k];
 	    ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;
 	    ++i;
@@ -1578,9 +1580,9 @@ int ScriptLangList(SplineFont *sf,GGadget *list,int sli) {
     int i;
     const int width = 300;
 
-    if ( ti[len-2]->selected && ti[len-2]->userdata==(void *) SLI_NESTED )
+    if ( len>=2 && ti[len-2]->selected && ti[len-2]->userdata==(void *) SLI_NESTED )
 return(false);
-    if ( !ti[len-1]->selected )
+    if ( len>=1 && !ti[len-1]->selected )
 return(true);
     /* the last entry in the script/lang pulldown is the one that allows them */
     /*  to edit the script lang list. That's what the above check is for */

@@ -111,7 +111,8 @@ static int KC_Sli(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
 	kcd = GDrawGetUserData(GGadgetGetWindow(g));
 	sli = GGadgetGetFirstListSelectedItem(g);
-	if ( kcd->kcld->sf->script_lang[sli]!=NULL )
+	if ( kcd->kcld->sf->script_lang!=NULL &&
+		kcd->kcld->sf->script_lang[sli]!=NULL )
 	    kcd->new->sli = sli;
 	else
 	    ScriptLangList(kcd->kcld->sf,g,kcd->new->sli);
