@@ -31,7 +31,7 @@
 
 /*#define TRACEINSTR 1*/
 
-#if TT_CONFIG_OPTION_BYTECODE_DEBUG
+#if TT_CONFIG_OPTION_BYTECODE_DEBUG && (!TT_CONFIG_OPTION_FREETYPE_DEBUG || !TT_CONFIG_OPTION_BYTECODE_INTERPRETER)
 static int ttrint(double val) {
     if ( val>=0 )
 return( floor(val+.5));		/* This is slightly different from rint which rounds one half either up or down. tt alwas rounds up */

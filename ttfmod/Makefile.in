@@ -22,8 +22,16 @@ LIBS = -L../libs $(X_LIBS) ../libs/libgdraw.a ../libs/libgunicode.a \
 ttfmod: $(ttfmod_OBJECTS)
 	$(CC) -o ttfmod $(ttfmod_OBJECTS) stamp.c $(LIBS)
 
+#this makes all the .ui files but wildcarding doesn't work too well if the
+# files don't exist.
+nomen.h ttfmod-ui.c ttfmod-en.ui: $(srcdir)/nomen-*.c makenomenh.c
+	$(CC) -o makenomenh $(CFLAGS) $(srcdir)/makenomenh.c $(LIBS)
+	-ln -s $(srcdir)/nomen-*.c .
+	./makenomenh ttfmod TtfMod
+	mv ttfmod-ui-en.c ttfmod-ui.c
+
 clean:
-	-rm -f *.o ttfmod
+	-rm -f *.o ttfmod makenomenh *.ui nomen.h _nomen*.c
 
 distclean cleaner:
-	-rm -f *.o ttfmod Makefile
+	-rm -f *.o ttfmod Makefile makenomenh *.ui nomen.h _nomen*.c

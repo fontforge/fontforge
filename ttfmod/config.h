@@ -66,12 +66,26 @@
 /*  interpreter in the program. If it is on and TT_CONFIG_OPTION_BYTECODE_INTERPRETER */
 /*  is off then the interpreter will run but will not actually move any points*/
 /*  (it just figures out what points would be moved). If both are on then it */
-/*  will be a full interpreter and will be in violation of the patent */
+/*  will be a full interpreter and will (probably) be in violation of the patent */
 /* I believe that the intermediate mode is perfectly legal, so I leave it on */
 /*  by default. */
 # define TT_CONFIG_OPTION_BYTECODE_DEBUG	1
 #endif
 
+#if TT_CONFIG_OPTION_BYTECODE_DEBUG && TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+# ifndef TT_CONFIG_OPTION_FREETYPE_DEBUG
+/* If you have freetype with the bytecode interpreter enabled, and you have */
+/*  the freetype sources on your machine then, then you should define this */
+/*  flag to be 1. You should also add					   */
+/*		-I<freetype2-top-dir>/src/truetype			   */
+/*  to your CFLAGS. If set then ttfmod will use freetype's built-in debugger */
+/*  as the basis of it's own debugging (it needs access to internal freetype */
+/*  include files, hence all the complexity).				   */
+/* I leave this off by default because most people don't have the freetype */
+/*  sources on their machines. */
+#  define TT_CONFIG_OPTION_FREETYPE_DEBUG 0
+# endif
+#endif
 
 #ifndef TT_RASTERIZE_FONTVIEW
 /* If you do not want to link with FreeType at all then turn this off. When */

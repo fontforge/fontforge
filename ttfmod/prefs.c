@@ -117,7 +117,7 @@ static int CheckLangDir(char *full,int sizefull,char *dir, const char *loc) {
     if ( loc==NULL || dir==NULL )
 return(false);
 
-    strcpy(buffer,"ttfmod.");
+    strcpy(buffer,"ttfmod-");
     strcat(buffer,loc);
     strcat(buffer,".ui");
 

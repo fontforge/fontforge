@@ -400,3 +400,24 @@ return;
 void FreeType_FreeRaster(struct freetype_raster *raster) {
 }
 #endif
+
+#if TT_CONFIG_OPTION_BYTECODE_DEBUG && TT_CONFIG_OPTION_FREETYPE_DEBUG && TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+/* This code is inspired by ttdebug.c in ft2demos and David Turner's kind */
+/*  suggestions. */
+#include "ttobjs.h"
+#include "ttdriver.h"
+#include "ttinterp.h"
+
+
+FT_Library      library;    /* root library object */
+FT_Memory       memory;     /* system object */
+FT_Driver       driver;     /* truetype driver */
+TT_Face         face;       /* truetype face */
+TT_Size         size;       /* truetype size */
+TT_GlyphSlot    glyph;      /* truetype glyph slot */
+TT_ExecContext  exec;       /* truetype execution context */
+FT_Error        error;
+
+void CVGenerateGloss(CharView *cv) {
+}
+#endif
