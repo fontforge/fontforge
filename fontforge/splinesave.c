@@ -658,10 +658,23 @@ static void splmoveto(GrowBuf *gb,BasePoint *current,SplineSet *spl[MmMax],
     _moveto(gb,current,to,instance_count,line,round,hdb);
 }
 
+static int AnyRefs(SplineChar *sc) {
+    int i;
+
+    for ( i=ly_fore; i<sc->layer_cnt; ++i )
+	if ( sc->layers[i].refs!=NULL )
+return( true );
+
+return( false );
+}
+
 static void refmoveto(GrowBuf *gb,BasePoint *current,BasePoint startstop[MmMax*2],
 	int instance_count, int line, int round, struct hintdb *hdb, RefChar *refs[MmMax]) {
     BasePoint to[MmMax];
     int i;
+
+    if ( refs!=NULL && AnyRefs(refs[0]->sc))		/* if it contains references, they must be in exactly the right places */
+return;
 
     for ( i=0; i<instance_count; ++i ) {
 	to[i] = startstop[i*2+0];
@@ -1070,16 +1083,6 @@ return( NULL );
 return( reverserefs(ret) );
 }
 
-static int AnyRefs(SplineChar *sc) {
-    int i;
-
-    for ( i=ly_fore; i<sc->layer_cnt; ++i )
-	if ( sc->layers[i].refs!=NULL )
-return( true );
-
-return( false );
-}
-
 static int TrySubrRefs(GrowBuf *gb, struct pschars *subrs, SplineChar *scs[MmMax],
 	int instance_count, int round, int self) {
     RefChar *refs[MmMax], rtemp[MmMax];
@@ -1108,7 +1111,7 @@ static int TrySubrRefs(GrowBuf *gb, struct pschars *subrs, SplineChar *scs[MmMax
 		if ( r->sc->ttf_glyph==0x7fff ||
 			(( r->sc->hconflicts || r->sc->vconflicts || r->sc->anyflexes || AnyRefs(r->sc) ) &&
 				(r->transform[4]!=0 || r->transform[5]!=0 ||
-					current[j].x!=rb.minx))) {
+					current[j].x!=round ? rint(rb.minx) : rb.minx))) {
 return( false );
 		}
 	    }
