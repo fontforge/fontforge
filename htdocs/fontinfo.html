@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 25-Sep-2003 -->
+  <!-- AP: Last modified: 3-Oct-2003 -->
   <TITLE>Font Info</TITLE>
 </HEAD>
 <BODY>
@@ -106,6 +106,25 @@ Registry/Ordering/Supplement for this font.
 Not all font formats support all encodings. SVG fonts will always be output
 in a unicode encoding, truetype fonts in either unicode or one of the CJK
 encodings, type1 fonts only support single byte encodings, etc.
+<P>
+<A NAME="Interpretation">Sadly</A> the encoding is not always sufficient
+for understanding the font's behavior. For example a unicode font designed
+for a chinese system will look very different from a unicode font for a japanese
+system (The same unicode character may map to very different chinese or japanese
+glyphs). To handle this (and some other cases) PfaEdit has the concept of
+"Interpretation". There are several cases in which this field is useful.
+<UL>
+  <LI>
+    To allow PfaEdit to know whether a Unicode (or any other non-CJK encoding
+    which includes CJK glyphs) font should be viewed as Japanese, Chinese or
+    Korean.
+  <LI>
+    Can cause PfaEdit to use the names "Delta.greek", "Omega.greek" and "mu.greek"
+    for U+0396, U+03a9, U+03bc (instead of uni0396, etc.).
+  <LI>
+    Can cause PfaEdit to name glyphs in the private use area after Adobe's
+    assignments to that area (ie. small caps, etc.)
+</UL>
 <P>
   <HR>
 <H3>
@@ -692,7 +711,7 @@ languages.
     <TD>K&ouml;zepes</TD>
     <TD>S&ouml;t&eacute;tes</TD>
     <TD>Fekete</TD>
-    <TD><!--D&amp;amp;amp;amp;#x151;lt-->
+    <TD><!--D&amp;amp;amp;amp;amp;#x151;lt-->
       Do"lt</TD>
     <TD>D&ouml;nt&ouml;tt</TD>
     <TD>Keskeny</TD>

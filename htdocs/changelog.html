@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 2-Oct-2003 -->
+  <!-- AP: Last modified: 5-Oct-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,30 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    5-Oct-2003
+    <UL>
+      <LI>
+	Got rid of GreekFixup and added Interpretations of encodings to FontInfo
+      <LI>
+	PfaEdit failed to output ligature substitutions nested under a context/chain
+	sub
+      <LI>
+	If a font had more than about 5 nested ligatures, pfaedit would screw up
+	its memory and (likely) crash
+      <LI>
+	Fixed various problems pertaining to adding a kerning class to an empty font
+      <LI>
+	Add a runtime check for the case where the user's system has a dynamic libpng
+	installed without libz
+      <LI>
+	If a character had ligature carets then PfaEdit could crash when determining
+	its script
+      <LI>
+	PfaEdit was reading mac 'kern' format 3 incorrectly.
+      <LI>
+	Rewrote the Kerning class creation dialog. I hope it is clearer now.
+    </UL>
   <LI>
     2-Oct-2003
     <UL>
@@ -24,7 +48,7 @@
 	Autotrace failed to read potrace output properly if there were more than
 	one contour in a given glyph.
       <LI>
-	Upgraded psunicodenames to the current Adobe Glyph List for New Fonts. 
+	Upgraded psunicodenames to the current Adobe Glyph List for New Fonts.
       <LI>
 	Simplify now works for quadratic splines. If one uses the []Allow Slopes
 	to Change checkbox then results are not good. I need a better algorithem.

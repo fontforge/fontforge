@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 4-May-2003 -->
+  <!-- AP: Last modified: 5-Oct-2003 -->
   <TITLE>The Metrics View</TITLE>
 </HEAD>
 <BODY>
@@ -175,7 +175,7 @@ be built using the following:
 So &Acirc; may be built by <KBD>[F12] ^ A</KBD>, and A with diaeresis and
 macron may be built with <KBD>[F12] : _ A</KBD>.
 <P>
-Greek letters may also be created. If you start with <KBD>[F12] &#64;</KBD> and
+Greek letters may also be created. If you start with <KBD>[F12] @</KBD> and
 follow with:
 <TABLE CELLPADDING="2">
   <TR>
@@ -280,8 +280,8 @@ follow with:
 </TABLE>
 <P>
 This is the mapping used by the Symbol font. (Lower case letters are created
-similarly so <KBD>[F12] &#64; a</KBD> yields a lower case alpha). Accented greek
-letters may also be built up, <KBD>[F12] &#64; " A</KBD> yields Alpha tonos.
+similarly so <KBD>[F12] @ a</KBD> yields a lower case alpha). Accented greek
+letters may also be built up, <KBD>[F12] @ " A</KBD> yields Alpha tonos.
 <P>
 Finally the following special characters may be built:
 <TABLE CELLPADDING="2">
@@ -293,18 +293,18 @@ Finally the following special characters may be built:
     <TD>[F12] *</TD>
     <TD>&#176;</TD>
     <TD>&nbsp;&nbsp;&nbsp;</TD>
-    <TD>[F12] &#64; *</TD>
+    <TD>[F12] @ *</TD>
     <TD>&lt;bullet&gt;</TD>
   </TR>
   <TR>
     <TD></TD>
-    <TD>[F12] &#64; &lt;space&gt;</TD>
+    <TD>[F12] @ &lt;space&gt;</TD>
     <TD>&lt;em space&gt;</TD>
     <TD></TD>
     <TD>[F12] #</TD>
     <TD>&#163;</TD>
     <TD></TD>
-    <TD>[F12] &#64; #</TD>
+    <TD>[F12] @ #</TD>
     <TD>&#165;</TD>
   </TR>
   <TR>
@@ -312,7 +312,7 @@ Finally the following special characters may be built:
     <TD>[F12] $</TD>
     <TD>&lt;euro&gt;</TD>
     <TD></TD>
-    <TD>[F12] &#64; $</TD>
+    <TD>[F12] @ $</TD>
     <TD>&#162;</TD>
     <TD></TD>
     <TD>[F12] !</TD>
@@ -326,12 +326,12 @@ Finally the following special characters may be built:
     <TD>[F12] -</TD>
     <TD>&lt;soft-hyphen&gt;</TD>
     <TD></TD>
-    <TD>[F12] &#64; -</TD>
+    <TD>[F12] @ -</TD>
     <TD>&lt;en dash&gt;</TD>
   </TR>
   <TR>
     <TD></TD>
-    <TD>[F12] &#64; .</TD>
+    <TD>[F12] @ .</TD>
     <TD>&#183;</TD>
     <TD></TD>
     <TD>[F12] 7 2</TD>
@@ -348,7 +348,7 @@ Finally the following special characters may be built:
     <TD>[F12] &gt;</TD>
     <TD>&lt;greater or equal&gt;</TD>
     <TD></TD>
-    <TD>[F12] &#64; &gt;</TD>
+    <TD>[F12] @ &gt;</TD>
     <TD>&lt;triangle bullet&gt;</TD>
   </TR>
   <TR>
@@ -389,7 +389,7 @@ Finally the following special characters may be built:
     <TD>[F12] \</TD>
     <TD>&#171;</TD>
     <TD></TD>
-    <TD>[F12] &#64; \</TD>
+    <TD>[F12] @ \</TD>
     <TD>&lt;single guillemot&gt;</TD>
     <TD></TD>
     <TD>[F12] a</TD>
@@ -447,7 +447,7 @@ Finally the following special characters may be built:
     <TD>[F12] |</TD>
     <TD>&#187;</TD>
     <TD></TD>
-    <TD>[F12] &#64; |</TD>
+    <TD>[F12] @ |</TD>
     <TD>&lt;right single guillemot&gt;</TD>
   </TR>
 </TABLE>
@@ -473,29 +473,41 @@ up a dialog showing the kerning classes currently defined for the font (it
 labels them according to the script in which they are active). You can create
 new classes, delete existing classes, or change existing classes.
 <P>
-<IMG SRC="kerningclass.png" WIDTH="296" HEIGHT="431" ALIGN="Left">Each kerning
+<IMG SRC="kerningclass.png" WIDTH="560" HEIGHT="579" ALIGN="Left">Each kerning
 class needs a <A HREF="charinfo.html#Feature-Tag">script/language</A> combination
 for which it is active, and a set of standard otf flags for a feature.
 <P>
 But the more interesting stuff follows this. A kerning class actually consists
 of two sets of classes -- one set for the first character of the pair and
-one for the second character of the pair. The Class Count field allows you
-to set the number of classes for each position.
+one for the second character of the pair. Under each list of classes are
+buttons for adding new classes, and editing or deleting old ones. A glyph
+class consists of a space seperated list of glyph names.
 <P>
-Classes of glyphs are numbered from 1 to the class count (there is also a
-class 0 but this is used for everything not mentioned elsewhere and should
-always kern to 0, so I do not expose it). You can select a class to manipulate
-by setting the class index field (and then clicking in another field), underneath
-the class index field is a small label showing the names of the characters
-in this class. If you press the [Select] button then the fontview's selection
-will be changed to the characters in the class. If you press the [Set] button
-then the characters in the class will be set to whatever is selected in the
-font view.
+Pressing [New] or [Edit] displays another dlg containing a text field with
+a list of glyph names. You may type in glyph names, or you may [Set] the
+glyph list to the names of the glyphs selected in the font view. Similarly
+the [Select] button will set the font view's selection to match the list
+of glyph names.
 <P>
-If you specify two valid class indeces, then a metrics view will be created
-showing a example of a character from each class and allowing you to set
-the kerning offset for those two (or you may set the kerning offset directly
-in the Kern Offset field of this dialog.
+Class 0 is magic. You never set it, it contains any glyphs not mentioned
+elsewhere.
+<P>
+Underneath the classes is a display of kerning values. The possible first
+character classes are listed vertically, the possible second character classes
+are listed horizontally. When you select a class (in one of the class lists
+above) the display of kerning values will scroll to display that class. If
+you move the mouse into the display and let it rest, a popup window will
+appear showing the glyphs that make up the classes which intersect at that
+point. If you click on a kerning value in the display, the dlg changes to
+a kerning dialog. <BR Clear=ALL>
+<P>
+<IMG SRC="kerningclass-kern.png" WIDTH="373" HEIGHT="318" ALIGN="Right">The
+kerning dialog displays a representative glyph from each class and allows
+you to adjust the kerning between them (and all other class members of each
+class). You can select which glyphs to display in the pulldown menus. You
+can enter a new kerning offset by typing in a value, or you can click on
+the second character of the kern pair and drag it around.<BR>
+<P>
 <P>
 <P ALIGN=Center>
 -- <A HREF="bitmapview.html">Prev</A> -- <A HREF="overview.html">TOC</A>

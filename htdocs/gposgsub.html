@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 27-Sep-2003 -->
+  <!-- AP: Last modified: 3-Oct-2003 -->
   <TITLE>Advanced Typography tables</TITLE>
 </HEAD>
 <BODY>
@@ -516,8 +516,7 @@ can sometimes be converted, and others have essentially no common ground.
       <P>
       Apple's documentation mentions that the 'kern' table supports kerning by
       state machine (ie. conditional kerning). PfaEdit does not (currently) read
-      such sub-tables. Apple also mentions another kerning format (format 3) which
-      they do not document. PfaEdit does not support that either.
+      such sub-tables.
       <P>
       OpenType allows kerning data to under a conditional/chaining selection (ie.
       conditional kerning). PfaEdit does support this.</TD>
@@ -637,7 +636,7 @@ GSUB tables have 7 sub-table formats, while morx tables have 5.
     <TD>Both formats have ligature sub-tables. The 'GSUB' version is unconditional
       (the ligature is always applied). The 'morx' version can be contextual (though
       in all fonts I have examined it is also uncontextual). PfaEdit only supports
-      unconditional ligatures. 
+      unconditional ligatures.
       <P>
       PfaEdit can read all the unconditional ligatures from a 'morx' sub-table.
       PfaEdit loses all contextual ligatures.
