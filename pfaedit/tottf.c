@@ -2904,6 +2904,7 @@ static uint8 *gen_md_instrs(struct glyphinfo *gi, uint8 *instrs,MinimumDistance 
 		     /*  it */
 		    undone = true;
 		else if ( pt2==ptcnt+1 || !(touched[pt2]&mask)) {
+		    md->done = true;
 		    instrs = pushpointstem(instrs,pt2,pt1);	/* Misnomer, I'm pushing two points */
 		    if ( !(touched[pt1]&mask))
 			*instrs++ = 0x2f;			/* MDAP[rnd] */
@@ -2915,6 +2916,7 @@ static uint8 *gen_md_instrs(struct glyphinfo *gi, uint8 *instrs,MinimumDistance 
 			touched[pt2]|= mask;
 		    any = true;
 		} else {
+		    md->done = true;
 		    instrs = pushpointstem(instrs,pt1,pt2);	/* Misnomer, I'm pushing two points */
 		    *instrs++ = 0x10;			/* SRP0 */
 		    *instrs++ = 0xcc;			/* MDRP[01100] min, rnd, grey */
