@@ -2156,7 +2156,7 @@ static void CI_DoNew(CharInfo *ci, unichar_t *def) {
     if ( newname!=NULL ) {
 	if ( sel!=0 )
 	    if ( !LigCheck(ci->sc,sel+1,(newname[0]<<24)|(newname[1]<<16)|(newname[2]<<8)|newname[3],
-		    newname+9)) {
+		    newname+14)) {
 		free(newname );
 return;
 	    }
@@ -2210,9 +2210,9 @@ return;
 return;
     }
 
-    unames = galloc((strlen(cnames)+6)*sizeof(unichar_t));
-    uc_strcpy(unames, "         ");
-    uc_strcpy(unames+9,cnames);
+    unames = galloc((strlen(cnames)+10)*sizeof(unichar_t));
+    uc_strcpy(unames, "          ");
+    uc_strcpy(unames+10,cnames);
     CI_DoNew(ci,unames);
     free(cnames);
     free(unames);
@@ -2639,7 +2639,7 @@ return;
 	}
 
 	for ( old=sc->possub; old!=NULL; old = old->next ) {
-	    if ( old->tag==new->tag ) {
+	    if ( old->tag==new->tag && old->type==new->type ) {
 		new->next = old->next;
 		*old = *new;
 		chunkfree(new,sizeof(PST));
