@@ -984,7 +984,7 @@ SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
 	trans[2] = -si->s;
 	trans[4] = trans[5] = 0;
 	factor = si->minorradius/si->radius;
-	trans[0] *= factor; trans[1] *= factor;
+	trans[0] *= factor; trans[2] *= factor;
 	ret = SplinePointListTransform(ret,trans,true);
     } else
 	ret = _SplineSetStroke(spl,si,sc);
