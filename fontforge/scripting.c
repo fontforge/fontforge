@@ -2382,11 +2382,13 @@ static void bNonLinearTransform(Context *c) {
 
 static void bExpandStroke(Context *c) {
     StrokeInfo si;
+    real r2;
     /* Arguments:
 	2 => stroke width (implied butt, round)
 	4 => stroke width, line cap, line join
 	5 => stroke width, caligraphic angle, thickness-numerator, thickness-denom
 	6 => stroke width, line cap, line join, 0, kanou's flags
+	7 => stroke width, caligraphic angle, thickness-numerator, thickness-denom, 0, knaou's flags
     */
 
     if ( c->a.argc!=2 && c->a.argc!=4 && c->a.argc!=5 && c->a.argc!=6 )
@@ -2395,7 +2397,8 @@ static void bExpandStroke(Context *c) {
 	    (c->a.argc>=4 && c->a.vals[2].type!=v_int ) ||
 	    (c->a.argc>=4 && c->a.vals[3].type!=v_int ) ||
 	    (c->a.argc>=5 && c->a.vals[4].type!=v_int ) ||
-	    (c->a.argc>=6 && c->a.vals[5].type!=v_int ))
+	    (c->a.argc>=6 && c->a.vals[5].type!=v_int ) ||
+	    (c->a.argc>=7 && c->a.vals[6].type!=v_int ))
 	error(c,"Bad argument type");
     memset(&si,0,sizeof(si));
     si.radius = c->a.vals[1].u.ival/2.;
@@ -2417,10 +2420,44 @@ static void bExpandStroke(Context *c) {
 	    si.removeexternal = true;
 	if ( c->a.vals[5].u.ival&4 )
 	    si.removeoverlapifneeded = true;
-    } else {
+    } else if ( c->a.argc==5 ) {
 	si.stroke_type = si_caligraphic;
 	si.penangle = 3.1415926535897932*c->a.vals[2].u.ival/180;
 	si.ratio = c->a.vals[3].u.ival / (double) c->a.vals[4].u.ival;
+        si.s = sin(si.penangle);
+        si.c = cos(si.penangle);
+        r2 = si.ratio*si.radius;
+        si.xoff[0] = si.xoff[4] = si.radius*si.c + r2*si.s;
+        si.yoff[0] = si.yoff[4] = -r2*si.c + si.radius*si.s;
+        si.xoff[1] = si.xoff[5] = si.radius*si.c - r2*si.s;
+        si.yoff[1] = si.yoff[5] = r2*si.c + si.radius*si.s;
+        si.xoff[2] = si.xoff[6] = -si.radius*si.c - r2*si.s;
+        si.yoff[2] = si.yoff[6] = r2*si.c - si.radius*si.s;
+        si.xoff[3] = si.xoff[7] = -si.radius*si.c + r2*si.s;
+        si.yoff[3] = si.yoff[7] = -r2*si.c - si.radius*si.s;
+    } else {
+        si.stroke_type = si_caligraphic;
+        si.penangle = 3.1415926535897932*c->a.vals[2].u.ival/180;
+        si.ratio = c->a.vals[3].u.ival / (double) c->a.vals[4].u.ival;
+        si.s = sin(si.penangle);
+        si.c = cos(si.penangle);
+        r2 = si.ratio*si.radius;
+        si.xoff[0] = si.xoff[4] = si.radius*si.c + r2*si.s;
+        si.yoff[0] = si.yoff[4] = -r2*si.c + si.radius*si.s;
+        si.xoff[1] = si.xoff[5] = si.radius*si.c - r2*si.s;
+        si.yoff[1] = si.yoff[5] = r2*si.c + si.radius*si.s;
+        si.xoff[2] = si.xoff[6] = -si.radius*si.c - r2*si.s;
+        si.yoff[2] = si.yoff[6] = r2*si.c - si.radius*si.s;
+        si.xoff[3] = si.xoff[7] = -si.radius*si.c + r2*si.s;
+        si.yoff[3] = si.yoff[7] = -r2*si.c - si.radius*si.s;
+        if ( c->a.vals[5].u.ival!=0 )
+            error(c,"If 6 arguments are given, the fifth must be zero");
+        if ( c->a.vals[6].u.ival&1 )
+            si.removeinternal = true;
+        else if ( c->a.vals[6].u.ival&2 )
+            si.removeexternal = true;
+        if ( c->a.vals[6].u.ival&4 )
+            si.removeoverlapifneeded = true;
     }
     FVStrokeItScript(c->curfv, &si);
 }
