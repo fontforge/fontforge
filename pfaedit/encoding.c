@@ -191,7 +191,7 @@ return;
 		}
 		u_strcat(ubuf,GStringGetResource(_STR_PleaseNameEncPost,NULL) );
 	    }
-	    name = GWidgetAskString(ubuf,ubuf,NULL);
+	    name = GWidgetAskString(ubuf,NULL,ubuf);
 	    if ( name!=NULL ) {
 		item->enc_name = cu_copy(name);
 		free(name);
@@ -436,7 +436,7 @@ Encoding *MakeEncoding(SplineFont *sf) {
     if ( sf->encoding_name!=em_none || sf->charcnt>=1500 )
 return(NULL);
 
-    name = GWidgetAskStringR(_STR_PleaseNameEnc,_STR_PleaseNameEnc,NULL);
+    name = GWidgetAskStringR(_STR_PleaseNameEnc,NULL,_STR_PleaseNameEnc);
     if ( name==NULL )
 return(NULL);
     item = gcalloc(1,sizeof(Encoding));

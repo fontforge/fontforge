@@ -588,9 +588,12 @@ static char *getstring(char *start) {
 
     while ( *start!='\0' && *start!='(' ) ++start;
     if ( *start=='(' ) ++start;
-    for ( end = start; *end!='\0' && (*end!=')' || parencnt>0); ++end )
-	if ( *end=='(' ) ++parencnt;
+    for ( end = start; *end!='\0' && (*end!=')' || parencnt>0); ++end ) {
+	if ( *end=='\\' && (end[1]=='(' || end[1]==')'))
+	    ++end;
+	else if ( *end=='(' ) ++parencnt;
 	else if ( *end==')' ) --parencnt;
+    }
     ret = malloc(end-start+1);
     if ( end>start )
 	strncpy(ret,start,end-start);

@@ -446,46 +446,6 @@ void SplineSetFindBounds(SplinePointList *spl, DBounds *bounds) {
     _SplineSetFindBounds(spl,bounds);
 }
 
-int SplinePointListIsClockwise(SplineSet *spl) {
-    Spline *leftmost = NULL, *spline, *first;
-    double xmin;
-    DBounds bounds;
-
-    if ( spl->first!=spl->last || spl->first->next == NULL )
-return( -1 );		/* Open paths, (open paths with only one point are a special case) */
-
-    first = NULL;
-    leftmost = spl->first->next;
-    while ( leftmost!=first && leftmost->from->me.y==leftmost->to->me.y ) {
-	if ( first==NULL ) first = leftmost;
-	leftmost = leftmost->to->next;
-    }
-    xmin = bounds.minx = bounds.maxx = leftmost->from->me.x;
-    bounds.miny = bounds.maxy = leftmost->from->me.y;
-    
-    first = NULL;
-    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-	if ( spline->from->me.y!=spline->to->me.y ) {
-	    bounds.minx = spline->from->me.x;	/* only bound we care about (bounds of this spline) */
-	    SplineFindBounds(spline,&bounds);
-	    if ( bounds.minx<xmin ) {
-		leftmost = spline;
-		xmin = bounds.minx;
-	    }
-	}
-	if ( first==NULL ) first = spline;
-    }
-    if ( leftmost==NULL )
-return( -1 );
-
-    if ( xmin==leftmost->from->me.x ) {
-return( leftmost->to->me.y>leftmost->from->prev->from->me.y );
-    } else if ( xmin==leftmost->to->me.x ) {
-return( leftmost->from->me.y<leftmost->to->next->to->me.y );
-    } else
-return( leftmost->from->me.y<leftmost->to->me.y );
-}
-
 void SplineCharFindBounds(SplineChar *sc,DBounds *bounds) {
     RefChar *rf;
 
@@ -1055,6 +1015,36 @@ return;
     }
 }
 
+static char *copyparse(char *str) {
+    char *ret=galloc(strlen(str)+1), *rpt=ret;
+    int ch,i;
+
+    while ( *str ) {
+	if ( *str=='\\' ) {
+	    ++str;
+	    if ( *str=='n' ) ch = '\n';
+	    else if ( *str=='r' ) ch = '\r';
+	    else if ( *str=='t' ) ch = '\t';
+	    else if ( *str=='b' ) ch = '\b';
+	    else if ( *str=='f' ) ch = '\f';
+	    else if ( *str=='\\' ) ch = '\\';
+	    else if ( *str=='(' ) ch = '(';
+	    else if ( *str==')' ) ch = ')';
+	    else if ( *str>='0' && *str<='7' ) {
+		for ( i=ch = 0; i<3 && *str>='0' && *str<='7'; ++i )
+		    ch = (ch<<3) + *str++-'0';
+		--str;
+	    } else
+		ch = *str;
+	    ++str;
+	    *rpt++ = ch;
+	} else
+	    *rpt++ = *str++;
+    }
+    *rpt = '\0';
+return(ret);
+}
+
 SplineFont *SplineFontFromPSFont(FontDict *fd) {
     SplineFont *sf = calloc(1,sizeof(SplineFont));
     int em;
@@ -1073,11 +1063,11 @@ SplineFont *SplineFontFromPSFont(FontDict *fd) {
 	    *to ='\0';
 	}
 	if ( sf->fontname==NULL ) sf->fontname = copy(fd->fontinfo->familyname);
-	sf->fullname = copy(fd->fontinfo->fullname);
-	sf->familyname = copy(fd->fontinfo->familyname);
-	sf->weight = copy(fd->fontinfo->weight);
-	sf->version = copy(fd->fontinfo->version);
-	sf->copyright = copy(fd->fontinfo->notice);
+	sf->fullname = copyparse(fd->fontinfo->fullname);
+	sf->familyname = copyparse(fd->fontinfo->familyname);
+	sf->weight = copyparse(fd->fontinfo->weight);
+	sf->version = copyparse(fd->fontinfo->version);
+	sf->copyright = copyparse(fd->fontinfo->notice);
 	sf->italicangle = fd->fontinfo->italicangle;
 	sf->upos = fd->fontinfo->underlineposition;
 	sf->uwidth = fd->fontinfo->underlinethickness;

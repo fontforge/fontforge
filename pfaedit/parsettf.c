@@ -289,7 +289,7 @@ return( true );
 	names[j] = TTFGetFontName(ttf,offsets[i]);
 	if ( names[j]!=NULL ) ++j;
     }
-    choice = GWidgetChoicesR(_STR_PickFont,_STR_MultipleFontsPick,(const unichar_t **) names,j,0);
+    choice = GWidgetChoicesR(_STR_PickFont,(const unichar_t **) names,j,0,_STR_MultipleFontsPick);
     if ( choice!=-1 )
 	fseek(ttf,offsets[choice],SEEK_SET);
     for ( i=0; i<j; ++i )
@@ -307,8 +307,8 @@ static int PickCFFFont(char **fontnames) {
     names = gcalloc(cnt+1,sizeof(unichar_t *));
     for ( i=0; i<cnt; ++i )
 	names[i] = uc_copy(fontnames[i]);
-    choice = GWidgetChoicesR(_STR_PickFont,_STR_MultipleFontsPick,
-	    (const unichar_t **) names,cnt,0);
+    choice = GWidgetChoicesR(_STR_PickFont,
+	    (const unichar_t **) names,cnt,0,_STR_MultipleFontsPick);
     for ( i=0; i<cnt; ++i )
 	free(names[i]);
     free(names);

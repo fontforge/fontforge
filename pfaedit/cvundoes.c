@@ -1042,7 +1042,7 @@ static BDFFont *BitmapCreateCheck(FontView *fv,int *yestoall, int first, int pix
 	u_strcpy(ubuf,GStringGetResource(_STR_ClipContainsPre,NULL));
 	uc_strcat(ubuf,buf);
 	u_strcat(ubuf,GStringGetResource(_STR_ClipContainsPost,NULL));
-	yes = GWidgetAskCenteredR_(_STR_BitmapPaste,ubuf,buts,0,2);
+	yes = GWidgetAskCenteredR_(_STR_BitmapPaste,buts,0,2,ubuf);
 	if ( yes==1 )
 	    *yestoall = true;
 	else

@@ -94,22 +94,22 @@ unichar_t *GWidgetOpenFile(const unichar_t *title, const unichar_t *defaultfile,
 	const unichar_t *initial_filter, unichar_t **mimetypes);
 unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfile,
 	const unichar_t *initial_filter, unichar_t **mimetypes);
-int GWidgetAsk(const unichar_t *title,const unichar_t *question,
-	const unichar_t **answers, const unichar_t *mn, int def, int cancel);
-int GWidgetAskCentered(const unichar_t *title,const unichar_t *question,
-	const unichar_t ** answers, const unichar_t *mn, int def, int cancel);
-unichar_t *GWidgetAskString(const unichar_t *title,const unichar_t *question,
-	const unichar_t *def);
-void GWidgetPostNotice(const unichar_t *title,const unichar_t *statement);
-void GWidgetError(const unichar_t *title,const unichar_t *statement);
-void GWidgetErrorR(int title,int statement);
-int GWidgetAskR(int title,int question, int *answers, int def, int cancel);
-int GWidgetAskR_(int title,const unichar_t *question, int *answers, int def, int cancel);
-int GWidgetAskCenteredR(int title,int question, int *answers, int def, int cancel);
-int GWidgetAskCenteredR_(int title,const unichar_t *question, int *answers, int def, int cancel);
-unichar_t *GWidgetAskStringR(int title,int question, const unichar_t *def);
-void GWidgetPostNoticeR(int title,int statement);
-int GWidgetChoicesR(int title,int question, const unichar_t **choices,int cnt, int def);
+int GWidgetAsk(const unichar_t *title, const unichar_t **answers, const unichar_t *mn,
+	int def, int cancel,const unichar_t *question,...);
+int GWidgetAskCentered(const unichar_t *title,
+	const unichar_t ** answers, const unichar_t *mn, int def, int cancel,const unichar_t *question,...);
+unichar_t *GWidgetAskString(const unichar_t *title,
+	const unichar_t *def,const unichar_t *question,...);
+void GWidgetPostNotice(const unichar_t *title,const unichar_t *statement,...);
+void GWidgetError(const unichar_t *title,const unichar_t *statement,...);
+void GWidgetErrorR(int title,int statement,...);
+int GWidgetAskR(int title, int *answers, int def, int cancel,int question,...);
+int GWidgetAskR_(int title, int *answers, int def, int cancel,const unichar_t *question,...);
+int GWidgetAskCenteredR(int title, int *answers, int def, int cancel,int question,...);
+int GWidgetAskCenteredR_(int title, int *answers, int def, int cancel,const unichar_t *question,...);
+unichar_t *GWidgetAskStringR(int title, const unichar_t *def,int question,...);
+void GWidgetPostNoticeR(int title,int statement,...);
+int GWidgetChoicesR(int title, const unichar_t **choices,int cnt, int def,int question,...);
 void GWidgetCreateInsChar(void);	/* takes input even when a modal dlg is active */
 		/* but is not modal itself */
 void GInsCharSetChar(unichar_t ch);	/* Sets current selection in ins char dlg */

@@ -820,13 +820,13 @@ SplineFont *SplineFontBlank(int encoding_name,int charcnt) {
 /* Can all be commented out if no pwd routines */
     pwd = getpwuid(getuid());
     if ( pwd!=NULL && pwd->pw_gecos!=NULL && *pwd->pw_gecos!='\0' )
-	sprintf( buffer, "Created by %.50s with PfaEdit 1.0", pwd->pw_gecos );
+	sprintf( buffer, "Created by %.50s with PfaEdit 1.0 (http://pfaedit.sf.net)", pwd->pw_gecos );
     else if ( pwd!=NULL && pwd->pw_name!=NULL && *pwd->pw_name!='\0' )
-	sprintf( buffer, "Created by %.50s with PfaEdit 1.0", pwd->pw_name );
+	sprintf( buffer, "Created by %.50s with PfaEdit 1.0 (http://pfaedit.sf.net)", pwd->pw_name );
     else if ( (pt=getenv("USER"))!=NULL )
-	sprintf( buffer, "Created by %.50s with PfaEdit 1.0", pt );
+	sprintf( buffer, "Created by %.50s with PfaEdit 1.0 (http://pfaedit.sf.net)", pt );
     else
-	strcpy( buffer, "Created with PfaEdit 1.0" );
+	strcpy( buffer, "Created with PfaEdit 1.0 (http://pfaedit.sf.net)" );
     endpwent();
 /* End comment */
     if ( xuid!=NULL ) {
@@ -1448,58 +1448,59 @@ return( open );
 /*  problems we merely search for them and if we find any return the first */
 SplineSet *SplineSetsDetectDir(SplineSet **_base,int *_lastscan) {
     SplineSet *spl, *ret, *base;
-    EdgeList es;
-    DBounds b;
-    Edge *active=NULL, *apt, *pr, *e;
-    int i, winding;
+    EIList el;
+    EI *active=NULL, *apt, *pr, *e;
+    int i, winding,change,waschange;
     SplineSet *open;
     int lastscan = *_lastscan;
+    SplineChar dummy;
 
     open = SplineSetsExtractOpen(_base);
     base = *_base;
 
-    SplineSetFindBounds(base,&b);
-    memset(&es,'\0',sizeof(es));
-    es.scale = 1.0;
-    es.mmin = floor(b.miny*es.scale);
-    es.mmax = ceil(b.maxy*es.scale);
-    es.omin = b.minx*es.scale;
-    es.omax = b.maxx*es.scale;
-    es.cnt = (int) (es.mmax-es.mmin) + 1;
-    es.edges = calloc(es.cnt,sizeof(Edge *));
-    es.interesting = calloc(es.cnt,sizeof(char));
-    es.sc = NULL;
-    es.major = 1; es.other = 0;
-    FindEdgesSplineSet(base,&es);
+    memset(&el,'\0',sizeof(el));
+    memset(&dummy,'\0',sizeof(dummy));
+    dummy.splines = base;
+    ELFindEdges(&dummy,&el);
+    el.major = 1;
+    ELOrder(&el,el.major);
 
     ret = NULL;
-    for ( i=0; i<es.cnt && ret==NULL; ++i ) {
-	active = ActiveEdgesRefigure(&es,active,i);
+    waschange = false;
+    for ( i=0; i<el.cnt && ret==NULL; ++i ) {
+	active = EIActiveEdgesRefigure(&el,active,i,1,&change);
 	if ( i<=lastscan )
     continue;
-	if ( es.edges[i]!=NULL )
+	if ( el.ordered[i]!=NULL || el.ends[i] ) {
+	    waschange = change;
     continue;			/* Just too hard to get the edges sorted when we are at a start vertex */
-	if ( /*es.edges[i]==NULL &&*/ !es.interesting[i] &&
-		!(i>0 && es.interesting[i-1]) && !(i>0 && es.edges[i-1]!=NULL) &&
-		!(i<es.cnt-1 && es.edges[i+1]!=NULL) &&
-		!(i<es.cnt-1 && es.interesting[i+1]))	/* interesting things happen when we add (or remove) entries */
-    continue;			/* and where we have points of inflection */
+	}
+	if ( !( waschange || change || el.ends[i] || el.ordered[i]!=NULL ||
+		(i!=el.cnt-1 && (el.ends[i+1] || el.ordered[i+1]!=NULL)) ))
+    continue;
+	waschange = change;
 	for ( apt=active; apt!=NULL && ret==NULL; apt = e) {
+	    if ( EISkipExtremum(apt,i+el.low,1)) {
+		e = apt->aenext->aenext;
+	continue;
+	    }
 	    if ( !apt->up ) {
 		ret = SplineSetOfSpline(base,active->spline);
 	break;
 	    }
 	    winding = apt->up?1:-1;
 	    for ( pr=apt, e=apt->aenext; e!=NULL && winding!=0; pr=e, e=e->aenext ) {
+		if ( EISkipExtremum(e,i+el.low,1)) {
+		    e = e->aenext;
+	    continue;
+		}
 		if ( pr->up!=e->up ) {
 		    if ( (winding<=0 && !e->up) || (winding>0 && e->up )) {
 			ret = SplineSetOfSpline(base,active->spline);
 		break;
 		    }
 		    winding += (e->up?1:-1);
-		} else if ( (pr->before==e || pr->after==e ) &&
-			(( pr->mmax==i && e->mmin==i ) ||
-			 ( pr->mmin==i && e->mmax==i )) )
+		} else if ( EISameLine(pr,e,i+el.low,1) )
 		    /* This just continues the line and doesn't change count */;
 		else {
 		    if ( (winding<=0 && !e->up) || (winding>0 && e->up )) {
@@ -1509,16 +1510,11 @@ SplineSet *SplineSetsDetectDir(SplineSet **_base,int *_lastscan) {
 		    winding += (e->up?1:-1);
 		}
 	    }
-	    /* color a horizontal line that comes out of the last vertex */
-	    if ( e!=NULL && (e->before==pr || e->after==pr) &&
-			(( pr->mmax==i && e->mmin==i ) ||
-			 ( pr->mmin==i && e->mmax==i )) ) {
-		pr = e;
-		e = e->aenext;
-	    }
 	}
     }
-    FreeEdges(&es);
+    free(el.ordered);
+    free(el.ends);
+    ElFreeEI(&el);
     if ( open==NULL )
 	open = base;
     else {
@@ -1527,6 +1523,52 @@ SplineSet *SplineSetsDetectDir(SplineSet **_base,int *_lastscan) {
     }
     *_base = open;
     *_lastscan = i;
+return( ret );
+}
+
+int SplinePointListIsClockwise(SplineSet *spl) {
+    EIList el;
+    EI *active=NULL, *apt, *e;
+    int i, change,waschange;
+    SplineChar dummy;
+    SplineSet *next;
+    int ret = -1;
+
+    if ( spl->first!=spl->last || spl->first->next == NULL )
+return( -1 );		/* Open paths, (open paths with only one point are a special case) */
+
+    memset(&el,'\0',sizeof(el));
+    memset(&dummy,'\0',sizeof(dummy));
+    dummy.splines = spl;
+    next = spl->next; spl->next = NULL;
+    ELFindEdges(&dummy,&el);
+    el.major = 1;
+    ELOrder(&el,el.major);
+
+    waschange = false;
+    for ( i=0; i<el.cnt && ret==-1; ++i ) {
+	active = EIActiveEdgesRefigure(&el,active,i,1,&change);
+	if ( el.ordered[i]!=NULL || el.ends[i] ) {
+	    waschange = change;
+    continue;			/* Just too hard to get the edges sorted when we are at a start vertex */
+	}
+	if ( !( waschange || change || el.ends[i] || el.ordered[i]!=NULL ||
+		(i!=el.cnt-1 && (el.ends[i+1] || el.ordered[i+1]!=NULL)) ))
+    continue;
+	waschange = change;
+	for ( apt=active; apt!=NULL && ret==-1; apt = e) {
+	    if ( EISkipExtremum(apt,i+el.low,1)) {
+		e = apt->aenext->aenext;
+	continue;
+	    }
+	    ret = apt->up;
+	break;
+	}
+    }
+    free(el.ordered);
+    free(el.ends);
+    ElFreeEI(&el);
+    spl->next = next;
 return( ret );
 }
 

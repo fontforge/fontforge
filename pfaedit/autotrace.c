@@ -243,18 +243,9 @@ return;
 	    SCAutoTrace(fv->sf->chars[i], args);
 }
 
-char *FindAutoTraceName(void) {
-    static int searched=0;
-    static char *name;
+char *ProgramExists(char *prog,char *buffer) {
     char *path, *pt;
-    char buffer[1025];
 
-    if ( searched )
-return( name );
-
-    searched = true;
-    if (( name = getenv("AUTOTRACE"))!=NULL )
-return( name );
     if (( path = getenv("PATH"))==NULL )
 return( NULL );
 
@@ -266,10 +257,9 @@ return( NULL );
 	    buffer[pt-path] = '\0';
 	    if ( pt!=path && buffer[pt-path-1]!='/' )
 		strcat(buffer,"/");
-	    strcat(buffer,"autotrace");
+	    strcat(buffer,prog);
 	    if ( access(buffer,X_OK)!=-1 ) {
-		name = "autotrace";
-return( name );
+return( buffer );
 	    }
 	}
 	if ( *pt=='\0' )
@@ -277,4 +267,20 @@ return( name );
 	path = pt+1;
     }
 return( NULL );
+}
+
+char *FindAutoTraceName(void) {
+    static int searched=0;
+    static char *name = NULL;
+    char buffer[1025];
+
+    if ( searched )
+return( name );
+
+    searched = true;
+    if (( name = getenv("AUTOTRACE"))!=NULL )
+return( name );
+    if ( ProgramExists("autotrace",buffer)!=NULL )
+	name = "autotrace";
+return( name );
 }

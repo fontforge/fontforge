@@ -3097,37 +3097,48 @@ static struct { int mslang, maclang, enc, used; } mactrans[] = {
     { 0 }};
 #endif
 
-static void dumpnames(struct alltabs *at, SplineFont *sf) {
-    int pos=0,i,j;
-    char buffer[200];
+void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf) {
     time_t now;
     struct tm *tm;
-    struct ttflangname dummy, *cur;
+    char buffer[200];
+    char *temp;
+
+    if ( dummy->names[0]==NULL ) dummy->names[0] = uc_copy(sf->copyright);
+    if ( dummy->names[1]==NULL ) dummy->names[1] = uc_copy(sf->familyname);
+    if ( dummy->names[2]==NULL ) {
+	temp = SFGetModifiers(sf);
+	dummy->names[2] = uc_copy(temp && *temp?temp:"Regular");
+    }
+    if ( dummy->names[3]==NULL ) {
+	time(&now);
+	tm = localtime(&now);
+	sprintf( buffer, "%s : %s : %d-%d-%d", BDFFoundry?BDFFoundry:"PfaEdit 1.0",
+		sf->fullname, tm->tm_mday, tm->tm_mon, tm->tm_year+1970 );
+	dummy->names[3] = uc_copy(buffer);
+    }
+    if ( dummy->names[4]==NULL ) dummy->names[4] = uc_copy(sf->fullname);
+    if ( dummy->names[5]==NULL ) dummy->names[5] = uc_copy(sf->version);
+    if ( dummy->names[6]==NULL ) dummy->names[6] = uc_copy(sf->fontname);
+}
+
+static void dumpnames(struct alltabs *at, SplineFont *sf) {
+    int pos=0,i,j;
+    struct ttflangname dummy, *cur, *useng;
     int strcnt=0;
     int posses[ttf_namemax];
 
     memset(&dummy,'\0',sizeof(dummy));
+    useng = NULL;
     for ( cur=sf->names; cur!=NULL; cur=cur->next ) {
 	if ( cur->lang!=0x409 ) {
 	    for ( i=0; i<ttf_namemax; ++i )
 		if ( cur->names[i]!=NULL ) ++strcnt;
-	} else
+	} else {
 	    dummy = *cur;
+	    useng = cur;
+	}
     }
-    if ( dummy.names[0]==NULL ) dummy.names[0] = uc_copy(sf->copyright);
-    if ( dummy.names[1]==NULL ) dummy.names[1] = uc_copy(sf->familyname);
-    if ( dummy.names[2]==NULL )
-	dummy.names[2] = uc_copy(sf->weight?sf->weight:"Regular");
-    if ( dummy.names[3]==NULL ) {
-	time(&now);
-	tm = localtime(&now);
-	sprintf( buffer, "PfaEdit 1.0 : %s : %d-%d-%d", sf->fullname, tm->tm_mday,
-		tm->tm_mon, tm->tm_year+1970 );
-	dummy.names[3] = uc_copy(buffer);
-    }
-    if ( dummy.names[4]==NULL ) dummy.names[4] = uc_copy(sf->fullname);
-    if ( dummy.names[5]==NULL ) dummy.names[5] = uc_copy(sf->version);
-    if ( dummy.names[6]==NULL ) dummy.names[6] = uc_copy(sf->fontname);
+    DefaultTTFEnglishNames(&dummy, sf);
     for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL ) strcnt+=3;
     	/* once of mac roman encoding, once for mac unicode and once for windows unicode 409 */
 
@@ -3186,6 +3197,9 @@ static void dumpnames(struct alltabs *at, SplineFont *sf) {
     if ( (at->namelen&3)!=0 )
 	for ( j= 4-(at->namelen&3); j>0; --j )
 	    putc('\0',at->name);
+    for ( i=0; i<ttf_namemax; ++i )
+	if ( useng==NULL || dummy.names[i]!=useng->names[i] )
+	    free( dummy.names[i]);
 }
 
 static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format) {

@@ -39,6 +39,7 @@ enum { pt_lp, pt_lpr, pt_ghostview, pt_file, pt_unknown=-1 };
 int pagewidth = 595, pageheight=792; 	/* Minimum size for US Letter, A4 paper, should work for either */
 static char *lastprinter=NULL;
 int printtype = pt_unknown;
+static int use_gv;
 
 typedef struct printinfo {
     FontView *fv;
@@ -113,6 +114,8 @@ static void dump_prologue(PI *pi) {
     else
 	fprintf( pi->out, "%%%%Title: Character Displays from %s\n", pi->sf->fullname );
     fprintf( pi->out, "%%%%DocumentNeededResources: font Times-Bold\n" );
+    if ( pi->sf->encoding_name == em_unicode ) 
+	fprintf( pi->out, "%%%%DocumentNeededResources: font ZapfDingbats\n" );
     fprintf( pi->out, "%%%%EndComments\n\n" );
 
     fprintf( pi->out, "%%%%BeginSetup\n" );
@@ -891,13 +894,18 @@ return( tis );
 	rewind(printcap);
     }
 }
-    
+
+static int progexists(char *prog) {
+    char buffer[1025];
+
+return( ProgramExists(prog,buffer)!=NULL );
+}
+
 static int PageSetup(PI *pi) {
     GRect pos;
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[14];
     GTextInfo label[14];
-    int cnt;
     char buf[10], pb[30];
     int pt;
     /* Don't translate these. we compare against the text */
@@ -931,7 +939,7 @@ static int PageSetup(PI *pi) {
     gcd[0].gd.label = &label[0];
     gcd[0].gd.mnemonic = 'l';
     gcd[0].gd.pos.x = 40; gcd[0].gd.pos.y = 6; 
-    gcd[0].gd.flags = gg_visible | gg_enabled;
+    gcd[0].gd.flags = progexists("lp")? (gg_visible | gg_enabled):gg_visible;
     gcd[0].gd.cid = CID_lp;
     gcd[0].gd.handle_controlevent = PG_RadioSet;
     gcd[0].creator = GRadioCreate;
@@ -941,17 +949,25 @@ static int PageSetup(PI *pi) {
     gcd[1].gd.label = &label[1];
     gcd[1].gd.mnemonic = 'r';
     gcd[1].gd.pos.x = gcd[0].gd.pos.x; gcd[1].gd.pos.y = 18+gcd[0].gd.pos.y; 
-    gcd[1].gd.flags = (cnt==0 ? gg_visible : (gg_visible | gg_enabled));
+    gcd[1].gd.flags = progexists("lpr")? (gg_visible | gg_enabled):gg_visible;
     gcd[1].gd.cid = CID_lpr;
     gcd[1].gd.handle_controlevent = PG_RadioSet;
     gcd[1].creator = GRadioCreate;
 
+    use_gv = false;
     label[2].text = (unichar_t *) "ghostview";
     label[2].text_is_1byte = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.mnemonic = 'g';
-    gcd[2].gd.pos.x = gcd[0].gd.pos.x+50; gcd[2].gd.pos.y = gcd[0].gd.pos.y; 
+    gcd[2].gd.pos.x = gcd[0].gd.pos.x+50; gcd[2].gd.pos.y = gcd[0].gd.pos.y;
     gcd[2].gd.flags = gg_visible | gg_enabled;
+    if ( !progexists("ghostview") ) {
+	if ( progexists("gv") ) {
+	    label[2].text = (unichar_t *) "gv";
+	    use_gv = true;
+	} else
+	    gcd[2].gd.flags = gg_visible;
+    }
     gcd[2].gd.cid = CID_ghostview;
     gcd[2].gd.handle_controlevent = PG_RadioSet;
     gcd[2].creator = GRadioCreate;
@@ -1106,7 +1122,12 @@ static void QueueIt(PI *pi) {
 	dup2(fileno(pi->out),stdinno);
 	i = 0;
 	if ( pi->printtype == pt_ghostview ) {
-	    argv[i++] = "ghostview";
+	    if ( !use_gv )
+		argv[i++] = "ghostview";
+	    else {
+		argv[i++] = "gv";
+		argv[i++] = "-antialias";
+	    }
 	    argv[i++] = "-";		/* read from stdin */
 	} else if ( pi->printtype == pt_lp ) {
 	    argv[i++] = "lp";
@@ -1291,7 +1312,13 @@ static unichar_t _simple1[] = { ' ','A',' ','q','u','i','c','k',' ','b',
 static unichar_t _simple2[] = { 'F','e','w',' ','z','e','b','r','a','s',' ','v',
 	'a','l','i','d','a','t','e',' ','m','y',' ','p','a','r','a','d','o','x',
 	',',' ','q','u','o','t','h',' ','J','a','c','k',' ','X','e','n','o', 0 };
-static unichar_t *simplechoices[] = { _simple1, _simple2, NULL };
+static unichar_t _simple3[] = { 'f','l','y','g','a','n','d','e',' ','b','ä','c',
+	'k','a','s','i','n','e','r',' ','s','ö','k','a',' ','h','w','i','l','a',
+	' ','p','å',' ','m','j','u','k','a',' ','t','u','v','o','r',  '\0' };
+static unichar_t _simple4[] = { ' ','A',' ','q','u','i','c','k',' ','b',
+	'r','o','w','n',' ','v','i','x','e','n',' ','j','u','m','p','s',' ','f','o',
+	'r',' ','t','h','e',' ','l','a','z','y',' ','d','o','g','.',  '\0' };
+static unichar_t *simplechoices[] = { _simple1, _simple2, _simple3, _simple4, NULL };
 static unichar_t *simple[] = { _simple1, NULL };
 /* Russian */
 static unichar_t _simplecyrill1[] = {' ', 0x421, 0x44a, 0x435, 0x448, 0x44c, ' ',

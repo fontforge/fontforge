@@ -274,7 +274,7 @@ static int askusersize(char *filename) {
     int guess;
     unichar_t *ret, *end;
     char def[10];
-    unichar_t udef[10], utit[40], uquest[80];
+    unichar_t udef[10];
 
     for ( pt=filename; *pt && !isdigit(*pt); ++pt );
     guess = strtol(pt,NULL,10);
@@ -283,17 +283,15 @@ static int askusersize(char *filename) {
     else
 	*def = '\0';
     uc_strcpy(udef,def);
-    uc_strcpy(utit,"Pixel Size?");
-    uc_strcpy(uquest,"What is the pixel size of the font in this file?");
   retry:
-    ret = GWidgetAskString(utit,uquest,udef);
+    ret = GWidgetAskStringR(_STR_PixelSize,udef,_STR_PixelSizeFont);
     if ( ret==NULL )
 	guess = -1;
     else {
 	guess = u_strtol(ret,&end,10);
 	free(ret);
 	if ( guess<=0 || *end!='\0' ) {
-	    GDrawError("Bad number");
+	    GWidgetErrorR(_STR_BadNumber,_STR_BadNumber);
   goto retry;
 	}
     }
@@ -314,7 +312,7 @@ static int alreadyexists(int pixelsize) {
     uc_strcat(ubuf,buffer);
     u_strcat(ubuf, GStringGetResource(_STR_Duppixelsizepost,NULL));
     
-return( GWidgetAsk(GStringGetResource(_STR_Duppixelsize,NULL),ubuf,buts,oc,0,1)==0 );
+return( GWidgetAsk(GStringGetResource(_STR_Duppixelsize,NULL),buts,oc,0,1,ubuf)==0 );
 }
 
 BDFFont *SFImportBDF(SplineFont *sf, char *filename) {
@@ -326,12 +324,12 @@ BDFFont *SFImportBDF(SplineFont *sf, char *filename) {
 
     bdf = fopen(filename,"r");
     if ( bdf==NULL ) {
-	GDrawError("Couldn't open file %s", filename );
+	GWidgetErrorR(_STR_CouldNotOpenFile, _STR_CouldNotOpenFileName, filename );
 return( 0 );
     }
     if ( gettoken(bdf,tok,sizeof(tok))==-1 || strcmp(tok,"STARTFONT")!=0 ) {
 	fclose(bdf);
-	GDrawError("Not a bdf file: %s", filename );
+	GWidgetErrorR(_STR_NotBdfFile, _STR_NotBdfFileName, filename );
 return( NULL );
     }
     pixelsize = slurp_header(bdf,&ascent,&descent,&enc,family,mods,full);
@@ -387,10 +385,7 @@ return( b );
 
 int FVImportBDF(FontView *fv, char *filename) {
     BDFFont *b;
-    static unichar_t loading[] = { 'L','o','a','d','i','n','g','.','.','.',  '\0' };
-    static unichar_t reading[] = { 'R','e','a','d','i','n','g',' ','G','l','y','p','h','s',  '\0' };
-    unichar_t ubuf[120];
-    char buf[120];
+    unichar_t ubuf[140];
     char *eod, *fpt, *file, *full;
     int fcnt, any = 0;
 
@@ -401,9 +396,8 @@ int FVImportBDF(FontView *fv, char *filename) {
     while (( fpt=strstr(fpt,"; "))!=NULL )
 	{ ++fcnt; fpt += 2; }
 
-    sprintf(buf, "Loading font from %.100s", "                                 ");
-    uc_strcpy(ubuf,buf);
-    GProgressStartIndicator(10,loading,ubuf,reading,0,fcnt);
+    u_sprintf(ubuf, GStringGetResource(_STR_LoadingFrom,NULL), filename);
+    GProgressStartIndicator(10,GStringGetResource(_STR_Loading,NULL),ubuf,GStringGetResource(_STR_ReadingGlyphs,NULL),0,fcnt);
     GProgressEnableStop(false);
 
     file = eod+1;
@@ -412,8 +406,7 @@ int FVImportBDF(FontView *fv, char *filename) {
 	if ( fpt!=NULL ) *fpt = '\0';
 	full = galloc(strlen(filename)+1+strlen(file)+1);
 	strcpy(full,filename); strcat(full,"/"); strcat(full,file);
-	sprintf(buf, "Loading font from %.100s", file);
-	uc_strcpy(ubuf,buf);
+	u_sprintf(ubuf, GStringGetResource(_STR_LoadingFrom,NULL), filename);
 	GProgressChangeLine1(ubuf);
 	b = SFImportBDF(fv->sf,full);
 	free(full);

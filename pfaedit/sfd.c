@@ -390,7 +390,7 @@ static char base64[64] = {
 }
 
 static void SFDDumpUTF7Str(FILE *sfd, const unichar_t *str) {
-    int ch, prev_cnt=0, prev=0, in;
+    int ch, prev_cnt=0, prev=0, in=0;
 
     putc('"',sfd);
     if ( str!=NULL ) while ( (ch = *str++)!='\0' ) {

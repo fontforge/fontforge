@@ -251,7 +251,7 @@ static void MergeFont(FontView *fv,SplineFont *other) {
     BDFFont *bdf;
 
     if ( fv->sf==other ) {
-	GDrawError("Merging a font with itself achieves nothing" );
+	GWidgetErrorR(_STR_MergingProb,_STR_MergingFontSelf);
 return;
     }
 
@@ -327,7 +327,7 @@ return;
 	if ( sf==NULL )
 	    /* Do Nothing */;
 	else if ( sf->fv==fv )
-	    GDrawError("Can't merge a font with itself");
+	    GWidgetErrorR(_STR_MergingProb,_STR_MergingFontSelf);
 	else
 	    MergeFont(fv,sf);
 	file = fpt+2;
@@ -350,7 +350,8 @@ static GTextInfo *BuildFontList(FontView *except) {
     }
     tf[cnt++].line = true;
     tf[cnt].fg = tf[cnt].bg = COLOR_DEFAULT;
-    tf[cnt++].text = uc_copy("Other ...");
+    tf[cnt].text_in_resource = true;
+    tf[cnt++].text = (unichar_t *) _STR_Other;
 return( tf );
 }
 
@@ -358,7 +359,8 @@ static void TFFree(GTextInfo *tf) {
     int i;
 
     for ( i=0; tf[i].text!=NULL || tf[i].line ; ++i )
-	free( tf[i].text );
+	if ( !tf[i].text_in_resource )
+	    free( tf[i].text );
     free(tf);
 }
 
@@ -417,8 +419,7 @@ void FVMergeFonts(FontView *fv) {
     GGadgetCreateData gcd[6];
     GTextInfo label[6];
     struct mf_data d;
-    static unichar_t title[] = { 'M','e','r','g','e',' ', 'F','o','n','t','s',  '\0' };
-    char buffer[50];
+    unichar_t buffer[80];
 
     /* If there's only one font loaded, then it's the current one, and there's*/
     /*  no point asking the user if s/he wants to merge any of the loaded */
@@ -432,7 +433,7 @@ void FVMergeFonts(FontView *fv) {
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-	wattrs.window_title = title;
+	wattrs.window_title = GStringGetResource(_STR_Mergefonts,NULL);
 	pos.x = pos.y = 0;
 	pos.width =GDrawPointsToPixels(NULL,150);
 	pos.height = GDrawPointsToPixels(NULL,88);
@@ -441,9 +442,8 @@ void FVMergeFonts(FontView *fv) {
 	memset(&label,0,sizeof(label));
 	memset(&gcd,0,sizeof(gcd));
 
-	sprintf( buffer, "Font to merge into %.20s", fv->sf->fontname );
-	label[0].text = (unichar_t *) buffer;
-	label[0].text_is_1byte = true;
+	u_sprintf( buffer, GStringGetResource(_STR_FontToMergeInto,NULL), fv->sf->fontname );
+	label[0].text = buffer;
 	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6; 
 	gcd[0].gd.flags = gg_visible | gg_enabled;
@@ -666,7 +666,7 @@ static void InterpolateFont(SplineFont *base, SplineFont *other, double amount) 
     int i, index;
 
     if ( base==other ) {
-	GDrawError("Interpolating a font with itself achieves nothing" );
+	GWidgetErrorR(_STR_InterpolatingProb,_STR_InterpolatingFontSelf);
 return;
     }
     new = SplineFontBlank(base->encoding_name,base->charcnt);
@@ -712,7 +712,7 @@ static int IF_OK(GGadget *g, GEvent *e) {
 	int err=false;
 	double amount;
 	
-	amount = GetDouble(gw,CID_Amount, "Amount",&err);
+	amount = GetDoubleR(gw,CID_Amount, _STR_Amount,&err);
 	if ( err )
 return( true );
 	last_amount = amount;
@@ -739,8 +739,7 @@ void FVInterpolateFonts(FontView *fv) {
     GGadgetCreateData gcd[8];
     GTextInfo label[8];
     struct mf_data d;
-    static unichar_t title[] = { 'I', 'n', 't', 'e', 'r', 'p', 'o','l','a','t','e', ' ',  'F','o','n','t','s','.', '.', '.', '\0' };
-    char buffer[50], buf2[30];
+    unichar_t buffer[80]; char buf2[30];
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
@@ -748,7 +747,7 @@ void FVInterpolateFonts(FontView *fv) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = title;
+    wattrs.window_title = GStringGetResource(_STR_Interp,NULL);
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,200);
     pos.height = GDrawPointsToPixels(NULL,118);
@@ -757,9 +756,8 @@ void FVInterpolateFonts(FontView *fv) {
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
 
-    sprintf( buffer, "Interpolating between %.20s and:", fv->sf->fontname );
-    label[0].text = (unichar_t *) buffer;
-    label[0].text_is_1byte = true;
+    u_sprintf( buffer, GStringGetResource(_STR_InterpBetween,NULL), fv->sf->fontname );
+    label[0].text = buffer;
     gcd[0].gd.label = &label[0];
     gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6; 
     gcd[0].gd.flags = gg_visible | gg_enabled;
@@ -791,8 +789,8 @@ void FVInterpolateFonts(FontView *fv) {
 
     gcd[3].gd.pos.x = 5; gcd[3].gd.pos.y = 51+6;
     gcd[3].gd.flags = gg_visible | gg_enabled;
-    label[3].text = (unichar_t *) "by";
-    label[3].text_is_1byte = true;
+    label[3].text = (unichar_t *) _STR_By;
+    label[3].text_in_resource = true;
     gcd[3].gd.label = &label[3];
     gcd[3].creator = GLabelCreate;
 
@@ -806,8 +804,8 @@ void FVInterpolateFonts(FontView *fv) {
     gcd[5].gd.pos.x = 15-3; gcd[5].gd.pos.y = 85-3;
     gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
     gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[5].text = (unichar_t *) "OK";
-    label[5].text_is_1byte = true;
+    label[5].text = (unichar_t *) _STR_OK;
+    label[5].text_in_resource = true;
     gcd[5].gd.mnemonic = 'O';
     gcd[5].gd.label = &label[5];
     gcd[5].gd.handle_controlevent = IF_OK;
@@ -816,8 +814,8 @@ void FVInterpolateFonts(FontView *fv) {
     gcd[6].gd.pos.x = 200-GIntGetResource(_NUM_Buttonsize)-15; gcd[6].gd.pos.y = 85;
     gcd[6].gd.pos.width = -1; gcd[6].gd.pos.height = 0;
     gcd[6].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[6].text = (unichar_t *) "Cancel";
-    label[6].text_is_1byte = true;
+    label[6].text = (unichar_t *) _STR_Cancel;
+    label[6].text_in_resource = true;
     gcd[6].gd.label = &label[6];
     gcd[6].gd.mnemonic = 'C';
     gcd[6].gd.handle_controlevent = MF_Cancel;

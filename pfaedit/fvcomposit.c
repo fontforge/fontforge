@@ -368,9 +368,7 @@ static int SCMakeBaseReference(SplineChar *sc,SplineFont *sf,int ch, int copybmp
 	    if ( ch==0x131 ) ch='i'; else ch = 'j';
 	    rsc = findchar(sf,ch);
 	    if ( rsc!=NULL && !sf->dotlesswarn ) {
-		GDrawError( ch=='i'?
-		    "Your font is missing the dotlessi character,\nplease add it and remake your accented characters":
-		    "Your font is missing the dotlessj character,\nplease add it and remake your accented characters" );
+		GWidgetErrorR( _STR_MissingChar,ch=='i'?_STR_Missingdotlessi:_STR_Missingdotlessj);
 		sf->dotlesswarn = true;
 	    }
 	}

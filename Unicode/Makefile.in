@@ -8,7 +8,7 @@ CC = @CC@
 RANLIB = @RANLIB@
 
 libgunicode_OBJECTS =  ArabicForms.o alphabet.o backtrns.o char.o \
- cjk.o memory.o ucharmap.o unialt.o uninames.o ustring.o utype.o
+ cjk.o memory.o ucharmap.o unialt.o uninames.o ustring.o utype.o usprintf.o
 
 Incs = -I../inc -I/usr/pkg/include -I/usr/pkg/include/giflib
 WFLAGS = -Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type -Wparentheses

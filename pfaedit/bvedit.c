@@ -37,7 +37,7 @@ static int askfraction(int *xoff, int *yoff) {
 
     sprintf( buffer, "%d:%d", lastx, lasty );
     uc_strcpy(ubuffer,buffer);
-    ret = GWidgetAskString(GStringGetResource(_STR_Skew,NULL),GStringGetResource(_STR_SkewRatio,NULL),ubuffer);
+    ret = GWidgetAskStringR(_STR_Skew,ubuffer,_STR_SkewRatio);
     if ( ret==NULL )
 return( 0 );
     xv = u_strtol(ret,&end,10);

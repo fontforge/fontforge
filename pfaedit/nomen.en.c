@@ -318,7 +318,7 @@ static char *str_FamilyNameRequired = "A Font Family name is required";
 static char *str_PSNameNotNumber = "A Postscript name may not be a number";
 static char *str_BadFamilyName = "Bad Font Family Name";
 static char *str_BadModifierName = "Bad Font Modifier Name";
-static char *str_BadPSName = "A Postscript name should be ASCII\nand must not contain (){}[]<>%/ or space";
+static char *str_BadPSName = "A Postscript name should be ASCII\nand must not contain (){}[]<>%%/";
 static char *str_Names = "Names";
 static char *str_Encoding2 = "Encoding";
 static char *str_PSGeneral = "PS General";
@@ -490,6 +490,7 @@ static char *str_OTFFamily = "Preferred Family";
 static char *str_OTFStyles = "Preferred Styles";
 static char *str_CompatableFull = "Compatable Full";
 static char *str_SampleText = "Sample Text";
+static char *str_TranslateStyle = "Translate Style";
     /* Language list */
 /* Language & Country (where applicable) in the native language if I can find */
 /*  it, in english if I can't. Followed by the 2char language _ 2char country */
@@ -539,7 +540,7 @@ static char *str_Polish = "Polish pl_PL";
 static char *str_PTPortuguese = "Português Português pt_PT";
 static char *str_BRPortuguese = "Português Brasil pt_BR";
 static char *str_Romanian = "Romanian ro_RO";
-static unichar_t str_Russian = { 0x420, 0x443, 0x441, 0x441, 0x43a, 0x438, 0x439, ' ru_RU',  '\0' };
+static unichar_t str_Russian = { 0x420, 0x443, 0x441, 0x441, 0x43a, 0x438, 0x439, ' ', 'r','u','_','R','U',  '\0' };
 static char *str_Slovak = "Slovak sk_SK";
 static char *str_Slovenian = "Slovenian sl_SI";
 static char *str_TradSpanish = "Español Español es_ES";
@@ -773,6 +774,27 @@ static char *str_Third = "Third";
 static char *str_th = "th";
 static char *str_RemoveEncoding = "Remove Encoding";
 static char *str_LoadEncoding = "Load Encoding";
+    /* fv composit */
+static char *str_MissingChar = "Missing Character...";
+static char *str_Missingdotlessi="Your font is missing the dotlessi character,\nplease add it and remake your accented characters";
+static char *str_Missingdotlessj="Your font is missing the dotlessj character,\nplease add it and remake your accented characters";
+    /* fv fonts */
+static char *str_MergingProb = "Merging Problem";
+static char *str_MergingFontSelf = "Merging a font with itself achieves nothing";
+static char *str_Other = "Other ..."
+static char *str_FontToMergeInto = "Font to merge into %.20s";
+static char *str_InterpolatingProb = "Interpolating Problem";
+static char *str_InterpolatingFontSelf = "Interpolating a font with itself achieves nothing";
+static char *str_Amount = "Amount";
+static char *str_InterpBetween = "Interpolating between %.20s and:";
+static char *str_by = "by";
+    /* Import bdf */
+static char *str_PixelSizeFont = "What is the pixel size of the font in this file?";
+static char *str_CouldNotOpenFile = "Couldn't open file"
+static char *str_CouldNotOpenFileName = "Couldn't open file %.200hs"
+static char *str_NotBdfFile = "Not a bdf file"
+static char *str_NotBdfFileName = "Not a bdf file %.200hs"
+static char *str_LoadingFrom = "Loading font from %.100hs";
     /* problems */
 static char *str_ProbOpenPath = "The selected path does not form a closed loop";
 static char *str_ProbPointsTooClose = "The selected points are too close to each other";

@@ -216,7 +216,7 @@ static int AskChanged(SplineFont *sf) {
     u_strcat(ubuf, GStringGetResource( _STR_Fontchangemid,NULL ));
     uc_strncat(ubuf,filename, 70);
     u_strcat(ubuf, GStringGetResource( _STR_Fontchangepost,NULL ));
-    ret = GWidgetAskR_( _STR_Fontchange,ubuf,buts,0,2);
+    ret = GWidgetAskR_( _STR_Fontchange,buts,0,2,ubuf);
 return( ret );
 }
 
@@ -232,7 +232,7 @@ static int RevertAskChanged(char *fontname,char *filename) {
     u_strcat(ubuf, GStringGetResource( _STR_Fontchangemid,NULL ));
     uc_strncat(ubuf,filename, 70);
     u_strcat(ubuf, GStringGetResource( _STR_Fontchangerevertpost,NULL ));
-    ret = GWidgetAskR_( _STR_Fontchange,ubuf,buts,0,1);
+    ret = GWidgetAskR_( _STR_Fontchange,buts,0,1,ubuf);
 return( ret==0 );
 }
 
@@ -544,7 +544,7 @@ static int FVSelCount(FontView *fv) {
     for ( i=0; i<fv->sf->charcnt; ++i )
 	if ( fv->selected[i] ) ++cnt;
     if ( cnt>10 ) {
-	if ( GWidgetAskR(_STR_Manywin,_STR_Toomany,buts,0,1)==1 )
+	if ( GWidgetAskR(_STR_Manywin,buts,0,1,_STR_Toomany)==1 )
 return( false );
     }
 return( true );
@@ -1065,7 +1065,7 @@ static void FVMenuBuildAccent(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	if ( sc==NULL )
 	    sc = SCBuildDummy(&dummy,fv->sf,i);
 	else if ( sc->unicodeenc == 0x00c5 /* Aring */ && sc->splines!=NULL ) {
-	    if ( GWidgetAskR(_STR_Replacearing,_STR_Areyousurearing,buts,0,1)==1 )
+	    if ( GWidgetAskR(_STR_Replacearing,buts,0,1,_STR_Areyousurearing)==1 )
     continue;
 	}
 	if ( SFIsCompositBuildable(fv->sf,sc->unicodeenc) &&

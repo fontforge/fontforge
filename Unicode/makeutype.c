@@ -998,16 +998,39 @@ static void visualalts(void) {
     alts[0x2375][0] = 0x3c9;
     alts[0x237a][0] = 0x3b1;
 
-    /* I've only typed in the common ones (names of control chars) */
+    /* names of control chars */
     alts[0x2400][0] = 'N';	alts[0x2400][1] = 'U';	alts[0x2400][2] = 'L';
     alts[0x2401][0] = 'S';	alts[0x2401][1] = 'O';	alts[0x2401][2] = 'H';
+    alts[0x2402][0] = 'S';	alts[0x2402][1] = 'T';	alts[0x2402][2] = 'X';
+    alts[0x2403][0] = 'E';	alts[0x2403][1] = 'T';	alts[0x2403][2] = 'X';
+    alts[0x2404][0] = 'E';	alts[0x2404][1] = 'O';	alts[0x2404][2] = 'T';
+    alts[0x2405][0] = 'E';	alts[0x2405][1] = 'N';	alts[0x2405][2] = 'A';
+    alts[0x2406][0] = 'A';	alts[0x2406][1] = 'C';	alts[0x2406][2] = 'K';
     alts[0x2407][0] = 'B';	alts[0x2407][1] = 'E';	alts[0x2407][2] = 'L';
     alts[0x2408][0] = 'B';	alts[0x2408][1] = 'S';
     alts[0x2409][0] = 'H';	alts[0x2409][1] = 'T';
     alts[0x240A][0] = 'L';	alts[0x240a][1] = 'F';
+    alts[0x240b][0] = 'V';	alts[0x240b][1] = 'T';
     alts[0x240C][0] = 'F';	alts[0x240c][1] = 'F';
     alts[0x240d][0] = 'C';	alts[0x240d][1] = 'R';
+    alts[0x240e][0] = 'S';	alts[0x240e][1] = 'O';
+    alts[0x240f][0] = 'S';	alts[0x240f][1] = 'I';
+    alts[0x2410][0] = 'D';	alts[0x2410][1] = 'L';	alts[0x2410][2] = 'E';
+    alts[0x2411][0] = 'D';	alts[0x2411][1] = 'C';	alts[0x2411][2] = '1';
+    alts[0x2412][0] = 'D';	alts[0x2412][1] = 'C';	alts[0x2412][2] = '2';
+    alts[0x2413][0] = 'D';	alts[0x2413][1] = 'C';	alts[0x2413][2] = '3';
+    alts[0x2414][0] = 'D';	alts[0x2414][1] = 'C';	alts[0x2414][2] = '4';
+    alts[0x2415][0] = 'N';	alts[0x2415][1] = 'A';	alts[0x2415][2] = 'K';
+    alts[0x2416][0] = 'S';	alts[0x2416][1] = 'Y';	alts[0x2416][2] = 'N';
+    alts[0x2417][0] = 'E';	alts[0x2417][1] = 'T';	alts[0x2417][2] = 'B';
+    alts[0x2418][0] = 'C';	alts[0x2418][1] = 'A';	alts[0x2418][2] = 'N';
+    alts[0x2419][0] = 'E';	alts[0x2419][1] = 'M';
+    alts[0x241a][0] = 'S';	alts[0x241a][1] = 'U';	alts[0x241a][2] = 'B';
     alts[0x241b][0] = 'E';	alts[0x241b][1] = 'S';	alts[0x241b][2] = 'C';
+    alts[0x241c][0] = 'F';	alts[0x241c][1] = 'S';
+    alts[0x241d][0] = 'G';	alts[0x241d][1] = 'S';
+    alts[0x241e][0] = 'R';	alts[0x241e][1] = 'S';
+    alts[0x241f][0] = 'U';	alts[0x241f][1] = 'S';
     alts[0x2420][0] = 'S';	alts[0x2420][1] = 'P';
     alts[0x2421][0] = 'D';	alts[0x2421][1] = 'E';	alts[0x2421][2] = 'L';
     alts[0x2422][0] = 0x180;

@@ -26,6 +26,7 @@
  */
 #ifndef _UCHAR_H
 # define _UCHAR_H
+#include <stdarg.h>
 #include <string.h>
 #include <memory.h>
 #include "basics.h"
@@ -90,4 +91,7 @@ extern char *u2def_strncpy(char *to, const unichar_t *ufrom, int n);
 extern unichar_t *def2u_copy(const char *from);
 extern char *u2def_copy(const unichar_t *ufrom);
 
+extern int u_sprintf(unichar_t *str, const unichar_t *format, ... );
+extern int u_snprintf(unichar_t *str, int len, const unichar_t *format, ... );
+extern int u_vsnprintf(unichar_t *str, int len, const unichar_t *format, va_list ap );
 #endif

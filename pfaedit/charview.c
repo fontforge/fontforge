@@ -2459,7 +2459,7 @@ int GotoChar(SplineFont *sf) {
     unichar_t *ret, *end;
     int i;
 
-    ret = GWidgetAskStringR(_STR_Goto,_STR_Enternameofchar,NULL);
+    ret = GWidgetAskStringR(_STR_Goto,NULL,_STR_Enternameofchar);
     if ( ret==NULL )
 return(-1);
     for ( i=0; i<sf->charcnt; ++i )

@@ -1391,13 +1391,36 @@ static const unichar_t str_2375[] = { 0x03c9, 0 };
 static const unichar_t str_237a[] = { 0x03b1, 0 };
 static const unichar_t str_2400[] = { 0x004e, 0x0055, 0x004c, 0 };
 static const unichar_t str_2401[] = { 0x0053, 0x004f, 0x0048, 0 };
+static const unichar_t str_2402[] = { 0x0053, 0x0054, 0x0058, 0 };
+static const unichar_t str_2403[] = { 0x0045, 0x0054, 0x0058, 0 };
+static const unichar_t str_2404[] = { 0x0045, 0x004f, 0x0054, 0 };
+static const unichar_t str_2405[] = { 0x0045, 0x004e, 0x0041, 0 };
+static const unichar_t str_2406[] = { 0x0041, 0x0043, 0x004b, 0 };
 static const unichar_t str_2407[] = { 0x0042, 0x0045, 0x004c, 0 };
 static const unichar_t str_2408[] = { 0x0042, 0x0053, 0 };
 static const unichar_t str_2409[] = { 0x0048, 0x0054, 0 };
 static const unichar_t str_240a[] = { 0x004c, 0x0046, 0 };
+static const unichar_t str_240b[] = { 0x0056, 0x0054, 0 };
 static const unichar_t str_240c[] = { 0x0046, 0x0046, 0 };
 static const unichar_t str_240d[] = { 0x0043, 0x0052, 0 };
+static const unichar_t str_240e[] = { 0x0053, 0x004f, 0 };
+static const unichar_t str_240f[] = { 0x0053, 0x0049, 0 };
+static const unichar_t str_2410[] = { 0x0044, 0x004c, 0x0045, 0 };
+static const unichar_t str_2411[] = { 0x0044, 0x0043, 0x0031, 0 };
+static const unichar_t str_2412[] = { 0x0044, 0x0043, 0x0032, 0 };
+static const unichar_t str_2413[] = { 0x0044, 0x0043, 0x0033, 0 };
+static const unichar_t str_2414[] = { 0x0044, 0x0043, 0x0034, 0 };
+static const unichar_t str_2415[] = { 0x004e, 0x0041, 0x004b, 0 };
+static const unichar_t str_2416[] = { 0x0053, 0x0059, 0x004e, 0 };
+static const unichar_t str_2417[] = { 0x0045, 0x0054, 0x0042, 0 };
+static const unichar_t str_2418[] = { 0x0043, 0x0041, 0x004e, 0 };
+static const unichar_t str_2419[] = { 0x0045, 0x004d, 0 };
+static const unichar_t str_241a[] = { 0x0053, 0x0055, 0x0042, 0 };
 static const unichar_t str_241b[] = { 0x0045, 0x0053, 0x0043, 0 };
+static const unichar_t str_241c[] = { 0x0046, 0x0053, 0 };
+static const unichar_t str_241d[] = { 0x0047, 0x0053, 0 };
+static const unichar_t str_241e[] = { 0x0052, 0x0053, 0 };
+static const unichar_t str_241f[] = { 0x0055, 0x0053, 0 };
 static const unichar_t str_2420[] = { 0x0053, 0x0050, 0 };
 static const unichar_t str_2421[] = { 0x0044, 0x0045, 0x004c, 0 };
 static const unichar_t str_2422[] = { 0x0180, 0 };
@@ -5496,14 +5519,37 @@ str_2375,
 static const unichar_t * const tab_24[] = {
 str_2400,
 str_2401,
-0, 0, 0, 0, 0, str_2407,
+str_2402,
+str_2403,
+str_2404,
+str_2405,
+str_2406,
+str_2407,
 str_2408,
 str_2409,
 str_240a,
-0, str_240c,
+str_240b,
+str_240c,
 str_240d,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_241b,
-0, 0, 0, 0, str_2420,
+str_240e,
+str_240f,
+str_2410,
+str_2411,
+str_2412,
+str_2413,
+str_2414,
+str_2415,
+str_2416,
+str_2417,
+str_2418,
+str_2419,
+str_241a,
+str_241b,
+str_241c,
+str_241d,
+str_241e,
+str_241f,
+str_2420,
 str_2421,
 str_2422,
 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_2460,

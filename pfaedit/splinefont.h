@@ -425,8 +425,10 @@ enum fontformat { ff_pfa, ff_pfb, ff_ptype3, ff_ptype0, ff_ttf, ff_ttfsym,
 extern int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format);
 extern int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format);
 extern int WriteTTFFont(char *fontname,SplineFont *sf, enum fontformat format);
+extern void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf);
 extern void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname);
 extern int SFReencodeFont(SplineFont *sf,enum charset new_map);
+extern char *SFGetModifiers(SplineFont *sf);
 extern void SFSetFontName(SplineFont *sf, char *family, char *mods, char *full);
 
 extern int DoubleNear(double a,double b);

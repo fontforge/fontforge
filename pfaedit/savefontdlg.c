@@ -278,7 +278,7 @@ static void GFD_exists(GIOControl *gio) {
     u_strcpy(buffer, GStringGetResource(_STR_Fileexistspre,NULL));
     u_strcat(buffer, u_GFileNameTail(gio->path));
     u_strcat(buffer, GStringGetResource(_STR_Fileexistspost,NULL));
-    if ( GWidgetAsk(GStringGetResource(_STR_Fileexists,NULL),buffer,rcb,rcmn,0,1)==0 ) {
+    if ( GWidgetAsk(GStringGetResource(_STR_Fileexists,NULL),rcb,rcmn,0,1,buffer)==0 ) {
 	DoSave(d,gio->path);
     }
     GFileChooserReplaceIO(d->gfc,NULL);
@@ -341,7 +341,7 @@ static int GFD_NewDir(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	unichar_t *newdir;
-	newdir = GWidgetAskStringR(_STR_Createdir,_STR_Dirname,NULL);
+	newdir = GWidgetAskStringR(_STR_Createdir,NULL,_STR_Dirname);
 	if ( newdir==NULL )
 return( true );
 	if ( !u_GFileIsAbsolute(newdir)) {

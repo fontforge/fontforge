@@ -84,7 +84,7 @@ static int MultipleValues(char *name, int local) {
     sprintf( buffer, "%d", local );
     uc_strcat(ubuf,buffer);
     u_strcat(ubuf,GStringGetResource( _STR_Alreadycharpost,NULL ));
-    if ( GWidgetAsk(GStringGetResource(_STR_Multiple,NULL),ubuf,buts,ocmn,0,1)==0 )
+    if ( GWidgetAsk(GStringGetResource(_STR_Multiple,NULL),buts,ocmn,0,1,ubuf)==0 )
 return( true );
 
 return( false );
@@ -93,7 +93,7 @@ return( false );
 static int MultipleNames(void) {
     int buts[] = { _STR_OK, _STR_Cancel, 0 };
 
-    if ( GWidgetAskR(_STR_Multiple,_STR_Alreadycharnamed,buts,0,1)==0 )
+    if ( GWidgetAskR(_STR_Multiple,buts,0,1,_STR_Alreadycharnamed)==0 )
 return( true );
 
 return( false );
@@ -160,7 +160,7 @@ return( true );
 		sprintf( buffer, "%d", i );
 		uc_strcat(ubuf,buffer);
 		u_strcat(ubuf,GStringGetResource( _STR_Alreadyligpost,NULL ));
-return( GWidgetAsk(GStringGetResource(_STR_Multiple,NULL),ubuf,buts,ocmn,0,1)==0 );
+return( GWidgetAsk(GStringGetResource(_STR_Multiple,NULL),buts,ocmn,0,1,ubuf)==0 );
 	    }
 	}
 
@@ -185,7 +185,7 @@ return( false );
 	    uc_strncat(ubuf,start,20);
 	    u_strcat(ubuf,GStringGetResource( _STR_Missingcomponantpost,NULL ));
 	    *pt = ch;
-return( GWidgetAsk(GStringGetResource(_STR_Multiple,NULL),ubuf,buts,ocmn,0,1)==0 );
+return( GWidgetAsk(GStringGetResource(_STR_Multiple,NULL),buts,ocmn,0,1,ubuf)==0 );
 	}
 	*pt = ch;
 	if ( ch=='\0' )
