@@ -66379,4 +66379,4 @@ struct psaltnames  {
 /* And a terminator */
     {NULL}
 };
-int psaltuninames_cnt = sizeof(psaltuninames)/sizeof(psaltuninames[0]);
+int psaltuninames_cnt = sizeof(psaltuninames)/sizeof(psaltuninames[0])-1;
