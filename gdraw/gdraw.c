@@ -227,7 +227,7 @@ void GDrawTranslateCoordinates(GWindow from,GWindow to, GPoint *pt) {
     GDisplay *gd;
     if ( from!=NULL )
 	gd = from->display;
-    else if ( to==NULL )
+    else if ( to!=NULL )
 	gd = to->display;
     else
 return;
