@@ -159,8 +159,8 @@ static void BDFDumpChar(FILE *file,BDFFont *font,BDFChar *bdfc,int enc) {
     if ( font->sf->hasvmetrics && bdfc->sc->vwidth!=em ) {
 	fprintf( file, "SWIDTH1 %d 0\n", bdfc->sc->vwidth*1000/em );
 	fprintf( file, "DWIDTH1 %d 0\n", (bdfc->sc->vwidth*font->pixelsize+em/2)/em );
-	if ( font->sf->ascent!=bdfc->sc->parent->ascent )	/* For CID fonts */
-	    fprintf( file, "VVECTOR %d,%d\n", 500, 1000*bdfc->sc->parent->ascent/
+	if ( font->sf->vertical_origin!=bdfc->sc->parent->vertical_origin )	/* For CID fonts */
+	    fprintf( file, "VVECTOR %d,%d\n", 500, 1000*bdfc->sc->parent->vertical_origin/
 		    (bdfc->sc->parent->ascent+bdfc->sc->parent->descent)  );
     }
     fprintf( file, "BBX %d %d %d %d\n", bdfc->xmax-bdfc->xmin+1, bdfc->ymax-bdfc->ymin+1,
@@ -251,7 +251,8 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding) {
 	strcpy(fontname,font->sf->fontname);
     }
 
-    fprintf( file, "STARTFONT 2.1\n" );
+  /* Vertical metrics & metrics specified at top level are 2.2 features */
+    fprintf( file, font->sf->hasvmetrics ? "STARTFONT 2.2\n": "STARTFONT 2.1\n" );
     fprintf( file, "FONT %s\n", buffer );	/* FONT ... */
 #if !OLD_GREYMAP_FORMAT
     if ( font->clut==NULL )
@@ -271,15 +272,15 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding) {
 	fprintf( file, "DWIDTH %d\n", font->pixelsize ); /* Default advance width value */
 	fprintf( file, "SWIDTH1 1000\n" );	/* Default advance width value */
 	fprintf( file, "DWIDTH1 %d\n", font->pixelsize ); /* Default advance width value */
-	fprintf( file, "VVECTOR %d,%d\n", 500, 1000*font->sf->ascent/
+	fprintf( file, "VVECTOR %d,%d\n", 500, 1000*font->sf->vertical_origin/
 		(font->sf->ascent+font->sf->descent)  );
 		/* Spec doesn't say if vvector is in scaled or unscaled units */
 		/*  offset from horizontal origin to vertical orig */
     }
-    /* the spec says we can omit SWIDTH/DWIDTH from character metrics if we */
+    /* the 2.2 spec says we can omit SWIDTH/DWIDTH from character metrics if we */
     /* specify it here. That would make monospaced fonts a lot smaller, but */
-    /* I worry that some parsers won't be able to handle it (my didn't until*/
-    /* just now), so I shan't do that */
+    /* that's not in the 2.1 and I worry that some parsers won't be able to */
+    /* handle it (mine didn't until just now), so I shan't do that */
 
     if ( !font->sf->onlybitmaps )
 	fprintf(file, "COMMENT \"This bdf font was generated from a postscript font, %s, by pfaedit\"\n", font->sf->fontname );

@@ -219,7 +219,7 @@ return( i );
 
 struct metrics {
     int swidth, dwidth, swidth1, dwidth1;	/* Font wide width defaults */
-    int metricsset;
+    int metricsset, vertical_origin;
 };
 
 static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,int depth, struct metrics *defs) {
@@ -424,6 +424,8 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc,
 	    fscanf(bdf, "%d", &defs->dwidth1 );
 	else if ( strcmp(tok,"METRICSSET")==0 )
 	    fscanf(bdf, "%d", &defs->metricsset );
+	else if ( strcmp(tok,"VVECTOR")==0 )
+	    fscanf(bdf, "%*d %d", &defs->vertical_origin );
 	else if ( strcmp(tok,"CHARSET_REGISTRY")==0 )
 	    fscanf(bdf, " \"%[^\"]", encname );
 	else if ( strcmp(tok,"CHARSET_ENCODING")==0 ) {
@@ -1350,7 +1352,7 @@ BDFFont *SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback) {
     struct metrics defs;
 
     defs.swidth = defs.swidth1 = -1; defs.dwidth=defs.dwidth1=0;
-    defs.metricsset = 0;
+    defs.metricsset = 0; defs.vertical_origin = 0;
 
     bdf = fopen(filename,"r");
     if ( bdf==NULL ) {
@@ -1394,14 +1396,16 @@ return( NULL );
 	/* Loading first bitmap into onlybitmap font sets the name and encoding */
 	SFSetFontName(sf,family,mods,full);
 	SFReencodeFont(sf,enc);
-	if ( defs.metricsset!=0 )
+	if ( defs.metricsset!=0 ) {
 	    sf->hasvmetrics = true;
+	    sf->vertical_origin = defs.vertical_origin==0?sf->ascent:defs.vertical_origin;
+	}
 	sf->display_size = pixelsize;
     }
 
     b = NULL;
     if ( !toback )
-	for ( b=sf->bitmaps; b!=NULL && b->pixelsize!=pixelsize; b=b->next );
+	for ( b=sf->bitmaps; b!=NULL && (b->pixelsize!=pixelsize || BDFDepth(b)!=depth); b=b->next );
     if ( b!=NULL ) {
 	if ( !alreadyexists(pixelsize)) {
 	    fclose(bdf); free(toc);
@@ -1423,17 +1427,14 @@ return( NULL );
 	b->ascent = ascent;
 	b->descent = pixelsize-b->ascent;
 	b->encoding_name = sf->encoding_name;
+	if ( depth!=1 )
+	    BDFClut(b,(1<<(depth/2)));
 	if ( !toback ) {
 	    b->next = sf->bitmaps;
 	    sf->bitmaps = b;
 	    SFOrderBitmapList(sf);
 	}
-    } else {
-	free(b->clut);
-	b->clut = NULL;
     }
-    if ( depth!=1 )
-	BDFClut(b,(1<<(depth/2)));
     if ( ispk==1 ) {
 	while ( pk_char(bdf,sf,b));
     } else if ( ispk==2 ) {
@@ -1524,7 +1525,9 @@ static void SFMergeBitmaps(SplineFont *sf,BDFFont *strikes) {
     while ( strikes ) {
 	snext = strikes->next;
 	strikes->next = NULL;
-	for ( prev=NULL,b=sf->bitmaps; b!=NULL && b->pixelsize!=strikes->pixelsize; b=b->next );
+	for ( prev=NULL,b=sf->bitmaps; b!=NULL &&
+		(b->pixelsize!=strikes->pixelsize || BDFDepth(b)!=BDFDepth(strikes));
+		b=b->next );
 	if ( b==NULL ) {
 	    strikes->next = sf->bitmaps;
 	    sf->bitmaps = strikes;
@@ -1542,6 +1545,7 @@ static void SFMergeBitmaps(SplineFont *sf,BDFFont *strikes) {
 	}
 	strikes = snext;
     }
+    SFOrderBitmapList(sf);
 }
 
 static void FVAddToBackground(FontView *fv,BDFFont *bdf);
