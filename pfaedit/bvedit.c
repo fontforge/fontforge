@@ -525,6 +525,7 @@ return( BDFFloatCopy(sel));
     new = galloc(sizeof(BDFFloat));
     *new = *sel;
     new->byte_data = todepth!=1;
+    new->depth = todepth;
     new->bytes_per_line = new->byte_data ? new->xmax-new->xmin+1 : ((new->xmax-new->xmin)>>3)+1;
     new->bitmap = gcalloc(new->bytes_per_line*(sel->ymax-sel->ymin+1),1);
     if ( fromdepth==1 ) {
@@ -582,6 +583,7 @@ return( NULL );
     new->ymin = ymin;
     new->ymax = ymax;
     new->byte_data = bc->byte_data;
+    new->depth = bc->depth;
     if ( bc->byte_data ) {
 	new->bytes_per_line = xmax-xmin+1;
 	new->bitmap = gcalloc(new->bytes_per_line*(ymax-ymin+1),sizeof(uint8));

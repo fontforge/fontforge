@@ -722,6 +722,48 @@ static void bImport(Context *c) {
 	error(c,"Import failed" );
 }
 
+static void bExport(Context *c) {
+    int format,i ;
+    BDFFont *bdf;
+
+    if ( c->a.argc!=2 && c->a.argc!=3 )
+	error( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_str || (c->a.argc==3 && c->a.vals[2].type!=v_int ))
+	error( c, "Bad type of arguments");
+    if ( strmatch(c->a.vals[1].u.sval,"eps")==0 )
+	format = 0;
+    else if ( strmatch(c->a.vals[1].u.sval,"fig")==0 )
+	format = 1;
+    else if ( strmatch(c->a.vals[1].u.sval,"xbm")==0 )
+	format = 2;
+    else if ( strmatch(c->a.vals[1].u.sval,"bmp")==0 )
+	format = 3;
+#ifndef _NO_LIBPNG
+    else if ( strmatch(c->a.vals[1].u.sval,"png")==0 )
+	format = 4;
+    else
+	error( c, "Bad format (first arg must be eps/fig/xbm/bmp/png)");
+#else
+    else
+	error( c, "Bad format (first arg must be eps/fig/xbm/bmp)");
+#endif
+    if (( format>=2 && c->a.argc!=3 ) || (format<2 && c->a.argc==3 ))
+	error( c, "Wrong number of arguments");
+    bdf=NULL;
+    if ( format>=2 ) {
+	for ( bdf = c->curfv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
+	    if (( BDFDepth(bdf)==1 && bdf->pixelsize==c->a.vals[2].u.ival) ||
+		    (bdf->pixelsize!=(c->a.vals[2].u.ival&0xffff) &&
+			    BDFDepth(bdf)==(c->a.vals[2].u.ival>>16)) )
+	break;
+	if ( bdf==NULL )
+	    error(c, "No bitmap font matches the specified size");
+    }
+    for ( i=0; i<c->curfv->sf->charcnt; ++i )
+	if ( SCWorthOutputting(c->curfv->sf->chars[i]) )
+	    ScriptExport(c->curfv->sf,bdf,format,i);
+}
+
 static void bMergeKern(Context *c) {
     int isafm;
 
@@ -1851,6 +1893,7 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "Save", bSave },
     { "Generate", bGenerate },
     { "Import", bImport },
+    { "Export", bExport },
     { "MergeKern", bMergeKern },
     { "PrintSetup", bPrintSetup },
     { "PrintFont", bPrintFont },

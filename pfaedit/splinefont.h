@@ -107,6 +107,7 @@ typedef struct bdffloat {
     int16 xmin,xmax,ymin,ymax;
     int16 bytes_per_line;
     unsigned int byte_data:1;
+    uint8 depth;
     uint8 *bitmap;
 } BDFFloat;
 
@@ -167,6 +168,7 @@ typedef struct bdfchar {
     unsigned int changed: 1;
     unsigned int byte_data: 1;		/* for anti-aliased chars entries are grey-scale bytes not bw bits */
     unsigned int widthgroup: 1;		/* for ttf bitmap output */
+    uint8 depth;			/* for ttf bitmap output */
     BDFFloat *selection;
 } BDFChar;
 

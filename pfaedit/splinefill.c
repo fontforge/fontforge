@@ -1195,6 +1195,7 @@ return;
     new.enc = bc->enc;
     new.sc = bc->sc;
     new.byte_data = true;
+    new.depth = max==3 ? 2 : max==15 ? 4 : 8;
     new.bitmap = gcalloc( (new.ymax-new.ymin+1) * new.bytes_per_line, sizeof(uint8));
     for ( i=0; i<=bc->ymax-bc->ymin; ++i ) {
 	bpt = bc->bitmap + i*bc->bytes_per_line;

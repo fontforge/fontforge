@@ -130,11 +130,13 @@ return;
     bdfc->xmax = bdfc->xmin+metrics->width-1;
     bdfc->ymax = metrics->hbearingY-1;
     bdfc->ymin = bdfc->ymax-metrics->height+1;
-    if ( bdf->clut==NULL )
+    if ( bdf->clut==NULL ) {
 	bdfc->bytes_per_line = (metrics->width+7)/8;
-    else {
+	bdfc->depth = 1;
+    } else {
 	bdfc->bytes_per_line = metrics->width;
 	bdfc->byte_data = true;
+	bdfc->depth = bdf->clut->clut_len==4 ? 2 : bdf->clut->clut_len==16 ? 4 : 8;
     }
     bdfc->bitmap = gcalloc(metrics->height*bdfc->bytes_per_line,sizeof(uint8));
 

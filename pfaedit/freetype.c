@@ -333,6 +333,7 @@ BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,
     if ( slot->bitmap.width==0 )
 	bdfc->xmax = bdfc->xmin;
     bdfc->byte_data = (depth!=1);
+    bdfc->depth = depth;
     if ( sc!=NULL ) {
 	bdfc->width = rint(sc->width*pixelsize / (real) (sc->parent->ascent+sc->parent->descent));
 	bdfc->enc = enc;

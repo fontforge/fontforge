@@ -466,6 +466,7 @@ extern void SCRemoveSelectedMinimumDistances(SplineChar *sc,int inx);
 extern int _ExportEPS(FILE *eps,SplineChar *sc);
 extern int CVExport(CharView *cv);
 extern int BVExport(BitmapView *bv);
+extern void ScriptExport(SplineFont *sf, BDFFont *bdf, int format, int enc);
 
 extern void DefaultY(GRect *pos);
 extern CharView *CharViewCreate(SplineChar *sc,FontView *fv);

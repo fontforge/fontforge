@@ -276,8 +276,8 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,int depth, struct m
 	    bc->bytes_per_line = xmax-xmin + 1;
 	    bc->byte_data = true;
 	}
+	bc->depth = depth;
 	bc->bitmap = galloc(bc->bytes_per_line*(ymax-ymin+1));
-	bc->byte_data = ( depth!=1 );
 
 	pt = bc->bitmap; end = pt + bc->bytes_per_line*(ymax-ymin+1);
 	eol = pt + bc->bytes_per_line;

@@ -379,7 +379,7 @@ static int ExportXBM(char *filename,SplineChar *sc, int format) {
     int scale;
     void *freetypecontext;
 
-    if ( format==1 ) {
+    if ( format==0 ) {
 	ans = GWidgetAskStringR(_STR_PixelSizeQ,def,_STR_PixelSizeQ);
 	if ( ans==NULL )
 return( 0 );
@@ -417,8 +417,13 @@ return( 0 );
 	base.bytes_per_line = bdfc->bytes_per_line;
 	base.width = bdfc->xmax-bdfc->xmin+1;
 	base.height = bdfc->ymax-bdfc->ymin+1;
-	if ( format==1 )
+	base.trans = -1;
+	if ( format==0 )
 	    ret = GImageWriteXbm(&gi,filename);
+#ifndef _NO_LIBPNG
+	else if ( format==2 )
+	    ret = GImageWritePng(&gi,filename,false);
+#endif
 	else
 	    ret = GImageWriteBmp(&gi,filename);
 	BDFCharFree(bdfc);
@@ -436,14 +441,20 @@ return( 0 );
 	base.width = bdfc->xmax-bdfc->xmin+1;
 	base.height = bdfc->ymax-bdfc->ymin+1;
 	base.clut = &clut;
+	base.trans = -1;
 	clut.clut_len = 1<<bitsperpixel;
 	clut.is_grey = true;
-	clut.trans_index = 0;
+	clut.trans_index = -1;
 	scale = 255/((1<<bitsperpixel)-1);
 	scale = COLOR_CREATE(scale,scale,scale);
 	for ( i=0; i< 1<<bitsperpixel; ++i )
 	    clut.clut[(1<<bitsperpixel)-1 - i] = i*scale;
-	ret = GImageWriteBmp(&gi,filename);
+#ifndef _NO_LIBPNG
+	if ( format==2 )
+	    ret = GImageWritePng(&gi,filename,false);
+	else
+#endif
+	    ret = GImageWriteBmp(&gi,filename);
 	BDFCharFree(bdfc);
     }
 return( ret );
@@ -452,30 +463,82 @@ return( ret );
 static int BCExportXBM(char *filename,BDFChar *bdfc, int format) {
     struct _GImage base;
     GImage gi;
+    GClut clut;
     int ret;
     int tot;
+    int scale, i;
     uint8 *pt, *end;
-
-    BCRegularizeBitmap(bdfc);
-    /* Sigh. Bitmaps use a different defn of set than images do. make it consistant */
-    tot = bdfc->bytes_per_line*(bdfc->ymax-bdfc->ymin+1);
-    for ( pt = bdfc->bitmap, end = pt+tot; pt<end; *pt++ ^= 0xff );
 
     memset(&gi,'\0', sizeof(gi));
     memset(&base,'\0', sizeof(base));
     gi.u.image = &base;
-    base.image_type = it_mono;
-    base.data = bdfc->bitmap;
-    base.bytes_per_line = bdfc->bytes_per_line;
-    base.width = bdfc->xmax-bdfc->xmin+1;
-    base.height = bdfc->ymax-bdfc->ymin+1;
-    if ( format==0 )
-	ret = GImageWriteXbm(&gi,filename);
-    else
-	ret = GImageWriteBmp(&gi,filename);
-    /* And back to normal */
-    for ( pt = bdfc->bitmap, end = pt+tot; pt<end; *pt++ ^= 0xff );
+
+    if ( !bdfc->byte_data ) {
+	BCRegularizeBitmap(bdfc);
+	/* Sigh. Bitmaps use a different defn of set than images do. make it consistant */
+	tot = bdfc->bytes_per_line*(bdfc->ymax-bdfc->ymin+1);
+	for ( pt = bdfc->bitmap, end = pt+tot; pt<end; *pt++ ^= 0xff );
+
+	base.image_type = it_mono;
+	base.data = bdfc->bitmap;
+	base.bytes_per_line = bdfc->bytes_per_line;
+	base.width = bdfc->xmax-bdfc->xmin+1;
+	base.height = bdfc->ymax-bdfc->ymin+1;
+	base.trans = -1;
+	if ( format==0 )
+	    ret = GImageWriteXbm(&gi,filename);
+#ifndef _NO_LIBPNG
+	else if ( format==2 )
+	    ret = GImageWritePng(&gi,filename,false);
+#endif
+	else
+	    ret = GImageWriteBmp(&gi,filename);
+	/* And back to normal */
+	for ( pt = bdfc->bitmap, end = pt+tot; pt<end; *pt++ ^= 0xff );
+    } else {
+	BCRegularizeGreymap(bdfc);
+	base.image_type = it_index;
+	base.data = bdfc->bitmap;
+	base.bytes_per_line = bdfc->bytes_per_line;
+	base.width = bdfc->xmax-bdfc->xmin+1;
+	base.height = bdfc->ymax-bdfc->ymin+1;
+	base.clut = &clut;
+	clut.clut_len = 1<<bdfc->depth;
+	clut.is_grey = true;
+	clut.trans_index = base.trans = -1;
+	scale = 255/((1<<bdfc->depth)-1);
+	scale = COLOR_CREATE(scale,scale,scale);
+	for ( i=0; i< 1<<bdfc->depth; ++i )
+	    clut.clut[(1<<bdfc->depth)-1 - i] = i*scale;
+#ifndef _NO_LIBPNG
+	if ( format==2 )
+	    ret = GImageWritePng(&gi,filename,false);
+	else
+#endif
+	    ret = GImageWriteBmp(&gi,filename);
+    }
 return( ret );
+}
+
+void ScriptExport(SplineFont *sf, BDFFont *bdf, int format, int enc) {
+    char *ext = format==0?"eps":format==1?"fig":format==2?"xbm":format==3?"bmp":"png";
+    char buffer[100];
+    SplineChar *sc = sf->chars[enc];
+    BDFChar *bc = bdf!=NULL ? bdf->chars[enc] : NULL;
+    int good=true;
+
+    if ( sc==NULL )
+return;
+
+    sprintf( buffer, "%.40s_%.40s.%s", sc->name, sc->parent->fontname, ext);
+    if ( format==0 )
+	good = ExportEPS(buffer,sc);
+    else if ( format==1 )
+	good = ExportFig(buffer,sc);
+    else if ( bc!=NULL )
+	good = BCExportXBM(buffer,bc,format-2);
+    if ( !good )
+	GWidgetErrorR(_STR_Savefailedtitle,_STR_Savefailedtitle);
 }
 
 struct gfc_data {
@@ -491,13 +554,19 @@ struct gfc_data {
 static GTextInfo bcformats[] = {
     { (unichar_t *) "X Bitmap", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "BMP", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+#ifndef _NO_LIBPNG
+    { (unichar_t *) "png", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+#endif
     { NULL }};
 
 static GTextInfo formats[] = {
     { (unichar_t *) "EPS", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 1, 0, 1 },
+    { (unichar_t *) "XFig", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "X Bitmap", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "BMP", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "XFig", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+#ifndef _NO_LIBPNG
+    { (unichar_t *) "png", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+#endif
     { NULL }};
 static int last_format = 0;
 
@@ -508,15 +577,15 @@ static void DoExport(struct gfc_data *d,unichar_t *path) {
     temp = cu_copy(path);
     last_format = format = GGadgetGetFirstListSelectedItem(d->format);
     if ( d->bc )
-	++last_format;
+	last_format += 2;
     if ( d->bc!=NULL )
 	good = BCExportXBM(temp,d->bc,format);
     else if ( format==0 )
 	good = ExportEPS(temp,d->sc);
-    else if ( format==3 )
+    else if ( format==1 )
 	good = ExportFig(temp,d->sc);
     else
-	good = ExportXBM(temp,d->sc,format);
+	good = ExportXBM(temp,d->sc,format-2);
     if ( !good )
 	GWidgetErrorR(_STR_Savefailedtitle,_STR_Savefailedtitle);
     free(temp);
@@ -576,8 +645,6 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	unichar_t *pt, *file, *f2;
 	int format = GGadgetGetFirstListSelectedItem(g);
-	if ( d->bc!=NULL )
-	    ++format;			/* Bitmap View doesn't get eps */
 	file = GGadgetGetTitle(d->gfc);
 	f2 = galloc(sizeof(unichar_t) * (u_strlen(file)+5));
 	u_strcpy(f2,file);
@@ -585,7 +652,14 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	pt = u_strrchr(f2,'.');
 	if ( pt==NULL )
 	    pt = f2+u_strlen(f2);
-	uc_strcpy(pt,format==0?".eps":format==1?".xbm":format==2?".bmp":".fig");
+	if ( d->bc!=NULL )
+	    uc_strcpy(pt,format==0?".xbm":format==1?".bmp":".png");
+	else
+	    uc_strcpy(pt,format==0?".eps":
+			 format==1?".fig":
+			 format==2?".xbm":
+			 format==3?".bmp":
+				   ".png");
 	GGadgetSetTitle(d->gfc,f2);
 	free(f2);
     }
@@ -664,6 +738,7 @@ static int _Export(SplineChar *sc,BDFChar *bc) {
     struct gfc_data d;
     GGadget *pulldown, *files, *tf;
     char buffer[100]; unichar_t ubuf[100];
+    char *ext;
     int _format, i;
     int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid;
 
@@ -730,12 +805,16 @@ static int _Export(SplineChar *sc,BDFChar *bc) {
 
     _format = last_format;
     if ( bc!=NULL ) {
-	--_format;
-	if ( _format<0 || _format>1 ) _format = 0;
+	_format-=2;
+	if ( _format<0 || _format>2 ) _format = 0;
     }
     gcd[6].gd.pos.x = 55; gcd[6].gd.pos.y = 194; 
     gcd[6].gd.flags = gg_visible | gg_enabled ;
     gcd[6].gd.u.list = bc!=NULL?bcformats:formats;
+    if ( bc!=NULL ) {
+	bcformats[0].disabled = bc->byte_data;
+	if ( _format==0 ) _format=1;
+    }
     gcd[6].gd.label = &gcd[6].gd.u.list[_format];
     gcd[6].gd.u.list[0].selected = true;
     gcd[6].gd.handle_controlevent = GFD_Format;
@@ -748,9 +827,11 @@ static int _Export(SplineChar *sc,BDFChar *bc) {
     GGadgetSetUserData(gcd[2].ret,gcd[0].ret);
 
     GFileChooserConnectButtons(gcd[0].ret,gcd[1].ret,gcd[2].ret);
-    if ( bc!=NULL ) ++_format;
-    sprintf( buffer, "%.40s_%.40s.%s", sc->name, sc->parent->fontname,
-	    _format==0?"eps":_format==1?"xbm":_format==2?"bmp":"fig");
+    if ( bc!=NULL )
+	ext = _format==0 ? "xbm" : _format==1 ? "bmp" : "png";
+    else
+	ext = _format==0?"eps":_format==1?"fig":_format==2?"xbm":_format==3?"bmp":"png";
+    sprintf( buffer, "%.40s_%.40s.%s", sc->name, sc->parent->fontname,ext);
     uc_strcpy(ubuf,buffer);
     GGadgetSetTitle(gcd[0].ret,ubuf);
     GFileChooserGetChildren(gcd[0].ret,&pulldown,&files,&tf);

@@ -1487,11 +1487,13 @@ return( 0 );
 
     bdf->chars[bfc->enc] = bfc;
     bfc->sc = bdf->sf->chars[bfc->enc];
-    if ( bdf->clut==NULL )
+    if ( bdf->clut==NULL ) {
 	bfc->bytes_per_line = (bfc->xmax-bfc->xmin)/8 +1;
-    else {
+	bfc->depth = 1;
+    } else {
 	bfc->bytes_per_line = bfc->xmax-bfc->xmin +1;
 	bfc->byte_data = true;
+	bfc->depth = bdf->clut->clut_len==4 ? 2 : bdf->clut->clut_len==16 ? 4 : 8;
     }
     bfc->bitmap = gcalloc((bfc->ymax-bfc->ymin+1)*bfc->bytes_per_line,sizeof(char));
 
