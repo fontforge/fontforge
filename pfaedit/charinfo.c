@@ -1696,6 +1696,28 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 		    (alt = SFGetChar(sf,(&(ArabicForms[sc->unicodeenc-0x600].initial))[i],NULL))!=NULL )
 		last=AddSubs(last,form_tags[i],alt->name,0);
 	}
+    } else if ( sc->unicodeenc>=0x5db && sc->unicodeenc<=0x5e6 &&
+	    (tag==0 || tag==CHR('f','i','n','a')) ) {
+	/* Hebrew finals */
+	alt = NULL;
+	if ( sc->unicodeenc==0x5db )
+	    alt = SFGetChar(sf,0x5da,NULL);
+	else if ( sc->unicodeenc==0x5de )
+	    alt = SFGetChar(sf,0x5dd,NULL);
+	else if ( sc->unicodeenc==0x5e0 )
+	    alt = SFGetChar(sf,0x5df,NULL);
+	else if ( sc->unicodeenc==0x5e4 )
+	    alt = SFGetChar(sf,0x5e3,NULL);
+	else if ( sc->unicodeenc==0x5e6 )
+	    alt = SFGetChar(sf,0x5e5,NULL);
+	if ( alt!=NULL )
+	    last=AddSubs(last,CHR('f','i','n','a'),alt->name,0);
+    } else if ( sc->unicodeenc>=0x3c3 &&
+	    (tag==0 || tag==CHR('f','i','n','a')) ) {
+	/* Greek final sigma */
+	alt = SFGetChar(sf,0x3c2,NULL);
+	if ( alt!=NULL )
+	    last=AddSubs(last,CHR('f','i','n','a'),alt->name,0);
     }
 
     if ( tag==0 || tag==CHR('l','f','b','d') ) {
