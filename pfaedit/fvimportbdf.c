@@ -475,11 +475,13 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc,
 	    char *pt = comments;
 	    char *eoc = comments+1000-1;
 	    while ((ch=getc(bdf))==' ' || ch=='\t' );
+	    if ( ch=='"' ) ch = getc(bdf);
 	    while ( ch!='\n' && ch!='\r' && ch!=EOF ) {
 		if ( pt<eoc )
 		    *pt++ = ch;
 		ch = getc(bdf);
 	    }
+	    if ( pt>comments && pt[-1]=='\"' ) --pt;
 	    *pt = '\0';
 	    ungetc('\n',bdf);
 	    found_copyright = true;
