@@ -123,7 +123,7 @@ typedef struct kernclasslistdlg {
 
 extern int _GScrollBar_Width;
 
-GTextInfo magnifications[] = {
+static GTextInfo magnifications[] = {
     { (unichar_t *) "100%", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 1, 0, 1},
     { (unichar_t *) "200%", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) "300%", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -397,7 +397,7 @@ return( true );
 return( true );
 }
 
-static void KCD_DrawGlyph(GWindow pixmap,int x,int baseline,BDFChar *bdfc,int mag) {
+void KCD_DrawGlyph(GWindow pixmap,int x,int baseline,BDFChar *bdfc,int mag) {
     struct _GImage base;
     GImage gi;
     GClut clut;
@@ -694,7 +694,7 @@ static int KCD_DisplaySizeChanged(GGadget *g, GEvent *e) {
 	int pixelsize = u_strtol(ret,&end,10);
 
 	while ( *end==' ' ) ++end;
-	if ( pixelsize>4 && pixelsize<300 && *end=='\0' ) {
+	if ( pixelsize>4 && pixelsize<400 && *end=='\0' ) {
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    unichar_t ubuf[20]; char buffer[20];
 	    ubuf[0] = '0'; ubuf[1] = '\0';
