@@ -51,6 +51,7 @@ int GraveAcuteCenterBottom = 1;
 int CharCenterHighest = 1;
 int ask_user_for_resolution = true;
 int stop_at_join = false;
+int cv_auto_goto = true;
 float arrowAmount=1;
 float snapdistance=3.5;
 float joinsnap=0;
@@ -285,6 +286,7 @@ static struct prefs_list {
 	{ "UndoDepth", pr_int, &maxundoes, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupUndo },
 	{ "StopAtJoin", pr_bool, &stop_at_join, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupSAJ },
 	{ "UpdateFlex", pr_bool, &updateflex, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupUF },
+	{ "GlyphAutoGoto", pr_bool, &cv_auto_goto, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupGAG },
 	{ NULL }
 },
   accent_list[] = {
