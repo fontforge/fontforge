@@ -3641,6 +3641,9 @@ static char *str_DefaultC = "Default:";
 static char *str_NamedStyles = "Named Styles";
 static char *str_AtLeastOneName = "You must provide at least one name here"
 
+    /* splineoverlap */
+static char *str_OverlapBadDir = "Glyph %.40hs contains an overlapped region where two contours with oposite orientations intersect. This will not be removed. In many cases doing Element->Correct Direction before Remove Overlap will improve matters."
+
     /* Adjectives, etc. that are sometimes masculine and sometimes feminine in french (perhaps other langs) */
 static char str_NewDDD_fem[] = "New...";
 static unichar_t mnemonic_NewDDD_fem[] = 'N';
