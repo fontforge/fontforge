@@ -12,6 +12,8 @@ top_builddir = .
 
 INSTALL = @INSTALL@
 
+all: pfaedit
+
 pfaedit: libgunicode libgdraw
 	( cd pfaedit ; $(MAKE) )
 
@@ -33,7 +35,7 @@ distclean cleaner:
 	-rm Makefile config.cache config.log config.status libtool
 
 
-install: $(sharedir)
+install: $(sharedir) all
 # You may need to be root to do the install
 	mkdir -p $(bindir)
 	mkdir -p $(mandir)/man1
