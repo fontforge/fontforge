@@ -86,8 +86,11 @@ AC_TRY_COMPILE([#include <gif_lib.h>], [ ExtensionBlock foo; foo.Function=3; ], 
 AC_CHECK_LIB(z, deflateEnd, : ,AC_DEFINE(_NO_LIBPNG), -lm) 
 AC_CHECK_LIB(png, png_create_read_struct, : ,[
  AC_CHECK_LIB(png12, png_create_read_struct, AC_DEFINE(_LIBPNG12), AC_DEFINE(_NO_LIBPNG), -lz -lm)], -lz -lm)
+AC_CHECK_HEADER(png.h, : , AC_DEFINE(_NO_LIBPNG))
 AC_CHECK_LIB(jpeg, jpeg_CreateDecompress, :  ,AC_DEFINE(_NO_LIBJPEG)) 
+AC_CHECK_HEADER(jpeglib.h, : , AC_DEFINE(_NO_LIBJPEG))
 AC_CHECK_LIB(tiff, TIFFOpen, : , AC_DEFINE(_NO_LIBTIFF), -lm )
+AC_CHECK_HEADER(tiffio.h, : , AC_DEFINE(_NO_LIBTIFF))
 AC_CHECK_LIB(xml2, xmlParseFile, : , AC_DEFINE(_NO_LIBXML))
 
 if test "$gww_uselessiconv" = "no" ; then
