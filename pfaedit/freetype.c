@@ -60,7 +60,7 @@ return( NULL );
 }
 
 SplineSet *FreeType_GridFitChar(void *single_glyph_context,
-	int enc, real ptsize, int dpi, int *width) {
+	int enc, real ptsize, int dpi, int16 *width, SplineSet *splines) {
 return( NULL );
 }
 #else
