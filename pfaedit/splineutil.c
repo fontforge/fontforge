@@ -319,9 +319,6 @@ void SplineRefigure(Spline *spline) {
     spline->knowncurved = false;
     spline->knownlinear = spline->islinear;
     SplineIsLinear(spline);
-    if ( !spline->islinear && spline->knownlinear ) {
-	spline->knownlinear = false;
-    }
     spline->isquadratic = false;
     if ( !spline->islinear && xsp->a==0 && ysp->a==0 )
 	spline->isquadratic = true;	/* Only likely if we read in a TTF */
