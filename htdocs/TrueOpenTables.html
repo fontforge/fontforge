@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 13-Feb-2003 -->
-  <!-- AP: Last modified: 2-Mar-2004 -->
+  <!-- AP: Last modified: 21-Mar-2004 -->
   <TITLE>TrueType and OpenType tables supported by FontForge</TITLE>
 </HEAD>
 <BODY>
@@ -24,6 +24,15 @@ are essentially the same, while Apple's differ significantly from either.
       docs</TH>
     <TH>Adobe<BR>
       docs</TH>
+  </TR>
+  <TR>
+    <TD>avar</TD>
+    <TD>axis variation</TD>
+    <TD>Used to specify piecewise linear sections of axes for distortable fonts</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6avar.html">avar</A></TD>
+    <TD><P ALIGN=Center>
+      *</TD>
   </TR>
   <TR>
     <TD>bdat</TD>
@@ -86,9 +95,19 @@ are essentially the same, while Apple's differ significantly from either.
       <A HREF="http://partners.adobe.com/asn/tech/type/opentype/cmap.jsp">cmap</A></TD>
   </TR>
   <TR>
+    <TD>cvar</TD>
+    <TD>variations on cvt table</TD>
+    <TD>Used to specify hinting differences in distortable fonts</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6cvar.html">cvar</A></TD>
+    <TD><P ALIGN=Center>
+      *</TD>
+  </TR>
+  <TR>
     <TD>cvt</TD>
     <TD>control value table</TD>
-    <TD>FontForge uses this when it attempts to hint truetype fonts.</TD>
+    <TD>FontForge uses this when it attempts to hint truetype fonts (FontForge
+      will read it from a font and save it into another).</TD>
     <TD><P ALIGN=Center>
       <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6cvt.html">cvt</A></TD>
     <TD><P ALIGN=Center>
@@ -131,8 +150,30 @@ are essentially the same, while Apple's differ significantly from either.
     <TD>Maps features specified in Apple's 'morx' (or 'mort') tables into names
       provided in the 'name' table. FontForge generates this when it generates
       a 'morx' table.</TD>
-    <TD><A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6feat.html">feat</A></TD>
-    <TD>*</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6feat.html">feat</A></TD>
+    <TD><P ALIGN=Center>
+      *</TD>
+  </TR>
+  <TR>
+    <TD>fpgm</TD>
+    <TD>font program</TD>
+    <TD>FontForge never generates this, but it will preserve it and allows users
+      to edit it.</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6fpgm.html">fpgm</A></TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://partners.adobe.com/asn/tech/type/opentype/fpgm.jsp">fpgm</A></TD>
+  </TR>
+  <TR>
+    <TD>fvar</TD>
+    <TD>font variations</TD>
+    <TD>Provides top level information about distortable fonts. Specifies the
+      types of distortions possible.</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6fvar.html">fvar</A></TD>
+    <TD><P ALIGN=Center>
+      *</TD>
   </TR>
   <TR>
     <TD>gasp</TD>
@@ -140,8 +181,10 @@ are essentially the same, while Apple's differ significantly from either.
     <TD>When FontForge does not attempt to hint a truetype font it will generate
       this table which tells the rasterizer not to to do grid-fitting (hinting)
       but to do anti-aliasing instead.</TD>
-    <TD><A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6gasp.html">gasp</A></TD>
-    <TD><A HREF="http://partners.adobe.com/asn/tech/type/opentype/gasp.jsp">gasp</A></TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6gasp.html">gasp</A></TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://partners.adobe.com/asn/tech/type/opentype/gasp.jsp">gasp</A></TD>
   </TR>
   <TR>
     <TD>GDEF</TD>
@@ -185,6 +228,16 @@ are essentially the same, while Apple's differ significantly from either.
       *</TD>
     <TD><P ALIGN=Center>
       <A HREF="http://partners.adobe.com/asn/tech/type/opentype/gsub.jsp">GSUB</A></TD>
+  </TR>
+  <TR>
+    <TD>gvar</TD>
+    <TD>glyph variations</TD>
+    <TD>This table contains the meat of a distortable font. It specifies how
+      each glyph can be distorted.</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6gvar.html">gvar</A></TD>
+    <TD><P ALIGN=Center>
+      *</TD>
   </TR>
   <TR>
     <TD>head</TD>
@@ -324,8 +377,18 @@ are essentially the same, while Apple's differ significantly from either.
       <A HREF="http://partners.adobe.com/asn/tech/type/opentype/post.jsp">post</A></TD>
   </TR>
   <TR>
+    <TD>prep</TD>
+    <TD>cvt program</TD>
+    <TD>FontForge never generatest this table itself, but it will retain it when
+      reading other fonts, and it allows users to edit it.</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6prep.html">prep</A></TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://partners.adobe.com/asn/tech/type/opentype/prep.jsp">prep</A></TD>
+  </TR>
+  <TR>
     <TD>prop</TD>
-    <TD>properties</TD>
+    <TD>glyph properties</TD>
     <TD>Provides the unicode properties of each glyph for an Apple font. This
       table bears some similarities to the GDEF table.</TD>
     <TD><P ALIGN=Center>
