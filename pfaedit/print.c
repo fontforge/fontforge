@@ -1937,12 +1937,12 @@ static unichar_t _inferno1[] = { ' ','N','e','l',' ','m','e','z','z','o',' ',
 	'd','e','l',' ','c','a','m','m','i','n',' ','d','i',' ',
 	'n','o','s','t','r','a',' ','v','i','t','a',  '\0' };
 static unichar_t _inferno2[] = { 'm','i',' ','r','i','t','r','o','v','a','i',
-	' ','p','e','r',' ','u','n','a',' ','s','o','l','v','a',' ',
+	' ','p','e','r',' ','u','n','a',' ','s','e','l','v','a',' ',
 	'o','b','s','c','u','r','a',',',  '\0' };
 static unichar_t _inferno3[] = { 'c','h',(uint8)'é',' ','l','a',' ','d','i','r','i',
 	't','t','a',' ','v','i','a',' ','e','r','a',' ','s','m','a','r','r',
 	'i','t','a','.',  '\0' };
-static unichar_t _inferno4[] = { ' ','A','n','i',' ','q','u','a','n','t','o',
+static unichar_t _inferno4[] = { ' ','A','h','i',' ','q','u','a','n','t','o',
 	' ','a',' ','d','i','r',' ','q','u','a','l',' ','e','r','a',' ',(uint8)'è',
 	' ','c','o','s','a',' ','d','u','r','a',  '\0' };
 static unichar_t _inferno5[] = { 'e','s','t','a',' ','s','e','l','v','a',' ',
@@ -1950,7 +1950,7 @@ static unichar_t _inferno5[] = { 'e','s','t','a',' ','s','e','l','v','a',' ',
 	'e',' ','f','o','r','t','e',  '\0' };
 static unichar_t _inferno6[] = { 'c','h','e',' ','n','e','l',' ','p','e','n',
 	's','i','e','r',' ','r','i','n','o','v','a',' ','l','a',' ','p','a','u',
-	'v','a','!',  '\0' };
+	'r','a','!',  '\0' };
 static unichar_t *inferno[] = { _inferno1, _inferno2, _inferno3, _inferno4,
 	_inferno5, _inferno6, NULL };
 /* Latin */
