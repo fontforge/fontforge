@@ -547,6 +547,7 @@ typedef struct splinechar {
     int16 lsidebearing;		/* only used when reading in a type1 font */
 				/*  Or an otf font where it is the subr number of a refered character */
 			        /*  or a ttf font with vert metrics where it is the ymax value */
+			        /*  or when generating morx where it is the mask of tables in which the glyph occurs */
 				/* Always a temporary value */
     uint16 orig_pos;		/* Original position in the glyph list */
     int ttf_glyph;		/* only used when writing out a ttf or otf font */

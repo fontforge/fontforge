@@ -590,7 +590,7 @@ static void dumpcoveragetable(FILE *gpos,SplineChar **glyphs) {
     }
 }
 
-static SplineChar **GlyphsFromNames(SplineFont *sf,char *names) {
+SplineChar **SFGlyphsFromNames(SplineFont *sf,char *names) {
     int cnt, ch;
     char *pt, *end;
     SplineChar *sc, **glyphs;
@@ -623,7 +623,7 @@ return( glyphs );
 }
 
 static SplineChar **OrderedGlyphsFromNames(SplineFont *sf,char *names) {
-    SplineChar **glyphs = GlyphsFromNames(sf,names);
+    SplineChar **glyphs = SFGlyphsFromNames(sf,names);
     int i,j;
 
     if ( glyphs==NULL || glyphs[0]==NULL )
@@ -1623,7 +1623,7 @@ static void dumpg___ContextChainGlyphs(FILE *lfile,FPST *fpst,SplineFont *sf,
 	    fseek(lfile,subpos,SEEK_SET);
 
 	    if ( iscontext ) {
-		subglyphs = GlyphsFromNames(sf,fpst->rules[k].u.glyph.names);
+		subglyphs = SFGlyphsFromNames(sf,fpst->rules[k].u.glyph.names);
 		for ( l=0; subglyphs[l]!=NULL; ++l );
 		putshort(lfile,l);
 		curcontext = l;
@@ -1632,21 +1632,21 @@ static void dumpg___ContextChainGlyphs(FILE *lfile,FPST *fpst,SplineFont *sf,
 		    putshort(lfile,subglyphs[l]->ttf_glyph);
 		free(subglyphs);
 	    } else {
-		subglyphs = GlyphsFromNames(sf,fpst->rules[k].u.glyph.back);
+		subglyphs = SFGlyphsFromNames(sf,fpst->rules[k].u.glyph.back);
 		for ( l=0; subglyphs[l]!=NULL; ++l );
 		putshort(lfile,l);
 		curcontext = l;
 		for ( l=0; subglyphs[l]!=NULL; ++l )
 		    putshort(lfile,subglyphs[l]->ttf_glyph);
 		free(subglyphs);
-		subglyphs = GlyphsFromNames(sf,fpst->rules[k].u.glyph.names);
+		subglyphs = SFGlyphsFromNames(sf,fpst->rules[k].u.glyph.names);
 		for ( l=0; subglyphs[l]!=NULL; ++l );
 		putshort(lfile,l);
 		curcontext += l;
 		for ( l=1; subglyphs[l]!=NULL; ++l )
 		    putshort(lfile,subglyphs[l]->ttf_glyph);
 		free(subglyphs);
-		subglyphs = GlyphsFromNames(sf,fpst->rules[k].u.glyph.fore);
+		subglyphs = SFGlyphsFromNames(sf,fpst->rules[k].u.glyph.fore);
 		for ( l=0; subglyphs[l]!=NULL; ++l );
 		putshort(lfile,l);
 		curcontext += l;
@@ -1842,7 +1842,7 @@ static void dumpg___ContextChainCoverage(FILE *lfile,FPST *fpst,SplineFont *sf,
 		putshort(lfile,g___FigureNest(nested,pp,at,fpst->rules[0].lookups[i].lookup_tag));
 	    }
 	} else {		/* reverse coverage */
-	    glyphs = GlyphsFromNames(sf,fpst->rules[0].u.rcoverage.replacements);
+	    glyphs = SFGlyphsFromNames(sf,fpst->rules[0].u.rcoverage.replacements);
 	    for ( i=0; glyphs[i]!=0; ++i );
 	    putshort(lfile,i);
 	    for ( i=0; glyphs[i]!=0; ++i )

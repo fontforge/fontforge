@@ -555,6 +555,7 @@ extern int SSAddPoints(SplineSet *ss,int ptcnt,BasePoint *bp, char *flags,int ha
     /* Used by both otf and apple */
 extern uint16 *ClassesFromNames(SplineFont *sf,char **classnames,int class_cnt,
 	int numGlyphs, SplineChar ***glyphs);
+extern SplineChar **SFGlyphsFromNames(SplineFont *sf,char *names);
 
 
 extern void AnchorClassOrder(SplineFont *sf);

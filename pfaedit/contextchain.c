@@ -1452,9 +1452,11 @@ return( true );
 	}
 return( false );
     } else if ( event->type==et_resize ) {
-	int blen = GDrawPointsToPixels(NULL,GIntGetResource(_NUM_Buttonsize));
+	int blen = GDrawPointsToPixels(NULL,GIntGetResource(_NUM_Buttonsize)), i;
 	GRect wsize, csize;
 	struct contextchaindlg *ccd = GDrawGetUserData(gw);
+	GGadget *g;
+
 	GDrawGetSize(ccd->gw,&wsize);
 	GGadgetResize(GWidgetGetControl(ccd->gw,CID_Group),wsize.width-4,wsize.height-4);
 	GGadgetGetSize(GWidgetGetControl(ccd->gw,CID_OK),&csize);
@@ -1466,11 +1468,48 @@ return( false );
 	GGadgetGetSize(GWidgetGetControl(ccd->gw,CID_Cancel),&csize);
 	GGadgetMove(GWidgetGetControl(ccd->gw,CID_Cancel),wsize.width-blen-20,wsize.height-ccd->canceldrop);
 
+	GGadgetGetSize(GWidgetGetControl(ccd->gw,CID_MatchType),&csize);
+	GGadgetResize(GWidgetGetControl(ccd->gw,CID_MatchType),wsize.width-GDrawPointsToPixels(NULL,10),csize.height);
+	GGadgetGetSize(GWidgetGetControl(ccd->gw,CID_MatchType+100),&csize);
+	GGadgetResize(GWidgetGetControl(ccd->gw,CID_MatchType+100),wsize.width-GDrawPointsToPixels(NULL,10),csize.height);
+	GGadgetGetSize(GWidgetGetControl(ccd->gw,CID_LookupList),&csize);
+	GGadgetResize(GWidgetGetControl(ccd->gw,CID_LookupList),wsize.width-GDrawPointsToPixels(NULL,20),csize.height);
+	GGadgetGetSize(GWidgetGetControl(ccd->gw,CID_GList),&csize);
+	GGadgetResize(GWidgetGetControl(ccd->gw,CID_GList),wsize.width-GDrawPointsToPixels(NULL,20),csize.height);
+	if ( (g = GWidgetGetControl(ccd->gw,CID_LookupList+100))!=NULL ) {
+	    GGadgetGetSize(g,&csize);
+	    GGadgetResize(g,wsize.width-GDrawPointsToPixels(NULL,20),csize.height);
+	} else {
+	    GGadgetGetSize(GWidgetGetControl(ccd->gw,CID_RplList+100),&csize);
+	    GGadgetResize(GWidgetGetControl(ccd->gw,CID_RplList+100),wsize.width-GDrawPointsToPixels(NULL,25),csize.height);
+	}
+	for ( i=0; i<3; ++i ) {
+	    if ( (g=GWidgetGetControl(ccd->gw,CID_GlyphList+i*20))!=NULL ) {
+		GGadgetGetSize(g,&csize);
+		GGadgetResize(g,wsize.width-GDrawPointsToPixels(NULL,25),csize.height);
+	    }
+	    if ( (g=GWidgetGetControl(ccd->gw,CID_GList+100+i*20))!=NULL ) {
+		GGadgetGetSize(g,&csize);
+		GGadgetResize(g,wsize.width-GDrawPointsToPixels(NULL,20),csize.height);
+	    }
+	}
+	if ( (g=GWidgetGetControl(ccd->gw,CID_GlyphList+100))!=NULL ) {
+	    GGadgetGetSize(g,&csize);
+	    GGadgetResize(g,wsize.width-GDrawPointsToPixels(NULL,25),csize.height);
+	}
+
 	GDrawResize(ccd->formats,wsize.width-8,wsize.height-ccd->subheightdiff);
 	GDrawResize(ccd->coverage,wsize.width-8,wsize.height-ccd->subheightdiff);
 	GDrawResize(ccd->glist,wsize.width-8,wsize.height-ccd->subheightdiff);
 	GDrawResize(ccd->glyphs,wsize.width-8,wsize.height-ccd->subheightdiff);
 	GDrawResize(ccd->cselect,wsize.width-8,wsize.height-ccd->subheightdiff);
+
+	GDrawRequestExpose(ccd->gw,NULL,false);
+	GDrawRequestExpose(ccd->aw==aw_formats ? ccd->formats :
+			    ccd->aw==aw_coverage ? ccd->coverage :
+			    ccd->aw==aw_glist ? ccd->glist :
+			    ccd->aw==aw_glyphs ? ccd->glyphs :
+				ccd->cselect, NULL,false);
     } else if ( event->type == et_drop ) {
 	CCD_Drop(GDrawGetUserData(gw),event);
     }
@@ -1718,7 +1757,7 @@ return( NULL );
 	bgcd[2].gd.flags = gg_visible | gg_enabled;
 	ccd->aw = aw_formats;
     } else if ( fpst->format==pst_coverage ) {
-	bgcd[1].gd.flags = bgcd[2].gd.flags = gg_visible | gg_enabled;
+	bgcd[1].gd.flags = gg_visible | gg_enabled; bgcd[2].gd.flags = gg_visible;
 	ccd->aw = aw_coverage;	/* flags are different from those of reversesub above */
     } else {
 	bgcd[1].gd.flags = bgcd[2].gd.flags = gg_visible | gg_enabled;
