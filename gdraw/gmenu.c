@@ -92,6 +92,8 @@ typedef struct gmenu {
     unsigned int scrollup: 1;
     unsigned int freemi: 1;
     unsigned int disabled: 1;
+    unsigned int dying: 1;
+    unsigned int hidden: 1;
     int bp;
     int tickoff, tioff, rightedge;
     int width, height;
@@ -331,6 +333,9 @@ static void GMenuSetPressed(struct gmenu *m, int pressed) {
 }
 
 static void _GMenuDestroy(struct gmenu *m) {
+    if ( m->dying )
+return;
+    m->dying = true;
     if ( m->line_with_mouse!=-1 )
 	m->mi[m->line_with_mouse].ti.selected = false;
     if ( m->child!=NULL )
@@ -361,6 +366,7 @@ static void GMenuHideAll(struct gmenu *m) {
 	GDrawPointerUngrab(GDrawGetDisplayOfWindow(m->w));
 	while ( m->parent ) m = m->parent;
 	while ( m ) {
+	    m->hidden = true;
 	    GDrawSetVisible(m->w,false);
 	    m=m->child;
 	}
@@ -462,6 +468,9 @@ return( false );
 static int gmenu_mouse(struct gmenu *m, GEvent *event) {
     GPoint p;
     struct gmenu *testm;
+
+    if ( m->hidden || (m->child!=NULL && m->child->hidden))
+return( true );
 
     if ( event->type == et_crossing ) {
 	if ( !event->u.crossing.entered )
@@ -653,7 +662,8 @@ return( true );
 	    int en = mb->entry_with_mouse;
 	    if ( en>0 ) {
 		GMenuBarChangeSelection(mb,en-1,event);
-	    }
+	    } else
+		GMenuBarChangeSelection(mb,mb->lastmi-1,event);
 return( true );
 	}
 	/* Else fall into the "Up" case */
@@ -673,9 +683,10 @@ return( true );
 	    if ( m->parent==NULL && m->menubar!=NULL ) {
 		GMenuBar *mb = m->menubar;
 		int en = mb->entry_with_mouse;
-		if ( en<mb->lastmi ) {
+		if ( en+1<mb->lastmi ) {
 		    GMenuBarChangeSelection(mb,en+1,event);
-		}
+		} else
+		    GMenuBarChangeSelection(mb,0,event);
 return( true );
 	    } else if ( m->mcnt!=0 ) {
 		GMenuChangeSelection(m,m->line_with_mouse+1,event);
@@ -1046,6 +1057,9 @@ static int gmenubar_mouse(GGadget *g, GEvent *event) {
     GMenuBar *mb = (GMenuBar *) g;
     int which;
 
+    if ( mb->child!=NULL && mb->child->hidden )
+return( true );
+
     if ( event->type == et_mousedown ) {
 	mb->pressed = true;
 	if ( mb->child!=NULL )
@@ -1083,7 +1097,7 @@ static int gmenubar_mouse(GGadget *g, GEvent *event) {
 	if ( mb->child!=NULL )
 	    GMenuSetPressed(mb->child,false);
     }
-return( false );
+return( true );
 }
 
 static void gmenubar_destroy(GGadget *g) {
