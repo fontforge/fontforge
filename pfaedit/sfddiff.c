@@ -334,11 +334,17 @@ static void dodiff( SplineFont *sf1, SplineFont *sf2, int checkhints,
 	printf( "The two fonts have different weights\n" );
 	++adiff;
     }
-    if ( strcmp(sf1->copyright,sf2->copyright)!=0 ) {
+    if ( sf1->copyright==NULL && sf2->copyright==NULL )
+	/* Match */;
+    else if ( sf1->copyright==NULL || sf2->copyright==NULL ||
+	    strcmp(sf1->copyright,sf2->copyright)!=0 ) {
 	printf( "The two fonts have different copyrights\n" );
 	++adiff;
     }
-    if ( strcmp(sf1->comments,sf2->comments)!=0 ) {
+    if ( sf1->comments==NULL && sf2->comments==NULL )
+	/* Match */;
+    else if ( sf1->comments==NULL || sf2->comments==NULL ||
+	    strcmp(sf1->comments,sf2->comments)!=0 ) {
 	printf( "The two fonts have different comments\n" );
 	++adiff;
     }
