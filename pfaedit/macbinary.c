@@ -1309,6 +1309,9 @@ int WriteMacPSFont(char *filename,SplineFont *sf,enum fontformat format) {
     struct macbinaryheader header;
     int lcfn = false, lcfam = false;
     char buffer[63];
+#if __Mac
+    char *pt;
+#endif
 
     temppfb = tmpfile();
     if ( temppfb==NULL )
@@ -1626,7 +1629,7 @@ return( 0 );
     resources[r].res = rlist[1];
     rlist[1][0].pos = SFsToFOND(res,sfs,id,format,bf);
     rlist[1][0].flags = 0x00;	/* I've seen FONDs with resource flags 0, 0x20, 0x60 */
-    rlist[1][0].id = rlist[0][0].id;
+    rlist[1][0].id = id;
     rlist[1][0].name = sfs->sf->familyname;
     DumpResourceMap(res,resources,format);
     for ( i=0; i<r; ++i )
