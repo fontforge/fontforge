@@ -4618,6 +4618,30 @@ void FindVStems( SplineFont *sf, real snaps[12], real cnt[12]) {
     FigureStems(sf,snaps,cnt,0);
 }
 
+static int IsFlexSmooth(SplinePoint *sp) {
+    BasePoint nvec, pvec;
+    double proj_same, proj_normal;
+
+    if ( sp->nonextcp || sp->noprevcp )
+return( false );	/* No continuity of slopes */
+
+    nvec.x = sp->nextcp.x - sp->me.x; nvec.y = sp->nextcp.y - sp->me.y;
+    pvec.x = sp->me.x - sp->prevcp.x; pvec.y = sp->me.y - sp->prevcp.y;
+
+    /* Avoid cases where the slopes are 180 out of phase */
+    if ( (proj_same   = nvec.x*pvec.x + nvec.y*pvec.y)<=0 )
+return( false );
+    if ( (proj_normal = nvec.x*pvec.y - nvec.y*pvec.x)<0 )
+	proj_normal = -proj_normal;
+
+    /* Something is smooth if the normal projection is 0. Let's allow for */
+    /*  some rounding errors */
+    if ( proj_same >= 16*proj_normal )
+return( true );
+
+return( false );
+}
+
 static int _SplineCharIsFlexible(SplineChar *sc, int blueshift) {
     /* Need two splines
 	outer endpoints have same x (or y) values
@@ -4625,8 +4649,12 @@ static int _SplineCharIsFlexible(SplineChar *sc, int blueshift) {
 	inner point must also be less than BlueShift units (defaults to 7=>6)
 	    (can increase BlueShift up to 21)
 	the inner point must be a local extremum
-		(something incomprehensible is written about the control points)
-		perhaps that they should have the same x(y) value as the center
+	the inner point's cps must be at the x (or y) value as the extremum
+		(I think)
+    */
+    /* We want long, nearly straight stems. If the end-points should not have
+      continuous slopes, or if they do, they must be horizontal/vertical.
+      This is an heuristic requirement, not part of Adobe's spec.
     */
     SplineSet *spl;
     SplinePoint *sp, *np, *pp;
@@ -4660,6 +4688,8 @@ return(false);
 			RealNear(sp->prevcp.x,sp->me.x) &&
 			RealNear(np->me.x,pp->me.x) &&
 			!RealNear(np->me.x,sp->me.x) &&
+			(!IsFlexSmooth(pp) || RealNear(pp->nextcp.x,pp->me.x)) &&
+			(!IsFlexSmooth(np) || RealNear(np->prevcp.x,np->me.x)) &&
 			np->me.x-sp->me.x < blueshift &&
 			np->me.x-sp->me.x > -blueshift ) {
 		    if ( (np->me.x>sp->me.x &&
@@ -4676,6 +4706,8 @@ return(false);
 			RealNear(sp->prevcp.y,sp->me.y) &&
 			RealNear(np->me.y,pp->me.y) &&
 			!RealNear(np->me.y,sp->me.y) &&
+			(!IsFlexSmooth(pp) || RealNear(pp->nextcp.y,pp->me.y)) &&
+			(!IsFlexSmooth(np) || RealNear(np->prevcp.y,np->me.y)) &&
 			np->me.y-sp->me.y < blueshift &&
 			np->me.y-sp->me.y > -blueshift ) {
 		    if ( (np->me.y>sp->me.y &&
