@@ -4218,7 +4218,7 @@ static void dumptype2glyphs(SplineFont *sf,struct alltabs *at) {
     subrs = SplineFont2Subrs2(sf);
     _dumpcffstrings(at->private,subrs);
     GProgressNextStage();
-    at->charstrings = dumpcffstrings(SplineFont2Chrs2(sf,at->defwid,at->nomwid,subrs));
+    at->charstrings = dumpcffstrings(SplineFont2Chrs2(sf,at->nomwid,at->defwid,subrs));
     dumpcfftopdict(sf,at);
     finishup(sf,at);
 
