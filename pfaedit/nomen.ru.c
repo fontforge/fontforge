@@ -1252,3 +1252,4 @@ static char mnemonic_TransformBackground = 'B'; /*new*/
 static char *str_FreePress = "A free press discriminates\nagainst the illiterate."; /*new*/
 
 static int num_buttonsize  =  70;
+static int num_ScaleFactor  =  130;

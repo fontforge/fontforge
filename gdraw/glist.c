@@ -926,6 +926,7 @@ static GList *_GListCreate(GList *gl, struct gwindow *base, GGadgetData *gd,void
     }
 
     GListFit(gl);
+    _GGadget_FinalPosition(&gl->g,base,gd);
 
     if ( gd->flags & gg_group_end )
 	_GGadgetCloseGroup(&gl->g);

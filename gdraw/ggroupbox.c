@@ -171,6 +171,7 @@ GGadget *GLineCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     _GGadget_Create(g,base,gd,data,&_GGroup_LineBox);
 
     GLineFit(g);
+    _GGadget_FinalPosition(g,base,gd);
 return( g );
 }
 
@@ -187,5 +188,6 @@ GGadget *GGroupCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     if ( g->prevlabel && gd->pos.x==0 )
 	g->r.x = g->prev->r.x - GDrawPointsToPixels(base,_GGadget_Skip);
     GGroupFit(g);
+    _GGadget_FinalPosition(g,base,gd);
 return( g );
 }

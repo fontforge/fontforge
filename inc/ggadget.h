@@ -174,14 +174,16 @@ enum fchooserret { fc_hide, fc_show, fc_showdisabled };
 #define _STR_None	15
 #define __STR_LastStd	15
 
-#define _NUM_Buttonsize	0
-#define __NUM_LastStd	0
+#define _NUM_Buttonsize		0
+#define _NUM_ScaleFactor	1
+#define __NUM_LastStd		1
 
 extern void GTextInfoFree(GTextInfo *ti);
 extern void GTextInfoListFree(GTextInfo *ti);
 extern void GTextInfoArrayFree(GTextInfo **ti);
 extern GTextInfo **GTextInfoFromChars(char **array, int len);
 extern const unichar_t *GStringGetResource(int index,unichar_t *mnemonic);
+extern int GGadgetScale(int xpos);
 extern int GIntGetResource(int index);
 extern int GStringSetResourceFile(char *filename);	/* returns 1 for success, 0 for failure */
 /* fallback string arrays are null terminated. mnemonics is same length as string */

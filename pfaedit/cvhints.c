@@ -328,7 +328,7 @@ void CVReviewHints(CharView *cv) {
 	wattrs.window_title = GStringGetResource(_STR_Reviewhints,NULL);
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
-	pos.width =GDrawPointsToPixels(NULL,170);
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,170));
 	pos.height = GDrawPointsToPixels(NULL,164);
 	hd.gw = gw = GDrawCreateTopWindow(NULL,&pos,rh_e_h,&hd,&wattrs);
 
@@ -371,7 +371,7 @@ void CVReviewHints(CharView *cv) {
 	gcd[4].gd.handle_controlevent = RH_OK;
 	gcd[4].creator = GButtonCreate;
 
-	gcd[5].gd.pos.x = 170-GIntGetResource(_NUM_Buttonsize)-20; gcd[5].gd.pos.y = 17+37+3+14+60;
+	gcd[5].gd.pos.x = -20; gcd[5].gd.pos.y = 17+37+3+14+60;
 	gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
 	gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
 	label[5].text = (unichar_t *) _STR_Cancel;
@@ -415,7 +415,7 @@ void CVReviewHints(CharView *cv) {
 	gcd[9].gd.handle_controlevent = RH_Add;
 	gcd[9].creator = GButtonCreate;
 
-	gcd[10].gd.pos.x = 170-GIntGetResource(_NUM_Buttonsize)-20; gcd[10].gd.pos.y = 17+14+33;
+	gcd[10].gd.pos.x = -20; gcd[10].gd.pos.y = 17+14+33;
 	gcd[10].gd.pos.width = -1; gcd[10].gd.pos.height = 0;
 	gcd[10].gd.flags = gg_visible | gg_enabled;
 	label[10].text = (unichar_t *) _STR_Remove;
@@ -437,7 +437,7 @@ void CVReviewHints(CharView *cv) {
 	gcd[11].gd.handle_controlevent = RH_NextPrev;
 	gcd[11].creator = GButtonCreate;
 
-	gcd[12].gd.pos.x = 170-GIntGetResource(_NUM_Buttonsize)-20; gcd[12].gd.pos.y = 17+37+14+30;
+	gcd[12].gd.pos.x = -20; gcd[12].gd.pos.y = 17+37+14+30;
 	gcd[12].gd.pos.width = -1; gcd[12].gd.pos.height = 0;
 	gcd[12].gd.flags = gg_visible | gg_enabled;
 	label[12].text = (unichar_t *) _STR_NextArrow;
@@ -569,7 +569,7 @@ void CVCreateHint(CharView *cv,int ishstem) {
 	wattrs.window_title = GStringGetResource(_STR_CreateHint,NULL);
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
-	pos.width =GDrawPointsToPixels(NULL,170);
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,170));
 	pos.height = GDrawPointsToPixels(NULL,90);
 	chd.gw = gw = GDrawCreateTopWindow(NULL,&pos,chd_e_h,&chd,&wattrs);
 
@@ -617,7 +617,7 @@ void CVCreateHint(CharView *cv,int ishstem) {
 	gcd[4].gd.handle_controlevent = CH_OK;
 	gcd[4].creator = GButtonCreate;
 
-	gcd[5].gd.pos.x = 170-GIntGetResource(_NUM_Buttonsize)-20; gcd[5].gd.pos.y = 17+37+3;
+	gcd[5].gd.pos.x = -20; gcd[5].gd.pos.y = 17+37+3;
 	gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
 	gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
 	label[5].text = (unichar_t *) _STR_Cancel;

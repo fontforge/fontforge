@@ -334,7 +334,7 @@ static void RegionControl(CharView *cv,DBounds *b,int cnt) {
 	wattrs.window_title = GStringGetResource(_STR_SpaceRegions,NULL);
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
-	pos.width = GDrawPointsToPixels(NULL,225);
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,225));
 	pos.height = GDrawPointsToPixels(NULL,115);
 	gw = GDrawCreateTopWindow(NULL,&pos,rcd_e_h,&rcd,&wattrs);
 
@@ -395,7 +395,7 @@ static void RegionControl(CharView *cv,DBounds *b,int cnt) {
 	gcd[5].gd.handle_controlevent = RC_OK;
 	gcd[5].creator = GButtonCreate;
 
-	gcd[6].gd.pos.x = 225-GIntGetResource(_NUM_Buttonsize)-20; gcd[6].gd.pos.y = gcd[5].gd.pos.y+3;
+	gcd[6].gd.pos.x = -20; gcd[6].gd.pos.y = gcd[5].gd.pos.y+3;
 	gcd[6].gd.pos.width = -1; gcd[6].gd.pos.height = 0;
 	gcd[6].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
 	label[6].text = (unichar_t *) _STR_Cancel;

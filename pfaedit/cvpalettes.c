@@ -213,7 +213,7 @@ static int Ask(int rb1, int rb2, int rb, int lab, real *val, int isint ) {
 	wattrs.window_title = GStringGetResource(_STR_ShapeType,NULL);
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
-	pos.width =GDrawPointsToPixels(NULL,190);
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,190));
 	pos.height = GDrawPointsToPixels(NULL,105+off);
 	d.gw = GDrawCreateTopWindow(NULL,&pos,toolask_e_h,&d,&wattrs);
 
@@ -260,7 +260,7 @@ static int Ask(int rb1, int rb2, int rb, int lab, real *val, int isint ) {
 	gcd[4].gd.handle_controlevent = TA_OK;
 	gcd[4].creator = GButtonCreate;
 
-	gcd[5].gd.pos.x = 170-GIntGetResource(_NUM_Buttonsize)-20; gcd[5].gd.pos.y = 70+3+off;
+	gcd[5].gd.pos.x = -20; gcd[5].gd.pos.y = 70+3+off;
 	gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
 	gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
 	label[5].text = (unichar_t *) _STR_Cancel;
@@ -752,7 +752,7 @@ return( cvlayers );
     wattrs.is_dlg = true;
     wattrs.window_title = GStringGetResource(_STR_Layers,NULL);
 
-    r.width = 104; r.height = 162;
+    r.width = GGadgetScale(104); r.height = 162;
     if ( cvlayersoff.x==-9999 ) {
 	cvlayersoff.x = -r.width-6;
 	cvlayersoff.y = cv->mbh+187+50+45/*25*/;	/* 45 is right if there's decor, 25 when none. twm gives none, kde gives decor */
@@ -1084,7 +1084,7 @@ return(bvlayers);
     wattrs.is_dlg = true;
     wattrs.window_title = GStringGetResource(_STR_Layers,NULL);
 
-    r.width = 73; r.height = 73;
+    r.width = GGadgetScale(73); r.height = 73;
     r.x = -r.width-6; r.y = bv->mbh+81+45/*25*/;	/* 45 is right if there's decor, is in kde, not in twm. Sigh */
     bvlayers = CreatePalette( bv->gw, &r, bvlayers_e_h, bv, &wattrs );
 

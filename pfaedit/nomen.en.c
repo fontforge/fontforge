@@ -840,6 +840,29 @@ static unichar_t mnemonic_NextArrow = 'N';
 static char *str_CreateHint = "Create Hint...";
 static char *str_CreateHorizontalHint = "Create Horizontal Stem Hint";
 static char *str_CreateVerticalHint = "Create Vertical Stem Hint";
+    /* expand stroke */
+static char *str_LineCap = "Line Cap";
+static char *str_Butt = "Butt";
+static unichar_t mnemonic_Butt = 'B';
+static char *str_Round = "Round";
+static unichar_t mnemonic_Round = 'R';
+static char *str_Squareq = "Square";
+static unichar_t mnemonic_Squareq = 'q';
+static char *str_LineJoin = "Line Join";
+static char *str_Miter = "Miter";
+static unichar_t mnemonic_Miter = 'M';
+static char *str_Roundu = "Round";
+static unichar_t mnemonic_Roundu = 'u';
+static char *str_Bevel = "Bevel";
+static unichar_t mnemonic_Bevel = 'v';
+static char *str_StrokeWidth = "Stroke Width:";
+static unichar_t mnemonic_StrokeWidth = 'W';
+static char *str_Strok = "Stroke";
+static unichar_t mnemonic_Stroke = 'S';
+static char *str_Caligraphic = "Caligraphic";
+static unichar_t mnemonic_Caligraphic = 'C';
+static char *str_PenAngle = "Pen Angle:";
+static unichar_t mnemonic_PenAngle = 'A';
     /* Auto Width/Kern */
 static char *str_EnterTwoCharRange = "Enter two character ranges";
 static char *str_ToBeAdjusted = "to be adjusted.";
@@ -1277,3 +1300,4 @@ static char *str_FreePress = "A free press discriminates\nagainst the illiterate
 static char *str_GaudiamusLigature = "Gaudiamus Ligature!";
 
 static int num_buttonsize = 55;
+static int num_ScaleFactor = 100;

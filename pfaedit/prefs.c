@@ -505,7 +505,7 @@ void DoPrefs(void) {
     wattrs.cursor = ct_pointer;
     wattrs.window_title = GStringGetResource(_STR_Prefs,NULL);
     pos.x = pos.y = 0;
-    pos.width =GDrawPointsToPixels(NULL,260);
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,260));
     pos.height = GDrawPointsToPixels(NULL,line*26+45);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&p,&wattrs);
 
@@ -608,7 +608,7 @@ void DoPrefs(void) {
     gcd[gc].gd.handle_controlevent = Prefs_Ok;
     gcd[gc++].creator = GButtonCreate;
 
-    gcd[gc].gd.pos.x = 250-GIntGetResource(_NUM_Buttonsize)-30; gcd[gc].gd.pos.y = gcd[gc-1].gd.pos.y+3;
+    gcd[gc].gd.pos.x = -30; gcd[gc].gd.pos.y = gcd[gc-1].gd.pos.y+3;
     gcd[gc].gd.pos.width = -1; gcd[gc].gd.pos.height = 0;
     gcd[gc].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
     label[gc].text = (unichar_t *) _STR_Cancel;

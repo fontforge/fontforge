@@ -220,15 +220,15 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *)) {
 	wattrs.window_title = title;
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
-	pos.width =GDrawPointsToPixels(NULL,SD_Width);
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,SD_Width));
 	pos.height = GDrawPointsToPixels(NULL,SD_Height);
 	sd.gw = gw = GDrawCreateTopWindow(NULL,&pos,stroke_e_h,&sd,&wattrs);
 
 	memset(&label,0,sizeof(label));
 	memset(&gcd,0,sizeof(gcd));
 
-	label[0].text = (unichar_t *) "Line Cap";
-	label[0].text_is_1byte = true;
+	label[0].text = (unichar_t *) _STR_LineCap;
+	label[0].text_in_resource = true;
 	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 10; gcd[0].gd.pos.y = 23;
 	gcd[0].gd.flags = gg_enabled | gg_visible;
@@ -239,8 +239,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *)) {
 	gcd[1].gd.flags = gg_enabled | gg_visible;
 	gcd[1].creator = GGroupCreate;
 
-	label[2].text = (unichar_t *) "Butt";
-	label[2].text_is_1byte = true;
+	label[2].text = (unichar_t *) _STR_Butt;
+	label[2].text_in_resource = true;
 	label[2].image = &GIcon_buttcap;
 	gcd[2].gd.mnemonic = 'B';
 	gcd[2].gd.label = &label[2];
@@ -249,8 +249,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *)) {
 	gcd[2].gd.cid = CID_ButtCap;
 	gcd[2].creator = GRadioCreate;
 
-	label[3].text = (unichar_t *) "Round";
-	label[3].text_is_1byte = true;
+	label[3].text = (unichar_t *) _STR_Round;
+	label[3].text_in_resource = true;
 	label[3].image = &GIcon_roundcap;
 	gcd[3].gd.mnemonic = 'R';
 	gcd[3].gd.label = &label[3];
@@ -259,8 +259,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *)) {
 	gcd[3].gd.cid = CID_RoundCap;
 	gcd[3].creator = GRadioCreate;
 
-	label[4].text = (unichar_t *) "Square";
-	label[4].text_is_1byte = true;
+	label[4].text = (unichar_t *) _STR_Squareq;
+	label[4].text_in_resource = true;
 	label[4].image = &GIcon_squarecap;
 	gcd[4].gd.mnemonic = 'q';
 	gcd[4].gd.label = &label[4];
@@ -269,8 +269,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *)) {
 	gcd[4].gd.cid = CID_SquareCap;
 	gcd[4].creator = GRadioCreate;
 
-	label[5].text = (unichar_t *) "Line Join";
-	label[5].text_is_1byte = true;
+	label[5].text = (unichar_t *) _STR_LineJoin;
+	label[5].text_in_resource = true;
 	gcd[5].gd.label = &label[5];
 	gcd[5].gd.pos.x = gcd[0].gd.pos.x; gcd[5].gd.pos.y = gcd[2].gd.pos.y+25;
 	gcd[5].gd.flags = gg_enabled | gg_visible;
@@ -281,8 +281,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *)) {
 	gcd[6].gd.flags = gg_enabled | gg_visible;
 	gcd[6].creator = GGroupCreate;
 
-	label[7].text = (unichar_t *) "Miter";
-	label[7].text_is_1byte = true;
+	label[7].text = (unichar_t *) _STR_Miter;
+	label[7].text_in_resource = true;
 	label[7].image = &GIcon_miterjoin;
 	gcd[7].gd.mnemonic = 'M';
 	gcd[7].gd.label = &label[7];
@@ -291,8 +291,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *)) {
 	gcd[7].gd.cid = CID_MiterJoin;
 	gcd[7].creator = GRadioCreate;
 
-	label[8].text = (unichar_t *) "Round";
-	label[8].text_is_1byte = true;
+	label[8].text = (unichar_t *) _STR_Roundu;
+	label[8].text_in_resource = true;
 	label[8].image = &GIcon_roundjoin;
 	gcd[8].gd.mnemonic = 'u';
 	gcd[8].gd.label = &label[8];
@@ -301,8 +301,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *)) {
 	gcd[8].gd.cid = CID_RoundJoin;
 	gcd[8].creator = GRadioCreate;
 
-	label[9].text = (unichar_t *) "Bevel";
-	label[9].text_is_1byte = true;
+	label[9].text = (unichar_t *) _STR_Bevel;
+	label[9].text_in_resource = true;
 	label[9].image = &GIcon_beveljoin;
 	gcd[9].gd.mnemonic = 'v';
 	gcd[9].gd.label = &label[9];
@@ -311,8 +311,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *)) {
 	gcd[9].gd.cid = CID_BevelJoin;
 	gcd[9].creator = GRadioCreate;
 
-	label[10].text = (unichar_t *) "Stroke Width:";
-	label[10].text_is_1byte = true;
+	label[10].text = (unichar_t *) _STR_StrokeWidth;
+	label[10].text_in_resource = true;
 	gcd[10].gd.mnemonic = 'W';
 	gcd[10].gd.label = &label[10];
 	gcd[10].gd.pos.x = 5; gcd[10].gd.pos.y = 140+6;
@@ -338,7 +338,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *)) {
 	gcd[12].gd.handle_controlevent = Stroke_OK;
 	gcd[12].creator = GButtonCreate;
 
-	gcd[13].gd.pos.x = SD_Width-30-GIntGetResource(_NUM_Buttonsize); gcd[13].gd.pos.y = SD_Height-30;
+	gcd[13].gd.pos.x = -30; gcd[13].gd.pos.y = SD_Height-30;
 	gcd[13].gd.pos.width = -1;
 	gcd[13].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
 	label[13].text = (unichar_t *) _STR_Cancel;
@@ -348,8 +348,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *)) {
 	gcd[13].gd.handle_controlevent = Stroke_Cancel;
 	gcd[13].creator = GButtonCreate;
 
-	label[14].text = (unichar_t *) "Stroke";
-	label[14].text_is_1byte = true;
+	label[14].text = (unichar_t *) _STR_Strok;
+	label[14].text_in_resource = true;
 	gcd[14].gd.mnemonic = 'S';
 	gcd[14].gd.label = &label[14];
 	gcd[14].gd.pos.x = 5; gcd[14].gd.pos.y = 5;
@@ -358,8 +358,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *)) {
 	gcd[14].gd.handle_controlevent = Stroke_Stroke;
 	gcd[14].creator = GRadioCreate;
 
-	label[15].text = (unichar_t *) "Caligraphic";
-	label[15].text_is_1byte = true;
+	label[15].text = (unichar_t *) _STR_Caligraphic;
+	label[15].text_in_resource = true;
 	gcd[15].gd.mnemonic = 'C';
 	gcd[15].gd.label = &label[15];
 	gcd[15].gd.pos.x = 5; gcd[15].gd.pos.y = gcd[5].gd.pos.y+38;
@@ -378,8 +378,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *)) {
 	gcd[17].gd.flags = gg_enabled | gg_visible;
 	gcd[17].creator = GGroupCreate;
 
-	label[18].text = (unichar_t *) "Pen Angle:";
-	label[18].text_is_1byte = true;
+	label[18].text = (unichar_t *) _STR_PenAngle;
+	label[18].text_in_resource = true;
 	gcd[18].gd.mnemonic = 'A';
 	gcd[18].gd.label = &label[18];
 	gcd[18].gd.pos.x = gcd[2].gd.pos.x; gcd[18].gd.pos.y = gcd[15].gd.pos.y+12+6;

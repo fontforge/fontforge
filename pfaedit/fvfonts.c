@@ -603,7 +603,7 @@ void FVMergeFonts(FontView *fv) {
 	wattrs.cursor = ct_pointer;
 	wattrs.window_title = GStringGetResource(_STR_Mergefonts,NULL);
 	pos.x = pos.y = 0;
-	pos.width =GDrawPointsToPixels(NULL,150);
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,150));
 	pos.height = GDrawPointsToPixels(NULL,88);
 	gw = GDrawCreateTopWindow(NULL,&pos,mv_e_h,&d,&wattrs);
 
@@ -635,7 +635,7 @@ void FVMergeFonts(FontView *fv) {
 	gcd[2].gd.handle_controlevent = MF_OK;
 	gcd[2].creator = GButtonCreate;
 
-	gcd[3].gd.pos.x = 150-GIntGetResource(_NUM_Buttonsize)-15; gcd[3].gd.pos.y = 55;
+	gcd[3].gd.pos.x = -15; gcd[3].gd.pos.y = 55;
 	gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
 	gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
 	label[3].text = (unichar_t *) _STR_Cancel;
@@ -917,7 +917,7 @@ void FVInterpolateFonts(FontView *fv) {
     wattrs.cursor = ct_pointer;
     wattrs.window_title = GStringGetResource(_STR_Interp,NULL);
     pos.x = pos.y = 0;
-    pos.width =GDrawPointsToPixels(NULL,200);
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,200));
     pos.height = GDrawPointsToPixels(NULL,118);
     gw = GDrawCreateTopWindow(NULL,&pos,mv_e_h,&d,&wattrs);
 
@@ -979,7 +979,7 @@ void FVInterpolateFonts(FontView *fv) {
     gcd[5].gd.handle_controlevent = IF_OK;
     gcd[5].creator = GButtonCreate;
 
-    gcd[6].gd.pos.x = 200-GIntGetResource(_NUM_Buttonsize)-15; gcd[6].gd.pos.y = 85;
+    gcd[6].gd.pos.x = -15; gcd[6].gd.pos.y = 85;
     gcd[6].gd.pos.width = -1; gcd[6].gd.pos.height = 0;
     gcd[6].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
     label[6].text = (unichar_t *) _STR_Cancel;

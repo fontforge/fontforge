@@ -591,7 +591,8 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     wattrs.cursor = ct_pointer;
     wattrs.window_title = GStringGetResource(_STR_Generate,NULL);
     pos.x = pos.y = 0;
-    bsbigger = 4*bs+4*14>295; totwid = bsbigger?4*bs+4*12:295;
+    totwid = GGadgetScale(295);
+    bsbigger = 4*bs+4*14>totwid; totwid = bsbigger?4*bs+4*12:totwid;
     spacing = (totwid-4*bs-2*12)/3;
     pos.width = GDrawPointsToPixels(NULL,totwid);
     pos.height = GDrawPointsToPixels(NULL,285);
@@ -599,7 +600,7 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
-    gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6; gcd[0].gd.pos.width = totwid-24; gcd[0].gd.pos.height = 182;
+    gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6; gcd[0].gd.pos.width = 100*totwid/GIntGetResource(_NUM_ScaleFactor)-24; gcd[0].gd.pos.height = 182;
     gcd[0].gd.flags = gg_visible | gg_enabled;
     gcd[0].creator = GFileChooserCreate;
 
@@ -613,7 +614,7 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     gcd[1].gd.handle_controlevent = GFD_SaveOk;
     gcd[1].creator = GButtonCreate;
 
-    gcd[2].gd.pos.x = (totwid-spacing)/2-bs; gcd[2].gd.pos.y = 252;
+    gcd[2].gd.pos.x = -(spacing+bs)*100/GIntGetResource(_NUM_ScaleFactor)-12; gcd[2].gd.pos.y = 252;
     gcd[2].gd.pos.width = -1;
     gcd[2].gd.flags = gg_visible | gg_enabled;
     label[2].text = (unichar_t *) _STR_Filter;
@@ -623,7 +624,7 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     gcd[2].gd.handle_controlevent = GFileChooserFilterEh;
     gcd[2].creator = GButtonCreate;
 
-    gcd[3].gd.pos.x = totwid-bs-12; gcd[3].gd.pos.y = 252; gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
+    gcd[3].gd.pos.x = -12; gcd[3].gd.pos.y = 252; gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
     gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
     label[3].text = (unichar_t *) _STR_Cancel;
     label[3].text_in_resource = true;
@@ -632,7 +633,7 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     gcd[3].gd.handle_controlevent = GFD_Cancel;
     gcd[3].creator = GButtonCreate;
 
-    gcd[4].gd.pos.x = (totwid+spacing)/2; gcd[4].gd.pos.y = 252; gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
+    gcd[4].gd.pos.x = (spacing+bs)*100/GIntGetResource(_NUM_ScaleFactor)+12; gcd[4].gd.pos.y = 252; gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
     gcd[4].gd.flags = gg_visible | gg_enabled;
     label[4].text = (unichar_t *) _STR_New;
     label[4].text_in_resource = true;

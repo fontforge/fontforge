@@ -417,7 +417,7 @@ static const unichar_t *deffall[] = { lang, ok, cancel, _open, save, filter, new
 	replace, fileexists, fileexistspre, fileexistspost, createdir,
 	dirname, couldntcreatedir, selectall, none, NULL };
 static const unichar_t deffallmn[] = { 0, 'O', 'C', 'O', 'S', 'F', 'N', 'R', 0, 0, 0, 'A', 'N' };
-static const int deffallint[] = { 55 };
+static const int deffallint[] = { 55, 100 };
 
 static unichar_t **strarray=NULL; static const unichar_t **fallback=deffall;
 static unichar_t *smnemonics=NULL; static const unichar_t *fmnemonics=deffallmn;

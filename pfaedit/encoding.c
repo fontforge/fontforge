@@ -386,7 +386,7 @@ return;
     wattrs.cursor = ct_pointer;
     wattrs.window_title = GStringGetResource(_STR_RemoveEncoding,NULL);
     pos.x = pos.y = 0;
-    pos.width =GDrawPointsToPixels(NULL,150);
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,150));
     pos.height = GDrawPointsToPixels(NULL,110);
     gw = GDrawCreateTopWindow(NULL,&pos,de_e_h,&done,&wattrs);
 
@@ -398,7 +398,7 @@ return;
     gcd[0].gd.handle_controlevent = DE_Delete;
     gcd[0].creator = GListCreate;
 
-    gcd[2].gd.pos.x = 150-GIntGetResource(_NUM_Buttonsize)-10; gcd[2].gd.pos.y = gcd[0].gd.pos.y+gcd[0].gd.pos.height+5;
+    gcd[2].gd.pos.x = -10; gcd[2].gd.pos.y = gcd[0].gd.pos.y+gcd[0].gd.pos.height+5;
     gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
     gcd[2].gd.flags = gg_visible | gg_enabled | gg_but_cancel ;
     label[2].text = (unichar_t *) _STR_Cancel;

@@ -648,7 +648,7 @@ static char *AskKey(SplineFont *sf) {
     wattrs.cursor = ct_pointer;
     wattrs.window_title = GStringGetResource(_STR_PrivateKey,NULL);
     pos.x = pos.y = 0;
-    ptwidth = 2*GIntGetResource(_NUM_Buttonsize)+60;
+    ptwidth = 2*GIntGetResource(_NUM_Buttonsize)+GGadgetScale(60);
     pos.width =GDrawPointsToPixels(NULL,ptwidth);
     pos.height = GDrawPointsToPixels(NULL,90);
     gw = GDrawCreateTopWindow(NULL,&pos,ask_e_h,&d,&wattrs);
@@ -681,7 +681,7 @@ static char *AskKey(SplineFont *sf) {
     gcd[2].gd.handle_controlevent = Ask_OK;
     gcd[2].creator = GButtonCreate;
 
-    gcd[3].gd.pos.x = ptwidth-GIntGetResource(_NUM_Buttonsize)-20; gcd[3].gd.pos.y = 90-35;
+    gcd[3].gd.pos.x = -20; gcd[3].gd.pos.y = 90-35;
     gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
     gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
     label[3].text = (unichar_t *) _STR_Cancel;
@@ -2317,7 +2317,7 @@ void FontInfo(SplineFont *sf) {
     wattrs.cursor = ct_pointer;
     wattrs.window_title = GStringGetResource(_STR_Fontinformation,NULL);
     pos.x = pos.y = 0;
-    pos.width =GDrawPointsToPixels(NULL,268);
+    pos.width =GDrawPointsToPixels(NULL,GGadgetScale(268));
     pos.height = GDrawPointsToPixels(NULL,355);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&d,&wattrs);
 
@@ -2472,7 +2472,7 @@ void FontInfo(SplineFont *sf) {
     egcd[4].gd.cid = CID_Make;
     egcd[4].creator = GButtonCreate;
 
-    egcd[5].gd.pos.x = 254-12-GIntGetResource(_NUM_Buttonsize);
+    egcd[5].gd.pos.x = -12;
     egcd[5].gd.pos.y = egcd[4].gd.pos.y;
     egcd[5].gd.pos.width = -1; egcd[5].gd.pos.height = 0;
     egcd[5].gd.flags = gg_visible;
@@ -2603,8 +2603,9 @@ void FontInfo(SplineFont *sf) {
     psgcd[4].creator = GTextFieldCreate;
 
     psgcd[6].gd.pos.y = psgcd[4].gd.pos.y;
-    psgcd[6].gd.pos.width = GIntGetResource(_NUM_Buttonsize); psgcd[6].gd.pos.height = 0;
-    psgcd[6].gd.pos.x = psgcd[3].gd.pos.x+psgcd[3].gd.pos.width-psgcd[6].gd.pos.width;
+    psgcd[6].gd.pos.width = -1; psgcd[6].gd.pos.height = 0;
+    psgcd[6].gd.pos.x = psgcd[3].gd.pos.x+psgcd[3].gd.pos.width-
+	    GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
     /*if ( strstrmatch(sf->fontname,"Italic")!=NULL ||strstrmatch(sf->fontname,"Oblique")!=NULL )*/
 	psgcd[6].gd.flags = gg_visible | gg_enabled;
     pslabel[6].text = (unichar_t *) _STR_Guess;
@@ -2760,7 +2761,8 @@ void FontInfo(SplineFont *sf) {
     pgcd[2].gd.cid = CID_Add;
     pgcd[2].creator = GButtonCreate;
 
-    pgcd[3].gd.pos.x = (240-GIntGetResource(_NUM_Buttonsize))/2; pgcd[3].gd.pos.y = pgcd[2].gd.pos.y;
+    pgcd[3].gd.pos.x = (260-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor))/2;
+    pgcd[3].gd.pos.y = pgcd[2].gd.pos.y;
     pgcd[3].gd.pos.width = -1; pgcd[3].gd.pos.height = 0;
     pgcd[3].gd.flags = gg_visible ;
     plabel[3].text = (unichar_t *) _STR_Guess;
@@ -2771,7 +2773,7 @@ void FontInfo(SplineFont *sf) {
     pgcd[3].gd.cid = CID_Guess;
     pgcd[3].creator = GButtonCreate;
 
-    pgcd[4].gd.pos.x = 240-GIntGetResource(_NUM_Buttonsize)-20; pgcd[4].gd.pos.y = pgcd[2].gd.pos.y;
+    pgcd[4].gd.pos.x = -20; pgcd[4].gd.pos.y = pgcd[2].gd.pos.y;
     pgcd[4].gd.pos.width = -1; pgcd[4].gd.pos.height = 0;
     pgcd[4].gd.flags = gg_visible | gg_enabled ;
     plabel[4].text = (unichar_t *) _STR_Remove;
@@ -3157,7 +3159,7 @@ void FontInfo(SplineFont *sf) {
     mgcd[1].gd.handle_controlevent = GFI_OK;
     mgcd[1].creator = GButtonCreate;
 
-    mgcd[2].gd.pos.x = 268-GIntGetResource(_NUM_Buttonsize)-30; mgcd[2].gd.pos.y = mgcd[1].gd.pos.y+3;
+    mgcd[2].gd.pos.x = -30; mgcd[2].gd.pos.y = mgcd[1].gd.pos.y+3;
     mgcd[2].gd.pos.width = -1; mgcd[2].gd.pos.height = 0;
     mgcd[2].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
     mlabel[2].text = (unichar_t *) _STR_Cancel;

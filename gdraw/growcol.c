@@ -887,6 +887,7 @@ static GRowCol *_GRowColCreate(GRowCol *grc, struct gwindow *base, GGadgetData *
     }
 
     GRowColFit(grc);
+    _GGadget_FinalPosition(&grc->g,base,gd);
 
     if ( gd->flags & gg_group_end )
 	_GGadgetCloseGroup(&grc->g);

@@ -431,6 +431,7 @@ extern void GMenuItemArrayFree(GMenuItem *mi);
 extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
 
 extern GGadget *_GGadget_Create(GGadget *g, struct gwindow *base, GGadgetData *gd,void *data, GBox *def);
+extern void _GGadget_FinalPosition(GGadget *g, struct gwindow *base, GGadgetData *gd);
 extern void _ggadget_destroy(GGadget *g);
 
 extern GWindow GListPopupCreate(GGadget *owner,void (*inform)(GGadget *,int), GTextInfo **ti);

@@ -12,7 +12,7 @@
 
 #define e_hexjis	100
 
-static char *istandard[] = { "buttonsize", NULL };
+static char *istandard[] = { "buttonsize", "ScaleFactor", NULL };
 
 static char *standard[] = { "Language", "OK", "Cancel", "Open", "Save",
 	"Filter", "New", "Replace", "Fileexists", "Fileexistspre",

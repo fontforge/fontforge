@@ -289,7 +289,7 @@ static int AskSizeBits(int *pixelsize,int *bitsperpixel) {
     wattrs.window_title = GStringGetResource(_STR_PixelSizeQ,NULL);
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
-    pos.width =GDrawPointsToPixels(NULL,140);
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,140));
     pos.height = GDrawPointsToPixels(NULL,100);
     sb.gw = gw = GDrawCreateTopWindow(NULL,&pos,sb_e_h,&sb,&wattrs);
 
@@ -334,7 +334,7 @@ static int AskSizeBits(int *pixelsize,int *bitsperpixel) {
     gcd[4].gd.handle_controlevent = SB_OK;
     gcd[4].creator = GButtonCreate;
 
-    gcd[5].gd.pos.x = 140-GIntGetResource(_NUM_Buttonsize)-10; gcd[5].gd.pos.y = 38+30;
+    gcd[5].gd.pos.x = -10; gcd[5].gd.pos.y = 38+30;
     gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
     gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
     label[5].text = (unichar_t *) _STR_Cancel;
@@ -655,14 +655,15 @@ static int _Export(SplineChar *sc,BDFChar *bc) {
     wattrs.cursor = ct_pointer;
     wattrs.window_title = GStringGetResource(_STR_Export,NULL);
     pos.x = pos.y = 0;
-    bsbigger = 3*bs+4*14>223; totwid = bsbigger?3*bs+4*12:223;
+    totwid = GGadgetScale(223);
+    bsbigger = 3*bs+4*14>totwid; totwid = bsbigger?3*bs+4*12:totwid;
     pos.width = GDrawPointsToPixels(NULL,totwid);
     pos.height = GDrawPointsToPixels(NULL,255);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&d,&wattrs);
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
-    gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6; gcd[0].gd.pos.width = totwid-24; gcd[0].gd.pos.height = 182;
+    gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6; gcd[0].gd.pos.width = totwid*100/GIntGetResource(_NUM_ScaleFactor)-24; gcd[0].gd.pos.height = 182;
     gcd[0].gd.flags = gg_visible | gg_enabled;
     gcd[0].creator = GFileChooserCreate;
 
@@ -674,7 +675,7 @@ static int _Export(SplineChar *sc,BDFChar *bc) {
     gcd[1].gd.handle_controlevent = GFD_SaveOk;
     gcd[1].creator = GButtonCreate;
 
-    gcd[2].gd.pos.x = (totwid-bs)/2; gcd[2].gd.pos.y = 224; gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
+    gcd[2].gd.pos.x = (totwid-bs)*100/GIntGetResource(_NUM_ScaleFactor)/2; gcd[2].gd.pos.y = 224; gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
     gcd[2].gd.flags = gg_visible | gg_enabled;
     label[2].text = (unichar_t *) _STR_Filter;
     label[2].text_in_resource = true;
@@ -682,7 +683,7 @@ static int _Export(SplineChar *sc,BDFChar *bc) {
     gcd[2].gd.handle_controlevent = GFileChooserFilterEh;
     gcd[2].creator = GButtonCreate;
 
-    gcd[3].gd.pos.x = totwid-gcd[1].gd.pos.x-bs; gcd[3].gd.pos.y = 224; gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
+    gcd[3].gd.pos.x = -gcd[1].gd.pos.x; gcd[3].gd.pos.y = 224; gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
     gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
     label[3].text = (unichar_t *) _STR_Cancel;
     label[3].text_in_resource = true;

@@ -601,6 +601,7 @@ GGadget *GTabSetCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     if ( gd->flags&gg_tabset_fill1line ) gts->fill1line = true;
     gts->offset_per_row = GDrawPointsToPixels(base,2);
     GTabSetRemetric(gts);
+    _GGadget_FinalPosition(&gts->g,base,gd);
 
     bp = GBoxBorderWidth(base,gts->g.box);
     gts->g.inner = gts->g.r;

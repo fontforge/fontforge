@@ -817,7 +817,7 @@ static void GFileChooserCreateChildren(GFileChooser *gfc, int flags) {
 
     memset(&gd,'\0',sizeof(gd));
     gd.pos.y = gfc->g.r.y; gd.pos.height = 0;
-    gd.pos.width = GDrawPointsToPixels(gfc->g.base,150);
+    gd.pos.width = GGadgetScale(GDrawPointsToPixels(gfc->g.base,150));
     if ( gd.pos.width>gfc->g.r.width ) gd.pos.width = gfc->g.r.width;
     gd.pos.x = gfc->g.r.x+(gfc->g.r.width - gd.pos.width)/2;
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_list_exactlyone;
@@ -856,10 +856,11 @@ GGadget *GFileChooserCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     _GGadget_Create(&gfc->g,base,gd,data,&gfilechooser_box);
     gfc->g.takes_input = gfc->g.takes_keyboard = false; gfc->g.focusable = false;
     if ( gfc->g.r.width == 0 )
-	gfc->g.r.width = GDrawPointsToPixels(base,140);
+	gfc->g.r.width = GGadgetScale(GDrawPointsToPixels(base,140));
     if ( gfc->g.r.height == 0 )
 	gfc->g.r.height = GDrawPointsToPixels(base,100);
     gfc->g.inner = gfc->g.r;
+    _GGadget_FinalPosition(&gfc->g,base,gd);
 
     GFileChooserCreateChildren(gfc, gd->flags);
     gfc->filter = GFileChooserDefFilter;

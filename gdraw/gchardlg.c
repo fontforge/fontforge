@@ -863,19 +863,19 @@ void GWidgetCreateInsChar(void) {
 	{ (unichar_t *) "Close", NULL, -1, -1, NULL, NULL, 0,0,0,0,0,0, 1 },
 	{ (unichar_t *) "Show", NULL, -1, -1, NULL, NULL, 0,0,0,0,0,0, 1 }};
     static GGadgetCreateData gcd[] = {
-	{ GLabelCreate, {{ 6, 6 }, NULL, 'e', 0, 0, 0, 0, &labels[0], NULL, gg_visible | gg_enabled }},
-	{ GListButtonCreate, {{ 6, 21, 168 }, NULL, 'e', 0, 0, 0, INSCHR_CharSet, NULL, NULL, gg_visible | gg_enabled }},
-	{ GLabelCreate, {{ 6, 50 }, NULL, 'C', 0, 0, 0, 0, &labels[1], NULL, gg_visible | gg_enabled }},
-	{ GTextFieldCreate, {{ 6, 64, 65 }, NULL, 'C', 0, 0, 0, INSCHR_Char, NULL, NULL, gg_visible | gg_enabled }},
-	{ GRadioCreate, {{ 85, 48 }, NULL, 'H', 0, 0, 0, INSCHR_Hex, &labels[2], NULL, gg_visible | gg_enabled | gg_cb_on }},
-	{ GRadioCreate, {{ 85, 68 }, NULL, 'D', 0, 0, 0, INSCHR_Dec, &labels[3], NULL, gg_visible | gg_enabled }},
-	{ GRadioCreate, {{ 127, 48 }, NULL, 'U', 0, 0, 0, INSCHR_Unicode, &labels[4], NULL, gg_visible | gg_enabled }},
-	{ GRadioCreate, {{ 127, 68 }, NULL, 'K', 0, 0, 0, INSCHR_KuTen, &labels[5], NULL, gg_visible }},
-	{ GButtonCreate, {{ 73, 93, 50 }, NULL, 'P', 0, 0, 0, INSCHR_Prev, &labels[6], NULL, gg_visible }},
-	{ GButtonCreate, {{ 137, 93, 50 }, NULL, 'N', 0, 0, 0, INSCHR_Next, &labels[7], NULL, gg_visible }},
-	{ GButtonCreate, {{ 200-3, 6-3, 50+6 }, NULL, 'I', 0, 0, 0, INSCHR_Insert, &labels[8], NULL, gg_visible | gg_enabled | gg_but_default }},
-	{ GButtonCreate, {{ 200, 36, 50 }, NULL, 'l', 0, 0, 0, INSCHR_Close, &labels[9], NULL, gg_visible | gg_enabled | gg_but_cancel }},
-	{ GButtonCreate, {{ 200, 64, 50 }, NULL, 'S', 0, 0, 0, INSCHR_Show, &labels[10], NULL, gg_visible }},
+	{ GLabelCreate, {{ 6, 6 }, NULL, 'e', 0, 0, 0, 0, &labels[0], NULL, gg_visible | gg_enabled | gg_pos_use0 }},
+	{ GListButtonCreate, {{ 6, 21, 168 }, NULL, 'e', 0, 0, 0, INSCHR_CharSet, NULL, NULL, gg_visible | gg_enabled | gg_pos_use0 }},
+	{ GLabelCreate, {{ 6, 50 }, NULL, 'C', 0, 0, 0, 0, &labels[1], NULL, gg_visible | gg_enabled | gg_pos_use0 }},
+	{ GTextFieldCreate, {{ 6, 64, 65 }, NULL, 'C', 0, 0, 0, INSCHR_Char, NULL, NULL, gg_visible | gg_enabled | gg_pos_use0 }},
+	{ GRadioCreate, {{ 85, 48 }, NULL, 'H', 0, 0, 0, INSCHR_Hex, &labels[2], NULL, gg_visible | gg_enabled | gg_cb_on | gg_pos_use0 }},
+	{ GRadioCreate, {{ 85, 68 }, NULL, 'D', 0, 0, 0, INSCHR_Dec, &labels[3], NULL, gg_visible | gg_enabled | gg_pos_use0 }},
+	{ GRadioCreate, {{ 127, 48 }, NULL, 'U', 0, 0, 0, INSCHR_Unicode, &labels[4], NULL, gg_visible | gg_enabled | gg_pos_use0 }},
+	{ GRadioCreate, {{ 127, 68 }, NULL, 'K', 0, 0, 0, INSCHR_KuTen, &labels[5], NULL, gg_visible | gg_pos_use0 }},
+	{ GButtonCreate, {{ 73, 93, 50 }, NULL, 'P', 0, 0, 0, INSCHR_Prev, &labels[6], NULL, gg_visible | gg_pos_use0 }},
+	{ GButtonCreate, {{ 137, 93, 50 }, NULL, 'N', 0, 0, 0, INSCHR_Next, &labels[7], NULL, gg_visible | gg_pos_use0 }},
+	{ GButtonCreate, {{ 200-3, 6-3, 50+6 }, NULL, 'I', 0, 0, 0, INSCHR_Insert, &labels[8], NULL, gg_visible | gg_enabled | gg_but_default | gg_pos_use0 }},
+	{ GButtonCreate, {{ 200, 36, 50 }, NULL, 'l', 0, 0, 0, INSCHR_Close, &labels[9], NULL, gg_visible | gg_enabled | gg_but_cancel | gg_pos_use0 }},
+	{ GButtonCreate, {{ 200, 64, 50 }, NULL, 'S', 0, 0, 0, INSCHR_Show, &labels[10], NULL, gg_visible | gg_pos_use0 }},
 	{ NULL }};
     GRect pos;
     GWindowAttrs wattrs;

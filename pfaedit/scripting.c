@@ -2594,7 +2594,7 @@ void ScriptDlg(FontView *fv) {
 	wattrs.cursor = ct_pointer;
 	wattrs.window_title = GStringGetResource(_STR_ExecuteScript,NULL);
 	pos.x = pos.y = 0;
-	pos.width =GDrawPointsToPixels(NULL,SD_Width);
+	pos.width = GDrawPointsToPixels(NULL,GGadgetScale(SD_Width));
 	pos.height = GDrawPointsToPixels(NULL,SD_Height);
 	gw = GDrawCreateTopWindow(NULL,&pos,sd_e_h,&sd,&wattrs);
 
@@ -2617,7 +2617,7 @@ void ScriptDlg(FontView *fv) {
 	gcd[1].gd.handle_controlevent = SD_OK;
 	gcd[1].creator = GButtonCreate;
 
-	gcd[2].gd.pos.x = SD_Width-GIntGetResource(_NUM_Buttonsize)-25; gcd[2].gd.pos.y = SD_Height-32;
+	gcd[2].gd.pos.x = -25; gcd[2].gd.pos.y = SD_Height-32;
 	gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
 	gcd[2].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
 	label[2].text = (unichar_t *) _STR_Cancel;

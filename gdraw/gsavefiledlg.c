@@ -165,7 +165,8 @@ unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfil
     wattrs.cursor = ct_pointer;
     wattrs.window_title = (unichar_t *) title;
     pos.x = pos.y = 0;
-    bsbigger = 3*bs+4*14>223; totwid = bsbigger?3*bs+4*12:223;
+    totwid = GGadgetScale(223);
+    bsbigger = 3*bs+4*14>totwid; totwid = bsbigger?3*bs+4*12:totwid;
     pos.width = GDrawPointsToPixels(NULL,totwid);
     pos.height = GDrawPointsToPixels(NULL,255);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&d,&wattrs);
@@ -187,7 +188,7 @@ unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfil
     gcd[1].gd.handle_controlevent = GFD_SaveOk;
     gcd[1].creator = GButtonCreate;
 
-    gcd[2].gd.pos.x = (totwid-bs)/2; gcd[2].gd.pos.y = 222;
+    gcd[2].gd.pos.x = (totwid-bs)*100/GIntGetResource(_NUM_ScaleFactor)/2; gcd[2].gd.pos.y = 222;
     gcd[2].gd.pos.width = -1;
     gcd[2].gd.flags = gg_visible | gg_enabled;
     label[2].text = (unichar_t *) _STR_Filter;
@@ -197,7 +198,7 @@ unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfil
     gcd[2].gd.handle_controlevent = GFileChooserFilterEh;
     gcd[2].creator = GButtonCreate;
 
-    gcd[3].gd.pos.x = totwid-gcd[1].gd.pos.x-bs; gcd[3].gd.pos.y = 222;
+    gcd[3].gd.pos.x = -gcd[1].gd.pos.x; gcd[3].gd.pos.y = 222;
     gcd[3].gd.pos.width = -1;
     gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
     label[3].text = (unichar_t *) _STR_Cancel;
@@ -208,7 +209,7 @@ unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfil
     gcd[3].creator = GButtonCreate;
 
     gcd[4].gd.pos.x = gcd[2].gd.pos.x; gcd[4].gd.pos.y = 192;
-    gcd[4].gd.pos.width = GIntGetResource(_NUM_Buttonsize);
+    gcd[4].gd.pos.width = -1;
     gcd[4].gd.flags = gg_visible | gg_enabled;
     label[4].text = (unichar_t *) _STR_New;
     label[4].text_in_resource = true;

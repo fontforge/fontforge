@@ -428,7 +428,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     wattrs.window_title = GStringGetResource(isavail ? _STR_Bitmapsavail : _STR_Regenbitmaps,NULL );
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
-    pos.width =GDrawPointsToPixels(NULL,190);
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,190));
     pos.height = GDrawPointsToPixels(NULL,202);
     bd.gw = GDrawCreateTopWindow(NULL,&pos,bd_e_h,&bd,&wattrs);
 
@@ -552,7 +552,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j].gd.handle_controlevent = CB_OK;
     gcd[j++].creator = GButtonCreate;
 
-    gcd[j].gd.pos.x = 190-GIntGetResource(_NUM_Buttonsize)-20; gcd[j].gd.pos.y = 202-32;
+    gcd[j].gd.pos.x = -20; gcd[j].gd.pos.y = 202-32;
     gcd[j].gd.pos.width = -1; gcd[j].gd.pos.height = 0;
     gcd[j].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
     label[j].text = (unichar_t *) _STR_Cancel;

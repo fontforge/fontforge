@@ -494,7 +494,7 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
 	wattrs.window_title = GStringGetResource( _STR_Charinfo,NULL );
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
-	pos.width =GDrawPointsToPixels(NULL,CI_Width);
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,CI_Width));
 	pos.height = GDrawPointsToPixels(NULL,CI_Height);
 	gi.gw = GDrawCreateTopWindow(NULL,&pos,ci_e_h,&gi,&wattrs);
 
@@ -594,7 +594,7 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
 	gcd[10].gd.handle_controlevent = CI_OK;
 	gcd[10].creator = GButtonCreate;
 
-	gcd[11].gd.pos.x = CI_Width-GIntGetResource(_NUM_Buttonsize)-25; gcd[11].gd.pos.y = CI_Height-32;
+	gcd[11].gd.pos.x = -25; gcd[11].gd.pos.y = CI_Height-32;
 	gcd[11].gd.pos.width = -1; gcd[11].gd.pos.height = 0;
 	gcd[11].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
 	label[11].text = (unichar_t *) _STR_Cancel;
@@ -671,7 +671,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	wattrs.window_title = GStringGetResource(_STR_ReferenceInfo,NULL);
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
-	pos.width =GDrawPointsToPixels(NULL,RI_Width);
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,RI_Width));
 	pos.height = GDrawPointsToPixels(NULL,RI_Height);
 	gi.gw = GDrawCreateTopWindow(NULL,&pos,ci_e_h,&gi,&wattrs);
 
@@ -713,7 +713,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	gcd[8].gd.handle_controlevent = CI_Show;
 	gcd[8].creator = GButtonCreate;
 
-	gcd[9].gd.pos.x = (RI_Width-GIntGetResource(_NUM_Buttonsize)-6-30); gcd[9].gd.pos.y = RI_Height-32-3;
+	gcd[9].gd.pos.x = -6-30; gcd[9].gd.pos.y = RI_Height-32-3;
 	gcd[9].gd.pos.width = -1; gcd[9].gd.pos.height = 0;
 	gcd[9].gd.flags = gg_visible | gg_enabled | gg_but_default | gg_but_cancel;
 	label[9].text = (unichar_t *) _STR_OK;
@@ -753,7 +753,7 @@ static void ImgGetInfo(CharView *cv, ImageList *img) {
 	wattrs.window_title = GStringGetResource(_STR_ImageInfo,NULL);
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
-	pos.width =GDrawPointsToPixels(NULL,II_Width);
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,II_Width));
 	pos.height = GDrawPointsToPixels(NULL,II_Height);
 	gi.gw = GDrawCreateTopWindow(NULL,&pos,ci_e_h,&gi,&wattrs);
 
@@ -777,7 +777,7 @@ static void ImgGetInfo(CharView *cv, ImageList *img) {
 	gcd[1].gd.flags = gg_enabled|gg_visible;
 	gcd[1].creator = GLabelCreate;
 
-	gcd[2].gd.pos.x = (II_Width-GIntGetResource(_NUM_Buttonsize)-6)/2; gcd[2].gd.pos.y = II_Height-32-3;
+	gcd[2].gd.pos.x = (II_Width-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor)-6)/2; gcd[2].gd.pos.y = II_Height-32-3;
 	gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
 	gcd[2].gd.flags = gg_visible | gg_enabled | gg_but_default | gg_but_cancel;
 	label[2].text = (unichar_t *) _STR_OK;
@@ -1112,7 +1112,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	wattrs.cursor = ct_pointer;
 	wattrs.window_title = GStringGetResource(_STR_PointInfo,NULL);
 	wattrs.is_dlg = true;
-	pos.width =GDrawPointsToPixels(NULL,PI_Width);
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,PI_Width));
 	pos.height = GDrawPointsToPixels(NULL,PI_Height);
 	pt.x = cv->xoff + rint(sp->me.x*cv->scale);
 	pt.y = -cv->yoff + cv->height - rint(sp->me.y*cv->scale);
@@ -1245,7 +1245,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[13].creator = GLineCreate;
 
 	gcd[14].gd.pos.x = 20-3; gcd[14].gd.pos.y = PI_Height-35-3;
-	gcd[14].gd.pos.width = GIntGetResource(_NUM_Buttonsize)+6; gcd[14].gd.pos.height = 0;
+	gcd[14].gd.pos.width = -1; gcd[14].gd.pos.height = 0;
 	gcd[14].gd.flags = gg_visible | gg_enabled | gg_but_default;
 	label[14].text = (unichar_t *) _STR_OK;
 	label[14].text_in_resource = true;
@@ -1254,7 +1254,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[14].gd.handle_controlevent = PI_Ok;
 	gcd[14].creator = GButtonCreate;
 
-	gcd[15].gd.pos.x = PI_Width-GIntGetResource(_NUM_Buttonsize)-20; gcd[15].gd.pos.y = PI_Height-35;
+	gcd[15].gd.pos.x = -20; gcd[15].gd.pos.y = PI_Height-35;
 	gcd[15].gd.pos.width = -1; gcd[15].gd.pos.height = 0;
 	gcd[15].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
 	label[15].text = (unichar_t *) _STR_Cancel;

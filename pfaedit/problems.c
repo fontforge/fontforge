@@ -137,7 +137,7 @@ return;
 	wattrs.cursor = ct_pointer;
 	wattrs.window_title = GStringGetResource(_STR_ProbExplain,NULL);
 	pos.x = pos.y = 0;
-	pos.width =GDrawPointsToPixels(NULL,400);
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,400));
 	pos.height = GDrawPointsToPixels(NULL,86);
 	p->explainw = GDrawCreateTopWindow(NULL,&pos,explain_e_h,p,&wattrs);
 
@@ -175,7 +175,7 @@ return;
 	gcd[1].gd.cid = CID_Next;
 	gcd[1].creator = GButtonCreate;
 
-	gcd[2].gd.pos.x = 400-GIntGetResource(_NUM_Buttonsize)-15; gcd[2].gd.pos.y = gcd[1].gd.pos.y+3;
+	gcd[2].gd.pos.x = -15; gcd[2].gd.pos.y = gcd[1].gd.pos.y+3;
 	gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
 	gcd[2].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
 	label[2].text = (unichar_t *) _STR_Stop;
@@ -1055,7 +1055,7 @@ void FindProblems(FontView *fv,CharView *cv) {
     wattrs.cursor = ct_pointer;
     wattrs.window_title = GStringGetResource(_STR_Findprobs,NULL);
     pos.x = pos.y = 0;
-    pos.width =GDrawPointsToPixels(NULL,200);
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,200));
     pos.height = GDrawPointsToPixels(NULL,fv->cidmaster==NULL?335:372);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&p,&wattrs);
 

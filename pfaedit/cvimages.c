@@ -850,6 +850,7 @@ static void _Import(CharView *cv,BDFChar *bc,FontView *fv) {
     pos.x = pos.y = 0;
     totwid = 223;
     if ( fv!=NULL ) totwid += 60;
+    totwid = GGadgetScale(totwid);
     bsbigger = 3*bs+4*14>totwid; totwid = bsbigger?3*bs+4*12:totwid;
     pos.width = GDrawPointsToPixels(NULL,totwid);
     pos.height = GDrawPointsToPixels(NULL,255);
@@ -871,7 +872,7 @@ static void _Import(CharView *cv,BDFChar *bc,FontView *fv) {
     gcd[1].gd.handle_controlevent = GFD_ImportOk;
     gcd[1].creator = GButtonCreate;
 
-    gcd[2].gd.pos.x = (totwid-bs)/2; gcd[2].gd.pos.y = 224; gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
+    gcd[2].gd.pos.x = (totwid-bs)*100/GIntGetResource(_NUM_ScaleFactor)/2; gcd[2].gd.pos.y = 224; gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
     gcd[2].gd.flags = gg_visible | gg_enabled;
     label[2].text = (unichar_t *) _STR_Filter;
     label[2].text_in_resource = true;
@@ -880,7 +881,7 @@ static void _Import(CharView *cv,BDFChar *bc,FontView *fv) {
     gcd[2].gd.handle_controlevent = GFileChooserFilterEh;
     gcd[2].creator = GButtonCreate;
 
-    gcd[3].gd.pos.x = totwid-gcd[1].gd.pos.x-bs; gcd[3].gd.pos.y = 224; gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
+    gcd[3].gd.pos.x = -gcd[1].gd.pos.x; gcd[3].gd.pos.y = 224; gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
     gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
     label[3].text = (unichar_t *) _STR_Cancel;
     label[3].text_in_resource = true;

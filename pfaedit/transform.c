@@ -288,7 +288,7 @@ static void MakeTransBlock(TransData *td,int bnum) {
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.cursor = ct_pointer;
     pos.x = 0; pos.y = GDrawPointsToPixels(NULL,TBlock_Top+bnum*TBlock_Height);
-    pos.width =GDrawPointsToPixels(NULL,TBlock_Width);
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,TBlock_Width));
     pos.height = GDrawPointsToPixels(NULL,TBlock_Height);
     td->tblock[bnum] = gw = GDrawCreateSubWindow(td->gw,&pos,NULL,td,&wattrs);
 
@@ -479,7 +479,7 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	wattrs.window_title = GStringGetResource(_STR_Transform,NULL);
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
-	pos.width =GDrawPointsToPixels(NULL,TBlock_Width);
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,TBlock_Width));
 	pos.height = GDrawPointsToPixels(NULL,TBlock_Top+TCnt*TBlock_Height+64);
 	td.gw = gw = GDrawCreateTopWindow(NULL,&pos,trans_e_h,&td,&wattrs);
 
@@ -516,7 +516,7 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	gcd[i].gd.handle_controlevent = Trans_OK;
 	gcd[i++].creator = GButtonCreate;
 
-	gcd[i].gd.pos.x = TBlock_Width-GIntGetResource(_NUM_Buttonsize)-30; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+3;
+	gcd[i].gd.pos.x = -30; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+3;
 	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
 	label[i].text = (unichar_t *) _STR_Cancel;

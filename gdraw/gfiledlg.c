@@ -84,7 +84,8 @@ unichar_t *GWidgetOpenFile(const unichar_t *title, const unichar_t *defaultfile,
     wattrs.cursor = ct_pointer;
     wattrs.window_title = (unichar_t *) title;
     pos.x = pos.y = 0;
-    bsbigger = 3*bs+4*14>223; totwid = bsbigger?3*bs+4*12:223;
+    totwid = GGadgetScale(223);
+    bsbigger = 3*bs+4*14>totwid; totwid = bsbigger?3*bs+4*12:totwid;
     pos.width = GDrawPointsToPixels(NULL,totwid);
     pos.height = GDrawPointsToPixels(NULL,223);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&d,&wattrs);
@@ -97,7 +98,7 @@ unichar_t *GWidgetOpenFile(const unichar_t *title, const unichar_t *defaultfile,
     gcd[0].creator = GFileChooserCreate;
 
     gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = 192-3;
-    gcd[1].gd.pos.width = GIntGetResource(_NUM_Buttonsize);
+    gcd[1].gd.pos.width = -1;
     gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
     label[1].text = (unichar_t *) _STR_OK;
     label[1].text_in_resource = true;
@@ -106,8 +107,8 @@ unichar_t *GWidgetOpenFile(const unichar_t *title, const unichar_t *defaultfile,
     gcd[1].gd.handle_controlevent = GFD_Ok;
     gcd[1].creator = GButtonCreate;
 
-    gcd[2].gd.pos.x = (totwid-bs)/2; gcd[2].gd.pos.y = 192;
-    gcd[2].gd.pos.width = GIntGetResource(_NUM_Buttonsize);
+    gcd[2].gd.pos.x = (totwid-bs)*100/GIntGetResource(_NUM_ScaleFactor)/2; gcd[2].gd.pos.y = 222;
+    gcd[2].gd.pos.width = -1;
     gcd[2].gd.flags = gg_visible | gg_enabled;
     label[2].text = (unichar_t *) _STR_Filter;
     label[2].text_in_resource = true;
@@ -116,8 +117,8 @@ unichar_t *GWidgetOpenFile(const unichar_t *title, const unichar_t *defaultfile,
     gcd[2].gd.handle_controlevent = GFileChooserFilterEh;
     gcd[2].creator = GButtonCreate;
 
-    gcd[3].gd.pos.x = totwid-gcd[1].gd.pos.x-bs; gcd[3].gd.pos.y = 192;
-    gcd[3].gd.pos.width = GIntGetResource(_NUM_Buttonsize);
+    gcd[3].gd.pos.x = -gcd[1].gd.pos.x; gcd[3].gd.pos.y = 192;
+    gcd[3].gd.pos.width = -1;
     gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
     label[3].text = (unichar_t *) _STR_Cancel;
     label[3].text_in_resource = true;

@@ -1225,7 +1225,7 @@ static void AutoWKDlg(SplineFont *sf,int autokern) {
     wattrs.cursor = ct_pointer;
     wattrs.window_title = GStringGetResource(autokern?_STR_Autokern:_STR_Autowidth,NULL);
     pos.x = pos.y = 0;
-    pos.width =GDrawPointsToPixels(NULL,200);
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,200));
     pos.height = GDrawPointsToPixels(NULL,autokern?273:215);
     gw = GDrawCreateTopWindow(NULL,&pos,AW_e_h,&wi,&wattrs);
 
@@ -1318,7 +1318,7 @@ static void AutoWKDlg(SplineFont *sf,int autokern) {
     gcd[i].gd.handle_controlevent = AW_OK;
     gcd[i++].creator = GButtonCreate;
 
-    gcd[i].gd.pos.x = 200-GIntGetResource(_NUM_Buttonsize)-30; gcd[i].gd.pos.y = y;
+    gcd[i].gd.pos.x = -30; gcd[i].gd.pos.y = y;
     gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
     label[i].text = (unichar_t *) _STR_Cancel;

@@ -225,7 +225,7 @@ return;
     gd.pos.width = GDrawPointsToPixels(new->gw,50);
     gd.pos.x = pos.width-gd.pos.width-10;
     gd.pos.y = pos.height-GDrawPointsToPixels(new->gw,29);
-    gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
+    gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0;
     gd.mnemonic = 'S';
     label.text = (unichar_t *) "Stop";
     label.text_is_1byte = true;

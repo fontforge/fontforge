@@ -601,6 +601,7 @@ static GLabel *_GLabelCreate(GLabel *gl, struct gwindow *base, GGadgetData *gd,v
     }
     gl->shiftonpress = shift_on_press;
     GLabelFit(gl);
+    _GGadget_FinalPosition(&gl->g,base,gd);
 
     if ( gd->flags & gg_group_end )
 	_GGadgetCloseGroup(&gl->g);

@@ -521,6 +521,10 @@ return( GDrawPointsToPixels(sigh->base,_GGadget_LeftMargin));
 return( lastOpenGroup->r.x + GDrawPointsToPixels(lastOpenGroup->base,_GGadget_Skip));
 }
 
+int GGadgetScale(int xpos) {
+return( xpos*GIntGetResource(_NUM_ScaleFactor)/100 );
+}
+
 GGadget *_GGadget_Create(GGadget *g, struct gwindow *base, GGadgetData *gd,void *data, GBox *def) {
     GGadget *last, *lastopengroup;
 
@@ -531,6 +535,11 @@ GGadget *_GGadget_Create(GGadget *g, struct gwindow *base, GGadgetData *gd,void 
 	g->r.y = GDrawPointsToPixels(base,g->r.y);
 	if ( g->r.width!=-1 )
 	    g->r.width = GDrawPointsToPixels(base,g->r.width);
+	if ( !(gd->flags&gg_pos_use0)) {
+	    g->r.x = GGadgetScale(g->r.x);
+	    if ( g->r.width!=-1 )
+		g->r.width = GGadgetScale(g->r.width);
+	}
 	g->r.height = GDrawPointsToPixels(base,g->r.height);
     }
     last = g->prev;
@@ -599,6 +608,15 @@ GGadget *_GGadget_Create(GGadget *g, struct gwindow *base, GGadgetData *gd,void 
 		  gs_enabled;
     if ( !(gd->flags&gg_enabled) ) g->was_disabled = true;
 return( g );
+}
+
+void _GGadget_FinalPosition(GGadget *g, struct gwindow *base, GGadgetData *gd) {
+    if ( g->r.x<0 && !(gd->flags&gg_pos_use0)) {
+	GRect size;
+	GDrawGetSize(base,&size);
+	g->r.x += size.width-g->r.width;
+	g->inner.x += size.width-g->r.width;
+    }
 }
 
 void _ggadget_destroy(GGadget *g) {

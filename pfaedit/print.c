@@ -1059,7 +1059,7 @@ static int PageSetup(PI *pi) {
     wattrs.cursor = ct_pointer;
     wattrs.window_title = GStringGetResource(_STR_PageSetup,NULL);
     pos.x = pos.y = 0;
-    pos.width =GDrawPointsToPixels(NULL,250);
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,250));
     pos.height = GDrawPointsToPixels(NULL,150);
     pi->setup = GDrawCreateTopWindow(NULL,&pos,pg_e_h,pi,&wattrs);
 
@@ -1206,7 +1206,7 @@ static int PageSetup(PI *pi) {
     gcd[10].gd.handle_controlevent = PG_OK;
     gcd[10].creator = GButtonCreate;
 
-    gcd[11].gd.pos.x = 250-GIntGetResource(_NUM_Buttonsize)-30; gcd[11].gd.pos.y = gcd[10].gd.pos.y+3;
+    gcd[11].gd.pos.x = -30; gcd[11].gd.pos.y = gcd[10].gd.pos.y+3;
     gcd[11].gd.pos.width = -1; gcd[11].gd.pos.height = 0;
     gcd[11].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
     label[11].text = (unichar_t *) _STR_Cancel;

@@ -2034,7 +2034,7 @@ void MetaFont(FontView *fv,CharView *cv) {
     wattrs.cursor = ct_pointer;
     wattrs.window_title = GStringGetResource(_STR_MetaFont,NULL);
     pos.x = pos.y = 0;
-    pos.width =GDrawPointsToPixels(NULL,268);
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,268));
     pos.height = GDrawPointsToPixels(NULL,330);
     meta.gw = GDrawCreateTopWindow(NULL,&pos,e_h,&meta,&wattrs);
 
@@ -2163,7 +2163,7 @@ void MetaFont(FontView *fv,CharView *cv) {
     mgcd[13].gd.handle_controlevent = MT_OK;
     mgcd[13].creator = GButtonCreate;
 
-    mgcd[14].gd.pos.x = 268-GIntGetResource(_NUM_Buttonsize)-30; mgcd[14].gd.pos.y = mgcd[13].gd.pos.y+3;
+    mgcd[14].gd.pos.x = -30; mgcd[14].gd.pos.y = mgcd[13].gd.pos.y+3;
     mgcd[14].gd.pos.width = -1; mgcd[14].gd.pos.height = 0;
     mgcd[14].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
     mlabel[14].text = (unichar_t *) _STR_Cancel;

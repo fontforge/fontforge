@@ -140,7 +140,7 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	wattrs.window_title = GStringGetResource(title[wtype],NULL);
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
-	pos.width =GDrawPointsToPixels(NULL,210);
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,210));
 	pos.height = GDrawPointsToPixels(NULL,120);
 	cwd.gw = winds[wtype] = GDrawCreateTopWindow(NULL,&pos,cwd_e_h,&cwd,&wattrs);
 
@@ -217,7 +217,7 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	gcd[6].gd.handle_controlevent = CW_OK;
 	gcd[6].creator = GButtonCreate;
 
-	gcd[7].gd.pos.x = 210-GIntGetResource(_NUM_Buttonsize)-20; gcd[7].gd.pos.y = 120-32;
+	gcd[7].gd.pos.x = -20; gcd[7].gd.pos.y = 120-32;
 	gcd[7].gd.pos.width = -1; gcd[7].gd.pos.height = 0;
 	gcd[7].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
 	label[7].text = (unichar_t *) _STR_Cancel;

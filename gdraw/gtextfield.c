@@ -1898,7 +1898,7 @@ static void GTextFieldFit(GTextField *gt) {
 	GDrawSetFont(gt->g.base,old);
     }
 
-    temp = GDrawPointsToPixels(gt->g.base,80)+extra;
+    temp = GGadgetScale(GDrawPointsToPixels(gt->g.base,80))+extra;
 
     if ( gt->g.r.width==0 || gt->g.r.height==0 ) {
 	int bp = GBoxBorderWidth(gt->g.base,gt->g.box);
@@ -1980,6 +1980,7 @@ static GTextField *_GTextFieldCreate(GTextField *gt, struct gwindow *base, GGadg
     if ( (gd->flags & gg_textarea_wrap) && gt->multi_line )
 	gt->wrap = true;
     GTextFieldFit(gt);
+    _GGadget_FinalPosition(&gt->g,base,gd);
     GTextFieldRefigureLines(gt,0);
 
     if ( gd->flags & gg_group_end )

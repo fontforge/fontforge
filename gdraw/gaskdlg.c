@@ -215,7 +215,7 @@ return( NULL );
 	gcd[0].gd.pos.x = (maxw-gcd[0].gd.pos.width)/2;
 	gcd[0].gd.pos.y = GDrawPointsToPixels(gw,6);
 	gcd[0].gd.pos.height = fh;
-	gcd[0].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
+	gcd[0].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0;
 	gcd[0].gd.label = &qlabels[0];
 	gcd[0].creator = GLabelCreate;
     } else for ( i=0; i<lb; ++i ) {
@@ -223,7 +223,7 @@ return( NULL );
 	gcd[i].gd.pos.y = GDrawPointsToPixels(gw,6)+i*fh;
 	gcd[i].gd.pos.width = GDrawGetTextWidth(gw,qlabels[i].text,-1,NULL);
 	gcd[i].gd.pos.height = fh;
-	gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0;
 	gcd[i].gd.label = &qlabels[i];
 	gcd[i].creator = GLabelCreate;
     }
@@ -232,7 +232,7 @@ return( NULL );
 	gcd[bcnt+lb].gd.pos.x = GDrawPointsToPixels(gw,8);
 	gcd[bcnt+lb].gd.pos.y = y;
 	gcd[bcnt+lb].gd.pos.width = maxw-2*GDrawPointsToPixels(gw,6);
-	gcd[bcnt+lb].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
+	gcd[bcnt+lb].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0;
 	gcd[bcnt+lb].gd.cid = bcnt;
 	gcd[bcnt+lb].creator = GTextFieldCreate;
 	y += fh + GDrawPointsToPixels(gw,6) + GDrawPointsToPixels(gw,10);
@@ -242,7 +242,7 @@ return( NULL );
 	gcd[i+lb].gd.pos.x = GDrawPointsToPixels(gw,8) + i*(bw+bspace);
 	gcd[i+lb].gd.pos.y = y;
 	gcd[i+lb].gd.pos.width = bw;
-	gcd[i+lb].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
+	gcd[i+lb].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0;
 	if ( i==def ) {
 	    gcd[i+lb].gd.flags |= gg_but_default;
 	    gcd[i+lb].gd.pos.x -= GDrawPointsToPixels(gw,3);
@@ -683,7 +683,7 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
 	gcd[0].gd.pos.x = (maxw-gcd[0].gd.pos.width)/2;
 	gcd[0].gd.pos.y = GDrawPointsToPixels(gw,6);
 	gcd[0].gd.pos.height = fh;
-	gcd[0].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
+	gcd[0].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0;
 	gcd[0].gd.label = &qlabels[0];
 	gcd[0].creator = GLabelCreate;
     } else for ( i=0; i<lb; ++i ) {
@@ -691,7 +691,7 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
 	gcd[i].gd.pos.y = GDrawPointsToPixels(gw,6)+i*fh;
 	gcd[i].gd.pos.width = GDrawGetTextWidth(gw,qlabels[i].text,-1,NULL);
 	gcd[i].gd.pos.height = fh;
-	gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0;
 	gcd[i].gd.label = &qlabels[i];
 	gcd[i].creator = GLabelCreate;
     }
@@ -700,7 +700,7 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
     gcd[i].gd.pos.x = GDrawPointsToPixels(gw,8); gcd[i].gd.pos.y = y;
     gcd[i].gd.pos.width = maxw - 2*GDrawPointsToPixels(gw,8);
     gcd[i].gd.pos.height = (cnt<4?4:cnt<8?cnt:8)*fh + 2*GDrawPointsToPixels(gw,6);
-    gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
+    gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0;
     if ( multisel )
 	gcd[i].gd.flags |= gg_list_multiplesel;
     else
@@ -714,7 +714,7 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
     if ( multisel ) {
 	y -= GDrawPointsToPixels(gw,5);
 	gcd[i].gd.pos.x = GDrawPointsToPixels(gw,15); gcd[i].gd.pos.y = y;
-	gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0;
 	gcd[i].gd.label = &blabel[2];
 	blabel[2].text = (unichar_t *) _STR_SelectAll;
 	blabel[2].text_in_resource = true;
@@ -726,7 +726,7 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
 		GDrawPointsToPixels(gw,GIntGetResource(_NUM_Buttonsize));
 	gcd[i].gd.pos.y = y;
 	gcd[i].gd.pos.width = -1;
-	gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels ;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0 ;
 	gcd[i].gd.label = &blabel[3];
 	blabel[3].text = (unichar_t *) _STR_None;
 	blabel[3].text_in_resource = true;
@@ -738,7 +738,7 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
 
     gcd[i].gd.pos.x = GDrawPointsToPixels(gw,15)-3; gcd[i].gd.pos.y = y-3;
     gcd[i].gd.pos.width = -1;
-    gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels |gg_but_default;
+    gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels |gg_but_default | gg_pos_use0;
     gcd[i].gd.label = &blabel[0];
     blabel[0].text = (unichar_t *) buts[0];
     blabel[0].text_in_resource = true;
@@ -749,7 +749,7 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
 	    GDrawPointsToPixels(gw,GIntGetResource(_NUM_Buttonsize));
     gcd[i].gd.pos.y = y;
     gcd[i].gd.pos.width = -1;
-    gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels |gg_but_cancel;
+    gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels |gg_but_cancel | gg_pos_use0;
     gcd[i].gd.label = &blabel[1];
     blabel[1].text = (unichar_t *) buts[1];
     blabel[1].text_in_resource = true;
