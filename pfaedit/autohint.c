@@ -512,12 +512,6 @@ static int EIAddEdge(Spline *spline, real tmin, real tmax, EIList *el) {
     new->tmin = tmin;
     new->tmax = tmax;
 
-    if ( el->splinelast!=NULL )
-	el->splinelast->splinenext = new;
-    el->splinelast = new;
-    if ( el->splinefirst==NULL )
-	el->splinefirst = new;
-
     s = &spline->splines[1];
     if (( dydtmin = (3*s->a*tmin + 2*s->b)*tmin + s->c )<0 ) dydtmin = -dydtmin;
     if (( dydtmax = (3*s->a*tmax + 2*s->b)*tmax + s->c )<0 ) dydtmax = -dydtmax;
@@ -584,6 +578,13 @@ return( false );
     } else {
 	new->next = el->edges;
 	el->edges = new;
+
+	if ( el->splinelast!=NULL )
+	    el->splinelast->splinenext = new;
+	el->splinelast = new;
+	if ( el->splinefirst==NULL )
+	    el->splinefirst = new;
+
 return( true );
     }
 }
