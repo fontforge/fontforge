@@ -204,7 +204,7 @@ static void _gio_file_mkdir(GIOControl *gc,char *path) {
 }
 
 void _GIO_localDispatch(GIOControl *gc) {
-    char *path = cu_copy(gc->path);
+    char *path = u2def_copy(gc->path);
     char *topath;
 
     switch ( gc->gf ) {
