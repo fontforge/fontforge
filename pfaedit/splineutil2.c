@@ -1421,7 +1421,12 @@ static void SPLForceLines(SplineChar *sc,SplineSet *ss,double bump_size) {
 			sp->me.x -= xoff; sp->me.y -= yoff;
 			sp->prevcp.x -= xoff; sp->prevcp.y -= yoff;
 			sp->nextcp = sp->me; sp->nonextcp = true;
+			if ( sp->next==first ) first = NULL;
 			SplineFree(sp->next);
+			if ( s->from==ss->first ) {
+			    ss->first = sp;
+			    if ( ss->first==ss->last ) ss->last = sp;
+			}
 			SplinePointMDFree(sc,s->from);
 			sp->next = s; s->from = sp;
 			SplineRefigure(s);
@@ -1442,7 +1447,12 @@ static void SPLForceLines(SplineChar *sc,SplineSet *ss,double bump_size) {
 			sp->me.x -= xoff; sp->me.y -= yoff;
 			sp->nextcp.x -= xoff; sp->nextcp.y -= yoff;
 			sp->prevcp = sp->me; sp->noprevcp = true;
+			if ( sp->prev==first ) first = NULL;
 			SplineFree(sp->prev);
+			if ( s->to==ss->last ) {
+			    ss->last = sp;
+			    if ( ss->first==ss->last ) ss->first = sp;
+			}
 			SplinePointMDFree(sc,s->to);
 			sp->prev = s; s->to = sp;
 			SplineRefigure(s);
