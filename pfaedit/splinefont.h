@@ -1058,6 +1058,7 @@ extern void SCCatagorizePoints(SplineChar *sc);
 extern SplinePointList *SplinePointListCopy1(SplinePointList *spl);
 extern SplinePointList *SplinePointListCopy(SplinePointList *base);
 extern SplinePointList *SplinePointListCopySelected(SplinePointList *base);
+extern void ApTransform(AnchorPoint *ap, real transform[6]);
 extern SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[6], int allpoints );
 extern SplinePointList *SplinePointListShift(SplinePointList *base, real xoff, int allpoints );
 extern SplinePointList *SplinePointListRemoveSelected(SplineChar *sc,SplinePointList *base);

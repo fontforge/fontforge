@@ -652,7 +652,7 @@ extern int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi, int *anya);
 extern int CVTwoForePointsSelected(CharView *cv, SplinePoint **sp1, SplinePoint **sp2);
 extern int CVIsDiagonalable(SplinePoint *sp1, SplinePoint *sp2, SplinePoint **sp3, SplinePoint **sp4);
 extern int CVClearSel(CharView *cv);
-extern int CVSetSel(CharView *cv);
+extern int CVSetSel(CharView *cv,int mask);
 extern int CVAllSelected(CharView *cv);
 extern void SCUpdateAll(SplineChar *sc);
 extern void SCOutOfDateBackground(SplineChar *sc);

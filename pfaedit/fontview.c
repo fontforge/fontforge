@@ -1616,6 +1616,7 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], uint8 *sel,
 	enum fvtrans_flags flags) {
     RefChar *refs;
     real t[6];
+    AnchorPoint *ap;
 
     if ( sc->blended ) {
 	int j;
@@ -1625,12 +1626,14 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], uint8 *sel,
     }
 
     SCPreserveState(sc,true);
-    if ( flags&fvt_dontmovewidth ) 
+    if ( !(flags&fvt_dontmovewidth) )
 	if ( transform[0]>0 && transform[3]>0 && transform[1]==0 && transform[2]==0 ) {
 	    int widthset = sc->widthset;
 	    SCSynchronizeWidth(sc,sc->width*transform[0]+transform[4],sc->width,fv);
 	    if ( !(flags&fvt_dontsetwidth) ) sc->widthset = widthset;
 	}
+    for ( ap=sc->anchor; ap!=NULL; ap=ap->next )
+	ApTransform(ap,transform);
     SplinePointListTransform(sc->splines,transform,true);
     for ( refs = sc->refs; refs!=NULL; refs=refs->next ) {
 	if ( sel!=NULL && sel[refs->sc->enc] ) {

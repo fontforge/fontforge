@@ -1137,6 +1137,14 @@ SplinePointList *SplinePointListRemoveSelected(SplineChar *sc,SplinePointList *b
 return( head );
 }
 
+void ApTransform(AnchorPoint *ap, real transform[6]) {
+    BasePoint p;
+    p.x = transform[0]*ap->me.x + transform[2]*ap->me.y + transform[4];
+    p.y = transform[1]*ap->me.x + transform[3]*ap->me.y + transform[5];
+    ap->me.x = rint(1024*p.x)/1024;
+    ap->me.y = rint(1024*p.y)/1024;
+}
+
 static void TransformPoint(SplinePoint *sp, real transform[6]) {
     BasePoint p;
     p.x = transform[0]*sp->me.x + transform[2]*sp->me.y + transform[4];

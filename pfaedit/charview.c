@@ -3668,6 +3668,8 @@ return( true );
 #define MID_Join	2127
 #define MID_CopyGridFit	2128
 #define MID_Elide	2129
+#define MID_SelectAllPoints	2130
+#define MID_SelectAnchors	2131
 #define MID_Clockwise	2201
 #define MID_Counter	2202
 #define MID_GetInfo	2203
@@ -4273,7 +4275,7 @@ static void _CVCopy(CharView *cv) {
     int desel = false, anya;
 
     if ( !CVAnySel(cv,NULL,NULL,NULL,&anya))
-	if ( !(desel = CVSetSel(cv)))
+	if ( !(desel = CVSetSel(cv,-1)))
 return;
     CopySelected(cv);
     if ( desel )
@@ -4447,7 +4449,13 @@ return;
 
 static void CVSelectAll(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    if ( CVSetSel(cv))
+    int mask = -1;
+
+    if ( mi->mid==MID_SelectAllPoints )
+	mask = 1;
+    else if ( mi->mid==MID_SelectAnchors )
+	mask = 2;
+    if ( CVSetSel(cv,mask))
 	SCUpdateAll(cv->sc);
 }
 
@@ -4833,11 +4841,8 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
 		SplineSetFindBounds(refs->splines,&refs->bb);
 	    }
 	if ( cv->showanchor ) {
-	    for ( ap=cv->sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->selected || !anysel ) {
-		real x   = ap->me.x*transform[0] + ap->me.y*transform[2] + transform[4];
-		ap->me.y = ap->me.x*transform[1] + ap->me.y*transform[3] + transform[5];
-		ap->me.x = x;
-	    }
+	    for ( ap=cv->sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->selected || !anysel )
+		ApTransform(ap,transform);
 	}
 	if ( transform[1]==0 && transform[2]==0 ) {
 	    TransHints(cv->sc->hstem,transform[3],transform[5],transform[0],transform[4],flags&fvt_round_to_int);
@@ -6045,6 +6050,8 @@ static GMenuItem sllist[] = {
     { { (unichar_t *) _STR_NextControlPoint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'x' }, ';', ksm_control, NULL, NULL, CVMenuNextPrevCPt, MID_NextCP },
     { { (unichar_t *) _STR_PrevControlPoint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'r' }, ':', ksm_shift|ksm_control, NULL, NULL, CVMenuNextPrevCPt, MID_PrevCP },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_SelectAllPoints, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'A', ksm_control|ksm_meta, NULL, NULL, CVSelectAll, MID_SelectAllPoints },
+    { { (unichar_t *) _STR_SelectAnchors, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'c' }, '\0', ksm_control, NULL, NULL, CVSelectAll, MID_SelectAnchors },
     { { (unichar_t *) _STR_SelectWidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'W' }, '\0', ksm_control, NULL, NULL, CVSelectWidth, MID_SelectWidth },
     { { (unichar_t *) _STR_SelectVWidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, '\0', ksm_shift|ksm_control, NULL, NULL, CVSelectVWidth, MID_SelectVWidth },
     { NULL }
@@ -6776,7 +6783,7 @@ static void SVMenuGenerate(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void SVSelectAll(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SearchView *sv = (SearchView *) GDrawGetUserData(gw);
     CharView *cv = sv->cv_srch.inactive ? &sv->cv_rpl : &sv->cv_srch;
-    if ( CVSetSel(cv))
+    if ( CVSetSel(cv,-1))
 	SCUpdateAll(cv->sc);
 }
 

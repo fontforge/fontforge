@@ -195,7 +195,7 @@ int CVClearSel(CharView *cv) {
 return( needsupdate );
 }
 
-int CVSetSel(CharView *cv) {
+int CVSetSel(CharView *cv,int mask) {
     SplinePointList *spl;
     Spline *spline, *first;
     RefChar *rf;
@@ -204,6 +204,7 @@ int CVSetSel(CharView *cv) {
     AnchorPoint *ap;
 
     cv->lastselpt = NULL;
+    if ( mask&1 )
     for ( spl = *cv->heads[cv->drawmode]; spl!=NULL; spl = spl->next ) {
 	if ( !spl->first->selected ) { needsupdate = true; spl->first->selected = true; }
 	first = NULL;
@@ -215,24 +216,25 @@ int CVSetSel(CharView *cv) {
 	}
     }
     if ( cv->drawmode == dm_fore ) {
+	if ( mask&1 )
 	for ( rf=cv->sc->refs; rf!=NULL; rf = rf->next )
 	    if ( !rf->selected ) { needsupdate = true; rf->selected = true; }
-	if ( cv->showanchor )
+	if ( (mask&2) && cv->showanchor )
 	    for ( ap=cv->sc->anchor; ap!=NULL; ap=ap->next )
 		if ( !ap->selected ) { needsupdate = true; ap->selected = true; }
     }
-    if ( cv->drawmode == dm_back ) {
+    if ( cv->drawmode == dm_back && (mask&1)) {
 	for ( img=cv->sc->backimages; img!=NULL; img = img->next )
 	    if ( !img->selected ) { needsupdate = true; img->selected = true; }
     }
     if ( cv->p.nextcp || cv->p.prevcp )
 	needsupdate = true;
     cv->p.nextcp = cv->p.prevcp = false;
-    if ( cv->showhmetrics && !cv->widthsel ) {
+    if ( cv->showhmetrics && !cv->widthsel && (mask&4)) {
 	cv->widthsel = needsupdate = true;
 	cv->oldwidth = cv->sc->width;
     }
-    if ( cv->showvmetrics && cv->sc->parent->hasvmetrics && !cv->vwidthsel ) {
+    if ( cv->showvmetrics && cv->sc->parent->hasvmetrics && !cv->vwidthsel && (mask&4)) {
 	cv->vwidthsel = needsupdate = true;
 	cv->oldvwidth = cv->sc->vwidth;
     }
@@ -602,7 +604,7 @@ return;
 	}
     } else {
 	/* should triple clicking select all? */
-	if ( CVSetSel(cv)) needsupdate = true;
+	if ( CVSetSel(cv,-1)) needsupdate = true;
     }
     if ( needsupdate )
 	SCUpdateAll(cv->sc);
