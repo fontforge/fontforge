@@ -3070,6 +3070,8 @@ GWW: Nope, sTypoAscender-sTypoDescender == EmSize
 height and depth of specific glyphs within the font, and some 
 applications will treat them as the top and bottom of the font 
 bounding box. (the "ANSI" glyphs)
+GWW: That's what's documented. But it means non-ANSI glyphs get clipped. So the
+docs are wrong.
 */
 	os2->ascender = sf->ascent;
 	os2->descender = -sf->descent;		/* Should be neg */
