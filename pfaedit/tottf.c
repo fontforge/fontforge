@@ -4865,11 +4865,15 @@ static void redocvt(struct alltabs *at) {
 /* scripts (for opentype) that I understand */
 /* these are in alphabetical order */
 enum scripts { script_arabic, script_armenian, script_bengali, script_bopo,
-	script_cansyl, script_cherokee, script_cyrillic, script_devanagari,
-	script_ethiopic, script_georgian, script_greek, script_gujarati,
-	script_gurmukhi, script_hangul, script_cjk, script_hebrew,
-	script_hiragana, script_jamo
-	/* Incomplete!!! */
+	script_braille, script_cansyl, script_cherokee, script_cyrillic,
+	script_devanagari, script_ethiopic, script_georgian, script_greek,
+	script_gujarati, script_gurmukhi, script_hangul, script_cjk,
+	script_hebrew, script_hiragana, script_jamo, script_katakana,
+	script_khmer, script_kannada, script_latin, script_lao,
+	script_malayalam, script_mongolian, script_myamar, script_ogham,
+	script_oriya, script_runic, script_sinhala, script_syriac,
+	script_tamil, script_telugu, script_thaana, script_thai,
+	script_tibetan, script_yi
 };
 
 static int scripts[][11] = {
@@ -4991,6 +4995,61 @@ static struct simplesubs *VerticalRotationGlyphs(SplineFont *sf) {
 	    }
 	    ++j;
 	} while ( j<_sf->subfontcnt );
+	if ( cnt==0 )
+return( NULL );
+	else if ( subs!=NULL )
+return( subs );
+	subs = gcalloc(cnt+1,sizeof(struct simplesubs));
+    }
+return( NULL );
+}
+
+static SplineChar *SFFindSC(SplineFont *sf,int uni) {
+    int i = SFFindExistingChar(sf,uni,NULL);
+    if ( i==-1 )
+return( NULL );
+return( sf->chars[i] );
+}
+
+static struct simplesubs *longs(SplineFont *sf) {
+    struct simplesubs *subs = NULL;
+    SplineChar *sc, *scbase;
+    /* Convert s->longs initially and medially */
+
+    scbase = SFFindSC(sf,'s');
+    sc = SFFindSC(sf,0x17f);
+    if ( SCWorthOutputting(sc) && SCWorthOutputting(scbase)) {
+	subs = gcalloc(2,sizeof(struct simplesubs));
+	subs[0].origsc = scbase;
+	subs[0].orig = scbase->ttf_glyph;
+	subs[0].replacement = sc->ttf_glyph;
+    }
+return( subs );
+}
+
+static struct simplesubs *arabic_forms(SplineFont *sf, int form) {
+    /* data for arabic form conversion */
+    int cnt, j, k;
+    struct simplesubs *subs = NULL;
+    SplineChar *sc, *scbase;
+
+    for ( k=0; k<2; ++k ) {
+	cnt = 0;
+	for ( j = 0x0600; j<0x0700; ++j ) {
+	    if ( (&(ArabicForms[j-0x600].initial))[form]!=0 &&
+		    (&(ArabicForms[j-0x600].initial))[form]!=j &&
+		    (scbase = SFFindSC(sf,j))!=NULL &&
+		    (sc = SFFindSC(sf,(&(ArabicForms[j-0x600].initial))[form]))!=NULL &&
+		    SCWorthOutputting(scbase) &&
+		    SCWorthOutputting(sc)) {
+		if ( subs!=NULL ) {
+		    subs[cnt].origsc = scbase;
+		    subs[cnt].orig = scbase->ttf_glyph;
+		    subs[cnt].replacement = sc->ttf_glyph;
+		}
+		++cnt;
+	    }
+	}
 	if ( cnt==0 )
 return( NULL );
 	else if ( subs!=NULL )
@@ -5246,8 +5305,10 @@ static void dumpGSUBvrt2(FILE *gsub,SplineFont *sf,struct simplesubs *subs,struc
 static void dumpg___info(struct alltabs *at, SplineFont *sf,int is_gpos) {
     /* Dump out either a gpos or a gsub table. gpos handles kerns, gsub ligs */
     int mask[3];
-    struct simplesubs *subs = is_gpos?NULL : VerticalRotationGlyphs(sf);
+    struct simplesubs *subs, *ls, *arabini, *arabmed, *arabfin, *arabiso;
+    struct simplesubs *sublist[8];
     int i,j,script_cnt=0, lookup_cnt=0, l2r=0, r2l=0, han=0, hansimple=0;
+    int latinsimple=0, arabsimple=0;
     int script_size;
     int32 r2l_pos;
     int g___len;
@@ -5255,32 +5316,74 @@ static void dumpg___info(struct alltabs *at, SplineFont *sf,int is_gpos) {
     void (*dumpg___data)(FILE *,SplineFont *, int,struct alltabs *) =
 	    is_gpos?dumpgposkerndata:dumpgsubligdata;
     int tag = is_gpos?CHR('k','e','r','n'):CHR('l','i','g','a');
-    int tags[3];
+    int tags[10], r2lflag[10];
 
     memset(mask,0,sizeof(mask));
     FeatureScriptMask(sf,is_gpos, mask);
-    if ( mask[0]==0 && mask[1]==0 && mask[2]==0 && subs==NULL )	/* No recognizable kerns */
+    if ( is_gpos ) {
+	subs = ls = arabini = arabmed = arabfin = arabiso = NULL;
+    } else {
+	subs = VerticalRotationGlyphs(sf);
+	ls = longs(sf);
+	arabini = arabic_forms(sf,0);
+	arabmed = arabic_forms(sf,1);
+	arabfin = arabic_forms(sf,2);
+	arabiso = arabic_forms(sf,3);
+	j=0;
+	if ( subs!=NULL ) sublist[j++] = subs;
+	if ( ls!=NULL ) { sublist[j++] = ls; sublist[j++] = longs(sf); }
+	if ( arabini!=NULL ) sublist[j++] = arabini;
+	if ( arabmed!=NULL ) sublist[j++] = arabmed;
+	if ( arabfin!=NULL ) sublist[j++] = arabfin;
+	if ( arabiso!=NULL ) sublist[j++] = arabiso;
+    }
+    if ( mask[0]==0 && mask[1]==0 && mask[2]==0 &&	/* no recognizable */
+	    subs==NULL && ls==NULL &&			/*  entries */
+	    arabini==NULL && arabmed==NULL && arabfin==NULL && arabiso==NULL )
 return;
     if ( mask[script_cjk>>5] & (1<<(script_cjk&0x1f)) )
 	hansimple=1;
-    if ( subs!=NULL )
-	mask[script_cjk>>5] |= 1<<(script_cjk&0x1f);
+    if ( mask[script_arabic>>5] & (1<<(script_arabic&0x1f)) )
+	arabsimple=1;
+    if ( mask[script_latin>>5] & (1<<(script_latin&0x1f)) )
+	latinsimple=1;
+
     for ( i=0; scripts[i][0]!=-1; ++i ) {
 	if ( mask[i>>5]&(1<<(i&0x1f))) {
-	    ++script_cnt;
 	    if ( i==script_arabic || i==script_hebrew )
 		r2l = true;
 	    else
 		l2r = true;
 	}
     }
+
+    if ( subs!=NULL )
+	mask[script_cjk>>5] |= 1<<(script_cjk&0x1f);
+    if ( ls!=NULL )
+	mask[script_latin>>5] |= 1<<(script_latin&0x1f);
+    if ( arabini!=NULL || arabmed!=NULL || arabfin!=NULL || arabiso!=NULL )
+	mask[script_arabic>>5] |= 1<<(script_arabic&0x1f);
+    for ( i=0; scripts[i][0]!=-1; ++i )
+	if ( mask[i>>5]&(1<<(i&0x1f)))
+	    ++script_cnt;
+
     if ( subs!=NULL )
 	han = 1;
     lookup_cnt = l2r+r2l+han;
     tags[0] = tag; tags[1] = tag;
-    if ( han )
+    j=0;
+    if ( l2r ) r2lflag[j++] = 0;
+    if ( r2l ) r2lflag[j++] = 1;
+    if ( han ) {
 	tags[l2r+r2l]= CHR('v','r','t','2');
-    
+	r2lflag[j++] = 0;
+    }
+    if ( ls!=NULL ) { tags[lookup_cnt++] = CHR('i','n','i','t'); tags[lookup_cnt++] = CHR('m','e','d','i'); r2lflag[j++] = 0; r2lflag[j++] = 0; }
+    if ( arabini!=NULL ) { tags[lookup_cnt++] = CHR('i','n','i','t'); r2lflag[j++] = true; }
+    if ( arabmed!=NULL ) { tags[lookup_cnt++] = CHR('m','e','d','i'); r2lflag[j++] = true; }
+    if ( arabfin!=NULL ) { tags[lookup_cnt++] = CHR('f','i','n','a'); r2lflag[j++] = true; }
+    if ( arabiso!=NULL ) { tags[lookup_cnt++] = CHR('i','s','o','l'); r2lflag[j++] = true; }
+
     g___ = tmpfile();
     if ( is_gpos ) at->gpos = g___; else at->gsub = g___;
     putlong(g___,0x10000);		/* version number */
@@ -5288,9 +5391,13 @@ return;
     script_size = 10+2+script_cnt*18;
     if ( han && hansimple )
 	script_size += 2;
+    if ( mask[script_latin>>5]&(1<<(script_latin&0x1f)) )
+	script_size += 4*(ls!=NULL) + 2*latinsimple -2;
+    if ( mask[script_arabic>>5]&(1<<(script_arabic&0x1f)) )
+	script_size += 2*((arabini!=NULL) + (arabmed!=NULL) + (arabfin!=NULL) +
+		(arabiso!=NULL) + arabsimple -1);
     putshort(g___,script_size);	/* offset to features table */
-    putshort(g___,script_size+(lookup_cnt==1?14:lookup_cnt==3?40:
-					subs==NULL?28:26));
+    putshort(g___,script_size);	/* We'll fix this up later */
 	    /* offset to features table */
 
 /* Now the scripts, first the list */
@@ -5302,6 +5409,11 @@ return;
 	j+=12;
 	if ( i==script_cjk && han && hansimple )
 	    j+=2;
+	else if ( i==script_latin && ls!=NULL )
+	    j+= 4+2*latinsimple-2;
+	else if ( i==script_arabic )
+	    j += 2*((arabini!=NULL) + (arabmed!=NULL) + (arabfin!=NULL) +
+		    (arabiso!=NULL) + arabsimple -1);
     }
 /* Then each script's default language */
     for ( i=0; scripts[i][0]!=-1; ++i ) if ( mask[i>>5]&(1<<(i&0x1f))) {
@@ -5316,6 +5428,29 @@ return;
 	} else if ( i==script_cjk && han ) {
 	    putshort(g___,1);				/* one feature */
 	    putshort(g___,l2r+r2l);			/* virtical feature */
+	} else if ( i==script_latin && ls!=NULL && latinsimple ) {
+	    putshort(g___,3);			/* three features */
+	    putshort(g___,0);				/* left to right features */
+	    putshort(g___,l2r+r2l+han);			/* longs initial */
+	    putshort(g___,l2r+r2l+han+1);		/* longs medial */
+	} else if ( i==script_latin && ls!=NULL ) {
+	    putshort(g___,2);				/* one feature */
+	    putshort(g___,l2r+r2l+han);			/* longs initial */
+	    putshort(g___,l2r+r2l+han+1);		/* longs medial */
+	} else if ( i==script_arabic ) {
+	    putshort(g___,(arabini!=NULL) + (arabmed!=NULL) + (arabfin!=NULL) +
+		    (arabiso!=NULL) + arabsimple);
+	    if ( arabsimple )
+		putshort(g___,l2r);
+	    j=l2r+r2l+han+2*(ls!=NULL);
+	    if ( arabini!=NULL )
+		putshort(g___,j++);
+	    if ( arabmed!=NULL )
+		putshort(g___,j++);
+	    if ( arabfin!=NULL )
+		putshort(g___,j++);
+	    if ( arabiso!=NULL )
+		putshort(g___,j++);
 	} else {
 	    putshort(g___,1);				/* one feature */
 	    putshort(g___,(i!=script_arabic && i!=script_hebrew)?0:l2r );
@@ -5324,79 +5459,42 @@ return;
 
 /* Now the features */
     putshort(g___,lookup_cnt);			/* Number of features */
-    putlong(g___,tags[0]);			/* First feature type */
-    putshort(g___,2+6*lookup_cnt);		/* offset to first feature */
-    if ( lookup_cnt>=2 ) {
-	putlong(g___,tags[1]);			/* Second feature type */
-	putshort(g___,20+(lookup_cnt-2)*6);	/* offset to it */
-	if ( lookup_cnt==3 ) {
-	    putlong(g___,tags[3]);		/* third feature type */
-	    putshort(g___,34);			/* offset to it */
-	}
+    for ( i=0; i<lookup_cnt; ++i ) {
+	putlong(g___,tags[i]);			/* Feature type */
+	putshort(g___,2+6*lookup_cnt+i*6);	/* offset to feature */
     }
-    putshort(g___,0);				/* No feature params */
-    putshort(g___,1);				/* only one lookup */
-    putshort(g___,0);				/* And it is lookup: 0 */
-    if ( lookup_cnt>=2 ) {
-	if ( tags[1]==tags[0] ) {
-		/* the r2l system needs both l2r and r2l */
-	    putshort(g___,0);			/* No feature params */
-	    putshort(g___,2);			/* use both l2r and r2l lookups */
-	    putshort(g___,1);			/* try r2l first */
-	    putshort(g___,0);			/* then l2r first */
-	} else {
-	    /* Here there's only one ligature tag and so now we do the cjk vrt2 */
-	    putshort(g___,0);			/* No feature params */
-	    putshort(g___,1);			/* only one lookup */
-	    putshort(g___,1);			/* And it is lookup: 1 */
-	}
-	if ( lookup_cnt==3 ) {	/* cjk vrt2 */
-	    putshort(g___,0);			/* No feature params */
-	    putshort(g___,1);			/* only one lookup */
-	    putshort(g___,2);			/* And it is lookup: 2 */
-	}
+    for ( i=0; i<lookup_cnt; ++i ) {
+	putshort(g___,0);			/* No feature params */
+	putshort(g___,1);			/* only one lookup */
+	putshort(g___,i);			/* And it is lookup: i */
     }
 
 /* Now the lookups */
+    { int32 here = ftell(g___);
+	fseek(g___,8,SEEK_SET);
+	putshort(g___,here);
+	fseek(g___,here,SEEK_SET);
+    }
     putshort(g___,lookup_cnt);
     putshort(g___,lookup_cnt*2+2);
     r2l_pos = ftell(g___);
-    if ( lookup_cnt>=2 )
+    for ( i=1; i<lookup_cnt; ++i )
 	putshort(g___,0);		/* Don't know, have to fill in later */
-    if ( lookup_cnt==3 )
-	putshort(g___,0);		/* Don't know, have to fill in later */
-/* Then the first lookup header */
-    putshort(g___,is_gpos?2:l2r+r2l?4:1);/* subtable type: Pair adjustment/Ligature/Simple replacement */
-    putshort(g___,l2r||!r2l?0:1);	/* flag (right2left flag) */
-    putshort(g___,1);			/* One subtable */
-    putshort(g___,8);
-    if ( l2r+r2l==0 )
-	dumpGSUBvrt2(g___,sf,subs,at);
-    else
-	dumpg___data(g___,sf,!l2r,at);
-    if ( lookup_cnt>=2 ) {
-	int32 here = ftell(g___);
-	fseek(g___,r2l_pos,SEEK_SET);
-	putshort(g___,here-r2l_pos+4);
-	fseek(g___,here,SEEK_SET);
-	putshort(g___,is_gpos?2:l2r+r2l==2?4:1);/* subtable type: Pair adjustment/Ligature/Simple replacement */
-	putshort(g___,l2r+r2l==2?1:0);	/* flag (right2left flag) */
-	putshort(g___,1);		/* One subtable */
+    j=0;
+    for ( i=0; i<lookup_cnt; ++i ) {
+	putshort(g___,is_gpos?2:i<l2r+r2l?4:1);/* subtable type: Pair adjustment/Ligature/Simple replacement */
+	putshort(g___,r2lflag[i]);		/* flag (right2left flag) */
+	putshort(g___,1);			/* One subtable */
 	putshort(g___,8);
-	if ( l2r+r2l==1 )
-	    dumpGSUBvrt2(g___,sf,subs,at);
+	if ( i<l2r+r2l )
+	    dumpg___data(g___,sf,r2lflag[i],at);
 	else
-	    dumpg___data(g___,sf,true,at);
-	if ( lookup_cnt==3 ) {
+	    dumpGSUBvrt2(g___,sf,sublist[j++],at);
+	if ( i+1!=lookup_cnt ) {
 	    int32 here = ftell(g___);
-	    fseek(g___,r2l_pos+2,SEEK_SET);
+	    fseek(g___,r2l_pos+i*2,SEEK_SET);
 	    putshort(g___,here-r2l_pos+4);
 	    fseek(g___,here,SEEK_SET);
-	    putshort(g___,1);		/* subtable type: Simple replacement */
-	    putshort(g___,0);		/* flag (right2left flag) */
-	    putshort(g___,1);		/* One subtable */
-	    putshort(g___,8);
-	    dumpGSUBvrt2(g___,sf,subs,at);
 	}
     }
     g___len = ftell(g___);
