@@ -1436,7 +1436,7 @@ static void SPLCheckValidity(SplineSet *ss) {
     break;
 	nsp = sp->next->to;
 	if ( nsp->prev != sp->next || sp->next->from!=sp )
-	    GDrawIError("Bad SPL");
+	    IError("Bad SPL");
 	if ( nsp==ss->first )
     break;
     }
@@ -1446,7 +1446,7 @@ static void SPLCheckValidity(SplineSet *ss) {
     break;
 	nsp = sp->prev->from;
 	if ( nsp->next != sp->prev || sp->prev->to!=sp )
-	    GDrawIError("Bad SPL");
+	    IError("Bad SPL");
 	if ( nsp==ss->last )
     break;
     }
@@ -1512,7 +1512,7 @@ return( ssplus );
 		    MakeJoints(cur->next->plusto,cur->plusfrom,si,&cur->pinterto,
 			    &cur->s->to->me,-1,cur->pangle,cur->nangle,factor);
 		else
-		    GDrawIError("Lastp not cur" );
+		    IError("Lastp not cur" );
 	    }
 	    if ( !cur->minusskip ) lastm = cur;
 	    if ( lastm!=NULL && !cur->next->minusskip ) {
@@ -1524,7 +1524,7 @@ return( ssplus );
 		    MakeJoints(lastm->minusto,cur->next->minusfrom,si,&cur->minterto,
 			    &cur->s->to->me,1,PI+cur->nangle,PI+cur->pangle,factor);
 		else
-		    GDrawIError("Lastm not cur");
+		    IError("Lastm not cur");
 	    }
 	}
     }
@@ -1613,6 +1613,34 @@ void SSBisectTurners(SplineSet *spl) {
     while ( spl!=NULL ) {
 	BisectTurners(spl);
 	spl = spl->next;
+    }
+}
+#endif
+
+#ifdef LOCAL_DEBUG
+static void touchall(SplineSet *spl) {
+    SplinePoint *sp;
+
+    for ( sp=spl->last; sp!=NULL; ) {
+	if ( sp->prev==NULL )
+    break;
+	sp = sp->prev->from;
+	if ( sp==spl->last )
+    break;
+    }
+    for ( sp=spl->first; sp!=NULL; ) {
+	if ( sp->next==NULL )
+    break;
+	sp = sp->next->to;
+	if ( sp==spl->first )
+    break;
+    }
+}
+
+void splstouchall(SplineSet *ss) {
+    while ( ss!=NULL ) {
+	touchall(ss);
+	ss = ss->next;
     }
 }
 #endif

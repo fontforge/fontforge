@@ -33,6 +33,8 @@
 #include "splinefont.h"
 #include "edgelist.h"
 
+uint32 default_background = 0xffffff;		/* white */
+
 static void HintsFree(Hints *h) {
     Hints *hnext;
     for ( ; h!=NULL; h = hnext ) {
@@ -121,7 +123,7 @@ return( e->up?1.0:0.0 );
 
 	new_t = IterateSplineSolve(msp,e->t_mmin,e->t_mmax,(sought_m+es->mmin)/es->scale,.001);
 	if ( new_t==-1 )
-	    GDrawIError( "No Solution");
+	    IError( "No Solution");
 	e->m_cur = (((msp->a*new_t + msp->b)*new_t+msp->c)*new_t + msp->d)*es->scale - es->mmin;
 return( new_t );
     } else {
@@ -149,7 +151,7 @@ return( e->up?1.0:0.0 );
 	}
 	new_t = IterateSplineSolve(msp,e->t_mmin,e->t_mmax,(sought_m+es->mmin)/es->scale,.001);
 	if ( new_t==-1 )
-	    GDrawIError( "No Solution");
+	    IError( "No Solution");
 	e->m_cur = (((msp->a*new_t + msp->b)*new_t+msp->c)*new_t + msp->d)*es->scale - es->mmin;
 return( new_t );
     }
@@ -235,7 +237,7 @@ static void AddEdge(EdgeList *es, Spline *sp, real tmin, real tmax ) {
     e->tmin = tmin; e->tmax = tmax;
 
     if ( e->mmin<0 || e->mmin>=e->mmax ) {
-	/*GDrawIError("Probably not serious, but we've got a zero length spline in AddEdge in %s",es->sc==NULL?<nameless>:es->sc->name);*/
+	/*IError("Probably not serious, but we've got a zero length spline in AddEdge in %s",es->sc==NULL?<nameless>:es->sc->name);*/
 	free(e);
 return;
     }
@@ -324,7 +326,7 @@ static void AddMajorEdge(EdgeList *es, Spline *sp) {
 return;
     }
     if ( e->mmin<0 )
-	GDrawIError("Grg!");
+	IError("Grg!");
 
     if ( ceil(e->m_cur)>e->mmax ) {
 	free(e);
@@ -807,7 +809,7 @@ void BCCompressBitmap(BDFChar *bdfc) {
 		    last = temp;
 		}
 		if ( last!=0 )
-		    GDrawIError("Sigh");
+		    IError("Sigh");
 	    }
 	    bdfc->xmin += off;
 	}
@@ -1027,6 +1029,10 @@ static void SetByteMapToGrey(uint8 *bytemap,EdgeList *es,Layer *layer,Layer *alt
     }
 }
 
+#ifdef FONTFORGE_CONFIG_GTK
+static void FillImages(uint8 *bytemap,EdgeList *es,ImageList *img,Layer *layer,Layer *alt) {
+}
+#else
 static void FillImages(uint8 *bytemap,EdgeList *es,ImageList *img,Layer *layer,Layer *alt) {
     uint32 fillcol, col;
     int grey,i,j,x1,x2,y1,y2,jj,ii;
@@ -1086,6 +1092,7 @@ static void FillImages(uint8 *bytemap,EdgeList *es,ImageList *img,Layer *layer,L
 	img = img->next;
     }
 }
+#endif
 
 static void ProcessLayer(uint8 *bytemap,EdgeList *es,Layer *layer,
 	Layer *alt) {
@@ -1596,8 +1603,8 @@ return;
 
 GClut *_BDFClut(int linear_scale) {
     int scale = linear_scale*linear_scale, i;
-    Color bg = screen_display==NULL?0xffffff:GDrawGetDefaultBackground(NULL);
-    int bgr=COLOR_RED(bg), bgg=COLOR_GREEN(bg), bgb=COLOR_BLUE(bg);
+    Color bg = default_background;
+    int bgr=((bg>>16)&0xff), bgg=((bg>>8)&0xff), bgb= (bg&0xff);
     GClut *clut;
 
     clut = gcalloc(1,sizeof(GClut));

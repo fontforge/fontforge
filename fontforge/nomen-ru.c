@@ -1162,9 +1162,7 @@ static char str_IgnoreLigatures = "Игнорировать лигатуры";
 static char str_IgnoreCombiningMarks = "Ignore Combining Marks"; /*new*/
     /* Import */
 static char str_Duppixelsize[] = "Duplicate pixelsize"; /*new*/
-/* "The font database already contains a bitmap\nfont with this pixelsize (%d)\nDo you want to overwrite it?" */
-static char str_Duppixelsizepre[] = "The font database already contains a bitmap\012font with this pixelsize ("; /*new*/
-static char str_Duppixelsizepost[] = ")\012Do you want to overwrite it?"; /*new*/
+static char str_DupPixelSizeLong = "The font database already contains a bitmap\012font with this pixelsize (%d)\012Do you want to overwrite it?";
 static char str_NoBitmapFont = "No Bitmap Font"; /*new*/
 static char str_NoBitmapFontIn = "Could not find a bitmap font in %hs"; /*new*/
     /* Private Info */

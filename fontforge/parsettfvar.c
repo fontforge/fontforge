@@ -752,11 +752,12 @@ return;
 
 #if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressChangeLine2R(_STR_ProcessingVariations);
+    if ( !no_windowing_ui )
+	GDrawProcessPendingEvents(NULL);
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_change_line2(_("Processing Variations"));
+    /* !!! force an expose */
 #endif
-    if ( screen_display!=NULL )
-	GDrawProcessPendingEvents(NULL);
     parsefvar(info,ttf);
     if ( info->variations!=NULL && info->avar_start!=0 )
 	parseavar(info,ttf);

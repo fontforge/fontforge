@@ -688,7 +688,7 @@ static void SplineFindOtherEdge(SCI *sci,Spline *spline) {
     }
 
     if ( bcnt&1 )
-	GDrawIError( "Odd number of Point intersections in SplineFindOtherEdge" );
+	IError( "Odd number of Point intersections in SplineFindOtherEdge" );
     if ( bcnt&2 ) {
 	/* Odd number of splines left */
 	right = left;
@@ -922,7 +922,7 @@ static void MapFromCounterGroup(struct map *map,MetaFontDlg *meta,
 		  break;
 		  case cc_zones:
 		  default:
-		    GDrawIError("Shouldn't get here in MapFromCounterGroup" );
+		    IError("Shouldn't get here in MapFromCounterGroup" );
 		  break;
 		}
 		newcwidth = meta->counters[isvert].counter.factor*newcwidth +
@@ -1580,7 +1580,7 @@ static void SplineIntersectWithEdge(SCI *sci,SplinePoint *sp,Spline *s,
 	    if ( RealApprox(new1.y,mapped))
 		new->y = mapped;
 	    else if ( v1->y==0 )
-		GDrawIError("Two Parallel vertical lines" );
+		IError("Two Parallel vertical lines" );
 	    else {
 		new->y = mapped;
 		new->x = new1.x + (mapped-new1.y)*v1->x/v1->y;
@@ -1590,7 +1590,7 @@ static void SplineIntersectWithEdge(SCI *sci,SplinePoint *sp,Spline *s,
 	    if ( RealApprox(new1.x,mapped))
 		new->x = mapped;
 	    else if ( v1->x==0 )
-		GDrawIError("Two Parallel horizontal lines" );
+		IError("Two Parallel horizontal lines" );
 	    else {
 		new->x = mapped;
 		new->y = new1.y + (mapped-new1.x)*v1->y/v1->x;
@@ -1636,7 +1636,7 @@ static void SCIPositionPts(SCI *sci) {
 		if ( v1.x==0 ) {
 		    if ( v2.x==0 ) {
 			if ( !RealApprox(new1.x,new2.x) || !RealApprox(new1.y,new2.y))
-			    GDrawIError("Two Parallel horizontal lines" );
+			    IError("Two Parallel horizontal lines" );
 		    } else
 			/* Inherit x from new1 */
 			new.y = new2.y + v2.y*(new.x-new2.x)/v2.x;
@@ -1645,7 +1645,7 @@ static void SCIPositionPts(SCI *sci) {
 		    new.y = new1.y + v1.y*(new.x-new1.x)/v1.x;
 		} else if ( v2.y/v2.x == v1.y/v1.x ) {
 		    if ( !RealApprox(new1.x,new2.x) || !RealApprox(new1.y,new2.y))
-			GDrawIError("Two Parallel lines" );
+			IError("Two Parallel lines" );
 		} else {
 /* new1.y + v1.y*(X-new1.x)/v1.x = new2.y + v2.y*(X-new2.x)/v2.x */
 /* new1.y-new2.y - v1.y/v1.x*new1.x + v2.y/v2.x*new2.x = (v2.y/v2.x-v1.y/v1.x)*X */
@@ -1825,7 +1825,7 @@ return;
     sci = SCIinit(sc,meta);
     SCIFindStems(sci);
     if ( !SCIReasonableConnections(sci)) {
-	GDrawIError( "Could not deal with %s, missing stems", sc->name );
+	IError( "Could not deal with %s, missing stems", sc->name );
 	SCIFree(sci);
 return;
     }

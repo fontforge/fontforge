@@ -173,7 +173,7 @@ return( false );
     }
     td->njoins = pcnt;
     if ( i!=td->nsamples+1 )
-	GDrawIError("Sample failure %d is not %d", i, td->samples+1 );
+	IError("Sample failure %d is not %d", i, td->samples+1 );
 return( true );
 }
 

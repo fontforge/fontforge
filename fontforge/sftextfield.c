@@ -498,7 +498,7 @@ return;
 	if ( next==NULL )
     break;
 	if ( fl->start>fl->end || fl->end!=next->start || next==fl || next->next==fl ) {
-	    GDrawIError("FontList is corrupted" );
+	    IError("FontList is corrupted" );
 	    fl->next = NULL;
 return;
 	}

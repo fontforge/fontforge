@@ -610,7 +610,7 @@ return;
 	    p_p = p_p->next->to; sc_p = nsc_p;
 	} else {
 	    if ( sc_p->next==NULL ) {
-		GDrawIError("Unexpected point mismatch in replace");
+		IError("Unexpected point mismatch in replace");
 return;
 	    }
 	    np_p = p_p->next->to; nsc_p = sc_p->next->to; nr_p = r_p->next->to;
@@ -1602,8 +1602,12 @@ void FVReplaceOutlineWithReference( FontView *fv ) {
     int i, j, selcnt = 0;
     SearchView *oldsv = fv->sv;
 
+#if defined(FONTFORGE_CONFIG_GDRAW)
     if ( fv->v!=NULL )
 	GDrawSetCursor(fv->v,ct_watch);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    /* !!!! */
+#endif
 
     sv = SVFillup( gcalloc(1,sizeof(SearchView)), fv);
     CV2SC(&sv->cv_srch,&sv->sc_srch,sv);

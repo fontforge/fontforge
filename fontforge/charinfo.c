@@ -1386,7 +1386,7 @@ static int FromScriptToList(GTextInfo **ti,int sindex) {
 	if ( u_strcmp(ti[i]->text,match)==0 )
 return( i );
     }
-    GDrawIError("Failed to find corresponding script S2L" );
+    IError("Failed to find corresponding script S2L" );
 return( -1 );
 }
 
@@ -1401,7 +1401,7 @@ static int FromListToScript(GTextInfo **ti,int tindex) {
 	if ( u_strcmp(ti[tindex]->text,match)==0 )
 return( i );
     }
-    GDrawIError("Failed to find corresponding script L2S" );
+    IError("Failed to find corresponding script L2S" );
 return( -1 );
 }
 
@@ -5093,7 +5093,7 @@ void SCLigCaretCheck(SplineChar *sc,int clean) {
     for ( pst=sc->possub, prev=NULL; pst!=NULL; prev = pst, pst=pst->next ) {
 	if ( pst->type == pst_lcaret ) {
 	    if ( carets!=NULL )
-		GDrawIError("Too many ligature caret structures" );
+		IError("Too many ligature caret structures" );
 	    else {
 		carets = pst;
 		prev_carets = prev;

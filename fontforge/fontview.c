@@ -343,6 +343,7 @@ void SplineFontSetUnChanged(SplineFont *sf) {
 	    _SplineFontSetUnChanged(sf->mm->instances[i]);
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void FVFlattenAllBitmapSelections(FontView *fv) {
     BDFFont *bdf;
     int i;
@@ -354,7 +355,6 @@ static void FVFlattenAllBitmapSelections(FontView *fv) {
     }
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static int AskChanged(SplineFont *sf) {
     int ret;
 #if defined(FONTFORGE_CONFIG_GDRAW)
@@ -1113,7 +1113,11 @@ void MergeKernInfo(SplineFont *sf) {
 return;
 
     if ( !LoadKerningDataFromMetricsFile(sf,temp))
-	GDrawError( "Failed to load kern data from %s", temp);
+#if defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Load of Kerning Metrics Failed"),_("Failed to load kern data from %s"), temp);
+#else
+	GWidgetErrorR(_STR_KerningLoadFailed,_STR_KerningLoadFailedLong, temp);
+#endif
     free(ret); free(temp);
 }
 # endif
@@ -3191,7 +3195,7 @@ void FVBuildAccent(FontView *fv,int onlyaccents) {
 	SplineChar *sc = fv->sf->chars[i];
 	if ( sc==NULL )
 	    sc = SCBuildDummy(&dummy,fv->sf,i);
-	else if ( screen_display==NULL && sc->unicodeenc == 0x00c5 /* Aring */ &&
+	else if ( !no_windowing_ui && sc->unicodeenc == 0x00c5 /* Aring */ &&
 		sc->layers[ly_fore].splines!=NULL ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    static int buts[] = { _STR_Yes, _STR_No, 0 };
@@ -6381,7 +6385,7 @@ return;
 
     sc->changedsincelasthinted = true;
     if ( sc->enc>=fv->filled->charcnt )
-	GDrawIError("Character out of bounds in bitmap font %d>=%d", sc->enc, fv->filled->charcnt );
+	IError("Character out of bounds in bitmap font %d>=%d", sc->enc, fv->filled->charcnt );
     else
 	BDFCharFree(fv->filled->chars[sc->enc]);
     fv->filled->chars[sc->enc] = NULL;
@@ -8220,6 +8224,15 @@ FontView *FontViewCreate(SplineFont *sf) {
 
     g_object_set_data( fv->gw, "data", fv );
     g_object_set_data( fv->v , "data", fv );
+
+    {
+	GdkGC *gc = fv->v->style->fg_gc[fv->v->state];
+	GdkGCValues values;
+	gdk_gc_get_values(gc,&values);
+	default_background = ((values.background.red  &0xff00)<<8) |
+			     ((values.background.green&0xff00)   ) |
+			     ((values.background.blue &0xff00)>>8);
+    }
 #elif defined(FONTFORGE_CONFIG_GDRAW)
     GRect pos;
     GWindow gw;
@@ -8236,12 +8249,14 @@ FontView *FontViewCreate(SplineFont *sf) {
     GRect size;
     BDFFont *bdf;
 
-    if ( icon==NULL )
+    if ( icon==NULL ) {
 #ifdef BIGICONS
 	icon = GDrawCreateBitmap(NULL,fontview_width,fontview_height,fontview_bits);
 #else
 	icon = GDrawCreateBitmap(NULL,fontview2_width,fontview2_height,fontview2_bits);
 #endif
+	default_background = GDrawGetDefaultBackground(screen_display);
+    }
 
     GDrawGetSize(GDrawGetRoot(NULL),&size);
 
@@ -8421,7 +8436,11 @@ return( NULL );
 		if ( strippedname!=filename ) free(strippedname);
 		strippedname = tmpfile;
 	    } else {
-		GDrawError("Decompress failed" );
+#if defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Decompress Failed"),_("Decompress Failed"));
+#else
+		GWidgetErrorR(_STR_DecompressFailed,_STR_DecompressFailed);
+#endif
 		free(tmpfile);
 return( NULL );
 	    }
@@ -8444,6 +8463,7 @@ return( NULL );
     ubuf[100+len] = '\0';
     GProgressStartIndicator(fv_list==NULL?0:10,GStringGetResource(_STR_Loading,NULL),ubuf,GStringGetResource(_STR_ReadingGlyphs,NULL),0,1);
     GProgressEnableStop(0);
+    if ( fv_list==NULL && !no_windowing_ui ) { GDrawSync(NULL); GDrawProcessPendingEvents(NULL); }
 #elif defined(FONTFORGE_CONFIG_GTK)
     strcpy(ubuf,_("Loading font from "));
     len = u_strlen(buf);
@@ -8451,10 +8471,10 @@ return( NULL );
     buf[100+len] = '\0';
     gwwv_progress_start_indicator(fv_list==NULL?0:10,_("Loading..."),buf,_("Reading Glyphs"),NULL),0,1);
     gwwv_progress_enable_stop(0);
+    /* Do something here to force an expose !!!! */
 #else
     len = 0;
 #endif
-    if ( fv_list==NULL && screen_display!=NULL ) { GDrawSync(NULL); GDrawProcessPendingEvents(NULL); }
 
     sf = NULL;
     foo = fopen(strippedname,"rb");

@@ -114,7 +114,7 @@ enum psstrokeflags PsStrokeFlagsDlg(void) {
     int done = false;
     int k, rm_k, he_k, cd_k;
 
-    if ( screen_display==NULL )
+    if ( no_windowing_ui )
 return( oldflags );
 
     memset(&wattrs,0,sizeof(wattrs));
@@ -291,7 +291,11 @@ return;
     {
 	spl = SplinePointListInterpretPS(ps);
 	if ( spl==NULL ) {
-	    GDrawError( "I'm sorry this file is too complex for me to understand");
+#if defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Too Complex or Bad"),_("I'm sorry this file is too complex for me to understand (or is erroneous)"));
+#else
+	    GWidgetErrorR( _STR_TooComplex, _STR_TooComplexLong );
+#endif
 return;
 	}
 	if ( sc->parent->order2 )
@@ -349,7 +353,11 @@ void SCImportSVG(SplineChar *sc,int layer,char *path,int doclear) {
 	    if ( espl->first->next->order2!=sc->parent->order2 )
 		spl = SplineSetsConvertOrder(spl,sc->parent->order2);
 	if ( spl==NULL ) {
-	    GDrawError( "I'm sorry this file is too complex for me to understand");
+#if defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Too Complex or Bad"),_("I'm sorry this file is too complex for me to understand (or is erroneous)"));
+#else
+	    GWidgetErrorR( _STR_TooComplex, _STR_TooComplexLong );
+#endif
 return;
 	}
 	for ( espl=spl; espl->next!=NULL; espl = espl->next );
@@ -903,8 +911,8 @@ return( image );
 	clut=base->clut = gcalloc(1,sizeof(GClut));
 	clut->clut_len = 2;
 	clut->clut[0] = 0x808080;
-	if ( screen_display!=NULL )
-	    clut->clut[1] = GDrawGetDefaultBackground(NULL);
+	if ( !no_windowing_ui )
+	    clut->clut[1] = default_background;
 	else
 	    clut->clut[1] = 0xb0b0b0;
 	clut->trans_index = 1;

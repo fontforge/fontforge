@@ -141,7 +141,7 @@ return;
 		real coord = dir?sp->me.y:sp->me.x;
 		for ( i=0; i<rcnt && coord>regions[i].end; ++i );
 		if ( i==rcnt )
-		    GDrawIError( "Region list is screwed up");
+		    IError( "Region list is screwed up");
 		else {
 		    if ( dir==0 ) {
 			sp->me.x += regions[i].offset;

@@ -392,10 +392,20 @@ return( true );
 	    free(fn);
 	}
 	free(find);
-    } else if ( screen_display==NULL )
+#if defined(FONTFORGE_CONFIG_GDRAW)
+    } else if ( no_windowing_ui )
 	choice = 0;
     else
 	choice = GWidgetChoicesR(_STR_PickFont,(const unichar_t **) names,j,0,_STR_MultipleFontsPick);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    } else if ( no_windowing_ui )
+	choice = 0;
+    else
+	choice = gwwv_choose(_("Pick a font, any font..."),(const unichar_t **) names,j,0,_("There are multiple fonts in this file, pick one"));
+#elif defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
+    } else
+	choice = 0;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     if ( choice!=-1 ) {
 	fseek(ttf,offsets[choice],SEEK_SET);
 	*chosenname = cu_copy(names[choice]);
@@ -415,8 +425,21 @@ static int PickCFFFont(char **fontnames) {
     names = gcalloc(cnt+1,sizeof(unichar_t *));
     for ( i=0; i<cnt; ++i )
 	names[i] = uc_copy(fontnames[i]);
-    choice = GWidgetChoicesR(_STR_PickFont,
-	    (const unichar_t **) names,cnt,0,_STR_MultipleFontsPick);
+#if defined(FONTFORGE_CONFIG_GDRAW)
+    if ( no_windowing_ui )
+	choice = 0;
+    else
+	choice = GWidgetChoicesR(_STR_PickFont,
+		(const unichar_t **) names,cnt,0,_STR_MultipleFontsPick);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    if ( no_windowing_ui )
+	choice = 0;
+    else
+	choice = gwwv_choose(_("Pick a font, any font..."),
+	    (const unichar_t **) names,cnt,0,_("There are multiple fonts in this file, pick one"));
+#elif defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
+    choice = 0;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     for ( i=0; i<cnt; ++i )
 	free(names[i]);
     free(names);
@@ -644,7 +667,11 @@ static void readttfmaxp(FILE *ttf,struct ttfinfo *info) {
 	/* X11 OpenType bitmap format */;
 	info->onlystrikes = true;
     } else if ( cnt!=info->glyph_cnt && info->loca_length!=0 ) {
-	GDrawError("TTF file has bad glyph count field. maxp says: %d sizeof(loca)=>%d", cnt, info->glyph_cnt);
+#if defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_notice(_("Bad Glyph Count"),_("Font file has bad glyph count field. maxp says: %d sizeof(loca)=>%d"), cnt, info->glyph_cnt );
+#else
+	GWidgetPostNoticeR(_STR_BadGlyphCount, _STR_BadGlyphCountLong, cnt, info->glyph_cnt);
+#endif
 	if ( cnt>info->glyph_cnt )
 	    cnt = info->glyph_cnt;		/* Use the smaller of the two values */
     }
@@ -1124,7 +1151,7 @@ static void readttfsimpleglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, in
 	if ( flags[i]&_Repeat ) {
 	    int cnt = getc(ttf);
 	    if ( i+cnt>=tot ) {
-		GDrawIError("Flag count is wrong (or total is): %d %d", i+cnt, tot );
+		IError("Flag count is wrong (or total is): %d %d", i+cnt, tot );
 		cnt = tot-i-1;
 	    }
 	    for ( j=0; j<cnt; ++j )
@@ -1133,7 +1160,7 @@ static void readttfsimpleglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, in
 	}
     }
     if ( i!=tot )
-	GDrawIError("Flag count is wrong (or total is): %d %d", i, tot );
+	IError("Flag count is wrong (or total is): %d %d", i, tot );
 
     last_pos = 0;
     for ( i=0; i<tot; ++i ) {
@@ -2915,7 +2942,7 @@ static void cidfigure(struct ttfinfo *info, struct topdicts *dict,
 	sf->chars[cid]->parent = sf;
 	sf->chars[cid]->enc = cid;
 	if ( sf->chars[cid]->layers[ly_fore].refs!=NULL )
-	    GDrawIError( "Reference found in CID font. Can't fix it up");
+	    IError( "Reference found in CID font. Can't fix it up");
 	if ( cstype==2 ) {
 	    if ( sf->chars[cid]->width == (int16) 0x8000 )
 		sf->chars[cid]->width = dict->defaultwidthx;
@@ -3325,7 +3352,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    for ( i=0; i<segCount; ++i )
 		endchars[i] = getushort(ttf);
 	    if ( getushort(ttf)!=0 )
-		GDrawIError("Expected 0 in true type font");
+		IError("Expected 0 in true type font");
 	    startchars = galloc(segCount*sizeof(uint16));
 	    for ( i=0; i<segCount; ++i )
 		startchars[i] = getushort(ttf);
@@ -3340,7 +3367,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    /* that's the amount of space left in the subtable and it must */
 	    /*  be filled with glyphIDs */
 	    if ( len<0 ) {
-		GDrawIError("This font has an illegal format 4 subtable with too little space for all the segments.\nThis error is not recoverable.\nBye" );
+		IError("This font has an illegal format 4 subtable with too little space for all the segments.\nThis error is not recoverable.\nBye" );
 		exit(1);
 	    }
 	    glyphs = galloc(len);
@@ -3432,7 +3459,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    /*  ments for a format 0 sub-table. See Zapfino.dfont */
 	    int first, count;
 	    if ( enc!=em_unicode && enc!=em_unicode4 )
-		GDrawIError("I don't support truncated array encoding (format=6) except for unicode" );
+		IError("I don't support truncated array encoding (format=6) except for unicode" );
 	    first = getushort(ttf);
 	    count = getushort(ttf);
 	    if ( justinuse )
@@ -3523,7 +3550,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	} else if ( format==8 ) {
 	    uint32 ngroups, start, end, startglyph;
 	    if ( enc!=em_unicode4 )
-		GDrawIError("I don't support 32 bit characters except for the UCS-4 (MS platform, specific=10)" );
+		IError("I don't support 32 bit characters except for the UCS-4 (MS platform, specific=10)" );
 	    /* I'm now assuming unicode surrogate encoding, so I just ignore */
 	    /*  the is32 table (it will be set for the surrogates and not for */
 	    /*  anything else */
@@ -3547,7 +3574,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    /* same as format 6, except for 4byte chars */
 	    int first, count;
 	    if ( enc!=em_unicode4 )
-		GDrawIError("I don't support 32 bit characters except for the UCS-4 (MS platform, specific=10)" );
+		IError("I don't support 32 bit characters except for the UCS-4 (MS platform, specific=10)" );
 	    first = getlong(ttf);
 	    count = getlong(ttf);
 	    if ( justinuse )
@@ -3561,7 +3588,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	} else if ( format==12 ) {
 	    uint32 ngroups, start, end, startglyph;
 	    if ( enc!=em_unicode4 )
-		GDrawIError("I don't support 32 bit characters except for the UCS-4 (MS platform, specific=10)" );
+		IError("I don't support 32 bit characters except for the UCS-4 (MS platform, specific=10)" );
 	    ngroups = getlong(ttf);
 	    for ( j=0; j<ngroups; ++j ) {
 		start = getlong(ttf);

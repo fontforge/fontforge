@@ -92,7 +92,7 @@ void SFFreeGenerateFeatureTag(struct gentagtype *gentags,uint32 tag) {
 	gentags->tagtype[i].type = pst_null;
 	gentags->tagtype[i].tag = CHR(' ',' ',' ',' ');
     } else
-	GDrawIError("Attempt to free an invalid generated tag" );
+	IError("Attempt to free an invalid generated tag" );
 }
 
 int SFRemoveThisFeatureTag(SplineFont *sf, uint32 tag, int sli, int flags) {

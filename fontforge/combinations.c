@@ -128,7 +128,11 @@ void SFShowLigatures(SplineFont *sf,SplineChar *searchfor) {
 	}
     }
     choices[cnt] = NULL;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     i = GWidgetChoicesR(_STR_Ligatures, (const unichar_t **) choices,cnt, 0,_STR_SelectLigature);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    i = gwwv_choose(_("Ligatures"),(const unichar_t **) choices,cnt,0,_("Select a ligature to view"));
+#endif
     if ( i!=-1 && where[i]!=-1 )
 	CharViewCreate(sf->chars[where[i]],sf->fv);
     free(where);

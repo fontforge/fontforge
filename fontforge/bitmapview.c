@@ -73,8 +73,8 @@ static void BVFit(BitmapView *bv) {
 	bottom = -bv->bdf->descent;
 	if ( right==-1 ) right = fh;
     }
-    if ( top<bottom ) GDrawIError("Bottom bigger than top!");
-    if ( right<left ) GDrawIError("Left bigger than right!");
+    if ( top<bottom ) IError("Bottom bigger than top!");
+    if ( right<left ) IError("Left bigger than right!");
     top -= bottom;
     right -= left;
     if ( top==0 ) top = bv->bdf->pixelsize;

@@ -2482,7 +2482,7 @@ static void BVShadesExpose(GWindow pixmap, BitmapView *bv, GRect *r) {
     GRect old;
     int i,j,index;
     GRect block;
-    Color bg = GDrawGetDefaultBackground(NULL);
+    Color bg = default_background;
     int greybg = (3*COLOR_RED(bg)+6*COLOR_GREEN(bg)+COLOR_BLUE(bg))/10;
 
     GDrawSetLineWidth(pixmap,0);

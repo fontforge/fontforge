@@ -472,16 +472,27 @@ static void PIFontDisplay(PI *pi) {
 	    ;
     
 	if ( pi->chline==0 )
-	    GDrawError( "Warning: Font contained no characters" );
+#if defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_notice(_("Print Failed"),_("Warning: Font contained no characters"));
+#else
+	    GWidgetPostNoticeR(_STR_PrintFailed,_STR_NoCharacters);
+#endif
 	else
 	    dump_trailer(pi);
     }
 
     if ( wascompacted ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	FontView *fvs;
 	SFCompactFont(pi->sf);
 	for ( fvs=pi->sf->fv; fvs!=NULL; fvs=fvs->nextsame )
 	    GDrawRequestExpose(fvs->v,NULL,false);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	SFCompactFont(pi->sf);
+	/* !!!! */
+#else
+	SFCompactFont(pi->sf);
+#endif
     }
 }
 
@@ -1199,7 +1210,7 @@ return(true);
 	    char *cret = cu_copy(ret), *pt;
 	    real pw,ph, scale;
 	    if ( sscanf(cret,"%gx%g",&pw,&ph)!=2 ) {
-		GDrawIError("Bad Pagesize must be a known name or <num>x<num><units>\nWhere <units> is one of pt (points), mm, cm, in" );
+		IError("Bad Pagesize must be a known name or <num>x<num><units>\nWhere <units> is one of pt (points), mm, cm, in" );
 return( true );
 	    }
 	    pt = cret+strlen(cret)-1;
@@ -1213,7 +1224,7 @@ return( true );
 	    else if ( strncmp(pt-2,"pt",2)==0 )
 		scale = 1;
 	    else {
-		GDrawIError("Bad Pagesize units are unknown\nMust be one of pt (points), mm, cm, in" );
+		IError("Bad Pagesize units are unknown\nMust be one of pt (points), mm, cm, in" );
 return( true );
 	    }
 	    pgwidth = pw*scale; pgheight = ph*scale;
@@ -1643,19 +1654,19 @@ static void QueueIt(PI *pi) {
 	    execvp(argv[0],argv);
 	}
 	fprintf( stderr, "Failed to exec print job\n" );
-	/*GDrawIError("Failed to exec print job");*/ /* X Server gets confused by talking to the child */
+	/*IError("Failed to exec print job");*/ /* X Server gets confused by talking to the child */
 	_exit(1);
     } else if ( pid==-1 )
-	GDrawIError("Failed to fork print job");
+	IError("Failed to fork print job");
     else if ( pi->printtype != pt_ghostview ) {
 	waitpid(pid,&status,0);
 	if ( !WIFEXITED(status) )
-	    GDrawIError("Failed to queue print job");
+	    IError("Failed to queue print job");
     } else {
 	sleep(1);
 	if ( waitpid(pid,&status,WNOHANG)>0 ) {
 	    if ( !WIFEXITED(status) )
-		GDrawIError("Failed to run ghostview");
+		IError("Failed to run ghostview");
 	}
     }
     waitpid(-1,&status,WNOHANG);	/* Clean up any zombie ghostviews */
@@ -1672,11 +1683,23 @@ static void DoPrinting(PI *pi,char *filename,unichar_t *sample) {
 	PIChars(pi);
     rewind(pi->out);
     if ( ferror(pi->out) )
-	GDrawError("Failed to generate postscript in file %s", filename==NULL?"temporary":filename );
+#if defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Print Failed"),_("Failed to generate postscript in file %s"),
+		filename==NULL?"temporary":filename );
+#else
+	GWidgetErrorR(_STR_PrintFailed,_STR_FailedGenPostFile,
+		filename==NULL?"temporary":filename );
+#endif
     if ( pi->printtype!=pt_file )
 	QueueIt(pi);
     if ( fclose(pi->out)!=0 )
-	GDrawError("Failed to generate postscript in file %s", filename==NULL?"temporary":filename );
+#if defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Print Failed"),_("Failed to generate postscript in file %s"),
+		filename==NULL?"temporary":filename );
+#else
+	GWidgetErrorR(_STR_PrintFailed,_STR_FailedGenPostFile,
+		filename==NULL?"temporary":filename );
+#endif
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -1758,7 +1781,11 @@ return(true);
 	    free(ret);
 	    pi->out = fopen(file,"wb");
 	    if ( pi->out==NULL ) {
-		GDrawError("Failed to open file %s for output", file );
+#if defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Print Failed"),_("Failed to open file %s for output"), file);
+#else
+		GWidgetErrorR(_STR_PrintFailed,_STR_CouldntOpenOutput, file);
+#endif
 		free(file);
 return(true);
 	    }
@@ -3154,7 +3181,11 @@ void ScriptPrint(FontView *fv,int type,int32 *pointsizes,char *samplefile,
 	}
 	pi.out = fopen(outputfile,"wb");
 	if ( pi.out==NULL ) {
-	    GDrawError("Failed to open file %s for output", outputfile );
+#if defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Print Failed"),_("Failed to open file %s for output"), outputfile);
+#else
+	    GWidgetErrorR(_STR_PrintFailed,_STR_CouldntOpenOutput, outputfile);
+#endif
 return;
 	}
     } else {

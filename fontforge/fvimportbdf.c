@@ -1550,7 +1550,7 @@ return( false );
 	for ( i=0; i<cnt; ++i ) {
 	    BDFChar *bc = b->chars[i];
 	    if ( i<cnt-1 && offsets[i+1]-offsets[i]!=bc->bytes_per_line * (bc->ymax-bc->ymin+1))
-		GDrawIError("Bad PCF glyph bitmap size");
+		IError("Bad PCF glyph bitmap size");
 	    memcpy(bc->bitmap,bitmap+offsets[i],
 		    bc->bytes_per_line * (bc->ymax-bc->ymin+1));
 #if defined(FONTFORGE_CONFIG_GDRAW)
@@ -1747,40 +1747,20 @@ return( guess );
 }
 
 static int alreadyexists(int pixelsize) {
-    char buffer[10];
-    unichar_t ubuf[200];
-    const unichar_t *buts[3]; unichar_t oc[2];
+#if defined(FONTFORGE_CONFIG_GDRAW)
+    static int buts[] = { _STR_OK, _STR_Cancel, 0 };
+#elif defined(FONTFORGE_CONFIG_GTK)
+    static char *buts[] = { GTK_STOCK_OK, GTK_STOCK_CANCEL, NULL };
+#endif
     int ret;
 
-    buts[2]=NULL;
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    buts[0] = GStringGetResource( _STR_OK, &oc[0]);
+    ret = GWidgetAskR(_STR_Duppixelsize,buts,0,1,_STR_DupPixelSizeLong,
+	    pixelsize)==0;
 #elif defined(FONTFORGE_CONFIG_GTK)
-    buts[0] =  _("OK");
-#endif
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    buts[1] = GStringGetResource( _STR_Cancel, &oc[1]);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    buts[1] =  _("Cancel");
-#endif
-
-    sprintf(buffer,"%d",pixelsize);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    u_strcpy(ubuf, GStringGetResource(_STR_Duppixelsizepre,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-    u_strcpy(ubuf, _("The font database already contains a bitmap\nfont with this pixelsize ("));
-#endif
-    uc_strcat(ubuf,buffer);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    u_strcat(ubuf, GStringGetResource(_STR_Duppixelsizepost,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-    u_strcat(ubuf, _(")\nDo you want to overwrite it?"));
-#endif
-
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    ret = GWidgetAsk(GStringGetResource(_STR_Duppixelsize,NULL),buts,oc,0,1,ubuf)==0;
-#elif defined(FONTFORGE_CONFIG_GTK)
-    ret = GWidgetAsk(_("Duplicate pixelsize"),buts,oc,0,1,ubuf)==0;
+    ret = GWidgetAsk(_("Duplicate pixelsize"),buts,0,1,
+	_("The font database already contains a bitmap\012font with this pixelsize (%d)\012Do you want to overwrite it?"),
+	pixelsize);
 #endif
 
 return( ret );
@@ -2002,7 +1982,11 @@ static BDFFont *_SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback
 		filename = temp;
 	    else {
 		free(temp);
-		GDrawError("Decompress failed" );
+#if defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Decompress Failed"),_("Decompress Failed"));
+#else
+		GWidgetErrorR(_STR_DecompressFailed,_STR_DecompressFailed);
+#endif
 return( NULL );
 	    }
 	}
@@ -2115,8 +2099,10 @@ int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
 	if ( b!=NULL ) {
 	    anyb = b;
 	    any = true;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    if ( b==fv->show && fv->v!=NULL )
 		GDrawRequestExpose(fv->v,NULL,false);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	}
 	file = fpt+2;
     } while ( fpt!=NULL );
@@ -2172,7 +2158,7 @@ static void SFAddToBackground(SplineFont *sf,BDFFont *bdf) {
 
 	    clut = gcalloc(1,sizeof(GClut));
 	    clut->clut_len = 2;
-	    clut->clut[0] = screen_display==NULL? 0xffffff : GDrawGetDefaultBackground(NULL);
+	    clut->clut[0] = default_background;
 	    clut->clut[1] = 0x808080;
 	    clut->trans_index = 0;
 	    base->trans = 0;

@@ -2440,7 +2440,7 @@ return( NULL );
 		if ( sli>=sf->sli_cnt && sli!=SLI_NESTED) {
 		    static int complained=false;
 		    if ( !complained )
-			GDrawIError("'%s' in %s has a script index out of bounds: %d",
+			IError("'%s' in %s has a script index out of bounds: %d",
 				isv ? "vkrn" : "kern",
 				sc->name, sli );
 		    else
@@ -2526,7 +2526,7 @@ return( NULL );
 	    } else if ( liga->script_lang_index>=sf->sli_cnt && liga->script_lang_index!=SLI_NESTED ) {
 		static int complained=false;
 		if ( !complained )
-		    GDrawIError("'%c%c%c%c' in %s has a script index out of bounds: %d",
+		    IError("'%c%c%c%c' in %s has a script index out of bounds: %d",
 			    (liga->tag>>24), (liga->tag>>16)&0xff, (liga->tag>>8)&0xff, liga->tag&0xff,
 			    sc->name, liga->script_lang_index );
 		else
@@ -2952,11 +2952,11 @@ static void SFDParseChainContext(FILE *sfd,SplineFont *sf,FPST *fpst, char *tok)
     if ( fpst->script_lang_index>=sf->sli_cnt && fpst->script_lang_index!=SLI_NESTED ) {
 	static int complained=false;
 	if ( sf->sli_cnt==0 )
-	    GDrawIError("'%c%c%c%c' has a script index out of bounds: %d\nYou MUST fix this manually",
+	    IError("'%c%c%c%c' has a script index out of bounds: %d\nYou MUST fix this manually",
 		    (fpst->tag>>24), (fpst->tag>>16)&0xff, (fpst->tag>>8)&0xff, fpst->tag&0xff,
 		    fpst->script_lang_index );
 	else if ( !complained )
-	    GDrawIError("'%c%c%c%c' has a script index out of bounds: %d",
+	    IError("'%c%c%c%c' has a script index out of bounds: %d",
 		    (fpst->tag>>24), (fpst->tag>>16)&0xff, (fpst->tag>>8)&0xff, fpst->tag&0xff,
 		    fpst->script_lang_index );
 	else
@@ -4258,7 +4258,7 @@ void SFAutoSave(SplineFont *sf) {
     char *oldloc;
     SplineFont *ssf;
 
-    if ( screen_display==NULL )		/* No autosaves when just scripting */
+    if ( no_windowing_ui )		/* No autosaves when just scripting */
 return;
 
     if ( sf->cidmaster!=NULL ) sf=sf->cidmaster;

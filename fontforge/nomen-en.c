@@ -1238,6 +1238,9 @@ static char *str_POSTDepreciatedTit = "The 'POST' type1 format is probably depre
 static char *str_POSTDepreciated = "The 'POST' type1 format is probably depreciated and may not work in future version of the mac."
 static char *str_Type1NeedsNFNT = "When generating a Mac Type1 resource font, you MUST generate at least one NFNT bitmap font to go with it. If you have not created any bitmaps for this font, cancel this dlg and use the Element->Bitmaps Available command to create one"
 static char *str_Type1NeedsNFNTTit = "Needs bitmap font"
+static char *str_MissingBitmap = "Missing Bitmap"
+static char *str_MissingBitmapLong = "Attempt to save a pixel size that has not been created (%d@%d)"
+static char *str_MissingRegenBitmapLong = "Attempt to regenerate a pixel size that has not been created (%d@%d)"
     /* Goto character ... */
 static char str_Badnumberin[] = "Bad Number in ";
 static char str_Enternameofchar[] = "Enter the name of a character in the font";
@@ -1296,6 +1299,8 @@ static char *str_AdvanceBarPopup = "Display the advance width as a bar under the
 static char *str_AdvanceLinePopup = "Display the advance width as a line\nperpendicular to the advance direction"
 static char *str_Suffix = "Suffix:";
 static char *str_SuffixToTag = "Suffix to Tag...";
+static char *str_KerningLoadFailed = "Load of Kerning Metrics Failed";
+static char *str_KerningLoadFailedLong = "Failed to load kern data from %hs";
     /* Messages from accented characters */
 static char str_Buildingaccented[] = "Building accented letters";
 static char str_Replacearing[] = "Replace Å";
@@ -2113,11 +2118,11 @@ static char str_VKernsFinal = "Vertical Kern Pairs with this as the final glyph"
 static char str_CopyWhichFeatures = "Copy Which Features?";
     /* Import */
 static char str_Duppixelsize[] = "Duplicate pixelsize";
-/* "The font database already contains a bitmap\nfont with this pixelsize (%d)\nDo you want to overwrite it?" */
-static char str_Duppixelsizepre[] = "The font database already contains a bitmap\012font with this pixelsize (";
-static char str_Duppixelsizepost[] = ")\012Do you want to overwrite it?";
+static char str_DupPixelSizeLong = "The font database already contains a bitmap\012font with this pixelsize (%d)\012Do you want to overwrite it?";
 static char str_NoBitmapFont = "No Bitmap Font";
 static char str_NoBitmapFontIn = "Could not find a bitmap font in %hs";
+static char str_TooComplex = "Too Complex or Bad"
+static char str_TooComplexLong = "I'm sorry this file is too complex for me to understand (or is erroneous)"
     /* Private Info */
 static char str_Bluequest[] = "This will change both BlueValues and OtherBlues.\012Do you want to continue?";
 static char str_Hstemquest[] = "This will change both StdHW and StemSnapH.\012Do you want to continue?";
@@ -2507,6 +2512,8 @@ static char *str_Search = "Search";
 static char mnemonic_Search = 'S';
 static char *str_GiveUp = "Give Up";
 static char mnemonic_GiveUp = 'G';
+static char *str_BadCidmap = "Bad Cidmap File"
+static char *str_BadCidmapLong = "%s is not a cidmap file, please download\nhttp://fontforge.sourceforge.net/cidmaps.tgz"
 static char *str_NoCidmap = "No cidmap file..."
 static char *str_LookForCidmap = "FontForge was unable to find a cidmap file for this font. It is not essential to have one, but some things will work better if you do. If you have not done so you might want to download the cidmaps from:\n   http://FontForge.sourceforge.net/cidmaps.tgz\nand then gunzip and untar them and move them to:\n  %.80hs\n\nWould you like to search your local disk for an appropriate file?"
 static char *str_AreYouSureCharset = "Are you sure you don't want to use the cidmap I found?";
@@ -2567,7 +2574,9 @@ static char *str_NotPcfFileName = "Not an X11 pcf file %.200hs"
 static char *str_LoadingFrom = "Loading font from %.100hs";
 static char *str_DuplicateName = "Duplicate Name";
 static char *str_DuplicateCharName = "Duplicate character name (%hs) in font";
+static char *str_DecompressFailed = "Decompress Failed!";
     /* problems */
+static char *str_NoProblemsFound = "No problems found";
 static char *str_ProbOpenPath = "The two selected points are the endpoints of an open path";
 static char *str_ProbIntersectingPaths = "The paths that make up this glyph intersect one another"
 static char *str_ProbPointsTooClose = "The selected points are too close to each other";
@@ -2802,6 +2811,10 @@ static char *str_GenAntiAlias = "Generating anti-alias font";
 /* "%d pixels" (for the size of the font being rasterized) */
 static char *str_Pixels = " pixels";
 	/* print */
+static char *str_PrintFailed = "Print Failed";
+static char *str_CouldntOpenOutput = "Failed to open file %hs for output";
+static char *str_FailedGenPostFile = "Failed to generate postscript in file %hs";
+static char *str_NoCharacters = "Warning: Font contained no characters";
 static char *str_PrintingFont = "Printing Font";
 static char *str_GeneratingPostscriptFont = "Generating Postscript Font";
 static char *str_FailedGenPost = "Failed to generate postscript font";
@@ -2854,6 +2867,8 @@ static char *str_NotEnoughLines = "Not enough lines";
 static char *str_CantParallel = "Can't Parallel";
 static char *str_ShareCommonEndpoint = "These two lines share a common endpoint, I can't make them parallel";
     /* parsettf */
+static char *str_BadGlyphCount = "Bad Glyph Count";
+static char *str_BadGlyphCountLong = "Font file has bad glyph count field. maxp says: %d sizeof(loca)=>%d"
 static char *str_ReadingNames = "Reading Names";
 static char *str_ProcessingVariations = "Processing Variations";
 static char *str_FixingupReferences = "Fixing up References";
@@ -3417,6 +3432,9 @@ static char *str_AnyScript = "Any Script";
 static char *str_BadTag = "Bad Tag";
 static char *str_RetagWith = "Retag with...";
 static char *str_NoSelectedFont = "No Selected Font";
+    /* ui util */
+static char *NoBrowser = "No Browser";
+static char *NoBrowserLong = "Could not find a browser. Set the BROWSER environment variable to point to one";
     /* spline util */
 static char *str_BadMM = "Bad Multiple Master Font";
 static char *str_MMTooFewMasters = "This multiple master font has %1$d instance fonts, but it needs at least %2$d master fonts for %3$d axes. FontForge will not be able to edit this correctly";

@@ -1881,7 +1881,7 @@ return( false );
 	}
 	GDrawDestroyWindow(sf->cvt_dlg->gw);
     }
-    if ( screen_display!=NULL ) {
+    if ( !no_windowing_ui ) {
 	GDrawSync(NULL);
 	GDrawProcessPendingEvents(NULL);
     }

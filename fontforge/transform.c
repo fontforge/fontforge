@@ -201,7 +201,7 @@ static int Trans_OK(GGadget *g, GEvent *e) {
 		skewselect(&bvts[bvpos],trans[2]); ++bvpos;
 	      break;
 	      default:
-		GDrawIError("Unexpected selection in Transform");
+		IError("Unexpected selection in Transform");
 		err = 1;
 	      break;
 	    }

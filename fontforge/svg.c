@@ -811,12 +811,17 @@ static xmlNodePtr SVGPickFont(xmlNodePtr *fonts,char *filename) {
 	    free(fn);
 	}
 	free(find);
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+#if defined(FONTFORGE_CONFIG_GDRAW)
     } else if ( no_windowing_ui )
 	choice = 0;
     else
 	choice = GWidgetChoicesR(_STR_PickFont,(const unichar_t **) names,cnt,0,_STR_MultipleFontsPick);
-#else
+#elif defined(FONTFORGE_CONFIG_GTK)
+    } else if ( no_windowing_ui )
+	choice = 0;
+    else
+	choice = gwwv_choose(_("Pick a font, any font..."),(const unichar_t **) names,cnt,0,_("There are multiple fonts in this file, pick one"));
+#elif defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
     } else
 	choice = 0;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

@@ -573,7 +573,7 @@ static void dumpcoveragetable(FILE *gpos,SplineChar **glyphs) {
 
     for ( i=0; glyphs[i]!=NULL; ++i ) {
 	if ( glyphs[i]->ttf_glyph<=last )
-	    GDrawIError("Glyphs must be ordered when creating coverage table");
+	    IError("Glyphs must be ordered when creating coverage table");
 	if ( glyphs[i]->ttf_glyph!=last+1 )
 	    ++range_cnt;
 	last = glyphs[i]->ttf_glyph;
@@ -1858,9 +1858,9 @@ static void dumpg___ContextChainCoverage(FILE *lfile,FPST *fpst,SplineFont *sf,
     int ispos = (fpst->type==pst_contextpos || fpst->type==pst_chainpos);
 
     if ( fpst->rule_cnt!=1 )
-	GDrawIError("Bad rule cnt in coverage context lookup");
+	IError("Bad rule cnt in coverage context lookup");
     if ( fpst->format==pst_reversecoverage && fpst->rules[0].u.rcoverage.always1!=1 )
-	GDrawIError("Bad input count in reverse coverage lookup" );
+	IError("Bad input count in reverse coverage lookup" );
 
     putshort(lfile,3);		/* Sub format 3 => coverage */
     exists = galloc(fpst->rules[0].lookup_cnt*sizeof(uint8));
@@ -2145,7 +2145,7 @@ static void g___HandleNested(FILE *lfile,SplineFont *sf,int gpos,
 			    } else if ( type==pst_ligature ) {
 				/* Already done */;
 			    } else
-				GDrawIError("Unknown PST type in GPOS/GSUB figure lookups" );
+				IError("Unknown PST type in GPOS/GSUB figure lookups" );
 			    new->len = ftell(lfile)-new->offset;
 		    break;
 			}
@@ -2235,7 +2235,7 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 		    dumpGPOSpairpos(lfile,sf,glyphs,&ligtags[j]);
 		    new->lookup_type = 2;
 		} else
-		    GDrawIError("Unknown PST type in GPOS figure lookups" );
+		    IError("Unknown PST type in GPOS figure lookups" );
 		new->len = ftell(lfile)-new->offset;
 	    }
 	}
@@ -2873,7 +2873,7 @@ static void AddScriptLangsToFeature(struct feature *f,struct slusage *slu,
 	}
     }
     if ( f->sl==NULL )
-	GDrawIError("Impossible script lang in AddScriptLangsToFeature" );
+	IError("Impossible script lang in AddScriptLangsToFeature" );
 }
 
 static void AddSliToFeature(struct feature *f,SplineFont *sf,int sli) {
@@ -2890,7 +2890,7 @@ static void AddSliToFeature(struct feature *f,SplineFont *sf,int sli) {
 	sl->lang = sr[s].langs[l];
     }
     if ( f->sl==NULL )
-	GDrawIError("Impossible script lang in AddSliToFeature" );
+	IError("Impossible script lang in AddSliToFeature" );
 }
 
 /* Now we have a set of lookups. Each of which is used by some colection of */
@@ -3161,7 +3161,7 @@ return( NULL );
     }
     for ( cnt=0, l=lookups; l!=NULL; l=l->next, ++cnt )
 	if ( l->lookup_cnt!=cnt && !lc_warned ) {
-	    GDrawIError("GPOS/GSUB: Lookup ordering mismatch");
+	    IError("GPOS/GSUB: Lookup ordering mismatch");
 	    lc_warned = true;
 	}
     lookup_list_table_start = ftell(g___);

@@ -891,8 +891,10 @@ return;
 	local_encoding = DefaultEncoding();
     else
 	local_encoding = prefs_encoding;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     if ( xdefs_filename!=NULL )
 	GResourceAddResourceFile(xdefs_filename,GResourceProgramName);
+#endif
     if ( glyph_2_name_map ) {
 	old_ttf_flags |= ttf_flag_glyphmap;
 	old_otf_flags |= ttf_flag_glyphmap;

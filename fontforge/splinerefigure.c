@@ -38,7 +38,7 @@ void SplineRefigure3(Spline *spline) {
 
 #ifdef DEBUG
     if ( RealNear(from->me.x,to->me.x) && RealNear(from->me.y,to->me.y))
-	GDrawIError("Zero length spline created");
+	IError("Zero length spline created");
 #endif
     xsp->d = from->me.x; ysp->d = from->me.y;
     if ( from->nonextcp ) from->nextcp = from->me;
@@ -70,7 +70,7 @@ void SplineRefigure3(Spline *spline) {
 	    spline->islinear = true;	/* This seems extremely unlikely... */
     }
     if ( isnan(ysp->a) || isnan(xsp->a) )
-	GDrawIError("NaN value in spline creation");
+	IError("NaN value in spline creation");
     LinearApproxFree(spline->approx);
     spline->approx = NULL;
     spline->knowncurved = false;

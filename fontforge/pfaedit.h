@@ -67,8 +67,7 @@ enum { em_base = 0x100,		/* an addition to enum charset, used as the base value 
 	em_original = (em_compacted-1)
     };
 
-extern void GDrawIError(const char *fmt,...);
-extern void GDrawError(const char *fmt,...);
+extern void IError(const char *fmt,...);
 
 extern void CheckIsScript(int argc, char *argv[]);
 
@@ -98,6 +97,7 @@ extern int autohint_before_generate;
 extern int seperate_hint_controls;
 extern int ItalicConstrained;
 extern int no_windowing_ui;
+extern uint32 default_background;
 
 extern int new_em_size;
 extern int new_fonts_are_order2;

@@ -1425,8 +1425,7 @@ static char *str_Itself = "Lui-même" ;
  /* Import */
 static char str_Duppixelsize[] = "Taille de pixel déjà existante" ;
    /* "The font database already contains a bitmap\nfont with this pixelsize (%d)\nDo you want to overwrite it ?" */
-static char str_Duppixelsizepre[] = "La fonte contient déja des bitmaps de cette\ntaille (" ;
-static char str_Duppixelsizepost[] = ")\012Voulez vous l'écraser ?" ;
+static char str_DupPixelSizeLong = "La fonte contient déja des bitmaps de cette\ntaille (%d)\012Voulez vous l'écraser ?" ;
 static char str_NoBitmapFont = "Pas de fonte bitmap" ;
 static char str_NoBitmapFontIn = "Pas de fonte bitmap dans %hs" ;
 static char *str_PairedChar = "Second glyphe" ;

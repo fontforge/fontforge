@@ -122,7 +122,7 @@ static void MVVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
 		    scale = BDFDepth(mv->bdf);
 		base.image_type = it_index;
 		clut.clut_len = 1<<scale;
-		bg = GDrawGetDefaultBackground(NULL);
+		bg = default_background;
 		fg = ( mv->perchar[i].selected ) ? 0x808080 : 0x000000;
 		for ( l=0; l<(1<<scale); ++l )
 		    clut.clut[l] =
@@ -256,7 +256,7 @@ return;
 		base.image_type = it_index;
 		scale = lscale*lscale;
 		clut.clut_len = scale;
-		bg = GDrawGetDefaultBackground(NULL);
+		bg = default_background;
 		fg = ( mv->perchar[i].selected ) ? 0x808080 : 0x000000;
 		for ( l=0; l<scale; ++l )
 		    clut.clut[l] =
@@ -1398,7 +1398,7 @@ return;					/* Nothing changed */
     if ( i!=0 && oldx > mv->perchar[i-1].dx + mv->perchar[i-1].dwidth ) /* without kern */
 	oldx = mv->perchar[i-1].dx + mv->perchar[i-1].dwidth;
     if ( ei==i && ept==pt )
-	GDrawIError("No change when there should have been one in MV_TextChanged");
+	IError("No change when there should have been one in MV_TextChanged");
     if ( u_strlen(ret)>=mv->max ) {
 	int oldmax=mv->max;
 	mv->max = u_strlen(ret)+10;

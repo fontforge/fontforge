@@ -1441,7 +1441,7 @@ real EITOfNextMajor(EI *e, EIList *el, real sought_m ) {
 
     if ( msp->a==0 && msp->b==0 ) {
 	if ( msp->c == 0 ) {
-	    GDrawIError("Hor/Vert line when not expected");
+	    IError("Hor/Vert line when not expected");
 return( 0 );
 	}
 	new_t = (sought_m-msp->d)/(msp->c);
@@ -1467,7 +1467,7 @@ return( new_t );
 	    t_mmin = new_t;
 	}
 	if ( t_mmax==t_mmin ) {
-	    GDrawIError("EITOfNextMajor failed! on %s", el->sc!=NULL?el->sc->name:"Unknown" );
+	    IError("EITOfNextMajor failed! on %s", el->sc!=NULL?el->sc->name:"Unknown" );
 return( new_t );
 	}
     }
@@ -3201,7 +3201,7 @@ void SCGuessHHintInstancesAndAdd(SplineChar *sc, StemInfo *stem, real guess1, re
     if ( stem->hasconflicts ) {
 	/*StemInfoReduceOverlap(sc->hstem,stem);*/	/* User asked for it, assume s/he knows what s/he's doing */
 	if ( stem->where==NULL )
-	    GDrawError("Couldn't figure out where this hint is active");
+	    IError("Couldn't figure out where this hint is active");
     }
 }
 
@@ -3218,7 +3218,7 @@ void SCGuessVHintInstancesAndAdd(SplineChar *sc, StemInfo *stem, real guess1, re
     if ( stem->hasconflicts ) {
 	/*StemInfoReduceOverlap(sc->vstem,stem);*/	/* User asked for it, assume s/he knows what s/he's doing */
 	if ( stem->where==NULL )
-	    GDrawError("Couldn't figure out where this hint is active");
+	    IError("Couldn't figure out where this hint is active");
     }
 }
 

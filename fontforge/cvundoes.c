@@ -414,7 +414,7 @@ void UndoesFree(Undoes *undo) {
 	    UndoesFree(undo->u.possub.more_pst);
 	  break;
 	  default:
-	    GDrawIError( "Unknown undo type in UndoesFree: %d", undo->undotype );
+	    IError( "Unknown undo type in UndoesFree: %d", undo->undotype );
 	  break;
 	}
 	chunkfree(undo,sizeof(Undoes));
@@ -467,7 +467,7 @@ Undoes *CVPreserveState(CharView *cv) {
     Undoes *undo;
     int layer = CVLayer(cv);
 
-    if ( screen_display==NULL || maxundoes==0 )		/* No use for undoes in scripting */
+    if ( no_windowing_ui || maxundoes==0 )		/* No use for undoes in scripting */
 return(NULL);
 
     undo = chunkalloc(sizeof(Undoes));
@@ -498,7 +498,7 @@ return( CVAddUndo(cv,undo));
 Undoes *SCPreserveLayer(SplineChar *sc,int layer, int dohints) {
     Undoes *undo;
 
-    if ( screen_display==NULL || maxundoes==0 )		/* No use for undoes in scripting */
+    if ( no_windowing_ui || maxundoes==0 )		/* No use for undoes in scripting */
 return(NULL);
 
     undo = chunkalloc(sizeof(Undoes));
@@ -592,7 +592,7 @@ return( undo );
 Undoes *CVPreserveWidth(CharView *cv,int width) {
     Undoes *undo;
 
-    if ( screen_display==NULL || maxundoes==0 )		/* No use for undoes in scripting */
+    if ( no_windowing_ui || maxundoes==0 )		/* No use for undoes in scripting */
 return(NULL);
 
     undo = chunkalloc(sizeof(Undoes));
@@ -607,7 +607,7 @@ return( CVAddUndo(cv,undo));
 Undoes *CVPreserveVWidth(CharView *cv,int vwidth) {
     Undoes *undo;
 
-    if ( screen_display==NULL || maxundoes==0 )		/* No use for undoes in scripting */
+    if ( no_windowing_ui || maxundoes==0 )		/* No use for undoes in scripting */
 return(NULL);
 
     undo = chunkalloc(sizeof(Undoes));
@@ -623,7 +623,7 @@ return( CVAddUndo(cv,undo));
 Undoes *SCPreserveWidth(SplineChar *sc) {
     Undoes *undo;
 
-    if ( screen_display==NULL || maxundoes==0 )		/* No use for undoes in scripting */
+    if ( no_windowing_ui || maxundoes==0 )		/* No use for undoes in scripting */
 return(NULL);
 
     undo = chunkalloc(sizeof(Undoes));
@@ -638,7 +638,7 @@ return( AddUndo(undo,&sc->layers[ly_fore].undoes,&sc->layers[ly_fore].redoes));
 Undoes *SCPreserveVWidth(SplineChar *sc) {
     Undoes *undo;
 
-    if ( screen_display==NULL || maxundoes==0 )		/* No use for undoes in scripting */
+    if ( no_windowing_ui || maxundoes==0 )		/* No use for undoes in scripting */
 return(NULL);
 
     undo = chunkalloc(sizeof(Undoes));
@@ -653,7 +653,7 @@ return( AddUndo(undo,&sc->layers[ly_fore].undoes,&sc->layers[ly_fore].redoes));
 Undoes *BCPreserveState(BDFChar *bc) {
     Undoes *undo;
 
-    if ( screen_display==NULL || maxundoes==0 )		/* No use for undoes in scripting */
+    if ( no_windowing_ui || maxundoes==0 )		/* No use for undoes in scripting */
 return(NULL);
 
     undo = chunkalloc(sizeof(Undoes));
@@ -746,7 +746,7 @@ static void SCUndoAct(SplineChar *sc,int layer, Undoes *undo) {
 	}
       } break;
       default:
-	GDrawIError( "Unknown undo type in SCUndoAct: %d", undo->undotype );
+	IError( "Unknown undo type in SCUndoAct: %d", undo->undotype );
       break;
     }
 }
@@ -887,7 +887,7 @@ static void BCUndoAct(BDFChar *bc,Undoes *undo) {
 	sel = bc->selection; bc->selection = undo->u.bmpstate.selection; undo->u.bmpstate.selection = sel;
       } break;
       default:
-	GDrawIError( "Unknown undo type in BCUndoAct: %d", undo->undotype );
+	IError( "Unknown undo type in BCUndoAct: %d", undo->undotype );
       break;
     }
 }
@@ -954,7 +954,7 @@ void CopyBufferFree(void) {
 static void CopyBufferFreeGrab(void) {
     CopyBufferFree();
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    if ( fv_list!=NULL && screen_display!=NULL )
+    if ( fv_list!=NULL && !no_windowing_ui )
 	GDrawGrabSelection(fv_list->gw,sn_clipboard);	/* Grab the selection to one of my windows, doesn't matter which, aren't going to export it, but just want to clear things out so no one else thinks they have the selection */
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 }
@@ -1127,7 +1127,7 @@ static void XClipCheckEps(void) {
 
     if ( fv_list==NULL )
 return;
-    if ( screen_display==NULL )
+    if ( no_windowing_ui )
 return;
 
     while ( cur ) {
@@ -1591,7 +1591,7 @@ static void SCCheckXClipboard(GWindow awindow,SplineChar *sc,int layer,int docle
     FILE *temp;
     GImage *image;
 
-    if ( screen_display==NULL )
+    if ( no_windowing_ui )
 return;
     type = 0;
 #ifndef _NO_LIBPNG
@@ -2792,7 +2792,7 @@ void CopyPSTAppend(enum possub_type type, unichar_t *text ) {
     Undoes *cp;
 
     if ( copybuffer.undotype!=ut_possub ) {
-	GDrawIError("Bad call to CopyPSTAppend");
+	IError("Bad call to CopyPSTAppend");
 return;
     }
 

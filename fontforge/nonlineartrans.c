@@ -218,7 +218,7 @@ return( op_value );
 
 static void backup(struct context *c,enum operator op, real val ) {
     if ( c->backed_token!=op_base ) {
-	GDrawIError( "Attempt to back up twice.\nnear ...%s\n", c->cur );
+	IError( "Attempt to back up twice.\nnear ...%s\n", c->cur );
 	c->had_error = true;
     }
     c->backed_token = op;
@@ -553,7 +553,7 @@ return( evaluate_expr(c,e->op2) );
 	else
 return( evaluate_expr(c,e->op3) );
       default:
-	GDrawIError( "Bad operator %d in %s\n", e->operator, c->sc->name );
+	IError( "Bad operator %d in %s\n", e->operator, c->sc->name );
 	c->had_error = true;
 return( 0 );
     }

@@ -1926,7 +1926,7 @@ return( NULL );
     dump_index(binary,cidbytes->fdbytes,-1);		/* Adobe says undefined */
     dump_index(binary,cidbytes->gdbytes,offset);
     if ( ftell(binary) != (cidbytes->cidcnt+1)*(cidbytes->fdbytes+cidbytes->gdbytes))
-	GDrawIError("CIDMap section the wrong length" );
+	IError("CIDMap section the wrong length" );
 
     offset = (cidbytes->cidcnt+1)*(cidbytes->fdbytes+cidbytes->gdbytes) +
 	    (subrtot+1) * cidbytes->gdbytes;
@@ -1944,7 +1944,7 @@ return( NULL );
     dump_index(binary,cidbytes->gdbytes,offset);
     if ( ftell(binary) != (cidbytes->cidcnt+1)*(cidbytes->fdbytes+cidbytes->gdbytes) +
 	    (subrtot+1) * cidbytes->gdbytes )
-	GDrawIError("SubrMap section the wrong length" );
+	IError("SubrMap section the wrong length" );
 
     buffer = galloc(8192);
 

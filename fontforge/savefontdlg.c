@@ -87,13 +87,17 @@ static char *extensions[] = { ".pfa", ".pfb", "", "%s.pfb", ".pfa", ".pfb", ".pt
 	".cid", ".cff", ".cid.cff",
 	".ttf", ".ttf", ".suit", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", ".svg", NULL };
+# ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static char *bitmapextensions[] = { ".*bdf", ".ttf", ".dfont", ".bmap", ".dfont", ".*fnt", ".otb", ".none", NULL };
+# endif
 #else
 static char *extensions[] = { ".pfa", ".pfb", ".bin", "%s.pfb", ".pfa", ".pfb", ".pt3", ".ps",
 	".cid", ".cff", ".cid.cff",
 	".ttf", ".ttf", ".ttf.bin", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", ".svg", NULL };
+# ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static char *bitmapextensions[] = { ".*bdf", ".ttf", ".dfont", ".bmap.bin", ".*fnt", ".otb", ".none", NULL };
+# endif
 #endif
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static GTextInfo formattypes[] = {
@@ -207,7 +211,9 @@ static int WriteAfmFile(char *filename,SplineFont *sf, int formattype) {
     char *buf = galloc(strlen(filename)+6), *pt, *pt2;
     FILE *afm;
     int ret;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     unichar_t *temp;
+#endif
     int subtype = formattype;
 
     if ( (formattype==ff_mma || formattype==ff_mmb) && sf->mm!=NULL ) {
@@ -297,7 +303,9 @@ static int WriteTfmFile(char *filename,SplineFont *sf, int formattype) {
     char *buf = galloc(strlen(filename)+6), *pt, *pt2;
     FILE *tfm, *enc;
     int ret;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     unichar_t *temp;
+#endif
     int i;
     char *encname;
 
@@ -367,7 +375,9 @@ int WritePfmFile(char *filename,SplineFont *sf, int type0) {
     char *buf = galloc(strlen(filename)+6), *pt, *pt2;
     FILE *pfm;
     int ret;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     unichar_t *temp;
+#endif
 
     strcpy(buf,filename);
     pt = strrchr(buf,'.');
@@ -850,7 +860,7 @@ static int AskResolution(int bf) {
     GTextInfo label[10];
     int done=-3;
 
-    if ( screen_display==NULL )
+    if ( no_windowing_ui )
 return( -1 );
 
     gw = bf==bf_bdf ? bdf_gw : fon_gw;
@@ -998,7 +1008,9 @@ static int WriteBitmaps(char *filename,SplineFont *sf, int32 *sizes,int res, int
     char *buf = galloc(strlen(filename)+30), *pt, *pt2;
     int i;
     BDFFont *bdf;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     unichar_t *temp;
+#endif
     char buffer[100], *ext;
     /* res = -1 => Guess depending on pixel size of font */
     extern int ask_user_for_resolution;
@@ -1030,12 +1042,14 @@ return( false );
 	for ( bdf=sf->bitmaps; bdf!=NULL &&
 		(bdf->pixelsize!=(sizes[i]&0xffff) || BDFDepth(bdf)!=(sizes[i]>>16));
 		bdf=bdf->next );
-	if ( bdf==NULL )
-	    sprintf(buffer,"Attempt to save a pixel size that has not been created (%d@%d)", sizes[i]&0xffff, sizes[i]>>16);
-	if ( buffer[0]!='\0' ) {
-	    temp = uc_copy(buffer);
-	    GWidgetPostNotice(temp,temp);
-	    free(temp);
+	if ( bdf==NULL ) {
+#if defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_notice(_("Missing Bitmap"),_("Attempt to save a pixel size that has not been created (%d@%d)",
+			    sizes[i]&0xffff, sizes[i]>>16);
+#else
+	    GWidgetPostNoticeR(_STR_MissingBitmap,_STR_MissingBitmapLong,
+		    sizes[i]&0xffff, sizes[i]>>16);
+#endif
 	    free(buf);
 return( false );
 	}
@@ -1199,7 +1213,7 @@ static char *GetWernerSFDFile(SplineFont *sf) {
     int supl = sf->supplement;
 
     for ( supl = sf->supplement; supl<sf->supplement+10 ; ++supl ) {
-	if ( screen_display==NULL ) {
+	if ( no_windowing_ui ) {
 	    if ( sf->subfontcnt!=0 ) {
 		sprintf(buffer,"%.40s-%.40s-%d.sfd", sf->cidregistry,sf->ordering,supl);
 		def = buffer;
@@ -1237,7 +1251,7 @@ return( ret );
     break;
     }
 
-    if ( screen_display==NULL )
+    if ( no_windowing_ui )
 return( NULL );
 
     /*if ( def==NULL )*/
@@ -1406,7 +1420,9 @@ static int SaveSubFont(SplineFont *sf,char *newname,int32 *sizes,int res,
     char *spt, *pt, buf[8];
     RefChar *ref;
     int err = 0;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     unichar_t *ufile;
+#endif
     SplineFont *parents[256];
     enum fontformat subtype = strstr(newname,".pfa")!=NULL ? ff_pfa : ff_pfb ;
 

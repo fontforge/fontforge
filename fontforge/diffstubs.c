@@ -64,19 +64,13 @@ int StemListAnyConflicts(StemInfo *stems) { return 0 ; }
 int getAdobeEnc(char *name) { return -1; }
 SplineChar *SFMakeChar(SplineFont *sf, int enc) { return NULL; }
 GDisplay *screen_display=NULL;
+int no_windowing_ui = true;
 int FVWinInfo(struct fontview *sf,int *cc,int *rc) { return 0 ; }
 
 /* ************************************************************************** */
 /* And some routines we actually do need */
 
-void GDrawIError(const char *format, ... ) {
-    va_list ap;
-    va_start(ap,format);
-    vfprintf(stderr,format,ap);
-    va_end(ap);
-}
-
-void GDrawError(const char *format,...) { 
+void IError(const char *format, ... ) {
     va_list ap;
     va_start(ap,format);
     vfprintf(stderr,format,ap);
