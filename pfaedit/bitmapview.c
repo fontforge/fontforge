@@ -31,6 +31,7 @@
 #include "nomen.h"
 #include <math.h>
 #include <locale.h>
+#include <gresource.h>
 
 extern int _GScrollBar_Width;
 extern struct lconv localeinfo;
@@ -1570,6 +1571,7 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv) {
     FontRequest rq;
     int as, ds, ld;
     static unichar_t fixed[] = { 'f','i','x','e','d',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t', '\0' };
+    static unichar_t *infofamily = NULL;
 
     BVShows.lastpixelsize = bdf->pixelsize;
 
@@ -1658,8 +1660,14 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv) {
     /*bv->tools = BVMakeTools(bv);*/
     /*bv->layers = BVMakeLayers(bv);*/
 
+    if ( infofamily==NULL ) {	/* Yes, let's use the same resource name */
+	infofamily = uc_copy(GResourceFindString("CharView.InfoFamily"));
+	if ( infofamily==NULL )
+	    infofamily = fixed;
+    }
+
     memset(&rq,0,sizeof(rq));
-    rq.family_name = fixed;
+    rq.family_name = infofamily;
     rq.point_size = -7;
     rq.weight = 400;
     bv->small = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
