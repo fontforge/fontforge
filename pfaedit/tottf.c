@@ -572,14 +572,15 @@ static void FigureFullMetricsEnd(SplineFont *sf,struct glyphinfo *gi) {
 	if ( sf->subfonts[j]->charcnt>maxc ) maxc = sf->subfonts[j]->charcnt;
     if ( sf->subfontcnt==0 ) {
 	for ( i=maxc-1; i>0; --i )
-	    if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]==SCDuplicate(sf->chars[i]))
+	    if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]->ttf_glyph!=-1 &&
+		    sf->chars[i]==SCDuplicate(sf->chars[i]))
 	break;
     } else {
 	for ( i=maxc-1; i>0; --i ) {
 	    for ( j=0; j<sf->subfontcnt; ++j )
 		if ( i<sf->subfonts[j]->charcnt && sf->subfonts[j]->chars[i]!=NULL )
 	    break;
-	    if ( j<sf->subfontcnt && SCWorthOutputting(sf->subfonts[j]->chars[i]))
+	    if ( j<sf->subfontcnt && SCWorthOutputting(sf->subfonts[j]->chars[i]) && sf->chars[i]->ttf_glyph!=-1 )
 	break;	/* no duplicates in cid font */
 	}
     }

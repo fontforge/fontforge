@@ -2798,7 +2798,7 @@ static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
 	/* lsb = */ getushort(ttf);
     }
     if ( i==0 )
-	fprintf( stderr, "Invalid ttf hmtx table (or hhea), numOfLongVerMetrics is 0\n" );
+	fprintf( stderr, "Invalid ttf hmtx table (or hhea), numOfLongMetrics is 0\n" );
 	
     for ( j=i; j<info->glyph_cnt; ++j ) {
 	if ( info->chars[j]!=NULL ) {		/* In a ttc file we may skip some */
