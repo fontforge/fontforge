@@ -36,7 +36,7 @@ mkdir -p ${RPM_BUILD_ROOT}%{_libdir}
 %makeinstall
 
 #%post
-#ldconfig
+ldconfig
 
 #%postun
 #ldconfig
