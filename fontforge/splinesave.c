@@ -1170,7 +1170,9 @@ return( true );
 
 static RefChar *RefFindAdobe(RefChar *r, RefChar *t) {
     *t = *r;
-    while ( t->adobe_enc==-1 && t->sc->layers[ly_fore].refs!=NULL && t->sc->layers[ly_fore].refs->next==NULL &&
+    while ( t->adobe_enc==-1 && t->sc->layers[ly_fore].refs!=NULL &&
+	    t->sc->layers[ly_fore].refs->next==NULL &&
+	    t->sc->layers[ly_fore].splines==NULL &&
 	    t->sc->layers[ly_fore].refs->transform[0]==1.0 &&
 	    t->sc->layers[ly_fore].refs->transform[1]==0.0 &&
 	    t->sc->layers[ly_fore].refs->transform[2]==0.0 &&
