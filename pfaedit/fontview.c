@@ -2547,6 +2547,9 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_Print:
 	    mi->ti.disabled = fv->sf->onlybitmaps;
 	  break;
+	  case MID_Display:
+	    mi->ti.disabled = fv->sf->onlybitmaps && fv->sf->bitmaps==NULL;
+	  break;
 	}
     }
 }

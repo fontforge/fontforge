@@ -774,6 +774,73 @@ return;
     fclose(file);
 }
 
+#define MID_Cut		1
+#define MID_Copy	2
+#define MID_Paste	3
+
+#define MID_SelectAll	4
+
+#define MID_Save	5
+#define MID_Import	6
+
+#define MID_Undo	7
+
+static GTextField *popup_kludge;
+
+static void GTFPopupInvoked(GWindow v, GMenuItem *mi,GEvent *e) {
+    GTextField *st;
+    if ( popup_kludge==NULL )
+return;
+    st = popup_kludge;
+    popup_kludge = NULL;
+    switch ( mi->mid ) {
+      case MID_Undo:
+	gtextfield_editcmd(&st->g,ec_undo);
+      break;
+      case MID_Cut:
+	gtextfield_editcmd(&st->g,ec_cut);
+      break;
+      case MID_Copy:
+	gtextfield_editcmd(&st->g,ec_copy);
+      break;
+      case MID_Paste:
+	gtextfield_editcmd(&st->g,ec_paste);
+      break;
+      case MID_SelectAll:
+	gtextfield_editcmd(&st->g,ec_selectall);
+      break;
+      case MID_Save:
+	GTextFieldSave(st);
+      break;
+      case MID_Import:
+	GTextFieldImport(st);
+      break;
+    }
+}
+
+static GMenuItem gtf_popuplist[] = {
+    { { (unichar_t *) "Undo", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'U' }, 'Z', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Undo },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) "Cut", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 't' }, 'X', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Cut },
+    { { (unichar_t *) "Copy", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'C' }, 'C', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Copy },
+    { { (unichar_t *) "Paste", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'P' }, 'V', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Paste },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) "Save", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'S' }, 'S', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Save },
+    { { (unichar_t *) "Import", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'I' }, 'I', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Import },
+    { NULL }
+};
+
+static void GTFPopupMenu(GTextField *st, GEvent *event) {
+    int no_sel = st->sel_start==st->sel_end;
+    gtf_popuplist[0].ti.disabled = st->oldtext==NULL;	/* Undo */
+    gtf_popuplist[2].ti.disabled = no_sel;		/* Cut */
+    gtf_popuplist[3].ti.disabled = no_sel;		/* Copy */
+    gtf_popuplist[4].ti.disabled = !GDrawSelectionHasType(st->g.base,sn_clipboard,"Unicode") &&
+	    !GDrawSelectionHasType(st->g.base,sn_clipboard,"STRING");
+    popup_kludge = st;
+    GMenuCreatePopupMenu(st->g.base,event, gtf_popuplist);
+}
+
 static int GTextFieldDoChange(GTextField *gt, GEvent *event) {
     int ss = gt->sel_start, se = gt->sel_end;
     int pos, l, xpos, sel;
@@ -1338,6 +1405,12 @@ return( glistfield_mouse(ge,event));
     if ( gt->pressed==NULL && event->type == et_mousemove && g->popup_msg!=NULL &&
 	    GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y))
 	GGadgetPreparePopup(g->base,g->popup_msg);
+
+    if ( event->type == et_mousedown && event->u.mouse.button==3 &&
+	    GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y)) {
+	GTFPopupMenu(gt,event);
+return( true );
+    }
 
     if ( event->type == et_mousedown || gt->pressed ) {
 	i = (event->u.mouse.y-g->inner.y)/gt->fh + gt->loff_top;

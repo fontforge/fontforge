@@ -1023,6 +1023,73 @@ return;
     fclose(file);
 }
 
+#define MID_Cut		1
+#define MID_Copy	2
+#define MID_Paste	3
+
+#define MID_SelectAll	4
+
+#define MID_Save	5
+#define MID_Import	6
+
+#define MID_Undo	7
+
+static SFTextArea *popup_kludge;
+
+static void SFTFPopupInvoked(GWindow v, GMenuItem *mi,GEvent *e) {
+    SFTextArea *st;
+    if ( popup_kludge==NULL )
+return;
+    st = popup_kludge;
+    popup_kludge = NULL;
+    switch ( mi->mid ) {
+      case MID_Undo:
+	sftextarea_editcmd(&st->g,ec_undo);
+      break;
+      case MID_Cut:
+	sftextarea_editcmd(&st->g,ec_cut);
+      break;
+      case MID_Copy:
+	sftextarea_editcmd(&st->g,ec_copy);
+      break;
+      case MID_Paste:
+	sftextarea_editcmd(&st->g,ec_paste);
+      break;
+      case MID_SelectAll:
+	sftextarea_editcmd(&st->g,ec_selectall);
+      break;
+      case MID_Save:
+	SFTextAreaSave(st);
+      break;
+      case MID_Import:
+	SFTextAreaImport(st);
+      break;
+    }
+}
+
+static GMenuItem sftf_popuplist[] = {
+    { { (unichar_t *) _STR_Undo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'U' }, 'Z', ksm_control, NULL, NULL, SFTFPopupInvoked, MID_Undo },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_Cut, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 't' }, 'X', ksm_control, NULL, NULL, SFTFPopupInvoked, MID_Cut },
+    { { (unichar_t *) _STR_Copy, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, 'C', ksm_control, NULL, NULL, SFTFPopupInvoked, MID_Copy },
+    { { (unichar_t *) _STR_Paste, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'V', ksm_control, NULL, NULL, SFTFPopupInvoked, MID_Paste },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_Save, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 'S', ksm_control, NULL, NULL, SFTFPopupInvoked, MID_Save },
+    { { (unichar_t *) _STR_Import, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'I', ksm_control, NULL, NULL, SFTFPopupInvoked, MID_Import },
+    { NULL }
+};
+
+static void SFTFPopupMenu(SFTextArea *st, GEvent *event) {
+    int no_sel = st->sel_start==st->sel_end;
+    sftf_popuplist[0].ti.disabled = st->oldtext==NULL;	/* Undo */
+    sftf_popuplist[2].ti.disabled = no_sel;		/* Cut */
+    sftf_popuplist[3].ti.disabled = no_sel;		/* Copy */
+    sftf_popuplist[4].ti.disabled = !GDrawSelectionHasType(st->g.base,sn_clipboard,"Unicode") &&
+	    !GDrawSelectionHasType(st->g.base,sn_clipboard,"STRING");
+    popup_kludge = st;
+    GMenuCreatePopupMenu(st->g.base,event, sftf_popuplist);
+}
+
 static int SFTextAreaDoChange(SFTextArea *st, GEvent *event) {
     int ss = st->sel_start, se = st->sel_end;
     int pos, l, xpos, sel;
@@ -1556,6 +1623,12 @@ return( false );
     if ( st->pressed==NULL && event->type == et_mousemove && g->popup_msg!=NULL &&
 	    GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y))
 	GGadgetPreparePopup(g->base,g->popup_msg);
+
+    if ( event->type == et_mousedown && event->u.mouse.button==3 &&
+	    GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y)) {
+	SFTFPopupMenu(st,event);
+return( true );
+    }
 
     if ( event->type == et_mousedown || st->pressed ) {
 	for ( i=st->loff_top; i<st->lcnt-1 &&
