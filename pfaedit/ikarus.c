@@ -46,17 +46,150 @@ return;
 	urwtable[i+101] = 'A'+i;
 	urwtable[i+301] = 'a'+i;
     }
+    urwtable[127] = 0xc6;
+    urwtable[128] = 0x152;
+    urwtable[129] = 0xd8;
+    urwtable[201] = 0xc4;
+    urwtable[203] = 0xc0;
+    urwtable[204] = 0xc2;
+    urwtable[207] = 0xc3;
+    urwtable[208] = 0xc5;
+    urwtable[209] = 0x104;
+    urwtable[210] = 0xc7;
+    urwtable[215] = 0x110;
+    urwtable[216] = 0xcb;
+    urwtable[217] = 0xc9;
+    urwtable[218] = 0xc8;
+    urwtable[219] = 0xca;
+    urwtable[222] = 0x118;
+    urwtable[226] = 0xcf;
+    urwtable[227] = 0xcd;
+    urwtable[228] = 0xcc;
+    urwtable[229] = 0xce;
+    urwtable[231] = 0x139;
+    urwtable[233] = 0x141;
+    urwtable[236] = 0xd1;
+    urwtable[237] = 0xd6;
+    urwtable[238] = 0xd3;
+    urwtable[239] = 0xd2;
+    urwtable[240] = 0xd4;
+    urwtable[241] = 0xd5;
+    urwtable[246] = 0x160;
+    urwtable[251] = 0xdc;
+    urwtable[252] = 0xda;
+    urwtable[253] = 0xd9;
+    urwtable[254] = 0xdb;
+    urwtable[255] = 0xdc;
+    urwtable[257] = 0xdd;
+    urwtable[259] = 0x17d;
+    urwtable[261] = 0xde;
+    urwtable[262] = 0x100;
+    urwtable[268] = 0x178;
+    urwtable[327] = 0xe6;
+    urwtable[328] = 0x153;
+    urwtable[329] = 0xf8;
+    urwtable[330] = 0xdf;
+    urwtable[331] = 0x131;
+    urwtable[332] = 0xf6be;
+    urwtable[333] = 0x133;
+    urwtable[336] = 0xfb00;
+    urwtable[337] = 0xfb01;
+    urwtable[338] = 0xfb02;
+	/* 339 is ft lig */
+	/* 340 is fff lig */
+    urwtable[341] = 0xfb03;
+    urwtable[342] = 0xfb04;
+	/* 343 is fft lig */
+    urwtable[401] = 0xe4;
+    urwtable[402] = 0xe1;
+    urwtable[402] = 0xe0;
+    urwtable[403] = 0xe2;
+    urwtable[407] = 0xe3;
+    urwtable[408] = 0xe5;
+    urwtable[409] = 0x105;
+    urwtable[413] = 0xe7;
+    urwtable[413] = 0xe7;
+    urwtable[415] = 0x111;
+    urwtable[416] = 0xeb;
+    urwtable[417] = 0xe9;
+    urwtable[418] = 0xe8;
+    urwtable[420] = 0xea;
+    urwtable[422] = 0x119;
+    urwtable[426] = 0xef;
+    urwtable[427] = 0xed;
+    urwtable[428] = 0xec;
+    urwtable[429] = 0xee;
+    urwtable[432] = 0x142;
+    urwtable[435] = 0xf1;
+    urwtable[436] = 0xf6;
+    urwtable[437] = 0xf3;
+    urwtable[438] = 0xf2;
+    urwtable[439] = 0xf4;
+    urwtable[440] = 0xf5;
+    urwtable[446] = 0x161;
+    urwtable[449] = 0xfc;
+    urwtable[450] = 0xfa;
+    urwtable[451] = 0xf8;
+    urwtable[452] = 0xf9;
+    urwtable[455] = 0xfd;
+    urwtable[457] = 0x17e;
+    urwtable[459] = 0xf0;
+    urwtable[460] = 0xfe;
+    urwtable[461] = 0xff;
+    urwtable[462] = 0x127;
+    urwtable[466] = 0x101;
+    for ( i=1; i<=9; ++i )
+	urwtable[500+i] = '0'+i;
+    urwtable[510] = '0';
+    urwtable[511] = 0xa3;
+    urwtable[512] = '$';
+    urwtable[513] = 0xa2;
     urwtable[514] = 0x192;
     urwtable[516] = 0xa5;
+    urwtable[519] = 0x20a4;
+    urwtable[523] = 0x20a7;
+    urwtable[524] = 0x20a3;
+    urwtable[575] = 0xb9;
+    urwtable[576] = 0xb2;
+    urwtable[577] = 0xb3;
+    for ( i=4; i<=9; ++i )
+	urwtable[574+i] = 0x2070+i;
+    urwtable[584] = 0x2070;
+    for ( i=1; i<=9; ++i )
+	urwtable[586+i] = 0x2080+i;
+    urwtable[596] = 0x2080;
+    
+    urwtable[601] = '.';
+    urwtable[602] = ':';
     urwtable[606] = 0x2026;
-    urwtable[625] = '-';
+    urwtable[607] = ',';
+    urwtable[608] = ';';
+    urwtable[609] = 0x2019;
+    urwtable[610] = 0x2018;
+    urwtable[611] = 0x201d;
+    urwtable[612] = 0x201c;
+    urwtable[613] = 0x201e;
+    urwtable[614] = '!';
+    urwtable[615] = 0xa1;
+    urwtable[616] = '?';
+    urwtable[617] = 0xbf;
+    urwtable[618] = 0xbb;
+    urwtable[619] = 0xab;
+    urwtable[620] = 0x203a;
+    urwtable[621] = 0x203a;
+    urwtable[622] = '/';
+    urwtable[623] = 0x2010;
+    urwtable[624] = 0x2013;
+    urwtable[625] = 0x2014;
     urwtable[626] = '(';
     urwtable[627] = ')';
     urwtable[628] = '[';
     urwtable[629] = ']';
+    urwtable[630] = '&';
     urwtable[631] = 0xa7;
     urwtable[632] = 0x2020;
     urwtable[633] = 0x2021;
+    urwtable[634] = '*';
     urwtable[635] = '\'';
     urwtable[636] = '"';
     urwtable[637] = '@';
@@ -78,9 +211,38 @@ return;
     urwtable[657] = 0xaa;
     urwtable[658] = 0xba;
     urwtable[659] = 0xb1;
-    urwtable[622] = '/';
-    urwtable[677] = 0x2044;		/* Or should it be slash? */
+    urwtable[662] = 0xbd;
+    urwtable[663] = 0x2153;
+    urwtable[664] = 0x2154;
+    urwtable[665] = 0xbc;
+    urwtable[666] = 0xbe;
+    urwtable[667] = 0x2155;
+    for ( i=0; i<=0x215e -0x2155; ++i )
+	urwtable[668+i] = 0x215e +i;
+    urwtable[677] = 0x2044;
+    urwtable[678] = '%';
+    urwtable[679] = 0x2030;
+	/* 680 and 681 are some sort of varient on % and per mill */
     urwtable[700] = '\\';
+    urwtable[701] = 0xa8;
+    urwtable[702] = 0x2d9;
+    urwtable[703] = 0x2da;
+    urwtable[704] = 0x2ca;
+    urwtable[705] = 0x2cb;
+    urwtable[706] = 0x2c6;
+    urwtable[707] = 0x2c7;
+    urwtable[708] = 0x2d8;
+    urwtable[709] = 0x2dc;
+    urwtable[710] = 0x2dd;
+    urwtable[711] = 0xb8;
+    urwtable[712] = 0x2db;
+    urwtable[713] = 0xaf;
+    urwtable[714] = 0xaf;
+	/* 751-764 seem to be varients on 701-714 */
+    urwtable[765] = 0x323;
+    urwtable[766] = 0x320;
+    urwtable[768] = 0x326;
+    urwtable[769] = 0x313;    
 	/* 795 is a big copyright */
 	/* 796 is a big registered */
     urwtable[1016] = 0x2022;
@@ -352,12 +514,20 @@ return( NULL );
     fnam[12] = fullname[80] = '\0';
     ch1 = getc(file);
     ch2 = getc(file);
-    if ( ch1!='I' || ch2!='K' ) {
+    if ( ch1=='i' || ch2=='k' )
+	/* Docs don't mention this, but lower case is ok too */;
+    else if ( ch1!='I' || ch2!='K' ) {
 	if ( (ch1=='D' && ch2=='I') || (ch1=='V' && ch2=='C') ||
 		(ch1=='V' && ch2=='S') || (ch1=='V' && ch2=='E') || 
 		(ch1=='S' && ch2=='C') || (ch1=='S' && ch2=='N') || 
-		(ch1=='B' && ch2=='I') || (ch1=='G' && isdigit(ch2)))
+		(ch1=='B' && ch2=='I') || (ch1=='G' && isdigit(ch2)) ||
+		(ch1=='d' && ch2=='i') || (ch1=='v' && ch2=='c') ||
+		(ch1=='v' && ch2=='s') || (ch1=='v' && ch2=='e') || 
+		(ch1=='s' && ch2=='c') || (ch1=='s' && ch2=='n') || 
+		(ch1=='b' && ch2=='i') || (ch1=='g' && isdigit(ch2)))
 	    fprintf( stderr, "This is probably a valid URW font, but it is in a format (%c%c) which PfaEdit\ndoes not support. PfaEdit only supports 'IK' format fonts.\n" );
+	else if ( ch1==0 && ch2==0 && ilen==55 )
+	    fprintf( stderr, "This looks like an ikarus format which I have seen examples of, but for which\nI have no documentation. PfaEdit does not support it yet.\n" );
 	fclose(file);
 return( NULL );
     } else if ( ilen<55 || hlen<=ilen ) {
