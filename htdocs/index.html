@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 12-Oct-2003 -->
+  <!-- AP: Last modified: 15-Oct-2003 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -136,8 +136,8 @@ let me know when you do</A>.
     &nbsp; &nbsp; How to install <A HREF="MacOSX.html#binary">PfaEdit on Mac
     OS/X</A>
   <LI>
-    <A HREF="pfaedit_cygwin-031012.tgz">A cygwin version</A> (for ms windows
-    32). Version: 12-Oct-2003<BR>
+    <A HREF="pfaedit_cygwin-031015.tgz">A cygwin version</A> (for ms windows
+    32). Version: 15-Oct-2003<BR>
     &nbsp; &nbsp; How to install <A HREF="faq.html#windows">PfaEdit under
     windows</A>
   <LI>
@@ -155,9 +155,9 @@ PfaEdit's capabilities.
 <P>
 You can download a <A HREF="pfaedit-030827-1.src.rpm">source RPM</A>: Version:
 27-Aug-2003<BR>
-Or you can download the <A HREF="pfaedit_full-031012.tgz">source tree </A>in
+Or you can download the <A HREF="pfaedit_full-031015.tgz">source tree </A>in
 one .tgz file: Version
-12-Oct-2003<!--
+15-Oct-2003<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -375,7 +375,7 @@ bitmap fonts that pfaedit uses
 </H2>
 <P>
 All the documentation files in this directory bundled up into one
-<A HREF="pfaedit_htdocs-031012.tgz">tgz file</A> 12-Oct-2003.<BR>
+<A HREF="pfaedit_htdocs-031015.tgz">tgz file</A> 15-Oct-2003.<BR>
 If you do the following then PfaEdit will find the docs for you when you
 press F1 (ie. PfaEdit it will look in /usr/local/share/doc/pfaedit before
 it looks on the web):
@@ -596,12 +596,7 @@ and rarely appear on this list.
     Under kde, iconifying a PfaEdit window crashes the button bar at the bottom
     of the screen. Personally I consider this a bug in kde.
   <LI>
-    Under some versions of windows my PFM/PFB files are not recognized as valid.
-    I have no idea why not, they work fine on my test machine.
-  <LI>
-    When reading a ttf file with a GSUB/GPOS table, pfaedit ignores the more
-    complex subtables. See the <A HREF="gposgsub.html">section on those tables</A>
-    for more info.
+    PfaEdit only produces an approximation to the OS/2 Codepages fields.
   <LI>
     ???
 </UL>
@@ -958,6 +953,21 @@ which company has given me the free time to write this program.
       <LI>
 	<A HREF="http://gnuwin32.sourceforge.net/packages/t1lib.htm">t1lib</A> --
 	Type1 Rasterizer
+    </UL>
+  <LI>
+    Other font tools of mine
+    <UL>
+      <LI>
+	<A HREF="http://fondu.sf.net/">fondu</A> -- Unwraps fonts from mac resource
+	files (this includes dfonts). Produces ttf, pfb and bdf files for 'sfnt',
+	'POST' and 'NFNT' resources
+      <LI>
+	<A HREF="http://mensis.sf.net/">mensis</A> -- Allows the user much finer
+	control over some truetype tables than is provided by PfaEdit.
+      <LI>
+	<A HREF="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/pfaedit/pfaedit/fonttools/showttf.c">showttf</A>
+	-- Dumps the contents of a truetype/opentype font. Does some error checking
+	too.
     </UL>
   <LI>
     <A HREF="otherlinks.html">Other related links...</A>
