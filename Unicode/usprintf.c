@@ -280,7 +280,7 @@ int u_vsnprintf(unichar_t *str, int len, const unichar_t *format, va_list ap ) {
 		    ++pt;
 		}
 	    }
-	    temp.precision = 0x80000000;
+	    temp.precision = 0x800000;
 	    if ( *pt=='.' ) {
 		++pt;
 		if ( *pt=='*' ) {
@@ -307,15 +307,15 @@ int u_vsnprintf(unichar_t *str, int len, const unichar_t *format, va_list ap ) {
 		    temp.format=='u' || temp.format=='x' || temp.format=='X' ||
 		    temp.format=='c' ) {
 		temp.arg_type = at_int;
-		if ( temp.precision == (int) 0x80000000 ) temp.precision = 1;
+		if ( temp.precision == (int) 0x800000 ) temp.precision = 1;
 	    } else if ( temp.format=='e' || temp.format=='E' || temp.format=='f' ||
 		    temp.format=='F' || temp.format=='g' || temp.format=='G' ) {
 		temp.arg_type = at_double;
-		if ( temp.precision == (int) 0x80000000 ) temp.precision = 6;
+		if ( temp.precision == (int) 0x800000 ) temp.precision = 6;
 	    } else if ( temp.format=='a' || temp.format=='A' ) {
 		    /* aA hex conversion of double */
 		temp.arg_type = at_double;
-		if ( temp.precision == (int) 0x80000000 ) temp.precision = 2*sizeof(double)-2;
+		if ( temp.precision == (int) 0x800000 ) temp.precision = 2*sizeof(double)-2;
 	    } else if ( temp.format=='s' && temp.is_short )
 		temp.arg_type = at_astr;
 	    else if ( temp.format=='s' )
@@ -379,7 +379,7 @@ int u_vsnprintf(unichar_t *str, int len, const unichar_t *format, va_list ap ) {
 		if ( !state.args[arg-1].hasformat ) ++arg;
 	    }
 	    if ( state.args[arg-1].fieldwidth<0 ) ++ac;
-	    if ( state.args[arg-1].precision<0 && state.args[arg-1].precision!= (int) 0x80000000)
+	    if ( state.args[arg-1].precision<0 && state.args[arg-1].precision!= (int) 0x800000)
 		++ac;
 	    ++ac;
 	    while ( *pt && !isspec(*pt)) ++pt;
