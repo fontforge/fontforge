@@ -2781,7 +2781,8 @@ return;
     pst->tag = info->mort_subs_tag;
     pst->macfeature = info->mort_tag_mac;
     pst->flags = info->mort_r2l ? pst_r2l : 0;
-    pst->script_lang_index = SLIFromInfo(info,sc,DEFAULT_LANG);
+    pst->script_lang_index = info->mort_is_nested ? SLI_NESTED :
+	    SLIFromInfo(info,sc,DEFAULT_LANG);
     pst->next = sc->possub;
     sc->possub = pst;
     pst->u.subs.variant = copy(ssc->name);
@@ -3116,6 +3117,434 @@ return;
     free(sm.classes);
 }
 
+struct statetable {
+    uint32 state_start;
+    int nclasses;
+    int nstates;
+    int nentries;
+    int state_offset;
+    int entry_size;	/* size of individual entry */
+    int entry_extras;	/* Number of extra glyph offsets */
+    int first_glyph;	/* that's classifyable */
+    int nglyphs;
+    uint8 *classes;
+    uint8 *state_table;	/* state_table[nstates][nclasses], each entry is an */
+	/* index into the following array */
+    uint16 *state_table2;	/* morx version. States are have 2 byte entries */
+    uint16 *classes2;
+    uint8 *transitions;
+    uint32 extra_offsets[3];
+};
+
+static struct statetable *read_statetable(FILE *ttf, int ent_extras, int ismorx, struct ttfinfo *info) {
+    struct statetable *st = gcalloc(1,sizeof(struct statetable));
+    uint32 here = ftell(ttf);
+    int nclasses, class_off, state_off, entry_off;
+    int state_max, ent_max, old_state_max, old_ent_max;
+    int i, j, ent, new_state, ent_size;
+
+    st->state_start = here;
+
+    if ( ismorx ) {
+	nclasses = getlong(ttf);
+	class_off = getlong(ttf);
+	state_off = getlong(ttf);
+	entry_off = getlong(ttf);
+	st->extra_offsets[0] = getlong(ttf);
+	st->extra_offsets[1] = getlong(ttf);
+	st->extra_offsets[2] = getlong(ttf);
+    } else {
+	nclasses = getushort(ttf);	/* Number of bytes per state in state subtable, equal to number of classes */
+	class_off = getushort(ttf);
+	state_off = getushort(ttf);
+	entry_off = getushort(ttf);
+	st->extra_offsets[0] = getushort(ttf);
+	st->extra_offsets[1] = getushort(ttf);
+	st->extra_offsets[2] = getushort(ttf);
+    }
+    st->nclasses = nclasses;
+    st->state_offset = state_off;
+
+	/* parse class subtable */
+    fseek(ttf,here+class_off,SEEK_SET);
+    if ( ismorx ) {
+	st->classes2 = info->morx_classes = galloc(info->glyph_cnt*sizeof(uint16));
+	for ( i=0; i<info->glyph_cnt; ++i )
+	    st->classes2[i] = 1;			/* Out of bounds */
+	readttf_applelookup(ttf,info,
+		mortclass_apply_values,mortclass_apply_value,NULL,NULL);
+    } else {
+	st->first_glyph = getushort(ttf);
+	st->nglyphs = getushort(ttf);
+	st->classes = galloc(st->nglyphs);
+	fread(st->classes,1,st->nglyphs,ttf);
+    }
+
+    /* The size of an entry is variable. There are 2 uint16 fields at the begin-*/
+    /*  ning of all entries. There may be some number of shorts following these*/
+    /*  used for indexing special tables. */
+    ent_size = 4 + 2*ent_extras;
+    st->entry_size = ent_size;
+    st->entry_extras = ent_extras;
+
+    /* Apple does not provide a way of figuring out the size of either of the */
+    /*  state or entry tables, so we must parse both as we go and try to work */
+    /*  out the maximum values... */
+    /* There are always at least 2 states defined. Parse them and find what */
+    /*  is the biggest entry they use, then parse those entries and find what */
+    /*  is the biggest state they use, and then repeat until we don't find any*/
+    /*  more states or entries */
+    old_state_max = 0; old_ent_max = 0;
+    state_max = 2; ent_max = 0;
+    while ( old_state_max!=state_max ) {
+	i = old_state_max*nclasses;
+	fseek(ttf,here+state_off+(ismorx?i*sizeof(uint16):i),SEEK_SET);
+	old_state_max = state_max;
+	for ( ; i<state_max*nclasses; ++i ) {
+	    ent = ismorx ? getushort(ttf) : getc(ttf);
+	    if ( ent+1 > ent_max )
+		ent_max = ent+1;
+	}
+	if ( ent_max==old_ent_max )		/* Nothing more */
+    break;
+	if ( ent_max>1000 ) {
+	    fprintf( stderr, "It looks to me as though there's a morx sub-table with more than 1000\n transitions. Which makes me think there's probably an error\n" );
+	    free(st);
+return( NULL );
+	}
+	fseek(ttf,here+entry_off+old_ent_max*ent_size,SEEK_SET);
+	i = old_ent_max;
+	old_ent_max = ent_max;
+	for ( ; i<ent_max; ++i ) {
+	    new_state = getushort(ttf);
+	    if ( !ismorx )
+		new_state = (new_state-state_off)/nclasses;
+	    /* flags = */ getushort(ttf);
+	    for ( j=0; j<ent_extras; ++j )
+		/* glyphOffsets[j] = */ getushort(ttf);
+	    if ( new_state+1>state_max )
+		state_max = new_state+1;
+	}
+	if ( state_max>1000 ) {
+	    fprintf( stderr, "It looks to me as though there's a morx sub-table with more than 1000\n states. Which makes me think there's probably an error\n" );
+	    free(st);
+return( NULL );
+	}
+    }
+
+    st->nstates = state_max;
+    st->nentries = ent_max;
+    
+    fseek(ttf,here+state_off,SEEK_SET);
+    /* an array of arrays of state transitions, each represented by one byte */
+    /*  which is an index into the Entry subtable, which comes next. */
+    /* One dimension is the number of states, and the other the */
+    /*  number of classes (classes vary faster than states) */
+    /* The first two states are predefined, 0 is start of text, 1 start of line*/
+    if ( ismorx ) {
+	st->state_table2 = galloc(st->nstates*st->nclasses*sizeof(uint16));
+	for ( i=0; i<st->nstates*st->nclasses; ++i )
+	    st->state_table2[i] = getushort(ttf);
+    } else {
+	st->state_table = galloc(st->nstates*st->nclasses);
+	fread(st->state_table,1,st->nstates*st->nclasses,ttf);
+    }
+
+	/* parse the entry subtable */
+    fseek(ttf,here+entry_off,SEEK_SET);
+    st->transitions = galloc(st->nentries*st->entry_size);
+    fread(st->transitions,1,st->nentries*st->entry_size,ttf);
+return( st );
+}
+
+static void statetablefree(struct statetable *st) {
+    free( st->classes );
+    free( st->state_table );
+    free( st->classes2 );
+    free( st->state_table2 );
+    free( st->transitions );
+    free( st );
+}
+
+static char **ClassesFromStateTable(struct statetable *st,int ismorx,struct ttfinfo *info) {
+    /* On the mac the first four classes should be left blank. only class 1 */
+    /*  (out of bounds) is supposed to be used in the class array anyway */
+    char **classes = galloc(st->nclasses*sizeof(char *));
+    int *lens = gcalloc(st->nclasses,sizeof(int));
+    int i;
+
+    if ( ismorx ) {
+	for ( i=0; i<info->glyph_cnt; ++i )
+	    lens[st->classes2[i]] += strlen( info->chars[i]->name )+1;
+    } else {
+	for ( i=st->first_glyph; i<st->first_glyph+st->nglyphs && i<info->glyph_cnt; ++i )
+	    lens[st->classes[i-st->first_glyph]] += strlen( info->chars[i]->name )+1;
+    }
+    classes[0] = classes[1] = classes[2] = classes[3] = NULL;
+    for ( i=4; i<st->nclasses; ++i ) {
+	classes[i] = galloc(lens[i]+1);
+	*classes[i] = '\0';
+    }
+    if ( ismorx ) {
+	for ( i=0; i<info->glyph_cnt; ++i ) if ( st->classes[2]>=4 ) {
+	    strcat(classes[st->classes2[i]],info->chars[i]->name );
+	    strcat(classes[st->classes2[i]]," ");
+	}
+    } else {
+	for ( i=st->first_glyph; i<st->first_glyph+st->nglyphs && i<info->glyph_cnt; ++i ) if ( st->classes[i-st->first_glyph]>=4 ) {
+	    strcat(classes[st->classes[i-st->first_glyph]],info->chars[i]->name );
+	    strcat(classes[st->classes[i-st->first_glyph]]," " );
+	}
+    }
+    for ( i=4; i<st->nclasses; ++i ) {
+	int len = strlen(classes[i]);
+	if ( len!=0 )
+	    classes[i][len-1] = '\0';	/* Remove trailing space */
+    }
+    free(lens);
+return( classes );
+}
+
+static char *NamesOfList(uint32 pos,int cnt, FILE *ttf, struct ttfinfo *info) {
+    int i, len, glyph;
+    char *str;
+
+    if ( cnt==0 )
+return(NULL);
+
+    fseek(ttf,pos,SEEK_SET);
+    for ( i=len=0; i<cnt; ++i ) {
+	glyph = getushort(ttf);
+	if ( glyph<info->glyph_cnt )
+	    len += strlen(info->chars[glyph]->name)+1;
+    }
+    if ( len==0 )
+return( NULL );
+    str = galloc(len+1);
+    for ( i=len=0; i<cnt; ++i ) {
+	glyph = getushort(ttf);
+	if ( glyph<info->glyph_cnt ) {
+	    strcpy(str+len,info->chars[glyph]->name);
+	    len += strlen(info->chars[glyph]->name);
+	    str[len++] = ' ';
+	}
+    }
+    str[len-1] = '\0';
+return( str );
+}
+
+static void read_perglyph_subs(FILE *ttf,struct ttfinfo *info,
+	int subs_base,int subs_end,struct statetable *st, uint8 *classes_subbed) {
+    /* The file is positioned at the start of a per-glyph substitution table */
+    /* Sadly great chunks of this table have been omitted. We are where glyph */
+    /*  0 would be if it were present. We've no idea what has been omitted */
+    /* Simple checks: if the file pointer is outside of the area devoted to */
+    /*   substitutions then we know it is ignorable. */
+    /*  If the current glyph is not in the list of glyphs which could ever */
+    /*   be substituted then we know it is ignorable. */
+    /*  If the putative substitution glyph is not a valid glyph then we know */
+    /*   it is ignorable */
+    int i, subs;
+    uint32 here;
+
+    for ( i=0; i<info->glyph_cnt; ++i ) {
+	here = ftell(ttf);
+	subs = getushort(ttf);
+	if ( subs>=info->glyph_cnt )
+    continue;
+	if ( here<subs_base )
+    continue;
+	if ( here>=subs_end )
+    break;
+	if ( i<st->first_glyph || i>=st->first_glyph+st->nglyphs ) {
+	    if ( !classes_subbed[1]) {		/* Out of bounds class */
+		if ( i>=st->first_glyph+st->nglyphs )
+    break;
+    continue;
+	    }
+	} else {
+	    if ( !classes_subbed[st->classes[i-st->first_glyph]] )
+    continue;
+	}
+	TTF_SetMortSubs(info, i, subs);
+    }
+}
+
+static int sm_lookupfind(uint32 *lookups,int *_lm,int off) {
+    int lm = *_lm, i;
+    for ( i=0; i<=lm; ++i )
+	if ( lookups[i]==off )
+return( i );
+    (*_lm)++;
+return( i );
+}
+
+static uint32 TagFromInfo(struct ttfinfo *info,int i) {
+    char buf[8];
+    uint32 tag;
+
+    sprintf( buf, "M%03d", info->gentags.tt_cur + i );
+    if ( info->gentags.tt_cur + i >= info->gentags.tt_max ) {
+	if ( info->gentags.tt_max==0 )
+	    info->gentags.tagtype = galloc((info->gentags.tt_max=30)*sizeof(struct tagtype));
+	else
+	    info->gentags.tagtype = grealloc(info->gentags.tagtype,(info->gentags.tt_max+=30)*sizeof(struct tagtype));
+    }
+    info->gentags.tagtype[info->gentags.tt_cur+i].type = pst_substitution;
+    tag = CHR(buf[0], buf[1], buf[2], buf[3] );
+    info->gentags.tagtype[info->gentags.tt_cur+i].tag = tag;
+return( tag );
+}
+
+static void readttf_mortx_asm(FILE *ttf,struct ttfinfo *info,int ismorx,
+	uint32 length,enum asm_type type,int extras,
+	uint32 coverage, uint32 subtab_len) {
+    struct statetable *st;
+    ASM *as;
+    int i,j;
+    uint32 here = ftell(ttf);
+
+    st = read_statetable(ttf,extras,ismorx,info);
+    if ( st==NULL )
+return;
+
+    as = chunkalloc(sizeof(ASM));
+    as->type = type;
+    as->feature = info->mort_feat; as->setting = info->mort_setting;
+    as->flags = coverage>>16;
+    as->class_cnt = st->nclasses;
+    as->state_cnt = st->nstates;
+    as->classes = ClassesFromStateTable(st,ismorx,info);
+    as->state = galloc(st->nclasses*st->nstates*sizeof(struct asm_state));
+    for ( i=0; i<st->nclasses*st->nstates; ++i ) {
+	int trans;
+	if ( ismorx ) {
+	    trans = st->state_table2[i];
+	    as->state[i].next_state = memushort(st->transitions,trans*st->entry_size);
+	} else {
+	    trans = st->state_table[i];
+	    as->state[i].next_state = (memushort(st->transitions,trans*st->entry_size)-st->state_offset)/st->nclasses;
+	}
+	as->state[i].flags = memushort(st->transitions,trans*st->entry_size+2);
+	as->state[i].u.context.mark_tag = memushort(st->transitions,trans*st->entry_size+2+2);
+	as->state[i].u.context.cur_tag = memushort(st->transitions,trans*st->entry_size+2+2+2);
+    }
+    /* Indic tables have no attached subtables, just a verb in the flag field */
+    /*  so for them we are done. For the others... */
+    if ( !ismorx && type==asm_insert ) {
+	for ( i=0; i<st->nclasses*st->nstates; ++i ) {
+	    char *cur=NULL, *mark=NULL;
+	    if ( (as->state[i].flags&0x3e0)!=0 && as->state[i].u.context.mark_tag!=0 ) {
+		cur = NamesOfList(here+as->state[i].u.context.mark_tag,
+			(as->state[i].flags&0x3e0)>>5,ttf,info);
+	    }
+	    if ( (as->state[i].flags&0x01f)!=0 && as->state[i].u.context.cur_tag!=0 ) {
+		mark = NamesOfList(here+as->state[i].u.context.cur_tag,
+			as->state[i].flags&0x01f,ttf,info);
+	    }
+	    as->state[i].u.insert.cur_ins=cur;
+	    as->state[i].u.insert.mark_ins=mark;
+	}
+    } else if ( ismorx && type == asm_insert ) {
+	for ( i=0; i<st->nclasses*st->nstates; ++i ) {
+	    char *cur=NULL, *mark=NULL;
+	    if ( (as->state[i].flags&0x3e0)!=0 && as->state[i].u.context.mark_tag!=0xffff ) {
+		cur = NamesOfList(here+st->extra_offsets[0]+as->state[i].u.context.mark_tag*2,
+			(as->state[i].flags&0x3e0)>>5,ttf,info);
+	    }
+	    if ( (as->state[i].flags&0x01f)!=0 && as->state[i].u.context.cur_tag!=0xffff ) {
+		mark = NamesOfList(here+st->extra_offsets[0]+as->state[i].u.context.cur_tag*2,
+			as->state[i].flags&0x01f,ttf,info);
+	    }
+	    as->state[i].u.insert.cur_ins=cur;
+	    as->state[i].u.insert.mark_ins=mark;
+	}
+    } else if ( !ismorx && type == asm_context ) {
+	/* I don't see any good way to parse a per-glyph substitution table */
+	/*  the problem being that most of the per-glyph table is missing */
+	/*  but I don't know which bits. The offsets I'm given point to */
+	/*  where glyph 0 would be if it were present in the table, but */
+	/*  mostly only the bit used is present... */
+	/* I could walk though the state machine and find all classes that */
+	/*  go to a specific substitution (which would tell me what glyphs */
+	/*  were active). That's not hard for substitutions of the current */
+	/*  glyph, but it is intractibable for marked glyphs. And I can't  */
+	/*  do one without the other. So I do neither. */
+	/* One thing I could test fairly easily would be to see whether    */
+	/*  class 1 (out of bounds) is ever available for a substitution   */
+	/*  (if it ever has a mark set on it or has a current substitution)*/
+	/*  if not, then I can ignore any putative substitutions for class */
+	/*  1 glyphs (actually I should do this for all classes)*/
+	/* Apple's docs say the substitutions are offset from the "state   */
+	/*  subtable", but it seems much more likely that they are offset  */
+	/*  from the substitution table (given that Apple's docs are often */
+	/*  wrong */
+	uint8 *classes_subbed = gcalloc(st->nclasses,1);
+	int lookup_max = -1, index;
+	uint32 *lookups = galloc(st->nclasses*st->nstates*sizeof(uint32));
+
+	for ( i=0; i<st->nstates; ++i ) for ( j=0; j<st->nclasses; ++j ) {
+	    if ( (as->state[i*st->nclasses+j].flags&0x8000) ||	/* Set Mark */
+		    as->state[i*st->nclasses+j].u.context.cur_tag!= 0 )
+		classes_subbed[j] = true;
+	}
+	for ( i=0; i<st->nclasses*st->nstates; ++i ) {
+	    if ( as->state[i].u.context.mark_tag!=0 ) {
+		index = sm_lookupfind(lookups,&lookup_max,as->state[i].u.context.mark_tag);
+		as->state[i].u.context.mark_tag = TagFromInfo(info,index);
+	    }
+	    if ( as->state[i].u.context.cur_tag!=0 ) {
+		index = sm_lookupfind(lookups,&lookup_max,as->state[i].u.context.cur_tag);
+		as->state[i].u.context.cur_tag = TagFromInfo(info,index);
+	    }
+	}
+	for ( i=0; i<lookup_max; ++i ) {
+	    info->mort_subs_tag = TagFromInfo(info,i);
+	    info->mort_is_nested = true;
+	    fseek(ttf,here+st->extra_offsets[0]+lookups[i]*2,SEEK_SET);
+	    read_perglyph_subs(ttf,info,here+st->extra_offsets[0],here+subtab_len,
+		    st,classes_subbed);
+	}
+	info->mort_is_nested = false;
+	free(classes_subbed);
+	free(lookups);
+	info->gentags.tt_cur += lookup_max;
+    } else if ( ismorx && type == asm_context ) {
+	int lookup_max= -1;
+	uint32 *lookups;
+	for ( i=0; i<st->nclasses*st->nstates; ++i ) {
+	    if ( as->state[i].u.context.mark_tag!=0xffff ) {
+		if ( as->state[i].u.context.mark_tag>lookup_max )
+		    lookup_max = as->state[i].u.context.mark_tag;
+		as->state[i].u.context.mark_tag = TagFromInfo(info,as->state[i].u.context.mark_tag);
+	    }
+	    if ( as->state[i].u.context.cur_tag!=0xffff ) {
+		if ( as->state[i].u.context.cur_tag>lookup_max )
+		    lookup_max = as->state[i].u.context.cur_tag;
+		as->state[i].u.context.cur_tag = TagFromInfo(info,as->state[i].u.context.cur_tag);
+	    }
+	}
+	++lookup_max;
+	lookups = galloc(lookup_max*sizeof(uint32));
+	fseek(ttf,here+st->extra_offsets[0],SEEK_SET);
+	for ( i=0; i<lookup_max; ++i )
+	    lookups[i] = getlong(ttf) + here+st->extra_offsets[0];
+	for ( i=0; i<lookup_max; ++i ) {
+	    fseek(ttf,lookups[i],SEEK_SET);
+	    info->mort_subs_tag = TagFromInfo(info,i);
+	    info->mort_is_nested = true;
+	    readttf_applelookup(ttf,info,
+		    mort_apply_values,mort_apply_value,NULL,NULL);
+	}
+	info->mort_is_nested = false;
+	free(lookups);
+	info->gentags.tt_cur += lookup_max;
+    }
+    as->next = info->sm;
+    info->sm = as;
+    statetablefree(st);
+}
+
 static void FeatMarkAsEnabled(struct ttfinfo *info,int featureType,
 	int featureSetting);
 
@@ -3127,7 +3556,7 @@ static uint32 readmortchain(FILE *ttf,struct ttfinfo *info, uint32 base, int ism
     uint32 length, coverage;
     uint32 here;
     uint32 tag;
-    struct tagmaskfeature { uint32 tag, enable_flags; int ismac; } tmf[32];
+    struct tagmaskfeature { uint32 tag, enable_flags; uint16 ismac, feat, set; } tmf[32];
     int r2l;
 
     default_flags = getlong(ttf);
@@ -3157,6 +3586,8 @@ static uint32 readmortchain(FILE *ttf,struct ttfinfo *info, uint32 base, int ism
 		tmf[k].tag = tag;
 		tmf[k].ismac = false;
 	    }
+	    tmf[k].feat = featureType;
+	    tmf[k].set = featureSetting;
 	    tmf[k++].enable_flags = enable_flags;
 	}
     }
@@ -3180,6 +3611,7 @@ return( chain_len );
 	    info->mort_subs_tag = tmf[j].tag;
 	    info->mort_r2l = r2l;
 	    info->mort_tag_mac = tmf[j].ismac;
+	    info->mort_feat = tmf[j].feat; info->mort_setting = tmf[j].set;
 	    for ( l=0; info->feats[0][l]!=0; ++l )
 		if ( info->feats[0][l]==tmf[j].tag )
 	    break;
@@ -3188,17 +3620,22 @@ return( chain_len );
 		info->feats[0][l+1] = 0;
 	    }
 	    switch( coverage&0xff ) {
-	      case 0:
-		/* Indic rearangement */
+	      case 0:	/* Indic rearangement */
+		readttf_mortx_asm(ttf,info,ismorx,length,asm_indic,0,
+			coverage,length);
 	      break;
-	      case 1:
-		/* contextual glyph substitution */
+	      case 1:	/* contextual glyph substitution */
+		readttf_mortx_asm(ttf,info,ismorx,length,asm_context,2,
+			coverage,length);
 	      break;
 	      case 2:	/* ligature substitution */
+		/* Apple's ligature state machines are too wierd to be */
+		/*  represented easily, but I can parse them into a set */
+		/*  of ligatures -- assuming they are unconditional */
 		readttf_mortx_lig(ttf,info,ismorx,here,length);
 	      break;
 	      case 4:	/* non-contextual glyph substitutions */
-		/* Another case of that isn't specified in the docs */
+		/* Another case that isn't specified in the docs */
 		/* It seems unlikely that (in morx at least!) the base for */
 		/*  offsets in the lookup table should be the start of the */
 		/*  mor[tx] table, it would make more sense for it to be the*/
@@ -3206,8 +3643,9 @@ return( chain_len );
 		readttf_applelookup(ttf,info,
 			mort_apply_values,mort_apply_value,NULL,NULL);
 	      break;
-	      case 5:
-		/* contextual glyph insertion */
+	      case 5:	/* contextual glyph insertion */
+		readttf_mortx_asm(ttf,info,ismorx,length,asm_insert,2,
+			coverage,length);
 	      break;
 	    }
 	}

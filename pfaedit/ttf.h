@@ -164,7 +164,7 @@ struct ttfinfo {
     struct script_record **script_lang;
 
     uint32 mort_subs_tag;
-    int mort_r2l, mort_tag_mac;
+    int mort_r2l, mort_tag_mac, mort_feat, mort_setting, mort_is_nested;
     uint16 *morx_classes;
 
     uint32 *feats[2];			/* Order of gsub/gpos (morx) features */

@@ -275,7 +275,7 @@ typedef struct generic_asm {		/* Apple State Machine */
 		char *cur_ins;
 	    } insert;
 	} u;
-    } state;
+    } *state;
 } ASM;
 /* State Flags:
  Indic:
@@ -975,6 +975,7 @@ extern KernClass *KernClassCopy(KernClass *kc);
 extern void KernClassListFree(KernClass *kc);
 extern int KernClassContains(KernClass *kc, char *name1, char *name2, int ordered );
 extern void FPSTFree(FPST *fpst);
+extern void ASMFree(ASM *sm);
 extern void MacNameListFree(struct macname *mn);
 extern void MacSettingListFree(struct macsetting *ms);
 extern void MacFeatListFree(MacFeat *mf);

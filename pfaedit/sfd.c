@@ -817,6 +817,7 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
     struct ttf_table *tab;
     KernClass *kc;
     FPST *fpst;
+    ASM *sm;
     int isv;
 
     fprintf(sfd, "FontName: %s\n", sf->fontname );
@@ -980,6 +981,50 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	}
 	fprintf( sfd, "EndFPST\n" );
     }
+    for ( sm=sf->sm; sm!=NULL; sm=sm->next ) {
+	static char *keywords[] = { "MacIndic:", "MacContext:", "MacLigature:", "unused", "MacSimple:", "MacInsert:", NULL };
+	fprintf( sfd, "%s %d,%d %d %d %d\n",
+		keywords[sm->type-asm_indic],
+		sm->feature, sm->setting,
+		sm->flags,
+		sm->class_cnt, sm->state_cnt );
+	for ( i=4; i<sm->class_cnt; ++i )
+	    fprintf( sfd, "  Class: %d %s\n", strlen(sm->classes[i]), sm->classes[i]);
+	for ( i=0; i<sm->class_cnt*sm->state_cnt; ++i ) {
+	    fprintf( sfd, " %d %d ", sm->state[i].next_state, sm->state[i].flags );
+	    if ( sm->type==asm_context ) {
+		if ( sm->state[i].u.context.mark_tag==0 )
+		    fprintf(sfd,"~ ");
+		else
+		    fprintf(sfd,"'%c%c%c%c' ",
+			sm->state[i].u.context.mark_tag>>24,
+			(sm->state[i].u.context.mark_tag>>16)&0xff,
+			(sm->state[i].u.context.mark_tag>>8)&0xff,
+			sm->state[i].u.context.mark_tag&0xff);
+		if ( sm->state[i].u.context.cur_tag==0 )
+		    fprintf(sfd,"~ ");
+		else
+		    fprintf(sfd,"'%c%c%c%c' ",
+			sm->state[i].u.context.cur_tag>>24,
+			(sm->state[i].u.context.cur_tag>>16)&0xff,
+			(sm->state[i].u.context.cur_tag>>8)&0xff,
+			sm->state[i].u.context.cur_tag&0xff);
+	    } else if ( sm->type == asm_insert ) {
+		if ( sm->state[i].u.insert.mark_ins==NULL )
+		    fprintf( sfd, "0 ");
+		else
+		    fprintf( sfd, "%d %s ", strlen(sm->state[i].u.insert.mark_ins),
+			    sm->state[i].u.insert.mark_ins );
+		if ( sm->state[i].u.insert.cur_ins==NULL )
+		    fprintf( sfd, "0 ");
+		else
+		    fprintf( sfd, "%d %s ", strlen(sm->state[i].u.insert.cur_ins),
+			    sm->state[i].u.insert.cur_ins );
+	    }
+	    putc('\n',sfd);
+	}
+	fprintf( sfd, "EndASM\n" );
+    }
     SFDDumpMacFeat(sfd,sf->features);
     if ( sf->gentags.tt_cur>0 ) {
 	fprintf( sfd, "GenTags: %d", sf->gentags.tt_cur );
@@ -1013,8 +1058,11 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 		ord->table_tag>>24, (ord->table_tag>>16)&0xff, (ord->table_tag>>8)&0xff, ord->table_tag&0xff,
 		i );
 	for ( i=0; ord->ordered_features[i]!=0; ++i )
-	    fprintf( sfd, "\t'%c%c%c%c'\n",
-		    ord->ordered_features[i]>>24, (ord->ordered_features[i]>>16)&0xff, (ord->ordered_features[i]>>8)&0xff, ord->ordered_features[i]&0xff );
+	    if ( (ord->ordered_features[i]>>24)<' ' || (ord->ordered_features[i]>>24)>=0x7f )
+		fprintf( sfd, "\t<%d,%d>\n", ord->ordered_features[i]>>16, ord->ordered_features[i]&0xffff );
+	    else
+		fprintf( sfd, "\t'%c%c%c%c'\n",
+			ord->ordered_features[i]>>24, (ord->ordered_features[i]>>16)&0xff, (ord->ordered_features[i]>>8)&0xff, ord->ordered_features[i]&0xff );
     }
     for ( tab = sf->ttf_tables; tab!=NULL ; tab = tab->next )
 	SFDDumpTtfTable(sfd,tab);
@@ -1278,6 +1326,13 @@ return( pt!=tokbuf?1:ch==EOF?-1: 0 );
 }
 
 static int getsint(FILE *sfd, int16 *val) {
+    int val2;
+    int ret = getint(sfd,&val2);
+    *val = val2;
+return( ret );
+}
+
+static int getusint(FILE *sfd, uint16 *val) {
     int val2;
     int ret = getint(sfd,&val2);
     *val = val2;
@@ -1863,8 +1918,7 @@ return( NULL );
 	    while ( (ch=getc(sfd))==' ' || ch=='\t' );
 	    ungetc(ch,sfd);
 	    if ( ch!='\n' && ch!='\r' ) {
-		getint(sfd,&temp);
-		sc->orig_pos = temp;
+		getusint(sfd,&sc->orig_pos);
 	    }
 	} else if ( strmatch(tok,"OldEncoding:")==0 ) {
 	    getint(sfd,&sc->old_enc);
@@ -1996,10 +2050,8 @@ return( NULL );
 	    } else
 		liga->flags = PSTDefaultFlags(liga->type,sc);
 	    if ( isdigit(ch)) {
-		int temp;
 		ungetc(ch,sfd);
-		getint(sfd,&temp);
-		liga->script_lang_index = temp;
+		getusint(sfd,&liga->script_lang_index);
 		while ( (ch=getc(sfd))==' ' || ch=='\t' );
 	    } else
 		liga->script_lang_index = SFAddScriptLangIndex(sc->parent,
@@ -2452,8 +2504,7 @@ static void SFDParseChainContext(FILE *sfd,SplineFont *sf,FPST *fpst, char *tok)
 		getname(sfd,tok);
 		(&fpst->rules[i].u.class.nclasses)[j] = galloc((&fpst->rules[i].u.class.ncnt)[j]*sizeof(uint16));
 		for ( k=0; k<(&fpst->rules[i].u.class.ncnt)[j]; ++k ) {
-		    getint(sfd,&temp);
-		    (&fpst->rules[i].u.class.nclasses)[j][k] = temp;
+		    getusint(sfd,&(&fpst->rules[i].u.class.nclasses)[j][k]);
 		}
 	    }
 	  break;
@@ -2504,6 +2555,75 @@ static void SFDParseChainContext(FILE *sfd,SplineFont *sf,FPST *fpst, char *tok)
 	}
     }
     getname(sfd,tok);
+}
+
+static uint32 ASM_ParseSubTag(FILE *sfd) {
+    uint32 tag;
+    int ch;
+
+    while ( (ch=getc(sfd))==' ' );
+    if ( ch!='\'' )
+return( 0 );
+
+    tag = getc(sfd)<<24;
+    tag |= getc(sfd)<<16;
+    tag |= getc(sfd)<<8;
+    tag |= getc(sfd);
+    getc(sfd);		/* final quote */
+return( tag );
+}
+
+static void SFDParseStateMachine(FILE *sfd,SplineFont *sf,ASM *sm, char *tok) {
+    int i, temp;
+
+    sm->type = strmatch(tok,"MacIndic:")==0 ? asm_indic :
+		strmatch(tok,"MacContext:")==0 ? asm_context :
+		strmatch(tok,"MacLigature:")==0 ? asm_lig :
+		strmatch(tok,"MacSimple:")==0 ? asm_simple : asm_insert;
+    getusint(sfd,&sm->feature);
+    getc(sfd);		/* Skip comma */
+    getusint(sfd,&sm->setting);
+    getusint(sfd,&sm->flags);
+    getusint(sfd,&sm->class_cnt);
+    getusint(sfd,&sm->state_cnt);
+
+    sm->classes = galloc(sm->class_cnt*sizeof(char *));
+    sm->classes[0] = sm->classes[1] = sm->classes[2] = sm->classes[3] = NULL;
+    for ( i=4; i<sm->class_cnt; ++i ) {
+	getname(sfd,tok);
+	getint(sfd,&temp);
+	sm->classes[i] = galloc(temp+1); sm->classes[i][temp] = '\0';
+	getc(sfd);	/* skip space */
+	fread(sm->classes[i],1,temp,sfd);
+    }
+
+    sm->state = galloc(sm->class_cnt*sm->state_cnt*sizeof(struct asm_state));
+    for ( i=0; i<sm->class_cnt*sm->state_cnt; ++i ) {
+	getusint(sfd,&sm->state[i].next_state);
+	getusint(sfd,&sm->state[i].flags);
+	if ( sm->type == asm_context ) {
+	    sm->state[i].u.context.mark_tag = ASM_ParseSubTag(sfd);
+	    sm->state[i].u.context.cur_tag = ASM_ParseSubTag(sfd);
+	} else if ( sm->type == asm_insert ) {
+	    getint(sfd,&temp);
+	    if ( temp==0 )
+		sm->state[i].u.insert.mark_ins = NULL;
+	    else {
+		sm->state[i].u.insert.mark_ins = galloc(temp+1); sm->state[i].u.insert.mark_ins[temp] = '\0';
+		getc(sfd);	/* skip space */
+		fread(sm->state[i].u.insert.mark_ins,1,temp,sfd);
+	    }
+	    getint(sfd,&temp);
+	    if ( temp==0 )
+		sm->state[i].u.insert.cur_ins = NULL;
+	    else {
+		sm->state[i].u.insert.cur_ins = galloc(temp+1); sm->state[i].u.insert.cur_ins[temp] = '\0';
+		getc(sfd);	/* skip space */
+		fread(sm->state[i].u.insert.cur_ins,1,temp,sfd);
+	    }
+	}
+    }
+    getname(sfd,tok);			/* EndASM */
 }
 
 static struct macname *SFDParseMacNames(FILE *sfd, char *tok) {
@@ -2624,6 +2744,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
     struct ttf_table *lastttf = NULL;
     KernClass *lastkc=NULL, *kc, *lastvkc=NULL;
     FPST *lastfp=NULL;
+    ASM *lastsm=NULL;
 
     sf = SplineFontEmpty();
     sf->cidmaster = cidmaster;
@@ -2862,6 +2983,16 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 		lastfp->next = fpst;
 	    lastfp = fpst;
 	    SFDParseChainContext(sfd,sf,fpst,tok);
+	} else if ( strmatch(tok,"MacIndic:")==0 || strmatch(tok,"MacContext:")==0 ||
+		strmatch(tok,"MacLigature:")==0 || strmatch(tok,"MacSimple:")==0 ||
+		strmatch(tok,"MacInsert:")==0 ) {
+	    ASM *sm = chunkalloc(sizeof(ASM));
+	    if ( lastsm==NULL )
+		sf->sm = sm;
+	    else
+		lastsm->next = sm;
+	    lastsm = sm;
+	    SFDParseStateMachine(sfd,sf,sm,tok);
 	} else if ( strmatch(tok,"MacFeat:")==0 ) {
 	    sf->features = SFDParseMacFeatures(sfd,tok);
 	} else if ( strmatch(tok,"TeXData:")==0 ) {
@@ -2985,11 +3116,17 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    ord->ordered_features[temp] = 0;
 	    for ( i=0; i<temp; ++i ) {
 		while ( isspace((ch=getc(sfd))) );
-		if ( ch=='\'' ) ch = getc(sfd);
-		ord->ordered_features[i] = (ch<<24) | (getc(sfd)<<16);
-		ord->ordered_features[i] |= (getc(sfd)<<8);
-		ord->ordered_features[i] |= getc(sfd);
-		if ( (ch=getc(sfd))!='\'') ungetc(ch,sfd);
+		if ( ch=='\'' ) {
+		    ch = getc(sfd);
+		    ord->ordered_features[i] = (ch<<24) | (getc(sfd)<<16);
+		    ord->ordered_features[i] |= (getc(sfd)<<8);
+		    ord->ordered_features[i] |= getc(sfd);
+		    if ( (ch=getc(sfd))!='\'') ungetc(ch,sfd);
+		} else if ( ch=='<' ) {
+		    int f,s;
+		    fscanf(sfd,"%d,%d>", &f, &s );
+		    ord->ordered_features[i] = (f<<16)|s;
+		}
 	    }
 	    if ( lastord==NULL )
 		sf->orders = ord;

@@ -3394,6 +3394,27 @@ void MacFeatListFree(MacFeat *mf) {
     }
 }
 
+void ASMFree(ASM *sm) {
+    ASM *next;
+    int i;
+
+    while ( sm!=NULL ) {
+	next = sm->next;
+	if ( sm->type==asm_insert ) {
+	    for ( i=0; i<sm->class_cnt*sm->state_cnt; ++i ) {
+		free( sm->state[i].u.insert.mark_ins );
+		free( sm->state[i].u.insert.cur_ins );
+	    }
+	}
+	for ( i=4; i<sm->class_cnt; ++i )
+	    free(sm->classes[i]);
+	free(sm->state);
+	free(sm->classes);
+	chunkfree(sm,sizeof(ASM));
+	sm = next;
+    }
+}
+
 void SplineFontFree(SplineFont *sf) {
     int i;
     BDFFont *bdf, *bnext;
@@ -3437,6 +3458,7 @@ return;
     KernClassListFree(sf->kerns);
     KernClassListFree(sf->vkerns);
     FPSTFree(sf->possub);
+    ASMFree(sf->sm);
     free(sf->gentags.tagtype);
     free(sf);
 }

@@ -809,6 +809,9 @@ return( ret );
 static struct macname *reversemacnames(struct macname *mn) {
     struct macname *next, *prev=NULL;
 
+    if ( mn==NULL )
+return( NULL );
+
     next = mn->next;
     while ( next!=NULL ) {
 	mn->next = prev;
