@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 16-Jan-2005 -->
+  <!-- AP: Last modified: 26-Jan-2005 -->
   <TITLE>Generate Font Dialog</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -19,8 +19,8 @@ output, you may select which pixelsizes of bitmap to generate.
 The outline types are:
 <UL>
   <LI>
-    PostScript Type1 font, binary format (a .pfb file, this may be used by adobe
-    type manager or by the new x font server)
+    PostScript Type1 font, binary format (a .pfb file, this may be by most modern
+    windowing systems)
   <LI>
     PostScript Type1 font, ascii format (a .pfa file, this is used by printers)
   <LI>
@@ -103,7 +103,7 @@ The outline types are:
     Open Type CID, This is only available if your font is a
     <A HREF="cidmenu.html">CID font</A>. It produces an OpenType CID-keyed font.
   <LI>
-    SVG font
+    <A HREF="#svg">SVG font</A>
   <LI>
     None
 </UL>
@@ -309,6 +309,24 @@ For information on creating mac font families beyond the capabilities of
 this dialog look at the <A HREF="faq.html#How-family">FAQ</A>.
 <P>
 <BR Clear=All>
+  <HR>
+<H2>
+  <A NAME="svg">SVG</A> fonts
+</H2>
+<P>
+SVG (Scalable Vector Graphics) fonts, come in two forms, one corresponds
+roughly to a PostScript Type1 font, and one to a PostScript Type 3 font.
+<P>
+In the first format a set of contours is specified for each glyph. There
+is no indication given whether the font should be stroked or filled -- that
+informaton will have inherited from the graphical environment when the font
+is used on text.
+<P>
+In the second format each glyph may contain the stroke and fill commands
+needed to draw it.
+<P>
+FontForge usually generates the first format, but for multi layered or stroked
+fonts it will generate the second format.
 <P ALIGN=Center>
 -- <A HREF="filemenu.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
 <A HREF="filemenu.html">Next</A> --

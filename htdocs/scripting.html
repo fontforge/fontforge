@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 17-Jan-2005 -->
+  <!-- AP: Last modified: 21-Jan-2005 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -1573,6 +1573,21 @@ ApplySubstitution("*","*","vrt2")
     argument is specified then it rounds like <CODE>rint(factor * x) /
     factor</CODE>, in other words if you set factor to 100 then it will round
     to hundredths.
+  <DT>
+    RoundToCluster([within-num,within-demom[,max]])
+  <DD>
+    The first two provide a fraction that indicates a value within which similar
+    coordinates will be bundled together. Max indicates how many "within"s from
+    the center point it will go if there are a chain of points each within "within"
+    of the previous one. So
+    <BLOCKQUOTE>
+      <PRE> RoundToCluster(1,10,5)
+</PRE>
+    </BLOCKQUOTE>
+    <P>
+    Will merge coordinates within .1 em-unit of each other. A sequence like
+    <CODE>-.1,-.05,0,.05,.1,.15</CODE> will all be merged together because each
+    is within .1 of the next, and none is more than .5 from the center.
   <DT>
     AutoTrace()
   <DD>
