@@ -123,6 +123,7 @@ const char *FindUCS2Name(void) {
     /*  different versions of each use still different names? */
     /* Even worse, both accept UCS-2, but under iconv it means native byte */
     /*  ordering and under libiconv it means big-endian */
+    /* On solaris 9, iconv doesn't support unicode at all and is useless to us*/
     iconv_t test;
     static char *goodname = NULL;
     static char *names[] = { "UCS-2", "UCS-2-INTERNAL", "UCS2", "ISO-10646/UCS2", "UNICODE", NULL };
