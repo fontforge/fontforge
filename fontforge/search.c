@@ -1633,8 +1633,8 @@ void FVReplaceOutlineWithReference( FontView *fv ) {
 	if ( IsASingleReferenceOrEmpty(sf->chars[i]))
     continue;		/* No point in replacing something which is itself a ref with a ref to a ref */
 	memset(fv->selected,0,sf->charcnt);
-	SVCopyToCV(fv,i,&sv->cv_srch,false);
-	SVCopyToCV(fv,i,&sv->cv_rpl,true);
+	SVCopyToCV(fv,i,&sv->cv_srch,true);
+	SVCopyToCV(fv,i,&sv->cv_rpl,false);
 	sv->sc_srch.changed_since_autosave = sv->sc_rpl.changed_since_autosave = true;
 	SVResetPaths(sv);
 	if ( !_DoFindAll(sv) && selcnt==1 )
