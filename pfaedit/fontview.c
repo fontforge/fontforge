@@ -867,7 +867,8 @@ static void FVMenuClear(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
 	if ( !fv->onlycopydisplayed || fv->filled==fv->show ) {
 	    /* If we are messing with the outline character, check for dependencies */
-	    if ( refstate<=0 && fv->sf->chars[i]->dependents!=NULL ) {
+	    if ( refstate<=0 && fv->sf->chars[i]!=NULL &&
+		    fv->sf->chars[i]->dependents!=NULL ) {
 		unsel = UnselectedDependents(fv,fv->sf->chars[i]);
 		if ( refstate==-2 && unsel ) {
 		    UnlinkThisReference(fv,fv->sf->chars[i]);
@@ -1239,7 +1240,10 @@ return( true );			/* Yes. they do work, I don't care what it looks like */
 	if ( u>=0x1f70 && u<0x2000 ) {
 	    upt = SFGetAlternate(sf,u);
 	    while ( *upt ) {
-		if ( iscombining(*upt) )
+	    if ( iscombining(*upt) || *upt==0xb7 ||	/* b7, centered dot is used as a combining accent for Ldot */
+		    *upt==0x1ffe || *upt==0x1fbf || *upt==0x1fcf || *upt==0x1fdf ||
+		    *upt==0x1fee || 
+		    *upt==0x1fcd || *upt==0x1fdd || *upt==0x1fce || *upt==0x1fde )	/* Special greek accents */
 return( true );
 		++upt;
 	    }
@@ -2079,7 +2083,7 @@ static GMenuItem edlist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_SelectAll, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'A', ksm_control, NULL, NULL, FVMenuSelectAll },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Unlinkref, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'U' }, '\0', 0, NULL, NULL, FVMenuUnlinkRef, MID_UnlinkRef },
+    { { (unichar_t *) _STR_Unlinkref, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'U' }, 'U', ksm_control, NULL, NULL, FVMenuUnlinkRef, MID_UnlinkRef },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Copyfrom, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, '\0', 0, cflist, cflistcheck, NULL, 0 },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
@@ -2854,6 +2858,7 @@ void SCPreparePopup(GWindow gw,SplineChar *sc) {
     static char *chosung[] = { "G", "GG", "N", "D", "DD", "L", "M", "B", "BB", "S", "SS", "", "J", "JJ", "C", "K", "T", "P", "H", NULL };
     static char *jungsung[] = { "A", "AE", "YA", "YAE", "EO", "E", "YEO", "YE", "O", "WA", "WAE", "OE", "YO", "U", "WEO", "WE", "WI", "YU", "EU", "YI", "I", NULL };
     static char *jongsung[] = { "", "G", "GG", "GS", "N", "NJ", "NH", "D", "L", "LG", "LM", "LB", "LS", "LT", "LP", "LH", "M", "B", "BS", "S", "SS", "NG", "J", "C", "K", "T", "P", "H", NULL };
+    int enc = sc->parent->encoding_name;
 
     if ( sc->unicodeenc!=-1 )
 	upos = sc->unicodeenc;
@@ -2867,7 +2872,9 @@ void SCPreparePopup(GWindow gw,SplineChar *sc) {
 	    upos = 0x11a8 + sc->jamo-(19+21+1);
     }
 #endif
-    else if ( sc->enc<32 || (sc->enc>=127 && sc->enc<160) )
+    else if (( sc->enc<32 || (sc->enc>=127 && sc->enc<160) ) &&
+	    (enc = sc->parent->encoding_name)!=em_none &&
+	    (enc<=em_zapfding || (enc>=em_big5 && enc<=em_unicode)))
 	upos = sc->enc;
     else {
 	uc_strncpy(space,sc->name,sizeof(space)/sizeof(unichar_t)-2);

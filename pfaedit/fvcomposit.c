@@ -204,15 +204,22 @@ return( greekalts );
 	    if ( haschar(sf,greekalts[1]))
 return( greekalts );
 	} else if ( base<0x1fb0 ) {
-	    /* unicode decomposition should work for these guys */
+	    if ( base&0x8 ) {
+		greekalts[0] = *upt;
+		greekalts[1] = 0x1fbe;	/* ypogegrammeni => prosgegammeni with upper case */
+		greekalts[2] = 0;
+		if ( haschar(sf,greekalts[1]))
+return( greekalts );
+	    } else
+		/* unicode decomposition should work for lower case */;
 	} else if ( base==0x1fd7 || base == 0x1fe7 ) {
-	    greekalts[0] = *upt;
+	    greekalts[0] = (base&0xfff0)==0x1fd0?0x03b9:0x03c5;
 	    greekalts[1] = 0x1fc1;
 	    greekalts[2] = '\0';
 	    if ( haschar(sf,greekalts[1]))
 return( greekalts );
 	} else if ( base==0x1fd2 || base==0x1fd3 || base == 0x1fe2 || base==0x1fe3 ) {
-	    greekalts[0] = *upt;
+	    greekalts[0] = (base&0xfff0)==0x1fd0?0x03b9:0x03c5;
 	    greekalts[1] = (base&1)?0x1fee:0x1fed;
 	    greekalts[2] = '\0';
 	    if ( haschar(sf,greekalts[1]))
@@ -227,6 +234,12 @@ return( greekalts );
 			*gpt = goods[i];
 		break;
 		    }
+		if ( !haschar(sf,*gpt))
+	    break;
+	    }
+	    if ( *pt=='\0' ) {
+		*gpt = 0;
+return( greekalts );
 	    }
 	}
      } else if ( base>=0x380 && base<=0x3ff && upt!=NULL ) {
@@ -547,9 +560,11 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
     if ( basech>=0x390 && basech<=0x3ff) {
 	if ( isupper(basech) &&
 		(ch==0x313 || ch==0x314 || ch==0x301 || ch==0x300 || ch==0x30d ||
+		 ch==0x1ffe || ch==0x1fbf || ch==0x1fcf || ch==0x1fdf ||
 		 ch==0x1fcd || ch==0x1fdd || ch==0x1fce || ch==0x1fde ) )
 	    pos = ____ABOVE|____LEFT;
-	else if ( ch==0x1fcd || ch==0x1fdd || ch==0x1fce || ch==0x1fde )
+	else if ( ch==0x1fcd || ch==0x1fdd || ch==0x1fce || ch==0x1fde ||
+		 ch==0x1ffe || ch==0x1fbf || ch==0x1fcf || ch==0x1fdf )
 	    pos = ____ABOVE;
     } else if ( (basech==0x1ffe || basech==0x1fbf) && (ch==0x301 || ch==0x300))
 	pos = ____RIGHT;

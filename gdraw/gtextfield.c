@@ -1159,7 +1159,7 @@ return( glistfield_mouse(ge,event));
 	    if ( !gt->hidden_cursor )
 		gt->old_cursor = GDrawGetCursor(gt->g.base);
 	    GDrawSetCursor(gt->g.base,ct_draganddrop);
-	} else if ( event->u.mouse.button!=3 ) {
+	} else if ( event->u.mouse.button!=3 && !(event->u.mouse.state&ksm_shift) ) {
 	    if ( event->u.mouse.button==1 )
 		GTextFieldGrabPrimarySelection(gt);
 	    gt->sel_start = gt->sel_end = gt->sel_base = end-gt->text;
@@ -1172,7 +1172,7 @@ return( glistfield_mouse(ge,event));
 	}
 	if ( gt->pressed==NULL )
 	    gt->pressed = GDrawRequestTimer(gt->g.base,200,100,NULL);
-	if ( gt->sel_start > u_strlen( gt->text ))
+	if ( gt->sel_start > u_strlen( gt->text ))	/* Ok to have selection at end, but beyond is an error */
 	    fprintf( stderr, "About to crash\n" );
 	_ggadget_redraw(g);
 return( true );
@@ -1321,6 +1321,10 @@ return( true );
 		gt->sel_end = gt->sel_base;
 	    }
 	    _ggadget_redraw(g);
+	    if ( gt->vsb!=NULL )
+		GScrollBarSetPos(&gt->vsb->g,gt->loff_top);
+	    if ( gt->hsb!=NULL )
+		GScrollBarSetPos(&gt->hsb->g,gt->xoff_left);
 	}
 return( true );
     }
