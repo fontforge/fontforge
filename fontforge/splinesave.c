@@ -2483,7 +2483,7 @@ static void ExpandRefList2(GrowBuf *gb, SplineChar *sc, RefChar *refs, RefChar *
 	}
 	for ( s=h, cnt=0; s!=NULL; s=s->next, ++cnt )
 	    s->hintnumber = cnt>=HntMax?-1:cnt;
-	for ( s=v, cnt=0; s!=NULL; s=s->next, ++cnt )
+	for ( s=v; s!=NULL; s=s->next, ++cnt )
 	    s->hintnumber = cnt>=HntMax?-1:cnt;
     
 	if ( h!=NULL )
