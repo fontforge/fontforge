@@ -692,7 +692,7 @@ uint16 MacStyleCode( SplineFont *sf, uint16 *psstylecode ) {
 
     if ( sf->macstyle!=-1 ) {
 	if ( psstylecode!=NULL )
-	    *psstylecode = (sf->macstyle&0xf)|((sf->macstyle&0x60)>>1);
+	    *psstylecode = (sf->macstyle&0x3)|((sf->macstyle&0x6c)>>1);
 return( sf->macstyle );
     }
 
