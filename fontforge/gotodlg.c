@@ -257,8 +257,8 @@ struct unicoderange {
     { "Tag characters", 0xe0000, 0xe007f, -1 },
     { "Variation Selectors", 0xe0110, 0xe01ff, -1 },
 /* End of SSP */
-    { "Supplementary Private Use Area-A", 0xfff80, 0xfffff, -1 },
-    { "Supplementary Private Use Area-B", 0x10ff80, 0x10ffff, -1 },
+    { "Supplementary Private Use Area-A", 0xf0000, 0xfffff, -1 },
+    { "Supplementary Private Use Area-B", 0x100000, 0x10ffff, -1 },
     { NULL }
 };
 
