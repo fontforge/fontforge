@@ -36,6 +36,8 @@
 
 #include "ttf.h"
 
+int glyph_2_name_map=0;
+
 /* This file produces a ttf file given a splinefont. The most interesting thing*/
 /*  it does is to figure out a quadratic approximation to the cubic splines */
 /*  that postscript uses. We do this by looking at each spline and running */
@@ -7159,6 +7161,49 @@ static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
     /* ttfcopyfile closed all the files (except ttf) */
 }
 
+static void DumpGlyphToNameMap(char *fontname,SplineFont *sf) {
+    char *d, *e;
+    char *newname = galloc(strlen(fontname)+10);
+    FILE *file;
+    int i,k,max;
+    SplineChar *sc;
+
+    strcpy(newname,fontname);
+    d = strrchr(newname,'/');
+    if ( d==NULL ) d=newname;
+    e = strrchr(d,'.');
+    if ( e==NULL ) e = newname+strlen(newname);
+    strcpy(e,".g2n");
+
+    file = fopen(newname,"w");
+    if ( file==NULL ) {
+	fprintf(stderr, "Failed to open glyph to name map file for writing: %s\n", newname );
+	free(newname);
+return;
+    }
+
+    if ( sf->subfontcnt==0 )
+	max = sf->charcnt;
+    else {
+	for ( k=max=0; k<sf->subfontcnt; ++k )
+	    if ( sf->subfonts[k]->charcnt > max )
+		max = sf->subfonts[k]->charcnt;
+    }
+    for ( i=0; i<max; ++i ) {
+	if ( sf->subfontcnt==0 )
+	    sc = sf->chars[i];
+	else {
+	    for ( k=0; k<sf->subfontcnt; ++k ) if ( i<sf->subfonts[k]->charcnt )
+		if ( (sc=sf->subfonts[k]->chars[i])!=NULL )
+	    break;
+	}
+	if ( sc!=NULL && sc->ttf_glyph!=-1 )
+	    fprintf( file, "%d\t%s\n", sc->ttf_glyph, sc->name );
+    }
+    fclose(file);
+    free(newname);
+}
+
 int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
 	int32 *bsizes, enum bitmapformat bf,int flags) {
     struct alltabs at;
@@ -7187,6 +7232,8 @@ int WriteTTFFont(char *fontname,SplineFont *sf,enum fontformat format,
     if (( ttf=fopen(fontname,"w+"))==NULL )
 return( 0 );
     ret = _WriteTTFFont(ttf,sf,format,bsizes,bf,flags);
+    if ( ret && glyph_2_name_map )
+	DumpGlyphToNameMap(fontname,sf);
     if ( fclose(ttf)==-1 )
 return( 0 );
 return( ret );

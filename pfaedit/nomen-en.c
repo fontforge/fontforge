@@ -943,6 +943,7 @@ static char *str_PrefsPopupMFA[] = "Commands to pass to mf (metafont) program, t
 static char *str_PrefsPopupMFK[] = "Ask the user for mf commands each time mf is invoked"
 static char *str_PrefsPopupMFB[] = "PfaEdit loads large images into the background of each character\nprior to autotracing them. You may retain those\nimages to look at after mf processing is complete, or\nremove them to save space"
 static char *str_PrefsPopupMFE[] = "MetaFont (mf) generates lots of verbiage to stdout.\nMost of the time I find it an annoyance but it is\nimportant to see if something goes wrong."
+static char *str_PrefsPopupG2N[] = "When generating a truetype or opentype font it is occasionally\nuseful to know the mapping between truetype glyph ids and\ncharacter names. Setting this option will cause PfaEdit to\nproduce a file (with extension .g2n) containing those data.";
 static char *str_Generic[] = "Generic";
 static char *str_PrefsFontInfo[] = "Font Info";
 static char *str_PrefsApps[] = "Apps";

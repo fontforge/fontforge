@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 16-Sep-2001 -->
-  <!-- AP: Last modified: 5-Aug-2002 -->
+  <!-- AP: Last modified: 1-Sep-2002 -->
   <TITLE>Older changes to PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,420 @@
 <A HREF="index.html#change-log">Current changes</A>
 <P>
 <UL>
+  <LI>
+    30-July-2002
+    <UL>
+      <LI>
+	Fixed a couple of problems found by
+	<A HREF="http://developer.kde.org/~sewardj/">valgrind</A>
+      <LI>
+	Applied a patch from KANOU Hiroki. PasteInto did not work.
+      <LI>
+	Added run length encoding compression to sfd files (for background images).
+	Bitmap image sizes are much smaller now.
+      <LI>
+	PfaEdit failed to recognize that a PNG black and white image was monochrome.
+      <LI>
+	Now PfaEdit will immediately put up the progress indicator when loading the
+	first font (so the user has something to look at)
+      <LI>
+	A little more work on generate multiple.
+      <LI>
+	Removed a confusing message about autohinting a font for which no autohinting
+	was actually done (it was just checking to see if it needed to).
+      <LI>
+	Oops. Windows won't accept a ttf file if there is no name table entry with
+	the same platform/specific entries as those in the cmap.
+      <LI>
+	If a character contained a reference to a blank character that PfaEdit decided
+	wasn't worth outputting, then the truetype composite for it would not work.
+      <LI>
+	The standard format for the ttf "version" name is different from the equivalent
+	postscript name. Added code to interconvert between the two rather than expecting
+	them to be the same.
+      <LI>
+	Added a gasp table for when there was no hinting.
+    </UL>
+  <LI>
+    28-July-2002
+    <UL>
+      <LI>
+	Pressing the [Filter] button on a blank field will show the current filter
+	text (holding the mouse over the [Filter] button will cause a popup to appear
+	with the same info).
+      <LI>
+	If there were know selection the pressing an arrow key would presume that
+	the selection was at encoding -1, which caused strange behavior. Now we will
+	pretend that the selection is visible and halfway down the screen.
+      <LI>
+	Oops. CMap files allow for multiple encodings for the same glyph. Now prepared
+	to put in refs.
+      <LI>
+	Oops. Generate multiple had several problems (couldn't handle encodings above
+	0x80000000, was surprised by empty font numbers, etc.)
+      <LI>
+	If a family name contained a space then only the first word in it would be
+	read out of an sfd file
+    </UL>
+  <LI>
+    27-July-2002
+    <UL>
+      <LI>
+	Oops. I was calling TeX sfd files Sub Font Directories and their proper name
+	was Sub Font Definition.
+      <LI>
+	Enabled the [Stop] button in the progress dlg when saving a font.
+      <LI>
+	PfaEdit would go into an infinite loop when reading one of its sfd files
+	when it was expecting a TeX sfd file. Fixed, and put in guards so that won't
+	happen anyway.
+      <LI>
+	Added two new menu commands "Flatten to CMap" and "Convert By CMap". These
+	will use one of Adobe's CMap files to guide the Flattening/Converting process
+	(rather than one of my cidmap files)
+      <LI>
+	Added support for some really large encodings if they have almost equally
+	large gaps in them (use adobe's "coderange" data to manage a sparce array).
+      <LI>
+	If we could not find any style modifiers in a fontname, then we used to claim
+	that the style was "Regular". I think it is better if we claim that it is
+	/Width (ie. whatever is in the FontInfo /Width entry) and if that isn't set
+	then return "Regular")
+    </UL>
+  <LI>
+    26-July-2002
+    <UL>
+      <LI>
+	Added support for Werner's (TeX's) Sub Font Definition files which provide
+	a way of splitting up a 2 byte encoding into lots of little pfb fonts with
+	256 characters in each.
+      <LI>
+	Normally in a ttf font, PfaEdit generates a 'post' table with the names of
+	all the characters in it. I've just added a way to make it generate a short
+	'post' table with no character names.
+      <LI>
+	PfaEdit generates bad truetype hints. There is now a way to turn these off
+	in the Generate Font dlg.
+    </UL>
+  <LI>
+    24-July-2002
+    <UL>
+      <LI>
+	Code for finding the style still not working as it should.
+      <LI>
+	Oops, the postscript parser was over-zealous about generating warnings.
+      <LI>
+	Oops, the code which interprets results from autotrace was over-zealous on
+	getting rid of contours in small images. 
+	  <HR>
+      <LI>
+	SetUnicodeValue did not behave as it should have.
+      <LI>
+	Made acorn2sfd a little sturdier. 
+	  <HR>
+      <LI>
+	Bitmap copies didn't work from the font view (probably broke when I added
+	anti-aliased support)
+    </UL>
+  <LI>
+    23-July-2002
+    <UL>
+      <LI>
+	Crash bug introduced yesterday by the duplicate name work.
+      <LI>
+	Initial version of <I><A HREF="acorn2sfd.html">acorn2sfd</A></I> -- a program
+	to convert Acorn RISC/OS font directories into sfd files.
+      <LI>
+	If a font is loaded from a ttf file, then it will have both postscript and
+	ttf versions of certain names stored (family, copyright, version, etc.).
+	The postscript names are obviously displayed, but changing them would not
+	change the ttf versions. So generating a ttf font and then looking at it
+	would still show the old setting of the name. The two should be better
+	synchronized now.
+    </UL>
+  <LI>
+    22-July-2002
+    <UL>
+      <LI>
+	Introduced a crash yesterday if a postscript font contained an name in an
+	encoding vector which was not defined in the font. 
+	  <HR>
+      <LI>
+	More work on duplicate names. I no longer append a ".&lt;number&gt;" to the
+	end of duplicate entries and when generating fonts I remove them and generate
+	an encoding with has multiple references to the base glyph. Which is what
+	I should have been doing.
+      <LI>
+	Small improvements to the style name detector.
+      <LI>
+	If the Width field was a null string, then reading it from an sfd file caused
+	us to thing the next keyword was the width.
+      <LI>
+	Fixed a bug in the display of menus.
+    </UL>
+  <LI>
+    21-July-2002
+    <UL>
+      <LI>
+	Various small bugs in build accented characters
+      <LI>
+	On the mac the filenames for mac resource fonts are different from same fonts
+	elsewhere (elsewhere they have an additional ".bin"). Made either extension
+	work from a script file (so they can work cross platform).
+      <LI>
+	Expand Stroke had problems with curved splines where the slope at one of
+	the end-points was 0/0. Since this will happen by default when joining a
+	corner point to a curved point this should have been a frequent occurance.
+      <LI>
+	Bug in generating 'post' table if glyph 0 existed but was not .notdef.
+      <LI>
+	Postscript fonts with one glyph going to multiple encodings cause problems.
+      <LI>
+	Now both PS and TTF load will have consistant names in the above case.
+      <LI>
+	My presumption of how symbol encodings were stored under MicroSoft was wrong.
+	It is not a one byte encoding, it is a map into the private/corporate use
+	area of unicode. 0xf000-0xf0ff. Changed to deal with that.
+      <LI>
+	Loading a font with mac roman encoding often generated a font of 65536 characters
+	(rather than 256+a few extras). Fixed.
+      <LI>
+	New version of autowidth/kern. I don't think it kerns serifed fonts well,
+	might do ok for sans.
+      <LI>
+	Ability to provide autokern with a list of potential kern pairs and have
+	it just check them. 
+	  <HR>
+      <LI>
+	Scripting support for kernpair files
+      <LI>
+	AutoWidth/Kern now does a little better on serifed fonts
+    </UL>
+  <LI>
+    15-July-2002
+    <UL>
+      <LI>
+	Correct Direction should now only set the changed bit when it actually changes
+	a character.
+      <LI>
+	Correct Direction will now warn about flipped references, and offer you the
+	chance to unlink them (after which it will be able to correct their direction)
+      <LI>
+	Added ability to scripting to check if a character has changed, and to get
+	a font's filename.
+      <LI>
+	Cleaned up build accented chars a bit.
+      <LI>
+	Another attempt to keep X from crashing on disappearing progress dlgs.
+      <LI>
+	Maximizing the fontview could make it bigger than the screen so that the
+	scroll bar was unusable.
+    </UL>
+  <LI>
+    14-July-2002
+    <UL>
+      <LI>
+	Valek points out that bitmaps generated by freetype were one pixel too high.
+      <LI>
+	Changed the get info dlg for references so that the user could change the
+	transformation matrix.
+      <LI>
+	Font Info-&gt;PS Private got the wrong value when guessing the vertical stem
+	snaps
+      <LI>
+	PfaEdit did not find ghosthints for things at the numeric height.
+      <LI>
+	PfaEdit got non-integer values for some hints where it should have found
+	integer values.
+      <LI>
+	Bug when auto-hinting references fixed.
+      <LI>
+	PfaEdit would find hints for things that don't need to be hinted (finding
+	a vertical stem for the top of "E" for instance. There is a vertical stem
+	there, but it is deemed irrelevant). It now finds fewer of these hints. I
+	hope it still finds all the legitimate ones.
+    </UL>
+  <LI>
+    13-July-2002
+    <UL>
+      <LI>
+	I think I've finally worked out Apple's scaled offset
+	<A HREF="Composites/index.html">composite</A> glyphs (and they do not behave
+	as Apple documents)
+      <LI>
+	PfaEdit was not setting the maxCompositePoints and maxCompositeContours fields
+	of the maxp table of truetype fonts. This meant that in some cases rasterizers
+	would crash when trying to deal with characters containing many components.
+      <LI>
+	The translation tables between unicode and johab were wrong.
+      <LI>
+	PfaEdit failed to generate ttf fonts with big5/sjis/wansung cmaps.
+      <LI>
+	Changed so that reading sjis/wansung encoded ttf files would use a sjis/wansung
+	encoding in pfaedit (rather than the 94x94 encoding that no one but me seems
+	to understand).
+    </UL>
+  <LI>
+    9-July-2002
+    <UL>
+      <LI>
+	Bug in generating ttf fonts with embedded bitmaps.
+      <LI>
+	Open Font dlg will now try again if it can't load a valid font.
+      <LI>
+	Started working on a
+	<A HREF="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/pfaedit/pfaedit/test/">minimal
+	testsuite</A>, and what do you know? I found some bugs...
+	<UL>
+	  <LI>
+	    Scripting had problems when user preference was set to ask for bdf resolution.
+	  <LI>
+	    Generate() scripting built in now takes an optional resolution argument
+	  <LI>
+	    Problems generating the vertical metrics tables in cid keyed otf fonts
+	  <LI>
+	    Problems working with cid-keyed fonts in scripts if pfaedit could not find
+	    the requisite cidmap file 
+	      <HR>
+	</UL>
+      <LI>
+	Fixed various problems with parsing EPS files, and extended the vocabulary
+	a little.
+      <LI>
+	If the ".notdef" character was whitespace (as it is for most postscript fonts)
+	then generating a ttf font would produce an entry for glyph 0 that both flint
+	and NT consider to be erroneous, while freetype and windows think it's fine.
+	Fixed so that Flint no longer complains.
+      <LI>
+	the fontview could get confused about matching short names with periods in
+	them against the standard postscript unicode names, so it could think that
+	"b.0" matched "bracketleft". This caused some confusion in the display.
+    </UL>
+  <LI>
+    27-June-2002
+    <UL>
+      <LI>
+	A couple more vms patches
+    </UL>
+  <LI>
+    26-June-2002
+    <UL>
+      <LI>
+	Merged in Jouk Jansen changes for OpenVMS
+    </UL>
+  <LI>
+    23-June-2002
+    <UL>
+      <LI>
+	Valek wanted to be able to add comments to characters and to flag characters
+	with some visible mark. The <A HREF="getinfo.html#Character">Char Info </A>dlg
+	has been extended to do this. The scripting language has been extended to
+	allow scripts to set and test these too.
+      <LI>
+	Added a "foreach selected character in the font" loop.
+      <LI>
+	Added $selection variable to return the current selection as an array
+      <LI>
+	Extended the Select() and SelectMore() commands to accept an array as an
+	argument (and set the selection to the array).
+    </UL>
+  <LI>
+    22-June-2002
+    <UL>
+      <LI>
+	Yesterday's unicode sprintf change introduced another bug. Fixed
+      <LI>
+	Valek points out that if you have a bitmap only font and you attempt
+	simultaneously to scale it and delete all the bitmaps, then PfaEdit would
+	crash. (Same thing would happen if you just removed all the bitmaps).
+      <LI>
+	Valek provided some additional russian translations.
+    </UL>
+  <LI>
+    21-June-2002
+    <UL>
+      <LI>
+	Ttf fonts seem to be unhappy if they contain a glyph with a single contour
+	and a single point on that contour. I don't know why. Output all such as
+	spaces.
+      <LI>
+	Added ability to set the resolution of a bdf font.
+      <LI>
+	Rearranged preferences.
+      <LI>
+	Added scripting access to Force-Encoding
+      <LI>
+	PfaEdit memory allocation optimizations didn't work if sizeof(int *)==8
+      <LI>
+	Bug in unicode sprintf routine when sizeof(long)==8
+      <LI>
+	In some cases when reading a ttf font with a (unicode) cmap which assigned
+	one glyph to two encodings, and if that glyph happened to be in the
+	AdobeStandardEncoding, then when converting to Type1 PfaEdit would create
+	a dictionary which recursively seac-ed (invoked) itself. This caused an infinite
+	loop in GhostView, and crashed some printers.
+    </UL>
+  <LI>
+    11-June-2002
+    <UL>
+      <LI>
+	CID fix on 3 June was wrong, it broke all non-CID keyed postscript fonts
+	(it did work for CID fonts). Both should work now.
+      <LI>
+	Added better support for bdf foundries and for bdf copyrights.
+      <LI>
+	Added a preference item to specify the ttf VendorID (foundry). Used to truncate
+	the bdf foundry to 4 characters.
+      <LI>
+	Small bug fix in print
+      <LI>
+	Cleaned up bug in scripting ($bitmaps)
+    </UL>
+  <LI>
+    7-June-2002
+    <UL>
+      <LI>
+	Fixed some more CID font problems
+      <LI>
+	Tweaked behavior of FamilyName/FullName in GetFontInfo dlg.
+    </UL>
+  <LI>
+    6-June-2002
+    <UL>
+      <LI>
+	PfaEdit now supports greymap strikes in truetype files
+      <LI>
+	The bitmap editor has been extended to handle greymap (anti-aliased) fonts
+      <LI>
+	There is no longer a separate mechanism for generating greymap files from
+	the Generate Font dlg, instead they may be added to the font database file
+	with the bitmap dlg.
+      <LI>
+	Added support for vertical metrics in bdf files.
+      <LI>
+	Fixed some problems in moving the vwidth line in outline character views
+      <LI>
+	Added some default window positioning code.
+    </UL>
+  <LI>
+    4-June-2002
+    <UL>
+      <LI>
+	Oops, more bug fixes for the new greymap format.
+      <LI>
+	One more attempt to solve the X Server bug where destroying/unmapping a window
+	before its map notify event gets processed causes the X server to crash.
+    </UL>
+  <LI>
+    3-June-2002
+    <UL>
+      <LI>
+	Stopped using my extension to bdf to make it support greymaps and started
+	using that supported by freetype (removed the BITSPERPIXEL keyword and added
+	an extra argument to the SIZE keyword).
+      <LI>
+	More fixes for cid fonts
+    </UL>
   <LI>
     18-May-2002
     <UL>

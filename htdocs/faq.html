@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 29-Aug-2002 -->
+  <!-- AP: Last modified: 1-Sep-2002 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -538,8 +538,8 @@ $ mv pfaedit.1 /usr/local/share/man/man1
 	<P>
 	Then edit the file ~/.bashrc to contain the lines:
 	<BLOCKQUOTE>
-	  <PRE>PATH=/usr/local/bin:$PATH ; export PATH
-MANPATH=/usr/local/share/man:$MANPATH ; export MANPATH
+	  <PRE>PATH=${PATH}:/usr/local/bin ; export PATH
+MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
 </PRE>
 	</BLOCKQUOTE>
       <LI>

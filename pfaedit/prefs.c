@@ -68,6 +68,7 @@ extern int mf_ask;			/* in autotrace.c */
 extern int mf_clearbackgrounds;		/* in autotrace.c */
 extern int mf_showerrors;		/* in autotrace.c */
 extern char *mf_args;			/* in autotrace.c */
+extern int glyph_2_name_map;		/* in tottf.c */
 unichar_t *script_menu_names[SCRIPT_MENU_MAX];
 char *script_filenames[SCRIPT_MENU_MAX];
 
@@ -145,6 +146,7 @@ static struct prefs_list {
 	{ "TTFFoundry", pr_string, &TTFFoundry, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupTFN },
 	{ "XUID-Base", pr_string, &xuid, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupXU },
 	{ "AskBDFResolution", pr_bool, &ask_user_for_resolution, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupBR },
+	{ "DumpGlyphMap", pr_bool, &glyph_2_name_map, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupG2N },
 	{ NULL }
 },
  hidden_list[] = {
