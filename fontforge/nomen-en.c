@@ -517,7 +517,7 @@ static char *str_ChangeMMBlend = "MM Change Def Weights...";
 static char mnemonic_MMValid = 'W';
 static char *str_MMReblend = "MM Reblend";
 static char mnemonic_MMReblend = 'R';
-static char *str_MMBlendToNew = "Blend to New Font";
+static char *str_MMBlendToNew = "Blend to New Font...";
 static char mnemonic_MMBlendToNew = 'B';
 
     /* Font Info dlg */
