@@ -1309,11 +1309,14 @@ return;
     }
 }
 
-static void addinfo(struct fontparse *fp,char *line,char *tok,char *binstart,int binlen) {
+static void addinfo(struct fontparse *fp,char *line,char *tok,char *binstart,int binlen,FILE *in) {
+    char *pt;
+
     decodestr((unsigned char *) binstart,binlen);
     binstart += fp->fd->private->leniv;
     binlen -= fp->fd->private->leniv;
 
+ retry:
     if ( fp->insubs ) {
 	struct pschars *chars = /*fp->insubs ?*/ fp->fd->private->subrs /*: fp->fd->private->othersubrs*/;
 	while ( isspace(*line)) ++line;
@@ -1348,6 +1351,31 @@ static void addinfo(struct fontparse *fp,char *line,char *tok,char *binstart,int
 	    GProgressNext();
 	}
     } else if ( !fp->alreadycomplained ) {
+	/* Special hacks for known badly formatted fonts */
+	if ( strstr(line,"/CharStrings")!=NULL ) {
+	    for ( pt=line; *pt!='/'; ++pt );
+	    pt = strchr(pt+1,'/');
+	    if ( pt!=NULL )
+		*pt = '\0';
+	    parseline(fp,line,in);
+	    if ( pt!=NULL ) {
+		*pt = '/';
+		line = pt;
+ goto retry;
+	    }
+return;
+	} else if ( strstr(line,"/Subrs")!=NULL ) {
+	    pt = strstr(line,"dup");
+	    if ( pt!=NULL )
+		*pt = '\0';
+	    parseline(fp,line,in);
+	    if ( pt!=NULL ) {
+		*pt = 'd';
+		line = pt;
+ goto retry;
+	    }
+return;
+	}
 	fprintf( stderr, "Shouldn't be in addinfo |%s", line );
 	fp->alreadycomplained = true;
     }
@@ -1518,7 +1546,7 @@ return( 0 );
     if ( binstart==NULL ) {
 	parseline(fp,buffer,temp);
     } else {
-	addinfo(fp,buffer,temptok,binstart,binlen);
+	addinfo(fp,buffer,temptok,binstart,binlen,temp);
     }
 return( 1 );
 }
