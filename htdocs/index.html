@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 9-Feb-2002 -->
+  <!-- AP: Last modified: 12-Feb-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -78,14 +78,14 @@ you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-020208.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 8-Feb-2002
+    <A HREF="pfaedit-020212.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 12-Feb-2002
   <LI>
     <A HREF="pfaedit_ppc-020208.tgz">Download pfaedit linux-ppc SUSE 7.1
     </A>executable Version: 8-Feb-2002
   <LI>
-    <A HREF="pfaedit-solaris-020208.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 8-Feb-2002
+    <A HREF="pfaedit-solaris-020212.tgz">Download pfaedit Solaris 8.0
+    </A>executable Version: 12-Feb-2002
   <LI>
     <A HREF="pfaedit-020208-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
     Version: 8-Feb-2002 (Redhat 7.1)
@@ -116,9 +116,9 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-020208-1.src.rpm">source RPM</A>: Version:
 8-Feb-2002<BR>
-Or you can download the <A HREF="pfaedit_full-020209.tgz">entire source tree
+Or you can download the <A HREF="pfaedit_full-020212.tgz">entire source tree
 </A>in one .tgz file: Version
-9-Feb-2002<!--
+12-Feb-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -145,10 +145,11 @@ If you want to edit CID keyed fonts you need these
 <P>
 With the appropriate <A NAME="image-libs">libraries</A>, PfaEdit can import
 png, tiff, and gif images to act as character backgrounds for tracing purposes
-(PfaEdit can import bmp and xbm formats without external libraries). None
-is required for the proper compilation/execution of PfaEdit, if the libraries
-are not present they will not be used. If your machine doesn't have them
-and you want them they are available from:
+(PfaEdit can import bmp and xbm formats without external libraries). With
+the freetype library PfaEdit will do a better job making bitmap characters
+for you. None is required for the proper compilation/execution of PfaEdit,
+if the libraries are not present they will not be used. If your machine doesn't
+have them and you want them they are available from:
 <UL>
   <LI>
     <A HREF="http://www.libpng.org/pub/png/libpng.html">libpng</A> (and required
@@ -159,6 +160,8 @@ and you want them they are available from:
     <A HREF="http://prtr-13.ucsc.edu/~badger/software/libungif/index.shtml">libungif</A>
   <LI>
     <A HREF="http://www.ijg.org/">libjpeg</A>
+  <LI>
+    <A HREF="http://freetype.sf.net/">freetype</A>
 </UL>
 <P>
 PfaEdit has been ported to the following systems (at some point in its life)
@@ -266,6 +269,33 @@ Or you can just browse the <A HREF="overview.html">docs online</A>.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    12-Feb-2002
+    <UL>
+      <LI>
+	Added sjis and Wansung encodings
+      <LI>
+	Used freetype for a couple of other things (generating gdf files and exporting
+	bitmaps)
+      <LI>
+	Textfields didn't respond to middle button clicks (to paste the primary
+	selection).
+      <LI>
+	PfaEdit would sometimes fail to exit properly if you brought up a script
+	dlg.
+      <LI>
+	Added a --version command line option.
+      <LI>
+	Fixed another bug in generating postscript.
+      <LI>
+	Added a user defined print command option to the print dlg.
+      <LI>
+	Fixed a bug in Simplify/Merge
+      <LI>
+	Fixed a bug in loading integer resources
+      <LI>
+	Cleaned up the help command line option.
+    </UL>
   <LI>
     9-Feb-2002
     <UL>
@@ -768,8 +798,6 @@ prepared to save frequently and always work on a copy of the original.
     it. It should be easy enough to add (I hope). Furthermore I don't know what
     to do about digits which appear in arabic/hebrew in l2r ordering, so I shall
     give the r2l scripts access to both lookups.
-  <LI>
-    My rasterizer will never be as good as adobe's.
   <LI>
     I'm told AutoKern doesn't work too well.
   <LI>

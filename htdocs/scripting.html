@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 8-Feb-2002 -->
+  <!-- AP: Last modified: 12-Feb-2002 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -11,9 +11,43 @@
 </H1>
 <P>
 PfaEdit includes an interpreter so you can write scripts to modify fonts.
+<UL>
+  <LI>
+    <A HREF="#Starting">Starting a script</A>
+  <LI>
+    <A HREF="#Language">Scripting language</A>
+    <UL>
+      <LI>
+	<A HREF="#variables">Built in variables</A>
+      <LI>
+	<A HREF="#procedures">Built in procedures</A>
+      <LI>
+	<A HREF="#Example">Example</A>
+    </UL>
+  <LI>
+    <A HREF="scripting.html#Execute">The Execute Script dialog</A>
+  <LI>
+    <A HREF="#menu">The Scripts menu</A>
+</UL>
+<H2>
+  <A NAME="Starting">Starting scripts</A>
+</H2>
 <P>
 If you start pfaedit with a script on the command line it will not put up
 any windows and it will exit when the script is done.
+<BLOCKQUOTE>
+  <PRE>$ pfaedit -script scriptfile.pe {fontnames}
+</PRE>
+</BLOCKQUOTE>
+<P>
+PfaEdit can also be used as an interpreter that the shell will automatically
+pass scripts to. If you a mark your script files as executable<BR>
+<CODE>&nbsp; &nbsp; $ chmod +x scriptfile.pe</CODE><BR>
+and begin each one with the line<BR>
+<CODE>&nbsp; &nbsp; #!/usr/local/bin/pfaedit</CODE><BR>
+(or wherever pfaedit happens to reside on your system) then you can invoke
+the script just by typing<BR>
+<CODE>&nbsp; &nbsp; $ scriptfile.pe {fontnames}</CODE>
 <P>
 You can also start a script from within PfaEdit with File-&gt;Execute Script,
 and you can use the Preference Dlg to define a set of frequently used scripts
@@ -42,6 +76,9 @@ font and extending it to contain cyrillic characters. So the script might:
   <LI>
     ... and so forth
 </UL>
+<H2>
+  Scripting <A NAME="Language">Language</A>
+</H2>
 <P>
 The syntax is rather like a mixture of C and shell commands. Every file
 corresponds to a procedure. As in a shell script arguments passed to the
@@ -188,9 +225,9 @@ Similarly when working with cid keyed fonts, PfaEdit works in the "current
 sub font", and most commands refer to this font. The CIDChangeSubFont() command
 can alter that.
 <P>
-All builtin variables begin with "$", you may not create any variables that
-start with "$" yourself (though you may assign to (some) already existing
-ones)
+All builtin <A NAME="variables">variables</A> begin with "$", you may not
+create any variables that start with "$" yourself (though you may assign
+to (some) already existing ones)
 <UL>
   <LI>
     <CODE>$0 </CODE>the current script filename
@@ -259,8 +296,8 @@ endloop
 </PRE>
 </BLOCKQUOTE>
 <P>
-The built in procedures are very similar to the menu items with the same
-names.
+The built in <A NAME="procedures">procedures</A> are very similar to the
+menu items with the same names.
 <DL>
   <DT>
     Print(arg1,arg2,arg3,...)
@@ -708,8 +745,9 @@ SetKern(0u41e,kern)
 </DL>
 <P>
   <HR>
-<P>
-Example:
+<H3>
+  <A NAME="Example">Example</A>:
+</H3>
 <BLOCKQUOTE>
   <PRE>#!/usr/local/bin/pfaedit
 #Take a Latin font and apply some simple transformations to it
@@ -787,6 +825,36 @@ Save($1:r+"-koi8-r.sfd");
 Quit(0);
 </PRE>
 </BLOCKQUOTE>
+<H2>
+  The <A NAME="Execute">Execute</A> Script dialog
+</H2>
+<P>
+This dialog allows you to type a script directly in to PfaEdit and then run
+it. Of course the most common case is that you'll have a script file somewhere
+that you want to execute, so there's a button [Call] down at the bottom of
+the dlg. Pressing [Call] will bring up a file picker dlg looking for files
+with the extension *.pe (you can change that by typing a wildcard sequence
+and pressing the [Filter] button). After you have selected your scipt the
+appropriate text to text to invoke it will be placed in the text area.
+<P>
+The current font of the script will be set to whatever font you invoked it
+from.
+<H2>
+  The Scripts <A NAME="menu">Menu</A>
+</H2>
+<P>
+You can use the preference dialog to create a list of frequently used scripts.
+Invoke File-&gt;Preferences and select the Scripts tag. In this dialog are
+ten possible entries, each one should have a name (to be displayed in the
+menu) and an associated script file to be run.
+<P>
+After you have set up your preferences you can invoke scripts from the font
+view, either directly from the menu (File-&gt;Scripts-&gt;&lt;your name&gt;)
+or by a hot key. The first script you added will be invoked by Cnt-Alt-1,
+then second by Cnt-Alt-2, and the tenth by Cnt-Alt-0.
+<P>
+The current font of the script will be set to whatever font you invoked it
+from.
 <P>
 <P ALIGN=Center>
 -- <A HREF="cliargs.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
