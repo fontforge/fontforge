@@ -4177,6 +4177,9 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 			kc->first_cnt = class1[i];
 		++ kc->first_cnt;
 		kc->offsets = galloc(kc->first_cnt*kc->second_cnt*sizeof(int16));
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+		kc->adjusts = gcalloc(kc->first_cnt*kc->second_cnt,sizeof(DeviceTable));
+#endif
 		fseek(ttf,begin_table+array,SEEK_SET);
 		for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i )
 		    kc->offsets[i] = getushort(ttf);
@@ -4197,6 +4200,9 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 		class2 = gcalloc(gc>info->glyph_cnt?gc:info->glyph_cnt,sizeof(uint16));
 		kvs = galloc(kv*sizeof(int16));
 		kc->offsets = galloc(kc->first_cnt*kc->second_cnt*sizeof(int16));
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+		kc->adjusts = gcalloc(kc->first_cnt*kc->second_cnt,sizeof(DeviceTable));
+#endif
 		for ( i=0; i<kv; ++i )
 		    kvs[i] = (int16) getushort(ttf);
 		for ( i=0; i<gc; ++i )
