@@ -653,6 +653,8 @@ typedef struct minimumdistance {
 
 typedef struct layer {
     SplinePointList *splines;
+    RefChar *refs;			/* Only in foreground layer(s) */
+    ImageList *images;			/* Only in background or type3 layer(s) */
     Undoes *undoes;
     Undoes *redoes;
 } Layer;
@@ -676,7 +678,6 @@ typedef struct splinechar {
     StemInfo *vstem;		/* vstem hints have a horizontal offset but run vertically */
     DStemInfo *dstem;		/* diagonal hints for ttf */
     MinimumDistance *md;
-    RefChar *refs;
     struct charview *views;
     struct charinfo *charinfo;
     struct splinefont *parent;
@@ -704,7 +705,6 @@ typedef struct splinechar {
     struct splinecharlist { struct splinechar *sc; struct splinecharlist *next;} *dependents;
 	    /* The dependents list is a list of all characters which refenence*/
 	    /*  the current character directly */
-    ImageList *backimages;
     KernPair *kerns;
     KernPair *vkerns;
     PST *possub;		/* If we are a ligature then this tells us what */

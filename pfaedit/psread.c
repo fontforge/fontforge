@@ -2108,7 +2108,7 @@ static void SCInterpretPS(FILE *ps,SplineChar *sc, int *flags) {
     InterpretPS(ps,NULL,&ec,NULL);
     ec.sc = sc;
     sc->width = ec.width;
-    sc->refs = ec.refs;
+    sc->layers[ly_fore].refs = ec.refs;
     sc->layers[ly_fore].splines = SplinesFromEntities(&ec,flags);
     free(wrapper.top);
 }
@@ -2146,7 +2146,7 @@ void PSFontInterpretPS(FILE *ps,struct charprocs *cp) {
     /*  with the appropriate splinechar. If we can't find anything then throw */
     /*  out the reference */
     for ( i=0; i<cp->next; ++i ) {
-	for ( p=NULL, ref=cp->values[i]->refs; ref!=NULL; ref=next ) {
+	for ( p=NULL, ref=cp->values[i]->layers[ly_fore].refs; ref!=NULL; ref=next ) {
 	    next = ref->next;
 	    for ( j=0; j<cp->next; ++j )
 		if ( strcmp(cp->keys[j],(char *) (ref->sc))==0 )
@@ -2160,7 +2160,7 @@ void PSFontInterpretPS(FILE *ps,struct charprocs *cp) {
 		p = ref;
 	    } else {
 		if ( p==NULL )
-		    cp->values[i]->refs = next;
+		    cp->values[i]->layers[ly_fore].refs = next;
 		else
 		    p->next = next;
 		RefCharFree(ref);
@@ -2529,7 +2529,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		}
 		r1->next = r2;
 		if ( rlast!=NULL ) rlast->next = r1;
-		else ret->refs = r1;
+		else ret->layers[ly_fore].refs = r1;
 		rlast = r2;
 		sp = 0;
 	      break;

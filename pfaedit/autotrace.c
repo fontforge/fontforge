@@ -238,13 +238,13 @@ static void _SCAutoTrace(SplineChar *sc, char **args) {
     int pid, status, fd;
     int ispotrace;
 
-    if ( sc->backimages==NULL )
+    if ( sc->layers[ly_back].images==NULL )
 return;
     prog = FindAutoTraceName();
     if ( prog==NULL )
 return;
     ispotrace = (strstrmatch(prog,"potrace")!=NULL );
-    for ( images = sc->backimages; images!=NULL; images=images->next ) {
+    for ( images = sc->layers[ly_back].images; images!=NULL; images=images->next ) {
 /* the linker tells me not to use tempnam(). Which does almost exactly what */
 /*  I want. So we go through a much more complex set of machinations to make */
 /*  it happy. */
@@ -447,12 +447,12 @@ return;
     }
 
     for ( i=cnt=0; i<fv->sf->charcnt; ++i )
-	if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->backimages )
+	if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->layers[ly_back].images )
 	    ++cnt;
     GProgressStartIndicatorR(10,_STR_Autotracing,_STR_Autotracing,0,cnt,1);
 
     for ( i=0; i<fv->sf->charcnt; ++i ) {
-	if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->backimages ) {
+	if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->layers[ly_back].images ) {
 	    _SCAutoTrace(fv->sf->chars[i], args);
 	    if ( !GProgressNext())
     break;
@@ -467,7 +467,7 @@ void SCAutoTrace(SplineChar *sc,GWindow v,int ask) {
     char **args;
     GCursor ct;
 
-    if ( sc->backimages==NULL ) {
+    if ( sc->layers[ly_back].images==NULL ) {
 	GWidgetErrorR(_STR_NothingToTrace,_STR_NothingToTrace);
 return;
     } else if ( FindAutoTraceName()==NULL ) {
@@ -698,12 +698,12 @@ return( NULL );
 		    GProgressChangeLine1R(_STR_Autotracing);
 		    GProgressChangeTotal(sf->charcnt);
 		    for ( i=0; i<sf->charcnt; ++i ) {
-			if ( (sc = sf->chars[i])!=NULL && sc->backimages ) {
+			if ( (sc = sf->chars[i])!=NULL && sc->layers[ly_back].images ) {
 			    _SCAutoTrace(sc, args);
 			    if ( mf_clearbackgrounds ) {
-				GImageDestroy(sc->backimages->image);
-			        free(sc->backimages);
-			        sc->backimages = NULL;
+				GImageDestroy(sc->layers[ly_back].images->image);
+			        free(sc->layers[ly_back].images);
+			        sc->layers[ly_back].images = NULL;
 			    }
 			}
 			if ( !GProgressNext())

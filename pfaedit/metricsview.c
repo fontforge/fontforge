@@ -1822,7 +1822,7 @@ static void MVUnlinkRef(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 return;
     sc = mv->perchar[i].sc;
     SCPreserveState(sc,false);
-    for ( rf=sc->refs; rf!=NULL ; rf=next ) {
+    for ( rf=sc->layers[ly_fore].refs; rf!=NULL ; rf=next ) {
 	next = rf->next;
 	SCRefToSplines(sc,rf);
     }
@@ -2098,7 +2098,7 @@ static void MVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	int asked=-1;
 	static int buts[] = { _STR_Unlink, _STR_No, _STR_Cancel, 0 };
 
-	for ( ref=sc->refs; ref!=NULL; ref=ref->next ) {
+	for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	    if ( ref->transform[0]*ref->transform[3]<0 ||
 		    (ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
 		if ( asked==-1 ) {
@@ -2825,7 +2825,7 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = i==-1 || mv->perchar[i].sc->layers[ly_fore].redoes==NULL;
 	  break;
 	  case MID_UnlinkRef:
-	    mi->ti.disabled = i==-1 || mv->perchar[i].sc->refs==NULL;
+	    mi->ti.disabled = i==-1 || mv->perchar[i].sc->layers[ly_fore].refs==NULL;
 	  break;
 	  case MID_Paste:
 	    mi->ti.disabled = i==-1 ||
@@ -2907,7 +2907,7 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_Autotrace:
 	    mi->ti.disabled = !(FindAutoTraceName()!=NULL && sc!=NULL &&
-		    sc->backimages!=NULL );
+		    sc->layers[ly_back].images!=NULL );
 	  break;
 	}
     }

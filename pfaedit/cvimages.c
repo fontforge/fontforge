@@ -860,11 +860,11 @@ void SCInsertBackImage(SplineChar *sc,GImage *image,real scale,real yoff,real xo
     im->yoff = yoff;
     im->xscale = im->yscale = scale;
     im->selected = true;
-    im->next = sc->backimages;
+    im->next = sc->layers[ly_back].images;
     im->bb.minx = im->xoff; im->bb.maxy = im->yoff;
     im->bb.maxx = im->xoff + GImageGetWidth(im->image)*im->xscale;
     im->bb.miny = im->yoff - GImageGetHeight(im->image)*im->yscale;
-    sc->backimages = im;
+    sc->layers[ly_back].images = im;
     sc->parent->onlybitmaps = false;
     SCOutOfDateBackground(sc);
     SCCharChangedUpdate(sc);
@@ -876,7 +876,7 @@ void SCAddScaleImage(SplineChar *sc,GImage *image,int doclear) {
     image = ImageAlterClut(image);
     scale = (sc->parent->ascent+sc->parent->descent)/(real) GImageGetHeight(image);
     if ( doclear )
-	ImageListsFree(sc->backimages); sc->backimages = NULL;
+	ImageListsFree(sc->layers[ly_back].images); sc->layers[ly_back].images = NULL;
     SCInsertBackImage(sc,image,scale,sc->parent->ascent,0);
 }
 

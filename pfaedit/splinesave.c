@@ -923,7 +923,7 @@ static void CvtPsRSplineSet(GrowBuf *gb, SplineChar *scs[MmMax], int instance_co
     int i;
 
     for ( i=0; i<instance_count; ++i )
-	refs[i] = scs[i]->refs;
+	refs[i] = scs[i]->layers[ly_fore].refs;
     while ( refs[0]!=NULL ) {
 	for ( i=0; i<instance_count; ++i ) {
 	    rscs[i] = refs[i]->sc;
@@ -953,7 +953,7 @@ static RefChar *IsRefable(RefChar *ref, int isps, real transform[6], RefChar *so
 		transform[5];
 
     if (( isps==1 && ref->adobe_enc!=-1 ) ||
-	    (/*isps!=1 &&*/ (ref->sc->layers[ly_fore].splines!=NULL || ref->sc->refs==NULL))) {
+	    (/*isps!=1 &&*/ (ref->sc->layers[ly_fore].splines!=NULL || ref->sc->layers[ly_fore].refs==NULL))) {
 	/* If we're in postscript mode and the character we are refering to */
 	/*  has an adobe encoding then we are done. */
 	/* In TrueType mode, if the character has no refs itself then we are */
@@ -967,11 +967,11 @@ static RefChar *IsRefable(RefChar *ref, int isps, real transform[6], RefChar *so
 	/*sub->layers[0].splines = NULL;*/
 	memcpy(sub->transform,trans,sizeof(trans));
 return( sub );
-    } else if ( /* isps &&*/ ( ref->sc->refs==NULL || ref->sc->layers[ly_fore].splines!=NULL) ) {
+    } else if ( /* isps &&*/ ( ref->sc->layers[ly_fore].refs==NULL || ref->sc->layers[ly_fore].splines!=NULL) ) {
 	RefCharsFreeRef(sofar);
 return( NULL );
     }
-    for ( sub=ref->sc->refs; sub!=NULL; sub=sub->next ) {
+    for ( sub=ref->sc->layers[ly_fore].refs; sub!=NULL; sub=sub->next ) {
 	sofar = IsRefable(sub,isps,trans, sofar);
 	if ( sofar==NULL )
 return( NULL );
@@ -1014,7 +1014,7 @@ RefChar *SCCanonicalRefs(SplineChar *sc, int isps) {
     if ( sc->layers[ly_fore].splines!=NULL )
 return(NULL);
     noop[0] = noop[3] = 1.0; noop[2]=noop[1]=noop[4]=noop[5] = 0;
-    for ( ref=sc->refs; ref!=NULL; ref=ref->next ) {
+    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	ret = IsRefable(ref,isps,noop, ret);
 	if ( ret==NULL )
 return( NULL );
@@ -1070,8 +1070,8 @@ static int TrySubrRefs(GrowBuf *gb, struct pschars *subrs, SplineChar *scs[MmMax
     } else {
 	for ( j=0; j<instance_count; ++j ) {
 	    RefChar *r;
-	    refs[j] = scs[j]->refs;
-	    for ( r=scs[j]->refs; r!=NULL; r=r->next ) {
+	    refs[j] = scs[j]->layers[ly_fore].refs;
+	    for ( r=scs[j]->layers[ly_fore].refs; r!=NULL; r=r->next ) {
 		if ( r->sc->hconflicts || r->sc->vconflicts || r->sc->anyflexes )
 		    SplineCharFindBounds(r->sc,&rb);
 		if ( r->sc->ttf_glyph==0x7fff ||
@@ -1120,10 +1120,10 @@ return( true );
 static int IsPSRefable(SplineChar *sc) {
     RefChar *ref;
 
-    if ( sc->refs==NULL || sc->layers[ly_fore].splines!=NULL )
+    if ( sc->layers[ly_fore].refs==NULL || sc->layers[ly_fore].splines!=NULL )
 return( false );
 
-    for ( ref=sc->refs; ref!=NULL; ref=ref->next ) {
+    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	if ( ref->transform[0]!=1 ||
 		ref->transform[1]!=0 ||
 		ref->transform[2]!=0 ||
@@ -1135,16 +1135,16 @@ return( true );
 
 static RefChar *RefFindAdobe(RefChar *r, RefChar *t) {
     *t = *r;
-    while ( t->adobe_enc==-1 && t->sc->refs!=NULL && t->sc->refs->next==NULL &&
-	    t->sc->refs->transform[0]==1.0 &&
-	    t->sc->refs->transform[1]==0.0 &&
-	    t->sc->refs->transform[2]==0.0 &&
-	    t->sc->refs->transform[3]==1.0 ) {
-	t->transform[4] += t->sc->refs->transform[4];
-	t->transform[5] += t->sc->refs->transform[5];
-	t->adobe_enc = t->sc->refs->adobe_enc;
-	t->local_enc = t->sc->refs->local_enc;
-	t->sc = t->sc->refs->sc;
+    while ( t->adobe_enc==-1 && t->sc->layers[ly_fore].refs!=NULL && t->sc->layers[ly_fore].refs->next==NULL &&
+	    t->sc->layers[ly_fore].refs->transform[0]==1.0 &&
+	    t->sc->layers[ly_fore].refs->transform[1]==0.0 &&
+	    t->sc->layers[ly_fore].refs->transform[2]==0.0 &&
+	    t->sc->layers[ly_fore].refs->transform[3]==1.0 ) {
+	t->transform[4] += t->sc->layers[ly_fore].refs->transform[4];
+	t->transform[5] += t->sc->layers[ly_fore].refs->transform[5];
+	t->adobe_enc = t->sc->layers[ly_fore].refs->adobe_enc;
+	t->local_enc = t->sc->layers[ly_fore].refs->local_enc;
+	t->sc = t->sc->layers[ly_fore].refs->sc;
     }
 return( t );
 }
@@ -1166,7 +1166,7 @@ return( TrySubrRefs(gb,subrs,scs,instance_count,round,true));
 	if ( !IsPSRefable(scs[j]))
 return( false );
 
-    refs = scs[0]->refs;
+    refs = scs[0]->layers[ly_fore].refs;
     if ( refs==NULL )
 return( false );
 
@@ -1184,7 +1184,7 @@ return( false );
 	    r2 = NULL;			/* No space???? */
 	else {
 	    space.sc = scs[0]->parent->chars[i];
-	    if ( space.sc->layers[ly_fore].splines!=NULL || space.sc->refs!=NULL )
+	    if ( space.sc->layers[ly_fore].splines!=NULL || space.sc->layers[ly_fore].refs!=NULL )
 		r2 = NULL;
 	}
     } else if ( r2->next!=NULL )
@@ -1227,12 +1227,12 @@ return( false );
 	RefChar *r3, t3;
 
 	SplineCharFindBounds(r2sc,&b);
-	if ( scs[j]->refs!=NULL && scs[j]->refs->next==NULL )
+	if ( scs[j]->layers[ly_fore].refs!=NULL && scs[j]->layers[ly_fore].refs->next==NULL )
 	    r3 = r2;		/* Space, not offset */
 	else if ( swap )
-	    r3 = RefFindAdobe(scs[j]->refs,&t3);
+	    r3 = RefFindAdobe(scs[j]->layers[ly_fore].refs,&t3);
 	else
-	    r3 = RefFindAdobe(scs[j]->refs->next,&t3);
+	    r3 = RefFindAdobe(scs[j]->layers[ly_fore].refs->next,&t3);
 
 	b.minx = myround(b.minx,round);
 	data[j][0] = b.minx;
@@ -1259,7 +1259,7 @@ return( false );
     if ( sc->layers[ly_fore].splines!=NULL )
 return( sc->layers[ly_fore].splines->first->hintmask==NULL );
 
-    for ( ref = sc->refs; ref!=NULL; ref=ref->next )
+    for ( ref = sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
 	if ( ref->layers[0].splines!=NULL )
 return( ref->layers[0].splines->first->hintmask==NULL );
 
@@ -1423,7 +1423,7 @@ static int AlwaysSeacable(SplineChar *sc) {
     for ( d=sc->dependents; d!=NULL; d = d->next ) {
 	if ( d->sc->layers[ly_fore].splines!=NULL )	/* I won't deal with things with both splines and refs. */
     continue;				/*  skip it */
-	for ( r=d->sc->refs; r!=NULL; r=r->next ) {
+	for ( r=d->sc->layers[ly_fore].refs; r!=NULL; r=r->next ) {
 	    if ( r->transform[0]!=1 || r->transform[1]!=0 ||
 		    r->transform[2]!=0 || r->transform[3]!=1 )
 	break;				/* Can't deal with it either way */
@@ -1431,11 +1431,11 @@ static int AlwaysSeacable(SplineChar *sc) {
 	if ( r!=NULL )		/* Bad transform matrix */
     continue;			/* Can't handle either way, skip */
 
-	for ( r=d->sc->refs; r!=NULL; r=r->next ) {
+	for ( r=d->sc->layers[ly_fore].refs; r!=NULL; r=r->next ) {
 	    if ( iscid || r->adobe_enc==-1 )
 return( false );			/* not seacable, but could go in subr */
 	}
-	r = d->sc->refs;
+	r = d->sc->layers[ly_fore].refs;
 	if ( r->next!=NULL && r->next->next!=NULL )
 return( false );		/* seac only takes 2 chars */
 	if ( r->next!=NULL &&
@@ -1470,7 +1470,7 @@ static int SpecialCaseConflicts(SplineChar *sc) {
 	SplineCharFindBounds(d->sc,&db);
 	if ( db.minx != sb.minx )
     continue;
-	for ( r=d->sc->refs; r!=NULL; r=r->next )
+	for ( r=d->sc->layers[ly_fore].refs; r!=NULL; r=r->next )
 	    if ( r->sc == sc && r->transform[4]==0 && r->transform[5]==0 )
 return( true );
     }
@@ -1504,7 +1504,7 @@ static void SplineFont2Subrs1(SplineFont *sf,int round, int iscjk,
 		BasePoint *bp;
 		RefChar *r;
 
-		for ( r=sc->refs; r!=NULL; r=r->next )
+		for ( r=sc->layers[ly_fore].refs; r!=NULL; r=r->next )
 		    if ( r->sc->ttf_glyph==0x7fff )
 		break;
 		if ( r!=NULL )	/* Contains a reference to something which is not in a sub itself */
@@ -2480,7 +2480,7 @@ static unsigned char *SplineChar2PSOutline2(SplineChar *sc,int *len,
     hdb.scs = scs;
 
     CvtPsSplineSet2(&gb,sc->layers[ly_fore].splines,&hdb,startend,sc->parent->order2,round);
-    for ( rf = sc->refs; rf!=NULL; rf = rf->next )
+    for ( rf = sc->layers[ly_fore].refs; rf!=NULL; rf = rf->next )
 	CvtPsSplineSet2(&gb,rf->layers[0].splines,&hdb,NULL,sc->parent->order2,round);
     if ( gb.pt+1>=gb.end )
 	GrowBuffer(&gb);
@@ -2548,7 +2548,7 @@ static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid,
 	DumpHints(&gb,sc->vstem,sc->vconflicts || sc->hconflicts?-1:3,sc->vconflicts || sc->hconflicts?23:3,round);
 	CounterHints2(&gb, sc, hdb.cnt );
 	CvtPsSplineSet2(&gb,sc->layers[ly_fore].splines,&hdb,NULL,sc->parent->order2,round);
-	for ( rf = sc->refs; rf!=NULL; rf = rf->next )
+	for ( rf = sc->layers[ly_fore].refs; rf!=NULL; rf = rf->next )
 	    CvtPsSplineSet2(&gb,rf->layers[0].splines,&hdb,NULL,sc->parent->order2,round);
     }
     if ( gb.pt+1>=gb.end )
@@ -2575,7 +2575,7 @@ static int Type2SpecialCase(SplineChar *sc) {
     RefChar *r;
 
     for ( d=sc->dependents; d!=NULL; d=d->next ) {
-	for ( r=d->sc->refs; r!=NULL; r = r->next ) {
+	for ( r=d->sc->layers[ly_fore].refs; r!=NULL; r = r->next ) {
 	    if ( autohint_before_generate && r->sc!=NULL &&
 		    r->sc->changedsincelasthinted && !r->sc->manualhints )
 		SplineCharAutoHint(r->sc,true);
@@ -2611,7 +2611,7 @@ struct pschars *SplineFont2Subrs2(SplineFont *sf,int flags) {
 	if ( sc==NULL || sc!=SCDuplicate(sc))
 	    /* Do Nothing */;
 	else if ( SCWorthOutputting(sc) &&
-	    (( sc->refs==NULL && sc->dependents!=NULL &&
+	    (( sc->layers[ly_fore].refs==NULL && sc->dependents!=NULL &&
 		    ( (!sc->hconflicts && !sc->vconflicts) ||
 			Type2SpecialCase(sc)) )  )) {
 	/* Put the */

@@ -572,8 +572,8 @@ static void SFDDumpTtfTable(FILE *sfd,struct ttf_table *tab) {
 static int SFDOmit(SplineChar *sc) {
     if ( sc==NULL )
 return( true );
-    if ( sc->layers[ly_fore].splines==NULL && sc->refs==NULL && sc->anchor==NULL &&
-	    sc->layers[ly_back].splines==NULL && sc->backimages==NULL ) {
+    if ( sc->layers[ly_fore].splines==NULL && sc->layers[ly_fore].refs==NULL && sc->anchor==NULL &&
+	    sc->layers[ly_back].splines==NULL && sc->layers[ly_back].images==NULL ) {
 	if ( strcmp(sc->name,".null")==0 || strcmp(sc->name,"nonmarkingreturn")==0 )
 return(true);
 	if ( !sc->widthset && sc->width==sc->parent->ascent+sc->parent->descent &&
@@ -629,7 +629,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
 	SFDDumpMinimumDistances(sfd,sc);
     }
     SFDDumpAnchorPoints(sfd,sc);
-    for ( ref=sc->refs; ref!=NULL; ref=ref->next ) if ( ref->sc!=NULL ) {
+    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) if ( ref->sc!=NULL ) {
 	if ( ref->sc->enc==0 && ref->sc->layers[ly_fore].splines==NULL )
 	    fprintf( stderr, "Using a reference to character 0, removed. In %s\n", sc->name);
 	else
@@ -643,7 +643,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
 	fprintf(sfd, "Back\n" );
 	SFDDumpSplineSet(sfd,sc->layers[ly_back].splines);
     }
-    for ( img=sc->backimages; img!=NULL; img=img->next )
+    for ( img=sc->layers[ly_back].images; img!=NULL; img=img->next )
 	SFDDumpImage(sfd,img);
     if ( sc->kerns!=NULL ) {
 	fprintf( sfd, "KernsSLIF:" );
@@ -2176,7 +2176,7 @@ return( NULL );
 	} else if ( strmatch(tok,"Ref:")==0 ) {
 	    ref = SFDGetRef(sfd);
 	    if ( lastr==NULL )
-		sc->refs = ref;
+		sc->layers[ly_fore].refs = ref;
 	    else
 		lastr->next = ref;
 	    lastr = ref;
@@ -2187,7 +2187,7 @@ return( NULL );
 	} else if ( strmatch(tok,"Image:")==0 ) {
 	    img = SFDGetImage(sfd);
 	    if ( lasti==NULL )
-		sc->backimages = img;
+		sc->layers[ly_back].images = img;
 	    else
 		lasti->next = img;
 	    lasti = img;
@@ -2459,9 +2459,9 @@ return( 1 );
 static void SFDFixupRef(SplineChar *sc,RefChar *ref) {
     RefChar *rf;
 
-    for ( rf = ref->sc->refs; rf!=NULL; rf=rf->next ) {
+    for ( rf = ref->sc->layers[ly_fore].refs; rf!=NULL; rf=rf->next ) {
 	if ( rf->sc==sc ) {	/* Huh? */
-	    ref->sc->refs = NULL;
+	    ref->sc->layers[ly_fore].refs = NULL;
     break;
 	}
 	if ( rf->layers[0].splines==NULL )
@@ -2485,7 +2485,7 @@ static void SFDFixupRefs(SplineFont *sf) {
 	/*if ( isautorecovery && !sf->chars[i]->changed )*/
     /*continue;*/
 	rprev = NULL;
-	for ( refs = sf->chars[i]->refs; refs!=NULL; refs=rnext ) {
+	for ( refs = sf->chars[i]->layers[ly_fore].refs; refs!=NULL; refs=rnext ) {
 	    rnext = refs->next;
 	    if ( refs->local_enc<sf->charcnt )
 		refs->sc = sf->chars[refs->local_enc];
@@ -2500,7 +2500,7 @@ static void SFDFixupRefs(SplineFont *sf) {
 		if ( rprev!=NULL )
 		    rprev->next = rnext;
 		else
-		    sf->chars[i]->refs = rnext;
+		    sf->chars[i]->layers[ly_fore].refs = rnext;
 	    }
 	}
 	/*if ( isautorecovery && !sf->chars[i]->changed )*/
@@ -2528,7 +2528,7 @@ static void SFDFixupRefs(SplineFont *sf) {
 	}
     }
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	for ( refs = sf->chars[i]->refs; refs!=NULL; refs=refs->next ) {
+	for ( refs = sf->chars[i]->layers[ly_fore].refs; refs!=NULL; refs=refs->next ) {
 	    SFDFixupRef(sf->chars[i],refs);
 	}
 	GProgressNext();

@@ -137,12 +137,12 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into) {
     nsc->vstem = StemInfoCopy(nsc->vstem);
     nsc->dstem = DStemInfoCopy(nsc->dstem);
     nsc->md = MinimumDistanceCopy(nsc->md);
-    nsc->refs = RefCharsCopy(nsc->refs);
+    nsc->layers[ly_fore].refs = RefCharsCopy(nsc->layers[ly_fore].refs);
     nsc->views = NULL;
     nsc->changed = true;
     nsc->dependents = NULL;		/* Fix up later when we know more */
     nsc->layers[ly_back].splines = NULL;
-    nsc->backimages = NULL;
+    nsc->layers[ly_back].images = NULL;
     nsc->layers[ly_fore].undoes = nsc->layers[ly_back].undoes = NULL;
     nsc->layers[ly_fore].redoes = nsc->layers[ly_back].redoes = NULL;
     nsc->kerns = NULL;
@@ -527,7 +527,7 @@ int SFFindExistingChar(SplineFont *sf, int unienc, char *name ) {
 
     if ( i==-1 || sf->chars[i]==NULL )
 return( -1 );
-    if ( sf->chars[i]->layers[ly_fore].splines!=NULL || sf->chars[i]->refs!=NULL ||
+    if ( sf->chars[i]->layers[ly_fore].splines!=NULL || sf->chars[i]->layers[ly_fore].refs!=NULL ||
 	    sf->chars[i]->widthset )
 return( i );
 
@@ -555,17 +555,17 @@ static void MFixupSC(SplineFont *sf, SplineChar *sc,int i) {
     sc->enc = i;
     sc->parent = sf;
  retry:
-    for ( ref=sc->refs; ref!=NULL; ref=ref->next ) {
+    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	/* The sc in the ref is from the old font. It's got to be in the */
 	/*  new font too (was either already there or just got copied) */
 	ref->local_enc =  _SFFindChar(sf,ref->sc->unicodeenc,ref->sc->name);
 	if ( ref->local_enc==-1 ) {
 	    GDrawIError("Bad reference, can't fix it up");
-	    if ( ref==sc->refs ) {
-		sc->refs = ref->next;
+	    if ( ref==sc->layers[ly_fore].refs ) {
+		sc->layers[ly_fore].refs = ref->next;
  goto retry;
 	    } else {
-		for ( prev=sc->refs; prev->next!=ref; prev=prev->next );
+		for ( prev=sc->layers[ly_fore].refs; prev->next!=ref; prev=prev->next );
 		prev->next = ref->next;
 		chunkfree(ref,sizeof(*ref));
 		ref = prev;
@@ -597,11 +597,11 @@ static int SFHasChar(SplineFont *sf, int unienc, char *name ) {
 
     index = _SFFindChar(sf,unienc,name);
     if ( index>=0 && index<sf->charcnt && sf->chars[index]!=NULL ) {
-	if ( sf->chars[index]->refs!=NULL ||
+	if ( sf->chars[index]->layers[ly_fore].refs!=NULL ||
 		sf->chars[index]->layers[ly_fore].splines!=NULL ||
 		sf->chars[index]->width!=sf->ascent+sf->descent ||
 		sf->chars[index]->widthset ||
-		sf->chars[index]->backimages != NULL ||
+		sf->chars[index]->layers[ly_back].images != NULL ||
 		sf->chars[index]->layers[ly_back].splines != NULL )
 return( true );
     }
@@ -656,7 +656,7 @@ static void _MergeFont(SplineFont *into,SplineFont *other) {
 		    if ( into->bitmaps!=NULL && other->bitmaps!=NULL )
 			BitmapsCopy(bitmap_into,other,index,i);
 		} else if ( !doit ) {
-		    if ( o_sf->chars[i]->layers[ly_fore].splines==NULL && o_sf->chars[i]->refs==NULL &&
+		    if ( o_sf->chars[i]->layers[ly_fore].splines==NULL && o_sf->chars[i]->layers[ly_fore].refs==NULL &&
 			    !o_sf->chars[i]->widthset )
 			/* Don't bother to copy it */;
 		    else if ( SCDuplicate(o_sf->chars[i])!=o_sf->chars[i] )
@@ -742,7 +742,7 @@ static void CIDMergeFont(SplineFont *into,SplineFont *other) {
 	    i_sf->charcnt = i+1;
 	}
 	for ( i=0; i<o_sf->charcnt; ++i ) if ( o_sf->chars[i]!=NULL ) {
-	    if ( o_sf->chars[i]->layers[ly_fore].splines==NULL && o_sf->chars[i]->refs==NULL &&
+	    if ( o_sf->chars[i]->layers[ly_fore].splines==NULL && o_sf->chars[i]->layers[ly_fore].refs==NULL &&
 		    !o_sf->chars[i]->widthset )
 		/* Don't bother to copy it */;
 	    else if ( SFHasCID(into,i)==-1 ) {
@@ -1130,7 +1130,7 @@ return;
     sc->views = NULL;
     sc->dependents = NULL;
     sc->layers[ly_back].splines = NULL;
-    sc->backimages = NULL;
+    sc->layers[ly_back].images = NULL;
     sc->layers[ly_fore].undoes = sc->layers[ly_back].undoes = NULL;
     sc->layers[ly_fore].redoes = sc->layers[ly_back].redoes = NULL;
     sc->kerns = NULL;
@@ -1139,7 +1139,7 @@ return;
     sc->vwidth = base->vwidth + amount*(other->vwidth-base->vwidth);
     sc->lsidebearing = base->lsidebearing + amount*(other->lsidebearing-base->lsidebearing);
     sc->layers[ly_fore].splines = InterpSplineSets(base->layers[ly_fore].splines,other->layers[ly_fore].splines,amount,sc);
-    sc->refs = InterpRefs(base->refs,other->refs,amount,sc);
+    sc->layers[ly_fore].refs = InterpRefs(base->layers[ly_fore].refs,other->layers[ly_fore].refs,amount,sc);
     sc->changedsincelasthinted = true;
     sc->widthset = base->widthset;
     sc->glyph_class = base->glyph_class;
@@ -1148,7 +1148,7 @@ return;
 static void IFixupSC(SplineFont *sf, SplineChar *sc,int i) {
     RefChar *ref;
 
-    for ( ref=sc->refs; ref!=NULL; ref=ref->next ) if ( !ref->checked ) {
+    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) if ( !ref->checked ) {
 	/* The sc in the ref is from the base font. It's got to be in the */
 	/*  new font too (the ref only gets created if it's present in both fonts)*/
 	ref->checked = true;

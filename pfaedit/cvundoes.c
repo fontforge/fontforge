@@ -44,9 +44,9 @@ return( ret );
 static RefChar *RefCharsCopyState(SplineChar *sc) {
     RefChar *head=NULL, *last=NULL, *new, *crefs;
 
-    if ( sc->refs==NULL )
+    if ( sc->layers[ly_fore].refs==NULL )
 return( NULL );
-    for ( crefs = sc->refs; crefs!=NULL; crefs=crefs->next ) {
+    for ( crefs = sc->layers[ly_fore].refs; crefs!=NULL; crefs=crefs->next ) {
 	new = chunkalloc(sizeof(RefChar));
 	*new = *crefs;
 	new->layers[0].splines = NULL;
@@ -64,9 +64,9 @@ return( head );
 static ImageList *SCImagesCopyState(SplineChar *sc) {
     ImageList *head=NULL, *last=NULL, *new, *cimg;
 
-    if ( sc->backimages==NULL )
+    if ( sc->layers[ly_back].images==NULL )
 return( NULL );
-    for ( cimg = sc->backimages; cimg!=NULL; cimg=cimg->next ) {
+    for ( cimg = sc->layers[ly_back].images; cimg!=NULL; cimg=cimg->next ) {
 	new = chunkalloc(sizeof(ImageList));
 	*new = *cimg;
 	new->next = NULL;
@@ -82,7 +82,7 @@ return( head );
 
 static ImageList *ImagesCopyState(CharView *cv) {
 
-    if ( cv->drawmode!=dm_back || cv->sc->backimages==NULL )
+    if ( cv->drawmode!=dm_back || cv->sc->layers[ly_back].images==NULL )
 return( NULL );
 return( SCImagesCopyState(cv->sc));
 }
@@ -175,7 +175,7 @@ return( NULL );
 }
 
 static void FixupRefChars(SplineChar *sc,RefChar *urefs) {
-    RefChar *crefs = sc->refs, *cend, *cprev, *unext, *cnext;
+    RefChar *crefs = sc->layers[ly_fore].refs, *cend, *cprev, *unext, *cnext;
 
     cprev = NULL;
     while ( crefs!=NULL && urefs!=NULL ) {
@@ -205,7 +205,7 @@ static void FixupRefChars(SplineChar *sc,RefChar *urefs) {
 	    unext = urefs->next;
 	    urefs->next = crefs;
 	    if ( cprev==NULL )
-		sc->refs = urefs;
+		sc->layers[ly_fore].refs = urefs;
 	    else
 		cprev->next = urefs;
 	    cprev = urefs;
@@ -222,7 +222,7 @@ static void FixupRefChars(SplineChar *sc,RefChar *urefs) {
 	}
     } else if ( urefs!=NULL ) {
 	if ( cprev==NULL )
-	    sc->refs = urefs;
+	    sc->layers[ly_fore].refs = urefs;
 	else
 	    cprev->next = urefs;
 	while ( urefs!=NULL ) {
@@ -234,7 +234,7 @@ static void FixupRefChars(SplineChar *sc,RefChar *urefs) {
 }
 
 static void FixupImages(SplineChar *sc,ImageList *uimgs) {
-    ImageList *cimgs = sc->backimages, *cend, *cprev, *unext, *cnext;
+    ImageList *cimgs = sc->layers[ly_back].images, *cend, *cprev, *unext, *cnext;
 
     cprev = NULL;
     while ( cimgs!=NULL && uimgs!=NULL ) {
@@ -254,7 +254,7 @@ static void FixupImages(SplineChar *sc,ImageList *uimgs) {
 	    /*  img list, then than means we need to delete everything on the */
 	    /*  char's list between the two */
 	    if ( cprev==NULL )
-		sc->backimages = cend;
+		sc->layers[ly_back].images = cend;
 	    else
 		cprev->next = cend;
 	    while ( cimgs!=cend ) {
@@ -266,7 +266,7 @@ static void FixupImages(SplineChar *sc,ImageList *uimgs) {
 	    unext = uimgs->next;
 	    uimgs->next = cimgs;
 	    if ( cprev==NULL )
-		sc->backimages = uimgs;
+		sc->layers[ly_back].images = uimgs;
 	    else
 		cprev->next = uimgs;
 	    cprev = uimgs;
@@ -276,12 +276,12 @@ static void FixupImages(SplineChar *sc,ImageList *uimgs) {
     if ( cimgs!=NULL ) {
 	ImageListsFree(cimgs);
 	if ( cprev==NULL )
-	    sc->backimages = NULL;
+	    sc->layers[ly_back].images = NULL;
 	else
 	    cprev->next = NULL;
     } else if ( uimgs!=NULL ) {
 	if ( cprev==NULL )
-	    sc->backimages = uimgs;
+	    sc->layers[ly_back].images = uimgs;
 	else
 	    cprev->next = uimgs;
     }
@@ -565,7 +565,7 @@ Undoes *CVPreserveTState(CharView *cv) {
 
     undo = CVPreserveState(cv);
     if ( !cv->p.transany || cv->p.transanyrefs ) {
-	for ( refs = cv->sc->refs, urefs=undo->u.state.refs; urefs!=NULL; refs=refs->next, urefs=urefs->next )
+	for ( refs = cv->sc->layers[ly_fore].refs, urefs=undo->u.state.refs; urefs!=NULL; refs=refs->next, urefs=urefs->next )
 	    if ( !cv->p.transany || refs->selected )
 		urefs->layers[0].splines = SplinePointListCopy(refs->layers[0].splines);
     }
@@ -698,7 +698,7 @@ static void SCUndoAct(SplineChar *sc,int drawmode, Undoes *undo) {
 	    sc->anchor = undo->u.state.anchor;
 	    undo->u.state.anchor = ap;
 	}
-	if ( drawmode==dm_fore && !RefCharsMatch(undo->u.state.refs,sc->refs)) {
+	if ( drawmode==dm_fore && !RefCharsMatch(undo->u.state.refs,sc->layers[ly_fore].refs)) {
 	    RefChar *refs = RefCharsCopyState(sc);
 	    FixupRefChars(sc,undo->u.state.refs);
 	    undo->u.state.refs = refs;
@@ -708,7 +708,7 @@ static void SCUndoAct(SplineChar *sc,int drawmode, Undoes *undo) {
 	    undo->u.state.u.hints = hints;
 	}
 	if ( drawmode==dm_back && undo->undotype!=ut_statehint &&
-		!ImagesMatch(undo->u.state.u.images,sc->backimages)) {
+		!ImagesMatch(undo->u.state.u.images,sc->layers[ly_back].images)) {
 	    ImageList *images = SCImagesCopyState(sc);
 	    FixupImages(sc,undo->u.state.u.images);
 	    undo->u.state.u.images = images;
@@ -818,14 +818,14 @@ void CVRestoreTOriginalState(CharView *cv) {
 
     SplinePointListSet(cv->layerheads[cv->drawmode]->splines,undo->u.state.splines);
     if ( cv->drawmode==dm_fore && (!cv->p.anysel || cv->p.transanyrefs)) {
-	for ( ref=cv->sc->refs, uref=undo->u.state.refs; uref!=NULL; ref=ref->next, uref=uref->next )
+	for ( ref=cv->sc->layers[ly_fore].refs, uref=undo->u.state.refs; uref!=NULL; ref=ref->next, uref=uref->next )
 	    if ( uref->layers[0].splines!=NULL ) {
 		SplinePointListSet(ref->layers[0].splines,uref->layers[0].splines);
 		memcpy(&ref->transform,&uref->transform,sizeof(ref->transform));
 	    }
     }
     if ( cv->drawmode==dm_back ) {
-	for ( img=cv->sc->backimages, uimg=undo->u.state.u.images; uimg!=NULL;
+	for ( img=cv->sc->layers[ly_back].images, uimg=undo->u.state.u.images; uimg!=NULL;
 		img = img->next, uimg = uimg->next ) {
 	    img->xoff = uimg->xoff;
 	    img->yoff = uimg->yoff;
@@ -1081,7 +1081,7 @@ return( copy(""));
     dummy.name = "dummy";
     dummy.parent = fv_list->sf;		/* might not be the actual parent */
     dummy.layers[ly_fore].splines = cur->u.state.splines;
-    dummy.refs = cur->u.state.refs;
+    dummy.layers[ly_fore].refs = cur->u.state.refs;
 
     eps = tmpfile();
     if ( eps==NULL ) {
@@ -1261,7 +1261,7 @@ void CopySelected(CharView *cv) {
     copybuffer.u.state.splines = SplinePointListCopySelected(cv->layerheads[cv->drawmode]->splines);
     if ( cv->drawmode==dm_fore ) {
 	RefChar *refs, *new;
-	for ( refs = cv->sc->refs; refs!=NULL; refs = refs->next ) if ( refs->selected ) {
+	for ( refs = cv->sc->layers[ly_fore].refs; refs!=NULL; refs = refs->next ) if ( refs->selected ) {
 	    new = chunkalloc(sizeof(RefChar));
 	    *new = *refs;
 	    new->layers[0].splines = NULL;
@@ -1282,7 +1282,7 @@ void CopySelected(CharView *cv) {
     }
     if ( cv->drawmode==dm_back ) {
 	ImageList *imgs, *new;
-	for ( imgs = cv->sc->backimages; imgs!=NULL; imgs = imgs->next ) if ( imgs->selected ) {
+	for ( imgs = cv->sc->layers[ly_back].images; imgs!=NULL; imgs = imgs->next ) if ( imgs->selected ) {
 	    new = chunkalloc(sizeof(ImageList));
 	    *new = *imgs;
 	    new->next = copybuffer.u.state.u.images;
@@ -1406,7 +1406,7 @@ int SCDependsOnSC(SplineChar *parent, SplineChar *child) {
 
     if ( parent==child )
 return( true );
-    for ( ref=parent->refs; ref!=NULL; ref=ref->next ) {
+    for ( ref=parent->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	if ( SCDependsOnSC(ref->sc,child))
 return( true );
     }
@@ -1698,8 +1698,8 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 		    new->transform[4] *= scale; new->transform[5] *= scale;
 		    new->layers[0].splines = NULL;
 		    new->sc = rsc;
-		    new->next = sc->refs;
-		    sc->refs = new;
+		    new->next = sc->layers[ly_fore].refs;
+		    sc->layers[ly_fore].refs = new;
 		    SCReinstanciateRefChar(sc,new);
 		    SCMakeDependent(sc,rsc);
 		} else {
@@ -1763,7 +1763,7 @@ return;
       case ut_noop:
       break;
       case ut_state: case ut_statehint: case ut_statename:
-	if ( cv->drawmode==dm_fore && cvsc->layers[ly_fore].splines==NULL && cvsc->refs==NULL ) {
+	if ( cv->drawmode==dm_fore && cvsc->layers[ly_fore].splines==NULL && cvsc->layers[ly_fore].refs==NULL ) {
 	    SCSynchronizeWidth(cvsc,paster->u.state.width,cvsc->width,NULL);
 	    cvsc->vwidth = paster->u.state.vwidth;
 	}
@@ -1784,8 +1784,8 @@ return;
 		new = galloc(sizeof(ImageList));
 		*new = *cimg;
 		new->selected = true;
-		new->next = cvsc->backimages;
-		cvsc->backimages = new;
+		new->next = cvsc->layers[ly_back].images;
+		cvsc->layers[ly_back].images = new;
 	    }
 	    SCOutOfDateBackground(cvsc);
 	} else if ( paster->undotype==ut_statehint && cv->searcher==NULL )
@@ -1808,8 +1808,8 @@ return;
 		    new->layers[0].splines = NULL;
 		    new->sc = sc;
 		    new->selected = true;
-		    new->next = cvsc->refs;
-		    cvsc->refs = new;
+		    new->next = cvsc->layers[ly_fore].refs;
+		    cvsc->layers[ly_fore].refs = new;
 		    SCReinstanciateRefChar(cvsc,new);
 		    SCMakeDependent(cvsc,sc);
 		} else {

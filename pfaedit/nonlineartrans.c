@@ -607,14 +607,14 @@ static void SCNLTrans(SplineChar *sc,struct context *c) {
     SplineSet *ss;
     RefChar *ref;
 
-    if ( sc->layers[ly_fore].splines==NULL && sc->refs==NULL )
+    if ( sc->layers[ly_fore].splines==NULL && sc->layers[ly_fore].refs==NULL )
 return;
 
     SCPreserveState(sc,false);
     c->sc = sc;
     for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next )
 	SplineSetNLTrans(ss,c,true);
-    for ( ref=sc->refs; ref!=NULL; ref=ref->next ) {
+    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	c->x = ref->transform[4]; c->y = ref->transform[5];
 	ref->transform[4] = NL_expr(c,c->x_expr);
 	ref->transform[5] = NL_expr(c,c->y_expr);
@@ -626,7 +626,7 @@ static void CVNLTrans(CharView *cv,struct context *c) {
     SplineSet *ss;
     RefChar *ref;
 
-    if ( cv->layerheads[cv->drawmode]->splines==NULL && (cv->drawmode!=dm_fore || cv->sc->refs==NULL ))
+    if ( cv->layerheads[cv->drawmode]->splines==NULL && (cv->drawmode!=dm_fore || cv->sc->layers[ly_fore].refs==NULL ))
 return;
 
     CVPreserveState(cv);
@@ -634,7 +634,7 @@ return;
     for ( ss=cv->layerheads[cv->drawmode]->splines; ss!=NULL; ss=ss->next )
 	SplineSetNLTrans(ss,c,false);
     if ( cv->drawmode==dm_fore ) {
-	for ( ref=cv->sc->refs; ref!=NULL; ref=ref->next ) {
+	for ( ref=cv->sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	    c->x = ref->transform[4]; c->y = ref->transform[5];
 	    ref->transform[4] = NL_expr(c,c->x_expr);
 	    ref->transform[5] = NL_expr(c,c->y_expr);
@@ -653,10 +653,10 @@ static void _SFNLTrans(FontView *fv,struct context *c) {
 	SCNLTrans(fv->sf->chars[i],c);
     for ( i=0; i<fv->sf->charcnt; ++i )
 	if ( fv->selected[i] && (sc=fv->sf->chars[i])!=NULL &&
-		(sc->layers[ly_fore].splines!=NULL || sc->refs!=NULL)) {
+		(sc->layers[ly_fore].splines!=NULL || sc->layers[ly_fore].refs!=NULL)) {
 	    /* A reference doesn't really work after a non-linear transform */
 	    /*  but let's do the obvious thing */
-	    for ( ref = sc->refs; ref!=NULL; ref=ref->next )
+	    for ( ref = sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
 		SCReinstanciateRefChar(sc,ref);
 	    SCCharChangedUpdate(sc);
 	}

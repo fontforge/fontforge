@@ -2349,7 +2349,7 @@ static void bCorrectDirection(Context *c) {
 	sc = sf->chars[i];
 	changed = refchanged = false;
 	if ( checkrefs ) {
-	    for ( ref=sc->refs; ref!=NULL; ref=ref->next ) {
+	    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 		if ( ref->transform[0]*ref->transform[3]<0 ||
 			(ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
 		    if ( !refchanged ) {

@@ -222,7 +222,7 @@ static void svg_scpathdump(FILE *file, SplineChar *sc) {
     int lineout, any;
 
     any = sc->layers[ly_fore].splines!=NULL;
-    for ( ref=sc->refs ; ref!=NULL && !any; ref = ref->next )
+    for ( ref=sc->layers[ly_fore].refs ; ref!=NULL && !any; ref = ref->next )
 	any = ref->layers[0].splines!=NULL;
     if ( !any ) {
 	/* I think a space is represented by leaving out the d (path) entirely*/
@@ -230,7 +230,7 @@ static void svg_scpathdump(FILE *file, SplineChar *sc) {
     } else {
 	fprintf( file,"d=\"");
 	lineout = svg_pathdump(file,sc->layers[ly_fore].splines,3);
-	for ( ref= sc->refs; ref!=NULL; ref=ref->next )
+	for ( ref= sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
 	    lineout = svg_pathdump(file,ref->layers[0].splines,lineout);
 	if ( lineout>=255-4 ) putc('\n',file );
 	putc('"',file);

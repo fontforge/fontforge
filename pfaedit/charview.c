@@ -687,7 +687,7 @@ static void CVDrawTemplates(CharView *cv,GWindow pixmap,SplineChar *template,DRe
     RefChar *r;
 
     CVDrawSplineSet(cv,pixmap,template->layers[ly_fore].splines,templateoutlinecol,false,clip);
-    for ( r=template->refs; r!=NULL; r=r->next )
+    for ( r=template->layers[ly_fore].refs; r!=NULL; r=r->next )
 	CVDrawSplineSet(cv,pixmap,r->layers[0].splines,templateoutlinecol,false,clip);
 }
 
@@ -1259,7 +1259,7 @@ return;
 		cv->sc->enc<sub->charcnt )
 	    sc = sub->chars[cv->sc->enc];
 	if ( sc!=NULL ) {
-	    for ( rf=sc->refs; rf!=NULL; rf = rf->next )
+	    for ( rf=sc->layers[ly_fore].refs; rf!=NULL; rf = rf->next )
 		CVDrawSplineSet(cv,pixmap,rf->layers[0].splines,backoutlinecol,false,clip);
 	    CVDrawSplineSet(cv,pixmap,sc->layers[ly_fore].splines,backoutlinecol,false,clip);
 	}
@@ -1287,10 +1287,10 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     if ( !cv->show_ft_results && cv->dv==NULL ) {
 	/* if we've got bg images (and we're showing them) then the hints live in */
 	/*  the bg image pixmap (else they get overwritten by the pixmap) */
-	if ( (cv->showhhints || cv->showvhints || cv->showdhints) && ( cv->sc->backimages==NULL || !cv->showback) )
+	if ( (cv->showhhints || cv->showvhints || cv->showdhints) && ( cv->sc->layers[ly_back].images==NULL || !cv->showback) )
 	    CVShowHints(cv,pixmap);
 
-	if (( cv->showback || cv->drawmode==dm_back ) && cv->sc->backimages!=NULL ) {
+	if (( cv->showback || cv->drawmode==dm_back ) && cv->sc->layers[ly_back].images!=NULL ) {
 	    /* This really should be after the grids, but then it would completely*/
 	    /*  hide them. */
 	    GRect r;
@@ -1300,7 +1300,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		GDrawFillRect(cv->backimgs,NULL,GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(cv->v)));
 		if ( cv->showhhints || cv->showvhints || cv->showdhints)
 		    CVShowHints(cv,cv->backimgs);
-		DrawImageList(cv,cv->backimgs,cv->sc->backimages);
+		DrawImageList(cv,cv->backimgs,cv->sc->layers[ly_back].images);
 		cv->back_img_out_of_date = false;
 	    }
 	    r.x = r.y = 0; r.width = cv->width; r.height = cv->height;
@@ -1322,7 +1322,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	}
 
 	if ( cv->showback || cv->drawmode==dm_back )
-	    DrawSelImageList(cv,pixmap,cv->sc->backimages);
+	    DrawSelImageList(cv,pixmap,cv->sc->layers[ly_back].images);
 	if (( cv->showfore || cv->drawmode==dm_fore ) && cv->showfilled ) {
 	    /* Wrong order, I know. But it is useful to have the background */
 	    /*  visible on top of the fill... */
@@ -1398,7 +1398,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 
     if ( cv->showfore || (cv->drawmode==dm_fore && !cv->show_ft_results && cv->dv==NULL))  {
 	CVDrawAnchorPoints(cv,pixmap);
-	for ( rf=cv->sc->refs; rf!=NULL; rf = rf->next ) {
+	for ( rf=cv->sc->layers[ly_fore].refs; rf!=NULL; rf = rf->next ) {
 	    CVDrawRefName(cv,pixmap,rf,0);
 	    CVDrawSplineSet(cv,pixmap,rf->layers[0].splines,foreoutlinecol,false,&clip);
 	    if ( rf->selected )
@@ -1610,7 +1610,7 @@ static GWindow CharIcon(CharView *cv, FontView *fv) {
     GDrawFillRect(icon,&r,0x0);		/* for some reason icons seem to be color reversed by my defn */
 
     bdf = NULL; bdfc = NULL;
-    if ( sc->refs!=NULL || sc->layers[ly_fore].splines!=NULL ) {
+    if ( sc->layers[ly_fore].refs!=NULL || sc->layers[ly_fore].splines!=NULL ) {
 	bdf = fv->show;
 	if ( bdf->chars[sc->enc]==NULL )
 	    bdf = fv->filled;
@@ -2410,7 +2410,7 @@ static int _CVTestSelectFromEvent(CharView *cv,FindSel *fs) {
 	    temp = cv->p;
 	    fs->p = &temp;
 	    fs->seek_controls = false;
-	    for ( rf=cv->sc->refs; rf!=NULL; rf = rf->next ) {
+	    for ( rf=cv->sc->layers[ly_fore].refs; rf!=NULL; rf = rf->next ) {
 		if ( InSplineSet(fs,rf->layers[0].splines)) {
 		    cv->p.ref = rf;
 		    cv->p.anysel = true;
@@ -2435,7 +2435,7 @@ static int _CVTestSelectFromEvent(CharView *cv,FindSel *fs) {
 	    }
 	} else if ( cv->drawmode==dm_back ) {
 	    ImageList *img;
-	    for ( img = cv->sc->backimages; img!=NULL; img=img->next ) {
+	    for ( img = cv->sc->layers[ly_back].images; img!=NULL; img=img->next ) {
 		if ( InImage(fs,img)) {
 		    cv->p.img = img;
 		    cv->p.anysel = true;
@@ -3109,8 +3109,8 @@ return;
 	    new->transform[0] = new->transform[3] = 1.0;
 	    new->layers[0].splines = NULL;
 	    new->sc = rsc;
-	    new->next = cv->sc->refs;
-	    cv->sc->refs = new;
+	    new->next = cv->sc->layers[ly_fore].refs;
+	    cv->sc->layers[ly_fore].refs = new;
 	    SCReinstanciateRefChar(cv->sc,new);
 	    SCMakeDependent(cv->sc,rsc);
 	}
@@ -3819,7 +3819,7 @@ void RevertedGlyphReferenceFixup(SplineChar *sc, SplineFont *sf) {
     int i;
     RefChar *refs, *prev, *next;
 
-    for ( prev=NULL, refs = sc->refs ; refs!=NULL; refs = next ) {
+    for ( prev=NULL, refs = sc->layers[ly_fore].refs ; refs!=NULL; refs = next ) {
 	next = refs->next;
 	if ( sf->encodingchanged && refs->unicode_enc>0 ) {
 	    /* Well, try to fix things up based on the unicode encoding */
@@ -3844,7 +3844,7 @@ void RevertedGlyphReferenceFixup(SplineChar *sc, SplineFont *sf) {
 	    SCMakeDependent(sc,refs->sc);
 	} else {
 	    if ( prev==NULL )
-		sc->refs = next;
+		sc->layers[ly_fore].refs = next;
 	    else
 		prev->next = next;
 	    RefCharFree(refs);
@@ -3863,7 +3863,7 @@ return;
     if ( sc==NULL ) {
 	GWidgetErrorR(_STR_CantFindGlyph,_STR_CantRevertGlyph,cv->sc->name);
 	cv->sc->namechanged = true;
-    } else if ( sc->refs!=NULL && cv->sc->parent->encodingchanged &&
+    } else if ( sc->layers[ly_fore].refs!=NULL && cv->sc->parent->encodingchanged &&
 	    GWidgetAskR(_STR_GlyphHasRefs,buts,0,1,_STR_GlyphHasRefsQuestion,cv->sc->name)==1 ) {
 	SplineCharFree(sc);
     } else {
@@ -4376,7 +4376,7 @@ static void CVDoClear(CharView *cv) {
     if ( cv->drawmode==dm_fore ) {
 	RefChar *refs, *next;
 	AnchorPoint *ap, *aprev=NULL, *anext;
-	for ( refs=cv->sc->refs; refs!=NULL; refs = next ) {
+	for ( refs=cv->sc->layers[ly_fore].refs; refs!=NULL; refs = next ) {
 	    next = refs->next;
 	    if ( refs->selected )
 		SCRemoveDependent(cv->sc,refs);
@@ -4395,13 +4395,13 @@ static void CVDoClear(CharView *cv) {
     }
     if ( cv->drawmode==dm_back ) {
 	ImageList *prev, *imgs, *next;
-	for ( prev = NULL, imgs=cv->sc->backimages; imgs!=NULL; imgs = next ) {
+	for ( prev = NULL, imgs=cv->sc->layers[ly_back].images; imgs!=NULL; imgs = next ) {
 	    next = imgs->next;
 	    if ( !imgs->selected )
 		prev = imgs;
 	    else {
 		if ( prev==NULL )
-		    cv->sc->backimages = next;
+		    cv->sc->layers[ly_back].images = next;
 		else
 		    prev->next = next;
 		chunkfree(imgs,sizeof(ImageList));
@@ -4544,11 +4544,11 @@ static void _CVUnlinkRef(CharView *cv) {
     int anyrefs=0;
     RefChar *rf, *next;
 
-    if ( cv->drawmode==dm_fore && cv->sc->refs!=NULL ) {
+    if ( cv->drawmode==dm_fore && cv->sc->layers[ly_fore].refs!=NULL ) {
 	CVPreserveState(cv);
-	for ( rf=cv->sc->refs; rf!=NULL && !anyrefs; rf=rf->next )
+	for ( rf=cv->sc->layers[ly_fore].refs; rf!=NULL && !anyrefs; rf=rf->next )
 	    if ( rf->selected ) anyrefs = true;
-	for ( rf=cv->sc->refs; rf!=NULL ; rf=next ) {
+	for ( rf=cv->sc->layers[ly_fore].refs; rf!=NULL ; rf=next ) {
 	    next = rf->next;
 	    if ( rf->selected || !anyrefs) {
 		SCRefToSplines(cv->sc,rf);
@@ -4599,7 +4599,7 @@ static void cv_edlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	  break;
 	  case MID_CopyLBearing: case MID_CopyRBearing:
 	    mi->ti.disabled = cv->drawmode!=dm_fore ||
-		    (cv->sc->layers[ly_fore].splines==NULL && cv->sc->refs==NULL);
+		    (cv->sc->layers[ly_fore].splines==NULL && cv->sc->layers[ly_fore].refs==NULL);
 	  break;
 	  case MID_CopyFgToBg:
 	    mi->ti.disabled = cv->sc->layers[ly_fore].splines==NULL;
@@ -4628,7 +4628,7 @@ static void cv_edlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	    mi->ti.disabled = cv->drawmode!=dm_fore || cv->searcher!=NULL;
 	  break;
 	  case MID_UnlinkRef:
-	    mi->ti.disabled = cv->drawmode!=dm_fore || cv->sc->refs==NULL;
+	    mi->ti.disabled = cv->drawmode!=dm_fore || cv->sc->layers[ly_fore].refs==NULL;
 	  break;
 	}
     }
@@ -4870,12 +4870,12 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
     if ( flags&fvt_round_to_int )
 	SplineSetsRound2Int(cv->layerheads[cv->drawmode]->splines);
     if ( cv->drawmode==dm_back ) {
-	for ( img = cv->sc->backimages; img!=NULL; img=img->next )
+	for ( img = cv->sc->layers[ly_back].images; img!=NULL; img=img->next )
 	    if ( img->selected || !anysel ) {
 		BackgroundImageTransform(cv->sc, img, transform);
 	    }
     } else if ( cv->drawmode==dm_fore ) {
-	for ( refs = cv->sc->refs; refs!=NULL; refs=refs->next )
+	for ( refs = cv->sc->layers[ly_fore].refs; refs!=NULL; refs=refs->next )
 	    if ( refs->selected || !anysel ) {
 		SplinePointListTransform(refs->layers[0].splines,transform,true);
 		t[0] = refs->transform[0]*transform[0] +
@@ -4924,7 +4924,7 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
 		cv->sc->vwidth+=transform[5];
 	if ( (flags&fvt_dobackground) && !anysel ) {
 	    SCPreserveBackground(cv->sc);
-	    for ( img = cv->sc->backimages; img!=NULL; img=img->next )
+	    for ( img = cv->sc->layers[ly_back].images; img!=NULL; img=img->next )
 		BackgroundImageTransform(cv->sc, img, transform);
 	    SplinePointListTransform(cv->layerheads[cv->drawmode]->splines,
 		    transform,true);
@@ -5088,7 +5088,7 @@ void SCRound2Int(SplineChar *sc) {
     }
 
     SplineSetsRound2Int(sc->layers[ly_fore].splines);
-    for ( r=sc->refs; r!=NULL; r=r->next ) {
+    for ( r=sc->layers[ly_fore].refs; r!=NULL; r=r->next ) {
 	r->transform[4] = rint(r->transform[4]);
 	r->transform[5] = rint(r->transform[5]);
 	SplineSetFindBounds(r->layers[0].splines,&r->bb);
@@ -5131,7 +5131,7 @@ static void _CVMenuRound2Int(CharView *cv) {
 	    SplineRefigure(spl->first->prev);
     }
     if ( cv->drawmode==dm_fore ) {
-	for ( r=cv->sc->refs; r!=NULL; r=r->next ) {
+	for ( r=cv->sc->layers[ly_fore].refs; r!=NULL; r=r->next ) {
 	    if ( r->selected || !anysel ) {
 		r->transform[4] = rint(r->transform[4]);
 		r->transform[5] = rint(r->transform[5]);
@@ -5242,15 +5242,15 @@ return;
     } else if ( r!=NULL ) {
 	RefChar *p, *pp, *t;
 	p = pp = NULL;
-	for ( t=cv->sc->refs; t!=NULL && t!=r; t=t->next ) {
+	for ( t=cv->sc->layers[ly_fore].refs; t!=NULL && t!=r; t=t->next ) {
 	    pp = p; p = t;
 	}
 	switch ( mi->mid ) {
 	  case MID_First:
 	    if ( p!=NULL ) {
 		p->next = r->next;
-		r->next = cv->sc->refs;
-		cv->sc->refs = r;
+		r->next = cv->sc->layers[ly_fore].refs;
+		cv->sc->layers[ly_fore].refs = r;
 	    }
 	  break;
 	  case MID_Earlier:
@@ -5258,7 +5258,7 @@ return;
 		p->next = r->next;
 		r->next = p;
 		if ( pp==NULL ) {
-		    cv->sc->refs = r;
+		    cv->sc->layers[ly_fore].refs = r;
 		} else {
 		    pp->next = r;
 		}
@@ -5266,10 +5266,10 @@ return;
 	  break;
 	  case MID_Last:
 	    if ( r->next!=NULL ) {
-		for ( t=cv->sc->refs; t->next!=NULL; t=t->next );
+		for ( t=cv->sc->layers[ly_fore].refs; t->next!=NULL; t=t->next );
 		t->next = r;
 		if ( p==NULL )
-		    cv->sc->refs = r->next;
+		    cv->sc->layers[ly_fore].refs = r->next;
 		else
 		    p->next = r->next;
 		r->next = NULL;
@@ -5281,7 +5281,7 @@ return;
 		r->next = t->next;
 		t->next = r;
 		if ( p==NULL )
-		    cv->sc->refs = t;
+		    cv->sc->layers[ly_fore].refs = t;
 		else
 		    p->next = t;
 	    }
@@ -5290,15 +5290,15 @@ return;
     } else if ( im!=NULL ) {
 	ImageList *p, *pp, *t;
 	p = pp = NULL;
-	for ( t=cv->sc->backimages; t!=NULL && t!=im; t=t->next ) {
+	for ( t=cv->sc->layers[ly_back].images; t!=NULL && t!=im; t=t->next ) {
 	    pp = p; p = t;
 	}
 	switch ( mi->mid ) {
 	  case MID_First:
 	    if ( p!=NULL ) {
 		p->next = im->next;
-		im->next = cv->sc->backimages;
-		cv->sc->backimages = im;
+		im->next = cv->sc->layers[ly_back].images;
+		cv->sc->layers[ly_back].images = im;
 	    }
 	  break;
 	  case MID_Earlier:
@@ -5306,7 +5306,7 @@ return;
 		p->next = im->next;
 		im->next = p;
 		if ( pp==NULL ) {
-		    cv->sc->backimages = im;
+		    cv->sc->layers[ly_back].images = im;
 		} else {
 		    pp->next = im;
 		}
@@ -5314,10 +5314,10 @@ return;
 	  break;
 	  case MID_Last:
 	    if ( im->next!=NULL ) {
-		for ( t=cv->sc->backimages; t->next!=NULL; t=t->next );
+		for ( t=cv->sc->layers[ly_back].images; t->next!=NULL; t=t->next );
 		t->next = im;
 		if ( p==NULL )
-		    cv->sc->backimages = im->next;
+		    cv->sc->layers[ly_back].images = im->next;
 		else
 		    p->next = im->next;
 		im->next = NULL;
@@ -5329,7 +5329,7 @@ return;
 		im->next = t->next;
 		t->next = im;
 		if ( p==NULL )
-		    cv->sc->backimages = t;
+		    cv->sc->layers[ly_back].images = t;
 		else
 		    p->next = t;
 	    }
@@ -5466,7 +5466,7 @@ static void CVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     int asked=-1;
     static int buts[] = { _STR_Unlink, _STR_No, _STR_Cancel, 0 };
 
-    if ( cv->drawmode==dm_fore ) for ( ref=cv->sc->refs; ref!=NULL; ref=ref->next ) {
+    if ( cv->drawmode==dm_fore ) for ( ref=cv->sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	if ( ref->transform[0]*ref->transform[3]<0 ||
 		(ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
 	    if ( asked==-1 ) {
@@ -5589,11 +5589,11 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
     ImageList *il;
 
     if ( cv->drawmode==dm_fore ) {
-	for ( ref=cv->sc->refs; ref!=NULL; ref=ref->next )
+	for ( ref=cv->sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
 	    if ( ref->selected )
 		badsel = true;
     } else if ( cv->drawmode==dm_back ) {
-	for ( il=cv->sc->backimages; il!=NULL; il=il->next )
+	for ( il=cv->sc->layers[ly_back].images; il!=NULL; il=il->next )
 	    if ( il->selected )
 		badsel = true;
     }
@@ -5655,7 +5655,7 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	    mi->ti.disabled = !anypoints || dir==2;
 	  break;
 	  case MID_MetaFont:
-	    mi->ti.disabled = cv->drawmode!=dm_fore || cv->sc->refs!=NULL || order2;
+	    mi->ti.disabled = cv->drawmode!=dm_fore || cv->sc->layers[ly_fore].refs!=NULL || order2;
 	  break;
 	  case MID_Stroke:
 	    mi->ti.disabled = ( cv->layerheads[cv->drawmode]->splines==NULL || order2 );
@@ -5697,7 +5697,7 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	    mi->ti.disabled = !SFIsSomethingBuildable(cv->fv->sf,cv->sc,false);
 	  break;
 	  case MID_Autotrace:
-	    mi->ti.disabled = FindAutoTraceName()==NULL || cv->sc->backimages==NULL;
+	    mi->ti.disabled = FindAutoTraceName()==NULL || cv->sc->layers[ly_back].images==NULL;
 	  break;
 	}
     }
@@ -6398,10 +6398,10 @@ static void orlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	isfirst = cv->layerheads[cv->drawmode]->splines==spl;
 	islast = spl->next==NULL;
     } else if ( r!=NULL ) {
-	isfirst = cv->sc->refs==r;
+	isfirst = cv->sc->layers[ly_fore].refs==r;
 	islast = r->next==NULL;
     } else if ( im!=NULL ) {
-	isfirst = cv->sc->backimages==im;
+	isfirst = cv->sc->layers[ly_back].images==im;
 	islast = im->next!=NULL;
     }
 

@@ -694,22 +694,22 @@ SplineChar *SCDuplicate(SplineChar *sc) {
     if ( sc==NULL || sc->parent->cidmaster!=NULL )
 return( sc );		/* Can't do this in CID keyed fonts */
 
-    while ( sc->refs!=NULL && sc->refs->next==NULL && 
-	    sc->refs->transform[0]==1 && sc->refs->transform[1]==0 &&
-	    sc->refs->transform[2]==0 && sc->refs->transform[3]==1 &&
-	    sc->refs->transform[4]==0 && sc->refs->transform[5]==0 ) {
-	char *basename = sc->refs->sc->name;
+    while ( sc->layers[ly_fore].refs!=NULL && sc->layers[ly_fore].refs->next==NULL && 
+	    sc->layers[ly_fore].refs->transform[0]==1 && sc->layers[ly_fore].refs->transform[1]==0 &&
+	    sc->layers[ly_fore].refs->transform[2]==0 && sc->layers[ly_fore].refs->transform[3]==1 &&
+	    sc->layers[ly_fore].refs->transform[4]==0 && sc->layers[ly_fore].refs->transform[5]==0 ) {
+	char *basename = sc->layers[ly_fore].refs->sc->name;
 	int len = strlen(basename);
 	if ( strncmp(sc->name,basename,len)==0 &&
 		(sc->name[len]=='.' || sc->name[len]=='\0'))
-	    matched = sc->refs->sc;
-	sc = sc->refs->sc;
+	    matched = sc->layers[ly_fore].refs->sc;
+	sc = sc->layers[ly_fore].refs->sc;
     }
 return( matched );
 }
 
 int SCIsNotdef(SplineChar *sc,int fixed) {
-return( sc!=NULL && sc->enc==0 && sc->refs==NULL && strcmp(sc->name,".notdef")==0 &&
+return( sc!=NULL && sc->enc==0 && sc->layers[ly_fore].refs==NULL && strcmp(sc->name,".notdef")==0 &&
 	(sc->layers[ly_fore].splines!=NULL || (sc->widthset && fixed==-1) ||
 	 (sc->width!=sc->parent->ascent+sc->parent->descent && fixed==-1 ) ||
 	 (sc->width==fixed && fixed!=-1 && sc->widthset)));
@@ -717,7 +717,7 @@ return( sc!=NULL && sc->enc==0 && sc->refs==NULL && strcmp(sc->name,".notdef")==
 
 int SCWorthOutputting(SplineChar *sc) {
 return( sc!=NULL &&
-	( sc->layers[ly_fore].splines!=NULL || sc->refs!=NULL || sc->widthset || sc->anchor!=NULL ||
+	( sc->layers[ly_fore].splines!=NULL || sc->layers[ly_fore].refs!=NULL || sc->widthset || sc->anchor!=NULL ||
 #if HANYANG
 	    sc->compositionunit ||
 #endif
@@ -726,7 +726,7 @@ return( sc!=NULL &&
 	( strcmp(sc->name,".notdef")!=0 || sc->enc==0) &&
 	( (strcmp(sc->name,".null")!=0 && strcmp(sc->name,"glyph1")!=0 &&
 	   strcmp(sc->name,"nonmarkingreturn")!=0 && strcmp(sc->name,"glyph2")!=0) ||
-	  sc->layers[ly_fore].splines!=NULL || sc->dependents!=NULL || sc->refs!=NULL ) );
+	  sc->layers[ly_fore].splines!=NULL || sc->dependents!=NULL || sc->layers[ly_fore].refs!=NULL ) );
 }
 
 int CIDWorthOutputting(SplineFont *cidmaster, int enc) {

@@ -1270,7 +1270,7 @@ static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, 
     /* USE_MY_METRICS, what happens if ARGS AREN'T XY */
     /* ROUND means that offsets should rounded to the grid before being added */
     /*  (it's irrelevant for my purposes) */
-    sc->refs = head;
+    sc->layers[ly_fore].refs = head;
 }
 
 static SplineChar *readttfglyph(FILE *ttf,struct ttfinfo *info,int start, int end,int enc) {
@@ -2844,7 +2844,7 @@ static void cidfigure(struct ttfinfo *info, struct topdicts *dict,
 	sf->chars[cid] = info->chars[i];
 	sf->chars[cid]->parent = sf;
 	sf->chars[cid]->enc = cid;
-	if ( sf->chars[cid]->refs!=NULL )
+	if ( sf->chars[cid]->layers[ly_fore].refs!=NULL )
 	    GDrawIError( "Reference found in CID font. Can't fix it up");
 	if ( cstype==2 ) {
 	    if ( sf->chars[cid]->width == (int16) 0x8000 )
@@ -3724,7 +3724,7 @@ return( -1 );
 	break;
 	}
     }
-    for ( refs=sc->refs; refs!=NULL; refs=refs->next ) {
+    for ( refs=sc->layers[ly_fore].refs; refs!=NULL; refs=refs->next ) {
 	ret = ttfFindPointInSC(refs->sc,pnum-last,pos);
 	if ( ret==-1 )
 return( -1 );
@@ -3755,13 +3755,13 @@ return( false );
 return( false );
     info->chars[i]->ticked = true;
     prev = NULL;
-    for ( ref=info->chars[i]->refs; ref!=NULL; ref=next ) {
+    for ( ref=info->chars[i]->layers[ly_fore].refs; ref!=NULL; ref=next ) {
 	if ( ref->sc!=NULL )
     break;				/* Already done */
 	next = ref->next;
 	if ( !ttfFixupRef(info,ref->local_enc)) {
 	    if ( prev==NULL )
-		info->chars[i]->refs = next;
+		info->chars[i]->layers[ly_fore].refs = next;
 	    else
 		prev->next = next;
 	    free(ref);
@@ -4081,7 +4081,7 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
     }
 
     for ( i=0; i<newcharcnt; ++i ) if ( newchars[i]!=NULL ) {
-	for ( rf = newchars[i]->refs; rf!=NULL; rf = rf->next ) {
+	for ( rf = newchars[i]->layers[ly_fore].refs; rf!=NULL; rf = rf->next ) {
 	    rf->local_enc = rf->sc->enc;
 	    rf->unicode_enc = rf->sc->unicodeenc;
 	}

@@ -143,7 +143,7 @@ return( true );
     spl = NULL;
     if ( ref->layers[0].splines!=NULL )
 	for ( spl = ref->layers[0].splines; spl->next!=NULL; spl = spl->next );
-    for ( subref = ref->sc->refs; subref!=NULL; subref=subref->next ) {
+    for ( subref = ref->sc->layers[ly_fore].refs; subref!=NULL; subref=subref->next ) {
 	new = SplinePointListTransform(SplinePointListCopy(subref->layers[0].splines),trans,true);
 	if ( spl==NULL )
 	    ref->layers[0].splines = new;

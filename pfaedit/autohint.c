@@ -459,8 +459,8 @@ void QuickBlues(SplineFont *_sf, BlueData *bd) {
 		    enc==0x399 || enc==0x39f || enc==0x3ba || enc==0x3bf || enc==0x3c1 || enc==0x3be || enc==0x3c7 ||
 		    enc==0x41f || enc==0x41e || enc==0x43e || enc==0x43f || enc==0x440 || enc==0x452 || enc==0x445 ) {
 		t = sf->chars[i];
-		while ( t->layers[ly_fore].splines==NULL && t->refs!=NULL )
-		    t = t->refs->sc;
+		while ( t->layers[ly_fore].splines==NULL && t->layers[ly_fore].refs!=NULL )
+		    t = t->layers[ly_fore].refs->sc;
 		max = -1e10; min = 1e10;
 		if ( t->layers[ly_fore].splines!=NULL ) {
 		    for ( spl=t->layers[ly_fore].splines; spl!=NULL; spl=spl->next ) {
@@ -3269,7 +3269,7 @@ static void AutoHintRefs(SplineChar *sc,int removeOverlaps) {
 
     /* Add hints for base characters before accent hints => if there are any */
     /*  conflicts, the base characters win */
-    for ( ref=sc->refs; ref!=NULL; ref=ref->next ) {
+    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	if ( ref->transform[1]==0 && ref->transform[2]==0 ) {
 	    if ( !ref->sc->manualhints && ref->sc->changedsincelasthinted )
 		SplineCharAutoHint(ref->sc,removeOverlaps);
@@ -3281,7 +3281,7 @@ static void AutoHintRefs(SplineChar *sc,int removeOverlaps) {
 	}
     }
 
-    for ( ref=sc->refs; ref!=NULL; ref=ref->next ) {
+    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	if ( ref->transform[1]==0 && ref->transform[2]==0 &&
 		(ref->sc->unicodeenc==-1 || !isalnum(ref->sc->unicodeenc)) ) {
 	    sc->hstem = RefHintsMerge(sc->hstem,ref->sc->hstem,ref->transform[3], ref->transform[5], ref->transform[0], ref->transform[4]);
@@ -3591,7 +3591,7 @@ static void _SCClearHintMasks(SplineChar *sc,int counterstoo) {
 	}
     }
 
-    for ( ref = sc->refs; ref!=NULL; ref=ref->next ) {
+    for ( ref = sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	for ( spl = ref->layers[0].splines; spl!=NULL; spl=spl->next ) {
 	    for ( sp = spl->first ; ; ) {
 		chunkfree(sp->hintmask,sizeof(HintMask));
@@ -4202,7 +4202,7 @@ return;
     SplResolveSplitHints(scs,spl,instance_count,&hs,&vs);
     anymore = false;
     for ( i=0; i<instance_count; ++i ) {
-	ref[i] = scs[i]->refs;
+	ref[i] = scs[i]->layers[ly_fore].refs;
 	if ( ref[i]!=NULL ) anymore = true;
     }
     while ( anymore ) {
@@ -4317,7 +4317,7 @@ return;						/* In an MM font we may still need to resolve things like different
 
     for ( i=0; i<instance_count; ++i ) {
 	spl[i] = scs[i]->layers[ly_fore].splines;
-	ref[i] = scs[i]->refs;
+	ref[i] = scs[i]->layers[ly_fore].refs;
     }
     inited = SplFigureHintMasks(scs,spl,instance_count,mask,false);
     forever {

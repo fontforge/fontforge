@@ -218,7 +218,7 @@ static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
     }
     if ( i!=-1 && swidth!=-1 &&
 	    ((sf->onlybitmaps && ((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) ) ||
-	     (sf->chars[i]!=NULL && sf->chars[i]->layers[ly_fore].splines==NULL && sf->chars[i]->refs==NULL &&
+	     (sf->chars[i]!=NULL && sf->chars[i]->layers[ly_fore].splines==NULL && sf->chars[i]->layers[ly_fore].refs==NULL &&
 	       !sf->chars[i]->widthset)) ) {
 	sf->chars[i]->width = swidth;
 	sf->chars[i]->widthset = true;
@@ -802,7 +802,7 @@ return( false );
     bc->bytes_per_line = ((bc->xmax-bc->xmin+8)>>3);
     bc->bitmap = gcalloc(bc->bytes_per_line*(bc->ymax-bc->ymin+1),1);
 
-    if ( sf->chars[enc]->layers[ly_fore].splines==NULL && sf->chars[enc]->refs==NULL &&
+    if ( sf->chars[enc]->layers[ly_fore].splines==NULL && sf->chars[enc]->layers[ly_fore].refs==NULL &&
 	    !sf->chars[enc]->widthset ) {
 	sf->chars[enc]->width = aw;
 	sf->chars[enc]->widthset = true;
@@ -1048,7 +1048,7 @@ return( 0 );
     bc->bytes_per_line = ((w+7)>>3);
     bc->bitmap = gcalloc(bc->bytes_per_line*h,1);
 
-    if ( sf->chars[cc]->layers[ly_fore].splines==NULL && sf->chars[cc]->refs==NULL &&
+    if ( sf->chars[cc]->layers[ly_fore].splines==NULL && sf->chars[cc]->layers[ly_fore].refs==NULL &&
 	    !sf->chars[cc]->widthset ) {
 	sf->chars[cc]->width = (sf->ascent+sf->descent)*(double) tfm/(0x100000);
 	sf->chars[cc]->widthset = true;

@@ -72,7 +72,7 @@ void SFShowLigatures(SplineFont *sf,SplineChar *searchfor) {
 
     while ( 1 ) {
 	for ( i=cnt=0; i<sf->charcnt; ++i ) {
-	    if ( (sc=sf->chars[i])!=NULL && (sc->layers[ly_fore].splines!=NULL || sc->refs!=NULL) ) {
+	    if ( (sc=sf->chars[i])!=NULL && (sc->layers[ly_fore].splines!=NULL || sc->layers[ly_fore].refs!=NULL) ) {
 		for ( pst=sc->possub; pst!=NULL; pst=pst->next )
 			if ( pst->type==pst_ligature &&
 				(searchfor==NULL || PSTContains(pst->u.lig.components,searchfor->name))) {

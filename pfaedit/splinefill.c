@@ -438,7 +438,7 @@ void FindEdgesSplineSet(SplinePointList *spl, EdgeList *es) {
 static void FindEdges(SplineChar *sc, EdgeList *es) {
     RefChar *rf;
 
-    for ( rf=sc->refs; rf!=NULL; rf = rf->next )
+    for ( rf=sc->layers[ly_fore].refs; rf!=NULL; rf = rf->next )
 	FindEdgesSplineSet(rf->layers[0].splines,es);
 
     FindEdgesSplineSet(sc->layers[ly_fore].splines,es);

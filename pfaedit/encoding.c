@@ -841,7 +841,7 @@ static void SFApplyEnc(SplineFont *sf, int charcnt) {
     /* Remove references to characters which aren't in the new map (if any) */
     /* Don't need to fix up dependencies, because we throw the char away */
     for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL ) {
-	for ( rprev = NULL, refs=sc->refs; refs!=NULL; refs=rnext ) {
+	for ( rprev = NULL, refs=sc->layers[ly_fore].refs; refs!=NULL; refs=rnext ) {
 	    rnext = refs->next;
 	    if ( refs->sc->enc==-1 ) {
 		new = refs->layers[0].splines;
@@ -853,7 +853,7 @@ static void SFApplyEnc(SplineFont *sf, int charcnt) {
 		refs->layers[0].splines=NULL;
 		RefCharFree(refs);
 		if ( rprev==NULL )
-		    sc->refs = rnext;
+		    sc->layers[ly_fore].refs = rnext;
 		else
 		    rprev->next = rnext;
 	    } else

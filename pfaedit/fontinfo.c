@@ -1445,7 +1445,7 @@ static void RemoveSplineChar(SplineFont *sf, int enc) {
 	    dnext = dep->next;
 	    /* May be more than one reference to us, colon has two refs to period */
 	    /*  but only one dlist entry */
-	    for ( rf = dsc->refs; rf!=NULL; rf=rnext ) {
+	    for ( rf = dsc->layers[ly_fore].refs; rf!=NULL; rf=rnext ) {
 		rnext = rf->next;
 		if ( rf->sc==sc )
 		    SCRefToSplines(dsc,rf);
@@ -1454,12 +1454,12 @@ static void RemoveSplineChar(SplineFont *sf, int enc) {
 	for ( fvs=sc->parent->fv; fvs!=NULL; fvs=fvs->nextsame ) {
 	    if ( fvs->sv!=NULL ) {
 		RefChar *rf, *rnext;
-		for ( rf = fvs->sv->sc_srch.refs; rf!=NULL; rf=rnext ) {
+		for ( rf = fvs->sv->sc_srch.layers[ly_fore].refs; rf!=NULL; rf=rnext ) {
 		    rnext = rf->next;
 		    if ( rf->sc==sc )
 			SCRefToSplines(&fvs->sv->sc_srch,rf);
 		}
-		for ( rf = fvs->sv->sc_rpl.refs; rf!=NULL; rf=rnext ) {
+		for ( rf = fvs->sv->sc_rpl.layers[ly_fore].refs; rf!=NULL; rf=rnext ) {
 		    rnext = rf->next;
 		    if ( rf->sc==sc )
 			SCRefToSplines(&fvs->sv->sc_rpl,rf);
@@ -1482,7 +1482,7 @@ static void RemoveSplineChar(SplineFont *sf, int enc) {
 	}
 	sf->chars[enc] = NULL;
 
-	for ( refs=sc->refs; refs!=NULL; refs = rnext ) {
+	for ( refs=sc->layers[ly_fore].refs; refs!=NULL; refs = rnext ) {
 	    rnext = refs->next;
 	    SCRemoveDependent(sc,refs);
 	}
@@ -1744,7 +1744,7 @@ return( false );
 		/* skip */;
 	    else if ( (target==NULL && !infont(sc,table,tlen,item,used,new_map)) ||
 		      (target!=NULL && !intarget(sc,target) ) ) {
-		if ( sc->layers[ly_fore].splines==NULL && sc->refs==NULL && sc->dependents==NULL &&
+		if ( sc->layers[ly_fore].splines==NULL && sc->layers[ly_fore].refs==NULL && sc->dependents==NULL &&
 			(!sc->widthset || strcmp(sc->name,".notdef")==0 ) ) {
 			/* glyphs mapped to .notdef in a type1 font will have widthset but its not meaningful */
 		    RemoveSplineChar(sf,i);
@@ -1786,7 +1786,7 @@ return( false );
     sf->charcnt = enc_cnt+extras;
     sf->encoding_name = new_map;
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	for ( refs=sf->chars[i]->refs; refs!=NULL; refs = refs->next )
+	for ( refs=sf->chars[i]->layers[ly_fore].refs; refs!=NULL; refs = refs->next )
 	    refs->local_enc = refs->sc->enc;
     }
 

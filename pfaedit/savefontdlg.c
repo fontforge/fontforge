@@ -1422,7 +1422,7 @@ return( 0 );
     forever {
 	extras = 0;
 	for ( i=0; i<temp.charcnt; ++i ) if ( temp.chars[i]!=NULL ) {
-	    for ( ref=temp.chars[i]->refs; ref!=NULL; ref=ref->next )
+	    for ( ref=temp.chars[i]->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
 		if ( ref->sc->parent!=&temp )
 		    ++extras;
 	}
@@ -1435,7 +1435,7 @@ return( 0 );
 	temp.chars = newchars;
 	extras = 0;
 	for ( i=0; i<base; ++i ) if ( temp.chars[i]!=NULL ) {
-	    for ( ref=temp.chars[i]->refs; ref!=NULL; ref=ref->next )
+	    for ( ref=temp.chars[i]->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
 		if ( ref->sc->parent!=&temp ) {
 		    temp.chars[base+extras] = ref->sc;
 		    ref->sc->parent = &temp;
@@ -1915,7 +1915,7 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
 
     for ( i=d->sf->charcnt-1; i>=1; --i )
 	if ( d->sf->chars[i]!=NULL && strcmp(d->sf->chars[i]->name,".notdef")==0 &&
-		(d->sf->chars[i]->layers[ly_fore].splines!=NULL || d->sf->chars[i]->refs!=NULL))
+		(d->sf->chars[i]->layers[ly_fore].splines!=NULL || d->sf->chars[i]->layers[ly_fore].refs!=NULL))
     break;
     if ( i!=0 ) {
 	if ( GWidgetAskR(_STR_NotdefName,buts,0,1,_STR_NotdefChar,i)==1 )

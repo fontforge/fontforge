@@ -183,7 +183,7 @@ return;
     }
 #endif
     if ( p->explaining==_STR_ProbFlippedRef ) {
-	for ( r=p->sc->refs; r!=NULL && !r->selected; r = r->next );
+	for ( r=p->sc->layers[ly_fore].refs; r!=NULL && !r->selected; r = r->next );
 	if ( r!=NULL ) {
 	    SCPreserveState(p->sc,false);
 	    SCRefToSplines(p->sc,r);
@@ -789,7 +789,7 @@ static int RefDepth(RefChar *r) {
     RefChar *ref;
     int cur, max=0;
 
-    for ( ref= r->sc->refs; ref!=NULL; ref=ref->next ) {
+    for ( ref= r->sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	cur = RefDepth(ref);
 	if ( cur>max ) max = cur;
     }
@@ -800,7 +800,7 @@ static int SCRefDepth(SplineChar *sc) {
     RefChar *ref;
     int cur, max=0;
 
-    for ( ref= sc->refs; ref!=NULL; ref=ref->next ) {
+    for ( ref= sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	cur = RefDepth(ref);
 	if ( cur>max ) max = cur;
     }
@@ -1328,9 +1328,9 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 
     if ( p->flippedrefs && !p->finish && ( cv==NULL || cv->drawmode==dm_fore )) {
 	RefChar *ref;
-	for ( ref = sc->refs; ref!=NULL ; ref = ref->next )
+	for ( ref = sc->layers[ly_fore].refs; ref!=NULL ; ref = ref->next )
 	    ref->selected = false;
-	for ( ref = sc->refs; !p->finish && ref!=NULL ; ref = ref->next ) {
+	for ( ref = sc->layers[ly_fore].refs; !p->finish && ref!=NULL ; ref = ref->next ) {
 	    if ( ref->transform[0]*ref->transform[3]<0 ||
 		    (ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
 		changed = true;
@@ -1359,7 +1359,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	int cnt=0;
 	RefChar *r;
 	cnt = SPLPointCnt(sc->layers[ly_fore].splines);
-	for ( r=sc->refs; r!=NULL ; r=r->next )
+	for ( r=sc->layers[ly_fore].refs; r!=NULL ; r=r->next )
 	    cnt += SPLPointCnt(r->layers[0].splines);
 	if ( cnt>p->pointsmax ) {
 	    changed = true;

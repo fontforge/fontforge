@@ -415,9 +415,9 @@ static void dumpproc(void (*dumpchar)(int ch,void *data), void *data, SplineChar
 	dumpstr(dumpchar,data,"\n");
 
     dumpsplineset(dumpchar,data,sc->layers[ly_fore].splines);
-    if ( sc->refs!=NULL ) {
+    if ( sc->layers[ly_fore].refs!=NULL ) {
 	dumpstr(dumpchar,data,"    pop -1\n" );
-	for ( ref = sc->refs; ref!=NULL; ref=ref->next ) {
+	for ( ref = sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	    if ( ref->transform[0]!=1 || ref->transform[1]!=0 || ref->transform[2]!=0 ||
 		    ref->transform[3]!=1 || ref->transform[4]!=0 || ref->transform[5]!=0 ) {
 		if ( InvertTransform(inverse,ref->transform)) {

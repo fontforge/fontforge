@@ -60,7 +60,7 @@ return( 0 );
     *sp = foundsp; *_spl = found;
 
     if ( cv->drawmode==dm_fore ) {
-	for ( refs=cv->sc->refs; refs!=NULL; refs = refs->next ) {
+	for ( refs=cv->sc->layers[ly_fore].refs; refs!=NULL; refs = refs->next ) {
 	    if ( refs->selected ) {
 		if ( found!=NULL || foundref!=NULL )
 return( 0 );
@@ -81,7 +81,7 @@ return( 0 );
     }
 
     if ( cv->drawmode==dm_back ) {
-	for ( imgs=cv->sc->backimages; imgs!=NULL; imgs = imgs->next ) {
+	for ( imgs=cv->sc->layers[ly_back].images; imgs!=NULL; imgs = imgs->next ) {
 	    if ( imgs->selected ) {
 		if ( found!=NULL || foundimg!=NULL )
 return( 0 );
@@ -126,7 +126,7 @@ return( 0 );
     *_spl = found;
 
     if ( cv->drawmode==dm_fore ) {
-	for ( refs=cv->sc->refs; refs!=NULL; refs = refs->next ) {
+	for ( refs=cv->sc->layers[ly_fore].refs; refs!=NULL; refs = refs->next ) {
 	    if ( refs->selected ) {
 		if ( found!=NULL || foundref!=NULL )
 return( 0 );
@@ -137,7 +137,7 @@ return( 0 );
     }
 
     if ( cv->drawmode==dm_back ) {
-	for ( imgs=cv->sc->backimages; imgs!=NULL; imgs = imgs->next ) {
+	for ( imgs=cv->sc->layers[ly_back].images; imgs!=NULL; imgs = imgs->next ) {
 	    if ( imgs->selected ) {
 		if ( found!=NULL || foundimg!=NULL )
 return( 0 );

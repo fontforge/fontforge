@@ -396,8 +396,8 @@ static int SCMatchesFull(SplineChar *sc,SearchView *s) {
     int i, first;
 
     s->matched_ss = s->matched_refs = 0;
-    for ( s_r = s->sc_srch.refs; s_r!=NULL; s_r = s_r->next ) {
-	for ( r = sc->refs, i=0; r!=NULL; r=r->next, ++i ) if ( !(s->matched_refs&(1<<i)) ) {
+    for ( s_r = s->sc_srch.layers[ly_fore].refs; s_r!=NULL; s_r = s_r->next ) {
+	for ( r = sc->layers[ly_fore].refs, i=0; r!=NULL; r=r->next, ++i ) if ( !(s->matched_refs&(1<<i)) ) {
 	    if ( r->sc == s_r->sc )	/* I should check the transform to see if the tryflips (etc) flags would make this not a match */
 	break;
 	}
@@ -633,7 +633,7 @@ static void DoReplaceFull(SplineChar *sc,SearchView *s) {
     SplinePoint *sp;
 
     /* first remove those bits that matched */
-    for ( r = sc->refs, i=0; r!=NULL; r=rnext, ++i ) {
+    for ( r = sc->layers[ly_fore].refs, i=0; r!=NULL; r=rnext, ++i ) {
 	rnext = r->next;
 	if ( s->matched_refs&(1<<i))
 	    SCRemoveDependent(sc,r);
@@ -654,7 +654,7 @@ static void DoReplaceFull(SplineChar *sc,SearchView *s) {
 
     /* Then insert the replace stuff */
     SVBuildTrans(s,transform);
-    for ( r = s->sc_rpl.refs; r!=NULL; r=r->next ) {
+    for ( r = s->sc_rpl.layers[ly_fore].refs; r!=NULL; r=r->next ) {
 	subtrans[0] = transform[0]*r->transform[0] + transform[1]*r->transform[2];
 	subtrans[1] = transform[0]*r->transform[1] + transform[1]*r->transform[3];
 	subtrans[2] = transform[2]*r->transform[0] + transform[3]*r->transform[2];
@@ -667,9 +667,9 @@ static void DoReplaceFull(SplineChar *sc,SearchView *s) {
 	*new = *r;
 	memcpy(new->transform,subtrans,sizeof(subtrans));
 	new->layers[ly_fore].splines = NULL;
-	new->next = sc->refs;
+	new->next = sc->layers[ly_fore].refs;
 	new->selected = true;
-	sc->refs = new;
+	sc->layers[ly_fore].refs = new;
 	SCReinstanciateRefChar(sc,new);
 	SCMakeDependent(sc,new->sc);
     }
@@ -712,7 +712,7 @@ static void SVSelectSC(SearchView *sv) {
 	break;
 	}
     }
-    for ( rf=sc->refs; rf!=NULL; rf = rf->next )
+    for ( rf=sc->layers[ly_fore].refs; rf!=NULL; rf = rf->next )
 	if ( rf->selected ) rf->selected = false;
 
     if ( sv->subpatternsearch ) {
@@ -725,7 +725,7 @@ static void SVSelectSC(SearchView *sv) {
 	    /* Ok to wrap back to first */
 	}
     } else {
-	for ( rf=sc->refs, i=0; rf!=NULL; rf=rf->next, ++i )
+	for ( rf=sc->layers[ly_fore].refs, i=0; rf!=NULL; rf=rf->next, ++i )
 	    if ( sv->matched_refs&(1<<i) )
 		rf->selected = true;
 	for ( spl = sc->layers[ly_fore].splines,i=0; spl!=NULL; spl = spl->next, ++i ) {
@@ -775,11 +775,11 @@ static void SVParseDlg(SearchView *sv) {
     /*  and there is either no replace pattern, or it is also a single open */
     /*  path */
     sv->subpatternsearch = sv->path!=NULL && sv->path->next==NULL &&
-	    sv->path->first->prev==NULL && sv->sc_srch.refs==NULL;
+	    sv->path->first->prev==NULL && sv->sc_srch.layers[ly_fore].refs==NULL;
     if ( sv->replacepath!=NULL && (sv->replacepath->next!=NULL ||
 	    sv->replacepath->first->prev!=NULL ))
 	sv->subpatternsearch = false;
-    else if ( sv->sc_rpl.refs!=NULL )
+    else if ( sv->sc_rpl.layers[ly_fore].refs!=NULL )
 	sv->subpatternsearch = false;
 
     if ( sv->subpatternsearch ) {
@@ -827,7 +827,7 @@ static void DoRpl(SearchView *sv) {
     RefChar *r;
 
     /* Make sure we don't generate any self referential characters... */
-    for ( r = sv->sc_rpl.refs; r!=NULL; r=r->next ) {
+    for ( r = sv->sc_rpl.layers[ly_fore].refs; r!=NULL; r=r->next ) {
 	if ( SCDependsOnSC(r->sc,sv->curchar))
 return;
     }
@@ -944,7 +944,7 @@ static int SV_RplFind(GGadget *g, GEvent *e) {
 	RefChar *rf;
 	SVParseDlg(sv);
 	sv->findall = sv->replaceall = false;
-	for ( rf=sv->sc_rpl.refs; rf!=NULL; rf = rf->next ) {
+	for ( rf=sv->sc_rpl.layers[ly_fore].refs; rf!=NULL; rf = rf->next ) {
 	    if ( SCDependsOnSC(rf->sc,sv->curchar)) {
 		GWidgetErrorR(_STR_SelfRef,_STR_AttemptSelfRef);
 return( true );
@@ -1074,7 +1074,7 @@ static void SVDraw(SearchView *sv, GWindow pixmap, GEvent *event) {
 }
 
 static void SVCheck(SearchView *sv) {
-    int show = ( sv->sc_srch.layers[ly_fore].splines!=NULL || sv->sc_srch.refs!=NULL );
+    int show = ( sv->sc_srch.layers[ly_fore].splines!=NULL || sv->sc_srch.layers[ly_fore].refs!=NULL );
     int showrplall=show, showrpl;
 
     if ( sv->sc_srch.changed_since_autosave && sv->showsfindnext ) {
@@ -1084,7 +1084,7 @@ static void SVCheck(SearchView *sv) {
     if ( showrplall ) {
 	if ( sv->sc_srch.layers[ly_fore].splines!=NULL && sv->sc_srch.layers[ly_fore].splines->next==NULL &&
 		sv->sc_srch.layers[ly_fore].splines->first->prev==NULL &&
-		sv->sc_rpl.layers[ly_fore].splines==NULL && sv->sc_rpl.refs==NULL )
+		sv->sc_rpl.layers[ly_fore].splines==NULL && sv->sc_rpl.layers[ly_fore].refs==NULL )
 	    showrplall = false;
     }
     showrpl = showrplall;
@@ -1112,8 +1112,8 @@ static void SVCheck(SearchView *sv) {
 static void SearchViewFree(SearchView *sv) {
     SplinePointListsFree(sv->sc_srch.layers[ly_fore].splines);
     SplinePointListsFree(sv->sc_rpl.layers[ly_fore].splines);
-    RefCharsFree(sv->sc_srch.refs);
-    RefCharsFree(sv->sc_rpl.refs);
+    RefCharsFree(sv->sc_srch.layers[ly_fore].refs);
+    RefCharsFree(sv->sc_rpl.layers[ly_fore].refs);
     free(sv);
 }
 
@@ -1180,7 +1180,7 @@ return( true );
     for ( doit=!ask_if_difficult; doit<=1; ++doit ) {
 	for ( i=0; i<2; ++i ) {
 	    rprev = NULL;
-	    for ( r = searcher->chars[i]->refs; r!=NULL; r=rnext ) {
+	    for ( r = searcher->chars[i]->layers[ly_fore].refs; r!=NULL; r=rnext ) {
 		rnext = r->next;
 		pos = SFFindChar(fv->sf,r->sc->unicodeenc,r->sc->name);
 		if ( pos==-1 && !doit ) {
@@ -1196,7 +1196,7 @@ return( false );
 		    /* Do Nothing */;
 		else if ( pos==-1 ) {
 		    if ( rprev==NULL )
-			searcher->chars[i]->refs = rnext;
+			searcher->chars[i]->layers[ly_fore].refs = rnext;
 		    else
 			rprev->next = rnext;
 		    RefCharFree(r);

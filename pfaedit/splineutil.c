@@ -607,7 +607,7 @@ void SplineCharFindBounds(SplineChar *sc,DBounds *bounds) {
     bounds->minx = bounds->maxx = 0;
     bounds->miny = bounds->maxy = 0;
 
-    for ( rf=sc->refs; rf!=NULL; rf = rf->next )
+    for ( rf=sc->layers[ly_fore].refs; rf!=NULL; rf = rf->next )
 	_SplineSetFindBounds(rf->layers[0].splines,bounds);
 
     _SplineSetFindBounds(sc->layers[ly_fore].splines,bounds);
@@ -623,7 +623,7 @@ void SplineFontFindBounds(SplineFont *sf,DBounds *bounds) {
     for ( i = 0; i<sf->charcnt; ++i ) {
 	SplineChar *sc = sf->chars[i];
 	if ( sc!=NULL ) {
-	    for ( rf=sc->refs; rf!=NULL; rf = rf->next )
+	    for ( rf=sc->layers[ly_fore].refs; rf!=NULL; rf = rf->next )
 		_SplineSetFindBounds(rf->layers[0].splines,bounds);
 
 	    _SplineSetFindBounds(sc->layers[ly_fore].splines,bounds);
@@ -698,7 +698,7 @@ void SplineCharQuickBounds(SplineChar *sc, DBounds *b) {
     RefChar *ref;
 
     SplineSetQuickBounds(sc->layers[ly_fore].splines,b);
-    for ( ref = sc->refs; ref!=NULL; ref = ref->next ) {
+    for ( ref = sc->layers[ly_fore].refs; ref!=NULL; ref = ref->next ) {
 	/*SplineSetQuickBounds(ref->layers[0].splines,&temp);*/
 	if ( b->minx==0 && b->maxx==0 && b->miny==0 && b->maxy == 0 )
 	    *b = ref->bb;
@@ -747,7 +747,7 @@ void SplineCharQuickConservativeBounds(SplineChar *sc, DBounds *b) {
     RefChar *ref;
 
     SplineSetQuickConservativeBounds(sc->layers[ly_fore].splines,b);
-    for ( ref = sc->refs; ref!=NULL; ref = ref->next ) {
+    for ( ref = sc->layers[ly_fore].refs; ref!=NULL; ref = ref->next ) {
 	/*SplineSetQuickConservativeBounds(ref->layers[0].splines,&temp);*/
 	if ( b->minx==0 && b->maxx==0 && b->miny==0 && b->maxy == 0 )
 	    *b = ref->bb;
@@ -1292,7 +1292,7 @@ return;
     rsc = refs->sc;
     rsc->ticked = true;
 
-    for ( rf=rsc->refs; rf!=NULL; rf = rf->next ) {
+    for ( rf=rsc->layers[ly_fore].refs; rf!=NULL; rf = rf->next ) {
 	trans[0] = rf->transform[0]*transform[0] +
 		    rf->transform[1]*transform[2];
 	trans[1] = rf->transform[0]*transform[1] +
@@ -1476,9 +1476,9 @@ SplineChar *MakeDupRef(SplineChar *base, int local_enc, int uni_enc) {
     sc->parent = base->parent;
 
     /* Used not to bother for spaces, but SCDuplicate depends on the ref */
-    /*if ( dup->sc->refs!=NULL || dup->sc->layers[ly_fore].splines!=NULL )*/ {
+    /*if ( dup->sc->layers[ly_fore].refs!=NULL || dup->sc->layers[ly_fore].splines!=NULL )*/ {
 	RefChar *ref = chunkalloc(sizeof(RefChar));
-	sc->refs = ref;
+	sc->layers[ly_fore].refs = ref;
 	ref->sc = base;
 	ref->local_enc = base->enc;
 	ref->unicode_enc = base->unicodeenc;
@@ -1525,7 +1525,7 @@ return;		/* It's just the expected matrix */
 
     for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
 	SplinePointListTransform(sc->layers[ly_fore].splines,trans,true);
-	for ( refs=sc->refs; refs!=NULL; refs=refs->next ) {
+	for ( refs=sc->layers[ly_fore].refs; refs!=NULL; refs=refs->next ) {
 	    /* Just scale the offsets. we'll do all the base characters */
 	    double temp = refs->transform[4]*trans[0] +
 			refs->transform[5]*trans[2] +
@@ -1539,7 +1539,7 @@ return;		/* It's just the expected matrix */
 	sc->manualhints = false;
     }
     for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
-	for ( refs=sc->refs; refs!=NULL; refs=refs->next )
+	for ( refs=sc->layers[ly_fore].refs; refs!=NULL; refs=refs->next )
 	    SCReinstanciateRefChar(sc,refs);
     }
 }
@@ -1623,7 +1623,7 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext *
 	SCLigDefault(sf->chars[i]);		/* Also reads from AFM file, but it probably doesn't exist */
 	GProgressNext();
     }
-    for ( i=0; i<sf->charcnt; ++i ) for ( pr=NULL, refs = sf->chars[i]->refs; refs!=NULL; refs=next ) {
+    for ( i=0; i<sf->charcnt; ++i ) for ( pr=NULL, refs = sf->chars[i]->layers[ly_fore].refs; refs!=NULL; refs=next ) {
 	next = refs->next;
 	sf->chars[i]->ticked = true;
 	InstanciateReference(sf, refs, refs, refs->transform,sf->chars[i]);
@@ -1636,7 +1636,7 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext *
 	    /*  to a character that is not actually in the font. I even */
 	    /*  generated one by mistake once... */
 	    if ( pr==NULL )
-		sf->chars[i]->refs = next;
+		sf->chars[i]->layers[ly_fore].refs = next;
 	    else
 		pr->next = next;
 	}
@@ -1653,7 +1653,7 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext *
 	    }
 	}
     }
-    for ( i=0; i<sf->charcnt; ++i ) for ( refs = sf->chars[i]->refs; refs!=NULL; refs=next ) {
+    for ( i=0; i<sf->charcnt; ++i ) for ( refs = sf->chars[i]->layers[ly_fore].refs; refs!=NULL; refs=next ) {
 	next = refs->next;
 	if ( refs->adobe_enc==' ' && refs->layers[0].splines==NULL ) {
 	    /* When I have a link to a single character I will save out a */
@@ -1932,7 +1932,7 @@ return( NULL );
 	chars[i]->orig_pos = i;
 	/* There better not be any references (seac's) because we have no */
 	/*  encoding on which to base any fixups */
-	if ( chars[i]->refs!=NULL )
+	if ( chars[i]->layers[ly_fore].refs!=NULL )
 	    GDrawIError( "Reference found in CID font. Can't fix it up");
 	chars[i]->enc = i;
 	sf->subfonts[j]->charcnt = i+1;
@@ -1987,7 +1987,7 @@ return;
 	spl->next = rf->layers[0].splines;
 	rf->layers[0].splines = new;
     }
-    for ( refs = rf->sc->refs; refs!=NULL; refs = refs->next ) {
+    for ( refs = rf->sc->layers[ly_fore].refs; refs!=NULL; refs = refs->next ) {
 	new = SplinePointListTransform(SplinePointListCopy(refs->layers[0].splines),rf->transform,true);
 	if ( new!=NULL ) {
 	    for ( spl = new; spl->next!=NULL; spl = spl->next );
@@ -2002,7 +2002,7 @@ return;
 void SCReinstanciateRef(SplineChar *sc,SplineChar *rsc) {
     RefChar *rf;
 
-    for ( rf=sc->refs; rf!=NULL; rf=rf->next ) if ( rf->sc==rsc ) {
+    for ( rf=sc->layers[ly_fore].refs; rf!=NULL; rf=rf->next ) if ( rf->sc==rsc ) {
 	SCReinstanciateRefChar(sc,rf);
     }
 }
@@ -2011,15 +2011,15 @@ void SCRemoveDependent(SplineChar *dependent,RefChar *rf) {
     struct splinecharlist *dlist, *pd;
     RefChar *prev;
 
-    if ( dependent->refs==rf )
-	dependent->refs = rf->next;
+    if ( dependent->layers[ly_fore].refs==rf )
+	dependent->layers[ly_fore].refs = rf->next;
     else {
-	for ( prev = dependent->refs; prev->next!=rf; prev=prev->next );
+	for ( prev = dependent->layers[ly_fore].refs; prev->next!=rf; prev=prev->next );
 	prev->next = rf->next;
     }
     /* Check for multiple dependencies (colon has two refs to period) */
     /*  if there are none, then remove dependent from ref->sc's dependents list */
-    for ( prev = dependent->refs; prev!=NULL && (prev==rf || prev->sc!=rf->sc); prev = prev->next );
+    for ( prev = dependent->layers[ly_fore].refs; prev!=NULL && (prev==rf || prev->sc!=rf->sc); prev = prev->next );
     if ( prev==NULL ) {
 	dlist = rf->sc->dependents;
 	if ( dlist==NULL )
@@ -2039,11 +2039,11 @@ void SCRemoveDependent(SplineChar *dependent,RefChar *rf) {
 void SCRemoveDependents(SplineChar *dependent) {
     RefChar *rf, *next;
 
-    for ( rf=dependent->refs; rf!=NULL; rf=next ) {
+    for ( rf=dependent->layers[ly_fore].refs; rf!=NULL; rf=next ) {
 	next = rf->next;
 	SCRemoveDependent(dependent,rf);
     }
-    dependent->refs = NULL;
+    dependent->layers[ly_fore].refs = NULL;
 }
 
 void SCRefToSplines(SplineChar *sc,RefChar *rf) {
@@ -3467,8 +3467,8 @@ return;
     free(sc->name);
     SplinePointListsFree(sc->layers[ly_fore].splines);
     SplinePointListsFree(sc->layers[ly_back].splines);
-    RefCharsFree(sc->refs);
-    ImageListsFree(sc->backimages);
+    RefCharsFree(sc->layers[ly_fore].refs);
+    ImageListsFree(sc->layers[ly_back].images);
     /* image garbage collection????!!!! */
     StemInfosFree(sc->hstem);
     StemInfosFree(sc->vstem);

@@ -228,7 +228,7 @@ static void TransitiveClosureAdd(SplineChar **new,SplineChar **old,SplineChar *s
     if ( new[sc->enc]!=NULL )	/* already done */
 return;
     new[sc->enc] = sc;
-    for ( ref=sc->refs; ref!=NULL; ref = ref->next )
+    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref = ref->next )
 	TransitiveClosureAdd(new,old,ref->sc);
 }
 

@@ -359,7 +359,7 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding, int res) {
     }
     if ( (font->sf->chars[0]!=NULL &&
 	    (font->sf->chars[0]->layers[ly_fore].splines!=NULL || (font->sf->chars[0]->widthset && *mono!='M')) &&
-	     font->sf->chars[0]->refs==NULL && strcmp(font->sf->chars[0]->name,".notdef")==0 ) )
+	     font->sf->chars[0]->layers[ly_fore].refs==NULL && strcmp(font->sf->chars[0]->name,".notdef")==0 ) )
 	def_ch = 0;
 
     fprintf( file, "STARTPROPERTIES %d\n", 25+(x_h!=-1)+(cap_h!=-1)+

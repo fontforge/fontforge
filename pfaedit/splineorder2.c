@@ -635,7 +635,7 @@ static void SCConvertRefs(SplineChar *sc) {
     RefChar *rf;
 
     sc->ticked = true;
-    for ( rf=sc->refs; rf!=NULL; rf=rf->next ) {
+    for ( rf=sc->layers[ly_fore].refs; rf!=NULL; rf=rf->next ) {
 	if ( !rf->sc->ticked )
 	    SCConvertRefs(rf->sc);
 	SCReinstanciateRefChar(sc,rf);	/* Conversion is done by reinstanciating */

@@ -683,7 +683,7 @@ static SplineSet *SCttfApprox(SplineChar *sc) {
 	else last->next = tss;
 	last = tss;
     }
-    for ( ref=sc->refs; ref!=NULL; ref=ref->next ) {
+    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	for ( ss=ref->layers[0].splines; ss!=NULL; ss=ss->next ) {
 	    tss = sc->parent->order2 ? SplinePointListCopy1(ss) : SSttfApprox(ss);
 	    if ( head==NULL ) head = tss;
@@ -1048,10 +1048,10 @@ static void dumpspace(SplineChar *sc, struct glyphinfo *gi) {
 static int IsTTFRefable(SplineChar *sc) {
     RefChar *ref;
 
-    if ( sc->refs==NULL || sc->layers[ly_fore].splines!=NULL )
+    if ( sc->layers[ly_fore].refs==NULL || sc->layers[ly_fore].splines!=NULL )
 return( false );
 
-    for ( ref=sc->refs; ref!=NULL; ref=ref->next ) {
+    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	if ( ref->transform[0]<-2 || ref->transform[0]>1.999939 ||
 		ref->transform[1]<-2 || ref->transform[1]>1.999939 ||
 		ref->transform[2]<-2 || ref->transform[2]>1.999939 ||
@@ -1065,10 +1065,10 @@ static int RefDepth(RefChar *ref) {
     int rd, temp;
     SplineChar *sc = ref->sc;
 
-    if ( sc->refs==NULL || sc->layers[ly_fore].splines!=NULL )
+    if ( sc->layers[ly_fore].refs==NULL || sc->layers[ly_fore].splines!=NULL )
 return( 1 );
     rd = 0;
-    for ( ref = sc->refs; ref!=NULL; ref=ref->next ) {
+    for ( ref = sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	if ( ref->transform[0]>=-2 || ref->transform[0]<=1.999939 ||
 		ref->transform[1]>=-2 || ref->transform[1]<=1.999939 ||
 		ref->transform[2]>=-2 || ref->transform[2]<=1.999939 ||
@@ -1103,9 +1103,9 @@ static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
     dumpghstruct(gi,&gh);
 
     i=ptcnt=ctcnt=0;
-    for ( ref=sc->refs; ref!=NULL; ref=ref->next, ++i ) {
+    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next, ++i ) {
 	if ( ref->sc->ttf_glyph==-1 ) {
-	    /*if ( sc->refs->next==NULL || any )*/
+	    /*if ( sc->layers[ly_fore].refs->next==NULL || any )*/
     continue;
 	}
 	flags = (1<<1)|(1<<2)|(1<<12);	/* Args are always values for me */
@@ -1191,8 +1191,8 @@ static void dumpglyph(SplineChar *sc, struct glyphinfo *gi) {
 /*  glyph that consists of a single point. Glyphs containing two single points*/
 /*  are ok, glyphs with a single point and anything else are ok, glyphs with */
 /*  a line are ok. But a single point is not ok. Dunno why */
-    if (( sc->layers[ly_fore].splines==NULL && sc->refs==NULL ) ||
-	    ( sc->refs==NULL &&
+    if (( sc->layers[ly_fore].splines==NULL && sc->layers[ly_fore].refs==NULL ) ||
+	    ( sc->layers[ly_fore].refs==NULL &&
 	     (sc->layers[ly_fore].splines->first->next==NULL ||
 	      sc->layers[ly_fore].splines->first->next->to == sc->layers[ly_fore].splines->first) &&
 	     sc->layers[ly_fore].splines->next==NULL) ) {
@@ -1305,11 +1305,11 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
 	    for ( i=0; i<sf->charcnt; ++i ) {
 		if ( sf->chars[i]!=NULL ) {
 		    sc = sf->chars[i];
-		    if ( sc->orig_pos==1 && sc->layers[ly_fore].splines==NULL && sc->refs==NULL ) {
+		    if ( sc->orig_pos==1 && sc->layers[ly_fore].splines==NULL && sc->layers[ly_fore].refs==NULL ) {
 			ReplaceChar(sf,1,i);
 			if ( sf->chars[2]!=NULL )
 	    break;
-		    } else if ( sc->orig_pos==2 && sc->layers[ly_fore].splines==NULL && sc->refs==NULL ) {
+		    } else if ( sc->orig_pos==2 && sc->layers[ly_fore].splines==NULL && sc->layers[ly_fore].refs==NULL ) {
 			ReplaceChar(sf,2,i);
 			if ( sf->chars[1]!=NULL )
 	    break;

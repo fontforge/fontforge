@@ -114,7 +114,7 @@ return;
 	if ( selected==NULL || !selected[dlist->sc->enc] ) {
 	    SCPreserveState(dlist->sc,false);
 	    SplinePointListShift(dlist->sc->layers[ly_fore].splines,off,true);
-	    for ( ref = dlist->sc->refs; ref!=NULL; ref=ref->next )
+	    for ( ref = dlist->sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
 		    if ( ref->sc!=sc && (selected==NULL || !selected[ref->sc->enc] )) {
 		SplinePointListShift(ref->layers[0].splines,off,true);
 		ref->transform[4] += off;
@@ -143,14 +143,14 @@ int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi, int *anya) {
 	}
     }
     if ( cv->drawmode==dm_fore ) {
-	for ( rf=cv->sc->refs; rf!=NULL && !anyrefs; rf=rf->next )
+	for ( rf=cv->sc->layers[ly_fore].refs; rf!=NULL && !anyrefs; rf=rf->next )
 	    if ( rf->selected ) anyrefs = true;
 	if ( cv->showanchor && anya!=NULL )
 	    for ( ap=cv->sc->anchor; ap!=NULL && !anyanchor; ap=ap->next )
 		if ( ap->selected ) anyanchor = true;
     }
     if ( cv->drawmode==dm_back ) {
-	for ( il=cv->sc->backimages; il!=NULL && !anyimages; il=il->next )
+	for ( il=cv->sc->layers[ly_back].images; il!=NULL && !anyimages; il=il->next )
 	    if ( il->selected ) anyimages = true;
     }
     if ( anyp!=NULL ) *anyp = anypoints;
@@ -179,13 +179,13 @@ int CVClearSel(CharView *cv) {
 	}
     }
     if ( cv->drawmode == dm_fore ) {
-	for ( rf=cv->sc->refs; rf!=NULL; rf = rf->next )
+	for ( rf=cv->sc->layers[ly_fore].refs; rf!=NULL; rf = rf->next )
 	    if ( rf->selected ) { needsupdate = true; rf->selected = false; }
 	for ( ap=cv->sc->anchor; ap!=NULL; ap = ap->next )
 	    if ( ap->selected ) { if ( cv->showanchor ) needsupdate = true; ap->selected = false; }
     }
     if ( cv->drawmode == dm_back ) {
-	for ( img=cv->sc->backimages; img!=NULL; img = img->next )
+	for ( img=cv->sc->layers[ly_back].images; img!=NULL; img = img->next )
 	    if ( img->selected ) { needsupdate = true; img->selected = false; }
     }
     if ( cv->p.nextcp || cv->p.prevcp || cv->widthsel || cv->vwidthsel )
@@ -217,14 +217,14 @@ int CVSetSel(CharView *cv,int mask) {
     }
     if ( cv->drawmode == dm_fore ) {
 	if ( mask&1 )
-	for ( rf=cv->sc->refs; rf!=NULL; rf = rf->next )
+	for ( rf=cv->sc->layers[ly_fore].refs; rf!=NULL; rf = rf->next )
 	    if ( !rf->selected ) { needsupdate = true; rf->selected = true; }
 	if ( (mask&2) && cv->showanchor )
 	    for ( ap=cv->sc->anchor; ap!=NULL; ap=ap->next )
 		if ( !ap->selected ) { needsupdate = true; ap->selected = true; }
     }
     if ( cv->drawmode == dm_back && (mask&1)) {
-	for ( img=cv->sc->backimages; img!=NULL; img = img->next )
+	for ( img=cv->sc->layers[ly_back].images; img!=NULL; img = img->next )
 	    if ( !img->selected ) { needsupdate = true; img->selected = true; }
     }
     if ( cv->p.nextcp || cv->p.prevcp )
@@ -258,12 +258,12 @@ return( false );
 	}
     }
     if ( cv->drawmode == dm_fore ) {
-	for ( rf=cv->sc->refs; rf!=NULL; rf = rf->next )
+	for ( rf=cv->sc->layers[ly_fore].refs; rf!=NULL; rf = rf->next )
 	    if ( !rf->selected )
 return( false );
     }
     if ( cv->drawmode == dm_back ) {
-	for ( img=cv->sc->backimages; img!=NULL; img = img->next )
+	for ( img=cv->sc->layers[ly_back].images; img!=NULL; img = img->next )
 	    if ( !img->selected )
 return( false );
     }
@@ -302,7 +302,7 @@ void CVFindCenter(CharView *cv, BasePoint *bp, int nosel) {
     SplineSetFindSelBounds(cv->layerheads[cv->drawmode]->splines,&b,nosel);
     if ( cv->drawmode==dm_fore ) {
 	RefChar *rf;
-	for ( rf=cv->sc->refs; rf!=NULL; rf=rf->next ) {
+	for ( rf=cv->sc->layers[ly_fore].refs; rf!=NULL; rf=rf->next ) {
 	    if ( nosel || rf->selected ) {
 		if ( b.minx==0 && b.maxx==0 )
 		    b = rf->bb;
@@ -317,7 +317,7 @@ void CVFindCenter(CharView *cv, BasePoint *bp, int nosel) {
     }
     if ( cv->drawmode==dm_fore ) {
 	ImageList *img;
-	for ( img=cv->sc->backimages; img!=NULL; img=img->next ) {
+	for ( img=cv->sc->layers[ly_back].images; img!=NULL; img=img->next ) {
 	    if ( nosel || img->selected ) {
 		if ( b.minx==0 && b.maxx==0 )
 		    b = img->bb;
@@ -406,7 +406,7 @@ void CVCheckResizeCursors(CharView *cv) {
 
     cv->expandedge = ee_none;
     if ( cv->drawmode==dm_fore ) {
-	for ( ref=cv->sc->refs; ref!=NULL; ref=ref->next ) if ( ref->selected ) {
+	for ( ref=cv->sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) if ( ref->selected ) {
 	    if (( cv->expandedge = OnBB(cv,&ref->bb,fudge))!=ee_none )
 	break;
 	}
@@ -423,7 +423,7 @@ void CVCheckResizeCursors(CharView *cv) {
 	}
     }
     if ( cv->drawmode==dm_back ) {
-	for ( img=cv->sc->backimages; img!=NULL; img=img->next ) if ( img->selected ) {
+	for ( img=cv->sc->layers[ly_back].images; img!=NULL; img=img->next ) if ( img->selected ) {
 	    if (( cv->expandedge = OnBB(cv,&img->bb,fudge))!=ee_none )
     break;
 	}
@@ -443,7 +443,7 @@ static int ImgRefEdgeSelected(CharView *cv, FindSel *fs,GEvent *event) {
     /*  macron or other reference which fills the bounding box */
     if ( cv->drawmode==dm_fore && (!(event->u.chr.state&ksm_meta) ||
 	    (fs->p->ref!=NULL && !fs->p->ref->selected))) {
-	for ( ref=cv->sc->refs; ref!=NULL; ref=ref->next ) if ( ref->selected ) {
+	for ( ref=cv->sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) if ( ref->selected ) {
 	    if (( cv->expandedge = OnBB(cv,&ref->bb,fs->fudge))!=ee_none ) {
 		ref->selected = false;
 		update = CVClearSel(cv);
@@ -457,7 +457,7 @@ return( true );
 	}
     }
     if ( cv->drawmode==dm_back ) {
-	for ( img=cv->sc->backimages; img!=NULL; img=img->next ) if ( img->selected ) {
+	for ( img=cv->sc->layers[ly_back].images; img!=NULL; img=img->next ) if ( img->selected ) {
 	    if (( cv->expandedge = OnBB(cv,&img->bb,fs->fudge))!=ee_none ) {
 		img->selected = false;
 		update = CVClearSel(cv);
@@ -656,7 +656,7 @@ static int CVRectSelect(CharView *cv, real newx, real newy) {
     }
 
     if ( cv->drawmode==dm_fore ) {
-	for ( rf = cv->sc->refs; rf!=NULL; rf=rf->next ) {
+	for ( rf = cv->sc->layers[ly_fore].refs; rf!=NULL; rf=rf->next ) {
 	    if (( rf->bb.minx>=old.minx && rf->bb.maxx<old.maxx &&
 			rf->bb.miny>=old.miny && rf->bb.maxy<old.maxy ) !=
 		    ( rf->bb.minx>=new.minx && rf->bb.maxx<new.maxx &&
@@ -679,7 +679,7 @@ static int CVRectSelect(CharView *cv, real newx, real newy) {
 
     if ( cv->drawmode==dm_back ) {
 	DBounds bb;
-	for ( img = cv->sc->backimages; img!=NULL; img=img->next ) {
+	for ( img = cv->sc->layers[ly_back].images; img!=NULL; img=img->next ) {
 	    bb.minx = img->xoff;
 	    bb.miny = img->yoff;
 	    bb.maxx = img->xoff+GImageGetWidth(img->image)*img->xscale;
@@ -904,7 +904,7 @@ int CVMoveSelection(CharView *cv, real dx, real dy) {
 return(false);
     SplinePointListTransform(cv->layerheads[cv->drawmode]->splines,transform,false);
     if ( cv->drawmode==dm_fore ) {
-	for ( refs = cv->sc->refs; refs!=NULL; refs=refs->next ) if ( refs->selected ) {
+	for ( refs = cv->sc->layers[ly_fore].refs; refs!=NULL; refs=refs->next ) if ( refs->selected ) {
 	    refs->transform[4] += transform[4];
 	    refs->transform[5] += transform[5];
 	    refs->bb.minx += transform[4]; refs->bb.maxx += transform[4];
@@ -918,7 +918,7 @@ return(false);
 	    }
 	}
     } else if ( cv->drawmode==dm_back ) {
-	for ( img = cv->sc->backimages; img!=NULL; img=img->next ) if ( img->selected ) {
+	for ( img = cv->sc->layers[ly_back].images; img!=NULL; img=img->next ) if ( img->selected ) {
 	    img->xoff += transform[4];
 	    img->yoff += transform[5];
 	    img->bb.minx += transform[4]; img->bb.maxx += transform[4];

@@ -1804,7 +1804,7 @@ static void _MetaFont(MetaFontDlg *meta,SplineChar *sc) {
     SCI *sci;
     DBounds b;
 
-    if ( sc->refs!=NULL )
+    if ( sc->layers[ly_fore].refs!=NULL )
 return;
 
     sci = SCIinit(sc,meta);

@@ -352,13 +352,13 @@ static int RefMatch(SplineChar *sc1, SplineChar *sc2) {
     RefChar *ref1, *ref2;
     /* I don't require the reference list to be ordered */
 
-    for ( ref1=sc1->refs, ref2=sc2->refs; ref1!=NULL && ref2!=NULL; ref1=ref1->next, ref2=ref2->next )
+    for ( ref1=sc1->layers[ly_fore].refs, ref2=sc2->layers[ly_fore].refs; ref1!=NULL && ref2!=NULL; ref1=ref1->next, ref2=ref2->next )
 	ref2->checked = false;
     if ( ref1!=NULL || ref2!=NULL )
 return( false );
 
-    for ( ref1=sc1->refs; ref1!=NULL ; ref1=ref1->next ) {
-	for ( ref2=sc2->refs; ref2!=NULL ; ref2=ref2->next ) {
+    for ( ref1=sc1->layers[ly_fore].refs; ref1!=NULL ; ref1=ref1->next ) {
+	for ( ref2=sc2->layers[ly_fore].refs; ref2!=NULL ; ref2=ref2->next ) {
 	    if ( ref2->local_enc==ref1->local_enc && !ref2->checked )
 	break;
 	}
@@ -618,7 +618,7 @@ return( 0 );
     diff = false;
     any = false; all = true;
     for ( i=0; i<mm->instance_count; ++i ) {
-	refs[i] = mm->instances[i]->chars[enc]->refs;
+	refs[i] = mm->instances[i]->chars[enc]->layers[ly_fore].refs;
 	if ( refs[i]!=NULL ) any = true;
 	else all = false;
     }
@@ -637,7 +637,7 @@ return( 0 );
 		ref->transform[j] += refs[i]->transform[j]*mm->defweights[i];
 	}
 	if ( reflast==NULL )
-	    sc->refs = ref;
+	    sc->layers[ly_fore].refs = ref;
 	else
 	    reflast->next = ref;
 	reflast = ref;
@@ -814,7 +814,7 @@ return( _STR_MMDifferentNumCharsNoName );
     ret = _MMBlendChar(mm,enc);
     if ( mm->normal->chars[enc]!=NULL ) {
 	SplineChar *sc = mm->normal->chars[enc];
-	for ( ref=sc->refs; ref!=NULL; ref=ref->next ) {
+	for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	    SCReinstanciateRefChar(sc,ref);
 	    SCMakeDependent(sc,ref->sc);
 	}
@@ -851,7 +851,7 @@ int MMReblend(FontView *fv, MMSet *mm) {
 
     sf = mm->normal;
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	for ( ref=sf->chars[i]->refs; ref!=NULL; ref=ref->next ) {
+	for ( ref=sf->chars[i]->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	    SCReinstanciateRefChar(sf->chars[i],ref);
 	    SCMakeDependent(sf->chars[i],ref->sc);
 	}
