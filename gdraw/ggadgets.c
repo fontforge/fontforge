@@ -351,7 +351,8 @@ return;
 return;
     }
     if ( e->type==et_char || e->type==et_charup || e->type==et_mousemove ||
-	    e->type == et_mousedown || e->type==et_mouseup )
+	    e->type == et_mousedown || e->type==et_mouseup ||
+	    e->type==et_destroy || (e->type==et_create && popup!=e->w))
 	GGadgetEndPopup();
 }
 
@@ -647,6 +648,7 @@ void _ggadget_destroy(GGadget *g) {
     if ( g==NULL )
 return;
     _GWidget_RemoveGadget(g);
+    GGadgetEndPopup();
     if ( g->free_box )
 	free( g->box );
     free(g->popup_msg);
