@@ -41,6 +41,13 @@ int lig_script = CHR('*',' ',' ',' ');
 int lig_lang = DEFAULT_LANG;
 int *lig_tags=NULL;
 
+#define SPECIAL_TEMPORARY_LIGATURE_TAG	1
+    /* This is a special tag value which I use internally. It is not a valid */
+    /*  feature tag (not 4 ascii characters) so there should be no confusion */
+    /* When generating an afm file and I'm given the ligatures "ffi->f f i" */
+    /*  "ff->f f" then generate the third ligature "ffi->ff i" on a temporary */
+    /*  basis. AFM files can't deal with three character ligatures */
+
 static void *mygets(FILE *file,char *buffer,int size) {
     char *end = buffer+size-1;
     char *pt = buffer;
@@ -328,6 +335,9 @@ static int ScriptLangMatchLigOuts(PST *lig,SplineFont *sf) {
 	lig_tags[2] = 0;
     }
 
+    if ( lig->tag==SPECIAL_TEMPORARY_LIGATURE_TAG )	/* Special hack for the temporary 2 character intermediate ligatures we generate. We've already decided to output them */
+return( true );
+
     for ( i=0; lig_tags[i]!=0 && lig_tags[i]!=lig->tag; ++i );
     if ( lig_tags[i]==0 )
 return( false );
@@ -507,6 +517,8 @@ return( i );
 return( -1 );
 }
 
+static void LigatureClosure(SplineFont *sf);
+
 int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype) {
     DBounds b;
     real width;
@@ -521,6 +533,7 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype) {
     int em = (sf->ascent+sf->descent);
 
     SFLigaturePrepare(sf);
+    LigatureClosure(sf);		/* Convert 3 character ligs to a set of two character ones when possible */
 
     if ( iscid && sf->cidmaster!=NULL ) sf = sf->cidmaster;
 
@@ -714,6 +727,10 @@ void SFLigatureCleanup(SplineFont *sf) {
 		sclnext = scl->next;
 		chunkfree(scl,sizeof(struct splinecharlist));
 	    }
+	    if ( l->lig->tag==SPECIAL_TEMPORARY_LIGATURE_TAG ) {
+		free(l->lig->u.lig.components);
+		chunkfree(l->lig,sizeof(PST));
+	    }
 	    free( l );
 	}
 	sf->chars[j]->ligofme = NULL;
@@ -810,6 +827,59 @@ void SFLigaturePrepare(SplineFont *sf) {
 	}
     }
     free( all );
+}
+
+static void LigatureClosure(SplineFont *sf) {
+    /* AFM files can only deal with 2 character ligatures */
+    /* Look for any three character ligatures (like ffi) which can be made up */
+    /*  of a two character ligature and their final letter (like "ff" and "i")*/
+    /* I'm not going to bother with 4 character ligatures which could be made */
+    /*  of 2+1+1 because that doesn't happen in latin that I know of, and arabic */
+    /*  really should be using a type2 font */
+    int i;
+    LigList *l, *l2, *l3;
+    PST *lig;
+    SplineChar *sc, *sublig;
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+	for ( l=sc->ligofme; l!=NULL; l=l->next ) if ( ScriptLangMatchLigOuts(l->lig,sf)) {
+	    if ( l->ccnt==3 ) {
+		/* we've got a 3 character ligature */
+		for ( l2=l->next; l2!=NULL; l2=l2->next ) {
+		    if ( l2->lig->tag==l->lig->tag && l2->lig->script_lang_index==l->lig->script_lang_index &&
+			    l2->ccnt == 2 && l2->components->sc==l->components->sc ) {
+			/* We've found a two character sub ligature */
+			sublig = l2->lig->u.lig.lig;
+			for ( l3=sublig->ligofme; l3!=NULL; l3=l3->next ) {
+			    if ( l3->ccnt==2 && l3->components->sc==l->components->next->sc &&
+				    ScriptLangMatchLigOuts(l3->lig,sf))
+			break;
+			}
+			if ( l3!=NULL )	/* The ligature we want to add already exists */
+		break;
+			lig = chunkalloc(sizeof(PST));
+			*lig = *l->lig;
+			lig->tag = SPECIAL_TEMPORARY_LIGATURE_TAG;
+			lig->next = NULL;
+			lig->u.lig.components = galloc(strlen(sublig->name)+
+					strlen(l->components->next->sc->name)+
+					2);
+			sprintf(lig->u.lig.components,"%s %s",sublig->name,
+				l->components->next->sc->name);
+			l3 = galloc(sizeof(LigList));
+			l3->lig = lig;
+			l3->next = sublig->ligofme;
+			l3->first = sublig;
+			l3->ccnt = 2;
+			sublig->ligofme = l3;
+			l3->components = chunkalloc(sizeof(struct splinecharlist));
+			l3->components->sc = l->components->next->sc;
+		break;
+		    }
+		}
+	    }
+	}
+    }
 }
 
 static void putlshort(short val,FILE *pfm) {
