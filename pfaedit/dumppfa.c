@@ -662,7 +662,7 @@ return( false );
     if ( !haslg && iscjk ) 
 	dumpf(dumpchar,data,"/LanguageGroup 1 def\n" );
     if ( sf->tempuniqueid!=0 )
-	dumpf(dumpchar,data,"/LanguageGroup %d def\n", sf->tempuniqueid );
+	dumpf(dumpchar,data,"/UniqueID %d def\n", sf->tempuniqueid );
     if ( sf->private!=NULL ) {
 	for ( i=0; i<sf->private->next; ++i ) {
 	    dumpf(dumpchar,data,"/%s ", sf->private->keys[i]);
