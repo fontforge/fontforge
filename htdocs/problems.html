@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Jun-2001 -->
-  <!-- AP: Last modified: 27-Jan-2003 -->
+  <!-- AP: Last modified: 11-Jun-2003 -->
   <TITLE>Finding common font problems automagically</TITLE>
 </HEAD>
 <BODY>
@@ -53,7 +53,7 @@ to other script systems, or of problems that are specific to other script
 systems
 (<A HREF="mailto:pfaedit@users.sourceforge.net">pfaedit@users.sourceforge.net</A>).
 <P>
-<IMG SRC="findprobs.png" WIDTH="301" HEIGHT="418" ALIGN="Right">PfaEdit can
+<IMG SRC="findprobs.png" WIDTH="307" HEIGHT="431" ALIGN="Right">PfaEdit can
 detect the following potential problems:
 <P>
 <STRONG><BIG>Points Too Close</BIG></STRONG>
@@ -112,7 +112,15 @@ be. This will check for such points.
 <P>
 Technically it will search for all control points, which when projected onto
 the line between the two end points of the spline lie outside of the segment
-between the two.<BR Clear=Right>
+between the two.
+<P>
+<STRONG><BIG>Irrelevant control points</BIG></STRONG>
+<P>
+This will look for control points which are so close to the point they modify
+that they are unlikely to affect the shape of the curve. A control point
+is deemed too close if the distance between it and its modified point is
+less than the "Irrelevant Factor" times the distance between the two end
+points of the spline controlled by this control point.<BR Clear=Right>
 <P>
 <IMG SRC="findprobs-paths.png" WIDTH="301" HEIGHT="418" ALIGN="Right"><STRONG><BIG>Open
 Paths</BIG></STRONG>

@@ -2051,8 +2051,9 @@ void SplineFindExtrema(Spline1D *sp, double *_t1, double *_t2 ) {
     /* Find the extreme points on the curve */
     /*  Set to -1 if there are none or if they are outside the range [0,1] */
     /*  Order them so that t1<t2 */
-    /*  If only one valid inflection it will be t1 */
+    /*  If only one valid extremum it will be t1 */
     /*  (Does not check the end points unless they have derivative==0) */
+    /*  (Does not check to see if d/dt==0 points are inflection points (rather than extrema) */
     if ( sp->a!=0 ) {
 	/* cubic, possibly 2 extrema (possibly none) */
 	b2_fourac = 4*sp->b*sp->b - 12*sp->a*sp->c;

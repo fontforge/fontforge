@@ -56,6 +56,7 @@ struct problems {
     unsigned int vadvancewidth: 1;
     unsigned int stem3: 1;
     unsigned int showexactstem3: 1;
+    unsigned int irrelevantcontrolpoints: 1;
     unsigned int explain: 1;
     unsigned int done: 1;
     unsigned int doneexplain: 1;
@@ -65,6 +66,7 @@ struct problems {
     int explaining;
     real found, expected;
     real xheight, caph, ascent, descent;
+    real irrelevantfactor;
     int advancewidthval, vadvancewidthval;
     GWindow explainw;
     GGadget *explaintext, *explainvals, *ignoregadg;
@@ -76,8 +78,10 @@ static int openpaths=1, pointstooclose=1/*, missing=0*/, doxnear=0, doynear=0;
 static int doynearstd=1, linestd=1, cpstd=1, cpodd=1, hintnopt=0, ptnearhint=0;
 static int hintwidth=0, direction=0, flippedrefs=1, bitmaps=0;
 static int cidblank=0, cidmultiple=1, advancewidth=0, vadvancewidth=0;
+static int irrelevantcp=1;
 static int stem3=0, showexactstem3=0;
 static real near=3, xval=0, yval=0, widthval=50, advancewidthval=0, vadvancewidthval=0;
+static real irrelevantfactor = .005;
 
 #define CID_Stop		2001
 #define CID_Next		2002
@@ -112,6 +116,8 @@ static real near=3, xval=0, yval=0, widthval=50, advancewidthval=0, vadvancewidt
 #define CID_VAdvanceWidthVal	1025
 #define CID_Stem3		1026
 #define CID_ShowExactStem3	1027
+#define CID_IrrelevantCP	1028
+#define CID_IrrelevantFactor	1029
 
 
 static void FixIt(struct problems *p) {
@@ -156,6 +162,12 @@ return;
 		SCCharChangedUpdate(p->sc);
 	} else
 	    GDrawIError("Could not find referenc");
+return;
+    } else if ( p->explaining==_STR_ProbBadWidth ) {
+	SCSynchronizeWidth(p->sc,p->advancewidthval,p->sc->width,NULL);
+return;
+    } else if ( p->explaining==_STR_ProbBadVWidth ) {
+	p->sc->vwidth=p->vadvancewidthval;
 return;
     }
 
@@ -260,10 +272,27 @@ return;
 	    sp->pointtype = pt_corner;
     } else if ( p->explaining==_STR_ProbExpectedCounter || p->explaining==_STR_ProbExpectedClockwise ) {
 	SplineSetReverse(spl);
-    } else if ( p->explaining==_STR_ProbBadWidth ) {
-	SCSynchronizeWidth(p->sc,p->advancewidthval,p->sc->width,NULL);
-    } else if ( p->explaining==_STR_ProbBadVWidth ) {
-	p->sc->vwidth=p->vadvancewidthval;
+    } else if ( p->explaining==_STR_ProbIrrelCP ) {
+	if ( sp->next!=NULL ) {
+	    double len = sqrt((sp->me.x-sp->next->to->me.x)*(sp->me.x-sp->next->to->me.x) +
+		    (sp->me.y-sp->next->to->me.y)*(sp->me.y-sp->next->to->me.y));
+	    double cplen = sqrt((sp->me.x-sp->nextcp.x)*(sp->me.x-sp->nextcp.x) +
+		    (sp->me.y-sp->nextcp.y)*(sp->me.y-sp->nextcp.y));
+	    if ( cplen!=0 && cplen<p->irrelevantfactor*len ) {
+		sp->nextcp = sp->me;
+		sp->nonextcp = true;
+	    }
+	}
+	if ( sp->prev!=NULL ) {
+	    double len = sqrt((sp->me.x-sp->prev->from->me.x)*(sp->me.x-sp->prev->from->me.x) +
+		    (sp->me.y-sp->prev->from->me.y)*(sp->me.y-sp->prev->from->me.y));
+	    double cplen = sqrt((sp->me.x-sp->prevcp.x)*(sp->me.x-sp->prevcp.x) +
+		    (sp->me.y-sp->prevcp.y)*(sp->me.y-sp->prevcp.y));
+	    if ( cplen!=0 && cplen<p->irrelevantfactor*len ) {
+		sp->prevcp = sp->me;
+		sp->noprevcp = true;
+	    }
+	}
     } else
 	GDrawIError("Did not fix: %d", p->explaining );
     if ( sp->next!=NULL )
@@ -393,6 +422,7 @@ return;
 	    explain==_STR_ProbFlippedRef ||
 	    explain==_STR_ProbXNear || explain==_STR_ProbPtNearVHint ||
 	    explain==_STR_ProbYNear || explain==_STR_ProbPtNearHHint ||
+	    explain==_STR_ProbIrrelCP ||
 	    explain==_STR_ProbYBase || explain==_STR_ProbYXHeight ||
 	    explain==_STR_ProbYCapHeight || explain==_STR_ProbYAs ||
 	    explain==_STR_ProbYDs ||
@@ -984,6 +1014,43 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	}
     }
 
+    if ( p->irrelevantcontrolpoints && !p->finish ) {
+	for ( test=spl; test!=NULL && !p->finish && p->irrelevantcontrolpoints; test = test->next ) {
+	    for ( sp=test->first; !p->finish && p->irrelevantcontrolpoints; ) {
+		int either = false;
+		if ( sp->prev!=NULL ) {
+		    double len = sqrt((sp->me.x-sp->prev->from->me.x)*(sp->me.x-sp->prev->from->me.x) +
+			    (sp->me.y-sp->prev->from->me.y)*(sp->me.y-sp->prev->from->me.y));
+		    double cplen = sqrt((sp->me.x-sp->prevcp.x)*(sp->me.x-sp->prevcp.x) +
+			    (sp->me.y-sp->prevcp.y)*(sp->me.y-sp->prevcp.y));
+		    if ( cplen!=0 && cplen<p->irrelevantfactor*len )
+			either = true;
+		}
+		if ( sp->next!=NULL ) {
+		    double len = sqrt((sp->me.x-sp->next->to->me.x)*(sp->me.x-sp->next->to->me.x) +
+			    (sp->me.y-sp->next->to->me.y)*(sp->me.y-sp->next->to->me.y));
+		    double cplen = sqrt((sp->me.x-sp->nextcp.x)*(sp->me.x-sp->nextcp.x) +
+			    (sp->me.y-sp->nextcp.y)*(sp->me.y-sp->nextcp.y));
+		    if ( cplen!=0 && cplen<p->irrelevantfactor*len )
+			either = true;
+		}
+		if ( either ) {
+		    sp->selected = true;
+		    ExplainIt(p,sc,_STR_ProbIrrelCP,0,0);
+		    if ( p->ignorethis ) {
+			p->irrelevantcontrolpoints = false;
+	    break;
+		    }
+		}
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==test->first )
+	    break;
+	    }
+	}
+    }
+
     if ( p->hintwithnopt && !p->finish ) {
 	int anys, anye;
       restarthhint:
@@ -1348,6 +1415,7 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	flippedrefs = p->flippedrefs = GGadgetIsChecked(GWidgetGetControl(gw,CID_FlippedRefs));
 	bitmaps = p->bitmaps = GGadgetIsChecked(GWidgetGetControl(gw,CID_Bitmaps));
 	advancewidth = p->advancewidth = GGadgetIsChecked(GWidgetGetControl(gw,CID_AdvanceWidth));
+	irrelevantcp = p->irrelevantcontrolpoints = GGadgetIsChecked(GWidgetGetControl(gw,CID_IrrelevantCP));
 	stem3 = p->stem3 = GGadgetIsChecked(GWidgetGetControl(gw,CID_Stem3));
 	if ( stem3 )
 	    showexactstem3 = p->showexactstem3 = GGadgetIsChecked(GWidgetGetControl(gw,CID_ShowExactStem3));
@@ -1370,6 +1438,8 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	    advancewidthval = p->advancewidthval = GetIntR(gw,CID_AdvanceWidthVal,_STR_HintWidth,&errs);
 	if ( p->vadvancewidth )
 	    vadvancewidthval = p->vadvancewidthval = GetIntR(gw,CID_VAdvanceWidthVal,_STR_HintWidth,&errs);
+	if ( irrelevantcp )
+	    p->irrelevantfactor = irrelevantfactor = GetRealR(gw,CID_IrrelevantFactor,_STR_IrrelevantFactor,&errs)/100.0;
 	near = p->near = GetRealR(gw,CID_Near,_STR_Near,&errs);
 	if ( errs )
 return( true );
@@ -1379,7 +1449,8 @@ return( true );
 	if ( openpaths || pointstooclose /*|| missing*/ || doxnear || doynear ||
 		doynearstd || linestd || hintnopt || ptnearhint || hintwidth ||
 		direction || p->cidmultiple || p->cidblank || p->flippedrefs ||
-		p->bitmaps || p->advancewidth || p->vadvancewidth || p->stem3 ) {
+		p->bitmaps || p->advancewidth || p->vadvancewidth || p->stem3 ||
+		p->irrelevantcontrolpoints ) {
 	    DoProbs(p);
 	}
 	p->done = true;
@@ -1422,11 +1493,12 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData pgcd[9], pagcd[5], hgcd[7], rgcd[6], cgcd[5], mgcd[10];
-    GTextInfo plabel[9], palabel[5], hlabel[7], rlabel[6], clabel[5], mlabel[10];
+    GGadgetCreateData pgcd[13], pagcd[5], hgcd[7], rgcd[6], cgcd[5], mgcd[10];
+    GTextInfo plabel[13], palabel[5], hlabel[7], rlabel[6], clabel[5], mlabel[10];
     GTabInfo aspects[9];
     struct problems p;
-    char xnbuf[20], ynbuf[20], widthbuf[20], nearbuf[20], awidthbuf[20], vawidthbuf[20];
+    char xnbuf[20], ynbuf[20], widthbuf[20], nearbuf[20], awidthbuf[20],
+	    vawidthbuf[20], irrel[20];
     int i;
     SplineFont *sf;
     /*static GBox smallbox = { bt_raised, bs_rect, 2, 1, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };*/
@@ -1467,7 +1539,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     plabel[1].text_in_resource = true;
     pgcd[1].gd.label = &plabel[1];
     pgcd[1].gd.mnemonic = 'X';
-    pgcd[1].gd.pos.x = 3; pgcd[1].gd.pos.y = pgcd[0].gd.pos.y+20; 
+    pgcd[1].gd.pos.x = 3; pgcd[1].gd.pos.y = pgcd[0].gd.pos.y+19; 
     pgcd[1].gd.flags = gg_visible | gg_enabled;
     if ( doxnear ) pgcd[1].gd.flags |= gg_cb_on;
     pgcd[1].gd.popup_msg = GStringGetResource(_STR_XNearPopup,NULL);
@@ -1522,7 +1594,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     plabel[6].text_in_resource = true;
     pgcd[6].gd.label = &plabel[6];
     pgcd[6].gd.mnemonic = 'C';
-    pgcd[6].gd.pos.x = 3; pgcd[6].gd.pos.y = pgcd[5].gd.pos.y+17; 
+    pgcd[6].gd.pos.x = 3; pgcd[6].gd.pos.y = pgcd[5].gd.pos.y+15; 
     pgcd[6].gd.flags = gg_visible | gg_enabled;
     if ( cpstd ) pgcd[6].gd.flags |= gg_cb_on;
     pgcd[6].gd.popup_msg = GStringGetResource(_STR_CpStdPopup,NULL);
@@ -1533,12 +1605,49 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     plabel[7].text_in_resource = true;
     pgcd[7].gd.label = &plabel[7];
     pgcd[7].gd.mnemonic = 'b';
-    pgcd[7].gd.pos.x = 3; pgcd[7].gd.pos.y = pgcd[6].gd.pos.y+17; 
+    pgcd[7].gd.pos.x = 3; pgcd[7].gd.pos.y = pgcd[6].gd.pos.y+15; 
     pgcd[7].gd.flags = gg_visible | gg_enabled;
     if ( cpodd ) pgcd[7].gd.flags |= gg_cb_on;
     pgcd[7].gd.popup_msg = GStringGetResource(_STR_CpOddPopup,NULL);
     pgcd[7].gd.cid = CID_CpOdd;
     pgcd[7].creator = GCheckBoxCreate;
+
+    plabel[8].text = (unichar_t *) _STR_IrrelevantCP;
+    plabel[8].text_in_resource = true;
+    pgcd[8].gd.label = &plabel[8];
+    pgcd[8].gd.pos.x = 3; pgcd[8].gd.pos.y = pgcd[7].gd.pos.y+15; 
+    pgcd[8].gd.flags = gg_visible | gg_enabled;
+    if ( irrelevantcp ) pgcd[8].gd.flags |= gg_cb_on;
+    pgcd[8].gd.popup_msg = GStringGetResource(_STR_IrrelevantCPPopup,NULL);
+    pgcd[8].gd.cid = CID_IrrelevantCP;
+    pgcd[8].creator = GCheckBoxCreate;
+
+    plabel[9].text = (unichar_t *) _STR_IrrelevantFactor;
+    plabel[9].text_in_resource = true;
+    pgcd[9].gd.label = &plabel[9];
+    pgcd[9].gd.pos.x = 20; pgcd[9].gd.pos.y = pgcd[8].gd.pos.y+20; 
+    pgcd[9].gd.flags = gg_visible | gg_enabled;
+    pgcd[9].gd.popup_msg = GStringGetResource(_STR_IrrelevantFactorPopup,NULL);
+    pgcd[9].creator = GLabelCreate;
+
+    sprintf( irrel, "%g", irrelevantfactor*100 );
+    plabel[10].text = (unichar_t *) irrel;
+    plabel[10].text_is_1byte = true;
+    pgcd[10].gd.label = &plabel[10];
+    pgcd[10].gd.pos.x = 105; pgcd[10].gd.pos.y = pgcd[9].gd.pos.y-3;
+    pgcd[10].gd.pos.width = 50; 
+    pgcd[10].gd.flags = gg_visible | gg_enabled;
+    pgcd[10].gd.popup_msg = GStringGetResource(_STR_IrrelevantFactorPopup,NULL);
+    pgcd[10].gd.cid = CID_IrrelevantFactor;
+    pgcd[10].creator = GTextFieldCreate;
+
+    plabel[11].text = (unichar_t *) "%";
+    plabel[11].text_is_1byte = true;
+    pgcd[11].gd.label = &plabel[11];
+    pgcd[11].gd.pos.x = 163; pgcd[11].gd.pos.y = pgcd[9].gd.pos.y; 
+    pgcd[11].gd.flags = gg_visible | gg_enabled;
+    pgcd[11].gd.popup_msg = GStringGetResource(_STR_IrrelevantFactorPopup,NULL);
+    pgcd[11].creator = GLabelCreate;
 
 /* ************************************************************************** */
 
