@@ -62,6 +62,7 @@ typedef struct printinfo {
     unsigned int istype42cid: 1;
     unsigned int iscid: 1;
     unsigned int wastwobyte: 1;
+    unsigned int isunicode: 1;
     unsigned int overflow: 1;
     unsigned int done: 1;
     int ypos;
@@ -203,66 +204,87 @@ static int figure_fontdesc(PI *pi, struct fontdesc *fd, int fonttype, int fontst
     int beyond_std = false;
     extern unsigned short unicode_from_adobestd[];
     int fd_num = pi->next_object;
+    int cidmax;
 
     memset(fd,0,sizeof(*fd));
-    for ( i=0; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i])) {
-	SplineChar *sc = sf->chars[i];
-	int uni = sc->unicodeenc;
 
-	SplineCharFindBounds(sc,&b);
-	if ( first ) {
-	    fd->bb = b;
-	    first = false;
-	    samewidth = sc->width;
-	    fd->maxwidth = sc->width;
-	} else {
-	    if ( b.minx<fd->bb.minx ) fd->bb.minx = b.minx;
-	    if ( b.miny<fd->bb.miny ) fd->bb.miny = b.miny;
-	    if ( b.maxx>fd->bb.maxx ) fd->bb.maxx = b.maxx;
-	    if ( b.maxy>fd->bb.maxy ) fd->bb.maxy = b.maxy;
-	    if ( samewidth!=sc->width )
-		samewidth = -1;
-	    if ( sc->width>fd->maxwidth ) fd->maxwidth = sc->width;
-	}
-	fd->avgwidth += sc->width; ++wcnt;
-	if ( sc->layers[ly_fore].refs==NULL ) {
-	    /* Ascent and Descent are defined on non-accented characters */
-	    if ( b.miny<fd->descent ) fd->descent = b.miny;
-	    if ( b.maxy>fd->ascent ) fd->ascent = b.maxy;
-	}
-	if ( uni=='B' || uni=='D' || uni=='E' || uni=='F' || uni=='H' ||
-		uni=='I' || uni=='J' || uni=='L' || uni=='M' || uni=='N' ||
-		uni=='P' || uni=='R' || uni=='T' || uni=='U' || uni=='W' ||
-		uni=='X' || uni=='Y' || uni=='Z' ||
-		uni==0x393 || uni==0x395 || uni==0x396 || uni==0x397 ||
-		uni==0x399 || uni==0x39a || uni==0x39c ||
-		(uni>=0x3a0 && uni<=0x3a8) ||
-		(uni>=0x411 && uni<=0x415) || uni==0x418 ||
-		(uni>=0x41a && uni<=0x41d) || uni==0x41f || uni==0x420 ||
-		(uni>=0x422 && uni<=0x42c)) {
-	    fd->capheight += b.maxy;
-	    ++capcnt;
-	}
-	if ( (uni>='u' && uni<='z') ||
-		uni==0x3c0 || uni==0x3c4 || uni==0x3c7 || uni==0x3bd ||
-		(uni>=0x432 && uni<=0x434) || uni==0x438 ||
-		(uni>=0x43a && uni<=0x43d) || uni==0x43f || uni==0x432 ||
-		(uni>=0x445 && uni<=0x44c)) {
-	    fd->xheight += b.maxy;
-	    ++xhcnt;
-	}
-	/* This is a stupid defn. Every font contains accented latin and */
-	/*  they aren't in adobe std */
-	if ( uni<=0x7e )
-	    /* It's in adobe std */;
-	else if ( uni>0x3000 && uni<0xfb00 )
-	    beyond_std = true;
-	else if ( !beyond_std ) {
-	    for ( j=0x80; j<0x100; ++j )
-		if ( uni==unicode_from_adobestd[j])
+    cidmax = 0;
+    if ( sf->subfonts!=0 ) {
+	for ( i=0; i<sf->subfontcnt; ++i )
+	    if ( cidmax<sf->subfonts[i]->charcnt )
+		cidmax = sf->subfonts[i]->charcnt;
+    } else
+	cidmax = sf->charcnt;
+
+    for ( i=0; i<cidmax; ++i ) {
+	SplineChar *sc = NULL;
+	if ( sf->subfonts!=0 ) {
+	    for ( j=0; j<sf->subfontcnt; ++j )
+		if ( i<sf->subfonts[j]->charcnt &&
+			SCWorthOutputting(sf->subfonts[j]->chars[i]) ) {
+		    sc = sf->subfonts[j]->chars[i];
 	    break;
-	    if ( j==0x100 )
+		}
+	} else
+	    sc = sf->chars[i];
+	if ( SCWorthOutputting(sc)) {
+	    int uni = sc->unicodeenc;
+
+	    SplineCharFindBounds(sc,&b);
+	    if ( first ) {
+		fd->bb = b;
+		first = false;
+		samewidth = sc->width;
+		fd->maxwidth = sc->width;
+	    } else {
+		if ( b.minx<fd->bb.minx ) fd->bb.minx = b.minx;
+		if ( b.miny<fd->bb.miny ) fd->bb.miny = b.miny;
+		if ( b.maxx>fd->bb.maxx ) fd->bb.maxx = b.maxx;
+		if ( b.maxy>fd->bb.maxy ) fd->bb.maxy = b.maxy;
+		if ( samewidth!=sc->width )
+		    samewidth = -1;
+		if ( sc->width>fd->maxwidth ) fd->maxwidth = sc->width;
+	    }
+	    fd->avgwidth += sc->width; ++wcnt;
+	    if ( sc->layers[ly_fore].refs==NULL ) {
+		/* Ascent and Descent are defined on non-accented characters */
+		if ( b.miny<fd->descent ) fd->descent = b.miny;
+		if ( b.maxy>fd->ascent ) fd->ascent = b.maxy;
+	    }
+	    if ( uni=='B' || uni=='D' || uni=='E' || uni=='F' || uni=='H' ||
+		    uni=='I' || uni=='J' || uni=='L' || uni=='M' || uni=='N' ||
+		    uni=='P' || uni=='R' || uni=='T' || uni=='U' || uni=='W' ||
+		    uni=='X' || uni=='Y' || uni=='Z' ||
+		    uni==0x393 || uni==0x395 || uni==0x396 || uni==0x397 ||
+		    uni==0x399 || uni==0x39a || uni==0x39c ||
+		    (uni>=0x3a0 && uni<=0x3a8) ||
+		    (uni>=0x411 && uni<=0x415) || uni==0x418 ||
+		    (uni>=0x41a && uni<=0x41d) || uni==0x41f || uni==0x420 ||
+		    (uni>=0x422 && uni<=0x42c)) {
+		fd->capheight += b.maxy;
+		++capcnt;
+	    }
+	    if ( (uni>='u' && uni<='z') ||
+		    uni==0x3c0 || uni==0x3c4 || uni==0x3c7 || uni==0x3bd ||
+		    (uni>=0x432 && uni<=0x434) || uni==0x438 ||
+		    (uni>=0x43a && uni<=0x43d) || uni==0x43f || uni==0x432 ||
+		    (uni>=0x445 && uni<=0x44c)) {
+		fd->xheight += b.maxy;
+		++xhcnt;
+	    }
+	    /* This is a stupid defn. Every font contains accented latin and */
+	    /*  they aren't in adobe std */
+	    if ( uni<=0x7e )
+		/* It's in adobe std */;
+	    else if ( uni>0x3000 && uni<0xfb00 )
 		beyond_std = true;
+	    else if ( !beyond_std ) {
+		for ( j=0x80; j<0x100; ++j )
+		    if ( uni==unicode_from_adobestd[j])
+		break;
+		if ( j==0x100 )
+		    beyond_std = true;
+	    }
 	}
     }
 
@@ -647,7 +669,7 @@ static void pdf_build_type0(PI *pi) {
 	    for ( j=i; j<cidmax && widths[j]==widths[i]; ++j );
 	    --j;
 	    fprintf( pi->out, "    %d %d %d\n", i,j, widths[i]);
-	    i = j;
+	    i = j+1;
     continue;
 	}
 	fprintf( pi->out, "    %d [", i );
@@ -1110,7 +1132,7 @@ static void startpage(PI *pi ) {
 	pdf_addpage(pi);
 	fprintf(pi->out,"q 1 0 0 1 40 %d cm\n", pi->pageheight-54 );
 	fprintf( pi->out, "BT\n  /FTB 12 Tf\n  34 -54.84 Td\n" );
-	if ( pi->iscid )
+	if ( pi->iscid && !pi->isunicode)
 	    for ( i=0; i<pi->max; ++i )
 		fprintf(pi->out,"%d 0 TD (%d) Tj\n", (pi->pointsize+pi->extrahspace), i );
 	else
@@ -1198,16 +1220,17 @@ return(0);
 	int lastfont = -1;
 	if ( !pi->overflow ) {
 	    fprintf(pi->out, "BT\n  /FTB 12 Tf\n  26.88 %d Td\n", pi->ypos );
-	    if ( pi->iscid )
+	    if ( pi->iscid && !pi->isunicode)
 		fprintf(pi->out,"(%d) Tj\n", pi->chline );
 	    else
 		fprintf(pi->out,"(%04X) Tj\n", pi->chline );
 	    fprintf(pi->out, "ET\n" );
 	}
-	fprintf(pi->out, "BT\n" );
+	fprintf(pi->out, "BT\n  %d %d Td\n", 58-(pi->pointsize+pi->extrahspace), pi->ypos );
 	if ( pi->iscid )
-	    fprintf(pi->out, "  /FT0 %d Tf\n", pi->pointsize );
+	    fprintf(pi->out, "  /F0 %d Tf\n", pi->pointsize );
 	for ( i=0; i<pi->max ; ++i ) {
+	    fprintf( pi->out, "  %d 0 TD\n", pi->pointsize+pi->extrahspace );
 	    if ( i+pi->chline<pi->cidcnt &&
 			CIDWorthOutputting(pi->sf,i+pi->chline)!=-1) {
 		/*int x = 58 + i*(pi->pointsize+pi->extrahspace);*/
@@ -1215,10 +1238,6 @@ return(0);
 		    lastfont = (i+pi->chline)/256;
 		    fprintf(pi->out, "  /F%d %d Tf\n", pi->fonts[lastfont], pi->pointsize );
 		}
-		if ( i==0 )
-		    fprintf(pi->out, "  58 %d Td\n", pi->ypos );
-		else
-		    fprintf( pi->out, "  %d 0 TD\n", pi->pointsize+pi->extrahspace );
 		if ( pi->iscid )
 		    fprintf( pi->out, "  <%04x> Tj\n", pi->chline+i );
 		else
@@ -1267,7 +1286,15 @@ static void PIFontDisplay(PI *pi) {
     pi->extrahspace = pi->pointsize/3;
     pi->max = (pi->pagewidth-100)/(pi->extrahspace+pi->pointsize);
     pi->cidcnt = pi->sf->charcnt;
-    if ( pi->iscid ) {
+    if ( pi->sf->subfontcnt!=0 && pi->iscid ) {
+	int i,max=0;
+	for ( i=0; i<pi->sf->subfontcnt; ++i )
+	    if ( pi->sf->subfonts[i]->charcnt>max )
+		max = pi->sf->subfonts[i]->charcnt;
+	pi->cidcnt = max;
+    }
+
+    if ( pi->iscid && !pi->isunicode ) {
 	if ( pi->max>=20 ) pi->max = 20;
 	else if ( pi->max>=10 ) pi->max = 10;
 	else pi->max = 5;
@@ -3805,11 +3832,12 @@ static void PIInit(PI *pi,FontView *fv,SplineChar *sc,void *mv) {
     pi->twobyte = (pi->sf->encoding_name>=e_first2byte && pi->sf->encoding_name<em_base) ||
 		pi->sf->encoding_name>=em_unicodeplanes;
     pi->wastwobyte = pi->twobyte;
+    pi->isunicode = pi->sf->encoding_name==em_unicode;
     pi->istype42cid = pi->sf->order2 && pi->sf->encoding_name==em_unicode;
     pi->iscid = pi->sf->subfontcnt!=0 || pi->istype42cid;
     pi->pointsize = pdefs[di].pointsize;
     if ( pi->pointsize==0 )
-	pi->pointsize = pi->iscid?18:20;		/* 18 fits 20 across, 20 fits 16 */
+	pi->pointsize = pi->iscid && !pi->isunicode?18:20;		/* 18 fits 20 across, 20 fits 16 */
     PIGetPrinterDefs(pi);
 }
 

@@ -1790,6 +1790,9 @@ return(NULL);
     for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
 	free(fvs->selected);
 	fvs->selected = gcalloc(fvs->sf->charcnt,sizeof(char));
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+	FVSetTitle(fvs);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
     SFRestoreNearTop(sf);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
