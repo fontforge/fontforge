@@ -141,4 +141,3 @@ macenc.obj : macenc.c
 statemachine.obj : statemachine.c
 typofeatures.obj : typofeatures.c
 splinerefigure.obj : splinerefigure.c
-          $(CC) $(CFLAGS)/noop splinerefigure
