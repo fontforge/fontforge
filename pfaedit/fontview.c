@@ -5768,6 +5768,7 @@ SplineFont *ReadSplineFont(char *filename,enum openflags openflags) {
     int i;
     char *pt, *strippedname, *tmpfile=NULL, *paren=NULL, *fullname=filename;
     int len;
+    FILE *foo;
 
     if ( filename==NULL )
 return( NULL );
@@ -5837,7 +5838,49 @@ return( NULL );
     if ( fv_list==NULL && screen_display!=NULL ) { GDrawSync(NULL); GDrawProcessPendingEvents(NULL); }
 
     sf = NULL;
-    if ( strmatch(fullname+strlen(fullname)-4, ".sfd")==0 ||
+    foo = fopen(strippedname,"rb");
+    if ( foo!=NULL ) {
+	/* Try to guess the file type from the first few characters... */
+	int ch1 = getc(foo);
+	int ch2 = getc(foo);
+	int ch3 = getc(foo);
+	int ch4 = getc(foo);
+	int ch5, ch6;
+	fseek(foo, 98, SEEK_SET);
+	ch5 = getc(foo);
+	ch6 = getc(foo);
+	fclose(foo);
+	if (( ch1==0 && ch2==1 && ch3==0 && ch4==0 ) ||
+		(ch1=='O' && ch2=='T' && ch3=='T' && ch4=='O') ||
+		(ch1=='t' && ch2=='r' && ch3=='u' && ch4=='e') ||
+		(ch1=='t' && ch2=='t' && ch3=='c' && ch4=='f') ) {
+	    sf = SFReadTTF(fullname,0);
+	} else if ( ch1=='%' && ch2=='!' ) {
+	    sf = SFReadPostscript(fullname);
+	} else if ( ch1==1 && ch2==0 && ch3==4 && ch4==4 ) {
+	    sf = CFFParse(fullname);
+	} else if ( ch1=='<' && ch2=='?' && (ch3=='x'||ch3=='X') && (ch4=='m'||ch4=='M') ) {
+	    sf = SFReadSVG(fullname,0);
+#if 0		/* I'm not sure if this is a good test for mf files... */
+	} else if ( ch1=='%' && ch2==' ' ) {
+	    sf = SFFromMF(fullname);
+#endif
+	} else if ( ch1=='S' && ch2=='p' && ch3=='l' && ch4=='i' ) {
+	    sf = SFDRead(fullname);
+	    fromsfd = true;
+	} else if ( ch1=='S' && ch2=='T' && ch3=='A' && ch4=='R' ) {
+	    sf = SFFromBDF(fullname,0,false);
+	} else if ( ch1=='\1' && ch2=='f' && ch3=='c' && ch4=='p' ) {
+	    sf = SFFromBDF(fullname,2,false);
+	} else if ( ch5=='I' && ch6=='K' && ch3==0 && ch4==55 ) {
+	    /* Ikarus font type appears at word 50 (byte offset 98) */
+	    /* Ikarus name section length (at word 2, byte offset 2) was 55 in the 80s at URW */
+	    sf = SFReadIkarus(fullname);
+	} /* Too hard to figure out a valid mark for a mac resource file */
+    }
+    if ( sf!=NULL )
+	/* good */;
+    else if ( strmatch(fullname+strlen(fullname)-4, ".sfd")==0 ||
 	 strmatch(fullname+strlen(fullname)-5, ".sfd~")==0 ) {
 	sf = SFDRead(fullname);
 	fromsfd = true;
@@ -5868,52 +5911,17 @@ return( NULL );
 		strmatch(fullname+strlen(fullname)-4, ".pf3")==0 ||
 		strmatch(fullname+strlen(fullname)-4, ".cid")==0 ||
 		strmatch(fullname+strlen(fullname)-4, ".gsf")==0 ||
+		strmatch(fullname+strlen(fullname)-4, ".pt3")==0 ||
 		strmatch(fullname+strlen(fullname)-3, ".ps")==0 ) {
 	sf = SFReadPostscript(fullname);
+    } else if ( strmatch(fullname+strlen(fullname)-4, ".cff")==0 ) {
+	sf = CFFParse(fullname);
     } else if ( strmatch(fullname+strlen(fullname)-3, ".mf")==0 ) {
 	sf = SFFromMF(fullname);
     } else if ( strmatch(fullname+strlen(fullname)-3, ".ik")==0 ) {
 	sf = SFReadIkarus(fullname);
     } else {
-	FILE *foo = fopen(strippedname,"rb");
-	if ( foo!=NULL ) {
-	    /* Try to guess the file type from the first few characters... */
-	    int ch1 = getc(foo);
-	    int ch2 = getc(foo);
-	    int ch3 = getc(foo);
-	    int ch4 = getc(foo);
-	    int ch5, ch6;
-	    fseek(foo, 98, SEEK_SET);
-	    ch5 = getc(foo);
-	    ch6 = getc(foo);
-	    fclose(foo);
-	    if (( ch1==0 && ch2==1 && ch3==0 && ch4==0 ) ||
-		    (ch1=='O' && ch2=='T' && ch3=='T' && ch4=='O') ||
-		    (ch1=='t' && ch2=='r' && ch3=='u' && ch4=='e') ||
-		    (ch1=='t' && ch2=='t' && ch3=='c' && ch4=='f') ) {
-		sf = SFReadTTF(fullname,0);
-	    } else if ( ch1=='%' && ch2=='!' ) {
-		sf = SFReadPostscript(fullname);
-	    } else if ( ch1=='<' && ch2=='?' && (ch3=='x'||ch3=='X') && (ch4=='m'||ch4=='M') ) {
-		sf = SFReadSVG(fullname,0);
-#if 0		/* I'm not sure if this is a good test for mf files... */
-	    } else if ( ch1=='%' && ch2==' ' ) {
-		sf = SFFromMF(fullname);
-#endif
-	    } else if ( ch1=='S' && ch2=='p' && ch3=='l' && ch4=='i' ) {
-		sf = SFDRead(fullname);
-		fromsfd = true;
-	    } else if ( ch1=='S' && ch2=='T' && ch3=='A' && ch4=='R' ) {
-		sf = SFFromBDF(fullname,0,false);
-	    } else if ( ch1=='\1' && ch2=='f' && ch3=='c' && ch4=='p' ) {
-		sf = SFFromBDF(fullname,2,false);
-	    } else if ( ch5=='I' && ch6=='K' && ch3==0 && ch4==55 ) {
-		/* Ikarus font type appears at word 50 (byte offset 98) */
-		/* Ikarus name section length (at word 2, byte offset 2) was 55 in the 80s at URW */
-		sf = SFReadIkarus(fullname);
-	    } else /* Too hard to figure out a valid mark for a mac resource file */
-		sf = SFReadMacBinary(fullname,0);
-	}
+	sf = SFReadMacBinary(fullname,0);
     }
     if ( strippedname!=filename && strippedname!=tmpfile )
 	free(strippedname);
