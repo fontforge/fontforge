@@ -656,17 +656,25 @@ static void SFDDumpTtfTable(FILE *sfd,struct ttf_table *tab) {
 }
 
 static int SFDOmit(SplineChar *sc) {
+    int layer;
+
     if ( sc==NULL )
 return( true );
-    if ( sc->layers[ly_fore].splines==NULL && sc->layers[ly_fore].refs==NULL && sc->anchor==NULL &&
-	    sc->layers[ly_back].splines==NULL && sc->layers[ly_back].images==NULL ) {
-	if ( strcmp(sc->name,".null")==0 || strcmp(sc->name,"nonmarkingreturn")==0 )
-return(true);
-	if ( !sc->widthset && sc->width==sc->parent->ascent+sc->parent->descent &&
-		(strcmp(sc->name,".notdef")==0 || sc->enc==sc->unicodeenc ||
-		 strcmp(sc->name,".null")==0 || strcmp(sc->name,"nonmarkingreturn")==0 ))
-return(true);
+    if ( sc->comment!=NULL || sc->color!=COLOR_DEFAULT )
+return( false );
+    for ( layer = ly_back; layer<sc->layer_cnt; ++layer ) {
+	if ( sc->layers[layer].splines!=NULL ||
+		sc->layers[layer].refs!=NULL ||
+		sc->layers[layer].images!=NULL )
+return( false );
     }
+    if ( strcmp(sc->name,".null")==0 || strcmp(sc->name,"nonmarkingreturn")==0 )
+return(true);
+    if ( !sc->widthset && sc->width==sc->parent->ascent+sc->parent->descent &&
+	    (strcmp(sc->name,".notdef")==0 || sc->enc==sc->unicodeenc ||
+	     strcmp(sc->name,".null")==0 || strcmp(sc->name,"nonmarkingreturn")==0 ))
+return(true);
+
 return( false );
 }
 
