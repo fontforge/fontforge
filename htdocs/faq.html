@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 24-Nov-2002 -->
+  <!-- AP: Last modified: 14-Jan-2003 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -28,7 +28,9 @@
     <A HREF="#How-mac">How do I edit fonts from my macintoy?</A>
     <UL>
       <LI>
-	<A HREF="#How-family">How do create a mac font family? (How do I get the mac to group my fonts so that the italic and bold styles work)?</A>
+	<A HREF="#How-family">How do I create a mac font family? (How do I get the mac to group my fonts so that the italic and bold styles work)?</A>
+      <LI>
+	<A HREF="#Mac-ATM">Why doesn't ATM work with my fonts?</A>
     </UL>
   <LI>
     <A HREF="#windows">How do I edit fonts on MS windows?</A>
@@ -41,6 +43,8 @@
   <LI>
     <A HREF="#fuzzy">My characters are all perfectly hinted, why do some stems
     have different widths (or appear fuzzy, or fade away completely)?</A>
+  <LI>
+    <A HREF="#new-encoding">How do I pfaedit about a new encoding?</A>
   <LI>
     <A HREF="#new-name">How do I add a character with a new name?</A>
   <LI>
@@ -385,7 +389,7 @@ $ xset fp+ `pwd`
 	normal .otf and .ttf font files.
     </DL>
   <DT>
-    <B><A NAME="How-family">How do create a mac font family? (How do I get the mac to group my fonts so that the italic and bold styles work)?</A></B>
+    <B><A NAME="How-family">How do I create a mac font family? (How do I get the mac to group my fonts so that the italic and bold styles work)?</A></B>
   <DD>
     For the Style menu in most mac applications to work on your fonts, you must create a font family.
     You do this with the <A HREF="filemenu.html#GenerateMac">File->Generate Mac Family</A> command.
@@ -393,6 +397,18 @@ $ xset fp+ `pwd`
     All the fonts in a family must have the same Family name (See the <A HREF="fontinfo.html">font info</A> dialog).
     Mac font families only support Italic, Bold, Outline, Expanded, and Condensed styles, they
     do not support "Black", "DemiBold", "Light" or "Thin" varients.
+  <DT>
+    <B><A NAME="Mac-ATM">Why doesn't ATM work on my fonts?</A></B>
+  <DD>
+    Insure that the font has an encoding of MacRoman when you generate it.
+    <P>
+    This is really a limitation on ATM's part and there's nothing PfaEdit can
+    do about it.
+    <P>
+    If you generate a font with an encoding other than Mac Roman, then the
+    Mac's default behavior is to force the postscript font to have a mac roman
+    encoding. There is a mechanism to turn this behavior off, but if it is turned
+    off then ATM won't work at all.
   <DT>
     <B>How do I edit fonts on MS <A NAME="windows">windows</A>?</B>
   <DD>
@@ -512,6 +528,51 @@ MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
     The solution to this is to run Element-&gt;Correct Direction on all your
     characters before generating a font.<BR>
     But sometimes the poor rasterizer just can't do the right thing...
+  <DT>
+    <A NAME="new-encoding"><B>How I do tell pfaedit about a new encoding</B></A>
+  <DD>
+    First ask yourself if you really need a new encoding? If you are using
+    OpenType or TrueType fonts you can usually get by with the standard unicode
+    encoding. But if you really need a new one here is a rough idea of what to do:
+    <P>Figure out what your encoding looks like. Often this will involve
+      searching around the web to find an example of that encoding. For instance
+      if you want a devanagari encoding you might look at
+      <A HREF="http://www.cwi.nl/~dik/english/codes/indic.html">a site which
+      shows the ISCII encodings</A>
+      <P>
+      These encodings only show the top 96 characters, presumably the others
+      are the same as US ASCII. Look at the images and figure out how they map
+      to unicode (or more precisely what the appropriate postscript names are
+      for those characters).
+    <P>
+      Create a file (call it "Devanagari.ps" in this case). It should start with
+      a line:
+<BLOCKQUOTE><PRE>/Devanagari {</PRE></BLOCKQUOTE>
+      <P>This tells PfaEdit that the encoding is called "Devanagari", then follow
+      this with a list of all the character names (preceded by a slash). We start
+      with ASCII which starts with 32 .notdef characters, then space, etc.
+<BLOCKQUOTE><PRE>/Devanagari {
+ /.notdef
+ /.notdef
+ ...
+ /.notdef
+ /space
+ /exclam
+ /quotedbl
+ ...
+ /braceright
+ /asciitilde
+ /.notdef
+ ...
+ /.notdef
+ /uni0901
+ /uni0902
+ ...
+ /uni096F
+}</PRE></BLOCKQUOTE>
+      <P>
+      Now load this file into PfaEdit's list of encodings with Element->Font Info->Encoding->Load, and
+      then apply it to whatever fonts you want.
   <DT>
     <A NAME="new-name"><B>How do I add a character with a new name?</B></A>
   <DD>
