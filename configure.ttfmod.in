@@ -2,17 +2,20 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT(ttfmod/ttfmod.h)
 AC_PROG_CC
-#AC_PROG_RANLIB
+AC_PROG_RANLIB
 #AC_DISABLE_SHARED
-AC_DISABLE_STATIC
-AC_PROG_LIBTOOL
+#AC_DISABLE_STATIC
+#AC_PROG_LIBTOOL
 
 AC_SEARCH_LIBS(dlopen, dl) dnl some systems have this in libc
 AC_SEARCH_LIBS(inet_aton, resolv) dnl some systems have this in libc
 
+dnl Is there a better way to search for the freetype2 includes?
 dnl Is there a better way to add a directory to the include path?
 
-CFLAGS="$CFLAGS -I/usr/include/freetype2/"
+AC_CHECK_FILE(/usr/include/freetype2,CFLAGS="$CFLAGS -I/usr/include/freetype2/",[
+AC_CHECK_FILE(/usr/local/include/freetype2,CFLAGS="$CFLAGS -I/usr/local/include/freetype2/",[
+AC_CHECK_FILE(/usr/X11R6/include/freetype2,CFLAGS="$CFLAGS -I/usr/X11R6/include/freetype2/",)])])
 
 dnl check for freetype. If it doesn't exist then turn off
 dnl rasterization code (which uses it).
@@ -32,6 +35,7 @@ exit(0);
 #else
 A ludicrous error, but so what, it's an error, that's all I need
 #endif], [echo " " yes
+    AC_DEFINE(TT_CONFIG_OPTION_BYTECODE_INTERPRETER,1)
     AC_DEFINE(TT_CONFIG_OPTION_BYTECODE_DEBUG,1)], echo " " no)
 ], [ AC_DEFINE(_NO_LIBFREETYPE)
     AC_DEFINE(TT_RASTERIZE_FONTVIEW,0) ])
