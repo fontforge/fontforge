@@ -2379,6 +2379,7 @@ static char *str_BadImageFileName = "Bad image file: %.100hs";
 static char *str_BadImageFileNotBitmap = "Bad image file, not a bitmap: %.100hs";
 static char *str_NothingLoaded = "Nothing Loaded";
 static char *str_NothingSelected = "Nothing Selected";
+static char *str_NoGlyphSelectedForImport = "You must select a glyph before you can import an image into it"
 static char *str_MoreImagesThanSelected = "More Images Than Selected Characters";
 static char *str_BadTemplate = "Bad Template";
 static char *str_BadTemplateNoExtension = "Bad template, no extension";
