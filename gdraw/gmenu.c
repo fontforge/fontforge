@@ -53,6 +53,7 @@ static struct gmenu *GMenuCreateSubMenu(struct gmenu *parent,GMenuItem *mi,int d
 static struct gmenu *GMenuCreatePulldownMenu(GMenuBar *mb,GMenuItem *mi, int disabled);
 
 static int menu_grabs=true;
+static struct gmenu *most_recent_popup_menu = NULL;
 
 static void GMenuInit() {
     FontRequest rq;
@@ -798,6 +799,8 @@ static int gmenu_destroy(struct gmenu *m) {
 #if 0
  printf("gmenu_destroy\n");
 #endif
+    if ( most_recent_popup_menu==m )
+	most_recent_popup_menu = NULL;
     if ( m->freemi )
 	GMenuItemArrayFree(m->mi);
     free(m);
@@ -954,7 +957,16 @@ GWindow GMenuCreatePopupMenu(GWindow owner,GEvent *event, GMenuItem *mi) {
     if ( e.u.mouse.state & (ksm_button1|ksm_button2|ksm_button3) )
 	m->pressed = m->initial_press = true;
     m->freemi = true;
+    most_recent_popup_menu = m;
 return( m->w );
+}
+
+int GMenuPopupCheckKey(GEvent *event) {
+
+    if ( most_recent_popup_menu==NULL )
+return( false );
+
+return( gmenu_key(most_recent_popup_menu,event));
 }
 
 /* ************************************************************************** */
