@@ -558,7 +558,7 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int round) {
 
     cnt = 0;
     for ( i=0; i<sf->charcnt; ++i )
-	if ( sf->chars[i]!=NULL && strcmp(sf->chars[i]->name,".notdef")!=0 )
+	if ( SCWorthOutputting(sf->chars[i]) )
 	    ++cnt;
     ++cnt;		/* one notdef entry */
     chrs->cnt = cnt;
@@ -617,6 +617,7 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int round) {
 	}
 	GProgressNext();
     }
+    chrs->next = cnt;
 return( chrs );
 }
 

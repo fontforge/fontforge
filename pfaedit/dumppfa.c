@@ -284,7 +284,7 @@ static void dumpcharstrings(void (*dumpchar)(int ch,void *data), void *data, Spl
     chars = SplineFont2Chrs(sf,true);
     GProgressNextStage();
     dumpf(dumpchar,data,"2 index /CharStrings %d dict dup begin\n",chars->cnt);
-    for ( i=0; i<chars->cnt; ++i ) {
+    for ( i=0; i<chars->next; ++i ) {
 	if ( chars->keys[i]==NULL )
     break;
 	dumpf(dumpchar,data,"/%s %d RD ", chars->keys[i], chars->lens[i]+leniv );
