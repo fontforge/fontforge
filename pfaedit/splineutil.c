@@ -752,6 +752,25 @@ void SplineCharQuickConservativeBounds(SplineChar *sc, DBounds *b) {
     }
 }
 
+void SplineFontQuickConservativeBounds(SplineFont *sf,DBounds *b) {
+    DBounds bb;
+    int i;
+
+    b->minx = b->miny = 1e10;
+    b->maxx = b->maxy = -1e10;
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	SplineCharQuickConservativeBounds(sf->chars[i],&bb);
+	if ( bb.minx < b->minx ) b->minx = bb.minx;
+	if ( bb.miny < b->miny ) b->miny = bb.miny;
+	if ( bb.maxx > b->maxx ) b->maxx = bb.maxx;
+	if ( bb.maxy > b->maxy ) b->maxy = bb.maxy;
+    }
+    if ( b->minx>65536 ) b->minx = 0;
+    if ( b->miny>65536 ) b->miny = 0;
+    if ( b->maxx<-65536 ) b->maxx = 0;
+    if ( b->maxy<-65536 ) b->maxy = 0;
+}
+
 void SplinePointCatagorize(SplinePoint *sp) {
 
     sp->pointtype = pt_corner;

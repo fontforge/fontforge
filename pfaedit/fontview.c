@@ -67,7 +67,8 @@ static unsigned char fontview2_bits[] = {
 
 extern int _GScrollBar_Width;
 
-int default_fv_font_size = 24, default_fv_antialias=false,
+int default_fv_font_size = 24, default_fv_antialias=true,
+	default_fv_bbsized=true,
 	default_fv_showhmetrics=false, default_fv_showvmetrics=false;
 #define METRICS_BASELINE 0x0000c0
 #define METRICS_ORIGIN	 0xc00000
@@ -755,6 +756,7 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_EncodedView 2019
 #define MID_Ligatures	2020
 #define MID_KernPairs	2021
+#define MID_FitToEm	2022
 #define MID_CharInfo	2201
 #define MID_FindProblems 2216
 #define MID_MetaFont	2217
@@ -1966,7 +1968,7 @@ static void FVMenuShowMetrics(GWindow fvgw,struct gmenuitem *mi,GEvent *e) {
 static void FVMenuSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw), *fvs, *fvss;
     int dspsize = fv->filled->pixelsize;
-    int changealias = false;
+    int changedmodifier = false;
 
     fv->magnify = 1;
     if ( mi->mid == MID_24 )
@@ -1979,13 +1981,16 @@ static void FVMenuSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	default_fv_font_size = dspsize = 72;
     else if ( mi->mid == MID_96 )
 	default_fv_font_size = dspsize = 96;
-    else {
+    else if ( mi->mid == MID_FitToEm ) {
+	default_fv_bbsized = fv->bbsized = !fv->bbsized;
+	changedmodifier = true;
+    } else {
 	default_fv_antialias = fv->antialias = !fv->antialias;
 	fv->sf->display_antialias = fv->antialias;
-	changealias = true;
+	changedmodifier = true;
     }
     SavePrefs();
-    if ( fv->filled!=fv->show || fv->filled->pixelsize != dspsize || changealias ) {
+    if ( fv->filled!=fv->show || fv->filled->pixelsize != dspsize || changedmodifier ) {
 	BDFFont *new, *old;
 	for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame )
 	    fvs->touched = false;
@@ -1996,10 +2001,14 @@ static void FVMenuSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    if ( fvs==NULL )
 	break;
 	    old = fvs->filled;
-	    new = SplineFontPieceMeal(fvs->sf,dspsize,fvs->antialias,NULL);
+	    new = SplineFontPieceMeal(fvs->sf,dspsize,
+		(fvs->antialias?pf_antialias:0)|(fvs->bbsized?pf_bbsized:0),
+		NULL);
 	    for ( fvss=fvs; fvss!=NULL; fvss = fvss->nextsame ) {
 		if ( fvss->filled==old ) {
 		    fvss->filled = new;
+		    fvss->antialias = fvs->antialias;
+		    fvss->bbsized = fvs->bbsized;
 		    if ( fvss->show==old || fvss==fv )
 			FVChangeDisplayFont(fvss,new);
 		    fvss->touched = true;
@@ -2787,6 +2796,7 @@ static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_72, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '4' }, '7', ksm_control, NULL, NULL, FVMenuSize, MID_72 },
     { { (unichar_t *) _STR_96, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '4' }, '9', ksm_control, NULL, NULL, FVMenuSize, MID_96 },
     { { (unichar_t *) _STR_Antialias, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'A' }, '5', ksm_control, NULL, NULL, FVMenuSize, MID_AntiAlias },
+    { { (unichar_t *) _STR_FitToEm, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'F' }, '6', ksm_control, NULL, NULL, FVMenuSize, MID_FitToEm },
     { NULL },			/* Some extra room to show bitmaps */
     { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
     { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
@@ -2805,7 +2815,7 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     int pos;
     SplineFont *sf = fv->sf;
 
-    for ( i=0; vwlist[i].ti.text!=(unichar_t *) _STR_Antialias; ++i );
+    for ( i=0; vwlist[i].ti.text!=(unichar_t *) _STR_FitToEm; ++i );
     base = i+2;
     for ( i=base; vwlist[i].ti.text!=NULL; ++i ) {
 	free( vwlist[i].ti.text);
@@ -2885,6 +2895,10 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	  break;
 	  case MID_AntiAlias:
 	    mi->ti.checked = (fv->show!=NULL && fv->show->clut!=NULL);
+	    mi->ti.disabled = fv->sf->onlybitmaps && fv->show!=fv->filled;
+	  break;
+	  case MID_FitToEm:
+	    mi->ti.checked = (fv->show!=NULL && !fv->show->bbsized);
 	    mi->ti.disabled = fv->sf->onlybitmaps && fv->show!=fv->filled;
 	  break;
 	}
@@ -4395,7 +4409,9 @@ return;
     if ( fvs!=NULL )
 	new = fvs->filled;
     else
-	new = SplineFontPieceMeal(fv->sf,fv->filled->pixelsize,fv->antialias,NULL);
+	new = SplineFontPieceMeal(fv->sf,fv->filled->pixelsize,
+		(fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0),
+		NULL);
     BDFFontFree(fv->filled);
     if ( fv->filled == fv->show )
 	fv->show = new;
@@ -4418,7 +4434,9 @@ return;
 	if ( fv==NULL )
     break;
 	old = fv->filled;
-	new = SplineFontPieceMeal(sf,fv->filled->pixelsize,fv->antialias,NULL);
+	new = SplineFontPieceMeal(sf,fv->filled->pixelsize,
+		(fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0),
+		NULL);
 	for ( fvs=fv; fvs!=NULL; fvs=fvs->nextsame )
 	    if ( fvs->filled == old ) {
 		fvs->filled = new;
@@ -4536,6 +4554,7 @@ FontView *_FontViewCreate(SplineFont *sf) {
     fv->cbw = (ps*fv->magnify)+1;
     fv->cbh = (ps*fv->magnify)+1+FV_LAB_HEIGHT+1;
     fv->antialias = sf->display_antialias;
+    fv->bbsized = default_fv_bbsized;
 return( fv );
 }
 
@@ -4622,7 +4641,8 @@ FontView *FontViewCreate(SplineFont *sf) {
 	bdf = fv->nextsame->show;
     } else {
 	bdf = SplineFontPieceMeal(fv->sf,sf->display_size<0?-sf->display_size:default_fv_font_size,
-		fv->antialias,NULL );
+		(fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0),
+		NULL);
 	fv->filled = bdf;
 	if ( sf->display_size>0 ) {
 	    for ( bdf=sf->bitmaps; bdf!=NULL && bdf->pixelsize!=sf->display_size ;

@@ -275,6 +275,7 @@ typedef struct fontview {
     char *selected;
     MetricsView *metrics;
     unsigned int antialias:1;
+    unsigned int bbsized:1;		/* displayed bitmap should be scaled by bounding box rather than emsize */
     unsigned int wasonlybitmaps:1;
     unsigned int refstate: 3;	/* 0x1 => paste orig of all non exist refs, 0x2=>don't, 0x3 => don't warn about non-exist refs with no source font */
     unsigned int touched: 1;

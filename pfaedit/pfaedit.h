@@ -69,6 +69,7 @@ extern unsigned short unicode_from_adobestd[256];
 
 extern int default_fv_font_size;
 extern int default_fv_antialias;
+extern int default_fv_bbsized;
 extern int default_encoding;
 extern int adjustwidth;
 extern int adjustlbearing;

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 25-Oct-2002 -->
+  <!-- AP: Last modified: 26-Oct-2002 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,48 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    ??-Nov-2002
+    <UL>
+      <LI>
+	KDE has the lovely habit of losing some resize events when in
+	continuous resize mode. So I've tweaked the fontview resize code
+	so that it is less dependent on individual events.
+      <LI>
+	Added a mode where the user can choose between whether the font shown
+	in the fontview should be scaled so that the em fits in the space provided
+	(this is the old behavior) or so that the bounding box does.
+   </UL>
+  <LI>
+    02-Nov-2002
+    <UL>
+      <LI>
+	Png reading failed on greyscale images with an alpha channel
+      <LI>
+	Png now reads mono images as mono.
+      <LI>
+	make install (via libtool) didn't work if "." weren't in the PATH.
+   </UL>
+  <LI>
+    30-Oct-2002
+    <UL>
+      <LI>
+	GenerateFamily() scripting command had a number of problems.
+   </UL>
+  <LI>
+    26-Oct-2002
+    <UL>
+      <LI>
+	The "Apple" checkbox was sometimes (incorrectly) invisible in the Generate
+	Font/Family dialogs
+      <LI>
+	Minor improvements to the "Insert Character" dialog (to match
+	<A HREF="http://umap.sf.net/">umap</A>)
+      <LI>
+	Minor tweak to text fields
+      <LI>
+	More configuration changes
+    </UL>
   <LI>
     25-Oct-2002
     <UL>

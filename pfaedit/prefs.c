@@ -52,6 +52,7 @@ char *RecentFiles[RECENT_MAX] = { NULL };
 /*struct cvshows CVShows = { 1, 1, 1, 1, 1, 0, 1 };*/ /* in charview */
 /* int default_fv_font_size = 24; */	/* in fontview */
 /* int default_fv_antialias = false */	/* in fontview */
+/* int default_fv_bbsized = false */	/* in fontview */
 extern int default_fv_showhmetrics;	/* in fontview */
 extern int default_fv_showvmetrics;	/* in fontview */
 extern int palettes_docked;		/* in cvpalettes */

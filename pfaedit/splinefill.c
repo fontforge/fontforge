@@ -1317,35 +1317,48 @@ BDFChar *BDFPieceMeal(BDFFont *bdf, int index) {
 return(NULL);
     if ( bdf->freetype_context )
 	bdf->chars[index] = SplineCharFreeTypeRasterize(bdf->freetype_context,
-		sc->enc,bdf->pixelsize,bdf->clut?8:1);
+		sc->enc,bdf->truesize,bdf->clut?8:1);
     else if ( bdf->clut )
-	bdf->chars[index] = SplineCharAntiAlias(sc,bdf->pixelsize,4);
+	bdf->chars[index] = SplineCharAntiAlias(sc,bdf->truesize,4);
     else
-	bdf->chars[index] = SplineCharRasterize(sc,bdf->pixelsize);
+	bdf->chars[index] = SplineCharRasterize(sc,bdf->truesize);
 return( bdf->chars[index] );
 }
 
 /* Piecemeal fonts are only used as the display font in the fontview */
 /*  as such they are simple fonts (ie. we only display the current cid subfont) */
-BDFFont *SplineFontPieceMeal(SplineFont *sf,int pixelsize,int antialias,void *ftc) {
+BDFFont *SplineFontPieceMeal(SplineFont *sf,int pixelsize,int flags,void *ftc) {
     BDFFont *bdf = gcalloc(1,sizeof(BDFFont));
     real scale;
+    int truesize = pixelsize;
 
-    scale = pixelsize / (real) (sf->ascent+sf->descent);
+    if ( flags&pf_bbsized ) {
+	DBounds bb;
+	SplineFontQuickConservativeBounds(sf,&bb);
+	if ( bb.maxy<sf->ascent ) bb.maxy = sf->ascent;
+	if ( bb.miny>-sf->descent ) bb.miny = -sf->descent;
+	scale = pixelsize/ (real) (bb.maxy-bb.miny);
+	bdf->ascent = rint(bb.maxy*scale);
+	truesize = rint( (sf->ascent+sf->descent)*scale );
+    } else {
+	scale = pixelsize / (real) (sf->ascent+sf->descent);
+	bdf->ascent = rint(sf->ascent*scale);
+    }
 
     bdf->sf = sf;
     bdf->charcnt = sf->charcnt;
     bdf->pixelsize = pixelsize;
     bdf->chars = gcalloc(sf->charcnt,sizeof(BDFChar *));
-    bdf->ascent = rint(sf->ascent*scale);
     bdf->descent = pixelsize-bdf->ascent;
     bdf->encoding_name = sf->encoding_name;
     bdf->piecemeal = true;
+    bdf->bbsized = (flags&pf_bbsized)?1:0;
     bdf->res = -1;
+    bdf->truesize = truesize;
     bdf->freetype_context = ftc;
-    if ( ftc && antialias )
+    if ( ftc && (flags&pf_antialias) )
 	BDFClut(bdf,16);
-    else if ( antialias )
+    else if ( flags&pf_antialias )
 	BDFClut(bdf,4);
 return( bdf );
 }

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 19-Aug-2002 -->
+  <!-- AP: Last modified: 03-Nov-2002 -->
   <TITLE>The View Menu</TITLE>
 </HEAD>
 <BODY>
@@ -53,6 +53,8 @@
     <A HREF="#px96">96 pixel outline</A>
   <LI>
     <A HREF="#AntiAlias">AntiAlias</A>
+  <LI>
+    <A HREF="#FitToEm">Fit To Em</A>
   <LI>
     <A HREF="#bitmaps">&lt;list of bitmap pixel sizes, if any&gt;</A>
   <LI>
@@ -239,6 +241,21 @@
     in the view is a bitmapped font or an anti-aliased font. An Anti-aliased
     font shows levels of grey rather than just black and white. It often looks
     better than a bitmap, but it is slower to generate and draw.
+  <DT>
+    <A NAME="FitToEm">Fit To Em</A>
+  <DD>
+    Only in the font view. The fontview will either display characters scaled
+    so that the font's bounding box fits in the window, or so that the em fits
+    in the window. The advantage of the first method is that you see all of each
+    character, the advantage of the second is that you can see how the letter
+    sizes compare from font to font.
+    <P>
+    <SMALL>(This is something of a simplification. In bounding box mode the
+    displayed font is scaled so that the vertical size (as found in the bounding
+    box) fits it the window. Very wide characters will still not fit horizontally.
+    Also the scaling is not updated when characters change, if you have
+    changed the maximum bounds of the font you might want to force a rescale
+    by toggling this mode)</SMALL>
   <DT>
     &lt;list of <A NAME="bitmaps">bitmap</A> pixel sizes, if any&gt;
   <DD>

@@ -180,12 +180,14 @@ typedef struct bdffont {
     int16 pixelsize;
     int16 ascent, descent;
     unsigned int piecemeal: 1;
+    unsigned int bbsized: 1;
     enum charset encoding_name;
     struct bdffont *next;
     struct clut *clut;
     char *foundry;
     int res;
     void *freetype_context;
+    int truesize;		/* for bbsized fonts */
 } BDFFont;
 
 enum pointtype { pt_curve, pt_corner, pt_tangent };
@@ -633,6 +635,7 @@ extern void SplineSetQuickBounds(SplineSet *ss,DBounds *b);
 extern void SplineCharQuickBounds(SplineChar *sc, DBounds *b);
 extern void SplineSetQuickConservativeBounds(SplineSet *ss,DBounds *b);
 extern void SplineCharQuickConservativeBounds(SplineChar *sc, DBounds *b);
+extern void SplineFontQuickConservativeBounds(SplineFont *sf,DBounds *b);
 extern void SplinePointCatagorize(SplinePoint *sp);
 extern int SplinePointIsACorner(SplinePoint *sp);
 extern void SCCatagorizePoints(SplineChar *sc);
@@ -666,7 +669,8 @@ extern BDFFont *SplineFontAntiAlias(SplineFont *sf, int pixelsize,int linear_sca
 extern void BDFClut(BDFFont *bdf, int linear_scale);
 extern int BDFDepth(BDFFont *bdf);
 extern BDFChar *BDFPieceMeal(BDFFont *bdf, int index);
-extern BDFFont *SplineFontPieceMeal(SplineFont *sf,int pixelsize,int antialias,void *freetype_context);
+enum piecemeal_flags { pf_antialias=1, pf_bbsized=2 };
+extern BDFFont *SplineFontPieceMeal(SplineFont *sf,int pixelsize,int flags,void *freetype_context);
 extern BDFFont *BitmapFontScaleTo(BDFFont *old, int to);
 extern void BDFCharFree(BDFChar *bdfc);
 extern void BDFFontFree(BDFFont *bdf);
