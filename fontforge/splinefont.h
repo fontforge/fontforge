@@ -136,7 +136,7 @@ enum overlap_type { over_remove, over_rmselected, over_intersect, over_intersel,
 
 enum simpify_flags { sf_cleanup=-1, sf_normal=0, sf_ignoreslopes=1,
 	sf_ignoreextremum=2, sf_smoothcurves=4, sf_choosehv=8,
-	sf_forcelines=0x10 };
+	sf_forcelines=0x10, sf_nearlyhvlines=0x20 };
 struct simplifyinfo {
     int flags;
     double err;
@@ -1309,6 +1309,8 @@ extern int SSPointWithin(SplineSet *spl,BasePoint *pt);
 extern SplineSet *SSRemoveZeroLengthSplines(SplineSet *base);
 extern void SSRemoveStupidControlPoints(SplineSet *base);
 extern void SplineCharMerge(SplineChar *sc,SplineSet **head,int type);
+extern void SPLNearlyHvCps(SplineChar *sc,SplineSet *ss,double err);
+extern void SPLNearlyHvLines(SplineChar *sc,SplineSet *ss,double err);
 extern void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,
 	struct simplifyinfo *smpl);
 extern SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,
