@@ -247,21 +247,23 @@ return;
 		if ( mv->perchar[i].selected )
 		    clut.clut[1] = 0x808080;
 	    } else {
-		int scale = 3000/mv->pixelsize, l;
+		int lscale = 3000/mv->pixelsize, l;
 		Color fg, bg;
-		if ( scale>4 ) scale = 4; else if ( scale==3 ) scale= 2;
+		int scale;
+		if ( lscale>4 ) lscale = 4; else if ( lscale==3 ) lscale= 2;
 		if ( mv->bdf!=NULL && mv->bdf->clut!=NULL )
-		    scale = BDFDepth(mv->bdf);
+		    lscale = BDFDepth(mv->bdf);
 		base.image_type = it_index;
-		clut.clut_len = 1<<scale;
+		scale = lscale*lscale;
+		clut.clut_len = scale;
 		bg = GDrawGetDefaultBackground(NULL);
 		fg = ( mv->perchar[i].selected ) ? 0x808080 : 0x000000;
-		for ( l=0; l<(1<<scale); ++l )
+		for ( l=0; l<scale; ++l )
 		    clut.clut[l] =
 			COLOR_CREATE(
-			 COLOR_RED(bg) + (l*(COLOR_RED(fg)-COLOR_RED(bg)))/((1<<scale)-1),
-			 COLOR_GREEN(bg) + (l*(COLOR_GREEN(fg)-COLOR_GREEN(bg)))/((1<<scale)-1),
-			 COLOR_BLUE(bg) + (l*(COLOR_BLUE(fg)-COLOR_BLUE(bg)))/((1<<scale)-1) );
+			 COLOR_RED(bg) + ((int32) (l*(COLOR_RED(fg)-COLOR_RED(bg))))/(scale-1),
+			 COLOR_GREEN(bg) + ((int32) (l*(COLOR_GREEN(fg)-COLOR_GREEN(bg))))/(scale-1),
+			 COLOR_BLUE(bg) + ((int32) (l*(COLOR_BLUE(fg)-COLOR_BLUE(bg))))/(scale-1) );
 	    }
 	    base.data = bdfc->bitmap;
 	    base.bytes_per_line = bdfc->bytes_per_line;
