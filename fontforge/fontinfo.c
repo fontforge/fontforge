@@ -3656,7 +3656,7 @@ return( diff );
 static int CheckNames(struct gfi_data *d) {
     const unichar_t *ufamily = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Family));
     const unichar_t *ufont = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Fontname));
-    unichar_t *end;
+    unichar_t *end, *pt;
 
     if ( *ufamily=='\0' ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
@@ -3701,11 +3701,11 @@ return( false );
 #endif
 return( false );
     }
-    while ( *ufont ) {
-	if ( *ufont<=' ' || *ufont>=0x7f ||
-		*ufont=='(' || *ufont=='[' || *ufont=='{' || *ufont=='<' ||
-		*ufont==')' || *ufont==']' || *ufont=='}' || *ufont=='>' ||
-		*ufont=='%' || *ufont=='/' ) {
+    for ( pt=ufont; *pt; ++pt ) {
+	if ( *pt<=' ' || *pt>=0x7f ||
+		*pt=='(' || *pt=='[' || *pt=='{' || *pt=='<' ||
+		*pt==')' || *pt==']' || *pt=='}' || *pt=='>' ||
+		*pt=='%' || *pt=='/' ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadFontName,_STR_BadPSName);
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -3713,13 +3713,12 @@ return( false );
 #endif
 return( false );
 	}
-	++ufont;
     }
     if ( u_strlen(ufont)>63 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_BadFontName,_STR_BadPSName);
 #elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Bad Font Name"),_("A Postscript name should be ASCII\nand must not contain (){}[]<>%%/ or space"));
+	gwwv_post_error(_("Bad Font Name"),_("A Postscript name should be ASCII\nand must not contain (){}[]<>%%/ or space\nand must be shorter than 63 characters"));
 #endif
 return( false );
     }
