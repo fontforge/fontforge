@@ -425,7 +425,7 @@ static IntersectionList *FindLinearIntersections(SplineSet *spl, IntersectionLis
 		    if (( sp->islinear || sp2->islinear ) &&
 			    SplinesIntersect(sp,sp2,pts,t1s,t2s)>0 ) {
 			for ( i=0; i<4 && t1s[i]!=-1; ++i )
-			    if ( (t1s[i]!=0 && t1s[i]!=1) || (t2s[i]!=0 && t2s[i]!=1))
+			    if ( (t1s[i]>.001 && t1s[i]<.999) || (t2s[i]>.001 && t2s[i]<.999))
 				sofar = AddIntersection(sofar,sp,sp2,t1s[i],t2s[i],
 					pts[i].x,pts[i].y);
 		    }
@@ -1507,6 +1507,61 @@ static void RemoveDuplicates(IntersectionList *ilist) {
     }
 }
 
+/* We will also, occasionally, get a little spur stiking out with 0 width */
+/*  where a spline runs from an intersection, A, to point B, and then back */
+/*  from B to A */
+static SplineSet *RemoveBacktracks(SplineSet *base, IntersectionList *ilist) {
+    SplineSet *spl, *prev, *next;
+    Spline *s, *first, *n;
+    SplinePoint *f, *t, *m;
+
+    prev = NULL;
+    for ( spl=base, first=NULL; spl!=NULL; spl=next ) {
+	next = spl->next;
+	first = NULL;
+	for ( s=spl->first->next; s!=NULL && s!=first; s=n ) {
+	    if ( first==NULL ) first=s;
+	    n = s->to->next;
+	    f = s->from; t = n->to; m = s->to;
+	    if ( n!=s && f->me.x==t->me.x && f->me.y==t->me.y &&
+		    f->nextcp.x==t->nextcp.x && f->nextcp.y==t->prevcp.y &&
+		    m->nextcp.x==m->prevcp.x && m->nextcp.y==m->prevcp.y ) {
+		if ( m->isintersection ) {
+		    ILRemoveSplineFrom(ilist,&m->me,s);
+		    ILRemoveSplineFrom(ilist,&m->me,n);
+		}
+		if ( f->isintersection )
+		    ILRemoveSplineFrom(ilist,&f->me,s);
+		if ( t->isintersection )
+		    ILRemoveSplineFrom(ilist,&t->me,n);
+		if ( f==t ) {
+		    SplinePointListFree(spl);
+		    if ( prev==NULL )
+			base = next;
+		    else
+			prev->next = next;
+		    spl=NULL;
+	break;
+		}
+		SplinePointFree(m);
+		n=n->to->next;
+		SplineFree(s->to->next);
+		SplineFree(s);
+		n->from = f;
+		f->nextcp = t->nextcp;
+		f->next = n;
+		SplinePointFree(t);
+		if ( spl->first==t || spl->first==m ) spl->first = f;
+		if ( spl->last==t || spl->last==m ) spl->last = f;
+		first = NULL;	/* If we have a spur of two segments, we might need to go through the list again */
+	    }
+	}
+	if ( spl!=NULL )
+	    prev = spl;
+    }
+return(base);
+}
+
 #ifdef DEBUG
 static void ShowIntersections(IntersectionList *ilist) {
  IntersectionList *il; for ( il=ilist; il!=NULL; il=il->next ) {
@@ -1546,6 +1601,7 @@ SplineSet *SplineSetRemoveOverlap(SplineSet *base,enum overlap_type ot) {
 	tbase = SplineCharRemoveTiny(NULL,tbase);	/* remove tiny (<1unit long) splines. They confuse the needed checker */
 	base = tbase;
 	ilist = SplineSetFindIntersections(base);
+	base = RemoveBacktracks(base,ilist);
 	SplineSetFindNeeded(base,ot);
 	RemoveDuplicates(ilist);
 #ifdef DEBUG
