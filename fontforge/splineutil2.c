@@ -1791,9 +1791,9 @@ void SplineSetAddExtrema(SplineSet *ss,int between_selected) {
 
     first = NULL;
     for ( s = ss->first->next; s!=NULL && s!=first; s = s->to->next ) {
-	if ( first==NULL ) first = s;
 	if ( !between_selected || (s->from->selected && s->to->selected))
 	    s = SplineAddExtrema(s);
+	if ( first==NULL ) first = s;
     }
 }
 
