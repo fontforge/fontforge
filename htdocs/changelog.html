@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 7-Jul-2003 -->
+  <!-- AP: Last modified: 12-Jul-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -11,7 +11,7 @@
 </H1>
 <UL>
   <LI>
-    ???
+    12-Jul-2003
     <UL>
       <LI>
 	Remove weirdness in scripting interface to TeX font parameters
@@ -36,6 +36,34 @@
 	characters.
       <LI>
 	Expanded the simplify more command
+      <LI>
+	The GPOS output routines got very unhappy if a duplicate glyph happened to
+	have GPOS data. Fixed on both ends I hope.
+      <LI>
+	The pcf reader was unhappy if
+	<UL>
+	  <LI>
+	    the glyph bb width was a multiple of 8 (we read an extra byte per line which
+	    made the result appear as garbage)
+	  <LI>
+	    several glyphs had the same name.
+	</UL>
+      <LI>
+	the FontInfo dlg failed to parse the merge_with field of Anchor Classes properly,
+	meaning that each time [OK] was pressed in fontinfo each anchor class name
+	got a number prepended to it.
+      <LI>
+	Change the way the merge_with field of anchor classes is handled by the UI
+	so that it makes more sense. We used to display a number, now display the
+	name of another anchor class with which it can be merged.
+      <LI>
+	Added an arabic text sample, courtesy of Thomas Milo.
+      <LI>
+	Upgraded to Unicode 4.0 (<FONT COLOR="Red"><STRONG>Note:
+	<A HREF="http://libuninameslist.sf.net/">libuninameslist</A> has also been
+	upgraded</STRONG></FONT>)
+      <LI>
+	Added a new preference item CharCenterHighest to assist in accent placement.
     </UL>
   <LI>
     4-July-2003
