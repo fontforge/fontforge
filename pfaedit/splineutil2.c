@@ -295,6 +295,23 @@ return( NULL );
 return( SplineMake(from,to) );
 }
 
+static void CleanupDir(BasePoint *newcp,BasePoint *oldcp,BasePoint *base) {
+    double orig, new;
+    orig = atan2(oldcp->y-base->y,oldcp->x-base->x);
+    new  = atan2(newcp->y-base->y,newcp->x-base->x);
+    if ( !RealNearish(orig,new)) {
+	double len = sqrt((newcp->x-base->x)*(newcp->x-base->x) + (newcp->y-base->y)*(newcp->y-base->y));
+	newcp->x = len*cos(orig); newcp->y = len*sin(orig);
+	if ( newcp->x<1e-6 && newcp->x>-1e-6 ) newcp->x = 0;
+	if ( newcp->y<1e-6 && newcp->y>-1e-6 ) newcp->y = 0;
+	if ( newcp->x*(oldcp->x-base->x) + newcp->x*(oldcp->y-base->y)<0 ) {
+	    GDrawIError( "Control points in wrong direction" );
+	    newcp->x = -newcp->x; newcp->y = -newcp->y;
+	}
+	newcp->x += base->x; newcp->y += base->y;
+    }
+}
+
 /* Least squares tells us that:
 	| S(xi*ti^3) |	 | S(ti^6) S(ti^5) S(ti^4) S(ti^3) |   | a |
 	| S(xi*ti^2) | = | S(ti^5) S(ti^4) S(ti^3) S(ti^2) | * | b |
@@ -323,7 +340,7 @@ Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
     int i;
     double v[6], m[6][6];	/* Yes! rounding errors cause problems here */
     Spline *spline;
-    BasePoint prevcp, *p, *n;
+    BasePoint prevcp, nextcp, *p, *n;
     int err;
 
     /* If the two end-points are corner points then allow the slope to vary */
@@ -510,8 +527,10 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
     /*  were before (might be diametrically opposed). If not then leave */
     /*  control points as they are (not a good soln, but it prevents an even */
     /*  worse) */
-    prevcp.x = from->me.x + v[2]/3 + (v[2]+v[1])/3;
-    prevcp.y = from->me.y + v[5]/3 + (v[5]+v[4])/3;
+    nextcp.x = from->me.x + v[2]/3;
+    nextcp.y = from->me.y + v[5]/3;
+    prevcp.x = nextcp.x + (v[2]+v[1])/3;
+    prevcp.y = nextcp.y + (v[5]+v[4])/3;
     n = from->nonextcp ? &to->me : &from->nextcp;
     p = to->noprevcp ? &from->me : &to->prevcp;
     if ( prevcp.x > 65536 || prevcp.x < -65536 || prevcp.y > 65536 || prevcp.y < -65536 ||
@@ -535,9 +554,13 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
 #endif
     } else if ( v[2]*(n->x-from->me.x) + v[5]*(n->y-from->me.y)>=0 &&
 	    (prevcp.x-to->me.x)*(p->x-to->me.x) + (prevcp.y-to->me.y)*(p->y-to->me.y)>=0 ) {
-	from->nextcp.x = from->me.x + v[2]/3;
-	from->nextcp.y = from->me.y + v[5]/3;
-	from->nonextcp = v[2]==0 && v[5]==0;
+	/* if we had to throw out one of the slope eqns, we may not have a good slope */
+	if ( !from->nonextcp && (nextcp.x!=from->me.x || nextcp.y!=from->me.y))
+	    CleanupDir(&nextcp,&from->nextcp,&from->me);
+	from->nextcp = nextcp;
+	from->noprevcp = nextcp.x==from->me.x && nextcp.y==from->me.y;
+	if ( !to->noprevcp && (prevcp.x!=to->me.x || prevcp.y!=to->me.y))
+	    CleanupDir(&prevcp,&to->prevcp,&to->me);
 	to->prevcp = prevcp;
 	to->noprevcp = prevcp.x==to->me.x && prevcp.y==to->me.y;
     }

@@ -3221,7 +3221,7 @@ static void _CVMerge(CharView *cv,int elide) {
     if ( !CVAnySel(cv,&anyp,NULL,NULL) || !anyp)
 return;
     CVPreserveState(cv);
-    SplineCharMerge(cv->sc,cv->heads[cv->drawmode],elide);
+    SplineCharMerge(cv->sc,cv->heads[cv->drawmode],!elide);
     SCClearSelPt(cv->sc);
     CVCharChangedUpdate(cv);
 }
@@ -4608,7 +4608,7 @@ static GMenuItem htlist[] = {
     { { (unichar_t *) _STR_Createhhint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'r' }, '\0', ksm_control, NULL, NULL, CVMenuCreateHint, MID_CreateHHint },
     { { (unichar_t *) _STR_Createvhint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'e' }, '\0', ksm_control, NULL, NULL, CVMenuCreateHint, MID_CreateVHint },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Reviewhints, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, '\0', ksm_control, NULL, NULL, CVMenuReviewHints, MID_ReviewHints },
+    { { (unichar_t *) _STR_Reviewhints, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, 'H', ksm_control|ksm_meta, NULL, NULL, CVMenuReviewHints, MID_ReviewHints },
     { NULL }
 };
 
