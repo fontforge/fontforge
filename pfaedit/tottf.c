@@ -1023,6 +1023,9 @@ static void dumpmissingglyph(SplineFont *sf,struct glyphinfo *gi,int fixedwidth)
 static void dumpblankglyph(struct glyphinfo *gi,SplineFont *sf,int fixedwidth) {
     int advance = gi->next_glyph==1?0:fixedwidth==-1?(sf->ascent+sf->descent)/3:
 	    fixedwidth;
+    /* For reasons quite obscure to me, glyph 1 has an advance width of 0 */
+    /* even in a mono-spaced font like CourierNew.ttf */
+
     /* These don't get a glyph header, because there are no contours */
     gi->loca[gi->next_glyph++] = ftell(gi->glyphs);
     putshort(gi->hmtx,advance);
@@ -1347,7 +1350,7 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     else
 	dumpmissingglyph(sf,gi,fixed);
     if ( fixed!=-1 ) {
-	gi->lasthwidth = -1;
+	gi->lasthwidth = 3;
 	gi->hfullcnt = 3;
     }
     if ( !has1 )
