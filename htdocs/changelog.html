@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 29-Sep-2003 -->
+  <!-- AP: Last modified: 2-Oct-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,29 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    2-Oct-2003
+    <UL>
+      <LI>
+	got rid of my strange 94x94 encodings for JIS/KSC/GB (based on the kuten
+	array) and used instead the much more obvious encoding that everyone else
+	uses.
+      <LI>
+	BDF files were output with the wrong encoding name for JISX0208 (I was outputting
+	"JISX208" instead-- missing a "0").
+      <LI>
+	Autotrace failed to read potrace output properly if there were more than
+	one contour in a given glyph.
+      <LI>
+	Upgraded psunicodenames to the current Adobe Glyph List for New Fonts. 
+      <LI>
+	Simplify now works for quadratic splines. If one uses the []Allow Slopes
+	to Change checkbox then results are not good. I need a better algorithem.
+      <LI>
+	If asked to generate a type0 postscript font for a font encoded with an extended
+	1byte encoding (ie. one that had about 300 characters) PfaEdit would probably
+	crash.
+    </UL>
   <LI>
     29-Sept-2003
     <UL>
