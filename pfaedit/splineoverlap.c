@@ -619,8 +619,12 @@ static void DoIntersections(SplineChar *sc,SplineTList *me,IntersectionList *ili
     break;
 	} else {
 	    t = (cur->tl->t-tbase)/(1.0-tbase);
+#if 0
 	    test.x = ((to->prev->splines[0].a*t+to->prev->splines[0].b)*t+to->prev->splines[0].c)*t + to->prev->splines[0].d;
 	    test.y = ((to->prev->splines[1].a*t+to->prev->splines[1].b)*t+to->prev->splines[1].c)*t + to->prev->splines[1].d;
+#else
+	    test = cur->tl->inter->intersection;
+#endif
 	    if ( to->prev->from->me.x>test.x-.005 && to->prev->from->me.x<test.x+.005 &&
 		    to->prev->from->me.y>test.y-.005 && to->prev->from->me.y<test.y+.005 ) {
 		/* if the intersection occurs at an end point then we don't need */
