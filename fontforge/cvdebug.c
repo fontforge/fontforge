@@ -70,10 +70,14 @@ static void DVRegExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     int y;
 
     GDrawFillRect(pixmap,&event->u.expose.rect,GDrawGetDefaultBackground(screen_display));
-    if ( exc==NULL )
-return;
     GDrawSetFont(pixmap,dv->ii.gfont);
     y = 3+dv->ii.as;
+
+    if ( exc==NULL ) {
+	uc_strcpy(ubuffer,"<not running>");
+	GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
+return;
+    }
 
     sprintf( buffer, " rp0: %d", exc->GS.rp0 ); uc_strcpy(ubuffer,buffer);
     GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
@@ -155,21 +159,20 @@ static void DVStackExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     int i, y;
 
     GDrawFillRect(pixmap,&event->u.expose.rect,GDrawGetDefaultBackground(screen_display));
-    if ( exc==NULL )
-return;
     GDrawSetFont(pixmap,dv->ii.gfont);
     y = 3+dv->ii.as;
-    for ( i=exc->top-1; i>=0; --i ) {
-	sprintf(buffer, "%3d: %3ld (%.2f)", i, exc->stack[i], exc->stack[i]/64.0 );
-	uc_strcpy(ubuffer,buffer);
-	GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
-	if ( y>event->u.expose.rect.y+event->u.expose.rect.height )
-    break;
-	y += dv->ii.fh;
-    }
-    if ( exc->top==0 ) {
+    if ( exc==NULL  || exc->top==0 ) {
 	uc_strcpy(ubuffer,"<empty>");
 	GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
+    } else {
+	for ( i=exc->top-1; i>=0; --i ) {
+	    sprintf(buffer, "%3d: %3ld (%.2f)", i, exc->stack[i], exc->stack[i]/64.0 );
+	    uc_strcpy(ubuffer,buffer);
+	    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
+	    if ( y>event->u.expose.rect.y+event->u.expose.rect.height )
+	break;
+	    y += dv->ii.fh;
+	}
     }
 }
 
@@ -180,21 +183,20 @@ static void DVStorageExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     int i, y;
 
     GDrawFillRect(pixmap,&event->u.expose.rect,GDrawGetDefaultBackground(screen_display));
-    if ( exc==NULL )
-return;
     GDrawSetFont(pixmap,dv->ii.gfont);
     y = 3+dv->ii.as;
-    for ( i=0; i<exc->storeSize; ++i ) {
-	sprintf(buffer, "%3d: %3ld (%.2f)", i, exc->storage[i], exc->storage[i]/64.0 );
-	uc_strcpy(ubuffer,buffer);
-	GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
-	if ( y>event->u.expose.rect.y+event->u.expose.rect.height )
-    break;
-	y += dv->ii.fh;
-    }
-    if ( exc->storeSize==0 ) {
+    if ( exc==NULL || exc->storeSize==0 ) {
 	uc_strcpy(ubuffer,"<empty>");
 	GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
+    } else {
+	for ( i=0; i<exc->storeSize; ++i ) {
+	    sprintf(buffer, "%3d: %3ld (%.2f)", i, exc->storage[i], exc->storage[i]/64.0 );
+	    uc_strcpy(ubuffer,buffer);
+	    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
+	    if ( y>event->u.expose.rect.y+event->u.expose.rect.height )
+	break;
+	    y += dv->ii.fh;
+	}
     }
 }
 
@@ -205,22 +207,21 @@ static void DVCvtExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     int i, y;
 
     GDrawFillRect(pixmap,&event->u.expose.rect,GDrawGetDefaultBackground(screen_display));
-    if ( exc==NULL )
-return;
     GDrawSetFont(pixmap,dv->ii.gfont);
     y = 3+dv->ii.as;
-    for ( i=0; dv->cvt_offtop+i<exc->cvtSize; ++i ) {
-	sprintf(buffer, "%3d: %3ld (%.2f)", dv->cvt_offtop+i,
-		exc->cvt[dv->cvt_offtop+i], exc->cvt[dv->cvt_offtop+i]/64.0 );
-	uc_strcpy(ubuffer,buffer);
-	GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
-	if ( y>event->u.expose.rect.y+event->u.expose.rect.height )
-    break;
-	y += dv->ii.fh;
-    }
-    if ( exc->cvtSize==0 ) {
+    if ( exc==NULL || exc->cvtSize==0 ) {
 	uc_strcpy(ubuffer,"<empty>");
 	GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
+    } else {
+	for ( i=0; dv->cvt_offtop+i<exc->cvtSize; ++i ) {
+	    sprintf(buffer, "%3d: %3ld (%.2f)", dv->cvt_offtop+i,
+		    exc->cvt[dv->cvt_offtop+i], exc->cvt[dv->cvt_offtop+i]/64.0 );
+	    uc_strcpy(ubuffer,buffer);
+	    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
+	    if ( y>event->u.expose.rect.y+event->u.expose.rect.height )
+	break;
+	    y += dv->ii.fh;
+	}
     }
 }
 
@@ -245,34 +246,35 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 
     GDrawFillRect(pixmap,&event->u.expose.rect,GDrawGetDefaultBackground(screen_display));
     if ( exc==NULL )
-return;
+	n = 0;
+    else {
+	show_twilight = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Twilight));
+	show_grid = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Grid));
+	show_current = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Current));
+	r = show_twilight ? &exc->twilight : &exc->pts;
+	n = r->n_points;
+	pts = show_current ? r->cur : r->org;
 
-    show_twilight = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Twilight));
-    show_grid = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Grid));
-    show_current = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Current));
-    r = show_twilight ? &exc->twilight : &exc->pts;
-    n = r->n_points;
-    pts = show_current ? r->cur : r->org;
+	watches = DebuggerGetWatches(dv->dc,&n_watch);
 
-    watches = DebuggerGetWatches(dv->dc,&n_watch);
-
-    GDrawSetFont(pixmap,dv->ii.gfont);
-    y = 3+dv->ii.as;
-    for ( i=0; i<n; ++i ) {
-	watched = i<n_watch && !show_twilight && watches!=NULL && watches[i] ? 'W' : ' ';
-	if ( show_grid )
-	    sprintf(buffer, "%3d: %c%c%c %.2f,%.2f", i,
-		    r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ', watched,
-		    pts[i].x/64.0, pts[i].y/64.0 );
-	else
-	    sprintf(buffer, "%3d: %c%c%c %g,%g", i,
-		    r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ', watched,
-		    pts[i].x*dv->scale, pts[i].y*dv->scale );
-	uc_strcpy(ubuffer,buffer);
-	GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
-	if ( y>event->u.expose.rect.y+event->u.expose.rect.height )
-    break;
-	y += dv->ii.fh;
+	GDrawSetFont(pixmap,dv->ii.gfont);
+	y = 3+dv->ii.as;
+	for ( i=0; i<n; ++i ) {
+	    watched = i<n_watch && !show_twilight && watches!=NULL && watches[i] ? 'W' : ' ';
+	    if ( show_grid )
+		sprintf(buffer, "%3d: %c%c%c %.2f,%.2f", i,
+			r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ', watched,
+			pts[i].x/64.0, pts[i].y/64.0 );
+	    else
+		sprintf(buffer, "%3d: %c%c%c %g,%g", i,
+			r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ', watched,
+			pts[i].x*dv->scale, pts[i].y*dv->scale );
+	    uc_strcpy(ubuffer,buffer);
+	    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
+	    if ( y>event->u.expose.rect.y+event->u.expose.rect.height )
+	break;
+	    y += dv->ii.fh;
+	}
     }
     if ( n==0 ) {
 	uc_strcpy(ubuffer,"<none>");
@@ -426,15 +428,17 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
 	else
 	    dv->cv->ft_gridfitwidth = 0;
 	GDrawRequestExpose(dv->cv->v,NULL,false);
-	if ( dv->regs!=NULL )
-	    GDrawRequestExpose(dv->regs,NULL,false);
-	if ( dv->stack!=NULL )
-	    GDrawRequestExpose(dv->stack,NULL,false);
-	if ( dv->storage!=NULL )
-	    GDrawRequestExpose(dv->storage,NULL,false);
-	if ( dv->cvt!=NULL )
-	    GDrawRequestExpose(dv->cvt,NULL,false);
     }
+    if ( dv->regs!=NULL )
+	GDrawRequestExpose(dv->regs,NULL,false);
+    if ( dv->stack!=NULL )
+	GDrawRequestExpose(dv->stack,NULL,false);
+    if ( dv->storage!=NULL )
+	GDrawRequestExpose(dv->storage,NULL,false);
+    if ( dv->cvt!=NULL )
+	GDrawRequestExpose(dv->cvt,NULL,false);
+    if ( dv->points!=NULL )
+	GDrawRequestExpose(dv->points_v,NULL,false);
 }
 
 static void DVGoFigure(DebugView *dv,enum debug_gotype go) {
