@@ -199,7 +199,7 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding) {
     char *mono;
     char family_name[80], weight_name[60], slant[10], stylename[40], squeeze[40];
     char buffer[400];
-    int x_h= -1, cap_h= -1;
+    int x_h= -1, cap_h= -1, def_ch=-1;
     char fontname[300];
     int fbb_height, fbb_width, fbb_descent, fbb_lbearing;
     char *pt;
@@ -257,8 +257,11 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding) {
     if ( 'X'<font->charcnt && font->chars['X']!=NULL ) {
 	cap_h = font->chars['X']->ymax;
     }
+    if ( (font->sf->chars[0]!=NULL && font->sf->chars[0]->splines!=NULL &&
+	     font->sf->chars[0]->refs==NULL && strcmp(font->sf->chars[0]->name,".notdef")==0 ) )
+	def_ch = 0;
 
-    fprintf( file, "STARTPROPERTIES %d\n", 22+(x_h!=-1)+(cap_h!=-1));
+    fprintf( file, "STARTPROPERTIES %d\n", 22+(x_h!=-1)+(cap_h!=-1)+(def_ch!=-1));
     fprintf( file, "FONT_ASCENT %d\n", font->ascent );
     fprintf( file, "FONT_DESCENT %d\n", font->descent );
     fprintf( file, "QUAD_WIDTH %d\n", font->pixelsize );
@@ -266,6 +269,8 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding) {
 	fprintf( file, "X_HEIGHT %d\n", x_h );
     if ( cap_h!=-1 )
 	fprintf( file, "CAP_HEIGHT %d\n", cap_h );
+    if ( def_ch!=-1 )
+	fprintf( file, "DEFAULT_CHAR %d\n", def_ch );
     fprintf( file, "FONTNAME_REGISTRY \"\"\n" );
     fprintf( file, "FAMILY_NAME \"%s\"\n", family_name );
     fprintf( file, "FOUNDRY \"%s\"\n", BDFFoundry==NULL?"PfaEdit":BDFFoundry );
