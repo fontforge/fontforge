@@ -307,7 +307,7 @@ int main( int argc, char **argv ) {
     int ds, ld;
     int next_recent=0;
 
-    fprintf( stderr, "Copyright (c) 2000-2003 by George Williams.\n Executable based on sources from %s.\n",
+    fprintf( stderr, "Copyright (c) 2000-2004 by George Williams.\n Executable based on sources from %s.\n",
 	    source_modtime_str );
     setlocale(LC_ALL,"");
     localeinfo = *localeconv();
