@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 30-Sep-2004 -->
+  <!-- AP: Last modified: 4-Oct-2004 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -1751,6 +1751,20 @@ ApplySubstitution("*","*","vrt2")
     Returns an array containing the names of all instance fonts in a multi master
     set.
   <DT>
+    MMAxisNames()
+  <DD>
+    Returns an array containing the names of all axes in a multi master set.
+  <DT>
+    MMAxisBounds(axis)
+  <DD>
+    Axis is an integer less than the number of axes in the mm font. Returns an
+    array containing the lower bound, default value and upper bound. Note each
+    value is multiplied by 65536 (because they need not be integers on the mac,
+    and ff doesn't support real values).
+    <P>
+    (The default value is a GX Var concept. FF simulates a reasonable value for
+    true multiple master fonts).
+  <DT>
     MMWeightedName()
   <DD>
     Returns the name of the weighted font in a multi master set.
@@ -1762,6 +1776,21 @@ ApplySubstitution("*","*","vrt2")
     fonts and the weighted font) and changes the current font to the indicated
     one. If passed a small integer, then -1 indicates the weighted font and values
     between [0,$mmcount) represent that specific instance in the font set. 
+  <DT>
+    MMChangeWeight(weights)
+  <DD>
+    Weights is an array of integers, one for each axis. Each value should be
+    65536 times the desired value (to deal with mac blends which tend to be small
+    real numbers). This command changes the current multiple master font to have
+    a different default weight, and sets that to be the current instance.
+  <DT>
+    MMBlendToNewFont(weights)
+  <DD>
+    Weights is an array of integers, one for each axis. Each value should be
+    65536 times the desired value (to deal with mac blends which tend to be small
+    real numbers). This command creates a completely new font by blending the
+    mm font and sets the current font to the new font.
+  <DT>
       <HR>
   <DT>
     CIDChangeSubFont(new-sub-font-name)

@@ -1693,6 +1693,9 @@ extern void MMKern(SplineFont *sf,SplineChar *first,SplineChar *second,int diff,
 	int sli,KernPair *oldkp);
 extern int MMBlendChar(MMSet *mm, int enc);
 extern int MMReblend(struct fontview *fv, MMSet *mm);
+struct fontview *MMCreateBlendedFont(MMSet *mm,struct fontview *fv,real blends[MmMax],int tonew );
+
+extern char *EnforcePostScriptName(char *old);
 
 extern char *EnforcePostScriptName(char *old);
 

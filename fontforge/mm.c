@@ -1743,50 +1743,54 @@ return( true );
 return( true );
 }
 
+FontView *MMCreateBlendedFont(MMSet *mm,FontView *fv,real blends[MmMax],int tonew ) {
+    real oldblends[MmMax];
+    SplineFont *hold = mm->normal;
+    int i;
+    real axispos[4];
+
+    for ( i=0; i<mm->instance_count; ++i ) {
+	oldblends[i] = mm->defweights[i];
+	mm->defweights[i] = blends[i];
+    }
+    if ( tonew ) {
+	SplineFont *new;
+	FontView *oldfv = hold->fv;
+	char *fn, *full;
+	mm->normal = new = MMNewFont(mm,-1,hold->familyname);
+	MMWeightsUnMap(blends,axispos,mm->axis_count);
+	fn = _MMMakeFontname(mm,axispos,&full);
+	free(new->fontname); free(new->fullname);
+	new->fontname = fn; new->fullname = full;
+	new->weight = _MMGuessWeight(mm,axispos,new->weight);
+	new->private = BlendPrivate(PSDictCopy(hold->private),mm);
+	new->fv = NULL;
+	fv = FontViewCreate(new);
+	MMReblend(fv,mm);
+	new->mm = NULL;
+	mm->normal = hold;
+	for ( i=0; i<mm->instance_count; ++i ) {
+	    mm->defweights[i] = oldblends[i];
+	    mm->instances[i]->fv = oldfv;
+	}
+	hold->fv = oldfv;
+    } else {
+	for ( i=0; i<mm->instance_count; ++i )
+	    mm->defweights[i] = blends[i];
+	mm->changed = true;
+	MMReblend(fv,mm);
+    }
+return( fv );
+}
+
 static int MMCB_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct mmcb *mmcb = GDrawGetUserData(GGadgetGetWindow(g));
-	real blends[MmMax], oldblends[MmMax];
-	SplineFont *hold = mmcb->mm->normal;
-	int i;
-	FontView *fv;
-	real axispos[4];
+	real blends[MmMax];
 
 	if ( !GetWeights(mmcb->gw, blends, mmcb->mm, mmcb->mm->instance_count, mmcb->mm->axis_count))
 return( true );
-
-	for ( i=0; i<mmcb->mm->instance_count; ++i ) {
-	    oldblends[i] = mmcb->mm->defweights[i];
-	    mmcb->mm->defweights[i] = blends[i];
-	}
-	if ( mmcb->tonew ) {
-	    SplineFont *new;
-	    FontView *oldfv = hold->fv;
-	    char *fn, *full;
-	    mmcb->mm->normal = new = MMNewFont(mmcb->mm,-1,hold->familyname);
-	    MMWeightsUnMap(blends,axispos,mmcb->mm->axis_count);
-	    fn = _MMMakeFontname(mmcb->mm,axispos,&full);
-	    free(new->fontname); free(new->fullname);
-	    new->fontname = fn; new->fullname = full;
-	    new->weight = _MMGuessWeight(mmcb->mm,axispos,new->weight);
-	    new->private = BlendPrivate(PSDictCopy(hold->private),mmcb->mm);
-	    new->fv = NULL;
-	    fv = FontViewCreate(new);
-	    MMReblend(fv,mmcb->mm);
-	    new->mm = NULL;
-	    mmcb->mm->normal = hold;
-	    for ( i=0; i<mmcb->mm->instance_count; ++i ) {
-		mmcb->mm->defweights[i] = oldblends[i];
-		mmcb->mm->instances[i]->fv = oldfv;
-	    }
-	    hold->fv = oldfv;
-	} else {
-	    for ( i=0; i<mmcb->mm->instance_count; ++i )
-		mmcb->mm->defweights[i] = blends[i];
-	    mmcb->mm->changed = true;
-	    MMReblend(mmcb->fv,mmcb->mm);
-	}
-	mmcb->done = true;
+	MMCreateBlendedFont(mmcb->mm,mmcb->fv,blends,mmcb->tonew );
     }
 return( true );
 }
