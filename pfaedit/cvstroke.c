@@ -371,7 +371,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
     GTextInfo label[31];
     int yoff=0;
     int gcdoff, stroke_gcd;
-    static StrokeInfo defaults = { 25, lj_round, lc_butt, false, false, false, 3.1415926535897932/4, .2, 50 };
+    static StrokeInfo defaults = { 25, lj_round, lc_butt, false, false, false, false, 3.1415926535897932/4, .2, 50 };
     StrokeInfo *def = si?si:&defaults;
     char anglebuf[20], ratiobuf[20], widthbuf[20], width2buf[20],
 	    pressurebuf[20], pressure2buf[20];
@@ -427,9 +427,26 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.handle_controlevent = Stroke_Stroke;
 	gcd[gcdoff++].creator = GRadioCreate;
 
+	    /* This radio button is here rather than where it's location would */
+	    /*  suggest because itneeds to be grouped with stroke and dont expand */
+	label[gcdoff].text = (unichar_t *) _STR_Caligraphic;
+	label[gcdoff].text_in_resource = true;
+	gcd[gcdoff].gd.mnemonic = 'C';
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+6+99+4;
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (def->caligraphic ? gg_cb_on : 0);
+	gcd[gcdoff].gd.cid = CID_Caligraphic;
+	gcd[gcdoff].gd.handle_controlevent = Stroke_Caligraphic;
+	gcd[gcdoff++].creator = GRadioCreate;
+
 	stroke_gcd = gcdoff;
-	gcd[gcdoff].gd.pos.x = 1; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+6;
+	gcd[gcdoff].gd.pos.x = 1; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y+6;
 	gcd[gcdoff].gd.pos.width = SD_Width-2; gcd[gcdoff].gd.pos.height = 99;
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+	gcd[gcdoff++].creator = GGroupCreate;
+
+	gcd[gcdoff].gd.pos.x = 1; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y+6;
+	gcd[gcdoff].gd.pos.width = SD_Width-2; gcd[gcdoff].gd.pos.height = 58;
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
 	gcd[gcdoff++].creator = GGroupCreate;
 
@@ -527,26 +544,11 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.cid = CID_RmInternal;
 	gcd[gcdoff++].creator = GCheckBoxCreate;
 
-	label[gcdoff].text = (unichar_t *) _STR_Caligraphic;
-	label[gcdoff].text_in_resource = true;
-	gcd[gcdoff].gd.mnemonic = 'C';
-	gcd[gcdoff].gd.label = &label[gcdoff];
-	gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[stroke_gcd].gd.pos.y+gcd[stroke_gcd].gd.pos.height+4;
-	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (def->caligraphic ? gg_cb_on : 0);
-	gcd[gcdoff].gd.cid = CID_Caligraphic;
-	gcd[gcdoff].gd.handle_controlevent = Stroke_Caligraphic;
-	gcd[gcdoff++].creator = GRadioCreate;
-
-	gcd[gcdoff].gd.pos.x = 1; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+6;
-	gcd[gcdoff].gd.pos.width = SD_Width-2; gcd[gcdoff].gd.pos.height = 58;
-	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
-	gcd[gcdoff++].creator = GGroupCreate;
-
 	label[gcdoff].text = (unichar_t *) _STR_PenAngle;
 	label[gcdoff].text_in_resource = true;
 	gcd[gcdoff].gd.mnemonic = 'A';
 	gcd[gcdoff].gd.label = &label[gcdoff];
-	gcd[gcdoff].gd.pos.x = gcd[stroke_gcd+3].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y+15+3;
+	gcd[gcdoff].gd.pos.x = gcd[stroke_gcd+4].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[stroke_gcd-1].gd.pos.y+15+3;
 	gcd[gcdoff].gd.flags = gg_visible;
 	gcd[gcdoff].gd.cid = CID_PenAngleTxt;
 	gcd[gcdoff++].creator = GLabelCreate;
