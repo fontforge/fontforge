@@ -203,7 +203,7 @@ return( NULL );
 	w = GDrawGetTextWidth(gw,answers[i],-1,NULL);
 	if ( w>bw ) bw = w;
     }
-    bw += GDrawPointsToPixels(gw,12);
+    bw += GDrawPointsToPixels(gw,20);
     bspace = GDrawPointsToPixels(gw,6);
     if ( (bw+bspace) * bcnt > maxw )
 	maxw = (bw+bspace)*bcnt;
@@ -676,19 +676,19 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
     wattrs.cursor = ct_pointer;
     wattrs.window_title = (unichar_t *) title;
     pos.x = pos.y = 0;
-    pos.width = 200; pos.height = 60;		/* We'll figure size later */
+    pos.width = 220; pos.height = 60;		/* We'll figure size later */
 		/* but if we get the size too small, the cursor isn't in dlg */
     gw = GDrawCreateTopWindow(NULL,&pos,c_e_h,d,&wattrs);
 
     GDrawSetFont(gw,_ggadget_default_font);
     GDrawFontMetrics(_ggadget_default_font,&as,&ds,&ld);
     fh = as+ds;
-    maxw = 200;
+    maxw = 220;
     for ( i=0; i<lb; ++i ) {
 	w = GDrawGetTextWidth(gw,qlabels[i].text,-1,NULL);
 	if ( w>maxw ) maxw = w;
     }
-    maxw += GDrawPointsToPixels(gw,16);
+    maxw += GDrawPointsToPixels(gw,20);
 
     gcd = gcalloc(lb+1+2+2+2,sizeof(GGadgetCreateData));
     if ( lb==1 ) {
