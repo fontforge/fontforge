@@ -656,13 +656,13 @@ return( NULL );
 return( ret );
 }
 
-static short *ParseWernerSFDFile(char *wernerfilename,SplineFont *sf,int *max,char ***_names) {
+static int32 *ParseWernerSFDFile(char *wernerfilename,SplineFont *sf,int *max,char ***_names) {
     /* one entry for each char, >=1 => that subfont, 0=>not mapped, -1 => end of char mark */
-    int cnt=0, subfilecnt=0;
+    int cnt=0, subfilecnt=0, thusfar;
     int k, warned = false;
     uint32 r1,r2,i,modi;
     SplineFont *_sf;
-    short *mapping;
+    int32 *mapping;
     FILE *file;
     char buffer[200], *bpt;
     char *end, *pt;
@@ -683,8 +683,8 @@ return( NULL );
 	if ( _sf->charcnt>cnt ) cnt = _sf->charcnt;
     } while ( k<sf->subfontcnt );
 
-    mapping = gcalloc(cnt+1,sizeof(short));
-    memset(mapping,-1,(cnt+1)*sizeof(short));
+    mapping = gcalloc(cnt+1,sizeof(int32));
+    memset(mapping,-1,(cnt+1)*sizeof(int32));
     mapping[cnt] = -2;
     *max = 0;
 
@@ -733,6 +733,7 @@ return( NULL );
 	names[subfilecnt] = copyn(bpt,pt-bpt);
 	if ( subfilecnt>*max ) *max = subfilecnt;
 	end = pt;
+	thusfar = 0;
 	while ( *end!='\0' ) {
 	    while ( isspace(*end)) ++end;
 	    if ( *end=='\0' )
@@ -761,10 +762,12 @@ return( NULL );
 				i, subfilecnt, mapping[modi]);
 			warned = true;
 		    }
-		    mapping[modi] = subfilecnt;
+		    mapping[modi] = (subfilecnt<<8) | thusfar++;
 		}
 	    }
 	}
+	if ( thusfar>256 )
+	    fprintf( stderr, "More that 256 entries in subfont %s\n", names[subfilecnt] );
 	++subfilecnt;
 	if ( bpt!=buffer )
 	    free(bpt);
@@ -776,11 +779,11 @@ return( mapping );
 }
 
 static int SaveSubFont(SplineFont *sf,char *newname,int32 *sizes,int res,
-	short *mapping, int subfont, char **names) {
+	int32 *mapping, int subfont, char **names) {
     SplineFont temp;
     SplineChar *chars[256], **newchars;
     SplineFont *_sf;
-    int k, i, pos, used, base, extras;
+    int k, i, used, base, extras;
     char *filename;
     char *spt, *pt, buf[8];
     RefChar *ref;
@@ -796,25 +799,23 @@ static int SaveSubFont(SplineFont *sf,char *newname,int32 *sizes,int res,
     temp.subfontcnt = 0;
     temp.uniqueid = 0;
     memset(chars,0,sizeof(chars));
-    pos = used = 0;
-    for ( i=0; mapping[i]!=-2; ++i ) if ( mapping[i]==subfont ) {
+    used = 0;
+    for ( i=0; mapping[i]!=-2; ++i ) if ( (mapping[i]>>8)==subfont ) {
 	k = 0;
 	do {
 	    _sf = sf->subfontcnt==0 ? sf : sf->subfonts[k++];
 	    if ( i<_sf->charcnt && _sf->chars[i]!=NULL )
 	break;
 	} while ( k<sf->subfontcnt );
-	if ( pos>=256 )
-	    fprintf( stderr, "More that 256 entries in subfont %s\n", names[subfont] );
-	else if ( i<_sf->charcnt ) {
+	if ( i<_sf->charcnt ) {
 	    if ( _sf->chars[i]!=NULL ) {
 		_sf->chars[i]->parent = &temp;
-		_sf->chars[i]->enc = pos;
+		_sf->chars[i]->enc = mapping[i]&0xff;
 	    }
-	    chars[pos++] = _sf->chars[i];
+	    chars[mapping[i]&0xff] = _sf->chars[i];
 	    ++used;
 	} else
-	    chars[pos++] = NULL;
+	    chars[mapping[i]&0xff] = NULL;
     }
     if ( used==0 )
 return( 0 );
@@ -928,7 +929,7 @@ static void RestoreSF(SplineFont *sf) {
 static int WriteMultiplePSFont(SplineFont *sf,char *newname,int32 *sizes,
 	int res, char *wernerfilename) {
     int err=0, tofree=false, max, filecnt;
-    short *mapping;
+    int32 *mapping;
     unichar_t *path;
     int i;
     char **names;
