@@ -3491,10 +3491,8 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	} else if ( strmatch(tok,"BeginChars:")==0 ) {
 	    getint(sfd,&sf->charcnt);
 	    if ( getint(sfd,&realcnt)!=1 ) {
-		GProgressChangeStages(2);
 		GProgressChangeTotal(sf->charcnt);
 	    } else if ( realcnt!=-1 ) {
-		GProgressChangeStages(2);
 		GProgressChangeTotal(realcnt);
 	    }
 	    sf->chars = gcalloc(sf->charcnt,sizeof(SplineChar *));
@@ -3511,8 +3509,12 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 
     if ( sf->subfontcnt!=0 ) {
 	int max,k;
-	for ( i=0; i<sf->subfontcnt; ++i )
+	GProgressChangeStages(2*sf->subfontcnt);
+	for ( i=0; i<sf->subfontcnt; ++i ) {
+	    if ( i!=0 )
+		GProgressNextStage();
 	    sf->subfonts[i] = SFD_GetFont(sfd,sf,tok);
+	}
 	max = 0;
 	for ( i=0; i<sf->subfontcnt; ++i )
 	    if ( sf->subfonts[i]->charcnt>max ) max = sf->subfonts[i]->charcnt;
@@ -3526,10 +3528,14 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	}
     } else if ( sf->mm!=NULL ) {
 	MMSet *mm = sf->mm;
+	GProgressChangeStages(2*(mm->instance_count+1));
 	for ( i=0; i<mm->instance_count; ++i ) {
+	    if ( i!=0 )
+		GProgressNextStage();
 	    mm->instances[i] = SFD_GetFont(sfd,NULL,tok);
 	    mm->instances[i]->mm = mm;
 	}
+	GProgressNextStage();
 	mm->normal = SFD_GetFont(sfd,NULL,tok);
 	mm->normal->mm = mm;
 	sf->mm = NULL;
@@ -3544,10 +3550,8 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 		glyph = sc->orig_pos+1;
 	    GProgressNext();
 	}
-	if ( cidmaster==NULL ) {
-	    GProgressNextStage();
-	    GProgressChangeLine2R(_STR_InterpretingGlyphs);
-	}
+	GProgressNextStage();
+	GProgressChangeLine2R(_STR_InterpretingGlyphs);
 	SFDFixupRefs(sf);
     }
     while ( getname(sfd,tok)==1 ) {
@@ -3586,6 +3590,7 @@ SplineFont *SFDRead(char *filename) {
     if ( sfd==NULL )
 return( NULL );
     oldloc = setlocale(LC_NUMERIC,"C");
+    GProgressChangeStages(2);
     if ( SFDStartsCorrectly(sfd,tok) )
 	sf = SFD_GetFont(sfd,NULL,tok);
     setlocale(LC_NUMERIC,oldloc);

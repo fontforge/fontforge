@@ -3686,15 +3686,9 @@ return;
     free(sf);
 }
 
-void MMSetFree(MMSet *mm) {
+void MMSetFreeContents(MMSet *mm) {
     int i;
 
-    for ( i=0; i<mm->instance_count; ++i ) {
-	mm->instances[i]->mm = NULL;
-	SplineFontFree(mm->instances[i]);
-    }
-    mm->normal->mm = NULL;
-    SplineFontFree(mm->normal);
     free(mm->instances);
 
     free(mm->positions);
@@ -3708,6 +3702,18 @@ void MMSetFree(MMSet *mm) {
     free(mm->axismaps);
     free(mm->cdv);
     free(mm->ndv);
+}
+
+void MMSetFree(MMSet *mm) {
+    int i;
+
+    for ( i=0; i<mm->instance_count; ++i ) {
+	mm->instances[i]->mm = NULL;
+	SplineFontFree(mm->instances[i]);
+    }
+    mm->normal->mm = NULL;
+    SplineFontFree(mm->normal);
+    MMSetFreeContents(mm);
 
     chunkfree(mm,sizeof(*mm));
 }

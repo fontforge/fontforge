@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 2-Feb-2004 -->
+  <!-- AP: Last modified: 5-Feb-2004 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -615,7 +615,10 @@ a[4][0] = "Nested array";
 	-1 =&gt; default (generate an afm file for postscript fonts, never generate
 	a pfm file, full 'post' table, ttf hints)
       <LI>
-	fmflags&amp;1 =&gt; generate an afm file
+	fmflags&amp;1 =&gt; generate an afm file (if you are generating a multiple
+	master font then setting this flag means you get several afm files (one for
+	each master design, and one for the default version of the font) and an amfm
+	file)
       <LI>
 	fmflags&amp;2 =&gt; generate a pfm file
       <LI>
@@ -1031,7 +1034,13 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
   <DT>
     SetFontOrder(order)
   <DD>
-    Sets the font's order. Order must be either 2 (quadratic) or 3 (cubic).
+    Sets the font's order. Order must be either 2 (quadratic) or 3 (cubic). It
+    returns the old order.
+  <DT>
+    SetFontHasVerticalMetrics(flag)
+  <DD>
+    Sets whether the font has vertical metrics or not. A 0 value means it does
+    not, any other value means it does. Returns the old setting.
   <DT>
     SetFontNames(fontname[,family[,fullname[,weight[,copyright-notice[,fontversion]]]]])
   <DD>
@@ -1418,6 +1427,11 @@ ApplySubstitution("*","*","vrt2")
   <DD>
     Removes any feature tags which match the arguments (which are essentially
     the same as above, except that any of them may be "*" which will match anything).
+  <DT>
+    CheckForAnchorClass(name)
+  <DD>
+    Returns 1 if the current font contains an Anchor class with the given name
+    (which must be in utf8).
   <DT>
     AddAnchorClass(name,type,script-lang,tag,flags,merge-with)
   <DD>

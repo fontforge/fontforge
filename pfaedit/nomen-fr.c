@@ -3320,7 +3320,7 @@ static char str_GlyphNameTooLong = "Les noms de glyphe sont limités à 31 caractè
 
 static char *str_BadMM = "Mauvaise fonte Multiple Master";
 static char *str_Class_d = "Classe %d";
-static char *str_ConvertToMM = "Convertir en MM...";
+static char *str_CreateMM = "Créer une MM...";
 static char *str_MM = "MM";
 static char *str_MMDifferentNumChars = "Les fontes %1$.30hs et %2$.30hs n'ont pas le même nombre de glyphes";
 static char *str_MMDifferentOrder = "Les fontes %1$.30hs et %2$.30hs utilisent des courbes de Bézier d'ordres différents (quadratique et cubique)";
@@ -3342,7 +3342,7 @@ static char *str_NoProblems = "Aucun problème détecté";
 static unichar_t *str_RightArrow = { 'D', 'r', 'o','i','t','e', 0x2192, 0 };
 static char *str_StateClass = "État %d,  %.40s";
 static unichar_t *str_UpArrow = { 'H', 'a', 'u', 't', 0x2191, 0 };
-static char mnemonic_ConvertToMM = 'C';
+static char mnemonic_CreateMM = 'C';
 static unichar_t mnemonic_DownArrow = 'D';
 static unichar_t mnemonic_LeftArrow = 'L';
 static char mnemonic_MMInfo = 'I';

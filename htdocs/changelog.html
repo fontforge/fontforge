@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 4-Feb-2004 -->
+  <!-- AP: Last modified: 8-Feb-2004 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,27 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    ???
+    <UL>
+      <LI>
+	PfaEdit could produce bad tfm files.
+      <LI>
+	Added CheckForAnchorClass scripting command
+      <LI>
+	Added SetFontHasVerticalMetrics scripting command.
+      <LI>
+	PfaEdit would crash if asked to generate a contextual lookup which refered
+	to a lookup which only was activated by a character(s) which was not worth
+	outputting.
+      <LI>
+	PfaEdit did the wrong thing when evaluating the PostScript "index" command
+	(it returned the wrong value from the stack (stack index off by one))
+      <LI>
+	Added support for the PostScript "for" loop.
+      <LI>
+	PfaEdit seems to support creating simple Multiple Master fonts now.
+    </UL>
   <LI>
     4-Feb-2004
     <UL>

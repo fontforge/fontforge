@@ -488,6 +488,7 @@ extern void FVRegenChar(FontView *fv,SplineChar *sc);
 extern int _FVMenuSave(FontView *fv);
 extern int _FVMenuSaveAs(FontView *fv);
 extern int _FVMenuGenerate(FontView *fv,int family);
+extern void _FVCloseWindows(FontView *fv);
 extern void SCClearBackground(SplineChar *sc);
 extern char *GetPostscriptFontName(char *defdir,int mult);
 extern void MenuPrefs(GWindow base,struct gmenuitem *mi,GEvent *e);
@@ -964,6 +965,9 @@ extern ASM *SMConvertDlg(SplineFont *sf);
 extern void SFRemoveFeatureDlg(SplineFont *sf);
 extern void SFCopyFeatureToFontDlg(SplineFont *sf);
 extern void SFRetagFeatureDlg(SplineFont *sf);
+
+extern void MMChangeBlend(MMSet *mm,FontView *fv);
+extern void MMWizard(MMSet *mm);
 
 extern GMenuItem helplist[];
 #endif

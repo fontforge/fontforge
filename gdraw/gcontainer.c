@@ -110,11 +110,23 @@ return( td->gfocus->base );
 return( td->wfocus );
 }
 
+struct gfuncs *last_indicatedfocus_funcs;		/* !!!! Debug code */
+GGadget *last_indicatedfocus_gadget;
+struct gwindow *last_indicatedfocus_widget;
+
 static void _GWidget_IndicateFocusGadget(GGadget *g, enum mnemonic_focus mf) {
     GWindow top;
     GTopLevelD *td;
     GEvent e;
 
+  last_indicatedfocus_funcs = g->funcs;
+  last_indicatedfocus_gadget = g;
+  last_indicatedfocus_widget = g->base;
+
+    if ( g->funcs==NULL ) {
+	fprintf( stderr, "Bad focus attempt\n" );
+return;
+    }
     for ( top=g->base; top->parent!=NULL && !top->is_toplevel ; top=top->parent );
     td = (GTopLevelD *) (top->widget_data);
     if ( td->gfocus==g && mf==mf_normal )

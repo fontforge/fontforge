@@ -36,6 +36,12 @@ The outline types are:
     <A HREF="elementmenu.html#Bitmaps">Element-&gt;Bitmaps Available</A> to generate
     a bitmap font, and then retry this dlg.
   <LI>
+    Multiple Master(A), generates a multiple master font in ascii format (same
+    as .pfa)
+  <LI>
+    Multiple Master(B), generates a multiple master font in binary format (same
+    as .pfb)
+  <LI>
     Multiple PostScript Type 1 binary fonts (this is used to convert a large
     font with a two byte encoding into a series of smaller pfb files with 256
     characters in each. You may be prompted for a file to specify the conversion.
@@ -143,7 +149,8 @@ Not all are enabled at all times.
   <LI>
     [] Flex Hints -- Include PostScript flex hints in the output file
   <LI>
-    [] AFM -- Generate an adobe font metrics file<BR>
+    [] AFM -- Generate an adobe font metrics file (controls generation of .amfm
+    files for multiple master fonts too)<BR>
     Note: Only 'liga' and 'rlig' ligatures will be output in the AFM file. If
     this is not what you want, use the
     <A HREF="scripting.html#ControlAfmLigatureOutput">ControlAfmLigatureOutput</A>
