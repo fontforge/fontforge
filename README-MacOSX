@@ -83,6 +83,11 @@ DEPENDENCIES
  is obtained if you enable the bytecode interpreter (but note: you must
  have a license from Apple to do this). Instructions for doing so are
  in the file README.UNX in the freetype distribution.
+ *** PfaEdit also needs to have the freetype sources available to it      ***
+ *** when it builds (it needs some internal include files). The configure ***
+ *** script can usually figure this out, but it is very time-consuming    ***
+ *** you might want to say $ ./configure --with-freetype-src=<dir>	  ***
+ *** where <dir> is the top-level freetype source directory		  ***
 
  Finally, if you want to do autotracing you should install
      http://sourceforge.net/projects/autotrace/
