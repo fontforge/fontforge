@@ -349,11 +349,13 @@ extern SplinePoint *CVAnySelPoint(CharView *cv);
 extern int CVOneThingSel(CharView *cv, SplinePoint **sp, SplinePointList **spl,
 	RefChar **ref, ImageList **img);
 extern void CVInfoDraw(CharView *cv, GWindow pixmap );
+extern void SCInsertBackImage(SplineChar *sc,GImage *image,real scale,real yoff);
 extern void CVImport(CharView *cv);
 extern void BVImport(BitmapView *bv);
 extern void FVImport(FontView *bv);
-extern int FVImportBDF(FontView *fv, char *filename);
-extern BDFFont *SFImportBDF(SplineFont *sf, char *filename);
+extern int FVImportBDF(FontView *fv, char *filename,int toback);
+extern int FVImportTTF(FontView *fv, char *filename,int toback);
+extern BDFFont *SFImportBDF(SplineFont *sf, char *filename, int toback);
 extern void CVFindCenter(CharView *cv, BasePoint *bp, int nosel);
 extern void CVStroke(CharView *cv);
 extern void FVStroke(FontView *fv);

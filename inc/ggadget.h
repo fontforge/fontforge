@@ -170,7 +170,9 @@ enum fchooserret { fc_hide, fc_show, fc_showdisabled };
 #define _STR_Createdir	11
 #define _STR_Dirname	12
 #define _STR_Couldntcreatedir	13
-#define __STR_LastStd	13
+#define _STR_SelectAll	14
+#define _STR_None	15
+#define __STR_LastStd	15
 
 #define _NUM_Buttonsize	0
 #define __NUM_LastStd	0

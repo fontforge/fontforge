@@ -464,36 +464,38 @@ return;
     }
 }
 
+void SCInsertBackImage(SplineChar *sc,GImage *image,real scale,real yoff) {
+    ImageList *im;
+
+    SCPreserveBackground(sc);
+    im = galloc(sizeof(ImageList));
+    im->image = image;
+    im->xoff = 0;
+    im->yoff = yoff;
+    im->xscale = im->yscale = scale;
+    im->selected = true;
+    im->next = sc->backimages;
+    im->bb.minx = im->xoff; im->bb.maxy = im->yoff;
+    im->bb.maxx = im->xoff + GImageGetWidth(im->image)*im->xscale;
+    im->bb.miny = im->yoff - GImageGetHeight(im->image)*im->yscale;
+    sc->backimages = im;
+    SCOutOfDateBackground(sc);
+    SCCharChangedUpdate(sc,NULL);
+}
+
 static void ImportImage(CharView *cv,char *path) {
     GImage *image;
-    ImageList *im;
     real scale;
-    int dm = cv->drawmode;
 
     image = GImageRead(path);
     if ( image==NULL ) {
 	GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFile);
 return;
     }
-    cv->drawmode = dm_back;
-    CVPreserveState(cv);
-    cv->drawmode = dm;
+    ImageAlterClut(image);
     scale = (cv->sc->parent->ascent+cv->sc->parent->descent)/
 	    (real) GImageGetHeight(image);
-    im = galloc(sizeof(ImageList));
-    im->image = image;
-    im->xoff = 0;
-    im->yoff = cv->sc->parent->ascent;
-    im->xscale = im->yscale = scale;
-    im->selected = true;
-    im->next = cv->sc->backimages;
-    im->bb.minx = im->xoff; im->bb.maxy = im->yoff;
-    im->bb.maxx = im->xoff + GImageGetWidth(im->image)*im->xscale;
-    im->bb.miny = im->yoff - GImageGetHeight(im->image)*im->yscale;
-    cv->sc->backimages = im;
-    SCOutOfDateBackground(cv->sc);
-    ImageAlterClut(image);
-    CVCharChangedUpdate(cv);
+    SCInsertBackImage(cv->sc,image,scale,cv->sc->parent->ascent);
 }
 
 static int BCImportImage(BDFChar *bc,char *path) {
@@ -532,12 +534,13 @@ return( true );
 
 /****************************** Import picker *********************************/
 
-static int last_format;
+static int last_format, flast_format;
 struct gfc_data {
     int done;
     int ret;
     GGadget *gfc;
     GGadget *format;
+    GGadget *background;
     CharView *cv;
     BDFChar *bc;
     FontView *fv;
@@ -557,6 +560,10 @@ static unichar_t wildimg[] = { '*', '.', '{',
 static unichar_t wildps[] = { '*', '.', '{', 'p','s',',', 'e','p','s',',','}', '\0' };
 static unichar_t wildfig[] = { '*', '.', '{', 'f','i','g',',','x','f','i','g','}',  '\0' };
 static unichar_t wildbdf[] = { '*', '.', 'b', 'd','f',  '\0' };
+static unichar_t wildttf[] = { '*', '.', '{', 't', 't','f',',','o','t','f',',','t','t','c','}',  '\0' };
+static unichar_t wildpk[] = { '*', '.', 'p', 'k',  '\0' };
+static unichar_t *wildchr[] = { wildimg, wildps, wildfig };
+static unichar_t *wildfnt[] = { wildbdf, wildttf, wildpk };
 
 static GTextInfo formats[] = {
     { (unichar_t *) _STR_Image, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 1 },
@@ -566,6 +573,8 @@ static GTextInfo formats[] = {
 
 static GTextInfo fvformats[] = {
     { (unichar_t *) "BDF", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 1, 0, 1 },
+    { (unichar_t *) "TTF", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    /* { (unichar_t *) "pk", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 }, */
     { NULL }};
 
 static int GFD_ImportOk(GGadget *g, GEvent *e) {
@@ -576,21 +585,33 @@ static int GFD_ImportOk(GGadget *g, GEvent *e) {
 	int format = GGadgetGetFirstListSelectedItem(d->format);
 
 	GDrawSetCursor(GGadgetGetWindow(g),ct_watch);
-	last_format = format;
-	free(ret);
-	d->done = true;
 	if ( d->fv!=NULL )
-	    d->done = FVImportBDF(d->fv,temp);
-	else if ( d->bc!=NULL )
-	    d->done = BCImportImage(d->bc,temp);
-	else if ( format==0 )
-	    ImportImage(d->cv,temp);
-	else if ( format==1 )
-	    ImportPS(d->cv,temp);
+	    flast_format = format;
 	else
-	    ImportFig(d->cv,temp);
+	    last_format = format;
+	free(ret);
+	if ( d->fv!=NULL ) {
+	    int toback = GGadgetIsChecked(d->background);
+	    if ( toback && strchr(temp,';')!=NULL )
+		GWidgetErrorR(_STR_OnlyOneFont,_STR_OnlyOneFontBackground);
+	    else if ( format==0 )
+		d->done = FVImportBDF(d->fv,temp,toback);
+	    else if ( format==1 )
+		d->done = FVImportTTF(d->fv,temp,toback);
+	} else if ( d->bc!=NULL )
+	    d->done = BCImportImage(d->bc,temp);
+	else {
+	    d->done = true;
+	    if ( format==0 )
+		ImportImage(d->cv,temp);
+	    else if ( format==1 )
+		ImportPS(d->cv,temp);
+	    else
+		ImportFig(d->cv,temp);
+	}
 	free(temp);
     }
+    GDrawSetCursor(GGadgetGetWindow(g),ct_pointer);
 return( true );
 }
 
@@ -607,7 +628,7 @@ static int GFD_Format(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	int format = GGadgetGetFirstListSelectedItem(g);
-	GFileChooserSetFilterText(d->gfc,format==0?wildimg:format==1?wildps:wildfig);
+	GFileChooserSetFilterText(d->gfc,d->fv==NULL?wildchr[format]:wildfnt[format]);
 	GFileChooserRefreshList(d->gfc);
     }
 return( true );
@@ -630,10 +651,10 @@ static void _Import(CharView *cv,BDFChar *bc,FontView *fv) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[8];
-    GTextInfo label[7];
+    GGadgetCreateData gcd[9];
+    GTextInfo label[9];
     struct gfc_data d;
-    int i;
+    int i, format;
     int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid;
 
     memset(&wattrs,0,sizeof(wattrs));
@@ -691,24 +712,33 @@ static void _Import(CharView *cv,BDFChar *bc,FontView *fv) {
 
     gcd[5].gd.pos.x = 55; gcd[5].gd.pos.y = 194; 
     gcd[5].gd.flags = gg_visible | gg_enabled ;
-    if ( bc!=NULL || fv!=NULL ) {
+    if ( bc!=NULL ) {
 	gcd[5].gd.flags = gg_visible ;			/* No postscript in bitmap mode */
 	last_format=0;
     }
+    format = fv==NULL?last_format:flast_format;
     gcd[5].gd.u.list = fv==NULL?formats:fvformats;
-    gcd[5].gd.label = &gcd[5].gd.u.list[last_format];
+    gcd[5].gd.label = &gcd[5].gd.u.list[format];
     gcd[5].gd.handle_controlevent = GFD_Format;
     gcd[5].creator = GListButtonCreate;
     for ( i=0; i<sizeof(formats)/sizeof(formats[0]); ++i )
-	formats[i].selected = false;
-    gcd[5].gd.u.list[last_format].selected = true;
+	gcd[5].gd.u.list[i].selected = false;
+    gcd[5].gd.u.list[format].selected = true;
+
+    if ( fv!=NULL ) {
+	gcd[6].gd.pos.x = 120; gcd[6].gd.pos.y = gcd[5].gd.pos.y+4;
+	gcd[6].gd.flags = gg_visible | gg_enabled ;
+	label[6].text = (unichar_t *) _STR_AsBackground;
+	label[6].text_in_resource = true;
+	gcd[6].gd.label = &label[6];
+	gcd[6].creator = GCheckBoxCreate;
+    }
 
     GGadgetsCreate(gw,gcd);
     GGadgetSetUserData(gcd[2].ret,gcd[0].ret);
 
     GFileChooserConnectButtons(gcd[0].ret,gcd[1].ret,gcd[2].ret);
-    GFileChooserSetFilterText(gcd[0].ret,fv!=NULL?wildbdf:bc!=NULL?wildimg:
-	    last_format==0?wildimg:last_format==1?wildps:wildfig);
+    GFileChooserSetFilterText(gcd[0].ret,fv!=NULL?wildfnt[format]:wildchr[format]);
     GFileChooserRefreshList(gcd[0].ret);
 #if 0
     GFileChooserGetChildren(gcd[0].ret,&pulldown,&files,&tf);
@@ -721,6 +751,8 @@ static void _Import(CharView *cv,BDFChar *bc,FontView *fv) {
     d.bc = bc;
     d.gfc = gcd[0].ret;
     d.format = gcd[5].ret;
+    if ( fv!=NULL )
+	d.background = gcd[6].ret;
 
     GWidgetHidePalettes();
     GDrawSetVisible(gw,true);

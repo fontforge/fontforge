@@ -1213,7 +1213,7 @@ return;
 	tot = cnt-1;
     }
 
-    i = GWidgetChoicesBR(_STR_Dependents,(const unichar_t **) deps, buts, cnt, 0, _STR_Dependents );
+    i = GWidgetChoicesBR(_STR_Dependents,(const unichar_t **) deps, cnt, 0, buts, _STR_Dependents );
     if ( i!=-1 ) {
 	i = tot-i;
 	for ( d = sc->dependents, cnt=0; d!=NULL && cnt<i; d=d->next, ++cnt );

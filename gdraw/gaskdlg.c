@@ -36,6 +36,7 @@
 struct dlg_info {
     int done;
     int ret;
+    int multi;
 };
 
 static int d_e_h(GWindow gw, GEvent *event) {
@@ -523,6 +524,19 @@ void GWidgetErrorR(int title,int statement, ...) {
 #define CID_Cancel	0
 #define CID_OK		1
 #define CID_List	2
+#define CID_SelectAll	3
+#define CID_SelectNone	4
+
+static int GCD_Select(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GWindow gw = GGadgetGetWindow(g);
+	GGadget *list = GWidgetGetControl(gw,CID_List);
+
+	GGadgetSelectListItem(list,-1,GGadgetGetCid(g)==CID_SelectAll?1:0 );
+    }
+return( true );
+}
 
 static int c_e_h(GWindow gw, GEvent *event) {
     struct dlg_info *d = GDrawGetUserData(gw);
@@ -549,10 +563,10 @@ return( true );
 
 static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
 	const unichar_t *question, va_list ap,
-	const unichar_t **choices, int cnt,
+	const unichar_t **choices, int cnt, char *multisel,
 	int buts[2], int def,
 	int restrict_input, int center) {
-    GTextInfo qlabels[GLINE_MAX+1], *llabels, blabel[2];
+    GTextInfo qlabels[GLINE_MAX+1], *llabels, blabel[4];
     GGadgetCreateData *gcd;
     int lb;
     GRect pos;
@@ -570,7 +584,10 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
     llabels = gcalloc(cnt+1,sizeof(GTextInfo));
     for ( i=0; i<cnt; ++i) {
 	llabels[i].text = (unichar_t *) choices[i];
-	llabels[i].selected = (i==def);
+	if ( multisel )
+	    llabels[i].selected = multisel[i];
+	else
+	    llabels[i].selected = (i==def);
     }
 
     memset(&wattrs,0,sizeof(wattrs));
@@ -608,7 +625,7 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
     }
     maxw += GDrawPointsToPixels(gw,16);
 
-    gcd = gcalloc(lb+1+2+2,sizeof(GGadgetCreateData));
+    gcd = gcalloc(lb+1+2+2+2,sizeof(GGadgetCreateData));
     if ( lb==1 ) {
 	gcd[0].gd.pos.width = GDrawGetTextWidth(gw,qlabels[0].text,-1,NULL);
 	gcd[0].gd.pos.x = (maxw-gcd[0].gd.pos.width)/2;
@@ -631,13 +648,43 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
     gcd[i].gd.pos.x = GDrawPointsToPixels(gw,8); gcd[i].gd.pos.y = y;
     gcd[i].gd.pos.width = maxw - 2*GDrawPointsToPixels(gw,8);
     gcd[i].gd.pos.height = (cnt<4?4:cnt<8?cnt:8)*fh + 2*GDrawPointsToPixels(gw,6);
-    gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_list_exactlyone;
+    gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
+    if ( multisel )
+	gcd[i].gd.flags |= gg_list_multiplesel;
+    else
+	gcd[i].gd.flags |= gg_list_exactlyone;
     gcd[i].gd.u.list = llabels;
     gcd[i].gd.cid = CID_List;
     gcd[i++].creator = GListCreate;
     y += gcd[i-1].gd.pos.height + GDrawPointsToPixels(gw,10);
 
     memset(blabel,'\0',sizeof(blabel));
+    if ( multisel ) {
+	y -= GDrawPointsToPixels(gw,5);
+	gcd[i].gd.pos.x = GDrawPointsToPixels(gw,15); gcd[i].gd.pos.y = y;
+	gcd[i].gd.pos.width = -1;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
+	gcd[i].gd.label = &blabel[2];
+	blabel[2].text = (unichar_t *) _STR_SelectAll;
+	blabel[2].text_in_resource = true;
+	gcd[i].gd.cid = CID_SelectAll;
+	gcd[i].gd.handle_controlevent = GCD_Select;
+	gcd[i++].creator = GButtonCreate;
+
+	gcd[i].gd.pos.x = maxw-GDrawPointsToPixels(gw,15)-
+		GDrawPointsToPixels(gw,GIntGetResource(_NUM_Buttonsize));
+	gcd[i].gd.pos.y = y;
+	gcd[i].gd.pos.width = -1;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels ;
+	gcd[i].gd.label = &blabel[3];
+	blabel[3].text = (unichar_t *) _STR_None;
+	blabel[3].text_in_resource = true;
+	gcd[i].gd.cid = CID_SelectNone;
+	gcd[i].gd.handle_controlevent = GCD_Select;
+	gcd[i++].creator = GButtonCreate;
+	y += GDrawPointsToPixels(gw,30);
+    }
+
     gcd[i].gd.pos.x = GDrawPointsToPixels(gw,15)-3; gcd[i].gd.pos.y = y-3;
     gcd[i].gd.pos.width = -1;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels |gg_but_default;
@@ -673,7 +720,8 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
 return( gw );
 }
 
-int GWidgetChoicesR(int title, const unichar_t **choices,int cnt, int def,int question,...) {
+int GWidgetChoicesR(int title, const unichar_t **choices,int cnt, int def,
+	int question,...) {
     struct dlg_info d;
     GWindow gw;
     va_list ap;
@@ -681,7 +729,7 @@ int GWidgetChoicesR(int title, const unichar_t **choices,int cnt, int def,int qu
 
     va_start(ap,question);
     gw = ChoiceDlgCreate(&d,GStringGetResource( title,NULL),GStringGetResource( question,NULL),ap,
-	    choices,cnt,buts,def,true,false);
+	    choices,cnt,NULL,buts,def,true,false);
     va_end(ap);
     while ( !d.done )
 	GDrawProcessOneEvent(NULL);
@@ -691,17 +739,48 @@ int GWidgetChoicesR(int title, const unichar_t **choices,int cnt, int def,int qu
 return(d.ret);
 }
 
-int GWidgetChoicesBR(int title, const unichar_t **choices, int buts[2],int cnt, int def,int question,...) {
+int GWidgetChoicesBR(int title, const unichar_t **choices, int cnt, int def,
+	int buts[2], int question,...) {
     struct dlg_info d;
     GWindow gw;
     va_list ap;
 
     va_start(ap,question);
     gw = ChoiceDlgCreate(&d,GStringGetResource( title,NULL),GStringGetResource( question,NULL),ap,
-	    choices,cnt,buts,def,true,false);
+	    choices,cnt,NULL,buts,def,true,false);
     va_end(ap);
     while ( !d.done )
 	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+return(d.ret);
+}
+
+int GWidgetChoicesBRM(int title, const unichar_t **choices,char *sel,
+	int cnt, int buts[2], int question,...) {
+    struct dlg_info d;
+    GWindow gw;
+    va_list ap;
+    GGadget *list;
+    GTextInfo **lsel;
+    int i, len;
+
+    va_start(ap,question);
+    gw = ChoiceDlgCreate(&d,GStringGetResource( title,NULL),GStringGetResource( question,NULL),ap,
+	    choices,cnt,sel,buts,-1,true,false);
+    va_end(ap);
+    while ( !d.done )
+	GDrawProcessOneEvent(NULL);
+    if ( d.ret==-1 ) {
+	for ( i=0; i<cnt; ++i )
+	    sel[i] = 0;
+    } else {
+	list = GWidgetGetControl(gw,CID_List);
+	lsel = GGadgetGetList(list,&len);
+	for ( i=0; i<len; ++i )
+	    sel[i] = lsel[i]->selected;
+    }
     GDrawDestroyWindow(gw);
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);

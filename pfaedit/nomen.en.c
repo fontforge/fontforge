@@ -23,6 +23,10 @@ static char str_Fileexistspost[] = ", exists. Replace it?";
 static char str_Createdir[] = "Create directory...";
 static char str_Dirname[] = "Directory name?";
 static char str_Couldntcreatedir[] = "Couldn't create directory";
+static char str_SelectAll[] = "Select All";
+static char mnemonic_SelectAll ='A';
+static char *str_None ="None";
+static char mnemonic_None ='N';
 /* Menus ... */
 static char str_File[] = "File";
 static unichar_t mnemonic_File[] = 'F';
@@ -110,8 +114,6 @@ static char str_Clear[] = "Clear";
 static unichar_t mnemonic_Clear[] = 'l';
 static char str_Merge[] = "Merge";
 static unichar_t mnemonic_Merge[] = 'M';
-static char str_Selectall[] = "Select All";
-static unichar_t mnemonic_Selectall[] = 'A';
 static char str_Unlinkref[] = "Unlink Reference";
 static unichar_t mnemonic_Unlinkref[] = 'U';
 static char str_RemoveUndoes[] = "Remove Undoes";
@@ -430,7 +432,6 @@ static char *str_Condensed = "Condensed";
 static char *str_VeryExpanded = "Very Expanded";
 static char *str_VeryCondensed = "Very Condensed";
 static char *str_Monospaced ="Monospaced";
-static char *str_None ="None";
 static char *str_VeryLow ="Very Low";
 static char *str_Low ="Low";
 static char *str_MediumLow ="Medium Low";
@@ -793,6 +794,9 @@ static char *str_BadXFigFile = "Bad xfig file";
 static char *str_BadImageFile = "Bad image file";
 static char *str_BadImageFileNotBitmap = "Bad image file, not a bitmap";
 static char *str_Image = "Image";
+static char *str_AsBackground = "As Background";
+static char *str_OnlyOneFont = "Only One Font";
+static char *str_OnlyOneFontBackground = "Only one font may be imported into the background";
     /* CV Palettes */
 static char *str_SizeOfPoints="Size of Points";
 static char *str_Regular="Regular";
@@ -1023,6 +1027,8 @@ static char *str_PickFont = "Pick a font, any font...";
 static char *str_MultipleFontsPick = "There are multiple fonts in this file, pick one";
 static char *str_AutoHintingFont = "Auto Hinting Font...";
 static char *str_SavingOpenTypeFont = "Saving OpenType Font";
+static char *str_LoadBitmapFonts = "Load bitmap fonts?";
+static char *str_LoadTTFBitmaps = "Do you want to load the bitmap fonts embedded in this true/open type file?\n(And if so, which)";
 	/* Spline Fill */
 static char *str_Rasterizing = "Rasterizing...";
 static char *str_GenBitmap = "Generating bitmap font";
@@ -1068,6 +1074,8 @@ static char mnemonic_MaximumDistanceBetweenPts = 'M';
     /* parsettf */
 static char *str_ReadingNames = "Reading Names";
 static char *str_FixingupReferences = "Fixing up References";
+static char *str_NoBitmaps = "No Bitmap Strikes";
+static char *str_NoBitmapsInTTF = "No (useable) bitmap strikes in this TTF font: %hs";
     /* sfd */
 static char *str_Saving = "Saving...";
 static char *str_SavingDb = "Saving Spline Font Database";

@@ -1042,6 +1042,11 @@ return( true );
     }
 }
 
+static int intarget(SplineChar *sc, SplineFont *target) {
+    sc->enc = SFFindChar(target,sc->unicodeenc,sc->name);
+return( sc->enc!=-1 );
+}
+
 static void RemoveSplineChar(SplineFont *sf, int enc) {
     CharView *cv, *next;
     struct splinecharlist *dep, *dnext;
@@ -1101,7 +1106,7 @@ static void RemoveSplineChar(SplineFont *sf, int enc) {
 }
 
 /* see also SplineFontNew in splineutil2.c */
-int SFReencodeFont(SplineFont *sf,enum charset new_map) {
+static int _SFReencodeFont(SplineFont *sf,enum charset new_map,SplineFont *target) {
     const unsigned short *table;
     int i, extras, epos;
     SplineChar **chars;
@@ -1112,49 +1117,57 @@ int SFReencodeFont(SplineFont *sf,enum charset new_map) {
     uint8 *used;
     RefChar *refs;
 
-    if ( sf->encoding_name==new_map )
+    if ( target==NULL ) {
+	if ( sf->encoding_name==new_map )
 return(false);
-    if ( new_map==em_none ) {
-	sf->encoding_name=em_none;	/* Custom, it's whatever's there */
+	if ( new_map==em_none ) {
+	    sf->encoding_name=em_none;	/* Custom, it's whatever's there */
 return(false);
-    }
-    if ( new_map==em_adobestandard ) {
-	table = unicode_from_adobestd;
-    } else if ( new_map>=em_base ) {
-	for ( item=enclist; item!=NULL && item->enc_num!=new_map; item=item->next );
-	if ( item!=NULL ) {
-	    tlen = item->char_cnt;
-	    table = item->unicode;
-	} else {
-	    GWidgetErrorR(_STR_InvalidEncoding,_STR_InvalidEncoding);
-return( false );
 	}
-    } else if ( new_map==em_iso8859_1 )
-	table = unicode_from_i8859_1;
-    else if ( new_map==em_unicode ) {
+	if ( new_map==em_adobestandard ) {
+	    table = unicode_from_adobestd;
+	} else if ( new_map>=em_base ) {
+	    for ( item=enclist; item!=NULL && item->enc_num!=new_map; item=item->next );
+	    if ( item!=NULL ) {
+		tlen = item->char_cnt;
+		table = item->unicode;
+	    } else {
+		GWidgetErrorR(_STR_InvalidEncoding,_STR_InvalidEncoding);
+return( false );
+	    }
+	} else if ( new_map==em_iso8859_1 )
+	    table = unicode_from_i8859_1;
+	else if ( new_map==em_unicode ) {
+	    table = NULL;
+	    tlen = 65536;
+	} else if ( new_map==em_jis208 ) {
+	    table = unicode_from_jis208;
+	    tlen = 94*94;
+	} else if ( new_map==em_jis212 ) {
+	    table = unicode_from_jis212;
+	    tlen = 94*94;
+	} else if ( new_map==em_ksc5601 ) {
+	    table = unicode_from_ksc5601;
+	    tlen = 94*94;
+	} else if ( new_map==em_gb2312 ) {
+	    table = unicode_from_gb2312;
+	    tlen = 94*94;
+	} else
+	    table = unicode_from_alphabets[new_map+3];
+    } else {
+	if ( target->encoding_name == sf->encoding_name )
+return( false );
 	table = NULL;
-	tlen = 65536;
-    } else if ( new_map==em_jis208 ) {
-	table = unicode_from_jis208;
-	tlen = 94*94;
-    } else if ( new_map==em_jis212 ) {
-	table = unicode_from_jis212;
-	tlen = 94*94;
-    } else if ( new_map==em_ksc5601 ) {
-	table = unicode_from_ksc5601;
-	tlen = 94*94;
-    } else if ( new_map==em_gb2312 ) {
-	table = unicode_from_gb2312;
-	tlen = 94*94;
-    } else
-	table = unicode_from_alphabets[new_map+3];
+	tlen = target->charcnt;
+    }
 
     extras = 0;
     used = gcalloc((tlen+7)/8,sizeof(uint8));
     for ( i=0; i<sf->charcnt; ++i ) {
 	if ( sf->chars[i]==NULL )
 	    /* skip */;
-	else if ( !infont(sf->chars[i],table,tlen,item,used)) {
+	else if ( (target==NULL && !infont(sf->chars[i],table,tlen,item,used)) ||
+		  (target!=NULL && !intarget(sf->chars[i],target) ) ) {
 	    SplineChar *sc = sf->chars[i];
 	    if ( sc->splines==NULL && sc->refs==NULL && sc->dependents==NULL
 		    /*&& sc->width==sf->ascent+sf->descent*/ ) {
@@ -1165,7 +1178,9 @@ return( false );
     }
     free(used);
     enc_cnt=tlen;
-    if ( new_map==em_unicode )
+    if ( target!=NULL )
+	/* Done */;
+    else if ( new_map==em_unicode )
 	enc_cnt = 65536;
     else if ( tlen == 94*94 )
 	enc_cnt = 94*96;
@@ -1180,7 +1195,7 @@ return( false );
 		sf->chars[i]->enc = epos++;
 	    chars[sf->chars[i]->enc] = sf->chars[i];
 	    for ( bdf=sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
-		if ( bdf->chars[i]!=NULL ) {
+		if ( i<bdf->charcnt && bdf->chars[i]!=NULL ) {
 		    if ( sf->chars[i]!=NULL )
 			bdf->chars[i]->enc = sf->chars[i]->enc;
 		    bdf->temp[sf->chars[i]->enc] = bdf->chars[i];
@@ -1189,7 +1204,8 @@ return( false );
 	}
     }
     if ( epos!=enc_cnt+extras ) GDrawIError( "Bad count in ReencodeFont");
-    for ( i=0; i<256; ++i ) {
+#if 0
+    if ( target!=NULL ) for ( i=0; i<256; ++i ) {
 	if ( chars[i]==NULL ) {
 	    SplineChar *sc = chars[i] = chunkalloc(sizeof(SplineChar));
 	    sc->enc = i;
@@ -1230,6 +1246,7 @@ return( false );
 	    sc->lig = SCLigDefault(sc);
 	}
     }
+#endif
     free(sf->chars);
     sf->chars = chars;
     sf->charcnt = enc_cnt+extras;
@@ -1247,6 +1264,14 @@ return( false );
 	bdf->encoding_name = new_map;
     }
 return( true );
+}
+
+int SFReencodeFont(SplineFont *sf,enum charset new_map) {
+return( _SFReencodeFont(sf,new_map,NULL));
+}
+
+int SFMatchEncoding(SplineFont *sf,SplineFont *target) {
+return( _SFReencodeFont(sf,em_none,target));
 }
 
 static int AddDelChars(SplineFont *sf, int nchars) {

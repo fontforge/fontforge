@@ -315,7 +315,7 @@ static int alreadyexists(int pixelsize) {
 return( GWidgetAsk(GStringGetResource(_STR_Duppixelsize,NULL),buts,oc,0,1,ubuf)==0 );
 }
 
-BDFFont *SFImportBDF(SplineFont *sf, char *filename) {
+BDFFont *SFImportBDF(SplineFont *sf, char *filename, int toback) {
     FILE *bdf;
     char tok[100];
     int pixelsize, ascent, descent, enc;
@@ -339,14 +339,16 @@ return( NULL );
 	fclose(bdf);
 return( NULL );
     }
-    if ( sf->bitmaps==NULL && sf->onlybitmaps ) {
+    if ( !toback && sf->bitmaps==NULL && sf->onlybitmaps ) {
 	/* Loading first bitmap into onlybitmap font sets the name and encoding */
 	SFSetFontName(sf,family,mods,full);
 	SFReencodeFont(sf,enc);
 	sf->display_size = pixelsize;
     }
 
-    for ( b=sf->bitmaps; b!=NULL && b->pixelsize!=pixelsize; b=b->next );
+    b = NULL;
+    if ( !toback )
+	for ( b=sf->bitmaps; b!=NULL && b->pixelsize!=pixelsize; b=b->next );
     if ( b!=NULL ) {
 	if ( !alreadyexists(pixelsize)) {
 	    fclose(bdf);
@@ -368,9 +370,11 @@ return( NULL );
 	b->ascent = ascent;
 	b->descent = pixelsize-b->ascent;
 	b->encoding_name = sf->encoding_name;
-	b->next = sf->bitmaps;
-	sf->bitmaps = b;
-	SFOrderBitmapList(sf);
+	if ( !toback ) {
+	    b->next = sf->bitmaps;
+	    sf->bitmaps = b;
+	    SFOrderBitmapList(sf);
+	}
     }
     while ( gettoken(bdf,tok,sizeof(tok))!=-1 ) {
 	if ( strcmp(tok,"STARTCHAR")==0 ) {
@@ -383,7 +387,33 @@ return( NULL );
 return( b );
 }
 
-int FVImportBDF(FontView *fv, char *filename) {
+static void SFMergeBitmaps(SplineFont *sf,BDFFont *strikes) {
+    BDFFont *b, *prev, *snext;
+
+    while ( strikes ) {
+	snext = strikes->next;
+	strikes->next = NULL;
+	for ( prev=NULL,b=sf->bitmaps; b!=NULL && b->pixelsize!=strikes->pixelsize; b=b->next );
+	if ( b==NULL ) {
+	    strikes->next = sf->bitmaps;
+	    sf->bitmaps = strikes;
+	} else if ( !alreadyexists(strikes->pixelsize)) {
+	    BDFFontFree(strikes);
+	} else {
+	    strikes->next = b->next;
+	    if ( prev==NULL )
+		sf->bitmaps = strikes;
+	    else
+		prev->next = strikes;
+	    BDFFontFree(b);
+	}
+	strikes = snext;
+    }
+}
+
+static void FVAddToBackground(FontView *fv,BDFFont *bdf);
+
+int FVImportBDF(FontView *fv, char *filename, int toback) {
     BDFFont *b;
     unichar_t ubuf[140];
     char *eod, *fpt, *file, *full;
@@ -408,7 +438,7 @@ int FVImportBDF(FontView *fv, char *filename) {
 	strcpy(full,filename); strcat(full,"/"); strcat(full,file);
 	u_sprintf(ubuf, GStringGetResource(_STR_LoadingFrom,NULL), filename);
 	GProgressChangeLine1(ubuf);
-	b = SFImportBDF(fv->sf,full);
+	b = SFImportBDF(fv->sf,full,toback);
 	free(full);
 	GProgressNextStage();
 	if ( b!=NULL ) {
@@ -419,5 +449,77 @@ int FVImportBDF(FontView *fv, char *filename) {
 	file = fpt+2;
     } while ( fpt!=NULL );
     GProgressEndIndicator();
+    if ( toback )
+	FVAddToBackground(fv,b);
 return( any );
+}
+
+static void FVAddToBackground(FontView *fv,BDFFont *bdf) {
+    SplineFont *sf = fv->sf;
+    struct _GImage *base;
+    GClut *clut;
+    GImage *img;
+    int i;
+    SplineChar *sc; BDFChar *bdfc;
+    real scale;
+
+    for ( i=0; i<sf->charcnt && i<bdf->charcnt; ++i ) {
+	if ( bdf->chars[i]!=NULL ) {
+	    if ( sf->chars[i]==NULL )
+		SFMakeChar(sf,i);
+	    sc = sf->chars[i];
+	    bdfc = bdf->chars[i];
+
+	    base = gcalloc(1,sizeof(struct _GImage));
+	    base->image_type = it_mono;
+	    base->data = bdfc->bitmap;
+	    base->bytes_per_line = bdfc->bytes_per_line;
+	    base->width = bdfc->xmax-bdfc->xmin+1;
+	    base->height = bdfc->ymax-bdfc->ymin+1;
+	    bdfc->bitmap = NULL;
+
+	    clut = gcalloc(1,sizeof(GClut));
+	    clut->clut_len = 2;
+	    clut->clut[0] = GDrawGetDefaultBackground(NULL);
+	    clut->clut[1] = 0x808080;
+	    clut->trans_index = 0;
+	    base->trans = 0;
+	    base->clut = clut;
+
+	    img = gcalloc(1,sizeof(GImage));
+	    img->u.image = base;
+
+	    scale = (sf->ascent+sf->descent)/(bdf->ascent+bdf->descent);
+	    SCInsertBackImage(sc,img,scale,(bdfc->ymax+1)*scale);
+	}
+    }
+    BDFFontFree(bdf);
+}
+
+int FVImportTTF(FontView *fv, char *filename, int toback) {
+    SplineFont *strikeholder, *sf = fv->sf;
+    BDFFont *strikes;
+    unichar_t ubuf[100];
+
+    u_snprintf(ubuf, sizeof(ubuf)/sizeof(ubuf[0]), GStringGetResource(_STR_LoadingFrom,NULL), filename);
+    GProgressStartIndicator(10,GStringGetResource(_STR_Loading,NULL),ubuf,GStringGetResource(_STR_ReadingGlyphs,NULL),0,2);
+    GProgressEnableStop(false);
+
+    strikeholder = SFReadTTF(filename,toback?ttf_onlyonestrike|ttf_onlystrikes:ttf_onlystrikes);
+
+    if ( strikeholder==NULL || (strikes = strikeholder->bitmaps)==NULL ) {
+	SplineFontFree(strikeholder);
+	GProgressEndIndicator();
+return( false );
+    }
+    SFMatchEncoding(strikeholder,sf);
+    if ( toback )
+	FVAddToBackground(fv,strikes);
+    else
+	SFMergeBitmaps(sf,strikes);
+
+    strikeholder->bitmaps =NULL;
+    SplineFontFree(strikeholder);
+    GProgressEndIndicator();
+return( true );
 }

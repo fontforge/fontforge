@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Dec-2000 -->
-  <!-- AP: Last modified: 31-Aug-2001 -->
+  <!-- AP: Last modified: 22-Sep-2001 -->
   <TITLE>The File Menu</TITLE>
 </HEAD>
 <BODY>
@@ -56,7 +56,8 @@
     PfaEdit understands.
     <P>
     If you open a truetype font all character hinting (instructions) will be
-    lost.
+    lost. If the truetype font contains bitmaps then you will be asked if you
+    want to load some of the bitmaps as well as the outlines.
     <P>
     By default this dialog will display all files with extensions of pfa, pfb,
     sfd, ttf, otf and bdf. If you would also like it to display .ps files then
@@ -242,8 +243,12 @@
   <DT>
     <A NAME="Import">Import</A>...
   <DD>
-    In the Font View this allows you to import a bitmap font (.bdf) and merge
-    it into the list of bitmap sizes stored in the database.
+    In the Font View this allows you to import one or several bitmap fonts (from
+    a .bdf file or a ttf/otf/ttc file) and merge it into the list of bitmap sizes
+    stored in the database. You may also load one bitmap font into the backgrounds
+    of the outline characters (So "A" from the bitmap font goes into the background
+    of the "A" outline character), this is to make tracing characters easier.
+    Be careful, you need to load a big bitmap for autotrace to be useful.
     <P>
     In the Outline View this allows you to import an image into the background,
     or import encapsulated postscript or fig files into the foreground (the xfig

@@ -31,6 +31,7 @@
 #include <math.h>
 #include <locale.h>
 #include <gwidget.h>
+#include "ttf.h"
 
 /* True Type is a really icky format. Nothing is together. It's badly described */
 /*  much of the description is misleading */
@@ -41,93 +42,8 @@
 /*  http://fonts.apple.com/TTRefMan/index.html */
 
 /* !!!I don't currently parse instructions to get hints */
-/* !!!I don't currently read in bitmaps */
 
-/* Some glyphs have multiple encodings ("A" might be used for Alpha and Cyrillic A) */
-struct dup {
-    SplineChar *sc;
-    int enc;
-    struct dup *prev;
-};
-
-struct ttfinfo {
-    int emsize;			/* ascent + descent? from the head table */
-    int ascent, descent;	/* from the hhea table */
-				/* not the usWinAscent from the OS/2 table */
-    int width_cnt;		/* from the hhea table, in the hmtx table */
-    int glyph_cnt;		/* from maxp table (or cff table) */
-    unsigned int index_to_loc_is_long:1;	/* in head table */
-    unsigned int is_ttc:1;			/* Is it a font collection? */
-    /* Mac fonts platform=0/1, platform specific enc id, roman=0, english is lang code 0 */
-    /* iso platform=2, platform specific enc id, latin1=0/2, no language */
-    /* microsoft platform=3, platform specific enc id, 1, english is lang code 0x??09 */
-    char *copyright;		/* from the name table, nameid=0 */
-    char *familyname;		/* nameid=1 */
-    char *fullname;		/* nameid=4 */
-    char *weight;
-    char *version;		/* nameid=5 */
-    char *fontname;		/* postscript font name, nameid=6 */
-    char *xuid;			/* Only for open type cff fonts */
-    real italicAngle;		/* from post table */
-    int upos, uwidth;		/* underline pos, width from post table */
-    int fstype;
-    struct psdict *private;	/* Only for open type cff fonts */
-    enum charset encoding_name;/* from cmap */
-    struct pfminfo pfminfo;
-    struct ttflangname *names;
-    SplineChar **chars;		/* from all over, glyf table for contours */
-    				/* 		  cmap table for encodings */
-			        /*		  hmtx table for widths */
-			        /*		  post table for names */
-			        /* Or from	  CFF  table for everything in opentype */
-    char *cidregistry, *ordering;
-    int supplement;
-    real cidfontversion;
-    int subfontcnt;
-    SplineFont **subfonts;
-    char *inuse;		/* What glyphs are used by this font in the ttc */
-
-    int numtables;
-    		/* CFF  */
-    int cff_start;		/* Offset from sof to start of postscript compact font format */
-    int cff_length;
-    		/* cmap */
-    int encoding_start;		/* Offset from sof to start of encoding table */
-		/* glyf */
-    int glyph_start;		/* Offset from sof to start of glyph table */
-		/* GSUB */
-    int gsub_start;		/* Offset from sof to start of GSUB table */
-		/* EBDT */
-    int bitmapdata_start;	/* Offset to start of bitmap data */
-		/* EBLT */
-    int bitmaploc_start;	/* Offset to start of bitmap locator data */
-		/* head */
-    int head_start;
-		/* hhea */
-    int hhea_start;
-		/* hmtx */
-    int hmetrics_start;
-		/* kern */
-    int kern_start;
-		/* loca */
-    int glyphlocations_start;	/* there are glyph_cnt of these, from maxp tab */
-    int loca_length;		/* actually glypn_cnt is wrong. Use the table length (divided by size) instead */
-		/* maxp */
-    int maxp_start;		/* maximum number of glyphs */
-		/* name */
-    int copyright_start;	/* copyright and fontname */
-		/* post */
-    int postscript_start;	/* names for the glyphs, italic angle, etc. */
-		/* OS/2 */
-    int os2_start;
-
-    struct dup *dups;
-    unsigned int one_of_many: 1;	/* A TTCF file, or a opentype font with multiple fonts */
-};
-
-#define CHR(ch1,ch2,ch3,ch4) (((ch1)<<24)|((ch2)<<16)|((ch3)<<8)|(ch4))
-
-static int getushort(FILE *ttf) {
+int getushort(FILE *ttf) {
     int ch1 = getc(ttf);
     int ch2 = getc(ttf);
     if ( ch2==EOF )
@@ -144,7 +60,7 @@ return( EOF );
 return( (ch1<<16)|(ch2<<8)|ch3 );
 }
 
-static int32 getlong(FILE *ttf) {
+int32 getlong(FILE *ttf) {
     int ch1 = getc(ttf);
     int ch2 = getc(ttf);
     int ch3 = getc(ttf);
@@ -165,7 +81,7 @@ return( get3byte(ttf));
 return( getlong(ttf));
 }
 
-static real getfixed(FILE *ttf) {
+real getfixed(FILE *ttf) {
     int32 val = getlong(ttf);
     int mant = val&0xffff;
     /* This oddity may be needed to deal with the first 16 bits being signed */
@@ -173,7 +89,7 @@ static real getfixed(FILE *ttf) {
 return( (real) (val>>16) + (mant/65536.0) );
 }
 
-static real get2dot14(FILE *ttf) {
+real get2dot14(FILE *ttf) {
     int32 val = getushort(ttf);
     int mant = val&0x3fff;
     /* This oddity may be needed to deal with the first 2 bits being signed */
@@ -380,10 +296,12 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	  case CHR('G','S','U','B'):
 	    info->gsub_start = offset;
 	  break;
+	  case CHR('b','d','a','t'):		/* Apple uses a different tag. Great. */
 	  case CHR('E','B','D','T'):
 	    info->bitmapdata_start = offset;
 	  break;
-	  case CHR('E','B','L','T'):
+	  case CHR('b','l','o','c'):		/* Apple uses a different tag. Great. */
+	  case CHR('E','B','L','C'):
 	    info->bitmaploc_start = offset;
 	  break;
 	  case CHR('h','e','a','d'):
@@ -876,6 +794,11 @@ static void readttfglyphs(FILE *ttf,struct ttfinfo *info) {
 	}
     }
     free(goffsets);
+/* Debug */
+    for ( i=0; i<info->glyph_cnt ; ++i )
+	if ( info->chars[i]!=NULL )
+	    info->chars[i]->ttf_glyph = i;
+/* End Debug */
     GProgressNextStage();
 }
 
@@ -2292,7 +2215,8 @@ static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
 	if ( info->chars[i]!=NULL ) {		/* can happen in ttc files */
 	    info->chars[i]->width = getushort(ttf);
 	    info->chars[i]->widthset = true;
-	}
+	} else
+	    /* unused width = */ getushort(ttf);
 	/* lsb = */ getushort(ttf);
     }
     for ( j=i; j<info->glyph_cnt; ++j ) {
@@ -2445,6 +2369,8 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 		    for ( j=startchars[i]; j<=endchars[i]; ++j ) {
 			if ( justinuse )
 			    info->inuse[(uint16) (j+delta[i])] = true;
+			else if ( info->chars[(uint16) (j+delta[i])]==NULL )
+			    /* Do Nothing */;
 			else if ( info->chars[(uint16) (j+delta[i])]->unicodeenc==-1 ) {
 			    info->chars[(uint16) (j+delta[i])]->unicodeenc = modenc(j,mod);
 			    info->chars[(uint16) (j+delta[i])]->enc = j;
@@ -2461,6 +2387,8 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 			    index = (unsigned short) (index+delta[i]);
 			    if ( justinuse )
 				info->inuse[index] = 1;
+			    else if ( info->chars[index]==NULL )
+				/* Do Nothing */;
 			    else if ( info->chars[index]->unicodeenc==-1 ) {
 				info->chars[index]->unicodeenc = modenc(j,mod);
 				info->chars[index]->enc = j;
@@ -2828,7 +2756,6 @@ static int readttf(char *filename, struct ttfinfo *info) {
     GProgressChangeStages(3);
     if ( ttf==NULL )
 return( 0 );
-    memset(info,'\0',sizeof(struct ttfinfo));
     if ( !readttfheader(ttf,info)) {
 	fclose(ttf);
 return( 0 );
@@ -2837,7 +2764,9 @@ return( 0 );
     readttfpreglyph(ttf,info);
     GProgressChangeTotal(info->glyph_cnt);
 
-    if ( info->glyphlocations_start!=0 && info->glyph_start!=0 )
+    if ( info->onlystrikes )
+	info->chars = gcalloc(info->glyph_cnt,sizeof(SplineChar *));
+    else if ( info->glyphlocations_start!=0 && info->glyph_start!=0 )
 	readttfglyphs(ttf,info);
     else if ( info->cff_start!=0 ) {
 	if ( !readcffglyphs(ttf,info) ) {
@@ -2848,8 +2777,12 @@ return( 0 );
 	fclose(ttf);
 return( 0 );
     }
-    if ( info->hmetrics_start!=0 )
+    if ( !info->onlystrikes || info->hmetrics_start!=0 )
 	readttfwidths(ttf,info);
+    if ( info->bitmapdata_start!=0 && info->bitmaploc_start!=0 )
+	TTFLoadBitmaps(ttf,info,info->onlyonestrike);
+    else if ( info->onlystrikes )
+	GWidgetErrorR( _STR_NoBitmaps, _STR_NoBitmapsInTTF, filename );
     if ( info->cidregistry==NULL )
 	readttfencodings(ttf,info,false);
     if ( info->os2_start!=0 )
@@ -2952,6 +2885,7 @@ static void CheckEncoding(struct ttfinfo *info) {
 static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     SplineFont *sf;
     int i;
+    BDFFont *bdf;
 
     sf = SplineFontEmpty();
     sf->display_size = -default_fv_font_size;
@@ -2990,6 +2924,11 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->ordering = info->ordering;
     sf->supplement = info->supplement;
     sf->cidversion = info->cidfontversion;
+    sf->bitmaps = info->bitmaps;
+    for ( bdf = info->bitmaps; bdf!=NULL; bdf = bdf->next ) {
+	bdf->encoding_name = info->encoding_name;
+	bdf->sf = sf;
+    }
 
     if ( info->subfontcnt == 0 ) {
 	sf->charcnt = info->glyph_cnt;
@@ -3012,9 +2951,12 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 return( sf );
 }
 
-SplineFont *SFReadTTF(char *filename) {
+SplineFont *SFReadTTF(char *filename, int flags) {
     struct ttfinfo info;
 
+    memset(&info,'\0',sizeof(struct ttfinfo));
+    info.onlystrikes = (flags&ttf_onlystrikes)?1:0;
+    info.onlyonestrike = (flags&ttf_onlyonestrike)?1:0;
     if ( !readttf(filename,&info))
 return( NULL );
 return( SFFillFromTTF(&info));

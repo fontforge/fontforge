@@ -2332,6 +2332,8 @@ return;
 void SplineFontFree(SplineFont *sf) {
     int i;
 
+    if ( sf==NULL )
+return;
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
 	SplineCharFree(sf->chars[i]);
     free(sf->chars);

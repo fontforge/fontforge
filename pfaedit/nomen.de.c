@@ -42,8 +42,8 @@ static char str_Copy[] = "Kopieren";
 static unichar_t mnemonic_Copy[] = 'K';
 static char str_Paste[] = "Einfügen";
 static unichar_t mnemonic_Paste[] = 'f';
-static char str_Selectall[] = "Alles auswählen";
-static unichar_t mnemonic_Selectall[] = 'n';
+static char str_SelectAll[] = "Alles auswählen";
+static unichar_t mnemonic_SelectAll[] = 'n';
 
 static char str_Allfonts[] = "Alles Schriftart";
 static unichar_t mnemonic_Allfonts[] = 'A';

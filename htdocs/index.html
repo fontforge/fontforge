@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 20-Sep-2001 -->
+  <!-- AP: Last modified: 22-Sep-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -32,6 +32,8 @@ Contents
 	<A HREF="index.html#binary">Binary</A>
       <LI>
 	<A HREF="index.html#source">Source</A>
+      <LI>
+	<A HREF="#image-libs">External libraries used (but not required)</A>
       <LI>
 	<A HREF="#cidmaps">Helper files for editing CID keyed fonts</A>
       <LI>
@@ -64,8 +66,8 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-010919.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 19-Sept-2001
+    <A HREF="pfaedit-010922.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 22-Sept-2001
   <LI>
     <A HREF="pfaedit-solaris-010901.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 1-Sept-2001
@@ -90,22 +92,22 @@ know when you do</A>.
 <P>
 You can download a <A HREF="pfaedit-010905-1.src.rpm">source RPM</A>: Version:
 5-Sept-2001<BR>
-Or you can download the following three packages. Version: 19-Sept-2001
+Or you can download the following three packages. Version: 22-Sept-2001
 <UL>
   <LI>
     <A HREF="libgunicode-010908.tgz">Unicode library source</A> (8-Sept-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
-    <A HREF="libgdraw-010911.tgz">Unicode widget library source</A>
-    (11-Sept-2001)<BR>
+    <A HREF="libgdraw-010922.tgz">Unicode widget library source</A>
+    (22-Sept-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-010919.tgz">Pfaedit source</A> (19-Sept-2001)<BR>
+    <A HREF="pfaedit_src-010922.tgz">Pfaedit source</A> (22-Sept-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
-    <A HREF="pfaedit_full-010919.tgz">All three bundled together </A>(19-Sept-2001)
+    <A HREF="pfaedit_full-010922.tgz">All three bundled together </A>(22-Sept-2001)
   <LI>
     If you want to do autotracing around character images you should also download
     Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
@@ -114,12 +116,12 @@ Or you can download the following three packages. Version: 19-Sept-2001
     If you want to edit CID keyed fonts you need these
     <A HREF="cidmaps.tgz">character set descriptions</A>.
   <LI>
-    With the appropriate libraries, PfaEdit can import png, tiff, gif and jpeg
-    images to act as character backgrounds for tracing purposes (PfaEdit can
-    import bmp and xbm formats without external libraries). None is required
-    for the proper compilation/execution of PfaEdit, if the libraries are not
-    present they will not be used. If your machine doesn't have them and you
-    want them they are available from:
+    With the appropriate <A NAME="image-libs">libraries</A>, PfaEdit can import
+    png, tiff, and gif images to act as character backgrounds for tracing purposes
+    (PfaEdit can import bmp and xbm formats without external libraries). None
+    is required for the proper compilation/execution of PfaEdit, if the libraries
+    are not present they will not be used. If your machine doesn't have them
+    and you want them they are available from:
     <UL>
       <LI>
 	<A HREF="http://www.libpng.org/pub/png/libpng.html">libpng</A> (and required
@@ -207,6 +209,16 @@ bitmap fonts that pfaedit uses
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    22-Sept-2001
+    <UL>
+      <LI>
+	Can now read bitmap fonts out of a truetype EBDT (or bdat) table
+      <LI>
+	Can import a bitmap and put it into the background of a font.
+      <LI>
+	PfaEdit would sometimes get character widths wrong when reading a ttc file.
+    </UL>
   <LI>
     19-Sept-2001
     <UL>
@@ -349,8 +361,6 @@ prepared to save frequently and always work on a copy of the original.
   <LI>
     My rasterizer will never be as good as adobe's.
   <LI>
-    I think there are problems on Remove Overlaps.
-  <LI>
     I'm told AutoKern doesn't work too well.
   <LI>
     PfaEdit is confused by small splines, on the order of one em unit. If you
@@ -359,8 +369,7 @@ prepared to save frequently and always work on a copy of the original.
   <LI>
     The MetaFont command doesn't work well.
   <LI>
-    I'm told that my conversions between CJK characters and Unicode are out of
-    date. Anyone know where uptodate conversion tables exist?
+    PfaEdit does not deal with vertical metrics (for CJK characters).
   <LI>
     ???
 </UL>
@@ -525,6 +534,15 @@ now placed in graceful retirement by MacroMedia.
   <LI>
     <A HREF="http://www.bitstream.com/categories/developer/truedoc/pfrspec.html">OpenDoc</A>.
     Sadly Proprietary so I shan't support it.
+  <LI>
+    TeX formats (I'm not going to attempt to understand mf format) both of these
+    were provided for me by Torsten Bronger
+    <UL>
+      <LI>
+	<A HREF="tftopl.pdf">tfm (TeX Font Metrics file)</A>
+      <LI>
+	<A HREF="pktype.pdf">pk (packed raster)</A>
+    </UL>
 </UL>
 <P>
 Other font links

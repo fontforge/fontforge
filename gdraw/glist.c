@@ -152,6 +152,15 @@ return( -1 );
 
 static void GListSelect(GGadget *g, int32 pos, int32 sel) {
     GList *gl = (GList *) g;
+    int i;
+
+    if ( pos==-1 && (gl->multiple_sel || (!sel && !gl->exactly_one)) ) {
+	/* Select/deselect all */
+	for ( i=0; i<gl->ltot; ++i )
+	    gl->ti[i]->selected = sel;
+	_ggadget_redraw(g);
+return;
+    }
 
     if ( pos>=gl->ltot || pos<0 )
 return;

@@ -442,6 +442,7 @@ extern struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
 	struct pschars *subrs);
 struct cidbytes;
 struct fd2data;
+struct ttfinfo;
 extern struct pschars *CID2Chrs(SplineFont *cidmaster,struct cidbytes *cidbytes);
 extern struct pschars *SplineFont2Subrs2(SplineFont *sf);
 extern struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
@@ -455,6 +456,7 @@ extern int WriteTTFFont(char *fontname,SplineFont *sf, enum fontformat format);
 extern void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf);
 extern void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname);
 extern int SFReencodeFont(SplineFont *sf,enum charset new_map);
+extern int SFMatchEncoding(SplineFont *sf,SplineFont *target);
 extern char *SFGetModifiers(SplineFont *sf);
 extern void SFSetFontName(SplineFont *sf, char *family, char *mods, char *full);
 
@@ -594,7 +596,9 @@ extern void SFLigatureCleanup(SplineFont *sf);
 extern int SFDWrite(char *filename,SplineFont *sf);
 extern int SFDWriteBak(SplineFont *sf);
 extern SplineFont *SFDRead(char *filename);
-extern SplineFont *SFReadTTF(char *filename);
+extern void TTFLoadBitmaps(FILE *ttf,struct ttfinfo *info, int onlyone);
+enum ttfflags { ttf_onlystrikes=1, ttf_onlyonestrike=2 };
+extern SplineFont *SFReadTTF(char *filename,int flags);
 extern SplineFont *CFFParse(FILE *temp,int len,char *fontsetname);
 extern SplineFont *LoadSplineFont(char *filename);
 extern SplineFont *ReadSplineFont(char *filename);	/* Don't use this, use LoadSF instead */

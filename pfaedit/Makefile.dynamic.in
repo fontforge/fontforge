@@ -22,7 +22,7 @@ pfaedit_OBJECTS =  autohint.o autosave.o autowidth.o bitmapdlg.o \
  splinesaveafm.o splinestroke.o splineutil.o splineutil2.o stamp.o \
  start.o tottf.o transform.o uiutil.o utils.o windowmenu.o  \
  zapfnomen.o othersubrs.o autotrace.o openfontdlg.o encoding.o print.o \
- problems.o pfaedit-ui.o metafont.o alignment.o
+ problems.o pfaedit-ui.o metafont.o alignment.o parsettfbmf.o
 
 WFLAGS = -Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type -Wparentheses
 CFLAGS = @CFLAGS@ -I../inc $(WFLAGS) $(X_CFLAGS) @DEFS@ '-DSHAREDIR="$(sharedir)"'

@@ -14,7 +14,8 @@ static char *istandard[] = { "buttonsize", NULL };
 
 static char *standard[] = { "Language", "OK", "Cancel", "Open", "Save",
 	"Filter", "New", "Replace", "Fileexists", "Fileexistspre",
-	"Fileexistspost", "Createdir", "Dirname", "Couldntcreatedir", NULL };
+	"Fileexistspost", "Createdir", "Dirname", "Couldntcreatedir",
+	"SelectAll", "None", NULL };
 
 static unichar_t **names, **inames;
 static char *hadmn;
