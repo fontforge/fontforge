@@ -907,6 +907,7 @@ typedef struct splinefont {
 /*  to bother the user with specifying it. */
 /* (NormalizeDesignVector is fairly basic and shouldn't need user help ever) */
 /*  (As long as they want piecewise linear) */
+/* I'm not going to support intermediate designs at all for apple var tables */
 typedef struct mmset {
     int axis_count;
     char *axes[4];
@@ -915,13 +916,17 @@ typedef struct mmset {
     SplineFont *normal;
     real *positions;	/* array[instance][axis] saying where each instance lies on each axis */
     real *defweights;	/* array[instance] saying how much of each instance makes the normal font */
+			/* for adobe */
     struct axismap {
 	int points;	/* size of the next two arrays */
 	real *blends;	/* between [0,1] ordered so that blend[0]<blend[1]<... */
 	real *designs;	/* between the design ranges for this axis, typically [1,999] or [6,72] */
+	real min, def, max;	/* For mac */
     } *axismaps;	 /* array[axis] */
     char *cdv, *ndv;
     unsigned int changed: 1;
+    unsigned int apple: 1;
+    /* Named instances, Names for axes */
 } MMSet;
 
 /* mac styles. Useful idea we'll just steal it */

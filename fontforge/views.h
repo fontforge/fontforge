@@ -967,7 +967,7 @@ extern void SFRemoveFeatureDlg(SplineFont *sf);
 extern void SFCopyFeatureToFontDlg(SplineFont *sf);
 extern void SFRetagFeatureDlg(SplineFont *sf);
 
-extern void MMChangeBlend(MMSet *mm,FontView *fv);
+extern void MMChangeBlend(MMSet *mm,FontView *fv,int tonew);
 extern void MMWizard(MMSet *mm);
 
 extern int LayerDialog(Layer *layer);

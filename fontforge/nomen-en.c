@@ -513,6 +513,8 @@ static char *str_ChangeMMBlend = "MM Change Def Weights...";
 static char mnemonic_MMValid = 'W';
 static char *str_MMReblend = "MM Reblend";
 static char mnemonic_MMReblend = 'R';
+static char *str_MMBlendToNew = "Blend to New Font";
+static char mnemonic_MMBlendToNew = 'B';
 
     /* Font Info dlg */
 static char str_Custom[] = "Custom";
@@ -2806,6 +2808,7 @@ static char *str_CantParallel = "Can't Parallel";
 static char *str_ShareCommonEndpoint = "These two lines share a common endpoint, I can't make them parallel";
     /* parsettf */
 static char *str_ReadingNames = "Reading Names";
+static char *str_ProcessingVariations = "Processing Variations";
 static char *str_FixingupReferences = "Fixing up References";
 static char *str_NoBitmaps = "No Bitmap Strikes";
 static char *str_NoBitmapsInTTF = "No (useable) bitmap strikes in this TTF font: %hs";
@@ -3400,6 +3403,9 @@ static char *str_BadOrFewWeights = "Incorrect number of instances weights, or il
 static char *str_WeightsMustBe1 = "The weights for the default version of the font must sum to 1.0"
 static char *str_NumberOfAxes = "Number of Axes:"
 static char *str_NumberOfMasterDesigns = "Number of Master Designs:"
+static char *str_TypeOfDistortableFont = "Type of distortable font:"
+static char *str_Adobe = "Adobe";
+static char *str_Apple = "Apple";
 static char *str_Axis1 = "Axis 1";
 static char *str_Axis2 = "Axis 2";
 static char *str_Axis3 = "Axis 3";

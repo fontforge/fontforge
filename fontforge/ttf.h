@@ -41,11 +41,11 @@ struct variations {
     int axis_count;
     struct taxis {
 	uint32 tag;
-	float min, def, max;	/* in user design space */
+	real min, def, max;	/* in user design space */
 	int nameid;
 	int paircount;
-	float *mapfrom;		/* after conversion from [-1,1] */
-	float *mapto;		/* secondary conversiont to [-1,1] */
+	real *mapfrom;		/* after conversion from [-1,1] */
+	real *mapto;		/* secondary conversiont to [-1,1] */
     } *axes;		/* Array of axis_count entries */
     int instance_count;	/* Not master designs, but named interpolations in design space */
     struct tinstance {
@@ -56,6 +56,7 @@ struct variations {
     struct tuples {
 	real *coords;	/* Location along axes array[axis_count] */
 	SplineChar **chars;	/* Varied glyphs, array parallels one in info */
+	struct ttf_table *cvt;
 	KernClass *khead, *klast, *vkhead, *vklast;
 				/* Varied kern classes */
     } *tuples;
@@ -653,4 +654,5 @@ extern void GuessNamesFromGSUB(FILE *ttf,struct ttfinfo *info);
 extern void readttfgpossub(FILE *ttf,struct ttfinfo *info,int gpos);
 extern void readttfgdef(FILE *ttf,struct ttfinfo *info);
 
+extern void VariationFree(struct ttfinfo *info);
 extern void readttfvariations(struct ttfinfo *info, FILE *ttf);

@@ -630,6 +630,7 @@ static void DrawDirection(CharView *cv,GWindow pixmap, SplinePoint *sp) {
     BasePoint dir, *other;
     double len;
     int x,y,xe,ye;
+    SplinePoint *test;
 
     if ( sp->next==NULL )
 return;
@@ -639,10 +640,24 @@ return;
     if ( x<0 || y<0 || x>cv->width || y>cv->width )
 return;
 
-    if ( sp->nonextcp )
-	other = &sp->next->to->me;
-    else
-	other = &sp->nextcp;
+    /* Werner complained when the first point and the second point were at */
+    /*  the same location... */ /* Damn. They weren't at the same location */
+    /*  the were off by a rounding error. I'm not going to fix for that */
+    for ( test=sp; ; ) {
+	if ( test->me.x!=sp->me.x || test->me.y!=sp->me.y ) {
+	    other = &test->me;
+    break;
+	} else if ( !test->nonextcp ) {
+	    other = &test->nextcp;
+    break;
+	}
+	if ( test->next==NULL )
+return;
+	test = test->next->to;
+	if ( test==sp )
+return;
+    }
+
     dir.x = other->x-sp->me.x;
     dir.y = sp->me.y-other->y;		/* screen coordinates are the mirror of user coords */
     len = sqrt(dir.x*dir.x + dir.y*dir.y);
@@ -6683,11 +6698,6 @@ static void CVMenuShowMMMask(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static GMenuItem mvlist[] = {
     { { (unichar_t *) _STR_All, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xffffffff, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, CVMenuShowMMMask, MID_MMAll },
     { { (unichar_t *) _STR_None, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, CVMenuShowMMMask, MID_MMNone },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
-    /* 16 subfonts max */
-    { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
-    { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
-    { NULL }, { NULL },
     { NULL }
 };
 
@@ -6699,55 +6709,43 @@ static void mvlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     MMSet *mm = cv->sc->parent->mm;
     uint32 submask;
     SplineFont *sub;
-    static GMenuItem mvtemp[] = {
-	{ { (unichar_t *) _STR_All, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xffffffff, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, CVMenuShowMMMask, MID_MMAll },
-	{ { (unichar_t *) _STR_None, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, CVMenuShowMMMask, MID_MMNone },
-	{ { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
-	/* 16 subfonts max */
-	{ NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
-	{ NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
-	{ NULL }, { NULL },
-	{ NULL }
-    };
+    GMenuItem *mml;
 
-    if ( mvtemp[0].ti.text_in_resource ) {
-	mvtemp[0].ti.text = u_copy(GStringGetResource((int) mvtemp[0].ti.text,NULL));
-	mvtemp[0].ti.text_in_resource = false;
-	mvtemp[1].ti.text = u_copy(GStringGetResource((int) mvtemp[1].ti.text,NULL));
-	mvtemp[1].ti.text_in_resource = false;
-    }
     base = 3;
-    for ( i=base; mvtemp[i].ti.text!=NULL; ++i ) {
-	free( mvtemp[i].ti.text);
-	mvtemp[i].ti.text = NULL;
-    }
-
-    if ( mm!=NULL ) {
-	for ( j = 0, i=base; 
-		i<sizeof(mvtemp)/sizeof(mvtemp[0])-1 && j<mm->instance_count+1;
-		++i, ++j ) {
+    if ( mm==NULL )
+	mml = mvlist;
+    else {
+	mml = gcalloc(base+mm->instance_count+2,sizeof(GMenuItem));
+	memcpy(mml,mvlist,sizeof(mvlist));
+	mml[base-1].ti.fg = mml[base-1].ti.bg = COLOR_DEFAULT;
+	mml[base-1].ti.line = true;
+	for ( j = 0, i=base; j<mm->instance_count+1; ++i, ++j ) {
 	    if ( j==0 )
 		sub = mm->normal;
 	    else
 		sub = mm->instances[j-1];
-	    mvtemp[i].ti.text = uc_copy(sub->fontname);
-	    mvtemp[i].ti.checkable = true;
-	    mvtemp[i].ti.checked = (cv->mmvisible & (1<<j))?1:0;
-	    mvtemp[i].ti.userdata = (void *) (1<<j);
-	    mvtemp[i].ti.disabled = sub==cv->sc->parent;
-	    mvtemp[i].invoke = CVMenuShowMMMask;
-	    mvtemp[i].ti.fg = mvtemp[i].ti.bg = COLOR_DEFAULT;
+	    mml[i].ti.text = uc_copy(sub->fontname);
+	    mml[i].ti.checkable = true;
+	    mml[i].ti.checked = (cv->mmvisible & (1<<j))?1:0;
+	    mml[i].ti.userdata = (void *) (1<<j);
+	    mml[i].invoke = CVMenuShowMMMask;
+	    mml[i].ti.fg = mml[i].ti.bg = COLOR_DEFAULT;
 	    if ( sub==cv->sc->parent )
 		submask = (1<<j);
 	}
 	/* All */
-	mvtemp[0].ti.userdata = (void *) ((1<<j)-1);
-	mvtemp[0].ti.checked = (cv->mmvisible == (uint32) mvtemp[0].ti.userdata);
+	mml[0].ti.userdata = (void *) ((1<<j)-1);
+	mml[0].ti.checked = (cv->mmvisible == (uint32) mml[0].ti.userdata);
 	    /* None */
-	mvtemp[1].ti.checked = (cv->mmvisible == 0 || cv->mmvisible == submask);
+	mml[1].ti.checked = (cv->mmvisible == 0 || cv->mmvisible == submask);
     }
     GMenuItemArrayFree(mi->sub);
-    mi->sub = GMenuItemArrayCopy(mvtemp,NULL);
+    mi->sub = GMenuItemArrayCopy(mml,NULL);
+    if ( mml!=mvlist ) {
+	for ( i=base; mml[i].ti.text!=NULL; ++i )
+	    free( mml[i].ti.text);
+	free(mml);
+    }
 }
 
 static void CVMenuReblend(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -6755,7 +6753,7 @@ static void CVMenuReblend(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     int err;
     MMSet *mm = cv->sc->parent->mm;
 
-    if ( mm==NULL )
+    if ( mm==NULL || mm->apple || cv->sc->parent!=mm->normal )
 return;
     err = MMBlendChar(mm,cv->sc->enc);
     if ( mm->normal->chars[cv->sc->enc]!=NULL )
@@ -6764,16 +6762,10 @@ return;
 	GWidgetErrorR(_STR_BadMM,err);
 }
 
-/* additions here should go to mmtemp below */
 static GMenuItem mmlist[] = {
     { { (unichar_t *) _STR_MMReblend, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, 0, 0, NULL, NULL, CVMenuReblend, MID_MMReblend },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
     { { (unichar_t *) _STR_View, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, 0, 0, mvlist, mvlistcheck },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
-    /* 16 subfonts max */
-    { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
-    { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
-    { NULL }, { NULL },
     { NULL }
 };
 
@@ -6793,50 +6785,37 @@ static void mmlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
     MMSet *mm = cv->sc->parent->mm;
     SplineFont *sub;
-    static GMenuItem mmtemp[] = {
-	{ { (unichar_t *) _STR_MMReblend, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, 0, 0, NULL, NULL, CVMenuReblend, MID_MMReblend },
-	{ { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
-	{ { (unichar_t *) _STR_View, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, 0, 0, mvlist, mvlistcheck },
-	{ { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
-	/* 16 subfonts max */
-	{ NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
-	{ NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
-	{ NULL }, { NULL },
-	{ NULL }
-    };
+    GMenuItem *mml;
 
-    base = sizeof(mmtemp)/sizeof(mmtemp[0])-16-1;
-    if ( mmtemp[0].ti.text_in_resource ) {
-	for ( i=0; i<base; ++i ) {
-	    if ( mmtemp[i].ti.text_in_resource ) {
-		mmtemp[i].ti.text = u_copy(GStringGetResource((int) mmtemp[i].ti.text,NULL));
-		mmtemp[i].ti.text_in_resource = false;
-	    }
-	}
-    }
-    for ( i=base; mmtemp[i].ti.text!=NULL; ++i ) {
-	free( mmtemp[i].ti.text);
-	mmtemp[i].ti.text = NULL;
-    }
-
-    if ( mm!=NULL ) {
-	for ( j = 0, i=base; 
-		i<sizeof(mmtemp)/sizeof(mmtemp[0])-1 && j<mm->instance_count+1;
-		++i, ++j ) {
+    base = sizeof(mmlist)/sizeof(mmlist[0]);
+    if ( mm==NULL )
+	mml = mmlist;
+    else {
+	mml = gcalloc(base+mm->instance_count+2,sizeof(GMenuItem));
+	memcpy(mml,mmlist,sizeof(mmlist));
+	mml[base-1].ti.fg = mml[base-1].ti.bg = COLOR_DEFAULT;
+	mml[base-1].ti.line = true;
+	for ( j = 0, i=base; j<mm->instance_count+1; ++i, ++j ) {
 	    if ( j==0 )
 		sub = mm->normal;
 	    else
 		sub = mm->instances[j-1];
-	    mmtemp[i].ti.text = uc_copy(sub->fontname);
-	    mmtemp[i].ti.checkable = true;
-	    mmtemp[i].ti.checked = sub==cv->sc->parent;
-	    mmtemp[i].ti.userdata = sub;
-	    mmtemp[i].invoke = CVMenuShowSubChar;
-	    mmtemp[i].ti.fg = mmtemp[i].ti.bg = COLOR_DEFAULT;
+	    mml[i].ti.text = uc_copy(sub->fontname);
+	    mml[i].ti.checkable = true;
+	    mml[i].ti.checked = sub==cv->sc->parent;
+	    mml[i].ti.userdata = sub;
+	    mml[i].invoke = CVMenuShowSubChar;
+	    mml[i].ti.fg = mml[i].ti.bg = COLOR_DEFAULT;
 	}
     }
+    mml[0].ti.disabled = (mm==NULL || cv->sc->parent!=mm->normal || mm->apple);
     GMenuItemArrayFree(mi->sub);
-    mi->sub = GMenuItemArrayCopy(mmtemp,NULL);
+    mi->sub = GMenuItemArrayCopy(mml,NULL);
+    if ( mml!=mmlist ) {
+	for ( i=base; mml[i].ti.text!=NULL; ++i )
+	    free( mml[i].ti.text);
+	free(mml);
+    }
 }
 
 static GMenuItem mblist[] = {
