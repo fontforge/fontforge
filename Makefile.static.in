@@ -35,15 +35,18 @@ distclean cleaner:
 
 install: $(sharedir)
 # You may need to be root to do the install
-# remove any files from old installs that put the ui in bin
-	-rm -f $(bindir)/pfaedit*.ui
+	mkdir -p $(bindir)
+	mkdir -p $(mandir)/man1
+	mkdir -p $(sharedir)
 	cp pfaedit/pfaedit $(bindir)
+	cp pfaedit/sfddiff $(bindir)
 	cp pfaedit/pfaedit.*.ui $(sharedir)
 	cp $(srcdir)/pfaedit/pfaedit.1 $(mandir)/man1
 #	cp $(srcdir)/*.cidmap $(sharedir)
 
 uninstall:
 	-rm $(bindir)/pfaedit
+	-rm $(bindir)/sfddiff
 	-rm $(sharedir)/pfaedit.*.ui
 	-rm $(mandir)/man1/pfaedit.1
 #	-rm $(sharedir)/*.cidmap

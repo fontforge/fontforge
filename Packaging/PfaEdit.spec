@@ -1,5 +1,5 @@
 Name:        pfaedit
-Version:     020208
+Version:     020220
 Release:     1
 Summary:     A PostScript font editor
 Copyright:   BSD
@@ -33,8 +33,6 @@ mkdir -p ${RPM_BUILD_ROOT}%{_mandir}/man1
 mkdir -p ${RPM_BUILD_ROOT}%{_bindir}/../share/pfaedit
 rm -rf ${RPM_BUILD_ROOT}%{_libdir}
 mkdir -p ${RPM_BUILD_ROOT}%{_libdir}
-touch ${RPM_BUILD_ROOT}%{_libdir}/libgdraw.so.1
-touch ${RPM_BUILD_ROOT}%{_libdir}/libgunicode.so.1
 %makeinstall
 
 #%post
@@ -49,6 +47,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root)
 %{_bindir}/pfaedit
+%{_bindir}/sfddiff
 %{_bindir}/../share/pfaedit/
 %{_mandir}/man1/pfaedit.1*
 %doc LICENSE README
