@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 18-Aug-2003 -->
+  <!-- AP: Last modified: 21-Aug-2003 -->
   <TITLE>Advanced Typography tables</TITLE>
 </HEAD>
 <BODY>
@@ -19,6 +19,9 @@ My support for OpenType is not complete.
     <B><CODE>GSUB</CODE></B> and <B><CODE>GDEF</CODE></B> opentype tables</A>
   <LI>
     <A HREF="#AAT">Apple Advanced Typography</A>
+  <LI>
+    <A HREF="gposgsub.html#sometimes">Why do contextual substitutions only sometimes
+    get converted to AAT?</A>
   <LI>
     <A HREF="TrueOpenTables.html">other true type and open type tables</A>
   <LI>
@@ -511,6 +514,100 @@ opentype platform will not have happened on a Mac.
   at glyph "a" and the { r =&gt; r.alt } will not yet have executed and the
   match will fail.</SMALL>
 </BLOCKQUOTE>
+<H4>
+  Why can't all contextual/chaining tables be converted?
+</H4>
+<P>
+Well, obviously there are some thing that just aren't present. The concept
+of contextual positioning is missing from AAT, while Indic rearrangement
+is missing from OpenType. So let's concentrate on contextual substitutions,
+which both appear to support. But even here, there is a very basic mismatch
+in concepts between the way OpenType and Apple specify contextual substitutions.
+Consider the following contextual sustitution in a glyph list format:
+<TABLE BORDER CELLPADDING="2">
+  <TR>
+    <TH>Initial Sequence</TH>
+    <TD>a</TD>
+    <TD>b</TD>
+    <TD>c</TD>
+    <TD>d</TD>
+  </TR>
+  <TR>
+    <TH>Replace With</TH>
+    <TD>&nbsp;</TD>
+    <TD>B</TD>
+    <TD>C</TD>
+    <TD>&nbsp;</TD>
+  </TR>
+</TABLE>
+<P>
+Now in OpenType this means if you find the sequence "abcd" then replace the
+"b" with "B" and the "c" with "C". But this can't be expressed in an Apple
+state machine. In OpenType the match is done first, and then the substitutions
+occur. In a state machines the sustitutions have to be done (almost) concurrently
+with the match and so must happen whether the final "d" is present or not.
+<P>
+Consider the following table with two glyph strings
+<TABLE BORDER CELLPADDING="2">
+  <TR>
+    <TH>Initial Sequence</TH>
+    <TD>a</TD>
+    <TD><P ALIGN=Center>
+      b</TD>
+    <TD><P ALIGN=Center>
+      c</TD>
+    <TD>d</TD>
+  </TR>
+  <TR>
+    <TH>Replace With</TH>
+    <TD>&nbsp;</TD>
+    <TD><P ALIGN=Center>
+      B</TD>
+    <TD></TD>
+    <TD>&nbsp;</TD>
+  </TR>
+  <TR>
+    <TH>Initial Sequence</TH>
+    <TD>a</TD>
+    <TD><P ALIGN=Center>
+      b</TD>
+    <TD><P ALIGN=Center>
+      c</TD>
+    <TD>&nbsp;</TD>
+  </TR>
+  <TR>
+    <TH>Replace With</TH>
+    <TD>&nbsp;</TD>
+    <TD></TD>
+    <TD><P ALIGN=Center>
+      &nbsp;C</TD>
+    <TD>&nbsp;</TD>
+  </TR>
+</TABLE>
+<P>
+So replace the "b" if the final "d" is present, otherwise replace the "c".
+Again this cannot be expressed in Apple's state machines.
+  <HR>
+On the other hand, Apple's state machines can express things that OpenType
+tables cannot (again I'm restricting myself to contextual substitutions).
+Consider the case of a swash character at the begining of a word. Let us
+say that a word begins when a letter appears at the start of input or following
+a whitespace character. But OpenType has no way of expressing "start of input"
+in a contextual/chaining context, whereas Apple's state machines do.
+<P>
+Finally a state machine can match a general regular expression, while OpenType
+tables can only match fixed length strings. Suppose you were typesetting
+mathematics and wanted a substitution which would convert an arbetrary digit
+string following a variable into a subscript (so x23 should become
+x<SMALL><SUB>23</SUB></SMALL>). It is easy to write a state machine which
+will keep substituting as long as it gets more digits, but you'd need an
+infinite number of OpenType rules to have the same expressive power.
+<P>
+These examples probably seem fairly contrived, and (except for the swash
+one) they are. But they illustrate the point that the two formats have very
+different expressive capabilities and it is NOT possible to write a converter
+which will take any input in one format and produce an equivalent output
+in the other.
 <H3>
   Apple and OpenType features
 </H3>

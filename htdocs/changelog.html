@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 18-Aug-2003 -->
+  <!-- AP: Last modified: 20-Aug-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,24 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    20-Aug-2003
+    <UL>
+      <LI>
+	Support for <A HREF="http://potrace.sf.net/">potrace</A>
+      <LI>
+	Fix some bugs with simplify more
+      <LI>
+	Mac build was badly configured and linked with a shared library it should
+	not have.
+      <LI>
+	When compiled with -O2 pfaedit had rounding errors which resulted in a bad
+	bezier order3=&gt;order2 conversion (PS-&gt;TTF)
+      <LI>
+	SetPanose sometimes didn't
+      <LI>
+	Patch from KANOU to set ulUnicodeRange for version 4
+    </UL>
   <LI>
     18-Aug-2003
     <UL>
@@ -92,7 +110,7 @@
 	</UL>
       <LI>
 	Add a new command line argument "-last" which will load the last sfd file
-	closed.
+	closed. 
 	  <HR>
       <LI>
 	PfaEdit would crash when importing bitmap fonts
