@@ -2504,6 +2504,12 @@ return( false );
 		x = s1->from->me.x;			/* on hor/vert lines */
 	    else if ( s1->from->me.y==s1->to->me.y )
 		y = s1->from->me.y;
+	    if ( s2->knownlinear ) {
+		if ( s2->from->me.x==s2->to->me.x )
+		    x = s2->from->me.x;
+		else if ( s2->from->me.y==s2->to->me.y )
+		    y = s2->from->me.y;
+	    }
 	    soln = AddPoint(x,y,t,tempts[i],pts,t1s,t2s,soln);
 	}
 return( soln!=0 );
