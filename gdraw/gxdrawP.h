@@ -49,8 +49,13 @@ change the protection on /dev/input/event0 so that it is world readable
 # include <X11/Xlib.h>
 # include <X11/Xutil.h>
 # ifndef _NO_XINPUT
-#  include <X11/extensions/XInput.h>
-#  include <X11/extensions/XI.h>
+#  ifdef __VMS
+#   include <sys$common:[decw$include.extensions]XInput.h>
+#   include <sys$common:[decw$include.extensions]XI.h>
+#  else
+#   include <X11/extensions/XInput.h>
+#   include <X11/extensions/XI.h>
+#  endif
 # endif
 #endif
 
