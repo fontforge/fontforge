@@ -870,6 +870,7 @@ void DebuggerTerminate(struct debugger_context *dc) {
 	    pthread_mutex_lock(&dc->child_mutex);
 	    pthread_cond_signal(&dc->child_cond);	/* Wake up child and get it to clean up after itself */
 	    pthread_mutex_unlock(&dc->child_mutex);
+	    pthread_mutex_unlock(&dc->parent_mutex);
 	}
 	pthread_join(dc->thread,NULL);
 	dc->has_thread = false;
