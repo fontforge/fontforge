@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 12-May-2001 -->
+  <!-- AP: Last modified: 5-Jun-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -15,10 +15,6 @@
 <FONT COLOR="Red"><STRONG>PfaEdit</STRONG></FONT> -- A postscript font editor
 that lets you create your own postscript, truetype, opentype and bitmap (bdf)
 fonts, or edit existing ones. Also lets you convert one format to another.
-<P>
-<FONT COLOR="Red"><STRONG><BIG><BIG><BIG>NOTE: I shall be on vacation until
-the start of June. No more bug fixes for a
-while.</BIG></BIG></BIG></STRONG></FONT>
 <P>
 Contents
 <UL>
@@ -58,7 +54,7 @@ substitution will be buggy for a bit.
     </A><A NAME="downloads">executable</A> Version: 12-May-2001
   <LI>
     <A HREF="pfaedit-010512-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
-    Version: 12-May-2001 (no debug symbols)
+    Version: 12-May-2001
   <LI>
     <A HREF="pfaedit-030501.tgz">Download pfaedit linux-i386 RedHat 7.0
     </A><A NAME="downloads">executable</A> Version: 03-May-2001
@@ -165,6 +161,25 @@ You might also want to pull down some unicode bitmap fonts that pfaedit uses
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    5-June-2001
+    <UL>
+      <LI>
+	Added a command to look for common problems
+      <LI>
+	Fixed a crash caused by removing character slots from a font (using Number
+	of Characters in Font Info)
+      <LI>
+	Fixed a crash caused by reading in a ttf file where the kerning info specified
+	a non-existant glyph
+      <LI>
+	Fixed a crash caused by reading in a pf* file where the encoding was specified
+	in a slightly different format from the one we expect
+      <LI>
+	Palettes should be controllable again.
+      <LI>
+	Menu shortcuts should be available from palettes
+    </UL>
   <LI>
     12-May-2001
     <UL>
@@ -1127,8 +1142,6 @@ you run it in gdb you should be able to get a stack trace... Do what you
 can.
 <P>
 <A HREF="mailto:gww@silcom.com">gww@silcom.com</A>
-<P>
-(I'll be gone until 1 June, so I shan't be able to respond till then, sorry)
 <H2>
   <A NAME="Acknowledgements">Acknowledgements</A>
 </H2>
@@ -1233,7 +1246,7 @@ now placed in graceful retirement by MacroMedia.
     Type42</A> (the opposite of opentype, it's truetype embedded in postscript)
   <LI>
     <A HREF="http://www.bitstream.com/categories/developer/truedoc/pfrspec.html">OpenDoc</A>.
-    Sadly Proprietary so I can't support it.
+    Sadly Proprietary so I shan't support it.
 </UL>
 <P>
 Other font links

@@ -780,7 +780,7 @@ return;
 	    while ( isspace(*line)) ++line;
 	}
 return;
-    } else if ( fp->inencoding && strncmp(line,"0 1 255",7)==0 ) {
+    } else if ( fp->inencoding && strstr(line,"0 1 255")!=NULL ) {
 	/* the T1 spec I've got doesn't allow for this, but I've seen it anyway*/
 	/* 0 1 255 {1 index exch /.notdef put} for */
 	int i;
@@ -833,9 +833,10 @@ return;
 	}
     } else if ( fp->inprivate ) {
 	if ( strstr(line,"/CharStrings")!=NULL ) {
-	    if ( fp->fd->chars->next>0 )		/* In my type0 fonts, the string "/CharStrings" pops up many times, only first time is meaningful */
+	    if ( strstr(line,"dict")==NULL )		/* In my type0 fonts, the string "/CharStrings" pops up many times, only first time is meaningful */
 return;
-	    InitChars(fp->fd->chars,line);
+	    if ( fp->fd->chars->next==0 )
+		InitChars(fp->fd->chars,line);
 	    fp->inchars = 1;
 	    fp->insubs = fp->inothersubs = 0;
 return;
@@ -850,8 +851,15 @@ return;
 	    ContinueValue(fp,fp->fd->private->private,line);
 return;
 	}
-	if ( endtok==NULL )
+	if ( endtok==NULL ) {
+	    char *pt = line;
+	    if ( *pt!='/' ) while ( (pt=strstr(pt,"end"))!=NULL ) {
+		if ( fp->inchars ) fp->inchars = false;
+		else fp->inprivate = false;
+		pt += 3;
+	    }
 return;
+	}
 	if ( mycmp("ND",line+1,endtok)==0 || mycmp("|-",line+1,endtok)==0 ||
 		mycmp("NP",line+1,endtok)==0 || mycmp("|",line+1,endtok)==0 ||
 		mycmp("RD",line+1,endtok)==0 || mycmp("-|",line+1,endtok)==0 ||
@@ -872,7 +880,10 @@ return;
 	    fp->infi = 1;
 return;
 	} else if ( strstr(line,"/CharStrings")!=NULL ) {
-	    InitChars(fp->fd->chars,line);
+	    if ( strstr(line,"dict")==NULL )		/* In my type0 fonts, the string "/CharStrings" pops up many times, only first time is meaningful */
+return;
+	    if ( fp->fd->chars->next==0 )
+		InitChars(fp->fd->chars,line);
 	    fp->inchars = 1;
 	    fp->insubs = fp->inothersubs = 0;
 return;

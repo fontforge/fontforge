@@ -445,4 +445,6 @@ extern unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfil
 	const unichar_t *initial_filter, unichar_t **mimetypes,int mult);
 
 extern void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv);
+
+extern void FindProblems(FontView *fv,CharView *cv);
 #endif

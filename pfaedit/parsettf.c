@@ -2128,11 +2128,13 @@ static void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 		left = getushort(ttf);
 		right = getushort(ttf);
 		offset = (short) getushort(ttf);
-		kp = gcalloc(1,sizeof(KernPair));
-		kp->sc = info->chars[right];
-		kp->off = offset;
-		kp->next = info->chars[left]->kerns;
-		info->chars[left]->kerns = kp;
+		if ( left<info->glyph_cnt && right<info->glyph_cnt ) {
+		    kp = gcalloc(1,sizeof(KernPair));
+		    kp->sc = info->chars[right];
+		    kp->off = offset;
+		    kp->next = info->chars[left]->kerns;
+		    info->chars[left]->kerns = kp;
+		}
 	    }
 	} else {
 	    fseek(ttf,len-6,SEEK_CUR);

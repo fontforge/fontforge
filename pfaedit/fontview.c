@@ -587,6 +587,11 @@ static void FVMenuPrivateInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SFPrivateInfo(fv->sf);
 }
 
+static void FVMenuFindProblems(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    FindProblems(fv,NULL);
+}
+
 #define MID_24	2001
 #define MID_36	2002
 #define MID_48	2004
@@ -594,6 +599,7 @@ static void FVMenuPrivateInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_Next	2006
 #define MID_Prev	2007
 #define MID_CharInfo	2201
+#define MID_FindProblems	2216
 #define MID_Transform	2202
 #define MID_Stroke	2203
 #define MID_RmOverlap	2204
@@ -1202,6 +1208,9 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_CharInfo:
 	    mi->ti.disabled = anychars<0;
 	  break;
+	  case MID_FindProblems:
+	    mi->ti.disabled = anychars==-1;
+	  break;
 	  case MID_Transform:
 	    mi->ti.disabled = anychars==-1;
 	    /* some Transformations make sense on bitmaps now */
@@ -1413,6 +1422,7 @@ static unichar_t prev[] = { 'P', 'r', 'e', 'v', ' ', 'C', 'h', 'a', 'r', '\0' };
 static unichar_t _goto[] = { 'G', 'o', 't', 'o',  '\0' };
 static unichar_t fontinfo[] = { 'F','o','n','t',' ','I','n','f','o', '.', '.', '.', '\0' };
 static unichar_t privateinfo[] = { 'P','r','i','v','a','t','e',' ','I','n','f','o', '.', '.', '.', '\0' };
+static unichar_t findprobs[] = { 'F','i','n','d',' ','P','r','o','b','l','e','m','s', '.', '.', '.',  '\0' };
 static unichar_t getinfo[] = { 'C','h','a','r',' ','I','n','f','o', '.', '.', '.', '\0' };
 static unichar_t bitmapsavail[] = { 'B','i','t','m','a','p','s',' ','A','v','a','i','l','a','b','l','e','.', '.', '.',  '\0' };
 static unichar_t regenbitmaps[] = { 'R','e','g','e','n','e','r','a','t','e', ' ', 'B','i','t','m','a','p','s','.', '.', '.',  '\0' };
@@ -1506,6 +1516,7 @@ static GMenuItem ellist[] = {
     { { fontinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'F' }, 'F', ksm_control|ksm_shift, NULL, NULL, FVMenuFontInfo },
     { { privateinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'P' }, 'P', ksm_control|ksm_shift, NULL, NULL, FVMenuPrivateInfo },
     { { getinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'I' }, 'I', ksm_control, NULL, NULL, FVMenuCharInfo, MID_CharInfo },
+    { { findprobs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'o' }, '\0', ksm_control, NULL, NULL, FVMenuFindProblems, MID_FindProblems },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { bitmapsavail, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'A' }, 'B', ksm_control|ksm_shift, NULL, NULL, FVMenuBitmaps, MID_AvailBitmaps },
     { { regenbitmaps, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'B' }, 'B', ksm_control, NULL, NULL, FVMenuBitmaps, MID_RegenBitmaps },

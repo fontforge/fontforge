@@ -162,7 +162,7 @@ static int toolask_e_h(GWindow gw, GEvent *event) {
 	/* Above palettes */
 	GDrawRaise(gw);
     }
-return( true );
+return( event->type!=et_char );
 }
 
 static int Ask(char *rb1, char *rb2, int rb, char *lab, double *val, int isint ) {
@@ -466,6 +466,16 @@ static void ToolsMouse(CharView *cv, GEvent *event) {
     CVToolsSetCursor(cv,event->u.chr.state);
 }
 
+static void PostCharToWindow(GWindow to, GEvent *e) {
+    GPoint p;
+
+    p.x = e->u.chr.x; p.y = e->u.chr.y;
+    GDrawTranslateCoordinates(e->w,to,&p);
+    e->u.chr.x = p.x; e->u.chr.y = p.y;
+    e->w = to;
+    GDrawPostEvent(e);
+}
+
 static int cvtools_e_h(GWindow gw, GEvent *event) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
@@ -489,7 +499,7 @@ static int cvtools_e_h(GWindow gw, GEvent *event) {
       case et_char: case et_charup:
 	if ( cv->had_control != ((event->u.chr.state&ksm_control)?1:0) )
 	    cv->pressed_display = cvt_none;
-	CVChar(cv,event);
+	PostCharToWindow(cv->gw,event);
       break;
       case et_destroy:
       break;
@@ -589,7 +599,7 @@ static int cvlayers_e_h(GWindow gw, GEvent *event) {
 	GDrawSetVisible(gw,false);
       break;
       case et_char:
-	CVChar(cv,event);
+	PostCharToWindow(cv->gw,event);
       break;
       case et_controlevent:
 	if ( event->u.control.subtype == et_radiochanged ) {
@@ -896,7 +906,7 @@ static int bvlayers_e_h(GWindow gw, GEvent *event) {
 	GDrawSetVisible(gw,false);
       break;
       case et_char:
-	BVChar(bv,event);
+	PostCharToWindow(bv->gw,event);
       break;
       case et_controlevent:
 	if ( event->u.control.subtype == et_radiochanged ) {
@@ -1158,7 +1168,7 @@ static int bvtools_e_h(GWindow gw, GEvent *event) {
       case et_char: case et_charup:
 	if ( bv->had_control != ((event->u.chr.state&ksm_control)?1:0) )
 	    bv->pressed_display = bvt_none;
-	BVChar(bv,event);
+	PostCharToWindow(bv->gw,event);
       break;
       case et_destroy:
       break;

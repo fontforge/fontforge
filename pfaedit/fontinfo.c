@@ -148,29 +148,38 @@ static void RemoveSplineChar(SplineFont *sf, int enc) {
     BDFChar *bfc;
     SplineChar *sc = sf->chars[enc];
     BitmapView *bv, *bvnext;
+    RefChar *refs, *rnext;
 
-    for ( cv = sc->views; cv!=NULL; cv=next ) {
-	next = cv->next;
-	GDrawDestroyWindow(cv->gw);
-    }
-    if ( sc->views ) {
-	GDrawSync(NULL);
-	GDrawProcessPendingEvents(NULL);
-	GDrawSync(NULL);
-	GDrawProcessPendingEvents(NULL);
-    }
-    for ( dep=sc->dependents; dep!=NULL; dep=dnext ) {
-	SplineChar *dsc = dep->sc;
-	RefChar *rf, *rnext;
-	dnext = dep->next;
-	/* May be more than one reference to us, colon has two refs to period */
-	/*  but only one dlist entry */
-	for ( rf = dsc->refs; rf!=NULL; rf=rnext ) {
-	    rnext = rf->next;
-	    SCRefToSplines(dsc,rf);
+    if ( sc!=NULL ) {
+	for ( cv = sc->views; cv!=NULL; cv=next ) {
+	    next = cv->next;
+	    GDrawDestroyWindow(cv->gw);
 	}
+	if ( sc->views ) {
+	    GDrawSync(NULL);
+	    GDrawProcessPendingEvents(NULL);
+	    GDrawSync(NULL);
+	    GDrawProcessPendingEvents(NULL);
+	}
+	for ( dep=sc->dependents; dep!=NULL; dep=dnext ) {
+	    SplineChar *dsc = dep->sc;
+	    RefChar *rf, *rnext;
+	    dnext = dep->next;
+	    /* May be more than one reference to us, colon has two refs to period */
+	    /*  but only one dlist entry */
+	    for ( rf = dsc->refs; rf!=NULL; rf=rnext ) {
+		rnext = rf->next;
+		SCRefToSplines(dsc,rf);
+	    }
+	}
+	sf->chars[enc] = NULL;
+
+	for ( refs=sc->refs; refs!=NULL; refs = rnext ) {
+	    rnext = refs->next;
+	    SCRemoveDependent(sc,refs);
+	}
+	SplineCharFree(sc);
     }
-    sf->chars[enc] = NULL;
 
     for ( bdf=sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
 	if ( (bfc = bdf->chars[enc])!= NULL ) {
@@ -188,8 +197,6 @@ static void RemoveSplineChar(SplineFont *sf, int enc) {
 	    BDFCharFree(bfc);
 	}
     }
-
-    SplineCharFree(sc);
 }
 
 /* see also SplineFontNew in splineutil2.c */
@@ -734,7 +741,7 @@ static int e_h(GWindow gw, GEvent *event) {
 	struct gfi_data *d = GDrawGetUserData(gw);
 	d->done = true;
     }
-return( true );
+return( event->type!=et_char );
 }
 
 void FontMenuFontInfo(SplineFont *sf,FontView *fv) {

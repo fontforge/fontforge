@@ -180,6 +180,12 @@ return;
 	gt->lcnt = i;
 	if ( gt->vsb!=NULL )
 	    GScrollBarSetBounds(&gt->vsb->g,0,gt->lcnt-1,gt->g.inner.height/gt->fh);
+	if ( gt->loff_top+gt->g.inner.height/gt->fh>gt->lcnt ) {
+	    gt->loff_top = gt->lcnt-gt->g.inner.height/gt->fh;
+	    if ( gt->loff_top<0 ) gt->loff_top = 0;
+	    if ( gt->vsb!=NULL )
+		GScrollBarSetPos(&gt->vsb->g,gt->loff_top);
+	}
     }
     if ( i>=gt->lmax )
 	gt->lines = grealloc(gt->lines,(gt->lmax+=10)*sizeof(int32));
@@ -358,8 +364,10 @@ static void noop(void *_gt) {
 }
 
 static void GTextFieldGrabPrimarySelection(GTextField *gt) {
+    int ss = gt->sel_start, se = gt->sel_end;
 
     GDrawGrabSelection(gt->g.base,sn_primary);
+    gt->sel_start = ss; gt->sel_end = se;
     GDrawAddSelectionType(gt->g.base,sn_primary,"Unicode",gt,gt->sel_end-gt->sel_start,
 	    sizeof(unichar_t),
 	    genunicodedata,noop);

@@ -1090,8 +1090,6 @@ SplineFont *SplineFontFromPSFont(FontDict *fd) {
 
     encoding = calloc(sf->charcnt,sizeof(char *));
     sf->chars = calloc(sf->charcnt,sizeof(SplineChar *));
-    for ( i=0; i<256; ++i ) if ( fd->encoding[i]==NULL )
-	fd->encoding[i] = copy(".notdef");
     for ( i=0; i<256; ++i )
 	encoding[i] = copy(fd->encoding[i]);
     if ( sf->charcnt>256 ) {
@@ -1118,6 +1116,8 @@ SplineFont *SplineFontFromPSFont(FontDict *fd) {
 	    }
 	}
     }
+    for ( i=0; i<sf->charcnt; ++i ) if ( encoding[i]==NULL )
+	encoding[i] = copy(".notdef");
     for ( i=0; i<sf->charcnt; ++i ) {
 	int k= -1, k2=-1;
 	k = LookupCharString(encoding[i],fd->chars);
@@ -1353,6 +1353,8 @@ void SplineFindInflections(Spline1D *sp, double *_t1, double *_t2 ) {
 	    t2 = (-2*sp->b + b2_fourac) / (6*sp->a);
 	    if ( t1<t2 ) { double temp = t1; t1 = t2; t2 = temp; }
 	    else if ( t1==t2 ) t2 = -1;
+	    if ( DoubleNear(t1,0)) t1=0; else if ( DoubleNear(t1,1)) t1=1;
+	    if ( DoubleNear(t2,0)) t2=0; else if ( DoubleNear(t2,1)) t2=1;
 	    if ( t2<=0 || t2>=1 ) t2 = -1;
 	    if ( t1<=0 || t1>=1 ) { t1 = t2; t2 = -1; }
 	}

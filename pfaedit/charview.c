@@ -2112,6 +2112,7 @@ static unichar_t selectall[] = { 'S', 'e', 'l', 'e', 'c', 't', ' ', 'A', 'l', 'l
 static unichar_t unlinkref[] = { 'U', 'n', 'l', 'i', 'n', 'k', ' ', 'R', 'e', 'f', 'e', 'r', 'e', 'n', 'c', 'e',  '\0' };
 static unichar_t fontinfo[] = { 'F','o','n','t',' ','I','n','f','o', '.', '.', '.', '\0' };
 static unichar_t privateinfo[] = { 'P','r','i','v','a','t','e',' ','I','n','f','o', '.', '.', '.', '\0' };
+static unichar_t findprobs[] = { 'F','i','n','d',' ','P','r','o','b','l','e','m','s','.', '.', '.',  '\0' };
 static unichar_t getinfo[] = { 'G','e','t',' ','I','n','f','o', '.', '.', '.', '\0' };
 static unichar_t bitmapsavail[] = { 'B','i','t','m','a','p','s',' ','A','v','a','i','l','a','b','l','e','.', '.', '.',  '\0' };
 static unichar_t regenbitmaps[] = { 'R','e','g','e','n','e','r','a','t','e', ' ', 'B','i','t','m','a','p','s','.', '.', '.',  '\0' };
@@ -2229,6 +2230,11 @@ static void CVMenuFontInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVMenuPrivateInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     SFPrivateInfo(cv->fv->sf);
+}
+
+static void CVMenuFindProblems(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    FindProblems(NULL,cv);
 }
 
 static void CVMenuScale(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2431,7 +2437,7 @@ static void CVMenuGotoChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVMenuPaletteShow(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
-    CVPaletteSetVisible(cv, mi->mid==MID_Tools, CVPaletteIsVisible(cv, mi->mid==MID_Tools));
+    CVPaletteSetVisible(cv, mi->mid==MID_Tools, !CVPaletteIsVisible(cv, mi->mid==MID_Tools));
 }
 
 static void pllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -3247,6 +3253,7 @@ static GMenuItem ellist[] = {
     { { fontinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'F' }, 'F', ksm_control|ksm_shift, NULL, NULL, CVMenuFontInfo },
     { { privateinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'P' }, 'P', ksm_control|ksm_shift, NULL, NULL, CVMenuPrivateInfo },
     { { getinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'I' }, 'I', ksm_control, NULL, NULL, CVMenuGetInfo, MID_GetInfo },
+    { { findprobs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'o' }, '\0', ksm_control, NULL, NULL, CVMenuFindProblems },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { bitmapsavail, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'A' }, 'B', ksm_control|ksm_shift, NULL, NULL, CVMenuBitmaps, MID_AvailBitmaps },
     { { regenbitmaps, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'B' }, 'B', ksm_control, NULL, NULL, CVMenuBitmaps, MID_RegenBitmaps },

@@ -79,7 +79,7 @@ static int e_h(GWindow gw, GEvent *event) {
     } else if ( event->type == et_char ) {
 return( false );
     }
-return( true );
+return( event->type!=et_char );
 }
 
 unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfile,

@@ -848,7 +848,7 @@ static int pg_e_h(GWindow gw, GEvent *event) {
 	PI *pi = GDrawGetUserData(gw);
 	pi->done = true;
     }
-return( true );
+return( event->type!=et_char );
 }
 
 static GTextInfo *PrinterList() {
@@ -1271,7 +1271,7 @@ static int e_h(GWindow gw, GEvent *event) {
 	PI *pi = GDrawGetUserData(gw);
 	pi->done = true;
     }
-return( true );
+return( event->type!=et_char );
 }
 
 static unichar_t _simple[] = { ' ','T','h','e',' ','q','u','i','c','k',' ','b',

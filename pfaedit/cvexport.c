@@ -267,7 +267,7 @@ static int sb_e_h(GWindow gw, GEvent *event) {
 	struct sizebits *d = GDrawGetUserData(gw);
 	d->done = true;
     }
-return( true );
+return( event->type!=et_char );
 }
 
 static int AskSizeBits(int *pixelsize,int *bitsperpixel) {
@@ -386,6 +386,8 @@ return( 0 );
 	if ( !AskSizeBits(&pixelsize,&bitsperpixel) )
 return( 0 );
     }
+    if ( autohint_before_rasterize )
+	SplineCharAutoHint(sc,true);
 
     memset(&gi,'\0', sizeof(gi));
     memset(&base,'\0', sizeof(base));
