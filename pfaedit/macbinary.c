@@ -1884,6 +1884,29 @@ return( sf );
 return( NULL );
 }
 
+/* Look for a bare truetype font in a binhex/macbinary wrapper */
+static SplineFont *MightBeTrueType(FILE *binary,int32 pos,int32 dlen) {
+    FILE *temp = tmpfile();
+    char *buffer = galloc(8192);
+    int len;
+    SplineFont *sf;
+
+    fseek(binary,pos,SEEK_SET);
+    while ( dlen>0 ) {
+	len = dlen > 8192 ? 8192 : dlen;
+	len = fread(buffer,1,dlen > 8192 ? 8192 : dlen,binary);
+	if ( len==0 )
+    break;
+	fwrite(buffer,1,len,temp);
+	dlen -= len;
+    }
+    rewind(temp);
+    sf = _SFReadTTF(temp,0,NULL);
+    fclose(temp);
+    free(buffer);
+return( sf );
+}
+
 static SplineFont *IsResourceFork(FILE *f, long offset,char *filename) {
     /* If it is a good resource fork then the first 16 bytes are repeated */
     /*  at the location specified in bytes 4-7 */
@@ -1986,14 +2009,26 @@ return( ret );
 
 static SplineFont *IsResourceInBinary(FILE *f,char *filename) {
     unsigned char header[128];
-    unsigned long offset;
+    unsigned long offset, dlen, rlen;
 
     if ( fread(header,1,128,f)!=128 )
 return( NULL );
     if ( header[0]!=0 || header[74]!=0 || header[82]!=0 || header[1]<=0 ||
 	    header[1]>33 || header[63]!=0 || header[2+header[1]]!=0 )
 return( NULL );
-    offset = 128+((header[0x53]<<24)|(header[0x54]<<16)|(header[0x55]<<8)|header[0x56]);
+    dlen = ((header[0x53]<<24)|(header[0x54]<<16)|(header[0x55]<<8)|header[0x56]);
+    rlen = ((header[0x57]<<24)|(header[0x58]<<16)|(header[0x59]<<8)|header[0x5a]);
+    offset = 128+dlen;
+/* Look for a bare truetype font in a binhex/macbinary wrapper */
+    if ( dlen!=0 && rlen<=dlen) {
+	int pos = ftell(f);
+	fread(header,1,4,f);
+	header[5] = '\0';
+	if ( strcmp((char *) header,"OTTO")==0 || strcmp((char *) header,"true")==0 ||
+		strcmp((char *) header,"ttcf")==0 ||
+		(header[0]==0 && header[1]==1 && header[2]==0 && header[3]==0))
+return( MightBeTrueType(f,pos,dlen));
+    }
 return( IsResourceFork(f,offset,filename));
 }
 
@@ -2025,7 +2060,7 @@ static SplineFont *IsResourceInHex(FILE *f,char *filename) {
     FILE *binary = tmpfile();
     char *sixbit = "!\"#$%&'()*+,-012345689@ABCDEFGHIJKLMNPQRSTUVXYZ[`abcdefhijklmpqr";
     int ch, val, cnt, i, dlen, rlen;
-    char header[20], *pt;
+    unsigned char header[20]; char *pt;
     SplineFont *ret;
 
     if ( binary==NULL ) {
@@ -2079,6 +2114,19 @@ return( NULL );
     fread(header,1,20,binary);
     dlen = (header[10]<<24)|(header[11]<<16)|(header[12]<<8)|header[13];
     rlen = (header[14]<<24)|(header[15]<<16)|(header[16]<<8)|header[17];
+/* Look for a bare truetype font in a binhex/macbinary wrapper */
+    if ( dlen!=0 && rlen<dlen ) {
+	int pos = ftell(binary);
+	fread(header,1,4,binary);
+	header[5] = '\0';
+	if ( strcmp((char *) header,"OTTO")==0 || strcmp((char *) header,"true")==0 ||
+		strcmp((char *) header,"ttcf")==0 ||
+		(header[0]==0 && header[1]==1 && header[2]==0 && header[3]==0)) {
+	    ret = MightBeTrueType(binary,pos,dlen);
+	    fclose(binary);
+return( ret );
+	}
+    }
     if ( rlen==0 ) {
 	fclose(binary);
 return( NULL );
@@ -2140,7 +2188,7 @@ static SplineFont *FindResourceFile(char *filename) {
 return( sf );
 
     /* Well, look in the resource fork directory (if it exists), the resource */
-    /*  fork is placed there in a seperate file on non-Mac disks */
+    /*  fork is placed there in a seperate file on (some) non-Mac disks */
     strcpy(buffer,filename);
     spt = strrchr(buffer,'/');
     if ( spt==NULL ) { spt = buffer; pt = filename; }
