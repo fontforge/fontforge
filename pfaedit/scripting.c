@@ -219,7 +219,7 @@ static void traceback(Context *c) {
     int cnt = 0;
     while ( c!=NULL ) {
 	if ( cnt==1 ) printf( "Called from...\n" );
-	if ( cnt>0 ) fprintf( stderr, " %s:%d\n", c->filename, c->lineno );
+	if ( cnt>0 ) fprintf( stderr, " %s: %d\n", c->filename, c->lineno );
 	calldatafree(c);
 	if ( c->err_env!=NULL )
 	    longjmp(*c->err_env,1);
@@ -243,39 +243,39 @@ static void showtoken(Context *c,enum token_type got) {
 
 static void expect(Context *c,enum token_type expected, enum token_type got) {
     if ( got!=expected ) {
-	fprintf( stderr, "%s:%d Expected %s, got %s",
+	fprintf( stderr, "%s: %d Expected %s, got %s",
 		c->filename, c->lineno, toknames[expected], toknames[got] );
-    if ( screen_display!=NULL ) {
-	static unichar_t umsg[] = { '%','h','s',':','%','d',' ','E','x','p','e','c','t','e','d',' ','%','h','s',',',' ','g','o','t',' ','%','h','s',  0 };
-	GWidgetError(NULL,umsg,c->filename, c->lineno, toknames[expected], toknames[got] );
-    }
+	if ( screen_display!=NULL ) {
+	    static unichar_t umsg[] = { '%','h','s',':',' ','%','d',' ','E','x','p','e','c','t','e','d',' ','%','h','s',',',' ','g','o','t',' ','%','h','s',  0 };
+	    GWidgetError(NULL,umsg,c->filename, c->lineno, toknames[expected], toknames[got] );
+	}
 	showtoken(c,got);
     }
 }
 
 static void unexpected(Context *c,enum token_type got) {
-    fprintf( stderr, "%s:%d Unexpected %s found",
+    fprintf( stderr, "%s: %d Unexpected %s found",
 	    c->filename, c->lineno, toknames[got] );
     if ( screen_display!=NULL ) {
-	static unichar_t umsg[] = { '%','h','s',':','%','d',' ','U','n','e','x','p','e','c','t','e','d',' ','%','h','s',  0 };
+	static unichar_t umsg[] = { '%','h','s',':',' ','%','d',' ','U','n','e','x','p','e','c','t','e','d',' ','%','h','s',  0 };
 	GWidgetError(NULL,umsg,c->filename, c->lineno, toknames[got] );
     }
     showtoken(c,got);
 }
 
 static void error( Context *c, char *msg ) {
-    fprintf( stderr, "%s:%d %s\n", c->filename, c->lineno, msg );
+    fprintf( stderr, "%s: %d %s\n", c->filename, c->lineno, msg );
     if ( screen_display!=NULL ) {
-	static unichar_t umsg[] = { '%','h','s',':','%','d',' ','%','h','s',  0 };
+	static unichar_t umsg[] = { '%','h','s',':',' ','%','d',' ','%','h','s',  0 };
 	GWidgetError(NULL,umsg,c->filename, c->lineno, msg );
     }
     traceback(c);
 }
 
 static void errors( Context *c, char *msg, char *name) {
-    fprintf( stderr, "%s:%d %s: %s\n", c->filename, c->lineno, msg, name );
+    fprintf( stderr, "%s: %d %s: %s\n", c->filename, c->lineno, msg, name );
     if ( screen_display!=NULL ) {
-	static unichar_t umsg[] = { '%','h','s',':','%','d',' ','%','h','s',':',' ','%','h','s',  0 };
+	static unichar_t umsg[] = { '%','h','s',':',' ','%','d',' ','%','h','s',':',' ','%','h','s',  0 };
 	GWidgetError(NULL,umsg,c->filename, c->lineno, msg, name );
     }
     traceback(c);
