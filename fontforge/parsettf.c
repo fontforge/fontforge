@@ -1058,8 +1058,14 @@ static void readttfcopyrights(FILE *ttf,struct ttfinfo *info) {
 	free(info->version);
 	info->version = temp;
     }
-    if ( info->fontname==NULL && info->fullname!=NULL )
-	info->fontname = stripspaces(copy(info->fullname));
+    if ( info->fontname==NULL ) {
+	if ( info->fullname!=NULL )
+	    info->fontname = stripspaces(copy(info->fullname));
+	if ( info->fontname==NULL && info->familyname!=NULL )
+	    info->fontname = stripspaces(copy(info->familyname));
+	if ( info->fontname!=NULL )
+	    ValidatePostScriptFontName(info->fontname);
+    }
 
     if ( info->features ) {
 	MacFeat *mf;
