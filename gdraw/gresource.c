@@ -41,6 +41,9 @@
 char *GResourceProgramName, *GResourceFullProgram, *GResourceProgramDir;
 char *usercharset_names;
 int local_encoding = e_iso8859_1;
+#if HAVE_ICONV_H
+char *iconv_local_encoding_name = NULL;
+#endif
 
 static int rcur, rmax=0;
 static int rbase = 0, rsummit=0, rskiplen=0;	/* when restricting a search */

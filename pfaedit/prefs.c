@@ -518,7 +518,7 @@ return;
     GStringSetResourceFileV(full,PfaEditNomenChecksum);
 }
 
-static int encmatch(const char *enc) {
+static int encmatch(const char *enc,int subok) {
     static struct { char *name; int enc; } encs[] = {
 	{ "US-ASCII", e_usascii },
 	{ "ASCII", e_usascii },
@@ -608,6 +608,8 @@ static int encmatch(const char *enc) {
 	{ "UTF-8", e_utf8 },
 	{ "ISO-10646/UTF-8", e_utf8 },
 	{ "ISO_10646/UTF-8", e_utf8 },
+	{ "UCS2", e_unicode },
+	{ "UCS-2", e_unicode },
 	{ "ISO-10646", e_unicode },
 	{ "ISO_10646", e_unicode },
 #if 0
@@ -619,16 +621,39 @@ static int encmatch(const char *enc) {
 	{ NULL }};
     int i;
 
+#if HAVE_ICONV_H
+    iconv_t test;
+    free(iconv_local_encoding_name);
+    iconv_local_encoding_name= NULL;
+#endif
+
     for ( i=0; encs[i].name!=NULL; ++i )
 	if ( strmatch(enc,encs[i].name)==0 )
 return( encs[i].enc );
 
-    for ( i=0; encs[i].name!=NULL; ++i )
-	if ( strstrmatch(enc,encs[i].name)!=NULL )
+    if ( subok ) {
+	for ( i=0; encs[i].name!=NULL; ++i )
+	    if ( strstrmatch(enc,encs[i].name)!=NULL )
 return( encs[i].enc );
 
-    fprintf( stderr, "PfaEdit does not support your encoding (%s), it will pretend the local encoding is latin1\n", enc );
+#if HAVE_ICONV_H
+	/* I only try to use iconv if the encoding doesn't match one I support*/
+	/*  loading iconv unicode data takes a while */
+	test = iconv_open(enc,"UCS2");
+	if ( test==(iconv_t) (-1))
+	    fprintf( stderr, "Neither PfaEdit nor iconv() supports your encoding (%s) we will pretend\n you asked for latin1 instead.\n", enc );
+	else {
+	    fprintf( stderr, "PfaEdit does not support your encoding (%s), it will try to use iconv()\n or it will pretend the local encoding is latin1\n", enc );
+	    iconv_local_encoding_name= copy(enc);
+	    iconv_close(test);
+	}
+#else
+	fprintf( stderr, "PfaEdit does not support your encoding (%s), it will pretend the local encoding is latin1\n", enc );
+#endif
+
 return( e_iso8859_1 );
+    }
+return( e_unknown );
 }
 
 static int DefaultEncoding(void) {
@@ -642,12 +667,12 @@ static int DefaultEncoding(void) {
     if ( loc==NULL )
 return( e_iso8859_1 );
 
-    enc = encmatch(loc);
+    enc = encmatch(loc,false);
     if ( enc==e_unknown ) {
 	loc = strrchr(loc,'.');
 	if ( loc==NULL )
 return( e_iso8859_1 );
-	enc = encmatch(loc+1);
+	enc = encmatch(loc+1,true);
     }
     if ( enc==e_unknown )
 return( e_iso8859_1 );

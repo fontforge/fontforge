@@ -6,7 +6,7 @@ prefix = @prefix@
 bindir = @bindir@
 
 GU_VERSION=2
-GU_REVISION=1
+GU_REVISION=2
 GU_AGE=0
 
 LIBTOOL = @LIBTOOL@
@@ -19,7 +19,7 @@ libgunicode_OBJECTS =  ArabicForms.lo alphabet.lo backtrns.lo char.lo \
 Incs = -I$(top_srcdir)/inc -I/usr/pkg/include -I/usr/pkg/include/giflib
 WFLAGS = -Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type -Wparentheses \
 	-Wformat -Wchar-subscripts 
-CFLAGS = @CFLAGS@ $(Incs) $(WFLAGS) $(X_CFLAGS)
+CFLAGS = @CFLAGS@ $(Incs) $(WFLAGS) @DEFS@
 
 ../libgunicode.la: $(libgunicode_OBJECTS)
 	$(LIBTOOL) $(CC) $(CFLAGS) -o ../libgunicode.la $(libgunicode_OBJECTS) \
