@@ -1333,6 +1333,32 @@ return(NULL);
 return( new );
 }
 
+void SFFlatten(SplineFont *cidmaster) {
+    SplineChar **chars;
+    int i,j,max;
+
+    if ( cidmaster==NULL )
+return;
+    if ( cidmaster->cidmaster!=NULL )
+	cidmaster = cidmaster->cidmaster;
+    /* This doesn't change the ordering, so no need for special tricks to */
+    /*  preserve scrolling location. */
+    for ( i=max=0; i<cidmaster->subfontcnt; ++i )
+	if ( max<cidmaster->subfonts[i]->charcnt )
+	    max = cidmaster->subfonts[i]->charcnt;
+    chars = gcalloc(max,sizeof(SplineChar *));
+    for ( j=0; j<max; ++j ) {
+	for ( i=0; i<cidmaster->subfontcnt; ++i ) {
+	    if ( j<cidmaster->subfonts[i]->charcnt && cidmaster->subfonts[i]->chars[j]!=NULL ) {
+		chars[j] = cidmaster->subfonts[i]->chars[j];
+		cidmaster->subfonts[i]->chars[j] = NULL;
+	break;
+	    }
+	}
+    }
+    CIDFlatten(cidmaster,chars,max);
+}
+
 void SFFlattenByCMap(SplineFont *sf,char *cmapname) {
     struct cmap *cmap;
     int i,j,k,l,m, extras, max, curmax, warned;
