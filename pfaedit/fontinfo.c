@@ -1525,7 +1525,8 @@ void SFFindNearTop(SplineFont *sf) {
 	    fv->sc_near_top = NULL;
 	    for ( i=fv->rowoff*fv->colcnt; i<fv->sf->charcnt && i<(fv->rowoff+fv->rowcnt)*fv->colcnt; ++i ) {
 		for ( k=0; k<sf->subfontcnt; ++k )
-		    if ( sf->subfonts[k]->chars[i]!=NULL )
+		    if ( i<sf->subfonts[k]->charcnt &&
+			    sf->subfonts[k]->chars[i]!=NULL )
 			fv->sc_near_top = sf->subfonts[k]->chars[i];
 	    }
 	}
