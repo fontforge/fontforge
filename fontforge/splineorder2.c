@@ -507,12 +507,12 @@ static void ttfCleanup(SplinePoint *from) {
 	    if ( next->next==NULL || next==from ) {
 		if ( test==from )
     break;
-		next->prevcp = from->prevcp;
-		next->noprevcp = from->noprevcp;
-		next->prev = from->prev;
+		next->prevcp = test->prevcp;
+		next->noprevcp = test->noprevcp;
+		next->prev = test->prev;
 		next->prev->to = next;
-		SplineFree(from->next);
-		SplinePointFree(from);
+		SplineFree(test->next);
+		SplinePointFree(test);
 	    } else {
 		test->nextcp = next->nextcp;
 		test->nonextcp = next->nonextcp;
