@@ -1042,10 +1042,11 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_MMInfo	2901
 #define MID_MMValid	2902
 #define MID_ChangeMMBlend	2903
+#define MID_BlendToNew	2904
 #define MID_ModifyComposition	20902
 #define MID_BuildSyllables	20903
 
-/* returns -1 if nothing selected, the char if exactly one, -2 if more than one */
+/* returns -1 if nothing selected, if exactly one char return it, -2 if more than one */
 static int FVAnyCharSelected(FontView *fv) {
     int i, val=-1;
 
@@ -2902,6 +2903,8 @@ static void FVMenuAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void FVAutoHintSubs(FontView *fv) {
     int i, cnt=0;
 
+    if ( fv->sf->mm!=NULL && fv->sf->mm->apple )
+return;
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
 	++cnt;
     GProgressStartIndicatorR(10,_STR_FindingSubstitutionPts,_STR_FindingSubstitutionPts,0,cnt,1);
@@ -3351,9 +3354,18 @@ static void FVMenuChangeMMBlend(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     MMSet *mm = fv->sf->mm;
 
-    if ( mm==NULL )
+    if ( mm==NULL || mm->apple )
 return;
-    MMChangeBlend(mm,fv);
+    MMChangeBlend(mm,fv,false);
+}
+
+static void FVMenuBlendToNew(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    MMSet *mm = fv->sf->mm;
+
+    if ( mm==NULL || mm->apple )
+return;
+    MMChangeBlend(mm,fv,true);
 }
 
 static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -3370,7 +3382,12 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    free(mi->ti.text);
 	    mi->ti.text = u_copy(GStringGetResource(removeOverlap?_STR_Autohint:_STR_FullAutohint,NULL));
 	  break;
-	  case MID_HintSubsPt: case MID_AutoCounter: case MID_DontAutoHint:
+	  case MID_HintSubsPt:
+	    mi->ti.disabled = fv->sf->order2 || anychars==-1 || multilayer;
+	    if ( fv->sf->mm!=NULL && fv->sf->mm->apple )
+		mi->ti.disabled = true;
+	  break;
+	  case MID_AutoCounter: case MID_DontAutoHint:
 	    mi->ti.disabled = fv->sf->order2 || anychars==-1 || multilayer;
 	  break;
 	  case MID_AutoInstr: case MID_EditInstructions:
@@ -3997,13 +4014,9 @@ static GMenuItem mmlist[] = {
     { { (unichar_t *) _STR_CreateMM, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuCreateMM, MID_CreateMM },
     { { (unichar_t *) _STR_MMValid, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuMMValid, MID_MMValid },
     { { (unichar_t *) _STR_MMInfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuMMInfo, MID_MMInfo },
+    { { (unichar_t *) _STR_MMBlendToNew, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuBlendToNew, MID_BlendToNew },
     { { (unichar_t *) _STR_ChangeMMBlend, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuChangeMMBlend, MID_ChangeMMBlend },
     { NULL },				/* Extra room to show sub-font names */
-    /* 16 subfonts max */
-    { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
-    { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
-    { NULL }, { NULL },
-    { NULL }
 };
 
 static void mmlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
@@ -4013,44 +4026,48 @@ static void mmlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
     MMSet *mm = fv->sf->mm;
     SplineFont *sub;
+    GMenuItem *mml;
 
     for ( i=0; mmlist[i].mid!=MID_ChangeMMBlend; ++i );
     base = i+2;
-    for ( i=base; mmlist[i].ti.text!=NULL; ++i ) {
-	free( mmlist[i].ti.text);
-	mmlist[i].ti.text = NULL;
-    }
-
-    mmlist[base-1].ti.fg = mmlist[base-1].ti.bg = COLOR_DEFAULT;
-    if ( mm==NULL ) {
-	mmlist[base-1].ti.line = false;
-    } else {
-	mmlist[base-1].ti.line = true;
-	for ( j = 0, i=base; 
-		i<sizeof(mmlist)/sizeof(mmlist[0])-1 && j<mm->instance_count+1;
-		++i, ++j ) {
+    if ( mm==NULL )
+	mml = mmlist;
+    else {
+	mml = gcalloc(base+mm->instance_count+2,sizeof(GMenuItem));
+	memcpy(mml,mmlist,sizeof(mmlist));
+	mml[base-1].ti.fg = mml[base-1].ti.bg = COLOR_DEFAULT;
+	mml[base-1].ti.line = true;
+	for ( j = 0, i=base; j<mm->instance_count+1; ++i, ++j ) {
 	    if ( j==0 )
 		sub = mm->normal;
 	    else
 		sub = mm->instances[j-1];
-	    mmlist[i].ti.text = uc_copy(sub->fontname);
-	    mmlist[i].ti.checkable = true;
-	    mmlist[i].ti.checked = sub==fv->sf;
-	    mmlist[i].ti.userdata = sub;
-	    mmlist[i].invoke = FVMenuShowSubFont;
-	    mmlist[i].ti.fg = mmlist[i].ti.bg = COLOR_DEFAULT;
+	    mml[i].ti.text = uc_copy(sub->fontname);
+	    mml[i].ti.checkable = true;
+	    mml[i].ti.checked = sub==fv->sf;
+	    mml[i].ti.userdata = sub;
+	    mml[i].invoke = FVMenuShowSubFont;
+	    mml[i].ti.fg = mml[i].ti.bg = COLOR_DEFAULT;
 	}
     }
     GMenuItemArrayFree(mi->sub);
-    mi->sub = GMenuItemArrayCopy(mmlist,NULL);
+    mi->sub = GMenuItemArrayCopy(mml,NULL);
+    if ( mml!=mmlist ) {
+	for ( i=base; mml[i].ti.text!=NULL; ++i )
+	    free( mml[i].ti.text);
+	free(mml);
+    }
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_CreateMM:
 	    mi->ti.disabled = false;
 	  break;
-	  case MID_MMInfo: case MID_MMValid: case MID_ChangeMMBlend:
+	  case MID_MMInfo: case MID_MMValid: case MID_BlendToNew:
 	    mi->ti.disabled = mm==NULL;
+	  break;
+	  case MID_ChangeMMBlend:
+	    mi->ti.disabled = mm==NULL || mm->apple;
 	  break;
 	}
     }

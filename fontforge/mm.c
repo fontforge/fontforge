@@ -129,8 +129,12 @@ char *MMMakeMasterFontname(MMSet *mm,int ipos,char **fullname) {
     pt += strlen(pt);
     *pt++ = '_';
     for ( i=0; i<mm->axis_count; ++i ) {
-	sprintf( pt, " %d%s", (int) rint(MMAxisUnmap(mm,i,mm->positions[ipos*mm->axis_count+i])),
-		MMAxisAbrev(mm->axes[i]));
+	if ( !mm->apple )
+	    sprintf( pt, " %d%s", (int) rint(MMAxisUnmap(mm,i,mm->positions[ipos*mm->axis_count+i])),
+		    MMAxisAbrev(mm->axes[i]));
+	else
+	    sprintf( pt, " %.1f%s", MMAxisUnmap(mm,i,mm->positions[ipos*mm->axis_count+i]),
+		    MMAxisAbrev(mm->axes[i]));
 	pt += strlen(pt);
     }
     if ( pt>ret && pt[-1]==' ' )
@@ -982,6 +986,7 @@ struct mmcb {
     GWindow gw;
     MMSet *mm;
     FontView *fv;
+    int tonew;
 };
 
 #define CID_Explicit		6001
@@ -1079,7 +1084,7 @@ return( false );
 return( true );
 }
 
-void MMChangeBlend(MMSet *mm,FontView *fv) {
+void MMChangeBlend(MMSet *mm,FontView *fv,int tonew) {
     char buffer[MmMax*20], *pt;
     unichar_t ubuf[MmMax*20];
     int i, k;
@@ -1105,6 +1110,7 @@ return;
     memset(&mmcb,0,sizeof(mmcb));
     mmcb.mm = mm;
     mmcb.fv = fv;
+    mmcb.tonew = tonew;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
@@ -1282,6 +1288,8 @@ typedef struct mmw {
 
 #define CID_AxisCount	2001
 #define CID_MasterCount	2002
+#define CID_Adobe	2003
+#define CID_Apple	2004
 
 #define CID_WhichAxis	3000
 #define CID_AxisType	3001	/* +[0,3]*100 */
@@ -1301,8 +1309,14 @@ typedef struct mmw {
 #define CID_ForceBoldThreshold	6005
 #define CID_FamilyName		6006
 
-static void SetMasterToAxis(MMW *mmw) {
-    int i, cnt;
+static int MM_TypeChanged(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+    }
+return( true );
+}
+
+static void SetMasterToAxis(MMW *mmw, int initial) {
+    int i, cnt, def;
 
     cnt = GGadgetGetFirstListSelectedItem(GWidgetGetControl(mmw->subwins[mmw_counts],CID_AxisCount))
 	    +1;
@@ -1310,9 +1324,20 @@ static void SetMasterToAxis(MMW *mmw) {
 	GGadget *list = GWidgetGetControl(mmw->subwins[mmw_counts],CID_MasterCount);
 	int32 len;
 	GTextInfo **ti = GGadgetGetList(list,&len);
-	for ( i=0; i<16; ++i )
-	    ti[i]->disabled = (i+1) < (1<<cnt);
-	GGadgetSelectOneListItem(list,(1<<cnt)-1);
+	if ( GGadgetIsChecked(GWidgetGetControl(mmw->subwins[mmw_counts],CID_Adobe)) ) {
+	    for ( i=0; i<16; ++i )
+		ti[i]->disabled = (i+1) < (1<<cnt);
+	    def = (1<<cnt);
+	} else {
+	    for ( i=0; i<16; ++i )
+		ti[i]->disabled = (i+1) < cnt;
+	    def = 1;
+	    for ( i=0; i<cnt; ++i )
+		def *= 3;
+	    --def;
+	}
+	if ( !initial )
+	    GGadgetSelectOneListItem(list,def-1);
 	mmw->old_axis_count = cnt;
     }
 }
@@ -1320,7 +1345,7 @@ static void SetMasterToAxis(MMW *mmw) {
 static int MMW_AxisCntChanged(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
-	SetMasterToAxis(GDrawGetUserData(GGadgetGetWindow(g)));
+	SetMasterToAxis(GDrawGetUserData(GGadgetGetWindow(g)),false);
     }
 return( true );
 }
@@ -2421,6 +2446,7 @@ static MMSet *MMCopy(MMSet *orig) {
     /*  lose data when they shrink and then restore a value */
 
     mm = chunkalloc(sizeof(MMSet));
+    mm->apple = orig->apple;
     mm->instance_count = MmMax;
     mm->axis_count = 4;
     for ( i=0; i<orig->axis_count; ++i )
@@ -2439,6 +2465,9 @@ static MMSet *MMCopy(MMSet *orig) {
 	memcpy(mm->axismaps[i].blends,orig->axismaps[i].blends,mm->axismaps[i].points*sizeof(real));
 	mm->axismaps[i].designs = galloc(mm->axismaps[i].points*sizeof(real));
 	memcpy(mm->axismaps[i].designs,orig->axismaps[i].designs,mm->axismaps[i].points*sizeof(real));
+	mm->axismaps[i].min = orig->axismaps[i].min;
+	mm->axismaps[i].max = orig->axismaps[i].max;
+	mm->axismaps[i].def = orig->axismaps[i].def;
     }
     mm->cdv = copy(orig->cdv);
     mm->ndv = copy(orig->ndv);
@@ -2451,14 +2480,15 @@ void MMWizard(MMSet *mm) {
     GWindow gw;
     GWindowAttrs wattrs;
     GTabInfo axisaspects[5], designaspects[17];
-    GGadgetCreateData bgcd[8], cntgcd[6], axisgcd[4][13], designgcd[16][5],
+    GGadgetCreateData bgcd[8], cntgcd[9], axisgcd[4][13], designgcd[16][5],
 	    agcd[2], dgcd[3], ogcd[9];
-    GTextInfo blabel[8], cntlabel[6], axislabel[4][13], designlabel[16][5],
+    GTextInfo blabel[8], cntlabel[9], axislabel[4][13], designlabel[16][5],
 	    dlabel, olabels[9];
     char axisbegins[4][20], axisends[4][20];
     char *normalized[4], *designs[4];
     char *pt, *freeme;
     int i,k;
+    int isadobe = mm==NULL || !mm->apple;
     int space,blen= GIntGetResource(_NUM_Buttonsize)*100/GGadgetScale(100);
     static int axistablab[] = { _STR_Axis1, _STR_Axis2, _STR_Axis3, _STR_Axis4 };
     static char *designtablab[] = { "1", "2", "3", "4", "5", "6", "7", "8",
@@ -2561,10 +2591,37 @@ void MMWizard(MMSet *mm) {
     memset(&cntgcd,0,sizeof(cntgcd));
 
     k=0;
-    cntlabel[k].text = (unichar_t *) _STR_NumberOfAxes;
+    cntlabel[k].text = (unichar_t *) _STR_TypeOfDistortableFont;
     cntlabel[k].text_in_resource = true;
     cntgcd[k].gd.label = &cntlabel[k];
     cntgcd[k].gd.pos.x = 5; cntgcd[k].gd.pos.y = 11;
+    cntgcd[k].gd.flags = gg_visible | gg_enabled;
+    cntgcd[k++].creator = GLabelCreate;
+
+    cntlabel[k].text = (unichar_t *) _STR_Adobe;
+    cntlabel[k].text_in_resource = true;
+    cntgcd[k].gd.label = &cntlabel[k];
+    cntgcd[k].gd.pos.x = 10; cntgcd[k].gd.pos.y = cntgcd[k-1].gd.pos.y+12;
+    cntgcd[k].gd.flags = isadobe ? (gg_visible | gg_enabled | gg_cb_on) :
+	    ( gg_visible | gg_enabled );
+    cntgcd[k].gd.cid = CID_Adobe;
+    cntgcd[k].gd.handle_controlevent = MM_TypeChanged;
+    cntgcd[k++].creator = GRadioCreate;
+
+    cntlabel[k].text = (unichar_t *) _STR_Apple;
+    cntlabel[k].text_in_resource = true;
+    cntgcd[k].gd.label = &cntlabel[k];
+    cntgcd[k].gd.pos.x = 70; cntgcd[k].gd.pos.y = cntgcd[k-1].gd.pos.y;
+    cntgcd[k].gd.flags = !isadobe ? (gg_visible | gg_enabled | gg_cb_on) :
+	    ( gg_visible | gg_enabled );
+    cntgcd[k].gd.cid = CID_Apple;
+    cntgcd[k].gd.handle_controlevent = MM_TypeChanged;
+    cntgcd[k++].creator = GRadioCreate;
+
+    cntlabel[k].text = (unichar_t *) _STR_NumberOfAxes;
+    cntlabel[k].text_in_resource = true;
+    cntgcd[k].gd.label = &cntlabel[k];
+    cntgcd[k].gd.pos.x = 5; cntgcd[k].gd.pos.y = cntgcd[k-1].gd.pos.y+18;
     cntgcd[k].gd.flags = gg_visible | gg_enabled;
     cntgcd[k++].creator = GLabelCreate;
 
@@ -2597,7 +2654,7 @@ void MMWizard(MMSet *mm) {
     mastercounts[mmw.instance_count-1].selected = true;
 
     GGadgetsCreate(mmw.subwins[mmw_counts],cntgcd);
-    SetMasterToAxis(&mmw);
+    SetMasterToAxis(&mmw,true);
 
     memset(&axisgcd,0,sizeof(axisgcd));
     memset(&axislabel,0,sizeof(axislabel));
@@ -2756,7 +2813,6 @@ void MMWizard(MMSet *mm) {
     agcd[0].creator = GTabSetCreate;
 
     GGadgetsCreate(mmw.subwins[mmw_axes],agcd);
-    SetMasterToAxis(&mmw);
     for ( i=0; i<4; ++i ) {
 	free(axislabel[i][1].text);
 	free(normalized[i]);

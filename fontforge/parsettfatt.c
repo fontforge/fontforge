@@ -3899,6 +3899,7 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
     uint16 *class1, *class2;
     int tupleIndex;
     int isv;
+    SplineChar **chars;
 
     fseek(ttf,info->kern_start,SEEK_SET);
     version = getushort(ttf);
@@ -3930,12 +3931,15 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 	    if ( coverage&0x2000 ) {
 		if ( info->variations==NULL )
 		    flags_good = false;	/* Ignore if we failed to load the tuple data */
+		else if ( tupleIndex>=info->variations->tuple_count )
+		    flags_good = false;	/* Bad tuple */
 	    } else
 		tupleIndex = -1;
 	    header_size = 8;
 	}
 	if ( flags_good && format==0 ) {
 	    /* format 0, horizontal kerning data (as pairs) not perpendicular */
+	    chars = tupleIndex==-1 ? info->chars : info->variations->tuples[tupleIndex].chars;
 	    npairs = getushort(ttf);
 	    /* searchRange = */ getushort(ttf);
 	    /* entrySelector = */ getushort(ttf);
@@ -3946,15 +3950,15 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 		offset = (short) getushort(ttf);
 		if ( left<info->glyph_cnt && right<info->glyph_cnt ) {
 		    kp = chunkalloc(sizeof(KernPair));
-		    kp->sc = info->chars[right];
+		    kp->sc = chars[right];
 		    kp->off = offset;
-		    kp->sli = SLIFromInfo(info,info->chars[left],DEFAULT_LANG);
+		    kp->sli = SLIFromInfo(info,chars[left],DEFAULT_LANG);
 		    if ( isv ) {
-			kp->next = info->chars[left]->vkerns;
-			info->chars[left]->vkerns = kp;
+			kp->next = chars[left]->vkerns;
+			chars[left]->vkerns = kp;
 		    } else {
-			kp->next = info->chars[left]->kerns;
-			info->chars[left]->kerns = kp;
+			kp->next = chars[left]->kerns;
+			chars[left]->kerns = kp;
 		    }
 		} else
 		    fprintf( stderr, "Bad kern pair glyphs %d & %d must be less than %d\n",
@@ -3978,19 +3982,25 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 #endif
 	} else if ( flags_good && (format==2 || format==3 )) {
 	    /* two class based formats */
-	    if ( isv ) {
-		if ( info->khead==NULL )
-		    info->vkhead = kc = chunkalloc(sizeof(KernClass));
-		else
-		    kc = info->vklast->next = chunkalloc(sizeof(KernClass));
-		info->vklast = kc;
+	    KernClass **khead, **klast;
+	    if ( isv && tupleIndex==-1 ) {
+		khead = &info->vkhead;
+		klast = &info->vklast;
+	    } else if ( tupleIndex==-1 ) {
+		khead = &info->khead;
+		klast = &info->klast;
+	    } else if ( isv ) {
+		khead = &info->variations->tuples[tupleIndex].vkhead;
+		klast = &info->variations->tuples[tupleIndex].vklast;
 	    } else {
-		if ( info->khead==NULL )
-		    info->khead = kc = chunkalloc(sizeof(KernClass));
-		else
-		    kc = info->klast->next = chunkalloc(sizeof(KernClass));
-		info->klast = kc;
+		khead = &info->variations->tuples[tupleIndex].khead;
+		klast = &info->variations->tuples[tupleIndex].klast;
 	    }
+	    if ( *khead==NULL )
+		*khead = kc = chunkalloc(sizeof(KernClass));
+	    else
+		kc = (*klast)->next = chunkalloc(sizeof(KernClass));
+	    *klast = kc;
 	    if ( format==2 ) {
 		rowWidth = getushort(ttf);
 		left = getushort(ttf);

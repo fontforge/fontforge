@@ -38,7 +38,7 @@
 /* If it's hinted it better have a cvar */
 /* It may have an avar if it wants to be complicated */
 
-static void VariationFree(struct ttfinfo *info) {
+void VariationFree(struct ttfinfo *info) {
     int i,j;
     struct variations *variation = info->variations;
 
@@ -60,11 +60,12 @@ return;
     if ( variation->tuples!=NULL ) {
 	for ( i=0; i<variation->tuple_count; ++i ) {
 	    free(variation->tuples[i].coords);
-	    for ( j=0; j<info->glyph_cnt; ++j )
-		SplineCharFree(info->chars[j]);
-	    free(info->chars);
-	    KernClassListFree(info->khead);
-	    KernClassListFree(info->vkhead);
+	    if ( variation->tuples[i].chars!=NULL )
+		for ( j=0; j<info->glyph_cnt; ++j )
+		    SplineCharFree(variation->tuples[i].chars[j]);
+	    free(variation->tuples[i].chars);
+	    KernClassListFree(variation->tuples[i].khead);
+	    KernClassListFree(variation->tuples[i].vkhead);
 	}
 	free(variation->tuples);
     }
@@ -73,16 +74,17 @@ return;
 }
 
 static void parsefvar(struct ttfinfo *info, FILE *ttf) {
-    int data_off, axis_count, instance_count;
+    int data_off, axis_count, instance_count, cnt;
     int i,j;
 
     fseek(ttf,info->fvar_start,SEEK_SET);
     if ( getlong(ttf)!=0x00010000 )	/* I only understand version 1 */
 return;
     data_off = getushort(ttf);
-    if ( getushort(ttf)>2 )
+    cnt = getushort(ttf);
+    if ( cnt>2 )
 	fprintf( stderr, "Hmm, this 'fvar' table has more count/size pairs than I expect\n" );
-    else if ( getushort(ttf)<2 ) {
+    else if ( cnt<2 ) {
 	fprintf( stderr, "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it\n" );
 return;
     }
@@ -112,7 +114,7 @@ return;
     info->variations->axis_count = axis_count;
     info->variations->instance_count = instance_count;
     info->variations->axes = gcalloc(axis_count,sizeof(struct taxis));
-    info->variations->instances = gcalloc(axis_count,sizeof(struct tinstance));
+    info->variations->instances = gcalloc(instance_count,sizeof(struct tinstance));
     for ( i=0; i<instance_count; ++i )
 	info->variations->instances[i].coords = galloc(axis_count*sizeof(real));
 
@@ -175,11 +177,18 @@ static SplineChar **InfoCopyGlyphs(struct ttfinfo *info) {
     SplineChar **chars = galloc(info->glyph_cnt*sizeof(SplineChar *));
     int i;
 
-    for ( i=0; i<info->glyph_cnt; ++i )
-	chars[i] = ( info->chars[i]!=NULL ) ? SplineCharCopy(info->chars[i],NULL) : NULL;
+    for ( i=0; i<info->glyph_cnt; ++i ) {
+	if ( info->chars[i]==NULL )
+	    chars[i] = NULL;
+	else {
+	    chars[i] = SplineCharCopy(info->chars[i],NULL);
+	    chars[i]->changed = false;
+	}
+    }
 return( chars );
 }
 
+#define BAD_DELTA	0x10001
 static int *readpackeddeltas(FILE *ttf,int n) {
     int *deltas;
     int runcnt, i, j;
@@ -191,17 +200,20 @@ static int *readpackeddeltas(FILE *ttf,int n) {
 	runcnt = getc(ttf);
 	if ( runcnt&0x80 ) {
 	    /* runcnt zeros get added */
-	    for ( j=0; j<=(runcnt&0x3f); ++j )
+	    for ( j=0; j<=(runcnt&0x3f) && i<n ; ++j )
 		deltas[i++] = 0;
 	} else if ( runcnt&0x40 ) {
-	    /* runcnt shorts from the stack *;
-	    runcnt = (runcnt&0x7f);
-	    for ( j=0 ; j<=(runcnt&0x3f); ++j )
+	    /* runcnt shorts from the stack */
+	    for ( j=0 ; j<=(runcnt&0x3f) && i<n ; ++j )
 		deltas[i++] = (int16) getushort(ttf);
 	} else {
 	    /* runcnt signed bytes from the stack */
-	    for ( j=0; j<runcnt; ++j )
+	    for ( j=0; j<=(runcnt&0x3f) && i<n; ++j )
 		deltas[i++] = (int8) getc(ttf);
+	}
+	if ( j<=(runcnt&0x3f) ) {
+	    if ( n>0 )
+		deltas[0] = BAD_DELTA;
 	}
     }
 return( deltas );
@@ -249,9 +261,9 @@ static int TuplesMatch(struct variations *v, int vtest, int dbase) {
     if ( vtest==dbase )
 return( true );
     for ( i=0; i<v->axis_count; ++i ) {
-	if ( v->tuples[dbase].coords[i]==0 && v->tuples[vtest].coords[i]!=0 )
+	if ( v->tuples[vtest].coords[i]==0 && v->tuples[dbase].coords[i]!=0 )
 return( false );
-	if ( v->tuples[vtest].coords[i]!=0 &&
+	if ( v->tuples[dbase].coords[i]!=0 &&
 		v->tuples[dbase].coords[i]!=v->tuples[vtest].coords[i] )
 return( false );
     }
@@ -268,11 +280,16 @@ static int PointCount(SplineChar *sc) {
 	for ( i=0, ref=sc->layers[ly_fore].refs; ref!=NULL; ++i, ref=ref->next );
     else {
 	for ( i=0, ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
-	    for ( sp=ss->first; sp!=NULL ; ++i ) {
+	    for ( sp=ss->first; sp!=NULL ; ) {
 		if ( sp->ttfindex!=0xffff && sp->ttfindex!=0xfffe )
 		    ++i;
 		if ( sp->nextcpindex!=0xffff && sp->nextcpindex!=0xfffe )
 		    ++i;
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==ss->first )
+	    break;
 	    }
 	}
     }
@@ -284,7 +301,6 @@ static void SCShiftAllBy(SplineChar *sc,int xd, int yd) {
     /*  should be shifted over */
     SplineSet *ss;
     SplinePoint *sp;
-    Spline *s, *first;
     RefChar *ref;
 
     if ( xd==0 && yd==0 )
@@ -307,11 +323,6 @@ return;
 	    sp = sp->next->to;
 	    if ( sp == ss->first )
 	break;
-	}
-	first = NULL;
-	for ( s=ss->first->next; s!=NULL && s!=first; s=s->to->next ) {
-	    SplineRefigure(s);
-	    if ( first==NULL ) first = s;
 	}
     }
     for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
@@ -358,11 +369,6 @@ static void VaryGlyph(SplineChar *sc,int *points, int *xdeltas, int *ydeltas,
 		    if ( sp == ss->first )
 		break;
 		}
-		first = NULL;
-		for ( s=ss->first->next; s!=NULL && s!=first; s=s->to->next ) {
-		    SplineRefigure(s);
-		    if ( first==NULL ) first = s;
-		}
 	    }
 	}
 	SCShiftAllBy(sc,-xdeltas[pcnt-4],0);
@@ -404,6 +410,8 @@ static void VaryGlyph(SplineChar *sc,int *points, int *xdeltas, int *ydeltas,
 			sp->nextcp.y += ydeltas[j++];
 			if ( sp->next!=NULL )
 			    sp->next->to->prevcp = sp->nextcp;
+		    } else if ( sp->nonextcp ) {
+			sp->nextcp = sp->me;
 		    }
 		    if ( sp->next==NULL )
 		break;
@@ -412,10 +420,6 @@ static void VaryGlyph(SplineChar *sc,int *points, int *xdeltas, int *ydeltas,
 		break;
 		}
 		first = NULL;
-		for ( s=ss->first->next; s!=NULL && s!=first; s=s->to->next ) {
-		    SplineRefigure(s);
-		    if ( first==NULL ) first = s;
-		}
 	    }
 	}
 	if ( points[j]==i )
@@ -426,6 +430,27 @@ static void VaryGlyph(SplineChar *sc,int *points, int *xdeltas, int *ydeltas,
 	    SCShiftAllBy(sc,0,-ydeltas[j++]);
 	if ( points[j]==i+3 )
 	    sc->vwidth += ydeltas[j++];
+    }
+    if ( sc->layers[ly_fore].refs==NULL ) {
+	for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+	    for ( sp=ss->first; sp!=NULL ; ++i ) {
+		if ( sp->ttfindex==0xffff ) {
+		    sp->me.x = ( sp->nextcp.x + sp->prevcp.x )/2;
+		    sp->me.y = ( sp->nextcp.y + sp->prevcp.y )/2;
+		}
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp == ss->first )
+	    break;
+	    }
+
+	    first = NULL;
+	    for ( s=ss->first->next; s!=NULL && s!=first; s=s->to->next ) {
+		SplineRefigure(s);
+		if ( first==NULL ) first = s;
+	    }
+	}
     }
 }
 
@@ -447,9 +472,17 @@ return;					/*  can't happen */
     }
     xdeltas = readpackeddeltas(ttf,pcnt);
     ydeltas = readpackeddeltas(ttf,pcnt);
-    for ( tc = 0; tc<v->tuple_count; ++tc )
-	if ( TuplesMatch(v,tc,tupleIndex))
-	    VaryGlyph(v->tuples[tc].chars[gnum],points,xdeltas,ydeltas,pcnt);
+    if ( xdeltas[0]!=BAD_DELTA && ydeltas[0]!=BAD_DELTA )
+	for ( tc = 0; tc<v->tuple_count; ++tc ) {
+	    if ( TuplesMatch(v,tc,tupleIndex))
+		VaryGlyph(v->tuples[tc].chars[gnum],points,xdeltas,ydeltas,pcnt);
+    } else {
+	static int warned = false;
+	if ( !warned )
+	    fprintf( stderr, "Incorrect number of deltas in glyph %d (%s)\n", gnum,
+		    info->chars[gnum]->name!=NULL?info->chars[gnum]->name:"<Nameless>" );
+	warned = true;
+    }
     free(xdeltas);
     free(ydeltas);
 }
@@ -466,7 +499,7 @@ static void parsegvar(struct ttfinfo *info, FILE *ttf) {
 	VariationFree(info);
 return;
     }
-    axiscount = getlong(ttf);
+    axiscount = getushort(ttf);
     if ( axiscount!=info->variations->axis_count ) {
 	fprintf( stderr, "Hmm, the axis count in the 'gvar' table is different from that in the 'fvar' table.\n" );
 	VariationFree(info);
@@ -514,13 +547,14 @@ return;
 	int tc;
 	uint32 datoff;
 	int *sharedpoints=NULL;
+	fseek(ttf,gvars[g],SEEK_SET);
 	tc = getushort(ttf);
 	datoff = gvars[g]+getushort(ttf);
 	if ( tc&0x8000 ) {
 	    uint32 here = ftell(ttf);
-	    fseek(ttf,dataoff,SEEK_SET);
+	    fseek(ttf,datoff,SEEK_SET);
 	    sharedpoints = readpackedpoints(ttf);
-	    dataoff = ftell(ttf);
+	    datoff = ftell(ttf);
 	    fseek(ttf,here,SEEK_SET);
 	}
 	for ( i=0; i<(tc&0xfff); ++i ) {
@@ -539,33 +573,168 @@ return;
 	    } else {
 		int *localpoints=NULL;
 		uint32 here = ftell(ttf);
-		fseek(ttf,dataoff,SEEK_SET);
+		fseek(ttf,datoff,SEEK_SET);
 		if ( tupleIndex&0x2000 )
 		    localpoints = readpackedpoints(ttf);
 		VaryGlyphs(info,tupleIndex&0xfff,g,
-			(tupleIndex&0x2000)?sharedpoints:localpoints,ttf);
+			(tupleIndex&0x2000)?localpoints:sharedpoints,ttf);
 		free(localpoints);
 		fseek(ttf,here,SEEK_SET);
 	    }
-	    dataoff += tupleDataSize;
+	    datoff += tupleDataSize;
 	}
 	free(sharedpoints);
     }
     free(gvars);
 }
 
+static void AlterEntry(struct ttf_table *cvt, int i, int delta ) {
+    int val = memushort(cvt->data,2*i);
+    memputshort(cvt->data,2*i,val+delta);
+}
+
+static void VaryCvt(struct tuples *tuple,int *points, int *deltas,
+	int pcnt, struct ttf_table *orig_cvt) {
+    struct ttf_table *cvt;
+    int i;
+
+    if ( (cvt = tuple->cvt)==NULL ) {
+	cvt = tuple->cvt = chunkalloc(sizeof(struct ttf_table));
+	cvt->tag = orig_cvt->tag;
+	cvt->len = cvt->maxlen = orig_cvt->len;
+	cvt->data = galloc(cvt->len);
+	memcpy(cvt->data,orig_cvt->data,cvt->len);
+    }
+    if ( points[0]==ALL_POINTS ) {
+	for ( i=0; i<pcnt; ++i )
+	    AlterEntry(cvt,i,deltas[i]);
+    } else {
+	for ( i=0; i<pcnt; ++i )
+	    AlterEntry(cvt,points[i],deltas[i]);
+    }
+}
+
+static void VaryCvts(struct ttfinfo *info,int tupleIndex, int *points, FILE *ttf,
+    struct ttf_table *origcvt ) {
+    /* one annoying thing about gvar, is that the variations do not describe */
+    /*  designs. well variations for [0,1] describes that design, but the */
+    /*  design for [1,1] includes the variations [0,1], [1,0], and [1,1] */
+    /* And same is true of cvar */
+    int pcnt, tc;
+    int *deltas;
+    struct variations *v = info->variations;
+
+    if ( points[0]==ALL_POINTS )
+	pcnt = origcvt->len/sizeof(uint16);
+    else {
+	for ( pcnt=0; points[pcnt]!=END_OF_POINTS; ++pcnt );
+    }
+    deltas = readpackeddeltas(ttf,pcnt);
+    if ( deltas[0]!=BAD_DELTA )
+	for ( tc = 0; tc<v->tuple_count; ++tc ) {
+	    if ( TuplesMatch(v,tc,tupleIndex))
+		VaryCvt(&v->tuples[tc],points,deltas,pcnt,origcvt);
+    } else {
+	static int warned = false;
+	if ( !warned )
+	    fprintf( stderr, "Incorrect number of deltas in cvt\n" );
+	warned = true;
+    }
+    free(deltas);
+}
+
 static void parsecvar(struct ttfinfo *info, FILE *ttf) {
+    struct ttf_table *cvt;
+    int tuplecount;
+    uint32 offset;
+    int *sharedpoints=NULL;
+    int i;
+    int warned = false;
+
+    for ( cvt = info->tabs; cvt!=NULL && cvt->tag!=CHR('c','v','t',' '); cvt=cvt->next );
+    if ( cvt==NULL )
+return;
+
+    fseek(ttf,info->cvar_start,SEEK_SET);
+    if ( getlong(ttf)!=0x00010000 ) {	/* I only understand version 1 */
+	/* I think I can live without cvt variations... */
+	/* So I shan't free the structure */
+return;
+    }
+
+    tuplecount = getushort(ttf);
+    offset = info->cvar_start+getushort(ttf);
+    /* The documentation implies there are flags packed into the tuplecount */
+    /*  but John Jenkins tells me that shared points don't apply to cvar */
+    /*  Might as well parse it just in case */
+    if ( tuplecount&0x8000 ) {
+	uint32 here = ftell(ttf);
+	fseek(ttf,offset,SEEK_SET);
+	sharedpoints = readpackedpoints(ttf);
+	offset = ftell(ttf);
+	fseek(ttf,here,SEEK_SET);
+    }
+    for ( i=0; i<(tuplecount&0xfff); ++i ) {
+	int tupleDataSize, tupleIndex;
+	tupleDataSize = getushort(ttf);
+	tupleIndex = getushort(ttf);
+	/* there is no provision here for a global tuple coordinate section */
+	/*  so John says there are no tuple indeces. Just embedded tuples */
+	if ( tupleIndex&0x4000 ) {
+	    if ( !warned )
+		fprintf( stderr, "Warning: 'cvar' contains intermediate tuple data.\n FontForge doesn't support this.\n" );
+	    warned = true;
+	    if ( tupleIndex&0x8000 )
+		fseek(ttf,2*info->variations->axis_count,SEEK_CUR);
+	    if ( tupleIndex&0x4000 )
+		fseek(ttf,4*info->variations->axis_count,SEEK_CUR);
+	} else {
+	    int *localpoints=NULL;
+	    uint32 here;
+	    int j,k,ti;
+	    ti = tupleIndex&0xfff;
+	    if ( tupleIndex&0x8000 ) {
+		real *coords = galloc(info->variations->axis_count*sizeof(real));
+		for ( j=0; j<info->variations->axis_count; ++j )
+		    coords[j] = ((int16) getushort(ttf))/16384.0;
+		for ( k=0 ; k<info->variations->tuple_count; ++k ) {
+		    for ( j=0; j<info->variations->axis_count; ++j )
+			if ( coords[j]!=info->variations->tuples[k].coords[j] )
+		    break;
+		    if ( j==info->variations->axis_count )
+		break;
+		}
+		ti = -1;
+		if ( k!=info->variations->tuple_count )
+		    ti = k;
+	    }
+	    if ( ti!=-1 ) {
+		here = ftell(ttf);
+		fseek(ttf,offset,SEEK_SET);
+		if ( tupleIndex&0x2000 )
+		    localpoints = readpackedpoints(ttf);
+		VaryCvts(info,ti,(tupleIndex&0x2000)?localpoints:sharedpoints,ttf,cvt);
+		free(localpoints);
+		fseek(ttf,here,SEEK_SET);
+	    }
+	}
+	offset += tupleDataSize;
+    }
+    free(sharedpoints);
 }
 
 void readttfvariations(struct ttfinfo *info, FILE *ttf) {
     if ( info->gvar_start==0 || info->gvar_len==0 || info->fvar_start==0 || info->fvar_len==0 )
 return;
 
+    GProgressChangeLine2R(_STR_ProcessingVariations);
+    if ( screen_display!=NULL )
+	GDrawProcessPendingEvents(NULL);
     parsefvar(info,ttf);
     if ( info->variations!=NULL && info->avar_start!=0 )
 	parseavar(info,ttf);
     if ( info->variations!=NULL )
 	parsegvar(info,ttf);
-    if ( info->variations!=NULL && info->cvar_start!=0 )
+    if ( info->variations!=NULL && info->cvar_start!=0 && info->cvt_start!=0 )
 	parsecvar(info,ttf);
 }

@@ -4173,6 +4173,115 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
     info->dups = NULL;
 }
 
+static char *AxisNameConvert(uint32 tag) {
+    char buffer[8];
+
+    if ( tag==CHR('w','g','h','t'))
+return( copy("Weight"));
+    if ( tag==CHR('w','d','t','h'))
+return( copy("Width"));
+    if ( tag==CHR('o','p','s','z'))
+return( copy("OpticalSize"));
+    if ( tag==CHR('s','l','n','t'))
+return( copy("Slant"));
+
+    buffer[0] = tag>>24;
+    buffer[1] = tag>>16;
+    buffer[2] = tag>>8;
+    buffer[3] = tag&0xff;
+    buffer[4] = 0;
+return( copy(buffer ));
+}
+
+static SplineFont *SFFromTuple(SplineFont *basesf,struct variations *v,int tuple,
+	MMSet *mm, struct ttfinfo *info) {
+    SplineFont *sf;
+    int i;
+
+    sf = SplineFontEmpty();
+    sf->display_size = basesf->display_size;
+    sf->display_antialias = basesf->display_antialias;
+
+    sf->fontname = MMMakeMasterFontname(mm,tuple,&sf->fullname);
+    sf->familyname = copy(basesf->familyname);
+    sf->weight = copy("All");
+    sf->italicangle = basesf->italicangle;
+    sf->upos = basesf->upos;
+    sf->uwidth = basesf->uwidth;
+    sf->ascent = basesf->ascent;
+    sf->vertical_origin = basesf->vertical_origin;
+    sf->hasvmetrics = basesf->hasvmetrics;
+    sf->descent = basesf->descent;
+    sf->kerns = v->tuples[tuple].khead;
+    sf->vkerns = v->tuples[tuple].vkhead;
+    sf->encoding_name = basesf->encoding_name;
+    sf->mm = mm;
+    sf->charcnt = basesf->charcnt;
+    sf->chars = gcalloc(sf->charcnt,sizeof(SplineChar *));
+    for ( i=0; i<sf->charcnt; ++i ) if ( basesf->chars[i]!=NULL && basesf->chars[i]->orig_pos<info->glyph_cnt ) {
+	sf->chars[i] = v->tuples[tuple].chars[basesf->chars[i]->orig_pos];
+	sf->chars[i]->enc = i;
+	sf->chars[i]->parent = sf;
+    }
+    sf->ttf_tables = v->tuples[tuple].cvt;
+
+    free(v->tuples[tuple].chars);
+    v->tuples[tuple].chars = NULL;
+    v->tuples[tuple].khead = NULL;
+    v->tuples[tuple].vkhead = NULL;
+    v->tuples[tuple].cvt = NULL;
+return( sf );
+}
+
+static void MMFillFromVAR(SplineFont *sf, struct ttfinfo *info) {
+    MMSet *mm = chunkalloc(sizeof(MMSet));
+    struct variations *v = info->variations;
+    int i,j;
+
+    sf->mm = mm;
+    mm->normal = sf;
+    mm->apple = true;
+    mm->axis_count = v->axis_count;
+    mm->instance_count = v->tuple_count;
+    mm->instances = galloc(v->tuple_count*sizeof(SplineFont *));
+    mm->positions = galloc(v->tuple_count*v->axis_count*sizeof(real));
+    for ( i=0; i<v->tuple_count; ++i ) for ( j=0; j<v->axis_count; ++j )
+	mm->positions[i*v->axis_count+j] = v->tuples[i].coords[j];
+    mm->defweights = gcalloc(v->tuple_count,sizeof(real));	/* Doesn't apply */
+    mm->axismaps = gcalloc(v->axis_count,sizeof(struct axismap));
+    for ( i=0; i<v->axis_count; ++i ) {
+	mm->axes[i] = AxisNameConvert(v->axes[i].tag);
+	mm->axismaps[i].min = v->axes[i].min;
+	mm->axismaps[i].def = v->axes[i].def;
+	mm->axismaps[i].max = v->axes[i].max;
+	if ( v->axes[i].paircount==0 ) {
+	    mm->axismaps[i].points = 3;
+	    mm->axismaps[i].blends = galloc(3*sizeof(real));
+	    mm->axismaps[i].designs = galloc(3*sizeof(real));
+	    mm->axismaps[i].blends[0] = -1; mm->axismaps[i].designs[0] = mm->axismaps[i].min;
+	    mm->axismaps[i].blends[1] =  0; mm->axismaps[i].designs[1] = mm->axismaps[i].def;
+	    mm->axismaps[i].blends[2] =  1; mm->axismaps[i].designs[2] = mm->axismaps[i].max;
+	} else {
+	    mm->axismaps[i].points = v->axes[i].paircount;
+	    mm->axismaps[i].blends = galloc(v->axes[i].paircount*sizeof(real));
+	    mm->axismaps[i].designs = galloc(v->axes[i].paircount*sizeof(real));
+	    for ( j=0; j<v->axes[i].paircount; ++j ) {
+		if ( v->axes[i].mapfrom[j]<=0 ) {
+		    mm->axismaps[i].designs[j] = mm->axismaps[i].def +
+			    v->axes[i].mapfrom[j]*(mm->axismaps[i].def-mm->axismaps[i].min);
+		} else {
+		    mm->axismaps[i].designs[j] = mm->axismaps[i].def +
+			    v->axes[i].mapfrom[j]*(mm->axismaps[i].max-mm->axismaps[i].def);
+		}
+		mm->axismaps[i].blends[j] = v->axes[i].mapto[j];
+	    }
+	}
+    }
+    for ( i=0; i<mm->instance_count; ++i )
+	mm->instances[i] = SFFromTuple(sf,v,i,mm,info);
+    VariationFree(info);
+}
+
 static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     SplineFont *sf, *_sf;
     int i,k;
@@ -4295,6 +4404,8 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 
     otf_orderlangs(sf);		/* I thought these had to be ordered, but it seems I was wrong. But I depend on the order, so I enforce it here */
 
+    if ( info->variations!=NULL )
+	MMFillFromVAR(sf,info);
 return( sf );
 }
 
