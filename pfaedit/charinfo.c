@@ -3436,8 +3436,16 @@ static void SetNameFromUnicode(GWindow gw,int cid,int val) {
 }
 
 void SCInsertPST(SplineChar *sc,PST *new) {
+#if 0
     PST *old, *prev;
 
+    if ( new->type == pst_ligature || new->type==pst_pair ) {
+#endif
+	new->next = sc->possub;
+	sc->possub = new;
+#if 0
+return;
+    }
     for ( old=sc->possub, prev = NULL; old!=NULL; prev = old, old = old->next ) {
 	if ( old->tag==new->tag && old->type==new->type &&
 		old->script_lang_index == new->script_lang_index ) {
@@ -3450,6 +3458,7 @@ void SCInsertPST(SplineChar *sc,PST *new) {
 	sc->possub = new;
     else
 	prev->next = new;
+#endif
 }
 
 PST *SCFindPST(SplineChar *sc,int type,uint32 tag,int sli,int flags) {
