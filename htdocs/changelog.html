@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 24-Oct-2002 -->
+  <!-- AP: Last modified: 25-Oct-2002 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,19 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    25-Oct-2002
+    <UL>
+      <LI>
+	Problems when reading an sfd with references to cleaned up characters.
+      <LI>
+	Removed code from ttf generation that check for points of inflection (but
+	fixed a couple of bugs in it before doing that).
+      <LI>
+	Change the way scripting GenerateFamily behaves. One person has already been
+	unable to figure out how to use it, and I agree that it didn't make much
+	sense the way I had it.
+    </UL>
   <LI>
     24-Oct-2002
     <UL>
@@ -31,6 +44,9 @@
       <LI>
 	Added a way to configure the font family used for info messages in the outline
 	and bitmap character views.
+      <LI>
+	New man pages which use the macros supported by Sun. Thanks to R. P. Channing
+	Rodgers.
     </UL>
   <LI>
     22-Oct-2002

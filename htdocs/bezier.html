@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Dec-2000 -->
-  <!-- AP: Last modified: 7-Feb-2002 -->
+  <!-- AP: Last modified: 25-Oct-2002 -->
   <TITLE>Bezier Splines</TITLE>
 </HEAD>
 <BODY>
@@ -128,6 +128,12 @@ is at:
 <BLOCKQUOTE>
   QP<SUB>1</SUB> = CP<SUB>0</SUB> + 3/2 * (CP<SUB>1</SUB> - CP<SUB>0</SUB>)
 </BLOCKQUOTE>
+<P>
+Other sources I have read on the net suggest checking the cubic spline for
+points of inflection (which quadratic splines cannot have) and forcing breaks
+there. To my eye this actually makes the result worse, it uses more points
+and the approximation does not look as close as it does when ignoring the
+points of inflection. So I ignore them.
 <H2>
   Open Type, another solution
 </H2>
