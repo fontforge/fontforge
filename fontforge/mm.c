@@ -2381,6 +2381,7 @@ static SplineFont *MMNewFont(MMSet *mm,int index,char *familyname) {
     int i;
 
     sf = SplineFontNew();
+    sf->order2 = mm->apple;
     free(sf->fontname); free(sf->familyname); free(sf->fullname); free(sf->weight);
     sf->familyname = copy(familyname);
     if ( index==-1 ) {
