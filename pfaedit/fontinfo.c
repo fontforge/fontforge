@@ -61,6 +61,7 @@ GTextInfo emsizes[] = {
 GTextInfo encodingtypes[] = {
     { (unichar_t *) _STR_Custom, NULL, 0, 0, (void *) em_custom, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Compacted, NULL, 0, 0, (void *) em_compacted, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Original, NULL, 0, 0, (void *) em_original, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
     { (unichar_t *) _STR_Isolatin1, NULL, 0, 0, (void *) em_iso8859_1, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Isolatin0, NULL, 0, 0, (void *) em_iso8859_15, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -1387,6 +1388,8 @@ static void RemoveSplineChar(SplineFont *sf, int enc) {
     }
 }
 
+static int _SFReencodeFont(SplineFont *sf,enum charset new_map, SplineFont *target);
+
 int SFForceEncoding(SplineFont *sf,enum charset new_map) {
     int enc_cnt=256,i;
     BDFFont *bdf;
@@ -1398,6 +1401,15 @@ return(false);
 	sf->encoding_name=em_custom;	/* Custom, it's whatever's there */
 return(false);
     }
+
+    if ( new_map==em_original ) {
+	for ( i=enc_cnt=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=0 )
+	    sf->chars[i]->ttf_glyph = enc_cnt++;
+	if ( sf->charcnt==enc_cnt )
+return( false );
+return( _SFReencodeFont(sf,em_original,NULL));
+    }
+	
 
     if ( new_map>=em_base ) {
 	for ( item=enclist; item!=NULL && item->enc_num!=new_map; item=item->next );
@@ -1553,6 +1565,19 @@ return( false );
 	} else if ( new_map==em_johab ) {
 	    table = unicode_from_johab;
 	    tlen = 0x10000-0x8400;	/* the johab table starts at 0x8400 to save space */
+	} else if ( new_map==em_original ) {
+	    tlen = 0;
+	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
+		if ( sf->chars[i]->ttf_glyph>tlen ) tlen = sf->chars[i]->ttf_glyph;
+	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
+/* This can happen in two ways: User added characters, or we have one char at */
+/*  two encodings (space, nbspace) */
+/* We could just remove duplicate encoding here, but I think better to leave */
+/* that info in */
+		if ( sf->chars[i]->ttf_glyph==-1 )
+		    sf->chars[i]->ttf_glyph = ++tlen;
+	    ++tlen;
+	    table = NULL;
 	} else
 	    table = unicode_from_alphabets[new_map+3];
     } else {
@@ -1565,30 +1590,37 @@ return( false );
     enc_cnt=tlen;
     if ( target!=NULL )
 	/* Done */;
+    else if ( table==NULL )
+	/* Done */;
     else if ( tlen == 94*94 )
 	enc_cnt = 94*96;
     else if ( tlen == 0x10000-0xa100 || tlen==0x10000-0x8400 || tlen==0x10000-0x8100 )
 	enc_cnt = 65536;
 
     extras = 0;
-    used = gcalloc((tlen+7)/8,sizeof(uint8));
-    for ( i=0; i<sf->charcnt; ++i ) {
-	SplineChar *sc = sf->chars[i];
-	if ( sc==NULL )
-	    /* skip */;
-	else if ( (target==NULL && !infont(sc,table,tlen,item,used,new_map)) ||
-		  (target!=NULL && !intarget(sc,target) ) ) {
-	    if ( sc->splines==NULL && sc->refs==NULL && sc->dependents==NULL && !sc->widthset ) {
-		RemoveSplineChar(sf,i);
-	    } else
-		++extras;
+    if ( target==NULL && new_map==em_original ) {
+	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
+	    sf->chars[i]->enc = sf->chars[i]->ttf_glyph;
+    } else {
+	used = gcalloc((tlen+7)/8,sizeof(uint8));
+	for ( i=0; i<sf->charcnt; ++i ) {
+	    SplineChar *sc = sf->chars[i];
+	    if ( sc==NULL )
+		/* skip */;
+	    else if ( (target==NULL && !infont(sc,table,tlen,item,used,new_map)) ||
+		      (target!=NULL && !intarget(sc,target) ) ) {
+		if ( sc->splines==NULL && sc->refs==NULL && sc->dependents==NULL && !sc->widthset ) {
+		    RemoveSplineChar(sf,i);
+		} else
+		    ++extras;
+	    }
+	    if ( sc!=NULL ) {
+		for ( cv=sc->views; cv!=NULL; cv=cv->next )
+		    cv->template1 = cv->template2 = NULL;
+	    }
 	}
-	if ( sc!=NULL ) {
-	    for ( cv=sc->views; cv!=NULL; cv=cv->next )
-		cv->template1 = cv->template2 = NULL;
-	}
+	free(used);
     }
-    free(used);
     chars = gcalloc(enc_cnt+extras,sizeof(SplineChar *));
     for ( bdf=sf->bitmaps; bdf!=NULL; bdf = bdf->next )
 	bdf->temp = gcalloc(enc_cnt+extras,sizeof(BDFChar *));
