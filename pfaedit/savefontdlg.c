@@ -669,7 +669,8 @@ return( NULL );
     } while ( k<sf->subfontcnt );
 
     mapping = gcalloc(cnt+1,sizeof(short));
-    mapping[cnt] = -1;
+    memset(mapping,-1,(cnt+1)*sizeof(short));
+    mapping[cnt] = -2;
     *max = 0;
 
     while ( fgets(buffer,sizeof(buffer),file)!=NULL )
@@ -715,7 +716,7 @@ return( NULL );
 		    }
 		}
 		if ( modi<cnt ) {
-		    if ( mapping[modi]!=0 && !warned ) {
+		    if ( mapping[modi]!=-1 && !warned ) {
 			fprintf( stderr, "Warning: Encoding %d is mapped to at least two sub-fonts (%d and %d)\n Only one will be used here.\n",
 				i, subfilecnt, mapping[modi]);
 			warned = true;
@@ -754,7 +755,7 @@ static int SaveSubFont(SplineFont *sf,char *newname,int32 *sizes,int res,
     temp.uniqueid = 0;
     memset(chars,0,sizeof(chars));
     pos = used = 0;
-    for ( i=0; mapping[i]>=0; ++i ) if ( mapping[i]==subfont ) {
+    for ( i=0; mapping[i]!=-2; ++i ) if ( mapping[i]==subfont ) {
 	k = 0;
 	do {
 	    _sf = sf->subfontcnt==0 ? sf : sf->subfonts[k++];
@@ -918,7 +919,7 @@ return( 1 );
     free(path);
     /*GProgressEnableStop(false);*/
 
-    for ( i=1; i<=max && !err; ++i )
+    for ( i=0; i<=max && !err; ++i )
 	err = SaveSubFont(sf,newname,sizes,res,mapping,i,names);
     RestoreSF(sf);
     free(mapping);
