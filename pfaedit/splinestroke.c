@@ -559,7 +559,7 @@ static void StrokeJoint(SplinePoint *base,StrokeInfo *si,JointPoint *plus,JointP
 		 base->next->splines[1].c);
 	if ( !pinner ) {
 	    SplineSet junk;
-	    MakeJoints(plus,si,&pplus,&nplus,&base->me,1,pangle,nangle,&base->me,factor);
+	    MakeJoints(plus,si,&pplus,&nplus,&base->me,1,nangle,pangle,&base->me,factor);
 	    junk.first = plus->from; junk.last = plus->to;
 	    SplineSetReverse(&junk);
 	    plus->from = junk.first; plus->to = junk.last;
