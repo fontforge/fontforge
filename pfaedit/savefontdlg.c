@@ -442,12 +442,11 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_AppleMode),false);
     if ( which==0 )	/* Postscript */
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OpenTypeMode),false);
-    else if ( !alwaysgenopentype &&
-	    (fs==ff_ttfmacbin || fs==ff_ttfdfont || fs==ff_otfdfont ||
+    else if ( (fs==ff_ttfmacbin || fs==ff_ttfdfont || fs==ff_otfdfont ||
 	     fs==ff_otfciddfont || d->family || (fs==ff_none && bf==bf_sfnt_dfont)))
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OpenTypeMode),false);
     else
-	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OpenTypeMode),true);
+	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OpenTypeMode),alwaysgenopentype);
 
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_PfEdComments),flags&ttf_flag_pfed_comments);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors),flags&ttf_flag_pfed_colors);
