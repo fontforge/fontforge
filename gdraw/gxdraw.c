@@ -1577,7 +1577,7 @@ static int GXDrawSetline(GXDisplay *gdisp, GGC *mine) {
 	    mine->dash_offset != gcs->dash_offset ) {
 	vals.line_style = mine->dash_len==0?LineSolid:LineOnOffDash;
 	mask |= GCLineStyle;
-	if ( vals.line_style!=0 ) {
+	if ( vals.line_style!=LineSolid ) {
 	    if ( mine->dash_len==mine->skip_len ) {
 		vals.dash_offset = mine->dash_offset;
 		vals.dashes = mine->dash_len;
