@@ -2073,9 +2073,8 @@ void otf_dumpgdef(struct alltabs *at, SplineFont *_sf) {
     /*  attach class def subtable, so I shall too */
     /* All my example fonts contain a ligature caret list subtable, which is */
     /*  empty. Odd, but perhaps important */
-    AnchorClass *ac;
     PST *pst;
-    int i,j,k,l, lcnt,cmax;
+    int i,j,k,l, lcnt,cmax, needsclass;
     int pos, offset;
     int cnt, start, last, lastval;
     SplineChar **glyphs, *sc;
@@ -2083,17 +2082,16 @@ void otf_dumpgdef(struct alltabs *at, SplineFont *_sf) {
 
     if ( _sf->cidmaster ) _sf = _sf->cidmaster;
 
-    for ( ac = _sf->anchor; ac!=NULL; ac=ac->next ) {
-	if ( ac->feature_tag!=CHR('c','u','r','s'))
-    break;
-    }
     glyphs = NULL;
     for ( k=0; k<2; ++k ) {
 	lcnt = 0;
+	needsclass = false;
 	l = 0;
 	do {
 	    sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[l];
 	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
+		if ( gdefclass(sf->chars[i])!=1 )
+		    needsclass = true;
 		for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
 		    if ( pst->type == pst_lcaret ) {
 			for ( j=pst->u.lcaret.cnt-1; j>=0; --j )
@@ -2117,17 +2115,17 @@ void otf_dumpgdef(struct alltabs *at, SplineFont *_sf) {
 	glyphs = galloc((lcnt+1)*sizeof(SplineChar *));
 	glyphs[lcnt] = NULL;
     }
-    if ( ac==NULL && lcnt==0 )
+    if ( !needsclass && lcnt==0 )
 return;					/* No anchor positioning, no ligature carets */
 
     at->gdef = tmpfile();
     putlong(at->gdef,0x00010000);		/* Version */
-    putshort(at->gdef, ac!=NULL ? 12 : 0 );	/* glyph class defn table */
+    putshort(at->gdef, needsclass ? 12 : 0 );	/* glyph class defn table */
     putshort(at->gdef, 0 );			/* attachment list table */
     putshort(at->gdef, 0 );			/* ligature caret table (come back and fix up later) */
     putshort(at->gdef, 0 );			/* mark attachment class table */
 
-    if ( ac!=NULL ) {
+    if ( needsclass ) {
 	/* Mark shouldn't conflict with anything */
 	/* Ligature is more important than Base */
 	/* Component is not used */
