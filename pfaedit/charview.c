@@ -4498,7 +4498,7 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     cv_edlistcheck(cv,mi,e,true);
 }
 
-static void SPChangePointType(SplinePoint *sp, int pointtype) {
+void SPChangePointType(SplinePoint *sp, int pointtype) {
     BasePoint unitnext, unitprev;
     double nextlen, prevlen;
     int makedflt;

@@ -56,6 +56,9 @@ typedef struct gidata {
 #define CID_PrevPos	2008
 #define CID_NextDef	2009
 #define CID_PrevDef	2010
+#define CID_Curve	2011
+#define CID_Corner	2012
+#define CID_Tangent	2013
 
 #define CID_X		3001
 #define CID_Y		3002
@@ -79,7 +82,7 @@ typedef struct gidata {
 #define II_Height	70
 
 #define PI_Width	218
-#define PI_Height	200
+#define PI_Height	220
 
 #define AI_Width	160
 #define AI_Height	234
@@ -1296,6 +1299,10 @@ static void PIFillup(GIData *ci, int except_cid) {
     GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_PrevPos),ubuf);
 
     GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_PrevDef), ci->cursp->prevcpdef );
+
+    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Curve), ci->cursp->pointtype==pt_curve );
+    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Corner), ci->cursp->pointtype==pt_corner );
+    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Tangent), ci->cursp->pointtype==pt_tangent );
 }
 
 static int PI_Next(GGadget *g, GEvent *e) {
@@ -1381,7 +1388,7 @@ return( true );
 static int PI_NextChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
-	real dx=0, dy=0;
+	real dx=0, dy=0, len, len2;
 	int err=false;
 	SplinePoint *cursp = ci->cursp;
 
@@ -1398,6 +1405,16 @@ return( true );
 	    cursp->nextcpdef = false;
 	    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_NextDef), false );
 	}
+	if ( !ci->sc->parent->order2 && cursp->pointtype==pt_curve ) {
+	    dx = cursp->nextcp.x - cursp->me.x;
+	    dy = cursp->nextcp.y - cursp->me.y;
+	    len = sqrt(dx*dx+dy*dy);
+	    len2 = sqrt((cursp->prevcp.x-cursp->me.x)*(cursp->prevcp.x-cursp->me.x)+
+		    (cursp->prevcp.y-cursp->me.y)*(cursp->prevcp.y-cursp->me.y));
+	    cursp->prevcp.x=cursp->me.x-dx*len2/len;
+	    cursp->prevcp.y=cursp->me.y-dy*len2/len;
+	    SplineRefigure(cursp->prev);
+	}
 	if ( ci->sc->parent->order2 )
 	    SplinePointNextCPChanged2(cursp,false);
 	else if ( cursp->next!=NULL )
@@ -1411,7 +1428,7 @@ return( true );
 static int PI_PrevChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
-	real dx=0, dy=0;
+	real dx=0, dy=0, len, len2;
 	int err=false;
 	SplinePoint *cursp = ci->cursp;
 
@@ -1427,6 +1444,16 @@ return( true );
 	if (( dx>.1 || dx<-.1 || dy>.1 || dy<-.1 ) && cursp->prevcpdef ) {
 	    cursp->prevcpdef = false;
 	    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_PrevDef), false );
+	}
+	if ( !ci->sc->parent->order2 && cursp->pointtype==pt_curve ) {
+	    dx = cursp->prevcp.x - cursp->me.x;
+	    dy = cursp->prevcp.y - cursp->me.y;
+	    len = sqrt(dx*dx+dy*dy);
+	    len2 = sqrt((cursp->nextcp.x-cursp->me.x)*(cursp->nextcp.x-cursp->me.x)+
+		    (cursp->nextcp.y-cursp->me.y)*(cursp->nextcp.y-cursp->me.y));
+	    cursp->nextcp.x=cursp->me.x-dx*len2/len;
+	    cursp->nextcp.y=cursp->me.y-dy*len2/len;
+	    SplineRefigure(cursp->next);
 	}
 	if ( ci->sc->parent->order2 )
 	    SplinePointPrevCPChanged2(cursp,false);
@@ -1478,17 +1505,38 @@ static int PI_PrevDefChanged(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int PI_PTypeChanged(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	SplinePoint *cursp = ci->cursp;
+	enum pointtype pt = GGadgetGetCid(g)-CID_Curve + pt_curve;
+
+	if ( pt==cursp->pointtype ) {
+	    /* Can't happen */
+	} else if ( pt==pt_corner ) {
+	    cursp->pointtype = pt_corner;
+	    CVCharChangedUpdate(ci->cv);
+	} else {
+	    SPChangePointType(cursp,pt);
+	    CVCharChangedUpdate(ci->cv);
+	    PIFillup(ci,GGadgetGetCid(g));
+	}
+    }
+return( true );
+}
+
 static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
     static GIData gi;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[24];
-    GTextInfo label[24];
+    GGadgetCreateData gcd[29];
+    GTextInfo label[29];
     static GBox cur, nextcp, prevcp;
     extern Color nextcpcol, prevcpcol;
     GWindow root;
     GRect screensize;
     GPoint pt;
+    int j, defxpos, nextstarty;
 
     cur.main_background = nextcp.main_background = prevcp.main_background = COLOR_DEFAULT;
     cur.main_foreground = 0xff0000;
@@ -1531,168 +1579,235 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	memset(&gcd,0,sizeof(gcd));
 	memset(&label,0,sizeof(label));
 
-	label[0].text = (unichar_t *) _STR_Base;
-	label[0].text_in_resource = true;
-	gcd[0].gd.label = &label[0];
-	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5+6; 
-	gcd[0].gd.flags = gg_enabled|gg_visible|gg_dontcopybox;
-	gcd[0].gd.box = &cur;
-	gcd[0].creator = GLabelCreate;
+	j=0;
+	label[j].text = (unichar_t *) _STR_Base;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = 5+6; 
+	gcd[j].gd.flags = gg_enabled|gg_visible|gg_dontcopybox;
+	gcd[j].gd.box = &cur;
+	gcd[j].creator = GLabelCreate;
+	++j;
 
-	gcd[1].gd.pos.x = 60; gcd[1].gd.pos.y = 5; gcd[1].gd.pos.width = 70;
-	gcd[1].gd.flags = gg_enabled|gg_visible;
-	gcd[1].gd.cid = CID_BaseX;
-	gcd[1].gd.handle_controlevent = PI_BaseChanged;
-	gcd[1].creator = GTextFieldCreate;
+	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = 5; gcd[j].gd.pos.width = 70;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_BaseX;
+	gcd[j].gd.handle_controlevent = PI_BaseChanged;
+	gcd[j].creator = GTextFieldCreate;
+	++j;
 
-	gcd[2].gd.pos.x = 137; gcd[2].gd.pos.y = 5; gcd[2].gd.pos.width = 70;
-	gcd[2].gd.flags = gg_enabled|gg_visible;
-	gcd[2].gd.cid = CID_BaseY;
-	gcd[2].gd.handle_controlevent = PI_BaseChanged;
-	gcd[2].creator = GTextFieldCreate;
+	gcd[j].gd.pos.x = 137; gcd[j].gd.pos.y = 5; gcd[j].gd.pos.width = 70;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_BaseY;
+	gcd[j].gd.handle_controlevent = PI_BaseChanged;
+	gcd[j].creator = GTextFieldCreate;
+	++j;
 
-	label[3].text = (unichar_t *) _STR_PrevCP;
-	label[3].text_in_resource = true;
-	gcd[3].gd.label = &label[3];
-	gcd[3].gd.pos.x = 9; gcd[3].gd.pos.y = 35; 
-	gcd[3].gd.flags = gg_enabled|gg_visible|gg_dontcopybox;
-	gcd[3].gd.box = &prevcp;
-	gcd[3].creator = GLabelCreate;
+	label[j].text = (unichar_t *) _STR_PrevCP;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 9; gcd[j].gd.pos.y = 35; 
+	gcd[j].gd.flags = gg_enabled|gg_visible|gg_dontcopybox;
+	gcd[j].gd.box = &prevcp;
+	gcd[j].creator = GLabelCreate;
+	++j;
 
-	gcd[4].gd.pos.x = 60; gcd[4].gd.pos.y = 35; gcd[4].gd.pos.width = 60;
-	gcd[4].gd.flags = gg_enabled|gg_visible;
-	gcd[4].gd.cid = CID_PrevPos;
-	gcd[4].creator = GLabelCreate;
+	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = 35; gcd[j].gd.pos.width = 60;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_PrevPos;
+	gcd[j].creator = GLabelCreate;
+	++j;
 
-	label[21].text = (unichar_t *) _STR_Default;
-	label[21].text_in_resource = true;
-	gcd[21].gd.label = &label[21];
-	gcd[21].gd.pos.x = 125; gcd[21].gd.pos.y = gcd[4].gd.pos.y-3;
-	gcd[21].gd.flags = (gg_enabled|gg_visible);
-	gcd[21].gd.cid = CID_PrevDef;
-	gcd[21].gd.handle_controlevent = PI_PrevDefChanged;
-	gcd[21].creator = GCheckBoxCreate;
+	defxpos = 125;
+	label[j].text = (unichar_t *) _STR_Default;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = defxpos; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-3;
+	gcd[j].gd.flags = (gg_enabled|gg_visible);
+	gcd[j].gd.cid = CID_PrevDef;
+	gcd[j].gd.handle_controlevent = PI_PrevDefChanged;
+	gcd[j].creator = GCheckBoxCreate;
+	++j;
 
-	gcd[5].gd.pos.x = 60; gcd[5].gd.pos.y = 49; gcd[5].gd.pos.width = 70;
-	gcd[5].gd.flags = gg_enabled|gg_visible;
-	gcd[5].gd.cid = CID_PrevXOff;
-	gcd[5].gd.handle_controlevent = PI_PrevChanged;
-	gcd[5].creator = GTextFieldCreate;
+	label[j].text = (unichar_t *) _STR_Offset;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = gcd[3].gd.pos.x+10; gcd[j].gd.pos.y = 49+4; 
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].creator = GLabelCreate;
+	++j;
 
-	gcd[6].gd.pos.x = 137; gcd[6].gd.pos.y = 49; gcd[6].gd.pos.width = 70;
-	gcd[6].gd.flags = gg_enabled|gg_visible;
-	gcd[6].gd.cid = CID_PrevYOff;
-	gcd[6].gd.handle_controlevent = PI_PrevChanged;
-	gcd[6].creator = GTextFieldCreate;
+	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-4; gcd[j].gd.pos.width = 70;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_PrevXOff;
+	gcd[j].gd.handle_controlevent = PI_PrevChanged;
+	gcd[j].creator = GTextFieldCreate;
+	++j;
 
-	label[7].text = (unichar_t *) _STR_NextCP;
-	label[7].text_in_resource = true;
-	gcd[7].gd.label = &label[7];
-	gcd[7].gd.pos.x = gcd[3].gd.pos.x; gcd[7].gd.pos.y = 82; 
-	gcd[7].gd.flags = gg_enabled|gg_visible;
-	gcd[7].gd.flags = gg_enabled|gg_visible|gg_dontcopybox;
-	gcd[7].gd.box = &nextcp;
-	gcd[7].creator = GLabelCreate;
+	gcd[j].gd.pos.x = 137; gcd[j].gd.pos.y = 49; gcd[j].gd.pos.width = 70;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_PrevYOff;
+	gcd[j].gd.handle_controlevent = PI_PrevChanged;
+	gcd[j].creator = GTextFieldCreate;
+	++j;
 
-	gcd[8].gd.pos.x = 60; gcd[8].gd.pos.y = 82;  gcd[8].gd.pos.width = 60;
-	gcd[8].gd.flags = gg_enabled|gg_visible;
-	gcd[8].gd.cid = CID_NextPos;
-	gcd[8].creator = GLabelCreate;
+	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[3].gd.pos.y-3;
+	gcd[j].gd.pos.width = PI_Width-10; gcd[j].gd.pos.height = 43;
+	gcd[j].gd.flags = gg_enabled | gg_visible;
+	gcd[j].creator = GGroupCreate;
+	++j;
 
-	label[22].text = (unichar_t *) _STR_Default;
-	label[22].text_in_resource = true;
-	gcd[22].gd.label = &label[22];
-	gcd[22].gd.pos.x = gcd[21].gd.pos.x; gcd[22].gd.pos.y = gcd[8].gd.pos.y-3;
-	gcd[22].gd.flags = (gg_enabled|gg_visible);
-	gcd[22].gd.cid = CID_NextDef;
-	gcd[22].gd.handle_controlevent = PI_NextDefChanged;
-	gcd[22].creator = GCheckBoxCreate;
+	nextstarty = 82;
+	label[j].text = (unichar_t *) _STR_NextCP;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = gcd[3].gd.pos.x; gcd[j].gd.pos.y = nextstarty; 
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.flags = gg_enabled|gg_visible|gg_dontcopybox;
+	gcd[j].gd.box = &nextcp;
+	gcd[j].creator = GLabelCreate;
+	++j;
 
-	gcd[9].gd.pos.x = 60; gcd[9].gd.pos.y = 96; gcd[9].gd.pos.width = 70;
-	gcd[9].gd.flags = gg_enabled|gg_visible;
-	gcd[9].gd.cid = CID_NextXOff;
-	gcd[9].gd.handle_controlevent = PI_NextChanged;
-	gcd[9].creator = GTextFieldCreate;
+	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = 82;  gcd[j].gd.pos.width = 60;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_NextPos;
+	gcd[j].creator = GLabelCreate;
+	++j;
 
-	gcd[10].gd.pos.x = 137; gcd[10].gd.pos.y = 96; gcd[10].gd.pos.width = 70;
-	gcd[10].gd.flags = gg_enabled|gg_visible;
-	gcd[10].gd.cid = CID_NextYOff;
-	gcd[10].gd.handle_controlevent = PI_NextChanged;
-	gcd[10].creator = GTextFieldCreate;
+	label[j].text = (unichar_t *) _STR_Default;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = defxpos; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-3;
+	gcd[j].gd.flags = (gg_enabled|gg_visible);
+	gcd[j].gd.cid = CID_NextDef;
+	gcd[j].gd.handle_controlevent = PI_NextDefChanged;
+	gcd[j].creator = GCheckBoxCreate;
+	++j;
 
-	gcd[11].gd.pos.x = (PI_Width-2*50-10)/2; gcd[11].gd.pos.y = 127;
-	gcd[11].gd.pos.width = 53; gcd[11].gd.pos.height = 0;
-	gcd[11].gd.flags = gg_visible | gg_enabled;
-	label[11].text = (unichar_t *) _STR_PrevArrow;
-	label[11].text_in_resource = true;
-	gcd[11].gd.mnemonic = 'P';
-	gcd[11].gd.label = &label[11];
-	gcd[11].gd.handle_controlevent = PI_Prev;
-	gcd[11].creator = GButtonCreate;
+	label[j].text = (unichar_t *) _STR_Offset;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = gcd[3].gd.pos.x+10; gcd[j].gd.pos.y = 100; 
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].creator = GLabelCreate;
+	++j;
 
-	gcd[12].gd.pos.x = PI_Width-50-(PI_Width-2*50-10)/2; gcd[12].gd.pos.y = gcd[11].gd.pos.y;
-	gcd[12].gd.pos.width = 53; gcd[12].gd.pos.height = 0;
-	gcd[12].gd.flags = gg_visible | gg_enabled;
-	label[12].text = (unichar_t *) _STR_NextArrow;
-	label[12].text_in_resource = true;
-	gcd[12].gd.label = &label[12];
-	gcd[12].gd.mnemonic = 'N';
-	gcd[12].gd.handle_controlevent = PI_Next;
-	gcd[12].creator = GButtonCreate;
+	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-4; gcd[j].gd.pos.width = 70;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_NextXOff;
+	gcd[j].gd.handle_controlevent = PI_NextChanged;
+	gcd[j].creator = GTextFieldCreate;
+	++j;
 
-	gcd[13].gd.pos.x = 5; gcd[13].gd.pos.y = 157;
-	gcd[13].gd.pos.width = PI_Width-10;
-	gcd[13].gd.flags = gg_enabled|gg_visible;
-	gcd[13].creator = GLineCreate;
+	gcd[j].gd.pos.x = 137; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y; gcd[j].gd.pos.width = 70;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_NextYOff;
+	gcd[j].gd.handle_controlevent = PI_NextChanged;
+	gcd[j].creator = GTextFieldCreate;
+	++j;
 
-	gcd[14].gd.pos.x = 20-3; gcd[14].gd.pos.y = PI_Height-35-3;
-	gcd[14].gd.pos.width = -1; gcd[14].gd.pos.height = 0;
-	gcd[14].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[14].text = (unichar_t *) _STR_OK;
-	label[14].text_in_resource = true;
-	gcd[14].gd.mnemonic = 'O';
-	gcd[14].gd.label = &label[14];
-	gcd[14].gd.handle_controlevent = PI_Ok;
-	gcd[14].creator = GButtonCreate;
+	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = nextstarty-3;
+	gcd[j].gd.pos.width = PI_Width-10; gcd[j].gd.pos.height = 43;
+	gcd[j].gd.flags = gg_enabled | gg_visible;
+	gcd[j].creator = GGroupCreate;
+	++j;
 
-	gcd[15].gd.pos.x = -20; gcd[15].gd.pos.y = PI_Height-35;
-	gcd[15].gd.pos.width = -1; gcd[15].gd.pos.height = 0;
-	gcd[15].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[15].text = (unichar_t *) _STR_Cancel;
-	label[15].text_in_resource = true;
-	gcd[15].gd.label = &label[15];
-	gcd[15].gd.mnemonic = 'C';
-	gcd[15].gd.handle_controlevent = PI_Cancel;
-	gcd[15].creator = GButtonCreate;
+	label[j].text = (unichar_t *) _STR_Type;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = gcd[0].gd.pos.x; gcd[j].gd.pos.y = 127;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].creator = GLabelCreate;
+	++j;
 
-	gcd[16].gd.pos.x = 2; gcd[16].gd.pos.y = 2;
-	gcd[16].gd.pos.width = pos.width-4; gcd[16].gd.pos.height = pos.height-4;
-	gcd[16].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-	gcd[16].creator = GGroupCreate;
+	label[j].image = &GIcon_midcurve;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-2;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_Curve;
+	gcd[j].gd.handle_controlevent = PI_PTypeChanged;
+	gcd[j].creator = GRadioCreate;
+	++j;
 
-	gcd[17].gd.pos.x = 5; gcd[17].gd.pos.y = gcd[3].gd.pos.y-3;
-	gcd[17].gd.pos.width = PI_Width-10; gcd[17].gd.pos.height = 43;
-	gcd[17].gd.flags = gg_enabled | gg_visible;
-	gcd[17].creator = GGroupCreate;
+	label[j].image = &GIcon_midcorner;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 100; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_Corner;
+	gcd[j].gd.handle_controlevent = PI_PTypeChanged;
+	gcd[j].creator = GRadioCreate;
+	++j;
 
-	gcd[18].gd.pos.x = 5; gcd[18].gd.pos.y = gcd[7].gd.pos.y-3;
-	gcd[18].gd.pos.width = PI_Width-10; gcd[18].gd.pos.height = 43;
-	gcd[18].gd.flags = gg_enabled | gg_visible;
-	gcd[18].creator = GGroupCreate;
+	label[j].image = &GIcon_midtangent;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 140; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_Tangent;
+	gcd[j].gd.handle_controlevent = PI_PTypeChanged;
+	gcd[j].creator = GRadioCreate;
+	++j;
 
-	label[19].text = (unichar_t *) _STR_Offset;
-	label[19].text_in_resource = true;
-	gcd[19].gd.label = &label[19];
-	gcd[19].gd.pos.x = gcd[3].gd.pos.x+10; gcd[19].gd.pos.y = gcd[5].gd.pos.y+6; 
-	gcd[19].gd.flags = gg_enabled|gg_visible;
-	gcd[19].creator = GLabelCreate;
+	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+18;
+	gcd[j].gd.pos.width = PI_Width-10;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].creator = GLineCreate;
+	++j;
 
-	label[20].text = (unichar_t *) _STR_Offset;
-	label[20].text_in_resource = true;
-	gcd[20].gd.label = &label[20];
-	gcd[20].gd.pos.x = gcd[3].gd.pos.x+10; gcd[20].gd.pos.y = gcd[9].gd.pos.y+6; 
-	gcd[20].gd.flags = gg_enabled|gg_visible;
-	gcd[20].creator = GLabelCreate;
+	gcd[j].gd.pos.x = (PI_Width-2*50-10)/2; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+5;
+	gcd[j].gd.pos.width = 53; gcd[j].gd.pos.height = 0;
+	gcd[j].gd.flags = gg_visible | gg_enabled;
+	label[j].text = (unichar_t *) _STR_PrevArrow;
+	label[j].text_in_resource = true;
+	gcd[j].gd.mnemonic = 'P';
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.handle_controlevent = PI_Prev;
+	gcd[j].creator = GButtonCreate;
+	++j;
+
+	gcd[j].gd.pos.x = PI_Width-50-(PI_Width-2*50-10)/2; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y;
+	gcd[j].gd.pos.width = 53; gcd[j].gd.pos.height = 0;
+	gcd[j].gd.flags = gg_visible | gg_enabled;
+	label[j].text = (unichar_t *) _STR_NextArrow;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.mnemonic = 'N';
+	gcd[j].gd.handle_controlevent = PI_Next;
+	gcd[j].creator = GButtonCreate;
+	++j;
+
+	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+30;
+	gcd[j].gd.pos.width = PI_Width-10;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].creator = GLineCreate;
+	++j;
+
+	gcd[j].gd.pos.x = 20-3; gcd[j].gd.pos.y = PI_Height-35-3;
+	gcd[j].gd.pos.width = -1; gcd[j].gd.pos.height = 0;
+	gcd[j].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	label[j].text = (unichar_t *) _STR_OK;
+	label[j].text_in_resource = true;
+	gcd[j].gd.mnemonic = 'O';
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.handle_controlevent = PI_Ok;
+	gcd[j].creator = GButtonCreate;
+	++j;
+
+	gcd[j].gd.pos.x = -20; gcd[j].gd.pos.y = PI_Height-35;
+	gcd[j].gd.pos.width = -1; gcd[j].gd.pos.height = 0;
+	gcd[j].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	label[j].text = (unichar_t *) _STR_Cancel;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.mnemonic = 'C';
+	gcd[j].gd.handle_controlevent = PI_Cancel;
+	gcd[j].creator = GButtonCreate;
+	++j;
+
+	gcd[j].gd.pos.x = 2; gcd[j].gd.pos.y = 2;
+	gcd[j].gd.pos.width = pos.width-4; gcd[j].gd.pos.height = pos.height-4;
+	gcd[j].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+	gcd[j].creator = GGroupCreate;
+	++j;
 
 	GGadgetsCreate(gi.gw,gcd);
 

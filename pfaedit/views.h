@@ -701,6 +701,7 @@ extern void CVSetWidth(CharView *cv,enum widthtype wtype);
 extern void FVSetWidthScript(FontView *fv,enum widthtype wtype,int val,int incr);
 extern void CVChangeSC(CharView *cv, SplineChar *sc );
 extern void SCRefreshTitles(SplineChar *sc);
+extern void SPChangePointType(SplinePoint *sp, int pointtype);
 
 extern void CVAdjustPoint(CharView *cv, SplinePoint *sp);
 extern void CVMergeSplineSets(CharView *cv, SplinePoint *active, SplineSet *activess,

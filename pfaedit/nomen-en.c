@@ -1251,6 +1251,7 @@ static char *str_NextCPY = "Next CP Y";
 static char *str_PrevCP = "Prev CP:";
 static char *str_PrevCPX = "Prev CP X";
 static char *str_PrevCPY = "Prev CP Y";
+static char *str_Type = "Type:";
 static char *str_UnicodeL = "Unicode";
 static char *str_LigatureL = "Ligature";
 static char *str_Components = "Components";
