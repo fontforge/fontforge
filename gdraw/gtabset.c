@@ -181,6 +181,8 @@ return( false );
 	/* This one draws on top of the others, must come last */
 	DrawTab(pixmap,gts,gts->sel,gts->tabs[gts->sel].x, g->r.y + (gts->rcnt-1) * gts->rowh + yoff );
     }
+    if ( gts->nested_expose )
+	(gts->nested_expose)(pixmap,g,event);
     GDrawPopClip(pixmap,&old1);
 return( true );
 }
@@ -360,6 +362,9 @@ static int gtabset_mouse(GGadget *g, GEvent *event) {
 
     if ( !g->takes_input || (g->state!=gs_enabled && g->state!=gs_active && g->state!=gs_focused ))
 return( false );
+    if ( gts->nested_mouse!=NULL )
+	if ( (gts->nested_mouse)(g,event))
+return( true );
 
     if ( event->type == et_crossing ) {
 return( true );
@@ -368,7 +373,7 @@ return( true );
     } else {
 	int i, sel= -1, l;
 	if ( event->u.mouse.y < gts->g.r.y || event->u.mouse.y >= gts->g.inner.y )
-	    sel = -1;
+return( false );
 	else if ( gts->scrolled ) {
 	    if ( gts->haslarrow && event->u.mouse.x<gts->tabs[gts->toff].x )
 		sel = -2;	/* left arrow */
@@ -644,4 +649,14 @@ return( NULL );
 int GTabSetGetTabLines(GGadget *g) {
     GTabSet *gts = (GTabSet *) g;
 return( gts->rcnt );
+}
+
+void GTabSetSetNestedExpose(GGadget *g, void (*ne)(GWindow,GGadget *,GEvent *)) {
+    GTabSet *gts = (GTabSet *) g;
+    gts->nested_expose = ne;
+}
+
+void GTabSetSetNestedMouse(GGadget *g, int (*nm)(GGadget *,GEvent *)) {
+    GTabSet *gts = (GTabSet *) g;
+    gts->nested_mouse = nm;
 }

@@ -33,7 +33,7 @@
 
 static void GListButtonDoPopup(GListButton *);
 
-static GBox button_box = { /* Don't initialize here */ 0 };
+GBox _GGadget_button_box = { /* Don't initialize here */ 0 };
 static GBox label_box = { /* Don't initialize here */ 0 };	
 static int shift_on_press = 0;
 static FontInstance *label_font = NULL;
@@ -473,12 +473,12 @@ return;
 static void GButtonInit() {
     FontInstance *temp;
     _GGadgetCopyDefaultBox(&label_box);
-    _GGadgetCopyDefaultBox(&button_box);
-    button_box.flags = box_foreground_border_inner|box_foreground_border_outer|
+    _GGadgetCopyDefaultBox(&_GGadget_button_box);
+    _GGadget_button_box.flags = box_foreground_border_inner|box_foreground_border_outer|
 	/*box_active_border_inner|*/box_do_depressed_background|box_draw_default;
     label_box.border_type = bt_none;
     label_box.border_width = label_box.padding = label_box.flags = 0;
-    label_font = _GGadgetInitDefaultBox("GButton.",&button_box,NULL);
+    label_font = _GGadgetInitDefaultBox("GButton.",&_GGadget_button_box,NULL);
     temp = _GGadgetInitDefaultBox("GLabel.",&label_box,NULL);
     if ( temp!=NULL )
 	label_font = temp;
@@ -614,7 +614,7 @@ return( &gl->g );
 }
 
 GGadget *GButtonCreate(struct gwindow *base, GGadgetData *gd,void *data) {
-    GLabel *gl = _GLabelCreate(gcalloc(1,sizeof(GLabel)),base,gd,data,&button_box);
+    GLabel *gl = _GLabelCreate(gcalloc(1,sizeof(GLabel)),base,gd,data,&_GGadget_button_box);
 
     gl->g.takes_input = true; gl->g.takes_keyboard = true; gl->g.focusable = true;
 return( &gl->g );
@@ -622,7 +622,7 @@ return( &gl->g );
 
 GGadget *GImageButtonCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     GImageButton *gl =
-	(GImageButton *) _GLabelCreate(gcalloc(1,sizeof(GImageButton)),base,gd,data,&button_box);
+	(GImageButton *) _GLabelCreate(gcalloc(1,sizeof(GImageButton)),base,gd,data,&_GGadget_button_box);
 
     gl->g.takes_input = true;
     gl->labeltype = 1;
@@ -684,7 +684,7 @@ GGadget *GListButtonCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 	}
 	gd->label = &gd->u.list[i];
     }
-    _GLabelCreate((GLabel *) gl,base,gd,data,&button_box);
+    _GLabelCreate((GLabel *) gl,base,gd,data,&_GGadget_button_box);
     gl->g.funcs = &glistbutton_funcs;
 return( &gl->g );
 }

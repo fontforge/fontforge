@@ -234,6 +234,8 @@ int GTabSetGetSel(GGadget *g);
 void GTabSetSetEnabled(GGadget *g,int pos, int enabled);
 GWindow GTabSetGetSubwindow(GGadget *g,int pos);
 int GTabSetGetTabLines(GGadget *g);
+void GTabSetSetNestedExpose(GGadget *g, void (*)(GWindow,GGadget *,GEvent *));
+void GTabSetSetNestedMouse(GGadget *g, int (*)(GGadget *,GEvent *));
 
 int32 GScrollBarGetPos(GGadget *g);
 int32 GScrollBarSetPos(GGadget *g,int32 pos);

@@ -85,6 +85,7 @@ return( NULL );
 	base->clut = gcalloc(1,sizeof(GClut));
 return( gi );
 }
+
 void GImageDestroy(GImage *gi) {
     int i;
 

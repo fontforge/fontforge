@@ -39,6 +39,7 @@ enum encoding { e_usascii, e_iso646_no, e_iso646_se, e_iso8859_1,
 /* the difference between jis & jis2 is what the output encoding should be (presence of '(') */
     e_jis, e_jis2, e_jiskorean, e_jisgb, e_sjis,	/* multi-byte */
     e_euc, e_euckorean, e_eucgb,
+    e_wansung, e_johab,
     e_big5,
     e_unicode, e_unicode_backwards,			/* wide chars */
     e_utf7, e_utf8,					/* unicode encodings */
