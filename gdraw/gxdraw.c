@@ -1388,7 +1388,7 @@ static void GXDrawLower(GWindow w) {
     XLowerWindow(gw->display->display,gw->w);
 }
 
-static void GXDrawSetWindowTitles(GWindow w, unichar_t *title, unichar_t *icontit) {
+static void GXDrawSetWindowTitles(GWindow w, const unichar_t *title, const unichar_t *icontit) {
     GXWindow gw = (GXWindow) w;
     Display *display = gw->display->display;
     char *pt;

@@ -360,7 +360,7 @@ extern void GDrawRaise(GWindow w);
 extern void GDrawRaiseAbove(GWindow w,GWindow below);
 extern int  GDrawIsAbove(GWindow w,GWindow other);
 extern void GDrawLower(GWindow w);
-extern void GDrawSetWindowTitles(GWindow w, unichar_t *title, unichar_t *icontit);
+extern void GDrawSetWindowTitles(GWindow w, const unichar_t *title, const unichar_t *icontit);
 extern unichar_t *GDrawGetWindowTitle(GWindow w);
 extern void GDrawSetCursor(GWindow w, GCursor ct);
 extern GCursor GDrawGetCursor(GWindow w);

@@ -117,7 +117,7 @@ static void PSDrawLower(GWindow w) {
     /* Not meaningful */
 }
 
-static void PSDrawSetWindowTitles(GWindow w, unichar_t *title, unichar_t *icontit) {
+static void PSDrawSetWindowTitles(GWindow w, const unichar_t *title, const unichar_t *icontit) {
     /* Not meaningful */
 }
 

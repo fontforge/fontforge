@@ -158,7 +158,7 @@ struct displayfuncs {
     void (*raiseAbove)(GWindow,GWindow);
     int  (*isAbove)(GWindow,GWindow);
     void (*lower)(GWindow);
-    void (*setWindowTitles)(GWindow, unichar_t *title, unichar_t *icontitle);
+    void (*setWindowTitles)(GWindow, const unichar_t *title, const unichar_t *icontitle);
     unichar_t *(*getWindowTitle)(GWindow);
     void (*getPointerPos)(GWindow,GEvent *);
     void (*setCursor)(GWindow, GCursor);
