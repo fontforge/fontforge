@@ -6798,15 +6798,17 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
     else if ( dummy->unicodeenc!=-1  ) {
 	if ( dummy->unicodeenc<psunicodenames_cnt )
 	    dummy->name = (char *) psunicodenames[dummy->unicodeenc];
-	if ( dummy->name==NULL && sf->uni_interp==ui_adobe &&
+	if ( dummy->name==NULL &&
+		(sf->uni_interp==ui_adobe || sf->uni_interp==ui_ams) &&
 		((dummy->unicodeenc>=0xe000 && dummy->unicodeenc<=0xf7ff ) ||
 		 (dummy->unicodeenc>=0xfb00 && dummy->unicodeenc<=0xfb06 ))) {
+	    int provenance = sf->uni_interp==ui_adobe ? 1 : 2;
 	    /* If we are using Adobe's interpretation of the private use */
 	    /*  area (which means small caps, etc. Then look for those */
 	    /*  names (also include the names for ligatures) */
 	    for ( j=0; psaltuninames[j].name!=NULL; ++j ) {
 		if ( psaltuninames[j].unicode == dummy->unicodeenc &&
-			strpbrk(psaltuninames[j].name,"._")!=NULL ) {
+			psaltuninames[j].provenance == provenance ) {
 		    dummy->name = psaltuninames[j].name;
 	    break;
 		}

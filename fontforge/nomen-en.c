@@ -2513,6 +2513,7 @@ static char *str_Third = "Third";
 static char *str_RemoveEncoding = "Remove Encoding";
 static char *str_LoadEncoding = "Load Encoding";
 static char *str_AdobePUA = "Adobe Public Use Defs.";
+static char *str_AMSPUA = "AMS Public Use";
 static char *str_Interpretation = "Interpretation:";
 static char *str_UseCidMap = "Use CID Map";
 static char *str_SearchForCIDMap = "This font is based on the charset %1$.20hs-%2$.20hs-%3$d, but the best I've been able to find is %1$.20hs-%2$.20hs-%4$d.\nShall I use that or let you search?";

@@ -78,6 +78,7 @@ extern unsigned short unicode_from_adobestd[256];
 extern struct psaltnames {
     char *name;
     int unicode;
+    int provenance;		/* 1=> Adobe PUA, 2=>AMS PUA, 3=>TeX */
 } psaltuninames[];
 extern int psaltuninames_cnt;
 
