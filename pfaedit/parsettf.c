@@ -1109,6 +1109,7 @@ static void readttfsimpleglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, in
 	    /* Means the components overlap (which? this one and what other?) */
 /* Described in OpenType specs, not by Apple */
 /* amusingly, Apple supports but MS does not */
+/* MS says they support this after Win 2000 */
 #define _SCALED_OFFSETS		0x800	/* Use Apple definition of offset interpretation */
 #define _UNSCALED_OFFSETS	0x1000	/* Use MS definition */
 
