@@ -1613,7 +1613,7 @@ return;
     sp->prevcp.y = rint(sp->prevcp.y*1024)/1024;
 }
 
-#define NICE_PROPORTION	.4
+#define NICE_PROPORTION	.39
 void SplineCharDefaultNextCP(SplinePoint *base, SplinePoint *next) {
     SplinePoint *prev=NULL;
     real len;
