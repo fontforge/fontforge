@@ -30,6 +30,7 @@
 #include <utype.h>
 #include <gkeysym.h>
 
+#define RAD2DEG	(180/3.1415926535897932)
 #define TCnt	3
 
 typedef struct gidata {
@@ -60,6 +61,10 @@ typedef struct gidata {
 #define CID_Curve	2011
 #define CID_Corner	2012
 #define CID_Tangent	2013
+#define CID_NextR	2014
+#define CID_NextTheta	2015
+#define CID_PrevR	2016
+#define CID_PrevTheta	2017
 
 #define CID_X		3001
 #define CID_Y		3002
@@ -83,7 +88,7 @@ typedef struct gidata {
 #define II_Height	70
 
 #define PI_Width	218
-#define PI_Height	220
+#define PI_Height	278
 
 #define AI_Width	160
 #define AI_Height	234
@@ -1285,10 +1290,10 @@ static int PI_Ok(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static void mysprintf( char *buffer, real v) {
+static void mysprintf( char *buffer, char *format, real v) {
     char *pt;
 
-    sprintf( buffer, "%.2f", v );
+    sprintf( buffer, format, v );
     pt = strrchr(buffer,'.');
     if ( pt[1]=='0' && pt[2]=='0' )
 	*pt='\0';
@@ -1299,35 +1304,54 @@ static void mysprintf( char *buffer, real v) {
 static void mysprintf2( char *buffer, real v1, real v2) {
     char *pt;
 
-    mysprintf(buffer,v1);
+    mysprintf(buffer,"%.2f", v1);
     pt = buffer+strlen(buffer);
     *pt++ = ',';
-    mysprintf(pt,v2);
+    mysprintf(pt,"%.2f", v2);
 }
 
 static void PIFillup(GIData *ci, int except_cid) {
     char buffer[50];
     unichar_t ubuf[50];
+    double dx, dy;
 
-    mysprintf(buffer, ci->cursp->me.x );
+    mysprintf(buffer, "%.2f", ci->cursp->me.x );
     uc_strcpy(ubuf,buffer);
     if ( except_cid!=CID_BaseX )
 	GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_BaseX),ubuf);
 
-    mysprintf(buffer, ci->cursp->me.y );
+    mysprintf(buffer, "%.2f", ci->cursp->me.y );
     uc_strcpy(ubuf,buffer);
     if ( except_cid!=CID_BaseY )
 	GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_BaseY),ubuf);
 
-    mysprintf(buffer, ci->cursp->nextcp.x-ci->cursp->me.x );
+    dx = ci->cursp->nextcp.x-ci->cursp->me.x;
+    dy = ci->cursp->nextcp.y-ci->cursp->me.y;
+    mysprintf(buffer, "%.2f", dx );
     uc_strcpy(ubuf,buffer);
     if ( except_cid!=CID_NextXOff )
 	GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_NextXOff),ubuf);
 
-    mysprintf(buffer, ci->cursp->nextcp.y-ci->cursp->me.y );
+    mysprintf(buffer, "%.2f", dy );
     uc_strcpy(ubuf,buffer);
     if ( except_cid!=CID_NextYOff )
 	GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_NextYOff),ubuf);
+
+    if ( except_cid!=CID_NextR ) {
+	mysprintf(buffer, "%.2f", sqrt( dx*dx+dy*dy ));
+	uc_strcpy(ubuf,buffer);
+	GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_NextR),ubuf);
+    }
+
+    if ( except_cid!=CID_NextTheta ) {
+	if ( ci->cursp->pointtype==pt_tangent && ci->cursp->prev!=NULL ) {
+	    dx = ci->cursp->me.x-ci->cursp->prev->from->me.x;
+	    dy = ci->cursp->me.y-ci->cursp->prev->from->me.y;
+	}
+	mysprintf(buffer, "%.1f", atan2(dy,dx)*RAD2DEG);
+	uc_strcpy(ubuf,buffer);
+	GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_NextTheta),ubuf);
+    }
 
     mysprintf2(buffer, ci->cursp->nextcp.x,ci->cursp->nextcp.y );
     uc_strcpy(ubuf,buffer);
@@ -1335,15 +1359,33 @@ static void PIFillup(GIData *ci, int except_cid) {
 
     GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_NextDef), ci->cursp->nextcpdef );
 
-    mysprintf(buffer, ci->cursp->prevcp.x-ci->cursp->me.x );
+    dx = ci->cursp->prevcp.x-ci->cursp->me.x;
+    dy = ci->cursp->prevcp.y-ci->cursp->me.y;
+    mysprintf(buffer, "%.2f", dx );
     uc_strcpy(ubuf,buffer);
     if ( except_cid!=CID_PrevXOff )
 	GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_PrevXOff),ubuf);
 
-    mysprintf(buffer, ci->cursp->prevcp.y-ci->cursp->me.y );
+    mysprintf(buffer, "%.2f", dy );
     uc_strcpy(ubuf,buffer);
     if ( except_cid!=CID_PrevYOff )
 	GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_PrevYOff),ubuf);
+
+    if ( except_cid!=CID_PrevR ) {
+	mysprintf(buffer, "%.2f", sqrt( dx*dx+dy*dy ));
+	uc_strcpy(ubuf,buffer);
+	GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_PrevR),ubuf);
+    }
+
+    if ( except_cid!=CID_PrevTheta ) {
+	if ( ci->cursp->pointtype==pt_tangent && ci->cursp->next!=NULL ) {
+	    dx = ci->cursp->me.x-ci->cursp->next->to->me.x;
+	    dy = ci->cursp->me.y-ci->cursp->next->to->me.y;
+	}
+	mysprintf(buffer, "%.1f", atan2(dy,dx)*RAD2DEG);
+	uc_strcpy(ubuf,buffer);
+	GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_PrevTheta),ubuf);
+    }
 
     mysprintf2(buffer, ci->cursp->prevcp.x,ci->cursp->prevcp.y );
     uc_strcpy(ubuf,buffer);
@@ -1354,6 +1396,9 @@ static void PIFillup(GIData *ci, int except_cid) {
     GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Curve), ci->cursp->pointtype==pt_curve );
     GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Corner), ci->cursp->pointtype==pt_corner );
     GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Tangent), ci->cursp->pointtype==pt_tangent );
+
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_PrevTheta), ci->cursp->pointtype!=pt_tangent );
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_NextTheta), ci->cursp->pointtype!=pt_tangent );
 }
 
 static int PI_Next(GGadget *g, GEvent *e) {
@@ -1457,10 +1502,29 @@ static int PI_NextChanged(GGadget *g, GEvent *e) {
 	int err=false;
 	SplinePoint *cursp = ci->cursp;
 
-	if ( GGadgetGetCid(g)==CID_NextXOff )
+	if ( GGadgetGetCid(g)==CID_NextXOff ) {
 	    dx = GetCalmRealR(ci->gw,CID_NextXOff,_STR_NextCPX,&err)-(cursp->nextcp.x-cursp->me.x);
-	else
+	    if ( cursp->pointtype==pt_tangent && cursp->prev!=NULL ) {
+		if ( cursp->prev->from->me.x==cursp->me.x ) {
+		    dy = dx; dx = 0;	/* They should be constrained not to change in the x direction */
+		} else
+		    dy = dx*(cursp->prev->from->me.y-cursp->me.y)/(cursp->prev->from->me.x-cursp->me.x);
+	    }
+	} else if ( GGadgetGetCid(g)==CID_NextYOff ) {
 	    dy = GetCalmRealR(ci->gw,CID_NextYOff,_STR_NextCPY,&err)-(cursp->nextcp.y-cursp->me.y);
+	    if ( cursp->pointtype==pt_tangent && cursp->prev!=NULL ) {
+		if ( cursp->prev->from->me.y==cursp->me.y ) {
+		    dx = dy; dy = 0;	/* They should be constrained not to change in the y direction */
+		} else
+		    dx = dy*(cursp->prev->from->me.x-cursp->me.x)/(cursp->prev->from->me.y-cursp->me.y);
+	    }
+	} else {
+	    double len, theta;
+	    len = GetCalmRealR(ci->gw,CID_NextR,_STR_NextCPDist,&err);
+	    theta = GetCalmRealR(ci->gw,CID_NextTheta,_STR_NextCPAngle,&err)/RAD2DEG;
+	    dx = len*cos(theta) - (cursp->nextcp.x-cursp->me.x);
+	    dy = len*sin(theta) - (cursp->nextcp.y-cursp->me.y);
+	}
 	if ( (dx==0 && dy==0) || err )
 return( true );
 	cursp->nextcp.x += dx;
@@ -1493,10 +1557,29 @@ static int PI_PrevChanged(GGadget *g, GEvent *e) {
 	int err=false;
 	SplinePoint *cursp = ci->cursp;
 
-	if ( GGadgetGetCid(g)==CID_PrevXOff )
+	if ( GGadgetGetCid(g)==CID_PrevXOff ) {
 	    dx = GetCalmRealR(ci->gw,CID_PrevXOff,_STR_PrevCPX,&err)-(cursp->prevcp.x-cursp->me.x);
-	else
+	    if ( cursp->pointtype==pt_tangent && cursp->next!=NULL ) {
+		if ( cursp->next->to->me.x==cursp->me.x ) {
+		    dy = dx; dx = 0;	/* They should be constrained not to change in the x direction */
+		} else
+		    dy = dx*(cursp->next->to->me.y-cursp->me.y)/(cursp->next->to->me.x-cursp->me.x);
+	    }
+	} else if ( GGadgetGetCid(g)==CID_PrevYOff ) {
 	    dy = GetCalmRealR(ci->gw,CID_PrevYOff,_STR_PrevCPY,&err)-(cursp->prevcp.y-cursp->me.y);
+	    if ( cursp->pointtype==pt_tangent && cursp->next!=NULL ) {
+		if ( cursp->next->to->me.y==cursp->me.y ) {
+		    dx = dy; dy = 0;	/* They should be constrained not to change in the y direction */
+		} else
+		    dx = dy*(cursp->next->to->me.x-cursp->me.x)/(cursp->next->to->me.y-cursp->me.y);
+	    }
+	} else {
+	    double len, theta;
+	    len = GetCalmRealR(ci->gw,CID_PrevR,_STR_PrevCPDist,&err);
+	    theta = GetCalmRealR(ci->gw,CID_PrevTheta,_STR_PrevCPAngle,&err)/RAD2DEG;
+	    dx = len*cos(theta) - (cursp->prevcp.x-cursp->me.x);
+	    dy = len*sin(theta) - (cursp->prevcp.y-cursp->me.y);
+	}
 	if ( (dx==0 && dy==0) || err )
 return( true );
 	cursp->prevcp.x += dx;
@@ -1586,8 +1669,8 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
     static GIData gi;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[29];
-    GTextInfo label[29];
+    GGadgetCreateData gcd[37];
+    GTextInfo label[37];
     static GBox cur, nextcp, prevcp;
     extern Color nextcpcol, prevcpcol;
     GWindow root;
@@ -1663,19 +1746,19 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	label[j].text = (unichar_t *) _STR_PrevCP;
 	label[j].text_in_resource = true;
 	gcd[j].gd.label = &label[j];
-	gcd[j].gd.pos.x = 9; gcd[j].gd.pos.y = 35; 
+	gcd[j].gd.pos.x = 9; gcd[j].gd.pos.y = 36; 
 	gcd[j].gd.flags = gg_enabled|gg_visible|gg_dontcopybox;
 	gcd[j].gd.box = &prevcp;
 	gcd[j].creator = GLabelCreate;
 	++j;
 
-	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = 35; gcd[j].gd.pos.width = 60;
+	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y; gcd[j].gd.pos.width = 65;
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].gd.cid = CID_PrevPos;
 	gcd[j].creator = GLabelCreate;
 	++j;
 
-	defxpos = 125;
+	defxpos = 130;
 	label[j].text = (unichar_t *) _STR_Default;
 	label[j].text_in_resource = true;
 	gcd[j].gd.label = &label[j];
@@ -1689,7 +1772,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	label[j].text = (unichar_t *) _STR_Offset;
 	label[j].text_in_resource = true;
 	gcd[j].gd.label = &label[j];
-	gcd[j].gd.pos.x = gcd[3].gd.pos.x+10; gcd[j].gd.pos.y = 49+4; 
+	gcd[j].gd.pos.x = gcd[3].gd.pos.x+10; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+18+4; 
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].creator = GLabelCreate;
 	++j;
@@ -1701,20 +1784,50 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].creator = GTextFieldCreate;
 	++j;
 
-	gcd[j].gd.pos.x = 137; gcd[j].gd.pos.y = 49; gcd[j].gd.pos.width = 70;
+	gcd[j].gd.pos.x = 137; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y; gcd[j].gd.pos.width = 70;
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].gd.cid = CID_PrevYOff;
 	gcd[j].gd.handle_controlevent = PI_PrevChanged;
 	gcd[j].creator = GTextFieldCreate;
 	++j;
 
-	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[3].gd.pos.y-3;
-	gcd[j].gd.pos.width = PI_Width-10; gcd[j].gd.pos.height = 43;
+	label[j].text = (unichar_t *) _STR_Dist;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = gcd[3].gd.pos.x+10; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+28; 
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].creator = GLabelCreate;
+	++j;
+
+	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-4; gcd[j].gd.pos.width = 70;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_PrevR;
+	gcd[j].gd.handle_controlevent = PI_PrevChanged;
+	gcd[j].creator = GTextFieldCreate;
+	++j;
+
+	gcd[j].gd.pos.x = 137; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y; gcd[j].gd.pos.width = 60;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_PrevTheta;
+	gcd[j].gd.handle_controlevent = PI_PrevChanged;
+	gcd[j].creator = GTextFieldCreate;
+	++j;
+
+	label[j].text = (unichar_t *) _STR_Degree;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = gcd[j-1].gd.pos.x+gcd[j-1].gd.pos.width+2; gcd[j].gd.pos.y = gcd[j-3].gd.pos.y; 
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].creator = GLabelCreate;
+	++j;
+
+	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[3].gd.pos.y-5;
+	gcd[j].gd.pos.width = PI_Width-10; gcd[j].gd.pos.height = 70;
 	gcd[j].gd.flags = gg_enabled | gg_visible;
 	gcd[j].creator = GGroupCreate;
 	++j;
 
-	nextstarty = 82;
+	nextstarty = gcd[j-3].gd.pos.y+34;
 	label[j].text = (unichar_t *) _STR_NextCP;
 	label[j].text_in_resource = true;
 	gcd[j].gd.label = &label[j];
@@ -1725,7 +1838,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].creator = GLabelCreate;
 	++j;
 
-	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = 82;  gcd[j].gd.pos.width = 60;
+	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = nextstarty;  gcd[j].gd.pos.width = 65;
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].gd.cid = CID_NextPos;
 	gcd[j].creator = GLabelCreate;
@@ -1744,7 +1857,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	label[j].text = (unichar_t *) _STR_Offset;
 	label[j].text_in_resource = true;
 	gcd[j].gd.label = &label[j];
-	gcd[j].gd.pos.x = gcd[3].gd.pos.x+10; gcd[j].gd.pos.y = 100; 
+	gcd[j].gd.pos.x = gcd[3].gd.pos.x+10; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+18+4; 
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].creator = GLabelCreate;
 	++j;
@@ -1763,8 +1876,38 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].creator = GTextFieldCreate;
 	++j;
 
-	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = nextstarty-3;
-	gcd[j].gd.pos.width = PI_Width-10; gcd[j].gd.pos.height = 43;
+	label[j].text = (unichar_t *) _STR_Dist;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = gcd[3].gd.pos.x+10; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+28; 
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].creator = GLabelCreate;
+	++j;
+
+	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-4; gcd[j].gd.pos.width = 70;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_NextR;
+	gcd[j].gd.handle_controlevent = PI_NextChanged;
+	gcd[j].creator = GTextFieldCreate;
+	++j;
+
+	gcd[j].gd.pos.x = 137; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y; gcd[j].gd.pos.width = 60;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_NextTheta;
+	gcd[j].gd.handle_controlevent = PI_NextChanged;
+	gcd[j].creator = GTextFieldCreate;
+	++j;
+
+	label[j].text = (unichar_t *) _STR_Degree;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = gcd[j-1].gd.pos.x+gcd[j-1].gd.pos.width+2; gcd[j].gd.pos.y = gcd[j-3].gd.pos.y; 
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].creator = GLabelCreate;
+	++j;
+
+	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = nextstarty-5;
+	gcd[j].gd.pos.width = PI_Width-10; gcd[j].gd.pos.height = 70;
 	gcd[j].gd.flags = gg_enabled | gg_visible;
 	gcd[j].creator = GGroupCreate;
 	++j;
@@ -1772,7 +1915,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	label[j].text = (unichar_t *) _STR_Type;
 	label[j].text_in_resource = true;
 	gcd[j].gd.label = &label[j];
-	gcd[j].gd.pos.x = gcd[0].gd.pos.x; gcd[j].gd.pos.y = 127;
+	gcd[j].gd.pos.x = gcd[0].gd.pos.x; gcd[j].gd.pos.y = gcd[j-3].gd.pos.y+32;
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].creator = GLabelCreate;
 	++j;
