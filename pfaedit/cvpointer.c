@@ -56,18 +56,19 @@ return;
     if ( !adjustwidth )
 return;
 
-    if ( sc->unicodeenc!=-1 && isalpha(sc->unicodeenc)) {
-	for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next ) {
-	    if ( dlist->sc->width==oldwidth &&
-		    (flagfv==NULL || !flagfv->selected[dlist->sc->enc])) {
-		SCSynchronizeWidth(dlist->sc,newwidth,oldwidth,fv);
-		if ( !dlist->sc->changed ) {
-		    dlist->sc->changed = true;
-		    if ( fv!=NULL )
-			FVToggleCharChanged(dlist->sc);
-		}
-		SCUpdateAll(dlist->sc);
+    if ( sc->unicodeenc==-1 || sc->unicodeenc>=0x10000 ||
+	    !isalpha(sc->unicodeenc) || iscombining(sc->unicodeenc))
+return;
+    for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next ) {
+	if ( dlist->sc->width==oldwidth &&
+		(flagfv==NULL || !flagfv->selected[dlist->sc->enc])) {
+	    SCSynchronizeWidth(dlist->sc,newwidth,oldwidth,fv);
+	    if ( !dlist->sc->changed ) {
+		dlist->sc->changed = true;
+		if ( fv!=NULL )
+		    FVToggleCharChanged(dlist->sc);
 	    }
+	    SCUpdateAll(dlist->sc);
 	}
     }
 }
@@ -99,6 +100,10 @@ void SCSynchronizeLBearing(SplineChar *sc,char *selected,real off) {
     }
 
     if ( !adjustlbearing )
+return;
+
+    if ( sc->unicodeenc==-1 || sc->unicodeenc>=0x10000 ||
+	    !isalpha(sc->unicodeenc) || iscombining(sc->unicodeenc))
 return;
 
     for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next ) {
