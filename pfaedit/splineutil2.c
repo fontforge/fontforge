@@ -744,7 +744,7 @@ static void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint 
 
 static SplinePointList *SplinePointListMerge(SplineChar *sc, SplinePointList *spl,int type) {
     Spline *spline, *first;
-    SplinePoint *nextp, *curp;
+    SplinePoint *nextp, *curp, *selectme;
     int all;
 
     /* If the entire splineset is selected, it should merge into oblivion */
@@ -784,6 +784,7 @@ return( NULL );			/* Some one else should free it and reorder the spline set lis
     /* when we get here spl->first is not selected */
     if ( spl->first->selected ) GDrawIError( "spl->first is selected in SplinePointListMerge");
     curp = spl->first;
+    selectme = NULL;
     while ( 1 ) {
 	while ( !curp->selected ) {
 	    if ( curp->next==NULL )
@@ -800,7 +801,9 @@ return( NULL );			/* Some one else should free it and reorder the spline set lis
 	/*  we know that spl->last is not selected */
 	SplinesRemoveBetween(sc,curp->prev->from,nextp,type);
 	curp = nextp;
+	selectme = nextp;
     }
+    if ( selectme!=NULL ) selectme->selected = true;
 return( spl );
 }
 
