@@ -1659,15 +1659,9 @@ static void FVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVOverlap(fv,e!=NULL && (e->u.mouse.state&ksm_shift));
 }
 
-static void FVSimplify(FontView *fv,int type) {
+void _FVSimplify(FontView *fv,int type, double err) {
     int i, cnt=0;
-    double err = .75;
 
-    if ( type==1 ) {
-	type = SimplifyDlg(&err);
-	if ( type==-1 )
-return;
-    }
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
 	++cnt;
     GProgressStartIndicatorR(10,_STR_Simplifying,_STR_Simplifying,0,cnt,1);
@@ -1681,6 +1675,19 @@ return;
     break;
     }
     GProgressEndIndicator();
+}
+
+static void FVSimplify(FontView *fv,int type) {
+    double err = .75;
+
+    if ( type==1 ) {
+	static double local_err = .75;
+	type = SimplifyDlg(&local_err);
+	if ( type==-1 )
+return;
+	err = local_err;
+    }
+    _FVSimplify(fv,type,err);
 }
 
 static void FVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {

@@ -554,7 +554,7 @@ static void bOpen(Context *c) {
     int openflags=0;
 
     if ( c->a.argc!=2 && c->a.argc!=3 )
-	error( c, "Wrong number of arguments to Open");
+	error( c, "Wrong number of arguments");
     else if ( c->a.vals[1].type!=v_str )
 	error( c, "Open expects a filename" );
     else if ( c->a.argc==3 ) {
@@ -576,13 +576,13 @@ static void bOpen(Context *c) {
 
 static void bNew(Context *c) {
     if ( c->a.argc!=1 )
-	error( c, "Wrong number of arguments to New");
+	error( c, "Wrong number of arguments");
     c->curfv = FVAppend(_FontViewCreate(SplineFontNew()));
 }
 
 static void bClose(Context *c) {
     if ( c->a.argc!=1 )
-	error( c, "Wrong number of arguments to Close");
+	error( c, "Wrong number of arguments");
     if ( fv_list==c->curfv )
 	fv_list = c->curfv->next;
     else {
@@ -598,7 +598,7 @@ static void bSave(Context *c) {
     SplineFont *sf = c->curfv->sf;
 
     if ( c->a.argc>2 )
-	error( c, "Wrong number of arguments to Save");
+	error( c, "Wrong number of arguments");
     if ( c->a.argc==2 ) {
 	if ( c->a.vals[1].type!=v_str )
 	    error(c,"If an argument is given to Save it must be a filename");
@@ -620,7 +620,7 @@ static void bGenerate(Context *c) {
     char *subfontdirectory = NULL;
 
     if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=4 && c->a.argc!=5 && c->a.argc!=6 )
-	error( c, "Wrong number of arguments to Generate");
+	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_str ||
 	    (c->a.argc>=3 && c->a.vals[2].type!=v_str ) ||
 	    (c->a.argc>=4 && c->a.vals[3].type!=v_int ) ||
@@ -755,9 +755,9 @@ static void bImport(Context *c) {
     int format, back, ok, isimage;
 
     if ( c->a.argc!=2 && c->a.argc!=3 )
-	error( c, "Wrong number of arguments to Import");
+	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_str || (c->a.argc==3 && c->a.vals[2].type!=v_int ))
-	error( c, "Bad type of arguments to Import");
+	error( c, "Bad type of argument");
     filename = GFileMakeAbsoluteName(c->a.vals[1].u.sval);
     ext = strrchr(filename,'.');
     if ( ext==NULL ) {
@@ -809,7 +809,7 @@ static void bWritePfm(Context *c) {
     SplineFont *sf = c->curfv->sf;
 
     if ( c->a.argc!=2 )
-	error( c, "Wrong number of arguments to WritePfm");
+	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_str )
 	error( c, "Bad type of argument");
     if ( !WritePfmFile(c->a.vals[1].u.sval,sf,0) )
@@ -942,7 +942,7 @@ static void bPrintFont(Context *c) {
 /* **** Edit menu **** */
 static void doEdit(Context *c, int cmd) {
     if ( c->a.argc!=1 )
-	error( c, "Wrong number of arguments to edit command");
+	error( c, "Wrong number of arguments");
     FVFakeMenus(c->curfv,cmd);
 }
 
@@ -1006,13 +1006,13 @@ static void bJoin(Context *c) {
 
 static void bSelectAll(Context *c) {
     if ( c->a.argc!=1 )
-	error( c, "Wrong number of arguments to SelectAll");
+	error( c, "Wrong number of arguments");
     memset(c->curfv->selected,1,c->curfv->sf->charcnt);
 }
 
 static void bSelectNone(Context *c) {
     if ( c->a.argc!=1 )
-	error( c, "Wrong number of arguments to SelectNone");
+	error( c, "Wrong number of arguments");
     memset(c->curfv->selected,0,c->curfv->sf->charcnt);
 }
 
@@ -1144,9 +1144,9 @@ static void bReencode(Context *c) {
 	{ em_unicode4, "ucs4" },
 	{ 0, NULL}};
     if ( c->a.argc!=2 && c->a.argc!=3 )
-	error( c, "Wrong number of arguments to Reencode");
+	error( c, "Wrong number of arguments");
     else if ( c->a.vals[1].type!=v_str || ( c->a.argc==3 && c->a.vals[2].type!=v_int ))
-	error(c,"Bad argument type in Reencode");
+	error(c,"Bad argument type");
     if ( c->a.argc==3 )
 	force = c->a.vals[2].u.ival;
     for ( i=0; encdata[i].name!=NULL; ++i )
@@ -1384,7 +1384,7 @@ static void bTransform(Context *c) {
     BVTFunc bvts[1];
 
     if ( c->a.argc!=7 )
-	error( c, "Wrong number of arguments to Transform");
+	error( c, "Wrong number of arguments");
     else if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int ||
 	      c->a.vals[3].type!=v_int || c->a.vals[4].type!=v_int ||
 	      c->a.vals[5].type!=v_int || c->a.vals[6].type!=v_int )
@@ -1414,7 +1414,7 @@ static void bHFlip(Context *c) {
 	trans[4] = 2*c->a.vals[1].u.ival;
 	otype = 0;
     } else
-	error( c, "Wrong number of arguments to HFlip");
+	error( c, "Wrong number of arguments");
     bvts[0].func = bvt_fliph;
     bvts[1].func = bvt_none;
     FVTransFunc(c->curfv,trans,otype,bvts,true);
@@ -1438,7 +1438,7 @@ static void bVFlip(Context *c) {
 	    trans[5] = 2*c->a.vals[2].u.ival;
 	otype = 0;
     } else
-	error( c, "Wrong number of arguments to VFlip");
+	error( c, "Wrong number of arguments");
     bvts[0].func = bvt_flipv;
     bvts[1].func = bvt_none;
     FVTransFunc(c->curfv,trans,otype,bvts,true);
@@ -1451,7 +1451,7 @@ static void bRotate(Context *c) {
     double a;
 
     if ( c->a.argc==1 || c->a.argc==3 || c->a.argc>4 )
-	error( c, "Wrong number of arguments to Rotate");
+	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_int || (c->a.argc==4 &&
 	    (c->a.vals[2].type!=v_int || c->a.vals[3].type!=v_int )))
 	error(c,"Bad argument type in Rotate");
@@ -1491,7 +1491,7 @@ static void bScale(Context *c) {
     */
 
     if ( c->a.argc==1 || c->a.argc>5 )
-	error( c, "Wrong number of arguments to Scale");
+	error( c, "Wrong number of arguments");
     for ( i=1; i<c->a.argc; ++i )
 	if ( c->a.vals[i].type!=v_int )
 	    error(c,"Bad argument type in Scale");
@@ -1523,7 +1523,7 @@ static void bSkew(Context *c) {
     double a;
 
     if ( c->a.argc==1 || c->a.argc==3 || c->a.argc>4 )
-	error( c, "Wrong number of arguments to Skew");
+	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_int || (c->a.argc==4 &&
 	    (c->a.vals[2].type!=v_int || c->a.vals[3].type!=v_int )))
 	error(c,"Bad argument type in Skew");
@@ -1564,7 +1564,7 @@ static void bScaleToEm(Context *c) {
     int i;
 
     if ( c->a.argc!=3 )
-	error( c, "Wrong number of arguments to Scale");
+	error( c, "Wrong number of arguments");
     for ( i=1; i<c->a.argc; ++i )
 	if ( c->a.vals[i].type!=v_int || c->a.vals[i].u.ival<0 || c->a.vals[i].u.ival>16384 )
 	    error(c,"Bad argument type");
@@ -1580,7 +1580,7 @@ static void bExpandStroke(Context *c) {
     */
 
     if ( c->a.argc!=2 && c->a.argc!=4 && c->a.argc!=7 )
-	error( c, "Wrong number of arguments to ExpandStroke");
+	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_int ||
 	    (c->a.argc>=4 && c->a.vals[2].type!=v_int ) ||
 	    (c->a.argc>=4 && c->a.vals[3].type!=v_int ) ||
@@ -1604,14 +1604,22 @@ static void bExpandStroke(Context *c) {
 
 static void bRemoveOverlap(Context *c) {
     if ( c->a.argc!=1 )
-	error( c, "Wrong number of arguments to RemoveOverlap");
+	error( c, "Wrong number of arguments");
     FVFakeMenus(c->curfv,100);
 }
 
 static void bSimplify(Context *c) {
-    if ( c->a.argc!=1 )
-	error( c, "Wrong number of arguments to Simplify");
-    FVFakeMenus(c->curfv,101);
+    double err = .75;
+    int type = 0;
+
+    if ( c->a.argc==3 ) {
+	if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int )
+	    error( c, "Bad type for argument" );
+	type = c->a.vals[1].u.ival;
+	err = c->a.vals[2].u.ival;
+    } else if ( c->a.argc!=1 )
+	error( c, "Wrong number of arguments");
+    _FVSimplify(c->curfv,type,err);
 }
 
 static void bAddExtrema(Context *c) {
@@ -1621,9 +1629,13 @@ static void bAddExtrema(Context *c) {
 }
 
 static void bRoundToInt(Context *c) {
-    if ( c->a.argc!=1 )
+    double err = .75;
+    int flags = 0;
+
+    if ( c->a.argc==3 ) {
+    } else if ( c->a.argc!=1 )
 	error( c, "Wrong number of arguments");
-    FVFakeMenus(c->curfv,103);
+    _FVSimplify(c->curfv,flags,err);
 }
 
 static void bAutotrace(Context *c) {
@@ -1671,13 +1683,13 @@ static void bCorrectDirection(Context *c) {
 
 static void bBuildComposit(Context *c) {
     if ( c->a.argc!=1 )
-	error( c, "Wrong number of arguments to BuildComposit");
+	error( c, "Wrong number of arguments");
     FVBuildAccent(c->curfv,false);
 }
 
 static void bBuildAccented(Context *c) {
     if ( c->a.argc!=1 )
-	error( c, "Wrong number of arguments to BuildAccented");
+	error( c, "Wrong number of arguments");
     FVBuildAccent(c->curfv,true);
 }
 
@@ -1686,7 +1698,7 @@ static void bMergeFonts(Context *c) {
     int openflags=0;
 
     if ( c->a.argc!=2 && c->a.argc!=3 )
-	error( c, "Wrong number of arguments to Open");
+	error( c, "Wrong number of arguments");
     else if ( c->a.vals[1].type!=v_str )
 	error( c, "MergeFonts expects a filename" );
     else if ( c->a.argc==3 ) {
@@ -1702,13 +1714,13 @@ static void bMergeFonts(Context *c) {
 
 static void bAutoHint(Context *c) {
     if ( c->a.argc!=1 )
-	error( c, "Wrong number of arguments to AutoHint");
+	error( c, "Wrong number of arguments");
     FVFakeMenus(c->curfv,200);
 }
 
 static void bSetWidth(Context *c) {
     if ( c->a.argc!=2 )
-	error( c, "Wrong number of arguments to SetWidth");
+	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_int )
 	error(c,"Bad argument type in SetWidth");
     FVSetWidthScript(c->curfv,wt_width,c->a.vals[1].u.ival);
@@ -1716,7 +1728,7 @@ static void bSetWidth(Context *c) {
 
 static void bSetVWidth(Context *c) {
     if ( c->a.argc!=2 )
-	error( c, "Wrong number of arguments to SetVWidth");
+	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_int )
 	error(c,"Bad argument type in SetVWidth");
     FVSetWidthScript(c->curfv,wt_vwidth,c->a.vals[1].u.ival);
@@ -1724,7 +1736,7 @@ static void bSetVWidth(Context *c) {
 
 static void bSetLBearing(Context *c) {
     if ( c->a.argc!=2 )
-	error( c, "Wrong number of arguments to SetLBearing");
+	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_int )
 	error(c,"Bad argument type in SetLBearing");
     FVSetWidthScript(c->curfv,wt_lbearing,c->a.vals[1].u.ival);
@@ -1732,7 +1744,7 @@ static void bSetLBearing(Context *c) {
 
 static void bSetRBearing(Context *c) {
     if ( c->a.argc!=2 )
-	error( c, "Wrong number of arguments to SetRBearing");
+	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_int )
 	error(c,"Bad argument type in SetRBearing");
     FVSetWidthScript(c->curfv,wt_rbearing,c->a.vals[1].u.ival);
@@ -1742,7 +1754,7 @@ static void bAutoWidth(Context *c) {
     SplineFont *sf = c->curfv->sf;
 
     if ( c->a.argc != 2 )
-	error( c, "Wrong number of arguments to AutoWidth");
+	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_int )
 	error(c,"Bad argument type in AutoWidth");
     if ( !AutoWidthScript(sf,c->a.vals[1].u.ival))
@@ -1893,7 +1905,7 @@ static void bCharCnt(Context *c) {
 static void bInFont(Context *c) {
     SplineFont *sf = c->curfv->sf;
     if ( c->a.argc!=2 )
-	error( c, "Wrong number of arguments to InFont");
+	error( c, "Wrong number of arguments");
     c->return_val.type = v_int;
     if ( c->a.vals[1].type==v_int )
 	c->return_val.u.ival = c->a.vals[1].u.ival>=0 && c->a.vals[1].u.ival<sf->charcnt;
@@ -1917,7 +1929,7 @@ static void bInFont(Context *c) {
 static void bWorthOutputting(Context *c) {
     SplineFont *sf = c->curfv->sf;
     if ( c->a.argc!=2 )
-	error( c, "Wrong number of arguments to InFont");
+	error( c, "Wrong number of arguments");
     c->return_val.type = v_int;
     if ( c->a.vals[1].type==v_int )
 	c->return_val.u.ival = c->a.vals[1].u.ival>=0 &&

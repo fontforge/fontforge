@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 21-Jan-2003 -->
+  <!-- AP: Last modified: 23-Jan-2003 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -917,8 +917,8 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     value that it was to the old value.
   <DT>
     ExpandStroke(width)<BR>
-    ExpandStroke(width,line cap, line join)
-    ExpandStroke(width,caligraphic-angle,height-numerator,height-denom)<BR>
+    ExpandStroke(width,line cap, line join)<BR>
+    ExpandStroke(width,caligraphic-angle,height-numerator,height-denom)
   <DD>
     In the first format a line cap of "butt" and line join of "round" are implied..
   <DT>
@@ -926,9 +926,18 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
   <DD>
     Does the obvious.
   <DT>
-    Simplify()
+    Simplify()<BR>
+    Simplify(flags,error)
   <DD>
-    Does the obvious.
+    With no arguments it does the obvious. If flags is -1 it does a Cleanup, otherwise
+    flags should be a bitwise or of
+    <UL>
+	<LI>1 -- Slopes may change at the end points.
+	<LI>2 -- Points which are extremum may be removed
+    </UL>
+    <P>
+    The error argument is the number of pixels by which the modified path is
+    allowed to stray from the true path.
   <DT>
     AddExtrema()
   <DD>
