@@ -2315,11 +2315,14 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont) {
 	nomwid = defwid = sameval;
     } else {
 	++maxw;
+	if ( maxw>65535 ) maxw = 3*(sf->ascent+sf->descent);
 	widths = gcalloc(maxw,sizeof(uint16));
 	cumwid = gcalloc(maxw,sizeof(uint32));
 	defwid = 0; cnt=0;
 	for ( i=0; i<sf->charcnt; ++i )
-	    if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]->width>=0)
+	    if ( SCWorthOutputting(sf->chars[i]) &&
+		    sf->chars[i]->width>=0 &&
+		    sf->chars[i]->width<maxw )
 		if ( ++widths[sf->chars[i]->width] > cnt ) {
 		    defwid = sf->chars[i]->width;
 		    cnt = widths[defwid];

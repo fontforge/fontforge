@@ -94,7 +94,7 @@ typedef struct dbounds {
 
 typedef struct bluedata {
     real xheight, xheighttop;		/* height of "x" and "o" */
-    real caph, caphtop;		/* height of "I" and "O" */
+    real caph, caphtop;			/* height of "I" and "O" */
     real ascent;			/* height of "l" */
     real descent;			/* depth of "p" */
 } BlueData;
@@ -107,7 +107,7 @@ typedef struct bdffloat {
 
 typedef struct undoes {
     struct undoes *next;
-    enum undotype { ut_none=0, ut_state, ut_tstate, ut_width,
+    enum undotype { ut_none=0, ut_state, ut_tstate, ut_statehint, ut_width,
 	    ut_bitmap, ut_bitmapsel, ut_composit, ut_multiple, ut_noop } undotype;
     union {
 	struct {
@@ -115,7 +115,10 @@ typedef struct undoes {
 	    int16 lbearingchange;
 	    struct splinepointlist *splines;
 	    struct refchar *refs;
-	    struct imagelist *images;
+	    union {
+		struct imagelist *images;
+		void *hints;
+	    } u;
 	    struct splinefont *copied_from;
 	} state;
 	int width;
@@ -264,14 +267,12 @@ typedef struct hintinstance {
     struct hintinstance *next;
 } HintInstance;
 
+enum hinttypes { ht_unspecified=0, ht_h, ht_v, ht_d };
 typedef struct steminfo {
-    real start;			/* location at which the stem starts */
-    real width;			/* or height */
-    HintInstance *where;	/* location(s) in the other coord */
     struct steminfo *next;
-    unsigned int asedges:1;	/* only do a set of edge hints for this guy */
-    				/*  or remove entirely if the edges overlap */
-			        /*  something else */
+    unsigned int hinttype: 2;	/* Only used by undoes */
+    unsigned int ghost: 1;	/* this is a ghost stem hint. As such truetype should ignore it, type2 output should negate it, and type1 should use as is */
+		    /* Type2 says: -20 is "width" of top edge, -21 is "width" of bottom edge, type1 accepts either */
     unsigned int haspointleft:1;
     unsigned int haspointright:1;
     unsigned int haspoints:1;	/* both edges of the stem have points on them */
@@ -291,17 +292,19 @@ typedef struct steminfo {
     unsigned int startdone: 1;	/* Used by ttf instructing */
     unsigned int backwards: 1;	/* If we think this hint is better done with a negative width */
     unsigned int reordered: 1;	/* In AutoHinting. Means we changed the start of the hint, need to test for out of order */
-    unsigned int ghost: 1;	/* this is a ghost stem hint. As such truetype should ignore it, type2 output should negate it, and type1 should use as is */
-		    /* Type2 says: -20 is "width" of top edge, -21 is "width" of bottom edge, type1 accepts either */
     int16 hintnumber;		/* when dumping out hintmasks we need to know */
 				/*  what bit to set for this hint */
     int mask;			/* Mask of all references that use this hint */
 				/*  in type2 output */
+    real start;			/* location at which the stem starts */
+    real width;			/* or height */
+    HintInstance *where;	/* location(s) in the other coord */
 } StemInfo;
 
 typedef struct dsteminfo {
+    struct dsteminfo *next;	/* First two fields match those in steminfo */
+    unsigned int hinttype: 2;	/* Only used by undoes */
     BasePoint leftedgetop, rightedgetop, leftedgebottom, rightedgebottom;
-    struct dsteminfo *next;
 } DStemInfo;
 
 typedef struct imagelist {
@@ -474,6 +477,7 @@ extern void DStemInfoFree(DStemInfo *h);
 extern void KernPairsFree(KernPair *kp);
 extern void LigatureFree(Ligature *lig);
 extern StemInfo *StemInfoCopy(StemInfo *h);
+extern DStemInfo *DStemInfoCopy(DStemInfo *h);
 extern SplineChar *SplineCharCopy(SplineChar *sc);
 extern BDFChar *BDFCharCopy(BDFChar *bc);
 extern void ImageListsFree(ImageList *imgs);
@@ -598,7 +602,7 @@ extern Ligature *SCLigDefault(SplineChar *sc);
 extern BDFChar *BDFMakeChar(BDFFont *bdf,int i);
 
 extern void SCUndoSetLBearingChange(SplineChar *sc,int lb);
-extern Undoes *SCPreserveState(SplineChar *sc);
+extern Undoes *SCPreserveState(SplineChar *sc,int dohints);
 extern Undoes *SCPreserveBackground(SplineChar *sc);
 extern Undoes *SCPreserveWidth(SplineChar *sc);
 extern Undoes *BCPreserveState(BDFChar *bc);

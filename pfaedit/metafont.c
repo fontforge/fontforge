@@ -223,7 +223,7 @@ static SCI *SCIinit(SplineChar *sc,MetaFontDlg *meta) {
     int cnt;
     SCI *sci;
 
-    SCPreserveState(sc);
+    SCPreserveState(sc,true);
     SCPreserveBackground(sc);
 
     SplinePointListSimplify(sc->splines,true);		/* Get rid of two points at the same location, they cause us problems */

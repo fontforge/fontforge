@@ -45,11 +45,13 @@
 /*  into splinefont.h after the (or instead of) the definition of chunkalloc()*/
 
 #ifndef chunkalloc
-#define ALLOC_CHUNK	100
+#define ALLOC_CHUNK	1
 #define CHUNK_MAX	100
 
+#if ALLOC_CHUNK>1
 struct chunk { struct chunk *next; };
 static struct chunk *chunklists[CHUNK_MAX/4] = { 0 };
+#endif
 
 void *chunkalloc(int size) {
 # if ALLOC_CHUNK<=1
@@ -1916,6 +1918,23 @@ StemInfo *StemInfoCopy(StemInfo *h) {
 		hilast->next = hicur;
 		hilast = hicur;
 	    }
+	}
+    }
+return( head );
+}
+
+DStemInfo *DStemInfoCopy(DStemInfo *h) {
+    DStemInfo *head=NULL, *last=NULL, *cur;
+
+    for ( ; h!=NULL; h = h->next ) {
+	cur = chunkalloc(sizeof(DStemInfo));
+	*cur = *h;
+	cur->next = NULL;
+	if ( head==NULL )
+	    head = last = cur;
+	else {
+	    last->next = cur;
+	    last = cur;
 	}
     }
 return( head );

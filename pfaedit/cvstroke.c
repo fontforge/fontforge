@@ -98,7 +98,7 @@ static void FVStrokeIt(void *_fv, StrokeInfo *si) {
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
-	SCPreserveState(sc);
+	SCPreserveState(sc,false);
 	head = NULL; last = NULL;
 	for ( spl= sc->splines; spl!=NULL; spl = spl->next ) {
 	    cur = SplineSetStroke(spl,si,sc);

@@ -256,6 +256,104 @@ static void FixupImages(SplineChar *sc,ImageList *uimgs) {
     }
 }
 
+static void UHintListFree(void *hints) {
+    StemInfo *h, *t, *p;
+
+    if ( hints==NULL )
+return;
+    if ( ((StemInfo *) hints)->hinttype==ht_d )
+	DStemInfosFree(hints);
+    else {
+	h = t = hints;
+	p = NULL;
+	while ( t!=NULL && t->hinttype!=ht_d ) {
+	    p = t;
+	    t = t->next;
+	}
+	p->next = NULL;
+	StemInfosFree(h);
+	DStemInfosFree((DStemInfo *) t);
+    }
+}
+
+static void *UHintCopy(SplineChar *sc,int docopy) {
+    StemInfo *h = sc->hstem, *v = sc->vstem, *last;
+    DStemInfo *d = sc->dstem;
+    void *ret = NULL;
+
+    if ( docopy ) {
+	h = StemInfoCopy(h);
+	v = StemInfoCopy(v);
+	d = DStemInfoCopy(d);
+    } else {
+	sc->hstem = NULL;
+	sc->vstem = NULL;
+	sc->dstem = NULL;
+	sc->hconflicts = sc->vconflicts = false;
+    }
+    ret = h;
+    if ( h!=NULL ) {
+	h->hinttype = ht_h;
+	for ( last=h; last->next!=NULL; last=last->next ) last->next->hinttype = ht_unspecified;
+	last->next = v;
+    } else
+	ret = v;
+    if ( v!=NULL ) {
+	v->hinttype = ht_v;
+	for ( last=v; last->next!=NULL; last=last->next ) last->next->hinttype = ht_unspecified;
+    }
+    if ( last!=NULL )
+	last->next = (StemInfo *) d;
+    else
+	ret = d;
+    if ( d!=NULL ) {
+	d->hinttype = ht_d;
+	for ( d=d->next; d!=NULL; d=d->next ) d->hinttype = ht_unspecified;
+    }
+return(ret);
+}
+
+static void ExtractHints(SplineChar *sc,void *hints,int docopy) {
+    StemInfo *h = NULL, *v = NULL, *p;
+    DStemInfo *d = NULL;
+    StemInfo *pv = NULL, *pd = NULL;
+
+    p = NULL;
+    while ( hints!=NULL ) {
+	if ( ((StemInfo *) hints)->hinttype == ht_h )
+	    h = hints;
+	else if ( ((StemInfo *) hints)->hinttype == ht_v ) {
+	    v = hints;
+	    pv = p;
+	} else if ( ((StemInfo *) hints)->hinttype == ht_d ) {
+	    d = hints;
+	    pd = p;
+    break;
+	}
+	p = hints;
+	hints = ((StemInfo *) hints)->next;
+    }
+
+    if ( pv!=NULL ) pv->next = NULL;
+    if ( pd!=NULL ) pd->next = NULL;
+    if ( docopy ) {
+	h = StemInfoCopy(h);
+	if ( pv!=NULL ) pv->next = v;
+	v = StemInfoCopy(v);
+	if ( pd!=NULL ) pd->next = (StemInfo *) d;
+	d = DStemInfoCopy(d);
+    }
+
+    StemInfosFree(sc->hstem);
+    StemInfosFree(sc->vstem);
+    DStemInfosFree(sc->dstem);
+    sc->hstem = h;
+    sc->vstem = v;
+    sc->dstem = d;
+    sc->hconflicts = StemInfoAnyOverlaps(h);
+    sc->vconflicts = StemInfoAnyOverlaps(v);
+}
+
 void UndoesFree(Undoes *undo) {
     Undoes *unext;
 
@@ -266,10 +364,13 @@ void UndoesFree(Undoes *undo) {
 	  case ut_width:
 	    /* Nothing else to free */;
 	  break;
-	  case ut_state: case ut_tstate:
+	  case ut_state: case ut_tstate: case ut_statehint:
 	    SplinePointListsFree(undo->u.state.splines);
 	    RefCharsFree(undo->u.state.refs);
-	    ImageListsFree(undo->u.state.images);
+	    if ( undo->undotype==ut_statehint )
+		UHintListFree(undo->u.state.u.hints);
+	    else
+		ImageListsFree(undo->u.state.u.images);
 	  break;
 	  case ut_bitmap:
 	    free(undo->u.bmpstate.bitmap);
@@ -328,18 +429,22 @@ Undoes *CVPreserveState(CharView *cv) {
     undo->u.state.splines = SplinePointListCopy(*cv->heads[cv->drawmode]);
     if ( cv->drawmode==dm_fore )
 	undo->u.state.refs = RefCharsCopyState(cv->sc);
-    undo->u.state.images = ImagesCopyState(cv);
+    undo->u.state.u.images = ImagesCopyState(cv);
 return( CVAddUndo(cv,undo));
 }
 
-Undoes *SCPreserveState(SplineChar *sc) {
+Undoes *SCPreserveState(SplineChar *sc,int dohints) {
     Undoes *undo = chunkalloc(sizeof(Undoes));
 
     undo->undotype = ut_state;
     undo->u.state.width = sc->width;
     undo->u.state.splines = SplinePointListCopy(sc->splines);
     undo->u.state.refs = RefCharsCopyState(sc);
-    undo->u.state.images = NULL;
+    undo->u.state.u.images = NULL;
+    if ( dohints ) {
+	undo->undotype = ut_statehint;
+	undo->u.state.u.hints = UHintCopy(sc,true);
+    }
     undo->u.state.copied_from = sc->parent;
 return( AddUndo(undo,&sc->undoes[0],&sc->redoes[0]));
 }
@@ -351,7 +456,7 @@ Undoes *SCPreserveBackground(SplineChar *sc) {
     undo->u.state.width = sc->width;
     undo->u.state.splines = SplinePointListCopy(sc->backgroundsplines);
     undo->u.state.refs = RefCharsCopyState(sc);
-    undo->u.state.images = NULL;
+    undo->u.state.u.images = NULL;
     undo->u.state.copied_from = sc->parent;
 return( AddUndo(undo,&sc->undoes[1],&sc->redoes[1]));
 }
@@ -428,7 +533,7 @@ static void CVUndoAct(CharView *cv,Undoes *undo) {
 	    SCSynchronizeWidth(sc,undo->u.width,width,cv->fv);
 	undo->u.width = width;
       } break;
-      case ut_state: case ut_tstate: {
+      case ut_state: case ut_tstate: case ut_statehint: {
 	SplinePointList *spl = *cv->heads[cv->drawmode];
 	if ( cv->drawmode==dm_fore ) {
 	    int width = sc->width;
@@ -441,11 +546,16 @@ static void CVUndoAct(CharView *cv,Undoes *undo) {
 	    RefChar *refs = RefCharsCopyState(cv->sc);
 	    FixupRefChars(sc,undo->u.state.refs);
 	    undo->u.state.refs = refs;
+	} else if ( cv->drawmode==dm_fore && undo->undotype==ut_statehint ) {
+	    void *hints = UHintCopy(sc,false);
+	    ExtractHints(sc,undo->u.state.u.hints,false);
+	    undo->u.state.u.hints = hints;
 	}
-	if ( cv->drawmode==dm_back && !ImagesMatch(undo->u.state.images,sc->backimages)) {
+	if ( cv->drawmode==dm_back && undo->undotype!=ut_statehint &&
+		!ImagesMatch(undo->u.state.u.images,sc->backimages)) {
 	    ImageList *images = ImagesCopyState(cv);
-	    FixupImages(sc,undo->u.state.images);
-	    undo->u.state.images = images;
+	    FixupImages(sc,undo->u.state.u.images);
+	    undo->u.state.u.images = images;
 	    SCOutOfDateBackground(cv->sc);
 	}
 	undo->u.state.splines = spl;
@@ -507,7 +617,7 @@ void CVRestoreTOriginalState(CharView *cv) {
 	    }
     }
     if ( cv->drawmode==dm_back ) {
-	for ( img=cv->sc->backimages, uimg=undo->u.state.images; uimg!=NULL;
+	for ( img=cv->sc->backimages, uimg=undo->u.state.u.images; uimg!=NULL;
 		img = img->next, uimg = uimg->next ) {
 	    img->xoff = uimg->xoff;
 	    img->yoff = uimg->yoff;
@@ -595,10 +705,13 @@ static Undoes copybuffer;
 static void CopyBufferFree(void) {
 
     switch( copybuffer.undotype ) {
-      case ut_state:
+      case ut_state: case ut_statehint:
 	SplinePointListsFree(copybuffer.u.state.splines);
 	RefCharsFree(copybuffer.u.state.refs);
-	ImageListsFree(copybuffer.u.state.images);
+	if ( copybuffer.undotype==ut_statehint )
+	    UHintListFree(copybuffer.u.state.u.hints);
+	else
+	    ImageListsFree(copybuffer.u.state.u.images);
       break;
       case ut_bitmapsel:
 	BDFFloatFree(copybuffer.u.bmpstate.selection);
@@ -670,8 +783,8 @@ void CopySelected(CharView *cv) {
 	for ( imgs = cv->sc->backimages; imgs!=NULL; imgs = imgs->next ) if ( imgs->selected ) {
 	    new = chunkalloc(sizeof(RefChar));
 	    *new = *imgs;
-	    new->next = copybuffer.u.state.images;
-	    copybuffer.u.state.images = new;
+	    new->next = copybuffer.u.state.u.images;
+	    copybuffer.u.state.u.images = new;
 	}
     }
     copybuffer.u.state.copied_from = cv->sc->parent;
@@ -685,13 +798,14 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
     if ( sc==NULL ) {
 	cur->undotype = ut_noop;
     } else {
-	cur->undotype = ut_state;
 	cur->u.state.width = sc->width;
 	if ( full ) {
+	    cur->undotype = ut_statehint;
 	    cur->u.state.splines = SplinePointListCopy(sc->splines);
 	    cur->u.state.refs = RefCharsCopyState(sc);
-	    cur->u.state.images = NULL;
+	    cur->u.state.u.hints = UHintCopy(sc,true);
 	} else {		/* Or just make a reference */
+	    cur->undotype = ut_state;
 	    cur->u.state.refs = ref = chunkalloc(sizeof(RefChar));
 	    ref->unicode_enc = sc->unicodeenc;
 	    ref->local_enc = sc->enc;
@@ -804,15 +918,18 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv) {
     switch ( paster->undotype ) {
       case ut_noop:
       break;
-      case ut_state:
+      case ut_state: case ut_statehint:
 	sc->parent->onlybitmaps = false;
-	SCPreserveState(sc);
+	SCPreserveState(sc,paster->undotype==ut_statehint);
 	SCSynchronizeWidth(sc,paster->u.state.width,sc->width,fv);
 	SplinePointListsFree(sc->splines);
 	sc->splines = NULL;
 	if ( paster->u.state.splines!=NULL )
 	    sc->splines = SplinePointListCopy(paster->u.state.splines);
 	/* Ignore any images, can't be in foreground level */
+	/* but might be hints */
+	if ( paster->undotype==ut_statehint )
+	    ExtractHints(sc,paster->u.state.u.hints,true);
 	SCRemoveDependents(sc);
 	if ( paster->u.state.refs!=NULL ) {
 	    RefChar *new, *refs;
@@ -840,7 +957,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv) {
 	SCCharChangedUpdate(sc,fv);
       break;
       case ut_width:
-	SCPreserveState(sc);
+	SCPreserveWidth(sc);
 	SCSynchronizeWidth(sc,paster->u.width,sc->width,fv);
 	SCCharChangedUpdate(sc,fv);
       break;
@@ -854,7 +971,7 @@ static void _PasteToCV(CharView *cv,Undoes *paster) {
     switch ( paster->undotype ) {
       case ut_noop:
       break;
-      case ut_state:
+      case ut_state: case ut_statehint:
 	if ( cv->drawmode==dm_fore && cv->sc->splines==NULL && cv->sc->refs==NULL )
 	    SCSynchronizeWidth(cv->sc,paster->u.state.width,cv->sc->width,cv->fv);
 	if ( paster->u.state.splines!=NULL ) {
@@ -864,11 +981,11 @@ static void _PasteToCV(CharView *cv,Undoes *paster) {
 	    spl->next = *cv->heads[cv->drawmode];
 	    *cv->heads[cv->drawmode] = new;
 	}
-	if ( paster->u.state.images!=NULL ) {
+	if ( paster->undotype==ut_state && paster->u.state.u.images!=NULL ) {
 	    /* Images can only be pasted into background, so do that */
 	    /*  even if we aren't in background mode */
 	    ImageList *new, *cimg;
-	    for ( cimg = paster->u.state.images; cimg!=NULL; cimg=cimg->next ) {
+	    for ( cimg = paster->u.state.u.images; cimg!=NULL; cimg=cimg->next ) {
 		new = galloc(sizeof(ImageList));
 		*new = *cimg;
 		new->selected = true;
@@ -876,7 +993,8 @@ static void _PasteToCV(CharView *cv,Undoes *paster) {
 		cv->sc->backimages = new;
 	    }
 	    SCOutOfDateBackground(cv->sc);
-	}
+	} else if ( paster->undotype==ut_statehint )
+	    ExtractHints(cv->sc,paster->u.state.u.hints,true);
 	if ( paster->u.state.refs!=NULL && cv->drawmode==dm_fore ) {
 	    RefChar *new, *refs;
 	    SplineChar *sc;
@@ -1129,14 +1247,30 @@ void PasteIntoFV(FontView *fv) {
     BDFFont *bdf;
     int i, cnt=0;
     int yestoall=0, first=true;
+    char *oldsel = fv->selected;
 
     fv->refstate = 0;
 
+    cur = &copybuffer;
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] )
 	++cnt;
+    /* If they select exactly one character but there are more things in the */
+    /*  copy buffer, then temporarily change the selection so that everything*/
+    /*  in the copy buffer gets pasted (into chars immediately following sele*/
+    /*  cted one (unless we run out of chars...)) */
+    if ( cnt==1 && cur->undotype==ut_multiple && cur->u.multiple.mult->next!=NULL ) {
+	Undoes *tot; int j;
+	for ( cnt=0, tot=cur->u.multiple.mult; tot!=NULL; ++cnt, tot=tot->next );
+	fv->selected = galloc(fv->sf->charcnt);
+	memcpy(fv->selected,oldsel,fv->sf->charcnt);
+	for ( i=0; i<fv->sf->charcnt && !fv->selected[i]; ++i );
+	for ( j=0; j<cnt && i+j<fv->sf->charcnt; ++j )
+	    fv->selected[i+j] = 1;
+	cnt = j;
+    }
+
     GProgressStartIndicatorR(10,_STR_Pasting,_STR_Pasting,0,cnt,1);
 
-    cur = &copybuffer;
     if ( cur->undotype==ut_multiple )
 	cur = cur->u.multiple.mult;
     /* This little gem of code is to keep us from throwing out forward */
@@ -1195,4 +1329,6 @@ void PasteIntoFV(FontView *fv) {
     break;
     }
     GProgressEndIndicator();
+    if ( oldsel!=fv->selected )
+	free(oldsel);
 }

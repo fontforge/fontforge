@@ -764,7 +764,7 @@ return;
     if ( sc->splines==NULL && sc->refs==NULL && !sc->widthset &&
 	    sc->hstem==NULL && sc->vstem==NULL )
 return;
-    SCPreserveState(sc);
+    SCPreserveState(sc,true);
     sc->widthset = false;
     sc->width = sc->parent->ascent+sc->parent->descent;
     SplinePointListsFree(sc->splines);
@@ -839,7 +839,7 @@ static void FVMenuUnlinkRef(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     for ( i=0; i<fv->sf->charcnt; ++i )
 	    if ( fv->selected[i] && (sc=fv->sf->chars[i])!=NULL && sc->refs!=NULL ) {
-	SCPreserveState(sc);
+	SCPreserveState(sc,false);
 	for ( rf=sc->refs; rf!=NULL ; rf=next ) {
 	    next = rf->next;
 	    SCRefToSplines(sc,rf);
@@ -963,7 +963,7 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], char *sel) {
     RefChar *refs;
     real t[6];
 
-    SCPreserveState(sc);
+    SCPreserveState(sc,false);
     if ( transform[0]>0 && transform[3]>0 && transform[1]==0 && transform[2]==0 ) {
 	SCSynchronizeWidth(sc,sc->width*transform[0],sc->width,fv);
     }
@@ -1082,7 +1082,7 @@ static void FVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
-	SCPreserveState(sc);
+	SCPreserveState(sc,false);
 	sc->splines = SplineSetRemoveOverlap(sc->splines);
 	SCCharChangedUpdate(sc,fv);
 	if ( !GProgressNext())
@@ -1102,7 +1102,7 @@ static void FVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
-	SCPreserveState(sc);
+	SCPreserveState(sc,false);
 	SplineCharSimplify(sc->splines,cleanup);
 	SCCharChangedUpdate(sc,fv);
 	if ( !GProgressNext())
@@ -1121,7 +1121,7 @@ static void FVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
-	SCPreserveState(sc);
+	SCPreserveState(sc,false);
 	sc->splines = SplineSetsCorrect(sc->splines);
 	SCCharChangedUpdate(sc,fv);
 	if ( !GProgressNext())

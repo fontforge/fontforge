@@ -851,7 +851,7 @@ void SCBuildComposit(SplineFont *sf, SplineChar *sc, int copybmp,FontView *fv) {
 
     if ( !SFIsCompositBuildable(sf,sc->unicodeenc))
 return;
-    SCPreserveState(sc);
+    SCPreserveState(sc,true);
     SplinePointListsFree(sc->splines);
     sc->splines = NULL;
     SCRemoveDependents(sc);

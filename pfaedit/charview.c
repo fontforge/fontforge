@@ -2979,7 +2979,7 @@ void SCRound2Int(SplineChar *sc,FontView *fv) {
     SplinePoint *sp;
     RefChar *r;
 
-    SCPreserveState(sc);
+    SCPreserveState(sc,false);
     for ( spl= sc->splines; spl!=NULL; spl=spl->next ) {
 	for ( sp=spl->first; ; ) {
 	    SplinePointRound(sp);

@@ -103,7 +103,7 @@ return;
 
     for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next ) {
 	if ( selected==NULL || !selected[dlist->sc->enc] ) {
-	    SCPreserveState(dlist->sc);
+	    SCPreserveState(dlist->sc,false);
 	    SplinePointListShift(dlist->sc->splines,off,true);
 	    for ( ref = dlist->sc->refs; ref!=NULL; ref=ref->next )
 		    if ( ref->sc!=sc && (selected==NULL || !selected[ref->sc->enc] )) {

@@ -215,7 +215,7 @@ return;
 		new = SplinePointListTransform(new,transform,true);
 		if ( new!=NULL ) {
 		    if ( !changed )
-			SCPreserveState(sc);
+			SCPreserveState(sc,false);
 		    for ( last=new; last->next!=NULL; last=last->next );
 		    last->next = sc->splines;
 		    sc->splines = new;
