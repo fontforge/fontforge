@@ -58,6 +58,7 @@ float joinsnap=0;
 char *BDFFoundry=NULL;
 char *TTFFoundry=NULL;
 char *xuid=NULL;
+char *SaveTablesPref=NULL;
 char *RecentFiles[RECENT_MAX] = { NULL };
 /*struct cvshows CVShows = { 1, 1, 1, 1, 1, 0, 1 };*/ /* in charview */
 /* int default_fv_font_size = 24; */	/* in fontview */
@@ -314,6 +315,7 @@ static struct prefs_list {
 	{ "HintForGen", pr_bool, &autohint_before_generate, NULL, NULL, 'H', NULL, 0, _STR_PrefsPopupAHG },
 	{ "AlwaysGenApple", pr_bool, &alwaysgenapple, NULL, NULL, 'A', NULL, 0, _STR_PrefsPopupAGA },
 	{ "AlwaysGenOpenType", pr_bool, &alwaysgenopentype, NULL, NULL, 'O', NULL, 0, _STR_PrefsPopupAGO },
+	{ "PreserveTables", pr_string, &SaveTablesPref, NULL, NULL, 'P', NULL, 0, _STR_PrefsPopupPT },
 	{ NULL }
 },
  hidden_list[] = {

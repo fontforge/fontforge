@@ -4703,6 +4703,21 @@ return( NULL );
 return( out );
 }
 
+static FILE *dumpsavedtable(struct ttf_table *tab) {
+    FILE *out;
+
+    if ( tab==NULL )
+return( NULL );
+
+    out = tmpfile();
+    fwrite(tab->data,1,tab->len,out);
+    if ( (tab->len&1))
+	putc('\0',out);
+    if ( (tab->len+1)&2 )
+	putshort(out,0);
+return( out );
+}
+
 static void SFDummyUpCIDs(SplineFont *sf) {
     int i,k,max;
 
@@ -4717,6 +4732,11 @@ return;
     for ( k=0; k<sf->subfontcnt; ++k )
 	for ( i=0; i<sf->subfonts[k]->charcnt; ++i ) if ( sf->subfonts[k]->chars[i]!=NULL )
 	    sf->chars[i] = sf->subfonts[k]->chars[i];
+}
+
+static int tagcomp(const void *_t1, const void *_t2) {
+    struct taboff *t1 = (struct taboff *) _t1, *t2 = (struct taboff *) _t2;
+return( (int) (t1->tag - t2->tag) );
 }
 
 static int tcomp(const void *_t1, const void *_t2) {
@@ -4737,6 +4757,7 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
 	int32 *bsizes, enum bitmapformat bf,int flags) {
     int i, j, aborted, ebdtpos, eblcpos, offset;
     BDFFont *bdf;
+    struct ttf_table *tab;
 
     if ( strmatch(sf->encoding_name->enc_name,"symbol")==0 && format==ff_ttf )
 	format = ff_ttfsym;
@@ -4879,6 +4900,8 @@ return( false );
 	at->prepf = dumpstoredtable(sf,CHR('p','r','e','p'),&at->preplen);
 	at->cvtf = dumpstoredtable(sf,CHR('c','v','t',' '),&at->cvtlen);
     }
+    for ( tab=sf->ttf_tab_saved; tab!=NULL; tab=tab->next )
+	tab->temp = dumpsavedtable(tab);
     if ( format!=ff_type42 && format!=ff_type42cid ) {
 	dumppost(at,sf,format);
 	dumpcmap(at,sf,format);
@@ -5140,6 +5163,16 @@ return( false );
 
     if ( i>=MAX_TAB )
 	IError("Miscalculation of number of tables needed. Up sizeof tabs array in struct tabdir in ttf.h" );
+
+    for ( tab=sf->ttf_tab_saved; tab!=NULL && i<MAX_TAB; tab=tab->next ) {
+	at->tabdir.tabs[i].tag = tab->tag;
+	at->tabdir.tabs[i].data = tab->temp;
+	at->tabdir.tabs[i++].length = tab->len;
+    }
+    if ( tab!=NULL )
+	IError("Some user supplied tables omitted. Up sizeof tabs array in struct tabdir in ttf.h" );
+
+    qsort(at->tabdir.tabs,i,sizeof(struct taboff),tagcomp);
     
     at->tabdir.numtab = i;
     at->tabdir.searchRange = (i<16?8:i<32?16:i<64?32:64)*16;

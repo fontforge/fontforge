@@ -228,9 +228,15 @@ struct ttfinfo {
 	struct macidname *next;
     } *macstrids;
     struct fontdict *fd;	/* For reading in Type42 fonts. Glyph names in postscript section must be associated with glyphs in TTF section */
+    int savecnt;
+    struct savetab {
+	uint32 tag;
+	uint32 offset;
+	int len;
+    } *savetab;
 };
 
-#define MAX_TAB	32
+#define MAX_TAB	48
 struct tabdir {
     int32 version;	/* 0x00010000 */
     uint16 numtab;

@@ -933,7 +933,8 @@ typedef struct splinefont {
 	int32 len, maxlen;
 	uint8 *data;
 	struct ttf_table *next;
-    } *ttf_tables;
+	FILE *temp;	/* Temporary storage used during generation */
+    } *ttf_tables, *ttf_tab_saved;
 	/* We copy: fpgm, prep, cvt, maxp */
     struct instrdata *instr_dlgs;	/* Pointer to all table and character instruction dlgs in this font */
     struct shortview *cvt_dlg;
