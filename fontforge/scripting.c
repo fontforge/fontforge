@@ -3398,7 +3398,30 @@ static void bWorthOutputting(Context *c) {
 	}
 	c->return_val.u.ival = enc!=-1 && SCWorthOutputting(sf->chars[enc]);
     } else
-	error( c, "Bad type of argument to InFont");
+	error( c, "Bad type of argument");
+}
+
+static void bDrawsSomething(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    c->return_val.type = v_int;
+    if ( c->a.vals[1].type==v_int )
+	c->return_val.u.ival = c->a.vals[1].u.ival>=0 &&
+		c->a.vals[1].u.ival<sf->charcnt &&
+		SCDrawsSomething(sf->chars[c->a.vals[1].u.ival]);
+    else if ( c->a.vals[1].type==v_unicode || c->a.vals[1].type==v_str ) {
+	int enc;
+	if ( c->a.vals[1].type==v_unicode )
+	    enc = SFFindChar(sf,c->a.vals[1].u.ival,NULL);
+	else {
+	    unichar_t *temp = uc_copy(c->a.vals[1].u.sval);
+	    enc = NameToEncoding(sf,temp);
+	    free(temp);
+	}
+	c->return_val.u.ival = enc!=-1 && SCDrawsSomething(sf->chars[enc]);
+    } else
+	error( c, "Bad type of argument");
 }
 
 static void bDefaultATT(Context *c) {
@@ -4221,6 +4244,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
 /* ***** */
     { "CharCnt", bCharCnt },
     { "InFont", bInFont },
+    { "DrawsSomething", bDrawsSomething },
     { "WorthOutputting", bWorthOutputting },
     { "CharInfo", bCharInfo },
     { NULL }

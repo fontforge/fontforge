@@ -1403,6 +1403,7 @@ extern void SplineCharAutoHint( SplineChar *sc,int removeOverlaps);
 extern void SplineFontAutoHint( SplineFont *sf);
 extern StemInfo *HintCleanup(StemInfo *stem,int dosort,int instance_count);
 extern int SplineFontIsFlexible(SplineFont *sf,int flags);
+extern int SCDrawsSomething(SplineChar *sc);
 extern int SCWorthOutputting(SplineChar *sc);
 extern SplineChar *SCDuplicate(SplineChar *sc);
 extern int SCIsNotdef(SplineChar *sc,int isfixed);
