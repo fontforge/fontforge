@@ -374,11 +374,7 @@ return( NULL );
 	fclose(fon);
 return( NULL );
     }
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    sf = SplineFontBlank(em_win,256);
-#else
     sf = SplineFontBlank(FindOrMakeEncoding("win"),256);
-#endif
 
     if ( magic == 0x200 || magic==0x300 )
 	FNT_Load(fon,sf);

@@ -29,10 +29,10 @@
 
 #include "basics.h"
 #include "configure-pfaedit.h"
-#ifdef FONTFORGE_CONFIG_ICONV_ENCODING
+#ifdef HAVE_ICONV_H
 # include <iconv.h>
 #else
-# include "charset.h"
+# include <gwwiconv.h>
 #endif
 
 #ifdef USE_DOUBLE
@@ -469,16 +469,12 @@ typedef struct bdfchar {
 } BDFChar;
 
 typedef struct enc {
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    int enc_num;
-#endif
     char *enc_name;
     int char_cnt;	/* Size of the next two arrays */
     int32 *unicode;	/* unicode value for each encoding point */
     char **psnames;	/* optional postscript name for each encoding point */
     struct enc *next;
     unsigned int builtin: 1;
-#ifdef FONTFORGE_CONFIG_ICONV_ENCODING
     unsigned int hidden: 1;
     unsigned int only_1byte: 1;
     unsigned int has_1byte: 1;
@@ -498,7 +494,6 @@ typedef struct enc {
     char *iconv_name;	/* For compatibility to old versions we might use a different name from that used by iconv. */
     iconv_t *tounicode;
     iconv_t *fromunicode;
-#endif    
 } Encoding;
 
 typedef struct bdffont {
@@ -510,11 +505,7 @@ typedef struct bdffont {
     int16 ascent, descent;
     unsigned int piecemeal: 1;
     unsigned int bbsized: 1;
-#ifdef FONTFORGE_CONFIG_ICONV_ENCODING 
     Encoding *encoding_name;
-#else
-    enum charset encoding_name;
-#endif
     struct bdffont *next;
     struct clut *clut;
     char *foundry;
@@ -887,11 +878,7 @@ typedef struct splinefont {
 						/*  I leave it in so as to avoid cluttering up code with #ifdefs */
     unsigned int new: 1;			/* A new and unsaved font */
     struct fontview *fv;
-#ifdef FONTFORGE_CONFIG_ICONV_ENCODING
     Encoding *encoding_name, *old_encname;
-#else
-    enum charset encoding_name, old_encname;
-#endif
     enum uni_interp uni_interp;
     Layer grid;
     BDFFont *bitmaps;
@@ -1136,20 +1123,11 @@ extern void SFFindNearTop(SplineFont *);
 extern void SFRestoreNearTop(SplineFont *);
 extern int SFAddDelChars(SplineFont *sf, int nchars);
 extern int FontEncodingByName(char *name);
-#ifdef FONTFORGE_CONFIG_ICONV_ENCODING
 extern int SFForceEncoding(SplineFont *sf,Encoding *new_map);
 extern int SFReencodeFont(SplineFont *sf,Encoding *new_map);
-#else
-extern int SFForceEncoding(SplineFont *sf,enum charset new_map);
-extern int SFReencodeFont(SplineFont *sf,enum charset new_map);
-#endif
 extern int SFCompactFont(SplineFont *sf);
 extern int SFUncompactFont(SplineFont *sf);
-#ifdef FONTFORGE_CONFIG_ICONV_ENCODING
 extern int CountOfEncoding(Encoding *encoding_name);
-#else
-extern int CountOfEncoding(enum charset encoding_name);
-#endif
 extern int SFMatchEncoding(SplineFont *sf,SplineFont *target);
 extern char *_GetModifiers(char *fontname, char *familyname,char *weight);
 extern char *SFGetModifiers(SplineFont *sf);
@@ -1343,11 +1321,7 @@ extern SplineSet *SplineCharRemoveTiny(SplineChar *sc,SplineSet *head);
 extern SplineFont *SplineFontNew(void);
 extern char *GetNextUntitledName(void);
 extern SplineFont *SplineFontEmpty(void);
-#if !defined(FONTFORGE_CONFIG_ICONV_ENCODING)
-extern SplineFont *SplineFontBlank(int enc,int charcnt);
-#else
 extern SplineFont *SplineFontBlank(Encoding *enc,int charcnt);
-#endif
 extern void SFIncrementXUID(SplineFont *sf);
 extern void SFRandomChangeXUID(SplineFont *sf);
 extern SplineSet *SplineSetReverse(SplineSet *spl);
@@ -1436,11 +1410,7 @@ extern int AmfmSplineFont(FILE *afm, MMSet *mm,int formattype);
 extern int AfmSplineFont(FILE *afm, SplineFont *sf,int formattype);
 extern int PfmSplineFont(FILE *pfm, SplineFont *sf,int type0);
 extern int TfmSplineFont(FILE *afm, SplineFont *sf,int formattype);
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-extern char *EncodingName(int map);
-#else
 extern char *EncodingName(Encoding *map);
-#endif
 extern char *SFEncodingName(SplineFont *sf);
 extern void SFLigaturePrepare(SplineFont *sf);
 extern void SFLigatureCleanup(SplineFont *sf);
@@ -1457,14 +1427,9 @@ extern int SCSetMetaData(SplineChar *sc,char *name,int unienc,
 extern int SCSetMetaData(SplineChar *sc,char *name,int unienc,const unichar_t *comment);
 #endif
 
-#ifdef FONTFORGE_CONFIG_ICONV_ENCODING
 extern enum uni_interp interp_from_encoding(Encoding *enc,enum uni_interp interp);
 extern const char *EncName(Encoding *encname);
 extern Encoding *FindOrMakeEncoding(const char *name);
-#else
-extern enum uni_interp interp_from_encoding(enum charset enc,enum uni_interp interp);
-extern const char *EncName(int encname);
-#endif
 extern void SFDDumpMacFeat(FILE *sfd,MacFeat *mf);
 extern MacFeat *SFDParseMacFeatures(FILE *sfd, char *tok);
 extern int SFDWrite(char *filename,SplineFont *sf);
@@ -1651,16 +1616,11 @@ extern struct freetype_raster *FreeType_GetRaster(void *single_glyph_context,
 	int enc, real ptsize, int dpi);
 extern void FreeType_FreeRaster(struct freetype_raster *raster);
 
-#ifdef FONTFORGE_CONFIG_ICONV_ENCODING
 extern int UniFromName(const char *name,enum uni_interp interp, Encoding *encname);
 # ifdef FONTFORGE_CONFIG_GTK
 #  define uUniFromName UniFromName
 # else
 extern int uUniFromName(const unichar_t *name,enum uni_interp interp, Encoding *encname);
-#endif
-#else
-extern int UniFromName(const char *name,enum uni_interp interp, int encname);
-extern int uUniFromName(const unichar_t *name,enum uni_interp interp, int encname);
 #endif
 extern char *StdGlyphName(char *buffer, int uni, enum uni_interp interp);
 
@@ -1722,13 +1682,8 @@ extern MacFeat *FindMacFeature(SplineFont *sf, int feat,MacFeat **secondary);
 extern struct macsetting *FindMacSetting(SplineFont *sf, int feat, int set,struct macsetting **secondary);
 extern struct macname *FindMacSettingName(SplineFont *sf, int feat, int set);
 
-#ifdef FONTFORGE_CONFIG_ICONV_ENCODING
 extern int32 UniFromEnc(int enc, Encoding *encname);
 extern int32 EncFromUni(int32 uni, Encoding *encname);
-#else
-extern int32 UniFromEnc(int enc, enum charset encname);
-extern int32 EncFromUni(int32 uni, enum charset encname);
-#endif
 extern int32 EncFromSF(int32 uni, SplineFont *sf);
 
 extern void MatInverse(real into[6], real orig[6]);

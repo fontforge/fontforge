@@ -304,21 +304,7 @@ static GTextInfo *AvailableRanges(SplineFont *sf) {
 
     for ( i=cnt=0; unicoderange[i].name!=NULL; ++i ) {
 	ch = unicoderange[i].defined==-1 ? unicoderange[i].first : unicoderange[i].defined;
-	pos = -1;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	if ( sf->encoding_name==em_unicode ) {
-	    if ( ch<sf->charcnt && ch<65536 )
-		pos = ch;
-	} else if ( sf->encoding_name==em_unicode4 ) {
-	    if ( ch<sf->charcnt )
-		pos = ch;
-	} else if ( sf->encoding_name>=em_unicodeplanes && sf->encoding_name>=em_unicodeplanesmax ) {
-	    pos = ch-((sf->encoding_name-em_unicodeplanes)<<16);
-	    if ( pos>=sf->charcnt || pos<0 )
-		pos = -1;
-	} else
-#endif
-	    pos = SFFindChar(sf,ch,NULL);
+	pos = SFFindChar(sf,ch,NULL);
 	if ( pos!=-1 ) {
 	    ret[cnt].text = (unichar_t *) unicoderange[i].name;
 	    ret[cnt].text_is_1byte = true;
@@ -366,26 +352,6 @@ return( enc );
 	    }
 	} else if ( isdigit(*name)) {
 	    enc = strtoul(name,&end,0);
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	    if ( *end==',' && ((sf->encoding_name>=em_jis208 && sf->encoding_name<=em_last94x94) ||
-		    sf->encoding_name == em_unicode )) {
-		int j = strtoul(end+1,&end,10);
-		/* kuten */
-		if ( *end!='\0' )
-		    enc = -1;
-		else if ( sf->encoding_name==em_unicode ) {
-		    if ( enc>=0 && enc<256 && j>=0 && j<256 )
-			enc = (enc<<8) |j;
-		    else
-			enc = -1;
-		} else {
-		    if ( enc>=1 && enc<=94 && j>=1 && j<=94 )
-			enc = ((enc+0x20)<<8) + j+0x20;
-		    else
-			enc = -1;
-		}
-	    } else
-#endif
 	    if ( *end!='\0' )
 		enc = -1;
 	    if ( sf->remap!=NULL && enc!=-1 ) {
@@ -421,11 +387,7 @@ return( enc );
 	if ( enc!=-1 && uni==-1 ) {
 	    if ( sf->chars[enc]!=NULL )
 		uni = sf->chars[enc]->unicodeenc;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	    else if ( sf->encoding_name == em_unicode || sf->encoding_name==em_unicode4 )
-#else
 	    else if ( sf->encoding_name->is_unicodebmp || sf->encoding_name->is_unicodefull )
-#endif
 		uni = enc;
 	}
 	if ( dot!=NULL ) {
@@ -530,11 +492,7 @@ int GotoChar(SplineFont *sf) {
     int enc = -1;
     unichar_t *ret;
 
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    if ( sf->encoding_name<em_first2byte || sf->encoding_name>=em_base ) {
-#else
     if ( sf->encoding_name->only_1byte ) {
-#endif
 	/* In one byte encodings don't bother with the range list. It won't */
 	/*  have enough entries to be useful */
 	ret = GWidgetAskStringR(_STR_Goto,NULL,_STR_EnternameofGlyph);

@@ -46,20 +46,6 @@
 static const int unicode4_size = 17*65536;
     /* Unicode goes up to 0x10ffff */
 
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-enum { em_base = 0x100,		/* an addition to enum charset, used as the base value for the encoding list above */
-	em_sjis = em_max,
-	em_wansung,
-	em_jisgb,
-	em_max2,
-/* Any changes above should be duplicated in sfd.c:36-45 */
-	em_unicodeplanes = 0x10000,		/* One encoding for each plane of unicode */
-	em_unicodeplanesmax = 0x10017,
-	em_custom = em_none,
-	em_compacted = (em_none-1),
-	em_original = (em_compacted-1)
-    };
-#endif
 
 extern void IError(const char *fmt,...);
 

@@ -4328,22 +4328,6 @@ return;
 	for ( pos = cv->sc->enc+1; pos<sf->charcnt &&
 		(sf->chars[pos]==NULL || sf->chars[pos]!=SCDuplicate(sf->chars[pos])); ++pos );
 	if ( pos>=sf->charcnt ) {
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	    if ( cv->sc->enc<0xa140 && sf->encoding_name==em_big5 )
-		pos = 0xa140;
-	    else if ( cv->sc->enc<0xa140 && sf->encoding_name==em_big5hkscs )
-		pos = 0x8140;
-	    else if ( cv->sc->enc<0x8431 && sf->encoding_name==em_johab )
-		pos = 0x8431;
-	    else if ( cv->sc->enc<0xa1a1 && sf->encoding_name==em_wansung )
-		pos = 0xa1a1;
-	    else if ( cv->sc->enc<0xa1a1 && sf->encoding_name==em_jisgb )
-		pos = 0xa1a1;
-	    else if ( cv->sc->enc<0x8140 && sf->encoding_name==em_sjis )
-		pos = 0x8140;
-	    else if ( cv->sc->enc<0xe040 && sf->encoding_name==em_sjis )
-		pos = 0xe040;
-#else
 	    if ( sf->encoding_name->is_tradchinese ) {
 		if ( strstrmatch(sf->encoding_name->enc_name,"hkscs")!=NULL ) {
 		    if ( cv->sc->enc<0x8140 )
@@ -4360,7 +4344,6 @@ return;
 		pos = 0x8140;
 	    else if ( cv->sc->enc<0xe040 && strstrmatch(sf->encoding_name->enc_name,"sjis")!=NULL )
 		pos = 0xe040;
-#endif
 	    if ( pos>=sf->charcnt )
 return;
 	}

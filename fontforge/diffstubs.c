@@ -325,11 +325,7 @@ SplineFont *SplineFontEmpty(void) {
     SplineFont *sf;
     sf = gcalloc(1,sizeof(SplineFont));
     sf->pfminfo.fstype = -1;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    sf->encoding_name = em_none;
-#else
     sf->encoding_name = &custom;
-#endif
 return( sf );
 }
 
@@ -515,11 +511,7 @@ static uint32 scripts[][11] = {
 
 uint32 ScriptFromUnicode(int u,SplineFont *sf) {
     int s, k;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    int enc;
-#else
     Encoding *enc;
-#endif
 
     if ( u!=-1 ) {
 	for ( s=0; scripts[s][0]!=0; ++s ) {
@@ -546,51 +538,6 @@ return( CHR('j','a','m','o'));
 return( CHR('h','a','n','i') );
     }
 
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    if ( enc==em_jis208 || enc==em_jis212 || enc==em_gb2312 || enc==em_big5 ||
-	    enc == em_big5hkscs || enc==em_sjis || enc==em_jisgb )
-return( CHR('h','a','n','i') );
-    else if ( enc==em_ksc5601 || enc==em_johab || enc==em_wansung )
-return( CHR('j','a','m','o') );
-    else if ( enc==em_iso8859_11 )
-return( CHR('t','h','a','i'));
-    else if ( enc==em_iso8859_8 )
-return( CHR('h','e','b','r'));
-    else if ( enc==em_iso8859_7 )
-return( CHR('g','r','e','k'));
-    else if ( enc==em_iso8859_6 )
-return( CHR('a','r','a','b'));
-    else if ( enc==em_iso8859_5 || enc==em_koi8_r )
-return( CHR('c','y','r','l'));
-    else if ( enc==em_jis201 )
-return( CHR('k','a','n','a'));
-    else if ( (enc>=em_iso8859_1 && enc<=em_iso8859_15 ) || enc==em_mac ||
-	    enc==em_win || enc==em_adobestandard )
-return( CHR('l','a','t','n'));
-#else
-    if ( enc->is_japanese || enc->is_chinese )
-return( CHR('h','a','n','i') );
-    else if ( enc->is_korean )
-return( CHR('j','a','m','o') );
-    else if ( strstr(enc->enc_name,"8859")!=NULL ) {
-	int len = strlen(enc->enc_name);
-	if ( strcmp(enc->enc_name+len-2,"11")==0 )
-return( CHR('t','h','a','i'));
-	if ( strcmp(enc->enc_name+len-1,"8")==0 && !isdigit(enc->enc_name[len-2] ))
-return( CHR('h','e','b','r'));
-	if ( strcmp(enc->enc_name+len-1,"7")==0 && !isdigit(enc->enc_name[len-2] ))
-return( CHR('g','r','e','k'));
-	if ( strcmp(enc->enc_name+len-1,"6")==0 && !isdigit(enc->enc_name[len-2] ))
-return( CHR('a','r','a','b'));
-	if ( strcmp(enc->enc_name+len-1,"5")==0 && !isdigit(enc->enc_name[len-2] ))
-return( CHR('c','y','r','l'));
-
-return( CHR('l','a','t','n')); /* The other 8859 encodings are latin */
-    } else if (strstrmatch(enc->enc_name,"KOI8")!=NULL ) {
-return( CHR('c','y','r','l'));
-    } else if (( strstrmatch(enc->enc_name,"adobe")!=NULL && strstrmatch(enc->enc_name,"standard")) )
-return( CHR('l','a','t','n'));
-#endif
 
 return( 0 );
 }

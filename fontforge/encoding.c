@@ -68,13 +68,7 @@ static int32 tex_base_encoding[] = {
     0x00f0, 0x00f1, 0x00f2, 0x00f3, 0x00f4, 0x00f5, 0x00f6, 0x00f7,
     0x00f8, 0x00f9, 0x00fa, 0x00fb, 0x00fc, 0x00fd, 0x00fe, 0x00ff
 };
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 
-static int enc_num = em_base;
-
-static Encoding texbase = { em_base, "TeX-Base-Encoding", 256, tex_base_encoding, NULL, NULL, 1 };
-Encoding *enclist = &texbase;
-#else
 static int32 unicode_from_MacSymbol[] = {
   0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007,
   0x0008, 0x0009, 0x000a, 0x000b, 0x000c, 0x000d, 0x000e, 0x000f,
@@ -180,6 +174,12 @@ Encoding *FindOrMakeEncoding(const char *name) {
 	*strchr(buffer,'_') = '-';
 	name = buffer;
     }
+    if ( strncmp(name,"iso-8859",8)==0 ) {
+	/* Fixup for old naming conventions */
+	strncpy(buffer,name,3);
+	strncpy(buffer+3,name+4,sizeof(buffer)-3);
+	name = buffer;
+    }
     for ( enc=enclist; enc!=NULL; enc=enc->next )
 	if ( strmatch(name,enc->enc_name)==0 ||
 		(enc->iconv_name!=NULL && strmatch(name,enc->iconv_name)==0))
@@ -199,7 +199,7 @@ return( &unicodefull );
 	iconv_name = "ISO-2022-JP-2";
     else if ( strcmp(name,"ksc5601")==0 )
 	iconv_name = "ISO-2022-KR";
-    else if ( strcmp(name,"gb2312pk")==0 )
+    else if ( strcmp(name,"gb2312")==0 )
 	iconv_name = "ISO-2022-CN";
     else if ( strcmp(name,"wansung")==0 )
 	iconv_name = "EUC-KR";
@@ -312,7 +312,6 @@ return( NULL );
 	enc->is_tradchinese = true;
 return( enc );
 }
-#endif
 
 static char *getPfaEditEncodings(void) {
     static char *encfile=NULL;
@@ -373,6 +372,7 @@ return( NULL );
     ++max;
     if ( max<256 ) max = 256;
     item = gcalloc(1,sizeof(Encoding));
+    item->only_1byte = item->has_1byte = true;
     item->char_cnt = max;
     item->unicode = galloc(max*sizeof(int32));
     memcpy(item->unicode,encs,max*sizeof(int32));
@@ -433,9 +433,6 @@ return;
     }
 
     for ( i=0, prev=NULL, item=head; item!=NULL; prev = item, item=item->next, ++i ) {
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	item->enc_num = ++enc_num;
-#endif
 	if ( item->enc_name==NULL ) {
 	    if ( no_windowing_ui ) {
 		GWidgetErrorR(_STR_BadEncFormat,_STR_UnnamableEncoding);
@@ -565,17 +562,6 @@ static void DeleteEncoding(Encoding *me) {
     if ( me->builtin )
 return;
 
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    if ( default_encoding == me->enc_num )
-	default_encoding = e_iso8859_1;
-    for ( fv = fv_list; fv!=NULL; fv = fv->next ) {
-	if ( fv->sf->encoding_name==me->enc_num ) {
-	    fv->sf->encoding_name = em_none;
-	    for ( bdf=fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
-		bdf->encoding_name = em_none;
-	}
-    }
-#else
     if ( default_encoding == me )
 	default_encoding = FindOrMakeEncoding("iso8859-1");
     for ( fv = fv_list; fv!=NULL; fv = fv->next ) {
@@ -585,7 +571,6 @@ return;
 		bdf->encoding_name = &custom;
 	}
     }
-#endif
     if ( me==enclist )
 	enclist = me->next;
     else {
@@ -749,22 +734,15 @@ Encoding *MakeEncoding(SplineFont *sf) {
     int i;
     Encoding *item, *temp;
 
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    if ( sf->encoding_name!=em_none || sf->charcnt>=1500 )
-return(NULL);
-#else
     if ( sf->encoding_name!=&custom || sf->charcnt>=1500 )
 return(NULL);
-#endif
 
     name = GWidgetAskStringR(_STR_PleaseNameEnc,NULL,_STR_PleaseNameEnc);
     if ( name==NULL )
 return(NULL);
     item = gcalloc(1,sizeof(Encoding));
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    item->enc_num = ++enc_num;
-#endif
     item->enc_name = cu_copy(name);
+    item->only_1byte = item->has_1byte = true;
     free(name);
     item->char_cnt = sf->charcnt;
     item->unicode = gcalloc(sf->charcnt,sizeof(int32));
@@ -1722,11 +1700,7 @@ return(NULL);
     new->changed = new->changed_since_autosave = true;
     new->display_antialias = cidmaster->display_antialias;
     new->fv = cidmaster->fv;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    new->encoding_name = em_none;
-#else
     new->encoding_name = &custom;
-#endif
     /* Don't copy the grid splines, there won't be anything meaningfull at top level */
     /*  and won't know which font to copy from below */
     new->bitmaps = cidmaster->bitmaps;		/* should already be flattened */
@@ -2067,34 +2041,9 @@ return(NULL);
 return( cidmaster );
 }
 
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-int CountOfEncoding(enum charset encoding_name) {
-    Encoding *item=NULL;
-
-    if ( encoding_name == em_unicode4 )
-return( unicode4_size );
-    if ( encoding_name == em_unicode || encoding_name == em_big5 || encoding_name==em_big5hkscs ||
-	    encoding_name == em_johab || encoding_name == em_wansung ||
-	    encoding_name == em_sjis || encoding_name == em_jisgb ||
-	    (encoding_name >= em_unicodeplanes && encoding_name <= em_unicodeplanesmax ))
-return( 65536 );
-    else if ( encoding_name < em_first2byte )
-return( 256 );
-    else if ( encoding_name <= em_last94x94 )
-return( 65536 );
-    else if ( encoding_name >= em_base ) {
-	for ( item=enclist; item!=NULL && item->enc_num!=encoding_name;
-		item=item->next );
-	if ( item!=NULL )
-return( item->char_cnt );
-    }
-return( 0 );
-}
-#else
 int CountOfEncoding(Encoding *encoding_name) {
 return( encoding_name->char_cnt );
 }
-#endif
 
 static void BDFsToo(SplineFont *sf,int cnt) {
     BDFFont *bdf;
@@ -2133,11 +2082,7 @@ static void _SFCompactFont(SplineFont *sf) {
     sf->chars = newchars;
     sf->charcnt = cnt;
     sf->old_encname = sf->encoding_name;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    sf->encoding_name = em_none;
-#else
     sf->encoding_name = &compact;
-#endif
     sf->compacted = true;
     sf->encodingchanged = true;
     BDFsToo(sf,cnt);
@@ -2236,18 +2181,5 @@ char *SFEncodingName(SplineFont *sf) {
 	sprintf( buffer, "%.50s-%.50s-%d", sf->cidregistry, sf->ordering, sf->supplement );
 return( copy( buffer ));
     }
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    switch ( sf->encoding_name ) {
-      case em_custom:
-return( copy( "Custom" ));
-      case em_compacted:
-return( copy( "Compacted" ));
-      case em_original:
-return( copy( "Original" ));
-      default:
-return( copy( EncodingName(sf->encoding_name)));
-    }
-#else
 return( copy( sf->encoding_name->enc_name ));
-#endif
 }

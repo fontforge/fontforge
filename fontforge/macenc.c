@@ -1104,14 +1104,6 @@ return( NULL );
 
     if ( macenc==sm_japanese || macenc==sm_korean || macenc==sm_tradchinese ||
 	    macenc == sm_simpchinese ) {
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	ret = galloc((strlen(str)+1)*sizeof(unichar_t));
-	encoding2u_strncpy(ret,str,strlen(str)+1,
-		macenc==sm_japanese ? e_sjis :
-		macenc==sm_korean ? e_wansung :
-		macenc==sm_tradchinese ? e_big5 :
-		e_jisgb );
-#else
 	Encoding *enc = FindOrMakeEncoding(macenc==sm_japanese ? "Sjis" :
 					    macenc==sm_korean ? "EUC-KR" :
 			                    macenc==sm_tradchinese ? "Big5" :
@@ -1124,7 +1116,6 @@ return( NULL );
 	out = (char *) (ret = galloc(outlen+2));
 	iconv(enc->tounicode,&in,&inlen,&out,&outlen);
 	out[0] = '\0'; out[1] = '\0';
-#endif
 return( ret );
     }
 
@@ -1163,14 +1154,6 @@ return( NULL );
 
     if ( macenc==sm_japanese || macenc==sm_korean || macenc==sm_tradchinese ||
 	    macenc == sm_simpchinese ) {
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	ret = galloc(2*(u_strlen(ustr)+1));
-	u2encoding_strncpy(ret,ustr,2*u_strlen(ustr)+2,
-		macenc==sm_japanese ? e_sjis :
-		macenc==sm_korean ? e_wansung :
-		macenc==sm_tradchinese ? e_big5 :
-		e_jisgb );
-#else
 	Encoding *enc = FindOrMakeEncoding(macenc==sm_japanese ? "Sjis" :
 					    macenc==sm_korean ? "EUC-KR" :
 			                    macenc==sm_tradchinese ? "Big5" :
@@ -1183,7 +1166,6 @@ return( NULL );
 	out = ret = galloc(outlen+2);
 	iconv(enc->fromunicode,&in,&inlen,&out,&outlen);
 	out[0] = out[1] = '\0';
-#endif
 return( ret );
     }
 

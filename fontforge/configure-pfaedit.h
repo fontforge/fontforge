@@ -47,18 +47,6 @@
 # define FONTFORGE_CONFIG_GDRAW
 #endif
 
-/*  !!!!!!!!!!!!!!!!! Experimental. But please try this one !!!!!!!!!!!!!!!!! */
-/* FontForge can use the encodings built into gdraw, or it can use the iconv  */
-/*  encodings.						                      */
-/*									      */
-/* #define FONTFORGE_CONFIG_ICONV_ENCODING				      */
-/*									      */
-/* Can be set from configure --with-iconv				      */
-#ifdef FONTFORGE_CONFIG_GTK	/* If gdraw is not available, must use iconv */
-# undef FONTFORGE_CONFIG_ICONV_ENCODING
-# define FONTFORGE_CONFIG_ICONV_ENCODING
-#endif
-
 /* Making FontForge handle more of the capabilities of type3 & svg fonts is not*/
 /*  something most people will want. It wastes space too. So I thought I'd    */
 /*  make it conditional. 						      */

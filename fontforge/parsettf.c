@@ -105,176 +105,6 @@ real get2dot14(FILE *ttf) {
 return( (real) ((val<<16)>>(16+14)) + (mant/16384.0) );
 }
 
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-static int enc_from_platspec(int platform,int specific) {
-    int enc;
-
-    enc = em_none;
-    if ( platform==0 )
-	enc = em_unicode;
-    else if ( platform==1 ) {
-	if ( specific==0 )
-	    enc = em_mac;
-	else if ( specific==1 )
-	    enc = em_sjis;
-	else if ( specific==2 )
-	    enc = em_big5hkscs;		/* Or should we just guess big5? Both are wrong sometimes */
-	else if ( specific==3 )
-	    enc = em_wansung;
-	else if ( specific==25 )
-	    enc = em_jisgb;
-    } else if ( platform==2 ) {		/* obselete */
-	if ( specific==0 )
-	    enc = em_iso8859_1;		/* Actually just ASCII */
-	else if ( specific==1 )
-	    enc = em_unicode;
-	else if ( specific==2 )
-	    enc = em_iso8859_1;
-    } else if ( platform==3 ) {
-	if ( specific==1 || specific==0 )	/* symbol (sp=0) is just unicode */
-	    enc = em_unicode;
-	else if ( specific==2 )
-	    enc = em_sjis;
-	else if ( specific==3 )
-	    enc = em_jisgb;
-	else if ( specific==4 )
-	    enc = em_big5hkscs;
-	else if ( specific==5 )
-	    enc = em_wansung;
-	else if ( specific==6 )
-	    enc = em_johab;
-    } else if ( platform==7 ) {		/* Used internally in freetype, but */
-	if ( specific==0 )		/*  there's no harm in looking for it */
-	    enc = em_adobestandard;	/*  even if it never happens */
-	else if ( specific==1 )
-	    /* adobe_expert */;
-	else if ( specific==2 )
-	    /* adobe_custom */;
-    }
-return( enc );
-}
-
-static unichar_t *_readencstring(FILE *ttf,int offset,int len,
-	int platform,int specific,int language) {
-    long pos = ftell(ttf);
-    unichar_t *str, *pt, empty[1];
-    int i, ch, enc;
-
-    fseek(ttf,offset,SEEK_SET);
-
-    enc = enc_from_platspec(platform,specific);
-    if ( platform==1 ) {
-	char *cstr, *cpt;
-	cstr = cpt = galloc(len+1);
-	for ( i=0; i<len; ++i )
-	    *cpt++ = getc(ttf);
-	*cpt = '\0';
-	str = MacStrToUnicode(cstr,specific,language);
-	free(cstr);
-	pt = empty;
-    } else if ( enc==em_adobestandard ) {
-	str = pt = galloc(2*len+2);
-	for ( i=0; i<len; ++i )
-	    *pt++ = unicode_from_adobestd[getc(ttf)];
-    } else if ( enc==em_unicode ) {
-	str = pt = galloc(len+2);
-	for ( i=0; i<len/2; ++i ) {
-	    ch = getc(ttf)<<8;
-	    *pt++ = ch | getc(ttf);
-	}
-    } else if ( enc==em_big5 || enc==em_big5hkscs ) {
-	str = pt = galloc(2*len+2);	/* Probably more space than we need, but it should be enough */
-	for ( i=0; i<len; ++i ) {
-	    ch = getc(ttf);
-	    if ( ch==0 ) {
-		/* Interesting. I've never seen this described, but empirically */
-		/*  it appears that a leading 0 byte means an ascii byte follows */
-		/*  I thought we got mixed 8/16 encoding, not straight 16... */
-		*pt++ = getc(ttf);
-		++i;
-	    } else if ( ch<0x81 )
-		*pt++ = ch;
-	    else {
-		ch = ((ch<<8)|getc(ttf));
-		*pt++ = unicode_from_big5hkscs[ch-0x8100];
-		++i;
-	    }
-	}
-    } else if ( enc==em_johab ) {
-	str = pt = galloc(2*len+2);	/* Probably more space than we need, but it should be enough */
-	for ( i=0; i<len; ++i ) {
-	    ch = getc(ttf);
-	    if ( ch<0x84 )
-		*pt++ = ch;
-	    else {
-		ch = ((ch<<8)|getc(ttf));
-		*pt++ = unicode_from_johab[ch-0x8400];
-		++i;
-	    }
-	}
-    } else if ( enc==em_wansung ) {
-	str = pt = galloc(2*len+2);	/* Probably more space than we need, but it should be enough */
-	for ( i=0; i<len; ++i ) {
-	    ch = getc(ttf);
-	    if ( ch<0xa1 )
-		*pt++ = ch;
-	    else {
-		ch = ((ch<<8)|getc(ttf)) - 0xa1a1;
-		ch = (ch>>8)*94 + (ch&0xff);
-		*pt++ = unicode_from_ksc5601[ch];
-		++i;
-	    }
-	}
-    } else if ( enc==em_jisgb ) {
-	str = pt = galloc(2*len+2);	/* Probably more space than we need, but it should be enough */
-	for ( i=0; i<len; ++i ) {
-	    ch = getc(ttf);
-	    if ( ch<0xa1 )
-		*pt++ = ch;
-	    else {
-		ch = ((ch<<8)|getc(ttf)) - 0xa1a1;
-		ch = (ch>>8)*94 + (ch&0xff);
-		*pt++ = unicode_from_gb2312[ch];
-		++i;
-	    }
-	}
-    } else if ( enc==em_sjis ) {
-	str = pt = galloc(2*len+2);	/* Probably more space than we need, but it should be enough */
-	for ( i=0; i<len; ++i ) {
-	    ch = getc(ttf);
-	    if ( ch<127 ) {
-		if ( ch=='\\' ) ch= 0xa5;		/* Yen */
-		*pt++ = ch;
-	    } else if ( ch>=161 && ch<=223 ) {
-		*pt++ = unicode_from_jis201[ch];	/* Katakana */
-	    } else {
-		int ch2 = getc(ttf);
-		if ( ch >= 129 && ch<= 159 )
-		    ch -= 112;
-		else
-		    ch -= 176;
-		ch <<= 1;
-		if ( ch2>=159 )
-		    ch2-= 126;
-		else if ( ch2>127 ) {
-		    --ch;
-		    ch2 -= 32;
-		} else {
-		    --ch;
-		    ch2 -= 31;
-		}
-		*pt++ = unicode_from_jis208[(ch-0x21)*94+(ch2-0x21)];
-		++i;
-	    }
-	}
-    } else {
-	str = NULL; pt = empty;
-    }
-    *pt = '\0';
-    fseek(ttf,pos,SEEK_SET);
-return( str );
-}
-#else
 static Encoding *enc_from_platspec(int platform,int specific) {
     char *enc;
 
@@ -283,7 +113,7 @@ static Encoding *enc_from_platspec(int platform,int specific) {
 	enc = "Unicode";
     else if ( platform==1 ) {
 	if ( specific==0 )
-	    enc = "Macintosh";
+	    enc = "Mac";
 	else if ( specific==1 )
 	    enc = "Sjis";
 	else if ( specific==2 )
@@ -373,18 +203,13 @@ static unichar_t *_readencstring(FILE *ttf,int offset,int len,
     fseek(ttf,pos,SEEK_SET);
 return( str );
 }
-#endif
 
 unichar_t *TTFGetFontName(FILE *ttf,int32 offset,int32 off2) {
     int i,num;
     int32 tag, nameoffset, length, stringoffset;
     int plat, spec, lang, name, len, off, val;
     int fullval, fullstr, fulllen, famval, famstr, famlen;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    int enc;
-#else
     Encoding *enc;
-#endif
     int fullplat, fullspec, fulllang, famplat, famspec, famlang;
 
     fseek(ttf,offset,SEEK_SET);
@@ -419,15 +244,6 @@ return( NULL );
 	enc = enc_from_platspec(plat,spec);
 	val = 0;
     /* I really want an english name */
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	if ( (plat==0 || plat==1) && enc!=em_none && lang==0 )
-	    val = 11;
-	else if ( plat==3 && enc!=em_none && (lang&0xff)==0x09 )
-	    val = 12;
-    /* failing that I'll take what I can get */
-	else if ( enc!=em_none )
-	    val = 1;
-#else
 	if ( (plat==0 || plat==1) && !enc->is_custom && lang==0 )
 	    val = 11;
 	else if ( plat==3 && !enc->is_custom && (lang&0xff)==0x09 )
@@ -435,7 +251,6 @@ return( NULL );
     /* failing that I'll take what I can get */
 	else if ( !enc->is_custom )
 	    val = 1;
-#endif
 	if ( name==4 && val>fullval ) {
 	    fullval = val;
 	    fullstr = off;
@@ -2687,12 +2502,8 @@ return;
     if ( dict->encodingoff==0 || dict->encodingoff==1 ) {
 	/* Standard Encodings */
 	char **enc = dict->encodingoff==0 ? AdobeStandardEncoding : AdobeExpertEncoding;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	info->encoding_name = dict->encodingoff==0 ? em_adobestandard : em_custom;
-#else
 	info->encoding_name = FindOrMakeEncoding( dict->encodingoff==0 ?
 		"AdobeStandard" : "Custom" );
-#endif
 	next = 256;
 	for ( i=0; i<info->glyph_cnt; ++i ) {
 	    for ( pos=0; pos<256; ++pos )
@@ -2706,11 +2517,7 @@ return;
     } else {
 	for ( i=0; i<info->glyph_cnt; ++i )
 	    info->chars[i]->enc = -1;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	info->encoding_name = em_custom;
-#else
 	info->encoding_name = &custom;
-#endif
 	fseek(ttf,dict->cff_start+dict->encodingoff,SEEK_SET);
 	format = getc(ttf);
 	if ( (format&0x7f)==0 ) {
@@ -2997,11 +2804,7 @@ static SplineFont *cffsffillup(struct topdicts *subdict, char **strings,
 	sprintf(buffer,"UntitledSubFont_%d", ++nameless );
 	sf->fontname = copy(buffer);
     }
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    sf->encoding_name = em_none;
-#else
     sf->encoding_name = &custom;
-#endif
 
     if ( subdict->fontmatrix[0]==0 )
 	emsize = 1000;
@@ -3500,13 +3303,8 @@ return( cnt>=2 ? ui_ams : ui_none );
 static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
     int i,j;
     int nencs, version;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    enum charset enc = em_none;
-    const unichar_t *trans=NULL;
-#else
     Encoding *enc = &custom;
     const int32 *trans=NULL;
-#endif
     enum uni_interp interp = ui_none;
     int platform, specific;
     int offset, encoff=0;
@@ -3533,68 +3331,6 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	if ( SubtableIsntSupported(ttf,info->encoding_start+offset,platform,specific))
     continue;
 	interp = interp_from_encoding(enc_from_platspec(platform,specific),interp);
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	if ( platform==3 && specific==10 ) { /* MS Unicode 4 byte */
-	    enc = em_unicode4;
-	    encoff = offset;
-	    mod = 0;
-	    info->platform = platform; info->specific = specific;
-	} else if ( (enc!=em_unicode4 || (!prefer_cjk_encodings ||
-		(enc!=em_sjis && enc!=em_wansung && enc!=em_big5 &&
-		 enc!=em_jisgb &&
-		 enc!=em_big5hkscs && enc!=em_johab))) &&
-		(( platform==3 && specific==1 ) || /* MS Unicode */
-/* Well I should only deal with apple unicode specific==0 (default) and 3 (U2.0 semantics) */
-/*  but apple ships dfonts with specific==1 (Unicode 1.1 semantics) */
-/*  which is stupid of them */
-		( platform==0 /*&& (specific==0 || specific==3)*/ && enc!=em_symbol ))) {	/* Apple Unicode */
-	    enc = em_unicode;
-	    encoff = offset;
-	    info->platform = platform; info->specific = specific;
-	    mod = 0;
-	/* choose ms symbol over apple unicode. If there's an ms uncode it will */
-	/*  come after ms symbol in the list and we'll get that */
-	} else if ( platform==3 && specific==0 && (enc==em_none||enc==-2||enc==em_mac||enc==em_unicode) ) {
-	    /* Only select symbol if we don't have something better */
-	    enc = em_symbol;
-	    encoff = offset;
-	    info->platform = platform; info->specific = specific;
-	    /* Now I had assumed this would be a 1 byte encoding, but it turns*/
-	    /*  out to map into the unicode private use area at U+f000-U+F0FF */
-	    /*  so it's a 2 byte enc */
-/* Mac platform specific encodings are script numbers. 0=>roman, 1=>jap, 2=>big5, 3=>korean, 4=>arab, 5=>hebrew, 6=>greek, 7=>cyrillic, ... 25=>simplified chinese */
-	} else if ( platform==1 && specific==0 && (enc==em_none||enc==-2) ) {
-	    info->platform = platform; info->specific = specific;
-	    enc = em_mac;
-	    encoff = offset;
-	    trans = unicode_from_mac;
-	} else if ( platform==1 && (specific==2 ||specific==1||specific==3||specific==25) &&
-		(prefer_cjk_encodings || enc!=em_unicode) ) {
-	    enc = specific==1?em_sjis:specific==2?em_big5hkscs:specific==3?em_wansung:em_jisgb;
-	    mod = specific==1?2:specific==2?4:specific==3?5:3;		/* convert to ms specific */
-	    info->platform = platform; info->specific = specific;
-	    encoff = offset;
-	} else if ( platform==3 && (specific>=2 && specific<=6 ) &&
-		(prefer_cjk_encodings || enc!=em_unicode) ) {
-	    /* Old ms docs say that specific==3 => big 5, new docs say specific==4 => big5 */
-	    /*  Ain't that jus' great? */
-	    enc = specific==2? em_sjis :
-		  specific==3? em_jisgb :
-		  specific==4? em_big5hkscs :
-		  specific==5? em_wansung :
-		      em_johab;
-	    info->platform = platform; info->specific = specific;
-	    mod = specific;
-	    encoff = offset;
-	} else if ( enc==em_none ) {
-	    enc = -2;
-	    mod = -1;
-	    encoff = offset;
-	    info->platform = platform; info->specific = specific;
-	}
-    }
-    if ( enc!=em_none ) {
-#else
 	if ( platform==3 && specific==10 ) { /* MS Unicode 4 byte */
 	    enc = FindOrMakeEncoding("UnicodeFull");
 	    encoff = offset;
@@ -3623,7 +3359,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 /* Mac platform specific encodings are script numbers. 0=>roman, 1=>jap, 2=>big5, 3=>korean, 4=>arab, 5=>hebrew, 6=>greek, 7=>cyrillic, ... 25=>simplified chinese */
 	} else if ( platform==1 && specific==0 && enc->is_custom ) {
 	    info->platform = platform; info->specific = specific;
-	    enc = FindOrMakeEncoding("Macintosh");
+	    enc = FindOrMakeEncoding("Mac");
 	    encoff = offset;
 	} else if ( platform==1 && (specific==2 ||specific==1||specific==3||specific==25) &&
 		!enc->is_unicodefull &&
@@ -3651,7 +3387,6 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    enc = &custom;
     }
     if ( !enc->is_custom ) {
-#endif
 	fseek(ttf,info->encoding_start+encoff,SEEK_SET);
 	format = getushort(ttf);
 	if ( format!=12 && format!=10 && format!=8 ) {
@@ -3665,12 +3400,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	if ( format==0 ) {
 	    for ( i=0; i<len-6; ++i )
 		table[i] = getc(ttf);
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	    if ( enc==em_symbol && trans==NULL )
-		trans = unicode_from_MacSymbol;
-#else
 	    trans = enc->unicode;
-#endif
 	    for ( i=0; i<256 && i<info->glyph_cnt && i<len-6; ++i )
 		if ( !justinuse ) {
 		    info->chars[table[i]]->enc = i;
@@ -3679,14 +3409,10 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 		} else
 		    info->inuse[table[i]] = 1;
 	} else if ( format==4 ) {
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	    if ( enc==em_symbol ) { enc=em_unicode; info->twobytesymbol=true;}
-#else
 	    if ( strmatch(enc->enc_name,"symbol")==0 ) {
 		enc=FindOrMakeEncoding("UnicodeBmp");
 		info->twobytesymbol=true;
 	    }
-#endif
 	    segCount = getushort(ttf)/2;
 	    /* searchRange = */ getushort(ttf);
 	    /* entrySelector = */ getushort(ttf);
@@ -3802,17 +3528,10 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    /*  uses it for 1 byte encodings which don't fit into the require-*/
 	    /*  ments for a format 0 sub-table. See Zapfino.dfont */
 	    int first, count;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	    if ( enc!=em_unicode && enc!=em_unicode4 ) {
-		IError("I don't support truncated array encoding (format=6) except for unicode" );
-		enc = em_unicode;
-	    }
-#else
 	    if ( !enc->is_unicodebmp && !enc->is_unicodefull ) {
 		IError("I don't support truncated array encoding (format=6) except for unicode" );
 		enc = FindOrMakeEncoding("UnicodeBmp");
 	    }
-#endif
 	    first = getushort(ttf);
 	    count = getushort(ttf);
 	    if ( justinuse )
@@ -3902,17 +3621,10 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    free(glyphs);
 	} else if ( format==8 ) {
 	    uint32 ngroups, start, end, startglyph;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	    if ( enc!=em_unicode4 ) {
-		IError("I don't support 32 bit characters except for the UCS-4 (MS platform, specific=10)" );
-		enc = em_unicode4;
-	    }
-#else
 	    if ( !enc->is_unicodefull ) {
 		IError("I don't support 32 bit characters except for the UCS-4 (MS platform, specific=10)" );
 		enc = FindOrMakeEncoding("UnicodeFull");
 	    }
-#endif
 	    /* I'm now assuming unicode surrogate encoding, so I just ignore */
 	    /*  the is32 table (it will be set for the surrogates and not for */
 	    /*  anything else */
@@ -3935,17 +3647,10 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	} else if ( format==10 ) {
 	    /* same as format 6, except for 4byte chars */
 	    int first, count;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	    if ( enc!=em_unicode4 ) {
-		IError("I don't support 32 bit characters except for the UCS-4 (MS platform, specific=10)" );
-		enc = em_unicode4;
-	    }
-#else
 	    if ( !enc->is_unicodefull ) {
 		IError("I don't support 32 bit characters except for the UCS-4 (MS platform, specific=10)" );
 		enc = FindOrMakeEncoding("UnicodeFull");
 	    }
-#endif
 	    first = getlong(ttf);
 	    count = getlong(ttf);
 	    if ( justinuse )
@@ -3958,17 +3663,10 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 		}
 	} else if ( format==12 ) {
 	    uint32 ngroups, start, end, startglyph;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	    if ( enc!=em_unicode4 ) {
-		IError("I don't support 32 bit characters except for the UCS-4 (MS platform, specific=10)" );
-		enc = em_unicode4;
-	    }
-#else
 	    if ( !enc->is_unicodefull ) {
 		IError("I don't support 32 bit characters except for the UCS-4 (MS platform, specific=10)" );
 		enc = FindOrMakeEncoding("UnicodeFull");
 	    }
-#endif
 	    ngroups = getlong(ttf);
 	    for ( j=0; j<ngroups; ++j ) {
 		start = getlong(ttf);
@@ -3994,11 +3692,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
     info->uni_interp = interp;
 }
 
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-static int EncFromName(const char *name,enum uni_interp interp,int encname) {
-#else
 static int EncFromName(const char *name,enum uni_interp interp,Encoding *encname) {
-#endif
     int i;
     i = UniFromName(name,interp,encname);
     if ( i==-1 && strlen(name)==4 ) {
@@ -4569,14 +4263,7 @@ return;
 	if ( uenc!=-1 )
 	    sc->unicodeenc = uenc;
     }
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    if ( chars[0x41]!=NULL && chars[0x41]->name!=NULL && strcmp(chars[0x41]->name,"Alpha")==0 )
-	info->encoding_name = em_symbol;
-    else
-	info->encoding_name = em_none;
-#else
     info->encoding_name = &custom;
-#endif
     free(info->chars);
     info->chars = chars;
     info->glyph_cnt = 256+extras;
@@ -4587,15 +4274,6 @@ return;
 }
 
 static void CheckEncoding(struct ttfinfo *info) {
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    const uint16 *table;
-    static const uint16 *choices[] = { unicode_from_MacSymbol, unicode_from_mac, 
-	unicode_from_win, unicode_from_i8859_1, 
-	NULL };
-    static int encs[] = { em_symbol, em_mac, em_win, em_iso8859_1,
-	em_adobestandard, em_zapfding };
-    int i, errs;
-#endif
     int j, extras;
     SplineChar **chars;
 
@@ -4613,23 +4291,7 @@ static void CheckEncoding(struct ttfinfo *info) {
 	    chars[info->chars[j]->enc] = info->chars[j];
     }
 
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    info->encoding_name = em_none;
-    for ( i=0; choices[i]!=NULL; ++i ) {
-	table = choices[i];
-	errs = 0;
-	for ( j=0; j<256 ; ++j ) if ( chars[j]!=NULL ) {
-	    if ( table[j]!=chars[j]->unicodeenc && table[j]!=0 )
-		++errs;
-	}
-	if ( j==256 && errs<11 ) {
-	    info->encoding_name = encs[i];
-    break;
-	}
-    }
-#else
     info->encoding_name = &custom;
-#endif
     free(info->chars);
     info->chars = chars;
     info->glyph_cnt = 256+extras;
@@ -4695,18 +4357,9 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
 	    if ( dup->enc>max ) max = dup->enc;
 	}
 
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    if ( info->encoding_name>=em_first2byte && info->encoding_name<=em_last94x94 )
-	epos = 65536;
-    else if ( info->encoding_name==em_unicode4 )
-	epos = (max>=unicode4_size) ? max+1 : unicode4_size;
-    else
-	epos = istwobyte?65536:256;
-#else
     epos = info->encoding_name->char_cnt;
     if ( epos==0 )
 	epos = istwobyte?65536:256;
-#endif
     newcharcnt = epos+extras;
     newchars = gcalloc(newcharcnt,sizeof(SplineChar *));
     for ( i=0; i<oldcnt; ++i ) if ( oldchars[i]!=NULL ) {
@@ -4732,11 +4385,7 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
     sf->chars = newchars; sf->charcnt = newcharcnt;
     free(oldchars);
 
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    sf->encoding_name = info->encoding_name==-2? em_none : info->encoding_name;
-#else
     sf->encoding_name = info->encoding_name;
-#endif
     sf->uni_interp = info->uni_interp;
 
     for ( bdf=sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
@@ -5003,25 +4652,15 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->script_lang = info->script_lang;
     sf->sli_cnt = info->sli_cnt;
     sf->ttf_tables = info->tabs;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    if ( info->encoding_name == em_symbol || info->encoding_name == em_mac )
-	/* Don't trust those encodings */
-	CheckEncoding(info);
-#else
     if ( info->encoding_name==NULL )
 	info->encoding_name = &custom;		/* Can happen in a type42 */
     if ( info->encoding_name->only_1byte )
 	/* Don't trust those encodings */
 	CheckEncoding(info);
-#endif
     if ( info->twobytesymbol )
 	/* rework ms symbol encodings */
 	SymbolFixup(info);
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    sf->encoding_name = em_none;
-#else
     sf->encoding_name = &custom;
-#endif
     sf->cidregistry = info->cidregistry;
     sf->ordering = info->ordering;
     sf->supplement = info->supplement;

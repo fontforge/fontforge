@@ -1657,21 +1657,6 @@ int SFIsCJK(SplineFont *sf) {
     if ( (val = PSDictHasEntry(sf->private,"LanguageGroup"))!=NULL )
 return( strtol(val,NULL,10));
 
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    if ( sf->encoding_name>=em_first2byte && sf->encoding_name<em_unicode )
-return( true );
-    if ( sf->encoding_name==em_sjis || sf->encoding_name==em_wansung ||
-	    sf->encoding_name==em_jisgb )
-return( true );
-    if ( (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4) &&
-	    sf->charcnt>0x3000 &&
-	    SCWorthOutputting(sf->chars[0x3000]) &&
-	    !SCWorthOutputting(sf->chars['A']) )
-return( true );
-    if ( sf->encoding_name==em_unicodeplanes+2 /* SIP */ )
-return( true );
-    if ( sf->encoding_name==em_none ) {
-#else
     if ( sf->encoding_name->is_japanese || sf->encoding_name->is_korean ||
 	    sf->encoding_name->is_tradchinese || sf->encoding_name->is_simplechinese )
 return( true );
@@ -1681,7 +1666,6 @@ return( true );
 	    !SCWorthOutputting(sf->chars['A']) )
 return( true );
     if ( sf->encoding_name==&custom ) {
-#endif
 	/* If it's in a CID font and it doesn't contain alphabetics, then */
 	/*  it's assumed to be CJK */
 	if ( sf->cidmaster!=NULL )

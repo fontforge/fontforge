@@ -92,16 +92,6 @@ AC_CHECK_LIB(xml2, xmlParseFile, : , AC_DEFINE(_NO_LIBXML))
 
 AC_CHECK_HEADERS([iconv.h])
 
-if test "$ac_cv_header_iconv_h" = "yes" >/dev/null 2>&1 ; then
- AC_ARG_WITH(iconv,
-  [  --with-iconv   Use iconv for encoding definitions rather than gdraw],
-  [
-     if test "$withval" != "no" >/dev/null 2>&1 ; then
-	 AC_DEFINE(FONTFORGE_CONFIG_ICONV_ENCODING)
-     fi
-  ], : )
-fi
-
 gww_hasbytecode="no"
 AC_ARG_WITH(freetype-bytecode,
  [  --with-freetype-bytecode   Control whether we build with the bytecode interpreter],
