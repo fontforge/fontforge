@@ -289,7 +289,7 @@ return( 0x408 );
       case 10:		/* Hebrew */
 return( 0x40d );
       case 26:		/* Hungarian */
-return( 0x402 );
+return( 0x40e );
       case 15:		/* Icelandic */
 return( 0x40f );
       case 3:		/* Italian */
