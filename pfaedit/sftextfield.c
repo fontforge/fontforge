@@ -2080,6 +2080,8 @@ static void sftextarea_move(GGadget *g, int32 x, int32 y ) {
 static void sftextarea_resize(GGadget *g, int32 width, int32 height ) {
     SFTextArea *st = (SFTextArea *) g;
     int gtwidth=width, gtheight=height, oldheight=0;
+    int l;
+
     if ( st->hsb!=NULL ) {
 	oldheight = st->hsb->g.r.y+st->hsb->g.r.height-g->r.y;
 	gtheight = height - (oldheight-g->r.height);
@@ -2095,6 +2097,19 @@ static void sftextarea_resize(GGadget *g, int32 width, int32 height ) {
 	_ggadget_resize((GGadget *) (st->hsb),gtwidth,st->hsb->g.r.height);
     }
     _ggadget_resize(g,gtwidth, gtheight);
+    SFTextAreaRefigureLines(st,0);
+    if ( st->vsb!=NULL ) {
+	GScrollBarSetBounds(&st->vsb->g,0,st->lineheights[st->lcnt-1].y,st->g.inner.height);
+	if ( st->loff_top>=st->lcnt )
+	    st->loff_top = st->lcnt-1;
+	for ( l = st->loff_top; l>=0 && st->lineheights[st->lcnt-1].y-st->lineheights[l].y<=st->g.inner.height; --l );
+	++l;
+	if ( l!=st->loff_top ) {
+	    st->loff_top = l;
+	    GScrollBarSetPos(&st->vsb->g,st->lineheights[l].y);
+	    _ggadget_redraw(&st->g);
+	}
+    }
 }
 
 static GRect *sftextarea_getsize(GGadget *g, GRect *r ) {
@@ -2154,6 +2169,7 @@ static int sftextarea_vscroll(GGadget *g, GEvent *event) {
     }
     for ( page=1; st->lcnt-page>=0 && st->lineheights[st->lcnt-1].y-st->lineheights[st->lcnt-page].y<=g->inner.height;
 	    ++page );
+    --page;
     if ( loff > st->lcnt-page )
 	loff = st->lcnt - page;
     if ( loff<0 ) loff = 0;

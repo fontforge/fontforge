@@ -1936,6 +1936,8 @@ static void gtextfield_move(GGadget *g, int32 x, int32 y ) {
 static void gtextfield_resize(GGadget *g, int32 width, int32 height ) {
     GTextField *gt = (GTextField *) g;
     int gtwidth=width, gtheight=height, oldheight=0;
+    int l;
+
     if ( gt->hsb!=NULL ) {
 	oldheight = gt->hsb->g.r.y+gt->hsb->g.r.height-g->r.y;
 	gtheight = height - (oldheight-g->r.height);
@@ -1951,6 +1953,19 @@ static void gtextfield_resize(GGadget *g, int32 width, int32 height ) {
 	_ggadget_resize((GGadget *) (gt->hsb),gtwidth,gt->hsb->g.r.height);
     }
     _ggadget_resize(g,gtwidth, gtheight);
+
+    GTextFieldRefigureLines(gt,0);
+    if ( gt->vsb!=NULL ) {
+	GScrollBarSetBounds(&gt->vsb->g,0,gt->lcnt-1,gt->g.inner.height/gt->fh);
+	l = gt->loff_top;
+	if ( gt->loff_top>gt->lcnt-gt->g.inner.height/gt->fh )
+	    l = gt->lcnt-gt->g.inner.height/gt->fh;
+	if ( l!=gt->loff_top ) {
+	    gt->loff_top = l;
+	    GScrollBarSetPos(&gt->vsb->g,l);
+	    _ggadget_redraw(&gt->g);
+	}
+    }
 }
 
 static GRect *gtextfield_getsize(GGadget *g, GRect *r ) {

@@ -1576,6 +1576,9 @@ static void QueueIt(PI *pi) {
 #define	CID_PointSize	1006
 #define CID_SmpLab	1007
 #define CID_SampleText	1008
+#define CID_OK		1009
+#define CID_Cancel	1010
+#define CID_Group	1011
 
 static void PRT_SetEnabled(PI *pi) {
     int enable_ps, enable_sample;
@@ -1707,7 +1710,19 @@ static int PRT_RadioSet(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static int e_h(GWindow gw, GEvent *event) {
+static void prt_resize(PI *pi) {
+    GRect size, gpos;
+
+    GDrawGetSize(pi->gw,&size);
+    GGadgetResize(GWidgetGetControl(pi->gw,CID_Group),size.width-4,size.height-4);
+    GGadgetMove(GWidgetGetControl(pi->gw,CID_OK),40,size.height-48);
+    GGadgetMove(GWidgetGetControl(pi->gw,CID_Cancel),size.width-GDrawPointsToPixels(pi->gw,GIntGetResource(_NUM_Buttonsize))-40,size.height-48);
+    GGadgetGetSize(GWidgetGetControl(pi->gw,CID_SampleText),&gpos);
+    GGadgetResize(GWidgetGetControl(pi->gw,CID_SampleText),size.width-14,size.height-gpos.y-56);
+    GDrawRequestExpose(pi->gw,NULL,false);
+}
+
+static int prt_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	PI *pi = GDrawGetUserData(gw);
 	pi->done = true;
@@ -1717,6 +1732,8 @@ static int e_h(GWindow gw, GEvent *event) {
 return( true );
 	}
 return( false );
+    } else if ( event->type==et_resize && event->u.resize.sized ) {
+	prt_resize(GDrawGetUserData(gw));
     }
 return( true );
 }
@@ -2643,9 +2660,9 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     wattrs.cursor = ct_pointer;
     wattrs.window_title = GStringGetResource(_STR_Print,NULL);
     pos.x = pos.y = 0;
-    pos.width =GDrawPointsToPixels(NULL,310);
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,310));
     pos.height = GDrawPointsToPixels(NULL,330);
-    pi.gw = GDrawCreateTopWindow(NULL,&pos,e_h,&pi,&wattrs);
+    pi.gw = GDrawCreateTopWindow(NULL,&pos,prt_e_h,&pi,&wattrs);
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
@@ -2719,7 +2736,7 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     label[5].text_is_1byte = true;
     gcd[5].gd.label = &label[5];
     gcd[5].gd.mnemonic = 'P';
-    gcd[5].gd.pos.x = 60; gcd[5].gd.pos.y = gcd[4].gd.pos.y-6;
+    gcd[5].gd.pos.x = 67; gcd[5].gd.pos.y = gcd[4].gd.pos.y-6;
     gcd[5].gd.pos.width = 60;
     gcd[5].gd.flags = gg_visible | gg_enabled;
     gcd[5].gd.cid = CID_PointSize;
@@ -2766,6 +2783,7 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     gcd[9].gd.mnemonic = 'O';
     gcd[9].gd.label = &label[9];
     gcd[9].gd.handle_controlevent = PRT_OK;
+    gcd[9].gd.cid = CID_OK;
     gcd[9].creator = GButtonCreate;
 
     gcd[10].gd.pos.x = 310-GIntGetResource(_NUM_Buttonsize)-30; gcd[10].gd.pos.y = gcd[9].gd.pos.y+3;
@@ -2776,11 +2794,13 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     gcd[10].gd.label = &label[10];
     gcd[10].gd.mnemonic = 'C';
     gcd[10].gd.handle_controlevent = PRT_Cancel;
+    gcd[10].gd.cid = CID_Cancel;
     gcd[10].creator = GButtonCreate;
 
     gcd[11].gd.pos.x = 2; gcd[11].gd.pos.y = 2;
     gcd[11].gd.pos.width = pos.width-4; gcd[11].gd.pos.height = pos.height-2;
     gcd[11].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+    gcd[11].gd.cid = CID_Group;
     gcd[11].creator = GGroupCreate;
 
     GGadgetsCreate(pi.gw,gcd);

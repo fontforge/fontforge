@@ -497,7 +497,7 @@ void DisplayDlg(SplineFont *sf) {
     wattrs.cursor = ct_pointer;
     wattrs.window_title = GStringGetResource(_STR_Display,NULL);
     pos.x = pos.y = 0;
-    pos.width = GDrawPointsToPixels(NULL,410);
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,410));
     pos.height = GDrawPointsToPixels(NULL,330);
     di.gw = GDrawCreateTopWindow(NULL,&pos,dsp_e_h,&di,&wattrs);
 
