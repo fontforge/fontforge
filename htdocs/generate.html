@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 17-Aug-2003 -->
+  <!-- AP: Last modified: 26-Dec-2003 -->
   <TITLE>Generate Font Dialog</TITLE>
 </HEAD>
 <BODY>
@@ -28,6 +28,13 @@ The outline types are:
     mac, unmacbinaried, and installed there)<BR>
     If you are on a mac then a resource fork will be generated directly, macbinary
     will not be used.
+    <P>
+    <FONT COLOR="Red"><STRONG><BIG>NOTE:</BIG></STRONG></FONT> The mac will not
+    recognize a PostScript font unless you also generate a bitmap font in NFNT
+    format and place it in the same directory. If you haven't created any bitmap
+    fonts yet, cancel this dlg and use
+    <A HREF="elementmenu.html#Bitmaps">Element-&gt;Bitmaps Available</A> to generate
+    a bitmap font, and then retry this dlg.
   <LI>
     Multiple PostScript Type 1 binary fonts (this is used to convert a large
     font with a two byte encoding into a series of smaller pfb files with 256
@@ -103,9 +110,12 @@ The bitmap types are:
     and wraps them up in a mac binary file.<BR>
     NFNT (Resource) -- On a mac the NFNT font will be generated in a resource
     fork directly.
-  <LI>
-    NFNT (dfont) -- Converts the bitmap fonts into Macintosh NFNT resources and
-    stores them in a mac (OS/X) dfont file.
+    <P>
+    <FONT COLOR="Red"><STRONG><BIG>NOTE:</BIG></STRONG></FONT> Mac OS/X appears
+    not to support NFNT bitmaps (at least I can't get them to work).
+    <FONT COLOR="Red"><STRONG>However</STRONG></FONT>, the mac still needs at
+    least one NFNT in order to find an type1 font. Even though the bitmap is
+    required, it will not be used. Odd.
   <LI>
     Windows FNT -- this needs to be processed somehow with the windows resource
     compiler to create a FON file. I don't have enough info to do this myself
@@ -231,9 +241,17 @@ PfaEdit will generate <A HREF="gposgsub.html">GPOS, GSUB, and GDEF tables</A>.
 These contain kerning, ligature information, arabic forms data, anchor points,
 etc.
 <P>
-Apple does not support these tables. If you set Apple mode
+Apple does not support these OpenType layout tables. If you set Apple mode
 <A HREF="gposgsub.html#AAT">'kern', 'opbd', 'morx', 'feat', 'lcar' and 'prop'
-</A>tables may be generated instead. 
+</A>tables may be generated instead. (and a couple of other small differences
+will appear).
+<P>
+If you set both Apple and OpenType then both sets of tables will be generated.
+If you set neither, then only the 'kern' table will be generated, and it
+will only contain pair-wise kerning (no kerning classes, no kerning by state
+machine). This is the kind of kerning available in the original truetype
+spec (from which both Apple and OpenType have diverged, but which both still
+support).
   <HR>
 <H2>
   Generate <A NAME="Mac-Family">Mac</A> Family

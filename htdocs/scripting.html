@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 3-Dec-2003 -->
+  <!-- AP: Last modified: 26-Dec-2003 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -543,6 +543,9 @@ a[4][0] = "Nested array";
 	bin (a mac postscript (pfb) resource in a mac binary wrapper)<BR>
 	res (on the Mac itself PfaEdit will put the result directly into a font suitcase
 	file, and the extension should be ".res" rather than ".bin")
+	<P>
+	Note: you must also create a bitmap font in NFNT format or the mac will not
+	recognize your postscript font.
       <LI>
 	mult (splits a big font up into multiple pfb fonts each with 256 characters)
       <LI>
@@ -581,8 +584,10 @@ a[4][0] = "Nested array";
 	sbit (for EBDT/bdat table in truetype without any outline font)
       <LI>
 	bin (for nfnt in macbinary)
-      <LI>
-	dfont (for nfnt in dfont)
+	<P>
+	NOTE: Mac OS/X does not appear to support NFNT bitmaps. However even though
+	unused itself, an NFNT bitmap must be present for a resource based postscript
+	font to be used.
       <LI>
 	fnt (For windows FNT format)
       <LI>

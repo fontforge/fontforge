@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 29-Dec-2002 -->
+  <!-- AP: Last modified: 14-Dec-2003 -->
   <TITLE>Get Info</TITLE>
 </HEAD>
 <BODY>
@@ -21,32 +21,44 @@ dialog is brought up.
   Point Info
 </H2>
 <P>
-<IMG SRC="pointinfo.png" WIDTH="254" HEIGHT="295" ALIGN="Right"> This shows
+<IMG SRC="pointinfo.png" WIDTH="307" HEIGHT="417" ALIGN="Right"> This shows
 information about the current point. The Base position is where the point
-itself is. The Next CP shows both the location of the next control point,
-and the offset to that point from the base (and whether this setting is the
-default for that point), while the Prev CP does the same for the previous
-control point. You may change any of these and the change is reflected in
-the outline view. You may move on to the next or previous point on the path.
-If you cancel then all changes to all points are canceled.
+itself is. 
+<P>
+The Next CP shows both the location of the next control point, and the offset
+to that point from the base (and whether this setting is the default for
+that point), underneath the offsets it shows the same information in a different
+format -- as a distance from the point itself, and the angle to it.
+<P>
+The Prev CP does the same for the previous control point. 
+<P>
+You may change any of these and the change is reflected in the outline view.
+Your changes are constrained by the point type (for instance with tangent
+points, you may not change the angle fields as these are fixed).
+<P>
+You may also change whether a point is a curve, corner or tangent point (Caution:
+Changing from a corner point to a curve point and back to a corner point
+is NOT a no op. It may change the control points) You may move on to the
+next or previous point on the path. If you cancel then all changes to all
+points are canceled.
 <P>
 The colors of the labels reflect the colors of the items they refer to. The
 point itself will be drawn in red, the previous control point will be drawn
 in magenta and the next control point will be drawn in dull cyan.
 <BR Clear=All>
 <H2>
-  <IMG SRC="agetinfo.png" WIDTH="226" HEIGHT="329" ALIGN="Right"><A NAME="Anchors">Anchor Points</A>
-  Info
+  <IMG SRC="agetinfo.png" WIDTH="226" HEIGHT="329" ALIGN="Right"><A NAME="Anchors">Anchor
+  Points</A> Info
 </H2>
 <P>
-This dialog shows the selected <A HREF="overview.html#Anchors">anchor point</A> with the anchor class,
-location, type and (for ligatures) the ligature index. You may change any of these
-attributes (as long as your changes are reasonable). You may create new points
-or delete the current one. As with normal points above you may step through all
-the anchor points in your character.
+This dialog shows the selected <A HREF="overview.html#Anchors">anchor point</A>
+with the anchor class, location, type and (for ligatures) the ligature index.
+You may change any of these attributes (as long as your changes are reasonable).
+You may create new points or delete the current one. As with normal points
+above you may step through all the anchor points in your character.
 <P>
-Anchor points may also be created with the <A HREF="pointmenu.html#AddAnchor">Point->Add Anchor</A>
-command.
+Anchor points may also be created with the
+<A HREF="pointmenu.html#AddAnchor">Point-&gt;Add Anchor</A> command.
 <BR Clear=All>
 <H2>
   <IMG SRC="rgetinfo.png" WIDTH="297" HEIGHT="284" ALIGN="Right">Reference
@@ -73,10 +85,13 @@ being referred to.<BR CLEAR=ALL>
 This dialog gives the offset to the lower left corner of the image and the
 scale factors applied to the image. Currently you may not alter anything
 here, it is purely informational.
-<P> See Also:
+<P>
+See Also:
 <UL>
-<LI><A HREF="fontinfo.html">The font info dialog</A>
-<LI><A HREF="charinfo.html">The character info dialog</A>
+  <LI>
+    <A HREF="fontinfo.html">The font info dialog</A>
+  <LI>
+    <A HREF="charinfo.html">The character info dialog</A>
 </UL>
 <P ALIGN=Center>
 -- <A HREF="elementmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A>

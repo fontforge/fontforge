@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Sep-2003 -->
-  <!-- AP: Last modified: 27-Sep-2003 -->
+  <!-- AP: Last modified: 24-Dec-2003 -->
   <TITLE>The Mac State Machine dialog</TITLE>
 </HEAD>
 <BODY>
@@ -15,11 +15,11 @@ mac uses state machines where opentype would use a contextual lookup. The
 example at right (with appropriate substitutions attached to it) will convert
 an initial or medial short-s into a long-s (for doing renaissance printing).
 <P>
-PfaEdit currently supports 3 types of state machines: contextual glyph
-substitution, indic rearrangement, and contextual glyph insertion. The example
-at right is of contextual glyph substitution.
+PfaEdit currently supports 4 types of state machines: contextual glyph
+substitution, indic rearrangement, contextual glyph insertion, and contextual
+kerning. The example at right is of contextual glyph substitution.
 <P>
-All state machines have certain similar features. They must all be assigned
+State machines have certain similar features. All but kerning be assigned
 to a feature/setting combination, they all have a set of flags indicating
 in what circumstances they apply, they all have the glyphs of the font assigned
 to a set of classes, and finally they all have a series of transitions indicating
@@ -41,7 +41,7 @@ the matrix, and states down the side. The transition from state 0 when given
 input from class 0 is shown in the upper left corner of the matrix, and so
 on.
 <P>
-When the state machine start up it will be in one of the first two states.
+When the state machine starts up it will be in one of the first two states.
 It will be in state 0 at the beginning of input, and in state1 when it starts
 at the beginning of a new line.
 <P>
@@ -52,6 +52,7 @@ on the type of state machine:
     <TH>Indic</TH>
     <TH>Contextual</TH>
     <TH>Insertion</TH>
+    <TH>Kerning</TH>
   </TR>
   <TR>
     <TD><P ALIGN=Center>
@@ -60,6 +61,8 @@ on the type of state machine:
       <IMG SRC="transition-context.png" WIDTH="54" HEIGHT="64"></TD>
     <TD><P ALIGN=Center>
       <IMG SRC="transition-insert.png" WIDTH="54" HEIGHT="64"></TD>
+    <TD><P ALIGN=Center>
+      <IMG SRC="transition-kern.png" WIDTH="54" HEIGHT="64"></TD>
   </TR>
 </TABLE>
 <P>
@@ -67,7 +70,9 @@ The first line of all transitions shows the next state. The next line contains
 a set of flags where "M" =&gt; the current glyph should be marked (the meaning
 of this becomes appearant later), "A" =&gt; processing should advance to
 the next glyph. For indic tables there is a third flag shown, "L" =&gt; the
-current glyph is the last glyph of the indic rearrangement.
+current glyph is the last glyph of the indic rearrangement, while for kerning
+tables there is a "P" flag indicating that the current glyph should be pushed
+onto the kerning stack.
 <P>
 The last two lines have varied meanings depending on the type of the state
 machine.
@@ -88,7 +93,88 @@ machine.
     the glyph list is truncated). There are additional flags here that are also
     not shown because of lack of room. They may be viewed by clicking on a
     transition.
+  <LI>
+    For kerning transitions the first line shows the first (few) kerning values,
+    the second line shows either "..." if there are more kerning values, or nothing.
 </UL>
+<P>
+For a complete description of what these state machines can do you should
+read Apple's documentation
+<UL>
+  <LI>
+    On the
+    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6morx.html">'morx'</A>
+    and
+    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6mort.html">'mort'</A>
+    tables
+  <LI>
+    On the
+    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6kern.html">'kern'</A>
+    table (format 1)
+  <LI>
+    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6Tables.html#StateTables">On
+    state machines in general</A>
+  <LI>
+    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6feat.html">The
+    'feat' (feature) table</A>
+  <LI>
+    <A HREF="http://developer.apple.com/fonts/Registry/index.html">Apple's Font
+    Feature registry</A>
+</UL>
+<P>
+The general idea is that a word processor converts text into a string of
+glyphs, and then the state machine is applied to that string. The state machine
+starts in state 0 or 1, it figures out what class the first glyph belongs
+to, and indexes into the current state by that class. The transition at that
+location provides a new state to move to (which might be the same as the
+current one), it will usually advance to the next glyph (so the new state
+will be indexed by a different glyph) but sometimes you will want to continue
+processing the current glyph in the new state. Also it will perform a set
+of operations which differ depending on the type of state machine.
+<P>
+Many of the state machines have the concept of a "marked" glyph. This is
+important if the desired change for a given glyph depends on what glyphs
+follow it. In that case when we reach an interesting glyph we "mark" it,
+and then, after reading a few more glyphs when we know what to do, we apply
+a transformation to the marked glyph.
+<TABLE BORDER CELLPADDING="2">
+  <TR>
+    <TH>Indic</TH>
+    <TH>Contextual</TH>
+    <TH>Insertion</TH>
+    <TH>Kerning</TH>
+  </TR>
+  <TR VALIGN="Top">
+    <TD><P ALIGN=Left>
+      In addition to a "mark"ed glyph, indic transformations also have a the concept
+      of a "last" glyph. There are 16 transformations which may be applied the
+      the glyphs between the "mark"ed and "last" glyphs. Suppose the glyph stream
+      looks like<BR>
+      &nbsp; &nbsp; abcdef<BR>
+      And "a" was "mark"ed and "d" was "last" then a transition "AxD =&gt; DxA"
+      refers to the marked glyph as "A", the last glyph as "D" and everything in
+      between as "x", so this would change the glyph stream to<BR>
+      &nbsp; &nbsp; dbcaef</TD>
+    <TD>This can apply a substitution to the current glyph, a different substitution
+      to the marked glyph, and it may mark the current glyph. The substitutions
+      are indicated by 4 character tags and should be "Nested" substitutions which
+      may be created by the Element-&gt;Char Info dialog.</TD>
+    <TD>This can insert a string (up to 31 glyphs) before or after the current
+      and the marked glyphs.</TD>
+    <TD>Kerning does not have a single "mark"ed glyph, instead it can push up
+      to 8 glyphs onto a stack, and at a later point a set of kerning values may
+      be applied to those glyphs (so the flag which is usually indicated as "M"
+      for mark, is here "P" for push). Once all the glyphs have been pushed, a
+      set of kerning values may be applied. One value for each pushed glyph. This
+      is a number which indicates how much the glyph in question should be kerned.
+      If the glyph stream looks like:<BR>
+      &nbsp; &nbsp; F."<BR>
+      and you want to kern "." by -300, and """ by 0 em-units, then you would
+      enter<BR>
+      &nbsp; &nbsp; -300 0<BR>
+      as kerning values.</TD>
+  </TR>
+</TABLE>
 <H2>
   Editing <A NAME="EditTransition">Transitions</A>
 </H2>
@@ -100,6 +186,7 @@ to the type of state machine.
     <TH>Indic</TH>
     <TH>Contextual</TH>
     <TH>Insertion</TH>
+    <TH>Kerning</TH>
   </TR>
   <TR>
     <TD><P ALIGN=Center>
@@ -108,6 +195,8 @@ to the type of state machine.
       <IMG SRC="edittransition-context.png" WIDTH="282" HEIGHT="337"></TD>
     <TD><P ALIGN=Center>
       <IMG SRC="edittransition-insert.png" WIDTH="282" HEIGHT="337"></TD>
+    <TD><P ALIGN=Center>
+      <IMG SRC="edittransition-kern.png" WIDTH="282" HEIGHT="337"></TD>
   </TR>
 </TABLE>
 <P>
@@ -129,23 +218,6 @@ a list of the names of the glyphs in this class. Pressing the [Set] button
 will set that field to any selected glyphs in the font view. Pressing the
 [Select] button will change the selection in the font view to match the glyphs
 in the text.<BR Clear=ALL>
-<UL>
-  <LI>
-    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6morx.html">The
-    'morx' (extended glyph metamorphisis) table</A>
-  <LI>
-    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6mort.html">The
-    'mort' (older version of 'morx') table</A>
-  <LI>
-    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6feat.html">The
-    'feat' (feature) table</A>
-  <LI>
-    <A HREF="http://developer.apple.com/fonts/Registry/index.html">Apple's Font
-    Feature registry</A>
-  <LI>
-    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6Tables.html">Description
-    of the subtables of the 'mort'/'morx' tables</A>
-</UL>
 <P>
 <P ALIGN=Center>
 -- <A HREF="fontinfo.html">Up</A> -- <A HREF="overview.html">TOC</A> --

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 10-Dec-2003 -->
+  <!-- AP: Last modified: 28-Dec-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,105 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    28-Dec-2003
+    <UL>
+      <LI>
+	RemoveATT scripting command didn't work if the third argument were "*"
+      <LI>
+	PfaEdit's clipping in the character view left something to be desired.
+      <LI>
+	Make Meta-Arrow move selected points by 10 times what Arrow would move them
+	by.
+      <LI>
+	Grabbed the feature ordering for GPOS/GSUB specified on the
+	<A HREF="http://www.microsoft.com/typography/specs/default.htm">microsoft
+	site</A> and taught it to PfaEdit.
+      <LI>
+	Change the Point Info dlg
+	<UL>
+	  <LI>
+	    to allow the user to control the point type from there.
+	  <LI>
+	    to enforce constaints on control points (ie. the control points of a curve
+	    point must be in line with the point itself)
+	  <LI>
+	    by adding an alternated mode of entering data, by distance and angle (rather
+	    than just offset)
+	</UL>
+      <LI>
+	Some MF fonts have glyph names with characters which aren't allowed in PostScript
+	names
+      <LI>
+	PfaEdit failed to set widthset when it read in glyphs from a windows FNT
+	(FON) file. This meant that some glyphs might be ignored.
+      <LI>
+	The context chaining dialog had a bad test for valid glyph names and complained
+	about any name containing digits
+      <LI>
+	The histogram dlg would crash if the mouse moved across it when the window
+	was so wide that it could contain more stem widths than were actually in
+	use.
+      <LI>
+	Added three commands to the metrics view view menu to allow users to insert
+	glyphs by name or encoding.
+      <LI>
+	Yannis points out that afm files produced on fonts with vertical metrics
+	did not contain "WY" values (vertical advance width), also that the vkerns
+	in the file actually contained the values of horizontal kerns.
+      <LI>
+	The 'kern' table did not contain pairwise vertical kerns (it did contain
+	vertical kerning by class).
+      <LI>
+	The View-&gt;Substitutions sub menu of the metricsview was not being cleared
+	properly if the current glyph had no substitutions.
+      <LI>
+	Yannis wants the View-&gt;Substitutions menu to have a way to return to the
+	original glyph.
+      <LI>
+	Yannis points out that the metricsview in vertical mode changed the top side
+	bearing in an unexpected way. Also the vertical advance width did not refresh
+	the display properly.
+      <LI>
+	Thanks to David Opstad, I now have an example of a format 1 kerning table
+	and have extended PfaEdit to support kerning by state machine.
+      <LI>
+	The code for generating and loading otb (OpenType bitmap) fonts was broken.
+      <LI>
+	And the code for generating my own wierd bitmap only fonts for windows had
+	some flaws too (different flaws).
+      <LI>
+	If I typed a character into a fontview (or char view) and the font did not
+	contain the character, pfaedit would not select that slot that encoded the
+	character, even if the character was in the encoding.
+      <LI>
+	When loading a ps type3 font, make sure that the glyph name is available
+	when parsing glyphs so we can produce reasonable error msgs. (mostly this
+	means "Spline stroke is too big"
+      <LI>
+	Only generate Spline stroke too big errors once per font.
+      <LI>
+	Adam Goode tells me that the format 12 (32bit unicode) cmap was wrong, and
+	provided a patch to fix it.
+      <LI>
+	Pretty much rewrote the stroking command from scratch.
+      <LI>
+	Merge fonts would crash when merging in a font containing either a ligature
+	caret or a nested lookup.
+      <LI>
+	Made PfaEdit cognizant of the proposed unicode dotlessj character (0237),
+	it will now use either this or the dotlessj in adobe's private use area
+	(depending on which is in the font)
+      <LI>
+	PfaEdit would crash when trying to build an accented character based on inverted
+	breve in pala.ttf
+	<UL>
+	  <LI>
+	    It wrongly considered pala.ttf to be slightly italic (.0005&#176;)
+	  <LI>
+	    It would crash when doing this in an italic font
+	</UL>
+    </UL>
   <LI>
     10-Dec-2003
     <UL>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 14-Jun-2003 -->
+  <!-- AP: Last modified: 23-Dec-2003 -->
   <TITLE>The View Menu</TITLE>
 </HEAD>
 <BODY>
@@ -17,6 +17,12 @@
     <A HREF="#Out">Zoom Out</A>
   <LI>
     <A HREF="#In">Zoom In</A>
+  <LI>
+    <A HREF="#InsBefore">Insert Char Before...</A>
+  <LI>
+    <A HREF="#InsAfter">Insert Char After...</A>
+  <LI>
+    <A HREF="#Goto">Replace Char...</A>
   <LI>
     <A HREF="#Next">Next Char</A>
   <LI>
@@ -59,6 +65,8 @@
     <A HREF="#px96">96 pixel outline</A>
   <LI>
     <A HREF="#AntiAlias">AntiAlias</A>
+  <LI>
+    <A HREF="#Vertical">Vertical</A>
   <LI>
     <A HREF="#FitToEm">Fit To Em</A>
   <LI>
@@ -142,15 +150,17 @@
   <DD>
     Brings up a sub menu showing all the GSUB type 1 and type 3 substitutions
     (simple and alternate) you have defined for the selected character and allows
-    you to change the character as directed by the substitution.
+    you to change the character as directed by the substitution. Also contains
+    an entry to return you to the original glyph.
     <P>
     Substitutions may be set with the <A HREF="charinfo.html">Element-&gt;Char
     Info</A> command.
   <DT>
-    <A NAME="Goto">Goto</A>
+    <A NAME="Goto">Goto</A><BR>
+    Replace Char...
   <DD>
-    In the Font, Outline and Bitmap views this brings up a dialog in which you
-    may type either:
+    In the Font, Outline, Bitmap and Metrics views this brings up a dialog in
+    which you may type either:
     <UL>
       <LI>
 	A name of a character in the current font
@@ -182,8 +192,15 @@
     In the font view the view will scroll so that this character is visible and
     it will be selected
     <P>
-    In the bitmap and outline views, the current character will change to be
-    the one specified.
+    In the bitmap, outline and metrics views, the current character will change
+    to be the one specified.
+  <DT>
+    <A NAME="InsBefore">Insert Char Before...</A><BR>
+    <A NAME="InsAfter">Insert Char After...</A>
+  <DD>
+    In the metrics view this brings up a dialog similar to the previous one allowing
+    you to enter a glyph by name or encoding either before or after the currently
+    selected position.
   <DT>
     <A NAME="FindInFV">Find In Font View</A>
   <DD>
@@ -283,6 +300,12 @@
     font shows levels of grey rather than just black and white. It often looks
     better than a bitmap, but it is slower to generate and draw.
   <DT>
+    <A NAME="Vertical">Vertical</A>
+  <DD>
+    Only in the metrics view. Toggles between displaying horizontal and vertical
+    metrics. (Only available if Element-&gt;Font Info-&gt;General-&gt;Has Vertical
+    Metrics is set).
+  <DT>
     <A NAME="FitToEm">Fit To Em</A>
   <DD>
     Only in the font view. The fontview will either display characters scaled
@@ -307,7 +330,7 @@
     In CID keyed fonts this list will not be present.<BR>
     If your font database includes some greymap fonts then these will be listed
     here too, as usual they will be displayed as
-    &lt;pixel-size&gt;&#64;&lt;bits-per-pixel&gt;
+    &lt;pixel-size&gt;@&lt;bits-per-pixel&gt;
   <DT>
     Show/Hide <A NAME="Grid">Grid</A>
   <DD>
