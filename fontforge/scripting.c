@@ -571,6 +571,7 @@ static void bSavePrefs(Context *c) {
     if ( c->a.argc!=1 )
 	error( c, "Wrong number of arguments" );
     _SavePrefs();
+    DumpPfaEditEncodings();
 }
 
 static void bGetPrefs(Context *c) {
@@ -1784,7 +1785,7 @@ static void bLoadEncodingFile(Context *c) {
 	error(c,"Bad argument type");
 
     ParseEncodingFile(c->a.vals[1].u.sval);
-    DumpPfaEditEncodings();
+    /*DumpPfaEditEncodings();*/
 }
 
 static void bSetFontOrder(Context *c) {
