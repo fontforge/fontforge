@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 4-Oct-2004 -->
+  <!-- AP: Last modified: 10-Oct-2004 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -585,6 +585,10 @@ a[4][0] = "Nested array";
       <LI>
 	ps (type 0)
       <LI>
+	t42 (type 42, truetype wrapped in PostScript)
+      <LI>
+	cid.t42 (type 42 cid font)
+      <LI>
 	cid (non-otf cid font)
       <LI>
 	cff (bare cff font)
@@ -839,9 +843,11 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
       <LI>
 	2 =&gt; output to ghostview
       <LI>
-	3 =&gt; output to file
+	3 =&gt; output to PostScript file
       <LI>
 	4 =&gt; other printing command
+      <LI>
+	5 =&gt; output to a pdf file
     </UL>
     <P>
     If the type is 4 (other) and the second argument is specified, then the second
@@ -851,8 +857,8 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     (If the second argument is a null string neither will be set).
     <P>
     The third and fourth arguments should specify the page width and height
-    respectively. Units are in points, so 8.5x11" paper is 612,792 and A4 paper
-    is (about) 595,842.
+    respectively. Units are in 1/72 inches (almost points), so 8.5x11" paper
+    is 612,792 and A4 paper is (about) 595,842.
   <DT>
     PrintFont(type[,pointsize[,sample-text-file[,output-file]]])
   <DD>
@@ -879,8 +885,8 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     value), or in the current default encoding. A null string or an omitted argument
     will cause FontForge to use a default value.
     <P>
-    If your PrintSetup specified printing to a file then the fourth argument
-    provides the filename of the output file.
+    If your PrintSetup specified printing to a file (either PostScript or pdf)
+    then the fourth argument provides the filename of the output file.
   <DT>
     <A NAME="Quit">Quit</A>(status)
   <DD>
@@ -1775,7 +1781,7 @@ ApplySubstitution("*","*","vrt2")
     FontForge searches through all fonts in the multi master font set (instance
     fonts and the weighted font) and changes the current font to the indicated
     one. If passed a small integer, then -1 indicates the weighted font and values
-    between [0,$mmcount) represent that specific instance in the font set. 
+    between [0,$mmcount) represent that specific instance in the font set.
   <DT>
     MMChangeWeight(weights)
   <DD>

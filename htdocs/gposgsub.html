@@ -2,9 +2,9 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 16-Apr-2004 -->
-  <LINK REL="icon" href="ffanvil16.png">
+  <!-- AP: Last modified: 12-Oct-2004 -->
   <TITLE>Advanced Typography tables</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
@@ -484,7 +484,8 @@ from feature type/setting to opentype tags).
   </TR>
 </TABLE>
 <H3>
-  What features can be interconverted between OpenType and AAT?
+  What features can be <A NAME="Conversion">interconverted</A> between OpenType
+  and AAT?
 </H3>
 <P>
 Some features have almost the same meaning in OpenType and AAT (although
@@ -636,9 +637,10 @@ GSUB tables have 7 sub-table formats, while morx tables have 5.
     <TD VALIGN="Top"><P ALIGN=Center>
       Ligature</TD>
     <TD>Both formats have ligature sub-tables. The 'GSUB' version is unconditional
-      (the ligature is always applied). The 'morx' version can be contextual (though
-      in all fonts I have examined it is also uncontextual). FontForge only supports
-      unconditional ligatures.
+      (the ligature is always applied -- though a ligature substitution can be
+      embedded in an OpenType contextual substitution). The 'morx' version can
+      be contextual (though in all fonts I have examined it is also uncontextual).
+      FontForge only supports unconditional ligatures.
       <P>
       FontForge can read all the unconditional ligatures from a 'morx' sub-table.
       FontForge loses all contextual ligatures.

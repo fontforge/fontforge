@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 30-Sep-2004 -->
+  <!-- AP: Last modified: 12-Oct-2004 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -12,7 +12,45 @@
 </H1>
 <UL>
   <LI>
-    ???
+    12-Oct-2004
+    <UL>
+      <LI>
+	We have a Spanish UI now, courtesy of Walter Echarri. Yeah!
+      <LI>
+	Support for loading type3 fonts (that ff produced) was broken. Note: ff is
+	still unable to load many type3 fonts (any that are filtered, or that use
+	images for example), but it should be able to read its own fonts.
+      <LI>
+	(I hope) minor change to the way .notdef is handled when reading postscript
+	files.
+      <LI>
+	Added support for printing to pdf file
+      <LI>
+	(fixed a bug in pdf generation from the export command)
+      <LI>
+	Fixed various problems from turning off the multilayer bit in fontinfo
+      <LI>
+	KANOU needs a couple more strings disambiguated.
+      <LI>
+	Add support for generating type42 and type 11 (type42 cid) fonts, add support
+	for loading type42 (but I'm not bothering with type11s) and use these guys
+	when printing order2 fonts.
+      <LI>
+	Check to make sure the PostScript Fontname is valid when reading in a truetype
+	(or svg) font (syntax doesn't enforce this), and if not warn the user and
+	fix it up.
+      <LI>
+	Add some new scripting commands for handling MM fonts since someone seems
+	to want them.
+      <LI>
+	Used to complain if there were more than one Unique Font ID in the truetype
+	'name' table. (because the OpenType list said there should only be one, else
+	it would not be unique). But both Apple and MS ship with fonts containing
+	multiple Unique Font IDs. God knows what that means, or when you pick one
+	over the other... Anyway I changed my error into a warning.
+    </UL>
+  <LI>
+    30-Sept-2004
     <UL>
       <LI>
 	I have rewritten Remove Overlap from scratch. I seems less likely to crash,
