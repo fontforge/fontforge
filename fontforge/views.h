@@ -953,6 +953,7 @@ extern int CVTwoForePointsSelected(CharView *cv, SplinePoint **sp1, SplinePoint 
 extern int CVIsDiagonalable(SplinePoint *sp1, SplinePoint *sp2, SplinePoint **sp3, SplinePoint **sp4);
 extern int CVClearSel(CharView *cv);
 extern int CVSetSel(CharView *cv,int mask);
+extern void CVInvertSel(CharView *cv);
 extern int CVAllSelected(CharView *cv);
 extern SplinePointList *CVAnySelPointList(CharView *cv);
 extern SplinePoint *CVAnySelPoint(CharView *cv);

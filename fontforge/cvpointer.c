@@ -235,6 +235,35 @@ int CVSetSel(CharView *cv,int mask) {
 return( needsupdate );
 }
 
+void CVInvertSel(CharView *cv) {
+    SplinePointList *spl;
+    Spline *spline, *first;
+    RefChar *rf;
+    ImageList *img;
+
+    cv->lastselpt = NULL;
+
+    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
+      	spl->first->selected = !spl->first->selected;
+	first = NULL;
+	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+	    spline->to->selected = !spline->to->selected;
+	    cv->lastselpt = spline->to;
+	    if ( first==NULL ) first = spline;
+	}
+	/* in circular case, first point is toggled twice in above code	*/
+	/* so fix it here						*/
+	if ( spline==first && spline != NULL)
+	    spl->first->selected = !spl->first->selected;
+
+    }
+    for ( rf=cv->layerheads[cv->drawmode]->refs; rf!=NULL; rf = rf->next )
+        rf->selected = !rf->selected;
+    for ( img=cv->layerheads[cv->drawmode]->images; img!=NULL; img = img->next )
+        img->selected = !img->selected;
+    cv->p.nextcp = cv->p.prevcp = false;
+}
+
 int CVAllSelected(CharView *cv) {
     SplinePointList *spl;
     Spline *spline, *first;
