@@ -72,7 +72,7 @@ static void CVStrokeIt(void *_cv, StrokeInfo *si) {
     SplineSet *spl, *prev, *head=NULL, *last=NULL, *cur, *snext;
 
     CVPreserveState(cv);
-    if ( CVAnySel(cv,&anypoints,NULL,NULL) && anypoints ) {
+    if ( CVAnySel(cv,&anypoints,NULL,NULL,NULL) && anypoints ) {
 	prev = NULL;
 	for ( spl= *cv->heads[cv->drawmode]; spl!=NULL; spl = snext ) {
 	    snext = spl->next;

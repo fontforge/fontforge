@@ -200,3 +200,39 @@ return;
     }
     mi->sub = sub;
 }
+
+/* Builds up a menu containing all the anchor classes */
+void _aplistbuild(struct gmenuitem *top,SplineFont *sf,
+	void (*func)(GWindow,struct gmenuitem *,GEvent *)) {
+    int cnt;
+    GMenuItem *mi, *sub;
+    AnchorClass *ac;
+
+    cnt = 0;
+    for ( ac = sf->anchor; ac!=NULL; ac=ac->next ) ++cnt;
+    if ( cnt==0 )
+	cnt = 1;
+    else
+	cnt += 2;
+    sub = gcalloc(cnt+1,sizeof(GMenuItem));
+    mi = &sub[0];
+    mi->ti.userdata = (void *) (-1);
+    mi->ti.bg = mi->ti.fg = COLOR_DEFAULT;
+    mi->invoke = func;
+    mi->ti.text = u_copy(GStringGetResource(_STR_All,NULL));
+    if ( cnt==1 )
+	mi->ti.disabled = true;
+    else {
+	++mi;
+	mi->ti.bg = mi->ti.fg = COLOR_DEFAULT;
+	mi->ti.line = true;
+	++mi;
+    }
+    for ( ac=sf->anchor; ac!=NULL; ac = ac->next, ++mi ) {
+	mi->ti.userdata = (void *) ac;
+	mi->ti.bg = mi->ti.fg = COLOR_DEFAULT;
+	mi->invoke = func;
+	mi->ti.text = u_copy(ac->name);
+    }
+    top->sub = sub;
+}

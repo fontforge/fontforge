@@ -30,15 +30,17 @@
 #include "ustring.h"
 
 int CVOneThingSel(CharView *cv, SplinePoint **sp, SplinePointList **_spl,
-	RefChar **ref, ImageList **img) {
+	RefChar **ref, ImageList **img, AnchorPoint **ap) {
     /* if there is exactly one thing selected return it */
     SplinePointList *spl, *found=NULL;
     Spline *spline;
     SplinePoint *foundsp=NULL;
     RefChar *refs, *foundref=NULL;
     ImageList *imgs, *foundimg=NULL;
+    AnchorPoint *aps, *foundap=NULL;
 
     *sp = NULL; *_spl=NULL; *ref=NULL; *img = NULL;
+    if ( ap ) *ap = NULL;
     for ( spl= *cv->heads[cv->drawmode]; spl!=NULL; spl=spl->next ) {
 	if ( spl->first->selected ) {
 	    if ( found!=NULL )
@@ -66,6 +68,16 @@ return( 0 );
 	    }
 	}
 	*ref = foundref;
+	if ( cv->showanchor && ap!=NULL ) {
+	    for ( aps=cv->sc->anchor; aps!=NULL; aps=aps->next ) {
+		if ( aps->selected ) {
+		    if ( found!=NULL || foundref!=NULL || foundap!=NULL )
+return( 0 );
+		    foundap = aps;
+		}
+	    }
+	    *ap = foundap;
+	}
     }
 
     if ( cv->drawmode==dm_back ) {
@@ -79,8 +91,8 @@ return( 0 );
 	*img = foundimg;
     }
     if ( found )
-return( foundimg==NULL && foundref==NULL );
-    else if ( foundref || foundimg )
+return( foundimg==NULL && foundref==NULL && foundap==NULL );
+    else if ( foundref || foundimg || foundap )
 return( true );
 
 return( false );

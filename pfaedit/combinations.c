@@ -99,9 +99,10 @@ void SFShowLigatures(SplineFont *sf) {
 struct kerns {
     SplineChar *first;
     SplineChar *second;
-    int newoff;
+    int newoff, newyoff;
     unsigned int r2l: 1;
     KernPair *kp;
+    AnchorClass *ac;
 };
 
 typedef struct kpdata {
@@ -110,6 +111,9 @@ typedef struct kpdata {
     SplineFont *sf;
     SplineChar *sc;		/* If set then restrict to kerns of this char */
 				/*  in either position */
+    AnchorClass *ac;		/* If set then don't do kerns, but look for */
+				/*  anchor combos with this class. If -1 */
+			        /*  then all anchor combos with any class */
     struct kerns *kerns;	/* All the kerns we care about */
     int kcnt, firstcnt;
     BDFFont *bdf;
@@ -117,7 +121,7 @@ typedef struct kpdata {
     int sb_width;
     GFont *font;
     int fh, as;
-    int uh, wh, off_top, selected, last_index;
+    int uh, wh, off_top, selected, last_index, vpad;
     int pressed_x, old_val;
     unsigned int done:1;
     unsigned int first:1;
@@ -179,24 +183,35 @@ static void KPSortEm(KPData *kpd,enum sortby sort_func) {
 	    kpd->sc->enc = oldenc;
     } else
 	qsort(kpd->kerns,kpd->kcnt,sizeof(struct kerns), offcmpr );
-}
 
-static void CheckLeftRight(KPData *kpd) {
-    /* flag any hebrew/arabic entries */
-    int i;
-
-    for ( i=0; i<kpd->kcnt; ++i ) {
-	/* Figure that there won't be any mixed orientation kerns (no latin "A" with hebrew "Alef" kern) */
-	/*  but there might be some hebrew/arabic ligatures or something that */
-	/*  we don't recognize as right-to-left (ie. not in unicode) */
-	if (( kpd->kerns[i].first->unicodeenc!=-1 && isrighttoleft( kpd->kerns[i].first->unicodeenc )) ||
-		( kpd->kerns[i].second->unicodeenc!=-1 && isrighttoleft( kpd->kerns[i].second->unicodeenc )) )
-	    kpd->kerns[i].r2l = true;
+    if ( sort_func==sb_first ) {
+	int cnt=1, i;
+	for ( i=1; i<kpd->kcnt; ++i ) {
+	    if ( kpd->kerns[i].first!=kpd->kerns[i-1].first )
+		++cnt;
+	}
+	kpd->firstcnt = cnt;
     }
 }
 
+static void CheckLeftRight(struct kerns *k) {
+    /* flag any hebrew/arabic entries */
+
+    /* Figure that there won't be any mixed orientation kerns (no latin "A" with hebrew "Alef" kern) */
+    /*  but there might be some hebrew/arabic ligatures or something that */
+    /*  we don't recognize as right-to-left (ie. not in unicode) */
+    if (( k->first->unicodeenc!=-1 && isrighttoleft( k->first->unicodeenc )) ||
+	    ( k->second->unicodeenc!=-1 && isrighttoleft( k->second->unicodeenc )) )
+	k->r2l = true;
+    else if ( k->first->script==CHR('a','r','a','b') ||
+	     k->first->script==CHR('h','e','b','r') ||
+	     k->second->script==CHR('a','r','a','b') ||
+	     k->second->script==CHR('h','e','b','r') )
+	k->r2l = true;
+}
+
 static void KPBuildKernList(KPData *kpd) {
-    int i, cnt, firstcnt=0;
+    int i, cnt;
     KernPair *kp;
 
     if ( kpd->sc!=NULL ) {
@@ -206,7 +221,10 @@ static void KPBuildKernList(KPData *kpd) {
 		    kpd->kerns[cnt].first = kpd->sc;
 		    kpd->kerns[cnt].second = kp->sc;
 		    kpd->kerns[cnt].newoff = kp->off;
+		    kpd->kerns[cnt].newyoff = 0;
 		    kpd->kerns[cnt].kp = kp;
+		    kpd->kerns[cnt].ac = NULL;
+		    CheckLeftRight(&kpd->kerns[cnt]);
 		}
 		++cnt;
 	    }
@@ -217,7 +235,10 @@ static void KPBuildKernList(KPData *kpd) {
 			    kpd->kerns[cnt].first = kpd->sf->chars[i];
 			    kpd->kerns[cnt].second = kp->sc;
 			    kpd->kerns[cnt].newoff = kp->off;
+			    kpd->kerns[cnt].newyoff = 0;
 			    kpd->kerns[cnt].kp = kp;
+			    kpd->kerns[cnt].ac = NULL;
+			    CheckLeftRight(&kpd->kerns[cnt]);
 			}
 			++cnt;
 		    }
@@ -230,22 +251,22 @@ static void KPBuildKernList(KPData *kpd) {
 return;
 	    kpd->kerns = galloc((cnt+1)*sizeof(struct kerns));
 	    kpd->kcnt = cnt;
-	    kpd->firstcnt = 1;
 	}
     } else {
 	while ( 1 ) {
-	    for ( firstcnt=cnt=i=0; i<kpd->sf->charcnt; ++i ) if ( kpd->sf->chars[i]!=NULL ) {
+	    for ( cnt=i=0; i<kpd->sf->charcnt; ++i ) if ( kpd->sf->chars[i]!=NULL ) {
 		for ( kp = kpd->sf->chars[i]->kerns; kp!=NULL; kp=kp->next ) {
 		    if ( kpd->kerns!=NULL ) {
 			kpd->kerns[cnt].first = kpd->sf->chars[i];
 			kpd->kerns[cnt].second = kp->sc;
 			kpd->kerns[cnt].newoff = kp->off;
+			kpd->kerns[cnt].newyoff = 0;
 			kpd->kerns[cnt].kp = kp;
+			kpd->kerns[cnt].ac = NULL;
+			CheckLeftRight(&kpd->kerns[cnt]);
 		    }
 		    ++cnt;
 		}
-		if ( kpd->sf->chars[i]->kerns!=NULL )
-		    ++firstcnt;
 	    }
 	    if ( kpd->kerns!=NULL )
 	break;
@@ -253,10 +274,143 @@ return;
 return;
 	    kpd->kerns = galloc((cnt+1)*sizeof(struct kerns));
 	    kpd->kcnt = cnt;
-	    kpd->firstcnt = firstcnt;
 	}
     }
-    CheckLeftRight(kpd);
+    KPSortEm(kpd,sb_first);
+}
+
+AnchorClass *AnchorClassMatch(SplineChar *sc1,SplineChar *sc2,AnchorClass *restrict,
+	AnchorPoint **_ap1,AnchorPoint **_ap2 ) {
+    AnchorPoint *ap1, *ap2;
+
+    if ( restrict!=(AnchorClass *) -1 ) {
+	for ( ap1=sc1->anchor; ap1!=NULL && ap1->anchor!=restrict; ap1=ap1->next );
+	for ( ap2=sc2->anchor; ap2!=NULL && ap2->anchor!=restrict; ap2=ap2->next );
+	if ( ap1!=NULL && ap2!=NULL &&
+		((ap1->type==at_mark && ap2->type!=at_mark) ||
+		 (ap1->type!=at_mark && ap2->type==at_mark))) {
+	     *_ap1 = ap1;
+	     *_ap2 = ap2;
+return( restrict );
+	}
+    } else {
+	for ( ap1=sc1->anchor; ap1!=NULL ; ap1=ap1->next ) {
+	    for ( ap2=sc2->anchor; ap2!=NULL; ap2=ap2->next ) {
+		if ( ap1->anchor==ap2->anchor &&
+			((ap1->type==at_mark && ap2->type!=at_mark) ||
+			 (ap1->type!=at_mark && ap2->type==at_mark))) {
+		     *_ap1 = ap1;
+		     *_ap2 = ap2;
+return( ap1->anchor );
+		}
+	    }
+	}
+    }
+return( NULL );
+}
+
+AnchorClass *AnchorClassMkMkMatch(SplineChar *sc1,SplineChar *sc2,
+	AnchorPoint **_ap1,AnchorPoint **_ap2 ) {
+    AnchorPoint *ap1, *ap2;
+
+    for ( ap1=sc1->anchor; ap1!=NULL ; ap1=ap1->next ) {
+	for ( ap2=sc2->anchor; ap2!=NULL; ap2=ap2->next ) {
+	    if ( ap1->anchor==ap2->anchor &&
+		    ap1->type==at_basemark && ap2->type==at_mark)  {
+		 *_ap1 = ap1;
+		 *_ap2 = ap2;
+return( ap1->anchor );
+	    }
+	}
+    }
+return( NULL );
+}
+
+static void KPBuildAnchorList(KPData *kpd) {
+    int i, j, cnt;
+    AnchorClass *ac;
+    AnchorPoint *ap1, *ap2, *temp;
+    SplineFont *sf = kpd->sf;
+    DBounds bb;
+
+    if ( kpd->sc!=NULL ) {
+	while ( 1 ) {
+	    cnt = 0;
+	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+		if ( (ac = AnchorClassMatch(kpd->sc,sf->chars[i],kpd->ac,&ap1,&ap2)) ) {
+		    if ( kpd->kerns!=NULL ) {
+			struct kerns *k = &kpd->kerns[cnt];
+			if ( ap1->type!=at_mark ) {
+			    k->first = kpd->sc;
+			    k->second = sf->chars[i];
+			} else {
+			    k->first = sf->chars[i];
+			    k->second = kpd->sc;
+			    temp = ap1; ap1=ap2; ap2=temp;
+			}
+			CheckLeftRight(k);
+			if ( k->r2l ) {
+			    SplineCharQuickBounds(k->second,&bb);
+			    k->newoff = -ap1->me.x+bb.maxx-ap2->me.x;
+			} else
+			    k->newoff = -k->first->width+ap1->me.x-ap2->me.x;
+			k->newyoff = ap1->me.y-ap2->me.y;
+			k->ac = ac;
+			k->kp = NULL;
+		    }
+		    ++cnt;
+		}
+	    }
+	    if ( kpd->kerns!=NULL )
+	break;
+	    if ( cnt==0 )
+return;
+	    kpd->kerns = galloc((cnt+1)*sizeof(struct kerns));
+	    kpd->kcnt = cnt;
+	}
+    } else {
+	while ( 1 ) {
+	    cnt = 0;
+	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->anchor ) {
+		if ( kpd->ac!=(AnchorClass *) -1 ) {
+		    for ( temp = sf->chars[i]->anchor; temp!=NULL && temp->anchor!=kpd->ac; temp=temp->next );
+		    if ( temp==NULL )
+	    continue;
+		}
+		for ( j=i+1; j<sf->charcnt; ++j ) if ( sf->chars[j]!=NULL ) {
+		    if ( (ac = AnchorClassMatch(sf->chars[i],sf->chars[j],kpd->ac,&ap1,&ap2)) ) {
+			if ( kpd->kerns!=NULL ) {
+			    struct kerns *k = &kpd->kerns[cnt];
+			    if ( ap1->type!=at_mark ) {
+				k->first = sf->chars[i];
+				k->second = sf->chars[j];
+			    } else {
+				k->first = sf->chars[j];
+				k->second = sf->chars[i];
+				temp = ap1; ap1=ap2; ap2=temp;
+			    }
+			    CheckLeftRight(k);
+			    if ( k->r2l ) {
+				SplineCharQuickBounds(k->second,&bb);
+				k->newoff = -ap1->me.x+bb.maxx-ap2->me.x;
+			    } else
+				k->newoff = -k->first->width+ap1->me.x-ap2->me.x;
+			    k->newyoff = ap1->me.y-ap2->me.y;
+			    k->ac = ac;
+			    k->kp = NULL;
+			}
+			++cnt;
+		    }
+		}
+	    }
+	    if ( kpd->kerns!=NULL )
+	break;
+	    if ( cnt==0 )
+return;
+	    kpd->kerns = galloc((cnt+1)*sizeof(struct kerns));
+	    kpd->kcnt = cnt;
+	}
+    }
     KPSortEm(kpd,sb_first);
 }
 
@@ -299,7 +453,8 @@ static void KP_Resize(KPData *kpd) {
     GGadget *sb;
     int minh, minw;
 
-    kpd->uh = kpd->bdf->pixelsize+kpd->fh+6;
+    kpd->uh = (4*kpd->bdf->pixelsize/3)+kpd->fh+6;
+    kpd->vpad = kpd->bdf->pixelsize/5 + 3;
 
     GDrawGetSize(kpd->gw,&size);
 
@@ -358,10 +513,10 @@ static void KP_ExposeKerns(KPData *kpd,GWindow pixmap,GRect *rect) {
     GImage gi;
     int index1, index2;
     BDFChar *bdfc1, *bdfc2;
-    int i, as, x, em = kpd->sf->ascent+kpd->sf->descent;
+    int i, as, x, em = kpd->sf->ascent+kpd->sf->descent, yoff;
     int first, last;
     struct kerns *kern;
-    char buffer[12]; unichar_t ubuf[12];
+    char buffer[40]; unichar_t ubuf[100];
 
     first = rect->y/kpd->uh;
     last = (rect->y+rect->height+kpd->uh-1)/kpd->uh;
@@ -376,7 +531,7 @@ static void KP_ExposeKerns(KPData *kpd,GWindow pixmap,GRect *rect) {
 	    BDFPieceMeal(kpd->bdf,index2);
     }
 
-    as = kpd->sf->ascent * kpd->bdf->pixelsize / em + 3;
+    as = kpd->vpad + kpd->sf->ascent * kpd->bdf->pixelsize / em;
 
     memset(&gi,'\0',sizeof(gi));
     memset(&base,'\0',sizeof(base));
@@ -417,13 +572,19 @@ static void KP_ExposeKerns(KPData *kpd,GWindow pixmap,GRect *rect) {
 #ifndef _BrokenBitmapImages
 	base.trans = base.clut->trans_index = 0;
 #endif
-	GDrawDrawImage(pixmap,&gi,NULL, x,subclip.y+as-bdfc2->ymax);
+	yoff = (kern->newyoff*kpd->bdf->pixelsize/em);
+	GDrawDrawImage(pixmap,&gi,NULL, x,subclip.y+as-bdfc2->ymax-yoff);
 	GDrawDrawLine(pixmap,0,subclip.y+kpd->uh-1,
 		subclip.x+subclip.width,subclip.y+kpd->uh-1,0x000000);
-	sprintf( buffer, "%d", kern->newoff);
+	if ( kern->kp!=NULL )
+	    sprintf( buffer, "%d ", kern->newoff);
+	else
+	    sprintf( buffer, "%d,%d ", kern->newoff, kern->newyoff );
 	uc_strcpy(ubuf,buffer);
-	GDrawDrawText(pixmap,15,subclip.y+kpd->bdf->pixelsize+6+kpd->as,ubuf,-1,NULL,
-		kern->newoff!=kern->kp->off ? 0xff0000 : 0x000000 );
+	if ( kern->ac!=NULL )
+	    u_strncat(ubuf,kern->ac->name,sizeof(ubuf)/sizeof(ubuf[0]));
+	GDrawDrawText(pixmap,15,subclip.y+kpd->uh-kpd->fh+kpd->as,ubuf,-1,NULL,
+		kern->kp!=NULL && kern->newoff!=kern->kp->off ? 0xff0000 : 0x000000 );
 	if ( i+kpd->off_top==kpd->selected ) {
 	    sel.x = 0; sel.width = kpd->vwidth-1;
 	    sel.y = subclip.y; sel.height = kpd->uh-2;
@@ -484,7 +645,7 @@ return( NULL );
     if ( e->u.mouse.x < x || e->u.mouse.x>= x+bdfc2->xmax-bdfc2->xmin )
 return( NULL );
 
-    baseline = (i-kpd->off_top)*kpd->uh + kpd->sf->ascent * kpd->bdf->pixelsize / em + 3;
+    baseline = (i-kpd->off_top)*kpd->uh + kpd->sf->ascent * kpd->bdf->pixelsize / em + kpd->vpad;
     if ( e->u.mouse.y < baseline-bdfc2->ymax || e->u.mouse.y >= baseline-bdfc2->ymin )
 return( NULL );
 
@@ -500,10 +661,13 @@ static void KP_SetCursor(KPData *kpd, int ismove ) {
 }
 	    
 static BDFChar *KP_Cursor(KPData *kpd, GEvent *e) {
-    BDFChar *bdfc2 = KP_Inside(kpd,e);
-
-    KP_SetCursor(kpd,bdfc2!=NULL );
+    if ( kpd->ac==NULL ) {
+	BDFChar *bdfc2 = KP_Inside(kpd,e);
+    
+	KP_SetCursor(kpd,bdfc2!=NULL );
 return( bdfc2 );
+    }
+return( NULL );
 }
 
 static void KP_ScrollTo(KPData *kpd,int where) {
@@ -730,7 +894,8 @@ return( true );
 	    KP_RefreshSel(kpd,index);
 	}
 	if ( event->u.mouse.button==3 && index>=0 ) {
-	    GMenuCreatePopupMenu(gw,event, kernmenu);
+	    if ( kpd->ac==NULL )
+		GMenuCreatePopupMenu(gw,event, kernmenu);
 	} else if ( KP_Cursor(kpd,event)!=NULL ) {
 	    kpd->pressed_x = event->u.mouse.x;
 	    kpd->old_val = kpd->kerns[index].newoff;
@@ -764,7 +929,9 @@ return( true );
 	    GGadgetPreparePopup(gw,upopupbuf);
 	    KP_Cursor(kpd,event);
 	} else if ( kpd->pressed && kpd->pressed_x!=-1 ) {
-	    if ( index==kpd->selected ) {
+	    if ( kpd->ac!=NULL ) {
+		/* Nothing to be done. That's what I find so wonderful. Happy Days */
+	    } else if ( index==kpd->selected ) {
 		KP_SetCursor(kpd,true);
 		temp = kpd->old_val + (event->u.mouse.x-kpd->pressed_x)*(kpd->sf->ascent+kpd->sf->descent)/kpd->bdf->pixelsize;
 		if ( temp!=kpd->kerns[index].newoff ) {
@@ -787,8 +954,13 @@ return( true );
 static void kpdpopup(KPData *kpd) {
     char buffer[100];
 
-    sprintf( buffer, "total kern pairs=%d\nchars starting kerns=%d",
-	    kpd->kcnt, kpd->firstcnt );
+    if ( kpd->ac==NULL ) {
+	sprintf( buffer, "total kern pairs=%d\nchars starting kerns=%d",
+		kpd->kcnt, kpd->firstcnt );
+    } else {
+	sprintf( buffer, "total anchored pairs=%d\nbase char cnt=%d",
+		kpd->kcnt, kpd->firstcnt );
+    }
     uc_strcpy(upopupbuf,buffer);
     GGadgetPreparePopup(kpd->gw,upopupbuf);
 }
@@ -828,7 +1000,7 @@ return( false );
 return( true );
 }
 
-void SFShowKernPairs(SplineFont *sf,SplineChar *sc) {
+void SFShowKernPairs(SplineFont *sf,SplineChar *sc,AnchorClass *ac) {
     KPData kpd;
     GRect pos;
     GWindow gw;
@@ -842,9 +1014,13 @@ void SFShowKernPairs(SplineFont *sf,SplineChar *sc) {
     memset(&kpd,0,sizeof(kpd));
     kpd.sf = sf;
     kpd.sc = sc;
+    kpd.ac = ac;
     kpd.first = true;
     kpd.last_index = kpd.selected = -1;
-    KPBuildKernList(&kpd);
+    if ( ac==NULL )
+	KPBuildKernList(&kpd);
+    else
+	KPBuildAnchorList(&kpd);
     if ( kpd.kcnt==0 )
 return;
 

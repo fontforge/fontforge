@@ -50,7 +50,7 @@ typedef struct quartic {
 
 #ifndef chunkalloc
 #define ALLOC_CHUNK	100
-#define CHUNK_MAX	120
+#define CHUNK_MAX	140
 
 #ifdef FLAG
 #undef FLAG
@@ -1256,7 +1256,7 @@ return;
 
     for ( dlist=base->dependents; dlist!=NULL && dlist->sc!=dependent; dlist = dlist->next);
     if ( dlist==NULL ) {
-	dlist = calloc(1,sizeof(struct splinecharlist));
+	dlist = chunkalloc(sizeof(struct splinecharlist));
 	dlist->sc = dependent;
 	dlist->next = base->dependents;
 	base->dependents = dlist;
@@ -1607,6 +1607,7 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd) {
 	sf->chars[i]->vwidth = sf->ascent+sf->descent;
 	sf->chars[i]->enc = i;
 	sf->chars[i]->unicodeenc = UniFromName(encoding[i]);
+	sf->chars[i]->script = ScriptFromUnicode(sf->chars[i]->unicodeenc,sf);
 	sf->chars[i]->parent = sf;
 	sf->chars[i]->lig = SCLigDefault(sf->chars[i]);		/* Should read from AFM file, but that's way too much work */
 	GProgressNext();
@@ -1695,6 +1696,7 @@ return( NULL );
 		    NULL,buffer);
 	chars[i]->vwidth = sf->subfonts[j]->ascent+sf->subfonts[j]->descent;
 	chars[i]->unicodeenc = uni;
+	chars[i]->script = ScriptFromUnicode(uni,sf);
 	chars[i]->enc = i;
 	/* There better not be any references (seac's) because we have no */
 	/*  encoding on which to base any fixups */
@@ -1789,7 +1791,7 @@ void SCRemoveDependent(SplineChar *dependent,RefChar *rf) {
 	    if ( dlist!=NULL )
 		pd->next = dlist->next;
 	}
-	free(dlist);
+	chunkfree(dlist,sizeof(struct splinecharlist));
     }
     RefCharFree(rf);
 }
@@ -2617,6 +2619,128 @@ void KernPairsFree(KernPair *kp) {
     }
 }
 
+static AnchorPoint *AnchorPointsRemoveName(AnchorPoint *alist,AnchorClass *an) {
+    AnchorPoint *prev=NULL, *ap, *next;
+
+    for ( ap=alist; ap!=NULL; ap=next ) {
+	next = ap->next;
+	if ( ap->anchor == an ) {
+	    if ( prev==NULL )
+		alist = next;
+	    else
+		prev->next = next;
+	    chunkfree(ap,sizeof(AnchorPoint));
+	    if ( ap->type!=at_baselig )
+		next = NULL;		/* Names only occur once, unless it's a ligature */
+	} else
+	    prev = ap;
+    }
+return( alist );
+}
+
+static void SCRemoveAnchorClass(SplineChar *sc,AnchorClass *an) {
+    Undoes *test;
+
+    if ( sc==NULL )
+return;
+    sc->anchor = AnchorPointsRemoveName(sc->anchor,an);
+    for ( test = sc->undoes[0]; test!=NULL; test=test->next )
+	if ( test->undotype==ut_state || test->undotype==ut_tstate ||
+		test->undotype==ut_statehint || test->undotype==ut_statename )
+	    test->u.state.anchor = AnchorPointsRemoveName(test->u.state.anchor,an);
+    for ( test = sc->redoes[0]; test!=NULL; test=test->next )
+	if ( test->undotype==ut_state || test->undotype==ut_tstate ||
+		test->undotype==ut_statehint || test->undotype==ut_statename )
+	    test->u.state.anchor = AnchorPointsRemoveName(test->u.state.anchor,an);
+}
+
+void SFRemoveAnchorClass(SplineFont *sf,AnchorClass *an) {
+    int i;
+    AnchorClass *prev, *test;
+
+    PasteRemoveAnchorClass(sf,an);
+
+    for ( i=0; i<sf->charcnt; ++i )
+	SCRemoveAnchorClass(sf->chars[i],an);
+    prev = NULL;
+    for ( test=sf->anchor; test!=NULL; test=test->next ) {
+	if ( test==an ) {
+	    if ( prev==NULL )
+		sf->anchor = test->next;
+	    else
+		prev->next = test->next;
+	    chunkfree(test,sizeof(AnchorClass));
+    break;
+	} else
+	    prev = test;
+    }
+}
+
+AnchorPoint *APAnchorClassMerge(AnchorPoint *anchors,AnchorClass *into,AnchorClass *from) {
+    AnchorPoint *api=NULL, *prev, *ap, *next;
+
+    prev = NULL;
+    for ( ap=anchors; ap!=NULL; ap=next ) {
+	next = ap->next;
+	if ( ap->anchor==from ) {
+	    for ( api=anchors; api!=NULL; api=api->next ) {
+		if ( api->anchor==into &&
+			(api->type!=at_baselig || ap->type!=at_baselig || api->lig_index==ap->lig_index))
+	    break;
+	    }
+	    if ( api==NULL && into!=NULL ) {
+		ap->anchor = into;
+		prev = ap;
+	    } else {
+		if ( prev==NULL )
+		    anchors = next;
+		else
+		    prev->next = next;
+		chunkfree(ap,sizeof(AnchorPoint));
+	    }
+	} else
+	    prev = ap;
+    }
+return( anchors );
+}
+
+void AnchorClassMerge(SplineFont *sf,AnchorClass *into,AnchorClass *from) {
+    int i;
+
+    if ( into==from )
+return;
+    PasteAnchorClassMerge(sf,into,from);
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	SplineChar *sc = sf->chars[i];
+
+	sc->anchor = APAnchorClassMerge(sc->anchor,into,from);
+    }
+}
+
+AnchorPoint *AnchorPointsCopy(AnchorPoint *alist) {
+    AnchorPoint *head=NULL, *last, *ap;
+
+    while ( alist!=NULL ) {
+	ap = chunkalloc(sizeof(AnchorPoint));
+	*ap = *alist;
+	if ( head==NULL )
+	    head = ap;
+	else
+	    last->next = ap;
+	last = ap;
+	alist = alist->next;
+    }
+return( head );
+}
+
+void AnchorPointsFree(AnchorPoint *ap) {
+    AnchorPoint *anext;
+    for ( ; ap!=NULL; ap = anext ) {
+	anext = ap->next;
+	chunkfree(ap,sizeof(AnchorPoint));
+    }
+}
+
 void LigatureFree(Ligature *lig) {
     if ( lig==NULL )
 return;
@@ -2653,8 +2777,15 @@ SplineChar *SplineCharCreate(void) {
 return( sc );
 }
 
+void SplineCharListsFree(struct splinecharlist *dlist) {
+    struct splinecharlist *dnext;
+    for ( ; dlist!=NULL; dlist = dnext ) {
+	dnext = dlist->next;
+	chunkfree(dlist,sizeof(struct splinecharlist));
+    }
+}
+
 void SplineCharFreeContents(SplineChar *sc) {
-    struct splinecharlist *dlist, *dnext;
 
     if ( sc==NULL )
 return;
@@ -2669,12 +2800,10 @@ return;
     DStemInfosFree(sc->dstem);
     MinimumDistancesFree(sc->md);
     KernPairsFree(sc->kerns);
+    AnchorPointsFree(sc->anchor);
     UndoesFree(sc->undoes[0]); UndoesFree(sc->undoes[1]);
     UndoesFree(sc->redoes[0]); UndoesFree(sc->redoes[1]);
-    for ( dlist=sc->dependents; dlist!=NULL; dlist = dnext ) {
-	dnext = dlist->next;
-	free(dlist);
-    }
+    SplineCharListsFree(sc->dependents);
     LigatureFree(sc->lig);
 }
 
@@ -2686,11 +2815,20 @@ return;
     chunkfree(sc,sizeof(SplineChar));
 }
 
+void AnchorClassesFree(AnchorClass *an) {
+    AnchorClass *anext;
+    for ( ; an!=NULL; an = anext ) {
+	anext = an->next;
+	chunkfree(an,sizeof(AnchorClass));
+    }
+}
+
 void SplineFontFree(SplineFont *sf) {
     int i;
 
     if ( sf==NULL )
 return;
+    PasteRemoveSFAnchors(sf);
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
 	SplineCharFree(sf->chars[i]);
     free(sf->chars);
@@ -2703,11 +2841,8 @@ return;
     free(sf->origname);
     free(sf->autosavename);
     free(sf->version);
-#if 0
-    free(sf->hsnaps);
-    free(sf->vsnaps);
-#endif
     SplinePointListFree(sf->gridsplines);
+    AnchorClassesFree(sf->anchor);
     UndoesFree(sf->gundoes);
     UndoesFree(sf->gredoes);
     PSDictFree(sf->private);

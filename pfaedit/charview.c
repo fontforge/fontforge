@@ -53,7 +53,8 @@ struct cvshows CVShows = {
 	0,		/* show vertical metrics */
 	0,		/* mark extrema */
 	1,		/* show blue values */
-	1		/* show family blues too */
+	1,		/* show family blues too */
+	1		/* show anchor points */
 };
 Color nextcpcol = 0x007090;
 Color prevcpcol = 0xff00ff;
@@ -892,6 +893,56 @@ return;
     GDrawDrawText(pixmap,x-len/2,y,namebuf,-1,NULL,fg);
 }
 
+static void CVDrawAnchorPoints(CharView *cv,GWindow pixmap) {
+    int x,y, len, sel;
+    GPoint gp[9];
+    Color col = 0x0040ff;
+    AnchorPoint *ap;
+    char buf[10];
+    unichar_t *name, ubuf[30];
+    GRect r;
+
+    if ( cv->drawmode!=dm_fore || cv->sc->anchor==NULL || !cv->showanchor )
+return;
+    GDrawSetFont(pixmap,cv->normal);
+
+    for ( sel=0; sel<2; ++sel ) {
+	for ( ap = cv->sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->selected==sel ) {
+	    x = cv->xoff + rint(ap->me.x*cv->scale);
+	    y = -cv->yoff + cv->height - rint(ap->me.y*cv->scale);
+	    if ( x<-400 || y<-40 || x>cv->width+400 || y>cv->height )
+	continue;
+
+	    gp[0].x = x-1; gp[0].y = y-1;
+	    gp[1].x = x;   gp[1].y = y-6;
+	    gp[2].x = x+1; gp[2].y = y-1;
+	    gp[3].x = x+6; gp[3].y = y;
+	    gp[4].x = x+1; gp[4].y = y+1;
+	    gp[5].x = x;   gp[5].y = y+6;
+	    gp[6].x = x-1; gp[6].y = y+1;
+	    gp[7].x = x-6; gp[7].y = y;
+	    gp[8] = gp[0];
+	    if ( ap->selected )
+		GDrawDrawPoly(pixmap,gp,9,col);
+	    else
+		GDrawFillPoly(pixmap,gp,9,col);
+	    if ( ap->type!=at_baselig )
+		name = ap->anchor->name;
+	    else {
+		u_strncpy(ubuf,ap->anchor->name,20);
+		sprintf(buf,"#%d", ap->lig_index);
+		uc_strcat(ubuf,buf);
+		name = ubuf;
+	    }
+	    len = GDrawGetTextWidth(pixmap,name,-1,NULL);
+	    r.x = x-len/2; r.width = len;
+	    r.y = y+7; r.height = cv->nfh;
+	    GDrawFillRect(pixmap,&r,GDrawGetDefaultBackground(NULL));
+	    GDrawDrawText(pixmap,x-len/2,y+7+cv->nas,name,-1,NULL,col);
+	}
+    }
+}
+
 static void DrawImageList(CharView *cv,GWindow pixmap,ImageList *backimages) {
     GRect size, temp;
     int x,y;
@@ -1018,6 +1069,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     }
 
     if ( cv->showfore || cv->drawmode==dm_fore ) {
+	CVDrawAnchorPoints(cv,pixmap);
 	for ( rf=cv->sc->refs; rf!=NULL; rf = rf->next ) {
 	    CVDrawRefName(cv,pixmap,rf,0);
 	    CVDrawSplineSet(cv,pixmap,rf->splines,0,false,&clip);
@@ -1484,7 +1536,7 @@ return;
 	    event->u.chr.keysym == GK_KP_Up ||
 	    event->u.chr.keysym == GK_KP_Right ||
 	    event->u.chr.keysym == GK_KP_Down ) {
-	real dx=0, dy=0;
+	real dx=0, dy=0; int anya;
 	switch ( event->u.chr.keysym ) {
 	  case GK_Left: case GK_KP_Left:
 	    dx = -1;
@@ -1522,7 +1574,7 @@ return;
 		CVAdjustControl(cv,which,&to);
 		cv->p.sp = old;
 		SCUpdateAll(cv->sc);
-	    } else if ( CVAnySel(cv,NULL,NULL,NULL) || cv->widthsel || cv->vwidthsel ) {
+	    } else if ( CVAnySel(cv,NULL,NULL,NULL,&anya) || cv->widthsel || cv->vwidthsel ) {
 		CVPreserveState(cv);
 		CVMoveSelection(cv,dx*arrowAmount,dy*arrowAmount);
 		if ( cv->widthsel )
@@ -2009,6 +2061,22 @@ return;
 			cv->p.ref = rf;
 			cv->p.anysel = true;
 		break;
+		    }
+		}
+		if ( cv->showanchor && !cv->p.anysel ) {
+		    AnchorPoint *ap, *found=NULL;
+		    /* I do this pecular search because: */
+		    /*	1) I expect there to be lots of times we get multiple */
+		    /*     anchors at the same location */
+		    /*  2) The anchor points are drawn so that the bottommost */
+		    /*	   is displayed */
+		    for ( ap=cv->sc->anchor; ap!=NULL; ap=ap->next )
+			if ( fs.xl<=ap->me.x && fs.xh>=ap->me.x &&
+				fs.yl<=ap->me.y && fs.yh >= ap->me.y )
+			    found = ap;
+		    if ( found!=NULL ) {
+			cv->p.ap = found;
+			cv->p.anysel = true;
 		    }
 		}
 	    } else if ( cv->drawmode==dm_back ) {
@@ -2935,6 +3003,7 @@ return( true );
 #define MID_Goto	2016
 #define MID_FindInFontView	2017
 #define MID_KernPairs	2018
+#define MID_AnchorPairs	2019
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -2973,7 +3042,6 @@ return( true );
 #define MID_Autotrace	2212
 #define MID_Round	2213
 #define MID_MetaFont	2217
-#define MID_MakeFirst	2218
 #define MID_Average	2219
 #define MID_SpacePts	2220
 #define MID_SpaceRegion	2221
@@ -2986,6 +3054,8 @@ return( true );
 #define MID_Corner	2301
 #define MID_Tangent	2302
 #define MID_Curve	2303
+#define MID_MakeFirst	2304
+#define MID_AddAnchor	2310
 #define MID_AutoHint	2400
 #define MID_ClearHStem	2401
 #define MID_ClearVStem	2402
@@ -3208,7 +3278,7 @@ static void _CVMenuScale(CharView *cv,struct gmenuitem *mi) {
 	BasePoint c;
 	c.x = (cv->width/2-cv->xoff)/cv->scale;
 	c.y = (cv->height/2-cv->yoff)/cv->scale;
-	if ( CVAnySel(cv,NULL,NULL,NULL))
+	if ( CVAnySel(cv,NULL,NULL,NULL,NULL))
 	    CVFindCenter(cv,&c,false);
 	CVMagnify(cv,c.x,c.y,mi->mid==MID_ZoomOut?-1:1);
     }
@@ -3273,7 +3343,12 @@ static void CVMenuFill(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void CVMenuKernPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    SFShowKernPairs(cv->sc->parent,cv->sc);
+    SFShowKernPairs(cv->sc->parent,cv->sc,NULL);
+}
+
+static void CVMenuAnchorPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    SFShowKernPairs(cv->sc->parent,cv->sc,(AnchorClass *) (-1));
 }
 
 static void CVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -3341,7 +3416,7 @@ static void CVNextPrevPt(CharView *cv,struct gmenuitem *mi) {
     SplineSet *spl, *ss;
     int x, y;
 
-    if ( mi->mid != MID_FirstPt && !CVOneThingSel(cv,&selpt,&spl,&r,&il))
+    if ( mi->mid != MID_FirstPt && !CVOneThingSel(cv,&selpt,&spl,&r,&il,NULL))
 return;
     other = selpt;
     if ( mi->mid == MID_NextPt ) {
@@ -3400,7 +3475,7 @@ static void CVNextPrevCPt(CharView *cv,struct gmenuitem *mi) {
     RefChar *r; ImageList *il;
     SplineSet *spl;
 
-    if ( !CVOneThingSel(cv,&selpt,&spl,&r,&il))
+    if ( !CVOneThingSel(cv,&selpt,&spl,&r,&il,NULL))
 return;
     if ( selpt==NULL )
 return;
@@ -3474,9 +3549,9 @@ static void CVRedo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static void _CVCopy(CharView *cv) {
-    int desel = false;
+    int desel = false, anya;
 
-    if ( !CVAnySel(cv,NULL,NULL,NULL))
+    if ( !CVAnySel(cv,NULL,NULL,NULL,&anya))
 	if ( !(desel = CVSetSel(cv)))
 return;
     CopySelected(cv);
@@ -3513,10 +3588,22 @@ static void CVDoClear(CharView *cv) {
 	    *cv->heads[cv->drawmode]);
     if ( cv->drawmode==dm_fore ) {
 	RefChar *refs, *next;
+	AnchorPoint *ap, *aprev=NULL, *anext;
 	for ( refs=cv->sc->refs; refs!=NULL; refs = next ) {
 	    next = refs->next;
 	    if ( refs->selected )
 		SCRemoveDependent(cv->sc,refs);
+	}
+	if ( cv->showanchor ) for ( ap=cv->sc->anchor; ap!=NULL; ap=anext ) {
+	    anext = ap->next;
+	    if ( ap->selected ) {
+		if ( aprev!=NULL )
+		    aprev->next = anext;
+		else
+		    cv->sc->anchor = anext;
+		chunkfree(ap,sizeof(AnchorPoint));
+	    } else
+		aprev = ap;
 	}
     }
     if ( cv->drawmode==dm_back ) {
@@ -3543,8 +3630,9 @@ static void CVDoClear(CharView *cv) {
 
 static void CVClear(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
+    int anyanchor;
 
-    if ( !CVAnySel(cv,NULL,NULL,NULL))
+    if ( !CVAnySel(cv,NULL,NULL,NULL,&anyanchor))
 return;
     CVDoClear(cv);
     CVCharChangedUpdate(cv);
@@ -3568,7 +3656,7 @@ static void CVPaste(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void _CVMerge(CharView *cv,int elide) {
     int anyp = 0;
 
-    if ( !CVAnySel(cv,&anyp,NULL,NULL) || !anyp)
+    if ( !CVAnySel(cv,&anyp,NULL,NULL,NULL) || !anyp)
 return;
     CVPreserveState(cv);
     SplineCharMerge(cv->sc,cv->heads[cv->drawmode],!elide);
@@ -3589,7 +3677,7 @@ static void CVElide(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void _CVJoin(CharView *cv) {
     int anyp = 0, changed;
 
-    CVAnySel(cv,&anyp,NULL,NULL);
+    CVAnySel(cv,&anyp,NULL,NULL,NULL);
     CVPreserveState(cv);
     *cv->heads[cv->drawmode] = SplineSetJoin(*cv->heads[cv->drawmode],!anyp,0,&changed);
     if ( changed )
@@ -3602,8 +3690,9 @@ static void CVJoin(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static void _CVCut(CharView *cv) {
+    int anya;
 
-    if ( !CVAnySel(cv,NULL,NULL,NULL))
+    if ( !CVAnySel(cv,NULL,NULL,NULL,&anya))
 return;
     _CVCopy(cv);
     CVDoClear(cv);
@@ -3689,9 +3778,9 @@ static void CVRemoveUndoes(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 /* figure out what things are possible from the edit menu before the user */
 /*  pulls it down */
 static void cv_edlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv) {
-    int anypoints, anyrefs, anyimages;
+    int anypoints, anyrefs, anyimages, anyanchor;
 
-    CVAnySel(cv,&anypoints,&anyrefs,&anyimages);
+    CVAnySel(cv,&anypoints,&anyrefs,&anyimages,&anyanchor);
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
@@ -3711,9 +3800,9 @@ static void cv_edlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 		mi->invoke = is_cv ? CVElide : SVElide;
 	    }
 	  break;
-	  case MID_Cut: /*case MID_Copy:*/ case MID_Clear:
+	  case MID_Clear: case MID_Cut: /*case MID_Copy:*/
 	    /* If nothing is selected, copy copies everything */
-	    mi->ti.disabled = !anypoints && !anyrefs && !anyimages;
+	    mi->ti.disabled = !anypoints && !anyrefs && !anyimages && !anyanchor;
 	  break;
 	  case MID_CopyLBearing: case MID_CopyRBearing:
 	    mi->ti.disabled = cv->drawmode!=dm_fore ||
@@ -3844,6 +3933,11 @@ static void cv_ptlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	  case MID_MakeFirst:
 	    mi->ti.disabled = cnt!=1 || sel->first->prev==NULL || sel->first==selpt;
 	  break;
+#if 0
+	  case MID_AddAnchor:
+	    mi->ti.disabled = AnchorClassUnused(cv->sc,&waslig)==NULL;
+	  break;
+#endif
 	}
     }
 }
@@ -3895,7 +3989,7 @@ static int getorigin(void *d,BasePoint *base,int index) {
 	/* all done */
       break;
       case 1:		/* Center of selection */
-	CVFindCenter(cv,base,!CVAnySel(cv,NULL,NULL,NULL));
+	CVFindCenter(cv,base,!CVAnySel(cv,NULL,NULL,NULL,NULL));
       break;
       case 2:		/* last press */
 	base->x = cv->p.cx;
@@ -3928,6 +4022,7 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
     RefChar *refs;
     ImageList *img;
     real t[6];
+    AnchorPoint *ap;
 
     SplinePointListTransform(*cv->heads[cv->drawmode],transform,!anysel);
     if ( flags&fvt_round_to_int )
@@ -3962,6 +4057,13 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
 		memcpy(refs->transform,t,sizeof(t));
 		SplineSetFindBounds(refs->splines,&refs->bb);
 	    }
+	if ( cv->showanchor ) {
+	    for ( ap=cv->sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->selected || !anysel ) {
+		real x   = ap->me.x*transform[0] + ap->me.y*transform[2] + transform[4];
+		ap->me.y = ap->me.x*transform[1] + ap->me.y*transform[3] + transform[5];
+		ap->me.x = x;
+	    }
+	}
 	if ( transform[1]==0 && transform[2]==0 ) {
 	    TransHints(cv->sc->hstem,transform[3],transform[5],transform[0],transform[4],flags&fvt_round_to_int);
 	    TransHints(cv->sc->vstem,transform[0],transform[4],transform[3],transform[5],flags&fvt_round_to_int);
@@ -3991,8 +4093,9 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
 static void transfunc(void *d,real transform[6],int otype,BVTFunc *bvts,
 	enum fvtrans_flags flags) {
     CharView *cv = (CharView *) d;
+    int anya;
 
-    cv->p.transany = CVAnySel(cv,NULL,NULL,NULL);
+    cv->p.transany = CVAnySel(cv,NULL,NULL,NULL,&anya);
     if ( cv->drawmode==dm_fore ) {
 	SCPreserveState(cv->sc,true);
 	if ( (flags&fvt_dobackground) )
@@ -4005,7 +4108,7 @@ static void transfunc(void *d,real transform[6],int otype,BVTFunc *bvts,
 
 static void CVMenuTransform(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    int anysel = CVAnySel(cv,NULL,NULL,NULL);
+    int anysel = CVAnySel(cv,NULL,NULL,NULL,NULL);
     TransformDlgCreate(cv,transfunc,getorigin,!anysel && cv->drawmode==dm_fore);
 }
 
@@ -4062,7 +4165,7 @@ static void CVMenuMakeParallel(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static void _CVMenuRound2Int(CharView *cv) {
-    int anysel = CVAnySel(cv,NULL,NULL,NULL);
+    int anysel = CVAnySel(cv,NULL,NULL,NULL,NULL);
     SplinePointList *spl;
     SplinePoint *sp;
     RefChar *r;
@@ -4133,7 +4236,7 @@ static void CVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void _CVMenuAddExtrema(CharView *cv) {
     int anysel;
 
-    (void) CVAnySel(cv,&anysel,NULL,NULL);
+    (void) CVAnySel(cv,&anysel,NULL,NULL,NULL);
     CVPreserveState(cv);
     SplineCharAddExtrema(*cv->heads[cv->drawmode],anysel);
     CVCharChangedUpdate(cv);
@@ -4196,6 +4299,19 @@ return;
 static void CVMenuMakeFirst(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     _CVMenuMakeFirst(cv);
+}
+
+static void CVMenuAddAnchor(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    int waslig;
+
+    if ( AnchorClassUnused(cv->sc,&waslig)==NULL ) {
+	GWidgetPostNoticeR(_STR_MakeNewClass,_STR_MakeNewAnchorClass);
+	FontInfo(cv->sc->parent,8,true);		/* Anchor Class */
+	if ( AnchorClassUnused(cv->sc,&waslig)==NULL )
+return;
+    }
+    ApGetInfo(cv,NULL);
 }
 
 static void CVMenuAutotrace(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -4319,6 +4435,7 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
     SplinePoint *selpt=NULL;
     Spline *spline, *first;
     int onlyaccents;
+    AnchorPoint *ap;
 
 #ifdef PFAEDIT_CONFIG_TILEPATH
     int badsel = false;
@@ -4372,7 +4489,7 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	  case MID_GetInfo:
 	    {
 		SplinePoint *sp; SplineSet *spl; RefChar *ref; ImageList *img;
-		mi->ti.disabled = !CVOneThingSel(cv,&sp,&spl,&ref,&img);
+		mi->ti.disabled = !CVOneThingSel(cv,&sp,&spl,&ref,&img,&ap);
 	    }
 	  break;
 	  case MID_ShowDependents:
@@ -4755,7 +4872,7 @@ static void mtlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void cv_sllistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
     SplinePoint *sp; SplineSet *spl; RefChar *r; ImageList *im;
-    int exactlyone = CVOneThingSel(cv,&sp,&spl,&r,&im);
+    int exactlyone = CVOneThingSel(cv,&sp,&spl,&r,&im,NULL);
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
@@ -4803,6 +4920,9 @@ static void cv_vwlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	  case MID_PrevDef:
 	    for ( pos = cv->sc->enc-1; pos>=0 && sf->chars[pos]==NULL; --pos );
 	    mi->ti.disabled = pos==-1 || cv->searcher!=NULL;
+	  break;
+	  case MID_AnchorPairs:
+	    mi->ti.disabled = cv->sc->anchor==NULL;
 	  break;
 	  case MID_KernPairs:
 	    mi->ti.disabled = cv->sc->kerns==NULL;
@@ -4977,7 +5097,9 @@ static GMenuItem ptlist[] = {
     { { (unichar_t *) _STR_Corner, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'o' }, '3', ksm_control, NULL, NULL, CVMenuPointType, MID_Corner },
     { { (unichar_t *) _STR_Tangent, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'T' }, '4', ksm_control, NULL, NULL, CVMenuPointType, MID_Tangent },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_MakeFirst, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'r' }, '1', ksm_control, NULL, NULL, CVMenuMakeFirst, MID_MakeFirst },
+    { { (unichar_t *) _STR_MakeFirst, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, '1', ksm_control, NULL, NULL, CVMenuMakeFirst, MID_MakeFirst },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_AddAnchor, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, '0', ksm_control, NULL, NULL, CVMenuAddAnchor, MID_AddAnchor },
     { NULL }
 };
 
@@ -5100,6 +5222,7 @@ static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_Fill, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'l' }, '\0', 0, NULL, NULL, CVMenuFill, MID_Fill },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
     { { (unichar_t *) _STR_KernPairs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'K' }, '\0', 0, NULL, NULL, CVMenuKernPairs, MID_KernPairs },
+    { { (unichar_t *) _STR_AnchoredPairs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, '\0', 0, NULL, NULL, CVMenuAnchorPairs, MID_AnchorPairs },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
     { { (unichar_t *) _STR_Palettes, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', 0, pllist, pllistcheck },
     { { (unichar_t *) _STR_Hiderulers, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, '\0', ksm_control, NULL, NULL, CVMenuShowHideRulers, MID_HideRulers },
@@ -5153,6 +5276,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv) {
     cv->markextrema = CVShows.markextrema;
     cv->showblues = CVShows.showblues;
     cv->showfamilyblues = CVShows.showfamilyblues;
+    cv->showanchor = CVShows.showanchor;
 
     cv->infoh = 13;
     cv->rulerh = 13;
@@ -5202,6 +5326,10 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv) {
     cv->small = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cv->gw),&rq);
     GDrawFontMetrics(cv->small,&as,&ds,&ld);
     cv->sfh = as+ds; cv->sas = as;
+    rq.point_size = 10;
+    cv->normal = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cv->gw),&rq);
+    GDrawFontMetrics(cv->normal,&as,&ds,&ld);
+    cv->nfh = as+ds; cv->nas = as;
 
     cv->height = pos.height; cv->width = pos.width;
     cv->gi.u.image = gcalloc(1,sizeof(struct _GImage));
@@ -5469,7 +5597,7 @@ static void SVClear(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SearchView *sv = (SearchView *) GDrawGetUserData(gw);
     CharView *cv = sv->cv_srch.inactive ? &sv->cv_rpl : &sv->cv_srch;
 
-    if ( !CVAnySel(cv,NULL,NULL,NULL))
+    if ( !CVAnySel(cv,NULL,NULL,NULL,NULL))
 return;
     CVDoClear(cv);
     CVCharChangedUpdate(cv);
@@ -5547,7 +5675,7 @@ static void SVMenuGetInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = sv->cv_srch.inactive ? &sv->cv_rpl : &sv->cv_srch;
     SplinePoint *sp; SplineSet *spl; RefChar *r; ImageList *im;
 
-    if( !CVOneThingSel(cv,&sp,&spl,&r,&im))
+    if( !CVOneThingSel(cv,&sp,&spl,&r,&im,NULL))
 return;
     CVGetInfo(cv);
 }
@@ -5555,7 +5683,7 @@ return;
 static void SVMenuTransform(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SearchView *sv = (SearchView *) GDrawGetUserData(gw);
     CharView *cv = sv->cv_srch.inactive ? &sv->cv_rpl : &sv->cv_srch;
-    int anysel = CVAnySel(cv,NULL,NULL,NULL);
+    int anysel = CVAnySel(cv,NULL,NULL,NULL,NULL);
     TransformDlgCreate(cv,transfunc,getorigin,!anysel && cv->drawmode==dm_fore);
 }
 

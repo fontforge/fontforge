@@ -36,6 +36,8 @@
 # define real	float
 #endif
 
+#define CHR(ch1,ch2,ch3,ch4) (((ch1)<<24)|((ch2)<<16)|((ch3)<<8)|(ch4))
+
 struct psdict {
     int cnt, next;
     char **keys;
@@ -121,6 +123,22 @@ typedef struct bdffloat {
     uint8 *bitmap;
 } BDFFloat;
 
+typedef struct anchorclass {
+    unichar_t *name;
+    uint32 feature_tag;
+    struct anchorclass *next;
+} AnchorClass;
+
+enum anchor_type { at_mark, at_basechar, at_baselig, at_basemark };
+typedef struct anchorpoint {
+    AnchorClass *anchor;
+    BasePoint me;
+    unsigned int type: 4;
+    unsigned int selected: 1;
+    int lig_index;
+    struct anchorpoint *next;
+} AnchorPoint;
+
 typedef struct undoes {
     struct undoes *next;
     enum undotype { ut_none=0, ut_state, ut_tstate, ut_statehint, ut_statename,
@@ -132,8 +150,10 @@ typedef struct undoes {
 	    int16 width, vwidth;
 	    int16 lbearingchange;
 	    int unicodeenc;			/* only for ut_statename */
+	    uint32 script;			/* only for ut_statename */
 	    char *charname;			/* only for ut_statename */
 	    char *lig;				/* only for ut_statename */
+	    uint32 ligtag;			/* only for ut_statename */
 	    struct splinepointlist *splines;
 	    struct refchar *refs;
 	    struct minimumdistance *md;
@@ -141,6 +161,7 @@ typedef struct undoes {
 		struct imagelist *images;
 		void *hints;			/* ut_statehint, ut_statename */
 	    } u;
+	    AnchorPoint *anchor;
 	    struct splinefont *copied_from;
 	} state;
 	int width;	/* used by both ut_width and ut_vwidth */
@@ -375,6 +396,7 @@ typedef struct imagelist {
 typedef struct ligature {
     struct splinechar *lig;
     char *components;
+    uint32 tag;
 } Ligature;
 
 typedef struct liglist {
@@ -442,6 +464,8 @@ typedef struct splinechar {
 				/*  this field must be regenerated before the font is saved */
     unichar_t *comment;
     uint32 /*Color*/ color;
+    AnchorPoint *anchor;
+    uint32 script;		/* an opentype script tag-- four letters naming a script like 'latn' */
 } SplineChar;
 
 enum ttfnames { ttf_copyright=0, ttf_family, ttf_subfamily, ttf_uniqueid,
@@ -521,6 +545,7 @@ typedef struct splinefont {
     int tempuniqueid;
     int top_enc;
     uint16 desired_row_cnt, desired_col_cnt;
+    AnchorClass *anchor;
 } SplineFont;
 
 /* mac styles. Useful idea we'll just steal it */
@@ -594,6 +619,7 @@ extern void TTF_PSDupsDefault(SplineFont *sf);
 extern void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf);
 extern void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]);
 extern void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname);
+extern uint32 ScriptFromUnicode(int u,SplineFont *sf);
 extern void SFFindNearTop(SplineFont *);
 extern void SFRestoreNearTop(SplineFont *);
 extern int SFAddDelChars(SplineFont *sf, int nchars);
@@ -631,6 +657,16 @@ extern void StemInfoFree(StemInfo *h);
 extern void DStemInfosFree(DStemInfo *h);
 extern void DStemInfoFree(DStemInfo *h);
 extern void KernPairsFree(KernPair *kp);
+extern void AnchorPointsFree(AnchorPoint *kp);
+extern AnchorPoint *AnchorPointsCopy(AnchorPoint *alist);
+extern void SFRemoveAnchorClass(SplineFont *sf,AnchorClass *an);
+extern AnchorPoint *APAnchorClassMerge(AnchorPoint *anchors,AnchorClass *into,AnchorClass *from);
+extern void AnchorClassMerge(SplineFont *sf,AnchorClass *into,AnchorClass *from);
+extern void AnchorClassesFree(AnchorClass *kp);
+extern AnchorClass *AnchorClassMatch(SplineChar *sc1,SplineChar *sc2,
+	AnchorClass *restrict, AnchorPoint **_ap1,AnchorPoint **_ap2 );
+extern AnchorClass *AnchorClassMkMkMatch(SplineChar *sc1,SplineChar *sc2,
+	AnchorPoint **_ap1,AnchorPoint **_ap2 );
 extern void LigatureFree(Ligature *lig);
 extern StemInfo *StemInfoCopy(StemInfo *h);
 extern DStemInfo *DStemInfoCopy(DStemInfo *h);
@@ -643,6 +679,7 @@ extern void ImageListsFree(ImageList *imgs);
 extern void TTFLangNamesFree(struct ttflangname *l);
 extern void MinimumDistancesFree(MinimumDistance *md);
 extern SplineChar *SplineCharCreate(void);
+extern void SplineCharListsFree(struct splinecharlist *dlist);
 extern void SplineCharFreeContents(SplineChar *sc);
 extern void SplineCharFree(SplineChar *sc);
 extern void SplineFontFree(SplineFont *sf);
@@ -780,7 +817,7 @@ extern int PfmSplineFont(FILE *pfm, SplineFont *sf,int type0);
 extern char *EncodingName(int map);
 extern void SFLigaturePrepare(SplineFont *sf);
 extern void SFLigatureCleanup(SplineFont *sf);
-extern int SCSetMetaData(SplineChar *sc,char *name,int unienc,char *lig);
+extern int SCSetMetaData(SplineChar *sc,char *name,int unienc,char *lig,uint32 ltag);
 
 extern int SFDWrite(char *filename,SplineFont *sf);
 extern int SFDWriteBak(SplineFont *sf);
@@ -804,6 +841,7 @@ extern SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i);
 extern SplineChar *SFMakeChar(SplineFont *sf,int i);
 extern char *LigDefaultStr(int uni, char *name);
 extern char *AdobeLigatureFormat(char *name);
+extern uint32 LigTagFromUnicode(int uni);
 extern Ligature *SCLigDefault(SplineChar *sc);
 extern BDFChar *BDFMakeChar(BDFFont *bdf,int i);
 

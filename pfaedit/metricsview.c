@@ -957,6 +957,7 @@ return( true );
 #define MID_FindInFontView	2015
 #define MID_Ligatures	2020
 #define MID_KernPairs	2021
+#define MID_AnchorPairs	2022
 #define MID_CharInfo	2201
 #define MID_FindProblems 2216
 #define MID_MetaFont	2217
@@ -1554,7 +1555,12 @@ static void MVMenuLigatures(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void MVMenuKernPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-    SFShowKernPairs(mv->fv->sf,NULL);
+    SFShowKernPairs(mv->fv->sf,NULL,NULL);
+}
+
+static void MVMenuAnchorPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    SFShowKernPairs(mv->fv->sf,NULL,mi->ti.userdata);
 }
 
 static void MVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1727,8 +1733,27 @@ static GMenuItem ellist[] = {
     { NULL }
 };
 
+static GMenuItem dummyall[] = {
+    { { (unichar_t *) _STR_All, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'K' }, '\0', ksm_shift|ksm_control, NULL, NULL, NULL },
+    NULL
+};
+
+/* Builds up a menu containing all the anchor classes */
+static void aplistbuild(GWindow base,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(base);
+    extern void GMenuItemArrayFree(GMenuItem *mi);
+
+    if ( mi->sub!=dummyall ) {
+	GMenuItemArrayFree(mi->sub);
+	mi->sub = NULL;
+    }
+
+    _aplistbuild(mi,mv->fv->sf,MVMenuAnchorPairs);
+}
+
 static GMenuItem cblist[] = {
     { { (unichar_t *) _STR_KernPairs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'K' }, '\0', ksm_shift|ksm_control, NULL, NULL, MVMenuKernPairs, MID_KernPairs },
+    { { (unichar_t *) _STR_AnchoredPairs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'K' }, '\0', ksm_shift|ksm_control, dummyall, aplistbuild, MVMenuAnchorPairs, MID_AnchorPairs },
     { { (unichar_t *) _STR_Ligatures, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'L' }, '\0', ksm_shift|ksm_control, NULL, NULL, MVMenuLigatures, MID_Ligatures },
     NULL
 };
@@ -1758,6 +1783,9 @@ static void cblistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	  break;
 	  case MID_KernPairs:
 	    mi->ti.disabled = !anykerns;
+	  break;
+	  case MID_AnchorPairs:
+	    mi->ti.disabled = sf->anchor==NULL;
 	  break;
 	}
     }

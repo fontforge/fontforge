@@ -1070,9 +1070,10 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
     BDFFont *bdf;
     real ybase, italicoff;
     const unichar_t *temp;
-    SplineChar *basersc;
+    SplineChar *basersc=NULL;
     int baserch = basech;
     int eta;
+    AnchorPoint *ap1, *ap2;
 
     /* When we center an accent on Uhorn, we don't really want it centered */
     /*  on the combination, we want it centered on "U". So if basech is itself*/
@@ -1082,7 +1083,7 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
     /* Similarly in Ø or ø, we really want to base the accents on O or o */
     if ( baserch==0xf8 ) baserch = 'o';
     else if ( baserch==0xd8 ) baserch = 'O';
-    
+
     /* cedilla on lower "g" becomes a turned comma above it */
     if ( ch==0x327 && basech=='g' && haschar(sf,0x312))
 	ch = 0x312;
@@ -1136,8 +1137,22 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 	    bbb.minx = bb.minx;
 	}
 	bb = bbb;
-    } else
+    } else if ( basech==sc->unicodeenc || ( basersc = findchar(sf,basech))==NULL )
 	basersc = sc;
+
+    transform[0] = transform[3] = 1;
+    transform[1] = transform[2] = transform[4] = transform[5] = 0;
+
+    if ( sc->refs!=NULL && sc->refs->next!=NULL &&
+	    AnchorClassMkMkMatch(sc->refs->sc,rsc,&ap1,&ap2)!=NULL ) {
+	/* Do we have a mark to mark attachment to the last anchor we added? */
+	/*  If so then figure offsets relative to it. */
+	xoff = ap1->me.x-ap2->me.x + sc->refs->transform[4];
+	yoff = ap1->me.y-ap2->me.y + sc->refs->transform[5];
+    } else if ( AnchorClassMatch(basersc,rsc,(AnchorClass *) -1,&ap1,&ap2)!=NULL && ap2->type==at_mark ) {
+	xoff = ap1->me.x-ap2->me.x;
+	yoff = ap1->me.y-ap2->me.y;
+    } else {
  /* try to establish a common line on which all accents lie. The problem being*/
  /*  that an accent above a,e,o will usually be slightly higher than an accent */
  /*  above i or u, similarly for upper case. Letters with ascenders shouldn't */
@@ -1167,8 +1182,6 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 	    bb.maxx -= (bb.maxx-bb.minx)/3;	/* Should also be centered on left stem of eta, but I don't know how to do that..., hence this hack */
     }
 
-    transform[0] = transform[3] = 1;
-    transform[1] = transform[2] = transform[4] = transform[5] = 0;
     if ( invert ) {
 	/* this transform does a vertical flip from the vertical midpoint of the breve */
 	transform[3] = -1;
@@ -1279,6 +1292,7 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
     italicoff = 0;
     if ( ia!=0 )
 	xoff += (italicoff = tan(-ia)*(rbb.miny+yoff-ybase));
+    }	/* Anchor points */
     transform[4] = xoff;
     /*if ( invert ) transform[5] -= yoff; else */transform[5] += yoff;
     _SCAddRef(sc,rsc,transform);

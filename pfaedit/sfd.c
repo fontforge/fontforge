@@ -44,260 +44,6 @@ static const char *charset_names[] = {
     "jis208", "jis212", "ksc5601", "gb2312", "big5", "big5hkscs", "johab",
     "unicode", "unicode4", "sjis", "wansung", NULL};
 
-static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
-    SplinePoint *first, *sp;
-
-    for ( ; spl!=NULL; spl=spl->next ) {
-	first = NULL;
-	for ( sp = spl->first; ; sp=sp->next->to ) {
-	    if ( first==NULL )
-		fprintf( sfd, "%g %g m ", sp->me.x, sp->me.y );
-	    else if ( sp->prev->islinear )		/* Don't use known linear here. save control points if there are any */
-		fprintf( sfd, " %g %g l ", sp->me.x, sp->me.y );
-	    else
-		fprintf( sfd, " %g %g %g %g %g %g c ",
-			sp->prev->from->nextcp.x, sp->prev->from->nextcp.y,
-			sp->prevcp.x, sp->prevcp.y,
-			sp->me.x, sp->me.y );
-	    fprintf(sfd, "%d\n", sp->pointtype|(sp->selected<<2)|
-			(sp->nextcpdef<<3)|(sp->prevcpdef<<4)|
-			(sp->roundx<<5)|(sp->roundy<<6) );
-	    if ( sp==first )
-	break;
-	    if ( first==NULL ) first = sp;
-	    if ( sp->next==NULL )
-	break;
-	}
-    }
-    fprintf( sfd, "EndSplineSet\n" );
-}
-
-static void SFDDumpMinimumDistances(FILE *sfd,SplineChar *sc) {
-    MinimumDistance *md = sc->md;
-    SplineSet *ss;
-    SplinePoint *sp;
-    int pt=0;
-
-    if ( md==NULL )
-return;
-    for ( ss = sc->splines; ss!=NULL; ss=ss->next ) {
-	for ( sp=ss->first; ; ) {
-	    sp->ptindex = pt++;
-	    if ( sp->next == NULL )
-	break;
-	    sp = sp->next->to;
-	    if ( sp==ss->first )
-	break;
-	}
-    }
-    fprintf( sfd, "MinimumDistance: " );
-    while ( md!=NULL ) {
-	fprintf( sfd, "%c%d,%d ", md->x?'x':'y', md->sp1?md->sp1->ptindex:-1,
-		md->sp2?md->sp2->ptindex:-1 );
-	md = md->next;
-    }
-    fprintf( sfd, "\n" );
-}
-
-struct enc85 {
-    FILE *sfd;
-    unsigned char sofar[4];
-    int pos;
-    int ccnt;
-};
-
-static void SFDEnc85(struct enc85 *enc,int ch) {
-    enc->sofar[enc->pos++] = ch;
-    if ( enc->pos==4 ) {
-	unsigned int val = (enc->sofar[0]<<24)|(enc->sofar[1]<<16)|(enc->sofar[2]<<8)|enc->sofar[3];
-	if ( val==0 ) {
-	    fputc('z',enc->sfd);
-	    ++enc->ccnt;
-	} else {
-	    int ch2, ch3, ch4, ch5;
-	    ch5 = val%85;
-	    val /= 85;
-	    ch4 = val%85;
-	    val /= 85;
-	    ch3 = val%85;
-	    val /= 85;
-	    ch2 = val%85;
-	    val /= 85;
-	    fputc('!'+val,enc->sfd);
-	    fputc('!'+ch2,enc->sfd);
-	    fputc('!'+ch3,enc->sfd);
-	    fputc('!'+ch4,enc->sfd);
-	    fputc('!'+ch5,enc->sfd);
-	    enc->ccnt += 5;
-	    if ( enc->ccnt > 70 ) { fputc('\n',enc->sfd); enc->ccnt=0; }
-	}
-	enc->pos = 0;
-    }
-}
-
-static void SFDEnc85EndEnc(struct enc85 *enc) {
-    int i;
-    int ch2, ch3, ch4, ch5;
-    unsigned val;
-    if ( enc->pos==0 )
-return;
-    for ( i=enc->pos; i<4; ++i )
-	enc->sofar[i] = 0;
-    val = (enc->sofar[0]<<24)|(enc->sofar[1]<<16)|(enc->sofar[2]<<8)|enc->sofar[3];
-    if ( val==0 ) {
-	fputc('z',enc->sfd);
-    } else {
-	ch5 = val%85;
-	val /= 85;
-	ch4 = val%85;
-	val /= 85;
-	ch3 = val%85;
-	val /= 85;
-	ch2 = val%85;
-	val /= 85;
-	fputc('!'+val,enc->sfd);
-	fputc('!'+ch2,enc->sfd);
-	fputc('!'+ch3,enc->sfd);
-	fputc('!'+ch4,enc->sfd);
-	fputc('!'+ch5,enc->sfd);
-    }
-    enc->pos = 0;
-}
-
-/* Run length encoding */
-/* We always start with a background pixel(1), each line is a series of counts */
-/*  we alternate background/foreground. If we can't represent an entire run */
-/*  as one count, then we can split it up into several smaller runs and put */
-/*  0 counts in between */
-/* counts 0-254 mean 0-254 pixels of the current color */
-/* count 255 means that the next two bytes (bigendian) provide a two byte count */
-/* count 255 0 n (n<255) means that the previous line should be repeated n+1 times */
-/* count 255 0 255 means 255 pixels of the current color */
-static uint8 *image2rle(struct _GImage *img, int *len) {
-    int max = img->height*img->bytes_per_line;
-    uint8 *rle, *pt, *end;
-    int cnt, set;
-    int i,j,k;
-
-    *len = 0;
-    if ( img->image_type!=it_mono || img->bytes_per_line<5 )
-return( NULL );
-    rle = gcalloc(max,sizeof(uint8)), pt = rle, end=rle+max-3;
-
-    for ( i=0; i<img->height; ++i ) {
-	if ( i!=0 ) {
-	    if ( memcmp(img->data+i*img->bytes_per_line,
-			img->data+(i-1)*img->bytes_per_line, img->bytes_per_line)== 0 ) {
-		for ( k=1; k<img->height-i; ++k ) {
-		    if ( memcmp(img->data+(i+k)*img->bytes_per_line,
-				img->data+i*img->bytes_per_line, img->bytes_per_line)!= 0 )
-		break;
-		}
-		i+=k;
-		while ( k>0 ) {
-		    if ( pt>end ) {
-			free(rle);
-return( NULL );
-		    }
-		    *pt++ = 255;
-		    *pt++ = 0;
-		    *pt++ = k>254 ? 254 : k;
-		    k -= 254;
-		}
-		if ( i>=img->height )
-    break;
-	    }
-	}
-
-	set=1; cnt=0; j=0;
-	while ( j<img->width ) {
-	    for ( k=j; k<img->width; ++k ) {
-		if (( set && !(img->data[i*img->bytes_per_line+(k>>3)]&(0x80>>(k&7))) ) ||
-		    ( !set && (img->data[i*img->bytes_per_line+(k>>3)]&(0x80>>(k&7))) ))
-	    break;
-	    }
-	    cnt = k-j;
-	    j=k;
-	    do {
-		if ( pt>=end ) {
-		    free(rle);
-return( NULL );
-		}
-		if ( cnt<=254 )
-		    *pt++ = cnt;
-		else {
-		    *pt++ = 255;
-		    if ( cnt>65535 ) {
-			*pt++ = 255;
-			*pt++ = 255;
-			*pt++ = 0;		/* nothing of the other color, we've still got more of this one */
-		    } else {
-			*pt++ = cnt>>8;
-			*pt++ = cnt&0xff;
-		    }
-		}
-		cnt -= 65535;
-	    } while ( cnt>0 );
-	    set = 1-set;
-	}
-    }
-    *len = pt-rle;
-return( rle );
-}
-
-static void SFDDumpImage(FILE *sfd,ImageList *img) {
-    GImage *image = img->image;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
-    struct enc85 enc;
-    int rlelen;
-    uint8 *rle;
-    int i;
-
-    rle = image2rle(base,&rlelen);
-    fprintf(sfd, "Image: %d %d %d %d %d %x %g %g %g %g %d\n",
-	    base->width, base->height, base->image_type,
-	    base->image_type==it_true?3*base->width:base->bytes_per_line,
-	    base->clut==NULL?0:base->clut->clut_len,base->trans,
-	    img->xoff, img->yoff, img->xscale, img->yscale, rlelen );
-    memset(&enc,'\0',sizeof(enc));
-    enc.sfd = sfd;
-    if ( base->clut!=NULL ) {
-	for ( i=0; i<base->clut->clut_len; ++i ) {
-	    SFDEnc85(&enc,base->clut->clut[i]>>16);
-	    SFDEnc85(&enc,(base->clut->clut[i]>>8)&0xff);
-	    SFDEnc85(&enc,base->clut->clut[i]&0xff);
-	}
-    }
-    if ( rle!=NULL ) {
-	uint8 *pt=rle, *end=rle+rlelen;
-	while ( pt<end )
-	    SFDEnc85(&enc,*pt++);
-	free( rle );
-    } else {
-	for ( i=0; i<base->height; ++i ) {
-	    if ( base->image_type==it_true ) {
-		int *ipt = (int *) (base->data + i*base->bytes_per_line);
-		int *iend = (int *) (base->data + (i+1)*base->bytes_per_line);
-		while ( ipt<iend ) {
-		    SFDEnc85(&enc,*ipt>>16);
-		    SFDEnc85(&enc,(*ipt>>8)&0xff);
-		    SFDEnc85(&enc,*ipt&0xff);
-		    ++ipt;
-		}
-	    } else {
-		uint8 *pt = (uint8 *) (base->data + i*base->bytes_per_line);
-		uint8 *end = (uint8 *) (base->data + (i+1)*base->bytes_per_line);
-		while ( pt<end ) {
-		    SFDEnc85(&enc,*pt);
-		    ++pt;
-		}
-	    }
-	}
-    }
-    SFDEnc85EndEnc(&enc);
-    fprintf(sfd,"\nEndImage\n" );
-}
-
 signed char inbase64[256] = {
         -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
         -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -447,6 +193,275 @@ return( NULL );
 return( buffer[0]=='\0' ? NULL : u_copy(buffer) );
 }
 
+struct enc85 {
+    FILE *sfd;
+    unsigned char sofar[4];
+    int pos;
+    int ccnt;
+};
+
+static void SFDEnc85(struct enc85 *enc,int ch) {
+    enc->sofar[enc->pos++] = ch;
+    if ( enc->pos==4 ) {
+	unsigned int val = (enc->sofar[0]<<24)|(enc->sofar[1]<<16)|(enc->sofar[2]<<8)|enc->sofar[3];
+	if ( val==0 ) {
+	    fputc('z',enc->sfd);
+	    ++enc->ccnt;
+	} else {
+	    int ch2, ch3, ch4, ch5;
+	    ch5 = val%85;
+	    val /= 85;
+	    ch4 = val%85;
+	    val /= 85;
+	    ch3 = val%85;
+	    val /= 85;
+	    ch2 = val%85;
+	    val /= 85;
+	    fputc('!'+val,enc->sfd);
+	    fputc('!'+ch2,enc->sfd);
+	    fputc('!'+ch3,enc->sfd);
+	    fputc('!'+ch4,enc->sfd);
+	    fputc('!'+ch5,enc->sfd);
+	    enc->ccnt += 5;
+	    if ( enc->ccnt > 70 ) { fputc('\n',enc->sfd); enc->ccnt=0; }
+	}
+	enc->pos = 0;
+    }
+}
+
+static void SFDEnc85EndEnc(struct enc85 *enc) {
+    int i;
+    int ch2, ch3, ch4, ch5;
+    unsigned val;
+    if ( enc->pos==0 )
+return;
+    for ( i=enc->pos; i<4; ++i )
+	enc->sofar[i] = 0;
+    val = (enc->sofar[0]<<24)|(enc->sofar[1]<<16)|(enc->sofar[2]<<8)|enc->sofar[3];
+    if ( val==0 ) {
+	fputc('z',enc->sfd);
+    } else {
+	ch5 = val%85;
+	val /= 85;
+	ch4 = val%85;
+	val /= 85;
+	ch3 = val%85;
+	val /= 85;
+	ch2 = val%85;
+	val /= 85;
+	fputc('!'+val,enc->sfd);
+	fputc('!'+ch2,enc->sfd);
+	fputc('!'+ch3,enc->sfd);
+	fputc('!'+ch4,enc->sfd);
+	fputc('!'+ch5,enc->sfd);
+    }
+    enc->pos = 0;
+}
+
+static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
+    SplinePoint *first, *sp;
+
+    for ( ; spl!=NULL; spl=spl->next ) {
+	first = NULL;
+	for ( sp = spl->first; ; sp=sp->next->to ) {
+	    if ( first==NULL )
+		fprintf( sfd, "%g %g m ", sp->me.x, sp->me.y );
+	    else if ( sp->prev->islinear )		/* Don't use known linear here. save control points if there are any */
+		fprintf( sfd, " %g %g l ", sp->me.x, sp->me.y );
+	    else
+		fprintf( sfd, " %g %g %g %g %g %g c ",
+			sp->prev->from->nextcp.x, sp->prev->from->nextcp.y,
+			sp->prevcp.x, sp->prevcp.y,
+			sp->me.x, sp->me.y );
+	    fprintf(sfd, "%d\n", sp->pointtype|(sp->selected<<2)|
+			(sp->nextcpdef<<3)|(sp->prevcpdef<<4)|
+			(sp->roundx<<5)|(sp->roundy<<6) );
+	    if ( sp==first )
+	break;
+	    if ( first==NULL ) first = sp;
+	    if ( sp->next==NULL )
+	break;
+	}
+    }
+    fprintf( sfd, "EndSplineSet\n" );
+}
+
+static void SFDDumpMinimumDistances(FILE *sfd,SplineChar *sc) {
+    MinimumDistance *md = sc->md;
+    SplineSet *ss;
+    SplinePoint *sp;
+    int pt=0;
+
+    if ( md==NULL )
+return;
+    for ( ss = sc->splines; ss!=NULL; ss=ss->next ) {
+	for ( sp=ss->first; ; ) {
+	    sp->ptindex = pt++;
+	    if ( sp->next == NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
+	}
+    }
+    fprintf( sfd, "MinimumDistance: " );
+    while ( md!=NULL ) {
+	fprintf( sfd, "%c%d,%d ", md->x?'x':'y', md->sp1?md->sp1->ptindex:-1,
+		md->sp2?md->sp2->ptindex:-1 );
+	md = md->next;
+    }
+    fprintf( sfd, "\n" );
+}
+
+static void SFDDumpAnchorPoints(FILE *sfd,SplineChar *sc) {
+    AnchorPoint *ap;
+
+    for ( ap = sc->anchor; ap!=NULL; ap=ap->next ) {
+	fprintf( sfd, "AnchorPoint: " );
+	SFDDumpUTF7Str(sfd,ap->anchor->name);
+	fprintf( sfd, "%g %g %s %d\n",
+		ap->me.x, ap->me.y,
+		ap->type==at_mark ? "mark" :
+		ap->type==at_basechar ? "basechar" :
+		ap->type==at_baselig ? "baselig" : "basemark",
+		ap->lig_index );
+    }
+}
+
+/* Run length encoding */
+/* We always start with a background pixel(1), each line is a series of counts */
+/*  we alternate background/foreground. If we can't represent an entire run */
+/*  as one count, then we can split it up into several smaller runs and put */
+/*  0 counts in between */
+/* counts 0-254 mean 0-254 pixels of the current color */
+/* count 255 means that the next two bytes (bigendian) provide a two byte count */
+/* count 255 0 n (n<255) means that the previous line should be repeated n+1 times */
+/* count 255 0 255 means 255 pixels of the current color */
+static uint8 *image2rle(struct _GImage *img, int *len) {
+    int max = img->height*img->bytes_per_line;
+    uint8 *rle, *pt, *end;
+    int cnt, set;
+    int i,j,k;
+
+    *len = 0;
+    if ( img->image_type!=it_mono || img->bytes_per_line<5 )
+return( NULL );
+    rle = gcalloc(max,sizeof(uint8)), pt = rle, end=rle+max-3;
+
+    for ( i=0; i<img->height; ++i ) {
+	if ( i!=0 ) {
+	    if ( memcmp(img->data+i*img->bytes_per_line,
+			img->data+(i-1)*img->bytes_per_line, img->bytes_per_line)== 0 ) {
+		for ( k=1; k<img->height-i; ++k ) {
+		    if ( memcmp(img->data+(i+k)*img->bytes_per_line,
+				img->data+i*img->bytes_per_line, img->bytes_per_line)!= 0 )
+		break;
+		}
+		i+=k;
+		while ( k>0 ) {
+		    if ( pt>end ) {
+			free(rle);
+return( NULL );
+		    }
+		    *pt++ = 255;
+		    *pt++ = 0;
+		    *pt++ = k>254 ? 254 : k;
+		    k -= 254;
+		}
+		if ( i>=img->height )
+    break;
+	    }
+	}
+
+	set=1; cnt=0; j=0;
+	while ( j<img->width ) {
+	    for ( k=j; k<img->width; ++k ) {
+		if (( set && !(img->data[i*img->bytes_per_line+(k>>3)]&(0x80>>(k&7))) ) ||
+		    ( !set && (img->data[i*img->bytes_per_line+(k>>3)]&(0x80>>(k&7))) ))
+	    break;
+	    }
+	    cnt = k-j;
+	    j=k;
+	    do {
+		if ( pt>=end ) {
+		    free(rle);
+return( NULL );
+		}
+		if ( cnt<=254 )
+		    *pt++ = cnt;
+		else {
+		    *pt++ = 255;
+		    if ( cnt>65535 ) {
+			*pt++ = 255;
+			*pt++ = 255;
+			*pt++ = 0;		/* nothing of the other color, we've still got more of this one */
+		    } else {
+			*pt++ = cnt>>8;
+			*pt++ = cnt&0xff;
+		    }
+		}
+		cnt -= 65535;
+	    } while ( cnt>0 );
+	    set = 1-set;
+	}
+    }
+    *len = pt-rle;
+return( rle );
+}
+
+static void SFDDumpImage(FILE *sfd,ImageList *img) {
+    GImage *image = img->image;
+    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct enc85 enc;
+    int rlelen;
+    uint8 *rle;
+    int i;
+
+    rle = image2rle(base,&rlelen);
+    fprintf(sfd, "Image: %d %d %d %d %d %x %g %g %g %g %d\n",
+	    base->width, base->height, base->image_type,
+	    base->image_type==it_true?3*base->width:base->bytes_per_line,
+	    base->clut==NULL?0:base->clut->clut_len,base->trans,
+	    img->xoff, img->yoff, img->xscale, img->yscale, rlelen );
+    memset(&enc,'\0',sizeof(enc));
+    enc.sfd = sfd;
+    if ( base->clut!=NULL ) {
+	for ( i=0; i<base->clut->clut_len; ++i ) {
+	    SFDEnc85(&enc,base->clut->clut[i]>>16);
+	    SFDEnc85(&enc,(base->clut->clut[i]>>8)&0xff);
+	    SFDEnc85(&enc,base->clut->clut[i]&0xff);
+	}
+    }
+    if ( rle!=NULL ) {
+	uint8 *pt=rle, *end=rle+rlelen;
+	while ( pt<end )
+	    SFDEnc85(&enc,*pt++);
+	free( rle );
+    } else {
+	for ( i=0; i<base->height; ++i ) {
+	    if ( base->image_type==it_true ) {
+		int *ipt = (int *) (base->data + i*base->bytes_per_line);
+		int *iend = (int *) (base->data + (i+1)*base->bytes_per_line);
+		while ( ipt<iend ) {
+		    SFDEnc85(&enc,*ipt>>16);
+		    SFDEnc85(&enc,(*ipt>>8)&0xff);
+		    SFDEnc85(&enc,*ipt&0xff);
+		    ++ipt;
+		}
+	    } else {
+		uint8 *pt = (uint8 *) (base->data + i*base->bytes_per_line);
+		uint8 *end = (uint8 *) (base->data + (i+1)*base->bytes_per_line);
+		while ( pt<end ) {
+		    SFDEnc85(&enc,*pt);
+		    ++pt;
+		}
+	    }
+	}
+    }
+    SFDEnc85EndEnc(&enc);
+    fprintf(sfd,"\nEndImage\n" );
+}
+
 static void SFDDumpHintList(FILE *sfd,char *key, StemInfo *h) {
     HintInstance *hi;
 
@@ -483,7 +498,7 @@ return;
 static int SFDOmit(SplineChar *sc) {
     if ( sc==NULL )
 return( true );
-    if ( sc->splines==NULL && sc->refs==NULL && 
+    if ( sc->splines==NULL && sc->refs==NULL && sc->anchor==NULL &&
 	    sc->backgroundsplines==NULL && sc->backimages==NULL ) {
 	if ( strcmp(sc->name,".null")==0 || strcmp(sc->name,"nonmarkingreturn")==0 )
 return(true);
@@ -502,6 +517,14 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
 
     fprintf(sfd, "StartChar: %s\n", sc->name );
     fprintf(sfd, "Encoding: %d %d\n", sc->enc, sc->unicodeenc);
+    if ( ScriptFromUnicode(sc->unicodeenc,sc->parent)!=sc->script ) {
+	if ( sc->script==0 )
+	    fprintf( sfd, "Script: \n" );
+	else
+	    fprintf( sfd, "Script: %c%c%c%c\n",
+		    sc->script>>24, (sc->script>>16)&0xff,
+		    (sc->script>>8)&0xff, sc->script&0xff );
+    }
     if ( sc->parent->compacted )
 	fprintf(sfd, "OldEncoding: %d\n", sc->old_enc);
     fprintf(sfd, "Width: %d\n", sc->width );
@@ -525,6 +548,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
 	SFDDumpSplineSet(sfd,sc->splines);
 	SFDDumpMinimumDistances(sfd,sc);
     }
+    SFDDumpAnchorPoints(sfd,sc);
     for ( ref=sc->refs; ref!=NULL; ref=ref->next ) if ( ref->sc!=NULL ) {
 	if ( ref->sc->enc==0 && ref->sc->splines==NULL )
 	    fprintf( stderr, "Using a reference to character 0, removed. In %s\n", sc->name);
@@ -548,8 +572,15 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
 		fprintf( sfd, " %d %d", kp->sc->enc, kp->off );
 	fprintf(sfd, "\n" );
     }
-    if ( sc->lig!=NULL )
-	fprintf( sfd, "Ligature: %s\n", sc->lig->components );
+    if ( sc->lig!=NULL ) {
+	if ( sc->lig->tag==0 )
+	    fprintf( sfd, "Ligature: %s\n", sc->lig->components );
+	else
+	    fprintf( sfd, "Ligature: '%c%c%c%c' %s\n",
+		    sc->lig->tag>>24, (sc->lig->tag>>16)&0xff,
+		    (sc->lig->tag>>8)&0xff, sc->lig->tag&0xff,
+		    sc->lig->components );
+    }
     if ( sc->comment!=NULL ) {
 	fprintf( sfd, "Comment: " );
 	SFDDumpUTF7Str(sfd,sc->comment);
@@ -730,16 +761,30 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 		sf->desired_row_cnt);
     if ( sf->onlybitmaps!=0 )
 	fprintf( sfd, "OnlyBitmaps: %d\n", sf->onlybitmaps );
-    if ( sf->gridsplines!=NULL ) {
-	fprintf(sfd, "Grid\n" );
-	SFDDumpSplineSet(sfd,sf->gridsplines);
-    }
     if ( sf->private!=NULL )
 	SFDDumpPrivate(sfd,sf->private);
 #if HANYANG
     if ( sf->rules!=NULL )
 	SFDDumpCompositionRules(sfd,sf->rules);
 #endif
+    if ( sf->gridsplines!=NULL ) {
+	fprintf(sfd, "Grid\n" );
+	SFDDumpSplineSet(sfd,sf->gridsplines);
+    }
+    if ( sf->anchor!=NULL ) {
+	AnchorClass *an;
+	fprintf(sfd, "AnchorClass: ");
+	for ( an=sf->anchor; an!=NULL; an=an->next ) {
+	    SFDDumpUTF7Str(sfd,an->name);
+	    if ( an->feature_tag==0 )
+		fprintf( sfd, "0 ");
+	    else
+		fprintf( sfd, "%c%c%c%c ",
+			an->feature_tag>>24, (an->feature_tag>>16)&0xff,
+			(an->feature_tag>>8)&0xff, an->feature_tag&0xff );
+	}
+	putc('\n',sfd);
+    }
 
     if ( sf->subfontcnt!=0 ) {
 	int max;
@@ -1352,6 +1397,41 @@ static DStemInfo *SFDReadDHints(FILE *sfd) {
 return( head );
 }
 
+static AnchorPoint *SFDReadAnchorPoints(FILE *sfd,SplineChar *sc,AnchorPoint *lastap) {
+    AnchorPoint *ap = chunkalloc(sizeof(AnchorPoint));
+    AnchorClass *an;
+    unichar_t *name;
+    char tok[200];
+
+    name = SFDReadUTF7Str(sfd);
+    for ( an=sc->parent->anchor; an!=NULL && u_strcmp(an->name,name)!=0; an=an->next );
+    free(name);
+    ap->anchor = an;
+    getreal(sfd,&ap->me.x);
+    getreal(sfd,&ap->me.y);
+    ap->type = -1;
+    if ( getname(sfd,tok)==1 ) {
+	if ( strcmp(tok,"mark")==0 )
+	    ap->type = at_mark;
+	else if ( strcmp(tok,"basechar")==0 )
+	    ap->type = at_basechar;
+	else if ( strcmp(tok,"baselig")==0 )
+	    ap->type = at_baselig;
+	else if ( strcmp(tok,"basemark")==0 )
+	    ap->type = at_basemark;
+    }
+    getint(sfd,&ap->lig_index);
+    if ( ap->anchor==NULL || ap->type==-1 ) {
+	chunkfree(ap,sizeof(AnchorPoint));
+return( lastap );
+    }
+    if ( lastap==NULL )
+	sc->anchor = ap;
+    else
+	lastap->next = ap;
+return( ap );
+}
+
 static RefChar *SFDGetRef(FILE *sfd) {
     RefChar *rf;
     int enc=0, ch;
@@ -1372,11 +1452,12 @@ static RefChar *SFDGetRef(FILE *sfd) {
 return( rf );
 }
 
-static SplineChar *SFDGetChar(FILE *sfd,int emsize) {
+static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf) {
     SplineChar *sc;
     char tok[200], ch;
     RefChar *lastr=NULL, *ref;
     ImageList *lasti=NULL, *img;
+    AnchorPoint *lastap = NULL;
 
     if ( getname(sfd,tok)!=1 )
 return( NULL );
@@ -1387,15 +1468,29 @@ return( NULL );
 
     sc = SplineCharCreate();
     sc->name = copy(tok);
-    sc->vwidth = emsize;
+    sc->vwidth = sf->ascent+sf->descent;
+    sc->parent = sf;
+    sc->script = 0xffffffff;
     while ( 1 ) {
-	if ( getname(sfd,tok)!=1 )
+	if ( getname(sfd,tok)!=1 ) {
+	    SplineCharFree(sc);
 return( NULL );
+	}
 	if ( strmatch(tok,"Encoding:")==0 ) {
 	    getint(sfd,&sc->enc);
 	    getint(sfd,&sc->unicodeenc);
 	} else if ( strmatch(tok,"OldEncoding:")==0 ) {
 	    getint(sfd,&sc->old_enc);
+	} else if ( strmatch(tok,"Script:")==0 ) {
+	    while ( (ch=getc(sfd))==' ' || ch=='\t' );
+	    if ( ch=='\n' || ch=='\r' )
+		sc->script = 0;
+	    else {
+		sc->script = ch<<24;
+		sc->script |= (getc(sfd)<<16);
+		sc->script |= (getc(sfd)<<8);
+		sc->script |= getc(sfd);
+	    }
 	} else if ( strmatch(tok,"Width:")==0 ) {
 	    getsint(sfd,&sc->width);
 	} else if ( strmatch(tok,"VWidth:")==0 ) {
@@ -1425,6 +1520,8 @@ return( NULL );
 	    sc->vconflicts = StemListAnyConflicts(sc->vstem);
 	} else if ( strmatch(tok,"DStem:")==0 ) {
 	    sc->dstem = SFDReadDHints(sfd);
+	} else if ( strmatch(tok,"AnchorPoint:")==0 ) {
+	    lastap = SFDReadAnchorPoints(sfd,sc,lastap);
 	} else if ( strmatch(tok,"Fore")==0 ) {
 	    sc->splines = SFDGetSplineSet(sfd);
 	} else if ( strmatch(tok,"MinimumDistance:")==0 ) {
@@ -1462,8 +1559,18 @@ return( NULL );
 		last = kp;
 	    }
 	} else if ( strmatch(tok,"Ligature:")==0 ) {
-	    geteol(sfd,tok);
 	    sc->lig = gcalloc(1,sizeof(Ligature));
+	    sc->lig->tag = CHR('l','i','g','a');
+	    while ( (ch=getc(sfd))==' ' || ch=='\t' );
+	    if ( ch=='\'' ) {
+		sc->lig->tag = getc(sfd)<<24;
+		sc->lig->tag |= getc(sfd)<<16;
+		sc->lig->tag |= getc(sfd)<<8;
+		sc->lig->tag |= getc(sfd);
+		getc(sfd);
+	    } else
+		ungetc(ch,sfd);
+	    geteol(sfd,tok);
 	    sc->lig->components = copy(tok);
 	    sc->lig->lig = sc;
 	} else if ( strmatch(tok,"Colour:")==0 ) {
@@ -1473,6 +1580,16 @@ return( NULL );
 	} else if ( strmatch(tok,"Comment:")==0 ) {
 	    sc->comment = SFDReadUTF7Str(sfd);
 	} else if ( strmatch(tok,"EndChar")==0 ) {
+	    if ( sc->enc<sf->charcnt )
+		sf->chars[sc->enc] = sc;
+#if 0		/* Auto recovery fails if we do this */
+	    else {
+		SplineCharFree(sc);
+		sc = NULL;
+	    }
+#endif
+	    if ( sc->script==0xffffffff )
+		sc->script = ScriptFromUnicode(sc->unicodeenc,sf);
 return( sc );
 	} else {
 	    geteol(sfd,tok);
@@ -1661,7 +1778,7 @@ static void SFRemoveDependencies(SplineFont *sf) {
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	for ( dlist = sf->chars[i]->dependents; dlist!=NULL; dlist = dnext ) {
 	    dnext = dlist->next;
-	    free(dlist);
+	    chunkfree(dlist,sizeof(*dlist));
 	}
 	sf->chars[i]->dependents = NULL;
 	for ( kp=sf->chars[i]->kerns; kp!=NULL; kp=kp->next )
@@ -1879,9 +1996,27 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    sf->cidversion = temp;
 	} else if ( strmatch(tok,"Grid")==0 ) {
 	    sf->gridsplines = SFDGetSplineSet(sfd);
-#if 0
-	    SFFigureGrid(sf);
-#endif
+	} else if ( strmatch(tok,"AnchorClass:")==0 ) {
+	    unichar_t *name;
+	    AnchorClass *lastan = NULL, *an;
+	    while ( (name=SFDReadUTF7Str(sfd))!=NULL ) {
+		an = chunkalloc(sizeof(AnchorClass));
+		an->name = name;
+		getname(sfd,tok);
+		if ( tok[0]=='0' && tok[1]=='\0' )
+		    an->feature_tag = 0;
+		else {
+		    if ( tok[1]=='\0' ) { tok[1]=' '; tok[2] = 0; }
+		    if ( tok[2]=='\0' ) { tok[2]=' '; tok[3] = 0; }
+		    if ( tok[3]=='\0' ) { tok[3]=' '; tok[4] = 0; }
+		    an->feature_tag = (tok[0]<<24) | (tok[1]<<16) | (tok[2]<<8) | tok[3];
+		}
+		if ( lastan==NULL )
+		    sf->anchor = an;
+		else
+		    lastan->next = an;
+		lastan = an;
+	    }
 	} else if ( strmatch(tok,"BeginPrivate:")==0 ) {
 	    SFDGetPrivate(sfd,sf);
 	} else if ( strmatch(tok,"BeginSubrs:")==0 ) {	/* leave in so we don't croak on old sfd files */
@@ -1918,11 +2053,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	for ( i=0; i<sf->subfontcnt; ++i )
 	    sf->subfonts[i] = SFD_GetFont(sfd,sf,tok);
     } else {
-	while ( (sc = SFDGetChar(sfd,sf->ascent+sf->descent))!=NULL ) {
-	    if ( sc->enc<sf->charcnt ) {
-		sf->chars[sc->enc] = sc;
-		sc->parent = sf;
-	    }
+	while ( (sc = SFDGetChar(sfd,sf))!=NULL ) {
 	    GProgressNext();
 	}
 	if ( cidmaster==NULL ) {
@@ -1981,25 +2112,27 @@ SplineChar *SFDReadOneChar(char *filename,const char *name) {
     char *oldloc;
     char tok[2000];
     uint32 pos;
-    int ascent=800, descent=200;
+    SplineFont sf;;
 
     if ( sfd==NULL )
 return( NULL );
     oldloc = setlocale(LC_NUMERIC,"C");
 
+    memset(&sf,0,sizeof(sf));
+    sf.ascent = 800; sf.descent = 200;
     if ( SFDStartsCorrectly(sfd,tok) ) {
 	pos = ftell(sfd);
 	while ( getname(sfd,tok)!=-1 ) {
 	    if ( strcmp(tok,"StartChar:")==0 ) {
 		if ( getname(sfd,tok)==1 && strcmp(tok,name)==0 ) {
 		    fseek(sfd,pos,SEEK_SET);
-		    sc = SFDGetChar(sfd,ascent+descent);
+		    sc = SFDGetChar(sfd,&sf);
 	break;
 		}
 	    } else if ( strmatch(tok,"Ascent:")==0 ) {
-		getint(sfd,&ascent);
+		getint(sfd,&sf.ascent);
 	    } else if ( strmatch(tok,"Descent:")==0 ) {
-		getint(sfd,&descent);
+		getint(sfd,&sf.descent);
 	    }
 	    pos = ftell(sfd);
 	}
@@ -2016,6 +2149,7 @@ static int ModSF(FILE *asfd,SplineFont *sf) {
     int i,k;
     SplineChar *sc;
     SplineFont *ssf;
+    SplineFont temp;
 
     if ( getname(asfd,tok)!=1 || strcmp(tok,"Encoding:")!=0 )
 return(false);
@@ -2026,13 +2160,16 @@ return(false);
 return(false);
     SFRemoveDependencies(sf);
 
+    memset(&temp,0,sizeof(temp));
+    temp.ascent = sf->ascent; temp.descent = sf->descent;
+
     getint(asfd,&cnt);
     if ( cnt>sf->charcnt ) {
 	sf->chars = grealloc(sf->chars,cnt*sizeof(SplineChar *));
 	for ( i=sf->charcnt; i<cnt; ++i )
 	    sf->chars[i] = NULL;
     }
-    while ( (sc = SFDGetChar(asfd,sf->ascent+sf->descent))!=NULL ) {
+    while ( (sc = SFDGetChar(asfd,&temp))!=NULL ) {
 	ssf = sf;
 	for ( k=0; k<sf->subfontcnt; ++k ) {
 	    if ( sc->enc<sf->subfonts[k]->charcnt ) {

@@ -129,9 +129,9 @@ struct ttfinfo {
     unsigned int comcomplain: 1;	/* We've complained about composit formats in EBDT */
     unsigned int onlystrikes: 1;	/* Only read in the bitmaps, not the outlines */
     unsigned int onlyonestrike: 1;	/* Only read in one bitmap (strike) */
+    int anchor_class_cnt;		/* For GPOS */
+    AnchorClass *ahead, *alast;
 };
-
-#define CHR(ch1,ch2,ch3,ch4) (((ch1)<<24)|((ch2)<<16)|((ch3)<<8)|(ch4))
 
 struct tabdir {
     int32 version;	/* 0x00010000 */
@@ -443,3 +443,6 @@ struct alltabs {
 struct subhead { uint16 first, cnt, delta, rangeoff; };	/* a sub header in 8/16 cmap table */
 
 enum touchflags { tf_x=1, tf_y=2, tf_d=4, tf_endcontour=0x80, tf_startcontour=0x40 };
+
+extern void otf_dumpgposkerns(struct alltabs *at, SplineFont *sf);
+extern void otf_dumpgsub(struct alltabs *at, SplineFont *sf);

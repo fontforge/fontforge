@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 14-Jul-2002 -->
+  <!-- AP: Last modified: 29-Dec-2002 -->
   <TITLE>Get Info</TITLE>
 </HEAD>
 <BODY>
@@ -15,7 +15,7 @@ dialogs depending on what is selected. If one thing is selected, and that
 thing is a point then the point info dialog is brought up, if one thing is
 selected and that thing is a reference then the reference dialog is brought
 up, if one thing is selected and it is a background image then the image
-dialog is brought up. Otherwise the <A HREF="#Character">Character info</A>
+dialog is brought up. If one anchor point is selected then the anchor point
 dialog is brought up.
 <H2>
   Point Info
@@ -35,47 +35,19 @@ point itself will be drawn in red, the previous control point will be drawn
 in magenta and the next control point will be drawn in dull cyan.
 <BR Clear=All>
 <H2>
-  <IMG SRC="charinfo.png" WIDTH="282" HEIGHT="544" ALIGN="Right">
-  <A NAME="Character">Character</A> Info
+  <IMG SRC="agetinfo.png" WIDTH="226" HEIGHT="329" ALIGN="Right"><A NAME="Anchors">Anchor Points</A>
+  Info
 </H2>
 <P>
-This dialog allows you to set the name and unicode encoding of a given character.
-If you know the name of the character then PfaEdit can tell you the encoding
-(if you press Set From Name), similarly if you know the encoding then PfaEdit
-can tell you the name.
+This dialog shows the selected <A HREF="overview.html#Anchors">anchor point</A> with the anchor class,
+location, type and (for ligatures) the ligature index. You may change any of these
+attributes (as long as your changes are reasonable). You may create new points
+or delete the current one. As with normal points above you may step through all
+the anchor points in your character.
 <P>
-The name field contains a pull down list with (possibly) several synonyms for the
-name of this unicode code point.
-<P>
-You can assign an arbetrary (unicode) comment to the character. Simply type
-any text into this field. The comment is for your use, it will not go into
-any generated fonts. You may also assign a color to a character to make it
-stand out in the font view.
-<P>
-The ligature field allows you to tell PfaEdit that the current character
-is a ligature composed of several other characters. PfaEdit will often be
-able to fill this in with the right default value, but occasionally you may
-want to change it. The value should be a list of postscript character names
-separated by spaces. If a character may be viewed as two different ligatures
-then they may both be specified separated by a semicolon. For example "ffi"
-may be viewed as a ligature of "f" "f" and "i" or of "ff" and "i", the
-specification should be "f f i; ff i"
-<P>
-Some characters (ligatures, accented characters, Hangul syllables, etc.)
-are built up out of other characters. Displayed underneath the ligature field
-are the components of the current character, if those componants are in the
-font then you can use PfaEdit's Element-&gt;Build Accented or
-Element-&gt;Build Composit commands to create the current character. The
-information displayed here is informative only, you may not change this field
-directly.
-<P>
-In the font view the Next and Prev buttons are not greyed out and you can
-change move on to the next character (if, for example, you need to enter
-encodings for a range of characters).
-<P>
-The Done (or Cancel) button only Cancels work in the current character. If
-you have already used Next or Prev then those earlier changes will not be
-cancelled.<BR Clear=Right>
+Anchor points may also be created with the <A HREF="pointmenu.html#AddAnchor">Point->Add Anchor</A>
+command.
+<BR Clear=All>
 <H2>
   <IMG SRC="rgetinfo.png" WIDTH="297" HEIGHT="284" ALIGN="Right">Reference
   Info
@@ -93,7 +65,7 @@ TM[2,1]*y<SUB>ref</SUB> + TM[3,1]<BR>
 TM[2,2]*y<SUB>ref</SUB> + TM[3,2]</CODE>
 <P>
 The [Show] button will open a character outline view showing the character
-being referred to.
+being referred to.<BR CLEAR=ALL>
 <H2>
   Image Info
 </H2>
@@ -101,6 +73,11 @@ being referred to.
 This dialog gives the offset to the lower left corner of the image and the
 scale factors applied to the image. Currently you may not alter anything
 here, it is purely informational.
+<P> See Also:
+<UL>
+<LI><A HREF="fontinfo.html">The font info dialog</A>
+<LI><A HREF="charinfo.html">The character info dialog</A>
+</UL>
 <P ALIGN=Center>
 -- <A HREF="elementmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A>
 -- <A HREF="elementmenu.html">Next</A> --

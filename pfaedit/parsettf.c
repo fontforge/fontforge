@@ -3344,6 +3344,22 @@ static void readttfkerns(FILE *ttf,struct ttfinfo *info) {
     }
 }
 
+enum feature_type { fe_none, fe_kern, fe_mark, fe_liga, fe_max } type;
+#define UNUSED_SCRIPT		0
+#define MULTIPLE_SCRIPTS	0xffffffff
+struct feature {
+    uint32 offset;
+    uint32 tag, script;
+    enum feature_type type;
+    int lcnt;
+    uint16 *lookups;
+};
+struct lookup {
+    enum feature_type type;
+    uint32 tag, script;
+    uint16 lookup;
+};
+
 static uint16 *getCoverageTable(FILE *ttf, int coverage_offset) {
     int format, cnt, i,j;
     uint16 *glyphs=NULL;
@@ -3445,7 +3461,7 @@ static void addKernPair(struct ttfinfo *info, int glyph1, int glyph2, int16 offs
     }
 }
 
-static void gposKernSubTable(FILE *ttf, int which, int stoffset, struct ttfinfo *info) {
+static void gposKernSubTable(FILE *ttf, int stoffset, struct ttfinfo *info) {
     int coverage, cnt, i, j, pair_cnt, vf1, vf2, glyph2;
     int cd1, cd2, c1_cnt, c2_cnt, k, l;
     int16 offset;
@@ -3510,7 +3526,180 @@ return;
     }
 }
 
-static void gsubLigatureSubTable(FILE *ttf, int which, int stoffset,struct ttfinfo *info) {
+static AnchorClass **MarkGlyphsProcessMarks(FILE *ttf,int markoffset,
+	struct ttfinfo *info,struct lookup *lookup,uint16 *markglyphs,int classcnt) {
+    AnchorClass **classes = gcalloc(classcnt,sizeof(AnchorClass *)), *ac;
+    unichar_t ubuf[50];
+    int i, cnt;
+    struct mr { uint16 class, offset; } *at_offsets;
+    AnchorPoint *ap;
+    SplineChar *sc;
+
+    for ( i=0; i<classcnt; ++i ) {
+	u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),GStringGetResource(_STR_Untitled_n,NULL),
+		info->anchor_class_cnt+i );
+	classes[i] = ac = chunkalloc(sizeof(AnchorClass));
+	ac->name = u_copy(ubuf);
+	ac->feature_tag = lookup->tag;
+	if ( info->ahead==NULL )
+	    info->ahead = ac;
+	else
+	    info->alast->next = ac;
+	info->alast = ac;
+    }
+
+    fseek(ttf,markoffset,SEEK_SET);
+    cnt = getushort(ttf);
+    at_offsets = galloc(cnt*sizeof(struct mr));
+    for ( i=0; i<cnt; ++i ) {
+	at_offsets[i].class = getushort(ttf);
+	at_offsets[i].offset = getushort(ttf);
+	if ( at_offsets[i].class>=classcnt ) {
+	    at_offsets[i].class = 0;
+	    fprintf( stderr, "Class out of bounds in GPOS mark sub-table\n" );
+	}
+    }
+    for ( i=0; i<cnt; ++i ) {
+	sc = info->chars[markglyphs[i]];
+	if ( markglyphs[i]>=info->glyph_cnt || sc==NULL || at_offsets[i].offset==0 )
+    continue;
+	ap = chunkalloc(sizeof(AnchorPoint));
+	ap->anchor = classes[at_offsets[i].class];
+	fseek(ttf,markoffset+at_offsets[i].offset,SEEK_SET);
+	/* All anchor types have the same initial 3 entries, and I only care */
+	/*  about two of them, so I can ignore all the complexities of the */
+	/*  format type */
+	/* format = */ getushort(ttf);
+	ap->me.x = (int16) getushort(ttf);
+	ap->me.y = (int16) getushort(ttf);
+	ap->type = at_mark;
+	ap->next = sc->anchor;
+	sc->anchor = ap;
+    }
+    free(at_offsets);
+return( classes );
+}
+
+static void MarkGlyphsProcessBases(FILE *ttf,int baseoffset,
+	struct ttfinfo *info,struct lookup *lookup,uint16 *baseglyphs,int classcnt,
+	AnchorClass **classes,enum anchor_type at) {
+    int basecnt,i, j, ibase;
+    uint16 *offsets;
+    SplineChar *sc;
+    AnchorPoint *ap;
+
+    fseek(ttf,baseoffset,SEEK_SET);
+    basecnt = getushort(ttf);
+    offsets = galloc(basecnt*classcnt*sizeof(uint16));
+    for ( i=0; i<basecnt*classcnt; ++i )
+	offsets[i] = getushort(ttf);
+    for ( i=ibase=0; i<basecnt; ++i, ibase+= classcnt ) {
+	sc = info->chars[baseglyphs[i]];
+	if ( baseglyphs[i]>=info->glyph_cnt || sc==NULL )
+    continue;
+	if ( sc->script==0 && lookup->script!=0 && lookup->script!=MULTIPLE_SCRIPTS )
+	    sc->script = lookup->script;
+	for ( j=0; j<classcnt; ++j ) if ( offsets[ibase+j]!=0 ) {
+	    fseek(ttf,baseoffset+offsets[ibase+j],SEEK_SET);
+	    ap = chunkalloc(sizeof(AnchorPoint));
+	    ap->anchor = classes[j];
+	    /* All anchor types have the same initial 3 entries, and I only care */
+	    /*  about two of them, so I can ignore all the complexities of the */
+	    /*  format type */
+	    /* format = */ getushort(ttf);
+	    ap->me.x = (int16) getushort(ttf);
+	    ap->me.y = (int16) getushort(ttf);
+	    ap->type = at;
+	    ap->next = sc->anchor;
+	    sc->anchor = ap;
+	}
+    }
+}
+
+static void MarkGlyphsProcessLigs(FILE *ttf,int baseoffset,
+	struct ttfinfo *info,struct lookup *lookup,uint16 *baseglyphs,int classcnt,
+	AnchorClass **classes) {
+    int basecnt,compcnt, i, j, k, kbase;
+    uint16 *loffsets, *aoffsets;
+    SplineChar *sc;
+    AnchorPoint *ap;
+
+    fseek(ttf,baseoffset,SEEK_SET);
+    basecnt = getushort(ttf);
+    loffsets = galloc(basecnt*sizeof(uint16));
+    for ( i=0; i<basecnt; ++i )
+	loffsets[i] = getushort(ttf);
+    for ( i=0; i<basecnt; ++i ) {
+	sc = info->chars[baseglyphs[i]];
+	if ( baseglyphs[i]>=info->glyph_cnt || sc==NULL )
+    continue;
+	if ( sc->script==0 && lookup->script!=0 && lookup->script!=MULTIPLE_SCRIPTS )
+	    sc->script = lookup->script;
+	fseek(ttf,baseoffset+loffsets[i],SEEK_SET);
+	compcnt = getushort(ttf);
+	aoffsets = galloc(compcnt*classcnt*sizeof(uint16));
+	for ( k=0; k<compcnt*classcnt; ++k )
+	    aoffsets[k] = getushort(ttf);
+	for ( k=kbase=0; k<compcnt; ++k, kbase+=classcnt ) {
+	    for ( j=0; j<classcnt; ++j ) if ( aoffsets[kbase+j]!=0 ) {
+		fseek(ttf,baseoffset+loffsets[i]+aoffsets[kbase+j],SEEK_SET);
+		ap = chunkalloc(sizeof(AnchorPoint));
+		ap->anchor = classes[j];
+		/* All anchor types have the same initial 3 entries, and I only care */
+		/*  about two of them, so I can ignore all the complexities of the */
+		/*  format type */
+		/* format = */ getushort(ttf);
+		ap->me.x = (int16) getushort(ttf);
+		ap->me.y = (int16) getushort(ttf);
+		ap->type = at_baselig;
+		ap->lig_index = k;
+		ap->next = sc->anchor;
+		sc->anchor = ap;
+	    }
+	}
+    }
+}
+
+static void gposMarkSubTable(FILE *ttf, uint32 stoffset,
+	struct ttfinfo *info, struct lookup *lookup,int lu_type) {
+    int markcoverage, basecoverage, classcnt, markoffset, baseoffset;
+    uint16 *markglyphs, *baseglyphs;
+    AnchorClass **classes;
+
+	/* The header for the three different mark tables is the same */
+    /* Type = */ getushort(ttf);
+    markcoverage = getushort(ttf);
+    basecoverage = getushort(ttf);
+    classcnt = getushort(ttf);
+    markoffset = getushort(ttf);
+    baseoffset = getushort(ttf);
+    markglyphs = getCoverageTable(ttf,stoffset+markcoverage);
+    baseglyphs = getCoverageTable(ttf,stoffset+basecoverage);
+    if ( baseglyphs==NULL || markglyphs==NULL ) {
+	free(baseglyphs); free(markglyphs);
+return;
+    }
+	/* as is the (first) mark table */
+    classes = MarkGlyphsProcessMarks(ttf,stoffset+markoffset,
+	    info,lookup,markglyphs,classcnt);
+    switch ( lu_type ) {
+      case 4:			/* Mark to Base */
+      case 6:			/* Mark to Mark */
+	  MarkGlyphsProcessBases(ttf,stoffset+baseoffset,
+	    info,lookup,baseglyphs,classcnt,classes,lu_type==4?at_basechar:at_basemark);
+      break;
+      case 5:			/* Mark to Ligature */
+	  MarkGlyphsProcessLigs(ttf,stoffset+baseoffset,
+	    info,lookup,baseglyphs,classcnt,classes);
+      break;
+    }
+    info->anchor_class_cnt += classcnt;
+    free(markglyphs); free(baseglyphs);
+    free(classes);
+}
+
+static void gsubLigatureSubTable(FILE *ttf, int stoffset,
+	struct ttfinfo *info, struct lookup *lookup) {
     int coverage, cnt, i, j, k, lig_cnt, cc, len;
     uint16 *ls_offsets, *lig_offsets;
     uint16 *glyphs, *lig_glyphs, lig;
@@ -3541,16 +3730,27 @@ return;
 		lig_glyphs[k] = getushort(ttf);
 	    for ( k=len=0; k<cc; ++k )
 		len += strlen(info->chars[lig_glyphs[k]]->name)+1;
+	    if ( info->chars[lig]->lig!=NULL && info->chars[lig]->lig->tag!=lookup->tag ) {
+		if ( lookup->tag==CHR('r','l','i','g'))
+		    info->chars[lig]->lig->components[0]= '\0';		/* start over */
+		else
+	continue;
+	    }
 	    if ( info->chars[lig]->lig!=NULL ) {
 		len += strlen( info->chars[lig]->lig->components)+8;
 		info->chars[lig]->lig->components = pt = grealloc(info->chars[lig]->lig->components,len);
 		pt += strlen(pt);
-		*pt++ = ';';
+		if ( pt != info->chars[lig]->lig->components )
+		    *pt++ = ';';
 	    } else {
 		info->chars[lig]->lig = galloc(sizeof(Ligature));
 		info->chars[lig]->lig->lig = info->chars[lig];
 		info->chars[lig]->lig->components = pt = galloc(len);
 	    }
+	    info->chars[lig]->lig->tag = lookup->tag;
+	    if ( lookup->script!=UNUSED_SCRIPT && lookup->script!=MULTIPLE_SCRIPTS &&
+		    info->chars[lig]->script==0 )
+		info->chars[lig]->script = lookup->script;
 	    for ( k=0; k<cc; ++k ) {
 		strcpy(pt,info->chars[lig_glyphs[k]]->name);
 		pt += strlen(pt);
@@ -3563,92 +3763,207 @@ return;
     free(ls_offsets); free(glyphs);
 }
 
-static int *readttffeatures(FILE *ttf,int32 pos,int tag) {
-    /* read the features table returning an array containing all features */
-    /*  lookup indeces which match the feature tag */
-    int cnt, next, lcnt;
-    int i,j,k,max;
-    int32 here = ftell(ttf);
-    int *lookups, *ft_offsets;
+static struct feature *readttffeatures(FILE *ttf,int32 pos,int isgpos) {
+    /* read the features table returning an array containing all interesting */
+    /*  features */
+    int cnt;
+    uint32 tag;
+    int i,j;
+    struct feature *features;
 
     fseek(ttf,pos,SEEK_SET);
     cnt = getushort(ttf);
-    if ( cnt<=0 ) {
-	fseek(ttf,here,SEEK_SET);
+    if ( cnt<=0 )
 return( NULL );
-    }
-    ft_offsets = galloc(cnt*sizeof(int));
+    features = gcalloc(cnt+1,sizeof(struct feature));
     for ( i=j=0; i<cnt; ++i ) {
-	int ftag = getlong(ttf);
-	int offset = getushort(ttf);
-	if ( ftag==tag )
-	    ft_offsets[j++] = offset;
+	features[i].tag = tag = getlong(ttf);
+	features[i].offset = getushort(ttf);
+	switch ( tag ) {
+	  case CHR('l','i','g','a'): case CHR('h','l','i','g'):
+	  case CHR('d','l','i','g'): case CHR('r','l','i','g'):
+	  case CHR('f','r','a','c'):
+	    if ( !isgpos ) {
+		features[i].type = fe_liga;
+		++j;
+	    }
+	  break;
+	  case CHR('k','e','r','n'):
+	    if ( isgpos ) {
+		features[i].type = fe_kern;
+		++j;
+	    }
+	  break;
+	  case CHR('m','a','r','k'): case CHR('m','k','m','k'): case CHR('a','b','v','m'): case CHR('b','l','w','m'):
+	    if ( isgpos ) {
+		features[i].type = fe_mark;
+		++j;
+	    }
+	  break;
+	}
     }
-    cnt = j;
-    if ( cnt==0 ) {
-	fseek(ttf,here,SEEK_SET);
-	free(ft_offsets);
+    if ( j==0 ) {
+	free(features);
 return( NULL );
     }
 
-    max = cnt;
-    lookups = galloc((cnt+1)*sizeof(int));
-    next = 0;
-    for ( i=0; i<cnt; ++i ) {
-	fseek(ttf,pos+ft_offsets[i],SEEK_SET);
+    for ( i=0; i<cnt; ++i ) if ( features[i].type!=fe_none ) {
+	fseek(ttf,pos+features[i].offset,SEEK_SET);
 	/* feature parameters = */ getushort(ttf);
-	lcnt = getushort(ttf);
-	if ( next+lcnt>cnt ) {
-	    max = next+lcnt+(cnt-i)*2;
-	    lookups = grealloc(lookups,(max+1)*sizeof(int));
-	}
-	for ( j=0; j<lcnt; ++j )
-	    lookups[next++] = getushort(ttf);
+	features[i].lcnt = getushort(ttf);
+	features[i].lookups = galloc(features[i].lcnt*sizeof(uint16));
+	for ( j=0; j<features[i].lcnt; ++j )
+	    features[i].lookups[j] = getushort(ttf);
     }
 
-    free( ft_offsets );
-    fseek(ttf,here,SEEK_SET);
-    if ( next==0 ) {
+return( features );
+}
+
+static struct lookup *compactttflookups(struct feature *features) {
+    /* go through the feature table we read, and return an array containing */
+    /*  all lookup indeces which match the feature tag */
+    int cnt;
+    int i,j,k,l,m;
+    enum feature_type ft;
+    struct lookup *lookups;
+
+    cnt = 0;
+    for ( i=0; features[i].tag!=0; ++i )
+	cnt += features[i].lcnt;
+
+    lookups = gcalloc(cnt+1,sizeof(struct lookup));
+    j=0;
+    for ( ft=fe_none+1; ft<fe_max; ++ft ) {
+	int base = j;
+	for ( i=0; features[i].tag!=0; ++i ) if ( features[i].type==ft ) {
+	    for ( k=0; k<features[i].lcnt; ++k ) {
+		lookups[j].type = ft;
+		lookups[j].tag = features[i].tag;
+		lookups[j].script = features[i].script;
+		lookups[j++].lookup = features[i].lookups[k];
+	    }
+	    free( features[i].lookups );
+	}
+	/* Some lookups may appear in several features, so remove duplicates */
+	for ( k=base; k<j; ++k ) {
+	    for ( l=k+1; l<j; ++l ) {
+		if ( lookups[k].lookup == lookups[l].lookup ) {
+		    --j;
+		    for ( m=l; m<j; ++m )
+			lookups[m] = lookups[m+1];
+		}
+	    }
+	}
+    }
+
+    free( features );
+    if ( j==0 ) {
 	free(lookups);
 return( NULL );
     }
 
-    /* The same lookup may appear in several features, so remove duplicates */
-    for ( i=0; i<next; ++i ) {
-	for ( j=i+1; j<next; ++j ) {
-	    while ( j<next && lookups[i]==lookups[j] ) {
-		--next;
-		for ( k=j; k<next; ++k )
-		    lookups[k] = lookups[k+1];
-	    }
-	}
-    }
-    lookups[next] = -1;
+    lookups[j].type = fe_none;
+    lookups[j].lookup = -1;
 return( lookups );
+}
+
+static void ProcessLangSys(FILE *ttf,uint32 langsysoff,
+	struct feature *features, uint32 script) {
+    int cnt, feature, i;
+
+    fseek(ttf,langsysoff,SEEK_SET);
+    /* lookuporder = */ getushort(ttf);	/* not meaningful yet */
+    feature = getushort(ttf); /* required feature */
+    if ( feature==0xffff )
+	/* No required feature */;
+    else if ( features[feature].script==UNUSED_SCRIPT || features[feature].script==script )
+	features[feature].script = script;
+    else
+	features[feature].script = MULTIPLE_SCRIPTS;
+    cnt = getushort(ttf);
+    for ( i=0; i<cnt; ++i ) {
+	feature = getushort(ttf);
+	if ( features[feature].script==UNUSED_SCRIPT || features[feature].script==script )
+	    features[feature].script = script;
+	else
+	    features[feature].script = MULTIPLE_SCRIPTS;
+    }
+}
+
+static void tagTtfFeaturesWithScript(FILE *ttf,uint32 script_pos,struct feature *features) {
+    int cnt, i, j;
+    struct scriptrec {
+	uint32 script;
+	uint32 offset;
+    } *scripts;
+    struct stab {
+	uint16 deflangsys;
+	int langcnt, maxcnt;
+	uint16 *langsys;
+    } stab;
+
+    fseek(ttf,script_pos,SEEK_SET);
+    cnt = getushort(ttf);
+    scripts = galloc(cnt*sizeof(struct scriptrec));
+    for ( i=0; i<cnt; ++i ) {
+	scripts[i].script = getlong(ttf);
+	scripts[i].offset = script_pos+getushort(ttf);
+    }
+
+    memset(&stab,0,sizeof(stab));
+    stab.maxcnt = 30;
+    stab.langsys = galloc(30*sizeof(uint16));
+    for ( i=0; i<cnt; ++i ) {
+	fseek(ttf,scripts[i].offset,SEEK_SET);
+	stab.deflangsys = getushort(ttf);
+	stab.langcnt = getushort(ttf);
+	if ( stab.langcnt>=stab.maxcnt ) {
+	    stab.maxcnt = stab.langcnt+30;
+	    stab.langsys = grealloc(stab.langsys,stab.maxcnt);
+	}
+	for ( j=0; j<stab.langcnt; ++j ) {
+	    /* lang = */ getlong(ttf);
+	    stab.langsys[j] = getushort(ttf);
+	}
+	if ( stab.deflangsys!=0 )
+	    ProcessLangSys(ttf,scripts[i].offset+stab.deflangsys,features,scripts[i].script);
+	for ( j=0; j<stab.langcnt; ++j )
+	    ProcessLangSys(ttf,scripts[i].offset+stab.langsys[j],features,scripts[i].script);
+    }
+    free(stab.langsys);
+    free(scripts);
 }
 
 static void readttfgpossub(FILE *ttf,struct ttfinfo *info,int gpos) {
     int i, j, k, lu_cnt, lu_type, flags, cnt, st;
     uint16 *lu_offsets, *st_offsets;
     int32 base, lookup_start;
-    int *lookups;
+    int32 script_off, feature_off;
+    struct feature *features;
+    struct lookup *lookups;
 
     base = gpos?info->gpos_start:info->gsub_start;
     fseek(ttf,base,SEEK_SET);
     /* version = */ getlong(ttf);
-    /* Script list offset = */ getushort(ttf);
-    lookups = readttffeatures(ttf,base+getushort(ttf),gpos?CHR('k','e','r','n'):CHR('l','i','g','a'));
-    if ( lookups==NULL )		/* None of the data we care about */
-return;
+    script_off = getushort(ttf);
+    feature_off = getushort(ttf);
     lookup_start = base+getushort(ttf);
+    features = readttffeatures(ttf,base+feature_off,gpos);
+    if ( features==NULL )		/* None of the data we care about */
+return;
+    tagTtfFeaturesWithScript(ttf,base+script_off,features);
+    lookups = compactttflookups( features );
+    if ( lookups==NULL )
+return;
+    
     fseek(ttf,lookup_start,SEEK_SET);
 
     lu_cnt = getushort(ttf);
     lu_offsets = galloc(lu_cnt*sizeof(uint16));
     for ( i=0; i<lu_cnt; ++i )
 	lu_offsets[i] = getushort(ttf);
-    for ( k=0; lookups[k]!=-1; ++k ) {
-	i = lookups[k];
+    for ( k=0; lookups[k].lookup!=(uint16) -1; ++k ) {
+	i = lookups[k].lookup;
 	if ( i>=lu_cnt )
     continue;
 	fseek(ttf,lookup_start+lu_offsets[i],SEEK_SET);
@@ -3660,14 +3975,18 @@ return;
 	    st_offsets[j] = getushort(ttf);
 	for ( j=0; j<cnt; ++j ) {
 	    fseek(ttf,st = lookup_start+lu_offsets[i]+st_offsets[j],SEEK_SET);
-	    switch ( lu_type ) {
-	      case 2:
-		if ( gpos )
-		    gposKernSubTable(ttf,j,st,info);
+	    switch ( lookups[k].type ) {
+	      case fe_kern:
+		if ( gpos && lu_type==2 )
+		    gposKernSubTable(ttf,st,info);
 	      break;
-	      case 4:
-		if ( !gpos )
-		    gsubLigatureSubTable(ttf,j,st,info);
+	      case fe_mark:
+		  if ( gpos && lu_type>=4 && lu_type<=6 )
+		    gposMarkSubTable(ttf,st,info,&lookups[k],lu_type);
+	      break;
+	      case fe_liga:
+		  if ( !gpos && lu_type==4 )
+		    gsubLigatureSubTable(ttf,st,info,&lookups[k]);
 	      break;
 	    }
 	}
@@ -4081,6 +4400,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->uniqueid = info->uniqueid;
     sf->pfminfo = info->pfminfo;
     sf->names = info->names;
+    sf->anchor = info->ahead;
     if ( info->encoding_name == em_symbol || info->encoding_name == em_mac )
 	/* Don't trust those encodings */
 	CheckEncoding(info);
@@ -4097,6 +4417,11 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 	bdf->encoding_name = info->encoding_name;
 	bdf->sf = sf;
     }
+
+    for ( i=0; i<info->glyph_cnt; ++i )
+	if ( info->chars[i]->script==0 )	/* GSUB/GSUB table can fill in some script values */
+	    info->chars[i]->script =
+		    ScriptFromUnicode(info->chars[i]->unicodeenc,sf);
 
     if ( info->subfontcnt == 0 ) {
 	UseGivenEncoding(sf,info);

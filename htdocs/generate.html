@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 14-Dec-2002 -->
+  <!-- AP: Last modified: 29-Dec-2002 -->
   <TITLE>Generate Font Dialog</TITLE>
 </HEAD>
 <BODY>
@@ -144,7 +144,12 @@ There are also the following check boxes. Not all are visible at all times.
 	0 or 1 of them, MS/Adobe say any value other than 1)
       <LI>
 	Apple and MS/Adobe also differ on the way references (components) are scaled.
-	Luckily there is another way to disambiguate this case.
+	Luckily there is another way to disambiguate this case (and references
+	are rarely scaled anyway).
+      <LI>
+	The GPOS, GSUB and kern tables.
+	Apple does not support GPOS/GSUB tables. MicroSoft still supports kern
+	tables for some fonts but requires GPOS for others.
     </UL>
 </UL>
 <P>
@@ -185,7 +190,17 @@ The bitmap sizes must all be present in the font database. AntiAliased fonts
 can be indicated by following the pixelsize by "@&lt;depth&gt;" (ie. "@8").
 <P>
 If you are generating a bdf font then you will be prompted for a resolution
-later. 
+later.
+<P>
+If you generate a TrueType or OpenType font without the Apple mode set then
+PfaEdit will generate <A HREF="gposgsub.html">GPOS and GSUB tables</A>. These
+contain kerning, ligature information, arabic forms data, anchor points, etc.
+<P>
+Apple does not support these two tables. If you set Apple mode then kerning
+information will be stored in a kern table instead, but the other information
+mentioned above will not be present (Apple probably has a mechanism for
+specifying these data, but Apple's tables are much harder to parse and I
+haven't implemented them yet).
   <HR>
 <H2>
   Generate Mac Family

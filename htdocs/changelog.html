@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 23-Dec-2002 -->
+  <!-- AP: Last modified: 29-Dec-2002 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,24 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    ??-Dec-2002
+    <UL>
+      <LI>PfaEdit now supports <A HREF="overview.html#Anchors>anchor points</A>
+      for mark to base (ligature and mark) positioning.
+      <LI>PfaEdit was mistakenly treating NumLock on PC keyboards as if it were
+      the command key on Mac keyboards.
+      <LI>The font info dlg now remembers what tab was last pressed.
+      <LI>The char info dlg has been restructured. It includes a script field,
+      and associates a tag with the ligature (if any).
+      <LI>I have decided to generate a 'GPOS' table rather than a 'kern' table
+      in truetype output as well as in opentype output (unless applemode is set).
+      <LI>I have changed the default names of items in adobe's private use
+      area to match their new conventions. ie. names used to look like "Asmall"
+      and now look like "a.sc".
+      <LI>I have rewritten the way <A HREF="gposgsub.html">GPOS and GSUB</A>
+      tables are output. I hope this will not have much effect on users, but
+      it does mean that a few more sub-tables are now supported.
   <LI>
     23-Dec-2002
     <UL>

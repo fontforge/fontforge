@@ -828,13 +828,13 @@ return( !d.cancelled );
 
 void CVTile(CharView *cv) {
     SplineSet *tile = ClipBoardToSplineSet();
-    int anypoints, anyrefs, anyimages;
+    int anypoints, anyrefs, anyimages, anyattach;
 
     if ( tile==NULL )
 return;
 
-    CVAnySel(cv,&anypoints,&anyrefs,&anyimages);
-    if ( anyrefs || anyimages )
+    CVAnySel(cv,&anypoints,&anyrefs,&anyimages,&anyattach);
+    if ( anyrefs || anyimages || anyattach )
 return;
 
     if ( !TileAsk())

@@ -37,9 +37,11 @@ typedef struct gidata {
     SplineChar *sc;
     RefChar *rf;
     ImageList *img;
+    AnchorPoint *ap;
     SplinePoint *cursp;
     SplinePointList *curspl;
     SplinePointList *oldstate;
+    AnchorPoint *oldaps;
     GWindow gw;
     int done, first, changed;
 } GIData;
@@ -53,6 +55,8 @@ typedef struct gidata {
 #define CID_Components	1007
 #define CID_Comment	1008
 #define CID_Color	1009
+#define CID_Script	1010
+#define CID_LigTag	1011
 
 #define CID_BaseX	2001
 #define CID_BaseY	2002
@@ -65,8 +69,21 @@ typedef struct gidata {
 #define CID_NextDef	2009
 #define CID_PrevDef	2010
 
-#define CI_Width	200
-#define CI_Height	375
+#define CID_X		3001
+#define CID_Y		3002
+#define CID_NameList	3003
+#define CID_Mark	3004
+#define CID_BaseChar	3005
+#define CID_BaseLig	3006
+#define CID_BaseMark	3007
+#define CID_LigIndex	3008
+#define CID_Next	3009
+#define CID_Prev	3010
+#define CID_Delete	3011
+#define CID_New		3012
+
+#define CI_Width	218
+#define CI_Height	242
 
 #define RI_Width	215
 #define RI_Height	180
@@ -76,6 +93,9 @@ typedef struct gidata {
 
 #define PI_Width	218
 #define PI_Height	200
+
+#define AI_Width	160
+#define AI_Height	220
 
 static GTextInfo std_colors[] = {
     { (unichar_t *) _STR_Default, &def_image, 0, 0, (void *) COLOR_DEFAULT, NULL, false, true, false, false, false, false, false, true },
@@ -89,6 +109,57 @@ static GTextInfo std_colors[] = {
     { NULL, NULL }
 };
 
+static GTextInfo scripts[] = {
+    { (unichar_t *) _STR_Arab, NULL, 0, 0, (void *) CHR('a','r','a','b'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Armn, NULL, 0, 0, (void *) CHR('a','r','m','n'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Beng, NULL, 0, 0, (void *) CHR('b','e','n','g'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Bopo, NULL, 0, 0, (void *) CHR('b','o','p','o'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Brai, NULL, 0, 0, (void *) CHR('b','r','a','i'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Byzm, NULL, 0, 0, (void *) CHR('b','y','z','m'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Cans, NULL, 0, 0, (void *) CHR('c','a','n','s'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Cher, NULL, 0, 0, (void *) CHR('c','h','e','r'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Hani, NULL, 0, 0, (void *) CHR('h','a','n','i'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Cyrl, NULL, 0, 0, (void *) CHR('c','y','r','l'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_DFLT, NULL, 0, 0, (void *) CHR('D','F','L','T'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Deva, NULL, 0, 0, (void *) CHR('d','e','v','a'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Ethi, NULL, 0, 0, (void *) CHR('e','t','h','i'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Geor, NULL, 0, 0, (void *) CHR('g','e','o','r'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Grek, NULL, 0, 0, (void *) CHR('g','r','e','k'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Gujr, NULL, 0, 0, (void *) CHR('g','u','j','r'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Guru, NULL, 0, 0, (void *) CHR('g','u','r','u'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Jamo, NULL, 0, 0, (void *) CHR('j','a','m','o'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Hang, NULL, 0, 0, (void *) CHR('h','a','n','g'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Hebr, NULL, 0, 0, (void *) CHR('h','e','b','r'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Kana, NULL, 0, 0, (void *) CHR('k','a','n','a'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Knda, NULL, 0, 0, (void *) CHR('k','n','d','a'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Khmr, NULL, 0, 0, (void *) CHR('k','h','m','r'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Lao , NULL, 0, 0, (void *) CHR('l','a','o',' '), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Latn, NULL, 0, 0, (void *) CHR('l','a','t','n'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Mlym, NULL, 0, 0, (void *) CHR('m','l','y','m'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Mong, NULL, 0, 0, (void *) CHR('m','o','n','g'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Mymr, NULL, 0, 0, (void *) CHR('m','y','m','r'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Ogam, NULL, 0, 0, (void *) CHR('o','g','a','m'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Orya, NULL, 0, 0, (void *) CHR('o','r','y','a'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Runr, NULL, 0, 0, (void *) CHR('r','u','n','r'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Sinh, NULL, 0, 0, (void *) CHR('s','i','n','h'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Syrc, NULL, 0, 0, (void *) CHR('s','y','r','c'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Taml, NULL, 0, 0, (void *) CHR('t','a','m','l'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Telu, NULL, 0, 0, (void *) CHR('t','e','l','u'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Thaa, NULL, 0, 0, (void *) CHR('t','h','a','a'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Thai, NULL, 0, 0, (void *) CHR('t','h','a','i'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Tibt, NULL, 0, 0, (void *) CHR('t','i','b','t'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Yi  , NULL, 0, 0, (void *) CHR('y','i',' ',' '), NULL, false, false, false, false, false, false, false, true },
+    { NULL }
+};
+
+static GTextInfo ligature_tags[] = {
+    { (unichar_t *) _STR_Discretionary, NULL, 0, 0, (void *) CHR('d','l','i','g'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Historic, NULL, 0, 0, (void *) CHR('h','l','i','g'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Required, NULL, 0, 0, (void *) CHR('r','l','i','g'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Standard, NULL, 0, 0, (void *) CHR('l','i','g','a'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Fraction, NULL, 0, 0, (void *) CHR('f','r','a','c'), NULL, false, false, false, false, false, false, false, true },
+    { NULL }
+};
 
 static int MultipleValues(char *name, int local) {
     unichar_t ubuf[200]; char buffer[10];
@@ -165,6 +236,21 @@ static void SetNameFromUnicode(GWindow gw,int cid,int val) {
     free(temp);
 }
 
+static void SetScriptFromTag(GWindow gw,int tag) {
+    unichar_t ubuf[8];
+
+    ubuf[0] = tag>>24;
+    ubuf[1] = (tag>>16)&0xff;
+    ubuf[2] = (tag>>8)&0xff;
+    ubuf[3] = tag&0xff;
+    ubuf[4] = 0;
+    GGadgetSetTitle(GWidgetGetControl(gw,CID_Script),ubuf);
+}
+
+static void SetScriptFromUnicode(GWindow gw,int uni,SplineFont *sf) {
+    SetScriptFromTag(gw,ScriptFromUnicode(uni,sf));
+}
+
 static int LigCheck(SplineFont *sf,SplineChar *sc,char *components) {
     int i;
     unichar_t ubuf[200]; char buffer[10];
@@ -223,7 +309,7 @@ return( GWidgetAsk(GStringGetResource(_STR_Multiple,NULL),buts,ocmn,0,1,ubuf)==0
 return( true );
 }
 		
-static void LigSet(SplineChar *sc,char *lig) {
+static void LigSet(SplineChar *sc,char *lig,uint32 ltag) {
 
     if ( lig==NULL || *lig=='\0' ) {
 	LigatureFree(sc->lig);
@@ -233,10 +319,11 @@ static void LigSet(SplineChar *sc,char *lig) {
 	sc->lig = gcalloc(1,sizeof(Ligature));
 	sc->lig->components = copy(lig);
 	sc->lig->lig = sc;
+	sc->lig->tag = ltag;
     }
 }
 
-int SCSetMetaData(SplineChar *sc,char *name,int unienc,char *lig) {
+int SCSetMetaData(SplineChar *sc,char *name,int unienc,char *lig,uint32 ltag) {
     SplineFont *sf = sc->parent;
     int i, mv=0;
     int isnotdef, samename=false;
@@ -266,6 +353,8 @@ return( false );
 	    }
 	}
     }
+    if ( sc->unicodeenc!=unienc )
+	sc->script = ScriptFromUnicode(unienc,sc->parent);
     sc->unicodeenc = unienc;
     if ( strcmp(name,sc->name)!=0 ) {
 	free(sc->name);
@@ -283,26 +372,57 @@ return( false );
 	    (sf->encoding_name>=e_first2byte && sf->encoding_name<em_unicode && sc->enc<94*96 ) ||
 	    sc->unicodeenc!=-1 )
 	sf->encoding_name = em_none;
-    LigSet(sc,lig);
+    LigSet(sc,lig,ltag);
     SCRefreshTitles(sc);
 return( true );
+}
+
+static uint32 ParseTag(GWindow gw,int cid,int msg,int *err) {
+    const unichar_t *utag = _GGadgetGetTitle(GWidgetGetControl(gw,cid));
+    uint32 tag;
+    unichar_t ubuf[8];
+
+    if ( (ubuf[0] = utag[0])==0 ) {
+return( 0 );
+    } else {
+	if ( (ubuf[1] = utag[1])==0 )
+	    ubuf[1] = ubuf[2] = ubuf[3] = ' ';
+	else if ( (ubuf[2] = utag[2])==0 )
+	    ubuf[2] = ubuf[3] = ' ';
+	else if ( (ubuf[3] = utag[3])==0 )
+	    ubuf[3] = ' ';
+	tag = (ubuf[0]<<24) | (ubuf[1]<<16) | (ubuf[2]<<8) | ubuf[3];
+    }
+    if ( u_strlen(utag)>4 || ubuf[0]>=0x7f || ubuf[1]>=0x7f || ubuf[2]>=0x7f || ubuf[3]>=0x7f ) {
+	GWidgetErrorR(_STR_TagTooLong,msg);
+	*err = true;
+return( 0 );
+    }
+return( tag );
 }
 
 static int _CI_OK(GIData *ci) {
     int val;
     int ret, refresh_fvdi=0;
+    uint32 tag, ltag;
     char *lig, *name;
     const unichar_t *comment;
     FontView *fvs;
+    int err = false;
 
     val = ParseUValue(ci->gw,CID_UValue,true,ci->sc->parent);
     if ( val==-2 )
 return( false );
     lig = cu_copy( _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_Ligature)) );
     name = cu_copy( _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_UName)) );
+    tag = ParseTag(ci->gw,CID_Script,_STR_ScriptTagTooLong,&err);
+    ltag = ParseTag(ci->gw,CID_LigTag,_STR_FeatureTagTooLong,&err);
+    if ( err )
+return( false );
     if ( strcmp(name,ci->sc->name)!=0 || val!=ci->sc->unicodeenc )
 	refresh_fvdi = 1;
-    ret = SCSetMetaData(ci->sc,name,val,lig);
+    ret = SCSetMetaData(ci->sc,name,val,lig,ltag);
+    if ( ret ) ci->sc->script = tag;
     free(name);
     free(lig);
     if ( refresh_fvdi ) {
@@ -340,6 +460,8 @@ static void LigatureNameCheck(GIData *ci, int uni, const unichar_t *name) {
     unichar_t *components=NULL;
     char *namtemp = cu_copy(name);
     char *temp = LigDefaultStr(uni,namtemp);
+    unichar_t ubuf[8];
+    uint32 tag;
 
     free(namtemp);
     if ( temp==NULL )
@@ -347,6 +469,37 @@ return;
     components = uc_copy(temp);
     GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_Ligature),components);
     free(components);
+
+    tag = LigTagFromUnicode(uni);
+    if ( tag!=0 ) {
+	ubuf[0] = tag>>24;
+	ubuf[1] = (tag>>16)&0xff;
+	ubuf[2] = (tag>>8)&0xff;
+	ubuf[3] = tag&0xff;
+	ubuf[4] = 0;
+	GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_LigTag),ubuf);
+    }
+    if ( *_GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_Script))=='\0' ) {
+	/* Use the script of the first component if we can */
+	char *pt;
+	uint32 script;
+	if ( (pt=strchr(temp,' '))!=NULL ) *pt = '\0';
+	script = ScriptFromUnicode(UniFromName(temp),ci->sc->parent);
+	if ( script==0 ) {
+	    int index = SFFindChar(ci->sc->parent,-1,temp);
+	    if ( index!=-1 && ci->sc->parent->chars[index] )
+		script = ci->sc->parent->chars[index]->script;
+	}
+	if ( script!=0 ) {
+	    ubuf[0] = script>>24;
+	    ubuf[1] = (script>>16)&0xff;
+	    ubuf[2] = (script>>8)&0xff;
+	    ubuf[3] = script&0xff;
+	    ubuf[4] = 0;
+	    GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_LigTag),ubuf);
+	}
+    }
+    free(temp);
 }
 
 static int psnamesinited=false;
@@ -491,8 +644,10 @@ static int CI_SName(GGadget *g, GEvent *e) {	/* Set From Name */
 	GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_UValue),temp);
 	free(temp);
 
+	SetScriptFromUnicode(ci->gw,i,ci->sc->parent);
+
 	ubuf[0] = i;
-	if ( i==-1 )
+	if ( i==-1 || i>0xffff )
 	    ubuf[0] = '\0';
 	ubuf[1] = '\0';
 	GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_UChar),ubuf);
@@ -512,6 +667,7 @@ static int CI_SValue(GGadget *g, GEvent *e) {	/* Set From Value */
 return( true );
 
 	SetNameFromUnicode(ci->gw,CID_UName,val);
+	SetScriptFromUnicode(ci->gw,val,ci->sc->parent);
 
 	ubuf[0] = val;
 	if ( val==-1 )
@@ -624,6 +780,40 @@ return( true );
 return( true );
 }
 
+static int CI_ScriptChanged(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged &&
+	    e->u.control.u.tf_changed.from_pulldown!=-1 ) {
+	uint32 tag = (uint32) scripts[e->u.control.u.tf_changed.from_pulldown].userdata;
+	unichar_t ubuf[8];
+	/* If they select something from the pulldown, don't show the human */
+	/*  readable form, instead show the 4 character tag */
+	ubuf[0] = tag>>24;
+	ubuf[1] = (tag>>16)&0xff;
+	ubuf[2] = (tag>>8)&0xff;
+	ubuf[3] = tag&0xff;
+	ubuf[4] = 0;
+	GGadgetSetTitle(g,ubuf);
+    }
+return( true );
+}
+
+static int CI_LigTagChanged(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged &&
+	    e->u.control.u.tf_changed.from_pulldown!=-1 ) {
+	uint32 tag = (uint32) ligature_tags[e->u.control.u.tf_changed.from_pulldown].userdata;
+	unichar_t ubuf[8];
+	/* If they select something from the pulldown, don't show the human */
+	/*  readable form, instead show the 4 character tag */
+	ubuf[0] = tag>>24;
+	ubuf[1] = (tag>>16)&0xff;
+	ubuf[2] = (tag>>8)&0xff;
+	ubuf[3] = tag&0xff;
+	ubuf[4] = 0;
+	GGadgetSetTitle(g,ubuf);
+    }
+return( true );
+}
+
 static int CI_CommentChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
@@ -641,7 +831,7 @@ static void CIFillup(GIData *ci) {
     SplineFont *sf = sc->parent;
     unichar_t *temp;
     char buffer[10];
-    unichar_t ubuf[2];
+    unichar_t ubuf[8];
     const unichar_t *bits;
     int i;
 
@@ -664,12 +854,21 @@ static void CIFillup(GIData *ci) {
     ubuf[1] = '\0';
     GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_UChar),ubuf);
 
-    if ( sc->lig!=NULL )
+    SetScriptFromTag(ci->gw,sc->script);
+
+    if ( sc->lig!=NULL ) {
 	temp = uc_copy(sc->lig->components);
-    else
+	ubuf[0] = sc->lig->tag>>24;
+	ubuf[1] = (sc->lig->tag>>16)&0xff;
+	ubuf[2] = (sc->lig->tag>>8)&0xff;
+	ubuf[3] = sc->lig->tag&0xff;
+	ubuf[4] = 0;
+	GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_LigTag),ubuf);
+    } else
 	temp = uc_copy("");
     GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_Ligature),temp);
     free(temp);
+    
 
     bits = SFGetAlternate(sc->parent,sc->unicodeenc,sc,true);
     GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_ComponentMsg),GStringGetResource(
@@ -829,8 +1028,10 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
     static GIData gi;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[25];
-    GTextInfo label[25];
+    GGadgetCreateData ugcd[12], cgcd[6], lgcd[8], mgcd[9];
+    GTextInfo ulabel[12], clabel[6], llabel[8], mlabel[9];
+    int i;
+    GTabInfo aspects[5];
 
     gi.sc = sc;
     gi.done = false;
@@ -849,197 +1050,242 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
 	pos.height = GDrawPointsToPixels(NULL,CI_Height);
 	gi.gw = GDrawCreateTopWindow(NULL,&pos,ci_e_h,&gi,&wattrs);
 
-	memset(&gcd,0,sizeof(gcd));
-	memset(&label,0,sizeof(label));
+	memset(&ugcd,0,sizeof(ugcd));
+	memset(&ulabel,0,sizeof(ulabel));
 
-	label[0].text = (unichar_t *) _STR_UnicodeName;
-	label[0].text_in_resource = true;
-	gcd[0].gd.label = &label[0];
-	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5+6; 
-	gcd[0].gd.flags = gg_enabled|gg_visible;
-	gcd[0].gd.mnemonic = 'N';
-	gcd[0].creator = GLabelCreate;
+	ulabel[0].text = (unichar_t *) _STR_UnicodeName;
+	ulabel[0].text_in_resource = true;
+	ugcd[0].gd.label = &ulabel[0];
+	ugcd[0].gd.pos.x = 5; ugcd[0].gd.pos.y = 5+4; 
+	ugcd[0].gd.flags = gg_enabled|gg_visible;
+	ugcd[0].gd.mnemonic = 'N';
+	ugcd[0].creator = GLabelCreate;
 
-	gcd[1].gd.pos.x = 85; gcd[1].gd.pos.y = 5;
-	gcd[1].gd.flags = gg_enabled|gg_visible;
-	gcd[1].gd.mnemonic = 'N';
-	gcd[1].gd.cid = CID_UName;
-	gcd[1].creator = GListFieldCreate;
-	gcd[1].data = (void *) (-2);
+	ugcd[1].gd.pos.x = 85; ugcd[1].gd.pos.y = 5;
+	ugcd[1].gd.flags = gg_enabled|gg_visible;
+	ugcd[1].gd.mnemonic = 'N';
+	ugcd[1].gd.cid = CID_UName;
+	ugcd[1].creator = GListFieldCreate;
+	ugcd[1].data = (void *) (-2);
 
-	label[2].text = (unichar_t *) _STR_UnicodeValue;
-	label[2].text_in_resource = true;
-	gcd[2].gd.label = &label[2];
-	gcd[2].gd.pos.x = 5; gcd[2].gd.pos.y = 31+6; 
-	gcd[2].gd.flags = gg_enabled|gg_visible;
-	gcd[2].gd.mnemonic = 'V';
-	gcd[2].creator = GLabelCreate;
+	ulabel[2].text = (unichar_t *) _STR_UnicodeValue;
+	ulabel[2].text_in_resource = true;
+	ugcd[2].gd.label = &ulabel[2];
+	ugcd[2].gd.pos.x = 5; ugcd[2].gd.pos.y = 31+4; 
+	ugcd[2].gd.flags = gg_enabled|gg_visible;
+	ugcd[2].gd.mnemonic = 'V';
+	ugcd[2].creator = GLabelCreate;
 
-	gcd[3].gd.pos.x = 85; gcd[3].gd.pos.y = 31;
-	gcd[3].gd.flags = gg_enabled|gg_visible;
-	gcd[3].gd.mnemonic = 'V';
-	gcd[3].gd.cid = CID_UValue;
-	gcd[3].gd.handle_controlevent = CI_UValChanged;
-	gcd[3].creator = GTextFieldCreate;
+	ugcd[3].gd.pos.x = 85; ugcd[3].gd.pos.y = 31;
+	ugcd[3].gd.flags = gg_enabled|gg_visible;
+	ugcd[3].gd.mnemonic = 'V';
+	ugcd[3].gd.cid = CID_UValue;
+	ugcd[3].gd.handle_controlevent = CI_UValChanged;
+	ugcd[3].creator = GTextFieldCreate;
 
-	label[4].text = (unichar_t *) _STR_UnicodeChar;
-	label[4].text_in_resource = true;
-	gcd[4].gd.label = &label[4];
-	gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = 57+6; 
-	gcd[4].gd.flags = gg_enabled|gg_visible;
-	gcd[4].gd.mnemonic = 'h';
-	gcd[4].creator = GLabelCreate;
+	ulabel[4].text = (unichar_t *) _STR_UnicodeChar;
+	ulabel[4].text_in_resource = true;
+	ugcd[4].gd.label = &ulabel[4];
+	ugcd[4].gd.pos.x = 5; ugcd[4].gd.pos.y = 57+4; 
+	ugcd[4].gd.flags = gg_enabled|gg_visible;
+	ugcd[4].gd.mnemonic = 'h';
+	ugcd[4].creator = GLabelCreate;
 
-	gcd[5].gd.pos.x = 85; gcd[5].gd.pos.y = 57;
-	gcd[5].gd.flags = gg_enabled|gg_visible|gg_text_xim;
-	gcd[5].gd.mnemonic = 'h';
-	gcd[5].gd.cid = CID_UChar;
-	gcd[5].gd.handle_controlevent = CI_CharChanged;
-	gcd[5].creator = GTextFieldCreate;
+	ugcd[5].gd.pos.x = 85; ugcd[5].gd.pos.y = 57;
+	ugcd[5].gd.flags = gg_enabled|gg_visible|gg_text_xim;
+	ugcd[5].gd.mnemonic = 'h';
+	ugcd[5].gd.cid = CID_UChar;
+	ugcd[5].gd.handle_controlevent = CI_CharChanged;
+	ugcd[5].creator = GTextFieldCreate;
 
-	gcd[6].gd.pos.x = 12; gcd[6].gd.pos.y = 87;
-	gcd[6].gd.flags = gg_visible | gg_enabled;
-	label[6].text = (unichar_t *) _STR_SetFromName;
-	label[6].text_in_resource = true;
-	gcd[6].gd.mnemonic = 'a';
-	gcd[6].gd.label = &label[6];
-	gcd[6].gd.handle_controlevent = CI_SName;
-	gcd[6].creator = GButtonCreate;
+	ulabel[6].text = (unichar_t *) _STR_ScriptC;
+	ulabel[6].text_in_resource = true;
+	ugcd[6].gd.label = &ulabel[6];
+	ugcd[6].gd.pos.x = 5; ugcd[6].gd.pos.y = 83+4; 
+	ugcd[6].gd.flags = gg_enabled|gg_visible;
+	ugcd[6].creator = GLabelCreate;
 
-	gcd[7].gd.pos.x = 107; gcd[7].gd.pos.y = 87;
-	gcd[7].gd.flags = gg_visible | gg_enabled;
-	label[7].text = (unichar_t *) _STR_SetFromValue;
-	label[7].text_in_resource = true;
-	gcd[7].gd.mnemonic = 'l';
-	gcd[7].gd.label = &label[7];
-	gcd[7].gd.handle_controlevent = CI_SValue;
-	gcd[7].creator = GButtonCreate;
+	ugcd[7].gd.pos.x = 85; ugcd[7].gd.pos.y = 83;
+	ugcd[7].gd.flags = gg_enabled|gg_visible;
+	ugcd[7].gd.mnemonic = 'h';
+	ugcd[7].gd.cid = CID_Script;
+	ugcd[7].gd.u.list = scripts;
+	ugcd[7].gd.handle_controlevent = CI_ScriptChanged;
+	ugcd[7].creator = GListFieldCreate;
 
-	gcd[8].gd.pos.x = 40; gcd[8].gd.pos.y = CI_Height-32-32;
-	gcd[8].gd.pos.width = -1; gcd[8].gd.pos.height = 0;
-	gcd[8].gd.flags = gg_visible | gg_enabled ;
-	label[8].text = (unichar_t *) _STR_PrevArrow;
-	label[8].text_in_resource = true;
-	gcd[8].gd.mnemonic = 'P';
-	gcd[8].gd.label = &label[8];
-	gcd[8].gd.handle_controlevent = CI_NextPrev;
-	gcd[8].gd.cid = -1;
-	gcd[8].creator = GButtonCreate;
+	ugcd[8].gd.pos.x = 12; ugcd[8].gd.pos.y = 117;
+	ugcd[8].gd.flags = gg_visible | gg_enabled;
+	ulabel[8].text = (unichar_t *) _STR_SetFromName;
+	ulabel[8].text_in_resource = true;
+	ugcd[8].gd.mnemonic = 'a';
+	ugcd[8].gd.label = &ulabel[8];
+	ugcd[8].gd.handle_controlevent = CI_SName;
+	ugcd[8].creator = GButtonCreate;
 
-	gcd[9].gd.pos.x = CI_Width-GIntGetResource(_NUM_Buttonsize)-40; gcd[9].gd.pos.y = CI_Height-32-32;
-	gcd[9].gd.pos.width = -1; gcd[9].gd.pos.height = 0;
-	gcd[9].gd.flags = gg_visible | gg_enabled ;
-	label[9].text = (unichar_t *) _STR_NextArrow;
-	label[9].text_in_resource = true;
-	gcd[9].gd.label = &label[9];
-	gcd[9].gd.mnemonic = 'N';
-	gcd[9].gd.handle_controlevent = CI_NextPrev;
-	gcd[9].gd.cid = 1;
-	gcd[9].creator = GButtonCreate;
+	ugcd[9].gd.pos.x = 107; ugcd[9].gd.pos.y = 117;
+	ugcd[9].gd.flags = gg_visible | gg_enabled;
+	ulabel[9].text = (unichar_t *) _STR_SetFromValue;
+	ulabel[9].text_in_resource = true;
+	ugcd[9].gd.mnemonic = 'l';
+	ugcd[9].gd.label = &ulabel[9];
+	ugcd[9].gd.handle_controlevent = CI_SValue;
+	ugcd[9].creator = GButtonCreate;
 
-	gcd[10].gd.pos.x = 25-3; gcd[10].gd.pos.y = CI_Height-32-3;
-	gcd[10].gd.pos.width = -1; gcd[10].gd.pos.height = 0;
-	gcd[10].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[10].text = (unichar_t *) _STR_OK;
-	label[10].text_in_resource = true;
-	gcd[10].gd.mnemonic = 'O';
-	gcd[10].gd.label = &label[10];
-	gcd[10].gd.handle_controlevent = CI_OK;
-	gcd[10].creator = GButtonCreate;
+	memset(&cgcd,0,sizeof(cgcd));
+	memset(&clabel,0,sizeof(clabel));
 
-	gcd[11].gd.pos.x = -25; gcd[11].gd.pos.y = CI_Height-32;
-	gcd[11].gd.pos.width = -1; gcd[11].gd.pos.height = 0;
-	gcd[11].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[11].text = (unichar_t *) _STR_Cancel;
-	label[11].text_in_resource = true;
-	gcd[11].gd.label = &label[11];
-	gcd[11].gd.mnemonic = 'C';
-	gcd[11].gd.handle_controlevent = CI_Cancel;
-	gcd[11].gd.cid = CID_Cancel;
-	gcd[11].creator = GButtonCreate;
+	clabel[0].text = (unichar_t *) _STR_Comment;
+	clabel[0].text_in_resource = true;
+	cgcd[0].gd.label = &clabel[0];
+	cgcd[0].gd.pos.x = 5; cgcd[0].gd.pos.y = 5; 
+	cgcd[0].gd.flags = gg_enabled|gg_visible;
+	cgcd[0].creator = GLabelCreate;
 
-	gcd[12].gd.pos.x = 5; gcd[12].gd.pos.y = CI_Height-32-32-6;
-	gcd[12].gd.pos.width = CI_Width-10;
-	gcd[12].gd.flags = gg_visible | gg_enabled;
-	gcd[12].creator = GLineCreate;
+	cgcd[1].gd.pos.x = 5; cgcd[1].gd.pos.y = cgcd[0].gd.pos.y+13;
+	cgcd[1].gd.pos.width = CI_Width-20;
+	cgcd[1].gd.pos.height = 7*12+6;
+	cgcd[1].gd.flags = gg_enabled|gg_visible|gg_textarea_wrap|gg_text_xim;
+	cgcd[1].gd.cid = CID_Comment;
+	cgcd[1].gd.handle_controlevent = CI_CommentChanged;
+	cgcd[1].creator = GTextAreaCreate;
 
-	gcd[13].gd.pos.x = 5; gcd[13].gd.pos.y = CI_Height-32-32-32-8-30;
-	gcd[13].gd.pos.width = CI_Width-10;
-	gcd[13].gd.flags = gg_visible | gg_enabled;
-	gcd[13].creator = GLineCreate;
+	clabel[2].text = (unichar_t *) _STR_Color;
+	clabel[2].text_in_resource = true;
+	cgcd[2].gd.label = &clabel[2];
+	cgcd[2].gd.pos.x = 5; cgcd[2].gd.pos.y = cgcd[1].gd.pos.y+cgcd[1].gd.pos.height+5+6; 
+	cgcd[2].gd.flags = gg_enabled|gg_visible;
+	cgcd[2].creator = GLabelCreate;
 
-	gcd[14].gd.pos.x = 5; gcd[14].gd.pos.y = gcd[7].gd.pos.y+30;
-	gcd[14].gd.pos.width = CI_Width-10;
-	gcd[14].gd.flags = gg_visible | gg_enabled;
-	gcd[14].creator = GLineCreate;
+	cgcd[3].gd.pos.x = cgcd[3].gd.pos.x; cgcd[3].gd.pos.y = cgcd[2].gd.pos.y-6;
+	cgcd[3].gd.pos.width = cgcd[3].gd.pos.width;
+	cgcd[3].gd.flags = gg_enabled|gg_visible;
+	cgcd[3].gd.cid = CID_Color;
+	cgcd[3].gd.u.list = std_colors;
+	cgcd[3].creator = GListButtonCreate;
 
-	label[15].text = (unichar_t *) _STR_Comment;
-	label[15].text_in_resource = true;
-	gcd[15].gd.label = &label[15];
-	gcd[15].gd.pos.x = 5; gcd[15].gd.pos.y = gcd[14].gd.pos.y+5; 
-	gcd[15].gd.flags = gg_enabled|gg_visible;
-	gcd[15].creator = GLabelCreate;
+	memset(&lgcd,0,sizeof(lgcd));
+	memset(&llabel,0,sizeof(llabel));
 
-	gcd[16].gd.pos.x = 5; gcd[16].gd.pos.y = gcd[15].gd.pos.y+13;
-	gcd[16].gd.pos.width = CI_Width-10;
-	gcd[16].gd.pos.height = 4*12+6;
-	gcd[16].gd.flags = gg_enabled|gg_visible|gg_textarea_wrap|gg_text_xim;
-	gcd[16].gd.cid = CID_Comment;
-	gcd[16].gd.handle_controlevent = CI_CommentChanged;
-	gcd[16].creator = GTextAreaCreate;
+	llabel[0].text = (unichar_t *) _STR_Ligature;
+	llabel[0].text_in_resource = true;
+	lgcd[0].gd.label = &llabel[0];
+	lgcd[0].gd.pos.x = 5; lgcd[0].gd.pos.y = 5+4; 
+	lgcd[0].gd.flags = gg_enabled|gg_visible;
+	lgcd[0].gd.mnemonic = 'L';
+	lgcd[0].gd.popup_msg = GStringGetResource(_STR_Ligpop,NULL);
+	lgcd[0].creator = GLabelCreate;
 
-	label[17].text = (unichar_t *) _STR_Color;
-	label[17].text_in_resource = true;
-	gcd[17].gd.label = &label[17];
-	gcd[17].gd.pos.x = 5; gcd[17].gd.pos.y = gcd[16].gd.pos.y+gcd[16].gd.pos.height+5+6; 
-	gcd[17].gd.flags = gg_enabled|gg_visible;
-	gcd[17].creator = GLabelCreate;
+	lgcd[1].gd.pos.x = 85; lgcd[1].gd.pos.y = 5;
+	lgcd[1].gd.flags = gg_enabled|gg_visible;
+	lgcd[1].gd.mnemonic = 'L';
+	lgcd[1].gd.cid = CID_Ligature;
+	lgcd[1].gd.popup_msg = GStringGetResource(_STR_Ligpop,NULL);
+	lgcd[1].creator = GTextFieldCreate;
 
-	gcd[18].gd.pos.x = gcd[3].gd.pos.x; gcd[18].gd.pos.y = gcd[17].gd.pos.y-6;
-	gcd[18].gd.pos.width = gcd[3].gd.pos.width;
-	gcd[18].gd.flags = gg_enabled|gg_visible;
-	gcd[18].gd.cid = CID_Color;
-	gcd[18].gd.u.list = std_colors;
-	gcd[18].creator = GListButtonCreate;
+	llabel[2].text = (unichar_t *) _STR_TagC;
+	llabel[2].text_in_resource = true;
+	lgcd[2].gd.label = &llabel[2];
+	lgcd[2].gd.pos.x = 5; lgcd[2].gd.pos.y = lgcd[1].gd.pos.y+24+4; 
+	lgcd[2].gd.flags = gg_enabled|gg_visible;
+	lgcd[2].creator = GLabelCreate;
 
-	label[19].text = (unichar_t *) _STR_Ligature;
-	label[19].text_in_resource = true;
-	gcd[19].gd.label = &label[19];
-	gcd[19].gd.pos.x = 5; gcd[19].gd.pos.y = CI_Height-32-32-6-26+6-30; 
-	gcd[19].gd.flags = gg_enabled|gg_visible;
-	gcd[19].gd.mnemonic = 'L';
-	gcd[19].gd.popup_msg = GStringGetResource(_STR_Ligpop,NULL);
-	gcd[19].creator = GLabelCreate;
+	lgcd[3].gd.pos.x = 85; lgcd[3].gd.pos.y = lgcd[2].gd.pos.y-4;
+	lgcd[3].gd.flags = gg_enabled|gg_visible;
+	lgcd[3].gd.cid = CID_LigTag;
+	lgcd[3].gd.u.list = ligature_tags;
+	lgcd[3].gd.handle_controlevent = CI_LigTagChanged;
+	lgcd[3].creator = GListFieldCreate;
 
-	gcd[20].gd.pos.x = 85; gcd[20].gd.pos.y = CI_Height-32-32-6-26-30;
-	gcd[20].gd.flags = gg_enabled|gg_visible;
-	gcd[20].gd.mnemonic = 'L';
-	gcd[20].gd.cid = CID_Ligature;
-	gcd[20].gd.popup_msg = GStringGetResource(_STR_Ligpop,NULL);
-	gcd[20].creator = GTextFieldCreate;
+	lgcd[4].gd.pos.x = 5; lgcd[4].gd.pos.y = lgcd[3].gd.pos.y+26;
+	lgcd[4].gd.pos.width = CI_Width-10;
+	lgcd[4].gd.flags = gg_visible | gg_enabled;
+	lgcd[4].creator = GLineCreate;
 
-	gcd[21].gd.pos.x = 5; gcd[21].gd.pos.y = CI_Height-32-32-8-27;
-	gcd[21].gd.pos.width = CI_Width-10;
-	gcd[21].gd.flags = gg_visible | gg_enabled;
-	gcd[21].creator = GLineCreate;
+	llabel[5].text = (unichar_t *) _STR_AccentedComponents;
+	llabel[5].text_in_resource = true;
+	lgcd[5].gd.label = &llabel[5];
+	lgcd[5].gd.pos.x = 5; lgcd[5].gd.pos.y = lgcd[4].gd.pos.y+5; 
+	lgcd[5].gd.flags = gg_enabled|gg_visible;
+	lgcd[5].gd.cid = CID_ComponentMsg;
+	/*lgcd[5].gd.popup_msg = GStringGetResource(_STR_Ligpop,NULL);*/
+	lgcd[5].creator = GLabelCreate;
 
-	label[22].text = (unichar_t *) _STR_AccentedComponents;
-	label[22].text_in_resource = true;
-	gcd[22].gd.label = &label[22];
-	gcd[22].gd.pos.x = 5; gcd[22].gd.pos.y = CI_Height-32-32-6-24; 
-	gcd[22].gd.flags = gg_enabled|gg_visible;
-	gcd[22].gd.cid = CID_ComponentMsg;
-	/*gcd[22].gd.popup_msg = GStringGetResource(_STR_Ligpop,NULL);*/
-	gcd[22].creator = GLabelCreate;
+	lgcd[6].gd.pos.x = 5; lgcd[6].gd.pos.y = lgcd[5].gd.pos.y+12;
+	lgcd[6].gd.pos.width = CI_Width-20;
+	lgcd[6].gd.flags = gg_enabled|gg_visible;
+	lgcd[6].gd.cid = CID_Components;
+	/*lgcd[6].gd.popup_msg = GStringGetResource(_STR_Ligpop,NULL);*/
+	lgcd[6].creator = GLabelCreate;
 
-	gcd[23].gd.pos.x = 5; gcd[23].gd.pos.y = CI_Height-32-32-6-12;
-	gcd[23].gd.pos.width = CI_Width-10;
-	gcd[23].gd.flags = gg_enabled|gg_visible;
-	gcd[23].gd.cid = CID_Components;
-	/*gcd[23].gd.popup_msg = GStringGetResource(_STR_Ligpop,NULL);*/
-	gcd[23].creator = GLabelCreate;
+	memset(&mgcd,0,sizeof(mgcd));
+	memset(&mlabel,0,sizeof(mlabel));
+	memset(&aspects,'\0',sizeof(aspects));
 
-	GGadgetsCreate(gi.gw,gcd);
+	i = 0;
+	aspects[i].text = (unichar_t *) _STR_UnicodeL;
+	aspects[i].text_in_resource = true;
+	aspects[i].selected = true;
+	aspects[i++].gcd = ugcd;
+
+	aspects[i].text = (unichar_t *) _STR_Comment;
+	aspects[i].text_in_resource = true;
+	aspects[i++].gcd = cgcd;
+
+	aspects[i].text = (unichar_t *) _STR_LigatureL;
+	aspects[i].text_in_resource = true;
+	aspects[i++].gcd = lgcd;
+
+	mgcd[0].gd.pos.x = 4; mgcd[0].gd.pos.y = 6;
+	mgcd[0].gd.pos.width = CI_Width-10;
+	mgcd[0].gd.pos.height = CI_Height-70;
+	mgcd[0].gd.u.tabs = aspects;
+	mgcd[0].gd.flags = gg_visible | gg_enabled;
+	mgcd[0].creator = GTabSetCreate;
+
+	mgcd[1].gd.pos.x = 40; mgcd[1].gd.pos.y = mgcd[0].gd.pos.y+mgcd[0].gd.pos.height+3;
+	mgcd[1].gd.pos.width = -1; mgcd[1].gd.pos.height = 0;
+	mgcd[1].gd.flags = gg_visible | gg_enabled ;
+	mlabel[1].text = (unichar_t *) _STR_PrevArrow;
+	mlabel[1].text_in_resource = true;
+	mgcd[1].gd.mnemonic = 'P';
+	mgcd[1].gd.label = &mlabel[1];
+	mgcd[1].gd.handle_controlevent = CI_NextPrev;
+	mgcd[1].gd.cid = -1;
+	mgcd[1].creator = GButtonCreate;
+
+	mgcd[2].gd.pos.x = -40; mgcd[2].gd.pos.y = mgcd[1].gd.pos.y;
+	mgcd[2].gd.pos.width = -1; mgcd[2].gd.pos.height = 0;
+	mgcd[2].gd.flags = gg_visible | gg_enabled ;
+	mlabel[2].text = (unichar_t *) _STR_NextArrow;
+	mlabel[2].text_in_resource = true;
+	mgcd[2].gd.label = &mlabel[2];
+	mgcd[2].gd.mnemonic = 'N';
+	mgcd[2].gd.handle_controlevent = CI_NextPrev;
+	mgcd[2].gd.cid = 1;
+	mgcd[2].creator = GButtonCreate;
+
+	mgcd[3].gd.pos.x = 25-3; mgcd[3].gd.pos.y = CI_Height-31-3;
+	mgcd[3].gd.pos.width = -1; mgcd[3].gd.pos.height = 0;
+	mgcd[3].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	mlabel[3].text = (unichar_t *) _STR_OK;
+	mlabel[3].text_in_resource = true;
+	mgcd[3].gd.mnemonic = 'O';
+	mgcd[3].gd.label = &mlabel[3];
+	mgcd[3].gd.handle_controlevent = CI_OK;
+	mgcd[3].creator = GButtonCreate;
+
+	mgcd[4].gd.pos.x = -25; mgcd[4].gd.pos.y = mgcd[3].gd.pos.y+3;
+	mgcd[4].gd.pos.width = -1; mgcd[4].gd.pos.height = 0;
+	mgcd[4].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	mlabel[4].text = (unichar_t *) _STR_Cancel;
+	mlabel[4].text_in_resource = true;
+	mgcd[4].gd.label = &mlabel[4];
+	mgcd[4].gd.mnemonic = 'C';
+	mgcd[4].gd.handle_controlevent = CI_Cancel;
+	mgcd[4].gd.cid = CID_Cancel;
+	mgcd[4].creator = GButtonCreate;
+
+	GGadgetsCreate(gi.gw,mgcd);
     }
 
     CIFillup(&gi);
@@ -1068,6 +1314,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
     int i,j;
 
     gi.cv = cv;
+    gi.sc = cv->sc;
     gi.rf = ref;
     gi.changed = false;
     gi.done = false;
@@ -1189,6 +1436,7 @@ static void ImgGetInfo(CharView *cv, ImageList *img) {
     char posbuf[100], scalebuf[100];
 
     gi.cv = cv;
+    gi.sc = cv->sc;
     gi.img = img;
     gi.done = false;
 
@@ -1242,6 +1490,611 @@ static void ImgGetInfo(CharView *cv, ImageList *img) {
     while ( !gi.done )
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(gi.gw);
+}
+
+static int IsAnchorClassUsed(SplineChar *sc,AnchorClass *an) {
+    AnchorPoint *ap;
+    int waslig=0;
+
+    for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
+	if ( ap->anchor==an ) {
+	    if ( ap->type!=at_baselig )
+return( -1 );
+	    else if ( waslig<ap->lig_index+1 )
+		waslig = ap->lig_index+1;
+	}
+    }
+return( waslig );
+}
+
+AnchorClass *AnchorClassUnused(SplineChar *sc,int *waslig) {
+    AnchorClass *an;
+    int val;
+    /* Are there any anchors with this name? If so can't reuse it */
+    /*  unless they are ligature anchores */
+
+    *waslig = false;
+    for ( an=sc->parent->anchor; an!=NULL; an=an->next ) {
+	val = IsAnchorClassUsed(sc,an);
+	if ( val!=-1 ) {
+	    if ( val>0 ) *waslig = val;
+return( an );
+	}
+    }
+return( NULL );
+}
+
+static AnchorPoint *AnchorPointNew(CharView *cv) {
+    AnchorClass *an;
+    AnchorPoint *ap;
+    int waslig;
+    SplineChar *sc = cv->sc;
+
+    an = AnchorClassUnused(sc,&waslig);
+    if ( an==NULL )
+return(NULL);
+    ap = chunkalloc(sizeof(AnchorPoint));
+    ap->anchor = an;
+    ap->me.x = cv->p.cx; /* cv->p.cx = 0; */
+    ap->me.y = cv->p.cy; /* cv->p.cy = 0; */
+    ap->type = at_basechar;
+    if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 &&
+	    iscombining(sc->unicodeenc))
+	ap->type = at_mark;
+    else if ( an->feature_tag==CHR('m','k','m','k') )
+	ap->type = at_basemark;
+    else if ( sc->lig!=NULL || waslig )
+	ap->type = at_baselig;
+    ap->next = sc->anchor;
+    ap->lig_index = waslig;
+    sc->anchor = ap;
+return( ap );
+}
+
+static void AI_SelectList(GIData *ci,AnchorPoint *ap) {
+    int i;
+    AnchorClass *an;
+
+    for ( i=0, an=ci->sc->parent->anchor; an!=ap->anchor; ++i, an=an->next );
+    GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_NameList),i);
+}
+
+static void AI_DisplayClass(GIData *ci,AnchorPoint *ap) {
+    AnchorClass *ac = ap->anchor;
+    int enable_mkmk = ac->feature_tag!=CHR('m','a','r','k') && ac->feature_tag!=CHR('a','b','v','m') &&
+	    ac->feature_tag!=CHR('b','l','w','m');
+    int enable_mark = ac->feature_tag!=CHR('m','k','m','k');
+
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseChar),enable_mark);
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseLig),enable_mark);
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseMark),enable_mkmk);
+
+    if ( !enable_mark && (ap->type==at_basechar || ap->type==at_baselig)) {
+	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_BaseMark),true);
+	ap->type = at_basemark;
+    } else if ( !enable_mark && ap->type==at_basemark ) {
+	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_BaseChar),true);
+	ap->type = at_basechar;
+    }
+}
+
+static void AI_Display(GIData *ci,AnchorPoint *ap) {
+    char val[40];
+    unichar_t uval[40];
+    AnchorPoint *aps;
+
+    ci->ap = ap;
+    for ( aps=ci->sc->anchor; aps!=NULL; aps=aps->next )
+	aps->selected = false;
+    ap->selected = true;
+    sprintf(val,"%g",ap->me.x);
+    uc_strcpy(uval,val);
+    GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_X),uval);
+    sprintf(val,"%g",ap->me.y);
+    uc_strcpy(uval,val);
+    GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_Y),uval);
+    sprintf(val,"%d",ap->type==at_baselig?ap->lig_index:0);
+    uc_strcpy(uval,val);
+    GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_LigIndex),uval);
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_LigIndex),ap->type==at_baselig);
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_Next),ap->next!=NULL);
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_Prev),ci->sc->anchor!=ap);
+
+    AI_DisplayClass(ci,ap);
+
+    switch ( ap->type ) {
+      case at_mark:
+	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Mark),true);
+      break;
+      case at_basechar:
+	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_BaseChar),true);
+      break;
+      case at_baselig:
+	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_BaseLig),true);
+      break;
+      case at_basemark:
+	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_BaseMark),true);
+      break;
+    }
+
+    AI_SelectList(ci,ap);
+    SCUpdateAll(ci->sc);
+}
+
+static int AI_Next(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+
+	if ( ci->ap->next==NULL )
+return( true );
+	AI_Display(ci,ci->ap->next);
+    }
+return( true );
+}
+
+static int AI_Prev(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	AnchorPoint *ap, *prev;
+
+	prev = NULL;
+	for ( ap=ci->sc->anchor; ap!=ci->ap; ap = ap->next )
+	    prev = ap;
+	if ( prev==NULL )
+return( true );
+	AI_Display(ci,prev);
+    }
+return( true );
+}
+
+static int AI_Ok(GGadget *g, GEvent *e);
+static int AI_Delete(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	AnchorPoint *ap, *prev;
+
+	prev=NULL;
+	for ( ap=ci->sc->anchor; ap!=ci->ap; ap=ap->next )
+	    prev = ap;
+	if ( prev==NULL && ci->ap->next==NULL ) {
+	    static int buts[] = { _STR_Yes, _STR_No, 0 };
+	    if ( GWidgetAskR(_STR_LastAnchor,buts,0,1,_STR_RemoveLastAnchor)==1 ) {
+		AI_Ok(g,e);
+return( true );
+	    }
+	}
+	ap = ci->ap->next;
+	if ( prev==NULL )
+	    ci->sc->anchor = ap;
+	else
+	    prev->next = ap;
+	chunkfree(ci->ap,sizeof(AnchorPoint));
+	AI_Display(ci,ap);
+    }
+return( true );
+}
+
+static int AI_New(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	int waslig;
+	AnchorPoint *ap;
+
+	if ( AnchorClassUnused(ci->sc,&waslig)==NULL ) {
+	    GWidgetPostNoticeR(_STR_MakeNewClass,_STR_MakeNewAnchorClass);
+	    FontInfo(ci->sc->parent,8,true);		/* Anchor Class */
+	    if ( AnchorClassUnused(ci->sc,&waslig)==NULL )
+return(true);
+	    GGadgetSetList(GWidgetGetControl(ci->gw,CID_NameList),
+		    AnchorClassesLList(ci->sc->parent),false);
+	}
+	ap = AnchorPointNew(ci->cv);
+	if ( ap==NULL )
+return( true );
+	AI_Display(ci,ap);
+    }
+return( true );
+}
+
+static int AI_TypeChanged(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	AnchorPoint *ap = ci->ap;
+
+	if ( GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_Mark)) )
+	    ap->type = at_mark;
+	else if ( GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_BaseChar)) )
+	    ap->type = at_basechar;
+	else if ( GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_BaseLig)) )
+	    ap->type = at_baselig;
+	else if ( GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_BaseMark)) )
+	    ap->type = at_basemark;
+	GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_LigIndex),ap->type==at_baselig);
+    }
+return( true );
+}
+
+static void AI_TestOrdering(GIData *ci,real x) {
+    AnchorPoint *aps, *ap=ci->ap;
+    AnchorClass *ac = ap->anchor;
+    int isr2l;
+
+    isr2l = ci->sc->script==CHR('a','r','a','b') || ci->sc->script==CHR('h','e','b','r') ||
+	    (ci->sc->unicodeenc!=-1 && ci->sc->unicodeenc<0x10000 && isrighttoleft(ci->sc->unicodeenc));
+    for ( aps=ci->sc->anchor; aps!=NULL; aps=aps->next ) {
+	if ( aps->anchor==ac && aps!=ci->ap ) {
+	    if (( aps->lig_index<ap->lig_index &&
+		    ((!isr2l && aps->me.x>x) ||
+		     ( isr2l && aps->me.x<x))) ||
+		( aps->lig_index>ap->lig_index &&
+		    (( isr2l && aps->me.x>x) ||
+		     (!isr2l && aps->me.x<x))) ) {
+		GWidgetErrorR(_STR_OutOfOrder,_STR_IndexOutOfOrder,aps->lig_index);
+return;
+	    }
+	}
+    }
+return;
+}
+
+static int AI_LigIndexChanged(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	int index, max;
+	int err=false;
+	AnchorPoint *ap = ci->ap, *aps;
+
+	index = GetCalmRealR(ci->gw,CID_LigIndex,_STR_LigIndex,&err);
+	if ( index<0 || err )
+return( true );
+	if ( *_GGadgetGetTitle(g)=='\0' )
+return( true );
+	max = 0;
+	AI_TestOrdering(ci,ap->me.x);
+	for ( aps=ci->sc->anchor; aps!=NULL; aps=aps->next ) {
+	    if ( aps->anchor==ap->anchor && aps!=ap ) {
+		if ( aps->lig_index==index ) {
+		    GWidgetErrorR(_STR_IndexInUse,_STR_LigIndexInUse);
+return( true );
+		} else if ( aps->lig_index>max )
+		    max = aps->lig_index;
+	    }
+	}
+	if ( index>max+10 ) {
+	    char buf[20]; unichar_t ubuf[20];
+	    GWidgetErrorR(_STR_TooBig,_STR_IndexTooBig);
+	    sprintf(buf,"%d", max+1);
+	    uc_strcpy(ubuf,buf);
+	    GGadgetSetTitle(g,ubuf);
+	    index = max+1;
+	}
+	ap->lig_index = index;
+    }
+return( true );
+}
+
+static int AI_ANameChanged(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	AnchorPoint *ap;
+	GTextInfo *ti = GGadgetGetListItemSelected(g);
+	AnchorClass *an = ti->userdata;
+	int bad=0, max=0;
+
+	for ( ap=ci->sc->anchor; ap!=NULL; ap = ap->next ) {
+	    if ( ap!=ci->ap && ap->anchor==an ) {
+		if ( ap->type!=at_baselig || ci->ap->type!=at_baselig )
+	break;
+		if ( ap->lig_index==ci->ap->lig_index )
+		    bad = true;
+		else if ( ap->lig_index>max )
+		    max = ap->lig_index;
+	    }
+	}
+	if ( ap!=NULL ) {
+	    AI_SelectList(ci,ap);
+	    GWidgetErrorR(_STR_ClassUsed,_STR_AnchorClassUsed);
+	} else {
+	    ci->ap->anchor = an;
+	    if ( ci->ap->type!=at_baselig )
+		ci->ap->lig_index = 0;
+	    else if ( bad )
+		ci->ap->lig_index = max+1;
+	    AI_DisplayClass(ci,ci->ap);
+	    AI_TestOrdering(ci,ci->ap->me.x);
+	}
+    }
+return( true );
+}
+
+static int AI_PosChanged(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	real dx=0, dy=0;
+	int err=false;
+	AnchorPoint *ap = ci->ap;
+
+	if ( GGadgetGetCid(g)==CID_X ) {
+	    dx = GetCalmRealR(ci->gw,CID_X,_STR_X,&err)-ap->me.x;
+	    AI_TestOrdering(ci,ap->me.x+dx);
+	} else
+	    dy = GetCalmRealR(ci->gw,CID_Y,_STR_Y,&err)-ap->me.y;
+	if ( (dx==0 && dy==0) || err )
+return( true );
+	ap->me.x += dx;
+	ap->me.y += dy;
+	CVCharChangedUpdate(ci->cv);
+    }
+return( true );
+}
+
+static void AI_DoCancel(GIData *ci) {
+    CharView *cv = ci->cv;
+    ci->done = true;
+    AnchorPointsFree(cv->sc->anchor);
+    cv->sc->anchor = ci->oldaps;
+    ci->oldaps = NULL;
+    CVRemoveTopUndo(cv);
+    SCUpdateAll(cv->sc);
+}
+
+static int ai_e_h(GWindow gw, GEvent *event) {
+    if ( event->type==et_close ) {
+	AI_DoCancel( GDrawGetUserData(gw));
+    } else if ( event->type==et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("getinfo.html");
+return( true );
+	}
+return( false );
+    } else if ( event->type == et_map ) {
+	/* Above palettes */
+	GDrawRaise(gw);
+    }
+return( true );
+}
+
+static int AI_Cancel(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	AI_DoCancel( GDrawGetUserData(GGadgetGetWindow(g)));
+    }
+return( true );
+}
+
+static int AI_Ok(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	ci->done = true;
+	/* All the work has been done as we've gone along */
+    }
+return( true );
+}
+
+void ApGetInfo(CharView *cv, AnchorPoint *ap) {
+    static GIData gi;
+    GRect pos;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[20];
+    GTextInfo label[20];
+    int j;
+
+    memset(&gi,0,sizeof(gi));
+    gi.cv = cv;
+    gi.sc = cv->sc;
+    gi.oldaps = AnchorPointsCopy(cv->sc->anchor);
+    CVPreserveState(cv);
+    if ( ap==NULL ) {
+	ap = AnchorPointNew(cv);
+	if ( ap==NULL )
+return;
+    }
+	
+    gi.ap = ap;
+    gi.changed = false;
+    gi.done = false;
+
+	memset(&wattrs,0,sizeof(wattrs));
+	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.event_masks = ~(1<<et_charup);
+	wattrs.restrict_input_to_me = 1;
+	wattrs.undercursor = 1;
+	wattrs.cursor = ct_pointer;
+	wattrs.window_title = GStringGetResource(_STR_AnchorPointInfo,NULL);
+	wattrs.is_dlg = true;
+	pos.x = pos.y = 0;
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,AI_Width));
+	pos.height = GDrawPointsToPixels(NULL,AI_Height);
+	gi.gw = GDrawCreateTopWindow(NULL,&pos,ai_e_h,&gi,&wattrs);
+
+	memset(&gcd,0,sizeof(gcd));
+	memset(&label,0,sizeof(label));
+
+	j=0;
+	label[j].text = ap->anchor->name;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = 5; 
+	gcd[j].gd.pos.width = AI_Width-10; 
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_NameList;
+	gcd[j].gd.u.list = AnchorClassesList(cv->sc->parent);
+	gcd[j].gd.handle_controlevent = AI_ANameChanged;
+	gcd[j].creator = GListButtonCreate;
+	++j;
+
+	label[j].text = (unichar_t *) _STR_XC;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+34;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].creator = GLabelCreate;
+	++j;
+
+	gcd[j].gd.pos.x = 23; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-4;
+	gcd[j].gd.pos.width = 50;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_X;
+	gcd[j].gd.handle_controlevent = AI_PosChanged;
+	gcd[j].creator = GTextFieldCreate;
+	++j;
+
+	label[j].text = (unichar_t *) _STR_YC;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 85; gcd[j].gd.pos.y = gcd[j-2].gd.pos.y;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].creator = GLabelCreate;
+	++j;
+
+	gcd[j].gd.pos.x = 103; gcd[j].gd.pos.y = gcd[j-2].gd.pos.y;
+	gcd[j].gd.pos.width = 50;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_Y;
+	gcd[j].gd.handle_controlevent = AI_PosChanged;
+	gcd[j].creator = GTextFieldCreate;
+	++j;
+
+	label[j].text = (unichar_t *) _STR_Mark;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+28;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_Mark;
+	gcd[j].gd.handle_controlevent = AI_TypeChanged;
+	gcd[j].creator = GRadioCreate;
+	++j;
+
+	label[j].text = (unichar_t *) _STR_BaseChar;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 70; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_BaseChar;
+	gcd[j].gd.handle_controlevent = AI_TypeChanged;
+	gcd[j].creator = GRadioCreate;
+	++j;
+
+	label[j].text = (unichar_t *) _STR_BaseLig;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = gcd[j-2].gd.pos.x; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+14;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_BaseLig;
+	gcd[j].gd.handle_controlevent = AI_TypeChanged;
+	gcd[j].creator = GRadioCreate;
+	++j;
+
+	label[j].text = (unichar_t *) _STR_BaseMark;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = gcd[j-2].gd.pos.x; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_BaseMark;
+	gcd[j].gd.handle_controlevent = AI_TypeChanged;
+	gcd[j].creator = GRadioCreate;
+	++j;
+
+	label[j].text = (unichar_t *) _STR_LigIndex;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+26;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].creator = GLabelCreate;
+	++j;
+
+	gcd[j].gd.pos.x = 65; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-4;
+	gcd[j].gd.pos.width = 50;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_LigIndex;
+	gcd[j].gd.handle_controlevent = AI_LigIndexChanged;
+	gcd[j].creator = GTextFieldCreate;
+	++j;
+
+	label[j].text = (unichar_t *) _STR_New;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+30;
+	gcd[j].gd.pos.width = -1;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_New;
+	gcd[j].gd.handle_controlevent = AI_New;
+	gcd[j].creator = GButtonCreate;
+	++j;
+
+	label[j].text = (unichar_t *) _STR_Delete;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = -5; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y;
+	gcd[j].gd.pos.width = -1;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_Delete;
+	gcd[j].gd.handle_controlevent = AI_Delete;
+	gcd[j].creator = GButtonCreate;
+	++j;
+
+	label[j].text = (unichar_t *) _STR_PrevArrow;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 15; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+28;
+	gcd[j].gd.pos.width = -1;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_Next;	/* Yes, I really do mean the name to be reversed */
+	gcd[j].gd.handle_controlevent = AI_Next;
+	gcd[j].creator = GButtonCreate;
+	++j;
+
+	label[j].text = (unichar_t *) _STR_NextArrow;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = -15; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y;
+	gcd[j].gd.pos.width = -1;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_Prev;
+	gcd[j].gd.handle_controlevent = AI_Prev;
+	gcd[j].creator = GButtonCreate;
+	++j;
+
+	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+26;
+	gcd[j].gd.pos.width = AI_Width-10;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].creator = GLineCreate;
+	++j;
+
+	label[j].text = (unichar_t *) _STR_OK;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+8;
+	gcd[j].gd.pos.width = -1;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.handle_controlevent = AI_Ok;
+	gcd[j].creator = GButtonCreate;
+	++j;
+
+	label[j].text = (unichar_t *) _STR_Cancel;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = -5; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+3;
+	gcd[j].gd.pos.width = -1;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.handle_controlevent = AI_Cancel;
+	gcd[j].creator = GButtonCreate;
+	++j;
+
+	gcd[j].gd.pos.x = 2; gcd[j].gd.pos.y = 2;
+	gcd[j].gd.pos.width = pos.width-4; gcd[j].gd.pos.height = pos.height-4;
+	gcd[j].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
+	gcd[j].creator = GLineCreate;
+	++j;
+
+	GGadgetsCreate(gi.gw,gcd);
+	AI_Display(&gi,ap);
+	GWidgetIndicateFocusGadget(GWidgetGetControl(gi.gw,CID_X));
+
+    GWidgetHidePalettes();
+    GDrawSetVisible(gi.gw,true);
+    while ( !gi.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gi.gw);
+    AnchorPointsFree(gi.oldaps);
 }
 
 void MDReplace(MinimumDistance *md,SplineSet *old,SplineSet *rpl) {
@@ -1574,6 +2427,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
     nextcp.main_foreground = nextcpcol;
     prevcp.main_foreground = prevcpcol;
     gi.cv = cv;
+    gi.sc = cv->sc;
     gi.cursp = sp;
     gi.curspl = spl;
     gi.oldstate = SplinePointListCopy(*cv->heads[cv->drawmode]);
@@ -1788,8 +2642,9 @@ void CVGetInfo(CharView *cv) {
     SplinePointList *spl;
     RefChar *ref;
     ImageList *img;
+    AnchorPoint *ap;
 
-    if ( !CVOneThingSel(cv,&sp,&spl,&ref,&img)) {
+    if ( !CVOneThingSel(cv,&sp,&spl,&ref,&img,&ap)) {
 #if 0
 	if ( cv->fv->cidmaster==NULL )
 	    SCGetInfo(cv->sc,false);
@@ -1798,6 +2653,8 @@ void CVGetInfo(CharView *cv) {
 	RefGetInfo(cv,ref);
     else if ( img!=NULL )
 	ImgGetInfo(cv,img);
+    else if ( ap!=NULL )
+	ApGetInfo(cv,ap);
     else
 	PointGetInfo(cv,sp,spl);
 }

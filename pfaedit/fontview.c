@@ -830,6 +830,7 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_EncodedView 2019
 #define MID_Ligatures	2020
 #define MID_KernPairs	2021
+#define MID_AnchorPairs	2022
 #define MID_FitToEm	2022
 #define MID_CharInfo	2201
 #define MID_FindProblems 2216
@@ -984,7 +985,7 @@ void SCClearAll(SplineChar *sc) {
     if ( sc==NULL )
 return;
     if ( sc->splines==NULL && sc->refs==NULL && !sc->widthset &&
-	    sc->hstem==NULL && sc->vstem==NULL &&
+	    sc->hstem==NULL && sc->vstem==NULL && sc->anchor==NULL &&
 	    (!copymetadata ||
 		(sc->unicodeenc==-1 && strcmp(sc->name,".notdef")==0)))
 return;
@@ -998,6 +999,8 @@ return;
     sc->width = sc->parent->ascent+sc->parent->descent;
     SplinePointListsFree(sc->splines);
     sc->splines = NULL;
+    AnchorPointsFree(sc->anchor);
+    sc->anchor = NULL;
     for ( refs=sc->refs; refs!=NULL; refs = next ) {
 	next = refs->next;
 	SCRemoveDependent(sc,refs);
@@ -1339,7 +1342,7 @@ static int getorigin(void *d,BasePoint *base,int index) {
 	/* all done */
       break;
       case 1:		/* Center of selection */
-	/*CVFindCenter(cv,base,!CVAnySel(cv,NULL,NULL,NULL));*/
+	/*CVFindCenter(cv,base,!CVAnySel(cv,NULL,NULL,NULL,NULL));*/
       break;
       default:
 return( false );
@@ -1856,7 +1859,12 @@ static void FVMenuLigatures(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void FVMenuKernPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    SFShowKernPairs(fv->sf,NULL);
+    SFShowKernPairs(fv->sf,NULL,NULL);
+}
+
+static void FVMenuAnchorPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    SFShowKernPairs(fv->sf,NULL,mi->ti.userdata);
 }
 
 static void FVMenuCompact(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2652,7 +2660,7 @@ static void FVMenuCIDFontInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     if ( cidmaster==NULL )
 return;
-    FontInfo(cidmaster);
+    FontInfo(cidmaster,-1,false);
 }
 
 static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2845,8 +2853,27 @@ static GMenuItem ellist[] = {
     { NULL }
 };
 
+static GMenuItem dummyall[] = {
+    { { (unichar_t *) _STR_All, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'K' }, '\0', ksm_shift|ksm_control, NULL, NULL, NULL },
+    NULL
+};
+
+/* Builds up a menu containing all the anchor classes */
+static void aplistbuild(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    extern void GMenuItemArrayFree(GMenuItem *mi);
+
+    if ( mi->sub!=dummyall ) {
+	GMenuItemArrayFree(mi->sub);
+	mi->sub = NULL;
+    }
+
+    _aplistbuild(mi,fv->sf,FVMenuAnchorPairs);
+}
+
 static GMenuItem cblist[] = {
     { { (unichar_t *) _STR_KernPairs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'K' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuKernPairs, MID_KernPairs },
+    { { (unichar_t *) _STR_AnchoredPairs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'K' }, '\0', ksm_shift|ksm_control, dummyall, aplistbuild, FVMenuAnchorPairs, MID_AnchorPairs },
     { { (unichar_t *) _STR_Ligatures, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'L' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuLigatures, MID_Ligatures },
     NULL
 };
@@ -2876,6 +2903,9 @@ static void cblistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	  break;
 	  case MID_KernPairs:
 	    mi->ti.disabled = !anykerns;
+	  break;
+	  case MID_AnchorPairs:
+	    mi->ti.disabled = sf->anchor==NULL;
 	  break;
 	}
     }
@@ -3400,6 +3430,7 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 	dummy->name = ".notdef";
     dummy->width = dummy->vwidth = sf->ascent+sf->descent;
     dummy->parent = sf;
+    dummy->script = ScriptFromUnicode(dummy->unicodeenc,sf);
 return( dummy );
 }
 
@@ -3444,32 +3475,33 @@ return( components );
 }
 
 char *LigDefaultStr(int uni, char *name) {
-    const unichar_t *alt, *pt;
+    const unichar_t *alt=NULL, *pt;
     char *components = NULL;
     int len;
     const unichar_t *uname;
 
     /* If it's not unicode we have no info on it */
     /*  Unless it looks like one of adobe's special ligature names */
-    if ( uni==-1 || uni>=65536 ) {
+    if ( uni==-1 || uni>=65536 )
+	/* Nope */;
+    else if ( isdecompositionnormative(uni) &&
+		unicode_alternates[uni>>8]!=NULL &&
+		(alt = unicode_alternates[uni>>8][uni&0xff])!=NULL ) {
+	if ( alt[1]=='\0' )
+	    alt = NULL;		/* Single replacements aren't ligatures */
+	else if ( iscombining(alt[1]) && ( alt[2]=='\0' || iscombining(alt[2])))
+	    alt = NULL;		/* Don't treat accented letters as ligatures */
+	else if ( UnicodeCharacterNames[uni>>8]!=NULL &&
+		(uname = UnicodeCharacterNames[uni>>8][uni&0xff])!=NULL &&
+		uc_strstr(uname,"LIGATURE")==NULL &&
+		uc_strstr(uname,"VULGAR FRACTION")==NULL )
+	    alt = NULL;
+    }
+    if ( alt==NULL ) {
 	if ( name==NULL )
 return( NULL );
 	components = AdobeLigatureFormat(name);
 	alt = NULL;
-    } else {
-	if ( !isdecompositionnormative(uni) ||
-		unicode_alternates[uni>>8]==NULL ||
-		(alt = unicode_alternates[uni>>8][uni&0xff])==NULL )
-return( NULL );
-	for ( pt=alt; *pt; ++pt )
-	    if ( iscombining(*pt))
-return( NULL );			/* Don't treat accented letters as ligatures */
-	if ( alt[1]=='\0' )
-return( NULL );			/* Single replacements aren't ligatures */
-	if ( UnicodeCharacterNames[uni>>8]!=NULL &&
-		(uname = UnicodeCharacterNames[uni>>8][uni&0xff])!=NULL &&
-		uc_strstr(uname,"LIGATURE")==NULL )
-return( NULL );
     }
 
     if ( components!=NULL )
@@ -3479,6 +3511,12 @@ return( NULL );
     else if ( uni==0xfb04 )
 	components = copy("f f l; ff l");
     else if ( alt!=NULL ) {
+	if ( alt[1]==0x2044 && alt[3]==0 ) {
+	    static unichar_t hack[4];
+	    u_strcpy(hack,alt);
+	    hack[1] = '/';
+	    alt = hack;
+	}
 	components=NULL;
 	while ( 1 ) {
 	    len = 0;
@@ -3504,6 +3542,25 @@ return( NULL );
 return( components );
 }
 
+uint32 LigTagFromUnicode(int uni) {
+    int tag = CHR('l','i','g','a');	/* standard */
+
+    if (( uni>=0xbc && uni<=0xbe ) || (uni>=0x2153 && uni<=0x215e) )
+	tag = CHR('f','r','a','c');	/* Fraction */
+    switch ( uni ) {
+      case 0xfb05:		/* long-s t */
+	tag = CHR('h','l','i','g');
+      break;
+      case 0xfb06:		/* s t */
+	tag = CHR('d','l','i','g');
+      break;
+      case 0xfefb: case 0xfefc:	/* Lam & Alef, required ligs */
+	tag = CHR('r','l','i','g');
+      break;
+    }
+return( tag );
+}
+
 Ligature *SCLigDefault(SplineChar *sc) {
     char *components = LigDefaultStr(sc->unicodeenc,sc->name);
     Ligature *lig;
@@ -3514,6 +3571,7 @@ return( NULL );
     lig = gcalloc(1,sizeof(Ligature));
     lig->lig = sc;
     lig->components = components;
+    lig->tag = LigTagFromUnicode(sc->unicodeenc);
 return( lig );
 }
 

@@ -1289,6 +1289,7 @@ static void bSetCharName(Context *c) {
     SplineChar *sc;
     char *ligature, *name, *end;
     int uni;
+    uint32 ltag;
 
     if ( c->a.argc!=2 && c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
@@ -1298,6 +1299,7 @@ static void bSetCharName(Context *c) {
     uni = sc->unicodeenc;
     name = c->a.vals[1].u.sval;
     ligature = sc->lig==NULL?NULL : copy(sc->lig->components);
+    ltag = sc->lig==NULL ? CHR('l','i','g','a') : sc->lig->tag;
 
     if ( c->a.argc!=3 || c->a.vals[2].u.ival ) {
 	if ( name[0]=='u' && name[1]=='n' && name[2]=='i' && strlen(name)==7 &&
@@ -1311,13 +1313,14 @@ static void bSetCharName(Context *c) {
 	free( ligature );
 	ligature = LigDefaultStr(uni,name);
     }
-    SCSetMetaData(sc,name,uni,ligature);
+    SCSetMetaData(sc,name,uni,ligature,ltag);
 }
 
 static void bSetUnicodeValue(Context *c) {
     SplineChar *sc;
     char *ligature, *name;
     int uni;
+    uint32 ltag;
 
     if ( c->a.argc!=2 && c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
@@ -1328,6 +1331,7 @@ static void bSetUnicodeValue(Context *c) {
     uni = c->a.vals[1].u.ival;
     name = copy(sc->name);
     ligature = sc->lig==NULL?NULL : copy(sc->lig->components);
+    ltag = sc->lig==NULL ? CHR('l','i','g','a') : sc->lig->tag;
 
     if ( c->a.argc!=3 || c->a.vals[2].u.ival ) {
 	free(name);
@@ -1345,7 +1349,7 @@ static void bSetUnicodeValue(Context *c) {
 	free( ligature );
 	ligature = LigDefaultStr(uni,name);
     }
-    SCSetMetaData(sc,name,uni,ligature);
+    SCSetMetaData(sc,name,uni,ligature,ltag);
 }
 
 static void bSetCharColor(Context *c) {

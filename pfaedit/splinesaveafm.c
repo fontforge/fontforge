@@ -415,7 +415,7 @@ return( sc!=NULL && sc->enc==0 && sc->refs==NULL && strcmp(sc->name,".notdef")==
 
 int SCWorthOutputting(SplineChar *sc) {
 return( sc!=NULL &&
-	( sc->splines!=NULL || sc->refs!=NULL || sc->widthset ||
+	( sc->splines!=NULL || sc->refs!=NULL || sc->widthset || sc->anchor!=NULL ||
 #if HANYANG
 	    sc->compositionunit ||
 #endif
@@ -627,7 +627,7 @@ void SFLigatureCleanup(SplineFont *sf) {
 	    next = l->next;
 	    for ( scl = l->components; scl!=NULL; scl = sclnext ) {
 		sclnext = scl->next;
-		free(scl);
+		chunkfree(scl,sizeof(struct splinecharlist));
 	    }
 	    free( l );
 	}
@@ -682,7 +682,7 @@ void SFLigaturePrepare(SplineFont *sf) {
 		    if ( sc==NULL ) {
 			sc = tsc;
 		    } else {
-			struct splinecharlist *cur = galloc(sizeof(struct splinecharlist));
+			struct splinecharlist *cur = chunkalloc(sizeof(struct splinecharlist));
 			if ( head==NULL )
 			    head = cur;
 			else

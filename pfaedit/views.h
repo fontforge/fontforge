@@ -39,6 +39,7 @@ extern struct cvshows {
     int showhmetrics, showvmetrics;	/* show advance width, baseline, etc. */
     int markextrema;
     int showblues, showfamilyblues;
+    int showanchor;
 } CVShows;
 
 extern struct bvshows {
@@ -70,6 +71,7 @@ typedef struct pressedOn {
     RefChar *ref;
     SplinePointList *spl;	/* containing spline or point */
     ImageList *img;
+    AnchorPoint *ap;
     float ex, ey;		/* end of last rubber band rectangle */
     BasePoint constrain;	/* Point to which we constrain movement */
     BasePoint cp;		/* Original control point position */
@@ -121,6 +123,7 @@ typedef struct charview {
     unsigned int showvmetrics:1;
     unsigned int showblues:1;
     unsigned int showfamilyblues:1;
+    unsigned int showanchor:1;
     unsigned int markextrema:1;
     unsigned int needsrasterize:1;		/* Rasterization (of fill or fontview) needed on mouse up */
     unsigned int recentchange:1;		/* a change happened in the grids or background. don't need to rasterize */
@@ -142,8 +145,8 @@ typedef struct charview {
     int xoff, yoff;
     int mbh, infoh, rulerh;
     GGadget *vsb, *hsb, *mb;
-    GFont *small;
-    int16 sas, sfh;
+    GFont *small, *normal;
+    int16 sas, sfh, nas, nfh;
     BasePoint info;
     SplinePoint *info_sp;
     GPoint e;					/* mouse location */
@@ -408,7 +411,9 @@ extern int WritePfmFile(char *filename,SplineFont *sf, int type0);
 extern int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype,
 	int fmflags,int res, char *subfontdirectory,struct sflist *sfs);
 extern int SFGenerateFont(SplineFont *sf,int family);
-extern void FontInfo(SplineFont *sf);
+extern GTextInfo *AnchorClassesList(SplineFont *sf);
+extern GTextInfo **AnchorClassesLList(SplineFont *sf);
+extern void FontInfo(SplineFont *sf,int aspect,int sync);
 extern void FontInfoDestroy(FontView *fv);
 extern void FontMenuFontInfo(void *fv);
 extern void LoadEncodingFile(void);
@@ -506,7 +511,7 @@ extern void _SCCharChangedUpdate(SplineChar *sc,int changed);
 extern void SCCharChangedUpdate(SplineChar *sc);
 extern void SCSynchronizeWidth(SplineChar *sc,real newwidth, real oldwidth,FontView *fv);
 extern void SCSynchronizeLBearing(SplineChar *sc,char *selected,real off);
-extern int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi);
+extern int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi, int *anya);
 extern int CVTwoForePointsSelected(CharView *cv, SplinePoint **sp1, SplinePoint **sp2);
 extern int CVIsDiagonalable(SplinePoint *sp1, SplinePoint *sp2, SplinePoint **sp3, SplinePoint **sp4);
 extern int CVClearSel(CharView *cv);
@@ -517,7 +522,7 @@ extern void SCOutOfDateBackground(SplineChar *sc);
 extern SplinePointList *CVAnySelPointList(CharView *cv);
 extern SplinePoint *CVAnySelPoint(CharView *cv);
 extern int CVOneThingSel(CharView *cv, SplinePoint **sp, SplinePointList **spl,
-	RefChar **ref, ImageList **img);
+	RefChar **ref, ImageList **img, AnchorPoint **ap);
 extern void RevertedGlyphReferenceFixup(SplineChar *sc, SplineFont *sf);
 extern void CVInfoDraw(CharView *cv, GWindow pixmap );
 extern void SCImportPSFile(SplineChar *sc,enum drawmode dm,FILE *ps,int doclear);
@@ -546,6 +551,8 @@ extern void MDReplace(MinimumDistance *md,SplineSet *old,SplineSet *rpl);
 extern void SCGetInfo(SplineChar *sc,int nextprev);
 extern void CVGetInfo(CharView *cv);
 extern void SCRefBy(SplineChar *sc);
+extern void ApGetInfo(CharView *cv, AnchorPoint *ap);
+extern AnchorClass *AnchorClassUnused(SplineChar *sc,int *waslig);
 extern void FVSetWidth(FontView *fv,enum widthtype wtype);
 extern void CVSetWidth(CharView *cv,enum widthtype wtype);
 extern void FVSetWidthScript(FontView *fv,enum widthtype wtype,int val);
@@ -607,6 +614,9 @@ extern void CopySelected(CharView *cv);
 extern void SCCopyWidth(SplineChar *sc,enum undotype);
 extern void CopyWidth(CharView *cv,enum undotype);
 extern void PasteToCV(CharView *cv);
+extern void PasteRemoveSFAnchors(SplineFont *);
+extern void PasteAnchorClassMerge(SplineFont *sf,AnchorClass *into,AnchorClass *from);
+extern void PasteRemoveAnchorClass(SplineFont *sf,AnchorClass *dying);
 extern void ClipboardClear(void);
 extern SplineSet *ClipBoardToSplineSet(void);
 extern void BCCopySelected(BDFChar *bc,int pixelsize,int depth);
@@ -623,6 +633,8 @@ extern void WindowMenuBuild(GWindow base,struct gmenuitem *mi,GEvent *);
 extern void MenuRecentBuild(GWindow base,struct gmenuitem *mi,GEvent *);
 extern void MenuScriptsBuild(GWindow base,struct gmenuitem *mi,GEvent *);
 extern int RecentFilesAny(void);
+extern void _aplistbuild(struct gmenuitem *mi,SplineFont *sf,
+	void (*func)(GWindow,struct gmenuitem *,GEvent *));
 
 extern GImage GIcon_sel2ptr, GIcon_rightpointer, GIcon_angle, GIcon_distance,
 	GIcon_selectedpoint, GIcon_mag;
@@ -714,7 +726,7 @@ extern void SVMakeActive(SearchView *sv,CharView *cv);
 extern int SVAttachFV(FontView *fv,int ask_if_difficult);
 extern void SVDetachFV(FontView *fv);
 
-extern void SFShowKernPairs(SplineFont *sf,SplineChar *sc);
+extern void SFShowKernPairs(SplineFont *sf,SplineChar *sc,AnchorClass *ac);
 extern void SFShowLigatures(SplineFont *sf);
 
 extern GMenuItem helplist[];

@@ -117,12 +117,13 @@ return;
     }
 }
 
-int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi) {
-    int anypoints = 0, anyrefs=0, anyimages=0;
+int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi, int *anya) {
+    int anypoints = 0, anyrefs=0, anyimages=0, anyanchor=0;
     SplinePointList *spl;
     Spline *spline, *first;
     RefChar *rf;
     ImageList *il;
+    AnchorPoint *ap;
 
     for ( spl = *cv->heads[cv->drawmode]; spl!=NULL && !anypoints; spl = spl->next ) {
 	first = NULL;
@@ -135,6 +136,9 @@ int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi) {
     if ( cv->drawmode==dm_fore ) {
 	for ( rf=cv->sc->refs; rf!=NULL && !anyrefs; rf=rf->next )
 	    if ( rf->selected ) anyrefs = true;
+	if ( cv->showanchor && anya!=NULL )
+	    for ( ap=cv->sc->anchor; ap!=NULL && !anyanchor; ap=ap->next )
+		if ( ap->selected ) anyanchor = true;
     }
     if ( cv->drawmode==dm_back ) {
 	for ( il=cv->sc->backimages; il!=NULL && !anyimages; il=il->next )
@@ -143,7 +147,8 @@ int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi) {
     if ( anyp!=NULL ) *anyp = anypoints;
     if ( anyr!=NULL ) *anyr = anyrefs;
     if ( anyi!=NULL ) *anyi = anyimages;
-return( anypoints || anyrefs || anyimages );
+    if ( anya!=NULL ) *anya = anyanchor;
+return( anypoints || anyrefs || anyimages || anyanchor );
 }
 
 int CVClearSel(CharView *cv) {
@@ -152,6 +157,7 @@ int CVClearSel(CharView *cv) {
     RefChar *rf;
     ImageList *img;
     int needsupdate = 0;
+    AnchorPoint *ap;
 
     cv->lastselpt = NULL;
     for ( spl = *cv->heads[cv->drawmode]; spl!=NULL; spl = spl->next ) {
@@ -166,6 +172,8 @@ int CVClearSel(CharView *cv) {
     if ( cv->drawmode == dm_fore ) {
 	for ( rf=cv->sc->refs; rf!=NULL; rf = rf->next )
 	    if ( rf->selected ) { needsupdate = true; rf->selected = false; }
+	for ( ap=cv->sc->anchor; ap!=NULL; ap = ap->next )
+	    if ( ap->selected ) { if ( cv->showanchor ) needsupdate = true; ap->selected = false; }
     }
     if ( cv->drawmode == dm_back ) {
 	for ( img=cv->sc->backimages; img!=NULL; img = img->next )
@@ -184,6 +192,7 @@ int CVSetSel(CharView *cv) {
     RefChar *rf;
     ImageList *img;
     int needsupdate = 0;
+    AnchorPoint *ap;
 
     cv->lastselpt = NULL;
     for ( spl = *cv->heads[cv->drawmode]; spl!=NULL; spl = spl->next ) {
@@ -199,6 +208,9 @@ int CVSetSel(CharView *cv) {
     if ( cv->drawmode == dm_fore ) {
 	for ( rf=cv->sc->refs; rf!=NULL; rf = rf->next )
 	    if ( !rf->selected ) { needsupdate = true; rf->selected = true; }
+	if ( cv->showanchor )
+	    for ( ap=cv->sc->anchor; ap!=NULL; ap=ap->next )
+		if ( !ap->selected ) { needsupdate = true; ap->selected = true; }
     }
     if ( cv->drawmode == dm_back ) {
 	for ( img=cv->sc->backimages; img!=NULL; img = img->next )
@@ -456,6 +468,7 @@ return;
     if ( (fs->p->sp==NULL || !fs->p->sp->selected) &&
 	    (fs->p->ref==NULL || !fs->p->ref->selected) &&
 	    (fs->p->img==NULL || !fs->p->img->selected) &&
+	    (fs->p->ap==NULL || !fs->p->ap->selected) &&
 	    (!dowidth || !cv->widthsel) &&
 	    (!dovwidth || !cv->vwidthsel) &&
 	    !(event->u.mouse.state&ksm_shift))
@@ -507,9 +520,12 @@ return;
 	} else if ( fs->p->img!=NULL ) {
 	    if ( !fs->p->img->selected ) needsupdate = true;
 	    fs->p->img->selected = true;
-	} else {
+	} else if ( fs->p->ref!=NULL ) {
 	    if ( !fs->p->ref->selected ) needsupdate = true;
 	    fs->p->ref->selected = true;
+	} else if ( fs->p->ap!=NULL ) {
+	    if ( !fs->p->ap->selected ) needsupdate = true;
+	    fs->p->ap->selected = true;
 	}
     } else if ( event->u.mouse.clicks<=1 ) {
 	if ( fs->p->nextcp || fs->p->prevcp )
@@ -524,9 +540,12 @@ return;
 	} else if ( fs->p->img!=NULL ) {
 	    needsupdate = true;
 	    fs->p->img->selected = !fs->p->img->selected;
-	} else {
+	} else if ( fs->p->ref!=NULL ) {
 	    needsupdate = true;
 	    fs->p->ref->selected = !fs->p->ref->selected;
+	} else if ( fs->p->ap!=NULL ) {
+	    needsupdate = true;
+	    fs->p->ap->selected = !fs->p->ap->selected;
 	}
     } else if ( event->u.mouse.clicks==2 ) {
 	if ( fs->p->spl!=NULL ) {
@@ -538,8 +557,17 @@ return;
 		    { needsupdate = true; spline->to->selected = true; }
 		if ( first==NULL ) first = spline;
 	    }
-	} else {
+	} else if ( fs->p->ref!=NULL || fs->p->img!=NULL ) {
 	    /* Double clicking on a referenced character doesn't do much */
+	} else if ( fs->p->ap!=NULL ) {
+	    /* Select all Anchor Points at this location */
+	    AnchorPoint *ap;
+	    for ( ap=cv->sc->anchor; ap!=NULL; ap=ap->next )
+		if ( ap->me.x==fs->p->ap->me.x && ap->me.y==fs->p->ap->me.y )
+		    if ( !ap->selected ) {
+			ap->selected = true;
+			needsupdate = true;
+		    }
 	}
     } else {
 	/* should triple clicking select all? */
@@ -558,6 +586,7 @@ static int CVRectSelect(CharView *cv, real newx, real newy) {
     Spline *spline, *first;
     SplinePointList *spl;
     BasePoint *bp;
+    AnchorPoint *ap;
 
     if ( cv->p.cx<=cv->p.ex ) {
 	old.minx = cv->p.cx;
@@ -596,6 +625,16 @@ static int CVRectSelect(CharView *cv, real newx, real newy) {
 		    ( rf->bb.minx>=new.minx && rf->bb.maxx<new.maxx &&
 			rf->bb.miny>=new.miny && rf->bb.maxy<new.maxy )) {
 		rf->selected = !rf->selected;
+		any = true;
+	    }
+	}
+	if ( cv->showanchor ) for ( ap=cv->sc->anchor ; ap!=NULL; ap=ap->next ) {
+	    bp = &ap->me;
+	    if (( bp->x>=old.minx && bp->x<old.maxx &&
+			bp->y>=old.miny && bp->y<old.maxy ) !=
+		    ( bp->x>=new.minx && bp->x<new.maxx &&
+			bp->y>=new.miny && bp->y<new.maxy )) {
+		ap->selected = !ap->selected;
 		any = true;
 	    }
 	}
@@ -806,6 +845,7 @@ void CVMoveSelection(CharView *cv, real dx, real dy) {
     real transform[6];
     RefChar *refs;
     ImageList *img;
+    AnchorPoint *ap;
 
     transform[0] = transform[3] = 1.0;
     transform[1] = transform[2] = 0.0;
@@ -820,6 +860,12 @@ return;
 	    refs->bb.minx += transform[4]; refs->bb.maxx += transform[4];
 	    refs->bb.miny += transform[5]; refs->bb.maxy += transform[5];
 	    SplinePointListTransform(refs->splines,transform,true);
+	}
+	if ( cv->showanchor ) {
+	    for ( ap=cv->sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->selected ) {
+		ap->me.x += transform[4];
+		ap->me.y += transform[5];
+	    }
 	}
     } else if ( cv->drawmode==dm_back ) {
 	for ( img = cv->sc->backimages; img!=NULL; img=img->next ) if ( img->selected ) {

@@ -5,6 +5,7 @@
 #include <stdarg.h>
 #include <math.h>
 #include <charset.h>
+#include <ustring.h>
 
 Encoding *enclist = NULL;
 int local_encoding = e_iso8859_1;
@@ -328,6 +329,108 @@ return( 1 );
 
 return( bdf->clut->clut_len==256 ? 8 :
 	bdf->clut->clut_len==16 ? 4 : 2);
+}
+
+/* scripts (for opentype) that I understand */
+
+static uint32 scripts[][11] = {
+/* Arabic */	{ CHR('a','r','a','b'), 0x0600, 0x06ff, 0xfb50, 0xfdff, 0xfe70, 0xfeff },
+/* Armenian */	{ CHR('a','r','m','n'), 0x0530, 0x058f, 0xfb13, 0xfb17 },
+/* Bengali */	{ CHR('b','e','n','g'), 0x0980, 0x09ff },
+/* Bopomofo */	{ CHR('b','o','p','o'), 0x3100, 0x312f },
+/* Braille */	{ CHR('b','r','a','i'), 0x2800, 0x28ff },
+/* Byzantine M*/{ CHR('b','y','z','m'), 0x1d000, 0x1d0ff },
+/* Canadian Syl*/{CHR('c','a','n','s'), 0x1400, 0x167f },
+/* Cherokee */	{ CHR('c','h','e','r'), 0x13a0, 0x13ff },
+/* Cyrillic */	{ CHR('c','y','r','l'), 0x0500, 0x052f },
+/* Devanagari */{ CHR('d','e','v','a'), 0x0900, 0x097f },
+/* Ethiopic */	{ CHR('e','t','h','i'), 0x1300, 0x139f },
+/* Georgian */	{ CHR('g','e','o','r'), 0x1080, 0x10ff },
+/* Greek */	{ CHR('g','r','e','k'), 0x0370, 0x03ff, 0x1f00, 0x1fff },
+/* Gujarati */	{ CHR('g','u','j','r'), 0x0a80, 0x0aff },
+/* Gurmukhi */	{ CHR('g','u','r','u'), 0x0a00, 0x0a7f },
+/* Hangul */	{ CHR('h','a','n','g'), 0x1100, 0x11ff, 0x3130, 0x319f, 0xffa0, 0xffdf },
+ /* I'm not sure what the difference is between the 'hang' tag and the 'jamo' */
+ /*  tag. 'Jamo' is said to be the precomposed forms, but what's 'hang'? */
+/* CJKIdeogra */{ CHR('h','a','n','i'), 0x3300, 0x9fff, 0xf900, 0xfaff, 0x020000, 0x02ffff },
+/* Hebrew */	{ CHR('h','e','b','r'), 0x0590, 0x05ff, 0xfb1e, 0xfb4ff },
+#if 0	/* Hiragana used to have its own tag, but has since been merged with katakana */
+/* Hiragana */	{ CHR('h','i','r','a'), 0x3040, 0x309f },
+#endif
+/* Hangul Jamo*/{ CHR('j','a','m','o'), 0xac00, 0xd7af },
+/* Katakana */	{ CHR('k','a','n','a'), 0x3040, 0x30ff, 0xff60, 0xff9f },
+/* Khmer */	{ CHR('k','h','m','r'), 0x1780, 0x17ff },
+/* Kannada */	{ CHR('k','n','d','a'), 0x0c80, 0x0cff },
+/* Latin */	{ CHR('l','a','t','n'), 0x0000, 0x02af, 0x1d00, 0x1eff, 0xfb00, 0xfb0f, 0xff00, 0xff5f, 0, 0 },
+/* Lao */	{ CHR('l','a','o',' '), 0x0e80, 0x0eff },
+/* Malayalam */	{ CHR('m','l','y','m'), 0x0d00, 0x0d7f },
+/* Mongolian */	{ CHR('m','o','n','g'), 0x1800, 0x18af },
+/* Myanmar */	{ CHR('m','y','m','r'), 0x1000, 0x107f },
+/* Ogham */	{ CHR('o','g','a','m'), 0x1680, 0x169f },
+/* Oriya */	{ CHR('o','r','y','a'), 0x0b00, 0x0b7f },
+/* Runic */	{ CHR('r','u','n','r'), 0x16a0, 0x16ff },
+/* Sinhala */	{ CHR('s','i','n','h'), 0x0d80, 0x0dff },
+/* Syriac */	{ CHR('s','y','r','c'), 0x0700, 0x074f },
+/* Tamil */	{ CHR('t','a','m','l'), 0x0b80, 0x0bff },
+/* Telugu */	{ CHR('t','e','l','u'), 0x0c00, 0x0c7f },
+/* Thaana */	{ CHR('t','h','a','a'), 0x0780, 0x07bf },
+/* Thai */	{ CHR('t','h','a','i'), 0x0e00, 0x0e7f },
+/* Tibetan */	{ CHR('t','i','b','t'), 0x0f00, 0x0fff },
+/* Yi */	{ CHR('y','i',' ',' '), 0xa000, 0xa73f },
+		{ 0 }
+};
+
+uint32 ScriptFromUnicode(int u,SplineFont *sf) {
+    int s, k;
+    int enc;
+
+    if ( u!=-1 ) {
+	for ( s=0; scripts[s][0]!=0; ++s ) {
+	    for ( k=1; scripts[s][k+1]!=0; k += 2 )
+		if ( u>=scripts[s][k] && u<=scripts[s][k+1] )
+	    break;
+	    if ( scripts[s][k+1]!=0 )
+	break;
+	}
+	if ( scripts[s][0]!=0 )
+return( scripts[s][0] );
+    }
+
+    if ( sf==NULL )
+return( 0 );
+    enc = sf->encoding_name;
+    if ( sf->cidmaster!=NULL || sf->subfontcnt!=0 ) {
+	if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+	if ( strmatch(sf->ordering,"Identity")==0 )
+return( 0 );
+	else if ( strmatch(sf->ordering,"Korean")==0 )
+return( CHR('j','a','m','o'));
+	else
+return( CHR('h','a','n','i') );
+    }
+
+    if ( enc==em_jis208 || enc==em_jis212 || enc==em_gb2312 || enc==em_big5 ||
+	    enc == em_big5hkscs || enc==em_sjis )
+return( CHR('h','a','n','i') );
+    else if ( enc==em_ksc5601 || enc==em_johab || enc==em_wansung )
+return( CHR('j','a','m','o') );
+    else if ( enc==em_iso8859_11 )
+return( CHR('t','h','a','i'));
+    else if ( enc==em_iso8859_8 )
+return( CHR('h','e','b','r'));
+    else if ( enc==em_iso8859_7 )
+return( CHR('g','r','e','k'));
+    else if ( enc==em_iso8859_6 )
+return( CHR('a','r','a','b'));
+    else if ( enc==em_iso8859_5 || enc==em_koi8_r )
+return( CHR('c','y','r','l'));
+    else if ( enc==em_jis201 )
+return( CHR('k','a','n','a'));
+    else if ( (enc>=em_iso8859_1 && enc<=em_iso8859_15 ) || enc==em_mac ||
+	    enc==em_win || enc==em_adobestandard )
+return( CHR('l','a','t','n'));
+
+return( 0 );
 }
 
 #if HANYANG

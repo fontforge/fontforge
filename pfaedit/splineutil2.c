@@ -1580,6 +1580,7 @@ SplineFont *SplineFontNew(void) {
 	    uenc = table[i];
 	sc->enc = i;
 	sc->unicodeenc = uenc;
+	sc->script = ScriptFromUnicode(uenc,sf);
 	name = uenc<=0?".notdef":psunicodenames[uenc];
 	if ( uenc==-1 && item!=NULL && item->psnames!=NULL && item->psnames[i]!=NULL )
 	    name = item->psnames[i];

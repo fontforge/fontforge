@@ -33,7 +33,7 @@ pfaedit_OBJECTS =  autohint.o autosave.o autowidth.o bitmapdlg.o \
  problems.o pfaedit-ui.o metafont.o alignment.o parsettfbmf.o \
  macbinary.o crctab.o scripting.o freetype.o gotodlg.o search.o \
  combinations.o tilepath.o sftextfield.o displayfonts.o ikarus.o \
- cvhand.o cvfreehand.o simplifydlg.o winfonts.o
+ cvhand.o cvfreehand.o simplifydlg.o winfonts.o tottfgpos.o
 DIFFOBJS = sfddiff.o sfd.o diffstubs.o stamp.o
 ACORNOBJS = acorn2sfd.o sfd.o diffstubs.o psunicodenames.o stamp.o
 
@@ -41,7 +41,6 @@ WFLAGS = -Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type -Wparentheses
 CFLAGS = @CFLAGS@ -I$(top_srcdir)/inc -I$(srcdir) -I. $(WFLAGS) $(X_CFLAGS) \
     @DEFS@ '-DSHAREDIR="$(sharedir)"'
 
-LDFLAGS = @LDFLAGS@
 LIBS = -rpath $(libdir) $(X_LIBS) ../libgdraw.la ../libgunicode.la \
     $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS) @LIBS@ $(STATIC_LIBS) -L/usr/lib -lm
 DLIBS = -rpath $(libdir) ../libgunicode.la -lm

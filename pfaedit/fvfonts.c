@@ -72,6 +72,7 @@ SplineChar *SplineCharCopy(SplineChar *sc) {
 	nsc->lig = galloc(sizeof(Ligature));
 	nsc->lig->lig = nsc;
 	nsc->lig->components = copy(sc->lig->components);
+	nsc->lig->tag = sc->lig->tag;
     }
 return(nsc);
 }

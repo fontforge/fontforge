@@ -406,6 +406,7 @@ void UndoesFree(Undoes *undo) {
 		free( undo->u.state.charname );
 		free( undo->u.state.lig );
 	    }
+	    AnchorPointsFree(undo->u.state.anchor);
 	  break;
 	  case ut_bitmap:
 	    free(undo->u.bmpstate.bitmap);
@@ -467,6 +468,7 @@ Undoes *CVPreserveState(CharView *cv) {
     if ( cv->drawmode==dm_fore ) {
 	undo->u.state.refs = RefCharsCopyState(cv->sc);
 	undo->u.state.md = MDsCopyState(cv->sc,undo->u.state.splines);
+	undo->u.state.anchor = AnchorPointsCopy(cv->sc->anchor);
     }
     undo->u.state.u.images = ImagesCopyState(cv);
 return( CVAddUndo(cv,undo));
@@ -482,6 +484,7 @@ Undoes *SCPreserveState(SplineChar *sc,int dohints) {
     undo->u.state.splines = SplinePointListCopy(sc->splines);
     undo->u.state.refs = RefCharsCopyState(sc);
     undo->u.state.md = MDsCopyState(sc,undo->u.state.splines);
+    undo->u.state.anchor = AnchorPointsCopy(sc->anchor);
     undo->u.state.u.images = NULL;
     if ( dohints ) {
 	undo->undotype = ut_statehint;
@@ -489,8 +492,10 @@ Undoes *SCPreserveState(SplineChar *sc,int dohints) {
 	if ( dohints==2 ) {
 	    undo->undotype = ut_statename;
 	    undo->u.state.unicodeenc = sc->unicodeenc;
+	    undo->u.state.script = sc->script;
 	    undo->u.state.charname = copy(sc->name);
 	    undo->u.state.lig = sc->lig? copy(sc->lig->components) : NULL;
+	    undo->u.state.ligtag = sc->lig ? sc->lig->tag : 0;
 	}
     }
     undo->u.state.copied_from = sc->parent;
@@ -523,7 +528,7 @@ Undoes *CVPreserveTState(CharView *cv) {
     int anyrefs;
     RefChar *refs, *urefs;
 
-    cv->p.transany = CVAnySel(cv,NULL,&anyrefs,NULL);
+    cv->p.transany = CVAnySel(cv,NULL,&anyrefs,NULL,NULL);
     cv->p.transanyrefs = anyrefs;
 
     undo = CVPreserveState(cv);
@@ -623,8 +628,11 @@ static void SCUndoAct(SplineChar *sc,int drawmode, Undoes *undo) {
 	*head = undo->u.state.splines;
 	if ( drawmode==dm_fore ) {
 	    MinimumDistance *md = sc->md;
+	    AnchorPoint *ap = sc->anchor;
 	    sc->md = undo->u.state.md;
 	    undo->u.state.md = md;
+	    sc->anchor = undo->u.state.anchor;
+	    undo->u.state.anchor = ap;
 	}
 	if ( drawmode==dm_fore && !RefCharsMatch(undo->u.state.refs,sc->refs)) {
 	    RefChar *refs = RefCharsCopyState(sc);
@@ -648,19 +656,25 @@ static void SCUndoAct(SplineChar *sc,int drawmode, Undoes *undo) {
 	    SCSynchronizeLBearing(sc,NULL,undo->u.state.lbearingchange);
 	}
 	if ( drawmode==dm_fore && undo->undotype==ut_statename ) {
+	    int temptag;
 	    char *temp = sc->name;
 	    int uni = sc->unicodeenc;
+	    uint32 script = sc->script;
 	    sc->name = undo->u.state.charname;
 	    undo->u.state.charname = temp;
 	    sc->unicodeenc = undo->u.state.unicodeenc;
 	    undo->u.state.unicodeenc = uni;
+	    sc->script = undo->u.state.script;
+	    undo->u.state.script = script;
 	    temp = sc->lig==NULL ? NULL : sc->lig->components;
+	    temptag = sc->lig==NULL ? 0 : sc->lig->tag;
 	    free(sc->lig); sc->lig = NULL;
 	    if ( undo->u.state.lig!=NULL ) {
 		sc->lig = gcalloc(1,sizeof(Ligature)); sc->lig->lig = sc;
 		sc->lig->components = undo->u.state.lig;
+		sc->lig->tag = undo->u.state.ligtag;
 	    }
-	    undo->u.state.lig = temp;
+	    undo->u.state.lig = temp; undo->u.state.ligtag = temptag;
 	}
       } break;
       default:
@@ -845,6 +859,7 @@ static void CopyBufferFree(void) {
       case ut_state: case ut_statehint:
 	SplinePointListsFree(copybuffer.u.state.splines);
 	RefCharsFree(copybuffer.u.state.refs);
+	AnchorPointsFree(copybuffer.u.state.anchor);
 	if ( copybuffer.undotype==ut_statehint )
 	    UHintListFree(copybuffer.u.state.u.hints);
 	else
@@ -1080,6 +1095,15 @@ void CopySelected(CharView *cv) {
 	    new->next = copybuffer.u.state.refs;
 	    copybuffer.u.state.refs = new;
 	}
+	if ( cv->showanchor ) {
+	    AnchorPoint *ap, *new;
+	    for ( ap=cv->sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->selected ) {
+		new = chunkalloc(sizeof(AnchorPoint));
+		*new = *ap;
+		new->next = copybuffer.u.state.anchor;
+		copybuffer.u.state.anchor = new;
+	    }
+	}
     }
     if ( cv->drawmode==dm_back ) {
 	ImageList *imgs, *new;
@@ -1110,10 +1134,14 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
 	    cur->undotype = copymetadata ? ut_statename : ut_statehint;
 	    cur->u.state.splines = SplinePointListCopy(sc->splines);
 	    cur->u.state.refs = RefCharsCopyState(sc);
+	    cur->u.state.anchor = AnchorPointsCopy(sc->anchor);
 	    cur->u.state.u.hints = UHintCopy(sc,true);
 	    cur->u.state.unicodeenc = sc->unicodeenc;
+	    cur->u.state.script = sc->script;
 	    cur->u.state.charname = copymetadata ? copy(sc->name) : NULL;
 	    cur->u.state.lig = copymetadata && sc->lig? copy(sc->lig->components) : NULL;
+	    if ( sc->lig )
+		cur->u.state.ligtag = sc->lig->tag;
 	} else {		/* Or just make a reference */
 	    cur->undotype = ut_state;
 	    cur->u.state.refs = ref = chunkalloc(sizeof(RefChar));
@@ -1294,6 +1322,68 @@ return;
     free(paste);
 }
 
+static anchor_lost_warning = false;
+
+static void APMerge(SplineChar *sc,AnchorPoint *anchor) {
+    AnchorPoint *ap, *prev, *next, *test;
+    AnchorClass *ac;
+
+    if ( anchor==NULL )
+return;
+    anchor = AnchorPointsCopy(anchor);
+    /* If we pasted from one font to another, the anchor class list will be */
+    /*  different. */
+    for ( ac = sc->parent->anchor; ac!=NULL && ac!=anchor->anchor; ac=ac->next );
+    if ( ac==NULL ) {		/* Into a different font. See if we can find a class with same name in new font */
+	prev = NULL;
+	for ( ap = anchor; ap!=NULL; ap=next ) {
+	    next = ap->next;
+	    for ( ac = sc->parent->anchor; ac!=NULL && u_strcmp(ac->name,ap->anchor->name)!=0; ac = ac->next );
+	    if ( ac!=NULL ) {
+		ap->anchor = ac;
+		prev = ap;
+	    } else {
+		if ( prev==NULL )
+		    anchor = next;
+		else
+		    prev->next = next;
+		chunkfree(ap,sizeof(AnchorPoint));
+		anchor_lost_warning = true;
+	    }
+	}
+	if ( anchor_lost_warning )
+	    GWidgetErrorR(_STR_AnchorLost,_STR_AnchorLostPaste);
+	if ( anchor==NULL )
+return;
+    }
+    if ( sc->anchor==NULL ) {
+	sc->anchor = anchor;
+return;
+    }
+
+    prev = NULL;
+    for ( ap=anchor; ap!=NULL; ap=next ) {
+	next = ap->next;
+	for ( test=sc->anchor; test!=NULL; test=test->next )
+	    if ( test->anchor==ap->anchor &&
+		    (test->type!=at_baselig || ap->type!=at_baselig || test->lig_index==ap->lig_index) )
+	break;
+	if ( test!=NULL ) {
+	    GWidgetErrorR(_STR_DupAnchor,_STR_DupAnchorIn,test->anchor->name,sc->name);
+	    if ( prev==NULL )
+		anchor = next;
+	    else
+		prev->next = next;
+	    chunkfree(ap,sizeof(AnchorPoint));
+	} else
+	    prev = ap;
+    }
+    if ( prev!=NULL ) {
+	prev->next = sc->anchor;
+	sc->anchor = anchor;
+    }
+}
+
 /* when pasting from the fontview we do a clear first */
 static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
     DBounds bb;
@@ -1311,6 +1401,8 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 	    SplinePointListsFree(sc->splines);
 	    sc->splines = NULL;
 	    SCRemoveDependents(sc);
+	    AnchorPointsFree(sc->anchor);
+	    sc->anchor = NULL;
 	}
 	if ( paster->u.state.splines!=NULL ) {
 	    SplinePointList *temp = SplinePointListCopy(paster->u.state.splines);
@@ -1321,6 +1413,8 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 	    } else
 		sc->splines = temp;
 	}
+	if ( !sc->searcherdummy )
+	    APMerge(sc,paster->u.state.anchor);
 	/* Ignore any images, can't be in foreground level */
 	/* but might be hints */
 	if ( paster->undotype==ut_statehint || paster->undotype==ut_statename )
@@ -1329,7 +1423,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 	if ( paster->undotype==ut_statename )
 	    SCSetMetaData(sc,paster->u.state.charname,
 		    paster->u.state.unicodeenc==0xffff?-1:paster->u.state.unicodeenc,
-		    paster->u.state.lig);
+		    paster->u.state.lig,paster->u.state.ligtag);
 	if ( paster->u.state.refs!=NULL ) {
 	    RefChar *new, *refs;
 	    SplineChar *rsc;
@@ -1400,6 +1494,8 @@ static void _PasteToCV(CharView *cv,Undoes *paster) {
 return;
     }
 
+    anchor_lost_warning = false;
+
     cv->lastselpt = NULL;
     switch ( paster->undotype ) {
       case ut_noop:
@@ -1430,6 +1526,8 @@ return;
 	    SCOutOfDateBackground(cv->sc);
 	} else if ( paster->undotype==ut_statehint && cv->searcher==NULL )
 	    ExtractHints(cv->sc,paster->u.state.u.hints,true);
+	if ( paster->u.state.anchor!=NULL && cv->drawmode==dm_fore && !cv->sc->searcherdummy )
+	    APMerge(cv->sc,paster->u.state.anchor);
 	if ( paster->u.state.refs!=NULL && cv->drawmode==dm_fore ) {
 	    RefChar *new, *refs;
 	    SplineChar *sc;
@@ -1855,6 +1953,7 @@ return;
 	cnt = j;
     }
 
+    anchor_lost_warning = false;
     GProgressStartIndicatorR(10,_STR_Pasting,_STR_Pasting,0,cnt,1);
 
     if ( cur->undotype==ut_multiple )
@@ -1986,3 +2085,48 @@ return;
       break;
     }
 }
+
+/* Look through the copy buffer. If it wasn't copied from the given font, then */
+/*  we can stop. Otherwise: */
+/*	If "from" is NULL, then remove all anchorpoints from the buffer */
+/*	If "into" is NULL, then remove all anchorpoints with class "from" */
+/*	Else replace the anchor class of all anchorpoints with class "from" with "info" */
+static void _PasteAnchorClassManip(SplineFont *sf,AnchorClass *into,AnchorClass *from) {
+    Undoes *cur = &copybuffer, *temp;
+
+    if ( cur->undotype==ut_multiple )
+	cur = cur->u.multiple.mult;
+    while ( cur!=NULL ) {
+	temp = cur;
+	switch ( temp->undotype ) {
+	  case ut_composit:
+	    if ( temp->u.composit.state==NULL )
+	break;
+	    temp = temp->u.composit.state;
+	    /* Fall through */;
+	  case ut_state: case ut_statehint: case ut_statename:
+	    if ( temp->u.state.copied_from!=sf )
+return;
+	    if ( from==NULL ) {
+		AnchorPointsFree(temp->u.state.anchor);
+		temp->u.state.anchor = NULL;
+	    } else
+		temp->u.state.anchor = APAnchorClassMerge(temp->u.state.anchor,into,from);
+	  break;
+	}
+	cur=cur->next;
+    }
+}
+
+void PasteRemoveSFAnchors(SplineFont *sf) {
+    _PasteAnchorClassManip(sf,NULL,NULL);
+}
+
+void PasteAnchorClassMerge(SplineFont *sf,AnchorClass *into,AnchorClass *from) {
+    _PasteAnchorClassManip(sf,into,from);
+}
+
+void PasteRemoveAnchorClass(SplineFont *sf,AnchorClass *dying) {
+    _PasteAnchorClassManip(sf,NULL,dying);
+}
+
