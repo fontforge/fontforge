@@ -3781,6 +3781,74 @@ return;
     }
 }
 
+static void FigureSplExt(SplineSet *spl,int pos,int xextrema, double minmax[2]) {
+    Spline *s, *first;
+    double ts[3];
+    int oth = !xextrema, i;
+    double val;
+
+    while ( spl!=NULL ) {
+	first = NULL;
+	for ( s=spl->first->next; s!=NULL && s!=first; s=s->to->next ) {
+	    if ( first==NULL ) first = s;
+	    if (( xextrema &&
+		    pos > s->from->me.y && pos > s->from->nextcp.y &&
+		    pos > s->to->me.y && pos > s->to->prevcp.y ) ||
+		( xextrema &&
+		    pos < s->from->me.y && pos < s->from->nextcp.y &&
+		    pos < s->to->me.y && pos < s->to->prevcp.y ) ||
+		( !xextrema &&
+		    pos > s->from->me.x && pos > s->from->nextcp.x &&
+		    pos > s->to->me.x && pos > s->to->prevcp.x ) ||
+		( !xextrema &&
+		    pos < s->from->me.x && pos < s->from->nextcp.x &&
+		    pos < s->to->me.x && pos < s->to->prevcp.x ))
+	continue;	/* can't intersect spline */
+	    if ( SplineSolveFull(&s->splines[xextrema],pos,ts)==-1 )
+	continue;	/* didn't intersect */
+	    for ( i=0; i<3 && ts[i]!=-1; ++i ) {
+		val = ((s->splines[oth].a*ts[i]+s->splines[oth].b)*ts[i]+
+			s->splines[oth].c)*ts[i] + s->splines[oth].d;
+		if ( val<minmax[0] ) minmax[0] = val;
+		if ( val>minmax[1] ) minmax[1] = val;
+	    }
+	}
+	spl = spl->next;
+    }
+}
+
+static void FigureExtrema(Context *c,SplineChar *sc,int pos,int xextrema) {
+    /* If xextrema is true, then pos will be a y value and we want to */
+    /*  find the minimum and maximum x values for the contours of the glyph */
+    /*  at that y value */
+    /* If xextrama is false, then pos is an x value and we want min/max y */
+    double minmax[2];
+    int layer, l;
+    RefChar *r;
+
+    minmax[0] = 1e20; minmax[1] = -1e20;
+    for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	FigureSplExt(sc->layers[layer].splines,pos,xextrema,minmax);
+	for ( r = sc->layers[layer].refs; r!=NULL; r=r->next )
+	    for ( l=0; l<r->layer_cnt; ++l )
+		FigureSplExt(r->layers[l].splines,pos,xextrema,minmax);
+    }
+
+    c->return_val.type = v_arr;
+    c->return_val.u.aval = galloc(sizeof(Array));
+    c->return_val.u.aval->argc = 2;
+    c->return_val.u.aval->vals = galloc(2*sizeof(Val));
+    c->return_val.u.aval->vals[0].type = v_int;
+    c->return_val.u.aval->vals[1].type = v_int;
+    if ( minmax[0]>1e10 ) {	/* Unset. Presumably pos is outside bounding box */
+	c->return_val.u.aval->vals[0].u.ival = 1;
+	c->return_val.u.aval->vals[1].u.ival = 0;
+    } else {
+	c->return_val.u.aval->vals[0].u.ival = minmax[0];
+	c->return_val.u.aval->vals[1].u.ival = minmax[1];
+    }
+}
+
 static void PosSubInfo(SplineChar *sc,Context *c) {
     uint32 tags[3];
     int i;
@@ -3866,7 +3934,15 @@ static void bCharInfo(Context *c) {
     if ( c->a.argc==5 ) {
 	PosSubInfo(sc,c);
     } else if ( c->a.argc==3 ) {
-	int ch2 = ParseCharIdent(c,&c->a.vals[2],true);
+	int ch2;
+	if ( strmatch( c->a.vals[1].u.sval,"XExtrema")==0 ||
+		strmatch( c->a.vals[1].u.sval,"YExtrema")==0 ) {
+	    if ( c->a.vals[2].type!=v_int )
+		error( c, "Bad type for argument");
+	    FigureExtrema(c,sc,c->a.vals[2].u.ival,*c->a.vals[1].u.sval=='x' || *c->a.vals[1].u.sval=='X');
+return;
+	}
+	ch2 = ParseCharIdent(c,&c->a.vals[2],true);
 	if ( strmatch( c->a.vals[1].u.sval,"Kern")==0 ) {
 	    c->return_val.u.ival = 0;
 	    if ( sf->chars[ch2]!=NULL ) { KernPair *kp; KernClass *kc;
@@ -3924,17 +4000,19 @@ static void bCharInfo(Context *c) {
 		c->return_val.u.ival = b.minx;
 	    else if ( strmatch( c->a.vals[1].u.sval,"RBearing")==0 )
 		c->return_val.u.ival = sc->width-b.maxx;
-	    else if ( strmatch( c->a.vals[1].u.sval,"BBox")==0 ) {
+	    else if ( strmatch( c->a.vals[1].u.sval,"BBox")==0 ||
+		    strmatch( c->a.vals[1].u.sval,"BoundingBox")==0 ||
+		    strmatch( c->a.vals[1].u.sval,"BB")==0 ) {
 		c->return_val.type = v_arr;
 		c->return_val.u.aval = galloc(sizeof(Array));
 		c->return_val.u.aval->argc = 4;
 		c->return_val.u.aval->vals = galloc(4*sizeof(Val));
 		for ( i=0; i<4; ++i )
 		    c->return_val.u.aval->vals[i].type = v_int;
-		c->return_val.u.aval->vals[0].u.ival = rint(b.minx);
-		c->return_val.u.aval->vals[1].u.ival = rint(b.miny);
-		c->return_val.u.aval->vals[2].u.ival = rint(b.maxx);
-		c->return_val.u.aval->vals[3].u.ival = rint(b.maxy);
+		c->return_val.u.aval->vals[0].u.ival = floor(b.minx);
+		c->return_val.u.aval->vals[1].u.ival = floor(b.miny);
+		c->return_val.u.aval->vals[2].u.ival = ceil(b.maxx);
+		c->return_val.u.aval->vals[3].u.ival = ceil(b.maxy);
 	    } else
 		errors(c,"Unknown tag", c->a.vals[1].u.sval);
 	}
