@@ -1070,7 +1070,7 @@ static int WriteBitmaps(char *filename,SplineFont *sf, int32 *sizes,int res, int
     /* res = -1 => Guess depending on pixel size of font */
     extern int ask_user_for_resolution;
 
-    if ( ask_user_for_resolution ) {
+    if ( ask_user_for_resolution && res==0x80000000 ) {
 	GProgressPauseTimer();
 	res = AskResolution(bf);
 	GProgressResumeTimer();
@@ -2079,7 +2079,7 @@ return;
     }
 
     if ( !d->family )
-	err = _DoSave(d->sf,temp,sizes,-1);
+	err = _DoSave(d->sf,temp,sizes,0x80000000);
     else
 	err = !WriteMacFamily(temp,sfs,oldformatstate,oldbitmapstate,flags);
 
