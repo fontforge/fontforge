@@ -1735,7 +1735,10 @@ static void GreekUnicodeCheck(SplineFont *sf) {
 	}
 	if ( changed ) {
 	    int o1pos = -1, rm1pos = -1, rm2pos = -1;
-	    for ( j=0; j<sf->charcnt; ++j ) if ( i!=j && sf->chars[j]!=NULL ) {
+	    /* if the glyph is in the encoding then we should leave it. Otherwise  */
+	    /*  it is probably one of our useless specials and we should remove it */
+	    /* Many TeX fonts actually have Delta encoded twice. God knows why     */
+	    for ( j=256; j<sf->charcnt; ++j ) if ( i!=j && sf->chars[j]!=NULL ) {
 		if ( sf->chars[j]->unicodeenc == changed ) {
 		    if ( o1pos==-1 ) o1pos = j;
 		    else rm1pos = j;
