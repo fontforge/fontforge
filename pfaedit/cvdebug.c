@@ -68,7 +68,7 @@ static void DVRegExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     unichar_t ubuffer[100];
     int y;
 
-    GDrawFillRect(pixmap,&event->u.expose.rect,0xb0b0b0);
+    GDrawFillRect(pixmap,&event->u.expose.rect,GDrawGetDefaultBackground(screen_display));
     if ( exc==NULL )
 return;
     GDrawSetFont(pixmap,dv->ii.gfont);
@@ -153,7 +153,7 @@ static void DVStackExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     unichar_t ubuffer[100];
     int i, y;
 
-    GDrawFillRect(pixmap,&event->u.expose.rect,0xb0b0b0);
+    GDrawFillRect(pixmap,&event->u.expose.rect,GDrawGetDefaultBackground(screen_display));
     if ( exc==NULL )
 return;
     GDrawSetFont(pixmap,dv->ii.gfont);
@@ -178,7 +178,7 @@ static void DVStorageExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     unichar_t ubuffer[100];
     int i, y;
 
-    GDrawFillRect(pixmap,&event->u.expose.rect,0xb0b0b0);
+    GDrawFillRect(pixmap,&event->u.expose.rect,GDrawGetDefaultBackground(screen_display));
     if ( exc==NULL )
 return;
     GDrawSetFont(pixmap,dv->ii.gfont);
@@ -214,7 +214,7 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     int n;
     TT_GlyphZoneRec *r;
 
-    GDrawFillRect(pixmap,&event->u.expose.rect,0xb0b0b0);
+    GDrawFillRect(pixmap,&event->u.expose.rect,GDrawGetDefaultBackground(screen_display));
     if ( exc==NULL )
 return;
 
@@ -362,7 +362,10 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
     if ( exc!=NULL ) {
 	SplinePointListsFree(dv->cv->gridfit);
 	dv->cv->gridfit = SplineSetsFromPoints(&exc->pts,dv->scale);
-	dv->cv->ft_gridfitwidth = exc->pts.cur[exc->pts.n_points-1].x * dv->scale;
+	if ( exc->pts.n_points!=0 )
+	    dv->cv->ft_gridfitwidth = exc->pts.cur[exc->pts.n_points-1].x * dv->scale;
+	else
+	    dv->cv->ft_gridfitwidth = 0;
 	GDrawRequestExpose(dv->cv->v,NULL,false);
 	if ( dv->regs!=NULL )
 	    GDrawRequestExpose(dv->regs,NULL,false);
@@ -807,6 +810,7 @@ static void DVCreatePoints(DebugView *dv) {
     GGadgetsCreate(dv->points,gcd);
 
     dv->pts_head = GDrawPointsToPixels(NULL,GGadgetScale(5+3*16+3));
+    pos.x = 0;
     pos.y = dv->pts_head;
     pos.height -= dv->pts_head;
     dv->points_v = GWidgetCreateSubWindow(dv->points,&pos,dvpointsv_e_h,dv,&wattrs);
