@@ -396,7 +396,7 @@ static struct prefs_list {
 	{ "PreferCJKEncodings", pr_bool, &prefer_cjk_encodings, NULL, NULL, 'C', NULL, 0, _STR_PrefsPopupPCE },
 	{ "HintForGen", pr_bool, &autohint_before_generate, NULL, NULL, 'H', NULL, 0, _STR_PrefsPopupAHG },
 	{ "AlwaysGenApple", pr_bool, &alwaysgenapple, NULL, NULL, 'A', NULL, 0, _STR_PrefsPopupAGA },
-	{ "AlwaysGenOpenType", pr_bool, &alwaysgenopentype, NULL, NULL, 'A', NULL, 0, _STR_PrefsPopupAGO },
+	{ "AlwaysGenOpenType", pr_bool, &alwaysgenopentype, NULL, NULL, 'O', NULL, 0, _STR_PrefsPopupAGO },
 	{ NULL }
 },
  hidden_list[] = {
@@ -1781,8 +1781,8 @@ static int Prefs_Ok(GGadget *g, GEvent *e) {
 	gw = GGadgetGetWindow(g);
 	p = GDrawGetUserData(gw);
 	for ( i=0; i<SCRIPT_MENU_MAX; ++i ) {
-	    names[i] = _GGadgetGetTitle(GWidgetGetControl(gw,5000+i));
-	    scripts[i] = _GGadgetGetTitle(GWidgetGetControl(gw,5100+i));
+	    names[i] = _GGadgetGetTitle(GWidgetGetControl(gw,8000+i));
+	    scripts[i] = _GGadgetGetTitle(GWidgetGetControl(gw,8100+i));
 	    if ( *names[i]=='\0' ) names[i] = NULL;
 	    if ( *scripts[i]=='\0' ) scripts[i] = NULL;
 	    if ( scripts[i]==NULL && names[i]!=NULL ) {
@@ -2096,7 +2096,7 @@ void DoPrefs(void) {
 	sgcd[sgc].gd.flags = gg_visible | gg_enabled;
 	slabel[sgc].text = script_menu_names[i]==NULL?nullstr:script_menu_names[i];
 	sgcd[sgc].gd.label = &slabel[sgc];
-	sgcd[sgc].gd.cid = i+5000;
+	sgcd[sgc].gd.cid = i+8000;
 	sgcd[sgc++].creator = GTextFieldCreate;
 
 	sgcd[sgc].gd.pos.x = 110; sgcd[sgc].gd.pos.y = y2;
@@ -2104,7 +2104,7 @@ void DoPrefs(void) {
 	slabel[sgc].text = (unichar_t *) (script_filenames[i]==NULL?"":script_filenames[i]);
 	slabel[sgc].text_is_1byte = true;
 	sgcd[sgc].gd.label = &slabel[sgc];
-	sgcd[sgc].gd.cid = i+5100;
+	sgcd[sgc].gd.cid = i+8100;
 	sgcd[sgc++].creator = GTextFieldCreate;
 
 	sgcd[sgc].gd.pos.x = 210; sgcd[sgc].gd.pos.y = y2;
@@ -2112,7 +2112,7 @@ void DoPrefs(void) {
 	slabel[sgc].text = (unichar_t *) _STR_BrowseForFile;
 	slabel[sgc].text_in_resource = true;
 	sgcd[sgc].gd.label = &slabel[sgc];
-	sgcd[sgc].gd.cid = i+5200;
+	sgcd[sgc].gd.cid = i+8200;
 	sgcd[sgc].gd.handle_controlevent = Prefs_ScriptBrowse;
 	sgcd[sgc++].creator = GButtonCreate;
 
