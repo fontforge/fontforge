@@ -317,7 +317,15 @@ static int _SFFindChar(SplineFont *sf, int unienc, char *name ) {
 	}
     } else {
 	SplineChar *sc = SFHashName(sf,name);
-	if ( sc!=NULL ) index = sc->enc;
+	if ( sc==NULL )
+	    /* Do nothing */;
+	else if ( sc->enc!=-2 )
+	    index = sc->enc;
+	else {
+	    for ( index = sf->charcnt-1; index>=0; --index )
+		if ( sf->chars[index]==sc )
+	    break;
+	}
     }
 return( index );
 }
