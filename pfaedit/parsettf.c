@@ -376,7 +376,7 @@ static void readttfhhea(FILE *ttf,struct ttfinfo *info) {
 	info->ascent = info->ascent * ((real) info->emsize)/(info->ascent+info->descent);
     info->descent = info->emsize-info->ascent;
 
-    for ( i=0; i<13; ++i )
+    for ( i=0; i<12; ++i )
 	getushort(ttf);
     info->width_cnt = getushort(ttf);
 }
