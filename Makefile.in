@@ -34,6 +34,9 @@ distclean cleaner:
 
 install: $(sharedir)
 # You may need to be root to do the install
+	mkdir -p $(bindir)
+	mkdir -p $(mandir)
+	mkdir -p $(sharedir)
 # remove any files from old installs that put the ui in bin
 	-rm -f $(bindir)/pfaedit*.ui
 	cp pfaedit/pfaedit $(bindir)
