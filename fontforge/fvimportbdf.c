@@ -37,6 +37,11 @@ static char *cleancopy(char *name) {
     char *temp = NULL;
 
     fpt=tpt=name;
+    /* Look for some common cases */
+    /* Often bdf fonts name their glyphs things like "%" or "90". Neither is */
+    /*  a good postscript name, so do something reasonable here */
+    if ( !isalpha(*(unsigned char *) fpt) && fpt[1]=='\0' && psunicodenames[*(unsigned char *) fpt]!=NULL )
+return( copy( psunicodenames[*(unsigned char *) fpt] ));
     if ( isdigit(*fpt)) {
 	tpt = temp = galloc(strlen(name)+2);
 	*tpt++ = '$';
@@ -56,6 +61,13 @@ static char *cleancopy(char *name) {
 	    *tpt++ = *fpt;
     }
     *tpt = '\0';
+
+    if ( *name=='\0' ) {
+	char buffer[20];
+	static int unique = 0;
+	sprintf( buffer, "$u%d", ++unique );
+return( copy( buffer ));
+    }
 
     if ( temp!=NULL )
 return( temp );
