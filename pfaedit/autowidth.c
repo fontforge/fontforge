@@ -28,6 +28,7 @@
 #include "ustring.h"
 #include "utype.h"
 #include <math.h>
+#include <gkeysym.h>
 
 #define THIRDS_IN_WIDTH 0
 
@@ -1396,6 +1397,11 @@ static int AW_e_h(GWindow gw, GEvent *event) {
 	WidthInfo *wi = GDrawGetUserData(gw);
 	wi->done = true;
     } else if ( event->type == et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    WidthInfo *wi = GDrawGetUserData(gw);
+	    help(wi->autokern?"autowidth.html#AutoKern":"autowidth.html#AutoWidth");
+return( true );
+	}
 return( false );
     }
 return( true );

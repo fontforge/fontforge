@@ -29,6 +29,7 @@
 #include <gwidget.h>
 #include <ustring.h>
 #include <math.h>
+#include <gkeysym.h>
 
 /* This module is designed to detect certain features of a character (like stems
  *  and counters, and then modify them in a useful way.
@@ -1992,8 +1993,14 @@ static int e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	MetaFontDlg *meta = GDrawGetUserData(gw);
 	meta->done = true;
+    } else if ( event->type==et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("MetaFont.html");
+return( true );
+	}
+return( false );
     }
-return( event->type!=et_char );
+return( true );
 }
 
 void MetaFont(FontView *fv,CharView *cv,SplineChar *sc) {

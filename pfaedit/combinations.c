@@ -627,6 +627,10 @@ static int kpdv_e_h(GWindow gw, GEvent *event) {
 	KP_ExposeKerns(kpd,gw,&event->u.expose.rect);
       break;
       case et_char:
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("kernpairs.html");
+return( true );
+	}
 	KP_Commands(kpd,event);
       break;
       case et_mousedown:
@@ -718,6 +722,10 @@ static int kpd_e_h(GWindow gw, GEvent *event) {
 		event->u.expose.rect.x+event->u.expose.rect.width,kpd->header_height+kpd->wh*kpd->uh,
 		0x000000);
     } else if ( event->type == et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("kernpairs.html");
+return( true );
+	}
 return( false );
     } else if ( event->type == et_resize && event->u.resize.sized ) {
 	KP_Resize((KPData *) GDrawGetUserData(gw) );

@@ -26,6 +26,7 @@
  */
 #include "pfaeditui.h"
 #include "ustring.h"
+#include <gkeysym.h>
 
 typedef struct strokedlg {
     int done;
@@ -209,6 +210,10 @@ static int stroke_e_h(GWindow gw, GEvent *event) {
 	StrokeDlg *sd = GDrawGetUserData(gw);
 	sd->done = true;
     } else if ( event->type == et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("elementmenu.html#Expand");
+return( true );
+	}
 return( false );
     } else if ( event->type == et_map ) {
 	/* Above palettes */

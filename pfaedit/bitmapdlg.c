@@ -28,6 +28,7 @@
 #include "gwidget.h"
 #include "ustring.h"
 #include <math.h>
+#include <gkeysym.h>
 
 static int oldusefreetype=1;
 int oldsystem=0 /* X */;
@@ -508,6 +509,10 @@ static int bd_e_h(GWindow gw, GEvent *event) {
 	CreateBitmapData *bd = GDrawGetUserData(gw);
 	bd->done = true;
     } else if ( event->type == et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("elementmenu.html#Bitmaps");
+return( true );
+	}
 return( false );
     } else if ( event->type == et_map ) {
 	/* Above palettes */
