@@ -633,7 +633,7 @@ static void CleanupSplines(IntersectionList *ilist,IntersectionList *ilbase) {
 		    sl2->spline->to->me.x==sl1->spline->from->me.x && sl2->spline->to->me.y==sl1->spline->from->me.x )) {
 		prev->next = next;
 		ChangeSpline(ilbase,sl1->spline,sl2->spline);
-		free(sl2->spline);
+		SplineFree(sl2->spline);
 		free(sl2);
 	    } else
 		prev = sl2;
@@ -894,7 +894,7 @@ static void SplinesMergeLists(Spline *before, Spline *after) {
     before->to->nonextcp = after->from->nonextcp;
     before->to->nextcpdef = after->from->nextcpdef;
     before->to->next = after;
-    free(after->from);
+    SplinePointFree(after->from);
     after->from = before->to;
     SplinePointCatagorize(before->to);
 }
@@ -1345,7 +1345,7 @@ SplineSet *SplineSetRemoveOverlap(SplineSet *base) {
     /*  will still exist */
     while ( base!=NULL ) {
 	next = base->next;
-	free(base);
+	chunkfree(base,sizeof(SplinePointList));
 	base = next;
     }
     ILFree(ilist);

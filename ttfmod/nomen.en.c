@@ -657,5 +657,16 @@ static char *str_OTFFamily = "Preferred Family";
 static char *str_OTFStyles = "Preferred Styles";
 static char *str_CompatableFull = "Compatable Full";
 static char *str_SampleText = "Sample Text";
+static char *str_FontRevision = "Font Revision:";
+static char *str_Checksum = "Checksum:";
+static char *str_MagicNumber = "Magic Number:";
+static char *str_Flags = "Flags:";
+static char *str_Baseliney0 = "Baseline at y==0";
+static char *str_LBearingx0 = "LBearing at x==0";
+static char *str_InstrsDepOnPointsize = "Instrs Depend on Pointsize";
+static char *str_ForcePPEMInt = "Force PPEM to integer";
+static char *str_InstrsAlterWidth = "Instrs Alter Width:";
+static char *str_UnitsPerEm = "Units Per Em";
+static char *str_Date = "Date:";
 
 static int num_buttonsize = 55;

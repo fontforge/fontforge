@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 11-Sep-2001 -->
+  <!-- AP: Last modified: 14-Sep-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -16,12 +16,8 @@
 that lets you create your own postscript, truetype, opentype, cid-keyed and
 bitmap (bdf) fonts, or edit existing ones. Also lets you convert one format
 to another.
-<P>
-<FONT COLOR="Red"><STRONG><BIG><BIG>I shall be not be responding to bugs
-between 11-September-2001 and 23-September-2001.<BR>
--- Er... Given the current crisis I'll probably be here, but who knows
---<BR>
-</BIG></BIG></STRONG></FONT>
+<P ALIGN=Right>
+(my vacation cancelled due to terrorism)
 <P>
 Contents
 <UL>
@@ -68,14 +64,17 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-010911.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 11-Sept-2001
+    <A HREF="pfaedit-010914.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 14-Sept-2001
   <LI>
     <A HREF="pfaedit-solaris-010901.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 1-Sept-2001
   <LI>
     <A HREF="pfaedit-010905-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
-    Version: 5-Sept-2001<BR>
+    Version: 5-Sept-2001
+  <LI>
+    <A HREF="http://packages.debian.org/unstable/x11/pfaedit.html">A debian package
+    is available at the debian site.</A><BR>
     &nbsp;
   <LI>
     If you want to do autotracing around character images you should also download
@@ -91,7 +90,7 @@ know when you do</A>.
 <P>
 You can download a <A HREF="pfaedit-010905-1.src.rpm">source RPM</A>: Version:
 5-Sept-2001<BR>
-Or you can download the following three packages. Version: 11-Sept-2001
+Or you can download the following three packages. Version: 14-Sept-2001
 <UL>
   <LI>
     <A HREF="libgunicode-010908.tgz">Unicode library source</A> (8-Sept-2001)<BR>
@@ -103,10 +102,10 @@ Or you can download the following three packages. Version: 11-Sept-2001
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-010911.tgz">Pfaedit source</A> (11-Sept-2001)<BR>
+    <A HREF="pfaedit_src-010914.tgz">Pfaedit source</A> (14-Sept-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
-    <A HREF="pfaedit_full-010911.tgz">All three bundled together </A>(11-Sept-2001)
+    <A HREF="pfaedit_full-010914.tgz">All three bundled together </A>(14-Sept-2001)
   <LI>
     If you want to do autotracing around character images you should also download
     Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
@@ -189,6 +188,24 @@ bitmap fonts that pfaedit uses
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    14-Sept-2001
+    <UL>
+      <LI>
+	Fixed a couple more memory problems (caused by the chunk allocation), one
+	in remove overlap, one in autotrace
+      <LI>
+	I'm told that yesterday's executable upload didn't work. Hope today's does
+	better
+    </UL>
+  <LI>
+    13-Sept-2001
+    <UL>
+      <LI>
+	Fixed a crash when joining two paths
+      <LI>
+	More tweaking of search path for ui files.
+    </UL>
   <LI>
     11-Sept-2001
     <UL>

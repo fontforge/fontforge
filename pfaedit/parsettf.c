@@ -41,7 +41,7 @@
 /*  http://fonts.apple.com/TTRefMan/index.html */
 
 /* !!!I don't currently parse instructions to get hints */
-/* !!!I don't currently read in bitmaps (I don't know of any fonts to test on) */
+/* !!!I don't currently read in bitmaps */
 
 /* Some glyphs have multiple encodings ("A" might be used for Alpha and Cyrillic A) */
 struct dup {
@@ -2367,6 +2367,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
     uint16 *endchars, *startchars, *delta, *rangeOffset, *glyphs;
     int index;
     int mod = 0;
+    const unichar_t *trans=NULL;
 
     fseek(ttf,info->encoding_start,SEEK_SET);
     version = getushort(ttf);
@@ -2385,9 +2386,11 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    /* Only select symbol if we don't have something better */
 	    enc = em_symbol;
 	    encoff = offset;
+	    trans = unicode_from_MacSymbol;
 	} else if ( platform==1 && specific==0 && enc!=em_unicode ) {
 	    enc = em_mac;
 	    encoff = offset;
+	    trans = unicode_from_mac;
 	} else if ( platform==3 && (specific==2 || specific==3 || specific==5) && enc!=em_unicode ) {
 	    enc = specific==2? em_ksc5601 : specific==5 ? em_jis208 : em_unicode;
 	    mod = specific;
@@ -2403,9 +2406,11 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    for ( i=0; i<len-6; ++i )
 		table[i] = getc(ttf);
 	    for ( i=0; i<256 && i<info->glyph_cnt && i<len-6; ++i )
-		if ( !justinuse )
+		if ( !justinuse ) {
 		    info->chars[table[i]]->enc = i;
-		else
+		    if ( trans!=NULL )
+			info->chars[table[i]]->unicodeenc = trans[i];
+		} else
 		    info->inuse[table[i]] = 1;
 	} else if ( format==4 ) {
 	    segCount = getushort(ttf)/2;

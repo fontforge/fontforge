@@ -84,4 +84,5 @@ void OS2CreateEditor(Table *tab,TtfView *tfv);
 void instrCreateEditor(Table *tab,TtfView *tfv);
 void binaryCreateEditor(Table *tab,TtfView *tfv);
 void shortCreateEditor(Table *tab,TtfView *tfv);
+void metricsCreateEditor(Table *tab,TtfView *tfv);
 #endif

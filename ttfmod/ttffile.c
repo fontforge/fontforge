@@ -26,6 +26,7 @@
  */
 #include "ttfmod.h"
 #include <ustring.h>
+#include <chardata.h>
 
 int getushort(FILE *ttf) {
     int ch1 = getc(ttf);
@@ -190,6 +191,147 @@ return( NULL );
 return( _readustring(ttf,stringoffset+fullstr,fulllen));
 }
 
+static void readttfencodings(FILE *ttf,struct ttffont *font) {
+    int i,j;
+    int nencs, version;
+    enum charset enc = em_none;
+    int platform, specific;
+    int offset, encoff=0;
+    int format, len;
+    uint16 table[256];
+    int segCount;
+    uint16 *endchars, *startchars, *delta, *rangeOffset, *glyphs;
+    int index;
+    int mod = 0;
+    Table *tab;
+    unichar_t *trans=NULL;
+
+    for ( i=0; i<font->tbl_cnt; ++i )
+	if ( font->tbls[i]->name == CHR('c','m','a','p'))
+    break;
+    if ( i==font->tbl_cnt )
+return;
+    tab = font->tbls[i];
+
+    fseek(ttf,tab->start,SEEK_SET);
+    version = getushort(ttf);
+    nencs = getushort(ttf);
+    for ( i=0; i<nencs; ++i ) {
+	platform = getushort(ttf);
+	specific = getushort(ttf);
+	offset = getlong(ttf);
+	if ( platform==3 && specific==1 ) {
+	    enc = em_unicode;
+	    encoff = offset;
+	    mod = 0;
+	} else if ( platform==3 && specific==0 && enc==em_none ) {
+	    /* Only select symbol if we don't have something better */
+	    enc = em_symbol;
+	    encoff = offset;
+	    trans = unicode_from_MacSymbol;
+	} else if ( platform==1 && specific==0 && enc!=em_unicode ) {
+	    enc = em_mac;
+	    encoff = offset;
+	    trans = unicode_from_mac;
+	} else if ( platform==3 && (specific==2 || specific==3 || specific==5) && enc!=em_unicode ) {
+	    enc = specific==2? em_ksc5601 : specific==5 ? em_jis208 : em_unicode;
+	    mod = specific;
+	    encoff = offset;
+	}
+    }
+    if ( enc!=em_none ) {
+	font->enc_glyph_cnt = font->glyph_cnt;
+	font->unicode_enc = gcalloc(font->enc_glyph_cnt,sizeof(unichar_t));
+	font->enc = gcalloc(font->enc_glyph_cnt,sizeof(unichar_t));
+	fseek(ttf,tab->start+encoff,SEEK_SET);
+	format = getushort(ttf);
+	len = getushort(ttf);
+	/* language = */ getushort(ttf);
+	if ( format==0 ) {
+	    for ( i=0; i<len-6; ++i )
+		table[i] = getc(ttf);
+	    for ( i=0; i<256 && i<info->glyph_cnt && i<len-6; ++i ) {
+		font->enc[table[i]] = i;
+		if ( trans!=NULL )
+		    font->unicode_enc[table[i]] = trans[i];
+	    
+	} else if ( format==4 ) {
+	    segCount = getushort(ttf)/2;
+	    /* searchRange = */ getushort(ttf);
+	    /* entrySelector = */ getushort(ttf);
+	    /* rangeShift = */ getushort(ttf);
+	    endchars = galloc(segCount*sizeof(uint16));
+	    for ( i=0; i<segCount; ++i )
+		endchars[i] = getushort(ttf);
+	    if ( getushort(ttf)!=0 )
+		GDrawIError("Expected 0 in true type font");
+	    startchars = galloc(segCount*sizeof(uint16));
+	    for ( i=0; i<segCount; ++i )
+		startchars[i] = getushort(ttf);
+	    delta = galloc(segCount*sizeof(uint16));
+	    for ( i=0; i<segCount; ++i )
+		delta[i] = getushort(ttf);
+	    rangeOffset = galloc(segCount*sizeof(uint16));
+	    for ( i=0; i<segCount; ++i )
+		rangeOffset[i] = getushort(ttf);
+	    len -= 8*sizeof(uint16) +
+		    4*segCount*sizeof(uint16);
+	    /* that's the amount of space left in the subtable and it must */
+	    /*  be filled with glyphIDs */
+	    glyphs = galloc(len);
+	    for ( i=0; i<len/2; ++i )
+		glyphs[i] = getushort(ttf);
+	    for ( i=0; i<segCount; ++i ) {
+		if ( rangeOffset[i]==0 && startchars[i]==0xffff )
+		    /* Done */;
+		else if ( rangeOffset[i]==0 ) {
+		    for ( j=startchars[i]; j<=endchars[i]; ++j ) {
+			if ( font->enc[(uint16) (j+delta[i])]==0 ) {
+			    font->unicode_enc[(uint16) (j+delta[i])]->unicodeenc = modenc(j,mod);
+			    font->enc[(uint16) (j+delta[i])] = j;
+			}
+		    }
+		} else if ( rangeOffset[i]!=0xffff ) {
+		    /* It isn't explicitly mentioned by a rangeOffset of 0xffff*/
+		    /*  means no glyph */
+		    for ( j=startchars[i]; j<=endchars[i]; ++j ) {
+			index = glyphs[ (i-segCount+rangeOffset[i]/2) +
+					    j-startchars[i] ];
+			if ( index!=0 ) {
+			    index = (unsigned short) (index+delta[i]);
+			    if ( info->chars[index]->unicodeenc==-1 ) {
+				font->unicode_enc[index] = modenc(j,mod);
+				font->enc[index] = j;
+			    }
+			}
+		    }
+		}
+	    }
+	    free(glyphs);
+	    free(rangeOffset);
+	    free(delta);
+	    free(startchars);
+	    free(endchars);
+	} else if ( format==6 ) {
+	    /* Apple's unicode format */
+	    int first, count;
+	    first = getushort(ttf);
+	    count = getushort(ttf);
+	    for ( i=0; i<count; ++i ) {
+		j = getushort(ttf);
+		font->enc[j] = first+i;
+		font->unicode_enc[j] = first+i;
+	    }
+	} else if ( format==2 ) {
+	    GDrawIError("I don't support mixed 8/16 bit characters (no shit jis for me)");
+	} else if ( format==8 ) {
+	    GDrawIError("I don't support mixed 16/32 bit characters (no unicode surogates)");
+	} else if ( format==10 || format==12 ) {
+	    GDrawIError("I don't support 32 bit characters");
+	}
+    }
+}
+
 static Table *readtablehead(FILE *ttf,TtfFile *f) {
     int32 name = getlong(ttf);
     int32 checksum = getlong(ttf);
@@ -232,6 +374,7 @@ static TtfFont *_readttfheader(FILE *ttf,TtfFile *f) {
 	tf->tbls[i] = readtablehead(ttf,f);
     tf->fontname = TTFGetFontName(ttf,tf);
     tf->glyph_cnt = TTFGetGlyphCnt(ttf,tf);
+    readttfencodings(ttf,font);
 return( tf );
 }
 

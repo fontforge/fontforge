@@ -1066,8 +1066,8 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 		    cur->first->noprevcp = false;
 		    oldlast->prev->from->next = NULL;
 		    cur->last = oldlast->prev->from;
-		    free(oldlast->prev);
-		    free(oldlast);
+		    SplineFree(oldlast->prev);
+		    SplinePointFree(oldlast);
 		}
 		SplineMake(cur->last,cur->first);
 		cur->last = cur->first;
@@ -1371,7 +1371,7 @@ void PSFontInterpretPS(FILE *ps,struct charprocs *cp) {
 	    for ( j=0; j<cp->next; ++j )
 		if ( strcmp(cp->keys[j],(char *) (ref->sc))==0 )
 	    break;
-	    free(ref->sc);
+	    free(ref->sc);	/* a string, not a splinechar */
 	    if ( j!=cp->next ) {
 		ref->sc = cp->values[j];
 		SCMakeDependent(cp->values[i],ref->sc);
@@ -1383,7 +1383,7 @@ void PSFontInterpretPS(FILE *ps,struct charprocs *cp) {
 		    cp->values[i]->refs = next;
 		else
 		    p->next = next;
-		free(ref);
+		RefCharFree(ref);
 	    }
 	}
     }

@@ -49,6 +49,8 @@ typedef struct table {
     /* No pointer to the font, because a given table may be part of several */
     /*  different fonts in a ttc */
     struct tableview *tv;
+    void *table_data;
+    void (*free_tabledata)(void *);
 } Table;
     
 typedef struct ttffont {
@@ -56,7 +58,7 @@ typedef struct ttffont {
     int32 version;
     int tbl_cnt, tbl_max;
     Table **tbls;
-    int32 glyph_cnt;
+    int32 glyph_cnt, enc_glyph_cnt;
     uint16 *unicode_enc;
     uint16 *enc;
     struct ttffile *container;
