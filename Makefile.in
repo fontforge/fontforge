@@ -30,11 +30,13 @@ clean:
 	( cd pfaedit ; $(MAKE) clean )
 	( cd Unicode ; $(MAKE) clean )
 	( cd gdraw ; $(MAKE) clean )
+	-rm -rf .libs
 
 distclean cleaner:
 	( cd pfaedit ; $(MAKE) distclean )
 	( cd Unicode ; $(MAKE) distclean )
 	( cd gdraw ; $(MAKE) distclean )
+	-rm -rf .libs
 	-rm Makefile config.cache config.log config.status libtool
 
 install_libs: libs

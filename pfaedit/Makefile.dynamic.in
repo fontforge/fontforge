@@ -65,6 +65,7 @@ nomen.h pfaedit-ui.c pfaedit-en.ui: $(srcdir)/nomen-*.c makenomenh.c
 
 clean:
 	-rm -f *.o pfaedit *.ui nomen.h pfaedit-ui.c makenomenh _nomen-*.c sfddiff
+	-rm -rf .libs
 
 distclean cleaner: clean
 	-rm -f Makefile
