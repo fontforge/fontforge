@@ -2,9 +2,9 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
-  <!-- AP: Last modified: 2-Mar-2004 -->
-  <LINK REL="icon" href="ffanvil16.png">
+  <!-- AP: Last modified: 13-Oct-2004 -->
   <TITLE>Creating the letter "o" -- consistant directions</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
@@ -14,18 +14,17 @@
   <LI>
     <A HREF="editexample.html#FontCreate">Font Creation</A>
   <LI>
-    <A HREF="editexample.html#CharCreate">Creating a character (tracing
-    outlines)</A>
+    <A HREF="editexample.html#CharCreate">Creating a glyph (tracing outlines)</A>
   <LI>
-    <A HREF="editexample2.html#Navigating">Navigating to other characters</A>
+    <A HREF="editexample2.html#Navigating">Navigating to other glyphs</A>
   <LI>
-    <A HREF="editexample2.html#Creating-o">On to the next character (consistent
+    <A HREF="editexample2.html#Creating-o">On to the next glyph (consistent
     directions)</A>
   <LI>
     <A HREF="editexample3.html#consistent-stems">Consistent serifs and stem
     widths</A>
   <LI>
-    <A HREF="editexample4.html#accents">Building accented characters</A>
+    <A HREF="editexample4.html#accents">Building accented glyphs</A>
   <LI>
     <A HREF="editexample4.html#ligature">Building a ligature</A>
   <LI>
@@ -33,7 +32,7 @@
   <LI>
     <A HREF="editexample5.html#Kerning">Kerning</A>
   <LI>
-    <A HREF="editexample6.html#Variants">Character variants</A>
+    <A HREF="editexample6.html#Variants">Glyph variants</A>
   <LI>
     <A HREF="editexample6.html#Marks">Anchoring marks</A>
   <LI>
@@ -48,24 +47,24 @@
     <A HREF="scriptnotes.html#Special">Notes on various scripts</A>
 </UL>
 <H2>
-  <A NAME="Navigating">Navigating to characters.</A>
+  <A NAME="Navigating">Navigating to glyphs.</A>
 </H2>
 <P>
-The font view provides one way of navigating around the characters in a font.
-Simple scroll around it until you find the character you need and then double
-click on it to open a window looking at that character.
+The font view provides one way of navigating around the glyphs in a font.
+Simple scroll around it until you find the glyph you need and then double
+click on it to open a window looking at that glyph.
 <P>
-Typing a character will move to that character.
+Typing a glyph will move to that glyph.
 <P>
 However some fonts are huge (Chinese, Japanese and Korean fonts have thousands
-or even tens of thousands of characters) and scrolling around the font view
-is a an inefficient way of finding your character. <CODE>View-&gt;Goto
-</CODE>provides a simple dialog which will allow you to move directly to
-any character for which you know the name (or encoding). If your font is
-a Unicode font, then this dialog will also allow you to find characters by
-block name (ie. Hebrew rather than Alef).
+or even tens of thousands of glyphs) and scrolling around the font view is
+a an inefficient way of finding your glyph. <CODE>View-&gt;Goto </CODE>provides
+a simple dialog which will allow you to move directly to any glyph for which
+you know the name (or encoding). If your font is a Unicode font, then this
+dialog will also allow you to find glyphs by block name (ie. Hebrew rather
+than Alef).
 <P>
-The simplest way to navigate is just to go to the next or previous character.
+The simplest way to navigate is just to go to the next or previous glyph.
 And <CODE>View-&gt;Next Char</CODE> and <CODE>View-&gt;Prev Char</CODE> will
 do exactly that.
 <H2>
@@ -96,17 +95,16 @@ contain "o", and import "o_Ambrosia.png" into it.
 <P>
 Notice that the first outline is drawn clockwise and the second
 counter-clockwise. This change in drawing direction is important. Both PostScript
-and TrueType require that the outer boundary of a character be drawn in a
-certain direction (they happen to be opposite from each other, which is a
-mild annoyance), within FontForge all outer boundaries must be drawn clockwise,
+and TrueType require that the outer boundary of a glyph be drawn in a certain
+direction (they happen to be opposite from each other, which is a mild
+annoyance), within FontForge all outer boundaries must be drawn clockwise,
 while all inner boundaries must be drawn counter-clockwise.
 <P>
 If you fail to alternate directions between outer and inner boundaries you
 may get results like the one on the left
 <IMG SRC="o-baddir.png" WIDTH="51" HEIGHT="28">. If you fail to draw the
 outer contour in a clockwise fashion the errors are more subtle, but will
-generally result in a less pleasing result once the character has been
-rasterized.
+generally result in a less pleasing result once the glyph has been rasterized.
 <P>
 <SMALL><STRONG>TECHNICAL AND CONFUSING</STRONG>: the exact behavior of
 rasterizers varies. Early PostScript rasterizers used a "non-zero winding

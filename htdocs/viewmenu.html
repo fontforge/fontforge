@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 24-Aug-2004 -->
+  <!-- AP: Last modified: 13-Oct-2004 -->
   <TITLE>The View Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -54,6 +54,18 @@
 	<A HREF="#AnchoredPairs">Anchored Pairs</A>
       <LI>
 	<A HREF="#Ligatures">Ligatures</A>
+    </UL>
+  <LI>
+    Label Glyph By
+    <UL>
+      <LI>
+	<A HREF="#GlyphLabel">Image</A>
+      <LI>
+	<A HREF="#GlyphLabel">Name</A>
+      <LI>
+	<A HREF="#GlyphLabel">Unicode</A>
+      <LI>
+	<A HREF="#GlyphLabel">Encoding</A>
     </UL>
   <LI>
     <A HREF="#HMetrics">View H. Metrics...</A>
@@ -125,8 +137,8 @@
   <DT>
     <A NAME="Fit">Fit</A>
   <DD>
-    In the outline and bitmap views this will scale the current character to
-    the largest setting where it all fits in the view.
+    In the outline and bitmap views this will scale the current glyph to the
+    largest setting where it all fits in the view.
   <DT>
     Zoom <A NAME="Out">Out</A>
   <DD>
@@ -140,36 +152,35 @@
   <DT>
     <A NAME="Next">Next</A> Char
   <DD>
-    In the metrics, outline and bitmap view this changes the current character
-    to be the next one in the font.
+    In the metrics, outline and bitmap view this changes the current glyph to
+    be the next one in the font.
     <P>
-    In the font view this selects the next character in the font (and scrolls,
-    if necessary, to display that character).
+    In the font view this selects the next glyph in the font (and scrolls, if
+    necessary, to display that glyph).
   <DT>
     <A NAME="Prev">Prev</A> Char
   <DD>
-    In the metrics, outline and bitmap view this changes the current character
-    to be the previous one in the font.
+    In the metrics, outline and bitmap view this changes the current glyph to
+    be the previous one in the font.
     <P>
-    In the font view this selects the next character in the font (and scrolls,
-    if necessary, to display that character).
+    In the font view this selects the next glyph in the font (and scrolls, if
+    necessary, to display that glyph).
   <DT>
-    <A NAME="NextDef">Next Defined Character</A>
+    <A NAME="NextDef">Next Defined Glyph</A>
   <DD>
-    Similar to Next Char, except it moves to the next character defined in the
+    Similar to Next Char, except it moves to the next glyph defined in the font.
+  <DT>
+    <A NAME="PrevDef">Prev Defined Glyph</A>
+  <DD>
+    Similar to Prev Char, except it moves to the previous glyph defined in the
     font.
-  <DT>
-    <A NAME="PrevDef">Prev Defined Character</A>
-  <DD>
-    Similar to Prev Char, except it moves to the previous character defined in
-    the font.
   <DT>
     <A NAME="Substitutions">Substitutions</A>
   <DD>
     Brings up a sub menu showing all the GSUB type 1 and type 3 substitutions
-    (simple and alternate) you have defined for the selected character and allows
-    you to change the character as directed by the substitution. Also contains
-    an entry to return you to the original glyph.
+    (simple and alternate) you have defined for the selected glyph and allows
+    you to change the glyph as directed by the substitution. Also contains an
+    entry to return you to the original glyph.
     <P>
     Substitutions may be set with the <A HREF="charinfo.html">Element-&gt;Char
     Info</A> command.
@@ -181,13 +192,13 @@
     which you may type either:
     <UL>
       <LI>
-	A name of a character in the current font
+	A name of a glyph in the current font
       <LI>
-	A number (in either decimal or hex) indicating the character you are interested
+	A number (in either decimal or hex) indicating the glyph you are interested
 	in, in the current encoding
       <LI>
-	A hex number ,preceded by "U+" or "uni" or "u", indicating the character
-	you are interested in in unicode.
+	A hex number ,preceded by "U+" or "uni" or "u", indicating the glyph you
+	are interested in in unicode.
       <LI>
 	A decimal number, preceded by "glyph" ,indicating the glyph index in the
 	original glyph list.
@@ -204,14 +215,14 @@
 	Arabic letters may also be named as: <CODE>afii57442.isolated </CODE>or
 	<CODE>0x642.initial</CODE>
       <LI>
-	A single unicode character
+	A single unicode glyph
     </UL>
     <P>
-    In the font view the view will scroll so that this character is visible and
-    it will be selected
+    In the font view the view will scroll so that this glyph is visible and it
+    will be selected
     <P>
-    In the bitmap, outline and metrics views, the current character will change
-    to be the one specified.
+    In the bitmap, outline and metrics views, the current glyph will change to
+    be the one specified.
   <DT>
     <A NAME="InsBefore">Insert Char Before...</A><BR>
     <A NAME="InsAfter">Insert Char After...</A>
@@ -223,8 +234,7 @@
     <A NAME="FindInFV">Find In Font View</A>
   <DD>
     In the outline, bitmap and metrics views this will scroll the associated
-    font view so that the current character is displayed (and selected) in the
-    fontview.
+    font view so that the current glyph is displayed (and selected) in the fontview.
   <DT>
     <A NAME="Encoded">Encoded</A> View
   <DD>
@@ -269,39 +279,56 @@
 	<A NAME="KernPairs">Kern Pairs</A>
       <DD>
 	This <A HREF="kernpairs.html">brings up a dialog showing all kerning pairs
-	</A>in the current font (or, if invoked from the outline character view,
-	a list of all kerning pairs involving that character). You may alter kerning
-	pairs here too.
+	</A>in the current font (or, if invoked from the outline glyph view, a list
+	of all kerning pairs involving that glyph). You may alter kerning pairs here
+	too.
       <DT>
 	<A NAME="AnchoredPairs">Anchored Pairs</A>
       <DD>
 	This may have a sub-menu of its own containing all the anchor classes for
-	this font and an entry "All". You may choose to see all combinations of
-	characters from a given anchor class, or all combinations from all anchored
-	classes.
+	this font and an entry "All". You may choose to see all combinations of glyphs
+	from a given anchor class, or all combinations from all anchored classes.
 	<P>
-	If invoked from the outline character view it will provide a list of all
-	anchored combinations involving that character.
+	If invoked from the outline glyph view it will provide a list of all anchored
+	combinations involving that glyph.
       <DT>
 	<A NAME="Ligatures">Ligatures</A>
       <DD>
-	This brings up a dialog showing the names of all ligatures and of the characters
-	that compose them (if invoked from the outline character view, a list of
-	all ligatures containing that character). Double clicking on an entry will
-	bring up a window showing that ligature.
+	This brings up a dialog showing the names of all ligatures and of the glyphs
+	that compose them (if invoked from the outline glyph view, a list of all
+	ligatures containing that glyph). Double clicking on an entry will bring
+	up a window showing that ligature.
     </DL>
+  <DT>
+    <A NAME="GlyphLabel">Label Glyph By</A>
+  <DD>
+    In the font view each glyph has a label above it. This may be either:
+    <UL>
+      <LI>
+	An image of the glyph (from a conventional font)
+      <LI>
+	The name of the glyph
+      <LI>
+	The unicode code point associated with the glyph
+      <LI>
+	The glyph's encoding (in hex)
+    </UL>
+    <P>
+    Note that when the glyphs are small (the 24 pixel view, for example) there
+    may not be room for the entire name of each glyph (or even for the encoding),
+    so the labels may be truncated.
   <DT>
     <A NAME="HMetrics">View H. Metrics</A>...
   <DD>
     In the font view this will control which of the the horizontal metrics lines
-    are draw across the displayed glyphs. In the outline character view the same
+    are draw across the displayed glyphs. In the outline glyph view the same
     functionality is available from one of the palettes.
     <A HREF="fontview.html#metrics">See the font view for more information</A>
   <DT>
     <A NAME="VMetrics">View V. Metrics</A>...
   <DD>
     In the font view this will control which of the vertical metrics lines are
-    draw across the displayed glyphs. In the outline character view the same
+    draw across the displayed glyphs. In the outline glyph view the same
     functionality is available from one of the palettes. (This will be greyed
     out if your font does not have vertical metrics in it).
     <A HREF="fontview.html#metrics">See the font view for more information</A>
@@ -312,8 +339,8 @@
     of the outline view to be. The default is to rasterize it on a 24 pixel block.
     If this item is checked then a 24 pixel version of the outline font is displayed,
     selecting it will display a 24 pixel version of the font.<BR>
-    (Exactly one em-square of the character will be displayed, if the character
-    extends above the ascent or below the descent those features will be clipped)
+    (Exactly one em-square of the glyph will be displayed, if the glyph extends
+    above the ascent or below the descent those features will be clipped)
   <DT>
     <A NAME="px36">36 pixel </A>outline
   <DD>
@@ -346,18 +373,18 @@
   <DT>
     <A NAME="FitToEm">Fit To Em</A>
   <DD>
-    Only in the font view. The fontview will either display characters scaled
-    so that the font's bounding box fits in the window, or so that the em fits
-    in the window. The advantage of the first method is that you see all of each
-    character, the advantage of the second is that you can see how the letter
-    sizes compare from font to font.
+    Only in the font view. The fontview will either display glyphs scaled so
+    that the font's bounding box fits in the window, or so that the em fits in
+    the window. The advantage of the first method is that you see all of each
+    glyph, the advantage of the second is that you can see how the letter sizes
+    compare from font to font.
     <P>
     <SMALL>(This is something of a simplification. In bounding box mode the displayed
     font is scaled so that the vertical size (as found in the bounding box) fits
-    it the window. Very wide characters will still not fit horizontally. Also
-    the scaling is not updated when characters change, if you have changed the
-    maximum bounds of the font you might want to force a rescale by toggling
-    this mode)</SMALL>
+    it the window. Very wide glyphs will still not fit horizontally. Also the
+    scaling is not updated when glyphs change, if you have changed the maximum
+    bounds of the font you might want to force a rescale by toggling this
+    mode)</SMALL>
   <DT>
     &lt;list of <A NAME="bitmaps">bitmap</A> pixel sizes, if any&gt;
   <DD>
@@ -373,7 +400,7 @@
     Show/Hide <A NAME="Grid">Grid</A>
   <DD>
     In the Metrics View there is no layers palette. This entry allows you to
-    turn on or off the lines marking the edges of the characters on display.
+    turn on or off the lines marking the edges of the glyphs on display.
   <DT>
     <A NAME="Outline">Outline</A>
   <DD>
@@ -383,7 +410,7 @@
   <DT>
     Show/Hide <A NAME="Points">Points</A>
   <DD>
-    This hides or displays the points in the outline character view.
+    This hides or displays the points in the outline glyph view.
   <DT>
     Number <A NAME="NumPts">Points</A>
   <DD>
@@ -403,9 +430,9 @@
   <DT>
     <A NAME="Fill">Fill</A>
   <DD>
-    In the Outline view this fills in the character outline as you edit it. (this
-    can be very slow. If the character is too big (too magnified) then filling
-    will not be done).
+    In the Outline view this fills in the glyph outline as you edit it. (this
+    can be very slow. If the glyph is too big (too magnified) then filling will
+    not be done).
   <DT>
     <A NAME="ShowGridFit">Show Grid Fit</A>
   <DD>
@@ -415,12 +442,12 @@
   <DT>
     <A NAME="Bigger">Bigger</A> Pixel Size
   <DD>
-    In the bitmap view this displays the current character in next larger bitmap
+    In the bitmap view this displays the current glyph in next larger bitmap
     font (if there is one)
   <DT>
     <A NAME="Smaller">Smaller</A> Pixel Size
   <DD>
-    In the bitmap view this displays the current character in next smaller bitmap
+    In the bitmap view this displays the current glyph in next smaller bitmap
     font (if there is one)
   <DT>
     <A NAME="Palettes">Palettes</A>
@@ -456,8 +483,8 @@
   <DT>
     Show/Hide <A NAME="Rulers">Rulers</A>
   <DD>
-    In the Character Outline View toggles whether rulers appear at the top and
-    to the left of the editing area.
+    In the Glyph Outline View toggles whether rulers appear at the top and to
+    the left of the editing area.
 </DL>
 <P>
 <H2>

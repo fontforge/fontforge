@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 2-Sep-2002 -->
-  <!-- AP: Last modified: 9-Aug-2004 -->
+  <!-- AP: Last modified: 13-Oct-2004 -->
   <TITLE>Preferences Dialog</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -16,8 +16,8 @@
   <DT>
     <A NAME="AutoHint">AutoHint</A>
   <DD>
-    Whether characters should be automagically hinted before a bitmap character
-    is generated (improves the quality of the bitmap)
+    Whether glyphs should be automagically hinted before a bitmap glyph is generated
+    (improves the quality of the bitmap)
   <DT>
     <A NAME="LocalEncoding">LocalEncoding</A>
   <DD>
@@ -75,33 +75,33 @@
   <DT>
     <A NAME="AutoWidthSync">AutoWidthSync</A>
   <DD>
-    Whether you want the widths of accented characters to track the width of
-    the base character (so if you modify the width of A then the width of &Agrave;
-    will automagically change, if &Agrave; is built as a reference to A and a
-    reference to grave)
+    Whether you want the widths of accented glyphs to track the width of the
+    base glyph (so if you modify the width of A then the width of &Agrave; will
+    automagically change, if &Agrave; is built as a reference to A and a reference
+    to grave)
   <DT>
     <A NAME="AutoLBearingSync">AutoLBearingSync</A>
   <DD>
-    Whether you want left side bearings of accented characters to track the left
-    side bearing of base characters (so if you shift A left, then the accent
-    in &Agrave; will also be shifted left)
+    Whether you want left side bearings of accented glyphs to track the left
+    side bearing of base glyphs (so if you shift A left, then the accent in &Agrave;
+    will also be shifted left)
   <DT>
     <A NAME="ItalicConstrained">ItalicConstrained</A>
   <DD>
-    Whether constrained motion in the character view should allow motion parallel
+    Whether constrained motion in the glyph view should allow motion parallel
     to the italic angle as well as horizontal and vertical.
   <DT>
   <DT>
     <A NAME="ArrowMoveSize">ArrowMoveSize</A>
   <DD>
-    The number of em-units an arrow key will move a selected point in the character
+    The number of em-units an arrow key will move a selected point in the glyph
     view.
   <DT>
     <A NAME="SnapDistance">SnapDistance</A>
   <DD>
-    The maximum distance at which pointer motion in the character view will be
-    snapped to an interesting object (ie. a point, baseline, width line, etc.).
-    This is measured in pixels.
+    The maximum distance at which pointer motion in the glyph view will be snapped
+    to an interesting object (ie. a point, baseline, width line, etc.). This
+    is measured in pixels.
   <DT>
     <A NAME="JoinSnap">JoinSnap</A>
   <DD>
@@ -112,13 +112,13 @@
     <A NAME="CopyMetaData">CopyMetaData</A>
   <DD>
     Controls the behavior of Edit-&gt;Copy from the fontview. Normally Copy does
-    not copy a character's metadata (name, encoding, etc.) but if this is set
-    then it will.
+    not copy a glyph's metadata (name, encoding, etc.) but if this is set then
+    it will.
   <DT>
     <A NAME="UndoDepth">UndoDepth</A>
   <DD>
-    Controls the maximum number of Undoes that may be retained in a character.
-    (In some rare occasions an Undo will be stored even if this depth is 0)
+    Controls the maximum number of Undoes that may be retained in a glyph. (In
+    some rare occasions an Undo will be stored even if this depth is 0)
   <DT>
     <A NAME="StopAtJoin">StopAtJoin</A>
   <DD>
@@ -132,9 +132,9 @@
     <A NAME="UpdateFlex">UpdateFlex</A>
   <DD>
     Figure out what points will be part of flex hints after every change to a
-    character. Points which are at the center of a flex hint will have a green
-    halo drawn around them. The criteria for flex hints are given on pages 72-73
-    of Adobe's
+    glyph. Points which are at the center of a flex hint will have a green halo
+    drawn around them. The criteria for flex hints are given on pages 72-73 of
+    Adobe's
     <A HREF="http://partners.adobe.com/asn/developer/PDFS/TN/T1_SPEC.PDF">T1_Spec.pdf</A>.
     This setting can be used to show you when those criteria are not
     met.<BR Clear=all>
@@ -144,7 +144,7 @@
     <A NAME="AccentOffsetPercent">AccentOffsetPercent</A>
   <DD>
     The amount of space (as a percentage of the em-square) that should be placed
-    between an accent and the character below it by the Build Accented Character
+    between an accent and the glyph below it by the Build Accented Character
     command.
   <DT>
     <A NAME="AccentCenterLowest">AccentCenterLowest</A>
@@ -168,7 +168,7 @@
     <A NAME="TTFFoundry">TTF Foundry</A>
   <DD>
     Similar to the above except that it is used inside ttf files (the achVendID
-    field of the OS/2 table) and is limited to 4 characters.
+    field of the OS/2 table) and is limited to 4 glyphs.
   <DT>
     <A NAME="XUID-Base">XUID-Base</A>
   <DD>
@@ -209,7 +209,7 @@
   <DT>
     <A NAME="HintForGen">HintForGen</A>
   <DD>
-    Whether characters should be automagically hinted before a font is generated.
+    Whether glyphs should be automagically hinted before a font is generated.
   <DT>
     <A NAME="AlwaysGenApple">AlwaysGenApple</A>
   <DD>
@@ -309,7 +309,7 @@ and then you may add the mappings.
 <P>
 <IMG SRC="MacMapping.png" WIDTH="337" HEIGHT="198" ALIGN="Left">You must
 specify a mac feature (which must already be defined), a mac setting code
-and a 4 character opentype tag.<BR CLEAR=ALL>
+and a 4 glyph opentype tag.<BR CLEAR=ALL>
 <H2>
   Other ways of configuring
 </H2>

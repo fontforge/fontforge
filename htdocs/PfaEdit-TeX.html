@@ -2,9 +2,9 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
-  <!-- AP: Last modified: 2-Mar-2004 -->
-  <LINK REL="icon" href="ffanvil16.png">
+  <!-- AP: Last modified: 13-Oct-2004 -->
   <TITLE>Using FontForge with TeX</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
@@ -38,13 +38,13 @@ Before you generate a tfm file you should perform some of the following
   <DD>
     Do this with Element-&gt;Font Info-&gt;TeX.
   <DT>
-    Optionally set <A NAME="Italic">Italic</A> Correction values for characters
+    Optionally set <A NAME="Italic">Italic</A> Correction values for glyphs
   <DD>
     (FontForge will generate default values for italic fonts, so you only need
     do this if FontForge gets it wrong).
     <UL>
       <LI>
-	Select a character which should have an Italic Correction
+	Select a glyph which should have an Italic Correction
       <LI>
 	Element-&gt;Char Info-&gt;Alt Pos
       <LI>
@@ -55,30 +55,30 @@ Before you generate a tfm file you should perform some of the following
 	Set the XAdvance to the italic correction
     </UL>
   <DT>
-    Optionally set any <A NAME="charlist">charlists</A>
+    Optionally set any <A NAME="charlist">glyphlists</A>
   <DD>
     <UL>
       <LI>
-	Select the first glyph in the charlist (the smallest one)
+	Select the first glyph in the glyphlist (the smallest one)
       <LI>
 	Element-&gt;Char Info-&gt;Alt Subs
       <LI>
 	Press [New]
       <LI>
-	Set the tag to <CODE>TeX Charlist</CODE> from the pulldown list
+	Set the tag to <CODE>TeX Glyphlist</CODE> from the pulldown list
       <LI>
-	Type the names of all the other characters in the charlist into the Components
+	Type the names of all the other glyphs in the glyphlist into the Components
 	field<BR>
 	So if the charlist is for left parenthesis<BR>
 	You would select the lparen glyph and might type in "lparen.big lparen.bigger
 	lparen.biggest"
     </UL>
   <DT>
-    Optionally set any <A NAME="extension">extension</A> characters.
+    Optionally set any <A NAME="extension">extension</A> glyphs.
   <DD>
     <UL>
       <LI>
-	If the character is in a charlist then Select the last glyph in the charlist
+	If the glyph is in a charlist then Select the last glyph in the glyphlist
 	(the largest one)
       <LI>
 	Element-&gt;Char Info-&gt;Mult Subs
@@ -87,7 +87,7 @@ Before you generate a tfm file you should perform some of the following
       <LI>
 	Set the tag to <CODE>TeX Extension list </CODE>from the pulldown list
       <LI>
-	Type the names of the glyphs that this character decomposes into in the order:
+	Type the names of the glyphs that this glyph decomposes into in the order:
 	top middle bottom extension<BR>
 	If a field is not present use .notdef<BR>
 	So if the extension list is for left parenthesis<BR>

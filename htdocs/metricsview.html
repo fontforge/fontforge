@@ -2,9 +2,9 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 16-Apr-2004 -->
-  <LINK REL="icon" href="ffanvil16.png">
+  <!-- AP: Last modified: 13-Oct-2004 -->
   <TITLE>The Metrics View</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
@@ -13,40 +13,40 @@
 <P>
 <IMG SRC="MetricsView.png" WIDTH="478" HEIGHT="323">
 <P>
-The metrics view allows you to examine how characters look together and to
-alter the spacing between them.
+The metrics view allows you to examine how glyphs look together and to alter
+the spacing between them.
 <P>
-If the metrics view is created from the font view then any selected characters
+If the metrics view is created from the font view then any selected glyphs
 (well, the first 15 or so) will be displayed in the view in the order they
-were selected. If it is created from an outline or bitmap character view
-then only that character is displayed. If it is created from a bitmap character
-view (or from the font view when that view is displaying a bitmap font) then
-the metrics view will display bitmaps, but will not allow you to edit the
-bitmaps metrics (you must do your metrics editing in a view displaying outlines).
+were selected. If it is created from an outline or bitmap glyph view then
+only that glyph is displayed. If it is created from a bitmap glyph view (or
+from the font view when that view is displaying a bitmap font) then the metrics
+view will display bitmaps, but will not allow you to edit the bitmaps metrics
+(you must do your metrics editing in a view displaying outlines).
 <P>
 Underneath the menu bar is a text field which allows you to enter additional
 unicode characters to be displayed.
 <P>
 Beside the text field is a pulldown list showing the script language combination
 that will be used for building kern pairs. (See the description on
-<A HREF="charinfo.html#Feature-Tag">script language lists in the character
+<A HREF="charinfo.html#Feature-Tag">script language lists in the glyph
 information dialog</A>)
 <P>
 If you wish to enter non-unicode characters you may drag them from the font
 view and drop them into the metrics view where you want them to go.
 <P>
-The mid portion of the view is taken up with the displayed characters. For
-outline characters these are sized so that the em-height of the font just
-fits in this region. There are grey lines between the characters marking
-the origin of the character on the right and the width of the character on
-the left. The baseline is also drawn in grey.
+The mid portion of the view is taken up with the displayed glyphs. For outline
+glyphs these are sized so that the em-height of the font just fits in this
+region. There are grey lines between the glyphs marking the origin of the
+glyph on the right and the width of the glyph on the left. The baseline is
+also drawn in grey.
 <P>
-One of the characters is active. That character has a green line on its left
-(at its origin) and a blue line on its right (its width). You may change
-the width by dragging this line. You may change the left side bearing (lbearing)
-of the character by clicking on the character and dragging it left or right.
-You may change the kerning between this character and the one to its left
-by dragging the green line around.
+One of the glyphs is active. That glyph has a green line on its left (at
+its origin) and a blue line on its right (its width). You may change the
+width by dragging this line. You may change the left side bearing (lbearing)
+of the glyph by clicking on the glyph and dragging it left or right. You
+may change the kerning between this glyph and the one to its left by dragging
+the green line around.
 <TABLE BORDER CELLPADDING="2">
   <CAPTION>
     Kerning
@@ -57,20 +57,19 @@ by dragging the green line around.
   </TR>
 </TABLE>
 <P>
-The active character may be changed by clicking on any of the characters.
+The active glyph may be changed by clicking on any of the glyphs.
 <P>
 Underneath the display area are a set of text fields. You may type in new
 numbers for any of these fields to change the corresponding metrics of the
-character.
+glyph.
 <P>
-If the first character to be displayed is in Hebrew or Arabic (or any other
-right to left language) then the entire display area will be shown right
-to left
+If the first glyph to be displayed is in Hebrew or Arabic (or any other right
+to left language) then the entire display area will be shown right to left
 <P>
 <STRONG>Note</STRONG> there is a very complicated algorithm given in the
 Unicode spec for displaying mixed right to left and left to right passages.
 This is not followed here. The direction determination is done by the first
-character alone.
+glyph alone.
 <P>
 <STRONG>Note also </STRONG>that neither Arabic ligature nor form (initial,
 terminal, medial, isolated) determination will be done in the display area
@@ -87,15 +86,15 @@ View-&gt;Vertical. (This is only available if your font has vertical metrics
 enabled, Element-&gt;Font Info-&gt;General-&gt;Has Vertical Metrics). In
 this mode you can change vertical width, vertical kerning, etc.
 <P>
-If you double click on one of the displayed characters then FontForge will
-bring up a outline character view to allow you to edit that character.
+If you double click on one of the displayed glyphs then FontForge will bring
+up a outline glyph view to allow you to edit that glyph.
 <P>
-If the selected character contains active anchor points (that is something
-is attached to those anchor points) then you may move those anchor points
-around to see how they look. <STRONG>Note:</STRONG> When moving an anchor
-point in a mark, the result is counter-intuitive at first glance.
+If the selected glyph contains active anchor points (that is something is
+attached to those anchor points) then you may move those anchor points around
+to see how they look. <STRONG>Note:</STRONG> When moving an anchor point
+in a mark, the result is counter-intuitive at first glance.
 <P>
-If you click in a character with the right button then a popup menu appears
+If you click in a glyph with the right button then a popup menu appears
 displaying all the simple positioning (GPOS type 1) features you have defined.
 You may select one of these and see the effect of applying it.
 <STRONG>Limitation</STRONG> FontForge currently only supports modifying the
@@ -462,17 +461,16 @@ Finally the following special characters may be built:
 This still misses most unicode characters. But pressing [F12] twice will
 bring up a dialog which will allow you to select any character in unicode.
 <P>
-If you type [F12] by mistake then and Escape will get you out of accent mode.
+If you type [F12] by mistake then an Escape will get you out of accent mode.
 <H2>
   <A NAME="kernclass">Kerning By Class</A>
 </H2>
 <P>
-Often it is a good idea to create classes of characters which kern alike.
-For example A, &Agrave;, &Aacute;, &Acirc;, &Acirc;, &Atilde; and &Auml;
-probably all kern alike (but note that o and &ocirc; probably kern quite
-differently after a T), and rather than create separate kerning pairs for
-each of the "A"s above, they could all be placed in a class of characters
-which kern alike.
+Often it is a good idea to create classes of glyphs which kern alike. For
+example A, &Agrave;, &Aacute;, &Acirc;, &Acirc;, &Atilde; and &Auml; probably
+all kern alike (but note that o and &ocirc; probably kern quite differently
+after a T), and rather than create separate kerning pairs for each of the
+"A"s above, they could all be placed in a class of glyphs which kern alike.
 <P>
 <IMG SRC="kernbyclasses.png" ALIGN="Right" WIDTH="282" HEIGHT="263">The
 Metrics-&gt;Kern By Class command provides an interface to this. It brings
@@ -485,10 +483,10 @@ class needs a <A HREF="charinfo.html#Feature-Tag">script/language</A> combinatio
 for which it is active, and a set of standard otf flags for a feature.
 <P>
 But the more interesting stuff follows this. A kerning class actually consists
-of two sets of classes -- one set for the first character of the pair and
-one for the second character of the pair. Under each list of classes are
-buttons for adding new classes, and editing or deleting old ones. A glyph
-class consists of a space separated list of glyph names.
+of two sets of classes -- one set for the first glyph of the pair and one
+for the second glyph of the pair. Under each list of classes are buttons
+for adding new classes, and editing or deleting old ones. A glyph class consists
+of a space separated list of glyph names.
 <P>
 Pressing [New] or [Edit] displays another dlg containing a text field with
 a list of glyph names. You may type in glyph names, or you may [Set] the
@@ -500,20 +498,20 @@ Class 0 is magic. You never set it, it contains any glyphs not mentioned
 elsewhere.
 <P>
 Underneath the classes is a display of kerning values. The possible first
-character classes are listed vertically, the possible second character classes
-are listed horizontally. When you select a class (in one of the class lists
-above) the display of kerning values will scroll to display that class. If
-you move the mouse into the display and let it rest, a popup window will
-appear showing the glyphs that make up the classes which intersect at that
-point. If you click on a kerning value in the display, the dlg changes to
-a kerning dialog. <BR Clear=ALL>
+glyph classes are listed vertically, the possible second glyph classes are
+listed horizontally. When you select a class (in one of the class lists above)
+the display of kerning values will scroll to display that class. If you move
+the mouse into the display and let it rest, a popup window will appear showing
+the glyphs that make up the classes which intersect at that point. If you
+click on a kerning value in the display, the dlg changes to a kerning dialog.
+<BR Clear=ALL>
 <P>
 <IMG SRC="kerningclass-kern.png" WIDTH="373" HEIGHT="318" ALIGN="Right">The
 kerning dialog displays a representative glyph from each class and allows
 you to adjust the kerning between them (and all other class members of each
 class). You can select which glyphs to display in the pulldown menus. You
 can enter a new kerning offset by typing in a value, or you can click on
-the second character of the kern pair and drag it around.<BR>
+the second glyph of the kern pair and drag it around.<BR>
 <P>
 <P>
 <P ALIGN=Center>

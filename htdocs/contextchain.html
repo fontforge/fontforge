@@ -2,9 +2,9 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 16-Aug-2003 -->
-  <!-- AP: Last modified: 5-May-2004 -->
-  <LINK REL="icon" href="ffanvil16.png">
+  <!-- AP: Last modified: 13-Oct-2004 -->
   <TITLE>The dialog for editing Contextual or Chaining Contextual features</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
 <BODY>
 <H1>
@@ -27,10 +27,10 @@ to raise "t" and "h" after any digit.
 Chained Contextual Positioning does not really give you any more capabilities
 than Contextual Positioning, but it allows you to specify things in a slightly
 more logical fashion. In a chained feature you specify three match strings,
-one for characters before the current character, one for the current search,
-and one for characters after the current search. The advantage of this is
-that you can apply a transformation at the current character rather than
-having to apply it to some other character.
+one for glyphs before the current glyph, one for the current search, and
+one for glyphs after the current search. The advantage of this is that you
+can apply a transformation at the current glyph rather than having to apply
+it to some other glyph.
 <H2>
   What is a Contextual Substitution feature?
 </H2>
@@ -107,7 +107,7 @@ and define two patterns as:<BR>
 &nbsp; &nbsp; &nbsp; class1 [class1]</CODE>
 <P>
 The third format is the most general and allows you to specify your pattern
-by a <A HREF="#Coverage">separate list of glyphs</A> for each character
+by a <A HREF="#Coverage">separate list of glyphs</A> for each glyph
 position:<BR>
 <CODE>&nbsp; &nbsp; &nbsp; [bovw] [a-z]</CODE><BR>
 <BR CLEAR=ALL>
@@ -163,7 +163,7 @@ If you press the [New] or [Edit] buttons from the coverage dialog above you
 get the page to the right. The text field provides the names of all glyphs
 in the coverage table. You may edit this list directly by typing in it, or
 you may press the [Set] button which sets the text field to contain the names
-of all characters selected in the font view. And the [Select] button changes
+of all glyphs selected in the font view. And the [Select] button changes
 the selection of the font view to match the contents of the text field.
 <P>
 If you wish to cancel this operation press the [&lt;Prev] button and you
@@ -175,11 +175,10 @@ be lost), while pressing [Next&gt;] will accept those changes.<BR CLEAR=ALL>
 </H3>
 <P>
 This format allows you to specify several glyph lists to match. In the example
-at right the string "A,B,C" will be matched in the characters before the
-current glyph, then "D E" starting at the current location, and finally "F
-G H" after them. If everything matched then the feature 'beef' will be applied
-to location 0 (in this case "D") and then 'dead' will be applied to location
-1 ("E").
+at right the string "A,B,C" will be matched in the glyphs before the current
+glyph, then "D E" starting at the current location, and finally "F G H" after
+them. If everything matched then the feature 'beef' will be applied to location
+0 (in this case "D") and then 'dead' will be applied to location 1 ("E").
 <P>
 The buttons underneath allow you to add, change, remove and reorder these
 entries. The order is significant, word processors will stop at the first

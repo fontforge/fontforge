@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 28-Sep-2004 -->
+  <!-- AP: Last modified: 13-Oct-2004 -->
   <TITLE>Font Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -81,22 +81,22 @@ teach FontForge about new encodings.
 <P>
 There are two ways to change the encoding. The default assumes that the font
 currently has a reasonable encoding, but you want it to have a different
-one, here each character will be moved to the appropriate position in the
-new font. However if you check the <SAMP>[ ] Force Encoding box</SAMP>, then
-FontForge will assume that the characters are in the right order, but have
-got the wrong names. It will go through and rename every character to match
-what it should be in the new encoding (this is for cases where people have
-given a font an inappropriate encoding but where the mapping from character
-code to glyph is correct).
+one, here each glyph will be moved to the appropriate position in the new
+font. However if you check the <SAMP>[ ] Force Encoding box</SAMP>, then
+FontForge will assume that the glyphs are in the right order, but have got
+the wrong names. It will go through and rename every glyph to match what
+it should be in the new encoding (this is for cases where people have given
+a font an inappropriate encoding but where the mapping from character code
+to glyph is correct).
 <P>
-You may want to add characters to or removed characters from your font. You
-can specify how many characters you want in the font here.
+You may want to add glyphs to or remove glyphs from your font. You can specify
+how many glyphs you want in the font here.
 <P>
-<STRONG>Note</STRONG> some encodings have different numbers of characters,
-and it may be hard to guess how many will be used. But if you have changed
-the encoding but not altered the "Number of Characters" box, then the value
-in the Number box will be ignored and the correct number will come from the
-encoding process.
+<STRONG>Note</STRONG> some encodings have different numbers of glyphs, and
+it may be hard to guess how many will be used. But if you have changed the
+encoding but not altered the "Number of Glyphs" box, then the value in the
+Number box will be ignored and the correct number will come from the encoding
+process.
 <P>
 In a CID keyed font you are not allowed to change the encoding (in essence
 because there is none), but the dialog will show you the
@@ -453,7 +453,7 @@ already in the dictionary), or you may add keys by typing them in.
 Certain keys affect things other than hints. The <CODE>lenIV</CODE> entry
 controls how much random padding is placed around the type1 strings when
 the font is generated. Normally this will be 4, but if you want to save space
-(4 bytes per character in pfb format, 8 bytes in pfa) you may choose another
+(4 bytes per glyph in pfb format, 8 bytes in pfa) you may choose another
 value. The UniqueID key represents the font's Unique postscript ID. If you
 provide a value here then FontForge will copy it into the UniqueID field
 in the Font Dictionary. If you do not provide a UniqueID here, FontForge
@@ -484,11 +484,11 @@ embedded, it can be embedded into documents that can be printed (but not
 edited), it can be embedded into documents that can be edited, or it can
 be embedded into an editable document and later extracted and installed on
 a different system. You can also control whether the document producer is
-allowed to extract the characters it needs and make a new font from them
-(which saves space) or whether they must include the entire font if they
-use any of it. Finally you can restrict the embedding so that only bitmap
-versions of the font may be embedded. (meaningful in CID keyed postscript
-fonts as well as TTF and OTF).
+allowed to extract the glyphs it needs and make a new font from them (which
+saves space) or whether they must include the entire font if they use any
+of it. Finally you can restrict the embedding so that only bitmap versions
+of the font may be embedded. (meaningful in CID keyed postscript fonts as
+well as TTF and OTF).
 <P>
 The Windows Ascent and Descent fields are badly defined in the OpenType spec,
 which says that they should express the maximum range of the Windows "ANSI"
@@ -785,7 +785,7 @@ languages.
     <TD>K&ouml;zepes</TD>
     <TD>S&ouml;t&eacute;tes</TD>
     <TD>Fekete</TD>
-    <TD><!--D&amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;#x151;lt-->
+    <TD><!--D&amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;#x151;lt-->
       Do"lt</TD>
     <TD>D&ouml;nt&ouml;tt</TD>
     <TD>Keskeny</TD>
@@ -883,8 +883,8 @@ of 'mark' (but see the discussion in the
 <A HREF="overview.html#Anchors">overview</A> of when you might not).
 <P>
 From here you may add new classes, delete old ones or rename old ones. You
-may also bring up outline character views looking at the characters which
-use these classes.
+may also bring up outline glyph views looking at the glyphs which use these
+classes.
 <P>
 <IMG SRC="newanchor.png" WIDTH="226" HEIGHT="391" ALIGN="Left">The dialog
 for creating a new (or modifying an old) anchor class allows you to give
@@ -909,7 +909,7 @@ which type it will be.
 </UL>
 <P>
 Generally in OpenType fonts several Anchor Classes will be treated as one
-unit if they refer to approximately the same set of base characters and have
+unit if they refer to approximately the same set of base glyphs and have
 non-overlapping marks An example: there could be two types of marks that
 attach to the same set of letters, one attaching below and one above the
 letter, each would have its own anchor class, but you would tell FontForge

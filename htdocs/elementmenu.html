@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 29-Sep-2004 -->
+  <!-- AP: Last modified: 13-Oct-2004 -->
   <TITLE>The Element Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -15,7 +15,7 @@
   <LI>
     <A HREF="#Font">Font Info</A>
   <LI>
-    <A HREF="#CharInfo">Char Info</A>
+    <A HREF="#CharInfo">Glyph Info</A>
   <LI>
     <A HREF="#Info">Get Info</A>
   <LI>
@@ -88,7 +88,7 @@
     <A HREF="#Simplify">Simplify</A><BR>
     Simplify More
   <LI>
-    <A HREF="#Cleanup">Cleanup Chars</A>
+    <A HREF="#Cleanup">Cleanup Glyphs</A>
   <LI>
     <A HREF="elementmenu.html#Add-Extrema">Add Extrema</A>
   <LI>
@@ -143,9 +143,9 @@
     Build
     <UL>
       <LI>
-	<A HREF="#Accented">Build Accented Char</A>
+	<A HREF="#Accented">Build Accented Glyph</A>
       <LI>
-	<A HREF="#Accented">Build Composite Char</A>
+	<A HREF="#Accented">Build Composite Glyph</A>
       <LI>
 	<A HREF="#BuildDuplicate">Build Duplicate</A>
     </UL>
@@ -175,9 +175,9 @@ compiling FontForge.
     just the current sub-font, which is what this command does) from
     <A HREF="cidmenu.html#FontInfo">CID-&gt;CID Font Info</A>.
   <DT>
-    Char <A NAME="CharInfo">Info</A>
+    Glyph <A NAME="CharInfo">Info</A>
   <DD>
-    In the all views this brings up the <A HREF="charinfo.html#Character">Character
+    In the all views this brings up the <A HREF="charinfo.html#Character">Glyph
     Info dialog</A>.
   <DT>
     Get <A NAME="Info">Info</A>
@@ -190,8 +190,8 @@ compiling FontForge.
   <DD>
     This sub-menu is only present in the font view and allows you to manipulate
     GSUB/GPOS/morx features. If you wish to create them you should use
-    <A HREF="fontinfo.html">Font Info</A> or <A HREF="charinfo.html#Character">Char
-    Info</A>.
+    <A HREF="fontinfo.html">Font Info</A> or
+    <A HREF="charinfo.html#Character">Glyph Info</A>.
     <DL>
       <DT>
 	Copy <A NAME="Copy-Feat">Feature</A> to Font...
@@ -211,7 +211,7 @@ compiling FontForge.
 	The sub-menu consists of a list of feature names (and a few more generic
 	names like "All" which will provide defaults for everything it can figure
 	out, and "Ligatures" which will provide defaults for all ligatures). FontForge
-	will look for defaults for all selected characters. There is also one special
+	will look for defaults for all selected glyphs. There is also one special
 	entry:
 	<DL>
 	  <DT>
@@ -255,10 +255,10 @@ compiling FontForge.
       <DT>
 	<A NAME="Dependencies">References</A>...
       <DD>
-	This dialog is not available in the bitmap view. It shows you what characters
-	contain a reference to the current character. You can open a window looking
-	at any of the dependent characters by selecting that character and pressing
-	the [Show] button.
+	This dialog is not available in the bitmap view. It shows you what glyphs
+	contain a reference to the current glyph. You can open a window looking at
+	any of the dependent glyphs by selecting that glyph and pressing the [Show]
+	button.
       <DT>
 	<A NAME="DepSubs">Substitutions</A>...
       <DD>
@@ -271,12 +271,11 @@ compiling FontForge.
     Find <A NAME="Problems">Problems</A>...
   <DD>
     This command is not present in the bitmap view. It will search for several
-    common problems. In the character view it will select anything that needs
-    to be fixed, in the font view it will check all selected characters and if
-    any have problems will open them and select the problems. It will post a
-    message telling you of each problem found. It brings up the
-    <A HREF="problems.html">Find Problem</A> dialog to let you choose what problems
-    to look for.
+    common problems. In the glyph view it will select anything that needs to
+    be fixed, in the font view it will check all selected glyphs and if any have
+    problems will open them and select the problems. It will post a message telling
+    you of each problem found. It brings up the <A HREF="problems.html">Find
+    Problem</A> dialog to let you choose what problems to look for.
   <DT>
     <A NAME="Bitmaps">Bitmaps</A> Available...
   <DD>
@@ -351,13 +350,13 @@ compiling FontForge.
     and on the Mac 72dpi. This dialog provides the conversion between pixel size
     and point sizes at these resolutions.
     <P>
-    Normally the new characters are created by rasterizing the outline font.
-    If your system has the freetype2 library installed (and you checked the "Use
-    FreeType" box) then FontForge will use the FreeType rasterizer to generate
-    bitmaps, otherwise it will use FontForge's built-in rasterizer (which isn't
-    as good, but involves a little less overhead).
+    Normally the new glyphs are created by rasterizing the outline font. If your
+    system has the freetype2 library installed (and you checked the "Use FreeType"
+    box) then FontForge will use the FreeType rasterizer to generate bitmaps,
+    otherwise it will use FontForge's built-in rasterizer (which isn't as good,
+    but involves a little less overhead).
     <P>
-    Finally, if you have no outline font then the new characters will be created
+    Finally, if you have no outline font then the new glyphs will be created
     by scaling the (bitmap) font displayed in the font view.
     <P>
     In CID keyed fonts there will not be a set of bitmaps for each sub font,
@@ -376,11 +375,11 @@ compiling FontForge.
   <DD>
     If you have changed the outline that a bitmap is based one then you should
     (at some point) look into changing the bitmap too. This command allows you
-    to regenerate a subset of the characters in a given bitmap font. In the font
-    view you can regenerate all selected characters, while in the bitmap and
-    outline views you can regenerate the current character. You can pick what
-    pixel sizes should be regenerated too (unlike the above command, removing
-    a bitmap size from the regenerate list will not delete it).<BR>
+    to regenerate a subset of the glyphs in a given bitmap font. In the font
+    view you can regenerate all selected glyphs, while in the bitmap and outline
+    views you can regenerate the current glyph. You can pick what pixel sizes
+    should be regenerated too (unlike the above command, removing a bitmap size
+    from the regenerate list will not delete it).<BR>
     As before, if you wish to change a greymap you should refer to it by
     &lt;pixel-size&gt;@&lt;bits-per-pixel&gt;.
   <DT>
@@ -448,7 +447,7 @@ compiling FontForge.
     <A NAME="Expand">Expand</A> Stroke...
   <DD>
     Not in the bitmap view. In the font view it applies to all foreground splines
-    in all selected characters. In the outline view it applies to all paths that
+    in all selected glyphs. In the outline view it applies to all paths that
     have at least one point selected (or if no points are selected then it applies
     to all paths).<BR>
     <IMG SRC="twolines.png" WIDTH="247" HEIGHT="247">
@@ -516,7 +515,7 @@ compiling FontForge.
     </TABLE>
     <P>
     This will remove the selected contours from the unselected ones. Only available
-    in the outline character view.
+    in the outline glyph view.
   <DT>
     Find Intersections
   <DD>
@@ -553,7 +552,7 @@ compiling FontForge.
 	Whether to flatten small bumps off of lines
     </UL>
   <DT>
-    <A NAME="Cleanup">Cleanup Char</A>
+    <A NAME="Cleanup">Cleanup Glyph</A>
   <DD>
     This is similar to the simplify command. In this case if there is a spline
     which actually traces out a line but none the less has control points, then
@@ -562,37 +561,36 @@ compiling FontForge.
     <A NAME="Add-Extrema">Add Extrema</A>
   <DD>
     Not in the bitmap view. In the font view (or if nothing is selected in the
-    outline view) it will look at each spline in the character and find where
-    the extrema are and insert points at those locations (assuming there aren't
-    points there already). If there are points selected in the outline view then
-    it will only work on splines which are between two selected points.
+    outline view) it will look at each spline in the glyph and find where the
+    extrema are and insert points at those locations (assuming there aren't points
+    there already). If there are points selected in the outline view then it
+    will only work on splines which are between two selected points.
   <DT>
     <A NAME="Outline">Outline</A>
   <DD>
     <IMG SRC="OutlineInline.png" WIDTH="146" HEIGHT="70" ALIGN="Right">Changes
-    the selected characters so that instead of being a solid block, only the
-    outline of the character is visible. The characters' bounding box will not
-    change.
+    the selected glyphs so that instead of being a solid block, only the outline
+    of the glyph is visible. The glyphs' bounding box will not change.
   <DT>
     <A NAME="Inline">Inline</A>
   <DD>
-    Changes the selected characters so that the character is surrounded by an
-    outline. The characters' bounding box will not change.
+    Changes the selected glyphs so that the glyph is surrounded by an outline.
+    The glyphs' bounding box will not change.
   <DT>
     <A NAME="Shadow">Shadow</A>
   <DD>
-    Changes the selected characters to give them each a
+    Changes the selected glyphs to give them each a
     shadow.<IMG SRC="ShadowWireframe.png" WIDTH="171" HEIGHT="69" ALIGN="Right">
     The user has control over the shadow size and angle.
   <DT>
     <A NAME="Wireframe">Wireframe</A>
   <DD>
-    Changes the selected characters to give them a 3D wireframe look.
+    Changes the selected glyphs to give them a 3D wireframe look.
   <DT>
     <A NAME="MetaFont">MetaFont</A>...
   <DD>
     This <A HREF="MetaFont.html">dialog</A> is only present in the font and outline
-    character views. It allows you to make fonts bolder or condensed. It doesn't
+    glyph views. It allows you to make fonts bolder or condensed. It doesn't
     work very well.<FONT COLOR="Red"><BR>
     <STRONG>NOTE</STRONG></FONT>: It does <EM>not</EM> read TeX .mf files. The
     name is chosen because it has some similarity in terms of features.
@@ -602,9 +600,9 @@ compiling FontForge.
     This command is only available if you have downloaded Martin Weber's
     <A HREF="http://sourceforge.net/projects/autotrace/">autotrace program</A>,
     or Peter Selinger's <A HREF="http://potrace.sf.net/">potrace</A>. If you
-    have a background image in a character then autotrace will automagically
-    trace the outlines of that image. See <A HREF="autotrace.html">the section
-    on autotracing</A> for more information.
+    have a background image in a glyph then autotrace will automagically trace
+    the outlines of that image. See <A HREF="autotrace.html">the section on
+    autotracing</A> for more information.
   <DT>
     <A NAME="Align">Align</A> menu
   <DD>
@@ -686,11 +684,11 @@ compiling FontForge.
   <DD>
     This changes the order in which contours, references and images are drawn.
     It is almost useless because this order of contours and references does not
-    affect the final appearance of the character. The only relevance it has is
-    when interpolating fonts and in multiple master fonts. Here similar contours
-    must appear in the same order.
+    affect the final appearance of the glyph. The only relevance it has is when
+    interpolating fonts and in multiple master fonts. Here similar contours must
+    appear in the same order.
     <P>
-    If you have a character which contains both contours and references, FontForge
+    If you have a glyph which contains both contours and references, FontForge
     does not specify whether references or contours are drawn first (or whether
     the two are intermixed). If this matters to you, unlink your references.
   <DT>
@@ -717,30 +715,28 @@ compiling FontForge.
     The next path crossed will be made counter-clockwise, the next clockwise,
     etc.<BR>
     This command may produce unexpected results if two splines cross.<BR>
-    If a character contains a flipped reference, this command will be unable
-    to correct the contours inside of the reference directly, instead it will
-    offer to unlink the reference after which it can treat its (former) contours
-    like any others.
+    If a glyph contains a flipped reference, this command will be unable to correct
+    the contours inside of the reference directly, instead it will offer to unlink
+    the reference after which it can treat its (former) contours like any others.
   <DT>
-    Build <A NAME="Accented">Accented/Composite</A> Char
+    Build <A NAME="Accented">Accented/Composite</A> Glyph
   <DD>
     Not in the bitmap view.
     <P>
     The first menu item will only build accented letters, the second will build
-    general composite characters (fractions, ligatures, digits inside parens,
-    roman numerals, etc.) as well.
+    general composite glyphs (fractions, ligatures, digits inside parens, roman
+    numerals, etc.) as well.
     <P>
-    If the current character is an accented character (and all the base characters
-    and accents have already been created) then this command will delete anything
-    that is currently in the foreground and put a reference to the base character
-    and another reference to the accent character into the foreground. So if
-    the current character were "&Agrave;" then a reference to "A" would be added
-    to it, and a reference to "`" would be centered above the "A". <BR>
+    If the current glyph is an accented glyph (and all the base glyphs and accents
+    have already been created) then this command will delete anything that is
+    currently in the foreground and put a reference to the base glyph and another
+    reference to the accent glyph into the foreground. So if the current glyph
+    were "&Agrave;" then a reference to "A" would be added to it, and a reference
+    to "`" would be centered above the "A". <BR>
     If <A HREF="editmenu.html#From">Copy From</A> is set to All Fonts then any
-    bitmaps will have a similar process done (even in the outline character
-    view).<BR>
+    bitmaps will have a similar process done (even in the outline glyph view).<BR>
     A more complete description is given in the section on
-    <A HREF="accented.html">accented characters</A>.
+    <A HREF="accented.html">accented glyphs</A>.
   <DT>
     Build <A NAME="BuildDuplicate">Duplicate</A>
   <DD>
@@ -755,7 +751,7 @@ compiling FontForge.
   <DD>
     Only in the font view. If you are building a unicode font you will often
     want to merge in fonts with other encodings. You can, of course, cut and
-    paste from one to the other, but usually that needs to be done one character
+    paste from one to the other, but usually that needs to be done one glyph
     at a time (because the encoding may not be ordered the same as Unicode).
     Instead, if your fonts are properly encoded (with proper unicode names),
     then the Merge Fonts command will put them into the right places in the current
@@ -795,9 +791,9 @@ compiling FontForge.
     Only in the font view. If you have a bold font and a light font and would
     like to create a medium font, then you can interpolate a font between the
     two (or you can extrapolate a font that's even bolder or lighter). Your two
-    fonts must have the same sets of characters, and each character must have
-    the same number of paths (ordered similarly) and each path must have the
-    same number of points on it, and must have the same references.
+    fonts must have the same sets of glyphs, and each glyph must have the same
+    number of paths (ordered similarly) and each path must have the same number
+    of points on it, and must have the same references.
 </DL>
 <P>
 <H2>

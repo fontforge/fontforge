@@ -2,9 +2,9 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Jun-2001 -->
-  <!-- AP: Last modified: 18-Jun-2004 -->
-  <LINK REL="icon" href="ffanvil16.png">
+  <!-- AP: Last modified: 13-Oct-2004 -->
   <TITLE>Finding common font problems automagically</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
@@ -15,8 +15,8 @@ Nobody is perfect.
 <P>
 Well, I'm not.
 <P>
-When you draw you characters you are likely to make some minor errors, like
-having stems with slightly different widths in different characters, or having
+When you draw your glyphs you are likely to make some minor errors, like
+having stems with slightly different widths in different glyphs, or having
 lines which aren't quite vertical or...
 <P>
 FontForge's Find Problems command can help track down some common errors.
@@ -26,17 +26,17 @@ be what you wanted), but it will point things out to you that you should
 look at.
 <P>
 This command works either in the font view, the outline view or the metrics
-view. In the font view it will examine all selected characters for errors,
-and if it finds anything open a window looking at the character and post
-a (non-modal) dialog saying what the error is. You may then correct the problem
-and press the [Next] button in the dialog when you are done, or you may stop
-the command with the [Stop] button. Some errors FontForge will be able to
-fix automagically, and if so there will be a [Fix] button in this dlg
+view. In the font view it will examine all selected glyphs for errors, and
+if it finds anything open a window looking at the glyph and post a (non-modal)
+dialog saying what the error is. You may then correct the problem and press
+the [Next] button in the dialog when you are done, or you may stop the command
+with the [Stop] button. Some errors FontForge will be able to fix automagically,
+and if so there will be a [Fix] button in this dlg
 (<FONT COLOR="Red"><SMALL><STRONG>NOTE</STRONG></SMALL></FONT>: You should
 not assume that all problems are in fact errors. Some "problems" may be intended
 peculiarities of the font design. Don't just blindly press the [Fix] button).
 Behavior in the outline and metrics views is similar, except that only one
-character is searched for problems.
+glyph is searched for problems.
 <P>
 FontForge will be able to check for more problems if you:
 <UL>
@@ -69,12 +69,12 @@ both, stop and let you fix things.
 <STRONG><BIG>X near [val]</BIG></STRONG>
 <P>
 Often there will be a set of features which should be consistent across the
-entire file. For example the left side-bearing of the characters "BDEFHIKLMNPR"
+entire file. For example the left side-bearing of the glyphs "BDEFHIKLMNPR"
 should perhaps all be the same. This will let you enter in the desired
-side-bearing value, and then FontForge will find all characters with points
-that are near, but not exactly on the desired value. Where "near" is defined
-at the bottom of the dialog (in this case, everything within 3 em-units --
-in either direction -- will be near). If it finds an errant point, FontForge
+side-bearing value, and then FontForge will find all glyphs with points that
+are near, but not exactly on the desired value. Where "near" is defined at
+the bottom of the dialog (in this case, everything within 3 em-units -- in
+either direction -- will be near). If it finds an errant point, FontForge
 will select it, stop and let you fix it.
 <P>
 <STRONG><BIG>Y near [val]</BIG></STRONG>
@@ -107,7 +107,7 @@ lines that begin or end near horizontal (vertical, italic angle).
 <STRONG><BIG>Control points beyond
 spline</BIG></STRONG><IMG SRC="cpodd.png" WIDTH="210" HEIGHT="215" ALIGN="Right">
 <P>
-Consider the character at right, the selected point has a control point that
+Consider the glyph at right, the selected point has a control point that
 is far outside of what is reasonable and is probably not where it should
 be. This will check for such points.
 <P>
@@ -177,7 +177,7 @@ TrueType has no such limit.<BR Clear=all>
 </H3>
 <P>
 As mentioned above both PostScript and TrueType like clockwise paths. If
-you have a flipped reference then either the reference or the original character
+you have a flipped reference then either the reference or the original glyph
 will be drawn with a counter-clockwise path. To fix it you should
 Edit-&gt;Unlink the reference and Element-&gt;Correct Direction
 <H3>
@@ -187,7 +187,7 @@ Edit-&gt;Unlink the reference and Element-&gt;Correct Direction
 Appendix B of the the
 <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5177.Type2.pdf">Type2</A>
 spec says that an interpreter is only required to support subroutine nesting
-up to 10 levels. FontForge uses subroutine calls to handle referenced characters
+up to 10 levels. FontForge uses subroutine calls to handle referenced glyphs
 and sometimes also to handle hinting. Hinting will take up a maximum of 1
 level of subroutine calls leaving 9 available for references. TrueType has
 no such limit.<BR Clear=all>
@@ -196,28 +196,28 @@ no such limit.<BR Clear=all>
 controlling no points</STRONG></BIG>
 <P>
 This is a bit esoteric, and is present to provide a work-around for (what
-I think is) a bug in ghostview. Consider the following character
+I think is) a bug in ghostview. Consider the following glyph
 <P>
 <IMG SRC="phi-nohints-outline.png" WIDTH="89" HEIGHT="151">
 <IMG SRC="phi-nohints-filled.png" WIDTH="93" HEIGHT="121">
 <IMG SRC="phi-hints-outline.png" WIDTH="72" HEIGHT="133">
 <IMG SRC="phi-hints-filled.png" WIDTH="93" HEIGHT="125"><BR>
-The first two images show the character with no hints, first as seen in
-FontForge, then as displayed by ghostview. The result looks good. If we add
-hints to the two curved stems then ghostview gets very confused. I don't
-know enough about hints to know whether there should be hints there. I am
-assuming so, which is why FontForge will generate them. But this command
-will detect this problem if in fact it is a problem. If FontForge finds this
-it will select the offending hint and allow you to fix things (probably the
-best fix is to add curved points at the extrema of all the curved splines,
-this is actually recommended by adobe anyway
+The first two images show the glyph with no hints, first as seen in FontForge,
+then as displayed by ghostview. The result looks good. If we add hints to
+the two curved stems then ghostview gets very confused. I don't know enough
+about hints to know whether there should be hints there. I am assuming so,
+which is why FontForge will generate them. But this command will detect this
+problem if in fact it is a problem. If FontForge finds this it will select
+the offending hint and allow you to fix things (probably the best fix is
+to add curved points at the extrema of all the curved splines, this is actually
+recommended by adobe anyway
 (<A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/T1_Spec.pdf">T1_Spec.pdf
 </A>section 4.1)).
 <P>
 <STRONG><BIG>Points near hint edges</BIG></STRONG>
 <P>
-If you have a character like "H" where the main vertical stems are broken
-by the cross bar, it is all too easy to make the top part of the stem a slightly
+If you have a glyph like "H" where the main vertical stems are broken by
+the cross bar, it is all too easy to make the top part of the stem a slightly
 different width than the bottom. (The hinting process figures out all the
 stems.) So this command, in essence, is looking for points which are slightly
 off from a stem. (again, near is defined at the bottom of the dlg). If FontForge
@@ -225,16 +225,16 @@ finds such a point it selects it, stops, and allows you to fix it up.
 <P>
 <BIG><STRONG>Hint width near [val]</STRONG></BIG>
 <P>
-Usually one wants many of the characters to have a constant stem width, and
-this command will check that all stems near the indicated value are that
-value (again near is defined at the bottom of the page). If FontForge finds
-a bad stem it will select it, stop and allow you to fix things.
+Usually one wants many of the glyphs to have a constant stem width, and this
+command will check that all stems near the indicated value are that value
+(again near is defined at the bottom of the page). If FontForge finds a bad
+stem it will select it, stop and allow you to fix things.
 <P>
 <BIG><STRONG>Almost stem3 hint</STRONG></BIG>
 <P>
 Postscript has a special hint operator (hstem3 and vstem3) which is designed
 to hint the stems of things like "m" where there are three stems of equal
-width and equally far apart. It is easy for a character not to fit the criteria
+width and equally far apart. It is easy for a glyph not to fit the criteria
 for this operator (which means FontForge won't use it). This will detect
 cases that are close to right. I found that I needed to adjust the "Near"
 value to be bigger than the default.
@@ -258,9 +258,8 @@ horizontal and vertical hints.
 </H3>
 <P>
 Look through the associated bitmap fonts, and find if there is a bitmap font
-which is missing versions of characters present in the outline font. Conversely
-look for bitmap fonts with characters which are not present in the outline
-font.
+which is missing versions of glyphs present in the outline font. Conversely
+look for bitmap fonts with glyphs which are not present in the outline font.
 <P>
 <STRONG><BIG>Multiple Unicode</BIG></STRONG>
 <P>
@@ -271,23 +270,23 @@ point, there is no guarantee which will be used.)
 <P>
 <STRONG><BIG>Multiple Name</BIG></STRONG>
 <P>
-Check that you do not have two glyphs with the same name. 
+Check that you do not have two glyphs with the same name.
 <P>
 <STRONG><BIG><A NAME="Advance">Check Advance</A></BIG></STRONG>
 <P>
-Check for any characters whose advance width is not the specified value (useful
-for a mono-space font where you want to check that all characters have the
-same width).
+Check for any glyphs whose advance width is not the specified value (useful
+for a mono-space font where you want to check that all glyphs have the same
+width).
 <P>
 <STRONG><BIG>Check Vertical Advance</BIG></STRONG>
 <P>
-Check for any characters whose vertical advance (for fonts with vertical
-metrics) differs from the specified value.
+Check for any glyphs whose vertical advance (for fonts with vertical metrics)
+differs from the specified value.
 <P>
 <STRONG><BIG>Check substitutions for empty chars</BIG></STRONG>
 <P>
 Looks through all the 'GSUB' substitution, alternate substitution, multiple
-substitution and ligature entries that are attached to the current character
+substitution and ligature entries that are attached to the current glyph
 and checks to make sure that all the named components are present in the
 font (and contain something). <BR Clear=ALL>
 <P>

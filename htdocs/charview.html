@@ -2,24 +2,24 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 15-Aug-2004 -->
-  <TITLE>Outline Character View</TITLE>
+  <!-- AP: Last modified: 13-Oct-2004 -->
+  <TITLE>Outline Glyph View</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
-  Outline Character View
+  Outline Glyph View
 </H1>
 <P>
 <IMG SRC="charview2.png" WIDTH="544" HEIGHT="656">
 <P>
-The outline character view is the window in which most editing happens.
+The outline glyph view is the window in which most editing happens.
 <P>
 At the top of the window, underneath the menu bar is an information line.
 The first item is the location of the mouse pointer (in the internal coordinate
-system of the character). If there is a single selected point then the next
-item gives its location, and the next three are, respectively, the offsets
-from the selected point to the current location, the distance from the selected
+system of the glyph). If there is a single selected point then the next item
+gives its location, and the next three are, respectively, the offsets from
+the selected point to the current location, the distance from the selected
 point, and the angle from the horizontal (measured counter-clockwise). Then
 we have the current scale factor, and the layer which is active. Finally
 (in the debugging view) is an indication of whether the instruction pointer
@@ -28,9 +28,9 @@ is in the glyph program, the 'prep' program of the 'fpgm'.
 Underneath the information is a ruler showing the current pointer location
 as a red line. There's a similar ruler on the left side.
 <P>
-Underneath that is the character itself. On the left edge of the screen is
-a grey line indicating the x=0 line, further right is a black line showing
-where the character's width is currently set. There are also grey lines showing
+Underneath that is the glyph itself. On the left edge of the screen is a
+grey line indicating the x=0 line, further right is a black line showing
+where the glyph's width is currently set. There are also grey lines showing
 the ascent, descent and baseline.
 <P>
 Background images and background splines are drawn in grey. Grid lines are
@@ -38,7 +38,7 @@ also drawn in grey. Vertical hinting regions are drawn in light blue, Horizontal
 hints are drawn in light green. If any hints overlap the boundaries are drawn
 in cyan.
 <P>
-The points of the character are of three types, corner points drawn as filled
+The points of the glyph are of three types, corner points drawn as filled
 squares, curve points drawn as filled circles and tangent points drawn as
 filled triangles. If a point is selected then it will be drawn as an outlined
 square, circle or triangle and its control points are drawn as little magenta
@@ -76,8 +76,8 @@ If the mouse pointer is close to a point (within a few pixels) when you depress
 the mouse, then the effective location of the press will be the location
 of the point.
 <P>
-If you drag a character from the font view and drop it into a character view
-then FontForge will drop a reference to the dragged character into the view.
+If you drag a glyph from the font view and drop it into a glyph view then
+FontForge will drop a reference to the dragged glyph into the view.
 <H2>
   <A NAME="Layers">Layers</A>
 </H2>
@@ -91,32 +91,32 @@ You may use the indicated mnemonics to change the editable layer (even if
 the focus is not in the layers window).
 <P>
 The first is the foreground layer, this contains the splines that actually
-make up the character that will be placed into the font.
+make up the glyph that will be placed into the font.
 <P>
 The second is the background layer, this contains background images and splines.
 These do not go into the font, but may be helpful to you in tracing the outline
-of your character. It is possible to paste an image into the background if
-you have an image manipulation program that supports selection by mime type
-(the kde family of applications does this, perhaps others), then FontForge
-will be able to read images in either "image/png" or "image/bmp".
+of your glyph. It is possible to paste an image into the background if you
+have an image manipulation program that supports selection by mime type (the
+kde family of applications does this, perhaps others), then FontForge will
+be able to read images in either "image/png" or "image/bmp".
 <P>
 The third layer is a set of guide lines/splines. These are common to all
-characters in the font. A few lines are provided for you (the x=0 line, the
-ascent, descent and baseline). Other handy lines might be the x-height of
-the font, the cap-height, ascender-height, descender-height, ... When you
-are working in any of the other layers, points will snap to splines in this
-layer (making it easy to force a consistent x-height for example).
+glyphs in the font. A few lines are provided for you (the x=0 line, the ascent,
+descent and baseline). Other handy lines might be the x-height of the font,
+the cap-height, ascender-height, descender-height, ... When you are working
+in any of the other layers, points will snap to splines in this layer (making
+it easy to force a consistent x-height for example).
 <P>
-The next 4 entries control what hints for this character are visible. Most
-hints may be created with the <CODE>Hints-&gt;AutoHint</CODE> command, the
-presence of hints will sometimes improve rasterization. The blues entry displays
-the BlueValues zones. These may be set with <CODE>Element-&gt;Font Info-&gt;PS
+The next 4 entries control what hints for this glyph are visible. Most hints
+may be created with the <CODE>Hints-&gt;AutoHint</CODE> command, the presence
+of hints will sometimes improve rasterization. The blues entry displays the
+BlueValues zones. These may be set with <CODE>Element-&gt;Font Info-&gt;PS
 Private</CODE>.
 <P>
 The Anchors entry controls what whether anchor points are displayed.
 <P>
 The last two entries control whether the horizontal or vertical metrics for
-the character are visible. When editing Latin (Cyrillic, Greek, Hebrew, Arabic,
+the glyph are visible. When editing Latin (Cyrillic, Greek, Hebrew, Arabic,
 etc.) glyphs only horizontal metrics are generally present. When editing
 Chinese, Japanese, Korean fonts both horizontal and vertical metrics are
 needed. By default vertical metrics are not available, if you want them go
@@ -157,8 +157,8 @@ bound to magnify, and mouse button 2 with control is bound to ruler.
   tool
 </H3>
 <P>
-This tool is used for selecting points, images and referenced characters.
-It can also move these and scale images and referenced characters.
+This tool is used for selecting points, images and referenced glyphs. It
+can also move these and scale images and referenced glyphs.
 <P>
 Only things that are in the layer that is currently editable may be selected
 or moved or scaled.
@@ -171,10 +171,10 @@ will deselect everything. Clicking on the background and dragging out a rectangl
 will select everything within the rectangle. Clicking on a line or spline
 will select the two end points of that line or spline. Clicking on the dark
 part of an image (when in the background layer) will select the image. Clicking
-on the outline of a referenced character will select that reference (if a
-reference character happens to have the same outline and bounding box, then
-holding down the meta key will allow you to move it once it is selected,
-without the meta key you will resize it).
+on the outline of a referenced glyph will select that reference (if a reference
+glyph happens to have the same outline and bounding box, then holding down
+the meta key will allow you to move it once it is selected, without the meta
+key you will resize it).
 <P>
 If a point has no visible control points, then they are at the same location
 as the point itself. If you want to select one of the control points then
@@ -208,16 +208,15 @@ is set, then motion that would normally be constrained to the vertical is
 constrained to be along the ItalicAngle.
 <P>
 If you move the mouse to the bounding box of a selected image or reference
-character and drag it then you will scale that object.
+glyph and drag it then you will scale that object.
 <P>
 If you move the mouse to the <A NAME="set-width">width</A> line, then dragging
-it will change the width of the current character. If there are any bitmaps
-of this character then their widths will also be updated. If there are any
-other characters which depend on this character (ie. include this character
-as a reference) and their width was the same as the character's, then their
-widths will also be updated (so if you change the width of A, then the width
-of &Agrave;, &Aacute;, &Acirc;, &Atilde;, &Auml; and &Aring; might also be
-changed).
+it will change the width of the current glyph. If there are any bitmaps of
+this glyph then their widths will also be updated. If there are any other
+glyphs which depend on this glyph (ie. include this glyph as a reference)
+and their width was the same as the glyph's, then their widths will also
+be updated (so if you change the width of A, then the width of &Agrave;,
+&Aacute;, &Acirc;, &Atilde;, &Auml; and &Aring; might also be changed).
 <P>
 It is also possible to use the arrow keys to move selected items around.
 Each arrow will move the selection one em-unit (this can be changed in
@@ -232,8 +231,8 @@ times the normal amount.
 If you hold down the control key while working with the arrows then the view
 will be scrolled rather than moving the selection.
 <P>
-If the character is a ligature (and has a ligature entry in Char Info) then
-it has the potential of having "ligature caret locations". Essentially this
+If the glyph is a ligature (and has a ligature entry in Char Info) then it
+has the potential of having "ligature caret locations". Essentially this
 means that between each ligature component it is possible to place a caret
 location (so that the word processor will place be able to place a caret
 between each component of the ligature). In a ligature window a series of
@@ -456,8 +455,8 @@ it (bounding box), or whether the point where you depress the mouse becomes
 the center of the rectangle and the point where you release it provides an
 end-point (center out).
 <P>
-If you want even more control, you can double click in the character view
-and get another dialog which allows you to define numerically where the
+If you want even more control, you can double click in the glyph view and
+get another dialog which allows you to define numerically where the
 rectangle/ellipse should be placed, how big it should be, and whether it
 should be rotated.
 <H3>
@@ -486,19 +485,18 @@ points should extend beyond the circle in which the polygon is inscribed
 </H2>
 <P>
 <IMG SRC="charview-vert.png" WIDTH="544" HEIGHT="563" ALIGN="Right"> In this
-view the vertical metrics of the character are shown. You can change the
-vertical advance just as you changed the character's width (by selecting
-the pointer tool and dragging the vertical advance line up or
-down).<BR Clear=Right>
+view the vertical metrics of the glyph are shown. You can change the vertical
+advance just as you changed the glyph's width (by selecting the pointer tool
+and dragging the vertical advance line up or down).<BR Clear=Right>
 <H2>
   <A NAME="GridFit">Grid Fit View</A>
 </H2>
 <P>
 <IMG SRC="GridFit.png" WIDTH="327" HEIGHT="368" ALIGN="Right">If you have
-the freetype library, then you can see the results of rasterizing your character.
+the freetype library, then you can see the results of rasterizing your glyph.
 If you have freetype's bytecode interpreter enabled you can also see how
-the truetype instructions in the character have moved the points around (if
-you don't have the bytecode interpreter enabled you will see what freetype's
+the truetype instructions in the glyph have moved the points around (if you
+don't have the bytecode interpreter enabled you will see what freetype's
 autohinter does to points). This mode can be invoked with View-&gt;Show Grid
 Fit...
 <P>
@@ -597,7 +595,7 @@ them to look at things off the bottom.
 <P>
 The final button will exit the debugger.
 <P>
-The debugger also responds to some single character commands common to many
+The debugger also responds to some single glyph commands common to many
 debuggers:
 <TABLE BORDER CELLPADDING="2">
   <TR>

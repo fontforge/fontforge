@@ -2,9 +2,9 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Jun-2003 -->
-  <!-- AP: Last modified: 16-Apr-2004 -->
-  <LINK REL="icon" href="ffanvil16.png">
+  <!-- AP: Last modified: 13-Oct-2004 -->
   <TITLE>Select By Advanced Typographic Features</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
@@ -12,7 +12,7 @@
   By Advanced Typographic Features
 </H1>
 <P>
-This dialog allows you to select characters which:
+This dialog allows you to select glyphs which:
 <UL>
   <LI>
     are ligatures
@@ -20,7 +20,7 @@ This dialog allows you to select characters which:
       <LI>
 	In which case you may further restrict the search by specifying a ligature
 	tag ('liga', 'rlig', etc.) or a list of several tags ('liga rlig'). You may
-	also require that the ligature contain a character with the given name.
+	also require that the ligature contain a glyph with the given name.
     </UL>
   <LI>
     have a simple substitution transformation
@@ -28,7 +28,7 @@ This dialog allows you to select characters which:
       <LI>
 	In which case you may further restrict the search by specifying a ligature
 	tag ('onum', 'swsh', etc.) or a list of several tags ('onum swsh'). You may
-	also require that the substitution be to a character with the given name.
+	also require that the substitution be to a glyph with the given name.
     </UL>
   <LI>
     have an alternate substitution transformation
@@ -36,8 +36,8 @@ This dialog allows you to select characters which:
       <LI>
 	In which case you may further restrict the search by specifying a ligature
 	tag ('salt', 'swsh', etc.) or a list of several tags ('salt swsh'). You may
-	also require that at least one of the alternates be a character with the
-	given name.
+	also require that at least one of the alternates be a glyph with the given
+	name.
     </UL>
   <LI>
     have a multiple substitution transformation
@@ -45,7 +45,7 @@ This dialog allows you to select characters which:
       <LI>
 	In which case you may further restrict the search by specifying a ligature
 	tag ('ccmp'). You may also require that at least one of the alternates be
-	a character with the given name.
+	a glyph with the given name.
     </UL>
   <LI>
     have a simple position transformation
@@ -58,8 +58,8 @@ This dialog allows you to select characters which:
     be involved in a kerning combination
     <UL>
       <LI>
-	In which case you may further restrict the search by specifying a character
-	it must kern with.
+	In which case you may further restrict the search by specifying a glyph it
+	must kern with.
     </UL>
   <LI>
     Be involved in an anchored-pair combination
@@ -75,13 +75,13 @@ This dialog allows you to select characters which:
 There are three variants on how the search behaves:
 <OL>
   <LI>
-    The selection will be set to whatever characters match the search criteria
+    The selection will be set to whatever glyphs match the search criteria
   <LI>
     The selection will be expanded. Anything that was previously selected will
     remain so, and anything that matches the search criteria will become selected.
   <LI>
-    The selection will be restricted. Only characters previously selected will
-    be searched, the selection will be restricted to those which match<BR>
+    The selection will be restricted. Only glyphs previously selected will be
+    searched, the selection will be restricted to those which match<BR>
     So if you want to search for all ligatures containing both "f" and "i"...<BR>
     Search for ligatures containing "f" with "&lt;*&gt; Select Results" set<BR>
     Then Search for ligatures containing "i" with &lt;*&gt; Restrict Selection"

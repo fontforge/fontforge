@@ -2,9 +2,9 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
-  <!-- AP: Last modified: 16-Apr-2004 -->
+  <!-- AP: Last modified: 13-Oct-2004 -->
+  <TITLE>More advanced features, ligatures, mark positioning, glyph variants</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
-  <TITLE>More advanced features, ligatures, mark positioning, character variants</TITLE>
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
@@ -14,18 +14,17 @@
   <LI>
     <A HREF="editexample.html#FontCreate">Font Creation</A>
   <LI>
-    <A HREF="editexample.html#CharCreate">Creating a character (tracing
-    outlines)</A>
+    <A HREF="editexample.html#CharCreate">Creating a glyph (tracing outlines)</A>
   <LI>
-    <A HREF="editexample2.html#Navigating">Navigating to other characters</A>
+    <A HREF="editexample2.html#Navigating">Navigating to other glyphs</A>
   <LI>
-    <A HREF="editexample2.html#Creating-o">On to the next character (consistent
+    <A HREF="editexample2.html#Creating-o">On to the next glyph (consistent
     directions)</A>
   <LI>
     <A HREF="editexample3.html#consistent-stems">Consistent serifs and stem
     widths</A>
   <LI>
-    <A HREF="editexample4.html#accents">Building accented characters</A>
+    <A HREF="editexample4.html#accents">Building accented glyphs</A>
   <LI>
     <A HREF="editexample4.html#ligature">Building a ligature</A>
   <LI>
@@ -33,7 +32,7 @@
   <LI>
     <A HREF="editexample5.html#Kerning">Kerning</A>
   <LI>
-    <A HREF="editexample6.html#Variants">Character variants</A>
+    <A HREF="editexample6.html#Variants">Glyph variants</A>
     <UL>
       <LI>
 	<A HREF="editexample6.html#Conditional">Conditional variants</A>
@@ -52,16 +51,16 @@
     <A HREF="scriptnotes.html#Special">Notes on various scripts</A>
 </UL>
 <H2>
-  <A NAME="Variants">Character</A> Variants
+  <A NAME="Variants">Glyph</A> Variants
 </H2>
 <P>
-In many scripts characters have several variant glyphs. In latin the most
-obvious example is that every letter has both an upper case and a lower case
-variant. A more esoteric example would be that in renaissance times the long-s
-variant (of s) was used initially and medially in a word, while the short-s
-was only used at the end of a word.
+In many scripts glyphs have several variant glyphs. In latin the most obvious
+example is that every letter has both an upper case and a lower case variant.
+A more esoteric example would be that in renaissance times the long-s variant
+(of s) was used initially and medially in a word, while the short-s was only
+used at the end of a word.
 <P>
-Most Arabic characters have four variants (initial, medial, final and isolated).
+Most Arabic glyphs have four variants (initial, medial, final and isolated).
 <P>
 The digits often have several variants: tabular digits (where all digits
 have the same advance width so that tables of numbers don't look ragged),
@@ -103,10 +102,10 @@ into your font.
 <P>
 For instance suppose you want to create a latin script font where most letter
 combinations join at the baseline, but some join near the x-height. I was
-taught that the characters "b", "o", "v" and "w" join on the left at the
-x-height. So you need a variant form of all the lower case letters that will
-join on the left at the x-height and you need to use this form of the character
-after either a "b", "o", "v" or "w".
+taught that the glyphs "b", "o", "v" and "w" join on the left at the x-height.
+So you need a variant form of all the lower case letters that will join on
+the left at the x-height and you need to use this form of the glyph after
+either a "b", "o", "v" or "w".
 <P>
 See the <A HREF="fontinfo.html#Contextual">Element-&gt;Font
 Info-&gt;Contextual dialog </A>for more information
@@ -115,8 +114,8 @@ Info-&gt;Contextual dialog </A>for more information
 </H2>
 <P>
 Some scripts (Arabic, Hebrew) need vowel marks placed around the main text
-characters. Other scripts (some variants of Latin and Greek) have so many
-possible accent combinations that having preassembled glyphs for all combinations
+glyphs. Other scripts (some variants of Latin and Greek) have so many possible
+accent combinations that having preassembled glyphs for all combinations
 is unwieldy.
 <P>
 In OpenType (which includes MicroSoft's TrueType fonts) it is possible to
@@ -147,15 +146,15 @@ will attach at the same point, which would be ugly and confusing. Instead
 we create a different kind of anchor, a mark to mark anchor, on the circumflex
 and allow the acute accent to attach to that.
 <P>
-Before one can create an anchor in a character one must notify FontForge
-that this font will have anchors. You must create an
+Before one can create an anchor in a glyph one must notify FontForge that
+this font will have anchors. You must create an
 <A HREF="overview.html#Anchors">anchor class</A> for each type of attachment
 (thus in the case of A above with two types of attachments (one above and
 one below) you would create two anchor classes. The
 <CODE><A HREF="fontinfo.html#Anchors">Element-&gt;Font Info-&gt;Anchor
 Classes</A> </CODE>dialog will allow you to do that.
 <P>
-Then for each character in which an attachment will be made, you should first
+Then for each glyph in which an attachment will be made, you should first
 click at the point where the anchor is to be created and then bring up the
 <CODE>Point-&gt;Add Anchor </CODE>dialog.
 <P>

@@ -2,9 +2,9 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 2-Mar-2004 -->
-  <LINK REL="icon" href="ffanvil16.png">
+  <!-- AP: Last modified: 13-Oct-2004 -->
   <TITLE>Get Info</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
@@ -58,8 +58,8 @@ points until an new hintmask is given) you can use the hint mask pane. This
 provides you with a list of all hints in the current glyph, you should select
 the ones which you want active.
 <P>
-As you select hints, the character view will darken those hints so you can
-see what you've selected.
+As you select hints, the glyph view will darken those hints so you can see
+what you've selected.
 <P>
 Points with circles drawn around them have hintmasks.
 <P>
@@ -89,7 +89,7 @@ This dialog shows the selected <A HREF="overview.html#Anchors">anchor point</A>
 with the anchor class, location, type and (for ligatures) the ligature index.
 You may change any of these attributes (as long as your changes are reasonable).
 You may create new points or delete the current one. As with normal points
-above you may step through all the anchor points in your character.
+above you may step through all the anchor points in your glyph.
 <P>
 Anchor points may also be created with the
 <A HREF="pointmenu.html#AddAnchor">Point-&gt;Add Anchor</A> command.
@@ -103,15 +103,15 @@ This dialog shows the name of the selected reference, its encoding in the
 font and its postscript transformation matrix. You may alter the transformation
 matrix if you desire.
 <P>
-The transformation matrix maps points in the character being refered to into
-their location in the current character: <BR>
+The transformation matrix maps points in the glyph being refered to into
+their location in the current glyph: <BR>
 <CODE>&nbsp; &nbsp; x<SUB>current</SUB> = TM[1,1]*x<SUB>ref</SUB> +
 TM[2,1]*y<SUB>ref</SUB> + TM[3,1]<BR>
 &nbsp; &nbsp; y<SUB>current</SUB> = TM[1,2]*y<SUB>ref</SUB> +
 TM[2,2]*y<SUB>ref</SUB> + TM[3,2]</CODE>
 <P>
-The [Show] button will open a character outline view showing the character
-being referred to.<BR CLEAR=ALL>
+The [Show] button will open a glyph outline view showing the glyph being
+referred to.<BR CLEAR=ALL>
 <H2>
   Image Info
 </H2>
@@ -125,7 +125,7 @@ See Also:
   <LI>
     <A HREF="fontinfo.html">The font info dialog</A>
   <LI>
-    <A HREF="charinfo.html">The character info dialog</A>
+    <A HREF="charinfo.html">The glyph info dialog</A>
 </UL>
 <P ALIGN=Center>
 -- <A HREF="elementmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A>

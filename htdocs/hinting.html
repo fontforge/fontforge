@@ -2,9 +2,9 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 3-May-2001 -->
-  <!-- AP: Last modified: 16-Apr-2004 -->
-  <LINK REL="icon" href="ffanvil16.png">
+  <!-- AP: Last modified: 13-Oct-2004 -->
   <TITLE>Hinting</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
@@ -13,7 +13,7 @@
 <P>
 Postscript originally required that hints should not overlap. Now it requires
 that any active set of hints be non-overlapping, but it allows you to change
-sets as you move through the character.
+sets as you move through the glyph.
 <P>
 So to implement hinting with hint substitution FontForge needs to know not
 only the position and width of the stem being hinted, but also where the
@@ -27,8 +27,8 @@ of that area the stems' outlines are drawn with dotted lines. Most of these
 stems do not conflict with any other stems, but two, the bottom two horizontal
 stems conflict with each other. All the non-overlapping stem hints may be
 active at the same time, but only one of the two conflicting stem hints may
-be active. As FontForge outputs the character it decides at each point what
-stems need to be active, and activates them.
+be active. As FontForge outputs the glyph it decides at each point what stems
+need to be active, and activates them.
 <P>
 Postscript now allows FontForge to control relative counter sizes. Counters
 are the spaces between adjacent stems. In the example at left there are two
@@ -67,14 +67,14 @@ stem hints. It will also find hint substitution points (if any are needed),
 and will check for the simple counter description allowed by OpenType for
 non-Asian fonts (the equivalent of h/vstem3 hints in type1 fonts).
 <P>
-Whenever you change a character FontForge keeps track of that fact that the
-hints are out of date (when you autohint a character, or make a manual change
-to the hints FontForge resets this flag). If you generate a postscript font
-from something that contains glyphs with out of date hints, then FontForge
-will automagically regenerate them.
+Whenever you change a glyph FontForge keeps track of that fact that the hints
+are out of date (when you autohint a glyph, or make a manual change to the
+hints FontForge resets this flag). If you generate a postscript font from
+something that contains glyphs with out of date hints, then FontForge will
+automagically regenerate them.
 <P>
 This may not always be appropriate. You can turn this off in general with
-the HintForGen preference item. You may turn it off for an individual character
+the HintForGen preference item. You may turn it off for an individual glyph
 with the Hints-&gt;Don't AutoHint command.
 <H2>
   Manual Hinting
@@ -83,8 +83,8 @@ with the Hints-&gt;Don't AutoHint command.
 I hope that the FontForge's autohint command will be good enough that manual
 efforts will not be needed. But hopes like this are rarely fulfilled.
 <P>
-The AutoHint command should find all stems in a character. Some of them it
-deems to be useless and will remove them. If you find that FontForge is removing
+The AutoHint command should find all stems in a glyph. Some of them it deems
+to be useless and will remove them. If you find that FontForge is removing
 a hint that you think is important then invoke Hint-&gt;AutoHint with the
 shift key held down, this will tell FontForge not to prune any of the stems.
 You may then use Review Hints to prune things yourself.
@@ -115,9 +115,9 @@ You may manually:
     Review all your hints, manually changing or removing any (or all).
 </UL>
 <P>
-Once you have made a manual change to a character's hints with any of the
-above commands, that character will be marked "Don't AutoHint" until you
-explicitly call the AutoHint command on it. You may also explicitly use the
+Once you have made a manual change to a glyph's hints with any of the above
+commands, that glyph will be marked "Don't AutoHint" until you explicitly
+call the AutoHint command on it. You may also explicitly use the
 Hints-&gt;Don't AutoHint command to turn off FontForge's automatic hinting
 attempts.
 <P>
@@ -126,7 +126,7 @@ You may also manually
   <LI>
     Set hint change-over points
   <LI>
-    Set counter groups for a character
+    Set counter groups for a glyph
 </UL>
 <P>
 These do not set the "Don't AutoHint" bit.
@@ -150,7 +150,7 @@ and will control all subsequent points until a new hintmask is established.
 So in the
 following<IMG SRC="charwithhintmask.png" WIDTH="309" HEIGHT="322" ALIGN="Left"><IMG
     SRC="hintmaskinfo.png" WIDTH="321" HEIGHT="459" ALIGN="Right"> example, the
-selected point (on left) has the highlit hints active at it, In the character
+selected point (on left) has the highlit hints active at it, In the glyph
 view the currently active stems are drawn much darker than the inactive ones.
 Points with hintmasks attached to them have circles drawn around them.
 <P>
@@ -177,8 +177,8 @@ hints when it reads a TrueType font (the format is too complex, there are
 too many possibilities, instead FontForge stores all the truetype instructions
 and writes them back out uninterpretted).
 <P>
-From a Type1 font it will happily read all the hints in a character, and
-keep track of hint substitution points. It will not read counter hints though.
+From a Type1 font it will happily read all the hints in a glyph, and keep
+track of hint substitution points. It will not read counter hints though.
 <P>
 In an OpenType (Type2) font FontForge will read in all the hints, keep track
 of hint substitution points and the counter hints.
@@ -187,8 +187,8 @@ of hint substitution points and the counter hints.
 </H2>
 <P>
 FontForge does a really bad job of "hinting" (actually generating instructions
-for) truetype. Generally you will get better results with unhinted characters
-than with characters autoinstructed by fontforge.
+for) truetype. Generally you will get better results with unhinted glyphs
+than with glyphs autoinstructed by fontforge.
 <P>
 Hinting TrueType fonts opens a far wider range of possibilities. I have added
 several types of hints that are specific to truetype (and will be ignored
@@ -205,13 +205,13 @@ capabilities of TrueType.
     TrueType allows you to say that the distance between two features should
     never vanish. Every stem hint will automatically have one of these across
     it, but there may be other places where they will be useful. In particular
-    you can insure that there is always white space after a character by putting
-    a minimum distance hint between a point on the right edge of that character
-    and the width line, also these hints can be used to solve the serif problems
+    you can insure that there is always white space after a glyph by putting
+    a minimum distance hint between a point on the right edge of that glyph and
+    the width line, also these hints can be used to solve the serif problems
     mentioned above.
   <LI>
     Round to Grid<BR>
-    TrueType can move points to the rasterization grid before rasterizing characters.
+    TrueType can move points to the rasterization grid before rasterizing glyphs.
     Stem hints and minimum distance hints will automagically be rounded, but
     there might be other cases where rounding is useful.
 </UL>
