@@ -855,6 +855,9 @@ GWindow GMenuCreatePopupMenu(GWindow owner,GEvent *event, GMenuItem *mi) {
     GMenu *m;
     GEvent e;
 
+    if ( !gmenubar_inited )
+	GMenuInit();
+
     p.x = event->u.mouse.x;
     p.y = event->u.mouse.y;
     GDrawTranslateCoordinates(owner,GDrawGetRoot(GDrawGetDisplayOfWindow(owner)),&p);
