@@ -307,13 +307,8 @@ int main( int argc, char **argv ) {
     int ds, ld;
     int next_recent=0;
 
-#if __Mac
     fprintf( stderr, "Copyright (c) 2000-2003 by George Williams.\n Executable based on sources from %s.\n",
 	    source_modtime_str );
-#else
-    fprintf( stderr, "Copyright \251 2000-2003 by George Williams.\n Executable based on sources from %s.\n",
-	    source_modtime_str );
-#endif
     setlocale(LC_ALL,"");
     localeinfo = *localeconv();
     coord_sep = ",";
