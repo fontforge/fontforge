@@ -5755,8 +5755,7 @@ static void ProcessScript(int argc, char *argv[], FILE *script) {
 	    ++i;
     } else if ( strcmp(argv[1],"-script")==0 || strcmp(argv[1],"--script")==0 )
 	++i;
-    else if (( strcmp(argv[1],"-c")==0 || strcmp(argv[1],"--c")==0 ||
-	    strcmp(argv[1],"-command")==0 || strcmp(argv[1],"--command")==0) &&
+    else if (( strcmp(argv[1],"-c")==0 || strcmp(argv[1],"--c")==0) &&
 	    argc>=2 ) {
 	i += 2;
 	string = argv[2];
