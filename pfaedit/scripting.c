@@ -2895,6 +2895,26 @@ return( (feat<<16) | set );
 return( (tag[0]<<24)|(tag[1]<<16)|(tag[2]<<8)|tag[3] );
 }
 
+static void bCheckForAnchorClass(Context *c) {
+    AnchorClass *t;
+    unichar_t *ustr;
+    SplineFont *sf = c->curfv->sf;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str )
+	error( c, "Bad type for argument");
+
+    ustr = utf82u_copy( c->a.vals[1].u.sval );
+    for ( t=sf->anchor; t!=NULL; t=t->next )
+	if ( u_strcmp(ustr,t->name)==0 )
+    break;
+    free(ustr);
+    c->return_val.type = v_int;
+    c->return_val.u.ival = ( t!=NULL );
+return;
+}
+
 static void bAddAnchorClass(Context *c) {
     AnchorClass *ac, *t;
     unichar_t *ustr;
@@ -3483,6 +3503,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "AddATT", bAddATT },
     { "DefaultATT", bDefaultATT },
     { "RemoveATT", bRemoveATT },
+    { "CheckForAnchorClass", bCheckForAnchorClass },
     { "AddAnchorClass", bAddAnchorClass },
     { "RemoveAnchorClass", bRemoveAnchorClass },
     { "AddAnchorPoint", bAddAnchorPoint },
