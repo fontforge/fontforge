@@ -57,6 +57,10 @@ typedef struct quartic {
 #define FLAG 0xbadcafe
 #endif
 
+#ifdef CHUNKDEBUG
+static int chunkdebug = 0;	/* When this is set we never free anything, insuring that each chunk is unique */
+#endif
+
 #if ALLOC_CHUNK>1
 struct chunk { struct chunk *next; };
 struct chunk2 { struct chunk2 *next; int flag; };
@@ -121,6 +125,10 @@ return( item );
 }
 
 void chunkfree(void *item,int size) {
+#ifdef CHUNKDEBUG
+    if ( chunkdebug )
+return;
+#endif
 # if ALLOC_CHUNK<=1
     free(item);
 # else
