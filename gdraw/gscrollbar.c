@@ -252,22 +252,14 @@ return( false );
     if ( (event->type==et_mouseup || event->type==et_mousedown) &&
 	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
 	/* X treats scroll wheels as though they send events from buttons 4 and 5 */
-	/* Scrolling up gives us: press5 r5 p4 r4, */
-	/*  while down gives us: press4 r4 p5 r5 */
+	/* Badly configured wacom mice send "p5 r5 p4 r4" or "p4 r4 p5 r5" */
+	/*  properly configured mice just send "p4 r4" or "p5 r5" */
 	if ( event->type==et_mousedown ) {
 	    GDrawCancelTimer(gsb->pressed); gsb->pressed = NULL;
 	    if ( event->u.mouse.button==5 ) {
-		if ( !gsb->ignorenext45 ) {
-		    GScrollBarChanged(gsb,et_sb_up,0);
-		    gsb->ignorenext45 = true;
-		} else
-		    gsb->ignorenext45 = false;
+		GScrollBarChanged(gsb,et_sb_down,0);
 	    } else if ( event->u.mouse.button==4 ) {
-		if ( !gsb->ignorenext45 ) {
-		    GScrollBarChanged(gsb,et_sb_down,0);
-		    gsb->ignorenext45 = true;
-		} else
-		    gsb->ignorenext45 = false;
+		GScrollBarChanged(gsb,et_sb_up,0);
 	    }
 	}
 return( true );
