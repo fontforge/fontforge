@@ -512,8 +512,11 @@ static void AfmSplineCharX(FILE *afm, SplineChar *sc, int enc) {
 
     SplineCharFindBounds(sc,&b);
     /*fprintf( afm, "CX <%04x> ; WX %d ; N %s ; B %d %d %d %d ;",*/
-    fprintf( afm, "C %d ; WX %d ; N %s ; B %d %d %d %d ;",
-	    enc, sc->width*1000/em, sc->name,
+    fprintf( afm, "C %d ; WX %d ; ", enc, sc->width*1000/em );
+    if ( sc->parent->hasvmetrics )
+	fprintf( afm, "WY %d ; ", sc->vwidth*1000/em );
+    fprintf( afm, "N %s ; B %d %d %d %d ;",
+	    sc->name,
 	    (int) floor(b.minx*1000/em), (int) floor(b.miny*1000/em),
 	    (int) ceil(b.maxx*1000/em), (int) ceil(b.maxy*1000/em) );
     if (sc->ligofme!=NULL)
@@ -537,8 +540,11 @@ static void AfmSplineChar(FILE *afm, SplineChar *sc, int enc) {
     sc = SCDuplicate(sc);
 
     SplineCharFindBounds(sc,&b);
-    fprintf( afm, "C %d ; WX %d ; N %s ; B %d %d %d %d ;",
-	    enc, sc->width*1000/em, sc->name,
+    fprintf( afm, "C %d ; WX %d ; ", enc, sc->width*1000/em );
+    if ( sc->parent->hasvmetrics )
+	fprintf( afm, "WY %d ; ", sc->vwidth*1000/em );
+    fprintf( afm, "N %s ; B %d %d %d %d ;",
+	    sc->name,
 	    (int) floor(b.minx*1000/em), (int) floor(b.miny*1000/em),
 	    (int) ceil(b.maxx*1000/em), (int) ceil(b.maxy*1000/em) );
     if (sc->ligofme!=NULL)
@@ -552,8 +558,11 @@ static void AfmCIDChar(FILE *afm, SplineChar *sc, int enc) {
     int em = (sc->parent->ascent+sc->parent->descent);
 
     SplineCharFindBounds(sc,&b);
-    fprintf( afm, "C -1 ; WOX %d ; N %d ; B %d %d %d %d ;",
-	    sc->width*1000/em, enc,
+    fprintf( afm, "C -1 ; WX %d ; ", sc->width*1000/em );
+    if ( sc->parent->hasvmetrics )
+	fprintf( afm, "WY %d ; ", sc->vwidth*1000/em );
+    fprintf( afm, "N %d ; B %d %d %d %d ;",
+	    enc,
 	    (int) floor(b.minx*1000/em), (int) floor(b.miny*1000/em),
 	    (int) ceil(b.maxx*1000/em), (int) ceil(b.maxy*1000/em) );
     putc('\n',afm);
@@ -581,7 +590,7 @@ static void AfmKernPairs(FILE *afm, SplineChar *sc, int isv) {
     if ( strcmp(sc->name,".notdef")==0 )
 return;
 
-    for ( kp = sc->kerns; kp!=NULL; kp=kp->next ) {
+    for ( kp = isv ? sc->vkerns : sc->kerns; kp!=NULL; kp=kp->next ) {
 	if ( strcmp(kp->sc->name,".notdef")!=0 && kp->off!=0 ) {
 	    if ( isv )
 		fprintf( afm, "KPY %s %s %d\n", sc->name, kp->sc->name, kp->off*1000/em );
