@@ -251,7 +251,34 @@ struct unicoderange {
     { "Private/Corporate Use Area B", 0xf0000, 0x10ffff, -1 },
     { NULL }
 };
-    
+
+struct unicoderange specialnames[] = {
+    { "hyphen-minus", 0x2d },
+    { "nonbreakingspace", 0xa0 },
+    { "nbspace", 0xa0 },
+    { "softhyphen", 0xad },
+    { "dialytika", 0x308 },
+    { "ypogegrammeni", 0x345 },
+    { "tonos", 0x384 },
+    { "koronis", 0x1FBD },
+    { "prosgegrammeni", 0x1FBe },
+    { "psili", 0x1FBf },
+    { "perispomeni", 0x1Fc0 },
+    { "dialytika_perispomeni", 0x1Fc1 },
+    { "psili_varia", 0x1Fcd },
+    { "psili_oxia", 0x1Fce },
+    { "psili_perispomeni", 0x1Fcf },
+    { "dasia_varia", 0x1Fdd },
+    { "dasia_oxia", 0x1Fde },
+    { "dasia_perispomeni", 0x1Fdf },
+    { "dialytika_varia", 0x1Fed },
+    { "dialytika_oxia", 0x1Fee },
+    { "varia", 0x1Fef },
+    { "varia", 0x1Ffd },
+    { "oxia", 0x1Ffe },
+    { NULL }
+};
+
 const char *UnicodeRange(int unienc) {
     char *ret;
     struct unicoderange *best=NULL;
@@ -359,6 +386,13 @@ static int NameToEncoding(SplineFont *sf,const unichar_t *name) {
 		    if ( psunicodenames[uni]!=NULL )
 			if ( uc_strmatch(name,psunicodenames[uni])== 0 )
 		break;
+		if ( uni<0 ) {
+		    for ( i=0; specialnames[i].name!=NULL; ++i )
+			if ( uc_strcmp(name,specialnames[i].name)==0 ) {
+			    uni = specialnames[i].first;
+		    break;
+			}
+		}
 		if ( uni<0 ) {
 		    for ( uni=65535; uni>=0 ; --uni )
 			if ( UnicodeCharacterNames[uni>>8][uni&0xff]!=NULL )
