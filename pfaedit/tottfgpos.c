@@ -158,7 +158,7 @@ static LigList *LigListMatchTag(LigList *ligs,uint32 tag,uint16 flags) {
     LigList *l;
 
     for ( l=ligs; l!=NULL; l=l->next )
-	if ( l->lig->tag == tag && l->lig->flags==flags )
+	if ( l->lig->tag == tag && (l->lig->flags&~1)==flags )
 return( l );
 return( NULL );
 }
@@ -166,7 +166,7 @@ return( NULL );
 static PST *PosSubMatchTag(PST *pst,uint32 tag,enum possub_type type,uint16 flags) {
 
     for ( ; pst!=NULL; pst=pst->next )
-	if ( pst->tag == tag && pst->type==type && pst->flags==flags )
+	if ( pst->tag == tag && pst->type==type && (pst->flags&~1)==flags )
 return( pst );
 return( NULL );
 }
@@ -809,7 +809,7 @@ static void dumpgsubligdata(FILE *gsub,SplineFont *sf,uint32 script, uint32 tag,
     for ( i=0; i<cnt; ++i ) {
 	offsets[i] = ftell(gsub)-coverage_pos+2;
 	for ( pcnt = 0, ll = glyphs[i]->ligofme; ll!=NULL; ll=ll->next )
-	    if ( ll->lig->tag==tag && ll->lig->flags == flags)
+	    if ( ll->lig->tag==tag && (ll->lig->flags&~1) == flags)
 		++pcnt;
 	putshort(gsub,pcnt);
 	if ( pcnt>=max ) {
@@ -820,7 +820,7 @@ static void dumpgsubligdata(FILE *gsub,SplineFont *sf,uint32 script, uint32 tag,
 	for ( j=0; j<pcnt; ++j )
 	    putshort(gsub,0);			/* Place holders */
 	for ( pcnt=0, ll = glyphs[i]->ligofme; ll!=NULL; ll=ll->next ) {
-	    if ( ll->lig->tag==tag && ll->lig->flags == flags) {
+	    if ( ll->lig->tag==tag && (ll->lig->flags&~1) == flags) {
 		ligoffsets[pcnt] = ftell(gsub)-lig_list_start+2;
 		putshort(gsub,ll->lig->u.lig.lig->ttf_glyph);
 		for ( lcnt=0, scl=ll->components; scl!=NULL; scl=scl->next ) ++lcnt;
