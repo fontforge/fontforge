@@ -106,6 +106,8 @@ return;
     at->kernlen = ftell(at->kern);
     if ( at->kernlen&2 )
 	putshort(at->kern,0);		/* pad it */
+    free(offsets);
+    free(glnum);
 }
 
 /* ************************************************************************** */
@@ -1350,6 +1352,7 @@ return;
     at->proplen = ftell(at->prop);
     if ( at->proplen&2 )
 	putshort(at->prop,0);
+    free(props);
 }
 
 /* ************************************************************************** */

@@ -49,7 +49,7 @@ typedef struct quartic {
 /*  into splinefont.h after (or instead of) the definition of chunkalloc()*/
 
 #ifndef chunkalloc
-#define ALLOC_CHUNK	100		/* Number of small chunks to malloc at a time */
+#define ALLOC_CHUNK	1 /* 00		/* Number of small chunks to malloc at a time */
 #define CHUNK_MAX	40		/* Maximum size (in chunk units) that we are prepared to allocate */
 					/* The size of our data structures */
 # define CHUNK_UNIT	sizeof(void *)	/*  will vary with the word size of */
@@ -224,9 +224,11 @@ void SplinePointMDFree(SplineChar *sc, SplinePoint *sp) {
 
 void SplinePointListFree(SplinePointList *spl) {
     Spline *first, *spline, *next;
+    int nonext;
 
     if ( spl==NULL )
 return;
+    nonext = spl->first->next==NULL;
     if ( spl->first!=NULL ) {
 	first = NULL;
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = next ) {
@@ -235,7 +237,7 @@ return;
 	    SplineFree(spline);
 	    if ( first==NULL ) first = spline;
 	}
-	if ( spl->last!=spl->first || spl->first->next==NULL )
+	if ( spl->last!=spl->first || nonext )
 	    SplinePointFree(spl->first);
     }
     chunkfree(spl,sizeof(SplinePointList));
@@ -1649,6 +1651,7 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd) {
 	}
     }
     free(encoding);
+    free(used);
     /* sometimes (some apple oblique fonts) the fontmatrix is not just a */
     /*  formality, it acutally contains a skew. So be ready */
     if ( fd->fontmatrix[0]!=0 )
@@ -2860,10 +2863,15 @@ void TtfTablesFree(struct ttf_table *tab) {
 
 void SplineFontFree(SplineFont *sf) {
     int i;
+    BDFFont *bdf, *bnext;
 
     if ( sf==NULL )
 return;
     PasteRemoveSFAnchors(sf);
+    for ( bdf = sf->bitmaps; bdf!=NULL; bdf = bnext ) {
+	bnext = bdf->next;
+	BDFFontFree(bdf);
+    }
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
 	SplineCharFree(sf->chars[i]);
     free(sf->chars);
@@ -2876,7 +2884,10 @@ return;
     free(sf->origname);
     free(sf->autosavename);
     free(sf->version);
-    SplinePointListFree(sf->gridsplines);
+    free(sf->xuid);
+    free(sf->cidregistry);
+    free(sf->ordering);
+    SplinePointListsFree(sf->gridsplines);
     AnchorClassesFree(sf->anchor);
     TableOrdersFree(sf->orders);
     TtfTablesFree(sf->ttf_tables);

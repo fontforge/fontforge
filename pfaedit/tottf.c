@@ -1071,7 +1071,7 @@ return;
     dumpinstrs(gi,sc->ttf_instrs,sc->ttf_instrs_len);
 	
     dumppointarrays(gi,bp,fs,ptcnt);
-    SplinePointListFree(ttfss);
+    SplinePointListsFree(ttfss);
     free(bp);
     free(fs);
 
@@ -2141,6 +2141,7 @@ return( false );
     _dumpcffstrings(at->private,subrs);
     GProgressNextStage();
     at->charstrings = dumpcffstrings(SplineFont2Chrs2(sf,at->nomwid,at->defwid,subrs));
+    PSCharsFree(subrs);
     if ( at->charstrings == NULL )
 return( false );
     dumpcfftopdict(sf,at);

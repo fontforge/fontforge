@@ -239,7 +239,7 @@ return;
     fd->localname = copy(xname);
     fd->parent = fn;
     fd->map = map;
-    fd->charmap_name = decomp->mapname;
+    fd->charmap_name = u_copy(decomp->mapname);
     fd->x_height = fd->cap_height = 0;
     if ( fd->point_size==0 )
 	fd->is_scalable = true;
@@ -262,8 +262,11 @@ static void _GXDraw_InitFonts(GXDisplay *gxdisplay) {
     ret = XListFonts(display,"-*-*-*-*-*--*-*-*-*-*-*-*-*",8000,&ret_len);
 
     for ( i=0; i<ret_len; ++i ) {
-	if ( decompose_screen_name(ret[i],&decomp,fs->res))
+	if ( decompose_screen_name(ret[i],&decomp,fs->res)) {
 	    GXDrawHashFont(gxdisplay->fontstate,ret[i],&decomp);
+	    if ( decomp.map == em_max )
+		free( decomp.mapname );
+	}
     }
     _GDraw_RemoveDuplicateFonts(gxdisplay->fontstate);
     _GDraw_FillLastChance(gxdisplay->fontstate);
@@ -3274,6 +3277,7 @@ return( 0 );
 	    gdisp->inputdevices[i].devid = devs[i].id;
 	}
 	gdisp->n_inputdevices = ndevs;
+	XFreeDeviceList(devs);
     }
     classes = NULL;
     for ( k=0; k<2; ++k ) {

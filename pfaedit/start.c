@@ -214,8 +214,10 @@ static void DoDelayedEvents(GEvent *event) {
     GTimer *t = event->u.timer.timer;
     struct delayed_event *info = (struct delayed_event *) (event->u.timer.userdata);
 
-    if ( info!=NULL )
+    if ( info!=NULL ) {
 	(info->func)(info->data);
+	free(info);
+    }
     GDrawCancelTimer(t);
 }
 

@@ -132,6 +132,7 @@ return;
 	}
     }
     closedir(dir);
+    free(buffer);
     gc->iodata = head;
     gc->direntrydata = true;
     gc->return_code = 200;

@@ -286,6 +286,7 @@ void GTextInfoArrayFree(GTextInfo **ti) {
 return;
     for ( i=0; ti[i]->text || ti[i]->image || ti[i]->line; ++i )
 	GTextInfoFree(ti[i]);
+    GTextInfoFree(ti[i]);	/* And free the null entry at end */
     gfree(ti);
 }
 

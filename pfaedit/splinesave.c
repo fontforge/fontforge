@@ -1219,7 +1219,7 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
     BasePoint current;
     RefChar *rf;
     unsigned char *ret;
-    struct hintdb hintdb, *hdb;
+    struct hintdb hintdb, *hdb=NULL;
 
     memset(&gb,'\0',sizeof(gb));
     memset(&current,'\0',sizeof(current));
@@ -1269,6 +1269,13 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
     *gb.pt++ = startend==NULL ? 14 : 11;	/* endchar / return */
     ret = (unsigned char *) copyn((char *) gb.base,gb.pt-gb.base);
     *len = gb.pt-gb.base;
+    if ( hdb!=NULL ) {
+	struct mhlist *mh, *mhnext;
+	for ( mh=hdb->sublist; mh!=NULL; mh=mhnext ) {
+	    mhnext = mh->next;
+	    free(mh);
+	}
+    }
     free(gb.base);
     if ( startend!=NULL )
 	startend[1] = current;

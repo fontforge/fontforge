@@ -728,6 +728,10 @@ static void bGenerateFamily(Context *c) {
 
     if ( !GenerateScript(sf,c->a.vals[1].u.sval,bitmaptype,fmflags,-1,NULL,sfs) )
 	error(c,"Save failed");
+    for ( cur=sfs; cur!=NULL; cur=sfs ) {
+	sfs = cur->next;
+	free(cur);
+    }
 }
 
 static void Bitmapper(Context *c,int isavail) {

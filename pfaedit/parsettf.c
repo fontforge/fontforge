@@ -1858,6 +1858,7 @@ static void TopDictFree(struct topdicts *dict) {
 	free(dict->local_subrs.values[i]);
     free(dict->local_subrs.values);
     free(dict->local_subrs.lens);
+    free(dict);
 }
 
 static void readcffsubrs(FILE *ttf, struct pschars *subs) {
@@ -2491,15 +2492,32 @@ static void cffinfofillup(struct ttfinfo *info, struct topdicts *dict,
     info->ascent = dict->fontbb[3]*info->emsize/(dict->fontbb[3]-dict->fontbb[1]);
 #endif
     info->descent = info->emsize - info->ascent;
+    if ( dict->copyright!=-1 || dict->notice!=-1 )
+	free( info->copyright );
     if ( dict->copyright!=-1 )
 	info->copyright = copy(getsid(dict->copyright,strings));
-    else
+    else if ( dict->notice!=-1 )
 	info->copyright = copy(getsid(dict->notice,strings));
-    info->familyname = copy(getsid(dict->familyname,strings));
-    info->fullname = copy(getsid(dict->fullname,strings));
-    info->weight = copy(getsid(dict->weight,strings));
-    info->version = copy(getsid(dict->version,strings));
-    info->fontname = copy(dict->fontname);
+    if ( dict->familyname!=-1 ) {
+	free(info->familyname);
+	info->familyname = copy(getsid(dict->familyname,strings));
+    }
+    if ( dict->fullname!=-1 ) {
+	free(info->fullname);
+	info->fullname = copy(getsid(dict->fullname,strings));
+    }
+    if ( dict->weight!=-1 ) {
+	free(info->weight);
+	info->weight = copy(getsid(dict->weight,strings));
+    }
+    if ( dict->version!=-1 ) {
+	free(info->version);
+	info->version = copy(getsid(dict->version,strings));
+    }
+    if ( dict->fontname!=NULL ) {
+	free(info->fontname);
+	info->fontname = copy(dict->fontname);
+    }
     info->italicAngle = dict->italicangle;
     info->upos = dict->underlinepos;
     info->uwidth = dict->underlinewidth;
@@ -2703,7 +2721,7 @@ return( 0 );
     }
     free(fontnames); free(dicts);
     if ( strings!=NULL ) {
-	for ( i=0; strings[i]!=NULL && i<1; ++i )
+	for ( i=0; strings[i]!=NULL; ++i )
 	    free(strings[i]);
 	free(strings);
     }
@@ -4144,6 +4162,7 @@ return;
 			info->chars[lig_glyphs[k]]->script = lookup->script;
 		}
 		pt[-1] = '\0';
+		free(lig_glyphs);
 	    }
 	}
 	free(lig_offsets);

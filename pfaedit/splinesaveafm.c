@@ -782,7 +782,7 @@ static void putlint(int val,FILE *pfm) {
 }
 
 int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0) {
-    int caph, xh, ash, dsh, cnt, first=-1, samewid=-1, maxwid= -1, last=0, wid=0;
+    int caph, xh, ash, dsh, cnt=0, first=-1, samewid=-1, maxwid= -1, last=0, wid=0;
     int kerncnt=0, spacepos=0x20;
     int i;
     char *pt;

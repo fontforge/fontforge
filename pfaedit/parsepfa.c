@@ -1051,11 +1051,15 @@ return;
 return;
 	if ( mycmp("version",line+1,endtok)==0 )
 	    fp->fd->fontinfo->version = getstring(endtok,in);
-	else if ( mycmp("Notice",line+1,endtok)==0 )
+	else if ( mycmp("Notice",line+1,endtok)==0 ) {
+	    if ( fp->fd->fontinfo->notice!=NULL )
+		free(fp->fd->fontinfo->notice);
 	    fp->fd->fontinfo->notice = getstring(endtok,in);
-	else if ( mycmp("Copyright",line+1,endtok)==0 )		/* cff spec allows for copyright and notice */
+	} else if ( mycmp("Copyright",line+1,endtok)==0 ) {		/* cff spec allows for copyright and notice */
+	    if ( fp->fd->fontinfo->notice!=NULL )
+		free(fp->fd->fontinfo->notice);
 	    fp->fd->fontinfo->notice = getstring(endtok,in);
-	else if ( mycmp("FullName",line+1,endtok)==0 ) {
+	} else if ( mycmp("FullName",line+1,endtok)==0 ) {
 	    if ( fp->fd->fontinfo->fullname==NULL )
 		fp->fd->fontinfo->fullname = getstring(endtok,in);
 	    else
@@ -1659,6 +1663,7 @@ static void figurecids(struct fontparse *fp,FILE *temp) {
 		private->subrs->values[i] = readt1str(temp,offsets[i],
 			private->subrs->lens[i],leniv);
 	    }
+	    private->subrs->next = i;
 	    free(offsets);
 	}
 	PSDictRemoveEntry(private->private,"SubrMapOffset");
@@ -1804,6 +1809,7 @@ return(NULL);
     fp.fd = fp.mainfd = PSMakeEmptyFont();
     fp.fdindex = -1;
     realdecrypt(&fp,in,temp);
+    free(fp.vbuf);
     setlocale(LC_NUMERIC,oldloc);
 
     fclose(temp);

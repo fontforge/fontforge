@@ -175,6 +175,7 @@ static int WriteAfmFile(char *filename,SplineFont *sf, int formattype) {
     GProgressChangeLine1R(_STR_SavingAFM);
     GProgressChangeLine2(temp=uc_copy(buf)); free(temp);
     afm = fopen(buf,"w");
+    free(buf);
     if ( afm==NULL )
 return( false );
     ret = AfmSplineFont(afm,sf,formattype);
@@ -202,6 +203,7 @@ int WritePfmFile(char *filename,SplineFont *sf, int type0) {
 	strcpy(pt,".pfm");
     GProgressChangeLine2(temp=uc_copy(buf)); free(temp);
     pfm = fopen(buf,"w");
+    free(buf);
     if ( pfm==NULL )
 return( false );
     ret = PfmSplineFont(pfm,sf,type0);

@@ -1546,6 +1546,7 @@ int WriteMacBitmaps(char *filename,SplineFont *sf, int32 *sizes, int is_dfont) {
     else
 	res = fopen(binfilename,"w+");
     if ( res==NULL ) {
+	free(binfilename);
 return( 0 );
     }
 
@@ -1577,6 +1578,7 @@ return( 0 );
     if ( ferror(res)) ret = false;
     if ( fclose(res)==-1 ) ret = 0;
     free(resources[0].res);
+    free(binfilename);
 return( ret );
 }
 
@@ -1938,11 +1940,13 @@ static SplineFont *SearchTtfResources(FILE *f,long rlistpos,int subcnt,long rdat
 	sf = _SFReadTTF(ttf,flags,NULL);
 	fclose(ttf);
 	if ( sf!=NULL ) {
+	    free(buffer);
 	    fseek(f,start,SEEK_SET);
 return( sf );
 	}
 	fseek(f,here,SEEK_SET);
     }
+    free(buffer);
     fseek(f,start,SEEK_SET);
 return( NULL );
 }

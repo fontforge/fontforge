@@ -525,7 +525,7 @@ static int dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data,
     real stdhw[1], stdvw[1];
     int flex_max;
     int i;
-    int hasblue=0, hash=0, hasv=0, hasshift, haso, hasxuid, hasbold, haslg;
+    int hasblue=0, hash=0, hasv=0, hasshift, hasxuid, hasbold, haslg;
     int isbold=false;
     int iscjk;
     struct pschars *subrs, *chars;
@@ -627,7 +627,7 @@ return( false );
 	cnt += 3;		/* subrmap, etc. */
 	++cnt;			/* Other Subrs */
     }
-    if ( !haso && flex_max>0 ) ++cnt;
+    if ( flex_max>0 ) ++cnt;
     if ( hasbold || isbold ) ++cnt;
 
     dumpf(dumpchar,data,"/Private %d dict dup begin\n", cnt );

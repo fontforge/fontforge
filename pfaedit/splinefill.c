@@ -1382,5 +1382,6 @@ return;
 	free(bdf->clut);
     if ( bdf->freetype_context!=NULL )
 	FreeTypeFreeContext(bdf->freetype_context);
+    free( bdf->foundry );
     free(bdf);
 }
