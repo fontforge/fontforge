@@ -439,7 +439,7 @@ return( fallback[index]);
 int GIntGetResource(int index) {
     if ( index<0 || (index>=ilen && index>=filen ))
 return( -1 );
-    if ( index<slen && intarray[index]!=0x80000000 ) {
+    if ( index<ilen && intarray[index]!=0x80000000 ) {
 return( intarray[index]);
     }
 return( fallbackint[index]);
