@@ -503,6 +503,7 @@ enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_ptype3, ff_ptype0, ff_cid,
 	ff_ttf, ff_ttfsym, ff_ttfmacbin, ff_ttfdfont, ff_otf, ff_otfdfont,
 	ff_otfcid, ff_otfciddfont, ff_none };
 enum bitmapformat { bf_bdf, bf_ttf_ms, bf_ttf_apple, bf_sfnt_dfont, bf_gdf, bf_nfntmacbin, bf_nfntdfont, bf_none };
+extern SplineChar *SFFindExistingCharMac(SplineFont *,int unienc);
 extern int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format);
 extern int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format);
 extern int WriteMacPSFont(char *fontname,SplineFont *sf,enum fontformat format);

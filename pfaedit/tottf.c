@@ -27,10 +27,10 @@
 #include "pfaedit.h"
 #include <math.h>
 #include <unistd.h>
-#include <utype.h>
 #include <time.h>
-#include <ustring.h>
 #include <locale.h>
+#include <utype.h>
+#include <ustring.h>
 #include <chardata.h>
 #include <gwidget.h>
 
@@ -5659,7 +5659,7 @@ static void SetTo(uint32 *avail,uint16 *sfind,int to,int from) {
 }
 
 static int Needs816Enc(struct alltabs *at, SplineFont *sf) {
-    int i, j, complained, pos, k, len;
+    int i, j, complained, pos, k, len, subheadindex, jj;
     uint16 table[256];
     struct subhead subheads[128];
     uint16 *glyphs;
@@ -5667,15 +5667,17 @@ static int Needs816Enc(struct alltabs *at, SplineFont *sf) {
     uint32 macpos;
     int enccnt;
     /* This only works for big5, johab */
-    int base, lbase, basebound, subheadcnt, planesize;
+    int base, lbase, basebound, subheadcnt, planesize, plane0size;
+    int base2, base2bound;
 
     if ( sf->cidmaster!=NULL || sf->subfontcnt!=0 )
 return( false );
+    base2 = -1; base2bound = -2;
     if ( sf->encoding_name==em_big5 ) {
 	base = 0xa1;
 	basebound = 0xfd;
 	lbase = 0x40;
-	subheadcnt = 93;
+	subheadcnt = basebound-base+1;
 	planesize = 191;
     } else if ( sf->encoding_name==em_wansung ) {
 	base = 0xa1;
@@ -5687,29 +5689,67 @@ return( false );
 	base = 0x84;
 	basebound = 0xf9+1;
 	lbase = 0x31;
-	subheadcnt = 0xf9-0x84+1+1;
+	subheadcnt = basebound-base+1;
 	planesize = 0xfe -0x31+1;	/* Stupid gcc bug, thinks 0xfe- is ambiguous (exponant) */
+    } else if ( sf->encoding_name==em_sjis ) {
+	base = 129;
+	basebound = 159;
+	lbase = 64;
+	planesize = 252 - lbase +1;
+	base2 = 0xe0;
+	/* SJIS supports "user defined characters" between 0xf040 and 0xfcfc */
+	/*  there probably won't be any, but allow space for them if there are*/
+	for ( base2bound=0xfc00; base2bound>0xefff; --base2bound )
+	    if ( base2bound<sf->charcnt && SCWorthOutputting(sf->chars[base2bound]))
+	break;
+	base2bound >>= 8;
+	subheadcnt = basebound-base + 1 + base2bound-base2 + 1;
     } else {
 	fprintf( stderr, "Unsupported 8/16 encoding %d\n", sf->encoding_name );
+return( false );
     }
-    for ( i=0; i<base && i<sf->charcnt; ++i )
-	if ( SCWorthOutputting(sf->chars[i]))
-    break;
+    plane0size = base2==-1? base : base2;
+    i=0;
+    if ( base2!=-1 ) {
+	for ( i=basebound; i<base2 && i<sf->charcnt; ++i )
+	    if ( SCWorthOutputting(sf->chars[i]))
+	break;
+	if ( i==base2 || i==sf->charcnt )
+	    i = 0;
+    }
+    if ( i==0 )
+	for ( i=0; i<base && i<sf->charcnt; ++i )
+	    if ( SCWorthOutputting(sf->chars[i]))
+	break;
     if ( i==base || i==sf->charcnt )
 return( false );		/* Doesn't have the single byte entries */
 	/* Can use the normal 16 bit encoding scheme */
 
-    for ( i=base; i<256 && i<sf->charcnt; ++i )
-	if ( SCWorthOutputting(sf->chars[i])) {
-	    GWidgetErrorR(_STR_BadEncoding,_STR_ExtraneousSingleByte,i);
-    break;
-	}
+    if ( base2!=-1 ) {
+	for ( i=base; i<=basebound && i<sf->charcnt; ++i )
+	    if ( SCWorthOutputting(sf->chars[i])) {
+		GWidgetErrorR(_STR_BadEncoding,_STR_ExtraneousSingleByte,i);
+	break;
+	    }
+	if ( i==basebound+1 )
+	    for ( i=base2; i<256 && i<sf->charcnt; ++i )
+		if ( SCWorthOutputting(sf->chars[i])) {
+		    GWidgetErrorR(_STR_BadEncoding,_STR_ExtraneousSingleByte,i);
+	    break;
+		}
+    } else {
+	for ( i=base; i<256 && i<sf->charcnt; ++i )
+	    if ( SCWorthOutputting(sf->chars[i])) {
+		GWidgetErrorR(_STR_BadEncoding,_STR_ExtraneousSingleByte,i);
+	break;
+	    }
+    }
     for ( i=256; i<(base<<8) && i<sf->charcnt; ++i )
 	if ( SCWorthOutputting(sf->chars[i])) {
 	    GWidgetErrorR(_STR_BadEncoding,_STR_OutOfEncoding,i);
     break;
 	}
-    if ( i==(base<<8) )
+    if ( i==(base<<8) && base2==-1 )
 	for ( i=(basebound<<8); i<0x10000 && i<sf->charcnt; ++i )
 	    if ( SCWorthOutputting(sf->chars[i])) {
 		GWidgetErrorR(_STR_BadEncoding,_STR_OutOfEncoding,i);
@@ -5717,29 +5757,34 @@ return( false );		/* Doesn't have the single byte entries */
 	    }
 
     memset(table,'\0',sizeof(table));
-    for ( i=base; i<basebound; ++i )
+    for ( i=base; i<=basebound; ++i )
 	table[i] = 8*(i-base+1);
+    for ( i=base2; i<=base2bound; ++i )
+	table[i] = 8*(i-base2+basebound-base+1+1);
     memset(subheads,'\0',sizeof(subheads));
-    subheads[0].first = 0; subheads[0].cnt = planesize;
-    for ( i=1; i<=92; ++i ) {
-	subheads[i].first = 64;
+    subheads[0].first = 0; subheads[0].cnt = plane0size;
+    for ( i=1; i<subheadcnt+1; ++i ) {
+	subheads[i].first = lbase;
 	subheads[i].cnt = planesize;
     }
-    glyphs = gcalloc(subheadcnt*planesize,sizeof(uint16));
+    glyphs = gcalloc(subheadcnt*planesize+plane0size,sizeof(uint16));
     subheads[0].rangeoff = 0;
-    for ( i=0; i<0xa1 && i<sf->charcnt; ++i )
+    for ( i=0; i<plane0size && i<sf->charcnt; ++i )
 	if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1)
 	    glyphs[i] = sf->chars[i]->ttf_glyph;
+    
     pos = 1;
 
     complained = false;
-    for ( j=(base<<8); j<(basebound<<8); j+= 0x100 ) {
+    subheadindex = 1;
+    for ( jj=0; jj<2 || (base2==-1 && jj<1); ++jj )
+	    for ( j=((jj==0?base:base2)<<8); j<=((jj==0?basebound:base2bound)<<8); j+= 0x100 ) {
 	for ( i=0; i<lbase; ++i )
 	    if ( !complained && SCWorthOutputting(sf->chars[i+j])) {
 		GWidgetErrorR(_STR_BadEncoding,_STR_NotNormallyEncoded,i+j);
 		complained = true;
 	    }
-	if ( lbase==0x40 ) {
+	if ( sf->encoding_name==em_big5 ) {
 	    /* big5 has a gap here. Does johab? */
 	    for ( i=0x7f; i<0xa1; ++i )
 		if ( !complained && SCWorthOutputting(sf->chars[i+j])) {
@@ -5747,50 +5792,49 @@ return( false );		/* Doesn't have the single byte entries */
 		    complained = true;
 		}
 	}
-	if ( !complained && SCWorthOutputting(sf->chars[0xff+j])) {
-	    GWidgetErrorR(_STR_BadEncoding,_STR_NotNormallyEncoded,0xff+j);
-	    complained = true;
-	}
 	memset(tempglyphs,0,sizeof(tempglyphs));
 	for ( i=0; i<planesize; ++i )
 	    if ( sf->chars[j+lbase+i]!=NULL && sf->chars[j+lbase+i]->ttf_glyph!=-1 )
 		tempglyphs[i] = sf->chars[j+lbase+i]->ttf_glyph;
 	for ( i=1; i<pos; ++i ) {
-	    int delta = (uint16) (tempglyphs[0]-glyphs[i*planesize]);
+	    int delta = 0;
 	    for ( k=0; k<planesize; ++k )
-		if ( tempglyphs[k]==0 && glyphs[i*planesize+k]==0 )
+		if ( tempglyphs[k]==0 && glyphs[plane0size+(i-1)*planesize+k]==0 )
 		    /* Still matches */;
-		else if ( tempglyphs[k]==(uint16) (glyphs[i*planesize+k]+delta) )
+		else if ( delta==0 )
+		    delta = (uint16) (tempglyphs[k]-glyphs[plane0size+(i-1)*planesize+k]);
+		else if ( tempglyphs[k]==(uint16) (glyphs[plane0size+(i-1)*planesize+k]+delta) )
 		    /* Still matches */;
 		else
 	    break;
 	    if ( k==planesize ) {
-		subheads[(j>>8)-base+1].delta = delta;
-		subheads[(j>>8)-base+1].rangeoff = i*planesize;
+		subheads[subheadindex].delta = delta;
+		subheads[subheadindex].rangeoff = i*planesize;
 	break;
 	    }
 	}
-	if ( subheads[(j>>8)-base+1].rangeoff==0 ) {
-	    memcpy(glyphs+pos*planesize,tempglyphs,planesize*sizeof(uint16));
-	    subheads[(j>>8)-base+1].rangeoff = (pos++)*planesize ;
+	if ( subheads[subheadindex].rangeoff==0 ) {
+	    memcpy(glyphs+(pos-1)*planesize+plane0size,tempglyphs,planesize*sizeof(uint16));
+	    subheads[subheadindex].rangeoff = (pos++)*planesize ;
 	}
+	++subheadindex;
     }
 
     /* fixup offsets */
     /* my rangeoffsets are indexes into the glyph array. That's nice and */
     /*  simple. Unfortunately ttf says they are offsets from the current */
     /*  location in the file (sort of) so we now fix them up. */
-    for ( i=0; i<subheadcnt; ++i )
+    for ( i=0; i<subheadcnt+1; ++i )
 	subheads[i].rangeoff = subheads[i].rangeoff*sizeof(uint16) +
 		(subheadcnt-i-1)*sizeof(struct subhead) + sizeof(uint16);
 
-    len = 3*sizeof(uint16) + 256*sizeof(uint16) + subheadcnt*sizeof(struct subhead) +
-	    pos*planesize*sizeof(uint16);
+    len = 3*sizeof(uint16) + 256*sizeof(uint16) + (subheadcnt+1)*sizeof(struct subhead) +
+	    ((pos-1)*planesize+plane0size)*sizeof(uint16);
     macpos = 2*sizeof(uint16)+enccnt*(2*sizeof(uint16)+sizeof(uint32))+len;
 
     /* Two/Three encoding table pointers, one for ms, one for mac, one for macunicode (if ms is unicode) */
     enccnt = 3;
-    if ( sf->encoding_name==em_ksc5601 || sf->encoding_name==em_johab )
+    if ( sf->encoding_name==em_johab )
 	enccnt = 2;
 
     /* Encodings are supposed to be ordered by platform, then by specific */
@@ -5803,22 +5847,19 @@ return( false );		/* Doesn't have the single byte entries */
     
     if ( enccnt==3 ) {
 	/* big mac table, just a copy of the ms table */
-	putshort(at->cmap,sf->encoding_name==em_big5||
-			sf->encoding_name==em_sjis||
-			sf->encoding_name==em_jis208?1:0);
-					/* either mac or mac unicode platform */
+	putshort(at->cmap,1);
 	putshort(at->cmap,
-	    sf->encoding_name==em_jis208? 1 :	/* SJIS */
-	    sf->encoding_name==em_sjis?   1 :	/* SJIS */
-	    /*sf->encoding_name==em_big5?*/ 2 );/* Big5 */
+	    sf->encoding_name==em_sjis?   1 :	/* Japanese */
+	    sf->encoding_name==em_wansung? 3 :	/* Korean */
+	    /*sf->encoding_name==em_big5?*/ 2 );/* Chinese, Traditional */
 	putlong(at->cmap,2*sizeof(uint16)+enccnt*(2*sizeof(uint16)+sizeof(uint32)));
     }
 
     putshort(at->cmap,3);		/* ms platform */
     putshort(at->cmap,
-	sf->encoding_name==em_jis208? 2 :	/* SJIS */
 	sf->encoding_name==em_sjis? 2 :		/* SJIS */
 	sf->encoding_name==em_big5? 4 :		/* Big5 */
+	sf->encoding_name==em_wansung? 5 :	/* Wansung */
 	 6 );					/* Johab */
     putlong(at->cmap,2*sizeof(uint16)+enccnt*(2*sizeof(uint16)+sizeof(uint32)));
 					/* offset from tab start to sub tab start */
@@ -5828,7 +5869,7 @@ return( false );		/* Doesn't have the single byte entries */
     putshort(at->cmap,0);		/* version/language, not meaningful in ms systems */
     for ( i=0; i<256; ++i )
 	putshort(at->cmap,table[i]);
-    for ( i=0; i<subheadcnt; ++i ) {
+    for ( i=0; i<subheadcnt+1; ++i ) {
 	putshort(at->cmap,subheads[i].first);
 	putshort(at->cmap,subheads[i].cnt);
 	putshort(at->cmap,subheads[i].delta);
@@ -5846,22 +5887,54 @@ return( false );		/* Doesn't have the single byte entries */
 	if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 &&
 		sf->chars[i]->ttf_glyph<256 )
 	    table[i] = sf->chars[i]->ttf_glyph;
-    putshort(at->cmap,0);		/* format */
-    putshort(at->cmap,262);		/* length = 256bytes + 6 header bytes */
-    putshort(at->cmap,0);		/* language = english */
-    for ( i=0; i<256; ++i )
-	putc(table[i],at->cmap);
-
-    at->cmaplen = ftell(at->cmap);
-    if ( (at->cmaplen&2)!=0 )
-	putshort(at->cmap,0);
 return( true );
+}
+
+static FILE *NeedsUCS4Table(SplineFont *sf,int *ucs4len) {
+    int i,j,group;
+    FILE *format12;
+
+    if ( sf->encoding_name!=em_unicode4 )
+return( NULL );
+    for ( i=0x10000; i<sf->charcnt; ++i )
+	if ( SCWorthOutputting(sf->chars[i]))
+    break;
+    if ( i>=sf->charcnt )
+return(NULL);
+
+    format12 = tmpfile();
+    if ( format12==NULL )
+return( NULL );
+
+    putshort(format12,12);		/* Subtable format */
+    putshort(format12,0);		/* padding */
+    putlong(format12,0);		/* Length, we'll come back to this */
+    putlong(format12,0);		/* language */
+    putlong(format12,0);		/* Number of groups, we'll come back to this */
+
+    group = 0;
+    for ( i=0; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]->unicodeenc!=-1 ) {
+	for ( j=i+1; j<sf->charcnt && SCWorthOutputting(sf->chars[j]) &&
+		sf->chars[j]->unicodeenc!=-1 &&
+		sf->chars[j]->ttf_glyph==sf->chars[i]->ttf_glyph+j-i; ++j );
+	--j;
+	putlong(format12,i);		/* start char code */
+	putlong(format12,j);		/* end char code */
+	putlong(format12,sf->chars[i]->ttf_glyph);
+	++group;
+    }
+    *ucs4len = ftell(format12);
+    fseek(format12,4,SEEK_SET);
+    putlong(format12,*ucs4len);		/* Length, I said we'd come back to it */
+    putlong(format12,0);		/* language */
+    putlong(format12,group);		/* Number of groups */
+return( format12 );
 }
 
 static int figureencoding(SplineFont *sf,int i) {
     switch ( sf->encoding_name ) {
       default:				/* Unicode */
-	  if ( sf->chars[i]->unicodeenc>=65536 )	/* No support for 4 byte encodings yet */
+	  if ( sf->chars[i]->unicodeenc>=65536 )	/* format 4 doesn't support 4byte encodings, we have an additional format 12 table for that */
 return( -1 );
 
 return( sf->chars[i]->unicodeenc );
@@ -5901,15 +5974,23 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 
     at->cmap = tmpfile();
 
-    /* Mac, symbol encoding table */ /* Not going to bother with this for cid fonts */
+    /* MacRoman encoding table */ /* Not going to bother with making this work for cid fonts */
     memset(table,'\0',sizeof(table));
-    for ( i=0; i<sf->charcnt && i<256; ++i )
-	if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 )
-	    table[sf->chars[i]->enc] = sf->chars[i]->ttf_glyph;
+    for ( i=0; i<sf->charcnt && i<256; ++i ) {
+	sc = SFFindExistingCharMac(sf,unicode_from_mac[i]);
+	if ( sc!=NULL && sf->chars[i]->ttf_glyph!=-1 )
+	    table[i] = sf->chars[i]->ttf_glyph;
+    }
     table[0] = table[8] = table[13] = table[29] = 1;
     table[9] = 3;
 
     if ( format==ff_ttfsym || sf->encoding_name==em_symbol ) {
+	memset(table,'\0',sizeof(table));
+	for ( i=0; i<sf->charcnt && i<256; ++i )
+	    if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 )
+		table[sf->chars[i]->enc] = sf->chars[i]->ttf_glyph;
+	table[0] = table[8] = table[13] = table[29] = 1;
+	table[9] = 3;
 	/* Two encoding table pointers, one for ms, one for mac */
 	putshort(at->cmap,0);		/* version */
 	putshort(at->cmap,2);		/* num tables */
@@ -5917,23 +5998,21 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	    /* Encodings are supposed to be ordered */
 	putshort(at->cmap,1);		/* mac platform */
 	putshort(at->cmap,32);		/* plat specific enc, uninterpretted */
-	putlong(at->cmap,2*sizeof(uint16)+2*(2*sizeof(uint16)+sizeof(uint32))+262);	/* offset from tab start to sub tab start */
+	putlong(at->cmap,2*sizeof(uint16)+2*(2*sizeof(uint16)+sizeof(uint32)));	/* offset from tab start to sub tab start */
 	putshort(at->cmap,3);		/* ms platform */
 	putshort(at->cmap,0);		/* plat specific enc, symbol */
 	putlong(at->cmap,2*sizeof(uint16)+2*(2*sizeof(uint16)+sizeof(uint32)));	/* offset from tab start to sub tab start */
-
-	putshort(at->cmap,0);		/* format */
-	putshort(at->cmap,262);	/* length = 256bytes + 6 header bytes */
-	putshort(at->cmap,0);		/* language = meaningless */
-	for ( i=0; i<256; ++i )
-	    putc(table[i],at->cmap);
     } else if ( (sf->encoding_name==em_big5 ||
 		    sf->encoding_name==em_johab ||
-		    /*sf->encoding_name==em_sjis ||*/
+		    sf->encoding_name==em_sjis ||
 		    sf->encoding_name==em_wansung ) && Needs816Enc(at,sf)) {
-return;		/* All Done */
+	/* All Done */;
     } else {
 	uint32 *avail = galloc(65536*sizeof(uint32));
+	int ucs4len=0;
+	FILE *format12 = NeedsUCS4Table(sf,&ucs4len);
+	int hasmac, cjkenc;
+	long ucs4pos, mspos;
 	memset(avail,0xff,65536*sizeof(uint32));
 	if ( _sf->subfontcnt!=0 ) sfind = gcalloc(65536,sizeof(uint16));
 	charcnt = _sf->charcnt;
@@ -6027,31 +6106,47 @@ return;		/* All Done */
 	free(avail);
 	if ( _sf->subfontcnt!=0 ) free(sfind);
 
-	/* Two/Three encoding table pointers, one for ms, one for mac (one for mac big, just a copy of ms) */
+	/* Two/Three/Four encoding table pointers, one for ms, one for mac */
+	/*  usually one for mac big, just a copy of ms */
+	/* plus we may have a format12 encoding for ucs4, mac doesn't support */
+	hasmac = 1;
 	enccnt = 3;
-	if ( sf->encoding_name==em_ksc5601 || sf->encoding_name==em_johab )
+	if ( sf->encoding_name==em_johab ) {
 	    enccnt = 2;
+	    hasmac = 0;
+	} else if ( format12!=NULL )
+	    enccnt = 4;
 	putshort(at->cmap,0);		/* version */
 	putshort(at->cmap,enccnt);	/* num tables */
 
-	if ( (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4 ) &&
-		enccnt==3 ) {
+	mspos = 2*sizeof(uint16)+enccnt*(2*sizeof(uint16)+sizeof(uint32));
+	ucs4pos = mspos+(8+4*segcnt+rpos)*sizeof(int16);
+	cjkenc = 
+		sf->encoding_name==em_ksc5601 ||/* Wansung, korean */
+		sf->encoding_name==em_wansung ||/* Wansung, korean */
+		sf->encoding_name==em_jis208 ||	/* SJIS */
+		sf->encoding_name==em_sjis ||	/* SJIS */
+		sf->encoding_name==em_big5 ||	/* Big5, traditional Chinese */
+		sf->encoding_name==em_johab;	/* Korean */
+	if ( !cjkenc && hasmac ) {
 	    /* big mac table, just a copy of the ms table */
 	    putshort(at->cmap,0);	/* mac unicode platform */
 	    putshort(at->cmap,3);	/* Unicode 2.0 */
-	    putlong(at->cmap,2*sizeof(uint16)+enccnt*(2*sizeof(uint16)+sizeof(uint32)));
+	    putlong(at->cmap,mspos);
 	}
 	putshort(at->cmap,1);		/* mac platform */
 	putshort(at->cmap,0);		/* plat specific enc, script=roman */
-	putlong(at->cmap,2*sizeof(uint16)+enccnt*(2*sizeof(uint16)+sizeof(uint32))+(8+4*segcnt+rpos)*sizeof(int16));	/* offset from tab start to sub tab start */
-	if ( sf->encoding_name!=em_unicode && sf->encoding_name!=em_unicode4 && enccnt==3 ) {
+	putlong(at->cmap,ucs4pos+ucs4len);	/* offset from tab start to sub tab start */
+	if ( cjkenc && hasmac ) {
 	    /* big mac table, just a copy of the ms table */
 	    putshort(at->cmap,1);	/* mac platform */
 	    putshort(at->cmap,
 		sf->encoding_name==em_jis208? 1 :	/* SJIS */
 		sf->encoding_name==em_sjis? 1 :		/* SJIS */
+		sf->encoding_name==em_ksc5601? 3 :	/* Korean */
+		sf->encoding_name==em_wansung? 3 :	/* Korean */
 		2 );					/* Big5 */
-	    putlong(at->cmap,2*sizeof(uint16)+enccnt*(2*sizeof(uint16)+sizeof(uint32)));
+	    putlong(at->cmap,mspos);
 	}
 	putshort(at->cmap,3);		/* ms platform */
 	putshort(at->cmap,		/* plat specific enc */
@@ -6062,7 +6157,12 @@ return;		/* All Done */
 		sf->encoding_name==em_big5 ? 4 :	/* Big5, traditional Chinese */
 		sf->encoding_name==em_johab ? 6 :	/* Korean */
 		 1 );					/* Unicode */
-	putlong(at->cmap,2*sizeof(uint16)+enccnt*(2*sizeof(uint16)+sizeof(uint32)));	/* offset from tab start to sub tab start */
+	putlong(at->cmap,mspos);		/* offset from tab start to sub tab start */
+	if ( format12!=NULL ) {
+	    putshort(at->cmap,3);		/* ms platform */
+	    putshort(at->cmap,10);		/* plat specific enc, ucs4 */
+	    putlong(at->cmap,ucs4pos);		/* offset from tab start to sub tab start */
+	}
 
 	putshort(at->cmap,4);		/* format */
 	putshort(at->cmap,(8+4*segcnt+rpos)*sizeof(int16));
@@ -6085,6 +6185,10 @@ return;		/* All Done */
 	    putshort(at->cmap,ranges[i]);
 	free(ranges);
 	free(cmapseg);
+
+	if ( format12!=NULL ) {
+	    if ( !ttfcopyfile(at->cmap,format12,ucs4pos)) at->error = true;
+	}
     }
 
     /* Mac table just same as symbol table */

@@ -204,6 +204,15 @@ return( false );
 return( true );
 }
 
+SplineChar *SFFindExistingCharMac(SplineFont *sf,int unienc) {
+    int i;
+
+    for ( i=0; i<sf->charcnt && i<256; ++i )
+	if ( sf->chars[i]!=NULL && sf->chars[i]->unicodeenc==unienc )
+return( sf->chars[i] );
+return( NULL );
+}
+
 static double SFMacWidthMax(SplineFont *sf) {
     /* Only look at first 256 */
     int i;
