@@ -559,6 +559,7 @@ extern void BCCompressBitmap(BDFChar *bdfc);
 extern void BCRegularizeBitmap(BDFChar *bdfc);
 extern void BCRegularizeGreymap(BDFChar *bdfc);
 extern void BCPasteInto(BDFChar *bc,BDFChar *rbc,int ixoff,int iyoff, int invert, int cleartoo);
+extern void BCRotateCharForVert(BDFChar *bc,BDFChar *from, BDFFont *frombdf);
 extern BDFChar *SplineCharRasterize(SplineChar *sc, int pixelsize);
 extern BDFFont *SplineFontRasterize(SplineFont *sf, int pixelsize, int indicate);
 extern BDFChar *SplineCharAntiAlias(SplineChar *sc, int pixelsize,int linear_scale);
@@ -665,6 +666,8 @@ extern void BCDoRedo(BDFChar *bc,struct fontview *fv);
 extern void BCDoUndo(BDFChar *bc,struct fontview *fv);
 
 extern int SFIsCompositBuildable(SplineFont *sf,int unicodeenc);
+extern int SFIsSomethingBuildable(SplineFont *sf,SplineChar *sc);
+extern int SFIsRotatable(SplineFont *sf,SplineChar *sc);
 extern void SCBuildComposit(SplineFont *sf, SplineChar *sc, int copybmp,
 	struct fontview *fv);
 extern const unichar_t *SFGetAlternate(SplineFont *sf, int base);
@@ -678,8 +681,11 @@ extern SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	struct pschars *subrs, struct pschars *gsubrs, const char *name);
 
 extern int SFFindChar(SplineFont *sf, int unienc, char *name );
+extern int SFCIDFindChar(SplineFont *sf, int unienc, char *name );
 extern SplineChar *SFGetChar(SplineFont *sf, int unienc, char *name );
 extern int SFFindExistingChar(SplineFont *sf, int unienc, char *name );
+extern int SFCIDFindExistingChar(SplineFont *sf, int unienc, char *name );
+extern int SFHasCID(SplineFont *sf, int cid);
 
 extern char *getPfaEditDir(char *buffer);
 extern void DoAutoSaves(void);

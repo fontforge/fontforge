@@ -206,10 +206,6 @@ int SFIsCompositBuildable(SplineFont *sf,int unicodeenc) {
     const unichar_t *pt, *apt, *end; unichar_t ch;
     SplineChar *one, *two;
 
-    if ( iszerowidth(unicodeenc) ||
-	    (unicodeenc>=0x2000 && unicodeenc<=0x2015 ))
-return( true );
-
     if (( pt = SFGetAlternate(sf,unicodeenc))==NULL )
 return( false );
 
@@ -242,6 +238,34 @@ return( false );
 return( false );
     }
 return( true );
+}
+
+int SFIsRotatable(SplineFont *sf,SplineChar *sc) {
+    if ( sf->cidmaster!=NULL && strncmp(sc->name,"vertcid_",8)==0 ) {
+	char *end;
+	int cid = strtol(sc->name+8,&end,10);
+	if ( *end=='\0' && SFHasCID(sf,cid)!=-1)
+return( true );
+    } else if ( strncmp(sc->name,"vertuni",7)==0 && strlen(sc->name)==11 ) {
+	char *end;
+	int uni = strtol(sc->name+7,&end,16);
+	if ( *end=='\0' && SFCIDFindExistingChar(sf,uni,NULL)!=-1 )
+return( true );
+    }
+return( false );
+}
+
+int SFIsSomethingBuildable(SplineFont *sf,SplineChar *sc) {
+    int unicodeenc = sc->unicodeenc;
+
+    if ( iszerowidth(unicodeenc) ||
+	    (unicodeenc>=0x2000 && unicodeenc<=0x2015 ))
+return( true );
+
+    if ( SFIsCompositBuildable(sf,unicodeenc))
+return( true );
+
+return( SFIsRotatable(sf,sc));
 }
 
 static int SPInRange(SplinePoint *sp, real ymin, real ymax) {
@@ -387,7 +411,7 @@ return( 0 );
     }
     sc->width = rsc->width;
     if ( copybmp ) {
-	for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
 	    if ( bdf->chars[rsc->enc]!=NULL ) {
 		rbc = bdf->chars[rsc->enc];
 		bc = BDFMakeChar(bdf,sc->enc);
@@ -528,7 +552,7 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
     _SCAddRef(sc,rsc,transform);
 
     if ( copybmp ) {
-	for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
 	    if ( bdf->chars[rsc->enc]!=NULL && bdf->chars[sc->enc]!=NULL ) {
 		if ( (ispacing = (bdf->pixelsize*accent_offset+50)/100)<=1 ) ispacing = 2;
 		rbc = bdf->chars[rsc->enc];
@@ -583,7 +607,7 @@ static void SCPutRefAfter(SplineChar *sc,SplineFont *sf,int ch, int copybmp) {
     SCAddRef(sc,rsc,sc->width,0);
     sc->width += rsc->width;
     if ( copybmp ) {
-	for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
 	    if ( bdf->chars[rsc->enc]!=NULL && bdf->chars[sc->enc]!=NULL ) {
 		rbc = bdf->chars[rsc->enc];
 		bc = bdf->chars[sc->enc];
@@ -652,7 +676,7 @@ static void DoSpaces(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
     sc->width = width;
     sc->widthset = true;
     if ( copybmp ) {
-	for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
 	    if ( (bc = bdf->chars[sc->enc])==NULL ) {
 		BDFMakeChar(bdf,sc->enc);
 	    } else {
@@ -672,7 +696,7 @@ static void DoSpaces(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
     }
     SCCharChangedUpdate(sc);
     if ( copybmp ) {
-	for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next )
+	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	    if ( bdf->chars[sc->enc]!=NULL )
 		BCCharChangedUpdate(bdf->chars[sc->enc],fv);
     }
@@ -754,7 +778,7 @@ static void DoRules(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
     sc->widthset = true;
 
     if ( copybmp ) {
-	for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
 	    if ( (bc = bdf->chars[sc->enc])==NULL ) {
 		BDFMakeChar(bdf,sc->enc);
 	    } else {
@@ -776,9 +800,75 @@ static void DoRules(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
     }
     SCCharChangedUpdate(sc);
     if ( copybmp ) {
-	for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next )
+	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	    if ( bdf->chars[sc->enc]!=NULL )
 		BCCharChangedUpdate(bdf->chars[sc->enc],fv);
+    }
+}
+
+static void DoRotation(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
+    /* In when laying CJK characters vertically and intermixed latin (greek,etc) */
+    /*  characters need to be rotated. Adobe's cid tables call for some */
+    /*  pre-rotated characters, so we might as well be prepared to deal with */
+    /*  them. Note the rotated and normal characters are often in different */
+    /*  subfonts so we can't use references */
+    SplineChar *scbase;
+    real transform[6];
+    SplineSet *last, *temp;
+    RefChar *ref;
+    BDFFont *bdf;
+
+    if ( sf->cidmaster!=NULL && strncmp(sc->name,"vertcid_",8)==0 ) {
+	char *end;
+	int cid = strtol(sc->name+8,&end,10), j;
+	if ( *end!='\0' || (j=SFHasCID(sf,cid))==-1)
+return;		/* Can't happen */
+	scbase = sf->cidmaster->subfonts[j]->chars[cid];
+    } else if ( strncmp(sc->name,"vertuni",7)==0 && strlen(sc->name)==11 ) {
+	char *end;
+	int uni = strtol(sc->name+7,&end,16), index;
+	if ( *end!='\0' || (index = SFCIDFindExistingChar(sf,uni,NULL))==-1 )
+return;		/* Can't happen */
+	if ( sf->cidmaster==NULL )
+	    scbase = sf->chars[index];
+	else
+	    scbase = sf->cidmaster->subfonts[SFHasCID(sf,index)]->chars[index];
+    }
+
+    if ( scbase->parent->vertical_origin==0 )
+	scbase->parent->vertical_origin = scbase->parent->ascent;
+    transform[0] = transform[3] = 0;
+    transform[1] = -1; transform[2] = 1;
+    transform[4] = scbase->parent->descent; transform[5] = scbase->parent->vertical_origin;
+
+    sc->splines = SplinePointListTransform(SplinePointListCopy(scbase->splines),
+	    transform, true );
+    if ( sc->splines==NULL ) last = NULL;
+    else for ( last = sc->splines; last->next!=NULL; last = last->next );
+
+    for ( ref = scbase->refs; ref!=NULL; ref=ref->next ) {
+	temp = SplinePointListTransform(SplinePointListCopy(ref->splines),
+	    transform, true );
+	if ( last==NULL )
+	    sc->splines = temp;
+	else
+	    last->next = temp;
+	if ( temp!=NULL )
+	    for ( last=temp; last->next!=NULL; last=last->next );
+    }
+    sc->width = sc->parent->ascent+sc->parent->descent;
+    SCCharChangedUpdate(sc);
+    if ( copybmp ) {
+	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	    BDFChar *from, *to;
+	    if ( scbase->enc>=bdf->charcnt || sc->enc>=bdf->charcnt ||
+		    bdf->chars[scbase->enc]==NULL )
+	continue;
+	    from = bdf->chars[scbase->enc];
+	    to = BDFMakeChar(bdf,sc->enc);
+	    BCRotateCharForVert(to,from,bdf);
+	    BCCharChangedUpdate(to,fv);
+	}
     }
 }
 
@@ -860,7 +950,7 @@ void SCBuildComposit(SplineFont *sf, SplineChar *sc, int copybmp,FontView *fv) {
     /* This does not handle arabic ligatures at all. It would need to reverse */
     /*  the string and deal with <final>, <medial>, etc. info we don't have */
 
-    if ( !SFIsCompositBuildable(sf,sc->unicodeenc))
+    if ( !SFIsSomethingBuildable(sf,sc))
 return;
     SCPreserveState(sc,true);
     SplinePointListsFree(sc->splines);
@@ -873,6 +963,9 @@ return;
 return;
     } else if ( sc->unicodeenc>=0x2010 && sc->unicodeenc<=0x2015 ) {
 	DoRules(sf,sc,copybmp,fv);
+return;
+    } else if ( SFIsRotatable(sf,sc) ) {
+	DoRotation(sf,sc,copybmp,fv);
 return;
     }
 
@@ -904,7 +997,7 @@ return;
     }
     SCCharChangedUpdate(sc);
     if ( copybmp ) {
-	for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next )
+	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	    if ( bdf->chars[sc->enc]!=NULL )
 		BCCharChangedUpdate(bdf->chars[sc->enc],fv);
     }

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 26-Nov-2001 -->
+  <!-- AP: Last modified: 27-Nov-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -71,8 +71,8 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-011126.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 26-Nov-2001
+    <A HREF="pfaedit-011127.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 27-Nov-2001
   <LI>
     <A HREF="pfaedit-solaris-011102.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 2-Nov-2001
@@ -119,10 +119,10 @@ Or you can download the following three packages. Version: 26-Nov-2001
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-011126.tgz">Pfaedit source</A> (26-Nov-2001)<BR>
+    <A HREF="pfaedit_src-011127.tgz">Pfaedit source</A> (27-Nov-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
-    <A HREF="pfaedit_full-011126.tgz">All three bundled together </A>(26-Nov-2001)
+    <A HREF="pfaedit_full-011127.tgz">All three bundled together </A>(27-Nov-2001)
 </UL>
 <P>
 If you want to do autotracing around character images you should also download
@@ -232,6 +232,38 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    27-Nov-2001
+    <UL>
+      <LI>
+	Build Accented Character failed to update bitmaps in CID keyed fonts
+      <LI>
+	Build Accented Character will generate rotated characters when appropriate
+	for CID keyed fonts
+	<UL>
+	  <LI>
+	    If a character's name is "vertcid_&lt;cid&gt;" where &lt;cid&gt; should be
+	    replaced by a number, then that character will be replaced by a rotated version
+	    of &lt;cid&gt;
+	  <LI>
+	    If a character's name is "vertuni&lt;uni&gt;" where &lt;uni&gt; should be
+	    replaced by a 4 hex-digit number, then that character will be replaced by
+	    a rotated version of the unicode character &lt;uni&gt;.
+	</UL>
+      <LI>
+	When saving a font with rotated characters PfaEdit will now generate a vrt2
+	feature in the GSUB table (this lets the font's users find out about the
+	rotated glyphs.
+      <LI>
+	Before this PfaEdit would only read entries in the 'name' table which were
+	in unicode (or macroman). PfaEdit is a bit more general now and will read
+	the other encodings it knows about.
+      <LI>
+	Oops. Another screw up reading in open type.
+      <LI>
+	If the character at encoding 0 was not .notdef then PfaEdit would omit it
+	when generating a postscript/opentype font.
+    </UL>
   <LI>
     26-Nov-2001
     <UL>
@@ -593,8 +625,6 @@ prepared to save frequently and always work on a copy of the original.
     Importing a type0 font loses the encoding. PfaEdit only imports simple type0
     fonts (such as those made by itself), will get confused if there's more than
     one font with a chars dictionary.
-  <LI>
-    PfaEdit does not support the vertical metrics needed to do CJK fonts properly.
 </UL>
 <H2>
   <A NAME="known-bugs">Bugs</A>
@@ -628,8 +658,6 @@ prepared to save frequently and always work on a copy of the original.
     the ascent and descent).
   <LI>
     The MetaFont command doesn't work well.
-  <LI>
-    PfaEdit does not deal with vertical metrics (for CJK characters).
   <LI>
     ???
 </UL>
@@ -680,6 +708,10 @@ The following people have helped debug pfaedit. Many thanks!
     <A HREF="http://www.killesreiter.de/">Gerhard Killesreiter</A>
   <LI>
     Alexander Kotelnikov
+  <LI>
+    University of California, Santa Barbara<BR>
+    (which has several times let me use some of their machines to do builds and
+    find bugs if I didn't have the requisit system at home).
   <LI>
     <A HREF="http://rcswww.urz.tu-dresden.de/~koloska/">Uwe Koloska</A>
   <LI>

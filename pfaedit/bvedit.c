@@ -176,6 +176,27 @@ return;
     BCCharChangedUpdate(bc,fv);
 }
 
+void BCRotateCharForVert(BDFChar *bc,BDFChar *from, BDFFont *frombdf) {
+    /* Take the image in from, make a copy of it, put it in bc, rotate it */
+    /*  shift it around slightly so it is aligned properly to work as a CJK */
+    /*  vertically displayed latin letter */
+    int xmin, ymax;
+
+    BCPreserveState(bc);
+    BCFlattenFloat(from);
+    free(bc->bitmap);
+    bc->xmin = from->xmin; bc->xmax = from->xmax; bc->ymin = from->ymin; bc->ymax = from->ymax;
+    bc->width = from->width; bc->bytes_per_line = from->bytes_per_line;
+    bc->bitmap = galloc(bc->bytes_per_line*(bc->ymax-bc->ymin+1));
+    memcpy(bc->bitmap,from->bitmap,bc->bytes_per_line*(bc->ymax-bc->ymin+1));
+    BCTransFunc(bc,bvt_rotate90cw,0,0);
+    xmin = frombdf->descent + from->ymin;
+    ymax = frombdf->ascent - from->xmin;
+    bc->xmax += xmin-bc->xmin; bc->xmin = xmin;
+    bc->ymin += ymax-bc->ymax-1; bc->ymax = ymax-1;
+    bc->width = frombdf->pixelsize;
+}
+
 void BVRotateBitmap(BitmapView *bv,enum bvtools type ) {
     int xoff=0, yoff=0;
 

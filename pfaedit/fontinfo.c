@@ -1943,7 +1943,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GWindow gw = GGadgetGetWindow(g);
 	struct gfi_data *d = GDrawGetUserData(gw);
-	SplineFont *sf = d->sf;
+	SplineFont *sf = d->sf, *_sf;
 	int enc;
 	int reformat_fv=0;
 	int upos, uwid, as, des, nchar, oldcnt=sf->charcnt, err = false, weight=0;
@@ -1951,7 +1951,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	int force_enc=0;
 	real ia, cidversion;
 	const unichar_t *txt; unichar_t *end;
-	int i;
+	int i,j;
 	int vmetrics, vorigin;
 
 	if ( !CheckNames(d))
@@ -2036,11 +2036,19 @@ return(true);
 	sf->upos = upos;
 	sf->uwidth = uwid;
 	sf->uniqueid = uniqueid;
+
 	if ( sf->hasvmetrics!=vmetrics )
 	    CVPaletteDeactivate();		/* Force a refresh later */
-	sf->hasvmetrics = vmetrics;
-	if ( vmetrics )
-	    sf->vertical_origin = vorigin;
+	_sf = sf->cidmaster?sf->cidmaster:sf;
+	_sf->hasvmetrics = vmetrics;
+	for ( j=0; j<_sf->subfontcnt; ++j )
+	    _sf->subfonts[j]->hasvmetrics = vmetrics;
+	if ( vmetrics ) {
+	    _sf->vertical_origin = vorigin;
+	    for ( j=0; j<_sf->subfontcnt; ++j )
+		_sf->subfonts[j]->vertical_origin = vorigin;
+	}
+
 	if ( d->private!=NULL ) {
 	    PSDictFree(sf->private);
 	    sf->private = d->private;

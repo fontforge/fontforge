@@ -134,6 +134,31 @@ int SFFindChar(SplineFont *sf, int unienc, char *name ) {
 return( index );
 }
 
+int SFCIDFindChar(SplineFont *sf, int unienc, char *name ) {
+    int j,ret;
+
+    if ( sf->subfonts==NULL && sf->cidmaster==NULL )
+return( SFFindChar(sf,unienc,name));
+    if ( sf->cidmaster!=NULL )
+	sf=sf->cidmaster;
+    for ( j=0; j<sf->subfontcnt; ++j )
+	if (( ret = SFFindChar(sf->subfonts[j],unienc,name))!=-1 )
+return( ret );
+return( -1 );
+}
+
+int SFHasCID(SplineFont *sf,int cid) {
+    int i;
+    /* What subfont (if any) contains this cid? */
+    if ( sf->cidmaster!=NULL )
+	sf=sf->cidmaster;
+    for ( i=0; i<sf->subfontcnt; ++i )
+	if ( cid<sf->subfonts[i]->charcnt && sf->subfonts[i]->chars[cid]!=NULL )
+return( i );
+
+return( -1 );
+}
+
 SplineChar *SFGetChar(SplineFont *sf, int unienc, char *name ) {
     int ind = SFFindChar(sf,unienc,name);
 
@@ -152,6 +177,20 @@ return( -1 );
 	    sf->chars[i]->widthset )
 return( i );
 
+return( -1 );
+}
+
+int SFCIDFindExistingChar(SplineFont *sf, int unienc, char *name ) {
+    int j,ret;
+
+    if ( sf->subfonts==NULL && sf->cidmaster==NULL )
+return( SFFindExistingChar(sf,unienc,name));
+    if ( sf->cidmaster!=NULL )
+	sf=sf->cidmaster;
+    for ( j=0; j<sf->subfontcnt; ++j )
+	if (( ret = SFFindChar(sf->subfonts[j],unienc,name))!=-1 &&
+		sf->subfonts[j]->chars[ret]!=NULL )
+return( ret );
 return( -1 );
 }
 

@@ -3238,7 +3238,9 @@ static void CVMenuAutotrace(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVMenuBuildAccent(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     int onlyaccents = e==NULL || !(e->u.mouse.state&ksm_shift);
-    if ( !SFIsCompositBuildable(cv->fv->sf,cv->sc->unicodeenc) ||
+    if ( SFIsRotatable(cv->fv->sf,cv->sc))
+	/* It's ok */;
+    else if ( !SFIsCompositBuildable(cv->fv->sf,cv->sc->unicodeenc) ||
 	    (onlyaccents && !hascomposing(cv->fv->sf,cv->sc->unicodeenc)))
 return;
     SCBuildComposit(cv->fv->sf,cv->sc,!cv->fv->onlycopydisplayed,cv->fv);
@@ -3376,10 +3378,12 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 			?_STR_CleanupChars:_STR_Simplify,NULL));
 	  break;
 	  case MID_BuildAccent:
-	    mi->ti.disabled = !SFIsCompositBuildable(cv->fv->sf,cv->sc->unicodeenc);
+	    mi->ti.disabled = !SFIsSomethingBuildable(cv->fv->sf,cv->sc);
 	    onlyaccents = e==NULL || !(e->u.mouse.state&ksm_shift);
 	    if ( onlyaccents ) {
-		if ( !hascomposing(cv->fv->sf,cv->sc->unicodeenc))
+		if ( SFIsRotatable(cv->fv->sf,cv->sc))
+		    /* It's ok */;
+		else if ( !hascomposing(cv->fv->sf,cv->sc->unicodeenc))
 		    mi->ti.disabled = true;
 	    }
 	    free(mi->ti.text);

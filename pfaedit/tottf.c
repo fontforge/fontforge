@@ -3634,14 +3634,16 @@ static void redocvt(struct alltabs *at) {
 }
 
 /* scripts (for opentype) that I understand */
-enum scripts { script_latin, script_cyrillic, script_greek, script_arabic,
-	script_hebrew, script_max };
+/* these are in alphabetical order */
+enum scripts { script_arabic, script_cyrillic, script_greek, script_cjk,
+	script_hebrew, script_latin, script_max };
 static uint32 scripts[] = {
-    CHR('l','a','t','n'),
+    CHR('a','r','a','b'),
     CHR('c','y','r','l'),
     CHR('g','r','e','k'),
-    CHR('a','r','a','b'),
+    CHR('h','a','n','i'),	/* Er... I'm guessing this is what I should use for CJK 'vrt2' tables */
     CHR('h','e','b','r'),
+    CHR('l','a','t','n'),
     -1
 };
 
@@ -3680,6 +3682,57 @@ static int FeatureLanguageMask(SplineFont *sf,int iskern) {
 	++k;
     } while ( k<sf->subfontcnt );
 return( mask );
+}
+
+struct simplesubs { uint16 orig, replacement; SplineChar *origsc; };
+
+static struct simplesubs *VerticalRotationGlyphs(SplineFont *sf) {
+    int cnt, i, j, k;
+    struct simplesubs *subs = NULL;
+    SplineFont *_sf = sf;
+    SplineChar *sc, *scbase;
+
+    for ( k=0; k<2; ++k ) {
+	cnt = 0;
+	j = 0;
+	do {
+	    sf = _sf->subfontcnt==0 ? _sf : _sf->subfonts[j];
+	    for ( i=0; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sc=sf->chars[i])) {
+		if ( sf->cidmaster!=NULL && strncmp(sc->name,"vertcid_",8)==0 ) {
+		    char *end;
+		    int cid = strtol(sc->name+8,&end,10), j;
+		    if ( *end!='\0' || (j=SFHasCID(sf,cid))==-1)
+	    continue;
+		    scbase = sf->cidmaster->subfonts[j]->chars[cid];
+		} else if ( strncmp(sc->name,"vertuni",7)==0 && strlen(sc->name)==11 ) {
+		    char *end;
+		    int uni = strtol(sc->name+7,&end,16), index;
+		    if ( *end!='\0' || (index = SFCIDFindExistingChar(sf,uni,NULL))==-1 )
+	    continue;
+		    if ( sf->cidmaster==NULL )
+			scbase = sf->chars[index];
+		    else
+			scbase = sf->cidmaster->subfonts[SFHasCID(sf,index)]->chars[index];
+		} else
+	    continue;
+		if ( !SCWorthOutputting(scbase))
+	    continue;
+		if ( subs!=NULL ) {
+		    subs[cnt].origsc = scbase;
+		    subs[cnt].orig = scbase->ttf_glyph;
+		    subs[cnt].replacement = sc->ttf_glyph;
+		}
+		++cnt;
+	    }
+	    ++j;
+	} while ( j<_sf->subfontcnt );
+	if ( cnt==0 )
+return( NULL );
+	else if ( subs!=NULL )
+return( subs );
+	subs = gcalloc(cnt+1,sizeof(struct simplesubs));
+    }
+return( NULL );
 }
 
 static SplineChar **generateGlyphList(SplineFont *sf, int iskern, int isr2l) {
@@ -3899,19 +3952,49 @@ static void dumpgsubligdata(FILE *gsub,SplineFont *sf,int isr2l,struct alltabs *
     }
 }
 
+static void dumpGSUBvrt2(FILE *gsub,SplineFont *sf,struct simplesubs *subs,struct alltabs *at) {
+    SplineChar **glyphs;
+    int cnt;
+    int32 coverage_pos, end;
+
+    for ( cnt = 0; subs[cnt].orig!=0; ++cnt );
+    glyphs = galloc((cnt+1)*sizeof(SplineChar *));
+    for ( cnt = 0; subs[cnt].orig!=0; ++cnt )
+	glyphs[cnt] = subs[cnt].origsc;
+    glyphs[cnt] = NULL;
+
+    putshort(gsub,2);		/* glyph list format */
+    coverage_pos = ftell(gsub);
+    putshort(gsub,0);		/* offset to coverage table */
+    putshort(gsub,cnt);
+    for ( cnt = 0; subs[cnt].orig!=0; ++cnt )
+	putshort(gsub,subs[cnt].replacement);
+    end = ftell(gsub);
+    fseek(gsub,coverage_pos,SEEK_SET);
+    putshort(gsub,end-coverage_pos+2);
+    fseek(gsub,end,SEEK_SET);
+    dumpcoveragetable(gsub,glyphs);
+    free(subs);
+    free(glyphs);
+}
+
 static void dumpg___info(struct alltabs *at, SplineFont *sf,int is_gpos) {
     /* Dump out either a gpos or a gsub table. gpos handles kerns, gsub ligs */
     int mask = FeatureLanguageMask(sf,is_gpos);
-    int i,j,script_cnt=0, lookup_cnt=0, l2r=0, r2l=0;
+    struct simplesubs *subs = is_gpos?NULL : VerticalRotationGlyphs(sf);
+    int i,j,script_cnt=0, lookup_cnt=0, l2r=0, r2l=0, han=0;
     int32 r2l_pos;
     int g___len;
     FILE *g___;
     void (*dumpg___data)(FILE *,SplineFont *, int,struct alltabs *) =
 	    is_gpos?dumpgposkerndata:dumpgsubligdata;
     int tag = is_gpos?CHR('k','e','r','n'):CHR('l','i','g','a');
+    int tags[3];
 
-    if ( mask==0 )		/* No recognizable kerns */
+    if ( mask==0 && subs==NULL )	/* No recognizable kerns */
 return;
+    if ( subs!=NULL )
+	mask |= 1<<script_cjk;
     for ( i=0; i<script_max; ++i )
 	if ( mask&(1<<i))
 	    ++script_cnt;
@@ -3919,14 +4002,18 @@ return;
 	l2r = 1;
     if ( mask&((1<<script_arabic)|(1<<script_hebrew)) )
 	r2l = 1;
-    lookup_cnt = l2r+r2l;
+    if ( subs!=NULL )
+	han = 1;
+    lookup_cnt = l2r+r2l+han;
+    tags[0] = tag; tags[1] = tag; tags[l2r+r2l]= CHR('v','r','t','2');
     
     g___ = tmpfile();
     if ( is_gpos ) at->gpos = g___; else at->gsub = g___;
     putlong(g___,0x10000);		/* version number */
     putshort(g___,10);		/* offset to script table */
     putshort(g___,10+2+script_cnt*18);	/* offset to features table */
-    putshort(g___,10+2+script_cnt*18+(lookup_cnt==1?14:28));
+    putshort(g___,10+2+script_cnt*18+(lookup_cnt==1?14:lookup_cnt==3?40:
+					subs==NULL?28:26));
 	    /* offset to features table */
 
 /* Now the scripts, first the list */
@@ -3943,49 +4030,87 @@ return;
 	putshort(g___,0);			/* Offset to something not yet defined */
 	putshort(g___,0xffff);			/* No required features */
 	putshort(g___,1);			/* one feature */
-	putshort(g___,(lookup_cnt==1 || i<script_arabic)?0:1);
+	putshort(g___,(1<<i)&((1<<script_latin)|(1<<script_greek)|(1<<script_cyrillic))?0:
+			(1<<i)&((1<<script_arabic)|(1<<script_hebrew))?l2r:	/* if arabic&latin then arabic has feature 1, else feature 0 */
+			l2r+r2l);		/* if arabic&latin&cjk then cjk has feature 2, else if either latin or arabic and cjk then 1, if just cjk then 0 */
     }
 
 /* Now the features */
     putshort(g___,lookup_cnt);			/* Number of features */
-    putlong(g___,tag);				/* First feature type */
-    putshort(g___,lookup_cnt==1?8:14);		/* offset to first feature */
-    if ( lookup_cnt==2 ) {
-	putlong(g___,tag);			/* Second feature type */
-	putshort(g___,20);			/* offset to it */
+    putlong(g___,tags[0]);			/* First feature type */
+    putshort(g___,2+6*lookup_cnt);		/* offset to first feature */
+    if ( lookup_cnt>=2 ) {
+	putlong(g___,tags[1]);			/* Second feature type */
+	putshort(g___,20+(lookup_cnt-2)*6);	/* offset to it */
+	if ( lookup_cnt==3 ) {
+	    putlong(g___,tags[3]);		/* third feature type */
+	    putshort(g___,34);			/* offset to it */
+	}
     }
     putshort(g___,0);				/* No feature params */
     putshort(g___,1);				/* only one lookup */
     putshort(g___,0);				/* And it is lookup: 0 */
-    if ( lookup_cnt==2 ) {
-	putshort(g___,0);			/* No feature params */
-	putshort(g___,2);			/* use both l2r and r2l lookups */
-	putshort(g___,1);			/* try r2l first */
-	putshort(g___,0);			/* then l2r first */
+    if ( lookup_cnt>=2 ) {
+	if ( tags[1]==tags[0] ) {
+		/* the r2l system needs both l2r and r2l */
+	    putshort(g___,0);			/* No feature params */
+	    putshort(g___,2);			/* use both l2r and r2l lookups */
+	    putshort(g___,1);			/* try r2l first */
+	    putshort(g___,0);			/* then l2r first */
+	} else {
+	    /* Here there's only one ligature tag and so now we do the cjk vrt2 */
+	    putshort(g___,0);			/* No feature params */
+	    putshort(g___,1);			/* only one lookup */
+	    putshort(g___,1);			/* And it is lookup: 1 */
+	}
+	if ( lookup_cnt==3 ) {	/* cjk vrt2 */
+	    putshort(g___,0);			/* No feature params */
+	    putshort(g___,1);			/* only one lookup */
+	    putshort(g___,2);			/* And it is lookup: 2 */
+	}
     }
 
 /* Now the lookups */
     putshort(g___,lookup_cnt);
     putshort(g___,lookup_cnt*2+2);
     r2l_pos = ftell(g___);
-    if ( lookup_cnt==2 )
+    if ( lookup_cnt>=2 )
+	putshort(g___,0);		/* Don't know, have to fill in later */
+    if ( lookup_cnt==3 )
 	putshort(g___,0);		/* Don't know, have to fill in later */
 /* Then the first lookup header */
-    putshort(g___,is_gpos?2:4);		/* subtable type: Pair adjustment/Ligature */
-    putshort(g___,l2r?0:1);		/* flag (right2left flag) */
+    putshort(g___,is_gpos?2:l2r+r2l?4:1);/* subtable type: Pair adjustment/Ligature/Simple replacement */
+    putshort(g___,l2r||!r2l?0:1);	/* flag (right2left flag) */
     putshort(g___,1);			/* One subtable */
     putshort(g___,8);
-    dumpg___data(g___,sf,!l2r,at);
-    if ( lookup_cnt==2 ) {
+    if ( l2r+r2l==0 )
+	dumpGSUBvrt2(g___,sf,subs,at);
+    else
+	dumpg___data(g___,sf,!l2r,at);
+    if ( lookup_cnt>=2 ) {
 	int32 here = ftell(g___);
 	fseek(g___,r2l_pos,SEEK_SET);
 	putshort(g___,here-r2l_pos+4);
 	fseek(g___,here,SEEK_SET);
-	putshort(g___,is_gpos?2:4);	/* subtable type: Pair adjustment/Ligature */
-	putshort(g___,1);		/* flag (right2left flag) */
+	putshort(g___,is_gpos?2:l2r+r2l==2?4:1);/* subtable type: Pair adjustment/Ligature/Simple replacement */
+	putshort(g___,l2r+r2l==2?1:0);	/* flag (right2left flag) */
 	putshort(g___,1);		/* One subtable */
 	putshort(g___,8);
-	dumpg___data(g___,sf,true,at);
+	if ( l2r+r2l==1 )
+	    dumpGSUBvrt2(g___,sf,subs,at);
+	else
+	    dumpg___data(g___,sf,true,at);
+	if ( lookup_cnt==3 ) {
+	    int32 here = ftell(g___);
+	    fseek(g___,r2l_pos+2,SEEK_SET);
+	    putshort(g___,here-r2l_pos+4);
+	    fseek(g___,here,SEEK_SET);
+	    putshort(g___,1);		/* subtable type: Simple replacement */
+	    putshort(g___,0);		/* flag (right2left flag) */
+	    putshort(g___,1);		/* One subtable */
+	    putshort(g___,8);
+	    dumpGSUBvrt2(g___,sf,subs,at);
+	}
     }
     g___len = ftell(g___);
     if ( g___len&2 )
@@ -4000,7 +4125,8 @@ static void dumpgposkerns(struct alltabs *at, SplineFont *sf) {
     dumpg___info(at, sf,true);
 }
 
-static void dumpgsubligatures(struct alltabs *at, SplineFont *sf) {
+static void dumpgsub(struct alltabs *at, SplineFont *sf) {
+    /* Ligatures and cjk vertical rotation replacement */
     SFLigaturePrepare(sf);
     dumpg___info(at, sf, false);
     SFLigatureCleanup(sf);
@@ -4401,7 +4527,7 @@ return( false );		/* Doesn't have the single byte entries */
 	break;
 	    }
 	}
-	if ( subheads[(j-0xa000)>>8].rangeoff==0 ) {
+	if ( subheads[(j>>8)-base+1].rangeoff==0 ) {
 	    memcpy(glyphs+pos*planesize,tempglyphs,planesize*sizeof(uint16));
 	    subheads[(j>>8)-base+1].rangeoff = (pos++)*planesize ;
 	}
@@ -4746,11 +4872,11 @@ static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format
 	redovorg(at);		/* I know, VORG is only meaningful in a otf font and I dump it out in ttf too. Well, it will help ME read the font back in, and it won't bother anyone else. So there. */
     }
     redomaxp(at,format);
-    if ( format==ff_otf || format==ff_otfcid ) {
+    if ( format==ff_otf || format==ff_otfcid )
 	dumpgposkerns(at,sf);
-	dumpgsubligatures(at,sf);
-    } else
+    else
 	dumpkerns(at,sf);
+    dumpgsub(at,sf);		/* ttf will probably ignore these, but doesn't hurt to dump them */
     redoos2(at);
     redocvt(at);
     dumppost(at,sf,format);

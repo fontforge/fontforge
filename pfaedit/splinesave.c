@@ -1473,15 +1473,21 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
     char notdefentry[20];
     char exists[6];
     int fixed = SFOneWidth(sf), notdefwidth;
+    int zero_is_notdef;
 
     notdefwidth = fixed;
     if ( notdefwidth==-1 ) notdefwidth = sf->ascent+sf->descent;
 
     cnt = 0;
-    for ( i=1; i<sf->charcnt; ++i )
+    for ( i=0; i<sf->charcnt; ++i )
 	if ( SCWorthOutputting(sf->chars[i]) )
 	    ++cnt;
-    ++cnt;		/* one notdef entry */
+/* only honor the width on .notdef in non-fixed pitch fonts (or ones where there is an actual outline in notdef) */
+    zero_is_notdef = (sf->chars[0]!=NULL &&
+	    (sf->chars[0]->splines!=NULL || (sf->chars[0]->widthset && fixed==-1)) &&
+	     sf->chars[0]->refs==NULL && strcmp(sf->chars[0]->name,".notdef")==0 );
+    if ( !zero_is_notdef )
+	++cnt;		/* one notdef entry */
     /* special greek hacks */
     cnt += GreekExists(exists,sf);
 
@@ -1494,11 +1500,9 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
 
     i = cnt = 0;
     chrs->keys[0] = copy(".notdef");
-/* only honor the width on .notdef in non-fixed pitch fonts (or ones where there is an actual outline in notdef) */
-    if ( sf->chars[0]!=NULL &&
-	    (sf->chars[0]->splines!=NULL || (sf->chars[0]->widthset && fixed==-1)) &&
-	     sf->chars[0]->refs==NULL && strcmp(sf->chars[0]->name,".notdef")==0 ) {
-	    chrs->values[0] = SplineChar2PS(sf->chars[0],&chrs->lens[0],round,iscjk,subrs,NULL);
+    if ( zero_is_notdef ) {
+	chrs->values[0] = SplineChar2PS(sf->chars[0],&chrs->lens[0],round,iscjk,subrs,NULL);
+	i = 1;
     } else {
 	char *pt = notdefentry;
 	*pt++ = '\213';		/* 0 */
@@ -1525,8 +1529,9 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
 	*pt = '\0';
 	chrs->values[0] = (unsigned char *) copyn(notdefentry,pt-notdefentry);	/* 0 <w> hsbw endchar */
 	chrs->lens[0] = pt-notdefentry;
+	i = 0;
     }
-    i = cnt = 1;
+    cnt = 1;
     for ( ; i<sf->charcnt; ++i ) {
 	if ( SCWorthOutputting(sf->chars[i]) ) {
 	    chrs->keys[cnt] = copy(sf->chars[i]->name);
@@ -2348,28 +2353,31 @@ struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
     char notdefentry[20];
     SplineChar *sc;
     int fixed = SFOneWidth(sf), notdefwidth;
+    int zero_is_notdef;
 
     notdefwidth = fixed;
     if ( notdefwidth==-1 ) notdefwidth = sf->ascent+sf->descent;
 
     cnt = 0;
-    for ( i=1; i<sf->charcnt; ++i ) {
+    for ( i=0; i<sf->charcnt; ++i ) {
 	sc = sf->chars[i];
 	if ( SCWorthOutputting(sc) )
 	    ++cnt;
     }
-    ++cnt;		/* one notdef entry */
+/* only honor the width on .notdef in non-fixed pitch fonts (or ones where there is an actual outline in notdef) */
+    zero_is_notdef = (sf->chars[0]!=NULL &&
+	    (sf->chars[0]->splines!=NULL || (sf->chars[0]->widthset && fixed==-1)) &&
+	     sf->chars[0]->refs==NULL && strcmp(sf->chars[0]->name,".notdef")==0 );
+    if ( !zero_is_notdef )
+	++cnt;		/* one notdef entry */
     chrs->cnt = cnt;
     chrs->lens = galloc(cnt*sizeof(int));
     chrs->values = galloc(cnt*sizeof(unsigned char *));
 
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
 	sf->chars[i]->ttf_glyph = 0;
-    i = cnt = 0;
 /* only honour the width on .notdef in non-fixed pitch fonts (or ones where there is an actual outline in notdef) */
-    if ( sf->chars[0]!=NULL &&
-	    (sf->chars[0]->splines!=NULL || (sf->chars[0]->widthset && fixed==-1)) &&
-	    sf->chars[0]->refs==NULL && strcmp(sf->chars[0]->name,".notdef")==0 ) {
+    if ( zero_is_notdef ) {
 	chrs->values[0] = SplineChar2PS2(sf->chars[0],&chrs->lens[0],nomwid,defwid,subrs,NULL);
 	sf->chars[0]->ttf_glyph = 0;
 	i = 1;
@@ -2400,9 +2408,10 @@ struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
 	*pt = '\0';
 	chrs->values[0] = (unsigned char *) copyn(notdefentry,pt-notdefentry);	/* 0 <w> hsbw endchar */
 	chrs->lens[0] = pt-notdefentry;
+	i = 0;
     }
     cnt = 1;
-    for ( i=1; i<sf->charcnt; ++i ) {
+    for ( ; i<sf->charcnt; ++i ) {
 	sc = sf->chars[i];
 	if ( SCWorthOutputting(sc) ) {
 	    chrs->values[cnt] = SplineChar2PS2(sc,&chrs->lens[cnt],nomwid,defwid,subrs,NULL);
@@ -2419,6 +2428,9 @@ struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds) {
     char notdefentry[20];
     SplineChar *sc;
     SplineFont *sf = NULL;
+    /* In a cid-keyed font, cid 0 is defined to be .notdef so there are no */
+    /*  special worries. If it is defined we use it. If it is not defined */
+    /*  we add it. */
 
     max = 0;
     for ( i=0; i<cidmaster->subfontcnt; ++i )

@@ -104,51 +104,208 @@ real get2dot14(FILE *ttf) {
 return( (real) ((val<<16)>>(16+14)) + (mant/16384.0) );
 }
 
-static char *readstring(FILE *ttf,int offset,int len) {
+static unichar_t *_readencstring(FILE *ttf,int offset,int len,int enc) {
     long pos = ftell(ttf);
-    char *str, *pt;
-    int i;
-
-    fseek(ttf,offset,SEEK_SET);
-    str = pt = galloc(len+1);
-    for ( i=0; i<len; ++i )
-	*pt++ = getc(ttf);
-    *pt = '\0';
-    fseek(ttf,pos,SEEK_SET);
-return( str );
-}
-
-/* Unicode string */
-static char *readustring(FILE *ttf,int offset,int len) {
-    long pos = ftell(ttf);
-    char *str, *pt;
-    int i;
-
-    fseek(ttf,offset,SEEK_SET);
-    str = pt = galloc(len/2+1);
-    for ( i=0; i<len/2; ++i ) {
-	getc(ttf);
-	*pt++ = getc(ttf);
-    }
-    *pt = '\0';
-    fseek(ttf,pos,SEEK_SET);
-return( str );
-}
-
-static unichar_t *_readustring(FILE *ttf,int offset,int len) {
-    long pos = ftell(ttf);
-    unichar_t *str, *pt;
+    unichar_t *str, *pt, empty[1];
     int i, ch;
 
     fseek(ttf,offset,SEEK_SET);
-    str = pt = galloc(len+2);
-    for ( i=0; i<len/2; ++i ) {
-	ch = getc(ttf)<<8;
-	*pt++ = ch | getc(ttf);
+    if ( enc==em_mac ) {
+	str = pt = galloc(2*len+2);
+	for ( i=0; i<len; ++i )
+	    *pt++ = unicode_from_mac[getc(ttf)];
+    } else if ( enc==em_unicode ) {
+	str = pt = galloc(len+2);
+	for ( i=0; i<len/2; ++i ) {
+	    ch = getc(ttf)<<8;
+	    *pt++ = ch | getc(ttf);
+	}
+    } else if ( enc==em_big5 ) {
+	str = pt = galloc(2*len+2);	/* Probably more space than we need, but it should be enough */
+	for ( i=0; i<len; ++i ) {
+	    ch = getc(ttf);
+	    if ( ch==0 ) {
+		/* Interesting. I've never seen this described, but empirically */
+		/*  it appears that a leading 0 byte means an ascii byte follows */
+		/*  I thought we got mixed 8/16 encoding, not straight 16... */
+		*pt++ = getc(ttf);
+		++i;
+	    } else if ( ch<0xa1 )
+		*pt++ = ch;
+	    else {
+		ch = ((ch<<8)|getc(ttf));
+		*pt++ = unicode_from_big5[ch-0xa100];
+		++i;
+	    }
+	}
+    } else if ( enc==em_johab ) {
+	str = pt = galloc(2*len+2);	/* Probably more space than we need, but it should be enough */
+	for ( i=0; i<len; ++i ) {
+	    ch = getc(ttf);
+	    if ( ch<0x84 )
+		*pt++ = ch;
+	    else {
+		ch = ((ch<<8)|getc(ttf));
+		*pt++ = unicode_from_johab[ch-0x8400];
+		++i;
+	    }
+	}
+    } else if ( enc==em_ksc5601 ) {
+	str = pt = galloc(2*len+2);	/* Probably more space than we need, but it should be enough */
+	for ( i=0; i<len; ++i ) {
+	    ch = getc(ttf);
+	    if ( ch<0xa1 )
+		*pt++ = ch;
+	    else {
+		ch = ((ch<<8)|getc(ttf)) - 0xa1a1;
+		ch = (ch>>8)*94 + (ch&0xff);
+		*pt++ = unicode_from_ksc5601[ch];
+		++i;
+	    }
+	}
+    } else if ( enc==em_jis208 ) {
+	str = pt = galloc(2*len+2);	/* Probably more space than we need, but it should be enough */
+	for ( i=0; i<len; ++i ) {
+	    ch = getc(ttf);
+	    if ( ch<127 ) {
+		if ( ch=='\\' ) ch= 0xa5;		/* Yen */
+		*pt++ = ch;
+	    } else if ( ch>=161 && ch<=223 ) {
+		*pt++ = unicode_from_jis201[ch];	/* Katakana */
+	    } else {
+		int ch2 = getc(ttf);
+		if ( ch >= 129 && ch<= 159 )
+		    ch -= 112;
+		else
+		    ch -= 176;
+		ch <<= 1;
+		if ( ch2>=159 )
+		    ch2-= 126;
+		else if ( ch2>127 ) {
+		    --ch;
+		    ch2 -= 32;
+		} else {
+		    --ch;
+		    ch2 -= 31;
+		}
+		*pt++ = unicode_from_jis208[(ch-0x21)*94+(ch2-0x21)];
+		++i;
+	    }
+	}
+    } else {
+	fprintf( stderr, "Unexpected encoding %d\n", enc );
+	str = NULL; pt = empty;
     }
     *pt = '\0';
     fseek(ttf,pos,SEEK_SET);
 return( str );
+}
+
+static int enc_from_platspec(int platform,int specific) {
+    int enc;
+
+    enc = em_none;
+    if ( platform==0 )
+	enc = em_unicode;
+    else if ( platform==1 ) {
+	if ( specific==0 )
+	    enc = em_mac;
+	else if ( specific==2 )
+	    enc = em_big5;		/* Empirically determined */
+    } else if ( platform==3 ) {
+	if ( specific==1 )
+	    enc = em_unicode;
+	else if ( specific==2 )
+	    enc = em_jis208;
+	else if ( specific==5 )
+	    enc = em_ksc5601;
+	else if ( specific==4 )
+	    enc = em_big5;
+	else if ( specific==6 )
+	    enc = em_johab;
+    }
+return( enc );
+}
+
+static int AppleLang_to_MS(int language) {
+    switch ( language ) {
+      case 0:		/* English */
+return( 0x409 );
+      case 36:		/* Albanian */
+return( 0x41c );
+      case 12:		/* Arabic */
+return( 0x401 );
+      case 129:		/* Basque */
+return( 0x42d );
+      case 46:		/* Byelorussian */
+return( 0x423 );
+      case 44:		/* Bulgarian */
+return( 0x402 );
+      case 130:		/* Catalan */
+return( 0x403 );
+      case 19:		/* Traditional Chinese */
+return( 0x404 );
+      case 33:		/* Simplified Chinese */
+return( 0x04 );			/* Not sure about this MS value... */
+      case 18:		/* Croatian */
+return( 0x41a );
+      case 38:		/* Czech */
+return( 0x405 );
+      case 7:		/* Danish */
+return( 0x406 );
+      case 4:		/* Dutch */
+return( 0x413 );
+      case 34:		/* Flemish */
+return( 0x813 );
+      case 27:		/* Estonian */
+return( 0x425 );
+      case 13:		/* Finnish */
+return( 0x40b );
+      case 1:		/* French */
+return( 0x40c );
+      case 2:		/* German */
+return( 0x407 );
+      case 14: case 148:/* Greek */
+return( 0x408 );
+      case 10:		/* Hebrew */
+return( 0x40d );
+      case 26:		/* Hungarian */
+return( 0x402 );
+      case 15:		/* Icelandic */
+return( 0x40f );
+      case 3:		/* Italian */
+return( 0x410 );
+      case 11:		/* Japanese */
+return( 0x411 );
+      case 28:		/* Latvian */
+return( 0x426 );
+      case 24:		/* Lithuanian */
+return( 0x427 );
+      case 9:		/* Norwegian */
+return( 0x414 );
+      case 25:		/* Polish */
+return( 0x415 );
+      case 8:		/* Portuguese */
+return( 0x416 );
+      case 37:		/* Romanian */
+return( 0x418 );
+      case 32:		/* Russian */
+return( 0x419 );
+      case 39:		/* Slovak */
+return( 0x41b );
+      case 40:		/* Slovenian */
+return( 0x424 );
+      case 6:		/* Spanish */
+return( 0x40a );
+      case 5:		/* Swedish */
+return( 0x41d );
+      case 17:		/* Turkish */
+return( 0x41f );
+      case 45:		/* Ukrainian */
+return( 0x422 );
+      default:
+return( 0 );
+    }
 }
 
 static unichar_t *TTFGetFontName(FILE *ttf,int32 offset) {
@@ -156,6 +313,7 @@ static unichar_t *TTFGetFontName(FILE *ttf,int32 offset) {
     int32 tag, nameoffset, length, stringoffset;
     int plat, spec, lang, name, len, off, val;
     int fullval, fullstr, fulllen, famval, famstr, famlen;
+    int enc;
 
     fseek(ttf,offset,SEEK_SET);
     /* version = */ getlong(ttf);
@@ -186,16 +344,21 @@ return( NULL );
 	name = getushort(ttf);
 	len = getushort(ttf);
 	off = getushort(ttf);
+	enc = enc_from_platspec(plat,spec);
 	val = 0;
-	if ( plat==0 && /* any unicode semantics will do && */ lang==0 )
+    /* I really want an english name */
+	if ( (plat==0 || plat==1) && enc!=em_none && lang==0 )
+	    val = 11;
+	else if ( plat==3 && enc!=em_none && (lang&0xff)==0x09 )
+	    val = 12;
+    /* failing that I'll take what I can get */
+	else if ( enc!=em_none )
 	    val = 1;
-	else if ( plat==3 && spec==1 && lang==0x409 )
-	    val = 2;
 	if ( name==4 && val>fullval ) {
 	    fullval = val;
 	    fullstr = off;
 	    fulllen = len;
-	    if ( val==2 )
+	    if ( val==12 )
     break;
 	} else if ( name==1 && val>famval ) {
 	    famval = val;
@@ -209,7 +372,7 @@ return( NULL );
 	fullstr = famstr;
 	fulllen = famlen;
     }
-return( _readustring(ttf,stringoffset+fullstr,fulllen));
+return( _readencstring(ttf,stringoffset+fullstr,fulllen,enc));
 }
 
 static int PickTTFFont(FILE *ttf) {
@@ -408,6 +571,9 @@ static void readttfmaxp(FILE *ttf,struct ttfinfo *info) {
 static char *stripspaces(char *str) {
     char *str2 = str, *base = str;
 
+    if ( str==NULL )
+return( NULL );
+
     while ( *str ) {
 	if ( *str==' ' )
 	    ++str;
@@ -419,10 +585,16 @@ return( base );
 }
 
 static void TTFAddLangStr(FILE *ttf, struct ttfinfo *info, int language, int id,
-	int strlen, int stroff) {
+	int strlen, int stroff,int enc) {
     struct ttflangname *cur, *prev;
+    unichar_t *str;
 
     if ( id<0 || id>=ttf_namemax )
+return;
+    if ( (language&0xff00)==0 ) language |= 0x400;
+
+    str = _readencstring(ttf,stroff,strlen,enc);
+    if ( str==NULL )		/* we didn't understand the encoding */
 return;
 
     for ( prev=NULL, cur=info->names; cur!=NULL && cur->lang!=language; prev = cur, cur=cur->next );
@@ -435,12 +607,112 @@ return;
 	    prev->next = cur;
     }
     if ( cur->names[id]!=NULL ) free(cur->names[id]);
-    cur->names[id] = _readustring(ttf,stroff,strlen);
+    cur->names[id] = str;
+}
+
+static int is_ascii(unichar_t *str) {	/* isascii is in ctype */
+    if ( str==NULL )
+return( false );
+    while ( *str && *str<127 && *str>=' ' )
+	++str;
+return( *str=='\0' );
+}
+
+static int is_latin1(unichar_t *str) {
+    if ( str==NULL )
+return( false );
+    while ( *str && *str<256 && *str>=' ' )
+	++str;
+return( *str=='\0' );
+}
+
+static char *removeaccents(char *_str) {
+    /* Postscript really wants ASCII, so if we can make it ascii without too */
+    /*  much loss, let's do so */
+    unsigned char *str = (unsigned char *) _str, *pt = str;
+    while ( *pt ) {
+	if ( *pt>=0xc0 && *pt<=0xc5 )
+	    *pt = 'A';
+	else if ( *pt>=0xe0 && *pt<=0xe5 )
+	    *pt = 'a';
+	else if ( *pt==0xc6 || *pt==0xe6 || *pt==0xdf ) {
+	    unsigned char *temp = galloc(strlen((char *) str)+2);
+	    strcpy((char *) temp,(char *) str);
+	    if ( *pt==0xc6 ) {
+		temp[pt-str] = 'A';
+		temp[pt-str+1] = 'E';
+	    } else if ( *pt==0e6 ) {
+		temp[pt-str] = 'a';
+		temp[pt-str+1] = 'e';
+	    } else {
+		temp[pt-str] = 's';
+		temp[pt-str+1] = 's';
+	    }
+	    strcpy((char *) temp+(pt-str)+2,(char *) pt+1);
+	    pt = temp+(pt-str)+1;
+	    free(str);
+	    str = temp;
+	} else if ( *pt==0xc7 )
+	    *pt = 'C';
+	else if ( *pt==0xe7 )
+	    *pt = 'c';
+	else if ( *pt>=0xc8 && *pt<=0xcb )
+	    *pt = 'E';
+	else if ( *pt>=0xe8 && *pt<=0xeb )
+	    *pt = 'e';
+	else if ( *pt>=0xcc && *pt<=0xcf )
+	    *pt = 'I';
+	else if ( *pt>=0xec && *pt<=0xef )
+	    *pt = 'i';
+	else if ( *pt==0xd1 )
+	    *pt = 'N';
+	else if ( *pt==0xf1 )
+	    *pt = 'n';
+	else if ( (*pt>=0xd2 && *pt<=0xd6 ) || *pt==0xd8 )
+	    *pt = 'O';
+	else if ( (*pt>=0xf2 && *pt<=0xf6 ) || *pt==0xf8 )
+	    *pt = 'o';
+	else if ( *pt>=0xd9 && *pt<=0xdc )
+	    *pt = 'U';
+	else if ( *pt>=0xf9 && *pt<=0xfc )
+	    *pt = 'u';
+	else if ( *pt>=0xdd )
+	    *pt = 'Y';
+	else if ( *pt>=0xfd && *pt<=0xff )
+	    *pt = 'y';
+	++pt;
+    }
+return( (char *) str );
+}
+
+static char *FindLangEntry(struct ttfinfo *info, int id ) {
+    /* Look for an entry with string id */
+    /* we prefer english, if we can't find english look for something in ascii */
+    /* if not english let's try for latin1, if that fails we are doomed */
+    struct ttflangname *cur;
+    char *ret;
+
+    for ( cur=info->names; cur!=NULL && cur->lang!=0x409; cur=cur->next );
+    if ( cur!=NULL && cur->names[id]==NULL ) cur = NULL;
+    if ( cur==NULL )
+	for ( cur=info->names; cur!=NULL && (cur->lang&0xf)!=0x09; cur=cur->next );
+    if ( cur!=NULL && cur->names[id]==NULL ) cur = NULL;
+    if ( cur==NULL )
+	for ( cur=info->names; cur!=NULL && !is_ascii(cur->names[id]); cur=cur->next );
+    if ( cur==NULL )
+	for ( cur=info->names; cur!=NULL && !is_latin1(cur->names[id]); cur=cur->next );
+    if ( cur==NULL )
+return( NULL );
+    ret = cu_copy(cur->names[id]);
+    ret = removeaccents(ret);
+return( ret );
 }
 
 static void readttfcopyrights(FILE *ttf,struct ttfinfo *info) {
     int i, cnt, tableoff;
     int platform, specific, language, name, strlen, stroff;
+    int enc;
+
     /* All I want here are the names of the font and its copyright */
     fseek(ttf,info->copyright_start,SEEK_SET);
     /* format selector = */ getushort(ttf);
@@ -453,64 +725,25 @@ static void readttfcopyrights(FILE *ttf,struct ttfinfo *info) {
 	name = getushort(ttf);
 	strlen = getushort(ttf);
 	stroff = getushort(ttf);
-	if ( platform==3 && specific==1 )
-	    TTFAddLangStr(ttf,info,language,name,strlen,tableoff+stroff);
-	if ( (platform==3 && specific==1 && (language&0xff)==0x9) ||
-		(platform==0 && /*specific==0 && */ language==0) ) {
-		/* MS Arial starts out with a bunch of platform=0, specific=3 */
-		/*  entries. platform 0 is Apple unicode which is said in the */
-		/*  ms docs not to use the specific entry (I assumed that meant */
-		/*  0, but it's 3. Oh Well. Language is 0 */
-		/* Ah, but the Apple docs say that 3 means Unicode 2.0 */
-		/*  semantics (the difference between 1&2 lies in CJK so I */
-		/*  don't much care */
-	    switch ( name ) {
-	      case 0:
-		if ( info->copyright==NULL )
-		    info->copyright = readustring(ttf,tableoff+stroff,strlen);
-	      break;
-	      case 1:
-		if ( info->familyname==NULL )
-		    info->familyname = stripspaces(readustring(ttf,tableoff+stroff,strlen));
-	      break;
-	      case 4:
-		if ( info->fullname==NULL )
-		    info->fullname = readustring(ttf,tableoff+stroff,strlen);
-	      break;
-	      case 5:
-		if ( info->version==NULL )
-		    info->version = readustring(ttf,tableoff+stroff,strlen);
-	      break;
-	      case 6:
-		if ( info->fontname==NULL )
-		    info->fontname = readustring(ttf,tableoff+stroff,strlen);
-	      break;
-	    }
-	} else if ( platform==1 && specific==0 && language==0 ) {
-	    switch ( name ) {
-	      case 0:
-		if ( info->copyright==NULL )
-		    info->copyright = readstring(ttf,tableoff+stroff,strlen);
-	      break;
-	      case 1:
-		if ( info->familyname==NULL )
-		    info->familyname = stripspaces(readstring(ttf,tableoff+stroff,strlen));
-	      break;
-	      case 4:
-		if ( info->fullname==NULL )
-		    info->fullname = readstring(ttf,tableoff+stroff,strlen);
-	      break;
-	      case 5:
-		if ( info->version==NULL )
-		    info->version = readstring(ttf,tableoff+stroff,strlen);
-	      break;
-	      case 6:
-		if ( info->fontname==NULL )
-		    info->fontname = readstring(ttf,tableoff+stroff,strlen);
-	      break;
-	    }
+	enc = enc_from_platspec(platform,specific);
+	if ( enc!=em_none ) {
+	    if ( platform==0 || platform==1 )
+		language = AppleLang_to_MS(language);
+	    TTFAddLangStr(ttf,info,language,name,strlen,tableoff+stroff,enc);
 	}
     }
+
+    if ( info->copyright==NULL )
+	info->copyright = FindLangEntry(info,0);
+    if ( info->familyname==NULL )
+	info->familyname = stripspaces(FindLangEntry(info,1));
+    if ( info->fullname==NULL )
+	info->fullname = FindLangEntry(info,4);
+    if ( info->version==NULL )
+	info->version = FindLangEntry(info,5);
+    if ( info->fontname==NULL )
+	info->fontname = FindLangEntry(info,6);
+    
     if ( info->version==NULL ) info->version = copy("1.0");
     if ( info->fontname==NULL && info->fullname!=NULL ) info->fontname = stripspaces(copy(info->fullname));
 }
@@ -2044,7 +2277,7 @@ static void cffprivatefillup(struct psdict *private, struct topdicts *dict) {
     privateadd(private,"SnapStemV",
 	    realarray2str(dict->stemsnapv,sizeof(dict->stemsnapv)/sizeof(dict->stemsnapv[0])));
     if ( dict->forcebold )
-	privateadd(private,"ForceBold","True");
+	privateadd(private,"ForceBold","true");
     privateaddint(private,"LanguageGroup",dict->languagegroup);
     privateaddreal(private,"ExpansionFactor",dict->expansionfactor);
 }

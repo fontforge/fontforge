@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 23-Nov-2001 -->
+  <!-- AP: Last modified: 26-Nov-2001 -->
   <TITLE>The Element Menu</TITLE>
 </HEAD>
 <BODY>
@@ -390,6 +390,19 @@ This menu is not present in the Metrics View.
     percentage of the em to use as a separation. To avoid accents at slightly
     different heights, all characters near the x-height are treated as being
     at the x-height, and similarly for all characters near the cap height.
+      <HR>
+    When displaying latin (cyrillic, greek, etc.) text amid a CJK characters
+    displayed vertically the convention is that the latin glyphs should be rotated
+    (if you were to rotate the page so that the CJK characters ran left to right
+    rather than top to bottom, then the latin characters would read normally).
+    Certain slots in Adobe's cid assignments have been left for rotated latin
+    letters. If you apply Build Accented Character to one of these slots it will
+    find the appropriate latin letter and rotate it properly.<BR>
+    If a character's name is "vertcid_&lt;cid&gt;" where &lt;cid&gt; is a decimal
+    number, then it is assumed to be a vertically rotated version of the glyph
+    at &lt;cid&gt;. In non-cid-keyed fonts, if a character's name is
+    "vertuni&lt;uni&gt;" where &lt;uni&gt; is a four digit hex number, then it
+    is assumed to be a vertically rotated version of that unicode character.
   <DT>
     <A NAME="Merge">Merge</A> Fonts...
   <DD>

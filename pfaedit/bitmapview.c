@@ -149,9 +149,22 @@ void BCCharChangedUpdate(BDFChar *bc,FontView *fv) {
 }
 
 BDFChar *BDFMakeChar(BDFFont *bdf,int i) {
-    SplineChar *sc = SFMakeChar(bdf->sf,i);
+    SplineFont *sf=bdf->sf;
+    SplineChar *sc;
     BDFChar *bc;
 
+    if ( sf->cidmaster!=NULL ) {
+	int j = SFHasCID(sf,i);
+	if ( j==-1 ) {
+	    for ( j=0; j<sf->subfontcnt; ++j )
+		if ( i<sf->subfonts[j]->charcnt )
+	    break;
+	    if ( j==sf->subfontcnt )
+return( NULL );
+	}
+	sf = sf->subfonts[j];
+    }
+    sc = SFMakeChar(sf,i);
     if ( (bc = bdf->chars[i])==NULL ) {
 	bc = bdf->chars[i] = SplineCharRasterize(sc,bdf->pixelsize);
 	bc->enc = i;

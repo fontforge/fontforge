@@ -109,11 +109,51 @@ static int crcbuffer(uint8 *buffer,int size) {
 return( crc );
 }
 
-static uint16 HashToId(char *fontname) {
-    const int low = 128, high = 0x4000;
+static uint16 HashToId(char *fontname,SplineFont *sf) {
+    int low = 128, high = 0x4000;
     /* A FOND ID should be between these two numbers for roman script (I think) */
     uint32 hash = 0;
+    int i;
+    SplineChar *sc;
 
+    /* Figure out what language we've got (no support for cid fonts here) */
+    /*  I'm not bothering with all of the apple scripts, and I don't know */
+    /*  what to do about cjk fonts */
+    for ( i=0; i<sf->charcnt && i<256; ++i ) if ( (sc = sf->chars[i])!=NULL ) {
+	/* Japanese between	0x4000 and 0x41ff */
+	/* Trad Chinese		0x4200 and 0x43ff */
+	/*  Simp Chinese	0x7200 and 0x73ff */
+	/* Korean		0x4400 and 0x45ff */
+	if (( sc->unicodeenc>=0x0600 && sc->unicodeenc<0x0700 ) ||
+		( sc->unicodeenc>=0xFB50 && sc->unicodeenc<0xfe00 )) {
+	    /* arabic */
+	    low = 0x4600; high = 0x47ff;
+    break;
+	} else if (( sc->unicodeenc>=0x0590 && sc->unicodeenc<0x0600 ) ||
+		( sc->unicodeenc>=0xFB1d && sc->unicodeenc<0xFB50 )) {
+	    /* hebrew */
+	    low = 0x4800; high = 0x49ff;
+    break;
+	} else if (( sc->unicodeenc>=0x0370 && sc->unicodeenc<0x0400 ) ||
+		( sc->unicodeenc>=0x1f00 && sc->unicodeenc<0x2000 )) {
+	    /* greek */
+	    low = 0x4a00; high = 0x4bff;
+    break;
+	} else if ( sc->unicodeenc>=0x0400 && sc->unicodeenc<0x0530 ) {
+	    /* cyrillic */
+	    low = 0x4c00; high = 0x4dff;
+    break;
+	/* hebrew/arabic symbols 4e00-4fff */
+	} else if ( sc->unicodeenc>=0x0900 && sc->unicodeenc<0x0980 ) {
+	    /* devanagari */
+	    low = 0x5000; high = 0x51ff;
+    break;
+	} else if ( sc->unicodeenc>=0x0980 && sc->unicodeenc<0x0a00 ) {
+	    /* bengali: script=13 */
+	    low = 0x5800; high = 0x59ff;
+    break;
+	}
+    }
     while ( *fontname ) {
 	int temp = (hash>>28)&0xf;
 	hash = (hash<<4) | temp;
@@ -373,7 +413,7 @@ return(rlenpos);
 }
 
 static struct resource *SFToNFNTs(FILE *res, SplineFont *sf, real *sizes) {
-    int i, baseresid = HashToId(sf->fontname);
+    int i, baseresid = HashToId(sf->fontname,sf);
     struct resource *resstarts;
     BDFFont *bdf;
 
@@ -815,7 +855,7 @@ return( 0 );
     resources[0].tag = CHR('s','f','n','t');
     resources[0].res = rlist[0];
     rlist[0][0].pos = TTFToResource(res,tempttf);
-    rlist[0][0].id = HashToId(sf->fontname);
+    rlist[0][0].id = HashToId(sf->fontname,sf);
     resources[1].tag = CHR('F','O','N','D');
     resources[1].res = rlist[1];
     rlist[1][0].pos = SFToFOND(res,sf,rlist[0][0].id,true,bsizes);
@@ -873,7 +913,7 @@ return( 0 );
     resources[0].res = SFToNFNTs(res,sf,sizes);
     resources[1].tag = CHR('F','O','N','D');
     resources[1].res = rlist[1];
-    rlist[1][0].id = HashToId(sf->fontname);
+    rlist[1][0].id = HashToId(sf->fontname,sf);
     rlist[1][0].pos = SFToFOND(res,sf,rlist[1][0].id,false,sizes);
     rlist[1][0].name = sf->familyname;
     DumpResourceMap(res,resources);

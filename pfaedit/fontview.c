@@ -1259,8 +1259,9 @@ static void FVMenuBuildAccent(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    if ( GWidgetAskR(_STR_Replacearing,buts,0,1,_STR_Areyousurearing)==1 )
     continue;
 	}
-	if ( SFIsCompositBuildable(fv->sf,sc->unicodeenc) &&
-		(!onlyaccents || hascomposing(fv->sf,sc->unicodeenc))) {
+	if ( SFIsRotatable(fv->sf,sc) ||
+		(SFIsCompositBuildable(fv->sf,sc->unicodeenc) &&
+		 (!onlyaccents || hascomposing(fv->sf,sc->unicodeenc)))) {
 	    sc = SFMakeChar(fv->sf,i);
 	    SCBuildComposit(fv->sf,sc,!fv->onlycopydisplayed,fv);
 	}
@@ -1483,8 +1484,9 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		    sc = fv->sf->chars[i];
 		    if ( sc==NULL )
 			sc = SCBuildDummy(&dummy,fv->sf,i);
-		    if ( SFIsCompositBuildable(fv->sf,sc->unicodeenc) &&
-			    (!onlyaccents || hascomposing(fv->sf,sc->unicodeenc)) ) {
+		    if ( SFIsRotatable(fv->sf,sc) ||
+			    (SFIsCompositBuildable(fv->sf,sc->unicodeenc) &&
+			     (!onlyaccents || hascomposing(fv->sf,sc->unicodeenc))) ) {
 			anybuildable = true;
 		break;
 		    }
