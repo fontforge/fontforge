@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 3-Nov-2004 -->
+  <!-- AP: Last modified: 4-Nov-2004 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -1630,6 +1630,68 @@ ApplySubstitution("*","*","vrt2")
   <DT>
     BuildAccented()
   <DD>
+  <DT>
+    BuildDuplicate()
+  <DD>
+  <DT>
+    AddAccent(accent[,pos])
+  <DD>
+    There must be exactly on glyph selected. The first argument should be either
+    the glyph-name of an accent, or the unicode code point of that accent (and
+    it should be in the font). The second argument, if present indicates how
+    the accent should be positioned... if omitted a default position will be
+    chosen from the unicode value for the accent, this argument is the or of
+    the following flags:
+    <TABLE BORDER CELLPADDING="2">
+      <TR>
+	<TD>0x100</TD>
+	<TD>Above</TD>
+      </TR>
+      <TR>
+	<TD>0x200</TD>
+	<TD>Below</TD>
+      </TR>
+      <TR>
+	<TD>0x400</TD>
+	<TD>Overstrike</TD>
+      </TR>
+      <TR>
+	<TD>0x800</TD>
+	<TD>Left</TD>
+      </TR>
+      <TR>
+	<TD>0x1000</TD>
+	<TD>Right</TD>
+      </TR>
+      <TR>
+	<TD>0x4000</TD>
+	<TD>Center Left</TD>
+      </TR>
+      <TR>
+	<TD>0x8000</TD>
+	<TD>Center Right</TD>
+      </TR>
+      <TR>
+	<TD>0x10000</TD>
+	<TD>Centered Outside</TD>
+      </TR>
+      <TR>
+	<TD>0x20000</TD>
+	<TD>Outside</TD>
+      </TR>
+      <TR>
+	<TD>0x40000</TD>
+	<TD>Left Edge</TD>
+      </TR>
+      <TR>
+	<TD>0x80000</TD>
+	<TD>Right Edge</TD>
+      </TR>
+      <TR>
+	<TD>0x100000</TD>
+	<TD>Touching</TD>
+      </TR>
+    </TABLE>
   <DT>
     ReplaceWithReference()
   <DD>
