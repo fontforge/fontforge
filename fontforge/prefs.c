@@ -1791,8 +1791,9 @@ void DoPrefs(void) {
 		pgcd[gc].gd.label = EncodingTypesFindEnc(pgcd[gc].gd.u.list,
 			false,*(Encoding **) pl->val);
 		for ( ii=0; pgcd[gc].gd.u.list[ii].text!=NULL ||pgcd[gc].gd.u.list[ii].line; ++ii )
-		    if ( strcmp(pgcd[gc].gd.u.list[ii].userdata,"Compacted")==0 ||
-			    strcmp(pgcd[gc].gd.u.list[ii].userdata,"Original")==0 )
+		    if ( pgcd[gc].gd.u.list[ii].userdata!=NULL &&
+			    (strcmp(pgcd[gc].gd.u.list[ii].userdata,"Compacted")==0 ||
+			     strcmp(pgcd[gc].gd.u.list[ii].userdata,"Original")==0 ))
 			pgcd[gc].gd.u.list[ii].disabled = true;
 		pgcd[gc].creator = GListFieldCreate;
 		pgcd[gc].gd.pos.width = 160;
