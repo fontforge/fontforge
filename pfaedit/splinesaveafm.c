@@ -381,7 +381,9 @@ return( sc!=NULL &&
 #endif
 	    sc->dependents!=NULL ||
 	    sc->width!=sc->parent->ascent+sc->parent->descent ) &&
-	( strcmp(sc->name,".notdef")!=0 || sc->enc==0) );
+	( strcmp(sc->name,".notdef")!=0 || sc->enc==0) &&
+	( strcmp(sc->name,".null")!=0 || sc->splines!=NULL ) &&
+	( strcmp(sc->name,"nonmarkingreturn")!=0 || sc->splines!=NULL ) );
 }
 
 int CIDWorthOutputting(SplineFont *cidmaster, int enc) {
