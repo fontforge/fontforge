@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 18-Apr-2003 -->
+  <!-- AP: Last modified: 20-Apr-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -37,6 +37,15 @@
       <LI>
 	Added an "Original" encoding which gives you back the ordering of the glyphs
 	in the ttf font. (this may be changed when you regenerate a ttf font)
+      <LI>
+	PfaEdit failed to read ttf instructions for composit glyphs.
+      <LI>
+	PfaEdit got confused if a ttf file had multiple glyphs named ".notdef" (which
+	to me looks like a bug in the ttf font, but Times New Roman does this so
+	I have to deal with it).
+      <LI>
+	Added a command to the popup menu in the charview to bring up a window looking
+	at a reference.
     </UL>
   <LI>
     14-Apr-2003
