@@ -3757,7 +3757,7 @@ return( true );
 #define MID_SpacePts	2220
 #define MID_SpaceRegion	2221
 #define MID_MakeParallel	2222
-#define MID_ShowDependents	2223
+#define MID_ShowDependentRefs	2223
 #define MID_AddExtrema	2224
 #define MID_CleanupChar	2225
 #define MID_TilePath	2226
@@ -3772,6 +3772,7 @@ return( true );
 #define MID_Later	2235
 #define MID_Last	2236
 #define MID_CharInfo	2240
+#define MID_ShowDependentSubs	2241
 #define MID_Corner	2301
 #define MID_Tangent	2302
 #define MID_Curve	2303
@@ -5600,9 +5601,14 @@ static void CVMenuCharInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SCCharInfo(cv->sc);
 }
 
-static void CVMenuShowDependents(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+static void CVMenuShowDependentRefs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     SCRefBy(cv->sc);
+}
+
+static void CVMenuShowDependentSubs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    SCSubBy(cv->sc);
 }
 
 static void CVMenuBitmaps(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -5670,6 +5676,21 @@ static void balistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     cv_balistcheck(cv,mi,e);
 }
 
+static void delistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_ShowDependentRefs:
+	    mi->ti.disabled = cv->sc->dependents==NULL;
+	  break;
+	  case MID_ShowDependentSubs:
+	    mi->ti.disabled = !SCUsedBySubs(cv->sc);
+	  break;
+	}
+    }
+}
+
 static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv) {
     int anypoints = 0, splinepoints, dir = -2;
     SplinePointList *spl, *sel;
@@ -5727,9 +5748,6 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 		SplinePoint *sp; SplineSet *spl; RefChar *ref; ImageList *img;
 		mi->ti.disabled = !CVOneThingSel(cv,&sp,&spl,&ref,&img,&ap);
 	    }
-	  break;
-	  case MID_ShowDependents:
-	    mi->ti.disabled = cv->sc->dependents==NULL;
 	  break;
 	  case MID_Clockwise:
 	    mi->ti.disabled = !anypoints || dir==2;
@@ -6536,11 +6554,17 @@ static GMenuItem balist[] = {
     { NULL }
 };
 
+static GMenuItem delist[] = {
+    { { (unichar_t *) _STR_ReferencesDDD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'u' }, 'I', ksm_control|ksm_meta, NULL, NULL, CVMenuShowDependentRefs, MID_ShowDependentRefs },
+    { { (unichar_t *) _STR_SubstitutionsDDD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuShowDependentSubs, MID_ShowDependentSubs },
+    { NULL }
+};
+
 static GMenuItem ellist[] = {
     { { (unichar_t *) _STR_Fontinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'F', ksm_control|ksm_shift, NULL, NULL, CVMenuFontInfo },
     { { (unichar_t *) _STR_Charinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'I', ksm_control|ksm_shift|ksm_meta, NULL, NULL, CVMenuCharInfo, MID_CharInfo },
     { { (unichar_t *) _STR_Getinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'I', ksm_control, NULL, NULL, CVMenuGetInfo, MID_GetInfo },
-    { { (unichar_t *) _STR_ShowDependents, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, 'I', ksm_control|ksm_meta, NULL, NULL, CVMenuShowDependents, MID_ShowDependents },
+    { { (unichar_t *) _STR_ShowDependents, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, '\0', ksm_control|ksm_meta, delist, delistcheck },
     { { (unichar_t *) _STR_Findprobs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, 'E', ksm_control, NULL, NULL, CVMenuFindProblems },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Bitmapsavail, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'B', ksm_control|ksm_shift, NULL, NULL, CVMenuBitmaps, MID_AvailBitmaps },

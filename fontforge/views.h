@@ -708,6 +708,8 @@ extern void PI_ShowHints(SplineChar *sc, GGadget *list, int set);
 extern GTextInfo *SCHintList(SplineChar *sc,HintMask *);
 extern void CVGetInfo(CharView *cv);
 extern void CVPGetInfo(CharView *cv);
+extern int  SCUsedBySubs(SplineChar *sc);
+extern void SCSubBy(SplineChar *sc);
 extern void SCRefBy(SplineChar *sc);
 extern void ApGetInfo(CharView *cv, AnchorPoint *ap);
 extern void CVAddAnchor(CharView *cv);
