@@ -478,7 +478,7 @@ return;
     dovwidth = ( cv->showvmetrics && cv->sc->parent->hasvmetrics && cv->searcher == NULL &&
 		cv->p.cy>cv->sc->parent->vertical_origin-cv->sc->vwidth-fs->fudge &&
 		cv->p.cy<cv->sc->parent->vertical_origin-cv->sc->vwidth+fs->fudge );
-    nearcaret = -1;
+    cv->nearcaret = nearcaret = -1;
     if ( cv->showhmetrics ) nearcaret = NearCaret(cv->sc,cv->p.cx,fs->fudge);
     if ( (fs->p->sp==NULL || !fs->p->sp->selected) &&
 	    (fs->p->ref==NULL || !fs->p->ref->selected) &&
@@ -942,7 +942,7 @@ return;
     /*  done by move selection */
     if ( cv->expandedge!=ee_none && !cv->widthsel && !cv->vwidthsel && cv->nearcaret==-1 )
 	needsupdate = CVExpandEdge(cv);
-    else if ( cv->nearcaret!=-1 ) {
+    else if ( cv->nearcaret!=-1 && cv->lcarets!=NULL ) {
 	if ( cv->info.x!=cv->last_c.x ) {
 	    if ( !cv->recentchange ) SCPreserveState(cv->sc,2);
 	    cv->lcarets->u.lcaret.carets[cv->nearcaret] += cv->info.x-cv->last_c.x;
@@ -1006,9 +1006,10 @@ void CVMouseUpPointer(CharView *cv ) {
 	cv->expandedge = ee_none;
 	GDrawSetCursor(cv->v,ct_mypointer);
     }
-    if ( cv->nearcaret!=-1 ) {
+    if ( cv->nearcaret!=-1 && cv->lcarets!=NULL ) {
 	cv->nearcaret = -1;
 	cv->expandedge = ee_none;
+	cv->lcarets = NULL;
 	GDrawSetCursor(cv->v,ct_mypointer);
     }
     if ( cv->expandedge!=ee_none ) {
