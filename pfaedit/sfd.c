@@ -2206,6 +2206,20 @@ return( NULL );
 		if ( !hassli )
 		    sli = SFAddScriptLangIndex(sf,
 			    script!=0?script:SCScriptFromUnicode(sc),DEFAULT_LANG);
+		if ( sli>=sf->sli_cnt ) {
+		    static int complained=false;
+		    if ( !complained )
+			GDrawError("'%s' in %s has a script index out of bounds: %d",
+				isv ? "vkrn" : "kern",
+				sc->name, sli );
+		    else
+			fprintf( stderr, "Internal Error: '%s' in %s has a script index out of bounds: %d",
+				isv ? "vkrn" : "kern",
+				sc->name, sli );
+		    sli = SFAddScriptLangIndex(sf,
+			    SCScriptFromUnicode(sc),DEFAULT_LANG);
+		    complained = true;
+		}
 		kp = chunkalloc(sizeof(KernPair));
 		kp->sc = (SplineChar *) index;
 		kp->off = off;
@@ -2276,11 +2290,7 @@ return( NULL );
 		ungetc(ch,sfd);
 	    if ( liga->script_lang_index>=sf->sli_cnt && liga->type!=pst_lcaret ) {
 		static int complained=false;
-		if ( sf->sli_cnt==0 )
-		    GDrawError("'%c%c%c%c' in %s has a script index out of bounds: %d\nYou MUST fix this manually",
-			    (liga->tag>>24), (liga->tag>>16)&0xff, (liga->tag>>8)&0xff, liga->tag&0xff,
-			    sc->name, liga->script_lang_index );
-		else if ( !complained )
+		if ( !complained )
 		    GDrawError("'%c%c%c%c' in %s has a script index out of bounds: %d",
 			    (liga->tag>>24), (liga->tag>>16)&0xff, (liga->tag>>8)&0xff, liga->tag&0xff,
 			    sc->name, liga->script_lang_index );
@@ -2288,8 +2298,8 @@ return( NULL );
 		    fprintf( stderr, "Internal Error: '%c%c%c%c' in %s has a script index out of bounds: %d\n",
 			    (liga->tag>>24), (liga->tag>>16)&0xff, (liga->tag>>8)&0xff, liga->tag&0xff,
 			    sc->name, liga->script_lang_index );
-		if ( sf->sli_cnt!=0 )
-		    liga->script_lang_index = sf->sli_cnt-1;
+		liga->script_lang_index = SFAddScriptLangIndex(sf,
+			SCScriptFromUnicode(sc),DEFAULT_LANG);
 		complained = true;
 	    }
 	    if ( liga->type==pst_position )
