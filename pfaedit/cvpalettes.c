@@ -1227,7 +1227,7 @@ static void LayersSwitch(CharView *cv) {
 
 void SCMoreLayers(SplineChar *sc) { /* We've added more layers */
     CharView *curcv;
-    if ( cvtools==NULL )
+    if ( cvtools==NULL  || !sc->parent->multilayer )
 return;
     curcv = GDrawGetUserData(cvtools);
     if ( curcv->sc!=sc )
@@ -1237,7 +1237,7 @@ return;
 
 void SCLayersChange(SplineChar *sc) { /* many of the foreground layers need to be redrawn */
     CharView *curcv;
-    if ( cvtools==NULL )
+    if ( cvtools==NULL || !sc->parent->multilayer )
 return;
     curcv = GDrawGetUserData(cvtools);
     if ( curcv->sc!=sc )
@@ -1249,7 +1249,7 @@ void CVLayerChange(CharView *cv) { /* Current layer needs to be redrawn */
     CharView *curcv;
     int layer;
 
-    if ( cvtools==NULL )
+    if ( cvtools==NULL  || !cv->sc->parent->multilayer )
 return;
     curcv = GDrawGetUserData(cvtools);
     if ( curcv!=cv )
