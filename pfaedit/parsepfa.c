@@ -975,7 +975,7 @@ return;
 		findstring(fp,subrs,i,NULL,ept);
 	    } else
 		fprintf( stderr, "Index too big (must be <%d) |%s", subrs->cnt, line);
-	} else if ( strncmp(line, "readonly put", 12)==0 || strncmp(line, "ND", 2)==0 ) {
+	} else if ( strncmp(line, "readonly put", 12)==0 || strncmp(line, "ND", 2)==0 || strncmp(line, "|-", 2)==0 ) {
 	    fp->insubs = false;
 	} else if ( *line=='\n' ) {
 	    /* Ignore blank lines */;
