@@ -914,12 +914,22 @@ return(false);
     }
     fudge = snapdistance/cv->scale/2;
     if ( cv->widthsel ) {
-	cv->sc->width += dx;
+	if ( cv->sc->width+dx>0 && ((int16) (cv->sc->width+dx))<0 )
+	    cv->sc->width = 32767;
+	else if ( cv->sc->width+dx<0 && ((int16) (cv->sc->width+dx))>0 )
+	    cv->sc->width = -32768;
+	else
+	    cv->sc->width += dx;
 	if ( cv->sc->width>=-fudge && cv->sc->width<fudge )
 	    cv->sc->width = 0;
     }
     if ( cv->vwidthsel ) {
-	cv->sc->vwidth -= dy;
+	if ( cv->sc->vwidth-dy>0 && ((int16) (cv->sc->vwidth-dy))<0 )
+	    cv->sc->vwidth = 32767;
+	else if ( cv->sc->vwidth-dy<0 && ((int16) (cv->sc->vwidth-dy))>0 )
+	    cv->sc->vwidth = -32768;
+	else
+	    cv->sc->vwidth -= dy;
 	if ( cv->sc->vwidth>=-fudge && cv->sc->vwidth<fudge )
 	    cv->sc->vwidth = 0;
     }
@@ -1028,7 +1038,7 @@ void CVMouseUpPointer(CharView *cv ) {
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    if ( gwwv_ask(_("Negative Width"), buts, 0, 1, _("Negative character widths are not allowed in TrueType\nDo you really want a negative width?") )==1 )
 #endif
-		cv->sc->width = cv->p.cx;
+		cv->sc->width = cv->oldwidth;
 	}
 	SCSynchronizeWidth(cv->sc,cv->sc->width,cv->oldwidth,NULL);
 	cv->expandedge = ee_none;
@@ -1042,7 +1052,7 @@ void CVMouseUpPointer(CharView *cv ) {
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    if ( gwwv_ask(_("Negative Width"), buts, 0, 1, _("Negative character widths are not allowed in TrueType\nDo you really want a negative width?") )==1 )
 #endif
-		cv->sc->vwidth = cv->p.cy;
+		cv->sc->vwidth = cv->oldvwidth;
 	}
 	cv->expandedge = ee_none;
 	GDrawSetCursor(cv->v,ct_mypointer);
