@@ -4448,8 +4448,12 @@ static void SplinePointRound(SplinePoint *sp) {
     sp->me.y = rint(sp->me.y);
     sp->nextcp.x = rint(sp->nextcp.x);
     sp->nextcp.y = rint(sp->nextcp.y);
+    if ( sp->next!=NULL && sp->next->order2 )
+	sp->next->to->prevcp = sp->nextcp;
     sp->prevcp.x = rint(sp->prevcp.x);
     sp->prevcp.y = rint(sp->prevcp.y);
+    if ( sp->prev!=NULL && sp->prev->order2 )
+	sp->prev->from->nextcp = sp->prevcp;
 }
 
 void SplineSetsRound2Int(SplineSet *spl) {
