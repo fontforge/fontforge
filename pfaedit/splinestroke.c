@@ -340,7 +340,11 @@ static void StrokeJoint(SplinePoint *base,StrokeInfo *si,JointPoint *plus,JointP
 	    minus->from->me = minus->inter;
 	    minus->from->pointtype = pt_corner;
 	} else {
+	    SplineSet junk;
 	    MakeJoints(minus,si,&nminus,&pminus,&base->me);
+	    junk.first = minus->from; junk.last = minus->to;
+	    SplineSetReverse(&junk);
+	    minus->from = junk.first; minus->to = junk.last;
 	    minus->tprev = 1; minus->tnext = 0;
 	    plus->from = plus->to = chunkalloc(sizeof(SplinePoint));
 	    plus->from->me = plus->inter;
@@ -428,7 +432,7 @@ return( ssplus );
 	    p_tcur = cur_plus.tnext;
 	    m_tcur = cur_minus.tprev;
 	    pto = cur_plus.to;
-	    mto = cur_minus.to;
+	    mto = cur_minus.from;
 	} else {
 	    SplineSet junk;
 	    StrokeEnd(spline->to,si,&junk.first,&junk.last);

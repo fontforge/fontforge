@@ -1361,4 +1361,4 @@ static char *str_FreePress = "A free press discriminates\nagainst the illiterate
 static char *str_GaudiamusLigature = "Gaudiamus Ligature!"; /*new*/
 
 static int num_buttonsize = 55;
-static int num_ScaleFactor = 100;
+static int num_ScaleFactor = 120;
