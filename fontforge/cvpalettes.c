@@ -2500,12 +2500,16 @@ static void BVShadesExpose(GWindow pixmap, BitmapView *bv, GRect *r) {
 	for ( j=0; j<lay.cnt; ++j ) {
 	    block.x = 4 + j*(lay.size+1);
 	    index = (i*lay.cnt+j)*lay.div;
-	    if ( bv->color >= index - lay.div/2 &&
-		    bv->color <= index + lay.div/2 ) {
+	    if (( bv->color >= index - lay.div/2 &&
+			bv->color <= index + lay.div/2 ) ||
+		 ( bv->color_under_cursor >= index - lay.div/2 &&
+		    bv->color_under_cursor <= index + lay.div/2 )) {
 		GRect outline;
 		outline.x = block.x-1; outline.y = block.y-1;
 		outline.width = block.width+1; outline.height = block.height+1;
-		GDrawDrawRect(pixmap,&outline,0x00ff00);
+		GDrawDrawRect(pixmap,&outline,
+		    ( bv->color >= index - lay.div/2 &&
+			bv->color <= index + lay.div/2 )?0x00ff00:0xffffff);
 	    }
 	    index = (255-index) * greybg / 255;
 	    GDrawFillRect(pixmap,&block,0x010101*index);
@@ -3051,6 +3055,13 @@ void BVPaletteColorChange(BitmapView *bv) {
     if ( bvshades!=NULL )
 	GDrawRequestExpose(bvshades,NULL,false);
     GDrawRequestExpose(bv->gw,NULL,false);
+}
+
+void BVPaletteColorUnderChange(BitmapView *bv,int color_under) {
+    if ( bvshades!=NULL && color_under!=bv->color_under_cursor ) {
+	bv->color_under_cursor = color_under;
+	GDrawRequestExpose(bvshades,NULL,false);
+    }
 }
 
 void BVPaletteChangedChar(BitmapView *bv) {
