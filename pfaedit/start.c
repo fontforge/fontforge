@@ -200,7 +200,7 @@ static int splash_e_h(GWindow gw, GEvent *event) {
     static int splash_cnt;
     GRect old;
     int i, y, x;
-    static int foolishness[] = { _STR_FreePress, _STR_GaudiamusLigature };
+    static int foolishness[] = { _STR_FreePress, _STR_GaudiamusLigature, _STR_InTheBeginning };
 
     if ( event->type == et_expose ) {
 	GDrawPushClip(gw,&event->u.expose.rect,&old);
