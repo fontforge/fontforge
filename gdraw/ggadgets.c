@@ -860,6 +860,7 @@ GTextInfo **GGadgetGetList(GGadget *g,int32 *len) {
     if ( g->funcs->get_list!=NULL )
 return((g->funcs->get_list)(g,len));
 
+    if ( len!=NULL ) *len = 0;
 return( NULL );
 }
 

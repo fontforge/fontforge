@@ -274,6 +274,8 @@ return;
 	    arglist[ac++] = "-c";
 	    arglist[ac++] = "--output=-";		/* output to stdout */
 	    arglist[ac++] = "--eps";
+	    arglist[ac++] = "-r";
+	    arglist[ac++] = "72";
 	} else {
 	    arglist[ac++] = "--output-format=eps";
 	    arglist[ac++] = "--input-format=BMP";
@@ -302,18 +304,6 @@ return;
 		transform[1] = transform[2] = 0;
 		transform[4] = images->xoff;
 		transform[5] = images->yoff - images->yscale*ib->height;
-		if ( ispotrace ) {
-		    /* potrace seems to generate a coordinate system with */
-		    /*  no bearing to anything I can figure out */
-		    /* So find the bounds of the returned splines */
-		    /* note this fails if there is white space around the image */
-		    DBounds d;
-		    SplineSetFindBounds(new,&d);
-		    if ( d.maxy-d.miny>1 ) {
-			transform[0] *= (ib->height)/(d.maxy-d.miny);
-			transform[3] *= (ib->height)/(d.maxy-d.miny);
-		    }
-		}
 		new = SplinePointListTransform(new,transform,true);
 		if ( sc->parent->order2 ) {
 		    SplineSet *o2 = SplineSetsTTFApprox(new);

@@ -2681,7 +2681,6 @@ static void readttfkern(FILE *ttf, FILE *util, struct ttfinfo *info) {
 		    ( coverage&0x4000 ) ? " cross-stream" : "",
 		    ( coverage&0x2000 ) ? " kern-variation" : "",
 		    ( coverage&0xff ));
-	    if ( (coverage&0xff)==2 ) fprintf(stderr, "!!! Format 2 here!!!!\n" );
 	    printf( "\t  tuple index=%d\n", getushort(ttf));
 	    printf( "\t  row Width=%d\n", getushort(ttf));
 	    printf( "\t  left class offset=%d\n", left =getushort(ttf));
