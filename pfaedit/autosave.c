@@ -124,7 +124,8 @@ return( false );
 	sprintf(buffer,"%s/%s",recoverdir,entry->d_name);
 	if ( (sf = SFRecoverFile(buffer)) ) {
 	    any=true;
-	    FontViewCreate(sf);
+	    if ( sf->fv==NULL )		/* Doesn't work, cli arguments not parsed yet */
+		FontViewCreate(sf);
 	}
     }
     closedir(dir);

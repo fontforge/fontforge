@@ -550,6 +550,10 @@ static void _MenuExit(void *junk) {
 	next = fv->next;
 	if ( !_FVMenuClose(fv))
 return;
+	if ( fv->nextsame!=NULL || fv->sf->fv!=fv ) {
+	    GDrawSync(NULL);
+	    GDrawProcessPendingEvents(NULL);
+	}
     }
     exit(0);
 }
