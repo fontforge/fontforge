@@ -2284,7 +2284,18 @@ void CVPaletteActivate(CharView *cv) {
 
 #ifdef FONTFORGE_CONFIG_TYPE3
 void SFLayerChange(SplineFont *sf) {
-    CharView *old;
+    CharView *old, *cv;
+    int i;
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	SplineChar *sc = sf->chars[i];
+	for ( cv=sc->views; cv!=NULL; cv=cv->next ) {
+	    cv->layerheads[dm_back] = &sc->layers[ly_back];
+	    cv->layerheads[dm_fore] = &sc->layers[ly_fore];
+	    cv->layerheads[dm_grid] = &sf->grid;
+	}
+    }
+
     if ( cvtools==NULL )
 return;					/* No charviews open */
     old = GDrawGetUserData(cvtools);
@@ -2302,7 +2313,7 @@ return;
 	GDrawSetVisible(cvtools,false);
 	GDrawSetUserData(cvtools,NULL);
 #ifdef FONTFORGE_CONFIG_TYPE3
-	if ( cv->sc->parent->multilayer ) {
+	if ( cv->sc->parent->multilayer && cvlayers2!=NULL ) {
 	    SaveOffsets(cv->gw,cvlayers2,&cvlayersoff);
 	    GDrawSetVisible(cvlayers2,false);
 	    GDrawSetUserData(cvlayers2,NULL);

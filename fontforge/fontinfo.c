@@ -4830,10 +4830,11 @@ return( true );
 	    else if ( sf->multilayer )
 		SFSplinesFromLayers(sf,strokedfont);
 	    SFReinstanciateRefs(sf);
-	    if ( multilayer!=sf->multilayer )
+	    if ( multilayer!=sf->multilayer ) {
+		sf->multilayer = multilayer;
 		SFLayerChange(sf);
+	    }
 	}
-	sf->multilayer = multilayer;
 #endif
 	sf->strokedfont = strokedfont;
 	sf->strokewidth = strokewidth;
