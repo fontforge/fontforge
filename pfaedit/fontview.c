@@ -884,9 +884,14 @@ void SCClearAll(SplineChar *sc) {
     if ( sc==NULL )
 return;
     if ( sc->splines==NULL && sc->refs==NULL && !sc->widthset &&
-	    sc->hstem==NULL && sc->vstem==NULL )
+	    sc->hstem==NULL && sc->vstem==NULL && !copymetadata )
 return;
-    SCPreserveState(sc,true);
+    SCPreserveState(sc,2);
+    if ( copymetadata ) {
+	sc->unicodeenc = -1;
+	free(sc->name);
+	sc->name = ".notdef";
+    }
     sc->widthset = false;
     sc->width = sc->parent->ascent+sc->parent->descent;
     SplinePointListsFree(sc->splines);
@@ -4183,7 +4188,9 @@ return( NULL );
     len = u_strlen(ubuf);
     uc_strncat(ubuf,GFileNameTail(fullname),100);
     ubuf[100+len] = '\0';
-    GProgressStartIndicator(10,GStringGetResource(_STR_Loading,NULL),ubuf,GStringGetResource(_STR_ReadingGlyphs,NULL),0,1);
+    /* If there are no pfaedit windows, give them something to look at */
+    /*  immediately. Otherwise delay a bit */
+    GProgressStartIndicator(fv_list==NULL?0:10,GStringGetResource(_STR_Loading,NULL),ubuf,GStringGetResource(_STR_ReadingGlyphs,NULL),0,1);
     GProgressEnableStop(0);
 
     sf = NULL;
