@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 3-Aug-2003 -->
+  <!-- AP: Last modified: 1-Oct-2003 -->
   <TITLE>PfaEdit -- An outline font editor for PostScript&reg;, TrueType and
   OpenType fonts</TITLE>
 </HEAD>
@@ -717,13 +717,18 @@ placing vowel marks.
 </H3>
 <P>
 Anchor points allow fine control of the positioning of two (or several)
-characters. Currently PfaEdit supports two different styles of attachment
-based on anchors: cursive positioning and mark to base positioning. The first
-style is used to join scripts so that the exit from one character joins the
-entry point of the next. In the second style one of the characters is the
-base character, and it will be positioned normally, the other character will
-often be a diacritic or vowel mark and it will be positioned so that the
-anchor points in each character are coincident.
+characters. There are several different styles of attachment based on anchors:
+cursive, mark to base, mark to ligature and mark to mark postioning. The
+first style is used to join glyphs in flowing scripts (cursive) where the
+exit from one character joins the entry point of the next. In the second
+style one of the characters is the base character, and it will be positioned
+normally, the other character will often be a diacritic or vowel mark and
+it will be positioned so that the anchor points in each character are coincident.
+Mark to ligature behaves similarly to mark to base except that there may
+be more that one attachment point for the mark depending on which component
+of the ligature it is connected to. Finally, mark to mark allows you to postion
+two marks with respect to each other (as you might need to do in vietnamese
+or hebrew where you may get several marks for one glyph).
 <P>
 That is badly said. Consider the following two characters and how they are
 joined to make the final result:
@@ -754,20 +759,22 @@ That's roughly how anchor points are used. Now the mechanics.
 <P>
 A font may contain a list of Anchor Classes which may be specified with the
 <A HREF="fontinfo.html#Anchors">Element-&gt;Font Info dialog</A>. An anchor
-class consists of a name (in the above example the class was called "Top")
-and a tag. The tag is meaningful in the context of the
+class consists of a name (in the above example the class was called "Top"),
+a tag, a set of scripts and languages to which it applies, and the type of
+anchor. The tag is meaningful in the context of the
 <A HREF="gposgsub.html">GPOS</A> table and unless you are working with indic
-languages should probably be left as 'mark'.
+languages should probably be left as 'mark' for mark to base or mark to ligature
+connections. For cursive connections, use the tag 'curs', and for mark to
+mark connections use 'mkmk'.
 <P>
-The tag 'curs' is magic. This is used to build up a "cursive attachment"
-sub-table rather than a "mark to base" sub-table. In a cursive table each
-character may have two anchor points and entry and an exit point. The text
-layout program will attach the exit point of one character to the entry point
-of the next.
+Cursive attachments are a little different from the other attachment types.
+Each character has two attachment points, an entry and an exit (instead of
+just the one shown in the mark to base example above). The text layout program
+will attach the exit point of one character to the entry point of the next.
 <P>
-A character may contain several Anchor Points, there may be one for each
-anchor class (ligatures may have more than one for a class, and 'curs' classes
-may have two). You may create a point with the
+A character may contain several Anchor Points, but only one for each anchor
+class (ligatures may have more than one for a class, and 'curs' classes should
+have two). You may create a point with the
 <A HREF="pointmenu.html#AddAnchor">Point-&gt;Add Anchor command</A>. You
 must specify an anchor class, and whether this point is in a base character
 or in a mark character, and a location. So in the example above the anchor
@@ -785,7 +792,8 @@ your anchor point you may say that it is to be in a ligature, in which case
 you will also be asked for a ligature index -- a number running from 0 to
 the number of components -1. This allows you to position several anchor points
 with the same class. The text layout program will place the first mark over
-the first anchor point, the second mark over the second and so on.
+the first anchor point, the second mark over the second and so on (this is
+a gross simplification).
 <P>
 Finally you may need to position two marks based on the same anchor point,
 for example the character <IMG SRC="a_dieresis_macron.png" WIDTH=9 HEIGHT=14>
@@ -799,7 +807,7 @@ in macron should be of type mark and should be positioned at the same place
 as the "Top" anchor point. Thus when given the sequence of characters "a
 dieresis macron" the text layout program should position "a" normally, position
 "dieresis" so that the its Top anchor point is where "a"'s is, and position
-macro so that its TopMark anchor point is where "dieresis"'s is.
+macron so that its TopMark anchor point is where "dieresis"'s is.
 <P>
 Anchor points may be selected, dragged, transformed, cut, copied and pasted.
 <H3>
