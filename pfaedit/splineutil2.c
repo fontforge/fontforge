@@ -1359,9 +1359,11 @@ return;
 		/* nsp is something we don't want to remove */
 		if ( nsp==sp )
 	    break;
-		if ( SplinesRemoveBetweenMaybe(sc,sp,nsp,flags,err))
+		if ( SplinesRemoveBetweenMaybe(sc,sp,nsp,flags,err)) {
+		    if ( spl->last==spl->first )
+			spl->last = spl->first = sp;	/* We know this point didn't get removed */
 		    sp = nsp;
-		else
+		} else
 		    sp = sp->next->to;
 	    } else
 		sp = sp->next->to;
