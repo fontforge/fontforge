@@ -311,7 +311,7 @@ static void GRadioInit() {
     if ( radio_on_box.depressed_background == radio_off_box.depressed_background )
 	radio_on_box.depressed_background = radio_on_box.active_border;
     if ( checkbox_on_box.depressed_background == checkbox_off_box.depressed_background )
-	checkbox_on_box.depressed_background = COLOR_CREATE(0,0,0);
+	checkbox_on_box.depressed_background = radio_on_box.active_border;
     radon = GResourceFindImage("GRadioOn.Image",NULL);
     radoff = GResourceFindImage("GRadioOff.Image",NULL);
     checkon = GResourceFindImage("GCheckBoxOn.Image",NULL);
