@@ -65909,8 +65909,6 @@ const struct psaltnames  {
 	{ "at.cap", 0xf633 },
 	{ "s_t", 0xfb06 },
 	{ "longs_t", 0xfb05 },
-	{ "s_t", 0xfb06 },
-	{ "s_t", 0xfb06 },
 	{ "zero.slash", 0xf638 },
 	{ "j.dotless", 0xf6be },
 	{ "afii10066.ital", 0xf6c5 },
@@ -70985,6 +70983,13 @@ const struct psaltnames  {
 	{ "Omegasmall", 0xf518 },
 	{ "Iotadieresissmall", 0xf519 },
 	{ "Upsilondieresissmall", 0xf51a },
+/* Archaic or Rare Latin Ligatures */
+	{ "c_t", 0xf520 },
+	{ "longs_i", 0xf521 },
+	{ "longs_l", 0xf522 },
+	{ "longs_longs", 0xf523 },
+	{ "longs_longs_i", 0xf524 },
+	{ "longs_longs_l", 0xf525 },
 	NULL
 };
 const int psaltuninames_cnt = sizeof(psaltuninames)/sizeof(psaltuninames[0])-1;
