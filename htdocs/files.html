@@ -1,0 +1,59 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 24-Nov-2002 -->
+  <!-- AP: Last modified: 24-Nov-2002 -->
+  <TITLE>Files used by PfaEdit</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+  Files used by PfaEdit
+</H1>
+<DL>
+<DT>
+~/.PfaEdit
+<DD>
+PfaEdit creates this directory the first time it starts up. It contains various
+files PfaEdit uses to hold context across invocations.
+<HR>
+<DL>
+<DT>
+~/.PfaEdit/prefs
+<DD>
+This file contains user preference settings.
+<DT>
+~/.PfaEdit/Encodings.ps
+<DD>
+If there are any user defined encodings they reside in this file.
+<DT>
+~/.PfaEdit/autosave
+<DD>
+This directory contains the files used to drive the crash-recovery process.
+When PfaEdit is running there will be one file in this directory corresponding
+to each font loaded into PfaEdit that has been modified. These files will
+contain all changed characters.
+<P>
+When PfaEdit exits normally, this directory will be cleaned up and there should
+be no files in it.
+</DL>
+<DT>
+/usr/local/share/pfaedit/*.ui
+<DD>
+These files contain translations of the ui for various locales.
+<DT>
+/usr/local/share/doc/pfaedit/*.html
+<DD>
+Optional location for online documentation. <A HREF="index.html#docs">You can pull down a compressed
+archive from here.</A>
+<DT>
+/usr/local/share/pfaedit/*.cidmap
+<DD>
+"Encoding" files for Adobe's cid formats. <A HREF="cidmaps.tgz">You can pull down a compressed
+archive from here.</A>
+</DL>
+<P>
+<P>
+<P ALIGN=Center>
+-- <A HREF="cliargs.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
+<A HREF="scripting.html">Next</A> --
+</BODY></HTML>
