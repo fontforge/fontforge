@@ -2591,7 +2591,7 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *_sf,
     os2->version = 1;
     os2->weightClass = sf->pfminfo.weight;
     os2->widthClass = sf->pfminfo.width;
-    os2->fstype = 0xc;
+    os2->fstype = 0x8;
     if ( sf->pfminfo.fstype!=-1 )
 	os2->fstype = sf->pfminfo.fstype;
     os2->ysubYSize = os2->ysubXSize = os2->ysubYOff = (sf->ascent+sf->descent)/5;

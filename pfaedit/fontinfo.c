@@ -125,7 +125,7 @@ static GTextInfo weightclass[] = {
 static GTextInfo fstype[] = {
     { (unichar_t *) _STR_NeverEmbeddable, NULL, 0, 0, (void *) 0x02, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_OnlyPrint, NULL, 0, 0, (void *) 0x04, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_EditableDoc, NULL, 0, 0, (void *) 0x0c, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_EditableDoc, NULL, 0, 0, (void *) 0x08, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Installable, NULL, 0, 0, (void *) 0x00, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
 static GTextInfo pfmfamily[] = {
