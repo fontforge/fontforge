@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 3-Jan-2004 -->
+  <!-- AP: Last modified: 10-Jan-2004 -->
   <TITLE>Char Info</TITLE>
 </HEAD>
 <BODY>
@@ -10,7 +10,7 @@
   Char Info
 </H1>
 <H2>
-  <IMG SRC="charinfo.png" WIDTH="217" HEIGHT="291" ALIGN="Right">
+  <IMG SRC="charinfo.png" WIDTH="307" HEIGHT="409" ALIGN="Right">
   <A NAME="Character">Character</A> Info
 </H2>
 <P>
@@ -20,7 +20,12 @@ If you know the name of the character then PfaEdit can tell you the encoding
 can tell you the name.
 <P>
 The name field contains a pull down list with (possibly) several synonyms
-for the name of this unicode code point.<BR CLEAR=ALL>
+for the name of this unicode code point.
+<P>
+The Glyph class field is for the opentype 'GDEF' table. You can usually leave
+it set to automatic. PfaEdit will then figure out the class, and whether
+it should be output into GDEF. You can see what PfaEdit does in
+<A HREF="showatt.html">View-&gt;Show ATT</A>.<BR CLEAR=ALL>
 <P>
 <IMG SRC="charinfo-comment.png" WIDTH="307" HEIGHT="359" ALIGN="Right">You
 can assign an arbetrary (unicode) comment to the character. Simply type any
@@ -129,7 +134,7 @@ You must either specify an opentype feature tag (a four character tag like
 'liga', see the section on <A HREF="gposgsub.html">GPOS and GSUB</A> for
 feature tags), or an apple feature/setting value (Something like
 &lt;2,2&gt; where the first number is the feature and the second the setting
-for that feature). 
+for that feature).
 <P>
 In <A NAME="lookup-flags">addition</A> you must specify a set of
 <A HREF="http://partners.adobe.com/asn/tech/type/opentype/appendices/chapter2.jsp">flags</A>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 3-Jan-2004 -->
+  <!-- AP: Last modified: 10-Jan-2004 -->
   <TITLE>Spline Font Database File Format</TITLE>
 </HEAD>
 <BODY>
@@ -11,11 +11,13 @@
 </H1>
 <P>
 <FONT COLOR="Red"><STRONG>This page is often grievously out of date. It was
-a fair approximation to reality on 30 June 2003.</STRONG></FONT> Even if
-out of date it should be helpful, but if you really need to know the current
+a fair approximation to reality on 10 Jan 2004.</STRONG></FONT> Even if out
+of date it should be helpful, but if you really need to know the current
 format look at
 <A HREF="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/pfaedit/pfaedit/pfaedit/sfd.c">sfd.c</A>
-and see what it parses.
+and see what it parses. Some descriptions of esoteric features are not complete,
+but I hope they give you enough hints that you can figure the format out
+(especially after looking it up in sfd.c)
 <P>
 PfaEdit's <A HREF="sfd.html">sfd</A> files are ASCII files (so they can be
 copied easily across the internet and so that diffs are somewhat meaningful).
@@ -24,8 +26,20 @@ They contain a full description of your font.
 They are vaguely modeled on bdf files. The first few lines contain general
 font properties, then there's a section for each character, then a section
 for each bitmap font.
+<UL>
+  <LI>
+    <A HREF="sfdformat.html#Font-Header">Font Header</A>
+  <LI>
+    <A HREF="sfdformat.html#Outline-Char-Data">Outline Character Data</A>
+  <LI>
+    <A HREF="sfdformat.html#Bitmap-Fonts">Bitmap Fonts</A>
+  <LI>
+    <A HREF="sfdformat.html#CID-keyed-fonts">CID keyed fonts</A>
+  <LI>
+    <A HREF="sfdformat.html#Autosave-Format">AutoSave Format</A>
+</UL>
 <H3>
-  Font Header
+  <A NAME="Font-Header">Font Header</A>
 </H3>
 <P>
 Here is an example of what the first few lines look like (order is largely
@@ -167,6 +181,14 @@ time any of the four languages 'DEU ', 'ROM ', 'VIT ' or the default language
 apply to it. And the last line gives an example of an entry that is active
 for several scripts with several languages.
 <P>
+OpenType features are stored with an index into this list. If a feature has
+index "0" then that feature is only active for the latin script in the Romanian
+language. If it has index 2 it will be active for cyrillic, greek and latin
+scripts. A special script index of 65535 is used to mean that this feature
+is "Nested", that is it is never activated by itself, but its activation
+is controlled by a contextual or contextual chaining lookup (which in turn
+will have its own script language index).
+<P>
 If your font has any kerning classes
 <BLOCKQUOTE>
   <PRE>KernClass: 31 64 2 0
@@ -255,7 +277,12 @@ flags 4, a script lang index of 7, and it should be merged with other anchor
 classes marked with "1". The next class is named "bottom", the next "Anchor-2"
 and so forth. (Anchor class names are output in UTF7)
 <P>
-There are three formats for contextual or contextual chaining lookups: <BR>
+Contextual or contextual chaining lookups are also stored in the font header.
+The are introduced by one of the keywords: "ContextPos", "ContextSub",
+"ChainPos", "ChainSub" and "ReverseChain", and are ended by "EndFPST". Contextual
+chaining lookups may check previous glyphs (called backtracking), current
+glyphs and lookahead glyphs, while Contextual lookups only check for a string
+of current glyphs. There are four formats:<BR>
 By coverage tables
 <BLOCKQUOTE>
   <PRE>ChainSub: coverage 0 0 'abvs' 0 0 0 1
@@ -267,7 +294,25 @@ By coverage tables
 EndFPST
 </PRE>
 </BLOCKQUOTE>
-<P>By classes
+<P>
+This defines a simple context chaining substitution by coverage class. The
+opentype flags are 0, script/lang index is 0, the feature tag is 'abvs'.
+There are no classes, no backtracking classes and no lookahead classes defined
+(it's by coverage table). There is one rule. (For a greater explaination
+of these cryptic comments see the OpenType specs on contextual lookups).
+<P>
+Then follows the first rule. The first line, "1 1 0", says how many coverage
+tables there are in the normal list (1), how many in the backtrack list (1)
+and how many in the lookahead list (0). Then we get the one normal coverage
+table, which describes a single glyph (uni0C40). Then one backtracking coverage
+table which also defines one glyph (glyph388). Finally there is one sequence
+lookup, at normal position 0, we should apply the substitution named '0013'.
+<P>
+That is to say: If we find the glyph stream "glyph388 uni0C40", then it will
+match this lookup and we should apply substitution '0013' (found elsewhere)
+to uni0C40.
+<P>
+By classes
 <BLOCKQUOTE>
   <PRE>ChainSub: class 0 0 'calt' 3 3 0 1
   Class: 52 b o v w b.high o.high v.high w.high r.alt.high r.alt
@@ -283,7 +328,22 @@ EndFPST
 EndFPST
 </PRE>
 </BLOCKQUOTE>
-<P>By glyphs
+<P>
+This defines a context chaining substitution, by classes. The format of the
+first line is the same as described above. Here we have three classes for
+the normal match and three for the backtracking match, and one rule. The
+next 4 lines define the classes. As with kerning by classes, class 0 does
+not need to be explicitly defined, it is implicitily defined to be "any glyph
+not defined in another class". So we define class 1 to be "b,o,v,..." and
+class 2 to be "a,c,d,e,...". And then we define the backtracking classes
+(which here happen to be the same as the classes for the normal match, but
+that isn't always the case).
+<P>
+The one rule says that if we get something in normal class 2 following something
+in backtracking class 1 (that is, if we get something like "ba" or "oc")
+then apply substitution 'high'
+<P>
+By glyphs
 <BLOCKQUOTE>
   <PRE>ChainSub: glyph 0 1 'calt' 0 0 0 1
  String: 1 D
@@ -294,12 +354,28 @@ EndFPST
 EndFPST
 </PRE>
 </BLOCKQUOTE>
-The GenTags entry describes a list of feature tags that PfaEdit has generated itself
+<P>
+Again we have one rule. That rule says that if we get the sequence of glyphs
+"c b D e" then we should apply substitution 'rig1' to glyph "D".
+<P>
+And finally by reverse coverage tables
 <BLOCKQUOTE>
-  <PRE>GenTags: 1 sb'rigl'
+  <PRE>ChainSub: revcov 0 0 'foo ' 0 0 0 1
+ 1 1 0
+  Coverage: 7 uni0C40
+  BCoverage: 8 glyph388
+ 1
+  Replace: 11 uni0C40.alt
+EndFPST
 </PRE>
 </BLOCKQUOTE>
-<P>There may be apple state machines
+<P>
+Which says that when glyph388 precedes uni0C40 then uni0C40 should be replaced
+by uni0C40.alt
+<P>
+There may be apple state machines. These are introduced by one of the keywords:
+"MacIndic", "MacContext", "MacInsert" and "MacKern", and they are terminated
+with "EndASM".
 <BLOCKQUOTE>
   <PRE>MacContext: 2,2 16384 9 5
   Class: 320 yehhamzaabovearabic beharabic teharabic theharabic jeemarabic haharabic khaharabic seenarabic sheenarabic sadarabic dadarabic taharabic zaharabic ainarabic ghainarabic feharabic qafarabic kafarabic lamarabic meemarabic noonarabic heharabic alefmaksuraarabic yeharabic peharabic tteharabic tcheharabic veharabic gafarabic
@@ -312,50 +388,70 @@ The GenTags entry describes a list of feature tags that PfaEdit has generated it
  0 0 ~ ~ 
  0 0 ~ ~ 
  2 32768 ~ ~ 
- 0 0 ~ ~ 
- 0 0 ~ ~ 
- 0 0 ~ ~ 
- 0 0 ~ 'M000' 
- 0 0 ~ ~ 
- 0 0 ~ ~ 
- 0 0 ~ ~ 
- 0 0 ~ ~ 
- 2 32768 ~ ~ 
- 0 0 ~ ~ 
- 0 0 ~ ~ 
- 0 0 ~ ~ 
- 0 0 ~ 'M001' 
- 0 0 ~ ~ 
- 0 0 ~ ~ 
- 2 0 ~ ~ 
- 0 0 ~ ~ 
+ ... 
  3 32768 'M002' 'M003' 
- 0 0 'M004' 'M005' 
- 2 0 ~ ~ 
- 4 0 'M006' ~ 
- 0 0 ~ 'M007' 
- 0 0 ~ ~ 
- 0 0 ~ ~ 
- 3 0 ~ ~ 
- 0 0 ~ ~ 
- 3 32768 'M008' 'M009' 
- 0 0 'M010' 'M011' 
- 3 0 ~ ~ 
- 4 0 'M012' ~ 
- 0 0 ~ 'M013' 
- 0 0 ~ ~ 
- 0 0 ~ ~ 
- 4 0 ~ ~ 
- 0 0 ~ ~ 
- 3 32768 ~ 'M014' 
- 0 0 ~ 'M015' 
- 4 0 ~ ~ 
- 4 0 ~ ~ 
- 0 0 ~ 'M016' 
+ ...
 EndASM
 </PRE>
 </BLOCKQUOTE>
-<P>There may be a list of Mac Feature/Setting names
+<P>
+The state machine begins with a line defining what mac feature,setting invokes
+it, some mac flags, the number of classes, and number of states in the machine.
+The first four states on the mac are predefined, so we start with class 4
+(yehhamzaabovearabic...). Finally there will be &lt;number of
+classes&gt;*&lt;number of states&gt; lines describing transitions. We begin
+with the transition for state 0, class 0, then the transition for state 0,
+class 1, ...
+<P>
+Each transition contains the next state to go to, a set of flags. There may
+also be other arguments depending on the type of the state machine.
+<TABLE BORDER CELLPADDING="2">
+  <TR>
+    <TD VALIGN="Top">MacIndic</TD>
+    <TD>This format has no additional arguments</TD>
+  </TR>
+  <TR>
+    <TD VALIGN="Top">MacContext</TD>
+    <TD>This format potentially contains the names of two substitutions. One
+      to be applied to the marked glyph, one to be applied to the current glyph
+      (the special substitution "~" means do nothing and is used as a place holder).
+      See above.</TD>
+  </TR>
+  <TR>
+    <TD VALIGN="Top">MacInsert</TD>
+    <TD>This format contains two glyph lists, each preceded by a number indicating
+      how many bytes follow.
+      <BLOCKQUOTE>
+	<PRE>2 0 <B>0 3 a b</B>
+0 32768 <B>4 fi q 0</B>
+</PRE>
+      </BLOCKQUOTE>
+      <P>
+      The first line indicates that no characters should be insert at the marked
+      glyph but that "a" and "b" should be insert at the current glyph. The second
+      line indicates that "fi" and "q" should be insert at the marked glyph and
+      no characters at the current glyph. The flags determine whether characters
+      are insert before or after the glyph.</TD>
+  </TR>
+  <TR>
+    <TD VALIGN="Top">MacKern</TD>
+    <TD>This format contains a list of kerning offsets. First is a count field
+      saying how many numbers follow, then a list of numbers which adjust the kerning
+      for glyphs that have previously been pushed on the kerning stack.</TD>
+  </TR>
+</TABLE>
+<P>
+The GenTags entry describes a list of feature tags that PfaEdit has generated
+itself
+<BLOCKQUOTE>
+  <PRE>GenTags: 1 sb'rigl'
+</PRE>
+</BLOCKQUOTE>
+<P>
+This line says that PfaEdit has generated 1 tag, the generated tag is used
+for a substitution lookup (sb=&gt;substitution), and the tag is 'rig1'.
+<P>
+There may be a list of Mac Feature/Setting names
 <BLOCKQUOTE>
   <PRE>MacFeat: 0 0 0
 MacName: 0 0 24 "All Typographic Features"
@@ -386,10 +482,10 @@ EndSplineSet
 </PRE>
 </BLOCKQUOTE>
 <H3>
-  Outline Character Data
+  <A NAME="Outline-Char-Data">Outline Character Data</A>
 </H3>
 <P>
-Then for non-CID fonts:
+Then for non-CID fonts you should find a line like:
 <BLOCKQUOTE>
   <PRE>BeginChars: 285 253
 </PRE>
@@ -476,11 +572,11 @@ meanings:
   </TR>
   <TR>
     <TD>0x20</TD>
-    <TD>point is to be rounded in x</TD>
+    <TD>point is to be rounded in x (truetype hinting. doesn't really work)</TD>
   </TR>
   <TR>
     <TD>0x40</TD>
-    <TD>point is to be rounded in y</TD>
+    <TD>point is to be rounded in y (truetype hinting. doesn't really work)</TD>
   </TR>
   <TR>
     <TD>0x80</TD>
@@ -577,6 +673,15 @@ what type of point it is (basechar, mark, baselig, basemark, entry, exit),
 and for ligatures a number indicating which ligature component it refers
 to.
 <P>
+If the user has set the glyph class
+<BLOCKQUOTE>
+  <PRE>GlyphClass: 2
+</PRE>
+</BLOCKQUOTE>
+<P>
+Where the number is 1 more than the 'GDEF' glyph class it represents. (so
+the 2 above means a base glyph (class 1)).
+<P>
 If the character is the first in any kern pairs (not a pair defined by a
 kern class, however)
 <BLOCKQUOTE>
@@ -627,7 +732,7 @@ or a color
 </PRE>
 </BLOCKQUOTE>
 <H3>
-  Bitmap Fonts
+  <A NAME="Bitmap-Fonts">Bitmap Fonts</A>
 </H3>
 <P>
 After all the outline characters have been described there is an EndChars
@@ -665,7 +770,7 @@ EndSplineFont
 </PRE>
 </BLOCKQUOTE>
 <H3>
-  CID keyed fonts
+  <A NAME="CID-keyed-fonts">CID keyed fonts</A>
 </H3>
 <P>
 A CID font is saved slighlty differently. It begins with the normal font
@@ -685,7 +790,7 @@ be defined). This will be followed by a list of the subfonts (dumped out
 just like normal fonts) and their characters. Only the top level font will
 contain any bitmap characters, anchor classes, etc.
 <H2>
-  Autosave Format
+  <A NAME="Autosave-Format">Autosave Format</A>
 </H2>
 <P>
 <A HREF="errrecovery.html">Error recovery</A> files are saved in

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 2-Jan-2004 -->
+  <!-- AP: Last modified: 10-Jan-2004 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -1327,25 +1327,51 @@ ApplySubstitution("*","*","vrt2")
     each 4-character script name is followed by a comma seperated list of 4 character
     language names (with the languages enclosed in curly braces). As:<BR>
     <CODE>&nbsp; &nbsp; grek{dflt} latn{dflt,VIT ,ROM }</CODE><BR>
-    The third arg should be a 4 character opentype feature tag. The fourth argument
-    should be the otf flags (or -1 to make PfaEdit guess appropriate flags).
-    The remaining argument(s) vary depending on the value of the first (type)
-    argument. For Position tags there are 4 integral arguments which specify
-    how this feature modifies the metrics of this character. For Pair type the
-    next argument is the name of the other character in the pair followed by
-    8 integral arguments, the first 4 specify the changes in positioning to the
-    first character, the next four the changes for the second char. For substitution
-    tags the fifth argument is the name of another glyph which will replace the
-    current one. For an AltSubs tag the argument is a space seperated list of
-    glyph names any of which will replace the current one. For a MultSubs the
-    argument is a space seperated list of names all of which will replace the
-    current one. For a Ligature the argument is a space seperated list of glyph
-    names all of which will be replaced by the current glyph.
+    The third arg should be a 4 character opentype feature tag (or apple
+    feature/setting). The fourth argument should be the otf flags (or -1 to make
+    PfaEdit guess appropriate flags). The remaining argument(s) vary depending
+    on the value of the first (type) argument. For Position tags there are 4
+    integral arguments which specify how this feature modifies the metrics of
+    this character. For Pair type the next argument is the name of the other
+    character in the pair followed by 8 integral arguments, the first 4 specify
+    the changes in positioning to the first character, the next four the changes
+    for the second char. For substitution tags the fifth argument is the name
+    of another glyph which will replace the current one. For an AltSubs tag the
+    argument is a space seperated list of glyph names any of which will replace
+    the current one. For a MultSubs the argument is a space seperated list of
+    names all of which will replace the current one. For a Ligature the argument
+    is a space seperated list of glyph names all of which will be replaced by
+    the current glyph.
   <DT>
     RemoveATT(type,script-lang,tag)
   <DD>
     Removes any feature tags which match the arguments (which are essentially
     the same as above, except that any of them may be "*" which will match anything).
+  <DT>
+    AddAnchorClass(name,type,script-lang,tag,flags,merge-with)
+  <DD>
+    These mirror the values of the Anchor class dialog of Element-&gt;Font Info.
+    The first argument should be a utf8 encoded name for the anchor class. The
+    second should be one of the strings "default", "mk-mk", or "cursive". The
+    third should be a script-lang string like:<BR>
+    <CODE>&nbsp; &nbsp; grek{dflt} latn{dflt,VIT ,ROM }</CODE><BR>
+    The fourth arg should be a 4 character opentype feature tag. The fifth argument
+    should be the otf flags (or -1 to make PfaEdit guess appropriate flags).
+    The sixth and last argument should be the name of another AnchorClass to
+    be merged into the same lookup (or a null string if this class merges with
+    no other class yet).
+  <DT>
+    RemoveAnchorClass(name)
+  <DD>
+    Removes the named AnchorClass (and all associated points) from the font.
+  <DT>
+    AddAnchorPoint(name,type,x,y[,lig-index])
+  <DD>
+    Adds an AnchorPoint to the currently selected character. The first argument
+    is the name of the AnchorClass. The second should be one of the strings:
+    "mark", "basechar", "baselig", "basemark", "cursentry" or "cursexit". The
+    next two values specify the location of the point. The final argument is
+    only present for things of type "baselig".
   <DT>
     BuildComposit()
   <DD>

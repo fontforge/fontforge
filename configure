@@ -8603,8 +8603,10 @@ _ACEOF
 
 fi
 
-  if test "$gww_hasbytecode" = "yes" ; then
-   echo "$as_me:$LINENO: checking for pthread_create in -lpthread" >&5
+
+fi;
+if test "$gww_hasbytecode" = "yes" ; then
+ echo "$as_me:$LINENO: checking for pthread_create in -lpthread" >&5
 echo $ECHO_N "checking for pthread_create in -lpthread... $ECHO_C" >&6
 if test "${ac_cv_lib_pthread_pthread_create+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -8664,9 +8666,7 @@ else
   gww_hasbytecode="no"
 fi
 
-  fi
-
-fi;
+fi
 
 if test \( "$gww_hasbytecode" = "yes" \) -a \( "$FreeType2_IncRoot" != "" \); then
  gww_hasbytecode="no"

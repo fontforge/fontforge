@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jul-2003 -->
-  <!-- AP: Last modified: 20-Jul-2003 -->
+  <!-- AP: Last modified: 3-Jan-2004 -->
   <TITLE>PfaEdit's math</TITLE>
 </HEAD>
 <BODY>
@@ -221,9 +221,7 @@ end
 This is essentially what a circular pen does. The only aberrations appear
 at the end-points of a contour, or at points where two splines join but their
 slopes are not continuous. PostScript allows the user to specify the behavior
-at joints and at end-points. I shall only consider here the case where both
-behaviors match that of a circular pen (the other cases are not markedly
-different).
+at joints and at end-points.
 <P>
 &nbsp; &nbsp; <IMG SRC="expand-pre.png" WIDTH="126" HEIGHT="86" ALIGN="Middle">
 =&gt; <IMG SRC="expand-post.png" WIDTH="131" HEIGHT="91" ALIGN="Middle">
@@ -235,15 +233,36 @@ and then use the approximation method above to generate a spline from that
 to those of the original, so we can use the slope of the original in the
 above algorithm).
 <P>
-For the end-points we just draw a semi-circle (making sure it goes in the
-right direction).
+Unfortunately that doesn't always work. If the spline makes a very sharp
+bend, the our approximation method above is unable to produce a good
+approximation. When that happens PfaEdit attempts to break the spline in
+two, and a point near the sharp bend. The approximation of the two sub-splines
+is generally much better. (How does PfaEdit figure out where to break a line?
+It uses two methods, one just adds points to the extrema of the original
+curve, and the other looks for places where the innermost path intersects
+itself).
+<P>
+PostScript pens can end in
+<UL>
+  <LI>
+    A flat edge -- this is easy, we just draw a line from the end of one spline
+    to the end of the other
+  <LI>
+    A rounded edge -- here we just draw a semi-circle (making sure it goes in
+    the right direction).
+  <LI>
+    A butt edge -- just draw lines continuing the two splines, moving with the
+    same slope and width/2 units long, and then join those end-points with a
+    straight line.
+</UL>
 <P>
 Things are a bit more complex at a joint
 <IMG SRC="expand-joint-pre.png" WIDTH="61" HEIGHT="78" ALIGN="Middle"> =&gt;
 <IMG SRC="expand-joint-post.png" WIDTH="69" HEIGHT="80" ALIGN="Middle">,
 the green lines in the right image show where the path would have gone had
 it not been constrained by a joint, so on the inside of the joint PfaEdit
-must figure out where this intersection occurs.
+must figure out where this intersection occurs. While on the outside PfaEdit
+must figure out either a round, miter or bevelled edge.
 <H3>
   An elliptical pen
 </H3>
@@ -254,16 +273,17 @@ scale it to 50% in the horizontal direction, then stroke it with a circular
 pen, and then scale it back by 200% horizontally. The result will be as if
 we had used an elliptical pen.
 <P>
-Obviously if the ellipse is at an angle to the character's axes, we can apply
-a more complicated transformation which involves both rotation and scaling.
+Obviously if the ellipse is at an angle to the character's axes, we must
+apply a more complicated transformation which involves both rotation and
+scaling.
 <H3>
   A rectangular pen (a calligraphic pen)
 </H3>
 <P>
-Things are subtly different with a rectangular pen and a circular pen. We
-can no longer just find the points which are a given distance away and normal
-to the curve. Except where the spline is parallel to one edge of the pen,
-a the outer contour of a rectangular pen will be stroked by one of its
+Things are subtly different between a rectangular pen and a circular pen.
+We can no longer just find the points which are a given distance away and
+normal to the curve. Except where the spline is parallel to one edge of the
+pen, a the outer contour of a rectangular pen will be stroked by one of its
 end-points. So all we need do is figure out where a spline is parallel to
 the pen's sides, and look at the problem in little chunks between those difficult
 points.

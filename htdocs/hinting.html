@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 3-May-2001 -->
-  <!-- AP: Last modified: 30-Jul-2003 -->
+  <!-- AP: Last modified: 4-Jan-2004 -->
   <TITLE>Hinting</TITLE>
 </HEAD>
 <BODY>
@@ -79,22 +79,24 @@ try to guess the extents where the hint should be active.
 </H2>
 <P>
 PfaEdit will not be able to read hint info out of a TrueType font at all
-(the format is too complex, there are too many posibilities). From a Type1
-font without hint substitution it will happily read all the hints in a character.
-In a Type1 font with hint substitution it will read some random subset of
-the hints, and will mark the font as in need of having its hints regenerated.
-In an OpenType (Type2) font PfaEdit will read in all the hints, but it will
-have to figure out by itself where those hints are active (it will not read
-that from the font file).
+(the format is too complex, there are too many posibilities, instead PfaEdit
+stores all the truetype instructions and writes them back out uninterpretted).
+<P>
+From a Type1 font it will happily read all the hints in a character. 
+<P>
+In an OpenType (Type2) font PfaEdit will read in all the hints.
 <H2>
   Hinting and TrueType
 </H2>
 <P>
+PfaEdit does a really bad job of hinting truetype. Generally you will get
+better results with unhinted characters than with characters autoinstructed
+by pfaedit.
+<P>
 Hinting TrueType fonts opens a far wider range of posibilities. I have added
 several types of hints that are specific to truetype (and will be ignored
 by the postscript generation routines). These by no means exhaust the
-capabilities of TrueType, I'm working on another tool for TrueType hinting,
-called <A HREF="TtfMod/index.html">ttfmod</A> (it doesn't do much yet though).
+capabilities of TrueType.
 <UL>
   <LI>
     Diagonal Stem Hints<BR>

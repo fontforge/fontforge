@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 2-Jan-2004 -->
+  <!-- AP: Last modified: 10-Jan-2004 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,77 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    10-Jan-2003
+    <UL>
+      <LI>
+	PfaEdit would crash when asked to use the truetype debugger on fpgm
+      <LI>
+	PfaEdit always coloured the background of debugger windows grey.
+      <LI>
+	The Points window did not show any points.
+      <LI>
+	Changed the Points window and the character view to show whether a point
+	has a watch point set on it.
+      <LI>
+	Display the code range ('fpgm'/'prep'/Glyph) in the character's info line
+	when debugging.
+      <LI>
+	When creating a 'fpgm'/'prep' table we created one with some garbage instructions
+	in it.
+      <LI>
+	Somehow I neglected to put in a dlg for editing the 'cvt ' table. This has
+	been rectified.
+      <LI>
+	There was a bug in the postscript interpreter (the thing used for reading
+	.eps files and type3 fonts) and transforming a point by a matrix with diagonal
+	entries (rotation, skew, etc.) gave the wrong value.
+      <LI>
+	Added code to preserve more of the PS graphic state when eps file does a
+	gsave
+      <LI>
+	Merge Fonts would crash when merging a font with references into an empty
+	font
+      <LI>
+	I wasn't providing default values for width/weight classes in the OS/2 table
+      <LI>
+	The bitmap dlg could write one byte beyond the area allocated in some cases.
+      <LI>
+	Changed the outline character popup menu to include an Add Anchor Point entry
+      <LI>
+	The Ligature index wasn't correctly enabled in some cases.
+      <LI>
+	Add little arrows near the first point of each contour (in the outline character
+	view) showing the direction of the contour.
+      <LI>
+	The mac's interpretation of the CFF spec is very picky, but correct. If a
+	font contained no references then PfaEdit would generate an empty subroutine
+	index. This is wrong. There should be no subroutine index, rather than an
+	empty one. (Strangely, global subroutines have the reverse requirement. Stupid).
+	Now if there are no references, then PfaEdit will not generate a local subroutine
+	index.
+      <LI>
+	Yannis Haralambous has corrected the French UI.
+      <LI>
+	Three new scripting commands: AddAnchorClass, AddAnchorPoint, RemoveAnchorClass
+      <LI>
+	Show ATT did not show glyph classes properly.
+      <LI>
+	Made scripting dlg be resizable.
+      <LI>
+	Save As &amp; Import dlgs looked bad in French. Various other improvements
+	to make things look better on non-english systems.
+      <LI>
+	Added the ability to set the glyph class from Char Info.
+      <LI>
+	FontsInFile did not work on pfb files (nor on cff)
+      <LI>
+	Opening a mac resource file with multiple FONDs from a script would crash.
+      <LI>
+	In Font Info-&gt;TTF Names the languages now appear in unicode ordering no
+	matter what the locale (used to be the langs were in alphabetical ordering
+	for English, even if they were actually French)
+    </UL>
   <LI>
     2-Jan-2004
     <UL>

@@ -104,10 +104,10 @@ AC_ARG_WITH(freetype-bytecode,
     echo checking for bytecode interpreter in freetype...
     AC_CHECK_LIB(freetype, TT_RunIns, gww_hasbytecode="yes", : )],
    AC_DEFINE(_NO_FREETYPE))
-  if test "$gww_hasbytecode" = "yes" ; then
-   AC_CHECK_LIB(pthread, pthread_create, LIBS="$LIBS -lpthread", gww_hasbytecode="no")
-  fi
  ])
+if test "$gww_hasbytecode" = "yes" ; then
+ AC_CHECK_LIB(pthread, pthread_create, LIBS="$LIBS -lpthread", gww_hasbytecode="no")
+fi
 
 if test \( "$gww_hasbytecode" = "yes" \) -a \( "$FreeType2_IncRoot" != "" \); then
  gww_hasbytecode="no"
