@@ -486,7 +486,7 @@ GWindow CVMakeTools(CharView *cv) {
 return( tools );
 }
 
-static void CVPopupInvoked(GWindow v, GMenuItem *mi) {
+static void CVPopupInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(v);
     int pos;
 
@@ -1018,7 +1018,7 @@ GWindow BVMakeTools(BitmapView *bv) {
 return( tools );
 }
 
-static void BVPopupInvoked(GWindow v, GMenuItem *mi) {
+static void BVPopupInvoked(GWindow v, GMenuItem *mi,GEvent *e) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(v);
     int pos;
 

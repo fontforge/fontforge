@@ -1,0 +1,56 @@
+.\"	man page for pfaedit by tom harvey
+.Dd January 7, 2001
+.Dt PFAEDIT 1
+.Os
+.Sh NAME
+.Nm pfaedit
+.Nd create and modify PostScript fonts
+.Sh SYNOPSIS
+.Nm
+.Op Fl new
+.Nm ""
+.Ar fontname
+.Sh DESCRIPTION
+.Nm
+allows you to create and modify PostScript fonts. You can save fonts in
+several different PostScript formats as well as TrueType and OpenType,
+and generate bitmaps.
+.Pp
+If the
+.Fl new
+flag is specified, a new PostScript font with the ISO 8859-1 encoding (the
+international encoding standard for western Europe will be created, and the
+standard for most X fonts) and open a font view which will allow you to edit
+that font.
+.Pp
+If a
+.Ar fontname
+is given,
+.Nm
+will open a font view looking at the font you selected. This may be a binary
+or ascii PostScript type1 font (.pfa or .pfb extensions) or one of pfaedit's
+spline font database files (.sfd extension), or even a PostScript type 0 font
+(.ps extension, though the encoding will probably be lost here), a true type
+font (.ttf), or an opentype font (.otf) or a bitmap font (.bdf).
+.Pp
+Without flags or arguments,
+.Nm
+will open a file picker dialog and allow you to browse your disk to find the
+appropriate font file, or create a new one.
+.\" .Sh ENVIRONMENT
+.Sh FILES
+.Bl -tag -width ~/.PfaEdit/autosave/ -compact
+.It Pa ~/.PfaEdit/autosave/
+crash recovery directory
+.El
+.\" .Sh EXAMPLES
+.\" .Sh DIAGNOSTICS
+.Sh SEE ALSO
+The pfaedit user manual, at
+.Pa http://pfaedit.sourceforge.net/
+.\" .Sh STANDARDS
+.\" .Sh HISTORY
+.Sh AUTHOR
+George Williams
+.\" .Sh BUGS
+No doubt many. But unknown.
