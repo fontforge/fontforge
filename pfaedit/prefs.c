@@ -198,6 +198,7 @@ static int Prefs_Ok(GGadget *g, GEvent *e) {
     GWindow gw;
     const unichar_t *ret;
     int lc=-1;
+    GTextInfo *ti;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	gw = GGadgetGetWindow(g);
@@ -237,7 +238,8 @@ return( true );
 		if ( prefs_list[i].val==&local_encoding )
 	continue;
 		enc = GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,1000+i));
-		*((int *) (prefs_list[i].val)) = (int) (encodingtypes[enc].userdata);
+		ti = GGadgetGetListItem(GWidgetGetControl(gw,1000+i),enc);
+		*((int *) (prefs_list[i].val)) = (int) (ti->userdata);
 	      break;
 	      case pr_string:
 	        ret = _GGadgetGetTitle(GWidgetGetControl(gw,1000+i));
