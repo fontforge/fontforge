@@ -1297,6 +1297,18 @@ return(NULL);
     cidmaster->bitmaps = NULL;			/* don't free 'em */
     for ( bdf=new->bitmaps; bdf!=NULL; bdf=bdf->next )
 	bdf->sf = new;
+    new->script_lang = cidmaster->script_lang;
+    cidmaster->script_lang = NULL;
+    new->sli_cnt = cidmaster->sli_cnt;
+    new->kerns = cidmaster->kerns; new->vkerns = cidmaster->vkerns;
+    cidmaster->kerns = cidmaster->vkerns = NULL;
+    new->texdata = cidmaster->texdata;
+    new->gentags = cidmaster->gentags;
+    memset(&cidmaster->gentags,0,sizeof(cidmaster->gentags));
+    new->possub = cidmaster->possub; cidmaster->possub = NULL;
+    new->sm = cidmaster->sm; cidmaster->sm = NULL;
+    new->features = cidmaster->features; cidmaster->features = NULL;
+    new->macstyle = cidmaster->macstyle;
     new->origname = copy( cidmaster->origname );
     new->display_size = cidmaster->display_size;
     /* Don't copy private */
