@@ -4345,12 +4345,12 @@ static void CheckEncoding(struct ttfinfo *info) {
 
     extras = 0;
     for ( j=0; j<info->glyph_cnt; ++j )
-	if ( info->chars[j]->enc==0 && j!=0 )
+	if ( (info->chars[j]->enc==0 && j!=0) || info->chars[j]->enc>=256 )
 	    ++extras;
     chars = gcalloc(256+extras,sizeof(SplineChar *));
     extras = 0;
     for ( j=0; j<info->glyph_cnt; ++j ) {
-	if ( info->chars[j]->enc==0 && j!=0 ) {
+	if (( info->chars[j]->enc==0 && j!=0) || info->chars[j]->enc>=256 ) {
 	    chars[256+extras] = info->chars[j];
 	    info->chars[j]->enc = 256+extras++;
 	} else
@@ -4429,7 +4429,7 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
     newcharcnt = epos+extras;
     newchars = gcalloc(newcharcnt,sizeof(SplineChar *));
     for ( i=0; i<oldcnt; ++i ) if ( oldchars[i]!=NULL ) {
-	if ( oldchars[i]->enc!=0 || i==0 || (i==1 && info->barecff))
+	if (( oldchars[i]->enc!=0 || i==0 || (i==1 && info->barecff)) && oldchars[i]->enc<epos )
 	    newchars[oldchars[i]->enc] = oldchars[i];
 	else {
 	    oldchars[i]->enc = epos;
