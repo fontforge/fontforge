@@ -549,6 +549,7 @@ static GImage *ImageAlterClut(GImage *image) {
 	    nbase->clut = base->clut;
 	    base->clut = NULL;
 	    nbase->trans = base->trans;
+	    GImageDestroy(image);
 	    image = new;
 	    base = nbase;
 	} else
@@ -603,7 +604,7 @@ void SCInsertBackImage(SplineChar *sc,GImage *image,real scale,real yoff,real xo
 void SCAddScaleImage(SplineChar *sc,GImage *image,int doclear) {
     double scale;
 
-    ImageAlterClut(image);
+    image = ImageAlterClut(image);
     scale = (sc->parent->ascent+sc->parent->descent)/(real) GImageGetHeight(image);
     if ( doclear )
 	ImageListsFree(sc->backimages); sc->backimages = NULL;
