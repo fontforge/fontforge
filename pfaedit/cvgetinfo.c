@@ -70,7 +70,7 @@ typedef struct gidata {
 #define II_Width	130
 #define II_Height	70
 
-#define PI_Width	184
+#define PI_Width	218
 #define PI_Height	200
 
 static int MultipleValues(char *name, int local) {
@@ -1172,13 +1172,13 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[0].gd.box = &cur;
 	gcd[0].creator = GLabelCreate;
 
-	gcd[1].gd.pos.x = 60; gcd[1].gd.pos.y = 5; gcd[1].gd.pos.width = 53;
+	gcd[1].gd.pos.x = 60; gcd[1].gd.pos.y = 5; gcd[1].gd.pos.width = 70;
 	gcd[1].gd.flags = gg_enabled|gg_visible;
 	gcd[1].gd.cid = CID_BaseX;
 	gcd[1].gd.handle_controlevent = PI_BaseChanged;
 	gcd[1].creator = GTextFieldCreate;
 
-	gcd[2].gd.pos.x = 120; gcd[2].gd.pos.y = 5; gcd[2].gd.pos.width = 53;
+	gcd[2].gd.pos.x = 137; gcd[2].gd.pos.y = 5; gcd[2].gd.pos.width = 70;
 	gcd[2].gd.flags = gg_enabled|gg_visible;
 	gcd[2].gd.cid = CID_BaseY;
 	gcd[2].gd.handle_controlevent = PI_BaseChanged;
@@ -1206,13 +1206,13 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[21].gd.handle_controlevent = PI_PrevDefChanged;
 	gcd[21].creator = GCheckBoxCreate;
 
-	gcd[5].gd.pos.x = 60; gcd[5].gd.pos.y = 49; gcd[5].gd.pos.width = 53;
+	gcd[5].gd.pos.x = 60; gcd[5].gd.pos.y = 49; gcd[5].gd.pos.width = 70;
 	gcd[5].gd.flags = gg_enabled|gg_visible;
 	gcd[5].gd.cid = CID_PrevXOff;
 	gcd[5].gd.handle_controlevent = PI_PrevChanged;
 	gcd[5].creator = GTextFieldCreate;
 
-	gcd[6].gd.pos.x = 120; gcd[6].gd.pos.y = 49; gcd[6].gd.pos.width = 53;
+	gcd[6].gd.pos.x = 137; gcd[6].gd.pos.y = 49; gcd[6].gd.pos.width = 70;
 	gcd[6].gd.flags = gg_enabled|gg_visible;
 	gcd[6].gd.cid = CID_PrevYOff;
 	gcd[6].gd.handle_controlevent = PI_PrevChanged;
@@ -1241,13 +1241,13 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[22].gd.handle_controlevent = PI_NextDefChanged;
 	gcd[22].creator = GCheckBoxCreate;
 
-	gcd[9].gd.pos.x = 60; gcd[9].gd.pos.y = 96; gcd[9].gd.pos.width = 53;
+	gcd[9].gd.pos.x = 60; gcd[9].gd.pos.y = 96; gcd[9].gd.pos.width = 70;
 	gcd[9].gd.flags = gg_enabled|gg_visible;
 	gcd[9].gd.cid = CID_NextXOff;
 	gcd[9].gd.handle_controlevent = PI_NextChanged;
 	gcd[9].creator = GTextFieldCreate;
 
-	gcd[10].gd.pos.x = 120; gcd[10].gd.pos.y = 96; gcd[10].gd.pos.width = 53;
+	gcd[10].gd.pos.x = 137; gcd[10].gd.pos.y = 96; gcd[10].gd.pos.width = 70;
 	gcd[10].gd.flags = gg_enabled|gg_visible;
 	gcd[10].gd.cid = CID_NextYOff;
 	gcd[10].gd.handle_controlevent = PI_NextChanged;
