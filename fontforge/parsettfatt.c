@@ -173,10 +173,19 @@ static uint16 *getCoverageTable(FILE *ttf, int coverage_offset, struct ttfinfo *
 	glyphs = galloc((cnt+1)*sizeof(uint16));
 	if ( ftell(ttf)+2*cnt > info->g_bounds ) {
 	    fprintf( stderr, "coverage table extends beyond end of table\n" );
+	    if ( ftell(ttf)>info->g_bounds )
+return( NULL );
 	    cnt = (info->g_bounds-ftell(ttf))/2;
 	}
 	for ( i=0; i<cnt; ++i ) {
+	    if ( cnt&0xffff0000 )
+		fprintf( stderr, "Bad count.\n");
 	    glyphs[i] = getushort(ttf);
+	    if ( feof(ttf) ) {
+		fprintf( stderr, "End of file found in coverage table.\n" );
+		free(glyphs);
+return( NULL );
+	    }
 	    if ( glyphs[i]>=info->glyph_cnt ) {
 		fprintf( stderr, "Bad coverage table. Glyph %d out of range [0,%d)\n", glyphs[i], info->glyph_cnt );
 		glyphs[i] = 0;
@@ -194,6 +203,11 @@ static uint16 *getCoverageTable(FILE *ttf, int coverage_offset, struct ttfinfo *
 	    start = getushort(ttf);
 	    end = getushort(ttf);
 	    ind = getushort(ttf);
+	    if ( feof(ttf) ) {
+		fprintf( stderr, "End of file found in coverage table.\n" );
+		free(glyphs);
+return( NULL );
+	    }
 	    if ( start>end || end>=info->glyph_cnt ) {
 		fprintf( stderr, "Bad coverage table. Glyph range %d-%d out of range [0,%d)\n", start, end, info->glyph_cnt );
 		start = end = 0;
@@ -1015,6 +1029,10 @@ static void g___ChainingSubTable1(FILE *ttf, int stoffset,
     for ( i=0; i<rcnt; ++i )
 	rules[i].offsets = getushort(ttf)+stoffset;
     glyphs = getCoverageTable(ttf,stoffset+coverage,info);
+    if ( glyphs==NULL ) {
+	free(rules);
+return;
+    }
     cnt = 0;
     for ( i=0; i<rcnt; ++i ) {
 	fseek(ttf,rules[i].offsets,SEEK_SET);
@@ -1057,6 +1075,10 @@ static void g___ChainingSubTable1(FILE *ttf, int stoffset,
 	    }
 
 	    rules[i].subrules[j].scnt = getushort(ttf);
+	    if ( rules[i].subrules[j].scnt<0 ) {
+		fprintf( stderr, "Bad transformation count in context chaining sub-table.\n" );
+return;
+	    }
 	    rules[i].subrules[j].sl = galloc(rules[i].subrules[j].scnt*sizeof(struct seqlookup));
 	    for ( k=0; k<rules[i].subrules[j].scnt; ++k ) {
 		rules[i].subrules[j].sl[k].seq = getushort(ttf);
@@ -1154,6 +1176,10 @@ static void g___ContextSubTable2(FILE *ttf, int stoffset,
     for ( i=0; i<rcnt; ++i ) if ( rules[i].offsets!=stoffset ) { /* some classes might be unused */
 	fseek(ttf,rules[i].offsets,SEEK_SET);
 	rules[i].scnt = getushort(ttf);
+	if ( rules[i].scnt<0 ) {
+	    fprintf( stderr, "Bad count in context chaining sub-table.\n" );
+return;
+	}
 	cnt += rules[i].scnt;
 	rules[i].subrules = galloc(rules[i].scnt*sizeof(struct subrule));
 	for ( j=0; j<rules[i].scnt; ++j )
@@ -1161,11 +1187,21 @@ static void g___ContextSubTable2(FILE *ttf, int stoffset,
 	for ( j=0; j<rules[i].scnt; ++j ) {
 	    fseek(ttf,rules[i].subrules[j].offset,SEEK_SET);
 	    rules[i].subrules[j].ccnt = getushort(ttf);
+	    if ( rules[i].subrules[j].ccnt<0 ) {
+		fprintf( stderr, "Bad class count in contextual chaining sub-table.\n" );
+		free(rules);
+return;
+	    }
 	    rules[i].subrules[j].classindeces = galloc(rules[i].subrules[j].ccnt*sizeof(uint16));
 	    rules[i].subrules[j].classindeces[0] = i;
 	    for ( k=1; k<rules[i].subrules[j].ccnt; ++k )
 		rules[i].subrules[j].classindeces[k] = getushort(ttf);
 	    rules[i].subrules[j].scnt = getushort(ttf);
+	    if ( rules[i].subrules[j].scnt<0 ) {
+		fprintf( stderr, "Bad count in contextual chaining sub-table.\n" );
+		free(rules);
+return;
+	    }
 	    rules[i].subrules[j].sl = galloc(rules[i].subrules[j].scnt*sizeof(struct seqlookup));
 	    for ( k=0; k<rules[i].subrules[j].scnt; ++k ) {
 		rules[i].subrules[j].sl[k].seq = getushort(ttf);
@@ -1267,6 +1303,10 @@ static void g___ChainingSubTable2(FILE *ttf, int stoffset,
     for ( i=0; i<rcnt; ++i ) if ( rules[i].offsets!=0 ) { /* some classes might be unused */
 	fseek(ttf,rules[i].offsets,SEEK_SET);
 	rules[i].scnt = getushort(ttf);
+	if ( rules[i].scnt<0 ) {
+	    fprintf( stderr, "Bad count in context chaining sub-table.\n" );
+return;
+	}
 	cnt += rules[i].scnt;
 	rules[i].subrules = galloc(rules[i].scnt*sizeof(struct subrule));
 	for ( j=0; j<rules[i].scnt; ++j )
@@ -1274,19 +1314,39 @@ static void g___ChainingSubTable2(FILE *ttf, int stoffset,
 	for ( j=0; j<rules[i].scnt; ++j ) {
 	    fseek(ttf,rules[i].subrules[j].offset,SEEK_SET);
 	    rules[i].subrules[j].bccnt = getushort(ttf);
+	    if ( rules[i].subrules[j].bccnt<0 ) {
+		fprintf( stderr, "Bad class count in contextual chaining sub-table.\n" );
+		free(rules);
+return;
+	    }
 	    rules[i].subrules[j].bci = galloc(rules[i].subrules[j].bccnt*sizeof(uint16));
 	    for ( k=0; k<rules[i].subrules[j].bccnt; ++k )
 		rules[i].subrules[j].bci[k] = getushort(ttf);
 	    rules[i].subrules[j].ccnt = getushort(ttf);
+	    if ( rules[i].subrules[j].ccnt<0 ) {
+		fprintf( stderr, "Bad class count in contextual chaining sub-table.\n" );
+		free(rules);
+return;
+	    }
 	    rules[i].subrules[j].classindeces = galloc(rules[i].subrules[j].ccnt*sizeof(uint16));
 	    rules[i].subrules[j].classindeces[0] = i;
 	    for ( k=1; k<rules[i].subrules[j].ccnt; ++k )
 		rules[i].subrules[j].classindeces[k] = getushort(ttf);
 	    rules[i].subrules[j].fccnt = getushort(ttf);
+	    if ( rules[i].subrules[j].fccnt<0 ) {
+		fprintf( stderr, "Bad class count in contextual chaining sub-table.\n" );
+		free(rules);
+return;
+	    }
 	    rules[i].subrules[j].fci = galloc(rules[i].subrules[j].fccnt*sizeof(uint16));
 	    for ( k=0; k<rules[i].subrules[j].fccnt; ++k )
 		rules[i].subrules[j].fci[k] = getushort(ttf);
 	    rules[i].subrules[j].scnt = getushort(ttf);
+	    if ( rules[i].subrules[j].scnt<0 ) {
+		fprintf( stderr, "Bad count in contextual chaining sub-table.\n" );
+		free(rules);
+return;
+	    }
 	    rules[i].subrules[j].sl = galloc(rules[i].subrules[j].scnt*sizeof(struct seqlookup));
 	    for ( k=0; k<rules[i].subrules[j].scnt; ++k ) {
 		rules[i].subrules[j].sl[k].seq = getushort(ttf);
@@ -1380,6 +1440,10 @@ static void g___ContextSubTable3(FILE *ttf, int stoffset,
 
     gcnt = getushort(ttf);
     scnt = getushort(ttf);
+    if ( feof(ttf) ) {
+	fprintf( stderr, "Bad count in context chaining sub-table.\n" );
+return;
+    }
     coverage = galloc(gcnt*sizeof(uint16));
     for ( i=0; i<gcnt; ++i )
 	coverage[i] = getushort(ttf);
@@ -4201,7 +4265,8 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 		left = getushort(ttf);
 		right = getushort(ttf);
 		offset = (short) getushort(ttf);
-		if ( left<info->glyph_cnt && right<info->glyph_cnt ) {
+		if ( left<info->glyph_cnt && right<info->glyph_cnt &&
+			chars[left]!=NULL && chars[right]!=NULL ) {
 		    kp = chunkalloc(sizeof(KernPair));
 		    kp->sc = chars[right];
 		    kp->off = offset;

@@ -1813,7 +1813,7 @@ static void rle2image(struct enc85 *dec,int rlelen,struct _GImage *base) {
 	    cnt = ch;
 	if ( ch==255 && ch2==0 && cnt<255 ) {
 	    /* Line duplication */
-	    for ( i=0; i<cnt; ++i ) {
+	    for ( i=0; i<cnt && pt<end; ++i ) {
 		memcpy(pt,base->data+(r-1)*base->bytes_per_line,base->bytes_per_line);
 		++r;
 		pt += base->bytes_per_line;
@@ -3212,7 +3212,7 @@ static Encoding *SFDGetEncoding(FILE *sfd, char *tok, SplineFont *sf) {
     int encname;
 
     if ( getint(sfd,&encname) ) {
-	if ( encname<sizeof(charset_names)/sizeof(charset_names[0]) )
+	if ( encname<sizeof(charset_names)/sizeof(charset_names[0])-1 )
 	    enc = FindOrMakeEncoding(charset_names[encname]);
     } else {
 	geteol(sfd,tok);

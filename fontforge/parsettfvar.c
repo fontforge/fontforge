@@ -283,6 +283,9 @@ static int TuplesMatch(struct variations *v, int vtest, int dbase) {
     /* way round */
     int i;
 
+    if ( dbase>=v->tuple_count )
+return( false );
+
     if ( vtest==dbase )
 return( true );
     for ( i=0; i<v->axis_count; ++i ) {

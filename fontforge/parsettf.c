@@ -4159,7 +4159,8 @@ static void UnfigureControls(Spline *spline,BasePoint *pos) {
     pos->y = rint( (spline->splines[1].c+2*spline->splines[1].d)/2 );
 }
 
-static int ttfFindPointInSC(SplineChar *sc,int pnum,BasePoint *pos) {
+static int ttfFindPointInSC(SplineChar *sc,int pnum,BasePoint *pos,
+	RefChar *bound) {
     SplineSet *ss;
     SplinePoint *sp;
     int last=0, ret;
@@ -4189,7 +4190,11 @@ return( -1 );
 	}
     }
     for ( refs=sc->layers[ly_fore].refs; refs!=NULL; refs=refs->next ) {
-	ret = ttfFindPointInSC(refs->sc,pnum-last,pos);
+	if ( refs==bound ) {
+	    fprintf( stderr, "Invalid point match. Point would be after this reference.\n" );
+return( 0x800000 );
+	}
+	ret = ttfFindPointInSC(refs->sc,pnum-last,pos,NULL);
 	if ( ret==-1 )
 return( -1 );
 	last += ret;
@@ -4200,8 +4205,12 @@ return( last );		/* Count of number of points in the character */
 static void ttfPointMatch(SplineChar *sc,RefChar *rf) {
     BasePoint sofar, inref;
 
-    if ( ttfFindPointInSC(sc,rf->transform[4],&sofar)!=-1 ||
-	    ttfFindPointInSC(rf->sc,rf->transform[5],&inref)!=-1 ) {
+    if ( rf->transform[4]<0 || rf->transform[5]<0 ) {
+	fprintf( stderr, "Invalid point to match.\n" );
+return;
+    }
+    if ( ttfFindPointInSC(sc,rf->transform[4],&sofar,rf)!=-1 ||
+	    ttfFindPointInSC(rf->sc,rf->transform[5],&inref,NULL)!=-1 ) {
 	fprintf( stderr, "Could not match points in composite glyph (%g to %g) when adding %s to %s\n",
 		rf->transform[4], rf->transform[5], rf->sc->name, sc->name);
 return;
@@ -4272,6 +4281,11 @@ static void TtfCopyTableBlindly(struct ttfinfo *info,FILE *ttf,
 
     if ( start==0 || len==0 )
 return;
+    if ( len>0x1000000 ) {
+	fprintf( stderr, "Unlikely length for table, so I'm ignoring it. %u\n", len );
+return;
+    }
+
     tab = chunkalloc(sizeof(struct ttf_table));
     tab->tag = tag;
     tab->len = len;
