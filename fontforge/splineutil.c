@@ -1739,7 +1739,7 @@ static void SFInstanciateRefs(SplineFont *sf) {
     }
 }
 
-static void SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext *pscontext) {
+static void _SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext *pscontext) {
     int i, j, isnotdef;
     RefChar *refs, *next;
     char **encoding;
@@ -1857,6 +1857,23 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext *
 #endif
 }
 
+static void SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext *pscontext) {
+    int i;
+    SplineChar *sc;
+
+    _SplineFontFromType1(sf,fd,pscontext);
+
+    /* Clean up the hint masks, We create an initial hintmask whether we need */
+    /*  it or not */
+    for ( i=0; i<sf->charcnt; ++i ) {
+	if ( (sc = sf->chars[i])!=NULL && !sc->hconflicts && !sc->vconflicts &&
+		sc->layers[ly_fore].splines!=NULL ) {
+	    chunkfree( sc->layers[ly_fore].splines->first->hintmask,sizeof(HintMask) );
+	    sc->layers[ly_fore].splines->first->hintmask = NULL;
+	}
+    }
+}
+
 static SplineFont *SplineFontFromMMType1(SplineFont *sf, FontDict *fd, struct pscontext *pscontext) {
     char *pt, *end, *origweight;
     MMSet *mm;
@@ -1893,7 +1910,7 @@ return( NULL );
     mm->defweights = galloc(mm->instance_count*sizeof(real));
     memcpy(mm->defweights,pscontext->blend_values,mm->instance_count*sizeof(real));
     mm->normal = sf;
-    SplineFontFromType1(mm->normal,fd,pscontext);
+    _SplineFontFromType1(mm->normal,fd,pscontext);
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
 	sf->chars[i]->blended = true;
     sf->mm = mm;
@@ -2056,19 +2073,39 @@ return( NULL );
 
 	mm->instances[ipos] = SplineFontEmpty();
 	SplineFontMetaData(mm->instances[ipos],fd);
-	SplineFontFromType1(mm->instances[ipos],fd,pscontext);
+	_SplineFontFromType1(mm->instances[ipos],fd,pscontext);
 	mm->instances[ipos]->mm = mm;
     }
     free(origweight);
+
+    /* Clean up hintmasks. We always create a hintmask on the first point */
+    /*  only keep them if we actually have conflicts.			  */
+    for ( i=0; i<mm->normal->charcnt; ++i ) if ( mm->normal->chars[i]!=NULL ) {
+	for ( item=0; item<mm->instance_count; ++item )
+	    if ( mm->instances[item]->chars[i]->vconflicts ||
+		    mm->instances[item]->chars[i]->hconflicts )
+	break;
+	if ( item==mm->instance_count ) {	/* No conflicts */
+	    for ( item=0; item<mm->instance_count; ++item ) {
+		free( mm->instances[item]->chars[i]->layers[ly_fore].splines->first->hintmask );
+		mm->instances[item]->chars[i]->layers[ly_fore].splines->first->hintmask = NULL;
+	    }
+	    chunkfree( mm->normal->chars[i]->layers[ly_fore].splines->first->hintmask, sizeof(HintMask) );
+	    mm->normal->chars[i]->layers[ly_fore].splines->first->hintmask = NULL;
+	}
+    }
+
 return( sf );
 }
 
 static SplineFont *SplineFontFromCIDType1(SplineFont *sf, FontDict *fd,
 	struct pscontext *pscontext) {
-    int i,j, bad, uni;
+    int i,j,k, bad, uni;
     SplineChar **chars;
     char buffer[100];
     struct cidmap *map;
+    SplineFont *_sf;
+    SplineChar *sc;
 
     bad = 0x80000000;
     for ( i=0; i<fd->fdcnt; ++i )
@@ -2135,6 +2172,21 @@ return( NULL );
 	}
     }
     free(chars);
+
+    /* Clean up the hint masks, We create an initial hintmask whether we */
+    /*  need it or not */
+    k=0;
+    do {
+	_sf = k<sf->subfontcnt?sf->subfonts[k]:sf;
+	for ( i=0; i<sf->charcnt; ++i ) {
+	    if ( (sc = sf->chars[i])!=NULL && !sc->hconflicts && !sc->vconflicts &&
+		    sc->layers[ly_fore].splines!=NULL ) {
+		chunkfree( sc->layers[ly_fore].splines->first->hintmask,sizeof(HintMask) );
+		sc->layers[ly_fore].splines->first->hintmask = NULL;
+	    }
+	}
+	++k;
+    } while ( k<sf->subfontcnt );
 return( sf );
 }
 

@@ -1316,6 +1316,8 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
     SplineChar *scs[MmMax];
     real data[MmMax][6];
     MMSet *mm = sc->parent->mm;
+    HintMask *hm[MmMax];
+    int fixuphm = false;
 
     if ( !(flags&ps_flag_nohints) && SCNeedsSubsPts(sc,format))
 	SCFigureHintMasks(sc);
@@ -1338,6 +1340,17 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
 	    hc[i] = scs[i]->hconflicts; vc[i] = scs[i]->vconflicts;
 	    scs[i]->hstem = NULL; scs[i]->vstem = NULL;
 	    scs[i]->hconflicts = false; scs[i]->vconflicts = false;
+	}
+    } else {
+	for ( i=0; i<instance_count; ++i )
+	    if ( scs[i]->vconflicts || scs[i]->hconflicts )
+	break;
+	if ( scs[0]->layers[ly_fore].splines!=NULL && i==instance_count ) {	/* No conflicts */
+	    fixuphm = true;
+	    for ( i=0; i<instance_count; ++i ) {
+		hm[i] = scs[i]->layers[ly_fore].splines->first->hintmask;
+		scs[i]->layers[ly_fore].splines->first->hintmask = NULL;
+	    }
 	}
     }
 
@@ -1407,6 +1420,9 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
 	    scs[i]->hstem = oldh[i]; scs[i]->vstem = oldv[i] = scs[i]->vstem;
 	    scs[i]->hconflicts = hc[i]; scs[i]->vconflicts = vc[i];
 	}
+    } else if ( fixuphm ) {
+	for ( i=0; i<instance_count; ++i )
+	    scs[i]->layers[ly_fore].splines->first->hintmask = hm[i];
     }
 return( ret );
 }
@@ -2487,12 +2503,17 @@ static unsigned char *SplineChar2PSOutline2(SplineChar *sc,int *len,
     int hc, vc;
     SplineChar *scs[MmMax];
     int round = (flags&ps_flag_round)? true : false;
+    HintMask *hm = NULL;
 
     if ( flags&ps_flag_nohints ) {
 	oldh = sc->hstem; oldv = sc->vstem;
 	hc = sc->hconflicts; vc = sc->vconflicts;
 	sc->hstem = NULL; sc->vstem = NULL;
 	sc->hconflicts = false; sc->vconflicts = false;
+    } else if ( sc->layers[ly_fore].splines!=NULL && !sc->vconflicts &&
+	    !sc->hconflicts ) {
+	hm = sc->layers[ly_fore].splines->first->hintmask;
+	sc->layers[ly_fore].splines->first->hintmask = NULL;
     }
 
     memset(&gb,'\0',sizeof(gb));
@@ -2513,7 +2534,8 @@ static unsigned char *SplineChar2PSOutline2(SplineChar *sc,int *len,
     if ( flags&ps_flag_nohints ) {
 	sc->hstem = oldh; sc->vstem = oldv;
 	sc->hconflicts = hc; sc->vconflicts = vc;
-    }
+    } else if ( hm!=NULL )
+	sc->layers[ly_fore].splines->first->hintmask = hm;
 return( ret );
 }
 
@@ -2527,6 +2549,7 @@ static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid,
     int hc, vc;
     SplineChar *scs[MmMax];
     int round = (flags&ps_flag_round)? true : false;
+    HintMask *hm = NULL;
 
     if ( autohint_before_generate && sc->changedsincelasthinted &&
 	    !sc->manualhints && !(flags&ps_flag_nohints))
@@ -2539,6 +2562,10 @@ static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid,
 	hc = sc->hconflicts; vc = sc->vconflicts;
 	sc->hstem = NULL; sc->vstem = NULL;
 	sc->hconflicts = false; sc->vconflicts = false;
+    } else if ( sc->layers[ly_fore].splines!=NULL && !sc->vconflicts &&
+	    !sc->hconflicts ) {
+	hm = sc->layers[ly_fore].splines->first->hintmask;
+	sc->layers[ly_fore].splines->first->hintmask = NULL;
     }
 
     memset(&gb,'\0',sizeof(gb));
@@ -2565,8 +2592,10 @@ static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid,
 	scs[0] = sc;
 	hdb.noconflicts = !sc->hconflicts && !sc->vconflicts;
 	hdb.cnt = NumberHints(hdb.scs,1);
-	DumpHints(&gb,sc->hstem,sc->hconflicts?18:1,sc->hconflicts?18:1,round);
-	DumpHints(&gb,sc->vstem,sc->vconflicts || sc->hconflicts?-1:3,sc->vconflicts || sc->hconflicts?23:3,round);
+	DumpHints(&gb,sc->hstem,sc->hconflicts || sc->vconflicts?18:1,
+				sc->hconflicts || sc->vconflicts?18:1,round);
+	DumpHints(&gb,sc->vstem,sc->hconflicts || sc->vconflicts?-1:3,
+				sc->hconflicts || sc->vconflicts?23:3,round);
 	CounterHints2(&gb, sc, hdb.cnt );
 	CvtPsSplineSet2(&gb,sc->layers[ly_fore].splines,&hdb,NULL,sc->parent->order2,round);
 	for ( rf = sc->layers[ly_fore].refs; rf!=NULL; rf = rf->next )
@@ -2583,7 +2612,8 @@ static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid,
     if ( flags&ps_flag_nohints ) {
 	sc->hstem = oldh; sc->vstem = oldv;
 	sc->hconflicts = hc; sc->vconflicts = vc;
-    }
+    } else if ( hm!=NULL )
+	sc->layers[ly_fore].splines->first->hintmask = hm;
 return( ret );
 }
 
