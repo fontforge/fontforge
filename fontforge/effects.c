@@ -433,6 +433,9 @@ static void OrientEdges(SplineSet *base,SplineChar *sc) {
     EIList el;
     EI *active=NULL, *apt, *e;
     SplineChar dummy;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    Layer layers[2];
+#endif
     int i, waschange, winding, change;
 
     for ( spl=base; spl!=NULL; spl=spl->next ) {
@@ -446,6 +449,10 @@ static void OrientEdges(SplineSet *base,SplineChar *sc) {
 
     memset(&el,'\0',sizeof(el));
     memset(&dummy,'\0',sizeof(dummy));
+#ifdef FONTFORGE_CONFIG_TYPE3
+    memset(layers,'\0',sizeof(layers));
+    dummy.layers = layers;
+#endif
     dummy.layers[ly_fore].splines = base;
     if ( sc!=NULL ) dummy.name = sc->name;
     ELFindEdges(&dummy,&el);
