@@ -4,6 +4,9 @@
 #include <ctype.h>
 #include <unistd.h>
 
+static int leniv=4;
+static int useshex;
+
 static char *myfgets(char *str, int len, FILE *file) {
     char *pt, *end;
     int ch;
@@ -118,7 +121,7 @@ static void decodebytes(FILE *out,unsigned char *binpt, int binlen ) {
 	    "?25", "?26", "?27", "?28", "?29", "vhcurveto", "hvcurveto" };
 
     decodestr(binpt,binlen);
-    binpt += 4;
+    binpt += leniv;
     while ( binpt<end ) {
 	int ch = *binpt++;
 	if ( ch>=32 && ch<=246 ) {
@@ -173,25 +176,55 @@ static int glorpline(FILE *temp, FILE *out,char *rdtok) {
     char buffer[3000], *pt, *binstart;
     int binlen;
     int ch;
-    int innum, val, inbinary, cnt, inr, wasspace, nownum, nowr, nowspace, sptok;
+    int innum, val, inbinary, inhex, cnt, inr, wasspace, nownum, nowr, nowspace, sptok;
     char *rdline = "{string currentfile exch readstring pop}", *rpt;
+    char *rdline2 = "{string currentfile exch readhexstring pop}";
     char *tokpt = NULL, *rdpt;
     char temptok[255];
-    int intok, first;
+    int intok, first, willbehex = 0;
+    int nibble=0, firstnibble=1;
 
     ch = getc(temp);
     if ( ch==EOF )
 return( 0 );
     ungetc(ch,temp);
 
-    innum = inr = 0; wasspace = 0; inbinary = 0; rpt = NULL; rdpt = NULL;
+    innum = inr = 0; wasspace = 0; inbinary = inhex = 0; rpt = NULL; rdpt = NULL;
     pt = buffer; binstart=NULL; binlen = 0; intok=0; sptok=0; first=1;
     while ( (ch=getc(temp))!=EOF ) {
 	*pt++ = ch;
+	if ( pt>=buffer+sizeof(buffer)) {
+	    fprintf(stderr,"Buffer overrun\n" );
+	    exit(1);
+	}
 	nownum = nowspace = nowr = 0;
+	if ( rpt!=NULL && ch!=*rpt && ch=='h' && rpt-rdline>25 && rpt-rdline<30 &&
+		rdline2[rpt-rdline]=='h' ) {
+	    rpt = rdline2 + (rpt-rdline);
+	    willbehex = 1;
+	}
 	if ( inbinary ) {
 	    if ( --cnt==0 )
 		inbinary = 0;
+	} else if ( inhex ) {
+	    if ( isdigit(ch) || (ch>='a'&&ch<='f') || (ch>='A' && ch<='F')) {
+		int h;
+		if ( isdigit(ch)) h = ch-'0';
+		else if ( ch>='a' && ch<='f' ) h = ch-'a'+10;
+		else h = ch-'A'+10;
+		if ( firstnibble ) {
+		    nibble = h;
+		    --pt;
+		} else {
+		    pt[-1] = (nibble<<4)|h;
+		    if ( --cnt==0 )
+			inbinary = inhex = 0;
+		}
+		firstnibble = !firstnibble;
+	    } else {
+		--pt;
+		/* skip everything not hex */
+	    }
 	} else if ( ch=='/' ) {
 	    intok = 1;
 	    tokpt = temptok;
@@ -200,7 +233,7 @@ return( 0 );
 	} else if ( (intok||sptok) && (ch=='{' || ch=='[')) {
 	    *tokpt = '\0';
 	    rpt = rdline+1;
-	    intok = 0;
+	    intok = sptok = 0;
 	} else if ( intok ) {
 	    *tokpt = '\0';
 	    intok = 0;
@@ -216,6 +249,7 @@ return( 0 );
 		/* it matched the character definition string so this is the */
 		/*  token we want to search for */
 		strcpy(rdtok,temptok);
+		useshex = willbehex;
 	    }
 	} else if ( isdigit(ch)) {
 	    nownum = 1;
@@ -236,7 +270,8 @@ return( 0 );
 		ch = getc(temp);
 		*pt++ = ch;
 		if ( isspace(ch) && val!=0 ) {
-		    inbinary = 1;
+		    inhex = useshex;
+		    inbinary = !useshex;
 		    cnt = val;
 		    binstart = pt;
 		    binlen = val;
@@ -258,9 +293,9 @@ return( 0 );
 	pt[-1]='\n';
     }
     *pt = '\0';
-    if ( strncmp(buffer,"dup 49 ",6)==0 )
-	pt = NULL;
     if ( binstart==NULL ) {
+	if (( pt = strstr(buffer,"/lenIV"))!=NULL )
+	    leniv = strtol(pt+6,NULL,0);
 	fputs(buffer,out);
     } else {
 	for ( pt=buffer; pt<binstart; ++pt )
@@ -279,15 +314,19 @@ static void decrypteexec(FILE *in,FILE *temp, int hassectionheads) {
     int ch1, ch2, ch3, ch4, binary;
     int zcnt;
     unsigned char zeros[EODMARKLEN+6+1];
+    int sect_len;
 
     while ( (ch1=getc(in))!=EOF && isspace(ch1));
+    /* Mac POST resources also have 6 bytes inserted here. They appear to be */
+    /*  a four byte length followed by ^B ^@ */
     if ( ch1==0200 && hassectionheads ) {
 	/* skip the 6 byte section header in pfb files that follows eexec */
 	ch1 = getc(in);
-	ch1 = getc(in);
-	ch1 = getc(in);
-	ch1 = getc(in);
-	ch1 = getc(in);
+	sect_len = getc(in);
+	sect_len |= getc(in)<<8;
+	sect_len |= getc(in)<<16;
+	sect_len |= getc(in)<<24;
+	sect_len -= 3;
 	ch1 = getc(in);
     }
     ch2 = getc(in); ch3 = getc(in); ch4 = getc(in);
@@ -309,15 +348,18 @@ return;
 	nrandombytes[3] = decode(ch4);
 	zcnt = 0;
 	while (( ch1=getc(in))!=EOF ) {
+	    --sect_len;
 	    if ( hassectionheads ) {
-		if ( (zcnt>=1 && zcnt<6) || ( ch1==0200 && zcnt==0 ))
-		    zeros[zcnt++] = decode(ch1);
-		else if ( zcnt>=6 && ch1=='0' ) {
-		    zeros[zcnt++] = decode(ch1);
-		    if ( zcnt>EODMARKLEN+6 )
+		if ( sect_len==0 && ch1==0200 ) {
+		    ch1 = getc(in);
+		    sect_len = getc(in);
+		    sect_len |= getc(in)<<8;
+		    sect_len |= getc(in)<<16;
+		    sect_len |= getc(in)<<24;
+		    sect_len += 1;
+		    if ( ch1=='\1' )
 	break;
 		} else {
-		    dumpzeros(temp,zeros,zcnt);
 		    zcnt = 0;
 		    putc(decode(ch1),temp);
 		}
@@ -354,6 +396,31 @@ return;
     if ( ch1!=EOF ) ungetc(ch1,in);
 }
 
+static void decryptbinary(FILE *in,FILE *temp, char *line, long solpos) {
+    int i, cnt, ch;
+    char *pt;
+
+    fprintf( stderr, "This program does not handled cid-keyed fonts. Sorry\n" );
+exit(1);
+    pt = strstr(line,"(Binary)");
+    pt += strlen("(Binary)");
+    cnt = strtol(pt,NULL,10);
+
+    pt = strstr(line,"StartData ");
+    pt += strlen("StartData ");
+
+    solpos += pt-line;
+    fseek(in,SEEK_SET,solpos);
+
+    initcode();
+    nrandombytes[0] = decode(getc(in));
+    nrandombytes[1] = decode(getc(in));
+    nrandombytes[2] = decode(getc(in));
+    nrandombytes[3] = decode(getc(in));
+    for ( i = 0; ( ch=getc(in))!=EOF && i<cnt; ++i )
+	putc(decode(ch),temp);
+}
+
 #if 0
 static void encrypteexec(FILE *temp,FILE *out) {
     int glorped, i;
@@ -384,9 +451,14 @@ static void decryptagain(FILE *temp,FILE *out) {
 
 static void doubledecrypt(char *outputfile,char *fontname) {
     FILE *in, *temp, *out;
-    char buffer[256], *tempname;
+    char buffer[256]/*, *tempname*/;
     char *pt;
     int first, hassectionheads;
+    int mightbegsf = 1;
+    long oldpos;
+
+    leniv = 4;
+    useshex = 0;
 
     in = fopen(fontname,"r");
     if ( in==NULL ) {
@@ -405,6 +477,7 @@ return;
 return;
     }
 
+#if 0
     tempname = tempnam(NULL,"dcrpt");
     sprintf( buffer,"%s.decrypt", pt);
     temp = fopen(tempname,"w+");
@@ -413,9 +486,20 @@ return;
 	fclose(in); fclose(out);
 return;
     }
+#else
+    temp = tmpfile();
+    if ( temp==NULL ) {
+	fprintf( stderr, "Cannot open temporary file\n" );
+	fclose(in); fclose(out);
+return;
+    }
+#endif
 
     first = 1; hassectionheads = 0;
+    oldpos = ftell(in);
     while ( myfgets(buffer,sizeof(buffer),in)!=NULL ) {
+    /* Mac POST resources also have 6 bytes inserted here. They appear to be */
+    /*  a four byte length followed by ^A ^@ */
 	if ( first && buffer[0]=='\200' ) {
 	    hassectionheads = 1;
 	    fputs(buffer+6,out);
@@ -424,17 +508,36 @@ return;
 	first = 0;
 	if ( strstr(buffer,"currentfile")!=NULL && strstr(buffer, "eexec")!=NULL )
     break;
+	if ( strstr(buffer,"(Binary)")!=NULL && strstr(buffer, "StartData")!=NULL )
+    break;
+	if ( mightbegsf ) {
+	    if ( strstr(buffer,"/Private")!=NULL || strstr(buffer,"/Subrs")!=NULL ||
+		    strstr(buffer,"/CharStrings")!=NULL )
+    break;
+	    if ( strstr(buffer,"/CIDInit")!=NULL )
+		mightbegsf = 0;
+	}
+	oldpos = ftell(in);
     }
 
-    decrypteexec(in,temp,hassectionheads);
-    rewind(temp);
-    decryptagain(temp,out);
+    if ( strstr(buffer,"currentfile")!=NULL && strstr(buffer, "eexec")!=NULL ) {
+	decrypteexec(in,temp,hassectionheads);
+	rewind(temp);
+	decryptagain(temp,out);
+    } else if ( strstr(buffer,"(Binary)")!=NULL && strstr(buffer, "StartData")!=NULL ) {
+	decryptbinary(in,temp,buffer,oldpos);
+	rewind(temp);
+	decryptagain(temp,out);
+    } else
+	decryptagain(in,out);
     while ( myfgets(buffer,sizeof(buffer),in)!=NULL ) {
 	if ( buffer[0]!='\200' || !hassectionheads )
 	    fputs(buffer,out);
     }
     fclose(in); fclose(out); fclose(temp);
+#if 0
     unlink(tempname); free(tempname);
+#endif
 }
 
 int main( int argc, char **argv) {
