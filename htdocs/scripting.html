@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 8-Aug-2004 -->
+  <!-- AP: Last modified: 11-Aug-2004 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -458,18 +458,32 @@ a[4][0] = "Nested array";
     Parses as much of str as possible and returns the offset to the first character
     that could not be parsed.
   <DT>
+    LoadPrefs()
+  <DD>
+    Loads the user's preferences. This used to happen automatically at startup.
+    Now it happens automatically when the UI is started, but scripts must request
+    it.
+  <DT>
+    SavePrefs()
+  <DD>
+    Save the current state of preferences. This used to happen when SetPref was
+    called, now a script must request it explicitly.
+  <DT>
     GetPref(str)
   <DD>
     Gets the value of the preference item whose name is contained in str. Only
     boolean, integer, real, string and file preference items may be returned.
     Boolean and real items are returned with integer type and file items are
-    returned with string type.
+    returned with string type. Encodings (NewCharset) are returned as magic numbers,
+    these are meaningless outside the context of get/set Pref.
   <DT>
     <A NAME="SetPrefs">SetPrefs</A>(str,val[,val2])
   <DD>
     Sets the value of the preference item whose name is contained in str. If
     the preference item has a real type then a second argument may be passed
-    and the value set will be val/val2.
+    and the value set will be val/val2. The NewCharset preference item may be
+    set to a magic number as provided by GetPref, or by one of the encoding strings
+    accepted by Reencode()
   <DT>
     GetEnv(str)
   <DD>
@@ -622,7 +636,7 @@ a[4][0] = "Nested array";
     <P>
     If you do not wish to generate an outline font then give the filename the
     extension of ".bdf".<BR>
-    fmflags controls whether an afm or pfm file should be generated
+    fmflags controls
     <UL>
       <LI>
 	-1 =&gt; default (generate an afm file for postscript fonts, never generate
@@ -640,7 +654,7 @@ a[4][0] = "Nested array";
       <LI>
 	fmflags&amp;8 =&gt; do not include ttf instructions
       <LI>
-	fmflags&amp;16 =&gt; where apple and ms/adobe differ about the format of
+	fmflags&amp;0x10 =&gt; where apple and ms/adobe differ about the format of
 	a true/open type file, use apple's definition (otherwise use ms/adobe)<BR>
 	Currently this affects bitmaps stored in the font (Apple calls the table
 	'bdat', ms/adobe 'EBDT'), the PostScript name in the 'name' table (Apple
@@ -655,6 +669,9 @@ a[4][0] = "Nested array";
       <LI>
 	fmflags&amp;0x80 =&gt; generate tables so the font will work on both Apple
 	and MS platforms.
+      <LI>
+	fmflags&amp;0x100 =&gt; generate a glyph map file (GID=&gt;glyph name, unicode
+	map)
       <LI>
 	fmflags&amp;0x10000 =&gt; generate a tfm file
       <LI>
@@ -1548,7 +1565,8 @@ ApplySubstitution("*","*","vrt2")
     ReplaceWithReference()
   <DD>
     Finds any glyph which contains an inline copy of one of the selected glyphs,
-    and converts that copy into a reference to the appropriate glyph.
+    and converts that copy into a reference to the appropriate glyph. Selection
+    is changed to the set of glyphs which the command alters.
   <DT>
     MergeFonts(other-font-name[,flags])
   <DD>

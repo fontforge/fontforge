@@ -2,9 +2,9 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 16-May-2004 -->
-  <LINK REL="icon" href="ffanvil16.png">
+  <!-- AP: Last modified: 15-Aug-2004 -->
   <TITLE>Outline Character View</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
@@ -126,16 +126,35 @@ to
   <A NAME="Tools">Tools</A>
 </H2>
 <P>
-<IMG SRC="tools.png" WIDTH="57" HEIGHT="287" ALIGN="Left"> There are 16 different
-editing tools of which two (rectangle/ellipse and polygon/star) come in two
-forms.
+<IMG SRC="tools.png" WIDTH="55" HEIGHT="294" ALIGN="Left" ISMAP USEMAP="#im-tools"><MAP
+    NAME="im-tools">
+  <AREA SHAPE="RECT" HREF="#rectangle" COORDS="0,215,54,243">
+  <AREA SHAPE="RECT" HREF="#perspective" COORDS="27,189,54,216">
+  <AREA SHAPE="RECT" HREF="#rotate3d" COORDS="0,189,27,216">
+  <AREA SHAPE="RECT" HREF="#skew" COORDS="26,161,54,189">
+  <AREA SHAPE="RECT" HREF="#rotate" COORDS="0,162,27,189">
+  <AREA SHAPE="RECT" HREF="#flip" COORDS="27,134,54,161">
+  <AREA SHAPE="RECT" HREF="#scale" COORDS="0,135,27,162">
+  <AREA SHAPE="RECT" HREF="#ruler" COORDS="27,108,54,134">
+  <AREA SHAPE="RECT" HREF="#knife" COORDS="-1,108,27,135">
+  <AREA SHAPE="RECT" HREF="#pen" COORDS="27,80,54,108">
+  <AREA SHAPE="RECT" HREF="#add-point" COORDS="1,81,27,108">
+  <AREA SHAPE="RECT" HREF="#add-point" COORDS="1,53,54,80">
+  <AREA SHAPE="RECT" HREF="#scroll" COORDS="27,27,53,53">
+  <AREA SHAPE="RECT" HREF="#freehand" COORDS="1,27,26,54">
+  <AREA SHAPE="RECT" HREF="#magnify" COORDS="28,0,53,27">
+  <AREA SHAPE="RECT" HREF="#pointer" COORDS="1,0,28,28">
+</MAP>
+There are 18 different editing tools of which two (rectangle/ellipse and
+polygon/star) come in two forms.
 <P>
 At the bottom of the palette is a list of the current bindings of the mouse
 buttons. Here mouse button 1 is bound to the pointer tool, mouse button 1
 with the control key pressed is also bound to pointer, mouse button 2 is
 bound to magnify, and mouse button 2 with control is bound to ruler.
 <H3>
-  <IMG SRC="cvarrowicon.png" ALIGN="Middle">The pointer tool
+  <IMG SRC="cvarrowicon.png" ALIGN="Middle">The <A NAME="pointer">pointer</A>
+  tool
 </H3>
 <P>
 This tool is used for selecting points, images and referenced characters.
@@ -224,8 +243,8 @@ placing the mouse pointer on it, depressing the button and dragging the line
 around. See the description on <A HREF="editexample4.html#ligature">building
 a ligature </A>for a more complete description.
 <H3>
-  <IMG SRC="cvmagicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The magnifying
-  tool
+  <IMG SRC="cvmagicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The
+  <A NAME="magnify">magnifying</A> tool
 </H3>
 <P>
 Clicking with the magnifying tool will magnify the view and center it around
@@ -240,8 +259,8 @@ will shift and scale the view so that your rectangle just fits into the window.
 If your mouse has a scroll wheel then holding down the control key with the
 scroll wheel causes it to magnify or minify the window.
 <H3>
-  <IMG SRC="cvhandicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The hand
-  tool
+  <IMG SRC="cvhandicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The
+  <A NAME="scroll">scroll</A> tool
 </H3>
 <P>
 You can use this tool to scroll the window without using the scroll bars.
@@ -278,7 +297,7 @@ Width)<BR CLEAR=ALL>
   <IMG SRC="cvcurveicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">
   <IMG SRC="cvcornericon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">
   <IMG SRC="cvtangenticon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">Tools
-  for adding curved, corner and tangent points.
+  for <A NAME="add-point">adding</A> curved, corner and tangent points.
 </H3>
 <P>
 These three tools behave similarly, differing only in what kind of point
@@ -305,7 +324,8 @@ If you double click then a point will be added as above and a
 <A HREF="getinfo.html">Point Info</A> dlg will appear to give you fine control
 over the location of the point and its control points.
 <H3>
-  <IMG SRC="cvpenicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The pen tool
+  <IMG SRC="cvpenicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The
+  <A NAME="pen">pen</A> tool
 </H3>
 <P>
 In many ways this is similar to the tools above, the only differences are
@@ -313,8 +333,8 @@ that the points created are curved points, they are initially created with
 the control points on the point and as you drag you drag out the control
 points rather than moving the point itself around.
 <H3>
-  <IMG SRC="cvknifeicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The knife
-  tool
+  <IMG SRC="cvknifeicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The
+  <A NAME="knife">knife</A> tool
 </H3>
 <P>
 This tool is used to cut splines. As you drag it across the view fontforge
@@ -326,7 +346,7 @@ so the spline is now open (or if it were previously open, it is now cut in
 two).
 <H3>
   <IMG SRC="cvrulericon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The
-  <A NAME="Ruler">ruler</A> tool
+  <A NAME="ruler">ruler</A> tool
 </H3>
 <P>
 This tool tells you the x-y offsets, distance and angle from the point where
@@ -341,8 +361,8 @@ Finally if you hold down the Meta (Alt) key when you release the mouse button,
 then the ruler window will remain on the screen until you dismiss it by either:
 clicking in the window, or dragging out a new ruler selection.
 <H3>
-  <IMG SRC="cvscaleicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The scale
-  tool
+  <IMG SRC="cvscaleicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The
+  <A NAME="scale">scale</A> tool
 </H3>
 <P>
 This tool allows you to scale the selection by eye rather than by a set amount
@@ -355,8 +375,8 @@ then hold down the shift key.
 Double clicking on this will bring up the transform dialog with the "Scale..."
 option selected.
 <H3>
-  <IMG SRC="cvflipicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The flip
-  tool
+  <IMG SRC="cvflipicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The
+  <A NAME="flip">flip</A> tool
 </H3>
 <P>
 This tool allows you to flip the selection either horizontally or vertically.
@@ -364,9 +384,14 @@ Again the point at which you press the mouse is the origin of the transformation
 <P>
 Double clicking on this will bring up the transform dialog with the "Flip..."
 option selected.
+<P>
+<FONT COLOR="Red"> <STRONG>Note: After flipping an outline you will almost
+certainly want to apply
+<A HREF="elementmenu.html#Correct">Element-&gt;Correct
+Direction</A>.</STRONG></FONT>
 <H3>
-  <IMG SRC="cvrotateicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The rotate
-  tool
+  <IMG SRC="cvrotateicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The
+  <A NAME="rotate">rotate</A> tool
 </H3>
 <P>
 This tools allows you to rotate the selection freely.
@@ -374,8 +399,8 @@ This tools allows you to rotate the selection freely.
 Double clicking on this will bring up the transform dialog with the "Rotate..."
 option selected.
 <H3>
-  <IMG SRC="cvskewicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The skew
-  tool
+  <IMG SRC="cvskewicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The
+  <A NAME="skew">skew</A> tool
 </H3>
 <P>
 This tool allows you to skew the selection.
@@ -383,9 +408,41 @@ This tool allows you to skew the selection.
 Double clicking on this will bring up the transform dialog with the "Skew..."
 option selected.
 <H3>
+  <IMG SRC="cvrotate3dicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The
+  <A NAME="rotate3d">rotate</A> 3D tool
+</H3>
+<P>
+This tool allows you to rotate the selection in the third dimension and project
+the result back onto the x-y plane. An imaginary line is drawn from the point
+where you pressed to the current point, this line determines the axis of
+rotation. The distance you move from the initial press determines the amount
+of rotation.
+<P>
+Double clicking on this will bring up the transform dialog with the "Rotate
+3D..." option selected.
+<H3>
+  <IMG SRC="Eperspective.png" WIDTH="154" HEIGHT="361" ALIGN="Right"><IMG SRC="cvperspectiveicon.png"
+      WIDTH="26" HEIGHT="26" ALIGN="Middle">The
+  <A NAME="perspective">perspective</A> tool
+</H3>
+<P>
+This tool allows you to apply a perspective transformation to the selection
+(this is a non-linear transformation). This tool uses three points: The glyph
+origin, the press point, and the current location of the cursor. In the image
+at right the mouse was pressed on the baseline near the glyph's advance width,
+and the mouse was released in the upper middle of the image. The glyph is
+transformed so that the release point is treated as the point at infinity.
+The line between the origin and the press point defines one axis of the
+transformation. Distances perpendicular to this line are retained, distances
+parallel to it are scaled as:
+<BLOCKQUOTE>
+  <I>x' = release_x + (release_y - y)/release_y * ( x - release_x )</I><BR>
+  <I>y' = y</I><BR CLEAR=ALL>
+</BLOCKQUOTE>
+<H3>
   <IMG SRC="cvrecticon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">
   <IMG SRC="cvellipseicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The
-  rectangle/ellipse tool
+  <A NAME="rectangle">rectangle</A>/ellipse tools
 </H3>
 <P>
 By default this produces a rectangle, single-clicking on the tool palette
@@ -406,7 +463,7 @@ should be rotated.
 <H3>
   <IMG SRC="cvpolyicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">
   <IMG SRC="cvstaricon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The polygon/star
-  tool
+  tools
 </H3>
 <P>
 By default this draws a regular polygon, but by double clicking on the button

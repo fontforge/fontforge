@@ -38,9 +38,11 @@ return;
 
     for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
 	for ( sp=spl->first ;; ) {
-	    sp->me.x     = x_vanish + (y_vanish - sp->me.y    )/y_vanish * (sp->me.x     - x_vanish);
-	    sp->nextcp.x = x_vanish + (y_vanish - sp->nextcp.y)/y_vanish * (sp->nextcp.x - x_vanish);
-	    sp->prevcp.x = x_vanish + (y_vanish - sp->prevcp.y)/y_vanish * (sp->prevcp.x - x_vanish);
+	    if ( sp->selected ) {
+		sp->me.x     = x_vanish + (y_vanish - sp->me.y    )/y_vanish * (sp->me.x     - x_vanish);
+		sp->nextcp.x = x_vanish + (y_vanish - sp->nextcp.y)/y_vanish * (sp->nextcp.x - x_vanish);
+		sp->prevcp.x = x_vanish + (y_vanish - sp->prevcp.y)/y_vanish * (sp->prevcp.x - x_vanish);
+	    }
 	    if ( sp->next==NULL )
 	break;
 	    sp = sp->next->to;
@@ -49,7 +51,8 @@ return;
 	}
 	first = NULL;
 	for ( s = spl->first->next; s!=NULL && s!=first ; s=s->to->next ) {
-	    SplineRefigure(s);
+	    if ( s->from->selected || s->to->selected )
+		SplineRefigure(s);
 	    if ( first==NULL ) first = s;
 	}
     }

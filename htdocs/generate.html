@@ -2,9 +2,9 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 28-May-2004 -->
-  <LINK REL="icon" href="ffanvil16.png">
+  <!-- AP: Last modified: 9-Aug-2004 -->
   <TITLE>Generate Font Dialog</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
@@ -213,21 +213,24 @@ Not all are enabled at all times.
   <LI>
     [] Save Colors -- Save the glyph colors in the
     '<A HREF="non-standard.html#PfEd">PfEd</A>' table as well.
+  <LI>
+    [] Output Glyph Map -- Output a file (with extension .g2n) mapping TrueType
+    (OpenType) glyph IDs to glyphnames (and possibly to unicode values)
 </UL>
 <P>
 TTF (and Open Type) fonts are usually generated in Unicode encoding, there
-will also be a tiny macintosh encoding of whatever bits of MacRoman fit in
-the first 256 glyphs (and a macintosh copy of the unicode encoding) -- the
-exceptions are: symbol fonts will use the symbol encoding, KSC5601 and Wansung
-fonts will use Wansung, Johab fonts will use johab, JIS208 and SJIS fonts
-will use SJIS, Big5 will use big5 encoding. Fonts with a "Full Unicode" encoding
-will have both a 2 byte unicode encoding table and a 4 byte table. OpenType
-CID keyed fonts will be saved with Unicode encoding.
+will also be a tiny macintosh encoding of MacRoman (and a macintosh copy
+of the unicode encoding) -- the exceptions are: symbol fonts will use the
+symbol encoding, KSC5601 and Wansung fonts will use Wansung, Johab fonts
+will use johab, JIS208 and SJIS fonts will use SJIS, Big5 will use big5 encoding.
+Fonts with a "Full Unicode" encoding will have both a 2 byte unicode encoding
+table and a 4 byte table. OpenType CID keyed fonts will be saved with Unicode
+encoding.
 <P>
 Postscript fonts are generated in whatever encoding the font is using (except
 if you take a two byte encoding and generate a Type1 font (rather than a
-Type0) then only the first few characters will be encoded). Type0 does not
-support a full Unicode (4 byte) encoding.
+Type0) then only the first few (256) characters will be encoded). Type0 does
+not support a full Unicode (4 byte) encoding.
 <P>
 PS CID (and OpenType CID in the CFF) are saved with no encoding. The encodings
 live in separate cmap files which are available from
@@ -247,7 +250,7 @@ dictionaries (If someone actually wants this let me know, it can be done,
 but I get the impression that nobody uses this any more).
 <P>
 On Mac OS/X, when generating a resource font containing a postscript font
-then the fontname textfield will not be present (as the filename is determined
+then the filename textfield will not be present (as the filename is determined
 by the fontname). You can still select a directory however.
 <P>
 The bitmap sizes must all be present in the font database. AntiAliased fonts
@@ -256,10 +259,12 @@ can be indicated by following the pixelsize by "@&lt;depth&gt;" (ie. "@8").
 If you are generating a bdf font then you will be prompted for a resolution
 later.
 <P>
-If you generate a TrueType or OpenType font without the Apple mode set then
-FontForge will generate <A HREF="gposgsub.html">GPOS, GSUB, and GDEF
-tables</A>. These contain kerning, ligature information, arabic forms data,
-anchor points, etc.
+If you generate a TrueType or OpenType font with the OpenType mode set (note:
+the term "OpenType" means two things, a truetype wrapper around a postscript
+font, or a set of tables containing typographic information -- here the OpenType
+mode refers to the typographic tables) then FontForge will generate
+<A HREF="gposgsub.html">GPOS, GSUB, and GDEF tables</A>. These contain kerning,
+ligature information, arabic forms data, anchor points, etc.
 <P>
 Apple does not support these OpenType layout tables. If you set Apple mode
 <A HREF="gposgsub.html#AAT">'kern', 'opbd', 'morx', 'feat', 'lcar' and 'prop'

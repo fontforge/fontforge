@@ -861,7 +861,7 @@ return;			/* Not available in order2 spline mode */
 	    event->u.mouse.state |= (1<<(7+event->u.mouse.button));
 	}
 	if ( event->u.mouse.clicks>=2 &&
-		(pos/2 == cvt_scale/2 || pos/2 == cvt_rotate/2))
+		(pos/2 == cvt_scale/2 || pos/2 == cvt_rotate/2 || pos == cvt_3d_rotate ))
 	    CVDoTransform(cv,pos);
     } else if ( event->type == et_mousemove ) {
 	if ( cv->pressed_tool==cvt_none && pos!=cvt_none )
