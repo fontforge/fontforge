@@ -873,9 +873,9 @@ void GWidgetCreateInsChar(void) {
 	{ GRadioCreate, {{ 127, 68 }, NULL, 'K', 0, 0, 0, INSCHR_KuTen, &labels[5], NULL, gg_visible | gg_pos_use0 }},
 	{ GButtonCreate, {{ 73, 93, 50 }, NULL, 'P', 0, 0, 0, INSCHR_Prev, &labels[6], NULL, gg_visible | gg_pos_use0 }},
 	{ GButtonCreate, {{ 137, 93, 50 }, NULL, 'N', 0, 0, 0, INSCHR_Next, &labels[7], NULL, gg_visible | gg_pos_use0 }},
-	{ GButtonCreate, {{ 200-3, 6-3, 50+6 }, NULL, 'I', 0, 0, 0, INSCHR_Insert, &labels[8], NULL, gg_visible | gg_enabled | gg_but_default | gg_pos_use0 }},
-	{ GButtonCreate, {{ 200, 36, 50 }, NULL, 'l', 0, 0, 0, INSCHR_Close, &labels[9], NULL, gg_visible | gg_enabled | gg_but_cancel | gg_pos_use0 }},
-	{ GButtonCreate, {{ 200, 64, 50 }, NULL, 'S', 0, 0, 0, INSCHR_Show, &labels[10], NULL, gg_visible | gg_pos_use0 }},
+	{ GButtonCreate, {{ 196-3, 6-3, 50+6 }, NULL, 'I', 0, 0, 0, INSCHR_Insert, &labels[8], NULL, gg_visible | gg_enabled | gg_but_default | gg_pos_use0 }},
+	{ GButtonCreate, {{ 196, 36, 50 }, NULL, 'l', 0, 0, 0, INSCHR_Close, &labels[9], NULL, gg_visible | gg_enabled | gg_but_cancel | gg_pos_use0 }},
+	{ GButtonCreate, {{ 196, 64, 50 }, NULL, 'S', 0, 0, 0, INSCHR_Show, &labels[10], NULL, gg_visible | gg_pos_use0 }},
 	{ NULL }};
     GRect pos;
     GWindowAttrs wattrs;
