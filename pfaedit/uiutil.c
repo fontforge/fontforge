@@ -342,6 +342,11 @@ return;
 	free(temp);
     }
 #endif
+#if __Mac
+    if ( strcmp(browser,"open")==0 )
+	/* open doesn't want "file:" prepended */;
+    else
+#endif
     if ( strstr(fullspec,":/")==NULL ) {
 	char *t1 = galloc(strlen(fullspec)+strlen("file:")+20);
 #if __CygWin
