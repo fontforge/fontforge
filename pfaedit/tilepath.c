@@ -26,6 +26,7 @@
  */
 #include "pfaeditui.h"
 #include <math.h>
+#include <gkeysym.h>
 
 #ifdef PFAEDIT_CONFIG_TILEPATH
 /* Given a path and a splineset */
@@ -542,6 +543,9 @@ static void AdjustSplineSet(TD *td) {
     Spline *spline, *s;
     SplinePoint *lastsp, *nextsp, *sp;
 
+    if ( td->result!=NULL )
+	for ( last=td->result ; last->next!=NULL; last = last->next );
+
     for ( spl=td->tileset; spl!=NULL; spl=spl->next ) {
 	new = chunkalloc(sizeof(SplineSet));
 	if ( last==NULL )
@@ -692,12 +696,10 @@ static int td_e_h(GWindow gw, GEvent *event) {
 	struct tiledlg *d = GDrawGetUserData(gw);
 	d->done = d->cancelled = true;
     } else if ( event->type==et_char ) {
-#if 0
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("fontinfo.html");
+	    help("tilepath.html");
 return( true );
 	}
-#endif
 return( false );
     }
 return( true );
