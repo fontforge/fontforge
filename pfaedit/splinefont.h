@@ -601,6 +601,7 @@ extern int SFMatchEncoding(SplineFont *sf,SplineFont *target);
 extern char *SFGetModifiers(SplineFont *sf);
 extern void SFSetFontName(SplineFont *sf, char *family, char *mods, char *full);
 extern void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes);
+extern void ttfdumpbitmapscaling(SplineFont *sf,struct alltabs *at,int32 *sizes);
 
 extern int RealNear(real a,real b);
 extern int RealNearish(real a,real b);

@@ -1030,7 +1030,9 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 	    path,sf->charcnt,1);
     free(path);
     /*GProgressEnableStop(false);*/
-    if ( oldformatstate!=ff_none || oldbitmapstate==bf_sfnt_dfont ) {
+    if ( oldformatstate!=ff_none ||
+	    oldbitmapstate==bf_sfnt_dfont ||
+	    oldbitmapstate==bf_ttf ) {
 	int oerr = 0;
 	switch ( oldformatstate ) {
 	  case ff_pfa: case ff_pfb: case ff_ptype3: case ff_ptype0: case ff_cid:
@@ -1045,9 +1047,16 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 	    oerr = !WriteMacPSFont(newname,sf,oldformatstate);
 	  break;
 	  case ff_ttfmacbin: case ff_ttfdfont: case ff_otfdfont: case ff_otfciddfont:
-	  case ff_none:		/* only if bitmaps, an sfnt wrapper for bitmaps */
 	    oerr = !WriteMacTTFFont(newname,sf,oldformatstate,sizes,
 		    oldbitmapstate,flags);
+	  break;
+	  case ff_none:		/* only if bitmaps, an sfnt wrapper for bitmaps */
+	    if ( oldbitmapstate==bf_sfnt_dfont )
+		oerr = !WriteMacTTFFont(newname,sf,oldformatstate,sizes,
+			oldbitmapstate,flags);
+	    else if ( oldbitmapstate==bf_ttf )
+		oerr = !WriteTTFFont(newname,sf,oldformatstate,sizes,oldbitmapstate,
+		    flags);
 	  break;
 	}
 	if ( oerr ) {
@@ -1478,8 +1487,10 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	list = GGadgetGetList(d->bmptype,&len);
 	temp = d->sf->cidmaster ? d->sf->cidmaster : d->sf;
 	if ( format==ff_none ) {
-	    if ( temp->bitmaps!=NULL )
+	    if ( temp->bitmaps!=NULL ) {
 		list[bf_sfnt_dfont]->disabled = false;
+		list[bf_ttf]->disabled = false;
+	    }
 	    BitmapName(d);
 return( true );
 	}
@@ -1523,7 +1534,7 @@ return( true );
 	    if ( format==ff_pfbmacbin )
 		GGadgetSelectOneListItem(d->bmptype,bf_nfntmacbin);
 	    else if ( bf==bf_nfntmacbin || bf==bf_nfntdfont )
-	    list[bf_ttf]->disabled = true;
+		list[bf_ttf]->disabled = true;
 	} else {
 	    list[bf_ttf]->disabled = false;
 	    if ( bf==bf_none )
@@ -1567,6 +1578,8 @@ static int GFD_BitmapFormat(GGadget *g, GEvent *e) {
 	BitmapName(d);
 	if ( bf==bf_sfnt_dfont )
 	    GGadgetSetChecked(d->ttfapple,true);
+	else if ( bf==bf_ttf )
+	    GGadgetSetChecked(d->ttfapple,false);
     }
 return( true );
 }
@@ -1832,8 +1845,6 @@ return( 0 );
 	bitmaptypes[i].disabled = false;
     }
     old = oldbitmapstate;
-    if ( ofs==ff_none && old==bf_ttf )
-	old = bf_bdf;
     if ( family ) {
 	if ( old==bf_bdf || old==bf_fon ) {
 	    if ( ofs==ff_otfdfont || ofs==ff_otfciddfont || ofs==ff_ttfdfont )
@@ -1860,8 +1871,6 @@ return( 0 );
 	bitmaptypes[bf_fon].disabled = true;
     } else if ( ofs!=ff_none )
 	bitmaptypes[bf_sfnt_dfont].disabled = true;
-    if ( ofs==ff_none )
-	bitmaptypes[bf_ttf].disabled = true;
     bitmaptypes[old].selected = true;
     gcd[8].gd.label = &bitmaptypes[old];
     gcd[8].gd.handle_controlevent = GFD_BitmapFormat;

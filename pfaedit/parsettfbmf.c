@@ -718,26 +718,13 @@ struct indexarray {
     struct indexarray *next;
 };
 
-static struct bitmapSizeTable *ttfdumpstrikelocs(FILE *bloc,FILE *bdat,BDFFont *bdf) {
-    struct bitmapSizeTable *size = gcalloc(1,sizeof(struct bitmapSizeTable));
-    struct indexarray *cur, *last=NULL, *head=NULL;
-    int i,j, final,cnt, first;
-    FILE *subtables = tmpfile();
-    struct mymets met;
-    int32 pos = ftell(bloc), startofsubtables, base;
-    BDFChar *bc, *bc2;
+static void FillLineMetrics(struct bitmapSizeTable *size,BDFFont *bdf) {
+    int i, first;
+    BDFChar *bc;
 
-    for ( i=0; i<bdf->charcnt && (bdf->chars[i]==NULL || bdf->chars[i]->sc->ttf_glyph==-1); ++i );
-    for ( j=bdf->charcnt-1; j>=0 && (bdf->chars[j]==NULL || bdf->chars[j]->sc->ttf_glyph==-1); --j );
-    if ( j==-1 ) {
-	GDrawIError("No characters to output in strikes");
-return(NULL);
-    }
-    size->flags = 0x01;		/* horizontal */
-    size->bitdepth = BDFDepth(bdf);
-    size->ppemX = size->ppemY = bdf->ascent+bdf->descent;
-    size->endGlyph = bdf->chars[j]->sc->ttf_glyph;
-    size->startGlyph = bdf->chars[i]->sc->ttf_glyph;
+    memset(&size->hori,0,sizeof(struct sbitLineMetrics));
+    memset(&size->vert,0,sizeof(struct sbitLineMetrics));
+
     /* I shall ignore vertical metrics */
     size->hori.caretRise = 1; /* other caret fields may be 0 */
     size->vert.caretRise = 1; /* other caret fields may be 0 */
@@ -762,7 +749,6 @@ return(NULL);
 	    if ( bc->ymax > size->hori.maxbeforebl ) size->hori.maxbeforebl = bc->ymax;
 	}
     }
-    size->subtableoffset = pos;
 
     /* There are some very cryptic pictures supposed to document the meaning */
     /*  of the metrics fields. MS and Apple use the same picture. The data */
@@ -779,6 +765,30 @@ return(NULL);
     size->vert.descender = bdf->pixelsize/2;
     size->vert.widthMax = bdf->pixelsize;
 #endif
+}
+
+static struct bitmapSizeTable *ttfdumpstrikelocs(FILE *bloc,FILE *bdat,BDFFont *bdf) {
+    struct bitmapSizeTable *size = gcalloc(1,sizeof(struct bitmapSizeTable));
+    struct indexarray *cur, *last=NULL, *head=NULL;
+    int i,j, final,cnt;
+    FILE *subtables = tmpfile();
+    struct mymets met;
+    int32 pos = ftell(bloc), startofsubtables, base;
+    BDFChar *bc, *bc2;
+
+    for ( i=0; i<bdf->charcnt && (bdf->chars[i]==NULL || bdf->chars[i]->sc->ttf_glyph==-1); ++i );
+    for ( j=bdf->charcnt-1; j>=0 && (bdf->chars[j]==NULL || bdf->chars[j]->sc->ttf_glyph==-1); --j );
+    if ( j==-1 ) {
+	GDrawIError("No characters to output in strikes");
+return(NULL);
+    }
+    size->flags = 0x01;		/* horizontal */
+    size->bitdepth = BDFDepth(bdf);
+    size->ppemX = size->ppemY = bdf->ascent+bdf->descent;
+    size->endGlyph = bdf->chars[j]->sc->ttf_glyph;
+    size->startGlyph = bdf->chars[i]->sc->ttf_glyph;
+    size->subtableoffset = pos;
+    FillLineMetrics(size,bdf);
 
     /* First figure out sequences of characters which all have about the same metrics */
     /* then we dump out the subtables (to temp file) */
@@ -1004,4 +1014,100 @@ void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes) {
 	putshort(at->bloc,0);
 
     GProgressChangeLine1R(_STR_SavingTTFont);
+}
+
+static BDFFont *BDFSelect(SplineFont *sf,int32 *sizes,int wanted ) {
+    int i;
+    int best = -1;
+    BDFFont *bdf;
+
+    if ( wanted<=(sizes[0]&0xffff) ) {
+	best = sizes[0]&0xffff;
+	if ( best==wanted )
+return(NULL );
+    } else {
+	for ( i=1; sizes[i]!=0 && wanted>(sizes[i]&0xffff); ++i );
+	best = sizes[i-1]&0xffff;
+	if ( best==wanted )	/* Exact match, no scaling needed */
+return( NULL );
+    }
+
+    for ( bdf=sf->bitmaps; bdf!=NULL && bdf->pixelsize!=best; bdf = bdf->next );
+return( bdf );
+}
+
+void ttfdumpbitmapscaling(SplineFont *sf,struct alltabs *at,int32 *sizes) {
+    int i, cnt;
+    BDFFont *bdf;
+    static int expected_sizes[] = { 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
+	    19, 20, 21, 22, 23, 24, 25, 30, 32, 33, 40, 0 };
+    struct bitmapSizeTable size;
+
+/* I only generate this table if I'm trying to generate an ms bitmap-only */
+/*  ttf file. Now MS doesn't really support bitmap-only fonts, so we kludge */
+/*  we make the loca table point to a bunch of space glyphs. But to keep */
+/*  the rasterizer from generating spaces, we put in a bunch of scaling */
+/*  instructions so that for all expected bitmap sizes we might meet */
+/*  we either get a bitmap strike or a scaled strike */
+/* The sizes above were chosen to get the pixel sizes for */
+/*	8,9,10,11,12,14,16,18,24 are present at 72,75,96,100,120 dpi */
+/* (standard pointsizes) (Mac, X & Win standard screen dpis) */
+
+    /* first count the number of scaled strikes */
+    cnt = 0;
+    for ( i=0; expected_sizes[i]!=0; ++i ) {
+	if ( BDFSelect(sf,sizes,expected_sizes[i])!=NULL )
+	    ++cnt;
+    }
+
+    at->ebsc = tmpfile();
+    putlong( at->ebsc, 0x20000 );
+    putlong( at->ebsc, cnt );
+    for ( i=0; expected_sizes[i]!=0; ++i ) {
+	if ( (bdf=BDFSelect(sf,sizes,expected_sizes[i]))!=NULL ) {
+	    FillLineMetrics(&size,bdf);
+	    /* Horizontal line metrics */
+	     putc((int) rint(size.hori.ascender*expected_sizes[i]/bdf->pixelsize),at->ebsc);
+	     putc((int) rint(size.hori.descender*expected_sizes[i]/bdf->pixelsize),at->ebsc);
+	     putc((int) rint(size.hori.widthMax*expected_sizes[i]/bdf->pixelsize),at->ebsc);
+	     putc(size.hori.caretRise,at->ebsc);
+	     putc(size.hori.caretRun,at->ebsc);
+	     putc(size.hori.caretOff,at->ebsc);
+	     putc((int) rint(size.hori.minoriginsb*expected_sizes[i]/bdf->pixelsize),at->ebsc);
+	     putc((int) rint(size.hori.minAdvancesb*expected_sizes[i]/bdf->pixelsize),at->ebsc);
+	     putc((int) rint(size.hori.maxbeforebl*expected_sizes[i]/bdf->pixelsize),at->ebsc);
+	     putc((int) rint(size.hori.minafterbl*expected_sizes[i]/bdf->pixelsize),at->ebsc);
+	     putc(0,at->ebsc);
+	     putc(0,at->ebsc);
+	    /* Vertical line metrics */
+#if 1
+	     putc((int) rint(size.hori.ascender*expected_sizes[i]/bdf->pixelsize),at->ebsc);
+	     putc((int) rint(size.hori.descender*expected_sizes[i]/bdf->pixelsize),at->ebsc);
+#else
+	     putc((int) rint(size.vert.ascender*expected_sizes[i]/bdf->pixelsize),at->ebsc);
+	     putc((int) rint(size.vert.descender*expected_sizes[i]/bdf->pixelsize),at->ebsc);
+#endif
+	     putc((int) rint(size.vert.widthMax*expected_sizes[i]/bdf->pixelsize),at->ebsc);
+	     putc(size.vert.caretRise,at->ebsc);
+	     putc(size.vert.caretRun,at->ebsc);
+	     putc(size.vert.caretOff,at->ebsc);
+	     putc((int) rint(size.vert.minoriginsb*expected_sizes[i]/bdf->pixelsize),at->ebsc);
+	     putc((int) rint(size.vert.minAdvancesb*expected_sizes[i]/bdf->pixelsize),at->ebsc);
+	     putc((int) rint(size.vert.maxbeforebl*expected_sizes[i]/bdf->pixelsize),at->ebsc);
+	     putc((int) rint(size.vert.minafterbl*expected_sizes[i]/bdf->pixelsize),at->ebsc);
+	     putc(0,at->ebsc);
+	     putc(0,at->ebsc);
+	    /* Actual scaling info */
+	    putc( expected_sizes[i], at->ebsc);
+	    putc( expected_sizes[i], at->ebsc);
+	    putc( bdf->pixelsize, at->ebsc);
+	    putc( bdf->pixelsize, at->ebsc);
+	}
+    }
+
+    at->ebsclen = ftell(at->ebsc);
+    if ( (at->ebsclen&1)!=0 )
+	putc(0,at->ebsc);
+    if ( ftell(at->ebsc)&2 )
+	putshort(at->ebsc,0);
 }

@@ -3303,6 +3303,29 @@ return;
     ttfdumpmetrics(sc,gi,&bb);
 }
 
+static int AssignTTFGlyph(SplineFont *sf,int32 *bsizes) {
+    int i, tg, j;
+    BDFFont *bdf;
+
+    tg = 3;
+    /* The first three glyphs are magic, glyph 0 might appear in the font */
+    /*  but glyph 1,2 never do (they correspond to NUL and CR respectively) */
+    /*  We generate them automagically */
+
+    for ( bdf = sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	for ( j=0; bsizes[j]!=0 && ((bsizes[j]&0xffff)!=bdf->pixelsize || (bsizes[j]>>16)!=BDFDepth(bdf)); ++j );
+	if ( bsizes[j]==0 )
+    continue;
+	for ( i=0; i<bdf->charcnt; ++i ) if ( !IsntBDFChar(bdf->chars[i]) )
+	    sf->chars[i]->ttf_glyph = 0;
+    }
+    /* If we are to use glyph 0, then it will already have the right ttf_glyph*/
+    /*  (0), while if we aren't to use it, it again will be right (-1) */
+    for ( i=1; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph==0 )
+	sf->chars[i]->ttf_glyph = tg++;
+return( tg );
+}
+
 static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     int i, cnt;
     RefChar *refs;
@@ -3314,12 +3337,16 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     GProgressNextStage();
     gi->fudge = (sf->ascent+sf->descent)/500;	/* fudge factor for hint matches */
 
-    i=0, cnt=0;
-    if ( SCIsNotdef(sf->chars[0],fixed) )
-	sf->chars[i++]->ttf_glyph = cnt++;
-    for ( cnt=3; i<sf->charcnt; ++i )
-	if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]==SCDuplicate(sf->chars[i]))
-	    sf->chars[i]->ttf_glyph = cnt++;
+    if ( gi->onlybitmaps )
+	cnt = AssignTTFGlyph(sf,gi->bsizes);
+    else {
+	i=0, cnt=0;
+	if ( SCIsNotdef(sf->chars[0],fixed) )
+	    sf->chars[i++]->ttf_glyph = cnt++;
+	for ( cnt=3; i<sf->charcnt; ++i )
+	    if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]==SCDuplicate(sf->chars[i]))
+		sf->chars[i]->ttf_glyph = cnt++;
+    }
 
     gi->maxp->numGlyphs = cnt;
     gi->loca = galloc((gi->maxp->numGlyphs+1)*sizeof(uint32));
@@ -3331,7 +3358,7 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     FigureFullMetricsEnd(sf,gi);
 
     i = 0;
-    if ( SCIsNotdef(sf->chars[0],fixed) )
+    if ( SCIsNotdef(sf->chars[0],fixed) && !gi->onlybitmaps )
 	dumpglyph(sf->chars[i++],gi);
     else
 	dumpmissingglyph(sf,gi,fixed);
@@ -3343,11 +3370,16 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     dumpblankglyph(gi,sf,fixed);	/* to be a couple of blank glyphs at the start*/
     /* One is for NUL and one for CR I think... but why? */
     for ( cnt=0; i<sf->charcnt; ++i ) {
-	if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]==SCDuplicate(sf->chars[i])) {
-	    if ( (refs = SCCanonicalRefs(sf->chars[i],false))!=NULL )
-		dumpcomposite(sf->chars[i],refs,gi);
-	    else
-		dumpglyph(sf->chars[i],gi);
+	if ( gi->onlybitmaps ) {
+	    if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph>0 )
+		dumpspace(sf->chars[i],gi);
+	} else {
+	    if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]==SCDuplicate(sf->chars[i])) {
+		if ( (refs = SCCanonicalRefs(sf->chars[i],false))!=NULL )
+		    dumpcomposite(sf->chars[i],refs,gi);
+		else
+		    dumpglyph(sf->chars[i],gi);
+	    }
 	}
 	if ( !GProgressNext())
 return( false );
@@ -6756,28 +6788,6 @@ static int32 filecheck(FILE *file) {
     }
 return( sum );
 }
-
-static void AssignTTFGlyph(SplineFont *sf,int32 *bsizes) {
-    int i, tg, j;
-    BDFFont *bdf;
-
-    tg = 3;
-    /* The first three glyphs are magic, glyph 0 might appear in the font */
-    /*  but glyph 1,2 never do (they correspond to NUL and CR respectively) */
-    /*  We generate them automagically */
-
-    for ( bdf = sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-	for ( j=0; bsizes[j]!=0 && ((bsizes[j]&0xffff)!=bdf->pixelsize || (bsizes[j]>>16)!=BDFDepth(bdf)); ++j );
-	if ( bsizes[j]==0 )
-    continue;
-	for ( i=0; i<bdf->charcnt; ++i ) if ( !IsntBDFChar(bdf->chars[i]) )
-	    sf->chars[i]->ttf_glyph = 0;
-    }
-    /* If we are to use glyph 0, then it will already have the right ttf_glyph*/
-    /*  (0), while if we aren't to use it, it again will be right (-1) */
-    for ( i=1; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph==0 )
-	sf->chars[i]->ttf_glyph = tg++;
-}
     
 static void AbortTTF(struct alltabs *at, SplineFont *sf) {
     int i;
@@ -6880,12 +6890,14 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
     }
     at->applemode = (flags&ttf_flag_applemode)?1:0;
     at->msbitmaps = bsizes!=NULL && !at->applemode;
+    at->gi.onlybitmaps = format==ff_none;
     at->gi.flags = flags;
+    at->gi.bsizes = bsizes;
     at->gi.fixed_width = CIDOneWidth(sf);
     at->isotf = format==ff_otf || format==ff_otfcid;
 
     at->maxp.version = 0x00010000;
-    if ( format==ff_otf || format==ff_otfcid || format==ff_none )
+    if ( format==ff_otf || format==ff_otfcid || (format==ff_none && at->applemode) )
 	at->maxp.version = 0x00005000;
     at->maxp.maxnumcomponents = 1;
     at->maxp.maxcomponentdepth = 1;
@@ -6898,13 +6910,16 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
 	aborted = !dumptype2glyphs(sf,at);
     else if ( format==ff_otfcid )
 	aborted = !dumpcidglyphs(sf,at);
-    else if ( format==ff_none ) {
+    else if ( format==ff_none && at->applemode ) {
 	AssignTTFGlyph(sf,bsizes);
 	aborted = !dumpcffhmtx(at,sf,true);
     } else
+	/* if format==ff_none the following will put out lots of space glyphs */
 	aborted = !dumpglyphs(sf,&at->gi);
     if ( bsizes!=NULL && !aborted )
 	ttfdumpbitmap(sf,at,bsizes);
+    if ( bsizes!=NULL && format==ff_none && at->msbitmaps )
+	ttfdumpbitmapscaling(sf,at,bsizes);
     if ( aborted ) {
 	AbortTTF(at,sf);
 return( false );
@@ -6920,7 +6935,7 @@ return( false );
     dumpnames(at,sf,format);
     if ( at->gi.glyph_len<0x20000 )
 	at->head.locais32 = 0;
-    if ( format!=ff_otf && format!=ff_otfcid && format!=ff_none )
+    if ( format!=ff_otf && format!=ff_otfcid && (format!=ff_none || at->msbitmaps) )
 	redoloca(at);
     redohead(at);
     redohhead(at,false);
@@ -6976,6 +6991,14 @@ return( false );
 	pos += ((at->bloclen+3)>>2)<<2;
     }
 
+    if ( at->ebsc!=NULL ) {
+	at->tabdir.tabs[i].tag = CHR('E','B','S','C');
+	at->tabdir.tabs[i].checksum = filecheck(at->ebsc);
+	at->tabdir.tabs[i].offset = pos;
+	at->tabdir.tabs[i++].length = at->ebsclen;
+	pos += ((at->ebsclen+3)>>2)<<2;
+    }
+
     if ( at->gpos!=NULL ) {
 	at->tabdir.tabs[i].tag = CHR('G','P','O','S');
 	at->tabdir.tabs[i].checksum = filecheck(at->gpos);
@@ -7014,7 +7037,7 @@ return( false );
 	pos += ((at->bdatlen+3)>>2)<<2;
     }
 
-    if ( format==ff_none ) {
+    if ( format==ff_none && !at->msbitmaps ) {
 	/* Bitmap only fonts get a bhed table rather than a head */
 	at->tabdir.tabs[i].tag = CHR('b','h','e','d');
 	at->tabdir.tabs[i].checksum = filecheck(at->headf);
@@ -7037,12 +7060,14 @@ return( false );
     at->tabdir.tabs[i++].length = at->cmaplen;
     pos += ((at->cmaplen+3)>>2)<<2;
 
-    if ( format!=ff_otf && format!=ff_otfcid && format!=ff_none ) {
-	at->tabdir.tabs[i].tag = CHR('c','v','t',' ');
-	at->tabdir.tabs[i].checksum = filecheck(at->cvtf);
-	at->tabdir.tabs[i].offset = pos;
-	at->tabdir.tabs[i++].length = at->cvtlen;
-	pos += ((at->cvtlen+3)>>2)<<2;
+    if ( format!=ff_otf && format!=ff_otfcid && (format!=ff_none || at->msbitmaps) ) {
+	if ( format!=ff_none ) {
+	    at->tabdir.tabs[i].tag = CHR('c','v','t',' ');
+	    at->tabdir.tabs[i].checksum = filecheck(at->cvtf);
+	    at->tabdir.tabs[i].offset = pos;
+	    at->tabdir.tabs[i++].length = at->cvtlen;
+	    pos += ((at->cvtlen+3)>>2)<<2;
+	}
 
 	if ( at->gi.fpgmf!=NULL ) {
 	    at->tabdir.tabs[i].tag = CHR('f','p','g','m');
@@ -7067,7 +7092,7 @@ return( false );
 	pos += ((at->gi.glyph_len+3)>>2)<<2;
     }
 
-    if ( format!=ff_none ) {
+    if ( format!=ff_none || at->msbitmaps ) {
 	at->tabdir.tabs[i].tag = CHR('h','e','a','d');
 	at->tabdir.tabs[i].checksum = filecheck(at->headf);
 	at->tabdir.tabs[i].offset = pos;
@@ -7095,7 +7120,7 @@ return( false );
 	pos += ((at->kernlen+3)>>2)<<2;
     }
 
-    if ( format!=ff_otf && format!=ff_otfcid  && format!=ff_none ) {
+    if ( format!=ff_otf && format!=ff_otfcid  && (format!=ff_none || at->msbitmaps) ) {
 	at->tabdir.tabs[i].tag = CHR('l','o','c','a');
 	at->tabdir.tabs[i].checksum = filecheck(at->loca);
 	at->tabdir.tabs[i].offset = pos;
@@ -7170,6 +7195,8 @@ static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
 	if ( !ttfcopyfile(ttf,at->bdat,at->tabdir.tabs[i++].offset)) at->error = true;
 	if ( !ttfcopyfile(ttf,at->bloc,at->tabdir.tabs[i++].offset)) at->error = true;
     }
+    if ( at->ebsc!=NULL )
+	if ( !ttfcopyfile(ttf,at->ebsc,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( at->gpos!=NULL )
 	if ( !ttfcopyfile(ttf,at->gpos,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( at->gsub!=NULL )
@@ -7186,8 +7213,10 @@ static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
 	if ( !ttfcopyfile(ttf,at->bloc,at->tabdir.tabs[i++].offset)) at->error = true;
     }
     if ( !ttfcopyfile(ttf,at->cmap,at->tabdir.tabs[i++].offset)) at->error = true;
-    if ( format!=ff_otf && format!= ff_otfcid && format!=ff_none ) {
-	if ( !ttfcopyfile(ttf,at->cvtf,at->tabdir.tabs[i++].offset)) at->error = true;
+    if ( format!=ff_otf && format!= ff_otfcid && (format!=ff_none || at->msbitmaps) ) {
+	if ( format!=ff_none ) {
+	    if ( !ttfcopyfile(ttf,at->cvtf,at->tabdir.tabs[i++].offset)) at->error = true;
+	}
 	if ( at->gi.fpgmf!=NULL ) {
 	    if ( !ttfcopyfile(ttf,at->gi.fpgmf,at->tabdir.tabs[i++].offset)) at->error = true;
 	}
@@ -7203,7 +7232,7 @@ static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
     if ( !ttfcopyfile(ttf,at->gi.hmtx,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( at->kern!=NULL )
 	if ( !ttfcopyfile(ttf,at->kern,at->tabdir.tabs[i++].offset)) at->error = true;
-    if ( format!=ff_otf && format!=ff_otfcid && format!=ff_none )
+    if ( format!=ff_otf && format!=ff_otfcid && (format!=ff_none || at->msbitmaps) )
 	if ( !ttfcopyfile(ttf,at->loca,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( !ttfcopyfile(ttf,at->maxpf,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( !ttfcopyfile(ttf,at->name,at->tabdir.tabs[i++].offset)) at->error = true;

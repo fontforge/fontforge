@@ -354,6 +354,8 @@ struct glyphinfo {
     int fpgmlen;
     int flags;
     int fixed_width;
+    int32 *bsizes;
+    unsigned int onlybitmaps: 1;
 };
 
 struct vorg {
@@ -421,6 +423,8 @@ struct alltabs {
     int bdatlen;
     FILE *bloc;		/* might be EBLC */
     int bloclen;
+    FILE *ebsc;
+    int ebsclen;
     int defwid, nomwid;
     int sidcnt;
     int lenpos;
