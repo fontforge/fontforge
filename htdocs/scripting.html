@@ -237,6 +237,17 @@ ones)
     call.
 </UL>
 <P>
+The following example will perform an action on all loaded fonts:
+<BLOCKQUOTE>
+  <PRE>file = $firstfont
+while ( file != "" )
+   Open(file)
+   /* Do Stuff */
+   file = $nextfont
+endloop
+</PRE>
+</BLOCKQUOTE>
+<P>
 The built in procedures are very similar to the menu items with the same
 names.
 <DL>
