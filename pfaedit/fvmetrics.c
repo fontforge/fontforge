@@ -31,9 +31,9 @@ typedef struct createwidthdata {
     void *_fv;
     void (*doit)(struct createwidthdata *);
     GWindow gw;
-    double setto;
-    double scale;
-    double increment;
+    real setto;
+    real scale;
+    real increment;
     enum settype { st_set, st_scale, st_incr } type;
     enum widthtype wtype;
 } CreateWidthData;
@@ -51,13 +51,13 @@ static int CW_OK(GGadget *g, GEvent *e) {
 	CreateWidthData *wd = GDrawGetUserData(GGadgetGetWindow(g));
 	if ( GGadgetIsChecked(GWidgetGetControl(wd->gw,CID_Set)) ) {
 	    wd->type = st_set;
-	    wd->setto = GetDouble(wd->gw,CID_SetVal,"Value",&err);
+	    wd->setto = GetReal(wd->gw,CID_SetVal,"Value",&err);
 	} else if ( GGadgetIsChecked(GWidgetGetControl(wd->gw,CID_Incr)) ) {
 	    wd->type = st_incr;
-	    wd->increment = GetDouble(wd->gw,CID_IncrVal,"Increment",&err);
+	    wd->increment = GetReal(wd->gw,CID_IncrVal,"Increment",&err);
 	} else {
 	    wd->type = st_scale;
-	    wd->scale = GetDouble(wd->gw,CID_ScaleVal,"Scale",&err);
+	    wd->scale = GetReal(wd->gw,CID_ScaleVal,"Scale",&err);
 	}
 	(wd->doit)(wd);
     }
@@ -249,7 +249,7 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 }
 
 static void DoChar(SplineChar *sc,CreateWidthData *wd, FontView *fv) {
-    double transform[6];
+    real transform[6];
     DBounds bb;
     int width=0;
 

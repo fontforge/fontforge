@@ -34,6 +34,7 @@
 #include "utype.h"
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <gkeysym.h>
 
 enum { pt_lp, pt_lpr, pt_ghostview, pt_file, pt_unknown=-1 };
 int pagewidth = 595, pageheight=792; 	/* Minimum size for US Letter, A4 paper, should work for either */
@@ -51,10 +52,12 @@ typedef struct printinfo {
     int extrahspace, extravspace;
     FILE *out;
     FILE *fontfile;
+    int cidcnt;
     char psfontname[300];
     unsigned int showvm: 1;
     unsigned int twobyte: 1;
     unsigned int iscjk: 1;
+    unsigned int iscid: 1;
     unsigned int overflow: 1;
     unsigned int done: 1;
     int ypos;
@@ -62,7 +65,7 @@ typedef struct printinfo {
     int chline;		/* High order bits of characters we're outputting */
     int page;
     int lastbase;
-    double xoff, yoff, scale;
+    real xoff, yoff, scale;
     GWindow gw;
     GWindow setup;
     char *printer;
@@ -78,6 +81,61 @@ static struct printdefaults {
 } pdefs[] = { { em_none, pt_fontdisplay }, { em_none, pt_chars }, { em_none, pt_fontsample }};
 /* defaults for print from fontview, charview, metricsview */
 
+static void DumpIdentCMap(PI *pi) {
+    SplineFont *sf = pi->sf;
+    int i, j, k, max;
+
+    max = 0;
+    for ( i=0; i<sf->subfontcnt; ++i )
+	if ( sf->subfonts[i]->charcnt>max ) max = sf->subfonts[i]->charcnt;
+    pi->cidcnt = max;
+
+    fprintf( pi->out, "%%%%BeginResource: CMap (Noop)\n" );
+    fprintf( pi->out, "%%!PS-Adobe-3.0 Resource-CMap\n" );
+    fprintf( pi->out, "%%%%BeginResource: CMap (Noop)\n" );
+    fprintf( pi->out, "%%%%DocumentNeededResources: ProcSet (CIDInit)\n" );
+    fprintf( pi->out, "%%%%IncludeResource: ProcSet (CIDInit)\n" );
+    fprintf( pi->out, "%%%%BeginResource: CMap (Noop)\n" );
+    fprintf( pi->out, "%%%%Title: (Noop %s %s %d)\n", sf->cidregistry, sf->ordering, sf->supplement );
+    fprintf( pi->out, "%%%%EndComments\n" );
+
+    fprintf( pi->out, "/CIDInit /ProcSet findresource begin\n" );
+
+    fprintf( pi->out, "12 dict begin\n" );
+
+    fprintf( pi->out, "begincmap\n" );
+
+    fprintf( pi->out, "/CIDSystemInfo 3 dict dup begin\n" );
+    fprintf( pi->out, "  /Registry (%s) def\n", sf->cidregistry );
+    fprintf( pi->out, "  /Ordering (%s) def\n", sf->ordering );
+    fprintf( pi->out, "  /Supplement %d def\n", sf->supplement );
+    fprintf( pi->out, "end def\n" );
+
+    fprintf( pi->out, "/CMapName /Noop def\n" );
+    fprintf( pi->out, "/CMapVersion 1.0 def\n" );
+    fprintf( pi->out, "/CMapType 1 def\n" );
+
+    fprintf( pi->out, "1 begincodespacerange\n" );
+    fprintf( pi->out, "  <0000> <%04x>\n", ((max+255)&0xffff00)-1 );
+    fprintf( pi->out, "endcodespacerange\n" );
+
+    for ( j=0; j<=max/256; j += 100 ) {
+	k = ( max/256-j > 100 )? 100 : max/256-j;
+	fprintf(pi->out, "%d begincidrange\n", k );
+	for ( i=0; i<k; ++i )
+	    fprintf( pi->out, " <%04x> <%04x> %d\n", (j+i)<<8, ((j+i)<<8)|0xff, (j+i)<<8 );
+	fprintf( pi->out, "endcidrange\n\n" );
+    }
+
+    fprintf( pi->out, "endcmap\n" );
+    fprintf( pi->out, "CMapName currentdict /CMap defineresource pop\n" );
+    fprintf( pi->out, "end\nend\n" );
+
+    fprintf( pi->out, "%%%%EndResource\n" );
+    fprintf( pi->out, "%%%%EOF\n" );
+    fprintf( pi->out, "%%%%EndResource\n" );
+}
+
 static void dump_prologue(PI *pi) {
     time_t now;
     struct passwd *pwd;
@@ -89,7 +147,8 @@ static void dump_prologue(PI *pi) {
     fprintf( pi->out, "%%%%Creator: PfaEdit\n" );
     time(&now);
     fprintf( pi->out, "%%%%CreationDate: %s", ctime(&now) );
-    fprintf( pi->out, "%%%%DocumentData: Clean7Bit\n" );
+    fprintf( pi->out, "%%%%DocumentData: %s\n", !pi->iscid ||pi->fontfile==NULL?
+	    "Clean7Bit":"Binary" );
 /* Can all be commented out if no pwd routines */
     pwd = getpwuid(getuid());
     if ( pwd!=NULL && pwd->pw_gecos!=NULL && *pwd->pw_gecos!='\0' )
@@ -100,7 +159,8 @@ static void dump_prologue(PI *pi) {
 	fprintf( pi->out, "%%%%For: %s\n", pt );
     endpwent();
 /* End pwd section */
-    fprintf( pi->out, "%%%%LanguageLevel: 2\n" );
+    fprintf( pi->out, "%%%%LanguageLevel: %d\n", pi->fontfile==NULL?1:
+	    pi->iscid?3: pi->twobyte?2: 1 );
     fprintf( pi->out, "%%%%Orientation: Portrait\n" );
     fprintf( pi->out, "%%%%Pages: atend\n" );
     if ( pi->pt==pt_fontdisplay ) {
@@ -116,6 +176,8 @@ static void dump_prologue(PI *pi) {
     fprintf( pi->out, "%%%%DocumentNeededResources: font Times-Bold\n" );
     if ( pi->sf->encoding_name == em_unicode ) 
 	fprintf( pi->out, "%%%%DocumentNeededResources: font ZapfDingbats\n" );
+    if ( pi->iscid && pi->fontfile!=NULL )
+	fprintf( pi->out, "%%%%DocumentNeededResources: ProcSet (CIDInit)\n" );
     fprintf( pi->out, "%%%%EndComments\n\n" );
 
     fprintf( pi->out, "%%%%BeginSetup\n" );
@@ -161,36 +223,45 @@ static void dump_prologue(PI *pi) {
 	while ( (ch=getc(pi->fontfile))!=EOF )
 	    putc(ch,pi->out);
 	fprintf( pi->out, "%%%%EndResource\n" );
+	if ( pi->iscid )
+	    DumpIdentCMap(pi);
 	sprintf(pi->psfontname,"%s__%d", pi->sf->fontname, pi->pointsize );
-	fprintf(pi->out,"MyFontDict /%s /%s findfont %d scalefont put\n", pi->psfontname, pi->sf->fontname, pi->pointsize );
+	if ( !pi->iscid )
+	    fprintf(pi->out,"MyFontDict /%s /%s findfont %d scalefont put\n",
+		    pi->psfontname, pi->sf->fontname, pi->pointsize );
+	else
+	    fprintf(pi->out,"MyFontDict /%s /%s--Noop /Noop [ /%s ] composefont %d scalefont put\n",
+		    pi->psfontname, pi->sf->fontname, pi->sf->fontname, pi->pointsize );
 	if ( pi->showvm )
 	    fprintf( pi->out, "vmstatus pop dup VM1 sub (Max VMusage: ) print == flush\n" );
 
-	/* Now see if there are any unencoded characters in the font, and if so */
-	/*  reencode enough fonts to display them all. These will all be 256 char fonts */
-	if ( pi->iscjk )
-	    i = 96*94;
-	else if ( pi->twobyte )
-	    i = 65536;
-	else
-	    i = 256;
-	for ( ; i<pi->sf->charcnt; ++i ) {
-	    if ( SCWorthOutputting(pi->sf->chars[i]) ) {
-		base = i&~0xff;
-		fprintf( pi->out, "MyFontDict /%s-%x__%d /%s-%x /%s%s findfont [\n",
-			pi->sf->fontname, base>>8, pi->pointsize,
-			pi->sf->fontname, base>>8,
-			pi->sf->fontname, pi->twobyte?"Base":"" );
-		for ( j=0; j<0x100 && base+j<pi->sf->charcnt; ++j )
-		    if ( SCWorthOutputting(pi->sf->chars[base+j]))
-			fprintf( pi->out, "\t/%s\n", pi->sf->chars[base+j]->name );
-		    else
+	if ( !pi->iscid ) {
+	    /* Now see if there are any unencoded characters in the font, and if so */
+	    /*  reencode enough fonts to display them all. These will all be 256 char fonts */
+	    if ( pi->iscjk )
+		i = 96*94;
+	    else if ( pi->twobyte )
+		i = 65536;
+	    else
+		i = 256;
+	    for ( ; i<pi->sf->charcnt; ++i ) {
+		if ( SCWorthOutputting(pi->sf->chars[i]) ) {
+		    base = i&~0xff;
+		    fprintf( pi->out, "MyFontDict /%s-%x__%d /%s-%x /%s%s findfont [\n",
+			    pi->sf->fontname, base>>8, pi->pointsize,
+			    pi->sf->fontname, base>>8,
+			    pi->sf->fontname, pi->twobyte?"Base":"" );
+		    for ( j=0; j<0x100 && base+j<pi->sf->charcnt; ++j )
+			if ( SCWorthOutputting(pi->sf->chars[base+j]))
+			    fprintf( pi->out, "\t/%s\n", pi->sf->chars[base+j]->name );
+			else
+			    fprintf( pi->out, "\t/.notdef\n" );
+		    for ( ;j<0x100; ++j )
 			fprintf( pi->out, "\t/.notdef\n" );
-		for ( ;j<0x100; ++j )
-		    fprintf( pi->out, "\t/.notdef\n" );
-		fprintf( pi->out, " ] font_remap definefont %d scalefont put\n",
-			pi->pointsize );
-		i = base+0xff;
+		    fprintf( pi->out, " ] font_remap definefont %d scalefont put\n",
+			    pi->pointsize );
+		    i = base+0xff;
+		}
 	    }
 	}
     }
@@ -208,7 +279,7 @@ return(false);
     GProgressStartIndicatorR(10,_STR_PrintingFont,_STR_PrintingFont,
 	    _STR_GeneratingPostscriptFont,pi->sf->charcnt,1);
     GProgressEnableStop(false);
-    if ( !_WritePSFont(pi->fontfile,pi->sf,pi->twobyte?ff_ptype0:ff_pfa)) {
+    if ( !_WritePSFont(pi->fontfile,pi->sf,pi->iscid?ff_cid:pi->twobyte?ff_ptype0:ff_pfa)) {
 	GProgressEndIndicator();
 	GWidgetErrorR(_STR_FailedGenPost,_STR_FailedGenPost );
 	fclose(pi->fontfile);
@@ -252,7 +323,7 @@ static void startpage(PI *pi ) {
     fprintf(pi->out,"MyFontDict /Times-Bold__12 get setfont\n" );
     fprintf(pi->out,"(Font Display for %s) 193.2 -10.92 n_show\n", pi->sf->fontname);
 
-    if ( pi->iscjk )
+    if ( pi->iscjk || pi->iscid )
 	for ( i=0; i<pi->max; ++i )
 	    fprintf(pi->out,"(%d) %d -54.84 n_show\n", i, 60+(pi->pointsize+pi->extrahspace)*i );
     else
@@ -265,17 +336,29 @@ static int DumpLine(PI *pi) {
     int i=0, line;
 
     /* First find the next line with stuff on it */
-    for ( line = pi->chline ; line<pi->sf->charcnt; line += pi->max ) {
-	for ( i=0; i<pi->max && line+i<pi->sf->charcnt; ++i )
-	    if ( SCWorthOutputting(pi->sf->chars[line+i]) )
+    if ( !pi->iscid ) {
+	for ( line = pi->chline ; line<pi->sf->charcnt; line += pi->max ) {
+	    for ( i=0; i<pi->max && line+i<pi->sf->charcnt; ++i )
+		if ( SCWorthOutputting(pi->sf->chars[line+i]) )
+	    break;
+	    if ( i!=pi->max )
 	break;
-	if ( i!=pi->max )
-    break;
+	}
+    } else {
+	for ( line = pi->chline ; line<pi->cidcnt; line += pi->max ) {
+	    for ( i=0; i<pi->max && line+i<pi->cidcnt; ++i )
+		if ( CIDWorthOutputting(pi->sf,line+i)!= -1 )
+	    break;
+	    if ( i!=pi->max )
+	break;
+	}
     }
-    if ( line+i>=pi->sf->charcnt )		/* Nothing more */
+    if ( line+i>=pi->cidcnt )		/* Nothing more */
 return(0);
 
-    if ( (pi->twobyte && line>=65536) || (pi->iscjk && line>=96*94) || ( !pi->twobyte && line>=256 ) ) {
+    if ( pi->iscid )
+	/* No encoding worries */;
+    else if ( (pi->twobyte && line>=65536) || (pi->iscjk && line>=96*94) || ( !pi->twobyte && line>=256 ) ) {
 	/* Nothing more encoded. Can't use the normal font, must use one of */
 	/*  the funky reencodings we built up at the beginning */
 	if ( pi->lastbase!=(line>>8) ) {
@@ -307,15 +390,21 @@ return(0);
 	if ( pi->iscjk )
 	    fprintf(pi->out,"(%d,%d) 26.88 %d n_show\n",
 		    pi->chline/96 + 1, pi->chline%96, pi->ypos );
+	else if ( pi->iscid )
+	    fprintf(pi->out,"(%d) 26.88 %d n_show\n", pi->chline, pi->ypos );
 	else
 	    fprintf(pi->out,"(%04X) 26.88 %d n_show\n", pi->chline, pi->ypos );
     }
     fprintf(pi->out,"MyFontDict /%s get setfont\n", pi->psfontname );
     for ( i=0; i<pi->max ; ++i ) {
-	if ( i+pi->chline<pi->sf->charcnt && SCWorthOutputting(pi->sf->chars[i+pi->chline])) {
+	if ( i+pi->chline<pi->cidcnt &&
+		    CIDWorthOutputting(pi->sf,i+pi->chline)!=-1) {
 	    if ( pi->overflow ) {
 		fprintf( pi->out, "<%02x> %d %d n_show\n", pi->chline +i-(pi->lastbase<<8),
 			58+26*i, pi->ypos );
+	    } else if ( pi->iscid ) {
+		fprintf( pi->out, "<%04x> %d %d n_show\n", pi->chline +i,
+			58+(pi->extrahspace+pi->pointsize)*i, pi->ypos );
 	    } else if ( pi->iscjk ) {
 		fprintf( pi->out, "<%02x%02X> %d %d n_show\n",
 			(pi->chline+i)/96 + '!', (pi->chline+i)%96 + ' ',
@@ -339,9 +428,16 @@ static void PIFontDisplay(PI *pi) {
     pi->extravspace = pi->pointsize/6;
     pi->extrahspace = pi->pointsize/3;
     pi->max = (pi->pagewidth-100)/(pi->extrahspace+pi->pointsize);
-    if ( pi->max>=16 ) pi->max = 16;
-    else if ( pi->max>=8 ) pi->max = 8;
-    else pi->max = 4;
+    pi->cidcnt = pi->sf->charcnt;
+    if ( pi->iscid ) {
+	if ( pi->max>=20 ) pi->max = 20;
+	else if ( pi->max>=10 ) pi->max = 10;
+	else pi->max = 5;
+    } else {
+	if ( pi->max>=16 ) pi->max = 16;
+	else if ( pi->max>=8 ) pi->max = 8;
+	else pi->max = 4;
+    }
     if ( !PIDownloadFont(pi))
 return;
 
@@ -386,7 +482,7 @@ static void PIDumpSPL(PI *pi,SplinePointList *spl) {
 
 static void SCPrintPage(PI *pi,SplineChar *sc) {
     DBounds b, page;
-    double scalex, scaley;
+    real scalex, scaley;
     RefChar *r;
 
     if ( pi->page!=0 )
@@ -517,7 +613,7 @@ return( 0 );
 }
 
 static unichar_t *PIFindEnd(PI *pi, unichar_t *pt, unichar_t *ept) {
-    double len = 0, max = pi->pagewidth-100, chlen;
+    real len = 0, max = pi->pagewidth-100, chlen;
     SplineChar *sc, *nsc;
     unichar_t *npt;
 
@@ -540,7 +636,7 @@ return( ept );
 }
 
 static int PIFindLen(PI *pi, unichar_t *pt, unichar_t *ept) {
-    double len = 0, chlen;
+    real len = 0, chlen;
     SplineChar *sc, *nsc;
     unichar_t *npt;
 
@@ -564,9 +660,9 @@ return( len );
 static void PIDoCombiners(PI *pi, SplineChar *sc, unichar_t *accents) {
     DBounds bb, rbb;
     SplineChar *asc;
-    double xmove=sc->width*pi->scale, ymove=0;
-    double spacing = (pi->sf->ascent+pi->sf->descent)/25;
-    double xoff, yoff;
+    real xmove=sc->width*pi->scale, ymove=0;
+    real spacing = (pi->sf->ascent+pi->sf->descent)/25;
+    real xoff, yoff;
     int first=true, pos;
 
     SplineCharFindBounds(sc,&bb);
@@ -700,7 +796,7 @@ return;
     pi->extravspace = pi->pointsize/6;
     if ( !PIDownloadFont(pi))
 return;
-    pi->scale = pi->pointsize/(double) (pi->sf->ascent+pi->sf->descent);
+    pi->scale = pi->pointsize/(real) (pi->sf->ascent+pi->sf->descent);
 
     samplestartpage(pi);
     pt = sample;
@@ -792,7 +888,7 @@ return(true);
 	    pgwidth = 516; pgheight = 728;
 	} else {
 	    char *cret = cu_copy(ret), *pt;
-	    double pw,ph, scale;
+	    real pw,ph, scale;
 	    if ( sscanf(cret,"%gx%g",&pw,&ph)!=2 ) {
 		GDrawIError("Bad Pagesize must be a known name or <num>x<num><units>\nWhere <units> is one of pt (points), mm, cm, in" );
 return( true );
@@ -860,8 +956,14 @@ static int pg_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	PI *pi = GDrawGetUserData(gw);
 	pi->done = true;
+    } else if ( event->type==et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    system("netscape http://pfaedit.sf.net/print.html &");
+return( true );
+	}
+return( false );
     }
-return( event->type!=et_char );
+return( true );
 }
 
 static GTextInfo *PrinterList() {
@@ -1312,8 +1414,14 @@ static int e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	PI *pi = GDrawGetUserData(gw);
 	pi->done = true;
+    } else if ( event->type==et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    system("netscape http://pfaedit.sf.net/print.html &");
+return( true );
+	}
+return( false );
     }
-return( event->type!=et_char );
+return( true );
 }
 
 /* English */
@@ -1815,11 +1923,13 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
 	pi.sf = sc->parent;
     else
 	pi.sf = mv->fv->sf;
+    if ( pi.sf->cidmaster!=NULL ) pi.sf = pi.sf->cidmaster;
     pi.twobyte = pi.sf->encoding_name>=e_first2byte;
     pi.iscjk = pi.sf->encoding_name>=e_first2byte && pi.sf->encoding_name!=em_unicode;
+    pi.iscid = pi.sf->subfontcnt!=0;
     pi.pointsize = pdefs[di].pointsize;
     if ( pi.pointsize==0 )
-	pi.pointsize = 20;
+	pi.pointsize = pi.iscid?18:20;		/* 18 fits 20 across, 20 fits 16 */
     PIGetPrinterDefs(&pi);
 
     memset(&wattrs,0,sizeof(wattrs));
@@ -1871,6 +1981,7 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     gcd[2].gd.cid = CID_Sample;
     gcd[2].gd.handle_controlevent = PRT_RadioSet;
     gcd[2].creator = GRadioCreate;
+    if ( pi.iscid ) gcd[2].gd.flags = gg_visible;
 
     if ( pdefs[di].pt==pt_chars && cnt==0 )
 	pdefs[di].pt = (fv!=NULL?pt_fontdisplay:pt_fontsample);

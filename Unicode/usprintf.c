@@ -176,7 +176,10 @@ return;
 	padvalue(state,arg,pt+1,fieldwidth);
       break;
       case 's':
-	if ( state->args[arg].is_short ) {
+	if ( state->args[arg].uval == NULL ) {
+	    static unichar_t null[] = { '<','n','u','l','l','>', '\0' };
+	    padstr(state,arg,null,fieldwidth,precision);
+	} else if ( state->args[arg].is_short ) {
 	    unichar_t *temp = def2u_copy((char *) (state->args[arg].uval));
 	    padstr(state,arg,temp,fieldwidth,precision);
 	    free(temp);
@@ -277,6 +280,7 @@ int u_vsnprintf(unichar_t *str, int len, const unichar_t *format, va_list ap ) {
 		    ++pt;
 		}
 	    }
+	    temp.precision = 0x80000000;
 	    if ( *pt=='.' ) {
 		++pt;
 		if ( *pt=='*' ) {
@@ -289,8 +293,7 @@ int u_vsnprintf(unichar_t *str, int len, const unichar_t *format, va_list ap ) {
 			temp.precision = 10*temp.precision + tovalue(*pt);
 			++pt;
 		    }
-		} else
-		    temp.precision = 0x80000000;
+		}
 	    }
 	    if ( *pt=='h' ) { temp.is_short=true; ++pt; }
 	    else if ( *pt=='l' ) { temp.is_long=true; ++pt; }

@@ -27,7 +27,7 @@
 #include "pfaeditui.h"
 
 static void ProcessKnife(CharView *cv, PressedOn *p) {
-    double dx, dy;
+    real dx, dy;
     SplinePoint *n;
 
     /* If we've already made a cut, don't make another cut too close to it */

@@ -165,7 +165,7 @@ static unichar_t *BVMakeTitles(BitmapView *bv, BDFChar *bc,unichar_t *ubuf) {
     SplineChar *sc;
     BDFFont *bdf = bv->bdf;
 
-    sc = bdf->sf->chars[bc->enc];
+    sc = bc->sc;
     uc_strncpy(ubuf,sc->name,90);
     u_strcat(ubuf,GStringGetResource(_STR_Bvat,NULL));
     sprintf( buffer, "%d", bdf->pixelsize);
@@ -223,6 +223,8 @@ void BVChar(BitmapView *bv, GEvent *event ) {
 	    event->u.chr.keysym == GK_BackSpace ) {
 	/* Menu does delete */
 	BVDoClear(bv);
+    } else if ( event->u.chr.keysym == GK_Help ) {
+	MenuHelp(NULL,NULL,NULL);	/* Menu does F1 */
     } else if ( event->u.chr.keysym == GK_Left ||
 	    event->u.chr.keysym == GK_Up ||
 	    event->u.chr.keysym == GK_Right ||
@@ -614,8 +616,8 @@ static void BVSetWidth(BitmapView *bv, int x) {
 }
 
 static void BVMouseDown(BitmapView *bv, GEvent *event) {
-    int x = floor( (event->u.mouse.x-bv->xoff)/ (double) bv->scale);
-    int y = floor( (bv->height-event->u.mouse.y-bv->yoff)/ (double) bv->scale);
+    int x = floor( (event->u.mouse.x-bv->xoff)/ (real) bv->scale);
+    int y = floor( (bv->height-event->u.mouse.y-bv->yoff)/ (real) bv->scale);
     int ny;
     BDFChar *bc = bv->bc;
     BDFFloat *sel;
@@ -670,8 +672,8 @@ return;
 }
 
 static void BVMouseMove(BitmapView *bv, GEvent *event) {
-    int x = floor( (event->u.mouse.x-bv->xoff)/ (double) bv->scale);
-    int y = floor( (bv->height-event->u.mouse.y-bv->yoff)/ (double) bv->scale);
+    int x = floor( (event->u.mouse.x-bv->xoff)/ (real) bv->scale);
+    int y = floor( (bv->height-event->u.mouse.y-bv->yoff)/ (real) bv->scale);
     int newx, newy;
     int fh = bv->bdf->ascent+bv->bdf->descent;
     BDFChar *bc = bv->bc;
@@ -753,8 +755,8 @@ static void BVSetPoint(BitmapView *bv, int x, int y, void *junk) {
 static void BVMagnify(BitmapView *bv, int midx, int midy, int bigger);
 
 static void BVMouseUp(BitmapView *bv, GEvent *event) {
-    int x = floor( (event->u.mouse.x-bv->xoff)/ (double) bv->scale);
-    int y = floor( (bv->height-event->u.mouse.y-bv->yoff)/ (double) bv->scale);
+    int x = floor( (event->u.mouse.x-bv->xoff)/ (real) bv->scale);
+    int y = floor( (bv->height-event->u.mouse.y-bv->yoff)/ (real) bv->scale);
 
     BVMouseMove(bv,event);
     switch ( bv->active_tool ) {
@@ -902,6 +904,7 @@ return( true );
 #define MID_SelAll	2106
 #define MID_Undo	2109
 #define MID_Redo	2110
+#define MID_RemoveUndoes 2111
 #define MID_GetInfo	2203
 #define MID_AvailBitmaps	2210
 #define MID_RegenBitmaps	2211
@@ -993,8 +996,8 @@ static void BVMenuScale(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     if ( mi->mid == MID_Fit ) {
 	BVFit(bv);
     } else {
-	double midx = (bv->width/2-bv->xoff)/bv->scale;
-	double midy = (bv->height/2-bv->yoff)/bv->scale;
+	real midx = (bv->width/2-bv->xoff)/bv->scale;
+	real midy = (bv->height/2-bv->yoff)/bv->scale;
 	BVMagnify(bv,midx,midy,mi->mid==MID_ZoomOut?-1:1);
     }
 }
@@ -1030,7 +1033,7 @@ static void BVMenuChangePixelSize(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     }
     if ( best!=NULL && bv->bdf!=best ) {
 	bv->bdf = best;
-	bv->scscale = ((double) (best->pixelsize))/(best->sf->ascent+best->sf->descent);
+	bv->scscale = ((real) (best->pixelsize))/(best->sf->ascent+best->sf->descent);
 	BVChangeChar(bv,bv->bc->enc,true);
 	BVShows.lastpixelsize = best->pixelsize;
     }
@@ -1062,6 +1065,12 @@ static void BVRedo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( bv->bc->redoes==NULL )
 return;
     BCDoRedo(bv->bc,bv->fv);
+}
+
+static void BVRemoveUndoes(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
+    UndoesFree(bv->bc->undoes); bv->bc->undoes = NULL;
+    UndoesFree(bv->bc->redoes); bv->bc->redoes = NULL;
 }
 
 static void BVCopy(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1130,6 +1139,18 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
+	  case MID_RegenBitmaps:
+	    mi->ti.disabled = bv->fv->sf->onlybitmaps;
+	  break;
+	}
+    }
+}
+
+static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
 	  case MID_Cut: /*case MID_Copy:*/ case MID_Clear:
 	    /* If nothing is selected, copy copies everything */
 	    mi->ti.disabled = bv->bc->selection==NULL;
@@ -1142,6 +1163,9 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_Redo:
 	    mi->ti.disabled = bv->bc->redoes==NULL;
+	  break;
+	  case MID_RemoveUndoes:
+	    mi->ti.disabled = bv->bc->redoes==NULL && bv->bc->undoes==NULL;
 	  break;
 	}
     }
@@ -1224,6 +1248,8 @@ static GMenuItem edlist[] = {
     { { (unichar_t *) _STR_Clear, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, GK_Delete, 0, NULL, NULL, BVClear, MID_Clear },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Selectall, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'A', ksm_control, NULL, NULL, BVSelectAll, MID_SelAll },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_RemoveUndoes, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'e' }, '\0', ksm_control, NULL, NULL, BVRemoveUndoes, MID_RemoveUndoes },
     { NULL }
 };
 
@@ -1273,7 +1299,7 @@ static GMenuItem vwlist[] = {
 static GMenuItem mblist[] = {
     { { (unichar_t *) _STR_File, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 0, 0, fllist, fllistcheck },
     { { (unichar_t *) _STR_Edit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'E' }, 0, 0, edlist, edlistcheck },
-    { { (unichar_t *) _STR_Element, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, 0, 0, ellist, NULL },
+    { { (unichar_t *) _STR_Element, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, 0, 0, ellist, ellistcheck },
     { { (unichar_t *) _STR_View, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, 0, 0, vwlist, vwlistcheck },
     { { (unichar_t *) _STR_Window, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'W' }, 0, 0, NULL, WindowMenuBuild },
     { { (unichar_t *) _STR_Help, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, 0, 0, helplist, NULL },
@@ -1318,7 +1344,7 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv) {
     bv->showfore = BVShows.showfore;
     bv->showoutline = BVShows.showoutline;
     bv->showgrid = BVShows.showgrid;
-    bv->scscale = ((double) (bdf->pixelsize))/(bdf->sf->ascent+bdf->sf->descent);
+    bv->scscale = ((real) (bdf->pixelsize))/(bdf->sf->ascent+bdf->sf->descent);
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_ititle;
@@ -1402,12 +1428,15 @@ return( bv );
 
 BitmapView *BitmapViewCreatePick(int enc, FontView *fv) {
     BDFFont *bdf;
+    SplineFont *sf;
 
-    for ( bdf = fv->sf->bitmaps; bdf!=NULL && bdf->pixelsize!=BVShows.lastpixelsize; bdf = bdf->next );
+    sf = fv->cidmaster ? fv->cidmaster : fv->sf;
+
+    for ( bdf = sf->bitmaps; bdf!=NULL && bdf->pixelsize!=BVShows.lastpixelsize; bdf = bdf->next );
     if ( bdf==NULL && fv->show!=fv->filled )
 	bdf = fv->show;
     if ( bdf==NULL )
-	bdf = fv->sf->bitmaps;
+	bdf = sf->bitmaps;
 
     BDFMakeChar(bdf,enc);
 return( BitmapViewCreate(bdf->chars[enc],bdf,fv));

@@ -32,6 +32,7 @@
 typedef struct createbitmapdata {
     unsigned int done: 1;
     FontView *fv;
+    SplineFont *sf;
     SplineChar *sc;
     int isavail;
     int which;
@@ -61,6 +62,9 @@ static void RemoveBDFWindows(BDFFont *bdf) {
     /* Just in case... */
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
+    /* We can't free the bdf until all the windows have executed their destroy*/
+    /*  routines (which they will when they get the destroy window event) */
+    /*  because those routines depend on the bdf existing ... */
 }
 
 void SFOrderBitmapList(SplineFont *sf) {
@@ -93,24 +97,24 @@ void SFOrderBitmapList(SplineFont *sf) {
     }
 }
 
-static void FVRemoveUnwantedBitmaps(FontView *fv,double *sizes) {
+static void SFRemoveUnwantedBitmaps(SplineFont *sf,real *sizes) {
     BDFFont *bdf, *prev, *next;
     int i;
 
-    for ( prev = NULL, bdf=fv->sf->bitmaps; bdf!=NULL; bdf = next ) {
+    for ( prev = NULL, bdf=sf->bitmaps; bdf!=NULL; bdf = next ) {
 	next = bdf->next;
 	for ( i=0; sizes[i]!=0 && sizes[i]!=bdf->pixelsize; ++i );
 	if ( sizes[i]==0 ) {
 	    /* To be deleted */
 	    if ( prev==NULL )
-		fv->sf->bitmaps = next;
+		sf->bitmaps = next;
 	    else
 		prev->next = next;
-	    if ( fv->show==bdf )
-		FVShowFilled(fv);
+	    if ( sf->fv!=NULL && sf->fv->show==bdf )
+		FVShowFilled(sf->fv);
 	    RemoveBDFWindows(bdf);
 	    BDFFontFree(bdf);
-	    fv->sf->changed = true;
+	    sf->changed = true;
 	} else {
 	    sizes[i] = -sizes[i];		/* don't need to create it */
 	    prev = bdf;
@@ -118,37 +122,36 @@ static void FVRemoveUnwantedBitmaps(FontView *fv,double *sizes) {
     }
 }
 
-static void FVFigureBitmaps(FontView *fv,double *sizes) {
+static void SFFigureBitmaps(SplineFont *sf,real *sizes) {
     BDFFont *bdf;
     int i, first;
 
-    FVRemoveUnwantedBitmaps(fv,sizes);
+    SFRemoveUnwantedBitmaps(sf,sizes);
 
     first = true;
     for ( i=0; sizes[i]!=0 ; ++i ) if ( sizes[i]>0 ) {
 	if ( first && autohint_before_rasterize )
-	    SplineFontAutoHint(fv->sf);
-	bdf = SplineFontRasterize(fv->sf,sizes[i],true);
-	bdf->next = fv->sf->bitmaps;
-	fv->sf->bitmaps = bdf;
-	fv->sf->changed = true;
+	    SplineFontAutoHint(sf);
+	bdf = SplineFontRasterize(sf,sizes[i],true);
+	bdf->next = sf->bitmaps;
+	sf->bitmaps = bdf;
+	sf->changed = true;
 	first = false;
     }
 
     /* Order the list */
-    SFOrderBitmapList(fv->sf);
+    SFOrderBitmapList(sf);
 }
 
-static void FVScaleBitmaps(FontView *fv,double *sizes) {
+static void FVScaleBitmaps(FontView *fv,real *sizes) {
     BDFFont *bdf;
     int i, cnt=0;
-    static unichar_t sb[] = { 'S','c','a','l','i','n','g',' ','B','i','t','m','a','p','s',  '\0' };
 
     for ( i=0; sizes[i]!=0 ; ++i ) if ( sizes[i]>0 )
 	++cnt;
-    GProgressStartIndicator(10,sb,sb,NULL,cnt,1);
+    GProgressStartIndicatorR(10,_STR_ScalingBitmaps,_STR_ScalingBitmaps,0,cnt,1);
 
-    FVRemoveUnwantedBitmaps(fv,sizes);
+    SFRemoveUnwantedBitmaps(fv->sf,sizes);
 
     for ( i=0; sizes[i]!=0 ; ++i ) if ( sizes[i]>0 ) {
 	bdf = BitmapFontScaleTo(fv->show,sizes[i]);
@@ -164,12 +167,23 @@ static void FVScaleBitmaps(FontView *fv,double *sizes) {
     SFOrderBitmapList(fv->sf);
 }
 
-static void ReplaceBDFC(SplineFont *sf,double *sizes,int enc) {
+static void ReplaceBDFC(SplineFont *sf,real *sizes,int enc) {
     BDFFont *bdf;
     BDFChar *bdfc, temp;
     int i;
     BitmapView *bv;
     int first=true;
+
+    if ( sf->subfontcnt!=0 ) {
+	for ( i=0; i<sf->subfontcnt; ++i )
+	    if ( enc<sf->subfonts[i]->charcnt &&
+		    SCWorthOutputting(sf->subfonts[i]->chars[enc]))
+	break;
+	if ( i<sf->subfontcnt )
+	    sf = sf->subfonts[i];
+    }
+    if ( enc>=sf->charcnt || sf->chars[enc]==NULL )
+return;
 
     for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
 	for ( i=0; sizes[i]!=0 && sizes[i]!=bdf->pixelsize; ++i );
@@ -198,10 +212,10 @@ static void ReplaceBDFC(SplineFont *sf,double *sizes,int enc) {
     }
 }
 
-static int FVRegenBitmaps(CreateBitmapData *bd,double *sizes) {
+static int FVRegenBitmaps(CreateBitmapData *bd,real *sizes) {
     FontView *fv = bd->fv;
-    SplineFont *sf = fv->sf;
-    int i;
+    SplineFont *sf = bd->sf;
+    int i,max;
     BDFFont *bdf;
 
     for ( i=0; sizes[i]!=0; ++i ) {
@@ -219,9 +233,14 @@ return( false );
     if ( bd->which==bd_current && bd->sc!=NULL )
 	ReplaceBDFC(sf,sizes,bd->sc->enc);
     else {
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL &&
-		    (fv->selected[i] || bd->which == bd_all)) {
-	    ReplaceBDFC(sf,sizes,i);
+	max = sf->charcnt;
+	if ( sf->subfontcnt!=0 )
+	    for ( i=0; i<sf->subfontcnt; ++i )
+		if ( sf->subfonts[i]->charcnt>max )
+		    max = sf->subfonts[i]->charcnt;
+	for ( i=0; i<max; ++i )
+	    if ( fv->selected[i] || bd->which == bd_all ) {
+		ReplaceBDFC(sf,sizes,i);
 	}
     }
     sf->changed = true;
@@ -238,11 +257,11 @@ return( true );
 #define CID_75		1003
 #define CID_100		1004
 
-static double *ParseList(GWindow gw, int cid,int *err, int final) {
+static real *ParseList(GWindow gw, int cid,int *err, int final) {
     const unichar_t *val = _GGadgetGetTitle(GWidgetGetControl(gw,cid)), *pt;
     unichar_t *end, *end2;
     int i;
-    double *sizes;
+    real *sizes;
 
     *err = false;
     end2 = NULL;
@@ -254,7 +273,7 @@ static double *ParseList(GWindow gw, int cid,int *err, int final) {
 	pt = end+1;
 	end2 = NULL;
     }
-    sizes = galloc((i+1)*sizeof(double));
+    sizes = galloc((i+1)*sizeof(real));
 
     for ( i=0, pt = val; *pt!='\0' ; ) {
 	sizes[i]=u_strtod(pt,&end);
@@ -287,14 +306,14 @@ static int CB_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	int err;
 	CreateBitmapData *bd = GDrawGetUserData(GGadgetGetWindow(g));
-	double *sizes = ParseList(bd->gw, CID_Pixel,&err, true);
+	real *sizes = ParseList(bd->gw, CID_Pixel,&err, true);
 	if ( err )
 return( true );
 	bd->done = true;
 	if ( bd->isavail && bd->fv->sf->onlybitmaps && bd->fv->sf->bitmaps!=NULL )
 	    FVScaleBitmaps(bd->fv,sizes);
 	else if ( bd->isavail )
-	    FVFigureBitmaps(bd->fv,sizes);
+	    SFFigureBitmaps(bd->sf,sizes);
 	else {
 	    bd->which = GGadgetGetFirstListSelectedItem(GWidgetGetControl(bd->gw,CID_Which));
 	    if ( !FVRegenBitmaps(bd,sizes))
@@ -315,7 +334,7 @@ static int CB_Cancel(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static unichar_t *GenText(double *sizes,double scale) {
+static unichar_t *GenText(real *sizes,real scale) {
     int i;
     char *cret, *pt;
     unichar_t *uret;
@@ -343,7 +362,7 @@ static int CB_TextChange(GGadget *g, GEvent *e) {
 	int cid = (int) GGadgetGetCid(g);
 	unichar_t *val;
 	int err=false;
-	double *sizes = ParseList(bd->gw,cid,&err,false);
+	real *sizes = ParseList(bd->gw,cid,&err,false);
 	int ncid;
 	if ( err )
 return( true );
@@ -377,19 +396,20 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     GTextInfo label[13];
     CreateBitmapData bd;
     int i,j,y;
-    double *sizes;
+    real *sizes;
     BDFFont *bdf;
 
     bd.fv = fv;
     bd.sc = sc;
+    bd.sf = fv->cidmaster ? fv->cidmaster : fv->sf;
     bd.isavail = isavail;
     bd.done = false;
 
-    for ( bdf=fv->sf->bitmaps, i=0; bdf!=NULL; bdf=bdf->next, ++i );
+    for ( bdf=bd.sf->bitmaps, i=0; bdf!=NULL; bdf=bdf->next, ++i );
     if ( i==0 && isavail )
 	i = 2;
-    sizes = galloc((i+1)*sizeof(double));
-    for ( bdf=fv->sf->bitmaps, i=0; bdf!=NULL; bdf=bdf->next, ++i )
+    sizes = galloc((i+1)*sizeof(real));
+    for ( bdf=bd.sf->bitmaps, i=0; bdf!=NULL; bdf=bdf->next, ++i )
 	sizes[i] = bdf->pixelsize;
 /*
     if ( i==0 && isavail ) {
@@ -430,7 +450,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
 	gcd[1].gd.flags = gg_enabled|gg_visible;
 	gcd[1].creator = GLabelCreate;
 
-	if ( fv->sf->onlybitmaps && fv->sf->bitmaps!=NULL )
+	if ( bd.sf->onlybitmaps && bd.sf->bitmaps!=NULL )
 	    label[2].text = (unichar_t *) _STR_AddingSizeScale;
 	else
 	    label[2].text = (unichar_t *) _STR_AddingSize;

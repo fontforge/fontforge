@@ -355,7 +355,7 @@ return( NULL );
     }
     if ( b==NULL ) {
 	if ( ascent==-1 && descent==-1 )
-	    ascent = rint(pixelsize*sf->ascent/(double) (sf->ascent+sf->descent));
+	    ascent = rint(pixelsize*sf->ascent/(real) (sf->ascent+sf->descent));
 	if ( ascent==-1 && descent!=-1 )
 	    ascent = pixelsize - descent;
 	else if ( ascent!=-1 )

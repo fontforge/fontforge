@@ -146,7 +146,7 @@ return( true );
 	    bothout = (l->flags&cvli_clipped) && (l->next->flags&cvli_clipped);
 	    if (( l->asstart.x<0 && l->next->asend.x>0 ) ||
 		    ( l->asstart.x>0 && l->next->asend.x<0 )) {
-		y = -(l->next->asend.y-l->asstart.y)*(double)l->asstart.x/(l->next->asend.x-l->asstart.x) +
+		y = -(l->next->asend.y-l->asstart.y)*(real)l->asstart.x/(l->next->asend.x-l->asstart.x) +
 			l->asstart.y;
 		if ( l->asstart.x<0 ) {
 		    l->asstart.x = 0;
@@ -158,7 +158,7 @@ return( true );
 	    }
 	    if (( l->asstart.x<cv->width && l->next->asend.x>cv->width ) ||
 		    ( l->asstart.x>cv->width && l->next->asend.x<cv->width )) {
-		y = (l->next->asend.y-l->asstart.y)*(double)(cv->width-l->asstart.x)/(l->next->asend.x-l->asstart.x) +
+		y = (l->next->asend.y-l->asstart.y)*(real)(cv->width-l->asstart.x)/(l->next->asend.x-l->asstart.x) +
 			l->asstart.y;
 		if ( l->asstart.x>cv->width ) {
 		    l->asstart.x = cv->width;
@@ -170,7 +170,7 @@ return( true );
 	    }
 	    if (( l->asstart.y<0 && l->next->asend.y>0 ) ||
 		    ( l->asstart.y>0 && l->next->asend.y<0 )) {
-		x = -(l->next->asend.x-l->asstart.x)*(double)l->asstart.y/(l->next->asend.y-l->asstart.y) +
+		x = -(l->next->asend.x-l->asstart.x)*(real)l->asstart.y/(l->next->asend.y-l->asstart.y) +
 			l->asstart.x;
 		if (( x<0 || x>=cv->width ) && bothout )
     continue;			/* Not on screen */;
@@ -184,7 +184,7 @@ return( true );
 	    }
 	    if (( l->asstart.y<cv->height && l->next->asend.y>cv->height ) ||
 		    ( l->asstart.y>cv->height && l->next->asend.y<cv->height )) {
-		x = (l->next->asend.x-l->asstart.x)*(double)(cv->height-l->asstart.y)/(l->next->asend.y-l->asstart.y) +
+		x = (l->next->asend.x-l->asstart.x)*(real)(cv->height-l->asstart.y)/(l->next->asend.y-l->asstart.y) +
 			l->asstart.x;
 		if (( x<0 || x>=cv->width ) && bothout )
     continue;			/* Not on screen */;
@@ -382,7 +382,7 @@ return;
 }
 
 static void DrawLine(CharView *cv, GWindow pixmap,
-	double x1, double y1, double x2, double y2, Color fg) {
+	real x1, real y1, real x2, real y2, Color fg) {
     int ix1 = cv->xoff + rint(x1*cv->scale);
     int iy1 = -cv->yoff + cv->height - rint(y1*cv->scale);
     int ix2 = cv->xoff + rint(x2*cv->scale);
@@ -458,7 +458,7 @@ return;		/* Offscreen */
 	    }
 	} else {
 	    ip2[j].x = 0;
-	    ip2[j++].y = ip[last].y - ip[last].x * ((double) (ip[i].y-ip[last].y))/(ip[i].x-ip[last].x);
+	    ip2[j++].y = ip[last].y - ip[last].x * ((real) (ip[i].y-ip[last].y))/(ip[i].x-ip[last].x);
 	    if ( ip[i].x>0 )
 		ip2[j++] = ip[i];
 	    else {
@@ -480,7 +480,7 @@ return;		/* Offscreen */
 	    }
 	} else {
 	    ip[j].x = cv->width-1;
-	    ip[j++].y = ip2[last].y + (cv->width-1- ip2[last].x) * ((double) (ip2[i].y-ip2[last].y))/(ip2[i].x-ip2[last].x);
+	    ip[j++].y = ip2[last].y + (cv->width-1- ip2[last].x) * ((real) (ip2[i].y-ip2[last].y))/(ip2[i].x-ip2[last].x);
 	    if ( ip2[i].x<cv->width )
 		ip[j++] = ip2[i];
 	    else {
@@ -500,7 +500,7 @@ return;		/* Offscreen */
 	    ip2[j++].x = ip[i].x;
 	} else {
 	    ip2[j].y = 0;
-	    ip2[j++].x = ip[last].x - ip[last].y * ((double) (ip[i].x-ip[last].x))/(ip[i].y-ip[last].y);
+	    ip2[j++].x = ip[last].x - ip[last].y * ((real) (ip[i].x-ip[last].x))/(ip[i].y-ip[last].y);
 	    if ( ip[i].y>0 )
 		ip2[j++] = ip[i];
 	    else {
@@ -520,7 +520,7 @@ return;		/* Offscreen */
 	    ip[j++].x = ip2[i].x;
 	} else {
 	    ip[j].y = cv->height-1;
-	    ip[j++].x = ip2[last].x + (cv->height-1- ip2[last].y) * ((double) (ip2[i].x-ip2[last].x))/(ip2[i].y-ip2[last].y);
+	    ip[j++].x = ip2[last].x + (cv->height-1- ip2[last].y) * ((real) (ip2[i].x-ip2[last].x))/(ip2[i].y-ip2[last].y);
 	    if ( ip2[i].y<cv->width )
 		ip[j++] = ip2[i];
 	    else {
@@ -834,7 +834,7 @@ static void CVNewScale(CharView *cv) {
 
 static void CVFit(CharView *cv) {
     DBounds b;
-    double left, right, top, bottom, hsc, wsc;
+    real left, right, top, bottom, hsc, wsc;
 
     SplineCharFindBounds(cv->sc,&b);
     bottom = b.miny;
@@ -1052,6 +1052,8 @@ void CVChar(CharView *cv, GEvent *event ) {
 	    event->u.chr.keysym == GK_BackSpace ) {
 	/* Menu does delete */
 	CVClear(cv->gw,NULL,NULL);
+    } else if ( event->u.chr.keysym == GK_Help ) {
+	MenuHelp(NULL,NULL,NULL);	/* Menu does F1 */
     } else if ( event->u.chr.keysym == GK_Left ||
 	    event->u.chr.keysym == GK_Up ||
 	    event->u.chr.keysym == GK_Right ||
@@ -1061,7 +1063,7 @@ void CVChar(CharView *cv, GEvent *event ) {
 	    event->u.chr.keysym == GK_KP_Right ||
 	    event->u.chr.keysym == GK_KP_Down ) {
 	if ( CVAnySel(cv,NULL,NULL,NULL)) {
-	    double dx=0, dy=0;
+	    real dx=0, dy=0;
 	    switch ( event->u.chr.keysym ) {
 	      case GK_Left: case GK_KP_Left:
 		dx = -1;
@@ -1100,7 +1102,7 @@ static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
     char buffer[50];
     unichar_t ubuffer[50];
     int ybase = cv->mbh+(cv->infoh-cv->sfh)/2+cv->sas;
-    double xdiff, ydiff;
+    real xdiff, ydiff;
     SplinePoint *sp, dummy;
 
     GDrawSetFont(pixmap,cv->small);
@@ -1141,7 +1143,7 @@ return;
 	sp = &dummy;
     }
     if ( sp ) {
-	double selx, sely;
+	real selx, sely;
 	if ( cv->pressed && sp==cv->p.sp ) {
 	    selx = cv->p.constrain.x;
 	    sely = cv->p.constrain.y;
@@ -1540,6 +1542,8 @@ void CVSetCharChanged(CharView *cv,int changed) {
     if ( cv->drawmode==dm_grid ) {
 	if ( changed ) {
 	    cv->fv->sf->changed = true;
+	    if ( cv->fv->cidmaster!=NULL )
+		cv->fv->cidmaster->changed = true;
 	    SFFigureGrid(cv->fv->sf);
 	}
     } else {
@@ -1554,11 +1558,15 @@ void CVSetCharChanged(CharView *cv,int changed) {
 	    FVToggleCharChanged(cv->fv,cv->sc);
 	    if ( changed ) {
 		cv->sc->parent->changed = true;
+		if ( cv->fv->cidmaster!=NULL )
+		    cv->fv->cidmaster->changed = true;
 	    }
 	}
 	if ( changed ) {
 	    cv->sc->changed_since_autosave = true;
 	    cv->sc->parent->changed_since_autosave = true;
+	    if ( cv->fv->cidmaster!=NULL )
+		cv->fv->cidmaster->changed_since_autosave = true;
 	}
 	if ( cv->drawmode==dm_fore ) {
 	    if ( changed )
@@ -1577,12 +1585,10 @@ void SCCharChangedUpdate(SplineChar *sc,FontView *fv) {
 	FVToggleCharChanged(fv,sc);
     }
     sc->changedsincelasthinted = true;
-#if 0
-    if ( sc->origtype1!=NULL )
-	SCClearOrig(sc);
-#endif
     fv->sf->changed = true;
     fv->sf->changed_since_autosave = true;
+    if ( fv->cidmaster!=NULL )
+	fv->cidmaster->changed = fv->cidmaster->changed_since_autosave = true;
     SCRegenDependents(sc);		/* All chars linked to this one need to get the new splines */
     SCUpdateAll(sc);
     SCRegenFills(sc);
@@ -1611,7 +1617,7 @@ void CVCharChangedUpdate(CharView *cv) {
 }
 
 static void CVMouseMove(CharView *cv, GEvent *event ) {
-    double cx, cy;
+    real cx, cy;
     PressedOn p;
     FindSel fs;
     GEvent fake;
@@ -1629,9 +1635,9 @@ return;
 
 	fake.u.mouse = event->u.mouse;
 	if ( (event->u.mouse.state&ksm_meta) && (cv->p.nextcp || cv->p.prevcp)) {
-	    double dot = (cv->p.cp.x-cv->p.constrain.x)*(p.cx-cv->p.constrain.x) +
+	    real dot = (cv->p.cp.x-cv->p.constrain.x)*(p.cx-cv->p.constrain.x) +
 		    (cv->p.cp.y-cv->p.constrain.y)*(p.cy-cv->p.constrain.y);
-	    double len = (cv->p.cp.x-cv->p.constrain.x)*(cv->p.cp.x-cv->p.constrain.x)+
+	    real len = (cv->p.cp.x-cv->p.constrain.x)*(cv->p.cp.x-cv->p.constrain.x)+
 		    (cv->p.cp.y-cv->p.constrain.y)*(cv->p.cp.y-cv->p.constrain.y);
 	    dot /= len;
 	    /* constrain control point to same angle with respect to base point*/
@@ -1732,21 +1738,21 @@ return;
     }
 }
 
-static void CVMagnify(CharView *cv, double midx, double midy, int bigger) {
+static void CVMagnify(CharView *cv, real midx, real midy, int bigger) {
     static float scales[] = { 1, 2, 3, 4, 6, 8, 11, 16, 23, 32, 45, 64, 90, 128, 181, 256, 512, 1024, 0 };
     int i, j;
 
     if ( cv->scale>=1 ) {
 	for ( i=0; scales[i]!=0 && cv->scale>scales[i]; ++i );
 	if ( scales[i]==0 ) i=j= i-1;
-	else if ( DoubleNear(scales[i],cv->scale) ) j=i;
-	else if ( i!=0 && DoubleNear(scales[i-1],cv->scale) ) j= --i; /* Round errors! */
+	else if ( RealNear(scales[i],cv->scale) ) j=i;
+	else if ( i!=0 && RealNear(scales[i-1],cv->scale) ) j= --i; /* Round errors! */
 	else j = i-1;
-    } else { double sinv = 1/cv->scale; int t;
+    } else { real sinv = 1/cv->scale; int t;
 	for ( i=0; scales[i]!=0 && sinv>scales[i]; ++i );
 	if ( scales[i]==0 ) i=j= i-1;
-	else if ( DoubleNear(scales[i],sinv) ) j=i;
-	else if ( i!=0 && DoubleNear(scales[i-1],sinv) ) j= --i; /* Round errors! */
+	else if ( RealNear(scales[i],sinv) ) j=i;
+	else if ( i!=0 && RealNear(scales[i-1],sinv) ) j= --i; /* Round errors! */
 	else j = i-1;
 	t = j;
 	j = -i; i = -t;
@@ -1794,7 +1800,7 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 	CVMouseUpPoint(cv);
       break;
       case cvt_magnify: case cvt_minify: {
-	double cx, cy;
+	real cx, cy;
 	cx = (event->u.mouse.x-cv->xoff)/cv->scale ;
 	cy = (cv->height-event->u.mouse.y-cv->yoff)/cv->scale ;
 	CVMagnify(cv,cx,cy,event->u.mouse.state&ksm_meta?-1:1);
@@ -1823,7 +1829,7 @@ static void CVTimer(CharView *cv,GEvent *event) {
 	GDrawGetPointerPosition(cv->v,&e);
 	if ( e.u.mouse.x<0 || e.u.mouse.y<0 ||
 		e.u.mouse.x>=cv->width || e.u.mouse.y >= cv->height ) {
-	    double dx = 0, dy = 0;
+	    real dx = 0, dy = 0;
 	    if ( e.u.mouse.x<0 )
 		dx = cv->width/8;
 	    else if ( e.u.mouse.x>=cv->width )
@@ -1884,7 +1890,7 @@ static int v_e_h(GWindow gw, GEvent *event) {
 return( true );
 }
 
-static void CVDrawNum(CharView *cv,GWindow pixmap,int x, int y, char *format,double val, int align) {
+static void CVDrawNum(CharView *cv,GWindow pixmap,int x, int y, char *format,real val, int align) {
     char buffer[40];
     unichar_t ubuf[40];
     int len;
@@ -1902,7 +1908,7 @@ static void CVDrawNum(CharView *cv,GWindow pixmap,int x, int y, char *format,dou
     GDrawDrawText(pixmap,x,y,ubuf,-1,NULL,0x000000);
 }
 
-static void CVDrawVNum(CharView *cv,GWindow pixmap,int x, int y, char *format,double val, int align) {
+static void CVDrawVNum(CharView *cv,GWindow pixmap,int x, int y, char *format,real val, int align) {
     char buffer[40];
     unichar_t ubuf[40], *upt;
     int len;
@@ -1925,8 +1931,8 @@ static void CVDrawVNum(CharView *cv,GWindow pixmap,int x, int y, char *format,do
 
 
 static void CVExposeRulers(CharView *cv, GWindow pixmap ) {
-    double xmin, xmax, ymin, ymax;
-    double onehundred, pos;
+    real xmin, xmax, ymin, ymax;
+    real onehundred, pos;
     int units, littleunits;
     int ybase = cv->mbh+cv->infoh;
     int x,y;
@@ -2226,6 +2232,7 @@ return( true );
 #define MID_Undo	2109
 #define MID_Redo	2110
 #define MID_CopyWidth	2111
+#define MID_RemoveUndoes	2112
 #define MID_Clockwise	2201
 #define MID_Counter	2202
 #define MID_GetInfo	2203
@@ -2362,8 +2369,8 @@ static void CVMenuScale(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( mi->mid == MID_Fit ) {
 	CVFit(cv);
     } else {
-	double midx = (cv->width/2-cv->xoff)/cv->scale;
-	double midy = (cv->height/2-cv->yoff)/cv->scale;
+	real midx = (cv->width/2-cv->xoff)/cv->scale;
+	real midy = (cv->height/2-cv->yoff)/cv->scale;
 	CVMagnify(cv,midx,midy,mi->mid==MID_ZoomOut?-1:1);
     }
 }
@@ -2705,6 +2712,14 @@ static void CVUnlinkRef(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
+static void CVRemoveUndoes(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    UndoesFree(*cv->uheads[cv->drawmode]);
+    UndoesFree(*cv->rheads[cv->drawmode]);
+    *cv->uheads[cv->drawmode] = *cv->rheads[cv->drawmode] = NULL;
+}
+
 /* We can only paste if there's something in the copy buffer */
 /* we can only copy if there's something selected to copy */
 /* figure out what things are possible from the edit menu before the user */
@@ -2732,6 +2747,9 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_Redo:
 	    mi->ti.disabled = *cv->rheads[cv->drawmode]==NULL;
+	  break;
+	  case MID_RemoveUndoes:
+	    mi->ti.disabled = *cv->rheads[cv->drawmode]==NULL && *cv->uheads[cv->drawmode]==NULL;
 	  break;
 	  case MID_CopyRef:
 	    mi->ti.disabled = cv->drawmode!=dm_fore;
@@ -2877,11 +2895,11 @@ return( false );
 return( true );
 }
 
-void CVTransFunc(CharView *cv,double transform[6]) {
+void CVTransFunc(CharView *cv,real transform[6]) {
     int anysel = cv->p.transany;
     RefChar *refs;
     ImageList *img;
-    double t[6];
+    real t[6];
 
     SplinePointListTransform(*cv->heads[cv->drawmode],transform,!anysel);
     if ( cv->drawmode==dm_back ) {
@@ -2930,7 +2948,7 @@ void CVTransFunc(CharView *cv,double transform[6]) {
     }
 }
 
-static void transfunc(void *d,double transform[6],int otype,BVTFunc *bvts) {
+static void transfunc(void *d,real transform[6],int otype,BVTFunc *bvts) {
     CharView *cv = (CharView *) d;
 
     cv->p.transany = CVAnySel(cv,NULL,NULL,NULL);
@@ -3172,6 +3190,14 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
+	  case MID_GetInfo:
+	    if ( cv->fv->cidmaster==NULL )
+		mi->ti.disabled = false;
+	    else {
+		SplinePoint *sp; SplineSet *spl; RefChar *ref; ImageList *img;
+		mi->ti.disabled = !CVOneThingSel(cv,&sp,&spl,&ref,&img);
+	    }
+	  break;
 	  case MID_Clockwise:
 	    mi->ti.disabled = !anypoints;
 	    mi->ti.checked = dir==1;
@@ -3387,7 +3413,7 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVMenuCenter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     DBounds bb;
-    double transform[6];
+    real transform[6];
     int drawmode = cv->drawmode;
 
     cv->drawmode = dm_fore;
@@ -3423,6 +3449,8 @@ static void CVMenuRemoveKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	KernPairsFree(cv->sc->kerns);
 	cv->sc->kerns = NULL;
 	cv->sc->parent->changed = true;
+	if ( cv->fv->cidmaster!=NULL )
+	    cv->fv->cidmaster->changed = true;
     }
 }
 
@@ -3468,6 +3496,8 @@ static GMenuItem edlist[] = {
     { { (unichar_t *) _STR_Selectall, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'A', ksm_control, NULL, NULL, CVSelectAll, MID_SelAll },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Unlinkref, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'U' }, '\0', 0, NULL, NULL, CVUnlinkRef, MID_UnlinkRef },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_RemoveUndoes, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'e' }, '\0', 0, NULL, NULL, CVRemoveUndoes, MID_RemoveUndoes },
     { NULL }
 };
 

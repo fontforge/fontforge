@@ -1065,6 +1065,8 @@ static GCursor GXDrawCreateCursor(GWindow src,GWindow mask,Color fg,Color bg,
     GXDisplay *gdisp = (GXDisplay *) (src->display);
     Display *display = gdisp->display;
     XColor fgc, bgc;
+    /* The XServer shipping with redhat 7.1 seems to suffer a protocol change */
+    /*  with the red and blue members of XColor structure reversed */
 
     fgc.red = COLOR_RED(fg)*0x101; fgc.green = COLOR_GREEN(fg)*0x101; fgc.blue = COLOR_BLUE(fg)*0x101;
     fgc.pixel = _GXDraw_GetScreenPixel(gdisp,fg); fgc.flags = -1;

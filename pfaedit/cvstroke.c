@@ -135,8 +135,8 @@ static int Stroke_OK(GGadget *g, GEvent *e) {
 		lj_miter;
 	si.caligraphic = GGadgetIsChecked( GWidgetGetControl(sw,CID_Caligraphic));
 	err = false;
-	si.penangle = GetDouble(sw,CID_PenAngle,"Pen Angle",&err)*3.1415926535897932/180;
-	si.radius = GetDouble(sw,CID_Width,"Width",&err)/2;
+	si.penangle = GetReal(sw,CID_PenAngle,"Pen Angle",&err)*3.1415926535897932/180;
+	si.radius = GetReal(sw,CID_Width,"Width",&err)/2;
 	if ( err )
 return( true );
 	if ( si.caligraphic ) {

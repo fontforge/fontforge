@@ -32,7 +32,7 @@ void CVMouseDownTransform(CharView *cv) {
 }
 
 void CVMouseMoveTransform(CharView *cv) {
-    double transform[6];
+    real transform[6];
 
     CVRestoreTOriginalState(cv);
     if ( cv->info.x != cv->p.cx || cv->info.y != cv->p.cy ) {
@@ -40,12 +40,12 @@ void CVMouseMoveTransform(CharView *cv) {
 	transform[1] = transform[2] = 0;
 	switch ( cv->active_tool ) {
 	  case cvt_rotate: {
-	    double angle = atan2(cv->info.y-cv->p.cy,cv->info.x-cv->p.cx);
+	    real angle = atan2(cv->info.y-cv->p.cy,cv->info.x-cv->p.cx);
 	    transform[0] = transform[3] = cos(angle);
 	    transform[2] = -(transform[1] = sin(angle));
 	  } break;
 	  case cvt_flip: {
-	    double dx,dy;
+	    real dx,dy;
 	    if (( dx = cv->info.x-cv->p.cx)<0 ) dx=-dx;
 	    if (( dy = cv->info.y-cv->p.cy)<0 ) dy=-dy;
 	    if ( dy>2*dx )
@@ -65,7 +65,7 @@ void CVMouseMoveTransform(CharView *cv) {
 	      transform[3] = 1.0+(cv->info.y-cv->p.cy)/(400*cv->scale);
 	  } break;
 	  case cvt_skew: {
-	    double angle = atan2(cv->info.y-cv->p.cy,cv->info.x-cv->p.cx);
+	    real angle = atan2(cv->info.y-cv->p.cy,cv->info.x-cv->p.cx);
 	    transform[2] = sin(angle);
 	  } break;
 	  default:

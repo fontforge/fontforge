@@ -35,8 +35,8 @@
 
 /*#define DEBUG	1*/
 
-int DoubleNear(double a,double b) {
-    double d;
+int RealNear(real a,real b) {
+    real d;
 
     if ( a==0 )
 return( b>-1e-8 && b<1e-8 );
@@ -48,14 +48,14 @@ return( a>-1e-8 && a<1e-8 );
 return( b>a-d && b<a+d );
 }
 
-int DoubleNearish(double a,double b) {
+int RealNearish(real a,real b) {
 
     if ( a-b<.001 && a-b>-.001 )
 return( true );
 return( false );
 }
 
-int DoubleApprox(double a,double b) {
+int RealApprox(real a,real b) {
 
     if ( a==0 ) {
 	if ( b<.0001 && b>-.0001 )
@@ -72,7 +72,7 @@ return( false );
 }
 
 int SplineIsLinear(Spline *spline) {
-    double t1,t2;
+    real t1,t2;
     int ret;
 
     if ( spline->knownlinear )
@@ -88,9 +88,9 @@ return( true );
     /*  two base points */
 
     /* Vertical lines */
-    if ( DoubleNear(spline->from->me.x,spline->to->me.x) ) {
-	ret = DoubleNear(spline->from->me.x,spline->from->nextcp.x) &&
-	    DoubleNear(spline->from->me.x,spline->to->prevcp.x) &&
+    if ( RealNear(spline->from->me.x,spline->to->me.x) ) {
+	ret = RealNear(spline->from->me.x,spline->from->nextcp.x) &&
+	    RealNear(spline->from->me.x,spline->to->prevcp.x) &&
 	    ((spline->from->nextcp.y >= spline->from->me.y &&
 	      spline->from->nextcp.y <= spline->to->prevcp.y &&
 	      spline->to->prevcp.y <= spline->to->me.y ) ||
@@ -98,9 +98,9 @@ return( true );
 	      spline->from->nextcp.y >= spline->to->prevcp.y &&
 	      spline->to->prevcp.y >= spline->to->me.y ));
     /* Horizontal lines */
-    } else if ( DoubleNear(spline->from->me.y,spline->to->me.y) ) {
-	ret = DoubleNear(spline->from->me.y,spline->from->nextcp.y) &&
-	    DoubleNear(spline->from->me.y,spline->to->prevcp.y) &&
+    } else if ( RealNear(spline->from->me.y,spline->to->me.y) ) {
+	ret = RealNear(spline->from->me.y,spline->from->nextcp.y) &&
+	    RealNear(spline->from->me.y,spline->to->prevcp.y) &&
 	    ((spline->from->nextcp.x >= spline->from->me.x &&
 	      spline->from->nextcp.x <= spline->to->prevcp.x &&
 	      spline->to->prevcp.x <= spline->to->me.x) ||
@@ -116,7 +116,7 @@ return( true );
 	    t2 = (spline->from->nextcp.x-spline->from->me.x)/(spline->to->me.x-spline->from->me.x);
 	    if ( t2<0 || t2>1.0 )
 		ret = false;
-	    ret = DoubleApprox(t1,t2);
+	    ret = RealApprox(t1,t2);
 	}
 	if ( ret ) {
 	    t1 = (spline->to->me.y-spline->to->prevcp.y)/(spline->to->me.y-spline->from->me.y);
@@ -127,7 +127,7 @@ return( true );
 		if ( t2<0 || t2>1.0 )
 		    ret = false;
 		else
-		    ret = DoubleApprox(t1,t2);
+		    ret = RealApprox(t1,t2);
 	    }
 	}
     }
@@ -159,12 +159,12 @@ return( spline->islinear );
 
 typedef struct spline1 {
     Spline1D sp;
-    double s0, s1;
-    double c0, c1;
+    real s0, s1;
+    real c0, c1;
 } Spline1;
 
-static void FigureSpline1(Spline1 *sp1,double t0, double t1, Spline1D *sp ) {
-    double s = (t1-t0);
+static void FigureSpline1(Spline1 *sp1,real t0, real t1, Spline1D *sp ) {
+    real s = (t1-t0);
     if ( sp->a==0 && sp->b==0 ) {
 	sp1->sp.d = sp->d + t0*sp->c;
 	sp1->sp.c = s*sp->c;
@@ -175,15 +175,15 @@ static void FigureSpline1(Spline1 *sp1,double t0, double t1, Spline1D *sp ) {
 	sp1->sp.c = s*(sp->c + t0*(2*sp->b + 3*sp->a*t0));
 	sp1->sp.b = s*s*(sp->b+3*sp->a*t0);
 	sp1->sp.a = s*s*s*sp->a;
-	if ( !DoubleNear(sp1->sp.a+sp1->sp.b+sp1->sp.c+sp1->sp.d,sp1->s1) ||
-		!DoubleNear(sp1->sp.d,sp1->s0))
+	if ( !RealNear(sp1->sp.a+sp1->sp.b+sp1->sp.c+sp1->sp.d,sp1->s1) ||
+		!RealNear(sp1->sp.d,sp1->s0))
 	    GDrawIError( "Created spline does not work in FigureSpline1");
 	sp1->c0 = sp1->sp.c/3 + sp1->s0;
 	sp1->c1 = sp1->c0 + (sp1->sp.b+sp1->sp.c)/3;
     }
 }
 
-SplinePoint *SplineBisect(Spline *spline, double t) {
+SplinePoint *SplineBisect(Spline *spline, real t) {
     Spline1 xstart, xend;
     Spline1 ystart, yend;
     Spline *spline1, *spline2;
@@ -265,9 +265,9 @@ and the 2 from the spline defn. So d==x0. Now we've only got three unknonws
 /* cnt is not quite n because we add in two more points, first and last */
 Spline *ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
 	TPoint *mid, int cnt) {
-    double t, t2, t3, t4, x, y, xt, yt, tt, ttn;
+    real t, t2, t3, t4, x, y, xt, yt, tt, ttn;
     int i;
-    double vx[3], vy[3], m[3][3];
+    real vx[3], vy[3], m[3][3];
     Spline *spline;
 
     t = t2 = t3 = t4 = 1;
@@ -306,7 +306,7 @@ Spline *ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
     m[1][0] = 0; m[1][1] -= t3; m[1][2] -= t3;
 
     if ( m[1][1]==0 ) {
-	double temp;
+	real temp;
 	temp = vx[1]; vx[1] = vx[0]; vx[0] = temp;
 	temp = vy[1]; vy[1] = vy[0]; vy[0] = temp;
 	m[1][1] = m[0][1]; m[0][1] = 0;
@@ -352,7 +352,7 @@ return( spline );
 static TPoint *SplinesFigureTPsBetween(SplinePoint *from, SplinePoint *to,
 	int *tot) {
     int cnt, i, j;
-    double len, slen, lbase, temp;
+    real len, slen, lbase, temp;
     SplinePoint *np;
     TPoint *tp;
 
@@ -394,7 +394,7 @@ static TPoint *SplinesFigureTPsBetween(SplinePoint *from, SplinePoint *to,
 	if ( temp<0 ) temp = -temp;
 	slen += temp;
 	for ( j=0; j<10; ++j ) {
-	    double t = j/10.0;
+	    real t = j/10.0;
 	    tp[i].t = (lbase+ t*slen)/len;
 	    tp[i].x = ((np->prev->splines[0].a*t+np->prev->splines[0].b)*t+np->prev->splines[0].c)*t + np->prev->splines[0].d;
 	    tp[i++].y = ((np->prev->splines[1].a*t+np->prev->splines[1].b)*t+np->prev->splines[1].c)*t + np->prev->splines[1].d;
@@ -465,7 +465,7 @@ static void FixupCurveTanPoints(SplinePoint *from,SplinePoint *to,
 	    }
 	}
 	if ( fncp->x!=0 || fncp->y!=0 ) {
-	    if ( !DoubleNear(atan2(fncp->y,fncp->x),
+	    if ( !RealNear(atan2(fncp->y,fncp->x),
 		    atan2(from->nextcp.y-from->me.y,from->nextcp.x-from->me.x)) )
 		from->pointtype = pt_corner;
 	}
@@ -482,7 +482,7 @@ static void FixupCurveTanPoints(SplinePoint *from,SplinePoint *to,
 	    }
 	}
 	if ( tpcp->x!=0 || tpcp->y!=0 ) {
-	    if ( !DoubleNear(atan2(tpcp->y,tpcp->x),
+	    if ( !RealNear(atan2(tpcp->y,tpcp->x),
 		    atan2(to->prevcp.y-to->me.y,to->prevcp.x-to->me.x)) )
 		to->pointtype = pt_corner;
 	}
@@ -673,7 +673,7 @@ return( false );
 	if ( from->me.x==to->me.x ) {
 	    if ( mid->me.x!=to->me.x )
 return( false );
-	} else if ( !DoubleNear((from->me.y-to->me.y)/(from->me.x-to->me.x),
+	} else if ( !RealNear((from->me.y-to->me.y)/(from->me.x-to->me.x),
 			    (mid->me.y-to->me.y)/(mid->me.x-to->me.x)) )
 return( false );
     }
@@ -807,12 +807,20 @@ char *GetNextUntitledName(void) {
 return( copy(buffer));
 }
 
+SplineFont *SplineFontEmpty(void) {
+    SplineFont *sf;
+    sf = calloc(1,sizeof(SplineFont));
+    sf->pfminfo.fstype = -1;
+    sf->encoding_name = em_none;
+return( sf );
+}
+
 SplineFont *SplineFontBlank(int encoding_name,int charcnt) {
     SplineFont *sf;
     char buffer[80], *pt;
     struct passwd *pwd;
 
-    sf = calloc(1,sizeof(SplineFont));
+    sf = SplineFontEmpty();
     sf->fontname = GetNextUntitledName();
     sf->fullname = copy(sf->fontname);
     sf->familyname = copy(sf->fontname);
@@ -840,6 +848,7 @@ SplineFont *SplineFontBlank(int encoding_name,int charcnt) {
     sf->charcnt = charcnt;
     sf->chars = gcalloc(charcnt,sizeof(SplineChar *));
     sf->encoding_name = encoding_name;
+    sf->pfminfo.fstype = -1;
 return( sf );
 }
 
@@ -958,7 +967,7 @@ return;
 }
 
 void SPAverageCps(SplinePoint *sp) {
-    double pangle, nangle, angle, plen, nlen, c, s;
+    real pangle, nangle, angle, plen, nlen, c, s;
     if ( sp->pointtype==pt_curve && sp->prev && sp->next ) {
 	pangle = atan2(sp->me.y-sp->prevcp.y,sp->me.x-sp->prevcp.x);
 	nangle = atan2(sp->nextcp.y-sp->me.y,sp->nextcp.x-sp->me.x);
@@ -982,7 +991,7 @@ void SPAverageCps(SplinePoint *sp) {
 }
 
 void SplineCharTangentNextCP(SplinePoint *sp) {
-    double angle, len;
+    real angle, len;
     BasePoint *bp;
 
     if ( sp->prev==NULL )
@@ -998,7 +1007,7 @@ return;
 }
 
 void SplineCharTangentPrevCP(SplinePoint *sp) {
-    double angle, len;
+    real angle, len;
     BasePoint *bp;
 
     if ( sp->next==NULL )
@@ -1016,8 +1025,8 @@ return;
 #define NICE_PROPORTION	.4
 void SplineCharDefaultNextCP(SplinePoint *base, SplinePoint *next) {
     SplinePoint *prev=NULL;
-    double len;
-    double angle, pangle, plen, ca;
+    real len;
+    real angle, pangle, plen, ca;
 
     if ( next==NULL )
 return;
@@ -1086,8 +1095,8 @@ return;
 
 void SplineCharDefaultPrevCP(SplinePoint *base, SplinePoint *prev) {
     SplinePoint *next=NULL;
-    double len, nlen;
-    double angle, nangle, ca;
+    real len, nlen;
+    real angle, nangle, ca;
 
     if ( prev==NULL )
 return;

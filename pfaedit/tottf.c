@@ -29,9 +29,11 @@
 #include <unistd.h>
 #include <utype.h>
 #include <time.h>
-#include "ustring.h"
+#include <ustring.h>
 #include <locale.h>
 #include <chardata.h>
+
+#include "psfont.h"		/* for struct fddata */
 
 /* This file produces a ttf file given a splinefont. The most interesting thing*/
 /*  it does is to figure out a quadratic approximation to the cubic splines */
@@ -52,11 +54,11 @@
 /* Does the quadratic spline in ttf approximate the cubic spline in ps */
 /*  within one pixel between tmin and tmax (on ps. presumably ttf between 0&1 */
 /* dim is the dimension in which there is the greatest change */
-static int comparespline(Spline *ps, Spline *ttf, double tmin, double tmax) {
+static int comparespline(Spline *ps, Spline *ttf, real tmin, real tmax) {
     int dim=0, other;
-    double dx, dy, ddim, dt, t;
-    double d, o;
-    double ttf_t, sq, val;
+    real dx, dy, ddim, dt, t;
+    real d, o;
+    real ttf_t, sq, val;
     DBounds bb;
 
     /* Are all points on ttf near points on ps? */
@@ -132,7 +134,7 @@ return( false );
 return( true );
 }
 
-static SplinePoint *MakeQuadSpline(SplinePoint *start,Spline *ttf,double x, double y) {
+static SplinePoint *MakeQuadSpline(SplinePoint *start,Spline *ttf,real x, real y) {
     Spline *new = gcalloc(1,sizeof(Spline));
     SplinePoint *end = gcalloc(1,sizeof(SplinePoint));
 
@@ -156,8 +158,8 @@ static SplinePoint *MakeQuadSpline(SplinePoint *start,Spline *ttf,double x, doub
 return( end );
 }
 
-static SplinePoint *LinearSpline(Spline *ps,SplinePoint *start, double tmax) {
-    double x,y;
+static SplinePoint *LinearSpline(Spline *ps,SplinePoint *start, real tmax) {
+    real x,y;
     Spline *new = gcalloc(1,sizeof(Spline));
     SplinePoint *end = gcalloc(1,sizeof(SplinePoint));
 
@@ -175,13 +177,13 @@ static SplinePoint *LinearSpline(Spline *ps,SplinePoint *start, double tmax) {
 return( end );
 }
 
-static SplinePoint *LinearTest(Spline *ps,double tmin,double tmax,
-	double xmax,double ymax, SplinePoint *start) {
+static SplinePoint *LinearTest(Spline *ps,real tmin,real tmax,
+	real xmax,real ymax, SplinePoint *start) {
     Spline ttf;
     int dim=0, other;
-    double dx, dy, ddim, dt, t;
-    double d, o, val;
-    double ttf_t;
+    real dx, dy, ddim, dt, t;
+    real d, o, val;
+    real ttf_t;
 
     memset(&ttf,'\0',sizeof(ttf));
     ttf.splines[0].d = start->me.x;
@@ -212,16 +214,16 @@ return( NULL );
 return( MakeQuadSpline(start,&ttf,xmax,ymax));
 }
 
-static SplinePoint *ttfapprox(Spline *ps,double tmin, double tmax, SplinePoint *start) {
+static SplinePoint *ttfapprox(Spline *ps,real tmin, real tmax, SplinePoint *start) {
     int dim=0, other;
-    double dx, dy, ddim, dt, t;
-    double x,y, xmin, ymin;
-    double dxdtmin, dydtmin, dxdt, dydt;
+    real dx, dy, ddim, dt, t;
+    real x,y, xmin, ymin;
+    real dxdtmin, dydtmin, dxdt, dydt;
     SplinePoint *sp;
-    double cx, cy;
+    real cx, cy;
     Spline ttf;
 
-    if ( DoubleNear(ps->splines[0].a,0) && DoubleNear(ps->splines[1].a,0) ) {
+    if ( RealNear(ps->splines[0].a,0) && RealNear(ps->splines[1].a,0) ) {
 	/* Already Quadratic, just need to find the control point */
 	/* Or linear, in which case we don't need to do much of anything */
 	Spline *spline;
@@ -297,9 +299,9 @@ return( sp );
 	/*  parallel and colinear then there is a line between 'em */
 	if ( ( dxdtmin==0 && dxdt==0 ) || (dydtmin==0 && dydt==0) ||
 		( dxdt!=0 && dxdtmin!=0 &&
-		    DoubleNearish(dydt/dxdt,dydtmin/dxdtmin)) ) {
+		    RealNearish(dydt/dxdt,dydtmin/dxdtmin)) ) {
 	    if (( dxdt==0 && x==xmin ) || (dydt==0 && y==ymin) ||
-		    (dxdt!=0 && x!=xmin && DoubleNearish(dydt/dxdt,(y-ymin)/(x-xmin))) ) {
+		    (dxdt!=0 && x!=xmin && RealNearish(dydt/dxdt,(y-ymin)/(x-xmin))) ) {
 		if ( (sp = LinearTest(ps,tmin,t,x,y,start))!=NULL ) {
 		    if ( t==tmax )
 return( sp );
@@ -955,7 +957,7 @@ struct glyphinfo {
     int cvtmax;
     int cvtcur;
     int xmin, ymin, xmax, ymax;
-    double blues[14];
+    real blues[14];
     int bcnt;
 };
 
@@ -993,14 +995,17 @@ struct alltabs {
     FILE *encoding;
     FILE *private;
     FILE *charstrings;
-    FILE *subrs;
+    FILE *fdselect;
+    FILE *fdarray;
     int defwid, nomwid;
     int sidcnt;
     int lenpos;
+    int privatelen;
     unsigned int sidlongoffset: 1;
     unsigned int cfflongoffset: 1;
     struct glyphinfo gi;
     int isfixed;
+    struct fd2data *fds;
 };
 
 static int32 getuint32(FILE *ttf) {
@@ -1032,17 +1037,22 @@ static void dumplong(FILE *file,int val) {
     putc((val>>8)&0xff,file);
     putc(val&0xff,file);
 }
+#define dumpabsoffset	dumplong
 
 static void dumpoffset(FILE *file,int offsize,int val) {
     if ( offsize==1 )
 	putc(val,file);
     else if ( offsize==2 )
 	dumpshort(file,val);
-    else
+    else if ( offsize==3 ) {
+	putc((val>>16)&0xff,file);
+	putc((val>>8)&0xff,file);
+	putc(val&0xff,file);
+    } else
 	dumplong(file,val);
 }
 
-static void dump2d14(FILE *file,double dval) {
+static void dump2d14(FILE *file,real dval) {
     int val;
     int mant;
 
@@ -1052,7 +1062,7 @@ static void dump2d14(FILE *file,double dval) {
     dumpshort(file,val);
 }
 
-static void dumpfixed(FILE *file,double dval) {
+static void dumpfixed(FILE *file,real dval) {
     int val;
     int mant;
 
@@ -1564,7 +1574,7 @@ static uint8 *geninstrs(struct glyphinfo *gi, uint8 *instrs,StemInfo *hint,
     int i;
     int last= -1;
     int stem, basecvt=-1;
-    double hbase, base, width;
+    real hbase, base, width;
     StemInfo *h;
 
     hbase = base = hint->start; width = hint->width;
@@ -1676,7 +1686,7 @@ static uint8 *gendinstrs(struct glyphinfo *gi,uint8 *pt,DStemInfo *dstem,
 	BasePoint *bp,int ptcnt,char *touched) {
     int i, stemindex;
     int corners[4];
-    double stemwidth, tempx, tempy, len;
+    real stemwidth, tempx, tempy, len;
 
     /* first get the indexes of the points that make up the diagonal */
     for ( i=0; i<4; ++i ) corners[i] =-1;
@@ -1998,8 +2008,8 @@ static void dumpint(FILE *cfff,int num) {
     }
 }
 
-static void dumpdbl(FILE *cfff,double d) {
-    if ( rint(d)==d )
+static void dumpdbl(FILE *cfff,real d) {
+    if ( d-rint(d)>-.00001 && d-rint(d)<.00001 )
 	dumpint(cfff,(int) d);
     else {
 	/* The type2 strings have a fixed format, but the dict data does not */
@@ -2007,8 +2017,9 @@ static void dumpdbl(FILE *cfff,double d) {
 	int sofar,n;
 	sprintf( buffer, "%g", d);
 	sofar = 0;
+	putc(30,cfff);		/* Start a double */
 	for ( pt=buffer; *pt; ++pt ) {
-	    if ( *pt<=9 )
+	    if ( isdigit(*pt) )
 		n = *pt-'0';
 	    else if ( *pt=='.' )
 		n = 0xa;
@@ -2041,7 +2052,7 @@ static void dumpoper(FILE *cfff,int oper ) {
     }
 }
 
-static void dumpdbloper(FILE *cfff,double d, int oper ) {
+static void dumpdbloper(FILE *cfff,real d, int oper ) {
     dumpdbl(cfff,d);
     dumpoper(cfff,oper);
 }
@@ -2074,11 +2085,11 @@ return;
 }
 
 static void DumpStrDouble(char *pt,FILE *cfff,int oper) {
-    double d = strtod(pt,NULL);
+    real d = strtod(pt,NULL);
     dumpdbloper(cfff,d,oper);
 }
 
-static void DumpDblArray(double *arr,int n,FILE *cfff, int oper) {
+static void DumpDblArray(real *arr,int n,FILE *cfff, int oper) {
     int mi,i;
 
     for ( mi=n-1; mi>=0 && arr[mi]==0; --mi );
@@ -2091,7 +2102,7 @@ return;
 }
 
 static void DumpStrArray(char *pt,FILE *cfff,int oper) {
-    double d, last=0;
+    real d, last=0;
     char *end;
 
     while ( *pt==' ' ) ++pt;
@@ -2111,7 +2122,9 @@ static void dumpcffheader(SplineFont *sf,FILE *cfff) {
     putc('\1',cfff);		/* Major version: 1 */
     putc('\0',cfff);		/* Minor version: 0 */
     putc('\4',cfff);		/* Header size in bytes */
-    putc('\2',cfff);		/* Offset size. */
+    putc('\4',cfff);		/* Absolute Offset size. */
+	/* I don't think there are any absolute offsets that aren't encoded */
+	/*  in a dict as numbers (ie. inherently variable sized items) */
 }
 
 static void dumpcffnames(SplineFont *sf,FILE *cfff) {
@@ -2141,6 +2154,79 @@ static void dumpcffcharset(SplineFont *sf,struct alltabs *at) {
 	    dumpshort(at->charset,storesid(at,sf->chars[i]->name));
 }
 
+static void dumpcffcidset(SplineFont *sf,struct alltabs *at) {
+    int cid, k, max=0, start;
+
+    putc(2,at->charset);
+
+    for ( k=0; k<sf->subfontcnt; ++k )
+	if ( sf->subfonts[k]->charcnt>max ) max = sf->subfonts[k]->charcnt;
+
+    start = -1;			/* Glyph 0 always maps to CID 0, and is omitted */
+    for ( cid = 1; cid<max; ++cid ) {
+	for ( k=0; k<sf->subfontcnt; ++k ) {
+	    if ( cid<sf->subfonts[k]->charcnt &&
+		SCWorthOutputting(sf->subfonts[k]->chars[cid]) )
+	break;
+	}
+	if ( k==sf->subfontcnt ) {
+	    if ( start!=-1 ) {
+		dumpshort(at->charset,start);
+		dumpshort(at->charset,cid-1-start);	/* Count of glyphs in range excluding first */
+		start = -1;
+	    }
+	} else {
+	    if ( start==-1 ) start = cid;
+	}
+    }
+    if ( start!=-1 ) {
+	dumpshort(at->charset,start);
+	dumpshort(at->charset,cid-1-start);	/* Count of glyphs in range excluding first */
+    }
+}
+
+static void dumpcfffdselect(SplineFont *sf,struct alltabs *at) {
+    int cid, k, max=0, lastfd, cnt;
+    int gid;
+
+    putc(3,at->fdselect);
+    dumpshort(at->fdselect,0);		/* number of ranges, fill in later */
+
+    for ( k=0; k<sf->subfontcnt; ++k )
+	if ( sf->subfonts[k]->charcnt>max ) max = sf->subfonts[k]->charcnt;
+
+    for ( k=0; k<sf->subfontcnt; ++k )
+	if ( SCWorthOutputting(sf->subfonts[k]->chars[0]))
+    break;
+    if ( k==sf->subfontcnt ) --k;	/* If CID 0 not defined, put it in last font */
+    dumpshort(at->fdselect,0);
+    putc(k,at->fdselect);
+    lastfd = k;
+    cnt = 1;
+    for ( cid = gid = 1; cid<max; ++cid ) {
+	for ( k=0; k<sf->subfontcnt; ++k ) {
+	    if ( cid<sf->subfonts[k]->charcnt &&
+		SCWorthOutputting(sf->subfonts[k]->chars[cid]) )
+	break;
+	}
+	if ( k==sf->subfontcnt )
+	    /* Doesn't map to a glyph, irrelevant */;
+	else {
+	    if ( k!=lastfd ) {
+		dumpshort(at->fdselect,gid);
+		putc(k,at->fdselect);
+		lastfd = k;
+		++cnt;
+	    }
+	    ++gid;
+	}
+    }
+    dumpshort(at->fdselect,gid);
+    fseek(at->fdselect,1,SEEK_SET);
+    dumpshort(at->fdselect,cnt);
+    fseek(at->fdselect,0,SEEK_END);
+}
+
 static void dumpcffencoding(SplineFont *sf,struct alltabs *at) {
     int i,offset, pos;
 
@@ -2162,8 +2248,7 @@ static void dumpcffencoding(SplineFont *sf,struct alltabs *at) {
 	putc(0,at->encoding);
 }
 
-static FILE *dumpcffstrings(struct pschars *strs) {
-    FILE *file = tmpfile();
+static void _dumpcffstrings(FILE *file, struct pschars *strs) {
     int i, len, offsize;
 
     /* First figure out the offset size */
@@ -2174,7 +2259,7 @@ static FILE *dumpcffstrings(struct pschars *strs) {
     /* Then output the index size and offsets */
     dumpshort( file, strs->cnt );
     if ( strs->cnt!=0 ) {
-	offsize = len<=255?1:len<=65535?2:4;
+	offsize = len<=255?1:len<=65535?2:len<=0xffffff?3:4;
 	putc(offsize,file);
 	len = 1;
 	for ( i=0; i<strs->cnt; ++i ) {
@@ -2190,21 +2275,27 @@ static FILE *dumpcffstrings(struct pschars *strs) {
 		putc( *pt++, file );
 	}
     }
+}
+
+static FILE *dumpcffstrings(struct pschars *strs) {
+    FILE *file = tmpfile();
+    _dumpcffstrings(file,strs);
     PSCharsFree(strs);
 return( file );
 }
 
-static void dumpcffprivate(SplineFont *sf,struct alltabs *at) {
+static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont) {
     char *pt;
-    FILE *private = at->private;
-    int mi,i,j,k,l, allsame=true, sameval = 0x8000000;
-    double bluevalues[14], otherblues[10];
-    double snapcnt[12];
-    double stemsnaph[12], stemsnapv[12];
-    double stdhw[1], stdvw[1];
+    FILE *private = subfont==-1?at->private:at->fds[subfont].private;
+    int mi,i,j,cnt, allsame=true, sameval = 0x8000000;
+    real bluevalues[14], otherblues[10];
+    real snapcnt[12];
+    real stemsnaph[12], stemsnapv[12];
+    real stdhw[1], stdvw[1];
     int hasblue=0, hash=0, hasv=0, bs;
     int maxw=0;
     uint16 *widths; uint32 *cumwid;
+    int nomwid, defwid;
 
     /* The private dict is not in an index, so no index header. Just the data */
 
@@ -2216,39 +2307,42 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at) {
 	    else if ( sameval!=sf->chars[i]->width )
 		allsame = false;
 	}
-    if ( allsame )
-	dumpintoper(private,sameval,21);		/* Nominative Width */
-    else {
+    if ( allsame ) {
+	nomwid = defwid = sameval;
+    } else {
 	++maxw;
 	widths = gcalloc(maxw,sizeof(uint16));
 	cumwid = gcalloc(maxw,sizeof(uint32));
+	defwid = 0; cnt=0;
 	for ( i=0; i<sf->charcnt; ++i )
-	    if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]->width>=0) {
-		++widths[sf->chars[i]->width];
+	    if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]->width>=0)
+		if ( ++widths[sf->chars[i]->width] > cnt ) {
+		    defwid = sf->chars[i]->width;
+		    cnt = widths[defwid];
+		}
+	widths[defwid] = 0;
+	for ( i=0; i<maxw; ++i )
 		for ( j=-107; j<=107; ++j )
-		    if ( sf->chars[i]->width+j>=0 && sf->chars[i]->width+j<maxw )
-			++cumwid[sf->chars[i]->width+j];
+		    if ( i+j>=0 && i+j<maxw )
+			cumwid[i] += widths[i+j];
+	cnt = 0; nomwid = 0;
+	for ( i=0; i<maxw; ++i )
+	    if ( cnt<cumwid[i] ) {
+		cnt = cumwid[i];
+		nomwid = i;
 	    }
-	for ( i=j=k=0; i<maxw; ++i )
-	    if ( k<cumwid[i] ) {
-		k = cumwid[i];
-		j=i;
-		while ( i<maxw && cumwid[i]==k )
-		    ++i;
-		--i;
-		j=(i+j)/2;
-	    }
-	dumpintoper(private,j,21);		/* Nominative Width */
-	at->nomwid = j;
-	for ( i=k=l=0; i<maxw; ++i )
-	    if ( k<widths[i] && (i<j-107 || i>j+107) ) {
-		k=widths[i];
-		l=i;
-	    }
-	dumpintoper(private,l,20);		/* Default Width */
-	at->defwid = l;
 	free(widths); free(cumwid);
     }
+    dumpintoper(private,defwid,20);		/* Default Width */
+    if ( subfont==-1 )
+	at->defwid = defwid;
+    else
+	at->fds[subfont].defwid = defwid;
+    dumpintoper(private,nomwid,21);		/* Nominative Width */
+    if ( subfont==-1 )
+	at->nomwid = nomwid;
+    else
+	at->fds[subfont].nomwid = nomwid;
 
     bs = SplineFontIsFlexible(sf);
     hasblue = PSDictHasEntry(sf->private,"BlueValues")!=NULL;
@@ -2290,7 +2384,7 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at) {
 	DumpDblArray(bluevalues,sizeof(bluevalues)/sizeof(bluevalues[0]),private,6);
     if ( (pt=PSDictHasEntry(sf->private,"OtherBlues"))!=NULL )
 	DumpStrArray(pt,private,7);
-    else
+    else if ( !hasblue )
 	DumpDblArray(otherblues,sizeof(otherblues)/sizeof(otherblues[0]),private,7);
     if ( (pt=PSDictHasEntry(sf->private,"FamilyBlues"))!=NULL )
 	DumpStrArray(pt,private,8);
@@ -2304,12 +2398,24 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at) {
 	dumpintoper(private,bs,(12<<8)+10);
     if ( (pt=PSDictHasEntry(sf->private,"BlueFuzz"))!=NULL )
 	DumpStrDouble(pt,private,(12<<8)+11);
-    if ( stdhw[0]!=0 )
-	dumpdbloper(private,stdhw[0],10);
-    if ( stdvw[0]!=0 )
-	dumpdbloper(private,stdvw[0],11);
-    DumpDblArray(stemsnaph,sizeof(stemsnaph)/sizeof(stemsnaph[0]),private,(12<<8)|12);
-    DumpDblArray(stemsnapv,sizeof(stemsnapv)/sizeof(stemsnapv[0]),private,(12<<8)|13);
+    if ( hash ) {
+	DumpStrArray(PSDictHasEntry(sf->private,"StdHW"),private,10);
+	if ( (pt=PSDictHasEntry(sf->private,"StemSnapH"))!=NULL )
+	    DumpStrArray(pt,private,(12<<8)|12);
+    } else {
+	if ( stdhw[0]!=0 )
+	    dumpdbloper(private,stdhw[0],10);
+	DumpDblArray(stemsnaph,sizeof(stemsnaph)/sizeof(stemsnaph[0]),private,(12<<8)|12);
+    }
+    if ( hasv ) {
+	DumpStrArray(PSDictHasEntry(sf->private,"StdVW"),private,11);
+	if ( (pt=PSDictHasEntry(sf->private,"StemSnapV"))!=NULL )
+	    DumpStrArray(pt,private,(12<<8)|13);
+    } else {
+	if ( stdvw[0]!=0 )
+	    dumpdbloper(private,stdvw[0],11);
+	DumpDblArray(stemsnapv,sizeof(stemsnapv)/sizeof(stemsnapv[0]),private,(12<<8)|13);
+    }
     if ( (pt=PSDictHasEntry(sf->private,"ForceBold"))!=NULL ) {
 	dumpintoper(private,*pt=='t'||*pt=='T',(12<<8)|14);
     } else if ( sf->weight!=NULL &&
@@ -2323,6 +2429,11 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at) {
     if ( (pt=PSDictHasEntry(sf->private,"ExpansionFactor"))!=NULL )
 	DumpStrDouble(pt,private,(12<<8)+18);
     dumpsizedint(private,false,ftell(private)+3+1,19);	/* Subrs */
+
+    if ( subfont==-1 )
+	at->privatelen = ftell(private);
+    else
+	at->fds[subfont].privatelen = ftell(private);
 }
 
 /* When we exit this the topdict is not complete, we still need to fill in */
@@ -2337,7 +2448,7 @@ static void dumpcfftopdict(SplineFont *sf,struct alltabs *at) {
     putc('\2',cfff);		/* Offset size */
     dumpshort(cfff,1);		/* Offset to topdict */
     at->lenpos = ftell(cfff);
-    dumpshort(cfff,0);		/* placeholder for final position */
+    dumpshort(cfff,0);		/* placeholder for final position (final offset in index points beyond last element) */
     dumpsid(cfff,at,sf->version,0);
     dumpsid(cfff,at,sf->copyright,1);
     dumpsid(cfff,at,sf->fullname,2);
@@ -2357,10 +2468,7 @@ static void dumpcfftopdict(SplineFont *sf,struct alltabs *at) {
 	dumpint(cfff,0);
 	dumpintoper(cfff,0,(12<<8)|7);
     }
-    if ( (pt=PSDictHasEntry(sf->private,"UniqueID"))==NULL )
-	dumpintoper(cfff, 4000000 + (rand()&0x3ffff), 13 );
-    else
-	dumpintoper(cfff, strtol(pt,NULL,10), 13 );
+    dumpintoper(cfff, sf->uniqueid?sf->uniqueid:4000000 + (rand()&0x3ffff), 13 );
     SplineFontFindBounds(sf,&b);
     at->gi.xmin = b.minx;
     at->gi.ymin = b.miny;
@@ -2381,13 +2489,121 @@ static void dumpcfftopdict(SplineFont *sf,struct alltabs *at) {
 	SFIncrementXUID(sf);
     }
     /* Offset to charset (oper=15) needed here */
-    /* Offset to encoding (oper=16) needed here */
+    /* Offset to encoding (oper=16) needed here (not for CID )*/
     /* Offset to charstrings (oper=17) needed here */
-    /* Length of, and Offset to private (oper=18) needed here */
+    /* Length of, and Offset to private (oper=18) needed here (not for CID )*/
+}
+
+static int dumpcffdict(SplineFont *sf,struct alltabs *at) {
+    FILE *fdarray = at->fdarray;
+    int pstart;
+    /* according to the PSRef Man v3, only fontname, fontmatrix and private */
+    /*  appear in this dictionary */
+
+    dumpsid(fdarray,at,sf->fontname,(12<<8)|38);
+    if ( sf->ascent+sf->descent!=1000 ) {
+	dumpdbl(fdarray,1.0/(sf->ascent+sf->descent));
+	dumpint(fdarray,0);
+	dumpint(fdarray,0);
+	dumpdbl(fdarray,1.0/(sf->ascent+sf->descent));
+	dumpint(fdarray,0);
+	dumpintoper(fdarray,0,(12<<8)|7);
+    }
+    pstart = ftell(fdarray);
+    dumpsizedint(fdarray,false,0,-1);	/* private length */
+    dumpsizedint(fdarray,true,0,18);	/* private offset */
+return( pstart );
+}
+
+static void dumpcffdictindex(SplineFont *sf,struct alltabs *at) {
+    int i;
+    int pos;
+
+    dumpshort(at->fdarray,sf->subfontcnt);
+    putc('\2',at->fdarray);		/* DICTs aren't very big, and there are at most 255 */\
+    dumpshort(at->fdarray,1);		/* Offset to first dict */
+    for ( i=0; i<sf->subfontcnt; ++i )
+	dumpshort(at->fdarray,0);	/* Dump offset placeholders (note there's one extra to mark the end) */
+    pos = ftell(at->fdarray)-1;
+    for ( i=0; i<sf->subfontcnt; ++i ) {
+	at->fds[i].fillindictmark = dumpcffdict(sf->subfonts[i],at);
+	at->fds[i].eodictmark = ftell(at->fdarray);
+	if ( at->fds[i].eodictmark>65536 )
+	    GDrawIError("The DICT INDEX got too big, result won't work");
+    }
+    fseek(at->fdarray,2*sizeof(short)+sizeof(char),SEEK_SET);
+    for ( i=0; i<sf->subfontcnt; ++i )
+	dumpshort(at->fdarray,at->fds[i].eodictmark-pos);
+    fseek(at->fdarray,0,SEEK_END);
+}
+
+static void dumpcffcidtopdict(SplineFont *sf,struct alltabs *at) {
+    char *pt, *end;
+    FILE *cfff = at->cfff;
+    DBounds b;
+    int cidcnt=0, k;
+
+    for ( k=0; k<sf->subfontcnt; ++k )
+	if ( sf->subfonts[k]->charcnt>cidcnt ) cidcnt = sf->subfonts[k]->charcnt;
+
+    dumpshort(cfff,1);		/* One top dict */
+    putc('\2',cfff);		/* Offset size */
+    dumpshort(cfff,1);		/* Offset to topdict */
+    at->lenpos = ftell(cfff);
+    dumpshort(cfff,0);		/* placeholder for final position */
+    dumpsid(cfff,at,sf->cidregistry,-1);
+    dumpsid(cfff,at,sf->ordering,-1);
+    dumpintoper(cfff,sf->supplement,(12<<8)|30);		/* ROS operator must be first */
+    dumpdbloper(cfff,sf->cidversion,(12<<8)|31);
+    dumpintoper(cfff,cidcnt,(12<<8)|34);
+    dumpintoper(cfff, sf->uniqueid?sf->uniqueid:4000000 + (rand()&0x3ffff), (12<<8)|35 );
+
+    dumpsid(cfff,at,sf->copyright,1);
+    dumpsid(cfff,at,sf->fullname,2);
+    dumpsid(cfff,at,sf->familyname,3);
+    dumpsid(cfff,at,sf->weight,4);
+    /* FontMatrix  (identity here, real ones in sub fonts)*/
+    /* Actually there is no fontmatrix in the adobe cid font I'm looking at */
+    /*  which means it should default to [.001...] but it doesn't so the */
+    /*  docs aren't completely accurate */
+#if 0
+    dumpdbl(cfff,1.0);
+    dumpint(cfff,0);
+    dumpint(cfff,0);
+    dumpdbl(cfff,1.0);
+    dumpint(cfff,0);
+    dumpintoper(cfff,0,(12<<8)|7);
+#endif
+
+    CIDFindBounds(sf,&b);
+    at->gi.xmin = b.minx;
+    at->gi.ymin = b.miny;
+    at->gi.xmax = b.maxx;
+    at->gi.ymax = b.maxy;
+    dumpdbl(cfff,floor(b.minx));
+    dumpdbl(cfff,floor(b.miny));
+    dumpdbl(cfff,ceil(b.maxx));
+    dumpdbloper(cfff,ceil(b.maxy),5);
+    /* We'll never set StrokeWidth */
+    if ( sf->xuid!=NULL ) {
+	pt = sf->xuid; if ( *pt=='[' ) ++pt;
+	while ( *pt && *pt!=']' ) {
+	    dumpint(cfff,strtol(pt,&end,10));
+	    for ( pt = end; *pt==' '; ++pt );
+	}
+	putc(14,cfff);
+	SFIncrementXUID(sf);
+    }
+    dumpint(cfff,0);			/* Docs say a private dict is required and they don't specifically omit CID top dicts */
+    dumpintoper(cfff,0,18);		/* But they do say it can be zero */
+    /* Offset to charset (oper=15) needed here */
+    /* Offset to charstrings (oper=17) needed here */
+    /* Offset to FDArray (oper=12,36) needed here */
+    /* Offset to FDSelect (oper=12,37) needed here */
 }
 
 static void finishup(SplineFont *sf,struct alltabs *at) {
-    int strlen, shlen, glen,enclen,csetlen,cstrlen,prvlen,subrlen;
+    int strlen, shlen, glen,enclen,csetlen,cstrlen,prvlen;
     int base, eotop, strhead;
 
     storesid(at,NULL);		/* end the strings index */
@@ -2397,7 +2613,6 @@ static void finishup(SplineFont *sf,struct alltabs *at) {
     csetlen = ftell(at->charset);
     cstrlen = ftell(at->charstrings);
     prvlen = ftell(at->private);
-    subrlen = ftell(at->subrs);
     base = ftell(at->cfff);
     if ( base+6*3+strlen+glen+enclen+csetlen+cstrlen+prvlen > 32767 ) {
 	at->cfflongoffset = true;
@@ -2410,7 +2625,7 @@ static void finishup(SplineFont *sf,struct alltabs *at) {
     dumpsizedint(at->cfff,at->cfflongoffset,base+strlen+glen,15);
     dumpsizedint(at->cfff,at->cfflongoffset,base+strlen+glen+csetlen,16);
     dumpsizedint(at->cfff,at->cfflongoffset,base+strlen+glen+csetlen+enclen,17);
-    dumpsizedint(at->cfff,at->cfflongoffset,prvlen,-1);
+    dumpsizedint(at->cfff,at->cfflongoffset,at->privatelen,-1);
     dumpsizedint(at->cfff,at->cfflongoffset,base+strlen+glen+csetlen+enclen+cstrlen,18);
     eotop = base-strhead-at->lenpos-1;
     if ( at->cfflongoffset ) {
@@ -2441,11 +2656,80 @@ static void finishup(SplineFont *sf,struct alltabs *at) {
     /* Char Strings */
     copyfile(at->cfff,at->charstrings,base+strlen+glen+csetlen+enclen);
 
-    /* Private */
+    /* Private & Subrs */
     copyfile(at->cfff,at->private,base+strlen+glen+csetlen+enclen+cstrlen);
+}
 
-    /* Subrs */
-    copyfile(at->cfff,at->subrs,base+strlen+glen+csetlen+enclen+cstrlen+prvlen);
+static void finishupcid(SplineFont *sf,struct alltabs *at) {
+    int strlen, shlen, glen,csetlen,cstrlen,fdsellen,fdarrlen,prvlen;
+    int base, eotop, strhead;
+    int i;
+
+    storesid(at,NULL);		/* end the strings index */
+    strlen = ftell(at->sidf) + (shlen = ftell(at->sidh));
+    glen = sizeof(short);	/* Single entry: 0, no globals */
+    /* No encodings */
+    csetlen = ftell(at->charset);
+    fdsellen = ftell(at->fdselect);
+    cstrlen = ftell(at->charstrings);
+    fdarrlen = ftell(at->fdarray);
+    base = ftell(at->cfff);
+
+    at->cfflongoffset = true;
+    base += 5*4+4+2;		/* two of the opers below are two byte opers */
+    strhead = 2+(at->sidcnt>1);
+    base += strhead;
+
+    prvlen = 0;
+    for ( i=0; i<sf->subfontcnt; ++i ) {
+	fseek(at->fdarray,at->fds[i].fillindictmark,SEEK_SET);
+	dumpsizedint(at->fdarray,false,at->fds[i].privatelen,-1);	/* Private len */
+	dumpsizedint(at->fdarray,true,base+strlen+glen+csetlen+fdsellen+cstrlen+fdarrlen+prvlen,18);	/* Private offset */
+	prvlen += ftell(at->fds[i].private);	/* private & subrs */
+    }
+
+    dumpsizedint(at->cfff,at->cfflongoffset,base+strlen+glen,15);	/* charset */
+    dumpsizedint(at->cfff,at->cfflongoffset,base+strlen+glen+csetlen,(12<<8)|37);	/* fdselect */
+    dumpsizedint(at->cfff,at->cfflongoffset,base+strlen+glen+csetlen+fdsellen,17);	/* charstrings */
+    dumpsizedint(at->cfff,at->cfflongoffset,base+strlen+glen+csetlen+fdsellen+cstrlen,(12<<8)|36);	/* fdarray */
+    eotop = base-strhead-at->lenpos-1;
+    fseek(at->cfff,at->lenpos,SEEK_SET);
+    dumpshort(at->cfff,eotop);
+    fseek(at->cfff,0,SEEK_END);
+
+    /* String Index */
+    dumpshort(at->cfff,at->sidcnt-1);
+    if ( at->sidcnt!=1 ) {		/* Everybody gets an added NULL */
+	putc(at->sidlongoffset?4:2,at->cfff);
+	copyfile(at->cfff,at->sidh,base);
+	copyfile(at->cfff,at->sidf,base+shlen);
+    }
+
+    /* Global Subrs */
+    dumpshort(at->cfff,0);
+
+    /* Charset */
+    copyfile(at->cfff,at->charset,base+strlen+glen);
+
+    /* FDSelect */
+    copyfile(at->cfff,at->fdselect,base+strlen+glen+csetlen);
+
+    /* Char Strings */
+    copyfile(at->cfff,at->charstrings,base+strlen+glen+csetlen+fdsellen);
+
+    /* FDArray (DICT Index) */
+    copyfile(at->cfff,at->fdarray,base+strlen+glen+csetlen+fdsellen+cstrlen);
+
+    /* Private & Subrs */
+    prvlen = 0;
+    for ( i=0; i<sf->subfontcnt; ++i ) {
+	int temp = ftell(at->fds[i].private);
+	copyfile(at->cfff,at->fds[i].private,
+		base+strlen+glen+csetlen+fdsellen+cstrlen+fdarrlen+prvlen);
+	prvlen += temp;
+    }
+
+    free(at->fds);
 }
 
 static void dumpcffhmtx(struct alltabs *at,SplineFont *sf) {
@@ -2480,6 +2764,42 @@ static void dumpcffhmtx(struct alltabs *at,SplineFont *sf) {
     at->gi.maxp->numGlyphs = cnt;
 }
 
+static void dumpcffcidhmtx(struct alltabs *at,SplineFont *_sf) {
+    DBounds b;
+    SplineChar *sc;
+    int cid,i,cnt=0,max;
+    SplineFont *sf;
+
+    at->gi.hmtx = tmpfile();
+    max = 0;
+    for ( i=0; i<_sf->subfontcnt; ++i )
+	if ( max<_sf->subfonts[i]->charcnt )
+	    max = _sf->subfonts[i]->charcnt;
+    for ( cid = 0; cid<max; ++cid ) {
+	for ( i=0; i<_sf->subfontcnt; ++i ) {
+	    sf = _sf->subfonts[i];
+	    if ( cid<sf->charcnt && SCWorthOutputting(sf->chars[cid]))
+	break;
+	}
+	if ( i!=_sf->subfontcnt ) {
+	    sc = sf->chars[cid];
+	    dumpshort(at->gi.hmtx,sc->width);
+	    SplineCharFindBounds(sc,&b);
+	    dumpshort(at->gi.hmtx,b.minx);
+	    ++cnt;
+	} else if ( cid==0 && i==sf->subfontcnt ) {
+	    /* Use final subfont to contain mythical default if there is no real default */
+	    dumpshort(at->gi.hmtx,sf->ascent+sf->descent);
+	    dumpshort(at->gi.hmtx,0);
+	    ++cnt;
+	}
+    }
+    at->gi.hmtxlen = ftell(at->gi.hmtx);
+    /* we don't need to align this table, things get written aligned */
+
+    at->gi.maxp->numGlyphs = cnt;
+}
+
 static void dumptype2glyphs(SplineFont *sf,struct alltabs *at) {
     int i;
     struct pschars *subrs;
@@ -2496,11 +2816,11 @@ static void dumptype2glyphs(SplineFont *sf,struct alltabs *at) {
     dumpcffcharset(sf,at);
     dumpcffencoding(sf,at);
     GProgressChangeStages(2);
-    dumpcffprivate(sf,at);
+    dumpcffprivate(sf,at,-1);
     subrs = SplineFont2Subrs2(sf);
+    _dumpcffstrings(at->private,subrs);
     GProgressNextStage();
     at->charstrings = dumpcffstrings(SplineFont2Chrs2(sf,at->defwid,at->nomwid,subrs));
-    at->subrs = dumpcffstrings(subrs);
     dumpcfftopdict(sf,at);
     finishup(sf,at);
 
@@ -2513,11 +2833,50 @@ static void dumptype2glyphs(SplineFont *sf,struct alltabs *at) {
     dumpcffhmtx(at,sf);
 }
 
-static void sethead(struct head *head,SplineFont *sf) {
+static void dumpcidglyphs(SplineFont *sf,struct alltabs *at) {
+    int i;
+
+    at->cfff = tmpfile();
+    at->sidf = tmpfile();
+    at->sidh = tmpfile();
+    at->charset = tmpfile();
+    at->fdselect = tmpfile();
+    at->fdarray = tmpfile();
+
+    at->fds = gcalloc(sf->subfontcnt,sizeof(struct fd2data));
+    for ( i=0; i<sf->subfontcnt; ++i ) {
+	at->fds[i].private = tmpfile();
+	dumpcffprivate(sf->subfonts[i],at,i);
+	at->fds[i].subrs = SplineFont2Subrs2(sf->subfonts[i]);
+	_dumpcffstrings(at->fds[i].private,at->fds[i].subrs);
+    }
+
+    dumpcffheader(sf,at->cfff);
+    dumpcffnames(sf,at->cfff);
+    dumpcffcidset(sf,at);
+    dumpcfffdselect(sf,at);
+    dumpcffdictindex(sf,at);
+    at->charstrings = dumpcffstrings(CID2Chrs2(sf,at->fds));
+    for ( i=0; i<sf->subfontcnt; ++i )
+	PSCharsFree(at->fds[i].subrs);
+    dumpcffcidtopdict(sf,at);
+    finishupcid(sf,at);
+
+    at->cfflen = ftell(at->cfff);
+    if ( at->cfflen&3 ) {
+	for ( i=4-(at->cfflen&3); i>0; --i )
+	    putc('\0',at->cfff);
+    }
+
+    dumpcffcidhmtx(at,sf);
+}
+
+static void sethead(struct head *head,SplineFont *_sf) {
     time_t now;
     uint32 now1904[4];
     uint32 year[2];
-    int i, lr, rl;
+    int i, lr, rl, j;
+    SplineFont *sf = _sf;
 
     head->version = 0x00010000;
     head->checksumAdj = 0;
@@ -2533,13 +2892,19 @@ static void sethead(struct head *head,SplineFont *sf) {
     head->lowestreadable = 8;
     head->locais32 = 1;
     lr = rl = 0;
-    for ( i=0; i<sf->charcnt; ++i )
-	if ( SCWorthOutputting(sf->chars[i]) ) {
-	    if ( islefttoright(sf->chars[i]->unicodeenc))
-		lr = 1;
-	    else if ( isrighttoleft(sf->chars[i]->unicodeenc))
-		rl = 1;
-	}
+    j = 0;
+    do {
+	sf = ( _sf->subfontcnt==0 ) ? _sf : _sf->subfonts[j];
+	for ( i=0; i<sf->charcnt; ++i )
+	    if ( SCWorthOutputting(sf->chars[i]) ) {
+		if ( islefttoright(sf->chars[i]->unicodeenc))
+		    lr = 1;
+		else if ( isrighttoleft(sf->chars[i]->unicodeenc))
+		    rl = 1;
+	    }
+	++j;
+    } while ( j<_sf->subfontcnt );
+    sf = _sf;
     /* I assume we've always got some neutrals (spaces, punctuation) */
     if ( lr && rl )
 	head->dirhint = 0;
@@ -2572,9 +2937,11 @@ static void sethead(struct head *head,SplineFont *sf) {
     head->modtime[0] = head->createtime[0] = (now1904[0]<<16)|now1904[1];
 }
 
-static void sethhead(struct hhead *hhead,struct alltabs *at, SplineFont *sf) {
+static void sethhead(struct hhead *hhead,struct alltabs *at, SplineFont *_sf) {
     int i, width, rbearing;
+    SplineFont *sf;
     DBounds bb;
+    int j;
 
     hhead->version = 0x00010000;
     hhead->ascender = sf->ascent;
@@ -2582,12 +2949,17 @@ static void sethhead(struct hhead *hhead,struct alltabs *at, SplineFont *sf) {
     hhead->linegap = 0;
     width = 0x80000000; rbearing = 0x7fffffff;
     at->isfixed = true;
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	SplineCharFindBounds(sf->chars[i],&bb);
-	if ( width!=0x80000000 && sf->chars[i]->width!=width ) at->isfixed = false;
-	if ( sf->chars[i]->width>width ) width = sf->chars[i]->width;
-	if ( sf->chars[i]->width-bb.maxx < rbearing ) rbearing = sf->chars[i]->width-bb.maxx;
-    }
+    j=0;
+    do {
+	sf = ( _sf->subfontcnt==0 ) ? _sf : _sf->subfonts[j];
+	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	    SplineCharFindBounds(sf->chars[i],&bb);
+	    if ( width!=0x80000000 && sf->chars[i]->width!=width ) at->isfixed = false;
+	    if ( sf->chars[i]->width>width ) width = sf->chars[i]->width;
+	    if ( sf->chars[i]->width-bb.maxx < rbearing ) rbearing = sf->chars[i]->width-bb.maxx;
+	}
+	++j;
+    } while ( j<_sf->subfontcnt );
     hhead->maxwidth = width;
     hhead->minlsb = at->head.xmin;
     hhead->minrsb = rbearing;
@@ -2595,19 +2967,27 @@ static void sethhead(struct hhead *hhead,struct alltabs *at, SplineFont *sf) {
     hhead->caretSlopeRise = 1;
 }
 
-void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname) {
-    int i, samewid= -1;
+void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *_sf,char *fontname) {
+    int i, samewid= -1, j;
+    SplineFont *sf;
 
     if ( !pfminfo->pfmset ) {
 	memset(pfminfo,'\0',sizeof(*pfminfo));
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	    if ( SCWorthOutputting(sf->chars[i]) ) {
-		if ( samewid==-1 )
-		    samewid = sf->chars[i]->width;
-		else if ( samewid!=sf->chars[i]->width )
-		    samewid = -2;
+	j=0;
+	do {
+	    sf = ( _sf->subfontcnt==0 ) ? _sf : _sf->subfonts[j];
+	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+		if ( SCWorthOutputting(sf->chars[i]) ) {
+		    if ( samewid==-1 )
+			samewid = sf->chars[i]->width;
+		    else if ( samewid!=sf->chars[i]->width )
+			samewid = -2;
+		}
 	    }
-	}
+	    ++j ;
+	} while ( j<_sf->subfontcnt );
+	sf = _sf;
+
 	pfminfo->pfmfamily = 0x10;
 	pfminfo->panose[0] = 2;
 	if ( samewid>0 )
@@ -2692,16 +3072,19 @@ void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname) {
     }
 }
 
-static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *sf,
+static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *_sf,
 	enum fontformat format) {
-    int i,j,cnt1,cnt2,first,last,avg1,avg2;
+    int i,j,cnt1,cnt2,first,last,avg1,avg2,k;
+    SplineFont *sf = _sf;
 
     SFDefaultOS2Info(&sf->pfminfo,sf,sf->fontname);
 
     os2->version = 1;
     os2->weightClass = sf->pfminfo.weight;
     os2->widthClass = sf->pfminfo.width;
-    os2->fstype = 0x8;
+    os2->fstype = 0xc;
+    if ( sf->pfminfo.fstype!=-1 )
+	os2->fstype = sf->pfminfo.fstype;
     os2->ysubYSize = os2->ysubXSize = os2->ysubYOff = (sf->ascent+sf->descent)/5;
     os2->ysubXOff = os2->ysupXOff = 0;
     os2->ysupYSize = os2->ysupXSize = os2->ysupYOff = (sf->ascent+sf->descent)/5;
@@ -2717,21 +3100,28 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *sf,
 
     avg1 = avg2 = last = 0; first = 0x10000;
     cnt1 = cnt2 = 0;
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->unicodeenc!=-1 ) {
-	for ( j=0; j<sizeof(uniranges)/sizeof(uniranges[0]); ++j )
-	    if ( sf->chars[i]->unicodeenc>=uniranges[j][0] &&
-		    sf->chars[i]->unicodeenc<=uniranges[j][1] ) {
-		os2->unicoderange[j>>5] |= (1<<(j&31));
-	break;
+    k = 0;
+    do {
+	sf = ( _sf->subfontcnt==0 ) ? _sf : _sf->subfonts[k];
+	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->unicodeenc!=-1 ) {
+	    for ( j=0; j<sizeof(uniranges)/sizeof(uniranges[0]); ++j )
+		if ( sf->chars[i]->unicodeenc>=uniranges[j][0] &&
+			sf->chars[i]->unicodeenc<=uniranges[j][1] ) {
+		    os2->unicoderange[j>>5] |= (1<<(j&31));
+	    break;
+		}
+	    if ( sf->chars[i]->unicodeenc<first ) first = sf->chars[i]->unicodeenc;
+	    if ( sf->chars[i]->unicodeenc>last ) last = sf->chars[i]->unicodeenc;
+	    avg2 += sf->chars[i]->width; ++cnt2;
+	    if ( sf->chars[i]->unicodeenc==' ' ||
+		    (sf->chars[i]->unicodeenc>='a' && sf->chars[i]->unicodeenc<='z')) {
+		avg1 += sf->chars[i]->width; ++cnt1;
 	    }
-	if ( sf->chars[i]->unicodeenc<first ) first = sf->chars[i]->unicodeenc;
-	if ( sf->chars[i]->unicodeenc>last ) last = sf->chars[i]->unicodeenc;
-	avg2 += sf->chars[i]->width; ++cnt2;
-	if ( sf->chars[i]->unicodeenc==' ' ||
-		(sf->chars[i]->unicodeenc>='a' && sf->chars[i]->unicodeenc<='z')) {
-	    avg1 += sf->chars[i]->width; ++cnt1;
 	}
-    }
+	++k;
+    } while ( k<_sf->subfontcnt );
+    sf = _sf;
+
     if ( cnt1==27 )
 	os2->avgCharWid = avg1/cnt1;
     else if ( cnt2!=0 )
@@ -2770,55 +3160,50 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *sf,
     else if ( sf->encoding_name==em_symbol )
 	os2->ulCodePage[0] |= 1<<31;	/* symbol */
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	if ( sf->chars[i]->unicodeenc==0xde )
-	    os2->ulCodePage[0] |= 1<<0;		/* latin1 */
-	else if ( sf->chars[i]->unicodeenc==0x13d )
-	    os2->ulCodePage[0] |= 1<<1;		/* latin2 */
-	else if ( sf->chars[i]->unicodeenc==0x411 )
-	    os2->ulCodePage[0] |= 1<<2;		/* cyrillic */
-	else if ( sf->chars[i]->unicodeenc==0x386 )
-	    os2->ulCodePage[0] |= 1<<3;		/* greek */
-	else if ( sf->chars[i]->unicodeenc==0x130 )
-	    os2->ulCodePage[0] |= 1<<4;		/* turkish */
-	else if ( sf->chars[i]->unicodeenc==0x5d0 )
-	    os2->ulCodePage[0] |= 1<<5;		/* hebrew */
-	else if ( sf->chars[i]->unicodeenc==0x631 )
-	    os2->ulCodePage[0] |= 1<<6;		/* arabic */
-	else if ( sf->chars[i]->unicodeenc==0x157 )
-	    os2->ulCodePage[0] |= 1<<7;		/* baltic */
-	else if ( sf->chars[i]->unicodeenc==0xe45 )
-	    os2->ulCodePage[0] |= 1<<17;	/* thai */
-	else if ( sf->chars[i]->unicodeenc==0x30a8 )
-	    os2->ulCodePage[0] |= 1<<18;	/* japanese */
-	else if ( sf->chars[i]->unicodeenc==0x3105 )
-	    os2->ulCodePage[0] |= 1<<19;	/* simplified chinese */
-	else if ( sf->chars[i]->unicodeenc==0x3131 )
-	    os2->ulCodePage[0] |= 1<<20;	/* korean */
-	else if ( sf->chars[i]->unicodeenc==0x21d4 )
-	    os2->ulCodePage[0] |= 1<<31;	/* symbol */
-    }
+    k=0;
+    do {
+	sf = ( _sf->subfontcnt==0 ) ? _sf : _sf->subfonts[k];
+	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	    if ( sf->chars[i]->unicodeenc==0xde )
+		os2->ulCodePage[0] |= 1<<0;		/* latin1 */
+	    else if ( sf->chars[i]->unicodeenc==0x13d )
+		os2->ulCodePage[0] |= 1<<1;		/* latin2 */
+	    else if ( sf->chars[i]->unicodeenc==0x411 )
+		os2->ulCodePage[0] |= 1<<2;		/* cyrillic */
+	    else if ( sf->chars[i]->unicodeenc==0x386 )
+		os2->ulCodePage[0] |= 1<<3;		/* greek */
+	    else if ( sf->chars[i]->unicodeenc==0x130 )
+		os2->ulCodePage[0] |= 1<<4;		/* turkish */
+	    else if ( sf->chars[i]->unicodeenc==0x5d0 )
+		os2->ulCodePage[0] |= 1<<5;		/* hebrew */
+	    else if ( sf->chars[i]->unicodeenc==0x631 )
+		os2->ulCodePage[0] |= 1<<6;		/* arabic */
+	    else if ( sf->chars[i]->unicodeenc==0x157 )
+		os2->ulCodePage[0] |= 1<<7;		/* baltic */
+	    else if ( sf->chars[i]->unicodeenc==0xe45 )
+		os2->ulCodePage[0] |= 1<<17;	/* thai */
+	    else if ( sf->chars[i]->unicodeenc==0x30a8 )
+		os2->ulCodePage[0] |= 1<<18;	/* japanese */
+	    else if ( sf->chars[i]->unicodeenc==0x3105 )
+		os2->ulCodePage[0] |= 1<<19;	/* simplified chinese */
+	    else if ( sf->chars[i]->unicodeenc==0x3131 )
+		os2->ulCodePage[0] |= 1<<20;	/* korean */
+	    else if ( sf->chars[i]->unicodeenc==0x21d4 )
+		os2->ulCodePage[0] |= 1<<31;	/* symbol */
+	}
+	++k;
+    } while ( k<_sf->subfontcnt );
+    sf = _sf;
 
     if ( os2->ulCodePage[0]==0 )
 	os2->ulCodePage[0] |= 1;
-    if ( format==ff_otf ) {
-	int caph, xh, cnt;
-	DBounds b;
-	caph = xh = 0; cnt = 0;
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	    if ( sf->chars[i]->unicodeenc=='I' || sf->chars[i]->unicodeenc=='x' ) {
-		SplineCharFindBounds(sf->chars[i],&b);
-		if ( sf->chars[i]->unicodeenc=='I' )
-		    caph = b.maxy;
-		else if ( sf->chars[i]->unicodeenc=='x' )
-		    xh = b.maxy;
-		if ( caph!=0 && xh!=0 )
-	break;
-	    }
-	}
+    if ( format==ff_otf || format==ff_otfcid ) {
+	BlueData bd;
+
+	QuickBlues(sf,&bd);		/* This handles cid fonts properly */
 	os2->version = 2;
-	os2->xHeight = xh;
-	os2->capHeight = caph;
+	os2->xHeight = bd.xheight;
+	os2->capHeight = bd.caph;
 	os2->defChar = ' ';
 	os2->breakChar = ' ';
 	os2->maxContext = 2;	/* Might do some kerning */
@@ -2900,7 +3285,7 @@ static void redomaxp(struct alltabs *at,enum fontformat format) {
 
     dumplong(at->maxpf,at->maxp.version);
     dumpshort(at->maxpf,at->maxp.numGlyphs);
-    if ( format!=ff_otf ) {
+    if ( format!=ff_otf && format!=ff_otfcid ) {
 	dumpshort(at->maxpf,at->maxp.maxPoints);
 	dumpshort(at->maxpf,at->maxp.maxContours);
 	dumpshort(at->maxpf,at->maxp.maxCompositPts);
@@ -3213,7 +3598,7 @@ static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format)
 
     at->post = tmpfile();
 
-    dumplong(at->post,format!=ff_otf?0x00020000:0x00030000);	/* formattype */
+    dumplong(at->post,format!=ff_otf && format!=ff_otfcid?0x00020000:0x00030000);	/* formattype */
     dumpfixed(at->post,sf->italicangle);
     dumpshort(at->post,sf->upos);
     dumpshort(at->post,sf->uwidth);
@@ -3222,7 +3607,7 @@ static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format)
     dumplong(at->post,0);		/* no idea about memory */
     dumplong(at->post,0);		/* no idea about memory */
     dumplong(at->post,0);		/* no idea about memory */
-    if ( format!=ff_otf ) {
+    if ( format!=ff_otf && format!=ff_otfcid ) {
 	dumpshort(at->post,at->maxp.numGlyphs);
 
 	dumpshort(at->post,0);		/* glyph 0 is named .notdef */
@@ -3269,17 +3654,20 @@ static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format)
 	    putc('\0',at->post);
 }
 
-static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) {
+static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format) {
     uint16 *avail = gcalloc(65536,sizeof(uint16));
-    int i,j;
+    uint16 *sfind = NULL;
+    int i,j,k,l;
     int segcnt, cnt=0, delta, rpos;
     struct cmapseg { uint16 start, end; uint16 delta; uint16 rangeoff; } *cmapseg;
     uint16 *ranges;
     char table[256];
+    SplineFont *sf = _sf;
+    SplineChar *sc;
 
     at->cmap = tmpfile();
 
-    /* Mac, symbol encoding table */
+    /* Mac, symbol encoding table */ /* Not going to bother with this for cid fonts */
     memset(table,'\0',sizeof(table));
     for ( i=0; i<sf->charcnt && i<256; ++i )
 	if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=0 )
@@ -3304,12 +3692,22 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
 	for ( i=0; i<256; ++i )
 	    putc(table[i],at->cmap);
     } else {
-	for ( i=0; i<sf->charcnt; ++i )
+	if ( _sf->subfontcnt!=0 ) sfind = gcalloc(65536,sizeof(uint16));
+	for ( i=0; i<sf->charcnt; ++i ) {
+	    k = 0;
+	    do {
+		sf = (_sf->subfontcnt==0 ) ? _sf : _sf->subfonts[k];
 		if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=0 &&
-		    sf->chars[i]->unicodeenc!=-1 ) {
-	    avail[sf->chars[i]->unicodeenc] = i;
-	    ++cnt;
+			sf->chars[i]->unicodeenc!=-1 ) {
+		    avail[sf->chars[i]->unicodeenc] = i;
+		    if ( sfind!=NULL ) sfind[sf->chars[i]->unicodeenc] = k;
+		    ++cnt;
+	    break;
+		}
+		++k;
+	    } while ( k<_sf->subfontcnt );
 	}
+
 	j = -1;
 	for ( i=segcnt=0; i<65536; ++i ) {
 	    if ( avail[i] && j==-1 ) {
@@ -3338,19 +3736,28 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
 	cmapseg[segcnt++].delta = 1;
 	rpos = 0;
 	for ( i=0; i<segcnt-1; ++i ) {
-	    delta = sf->chars[avail[cmapseg[i].start]]->ttf_glyph-cmapseg[i].start;
-	    for ( j=cmapseg[i].start; j<=cmapseg[i].end; ++j )
-		if ( delta != sf->chars[avail[j]]->ttf_glyph-j )
+	    l = avail[cmapseg[i].start];
+	    sc = sfind==NULL ? _sf->chars[l] : _sf->subfonts[sfind[l]]->chars[l];
+	    delta = sc->ttf_glyph-cmapseg[i].start;
+	    for ( j=cmapseg[i].start; j<=cmapseg[i].end; ++j ) {
+		l = avail[j];
+		sc = sfind==NULL ? _sf->chars[l] : _sf->subfonts[sfind[l]]->chars[l];
+		if ( delta != sc->ttf_glyph-j )
 	    break;
+	    }
 	    if ( j>cmapseg[i].end )
 		cmapseg[i].delta = delta;
 	    else {
 		cmapseg[i].rangeoff = (rpos + (segcnt-i)) * sizeof(int16);
-		for ( j=cmapseg[i].start; j<=cmapseg[i].end; ++j )
-		    ranges[rpos++] = sf->chars[avail[j]]->ttf_glyph;
+		for ( j=cmapseg[i].start; j<=cmapseg[i].end; ++j ) {
+		    l = avail[j];
+		    sc = sfind==NULL ? _sf->chars[l] : _sf->subfonts[sfind[l]]->chars[l];
+		    ranges[rpos++] = sc->ttf_glyph;
+		}
 	    }
 	}
 	free(avail);
+	if ( _sf->subfontcnt!=0 ) free(sfind);
 
 	/* Two encoding table pointers, one for ms, one for mac */
 	dumpshort(at->cmap,0);		/* version */
@@ -3417,7 +3824,7 @@ static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format
     memset(at,'\0',sizeof(struct alltabs));
 
     at->maxp.version = 0x00010000;
-    if ( format==ff_otf )
+    if ( format==ff_otf || format==ff_otfcid )
 	at->maxp.version = 0x00005000;
     at->maxp.maxZones = 2;
     at->maxp.maxFDEFs = 1;
@@ -3426,6 +3833,8 @@ static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format
     at->gi.maxp = &at->maxp;
     if ( format==ff_otf )
 	dumptype2glyphs(sf,at);
+    else if ( format==ff_otfcid )
+	dumpcidglyphs(sf,at);
     else
 	dumpglyphs(sf,&at->gi);
     at->head.xmin = at->gi.xmin;
@@ -3439,7 +3848,7 @@ static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format
     at->hhead.numMetrics = at->maxp.numGlyphs;
     if ( at->gi.glyph_len<0x20000 )
 	at->head.locais32 = 0;
-    if ( format!=ff_otf )
+    if ( format!=ff_otf && format!=ff_otfcid )
 	redoloca(at);
     redohead(at);
     redohhead(at);
@@ -3450,7 +3859,7 @@ static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format
     dumppost(at,sf,format);
     dumpcmap(at,sf,format);
 
-    if ( format==ff_otf ) {
+    if ( format==ff_otf || format==ff_otfcid ) {
 	at->tabdir.version = CHR('O','T','T','O');
 	at->tabdir.numtab = 9+(at->kernlen!=0);
     } else {
@@ -3464,7 +3873,7 @@ static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format
     i = 0;
     pos = sizeof(int32)+4*sizeof(int16) + at->tabdir.numtab*4*sizeof(int32);
 
-    if ( format==ff_otf ) {
+    if ( format==ff_otf || format==ff_otfcid ) {
 	at->tabdir.tabs[i].tag = CHR('C','F','F',' ');
 	at->tabdir.tabs[i].checksum = filecheck(at->cfff);
 	at->tabdir.tabs[i].offset = pos;
@@ -3484,7 +3893,7 @@ static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format
     at->tabdir.tabs[i++].length = at->cmaplen;
     pos += ((at->cmaplen+3)>>2)<<2;
 
-    if ( format!=ff_otf ) {
+    if ( format!=ff_otf && format!=ff_otfcid ) {
 	at->tabdir.tabs[i].tag = CHR('c','v','t',' ');
 	at->tabdir.tabs[i].checksum = filecheck(at->cvtf);
 	at->tabdir.tabs[i].offset = pos;
@@ -3524,7 +3933,7 @@ static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format
 	pos += ((at->kernlen+3)>>2)<<2;
     }
 
-    if ( format!=ff_otf  ) {
+    if ( format!=ff_otf && format!=ff_otfcid  ) {
 	at->tabdir.tabs[i].tag = CHR('l','o','c','a');
 	at->tabdir.tabs[i].checksum = filecheck(at->loca);
 	at->tabdir.tabs[i].offset = pos;
@@ -3569,11 +3978,11 @@ static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
     }
 
     i=0;
-    if ( format==ff_otf )
+    if ( format==ff_otf || format==ff_otfcid)
 	copyfile(ttf,at->cfff,at->tabdir.tabs[i++].offset);
     copyfile(ttf,at->os2f,at->tabdir.tabs[i++].offset);
     copyfile(ttf,at->cmap,at->tabdir.tabs[i++].offset);
-    if ( format!=ff_otf ) {
+    if ( format!=ff_otf && format!= ff_otfcid ) {
 	copyfile(ttf,at->cvtf,at->tabdir.tabs[i++].offset);
 	copyfile(ttf,at->gi.glyphs,at->tabdir.tabs[i++].offset);
     }
@@ -3583,7 +3992,7 @@ static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
     copyfile(ttf,at->gi.hmtx,at->tabdir.tabs[i++].offset);
     if ( at->kern!=NULL )
 	copyfile(ttf,at->kern,at->tabdir.tabs[i++].offset);
-    if ( format!=ff_otf )
+    if ( format!=ff_otf && format!=ff_otfcid )
 	copyfile(ttf,at->loca,at->tabdir.tabs[i++].offset);
     copyfile(ttf,at->maxpf,at->tabdir.tabs[i++].offset);
     copyfile(ttf,at->name,at->tabdir.tabs[i++].offset);
@@ -3605,6 +4014,11 @@ int WriteTTFFont(char *fontname,SplineFont *sf,enum fontformat format) {
     if (( ttf=fopen(fontname,"w+"))==NULL )
 return( 0 );
     oldloc = setlocale(LC_NUMERIC,"C");		/* TrueType probably doesn't need this, but OpenType does for floats in dictionaries */
+    if ( format==ff_otfcid ) {
+	if ( sf->cidmaster ) sf = sf->cidmaster;
+    } else {
+	if ( sf->subfontcnt!=0 ) sf = sf->subfonts[0];
+    }
     initTables(&at,sf,format);
     dumpttf(ttf,&at,format);
     setlocale(LC_NUMERIC,oldloc);

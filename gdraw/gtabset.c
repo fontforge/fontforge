@@ -539,8 +539,10 @@ static int sendtoparent_eh(GWindow gw, GEvent *event) {
     if ( event->type==et_controlevent ) {
 	event->w = GDrawGetParentWindow(gw);
 	GDrawPostEvent(event);
-    } else if ( event->type==et_char )
-return( false );
+    } else if ( event->type==et_char ) {
+	event->w = GDrawGetParentWindow(gw);
+	GDrawPostEvent(event);
+    }
 
 return( true );
 }

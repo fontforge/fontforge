@@ -29,7 +29,7 @@
 #include "splinefont.h"
 #include "ustring.h"
 
-static void SpAdjustTo(SplinePoint *sp,double newx, double newy) {
+static void SpAdjustTo(SplinePoint *sp,real newx, real newy) {
     sp->prevcp.x += newx-sp->me.x;
     sp->nextcp.x += newx-sp->me.x;
     sp->prevcp.y += newy-sp->me.y;
@@ -41,7 +41,7 @@ static void SpAdjustTo(SplinePoint *sp,double newx, double newy) {
 static void SpaceOne(CharView *cv,SplinePoint *sp) {
     SplinePoint *prev = sp->prev->from, *next = sp->next->to;
     BasePoint v, new;
-    double len, off;
+    real len, off;
     /* Rotate the coordinate system so that one axis is parallel to the */
     /*  line between sp->next->to and sp->prev->from. Position sp so that */
     /*  it is mid-way between the two on that axis while its distance from */
@@ -65,9 +65,9 @@ static void SpaceOne(CharView *cv,SplinePoint *sp) {
 static void SpaceMany(CharView *cv,DBounds *b, int dir, int region_size, int cnt) {
     SplinePoint *sp;
     SplineSet *spl;
-    struct region { double begin, end, offset; } *regions;
+    struct region { real begin, end, offset; } *regions;
     int rcnt,i,j;
-    double range, rtot, space, rpos;
+    real range, rtot, space, rpos;
 
     if ( dir==-1 ) {
 	if ( b->maxx - b->minx > b->maxy - b->miny )
@@ -82,7 +82,7 @@ static void SpaceMany(CharView *cv,DBounds *b, int dir, int region_size, int cnt
 	sp=spl->first;
 	while ( 1 ) {
 	    if ( sp->selected ) {
-		double coord = dir?sp->me.y:sp->me.x;
+		real coord = dir?sp->me.y:sp->me.x;
 		for ( i=0; i<rcnt && coord>regions[i].end+region_size; ++i );
 		if ( i==rcnt ) {
 		    regions[i].begin = regions[i].end = coord;
@@ -137,7 +137,7 @@ return;
 	sp=spl->first;
 	while ( 1 ) {
 	    if ( sp->selected ) {
-		double coord = dir?sp->me.y:sp->me.x;
+		real coord = dir?sp->me.y:sp->me.x;
 		for ( i=0; i<rcnt && coord>regions[i].end; ++i );
 		if ( i==rcnt )
 		    GDrawIError( "Region list is screwed up");
@@ -169,7 +169,7 @@ return;
 }
 
 static void AverageTwo(CharView *cv,SplinePoint *sp1, SplinePoint *sp2) {
-    double xoff, yoff, xpos, ypos, pos0, pos1;
+    real xoff, yoff, xpos, ypos, pos0, pos1;
 
     xoff = sp1->me.x - sp2->me.x;
     yoff = sp1->me.y - sp2->me.y;
@@ -213,7 +213,7 @@ static void AverageTwo(CharView *cv,SplinePoint *sp1, SplinePoint *sp2) {
 }
 
 static void AverageMany(CharView *cv,DBounds *b) {
-    double xoff, yoff, xpos, ypos;
+    real xoff, yoff, xpos, ypos;
     SplinePoint *sp;
     SplineSet *spl;
 
@@ -271,7 +271,7 @@ struct rcd {
     DBounds *b;
     int cnt;
 };
-static double lastsize = 100;
+static real lastsize = 100;
 
 #define CID_Y		1001
 #define CID_X		1002
@@ -283,9 +283,9 @@ static int RC_OK(GGadget *g, GEvent *e) {
 	GWindow gw = GGadgetGetWindow(g);
 	struct rcd *rcd = GDrawGetUserData(gw);
 	int err=false;
-	double size;
+	real size;
 	int dir = GGadgetIsChecked(GWidgetGetControl(gw,CID_Y));
-	size = GetDoubleR(gw,CID_Size,_STR_Size,&err);
+	size = GetRealR(gw,CID_Size,_STR_Size,&err);
 	if ( err )
 return(true);
 	SpaceMany(rcd->cv,rcd->b, dir, size, rcd->cnt);

@@ -96,7 +96,7 @@ struct hintdb {
     BasePoint current;
 };
 
-static void AddNumber(GrowBuf *gb, double pos, int round) {
+static void AddNumber(GrowBuf *gb, real pos, int round) {
     int dodiv = 0;
     int val;
     unsigned char *str;
@@ -138,7 +138,7 @@ static void AddNumber(GrowBuf *gb, double pos, int round) {
     gb->pt = str;
 }
 
-static int CvtPsStem3(GrowBuf *gb, StemInfo *h1, StemInfo *h2, StemInfo *h3, double off,
+static int CvtPsStem3(GrowBuf *gb, StemInfo *h1, StemInfo *h2, StemInfo *h3, real off,
 	int ishstem, int round) {
     StemInfo _h1, _h2, _h3;
 
@@ -204,7 +204,7 @@ static void HintDirection(StemInfo *h) {
     }
 }
 
-static void CvtPsHints(GrowBuf *gb, StemInfo *h, double off, int ishstem,
+static void CvtPsHints(GrowBuf *gb, StemInfo *h, real off, int ishstem,
 	int round, int iscjk ) {
 
     if ( h!=NULL && h->next!=NULL && h->next->next!=NULL &&
@@ -227,7 +227,7 @@ return;
     }
 }
 
-static void CvtPsMasked(GrowBuf *gb, StemInfo *h, double off, int ishstem,
+static void CvtPsMasked(GrowBuf *gb, StemInfo *h, real off, int ishstem,
 	int round, uint8 mask[12] ) {
 
     while ( h!=NULL ) {
@@ -253,7 +253,7 @@ static void CvtPsMasked(GrowBuf *gb, StemInfo *h, double off, int ishstem,
 /*  coordinate) with main */
 static int stemmatches(StemInfo *main) {
     StemInfo *last=main, *test;
-    double mlen, olen;
+    real mlen, olen;
     int cnt;
 
     cnt = 1;		/* for the main stem */
@@ -273,10 +273,10 @@ static int stemmatches(StemInfo *main) {
 return( cnt );
 }
 
-static int FigureCounters(StemInfo *stems,double *hints,int base,double offset ) {
+static int FigureCounters(StemInfo *stems,real *hints,int base,real offset ) {
     StemInfo *h, *first;
     int pos = base+1, cnt=0;
-    double last = offset;
+    real last = offset;
 
     for ( h=stems; h!=NULL ; h=h->next )
 	h->used = false;
@@ -308,7 +308,7 @@ return( pos );
 }
 
 static void CounterHints1(GrowBuf *gb, SplineChar *sc, int round) {
-    double hints[96*2+2];		/* At most 96 hints, no hint used more than once */
+    real hints[96*2+2];		/* At most 96 hints, no hint used more than once */
     int pos, i, j;
 
     pos = FigureCounters(sc->hstem,hints,0,0);
@@ -485,7 +485,7 @@ return( true );
 static int FigureHintMask(struct hintdb *hdb, SplinePoint *to, uint8 mask[12] ) {
     StemInfo *h=NULL, *v=NULL, *s;
     SplinePoint *tsp;
-    double lastx, lasty;
+    real lastx, lasty;
     SplineChar *sc;
     HintInstance *hi;
 
@@ -605,7 +605,7 @@ return;						/* active then we are done */
 static int InitialHintMask(struct hintdb *hdb, uint8 mask[12] ) {
     StemInfo *s=NULL;
     SplineChar *sc = hdb->sc;
-    double max;
+    real max;
     SplineSet *spl;
     SplinePoint *sp;
 
@@ -864,8 +864,8 @@ static void CvtPsSplineSet(GrowBuf *gb, SplinePointList *spl, BasePoint *current
     }
 }
 
-static RefChar *IsRefable(RefChar *ref, int isps, double transform[6], RefChar *sofar) {
-    double trans[6];
+static RefChar *IsRefable(RefChar *ref, int isps, real transform[6], RefChar *sofar) {
+    real trans[6];
     RefChar *sub;
 
     trans[0] = ref->transform[0]*transform[0] +
@@ -921,7 +921,7 @@ return( sofar );
 /*  refs themselves. They can't use hintmask commands inside */
 RefChar *SCCanonicalRefs(SplineChar *sc, int isps) {
     RefChar *ret = NULL, *ref;
-    double noop[6];
+    real noop[6];
 
     /* Neither allows mixing splines and refs */
     if ( sc->splines!=NULL )
@@ -1027,6 +1027,9 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
     RefChar *rf;
     unsigned char *ret;
     struct hintdb hintdb, *hdb;
+    int iscid = iscjk&0x100?1:0;
+
+    iscjk &= ~0x100;
 
     memset(&gb,'\0',sizeof(gb));
     SplineCharFindBounds(sc,&b);
@@ -1037,7 +1040,8 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
     current.x = round?floor(b.minx):b.minx; current.y = 0;
     sc->lsidebearing = current.x;
 
-    if ( IsSeacable(&gb,sc,round)) {
+/* CID fonts have no encodings. So we can't use seac to reference characters */
+    if ( !iscid && IsSeacable(&gb,sc,round)) {
 	/* All Done */;
     } else {
 	if ( sc->changedsincelasthinted && !sc->manualhints )
@@ -1096,6 +1100,15 @@ return( true );
 	    SCWorthOutputting(sf->chars[0x3000]) &&
 	    !SCWorthOutputting(sf->chars['A']) )
 return( true );
+    if ( sf->encoding_name==em_none ) {
+	/* If it's in a CID font and it doesn't contain alphabetics, then */
+	/*  it's assumed to be CJK */
+	if ( sf->cidmaster!=NULL )
+return( !SCWorthOutputting(SFGetChar(sf,'A',NULL)) &&
+	!SCWorthOutputting(SFGetChar(sf,0x391,NULL)) &&		/* Alpha */
+	!SCWorthOutputting(SFGetChar(sf,0x410,NULL)) &&		/* Cyrillic A */
+	!SCWorthOutputting(SFGetChar(sf,-1,"hwA")) );		/* Halfwidth A, non standard name, from my cidmap */
+    }
 
 return( false );
 }
@@ -1112,21 +1125,15 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
 	    ++cnt;
     ++cnt;		/* one notdef entry */
     chrs->cnt = cnt;
-    chrs->keys = malloc(cnt*sizeof(char *));
-    chrs->lens = malloc(cnt*sizeof(int));
-    chrs->values = malloc(cnt*sizeof(unsigned char *));
+    chrs->keys = galloc(cnt*sizeof(char *));
+    chrs->lens = galloc(cnt*sizeof(int));
+    chrs->values = galloc(cnt*sizeof(unsigned char *));
 
     i = cnt = 0;
     chrs->keys[0] = copy(".notdef");
     if ( sf->chars[0]!=NULL &&
 	    (sf->chars[0]->splines!=NULL || sf->chars[0]->widthset) &&
 	     sf->chars[0]->refs==NULL && strcmp(sf->chars[0]->name,".notdef")==0 ) {
-#if 0
-	if ( sf->chars[0]->origtype1!=NULL ) {
-	    chrs->values[0] = (uint8 *) copyn((char *) sf->chars[0]->origtype1,sf->chars[0]->origlen);
-	    chrs->lens[0] = sf->chars[0]->origlen;
-	} else
-#endif
 	    chrs->values[0] = SplineChar2PS(sf->chars[0],&chrs->lens[0],round,iscjk,subrs);
 	i = 1;
     } else {
@@ -1160,12 +1167,6 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
     for ( ; i<sf->charcnt; ++i ) {
 	if ( SCWorthOutputting(sf->chars[i]) ) {
 	    chrs->keys[cnt] = copy(sf->chars[i]->name);
-#if 0
-	    if ( sf->chars[i]->origtype1!=NULL ) {
-		chrs->values[cnt] = (uint8 *) copyn((char *) sf->chars[i]->origtype1,sf->chars[i]->origlen);
-		chrs->lens[cnt] = sf->chars[i]->origlen;
-	    } else
-#endif
 		chrs->values[cnt] = SplineChar2PS(sf->chars[i],&chrs->lens[cnt],
 			round,iscjk,subrs);
 	    ++cnt;
@@ -1176,11 +1177,81 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
 return( chrs );
 }
 
+struct pschars *CID2Chrs(SplineFont *cidmaster,struct cidbytes *cidbytes) {
+    struct pschars *chrs = calloc(1,sizeof(struct pschars));
+    int i, cnt, cid;
+    char notdefentry[20];
+    SplineFont *sf = NULL;
+    struct fddata *fd;
+
+    cnt = 0;
+    for ( i=0; i<cidmaster->subfontcnt; ++i )
+	if ( cnt<cidmaster->subfonts[i]->charcnt )
+	    cnt = cidmaster->subfonts[i]->charcnt;
+    cidbytes->cidcnt = cnt;
+
+    chrs->cnt = cnt;
+    chrs->lens = galloc(cnt*sizeof(int));
+    chrs->values = galloc(cnt*sizeof(unsigned char *));
+    cidbytes->fdind = galloc(cnt*sizeof(unsigned char *));
+
+    for ( cid = 0; cid<cnt; ++cid ) {
+	sf = NULL;
+	for ( i=0; i<cidmaster->subfontcnt; ++i ) {
+	    sf = cidmaster->subfonts[i];
+	    if ( cid<sf->charcnt && SCWorthOutputting(sf->chars[cid]) )
+	break;
+	}
+	if ( cid!=0 && i==cidmaster->subfontcnt ) {
+	    chrs->lens[cid] = 0;
+	    chrs->values[cid] = NULL;
+	    cidbytes->fdind[cid] = -1;		/* that's what Adobe uses */
+	} else if ( i==cidmaster->subfontcnt ) {
+	    /* Must have something for .notdef */
+	    /* sf corresponds to cidmaster->subfontcnt-1, generally the kanji font */
+	    int w = sf->ascent+sf->descent; char *pt = notdefentry;
+	    *pt++ = '\213';		/* 0 */
+	    if ( w>=-107 && w<=107 )
+		*pt++ = w+139;
+	    else if ( w>=108 && w<=1131 ) {
+		w -= 108;
+		*pt++ = (w>>8)+247;
+		*pt++ = w&0xff;
+	    } else if ( w>=-1131 && w<=-108 ) {
+		w = -w;
+		w -= 108;
+		*pt++ = (w>>8)+251;
+		*pt++ = w&0xff;
+	    } else {
+		*pt++ = '\377';
+		*pt++ = (w>>24)&0xff;
+		*pt++ = (w>>16)&0xff;
+		*pt++ = (w>>8)&0xff;
+		*pt++ = w&0xff;
+	    }
+	    *pt++ = '\015';	/* hsbw */
+	    *pt++ = '\016';	/* endchar */
+	    *pt = '\0';
+	    chrs->values[0] = (unsigned char *) copyn(notdefentry,pt-notdefentry);	/* 0 <w> hsbw endchar */
+	    chrs->lens[0] = pt-notdefentry;
+	    cidbytes->fdind[0] = cidmaster->subfontcnt-1;
+	} else {
+	    fd = &cidbytes->fds[i];
+	    cidbytes->fdind[cid] = i;
+	    chrs->values[cid] = SplineChar2PS(sf->chars[cid],&chrs->lens[cid],
+		    true,fd->iscjk|0x100,fd->subrs);
+	}
+	GProgressNext();
+    }
+    chrs->next = cid;
+return( chrs );
+}
+
 /* ************************************************************************** */
 /* ********************** Type2 PostScript CharStrings ********************** */
 /* ************************************************************************** */
 
-static void AddNumber2(GrowBuf *gb, double pos) {
+static void AddNumber2(GrowBuf *gb, real pos) {
     int val;
     unsigned char *str;
 
@@ -1537,7 +1608,7 @@ static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl, struct hintdb *hd
     }
 }
 
-static StemInfo *OrderHints(StemInfo *mh, StemInfo *h, double offset, double otheroffset, int mask) {
+static StemInfo *OrderHints(StemInfo *mh, StemInfo *h, real offset, real otheroffset, int mask) {
     StemInfo *prev, *new, *test;
 
     while ( h!=NULL ) {
@@ -1565,7 +1636,7 @@ return( mh );
 }
 
 static void DumpHints(GrowBuf *gb,StemInfo *h,int oper) {
-    double last = 0, cur;
+    real last = 0, cur;
 
     if ( h==NULL )
 return;
@@ -1844,7 +1915,7 @@ struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
 	if ( w==defwid )
 	    /* Don't need to specify it */;
 	else {
-	    w -= defwid;
+	    w -= nomwid;
 	    if ( w>=-107 && w<=107 )
 		*pt++ = w+139;
 	    else if ( w>=108 && w<=1131 ) {
@@ -1873,6 +1944,89 @@ struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
 	if ( SCWorthOutputting(sc) ) {
 	    chrs->values[cnt] = SplineChar2PS2(sc,&chrs->lens[cnt],nomwid,defwid,subrs);
 	    sf->chars[i]->ttf_glyph = cnt++;
+	}
+	GProgressNext();
+    }
+return( chrs );
+}
+    
+struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds) {
+    struct pschars *chrs = calloc(1,sizeof(struct pschars));
+    int i, cnt, cid, max;
+    char notdefentry[20];
+    SplineChar *sc;
+    SplineFont *sf = NULL;
+
+    max = 0;
+    for ( i=0; i<cidmaster->subfontcnt; ++i )
+	if ( max<cidmaster->subfonts[i]->charcnt )
+	    max = cidmaster->subfonts[i]->charcnt;
+    cnt = 1;			/* for .notdef */
+    for ( cid = 1; cid<max; ++cid ) {
+	for ( i=0; i<cidmaster->subfontcnt; ++i ) {
+	    sf = cidmaster->subfonts[i];
+	    if ( cid<sf->charcnt && SCWorthOutputting(sf->chars[cid])) {
+		++cnt;
+	break;
+	    }
+	}
+    }
+
+    chrs->cnt = cnt;
+    chrs->lens = malloc(cnt*sizeof(int));
+    chrs->values = malloc(cnt*sizeof(unsigned char *));
+
+    for ( i=0; i<cidmaster->subfontcnt; ++i ) {
+	sf = cidmaster->subfonts[i];
+	for ( cid=0; cid<sf->charcnt; ++cid ) if ( sf->chars[cid]!=NULL )
+	    sf->chars[cid]->ttf_glyph = 0;
+    }
+
+    for ( cid = cnt = 0; cid<max; ++cid ) {
+	sf = NULL;
+	for ( i=0; i<cidmaster->subfontcnt; ++i ) {
+	    sf = cidmaster->subfonts[i];
+	    if ( cid<sf->charcnt && SCWorthOutputting(sf->chars[cid]) )
+	break;
+	}
+	if ( cid!=0 && i==cidmaster->subfontcnt ) {
+	    /* Do nothing */;
+	} else if ( i==cidmaster->subfontcnt ) {
+	    /* They didn't define CID 0 */
+	    /* Place it in the final subfont (which is what sf points to) */
+	    int w = sf->ascent+sf->descent; char *pt = notdefentry;
+	    --i;
+	    if ( w==fds[i].defwid )
+		/* Don't need to specify it */;
+	    else {
+		w -= fds[i].nomwid;
+		if ( w>=-107 && w<=107 )
+		    *pt++ = w+139;
+		else if ( w>=108 && w<=1131 ) {
+		    w -= 108;
+		    *pt++ = (w>>8)+247;
+		    *pt++ = w&0xff;
+		} else if ( w>=-1131 && w<=-108 ) {
+		    w = -w;
+		    w -= 108;
+		    *pt++ = (w>>8)+251;
+		    *pt++ = w&0xff;
+		} else {
+		    *pt++ = 28;
+		    *pt++ = (w>>8)&0xff;
+		    *pt++ = w&0xff;
+		}
+	    }
+	    *pt++ = '\016';	/* endchar */
+	    *pt = '\0';
+	    chrs->values[0] = (unsigned char *) copyn(notdefentry,pt-notdefentry);	/* 0 <w> hsbw endchar */
+	    chrs->lens[0] = pt-notdefentry;
+	    ++cnt;
+	} else {
+	    sc = sf->chars[cid];
+	    chrs->values[cnt] = SplineChar2PS2(sc,&chrs->lens[cnt],
+		    fds[i].nomwid,fds[i].defwid,fds[i].subrs);
+	    sc->ttf_glyph = cnt++;
 	}
 	GProgressNext();
     }

@@ -46,9 +46,9 @@ void ProtestR(int labelr) {
     GWidgetPostNotice(ubuf,ubuf);
 }
 
-double GetDouble(GWindow gw,int cid,char *name,int *err) {
+real GetReal(GWindow gw,int cid,char *name,int *err) {
     const unichar_t *txt; unichar_t *end;
-    double val;
+    real val;
 
     txt = _GGadgetGetTitle(GWidgetGetControl(gw,cid));
     val = u_strtod(txt,&end);
@@ -59,9 +59,9 @@ double GetDouble(GWindow gw,int cid,char *name,int *err) {
 return( val );
 }
 
-double GetDoubleR(GWindow gw,int cid,int namer,int *err) {
+real GetRealR(GWindow gw,int cid,int namer,int *err) {
     const unichar_t *txt; unichar_t *end;
-    double val;
+    real val;
 
     txt = _GGadgetGetTitle(GWidgetGetControl(gw,cid));
     val = u_strtod(txt,&end);

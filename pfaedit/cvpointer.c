@@ -32,7 +32,7 @@
 /*  ours, and if we are a letter, then change the width on all chars linked */
 /*  to us which had the same width that we used to have (so if we change the */
 /*  width of A, we'll also change that of Á and Â and ... */
-void SCSynchronizeWidth(SplineChar *sc,double newwidth, double oldwidth, FontView *fv) {
+void SCSynchronizeWidth(SplineChar *sc,real newwidth, real oldwidth, FontView *fv) {
     BDFFont *bdf;
     struct splinecharlist *dlist;
 
@@ -45,7 +45,7 @@ return;
     for ( bdf=sc->parent->bitmaps; bdf!=NULL; bdf=bdf->next ) {
 	BDFChar *bc = bdf->chars[sc->enc];
 	if ( bc!=NULL ) {
-	    int width = rint(sc->width*bdf->pixelsize / (double) (sc->parent->ascent+sc->parent->descent));
+	    int width = rint(sc->width*bdf->pixelsize / (real) (sc->parent->ascent+sc->parent->descent));
 	    if ( bc->width!=width ) {
 		/*BCPreserveWidth(bc);*/ /* Bitmaps can't set width, so no undo for it */
 		bc->width = width;
@@ -77,7 +77,7 @@ return;
 /* Also all vstem hints */
 /* I deliberately don't set undoes in the dependants. The change is not */
 /*  in them, after all */
-void SCSynchronizeLBearing(SplineChar *sc,char *selected,double off) {
+void SCSynchronizeLBearing(SplineChar *sc,char *selected,real off) {
     struct splinecharlist *dlist;
     RefChar *ref;
     DStemInfo *d;
@@ -296,7 +296,7 @@ void CVFindCenter(CharView *cv, BasePoint *bp, int nosel) {
     bp->y = (b.miny+b.maxy)/2;
 }
 
-static int OnBB(CharView *cv, DBounds *bb, double fudge) {
+static int OnBB(CharView *cv, DBounds *bb, real fudge) {
 
     if ( cv->info.y < bb->miny-fudge || cv->info.y > bb->maxy+fudge ||
 	    cv->info.x < bb->minx-fudge || cv->info.x > bb->maxx+fudge )
@@ -350,7 +350,7 @@ void CVCheckResizeCursors(CharView *cv) {
     RefChar *ref;
     ImageList *img;
     int old_ee = cv->expandedge;
-    double fudge = 3.5/cv->scale;
+    real fudge = 3.5/cv->scale;
 
     cv->expandedge = ee_none;
     if ( cv->drawmode==dm_fore ) {
@@ -494,7 +494,7 @@ return;
 	SCUpdateAll(cv->sc);
 }
 
-static int CVRectSelect(CharView *cv, double newx, double newy) {
+static int CVRectSelect(CharView *cv, real newx, real newy) {
     int any=false;
     DBounds old, new;
     RefChar *rf;
@@ -600,8 +600,8 @@ static void CVAdjustControl(CharView *cv,BasePoint *cp) {
 	cp->x = cv->info.x;
 	cp->y = cv->info.y;
 	if ( cp->x!=sp->me.x || cp->y!=sp->me.y ) {
-	    double angle = atan2(cp->y-sp->me.y,cp->x-sp->me.x)-3.1415926535897932;
-	    double len = sqrt((othercp->y-sp->me.y)*(othercp->y-sp->me.y) + (othercp->x-sp->me.x)*(othercp->x-sp->me.x));
+	    real angle = atan2(cp->y-sp->me.y,cp->x-sp->me.x)-3.1415926535897932;
+	    real len = sqrt((othercp->y-sp->me.y)*(othercp->y-sp->me.y) + (othercp->x-sp->me.x)*(othercp->x-sp->me.x));
 	    /* There's just enough error in atan2 and sin/cos that horizontal */
 	    /*  and vertical things don't quite match */
 	    if ( cp->y-sp->me.y==0 ) {
@@ -628,9 +628,9 @@ static void CVAdjustControl(CharView *cv,BasePoint *cp) {
 	else
 	    bp = NULL;
 	if ( bp!=NULL ) {
-	    double angle = atan2(bp->y-sp->me.y,bp->x-sp->me.x);
-	    double len = sqrt((bp->x-sp->me.x)*(bp->x-sp->me.x) + (bp->y-sp->me.y)*(bp->y-sp->me.y));
-	    double dotprod =
+	    real angle = atan2(bp->y-sp->me.y,bp->x-sp->me.x);
+	    real len = sqrt((bp->x-sp->me.x)*(bp->x-sp->me.x) + (bp->y-sp->me.y)*(bp->y-sp->me.y));
+	    real dotprod =
 		    ((cv->info.x-sp->me.x)*(bp->x-sp->me.x) +
 		     (cv->info.y-sp->me.y)*(bp->y-sp->me.y));
 	    if ( len!=0 ) {
@@ -661,7 +661,7 @@ static void CVAdjustControl(CharView *cv,BasePoint *cp) {
 static void CVAdjustSpline(CharView *cv) {
     Spline *old = cv->p.spline;
     TPoint tp[5];
-    double t;
+    real t;
     Spline1D *oldx = &old->splines[0], *oldy = &old->splines[1];
 
     tp[0].x = cv->info.x; tp[0].y = cv->info.y; tp[0].t = cv->p.t;
@@ -681,8 +681,8 @@ static void CVAdjustSpline(CharView *cv) {
     CVSetCharChanged(cv,true);
 }
 
-void CVMoveSelection(CharView *cv, double dx, double dy) {
-    double transform[6];
+void CVMoveSelection(CharView *cv, real dx, real dy) {
+    real transform[6];
     RefChar *refs;
     ImageList *img;
 
@@ -712,7 +712,7 @@ return;
     CVSetCharChanged(cv,true);
 }
 
-static int Nearish(double a,double fudge) {
+static int Nearish(real a,real fudge) {
 return( a>-fudge && a<fudge );
 }
 
@@ -725,7 +725,7 @@ return( a>-fudge && a<fudge );
 /*  freed one of the splinesets in the merger */
 static void CVCheckMerges(CharView *cv ) {
     SplineSet *activess, *mergess;
-    double fudge = 1/cv->scale;
+    real fudge = 1/cv->scale;
 
   restart:
     for ( activess=*cv->heads[cv->drawmode]; activess!=NULL; activess=activess->next ) {
@@ -769,8 +769,8 @@ static void CVCheckMerges(CharView *cv ) {
 }
 
 static int CVExpandEdge(CharView *cv) {
-    double transform[6];
-    double xscale=1.0, yscale=1.0;
+    real transform[6];
+    real xscale=1.0, yscale=1.0;
 
     CVRestoreTOriginalState(cv);
     if ( cv->expandedge != ee_up && cv->expandedge != ee_down )
@@ -791,7 +791,7 @@ void CVMouseMovePointer(CharView *cv ) {
 
     /* if we haven't moved from the original location (ever) then this is a noop */
     if ( !cv->p.rubberbanding && !cv->recentchange &&
-	    DoubleNear(cv->info.x,cv->p.cx) && DoubleNear(cv->info.y,cv->p.cy) )
+	    RealNear(cv->info.x,cv->p.cx) && RealNear(cv->info.y,cv->p.cy) )
 return;
 
     if ( cv->p.width ) {

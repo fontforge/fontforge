@@ -163,4 +163,6 @@ SOFTWARE.
 #define GK_Hyper_L		XK_Hyper_L	
 #define GK_Hyper_R		XK_Hyper_R	 
 
+
+#define GK_Help			XK_Help
 #endif

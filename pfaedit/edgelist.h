@@ -29,9 +29,9 @@
 #include "splinefont.h"
 
 typedef struct hints {
-    double base, width;
-    double b1, b2, e1, e2;
-    double ab, ae;
+    real base, width;
+    real b1, b2, e1, e2;
+    real ab, ae;
     unsigned int adjustb: 1;
     unsigned int adjuste: 1;
     struct hints *next;
@@ -42,11 +42,11 @@ typedef struct hints {
 /*  at the moment, and other will be the other one. Of course it's */
 /*  consistant accross the datastructure at any given time */
 typedef struct edge {
-    double mmin, mmax;		/* relative to es->mmin */
-    double t_mmin, t_mmax;
-    double tmin, tmax;
-    double o_mmin, o_mmax;
-    double t_cur, o_cur, m_cur;
+    real mmin, mmax;		/* relative to es->mmin */
+    real t_mmin, t_mmax;
+    real tmin, tmax;
+    real o_mmin, o_mmax;
+    real t_cur, o_cur, m_cur;
     unsigned int up: 1;		/* line is directed up in the spline list */
     unsigned int max_adjusted: 1;	/* by hstem hints */
     unsigned int min_adjusted: 1;
@@ -54,15 +54,15 @@ typedef struct edge {
     struct edge *esnext, *aenext;
     struct edge *before, *after;
     int last_opos, last_mpos;
-    double oldt;		/* only used for FindIntersections of RemoveOverlap */
+    real oldt;		/* only used for FindIntersections of RemoveOverlap */
 } Edge;
 
 typedef struct edgelist {
     Edge **edges;
     int cnt;
-    double mmin, mmax;
-    double omin, omax;
-    double scale;
+    real mmin, mmax;
+    real omin, omax;
+    real scale;
     int bytes_per_line;
     uint8 *bitmap;
     Edge *last, *splinesetfirst;
@@ -76,11 +76,11 @@ typedef struct edgelist {
 } EdgeList;
 
 extern void FreeEdges(EdgeList *es);
-extern double TOfNextMajor(Edge *e, EdgeList *es, double sought_y );
+extern real TOfNextMajor(Edge *e, EdgeList *es, real sought_y );
 extern void FindEdgesSplineSet(SplinePointList *spl, EdgeList *es);
 extern Edge *ActiveEdgesInsertNew(EdgeList *es, Edge *active,int i);
-extern Edge *ActiveEdgesRefigure(EdgeList *es, Edge *active,double i);
-extern Edge *ActiveEdgesFindStem(Edge *apt, Edge **prev, double i);
+extern Edge *ActiveEdgesRefigure(EdgeList *es, Edge *active,real i);
+extern Edge *ActiveEdgesFindStem(Edge *apt, Edge **prev, real i);
 
 /* Version which is better for everything other than rasterization */
 /*  (I think) */
@@ -90,9 +90,9 @@ typedef struct edgeinfo {
     /*  If the spline becomes vert/horizontal that will be at one of the */
     /*   end points too */
     Spline *spline;
-    double tmin, tmax;
-    double coordmin[2];
-    double coordmax[2];
+    real tmin, tmax;
+    real coordmin[2];
+    real coordmax[2];
     unsigned int up: 1;
     unsigned int hv: 1;
     unsigned int hvbottom: 1;
@@ -107,8 +107,8 @@ typedef struct edgeinfo {
     unsigned int vertattmax: 1;
     unsigned hup: 1;
     unsigned vup: 1;
-    double tcur;		/* Value of t for current major coord */
-    double ocur;		/* Value of the other coord for current major coord */
+    real tcur;		/* Value of t for current major coord */
+    real ocur;		/* Value of the other coord for current major coord */
     struct edgeinfo *next;
     struct edgeinfo *ordered;
     struct edgeinfo *aenext;
@@ -119,8 +119,8 @@ typedef struct edgeinfo {
 
 typedef struct eilist {
     EI *edges;
-    double coordmin[2];
-    double coordmax[2];
+    real coordmin[2];
+    real coordmax[2];
     int low, high, cnt;
     EI **ordered;
     char *ends;			/* flag to say an edge ends on this line */
@@ -132,10 +132,10 @@ typedef struct eilist {
 extern void ElFreeEI(EIList *el);
 extern void ELFindEdges(SplineChar *sc, EIList *el);
 extern void ELOrder(EIList *el, int major );
-extern double EITOfNextMajor(EI *e, EIList *el, double sought_m );
-extern int EISameLine(EI *e, EI *n, double i, int major);
-extern int EISkipExtremum(EI *e, double i, int major);
-extern EI *EIActiveEdgesFindStem(EI *apt, double i, int major);
-extern EI *EIActiveEdgesRefigure(EIList *el, EI *active,double i,int major,
+extern real EITOfNextMajor(EI *e, EIList *el, real sought_m );
+extern int EISameLine(EI *e, EI *n, real i, int major);
+extern int EISkipExtremum(EI *e, real i, int major);
+extern EI *EIActiveEdgesFindStem(EI *apt, real i, int major);
+extern EI *EIActiveEdgesRefigure(EIList *el, EI *active,real i,int major,
 	int *_change);
 #endif

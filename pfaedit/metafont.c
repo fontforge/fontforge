@@ -104,21 +104,21 @@ enum counterchoices { cc_same,	/* counters have the same with until scaled */
 };
 
 struct scale {
-    double factor;
-    double add;
+    real factor;
+    real add;
 };
 
 struct zonemap {
-    double from;
-    double to;
+    real from;
+    real to;
 };
 
 struct stemcntl {
     unsigned int onlyh: 1;	/* this entry only controls hstems */
     unsigned int onlyv: 1;
-    double small, wide;		/* Only controls stems whose width is between small and wide (inclusive) */
-    double factor;
-    double add;
+    real small, wide;		/* Only controls stems whose width is between small and wide (inclusive) */
+    real factor;
+    real add;
 };
 
 typedef struct metafont {
@@ -131,12 +131,12 @@ typedef struct metafont {
 	struct scale counter;		/* if counterchoices==cc_scale */
 	int zonecnt;
 	struct zonemap *zones;
-	double widthmin;		/* No counter may drop below this */
+	real widthmin;		/* No counter may drop below this */
 			/* Nor will a counter smaller than this be detected */
     } counters[2];			/* 0 is horizontal, 1 is vertical */
     int stemcnt;
     struct stemcntl *stems;
-    double blues[6];			/* Contains the result of QuickBlues */
+    real blues[6];			/* Contains the result of QuickBlues */
     int bcnt, bxh;			/* number of entries and location of xh*/
     FontView *fv;
     CharView *cv;
@@ -152,7 +152,7 @@ typedef struct splineinfo {
     		/* Does spline1 or spline2 end first? so from will be either */
 		/*  spline1->from, or spline2->to, and to either spline1->to */
 		/*  or spline2->from */
-    double fromlen, tolen;		/* The distance from spline1 to spline2*/
+    real fromlen, tolen;		/* The distance from spline1 to spline2*/
 		/* (or spline2 to spline1 depending on whether from belongs */
 		/*  to spline1 or spline2), perpendicular to the point there */
 		/* if the len is -1 the we've decided that this doesn't */
@@ -180,14 +180,14 @@ typedef struct pointinfo {
 } PointInfo;
 
 struct countergroup {
-    double bottom, top;		/* Range in the other coordinate over which this map is valid */
+    real bottom, top;		/* Range in the other coordinate over which this map is valid */
     int scnt, counternumber;
     StemInfo **stems;
     struct countergroup *next;
 };
 
 struct map {
-    double bottom, top;		/* Range in the other coordinate over which this map is valid */
+    real bottom, top;		/* Range in the other coordinate over which this map is valid */
     int cnt;			/* number of entries in map */
     struct zonemap *mapping;
 };
@@ -203,8 +203,8 @@ typedef struct scinfo {
     int ptcnt;
     struct mapd mapd[2];
     MetaFontDlg *meta;
-    double rbearing;		/* Only used if !meta->scalewidth */
-    double width;
+    real rbearing;		/* Only used if !meta->scalewidth */
+    real width;
 } SCI;
 
 
@@ -411,10 +411,10 @@ return( true );
 /* Generate a line through spline1[t1] perpendicular to it at that point */
 /*  Intersect the line with spline2. If the intersection is on the spline */
 /*  segment, then fill in the len and vec values (vec is the vector from the spline to the midpoint between the two)*/
-static int FindPerpDistance(double t1,Spline *spline1, Spline *spline2,
-	BasePoint *vec, double *len) {
+static int FindPerpDistance(real t1,Spline *spline1, Spline *spline2,
+	BasePoint *vec, real *len) {
     BasePoint pt, slope, pslope, end[3], ss2;
-    double x, y, slope1, slope2, ts[3], lens[3], angle;
+    real x, y, slope1, slope2, ts[3], lens[3], angle;
     Spline1D temp;
     int i,j;
 
@@ -486,7 +486,7 @@ return( false );
     vec->y = (pt.y+end[j].y)/2 - pt.y;
     if ( lens[j]<.001 ) lens[j]=0;
     else {
-	double len = rint(lens[j]);
+	real len = rint(lens[j]);
 	if ( lens[j]>len-.001 && lens[j]<len+.001 )
 	    lens[j] = len;
     }
@@ -604,11 +604,11 @@ si->tovec.x, si->tovec.y, si->tolen);
 /*  by doing a horizontal or vertical traverse of the glyph. Let's try to */
 /*  traverse perpendicular to the spline itself */
 static void SplineFindOtherEdge(SCI *sci,Spline *spline) {
-    double angle, s, c, xval, yval;
+    real angle, s, c, xval, yval;
     BasePoint pt, mid;
     Spline *right, *left, *test, *first;
     SplineSet *ss;
-    double rlen, llen, len;
+    real rlen, llen, len;
     int bcnt;
     int bad, lbad, rbad;
 
@@ -634,13 +634,13 @@ static void SplineFindOtherEdge(SCI *sci,Spline *spline) {
 	for ( test = ss->first->next; test!=first; test = test->to->next ) {
 	  if ( first==NULL ) first = test;
 	  if ( test!=spline ) {
-	    double f,t,c1,c2;
+	    real f,t,c1,c2;
 	    f = -test->from->me.x*s + test->from->me.y*c;
 	    c1 = -test->from->nextcp.x*s + test->from->nextcp.y*c;
 	    t = -test->to->me.x*s + test->to->me.y*c;
 	    c2 = -test->to->prevcp.x*s + test->to->prevcp.y*c;
-	    if ( (f<yval && t<yval && c1<yval && c2<yval ) ||
-		    (f>yval && t>yval && c1>yval && c2>yval ) )
+	    if ( (f<yval-.001 && t<yval-.001 && c1<yval-.001 && c2<yval-.001 ) ||
+		    (f>yval+.001 && t>yval+.001 && c1>yval+.001 && c2>yval+.001 ) )
 	continue;		/* Can't intersect us */
 	    if ( FindPerpDistance(.5,spline,test,&mid,&len)) {
 		if ( (bad = len<0) ) len = -len;
@@ -650,8 +650,8 @@ static void SplineFindOtherEdge(SCI *sci,Spline *spline) {
 		    /*  spline later (or earlier) that intersects at the */
 		    /*  same place. So in that case we add half the normal */
 		    /*  amount */
-		    if ( DoubleNear(-test->from->me.x*s - test->from->me.y*c,yval) ||
-			    DoubleNear(-test->to->me.x*s - test->to->me.y*c,yval) )
+		    if ( RealNear(-test->from->me.x*s - test->from->me.y*c,yval) ||
+			    RealNear(-test->to->me.x*s - test->to->me.y*c,yval) )
 			++bcnt;
 		    else
 			bcnt += 2;
@@ -690,7 +690,7 @@ static void SplineFindOtherEdge(SCI *sci,Spline *spline) {
 
 static int NotParallelHere(SplineInfo *si,SplinePoint *sp) {
     Spline *s1, *s2;
-    double t1, len;
+    real t1, len;
     BasePoint mid;
 
     if ( si->spline1->from==sp ) {
@@ -748,7 +748,7 @@ static void CounterGroupsFree(struct countergroup *cg) {
     }
 }
 
-static double MetaFontFindWidth(MetaFontDlg *meta,double width,int isvert) {
+static real MetaFontFindWidth(MetaFontDlg *meta,real width,int isvert) {
     int i;
 
     /* First look for matches where isvert matches */
@@ -770,7 +770,7 @@ return( c->factor*width + c->add );
 return( width );	/* didn't match anything, return unchanged */
 }
 
-static int MetaRecognizedStemWidth(MetaFontDlg *meta,double width,int isvert) {
+static int MetaRecognizedStemWidth(MetaFontDlg *meta,real width,int isvert) {
     int i;
 
     /* First look for matches where isvert matches */
@@ -797,10 +797,10 @@ return( false );
 
 static void MapFromCounterGroup(struct map *map,MetaFontDlg *meta,
 	struct countergroup *cg, struct zonemap *extra, int ecnt, int isvert ) {
-    double offset=0;
+    real offset=0;
     int i=0,j,k;
     StemInfo *stem;
-    double newwidth, lastwidth, counterwidth, newcwidth;
+    real newwidth, lastwidth, counterwidth, newcwidth;
 
     map->bottom = cg->bottom;
     map->top = cg->top;
@@ -817,7 +817,7 @@ static void MapFromCounterGroup(struct map *map,MetaFontDlg *meta,
     if ( meta->counters[isvert].counterchoices==cc_zones ) {
 	struct zonemap *zones = meta->counters[isvert].zones;
 	int cnt = meta->counters[isvert].zonecnt;
-	double mid, newmid;
+	real mid, newmid;
 
 	for ( j=k=0; k<cnt; ++k ) {
 	    for ( ; j<cg->scnt ; ++j ) {
@@ -1139,7 +1139,7 @@ return(cg);
 static struct map *MapFromDiags(MetaFontDlg *meta,StemInfo *vstem, DStemInfo *dstem,
 	struct zonemap *extras, int ecnt) {
     struct map *map = gcalloc(1,sizeof(struct map));
-    double minx, maxx, minxw, maxxw, olen, orthwidth, width;
+    real minx, maxx, minxw, maxxw, olen, orthwidth, width;
     BasePoint orthvector;
     StemInfo dummystems[2];
     StemInfo *stems[3];
@@ -1275,7 +1275,7 @@ static void SCIBuildMaps(SCI *sci, int isvert) {
     MapCleanup(&sci->mapd[isvert]);
 }
 
-static double _MapCoord(struct map *map, double coord) {
+static real _MapCoord(struct map *map, real coord) {
     int i;
 
     if ( map==NULL || map->cnt==0 )
@@ -1292,9 +1292,9 @@ return( map->mapping[i].to + (coord-map->mapping[i].from)*
 return( coord+map->mapping[i].to-map->mapping[i].from );
 }
 
-static double MapCoord(struct mapd *map, double coord, double other) {
+static real MapCoord(struct mapd *map, real coord, real other) {
     int i, top=-1, bottom=-1;
-    double topdiff = 1e8, bottomdiff = 1e8;
+    real topdiff = 1e8, bottomdiff = 1e8;
 
     if ( map->mapcnt==1 )
 return( _MapCoord(&map->maps[0],coord));
@@ -1324,7 +1324,7 @@ static void SCIMapPoint(SCI *sci,BasePoint *pt) {
     pt->y = MapCoord(&sci->mapd[1],pt->y,pt->x);
 }
 
-static int _IsOnKnownEdge(struct map *map, double coord) {
+static int _IsOnKnownEdge(struct map *map, real coord) {
     int i;
 
     for ( i=0; i<map->cnt; ++i ) {
@@ -1336,7 +1336,7 @@ return( true );
 return( false );
 }
 
-static int IsOnKnownEdge(struct mapd *map, double coord, double other) {
+static int IsOnKnownEdge(struct mapd *map, real coord, real other) {
     int i;
 
     if ( map->mapcnt==1 )
@@ -1358,7 +1358,7 @@ return( false );
 }
 
 static int IsHVSpline(Spline *spline, SplinePoint *sp) {
-    double rat;
+    real rat;
 
     if ( !spline->knownlinear ) {
 	if ( sp==spline->from ) {
@@ -1373,7 +1373,7 @@ return( 1 );
 		    rat>-.05 )
 return( 0 );
 	} else if ( sp==spline->to ) {
-	    double xs, ys;
+	    real xs, ys;
 	    xs = 3*spline->splines[0].a+2*spline->splines[0].b+spline->splines[0].c;
 	    ys = 3*spline->splines[1].a+2*spline->splines[1].b+spline->splines[1].c;
 	    if ( xs==0 )
@@ -1394,10 +1394,10 @@ return( 0 );
 return( 2 );
 }
 
-static double SCIFindMidPoint(SCI *sci,int pt, SplineList *spl, BasePoint *mid) {
+static real SCIFindMidPoint(SCI *sci,int pt, SplineList *spl, BasePoint *mid) {
     SplinePoint *sp = sci->pts[pt].cur;
     SplineList *sl;
-    double len;
+    real len;
     SplineInfo *only, *exact;
     int isvert;
     Spline *spline;
@@ -1427,8 +1427,8 @@ static double SCIFindMidPoint(SCI *sci,int pt, SplineList *spl, BasePoint *mid) 
 		    len = MetaRecognizedStemWidth(sci->meta,sl->cur->fromlen,isvert)?
 			    sl->cur->fromlen:sl->cur->tolen;
 		only = sl->cur;
-	    } else if ( DoubleApprox(len,sl->cur->fromlen) ||
-		    DoubleApprox(len,sl->cur->tolen)) {
+	    } else if ( RealApprox(len,sl->cur->fromlen) ||
+		    RealApprox(len,sl->cur->tolen)) {
 		/* Same size as last, it's ok */
 	    } else
 		len = -2;
@@ -1484,7 +1484,7 @@ return( 0 );		/* Couldn't find a stem */
 }
 
 static void PositionFromMidLen(SCI *sci,BasePoint *new,BasePoint *mid,SplinePoint *sp,
-	double len, Spline *s) {
+	real len, Spline *s) {
     BasePoint v, other, temp;
     int isvert = IsHVSpline(s,sp);
 
@@ -1543,7 +1543,7 @@ static void SplineIntersectWithEdge(SCI *sci,SplinePoint *sp,Spline *s,
 	BasePoint *new,BasePoint *mid,BasePoint *v1) {
     BasePoint new1 = *new, new2, other;
     BasePoint v2;
-    double mapped;
+    real mapped;
 
     if ( s->knownlinear ) {
 	/* if the other spline is a line then we want the edge */
@@ -1552,7 +1552,7 @@ static void SplineIntersectWithEdge(SCI *sci,SplinePoint *sp,Spline *s,
 	/*  against the zones */
 	if ( s->from->me.y==s->to->me.y && SCIIsOnKnownEdge(sci,&sp->me,1)) {
 	    mapped = MapCoord(&sci->mapd[1],sp->me.y,sp->me.x);
-	    if ( DoubleApprox(new1.y,mapped))
+	    if ( RealApprox(new1.y,mapped))
 		new->y = mapped;
 	    else if ( v1->y==0 )
 		GDrawIError("Two Parallel vertical lines" );
@@ -1562,7 +1562,7 @@ static void SplineIntersectWithEdge(SCI *sci,SplinePoint *sp,Spline *s,
 	    }
 	} else if ( s->from->me.x==s->to->me.x && SCIIsOnKnownEdge(sci,&sp->me,0)) {
 	    mapped = MapCoord(&sci->mapd[0],sp->me.x,sp->me.y);
-	    if ( DoubleApprox(new1.x,mapped))
+	    if ( RealApprox(new1.x,mapped))
 		new->x = mapped;
 	    else if ( v1->x==0 )
 		GDrawIError("Two Parallel horizontal lines" );
@@ -1583,7 +1583,7 @@ static void SplineIntersectWithEdge(SCI *sci,SplinePoint *sp,Spline *s,
 
 static void SCIPositionPts(SCI *sci) {
     int i;
-    double len1, len2;
+    real len1, len2;
     BasePoint mid1, mid2;
     BasePoint v1,v2;
     BasePoint new, new1, new2;
@@ -1610,7 +1610,7 @@ static void SCIPositionPts(SCI *sci) {
 		new = new1;		/* This is a fallback for when we get errors */
 		if ( v1.x==0 ) {
 		    if ( v2.x==0 ) {
-			if ( !DoubleApprox(new1.x,new2.x) || !DoubleApprox(new1.y,new2.y))
+			if ( !RealApprox(new1.x,new2.x) || !RealApprox(new1.y,new2.y))
 			    GDrawIError("Two Parallel horizontal lines" );
 		    } else
 			/* Inherit x from new1 */
@@ -1619,7 +1619,7 @@ static void SCIPositionPts(SCI *sci) {
 		    new.x = new2.x;
 		    new.y = new1.y + v1.y*(new.x-new1.x)/v1.x;
 		} else if ( v2.y/v2.x == v1.y/v1.x ) {
-		    if ( !DoubleApprox(new1.x,new2.x) || !DoubleApprox(new1.y,new2.y))
+		    if ( !RealApprox(new1.x,new2.x) || !RealApprox(new1.y,new2.y))
 			GDrawIError("Two Parallel lines" );
 		} else {
 /* new1.y + v1.y*(X-new1.x)/v1.x = new2.y + v2.y*(X-new2.x)/v2.x */
@@ -1708,11 +1708,11 @@ return;		/* Debug !!!! */
     }
 }
 
-static void MovePointToInter(SCI *sci,int i,int j, double val, int isvert) {
+static void MovePointToInter(SCI *sci,int i,int j, real val, int isvert) {
     /* Move the new version of point i to the place where the spline between */
     /*  it and point j intersects the horizontal/vertical line through val */
     SplinePoint pti, ptj, *midsp;
-    double ts[3], t;
+    real ts[3], t;
     int k;
     Spline *spline;
 
@@ -1753,7 +1753,7 @@ static void SCICornerFixups(SCI *sci) {
     int i,j;
     SplinePoint *sp, *nsp;
     BasePoint *me, *nme;
-    double mid, oldmid;
+    real mid, oldmid;
 return;
     for ( i=0; i<sci->ptcnt; ++i ) {
 	sp = sci->pts[i].cur;
@@ -1858,7 +1858,7 @@ static int MT_OK(GGadget *g, GEvent *e) {
     int type, func;
     MetaFontDlg *meta;
     int i, cnt;
-    double stems, counters, xh=0;
+    real stems, counters, xh=0;
     int err;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
@@ -1867,10 +1867,10 @@ static int MT_OK(GGadget *g, GEvent *e) {
 	if ( type==0 ) {
 	    func = GGadgetGetFirstListSelectedItem(GWidgetGetControl(meta->gw,CID_SimpleFuncs));
 	    err = false;
-	    stems = GetDoubleR(meta->gw,CID_StemScale, _STR_StemScale,&err)/100;
-	    counters = GetDoubleR(meta->gw,CID_CounterScale,_STR_CounterScale,&err)/100;
+	    stems = GetRealR(meta->gw,CID_StemScale, _STR_StemScale,&err)/100;
+	    counters = GetRealR(meta->gw,CID_CounterScale,_STR_CounterScale,&err)/100;
 	    if ( meta->bxh!=-1 )
-		xh = GetDoubleR(meta->gw,CID_XH_Val,_STR_XHeight,&err);
+		xh = GetRealR(meta->gw,CID_XH_Val,_STR_XHeight,&err);
 	    if ( err )
 return( true );
 	    meta->counters[0].counterchoices = cc_edgefixed;
@@ -1926,8 +1926,8 @@ return( true );
 
 static void FuncSet(MetaFontDlg *meta) {
     int func = GGadgetGetFirstListSelectedItem(GWidgetGetControl(meta->gw,CID_SimpleFuncs));
-    double stemval = func==0?170:func==1?70:100;
-    double counterval = func==0?110:func==1?95:func==2?75:125;
+    real stemval = func==0?170:func==1?70:100;
+    real counterval = func==0?110:func==1?95:func==2?75:125;
     char buffer[10];
     unichar_t ustem[10], ucounter[10];
 

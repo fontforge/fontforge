@@ -382,6 +382,11 @@ static unsigned char lbearmask_bits[] = {
 
 void InitCursors(void) {
     GWindow mask, image;
+    /* The XServer shipping with redhat 7.1 seems to suffer a protocol change */
+    /*  with the red and blue members of XColor structure reversed */
+    /* So all of my cursors which should be red (to match the points drawn */
+    /*  on the screen) come out blue. If I run the same image on another server*/
+    /*  it's red. Oh well. */
 
     image = GDrawCreateBitmap(NULL,magplus_width,magplus_height,magplus_bits);
     ct_magplus = GDrawCreateCursor(image,image,0x000000,0xffffff,magplus_x_hot,

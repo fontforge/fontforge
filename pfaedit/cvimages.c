@@ -51,8 +51,8 @@ return;
 static BasePoint *slurppoints(FILE *fig,SplineFont *sf,int cnt ) {
     BasePoint *bps = galloc((cnt+1)*sizeof(BasePoint));	/* spline code may want to add another point */
     int x, y, i, ch;
-    double scale = sf->ascent/(8.5*1200.0);
-    double ascent = 11*1200*sf->ascent/(sf->ascent+sf->descent);
+    real scale = sf->ascent/(8.5*1200.0);
+    real ascent = 11*1200*sf->ascent/(sf->ascent+sf->descent);
 
     for ( i = 0; i<cnt; ++i ) {
 	fscanf(fig,"%d %d", &x, &y );
@@ -102,10 +102,10 @@ static SplineSet * slurpelipse(FILE *fig,SplineChar *sc, SplineSet *sofar) {
     float angle;
     SplinePointList *spl;
     SplinePoint *sp;
-    double dcx,dcy,drx,dry;
+    real dcx,dcy,drx,dry;
     SplineFont *sf = sc->parent;
-    double scale = sf->ascent/(8.5*1200.0);
-    double ascent = 11*1200*sf->ascent/(sf->ascent+sf->descent);
+    real scale = sf->ascent/(8.5*1200.0);
+    real ascent = 11*1200*sf->ascent/(sf->ascent+sf->descent);
     /* I ignore the angle */
 
     fscanf(fig, "%d %*d %*d %*d %*d %*d %*d %*d %*f %d %f %d %d %d %d %*d %*d %*d %*d",
@@ -197,23 +197,23 @@ return( spl );
 struct xspline {
     int n;		/* total number of control points */
     BasePoint *cp;	/* an array of n control points */
-    double *s;		/* an array of n tension values */
+    real *s;		/* an array of n tension values */
     /* for a closed spline cp[0]==cp[n-1], but we may still need to wrap a bit*/
     unsigned int closed: 1;
 };
 
-static double g(double u, double q, double p) {
+static real g(real u, real q, real p) {
 return( u * (q + u * (2*q + u *( 10-12*q+10*p + u * ( 2*p+14*q-15 + u*(6-5*q-p))))) );
 }
 
-static double h(double u, double q) {
+static real h(real u, real q) {
     /* The paper says that h(-1)==0, but the definition of h they give */
     /*  doesn't do that. But if we negate the x^5 term it all works */
     /*  (works for the higher derivatives too) */
 return( q*u * (1 + u * (2 - u * u * (u+2))) );
 }
 
-static void xsplineeval(BasePoint *ret,double t, struct xspline *xs) {
+static void xsplineeval(BasePoint *ret,real t, struct xspline *xs) {
     /* By choosing t to range between [0,n-1] we set delta in the article to 1*/
     /*  and may therefore ignore it */
 #if 0
@@ -230,22 +230,22 @@ static void xsplineeval(BasePoint *ret,double t, struct xspline *xs) {
 	/*  function becomes 0. This depends on the tension values */
 	/* For negative tension values it doesn't happen, the curve itself */
 	/*  is changed */
-	double Tk0 = k+1 + (xs->s[k+1]>0?xs->s[k+1]:0);
-	double Tk1 = k+2 + (xs->s[k+2]>0?xs->s[k+2]:0);
-	double Tk2 = k+1 - (xs->s[k+1]>0?xs->s[k+1]:0);
-	double Tk3 = k+2 - (xs->s[k+2]>0?xs->s[k+2]:0);
+	real Tk0 = k+1 + (xs->s[k+1]>0?xs->s[k+1]:0);
+	real Tk1 = k+2 + (xs->s[k+2]>0?xs->s[k+2]:0);
+	real Tk2 = k+1 - (xs->s[k+1]>0?xs->s[k+1]:0);
+	real Tk3 = k+2 - (xs->s[k+2]>0?xs->s[k+2]:0);
 	/* Now each blending function has a "p" value that describes its shape*/
-	double p0 = 2*(k-Tk0)*(k-Tk0);
-	double p1 = 2*(k+1-Tk1)*(k+1-Tk1);
-	double p2 = 2*(k+2-Tk2)*(k+2-Tk2);
-	double p3 = 2*(k+3-Tk3)*(k+3-Tk3);
+	real p0 = 2*(k-Tk0)*(k-Tk0);
+	real p1 = 2*(k+1-Tk1)*(k+1-Tk1);
+	real p2 = 2*(k+2-Tk2)*(k+2-Tk2);
+	real p3 = 2*(k+3-Tk3)*(k+3-Tk3);
 	/* and each negative tension blending function has a "q" value */
-	double q0 = xs->s[k+1]<0?-xs->s[k+1]/2:0;
-	double q1 = xs->s[k+2]<0?-xs->s[k+2]/2:0;
-	double q2 = q0;
-	double q3 = q1;
+	real q0 = xs->s[k+1]<0?-xs->s[k+1]/2:0;
+	real q1 = xs->s[k+2]<0?-xs->s[k+2]/2:0;
+	real q2 = q0;
+	real q3 = q1;
 	/* the function f for positive s is the same as g if q==0 */
-	double A0, A1, A2, A3;
+	real A0, A1, A2, A3;
 	if ( t<=Tk0 )
 	    A0 = g( (t-Tk0)/(k-Tk0), q0, p0);
 	else if ( q0>0 )
@@ -275,8 +275,8 @@ static void xsplineeval(BasePoint *ret,double t, struct xspline *xs) {
 }
 
 static void AdjustTs(TPoint *mids,SplinePoint *from, SplinePoint *to) {
-    double len=0, sofar;
-    double lens[8];
+    real len=0, sofar;
+    real lens[8];
     int i;
 
     lens[0] = sqrt((mids[0].x-from->me.x)*(mids[0].x-from->me.x) +
@@ -296,7 +296,7 @@ static void AdjustTs(TPoint *mids,SplinePoint *from, SplinePoint *to) {
 
 static SplineSet *ApproximateXSpline(struct xspline *xs) {
     int i, j;
-    double t;
+    real t;
     TPoint mids[7];
     SplineSet *spl = gcalloc(1,sizeof(SplineSet));
     SplinePoint *sp;
@@ -347,14 +347,14 @@ static SplineSet * slurpspline(FILE *fig,SplineChar *sc, SplineSet *sofar) {
 	while ((ch=getc(fig))!='\n' && ch!=EOF);
     xs.n = cnt;
     xs.cp = slurppoints(fig,sc->parent,cnt);
-    xs.s = galloc((cnt+1)*sizeof(double));
+    xs.s = galloc((cnt+1)*sizeof(real));
     xs.closed = (sub&1);
     for ( i=0; i<cnt; ++i )
 	fscanf(fig,"%lf",&xs.s[i]);
     /* the spec says that the last point of a closed path will duplicate the */
     /* first, but it doesn't seem to */
-    if ( xs.closed && ( !DoubleNear(xs.cp[cnt-1].x,xs.cp[0].x) ||
-			!DoubleNear(xs.cp[cnt-1].y,xs.cp[0].y) )) {
+    if ( xs.closed && ( !RealNear(xs.cp[cnt-1].x,xs.cp[0].x) ||
+			!RealNear(xs.cp[cnt-1].y,xs.cp[0].y) )) {
 	xs.n = ++cnt;
 	xs.cp[cnt-1] = xs.cp[0];
 	xs.s[cnt-1] = xs.s[0];
@@ -467,7 +467,7 @@ return;
 static void ImportImage(CharView *cv,char *path) {
     GImage *image;
     ImageList *im;
-    double scale;
+    real scale;
     int dm = cv->drawmode;
 
     image = GImageRead(path);
@@ -479,7 +479,7 @@ return;
     CVPreserveState(cv);
     cv->drawmode = dm;
     scale = (cv->sc->parent->ascent+cv->sc->parent->descent)/
-	    (double) GImageGetHeight(image);
+	    (real) GImageGetHeight(image);
     im = galloc(sizeof(ImageList));
     im->image = image;
     im->xoff = 0;

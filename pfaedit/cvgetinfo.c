@@ -25,9 +25,10 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#include "ustring.h"
+#include <ustring.h>
 #include <math.h>
-#include "utype.h"
+#include <utype.h>
+#include <gkeysym.h>
 
 #define TCnt	3
 
@@ -429,7 +430,11 @@ static int ci_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	GIData *ci = GDrawGetUserData(gw);
 	ci->done = true;
-    } else if ( event->type == et_char ) {
+    } else if ( event->type==et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    system("netscape http://pfaedit.sf.net/getinfo.html &");
+return( true );
+	}
 return( false );
     } else if ( event->type == et_map ) {
 	/* Above palettes */
@@ -774,7 +779,11 @@ static void PI_DoCancel(GIData *ci) {
 static int pi_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	PI_DoCancel( GDrawGetUserData(gw));
-    } else if ( event->type == et_char ) {
+    } else if ( event->type==et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    system("netscape http://pfaedit.sf.net/getinfo.html &");
+return( true );
+	}
 return( false );
     } else if ( event->type == et_map ) {
 	/* Above palettes */
@@ -799,7 +808,7 @@ static int PI_Ok(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static void mysprintf( char *buffer, double v) {
+static void mysprintf( char *buffer, real v) {
     char *pt;
 
     sprintf( buffer, "%.2f", v );
@@ -810,7 +819,7 @@ static void mysprintf( char *buffer, double v) {
 	pt[2] = '\0';
 }
 
-static void mysprintf2( char *buffer, double v1, double v2) {
+static void mysprintf2( char *buffer, real v1, real v2) {
     char *pt;
 
     mysprintf(buffer,v1);
@@ -913,14 +922,14 @@ return( true );
 static int PI_BaseChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
-	double dx=0, dy=0;
+	real dx=0, dy=0;
 	int err=false;
 	SplinePoint *cursp = ci->cursp;
 
 	if ( GGadgetGetCid(g)==CID_BaseX )
-	    dx = GetDouble(ci->gw,CID_BaseX,"Base X",&err)-cursp->me.x;
+	    dx = GetReal(ci->gw,CID_BaseX,"Base X",&err)-cursp->me.x;
 	else
-	    dy = GetDouble(ci->gw,CID_BaseY,"Base Y",&err)-cursp->me.y;
+	    dy = GetReal(ci->gw,CID_BaseY,"Base Y",&err)-cursp->me.y;
 	if ( (dx==0 && dy==0) || err )
 return( true );
 	cursp->me.x += dx;
@@ -942,14 +951,14 @@ return( true );
 static int PI_NextChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
-	double dx=0, dy=0;
+	real dx=0, dy=0;
 	int err=false;
 	SplinePoint *cursp = ci->cursp;
 
 	if ( GGadgetGetCid(g)==CID_NextXOff )
-	    dx = GetDouble(ci->gw,CID_NextXOff,"Next CP X",&err)-(cursp->nextcp.x-cursp->me.x);
+	    dx = GetReal(ci->gw,CID_NextXOff,"Next CP X",&err)-(cursp->nextcp.x-cursp->me.x);
 	else
-	    dy = GetDouble(ci->gw,CID_NextYOff,"Next CP Y",&err)-(cursp->nextcp.y-cursp->me.y);
+	    dy = GetReal(ci->gw,CID_NextYOff,"Next CP Y",&err)-(cursp->nextcp.y-cursp->me.y);
 	if ( (dx==0 && dy==0) || err )
 return( true );
 	cursp->nextcp.x += dx;
@@ -966,14 +975,14 @@ return( true );
 static int PI_PrevChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
-	double dx=0, dy=0;
+	real dx=0, dy=0;
 	int err=false;
 	SplinePoint *cursp = ci->cursp;
 
 	if ( GGadgetGetCid(g)==CID_PrevXOff )
-	    dx = GetDouble(ci->gw,CID_PrevXOff,"Prev CP X",&err)-(cursp->prevcp.x-cursp->me.x);
+	    dx = GetReal(ci->gw,CID_PrevXOff,"Prev CP X",&err)-(cursp->prevcp.x-cursp->me.x);
 	else
-	    dy = GetDouble(ci->gw,CID_PrevYOff,"Prev CP Y",&err)-(cursp->prevcp.y-cursp->me.y);
+	    dy = GetReal(ci->gw,CID_PrevYOff,"Prev CP Y",&err)-(cursp->prevcp.y-cursp->me.y);
 	if ( (dx==0 && dy==0) || err )
 return( true );
 	cursp->prevcp.x += dx;
@@ -1176,9 +1185,10 @@ void CVGetInfo(CharView *cv) {
     RefChar *ref;
     ImageList *img;
 
-    if ( !CVOneThingSel(cv,&sp,&spl,&ref,&img))
-	SCGetInfo(cv->sc,false);
-    else if ( ref!=NULL )
+    if ( !CVOneThingSel(cv,&sp,&spl,&ref,&img)) {
+	if ( cv->fv->cidmaster!=NULL )
+	    SCGetInfo(cv->sc,false);
+    } else if ( ref!=NULL )
 	RefGetInfo(cv,ref);
     else if ( img!=NULL )
 	ImgGetInfo(cv,img);

@@ -236,7 +236,8 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding) {
 	fprintf( file, "BITSPERPIXEL %d\n",
 		font->clut->clut_len==256 ? 8 :
 		font->clut->clut_len==16 ? 4 : 2);
-    fprintf(file, "COMMENT \"This bdf font was generated from a postscript font, %s, by pfaedit\"\n", font->sf->fontname );
+    if ( !font->sf->onlybitmaps )
+	fprintf(file, "COMMENT \"This bdf font was generated from a postscript font, %s, by pfaedit\"\n", font->sf->fontname );
 
     if ( 'x'<font->charcnt && font->chars['x']!=NULL ) {
 	x_h = font->chars['x']->ymax;

@@ -47,8 +47,9 @@ int almaps[] = { em_iso8859_1, em_iso8859_2, em_iso8859_3, em_iso8859_4,
 
 
 char *cjk[] = { "JIS0208.TXT", "JIS0212.TXT", "BIG5.TXT", "GB2312.TXT",
-	"OLD5601.TXT", NULL };
-/* There's another version of KSC5601 which is not 94x94, I'm ignoring it */
+	"HANGUL.TXT", NULL };
+/* I'm only paying attention to Wansung encoding (in HANGUL.TXT) which is 94x94 */
+/* I used to look at OLD5601, but that maps to Unicode 1.0, and Hangul's moved*/
 char *cjknames[] = { "jis208", "jis212", "big5", "gb2312", "ksc5601", NULL };
 int cjkmaps[] = { em_jis208, em_jis212, em_big5, em_gb2312, em_ksc5601 };
 
@@ -440,6 +441,83 @@ static void dumpbig5(FILE *output,FILE *header) {
     }
 }
 
+static void dumpWansung(FILE *output,FILE *header) {
+    FILE *file;
+    int i,j=3,k, first, last;
+    long _orig, _unicode;
+    unichar_t unicode[94*94];
+    unichar_t *table[256], *plane;
+    char buffer[200];
+
+    for ( k=0; k<256; ++k ) table[k] = NULL;
+
+	file = fopen( cjk[j], "r" );
+	if ( file==NULL ) {
+	    fprintf( stderr, "Can't open %s\n", cjk[j]);
+	} else {
+	    for ( i=0; i<sizeof(unicode)/sizeof(unicode[0]); ++i )
+		unicode[i] = 0;
+	    while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
+		if ( buffer[0]=='#' )
+	    continue;
+		sscanf(buffer, "%*d %lx %*x %*x %*x %*x 0x%lx", &_orig, &_unicode);
+		if ( table[_unicode>>8]==NULL )
+		    table[_unicode>>8] = calloc(256,2);
+		table[_unicode>>8][_unicode&0xff] = _orig;
+		_orig -= 0x2121;
+		_orig = (_orig>>8)*94 + (_orig&0xff);
+		unicode[_orig] = _unicode;
+		if ( used[_unicode>>8]==NULL ) {
+		    used[_unicode>>8] = calloc(256,sizeof(long));
+		}
+		used[_unicode>>8][_unicode&0xff] |= (1<<cjkmaps[j]);
+	    }
+	    fclose(file);
+	}
+
+	fprintf( header, "extern const unichar_t unicode_from_%s[];\n", cjknames[j] );
+	fprintf( output, "const unichar_t unicode_from_%s[] = {\n", cjknames[j] );
+	for ( i=0; i<sizeof(unicode)/sizeof(unicode[0]); i+=8 )
+	    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,\n",
+		    unicode[i], unicode[i+1], unicode[i+2], unicode[i+3],
+		    unicode[i+4], unicode[i+5], unicode[i+6], unicode[i+7]);
+	fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
+		unicode[i], unicode[i+1], unicode[i+2], unicode[i+3],
+		unicode[i+4], unicode[i+5], unicode[i+6], unicode[i+7]);
+
+	first = last = -1;
+	for ( k=0; k<256; ++k ) {
+	    if ( table[k]!=NULL ) {
+		if ( first==-1 ) first = k;
+		last = k;
+		plane = table[k];
+		fprintf( output, "static unsigned short %s_from_unicode_%x[] = {\n", cjknames[j], k );
+		for ( i=0; i<256-8; i+=8 )
+		    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,\n",
+			    plane[i], plane[i+1], plane[i+2], plane[i+3],
+			    plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
+		fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
+			    plane[i], plane[i+1], plane[i+2], plane[i+3],
+			    plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
+	    }
+	}
+	fprintf( output, "static const unsigned short * const %s_from_unicode_[] = {\n", cjknames[j] );
+	for ( k=first; k<=last; ++k )
+	    if ( table[k]!=NULL )
+		fprintf( output, "    %s_from_unicode_%x%s", cjknames[j], k, k!=last?",\n":"\n" );
+	    else
+		fprintf( output, "    u_allzeros,\n" );
+	fprintf( output, "};\n\n" );
+	fprintf( header, "extern struct charmap2 %s_from_unicode;\n", cjknames[j]);
+	fprintf( output, "struct charmap2 %s_from_unicode = { %d, %d, (unsigned short **) %s_from_unicode_, (unsigned short *) unicode_from_%s };\n\n",
+		cjknames[j], first, last, cjknames[j], cjknames[j]);
+
+	for ( k=first; k<=last; ++k ) {
+	    free(table[k]);
+	    table[k]=NULL;
+	}
+}
+
 static void dump94x94(FILE *output,FILE *header) {
     FILE *file;
     int i,j,k, first, last;
@@ -450,7 +528,7 @@ static void dump94x94(FILE *output,FILE *header) {
 
     for ( k=0; k<256; ++k ) table[k] = NULL;
 
-    for ( j=3; cjk[j]!=NULL; ++j ) {
+    for ( j=4; cjk[j]!=NULL; ++j ) {
 	file = fopen( cjk[j], "r" );
 	if ( file==NULL ) {
 	    fprintf( stderr, "Can't open %s\n", cjk[j]);
@@ -526,6 +604,7 @@ static void dumpcjks(FILE *output,FILE *header) {
 
     dumpjis(output,header);
     dumpbig5(output,header);
+    dumpWansung(output,header);
     dump94x94(output,header);
 }
 

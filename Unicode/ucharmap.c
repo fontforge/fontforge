@@ -124,8 +124,13 @@ return( u2encoding_strncpy(to,ufrom,n,local_encoding));
 }
 
 unichar_t *def2u_copy(const char *from) {
-    int len = sizeof(unichar_t)*strlen(from);
-    unichar_t *uto = galloc((len+1)*sizeof(unichar_t)), *ret;
+    int len;
+    unichar_t *uto, *ret;
+
+    if ( from==NULL )
+return( NULL );
+    len = sizeof(unichar_t)*strlen(from);
+    uto = galloc((len+1)*sizeof(unichar_t));
     ret = encoding2u_strncpy(uto,from,len,local_encoding);
     if ( ret==NULL )
 	free( uto );
@@ -135,8 +140,12 @@ return( ret );
 }
 
 char *u2def_copy(const unichar_t *ufrom) {
-    int len = u_strlen(ufrom);
+    int len;
     char *to, *ret;
+
+    if ( ufrom==NULL )
+return( NULL );
+    len = u_strlen(ufrom);
     if ( local_encoding>=e_first2byte )
 	len = 2*len;
     to = galloc(len+2);

@@ -49,11 +49,11 @@ static const unichar_t accents[][3] = {
     { 0xa8 },			/* diaeresis */
     { 0x2c0 },			/* hook above */
     { 0x2da, 0xb0 },		/* ring above */
-    { 0x2dd },			/* double acute */
+    { 0x2dd },			/* real acute */
     { 0x2c7 },			/* caron */
     { 0x2c8, 0x384, '\''  },	/* vertical line, tonos */
-    { '"' },			/* double vertical line */
-    { 0 },			/* double grave */
+    { '"' },			/* real vertical line */
+    { 0 },			/* real grave */
     { 0 },			/* cand... */		/* 310 */
     { 0 },			/* inverted breve */
     { 0x2bb },			/* turned comma */
@@ -81,7 +81,7 @@ static const unichar_t accents[][3] = {
     { 0x2db },			/* ogonek */		/* 0x328 */
     { 0x2c8, 0x384, '\''  },	/* vertical line below */
     { 0 },			/* bridge below */
-    { 0 },			/* double arch below */
+    { 0 },			/* real arch below */
     { 0x2c7 },			/* caron below */
     { 0x2c6, 0x52 },		/* circumflex below */
     { 0x2d8 },			/* breve below */
@@ -89,7 +89,7 @@ static const unichar_t accents[][3] = {
     { 0x2dc, 0x7e },		/* tilde below */	/* 0x330 */
     { 0xaf, 0x2c9 },		/* macron below */
     { '_' },			/* low line */
-    { 0 },			/* double low line */
+    { 0 },			/* real low line */
     { 0x2dc, 0x7e },		/* tilde overstrike */
     { '-' },			/* line overstrike */
     { '_' },			/* long line overstrike */
@@ -244,7 +244,7 @@ return( false );
 return( true );
 }
 
-static int SPInRange(SplinePoint *sp, double ymin, double ymax) {
+static int SPInRange(SplinePoint *sp, real ymin, real ymax) {
     if ( sp->me.y>=ymin && sp->me.y<=ymax )
 return( true );
     if ( sp->prev!=NULL )
@@ -257,9 +257,9 @@ return( false );
 }
 
 static void _SplineSetFindXRange(SplinePointList *spl, DBounds *bounds,
-	double ymin, double ymax, double ia) {
+	real ymin, real ymax, real ia) {
     Spline *spline;
-    double xadjust, tia = tan(ia);
+    real xadjust, tia = tan(ia);
 
     for ( ; spl!=NULL; spl = spl->next ) {
 	if ( SPInRange(spl->first,ymin,ymax) ) {
@@ -289,7 +289,7 @@ static void _SplineSetFindXRange(SplinePointList *spl, DBounds *bounds,
 /*  entire character. Our job is to make a guess at what the top of the */
 /*  character looks like so that we can do an optical accent placement */
 /* I tried having "top" be the top tenth of the character but that was too small */
-static double SCFindTopXRange(SplineChar *sc,DBounds *bounds, double ia) {
+static real SCFindTopXRange(SplineChar *sc,DBounds *bounds, real ia) {
     RefChar *rf;
     int ymax = bounds->maxy+1, ymin = ymax-(bounds->maxy-bounds->miny)/4;
 
@@ -303,7 +303,7 @@ static double SCFindTopXRange(SplineChar *sc,DBounds *bounds, double ia) {
 return( ymin );
 }
 
-static double SCFindBottomXRange(SplineChar *sc,DBounds *bounds, double ia) {
+static real SCFindBottomXRange(SplineChar *sc,DBounds *bounds, real ia) {
     RefChar *rf;
     int ymin = bounds->miny-1, ymax = ymin+(bounds->maxy-bounds->miny)/4;
 
@@ -317,7 +317,7 @@ static double SCFindBottomXRange(SplineChar *sc,DBounds *bounds, double ia) {
 return( ymin );
 }
 
-static double SplineCharFindSlantedBounds(SplineChar *sc,DBounds *bounds, double ia) {
+static real SplineCharFindSlantedBounds(SplineChar *sc,DBounds *bounds, real ia) {
     int ymin, ymax;
     RefChar *rf;
 
@@ -335,7 +335,7 @@ static double SplineCharFindSlantedBounds(SplineChar *sc,DBounds *bounds, double
 return( ymin );
 }
 	
-static void _SCAddRef(SplineChar *sc,SplineChar *rsc,double transform[6]) {
+static void _SCAddRef(SplineChar *sc,SplineChar *rsc,real transform[6]) {
     RefChar *ref = gcalloc(1,sizeof(RefChar));
 
     ref->sc = rsc;
@@ -344,13 +344,13 @@ static void _SCAddRef(SplineChar *sc,SplineChar *rsc,double transform[6]) {
     ref->adobe_enc = getAdobeEnc(rsc->name);
     ref->next = sc->refs;
     sc->refs = ref;
-    memcpy(ref->transform,transform,sizeof(double [6]));
+    memcpy(ref->transform,transform,sizeof(real [6]));
     SCReinstanciateRefChar(sc,ref);
     SCMakeDependent(sc,rsc);
 }
 
-static void SCAddRef(SplineChar *sc,SplineChar *rsc,double xoff, double yoff) {
-    double transform[6];
+static void SCAddRef(SplineChar *sc,SplineChar *rsc,real xoff, real yoff) {
+    real transform[6];
     transform[0] = transform[3] = 1;
     transform[1] = transform[2] = 0;
     transform[4] = xoff; transform[5] = yoff;
@@ -401,19 +401,19 @@ return( 1 );
 }
 
 static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
-	double ia, int basech ) {
+	real ia, int basech ) {
     const unichar_t *apt = accents[ch-BottomAccent], *end = apt+3;
     int ach= -1;
     int invert = false;
     SplineChar *rsc;
-    double transform[6];
+    real transform[6];
     DBounds bb, rbb;
-    double xoff, yoff;
-    double spacing = (sf->ascent+sf->descent)/25;
+    real xoff, yoff;
+    real spacing = (sf->ascent+sf->descent)/25;
     BDFChar *bc, *rbc;
     int ixoff, iyoff, ispacing, pos;
     BDFFont *bdf;
-    double ybase, italicoff;
+    real ybase, italicoff;
 
     /* cedilla on lower "g" becomes a turned comma above it */
     if ( ch==0x327 && basech=='g' && haschar(sf,0x312))
@@ -557,7 +557,7 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 		    else
 			ixoff = bc->xmin - rbc->xmin + ((bc->xmax-bc->xmin)-(rbc->xmax-rbc->xmin))/2;
 		}
-		ixoff += rint(italicoff*bdf->pixelsize/(double) (sf->ascent+sf->descent));
+		ixoff += rint(italicoff*bdf->pixelsize/(real) (sf->ascent+sf->descent));
 		BCPasteInto(bc,rbc,ixoff,iyoff, invert, false);
 	    }
 	}
@@ -654,7 +654,7 @@ static void DoSpaces(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
 		bc->ymin = 0;
 		bc->ymax = 1;
 		bc->bytes_per_line = 1;
-		bc->width = rint(width*bdf->pixelsize/(double) em);
+		bc->width = rint(width*bdf->pixelsize/(real) em);
 		bc->bitmap = gcalloc(bc->bytes_per_line*(bc->ymax-bc->ymin+1),sizeof(char));
 	    }
 	}
@@ -667,7 +667,7 @@ static void DoSpaces(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
     }
 }
 
-static SplinePoint *MakeSP(double x, double y, SplinePoint *last) {
+static SplinePoint *MakeSP(real x, real y, SplinePoint *last) {
     SplinePoint *new = gcalloc(1,sizeof(SplinePoint));
 
     new->me.x = x; new->me.y = y;
@@ -687,7 +687,7 @@ static void DoRules(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
     BDFChar *bc, *tempbc;
     BDFFont *bdf;
     DBounds b;
-    double lbearing, rbearing, height, ypos;
+    real lbearing, rbearing, height, ypos;
     SplinePoint *first, *sp;
 
     switch ( enc ) {
@@ -845,7 +845,7 @@ return( ret );
 void SCBuildComposit(SplineFont *sf, SplineChar *sc, int copybmp,FontView *fv) {
     const unichar_t *pt, *apt; unichar_t ch;
     BDFFont *bdf;
-    double ia;
+    real ia;
     /* This does not handle arabic ligatures at all. It would need to reverse */
     /*  the string and deal with <final>, <medial>, etc. info we don't have */
 

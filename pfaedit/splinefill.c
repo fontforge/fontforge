@@ -62,16 +62,16 @@ void FreeEdges(EdgeList *es) {
     HintsFree(es->vhints);
 }
 
-double TOfNextMajor(Edge *e, EdgeList *es, double sought_m ) {
+real TOfNextMajor(Edge *e, EdgeList *es, real sought_m ) {
     /* We want to find t so that Mspline(t) = sought_m */
     /*  the curve is monotonic */
     Spline *sp = e->spline;
     Spline1D *msp = &e->spline->splines[es->major];
-    double slope = (3.0*msp->a*e->t_cur+2.0*msp->b)*e->t_cur + msp->c;
-    double new_t, old_t, newer_t;
-    double found_m;
-    double t_mmax, t_mmin;
-    double mmax, mmin;
+    real slope = (3.0*msp->a*e->t_cur+2.0*msp->b)*e->t_cur + msp->c;
+    real new_t, old_t, newer_t;
+    real found_m;
+    real t_mmax, t_mmin;
+    real mmax, mmin;
 
     if ( sp->islinear ) {
 	new_t = e->t_cur + (sought_m-e->m_cur)/(es->scale * msp->c);
@@ -146,9 +146,9 @@ static int SlopeLess(Edge *e, Edge *p, int other) {
     Spline1D *psp = &p->spline->splines[other];
     Spline1D *msp = &e->spline->splines[!other];
     Spline1D *qsp = &p->spline->splines[!other];
-    double os = (3*osp->a*e->t_cur+2*osp->b)*e->t_cur+osp->c,
+    real os = (3*osp->a*e->t_cur+2*osp->b)*e->t_cur+osp->c,
 	   ps = (3*psp->a*p->t_cur+2*psp->b)*p->t_cur+psp->c;
-    double ms = (3*msp->a*e->t_cur+2*msp->b)*e->t_cur+msp->c,
+    real ms = (3*msp->a*e->t_cur+2*msp->b)*e->t_cur+msp->c,
 	   qs = (3*qsp->a*p->t_cur+2*qsp->b)*p->t_cur+qsp->c;
     if ( e->t_cur-e->tmin > e->tmax-e->t_cur ) { os = -os; ms = -ms; }
     if ( p->t_cur-p->tmin > p->tmax-p->t_cur ) { ps = -ps; qs = -qs; }
@@ -167,9 +167,9 @@ return( e->o_mmax<p->o_mmax );
 return( os<ps );
 }
 
-static void AddEdge(EdgeList *es, Spline *sp, double tmin, double tmax ) {
+static void AddEdge(EdgeList *es, Spline *sp, real tmin, real tmax ) {
     Edge *e, *pr;
-    double m1, m2;
+    real m1, m2;
     int mpos;
     Hints *hint;
     Spline1D *msp = &sp->splines[es->major], *osp = &sp->splines[es->other];
@@ -192,7 +192,7 @@ static void AddEdge(EdgeList *es, Spline *sp, double tmin, double tmax ) {
 	e->t_mmin = tmin;
 	e->up = true;
     }
-    if ( DoubleNear(e->mmin,es->mmin)) e->mmin = es->mmin;
+    if ( RealNear(e->mmin,es->mmin)) e->mmin = es->mmin;
     e->o_mmin = ( ((osp->a*e->t_mmin+osp->b)*e->t_mmin+osp->c)*e->t_mmin + osp->d ) * es->scale;
     e->o_mmax = ( ((osp->a*e->t_mmax+osp->b)*e->t_mmax+osp->c)*e->t_mmax + osp->d ) * es->scale;
     e->mmin -= es->mmin; e->mmax -= es->mmin;
@@ -272,7 +272,7 @@ return;
 
 static void AddMajorEdge(EdgeList *es, Spline *sp) {
     Edge *e, *pr;
-    double m1;
+    real m1;
     Spline1D *msp = &sp->splines[es->major], *osp = &sp->splines[es->other];
 
     e = gcalloc(1,sizeof(Edge));
@@ -307,20 +307,20 @@ return;
 }
 
 static void AddSpline(EdgeList *es, Spline *sp ) {
-    double t1=2, t2=2, t;
-    double b2_fourac;
-    double fm, tm;
+    real t1=2, t2=2, t;
+    real b2_fourac;
+    real fm, tm;
     Spline1D *msp = &sp->splines[es->major], *osp = &sp->splines[es->other];
 
     /* Find the points of inflection on the curve discribing y behavior */
-    if ( !DoubleNear(msp->a,0) ) {
+    if ( !RealNear(msp->a,0) ) {
 	/* cubic, possibly 2 inflections (possibly none) */
 	b2_fourac = 4*msp->b*msp->b - 12*msp->a*msp->c;
 	if ( b2_fourac>=0 ) {
 	    b2_fourac = sqrt(b2_fourac);
 	    t1 = (-2*msp->b - b2_fourac) / (6*msp->a);
 	    t2 = (-2*msp->b + b2_fourac) / (6*msp->a);
-	    if ( t1>t2 ) { double temp = t1; t1 = t2; t2 = temp; }
+	    if ( t1>t2 ) { real temp = t1; t1 = t2; t2 = temp; }
 	    else if ( t1==t2 ) t2 = 2.0;
 
 	    /* check for curves which have such a small slope they might */
@@ -328,7 +328,7 @@ static void AddSpline(EdgeList *es, Spline *sp ) {
 	    fm = es->major==1?sp->from->me.y:sp->from->me.x;
 	    tm = es->major==1?sp->to->me.y:sp->to->me.x;
 	    if ( fm==tm ) {
-		double m1, m2, d1, d2;
+		real m1, m2, d1, d2;
 		m1 = m2 = fm;
 		if ( t1>0 && t1<1 )
 		    m1 = ((msp->a*t1+msp->b)*t1+msp->c)*t1 + msp->d;
@@ -344,10 +344,10 @@ return;		/* Pretend it's horizontal, ignore it */
 		}
 	    }
 	}
-    } else if ( !DoubleNear(msp->b,0) ) {
+    } else if ( !RealNear(msp->b,0) ) {
 	/* Quadratic, at most one inflection */
 	t1 = -msp->c/(2.0*msp->b);
-    } else if ( !DoubleNear(msp->c,0) ) {
+    } else if ( !RealNear(msp->c,0) ) {
 	/* linear, no points of inflection */
     } else {
 	sp->ishorvert = true;
@@ -356,11 +356,11 @@ return;		/* Pretend it's horizontal, ignore it */
 return;		/* Horizontal line, ignore it */
     }
 
-    if ( DoubleNear(t1,0)) t1=0;
-    if ( DoubleNear(t1,1)) t1=1;
-    if ( DoubleNear(t2,0)) t2=0;
-    if ( DoubleNear(t2,1)) t2=1;
-    if ( DoubleNear(t1,t2)) t2=2;
+    if ( RealNear(t1,0)) t1=0;
+    if ( RealNear(t1,1)) t1=1;
+    if ( RealNear(t2,0)) t2=0;
+    if ( RealNear(t2,1)) t2=1;
+    if ( RealNear(t1,t2)) t2=2;
     t=0;
     if ( t1>0 && t1<1 ) {
 	AddEdge(es,sp,0,t1);
@@ -373,7 +373,7 @@ return;		/* Horizontal line, ignore it */
     AddEdge(es,sp,t,1.0);
     if ( es->interesting ) {
 	/* Also store up points of inflection in X as interesting (we got the endpoints, just internals now)*/
-	double ot1, ot2;
+	real ot1, ot2;
 	int mpos;
 	SplineFindInflections(osp,&ot1,&ot2);
 	if ( ot1>0 && ot1<1 ) {
@@ -443,7 +443,7 @@ Edge *ActiveEdgesInsertNew(EdgeList *es, Edge *active,int i) {
 return( active );
 }
 
-Edge *ActiveEdgesRefigure(EdgeList *es, Edge *active,double i) {
+Edge *ActiveEdgesRefigure(EdgeList *es, Edge *active,real i) {
     Edge *apt, *pr;
     int any;
 
@@ -495,7 +495,7 @@ Edge *ActiveEdgesRefigure(EdgeList *es, Edge *active,double i) {
 return( active );
 }
 
-Edge *ActiveEdgesFindStem(Edge *apt, Edge **prev, double i) {
+Edge *ActiveEdgesFindStem(Edge *apt, Edge **prev, real i) {
     int cnt=apt->up?1:-1;
     Edge *pr, *e;
 
@@ -531,7 +531,7 @@ Edge *ActiveEdgesFindStem(Edge *apt, Edge **prev, double i) {
 return( e );
 }
 
-static int isvstem(EdgeList *es,double stem,int *vval) {
+static int isvstem(EdgeList *es,real stem,int *vval) {
     Hints *hint;
 
     for ( hint=es->vhints; hint!=NULL ; hint=hint->next ) {
@@ -609,7 +609,7 @@ static void FillChar(EdgeList *es) {
 static void InitializeHints(SplineChar *sc, EdgeList *es) {
     Hints *hint, *last;
     StemInfo *s;
-    double t1, t2;
+    real t1, t2;
     int k,end,width;
 
     /* we only care about hstem hints, and only if they fail to cross a */
@@ -790,7 +790,7 @@ return( NULL );
 	es.bytes_per_line = 1;
     } else {
 	SplineCharFindBounds(sc,&b);
-	es.scale = (pixelsize-.3) / (double) (sc->parent->ascent+sc->parent->descent);
+	es.scale = (pixelsize-.3) / (real) (sc->parent->ascent+sc->parent->descent);
 	es.mmin = floor(b.miny*es.scale);
 	es.mmax = ceil(b.maxy*es.scale);
 	es.omin = b.minx*es.scale;
@@ -823,7 +823,7 @@ return( NULL );
     bdfc->xmax = (int) ceil(es.omax-es.omin) + bdfc->xmin;
     bdfc->ymax = es.mmax;
     if ( sc!=NULL ) {
-	bdfc->width = rint(sc->width*pixelsize / (double) (sc->parent->ascent+sc->parent->descent));
+	bdfc->width = rint(sc->width*pixelsize / (real) (sc->parent->ascent+sc->parent->descent));
 	bdfc->enc = sc->enc;
     }
     bdfc->bitmap = es.bitmap;
@@ -1008,11 +1008,11 @@ static void BDFCShrinkBitmap(BDFChar *bc, int linear_scale) {
 return;
 
     memset(&new,'\0',sizeof(new));
-    new.xmin = floor( ((double) bc->xmin)/linear_scale );
-    new.ymin = floor( ((double) bc->ymin)/linear_scale );
+    new.xmin = floor( ((real) bc->xmin)/linear_scale );
+    new.ymin = floor( ((real) bc->ymin)/linear_scale );
     new.xmax = new.xmin + (bc->xmax-bc->xmin+linear_scale-1)/linear_scale;
     new.ymax = new.ymin + (bc->ymax-bc->ymin+linear_scale-1)/linear_scale;
-    new.width = rint( ((double) bc->width)/linear_scale );
+    new.width = rint( ((real) bc->width)/linear_scale );
 
     new.bytes_per_line = (new.xmax-new.xmin+1);
     new.enc = bc->enc;
@@ -1051,14 +1051,24 @@ return( bc );
 return( bc );
 }
 
-BDFFont *SplineFontRasterize(SplineFont *sf, int pixelsize, int indicate, int slower) {
+BDFFont *SplineFontRasterize(SplineFont *_sf, int pixelsize, int indicate, int slower) {
 #else
-BDFFont *SplineFontRasterize(SplineFont *sf, int pixelsize, int indicate) {
+BDFFont *SplineFontRasterize(SplineFont *_sf, int pixelsize, int indicate) {
 #endif
     BDFFont *bdf = gcalloc(1,sizeof(BDFFont));
-    int i;
-    double scale = pixelsize / (double) (sf->ascent+sf->descent);
+    int i,k;
+    real scale;
     char csize[10]; unichar_t size[30];
+    int max;
+    SplineFont *sf;	/* The complexity here is to pick the appropriate subfont of a CID font */
+
+    sf = _sf;
+    max = sf->charcnt;
+    for ( i=0; i<_sf->subfontcnt; ++i ) {
+	sf = _sf->subfonts[i];
+	if ( sf->charcnt>max ) max = sf->charcnt;
+    }
+    scale = pixelsize / (real) (sf->ascent+sf->descent);
 
     sprintf(csize,"%d", pixelsize );
     uc_strcpy(size,csize);
@@ -1068,14 +1078,22 @@ BDFFont *SplineFontRasterize(SplineFont *sf, int pixelsize, int indicate) {
 		GStringGetResource(_STR_GenBitmap,NULL),size,sf->charcnt,1);
 	GProgressEnableStop(0);
     }
-    bdf->sf = sf;
-    bdf->charcnt = sf->charcnt;
+    bdf->sf = _sf;
+    bdf->charcnt = max;
     bdf->pixelsize = pixelsize;
-    bdf->chars = galloc(sf->charcnt*sizeof(BDFChar *));
+    bdf->chars = galloc(max*sizeof(BDFChar *));
     bdf->ascent = rint(sf->ascent*scale);
     bdf->descent = pixelsize-bdf->ascent;
     bdf->encoding_name = sf->encoding_name;
-    for ( i=0; i<sf->charcnt; ++i ) {
+    for ( i=0; i<max; ++i ) {
+	if ( _sf->subfontcnt!=0 ) {
+	    for ( k=0; k<_sf->subfontcnt; ++k ) if ( _sf->subfonts[k]->charcnt>i ) {
+		sf = _sf->subfonts[k];
+		if ( SCWorthOutputting(sf->chars[i]))
+	    break;
+	    }
+	    scale = pixelsize / (real) (sf->ascent+sf->descent);
+	}
 #if 0
 	bdf->chars[i] = slower ? SplineCharSlowerRasterize(sf->chars[i],pixelsize):
 				SplineCharRasterize(sf->chars[i],pixelsize);
@@ -1097,11 +1115,11 @@ static void BDFCAntiAlias(BDFChar *bc, int linear_scale) {
 return;
 
     memset(&new,'\0',sizeof(new));
-    new.xmin = floor( ((double) bc->xmin)/linear_scale );
-    new.ymin = floor( ((double) bc->ymin)/linear_scale );
+    new.xmin = floor( ((real) bc->xmin)/linear_scale );
+    new.ymin = floor( ((real) bc->ymin)/linear_scale );
     new.xmax = new.xmin + (bc->xmax-bc->xmin+linear_scale-1)/linear_scale;
     new.ymax = new.ymin + (bc->ymax-bc->ymin+linear_scale-1)/linear_scale;
-    new.width = rint( ((double) bc->width)/linear_scale );
+    new.width = rint( ((real) bc->width)/linear_scale );
 
     new.bytes_per_line = (new.xmax-new.xmin+1);
     new.enc = bc->enc;
@@ -1149,11 +1167,21 @@ BDFChar *SplineCharAntiAlias(SplineChar *sc, int pixelsize, int linear_scale) {
 return( bc );
 }
 
-BDFFont *SplineFontAntiAlias(SplineFont *sf, int pixelsize, int linear_scale) {
+BDFFont *SplineFontAntiAlias(SplineFont *_sf, int pixelsize, int linear_scale) {
     BDFFont *bdf = gcalloc(1,sizeof(BDFFont));
-    int i;
-    double scale = pixelsize / (double) (sf->ascent+sf->descent);
+    int i,k;
+    real scale;
     char csize[10]; unichar_t size[30];
+    int max;
+    SplineFont *sf;	/* The complexity here is to pick the appropriate subfont of a CID font */
+
+    sf = _sf;
+    max = sf->charcnt;
+    for ( i=0; i<_sf->subfontcnt; ++i ) {
+	sf = _sf->subfonts[i];
+	if ( sf->charcnt>max ) max = sf->charcnt;
+    }
+    scale = pixelsize / (real) (sf->ascent+sf->descent);
 
     sprintf(csize,"%d", pixelsize );
     uc_strcpy(size,csize);
@@ -1164,14 +1192,22 @@ BDFFont *SplineFontAntiAlias(SplineFont *sf, int pixelsize, int linear_scale) {
 
     if ( linear_scale>16 ) linear_scale = 16;	/* can't deal with more than 256 levels of grey */
     if ( linear_scale<=1 ) linear_scale = 2;
-    bdf->sf = sf;
-    bdf->charcnt = sf->charcnt;
+    bdf->sf = _sf;
+    bdf->charcnt = max;
     bdf->pixelsize = pixelsize;
-    bdf->chars = galloc(sf->charcnt*sizeof(BDFChar *));
+    bdf->chars = galloc(max*sizeof(BDFChar *));
     bdf->ascent = rint(sf->ascent*scale);
     bdf->descent = pixelsize-bdf->ascent;
     bdf->encoding_name = sf->encoding_name;
-    for ( i=0; i<sf->charcnt; ++i ) {
+    for ( i=0; i<max; ++i ) {
+	if ( _sf->subfontcnt!=0 ) {
+	    for ( k=0; k<_sf->subfontcnt; ++k ) if ( _sf->subfonts[k]->charcnt>i ) {
+		sf = _sf->subfonts[k];
+		if ( SCWorthOutputting(sf->chars[i]))
+	    break;
+	    }
+	    scale = pixelsize / (real) (sf->ascent+sf->descent);
+	}
 	bdf->chars[i] = SplineCharRasterize(sf->chars[i],pixelsize*linear_scale);
 	BDFCAntiAlias(bdf->chars[i],linear_scale);
 	GProgressNext();

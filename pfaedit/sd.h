@@ -61,12 +61,12 @@ typedef struct entity {
 	} splines;
 	struct text {
 	    TextUnit *text;
-	    double transform[6];
+	    real transform[6];
 	    struct entity *bound;
 	} text;
 	struct image {
 	    GImage *image;
-	    double transform[6];
+	    real transform[6];
 	} image;
 	struct group {
 	    struct entity *group;
@@ -84,7 +84,7 @@ typedef struct layer {
 
 typedef struct tile {
     Entity *tile;
-    struct tileinstance { double scale; GWindow pixmap; struct tileinstance *next; }
+    struct tileinstance { real scale; GWindow pixmap; struct tileinstance *next; }
 	    *instances;
     char *name;
 } Tile;
@@ -93,10 +93,10 @@ typedef struct splinedesign {
     int lcnt, lmax, active;
     Layer *layers;
 
-    double width, height;		/* in millimeters */
+    real width, height;		/* in millimeters */
     int16 hpages, vpages;
-    double pwidth, pheight;		/* in millimeters */
-    double units;			/* if user wants to see things in */
+    real pwidth, pheight;		/* in millimeters */
+    real units;			/* if user wants to see things in */
 	/* centimeters then units will be 10, if inches then 25.4, if points */
 	/* then 25.4/72, if 1/1200" then 25.4/1200, etc. */
     struct dview *dvs;

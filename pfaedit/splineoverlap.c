@@ -66,7 +66,7 @@ typedef struct splinelist {
 typedef struct splinetlist {
     struct splinetlist *next;
     Spline *spline;
-    double t;
+    real t;
     struct intersection *inter;
     unsigned int processed:1;
 } SplineTList;
@@ -79,7 +79,7 @@ typedef struct intersection {
     SplineTList *oldsplines;
 } IntersectionList;
 
-static void AddOldSplines(Spline *spline,double t,IntersectionList *il) {
+static void AddOldSplines(Spline *spline,real t,IntersectionList *il) {
     SplineTList *new = gcalloc(1,sizeof(SplineTList));
 
     new->spline = spline;
@@ -90,8 +90,8 @@ static void AddOldSplines(Spline *spline,double t,IntersectionList *il) {
 }
 
 static IntersectionList *AddIntersection(IntersectionList *old,
-	Spline *lefts, Spline *rights, double lt, double rt,
-	double xpos, double ypos ) {
+	Spline *lefts, Spline *rights, real lt, real rt,
+	real xpos, real ypos ) {
     IntersectionList *il;
     SplineTList *sp;
     SplinePoint *match;
@@ -163,11 +163,11 @@ return( il );
 }
 
 static IntersectionList *IntersectionOf(Edge *wasleft,Edge *wasright,
-	IntersectionList *old, double mpos, EdgeList *es) {
+	IntersectionList *old, real mpos, EdgeList *es) {
     /* first find the point of intersection. It's somewhere between oldt and t_cur */
     /*  major coordinate value is somewhere between mpos-1 and mpos */
-    double mtop, mbottom, xpos, ypos;
-    double ltop, lbottom, lt=-1, rtop, rbottom, rt=-1, locur, rocur=0, nrt=-1, nlt;
+    real mtop, mbottom, xpos, ypos;
+    real ltop, lbottom, lt=-1, rtop, rbottom, rt=-1, locur, rocur=0, nrt=-1, nlt;
     Spline1D *lsp, *rsp, *losp, *rosp;
 
     lsp = &wasleft->spline->splines[es->major];
@@ -212,23 +212,23 @@ return( old );
     }
 
     if (( wasleft->spline->to->next==wasright->spline &&
-	    DoubleNearish(xpos,wasleft->spline->to->me.x) &&
-	    DoubleNearish(ypos,wasleft->spline->to->me.y)) ||
+	    RealNearish(xpos,wasleft->spline->to->me.x) &&
+	    RealNearish(ypos,wasleft->spline->to->me.y)) ||
 	( wasleft->spline->from->prev==wasright->spline &&
-	    DoubleNearish(xpos,wasleft->spline->from->me.x) &&
-	    DoubleNearish(ypos,wasleft->spline->from->me.y)) )
+	    RealNearish(xpos,wasleft->spline->from->me.x) &&
+	    RealNearish(ypos,wasleft->spline->from->me.y)) )
 return( old );
 
 return( AddIntersection(old,wasleft->spline,wasright->spline,lt,rt,xpos,ypos));
 }
 
 static IntersectionList *MajorIntersectionOf(Edge *par_major,Edge *edge,
-	IntersectionList *old, double mpos, EdgeList *es) {
+	IntersectionList *old, real mpos, EdgeList *es) {
     /* first find the point of intersection. It's somewhere between oldt and t_cur */
     /*  major coordinate value is major->mmax (or mmin) */
-    double et, opos, mt;
+    real et, opos, mt;
     Spline1D *esp, *eosp;
-    double ypos, xpos;
+    real ypos, xpos;
 
     esp = &edge->spline->splines[es->major];
     eosp = &edge->spline->splines[es->other];
@@ -250,11 +250,11 @@ return( old );
     ypos = rint(ypos*1024)/1024;
 
     if (( edge->spline->to->next==par_major->spline &&
-	    DoubleNearish(xpos,edge->spline->to->me.x) &&
-	    DoubleNearish(ypos,edge->spline->to->me.y)) ||
+	    RealNearish(xpos,edge->spline->to->me.x) &&
+	    RealNearish(ypos,edge->spline->to->me.y)) ||
 	( edge->spline->from->prev==par_major->spline &&
-	    DoubleNearish(xpos,edge->spline->from->me.x) &&
-	    DoubleNearish(ypos,edge->spline->from->me.y)) )
+	    RealNearish(xpos,edge->spline->from->me.x) &&
+	    RealNearish(ypos,edge->spline->from->me.y)) )
 return( old );
 
 return( AddIntersection(old,edge->spline,par_major->spline,et,mt,xpos,ypos));
@@ -330,7 +330,7 @@ return( sofar );
 static int IsHorVertSpline(Spline *sp) {
     int major;
     Spline1D *msp;
-    double fm, tm;
+    real fm, tm;
     /* Check for splines that are very close to being horizontal or vertical */
     /*  we shall just pretend that they are lines.... */
 
@@ -338,14 +338,14 @@ static int IsHorVertSpline(Spline *sp) {
 	fm = major==1?sp->from->me.y:sp->from->me.x;
 	tm = major==1?sp->to->me.y:sp->to->me.x;
 	msp = &sp->splines[major];
-	if ( fm==tm && !DoubleNear(msp->a,0) ) {
-	    double m1, m2, d1, d2, t1, t2;
-	    double b2_fourac = 4*msp->b*msp->b - 12*msp->a*msp->c;
+	if ( fm==tm && !RealNear(msp->a,0) ) {
+	    real m1, m2, d1, d2, t1, t2;
+	    real b2_fourac = 4*msp->b*msp->b - 12*msp->a*msp->c;
 	    if ( b2_fourac>=0 ) {
 		b2_fourac = sqrt(b2_fourac);
 		t1 = (-2*msp->b - b2_fourac) / (6*msp->a);
 		t2 = (-2*msp->b + b2_fourac) / (6*msp->a);
-		if ( t1>t2 ) { double temp = t1; t1 = t2; t2 = temp; }
+		if ( t1>t2 ) { real temp = t1; t1 = t2; t2 = temp; }
 		else if ( t1==t2 ) t2 = 2.0;
 
 		m1 = m2 = fm;
@@ -365,9 +365,9 @@ return( false );
 
 static IntersectionList *LinesIntersect(Spline *line1, Spline *line2, IntersectionList *sofar) {
     /* If these two lines intersect, find that point */
-    double t1, t2;
-    double xpos, ypos;
-    double m1, m2;
+    real t1, t2;
+    real xpos, ypos;
+    real m1, m2;
 
     if ( line1->to==line2->from || line2->to==line1->from )
 return( sofar );
@@ -402,7 +402,7 @@ return( sofar );
     }
     m1 = (line1->to->me.y-line1->from->me.y)/(line1->to->me.x-line1->from->me.x);
     m2 = (line2->to->me.y-line2->from->me.y)/(line2->to->me.x-line2->from->me.x);
-    if ( DoubleNear(m1,m2) )
+    if ( RealNear(m1,m2) )
 return( sofar );
     xpos = (line1->from->me.y-line2->from->me.y -
 	    m1*line1->from->me.x + m2*line2->from->me.x)/(m2-m1);
@@ -456,7 +456,7 @@ return( sofar );
 static IntersectionList *FindThisVertextIntersections(SplineSet *spl,
 	SplinePoint *sp, IntersectionList *ilist) {
     Spline *spline, *first;
-    double t, xpos, ypos;
+    real t, xpos, ypos;
 
     while ( spl!=NULL ) {
 	first = NULL;
@@ -556,7 +556,7 @@ return;
 static void DoIntersections(SplineTList *me,IntersectionList *ilist) {
     struct tllist *base = NULL, *cur, *cnext;
     SplineTList *tsp;
-    double tbase, t;
+    real tbase, t;
     SplinePoint *to, *sp;
     IntersectionList *prev;
     Spline *lastspline=NULL;
@@ -885,8 +885,8 @@ static void ILDisconnect(IntersectionList *ilist) {
 
 static void SplinesMergeLists(Spline *before, Spline *after) {
 
-    if ( !DoubleNearish(before->to->me.x,after->from->me.x) ||
-	    !DoubleNearish(before->to->me.y,after->from->me.y) )
+    if ( !RealNearish(before->to->me.x,after->from->me.x) ||
+	    !RealNearish(before->to->me.y,after->from->me.y) )
 	GDrawIError("Attempt to merge two splines which don't meet");
     if ( before->to->next!=NULL || after->from->prev!=NULL )
 	GDrawIError("Attempt to merge two splines which are already attached to stuff");
@@ -1091,8 +1091,8 @@ return( SplineSetCreate(good1->from,last->to));
 return( spl );
 	}
 	cur->isticked = true;
-	if ( DoubleNearish(cur->to->me.x,last->to->me.x) &&
-		DoubleNearish(cur->to->me.y,last->to->me.y) )
+	if ( RealNearish(cur->to->me.x,last->to->me.x) &&
+		RealNearish(cur->to->me.y,last->to->me.y) )
 	    ReverseSplines(cur);
 	SplinesMergeLists(last,cur);
     }

@@ -70,6 +70,8 @@ void FVToggleCharChanged(FontView *fv,SplineChar *sc) {
     int i, j;
 
     if ( fv==NULL ) fv = sc->views->fv;
+    if ( fv->sf!=sc->parent )		/* Can happen in CID fonts if char's parent is not currently active */
+return;
     i = sc->enc / fv->colcnt;
     j = sc->enc - i*fv->colcnt;
     i -= fv->rowoff;
@@ -174,7 +176,7 @@ static void FVReselect(FontView *fv, int newpos) {
     fv->end_pos = newpos;
 }
 
-void SplineFontSetUnChanged(SplineFont *sf) {
+static void _SplineFontSetUnChanged(SplineFont *sf) {
     int i, was = sf->changed;
     BDFFont *bdf;
 
@@ -187,6 +189,13 @@ void SplineFontSetUnChanged(SplineFont *sf) {
 	    bdf->chars[i]->changed = false;
     if ( was )
 	GDrawRequestExpose(sf->fv->v,NULL,false);
+    for ( i=0; i<sf->subfontcnt; ++i )
+	_SplineFontSetUnChanged(sf->subfonts[i]);
+}
+
+void SplineFontSetUnChanged(SplineFont *sf) {
+    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+    _SplineFontSetUnChanged(sf);
 }
 
 static void FVFlattenAllBitmapSelections(FontView *fv) {
@@ -204,7 +213,13 @@ static int AskChanged(SplineFont *sf) {
     unichar_t ubuf[300];
     int ret;
     static int buts[] = { _STR_Save, _STR_Dontsave, _STR_Cancel, 0 };
-    char *filename = sf->filename, *fontname = sf->fontname;
+    char *filename, *fontname;
+
+    if ( sf->cidmaster!=NULL )
+	sf = sf->cidmaster;
+
+    filename = sf->filename;
+    fontname = sf->fontname;
 
     if ( filename==NULL && sf->origname!=NULL &&
 	    sf->onlybitmaps && sf->bitmaps!=NULL && sf->bitmaps->next==NULL )
@@ -253,11 +268,14 @@ int _FVMenuSaveAs(FontView *fv) {
     char *filename;
     int ok;
 
-    if ( fv->sf->filename!=NULL )
+    if ( fv->cidmaster!=NULL && fv->cidmaster->filename!=NULL )
+	temp=uc_copy(fv->cidmaster->filename);
+    else if ( fv->sf->filename!=NULL )
 	temp=uc_copy(fv->sf->filename);
     else {
-	temp = galloc(sizeof(unichar_t)*(strlen(fv->sf->fontname)+8));
-	uc_strcpy(temp,fv->sf->fontname);
+	SplineFont *sf = fv->cidmaster?fv->cidmaster:fv->sf;
+	temp = galloc(sizeof(unichar_t)*(strlen(sf->fontname)+8));
+	uc_strcpy(temp,sf->fontname);
 	uc_strcat(temp,".sfd");
     }
     ret = GWidgetSaveAsFile(GStringGetResource(_STR_Saveas,NULL),temp,NULL,NULL);
@@ -269,11 +287,12 @@ return( 0 );
     FVFlattenAllBitmapSelections(fv);
     ok = SFDWrite(filename,fv->sf);
     if ( ok ) {
-	free(fv->sf->filename);
-	fv->sf->filename = filename;
-	free(fv->sf->origname);
-	fv->sf->origname = copy(filename);
-	SplineFontSetUnChanged(fv->sf);
+	SplineFont *sf = fv->cidmaster?fv->cidmaster:fv->sf;
+	free(sf->filename);
+	sf->filename = filename;
+	free(sf->origname);
+	sf->origname = copy(filename);
+	SplineFontSetUnChanged(sf);
     } else
 	free(filename);
 return( ok );
@@ -287,22 +306,23 @@ static void FVMenuSaveAs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 int _FVMenuSave(FontView *fv) {
     int ret = 0;
+    SplineFont *sf = fv->cidmaster?fv->cidmaster:fv->sf;
 
-    if ( fv->sf->filename==NULL && fv->sf->origname!=NULL &&
-	    fv->sf->onlybitmaps && fv->sf->bitmaps!=NULL && fv->sf->bitmaps->next==NULL ) {
+    if ( sf->filename==NULL && sf->origname!=NULL &&
+	    sf->onlybitmaps && sf->bitmaps!=NULL && sf->bitmaps->next==NULL ) {
 	/* If it's a single bitmap font then just save back to the bdf file */
 	FVFlattenAllBitmapSelections(fv);
-	ret = BDFFontDump(fv->sf->origname,fv->sf->bitmaps,EncodingName(fv->sf->encoding_name));
+	ret = BDFFontDump(sf->origname,sf->bitmaps,EncodingName(sf->encoding_name));
 	if ( ret )
-	    SplineFontSetUnChanged(fv->sf);
-    } else if ( fv->sf->filename==NULL )
+	    SplineFontSetUnChanged(sf);
+    } else if ( sf->filename==NULL )
 	ret = _FVMenuSaveAs(fv);
     else {
 	FVFlattenAllBitmapSelections(fv);
-	if ( !SFDWriteBak(fv->sf) )
+	if ( !SFDWriteBak(sf) )
 	    GWidgetErrorR(_STR_SaveFailed,_STR_SaveFailed);
 	else {
-	    SplineFontSetUnChanged(fv->sf);
+	    SplineFontSetUnChanged(sf);
 	    ret = true;
 	}
     }
@@ -315,30 +335,39 @@ static void FVMenuSave(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static int _FVMenuClose(FontView *fv) {
-    int i;
+    int i, j;
     BDFFont *bdf;
     MetricsView *mv, *mnext;
+    SplineFont *sf = fv->cidmaster?fv->cidmaster:fv->sf;
 
-#if 0
- printf( "FontView closing...\n" );
-#endif
-    if ( fv->sf->changed ) {
+    if ( sf->changed ) {
 	i = AskChanged(fv->sf);
 	if ( i==2 )	/* Cancel */
 return( false );
 	if ( i==0 && !_FVMenuSave(fv))		/* Save */
 return(false);
 	else
-	    SFClearAutoSave(fv->sf);		/* if they didn't save it, remove change record */
+	    SFClearAutoSave(sf);		/* if they didn't save it, remove change record */
     }
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL ) {
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	CharView *cv, *next;
-	for ( cv = fv->sf->chars[i]->views; cv!=NULL; cv = next ) {
+	for ( cv = sf->chars[i]->views; cv!=NULL; cv = next ) {
 	    next = cv->next;
 	    GDrawDestroyWindow(cv->gw);
 	}
     }
-    for ( bdf = fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+    if ( sf->subfontcnt!=0 ) {
+	for ( j=0; j<sf->subfontcnt; ++j ) {
+	    for ( i=0; i<sf->subfonts[j]->charcnt; ++i ) if ( sf->subfonts[j]->chars[i]!=NULL ) {
+		CharView *cv, *next;
+		for ( cv = sf->subfonts[j]->chars[i]->views; cv!=NULL; cv = next ) {
+		    next = cv->next;
+		    GDrawDestroyWindow(cv->gw);
+		}
+	    }
+	}
+    }
+    for ( bdf = sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
 	for ( i=0; i<bdf->charcnt; ++i ) if ( bdf->chars[i]!=NULL ) {
 	    BitmapView *bv, *next;
 	    for ( bv = bdf->chars[i]->views; bv!=NULL; bv = next ) {
@@ -351,12 +380,9 @@ return(false);
 	mnext = mv->next;
 	GDrawDestroyWindow(mv->gw);
     }
-    if ( fv->sf->filename!=NULL )
-	RecentFilesRemember(fv->sf->filename);
+    if ( sf->filename!=NULL )
+	RecentFilesRemember(sf->filename);
     GDrawDestroyWindow(fv->gw);
-#if 0
- printf( "FontView Closed\n" );
-#endif
 return( true );
 }
 
@@ -370,42 +396,60 @@ static void FVMenuClose(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     DelayEvent((void (*)(void *)) _FVMenuClose, fv);
 }
 
-void FVRevert(FontView *fv) {
-    SplineFont *temp, *old = fv->sf;
-    BDFFont *tbdf, *fbdf;
-    BDFChar *bc;
-    BitmapView *bv, *bvnext;
+static void FVReattachCVs(SplineFont *old,SplineFont *new) {
+    int i, j, enc;
     CharView *cv, *cvnext;
-    MetricsView *mv, *mvnext;
-    int i, enc;
+    SplineFont *sub;
 
-    if ( fv->sf->origname==NULL )
-return;
-    if ( fv->sf->changed )
-	if ( !RevertAskChanged(fv->sf->fontname,fv->sf->origname))
-return;
-    temp = ReadSplineFont(fv->sf->origname);
-    if ( temp==NULL ) {
-return;
-    }
-    for ( i=0; i<fv->sf->charcnt; ++i ) {
-	if ( fv->sf->chars[i]!=NULL && fv->sf->chars[i]->views!=NULL ) {
-	    enc = SFFindChar(temp,fv->sf->chars[i]->unicodeenc,fv->sf->chars[i]->name);
+    for ( i=0; i<old->charcnt; ++i ) {
+	if ( old->chars[i]!=NULL && old->chars[i]->views!=NULL ) {
+	    if ( new->subfontcnt==0 ) {
+		enc = SFFindChar(new,old->chars[i]->unicodeenc,old->chars[i]->name);
+		sub = new;
+	    } else {
+		enc = -1;
+		for ( j=0; j<new->subfontcnt && enc==-1 ; ++j ) {
+		    sub = new->subfonts[j];
+		    enc = SFFindChar(sub,old->chars[i]->unicodeenc,old->chars[i]->name);
+		}
+	    }
 	    if ( enc==-1 ) {
-		for ( cv=fv->sf->chars[i]->views; cv!=NULL; cv = cvnext ) {
+		for ( cv=old->chars[i]->views; cv!=NULL; cv = cvnext ) {
 		    cvnext = cv->next;
 		    GDrawDestroyWindow(cv->gw);
 		}
 	    } else {
-		for ( cv=fv->sf->chars[i]->views; cv!=NULL; cv = cvnext ) {
+		for ( cv=old->chars[i]->views; cv!=NULL; cv = cvnext ) {
 		    cvnext = cv->next;
-		    CVChangeSC(cv,temp->chars[enc]);
+		    CVChangeSC(cv,sub->chars[enc]);
 		}
 	    }
 	    GDrawProcessPendingEvents(NULL);
 	}
     }
-    for ( fbdf=fv->sf->bitmaps; fbdf!=NULL; fbdf=fbdf->next ) {
+}
+
+void FVRevert(FontView *fv) {
+    SplineFont *temp, *old = fv->cidmaster?fv->cidmaster:fv->sf;
+    BDFFont *tbdf, *fbdf;
+    BDFChar *bc;
+    BitmapView *bv, *bvnext;
+    MetricsView *mv, *mvnext;
+    int i, enc;
+
+    if ( old->origname==NULL )
+return;
+    if ( old->changed )
+	if ( !RevertAskChanged(old->fontname,old->origname))
+return;
+    temp = ReadSplineFont(old->origname);
+    if ( temp==NULL ) {
+return;
+    }
+    FVReattachCVs(old,temp);
+    for ( i=0; i<old->subfontcnt; ++i )
+	FVReattachCVs(old->subfonts[i],temp);
+    for ( fbdf=old->bitmaps; fbdf!=NULL; fbdf=fbdf->next ) {
 	for ( tbdf=temp->bitmaps; tbdf!=NULL; tbdf=tbdf->next )
 	    if ( tbdf->pixelsize==fbdf->pixelsize )
 	break;
@@ -568,13 +612,14 @@ static void FVMenuOpenBitmap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int i;
 
-    if ( fv->sf->bitmaps==NULL )
+    if ( fv->cidmaster==NULL ? (fv->sf->bitmaps==NULL) : (fv->cidmaster->bitmaps==NULL) )
 return;
     if ( !FVSelCount(fv))
 return;
     for ( i=0; i<fv->sf->charcnt; ++i )
 	if ( fv->selected[i] ) {
-	    SFMakeChar(fv->sf,i);
+	    if ( fv->sf->chars[i]==NULL )
+		SFMakeChar(fv->cidmaster?fv->cidmaster:fv->sf,i);
 	    BitmapViewCreatePick(i,fv);
 	}
 }
@@ -630,6 +675,7 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_OpenOutline	2701
 #define MID_Revert	2702
 #define MID_Recent	2703
+#define MID_Print	2704
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -642,6 +688,13 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_CopyWidth	2111
 #define MID_AllFonts	2112
 #define MID_DisplayedFont	2113
+#define MID_RemoveUndoes	2114
+#define MID_Convert2CID	2800
+#define MID_Flatten	2801
+#define MID_InsertFont	2802
+#define MID_InsertBlank	2803
+#define MID_CIDFontInfo	2804
+#define MID_RemoveFromCID 2805
 
 /* returns -1 if nothing selected, the char if exactly one, -2 if more than one */
 static int FVAnyCharSelected(FontView *fv) {
@@ -794,6 +847,35 @@ static void FVMenuUnlinkRef(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
+static void FVMenuRemoveUndoes(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    SplineFont *main = fv->cidmaster? fv->cidmaster : fv->sf, *ssf;
+    int i,k;
+    SplineChar *sc;
+    BDFFont *bdf;
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
+	for ( bdf=main->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	    if ( bdf->chars[i]!=NULL ) {
+		UndoesFree(bdf->chars[i]->undoes); bdf->chars[i]->undoes = NULL;
+		UndoesFree(bdf->chars[i]->redoes); bdf->chars[i]->redoes = NULL;
+	    }
+	}
+	k = 0;
+	do {
+	    ssf = main->subfontcnt==0? main: main->subfonts[k];
+	    if ( i<ssf->charcnt && ssf->chars[i]!=NULL ) {
+		sc = ssf->chars[i];
+		UndoesFree(sc->undoes[0]); sc->undoes[0] = NULL;
+		UndoesFree(sc->undoes[1]); sc->undoes[1] = NULL;
+		UndoesFree(sc->redoes[0]); sc->redoes[0] = NULL;
+		UndoesFree(sc->redoes[1]); sc->redoes[1] = NULL;
+	    }
+	    ++k;
+	} while ( k<main->subfontcnt );
+    }
+}
+
 static void FVMenuCut(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVMenuCopy(gw,mi,e);
     FVMenuClear(gw,mi,e);
@@ -830,6 +912,7 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	switch ( mi->mid ) {
 	  case MID_Cut: case MID_Copy: case MID_Clear: case MID_CopyWidth:
 	  case MID_Paste: case MID_CopyRef: case MID_UnlinkRef:
+	  case MID_RemoveUndoes:
 	    mi->ti.disabled = pos==-1;
 	  break;
 	  case MID_Undo: case MID_Redo:
@@ -842,7 +925,7 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void FVMenuCharInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int pos = FVAnyCharSelected(fv);
-    if ( pos<0 )
+    if ( pos<0 || fv->cidmaster!=NULL )
 return;
     SFMakeChar(fv->sf,pos);
     SCGetInfo(fv->sf->chars[pos],true);
@@ -865,9 +948,9 @@ return( false );
 return( true );
 }
 
-void FVTrans(FontView *fv,SplineChar *sc,double transform[6], char *sel) {
+void FVTrans(FontView *fv,SplineChar *sc,real transform[6], char *sel) {
     RefChar *refs;
-    double t[6];
+    real t[6];
 
     SCPreserveState(sc);
     if ( transform[0]>0 && transform[3]>0 && transform[1]==0 && transform[2]==0 ) {
@@ -917,9 +1000,9 @@ void FVTrans(FontView *fv,SplineChar *sc,double transform[6], char *sel) {
     SCCharChangedUpdate(sc,fv);
 }
 
-static void FVTransFunc(void *_fv,double transform[6],int otype, BVTFunc *bvts) {
+static void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts) {
     FontView *fv = _fv;
-    double transx = transform[4], transy=transform[5];
+    real transx = transform[4], transy=transform[5];
     DBounds bb;
     BasePoint base;
     int i, cnt=0;
@@ -1233,6 +1316,11 @@ static void FVMenuSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	fv->filled = new;
 	FVChangeDisplayFont(fv,new);
 	fv->sf->display_size = -dspsize;
+	if ( fv->cidmaster!=NULL ) {
+	    int i;
+	    for ( i=0; i<fv->cidmaster->subfontcnt; ++i )
+		fv->cidmaster->subfonts[i]->display_size = -dspsize;
+	}
     }
 }
 
@@ -1260,7 +1348,7 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_CharInfo:
-	    mi->ti.disabled = anychars<0;
+	    mi->ti.disabled = anychars<0 || fv->cidmaster!=NULL;
 	  break;
 	  case MID_FindProblems:
 	    mi->ti.disabled = anychars==-1;
@@ -1331,7 +1419,7 @@ static void FVMenuCenter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int i;
     DBounds bb;
-    double transform[6];
+    real transform[6];
 
     transform[0] = transform[3] = 1.0;
     transform[1] = transform[2] = transform[5] = 0.0;
@@ -1415,6 +1503,273 @@ static void FVMenuAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     GProgressEndIndicator();
 }
 
+static void FVSetTitle(FontView *fv) {
+    unichar_t *title;
+
+    title = uc_copy(fv->sf->fontname);
+    GDrawSetWindowTitles(fv->gw,title,title);
+    free(title);
+}
+
+static void FVMenuShowSubFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    SplineFont *new = mi->ti.userdata;
+    MetricsView *mv, *mvnext;
+
+    for ( mv=fv->metrics; mv!=NULL; mv = mvnext ) {
+	/* Don't bother trying to fix up metrics views, just not worth it */
+	mvnext = mv->next;
+	GDrawDestroyWindow(mv->gw);
+    }
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+    if ( fv->sf->charcnt!=new->charcnt ) {
+	free(fv->selected);
+	fv->selected = gcalloc(new->charcnt,sizeof(char));
+    }
+    fv->sf = new;
+    FVSetTitle(fv);
+    FontViewReformat(fv);
+}
+
+static void FVMenuConvert2CID(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    SplineFont *cidmaster = fv->cidmaster;
+    struct cidmap *map;
+
+    if ( cidmaster!=NULL )
+return;
+    cidmaster = SplineFontEmpty();
+    map = AskUserForCIDMap(cidmaster);		/* Sets the ROS fields */
+    if ( map==NULL ) {
+	SplineFontFree(cidmaster);
+return;
+    }
+    cidmaster->fontname = copy(fv->sf->fontname);
+    cidmaster->fullname = copy(fv->sf->fullname);
+    cidmaster->familyname = copy(fv->sf->familyname);
+    cidmaster->weight = copy(fv->sf->weight);
+    cidmaster->copyright = copy(fv->sf->copyright);
+    cidmaster->cidversion = 1.0;
+    cidmaster->display_antialias = fv->sf->display_antialias;
+    cidmaster->display_size = fv->sf->display_size;
+    cidmaster->changed = cidmaster->changed_since_autosave = true;
+    fv->cidmaster = cidmaster;
+    cidmaster->fv = fv;
+    fv->sf->cidmaster = cidmaster;
+    cidmaster->subfontcnt = 1;
+    cidmaster->subfonts = gcalloc(2,sizeof(SplineFont *));
+    cidmaster->subfonts[0] = fv->sf;
+    SFEncodeToMap(fv->sf,map);
+    if ( fv->sf->private==NULL )
+	fv->sf->private = gcalloc(1,sizeof(struct psdict));
+    if ( !PSDictHasEntry(fv->sf->private,"lenIV"))
+	PSDictChangeEntry(fv->sf->private,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
+    free(fv->selected);
+    fv->selected = gcalloc(fv->sf->charcnt,sizeof(char));
+    FontViewReformat(fv);
+}
+
+static void FVMenuFlatten(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    SplineFont *cidmaster = fv->cidmaster;
+    SplineFont *new;
+    char buffer[20];
+    BDFFont *bdf;
+    int i,j,max;
+
+    if ( cidmaster==NULL )
+return;
+    new = SplineFontEmpty();
+    new->fontname = copy(cidmaster->fontname);
+    new->fullname = copy(cidmaster->fullname);
+    new->familyname = copy(cidmaster->familyname);
+    new->weight = copy(cidmaster->weight);
+    new->copyright = copy(cidmaster->copyright);
+    sprintf(buffer,"%d", cidmaster->cidversion);
+    new->version = copy(buffer);
+    new->italicangle = cidmaster->italicangle;
+    new->upos = cidmaster->upos;
+    new->uwidth = cidmaster->uwidth;
+    new->ascent = cidmaster->ascent;
+    new->descent = cidmaster->descent;
+    new->changed = new->changed_since_autosave = true;
+    new->display_antialias = cidmaster->display_antialias;
+    new->fv = cidmaster->fv;
+    new->encoding_name = em_none;
+    /* Don't copy the grid splines, there won't be anything meaningfull at top level */
+    /*  and won't know which font to copy from below */
+    new->bitmaps = cidmaster->bitmaps;		/* should already be flattened */
+    cidmaster->bitmaps = NULL;			/* don't free 'em */
+    for ( bdf=new->bitmaps; bdf!=NULL; bdf=bdf->next )
+	bdf->sf = new;
+    new->origname = copy( cidmaster->origname );
+    new->display_size = cidmaster->display_size;
+    /* Don't copy private */
+    new->xuid = copy(cidmaster->xuid);
+    for ( i=max=0; i<cidmaster->subfontcnt; ++i )
+	if ( max<cidmaster->subfonts[i]->charcnt )
+	    max = cidmaster->subfonts[i]->charcnt;
+    new->chars = gcalloc(max,sizeof(SplineChar *));
+    new->charcnt = max;
+    for ( j=0; j<max; ++j ) {
+	for ( i=0; i<cidmaster->subfontcnt; ++i ) {
+	    if ( j<cidmaster->subfonts[i]->charcnt && cidmaster->subfonts[i]->chars[j]!=NULL ) {
+		new->chars[j] = cidmaster->subfonts[i]->chars[j];
+		cidmaster->subfonts[i]->chars[j] = NULL;
+		new->chars[j]->parent = new;
+	break;
+	    }
+	}
+    }
+    fv->cidmaster = NULL;
+    if ( fv->sf->charcnt!=new->charcnt ) {
+	free(fv->selected);
+	fv->selected = gcalloc(new->charcnt,sizeof(char));
+    }
+    fv->sf = new;
+    FontViewReformat(fv);
+    SplineFontFree(cidmaster);
+    FVSetTitle(fv);
+}
+
+static void FVInsertInCID(FontView *fv,SplineFont *sf) {
+    SplineFont *cidmaster = fv->cidmaster;
+    SplineFont **subs;
+    int i;
+
+    subs = galloc((cidmaster->subfontcnt+1)*sizeof(SplineFont *));
+    for ( i=0; i<cidmaster->subfontcnt && cidmaster->subfonts[i]!=fv->sf; ++i )
+	subs[i] = cidmaster->subfonts[i];
+    subs[i] = sf;
+    for ( ; i<cidmaster->subfontcnt ; ++i )
+	subs[i+1] = cidmaster->subfonts[i];
+    ++cidmaster->subfontcnt;
+    free(cidmaster->subfonts);
+    cidmaster->subfonts = subs;
+    cidmaster->changed = true;
+    sf->cidmaster = cidmaster;
+
+    if ( fv->sf->charcnt!=sf->charcnt ) {
+	free(fv->selected);
+	fv->selected = gcalloc(sf->charcnt,sizeof(char));
+    }
+    fv->sf = sf;
+    FontViewReformat(fv);
+    FVSetTitle(fv);
+}
+
+static void FVMenuInsertFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    SplineFont *cidmaster = fv->cidmaster;
+    SplineFont *new;
+    struct cidmap *map;
+    char *filename;
+
+    if ( cidmaster==NULL || cidmaster->subfontcnt>=255 )	/* Open type allows 1 byte to specify the fdselect */
+return;
+
+    filename = GetPostscriptFontName(false);
+    if ( filename==NULL )
+return;
+    new = LoadSplineFont(filename);
+    free(filename);
+    if ( new==NULL )
+return;
+    if ( new->fv == fv )		/* Already part of us */
+return;
+    if ( new->fv != NULL ) {
+	GDrawRaise(new->fv->gw);
+	GWidgetErrorR(_STR_CloseFont,_STR_CloseFontForCID,new->origname);
+return;
+    }
+
+    map = FindCidMap(cidmaster->cidregistry,cidmaster->ordering,cidmaster->supplement);
+    SFEncodeToMap(new,map);
+    if ( !PSDictHasEntry(new->private,"lenIV"))
+	PSDictChangeEntry(new->private,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
+    new->display_antialias = fv->sf->display_antialias;
+    new->display_size = fv->sf->display_size;
+    FVInsertInCID(fv,new);
+}
+
+static void FVMenuInsertBlank(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    SplineFont *cidmaster = fv->cidmaster, *sf;
+    struct cidmap *map;
+
+    if ( cidmaster==NULL || cidmaster->subfontcnt>=255 )	/* Open type allows 1 byte to specify the fdselect */
+return;
+    map = FindCidMap(cidmaster->cidregistry,cidmaster->ordering,cidmaster->supplement);
+    sf = SplineFontBlank(em_none,MaxCID(map));
+    sf->cidmaster = cidmaster;
+    sf->display_antialias = fv->sf->display_antialias;
+    sf->display_size = fv->sf->display_size;
+    sf->private = gcalloc(1,sizeof(struct psdict));
+    PSDictChangeEntry(sf->private,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
+    FVInsertInCID(fv,sf);
+}
+
+static void FVMenuRemoveFontFromCID(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    SplineFont *cidmaster = fv->cidmaster, *sf = fv->sf;
+    static int buts[] = { _STR_Remove, _STR_Cancel, 0 };
+    int i;
+    MetricsView *mv, *mnext;
+
+    if ( cidmaster==NULL || cidmaster->subfontcnt<=1 )	/* Can't remove last font */
+return;
+    if ( GWidgetAskR(_STR_RemoveFont,buts,0,1,_STR_CIDRemoveFontCheck,
+	    sf->fontname,cidmaster->fontname)==1 )
+return;
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	CharView *cv, *next;
+	for ( cv = sf->chars[i]->views; cv!=NULL; cv = next ) {
+	    next = cv->next;
+	    GDrawDestroyWindow(cv->gw);
+	}
+    }
+    GDrawProcessPendingEvents(NULL);
+    for ( mv=fv->metrics; mv!=NULL; mv = mnext ) {
+	mnext = mv->next;
+	GDrawDestroyWindow(mv->gw);
+    }
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+    /* Just in case... */
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+
+    for ( i=0; i<cidmaster->subfontcnt; ++i )
+	if ( cidmaster->subfonts[i]==sf )
+    break;
+    fv->sf = i==0?cidmaster->subfonts[1]:cidmaster->subfonts[i-1];
+    while ( i<cidmaster->subfontcnt-1 ) {
+	cidmaster->subfonts[i] = cidmaster->subfonts[i+1];
+	++i;
+    }
+    --cidmaster->subfontcnt;
+
+    if ( fv->sf->charcnt!=sf->charcnt ) {
+	free(fv->selected);
+	fv->selected = gcalloc(fv->sf->charcnt,sizeof(char));
+    }
+    
+    SplineFontFree(sf);
+    FontViewReformat(fv);
+    FVSetTitle(fv);
+}
+
+static void FVMenuCIDFontInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    SplineFont *cidmaster = fv->cidmaster;
+
+    if ( cidmaster==NULL )
+return;
+    FontInfo(cidmaster);
+}
+
 static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int anychars = FVAnyCharSelected(fv);
@@ -1450,6 +1805,9 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_Recent:
 	    mi->ti.disabled = !RecentFilesAny();
 	  break;
+	  case MID_Print:
+	    mi->ti.disabled = fv->sf->onlybitmaps;
+	  break;
 	}
     }
 }
@@ -1473,7 +1831,7 @@ static GMenuItem fllist[] = {
     { { (unichar_t *) _STR_Mergekern, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 'K', ksm_control|ksm_shift, NULL, NULL, FVMenuMergeKern },
     { { (unichar_t *) _STR_Revertfile, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, 'R', ksm_control|ksm_shift, NULL, NULL, FVMenuRevert, MID_Revert },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Print, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'P', ksm_control, NULL, NULL, FVMenuPrint },
+    { { (unichar_t *) _STR_Print, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'P', ksm_control, NULL, NULL, FVMenuPrint, MID_Print },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Prefs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'e' }, '\0', ksm_control, NULL, NULL, MenuPrefs },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
@@ -1503,6 +1861,8 @@ static GMenuItem edlist[] = {
     { { (unichar_t *) _STR_Unlinkref, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'U' }, '\0', 0, NULL, NULL, FVMenuUnlinkRef, MID_UnlinkRef },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Copyfrom, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, '\0', 0, cflist, cflistcheck, NULL, 0 },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_RemoveUndoes, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'e' }, '\0', 0, NULL, NULL, FVMenuRemoveUndoes, MID_RemoveUndoes },
     { NULL }
 };
 
@@ -1626,6 +1986,76 @@ static GMenuItem mtlist[] = {
     { NULL }
 };
 
+static GMenuItem cdlist[] = {
+    { { (unichar_t *) _STR_Convert2CID, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, FVMenuConvert2CID, MID_Convert2CID },
+    { { (unichar_t *) _STR_Flatten, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, '\0', ksm_control, NULL, NULL, FVMenuFlatten, MID_Flatten },
+    { { (unichar_t *) _STR_InsertFont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuInsertFont, MID_InsertFont },
+    { { (unichar_t *) _STR_InsertBlank, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_control, NULL, NULL, FVMenuInsertBlank, MID_InsertBlank },
+    { { (unichar_t *) _STR_RemoveFont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, '\0', ksm_control, NULL, NULL, FVMenuRemoveFontFromCID, MID_RemoveFromCID },
+    { { (unichar_t *) _STR_CIDFontInfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuCIDFontInfo, MID_CIDFontInfo },
+    { NULL },				/* Extra room to show sub-font names */
+    { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
+    { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
+    { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
+    { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
+    { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
+    { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
+    { NULL }
+};
+
+static void cdlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    int i, base, j;
+    extern void GMenuItemArrayFree(GMenuItem *mi);
+    extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
+    SplineFont *sub, *cidmaster = fv->cidmaster;
+
+    for ( i=0; cdlist[i].mid!=MID_CIDFontInfo; ++i );
+    base = i+2;
+    for ( i=base; cdlist[i].ti.text!=NULL; ++i ) {
+	free( cdlist[i].ti.text);
+	cdlist[i].ti.text = NULL;
+    }
+
+    cdlist[base-1].ti.fg = cdlist[base-1].ti.bg = COLOR_DEFAULT;
+    if ( cidmaster==NULL ) {
+	cdlist[base-1].ti.line = false;
+    } else {
+	cdlist[base-1].ti.line = true;
+	for ( j = 0, i=base; 
+		i<sizeof(cdlist)/sizeof(cdlist[0])-1 && j<cidmaster->subfontcnt;
+		++i, ++j ) {
+	    sub = cidmaster->subfonts[j];
+	    cdlist[i].ti.text = uc_copy(sub->fontname);
+	    cdlist[i].ti.checkable = true;
+	    cdlist[i].ti.checked = sub==fv->sf;
+	    cdlist[i].ti.userdata = sub;
+	    cdlist[i].invoke = FVMenuShowSubFont;
+	    cdlist[i].ti.fg = cdlist[i].ti.bg = COLOR_DEFAULT;
+	}
+    }
+    GMenuItemArrayFree(mi->sub);
+    mi->sub = GMenuItemArrayCopy(cdlist,NULL);
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_Convert2CID:
+	    mi->ti.disabled = cidmaster!=NULL;
+	  break;
+	  case MID_InsertFont: case MID_InsertBlank:
+	    /* OpenType allows at most 255 subfonts (PS allows more, but why go to the effort to make safe font check that? */
+	    mi->ti.disabled = cidmaster==NULL || cidmaster->subfontcnt>=255;
+	  break;
+	  case MID_RemoveFromCID:
+	    mi->ti.disabled = cidmaster==NULL || cidmaster->subfontcnt<=1;
+	  break;
+	  case MID_Flatten: case MID_CIDFontInfo:
+	    mi->ti.disabled = cidmaster==NULL;
+	  break;
+	}
+    }
+}
+
 GMenuItem helplist[] = {
     { { (unichar_t *) _STR_Help, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, GK_F1, 0, NULL, NULL, MenuHelp },
     { NULL }
@@ -1638,6 +2068,7 @@ static GMenuItem mblist[] = {
     { { (unichar_t *) _STR_Hints, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'i' }, 0, 0, htlist, htlistcheck },
     { { (unichar_t *) _STR_View, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, 0, 0, vwlist, vwlistcheck },
     { { (unichar_t *) _STR_Metric, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 0, 0, mtlist, mtlistcheck },
+    { { (unichar_t *) _STR_CID, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, 0, 0, cdlist, cdlistcheck },
     { { (unichar_t *) _STR_Window, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'W' }, 0, 0, NULL, WindowMenuBuild, NULL },
     { { (unichar_t *) _STR_Help, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, 0, 0, helplist, NULL },
     { NULL }
@@ -1727,12 +2158,16 @@ void FVRegenChar(FontView *fv,SplineChar *sc) {
 
 SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
     extern unsigned short unicode_from_adobestd[256];
-    static char namebuf[20];
+    static char namebuf[100];
     Encoding *item=NULL;
 
     memset(dummy,'\0',sizeof(*dummy));
     dummy->enc = i;
-    if ( sf->encoding_name==em_unicode || sf->encoding_name==em_iso8859_1 )
+    if ( sf->cidmaster!=NULL ) {
+	/* CID fonts don't have encodings, instead we must look up the cid */
+	dummy->unicodeenc = CID2NameEnc(FindCidMap(sf->cidmaster->cidregistry,sf->cidmaster->ordering,sf->cidmaster->supplement),
+		i,namebuf,sizeof(namebuf));
+    } else if ( sf->encoding_name==em_unicode || sf->encoding_name==em_iso8859_1 )
 	dummy->unicodeenc = i<65536 ? i : -1;
     else if ( sf->encoding_name==em_adobestandard )
 	dummy->unicodeenc = i>=256?-1:unicode_from_adobestd[i];
@@ -1758,7 +2193,9 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 	dummy->unicodeenc = i>=256?-1:unicode_from_alphabets[sf->encoding_name+3][i];
     if ( dummy->unicodeenc==0 && i!=0 )
 	dummy->unicodeenc = -1;
-    if ( dummy->unicodeenc<' ' ||
+    if ( sf->cidmaster!=NULL )
+	dummy->name = namebuf;
+    else if ( (dummy->unicodeenc>=0 && dummy->unicodeenc<' ') ||
 	    (dummy->unicodeenc>=0x7f && dummy->unicodeenc<0xa0) )
 	/* standard controls */;
     else if ( dummy->unicodeenc!=-1  ) {
@@ -1848,6 +2285,19 @@ return( lig );
 
 SplineChar *SFMakeChar(SplineFont *sf,int i) {
     SplineChar dummy, *sc;
+    SplineFont *ssf;
+    int j;
+
+    if ( sf->subfontcnt!=0 ) {
+	ssf = NULL;
+	for ( j=0; j<sf->subfontcnt; ++j )
+	    if ( i<sf->subfonts[j]->charcnt ) {
+		ssf = sf->subfonts[j];
+		if ( ssf->chars[i]!=NULL )
+return( ssf->chars[i] );
+	    }
+	sf = ssf;
+    }
 
     if ( (sc = sf->chars[i])==NULL ) {
 	SCBuildDummy(&dummy,sf,i);
@@ -2094,6 +2544,8 @@ static void FVChar(FontView *fv,GEvent *event) {
 	fv->end_pos = pos;
 	FVShowInfo(fv);
 	FVScrollToChar(fv,pos);
+    } else if ( event->u.chr.keysym == GK_Help ) {
+	MenuHelp(NULL,NULL,NULL);	/* Menu does F1 */
     } else if ( event->u.chr.chars[0]=='\0' || event->u.chr.chars[1]!='\0' ) {
 	/* Do Nothing */;
     } else {
@@ -2226,7 +2678,7 @@ static void FVTimer(FontView *fv,GEvent *event) {
 	GEvent e;
 	GDrawGetPointerPosition(fv->v,&e);
 	if ( e.u.mouse.y<0 || e.u.mouse.y >= fv->height ) {
-	    double dy = 0;
+	    real dy = 0;
 	    if ( e.u.mouse.y<0 )
 		dy = -1;
 	    else if ( e.u.mouse.y>=fv->height )
@@ -2368,6 +2820,7 @@ return;
 void FontViewReformat(FontView *fv) {
     BDFFont *new;
 
+    GDrawSetCursor(fv->v,ct_watch);
     fv->rowltot = (fv->sf->charcnt+fv->colcnt-1)/fv->colcnt;
     GScrollBarSetBounds(fv->vsb,0,fv->rowltot,fv->rowcnt);
     if ( fv->rowoff>=fv->rowltot-fv->rowcnt ) {
@@ -2384,6 +2837,7 @@ void FontViewReformat(FontView *fv) {
 	fv->show = new;
     fv->filled = new;
     GDrawRequestExpose(fv->v,NULL,false);
+    GDrawSetCursor(fv->v,ct_pointer);
 }
 
 static int fv_e_h(GWindow gw, GEvent *event) {
@@ -2422,7 +2876,8 @@ static int fv_e_h(GWindow gw, GEvent *event) {
 	    for ( n=fv_list; n->next!=fv; n=n->next );
 	    n->next = fv->next;
 	}
-	FontViewFree(fv);
+	if ( fv_list!=NULL )		/* Freeing a large font can take forever, and if we're just going to exit there's no real reason to do so... */
+	    FontViewFree(fv);
       break;
     }
 return( true );
@@ -2442,6 +2897,7 @@ FontView *FontViewCreate(SplineFont *sf) {
     static unichar_t monospace[] = { 'm', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','u','n','i','f','o','n','t', '\0' };
     static GWindow icon = NULL;
     BDFFont *bdf;
+    int i;
 
     if ( icon==NULL )
 #ifdef BIGICONS
@@ -2450,9 +2906,16 @@ FontView *FontViewCreate(SplineFont *sf) {
 	icon = GDrawCreateBitmap(NULL,fontview2_width,fontview2_height,fontview2_bits);
 #endif
 
-    fv->sf = sf;
-    fv->selected = gcalloc(sf->charcnt,sizeof(char));
     sf->fv = fv;
+    if ( sf->subfontcnt==0 )
+	fv->sf = sf;
+    else {
+	fv->cidmaster = sf;
+	for ( i=0; i<sf->subfontcnt; ++i )
+	    sf->subfonts[i]->fv = fv;
+	fv->sf = sf = sf->subfonts[0];
+    }
+    fv->selected = gcalloc(sf->charcnt,sizeof(char));
     fv->cbw = default_fv_font_size+1;
     fv->cbh = default_fv_font_size+1+FV_LAB_HEIGHT+1;
     fv->magnify = 1;
@@ -2467,6 +2930,7 @@ FontView *FontViewCreate(SplineFont *sf) {
     pos.width = 16*fv->cbw+1;
     pos.height = 4*fv->cbh+1;
     fv->gw = gw = GDrawCreateTopWindow(NULL,&pos,fv_e_h,fv,&wattrs);
+    free((unichar_t *) wattrs.window_title);
 
     memset(&gd,0,sizeof(gd));
     gd.flags = gg_visible | gg_enabled;
@@ -2525,6 +2989,7 @@ SplineFont *ReadSplineFont(char *filename) {
     SplineFont *sf;
     unichar_t ubuf[150];
     char buf[1200];
+    int fromsfd = false;
     static struct { char *ext, *decomp, *recomp; } compressors[] = {
 	{ "gz", "gunzip", "gzip" },
 	{ "bz2", "bunzip2", "bzip2" },
@@ -2565,6 +3030,7 @@ return( NULL );
     if ( strmatch(filename+strlen(filename)-4, ".sfd")==0 ||
 	 strmatch(filename+strlen(filename)-5, ".sfd~")==0 ) {
 	sf = SFDRead(filename);
+	fromsfd = true;
     } else if ( strmatch(filename+strlen(filename)-4, ".ttf")==0 ||
 		strmatch(filename+strlen(filename)-4, ".ttc")==0 ||
 		strmatch(filename+strlen(filename)-4, ".otf")==0 ) {
@@ -2598,6 +3064,13 @@ return( NULL );
     if ( i!=-1 ) {
 	sprintf( buf, "%s %s", compressors[i].recomp, filename );
 	system(buf);
+    }
+    if ( !fromsfd && sf->pfminfo.fstype==0x0002 ) {
+	static int buts[] = { _STR_Yes, _STR_No, 0 };
+	if ( GWidgetAskR(_STR_RestrictedFont,buts,1,1,_STR_RestrictedRightsFont)==1 ) {
+	    SplineFontFree(sf);
+return( NULL );
+	}
     }
 return( sf );
 }
@@ -2665,9 +3138,8 @@ return( FontViewCreate(SplineFontNew()));
 }
 
 void FontViewFree(FontView *fv) {
-    SplineFontFree(fv->sf);
+    SplineFontFree(fv->cidmaster?fv->cidmaster:fv->sf);
     BDFFontFree(fv->filled);
     free(fv->selected);
     free(fv);
 }
-

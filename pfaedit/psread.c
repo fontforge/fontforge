@@ -176,7 +176,7 @@ static void pushio(IO *wrapper, FILE *ps, char *macro) {
     wrapper->top = io;
 }
 
-static int nextpstoken(IO *wrapper, double *val, char *tokbuf, int tbsize) {
+static int nextpstoken(IO *wrapper, real *val, char *tokbuf, int tbsize) {
     int ch, r, i;
     char *pt, *end;
 
@@ -286,13 +286,13 @@ return( pt_unknown );
     }
 }
 
-static void Transform(BasePoint *to, BasePoint *from, double trans[6]) {
+static void Transform(BasePoint *to, BasePoint *from, real trans[6]) {
     to->x = trans[0]*from->x+trans[2]*from->y+trans[4];
     to->y = trans[1]*from->y+trans[3]*from->y+trans[5];
 }
 
-static void MatMultiply(double to[6], double m1[6], double m2[6]) {
-    double trans[6];
+static void MatMultiply(real to[6], real m1[6], real m2[6]) {
+    real trans[6];
 
     trans[0] = m2[0]*m1[0] +
 		m2[1]*m1[2];
@@ -330,7 +330,7 @@ struct pskeydict {
 struct psstack {
     enum pstype { ps_num, ps_bool, ps_string, ps_instr, ps_lit } type;
     union vals {
-	double val;
+	real val;
 	int tf;
 	char *str;
 	struct pskeydict dict;		/* and for arrays too */
@@ -400,13 +400,13 @@ static int rollstack(struct psstack *stack, int sp) {
 return( sp );
 }
 
-static void circlearcto(double a1, double a2, double cx, double cy, double r,
-	SplineSet *cur, double *transform ) {
+static void circlearcto(real a1, real a2, real cx, real cy, real r,
+	SplineSet *cur, real *transform ) {
     SplinePoint *pt;
     BasePoint temp, base, cp;
-    double cplen;
+    real cplen;
     int sign=1;
-    double s1, s2, c1, c2;
+    real s1, s2, c1, c2;
 
     if ( a1==a2 )
 return;
@@ -433,10 +433,10 @@ return;
     cur->last = pt;
 }
 
-static void circlearcsto(double a1, double a2, double cx, double cy, double r,
-	SplineSet *cur, double *transform, int clockwise ) {
+static void circlearcsto(real a1, real a2, real cx, real cy, real r,
+	SplineSet *cur, real *transform, int clockwise ) {
     int a;
-    double last;
+    real last;
 
     while ( a1<0 ) a1 += 360; while ( a2<0 ) a2 += 360;
     while ( a1>=360 ) a1 -= 360; while ( a2>=360 ) a2 -= 360;
@@ -490,7 +490,7 @@ static void freestuff(struct psstack *stack, int sp, struct pskeydict *dict, Gro
 }
 
 static Entity *EntityCreate(SplinePointList *head,int linecap,int linejoin,
-	double linewidth) {
+	real linewidth) {
     Entity *ent = gcalloc(1,sizeof(Entity));
     ent->type = et_splines;
     ent->u.splines.splines = head;
@@ -507,11 +507,11 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
     BasePoint current, temp;
     int tok, i;
     struct psstack stack[100];
-    double dval;
+    real dval;
     int sp=0;
     SplinePoint *pt;
     RefChar *ref, *lastref=NULL;
-    double transform[6], t[6];
+    real transform[6], t[6];
     int ccnt=0;
     char tokbuf[100];
     IO wrapper;
@@ -519,7 +519,7 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
     struct pskeydict dict;
     struct pskeyval *kv;
     Color fore=0;
-    int linecap=lc_butt, linejoin=lj_miter; double linewidth=1;
+    int linecap=lc_butt, linejoin=lj_miter; real linewidth=1;
     Entity *ent;
     char *oldloc;
 
@@ -949,7 +949,7 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 	  break;
 	  case pt_arc: case pt_arcn:
 	    if ( sp>=5 ) {
-		double cx, cy, r, a1, a2;
+		real cx, cy, r, a1, a2;
 		cx = stack[sp-5].u.val;
 		cy = stack[sp-4].u.val;
 		r = stack[sp-3].u.val;
@@ -983,8 +983,8 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 	  break;
 	  case pt_arct: case pt_arcto:
 	    if ( sp>=5 ) {
-		double x1, y1, x2, y2, r;
-		double xt1, xt2, yt1, yt2;
+		real x1, y1, x2, y2, r;
+		real xt1, xt2, yt1, yt2;
 		x1 = stack[sp-5].u.val;
 		y1 = stack[sp-4].u.val;
 		x2 = stack[sp-3].u.val;
@@ -1007,14 +1007,14 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 		    SplineMake(cur->last,pt);
 		    cur->last = pt;
 		} else {
-		    double l1 = sqrt((current.x-x1)*(current.x-x1)+(current.y-y1)*(current.y-y1));
-		    double l2 = sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
-		    double dx = ((current.x-x1)/l1 + (x2-x1)/l2);
-		    double dy = ((current.y-y1)/l1 + (y2-y1)/l2);
+		    real l1 = sqrt((current.x-x1)*(current.x-x1)+(current.y-y1)*(current.y-y1));
+		    real l2 = sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
+		    real dx = ((current.x-x1)/l1 + (x2-x1)/l2);
+		    real dy = ((current.y-y1)/l1 + (y2-y1)/l2);
 		    /* the line from (x1,y1) to (x1+dx,y1+dy) contains the center*/
-		    double l3 = sqrt(dx*dx+dy*dy);
-		    double cx, cy, t, tmid;
-		    double a1, amid, a2;
+		    real l3 = sqrt(dx*dx+dy*dy);
+		    real cx, cy, t, tmid;
+		    real a1, amid, a2;
 		    int clockwise = true;
 		    dx /= l3; dy /= l3;
 		    a1 = atan2(current.y-y1,current.x-x1);
@@ -1127,18 +1127,18 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 		} else {
 		    int r=fore>>16, g=(fore>>8)&0xff, bl=fore&0xff;
 		    int mx, mn;
-		    double h, s, b;
+		    real h, s, b;
 		    mx = mn = r;
 		    if ( mx>g ) mn=g; else mx=g;
 		    if ( mx<bl ) mx = bl; if ( mn>bl ) mn = bl;
 		    b = mx/255.;
 		    s = h = 0;
 		    if ( mx>0 )
-			s = ((double) (mx-mn))/mx;
+			s = ((real) (mx-mn))/mx;
 		    if ( s!=0 ) {
-			double rdiff = ((double) (mx-r))/(mx-mn);
-			double gdiff = ((double) (mx-g))/(mx-mn);
-			double bdiff = ((double) (mx-bl))/(mx-mn);
+			real rdiff = ((real) (mx-r))/(mx-mn);
+			real gdiff = ((real) (mx-g))/(mx-mn);
+			real bdiff = ((real) (mx-bl))/(mx-mn);
 			if ( rdiff==0 )
 			    h = bdiff-gdiff;
 			else if ( gdiff==0 )
@@ -1156,14 +1156,14 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 	  break;
 	  case pt_sethsbcolor:
 	    if ( sp>=3 ) {
-		double h = stack[sp-3].u.val, s = stack[sp-2].u.val, b = stack[sp-1].u.val;
+		real h = stack[sp-3].u.val, s = stack[sp-2].u.val, b = stack[sp-1].u.val;
 		int r,g,bl;
 		if ( s==0 )	/* it's grey */
 		    fore = ((int) (b*255)) * 0x010101;
 		else {
-		    double sextant = (h-floor(h))*6;
-		    double mod = sextant-floor(sextant);
-		    double p = b*(1-s), q = b*(1-s*mod), t = b*(1-s*(1-mod));
+		    real sextant = (h-floor(h))*6;
+		    real mod = sextant-floor(sextant);
+		    real p = b*(1-s), q = b*(1-s*mod), t = b*(1-s*(1-mod));
 		    switch( (int) sextant) {
 		      case 0:
 			r = b*255.; g = t*255.; bl = p*255.;
@@ -1191,7 +1191,7 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 	  break;
 	  case pt_currentcmykcolor:
 	    if ( sp+3<sizeof(stack)/sizeof(stack[0]) ) {
-		double c,m,y,k;
+		real c,m,y,k;
 		stack[sp].type = stack[sp+1].type = stack[sp+2].type = stack[sp+3].type = ps_num;
 		y = 1.-(fore&0xff)/255.;
 		m = 1.-((fore>>8)&0xff)/255.;
@@ -1211,7 +1211,7 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 	  break;
 	  case pt_setcmykcolor:
 	    if ( sp>=4 ) {
-		double c=stack[sp-4].u.val,m=stack[sp-3].u.val,y=stack[sp-2].u.val,k=stack[sp-1].u.val;
+		real c=stack[sp-4].u.val,m=stack[sp-3].u.val,y=stack[sp-2].u.val,k=stack[sp-1].u.val;
 		sp -= 4;
 		if ( k==1 )
 		    fore = 0x000000;
@@ -1317,7 +1317,7 @@ return( ec.splines );
 
 static void SCInterpretPS(FILE *ps,SplineChar *sc) {
     EntityChar ec;
-    double dval;
+    real dval;
     char tokbuf[10];
     IO wrapper;
 
@@ -1337,7 +1337,7 @@ static void SCInterpretPS(FILE *ps,SplineChar *sc) {
 void PSFontInterpretPS(FILE *ps,struct charprocs *cp) {
     char tokbuf[100];
     int tok,i, j;
-    double dval;
+    real dval;
     SplineChar *sc; EntityChar dummy;
     RefChar *p, *ref, *next;
     IO wrapper;
@@ -1402,7 +1402,7 @@ Encoding *PSSlurpEncodings(FILE *file) {
     char *encname;
     char tokbuf[200];
     IO wrapper;
-    double dval;
+    real dval;
     int i, max, any, enc;
     int tok;
 
@@ -1495,22 +1495,22 @@ return;		/* The "path" is just a single point created by a moveto */
 /*  number rather than a 32 bit number */
 SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	struct pschars *subrs, struct pschars *gsubrs, const char *name) {
-    double stack[50]; int sp=0, v;		/* Type1 stack is about 25 long, Type2 stack is 48 */
-    double transient[32];
+    real stack[50]; int sp=0, v;		/* Type1 stack is about 25 long, Type2 stack is 48 */
+    real transient[32];
     SplineChar *ret = calloc(1,sizeof(SplineChar));
     SplinePointList *cur=NULL, *oldcur=NULL;
     RefChar *r1, *r2, *rlast=NULL;
     BasePoint current, oldcurrent;
-    double dx, dy, dx2, dy2, dx3, dy3, dx4, dy4, dx5, dy5, dx6, dy6;
+    real dx, dy, dx2, dy2, dx3, dy3, dx4, dy4, dx5, dy5, dx6, dy6;
     SplinePoint *pt;
     /* subroutines may be nested to a depth of 10 */
     struct substate { unsigned char *type1; int len; } pcstack[11];
     int pcsp=0;
     StemInfo *hint, *hp;
-    double pops[30];
+    real pops[30];
     int popsp=0;
     int base, polarity;
-    double coord;
+    real coord;
     struct pschars *s;
     int hint_cnt = 0;
 
@@ -1829,7 +1829,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	      break;
 	      case 28: /* exch */
 		if ( sp>=2 ) {
-		    double temp = stack[sp-1];
+		    real temp = stack[sp-1];
 		    stack[sp-1] = stack[sp-2]; stack[sp-2] = temp;
 		}
 	      break;
@@ -1850,7 +1850,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		    else if ( j==0 || N==0 )
 			/* No op */;
 		    else {
-			double *temp = galloc(N*sizeof(double));
+			real *temp = galloc(N*sizeof(real));
 			int i;
 			for ( i=0; i<N; ++i )
 			    temp[i] = stack[sp-N+i];
@@ -1892,7 +1892,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		if ( v!=37 )
 		    dx6 = stack[base++];
 		else {
-		    double xt = dx+dx2+dx3+dx4+dx5, yt = dy+dy2+dy3+dy4+dy5;
+		    real xt = dx+dx2+dx3+dx4+dx5, yt = dy+dy2+dy3+dy4+dy5;
 		    if ( xt<0 ) xt= -xt;
 		    if ( yt<0 ) yt= -yt;
 		    if ( xt>yt )
@@ -1976,7 +1976,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		/* I'm confused about v/hstemhm because the manual says it needs */
 		/*  to be used if one uses a hintmask, but that's not what the */
 		/*  examples show.  Or I'm not understanding. */
-		if ( sp-base<2 && v!=19 )
+		if ( sp-base<2 && v!=19 && v!=20 )
 		    fprintf(stderr, "Stack underflow on vstem in %s\n", name );
 		/* stack[0] is absolute x for start of vertical hint */
 		/*	(actually relative to the x specified as lsidebearing in h/sbw*/
@@ -2164,11 +2164,13 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	    }
 	    if ( v==24 ) {
 		current.x += stack[base++]; current.y += stack[base++];
-		pt = calloc(1,sizeof(SplinePoint));
-		pt->me = current;
-		pt->noprevcp = true; pt->nonextcp = true;
-		SplineMake(cur->last,pt);
-		cur->last = pt;
+		if ( cur!=NULL ) {	/* In legal code, cur can't be null here, but I got something illegal... */
+		    pt = calloc(1,sizeof(SplinePoint));
+		    pt->me = current;
+		    pt->noprevcp = true; pt->nonextcp = true;
+		    SplineMake(cur->last,pt);
+		    cur->last = pt;
+		}
 	    }
 	    sp = 0;
 	  break;

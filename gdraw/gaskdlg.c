@@ -629,7 +629,7 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
     y = GDrawPointsToPixels(gw,12)+lb*fh;
     gcd[i].gd.pos.x = GDrawPointsToPixels(gw,8); gcd[i].gd.pos.y = y;
     gcd[i].gd.pos.width = maxw - 2*GDrawPointsToPixels(gw,8);
-    gcd[i].gd.pos.height = (cnt<4?4:cnt<8?cnt:8)*fh + 2*GDrawPointsToPixels(gw,3);
+    gcd[i].gd.pos.height = (cnt<4?4:cnt<8?cnt:8)*fh + 2*GDrawPointsToPixels(gw,6);
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_list_exactlyone;
     gcd[i].gd.u.list = llabels;
     gcd[i].gd.cid = CID_List;

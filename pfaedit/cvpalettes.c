@@ -105,11 +105,11 @@ static int popupsres[] = { _STR_Pointer, _STR_PopMag,
 			            _STR_PopRectElipse, _STR_PopPolyStar,
 			            _STR_PopRectElipse, _STR_PopPolyStar};
 static int rectelipse=0, polystar=0, regular_star=1;
-static double rr_radius=0;
+static real rr_radius=0;
 static int ps_pointcnt=6;
-static double star_percent=1.7320508;	/* Regular 6 pointed star */
+static real star_percent=1.7320508;	/* Regular 6 pointed star */
 
-double CVRoundRectRadius(void) {
+real CVRoundRectRadius(void) {
 return( rr_radius );
 }
 
@@ -117,7 +117,7 @@ int CVPolyStarPoints(void) {
 return( ps_pointcnt );
 }
 
-double CVStarRatio(void) {
+real CVStarRatio(void) {
     if ( regular_star )
 return( sin(3.1415926535897932/ps_pointcnt)*tan(2*3.1415926535897932/ps_pointcnt)+cos(3.1415926535897932/ps_pointcnt) );
 	
@@ -128,7 +128,7 @@ struct ask_info {
     GWindow gw;
     int done;
     int ret;
-    double *val;
+    real *val;
     GGadget *rb1;
     GGadget *reg;
     int isint;
@@ -140,14 +140,14 @@ struct ask_info {
 static int TA_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct ask_info *d = GDrawGetUserData(GGadgetGetWindow(g));
-	double val, val2=0;
+	real val, val2=0;
 	int err=0;
 	if ( d->isint ) {
 	    val = GetIntR(d->gw,CID_ValText,d->lab,&err);
 	    if ( !(regular_star = GGadgetIsChecked(d->reg)))
-		val2 = GetDoubleR(d->gw,CID_PointPercent,_STR_SizeOfPoints,&err);
+		val2 = GetRealR(d->gw,CID_PointPercent,_STR_SizeOfPoints,&err);
 	} else
-	    val = GetDoubleR(d->gw,CID_ValText,d->lab,&err);
+	    val = GetRealR(d->gw,CID_ValText,d->lab,&err);
 	if ( err )
 return( true );
 	*d->val = val;
@@ -178,7 +178,7 @@ static int toolask_e_h(GWindow gw, GEvent *event) {
 return( event->type!=et_char );
 }
 
-static int Ask(int rb1, int rb2, int rb, int lab, double *val, int isint ) {
+static int Ask(int rb1, int rb2, int rb, int lab, real *val, int isint ) {
     struct ask_info d;
     char buffer[20], buf[20];
     GRect pos;
@@ -309,7 +309,7 @@ static void CVRectElipse(CharView *cv) {
 }
 
 static void CVPolyStar(CharView *cv) {
-    double temp = ps_pointcnt;
+    real temp = ps_pointcnt;
     polystar = Ask(_STR_Polygon,_STR_Star,polystar,
 	    _STR_NumPSVert,&temp,true);
     ps_pointcnt = temp;

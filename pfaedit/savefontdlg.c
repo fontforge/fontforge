@@ -45,15 +45,17 @@ struct gfc_data {
     SplineFont *sf;
 };
 
-static char *extensions[] = { ".pfa", ".pfb", ".ps", ".ps", ".ttf", ".ttf", ".otf", NULL };
+static char *extensions[] = { ".pfa", ".pfb", ".ps", ".ps", ".cid", ".ttf", ".ttf", ".otf", ".otf", NULL };
 static GTextInfo formattypes[] = {
     { (unichar_t *) "PS Type 1 (Ascii)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "PS Type 1 (Binary)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "PS Type 3", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "PS Type 0", NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "PS CID", NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "True Type", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "True Type (Symbol)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "Open Type (PS)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "Open Type CID", NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_Nooutlinefont, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }
 };
@@ -68,10 +70,10 @@ static int oldafmstate = true, oldpfmstate = false;
 static int oldformatstate = ff_pfb;
 static int oldbitmapstate = 0;
 
-static double *ParseBitmapSizes(GGadget *g,int *err) {
+static real *ParseBitmapSizes(GGadget *g,int *err) {
     const unichar_t *val = _GGadgetGetTitle(g), *pt; unichar_t *end, *end2;
     int i;
-    double *sizes;
+    real *sizes;
 
     *err = false;
     end2 = NULL;
@@ -83,7 +85,7 @@ static double *ParseBitmapSizes(GGadget *g,int *err) {
 	pt = end+1;
 	end2 = NULL;
     }
-    sizes = galloc((i+1)*sizeof(double));
+    sizes = galloc((i+1)*sizeof(real));
 
     for ( i=0, pt = val; *pt!='\0' ; ) {
 	sizes[i]=u_strtod(pt,&end);
@@ -101,11 +103,12 @@ return( NULL );
 return( sizes );
 }
 
-static int WriteAfmFile(char *filename,SplineFont *sf, int type0) {
+static int WriteAfmFile(char *filename,SplineFont *sf, int formattype) {
     char *buf = malloc(strlen(filename)+6), *pt, *pt2;
     FILE *afm;
     int ret;
     unichar_t *temp;
+    int iscid = ( formattype==ff_cid || formattype==ff_otfcid );
 
     strcpy(buf,filename);
     pt = strrchr(buf,'.');
@@ -119,7 +122,10 @@ static int WriteAfmFile(char *filename,SplineFont *sf, int type0) {
     afm = fopen(buf,"w");
     if ( afm==NULL )
 return( false );
-    ret = AfmSplineFont(afm,sf,type0);
+    if ( iscid )
+	fprintf( stderr, "Don't know how to make an AFM file for a CID font yet.\n" );
+    else
+	ret = AfmSplineFont(afm,sf,formattype==ff_ptype0);
     if ( fclose(afm)==-1 )
 return( 0 );
 return( ret );
@@ -149,12 +155,14 @@ return( 0 );
 return( ret );
 }
 
-static int WriteBitmaps(char *filename,SplineFont *sf, double *sizes, int do_grey) {
+static int WriteBitmaps(char *filename,SplineFont *sf, real *sizes, int do_grey) {
     char *buf = malloc(strlen(filename)+20), *pt, *pt2;
     int i;
     BDFFont *bdf;
     unichar_t *temp;
     char buffer[100];
+
+    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
 
     for ( i=0; sizes[i]!=0; ++i );
     GProgressChangeStages(i);
@@ -196,25 +204,23 @@ return( true );
 static void DoSave(struct gfc_data *d,unichar_t *path) {
     int err=false;
     char *temp;
-    double *sizes;
-    static unichar_t save[] = { 'S','a','v','i','n','g',' ','f','o','n','t',  '\0' };
-    static unichar_t saveps[] = { 'S','a','v','i','n','g',' ','P','o','s','t','s','c','r','i','p','t',' ','F','o','n','t', '\0' };
-    static unichar_t savettf[] = { 'S','a','v','i','n','g',' ','T','r','u','e','T','y','p','e',' ','F','o','n','t', '\0' };
-    static unichar_t saveotf[] = { 'S','a','v','i','n','g',' ','O','p','e','n','T','y','p','e',' ','F','o','n','t', '\0' };
-    static unichar_t saveafm[] = { 'S','a','v','i','n','g',' ','A','F','M',' ','F','i','l','e', '\0' };
-    static unichar_t savepfm[] = { 'S','a','v','i','n','g',' ','P','F','M',' ','F','i','l','e', '\0' };
-    static unichar_t savebdf[] = { 'S','a','v','i','n','g',' ','B','i','t','m','a','p',' ','F','o','n','t','(','s',')', '\0' };
+    real *sizes;
+    int iscid;
 
     temp = cu_copy(path);
     oldformatstate = GGadgetGetFirstListSelectedItem(d->pstype);
-    GProgressStartIndicator(10,save,oldformatstate==ff_ttf || oldformatstate==ff_ttfsym?
-		savettf:oldformatstate==ff_otf?saveotf:saveps,
+    iscid = oldformatstate==ff_cid || oldformatstate==ff_otfcid;
+    GProgressStartIndicator(10,GStringGetResource(_STR_SavingFont,NULL),
+		GStringGetResource(oldformatstate==ff_ttf || oldformatstate==ff_ttfsym?_STR_SavingTTFont:
+		 oldformatstate==ff_otf?_STR_SavingOpenTypeFont:
+		 oldformatstate==ff_cid || oldformatstate==ff_otfcid?_STR_SavingCIDFont:
+		 _STR_SavingPSFont,NULL),
 	    path,d->sf->charcnt,1);
     GProgressEnableStop(false);
     if ( oldformatstate!=ff_none ) {
-	if ( (oldformatstate!=ff_ttf && oldformatstate!=ff_ttfsym && oldformatstate!=ff_otf &&
+	if ( (oldformatstate!=ff_ttf && oldformatstate!=ff_ttfsym && oldformatstate!=ff_otf && oldformatstate!=ff_otfcid &&
 		    !WritePSFont(temp,d->sf,oldformatstate)) ||
-		((oldformatstate==ff_ttf || oldformatstate==ff_ttfsym || oldformatstate==ff_otf) &&
+		((oldformatstate==ff_ttf || oldformatstate==ff_ttfsym || oldformatstate==ff_otf || oldformatstate==ff_otfcid) &&
 		    !WriteTTFFont(temp,d->sf,oldformatstate)) ) {
 	    GWidgetErrorR(_STR_Savefailedtitle,_STR_Savefailedtitle);
 	    err = true;
@@ -222,16 +228,16 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
     }
     oldafmstate = GGadgetIsChecked(d->doafm);
     oldpfmstate = GGadgetIsChecked(d->dopfm);
-    if ( !err && oldafmstate ) {
-	GProgressChangeLine1(saveafm);
+    if ( !err && oldafmstate && !iscid ) {
+	GProgressChangeLine1R(_STR_SavingAFM);
 	GProgressIncrementBy(-d->sf->charcnt);
-	if ( !WriteAfmFile(temp,d->sf,oldformatstate==ff_ptype0)) {
+	if ( !WriteAfmFile(temp,d->sf,oldformatstate)) {
 	    GWidgetErrorR(_STR_Afmfailedtitle,_STR_Afmfailedtitle);
 	    err = true;
 	}
     }
-    if ( !err && oldpfmstate ) {
-	GProgressChangeLine1(savepfm);
+    if ( !err && oldpfmstate && !iscid ) {
+	GProgressChangeLine1R(_STR_SavingPFM);
 	GProgressIncrementBy(-d->sf->charcnt);
 	if ( !WritePfmFile(temp,d->sf,oldformatstate==ff_ptype0)) {
 	    GWidgetErrorR(_STR_Pfmfailedtitle,_STR_Pfmfailedtitle);
@@ -241,7 +247,7 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
     oldbitmapstate = GGadgetGetFirstListSelectedItem(d->bmptype);
     if ( oldbitmapstate!=2 && !err ) {
 	sizes = ParseBitmapSizes(d->bmpsizes,&err);
-	GProgressChangeLine1(savebdf);
+	GProgressChangeLine1R(_STR_SavingBitmapFonts);
 	GProgressIncrementBy(-d->sf->charcnt);
 	if ( !WriteBitmaps(temp,d->sf,sizes,oldbitmapstate))
 	    err = true;
@@ -362,6 +368,7 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	unichar_t *pt, *dup, *tpt, *ret;
 	int format = GGadgetGetFirstListSelectedItem(d->pstype);
 	int set;
+	static unichar_t nullstr[] = { 0 };
 
 	set = true;
 	if ( format==ff_ttf || format==ff_ttfsym || format==ff_otf || format==ff_none )
@@ -385,6 +392,17 @@ return( true );
 	uc_strcpy(pt,extensions[format]);
 	GGadgetSetTitle(d->gfc,dup);
 	free(dup);
+
+	if ( d->sf->cidmaster!=NULL ) {
+	    if ( format!=ff_none && format != ff_cid && format != ff_otfcid ) {
+		GGadgetSetTitle(d->bmpsizes,nullstr);
+		GGadgetSetVisible(d->doafm,true);
+		GGadgetSetVisible(d->dopfm,true);
+	    } else {
+		GGadgetSetVisible(d->doafm,false);
+		GGadgetSetVisible(d->dopfm,false);
+	    }
+	}
     }
 return( true );
 }
@@ -436,9 +454,9 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     GTextInfo label[14];
     struct gfc_data d;
     GGadget *pulldown, *files, *tf;
-    static unichar_t title[] = { 'G','e','n','e','r','a','t','e',' ','p','o','s','t','s','c','r','i','p','t',' ','f','o','n','t', '\0' };
-    int i, old;
+    int i, old, ofs;
     int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid, spacing;
+    SplineFont *temp;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
@@ -446,7 +464,7 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = title;
+    wattrs.window_title = GStringGetResource(_STR_Generate,NULL);
     pos.x = pos.y = 0;
     bsbigger = 4*bs+4*14>295; totwid = bsbigger?4*bs+4*12:295;
     spacing = (totwid-4*bs-2*12)/3;
@@ -515,16 +533,23 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
 	formattypes[i].selected = sf->onlybitmaps;
     formattypes[ff_ptype0].disabled = sf->onlybitmaps ||
 	    ( sf->encoding_name<em_jis208 && sf->encoding_name>=em_base);
-    old = oldformatstate;
-    if ( old==ff_ptype0 && formattypes[ff_ptype0].disabled )
-	old = ff_pfb;
+    formattypes[ff_cid].disabled = sf->cidmaster==NULL;
+    formattypes[ff_otfcid].disabled = sf->cidmaster==NULL;
+    ofs = oldformatstate;
+    if (( ofs==ff_ptype0 && formattypes[ff_ptype0].disabled ) ||
+	    (ofs==ff_cid && formattypes[ff_cid].disabled))
+	ofs = ff_pfb;
+    else if ( ofs==ff_otfcid && formattypes[ff_otfcid].disabled )
+	ofs = ff_cid;
+    else if ( (ofs!=ff_cid && ofs!=ff_otfcid) && sf->cidmaster!=NULL )
+	ofs = ff_otfcid;
     if ( sf->onlybitmaps )
-	old = ff_none;
+	ofs = ff_none;
     for ( i=0; i<sizeof(formattypes)/sizeof(formattypes[0]); ++i )
 	formattypes[i].selected = false;
-    formattypes[old].selected = true;
+    formattypes[ofs].selected = true;
     gcd[6].gd.handle_controlevent = GFD_Format;
-    gcd[6].gd.label = &formattypes[old];
+    gcd[6].gd.label = &formattypes[ofs];
 
     gcd[7].gd.pos.x = 2; gcd[7].gd.pos.y = 2;
     gcd[7].gd.pos.width = pos.width-4; gcd[7].gd.pos.height = pos.height-4;
@@ -543,7 +568,8 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
 	bitmaptypes[1].disabled = true;
     } else
 	bitmaptypes[1].disabled = false;
-    if ( sf->bitmaps==NULL ) {
+    temp = sf->cidmaster ? sf->cidmaster : sf;
+    if ( temp->bitmaps==NULL ) {
 	old = 2;
 	bitmaptypes[0].disabled = true;
     } else
@@ -556,9 +582,8 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     gcd[9].gd.flags = gg_visible | gg_enabled;
     if ( oldbitmapstate==2 )
 	gcd[9].gd.flags &= ~gg_enabled;
-    gcd[9].gd.u.list = bitmaptypes;
     gcd[9].creator = GTextFieldCreate;
-    label[9].text = BitmapList(sf);
+    label[9].text = BitmapList(temp);
     gcd[9].gd.label = &label[9];
 
     gcd[10].gd.pos.x = 12; gcd[10].gd.pos.y = 231; gcd[10].gd.pos.width = 0; gcd[10].gd.pos.height = 0;
@@ -568,15 +593,21 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     gcd[10].gd.label = &label[10];
     gcd[10].creator = GCheckBoxCreate;
 
+    if ( ofs==ff_otfcid || ofs==ff_cid ) {
+	gcd[5].gd.flags &= ~gg_visible;
+	gcd[10].gd.flags &= ~gg_visible;
+    }
+
     GGadgetsCreate(gw,gcd);
     GGadgetSetUserData(gcd[2].ret,gcd[0].ret);
     free(label[9].text);
 
     GFileChooserConnectButtons(gcd[0].ret,gcd[1].ret,gcd[2].ret);
     {
-	unichar_t *temp = galloc(sizeof(unichar_t)*(strlen(sf->fontname)+8));
-	uc_strcpy(temp,sf->fontname);
-	uc_strcat(temp,extensions[oldformatstate]==NULL?".pfb":extensions[oldformatstate]);
+	char *fn = sf->cidmaster==NULL? sf->fontname:sf->cidmaster->fontname;
+	unichar_t *temp = galloc(sizeof(unichar_t)*(strlen(fn)+8));
+	uc_strcpy(temp,fn);
+	uc_strcat(temp,extensions[ofs]==NULL?".pfb":extensions[ofs]);
 	GGadgetSetTitle(gcd[0].ret,temp);
 	free(temp);
     }

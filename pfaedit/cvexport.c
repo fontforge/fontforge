@@ -101,15 +101,15 @@ return(0);
 return( ret );
 }
 
-static void FigDumpPt(FILE *fig,BasePoint *me,double scale,double ascent) {
+static void FigDumpPt(FILE *fig,BasePoint *me,real scale,real ascent) {
     fprintf( fig, "%d %d ", (int) rint(me->x*scale), (int) rint(ascent-me->y*scale));
 }
 
 static void FigSplineSet(FILE *fig,SplineSet *spl,int spmax, int asc) {
     SplinePoint *sp;
     int cnt;
-    double scale = 7*1200.0/spmax;
-    double ascent = 11*1200*asc/spmax;
+    real scale = 7*1200.0/spmax;
+    real ascent = 11*1200*asc/spmax;
 
     while ( spl!=NULL ) {
 	/* type=3, SPline; sub_type=3, closed interpreted; linestyle=0(solid); thickness=1*/

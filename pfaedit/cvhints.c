@@ -77,7 +77,7 @@ return( false );
 return ( false );
 
     /* Similar slopes */
-return( DoubleApprox((sp1->me.y-(*sp3)->me.y)/(sp1->me.x-(*sp3)->me.x),
+return( RealApprox((sp1->me.y-(*sp3)->me.y)/(sp1->me.x-(*sp3)->me.x),
 	    (sp2->me.y-(*sp4)->me.y)/(sp2->me.x-(*sp4)->me.x)) );
 }
 

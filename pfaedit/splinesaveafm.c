@@ -260,9 +260,26 @@ return( sc!=NULL &&
 	( strcmp(sc->name,".notdef")!=0 || sc->enc==0) );
 }
 
+int CIDWorthOutputting(SplineFont *cidmaster, int enc) {
+    int i;
+
+    if ( enc<0 )
+return( -1 );
+
+    if ( cidmaster->subfontcnt==0 )
+return( enc>=cidmaster->charcnt?-1:SCWorthOutputting(cidmaster->chars[enc])?0:-1 );
+
+    for ( i=0; i<cidmaster->subfontcnt; ++i )
+	if ( enc<cidmaster->subfonts[i]->charcnt &&
+		SCWorthOutputting(cidmaster->subfonts[i]->chars[enc]))
+return( i );
+
+return( -1 );
+}
+
 int AfmSplineFont(FILE *afm, SplineFont *sf, int type0) {
     DBounds b;
-    double width;
+    real width;
     int i, cnt;
     int caph, xh, ash, dsh;
     int encmax=!type0?256:sf->encoding_name==em_unicode?65536:94*94;
@@ -602,8 +619,8 @@ int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0) {
     putlshort(2*(sf->ascent+sf->descent)/3,pfm);	/* sub size */
     putlshort(-sf->upos,pfm);		/* underline pos */
     putlshort(sf->uwidth,pfm);		/* underline width */
-    putlshort(-sf->upos,pfm);		/* double underline pos */
-    putlshort(-sf->upos+2*sf->uwidth,pfm);	/* double underline second line pos */
+    putlshort(-sf->upos,pfm);		/* real underline pos */
+    putlshort(-sf->upos+2*sf->uwidth,pfm);	/* real underline second line pos */
     putlshort(sf->uwidth,pfm);		/* underline width */
     putlshort(sf->uwidth,pfm);		/* underline width */
     putlshort((xh+sf->uwidth)/2,pfm);	/* strike out top */

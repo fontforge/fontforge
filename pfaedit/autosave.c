@@ -132,12 +132,15 @@ return( any );
 
 void DoAutoSaves(void) {
     FontView *fv;
+    SplineFont *sf;
 
-    for ( fv=fv_list; fv!=NULL; fv=fv->next )
-	if ( fv->sf->changed_since_autosave ) {
-	    if ( fv->sf->autosavename==NULL )
-		MakeAutoSaveName(fv->sf);
-	    if ( fv->sf->autosavename!=NULL )
-		SFAutoSave(fv->sf);
+    for ( fv=fv_list; fv!=NULL; fv=fv->next ) {
+	sf = fv->cidmaster?fv->cidmaster:fv->sf;
+	if ( sf->changed_since_autosave ) {
+	    if ( sf->autosavename==NULL )
+		MakeAutoSaveName(sf);
+	    if ( sf->autosavename!=NULL )
+		SFAutoSave(sf);
 	}
+    }
 }

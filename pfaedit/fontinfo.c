@@ -25,9 +25,10 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#include "ustring.h"
-#include "chardata.h"
-#include "utype.h"
+#include <ustring.h>
+#include <chardata.h>
+#include <utype.h>
+#include <gkeysym.h>
 
 struct gfi_data {
     int done;
@@ -95,6 +96,12 @@ static GTextInfo weightclass[] = {
     { (unichar_t *) _STR_Bold700, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Heavy800, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Black900, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { NULL }};
+static GTextInfo fstype[] = {
+    { (unichar_t *) _STR_NeverEmbeddable, NULL, 0, 0, (void *) 0x02, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_OnlyPrint, NULL, 0, 0, (void *) 0x04, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_EditableDoc, NULL, 0, 0, (void *) 0x0c, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Installable, NULL, 0, 0, (void *) 0x00, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
 static GTextInfo pfmfamily[] = {
     { (unichar_t *) _STR_Serif, NULL, 0, 0, (void *) 0x11, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -387,10 +394,13 @@ static struct langstyle *stylelist[] = {regs, demibolds, bolds, heavys, blacks,
 #define CID_Descent	1008
 #define CID_NChars	1009
 #define CID_Notice	1010
-#define CID_Make	1011
-#define CID_Delete	1012
-#define CID_XUID	1013
-#define CID_Human	1014
+#define CID_Version	1011
+#define CID_UniqueID	1012
+
+#define CID_Make	1111
+#define CID_Delete	1112
+#define CID_XUID	1113
+#define CID_Human	1114
 
 #define CID_PrivateEntries	2001
 #define	CID_PrivateValues	2002
@@ -401,6 +411,7 @@ static struct langstyle *stylelist[] = {regs, demibolds, bolds, heavys, blacks,
 #define CID_WeightClass		3001
 #define CID_WidthClass		3002
 #define CID_PFMFamily		3003
+#define CID_FSType		3004
 
 #define CID_PanFamily		4001
 #define CID_PanSerifs		4002
@@ -528,7 +539,6 @@ static struct { const char *name; short type, arr_size, present; } KnownPrivates
     { "ForceBold", pt_boolean },
     { "LanguageGroup", pt_number },
     { "RndStemUp", pt_number },
-    { "UniqueID", pt_number },
     { "lenIV", pt_number },
     { "ExpansionFactor", pt_number },
     { "Erode", pt_code },
@@ -850,7 +860,7 @@ return( true );
 return( true );
 }
 
-static void arraystring(char *buffer,double *array,int cnt) {
+static void arraystring(char *buffer,real *array,int cnt) {
     int i, ei;
 
     for ( ei=cnt; ei>1 && array[ei]==0; --ei );
@@ -863,7 +873,7 @@ static void arraystring(char *buffer,double *array,int cnt) {
     *buffer++ = ']'; *buffer='\0';
 }
 
-static void SnapSet(struct psdict *private,double stemsnap[12], double snapcnt[12],
+static void SnapSet(struct psdict *private,real stemsnap[12], real snapcnt[12],
 	char *name1, char *name2 ) {
     int i, mi;
     char buffer[211];
@@ -886,9 +896,9 @@ static int PI_Guess(GGadget *g, GEvent *e) {
     GGadget *list;
     int sel;
     SplineFont *sf;
-    double bluevalues[14], otherblues[10];
-    double snapcnt[12];
-    double stemsnap[12];
+    real bluevalues[14], otherblues[10];
+    real snapcnt[12];
+    real stemsnap[12];
     char buffer[211];
     unichar_t *temp;
     static int buts[] = { _STR_OK, _STR_Cancel, 0 };
@@ -1409,7 +1419,7 @@ return( true );
 static int GFI_GuessItalic(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	double val = SFGuessItalicAngle(d->sf);
+	real val = SFGuessItalicAngle(d->sf);
 	char buf[30]; unichar_t ubuf[30];
 	sprintf( buf, "%.1f", val);
 	uc_strcpy(ubuf,buf);
@@ -1554,7 +1564,7 @@ static int CheckNames(struct gfi_data *d) {
 return( false );
     }
     /* A postscript name cannot be a number. There are two ways it can be a */
-    /*  number, it can be a double (which we can check for with strtod) or */
+    /*  number, it can be a real (which we can check for with strtod) or */
     /*  it can be a "radix number" which is <intval>'#'<intval>. I'll only */
     /*  do a cursory test for that */
     u_strtod(ufamily,&end);
@@ -1848,6 +1858,7 @@ static void DefaultLanguage(struct gfi_data *d) {
 	free( d->def.names[ttf_subfamily]);
 	d->def.names[ttf_subfamily] = uc_copy("Regular");
     }
+    d->def.names[ttf_version] = GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Version));
     DefaultTTFEnglishNames(&d->def, d->sf);
     TNFinishFormer(d);
 }
@@ -1859,9 +1870,11 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	SplineFont *sf = d->sf;
 	int enc;
 	int reformat_fv=0;
-	int upos, uwid, as, des, nchar, oldcnt=sf->charcnt, err = false;
-	double ia;
+	int upos, uwid, as, des, nchar, oldcnt=sf->charcnt, err = false, weight=0;
+	int uniqueid;
+	real ia, cidversion;
 	const unichar_t *txt; unichar_t *end;
+	int i;
 
 	if ( !CheckNames(d))
 return( true );
@@ -1886,6 +1899,17 @@ return(true);
 	as = GetIntR(gw,CID_Ascent,_STR_Ascent,&err);
 	des = GetIntR(gw,CID_Descent,_STR_Descent,&err);
 	nchar = GetIntR(gw,CID_NChars,_STR_Numchars,&err);
+	uniqueid = GetIntR(gw,CID_UniqueID,_STR_UniqueID,&err);
+	if ( sf->subfontcnt!=0 )
+	    cidversion = GetRealR(gw,CID_Version,_STR_Version,&err);
+	if ( d->ttf_set ) {
+	    /* Only use the normal routine if we get no value, because */
+	    /*  "400 Book" is a reasonable setting, but would cause GetInt */
+	    /*  to complain */
+	    weight = u_strtol(_GGadgetGetTitle(GWidgetGetControl(gw,CID_WeightClass)),NULL,10);
+	    if ( weight == 0 )
+		weight = GetIntR(gw,CID_WeightClass,_STR_WeightClass,&err);
+	}
 	if ( err )
 return(true);
 	if ( as+des>16384 || des<0 || as<0 ) {
@@ -1900,6 +1924,12 @@ return(true);
 	free(sf->xuid); sf->xuid = *txt=='\0'?NULL:cu_copy(txt);
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Notice));
 	free(sf->copyright); sf->copyright = cu_copy(txt);
+	if ( sf->subfontcnt!=0 )
+	    sf->cidversion = cidversion;
+	else {
+	    txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Version));
+	    free(sf->version); sf->version = cu_copy(txt);
+	}
 	enc = GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,CID_Encoding));
 	if ( enc!=-1 ) {
 	    enc = (int) (GGadgetGetListItem(GWidgetGetControl(gw,CID_Encoding),enc)->userdata);
@@ -1917,6 +1947,7 @@ return(true);
 	sf->italicangle = ia;
 	sf->upos = upos;
 	sf->uwidth = uwid;
+	sf->uniqueid = uniqueid;
 	if ( d->private!=NULL ) {
 	    PSDictFree(sf->private);
 	    sf->private = d->private;
@@ -1926,6 +1957,15 @@ return(true);
 	    TTFLangNamesFree(sf->names);
 	    sf->names = d->names;
 	    d->names = NULL;
+	}
+	if ( d->ttf_set ) {
+	    sf->pfminfo.weight = weight;
+	    sf->pfminfo.width = GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,CID_WidthClass))+1;
+	    sf->pfminfo.pfmfamily = (int) (GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_PFMFamily))->userdata);
+	    sf->pfminfo.fstype = (int) (GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_FSType))->userdata);
+	    for ( i=0; i<10; ++i )
+		sf->pfminfo.panose[i] = (int) (GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_PanFamily+i))->userdata);
+	    sf->pfminfo.pfmset = true;
 	}
 	if ( reformat_fv )
 	    FontViewReformat(sf->fv);
@@ -2019,6 +2059,7 @@ static void TTFSetup(struct gfi_data *d) {
     for ( i=0; i<10; ++i )
 	GGadgetSelectOneListItem(GWidgetGetControl(d->gw,CID_PanFamily+i),info.panose[i]);
     d->ttf_set = true;
+    /* FSType is already set */
 }
 
 static int GFI_AspectChange(GGadget *g, GEvent *e) {
@@ -2038,21 +2079,25 @@ static int e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	struct gfi_data *d = GDrawGetUserData(gw);
 	d->done = true;
+    } else if ( event->type==et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    system("netscape http://pfaedit.sf.net/fontinfo.html &");
+return( true );
+	}
+return( false );
     }
-return( event->type!=et_char );
+return( true );
 }
 
-void FontMenuFontInfo(void *_fv) {
-    FontView *fv = (FontView *) _fv;
-    SplineFont *sf = fv->sf;
+void FontInfo(SplineFont *sf) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
     GTabInfo aspects[8];
-    GGadgetCreateData mgcd[10], ngcd[9], egcd[9], psgcd[14], tngcd[7],   pgcd[8], vgcd[10], pangcd[22];
-    GTextInfo mlabel[10], nlabel[9], elabel[9], pslabel[14], tnlabel[7], plabel[8], vlabel[10], panlabel[22], *list;
+    GGadgetCreateData mgcd[10], ngcd[11], egcd[11], psgcd[16], tngcd[7],   pgcd[8], vgcd[10], pangcd[22];
+    GTextInfo mlabel[10], nlabel[11], elabel[11], pslabel[16], tnlabel[7], plabel[8], vlabel[10], panlabel[22], *list;
     struct gfi_data d;
-    char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20], ncbuf[20];
+    char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20], ncbuf[20], vbuf[20], uibuf[12], regbuf[100];
     int i;
     int oldcnt = sf->charcnt;
     Encoding *item;
@@ -2127,7 +2172,27 @@ void FontMenuFontInfo(void *_fv) {
     ngcd[5].gd.cid = CID_Human;
     ngcd[5].creator = GTextFieldCreate;
 
-    ngcd[6].gd.pos.x = 12; ngcd[6].gd.pos.y = ngcd[5].gd.pos.y+26+6;
+    ngcd[8].gd.pos.x = 12; ngcd[8].gd.pos.y = ngcd[5].gd.pos.y+26+6;
+    nlabel[8].text = (unichar_t *) _STR_VersionC;
+    nlabel[8].text_in_resource = true;
+    ngcd[8].gd.label = &nlabel[8];
+    ngcd[8].gd.mnemonic = 'V';
+    ngcd[8].gd.flags = gg_visible | gg_enabled;
+    ngcd[8].creator = GLabelCreate;
+
+    ngcd[9].gd.pos.x = 105; ngcd[9].gd.pos.y = ngcd[8].gd.pos.y-6; ngcd[9].gd.pos.width = 147;
+    ngcd[9].gd.flags = gg_visible | gg_enabled;
+    nlabel[9].text = (unichar_t *) (sf->version?sf->version:"");
+    nlabel[9].text_is_1byte = true;
+    if ( sf->subfontcnt!=0 ) {
+	sprintf( vbuf,"%g", sf->cidversion );
+	nlabel[9].text = (unichar_t *) vbuf;
+    }
+    ngcd[9].gd.label = &nlabel[9];
+    ngcd[9].gd.cid = CID_Version;
+    ngcd[9].creator = GTextFieldCreate;
+
+    ngcd[6].gd.pos.x = 12; ngcd[6].gd.pos.y = ngcd[8].gd.pos.y+22;
     ngcd[6].gd.flags = gg_visible | gg_enabled;
     ngcd[6].gd.mnemonic = 'r';
     nlabel[6].text = (unichar_t *) _STR_Copyright;
@@ -2229,6 +2294,36 @@ void FontMenuFontInfo(void *_fv) {
     egcd[7].gd.label = &elabel[7];
     egcd[7].gd.cid = CID_NChars;
     egcd[7].creator = GTextFieldCreate;
+
+    if ( sf->cidmaster || sf->subfontcnt!=0 ) {
+	SplineFont *master = sf->cidmaster?sf->cidmaster:sf;
+
+	egcd[8].gd.pos.x = 12; egcd[8].gd.pos.y = egcd[7].gd.pos.y+36+6;
+	egcd[8].gd.flags = gg_visible ;
+	egcd[8].gd.mnemonic = 'N';
+	elabel[8].text = (unichar_t *) _STR_CIDRegistry;
+	elabel[8].text_in_resource = true;
+	egcd[8].gd.label = &elabel[8];
+	egcd[8].creator = GLabelCreate;
+
+	egcd[9].gd.pos.x = egcd[1].gd.pos.x; egcd[9].gd.pos.y = egcd[8].gd.pos.y-6;
+	egcd[9].gd.pos.width = 140;
+	egcd[9].gd.flags = gg_visible ;
+	sprintf( regbuf, "%.30s-%.30s-%d", master->cidregistry, master->ordering, master->supplement );
+	elabel[9].text = (unichar_t *) regbuf;
+	elabel[9].text_is_1byte = true;
+	egcd[9].gd.label = &elabel[9];
+	egcd[9].creator = GTextFieldCreate;
+    }
+
+    if ( sf->subfontcnt!=0 || sf->cidmaster!=NULL ) {
+	for ( i=0; i<=5; ++i )
+	    egcd[i].gd.flags &= ~gg_enabled;
+	if ( sf->subfontcnt!=0 ) {
+	    egcd[6].gd.flags &= ~gg_enabled;
+	    egcd[7].gd.flags &= ~gg_enabled;
+	}
+    }
 /******************************************************************************/
     memset(&pslabel,0,sizeof(pslabel));
     memset(&psgcd,0,sizeof(psgcd));
@@ -2267,7 +2362,7 @@ void FontMenuFontInfo(void *_fv) {
     psgcd[3].gd.cid = CID_Descent;
     psgcd[3].creator = GTextFieldCreate;
 
-    psgcd[4].gd.pos.x = 12; psgcd[4].gd.pos.y = psgcd[25].gd.pos.y+32+6;
+    psgcd[4].gd.pos.x = 12; psgcd[4].gd.pos.y = psgcd[3].gd.pos.y+26+6;
     psgcd[4].gd.flags = gg_visible | gg_enabled;
     psgcd[4].gd.mnemonic = 'I';
     pslabel[4].text = (unichar_t *) _STR_Italicangle;
@@ -2348,6 +2443,31 @@ void FontMenuFontInfo(void *_fv) {
     }
     psgcd[12].gd.cid = CID_XUID;
     psgcd[12].creator = GTextFieldCreate;
+
+    psgcd[13].gd.pos.x = 12; psgcd[13].gd.pos.y = psgcd[12].gd.pos.y+26+6;
+    pslabel[13].text = (unichar_t *) _STR_UniqueIDC;
+    pslabel[13].text_in_resource = true;
+    psgcd[13].gd.label = &pslabel[13];
+    psgcd[13].gd.mnemonic = 'U';
+    psgcd[13].gd.flags = gg_visible | gg_enabled;
+    psgcd[13].creator = GLabelCreate;
+
+    psgcd[14].gd.pos.x = psgcd[12].gd.pos.x; psgcd[14].gd.pos.y = psgcd[13].gd.pos.y-6; psgcd[14].gd.pos.width = psgcd[12].gd.pos.width;
+    psgcd[14].gd.flags = gg_visible | gg_enabled;
+    pslabel[14].text = (unichar_t *) "";
+    pslabel[14].text_is_1byte = true;
+    if ( sf->uniqueid!=0 ) {
+	sprintf( uibuf, "%d", sf->uniqueid );
+	pslabel[14].text = (unichar_t *) uibuf;
+    }
+    psgcd[14].gd.label = &pslabel[14];
+    psgcd[14].gd.cid = CID_UniqueID;
+    psgcd[14].creator = GTextFieldCreate;
+
+    if ( sf->subfontcnt!=0 ) {
+	for ( i=0; i<=10; ++i )
+	    psgcd[i].gd.flags &= ~gg_enabled;
+    }
 /******************************************************************************/
 
     memset(&plabel,0,sizeof(plabel));
@@ -2441,6 +2561,34 @@ void FontMenuFontInfo(void *_fv) {
     vgcd[5].gd.cid = CID_PFMFamily;
     vgcd[5].gd.u.list = pfmfamily;
     vgcd[5].creator = GListButtonCreate;
+
+    vgcd[6].gd.pos.x = 10; vgcd[6].gd.pos.y = vgcd[5].gd.pos.y+26+6;
+    vlabel[6].text = (unichar_t *) _STR_Embeddable;
+    vlabel[6].text_in_resource = true;
+    vgcd[6].gd.label = &vlabel[6];
+    vgcd[6].gd.flags = gg_visible | gg_enabled;
+    vgcd[6].gd.popup_msg = GStringGetResource(_STR_EmbeddablePopup,NULL);
+    vgcd[6].creator = GLabelCreate;
+
+    vgcd[7].gd.pos.x = 100; vgcd[7].gd.pos.y = vgcd[6].gd.pos.y-6; vgcd[7].gd.pos.width = 140;
+    vgcd[7].gd.flags = gg_visible | gg_enabled;
+    vgcd[7].gd.cid = CID_FSType;
+    vgcd[7].gd.u.list = fstype;
+    vgcd[7].gd.popup_msg = vgcd[6].gd.popup_msg;
+    vgcd[7].creator = GListButtonCreate;
+    fstype[0].selected = fstype[1].selected =
+	    fstype[2].selected = fstype[3].selected = false;
+    if ( sf->pfminfo.fstype&0x8 /* also catches the "not set" case == -1 */ )
+	i = 2;
+    else if ( sf->pfminfo.fstype&0x4 )
+	i = 1;
+    else if ( sf->pfminfo.fstype&0x2 )
+	i = 0;
+    else
+	i = 3;
+    fstype[i].selected = true;
+    vgcd[7].gd.label = &fstype[i];
+    
 
 /******************************************************************************/
     memset(&tnlabel,0,sizeof(tnlabel));
@@ -2709,10 +2857,14 @@ void FontMenuFontInfo(void *_fv) {
 	free(d.def.names[i]);
     TTFLangNamesFree(d.names);
 
-    if ( oldcnt!=sf->charcnt && fv!=NULL ) {
-	free(fv->selected);
-	fv->selected = gcalloc(sf->charcnt,sizeof(char));
+    if ( oldcnt!=sf->charcnt && sf->fv!=NULL && sf->fv->sf==sf ) {
+	free(sf->fv->selected);
+	sf->fv->selected = gcalloc(sf->charcnt,sizeof(char));
     }
-    if ( fv!=NULL )
-	GDrawRequestExpose(fv->v,NULL,false);
+    if ( sf->fv!=NULL )
+	GDrawRequestExpose(sf->fv->v,NULL,false);
+}
+
+void FontMenuFontInfo(void *_fv) {
+    FontInfo( ((FontView *) _fv)->sf);
 }

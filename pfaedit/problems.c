@@ -28,6 +28,7 @@
 #include <gwidget.h>
 #include <ustring.h>
 #include <math.h>
+#include <gkeysym.h>
 
 struct problems {
     FontView *fv;
@@ -46,13 +47,15 @@ struct problems {
     unsigned int ptnearhint: 1;
     unsigned int hintwidthnearval: 1;
     unsigned int direction: 1;
+    unsigned int cidmultiple: 1;
+    unsigned int cidblank: 1;
     unsigned int explain: 1;
     unsigned int done: 1;
     unsigned int doneexplain: 1;
     unsigned int finish: 1;
     unsigned int ignorethis: 1;
-    double near, xval, yval, widthval;
-    double xheight, caph, ascent, descent;
+    real near, xval, yval, widthval;
+    real xheight, caph, ascent, descent;
     GWindow explainw;
     GGadget *explaintext, *explainvals, *ignoregadg;
     SplineChar *lastcharopened;
@@ -62,7 +65,8 @@ struct problems {
 static int openpaths=1, pointstooclose=1/*, missing=0*/, doxnear=0, doynear=0;
 static int doynearstd=1, linestd=1, cpstd=1, cpodd=1, hintnopt=0, ptnearhint=0;
 static int hintwidth=0, direction=0;
-static double near=3, xval=0, yval=0, widthval=50;
+static int cidblank=0, cidmultiple=1;
+static real near=3, xval=0, yval=0, widthval=50;
 
 #define CID_Stop		2001
 #define CID_Next		2002
@@ -84,6 +88,8 @@ static double near=3, xval=0, yval=0, widthval=50;
 #define CID_Direction		1015
 #define CID_CpStd		1016
 #define CID_CpOdd		1017
+#define CID_CIDMultiple		1018
+#define CID_CIDBlank		1019
 
 
 static int explain_e_h(GWindow gw, GEvent *event) {
@@ -100,12 +106,18 @@ static int explain_e_h(GWindow gw, GEvent *event) {
 	    event->u.control.subtype == et_radiochanged ) {
 	struct problems *p = GDrawGetUserData(gw);
 	p->ignorethis = GGadgetIsChecked(event->u.control.g);
+    } else if ( event->type==et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    system("netscape http://pfaedit.sf.net/problems.html &");
+return( true );
+	}
+return( false );
     }
-return( event->type!=et_char );
+return( true );
 }
 
 static void ExplainIt(struct problems *p, SplineChar *sc, int explain,
-	double found, double expected ) {
+	real found, real expected ) {
     GRect pos;
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[8];
@@ -234,6 +246,11 @@ return;
     }
 }
 
+static void _ExplainIt(struct problems *p, int enc, int explain,
+	real found, real expected ) {
+    ExplainIt(p,p->sc=SFMakeChar(p->fv->sf,enc),explain,found,expected);
+}
+
 /* if they deleted a point or a splineset while we were explaining then we */
 /*  need to do some fix-ups. This routine detects a deletion and lets us know */
 /*  that more processing is needed */
@@ -292,8 +309,8 @@ return( base==NULL );
 }
 
 static int HVITest(struct problems *p,BasePoint *to, BasePoint *from,
-	Spline *spline, int hasia, double ia) {
-    double yoff, xoff, angle;
+	Spline *spline, int hasia, real ia) {
+    real yoff, xoff, angle;
     int ishor=false, isvert=false, isital=false;
     int isto;
     int type;
@@ -356,8 +373,8 @@ return( false );
 /*  vector between the end points of the spline segment? */
 static int OddCPCheck(BasePoint *cp,BasePoint *base,BasePoint *v,
 	SplinePoint *sp, struct problems *p) {
-    double len = (cp->x-base->x)*v->x+ (cp->y-base->y)*v->y;
-    double xoff, yoff;
+    real len = (cp->x-base->x)*v->x+ (cp->y-base->y)*v->y;
+    real xoff, yoff;
     int msg=0;
 
     if ( len<0 || len>1 || (len==0 && &sp->me!=base) || (len==1 && &sp->me==base)) {
@@ -455,7 +472,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    first = NULL;
 	    for ( spline = test->first->next; spline!=NULL && spline!=first && !p->finish; spline=spline->to->next ) {
 		if ( !spline->knownlinear ) {
-		    double t1, t2, t3, t4;
+		    real t1, t2, t3, t4;
 		    SplineFindInflections(&spline->splines[0],&t1,&t2);
 		    SplineFindInflections(&spline->splines[1],&t3,&t4);
 		    if (( t1>0 && t1<1 ) || (t2>0 && t2<1 ) || (t3>0 && t3<1) ||
@@ -527,7 +544,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     }
 
     if ( p->ynearstd && !p->finish ) {
-	double expected;
+	real expected;
 	int msg;
 	for ( test=spl; test!=NULL && !p->finish && p->ynearstd; test=test->next ) {
 	    sp = test->first;
@@ -573,7 +590,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     }
 
     if ( p->linenearstd && !p->finish ) {
-	double ia = (90-p->fv->sf->italicangle)*(3.1415926535897932/180);
+	real ia = (90-p->fv->sf->italicangle)*(3.1415926535897932/180);
 	int hasia = p->fv->sf->italicangle!=0;
 	for ( test=spl; test!=NULL && !p->finish && p->linenearstd; test = test->next ) {
 	    first = NULL;
@@ -598,7 +615,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     }
 
     if ( p->cpnearstd && !p->finish ) {
-	double ia = (90-p->fv->sf->italicangle)*(3.1415926535897932/180);
+	real ia = (90-p->fv->sf->italicangle)*(3.1415926535897932/180);
 	int hasia = p->fv->sf->italicangle!=0;
 	for ( test=spl; test!=NULL && !p->finish && p->linenearstd; test = test->next ) {
 	    first = NULL;
@@ -639,7 +656,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    first = NULL;
 	    for ( spline = test->first->next; spline!=NULL && spline!=first && !p->finish; spline=spline->to->next ) {
 		if ( !spline->knownlinear ) {
-		    BasePoint v; double len;
+		    BasePoint v; real len;
 		    v.x = spline->to->me.x-spline->from->me.x;
 		    v.y = spline->to->me.y-spline->from->me.y;
 		    len = /*sqrt*/(v.x*v.x+v.y*v.y);
@@ -737,7 +754,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     }
 
     if ( p->ptnearhint && !p->finish ) {
-	double found, expected;
+	real found, expected;
 	for ( test=spl; test!=NULL && !p->finish && p->ptnearhint; test=test->next ) {
 	    sp = test->first;
 	    do {
@@ -860,26 +877,55 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 return( changed );
 }
 
+static int CIDCheck(struct problems *p,int cid) {
+    int found = false;
+
+    if ( (p->cidmultiple || p->cidblank) && !p->finish ) {
+	SplineFont *csf = p->fv->cidmaster;
+	int i, cnt;
+	for ( i=cnt=0; i<csf->subfontcnt; ++i )
+	    if ( cid<csf->subfonts[i]->charcnt &&
+		    SCWorthOutputting(csf->subfonts[i]->chars[cid]) )
+		++cnt;
+	if ( cnt>1 && p->cidmultiple ) {
+	    _ExplainIt(p,cid,_STR_ProbCIDMult,cnt,1);
+	    if ( p->ignorethis )
+		p->cidmultiple = false;
+	    found = true;
+	} else if ( cnt==0 && p->cidblank ) {
+	    _ExplainIt(p,cid,_STR_ProbCIDBlank,0,0);
+	    if ( p->ignorethis )
+		p->cidblank = false;
+	    found = true;
+	}
+    }
+return( found );
+}
+
 static void DoProbs(struct problems *p) {
     int i, ret;
     SplineChar *sc;
 
-    if ( p->cv!=NULL )
+    if ( p->cv!=NULL ) {
 	ret = SCProblems(p->cv,NULL,p);
-    else {
+	ret |= CIDCheck(p,p->cv->sc->enc);
+    } else {
 	ret = false;
 	for ( i=0; i<p->fv->sf->charcnt && !p->finish; ++i )
-	    if ( p->fv->selected[i] && (sc = p->fv->sf->chars[i])!=NULL ) {
-		if ( SCProblems(NULL,sc,p)) {
-		    if ( sc!=p->lastcharopened ) {
-			if ( sc->views!=NULL )
-			    GDrawRaise(sc->views->gw);
-			else
-			    CharViewCreate(sc,p->fv);
-			p->lastcharopened = sc;
+	    if ( p->fv->selected[i] ) {
+		if ( (sc = p->fv->sf->chars[i])!=NULL ) {
+		    if ( SCProblems(NULL,sc,p)) {
+			if ( sc!=p->lastcharopened ) {
+			    if ( sc->views!=NULL )
+				GDrawRaise(sc->views->gw);
+			    else
+				CharViewCreate(sc,p->fv);
+			    p->lastcharopened = sc;
+			}
+			ret = true;
 		    }
-		    ret = true;
 		}
+		ret |= CIDCheck(p,i);
 	    }
     }
     if ( !ret )
@@ -915,14 +961,18 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	ptnearhint = p->ptnearhint = GGadgetIsChecked(GWidgetGetControl(gw,CID_PtNearHint));
 	hintwidth = p->hintwidthnearval = GGadgetIsChecked(GWidgetGetControl(gw,CID_HintWidthNear));
 	direction = p->direction = GGadgetIsChecked(GWidgetGetControl(gw,CID_Direction));
+	if ( p->fv->cidmaster!=NULL ) {
+	    cidmultiple = p->cidmultiple = GGadgetIsChecked(GWidgetGetControl(gw,CID_CIDMultiple));
+	    cidblank = p->cidblank = GGadgetIsChecked(GWidgetGetControl(gw,CID_CIDBlank));
+	}
 	p->explain = true;
 	if ( doxnear )
-	    p->xval = xval = GetDoubleR(gw,CID_XNearVal,_STR_XNear,&errs);
+	    p->xval = xval = GetRealR(gw,CID_XNearVal,_STR_XNear,&errs);
 	if ( doynear )
-	    p->yval = yval = GetDoubleR(gw,CID_YNearVal,_STR_YNear,&errs);
+	    p->yval = yval = GetRealR(gw,CID_YNearVal,_STR_YNear,&errs);
 	if ( hintwidth )
-	    widthval = p->widthval = GetDoubleR(gw,CID_HintWidth,_STR_HintWidth,&errs);
-	near = p->near = GetDoubleR(gw,CID_Near,_STR_Near,&errs);
+	    widthval = p->widthval = GetRealR(gw,CID_HintWidth,_STR_HintWidth,&errs);
+	near = p->near = GetRealR(gw,CID_Near,_STR_Near,&errs);
 	if ( errs )
 return( true );
 	if ( doynearstd )
@@ -930,7 +980,7 @@ return( true );
 	GDrawSetVisible(gw,false);
 	if ( openpaths || pointstooclose /*|| missing*/ || doxnear || doynear ||
 		doynearstd || linestd || hintnopt || ptnearhint || hintwidth ||
-		direction ) {
+		direction || p->cidmultiple || p->cidblank ) {
 	    DoProbs(p);
 	}
 	p->done = true;
@@ -965,10 +1015,17 @@ void FindProblems(FontView *fv,CharView *cv) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[22];
-    GTextInfo label[22];
+    GGadgetCreateData gcd[25];
+    GTextInfo label[25];
     struct problems p;
     char xnbuf[20], ynbuf[20], widthbuf[20], nearbuf[20];
+    int ypos;
+
+    memset(&p,0,sizeof(p));
+    if ( fv==NULL ) fv = cv->fv;
+    p.fv = fv; p.cv=cv;
+    if ( cv!=NULL )
+	p.lastcharopened = cv->sc;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
@@ -979,17 +1036,11 @@ void FindProblems(FontView *fv,CharView *cv) {
     wattrs.window_title = GStringGetResource(_STR_Findprobs,NULL);
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,200);
-    pos.height = GDrawPointsToPixels(NULL,315);
+    pos.height = GDrawPointsToPixels(NULL,fv->cidmaster==NULL?315:352);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&p,&wattrs);
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
-    memset(&p,0,sizeof(p));
-
-    if ( fv==NULL ) fv = cv->fv;
-    p.fv = fv; p.cv=cv;
-    if ( cv!=NULL )
-	p.lastcharopened = cv->sc;
 
     label[0].text = (unichar_t *) _STR_OpenPaths;
     label[0].text_in_resource = true;
@@ -1169,11 +1220,48 @@ void FindProblems(FontView *fv,CharView *cv) {
     gcd[12].gd.cid = CID_Direction;
     gcd[12].creator = GCheckBoxCreate;
 
+    gcd[18].gd.pos.x = 10; gcd[18].gd.pos.y = gcd[12].gd.pos.y+22;
+    gcd[18].gd.pos.width = 200-20;
+    gcd[18].gd.flags = gg_enabled | gg_visible;
+    gcd[18].creator = GLineCreate;
+
+    if ( fv->cidmaster!=NULL ) {
+	label[21].text = (unichar_t *) _STR_CIDMultiple;
+	label[21].text_in_resource = true;
+	gcd[21].gd.label = &label[21];
+	gcd[21].gd.mnemonic = 'S';
+	gcd[21].gd.pos.x = 6; gcd[21].gd.pos.y = gcd[12].gd.pos.y+24;
+	gcd[21].gd.flags = gg_visible | gg_enabled;
+	if ( cidmultiple ) gcd[21].gd.flags |= gg_cb_on;
+	gcd[21].gd.popup_msg = GStringGetResource(_STR_CIDMultiplePopup,NULL);
+	gcd[21].gd.cid = CID_CIDMultiple;
+	gcd[21].creator = GCheckBoxCreate;
+
+	label[22].text = (unichar_t *) _STR_CIDBlank;
+	label[22].text_in_resource = true;
+	gcd[22].gd.label = &label[22];
+	gcd[22].gd.mnemonic = 'S';
+	gcd[22].gd.pos.x = 6; gcd[22].gd.pos.y = gcd[21].gd.pos.y+17; 
+	gcd[22].gd.flags = gg_visible | gg_enabled;
+	if ( cidblank ) gcd[22].gd.flags |= gg_cb_on;
+	gcd[22].gd.popup_msg = GStringGetResource(_STR_CIDBlankPopup,NULL);
+	gcd[22].gd.cid = CID_CIDBlank;
+	gcd[22].creator = GCheckBoxCreate;
+
+	ypos = gcd[22].gd.pos.y-2;
+
+	gcd[23].gd.pos.x = 10; gcd[23].gd.pos.y = gcd[22].gd.pos.y+20;
+	gcd[23].gd.pos.width = 200-20;
+	gcd[23].gd.flags = gg_enabled | gg_visible;
+	gcd[23].creator = GLineCreate;
+    } else
+	ypos = gcd[12].gd.pos.y;
+
     label[13].text = (unichar_t *) _STR_PointsNear;
     label[13].text_in_resource = true;
     gcd[13].gd.label = &label[13];
     gcd[13].gd.mnemonic = 'N';
-    gcd[13].gd.pos.x = 6; gcd[13].gd.pos.y = gcd[12].gd.pos.y+37; 
+    gcd[13].gd.pos.x = 6; gcd[13].gd.pos.y = ypos+37; 
     gcd[13].gd.flags = gg_visible | gg_enabled;
     gcd[13].creator = GLabelCreate;
 
@@ -1210,11 +1298,6 @@ void FindProblems(FontView *fv,CharView *cv) {
     gcd[17].gd.pos.width = pos.width-4; gcd[17].gd.pos.height = pos.height-2;
     gcd[17].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
     gcd[17].creator = GGroupCreate;
-
-    gcd[18].gd.pos.x = 10; gcd[18].gd.pos.y = gcd[12].gd.pos.y+22;
-    gcd[18].gd.pos.width = 200-20;
-    gcd[18].gd.flags = gg_enabled | gg_visible;
-    gcd[18].creator = GLineCreate;
 
     GGadgetsCreate(gw,gcd);
 

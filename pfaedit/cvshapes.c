@@ -48,7 +48,7 @@ return( to );
 }
 
 void CVMouseDownShape(CharView *cv) {
-    double radius = CVRoundRectRadius(); int points = CVPolyStarPoints();
+    real radius = CVRoundRectRadius(); int points = CVPolyStarPoints();
     SplinePoint *last;
     int i;
 
@@ -97,13 +97,13 @@ void CVMouseDownShape(CharView *cv) {
     SCUpdateAll(cv->sc);
 }
 
-static void SetCorner(SplinePoint *sp,double x, double y) {
+static void SetCorner(SplinePoint *sp,real x, real y) {
     sp->me.x = x; sp->me.y = y;
     sp->nextcp = sp->me;
     sp->prevcp = sp->me;
 }
 
-static void SetCurve(SplinePoint *sp,double x, double y,double xrad, double yrad) {
+static void SetCurve(SplinePoint *sp,real x, real y,real xrad, real yrad) {
     sp->me.x = x; sp->me.y = y;
     sp->nextcp = sp->me;
     sp->nextcp.x += .552*xrad;
@@ -114,7 +114,7 @@ static void SetCurve(SplinePoint *sp,double x, double y,double xrad, double yrad
     sp->nonextcp = sp->noprevcp = (xrad==0 && yrad==0);
 }
 
-static void SetPTangent(SplinePoint *sp,double x, double y,double xrad, double yrad) {
+static void SetPTangent(SplinePoint *sp,real x, real y,real xrad, real yrad) {
     sp->me.x = x; sp->me.y = y;
     sp->nextcp = sp->me;
     sp->prevcp = sp->me;
@@ -123,7 +123,7 @@ static void SetPTangent(SplinePoint *sp,double x, double y,double xrad, double y
     sp->noprevcp = (xrad==0 && yrad==0);
 }
 
-static void SetNTangent(SplinePoint *sp,double x, double y,double xrad, double yrad) {
+static void SetNTangent(SplinePoint *sp,real x, real y,real xrad, real yrad) {
     sp->me.x = x; sp->me.y = y;
     sp->nextcp = sp->me;
     sp->nextcp.x += .552*xrad;
@@ -143,11 +143,11 @@ static void RedoActiveSplineSet(SplineSet *ss) {
 }
 
 void CVMouseMoveShape(CharView *cv) {
-    double radius = CVRoundRectRadius(); int points = CVPolyStarPoints();
-    double xrad,yrad;
-    double r2;
+    real radius = CVRoundRectRadius(); int points = CVPolyStarPoints();
+    real xrad,yrad;
+    real r2;
     SplinePoint *sp;
-    double base, off;
+    real base, off;
     int i;
 
     if ( cv->active_shape==NULL )

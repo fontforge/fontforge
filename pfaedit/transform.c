@@ -27,12 +27,13 @@
 #include "pfaeditui.h"
 #include "ustring.h"
 #include <math.h>
+#include <gkeysym.h>
 
 #define TCnt	3
 
 typedef struct transdata {
     void *userdata;
-    void (*transfunc)(void *,double trans[6],int otype,BVTFunc *);
+    void (*transfunc)(void *,real trans[6],int otype,BVTFunc *);
     int  (*getorigin)(void *,BasePoint *bp,int otype);
     GWindow tblock[TCnt];
     GWindow gw;
@@ -83,8 +84,8 @@ static GTextInfo transformtypes[] = {
     { (unichar_t *) "Skew...", NULL, 0, 0, (void *) 0x20, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};
 
-static void skewselect(BVTFunc *bvtf,double t) {
-    double off, bestoff;
+static void skewselect(BVTFunc *bvtf,real t) {
+    real off, bestoff;
     int i, best;
 
     bestoff = 10; best = 0;
@@ -103,8 +104,8 @@ static void skewselect(BVTFunc *bvtf,double t) {
 
 static int Trans_OK(GGadget *g, GEvent *e) {
     GWindow tw;
-    double transform[6], trans[6], t[6];
-    double angle;
+    real transform[6], trans[6], t[6];
+    real angle;
     int i, index, err;
     BasePoint base;
     int origin, bvpos=0;
@@ -133,12 +134,12 @@ static int Trans_OK(GGadget *g, GEvent *e) {
 	      case 0:		/* Do Nothing */
 	      break;
 	      case 1:		/* Move */
-		trans[4] = GetDouble(tw,CID_XMove,"X Movement",&err);
-		trans[5] = GetDouble(tw,CID_YMove,"Y Movement",&err);
+		trans[4] = GetReal(tw,CID_XMove,"X Movement",&err);
+		trans[5] = GetReal(tw,CID_YMove,"Y Movement",&err);
 		bvts[bvpos].x = trans[4]; bvts[bvpos].y = trans[5]; bvts[bvpos++].func = bvt_transmove;
 	      break;
 	      case 2:		/* Rotate */
-		angle = GetDouble(tw,CID_Angle,"Rotation Angle",&err);
+		angle = GetReal(tw,CID_Angle,"Rotation Angle",&err);
 		if ( GGadgetIsChecked( GWidgetGetControl(tw,CID_Clockwise)) )
 		    angle = -angle;
 		if ( fmod(angle,90)!=0 )
@@ -155,12 +156,12 @@ static int Trans_OK(GGadget *g, GEvent *e) {
 		trans[2] = -(trans[1] = sin(angle));
 	      break;
 	      case 3:		/* Scale Uniformly */
-		trans[0] = trans[3] = GetDouble(tw,CID_Scale,"Scale Factor",&err)/100.0;
+		trans[0] = trans[3] = GetReal(tw,CID_Scale,"Scale Factor",&err)/100.0;
 		bvts[0].func = bvt_none;		/* Bad trans=> No trans */
 	      break;
 	      case 4:		/* Scale */
-		trans[0] = GetDouble(tw,CID_XScale,"X Scale Factor",&err)/100.0;
-		trans[3] = GetDouble(tw,CID_YScale,"Y Scale Factor",&err)/100.0;
+		trans[0] = GetReal(tw,CID_XScale,"X Scale Factor",&err)/100.0;
+		trans[3] = GetReal(tw,CID_YScale,"Y Scale Factor",&err)/100.0;
 		bvts[0].func = bvt_none;		/* Bad trans=> No trans */
 	      break;
 	      case 5:		/* Flip */
@@ -173,7 +174,7 @@ static int Trans_OK(GGadget *g, GEvent *e) {
 		}
 	      break;
 	      case 6:		/* Skew */
-		angle = GetDouble(tw,CID_SkewAng,"Skew Angle",&err);
+		angle = GetReal(tw,CID_SkewAng,"Skew Angle",&err);
 		if ( GGadgetIsChecked( GWidgetGetControl(tw,CID_Clockwise)) )
 		    angle = -angle;
 		angle *= 3.1415926535897932/180;
@@ -214,7 +215,7 @@ return(true);
 	}
 	bvts[bvpos++].func = bvt_none;		/* Done */
 	for ( i=0; i<6; ++i )
-	    if ( DoubleNear(transform[i],0)) transform[i] = 0;
+	    if ( RealNear(transform[i],0)) transform[i] = 0;
 	transform[4] += base.x;
 	transform[5] += base.y;
 
@@ -261,7 +262,11 @@ static int trans_e_h(GWindow gw, GEvent *event) {
     } else if ( event->type == et_map ) {
 	/* Above palettes */
 	GDrawRaise(gw);
-    } else if ( event->type == et_char ) {
+    } else if ( event->type==et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    system("netscape http://pfaedit.sf.net/transform.html &");
+return( true );
+	}
 return( false );
     }
 return( true );
@@ -442,7 +447,7 @@ static void MakeTransBlock(TransData *td,int bnum) {
     GDrawSetVisible(gw,true);
 }
 
-void TransformDlgCreate(void *data,void (*transfunc)(void *,double *,int,BVTFunc *),
+void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *),
 	int (*getorigin)(void *,BasePoint *,int)) {
     GRect pos;
     GWindow gw;

@@ -26,7 +26,12 @@
  */
 #include "pfaeditui.h"
 #include <ustring.h>
+#include <utype.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <dirent.h>
+#include "gfile.h"
+#include "gresource.h"
 
 static int enc_num = em_base;
 
@@ -478,4 +483,456 @@ return;
     ParseEncodingFile(filename);
     free(fn); free(filename);
     DumpPfaEditEncodings();
+}
+
+/* ************************************************************************** */
+/* ****************************** CID Encodings ***************************** */
+/* ************************************************************************** */
+struct cidmap {
+    char *registry, *ordering;
+    int supplement, maxsupple;
+    int cidmax;			/* Max cid found in the charset */
+    int namemax;		/* Max cid with useful info */
+    unichar_t *unicode;
+    char **name;
+    struct cidmap *next;
+};
+
+static struct cidmap *cidmaps = NULL;
+
+int CID2NameEnc(struct cidmap *map,int cid, char *buffer, int len) {
+    int enc = -1;
+
+    if ( map==NULL )
+	snprintf(buffer,len,"cid_%d", cid);
+    else if ( cid<map->namemax && map->name[cid]!=NULL )
+	strncpy(buffer,map->name[cid],len);
+    else if ( cid==0 || (cid<map->namemax && map->unicode[cid]!=0 )) {
+	enc = map->unicode[cid];
+	if ( psunicodenames[enc]!=NULL )
+	    strncpy(buffer,psunicodenames[enc],len);
+	else
+	    snprintf(buffer,len,"uni%04X", enc);
+    } else
+	snprintf(buffer,len,"%s_%d", map->ordering, cid);
+return( enc );
+}
+
+int NameEnc2CID(struct cidmap *map,int enc, char *name) {
+    int i;
+
+    if ( map==NULL )
+return( -1 );
+    if ( enc!=-1 ) {
+	for ( i=0; i<map->namemax; ++i )
+	    if ( map->unicode[i]==enc )
+return( i );
+    } else {
+	for ( i=0; i<map->namemax; ++i )
+	    if ( map->name[i]!=NULL && strcmp(map->name[i],name)==0 )
+return( i );
+    }
+return( -1 );
+}
+
+int MaxCID(struct cidmap *map) {
+return( map->cidmax );
+}
+
+static char *SearchDirForCidMap(char *dir,char *registry,char *ordering,
+	int supplement,char **maybefile) {
+    char maybe[NAME_MAX+1];
+    struct dirent *ent;
+    DIR *d;
+    int len, rlen = strlen(registry), olen=strlen(ordering);
+    char *pt, *end, *ret;
+    int test, best = -1;
+
+    if ( *maybefile!=NULL ) {
+	char *pt = strrchr(*maybefile,'.');
+	while ( pt>*maybefile && isdigit(pt[-1]))
+	    --pt;
+	best = strtol(pt,NULL,10);
+    }
+
+    d = opendir(dir);
+    if ( d==NULL )
+return( NULL );
+    while ( (ent = readdir(d))!=NULL ) {
+	if ( (len = strlen(ent->d_name))<8 )
+    continue;
+	if ( strcmp(ent->d_name+len-7,".cidmap")!=0 )
+    continue;
+	if ( strncmp(ent->d_name,registry,rlen)!=0 || ent->d_name[rlen]!='-' )
+    continue;
+	pt = ent->d_name+rlen+1;
+	if ( strncmp(pt,ordering,olen)!=0 || pt[olen]!='-' )
+    continue;
+	pt += olen+1;
+	if ( !isdigit(*pt))
+    continue;
+	test = strtol(pt,&end,10);
+	if ( *end!='.' )
+    continue;
+	if ( test>=supplement ) {
+	    ret = galloc(strlen(dir)+1+len+1);
+	    strcpy(ret,dir);
+	    strcat(ret,"/");
+	    strcat(ret,ent->d_name);
+	    closedir(d);
+return( ret );
+	} else if ( test>best ) {
+	    best = test;
+	    strcpy(maybe,ent->d_name);
+	}
+    }
+    closedir(d);
+    if ( best>-1 ) {
+	ret = galloc(strlen(dir)+1+strlen(maybe)+1);
+	strcpy(ret,dir);
+	strcat(ret,"/");
+	strcat(ret,maybe);
+	*maybefile = ret;
+    }
+return( NULL );
+}
+
+static struct cidmap *MakeDummyMap(char *registry,char *ordering,int supplement) {
+    struct cidmap *ret = galloc(sizeof(struct cidmap));
+
+    ret->registry = copy(registry);
+    ret->ordering = copy(ordering);
+    ret->supplement = ret->maxsupple = supplement;
+    ret->cidmax = ret->namemax = 0;
+    ret->unicode = NULL; ret->name = NULL;
+    ret->next = cidmaps;
+    cidmaps = ret;
+return( ret );
+}
+
+static struct cidmap *LoadMapFromFile(char *file,char *registry,char *ordering,
+	int supplement) {
+    struct cidmap *ret = galloc(sizeof(struct cidmap));
+    char *pt = strrchr(file,'.');
+    FILE *f;
+    int cid1, cid2, uni, cnt, i;
+    char name[100];
+
+    while ( pt>file && isdigit(pt[-1]))
+	--pt;
+    ret->supplement = ret->maxsupple = strtol(pt,NULL,10);
+    if ( supplement>ret->maxsupple )
+	ret->maxsupple = supplement;
+    ret->registry = copy(registry);
+    ret->ordering = copy(ordering);
+    ret->next = cidmaps;
+    cidmaps = ret;
+
+    f = fopen( file,"r" );
+    if ( f==NULL ) {
+	fprintf( stderr, "Couldn't open %s\n", file );
+	ret->cidmax = ret->namemax = 0;
+	ret->unicode = NULL; ret->name = NULL;
+    } else {
+	fscanf( f, "%d %d", &ret->cidmax, &ret->namemax );
+	ret->unicode = gcalloc(ret->namemax+1,sizeof(unichar_t));
+	ret->name = gcalloc(ret->namemax+1,sizeof(char *));
+	while ( 1 ) {
+	    cnt=fscanf( f, "%d..%d %x", &cid1, &cid2, &uni );
+	    if ( cnt<=0 )
+	break;
+	    if ( cid1>ret->namemax )
+	continue;
+	    if ( cnt==3 ) {
+		if ( cid2>ret->namemax ) cid2 = ret->namemax;
+		for ( i=cid1; i<=cid2; ++i )
+		    ret->unicode[i] = uni++;
+	    } else if ( cnt==1 ) {
+		if ( fscanf(f,"%x", &uni )==1 )
+		    ret->unicode[cid1] = uni;
+		else if ( fscanf(f," /%s", name )==1 )
+		    ret->name[cid1] = copy(name);
+	    }
+	}
+	fclose(f);
+    }
+    free(file);
+return( ret );
+}
+
+struct cidmap *FindCidMap(char *registry,char *ordering,int supplement) {
+    struct cidmap *map, *maybe=NULL;
+    char *file, *maybefile=NULL;
+    int maybe_sup = -1;
+    static int buts[] = { _STR_UseIt, _STR_Search, 0 };
+    static int buts2[] = { _STR_UseIt, _STR_GiveUp, 0 };
+    unichar_t ubuf[100]; char buf[100];
+
+    for ( map = cidmaps; map!=NULL; map = map->next ) {
+	if ( strcmp(map->registry,registry)==0 && strcmp(map->ordering,ordering)==0 ) {
+	    if ( supplement<=map->supplement )
+return( map );
+	    else if ( maybe==NULL || maybe->supplement<map->supplement )
+		maybe = map;
+	}
+    }
+    if ( maybe!=NULL && supplement<=maybe->maxsupple )
+return( maybe );	/* User has said it's ok to use maybe at this supplement level */
+
+    file = SearchDirForCidMap(".",registry,ordering,supplement,&maybefile);
+    if ( file==NULL )
+	file = SearchDirForCidMap(GResourceProgramDir,registry,ordering,supplement,&maybefile);
+    if ( file==NULL )
+	file = SearchDirForCidMap("/usr/share/pfaedit",registry,ordering,supplement,&maybefile);
+
+    if ( file==NULL && (maybe!=NULL || maybefile!=NULL)) {
+	if ( maybefile!=NULL ) {
+	    char *pt = strrchr(maybefile,'.');
+	    while ( pt>maybefile && isdigit(pt[-1]))
+		--pt;
+	    maybe_sup = strtol(pt,NULL,10);
+	    if ( maybe!=NULL && maybe->supplement >= maybe_sup ) {
+		free(maybefile); maybefile = NULL;
+		maybe_sup = maybe->supplement;
+	    } else
+		maybe = NULL;
+	}
+	if ( maybe!=NULL )
+	    maybe_sup = maybe->supplement;
+	if ( GWidgetAskR(_STR_UseCidMap,buts,0,1,_STR_SearchForCIDMap,
+		registry,ordering,supplement,maybe_sup)==0 ) {
+	    if ( maybe!=NULL ) {
+		maybe->maxsupple = supplement;
+return( maybe );
+	    } else {
+		file = maybefile;
+		maybefile = NULL;
+	    }
+	}
+    }
+
+    if ( file==NULL ) {
+	unichar_t *uret;
+	snprintf(buf,sizeof(buf),"%s-%s-*.cidmap", registry, ordering );
+	uc_strcpy(ubuf,buf);
+	uret = GWidgetOpenFile(GStringGetResource(_STR_FindCharset,NULL),NULL,ubuf,NULL);
+	if ( uret==NULL ) {
+	    if ( GWidgetAskR(_STR_UseCidMap,buts2,0,1,_STR_AreYouSureCharset)==0 ) {
+		if ( maybe!=NULL ) {
+		    maybe->maxsupple = supplement;
+return( maybe );
+		} else {
+		    file = maybefile;
+		    maybefile = NULL;
+		}
+	    }
+	} else {
+	    file = u2def_copy(uret);
+	    free(uret);
+	}
+    }
+
+    free(maybefile);
+    if ( file!=NULL )
+return( LoadMapFromFile(file,registry,ordering,supplement));
+
+return( MakeDummyMap(registry,ordering,supplement));
+}
+
+void SFEncodeToMap(SplineFont *sf,struct cidmap *map) {
+    SplineChar **chars, *sc;
+    int i,max=0;
+    RefChar *refs, *rnext, *rprev;
+    SplineSet *new, *spl;
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL ) {
+	sc->enc = NameEnc2CID(map,sc->unicodeenc,sc->name);
+	if ( sc->enc>max ) max = sc->enc;
+    }
+
+    /* Remove references to characters which aren't in the new map (if any) */
+    /* Don't need to fix up dependencies, because we throw the char away */
+    for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL ) {
+	for ( rprev = NULL, refs=sc->refs; refs!=NULL; refs=rnext ) {
+	    rnext = refs->next;
+	    if ( refs->sc->enc==-1 ) {
+		new = refs->splines;
+		if ( new!=NULL ) {
+		    for ( spl = new; spl->next!=NULL; spl = spl->next );
+		    spl->next = sc->splines;
+		    sc->splines = new;
+		}
+		refs->splines=NULL;
+		RefCharFree(refs);
+		if ( rprev==NULL )
+		    sc->refs = rnext;
+		else
+		    rprev->next = rnext;
+	    } else
+		rprev = refs;
+	}
+    }
+
+    chars = gcalloc(max+1,sizeof(SplineChar *));
+    for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL ) {
+	if ( sc->enc==-1 )
+	    SplineCharFree(sc);
+	else
+	    chars[sc->enc] = sc;
+    }
+
+    free(sf->chars);
+    sf->charcnt = max;
+    sf->chars = chars;
+}
+
+struct block {
+    int cur, tot;
+    char **maps;
+    char **dirs;
+};
+
+static void AddToBlock(struct block *block,char *mapname, char *dir) {
+    int i, val, j;
+    int len = strlen(mapname);
+
+    if ( mapname[len-7]=='.' ) len -= 7;
+    for ( i=0; i<block->cur; ++i ) {
+	if ( (val=strncmp(block->maps[i],mapname,len))==0 )
+return;		/* Duplicate */
+	else if ( val>0 )
+    break;
+    }
+    if ( block->tot==0 ) {
+	block->tot = 10;
+	block->maps = galloc(10*sizeof(char *));
+	block->dirs = galloc(10*sizeof(char *));
+    } else if ( block->cur>=block->tot ) {
+	block->tot += 10;
+	block->maps = grealloc(block->maps,block->tot*sizeof(char *));
+	block->dirs = grealloc(block->dirs,block->tot*sizeof(char *));
+    }
+    for ( j=block->cur; j>=i; --j ) {
+	block->maps[j+1] = block->maps[j];
+	block->dirs[j+1] = block->dirs[j];
+    }
+    block->maps[i] = copyn(mapname,len);
+    block->dirs[i] = dir;
+    ++block->cur;
+}
+
+static void FindMapsInDir(struct block *block,char *dir) {
+    struct dirent *ent;
+    DIR *d;
+    int len;
+    char *pt, *pt2;
+
+    /* format of cidmap filename "?*-?*-[0-9]*.cidmap" */
+    d = opendir(dir);
+    if ( d==NULL )
+return;
+    while ( (ent = readdir(d))!=NULL ) {
+	if ( (len = strlen(ent->d_name))<8 )
+    continue;
+	if ( strcmp(ent->d_name+len-7,".cidmap")!=0 )
+    continue;
+	pt = strchr(ent->d_name, '-');
+	if ( pt==NULL || pt==ent->d_name )
+    continue;
+	pt2 = strchr(pt+1, '-' );
+	if ( pt2==NULL || pt2==pt+1 || !isdigit(pt2[1]))
+    continue;
+	AddToBlock(block,ent->d_name,dir);
+    }
+}
+
+struct cidmap *AskUserForCIDMap(SplineFont *sf) {
+    struct block block;
+    struct cidmap *map = NULL;
+    char buffer[200];
+    const unichar_t **choices;
+    int i,ret;
+    static unichar_t cidwild[] = { '?','*','-','?','*','-','[','0','-','9',']','*','.','c','i','d','m','a','p',  '\0' };
+    char *filename=NULL;
+    char *reg, *ord, *pt;
+    int supplement;
+
+    memset(&block,'\0',sizeof(block));
+    for ( map = cidmaps; map!=NULL; map = map->next ) {
+	sprintf(buffer,"%s-%s-%d", map->registry, map->ordering, map->supplement);
+	AddToBlock(&block,buffer,NULL);
+    }
+    FindMapsInDir(&block,".");
+    FindMapsInDir(&block,GResourceProgramDir);
+    FindMapsInDir(&block,"/usr/share/pfaedit");
+
+    choices = gcalloc(block.cur+2,sizeof(unichar_t *));
+    choices[0] = u_copy(GStringGetResource(_STR_Browse,NULL));
+    for ( i=0; i<block.cur; ++i )
+	choices[i+1] = uc_copy(block.maps[i]);
+    ret = GWidgetChoicesR(_STR_FindCharset,choices,i+1,0,_STR_SelectCIDOrdering);
+    for ( i=0; i<=block.cur; ++i )
+	free( (unichar_t *) choices[i] );
+    free(choices);
+    if ( ret==0 ) {
+	unichar_t *uret = GWidgetOpenFile(GStringGetResource(_STR_FindCharset,NULL),NULL,cidwild,NULL);
+	if ( uret==NULL )
+	    ret = -1;
+	else {
+	    filename = u2def_copy(uret);
+	    free(uret);
+	}
+    }
+    if ( ret!=-1 ) {
+	if ( filename!=NULL )
+	    /* Do nothing for now */;
+	else if ( block.dirs[ret-1]!=NULL ) {
+	    filename = galloc(strlen(block.dirs[ret-1])+strlen(block.maps[ret-1])+3+8);
+	    strcpy(filename,block.dirs[ret-1]);
+	    strcat(filename,"/");
+	    strcat(filename,block.maps[ret-1]);
+	    strcat(filename,".cidmap");
+	}
+	if ( ret!=0 )
+	    reg = block.maps[ret-1];
+	else {
+	    reg = strrchr(filename,'/');
+	    if ( reg==NULL ) reg = filename;
+	    else ++reg;
+	    reg = copy(reg);
+	}
+	pt = strchr(reg,'-');
+	if ( pt==NULL )
+	    ret = -1;
+	else {
+	    *pt = '\0';
+	    ord = pt+1;
+	    pt = strchr(ord,'-');
+	    if ( pt==NULL )
+		ret = -1;
+	    else {
+		*pt = '\0';
+		supplement = strtol(pt+1,NULL,10);
+	    }
+	}
+	if ( ret == -1 )
+	    /* No map */;
+	else if ( filename==NULL )
+	    map = FindCidMap(reg,ord,supplement);
+	else
+	    map = LoadMapFromFile(filename,reg,ord,supplement);
+	if ( reg!=block.maps[ret-1] )
+	    free(reg);
+	/*free(filename);*/	/* Freed by loadmap */
+    }
+    for ( i=0; i<block.cur; ++i )
+	free( block.maps[i]);
+    free(block.maps);
+    free(block.dirs);
+    if ( map!=NULL ) {
+	sf->cidregistry = copy(map->registry);
+	sf->ordering = copy(map->ordering);
+	sf->supplement = map->supplement;
+    }
+return( map );
 }

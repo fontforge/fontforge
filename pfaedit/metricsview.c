@@ -26,6 +26,7 @@
  */
 #include "pfaeditui.h"
 #include "nomen.h"
+#include <gkeysym.h>
 #include <string.h>
 #include <ustring.h>
 #include <utype.h>
@@ -399,7 +400,7 @@ return( true );
 	if ( *end )
 	    GDrawBeep(NULL);
 	else if ( val!=bb.minx ) {
-	    double transform[6];
+	    real transform[6];
 	    transform[0] = transform[3] = 1.0;
 	    transform[1] = transform[2] = transform[5] = 0;
 	    transform[4] = val-bb.minx;
@@ -436,7 +437,7 @@ return( true );
 	    /* Width is an integer. Adjust the lbearing so that the rbearing */
 	    /*  remains what was just typed in */
 	    if ( sc->width!=bb.maxx+val ) {
-		double transform[6];
+		real transform[6];
 		transform[0] = transform[3] = 1.0;
 		transform[1] = transform[2] = transform[5] = 0;
 		transform[4] = sc->width-val-bb.maxx;
@@ -1057,7 +1058,7 @@ static void MVMenuCenter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     int i;
     DBounds bb;
-    double transform[6];
+    real transform[6];
     SplineChar *sc;
 
     for ( i=0; i<mv->charcnt; ++i )
@@ -1274,6 +1275,9 @@ return;
 }
 
 static void MVChar(MetricsView *mv,GEvent *event) {
+    if ( event->u.chr.keysym == GK_Help ) {
+	MenuHelp(NULL,NULL,NULL);	/* Menu does F1 */
+    }
 }
 
 static int hitsbit(BDFChar *bc, int x, int y) {
@@ -1489,7 +1493,7 @@ return;
 		mv->fv->sf->changed = true;
 	    }
 	} else {
-	    double transform[6];
+	    real transform[6];
 	    DBounds bb;
 	    SplineCharFindBounds(sc,&bb);
 	    transform[0] = transform[3] = 1.0;

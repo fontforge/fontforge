@@ -418,6 +418,7 @@ return( true );
 }
 
 void GGadgetPreparePopup(GWindow base,const unichar_t *msg) {
+    GPoint pt;
     GGadgetEndPopup();
     if ( msg==NULL )
 return;
@@ -438,6 +439,9 @@ return;
 	GDrawSetFont(popup,popup_font);
     }
     GDrawGetSize(base,&popup_within);
+    pt.x = pt.y = 0;
+    GDrawTranslateCoordinates(base,GDrawGetRoot(GDrawGetDisplayOfWindow(popup)), &pt);
+    popup_within.x = pt.x; popup_within.y = pt.y;
     popup_timer = GDrawRequestTimer(popup,popup_delay,0,(void *) msg);
 }
 
@@ -825,6 +829,15 @@ return( NULL );
 
 GTextInfo *GGadgetGetListItem(GGadget *g,int32 pos) {
     if ( g->funcs->get_list_item!=NULL )
+return((g->funcs->get_list_item)(g,pos));
+
+return( NULL );
+}
+
+GTextInfo *GGadgetGetListItemSelected(GGadget *g) {
+    int pos = GGadgetGetFirstListSelectedItem(g);
+
+    if ( pos!=-1 && g->funcs->get_list_item!=NULL )
 return((g->funcs->get_list_item)(g,pos));
 
 return( NULL );

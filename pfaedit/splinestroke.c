@@ -30,8 +30,8 @@
 
 typedef struct joininfo {
     SplinePoint *from, *to;
-    double tprev;
-    double tnext;
+    real tprev;
+    real tnext;
     BasePoint inter;
 } JointPoint;
 
@@ -39,12 +39,12 @@ typedef struct joininfo {
 /* the plus point is where we go when we rotate the line's direction by +90degrees */
 /*  and then move radius in that direction. minus is when we rotate -90 and */
 /*  then move */	/* counter-clockwise */
-static double SplineExpand(Spline *spline,double t,StrokeInfo *si,BasePoint *plus, BasePoint *minus) {
+static real SplineExpand(Spline *spline,real t,StrokeInfo *si,BasePoint *plus, BasePoint *minus) {
     Spline1D *xsp = &spline->splines[0], *ysp = &spline->splines[1];
-    double xslope = (3*xsp->a*t+2*xsp->b)*t + xsp->c;
-    double yslope = (3*ysp->a*t+2*ysp->b)*t + ysp->c;
+    real xslope = (3*xsp->a*t+2*xsp->b)*t + xsp->c;
+    real yslope = (3*ysp->a*t+2*ysp->b)*t + ysp->c;
     BasePoint base;
-    double angle, lineangle, c,s;
+    real angle, lineangle, c,s;
 
     base.x = ((xsp->a*t+xsp->b)*t+xsp->c)*t + xsp->d;
     base.y = ((ysp->a*t+ysp->b)*t+ysp->c)*t + ysp->d;
@@ -91,8 +91,8 @@ static double SplineExpand(Spline *spline,double t,StrokeInfo *si,BasePoint *plu
 return( angle );
 }
 
-static SplinePoint *makequartercircle(double x, double y, double radius,
-	double xmul, double ymul,SplinePoint *prev) {
+static SplinePoint *makequartercircle(real x, real y, real radius,
+	real xmul, real ymul,SplinePoint *prev) {
     SplinePoint *here = gcalloc(1,sizeof(SplinePoint));
 
     here->me.x = x;
@@ -114,9 +114,9 @@ return( here );
 
 static void StrokeEnd(SplinePoint *base, StrokeInfo *si, SplinePoint **_plus, SplinePoint **_minus) {
     SplinePoint *plus, *minus, *cur, *mid1, *mid2;
-    double c,s;
-    double angle;
-    double sign;
+    real c,s;
+    real angle;
+    real sign;
 
     if ( base->next==NULL && base->prev==NULL ) {
 	/* A single point, is kind of dull.
@@ -198,10 +198,10 @@ static void StrokeEnd(SplinePoint *base, StrokeInfo *si, SplinePoint **_plus, Sp
 
 /* Is this the inner intersection or the outer one (the inner one is on both splines) */
 /*  the outer one is beyond both */
-static int IntersectLines(JointPoint *inter,BasePoint *p1,double sx1, double sy1,
-	BasePoint *p2, double sx2, double sy2) {
-    double t1,t2;
-    double denom;
+static int IntersectLines(JointPoint *inter,BasePoint *p1,real sx1, real sy1,
+	BasePoint *p2, real sx2, real sy2) {
+    real t1,t2;
+    real denom;
 
     denom = (sx1*sy2-sx2*sy1);
     if ( denom==0 ) {
@@ -215,7 +215,7 @@ static int IntersectLines(JointPoint *inter,BasePoint *p1,double sx1, double sy1
 	else if ( sy1!=0 ) {
 	    t2 = p2->y/sy2;
 	    t1 = p1->y/sy1;
-	    t1 = DoubleNear(p2->x-t2*sx2,p1->x-t1*sx1)?0: 1;
+	    t1 = RealNear(p2->x-t2*sx2,p1->x-t1*sx1)?0: 1;
 	} else
 	    t1 = 1;
     } else {
@@ -232,7 +232,7 @@ return( t1<=0 );	/* if t1 < 0 then the intersection point is actually */
 			/*  but beyond its endpoint... */
 }
 
-static void CirclePoint(TPoint *tp,BasePoint *center,BasePoint *dir,double radius) {
+static void CirclePoint(TPoint *tp,BasePoint *center,BasePoint *dir,real radius) {
     BasePoint off;
     off.x = dir->x-center->x;
     off.y = dir->y-center->y;
@@ -286,7 +286,7 @@ static void MakeJoints(JointPoint *ret,StrokeInfo *si,
 /* This makes plus joins clockwise and minus joins counter */
 static void StrokeJoint(SplinePoint *base,StrokeInfo *si,JointPoint *plus,JointPoint *minus) {
     BasePoint nplus, nminus, pplus,pminus;
-    double nangle, pangle;
+    real nangle, pangle;
     int pinner;
 
     SplineIsLinearMake(base->prev);
@@ -298,7 +298,7 @@ static void StrokeJoint(SplinePoint *base,StrokeInfo *si,JointPoint *plus,JointP
     plus->tprev = minus->tprev = 1; plus->tnext = minus->tnext = 0;
     if (( base->pointtype==pt_curve && !base->nonextcp && !base->noprevcp ) ||
 	    ( base->pointtype==pt_tangent && (!base->nonextcp || !base->noprevcp)) ||
-	    DoubleNearish(pangle,nangle) ) {
+	    RealNearish(pangle,nangle) ) {
 	/* If the two splines are tangent at the base, then everything is */
 	/*  simple, there is no join, things match up perfectly */
 	plus->from = plus->to = calloc(1,sizeof(SplinePoint));
@@ -349,8 +349,8 @@ SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
     					/* minus expects splines added on next*/
     SplinePoint *pto, *mto;
     TPoint pmids[4], mmids[4];
-    double p_tlast, m_tlast, p_tcur, m_tcur;
-    double t_start, t_end;
+    real p_tlast, m_tlast, p_tcur, m_tcur;
+    real t_start, t_end;
     int i;
     Spline *first, *spline;
 
@@ -407,7 +407,7 @@ return( ssplus );
 #endif
 	for ( i=0; i<4; ++i ) {
 	    BasePoint p,m;
-	    double t = t_start + (i+1)*(t_end-t_start)/5;
+	    real t = t_start + (i+1)*(t_end-t_start)/5;
 	    pmids[i].t = (t-p_tlast)/(p_tcur-p_tlast);
 	    mmids[i].t = (t-m_tlast)/(m_tcur-m_tlast);
 	    SplineExpand(spline,t,si,&p,&m);

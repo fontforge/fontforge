@@ -167,27 +167,6 @@ static void SFDDumpImage(FILE *sfd,ImageList *img) {
     fprintf(sfd,"\nEndImage\n" );
 }
 
-#if 0
-static void SFDDumpType1(FILE *sfd,SplineChar *sc) {
-    struct enc85 enc;
-    uint8 *pt, *end;
-
-    if ( sc->origtype1!=NULL ) {
-	fprintf( sfd, "OrigType1: %d\n", sc->origlen );
-	memset(&enc,'\0',sizeof(enc));
-	enc.sfd = sfd;
-	pt = sc->origtype1;
-	end = pt + sc->origlen;
-	while ( pt<end ) {
-	    SFDEnc85(&enc,*pt);
-	    ++pt;
-	}
-	SFDEnc85EndEnc(&enc);
-	fprintf(sfd,"\nEndType1\n" );
-    }
-}
-#endif
-
 static void SFDDumpHintList(FILE *sfd,char *key, StemInfo *h) {
     HintInstance *hi;
 
@@ -257,9 +236,6 @@ return;
 		ref->transform[0], ref->transform[1], ref->transform[2],
 		ref->transform[3], ref->transform[4], ref->transform[5]);
     }
-#if 0
-    SFDDumpType1(sfd,sc);
-#endif
     if ( sc->backgroundsplines!=NULL ) {
 	fprintf(sfd, "Back\n" );
 	SFDDumpSplineSet(sfd,sc->backgroundsplines);
@@ -315,33 +291,6 @@ static void SFDDumpBitmapFont(FILE *sfd,BDFFont *bdf) {
     }
     fprintf( sfd, "EndBitmapFont\n" );
 }
-
-#if 0
-static void SFDDumpSubrs(FILE *sfd,struct pschars *subrs) {
-    int i;
-    uint8 *pt, *end;
-    struct enc85 enc;
-    /* These guys are unnamed strings of random bytes */
-
-    memset(&enc,'\0',sizeof(enc));
-    enc.sfd = sfd;
-
-    fprintf( sfd, "BeginSubrs: %d\n", subrs->next );
-    for ( i=0; i<subrs->next; ++i ) {
-	fprintf( sfd, "%d", subrs->lens[i]);
-	if ( i==subrs->next-1 || i%30==29 )
-	    putc('\n',sfd);
-	else
-	    putc(' ',sfd);
-    }
-    for ( i=0; i<subrs->next; ++i ) {
-	for ( pt = subrs->values[i], end=pt+subrs->lens[i]; pt<end; ++pt )
-	    SFDEnc85(&enc,*pt);
-    }
-    SFDEnc85EndEnc(&enc);
-    fprintf( sfd, "EndSubrs\n" );
-}
-#endif
 
 static void SFDDumpPrivate(FILE *sfd,struct psdict *private) {
     int i;
@@ -450,19 +399,11 @@ static void SFDDumpLangName(FILE *sfd, struct ttflangname *ln) {
     putc('\n',sfd);
 }
 
-static void SFDDump(FILE *sfd,SplineFont *sf) {
+static void SFD_Dump(FILE *sfd,SplineFont *sf) {
     int i, realcnt;
     BDFFont *bdf;
     struct ttflangname *ln;
-    static unichar_t saving[] = { 'S','a','v','i','n','g','.','.','.',  '\0' };
-    static unichar_t savingdb[] = { 'S','a','v','i','n','g',' ','S','p','l','i','n','e',' ','F','o','n','t',' ','D','a','t','a','b','a','s','e',  '\0' };
-    static unichar_t savingoutlines[] = { 'S','a','v','i','n','g',' ','O','u','t','l','i','n','e','s',  '\0' };
-    static unichar_t savingbitmaps[] = { 'S','a','v','i','n','g',' ','B','i','t','m','a','p','s',  '\0' };
 
-    for ( i=0, bdf = sf->bitmaps; bdf!=NULL; bdf=bdf->next, ++i );
-    GProgressStartIndicator(10,saving,savingdb,savingoutlines,sf->charcnt,i+1);
-    GProgressEnableStop(false);
-    fprintf(sfd, "SplineFontDB: %.1f\n", 1.0 );
     fprintf(sfd, "FontName: %s\n", sf->fontname );
     if ( sf->fullname!=NULL )
 	fprintf(sfd, "FullName: %s\n", sf->fullname );
@@ -481,6 +422,10 @@ static void SFDDump(FILE *sfd,SplineFont *sf) {
     fprintf(sfd, "Descent: %d\n", sf->descent );
     if ( sf->xuid!=NULL )
 	fprintf(sfd, "XUID: %s\n", sf->xuid );
+    if ( sf->uniqueid!=0 )
+	fprintf(sfd, "UniqueID: %d\n", sf->uniqueid );
+    if ( sf->pfminfo.fstype!=-1 )
+	fprintf(sfd, "FSType: %d\n", sf->pfminfo.fstype );
     if ( sf->pfminfo.pfmset ) {
 	fprintf(sfd, "PfmFamily: %d\n", sf->pfminfo.pfmfamily );
 	fprintf(sfd, "TTFWeight: %d\n", sf->pfminfo.weight );
@@ -492,7 +437,13 @@ static void SFDDump(FILE *sfd,SplineFont *sf) {
     }
     for ( ln = sf->names; ln!=NULL; ln=ln->next )
 	SFDDumpLangName(sfd,ln);
-    if ( sf->encoding_name>=em_base ) {
+    if ( sf->subfontcnt!=0 ) {
+	/* CID fonts have no encodings, they have registry info instead */
+	fprintf(sfd, "Registry: %s\n", sf->cidregistry );
+	fprintf(sfd, "Ordering: %s\n", sf->ordering );
+	fprintf(sfd, "Supplement: %d\n", sf->supplement );
+	fprintf(sfd, "CIDVersion: %g\n", sf->cidversion );	/* This is a number whereas "version" is a string */
+    } else if ( sf->encoding_name>=em_base ) {
 	Encoding *item;
 	for ( item = enclist; item!=NULL && item->enc_num!=sf->encoding_name; item = item->next );
 	if ( item==NULL )
@@ -511,28 +462,57 @@ static void SFDDump(FILE *sfd,SplineFont *sf) {
 	fprintf(sfd, "Grid\n" );
 	SFDDumpSplineSet(sfd,sf->gridsplines);
     }
-#if 0
-    if ( sf->subrs!=NULL )
-	SFDDumpSubrs(sfd,sf->subrs);
-#endif
     if ( sf->private!=NULL )
 	SFDDumpPrivate(sfd,sf->private);
 
-    realcnt = 0;
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
-	++realcnt;
-    fprintf(sfd, "BeginChars: %d %d\n", sf->charcnt, realcnt );
-    for ( i=0; i<sf->charcnt; ++i ) {
-	if ( sf->chars[i]!=NULL )
-	    SFDDumpChar(sfd,sf->chars[i]);
-	GProgressNext();
+    if ( sf->subfontcnt!=0 ) {
+	int max;
+	for ( i=max=0; i<sf->subfontcnt; ++i )
+	    if ( max<sf->subfonts[i]->charcnt )
+		max = sf->subfonts[i]->charcnt;
+	fprintf(sfd, "BeginSubFonts: %d %d\n", sf->subfontcnt, max );
+	for ( i=0; i<sf->subfontcnt; ++i )
+	    SFD_Dump(sfd,sf->subfonts[i]);
+	fprintf(sfd, "EndSubFonts\n" );
+    } else {
+	if ( sf->cidmaster!=NULL )
+	    realcnt = -1;
+	else {
+	    realcnt = 0;
+	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
+		++realcnt;
+	}
+	fprintf(sfd, "BeginChars: %d %d\n", sf->charcnt, realcnt );
+	for ( i=0; i<sf->charcnt; ++i ) {
+	    if ( sf->chars[i]!=NULL )
+		SFDDumpChar(sfd,sf->chars[i]);
+	    GProgressNext();
+	}
+	fprintf(sfd, "EndChars\n" );
     }
-    fprintf(sfd, "EndChars\n" );
     if ( sf->bitmaps!=NULL )
-	GProgressChangeLine2(savingbitmaps);
+	GProgressChangeLine2R(_STR_SavingBitmaps);
     for ( bdf = sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	SFDDumpBitmapFont(sfd,bdf);
-    fprintf(sfd, "EndSplineFont\n" );
+    fprintf(sfd, sf->cidmaster==NULL?"EndSplineFont\n":"EndSubSplineFont\n" );
+}
+
+static void SFDDump(FILE *sfd,SplineFont *sf) {
+    int i, realcnt;
+    BDFFont *bdf;
+
+    realcnt = sf->charcnt;
+    if ( sf->subfontcnt!=0 ) {
+	for ( i=0; i<sf->subfontcnt; ++i )
+	    if ( realcnt<sf->subfonts[i]->charcnt )
+		realcnt = sf->subfonts[i]->charcnt;
+    }
+    for ( i=0, bdf = sf->bitmaps; bdf!=NULL; bdf=bdf->next, ++i );
+    GProgressStartIndicatorR(10,_STR_Saving,_STR_SavingDb,_STR_SavingOutlines,
+	    realcnt,i+1);
+    GProgressEnableStop(false);
+    fprintf(sfd, "SplineFontDB: %.1f\n", 1.0 );
+    SFD_Dump(sfd,sf);
     GProgressEndIndicator();
 }
 
@@ -543,6 +523,8 @@ int SFDWrite(char *filename,SplineFont *sf) {
     if ( sfd==NULL )
 return( 0 );
     oldloc = setlocale(LC_NUMERIC,"C");
+    if ( sf->cidmaster!=NULL )
+	sf=sf->cidmaster;
     SFDDump(sfd,sf);
     setlocale(LC_NUMERIC,oldloc);
 return( !ferror(sfd) && fclose(sfd)==0 );
@@ -551,6 +533,8 @@ return( !ferror(sfd) && fclose(sfd)==0 );
 int SFDWriteBak(SplineFont *sf) {
     char *buf/*, *pt, *bpt*/;
 
+    if ( sf->cidmaster!=NULL )
+	sf=sf->cidmaster;
     buf = galloc(strlen(sf->filename)+10);
 #if 1
     strcpy(buf,sf->filename);
@@ -626,12 +610,12 @@ static int getsint(FILE *sfd, int16 *val) {
 return( ret );
 }
 
-static int getdouble(FILE *sfd, double *val) {
+static int getreal(FILE *sfd, real *val) {
     char tokbuf[100], ch;
     char *pt=tokbuf, *end = tokbuf+100-2, *nend;
 
     while ( isspace(ch = getc(sfd)));
-    if ( ch!='e' && ch!='E' )		/* double's can't begin with exponants */
+    if ( ch!='e' && ch!='E' )		/* real's can't begin with exponants */
 	while ( isdigit(ch) || ch=='-' || ch=='+' || ch=='e' || ch=='E' || ch=='.' || ch==',' ) {
 	    if ( pt<end ) *pt++ = ch;
 	    ch = getc(sfd);
@@ -697,10 +681,10 @@ static ImageList *SFDGetImage(FILE *sfd) {
     base = image->list_len==0?image->u.image:image->u.images[0];
     img = gcalloc(1,sizeof(ImageList));
     img->image = image;
-    getdouble(sfd,&img->xoff);
-    getdouble(sfd,&img->yoff);
-    getdouble(sfd,&img->xscale);
-    getdouble(sfd,&img->yscale);
+    getreal(sfd,&img->xoff);
+    getreal(sfd,&img->yoff);
+    getreal(sfd,&img->xscale);
+    getreal(sfd,&img->yscale);
     base->trans = trans;
     if ( clutlen!=0 ) {
 	if ( base->clut==NULL )
@@ -764,8 +748,8 @@ static void SFDGetType1(FILE *sfd, SplineChar *sc) {
 
 static void SFDCloseCheck(SplinePointList *spl) {
     if ( spl->first!=spl->last &&
-	    DoubleNear(spl->first->me.x,spl->last->me.x) &&
-	    DoubleNear(spl->first->me.y,spl->last->me.y)) {
+	    RealNear(spl->first->me.x,spl->last->me.x) &&
+	    RealNear(spl->first->me.y,spl->last->me.y)) {
 	SplinePoint *oldlast = spl->last;
 	spl->first->prevcp = oldlast->prevcp;
 	spl->first->noprevcp = false;
@@ -781,7 +765,7 @@ static void SFDCloseCheck(SplinePointList *spl) {
 static SplineSet *SFDGetSplineSet(FILE *sfd) {
     SplinePointList *cur=NULL, *head=NULL;
     BasePoint current;
-    double stack[100];
+    real stack[100];
     int sp=0;
     SplinePoint *pt;
     int ch;
@@ -789,7 +773,7 @@ static SplineSet *SFDGetSplineSet(FILE *sfd) {
 
     current.x = current.y = 0;
     while ( 1 ) {
-	while ( getdouble(sfd,&stack[sp])==1 )
+	while ( getreal(sfd,&stack[sp])==1 )
 	    if ( sp<99 )
 		++sp;
 	while ( isspace(ch=getc(sfd)));
@@ -858,7 +842,7 @@ return( head );
 
 static HintInstance *SFDReadHintInstances(FILE *sfd, StemInfo *stem) {
     HintInstance *head=NULL, *last=NULL, *cur;
-    double begin, end;
+    real begin, end;
     int ch;
 
     while ( (ch=getc(sfd))==' ' || ch=='\t' );
@@ -870,7 +854,7 @@ static HintInstance *SFDReadHintInstances(FILE *sfd, StemInfo *stem) {
 	ungetc(ch,sfd);
 return(NULL);
     }
-    while ( getdouble(sfd,&begin)==1 && getdouble(sfd,&end)) {
+    while ( getreal(sfd,&begin)==1 && getreal(sfd,&end)) {
 	cur = gcalloc(1,sizeof(HintInstance));
 	cur->begin = begin;
 	cur->end = end;
@@ -888,9 +872,9 @@ return( head );
 
 static StemInfo *SFDReadHints(FILE *sfd) {
     StemInfo *head=NULL, *last=NULL, *cur;
-    double start, width;
+    real start, width;
 
-    while ( getdouble(sfd,&start)==1 && getdouble(sfd,&width)) {
+    while ( getreal(sfd,&start)==1 && getreal(sfd,&width)) {
 	cur = gcalloc(1,sizeof(StemInfo));
 	cur->start = start;
 	cur->width = width;
@@ -909,10 +893,10 @@ static DStemInfo *SFDReadDHints(FILE *sfd) {
     DStemInfo d;
 
     memset(&d,'\0',sizeof(d));
-    while ( getdouble(sfd,&d.leftedgetop.x)==1 && getdouble(sfd,&d.leftedgetop.y) &&
-	    getdouble(sfd,&d.rightedgetop.x)==1 && getdouble(sfd,&d.rightedgetop.y) &&
-	    getdouble(sfd,&d.leftedgebottom.x)==1 && getdouble(sfd,&d.leftedgebottom.y) &&
-	    getdouble(sfd,&d.rightedgebottom.x)==1 && getdouble(sfd,&d.rightedgebottom.y) ) {
+    while ( getreal(sfd,&d.leftedgetop.x)==1 && getreal(sfd,&d.leftedgetop.y) &&
+	    getreal(sfd,&d.rightedgetop.x)==1 && getreal(sfd,&d.rightedgetop.y) &&
+	    getreal(sfd,&d.leftedgebottom.x)==1 && getreal(sfd,&d.leftedgebottom.y) &&
+	    getreal(sfd,&d.rightedgebottom.x)==1 && getreal(sfd,&d.rightedgebottom.y) ) {
 	cur = galloc(sizeof(DStemInfo));
 	*cur = d;
 	if ( head == NULL )
@@ -933,12 +917,12 @@ static RefChar *SFDGetRef(FILE *sfd) {
     rf->local_enc = enc;
     while ( isspace(ch=getc(sfd)));
     if ( ch=='S' ) rf->selected = true;
-    getdouble(sfd,&rf->transform[0]);
-    getdouble(sfd,&rf->transform[1]);
-    getdouble(sfd,&rf->transform[2]);
-    getdouble(sfd,&rf->transform[3]);
-    getdouble(sfd,&rf->transform[4]);
-    getdouble(sfd,&rf->transform[5]);
+    getreal(sfd,&rf->transform[0]);
+    getreal(sfd,&rf->transform[1]);
+    getreal(sfd,&rf->transform[2]);
+    getreal(sfd,&rf->transform[3]);
+    getreal(sfd,&rf->transform[4]);
+    getreal(sfd,&rf->transform[5]);
 return( rf );
 }
 
@@ -1314,28 +1298,19 @@ return( cur );
     prev->next = cur;
 return( old );
 }
-    
-static SplineFont *SFDGetFont(FILE *sfd) {
+
+static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster) {
     SplineFont *sf;
     char tok[200];
-    double dval;
     SplineChar *sc;
-    int realcnt, ch;
-    static unichar_t interpret[] = { 'I','n','t','e','p','r','e','t','i','n','g',' ','G','l','y','p','h','s',  '\0' };
+    int realcnt, i, eof;
 
-    if ( getname(sfd,tok)!=1 )
-return( NULL );
-    if ( strcmp(tok,"SplineFontDB:")!=0 )
-return( NULL );
-    if ( getdouble(sfd,&dval)!=1 || (dval!=0 && dval!=1))
-return( NULL );
-    ch = getc(sfd); ungetc(ch,sfd);
-    if ( ch!='\r' && ch!='\n' )
-return( NULL );
-
-    sf = gcalloc(1,sizeof(SplineFont));
+    sf = SplineFontEmpty();
+    sf->cidmaster = cidmaster;
     while ( 1 ) {
-	if ( getname(sfd,tok)!=1 ) {
+	if ( (eof = getname(sfd,tok))!=1 ) {
+	    if ( eof==-1 )
+    break;
 	    geteol(sfd,tok);
     continue;
 	}
@@ -1358,11 +1333,11 @@ return( NULL );
 	    geteol(sfd,tok);
 	    sf->version = copy(tok);
 	} else if ( strmatch(tok,"ItalicAngle:")==0 ) {
-	    getdouble(sfd,&sf->italicangle);
+	    getreal(sfd,&sf->italicangle);
 	} else if ( strmatch(tok,"UnderlinePosition:")==0 ) {
-	    getdouble(sfd,&sf->upos);
+	    getreal(sfd,&sf->upos);
 	} else if ( strmatch(tok,"UnderlineWidth:")==0 ) {
-	    getdouble(sfd,&sf->uwidth);
+	    getreal(sfd,&sf->uwidth);
 	} else if ( strmatch(tok,"PfmFamily:")==0 ) {
 	    int temp;
 	    getint(sfd,&temp);
@@ -1401,6 +1376,10 @@ return( NULL );
 	    getint(sfd,&sf->ascent);
 	} else if ( strmatch(tok,"Descent:")==0 ) {
 	    getint(sfd,&sf->descent);
+	} else if ( strmatch(tok,"FSType:")==0 ) {
+	    getint(sfd,&sf->pfminfo.fstype);
+	} else if ( strmatch(tok,"UniqueID:")==0 ) {
+	    getint(sfd,&sf->uniqueid);
 	} else if ( strmatch(tok,"XUID:")==0 ) {
 	    geteol(sfd,tok);
 	    sf->xuid = copy(tok);
@@ -1414,45 +1393,91 @@ return( NULL );
 		else
 		    sf->encoding_name = item->enc_num;
 	    }
+	} else if ( strmatch(tok,"Registry:")==0 ) {
+	    geteol(sfd,tok);
+	    sf->cidregistry = copy(tok);
+	} else if ( strmatch(tok,"Ordering:")==0 ) {
+	    geteol(sfd,tok);
+	    sf->ordering = copy(tok);
+	} else if ( strmatch(tok,"Supplement:")==0 ) {
+	    getint(sfd,&sf->supplement);
+	} else if ( strmatch(tok,"CIDVersion:")==0 ) {
+	    real temp;
+	    getreal(sfd,&temp);
+	    sf->cidversion = temp;
 	} else if ( strmatch(tok,"Grid")==0 ) {
 	    sf->gridsplines = SFDGetSplineSet(sfd);
 	    SFFigureGrid(sf);
 	} else if ( strmatch(tok,"BeginPrivate:")==0 ) {
 	    SFDGetPrivate(sfd,sf);
-	} else if ( strmatch(tok,"BeginSubrs:")==0 ) {
+	} else if ( strmatch(tok,"BeginSubrs:")==0 ) {	/* leave in so we don't croak on old sfd files */
 	    SFDGetSubrs(sfd,sf);
+	} else if ( strmatch(tok,"BeginSubFonts:")==0 ) {
+	    getint(sfd,&sf->subfontcnt);
+	    sf->subfonts = gcalloc(sf->subfontcnt,sizeof(SplineFont *));
+	    getint(sfd,&realcnt);
+	    GProgressChangeStages(2);
+	    GProgressChangeTotal(realcnt);
+    break;
 	} else if ( strmatch(tok,"BeginChars:")==0 ) {
 	    getint(sfd,&sf->charcnt);
-	    GProgressChangeStages(2);
-	    if ( getint(sfd,&realcnt)==1 )
-		GProgressChangeTotal(realcnt);
-	    else
+	    if ( getint(sfd,&realcnt)!=1 ) {
+		GProgressChangeStages(2);
 		GProgressChangeTotal(sf->charcnt);
+	    } else if ( realcnt!=-1 ) {
+		GProgressChangeStages(2);
+		GProgressChangeTotal(realcnt);
+	    }
 	    sf->chars = gcalloc(sf->charcnt,sizeof(SplineChar *));
-	break;
+    break;
 	} else {
 	    /* If we don't understand it, skip it */
 	    geteol(sfd,tok);
 	}
     }
 
-    while ( (sc = SFDGetChar(sfd))!=NULL ) {
-	if ( sc->enc<sf->charcnt ) {
-	    sf->chars[sc->enc] = sc;
-	    sc->parent = sf;
+    if ( sf->subfontcnt!=0 ) {
+	for ( i=0; i<sf->subfontcnt; ++i )
+	    sf->subfonts[i] = SFD_GetFont(sfd,sf);
+    } else {
+	while ( (sc = SFDGetChar(sfd))!=NULL ) {
+	    if ( sc->enc<sf->charcnt ) {
+		sf->chars[sc->enc] = sc;
+		sc->parent = sf;
+	    }
+	    GProgressNext();
 	}
-	GProgressNext();
+	if ( cidmaster==NULL ) {
+	    GProgressNextStage();
+	    GProgressChangeLine2R(_STR_InterpretingGlyphs);
+	}
+	SFDFixupRefs(sf);
     }
-    GProgressNextStage();
-    GProgressChangeLine2(interpret);
-    SFDFixupRefs(sf);
     while ( getname(sfd,tok)==1 ) {
-	if ( strcmp(tok,"EndSplineFont")==0 )
+	if ( strcmp(tok,"EndSplineFont")==0 || strcmp(tok,"EndSubSplineFont")==0 )
     break;
 	else if ( strcmp(tok,"BitmapFont:")==0 )
 	    SFDGetBitmapFont(sfd,sf);
     }
 return( sf );
+}
+
+static SplineFont *SFDGetFont(FILE *sfd) {
+    char tok[200];
+    real dval;
+    int ch;
+
+    if ( getname(sfd,tok)!=1 )
+return( NULL );
+    if ( strcmp(tok,"SplineFontDB:")!=0 )
+return( NULL );
+    if ( getreal(sfd,&dval)!=1 || (dval!=0 && dval!=1))
+return( NULL );
+    ch = getc(sfd); ungetc(ch,sfd);
+    if ( ch!='\r' && ch!='\n' )
+return( NULL );
+
+return( SFD_GetFont(sfd,NULL));
 }
 
 SplineFont *SFDRead(char *filename) {
@@ -1474,8 +1499,9 @@ return( sf );
 static int ModSF(FILE *asfd,SplineFont *sf) {
     int newmap, cnt;
     char tok[200];
-    int i;
+    int i,k;
     SplineChar *sc;
+    SplineFont *ssf;
 
     if ( getname(asfd,tok)!=1 || strcmp(tok,"Encoding:")!=0 )
 return(false);
@@ -1493,11 +1519,19 @@ return(false);
 	    sf->chars[i] = NULL;
     }
     while ( (sc = SFDGetChar(asfd))!=NULL ) {
-	if ( sc->enc<sf->charcnt ) {
-	    if ( sf->chars[sc->enc]!=NULL )
-		SplineCharFree(sf->chars[sc->enc]);
-	    sf->chars[sc->enc] = sc;
-	    sc->parent = sf;
+	ssf = sf;
+	for ( k=0; k<sf->subfontcnt; ++k ) {
+	    if ( sc->enc<sf->subfonts[k]->charcnt ) {
+		ssf = sf->subfonts[k];
+		if ( SCWorthOutputting(ssf->chars[sc->enc]))
+	break;
+	    }
+	}
+	if ( sc->enc<ssf->charcnt ) {
+	    if ( ssf->chars[sc->enc]!=NULL )
+		SplineCharFree(ssf->chars[sc->enc]);
+	    ssf->chars[sc->enc] = sc;
+	    sc->parent = ssf;
 	    sc->changed = true;
 	}
     }
@@ -1554,19 +1588,37 @@ return( ret );
 }
 
 void SFAutoSave(SplineFont *sf) {
-    int i;
-    FILE *asfd = fopen(sf->autosavename,"w");
+    int i, k, max;
+    FILE *asfd;
     char *oldloc;
+    SplineFont *ssf;
 
+    if ( sf->cidmaster!=NULL ) sf=sf->cidmaster;
+    asfd = fopen(sf->autosavename,"w");
     if ( asfd==NULL )
 return;
+
+    max = sf->charcnt;
+    for ( i=0; i<sf->subfontcnt; ++i )
+	if ( sf->subfonts[i]->charcnt>max ) max = sf->subfonts[i]->charcnt;
+
     oldloc = setlocale(LC_NUMERIC,"C");
     if ( sf->origname!=NULL )		/* might be a new file */
 	fprintf( asfd, "Base: %s\n", sf->origname );
     fprintf( asfd, "Encoding: %d\n", sf->encoding_name );
-    fprintf( asfd, "BeginChars: %d\n", sf->charcnt );
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->changed )
-	SFDDumpChar( asfd,sf->chars[i]);
+    fprintf( asfd, "BeginChars: %d\n", max );
+    for ( i=0; i<max; ++i ) {
+	ssf = sf;
+	for ( k=0; k<sf->subfontcnt; ++k ) {
+	    if ( i<sf->subfonts[k]->charcnt ) {
+		ssf = sf->subfonts[k];
+		if ( SCWorthOutputting(ssf->chars[i]))
+	break;
+	    }
+	}
+	if ( ssf->chars[i]!=NULL && ssf->chars[i]->changed )
+	    SFDDumpChar( asfd,ssf->chars[i]);
+    }
     fprintf( asfd, "EndChars\n" );
     fprintf( asfd, "EndSplineFont\n" );
     fclose(asfd);
@@ -1575,7 +1627,20 @@ return;
 }
 
 void SFClearAutoSave(SplineFont *sf) {
+    int i;
+    SplineFont *ssf;
+
+    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
     sf->changed_since_autosave = false;
+    for ( i=0; i<sf->subfontcnt; ++i ) {
+	ssf = sf->subfonts[i];
+	ssf->changed_since_autosave = false;
+	if ( ssf->autosavename!=NULL ) {
+	    unlink( ssf->autosavename );
+	    free( ssf->autosavename );
+	    ssf->autosavename = NULL;
+	}
+    }
     if ( sf->autosavename==NULL )
 return;
     unlink(sf->autosavename);

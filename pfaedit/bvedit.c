@@ -509,9 +509,9 @@ void BCPasteInto(BDFChar *bc,BDFChar *rbc,int ixoff,int iyoff, int invert, int c
 static BDFChar *BCScale(BDFChar *old,int from, int to) {
     BDFChar *new;
     int x,y, ox,oy, oxs,oys, oxend, oyend;
-    double tot, scale;
-    double yscale, xscale;
-    double dto = to;
+    real tot, scale;
+    real yscale, xscale;
+    real dto = to;
 
     if ( old==NULL )
 return( NULL );

@@ -125,6 +125,15 @@ int SFFindChar(SplineFont *sf, int unienc, char *name ) {
 return( index );
 }
 
+SplineChar *SFGetChar(SplineFont *sf, int unienc, char *name ) {
+    int ind = SFFindChar(sf,unienc,name);
+
+    if ( ind==-1 )
+return( NULL );
+
+return( sf->chars[ind]);
+}
+
 int SFFindExistingChar(SplineFont *sf, int unienc, char *name ) {
     int i = SFFindChar(sf,unienc,name);
 
@@ -492,7 +501,7 @@ void FVMergeFonts(FontView *fv) {
     }
 }
 
-static RefChar *InterpRefs(RefChar *base, RefChar *other, double amount, SplineChar *sc) {
+static RefChar *InterpRefs(RefChar *base, RefChar *other, real amount, SplineChar *sc) {
     RefChar *head=NULL, *last=NULL, *cur;
     RefChar *test;
     int i;
@@ -532,7 +541,7 @@ static RefChar *InterpRefs(RefChar *base, RefChar *other, double amount, SplineC
 return( head );
 }
 
-static void InterpPoint(SplineSet *cur, SplinePoint *base, SplinePoint *other, double amount ) {
+static void InterpPoint(SplineSet *cur, SplinePoint *base, SplinePoint *other, real amount ) {
     SplinePoint *p = galloc(sizeof(SplinePoint));
 
     p->me.x = base->me.x + amount*(other->me.x-base->me.x);
@@ -555,7 +564,7 @@ static void InterpPoint(SplineSet *cur, SplinePoint *base, SplinePoint *other, d
     cur->last = p;
 }
     
-static SplineSet *InterpSplineSet(SplineSet *base, SplineSet *other, double amount, SplineChar *sc) {
+static SplineSet *InterpSplineSet(SplineSet *base, SplineSet *other, real amount, SplineChar *sc) {
     SplineSet *cur = gcalloc(1,sizeof(SplineSet));
     SplinePoint *bp, *op;
 
@@ -593,7 +602,7 @@ return( cur );
     }
 }
 
-static SplineSet *InterpSplineSets(SplineSet *base, SplineSet *other, double amount, SplineChar *sc) {
+static SplineSet *InterpSplineSets(SplineSet *base, SplineSet *other, real amount, SplineChar *sc) {
     SplineSet *head=NULL, *last=NULL, *cur;
 
     /* we could do something really complex to try and figure out which spline*/
@@ -613,7 +622,7 @@ static SplineSet *InterpSplineSets(SplineSet *base, SplineSet *other, double amo
 return( head );
 }
 
-static void InterpolateChar(SplineFont *new, int enc, SplineChar *base, SplineChar *other, double amount) {
+static void InterpolateChar(SplineFont *new, int enc, SplineChar *base, SplineChar *other, real amount) {
     SplineChar *sc;
 
     if ( base==NULL || other==NULL )
@@ -661,7 +670,7 @@ static void InterpFixupRefChars(SplineFont *sf) {
     }
 }
 
-static void InterpolateFont(SplineFont *base, SplineFont *other, double amount) {
+static void InterpolateFont(SplineFont *base, SplineFont *other, real amount) {
     SplineFont *new;
     int i, index;
 
@@ -687,7 +696,7 @@ return;
     FontViewCreate(new);
 }
 
-static void InterAskFilename(FontView *fv, double amount) {
+static void InterAskFilename(FontView *fv, real amount) {
     char *filename = GetPostscriptFontName(false);
     SplineFont *sf;
 
@@ -701,7 +710,7 @@ return;
 }
 
 #define CID_Amount	1000
-static double last_amount=50;
+static real last_amount=50;
 
 static int IF_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
@@ -710,9 +719,9 @@ static int IF_OK(GGadget *g, GEvent *e) {
 	int i, index = GGadgetGetFirstListSelectedItem(d->other);
 	FontView *fv;
 	int err=false;
-	double amount;
+	real amount;
 	
-	amount = GetDoubleR(gw,CID_Amount, _STR_Amount,&err);
+	amount = GetRealR(gw,CID_Amount, _STR_Amount,&err);
 	if ( err )
 return( true );
 	last_amount = amount;

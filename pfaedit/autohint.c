@@ -47,7 +47,7 @@ This file has routines to figure out at least some of these
 Also other routines to guess at good per-character hints
 */
 
-static void AddBlue(double val, double array[5], int force) {
+static void AddBlue(real val, real array[5], int force) {
     val = rint(val);
     if ( !force && (val<array[0]-array[1] || val >array[0]+array[1] ))
 return;		/* Outside of one sd */
@@ -59,7 +59,7 @@ return;		/* Outside of one sd */
 	array[3] = val;
 }
 
-static void MergeZones(double zone1[5], double zone2[5]) {
+static void MergeZones(real zone1[5], real zone2[5]) {
     if ( zone1[2]!=0 && zone2[2]!=0 &&
 	    ((zone1[4]+3>zone2[3] && zone1[3]<=zone2[3]) ||
 	     (zone2[4]+3>zone1[3] && zone2[3]<=zone1[3]) )) {
@@ -78,9 +78,9 @@ static void MergeZones(double zone1[5], double zone2[5]) {
 /*  the same set of letter shapes and have all evolved together and have */
 /*  various common features (ascenders, descenders, lower case, etc.). Other */
 /*  scripts don't fit */
-void FindBlues( SplineFont *sf, double blues[14], double otherblues[10]) {
-    double caph[5], xh[5], ascenth[5], digith[5], descenth[5], base[5];
-    double otherdigits[5];
+void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]) {
+    real caph[5], xh[5], ascenth[5], digith[5], descenth[5], base[5];
+    real otherdigits[5];
     int i, any = 0, j, k;
     DBounds b;
 
@@ -282,7 +282,7 @@ void FindBlues( SplineFont *sf, double blues[14], double otherblues[10]) {
 
     for ( j=0; j<i; j+=2 ) for ( k=j+2; k<i; k+=2 ) {
 	if ( blues[j]>blues[k] ) {
-	    double temp = blues[j];
+	    real temp = blues[j];
 	    blues[j]=blues[k];
 	    blues[k] = temp;
 	    temp = blues[j+1];
@@ -294,62 +294,74 @@ void FindBlues( SplineFont *sf, double blues[14], double otherblues[10]) {
 
 /* Quick and dirty (and sometimes wrong) approach to figure out the common */
 /* alignment zones in latin (greek, cyrillic) alphabets */
-void QuickBlues(SplineFont *sf, BlueData *bd) {
-    double xheight = -1e10, caph = -1e10, ascent = -1e10, descent = 1e10, max, min;
-    double xheighttop = -1e10, caphtop = -1e10;
+void QuickBlues(SplineFont *_sf, BlueData *bd) {
+    real xheight = -1e10, caph = -1e10, ascent = -1e10, descent = 1e10, max, min;
+    real xheighttop = -1e10, caphtop = -1e10;
+    SplineFont *sf;
     SplinePoint *sp;
     SplineSet *spl;
-    int i;
+    int i,j;
     SplineChar *t;
 
     /* Get the alignment zones we care most about */
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	int enc = sf->chars[i]->unicodeenc;
-	if ( enc=='I' || enc=='O' || enc=='x' || enc=='o' || enc=='p' || enc=='l' ||
-		enc==0x399 || enc==0x39f || enc==0x3ba || enc==0x3bf || enc==0x3c1 || enc==0x3be ||
-		enc==0x41f || enc==0x41e || enc==0x43e || enc==0x43f || enc==0x440 || enc==0x452 ) {
-	    t = sf->chars[i];
-	    while ( t->splines==NULL && t->refs!=NULL )
-		t = t->refs->sc;
-	    max = -1e10; min = 1e10;
-	    if ( t->splines!=NULL ) {
-		for ( spl=t->splines; spl!=NULL; spl=spl->next ) {
-		    for ( sp=spl->first; ; ) {
-			if ( sp->me.y > max ) max = sp->me.y;
-			if ( sp->me.y < min ) min = sp->me.y;
-			if ( sp->next==NULL )
-		    break;
-			sp = sp->next->to;
-			if ( sp==spl->first )
-		    break;
+
+    /* be careful of cid fonts */
+    if ( _sf->cidmaster!=NULL )
+	_sf = _sf->cidmaster;
+
+    j=0;
+    do {
+	sf = ( _sf->subfontcnt==0 )? _sf : _sf->subfonts[j];
+	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	    int enc = sf->chars[i]->unicodeenc;
+	    if ( enc=='I' || enc=='O' || enc=='x' || enc=='o' || enc=='p' || enc=='l' ||
+		    enc==0x399 || enc==0x39f || enc==0x3ba || enc==0x3bf || enc==0x3c1 || enc==0x3be ||
+		    enc==0x41f || enc==0x41e || enc==0x43e || enc==0x43f || enc==0x440 || enc==0x452 ) {
+		t = sf->chars[i];
+		while ( t->splines==NULL && t->refs!=NULL )
+		    t = t->refs->sc;
+		max = -1e10; min = 1e10;
+		if ( t->splines!=NULL ) {
+		    for ( spl=t->splines; spl!=NULL; spl=spl->next ) {
+			for ( sp=spl->first; ; ) {
+			    if ( sp->me.y > max ) max = sp->me.y;
+			    if ( sp->me.y < min ) min = sp->me.y;
+			    if ( sp->next==NULL )
+			break;
+			    sp = sp->next->to;
+			    if ( sp==spl->first )
+			break;
+			}
 		    }
-		}
-		if ( enc>0x400 ) {
-		    /* Only use ascent and descent here if we don't have anything better */
-		    if ( enc==0x41f ) caph = max;
-		    else if ( enc==0x41e ) caphtop = max;
-		    else if ( enc==0x43f && xheight<0 ) xheight = max;
-		    else if ( enc==0x43e ) xheighttop = max;
-		    else if ( enc==0x452 && ascent<0 ) ascent = max;
-		    else if ( enc==0x440 && descent>0 ) descent = min;
-		} else if ( enc>0x300 ) {
-		    if ( enc==0x399 ) caph = max;
-		    else if ( enc==0x39f ) caphtop = max;
-		    else if ( enc==0x3ba && xheight<0 ) xheight = max;
-		    else if ( enc==0x3bf ) xheighttop = max;
-		    else if ( enc==0x3be && ascent<0 ) ascent = max;
-		    else if ( enc==0x3c1 && descent>0 ) descent = min;
-		} else {
-		    if ( enc=='I' ) caph = max;
-		    else if ( enc=='O' ) caphtop = max;
-		    else if ( enc=='x' ) xheight = max;
-		    else if ( enc=='o' ) xheighttop = max;
-		    else if ( enc=='l' ) ascent = max;
-		    else descent = min;
+		    if ( enc>0x400 ) {
+			/* Only use ascent and descent here if we don't have anything better */
+			if ( enc==0x41f ) caph = max;
+			else if ( enc==0x41e ) caphtop = max;
+			else if ( enc==0x43f && xheight<0 ) xheight = max;
+			else if ( enc==0x43e ) xheighttop = max;
+			else if ( enc==0x452 && ascent<0 ) ascent = max;
+			else if ( enc==0x440 && descent>0 ) descent = min;
+		    } else if ( enc>0x300 ) {
+			if ( enc==0x399 ) caph = max;
+			else if ( enc==0x39f ) caphtop = max;
+			else if ( enc==0x3ba && xheight<0 ) xheight = max;
+			else if ( enc==0x3bf ) xheighttop = max;
+			else if ( enc==0x3be && ascent<0 ) ascent = max;
+			else if ( enc==0x3c1 && descent>0 ) descent = min;
+		    } else {
+			if ( enc=='I' ) caph = max;
+			else if ( enc=='O' ) caphtop = max;
+			else if ( enc=='x' ) xheight = max;
+			else if ( enc=='o' ) xheighttop = max;
+			else if ( enc=='l' ) ascent = max;
+			else descent = min;
+		    }
 		}
 	    }
 	}
-    }
+	++j;
+    } while ( j<_sf->subfontcnt );
+
     if ( caphtop<caph ) caphtop = caph; else if ( caph==-1e10 ) caph=caphtop;
     if ( xheighttop<xheight ) xheighttop = xheight; else if ( xheight==-1e10 ) xheight=xheighttop;
     bd->xheight = xheight; bd->xheighttop = xheighttop;
@@ -366,11 +378,11 @@ void ElFreeEI(EIList *el) {
     }
 }
 
-static void EIAddEdge(Spline *spline, double tmin, double tmax, EIList *el) {
+static void EIAddEdge(Spline *spline, real tmin, real tmax, EIList *el) {
     EI *new = gcalloc(1,sizeof(EI));
-    double min, max, temp;
+    real min, max, temp;
     Spline1D *s;
-    double dxdtmin, dxdtmax, dydtmin, dydtmax;
+    real dxdtmin, dxdtmax, dydtmin, dydtmax;
 
     new->spline = spline;
     new->tmin = tmin;
@@ -434,7 +446,7 @@ static void EIAddEdge(Spline *spline, double tmin, double tmax, EIList *el) {
 }
 
 static void EIAddSpline(Spline *spline, EIList *el) {
-    double ts[6], temp;
+    real ts[6], temp;
     int i, j, base;
 
     ts[0] = 0; ts[5] = 1.0;
@@ -488,7 +500,7 @@ return;
 
 static int IsBiggerSlope(EI *test, EI *base, int major) {
     int other = !major;
-    double tdo, tdm, bdo, bdm, t;
+    real tdo, tdm, bdo, bdm, t;
 
     if (( major && test->vup ) || (!major && test->hup))
 	t = test->tmin;
@@ -566,14 +578,14 @@ void ELOrder(EIList *el, int major ) {
 
 /* If the stem is vertical here, return an approximate height over which it is */
 /* if major is 1 then we check for vertical lines, if 0 then horizontal */
-static double IsEdgeHorVertHere(EI *e,int major, int i, double *up, double *down) {
+static real IsEdgeHorVertHere(EI *e,int major, int i, real *up, real *down) {
     /* It's vertical if dx/dt == 0 or if (dy/dt)/(dx/dt) is infinite */
     Spline *spline = e->spline;
     Spline1D *msp = &spline->splines[major], *osp = &spline->splines[!major];
-    double dodt = (3*osp->a*e->tcur+2*osp->b)*e->tcur + osp->c;
-    double dmdt = (3*msp->a*e->tcur+2*msp->b)*e->tcur + msp->c;
-    double tmax, tmin, t, o, ocur;
-    double dup, ddown;
+    real dodt = (3*osp->a*e->tcur+2*osp->b)*e->tcur + osp->c;
+    real dmdt = (3*msp->a*e->tcur+2*msp->b)*e->tcur + msp->c;
+    real tmax, tmin, t, o, ocur;
+    real dup, ddown;
 
     if ( dodt<0 ) dodt = -dodt;
     if ( dmdt<0 ) dmdt = -dmdt;
@@ -639,8 +651,8 @@ return( e->coordmax[major]-e->coordmin[major] );
 return( dup+ddown );
 }
 
-static int IsNearHV(EI *hv,EI *test,int i,double *up, double *down, int major) {
-    double u1, u2, d1, d2;
+static int IsNearHV(EI *hv,EI *test,int i,real *up, real *down, int major) {
+    real u1, u2, d1, d2;
     if ( IsEdgeHorVertHere(test,major,i,&u2,&d2)==0 )
 return( false );
     if ( IsEdgeHorVertHere(hv,major,i,&u1,&d1)==0 )
@@ -654,12 +666,12 @@ return( false );	/* A set of parallel segments one starts where the other ends. 
 return( true );
 }
 
-static double EIFigurePos(EI *e,int other, int *hadpt ) {
-    double val = e->ocur;
+static real EIFigurePos(EI *e,int other, int *hadpt ) {
+    real val = e->ocur;
     int oup = other==0?e->hup:e->vup;
     int major = !other;
     Spline1D *sp = &e->spline->splines[major];
-    double mcur = ((sp->a*e->tcur+sp->b)*e->tcur+sp->c)*e->tcur+sp->d;
+    real mcur = ((sp->a*e->tcur+sp->b)*e->tcur+sp->c)*e->tcur+sp->d;
 
     *hadpt = false;
     if ( e->spline->from->nonextcp && e->spline->to->noprevcp &&
@@ -751,7 +763,7 @@ return( new );
 return(stems);
 }
 
-static StemInfo *_StemsFind(StemInfo *stems,double start, double end, int shadpt, int ehadpt) {
+static StemInfo *_StemsFind(StemInfo *stems,real start, real end, int shadpt, int ehadpt) {
     StemInfo *test;
 
     for ( test=stems; test!=NULL; test=test->next ) {
@@ -784,13 +796,13 @@ return( test );
 static StemInfo *StemsFind(StemInfo *stems,EI *apt,EI *e, int major) {
     int other = !major;
     int shadpt, ehadpt;
-    double start = EIFigurePos(apt,other,&shadpt);
-    double end = EIFigurePos(e,other,&ehadpt);
+    real start = EIFigurePos(apt,other,&shadpt);
+    real end = EIFigurePos(e,other,&ehadpt);
 
 return( _StemsFind(stems,start,end,shadpt,ehadpt));
 }
 
-static void _StemAddBrief(StemInfo *new, double mstart, double mend ) {
+static void _StemAddBrief(StemInfo *new, real mstart, real mend ) {
     HintInstance *hi, *thi;
 
     thi=new->where;
@@ -809,11 +821,11 @@ return;
 }
 
 static StemInfo *StemAddBrief(StemInfo *stems,EI *apt,EI *e,
-	double mstart, double mend, int major) {
+	real mstart, real mend, int major) {
     StemInfo *new;
 
     if ( mend<=mstart ) {
-	double temp;
+	real temp;
 	fprintf( stderr, "Bad values in StemAddBrief, mstart=%g mend=%g\n", mstart, mend);
 	/* Have to add some HI, else we might crash later */
 	temp = mstart;
@@ -832,7 +844,7 @@ return( stems );
 static StemInfo *StemAddUpdate(StemInfo *stems,EI *apt,EI *e, int i, int major) {
     StemInfo *new = StemsFind(stems,apt,e,major);
     HintInstance *hi;
-    double up, down;
+    real up, down;
 
     if ( new->where==NULL )
 	stems = StemInsert(stems,new);
@@ -866,7 +878,7 @@ struct pendinglist {
     struct pendinglist *next;
     EI *apt, *e;
     int checka;
-    double otherpos, mpos;
+    real otherpos, mpos;
 };
 
 static void PendingListFree( struct pendinglist *pl ) {
@@ -885,12 +897,12 @@ static struct pendinglist *StemPending(struct pendinglist *pendings,
     int other = !major;
     Spline1D *sp = &checkme->spline->splines[major];
     Spline1D *osp = &checkme->spline->splines[other];
-    double mcur = ((sp->a*checkme->tcur+sp->b)*checkme->tcur+sp->c)*checkme->tcur+sp->d;
-    double ocur = checkme->ocur;
+    real mcur = ((sp->a*checkme->tcur+sp->b)*checkme->tcur+sp->c)*checkme->tcur+sp->d;
+    real ocur = checkme->ocur;
     int oup = other==0?checkme->hup:checkme->vup;
     int atmin;
     struct pendinglist *t, *p;
-    double wide, mdiff;
+    real wide, mdiff;
     StemInfo *new;
 
     if ( checkme->tmin==0 && 
@@ -961,14 +973,14 @@ static void StemCloseUntouched(StemInfo *stems,int i ) {
 }
 
 
-double EITOfNextMajor(EI *e, EIList *el, double sought_m ) {
+real EITOfNextMajor(EI *e, EIList *el, real sought_m ) {
     /* We want to find t so that Mspline(t) = sought_m */
     /*  the curve is monotonic */
     Spline1D *msp = &e->spline->splines[el->major];
-    double new_t;
-    double found_m;
-    double t_mmax, t_mmin;
-    double mmax, mmin;
+    real new_t;
+    real found_m;
+    real t_mmax, t_mmin;
+    real mmax, mmin;
 
     if ( msp->a==0 && msp->b==0 ) {
 	new_t = (sought_m+el->low-msp->d)/(msp->c);
@@ -1000,7 +1012,7 @@ return( new_t );
     }
 }
 
-EI *EIActiveEdgesRefigure(EIList *el, EI *active,double i,int major, int *_change) {
+EI *EIActiveEdgesRefigure(EIList *el, EI *active,real i,int major, int *_change) {
     EI *apt, *pr, *npt;
     int any;
     int change = false;
@@ -1087,7 +1099,7 @@ return( active );
 /* Ah, but also if they are at different intersections and are connected */
 /*  by a series of horizontal/vertical lines (whichever are invisible to major)*/
 /*  then we still should. */
-int EISameLine(EI *e, EI *n, double i, int major) {
+int EISameLine(EI *e, EI *n, real i, int major) {
     EI *t;
 
     if ( n!=NULL && /*n->up==e->up &&*/
@@ -1121,7 +1133,7 @@ return( n->up==e->up );
 return( false );
 }
 
-int EISkipExtremum(EI *e, double i, int major) {
+int EISkipExtremum(EI *e, real i, int major) {
     EI *n = e->aenext, *t;
 
     if ( n==NULL )
@@ -1157,7 +1169,7 @@ return( n->up!=e->up );
 return( false );
 }
 
-EI *EIActiveEdgesFindStem(EI *apt, double i, int major) {
+EI *EIActiveEdgesFindStem(EI *apt, real i, int major) {
     int cnt=apt->up?1:-1;
     EI *pr, *e, *p;
 
@@ -1224,13 +1236,13 @@ return( true );
 
 static int AreNearlyParallel(EI *apt,EI *e) {
     DStemInfo d;
-    double x,y,len, len1,len2;
+    real x,y,len, len1,len2;
     BasePoint top, bottom;
 
     if ( !MakeDStem(&d,apt,e))
 return( false );
 
-    if( !DoubleApprox((d.leftedgetop.y-d.leftedgebottom.y)/(d.leftedgetop.x-d.leftedgebottom.x),
+    if( !RealApprox((d.leftedgetop.y-d.leftedgebottom.y)/(d.leftedgetop.x-d.leftedgebottom.x),
 	    (d.rightedgetop.y-d.rightedgebottom.y)/(d.rightedgetop.x-d.rightedgebottom.x)) )
 return( false );
 
@@ -1305,7 +1317,7 @@ static StemInfo *ELFindStems(EIList *el, int major, DStemInfo **dstems ) {
     EI *active=NULL, *apt, *e, *p;
     int i, change, ahv, ehv, waschange;
     StemInfo *stems=NULL, *s;
-    double up, down;
+    real up, down;
     struct pendinglist *pendings = NULL;
     int other = !major;
 
@@ -1378,7 +1390,7 @@ static StemInfo *ELFindStems(EIList *el, int major, DStemInfo **dstems ) {
 return( stems );
 }
 
-static void HIExtendTo(HintInstance *where, double val ) {
+static void HIExtendTo(HintInstance *where, real val ) {
     while ( where!=NULL ) {
 	if ( where->begin>val && where->begin<=val+1 ) {
 	    where->begin=val;
@@ -1454,7 +1466,7 @@ static StemInfo *StemRemoveSerifOverlaps(StemInfo *stems) {
 	next = serif->next;
 	for ( main=serif->next; main!=NULL && main->start<serif->start+serif->width;
 		main = main->next ) {
-	    double left, right, mh, sh, top, bottom;
+	    real left, right, mh, sh, top, bottom;
 	    left = main->start-serif->start;
 	    right = serif->start+serif->width - (main->start+main->width);
 	    if ( left-right<-5 || left-right>5 )
@@ -1495,19 +1507,19 @@ static StemInfo *StemRemoveSerifOverlaps(StemInfo *stems) {
 return( stems );
 }
 
-double HIlen( StemInfo *stems) {
+real HIlen( StemInfo *stems) {
     HintInstance *hi;
-    double len = 0;
+    real len = 0;
 
     for ( hi=stems->where; hi!=NULL; hi = hi->next )
 	len += hi->end-hi->begin;
 return( len );
 }
 
-double HIoverlap( HintInstance *mhi, HintInstance *thi) {
+real HIoverlap( HintInstance *mhi, HintInstance *thi) {
     HintInstance *hi;
-    double len = 0;
-    double s, e;
+    real len = 0;
+    real s, e;
 
     for ( ; mhi!=NULL; mhi = mhi->next ) {
 	for ( hi = thi; hi!=NULL && hi->begin<=mhi->end; hi = hi->next ) {
@@ -1561,7 +1573,7 @@ static StemInfo *StemRemoveWideConflictingHintsContainingLittleOnes(StemInfo *st
 
     while ( stems!=NULL ) {
 	n = stems->next;
-	while ( n!=NULL && DoubleNear(n->start,stems->start) && n->width>4*stems->width &&
+	while ( n!=NULL && RealNear(n->start,stems->start) && n->width>4*stems->width &&
 		4*HIlen(stems)>HIlen(n) ) {
 	    stems->next = n->next;
 	    StemInfoFree(n);
@@ -1573,7 +1585,7 @@ static StemInfo *StemRemoveWideConflictingHintsContainingLittleOnes(StemInfo *st
 	sn = stems->next;
 	any = false;
 	for ( n=stems->next; n!=NULL && n->start<stems->start+stems->width; n=n->next ) {
-	    if ( (DoubleNear(n->start+n->width,stems->start+stems->width) &&
+	    if ( (RealNear(n->start+n->width,stems->start+stems->width) &&
 		      HIlen(stems)<HIlen(n)) ||
 		    (stems->width>4*n->width && 4*HIlen(stems)<HIlen(n)) ) {
 		if ( p==NULL )    
@@ -1591,7 +1603,7 @@ static StemInfo *StemRemoveWideConflictingHintsContainingLittleOnes(StemInfo *st
 return( head );
 }
 
-static StemInfo *StemRemoveConflictingBigHint(StemInfo *stems,double big) {
+static StemInfo *StemRemoveConflictingBigHint(StemInfo *stems,real big) {
     /* In I we may have a hint that runs from the top of the character to the */
     /*  bottom (especially if the serif is slightly curved), if it's the */
     /*  whole character then it doesn't do much good */
@@ -1614,7 +1626,7 @@ static StemInfo *StemRemoveConflictingBigHint(StemInfo *stems,double big) {
 return( head );
 }
 
-HintInstance *HICopyTrans(HintInstance *hi, double mul, double offset) {
+HintInstance *HICopyTrans(HintInstance *hi, real mul, real offset) {
     HintInstance *first=NULL, *last, *cur, *p;
 
     while ( hi!=NULL ) {
@@ -1675,7 +1687,7 @@ static HintInstance *HIMerge(HintInstance *into, HintInstance *hi) {
 return( first );
 }
 
-static int inhints(StemInfo *stems,double base, double width) {
+static int inhints(StemInfo *stems,real base, real width) {
 
     while ( stems!=NULL ) {
 	if ( stems->start==base || stems->start+stems->width==base+width ||
@@ -1686,13 +1698,13 @@ return( true );
 return( false );
 }
 
-static StemInfo *GhostAdd(StemInfo *ghosts, StemInfo *stems, double base,
-	double width, double xstart, double xend ) {
+static StemInfo *GhostAdd(StemInfo *ghosts, StemInfo *stems, real base,
+	real width, real xstart, real xend ) {
     StemInfo *s, *prev, *test;
     HintInstance *hi;
 
     if ( xstart>xend ) {
-	double temp = xstart;
+	real temp = xstart;
 	xstart = xend;
 	xend = temp;
     }
@@ -1736,7 +1748,7 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
     StemInfo *prev, *s, *n, *snext, *ghosts = NULL;
     SplineSet *spl;
     Spline *spline, *first;
-    double base, width;
+    real base, width;
 
     /* Get the two alignment zones we care most about */
     QuickBlues(sf,&bd);
@@ -1799,8 +1811,8 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
 		    sp->prev->from->prev->knownlinear &&
 		    (sp->next->to->me.y>sp->next->to->next->to->me.y)==
 		     (sp->prev->from->me.y>sp->prev->from->prev->from->me.y)) {
-		double xstart = (sp->prev->from->me.x-sp->me.x)/(sp->prev->from->me.y-sp->me.y);
-		double xend = (sp->next->to->me.x-sp->me.x)/(sp->next->to->me.y-sp->me.y);
+		real xstart = (sp->prev->from->me.x-sp->me.x)/(sp->prev->from->me.y-sp->me.y);
+		real xend = (sp->next->to->me.x-sp->me.x)/(sp->next->to->me.y-sp->me.y);
 		if (( xstart<0 && sp->prev->from->me.x>sp->me.x) ||
 			(xstart>0 && sp->prev->from->me.x<sp->me.x))
 		    xstart = -xstart;
@@ -1860,7 +1872,7 @@ static void SCGuessHintInstances(SplineChar *sc, StemInfo *stem,int major) {
     SplinePointList *spl;
     SplinePoint *sp, *np;
     int sm, wm;
-    double ob, oe;
+    real ob, oe;
     HintInstance *s=NULL, *w=NULL, *cur, *p, *t, *n, *w2;
     /* We've got a hint (from somewhere, old data, reading in a font, user specified etc.) */
     /*  but we don't have HintInstance info. So see if we can find those data */
@@ -1902,7 +1914,7 @@ static void SCGuessHintInstances(SplineChar *sc, StemInfo *stem,int major) {
 	    }
 	    if ( sm || wm ) {
 		cur = gcalloc(1,sizeof(HintInstance));
-		if ( ob>oe ) { double temp=ob; ob=oe; oe=temp;}
+		if ( ob>oe ) { real temp=ob; ob=oe; oe=temp;}
 		cur->begin = ob;
 		cur->end = oe;
 		if ( sm ) {
@@ -2117,10 +2129,10 @@ void SCGuessVHintInstancesList(SplineChar *sc) {
 	    StemInfoReduceOverlap(h->next,h);
 }
 
-static StemInfo *RefHintsMerge(StemInfo *into, StemInfo *rh, double mul, double offset,
-	double omul, double oofset) {
+static StemInfo *RefHintsMerge(StemInfo *into, StemInfo *rh, real mul, real offset,
+	real omul, real oofset) {
     StemInfo *prev, *h, *n;
-    double start, width;
+    real start, width;
 
     for ( ; rh!=NULL; rh=rh->next ) {
 	start = rh->start*mul + offset;
@@ -2144,8 +2156,8 @@ static StemInfo *RefHintsMerge(StemInfo *into, StemInfo *rh, double mul, double 
 return( into );
 }
 
-static DStemInfo *RefDHintsMerge(DStemInfo *into, DStemInfo *rh, double xmul, double xoffset,
-	double ymul, double yoffset) {
+static DStemInfo *RefDHintsMerge(DStemInfo *into, DStemInfo *rh, real xmul, real xoffset,
+	real ymul, real yoffset) {
     DStemInfo *new;
     BasePoint temp;
     DStemInfo *prev, *n;
@@ -2242,18 +2254,25 @@ void SplineCharAutoHint( SplineChar *sc, int removeOverlaps ) {
     sc->parent->changed = true;
 }
     
-void SplineFontAutoHint( SplineFont *sf) {
-    int i;
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
-	if ( sf->chars[i]->changedsincelasthinted &&
-		!sf->chars[i]->manualhints )
-	    SplineCharAutoHint(sf->chars[i],true);
+void SplineFontAutoHint( SplineFont *_sf) {
+    int i,k;
+    SplineFont *sf;
+
+    k=0;
+    do {
+	sf = _sf->subfontcnt==0 ? _sf : _sf->subfonts[k];
+	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
+	    if ( sf->chars[i]->changedsincelasthinted &&
+		    !sf->chars[i]->manualhints )
+		SplineCharAutoHint(sf->chars[i],true);
+	++k;
+    } while ( k<_sf->subfontcnt );
 }
 
-static void FigureStems( SplineFont *sf, double snaps[12], double cnts[12],
+static void FigureStems( SplineFont *sf, real snaps[12], real cnts[12],
 	int which ) {
     int i, j, k, cnt, smax=0, smin=1000;
-    double stemwidths[1000];
+    real stemwidths[1000];
     StemInfo *stems, *test;
     int len;
     HintInstance *hi;
@@ -2310,10 +2329,10 @@ static void FigureStems( SplineFont *sf, double snaps[12], double cnts[12],
 		cnts[cnt++] = stemwidths[i];
 	    }
 	}
-    } else { double firstbiggest=0;
+    } else { real firstbiggest=0;
 	for ( cnt = 0; cnt<12; ++cnt ) {
 	    int biggesti=0;
-	    double biggest=0;
+	    real biggest=0;
 	    for ( i=smin; i<=smax; ++i ) {
 		if ( stemwidths[i]>biggest ) { biggest = stemwidths[i]; biggesti=i; }
 	    }
@@ -2339,11 +2358,11 @@ static void FigureStems( SplineFont *sf, double snaps[12], double cnts[12],
     }
 }
 
-void FindHStems( SplineFont *sf, double snaps[12], double cnt[12]) {
+void FindHStems( SplineFont *sf, real snaps[12], real cnt[12]) {
     FigureStems(sf,snaps,cnt,1);
 }
 
-void FindVStems( SplineFont *sf, double snaps[12], double cnt[12]) {
+void FindVStems( SplineFont *sf, real snaps[12], real cnt[12]) {
     FigureStems(sf,snaps,cnt,0);
 }
 
@@ -2380,10 +2399,10 @@ static int SplineCharIsFlexible(SplineChar *sc, int blueshift) {
 	    if ( !pp->flexx && !pp->flexy ) {
 		sp->flexy = sp->flexx = 0;
 		val = 0;
-		if ( DoubleNear(sp->nextcp.x,sp->me.x) &&
-			DoubleNear(sp->prevcp.x,sp->me.x) &&
-			DoubleNear(np->me.x,pp->me.x) &&
-			!DoubleNear(np->me.x,sp->me.x) &&
+		if ( RealNear(sp->nextcp.x,sp->me.x) &&
+			RealNear(sp->prevcp.x,sp->me.x) &&
+			RealNear(np->me.x,pp->me.x) &&
+			!RealNear(np->me.x,sp->me.x) &&
 			np->me.x-sp->me.x < blueshift &&
 			np->me.x-sp->me.x > -blueshift ) {
 		    if ( (np->me.x>sp->me.x &&
@@ -2396,10 +2415,10 @@ static int SplineCharIsFlexible(SplineChar *sc, int blueshift) {
 			val = np->me.x-sp->me.x;
 		    }
 		}
-		if ( DoubleNear(sp->nextcp.y,sp->me.y) &&
-			DoubleNear(sp->prevcp.y,sp->me.y) &&
-			DoubleNear(np->me.y,pp->me.y) &&
-			!DoubleNear(np->me.y,sp->me.y) &&
+		if ( RealNear(sp->nextcp.y,sp->me.y) &&
+			RealNear(sp->prevcp.y,sp->me.y) &&
+			RealNear(np->me.y,pp->me.y) &&
+			!RealNear(np->me.y,sp->me.y) &&
 			np->me.y-sp->me.y < blueshift &&
 			np->me.y-sp->me.y > -blueshift ) {
 		    if ( (np->me.y>sp->me.y &&

@@ -32,7 +32,9 @@
 #include "sd.h"
 #include "views.h"
 
-#include <unistd.h>		/* for access, unlink */
+#include <sys/types.h>		/* for waitpid */
+#include <sys/wait.h>		/* for waitpid */
+#include <unistd.h>		/* for access, unlink, fork, execvp */
 #include <stdlib.h>		/* for getenv */
 
 /* Interface to Martin Weber's autotrace program   */
@@ -135,15 +137,34 @@ static SplinePointList *SplinesFromEntities(Entity *ent, Color bgcol) {
 return( head );
 }
 
+/* I think this is total paranoia. but it's annoying to have linker complaints... */
+static int mytempnam(char *buffer) {
+    char *dir;
+
+    if ( (dir=getenv("TMPDIR"))!=NULL )
+	strcpy(buffer,dir);
+#ifndef P_tmpdir
+#define P_tmpdir	"/tmp"
+#endif
+    else
+	strcpy(buffer,P_tmpdir);
+    strcat(buffer,"/PfaEdXXXXXX");
+return( mkstemp(buffer));
+}
+
 static void SCAutoTrace(SplineChar *sc, char *args) {
     ImageList *images;
-    char *bmp, *eps, *base, *prog, *cmd;
-    int len;
+    char *prog;
     SplineSet *new, *last;
     struct _GImage *ib;
     Color bgcol;
-    double transform[6];
+    real transform[6];
     int changed = false;
+    char tempname[1025];
+    char *arglist[10];
+    int ac;
+    FILE *ps;
+    int pid, status, fd;
 
     if ( sc->backimages==NULL )
 return;
@@ -151,15 +172,11 @@ return;
     if ( prog==NULL )
 return;
     for ( images = sc->backimages; images!=NULL; images=images->next ) {
-/* "never use this function, use mkstemp(3) instead." Er, a fine dogma, but */
-/*  unfortunately mkstemp doesn't do what I want. So I don't use it */
-	base = tempnam(NULL,"PfaEd");
-	bmp = galloc(strlen(base)+8);
-	eps = galloc(strlen(base)+8);
-	strcpy(bmp,base); strcat(bmp,".bmp");
-	strcpy(eps,base); strcat(eps,".eps");
-	free(base);
-	GImageWriteBmp(images->image,bmp);
+/* the linker tells me not to use tempnam(). Which does almost exactly what */
+/*  I want. So we go through a much more complex set of machinations to make */
+/*  it happy. */
+	fd = mytempnam(tempname);
+	GImageWriteBmp(images->image,tempname);
 	ib = images->image->list_len==0 ? images->image->u.image : images->image->u.images[0];
 	if ( ib->trans==-1 )
 	    bgcol = 0xffffff;		/* reasonable guess */
@@ -170,41 +187,45 @@ return;
 	else
 	    bgcol = 0xffffff;
 
-	len = strlen(prog);
-	if ( args!=NULL ) len = 1+strlen(args);
-	len += strlen(" --output-format=eps");
-	len += strlen(" --output-file ");
-	len += strlen(eps);
-	len += 1+strlen(bmp);
-	cmd = galloc(len+10);
-	strcpy(cmd,prog);
-	if ( args!=NULL ) {
-	    strcat(cmd," ");
-	    strcat(cmd,args);
-	}
-	strcat(cmd," "); strcat(cmd,bmp);
-	strcat(cmd, " --output-format=eps --output-file=");
-	strcat(cmd,eps);
-	if ( system(cmd)==0 ) {
-	    FILE *ps = fopen(eps,"r");
-	    new = SplinesFromEntities(EntityInterpretPS(ps),bgcol);
-	    transform[0] = images->xscale; transform[3] = images->yscale;
-	    transform[1] = transform[2] = 0;
-	    transform[4] = images->xoff;
-	    transform[5] = images->yoff - images->yscale*ib->height;
-	    new = SplinePointListTransform(new,transform,true);
-	    if ( new!=NULL ) {
-		if ( !changed )
-		    SCPreserveState(sc);
-		for ( last=new; last->next!=NULL; last=last->next );
-		last->next = sc->splines;
-		sc->splines = new;
-		changed = true;
+	ac = 0;
+	arglist[ac++] = prog;
+	arglist[ac++] = tempname;
+	arglist[ac++] = "--output-format=eps";
+	arglist[ac++] = "--input-format=bmp";
+	if ( args ) arglist[ac++] = args;
+	arglist[ac] = NULL;
+	/* We can't use AutoTrace's own "background-color" ignorer because */
+	/*  it ignores counters as well as surrounds. So "O" would be a dark */
+	/*  oval, etc. */
+	ps = tmpfile();
+	if ( (pid=fork())==0 ) {
+	    /* Child */
+	    close(1);
+	    dup2(fileno(ps),1);
+	    exit(execvp(prog,arglist)==-1);	/* If exec fails, then die */
+	} else if ( pid!=-1 ) {
+	    waitpid(pid,&status,0);
+	    if ( WIFEXITED(status)) {
+		rewind(ps);
+		new = SplinesFromEntities(EntityInterpretPS(ps),bgcol);
+		transform[0] = images->xscale; transform[3] = images->yscale;
+		transform[1] = transform[2] = 0;
+		transform[4] = images->xoff;
+		transform[5] = images->yoff - images->yscale*ib->height;
+		new = SplinePointListTransform(new,transform,true);
+		if ( new!=NULL ) {
+		    if ( !changed )
+			SCPreserveState(sc);
+		    for ( last=new; last->next!=NULL; last=last->next );
+		    last->next = sc->splines;
+		    sc->splines = new;
+		    changed = true;
+		}
 	    }
-	    fclose(ps);
 	}
-	unlink(bmp); unlink(eps);
-	free(bmp); free(eps); free(cmd);
+	fclose(ps);
+	close(fd);
+	unlink(tempname);		/* Might not be needed, but probably is*/
     }
     if ( changed )
 	SCCharChangedUpdate(sc,sc->parent->fv);

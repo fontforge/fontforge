@@ -35,16 +35,19 @@
 #include <locale.h>
 
 struct fontparse {
-    FontDict *fd;
+    FontDict *fd, *mainfd;
     /* always in font data */
     unsigned int infi:1;
     unsigned int inchars:1;
     unsigned int inprivate:1;
     unsigned int insubs:1;
-    unsigned int inothersubs:1;		/* Obselete */
     unsigned int inencoding: 1;
     unsigned int multiline: 1;
     unsigned int instring: 1;
+    unsigned int incidsysteminfo: 1;
+    unsigned int iscid: 1;
+    unsigned int iscff: 1;
+    int fdindex;
 
     unsigned int alreadycomplained: 1;
 
@@ -582,6 +585,57 @@ static void setLatin1Enc(char *encoding[256]) {
     copyenc(encoding,latin1enc);
 }
 
+static struct fontdict *MakeEmptyFont(void) {
+    struct fontdict *ret;
+
+    ret = calloc(1,sizeof(struct fontdict));
+    ret->fontinfo = calloc(1,sizeof(struct fontinfo));
+    ret->chars = calloc(1,sizeof(struct pschars));
+    ret->private = calloc(1,sizeof(struct private));
+    ret->private->subrs = calloc(1,sizeof(struct pschars));
+    ret->private->private = calloc(1,sizeof(struct psdict));
+    ret->encoding_name = em_none;
+    ret->fontinfo->fstype = -1;
+return( ret );
+}
+
+static struct fontdict *PSMakeEmptyFont(void) {
+    struct fontdict *ret;
+
+    ret = calloc(1,sizeof(struct fontdict));
+    ret->fontinfo = calloc(1,sizeof(struct fontinfo));
+    ret->chars = calloc(1,sizeof(struct pschars));
+    ret->private = calloc(1,sizeof(struct private));
+    ret->private->subrs = calloc(1,sizeof(struct pschars));
+    ret->private->private = calloc(1,sizeof(struct psdict));
+    ret->private->leniv = 4;
+    ret->charprocs = calloc(1,sizeof(struct charprocs));
+    ret->encoding_name = em_none;
+    ret->fontinfo->fstype = -1;
+return( ret );
+}
+
+static char *myfgets(char *str, int len, FILE *file) {
+    char *pt, *end;
+    int ch=0;
+
+    for ( pt = str, end = str+len-1; pt<end && (ch=getc(file))!=EOF && ch!='\r' && ch!='\n';
+	*pt++ = ch );
+    if ( ch=='\n' )
+	*pt++ = '\n';
+    else if ( ch=='\r' ) {
+	*pt++ = '\r';
+	if ((ch=getc(file))!='\n' )
+	    ungetc(ch,file);
+	else
+	    *pt++ = '\n';
+    }
+    if ( pt==str )
+return( NULL );
+    *pt = '\0';
+return( str );
+}
+
 static char *getstring(char *start) {
     char *end, *ret;
     int parencnt=0;
@@ -599,6 +653,17 @@ static char *getstring(char *start) {
 	strncpy(ret,start,end-start);
     ret[end-start] = '\0';
 return( ret );
+}
+
+static char *getlongstring(char *start,FILE *in) {
+    char buffer[512];
+
+    while ( *start!='\0' && *start!='(' ) ++start;
+    if ( *start!='\0' )
+return(getstring(start));
+    if ( myfgets(buffer,sizeof(buffer),in)==NULL )
+return( copy(""));
+return(getstring(buffer));
 }
 
 static char *gettoken(char *start) {
@@ -638,7 +703,7 @@ return;
     }
 }
 
-static void filldoublearray(double *array,char *start,int maxentries) {
+static void fillrealarray(real *array,char *start,int maxentries) {
     int i;
     char *end;
 
@@ -656,10 +721,16 @@ return;
 static void InitDict(struct psdict *dict,char *line) {
     while ( *line!='/' && *line!='\0' ) ++line;
     while ( !isspace(*line) && *line!='\0' ) ++line;
-    dict->cnt = strtol(line,NULL,10);
-    if ( dict->cnt>0 ) {
-	dict->keys = calloc(dict->cnt,sizeof(char *));
-	dict->values = calloc(dict->cnt,sizeof(char *));
+    dict->cnt += strtol(line,NULL,10);
+    if ( dict->next>0 ) { int i;		/* Shouldn't happen, but did in a bad file */
+	dict->keys = grealloc(dict->keys,dict->cnt*sizeof(char *));
+	dict->values = grealloc(dict->values,dict->cnt*sizeof(char *));
+	for ( i=dict->next; i<dict->cnt; ++i ) {
+	    dict->keys[i] = NULL; dict->values[i] = NULL;
+	}
+    } else {
+	dict->keys = gcalloc(dict->cnt,sizeof(char *));
+	dict->values = gcalloc(dict->cnt,sizeof(char *));
     }
 }
 
@@ -699,6 +770,25 @@ static void ContinueValue(struct fontparse *fp, struct psdict *dict, char *line)
     int incomment = false;
 
     while ( *line ) {
+	if ( !fp->instring && fp->depth==0 &&
+		(strncmp(line,"def",3)==0 ||
+		 strncmp(line,"|-",2)==0 || strncmp(line,"ND",2)==0)) {
+	    while ( 1 ) {
+		while ( fp->vpt>fp->vbuf+1 && isspace(fp->vpt[-1]) )
+		    --fp->vpt;
+		if ( fp->vpt>fp->vbuf+8 && strncmp(fp->vpt-8,"noaccess",8)==0 )
+		    fp->vpt -= 8;
+		else if ( fp->vpt>fp->vbuf+8 && strncmp(fp->vpt-8,"readonly",8)==0 )
+		    fp->vpt -= 8;
+		else
+	    break;
+	    }
+	    dict->values[dict->next] = copyn(fp->vbuf,fp->vpt-fp->vbuf);
+	    ++dict->next;
+	    fp->vpt = fp->vbuf;
+	    fp->multiline = false;
+return;
+	}
 	if ( fp->vpt>=fp->vmax ) {
 	    int len = fp->vmax-fp->vbuf+1000, off=fp->vpt-fp->vbuf;
 	    fp->vbuf = grealloc(fp->vbuf,len);
@@ -718,17 +808,6 @@ static void ContinueValue(struct fontparse *fp, struct psdict *dict, char *line)
 	else if ( *line=='}' || *line==']' )
 	    --fp->depth;
 	*fp->vpt++ = *line++;
-	if ( !fp->instring && fp->depth==0 &&
-		(strncmp(line,"def",3)==0 ||
-		 strncmp(line,"|-",2)==0 || strncmp(line,"ND",2)==0)) {
-	    while ( fp->vpt>fp->vbuf+1 && isspace(fp->vpt[-1]) )
-		--fp->vpt;
-	    dict->values[dict->next] = copyn(fp->vbuf,fp->vpt-fp->vbuf);
-	    ++dict->next;
-	    fp->vpt = fp->vbuf;
-	    fp->multiline = false;
-return;
-	}
     }
 }
 
@@ -760,7 +839,7 @@ return;
     ++dict->next;
 }
 
-static void parseline(struct fontparse *fp,char *line) {
+static void parseline(struct fontparse *fp,char *line,FILE *in) {
     char buffer[200], *pt, *endtok;
 
     if ( line[0]=='%' && !fp->multiline )
@@ -807,9 +886,9 @@ return;
 	if ( mycmp("version",line+1,endtok)==0 )
 	    fp->fd->fontinfo->version = getstring(endtok);
 	else if ( mycmp("Notice",line+1,endtok)==0 )
-	    fp->fd->fontinfo->notice = getstring(endtok);
+	    fp->fd->fontinfo->notice = getlongstring(endtok,in);
 	else if ( mycmp("Copyright",line+1,endtok)==0 )		/* cff spec allows for copyright and notice */
-	    fp->fd->fontinfo->notice = getstring(endtok);
+	    fp->fd->fontinfo->notice = getlongstring(endtok,in);
 	else if ( mycmp("FullName",line+1,endtok)==0 )
 	    fp->fd->fontinfo->fullname = getstring(endtok);
 	else if ( mycmp("FamilyName",line+1,endtok)==0 )
@@ -830,6 +909,8 @@ return;
 	    fp->fd->fontinfo->ascent = strtol(endtok,NULL,10);
 	else if ( mycmp("descent",line+1,endtok)==0 )
 	    fp->fd->fontinfo->descent = strtol(endtok,NULL,10);
+	else if ( mycmp("FSType",line+1,endtok)==0 )
+	    fp->fd->fontinfo->fstype = strtol(endtok,NULL,10);
 	else if ( !fp->alreadycomplained ) {
 	    fprintf( stderr, "Didn't understand |%s", line );
 	    fp->alreadycomplained = true;
@@ -841,14 +922,14 @@ return;
 	    if ( fp->fd->chars->next==0 )
 		InitChars(fp->fd->chars,line);
 	    fp->inchars = 1;
-	    fp->insubs = fp->inothersubs = 0;
+	    fp->insubs = 0;
 return;
 	} else if ( strstr(line,"/Subrs")!=NULL ) {
 	    if ( fp->fd->private->subrs->next>0 )
 return;
 	    InitChars(fp->fd->private->subrs,line);
 	    fp->insubs = 1;
-	    fp->inchars = fp->inothersubs = 0;
+	    fp->inchars = 0;
 return;
 	} else if ( fp->multiline ) {
 	    ContinueValue(fp,fp->fd->private->private,line);
@@ -874,6 +955,18 @@ return;
 		fp->fd->private->leniv = strtol(endtok,NULL,10);	/* We need this value */
 	    AddValue(fp,fp->fd->private->private,line,endtok);
 	}
+    } else if ( fp->incidsysteminfo ) {
+	if ( endtok==NULL && strncmp(line,"end", 3)==0 ) {
+	    fp->incidsysteminfo=0;
+return;
+	} else if ( endtok==NULL )
+return;
+	if ( mycmp("Registry",line+1,endtok)==0 )
+	    fp->fd->registry = getstring(endtok);
+	else if ( mycmp("Ordering",line+1,endtok)==0 )
+	    fp->fd->ordering = getstring(endtok);
+	else if ( mycmp("Supplement",line+1,endtok)==0 )		/* cff spec allows for copyright and notice */
+	    fp->fd->supplement = strtol(endtok,NULL,0);
     } else {
 	if ( strstr(line,"/Private")!=NULL ) {
 	    fp->inprivate = 1;
@@ -888,15 +981,25 @@ return;
 	    if ( fp->fd->chars->next==0 )
 		InitChars(fp->fd->chars,line);
 	    fp->inchars = 1;
-	    fp->insubs = fp->inothersubs = 0;
+	    fp->insubs = 0;
 return;
 	} else if ( mycmp("/CharProcs",line,endtok)==0 ) {
 	    InitCharProcs(fp->fd->charprocs,line);
-	    fp->insubs = fp->inothersubs = 0;
+	    fp->insubs = 0;
+return;
+	} else if ( strstr(line,"/CIDSystemInfo")!=NULL ) {
+	    fp->incidsysteminfo = 1;
 return;
 	}
-	if ( endtok==NULL )
+	if ( endtok==NULL ) {
+	    if ( fp->fdindex!=-1 && strstr(line,"end")!=NULL ) {
+		if ( ++fp->fdindex>=fp->mainfd->fdcnt )
+		    fp->fd = fp->mainfd;
+		else
+		    fp->fd = fp->mainfd->fds[fp->fdindex];
+	    }
 return;
+	}
 	if ( mycmp("FontName",line+1,endtok)==0 )
 	    fp->fd->fontname = gettoken(endtok);
 	else if ( mycmp("Encoding",line+1,endtok)==0 ) {
@@ -915,13 +1018,13 @@ return;
 	else if ( mycmp("FontType",line+1,endtok)==0 )
 	    fp->fd->fonttype = strtol(endtok,NULL,10);
 	else if ( mycmp("FontMatrix",line+1,endtok)==0 )
-	     filldoublearray(fp->fd->fontmatrix,endtok,6);
+	     fillrealarray(fp->fd->fontmatrix,endtok,6);
 	else if ( mycmp("LanguageLevel",line+1,endtok)==0 )
 	    fp->fd->languagelevel = strtol(endtok,NULL,10);
 	else if ( mycmp("WMode",line+1,endtok)==0 )
 	    fp->fd->wmode = strtol(endtok,NULL,10);
 	else if ( mycmp("FontBBox",line+1,endtok)==0 )
-	     filldoublearray(fp->fd->fontbb,endtok,4);
+	     fillrealarray(fp->fd->fontbb,endtok,4);
 	else if ( mycmp("UniqueID",line+1,endtok)==0 )
 	    fp->fd->uniqueid = strtol(endtok,NULL,10);
 	else if ( mycmp("XUID",line+1,endtok)==0 )
@@ -932,30 +1035,41 @@ return;
 	    /* Do Nothing */;
 	else if ( mycmp("BuildGlyph",line+1,endtok)==0 )
 	    /* Do Nothing */;
-	else if ( !fp->alreadycomplained ) {
+	else if ( mycmp("CIDFontName",line+1,endtok)==0 )
+	    fp->fd->cidfontname = gettoken(endtok);
+	else if ( mycmp("CIDFontVersion",line+1,endtok)==0 )
+	    fp->fd->cidversion = strtod(endtok,NULL);
+	else if ( mycmp("CIDFontType",line+1,endtok)==0 )
+	    fp->fd->cidfonttype = strtol(endtok,NULL,10);
+	else if ( mycmp("UIDBase",line+1,endtok)==0 )
+	    fp->fd->uniqueid = strtol(endtok,NULL,10);
+	else if ( mycmp("CIDMapOffset",line+1,endtok)==0 )
+	    fp->fd->mapoffset = strtol(endtok,NULL,10);
+	else if ( mycmp("FDBytes",line+1,endtok)==0 )
+	    fp->fd->fdbytes = strtol(endtok,NULL,10);
+	else if ( mycmp("GDBytes",line+1,endtok)==0 )
+	    fp->fd->gdbytes = strtol(endtok,NULL,10);
+	else if ( mycmp("CIDCount",line+1,endtok)==0 )
+	    fp->fd->cidcnt = strtol(endtok,NULL,10);
+	else if ( mycmp("FDArray",line+1,endtok)==0 ) { int i;
+	    fp->mainfd = fp->fd;
+	    fp->fd->fdcnt = strtol(endtok,NULL,10);
+	    fp->fd->fds = gcalloc(fp->fd->fdcnt,sizeof(struct fontdict *));
+	    for ( i=0; i<fp->fd->fdcnt; ++i )
+		fp->fd->fds[i] = MakeEmptyFont();
+	    fp->fdindex = 0;
+	    fp->fd = fp->fd->fds[0];
+	} else if ( mycmp("FontSetInit",line+1,endtok)==0 ) {
+	    fp->iscff = true;
+	    fp->iscid = false;
+	} else if ( mycmp("CIDInit",line+1,endtok)==0 ) {
+	    fp->iscid = true;
+	    fp->iscff = false;
+	} else if ( !fp->alreadycomplained ) {
 	    fprintf( stderr, "Didn't understand |%s", line );
 	    fp->alreadycomplained = true;
 	}
     }
-}
-
-static char *myfgets(char *str, int len, FILE *file) {
-    char *pt, *end;
-    int ch=0;
-
-    for ( pt = str, end = str+len-1; pt<end && (ch=getc(file))!=EOF && ch!='\r' && ch!='\n';
-	*pt++ = ch );
-    if ( ch=='\n' )
-	*pt++ = '\n';
-    else if ( ch=='\r' ) {
-	*pt++ = '\n';
-	if ((ch=getc(file))!='\n' )
-	    ungetc(ch,file);
-    }
-    if ( pt==str )
-return( NULL );
-    *pt = '\0';
-return( str );
 }
 
 static int hex(int ch1, int ch2) {
@@ -978,7 +1092,7 @@ unsigned short r;
 #define c1	52845
 #define c2	22719
 
-static void initcode() {
+static void initcode(void) {
     r = 55665;
 }
 
@@ -1010,7 +1124,7 @@ static void addinfo(struct fontparse *fp,char *line,char *tok,char *binstart,int
     binstart += fp->fd->private->leniv;
     binlen -= fp->fd->private->leniv;
 
-    if ( fp->insubs /*|| fp->inothersubs*/ ) {
+    if ( fp->insubs ) {
 	struct pschars *chars = /*fp->insubs ?*/ fp->fd->private->subrs /*: fp->fd->private->othersubrs*/;
 	while ( isspace(*line)) ++line;
 	if ( strncmp(line,"dup ",4)==0 ) {
@@ -1146,7 +1260,7 @@ return( 0 );
     }
     *pt = '\0';
     if ( binstart==NULL ) {
-	parseline(fp,buffer);
+	parseline(fp,buffer,temp);
     } else {
 	addinfo(fp,buffer,temptok,binstart,binlen);
     }
@@ -1247,7 +1361,172 @@ static void parsetype3(struct fontparse *fp,FILE *in) {
     PSFontInterpretPS(in,fp->fd->charprocs);
 }
 
-static void doubledecrypt(struct fontparse *fp,FILE *in, FILE *temp) {
+static unsigned char *readt1str(FILE *temp,int offset,int len,int leniv) {
+    int i;
+    unsigned char *str, *pt;
+    unsigned short r = 4330;
+    unsigned char plain, cypher;
+    /* The CID spec doesn't mention this, but the type 1 strings are all */
+    /*  eexec encrupted (with the nested encryption). Remember leniv varies */
+    /*  from fd to fd (potentially) */
+    /* I'm told (by Ian Kemmish) that leniv==-1 => no eexec encryption */
+
+    fseek(temp,offset,SEEK_SET);
+    if ( leniv<0 ) {
+	str = pt = galloc(len+1);
+	for (; i<len; ++i )
+	    *pt++ = getc(temp);
+    } else {
+	for ( i=0; i<leniv; ++i ) {
+	    cypher = getc(temp);
+	    plain = ( cypher ^ (r>>8));
+	    r = (cypher + r) * c1 + c2;
+	}
+	str = pt = galloc(len-leniv+1);
+	for (; i<len; ++i ) {
+	    cypher = getc(temp);
+	    plain = ( cypher ^ (r>>8));
+	    r = (cypher + r) * c1 + c2;
+	    *pt++ = plain;
+	}
+    }
+    *pt = '\0';
+return( str );
+}
+
+static void figurecids(struct fontparse *fp,FILE *temp) {
+    struct fontdict *fd = fp->mainfd;
+    int i,j,k,val;
+    int *offsets;
+    int cidcnt = fd->cidcnt;
+    int leniv;
+    /* Some cid formats don't have any of these */
+
+    fd->cidstrs = galloc(cidcnt*sizeof(uint8 *));
+    fd->cidlens = galloc(cidcnt*sizeof(int16));
+    fd->cidfds = galloc((cidcnt+1)*sizeof(int16));
+    offsets = galloc((cidcnt+1)*sizeof(int));
+    GProgressChangeTotal(cidcnt);
+
+    fseek(temp,fd->mapoffset,SEEK_SET);
+    for ( i=0; i<=fd->cidcnt; ++i ) {
+	for ( j=val=0; j<fd->fdbytes; ++j )
+	    val = (val<<8) + getc(temp);
+	fd->cidfds[i] = val;
+	for ( j=val=0; j<fd->gdbytes; ++j )
+	    val = (val<<8) + getc(temp);
+	offsets[i] = val;
+	if ( i!=0 )
+	    fd->cidlens[i-1] = offsets[i]-offsets[i-1];
+    }
+
+    for ( i=0; i<fd->cidcnt; ++i ) {
+	if ( fd->cidlens[i]== 0 )
+	    fd->cidstrs[i] = NULL;
+	else
+	    fd->cidstrs[i] = readt1str(temp,offsets[i],fd->cidlens[i],
+		    fd->fds[fd->cidfds[i]]->private->leniv);
+	GProgressNext();
+    }
+    free(offsets);
+
+    for ( k=0; k<fd->fdcnt; ++k ) {
+	struct private *private = fd->fds[k]->private;
+	char *ssubroff = PSDictHasEntry(private->private,"SubrMapOffset");
+	char *ssbbytes = PSDictHasEntry(private->private,"SDBytes");
+	char *ssubrcnt = PSDictHasEntry(private->private,"SubrCount");
+	int subroff, sbbytes, subrcnt;
+
+	if ( ssubroff!=NULL && ssbbytes!=NULL && ssubrcnt!=NULL &&
+		(subroff=strtol(ssubroff,NULL,10))>=0 &&
+		(sbbytes=strtol(ssbbytes,NULL,10))>0 &&
+		(subrcnt=strtol(ssubrcnt,NULL,10))>0 ) {
+	    private->subrs->cnt = subrcnt;
+	    private->subrs->values = gcalloc(subrcnt,sizeof(char *));
+	    private->subrs->lens = gcalloc(subrcnt,sizeof(int));
+	    leniv = private->leniv;
+	    offsets = galloc((subrcnt+1)*sizeof(int));
+	    fseek(temp,subroff,SEEK_SET);
+	    for ( i=0; i<=subrcnt; ++i ) {
+		for ( j=val=0; j<fd->gdbytes; ++j )
+		    val = (val<<8) + getc(temp);
+		offsets[i] = val;
+		if ( i!=0 )
+		    private->subrs->lens[i-1] = offsets[i]-offsets[i-1];
+	    }
+	    for ( i=0; i<subrcnt; ++i ) {
+		private->subrs->values[i] = readt1str(temp,offsets[i],
+			private->subrs->lens[i],leniv);
+	    }
+	    free(offsets);
+	}
+	PSDictRemoveEntry(private->private,"SubrMapOffset");
+	PSDictRemoveEntry(private->private,"SDBytes");
+	PSDictRemoveEntry(private->private,"SubrCount");
+    }
+}
+
+static void dodata( struct fontparse *fp, FILE *in, FILE *temp) {
+    int binary, cnt, len;
+    int ch, ch2;
+    char *pt;
+    char fontsetname[256];
+
+    while ( (ch=getc(in))!='(' && ch!='/' && ch!=EOF );
+    if ( ch=='/' ) {
+	/* There appears to be no provision for a hex encoding here */
+	/* Why can't they use the same format for routines with the same name? */
+	binary = true;
+	for ( pt=fontsetname; (ch=getc(in))!=' ' && ch!=EOF; )
+	    if ( pt<fontsetname+sizeof(fontsetname)-1 )
+		*pt++= ch;
+	*pt = '\0';
+    } else {
+	if ( (ch=getc(in))=='B' || ch=='b' ) binary = true;
+	else if ( ch=='H' || ch=='h' ) binary = false;
+	else {
+	    binary = true;		/* Who knows? */
+	    fprintf( stderr, "Failed to parse the StartData command properly\n" );
+	}
+	fontsetname[0] = '\0';
+    }
+    while ( (ch=getc(in))!=')' && ch!=EOF );
+    if ( fscanf( in, "%d", &len )!=1 || len<=0 ) {
+	len = 0;
+	fprintf( stderr, "Failed to parse the StartData command properly, bad cnt\n" );
+    }
+    cnt = len;
+    while ( isspace(ch=getc(in)) );
+    ungetc(ch,in);
+    for ( pt="StartData "; *pt; ++pt )
+	getc(in);			/* And if it didn't match, what could I do about it? */
+    if ( binary ) {
+	while ( cnt>0 ) {
+	    ch = getc(in);
+	    putc(ch,temp);
+	    --cnt;
+	}
+    } else {
+	while ( cnt>0 ) {
+	    /* Hex data are allowed to contain whitespace */
+	    while ( isspace(ch=getc(in)) );
+	    while ( isspace(ch2=getc(in)) );
+	    ch = hex(ch,ch2);
+	    putc(ch,temp);
+	    --cnt;
+	}
+	if ( (ch=getc(in))!='>' ) ungetc(ch,in);
+    }
+    rewind(temp);
+    if ( fp->iscid )
+	figurecids(fp,temp);
+    else {
+	fp->fd->sf = CFFParse(temp,len,fontsetname);
+	fp->fd->wascff = true;
+    }
+}
+
+static void realdecrypt(struct fontparse *fp,FILE *in, FILE *temp) {
     char buffer[256];
     int first, hassectionheads;
 
@@ -1256,10 +1535,12 @@ static void doubledecrypt(struct fontparse *fp,FILE *in, FILE *temp) {
 	if ( first && buffer[0]=='\200' ) {
 	    hassectionheads = 1;
 	    fp->fd->wasbinary = true;
-	    parseline(fp,buffer+6);
+	    parseline(fp,buffer+6,in);
 	} else
-	    parseline(fp,buffer);
+	    parseline(fp,buffer,in);
 	first = 0;
+	if ( strstr(buffer,"%%BeginData: ")!=NULL )
+    break;
 	if ( strstr(buffer,"currentfile")!=NULL && strstr(buffer, "eexec")!=NULL )
     break;
 	if ( strstr(buffer,"CharProcs")!=NULL && strstr(buffer,"begin")!=NULL ) {
@@ -1268,27 +1549,18 @@ return;
 	}
     }
 
-    decrypteexec(in,temp,hassectionheads);
-    rewind(temp);
-    decryptagain(fp,temp);
-    while ( myfgets(buffer,sizeof(buffer),in)!=NULL ) {
-	if ( buffer[0]!='\200' || !hassectionheads )
-	    parseline(fp,buffer);
+    if ( strstr(buffer,"%%BeginData: ")!=NULL ) {
+	/* used by both CID fonts and CFF fonts (and chameleons, whatever they are) */
+	dodata(fp,in,temp);
+    } else {
+	decrypteexec(in,temp,hassectionheads);
+	rewind(temp);
+	decryptagain(fp,temp);
+	while ( myfgets(buffer,sizeof(buffer),in)!=NULL ) {
+	    if ( buffer[0]!='\200' || !hassectionheads )
+		parseline(fp,buffer,in);
+	}
     }
-}
-
-static struct fontdict *MakeEmptyFont(void) {
-    struct fontdict *ret;
-
-    ret = calloc(1,sizeof(struct fontdict));
-    ret->fontinfo = calloc(1,sizeof(struct fontinfo));
-    ret->chars = calloc(1,sizeof(struct pschars));
-    ret->private = calloc(1,sizeof(struct private));
-    ret->private->subrs = calloc(1,sizeof(struct pschars));
-    ret->private->private = calloc(1,sizeof(struct psdict));
-    ret->private->leniv = 4;
-    ret->charprocs = calloc(1,sizeof(struct charprocs));
-return( ret );
 }
 
 FontDict *ReadPSFont(char *fontname) {
@@ -1311,8 +1583,9 @@ return(NULL);
 
     oldloc = setlocale(LC_NUMERIC,"C");
     memset(&fp,'\0',sizeof(fp));
-    fp.fd = MakeEmptyFont();
-    doubledecrypt(&fp,in,temp);
+    fp.fd = fp.mainfd = PSMakeEmptyFont();
+    fp.fdindex = -1;
+    realdecrypt(&fp,in,temp);
     setlocale(LC_NUMERIC,oldloc);
 
     fclose(in); fclose(temp);
@@ -1362,7 +1635,7 @@ static void PrivateFree(struct private *prv) {
     free(prv);
 }
 
-static void FontInfoFree(FontInfo *fi) {
+static void FontInfoFree(struct fontinfo *fi) {
     free(fi->familyname);
     free(fi->fullname);
     free(fi->notice);
@@ -1377,15 +1650,26 @@ void PSFontFree(FontDict *fd) {
     for ( i=0; i<256; ++i )
 	free( fd->encoding[i]);
     free(fd->fontname);
+    free(fd->cidfontname);
+    free(fd->registry);
+    free(fd->ordering);
     FontInfoFree(fd->fontinfo);
     PSCharsFree(fd->chars);
     PrivateFree(fd->private);
-    if ( fd->charprocs->cnt!=0 ) {
+    if ( fd->charprocs!=NULL ) {
 	for ( i=0; i<fd->charprocs->cnt; ++i )
 	    free(fd->charprocs->keys[i]);
 	free(fd->charprocs->keys);
 	free(fd->charprocs->values);
 	free(fd->charprocs);
     }
+    for ( i=0; i<fd->cidcnt; ++i )
+	free( fd->cidstrs[i]);
+    free(fd->cidstrs);
+    free(fd->cidlens);
+    free(fd->cidfds);
+    for ( i=0; i<fd->fdcnt; ++i )
+	PSFontFree(fd->fds[i]);
+    free(fd->fds);
     free(fd);
 }

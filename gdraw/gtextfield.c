@@ -1219,7 +1219,8 @@ return( true );
 
     if ( event->type == et_charup )
 return( false );
-    if ( (event->u.chr.keysym == GK_Return && !gt->accepts_returns ) ||
+    if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ||
+	    (event->u.chr.keysym == GK_Return && !gt->accepts_returns ) ||
 	    ( event->u.chr.keysym == GK_Tab && !gt->accepts_tabs ) ||
 	    event->u.chr.keysym == GK_BackTab || event->u.chr.keysym == GK_Escape )
 return( false );

@@ -1260,7 +1260,8 @@ return( NULL );
 
     gdisp->funcs = &psfuncs;
     gdisp->res = 600;
-    gdisp->scale_screen_by = gdisp->res/screen_display->res;
+    if ( screen_display!=NULL )
+	gdisp->scale_screen_by = gdisp->res/screen_display->res;
     if ( gdisp->scale_screen_by==0 ) gdisp->scale_screen_by =1;
 
     gdisp->scale = 1.;

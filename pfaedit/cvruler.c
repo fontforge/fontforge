@@ -30,7 +30,7 @@
 
 static void RulerText(CharView *cv, unichar_t *ubuf) {
     char buf[60];
-    double xoff = cv->info.x-cv->p.cx, yoff = cv->info.y-cv->p.cy;
+    real xoff = cv->info.x-cv->p.cx, yoff = cv->info.y-cv->p.cy;
 
     sprintf( buf, "%.1f %.0f\260 (%.0f,%.0f)", sqrt(xoff*xoff+yoff*yoff),
 	    atan2(yoff,xoff)*180/3.1415926535897932,

@@ -95,11 +95,11 @@ enum zones { z_low, z_mid, z_high, z_ascend, z_descend,
 	z_serifbase, z_serifxh, z_serifas, z_serifds, z_max };
 
 struct charone {
-    double lbearing, rmax;
-    double newl, newr;
+    real lbearing, rmax;
+    real newl, newr;
     SplineChar *sc;
-    double lzones[z_max][2];	/* min x values/zone with corresponding y vals */
-    double rzones[z_max][2];	/* max x values/zone with corresponding y vals */
+    real lzones[z_max][2];	/* min x values/zone with corresponding y vals */
+    real rzones[z_max][2];	/* max x values/zone with corresponding y vals */
     struct charpair *asleft;
     struct charpair *asright;
 };
@@ -107,12 +107,12 @@ struct charone {
 struct charpair {
     struct charone *left, *right;
     struct charpair *nextasleft, *nextasright;
-    double zones[z_max];
-    double average;
+    real zones[z_max];
+    real average;
 };
 
 typedef struct widthinfo {
-    double spacing;		/* desired spacing between letters */
+    real spacing;		/* desired spacing between letters */
     int zones[z_max][2];	/* low and high for each zone */
     int lcnt, rcnt;		/* count of left and right chars respectively */
     int tcnt;			/* sum of r+l cnt */
@@ -127,12 +127,12 @@ typedef struct widthinfo {
 
 #define NOTREACHED	-99999.0
 
-static double LineFindLeftDistance(struct charone *right,WidthInfo *wi);
-static double LineFindRightDistance(struct charone *left,WidthInfo *wi);
+static real LineFindLeftDistance(struct charone *right,WidthInfo *wi);
+static real LineFindRightDistance(struct charone *left,WidthInfo *wi);
 
 static void FigureLR(WidthInfo *wi) {
     int i;
-    double lsum, rsum, sum, subsum;
+    real lsum, rsum, sum, subsum;
     struct charone *ch;
     struct charpair *cp;
 
@@ -172,8 +172,8 @@ static void FigureLR(WidthInfo *wi) {
 static void CheckOutOfBounds(WidthInfo *wi) {
     int i,j;
     struct charpair *cp;
-    double min=NOTREACHED, temp, lr;
-    double minsp = wi->spacing/3;
+    real min=NOTREACHED, temp, lr;
+    real minsp = wi->spacing/3;
 
     for ( i=0; i<wi->rcnt; ++i ) {
 	if ( wi->right[i]->newl<-wi->spacing || wi->right[i]->newl>wi->spacing )
@@ -205,7 +205,7 @@ static void CheckOutOfBounds(WidthInfo *wi) {
 static void ApplyChanges(WidthInfo *wi) {
     char *rsel = gcalloc(wi->sf->charcnt,sizeof(char));
     int i, width;
-    double transform[6];
+    real transform[6];
     struct charone *ch;
     DBounds bb;
 
@@ -248,7 +248,7 @@ static void AutoKern(WidthInfo *wi) {
     int i, j, diff;
     KernPair *kp;
     MetricsView *mv;
-    double minsp = wi->spacing/3, min, max, temp;
+    real minsp = wi->spacing/3, min, max, temp;
 
     for ( i=0; i<wi->lcnt*wi->rcnt; ++i ) {
 	cp = wi->pairs[i];
@@ -301,8 +301,8 @@ static void AutoKern(WidthInfo *wi) {
 	MVReKern(mv);
 }
 
-static double SplineFindMaxXAtY(Spline *spline,double y,double max) {
-    double t,t1,t2,tbase,val;
+static real SplineFindMaxXAtY(Spline *spline,real y,real max) {
+    real t,t1,t2,tbase,val;
     Spline1D *xsp;
 
     if ( y>spline->from->me.y && y>spline->from->nextcp.y &&
@@ -347,8 +347,8 @@ return( max );
 return( max );
 }
 
-static double SplineFindMinXAtY(Spline *spline,double y,double min) {
-    double t,t1,t2,tbase,val;
+static real SplineFindMinXAtY(Spline *spline,real y,real min) {
+    real t,t1,t2,tbase,val;
     Spline1D *xsp;
 
     if ( y>spline->from->me.y && y>spline->from->nextcp.y &&
@@ -393,7 +393,7 @@ return( min );
 return( min );
 }
 
-static void PtFillZones(double x, double y,struct charone *ch, WidthInfo *wi) {
+static void PtFillZones(real x, real y,struct charone *ch, WidthInfo *wi) {
     int i;
 
     for ( i=0; i<z_max; ++i )
@@ -412,7 +412,7 @@ return;
 
 static void SplineFillZones(Spline *spline,struct charone *ch, WidthInfo *wi) {
     Spline1D *xsp, *ysp;
-    double t1, t2, tbase, t, val;
+    real t1, t2, tbase, t, val;
     int i, j;
 
     /* first try the end points */
@@ -488,7 +488,7 @@ static void SplineFillZones(Spline *spline,struct charone *ch, WidthInfo *wi) {
     }
 }
 
-static double SSFindMaxXAtY(SplineSet *spl,double y,double max) {
+static real SSFindMaxXAtY(SplineSet *spl,real y,real max) {
     Spline *sp, *first;
 
     while ( spl!=NULL ) {
@@ -502,7 +502,7 @@ static double SSFindMaxXAtY(SplineSet *spl,double y,double max) {
 return( max );
 }
 
-static double SSFindMinXAtY(SplineSet *spl,double y,double min) {
+static real SSFindMinXAtY(SplineSet *spl,real y,real min) {
     Spline *sp, *first;
 
     while ( spl!=NULL ) {
@@ -529,8 +529,8 @@ static void SSFillZones(SplineSet *spl,struct charone *ch, WidthInfo *wi) {
     }
 }
 
-static double SCFindMaxXAtY(SplineChar *sc,double y) {
-    double max = NOTREACHED;
+static real SCFindMaxXAtY(SplineChar *sc,real y) {
+    real max = NOTREACHED;
     RefChar *ref;
 
     max = SSFindMaxXAtY(sc->splines,y,NOTREACHED);
@@ -539,8 +539,8 @@ static double SCFindMaxXAtY(SplineChar *sc,double y) {
 return( max );
 }
 
-static double SCFindMinXAtY(SplineChar *sc,double y) {
-    double min = NOTREACHED;
+static real SCFindMinXAtY(SplineChar *sc,real y) {
+    real min = NOTREACHED;
     RefChar *ref;
 
     min = SSFindMinXAtY(sc->splines,y,NOTREACHED);
@@ -570,11 +570,11 @@ static void SCFillZones(struct charone *ch,WidthInfo *wi) {
     }
 }
 
-static double weights[z_max] = { 1, 1, 1, 1, 1, .25, .25, .25, .25 };
+static real weights[z_max] = { 1, 1, 1, 1, 1, .25, .25, .25, .25 };
 static void PairFindDistance(struct charpair *cp,WidthInfo *wi) {
     int i;
-    double xr, xl;
-    double sum, cnt, max, min, fudge;
+    real xr, xl;
+    real sum, cnt, max, min, fudge;
 
     for ( i=0; i<z_max; ++i ) {
 	cp->zones[i] = NOTREACHED;
@@ -635,10 +635,10 @@ static void PairFindDistance(struct charpair *cp,WidthInfo *wi) {
     }
 }
 
-static double LineFindLeftDistance(struct charone *right,WidthInfo *wi) {
+static real LineFindLeftDistance(struct charone *right,WidthInfo *wi) {
     int i;
-    double sum, cnt, max, min, fudge;
-    double zones[z_max];
+    real sum, cnt, max, min, fudge;
+    real zones[z_max];
 
     for ( i=0; i<z_max; ++i ) {
 	zones[i] = NOTREACHED;
@@ -673,10 +673,10 @@ return( (2*min+sum/cnt)/3 );
     }
 }
 
-static double LineFindRightDistance(struct charone *left,WidthInfo *wi) {
+static real LineFindRightDistance(struct charone *left,WidthInfo *wi) {
     int i;
-    double sum, cnt, max, min, fudge;
-    double zones[z_max];
+    real sum, cnt, max, min, fudge;
+    real zones[z_max];
 
     for ( i=0; i<z_max; ++i ) {
 	zones[i] = NOTREACHED;
@@ -715,12 +715,12 @@ static void FindZones(WidthInfo *wi) {
     DBounds bb;
     SplineFont *sf=wi->sf;
     int i, si=-1;
-    double as, ds, xh, serifsize, angle, ca;
+    real as, ds, xh, serifsize, angle, ca;
     static char *caps = "ABCDEFGHIJKLMNOPQRSTUVWXYZbdhkl";
     static char *descent = "pqgyj";
     static char *xheight = "xuvwyzacegmnopqrs";
     static char *easyserif = "IBDEFHIKLNPR";
-    double stemx, testx, y, ytop, ybottom, yorig, topx, bottomx;
+    real stemx, testx, y, ytop, ybottom, yorig, topx, bottomx;
 
     for ( i=0; caps[i]!='\0'; ++i )
 	if ( (si=SFFindExistingChar(sf,caps[i],NULL))!=-1 && sf->chars[si]!=NULL )
@@ -811,10 +811,10 @@ static void FindZones(WidthInfo *wi) {
 	wi->space_guess = rint(.184*(sf->ascent+sf->descent));
 }
 
-double SFGuessItalicAngle(SplineFont *sf) {
+real SFGuessItalicAngle(SplineFont *sf) {
     static char *easyserif = "IBDEFHKLNPR";
     int i,si;
-    double as, topx, bottomx;
+    real as, topx, bottomx;
     DBounds bb;
 
     for ( i=0; easyserif[i]!='\0'; ++i )
@@ -837,7 +837,7 @@ return( atan2(as/3,topx-bottomx)*180/3.1415926535897932-90 );
 void SFHasSerifs(SplineFont *sf) {
     static char *easyserif = "IBDEFHKLNPR";
     int i,si;
-    double as, topx, bottomx, serifbottomx, seriftopx;
+    real as, topx, bottomx, serifbottomx, seriftopx;
     DBounds bb;
 
     for ( i=0; easyserif[i]!='\0'; ++i )
@@ -854,10 +854,10 @@ return;
     bottomx = SCFindMinXAtY(sf->chars[si],as/3+bb.miny);
     serifbottomx = SCFindMinXAtY(sf->chars[si],1+bb.miny);
     seriftopx = SCFindMinXAtY(sf->chars[si],bb.maxy-1);
-    if ( DoubleNear(topx,bottomx) ) {
-	if ( DoubleNear(serifbottomx,bottomx) && DoubleNear(seriftopx,topx))
+    if ( RealNear(topx,bottomx) ) {
+	if ( RealNear(serifbottomx,bottomx) && RealNear(seriftopx,topx))
 	    sf->issans = true;
-	else if ( DoubleNear(serifbottomx,seriftopx) && topx-seriftopx>0 )
+	else if ( RealNear(serifbottomx,seriftopx) && topx-seriftopx>0 )
 	    sf->isserif = true;
     } else {
 	/* It's Italic. I'm just going to give up.... */
@@ -1061,7 +1061,7 @@ static int AW_OK(GGadget *g, GEvent *e) {
 	int err = false;
 	int tot;
 
-	wi->spacing = GetDoubleR(gw,CID_Spacing, _STR_Spacing,&err);
+	wi->spacing = GetRealR(gw,CID_Spacing, _STR_Spacing,&err);
 	if ( wi->autokern ) {
 	    wi->threshold = GetIntR(gw,CID_Threshold, _STR_Threshold, &err);
 	    tot = GetIntR(gw,CID_Total, _STR_TotalKerns, &err);

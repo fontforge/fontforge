@@ -125,7 +125,7 @@ void SplineRefigure(Spline *spline) {
     Spline1D *xsp = &spline->splines[0], *ysp = &spline->splines[1];
 
 #ifdef DEBUG
-    if ( DoubleNear(from->me.x,to->me.x) && DoubleNear(from->me.y,to->me.y))
+    if ( RealNear(from->me.x,to->me.x) && RealNear(from->me.y,to->me.y))
 	GDrawIError("Zero length spline created");
 #endif
     xsp->d = from->me.x; ysp->d = from->me.y;
@@ -147,12 +147,12 @@ void SplineRefigure(Spline *spline) {
 	ysp->b = 3*(to->prevcp.y-from->nextcp.y)-ysp->c;
 	xsp->a = to->me.x-from->me.x-xsp->c-xsp->b;
 	ysp->a = to->me.y-from->me.y-ysp->c-ysp->b;
-	if ( DoubleNear(xsp->c,0)) xsp->c=0;
-	if ( DoubleNear(ysp->c,0)) ysp->c=0;
-	if ( DoubleNear(xsp->b,0)) xsp->b=0;
-	if ( DoubleNear(ysp->b,0)) ysp->b=0;
-	if ( DoubleNear(xsp->a,0)) xsp->a=0;
-	if ( DoubleNear(ysp->a,0)) ysp->a=0;
+	if ( RealNear(xsp->c,0)) xsp->c=0;
+	if ( RealNear(ysp->c,0)) ysp->c=0;
+	if ( RealNear(xsp->b,0)) xsp->b=0;
+	if ( RealNear(ysp->b,0)) ysp->b=0;
+	if ( RealNear(xsp->a,0)) xsp->a=0;
+	if ( RealNear(ysp->a,0)) ysp->a=0;
 	spline->islinear = false;
 	if ( ysp->a==0 && xsp->a==0 && ysp->b==0 && xsp->b==0 )
 	    spline->islinear = true;	/* I'm not sure if this can happen */
@@ -177,9 +177,9 @@ Spline *SplineMake(SplinePoint *from, SplinePoint *to) {
 return( spline );
 }
 
-static double SolveCubic(double a, double b, double c, double d, double err, double t0) {
+static real SolveCubic(real a, real b, real c, real d, real err, real t0) {
     /* find t between t0 and .5 where at^3+bt^2+ct+d == +/- err */
-    double t, val, offset;
+    real t, val, offset;
     int first;
 
     offset=a;
@@ -204,9 +204,9 @@ static double SolveCubic(double a, double b, double c, double d, double err, dou
 return( t );
 }
 
-static double SolveCubicBack(double a, double b, double c, double d, double err, double t0) {
+static real SolveCubicBack(real a, real b, real c, real d, real err, real t0) {
     /* find t between .5 and t0 where at^3+bt^2+ct+d == +/- err */
-    double t, val, offset;
+    real t, val, offset;
     int first;
 
     offset=a;
@@ -262,8 +262,8 @@ return;
 
     while ( (next = lines->next)!=NULL ) {
 	if ( prev->here.x!=next->here.x ) {
-	    double slope = (next->here.y-prev->here.y) / (double) (next->here.x-prev->here.x);
-	    double inter = prev->here.y - slope*prev->here.x;
+	    real slope = (next->here.y-prev->here.y) / (real) (next->here.x-prev->here.x);
+	    real inter = prev->here.y - slope*prev->here.x;
 	    int y = rint(lines->here.x*slope + inter);
 	    if ( y == lines->here.y ) {
 		lines->here = next->here;
@@ -276,12 +276,12 @@ return;
     }
 }
 
-LinearApprox *SplineApproximate(Spline *spline, double scale) {
+LinearApprox *SplineApproximate(Spline *spline, real scale) {
     LinearApprox *test;
     LineList *cur, *last=NULL, *prev;
-    double tx,ty,t;
-    double slpx, slpy;
-    double intx, inty;
+    real tx,ty,t;
+    real slpx, slpy;
+    real intx, inty;
 
     for ( test = spline->approx; test!=NULL && test->scale!=scale; test = test->next );
     if ( test!=NULL )
@@ -368,8 +368,8 @@ return( test );
 }
 
 static void SplineFindBounds(Spline *sp, DBounds *bounds) {
-    double t, b2_fourac, v;
-    double min, max;
+    real t, b2_fourac, v;
+    real min, max;
     Spline1D *sp1;
     int i;
 
@@ -477,6 +477,28 @@ void SplineFontFindBounds(SplineFont *sf,DBounds *bounds) {
     }
 }
 
+void CIDFindBounds(SplineFont *cidmaster,DBounds *bounds) {
+    SplineFont *sf;
+    int i;
+    DBounds b;
+    real factor;
+
+    sf = cidmaster->subfonts[0];
+    SplineFontFindBounds(sf,bounds);
+    factor = 1000/(sf->ascent+sf->descent);
+    bounds->maxx *= factor; bounds->minx *= factor; bounds->miny *= factor; bounds->maxy *= factor;
+    for ( i=1; i<cidmaster->subfontcnt; ++i ) {
+	sf = cidmaster->subfonts[i];
+	SplineFontFindBounds(sf,&b);
+	factor = 1000/(sf->ascent+sf->descent);
+	b.maxx *= factor; b.minx *= factor; b.miny *= factor; b.maxy *= factor;
+	if ( b.maxx>bounds->maxx ) bounds->maxx = b.maxx;
+	if ( b.maxy>bounds->maxy ) bounds->maxy = b.maxy;
+	if ( b.miny<bounds->miny ) bounds->miny = b.miny;
+	if ( b.minx<bounds->minx ) bounds->minx = b.minx;
+    }
+}
+
 void SplinePointCatagorize(SplinePoint *sp) {
 
     sp->pointtype = pt_corner;
@@ -495,12 +517,12 @@ void SplinePointCatagorize(SplinePoint *sp) {
 	if ( sp->nextcp.y==sp->prevcp.y && sp->nextcp.y==sp->me.y )
 	    sp->pointtype = pt_curve;
 	else if ( sp->nextcp.x!=sp->prevcp.x ) {
-	    double slope = (sp->nextcp.y-sp->prevcp.y)/(sp->nextcp.x-sp->prevcp.x);
-	    double y = slope*(sp->me.x-sp->prevcp.x) + sp->prevcp.y - sp->me.y;
+	    real slope = (sp->nextcp.y-sp->prevcp.y)/(sp->nextcp.x-sp->prevcp.x);
+	    real y = slope*(sp->me.x-sp->prevcp.x) + sp->prevcp.y - sp->me.y;
 	    if ( y<1 && y>-1 )
 		sp->pointtype = pt_curve;
 	    else if ( sp->nextcp.y!=sp->prevcp.y ) {
-		double x;
+		real x;
 		slope = (sp->nextcp.x-sp->prevcp.x)/(sp->nextcp.y-sp->prevcp.y);
 		x = slope*(sp->me.y-sp->prevcp.y) + sp->prevcp.x - sp->me.x;
 		if ( x<1 && x>-1 )
@@ -511,16 +533,16 @@ void SplinePointCatagorize(SplinePoint *sp) {
 	    sp->pointtype = pt_curve;
     } else if ( sp->nonextcp ) {
 	if ( sp->next->to->me.x!=sp->prevcp.x ) {
-	    double slope = (sp->next->to->me.y-sp->prevcp.y)/(sp->next->to->me.x-sp->prevcp.x);
-	    double y = slope*(sp->me.x-sp->prevcp.x) + sp->prevcp.y - sp->me.y;
+	    real slope = (sp->next->to->me.y-sp->prevcp.y)/(sp->next->to->me.x-sp->prevcp.x);
+	    real y = slope*(sp->me.x-sp->prevcp.x) + sp->prevcp.y - sp->me.y;
 	    if ( y<1 && y>-1 )
 		sp->pointtype = pt_tangent;
 	} else if ( sp->me.x == sp->prevcp.x )
 	    sp->pointtype = pt_tangent;
     } else {
 	if ( sp->nextcp.x!=sp->prev->from->me.x ) {
-	    double slope = (sp->nextcp.y-sp->prev->from->me.y)/(sp->nextcp.x-sp->prev->from->me.x);
-	    double y = slope*(sp->me.x-sp->prev->from->me.x) + sp->prev->from->me.y - sp->me.y;
+	    real slope = (sp->nextcp.y-sp->prev->from->me.y)/(sp->nextcp.x-sp->prev->from->me.x);
+	    real y = slope*(sp->me.x-sp->prev->from->me.x) + sp->prev->from->me.y - sp->me.y;
 	    if ( y<1 && y>-1 )
 		sp->pointtype = pt_tangent;
 	} else if ( sp->me.x == sp->nextcp.x )
@@ -555,6 +577,7 @@ void SCCatagorizePoints(SplineChar *sc) {
 
 static int CharsNotInEncoding(FontDict *fd) {
     int i, cnt, j;
+
     for ( i=cnt=0; i<fd->chars->cnt; ++i ) {
 	if ( fd->chars->keys[i]!=NULL ) {
 	    for ( j=0; j<256; ++j )
@@ -566,7 +589,7 @@ static int CharsNotInEncoding(FontDict *fd) {
 	}
     }
     /* And for type 3 fonts... */
-    for ( i=0; i<fd->charprocs->cnt; ++i ) {
+    if ( fd->charprocs!=NULL ) for ( i=0; i<fd->charprocs->cnt; ++i ) {
 	if ( fd->charprocs->keys[i]!=NULL ) {
 	    for ( j=0; j<256; ++j )
 		if ( fd->encoding[j]!=NULL &&
@@ -856,7 +879,7 @@ SplinePointList *SplinePointListRemoveSelected(SplinePointList *base) {
 return( head );
 }
 
-static void TransformPoint(SplinePoint *sp, double transform[6]) {
+static void TransformPoint(SplinePoint *sp, real transform[6]) {
     BasePoint p;
     p.x = transform[0]*sp->me.x + transform[2]*sp->me.y + transform[4];
     p.y = transform[1]*sp->me.x + transform[3]*sp->me.y + transform[5];
@@ -881,7 +904,7 @@ static void TransformPoint(SplinePoint *sp, double transform[6]) {
 	sp->prevcp = sp->me;
 }
 
-SplinePointList *SplinePointListTransform(SplinePointList *base, double transform[6], int allpoints ) {
+SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[6], int allpoints ) {
     Spline *spline, *first;
     SplinePointList *spl;
     SplinePoint *spt, *pfirst;
@@ -926,8 +949,8 @@ SplinePointList *SplinePointListTransform(SplinePointList *base, double transfor
 return( base );
 }
 
-SplinePointList *SplinePointListShift(SplinePointList *base,double xoff,int allpoints ) {
-    double transform[6];
+SplinePointList *SplinePointListShift(SplinePointList *base,real xoff,int allpoints ) {
+    real transform[6];
     if ( xoff==0 )
 return( base );
     transform[0] = transform[3] = 1;
@@ -962,8 +985,8 @@ void SCMakeDependent(SplineChar *dependent,SplineChar *base) {
 }
 
 static void InstanciateReference(SplineFont *sf, RefChar *topref, RefChar *refs,
-	double transform[6], SplineChar *dsc) {
-    double trans[6];
+	real transform[6], SplineChar *dsc) {
+    real trans[6];
     RefChar *rf;
     SplineChar *rsc;
     SplinePointList *spl, *new;
@@ -1049,14 +1072,11 @@ return( str );
 return(ret);
 }
 
-SplineFont *SplineFontFromPSFont(FontDict *fd) {
-    SplineFont *sf = calloc(1,sizeof(SplineFont));
+static void SplineFontMetaData(SplineFont *sf,struct fontdict *fd) {
     int em;
     int i;
-    RefChar *refs, *next;
-    char **encoding;
 
-    sf->fontname = copy(fd->fontname);
+    sf->fontname = copy(fd->cidfontname?fd->cidfontname:fd->fontname);
     sf->display_size = -default_fv_font_size;
     sf->display_antialias = default_fv_antialias;
     if ( fd->fontinfo!=NULL ) {
@@ -1082,6 +1102,7 @@ SplineFont *SplineFontFromPSFont(FontDict *fd) {
     if ( sf->fullname==NULL ) sf->fullname = copy(sf->fontname);
     if ( sf->familyname==NULL ) sf->familyname = copy(sf->fontname);
     if ( sf->weight==NULL ) sf->weight = copy("Medium");
+    sf->cidversion = fd->cidversion;
     for ( i=19; i>=0 && fd->xuid[i]==0; --i );
     if ( i>=0 ) {
 	int j; char *pt;
@@ -1108,8 +1129,26 @@ SplineFont *SplineFontFromPSFont(FontDict *fd) {
     } else if ( sf->ascent==0 )
 	sf->ascent = 8*em/10;
     sf->descent = em-sf->ascent;
-    sf->charcnt = 256+CharsNotInEncoding(fd);
 
+    sf->private = fd->private->private; fd->private->private = NULL;
+    PSDictRemoveEntry(sf->private, "OtherSubrs");
+
+    sf->cidregistry = copy(fd->registry);
+    sf->ordering = copy(fd->ordering);
+    sf->supplement = fd->supplement;
+    sf->pfminfo.fstype = fd->fontinfo->fstype;
+}
+
+static void SplineFontFromType1(SplineFont *sf, FontDict *fd) {
+    int i;
+    RefChar *refs, *next;
+    char **encoding;
+    int istype2 = fd->fonttype==2;		/* Easy enough to deal with even though it will never happen... */
+
+    if ( istype2 )
+	fd->private->subrs->bias = fd->private->subrs->cnt<1240 ? 107 :
+	    fd->private->subrs->cnt<33900 ? 1131 : 32768;
+    sf->charcnt = 256+CharsNotInEncoding(fd);
     encoding = calloc(sf->charcnt,sizeof(char *));
     sf->chars = calloc(sf->charcnt,sizeof(SplineChar *));
     for ( i=0; i<256; ++i )
@@ -1156,11 +1195,7 @@ SplineFont *SplineFontFromPSFont(FontDict *fd) {
 	    sf->chars[i]->width = sf->ascent+sf->descent;
 	} else if ( k2==-1 ) {
 	    sf->chars[i] = PSCharStringToSplines(fd->chars->values[k],fd->chars->lens[k],
-		    false,fd->private->subrs,NULL,encoding[i]);
-#if 0
-	    sf->chars[i]->origtype1 = (uint8 *) copyn((char *)fd->chars->values[k],fd->chars->lens[k]);
-	    sf->chars[i]->origlen = fd->chars->lens[k];
-#endif
+		    istype2,fd->private->subrs,NULL,encoding[i]);
 	} else {
 	    if ( fd->charprocs->values[k]->unicodeenc==-2 )
 		sf->chars[i] = fd->charprocs->values[k];
@@ -1184,19 +1219,98 @@ SplineFont *SplineFontFromPSFont(FontDict *fd) {
 	if ( refs->adobe_enc==' ' && refs->splines==NULL ) {
 	    /* When I have a link to a single character I will save out a */
 	    /*  seac to that character and a space (since I can only make */
-	    /*  double char links), so if we find a space link, get rid of*/
+	    /*  real char links), so if we find a space link, get rid of*/
 	    /*  it. It's an artifact */
 	    SCRefToSplines(sf->chars[i],refs);
 	}
     }
     free(encoding);
-    sf->private = fd->private->private; fd->private->private = NULL;
-    PSDictRemoveEntry(sf->private, "OtherSubrs");
-    if ( fd->private->subrs->cnt!=0 ) {
-#if 0
-	sf->subrs = fd->private->subrs; fd->private->subrs = NULL;
-#endif
+}
+
+static SplineFont *SplineFontFromCIDType1(SplineFont *sf, FontDict *fd) {
+    int i,j, bad, uni;
+    SplineChar **chars;
+    char buffer[100];
+    struct cidmap *map;
+
+    bad = 0x80000000;
+    for ( i=0; i<fd->fdcnt; ++i )
+	if ( fd->fds[i]->fonttype!=1 && fd->fds[i]->fonttype!=2 )
+	    bad = fd->fds[i]->fonttype;
+    if ( bad!=0x80000000 || fd->cidfonttype!=0 ) {
+	fprintf(stderr,"Could not parse a CID font, " );
+	if ( fd->cidfonttype!=0 )
+	    fprintf( stderr, "unexpected CIDFontType %d ", fd->cidfonttype );
+	if ( bad!=0x80000000 )
+	    fprintf( stderr, "unexpected fonttype %d", bad );
+	fprintf( stderr,"\n");
+	SplineFontFree(sf);
+return( NULL );
     }
+    if ( fd->cidstrs==NULL || fd->cidcnt==0 ) {
+	fprintf( stderr, "CID format doesn't contain what we expected it to.\n" );
+	SplineFontFree(sf);
+return( NULL );
+    }
+
+    sf->subfontcnt = fd->fdcnt;
+    sf->subfonts = galloc((sf->subfontcnt+1)*sizeof(SplineFont *));
+    for ( i=0; i<fd->fdcnt; ++i ) {
+	sf->subfonts[i] = SplineFontEmpty();
+	SplineFontMetaData(sf->subfonts[i],fd->fds[i]);
+	sf->subfonts[i]->cidmaster = sf;
+	if ( fd->fds[i]->fonttype==2 )
+	    fd->fds[i]->private->subrs->bias =
+		    fd->fds[i]->private->subrs->cnt<1240 ? 107 :
+		    fd->fds[i]->private->subrs->cnt<33900 ? 1131 : 32768;
+    }
+
+    map = FindCidMap(sf->cidregistry,sf->ordering,sf->supplement);
+
+    chars = gcalloc(fd->cidcnt,sizeof(SplineChar *));
+    for ( i=0; i<fd->cidcnt; ++i ) if ( fd->cidlens[i]>0 ) {
+	j = fd->cidfds[i];		/* We get font indexes of 255 for non-existant chars */
+	uni = CID2NameEnc(map,i,buffer,sizeof(buffer));
+	chars[i] = PSCharStringToSplines(fd->cidstrs[i],fd->cidlens[i],
+		    fd->fds[j]->fonttype==2,fd->fds[j]->private->subrs,
+		    NULL,buffer);
+	chars[i]->unicodeenc = uni;
+	chars[i]->enc = i;
+	/* There better not be any references (seac's) because we have no */
+	/*  encoding on which to base any fixups */
+	if ( chars[i]->refs!=NULL )
+	    GDrawIError( "Reference found in CID font. Can't fix it up");
+	chars[i]->enc = i;
+	sf->subfonts[j]->charcnt = i+1;
+	GProgressNext();
+    }
+    for ( i=0; i<fd->fdcnt; ++i )
+	sf->subfonts[i]->chars = gcalloc(sf->subfonts[i]->charcnt,sizeof(SplineChar *));
+    for ( i=0; i<fd->cidcnt; ++i ) if ( chars[i]!=NULL ) {
+	j = fd->cidfds[i];
+	if ( j<sf->subfontcnt ) {
+	    sf->subfonts[j]->chars[i] = chars[i];
+	    chars[i]->parent = sf->subfonts[j];
+	}
+    }
+    free(chars);
+    /* Now we'd like to pull an adobe charset file (based on registry_ordering_supplement) */
+    /*  out of the air, and use it to give ourselves... well at least real */
+    /*  character names, possibly an encoding !!!! */
+return( sf );
+}
+
+SplineFont *SplineFontFromPSFont(FontDict *fd) {
+    SplineFont *sf = SplineFontEmpty();
+
+    SplineFontMetaData(sf,fd);
+    if ( fd->wascff ) {
+	SplineFontFree(sf);
+	sf = fd->sf;
+    } else if ( fd->fdcnt==0 )
+	SplineFontFromType1(sf,fd);
+    else
+	sf = SplineFontFromCIDType1(sf,fd);
 return( sf );
 }
 
@@ -1285,15 +1399,15 @@ void SCRefToSplines(SplineChar *sc,RefChar *rf) {
     SCRemoveDependent(sc,rf);
 }
 
-double SplineSolve(Spline1D *sp, double tmin, double tmax, double sought,double err) {
+real SplineSolve(Spline1D *sp, real tmin, real tmax, real sought,real err) {
     /* We want to find t so that spline(t) = sought */
     /*  the curve must be monotonic */
     /* returns t which is near sought or -1 */
-    double slope;
-    double new_t, newer_t;
-    double found_y;
-    double t_ymax, t_ymin;
-    double ymax, ymin;
+    real slope;
+    real new_t, newer_t;
+    real found_y;
+    real t_ymax, t_ymin;
+    real ymax, ymin;
     int up;
 
     if ( sp->a==0 && sp->b==0 ) {
@@ -1308,7 +1422,7 @@ return( -1 );
     ymax = ((sp->a*tmax + sp->b)*tmax + sp->c)*tmax + sp->d;
     ymin = ((sp->a*tmin + sp->b)*tmin + sp->c)*tmin + sp->d;
     if ( ymax<ymin ) {
-	double temp = ymax;
+	real temp = ymax;
 	ymax = ymin;
 	ymin = temp;
 	t_ymax = tmin;
@@ -1358,9 +1472,9 @@ return( -1 );
     }
 }
 
-void SplineFindInflections(Spline1D *sp, double *_t1, double *_t2 ) {
-    double t1= -1, t2= -1;
-    double b2_fourac;
+void SplineFindInflections(Spline1D *sp, real *_t1, real *_t2 ) {
+    real t1= -1, t2= -1;
+    real b2_fourac;
 
     /* Find the points of inflection on the curve discribing x behavior */
     /*  Set to -1 if there are none or if they are outside the range [0,1] */
@@ -1373,10 +1487,10 @@ void SplineFindInflections(Spline1D *sp, double *_t1, double *_t2 ) {
 	    b2_fourac = sqrt(b2_fourac);
 	    t1 = (-2*sp->b - b2_fourac) / (6*sp->a);
 	    t2 = (-2*sp->b + b2_fourac) / (6*sp->a);
-	    if ( t1<t2 ) { double temp = t1; t1 = t2; t2 = temp; }
+	    if ( t1<t2 ) { real temp = t1; t1 = t2; t2 = temp; }
 	    else if ( t1==t2 ) t2 = -1;
-	    if ( DoubleNear(t1,0)) t1=0; else if ( DoubleNear(t1,1)) t1=1;
-	    if ( DoubleNear(t2,0)) t2=0; else if ( DoubleNear(t2,1)) t2=1;
+	    if ( RealNear(t1,0)) t1=0; else if ( RealNear(t1,1)) t1=1;
+	    if ( RealNear(t2,0)) t2=0; else if ( RealNear(t2,1)) t2=1;
 	    if ( t2<=0 || t2>=1 ) t2 = -1;
 	    if ( t1<=0 || t1>=1 ) { t1 = t2; t2 = -1; }
 	}
@@ -1394,9 +1508,9 @@ void SplineFindInflections(Spline1D *sp, double *_t1, double *_t2 ) {
 /*  from an endpoint or another point of inflection, then many things are */
 /*  just going to skip over it, and other things will be confused by this */
 /*  so just remove it. It should be so close the difference won't matter */
-void SplineRemoveInflectionsTooClose(Spline1D *sp, double *_t1, double *_t2 ) {
-    double last, test;
-    double t1= *_t1, t2 = *_t2;
+void SplineRemoveInflectionsTooClose(Spline1D *sp, real *_t1, real *_t2 ) {
+    real last, test;
+    real t1= *_t1, t2 = *_t2;
 
     if ( t1>t2 && t2!=-1 ) {
 	t1 = t2;
@@ -1429,8 +1543,8 @@ void SplineRemoveInflectionsTooClose(Spline1D *sp, double *_t1, double *_t2 ) {
     *_t1 = t1; *_t2 = t2;
 }
 
-int SplineSolveFull(Spline1D *sp,double val, double ts[3]) {
-    double t1, t2;
+int SplineSolveFull(Spline1D *sp,real val, real ts[3]) {
+    real t1, t2;
     int i=0;
 
     SplineFindInflections(sp, &t1, &t2 );
@@ -1450,9 +1564,9 @@ int SplineSolveFull(Spline1D *sp,double val, double ts[3]) {
 return( ts[0]!=-1 );
 }
 
-static int XSolve(Spline *spline,double tmin, double tmax,FindSel *fs) {
+static int XSolve(Spline *spline,real tmin, real tmax,FindSel *fs) {
     Spline1D *yspline = &spline->splines[1], *xspline = &spline->splines[0];
-    double t,x,y;
+    real t,x,y;
 
     fs->p->t = t = SplineSolve(xspline,tmin,tmax,fs->p->cx,.001);
     if ( t>=0 && t<=1 ) {
@@ -1471,9 +1585,9 @@ return( true );
 return( false );
 }
 
-static int YSolve(Spline *spline,double tmin, double tmax,FindSel *fs) {
+static int YSolve(Spline *spline,real tmin, real tmax,FindSel *fs) {
     Spline1D *yspline = &spline->splines[1], *xspline = &spline->splines[0];
-    double t,x,y;
+    real t,x,y;
 
     fs->p->t = t = SplineSolve(yspline,tmin,tmax,fs->p->cy,.001);
     if ( t>=0 && t<=1 ) {
@@ -1496,11 +1610,11 @@ static int NearXSpline(FindSel *fs, Spline *spline) {
     /* If we get here we've checked the bounding box and we're in it */
     /*  the y spline is a horizontal line */
     /*  the x spline is not linear */
-    double t,y;
+    real t,y;
     Spline1D *yspline = &spline->splines[1], *xspline = &spline->splines[0];
 
     if ( xspline->a==0 ) {
-	double root = xspline->c*xspline->c - 4*xspline->b*(xspline->d-fs->p->cx);
+	real root = xspline->c*xspline->c - 4*xspline->b*(xspline->d-fs->p->cx);
 	if ( root < 0 )
 return( false );
 	root = sqrt(root);
@@ -1517,7 +1631,7 @@ return( true );
 return( true );
 	}
     } else {
-	double t1, t2, tbase;
+	real t1, t2, tbase;
 	SplineFindInflections(xspline,&t1,&t2);
 	tbase = 0;
 	if ( t1!=-1 ) {
@@ -1537,9 +1651,9 @@ return( false );
 }
 
 int NearSpline(FindSel *fs, Spline *spline) {
-    double t,x,y;
+    real t,x,y;
     Spline1D *yspline = &spline->splines[1], *xspline = &spline->splines[0];
-    double dx, dy;
+    real dx, dy;
 
     if (( dx = spline->to->me.x-spline->from->me.x)<0 ) dx = -dx;
     if (( dy = spline->to->me.y-spline->from->me.y)<0 ) dy = -dy;
@@ -1591,7 +1705,7 @@ return( NearXSpline(fs,spline));
 	    if ( fs->xl<x && fs->xh>x && t>=0 && t<=1 )
 return( true );
 	} else if ( yspline->a==0 ) {
-	    double root = yspline->c*yspline->c - 4*yspline->b*(yspline->d-fs->p->cy);
+	    real root = yspline->c*yspline->c - 4*yspline->b*(yspline->d-fs->p->cy);
 	    if ( root < 0 )
 return( false );
 	    root = sqrt(root);
@@ -1604,7 +1718,7 @@ return( true );
 	    if ( fs->xl<x && fs->xh>x && t>=0 && t<=1 )
 return( true );
 	} else {
-	    double t1, t2, tbase;
+	    real t1, t2, tbase;
 	    SplineFindInflections(yspline,&t1,&t2);
 	    tbase = 0;
 	    if ( t1!=-1 ) {
@@ -1624,7 +1738,7 @@ return( true );
 return( false );
 }
 
-double SplineNearPoint(Spline *spline, BasePoint *bp, double fudge) {
+real SplineNearPoint(Spline *spline, BasePoint *bp, real fudge) {
     PressedOn p;
     FindSel fs;
 
@@ -1790,5 +1904,8 @@ void SplineFontFree(SplineFont *sf) {
     UndoesFree(sf->gredoes);
     PSDictFree(sf->private);
     TTFLangNamesFree(sf->names);
+    for ( i=0; i<sf->subfontcnt; ++i )
+	SplineFontFree(sf->subfonts[i]);
+    free(sf->subfonts);
     free(sf);
 }

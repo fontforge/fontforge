@@ -216,6 +216,7 @@ void GGadgetClearList(GGadget *g);
 void GGadgetSetList(GGadget *g, GTextInfo **ti, int32 copyit);
 GTextInfo **GGadgetGetList(GGadget *g,int32 *len);	/* Do not free!!! */
 GTextInfo *GGadgetGetListItem(GGadget *g,int32 pos);
+GTextInfo *GGadgetGetListItemSelected(GGadget *g);
 void GGadgetSelectListItem(GGadget *g,int32 pos,int32 sel);
 void GGadgetSelectOneListItem(GGadget *g,int32 pos);
 int32 GGadgetIsListItemSelected(GGadget *g,int32 pos);

@@ -42,13 +42,13 @@ extern struct bvshows {
 } BVShows;
 
 typedef struct drect {
-    double x, y;
-    double width, height;
+    real x, y;
+    real width, height;
 } DRect;
 
 typedef struct pressedOn {
     int x,y;			/* screen location of the press */
-    double cx, cy;		/* Translated into character space */
+    real cx, cy;		/* Translated into character space */
     SplinePoint *sp;
     unsigned int nextcp: 1;	/* Is the cursor on the "next" control point of */
     unsigned int prevcp: 1;	/*  the spline point, or the "prev" control point */
@@ -59,7 +59,7 @@ typedef struct pressedOn {
     unsigned int transany: 1;
     unsigned int transanyrefs: 1;
     Spline *spline;
-    double t;			/* location on the spline where we pressed */
+    real t;			/* location on the spline where we pressed */
     RefChar *ref;
     SplinePointList *spl;	/* containing spline or point */
     ImageList *img;
@@ -116,7 +116,7 @@ typedef struct charview {
     SplinePointList **heads[dm_max];
     Undoes **uheads[dm_max];
     Undoes **rheads[dm_max];
-    double scale;
+    real scale;
     GWindow gw, v;
     int width, height;
     int xoff, yoff;
@@ -149,7 +149,7 @@ typedef struct charview {
     enum expandedge { ee_none, ee_nw, ee_up, ee_ne, ee_right, ee_se, ee_down,
 	    ee_sw, ee_left, ee_max } expandedge;
     BasePoint expandorigin;
-    double expandwidth, expandheight;
+    real expandwidth, expandheight;
     SplinePointList *active_shape;
     SplinePoint joinpos;
 } CharView;
@@ -164,7 +164,7 @@ typedef struct bitmapview {
     int width, height;
     int infoh, mbh;
     int scale;
-    double scscale;
+    real scscale;
     struct bitmapview *next;
     unsigned int showfore:1;
     unsigned int showoutline:1;
@@ -241,15 +241,16 @@ typedef struct fontview {
     unsigned int wasonlybitmaps:1;
     unsigned int refstate: 3;	/* 0x1 => paste orig of all non exist refs, 0x2=>don't, 0x3 => don't warn about non-exist refs with no source font */
     int16 magnify;
+    SplineFont *cidmaster;
 } FontView;
 
 typedef struct findsel {
     GEvent *e;
-    double fudge;		/* One pixel fudge factor */
-    double xl,xh, yl, yh;	/* One pixel fudge factor */
+    real fudge;		/* One pixel fudge factor */
+    real xl,xh, yl, yh;	/* One pixel fudge factor */
     unsigned int select_controls: 1;	/* notice control points */
     unsigned int seek_controls: 1;	/* notice control points before base points */
-    double scale;
+    real scale;
     PressedOn *p;
 } FindSel;
 
@@ -274,6 +275,7 @@ extern void MenuHelp(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuNew(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void MergeKernInfo(SplineFont *sf);
 extern int FontMenuGeneratePostscript(SplineFont *sf);
+extern void FontInfo(SplineFont *sf);
 extern void FontMenuFontInfo(void *fv);
 extern void LoadEncodingFile(void);
 extern struct enc *MakeEncoding(SplineFont *sf);
@@ -282,7 +284,7 @@ extern void SFPrivateInfo(SplineFont *sf);
 extern void FontViewReformat(FontView *fv);
 extern void FVShowFilled(FontView *fv);
 extern void SCPreparePopup(GWindow gw,SplineChar *sc);
-extern void FVTrans(FontView *fv,SplineChar *sc,double transform[6],char *sel);
+extern void FVTrans(FontView *fv,SplineChar *sc,real transform[6],char *sel);
 extern void FVMergeFonts(FontView *fv);
 extern void FVInterpolateFonts(FontView *fv);
 extern void FVRevert(FontView *fv);
@@ -299,8 +301,8 @@ extern GWindow CVMakeTools(CharView *cv);
 extern GWindow CVMakeLayers(CharView *cv);
 extern GWindow BVMakeTools(BitmapView *bv);
 extern GWindow BVMakeLayers(BitmapView *bv);
-extern double CVRoundRectRadius(void);
-extern double CVStarRatio(void);
+extern real CVRoundRectRadius(void);
+extern real CVStarRatio(void);
 extern int CVPolyStarPoints(void);
 extern int TrueCharState(GEvent *event);
 extern void BVToolsSetCursor(BitmapView *bv, int state);
@@ -316,8 +318,8 @@ extern void BVPaletteSetVisible(BitmapView *bv,int which,int visible);
 extern void BVPaletteActivate(BitmapView *bv);
 extern void BVPalettesHideIfMine(BitmapView *bv);
 extern void CVPaletteDeactivate(void);
-extern void CVTransFunc(CharView *cv,double transform[6]);
-extern void TransformDlgCreate(void *data,void (*transfunc)(void *,double *,int,BVTFunc *),
+extern void CVTransFunc(CharView *cv,real transform[6]);
+extern void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *),
 	int (*getorigin)(void *,BasePoint *,int));
 extern void BitmapDlg(FontView *fv,SplineChar *sc, int isavail);
 extern void CVReviewHints(CharView *cv);
@@ -332,8 +334,8 @@ extern void CVDrawRubberRect(GWindow pixmap, CharView *cv);
 extern void CVSetCharChanged(CharView *cv,int changed);
 extern void CVCharChangedUpdate(CharView *cv);
 extern void SCCharChangedUpdate(SplineChar *sc,FontView *fv);
-extern void SCSynchronizeWidth(SplineChar *sc,double newwidth, double oldwidth,FontView *fv);
-extern void SCSynchronizeLBearing(SplineChar *sc,char *selected,double off);
+extern void SCSynchronizeWidth(SplineChar *sc,real newwidth, real oldwidth,FontView *fv);
+extern void SCSynchronizeLBearing(SplineChar *sc,char *selected,real off);
 extern int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi);
 extern int CVTwoForePointsSelected(CharView *cv, SplinePoint **sp1, SplinePoint **sp2);
 extern int CVIsDiagonalable(SplinePoint *sp1, SplinePoint *sp2, SplinePoint **sp3, SplinePoint **sp4);
@@ -365,7 +367,7 @@ extern void CVAdjustPoint(CharView *cv, SplinePoint *sp);
 extern void CVMergeSplineSets(CharView *cv, SplinePoint *active, SplineSet *activess,
 	SplinePoint *merge, SplineSet *mergess);
 extern void CVChar(CharView *cv, GEvent *event );
-extern void CVMoveSelection(CharView *cv, double dx, double dy);
+extern void CVMoveSelection(CharView *cv, real dx, real dy);
 extern void CVMouseDownPoint(CharView *cv);
 extern void CVMouseMovePoint(CharView *cv,PressedOn *);
 extern void CVMouseMovePen(CharView *cv, PressedOn *p);
