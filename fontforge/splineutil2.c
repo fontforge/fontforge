@@ -2414,6 +2414,10 @@ return;
 	    ulen = sqrt(unit.x*unit.x + unit.y*unit.y);
 	    if ( ulen!=0 )
 		unit.x /= ulen, unit.y /= ulen;
+	} else {
+	    base->prevcp = base->me;
+	    base->noprevcp = true;
+	    base->prevcpdef = true;
 	}
     } else if ( base->pointtype == pt_corner ) {
 	if ( next->pointtype != pt_curve ) {
@@ -2500,6 +2504,10 @@ return;
 	    ulen = sqrt(unit.x*unit.x + unit.y*unit.y);
 	    if ( ulen!=0 )
 		unit.x /= ulen, unit.y /= ulen;
+	} else {
+	    base->nextcp = base->me;
+	    base->nonextcp = true;
+	    base->nextcpdef = true;
 	}
     } else if ( base->pointtype == pt_corner ) {
 	if ( prev->pointtype != pt_curve ) {

@@ -278,6 +278,8 @@ return;			/* We clicked on the active point, that's a no-op */
 		    sp->nonextcp = false;
 		}
 	    }
+	    if ( base->nonextcp )
+		base->nextcpdef = true;
 	    SplineMake(base,sp,order2);
 	    if ( cv->active_tool!=cvt_pen )
 		SplineCharDefaultNextCP(base);
@@ -440,6 +442,11 @@ void CVMergeSplineSets(CharView *cv, SplinePoint *active, SplineSet *activess,
 	}
 	SplinePointListMDFree(cv->sc,mergess);
     }
+    if ( active->pointtype==pt_curve &&
+	    !active->nonextcp && !active->noprevcp &&
+	    !active->nextcpdef && !active->prevcpdef &&
+	    !BpColinear(&active->prev->from->me,&active->me,&active->nextcp))
+	active->nextcpdef = active->prevcpdef = true;
     AdjustControls(active);
 }
 

@@ -737,6 +737,8 @@ void CVAdjustControl(CharView *cv,BasePoint *cp, BasePoint *to) {
 	    if ( sp->prev!=NULL && othercp==&sp->prevcp )
 		SplineRefigure3(sp->prev);
 	} 
+	if ( cp==&sp->nextcp ) sp->prevcpdef = false;
+	else sp->nextcpdef = false;
     } else {
 	BasePoint *bp;
 	if ( cp==&sp->prevcp && sp->next!=NULL )
