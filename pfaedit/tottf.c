@@ -2789,6 +2789,7 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *_sf,
 1)  The sTypoAscender and sTypoDescender values should sum to 2048 in 
 a 2048-unit font. They indicate the position of the em square 
 relative to the baseline.
+GWW: Nope, sTypoAscender-sTypoDescender == EmSize
 
 2)  The usWinAscent and usWinDescent values represent the maximum 
 height and depth of specific glyphs within the font, and some 
@@ -2797,8 +2798,8 @@ bounding box.
 */
 	os2->ascender = sf->ascent;
 	os2->winascent = at->head.ymax;
-	os2->descender = sf->descent;
-	os2->windescent = -at->head.ymin;
+	os2->descender = -sf->descent;	/* Should be neg */
+	os2->windescent = -at->head.ymin;	/* Should be positive */
     }
     os2->linegap = sf->pfminfo.linegap;
 
