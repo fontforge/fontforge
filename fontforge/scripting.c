@@ -5738,6 +5738,7 @@ static void ProcessScript(int argc, char *argv[], FILE *script) {
     int i,j;
     Context c;
     enum token_type tok;
+    char *string=NULL;
 
     no_windowing_ui = true;
     running_script = true;
@@ -5750,10 +5751,16 @@ static void ProcessScript(int argc, char *argv[], FILE *script) {
 	    i = 0;
     } else if ( strcmp(argv[1],"-nosplash")==0 || strcmp(argv[1],"--nosplash")==0 ) {
 	++i;
-	if ( strcmp(argv[2],"-script")==0 || strcmp(argv[2],"--script")==0 )
+	if ( argc>1 && (strcmp(argv[2],"-script")==0 || strcmp(argv[2],"--script")==0 ))
 	    ++i;
     } else if ( strcmp(argv[1],"-script")==0 || strcmp(argv[1],"--script")==0 )
 	++i;
+    else if (( strcmp(argv[1],"-c")==0 || strcmp(argv[1],"--c")==0 ||
+	    strcmp(argv[1],"-command")==0 || strcmp(argv[1],"--command")==0) &&
+	    argc>=2 ) {
+	i += 2;
+	string = argv[2];
+    }
     memset( &c,0,sizeof(c));
     c.a.argc = argc-i;
     c.a.vals = galloc(c.a.argc*sizeof(Val));
@@ -5766,6 +5773,11 @@ static void ProcessScript(int argc, char *argv[], FILE *script) {
     if ( script!=NULL ) {
 	c.filename = "<stdin>";
 	c.script = script;
+    } else if ( string!=NULL ) {
+	c.filename = "<command-string>";
+	c.script = tmpfile();
+	fwrite(string,1,strlen(string),c.script);
+	rewind(c.script);
     } else if ( i<argc && strcmp(argv[i],"-")!=0 ) {
 	c.filename = argv[i];
 	c.script = fopen(c.filename,"r");
@@ -5799,7 +5811,8 @@ static void _CheckIsScript(int argc, char *argv[]) {
 return;
     if ( strcmp(argv[1],"-")==0 )	/* Someone thought that, of course, "-" meant read from a script. I guess it makes no sense with anything else... */
 	ProcessScript(argc, argv,stdin);
-    if ( strcmp(argv[1],"-script")==0 || strcmp(argv[1],"--script")==0 )
+    if ( strcmp(argv[1],"-script")==0 || strcmp(argv[1],"--script")==0 ||
+	    strcmp(argv[1],"-c")==0 || strcmp(argv[1],"--c")==0 )
 	ProcessScript(argc, argv,NULL);
     else if ( (strcmp(argv[1],"-nosplash")==0 || strcmp(argv[1],"--nosplash")==0) &&
 	    argc>=3 && ( strcmp(argv[2],"-script")==0 || strcmp(argv[2],"--script")==0 ))
@@ -5825,8 +5838,9 @@ static void _doscriptusage(void) {
     printf( "\t-help\t\t\t (displays this message, invokes a browser)\n\t\t\t\t  (Using the BROWSER environment variable)\n" );
     printf( "\t-version\t\t (prints the version of fontforge and exits)\n" );
     printf( "\t-script scriptfile\t (executes scriptfile)\n" );
+    printf( "\t-c script-string\t (executes the argument as scripting cmds)\n" );
     printf( "\n" );
-    printf( "If no scriptfile is given (or if it's \"-\") FontForge will read stdin\n" );
+    printf( "If no scriptfile/string is given (or if it's \"-\") FontForge will read stdin\n" );
     printf( "FontForge will read postscript (pfa, pfb, ps, cid), opentype (otf),\n" );
     printf( "\ttruetype (ttf,ttc), macintosh resource fonts (dfont,bin,hqx),\n" );
     printf( "\tand bdf and pcf fonts. It will also read it's own format --\n" );
