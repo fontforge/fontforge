@@ -1411,7 +1411,10 @@ static void FVMenuAddExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void FVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int i, cnt=0, changed;
+    int i, cnt=0, changed, refchanged;
+    int askedall=-1, asked;
+    static int buts[] = { _STR_UnlinkAll, _STR_Unlink, _STR_No, _STR_Cancel, 0 };
+    RefChar *ref;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
 	++cnt;
@@ -1419,10 +1422,35 @@ static void FVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
-	SCPreserveState(sc,false);
-	changed = false;
+
+	changed = refchanged = false;
+	asked = askedall;
+	for ( ref=sc->refs; ref!=NULL; ref=ref->next ) {
+	    if ( ref->transform[0]*ref->transform[3]<0 ||
+		    (ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
+		if ( asked==-1 ) {
+		    asked = GWidgetAskR(_STR_FlippedRef,buts,0,2,_STR_FlippedRefUnlink, sc->name );
+		    if ( asked==3 )
+return;
+		    else if ( asked==2 )
+	break;
+		    else if ( asked==0 )
+			askedall = 0;
+		}
+		if ( asked==0 || asked==1 ) {
+		    if ( !refchanged ) {
+			refchanged = true;
+			SCPreserveState(sc,false);
+		    }
+		    SCRefToSplines(sc,ref);
+		}
+	    }
+	}
+
+	if ( !refchanged )
+	    SCPreserveState(sc,false);
 	sc->splines = SplineSetsCorrect(sc->splines,&changed);
-	if ( changed )
+	if ( changed || refchanged )
 	    SCCharChangedUpdate(sc);
 	if ( !GProgressNext())
     break;

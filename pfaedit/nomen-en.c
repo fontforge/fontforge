@@ -777,6 +777,8 @@ static char *str_RestrictedFont = "Restricted Font";
 static char *str_CloseFont = "Please close font";
 static char *str_CloseFontForCID = "Please close %hs before inserting it into a CID font";
 static char *str_CIDRemoveFontCheck = "Are you sure you wish to remove sub-font %1$.40hs from the CID font %2$.40hs";
+static char *str_FlippedRef = "Flipped Reference";
+static char *str_FlippedRefUnlink = "%.50hs contains a flipped reference. This cannot be corrected as is. Would you like me to unlink it and then correct it?";
     /* Messages from accented characters */
 static char str_Buildingaccented[] = "Building accented letters";
 static char str_Replacearing[] = "Replace Å";

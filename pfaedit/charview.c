@@ -3712,10 +3712,36 @@ return;
 
 static void CVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    int changed=false;
-    CVPreserveState(cv);
+    int changed=false, refchanged=false;
+    RefChar *ref;
+    int asked=-1;
+    static int buts[] = { _STR_Unlink, _STR_No, _STR_Cancel, 0 };
+
+    for ( ref=cv->sc->refs; ref!=NULL; ref=ref->next ) {
+	if ( ref->transform[0]*ref->transform[3]<0 ||
+		(ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
+	    if ( asked==-1 ) {
+		asked = GWidgetAskR(_STR_FlippedRef,buts,0,2,_STR_FlippedRefUnlink, cv->sc->name );
+		if ( asked==2 )
+return;
+		else if ( asked==1 )
+    break;
+	    }
+	    if ( asked==0 ) {
+		if ( !refchanged ) {
+		    refchanged = true;
+		    CVPreserveState(cv);
+		}
+		SCRefToSplines(cv->sc,ref);
+	    }
+	}
+    }
+
+    if ( !refchanged )
+	CVPreserveState(cv);
+	
     *cv->heads[cv->drawmode] = SplineSetsCorrect(*cv->heads[cv->drawmode],&changed);
-    if ( changed )
+    if ( changed || refchanged )
 	CVCharChangedUpdate(cv);
 }
 
