@@ -1159,7 +1159,7 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 		x = strtod((char *) path,&end);
 		end = skipcomma(end);
 		y = strtod(end,&end);
-		if ( type=='q' ) {
+		if ( type=='t' ) {
 		    x += current.x; y += current.y;
 		}
 		x1 = 2*cur->last->me.x - cur->last->prevcp.x;
