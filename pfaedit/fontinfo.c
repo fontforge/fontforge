@@ -893,7 +893,7 @@ return( true );
 static void arraystring(char *buffer,real *array,int cnt) {
     int i, ei;
 
-    for ( ei=cnt; ei>1 && array[ei]==0; --ei );
+    for ( ei=cnt; ei>1 && array[ei-1]==0; --ei );
     *buffer++ = '[';
     for ( i=0; i<ei; ++i ) {
 	sprintf(buffer, "%d ", (int) array[i]);
@@ -932,12 +932,13 @@ static int PI_Guess(GGadget *g, GEvent *e) {
     char buffer[211];
     unichar_t *temp;
     static int buts[] = { _STR_OK, _STR_Cancel, 0 };
-    struct psdict *private = d->private ? d->private : sf->private;
+    struct psdict *private;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	gw = GGadgetGetWindow(g);
 	d = GDrawGetUserData(gw);
 	sf = d->sf;
+	private = d->private ? d->private : sf->private;
 	list = GWidgetGetControl(d->gw,CID_PrivateEntries);
 	sel = GGadgetGetFirstListSelectedItem(list);
 	if ( strcmp(private->keys[sel],"BlueValues")==0 ||
@@ -962,7 +963,7 @@ return( true );
 		strcmp(private->keys[sel],"StemSnapV")==0 ) {
 	    if ( GWidgetAskR(_STR_Guess,buts,0,1,_STR_Vstemquest)==1 )
 return( true );
-	    FindHStems(sf,stemsnap,snapcnt);
+	    FindVStems(sf,stemsnap,snapcnt);
 	    PIPrivateCheck(d);
 	    SnapSet(d->private,stemsnap,snapcnt,"StdVW","StemSnapV");
 	}
