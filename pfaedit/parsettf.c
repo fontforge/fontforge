@@ -3302,6 +3302,8 @@ static void readttfos2metrics(FILE *ttf,struct ttfinfo *info) {
     info->pfminfo.pfmset = true;
 }
 
+static void GuessNamesFromGSUB(FILE *ttf,struct ttfinfo *info);
+
 static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
     int i,j;
     int format, len, gc, gcbig, val;
@@ -3353,6 +3355,18 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	}
 	free(indexes);
     }
+
+    /* If we have a GSUB table we can give some unencoded glyphs name */
+    /*  for example if we have a vrt2 substitution of A to <unencoded> */
+    /*  we could name the unencoded "A.vrt2" (though in this case we might */
+    /*  try A.vert instead */ /* Werner suggested this */
+    /* We could try this from morx too, except that apple features don't */
+    /*  meaningful ids. That is A.15,3 isn't very readable */
+    for ( i=info->glyph_cnt-1; i>=0 ; --i )
+	if ( info->chars[i]!=NULL && info->chars[i]->name==NULL )
+    continue;
+    if ( i>=0 && info->gsub_start!=0 )
+	GuessNamesFromGSUB(ttf,info);
 
     /* where no names are given, use the encoding to guess at them */
     /*  (or if the names default to the macintosh standard) */
@@ -3955,6 +3969,8 @@ static void gposExtensionSubTable(FILE *ttf, int stoffset,
     }
 }
 
+enum gsub_inusetype { git_normal, git_justinuse, git_findnames };
+
 static void gsubSimpleSubTable(FILE *ttf, int stoffset, struct ttfinfo *info,
 	struct lookup *lookup, int justinuse) {
     int coverage, cnt, i, which;
@@ -3980,13 +3996,39 @@ return;
 	free(glyph2s);
 return;
     }
-    if ( justinuse ) {
+    if ( justinuse==git_findnames ) {
+	/* Unnamed glyphs get a name built of the base name and the lookup tag */
+	for ( i=0; glyphs[i]!=0xffff; ++i ) if ( glyphs[i]<info->glyph_cnt ) {
+	    if ( info->chars[glyphs[i]]->name!=NULL ) {
+		which = format==1 ? (uint16) (glyphs[i]+delta) : glyph2s[i];
+		if ( info->chars[which]->name==NULL ) {
+		    char *basename = info->chars[glyphs[i]]->name;
+		    char *str = galloc(strlen(basename)+6);
+		    char tag[4];
+		    tag[0] = lookup->tag>>24;
+		    if ( (tag[1] = (lookup->tag>>16)&0xff)==' ' ) tag[1] = '\0';
+		    if ( (tag[2] = (lookup->tag>>8)&0xff)==' ' ) tag[2] = '\0';
+		    if ( (tag[3] = (lookup->tag)&0xff)==' ' ) tag[3] = '\0';
+#if 0
+		    script[0] = lookup->script>>24;
+		    if ( (script[1] = (lookup->script>>16)&0xff)==' ' ) script[1] = '\0';
+		    if ( (script[2] = (lookup->script>>8)&0xff)==' ' ) script[2] = '\0';
+		    if ( (script[3] = (lookup->script)&0xff)==' ' ) script[3] = '\0';
+		    sprintf(str,"%s.%s.%s", basename, script, tag );
+#else
+		    sprintf(str,"%s.%s", basename, tag );
+#endif
+		    info->chars[which]->name = str;
+		}
+	    }
+	}
+    } else if ( justinuse==git_justinuse ) {
 	for ( i=0; glyphs[i]!=0xffff; ++i ) if ( glyphs[i]<info->glyph_cnt ) {
 	    info->inuse[glyphs[i]]= true;
 	    which = format==1 ? (uint16) (glyphs[i]+delta) : glyph2s[i];
 	    info->inuse[which]= true;
 	}
-    } else {
+    } else if ( justinuse==git_normal ) {
 	for ( i=0; glyphs[i]!=0xffff; ++i ) if ( glyphs[i]<info->glyph_cnt && info->chars[glyphs[i]]!=NULL ) {
 	    which = format==1 ? (uint16) (glyphs[i]+delta) : glyph2s[i];
 	    if ( which>=info->glyph_cnt ) {
@@ -4056,14 +4098,14 @@ return;
 			    glyph2s[j], info->glyph_cnt );
 		glyph2s[j] = 0;
 	    }
-	    if ( justinuse )
+	    if ( justinuse==git_justinuse )
 		/* Do Nothing */;
 	    else if ( info->chars[glyph2s[j]]==NULL )
 		bad = true;
 	    else
 		len += strlen( info->chars[glyph2s[j]]->name) +1;
 	}
-	if ( justinuse ) {
+	if ( justinuse==git_justinuse ) {
 	    info->inuse[glyphs[i]] = 1;
 	    for ( j=0; j<cnt; ++j )
 		info->inuse[glyph2s[j]] = 1;
@@ -4137,10 +4179,38 @@ return;
 	    }
 	    for ( k=len=0; k<cc; ++k )
 		len += strlen(info->chars[lig_glyphs[k]]->name)+1;
-	    if ( justinuse ) {
+	    if ( justinuse==git_justinuse ) {
 		info->inuse[lig] = 1;
 		for ( k=0; k<cc; ++k )
 		    info->inuse[lig_glyphs[k]] = 1;
+	    } else if ( justinuse==git_findnames ) {
+		/* If our ligature glyph has no name (and its components do) */
+		/*  give it a name by concatenating components with underscores */
+		/*  between them, and appending the tag */
+		if ( info->chars[lig]!=NULL && info->chars[lig]->name==NULL ) {
+		    int len=0;
+		    for ( k=0; k<cc; ++k ) {
+			if ( info->chars[lig_glyphs[k]]==NULL || info->chars[lig_glyphs[k]]->name==NULL )
+		    break;
+			len += strlen(info->chars[lig_glyphs[k]]->name)+1;
+		    }
+		    if ( k==cc ) {
+			char *str = galloc(len+6), *pt;
+			char tag[4];
+			tag[0] = lookup->tag>>24;
+			if ( (tag[1] = (lookup->tag>>16)&0xff)==' ' ) tag[1] = '\0';
+			if ( (tag[2] = (lookup->tag>>8)&0xff)==' ' ) tag[2] = '\0';
+			if ( (tag[3] = (lookup->tag)&0xff)==' ' ) tag[3] = '\0';
+			for ( k=0; k<cc; ++k ) {
+			    strcat(str,info->chars[lig_glyphs[k]]->name);
+			    strcat(str,"_");
+			}
+			pt = str+strlen(str);
+			pt[-1] = '.';
+			strcpy(pt,tag);
+			info->chars[lig]->name = str;
+		    }
+		}
 	    } else if ( info->chars[lig]!=NULL ) {
 		liga = chunkalloc(sizeof(PST));
 		liga->type = pst_ligature;
@@ -4353,7 +4423,7 @@ static void tagTtfFeaturesWithScript(FILE *ttf,uint32 script_pos,struct feature 
     free(scripts);
 }
 
-static void readttfgsubUsed(FILE *ttf,struct ttfinfo *info) {
+static void ProcessGSUB(FILE *ttf,struct ttfinfo *info,int inusetype) {
     int i, j, lu_cnt, lu_type, cnt, st;
     uint16 *lu_offsets, *st_offsets;
     int32 base, lookup_start;
@@ -4384,23 +4454,32 @@ static void readttfgsubUsed(FILE *ttf,struct ttfinfo *info) {
 	    fseek(ttf,st = lookup_start+lu_offsets[i]+st_offsets[j],SEEK_SET);
 	    switch ( lu_type ) {
 	      case 1:
-		gsubSimpleSubTable(ttf,st,info,NULL,true);
+		gsubSimpleSubTable(ttf,st,info,NULL,inusetype);
 	      break;
 	      case 2: case 3:	/* Multiple and alternate have same format, different semantics */
-		gsubMultipleSubTable(ttf,st,info,NULL,lu_type,true);
+		if ( inusetype!=2 )
+		    gsubMultipleSubTable(ttf,st,info,NULL,lu_type,inusetype);
 	      break;
 	      case 4:
-		gsubLigatureSubTable(ttf,st,info,NULL,true);
+		gsubLigatureSubTable(ttf,st,info,NULL,inusetype);
 	      break;
 /* Any cases added here also need to go in the gsubExtensionSubTable and readttfgsubUsed */
 	      case 7:
-		gsubExtensionSubTable(ttf,st,info,NULL,true);
+		gsubExtensionSubTable(ttf,st,info,NULL,inusetype);
 	      break;
 	    }
 	}
 	free(st_offsets);
     }
     free(lu_offsets);
+}
+
+static void readttfgsubUsed(FILE *ttf,struct ttfinfo *info) {
+    ProcessGSUB(ttf,info,git_justinuse);
+}
+
+static void GuessNamesFromGSUB(FILE *ttf,struct ttfinfo *info) {
+    ProcessGSUB(ttf,info,git_findnames);
 }
 
 static void readttfgpossub(FILE *ttf,struct ttfinfo *info,int gpos) {
