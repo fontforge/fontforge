@@ -319,6 +319,9 @@ typedef struct steminfo {
     unsigned int backwards: 1;	/* If we think this hint is better done with a negative width */
     unsigned int reordered: 1;	/* In AutoHinting. Means we changed the start of the hint, need to test for out of order */
     unsigned int pendingpt: 1;	/* A pending stem creation, not a true stem */
+    unsigned int linearedges: 1;/* If we have a nice rectangle then we aren't */
+				/*  interested in the orientation which is */
+			        /*  wider than long */
     int16 hintnumber;		/* when dumping out hintmasks we need to know */
 				/*  what bit to set for this hint */
     int mask;			/* Mask of all references that use this hint */

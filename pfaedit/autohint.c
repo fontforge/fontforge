@@ -915,7 +915,8 @@ return( new );
 return(stems);
 }
 
-static StemInfo *_StemsFind(StemInfo *stems,real start, real end, int shadpt, int ehadpt) {
+static StemInfo *_StemsFind(StemInfo *stems,real start, real end,
+	int shadpt, int ehadpt, int lin) {
     StemInfo *test;
 
     for ( test=stems; test!=NULL; test=test->next ) {
@@ -942,6 +943,7 @@ return( test );
     test->width = end-start;
     test->haspointleft = shadpt;
     test->haspointright = ehadpt;
+    test->linearedges = lin;
 return( test );
 }
 
@@ -950,8 +952,9 @@ static StemInfo *StemsFind(StemInfo *stems,EI *apt,EI *e, int major) {
     int shadpt, ehadpt;
     real start = EIFigurePos(apt,other,&shadpt);
     real end = EIFigurePos(e,other,&ehadpt);
+    int lin = apt->spline->knownlinear && e->spline->knownlinear;
 
-return( _StemsFind(stems,start,end,shadpt,ehadpt));
+return( _StemsFind(stems,start,end,shadpt,ehadpt,lin));
 }
 
 static void _StemAddBrief(StemInfo *new, real mstart, real mend ) {
@@ -1125,7 +1128,7 @@ return( pendings );
 return( pendings );
 	new = _StemsFind(*stems,ocur<t->otherpos?ocur:t->otherpos,
 		    ocur<t->otherpos?t->otherpos:ocur,
-		    true,true);	/* pending hints only happen at endpoints */
+		    true,true,false);	/* pending hints only happen at endpoints */
 	if ( new->where==NULL ) {
 	    new->pendingpt = true;
 	    *stems = StemInsert(*stems,new);
@@ -1800,6 +1803,27 @@ static StemInfo *StemRemoveZeroHIlen(StemInfo *stems) {
 return( stems );
 }
 
+static StemInfo *StemRemoveWiderThanLong(StemInfo *stems,real big) {
+    StemInfo *s, *p, *sn;
+    /* Consider hyphen */
+    /* It seems to confuse freetype if we give it a vertical stem (even though*/
+    /*  it certainly is one). Instead, for rectangular stems remove the orientation */
+    /*  which is wider than long */
+
+    for ( p=NULL, s=stems; s!=NULL; s = sn ) {
+	sn = s->next;
+	if ( (s->linearedges || s->width>big) && s->width>HIlen(s)) {
+	    if ( p==NULL )
+		stems = sn;
+	    else
+		p->next = sn;
+	    StemInfoFree(s);
+	} else
+	    p = s;
+    }
+return( stems );
+}
+
 static StemInfo *StemRemoveSerifOverlaps(StemInfo *stems) {
     /* I don't think the rasterizer will be able to do much useful stuff with*/
     /*  with a serif vstem. What we want is to make sure the distance between*/
@@ -2013,6 +2037,7 @@ static StemInfo *StemRemoveWideConflictingHintsContainingLittleOnes(StemInfo *st
 return( head );
 }
 
+#if 0
 static StemInfo *StemRemoveConflictingBigHint(StemInfo *stems,real big) {
     /* In "I" we may have a hint that runs from the top of the character to */
     /*  the bottom (especially if the serif is slightly curved), if it's the */
@@ -2062,6 +2087,7 @@ static StemInfo *StemRemoveConflictingBigHint(StemInfo *stems,real big) {
 
 return( head );
 }
+#endif
 
 HintInstance *HICopyTrans(HintInstance *hi, real mul, real offset) {
     HintInstance *first=NULL, *last, *cur, *p;
@@ -2368,6 +2394,7 @@ return( dstems );
 
 static StemInfo *SCFindStems(EIList *el, int major, int removeOverlaps,DStemInfo **dstems,MinimumDistance **mds) {
     StemInfo *stems;
+    real big = (el->coordmax[1-major]-el->coordmin[1-major])*.40;
 
     el->major = major;
     ELOrder(el,major);
@@ -2375,12 +2402,14 @@ static StemInfo *SCFindStems(EIList *el, int major, int removeOverlaps,DStemInfo
     free(el->ordered);
     free(el->ends);
     stems = StemRemoveZeroHIlen(stems);
+    stems = StemRemoveWiderThanLong(stems,big);
     if ( removeOverlaps ) {
 	/*if ( major==1 )*/ /* There are a few hstem serifs that should be removed, central stem of "E" */
 	    stems = StemRemoveSerifOverlaps(stems);
 	stems = StemRemoveWideConflictingHintsContainingLittleOnes(stems);
 	if ( major==0 )
 	    stems = CheckForGhostHints(stems,el->sc);
+#if 0	/* Should be done by WiderThanLong now, and done better */
 	if ( StemListAnyConflicts(stems) ) {
 	    real big = (el->coordmax[1-major]-el->coordmin[1-major])*.40;
 	    char *pt;
@@ -2397,6 +2426,7 @@ static StemInfo *SCFindStems(EIList *el, int major, int removeOverlaps,DStemInfo
 	    /*  anyway after adding hints from References */
 	}
 	/*stems = StemRemoveConflictingHintsWithoutPoints(stems);*/ /* Too extreme */
+#endif
     }
     if ( dstems!=NULL )
 	*dstems = DStemPrune( *dstems );
