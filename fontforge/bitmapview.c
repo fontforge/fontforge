@@ -178,7 +178,11 @@ return( NULL );
     }
     sc = SFMakeChar(sf,i);
     if ( (bc = bdf->chars[i])==NULL ) {
-	bc = bdf->chars[i] = SplineCharRasterize(sc,bdf->pixelsize);
+	if ( bdf->clut==NULL )
+	    bc = SplineCharRasterize(sc,bdf->pixelsize);
+	else
+	    bc = SplineCharAntiAlias(sc,bdf->pixelsize,BDFDepth(bdf));
+	bdf->chars[i] = bc;
 	bc->enc = i;
     }
 return( bc );
@@ -1698,7 +1702,7 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv) {
 
     memset(&gd, '\0', sizeof(gd));
     memset(&ti, '\0', sizeof(ti));
-    gd.pos.x = pos.width - GDrawPointsToPixels(gw,116);
+    gd.pos.x = pos.width - GDrawPointsToPixels(gw,118);
     gd.pos.y = bv->mbh + GDrawPointsToPixels(gw,6);
     gd.pos.width = GDrawPointsToPixels(gw,106);
     gd.label = &ti;
