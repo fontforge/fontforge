@@ -246,7 +246,7 @@ return( NULL );
 	try = (gdisp->funcs->scaleFont)(gdisp,best,rq);
     else if ( best->style!=rq->style || best->weight!=rq->weight )
 	try = (gdisp->funcs->stylizeFont)(gdisp,best,rq);
-    if ( try!=best ) {
+    if ( try!=best && try!=NULL ) {
 	best = try;
 	best->was_scaled = true;
 	best->next = fn->data[enc]; fn->data[enc] = best;
