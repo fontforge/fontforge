@@ -454,7 +454,7 @@ return;
     if ( sb_max-sb_min > sb_pagesize )
 	gsb->thumbsize = (gsb->thumbsize*gsb->sb_pagesize)/(sb_max-sb_min);
     if ( gsb->thumbsize<2*gsb->thumbborder )
-	gsb->thumbsize = 2*gsb->thumbborder;
+	gsb->thumbsize = 2*gsb->thumbborder+2;
     GScrollBarSetPos(g,gsb->sb_pos);
 }
 

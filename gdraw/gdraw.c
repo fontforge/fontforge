@@ -155,6 +155,10 @@ GDrawEH GDrawGetEH(GWindow w) {
 return( w->eh );
 }
 
+void GDrawSetEH(GWindow w,GDrawEH eh) {
+    w->eh = eh;
+}
+
 void GDrawGetPointerPosition(GWindow w, GEvent *ret) {
     (w->display->funcs->getPointerPos)(w,ret);
 }

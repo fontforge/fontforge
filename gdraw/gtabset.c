@@ -622,3 +622,21 @@ int GTabSetGetSel(GGadget *g) {
     GTabSet *gts = (GTabSet *) g;
 return( gts->sel );
 }
+
+void GTabSetSetEnabled(GGadget *g,int pos,int enabled) {
+    GTabSet *gts = (GTabSet *) g;
+
+    if ( pos>=0 && pos<gts->tabcnt ) {
+	gts->tabs[pos].disabled = !enabled;
+	GDrawRequestExpose(g->base, &g->r, false);
+    }
+}
+
+GWindow GTabSetGetSubwindow(GGadget *g,int pos) {
+    GTabSet *gts = (GTabSet *) g;
+
+    if ( pos>=0 && pos<gts->tabcnt )
+return( gts->tabs[pos].w );
+
+return( NULL );
+}

@@ -941,6 +941,20 @@ GWindow GWidgetGetTopWidget(GWindow gw) {
 return( gw );
 }
 
+GDrawEH GWidgetGetEH(GWindow gw) {
+    if ( gw->widget_data==NULL )
+return( gw->eh );
+    else
+return( gw->widget_data->e_h );
+}
+
+void GWidgetSetEH(GWindow gw, GDrawEH e_h ) {
+    if ( gw->widget_data==NULL )
+	gw->eh = e_h;
+    else
+	gw->widget_data->e_h = e_h;
+}
+
 void GWidgetHidePalettes(void) {
     GTopLevelD *td, *palette;
 

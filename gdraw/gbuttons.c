@@ -114,8 +114,10 @@ return( false );
 	}
 	if ( gb->label!=NULL )
 	    width += GDrawGetTextWidth(pixmap,gb->label,-1,NULL);
-	if ( width<g->inner.width-mark )
+	if ( width<=g->inner.width-mark )
 	    x += ( g->inner.width-mark-width )/2;
+	else
+	    x += (g->inner.y-g->r.y);
     }
     if ( gb->image_precedes && img!=NULL ) {
 	GDrawDrawScaledImage(pixmap,img,x,g->inner.y + off);

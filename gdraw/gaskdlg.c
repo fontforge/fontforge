@@ -662,7 +662,6 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
     if ( multisel ) {
 	y -= GDrawPointsToPixels(gw,5);
 	gcd[i].gd.pos.x = GDrawPointsToPixels(gw,15); gcd[i].gd.pos.y = y;
-	gcd[i].gd.pos.width = -1;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
 	gcd[i].gd.label = &blabel[2];
 	blabel[2].text = (unichar_t *) _STR_SelectAll;
