@@ -2875,6 +2875,60 @@ void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
 	CodePage[0] |= 1;
 }
 
+static void WinBB(SplineFont *_sf,uint16 *winascent,uint16 *windescent,struct alltabs *at) {
+    /* The windows ascent/descent is calculated on the ymin/max of the */
+    /*  glyphs in the so called ANSI character set. I'm going to pretend */
+    /*  that's Latin1 with a few additions */
+    int i,k;
+    int first = true;
+    DBounds b, c;
+
+    if ( _sf->cidmaster!=NULL )
+	_sf = _sf->cidmaster;
+    if ( _sf->subfontcnt==0 ) {
+	for ( i=0; i<_sf->charcnt; ++i ) if ( SCWorthOutputting(_sf->chars[i]) ) {
+	    SplineChar *sc = _sf->chars[i];
+	    int uni = sc->unicodeenc;
+	    if ( uni < 0x100 || uni == 0x20ac || uni == 0x192 || uni==0x2020 ||
+		    uni == 0x160 || uni == 0x160 || uni==0x178 ) {
+		SplineCharQuickBounds(sc,&c);
+		if ( first ) {
+		    b = c;
+		    first = false;
+		} else {
+		    if ( c.miny<b.miny ) c.miny = b.miny;
+		    if ( c.maxy>b.maxy ) c.maxy = b.maxy;
+		}
+	    }
+	}
+    } else {
+	for ( k=0; k<_sf->subfontcnt; ++i ) {
+	    SplineFont *sf = _sf->subfonts[k];
+	    for ( i=0; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i])) {
+		int uni = sf->chars[i]->unicodeenc;
+		if ( uni < 0x100 || uni == 0x20ac || uni == 0x192 || uni==0x2020 ||
+			uni == 0x160 || uni == 0x160 || uni==0x178 ) {
+		    SplineCharQuickBounds(sf->chars[i],&c);
+		    if ( first ) {
+			b = c;
+			first = false;
+		    } else {
+			if ( c.miny<b.miny ) c.miny = b.miny;
+			if ( c.maxy>b.maxy ) c.maxy = b.maxy;
+		    }
+		}
+	    }
+	}
+    }
+    if ( first ) {	/* No characters in range */
+	*winascent = at->head.ymax;
+	*windescent = -at->head.ymin;		/* Should be positive */
+    } else {
+	*winascent = rint(c.maxy);
+	*windescent = -rint(c.miny);		/* Should be positive */
+    }
+}
+
 static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *_sf,
 	enum fontformat format) {
     int i,j,cnt1,cnt2,first,last,avg1,avg2,k;
@@ -2887,9 +2941,11 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *_sf,
     os2->fstype = 0x8;
     if ( sf->pfminfo.fstype!=-1 )
 	os2->fstype = sf->pfminfo.fstype;
-    os2->ysubYSize = os2->ysubXSize = os2->ysubYOff = (sf->ascent+sf->descent)/5;
+    os2->ysupYSize = os2->ysubYSize = .7*(sf->ascent+sf->descent);
+    os2->ysupXSize = os2->ysubXSize = .65*(sf->ascent+sf->descent);
+    os2->ysubYOff = .14*(sf->ascent+sf->descent);
     os2->ysubXOff = os2->ysupXOff = 0;
-    os2->ysupYSize = os2->ysupXSize = os2->ysupYOff = (sf->ascent+sf->descent)/5;
+    os2->ysupYOff = .48*(sf->ascent+sf->descent);
     os2->yStrikeoutSize = 102*(sf->ascent+sf->descent)/2048;
     os2->yStrikeoutPos = 530*(sf->ascent+sf->descent)/2048;
     os2->fsSel = (at->head.macstyle&1?32:0)|(at->head.macstyle&2?1:0);
@@ -2898,9 +2954,7 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *_sf,
     if ( os2->fsSel==0 ) os2->fsSel = 64;		/* Regular */
     if ( sf->pfminfo.os2_typoascent!=0 ) {
 	os2->ascender = sf->pfminfo.os2_typoascent;
-	os2->winascent = sf->pfminfo.os2_winascent;
 	os2->descender = sf->pfminfo.os2_typodescent;
-	os2->windescent = sf->pfminfo.os2_windescent;
     } else {
 /* David Lemon @Adobe.COM
 1)  The sTypoAscender and sTypoDescender values should sum to 2048 in 
@@ -2911,13 +2965,12 @@ GWW: Nope, sTypoAscender-sTypoDescender == EmSize
 2)  The usWinAscent and usWinDescent values represent the maximum 
 height and depth of specific glyphs within the font, and some 
 applications will treat them as the top and bottom of the font 
-bounding box.
+bounding box. (the "ANSI" glyphs)
 */
 	os2->ascender = sf->ascent;
-	os2->winascent = at->head.ymax;
-	os2->descender = -sf->descent;	/* Should be neg */
-	os2->windescent = -at->head.ymin;	/* Should be positive */
+	os2->descender = -sf->descent;		/* Should be neg */
     }
+    WinBB(sf,&os2->winascent,&os2->windescent,at);
     os2->linegap = sf->pfminfo.linegap;
 
     avg1 = avg2 = last = 0; first = 0x10000;
@@ -2994,7 +3047,7 @@ bounding box.
 	BlueData bd;
 
 	QuickBlues(sf,&bd);		/* This handles cid fonts properly */
-	os2->version = 2;
+	os2->version = 2;		/* current version is 3, I don't see how it differs from 2 */
 	os2->xHeight = bd.xheight;
 	os2->capHeight = bd.caph;
 	os2->defChar = ' ';
@@ -3370,6 +3423,7 @@ return( cnt );
 /* If we are generating both ot and apple then set as per apple, I think apple */
 /*  fails to load the font if their conventions aren't followed, but I don't */
 /*  think windows does */
+/* Undocumented fact: Windows insists on having a UniqueID string 3,1 */
 static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format) {
     int pos=0,i,j,feat_pos;
     struct ttflangname dummy, *cur, *useng;
