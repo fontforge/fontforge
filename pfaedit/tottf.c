@@ -57,7 +57,7 @@ int glyph_2_name_map=0;
 /* Does the quadratic spline in ttf approximate the cubic spline in ps */
 /*  within one pixel between tmin and tmax (on ps. presumably ttf between 0&1 */
 /* dim is the dimension in which there is the greatest change */
-static int comparespline(Spline *ps, Spline *ttf, real tmin, real tmax) {
+static int comparespline(Spline *ps, Spline *ttf, real tmin, real tmax, real err) {
     int dim=0, other;
     real dx, dy, ddim, dt, t;
     real d, o;
@@ -120,7 +120,7 @@ return( false );
 	    if ( ttf_t>=0 && ttf_t<=1.0 ) {
 		val = (ttf->splines[other].b*ttf_t+ttf->splines[other].c)*ttf_t+
 			    ttf->splines[other].d;
-		if ( val>o-1 && val<o+1 )
+		if ( val>o-err && val<o+err )
     continue;
 	    }
 	    ttf_t = (-ttf->splines[dim].c+sq)/(2*ttf->splines[dim].b);
@@ -128,7 +128,7 @@ return( false );
 	if ( ttf_t>=0 && ttf_t<=1.0 ) {
 	    val = (ttf->splines[other].b*ttf_t+ttf->splines[other].c)*ttf_t+
 			ttf->splines[other].d;
-	    if ( val>o-1 && val<o+1 )
+	    if ( val>o-err && val<o+err )
     continue;
 	}
 return( false );
@@ -231,7 +231,7 @@ return( MakeQuadSpline(start,&ttf,xmax,ymax,tmax,ps->to));
 
 static SplinePoint *_ttfapprox(Spline *ps,real tmin, real tmax, SplinePoint *start) {
     int dim=0, other;
-    real dx, dy, ddim, dt, t;
+    real dx, dy, ddim, dt, t, err;
     real x,y, xmin, ymin;
     real dxdtmin, dydtmin, dxdt, dydt;
     SplinePoint *sp;
@@ -297,6 +297,7 @@ return( sp );
 	ddim = dy;
     }
     other = !dim;
+    if (( err = ddim/3000 )<1 ) err = 1;
 
     if ( ddim<2 ||
 	    (dend.x==0 && rint(start->me.x)==end.x && dy<=10 && cnt!=0) ||
@@ -326,7 +327,7 @@ return( start );
 	ttf.splines[1].d = ymin;
 	ttf.splines[1].c = y-ymin;
 	ttf.splines[1].b = 0;
-	if ( comparespline(ps,&ttf,tmin,t) ) {
+	if ( comparespline(ps,&ttf,tmin,t,err) ) {
 	    sp = LinearSpline(ps,start,t);
 	    if ( t==tmax )
 return( sp );
@@ -375,7 +376,7 @@ return( sp );
 	ttf.splines[1].d = ymin;
 	ttf.splines[1].c = 2*(cy-ymin);
 	ttf.splines[1].b = ymin+y-2*cy;
-	if ( forceit || comparespline(ps,&ttf,tmin,t) ) {
+	if ( forceit || comparespline(ps,&ttf,tmin,t,err) ) {
 	    if ( !forceit && !unforceable && (rend.x-x)*(rend.x-x)+(rend.y-y)*(rend.y-y)<4*4 ) {
 		forceit = true;
  goto force_end;
