@@ -387,7 +387,7 @@ static struct prefs_list {
 	{ "DefaultOutputFormat", pr_int, &oldformatstate, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultBitmapFormat", pr_int, &oldbitmapstate, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultPSNameLength", pr_int, &oldpsstate, NULL, NULL, '\0', NULL, 1 },
-	{ "DefaultTTFHints", pr_int, &oldttfhintstate, NULL, NULL, '\0', NULL, 1 },
+	{ "DefaultTTFUseHints", pr_int, &oldttfhintstate, NULL, NULL, '\0', NULL, 1 },
 	{ "PageWidth", pr_int, &pagewidth, NULL, NULL, '\0', NULL, 1 },
 	{ "PageHeight", pr_int, &pageheight, NULL, NULL, '\0', NULL, 1 },
 	{ "PrintType", pr_int, &printtype, NULL, NULL, '\0', NULL, 1 },
