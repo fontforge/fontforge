@@ -2520,23 +2520,44 @@ void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
     do {
 	sf = ( _sf->subfontcnt==0 ) ? _sf : _sf->subfonts[k];
 	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	    if ( sf->chars[i]->unicodeenc==0xde )
+	    if ( sf->chars[i]->unicodeenc=='A' )
+		CodePage[1] |= 1<<31;		/* US (Ascii I assume) */
+	    else if ( sf->chars[i]->unicodeenc==0xde ) {
 		CodePage[0] |= 1<<0;		/* latin1 */
-	    else if ( sf->chars[i]->unicodeenc==0x13d )
+		CodePage[1] |= 1<<30;		/* WE/Latin1 */
+	    } else if ( sf->chars[i]->unicodeenc==0xc3 )
+		CodePage[1] |= 1<<18;		/* MS-DOS Nordic */
+	    else if ( sf->chars[i]->unicodeenc==0xe9 )
+		CodePage[1] |= 1<<20;		/* MS-DOS Canadian French */
+	    else if ( sf->chars[i]->unicodeenc==0xf5 )
+		CodePage[1] |= 1<<23;		/* MS-DOS Portuguese */
+	    else if ( sf->chars[i]->unicodeenc==0xfe )
+		CodePage[1] |= 1<<22;		/* MS-DOS Icelandic */
+	    else if ( sf->chars[i]->unicodeenc==0x13d ) {
 		CodePage[0] |= 1<<1;		/* latin2 */
-	    else if ( sf->chars[i]->unicodeenc==0x411 )
+		CodePage[1] |= 1<<26;		/* latin2 */
+	    } else if ( sf->chars[i]->unicodeenc==0x411 ) {
 		CodePage[0] |= 1<<2;		/* cyrillic */
-	    else if ( sf->chars[i]->unicodeenc==0x386 )
+		CodePage[1] |= 1<17;		/* MS DOS Russian */
+		CodePage[1] |= 1<25;		/* IBM Cyrillic */
+	    } else if ( sf->chars[i]->unicodeenc==0x386 ) {
 		CodePage[0] |= 1<<3;		/* greek */
-	    else if ( sf->chars[i]->unicodeenc==0x130 )
+		CodePage[1] |= 1<<16;		/* IBM Greek */
+		CodePage[1] |= 1<<28;		/* Greek, former 437 G */
+	    } else if ( sf->chars[i]->unicodeenc==0x130 ) {
 		CodePage[0] |= 1<<4;		/* turkish */
-	    else if ( sf->chars[i]->unicodeenc==0x5d0 )
+		CodePage[1] |= 1<<24;		/* IBM turkish */
+	    } else if ( sf->chars[i]->unicodeenc==0x5d0 ) {
 		CodePage[0] |= 1<<5;		/* hebrew */
-	    else if ( sf->chars[i]->unicodeenc==0x631 )
+		CodePage[1] |= 1<<21;		/* hebrew */
+	    } else if ( sf->chars[i]->unicodeenc==0x631 ) {
 		CodePage[0] |= 1<<6;		/* arabic */
-	    else if ( sf->chars[i]->unicodeenc==0x157 )
+		CodePage[1] |= 1<<19;		/* arabic */
+		CodePage[1] |= 1<<29;		/* arabic; ASMO 708 */
+	    } else if ( sf->chars[i]->unicodeenc==0x157 ) {
 		CodePage[0] |= 1<<7;		/* baltic */
-	    else if ( sf->chars[i]->unicodeenc==0xe45 )
+		CodePage[1] |= 1<<27;		/* baltic */
+	    } else if ( sf->chars[i]->unicodeenc==0xe45 )
 		CodePage[0] |= 1<<16;		/* thai */
 	    else if ( sf->chars[i]->unicodeenc==0x30a8 )
 		CodePage[0] |= 1<<17;		/* japanese */
