@@ -1717,7 +1717,7 @@ static void dumpfinalascii(void (*dumpchar)(int ch,void *data), void *data) {
     dumpchar('\n',data);
     for ( i = 0; i<8; ++i )
 	dumpstr(dumpchar,data,"0000000000000000000000000000000000000000000000000000000000000000\n");
-    dumpstr(dumpchar,data,"cleartomark\n{restore}if");
+    dumpstr(dumpchar,data,"cleartomark\n{restore}if\n");
 }
 
 static void mkheadercopyfile(FILE *temp,FILE *out,int headertype) {
