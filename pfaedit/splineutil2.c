@@ -267,15 +267,180 @@ return( mid );
 /* Least squares tells us that:
 	| S(xi*ti^3) |	 | S(ti^6) S(ti^5) S(ti^4) S(ti^3) |   | a |
 	| S(xi*ti^2) | = | S(ti^5) S(ti^4) S(ti^3) S(ti^2) | * | b |
-	| S(xi*ti)   |	 | S(ti^4)                 S(ti)   |   | c |
-	| S(xi)	     |   | S(ti^3)                 n       |   | d |
+	| S(xi*ti)   |	 | S(ti^4) S(ti^3) S(ti^2) S(ti)   |   | c |
+	| S(xi)	     |   | S(ti^3) S(ti^2) S(ti)   n       |   | d |
  and the definition of a spline tells us:
 	| x1         | = |   1        1       1       1    | * (a b c d)
 	| x0         | = |   0        0       0       1    | * (a b c d)
-So we're a bit over specified. Let's use the last two lines of least squares
-and the 2 from the spline defn. So d==x0. Now we've only got three unknonws
+So we're a bit over specified. Let's use the second from last line of least squares
+and the 2 from the spline defn. So d==x0. Now we've only got three unknowns
+and only two equations, but we want to insure that the slope of the spline
+at the end points remains unchanged
+*/
+/*
+	| d y1         | = |   slope1*d x1 
+	| d y0         | = |   slope0*d x0
+=>
+	| cy	       | = |   (orig c y)/(orig c x) * cx
+	| 3*ay+2*by+cy | = |   (orig 3*ay + 2*by + cy)/(orig 3*ax+2*bx+cx) * (3*ax+2*bx+cx)
 */
 /* cnt is not quite n because we add in two more points, first and last */
+Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
+	TPoint *mid, int cnt) {
+    real t, t2, t3, t4, x, y, xt, yt, tt, ttn;
+    real sx, sy;
+    int i;
+    real v[6], m[6][6];
+    Spline *spline;
+
+    /* If the two end-points are corner points then allow the slope to vary */
+    /* Or if one end-point is a tangent but the point defining the tangent's */
+    /*  slope is being removed then allow the slope to vary */
+    if ( (from->pointtype == pt_corner ||
+		(from->pointtype == pt_tangent &&
+			((from->nonextcp && from->noprevcp) || !from->noprevcp))) &&
+	    (to->pointtype == pt_corner ||
+		(to->pointtype == pt_tangent &&
+			((to->nonextcp && to->noprevcp) || !to->nonextcp))) ) {
+	from->pointtype = to->pointtype = pt_corner;
+return( ApproximateSplineFromPoints(from,to,mid,cnt) );
+    }
+
+    t = t2 = t3 = t4 = 1;
+    x = from->me.x+to->me.x; y = from->me.y+to->me.y;
+    xt = to->me.x; yt = to->me.y;
+    for ( i=0; i<cnt; ++i ) {
+	x += mid[i].x;
+	y += mid[i].y;
+	tt = mid[i].t;
+	xt += tt*mid[i].x;
+	yt += tt*mid[i].y;
+	t += tt;
+	t2 += (ttn=tt*tt);
+	t3 += (ttn*=tt);
+	t4 += (ttn*=tt);
+    }
+
+    v[0] = to->me.x-from->me.x;		/* ax */
+    v[1] = xt-t*from->me.x;		/* bx */
+    v[2] = 0;				/* cx */
+    v[3] = to->me.y-from->me.y;		/* ay */
+    v[4] = yt-t*from->me.y;		/* by */
+    v[5] = 0;				/* cy */
+
+    memset(m,0,sizeof(m));
+    m[0][0] = 1;  m[0][1] = 1;  m[0][2] = 1;
+    m[1][0] = t4; m[1][1] = t3; m[1][2] = t2;
+    m[2][2] = from->next->splines[1].c; m[2][5] = -from->next->splines[0].c;
+    m[3][3] = 1;  m[3][4] = 1;  m[3][5] = 1;
+    m[4][3] = t4; m[4][4] = t3; m[4][5] = t2;
+    sx = 3*to->prev->splines[0].a+2*to->prev->splines[0].b+to->prev->splines[0].c;
+    sy = 3*to->prev->splines[1].a+2*to->prev->splines[1].b+to->prev->splines[1].c;
+    m[5][0] = 3*sy; m[5][1] = 2*sy; m[5][2] = sy;
+	m[5][3] = -3*sx; m[5][4] = -2*sx; m[5][5] = -sx;
+    if ( t3-t4==0 ) {
+	m[1][0] = m[4][3] = t3;
+	m[1][1] = m[4][4] = t2;
+	m[1][2] = m[4][5] = t;
+	v[1] = x-(cnt+2)*from->me.x;
+	v[4] = y-(cnt+2)*from->me.y;
+    }
+
+    /* Remove a terms from rows 1, 4, and 5 (are none in row 2) */
+    v[1] -= m[1][0]*v[0];
+    v[4] -= m[1][0]*v[3];
+    m[1][1] -= m[1][0]; m[1][2] -= m[1][0];
+    m[4][4] -= m[1][0]; m[4][5] -= m[1][0];
+    m[1][0] = m[4][3] = 0;
+    v[5] -= m[5][0]*v[0]+m[5][3]*v[3];
+    m[5][1] -= m[5][0]; m[5][2] -= m[5][0];
+	m[5][4] -= m[5][3]; m[5][5] -= m[5][3];
+    m[5][0] = m[5][3] = 0;
+
+    /* At this point the matrix looks like:
+     1 ? ? 0 0 0
+     0 ? ? 0 0 0
+     0 0 ? 0 0 ?
+     0 0 0 1 ? ?
+     0 0 0 0 ? ?
+     0 ? ? 0 ? ?
+    */
+    if ( m[1][1]!=0 ) { /* m[4][4] is same as m[1][1] */
+	v[1] /= m[1][1];
+	v[4] /= m[1][1];
+	m[1][2] = m[4][5] /= m[1][1];
+
+	v[0] -= m[0][1]*v[1];
+	v[3] -= m[0][1]*v[4];
+	m[0][2] -= m[0][1]*m[1][2]; m[0][1] = 0;
+	v[5] -= m[5][1]*v[1] + m[5][4]*v[4];
+	m[5][2] -= m[5][1]*m[1][2];
+	m[5][5] -= m[5][4]*m[4][5];
+	m[5][1] = m[5][4] = 0;
+    }
+
+    /* At this point the matrix looks like:
+     1 0 ? 0 0 0
+     0 1 ? 0 0 0
+     0 0 ? 0 0 ?
+     0 0 0 1 0 ?
+     0 0 0 0 1 ?
+     0 0 ? 0 0 ?
+    */
+    if ( m[2][2]==0 ) {
+	real temp;
+	m[2][2] = m[5][2];
+	m[5][2] = 0;
+	temp = m[2][5];
+	m[2][5] = m[5][5];
+	m[5][5] = temp;
+	temp = v[2];
+	v[2] = v[5];
+	v[5] = temp;
+    }
+    if ( m[2][2]!=0 ) {
+	v[2] /= m[2][2];
+	m[2][5] /= m[2][2];
+
+	m[5][5] -= m[5][2]*m[2][5];
+	v[5] -= m[5][2]*v[2];
+	m[5][2] = 0;
+    }
+    if ( m[5][5]!=0 ) {
+	v[5] /= m[5][5];
+	v[4] -= m[4][5]*v[5];
+	v[3] -= m[3][5]*v[5];
+	v[2] -= m[2][5]*v[5];
+	m[4][5] = m[3][5] = m[2][5] = 0;
+    }
+    /* At this point the matrix looks like:
+     1 0 ? 0 0 0
+     0 1 ? 0 0 0
+     0 0 1 0 0 0
+     0 0 0 1 0 0
+     0 0 0 0 1 0
+     0 0 0 0 0 1
+    */
+    v[0] -= m[0][2]*v[2];
+    v[1] -= m[1][2]*v[2];
+    m[0][2] = m[1][2] = 0;
+
+    from->nextcp.x = from->me.x + v[2]/3;
+    from->nextcp.y = from->me.y + v[5]/3;
+    to->prevcp.x = from->nextcp.x + (v[2]+v[1])/3;
+    to->prevcp.y = from->nextcp.y + (v[5]+v[4])/3;
+    from->nonextcp = to->noprevcp = false;
+    spline = SplineMake(from,to);
+    if ( SplineIsLinear(spline)) {
+	spline->islinear = from->nonextcp = to->noprevcp = true;
+	spline->from->nextcp = spline->from->me;
+	spline->to->prevcp = spline->to->me;
+	SplineRefigure(spline);
+    }
+return( spline );
+}
+
+/* Similar to the above except we don't try to preserve the slopes */
 Spline *ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
 	TPoint *mid, int cnt) {
     real t, t2, t3, t4, x, y, xt, yt, tt, ttn;
@@ -482,128 +647,29 @@ static TPoint *SplinesFigureTPsBetween(SplinePoint *from, SplinePoint *to,
 return( tp );
 }
 
-static void FixupCurveTanPoints(SplinePoint *from,SplinePoint *to,
-	BasePoint *fncp, BasePoint *tpcp) {
-
-#if 1
-    /* if the control points don't match the point types then change the */
-    /*  point types. I used to try changing the point types, but the results */
-    /*  weren't good */
-    if ( from->pointtype!=pt_corner && !from->nonextcp ) {
-	fncp->x -= from->me.x; fncp->y -= from->me.y;
-	if ( fncp->x==0 && fncp->y==0 ) {
-	    if ( from->pointtype == pt_tangent && from->prev!=NULL ) {
-		fncp->x = from->me.x-from->prev->from->me.x;
-		fncp->y = from->me.y-from->prev->from->me.y;
-	    } else if ( from->pointtype == pt_curve && !from->noprevcp ) {
-		fncp->x = from->me.x-from->prevcp.x;
-		fncp->y = from->me.y-from->prevcp.y;
-	    }
-	}
-	if ( fncp->x!=0 || fncp->y!=0 ) {
-	    if ( !RealNear(atan2(fncp->y,fncp->x),
-		    atan2(from->nextcp.y-from->me.y,from->nextcp.x-from->me.x)) )
-		from->pointtype = pt_corner;
-	}
-    }
-    if ( to->pointtype!=pt_corner && !to->noprevcp ) {
-	tpcp->x -= to->me.x; tpcp->y -= to->me.y;
-	if ( tpcp->x==0 && tpcp->y==0 ) {
-	    if ( to->pointtype == pt_tangent && to->next!=NULL ) {
-		tpcp->x = to->me.x-to->next->to->me.x;
-		tpcp->y = to->me.y-to->next->to->me.y;
-	    } else if ( to->pointtype == pt_curve && !to->nonextcp ) {
-		tpcp->x = to->me.x-to->nextcp.x;
-		tpcp->y = to->me.y-to->nextcp.y;
-	    }
-	}
-	if ( tpcp->x!=0 || tpcp->y!=0 ) {
-	    if ( !RealNear(atan2(tpcp->y,tpcp->x),
-		    atan2(to->prevcp.y-to->me.y,to->prevcp.x-to->me.x)) )
-		to->pointtype = pt_corner;
-	}
-    }
-#else
-    /* if we have a curved/tangent point with a control point, then we must */
-    /*  insure that the spline goes in that direction still */
-    /* actually life is worse than than. If we have a curved point and the */
-    /*  other direction has a control point then we must match it. and if we */
-    /*  have a tangent point and we now have a control point then we must match*/
-    /*  what the direction would be. Bleah */
-    if ( from->pointtype!=pt_corner && !from->nonextcp ) {
-	fncp->x -= from->me.x; fncp->y -= from->me.y;
-	if ( fncp->x==0 && fncp->y==0 ) {
-	    if ( from->pointtype == pt_tangent && from->prev!=NULL ) {
-		fncp->x = from->me.x-from->prev->from->me.x;
-		fncp->y = from->me.y-from->prev->from->me.y;
-	    } else if ( from->pointtype == pt_curve && !from->noprevcp ) {
-		fncp->x = from->me.x-from->prevcp.x;
-		fncp->y = from->me.y-from->prevcp.y;
-	    }
-	}
-	if ( fncp->x!=0 || fncp->y!=0 ) {
-	    size = fncp->x*(from->nextcp.x-from->me.x) +
-		    fncp->y*(from->nextcp.y-from->me.y);
-	    size /= (fncp->x*fncp->x+fncp->y*fncp->y);
-	    if ( size>-.0001 && size<.0001 ) size=0;
-	    fncp->x *= size; fncp->y *= size;
-	    fncp->x += from->me.x; fncp->y += from->me.y;
-	    from->nextcp = *fncp;
-	    from->nonextcp = (size==0);
-	    tweaked = true;
-	}
-    }
-
-    if ( to->pointtype!=pt_corner && !to->noprevcp ) {
-	tpcp->x -= to->me.x; tpcp->y -= to->me.y;
-	if ( tpcp->x==0 && tpcp->y==0 ) {
-	    if ( to->pointtype == pt_tangent && to->next!=NULL ) {
-		tpcp->x = to->me.x-to->next->to->me.x;
-		tpcp->y = to->me.y-to->next->to->me.y;
-	    } else if ( to->pointtype == pt_curve && !to->nonextcp ) {
-		tpcp->x = to->me.x-to->nextcp.x;
-		tpcp->y = to->me.y-to->nextcp.y;
-	    }
-	}
-	if ( tpcp->x!=0 || tpcp->y!=0 ) {
-	    size = tpcp->x*(to->prevcp.x-to->me.x) +
-		    tpcp->y*(to->prevcp.y-to->me.y);
-	    size /= (tpcp->x*tpcp->x+tpcp->y*tpcp->y);
-	    if ( size>-.0001 && size<.0001 ) size=0;
-	    tpcp->x *= size; tpcp->y *= size;
-	    tpcp->x += to->me.x; tpcp->y += to->me.y;
-	    to->prevcp = *tpcp;
-	    to->noprevcp = (size==0);
-	    tweaked = true;
-	}
-    }
-    if ( tweaked )
-	SplineRefigure(to->prev);
-#endif
-    if ( from->pointtype==pt_tangent )
-	SplineCharTangentPrevCP(from);
-    if ( to->pointtype==pt_tangent )
-	SplineCharTangentNextCP(to);
-}
-
 static void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint *to) {
     int tot;
     TPoint *tp;
-    SplinePoint *np, *next;
+    SplinePoint *np, oldfrom;
+    Spline *sp;
     BasePoint fncp, tpcp;
 
     tp = SplinesFigureTPsBetween(from,to,&tot);
     fncp = from->nextcp; tpcp = to->prevcp;
 
-    for ( np = from->next->to; ; np = next ) {
-	SplineFree(np->prev);
+    oldfrom = *from;
+    ApproximateSplineFromPointsSlopes(from,to,tp,tot-1);
+    /* Have to do the frees after the approximation because the approx */
+    /*  uses the splines to determine slopes */
+    for ( sp = oldfrom.next; ; ) {
+	np = sp->to;
+	SplineFree(sp);
 	if ( np==to )
     break;
-	next = np->next->to;
+	sp = np->next;
 	SplinePointMDFree(sc,np);
     }
-    ApproximateSplineFromPoints(from,to,tp,tot-1);
-    FixupCurveTanPoints(from,to,&fncp,&tpcp);
+    /*FixupCurveTanPoints(from,to,&fncp,&tpcp);*/
     free(tp);
 }
 
@@ -717,8 +783,8 @@ return( false );
 
     tp = SplinesFigureTPsBetween(from,to,&tot);
 
-    ApproximateSplineFromPoints(from,to,tp,tot-1);
-    FixupCurveTanPoints(from,to,&fncp2,&tpcp2);
+    ApproximateSplineFromPointsSlopes(from,to,tp,tot-1);
+    /*FixupCurveTanPoints(from,to,&fncp2,&tpcp2);*/
 
     i = tot;
 
