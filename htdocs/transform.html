@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 18-Dec-2001 -->
+  <!-- AP: Last modified: 22-Aug-2002 -->
   <TITLE>Transform Dialog</TITLE>
 </HEAD>
 <BODY>
@@ -10,12 +10,12 @@
   Transform Dialog
 </H1>
 <P>
-<IMG SRC="transform.png" WIDTH="372" HEIGHT="317">
+<IMG SRC="transform.png" WIDTH="372" HEIGHT="336">
 <P>
-This dialog is available in the font and outline views. In the font view
-it applies to all selected characters. In the outline view if there is a
-selection then it applies to that. if there is no selection then it applies
-to the entire character.
+This dialog is available in the font, outline and metrics views. In the font
+view it applies to all selected characters. In the outline view if there
+is a selection then it applies to that. if there is no selection then it
+applies to the entire character.
 <P>
 You may choose whether you want the transformation to be centered at the
 character's origin, the center of the selection (or of the character as a
@@ -66,6 +66,9 @@ If you are in the font view or the outline view and there is no selection
 (and you are in the foreground) there is a "[] Transform Background Too"
 check box. If you check this then anything in the background will be transformed
 with the foreground.
+<P>
+If you check [] Round to Int then after the transformation has been applied
+everything will be rounded to an integer value.
 <P>
 Transformations in the Outline character view are not applied to any bitmaps.
 (Nor are transformations in the bitmap window mapped back to the outline).

@@ -48,6 +48,13 @@ struct gfi_data {
     unsigned int human_untitled: 1;
 };
 
+GTextInfo emsizes[] = {
+    { (unichar_t *) "1000", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) "1024", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) "2048", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) "4096", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { NULL }
+};
 GTextInfo encodingtypes[] = {
     { (unichar_t *) _STR_Custom, NULL, 0, 0, (void *) em_custom, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Compacted, NULL, 0, 0, (void *) em_compacted, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -418,6 +425,8 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_VOriginLab	1014
 #define CID_VOrigin	1015
 #define CID_Fontname	1016
+#define CID_Em		1017
+#define CID_Scale	1018
 
 #define CID_Make	1111
 #define CID_Delete	1112
@@ -1648,6 +1657,44 @@ static int GFI_VMetricsCheck(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int GFI_EmChanged(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	char buf[20]; unichar_t ubuf[20];
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	const unichar_t *ret = _GGadgetGetTitle(g); unichar_t *end;
+	int val = u_strtol(ret,&end,10), ascent, descent;
+	if ( *end )
+return( true );
+	switch ( GGadgetGetCid(g)) {
+	  case CID_Em:
+	    ascent = rint( ((double) val)*d->sf->ascent/(d->sf->ascent+d->sf->descent) );
+	    descent = val - ascent;
+	  break;
+	  case CID_Ascent:
+	    ascent = val;
+	    ret = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Descent));
+	    descent = u_strtol(ret,&end,10);
+	    if ( *end )
+return( true );
+	  break;
+	  case CID_Descent:
+	    descent = val;
+	    ret = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Ascent));
+	    ascent = u_strtol(ret,&end,10);
+	    if ( *end )
+return( true );
+	  break;
+	}
+	sprintf( buf, "%d", ascent ); if ( ascent==0 ) buf[0]='\0'; uc_strcpy(ubuf,buf);
+	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_Ascent),ubuf);
+	sprintf( buf, "%d", descent ); if ( descent==0 ) buf[0]='\0'; uc_strcpy(ubuf,buf);
+	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_Descent),ubuf);
+	sprintf( buf, "%d", ascent+descent ); if ( ascent+descent==0 ) buf[0]='\0'; uc_strcpy(ubuf,buf);
+	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_Em),ubuf);
+    }
+return( true );
+}
+
 static int GFI_GuessItalic(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
@@ -2383,6 +2430,7 @@ return(true);
 	vmetrics = GGadgetIsChecked(GWidgetGetControl(gw,CID_HasVerticalMetrics));
 	upos = GetIntR(gw,CID_UPos, _STR_Upos,&err);
 	uwid = GetIntR(gw,CID_UWidth,_STR_Uheight,&err);
+	GetIntR(gw,CID_Em,_STR_EmSize,&err);	/* just check for errors. redundant info */
 	as = GetIntR(gw,CID_Ascent,_STR_Ascent,&err);
 	des = GetIntR(gw,CID_Descent,_STR_Descent,&err);
 	nchar = GetIntR(gw,CID_NChars,_STR_Numchars,&err);
@@ -2444,6 +2492,19 @@ return(true);
 	    txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Version));
 	    free(sf->version); sf->version = cu_copy(txt);
 	}
+	if ( as+des != sf->ascent+sf->descent && GGadgetIsChecked(GWidgetGetControl(gw,CID_Scale)) ) {
+	    SFScaleToEm(sf,as,des);
+	    reformat_fv = true;
+	} else if ( as!=sf->ascent || des!=sf->descent ) {
+	    sf->ascent = as;
+	    sf->descent = des;
+	    reformat_fv = true;
+	}
+	sf->italicangle = ia;
+	sf->upos = upos;
+	sf->uwidth = uwid;
+	sf->uniqueid = uniqueid;
+
 	enc = GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,CID_Encoding));
 	if ( enc!=-1 ) {
 	    enc = (int) (GGadgetGetListItem(GWidgetGetControl(gw,CID_Encoding),enc)->userdata);
@@ -2461,15 +2522,6 @@ return(true);
 	}
 	if ( nchar!=sf->charcnt )
 	    reformat_fv = SFAddDelChars(sf,nchar);
-	if ( as!=sf->ascent || des!=sf->descent ) {
-	    sf->ascent = as;
-	    sf->descent = des;
-	    reformat_fv = true;
-	}
-	sf->italicangle = ia;
-	sf->upos = upos;
-	sf->uwidth = uwid;
-	sf->uniqueid = uniqueid;
 
 	if ( sf->hasvmetrics!=vmetrics )
 	    CVPaletteDeactivate();		/* Force a refresh later */
@@ -2656,11 +2708,11 @@ void FontInfo(SplineFont *sf) {
     GWindow gw;
     GWindowAttrs wattrs;
     GTabInfo aspects[9];
-    GGadgetCreateData mgcd[10], ngcd[13], egcd[12], psgcd[19], tngcd[7],   pgcd[8], vgcd[15], pangcd[22], comgcd[3];
-    GTextInfo mlabel[10], nlabel[13], elabel[12], pslabel[19], tnlabel[7], plabel[8], vlabel[15], panlabel[22], comlabel[3], *list;
+    GGadgetCreateData mgcd[10], ngcd[13], egcd[12], psgcd[22], tngcd[7],   pgcd[8], vgcd[15], pangcd[22], comgcd[3];
+    GTextInfo mlabel[10], nlabel[13], elabel[12], pslabel[22], tnlabel[7], plabel[8], vlabel[15], panlabel[22], comlabel[3], *list;
     struct gfi_data d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20], ncbuf[20],
-	    vbuf[20], uibuf[12], regbuf[100], vorig[20];
+	    vbuf[20], uibuf[12], regbuf[100], vorig[20], embuf[20];
     int i;
     int oldcnt = sf->charcnt;
     Encoding *item;
@@ -2943,6 +2995,7 @@ void FontInfo(SplineFont *sf) {
     pslabel[1].text_is_1byte = true;
     psgcd[1].gd.label = &pslabel[1];
     psgcd[1].gd.cid = CID_Ascent;
+    psgcd[1].gd.handle_controlevent = GFI_EmChanged;
     psgcd[1].creator = GTextFieldCreate;
 
     psgcd[2].gd.pos.x = 155; psgcd[2].gd.pos.y = psgcd[0].gd.pos.y;
@@ -2960,157 +3013,185 @@ void FontInfo(SplineFont *sf) {
     pslabel[3].text_is_1byte = true;
     psgcd[3].gd.label = &pslabel[3];
     psgcd[3].gd.cid = CID_Descent;
+    psgcd[3].gd.handle_controlevent = GFI_EmChanged;
     psgcd[3].creator = GTextFieldCreate;
+
+    psgcd[4].gd.pos.x = psgcd[0].gd.pos.x+5; psgcd[4].gd.pos.y = psgcd[0].gd.pos.y+24;
+    psgcd[4].gd.flags = gg_visible | gg_enabled;
+    psgcd[4].gd.mnemonic = 'E';
+    pslabel[4].text = (unichar_t *) _STR_EmSize;
+    pslabel[4].text_in_resource = true;
+    psgcd[4].gd.label = &pslabel[4];
+    psgcd[4].creator = GLabelCreate;
+
+    psgcd[5].gd.pos.x = psgcd[1].gd.pos.x-20; psgcd[5].gd.pos.y = psgcd[1].gd.pos.y+24; psgcd[5].gd.pos.width = 67;
+    psgcd[5].gd.flags = gg_visible | gg_enabled;
+    sprintf( embuf, "%d", sf->descent+sf->ascent );
+    pslabel[5].text = (unichar_t *) embuf;
+    pslabel[5].text_is_1byte = true;
+    psgcd[5].gd.label = &pslabel[5];
+    psgcd[5].gd.cid = CID_Em;
+    psgcd[5].gd.u.list = emsizes;
+    psgcd[5].gd.handle_controlevent = GFI_EmChanged;
+    psgcd[5].creator = GListFieldCreate;
+
+    psgcd[6].gd.pos.x = psgcd[2].gd.pos.x; psgcd[6].gd.pos.y = psgcd[4].gd.pos.y-4;
+    psgcd[6].gd.flags = gg_visible | gg_enabled | gg_cb_on;
+    pslabel[6].text = (unichar_t *) _STR_ScaleOutlines;
+    pslabel[6].text_in_resource = true;
+    psgcd[6].gd.label = &pslabel[6];
+    psgcd[6].gd.cid = CID_Scale;
+    psgcd[6].creator = GCheckBoxCreate;
 
 /* I've reversed the label, text field order in the gcd here because */
 /*  that way the text field will be displayed on top of the label rather */
 /*  than the reverse, and in Russian that's important translation of */
 /*  "Italic Angle" is too long. Oops, no it's the next one, might as well leave in here though */
-    psgcd[5].gd.pos.x = 12; psgcd[5].gd.pos.y = psgcd[3].gd.pos.y+26+6;
-    psgcd[5].gd.flags = gg_visible | gg_enabled;
-    psgcd[5].gd.mnemonic = 'I';
-    pslabel[5].text = (unichar_t *) _STR_Italicangle;
-    pslabel[5].text_in_resource = true;
-    psgcd[5].gd.label = &pslabel[5];
-    psgcd[5].creator = GLabelCreate;
+    psgcd[8].gd.pos.x = 12; psgcd[8].gd.pos.y = psgcd[5].gd.pos.y+26+6;
+    psgcd[8].gd.flags = gg_visible | gg_enabled;
+    psgcd[8].gd.mnemonic = 'I';
+    pslabel[8].text = (unichar_t *) _STR_Italicangle;
+    pslabel[8].text_in_resource = true;
+    psgcd[8].gd.label = &pslabel[8];
+    psgcd[8].creator = GLabelCreate;
 
-    psgcd[4].gd.pos.x = 103; psgcd[4].gd.pos.y = psgcd[5].gd.pos.y-6;
-    psgcd[4].gd.pos.width = 47;
-    psgcd[4].gd.flags = gg_visible | gg_enabled;
+    psgcd[7].gd.pos.x = 103; psgcd[7].gd.pos.y = psgcd[8].gd.pos.y-6;
+    psgcd[7].gd.pos.width = 47;
+    psgcd[7].gd.flags = gg_visible | gg_enabled;
     sprintf( iabuf, "%g", sf->italicangle );
-    pslabel[4].text = (unichar_t *) iabuf;
-    pslabel[4].text_is_1byte = true;
-    psgcd[4].gd.label = &pslabel[4];
-    psgcd[4].gd.cid = CID_ItalicAngle;
-    psgcd[4].creator = GTextFieldCreate;
+    pslabel[7].text = (unichar_t *) iabuf;
+    pslabel[7].text_is_1byte = true;
+    psgcd[7].gd.label = &pslabel[7];
+    psgcd[7].gd.cid = CID_ItalicAngle;
+    psgcd[7].creator = GTextFieldCreate;
 
-    psgcd[6].gd.pos.y = psgcd[4].gd.pos.y;
-    psgcd[6].gd.pos.width = -1; psgcd[6].gd.pos.height = 0;
-    psgcd[6].gd.pos.x = psgcd[3].gd.pos.x+psgcd[3].gd.pos.width-
+    psgcd[9].gd.pos.y = psgcd[7].gd.pos.y;
+    psgcd[9].gd.pos.width = -1; psgcd[9].gd.pos.height = 0;
+    psgcd[9].gd.pos.x = psgcd[3].gd.pos.x+psgcd[3].gd.pos.width-
 	    GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
     /*if ( strstrmatch(sf->fontname,"Italic")!=NULL ||strstrmatch(sf->fontname,"Oblique")!=NULL )*/
-	psgcd[6].gd.flags = gg_visible | gg_enabled;
-    pslabel[6].text = (unichar_t *) _STR_Guess;
-    pslabel[6].text_in_resource = true;
-    psgcd[6].gd.label = &pslabel[6];
-    psgcd[6].gd.mnemonic = 'G';
-    psgcd[6].gd.handle_controlevent = GFI_GuessItalic;
-    psgcd[6].creator = GButtonCreate;
+	psgcd[9].gd.flags = gg_visible | gg_enabled;
+    pslabel[9].text = (unichar_t *) _STR_Guess;
+    pslabel[9].text_in_resource = true;
+    psgcd[9].gd.label = &pslabel[9];
+    psgcd[9].gd.mnemonic = 'G';
+    psgcd[9].gd.handle_controlevent = GFI_GuessItalic;
+    psgcd[9].creator = GButtonCreate;
 
 /* I've reversed the label, text field order in the gcd here because */
 /*  that way the text field will be displayed on top of the label rather */
 /*  than the reverse, and in Russian that's important translation of */
 /*  "Underline position" is too long. */
-    psgcd[8].gd.pos.x = 12; psgcd[8].gd.pos.y = psgcd[4].gd.pos.y+26+6;
-    psgcd[8].gd.flags = gg_visible | gg_enabled;
-    psgcd[8].gd.mnemonic = 'P';
-    pslabel[8].text = (unichar_t *) _STR_Upos;
-    pslabel[8].text_in_resource = true;
-    psgcd[8].gd.label = &pslabel[8];
-    psgcd[8].creator = GLabelCreate;
-
-    psgcd[7].gd.pos.x = 103; psgcd[7].gd.pos.y = psgcd[8].gd.pos.y-6; psgcd[7].gd.pos.width = 47;
-    psgcd[7].gd.flags = gg_visible | gg_enabled;
-    sprintf( upbuf, "%g", sf->upos );
-    pslabel[7].text = (unichar_t *) upbuf;
-    pslabel[7].text_is_1byte = true;
-    psgcd[7].gd.label = &pslabel[7];
-    psgcd[7].gd.cid = CID_UPos;
-    psgcd[7].creator = GTextFieldCreate;
-
-    psgcd[9].gd.pos.x = 155; psgcd[9].gd.pos.y = psgcd[8].gd.pos.y;
-    psgcd[9].gd.flags = gg_visible | gg_enabled;
-    psgcd[9].gd.mnemonic = 'H';
-    pslabel[9].text = (unichar_t *) _STR_Uheight;
-    pslabel[9].text_in_resource = true;
-    psgcd[9].gd.label = &pslabel[9];
-    psgcd[9].creator = GLabelCreate;
-
-    psgcd[10].gd.pos.x = 200; psgcd[10].gd.pos.y = psgcd[7].gd.pos.y; psgcd[10].gd.pos.width = 47;
-    psgcd[10].gd.flags = gg_visible | gg_enabled;
-    sprintf( uwbuf, "%g", sf->uwidth );
-    pslabel[10].text = (unichar_t *) uwbuf;
-    pslabel[10].text_is_1byte = true;
-    psgcd[10].gd.label = &pslabel[10];
-    psgcd[10].gd.cid = CID_UWidth;
-    psgcd[10].creator = GTextFieldCreate;
-
-    psgcd[11].gd.pos.x = 12; psgcd[11].gd.pos.y = psgcd[10].gd.pos.y+26+6;
+    psgcd[11].gd.pos.x = 12; psgcd[11].gd.pos.y = psgcd[7].gd.pos.y+26+6;
     psgcd[11].gd.flags = gg_visible | gg_enabled;
-    psgcd[11].gd.mnemonic = 'x';
-    pslabel[11].text = (unichar_t *) _STR_Xuid;
+    psgcd[11].gd.mnemonic = 'P';
+    pslabel[11].text = (unichar_t *) _STR_Upos;
     pslabel[11].text_in_resource = true;
     psgcd[11].gd.label = &pslabel[11];
     psgcd[11].creator = GLabelCreate;
 
-    psgcd[12].gd.pos.x = 103; psgcd[12].gd.pos.y = psgcd[11].gd.pos.y-6; psgcd[12].gd.pos.width = 142;
+    psgcd[10].gd.pos.x = 103; psgcd[10].gd.pos.y = psgcd[11].gd.pos.y-6; psgcd[10].gd.pos.width = 47;
+    psgcd[10].gd.flags = gg_visible | gg_enabled;
+    sprintf( upbuf, "%g", sf->upos );
+    pslabel[10].text = (unichar_t *) upbuf;
+    pslabel[10].text_is_1byte = true;
+    psgcd[10].gd.label = &pslabel[10];
+    psgcd[10].gd.cid = CID_UPos;
+    psgcd[10].creator = GTextFieldCreate;
+
+    psgcd[12].gd.pos.x = 155; psgcd[12].gd.pos.y = psgcd[11].gd.pos.y;
     psgcd[12].gd.flags = gg_visible | gg_enabled;
-    if ( sf->xuid!=NULL ) {
-	pslabel[12].text = (unichar_t *) sf->xuid;
-	pslabel[12].text_is_1byte = true;
-	psgcd[12].gd.label = &pslabel[12];
-    }
-    psgcd[12].gd.cid = CID_XUID;
-    psgcd[12].creator = GTextFieldCreate;
+    psgcd[12].gd.mnemonic = 'H';
+    pslabel[12].text = (unichar_t *) _STR_Uheight;
+    pslabel[12].text_in_resource = true;
+    psgcd[12].gd.label = &pslabel[12];
+    psgcd[12].creator = GLabelCreate;
 
-    psgcd[13].gd.pos.x = 12; psgcd[13].gd.pos.y = psgcd[12].gd.pos.y+26+6;
-    pslabel[13].text = (unichar_t *) _STR_UniqueIDC;
-    pslabel[13].text_in_resource = true;
-    psgcd[13].gd.label = &pslabel[13];
-    psgcd[13].gd.mnemonic = 'U';
+    psgcd[13].gd.pos.x = 200; psgcd[13].gd.pos.y = psgcd[10].gd.pos.y; psgcd[13].gd.pos.width = 47;
     psgcd[13].gd.flags = gg_visible | gg_enabled;
-    psgcd[13].creator = GLabelCreate;
+    sprintf( uwbuf, "%g", sf->uwidth );
+    pslabel[13].text = (unichar_t *) uwbuf;
+    pslabel[13].text_is_1byte = true;
+    psgcd[13].gd.label = &pslabel[13];
+    psgcd[13].gd.cid = CID_UWidth;
+    psgcd[13].creator = GTextFieldCreate;
 
-    psgcd[14].gd.pos.x = psgcd[12].gd.pos.x; psgcd[14].gd.pos.y = psgcd[13].gd.pos.y-6; psgcd[14].gd.pos.width = psgcd[12].gd.pos.width;
+    psgcd[14].gd.pos.x = 12; psgcd[14].gd.pos.y = psgcd[13].gd.pos.y+26+6;
     psgcd[14].gd.flags = gg_visible | gg_enabled;
-    pslabel[14].text = (unichar_t *) "";
-    pslabel[14].text_is_1byte = true;
-    if ( sf->uniqueid!=0 ) {
-	sprintf( uibuf, "%d", sf->uniqueid );
-	pslabel[14].text = (unichar_t *) uibuf;
-    }
+    psgcd[14].gd.mnemonic = 'x';
+    pslabel[14].text = (unichar_t *) _STR_Xuid;
+    pslabel[14].text_in_resource = true;
     psgcd[14].gd.label = &pslabel[14];
-    psgcd[14].gd.cid = CID_UniqueID;
-    psgcd[14].creator = GTextFieldCreate;
+    psgcd[14].creator = GLabelCreate;
 
-    psgcd[15].gd.pos.x = 12; psgcd[15].gd.pos.y = psgcd[14].gd.pos.y+26+6;
-    pslabel[15].text = (unichar_t *) _STR_HasVerticalMetrics;
-    pslabel[15].text_in_resource = true;
-    psgcd[15].gd.label = &pslabel[15];
-    psgcd[15].gd.mnemonic = 'V';
-    psgcd[15].gd.cid = CID_HasVerticalMetrics;
+    psgcd[15].gd.pos.x = 103; psgcd[15].gd.pos.y = psgcd[14].gd.pos.y-6; psgcd[15].gd.pos.width = 142;
     psgcd[15].gd.flags = gg_visible | gg_enabled;
-    if ( sf->hasvmetrics )
-	psgcd[15].gd.flags |= gg_cb_on;
-    psgcd[15].gd.handle_controlevent = GFI_VMetricsCheck;
-    psgcd[15].creator = GCheckBoxCreate;
+    if ( sf->xuid!=NULL ) {
+	pslabel[15].text = (unichar_t *) sf->xuid;
+	pslabel[15].text_is_1byte = true;
+	psgcd[15].gd.label = &pslabel[15];
+    }
+    psgcd[15].gd.cid = CID_XUID;
+    psgcd[15].creator = GTextFieldCreate;
 
     psgcd[16].gd.pos.x = 12; psgcd[16].gd.pos.y = psgcd[15].gd.pos.y+26+6;
-    pslabel[16].text = (unichar_t *) _STR_VOrigin;
+    pslabel[16].text = (unichar_t *) _STR_UniqueIDC;
     pslabel[16].text_in_resource = true;
     psgcd[16].gd.label = &pslabel[16];
-    psgcd[16].gd.mnemonic = 'O';
-    psgcd[16].gd.flags = sf->hasvmetrics ? (gg_visible | gg_enabled) : gg_visible;
-    psgcd[16].gd.cid = CID_VOriginLab;
+    psgcd[16].gd.mnemonic = 'U';
+    psgcd[16].gd.flags = gg_visible | gg_enabled;
     psgcd[16].creator = GLabelCreate;
 
     psgcd[17].gd.pos.x = psgcd[12].gd.pos.x; psgcd[17].gd.pos.y = psgcd[16].gd.pos.y-6; psgcd[17].gd.pos.width = psgcd[12].gd.pos.width;
-    psgcd[17].gd.flags = sf->hasvmetrics ? (gg_visible | gg_enabled) : gg_visible;
+    psgcd[17].gd.flags = gg_visible | gg_enabled;
     pslabel[17].text = (unichar_t *) "";
     pslabel[17].text_is_1byte = true;
-    if ( sf->vertical_origin!=0 || sf->hasvmetrics ) {
-	sprintf( vorig, "%d", sf->vertical_origin );
-	pslabel[17].text = (unichar_t *) vorig;
+    if ( sf->uniqueid!=0 ) {
+	sprintf( uibuf, "%d", sf->uniqueid );
+	pslabel[17].text = (unichar_t *) uibuf;
     }
     psgcd[17].gd.label = &pslabel[17];
-    psgcd[17].gd.cid = CID_VOrigin;
+    psgcd[17].gd.cid = CID_UniqueID;
     psgcd[17].creator = GTextFieldCreate;
 
+    psgcd[18].gd.pos.x = 12; psgcd[18].gd.pos.y = psgcd[17].gd.pos.y+26+6;
+    pslabel[18].text = (unichar_t *) _STR_HasVerticalMetrics;
+    pslabel[18].text_in_resource = true;
+    psgcd[18].gd.label = &pslabel[18];
+    psgcd[18].gd.mnemonic = 'V';
+    psgcd[18].gd.cid = CID_HasVerticalMetrics;
+    psgcd[18].gd.flags = gg_visible | gg_enabled;
+    if ( sf->hasvmetrics )
+	psgcd[18].gd.flags |= gg_cb_on;
+    psgcd[18].gd.handle_controlevent = GFI_VMetricsCheck;
+    psgcd[18].creator = GCheckBoxCreate;
+
+    psgcd[19].gd.pos.x = 12; psgcd[19].gd.pos.y = psgcd[18].gd.pos.y+26+6;
+    pslabel[19].text = (unichar_t *) _STR_VOrigin;
+    pslabel[19].text_in_resource = true;
+    psgcd[19].gd.label = &pslabel[19];
+    psgcd[19].gd.mnemonic = 'O';
+    psgcd[19].gd.flags = sf->hasvmetrics ? (gg_visible | gg_enabled) : gg_visible;
+    psgcd[19].gd.cid = CID_VOriginLab;
+    psgcd[19].creator = GLabelCreate;
+
+    psgcd[20].gd.pos.x = psgcd[15].gd.pos.x; psgcd[20].gd.pos.y = psgcd[19].gd.pos.y-6; psgcd[20].gd.pos.width = psgcd[15].gd.pos.width;
+    psgcd[20].gd.flags = sf->hasvmetrics ? (gg_visible | gg_enabled) : gg_visible;
+    pslabel[20].text = (unichar_t *) "";
+    pslabel[20].text_is_1byte = true;
+    if ( sf->vertical_origin!=0 || sf->hasvmetrics ) {
+	sprintf( vorig, "%d", sf->vertical_origin );
+	pslabel[20].text = (unichar_t *) vorig;
+    }
+    psgcd[20].gd.label = &pslabel[20];
+    psgcd[20].gd.cid = CID_VOrigin;
+    psgcd[20].creator = GTextFieldCreate;
+
     if ( sf->subfontcnt!=0 ) {
-	for ( i=0; i<=10; ++i )
+	for ( i=0; i<=13; ++i )
 	    psgcd[i].gd.flags &= ~gg_enabled;
     } else if ( sf->cidmaster!=NULL ) {
-	for ( i=15; i<=17; ++i )
+	for ( i=18; i<=20; ++i )
 	    psgcd[i].gd.flags &= ~gg_enabled;
     }
 /******************************************************************************/

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-May-2001 -->
-  <!-- AP: Last modified: 13-Aug-2002 -->
+  <!-- AP: Last modified: 22-Aug-2002 -->
   <TITLE>Printing</TITLE>
 </HEAD>
 <BODY>
@@ -22,26 +22,38 @@ When you choose to print you have the option of printing:
     Certain selected characters, one per page, at a scale to fill up the page<BR>
     <IMG SRC="CharPrint.png" WIDTH="283" HEIGHT="392">
   <LI>
+    Certain selected characters at various pointsizes (36, 24, 20, 18, 16, 15,
+    14, 13, 12, 11, 10, 9, 8, 7.5, 7, 6.5, 6, 5.5, 5, 4.5,
+    4)<BR>
+    <IMG SRC="MultiPrint.png" WIDTH="227" HEIGHT="259">
+  <LI>
     A sample of the font in use. This will handle kerning, bi-directional text,
     and composing characters. Note: The characters printed are limited by the
-    characters in the current encoding here (for none-CID fonts). If you want
-    to see all the characters try a unicode encoding.<BR>
+    characters in the current encoding here. If you want to see all the characters
+    try a unicode encoding.<BR>
     <IMG SRC="FontSample.png" WIDTH="388" HEIGHT="537">
 </UL>
 <P>
-<IMG SRC="Print.png" WIDTH="426" HEIGHT="445" ALIGN="Right">The print dialog
-appears at right. The three choices are reflected by the radio buttons (the
-Full Page Character button will print any selected characters in the font
-view, the current character in the outline view, and any characters displayed
-in the metrics view, here it is greyed out because no characters were selected
-in the font view).
+<IMG SRC="Print.png" WIDTH="426" HEIGHT="472" ALIGN="Right">The print dialog
+appears at right. The four choices are reflected by the radio buttons (the
+Full Page Character and Multi Size Character buttons will print any selected
+characters in the font view, the current character in the outline view, and
+any characters displayed in the metrics view -- they will be greyed out if
+no characters are selected in the font view).
 <P>
 The PointSize field applies to the Full Font Display and the Sample Text
-methods.
+methods. For Sample Text you may enter several different pointsizes (seperated
+by commas) to print the sample at different pointsizes.
 <P>
 The Sample Text is fairly self-explanatory. The default sample text is geared
 to your font, if your font does not contain (for instance) greek characters,
 then the greek will not appear. Of course you may change it however you wish...
+<P>
+You may also save the sample text to a file by typing ^S within the textarea.
+The text will be saved in ucs2 format (starting with 0xfeff). And you my
+import text into the textarea by typing ^I. Files imported should be either
+in ucs2 (possibly byte reversed, determined by the initial 0xfeff) or in
+the current default encoding.
 <P>
 The Setup button allows you to pick a printer, pagesize, etc.<BR Clear=ALL>
 <P>

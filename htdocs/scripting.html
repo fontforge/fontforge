@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 17-Aug-2002 -->
+  <!-- AP: Last modified: 22-Aug-2002 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -422,14 +422,20 @@ a[4][0] = "Nested array";
     that could not be parsed. 
       <HR>
   <DT>
-    Open(filename)
+    Open(filename[,flags])
   <DD>
     This makes the font named by filename be the current font. If filename has
     not yet been loaded into memory it will be loaded now. It can execute with
     no current font.<BR>
     When loading from a ttc file, a particular font may be selected by placing
     the fontname in parens and appending it to the filename, as
-    <CODE>Open("gulim.ttc(Dotum)")</CODE>
+    <CODE>Open("gulim.ttc(Dotum)")</CODE><BR>
+    The optional flags argument current has only one flag in it:
+    <UL>
+      <LI>
+	1 =&gt; the user does have the appropriate lisence to examine the font no
+	matter what the fstype setting is.
+    </UL>
   <DT>
     New()
   <DD>
@@ -571,6 +577,61 @@ a[4][0] = "Nested array";
   <DD>
     Loads Kerning info out of either an afm or a tfm file and merges it into
     the current font.
+  <DT>
+    <A NAME="PrintSetup">PrintSetup</A>(type,[printer[,width,height]])
+  <DD>
+    Allows you to configure the print command. Type may be a value between 0
+    and 4
+    <UL>
+      <LI>
+	0 =&gt; print with lp
+      <LI>
+	1 =&gt; print with lpr
+      <LI>
+	2 =&gt; output to ghostview
+      <LI>
+	3 =&gt; output to file
+      <LI>
+	4 =&gt; other printing command
+    </UL>
+    <P>
+    If the type is 4 (other) and the second argument is specified, then the second
+    argument should be a string containing the "other" printing command.<BR>
+    If the type is 0 (lp) or 1 (lpr) and the second argument is specified, then
+    the second argument should contain the name of a laser printer<BR>
+    (If the second argument is a null string neither will be set).
+    <P>
+    The third and fourth arguments should specify the page width and height
+    respectively. Units are in points, so 8.5x11" paper is 612,792 and A4 paper
+    is (about) 595,842.
+  <DT>
+    PrintFont(type[,pointsize[,sample-text-file[,output-file]]])
+  <DD>
+    Prints the current font according to the
+    <A HREF="scripting.html#PrintSetup">PrintSetup</A>. The values for type are
+    (meanings are described in the <A HREF="print.html">section on printing</A>):
+    <UL>
+      <LI>
+	0 =&gt; Prints a full font display at the given pointsize
+      <LI>
+	1 =&gt; Prints selected characters to fill page
+      <LI>
+	2 =&gt; Prints selected characters at multiple pointsizes
+      <LI>
+	3 =&gt; Prints a text sample at the given pointsize(s)
+    </UL>
+    <P>
+    The pointsize is either a single integer or an array of integers. It is only
+    meaningful for types 0 and 3. If omitted or set to 0 a default value will
+    be chosen. The font display will only look at one value.
+    <P>
+    If you selected print type 3 then you may provide the name of a file containing
+    sample text. This file may either be in ucs2 format (preceded by a 0xfeff
+    value), or in the current default encoding. A null string or an omitted argument
+    will cause PfaEdit to use a default value.
+    <P>
+    If your PrintSetup specified printing to a file then the fourth argument
+    provides the filename of the output file.
   <DT>
     Quit(status)
   <DD>
@@ -779,6 +840,11 @@ a[4][0] = "Nested array";
   <DD>
     All selected characters will have their points moved the given amount.
   <DT>
+    ScaleToEm(ascent,descent)
+  <DD>
+    Change the font's ascent and descent and scale everything in the font to
+    be in the same proportion to the new em value that it was to the old value.
+  <DT>
     ExpandStroke(width)<BR>
     ExpandStroke(width,caligraphic-angle)<BR>
     ExpandStroke(width,line cap, line join)
@@ -815,8 +881,12 @@ a[4][0] = "Nested array";
     BuildAccented()
   <DD>
   <DT>
-    MergeFonts(other-font-name)
+    MergeFonts(other-font-name[,flags])
   <DD>
+    Loads other-font-name, and extracts any characters from it which are not
+    in the current font and moves them to the current font. The flags argument
+    is the same as that for Open. Currently the only relevant flag is to say
+    that you do have a lisence to use a font with fstype=2. 
       <HR>
   <DT>
     AutoHint()

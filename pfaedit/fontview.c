@@ -1228,8 +1228,29 @@ return( false );
 return( true );
 }
 
+void TransHints(StemInfo *stem,real mul1, real off1, real mul2, real off2, int round_to_int ) {
+    HintInstance *hi;
+
+    for ( ; stem!=NULL; stem=stem->next ) {
+	stem->start = stem->start*mul1 + off1;
+	stem->width *= mul1;
+	if ( round_to_int ) {
+	    stem->start = rint(stem->start);
+	    stem->width = rint(stem->width);
+	}
+	for ( hi=stem->where; hi!=NULL; hi=hi->next ) {
+	    hi->begin = hi->begin*mul2 + off2;
+	    hi->end = hi->end*mul2 + off2;
+	    if ( round_to_int ) {
+		hi->begin = rint(hi->begin);
+		hi->end = rint(hi->end);
+	    }
+	}
+    }
+}
+
 void FVTrans(FontView *fv,SplineChar *sc,real transform[6], char *sel,
-	int dobackground) {
+	enum fvtrans_flags flags) {
     RefChar *refs;
     real t[6];
 
@@ -1238,6 +1259,8 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], char *sel,
 	SCSynchronizeWidth(sc,sc->width*transform[0]+transform[4],sc->width,fv);
     }
     SplinePointListTransform(sc->splines,transform,true);
+    if ( flags&fvt_round_to_int )
+	SplineSetsRound2Int(sc->splines);
     for ( refs = sc->refs; refs!=NULL; refs=refs->next ) {
 	if ( sel!=NULL && sel[refs->sc->enc] ) {
 	    /* if the character referred to is selected then it's going to */
@@ -1269,7 +1292,15 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], char *sel,
 			transform[5];
 	    memcpy(refs->transform,t,sizeof(t));
 	}
+	if ( flags&fvt_round_to_int ) {
+	    refs->transform[4] = rint( refs->transform[4] );
+	    refs->transform[5] = rint( refs->transform[5] );
+	}
 	SplineSetFindBounds(refs->splines,&refs->bb);
+    }
+    if ( transform[1]==0 && transform[2]==0 ) {
+	TransHints(sc->hstem,transform[3],transform[5],transform[0],transform[4],flags&fvt_round_to_int);
+	TransHints(sc->vstem,transform[0],transform[4],transform[3],transform[5],flags&fvt_round_to_int);
     }
     if ( transform[0]==1 && transform[3]==1 && transform[1]==0 &&
 	    transform[2]==0 && transform[5]==0 &&
@@ -1278,7 +1309,7 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], char *sel,
 	SCUndoSetLBearingChange(sc,(int) rint(transform[4]));
 	SCSynchronizeLBearing(sc,NULL,transform[4]);
     }
-    if ( dobackground ) {
+    if ( flags&fvt_dobackground ) {
 	ImageList *img;
 	SCPreserveBackground(sc);
 	SplinePointListTransform(sc->backgroundsplines,transform,true);
@@ -1289,7 +1320,7 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], char *sel,
 }
 
 void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
-	int dobackground ) {
+	enum fvtrans_flags flags ) {
     FontView *fv = _fv;
     real transx = transform[4], transy=transform[5];
     DBounds bb;
@@ -1317,7 +1348,7 @@ void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
 		transform[5]=transy+base.y-
 		    (transform[1]*base.x+transform[3]*base.y);
 	    }
-	    FVTrans(fv,sc,transform,fv->selected,dobackground);
+	    FVTrans(fv,sc,transform,fv->selected,flags);
 	    if ( !onlycopydisplayed ) {
 		for ( bdf = fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next ) if ( bdf->chars[i]!=NULL )
 		    BCTrans(bdf,bdf->chars[i],bvts,fv);
@@ -1327,6 +1358,43 @@ void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
     break;
     }
     GProgressEndIndicator();
+}
+
+int SFScaleToEm(SplineFont *sf, int as, int des) {
+    double scale;
+    real transform[6];
+    BVTFunc bvts;
+    char *oldselected = sf->fv->selected;
+    int i;
+    KernPair *kp;
+
+    if ( as+des == sf->ascent+sf->descent ) {
+	if ( as!=sf->ascent && des!=sf->descent ) {
+	    sf->ascent = as; sf->descent = des;
+	    sf->changed = true;
+	}
+return( false );
+    }
+
+    scale = (as+des)/(sf->ascent+sf->descent);
+    transform[0] = transform[3] = scale;
+    transform[1] = transform[2] = transform[4] = transform[5] = 0;
+    bvts.func = bvt_none;
+    sf->fv->selected = galloc(sf->charcnt);
+    memset(sf->fv->selected,1,sf->charcnt);
+
+    sf->ascent = as; sf->descent = des;
+
+    FVTransFunc(sf->fv,transform,0,&bvts,fvt_dobackground|fvt_round_to_int);
+    free(sf->fv->selected);
+    sf->fv->selected = oldselected;
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
+	for ( kp=sf->chars[i]->kerns; kp!=NULL; kp=kp->next )
+	    kp->off = rint(scale*kp->off);
+
+    sf->changed = true;
+return( true );
 }
 
 static void FVMenuBitmaps(GWindow gw,struct gmenuitem *mi,GEvent *e) {

@@ -1295,10 +1295,10 @@ return( true );
 }
 
 static void MVTransFunc(void *_sc,real transform[6],int otype, BVTFunc *bvts,
-	int dobackground ) {
+	enum fvtrans_flags flags ) {
     SplineChar *sc = _sc;
 
-    FVTrans(sc->parent->fv,sc,transform, NULL,dobackground);
+    FVTrans(sc->parent->fv,sc,transform, NULL,flags);
 }
 
 static void MVMenuTransform(GWindow gw,struct gmenuitem *mi,GEvent *e) {

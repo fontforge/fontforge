@@ -33,7 +33,7 @@
 
 typedef struct transdata {
     void *userdata;
-    void (*transfunc)(void *,real trans[6],int otype,BVTFunc *,int);
+    void (*transfunc)(void *,real trans[6],int otype,BVTFunc *,enum fvtrans_flags);
     int  (*getorigin)(void *,BasePoint *bp,int otype);
     GWindow tblock[TCnt];
     GWindow gw;
@@ -42,6 +42,7 @@ typedef struct transdata {
 
 #define CID_Origin		1101
 #define CID_DoBackground	1102
+#define CID_Round2Int		1103
 
 #define CID_Type	1001
 #define CID_XMove	1002
@@ -108,7 +109,7 @@ static int Trans_OK(GGadget *g, GEvent *e) {
     real transform[6], trans[6], t[6];
     real angle;
     int i, index, err;
-    int dobackground = false;
+    int dobackground = false, round_2_int = false;
     BasePoint base;
     int origin, bvpos=0;
     BVTFunc bvts[TCnt+1];
@@ -123,6 +124,7 @@ static int Trans_OK(GGadget *g, GEvent *e) {
 	origin = GGadgetGetFirstListSelectedItem( GWidgetGetControl(td->gw,CID_Origin));
 	if ( GWidgetGetControl(td->gw,CID_DoBackground)!=NULL )
 	    dobackground = GGadgetIsChecked(GWidgetGetControl(td->gw,CID_DoBackground));
+	round_2_int = GGadgetIsChecked(GWidgetGetControl(td->gw,CID_Round2Int));
 	if ( td->getorigin!=NULL ) {
 	    (td->getorigin)(td->userdata,&base,origin );
 	    transform[4] = -base.x;
@@ -223,7 +225,8 @@ return(true);
 	transform[4] += base.x;
 	transform[5] += base.y;
 
-	(td->transfunc)(td->userdata,transform,origin,bvts,dobackground);
+	(td->transfunc)(td->userdata,transform,origin,bvts,
+		dobackground|(round_2_int?fvt_round_to_int:0));
 	td->done = true;
     }
 return( true );
@@ -451,13 +454,13 @@ static void MakeTransBlock(TransData *td,int bnum) {
     GDrawSetVisible(gw,true);
 }
 
-void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *,int),
+void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *,enum fvtrans_flags),
 	int (*getorigin)(void *,BasePoint *,int), int enableback) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[6];
-    GTextInfo label[5];
+    GGadgetCreateData gcd[7];
+    GTextInfo label[6];
     static TransData td;
     int i, len, y;
     GGadget *orig;
@@ -480,7 +483,7 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,TBlock_Width));
-	pos.height = GDrawPointsToPixels(NULL,TBlock_Top+TCnt*TBlock_Height+64);
+	pos.height = GDrawPointsToPixels(NULL,TBlock_Top+TCnt*TBlock_Height+78);
 	td.gw = gw = GDrawCreateTopWindow(NULL,&pos,trans_e_h,&td,&wattrs);
 
 	memset(&label,0,sizeof(label));
@@ -503,6 +506,16 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	    gcd[i].gd.mnemonic = 'T';
 	    gcd[i].gd.label = &label[i];
 	    gcd[i].gd.cid = CID_DoBackground;
+	    gcd[i++].creator = GCheckBoxCreate;
+	    y += 16;
+
+	    gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = y;
+	    gcd[i].gd.flags = gg_visible | gg_enabled;
+	    label[i].text = (unichar_t *) _STR_Round2int;
+	    label[i].text_in_resource = true;
+	    gcd[i].gd.mnemonic = 'R';
+	    gcd[i].gd.label = &label[i];
+	    gcd[i].gd.cid = CID_Round2Int;
 	    gcd[i++].creator = GCheckBoxCreate;
 	    y += 24;
 

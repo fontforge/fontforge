@@ -1323,7 +1323,7 @@ static void bScale(Context *c) {
     if ( c->a.argc==1 || c->a.argc>5 )
 	error( c, "Wrong number of arguments to Scale");
     for ( i=1; i<c->a.argc; ++i )
-	if ( c->a.vals[1].type!=v_int )
+	if ( c->a.vals[i].type!=v_int )
 	    error(c,"Bad argument type in Scale");
     i = 1;
     if ( c->a.argc&1 ) {
@@ -1388,6 +1388,17 @@ static void bMove(Context *c) {
     bvts[0].x = trans[4]; bvts[0].y = trans[5];
     bvts[1].func = bvt_none;
     FVTransFunc(c->curfv,trans,otype,bvts,true);
+}
+
+static void bScaleToEm(Context *c) {
+    int i;
+
+    if ( c->a.argc!=3 )
+	error( c, "Wrong number of arguments to Scale");
+    for ( i=1; i<c->a.argc; ++i )
+	if ( c->a.vals[i].type!=v_int || c->a.vals[i].u.ival<0 || c->a.vals[i].u.ival>16384 )
+	    error(c,"Bad argument type");
+    SFScaleToEm(c->curfv->sf,c->a.vals[1].u.ival,c->a.vals[2].u.ival);
 }
 
 static void bExpandStroke(Context *c) {
@@ -1873,6 +1884,7 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "Scale", bScale },
     { "Skew", bSkew },
     { "Move", bMove },
+    { "ScaleToEm", bScaleToEm },
     { "ExpandStroke", bExpandStroke },
     { "RemoveOverlap", bRemoveOverlap },
     { "Simplify", bSimplify },

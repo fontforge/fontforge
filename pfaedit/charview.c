@@ -3480,13 +3480,15 @@ void BackgroundImageTransform(SplineChar *sc, ImageList *img,real transform[6]) 
     SCOutOfDateBackground(sc);
 }
 
-void CVTransFunc(CharView *cv,real transform[6], int doback) {
+void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
     int anysel = cv->p.transany;
     RefChar *refs;
     ImageList *img;
     real t[6];
 
     SplinePointListTransform(*cv->heads[cv->drawmode],transform,!anysel);
+    if ( flags&fvt_round_to_int )
+	SplineSetsRound2Int(*cv->heads[cv->drawmode]);
     if ( cv->drawmode==dm_back ) {
 	for ( img = cv->sc->backimages; img!=NULL; img=img->next )
 	    if ( img->selected || !anysel ) {
@@ -3510,9 +3512,17 @@ void CVTransFunc(CharView *cv,real transform[6], int doback) {
 		t[5] = refs->transform[4]*transform[1] +
 			    refs->transform[5]*transform[3] +
 			    transform[5];
+		if ( flags&fvt_round_to_int ) {
+		    t[4] = rint( t[4] );
+		    t[5] = rint( t[5] );
+		}
 		memcpy(refs->transform,t,sizeof(t));
 		SplineSetFindBounds(refs->splines,&refs->bb);
 	    }
+	if ( transform[1]==0 && transform[2]==0 ) {
+	    TransHints(cv->sc->hstem,transform[3],transform[5],transform[0],transform[4],flags&fvt_round_to_int);
+	    TransHints(cv->sc->vstem,transform[0],transform[4],transform[3],transform[5],flags&fvt_round_to_int);
+	}
 	if ( transform[0]==1 && transform[3]==1 && transform[1]==0 &&
 		transform[2]==0 && transform[5]==0 &&
 		transform[4]!=0 && CVAllSelected(cv) &&
@@ -3526,7 +3536,7 @@ void CVTransFunc(CharView *cv,real transform[6], int doback) {
 	if ( transform[0]==1 && transform[3]==1 && transform[1]==0 &&
 		transform[2]==0 && cv->vwidthsel && transform[5]!=0 )
 	    cv->sc->vwidth+=transform[5];
-	if ( doback && !anysel ) {
+	if ( (flags&fvt_dobackground) && !anysel ) {
 	    SCPreserveBackground(cv->sc);
 	    for ( img = cv->sc->backimages; img!=NULL; img=img->next )
 		BackgroundImageTransform(cv->sc, img, transform);
@@ -3536,12 +3546,12 @@ void CVTransFunc(CharView *cv,real transform[6], int doback) {
 }
 
 static void transfunc(void *d,real transform[6],int otype,BVTFunc *bvts,
-	int dobackground) {
+	enum fvtrans_flags flags) {
     CharView *cv = (CharView *) d;
 
     cv->p.transany = CVAnySel(cv,NULL,NULL,NULL);
     CVPreserveState(cv);
-    CVTransFunc(cv,transform,dobackground);
+    CVTransFunc(cv,transform,flags);
     CVCharChangedUpdate(cv);
 }
 
@@ -3560,13 +3570,10 @@ static void SplinePointRound(SplinePoint *sp) {
     sp->prevcp.y = rint(sp->prevcp.y);
 }
 
-void SCRound2Int(SplineChar *sc,FontView *fv) {
-    SplinePointList *spl;
+void SplineSetsRound2Int(SplineSet *spl) {
     SplinePoint *sp;
-    RefChar *r;
 
-    SCPreserveState(sc,false);
-    for ( spl= sc->splines; spl!=NULL; spl=spl->next ) {
+    for ( ; spl!=NULL; spl=spl->next ) {
 	for ( sp=spl->first; ; ) {
 	    SplinePointRound(sp);
 	    if ( sp->prev!=NULL )
@@ -3580,6 +3587,13 @@ void SCRound2Int(SplineChar *sc,FontView *fv) {
 	if ( spl->first->prev!=NULL )
 	    SplineRefigure(spl->first->prev);
     }
+}
+
+void SCRound2Int(SplineChar *sc,FontView *fv) {
+    RefChar *r;
+
+    SCPreserveState(sc,false);
+    SplineSetsRound2Int(sc->splines);
     for ( r=sc->refs; r!=NULL; r=r->next ) {
 	r->transform[4] = rint(r->transform[4]);
 	r->transform[5] = rint(r->transform[5]);
