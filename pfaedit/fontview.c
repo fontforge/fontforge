@@ -1882,7 +1882,7 @@ static void FVChangeDisplayFont(FontView *fv,BDFFont *bdf) {
 return;
 
     if ( fv->show!=bdf ) {
-	if ( fv->show!=NULL && fv->show->pixelsize==bdf->pixelsize )
+	if ( fv->show!=NULL && fv->cbw == bdf->pixelsize+1 )
 	    samesize = true;
 	fv->show = bdf;
 	if ( bdf->pixelsize<20 ) {
