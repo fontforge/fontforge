@@ -98,7 +98,7 @@ enum pstoks { pt_eof=-1, pt_moveto, pt_rmoveto, pt_curveto, pt_rcurveto,
     pt_add, pt_sub, pt_mul, pt_div, pt_idiv, pt_mod, pt_neg,
     pt_ne, pt_eq, pt_gt, pt_ge, pt_lt, pt_le, pt_and, pt_or, pt_xor, pt_not,
     pt_true, pt_false,
-    pt_if, pt_ifelse, pt_def, pt_bind,
+    pt_if, pt_ifelse, pt_def, pt_bind, pt_load,
     pt_setlinecap, pt_setlinejoin, pt_setlinewidth,
     pt_currentlinecap, pt_currentlinejoin, pt_currentlinewidth,
     pt_setgray, pt_currentgray, pt_sethsbcolor, pt_currenthsbcolor,
@@ -121,7 +121,7 @@ char *toknames[] = { "moveto", "rmoveto", "curveto", "rcurveto",
 	"add", "sub", "mul", "div", "idiv", "mod", "neg",
 	"ne", "eq", "gt", "ge", "lt", "le", "and", "or", "xor", "not",
 	"true", "false", 
-	"if", "ifelse", "def", "bind",
+	"if", "ifelse", "def", "bind", "load",
 	"setlinecap", "setlinejoin", "setlinewidth",
 	"currentlinecap", "currentlinejoin", "currentlinewidth",
 	"setgray", "currentgray", "sethsbcolor", "currenthsbcolor",
@@ -820,6 +820,19 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 		sp -= 3;
 	    }
 	  break;
+	  case pt_load:
+	    if ( sp>=1 && stack[sp-1].type==ps_lit ) {
+		kv = lookup(&dict,stack[sp-1].u.str);
+		if ( kv!=NULL ) {
+		    free( stack[sp-1].u.str );
+		    stack[sp-1].type = kv->type;
+		    stack[sp-1].u = kv->u;
+		    if ( kv->type==ps_instr || kv->type==ps_lit )
+			stack[sp-1].u.str = copy(stack[sp-1].u.str);
+		} else
+		    stack[sp-1].type = ps_instr;
+	    }
+	  break;
 	  case pt_def:
 	    sp = AddEntry(&dict,stack,sp);
 	  break;
@@ -1336,7 +1349,8 @@ static SplinePointList *SplinesFromEntities(EntityChar *ec) {
 		head = new;
 	    else
 		last->next = new;
-	    for ( last = new; last->next!=NULL; last=last->next );
+	    if ( new!=NULL )
+		for ( last = new; last->next!=NULL; last=last->next );
 	}
 	free(ent);
     }
