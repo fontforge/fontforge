@@ -2958,7 +2958,7 @@ static void doif(Context *c) {
 return;
     if ( tok!=tt_endif && tok!=tt_eof ) {
 	nest = 0;
-	while ( ((tok=NextToken(c))!=tt_endif && tok!=tt_else && tok!=tt_elseif ) || nest>0 ) {
+	while ( (tok=NextToken(c))!=tt_endif || nest>0 ) {
 	    if ( tok==tt_eof )
 return;
 	    else if ( tok==tt_if ) ++nest;
