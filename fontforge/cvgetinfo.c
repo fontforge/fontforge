@@ -1964,8 +1964,8 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
     static GIData gi;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[39], hgcd[2], h2gcd[2], mgcd[8];
-    GTextInfo label[39], mlabel[8];
+    GGadgetCreateData gcd[39], hgcd[2], h2gcd[2], mgcd[11];
+    GTextInfo label[39], mlabel[11];
     GTabInfo aspects[4];
     static GBox cur, nextcp, prevcp;
     extern Color nextcpcol, prevcpcol;
