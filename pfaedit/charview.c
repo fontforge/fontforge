@@ -3643,3 +3643,21 @@ void CharViewFree(CharView *cv) {
     free(cv->gi.u.image);
     free(cv);
 }
+
+int CVValid(SplineFont *sf, SplineChar *sc, CharView *cv) {
+    /* A charview may have been closed. A splinechar may have been removed */
+    /*  from a font */
+    CharView *test;
+
+    if ( cv->sc!=sc || sc->parent!=sf )
+return( false );
+    if ( sc->enc<0 || sc->enc>sf->charcnt )
+return( false );
+    if ( sf->chars[sc->enc]!=sc )
+return( false );
+    for ( test=sc->views; test!=NULL; test=test->next )
+	if ( test==cv )
+return( true );
+
+return( false );
+}

@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#include <stdlib.h>
 #include <math.h>
 #include <time.h>
 #include <pwd.h>
@@ -1284,10 +1285,31 @@ return( event->type!=et_char );
 }
 
 /* English */
-static unichar_t _simple[] = { ' ','T','h','e',' ','q','u','i','c','k',' ','b',
+static unichar_t _simple1[] = { ' ','A',' ','q','u','i','c','k',' ','b',
 	'r','o','w','n',' ','f','o','x',' ','j','u','m','p','s',' ','o','v','e',
 	'r',' ','t','h','e',' ','l','a','z','y',' ','d','o','g','.',  '\0' };
-static unichar_t *simple[] = { _simple, NULL };
+static unichar_t _simple2[] = { 'F','e','w',' ','z','e','b','r','a','s',' ','v',
+	'a','l','i','d','a','t','e',' ','m','y',' ','p','a','r','a','d','o','x',
+	',',' ','q','u','o','t','h',' ','J','a','c','k',' ','X','e','n','o', 0 };
+static unichar_t *simplechoices[] = { _simple1, _simple2, NULL };
+static unichar_t *simple[] = { _simple1, NULL };
+/* Russian */
+static unichar_t _simplecyrill1[] = {' ', 0x421, 0x44a, 0x435, 0x448, 0x44c, ' ',
+	0x435, 0x449, 0x451, ' ', 0x44d, 0x442, 0x438, 0x445, ' ', 0x43c,
+	0x44f, 0x433, 0x43a, 0x438, 0x445, ' ', 0x444, 0x440, 0x430, 0x43d,
+	0x446, 0x443, 0x437, 0x441, 0x43a, 0x438, 0x445, ' ', 0x431, 0x443,
+	0x43b, 0x43e, 0x43a, ',', ' ', 0x434, 0x430, ' ', 0x432, 0x44b, 0x43f,
+	0x435, 0x439, ' ', 0x447, 0x430, 0x44e, '!',  0 };
+/* Eat more those soft french 'little-sweet-breads' and drink tea */
+static unichar_t _simplecyrill2[] = { ' ', 0x412, ' ', 0x447, 0x430, 0x449, 0x430,
+	0x445, ' ', 0x44e, 0x433, 0x430, ' ', 0x436, 0x438, 0x43b, '-', 0x431,
+	0x44b, 0x43b, ' ', 0x446, 0x438, 0x442, 0x440, 0x443, 0x441, ' ', '-',
+	'-', ' ', 0x434, 0x430, ',', ' ', 0x43d, 0x43e, ' ', 0x444, 0x430,
+	0x43b, 0x44c, 0x448, 0x438, 0x432, 0x44b, 0x439, ' ', 0x44d, 0x43a,
+	0x437, 0x435, 0x43c, 0x43f, 0x43b, 0x44f, 0x440, 0x44a, '!',  0 };
+/* "In the deep forests of South citrus lived... /answer/Yeah but falsificated one!" */
+static unichar_t *simplecyrillchoices[] = { _simplecyrill1, _simplecyrill2, NULL };
+static unichar_t *simplecyrill[] = { _simplecyrill1, NULL };
 /* Russian */
 static unichar_t _annakarenena1[] = { ' ',0x412,0x441,0x463,' ',0x441,0x447,0x430,0x441,
 	0x442,0x43b,0x438,0x432,0x44b,0x44f,' ',0x441,0x435,0x43c,0x44c,0x438,
@@ -1625,7 +1647,7 @@ static unichar_t _bulgarian[] = {' ',0x041f,0x0420,0x0415,0x0414,0x041c,0x0415,
     0x0430,0x0441,0x201c,',',' ',0x201e,0x0442,0x043e,0x043d,0x201c,'.',  '\0'};
 static unichar_t *bulgarian[] = { _bulgarian, NULL };
 
-static unichar_t **sample[] = { simple, faust, pheadra, antigone, annakarenena,
+static unichar_t **sample[] = { simple, simplecyrill, faust, pheadra, antigone, annakarenena,
 	debello, hebrew, donquixote, inferno, beorwulf, muchado, mabinogion,
 	goodsoldier, macedonian, bulgarian, lithuanian, polish, slovene, NULL };
 
@@ -1668,16 +1690,22 @@ static void u_stupidstrcpy( unichar_t *pt1, unichar_t *pt2 ) {
 }
 
 static unichar_t *BuildDef( SplineFont *sf) {
-    int i, j, gotem, len;
+    int i, j, gotem, len, any=0;
     unichar_t *ret=NULL;
 
+    for ( j=0; simplechoices[j]!=NULL; ++j );
+    simple[0] = simplechoices[rand()%j];
+    for ( j=0; simplecyrillchoices[j]!=NULL; ++j );
+    simplecyrill[0] = simplecyrillchoices[rand()%j];
+
     while ( 1 ) {
-	len = 0;
+	len = any = 0;
 	for ( i=0; sample[i]!=NULL; ++i ) {
 	    gotem = true;
 	    for ( j=0; sample[i][j]!=NULL && gotem; ++j )
 		gotem = AllChars(sf,sample[i][j]);
 	    if ( gotem ) {
+		++any;
 		for ( j=0; sample[i][j]!=NULL; ++j ) {
 		    if ( ret )
 			u_stupidstrcpy(ret+len,sample[i][j]);
@@ -1691,6 +1719,32 @@ static unichar_t *BuildDef( SplineFont *sf) {
 		++len;
 	    }
 	}
+
+	/* If no matches then put in "the quick brown...", in russian too if the encoding suggests it... */
+	if ( !any ) {
+	    for ( j=0; simple[j]!=NULL; ++j ) {
+		if ( ret )
+		    u_stupidstrcpy(ret+len,simple[j]);
+		len += u_strlen(simple[j]);
+		if ( ret )
+		    ret[len] = '\n';
+		++len;
+	    }
+	    if ( sf->encoding_name==em_unicode || sf->encoding_name==em_koi8_r || sf->encoding_name==em_iso8859_5 ) {
+		if ( ret )
+		    ret[len] = '\n';
+		++len;
+		for ( j=0; simplecyrill[j]!=NULL; ++j ) {
+		    if ( ret )
+			u_stupidstrcpy(ret+len,simplecyrill[j]);
+		    len += u_strlen(simplecyrill[j]);
+		    if ( ret )
+			ret[len] = '\n';
+		    ++len;
+		}
+	    }
+	}
+
 	if ( ret ) {
 	    ret[len-1]='\0';
 return( ret );

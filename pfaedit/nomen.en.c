@@ -838,6 +838,7 @@ static char *mnemonic_PointsNear = 'N';
 static char *str_Near = "Near";
 static char *str_ExplainErr = "Stop after each error and explain";
 static char *mnemonic_ExplainErr = 'A';
+static char *str_IgnoreProblemFuture = "Ignore this problem in the future";
 /* "Found %g, expected %g" */
 static char *str_Found = "Found ";
 static char *str_Expected = ", expected ";

@@ -323,6 +323,7 @@ extern int BVExport(BitmapView *bv);
 
 extern CharView *CharViewCreate(SplineChar *sc,FontView *fv);
 extern void CharViewFree(CharView *cv);
+extern int CVValid(SplineFont *sf, SplineChar *sc, CharView *cv);
 extern void CVDrawRubberRect(GWindow pixmap, CharView *cv);
 extern void CVSetCharChanged(CharView *cv,int changed);
 extern void CVCharChangedUpdate(CharView *cv);

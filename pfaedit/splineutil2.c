@@ -1446,13 +1446,14 @@ return( open );
 
 /* This is exactly the same as SplineSetsCorrect, but instead of correcting */
 /*  problems we merely search for them and if we find any return the first */
-SplineSet *SplineSetsDetectDir(SplineSet **_base) {
+SplineSet *SplineSetsDetectDir(SplineSet **_base,int *_lastscan) {
     SplineSet *spl, *ret, *base;
     EdgeList es;
     DBounds b;
     Edge *active=NULL, *apt, *pr, *e;
     int i, winding;
     SplineSet *open;
+    int lastscan = *_lastscan;
 
     open = SplineSetsExtractOpen(_base);
     base = *_base;
@@ -1474,6 +1475,8 @@ SplineSet *SplineSetsDetectDir(SplineSet **_base) {
     ret = NULL;
     for ( i=0; i<es.cnt && ret==NULL; ++i ) {
 	active = ActiveEdgesRefigure(&es,active,i);
+	if ( i<=lastscan )
+    continue;
 	if ( es.edges[i]!=NULL )
     continue;			/* Just too hard to get the edges sorted when we are at a start vertex */
 	if ( /*es.edges[i]==NULL &&*/ !es.interesting[i] &&
@@ -1523,6 +1526,7 @@ SplineSet *SplineSetsDetectDir(SplineSet **_base) {
 	spl->next = base;
     }
     *_base = open;
+    *_lastscan = i;
 return( ret );
 }
 

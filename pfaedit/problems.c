@@ -48,11 +48,13 @@ struct problems {
     unsigned int done: 1;
     unsigned int doneexplain: 1;
     unsigned int finish: 1;
+    unsigned int ignorethis: 1;
     double near, xval, yval, widthval;
     double xheight, caph, ascent, descent;
     GWindow explainw;
-    GGadget *explaintext, *explainvals;
+    GGadget *explaintext, *explainvals, *ignoregadg;
     SplineChar *lastcharopened;
+    CharView *cvopened;
 };
 
 static int openpaths=1, pointstooclose=1/*, missing=0*/, doxnear=0, doynear=0;
@@ -89,6 +91,10 @@ static int explain_e_h(GWindow gw, GEvent *event) {
 	if ( GGadgetGetCid(event->u.control.g)==CID_Stop )
 	    p->finish = true;
 	p->doneexplain = true;
+    } else if ( event->type==et_controlevent &&
+	    event->u.control.subtype == et_radiochanged ) {
+	struct problems *p = GDrawGetUserData(gw);
+	p->ignorethis = GGadgetIsChecked(event->u.control.g);
     }
 return( event->type!=et_char );
 }
@@ -97,8 +103,8 @@ static void ExplainIt(struct problems *p, SplineChar *sc, int explain,
 	double found, double expected ) {
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[7];
-    GTextInfo label[7];
+    GGadgetCreateData gcd[8];
+    GTextInfo label[8];
     unichar_t ubuf[100]; char buf[20];
     SplinePointList *spl; Spline *spline, *first;
 
@@ -113,7 +119,7 @@ return;
 	wattrs.window_title = GStringGetResource(_STR_ProbExplain,NULL);
 	pos.x = pos.y = 0;
 	pos.width =GDrawPointsToPixels(NULL,400);
-	pos.height = GDrawPointsToPixels(NULL,80);
+	pos.height = GDrawPointsToPixels(NULL,86);
 	p->explainw = GDrawCreateTopWindow(NULL,&pos,explain_e_h,p,&wattrs);
 
 	memset(&label,0,sizeof(label));
@@ -133,7 +139,14 @@ return;
 	gcd[4].gd.flags = gg_visible | gg_enabled;
 	gcd[4].creator = GLabelCreate;
 
-	gcd[1].gd.pos.x = 15-3; gcd[1].gd.pos.y = gcd[0].gd.pos.y+27;
+	label[5].text = (unichar_t *) _STR_IgnoreProblemFuture;
+	label[5].text_in_resource = true;
+	gcd[5].gd.label = &label[5];
+	gcd[5].gd.pos.x = 6; gcd[5].gd.pos.y = gcd[4].gd.pos.y+12;
+	gcd[5].gd.flags = gg_visible | gg_enabled;
+	gcd[5].creator = GCheckBoxCreate;
+
+	gcd[1].gd.pos.x = 15-3; gcd[1].gd.pos.y = gcd[5].gd.pos.y+20;
 	gcd[1].gd.pos.width = -1; gcd[1].gd.pos.height = 0;
 	gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
 	label[1].text = (unichar_t *) _STR_Next;
@@ -161,6 +174,7 @@ return;
 	GGadgetsCreate(p->explainw,gcd);
 	p->explaintext = gcd[0].ret;
 	p->explainvals = gcd[4].ret;
+	p->ignoregadg = gcd[5].ret;
     } else
 	GGadgetSetTitle(p->explaintext,GStringGetResource(explain,NULL));
 
@@ -175,14 +189,19 @@ return;
 	uc_strcat(ubuf,buf);
     }
     GGadgetSetTitle(p->explainvals,ubuf);
+    GGadgetSetChecked(p->ignoregadg,false);
 
     p->doneexplain = false;
+    p->ignorethis = false;
 
-    if ( sc!=p->lastcharopened ) {
+    if ( sc!=p->lastcharopened || sc->views==NULL ) {
+	if ( p->cvopened!=NULL && CVValid(p->fv->sf,p->lastcharopened,p->cvopened) )
+	    GDrawDestroyWindow(p->cvopened->gw);
+	p->cvopened = NULL;
 	if ( sc->views!=NULL )
 	    GDrawRaise(sc->views->gw);
 	else
-	    CharViewCreate(sc,p->fv);
+	    p->cvopened = CharViewCreate(sc,p->fv);
 	GDrawProcessPendingEvents(NULL);
 	GDrawProcessPendingEvents(NULL);
 	p->lastcharopened = sc;
@@ -308,6 +327,10 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		    sp = sp->next->to;
 		}
 		ExplainIt(p,sc,_STR_ProbOpenPath,0,0);
+		if ( p->ignorethis ) {
+		    p->openpaths = false;
+	break;
+		}
 		if ( missing(p,test,NULL))
       goto restart;
 	    }
@@ -315,7 +338,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     }
 
     if ( p->pointstooclose && !p->finish ) {
-	for ( test=spl; test!=NULL && !p->finish; test=test->next ) {
+	for ( test=spl; test!=NULL && !p->finish && p->pointstooclose; test=test->next ) {
 	    sp = test->first;
 	    do {
 		if ( sp->next==NULL )
@@ -325,6 +348,10 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		    changed = true;
 		    sp->selected = nsp->selected = true;
 		    ExplainIt(p,sc,_STR_ProbPointsTooClose,0,0);
+		    if ( p->ignorethis ) {
+			p->pointstooclose = false;
+	    break;
+		    }
 		    if ( missing(p,test,sp))
   goto restart;
 		}
@@ -335,7 +362,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 
 #if 0
     if ( p->missingextrema && !p->finish ) {
-	for ( test=spl; test!=NULL && !p->finish; test = test->next ) {
+	for ( test=spl; test!=NULL && !p->finish && p->missingextrema; test = test->next ) {
 	    first = NULL;
 	    for ( spline = test->first->next; spline!=NULL && spline!=first && !p->finish; spline=spline->to->next ) {
 		if ( !spline->knownlinear ) {
@@ -348,6 +375,10 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 			spline->to->selected = true;
 			changed = true;
 			ExplainIt(p,sc,_STR_ProbMissingExtreme,0,0);
+			if ( p->ignorethis ) {
+			    p->missingextrema = false;
+	    break;
+			}
 		    }
 		}
 		if ( first==NULL ) first = spline;
@@ -357,7 +388,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 #endif
 
     if ( p->xnearval && !p->finish ) {
-	for ( test=spl; test!=NULL && !p->finish; test=test->next ) {
+	for ( test=spl; test!=NULL && !p->finish && p->xnearval; test=test->next ) {
 	    sp = test->first;
 	    do {
 		if ( sp->me.x-p->xval<p->near && p->xval-sp->me.x<p->near &&
@@ -365,6 +396,10 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		    changed = true;
 		    sp->selected = true;
 		    ExplainIt(p,sc,_STR_ProbXNear,sp->me.x,p->xval);
+		    if ( p->ignorethis ) {
+			p->xnearval = false;
+	    break;
+		    }
 		    if ( missing(p,test,sp))
   goto restart;
 		}
@@ -376,7 +411,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     }
 
     if ( p->ynearval && !p->finish ) {
-	for ( test=spl; test!=NULL && !p->finish; test=test->next ) {
+	for ( test=spl; test!=NULL && !p->finish && p->ynearval; test=test->next ) {
 	    sp = test->first;
 	    do {
 		if ( sp->me.y-p->yval<p->near && p->yval-sp->me.y<p->near &&
@@ -384,6 +419,10 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		    changed = true;
 		    sp->selected = true;
 		    ExplainIt(p,sc,_STR_ProbYNear,sp->me.y,p->yval);
+		    if ( p->ignorethis ) {
+			p->ynearval = false;
+	    break;
+		    }
 		    if ( missing(p,test,sp))
   goto restart;
 		}
@@ -397,7 +436,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     if ( p->ynearstd && !p->finish ) {
 	double expected;
 	int msg;
-	for ( test=spl; test!=NULL && !p->finish; test=test->next ) {
+	for ( test=spl; test!=NULL && !p->finish && p->ynearstd; test=test->next ) {
 	    sp = test->first;
 	    do {
 		if (( sp->me.y-p->xheight<p->near && p->xheight-sp->me.y<p->near && sp->me.y!=p->xheight ) ||
@@ -424,6 +463,10 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 			expected = p->descent;
 		    }
 		    ExplainIt(p,sc,msg,sp->me.y,expected);
+		    if ( p->ignorethis ) {
+			p->ynearval = false;
+	    break;
+		    }
 		    if ( missing(p,test,sp))
   goto restart;
 		}
@@ -437,7 +480,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     if ( p->linenearstd && !p->finish ) {
 	double ia = (90-p->fv->sf->italicangle)*(3.1415926535897932/180);
 	int hasia = p->fv->sf->italicangle!=0;
-	for ( test=spl; test!=NULL && !p->finish; test = test->next ) {
+	for ( test=spl; test!=NULL && !p->finish && p->linenearstd; test = test->next ) {
 	    first = NULL;
 	    for ( spline = test->first->next; spline!=NULL && spline!=first && !p->finish; spline=spline->to->next ) {
 		if ( spline->knownlinear ) {
@@ -472,6 +515,10 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 				    yoff<0?spline->to->me.x:spline->from->me.x);
 			else
 			    ExplainIt(p,sc,_STR_ProbLineItal,0,0);
+			if ( p->ignorethis ) {
+			    p->linenearstd = false;
+	    break;
+			}
 			if ( missingspline(p,test,spline))
   goto restart;
 		    }
@@ -504,13 +551,17 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		h->active = true;
 		changed = true;
 		ExplainIt(p,sc,_STR_ProbHintControl,0,0);
+		if ( p->ignorethis ) {
+		    p->hintwithnopt = false;
+	break;
+		}
 		h->active = false;
 		if ( missinghint(sc->hstem,h))
       goto restarthhint;
 	    }
 	}
       restartvhint:
-	for ( h=sc->vstem; h!=NULL ; h=h->next ) {
+	for ( h=sc->vstem; h!=NULL && p->hintwithnopt; h=h->next ) {
 	    anys = anye = false;
 	    for ( test=spl; test!=NULL && !p->finish && (!anys || !anye); test=test->next ) {
 		sp = test->first;
@@ -528,6 +579,10 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		h->active = true;
 		changed = true;
 		ExplainIt(p,sc,_STR_ProbHintControl,0,0);
+		if ( p->ignorethis ) {
+		    p->hintwithnopt = false;
+	break;
+		}
 		if ( missinghint(sc->vstem,h))
       goto restartvhint;
 		h->active = false;
@@ -537,7 +592,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 
     if ( p->ptnearhint && !p->finish ) {
 	double found, expected;
-	for ( test=spl; test!=NULL && !p->finish; test=test->next ) {
+	for ( test=spl; test!=NULL && !p->finish && p->ptnearhint; test=test->next ) {
 	    sp = test->first;
 	    do {
 		int hs = false, vs = false;
@@ -577,6 +632,10 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		    changed = true;
 		    sp->selected = true;
 		    ExplainIt(p,sc,hs?_STR_ProbPtNearHHint:_STR_ProbPtNearVHint,found,expected);
+		    if ( p->ignorethis ) {
+			p->ptnearhint = false;
+	    break;
+		    }
 		    if ( missing(p,test,sp))
   goto restart;
 		}
@@ -611,7 +670,9 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		    hs?hs->width:vs->width,p->widthval);
 	    if ( hs!=NULL && !missinghint(sc->hstem,hs)) hs->active = false;
 	    if ( vs!=NULL && !missinghint(sc->vstem,vs)) vs->active = false;
-	    if ( (hs!=NULL && missinghint(sc->hstem,hs)) &&
+	    if ( p->ignorethis )
+		p->hintwidthnearval = false;
+	    else if ( (hs!=NULL && missinghint(sc->hstem,hs)) &&
 		    ( vs!=NULL && missinghint(sc->vstem,vs)))
       goto restart;
 	}
@@ -619,11 +680,12 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 
     if ( p->direction && !p->finish ) {
 	SplineSet **base, *ret;
+	int lastscan= -1;
 	if ( cv!=NULL )
 	    base = cv->heads[cv->drawmode];
 	else
 	    base = &sc->splines;
-	while ( !p->finish && (ret=SplineSetsDetectDir(base))!=NULL ) {
+	while ( !p->finish && (ret=SplineSetsDetectDir(base,&lastscan))!=NULL ) {
 	    sp = ret->first;
 	    changed = true;
 	    while ( 1 ) {
@@ -638,6 +700,10 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		ExplainIt(p,sc,_STR_ProbExpectedCounter,0,0);
 	    else
 		ExplainIt(p,sc,_STR_ProbExpectedClockwise,0,0);
+	    if ( p->ignorethis ) {
+		p->direction = false;
+	break;
+	    }
 	}
     }
 

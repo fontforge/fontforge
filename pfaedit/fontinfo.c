@@ -1691,6 +1691,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	int upos, uwid, as, des, nchar, oldcnt=sf->charcnt, err = false;
 	double ia;
 	const unichar_t *txt; unichar_t *end;
+	char *pt;
 
 	if ( !CheckNames(d))
 return( true );
@@ -1729,6 +1730,8 @@ return(true);
 	free(sf->xuid); sf->xuid = *txt=='\0'?NULL:cu_copy(txt);
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Notice));
 	free(sf->copyright); sf->copyright = cu_copy(txt);
+	for ( pt=sf->copyright; *pt!='\0'; ++pt )
+	    if ( *pt=='\n' ) *pt=' ';
 	enc = GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,CID_Encoding));
 	if ( enc!=-1 ) {
 	    enc = (int) (GGadgetGetListItem(GWidgetGetControl(gw,CID_Encoding),enc)->userdata);
@@ -1963,16 +1966,16 @@ void FontMenuFontInfo(void *_fv) {
     ngcd[6].gd.label = &nlabel[6];
     ngcd[6].creator = GLabelCreate;
 
-    ngcd[7].gd.pos.x = ngcd[5].gd.pos.x; ngcd[7].gd.pos.y = ngcd[6].gd.pos.y-6;
-    ngcd[7].gd.pos.width = ngcd[5].gd.pos.width;
-    ngcd[7].gd.flags = gg_visible | gg_enabled;
+    ngcd[7].gd.pos.x = 12; ngcd[7].gd.pos.y = ngcd[6].gd.pos.y+14;
+    ngcd[7].gd.pos.width = ngcd[5].gd.pos.x+ngcd[5].gd.pos.width-26;
+    ngcd[7].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
     if ( sf->copyright!=NULL ) {
 	nlabel[7].text = (unichar_t *) sf->copyright;
 	nlabel[7].text_is_1byte = true;
 	ngcd[7].gd.label = &nlabel[7];
     }
     ngcd[7].gd.cid = CID_Notice;
-    ngcd[7].creator = GTextFieldCreate;
+    ngcd[7].creator = GTextAreaCreate;
 /******************************************************************************/
     memset(&elabel,0,sizeof(elabel));
     memset(&egcd,0,sizeof(egcd));

@@ -110,7 +110,7 @@ static void GFD_dircreatefailed(GIOControl *gio) {
     }
     if ( gio->status[0]!='\0' )
 	u_strcat(buffer,gio->status);
-    GWidgetPostNotice(title,buffer);
+    GWidgetError(title,buffer);
     GFileChooserReplaceIO(d->gfc,NULL);
 }
 
