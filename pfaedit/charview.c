@@ -1039,6 +1039,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		(!cv->inactive && cv->widthsel)?0x00ff00:0x0);
 	if ( x>-400 && x<cv->width+400 ) {
 	    dtou( ubuf, cv->sc->width);
+	    GDrawSetFont(pixmap,cv->small);
 	    GDrawDrawText(pixmap,x+5,cv->sas+3,ubuf,-1,NULL,0x00000);
 	}
     }
@@ -1049,6 +1050,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		(!cv->inactive && cv->vwidthsel)?0x00ff00:0x0);
 	if ( y>-40 && y<cv->height+40 ) {
 	    dtou( ubuf, cv->sc->vwidth);
+	    GDrawSetFont(pixmap,cv->small);
 	    len = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
 	    GDrawDrawText(pixmap,cv->width-len-5,y,ubuf,-1,NULL,0x00ffff);
 	}
@@ -2731,7 +2733,7 @@ static void CVHScroll(CharView *cv,struct sbevent *sb) {
 	cv->back_img_out_of_date = true;
 	GScrollBarSetPos(cv->hsb,-newpos);
 	GDrawScroll(cv->v,NULL,diff,0);
-	if (( cv->showhhints && cv->sc->hstem!=NULL ) || cv->showblues ) {
+	if (( cv->showhhints && cv->sc->hstem!=NULL ) || cv->showblues || cv->showvmetrics ) {
 	    GRect r;
 	    r.y = 0; r.height = cv->height;
 	    r.width = 6*cv->sfh+10;
@@ -2791,7 +2793,7 @@ static void CVVScroll(CharView *cv,struct sbevent *sb) {
 	cv->back_img_out_of_date = true;
 	GScrollBarSetPos(cv->vsb,newpos-cv->height);
 	GDrawScroll(cv->v,NULL,0,diff);
-	if ( cv->showvhints && cv->sc->vstem!=NULL ) {
+	if (( cv->showvhints && cv->sc->vstem!=NULL) || cv->showhmetrics ) {
 	    GRect r;
 	    r.x = 0; r.width = cv->width;
 	    r.height = 2*cv->sfh+6;
