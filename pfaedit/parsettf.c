@@ -1817,8 +1817,10 @@ return( 3 );
 	pt = buffer;
 	do {
 	    ch = getc(ttf);
-	    pt = addnibble(pt,ch>>4);
-	    pt = addnibble(pt,ch&0xf);
+	    if ( pt<buffer+44 || (ch&0xf)==0xf || (ch&0xf0)==0xf0 ) {
+		pt = addnibble(pt,ch>>4);
+		pt = addnibble(pt,ch&0xf);
+	    }
 	} while ( pt[-1]!='\0' );
 	*dval = strtod(buffer,NULL);
 return( 2 );
