@@ -312,7 +312,15 @@ return;
 	for ( i=0; i<sf->charcnt; ++i )
 	    if ( sf->chars[i]!=NULL )
 		if ( sf->chars[i]->unicodeenc==event->u.chr.chars[0] )
-		    BVChangeChar(bv,i,false);
+	break;
+	if ( i==sf->charcnt ) for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]==NULL ) {
+	    SplineChar dummy;
+	    SCBuildDummy(&dummy,sf,i);
+	    if ( dummy.unicodeenc==event->u.chr.chars[0] )
+	break;
+	}
+	if ( i!=sf->charcnt )
+	    BVChangeChar(bv,i,false);
     }
 }
 
