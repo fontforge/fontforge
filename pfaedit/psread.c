@@ -2034,7 +2034,7 @@ void PSFontInterpretPS(FILE *ps,struct charprocs *cp) {
 We're not smart here no: 0 1 255 {1 index exch /.notdef put} for */
 Encoding *PSSlurpEncodings(FILE *file) {
     char *names[1024];
-    unichar_t encs[1024];
+    int32 encs[1024];
     Encoding *item, *head = NULL, *last;
     char *encname;
     char tokbuf[200];
@@ -2087,8 +2087,8 @@ return( head );
 	    item = gcalloc(1,sizeof(Encoding));
 	    item->enc_name = encname;
 	    item->char_cnt = max;
-	    item->unicode = galloc(max*sizeof(unichar_t));
-	    memcpy(item->unicode,encs,max*sizeof(unichar_t));
+	    item->unicode = galloc(max*sizeof(int32));
+	    memcpy(item->unicode,encs,max*sizeof(int32));
 	    if ( any ) {
 		item->psnames = gcalloc(max,sizeof(char *));
 		memcpy(item->psnames,names,max*sizeof(char *));
