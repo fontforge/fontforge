@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 30-Aug-2001 -->
+  <!-- AP: Last modified: 26-Nov-2001 -->
   <TITLE>The Font View</TITLE>
 </HEAD>
 <BODY>
@@ -223,6 +223,27 @@ The <A HREF="editmenu.html#Remove-Undoes">Remove Undoes </A>command will
 allow you to free up memory if you think you may be running short. PfaEdit
 is not always able to protect itself against running out of memory, sometimes
 the OS just sends it a SIGKILL signal.
+<H2>
+  <A NAME="Vertical-Metrics">Vertical Metrics</A>
+</H2>
+<P>
+CJK fonts generally should have vertical metrics. Latin (Cyrillic, Greek)
+fonts generally should not. If PfaEdit reads in a font with vertical metrics
+it will retain those metrics, if PfaEdit creates a new font then that font
+will not have vertical metrics enabled. 
+<P>
+To enable vertical metrics for a font go to
+<CODE><A HREF="fontinfo.html#vertical">Element-&gt;Font Info</A></CODE> and
+select the <CODE>PS General</CODE> tab and check the <CODE>[*] Has Vertical
+Metrics </CODE>checkbox. This will allow you to set the vertical origin for
+the font and will give every character a default vertical advance of the
+emsize of the font (ascent+descent).
+<P>
+The vertical origin is the y height (in the design coordinate system) of
+the origin for vertical metrics.
+<P>
+In the outline character view you will be able to adjust the vertical metrics
+just as you adjust the horizontal metrics.
 <P>
 <P ALIGN=Center>
 -- <A HREF="editexample.html">Prev</A> -- <A HREF="overview.html">TOC</A>

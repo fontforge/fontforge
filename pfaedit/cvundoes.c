@@ -426,6 +426,7 @@ Undoes *CVPreserveState(CharView *cv) {
 
     undo->undotype = ut_state;
     undo->u.state.width = cv->sc->width;
+    undo->u.state.vwidth = cv->sc->vwidth;
     undo->u.state.splines = SplinePointListCopy(*cv->heads[cv->drawmode]);
     if ( cv->drawmode==dm_fore )
 	undo->u.state.refs = RefCharsCopyState(cv->sc);
@@ -438,6 +439,7 @@ Undoes *SCPreserveState(SplineChar *sc,int dohints) {
 
     undo->undotype = ut_state;
     undo->u.state.width = sc->width;
+    undo->u.state.vwidth = sc->vwidth;
     undo->u.state.splines = SplinePointListCopy(sc->splines);
     undo->u.state.refs = RefCharsCopyState(sc);
     undo->u.state.u.images = NULL;
@@ -454,6 +456,7 @@ Undoes *SCPreserveBackground(SplineChar *sc) {
 
     undo->undotype = ut_state;
     undo->u.state.width = sc->width;
+    undo->u.state.vwidth = sc->vwidth;
     undo->u.state.splines = SplinePointListCopy(sc->backgroundsplines);
     undo->u.state.refs = RefCharsCopyState(sc);
     undo->u.state.u.images = NULL;
@@ -496,11 +499,27 @@ Undoes *CVPreserveWidth(CharView *cv,int width) {
 return( CVAddUndo(cv,undo));
 }
 
+Undoes *CVPreserveVWidth(CharView *cv,int vwidth) {
+    Undoes *undo = chunkalloc(sizeof(Undoes));
+
+    undo->undotype = ut_vwidth;
+    undo->u.width = vwidth;
+return( CVAddUndo(cv,undo));
+}
+
 Undoes *SCPreserveWidth(SplineChar *sc) {
     Undoes *undo = chunkalloc(sizeof(Undoes));
 
     undo->undotype = ut_width;
     undo->u.state.width = sc->width;
+return( AddUndo(undo,&sc->undoes[0],&sc->redoes[0]));
+}
+
+Undoes *SCPreserveVWidth(SplineChar *sc) {
+    Undoes *undo = chunkalloc(sizeof(Undoes));
+
+    undo->undotype = ut_vwidth;
+    undo->u.state.width = sc->vwidth;
 return( AddUndo(undo,&sc->undoes[0],&sc->redoes[0]));
 }
 
@@ -533,13 +552,21 @@ static void CVUndoAct(CharView *cv,Undoes *undo) {
 	    SCSynchronizeWidth(sc,undo->u.width,width,cv->fv);
 	undo->u.width = width;
       } break;
+      case ut_vwidth: {
+	int vwidth = sc->vwidth;
+	sc->vwidth = undo->u.width;
+	undo->u.width = vwidth;
+      } break;
       case ut_state: case ut_tstate: case ut_statehint: {
 	SplinePointList *spl = *cv->heads[cv->drawmode];
 	if ( cv->drawmode==dm_fore ) {
 	    int width = sc->width;
+	    int vwidth = sc->vwidth;
 	    if ( sc->width!=undo->u.state.width )
 		SCSynchronizeWidth(sc,undo->u.state.width,width,cv->fv);
+	    sc->vwidth = undo->u.state.vwidth;
 	    undo->u.state.width = width;
+	    undo->u.state.vwidth = vwidth;
 	}
 	*cv->heads[cv->drawmode] = undo->u.state.splines;
 	if ( cv->drawmode==dm_fore && !RefCharsMatch(undo->u.state.refs,sc->refs)) {
@@ -726,7 +753,8 @@ static void CopyBufferFree(void) {
 
 int CopyContainsSomething(void) {
 return( copybuffer.undotype==ut_state || copybuffer.undotype==ut_tstate ||
-	copybuffer.undotype==ut_width || copybuffer.undotype==ut_composit ||
+	copybuffer.undotype==ut_width || copybuffer.undotype==ut_vwidth ||
+	copybuffer.undotype==ut_composit ||
 	copybuffer.undotype==ut_noop );
 }
 
@@ -752,6 +780,7 @@ void CopyReference(SplineChar *sc) {
 
     copybuffer.undotype = ut_state;
     copybuffer.u.state.width = sc->width;
+    copybuffer.u.state.vwidth = sc->vwidth;
     copybuffer.u.state.refs = ref = chunkalloc(sizeof(RefChar));
     ref->unicode_enc = sc->unicodeenc;
     ref->local_enc = sc->enc;
@@ -765,6 +794,7 @@ void CopySelected(CharView *cv) {
 
     copybuffer.undotype = ut_state;
     copybuffer.u.state.width = cv->sc->width;
+    copybuffer.u.state.vwidth = cv->sc->vwidth;
     copybuffer.u.state.splines = SplinePointListCopySelected(*cv->heads[cv->drawmode]);
     if ( cv->drawmode==dm_fore ) {
 	RefChar *refs, *new;
@@ -799,6 +829,7 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
 	cur->undotype = ut_noop;
     } else {
 	cur->u.state.width = sc->width;
+	cur->u.state.vwidth = sc->vwidth;
 	if ( full ) {
 	    cur->undotype = ut_statehint;
 	    cur->u.state.splines = SplinePointListCopy(sc->splines);
@@ -823,6 +854,14 @@ void CopyWidth(CharView *cv) {
 
     copybuffer.undotype = ut_width;
     copybuffer.u.width = cv->sc->width;
+}
+
+void CopyVWidth(CharView *cv) {
+
+    CopyBufferFree();
+
+    copybuffer.undotype = ut_vwidth;
+    copybuffer.u.width = cv->sc->vwidth;
 }
 
 static SplineChar *FindCharacter(SplineFont *sf,RefChar *rf) {
@@ -922,6 +961,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv) {
 	sc->parent->onlybitmaps = false;
 	SCPreserveState(sc,paster->undotype==ut_statehint);
 	SCSynchronizeWidth(sc,paster->u.state.width,sc->width,fv);
+	sc->vwidth = paster->u.state.vwidth;
 	SplinePointListsFree(sc->splines);
 	sc->splines = NULL;
 	if ( paster->u.state.splines!=NULL )
@@ -961,6 +1001,11 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv) {
 	SCSynchronizeWidth(sc,paster->u.width,sc->width,fv);
 	SCCharChangedUpdate(sc);
       break;
+      case ut_vwidth:
+	SCPreserveVWidth(sc);
+	sc->vwidth = paster->u.width;
+	SCCharChangedUpdate(sc);
+      break;
     }
 }
 
@@ -972,8 +1017,10 @@ static void _PasteToCV(CharView *cv,Undoes *paster) {
       case ut_noop:
       break;
       case ut_state: case ut_statehint:
-	if ( cv->drawmode==dm_fore && cv->sc->splines==NULL && cv->sc->refs==NULL )
+	if ( cv->drawmode==dm_fore && cv->sc->splines==NULL && cv->sc->refs==NULL ) {
 	    SCSynchronizeWidth(cv->sc,paster->u.state.width,cv->sc->width,cv->fv);
+	    cv->sc->vwidth = paster->u.state.vwidth;
+	}
 	if ( paster->u.state.splines!=NULL ) {
 	    SplinePointList *spl, *new = SplinePointListCopy(paster->u.state.splines);
 	    SplinePointListSelect(new,true);
@@ -1038,6 +1085,9 @@ static void _PasteToCV(CharView *cv,Undoes *paster) {
       break;
       case ut_width:
 	SCSynchronizeWidth(cv->sc,paster->u.width,cv->sc->width,cv->fv);
+      break;
+      case ut_vwidth:
+	cv->sc->vwidth = paster->u.state.vwidth;
       break;
       case ut_composit:
 	if ( paster->u.composit.state!=NULL )
@@ -1294,7 +1344,7 @@ void PasteIntoFV(FontView *fv) {
 	switch ( cur->undotype ) {
 	  case ut_noop:
 	  break;
-	  case ut_state: case ut_width:
+	  case ut_state: case ut_width: case ut_vwidth:
 	    PasteToSC(SFMakeChar(fv->sf,i),cur,fv);
 	  break;
 	  case ut_bitmapsel: case ut_bitmap:

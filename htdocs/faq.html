@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 21-Nov-2001 -->
+  <!-- AP: Last modified: 24-Nov-2001 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -421,8 +421,9 @@ $ xset fp+ `pwd`
     font make sure you also generate an NFNT as well (this has the FOND).<BR>
     <STRONG>Caveat:</STRONG> The mac is picky about the filename used to contain
     a postscript file. It is based on the postscript font name but suffers a
-    transformation. Don't try to rename this file. Basically the rules as I know
-    them are (determined empirically):
+    transformation. Don't try to rename this file. Basically the rules are (see
+    <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/0091.Mac_Fond.pdf">Adobe
+    Technical Note 0091</A>):
     <UL>
       <LI>
 	The fontname is broken into chunks where each chunk starts with a capital
@@ -432,7 +433,7 @@ $ xset fp+ `pwd`
       <LI>
 	Subsequent chunks may only have two lower case letters following the capital.
       <LI>
-	Non-letter characters vanish.<BR>
+	Non-letter characters (or at least hyphens) vanish.<BR>
 	So TimesBold =&gt; TimesBol, Helvetica-BoldItalic =&gt; HelveBolIta,
 	NCenturySchoolbook =&gt; NCenSch
     </UL>

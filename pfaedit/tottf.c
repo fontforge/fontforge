@@ -876,6 +876,88 @@ return( i );
 return( i );
 }
 
+static void FigureFullMetricsEnd(SplineFont *sf,struct glyphinfo *gi) {
+    /* We can reduce the size of the width array by removing a run at the end */
+    /*  of the same width. So start at the end, find the width of the last */
+    /*  character we'll output, then run backwards as long as we've got the */
+    /*  same width */
+    /* (do same thing for vertical metrics too */
+    int i,j, maxc, lasti, lastv;
+    int width, vwidth;
+
+    maxc = sf->charcnt;
+    for ( j=0; j<sf->subfontcnt; ++j )
+	if ( sf->subfonts[j]->charcnt>maxc ) maxc = sf->subfonts[j]->charcnt;
+    if ( sf->subfontcnt==0 ) {
+	for ( i=maxc-1; i>0; --i )
+	    if ( SCWorthOutputting(sf->chars[i]))
+	break;
+    } else {
+	for ( i=maxc-1; i>0; --i ) {
+	    for ( j=0; j<sf->subfontcnt; ++j )
+		if ( sf->subfonts[j]->chars[i]!=NULL )
+	    break;
+	    if ( j<sf->subfontcnt && SCWorthOutputting(sf->subfonts[j]->chars[i]))
+	break;
+	}
+    }
+
+    if ( i>0 ) {
+	width = sf->chars[i]->width;
+	vwidth = sf->chars[i]->vwidth;
+	lasti = lastv = i;
+	if ( sf->subfontcnt==0 ) {
+	    for ( --i; i>0; --i ) {
+		if ( SCWorthOutputting(sf->chars[i])) {
+		    if ( sf->chars[i]->width!=width )
+	    break;
+		    else
+			lasti = i;
+		}
+	    }
+	    gi->lasthwidth = lasti;
+	    if ( sf->hasvmetrics ) {
+		for ( i=lastv-1; i>0; --i ) {
+		    if ( SCWorthOutputting(sf->chars[i])) {
+			if ( sf->chars[i]->vwidth!=vwidth )
+		break;
+			else
+			    lastv = i;
+		    }
+		}
+		gi->lastvwidth = lastv;
+	    }
+	} else {
+	    for ( --i; i>0; --i ) {
+		for ( j=0; j<sf->subfontcnt; ++j )
+		    if ( sf->subfonts[j]->chars[i]!=NULL )
+		break;
+		if ( j<sf->subfontcnt && SCWorthOutputting(sf->subfonts[j]->chars[i])) {
+		    if ( sf->subfonts[j]->chars[i]->width!=width )
+	    break;
+		    else
+			lasti = i;
+		}
+	    }
+	    gi->lasthwidth = lasti;
+	    if ( sf->hasvmetrics ) {
+		for ( i=lastv-1; i>0; --i ) {
+		    for ( j=0; j<sf->subfontcnt; ++j )
+			if ( sf->subfonts[j]->chars[i]!=NULL )
+		    break;
+		    if ( j<sf->subfontcnt && SCWorthOutputting(sf->subfonts[j]->chars[i])) {
+			if ( sf->chars[i]->vwidth!=vwidth )
+		break;
+			else
+			    lastv = i;
+		    }
+		}
+		gi->lastvwidth = lastv;
+	    }
+	}
+    }
+}
+
 static void dumpghstruct(struct glyphinfo *gi,struct glyphhead *gh) {
 
     putshort(gi->glyphs,gh->numContours);
@@ -887,6 +969,22 @@ static void dumpghstruct(struct glyphinfo *gi,struct glyphhead *gh) {
     if ( gh->ymin<gi->ymin ) gi->ymin = gh->ymin;
     if ( gh->xmax>gi->xmax ) gi->xmax = gh->xmax;
     if ( gh->ymax>gi->ymax ) gi->ymax = gh->ymax;
+}
+
+static void ttfdumpmetrics(SplineChar *sc,struct glyphinfo *gi,DBounds *b) {
+
+    if ( sc->enc<=gi->lasthwidth )
+	putshort(gi->hmtx,sc->width);
+    putshort(gi->hmtx,b->minx);
+    if ( sc->parent->hasvmetrics ) {
+	if ( sc->enc<=gi->lastvwidth )
+	    putshort(gi->vmtx,sc->vwidth);
+	putshort(gi->vmtx,sc->parent->vertical_origin-b->maxy);
+    }
+    if ( sc->enc==gi->lasthwidth )
+	gi->hfullcnt = sc->ttf_glyph+1;
+    if ( sc->enc==gi->lastvwidth )
+	gi->vfullcnt = sc->ttf_glyph+1;
 }
 
 static SplineSet *SCttfApprox(SplineChar *sc) {
@@ -1160,6 +1258,10 @@ static void dumpmissingglyph(SplineFont *sf,struct glyphinfo *gi,int fixedwidth)
     else
 	putshort(gi->hmtx,fixedwidth);
     putshort(gi->hmtx,stem);
+    if ( sf->hasvmetrics ) {
+	putshort(gi->vmtx,sf->ascent+sf->descent);
+	putshort(gi->vmtx,sf->vertical_origin-gh.ymax);
+    }
 }
 
 static void dumpblankglyph(struct glyphinfo *gi,SplineFont *sf) {
@@ -1167,13 +1269,18 @@ static void dumpblankglyph(struct glyphinfo *gi,SplineFont *sf) {
     gi->loca[gi->next_glyph++] = ftell(gi->glyphs);
     putshort(gi->hmtx,gi->next_glyph==2?0:(sf->ascent+sf->descent)/3);
     putshort(gi->hmtx,0);
+    if ( sf->hasvmetrics ) {
+	putshort(gi->vmtx,gi->next_glyph==2?0:(sf->ascent+sf->descent));
+	putshort(gi->vmtx,0);
+    }
 }
 
 static void dumpspace(SplineChar *sc, struct glyphinfo *gi) {
     /* These don't get a glyph header, because there are no contours */
+    DBounds b;
     gi->loca[gi->next_glyph++] = ftell(gi->glyphs);
-    putshort(gi->hmtx,sc->width);
-    putshort(gi->hmtx,0);
+    memset(&b,0,sizeof(b));
+    ttfdumpmetrics(sc,gi,&b);
 }
 
 static uint8 *pushheader(uint8 *instrs, int isword, int tot) {
@@ -1815,8 +1922,7 @@ static void dumpcomposit(SplineChar *sc, RefChar *refs, struct glyphinfo *gi) {
     if ( gi->maxp->maxCompositPts<pttemp ) gi->maxp->maxCompositPts=pttemp;
     if ( gi->maxp->maxCompositCtrs<contourtemp ) gi->maxp->maxCompositCtrs=contourtemp;
 
-    putshort(gi->hmtx,sc->width);
-    putshort(gi->hmtx,gh.xmin);
+    ttfdumpmetrics(sc,gi,&bb);
     if ( ftell(gi->glyphs)&1 )		/* Pad the file so that the next glyph */
 	putc('\0',gi->glyphs);		/* on a word boundary, can only happen if odd number of instrs */
     RefCharsFree(refs);
@@ -1870,8 +1976,7 @@ static void dumpglyph(SplineChar *sc, struct glyphinfo *gi) {
     free(contourends);
     free(fs);
 
-    putshort(gi->hmtx,sc->width);
-    putshort(gi->hmtx,gh.xmin);
+    ttfdumpmetrics(sc,gi,&bb);
 }
 
 static void dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
@@ -1901,6 +2006,9 @@ static void dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     gi->next_glyph = 0;
     gi->glyphs = tmpfile();
     gi->hmtx = tmpfile();
+    if ( sf->hasvmetrics )
+	gi->vmtx = tmpfile();
+    FigureFullMetricsEnd(sf,gi);
 
     i = 0;
     if ( sf->chars[0]!=NULL &&
@@ -1929,9 +2037,14 @@ static void dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     gi->glyph_len = ftell(gi->glyphs);
     gi->hmtxlen = ftell(gi->hmtx);
     /* pad out to four bytes */
+    if ( gi->hmtxlen&2 ) putshort(gi->hmtx,0);
     if ( gi->loca[gi->next_glyph]&3 ) {
 	for ( i=4-(gi->loca[gi->next_glyph]&3); i>0; --i )
 	    putc('\0',gi->glyphs);
+    }
+    if ( sf->hasvmetrics ) {
+	gi->vmtxlen = ftell(gi->vmtx);
+	if ( gi->vmtxlen&2 ) putshort(gi->vmtx,0);
     }
 }
 
@@ -2735,30 +2848,56 @@ static void dumpcffhmtx(struct alltabs *at,SplineFont *sf) {
     DBounds b;
     SplineChar *sc;
     int i,cnt;
+    int dovmetrics = sf->hasvmetrics;
 
     at->gi.hmtx = tmpfile();
+    if ( dovmetrics )
+	at->gi.vmtx = tmpfile();
+    FigureFullMetricsEnd(sf,&at->gi);
     if ( SCWorthOutputting(sf->chars[0]) && strcmp(sf->chars[0]->name,".notdef")==0 ) {
 	putshort(at->gi.hmtx,sf->chars[0]->width);
 	SplineCharFindBounds(sf->chars[0],&b);
 	putshort(at->gi.hmtx,b.minx);
+	if ( dovmetrics ) {
+	    putshort(at->gi.vmtx,sf->chars[0]->vwidth);
+	    putshort(at->gi.vmtx,sf->vertical_origin-b.miny);
+	}
 	i = 1;
     } else {
 	i = 0;
 	putshort(at->gi.hmtx,sf->ascent+sf->descent);
 	putshort(at->gi.hmtx,0);
+	if ( dovmetrics ) {
+	    putshort(at->gi.vmtx,sf->ascent+sf->descent);
+	    putshort(at->gi.vmtx,0);
+	}
     }
     cnt = 1;
     for ( i=1; i<sf->charcnt; ++i ) {
 	sc = sf->chars[i];
 	if ( SCWorthOutputting(sc)) {
-	    putshort(at->gi.hmtx,sc->width);
+	    if ( i<=at->gi.lasthwidth )
+		putshort(at->gi.hmtx,sc->width);
 	    SplineCharFindBounds(sc,&b);
 	    putshort(at->gi.hmtx,b.minx);
+	    if ( dovmetrics ) {
+		if ( i<=at->gi.lasthwidth )
+		    putshort(at->gi.vmtx,sc->vwidth);
+		putshort(at->gi.vmtx,sf->vertical_origin-b.maxy);
+	    }
 	    ++cnt;
+	    if ( i==at->gi.lasthwidth )
+		at->gi.hfullcnt = cnt;
+	    if ( i==at->gi.lastvwidth )
+		at->gi.vfullcnt = cnt;
 	}
     }
     at->gi.hmtxlen = ftell(at->gi.hmtx);
-    /* we don't need to align this table, things get written aligned */
+    if ( at->gi.hmtxlen&2 ) putshort(at->gi.hmtx,0);
+    if ( dovmetrics ) {
+	at->gi.vmtxlen = ftell(at->gi.vmtx);
+	if ( at->gi.vmtxlen&2 ) putshort(at->gi.vmtx,0);
+    }
 
     at->gi.maxp->numGlyphs = cnt;
 }
@@ -2768,8 +2907,13 @@ static void dumpcffcidhmtx(struct alltabs *at,SplineFont *_sf) {
     SplineChar *sc;
     int cid,i,cnt=0,max;
     SplineFont *sf;
+    int dovmetrics = sf->hasvmetrics;
 
     at->gi.hmtx = tmpfile();
+    if ( dovmetrics )
+	at->gi.vmtx = tmpfile();
+    FigureFullMetricsEnd(sf,&at->gi);
+
     max = 0;
     for ( i=0; i<_sf->subfontcnt; ++i )
 	if ( max<_sf->subfonts[i]->charcnt )
@@ -2782,19 +2926,37 @@ static void dumpcffcidhmtx(struct alltabs *at,SplineFont *_sf) {
 	}
 	if ( i!=_sf->subfontcnt ) {
 	    sc = sf->chars[cid];
-	    putshort(at->gi.hmtx,sc->width);
+	    if ( cid<=at->gi.lasthwidth )
+		putshort(at->gi.hmtx,sc->width);
 	    SplineCharFindBounds(sc,&b);
 	    putshort(at->gi.hmtx,b.minx);
+	    if ( dovmetrics ) {
+		if ( cid<=at->gi.lasthwidth )
+		    putshort(at->gi.vmtx,sc->vwidth);
+		putshort(at->gi.vmtx,sf->vertical_origin-b.maxy);
+	    }
 	    ++cnt;
+	    if ( cid==at->gi.lasthwidth )
+		at->gi.hfullcnt = cnt;
+	    if ( cid==at->gi.lastvwidth )
+		at->gi.vfullcnt = cnt;
 	} else if ( cid==0 && i==sf->subfontcnt ) {
 	    /* Use final subfont to contain mythical default if there is no real default */
 	    putshort(at->gi.hmtx,sf->ascent+sf->descent);
 	    putshort(at->gi.hmtx,0);
 	    ++cnt;
+	    if ( dovmetrics ) {
+		putshort(at->gi.vmtx,sf->ascent+sf->descent);
+		putshort(at->gi.vmtx,0);
+	    }
 	}
     }
     at->gi.hmtxlen = ftell(at->gi.hmtx);
-    /* we don't need to align this table, things get written aligned */
+    if ( at->gi.hmtxlen&2 ) putshort(at->gi.hmtx,0);
+    if ( dovmetrics ) {
+	at->gi.vmtxlen = ftell(at->gi.vmtx);
+	if ( at->gi.vmtxlen&2 ) putshort(at->gi.vmtx,0);
+    }
 
     at->gi.maxp->numGlyphs = cnt;
 }
@@ -2959,24 +3121,34 @@ static void sethead(struct head *head,SplineFont *_sf) {
     head->modtime[0] = head->createtime[0] = (now1904[0]<<16)|now1904[1];
 }
 
-static void sethhead(struct hhead *hhead,struct alltabs *at, SplineFont *_sf) {
-    int i, width, rbearing;
+static void sethhead(struct hhead *hhead,struct hhead *vhead,struct alltabs *at, SplineFont *_sf) {
+    int i, width, rbearing, height, bbearing;
     SplineFont *sf=NULL;
     DBounds bb;
     int j;
+    /* Might as well fill in the vhead even if we don't use it */
+    /*  we just won't dump it out if we don't want it */
 
     hhead->version = 0x00010000;
     hhead->ascender = _sf->ascent;
     hhead->descender = -_sf->descent;
     hhead->linegap = _sf->pfminfo.linegap;
-    width = 0x80000000; rbearing = 0x7fffffff;
+
+    vhead->version = 0x00011000;
+    vhead->ascender = (_sf->ascent+_sf->descent)/2;
+    vhead->descender = -vhead->ascender;
+    vhead->linegap = _sf->pfminfo.linegap;
+
+    width = 0x80000000; rbearing = 0x7fffffff; height = 0x80000000; bbearing=0x7fffffff;
     j=0;
     do {
 	sf = ( _sf->subfontcnt==0 ) ? _sf : _sf->subfonts[j];
 	for ( i=0; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i]) ) {
 	    SplineCharFindBounds(sf->chars[i],&bb);
 	    if ( sf->chars[i]->width>width ) width = sf->chars[i]->width;
+	    if ( sf->chars[i]->vwidth>height ) height = sf->chars[i]->vwidth;
 	    if ( sf->chars[i]->width-bb.maxx < rbearing ) rbearing = sf->chars[i]->width-bb.maxx;
+	    if ( sf->chars[i]->vwidth-bb.maxy < bbearing ) bbearing = sf->chars[i]->vwidth-bb.maxy;
 	}
 	++j;
     } while ( j<_sf->subfontcnt );
@@ -2986,6 +3158,22 @@ static void sethhead(struct hhead *hhead,struct alltabs *at, SplineFont *_sf) {
     hhead->minrsb = rbearing;
     hhead->maxextent = at->head.xmax;
     hhead->caretSlopeRise = 1;
+
+    vhead->maxwidth = height;
+    vhead->minlsb = at->head.ymin;
+    vhead->minrsb = bbearing;
+    vhead->maxextent = at->head.ymax;
+    vhead->caretSlopeRise = 1;
+
+    hhead->numMetrics = at->gi.hfullcnt;
+    vhead->numMetrics = at->gi.vfullcnt;
+}
+
+static void setvorg(struct vorg *vorg, SplineFont *sf) {
+    vorg->majorVersion = 1;
+    vorg->minorVersion = 0;
+    vorg->defaultVertOriginY = sf->vertical_origin;
+    vorg->numVertOriginYMetrics = 0;
 }
 
 void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *_sf,char *fontname) {
@@ -3098,8 +3286,8 @@ void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *_sf,char *fontname) {
 	}
 	if ( samewid>0 )
 	    pfminfo->panose[3] = 9;
-	if ( pfminfo->linegap == 0 )
-	    pfminfo->linegap = .09*(first->ascent+first->descent);
+	pfminfo->linegap = pfminfo->vlinegap =
+		rint(.09*(first->ascent+first->descent));
     }
 }
 
@@ -3306,28 +3494,56 @@ static void redohead(struct alltabs *at) {
 	putshort(at->headf,0);
 }
 
-static void redohhead(struct alltabs *at) {
+static void redohhead(struct alltabs *at,int isv) {
     int i;
-    at->hheadf = tmpfile();
+    struct hhead *head;
+    FILE *f;
 
-    putlong(at->hheadf,at->hhead.version);
-    putshort(at->hheadf,at->hhead.ascender);
-    putshort(at->hheadf,at->hhead.descender);
-    putshort(at->hheadf,at->hhead.linegap);
-    putshort(at->hheadf,at->hhead.maxwidth);
-    putshort(at->hheadf,at->hhead.minlsb);
-    putshort(at->hheadf,at->hhead.minrsb);
-    putshort(at->hheadf,at->hhead.maxextent);
-    putshort(at->hheadf,at->hhead.caretSlopeRise);
-    putshort(at->hheadf,at->hhead.caretSlopeRun);
+    if ( !isv ) {
+	f = at->hheadf = tmpfile();
+	head = &at->hhead;
+    } else {
+	f = at->vheadf = tmpfile();
+	head = &at->vhead;
+    }
+
+    putlong(f,head->version);
+    putshort(f,head->ascender);
+    putshort(f,head->descender);
+    putshort(f,head->linegap);
+    putshort(f,head->maxwidth);
+    putshort(f,head->minlsb);
+    putshort(f,head->minrsb);
+    putshort(f,head->maxextent);
+    putshort(f,head->caretSlopeRise);
+    putshort(f,head->caretSlopeRun);
     for ( i=0; i<5; ++i )
-	putshort(at->hheadf,at->hhead.mbz[i]);
-    putshort(at->hheadf,at->hhead.metricformat);
-    putshort(at->hheadf,at->hhead.numMetrics);
+	putshort(f,head->mbz[i]);
+    putshort(f,head->metricformat);
+    putshort(f,head->numMetrics);
 
-    at->hheadlen = ftell(at->hheadf);
-    if ( (at->hheadlen&2)!=0 )
-	putshort(at->hheadf,0);
+    if ( !isv ) {
+	at->hheadlen = ftell(f);
+	if ( (at->hheadlen&2)!=0 )
+	    putshort(f,0);
+    } else {
+	at->vheadlen = ftell(f);
+	if ( (at->vheadlen&2)!=0 )
+	    putshort(f,0);
+    }
+}
+
+static void redovorg(struct alltabs *at) {
+
+    at->vorgf = tmpfile();
+    putshort(at->vorgf,at->vorg.majorVersion);
+    putshort(at->vorgf,at->vorg.minorVersion);
+    putshort(at->vorgf,at->vorg.defaultVertOriginY);
+    putshort(at->vorgf,at->vorg.numVertOriginYMetrics);
+
+    at->vorglen = ftell(at->vorgf);
+    if ( (at->vorglen&2)!=0 )
+	putshort(at->vorgf,0);
 }
 
 static void redomaxp(struct alltabs *at,enum fontformat format) {
@@ -4497,10 +4713,10 @@ static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format
     at->maxp.version = 0x00010000;
     if ( format==ff_otf || format==ff_otfcid )
 	at->maxp.version = 0x00005000;
-    at->maxp.maxZones = 2;
-    at->maxp.maxFDEFs = 1;
-    at->maxp.maxStorage = 64;
-    at->maxp.maxStack = 64;
+    at->maxp.maxZones = 2;		/* 1 would probably do, don't use twilight */
+    at->maxp.maxFDEFs = 1;		/* Not even 1 */
+    at->maxp.maxStorage = 1;		/* Not even 1 */
+    at->maxp.maxStack = 64;		/* A guess, it's probably more like 8 */
     at->gi.maxp = &at->maxp;
     if ( format==ff_otf )
 	dumptype2glyphs(sf,at);
@@ -4515,16 +4731,20 @@ static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format
     at->head.xmax = at->gi.xmax;
     at->head.ymax = at->gi.ymax;
     sethead(&at->head,sf);
-    sethhead(&at->hhead,at,sf);
+    sethhead(&at->hhead,&at->vhead,at,sf);
+    setvorg(&at->vorg,sf);
     setos2(&at->os2,at,sf,format);	/* should precede kern/ligature output */
     dumpnames(at,sf);
-    at->hhead.numMetrics = at->maxp.numGlyphs;
     if ( at->gi.glyph_len<0x20000 )
 	at->head.locais32 = 0;
     if ( format!=ff_otf && format!=ff_otfcid )
 	redoloca(at);
     redohead(at);
-    redohhead(at);
+    redohhead(at,false);
+    if ( sf->hasvmetrics ) {
+	redohhead(at,true);
+	redovorg(at);		/* I know, VORG is only meaningful in a otf font and I dump it out in ttf too. Well, it will help ME read the font back in, and it won't bother anyone else. So there. */
+    }
     redomaxp(at,format);
     if ( format==ff_otf || format==ff_otfcid ) {
 	dumpgposkerns(at,sf);
@@ -4591,6 +4811,14 @@ static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format
     at->tabdir.tabs[i++].length = at->os2len;
     pos += ((at->os2len+3)>>2)<<2;
 
+    if ( at->vorgf!=NULL ) {
+	at->tabdir.tabs[i].tag = CHR('V','O','R','G');
+	at->tabdir.tabs[i].checksum = filecheck(at->vorgf);
+	at->tabdir.tabs[i].offset = pos;
+	at->tabdir.tabs[i++].length = at->vorglen;
+	pos += ((at->vorglen+3)>>2)<<2;
+    }
+
     if ( at->bdat!=NULL && !at->msbitmaps ) {
 	at->tabdir.tabs[i].tag = CHR('b','d','a','t');
 	at->tabdir.tabs[i].checksum = filecheck(at->bdat);
@@ -4643,7 +4871,7 @@ static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format
     at->tabdir.tabs[i].checksum = filecheck(at->gi.hmtx);
     at->tabdir.tabs[i].offset = pos;
     at->tabdir.tabs[i++].length = at->gi.hmtxlen;
-    pos += sizeof(struct hmtx)*at->maxp.numGlyphs;
+    pos += ((at->gi.hmtxlen+3)>>2)<<2;
 
     if ( at->kern!=NULL ) {
 	at->tabdir.tabs[i].tag = CHR('k','e','r','n');
@@ -4678,6 +4906,22 @@ static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format
     at->tabdir.tabs[i].offset = pos;
     at->tabdir.tabs[i++].length = at->postlen;
     pos += ((at->postlen+3)>>2)<<2;
+
+    if ( at->vheadf!=NULL ) {
+	at->tabdir.tabs[i].tag = CHR('v','h','e','a');
+	at->tabdir.tabs[i].checksum = filecheck(at->vheadf);
+	at->tabdir.tabs[i].offset = pos;
+	at->tabdir.tabs[i++].length = at->vheadlen;
+	pos += ((at->vheadlen+3)>>2)<<2;
+
+	at->tabdir.tabs[i].tag = CHR('v','m','t','x');
+	at->tabdir.tabs[i].checksum = filecheck(at->gi.vmtx);
+	at->tabdir.tabs[i].offset = pos;
+	at->tabdir.tabs[i++].length = at->gi.vmtxlen;
+	pos += ((at->gi.vmtxlen+3)>>2)<<2;
+    }
+    if ( i>=sizeof(at->tabdir.tabs)/sizeof(at->tabdir.tabs[0]))
+	GDrawIError("Miscalculation of number of tables needed. Up sizeof tabs array in struct tabdir" );
 
     at->tabdir.numtab = i;
     at->tabdir.searchRange = (i<16?8:i<32?16:32)*16;
@@ -4716,6 +4960,8 @@ static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
     if ( at->gsub!=NULL )
 	if ( !ttfcopyfile(ttf,at->gsub,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( !ttfcopyfile(ttf,at->os2f,at->tabdir.tabs[i++].offset)) at->error = true;
+    if ( at->vorgf!=NULL )
+	if ( !ttfcopyfile(ttf,at->vorgf,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( at->bdat!=NULL && !at->msbitmaps ) {
 	if ( !ttfcopyfile(ttf,at->bdat,at->tabdir.tabs[i++].offset)) at->error = true;
 	if ( !ttfcopyfile(ttf,at->bloc,at->tabdir.tabs[i++].offset)) at->error = true;
@@ -4736,6 +4982,10 @@ static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
     if ( !ttfcopyfile(ttf,at->maxpf,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( !ttfcopyfile(ttf,at->name,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( !ttfcopyfile(ttf,at->post,at->tabdir.tabs[i++].offset)) at->error = true;
+    if ( at->vheadf!=NULL ) {
+	if ( !ttfcopyfile(ttf,at->vheadf,at->tabdir.tabs[i++].offset)) at->error = true;
+	if ( !ttfcopyfile(ttf,at->gi.vmtx,at->tabdir.tabs[i++].offset)) at->error = true;
+    }
 
     checksum = filecheck(ttf);
     checksum = 0xb1b0afba-checksum;

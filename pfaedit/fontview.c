@@ -682,10 +682,11 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_InterpolateFonts	2215
 #define MID_ShowDependents	2222
 #define MID_Center	2600
-#define MID_SetWidth	2601
-#define MID_SetLBearing	2602
-#define MID_SetRBearing	2603
-#define MID_Thirds	2604
+#define MID_Thirds	2601
+#define MID_SetWidth	2602
+#define MID_SetLBearing	2603
+#define MID_SetRBearing	2604
+#define MID_SetVWidth	2605
 #define MID_AutoHint	2501
 #define MID_ClearHints	2502
 #define MID_ClearWidthMD	2503
@@ -1541,9 +1542,12 @@ static void FVMenuSetWidth(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     if ( FVAnyCharSelected(fv)==-1 )
 return;
+    if ( mi->mid == MID_SetVWidth && !fv->sf->hasvmetrics )
+return;
     FVSetWidth(fv,mi->mid==MID_SetWidth?wt_width:
 		  mi->mid==MID_SetLBearing?wt_lbearing:
-		  wt_rbearing);
+		  mi->mid==MID_SetRBearing?wt_rbearing:
+		  wt_vwidth);
 }
 
 static void FVMenuAutoWidth(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1579,6 +1583,9 @@ static void mtlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_Center: case MID_Thirds: case MID_SetWidth: 
 	  case MID_SetLBearing: case MID_SetRBearing:
 	    mi->ti.disabled = anychars==-1;
+	  break;
+	  case MID_SetVWidth:
+	    mi->ti.disabled = anychars==-1 || !fv->sf->hasvmetrics;
 	  break;
 	}
     }
@@ -2164,6 +2171,8 @@ static GMenuItem mtlist[] = {
     { { (unichar_t *) _STR_Setlbearing, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'L' }, 'L', ksm_control, NULL, NULL, FVMenuSetWidth, MID_SetLBearing },
     { { (unichar_t *) _STR_Setrbearing, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, 'R', ksm_control, NULL, NULL, FVMenuSetWidth, MID_SetRBearing },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_SetVWidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuSetWidth, MID_SetVWidth },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Autowidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'W', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoWidth },
     { { (unichar_t *) _STR_Autokern, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'K' }, 'K', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoKern },
     { { (unichar_t *) _STR_Removeallkern, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRemoveKern },
@@ -2424,7 +2433,7 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 	dummy->name = item->psnames[i];
     if ( dummy->name==NULL )
 	dummy->name = ".notdef";
-    dummy->width = sf->ascent+sf->descent;
+    dummy->width = dummy->vwidth = sf->ascent+sf->descent;
     dummy->parent = sf;
 return( dummy );
 }

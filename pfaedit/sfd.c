@@ -243,6 +243,8 @@ return;
     fprintf(sfd, "StartChar: %s\n", sc->name );
     fprintf(sfd, "Encoding: %d %d\n", sc->enc, sc->unicodeenc);
     fprintf(sfd, "Width: %d\n", sc->width );
+    if ( sc->vwidth!=sc->parent->ascent+sc->parent->descent )
+	fprintf(sfd, "VWidth: %d\n", sc->vwidth );
     if ( sc->changedsincelasthinted|| sc->manualhints || sc->widthset )
 	fprintf(sfd, "Flags: %s%s%s\n",
 		sc->changedsincelasthinted?"H":"",
@@ -468,6 +470,8 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
     fprintf(sfd, "UnderlineWidth: %g\n", sf->uwidth );
     fprintf(sfd, "Ascent: %d\n", sf->ascent );
     fprintf(sfd, "Descent: %d\n", sf->descent );
+    if ( sf->hasvmetrics )
+	fprintf(sfd, "VerticalOrigin: %d\n", sf->vertical_origin );
     if ( sf->xuid!=NULL )
 	fprintf(sfd, "XUID: %s\n", sf->xuid );
     if ( sf->uniqueid!=0 )
@@ -481,6 +485,8 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	fprintf(sfd, "Panose:" );
 	for ( i=0; i<10; ++i )
 	    fprintf( sfd, " %d", sf->pfminfo.panose[i]);
+	fprintf(sfd, "LineGap: %d\n", sf->pfminfo.linegap );
+	fprintf(sfd, "VLineGap: %d\n", sf->pfminfo.vlinegap );
 	putc('\n',sfd);
     }
     for ( ln = sf->names; ln!=NULL; ln=ln->next )
@@ -789,7 +795,7 @@ return( img );
 }
 
 static void SFDGetType1(FILE *sfd, SplineChar *sc) {
-    /* We've read the OrigType1 token */
+    /* We've read the OrigType1 token (this is now obselete, but parse it in case there are any old sfds) */
     int len;
     struct enc85 dec;
 
@@ -797,17 +803,8 @@ static void SFDGetType1(FILE *sfd, SplineChar *sc) {
     dec.sfd = sfd;
 
     getint(sfd,&len);
-#if 0
-    sc->origtype1 = pt = galloc(len);
-    sc->origlen = len;
-    end = pt+len;
-    while ( pt<end ) {
-	*pt++ = Dec85(&dec);
-    }
-#else
     while ( --len >= 0 )
 	Dec85(&dec);
-#endif
 }
 
 static void SFDCloseCheck(SplinePointList *spl) {
@@ -1054,7 +1051,7 @@ static RefChar *SFDGetRef(FILE *sfd) {
 return( rf );
 }
 
-static SplineChar *SFDGetChar(FILE *sfd) {
+static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf) {
     SplineChar *sc;
     char tok[200], ch;
     RefChar *lastr=NULL, *ref;
@@ -1069,6 +1066,7 @@ return( NULL );
 
     sc = chunkalloc(sizeof(SplineChar));
     sc->name = copy(tok);
+    sc->vwidth = sf->ascent+sf->descent;
     while ( 1 ) {
 	if ( getname(sfd,tok)!=1 )
 return( NULL );
@@ -1076,7 +1074,9 @@ return( NULL );
 	    getint(sfd,&sc->enc);
 	    getint(sfd,&sc->unicodeenc);
 	} else if ( strmatch(tok,"Width:")==0 ) {
-	    getint(sfd,&sc->width);
+	    getsint(sfd,&sc->width);
+	} else if ( strmatch(tok,"VWidth:")==0 ) {
+	    getsint(sfd,&sc->vwidth);
 	} else if ( strmatch(tok,"Flags:")==0 ) {
 	    while ( isspace(ch=getc(sfd)) && ch!='\n' && ch!='\r');
 	    while ( ch!='\n' && ch!='\r' ) {
@@ -1314,29 +1314,7 @@ static void SFDGetPrivate(FILE *sfd,SplineFont *sf) {
 }
 
 static void SFDGetSubrs(FILE *sfd,SplineFont *sf) {
-#if 0
-    int i, cnt;
-    struct enc85 dec;
-    unsigned char *pt, *end;
-
-    sf->subrs = gcalloc(1,sizeof(struct pschars));
-    getint(sfd,&cnt);
-    sf->subrs->next = sf->subrs->cnt = cnt;
-    sf->subrs->values = gcalloc(cnt,sizeof(char *));
-    sf->subrs->lens = gcalloc(cnt,sizeof(int));
-    for ( i=0; i<cnt; ++i ) {
-	getint(sfd,&sf->subrs->lens[i]);
-	sf->subrs->values[i] = galloc(sf->subrs->lens[i]+1);
-    }
-
-    memset(&dec,'\0', sizeof(dec)); dec.pos = -1;
-    dec.sfd = sfd;
-    for ( i=0; i<cnt; ++i ) {
-	for ( pt=sf->subrs->values[i], end = pt+sf->subrs->lens[i]; pt<end; ++pt )
-	    *pt = Dec85(&dec);
-	*pt = '\0';
-    }
-#else
+    /* Obselete, parse it in case there are any old sfds */
     int i, cnt, tot, len;
     struct enc85 dec;
 
@@ -1351,7 +1329,6 @@ static void SFDGetSubrs(FILE *sfd,SplineFont *sf) {
     dec.sfd = sfd;
     for ( i=0; i<tot; ++i )
 	Dec85(&dec);
-#endif
 }
 
 static unichar_t *SFDReadUTF7Str(FILE *sfd) {
@@ -1479,14 +1456,10 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	} else if ( strmatch(tok,"LangName:")==0 ) {
 	    sf->names = SFDGetLangName(sfd,sf->names);
 	} else if ( strmatch(tok,"PfmWeight:")==0 || strmatch(tok,"TTFWeight:")==0 ) {
-	    int temp;
-	    getint(sfd,&temp);
-	    sf->pfminfo.weight = temp;
+	    getsint(sfd,&sf->pfminfo.weight);
 	    sf->pfminfo.pfmset = true;
 	} else if ( strmatch(tok,"TTFWidth:")==0 ) {
-	    int temp;
-	    getint(sfd,&temp);
-	    sf->pfminfo.width = temp;
+	    getsint(sfd,&sf->pfminfo.width);
 	    sf->pfminfo.pfmset = true;
 	} else if ( strmatch(tok,"Panose:")==0 ) {
 	    int temp,i;
@@ -1494,6 +1467,12 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 		getint(sfd,&temp);
 		sf->pfminfo.panose[i] = temp;
 	    }
+	    sf->pfminfo.pfmset = true;
+	} else if ( strmatch(tok,"LineGap:")==0 ) {
+	    getsint(sfd,&sf->pfminfo.linegap);
+	    sf->pfminfo.pfmset = true;
+	} else if ( strmatch(tok,"VLineGap:")==0 ) {
+	    getsint(sfd,&sf->pfminfo.vlinegap);
 	    sf->pfminfo.pfmset = true;
 	} else if ( strmatch(tok,"DisplaySize:")==0 ) {
 	    getint(sfd,&sf->display_size);
@@ -1509,8 +1488,11 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    getint(sfd,&sf->ascent);
 	} else if ( strmatch(tok,"Descent:")==0 ) {
 	    getint(sfd,&sf->descent);
+	} else if ( strmatch(tok,"VerticalOrigin:")==0 ) {
+	    getint(sfd,&sf->vertical_origin);
+	    sf->hasvmetrics = true;
 	} else if ( strmatch(tok,"FSType:")==0 ) {
-	    getint(sfd,&sf->pfminfo.fstype);
+	    getsint(sfd,&sf->pfminfo.fstype);
 	} else if ( strmatch(tok,"UniqueID:")==0 ) {
 	    getint(sfd,&sf->uniqueid);
 	} else if ( strmatch(tok,"XUID:")==0 ) {
@@ -1573,7 +1555,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	for ( i=0; i<sf->subfontcnt; ++i )
 	    sf->subfonts[i] = SFD_GetFont(sfd,sf,tok);
     } else {
-	while ( (sc = SFDGetChar(sfd))!=NULL ) {
+	while ( (sc = SFDGetChar(sfd,sf))!=NULL ) {
 	    if ( sc->enc<sf->charcnt ) {
 		sf->chars[sc->enc] = sc;
 		sc->parent = sf;
@@ -1651,7 +1633,7 @@ return(false);
 	for ( i=sf->charcnt; i<cnt; ++i )
 	    sf->chars[i] = NULL;
     }
-    while ( (sc = SFDGetChar(asfd))!=NULL ) {
+    while ( (sc = SFDGetChar(asfd,sf))!=NULL ) {
 	ssf = sf;
 	for ( k=0; k<sf->subfontcnt; ++k ) {
 	    if ( sc->enc<sf->subfonts[k]->charcnt ) {

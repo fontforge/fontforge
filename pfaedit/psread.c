@@ -1516,7 +1516,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 
     ret->name = copy( name );
     ret->unicodeenc = -1;
-    ret->width = 0x8000000;
+    ret->width = (int16) 0x8000;
     if ( name==NULL ) name = "unnamed";
     ret->manualhints = true;
 

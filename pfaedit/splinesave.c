@@ -1358,6 +1358,26 @@ int SFOneWidth(SplineFont *sf) {
 return(width);
 }
 
+int SFOneHeight(SplineFont *sf) {
+    int width, i;
+
+    if ( !sf->hasvmetrics )
+return( sf->ascent+sf->descent );
+
+    width = -2;
+    for ( i=0; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i]) &&
+	    (strcmp(sf->chars[i]->name,".notdef")!=0 || sf->chars[i]->splines!=NULL)) {
+	/* Only trust the width of notdef if it's got some content */
+	/* (at least as far as fixed pitch determination goes) */
+	if ( width==-2 ) width = sf->chars[i]->vwidth;
+	else if ( width!=sf->chars[i]->vwidth ) {
+	    width = -1;
+    break;
+	}
+    }
+return(width);
+}
+
 int SFIsCJK(SplineFont *sf) {
     char *val;
 

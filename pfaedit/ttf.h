@@ -39,6 +39,7 @@ struct ttfinfo {
     int emsize;			/* ascent + descent? from the head table */
     int ascent, descent;	/* from the hhea table */
 				/* not the usWinAscent from the OS/2 table */
+    int vertical_origin;	/* if vmetrics are present */
     int width_cnt;		/* from the hhea table, in the hmtx table */
     int glyph_cnt;		/* from maxp table (or cff table) */
     unsigned int index_to_loc_is_long:1;	/* in head table */
@@ -108,6 +109,12 @@ struct ttfinfo {
     int postscript_start;	/* names for the glyphs, italic angle, etc. */
 		/* OS/2 */
     int os2_start;
+		/* vhea */
+    int vhea_start;
+		/* vmtx */
+    int vmetrics_start;
+		/* VORG */
+    int vorg_start;
 
     struct dup *dups;
     unsigned int one_of_many: 1;	/* A TTCF file, or a opentype font with multiple fonts */
@@ -132,7 +139,7 @@ struct tabdir {
 	uint32 checksum;/* for table */
 	uint32 offset;	/* to start of table in file */
 	uint32 length;
-    } tabs[11];		/* room for all the above tables */
+    } tabs[20];		/* room for all the above tables */
 };
 
 struct glyphhead {
@@ -323,6 +330,8 @@ struct glyphinfo {
     FILE *glyphs;
     FILE *hmtx;
     int hmtxlen;
+    FILE *vmtx;
+    int vmtxlen;
     int next_glyph;
     int glyph_len;
     short *cvt;
@@ -333,14 +342,31 @@ struct glyphinfo {
     int bcnt;
     int strikecnt;		/* number of bitmaps to dump */
     int fudge;
+    int lasthwidth, lastvwidth;	/* encoding of last glyph for which we generate a full metrics entry */
+    int hfullcnt, vfullcnt;
+};
+
+struct vorg {
+    ushort majorVersion;		/* 1 */
+    ushort minorVersion;		/* 0 */
+    short defaultVertOriginY;	/* Y coord of default vertical origin in the design coordinate system */
+    ushort numVertOriginYMetrics;	/* exceptions to the above, elements in following array */
+#if 0
+    struct {
+	ushort glyphindex;		/* ordered */
+	short vertOrigin;
+    } origins[];
+#endif
 };
 
 struct alltabs {
     struct tabdir tabdir;
     struct head head;
     struct hhead hhead;
+    struct hhead vhead;
     struct maxp maxp;
     struct os2 os2;
+    struct vorg vorg;
     FILE *loca;
     int localen;
     FILE *name;
@@ -365,6 +391,10 @@ struct alltabs {
     int os2len;
     FILE *cvtf;
     int cvtlen;
+    FILE *vheadf;
+    int vheadlen;
+    FILE *vorgf;
+    int vorglen;
     FILE *cfff;
     int cfflen;
     FILE *sidf;

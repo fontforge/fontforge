@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 24-Nov-2001 -->
+  <!-- AP: Last modified: 26-Nov-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -71,8 +71,8 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-011124.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 24-Nov-2001
+    <A HREF="pfaedit-011126.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 26-Nov-2001
   <LI>
     <A HREF="pfaedit-solaris-011102.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 2-Nov-2001
@@ -99,14 +99,15 @@ Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
 program.</A>
 <P>
 If you want to edit CID keyed fonts you need these
-<A HREF="cidmaps.tgz">character set descriptions</A>.
+<A HREF="cidmaps.tgz">character set descriptions</A>. (These were last updated
+25-Nov-2001)
 <H2>
   <A NAME="source">Source</A> distribution
 </H2>
 <P>
 You can download a <A HREF="pfaedit-011102-1.src.rpm">source RPM</A>: Version:
 2-Nov-2001<BR>
-Or you can download the following three packages. Version: 23-Nov-2001
+Or you can download the following three packages. Version: 26-Nov-2001
 <UL>
   <LI>
     <A HREF="libgunicode-011123.tgz">Unicode library source</A> (23-Nov-2001)<BR>
@@ -118,10 +119,10 @@ Or you can download the following three packages. Version: 23-Nov-2001
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-011124.tgz">Pfaedit source</A> (24-Nov-2001)<BR>
+    <A HREF="pfaedit_src-011126.tgz">Pfaedit source</A> (26-Nov-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
-    <A HREF="pfaedit_full-011124.tgz">All three bundled together </A>(24-Nov-2001)
+    <A HREF="pfaedit_full-011126.tgz">All three bundled together </A>(26-Nov-2001)
 </UL>
 <P>
 If you want to do autotracing around character images you should also download
@@ -129,7 +130,8 @@ Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
 program.</A>
 <P>
 If you want to edit CID keyed fonts you need these
-<A HREF="cidmaps.tgz">character set descriptions</A>.
+<A HREF="cidmaps.tgz">character set descriptions</A>. (These were last updated
+25-Nov-2001)
 <P>
 With the appropriate <A NAME="image-libs">libraries</A>, PfaEdit can import
 png, tiff, and gif images to act as character backgrounds for tracing purposes
@@ -231,11 +233,40 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
 </H2>
 <UL>
   <LI>
+    26-Nov-2001
+    <UL>
+      <LI>
+	Adobe has upgraded their cid version for traditional chinese, so I generated
+	a new cidmap to reflect that. I've also cleaned up most of the others.
+      <LI>
+	Initial version of vertical metric support.
+	<UL>
+	  <LI>
+	    (only in true/open type fonts)
+	  <LI>
+	    Added ability to set the vertical advance of each character
+	  <LI>
+	    Added ability to set the vertical origin (as an offset from the origin in
+	    the design coordinate system (which happens to be the origin for horizontal
+	    metrics)).
+	  <LI>
+	    Added ability to set the line gap (er, column gap?)
+	  <LI>
+	    What else do I need?
+	</UL>
+    </UL>
+  <LI>
     24-Nov-2001
     <UL>
       <LI>
 	Oops. Urich Klauer found a bug in my parsing of ttf/otf tables (introduced
 	by the linegap change on 8 Nov) and sent a patch.
+      <LI>
+	PfaEdit was erroneously complaining that all ttf composit glyphs were too
+	big (when reading them in, introduced 15 Nov).
+      <LI>
+	PfaEdit stored StdHW and StdVW in the wrong format when reading opentype
+	fonts and any .pfa/b fonts generated from that db caused ghostview problems.
     </UL>
   <LI>
     23-Nov-2001
@@ -694,7 +725,9 @@ The following people have helped debug pfaedit. Many thanks!
   <LI>
     Ulrich Klauer
   <LI>
-    <A HREF="http://canopus.iacp.dvo.ru/~panov/">Andrey V. Panov</A><BR>
+    <A HREF="http://canopus.iacp.dvo.ru/~panov/">Andrey V. Panov</A>
+  <LI>
+    Edward G.J. Lee<BR>
     &nbsp;
   <LI>
     And many others!

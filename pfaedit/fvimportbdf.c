@@ -83,6 +83,7 @@ static void MakeEncChar(SplineFont *sf,int enc,char *name) {
     if ( sf->chars[enc]==NULL ) {
 	sf->chars[enc] = chunkalloc(sizeof(SplineChar));
 	sf->chars[enc]->parent = sf;
+	sf->chars[enc]->width = sf->chars[enc]->vwidth = sf->ascent+sf->descent;
     }
     free(sf->chars[enc]->name);
     sf->chars[enc]->name = copy(name);

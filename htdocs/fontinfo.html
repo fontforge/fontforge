@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 6-Nov-2001 -->
+  <!-- AP: Last modified: 26-Nov-2001 -->
   <TITLE>Font Info</TITLE>
 </HEAD>
 <BODY>
@@ -282,8 +282,15 @@ trick).
 The UniqueID field is an older convention for the same purpose as XUID. If
 you do not fill in this field then PfaEdit will pick a random number for
 you in the allowable range. If you have talked to Adobe and been assigned
-a real UniqueID then you may use this field, otherwise leave it
-blank.<BR Clear=ALL>
+a real UniqueID then you may use this field, otherwise leave it blank.
+<P>
+If you want your font to have <A NAME="vertical">vertical</A> metrics (generally
+this means you are working on a CJK font) then check the <CODE>[*] Has Vertical
+Metrics</CODE> checkbox. This will enable the Vertical Origin field, and
+will mean that when you generate a truetype or opentype font a vertical metrics
+table will be added. The Vertical Origin is the vertical offset from the
+origin of the design coordinate system to the origin for the purposes of
+vertical metrics.<BR Clear=ALL>
 <H2>
   <A NAME="Private">Private</A> -- <SMALL>(font-wide postscript hinting)</SMALL>
 </H2>
@@ -371,8 +378,11 @@ use any of it. Finally you can restrict the embedding so that only bitmap
 versions of the font may be embedded. (meaningful in CID fonts as well as
 TTF).
 <P>
-You can also specify the default line gap, or leading between
-lines.<BR Clear=ALL>
+You can also specify the default line gap, or leading between lines.
+<P>
+And if your font has vertical metrics enabled (See PS General above) you
+will be able to set the default spacing between vertical columns of text.
+(the equivalent to LineGap in vertical text).<BR Clear=ALL>
 <H2>
   <IMG SRC="fontinfo-ttfname.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><A
       NAME="TTF-Names">TTF Names</A>

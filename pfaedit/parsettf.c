@@ -343,6 +343,15 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	  case CHR('O','S','/','2'):
 	    info->os2_start = offset;
 	  break;
+	  case CHR('v','h','e','a'):
+	    info->vhea_start = offset;
+	  break;
+	  case CHR('v','m','t','x'):
+	    info->vmetrics_start = offset;
+	  break;
+	  case CHR('V','O','R','G'):
+	    info->vorg_start = offset;
+	  break;
 	}
     }
 return( true );
@@ -822,6 +831,7 @@ static SplineChar *readttfglyph(FILE *ttf,struct ttfinfo *info,int start, int en
     SplineChar *sc = chunkalloc(sizeof(SplineChar));
 
     sc->unicodeenc = -1;
+    sc->vwidth = info->emsize;
     /* sc->manualhints = 1; */ /* But only when I know how to read them in!!!! */
 
     if ( start==end ) {
@@ -834,7 +844,7 @@ return( sc );
     /* xmin = */ getushort(ttf);
     /* ymin = */ getushort(ttf);
     /* xmax = */ getushort(ttf);
-    /* ymax = */ getushort(ttf);
+    /* ymax = */ sc->lsidebearing = getushort(ttf);
     if ( path_cnt>=0 )
 	readttfsimpleglyph(ttf,info,sc,path_cnt);
     else
@@ -2144,8 +2154,9 @@ static void cfffigure(struct ttfinfo *info, struct topdicts *dict,
 	info->chars[i] = PSCharStringToSplines(
 		dict->glyphs.values[i], dict->glyphs.lens[i],cstype-1,
 		subrs,gsubrs,getsid(dict->charset[i],strings));
+	info->chars[i]->vwidth = info->emsize;
 	if ( cstype==2 ) {
-	    if ( info->chars[i]->width == 0x8000000 )
+	    if ( info->chars[i]->width == (int16) 0x8000 )
 		info->chars[i]->width = dict->defaultwidthx;
 	    else
 		info->chars[i]->width += dict->defaultwidthx;
@@ -2209,6 +2220,7 @@ static void cidfigure(struct ttfinfo *info, struct topdicts *dict,
 	info->chars[i] = PSCharStringToSplines(
 		dict->glyphs.values[i], dict->glyphs.lens[i],cstype-1,
 		subrs,gsubrs,buffer);
+	info->chars[i]->vwidth = sf->ascent+sf->descent;
 	info->chars[i]->unicodeenc = uni;
 	sf->chars[cid] = info->chars[i];
 	sf->chars[cid]->parent = sf;
@@ -2216,7 +2228,7 @@ static void cidfigure(struct ttfinfo *info, struct topdicts *dict,
 	if ( sf->chars[cid]->refs!=NULL )
 	    GDrawIError( "Reference found in CID font. Can't fix it up");
 	if ( cstype==2 ) {
-	    if ( sf->chars[cid]->width == 0x8000000 )
+	    if ( sf->chars[cid]->width == (int16) 0x8000 )
 		sf->chars[cid]->width = dict->defaultwidthx;
 	    else
 		sf->chars[cid]->width += dict->defaultwidthx;
@@ -2330,6 +2342,54 @@ static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
 	    info->chars[j]->width = lastwidth;
 	    info->chars[j]->widthset = true;
 	}
+    }
+}
+
+static void readttfvwidths(FILE *ttf,struct ttfinfo *info) {
+    int i,j;
+    int lastvwidth = info->emsize, vwidth_cnt, tsb, cnt=0;
+    int32 voff=0;
+
+    fseek(ttf,info->vhea_start+4+4,SEEK_SET);		/* skip over the version number & typo right/left */
+    info->pfminfo.vlinegap = getushort(ttf);
+
+    for ( i=0; i<12; ++i )
+	getushort(ttf);
+    vwidth_cnt = getushort(ttf);
+
+    fseek(ttf,info->vmetrics_start,SEEK_SET);
+    for ( i=0; i<vwidth_cnt && i<info->glyph_cnt; ++i ) {
+	lastvwidth = getushort(ttf);
+	tsb = getushort(ttf);
+	if ( info->chars[i]!=NULL ) {		/* can happen in ttc files */
+	    info->chars[i]->vwidth = lastvwidth;
+	    if ( info->cff_start==0 ) {
+		voff += tsb + info->chars[i]->lsidebearing /* actually maxy */;
+		++cnt;
+	    }
+	}
+    }
+    if ( i==0 )
+	fprintf( stderr, "Invalid ttf vmtx table (or vhea), numOfLongVerMetrics is 0\n" );
+	
+    for ( j=i; j<info->glyph_cnt; ++j ) {
+	if ( info->chars[j]!=NULL )		/* In a ttc file we may skip some */
+	    info->chars[j]->vwidth = lastvwidth;
+    }
+
+    /* for truetype fonts the vertical offset is found by adding the ymax of a */
+    /*  character to the top side bearing. I set the font wide value to the */
+    /*  average of them all */
+    /* But opentype doesn't give us the ymax easily, and rather than compute */
+    /*  the bounding box I'll just punt and pick a reasonable value */
+    /* Of course I hope it will be over riden by the VORG table */
+    if ( cnt!=0 )
+	info->vertical_origin = voff/cnt;
+    if ( info->vertical_origin==0 )
+	info->vertical_origin = info->ascent;
+    if ( info->vorg_start!=0 ) {
+	fseek(ttf,info->vorg_start+4,SEEK_SET);
+	info->vertical_origin = (short) getushort(ttf);
     }
 }
 
@@ -3150,6 +3210,8 @@ return( 0 );
     }
     if ( !info->onlystrikes || info->hmetrics_start!=0 )
 	readttfwidths(ttf,info);
+    if ( info->vmetrics_start!=0 && info->vhea_start!=0 )
+	readttfvwidths(ttf,info);
     if ( info->bitmapdata_start!=0 && info->bitmaploc_start!=0 )
 	TTFLoadBitmaps(ttf,info,info->onlyonestrike);
     else if ( info->onlystrikes )
@@ -3182,6 +3244,7 @@ static SplineChar *SFMakeDupRef(SplineFont *sf, int local_enc, struct dup *dup) 
     sc->enc = local_enc;
     sc->unicodeenc = dup->uni;
     sc->width = dup->sc->width;
+    sc->vwidth = dup->sc->vwidth;
     sc->refs = ref;
     sc->parent = sf;
     if ( dup->uni>=0 && dup->uni<0x10000 && psunicodenames[dup->uni]!=NULL )
@@ -3323,6 +3386,9 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->upos = info->upos;
     sf->uwidth = info->uwidth;
     sf->ascent = info->ascent;
+    sf->vertical_origin = info->vertical_origin;
+    if ( info->vhea_start!=0 && info->vmetrics_start!=0 )
+	sf->hasvmetrics = true;
     sf->descent = info->descent;
     sf->private = info->private;
     sf->xuid = info->xuid;
@@ -3359,8 +3425,11 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 	sf->subfontcnt = info->subfontcnt;
 	sf->subfonts = info->subfonts;
 	free(info->chars);		/* This is the GID->char index, don't need it now */
-	for ( i=0; i<sf->subfontcnt; ++i )
+	for ( i=0; i<sf->subfontcnt; ++i ) {
 	    sf->subfonts[i]->cidmaster = sf;
+	    sf->subfonts[i]->vertical_origin = sf->vertical_origin;
+	    sf->subfonts[i]->hasvmetrics = sf->hasvmetrics;
+	}
     }
 return( sf );
 }

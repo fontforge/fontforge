@@ -46,7 +46,9 @@ struct cvshows CVShows = {
 	1,		/* show rulers */
 	1,		/* show points which are to be rounded to the ttf grid and aren't on hints */
 	1,		/* show x minimum distances */
-	1		/* show y minimum distances */
+	1,		/* show y minimum distances */
+	1,		/* show horizontal metrics */
+	0		/* show vertical metrics */
 };
 
 /* Positions on the info line */
@@ -763,13 +765,18 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	GDrawDrawPixmap(pixmap,cv->backimgs,&r,0,0);
     }
     if ( cv->showgrids || cv->drawmode==dm_grid ) {
+	CVDrawSplineSet(cv,pixmap,cv->fv->sf->gridsplines,0x808080,
+		cv->showpoints && cv->drawmode==dm_grid,&clip);
+    }
+    if ( cv->showhmetrics ) {
 	DrawLine(cv,pixmap,0,-8096,0,8096,0x808080);
 	DrawLine(cv,pixmap,-8096,0,8096,0,0x808080);
 	DrawLine(cv,pixmap,-8096,sf->ascent,8096,sf->ascent,0x808080);
 	DrawLine(cv,pixmap,-8096,-sf->descent,8096,-sf->descent,0x808080);
-
-	CVDrawSplineSet(cv,pixmap,cv->fv->sf->gridsplines,0x808080,
-		cv->showpoints && cv->drawmode==dm_grid,&clip);
+    }
+    if ( cv->showvmetrics ) {
+	DrawLine(cv,pixmap,(sf->ascent+sf->descent)/2,-8096,(sf->ascent+sf->descent)/2,8096,0x808080);
+	DrawLine(cv,pixmap,-8096,sf->vertical_origin,8096,sf->vertical_origin,0x808080);
     }
 
     if ( cv->showback || cv->drawmode==dm_back )
@@ -801,7 +808,11 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		cv->showpoints && cv->drawmode==dm_fore,&clip);
     }
 
-    DrawLine(cv,pixmap,cv->sc->width,-32768,cv->sc->width,32767,0x0);
+    if ( cv->showhmetrics )
+	DrawLine(cv,pixmap,cv->sc->width,-32768,cv->sc->width,32767,0x0);
+    if ( cv->showvmetrics )
+	DrawLine(cv,pixmap,-32768,sf->vertical_origin-cv->sc->vwidth,
+			    32767,sf->vertical_origin-cv->sc->vwidth,0x0);
 
     if ( cv->p.rubberbanding )
 	CVDrawRubberRect(pixmap,cv);
@@ -2350,6 +2361,7 @@ return( true );
 #define MID_SetRBearing	2603
 #define MID_Thirds	2604
 #define MID_RemoveKerns	2605
+#define MID_SetVWidth	2606
 #define MID_OpenBitmap	2700
 #define MID_Revert	2702
 #define MID_Recent	2703
@@ -3733,9 +3745,12 @@ static void CVMenuCenter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVMenuSetWidth(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
+    if ( mi->mid == MID_SetVWidth && !cv->sc->parent->hasvmetrics )
+return;
     CVSetWidth(cv,mi->mid==MID_SetWidth?wt_width:
 		  mi->mid==MID_SetLBearing?wt_lbearing:
-		  wt_rbearing);
+		  mi->mid==MID_SetRBearing?wt_rbearing:
+		  wt_vwidth);
 }
 
 static void CVMenuRemoveKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -3885,7 +3900,9 @@ static GMenuItem mtlist[] = {
     { { (unichar_t *) _STR_Setlbearing, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'L' }, 'L', ksm_control, NULL, NULL, CVMenuSetWidth, MID_SetLBearing },
     { { (unichar_t *) _STR_Setrbearing, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, 'R', ksm_control, NULL, NULL, CVMenuSetWidth, MID_SetRBearing },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Removekern, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'v' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuRemoveKern, MID_RemoveKerns },
+    { { (unichar_t *) _STR_Removekern, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuRemoveKern, MID_RemoveKerns },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_SetVWidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuSetWidth, MID_SetVWidth },
     { NULL }
 };
 
@@ -3961,6 +3978,8 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv) {
     cv->showrounds = CVShows.showrounds;
     cv->showmdx = CVShows.showmdx;
     cv->showmdy = CVShows.showmdy;
+    cv->showhmetrics = CVShows.showhmetrics;
+    cv->showvmetrics = CVShows.showvmetrics;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_ititle;

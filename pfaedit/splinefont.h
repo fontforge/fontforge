@@ -107,11 +107,11 @@ typedef struct bdffloat {
 
 typedef struct undoes {
     struct undoes *next;
-    enum undotype { ut_none=0, ut_state, ut_tstate, ut_statehint, ut_width,
+    enum undotype { ut_none=0, ut_state, ut_tstate, ut_statehint, ut_width, ut_vwidth,
 	    ut_bitmap, ut_bitmapsel, ut_composit, ut_multiple, ut_noop } undotype;
     union {
 	struct {
-	    int16 width;
+	    int16 width, vwidth;
 	    int16 lbearingchange;
 	    struct splinepointlist *splines;
 	    struct refchar *refs;
@@ -121,7 +121,7 @@ typedef struct undoes {
 	    } u;
 	    struct splinefont *copied_from;
 	} state;
-	int width;
+	int width;	/* used by both ut_width and ut_vwidth */
 	struct {
 	    /*int16 width;*/	/* width should be controled by postscript */
 	    int16 xmin,xmax,ymin,ymax;
@@ -349,9 +349,11 @@ typedef struct minimumdistance {
 typedef struct splinechar {
     char *name;
     int enc, unicodeenc;
-    int width;
+    int16 width, vwidth;
     int16 lsidebearing;		/* only used when reading in a type1 font */
 				/*  Or an otf font where it is the subr number of a refered character */
+			        /*  or a ttf font with vert metrics where it is the ymax value */
+				/* Always a temporary value */
     int16 ttf_glyph;		/* only used when writing out a ttf or otf font */
     SplinePointList *splines;
     StemInfo *hstem;		/* hstem hints have a vertical offset but run horizontally */
@@ -378,6 +380,7 @@ typedef struct splinechar {
     Undoes *undoes[2];
     Undoes *redoes[2];
     KernPair *kerns;
+    /* KernPair *vkerns;*/
     Ligature *lig;		/* If we are a ligature then this tells us what */
     LigList *ligofme;		/* If this is the first character of a ligature then this gives us the list of possible ones */
 				/*  this field must be regenerated before the font is saved */
@@ -401,6 +404,7 @@ typedef struct splinefont {
     char *version;
     real italicangle, upos, uwidth;		/* In font info */
     int ascent, descent;
+    int vertical_origin;			/* height of vertical origin in character coordinate system */
     int uniqueid;				/* Not copied when reading in!!!! */
     int charcnt;
     SplineChar **chars;
@@ -408,12 +412,11 @@ typedef struct splinefont {
     unsigned int changed_since_autosave: 1;
     unsigned int display_antialias: 1;
     unsigned int dotlesswarn: 1;		/* User warned that font doesn't have a dotless i character */
-    /*unsigned int subrsgood: 1;		/* the subrs & othersubrs arrays are correct for flex&hint subs */
-    /*unsigned int wasbinary: 1;*/
     unsigned int onlybitmaps: 1;		/* it's a bdf editor, not a postscript editor */
     unsigned int serifcheck: 1;			/* Have we checked to see if we have serifs? */
     unsigned int issans: 1;			/* We have no serifs */
     unsigned int isserif: 1;			/* We have serifs. If neither set then we don't know. */
+    unsigned int hasvmetrics: 1;		/* We've got vertical metric data and should output vhea/vmtx/VORG tables */
     struct fontview *fv;
     enum charset encoding_name;
     SplinePointList *gridsplines;
@@ -429,11 +432,12 @@ typedef struct splinefont {
     struct pfminfo {
 	unsigned int pfmset: 1;
 	unsigned char pfmfamily;
-	unsigned short weight;
-	unsigned short width;
+	int16 weight;
+	int16 width;
 	char panose[10];
-	int fstype;
-	int linegap;
+	int16 fstype;
+	int16 linegap;
+	int16 vlinegap;
     } pfminfo;
     struct ttflangname *names;
     char *cidregistry, *ordering;
@@ -459,6 +463,7 @@ extern int CheckAfmOfPostscript(SplineFont *sf,char *psname);
 extern int LoadKerningDataFromAfm(SplineFont *sf, char *filename);
 extern int LoadKerningDataFromTfm(SplineFont *sf, char *filename);
 extern int SFOneWidth(SplineFont *sf);
+extern int SFOneHeight(SplineFont *sf);
 extern int SFIsCJK(SplineFont *sf);
 extern struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
 	struct pschars *subrs);
@@ -654,6 +659,7 @@ extern void SCUndoSetLBearingChange(SplineChar *sc,int lb);
 extern Undoes *SCPreserveState(SplineChar *sc,int dohints);
 extern Undoes *SCPreserveBackground(SplineChar *sc);
 extern Undoes *SCPreserveWidth(SplineChar *sc);
+extern Undoes *SCPreserveVWidth(SplineChar *sc);
 extern Undoes *BCPreserveState(BDFChar *bc);
 extern void BCDoRedo(BDFChar *bc,struct fontview *fv);
 extern void BCDoUndo(BDFChar *bc,struct fontview *fv);

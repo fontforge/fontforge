@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Jun-2001 -->
-  <!-- AP: Last modified: 4-Aug-2001 -->
+  <!-- AP: Last modified: 24-Nov-2001 -->
   <TITLE>Finding common font problems automagically</TITLE>
 </HEAD>
 <BODY>
@@ -135,7 +135,9 @@ which is why PfaEdit will generate them. But this command will detect this
 problem if in fact it is a problem. If PfaEdit finds this it will select
 the offending hint and allow you to fix things (probably the best fix is
 to add curved points at the extrema of all the curved splines, this is actually
-recommended by adobe anyway).
+recommended by adobe anyway
+(<A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/T1_Spec.pdf">T1_Spec.pdf
+</A>section 4.1)).
 <P>
 <STRONG><BIG>Points near hint edges</BIG></STRONG>
 <P>
@@ -163,7 +165,7 @@ this constraint is violated. It does not correct the problem (as
 <P>
 Currently the command will report the same error several times if you do
 not fix the problem. That's sort of a bug, but I don't see an easy way around
-it yet.
+it yet. 
   <HR>
 <P>
 If your font is a CID keyed font you will also get:

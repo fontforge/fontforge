@@ -358,9 +358,15 @@ void CVCheckResizeCursors(CharView *cv) {
 	    if (( cv->expandedge = OnBB(cv,&ref->bb,fudge))!=ee_none )
 	break;
 	}
-	if ( cv->expandedge == ee_none )
-	    if ( cv->info.x > cv->sc->width-fudge && cv->info.x<cv->sc->width+fudge )
+	if ( cv->expandedge == ee_none ) {
+	    if ( cv->showhmetrics && cv->info.x > cv->sc->width-fudge &&
+		    cv->info.x<cv->sc->width+fudge )
 		cv->expandedge = ee_right;
+	    if ( cv->showvmetrics && cv->sc->parent->hasvmetrics &&
+		    cv->info.y > cv->sc->parent->vertical_origin-cv->sc->vwidth-fudge &&
+		    cv->info.y < cv->sc->parent->vertical_origin-cv->sc->vwidth+fudge )
+		cv->expandedge = ee_down;
+	}
     }
     if ( cv->drawmode==dm_back ) {
 	for ( img=cv->sc->backimages; img!=NULL; img=img->next ) if ( img->selected ) {
@@ -430,12 +436,22 @@ return;
 	needsupdate = CVClearSel(cv);
     if ( !fs->p->anysel ) {
 	/* Nothing else... unless they clicked on the width line, check that */
-	if ( cv->p.cx>cv->sc->width-fs->fudge && cv->p.cx<cv->sc->width+fs->fudge ) {
+	if ( cv->showhmetrics && cv->p.cx>cv->sc->width-fs->fudge &&
+		cv->p.cx<cv->sc->width+fs->fudge ) {
 	    fs->p->width = true;
 	    fs->p->cx = cv->sc->width;
 	    CVInfoDraw(cv,cv->gw);
 	    fs->p->anysel = true;
 	    cv->expandedge = ee_right;
+	    SetCur(cv);
+	} else if ( cv->showvmetrics && cv->sc->parent->hasvmetrics &&
+		cv->p.cy>cv->sc->parent->vertical_origin-cv->sc->vwidth-fs->fudge &&
+		cv->p.cy<cv->sc->parent->vertical_origin-cv->sc->vwidth+fs->fudge ) {
+	    fs->p->vwidth = true;
+	    fs->p->cy = cv->sc->parent->vertical_origin-cv->sc->vwidth;
+	    CVInfoDraw(cv,cv->gw);
+	    fs->p->anysel = true;
+	    cv->expandedge = ee_down;
 	    SetCur(cv);
 	}
     } else if ( event->u.mouse.clicks<=1 && !(event->u.mouse.state&ksm_shift)) {
@@ -809,6 +825,11 @@ return;
 	cv->sc->width = cv->info.x;
 	CVSetCharChanged(cv,true);
 	needsupdate = true;
+    } else if ( cv->p.vwidth ) {
+	if ( !cv->recentchange ) CVPreserveVWidth(cv,cv->sc->vwidth);
+	cv->sc->vwidth = cv->sc->parent->vertical_origin-cv->info.y;
+	CVSetCharChanged(cv,true);
+	needsupdate = true;
     } else if ( cv->expandedge!=ee_none )
 	needsupdate = CVExpandEdge(cv);
     else if ( !cv->p.anysel ) {
@@ -857,6 +878,14 @@ void CVMouseUpPointer(CharView *cv ) {
 		cv->sc->width = cv->p.cx;
 	}
 	SCSynchronizeWidth(cv->sc,cv->sc->width,cv->p.cx,cv->fv);
+	cv->expandedge = ee_none;
+	GDrawSetCursor(cv->v,ct_mypointer);
+    } else if ( cv->p.vwidth ) {
+	cv->p.vwidth = false;
+	if ( cv->sc->vwidth<0 && cv->p.cy>=0 ) {
+	    if ( GWidgetAskR(_STR_NegativeWidth, buts, 0, 1, _STR_NegativeWidthCheck )==1 )
+		cv->sc->vwidth = cv->p.cy;
+	}
 	cv->expandedge = ee_none;
 	GDrawSetCursor(cv->v,ct_mypointer);
     } else if ( cv->expandedge!=ee_none ) {

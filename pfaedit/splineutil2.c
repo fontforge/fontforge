@@ -999,6 +999,7 @@ SplineFont *SplineFontNew(void) {
     sf->onlybitmaps = true;
     for ( i=0; i<enclen && i<256; ++i ) {
 	SplineChar *sc = sf->chars[i] = chunkalloc(sizeof(SplineChar));
+	sc->vwidth = sf->ascent+sf->descent;
 	if ( table==NULL )
 	    uenc = i;
 	else if ( tlen==94*94 ) {
@@ -1006,7 +1007,7 @@ SplineFont *SplineFontNew(void) {
 		uenc = -1;
 	    else
 		uenc = table[(i/96)*94+(i%96-1)];
-	} else if ( tlen==0x10000-0xa100 ) {
+	} else if ( tlen==0x10000-0xa100 || tlen == 0x10000-0x8400 ) {
 	    uenc = ( i<160 )?i : -1;	/* deal with single byte encoding of big5 */
 	} else
 	    uenc = table[i];

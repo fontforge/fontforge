@@ -45,6 +45,10 @@ typedef struct createwidthdata {
 #define CID_IncrVal	1012
 #define CID_ScaleVal	1013
 
+static int rb1[] = { _STR_SetWidthTo, _STR_SetLBearingTo, _STR_SetRBearingTo, _STR_SetVWidthTo };
+static int rb2[] = { _STR_IncrWidthBy, _STR_IncrLBearingBy, _STR_IncrRBearingBy, _STR_IncrVWidthBy };
+static int rb3[] = { _STR_ScaleWidthBy, _STR_ScaleLBearingBy, _STR_ScaleRBearingBy, _STR_ScaleVWidthBy };
+
 static int CW_OK(GGadget *g, GEvent *e) {
     static int buts[] = { _STR_Yes, _STR_No, 0 };
 
@@ -53,17 +57,17 @@ static int CW_OK(GGadget *g, GEvent *e) {
 	CreateWidthData *wd = GDrawGetUserData(GGadgetGetWindow(g));
 	if ( GGadgetIsChecked(GWidgetGetControl(wd->gw,CID_Set)) ) {
 	    wd->type = st_set;
-	    wd->setto = GetReal(wd->gw,CID_SetVal,"Value",&err);
+	    wd->setto = GetRealR(wd->gw,CID_SetVal,rb1[wd->wtype],&err);
 	    if ( wd->setto<0 ) {
 		if ( GWidgetAskR(_STR_NegativeWidth, buts, 0, 1, _STR_NegativeWidthCheck )==1 )
 return( true );
 	    }
 	} else if ( GGadgetIsChecked(GWidgetGetControl(wd->gw,CID_Incr)) ) {
 	    wd->type = st_incr;
-	    wd->increment = GetReal(wd->gw,CID_IncrVal,"Increment",&err);
+	    wd->increment = GetRealR(wd->gw,CID_IncrVal,rb2[wd->wtype],&err);
 	} else {
 	    wd->type = st_scale;
-	    wd->scale = GetReal(wd->gw,CID_ScaleVal,"Scale",&err);
+	    wd->scale = GetRealR(wd->gw,CID_ScaleVal,rb2[wd->wtype],&err);
 	}
 	(wd->doit)(wd);
     }
@@ -118,13 +122,7 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
     GTextInfo label[11];
     static CreateWidthData cwd;
     static GWindow winds[3];
-    static unichar_t title1[] = { 'S','e','t',' ','W','i','d','t','h','.','.','.',  '\0' };
-    static unichar_t title2[] = { 'S','e','t',' ','L','B','e','a','r','i','n','g','.','.','.',  '\0' };
-    static unichar_t title3[] = { 'S','e','t',' ','R','B','e','a','r','i','n','g','.','.','.',  '\0' };
-    static unichar_t *title[] = { title1, title2, title3 };
-    static char *rb1[] = { "Set Width To:", "Set LBearing To:", "Set RBearing To:" };
-    static char *rb2[] = { "Increment Width By:", "Increment LBearing By:", "Increment RBearing By:" };
-    static char *rb3[] = { "Scale Width By:", "Scale LBearing By:", "Scale RBearing By:" };
+    static int title[] = { _STR_Setwidth, _STR_Setlbearing, _STR_Setrbearing, _STR_SetVWidth };
 
     cwd.done = false;
     cwd._fv = _fv;
@@ -139,7 +137,7 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-	wattrs.window_title = title[wtype];
+	wattrs.window_title = GStringGetResource(title[wtype],NULL);
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width =GDrawPointsToPixels(NULL,210);
@@ -150,7 +148,7 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	memset(&gcd,0,sizeof(gcd));
 
 	label[0].text = (unichar_t *) rb1[wtype];
-	label[0].text_is_1byte = true;
+	label[0].text_in_resource = true;
 	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5; 
 	gcd[0].gd.flags = gg_enabled|gg_visible|gg_cb_on;
@@ -160,7 +158,7 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	gcd[0].creator = GRadioCreate;
 
 	label[1].text = (unichar_t *) rb2[wtype];
-	label[1].text_is_1byte = true;
+	label[1].text_in_resource = true;
 	gcd[1].gd.label = &label[1];
 	gcd[1].gd.pos.x = 5; gcd[1].gd.pos.y = 32; 
 	gcd[1].gd.flags = gg_enabled|gg_visible;
@@ -170,7 +168,7 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	gcd[1].creator = GRadioCreate;
 
 	label[2].text = (unichar_t *) rb3[wtype];
-	label[2].text_is_1byte = true;
+	label[2].text_in_resource = true;
 	gcd[2].gd.label = &label[2];
 	gcd[2].gd.pos.x = 5; gcd[2].gd.pos.y = 59; 
 	gcd[2].gd.flags = gg_enabled|gg_visible;
@@ -284,7 +282,7 @@ static void DoChar(SplineChar *sc,CreateWidthData *wd, FontView *fv) {
 	if ( transform[4]!=0 )
 	    FVTrans(fv,sc,transform,NULL);
 return;
-    } else {
+    } else if ( wd->wtype == wt_rbearing ) {
 	SplineCharFindBounds(sc,&bb);
 	if ( wd->type==st_set )
 	    width = bb.maxx + wd->setto;
@@ -295,6 +293,17 @@ return;
 	if ( width!=sc->width ) {
 	    SCPreserveWidth(sc);
 	    SCSynchronizeWidth(sc,width,sc->width,fv);
+	}
+    } else {
+	if ( wd->type==st_set )
+	    width = wd->setto;
+	else if ( wd->type == st_incr )
+	    width = sc->vwidth + wd->increment;
+	else
+	    width = sc->vwidth * wd->scale/100;
+	if ( width!=sc->vwidth ) {
+	    SCPreserveVWidth(sc);
+	    sc->vwidth = width;
 	}
     }
     SCCharChangedUpdate(sc);
@@ -322,7 +331,11 @@ static void CVDoit(CreateWidthData *wd) {
 }
 
 void FVSetWidth(FontView *fv,enum widthtype wtype) {
-    FVCreateWidth(fv,FVDoit,wtype,wtype==wt_width?"600":"100");
+    char buffer[12];
+
+    sprintf( buffer, "%d", fv->sf->ascent+fv->sf->descent);
+    FVCreateWidth(fv,FVDoit,wtype,wtype==wt_width?"600":wtype==wt_vwidth?buffer:
+	    "100");
 }
 
 void CVSetWidth(CharView *cv,enum widthtype wtype) {
@@ -331,6 +344,8 @@ void CVSetWidth(CharView *cv,enum widthtype wtype) {
 
     if ( wtype==wt_width )
 	sprintf( buf, "%d", cv->sc->width );
+    else if ( wtype==wt_vwidth )
+	sprintf( buf, "%d", cv->sc->vwidth );
     else {
 	SplineCharFindBounds(cv->sc,&bb);
 	if ( wtype==wt_lbearing )

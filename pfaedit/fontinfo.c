@@ -29,6 +29,7 @@
 #include <chardata.h>
 #include <utype.h>
 #include <gkeysym.h>
+#include <math.h>
 
 struct gfi_data {
     int done;
@@ -398,6 +399,9 @@ static struct langstyle *stylelist[] = {regs, demibolds, bolds, heavys, blacks,
 #define CID_Notice	1010
 #define CID_Version	1011
 #define CID_UniqueID	1012
+#define CID_HasVerticalMetrics	1013
+#define CID_VOriginLab	1014
+#define CID_VOrigin	1015
 
 #define CID_Make	1111
 #define CID_Delete	1112
@@ -419,6 +423,8 @@ static struct langstyle *stylelist[] = {regs, demibolds, bolds, heavys, blacks,
 #define CID_NoSubsetting	3005
 #define CID_OnlyBitmaps		3006
 #define CID_LineGap		3007
+#define CID_VLineGap		3008
+#define CID_VLineGapLab		3009
 
 #define CID_PanFamily		4001
 #define CID_PanSerifs		4002
@@ -1327,24 +1333,6 @@ return( false );
 	sf->chars = grealloc(sf->chars,nchars*sizeof(SplineChar *));
 	for ( i=sf->charcnt; i<nchars; ++i )
 	    sf->chars[i] = NULL;
-#if 0
-	for ( i=sf->charcnt; i<nchars; ++i ) {
-	    SplineChar *sc = sf->chars[i] = chunkalloc(sizeof(SplineChar));
-	    sc->enc = i;
-	    if ( is_unicode ) {
-		sc->unicodeenc = i;
-		if ( i<psunicodenames_cnt && psunicodenames[i]!=NULL )
-		    sc->name = copy(psunicodenames[i]);
-		else { char buf[10];
-		    sprintf( buf, "uni%04X", i );
-		    sc->name = copy(buf);
-		}
-	    } else
-		sc->unicodeenc = -1;
-	    sc->width = sf->ascent+sf->descent;
-	    sc->parent = sf;
-	}
-#endif
 	sf->charcnt = nchars;
 	for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
 	    bdf->chars = grealloc(bdf->chars,nchars*sizeof(BDFChar *));
@@ -1475,6 +1463,26 @@ static int GFI_NameChange(GGadget *g, GEvent *e) {
 	}
 	GGadgetSetTitle(GWidgetGetControl(gw,CID_Human),uhum);
 	free(uhum);
+    }
+return( true );
+}
+
+static int GFI_VMetricsCheck(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	GWindow gw = GGadgetGetWindow(g);
+	const unichar_t *vo = _GGadgetGetTitle(GWidgetGetControl(gw,CID_VOrigin));
+	int checked = GGadgetIsChecked(g);
+	if ( checked && *vo=='\0' ) {
+	    struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	    char space[10]; unichar_t uspace[10];
+	    sprintf( space, "%d", d->sf->ascent );
+	    uc_strcpy(uspace,space);
+	    GGadgetSetTitle(GWidgetGetControl(gw,CID_VOrigin),uspace);
+	}
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_VOrigin),checked);
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_VOriginLab),checked);
+	GGadgetSetEnabled(GWidgetGetControl(GDrawGetParentWindow(gw),CID_VLineGap),checked);
+	GGadgetSetEnabled(GWidgetGetControl(GDrawGetParentWindow(gw),CID_VLineGapLab),checked);
     }
 return( true );
 }
@@ -1939,11 +1947,12 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	int enc;
 	int reformat_fv=0;
 	int upos, uwid, as, des, nchar, oldcnt=sf->charcnt, err = false, weight=0;
-	int uniqueid, linegap=0;
+	int uniqueid, linegap=0, vlinegap;
 	int force_enc=0;
 	real ia, cidversion;
 	const unichar_t *txt; unichar_t *end;
 	int i;
+	int vmetrics, vorigin;
 
 	if ( !CheckNames(d))
 return( true );
@@ -1963,6 +1972,7 @@ return( true );
 	    ProtestR(_STR_Italicangle);
 return(true);
 	}
+	vmetrics = GGadgetIsChecked(GWidgetGetControl(gw,CID_HasVerticalMetrics));
 	upos = GetIntR(gw,CID_UPos, _STR_Upos,&err);
 	uwid = GetIntR(gw,CID_UWidth,_STR_Uheight,&err);
 	as = GetIntR(gw,CID_Ascent,_STR_Ascent,&err);
@@ -1972,6 +1982,8 @@ return(true);
 	force_enc = GGadgetIsChecked(GWidgetGetControl(gw,CID_ForceEncoding));
 	if ( sf->subfontcnt!=0 )
 	    cidversion = GetRealR(gw,CID_Version,_STR_Version,&err);
+	if ( vmetrics )
+	    vorigin = GetIntR(gw,CID_VOrigin,_STR_VOrigin,&err);
 	if ( d->ttf_set ) {
 	    /* Only use the normal routine if we get no value, because */
 	    /*  "400 Book" is a reasonable setting, but would cause GetInt */
@@ -1980,6 +1992,8 @@ return(true);
 	    if ( weight == 0 )
 		weight = GetIntR(gw,CID_WeightClass,_STR_WeightClass,&err);
 	    linegap = GetIntR(gw,CID_LineGap,_STR_LineGap,&err);
+	    if ( vmetrics )
+		vlinegap = GetIntR(gw,CID_VLineGap,_STR_VLineGap,&err);
 	}
 	if ( err )
 return(true);
@@ -2022,6 +2036,11 @@ return(true);
 	sf->upos = upos;
 	sf->uwidth = uwid;
 	sf->uniqueid = uniqueid;
+	if ( sf->hasvmetrics!=vmetrics )
+	    CVPaletteDeactivate();		/* Force a refresh later */
+	sf->hasvmetrics = vmetrics;
+	if ( vmetrics )
+	    sf->vertical_origin = vorigin;
 	if ( d->private!=NULL ) {
 	    PSDictFree(sf->private);
 	    sf->private = d->private;
@@ -2044,6 +2063,8 @@ return(true);
 	    for ( i=0; i<10; ++i )
 		sf->pfminfo.panose[i] = (int) (GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_PanFamily+i))->userdata);
 	    sf->pfminfo.linegap = linegap;
+	    if ( vmetrics )
+		sf->pfminfo.vlinegap = vlinegap;
 	    sf->pfminfo.pfmset = true;
 	}
 	if ( reformat_fv )
@@ -2103,7 +2124,7 @@ return( ti );
 static void TTFSetup(struct gfi_data *d) {
     struct pfminfo info;
     char buffer[10]; unichar_t ubuf[10];
-    int i;
+    int i, lg, vlg;
 
     info = d->sf->pfminfo;
     if ( !info.pfmset ) {
@@ -2121,10 +2142,19 @@ static void TTFSetup(struct gfi_data *d) {
 	const unichar_t *ds = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Descent));
 	unichar_t *aend, *dend;
 	double av=u_strtod(as,&aend),dv=u_strtod(ds,&dend);
-	if ( *aend=='\0' && *dend=='\0' && info.linegap==0 )
-	    info.linegap = .9*(av+dv);
+	if ( *aend=='\0' && *dend=='\0' ) {
+	    if ( info.linegap==0 )
+		info.linegap = rint(.09*(av+dv));
+	    if ( info.vlinegap==0 )
+		info.vlinegap = info.linegap;
+	}
+	lg = info.linegap; vlg = info.vlinegap;
 	cu_strcpy(n,ufamily); cu_strcat(n,umods);
 	SFDefaultOS2Info(&info,d->sf,n);
+	if ( lg != 0 )
+	    info.linegap = lg;
+	if ( vlg!= 0 )
+	    info.vlinegap = vlg;
 	free(n);
     }
 
@@ -2149,6 +2179,9 @@ static void TTFSetup(struct gfi_data *d) {
     sprintf( buffer, "%d", info.linegap );
     uc_strcpy(ubuf,buffer);
     GGadgetSetTitle(GWidgetGetControl(d->gw,CID_LineGap),ubuf);
+    sprintf( buffer, "%d", info.vlinegap );
+    uc_strcpy(ubuf,buffer);
+    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_VLineGap),ubuf);
 }
 
 static int GFI_AspectChange(GGadget *g, GEvent *e) {
@@ -2183,10 +2216,11 @@ void FontInfo(SplineFont *sf) {
     GWindow gw;
     GWindowAttrs wattrs;
     GTabInfo aspects[8];
-    GGadgetCreateData mgcd[10], ngcd[11], egcd[12], psgcd[16], tngcd[7],   pgcd[8], vgcd[13], pangcd[22];
-    GTextInfo mlabel[10], nlabel[11], elabel[12], pslabel[16], tnlabel[7], plabel[8], vlabel[13], panlabel[22], *list;
+    GGadgetCreateData mgcd[10], ngcd[11], egcd[12], psgcd[19], tngcd[7],   pgcd[8], vgcd[15], pangcd[22];
+    GTextInfo mlabel[10], nlabel[11], elabel[12], pslabel[19], tnlabel[7], plabel[8], vlabel[15], panlabel[22], *list;
     struct gfi_data d;
-    char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20], ncbuf[20], vbuf[20], uibuf[12], regbuf[100];
+    char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20], ncbuf[20],
+	    vbuf[20], uibuf[12], regbuf[100], vorig[20];
     int i;
     int oldcnt = sf->charcnt;
     Encoding *item;
@@ -2563,8 +2597,44 @@ void FontInfo(SplineFont *sf) {
     psgcd[14].gd.cid = CID_UniqueID;
     psgcd[14].creator = GTextFieldCreate;
 
+    psgcd[15].gd.pos.x = 12; psgcd[15].gd.pos.y = psgcd[14].gd.pos.y+26+6;
+    pslabel[15].text = (unichar_t *) _STR_HasVerticalMetrics;
+    pslabel[15].text_in_resource = true;
+    psgcd[15].gd.label = &pslabel[15];
+    psgcd[15].gd.mnemonic = 'V';
+    psgcd[15].gd.cid = CID_HasVerticalMetrics;
+    psgcd[15].gd.flags = gg_visible | gg_enabled;
+    if ( sf->hasvmetrics )
+	psgcd[15].gd.flags |= gg_cb_on;
+    psgcd[15].gd.handle_controlevent = GFI_VMetricsCheck;
+    psgcd[15].creator = GCheckBoxCreate;
+
+    psgcd[16].gd.pos.x = 12; psgcd[16].gd.pos.y = psgcd[15].gd.pos.y+26+6;
+    pslabel[16].text = (unichar_t *) _STR_VOrigin;
+    pslabel[16].text_in_resource = true;
+    psgcd[16].gd.label = &pslabel[16];
+    psgcd[16].gd.mnemonic = 'O';
+    psgcd[16].gd.flags = sf->hasvmetrics ? (gg_visible | gg_enabled) : gg_visible;
+    psgcd[16].gd.cid = CID_VOriginLab;
+    psgcd[16].creator = GLabelCreate;
+
+    psgcd[17].gd.pos.x = psgcd[12].gd.pos.x; psgcd[17].gd.pos.y = psgcd[16].gd.pos.y-6; psgcd[17].gd.pos.width = psgcd[12].gd.pos.width;
+    psgcd[17].gd.flags = sf->hasvmetrics ? (gg_visible | gg_enabled) : gg_visible;
+    pslabel[17].text = (unichar_t *) "";
+    pslabel[17].text_is_1byte = true;
+    if ( sf->vertical_origin!=0 || sf->hasvmetrics ) {
+	sprintf( vorig, "%d", sf->vertical_origin );
+	pslabel[17].text = (unichar_t *) vorig;
+    }
+    psgcd[17].gd.label = &pslabel[17];
+    psgcd[17].gd.cid = CID_VOrigin;
+    psgcd[17].creator = GTextFieldCreate;
+
     if ( sf->subfontcnt!=0 ) {
 	for ( i=0; i<=10; ++i )
+	    psgcd[i].gd.flags &= ~gg_enabled;
+    } else if ( sf->cidmaster!=NULL ) {
+	for ( i=15; i<=17; ++i )
 	    psgcd[i].gd.flags &= ~gg_enabled;
     }
 /******************************************************************************/
@@ -2724,7 +2794,22 @@ void FontInfo(SplineFont *sf) {
     vgcd[11].gd.cid = CID_LineGap;
     vgcd[11].gd.popup_msg = vgcd[10].gd.popup_msg;
     vgcd[11].creator = GTextFieldCreate;
-    
+
+    vgcd[12].gd.pos.x = 10; vgcd[12].gd.pos.y = vgcd[11].gd.pos.y+26+6;
+    vlabel[12].text = (unichar_t *) _STR_VLineGap;
+    vlabel[12].text_in_resource = true;
+    vgcd[12].gd.label = &vlabel[12];
+    vgcd[12].gd.flags = sf->hasvmetrics ? (gg_visible | gg_enabled) : gg_visible;
+    vgcd[12].gd.popup_msg = GStringGetResource(_STR_VLineGapPopup,NULL);
+    vgcd[12].gd.cid = CID_VLineGapLab;
+    vgcd[12].creator = GLabelCreate;
+
+    vgcd[13].gd.pos.x = 100; vgcd[13].gd.pos.y = vgcd[12].gd.pos.y-6; vgcd[13].gd.pos.width = 140;
+    vgcd[13].gd.flags = sf->hasvmetrics ? (gg_visible | gg_enabled) : gg_visible;
+	/* V Line gap value set later */
+    vgcd[13].gd.cid = CID_VLineGap;
+    vgcd[13].gd.popup_msg = vgcd[11].gd.popup_msg;
+    vgcd[13].creator = GTextFieldCreate;
 
 /******************************************************************************/
     memset(&tnlabel,0,sizeof(tnlabel));

@@ -36,6 +36,7 @@ extern struct cvshows {
     int showrulers;
     int showrounds;		/* 0=>no, 1=>auto, 2=>always */
     int showmdx, showmdy;	/* minimum distances x,y */
+    int showhmetrics, showvmetrics;	/* show advance width, baseline, etc. */
 } CVShows;
 
 extern struct bvshows {
@@ -56,6 +57,7 @@ typedef struct pressedOn {
     unsigned int prevcp: 1;	/*  the spline point, or the "prev" control point */
     unsigned int anysel: 1;	/* did we hit anything? */
     unsigned int width: 1;	/* we're moving the width rather than a spline */
+    unsigned int vwidth: 1;	/* we're moving the width rather than a spline */
     unsigned int pressed: 1;
     unsigned int rubberbanding: 1;
     unsigned int transany: 1;
@@ -111,6 +113,8 @@ typedef struct charview {
     unsigned int showrounds:2;		/* 0=>no, 1=>auto, 2=>always */
     unsigned int showmdx:1;
     unsigned int showmdy:1;
+    unsigned int showhmetrics:1;
+    unsigned int showvmetrics:1;
     unsigned int needsrasterize:1;		/* Rasterization (of fill or fontview) needed on mouse up */
     unsigned int recentchange:1;		/* a change happened in the grids or background. don't need to rasterize */
     unsigned int drawmode:2;
@@ -262,7 +266,7 @@ typedef struct findsel {
     PressedOn *p;
 } FindSel;
 
-enum widthtype { wt_width, wt_lbearing, wt_rbearing };
+enum widthtype { wt_width, wt_lbearing, wt_rbearing, wt_vwidth };
 
 extern FontView *FontViewCreate(SplineFont *sf);
 extern void SplineFontSetUnChanged(SplineFont *sf);
@@ -408,6 +412,7 @@ extern int GotoChar(SplineFont *sf);
 extern Undoes *CVPreserveState(CharView *cv);
 extern Undoes *CVPreserveTState(CharView *cv);
 extern Undoes *CVPreserveWidth(CharView *cv,int width);
+extern Undoes *CVPreserveVWidth(CharView *cv,int vwidth);
 extern void CVDoRedo(CharView *cv);
 extern void CVDoUndo(CharView *cv);
 extern void CVRestoreTOriginalState(CharView *cv);
@@ -418,6 +423,7 @@ extern int CopyContainsBitmap(void);
 extern void CopyReference(SplineChar *sc);
 extern void CopySelected(CharView *cv);
 extern void CopyWidth(CharView *cv);
+extern void CopyVWidth(CharView *cv);
 extern void PasteToCV(CharView *cv);
 extern void BCCopySelected(BDFChar *bc,int pixelsize);
 extern void PasteToBC(BDFChar *bc,int pixelsize,FontView *fv);

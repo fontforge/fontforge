@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Dec-2000 -->
-  <!-- AP: Last modified: 11-Nov-2001 -->
+  <!-- AP: Last modified: 26-Nov-2001 -->
   <TITLE>The File Menu</TITLE>
 </HEAD>
 <BODY>
@@ -229,19 +229,23 @@
     TTF (and Open Type) fonts are usually generated in MicroSoft's Unicode encoding,
     there will also be a tiny macintosh encoding for the first 256 positions
     -- the exceptions are: symbol fonts will use the symbol encoding, KSC5601
-    fonts will use Wansung, and JIS208 will use SJIS. OpenType CID keyed fonts
-    will be saved with Unicode encoding.<BR>
-    Postscript fonts are generated in whatever encoding the font is using (expect
-    you take a two byte encoding and generate a Type1 font (rather than a Type0)
-    then only the first few characters will be encoded).<BR>
-    PS CID and OpenType CID are saved with no encoding. The encodings live in
-    seperate cmap files which are available from
+    fonts will use Wansung, and JIS208 will use SJIS, Big5 will use big5 encoding.
+    OpenType CID keyed fonts will be saved with Unicode encoding.<BR>
+    Postscript fonts are generated in whatever encoding the font is using (except
+    if you take a two byte encoding and generate a Type1 font (rather than a
+    Type0) then only the first few characters will be encoded).<BR>
+    PS CID (and OpenType CID in the CFF) are saved with no encoding. The encodings
+    live in seperate cmap files which are available from
     <A HREF="http://www.adobe.com/products/acrobat/acrrasianfontpack.html">adobe</A>
     (and perhaps other font vendors).<BR>
     If you save a CID font with a format other than PS CID or OpenType CID, then
     only the currenly displayed subfont will be saved, with the current meaningless
     character ordering (I suppose this is useful if you wish to extract a sub-font
-    from a CID font).
+    from a CID font).<BR>
+    TTF (and OpenType) fonts will produce vertical metrics tables if the font
+    has vertical metrics enabled. Postscript encodings will not produce Metrics2
+    dictionaries (If someone actually wants this let me know, it can be done,
+    but I get the impression that nobody uses this any more).
   <DT>
     <A NAME="Revert">Revert</A>
   <DD>

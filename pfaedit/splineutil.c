@@ -1389,6 +1389,7 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd) {
 	    else
 		sf->chars[i] = SplineCharCopy(fd->charprocs->values[k]);
 	}
+	sf->chars[i]->vwidth = sf->ascent+sf->descent;
 	sf->chars[i]->enc = i;
 	sf->chars[i]->unicodeenc = UnicodeNameLookup(encoding[i]);
 	sf->chars[i]->parent = sf;
@@ -1461,6 +1462,7 @@ return( NULL );
 	chars[i] = PSCharStringToSplines(fd->cidstrs[i],fd->cidlens[i],
 		    fd->fds[j]->fonttype==2,fd->fds[j]->private->subrs,
 		    NULL,buffer);
+	chars[i]->vwidth = sf->subfonts[j]->ascent+sf->subfonts[j]->descent;
 	chars[i]->unicodeenc = uni;
 	chars[i]->enc = i;
 	/* There better not be any references (seac's) because we have no */
@@ -1481,9 +1483,6 @@ return( NULL );
 	}
     }
     free(chars);
-    /* Now we'd like to pull an adobe charset file (based on registry_ordering_supplement) */
-    /*  out of the air, and use it to give ourselves... well at least real */
-    /*  character names, possibly an encoding !!!! */
 return( sf );
 }
 

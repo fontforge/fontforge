@@ -606,6 +606,9 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 #define CID_EFore	1008
 #define CID_EBack	1009
 #define CID_EGrid	1010
+#define CID_VHMetrics	1011
+#define CID_VVMetrics	1012
+#define CID_VVMetricsLab	1013
 
 static void CVLayersSet(CharView *cv) {
     GGadgetSetChecked(GWidgetGetControl(cvlayers,CID_VFore),cv->showfore);
@@ -614,9 +617,15 @@ static void CVLayersSet(CharView *cv) {
     GGadgetSetChecked(GWidgetGetControl(cvlayers,CID_VVHints),cv->showvhints);
     GGadgetSetChecked(GWidgetGetControl(cvlayers,CID_VHHints),cv->showhhints);
     GGadgetSetChecked(GWidgetGetControl(cvlayers,CID_VDHints),cv->showdhints);
+    GGadgetSetChecked(GWidgetGetControl(cvlayers,CID_VHMetrics),cv->showhmetrics);
+    GGadgetSetChecked(GWidgetGetControl(cvlayers,CID_VVMetrics),cv->showvmetrics);
     GGadgetSetChecked(GWidgetGetControl(cvlayers,
 		cv->drawmode==dm_fore?CID_EFore:
 		cv->drawmode==dm_back?CID_EBack:CID_EGrid ),true);
+    GGadgetSetEnabled(GWidgetGetControl(cvlayers,CID_VVMetrics),
+	    cv->sc->parent->hasvmetrics);
+    GGadgetSetEnabled(GWidgetGetControl(cvlayers,CID_VVMetricsLab),
+	    cv->sc->parent->hasvmetrics);
 }
 
 static int cvlayers_e_h(GWindow gw, GEvent *event) {
@@ -661,6 +670,12 @@ return( true );
 			GGadgetIsChecked(event->u.control.g);
 		cv->back_img_out_of_date = true;	/* only this cv */
 	      break;
+	      case CID_VHMetrics:
+		CVShows.showhmetrics = cv->showhmetrics = GGadgetIsChecked(event->u.control.g);
+	      break;
+	      case CID_VVMetrics:
+		CVShows.showvmetrics = cv->showvmetrics = GGadgetIsChecked(event->u.control.g);
+	      break;
 	      case CID_EFore:
 		cv->drawmode = dm_fore;
 		cv->lastselpt = NULL;
@@ -684,8 +699,8 @@ return( true );
 GWindow CVMakeLayers(CharView *cv) {
     GRect r;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[17];
-    GTextInfo label[17];
+    GGadgetCreateData gcd[21];
+    GTextInfo label[21];
     static GBox radio_box = { bt_none, bs_rect, 0, 0, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };
     static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',  '\0' };
     GFont *font;
@@ -702,7 +717,7 @@ return( cvlayers );
     wattrs.is_dlg = true;
     wattrs.window_title = GStringGetResource(_STR_Layers,NULL);
 
-    r.width = 85; r.height = 128;
+    r.width = 104; r.height = 162;
     if ( cvlayersoff.x==-9999 ) {
 	cvlayersoff.x = -r.width-6;
 	cvlayersoff.y = cv->mbh+187+45/*25*/;	/* 45 is right if there's decor, 25 when none. twm gives none, kde gives decor */
@@ -786,7 +801,21 @@ return( cvlayers );
     gcd[8].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
     gcd[8].gd.box = &radio_box;
     gcd[8].creator = GCheckBoxCreate;
-    base = 9;
+
+    gcd[9].gd.pos.x = 5; gcd[9].gd.pos.y = 123; 
+    gcd[9].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[9].gd.cid = CID_VHMetrics;
+    gcd[9].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
+    gcd[9].gd.box = &radio_box;
+    gcd[9].creator = GCheckBoxCreate;
+
+    gcd[10].gd.pos.x = 5; gcd[10].gd.pos.y = 140; 
+    gcd[10].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[10].gd.cid = CID_VVMetrics;
+    gcd[10].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
+    gcd[10].gd.box = &radio_box;
+    gcd[10].creator = GCheckBoxCreate;
+    base = 11;
 
 
     label[base].text = (unichar_t *) _STR_Fore;
@@ -843,6 +872,21 @@ return( cvlayers );
     gcd[base].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[base++].creator = GLabelCreate;
 
+    label[base].text = (unichar_t *) _STR_HMetrics;
+    label[base].text_in_resource = true;
+    gcd[base].gd.label = &label[base];
+    gcd[base].gd.pos.x = 47; gcd[base].gd.pos.y = 123; 
+    gcd[base].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[base++].creator = GLabelCreate;
+
+    label[base].text = (unichar_t *) _STR_VMetrics;
+    label[base].text_in_resource = true;
+    gcd[base].gd.label = &label[base];
+    gcd[base].gd.pos.x = 47; gcd[base].gd.pos.y = 140; 
+    gcd[base].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[base].gd.cid = CID_VVMetricsLab;
+    gcd[base++].creator = GLabelCreate;
+
     gcd[base].gd.pos.x = 1; gcd[base].gd.pos.y = 1;
     gcd[base].gd.pos.width = r.width-2; gcd[base].gd.pos.height = r.height-2;
     gcd[base].gd.flags = gg_enabled | gg_visible|gg_pos_in_pixels;
@@ -854,6 +898,12 @@ return( cvlayers );
     if ( cv->showhhints ) gcd[6].gd.flags |= gg_cb_on;
     if ( cv->showvhints ) gcd[7].gd.flags |= gg_cb_on;
     if ( cv->showdhints ) gcd[8].gd.flags |= gg_cb_on;
+    if ( cv->showhmetrics ) gcd[9].gd.flags |= gg_cb_on;
+    if ( cv->showvmetrics ) gcd[10].gd.flags |= gg_cb_on;
+    if ( !cv->sc->parent->hasvmetrics ) {
+	gcd[10].gd.flags &= ~gg_enabled;
+	gcd[base-2].gd.flags &= ~gg_enabled;
+    }
 
     GGadgetsCreate(cvlayers,gcd);
     GDrawSetVisible(cvlayers,true);

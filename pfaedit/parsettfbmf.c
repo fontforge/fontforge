@@ -114,6 +114,7 @@ return;
 	if ( info->chars[enc]==NULL ) {
 	    info->chars[enc] = chunkalloc(sizeof(SplineChar));
 	    info->chars[enc]->enc = enc;
+	    info->chars[enc]->width = info->chars[enc]->vwidth = info->emsize;
 	}
 	bdfc->sc = info->chars[enc];
     }
