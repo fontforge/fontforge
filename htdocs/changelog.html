@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 31-Mar-2003 -->
+  <!-- AP: Last modified: 1-Apr-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,31 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    1-Apr-2003 (April Fish!)
+    <UL>
+      <LI>
+	Fixed a crash in the Join command
+      <LI>
+	Fixed a crash when loading some truetype fonts (never bothered to figure
+	which ones exactly)
+      <LI>
+	Fixed a similar crash when loading old sfd files (note some old fonts won't
+	guess the script for ligatures, etc. properly)
+      <LI>
+	Added a new preference item: Stop At Join
+      <LI>
+	Changed the way control points are set when changing point type.
+      <LI>
+	The fill of the outline view sometimes lagged the change.
+      <LI>
+	Added another tag to CharInfo scripting command: GlyphIndex. It returns the
+	glyph number in the ttf font.
+      <LI>
+	Werner suggests that instead of namint things "nounicode-%x" where %x is
+	the encoding, use "nounicode-%d-%d-%x" where the two new arguments are the
+	platform/specific pair used in the cmap we picked.
+    </UL>
   <LI>
     31-Mar-2003
     <UL>
