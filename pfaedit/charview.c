@@ -283,7 +283,7 @@ static GPointList *MakePoly(CharView *cv, SplinePointList *spl) {
 	closed = true;
 	cur = NULL;
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-	    if ( !CVSplineOutside(cv,spline) ) {
+	    if ( !CVSplineOutside(cv,spline) && !isnan(spline->splines[0].a) && !isnan(spline->splines[1].a)) {
 		lap = SplineApproximate(spline,cv->scale);
 		if ( i==0 )
 		    CVLinesIntersectScreen(cv,lap);
@@ -1914,6 +1914,10 @@ return( true );
 	    fs->p->nextcp = true;
 	    fs->p->anysel = true;
 	    fs->p->cp = sp->nextcp;
+	    if ( sp->nonextcp && sp->pointtype==pt_curve ) {
+		fs->p->cp.x = sp->me.x + (sp->me.x-sp->prevcp.x);
+		fs->p->cp.y = sp->me.y + (sp->me.y-sp->prevcp.y);
+	    }
 return( true );
 	} else if ( fs->xl<=sp->prevcp.x && fs->xh>=sp->prevcp.x &&
 		fs->yl<=sp->prevcp.y && fs->yh >= sp->prevcp.y ) {
@@ -1923,6 +1927,10 @@ return( true );
 	    fs->p->prevcp = true;
 	    fs->p->anysel = true;
 	    fs->p->cp = sp->prevcp;
+	    if ( sp->noprevcp && sp->pointtype==pt_curve ) {
+		fs->p->cp.x = sp->me.x + (sp->me.x-sp->nextcp.x);
+		fs->p->cp.y = sp->me.y + (sp->me.y-sp->nextcp.y);
+	    }
 return( true );
 	}
     }
@@ -2476,13 +2484,15 @@ return;
 		    (cv->p.cp.y-cv->p.constrain.y)*(p.cy-cv->p.constrain.y);
 	    real len = (cv->p.cp.x-cv->p.constrain.x)*(cv->p.cp.x-cv->p.constrain.x)+
 		    (cv->p.cp.y-cv->p.constrain.y)*(cv->p.cp.y-cv->p.constrain.y);
-	    dot /= len;
-	    /* constrain control point to same angle with respect to base point*/
-	    if ( dot<0 ) dot = 0;
-	    p.cx = cv->p.constrain.x + dot*(cv->p.cp.x-cv->p.constrain.x);
-	    p.cy = cv->p.constrain.y + dot*(cv->p.cp.y-cv->p.constrain.y);
-	    p.x = fake.u.mouse.x = cv->xoff + rint(p.cx*cv->scale);
-	    p.y = fake.u.mouse.y = -cv->yoff + cv->height - rint(p.cy*cv->scale);
+	    if ( len!=0 ) {
+		dot /= len;
+		/* constrain control point to same angle with respect to base point*/
+		if ( dot<0 ) dot = 0;
+		p.cx = cv->p.constrain.x + dot*(cv->p.cp.x-cv->p.constrain.x);
+		p.cy = cv->p.constrain.y + dot*(cv->p.cp.y-cv->p.constrain.y);
+		p.x = fake.u.mouse.x = cv->xoff + rint(p.cx*cv->scale);
+		p.y = fake.u.mouse.y = -cv->yoff + cv->height - rint(p.cy*cv->scale);
+	    }
 	} else {
 	    /* Constrain mouse to hor/vert/45 from base point */
 	    int basex = cv->active_tool!=cvt_hand ? cv->xoff + rint(cv->p.constrain.x*cv->scale) : cv->p.x;
