@@ -191,9 +191,9 @@ return;
 	    } else {
 		if (( xrad = (cv->p.cx-cv->info.x) )<0 ) xrad = -xrad;
 		if (( yrad = (cv->p.cy-cv->info.y) )<0 ) yrad = -yrad;
-		SetCorner(sp,cv->p.cx-xrad,cv->info.y);
-		SetCorner(sp=sp->next->to, cv->info.x,cv->info.y);
-		SetCorner(sp=sp->next->to, cv->info.x,cv->p.cy-yrad);
+		SetCorner(sp,cv->p.cx-xrad,cv->p.cy+yrad);
+		SetCorner(sp=sp->next->to, cv->p.cx+xrad,cv->p.cy+yrad);
+		SetCorner(sp=sp->next->to, cv->p.cx+xrad,cv->p.cy-yrad);
 		SetCorner(sp=sp->next->to, cv->p.cx-xrad,cv->p.cy-yrad);
 	    }
 	} else {
