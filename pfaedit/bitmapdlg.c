@@ -256,12 +256,28 @@ return( true );
 #define CID_Pixel	1002
 #define CID_75		1003
 #define CID_100		1004
+#define CID_75Lab	1005
+#define CID_100Lab	1006
+#define CID_X		1007
+#define CID_Win		1008
+#define CID_Mac		1009
 
+static int GetSystem(GWindow gw) {
+    if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_X)) )
+return( CID_X );
+    if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_Win)) )
+return( CID_Win );
+
+return( CID_Mac );
+}
+    
 static real *ParseList(GWindow gw, int cid,int *err, int final) {
     const unichar_t *val = _GGadgetGetTitle(GWidgetGetControl(gw,cid)), *pt;
     unichar_t *end, *end2;
     int i;
     real *sizes;
+    int system = GetSystem(gw);
+    int scale;
 
     *err = false;
     end2 = NULL;
@@ -290,13 +306,15 @@ return( NULL );
     }
     sizes[i] = 0;
 
-    if ( cid==CID_75 )
+    if ( cid==CID_75 ) {
+	scale = system==CID_X?75:system==CID_Win?96:72;
 	for ( i=0; sizes[i]!=0; ++i )
-	    sizes[i] = rint(sizes[i]*75/72);
-    else if ( cid==CID_100 )
+	    sizes[i] = rint(sizes[i]*scale/72);
+    } else if ( cid==CID_100 ) {
+	scale = system==CID_X?100:system==CID_Win?120:100;
 	for ( i=0; sizes[i]!=0; ++i )
-	    sizes[i] = rint(sizes[i]*100/72);
-    else if ( final )
+	    sizes[i] = rint(sizes[i]*scale/72);
+    } else if ( final )
 	for ( i=0; sizes[i]!=0; ++i )
 	    sizes[i] = rint(sizes[i]);
 return( sizes );
@@ -364,14 +382,46 @@ static int CB_TextChange(GGadget *g, GEvent *e) {
 	int err=false;
 	real *sizes = ParseList(bd->gw,cid,&err,false);
 	int ncid;
+	int system = GetSystem(bd->gw);
+	int scale;
+
 	if ( err )
 return( true );
 	for ( ncid=CID_Pixel; ncid<=CID_100; ++ncid ) if ( ncid!=cid ) {
-	    val = GenText(sizes,ncid==CID_Pixel?1.0:ncid==CID_75?72./75.:72./100.);
+	    if ( ncid==CID_Pixel )
+		scale = 72;
+	    else if ( ncid==CID_75 )
+		scale = system==CID_X?75: system==CID_Win?96 : 72;
+	    else
+		scale = system==CID_X?100: system==CID_Win?120 : 100;
+	    val = GenText(sizes,72./scale);
 	    GGadgetSetTitle(GWidgetGetControl(bd->gw,ncid),val);
 	    free(val);
 	}
 	free(sizes);
+    }
+return( true );
+}
+
+static int CB_SystemChange(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	CreateBitmapData *bd = GDrawGetUserData(GGadgetGetWindow(g));
+	int system = (int) GGadgetGetCid(g);
+	GEvent temp;
+	GGadgetSetTitle(GWidgetGetControl(bd->gw,CID_75Lab),
+		GStringGetResource(system==CID_X?_STR_PointSizes75:
+				   system==CID_Win?_STR_PointSizes96:
+						   _STR_PointSizes72,NULL));
+	GGadgetSetTitle(GWidgetGetControl(bd->gw,CID_100Lab),
+		GStringGetResource(system==CID_Win?_STR_PointSizes120:
+						   _STR_PointSizes100,NULL));
+	GGadgetSetEnabled(GWidgetGetControl(bd->gw,CID_100Lab),system!=CID_Mac);
+	GGadgetSetEnabled(GWidgetGetControl(bd->gw,CID_100),system!=CID_Mac);
+	temp = *e;
+	temp.u.control.subtype = et_textchanged;
+	temp.u.control.g = GWidgetGetControl(bd->gw,CID_Pixel);
+	temp.u.control.u.tf_changed.from_pulldown = -1;
+	CB_TextChange(temp.u.control.g, &temp);
     }
 return( true );
 }
@@ -392,8 +442,8 @@ return( true );
 void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[13];
-    GTextInfo label[13];
+    GGadgetCreateData gcd[17];
+    GTextInfo label[17];
     CreateBitmapData bd;
     int i,j,y;
     real *sizes;
@@ -429,7 +479,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,190));
-    pos.height = GDrawPointsToPixels(NULL,202);
+    pos.height = GDrawPointsToPixels(NULL,228);
     bd.gw = GDrawCreateTopWindow(NULL,&pos,bd_e_h,&bd,&wattrs);
 
     memset(&label,0,sizeof(label));
@@ -482,11 +532,40 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
 	j=2; y = 5+13+28;
     }
 
+    label[j].text = (unichar_t *) _STR_XSizes;
+    label[j].text_in_resource = true;
+    gcd[j].gd.label = &label[j];
+    gcd[j].gd.pos.x = 10; gcd[j].gd.pos.y = y;
+    gcd[j].gd.flags = gg_enabled|gg_visible|gg_cb_on;
+    gcd[j].gd.cid = CID_X;
+    gcd[j].gd.handle_controlevent = CB_SystemChange;
+    gcd[j++].creator = GRadioCreate;
+
+    label[j].text = (unichar_t *) _STR_WinSizes;
+    label[j].text_in_resource = true;
+    gcd[j].gd.label = &label[j];
+    gcd[j].gd.pos.x = 50; gcd[j].gd.pos.y = y;
+    gcd[j].gd.flags = gg_enabled|gg_visible;
+    gcd[j].gd.cid = CID_Win;
+    gcd[j].gd.handle_controlevent = CB_SystemChange;
+    gcd[j++].creator = GRadioCreate;
+
+    label[j].text = (unichar_t *) _STR_MacSizes;
+    label[j].text_in_resource = true;
+    gcd[j].gd.label = &label[j];
+    gcd[j].gd.pos.x = 90; gcd[j].gd.pos.y = y;
+    gcd[j].gd.flags = gg_enabled|gg_visible;
+    gcd[j].gd.cid = CID_Mac;
+    gcd[j].gd.handle_controlevent = CB_SystemChange;
+    gcd[j++].creator = GRadioCreate;
+    y += 26;
+
     label[j].text = (unichar_t *) _STR_PointSizes75;
     label[j].text_in_resource = true;
     gcd[j].gd.label = &label[j];
     gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = y;
-    gcd[j].gd.flags = gg_enabled|gg_visible|gg_cb_on;
+    gcd[j].gd.flags = gg_enabled|gg_visible;
+    gcd[j].gd.cid = CID_75Lab;
     gcd[j++].creator = GLabelCreate;
     y += 13;
 
@@ -494,7 +573,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j].gd.label = &label[j];
     gcd[j].gd.pos.x = 15; gcd[j].gd.pos.y = y;
     gcd[j].gd.pos.width = 170;
-    gcd[j].gd.flags = gg_enabled|gg_visible|gg_cb_on;
+    gcd[j].gd.flags = gg_enabled|gg_visible;
     gcd[j].gd.cid = CID_75;
     gcd[j].gd.handle_controlevent = CB_TextChange;
     gcd[j++].creator = GTextFieldCreate;
@@ -504,7 +583,8 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     label[j].text_in_resource = true;
     gcd[j].gd.label = &label[j];
     gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = y;
-    gcd[j].gd.flags = gg_enabled|gg_visible|gg_cb_on;
+    gcd[j].gd.flags = gg_enabled|gg_visible;
+    gcd[j].gd.cid = CID_100Lab;
     gcd[j++].creator = GLabelCreate;
     y += 13;
 
@@ -512,7 +592,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j].gd.label = &label[j];
     gcd[j].gd.pos.x = 15; gcd[j].gd.pos.y = y;
     gcd[j].gd.pos.width = 170;
-    gcd[j].gd.flags = gg_enabled|gg_visible|gg_cb_on;
+    gcd[j].gd.flags = gg_enabled|gg_visible;
     gcd[j].gd.cid = CID_100;
     gcd[j].gd.handle_controlevent = CB_TextChange;
     gcd[j++].creator = GTextFieldCreate;
@@ -522,7 +602,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     label[j].text_in_resource = true;
     gcd[j].gd.label = &label[j];
     gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = y;
-    gcd[j].gd.flags = gg_enabled|gg_visible|gg_cb_on;
+    gcd[j].gd.flags = gg_enabled|gg_visible;
     gcd[j++].creator = GLabelCreate;
     y += 13;
 
@@ -542,7 +622,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
     gcd[j++].creator = GGroupCreate;
 
-    gcd[j].gd.pos.x = 20-3; gcd[j].gd.pos.y = 202-32-3;
+    gcd[j].gd.pos.x = 20-3; gcd[j].gd.pos.y = 228-32-3;
     gcd[j].gd.pos.width = -1; gcd[j].gd.pos.height = 0;
     gcd[j].gd.flags = gg_visible | gg_enabled | gg_but_default;
     label[j].text = (unichar_t *) _STR_OK;
@@ -552,7 +632,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j].gd.handle_controlevent = CB_OK;
     gcd[j++].creator = GButtonCreate;
 
-    gcd[j].gd.pos.x = -20; gcd[j].gd.pos.y = 202-32;
+    gcd[j].gd.pos.x = -20; gcd[j].gd.pos.y = 228-32;
     gcd[j].gd.pos.width = -1; gcd[j].gd.pos.height = 0;
     gcd[j].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
     label[j].text = (unichar_t *) _STR_Cancel;
