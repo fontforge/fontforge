@@ -1377,8 +1377,8 @@ return( 0 );
     /*  how to set it from the windows UI, but this seems to work */
     {
 	struct stat buf;
-	fstat(fileno(ttf),&buf);
-	fchmod(fileno(ttf),S_IXUSR | buf.st_mode );
+	fstat(fileno(out),&buf);
+	fchmod(fileno(out),S_IXUSR | buf.st_mode );
     }
 #endif
 
