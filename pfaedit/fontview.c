@@ -746,6 +746,7 @@ char *GetPostscriptFontName(char *dir, int mult) {
     static unichar_t fontmacsuit[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','m','a','c','-','s','u','i','t', '\0' };
     static unichar_t wild[] = { '*', '.', '{', 'p','f','a',',',
 					       'p','f','b',',',
+					       'p','t','3',',',
 			                       's','f','d',',',
 			                       't','t','f',',',
 			                       'b','d','f',',',

@@ -3818,7 +3818,7 @@ void TTFLangNamesFree(struct ttflangname *l) {
 void LayerDefault(Layer *layer) {
     memset(layer,0,sizeof(Layer));
 #ifdef PFAEDIT_CONFIG_TYPE3
-    layer->fill_brush.opacity = layer->stroke_pen.brush.opacity = WIDTH_INHERITED;
+    layer->fill_brush.opacity = layer->stroke_pen.brush.opacity = 1.0;
     layer->fill_brush.col = layer->stroke_pen.brush.col = COLOR_INHERITED;
     layer->stroke_pen.width = WIDTH_INHERITED;
     layer->stroke_pen.linecap = lc_inherited;
