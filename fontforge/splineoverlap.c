@@ -30,6 +30,8 @@
 #include <math.h>
 #include <stdarg.h>
 
+#include <gwidget.h>		/* For PostNotice */
+
 /* First thing we do is divide each spline into a set of sub-splines each of */
 /*  which is monotonic in both x and y (always increasing or decreasing)     */
 /* Then we compare each monotonic spline with every other one and see if they*/
@@ -1463,6 +1465,61 @@ return;
     free(space);
 }
 
+static void TestForBadDirections(Intersection *ilist) {
+    /* If we have a glyph with at least two contours one drawn clockwise, */
+    /*  one counter, and these two intersect, then our algorithm will */
+    /*  not remove what appears to the user to be an overlap. Warn about */
+    /*  this. */
+    /* I think it happens iff all exits from an intersection are needed */
+    MList *ml, *ml2;
+    int cnt, ncnt;
+    Intersection *il;
+
+    /* If we have two splines one going from a->b and the other from b->a */
+    /*  tracing exactly the same route, then they should cancel each other */
+    /*  out. But depending on the order we hit them they may both be marked */
+    /*  needed */  /* OverlapBugs.sfd: asciicircumflex */
+    for ( il=ilist; il!=NULL; il=il->next ) {
+	for ( ml=il->monos; ml!=NULL; ml=ml->next ) {
+	    if ( ml->m->isneeded && ml->m->s->knownlinear &&
+		    ml->m->start!=NULL && ml->m->end!=NULL ) {
+		for ( ml2 = ml->next; ml2!=NULL; ml2=ml2->next ) {
+		    if ( ml2->m->isneeded && ml2->m->s->knownlinear &&
+			    ml2->m->start == ml->m->end &&
+			    ml2->m->end == ml->m->start ) {
+			ml2->m->isneeded = false;
+			ml->m->isneeded = false;
+			ml2->m->isunneeded = true;
+			ml->m->isunneeded = true;
+		break;
+		    }
+		}
+	    }
+	}
+    }
+
+    while ( ilist!=NULL ) {
+	cnt = ncnt = 0;
+	for ( ml = ilist->monos; ml!=NULL; ml=ml->next ) {
+	    ++cnt;
+	    if ( ml->m->isneeded ) ++ncnt;
+	}
+	if ( cnt>=4 && ncnt==cnt ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
+	    GWidgetPostNoticeR(_STR_Warning,_STR_OverlapBadDir,glyphname);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_notice(_("Warning"),_("Glyph %.40s contains an overlapped region where two contours with oposite orientations intersect. This will not be removed. In many cases doing Element->Correct Direction before Remove Overlap will improve matters."),
+		    glyphname );
+#endif
+	    fprintf( stderr, "%s: Fully needed intersection at (%g,%g)\n",
+		    glyphname,
+		    ilist->inter.x, ilist->inter.y );
+    break;
+	}
+	ilist = ilist->next;
+    }
+}
+
 static void MonoFigure(Spline *s,double firstt,double endt, SplinePoint *first,
 	SplinePoint *end) {
     double f;
@@ -2091,6 +2148,8 @@ SplineSet *SplineSetRemoveOverlap(SplineChar *sc, SplineSet *base,enum overlap_t
 	ret = base;
     } else {
 	FindNeeded(ms,ot);
+	if ( ot==over_remove || ot == over_rmselected )
+	    TestForBadDirections(ilist);
 	ret = JoinAllNeeded(ilist);
 	ret = MergeOpenAndFreeClosed(ret,base,ot);
     }
