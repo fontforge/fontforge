@@ -265,58 +265,58 @@ int main(int argc, char **argv) {
 	if (( cid>=7887 && cid<=7916 ) || ( cid>=8720 && cid<=9353) ||
 		(cid>=12870 && cid<=13313)) {
 	    if ( cid>=7894 && cid<=7898 )
-		sprintf( buffer, "cid_%d.vert", cid-7894+665 );
+		sprintf( buffer, "cid-%d.vert", cid-7894+665 );
 	    else if ( cid>=7899 && cid<=7900 )
-		sprintf( buffer, "cid_%d.vert", cid-7899+674 );
+		sprintf( buffer, "cid-%d.vert", cid-7899+674 );
 	    else if ( cid>=7901 && cid<=7916 )
-		sprintf( buffer, "cid_%d.vert", cid-7901+676 );
+		sprintf( buffer, "cid-%d.vert", cid-7901+676 );
     /* Rotated Proportional latin, first 95 are ascii, rest are a mix */
 	    else if ( cid>=8720 && cid<=8949 )
-		sprintf( buffer, "cid_%d.vert", cid-8720+1 );
+		sprintf( buffer, "cid-%d.vert", cid-8720+1 );
     /* Rotated halfwidth latin, japanese ascii (ie yen for backslash) */
     /*  (don't really need a seperate case here, both blocks are consecutive) */
 	    else if ( cid>=8950 && cid<=9044 )
-		sprintf( buffer, "cid_%d.vert", cid-8950+231 );
+		sprintf( buffer, "cid-%d.vert", cid-8950+231 );
     /* Rotated halfwidth latin, nonascii */
 	    else if ( cid>=9045 && cid<=9078 )
-		sprintf( buffer, "cid_%d.vert", cid-9045+599 );
+		sprintf( buffer, "cid-%d.vert", cid-9045+599 );
 	    else if ( cid>=9079 && cid<=9081 )
-		sprintf( buffer, "cid_%d.vert", cid-9079+630 );
+		sprintf( buffer, "cid-%d.vert", cid-9079+630 );
 	    else if ( cid==9083 )		/* halfwidth backslash */
-		strcpy(buffer, "cid_8719.vert" );
+		strcpy(buffer, "cid-8719.vert" );
     /* Rotated halfwidth katakana */
 	    else if ( cid>=9084 && cid<=9147 )
-		sprintf( buffer, "cid_%d.vert", cid-9084+326 );
+		sprintf( buffer, "cid-%d.vert", cid-9084+326 );
     /* cid 390 gets used later */
 	    else if ( cid>=9148 && cid<=9178 )
-		sprintf( buffer, "cid_%d.vert", cid-9148+391 );
+		sprintf( buffer, "cid-%d.vert", cid-9148+391 );
     /* Rotated halfwidth hiragana */
 	    else if ( cid>=9179 && cid<=9262 )
-		sprintf( buffer, "cid_%d.vert", cid-9179+515 );
+		sprintf( buffer, "cid-%d.vert", cid-9179+515 );
 	    else if ( cid>=9263 && cid<=9274 )
-		sprintf( buffer, "cid_%d.vert", cid-9263+423 );
+		sprintf( buffer, "cid-%d.vert", cid-9263+423 );
     /* Rotated halfwidth brackets */
 	    else if ( cid>=9265 && cid<=9276 )
-		sprintf( buffer, "cid_%d.vert", cid-9265+504 );
+		sprintf( buffer, "cid-%d.vert", cid-9265+504 );
     /* Rotated halfwidth box builders */
 	    else if ( cid>=9277 && cid<=9353 )
-		sprintf( buffer, "cid_%d.vert", cid-9277+425 );
+		sprintf( buffer, "cid-%d.vert", cid-9277+425 );
 	    else if ( cid==9353 )
-		strcpy( buffer, "cid_390.vert" );
+		strcpy( buffer, "cid-390.vert" );
     /* More proportional latin */
 	    else if ( cid>=12870 && cid<=12959 )
-		sprintf( buffer, "cid_%d.vert", cid-12870+9354 );
+		sprintf( buffer, "cid-%d.vert", cid-12870+9354 );
     /* proportional italic latin */
 	    else if ( cid>=12960 && cid<=13253 )
-		sprintf( buffer, "cid_%d.vert", cid-12960+9444 );
+		sprintf( buffer, "cid-%d.vert", cid-12960+9444 );
     /* quarter width latin */
 	    else if ( cid>=13254 && cid<=13294 )
-		sprintf( buffer, "cid_%d.vert", cid-13254+9738 );
+		sprintf( buffer, "cid-%d.vert", cid-13254+9738 );
 	    else if ( uni!=-1 )
 		sprintf( buffer, "uni%04X.vert", uni>=VERTMARK?uni-VERTMARK:uni);
 	    else
     continue;
-		/*sprintf( buffer, "japan1_%d.vert", cid );*/
+		/*sprintf( buffer, "japan1-%d.vert", cid );*/
 	    nonuni_names[cid] = strdup(buffer);
 	    if ( uni!=-1 && uni<VERTMARK && used[uni] ) ++used[uni];
 	} else if ( uni>VERTMARK ) {
@@ -324,16 +324,16 @@ int main(int argc, char **argv) {
 	    cid_2_rotunicode[cid] = uni-VERTMARK;
 	} else if ( uni==-1 ) {
 	    if ( cid>=390 && cid<421 )
-		sprintf( buffer, "japan1_%d.hw", hwtable390[cid-390] );
+		sprintf( buffer, "cid-%d.hw", hwtable390[cid-390] );
 	    else if ( cid>=501 && cid<=503 )
-		sprintf( buffer, "japan1_%d.hw", hwtable501[cid-501] );
+		sprintf( buffer, "cid-%d.hw", hwtable501[cid-501] );
 	    else if ( cid>=516 && cid<=598 )
-		sprintf( buffer, "japan1_%d.hw", hwtable516[cid-516] );
+		sprintf( buffer, "cid-%d.hw", hwtable516[cid-516] );
 	    else if ( cid>=231 && cid<=632 )
-		sprintf( buffer, "japan1__%d.hw", cid );
+		sprintf( buffer, "cid-%d.hw", cid );
 	    else
     continue;
-		/*sprintf( buffer,"japan1_%d", cid );*/
+		/*sprintf( buffer,"cid-%d", cid );*/
 	    nonuni_names[cid] = strdup(buffer);
 	} else if ((( cid>=231 && cid<=326 ) || ( cid>=390 && cid<=632 ) ||
 		cid==8719) && uni!=0x2002 ) {
