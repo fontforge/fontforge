@@ -491,6 +491,8 @@ static struct resource *SFToNFNTs(FILE *res, SplineFont *sf, int32 *sizes) {
     for ( i=0; sizes[i]!=0; ++i ) {
 	if ( (sizes[i]>>16)!=1 )
     continue;
+	if ( (sizes[i]&0xffff)>=256 )
+    continue;
 	for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=(sizes[i]&0xffff) || BDFDepth(bdf)!=1); bdf=bdf->next );
 	if ( bdf==NULL )
     continue;
@@ -528,6 +530,8 @@ static struct resource *SFsToNFNTs(FILE *res, struct sflist *sfs,int baseresid) 
 	if ( sfi->sizes ) for ( i=0; sfi->sizes[i]!=0; ++i ) {
 	    if ( (sfi->sizes[i]>>16)!=1 )
 	continue;
+	    if ( (sfi->sizes[i]&0xffff)>=256 )
+	continue;
 	    for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=(sfi->sizes[i]&0xffff) || BDFDepth(bdf)!=1); bdf=bdf->next );
 	    if ( bdf==NULL )
 	continue;
@@ -554,6 +558,8 @@ static struct resource *BuildDummyNFNTlist(FILE *res, SplineFont *sf, int32 *siz
 
     for ( i=0; sizes[i]!=0; ++i ) {
 	if ( (sizes[i]>>16)!=1 )
+    continue;
+	if ( (sizes[i]&0xffff)>=256 )
     continue;
 	for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=(sizes[i]&0xffff) || BDFDepth(bdf)!=1); bdf=bdf->next );
 	if ( bdf==NULL )
@@ -649,7 +655,8 @@ uint16 MacStyleCode( SplineFont *sf, uint16 *psstylecode ) {
 	stylecode |= sf_shadow;
 	psstyle |= psf_shadow;
     }
-    if ( strstrmatch( styles, "Cond" ) || strstr( styles,"Cn") ) {
+    if ( strstrmatch( styles, "Cond" ) || strstr( styles,"Cn") ||
+	    strstrmatch( styles, "Narrow") ) {
 	stylecode |= sf_condense;
 	psstyle |= psf_condense;
     }
@@ -670,7 +677,7 @@ return( stylecode );
 
 static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,int32 *sizes) {
     uint32 rlenpos = ftell(res), widoffpos, widoffloc, kernloc, styleloc, end;
-    int i,j,k,cnt, strcnt, fontclass, stylecode, glyphenc, geoffset;
+    int i,j,k,cnt, strcnt, fontclass, stylecode, glyphenc, geoffset, realstylecode;
     KernPair *kp;
     DBounds b;
     char *pt;
@@ -695,9 +702,10 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,int32 *sizes
     putshort(res,2);			/* FOND version */
 
     /* Font association table */
-    stylecode = MacStyleCode( sf, NULL );
+    stylecode = realstylecode = MacStyleCode( sf, NULL );
+  stylecode = 0;		/* Debug !!!! */
     for ( i=j=0; sizes!=NULL && sizes[i]!=0; ++i )
-	if ( (sizes[i]>>16)==1 )
+	if ( (sizes[i]>>16)==1 && (sizes[i]&0xffff)<256 )
 	    ++j;
     if ( dottf ) {
 	putshort(res,j+1-1);		/* Number of faces */
@@ -705,7 +713,7 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,int32 *sizes
 	putshort(res,stylecode);
 	putshort(res,id);		/* Give it the same ID as the fond */
     } else
-	putshort(res,i-1);		/* Number of faces */
+	putshort(res,j-1);		/* Number of faces */
     if ( sizes!=NULL ) {
 	for ( i=0; sizes[i]!=0; ++i ) if (( sizes[i]>>16) == 1 ) {
 	    putshort(res,sizes[i]&0xffff);
@@ -721,7 +729,7 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,int32 *sizes
     /* bounding box table */
     putshort(res,1-1);			/* One bounding box */
     SplineFontFindBounds(sf,&b);
-    putshort(res,0);			/* plain style, No matter what it really is, pretend it's plain */
+    putshort(res,stylecode);
     putshort(res,b.minx*(1<<12)/(sf->ascent+sf->descent));
     putshort(res,b.miny*(1<<12)/(sf->ascent+sf->descent));
     putshort(res,b.maxx*(1<<12)/(sf->ascent+sf->descent));
@@ -741,8 +749,8 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,int32 *sizes
     if (( cnt = SFMacAnyKerns(sf))>0 ) {
 	kernloc = ftell(res);
 	putshort(res,1-1);		/* One style in the width table too */
-	putshort(res,0);		/* plain style, No matter what it really is, pretend it's plain */
-	putshort(res,cnt-1);		/* Count of kerning pairs */
+	putshort(res,stylecode);	/* style */
+	putshort(res,cnt);		/* Count of kerning pairs */
 	for ( k=0; k<256 && k<sf->charcnt; ++k ) if ( sf->chars[k]!=NULL ) {
 	    for ( kp=sf->chars[k]->kerns; kp!=NULL; kp=kp->next )
 		if ( kp->sc->enc<256 ) {
@@ -755,12 +763,12 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,int32 *sizes
 
     /* Fontographer referenced a postscript font even in truetype FONDs */
     styleloc = ftell(res);
-    fontclass = 0x1;
-    if ( !(stylecode&sf_outline) ) fontclass |= 4;
-    if ( stylecode&sf_bold ) fontclass |= 0x8;
-    if ( stylecode&psf_italic ) fontclass |= 0x40;
-    if ( stylecode&psf_condense ) fontclass |= 0x80;
-    if ( stylecode&psf_extend ) fontclass |= 0x100;
+    fontclass = 0x1;		/* font name needs coordinating? Font has its own encoding */
+    if ( !(realstylecode&sf_outline) ) fontclass |= 4;
+    if ( realstylecode&sf_bold ) fontclass |= 0x18;
+    if ( realstylecode&psf_italic ) fontclass |= 0x40;
+    if ( realstylecode&psf_condense ) fontclass |= 0x80;
+    if ( realstylecode&psf_extend ) fontclass |= 0x100;
     putshort(res,fontclass);		/* fontClass */
     geoffset = ftell(res);
     putlong(res,0);			/* Offset to glyph encoding table */ /* Fill in later */
@@ -769,10 +777,12 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,int32 *sizes
 	strcnt = 1;
     else if ( strmatch(sf->familyname,sf->fontname)==0 )
 	strcnt = 1;
-    else 
+    else if ( sf->fontname[strlen(sf->familyname)]=='-' )
+	strcnt = 4;
+    else
 	strcnt = 3;
     for ( k=0; k<48; ++k )
-	putc(strcnt,res);		/* All indeces point to this font */
+	putc(strcnt==1?1:2,res);	/* All indeces point to this font */
     putshort(res,strcnt);		/* strcnt strings */
     pt = sf->fontname+strlen(sf->familyname);
     if ( strcnt==1 ) {
@@ -786,19 +796,46 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,int32 *sizes
 	if ( islower(*sf->familyname)) putc(toupper(*sf->familyname),res);
 	else putc(*sf->familyname,res);
 	fwrite(sf->familyname+1,1,strlen(sf->familyname+1),res);
-	putc(strlen(pt),res);		/* basename */
-	fwrite(pt,1,strlen(pt),res);	/* everything else */
-	putc(1,res);			/* index string is one byte long */
-	putc(2,res);			/* plain name is basename with string 2 */
+	if ( strcnt==3 ) {
+	    putc(1,res);			/* index string is one byte long */
+	    putc(3,res);			/* plain name is basename with string 2 */
+	    putc(strlen(pt),res);		/* length of... */
+	    fwrite(pt,1,strlen(pt),res);	/* everything else */
+	} else {
+	    putc(2,res);			/* index string is two bytes long */
+	    putc(3,res);			/* plain name is basename with hyphen */
+	    putc(4,res);			/* and everything else */
+	    putc(1,res);			/* Length of ... */
+	    putc('-',res);			/* String containing hyphen */
+	    ++pt;			/* skip over hyphen */
+	    putc(strlen(pt),res);		/* length of ... */
+	    fwrite(pt,1,strlen(pt),res);	/* everything else */
+	}
     }
     /* Greg: record offset for glyph encoding table */
     /* We assume that the bitmap and postscript fonts are encoded similarly */
     /*  and so a null vector will do. */
-    glyphenc = ftell( res );
-    fseek(res,geoffset,SEEK_SET);
-    putlong(res,glyphenc);
-    fseek(res,glyphenc,SEEK_SET);
-    putshort(res,0); /* Greg: an empty Glyph encoding table */
+    /* GWW: Hmm. ATM refuses to use postscript fonts that have */
+    /*  glyph encoding tables. Printer drivers use them ok. ATM will only */
+    /*  work on fonts with mac roman encodings */
+    if ( sf->encoding_name!=em_mac ) {
+	glyphenc = ftell( res );
+	fseek(res,geoffset,SEEK_SET);
+	putlong(res,glyphenc-geoffset+2);
+	fseek(res,glyphenc,SEEK_SET);
+#if 1
+	putshort(res,0);
+#else
+	putshort(res,sf->charcnt>256?128:sf->charcnt-128);
+	for ( i=0x80; i<sf->charcnt && i<256; ++i ) {
+	    SplineChar *sc, dummy;
+	    putc(i,res);
+	    sc = SCBuildDummy(&dummy,sf,i);
+	    putc(strlen(sc->name),res);
+	    fwrite(sc->name,1,strlen(sc->name),res);
+	}
+#endif
+    }
 
     end = ftell(res);
     fseek(res,widoffpos,SEEK_SET);
@@ -836,8 +873,9 @@ static void putpsstring(FILE *res,char *fontname) {
 static uint32 SFsToFOND(FILE *res,struct sflist *sfs,uint32 id,int format,int bf) {
     uint32 rlenpos = ftell(res), widoffpos, widoffloc, kernloc, styleloc, end;
     int i,j,k,cnt, scnt, kcnt, pscnt, strcnt, fontclass, glyphenc, geoffset;
+    int size;
     uint16 psstyle, stylecode;
-    int exact, famlen;
+    int exact, famlen, has_hyphen;
     char *familyname;
     KernPair *kp;
     DBounds b;
@@ -893,12 +931,14 @@ static uint32 SFsToFOND(FILE *res,struct sflist *sfs,uint32 id,int format,int bf
 	putshort(res,i);		/* style */
 	putshort(res,faces[i]->id);
     }
-    /* then do bitmap faces (if any) */
-    for ( i=0; i<96; ++i ) if ( faces[i]!=NULL && faces[i]->ids!=NULL ) {
-	for ( j=0; faces[i]->ids[j]!=0 ; ++j ) {
-	    putshort(res,faces[i]->bdfs[j]->pixelsize);
-	    putshort(res,i);		/* style */
-	    putshort(res,faces[i]->ids[j]);
+    /* then do bitmap faces (if any) */ /* Ordered by size damn it */
+    for ( size=1; size<256; ++size ) {
+	for ( i=0; i<96; ++i ) if ( faces[i]!=NULL && faces[i]->ids!=NULL ) {
+	    for ( j=0; faces[i]->ids[j]!=0 ; ++j ) if ( faces[i]->bdfs[j]->pixelsize==size ) {
+		putshort(res,faces[i]->bdfs[j]->pixelsize);
+		putshort(res,i);		/* style */
+		putshort(res,faces[i]->ids[j]);
+	    }
 	}
     }
 
@@ -921,8 +961,8 @@ static uint32 SFsToFOND(FILE *res,struct sflist *sfs,uint32 id,int format,int bf
     putshort(res,scnt-1);		/* One set of width metrics per style */
     for ( i=0; i<96; ++i ) if ( faces[i]!=NULL ) {
 	putshort(res,i);
-	for ( k=0; k<=256; ++k ) {
-	    if ( k>=faces[i]->sf->charcnt || k==256 || faces[i]->sf->chars[k]==NULL )
+	for ( k=0; k<=257; ++k ) {
+	    if ( k>=faces[i]->sf->charcnt || k>=256 || faces[i]->sf->chars[k]==NULL )
 		putshort(res,1<<12);	/* 1 em is default size */
 	    else
 		putshort(res,faces[i]->sf->chars[k]->width*(1<<12)/(faces[i]->sf->ascent+faces[i]->sf->descent));
@@ -934,8 +974,8 @@ static uint32 SFsToFOND(FILE *res,struct sflist *sfs,uint32 id,int format,int bf
 	kernloc = ftell(res);
 	putshort(res,kcnt-1);		/* Number of styles with kern pairs */
 	for ( i=0; i<96; ++i ) if ( faces[i]!=NULL &&( cnt = SFMacAnyKerns(sf))>0 ) {
-	    putshort(res,i);		/* plain style, No matter what it really is, pretend it's plain */
-	    putshort(res,cnt-1);	/* Count of kerning pairs */
+	    putshort(res,i);		/* style */
+	    putshort(res,cnt);		/* Count of kerning pairs */
 	    for ( k=0; k<256 && k<faces[i]->sf->charcnt; ++k ) if ( faces[i]->sf->chars[k]!=NULL ) {
 		for ( kp=faces[i]->sf->chars[k]->kerns; kp!=NULL; kp=kp->next )
 		    if ( kp->sc->enc<256 ) {
@@ -955,6 +995,10 @@ static uint32 SFsToFOND(FILE *res,struct sflist *sfs,uint32 id,int format,int bf
     famlen = strlen(familyname);
     if ( (pt=strchr(familyname,'-'))!=NULL )
 	famlen = pt-familyname;
+    else if ( strnmatch(psfaces[0]->sf->familyname,psfaces[0]->sf->fontname,
+	    strlen(psfaces[0]->sf->familyname))==0 )
+	famlen = strlen(psfaces[0]->sf->familyname);
+    has_hyphen = (familyname[famlen]=='-');
     for ( i=pscnt=0; i<48; ++i ) if ( psfaces[i]!=NULL ) {
 	++pscnt;
 	if ( strncmp(psfaces[i]->sf->fontname,familyname,famlen)!=0 ) {
@@ -980,21 +1024,35 @@ static uint32 SFsToFOND(FILE *res,struct sflist *sfs,uint32 id,int format,int bf
     putlong(res,0);			/* Offset to glyph encoding table */ /* Fill in later */
     putlong(res,0);			/* Reserved, MBZ */
     strcnt = 1/* Family Name */ + pscnt-exact /* count of format strings */ +
+	    has_hyphen +
 	    pscnt-exact /* count of additional strings */;
     /* indeces to format strings */
     for ( i=0,pscnt=2; i<48; ++i )
-	if ( psfaces[i]==NULL || psfaces[i]->sf->fontname[famlen]==0 )
+	if ( psfaces[i]!=NULL && psfaces[i]->sf->fontname[famlen]!=0 )
+	    putc(pscnt++,res);
+	else if ( exact )
 	    putc(1,res);
 	else
-	    putc(pscnt++,res);
+	    putc(2,res);
     putshort(res,strcnt);		/* strcnt strings */
     putpnsstring(res,familyname,famlen);
+    if ( has_hyphen ) has_hyphen = pscnt++;	/* Space for hyphen if present */
     /* Now the format strings */
     for ( i=0; i<48; ++i ) if ( psfaces[i]!=NULL ) {
 	if ( psfaces[i]->sf->fontname[famlen]!=0 ) {
-	    putc(1,res);		/* Familyname with the following */
-	    putc(pscnt++,res);
+	    if ( has_hyphen && psfaces[i]->sf->fontname[famlen]==' ' ) {
+		putc(2,res);
+		putc(has_hyphen,res);
+		putc(pscnt++,res);
+	    } else {
+		putc(1,res);		/* Familyname with the following */
+		putc(pscnt++,res);
+	    }
 	}
+    }
+    if ( has_hyphen ) {
+	putc(1,res);
+	putc('-',res);
     }
     /* Now the additional names */
     for ( i=0; i<48; ++i ) if ( psfaces[i]!=NULL ) {
@@ -1004,11 +1062,16 @@ static uint32 SFsToFOND(FILE *res,struct sflist *sfs,uint32 id,int format,int bf
     /* Greg: record offset for glyph encoding table */
     /* We assume that the bitmap and postscript fonts are encoded similarly */
     /*  and so a null vector will do. */
-    glyphenc = ftell( res );
-    fseek(res,geoffset,SEEK_SET);
-    putlong(res,glyphenc);
-    fseek(res,glyphenc,SEEK_SET);
-    putshort(res,0); /* Greg: an empty Glyph encoding table */
+    /* GWW: Hmm. ATM refuses to use postscript fonts that have */
+    /*  glyph encoding tables. Printer drivers use them ok. ATM will only */
+    /*  work on fonts with mac roman encodings */
+    if ( psfaces[0]->sf->encoding_name!=em_mac ) {
+	glyphenc = ftell( res );
+	fseek(res,geoffset,SEEK_SET);
+	putlong(res,glyphenc-geoffset+2);
+	fseek(res,glyphenc,SEEK_SET);
+	putshort(res,0); /* Greg: an empty Glyph encoding table */
+    }
 
     end = ftell(res);
     fseek(res,widoffpos,SEEK_SET);
@@ -2022,8 +2085,8 @@ static FOND *BuildFondList(FILE *f,long rlistpos,int subcnt,long rdata_pos,
 	    cur->stylewidths = calloc(cnt,sizeof(struct stylewidths));
 	    for ( j=0; j<cnt; ++j ) {
 		cur->stylewidths[j].style = getushort(f);
-		cur->stylewidths[j].widthtab = malloc((cur->last-cur->first+1)*sizeof(short));
-		for ( k=cur->first; k<=cur->last; ++k )
+		cur->stylewidths[j].widthtab = malloc((cur->last-cur->first+3)*sizeof(short));
+		for ( k=cur->first; k<=cur->last+2; ++k )
 		    cur->stylewidths[j].widthtab[k] = getushort(f);
 	    }
 	}
@@ -2034,7 +2097,7 @@ static FOND *BuildFondList(FILE *f,long rlistpos,int subcnt,long rdata_pos,
 	    cur->stylekerns = calloc(cnt,sizeof(struct stylekerns));
 	    for ( j=0; j<cnt; ++j ) {
 		cur->stylekerns[j].style = getushort(f);
-		cur->stylekerns[j].kernpairs = getushort(f)+1;
+		cur->stylekerns[j].kernpairs = getushort(f);
 		cur->stylekerns[j].kerns = malloc(cur->stylekerns[j].kernpairs*sizeof(struct kerns));
 		for ( k=0; k<cur->stylekerns[j].kernpairs; ++k ) {
 		    cur->stylekerns[j].kerns[k].ch1 = getc(f);
