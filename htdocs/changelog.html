@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 6-Oct-2003 -->
+  <!-- AP: Last modified: 11-Oct-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,38 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    11-Oct-2003
+    <UL>
+      <LI>
+	Another patch from Kanou to recognize encodings better in bdf files.
+      <LI>
+	Various memory fixes found by valgrind
+      <LI>
+	The Element-&gt;Find Problems-&gt;ATT-&gt;Missing glyph names fixup dlg had
+	some formatting problems and failed to skip properly.
+      <LI>
+	Draw an "x" through encodings which do not map to glyphs
+      <LI>
+	If the user is in a compacted encoding and asks to print a font, then revert
+	to the uncompacted encoding for the duration of the printing.
+      <LI>
+	View-&gt;Show ATT would show ligatures (and substitutions) even if some of
+	the glyphs in the glyph list were missing.
+      <LI>
+	Fix a number of bugs found by the MS Font Validator
+	<UL>
+	  <LI>
+	    I misunderstood (and the spec incorrectly documented) the behavior of the
+	    maxp table
+	  <LI>
+	    I had a typo in figuring out the OS/2 table
+	</UL>
+      <LI>
+	I had one more case where I was computing the point count of a glyph incorrectly.
+      <LI>
+	Make the width line snap to zero when the user drags near it.
+    </UL>
   <LI>
     6-Oct-2003
     <UL>
