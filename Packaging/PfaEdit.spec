@@ -30,7 +30,7 @@ make
 %install
 mkdir -p ${RPM_BUILD_ROOT}%{_bindir}
 mkdir -p ${RPM_BUILD_ROOT}%{_mandir}/man1
-mkdir -p ${RPM_BUILD_ROOT}%{_bindir}/../share/pfaedit
+mkdir -p ${RPM_BUILD_ROOT}%{_datadir}/pfaedit
 rm -rf ${RPM_BUILD_ROOT}%{_libdir}
 mkdir -p ${RPM_BUILD_ROOT}%{_libdir}
 %makeinstall
@@ -52,7 +52,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/libgdraw.so.*.*.*
 %{_libdir}/libgunicode.la
 %{_libdir}/libgdraw.la
-%{_bindir}/../share/pfaedit/
+%{_datadir}/pfaedit/
 %{_mandir}/man1/pfaedit.1*
 %{_mandir}/man1/sfddiff.1*
 %doc LICENSE README
