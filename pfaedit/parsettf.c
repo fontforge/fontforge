@@ -496,13 +496,14 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	switch ( tag ) {
 	  case CHR('C','F','F',' '):
 	    info->cff_start = offset;
-	    info->cff_length = offset;
+	    info->cff_length = length;
 	  break;
 	  case CHR('c','m','a','p'):
 	    info->encoding_start = offset;
 	  break;
 	  case CHR('g','l','y','f'):
 	    info->glyph_start = offset;
+	    info->glyph_length = length;
 	  break;
 	  case CHR('G','P','O','S'):
 	    info->gpos_start = offset;
@@ -1144,6 +1145,13 @@ static SplineChar *readttfglyph(FILE *ttf,struct ttfinfo *info,int start, int en
     sc->vwidth = info->emsize;
     /* sc->manualhints = 1; */ /* But only when I know how to read them in!!!! */
 
+    if ( end>info->glyph_length ) {
+	if ( !info->complainedbeyondglyfend )
+	    fprintf(stderr, "Bad glyph (%d), its definition extends beyond the end of the glyf table\n", enc );
+	info->complainedbeyondglyfend = true;
+	SplineCharFree(sc);
+return( NULL );
+    }
     if ( start==end ) {
 	/* This isn't mentioned, but we seem to get some glyphs with no size,*/
 	/*  not even a path cnt. They appear to be empty glyphs */
@@ -1160,6 +1168,8 @@ return( sc );
 	readttfsimpleglyph(ttf,info,sc,path_cnt);
     else
 	readttfcompositglyph(ttf,info,sc,info->glyph_start+end);
+    if ( ftell(ttf)>info->glyph_start+end )
+	fprintf(stderr, "Bad glyph (%d), its definition extends beyond the space allowed for it\n", enc );
     sc->enc = 0;
 return( sc );
 }
@@ -2944,7 +2954,8 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 			if ( justinuse )
 			    info->inuse[(uint16) (j+delta[i])] = true;
 			else if ( info->chars[(uint16) (j+delta[i])]==NULL )
-			    /* Do Nothing */;
+			    fprintf( stderr, "Attempt to encode missing glyph %d to %d (0x%x)\n",
+				    j+delta[i], modenc(j,mod), modenc(j,mod));
 			else if ( info->chars[(uint16) (j+delta[i])]->unicodeenc==-1 ) {
 			    info->chars[(uint16) (j+delta[i])]->unicodeenc = umodenc(j,mod);
 			    info->chars[(uint16) (j+delta[i])]->enc = modenc(j,mod);
@@ -2963,11 +2974,14 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 				/* This isn't mentioned either, but in some */
 			        /*  MS Chinese fonts (kaiu.ttf) the index */
 			        /*  goes out of bounds. and MS's ttf dump */
-			        /*  program says it is treated as 0 */;
+			        /*  program says it is treated as 0 */
+				fprintf( stderr, "Attempt to encode missing glyph %d to %d (0x%x)\n",
+					index, modenc(j,mod), modenc(j,mod));
 			    else if ( justinuse )
 				info->inuse[index] = 1;
 			    else if ( info->chars[index]==NULL )
-				/* Do Nothing */;
+				fprintf( stderr, "Attempt to encode missing glyph %d to %d (0x%x)\n",
+					index, modenc(j,mod), modenc(j,mod));
 			    else if ( info->chars[index]->unicodeenc==-1 ) {
 				info->chars[index]->unicodeenc = umodenc(j,mod);
 				info->chars[index]->enc = modenc(j,mod);
@@ -2975,7 +2989,8 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 				info->dups = makedup(info->chars[index],umodenc(j,mod),modenc(j,mod),info->dups);
 			}
 		    }
-		}
+		} else
+		    fprintf( stderr, "Use of a range offset of 0xffff to mean a missing glyph in cmap table\n" );
 	    }
 	    free(glyphs);
 	    free(rangeOffset);

@@ -46,6 +46,7 @@ struct ttfinfo {
     unsigned int is_ttc:1;			/* Is it a font collection? */
     unsigned int is_onebyte:1;			/* Is it a one byte encoding? */
     unsigned int twobytesymbol:1;		/* it had a symbol encoding which we converted to unicode */
+    unsigned int complainedbeyondglyfend:1;	/* Don't complain about this more than once */
     /* Mac fonts platform=0/1, platform specific enc id, roman=0, english is lang code 0 */
     /* iso platform=2, platform specific enc id, latin1=0/2, no language */
     /* microsoft platform=3, platform specific enc id, 1, english is lang code 0x??09 */
@@ -84,6 +85,7 @@ struct ttfinfo {
     int encoding_start;		/* Offset from sof to start of encoding table */
 		/* glyf */
     int glyph_start;		/* Offset from sof to start of glyph table */
+    int glyph_length;
 		/* GPOS */
     int gpos_start;		/* Offset from sof to start of GPOS table */
 		/* GSUB */
