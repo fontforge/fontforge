@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 11-Dec-2002 -->
+  <!-- AP: Last modified: 12-Dec-2002 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,45 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    ??-Dec-2002
+    <UL>
+      <LI>
+	Add support for reading windows .FON and .FNT files.
+      <LI>
+	Bug when reading postscript files that included complicated combinations
+	of translate scale and concat commands.
+      <LI>
+	PfaEdit was a bit too cavalier about guessing how big serifs were. Caused
+	problems when autokerning a fraktur font. (PfaEdit thought it had huge
+	serifs when it had none).
+      <LI>
+	Direction (Clockwise, counterclockwise, correct) menu items are now
+	greyed out if the selected path is open.
+      <LI>
+	New OpenVms patches from Jacob Jansen.
+    </UL>
+  <LI>
+    13-Dec-2002
+    <UL>
+      <LI>
+	PfaEdit will now open a ttf/otf font that contains only bitmap strikes
+      <LI>
+	PfaEdit will now read NFNT resources (old mac bitmaps)
+      <LI>
+	PfaEdit will import NFNT resources
+      <LI>
+	Fixed a number of problems with loading and saving bdf files
+	<UL>
+	  <LI>Did not understand that the "ENCODING" keyword could take two
+	  values if the first were -1
+	  <LI>Added unencoded glyphs at the wrong encoding (I know that sounds
+	  like an oxymoron. I assign them an encoding, and I did it badly).
+	  <LI>If a font name were not one of the X Logical Font Names then
+	  pfaedit might fail to give the font a familyname or a fontname. This
+	  caused more problems when generating a new bdf file.
+	</UL>
+    </UL>
   <LI>
     11-Dec-2002
     <UL>

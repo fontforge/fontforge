@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 11-Dec-2002 -->
+  <!-- AP: Last modified: 14-Dec-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -92,8 +92,8 @@ let me know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-021211.tgz">Download pfaedit linux-i386 Redhat 7.3
-    </A><A NAME="downloads">executable</A> Version: 11-Dec-2002
+    <A HREF="pfaedit-021212.tgz">Download pfaedit linux-i386 Redhat 7.3
+    </A><A NAME="downloads">executable</A> Version: 12-Dec-2002
   <LI>
     <A HREF="pfaedit-021202-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
     Version: 02-Dec-2002 (Redhat 7.3)
@@ -138,9 +138,9 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-021202-1.src.rpm">source RPM</A>: Version:
 02-Dec-2002<BR>
-Or you can download the <A HREF="pfaedit_full-021211.tgz">entire source tree
+Or you can download the <A HREF="pfaedit_full-021212.tgz">entire source tree
 </A>in one .tgz file: Version
-11-Dec-2002<!--
+12-Dec-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -221,8 +221,8 @@ down the following file
     and then<BR>
     <CODE>$ gunzip cidmaps.tgz<BR>
     $ tar xf cidmaps.tar <BR>
-    $ mkdir -p /usr/share/pfaedit<BR>
-    $ mv *.cidmap /usr/share/pfaedit</CODE>
+    $ mkdir -p /usr/local/share/pfaedit<BR>
+    $ mv *.cidmap /usr/local/share/pfaedit</CODE>
 </UL>
 <P>
 <A NAME="suggested-fonts">You</A> might also want to pull down some unicode
@@ -248,13 +248,13 @@ bitmap fonts that pfaedit uses
 </H2>
 <P>
 All the documentation files in this directory bundled up into one
-<A HREF="pfaedit_htdocs-021208.tgz">tgz file</A> 08-Dec-2002.<BR>
+<A HREF="pfaedit_htdocs-021212.tgz">tgz file</A> 12-Dec-2002.<BR>
 If you do the following then PfaEdit will find the docs for you when you
-press F1 (ie. PfaEdit it will look in /usr/share/doc/pfaedit before it looks
+press F1 (ie. PfaEdit it will look in /usr/local/share/doc/pfaedit before it looks
 on the web):
 <BLOCKQUOTE>
-  <PRE>$ mkdir -p /usr/share/doc/pfaedit
-$ cd /usr/share/doc/pfaedit
+  <PRE>$ mkdir -p /usr/local/share/doc/pfaedit
+$ cd /usr/local/share/doc/pfaedit
 $ gunzip pfaedit_htdocs-*.tgz
 $ tar xf pfaedit_htdocs-*.tar
 $ rm pfaedit_htdocs-*.tar
@@ -695,6 +695,13 @@ now placed in graceful retirement by MacroMedia.
     Type42</A> (the opposite of opentype, it's truetype embedded in postscript)
   <LI>
     <A HREF="macformats.html">Macintosh font formats</A>
+  <LI>
+    Windows raster font formats
+    <UL>
+    <LI><A HREF="http://www.technoir.nu/hplx/hplx-l/9708/msg00404.html">FNT -- Windows version 2</A>
+    <LI><A HREF="http://support.microsoft.com/default.aspx?scid=KB;en-us;q65123">FNT -- Windows version 3</A>
+    <LI><A HREF="http://www.csn.ul.ie/~caolan/publink/winresdump/winresdump/doc/resfmt.txt">Some info on FON file format</A>
+    </UL>
   <LI>
     X11 pcf format
     <UL>
