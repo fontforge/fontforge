@@ -4388,7 +4388,7 @@ static void handlename(Context *c,Val *val) {
 			name[2]=='u'?c->curfv->sf->fullname:
 			name[2]=='e'?c->curfv->sf->weight:
 			name[2]=='i'?c->curfv->sf->origname:
-			name[2]=='o'?c->curfv->sf->fondname:
+			strcmp(name,"$fondname")==0?c->curfv->sf->fondname:
 			name[3]=='p'?c->curfv->sf->copyright:
 				    c->curfv->sf->version);
 		if ( val->u.sval==NULL )
