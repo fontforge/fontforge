@@ -76,6 +76,7 @@ GWindow GWidgetGetCurrentFocusWindow(void);
 GWindow GWidgetGetPreviousFocusTopWindow(void);
 struct ggadget *GWindowGetCurrentFocusGadget(void);
 struct ggadget *GWindowGetFocusGadgetOfWindow(GWindow gw);
+void GWindowClearFocusGadgetOfWindow(GWindow gw);
 void GWidgetIndicateFocusGadget(struct ggadget *g);
 void GWidgetNextFocus(GWindow);
 void GWidgetPrevFocus(GWindow);

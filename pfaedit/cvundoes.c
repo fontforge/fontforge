@@ -807,15 +807,26 @@ return( paster->undotype );
 }
 
 int CopyContainsSomething(void) {
-return( copybuffer.undotype==ut_state || copybuffer.undotype==ut_tstate ||
-	copybuffer.undotype==ut_width || copybuffer.undotype==ut_vwidth ||
-	copybuffer.undotype==ut_lbearing || copybuffer.undotype==ut_rbearing ||
-	copybuffer.undotype==ut_composit ||
-	copybuffer.undotype==ut_noop );
+    Undoes *cur = &copybuffer;
+    if ( cur->undotype==ut_multiple )
+	cur = cur->u.multiple.mult;
+    if ( cur->undotype==ut_composit )
+return( cur->u.composit.state!=NULL );
+
+return( cur->undotype==ut_state || cur->undotype==ut_tstate ||
+	cur->undotype==ut_width || cur->undotype==ut_vwidth ||
+	cur->undotype==ut_lbearing || cur->undotype==ut_rbearing ||
+	cur->undotype==ut_noop );
 }
 
 int CopyContainsBitmap(void) {
-return( copybuffer.undotype==ut_bitmapsel || copybuffer.undotype==ut_composit || copybuffer.undotype==ut_noop );
+    Undoes *cur = &copybuffer;
+    if ( cur->undotype==ut_multiple )
+	cur = cur->u.multiple.mult;
+    if ( cur->undotype==ut_composit )
+return( cur->u.composit.bitmaps!=NULL );
+
+return( cur->undotype==ut_bitmapsel || cur->undotype==ut_noop );
 }
 
 int getAdobeEnc(char *name) {
@@ -908,7 +919,7 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
 return( cur );
 }
 
-void CopyWidth(CharView *cv,enum undotype ut) {
+void SCCopyWidth(SplineChar *sc,enum undotype ut) {
     DBounds bb;
 
     CopyBufferFree();
@@ -916,20 +927,24 @@ void CopyWidth(CharView *cv,enum undotype ut) {
     copybuffer.undotype = ut;
     switch ( ut ) {
       case ut_width:
-	copybuffer.u.width = cv->sc->width;
+	copybuffer.u.width = sc->width;
       break;
       case ut_vwidth:
-	copybuffer.u.width = cv->sc->width;
+	copybuffer.u.width = sc->width;
       break;
       case ut_lbearing:
-	SplineCharFindBounds(cv->sc,&bb);
+	SplineCharFindBounds(sc,&bb);
 	copybuffer.u.lbearing = bb.minx;
       break;
       case ut_rbearing:
-	SplineCharFindBounds(cv->sc,&bb);
-	copybuffer.u.rbearing = cv->sc->width-bb.maxx;
+	SplineCharFindBounds(sc,&bb);
+	copybuffer.u.rbearing = sc->width-bb.maxx;
       break;
     }
+}
+
+void CopyWidth(CharView *cv,enum undotype ut) {
+    SCCopyWidth(cv->sc,ut);
 }
 
 static SplineChar *FindCharacter(SplineFont *sf,RefChar *rf) {
@@ -1395,6 +1410,44 @@ return;
     copybuffer.u.multiple.mult = head;
 }
 
+void MVCopyChar(MetricsView *mv, SplineChar *sc, int fullcopy) {
+    BDFFont *bdf;
+    Undoes *cur=NULL;
+    Undoes *bhead=NULL, *blast=NULL, *bcur;
+    Undoes *state;
+    extern int onlycopydisplayed;
+
+    if ( onlycopydisplayed && mv->bdf==NULL ) {
+	cur = SCCopyAll(sc,fullcopy);
+    } else if ( onlycopydisplayed ) {
+	cur = BCCopyAll(mv->bdf->chars[sc->enc],mv->bdf->pixelsize);
+    } else {
+	state = SCCopyAll(sc,fullcopy);
+	bhead = NULL;
+	for ( bdf=mv->fv->sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
+	    bcur = BCCopyAll(bdf->chars[sc->enc],bdf->pixelsize);
+	    if ( bhead==NULL )
+		bhead = bcur;
+	    else
+		blast->next = bcur;
+	    blast = bcur;
+	}
+	if ( bhead!=NULL || state!=NULL ) {
+	    cur = chunkalloc(sizeof(Undoes));
+	    cur->undotype = ut_composit;
+	    cur->u.composit.state = state;
+	    cur->u.composit.bitmaps = bhead;
+	} else
+	    cur = NULL;
+    }
+
+    if ( cur==NULL )
+return;
+    CopyBufferFree();
+    copybuffer.undotype = ut_multiple;
+    copybuffer.u.multiple.mult = cur;
+}
+
 static BDFFont *BitmapCreateCheck(FontView *fv,int *yestoall, int first, int pixelsize) {
     int yes = 0;
     BDFFont *bdf = NULL;
@@ -1521,4 +1574,55 @@ void PasteIntoFV(FontView *fv,int doclear) {
     GProgressEndIndicator();
     if ( oldsel!=fv->selected )
 	free(oldsel);
+}
+
+void PasteIntoMV(MetricsView *mv,SplineChar *sc, int doclear) {
+    Undoes *cur=NULL, *bmp;
+    BDFFont *bdf;
+    int yestoall=0, first=true;
+    extern int onlycopydisplayed;
+
+    cur = &copybuffer;
+
+    if ( cur->undotype==ut_multiple )
+	cur = cur->u.multiple.mult;
+    switch ( cur->undotype ) {
+      case ut_noop:
+      break;
+      case ut_state: case ut_width: case ut_vwidth:
+      case ut_lbearing: case ut_rbearing:
+      case ut_statehint: case ut_statename:
+	if ( !mv->fv->sf->hasvmetrics && cur->undotype==ut_vwidth) {
+	    GWidgetErrorR(_STR_NoVerticalMetrics,_STR_FontNoVerticalMetrics);
+return;
+	}
+	PasteToSC(sc,cur,mv->fv,doclear);
+      break;
+      case ut_bitmapsel: case ut_bitmap:
+	if ( onlycopydisplayed && mv->bdf!=NULL )
+	    _PasteToBC(BDFMakeChar(mv->bdf,sc->enc),mv->bdf->pixelsize,cur,doclear,mv->fv);
+	else {
+	    for ( bdf=mv->fv->sf->bitmaps; bdf!=NULL && bdf->pixelsize!=cur->u.bmpstate.pixelsize; bdf=bdf->next );
+	    if ( bdf==NULL ) {
+		bdf = BitmapCreateCheck(mv->fv,&yestoall,first,cur->u.bmpstate.pixelsize);
+		first = false;
+	    }
+	    if ( bdf!=NULL )
+		_PasteToBC(BDFMakeChar(bdf,sc->enc),bdf->pixelsize,cur,doclear,mv->fv);
+	}
+      break;
+      case ut_composit:
+	if ( cur->u.composit.state!=NULL )
+	    PasteToSC(sc,cur->u.composit.state,mv->fv,doclear);
+	for ( bmp=cur->u.composit.bitmaps; bmp!=NULL; bmp = bmp->next ) {
+	    for ( bdf=mv->fv->sf->bitmaps; bdf!=NULL &&
+		    bdf->pixelsize!=bmp->u.bmpstate.pixelsize; bdf=bdf->next );
+	    if ( bdf==NULL )
+		bdf = BitmapCreateCheck(mv->fv,&yestoall,first,bmp->u.bmpstate.pixelsize);
+	    if ( bdf!=NULL )
+		_PasteToBC(BDFMakeChar(bdf,sc->enc),bdf->pixelsize,bmp,doclear,mv->fv);
+	}
+	first = false;
+      break;
+    }
 }

@@ -961,6 +961,11 @@ return( true );
 #define MID_SelAll	2106
 #define MID_Undo	2109
 #define MID_Redo	2110
+#define MID_CopyRef	2107
+#define MID_CopyWidth	2111
+#define MID_CopyLBearing	2125
+#define MID_CopyRBearing	2126
+#define MID_CopyVWidth	2127
 #define MID_Center	2600
 #define MID_Thirds	2604
 #define MID_Recent	2703
@@ -991,8 +996,6 @@ static void MVMenuOpenOutline(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     int i;
 
-    if ( mv->fv->sf->bitmaps==NULL )
-return;
     for ( i=0; i<mv->charcnt; ++i )
 	if ( mv->perchar[i].selected )
     break;
@@ -1040,14 +1043,66 @@ static void MVCut(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void MVCopy(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-    GGadgetActiveGadgetEditCmd(mv->gw,ec_copy);
-    MVTextChanged(mv);
+    int i;
+
+    if ( GGadgetActiveGadgetEditCmd(mv->gw,ec_copy) )
+	MVTextChanged(mv);
+    else {
+	for ( i=mv->charcnt-1; i>=0; --i )
+	    if ( mv->perchar[i].selected )
+	break;
+	if ( i==-1 )
+return;
+	MVCopyChar(mv,mv->perchar[i].sc,true);
+    }
+}
+
+static void MVMenuCopyRef(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    int i;
+
+    if ( GWindowGetFocusGadgetOfWindow(gw)!=NULL )
+return;
+    for ( i=mv->charcnt-1; i>=0; --i )
+	if ( mv->perchar[i].selected )
+    break;
+    if ( i==-1 )
+return;
+    MVCopyChar(mv,mv->perchar[i].sc,false);
+}
+
+static void MVMenuCopyWidth(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    int i;
+
+    if ( GWindowGetFocusGadgetOfWindow(gw)!=NULL )
+return;
+    for ( i=mv->charcnt-1; i>=0; --i )
+	if ( mv->perchar[i].selected )
+    break;
+    if ( i==-1 )
+return;
+    SCCopyWidth(mv->perchar[i].sc,
+		   mi->mid==MID_CopyWidth?ut_width:
+		   mi->mid==MID_CopyVWidth?ut_vwidth:
+		   mi->mid==MID_CopyLBearing?ut_lbearing:
+					 ut_rbearing);
 }
 
 static void MVPaste(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-    GGadgetActiveGadgetEditCmd(mv->gw,ec_paste);
-    MVTextChanged(mv);
+    int i;
+
+    if ( GGadgetActiveGadgetEditCmd(mv->gw,ec_paste) )
+	MVTextChanged(mv);
+    else {
+	for ( i=mv->charcnt-1; i>=0; --i )
+	    if ( mv->perchar[i].selected )
+	break;
+	if ( i==-1 )
+return;
+	PasteIntoMV(mv,mv->perchar[i].sc,true);
+    }
 }
 
 static void MVClear(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1208,6 +1263,11 @@ static GMenuItem edlist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Cut, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 't' }, 'X', ksm_control, NULL, NULL, MVCut, MID_Cut },
     { { (unichar_t *) _STR_Copy, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, 'C', ksm_control, NULL, NULL, MVCopy, MID_Copy },
+    { { (unichar_t *) _STR_Copyref, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, 'G', ksm_control, NULL, NULL, MVMenuCopyRef, MID_CopyRef },
+    { { (unichar_t *) _STR_Copywidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'W' }, 'W', ksm_control, NULL, NULL, MVMenuCopyWidth, MID_CopyWidth },
+    { { (unichar_t *) _STR_CopyVWidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, '\0', ksm_control, NULL, NULL, MVMenuCopyWidth, MID_CopyVWidth },
+    { { (unichar_t *) _STR_CopyLBearing, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'p' }, '\0', ksm_control, NULL, NULL, MVMenuCopyWidth, MID_CopyLBearing },
+    { { (unichar_t *) _STR_CopyRBearing, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'g' }, '\0', ksm_control, NULL, NULL, MVMenuCopyWidth, MID_CopyRBearing },
     { { (unichar_t *) _STR_Paste, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'V', ksm_control, NULL, NULL, MVPaste, MID_Paste },
     { { (unichar_t *) _STR_Clear, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, 0, 0, NULL, NULL, MVClear, MID_Clear },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
@@ -1256,6 +1316,33 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_Recent:
 	    mi->ti.disabled = !RecentFilesAny();
+	  break;
+	}
+    }
+}
+
+static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    int i;
+
+    if ( GWindowGetFocusGadgetOfWindow(gw)!=NULL )
+	i = -1;
+    else
+	for ( i=mv->charcnt-1; i>=0; --i )
+	    if ( mv->perchar[i].selected )
+	break;
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_Copy: case MID_CopyRef: case MID_CopyWidth:
+	  case MID_CopyLBearing: case MID_CopyRBearing:
+	    mi->ti.disabled = i==-1;
+	  break;
+	  case MID_CopyVWidth:
+	    mi->ti.disabled = i==-1 || !mv->fv->sf->hasvmetrics;
+	  break;
+	  case MID_Paste:
+	    mi->ti.disabled = i==-1 || !CopyContainsSomething();
 	  break;
 	}
     }
@@ -1315,7 +1402,7 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static GMenuItem mblist[] = {
     { { (unichar_t *) _STR_File, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 0, 0, fllist, fllistcheck },
-    { { (unichar_t *) _STR_Edit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'E' }, 0, 0, edlist, NULL },
+    { { (unichar_t *) _STR_Edit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'E' }, 0, 0, edlist, edlistcheck },
     { { (unichar_t *) _STR_Element, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, 0, 0, ellist, ellistcheck },
     { { (unichar_t *) _STR_View, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, 0, 0, vwlist, vwlistcheck },
     { { (unichar_t *) _STR_Metric, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 0, 0, mtlist, NULL },
@@ -1449,27 +1536,31 @@ return;
 	    if ( within>0 && mv->perchar[within-1].selected &&
 		    event->u.mouse.x<mv->perchar[within].dx+3 )
 		onwidth = true;		/* previous char */
-	    else if ( within+1<mv->charcnt && mv->perchar[within+1].selected &&
+	    else if ( within!=-1 && within+1<mv->charcnt &&
+		    mv->perchar[within+1].selected &&
 		    event->u.mouse.x>mv->perchar[within+1].dx-3 )
 		onkern = true;			/* subsequent char */
-	    else if ( within>0 && mv->perchar[within].selected &&
+	    else if ( within>=0 && mv->perchar[within].selected &&
 		    event->u.mouse.x<mv->perchar[within].dx+3 )
 		onkern = true;
-	    else if ( event->u.mouse.x>mv->perchar[within].dx+mv->perchar[within].dwidth+mv->perchar[within].kernafter-3 ) {
+	    else if ( within>=0 &&
+		    event->u.mouse.x>mv->perchar[within].dx+mv->perchar[within].dwidth+mv->perchar[within].kernafter-3 ) {
 		onwidth = true;
 		sel = true;
 	    }
 	} else {
-	    if ( i>0 && mv->perchar[within-1].selected &&
+	    if ( within>0 && mv->perchar[within-1].selected &&
 		    event->u.mouse.x>mv->width-(mv->perchar[within].dx+3) )
 		onwidth = true;		/* previous char */
-	    else if ( within+1<mv->charcnt && mv->perchar[within+1].selected &&
+	    else if ( within!=-1 && within+1<mv->charcnt &&
+		    mv->perchar[within+1].selected &&
 		    event->u.mouse.x<mv->width-(mv->perchar[within+1].dx-3) )
 		onkern = true;			/* subsequent char */
-	    else if ( within>0 && mv->perchar[within].selected &&
+	    else if ( within>=0 && mv->perchar[within].selected &&
 		    event->u.mouse.x>mv->width-(mv->perchar[within].dx+3) )
 		onkern = true;
-	    else if ( event->u.mouse.x<mv->width-(mv->perchar[within].dx+mv->perchar[within].dwidth+mv->perchar[within].kernafter-3) ) {
+	    else if ( within>=0 &&
+		    event->u.mouse.x<mv->width-(mv->perchar[within].dx+mv->perchar[within].dwidth+mv->perchar[within].kernafter-3) ) {
 		onwidth = true;
 		sel = true;
 	    }
@@ -1478,7 +1569,10 @@ return;
 
     if ( event->type != et_mousemove || !mv->pressed ) {
 	int ct = -1;
-	if ( sc!=NULL ) {
+	if ( mv->bdf!=NULL ) {
+	    if ( mv->cursor!=ct_mypointer )
+		ct = ct_mypointer;
+	} else if ( sc!=NULL ) {
 	    if ( mv->cursor!=ct_lbearing )
 		ct = ct_lbearing;
 	} else if ( onwidth ) {
@@ -1510,6 +1604,7 @@ return;
 		if ( j!=i && mv->perchar[j].selected )
 		    MVDeselectChar(mv,j);
 	    MVSelectChar(mv,i);
+	    GWindowClearFocusGadgetOfWindow(mv->gw);
 	    mv->pressed = true;
 	} else if ( within!=-1 ) {
 	    mv->pressedwidth = onwidth;
@@ -1566,6 +1661,15 @@ return;
 	    mv->activeoff = diff;
 	    MVRedrawI(mv,i,mv->perchar[i].show->xmin+olda,mv->perchar[i].show->xmax+olda);
 	}
+    } else if ( event->type == et_mouseup && event->u.mouse.clicks>1 &&
+	    (within!=-1 || sc!=NULL)) {
+	mv->pressed = false; mv->activeoff = 0;
+	mv->pressedwidth = mv->pressedkern = false;
+	if ( within==-1 ) within = i;
+	if ( mv->bdf==NULL )
+	    CharViewCreate(mv->perchar[within].sc,mv->fv);
+	else
+	    BitmapViewCreate(mv->bdf->chars[mv->perchar[within].sc->enc],mv->bdf,mv->fv);
     } else if ( event->type == et_mouseup && mv->pressed ) {
 	for ( i=0; i<mv->charcnt && !mv->perchar[i].selected; ++i );
 	mv->pressed = false;
@@ -1614,6 +1718,11 @@ return;
 	    if ( transform[4]!=0 )
 		FVTrans(mv->fv,sc,transform,NULL,false);
 	}
+    } else if ( event->type == et_mouseup && mv->bdf!=NULL && within!=-1 ) {
+	for ( j=0; j<mv->charcnt; ++j )
+	    if ( j!=within && mv->perchar[j].selected )
+		MVDeselectChar(mv,j);
+	MVSelectChar(mv,within);
     }
 }
 

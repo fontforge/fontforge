@@ -463,13 +463,16 @@ extern int CopyContainsSomething(void);
 extern int CopyContainsBitmap(void);
 extern void CopyReference(SplineChar *sc);
 extern void CopySelected(CharView *cv);
+extern void SCCopyWidth(SplineChar *sc,enum undotype);
 extern void CopyWidth(CharView *cv,enum undotype);
 extern void PasteToCV(CharView *cv);
 extern void BCCopySelected(BDFChar *bc,int pixelsize);
 extern void PasteToBC(BDFChar *bc,int pixelsize,FontView *fv);
 extern void FVCopyWidth(FontView *fv,enum undotype ut);
 extern void FVCopy(FontView *fv, int fullcopy);
+extern void MVCopyChar(MetricsView *mv, SplineChar *sc, int fullcopy);
 extern void PasteIntoFV(FontView *fv, int doclear);
+void PasteIntoMV(MetricsView *mv,SplineChar *sc, int doclear);
 
 extern void CVShowPoint(CharView *cv, SplinePoint *sp);
 
