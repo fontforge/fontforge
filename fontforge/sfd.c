@@ -4168,6 +4168,8 @@ return(false);
     temp.ascent = sf->ascent; temp.descent = sf->descent;
     temp.order2 = sf->order2;
     temp.multilayer = sf->multilayer;
+    temp.sli_cnt = sf->sli_cnt;
+    temp.script_lang = sf->script_lang;
 
     getint(asfd,&cnt);
     if ( cnt>sf->charcnt ) {
@@ -4192,6 +4194,8 @@ return(false);
 	    sc->changed = true;
 	}
     }
+    sf->sli_cnt = temp.sli_cnt;
+    sf->script_lang = temp.script_lang;
     sf->changed = true;
     SFDFixupRefs(sf);
 return(true);
