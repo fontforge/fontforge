@@ -1020,6 +1020,8 @@ return( false );
 	sc->name = copy(name);
 	sc->namechanged = true;
     }
+    if ( strcmp(name,sc->name)!=0 )
+	GlyphHashFree(sf);
     sf->changed = true;
     if ( (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4) &&
 	    unienc==sc->enc && unienc>=0xe000 && unienc<=0xf8ff )

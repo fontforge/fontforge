@@ -660,8 +660,8 @@ void SFLigaturePrepare(SplineFont *sf) {
     PST *lig;
     LigList *ll;
     int i,j,ch;
-    char *pt, *ligstart, *dpt;
-    SplineChar *sc;
+    char *pt, *ligstart;
+    SplineChar *sc, *tsc;
     struct splinecharlist *head, *last;
 
     /* First clear out any old stuff */
@@ -679,19 +679,9 @@ void SFLigaturePrepare(SplineFont *sf) {
 		char *start = pt;
 		for ( ; *pt!='\0' && *pt!=' '; ++pt );
 		ch = *pt; *pt = '\0';
-		for ( j=0; j<sf->charcnt; ++j )
-		    if ( sf->chars[j]!=NULL && strcmp(sf->chars[j]->name,start)==0 )
-		break;
+		tsc = SFGetChar(sf,-1,start);
 		*pt = ch;
-		if ( j==sf->charcnt && (dpt=strchr(start,'.'))!=NULL && dpt<pt ) {
-		    ch = *dpt; *dpt='\0';
-		    for ( j=0; j<sf->charcnt; ++j )
-			if ( sf->chars[j]!=NULL && strcmp(sf->chars[j]->name,start)==0 )
-		    break;
-		    *dpt = ch;
-		}
-		if ( j<sf->charcnt ) {
-		    SplineChar *tsc = sf->chars[j];
+		if ( tsc!=NULL ) {
 		    if ( !SCWorthOutputting(tsc)) {
 			sc = NULL;
 	    break;

@@ -148,6 +148,88 @@ void BitmapsCopy(SplineFont *to, SplineFont *from, int to_index, int from_index 
     }
 }
 
+#define GN_HSIZE	257
+
+struct glyphnamebucket {
+    SplineChar *sc;
+    struct glyphnamebucket *next;
+};
+
+struct glyphnamehash {
+    struct glyphnamebucket *table[GN_HSIZE];
+};
+
+#ifndef __GNUC__
+# define __inline__
+#endif
+
+static __inline__ int hashname(const char *pt) {
+    int val = 0;
+
+    while ( *pt )
+	val += *pt++;
+    val %= GN_HSIZE;
+return( val );
+}
+
+static void _GlyphHashFree(SplineFont *sf) {
+    struct glyphnamebucket *test, *next;
+    int i;
+
+    if ( sf->glyphnames==NULL )
+return;
+    for ( i=0; i<GN_HSIZE; ++i ) {
+	for ( test = sf->glyphnames->table[i]; test!=NULL; test = next ) {
+	    next = test->next;
+	    chunkfree(test,sizeof(struct glyphnamebucket));
+	}
+    }
+    free(sf->glyphnames);
+    sf->glyphnames = NULL;
+}
+
+void GlyphHashFree(SplineFont *sf) {
+    _GlyphHashFree(sf);
+    if ( sf->cidmaster )
+	_GlyphHashFree(sf->cidmaster);
+}
+
+static void GlyphHashCreate(SplineFont *sf) {
+    int i, k, hash;
+    SplineFont *_sf;
+    struct glyphnamehash *gnh;
+    struct glyphnamebucket *new;
+
+    if ( sf->glyphnames!=NULL )
+return;
+    sf->glyphnames = gnh = gcalloc(1,sizeof(*gnh));
+    k = 0;
+    do {
+	_sf = k<sf->subfontcnt ? sf->subfonts[k] : sf;
+	for ( i=0; i<_sf->charcnt; ++i ) if ( _sf->chars[i]!=NULL ) {
+	    new = chunkalloc(sizeof(struct glyphnamebucket));
+	    new->sc = _sf->chars[i];
+	    hash = hashname(new->sc->name);
+	    new->next = gnh->table[hash];
+	    gnh->table[hash] = new;
+	}
+	++k;
+    } while ( k<sf->subfontcnt );
+}
+
+static SplineChar *SFHashName(SplineFont *sf,char *name) {
+    struct glyphnamebucket *test;
+
+    if ( sf->glyphnames==NULL )
+	GlyphHashCreate(sf);
+
+    for ( test=sf->glyphnames->table[hashname(name)]; test!=NULL; test = test->next )
+	if ( strcmp(test->sc->name,name)==0 )
+return( test->sc );
+
+return( NULL );
+}
+
 static int _SFFindChar(SplineFont *sf, int unienc, char *name ) {
     int index;
 
@@ -170,16 +252,15 @@ static int _SFFindChar(SplineFont *sf, int unienc, char *name ) {
 	break;
 	}
     } else {
-	for ( index = sf->charcnt-1; index>=0; --index ) if ( sf->chars[index]!=NULL ) {
-	    if ( strcmp(sf->chars[index]->name,name)==0 )
-	break;
-	}
+	SplineChar *sc = SFHashName(sf,name);
+	if ( sc!=NULL ) index = sc->enc;
     }
 return( index );
 }
 
 int SFFindChar(SplineFont *sf, int unienc, char *name ) {
     int index=-1;
+    char *end;
 
     if ( (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4) &&
 	    unienc!=-1 ) {
@@ -200,15 +281,22 @@ int SFFindChar(SplineFont *sf, int unienc, char *name ) {
 	break;
 	}
     } else if ( name!=NULL ) {
-	for ( index = sf->charcnt-1; index>=0; --index ) if ( sf->chars[index]!=NULL ) {
-	    if ( strcmp(sf->chars[index]->name,name)==0 )
-	break;
-	}
+	SplineChar *sc = SFHashName(sf,name);
+	if ( sc!=NULL ) index = sc->enc;
 	if ( index==-1 ) {
-	    for ( index=psunicodenames_cnt-1; index>=0; --index )
-		if ( psunicodenames[index]!=NULL &&
-			strcmp(psunicodenames[index],name)==0 )
-return( SFFindChar(sf,index,name));
+	    if ( name[0]=='u' && name[1]=='n' && name[2]=='i' && strlen(name)==7 ) {
+		if ( unienc=strtol(name+3,&end,16), *end!='\0' )
+		    unienc = -1;
+	    } else if ( name[0]=='u' && strlen(name)<=7 ) {
+		if ( unienc=strtol(name+1,&end,16), *end!='\0' )
+		    unienc = -1;
+	    }
+	    if ( unienc!=-1 )
+return( SFFindChar(sf,unienc,NULL));
+	    for ( unienc=psunicodenames_cnt-1; unienc>=0; --unienc )
+		if ( psunicodenames[unienc]!=NULL &&
+			strcmp(psunicodenames[unienc],name)==0 )
+return( SFFindChar(sf,unienc,NULL));
 	}
     }
 
@@ -294,10 +382,17 @@ return( index );
 int SFCIDFindChar(SplineFont *sf, int unienc, char *name ) {
     int j,ret;
 
-    if ( sf->subfonts==NULL && sf->cidmaster==NULL )
-return( _SFFindChar(sf,unienc,name));
     if ( sf->cidmaster!=NULL )
 	sf=sf->cidmaster;
+
+    if ( unienc==-1 && name!=NULL ) {
+	SplineChar *sc = SFHashName(sf,name);
+	if ( sc!=NULL )
+return( sc->enc );
+    }
+
+    if ( sf->subfonts==NULL )
+return( _SFFindChar(sf,unienc,name));
     for ( j=0; j<sf->subfontcnt; ++j )
 	if (( ret = _SFFindChar(sf->subfonts[j],unienc,name))!=-1 )
 return( ret );
@@ -317,12 +412,26 @@ return( -1 );
 }
 
 SplineChar *SFGetChar(SplineFont *sf, int unienc, char *name ) {
-    int ind = SFFindChar(sf,unienc,name);
+    int ind;
+    int j;
 
+    if ( unienc==-1 && name!=NULL )
+return( SFHashName(sf,name));
+
+    ind = SFCIDFindChar(sf,unienc,name);
     if ( ind==-1 )
 return( NULL );
 
+    if ( sf->subfonts==NULL && sf->cidmaster==NULL )
 return( sf->chars[ind]);
+
+    if ( sf->cidmaster!=NULL )
+	sf=sf->cidmaster;
+    for ( j=0; j<sf->subfontcnt; ++j )
+	if ( ind<sf->subfonts[j]->charcnt && sf->subfonts[j]->chars[ind]!=NULL )
+return( sf->subfonts[j]->chars[ind] );
+
+return( NULL );
 }
 
 SplineChar *SFGetOrMakeChar(SplineFont *sf, int unienc, char *name ) {

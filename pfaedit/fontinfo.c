@@ -1560,6 +1560,7 @@ return( false );
 	    bdf->encoding_name = sf->encoding_name;
 	}
     }
+    GlyphHashFree(sf);
 return( true );
 }
 

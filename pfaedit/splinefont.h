@@ -561,6 +561,7 @@ typedef struct splinefont {
     int top_enc;
     uint16 desired_row_cnt, desired_col_cnt;
     AnchorClass *anchor;
+    struct glyphnamehash *glyphnames;
 } SplineFont;
 
 /* mac styles. Useful idea we'll just steal it */
@@ -682,6 +683,7 @@ extern void StemInfoFree(StemInfo *h);
 extern void DStemInfosFree(DStemInfo *h);
 extern void DStemInfoFree(DStemInfo *h);
 extern void KernPairsFree(KernPair *kp);
+extern void SCOrderAP(SplineChar *sc);
 extern void AnchorPointsFree(AnchorPoint *kp);
 extern AnchorPoint *AnchorPointsCopy(AnchorPoint *alist);
 extern void SFRemoveAnchorClass(SplineFont *sf,AnchorClass *an);
@@ -900,6 +902,7 @@ extern struct enc *PSSlurpEncodings(FILE *file);
 extern SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	struct pschars *subrs, struct pschars *gsubrs, const char *name);
 
+extern void GlyphHashFree(SplineFont *sf);
 extern int SFFindChar(SplineFont *sf, int unienc, char *name );
 extern int SFCIDFindChar(SplineFont *sf, int unienc, char *name );
 extern SplineChar *SFGetChar(SplineFont *sf, int unienc, char *name );
