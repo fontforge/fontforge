@@ -3585,9 +3585,9 @@ void LogoExpose(GWindow pixmap,GEvent *event, GRect *r,enum drawmode dm) {
 	    event->u.expose.rect.y+event->u.expose.rect.height >= r->y ) {
 	/* Put something into the little box where the two scroll bars meet */
 	int xoff, yoff;
-	GImage *which = (dm==dm_fore) ? &GIcon_PfaEditLogo :
-			(dm==dm_back) ? &GIcon_PfaEditBack :
-			    &GIcon_PfaEditGuide;
+	GImage *which = (dm==dm_fore) ? &GIcon_FontForgeLogo :
+			(dm==dm_back) ? &GIcon_FontForgeBack :
+			    &GIcon_FontForgeGuide;
 	struct _GImage *base = which->u.image;
 	xoff = (sbsize-base->width);
 	yoff = (sbsize-base->height);
