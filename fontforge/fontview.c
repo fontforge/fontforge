@@ -3013,64 +3013,50 @@ void _FVSimplify(FontView *fv,struct simplifyinfo *smpl) {
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+static void FVSimplify(FontView *fv,int type) {
+    static struct simplifyinfo smpls[] = {
+	    { sf_normal },
+	    { sf_normal,.75,.05,0,-1 },
+	    { sf_normal,.75,.05,0,-1 }};
+    struct simplifyinfo *smpl = &smpls[type+1];
+
+    if ( smpl->linelenmax==-1 || (type==0 && !smpl->set_as_default)) {
+	smpl->err = (fv->sf->ascent+fv->sf->descent)/1000.;
+	smpl->linelenmax = (fv->sf->ascent+fv->sf->descent)/100.;
+    }
+
+    if ( type==1 ) {
+	if ( !SimplifyDlg(fv->sf,smpl))
+return;
+	if ( smpl->set_as_default )
+	    smpls[1] = *smpl;
+    }
+    _FVSimplify(fv,smpl);
+}
+
 # if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    static struct simplifyinfo smpl = { sf_normal,.75,.05,0,-1 };
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
-    smpl.err = (fv->sf->ascent+fv->sf->descent)/1000.;
-    smpl.linelenmax = (fv->sf->ascent+fv->sf->descent)/100.;
-    _FVSimplify(fv,&smpl);
+    FVSimplify( (FontView *) GDrawGetUserData(gw),false );
 }
 
 static void FVMenuSimplifyMore(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    static struct simplifyinfo smpl = { sf_normal,.75,.05,0,-1 };
-
-    if ( smpl.linelenmax==-1 ) {
-	smpl.err = (fv->sf->ascent+fv->sf->descent)/1000.;
-	smpl.linelenmax = (fv->sf->ascent+fv->sf->descent)/100.;
-    }
-
-    if ( !SimplifyDlg(fv->sf,&smpl))
-return;
-    _FVSimplify(fv,&smpl);
+    FVSimplify( (FontView *) GDrawGetUserData(gw),true );
 }
 
 static void FVMenuCleanup(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    static struct simplifyinfo smpl = { sf_cleanup };
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    _FVSimplify(fv,&smpl);
+    FVSimplify( (FontView *) GDrawGetUserData(gw),-1 );
 }
 # elif defined(FONTFORGE_CONFIG_GTK)
 void FontViewMenu_Simplify(GtkMenuItem *menuitem, gpointer user_data) {
-    FontView *fv = (FontView *) FV_From_MI(menuitem);
-    static struct simplifyinfo smpl = { sf_normal,.75,.05,0,-1 };
-
-    smpl.err = (fv->sf->ascent+fv->sf->descent)/1000.;
-    smpl.linelenmax = (fv->sf->ascent+fv->sf->descent)/100.;
-    _FVSimplify(fv,&smpl);
+    FVSimplify( (FontView *) FV_From_MI(menuitem), false);
 }
 
 void FontViewMenu_SimplifyMore(GtkMenuItem *menuitem, gpointer user_data) {
-    FontView *fv = (FontView *) FV_From_MI(menuitem);
-    static struct simplifyinfo smpl = { sf_normal,.75,.05,0,-1 };
-
-    if ( smpl.linelenmax==-1 ) {
-	smpl.err = (fv->sf->ascent+fv->sf->descent)/1000.;
-	smpl.linelenmax = (fv->sf->ascent+fv->sf->descent)/100.;
-    }
-
-    if ( !SimplifyDlg(fv->sf,&smpl))
-return;
-    _FVSimplify(fv,&smpl);
+    FVSimplify( (FontView *) FV_From_MI(menuitem), true);
 }
 
 void FontViewMenu_Cleanup(GtkMenuItem *menuitem, gpointer user_data) {
-    FontView *fv = (FontView *) FV_From_MI(menuitem);
-    static struct simplifyinfo smpl = { sf_cleanup };
-
-    _FVSimplify(fv,&smpl);
+    FVSimplify( (FontView *) FV_From_MI(menuitem), -1);
 }
 #endif
 #endif
@@ -7962,7 +7948,13 @@ static void FVChar(FontView *fv,GEvent *event) {
 	    (event->u.chr.state&ksm_shift) &&
 	    (event->u.chr.state&ksm_meta) )
 	FVMenuCharInfo(fv->gw,NULL,NULL);
-    else if ( (event->u.chr.keysym=='[' || event->u.chr.keysym==']') &&
+    else if (( event->u.chr.keysym=='M' ||event->u.chr.keysym=='m' ) &&
+	    (event->u.chr.state&ksm_control) ) {
+	if ( (event->u.chr.state&ksm_meta) && (event->u.chr.state&ksm_shift))
+	    FVSimplify(fv,1);
+	else if ( (event->u.chr.state&ksm_shift))
+	    FVSimplify(fv,0);
+    } else if ( (event->u.chr.keysym=='[' || event->u.chr.keysym==']') &&
 	    (event->u.chr.state&ksm_control) ) {
 	/* some people have remapped keyboards so that shift is needed to get [] */
 	int pos = FVAnyCharSelected(fv);

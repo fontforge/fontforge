@@ -3171,6 +3171,7 @@ static char *str_BumpSize = "Bump Size";
 static char *str_LineLenMax = "Line length max";
 static char *str_DontSmoothLines = "Don't smooth lines";
 static char *str_LongerThan = "longer than";
+static char *str_SetAsDefault = "Set as Default"
     /* ttfinstrs */
 static char *str_TTFInstructionsFor = "TrueType Instructions for %.50hs"
 static char *str_Parse = "Parse"
