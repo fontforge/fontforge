@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 16-Apr-2004 -->
+  <!-- AP: Last modified: 8-May-2004 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -59,6 +59,9 @@
       <LI>
 	<A HREF="faq.html#Bad-Windows-Fonts">Why don't my fonts work on windows?</A>
     </UL>
+  <LI>
+    <A HREF="#Missing-Refs">When I load an otf or a type1 font most of my references
+    have been replaced by inline copies. How do I get my references back?</A>
   <LI>
     <A HREF="#kern-info">Does FontForge read in the old kerning information from
     fonts?</A>
@@ -758,6 +761,16 @@ MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
     <P>
     Another possibility is discussed
     <A HREF="faq.html#Bad-Windows-Install">here</A>.
+  <DT>
+    <A NAME="Missing-Refs"><B>When I load an otf or a type1 font most of my
+    references have been replaced by inline copies. How do I get my references
+    back?</B></A>
+  <DD>
+    It is very difficult to figure out old references when loading postscript
+    fonts. Instead FontForge has a special command,
+    <A HREF="editmenu.html#ReplaceRef" TARGET="_top">Edit-&gt;Replace With
+    Reference</A>, that will search for potential reference candidates in the
+    font and replace them with references.
   <DT>
     <B><A NAME="kern-info">Does FontForge read in the old kerning information
     from fonts?</A></B>
