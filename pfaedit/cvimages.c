@@ -567,7 +567,7 @@ static unichar_t *wildchr[] = { wildimg, wildps, wildfig };
 static unichar_t *wildfnt[] = { wildbdf, wildttf, wildpk };
 
 static GTextInfo formats[] = {
-    { (unichar_t *) _STR_Image, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 1 },
+    { (unichar_t *) _STR_Image, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "EPS", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "XFig", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};

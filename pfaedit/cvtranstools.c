@@ -79,7 +79,7 @@ void CVMouseMoveTransform(CharView *cv) {
 			cv->p.cx*transform[1] +
 			cv->p.cy;
 	CVSetCharChanged(cv,true);
-	CVTransFunc(cv,transform);
+	CVTransFunc(cv,transform,false);
     }
     SCUpdateAll(cv->sc);
 }

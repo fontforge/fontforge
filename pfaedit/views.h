@@ -336,9 +336,9 @@ extern void BVPaletteActivate(BitmapView *bv);
 extern void BVPalettesHideIfMine(BitmapView *bv);
 extern void CVPaletteDeactivate(void);
 extern void BackgroundImageTransform(SplineChar *sc, ImageList *img,real transform[6]);
-extern void CVTransFunc(CharView *cv,real transform[6]);
+extern void CVTransFunc(CharView *cv,real transform[6],int doback);
 extern void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *,int),
-	int (*getorigin)(void *,BasePoint *,int), int isfv);
+	int (*getorigin)(void *,BasePoint *,int), int enableback);
 extern void BitmapDlg(FontView *fv,SplineChar *sc, int isavail);
 extern void CVReviewHints(CharView *cv);
 extern void CVCreateHint(CharView *cv,int ishstem);

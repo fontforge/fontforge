@@ -452,7 +452,7 @@ static void MakeTransBlock(TransData *td,int bnum) {
 }
 
 void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *,int),
-	int (*getorigin)(void *,BasePoint *,int), int isfv) {
+	int (*getorigin)(void *,BasePoint *,int), int enableback) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
@@ -497,7 +497,7 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	i = 1; y = TBlock_Top+TCnt*TBlock_Height+4;
 
 	    gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = y;
-	    gcd[i].gd.flags = isfv ? (gg_visible | gg_enabled) : gg_visible;
+	    gcd[i].gd.flags = enableback ? (gg_visible | gg_enabled) : gg_visible;
 	    label[i].text = (unichar_t *) _STR_TransformBackground;
 	    label[i].text_in_resource = true;
 	    gcd[i].gd.mnemonic = 'T';
@@ -533,7 +533,9 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
     }
     gw = td.gw;
 
-    GGadgetSetEnabled( GWidgetGetControl(gw,CID_DoBackground), isfv);
+    GGadgetSetEnabled( GWidgetGetControl(gw,CID_DoBackground), enableback);
+    if ( !enableback )
+	GGadgetSetChecked( GWidgetGetControl(gw,CID_DoBackground), false );
     orig = GWidgetGetControl(gw,CID_Origin);
     GGadgetSetEnabled( orig, getorigin!=NULL );
     ti = GGadgetGetList(orig,&len);

@@ -3058,7 +3058,7 @@ void BackgroundImageTransform(SplineChar *sc, ImageList *img,real transform[6]) 
     SCOutOfDateBackground(sc);
 }
 
-void CVTransFunc(CharView *cv,real transform[6]) {
+void CVTransFunc(CharView *cv,real transform[6], int doback) {
     int anysel = cv->p.transany;
     RefChar *refs;
     ImageList *img;
@@ -3098,6 +3098,12 @@ void CVTransFunc(CharView *cv,real transform[6]) {
 	    SCUndoSetLBearingChange(cv->sc,(int) rint(transform[4]));
 	    SCSynchronizeLBearing(cv->sc,NULL,transform[4]);
 	}
+	if ( doback && !anysel ) {
+	    SCPreserveBackground(cv->sc);
+	    for ( img = cv->sc->backimages; img!=NULL; img=img->next )
+		BackgroundImageTransform(cv->sc, img, transform);
+	    SplinePointListTransform(*cv->heads[dm_back],transform,true);
+	}
     }
 }
 
@@ -3107,13 +3113,14 @@ static void transfunc(void *d,real transform[6],int otype,BVTFunc *bvts,
 
     cv->p.transany = CVAnySel(cv,NULL,NULL,NULL);
     CVPreserveState(cv);
-    CVTransFunc(cv,transform);
+    CVTransFunc(cv,transform,dobackground);
     CVCharChangedUpdate(cv);
 }
 
 static void CVMenuTransform(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    TransformDlgCreate(cv,transfunc,getorigin,false);
+    int anysel = CVAnySel(cv,NULL,NULL,NULL);
+    TransformDlgCreate(cv,transfunc,getorigin,!anysel && cv->drawmode==dm_fore);
 }
 
 static void SplinePointRound(SplinePoint *sp) {
@@ -3768,7 +3775,7 @@ static void CVMenuCenter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( transform[4]!=0 ) {
 	cv->p.transany = false;
 	CVPreserveState(cv);
-	CVTransFunc(cv,transform);
+	CVTransFunc(cv,transform,false);
 	CVCharChangedUpdate(cv);
     }
     cv->drawmode = drawmode;

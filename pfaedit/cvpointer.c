@@ -808,7 +808,7 @@ static int CVExpandEdge(CharView *cv) {
     transform[4] = (1-xscale)*cv->expandorigin.x;
     transform[5] = (1-yscale)*cv->expandorigin.y;
     CVSetCharChanged(cv,true);
-    CVTransFunc(cv,transform);
+    CVTransFunc(cv,transform,false);
 return( true );
 }
 
