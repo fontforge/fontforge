@@ -4994,33 +4994,57 @@ return( false );
     for ( i=0; i<at->tabdir.numtab; ++i ) {
 	struct taboff *tab = &at->tabdir.tabs[i];
 	at->tabdir.ordered[i] = tab;
-	/* This is the ordering of tables in ARIAL. I've no idea why it makes a */
+/* This is the ordering of tables in ARIAL. I've no idea why it makes a */
 /*  difference to order them, time to do a seek seems likely to be small, but */
 /*  other people make a big thing about ordering them so I'll do it. */
 /* I got bored after glyph. Adobe follows the same scheme for their otf fonts */
 /*  so at least the world is consistant */
 /* On the other hand, MS Font validator has a different idea. Oh well */
-	tab->orderingval = tab->tag==CHR('h','e','a','d')? 1 :
-			   tab->tag==CHR('h','h','e','a')? 2 :
-			   tab->tag==CHR('m','a','x','p')? 3 :
-			   tab->tag==CHR('O','S','/','2')? 4 :
-			   tab->tag==CHR('g','a','s','p')? 5 :
-			   tab->tag==CHR('n','a','m','e')? 6 :
-			   tab->tag==CHR('c','m','a','p')? 7 :
-			   tab->tag==CHR('l','o','c','a')? 8 :
-			   tab->tag==CHR('C','F','F',' ')? 8 :
-			   tab->tag==CHR('L','T','S','H')? 9 :
-			   tab->tag==CHR('V','D','M','X')? 10 :
-			   tab->tag==CHR('p','r','e','p')? 11 :
-			   tab->tag==CHR('f','p','g','m')? 12 :
-			   tab->tag==CHR('c','v','t',' ')? 13 :
-			   tab->tag==CHR('h','m','t','x')? 14 :
-			   tab->tag==CHR('h','m','d','x')? 15 :
-			   tab->tag==CHR('g','l','y','f')? 16 :
-			   tab->tag==CHR('G','D','E','F')? 17 :
-			   tab->tag==CHR('G','S','U','B')? 18 :
-			   tab->tag==CHR('G','P','O','S')? 19 :
-			   20;
+/* From: http://partners.adobe.com/asn/tech/type/opentype/recom.jsp	      */
+/* TrueType Ordering							      */
+/*  head, hhea, maxp, OS/2, hmtx, LTSH, VDMX, hdmx, cmap, fpgm, prep, cvt,    */
+/*  loca, glyf, kern, name, post, gasp, PCLT, DSIG			      */
+/* CFF in OpenType Ordering						      */
+/*  head, hhea, maxp, OS/2, name, cmap, post, CFF, (other tables, as convenient) */
+	if ( format==ff_otf || format==ff_otfcid ) {
+	    tab->orderingval = tab->tag==CHR('h','e','a','d')? 1 :
+			       tab->tag==CHR('h','h','e','a')? 2 :
+			       tab->tag==CHR('m','a','x','p')? 3 :
+			       tab->tag==CHR('O','S','/','2')? 4 :
+			       tab->tag==CHR('n','a','m','e')? 5 :
+			       tab->tag==CHR('c','m','a','p')? 6 :
+			       tab->tag==CHR('p','o','s','t')? 7 :
+			       tab->tag==CHR('C','F','F',' ')? 8 :
+			       tab->tag==CHR('G','D','E','F')? 17 :
+			       tab->tag==CHR('G','S','U','B')? 18 :
+			       tab->tag==CHR('G','P','O','S')? 19 :
+			       20;
+	} else {
+	    tab->orderingval = tab->tag==CHR('h','e','a','d')? 1 :
+			       tab->tag==CHR('h','h','e','a')? 2 :
+			       tab->tag==CHR('m','a','x','p')? 3 :
+			       tab->tag==CHR('O','S','/','2')? 4 :
+			       tab->tag==CHR('h','m','t','x')? 5 :
+			       tab->tag==CHR('L','T','S','H')? 6 :
+			       tab->tag==CHR('V','D','M','X')? 7 :
+			       tab->tag==CHR('h','d','m','x')? 8 :
+			       tab->tag==CHR('c','m','a','p')? 9 :
+			       tab->tag==CHR('f','p','g','m')? 10 :
+			       tab->tag==CHR('p','r','e','p')? 11 :
+			       tab->tag==CHR('c','v','t',' ')? 12 :
+			       tab->tag==CHR('l','o','c','a')? 13 :
+			       tab->tag==CHR('g','l','y','f')? 14 :
+			       tab->tag==CHR('k','e','r','n')? 15 :
+			       tab->tag==CHR('n','a','m','e')? 16 :
+			       tab->tag==CHR('p','o','s','t')? 17 :
+			       tab->tag==CHR('g','a','s','p')? 18 :
+			       tab->tag==CHR('P','C','L','T')? 19 :
+			       tab->tag==CHR('D','S','I','G')? 20 :
+			       tab->tag==CHR('G','D','E','F')? 21 :
+			       tab->tag==CHR('G','S','U','B')? 22 :
+			       tab->tag==CHR('G','P','O','S')? 23 :
+			       24;
+	    }
        }
 
     qsort(at->tabdir.ordered,at->tabdir.numtab,sizeof(struct taboff *),tcomp);
