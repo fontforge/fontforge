@@ -1079,15 +1079,17 @@ SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[
 	/*  otherwise those near the edges may be wonky, fix 'em up */
 	/* Figuring out where the edges of the selection are is difficult */
 	/*  so let's just tweak all points, it shouldn't matter */
+	/* It does matter. Let's tweak all default points */
 	if ( !allpoints && !allsel ) {
 	    pfirst = NULL;
 	    for ( spt = spl->first ; spt!=pfirst; spt = spt->next->to ) {
 		if ( pfirst==NULL ) pfirst = spt;
-		if ( spt->prev!=NULL )
+		if ( spt->prev!=NULL && spt->prevcpdef )
 		    SplineCharDefaultPrevCP(spt,spt->prev->from);
 		if ( spt->next==NULL )
 	    break;
-		SplineCharDefaultNextCP(spt,spt->next->to);
+		if ( spt->nextcpdef )
+		    SplineCharDefaultNextCP(spt,spt->next->to);
 	    }
 	}
 	first = NULL;
@@ -2123,7 +2125,23 @@ static int NearXSpline(FindSel *fs, Spline *spline) {
     real t,y;
     Spline1D *yspline = &spline->splines[1], *xspline = &spline->splines[0];
 
-    if ( xspline->a==0 ) {
+    if ( xspline->a!=0 ) {
+	real t1, t2, tbase;
+	SplineFindInflections(xspline,&t1,&t2);
+	tbase = 0;
+	if ( t1!=-1 ) {
+	    if ( XSolve(spline,0,t1,fs))
+return( true );
+	    tbase = t1;
+	}
+	if ( t2!=-1 ) {
+	    if ( XSolve(spline,tbase,t2,fs))
+return( true );
+	    tbase = t2;
+	}
+	if ( XSolve(spline,tbase,1.0,fs))
+return( true );
+    } else if ( xspline->b!=0 ) {
 	real root = xspline->c*xspline->c - 4*xspline->b*(xspline->d-fs->p->cx);
 	if ( root < 0 )
 return( false );
@@ -2140,21 +2158,10 @@ return( true );
 	    if ( fs->yl<y && fs->yh>y )
 return( true );
 	}
-    } else {
-	real t1, t2, tbase;
-	SplineFindInflections(xspline,&t1,&t2);
-	tbase = 0;
-	if ( t1!=-1 ) {
-	    if ( XSolve(spline,0,t1,fs))
-return( true );
-	    tbase = t1;
-	}
-	if ( t2!=-1 ) {
-	    if ( XSolve(spline,tbase,t2,fs))
-return( true );
-	    tbase = t2;
-	}
-	if ( XSolve(spline,tbase,1.0,fs))
+    } else /* xspline->c can't be 0 because dx>dy => dx!=0 => xspline->c!=0 */ {
+	fs->p->t = t = (fs->p->cx-xspline->d)/xspline->c;
+	y = ((yspline->a*t+yspline->b)*t+yspline->c)*t + yspline->d;
+	if ( fs->yl<y && fs->yh>y )
 return( true );
     }
 return( false );

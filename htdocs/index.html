@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 11-Nov-2001 -->
+  <!-- AP: Last modified: 12-Nov-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -71,8 +71,8 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-011111.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 11-Nov-2001
+    <A HREF="pfaedit-011112.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 12-Nov-2001
   <LI>
     <A HREF="pfaedit-solaris-011102.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 2-Nov-2001
@@ -106,7 +106,7 @@ If you want to edit CID keyed fonts you need these
 <P>
 You can download a <A HREF="pfaedit-011102-1.src.rpm">source RPM</A>: Version:
 2-Nov-2001<BR>
-Or you can download the following three packages. Version: 11-Nov-2001
+Or you can download the following three packages. Version: 12-Nov-2001
 <UL>
   <LI>
     <A HREF="libgunicode-011011.tgz">Unicode library source</A> (11-Oct-2001)<BR>
@@ -118,10 +118,10 @@ Or you can download the following three packages. Version: 11-Nov-2001
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-011111.tgz">Pfaedit source</A> (11-Nov-2001)<BR>
+    <A HREF="pfaedit_src-011112.tgz">Pfaedit source</A> (12-Nov-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
-    <A HREF="pfaedit_full-011111.tgz">All three bundled together </A>(11-Nov-2001)
+    <A HREF="pfaedit_full-011112.tgz">All three bundled together </A>(12-Nov-2001)
 </UL>
 <P>
 If you want to do autotracing around character images you should also download
@@ -231,6 +231,30 @@ up into one <A HREF="pfaedit_htdocs-010925.tgz">tgz file</A> 25-Sept-2001.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    12-Nov-2001
+    <UL>
+      <LI>
+	Some nearly horizontal (but non-linear) splines could not be selected.
+      <LI>
+	Changed the point info dlg so that users could set points back to have default
+	control points.
+      <LI>
+	There was a pathway whereby points could be marked as having default control
+	points even when they didn't. That one is plugged.
+      <LI>
+	The chinese font, kaui contains some interesting bugs which we've had to
+	work around:
+	<UL>
+	  <LI>
+	    Glyph 257 contains a contour consisting of one off-curve point.
+	  <LI>
+	    The encoding cmap refers to non-existant glyphs
+	  <LI>
+	    The fpgm attempts to move points around (it isn't allowed to do that according
+	    to the docs)
+	</UL>
+    </UL>
   <LI>
     11-Nov-2001
     <UL>

@@ -587,7 +587,16 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 	    }
 	    ++i;
 	}
-	if ( !(flags[start]&_On_Curve) && !(flags[i-1]&_On_Curve) ) {
+	if ( start==i-1 ) {
+	    /* MS chinese fonts have contours consisting of a single off curve*/
+	    /*  point. What on earth do they think that means? */
+	    sp = chunkalloc(sizeof(SplinePoint));
+	    sp->me.x = pts[start].x;
+	    sp->me.y = pts[start].y;
+	    sp->nextcp = sp->prevcp = sp->me;
+	    sp->nonextcp = sp->noprevcp = true;
+	    cur->first = cur->last = sp;
+	} else if ( !(flags[start]&_On_Curve) && !(flags[i-1]&_On_Curve) ) {
 	    sp = chunkalloc(sizeof(SplinePoint));
 	    sp->me.x = (pts[start].x+pts[i-1].x)/2;
 	    sp->me.y = (pts[start].y+pts[i-1].y)/2;
@@ -2449,7 +2458,12 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 					    j-startchars[i] ];
 			if ( index!=0 ) {
 			    index = (unsigned short) (index+delta[i]);
-			    if ( justinuse )
+			    if ( index>=info->glyph_cnt )
+				/* This isn't mentioned either, but in some */
+			        /*  MS Chinese fonts (kaiu.ttf) the index */
+			        /*  goes out of bounds. and MS's ttf dump */
+			        /*  program says it is treated as 0 */;
+			    else if ( justinuse )
 				info->inuse[index] = 1;
 			    else if ( info->chars[index]==NULL )
 				/* Do Nothing */;

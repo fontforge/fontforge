@@ -58,6 +58,8 @@ typedef struct gidata {
 #define CID_PrevXOff	2006
 #define CID_PrevYOff	2007
 #define CID_PrevPos	2008
+#define CID_NextDef	2009
+#define CID_PrevDef	2010
 
 #define CI_Width	200
 #define CI_Height	219
@@ -855,6 +857,8 @@ static void PIFillup(GIData *ci, int except_cid) {
     uc_strcpy(ubuf,buffer);
     GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_NextPos),ubuf);
 
+    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_NextDef), ci->cursp->nextcpdef );
+
     mysprintf(buffer, ci->cursp->prevcp.x-ci->cursp->me.x );
     uc_strcpy(ubuf,buffer);
     if ( except_cid!=CID_PrevXOff )
@@ -868,6 +872,8 @@ static void PIFillup(GIData *ci, int except_cid) {
     mysprintf2(buffer, ci->cursp->prevcp.x,ci->cursp->prevcp.y );
     uc_strcpy(ubuf,buffer);
     GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_PrevPos),ubuf);
+
+    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_PrevDef), ci->cursp->prevcpdef );
 }
 
 static int PI_Next(GGadget *g, GEvent *e) {
@@ -963,6 +969,10 @@ return( true );
 	cursp->nextcp.x += dx;
 	cursp->nextcp.y += dy;
 	cursp->nonextcp = false;
+	if (( dx>.1 || dx<-.1 || dy>.1 || dy<-.1 ) && cursp->nextcpdef ) {
+	    cursp->nextcpdef = false;
+	    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_NextDef), false );
+	}
 	if ( cursp->next!=NULL )
 	    SplineRefigure(cursp->next);
 	CVCharChangedUpdate(ci->cv);
@@ -987,6 +997,10 @@ return( true );
 	cursp->prevcp.x += dx;
 	cursp->prevcp.y += dy;
 	cursp->noprevcp = false;
+	if (( dx>.1 || dx<-.1 || dy>.1 || dy<-.1 ) && cursp->prevcpdef ) {
+	    cursp->prevcpdef = false;
+	    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_PrevDef), false );
+	}
 	if ( cursp->prev!=NULL )
 	    SplineRefigure(cursp->prev);
 	CVCharChangedUpdate(ci->cv);
@@ -995,12 +1009,50 @@ return( true );
 return( true );
 }
 
+static int PI_NextDefChanged(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	SplinePoint *cursp = ci->cursp;
+
+	cursp->nextcpdef = GGadgetIsChecked(g);
+	/* If they turned def off, that's a noop, but if they turned it on... */
+	/*  then set things to the default */
+	if ( cursp->nextcpdef ) {
+	    BasePoint temp = cursp->prevcp;
+	    SplineCharDefaultNextCP(cursp,cursp->next==NULL?NULL:cursp->next->to);
+	    cursp->prevcp = temp;
+	    CVCharChangedUpdate(ci->cv);
+	    PIFillup(ci,GGadgetGetCid(g));
+	}
+    }
+return( true );
+}
+
+static int PI_PrevDefChanged(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	SplinePoint *cursp = ci->cursp;
+
+	cursp->prevcpdef = GGadgetIsChecked(g);
+	/* If they turned def off, that's a noop, but if they turned it on... */
+	/*  then set things to the default */
+	if ( cursp->prevcpdef ) {
+	    BasePoint temp = cursp->nextcp;
+	    SplineCharDefaultPrevCP(cursp,cursp->prev==NULL?NULL:cursp->prev->from);
+	    cursp->nextcp = temp;
+	    CVCharChangedUpdate(ci->cv);
+	    PIFillup(ci,GGadgetGetCid(g));
+	}
+    }
+return( true );
+}
+
 static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
     static GIData gi;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[22];
-    GTextInfo label[22];
+    GGadgetCreateData gcd[24];
+    GTextInfo label[24];
 
     gi.cv = cv;
     gi.cursp = sp;
@@ -1032,13 +1084,13 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[0].gd.flags = gg_enabled|gg_visible;
 	gcd[0].creator = GLabelCreate;
 
-	gcd[1].gd.pos.x = 60; gcd[1].gd.pos.y = 5; gcd[1].gd.pos.width = 50;
+	gcd[1].gd.pos.x = 60; gcd[1].gd.pos.y = 5; gcd[1].gd.pos.width = 53;
 	gcd[1].gd.flags = gg_enabled|gg_visible;
 	gcd[1].gd.cid = CID_BaseX;
 	gcd[1].gd.handle_controlevent = PI_BaseChanged;
 	gcd[1].creator = GTextFieldCreate;
 
-	gcd[2].gd.pos.x = 120; gcd[2].gd.pos.y = 5; gcd[2].gd.pos.width = 50;
+	gcd[2].gd.pos.x = 120; gcd[2].gd.pos.y = 5; gcd[2].gd.pos.width = 53;
 	gcd[2].gd.flags = gg_enabled|gg_visible;
 	gcd[2].gd.cid = CID_BaseY;
 	gcd[2].gd.handle_controlevent = PI_BaseChanged;
@@ -1056,13 +1108,22 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[4].gd.cid = CID_NextPos;
 	gcd[4].creator = GLabelCreate;
 
-	gcd[5].gd.pos.x = 60; gcd[5].gd.pos.y = 49; gcd[5].gd.pos.width = 50;
+	label[21].text = (unichar_t *) _STR_Default;
+	label[21].text_in_resource = true;
+	gcd[21].gd.label = &label[21];
+	gcd[21].gd.pos.x = 125; gcd[21].gd.pos.y = gcd[4].gd.pos.y-3;
+	gcd[21].gd.flags = gg_enabled|gg_visible;
+	gcd[21].gd.cid = CID_NextDef;
+	gcd[21].gd.handle_controlevent = PI_NextDefChanged;
+	gcd[21].creator = GCheckBoxCreate;
+
+	gcd[5].gd.pos.x = 60; gcd[5].gd.pos.y = 49; gcd[5].gd.pos.width = 53;
 	gcd[5].gd.flags = gg_enabled|gg_visible;
 	gcd[5].gd.cid = CID_NextXOff;
 	gcd[5].gd.handle_controlevent = PI_NextChanged;
 	gcd[5].creator = GTextFieldCreate;
 
-	gcd[6].gd.pos.x = 120; gcd[6].gd.pos.y = 49; gcd[6].gd.pos.width = 50;
+	gcd[6].gd.pos.x = 120; gcd[6].gd.pos.y = 49; gcd[6].gd.pos.width = 53;
 	gcd[6].gd.flags = gg_enabled|gg_visible;
 	gcd[6].gd.cid = CID_NextYOff;
 	gcd[6].gd.handle_controlevent = PI_NextChanged;
@@ -1080,20 +1141,29 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[8].gd.cid = CID_PrevPos;
 	gcd[8].creator = GLabelCreate;
 
-	gcd[9].gd.pos.x = 60; gcd[9].gd.pos.y = 96; gcd[9].gd.pos.width = 50;
+	label[22].text = (unichar_t *) _STR_Default;
+	label[22].text_in_resource = true;
+	gcd[22].gd.label = &label[22];
+	gcd[22].gd.pos.x = gcd[21].gd.pos.x; gcd[22].gd.pos.y = gcd[8].gd.pos.y-3;
+	gcd[22].gd.flags = gg_enabled|gg_visible;
+	gcd[22].gd.cid = CID_PrevDef;
+	gcd[22].gd.handle_controlevent = PI_PrevDefChanged;
+	gcd[22].creator = GCheckBoxCreate;
+
+	gcd[9].gd.pos.x = 60; gcd[9].gd.pos.y = 96; gcd[9].gd.pos.width = 53;
 	gcd[9].gd.flags = gg_enabled|gg_visible;
 	gcd[9].gd.cid = CID_PrevXOff;
 	gcd[9].gd.handle_controlevent = PI_PrevChanged;
 	gcd[9].creator = GTextFieldCreate;
 
-	gcd[10].gd.pos.x = 120; gcd[10].gd.pos.y = 96; gcd[10].gd.pos.width = 50;
+	gcd[10].gd.pos.x = 120; gcd[10].gd.pos.y = 96; gcd[10].gd.pos.width = 53;
 	gcd[10].gd.flags = gg_enabled|gg_visible;
 	gcd[10].gd.cid = CID_PrevYOff;
 	gcd[10].gd.handle_controlevent = PI_PrevChanged;
 	gcd[10].creator = GTextFieldCreate;
 
 	gcd[11].gd.pos.x = (PI_Width-2*50-10)/2; gcd[11].gd.pos.y = 127;
-	gcd[11].gd.pos.width = 50; gcd[11].gd.pos.height = 0;
+	gcd[11].gd.pos.width = 53; gcd[11].gd.pos.height = 0;
 	gcd[11].gd.flags = gg_visible | gg_enabled;
 	label[11].text = (unichar_t *) _STR_PrevArrow;
 	label[11].text_in_resource = true;
@@ -1103,7 +1173,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[11].creator = GButtonCreate;
 
 	gcd[12].gd.pos.x = PI_Width-50-(PI_Width-2*50-10)/2; gcd[12].gd.pos.y = gcd[11].gd.pos.y;
-	gcd[12].gd.pos.width = 50; gcd[12].gd.pos.height = 0;
+	gcd[12].gd.pos.width = 53; gcd[12].gd.pos.height = 0;
 	gcd[12].gd.flags = gg_visible | gg_enabled;
 	label[12].text = (unichar_t *) _STR_NextArrow;
 	label[12].text_in_resource = true;

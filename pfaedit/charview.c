@@ -2859,9 +2859,11 @@ static void SPChangePointType(SplinePoint *sp, int pointtype) {
 return;
     sp->pointtype = pointtype;
     
-    if ( pointtype==pt_corner )
+    if ( pointtype==pt_corner ) {
 	/* Leave control points as they are */;
-    else if ( pointtype==pt_tangent ) {
+	sp->nextcpdef = sp->nonextcp;
+	sp->prevcpdef = sp->noprevcp;
+    } else if ( pointtype==pt_tangent ) {
 	SplineCharTangentPrevCP(sp);
 	SplineCharTangentNextCP(sp);
     } else {

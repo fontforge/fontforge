@@ -1380,6 +1380,12 @@ static void ShowIntersections(IntersectionList *ilist) {
  }}}
 #endif
 
+/* Various operations that could be tried to make life easier:
+	Round to int
+	Insert extreme points
+	bring points that are close together on top of one another
+	?Correct Direction?	But that alters semantics
+*/
 SplineSet *SplineSetRemoveOverlap(SplineSet *base) {
     SplineSet *open, *needed, *tbase, *new, *next;
     IntersectionList *ilist;
