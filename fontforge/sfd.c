@@ -2407,8 +2407,11 @@ return( NULL );
 		liga->macfeature = true;
 	    } else
 		ungetc(ch,sfd);
-	    if ( liga->script_lang_index>=sf->sli_cnt && liga->script_lang_index!=SLI_NESTED &&
-		    liga->type!=pst_lcaret ) {
+	    if ( liga->type == pst_lcaret ) {
+		/* These are meaningless for lcarets, set them to innocuous values */
+		liga->script_lang_index = SLI_UNKNOWN;
+		liga->tag = CHR(' ',' ',' ',' ');
+	    } else if ( liga->script_lang_index>=sf->sli_cnt && liga->script_lang_index!=SLI_NESTED ) {
 		static int complained=false;
 		if ( !complained )
 		    GDrawIError("'%c%c%c%c' in %s has a script index out of bounds: %d",

@@ -1135,6 +1135,8 @@ struct sliflag *SFGetFormsList(SplineFont *sf,int test_dflt) {
 	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
 	for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
 	    for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
+		if ( pst->type == pst_lcaret )
+	    continue;
 		if ( pst->script_lang_index==SLI_NESTED )
 	    continue;
 		if ( test_dflt && !SLIHasDefault(sf,pst->script_lang_index))
