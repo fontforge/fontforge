@@ -5,6 +5,10 @@ VPATH = @srcdir@
 prefix = @prefix@
 bindir = @bindir@
 
+GU_VERSION=0
+GU_REVISION=1
+GU_AGE=0
+
 LIBTOOL = @LIBTOOL@
 CC = @CC@
 
@@ -18,7 +22,7 @@ CFLAGS = @CFLAGS@ $(Incs) $(WFLAGS) $(X_CFLAGS)
 
 ../libgunicode.la: $(libgunicode_OBJECTS)
 	$(LIBTOOL) $(CC) $(CFLAGS) -o ../libgunicode.la $(libgunicode_OBJECTS) \
-	    -rpath $(libdir)
+	    -rpath $(libdir) -version-info $(GU_VERSION):$(GU_REVISION):$(GU_AGE)
 
 %.lo: %.c
 	$(LIBTOOL) $(CC) $(CFLAGS) -c $<
