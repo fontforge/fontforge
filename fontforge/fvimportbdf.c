@@ -98,7 +98,7 @@ static int gettoken(FILE *bdf, char *tokbuf, int size) {
     char *pt=tokbuf, *end = tokbuf+size-2; int ch;
 
     while ( isspace(ch = getc(bdf)));
-    while ( ch!=EOF && !isspace(ch) && ch!='[' && ch!=']' && ch!='{' && ch!='}' && ch!='<' && ch!='%' ) {
+    while ( ch!=EOF && !isspace(ch) /* && ch!='[' && ch!=']' && ch!='{' && ch!='}' && ch!='<' && ch!='%' */ ) {
 	if ( pt<end ) *pt++ = ch;
 	ch = getc(bdf);
     }
@@ -1840,7 +1840,7 @@ return( NULL );
 	fclose(bdf); free(toc);
 return( NULL );
     }
-    if ( !toback && sf->bitmaps==NULL && sf->onlybitmaps ) {
+    if ( /* !toback && */ sf->bitmaps==NULL && sf->onlybitmaps ) {
 	/* Loading first bitmap into onlybitmap font sets the name and encoding */
 	SFSetFontName(sf,family,mods,full);
 	if ( fontname[0]!='\0' ) {
