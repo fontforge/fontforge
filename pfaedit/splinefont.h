@@ -393,6 +393,7 @@ typedef struct splinechar {
     unsigned int anyflexes: 1;
     unsigned int searcherdummy: 1;
     unsigned int changed_since_search: 1;
+    unsigned int wasopen: 1;
 #if HANYANG
     unsigned int compositionunit: 1;
     int16 jamo, varient;

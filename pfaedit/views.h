@@ -395,6 +395,7 @@ extern void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
 extern void FVTrans(FontView *fv,SplineChar *sc,real transform[6],char *sel,
 	int dobackground);
 extern void FVBuildAccent(FontView *fv,int onlyaccents);
+extern void FVChangeChar(FontView *fv,int encoding);
 extern void SCClearAll(SplineChar *sc);
 extern void BCClearAll(BDFChar *bc);
 extern void UnlinkThisReference(FontView *fv,SplineChar *sc);

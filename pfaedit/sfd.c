@@ -500,10 +500,11 @@ return;
     if ( sc->vwidth!=sc->parent->ascent+sc->parent->descent )
 	fprintf(sfd, "VWidth: %d\n", sc->vwidth );
     if ( sc->changedsincelasthinted|| sc->manualhints || sc->widthset )
-	fprintf(sfd, "Flags: %s%s%s\n",
+	fprintf(sfd, "Flags: %s%s%s%s\n",
 		sc->changedsincelasthinted?"H":"",
 		sc->manualhints?"M":"",
-		sc->widthset?"W":"");
+		sc->widthset?"W":"",
+		sc->views!=NULL?"O":"");
 #if HANYANG
     if ( sc->compositionunit )
 	fprintf( sfd, "CompositionUnit: %d %d\n", sc->jamo, sc->varient );
@@ -1376,6 +1377,7 @@ return( NULL );
 		if ( ch=='H' ) sc->changedsincelasthinted=true;
 		else if ( ch=='M' ) sc->manualhints = true;
 		else if ( ch=='W' ) sc->widthset = true;
+		else if ( ch=='O' ) sc->wasopen = true;
 		ch = getc(sfd);
 	    }
 #if HANYANG

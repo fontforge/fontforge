@@ -951,6 +951,7 @@ return( true );
 #define MID_NextDef	2012
 #define MID_PrevDef	2013
 #define MID_AntiAlias	2014
+#define MID_FindInFontView	2015
 #define MID_CharInfo	2201
 #define MID_FindProblems 2216
 #define MID_MetaFont	2217
@@ -1523,6 +1524,20 @@ return;
     }
 }
 
+static void MVMenuFindInFontView(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    int i;
+
+    for ( i=0; i<mv->charcnt; ++i ) {
+	if ( mv->perchar[i].selected ) {
+	    FVChangeChar(mv->fv,mv->perchar[i].sc->enc);
+	    GDrawSetVisible(mv->fv->gw,true);
+	    GDrawRaise(mv->fv->gw);
+    break;
+	}
+    }
+}
+
 static void MVMenuShowGrid(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     mv->showgrid = !mv->showgrid;
@@ -1645,6 +1660,7 @@ static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_PrevChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '[', ksm_control, NULL, NULL, MVMenuChangeChar, MID_Prev },
     { { (unichar_t *) _STR_NextDefChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, ']', ksm_control|ksm_meta, NULL, NULL, MVMenuChangeChar, MID_NextDef },
     { { (unichar_t *) _STR_PrevDefChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'a' }, '[', ksm_control|ksm_meta, NULL, NULL, MVMenuChangeChar, MID_PrevDef },
+    { { (unichar_t *) _STR_FindInFontView, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, '<', ksm_shift|ksm_control, NULL, NULL, MVMenuFindInFontView, MID_FindInFontView },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Hidegrid, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'G' }, '\0', ksm_control, NULL, NULL, MVMenuShowGrid, MID_ShowGrid },
     { { (unichar_t *) _STR_Antialias, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'A' }, '5', ksm_control, NULL, NULL, MVMenuAA, MID_AntiAlias },
@@ -1778,11 +1794,18 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-    int i, base;
+    int i, j, base, aselection;
     BDFFont *bdf;
     unichar_t buffer[60];
     extern void GMenuItemArrayFree(GMenuItem *mi);
     extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
+
+    aselection = false;
+    for ( j=0; j<mv->charcnt; ++j )
+	if ( mv->perchar[j].selected ) {
+	    aselection = true;
+    break;
+	}
 
     for ( i=0; vwlist[i].mid!=MID_Outline; ++i )
 	if ( vwlist[i].mid==MID_ShowGrid ) {
@@ -1791,6 +1814,12 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	} else if ( vwlist[i].mid==MID_AntiAlias ) {
 	    vwlist[i].ti.checked = mv->antialias;
 	    vwlist[i].ti.disabled = mv->bdf!=NULL;
+	} else if ( vwlist[i].mid==MID_FindInFontView ||
+		    vwlist[i].mid==MID_Next ||
+		    vwlist[i].mid==MID_Prev ||
+		    vwlist[i].mid==MID_NextDef ||
+		    vwlist[i].mid==MID_PrevDef ) {
+	    vwlist[i].ti.disabled = !aselection;
 	}
     base = i+1;
     for ( i=base; vwlist[i].ti.text!=NULL; ++i ) {

@@ -1574,7 +1574,7 @@ return;
 }
 
 static void FVShowInfo(FontView *fv);
-static void FVChangeChar(FontView *fv,int i) {
+void FVChangeChar(FontView *fv,int i) {
 
     if ( i!=-1 ) {
 	FVDeselectAll(fv);
@@ -4044,6 +4044,25 @@ static int fv_e_h(GWindow gw, GEvent *event) {
 return( true );
 }
 
+static void FontViewOpenKids(FontView *fv) {
+    int k, i;
+    SplineFont *sf = fv->sf, *_sf;
+
+    if ( sf->cidmaster!=NULL )
+	sf = sf->cidmaster;
+
+    k=0;
+    do {
+	_sf = sf->subfontcnt==0 ? sf : sf->subfonts[k];
+	for ( i=0; i<_sf->charcnt; ++i )
+	    if ( _sf->chars[i]!=NULL && _sf->chars[i]->wasopen ) {
+		_sf->chars[i]->wasopen = false;
+		CharViewCreate(_sf->chars[i],fv);
+	    }
+	++k;
+    } while ( k<sf->subfontcnt );
+}
+
 FontView *_FontViewCreate(SplineFont *sf) {
     FontView *fv = gcalloc(1,sizeof(FontView));
     int i;
@@ -4165,6 +4184,7 @@ FontView *FontViewCreate(SplineFont *sf) {
 
     /*GWidgetHidePalettes();*/
     GDrawSetVisible(gw,true);
+    FontViewOpenKids(fv);
 return( fv );
 }
 
