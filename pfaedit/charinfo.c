@@ -2601,7 +2601,8 @@ int SCSetMetaData(SplineChar *sc,char *name,int unienc,const unichar_t *comment)
 return( false );
 		}
 		mv = 1;
-	    } else if ( !isnotdef && strcmp(name,sf->chars[i]->name)==0 ) {
+	    } else if ( !isnotdef && strcmp(name,sf->chars[i]->name)==0 &&
+		    SCDuplicate(sc)!=SCDuplicate(sf->chars[i]) ) {
 		if ( !MultipleNames()) {
 return( false );
 		}

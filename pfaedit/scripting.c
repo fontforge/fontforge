@@ -1115,6 +1115,10 @@ static void bJoin(Context *c) {
     doEdit(c,13);
 }
 
+static void bSameGlyphAs(Context *c) {
+    doEdit(c,14);
+}
+
 static void bSelectAll(Context *c) {
     if ( c->a.argc!=1 )
 	error( c, "Wrong number of arguments");

@@ -1171,6 +1171,7 @@ int CopyContainsSomething(void) {
 return( cur->u.composit.state!=NULL );
 
 return( cur->undotype==ut_state || cur->undotype==ut_tstate ||
+	cur->undotype==ut_statehint || cur->undotype==ut_statename ||
 	cur->undotype==ut_width || cur->undotype==ut_vwidth ||
 	cur->undotype==ut_lbearing || cur->undotype==ut_rbearing ||
 	cur->undotype==ut_noop );
@@ -1184,6 +1185,24 @@ int CopyContainsBitmap(void) {
 return( cur->u.composit.bitmaps!=NULL );
 
 return( cur->undotype==ut_bitmapsel || cur->undotype==ut_noop );
+}
+
+RefChar *CopyContainsRef(SplineFont *sf) {
+    Undoes *cur = &copybuffer;
+    if ( cur->undotype==ut_multiple )
+	cur = cur->u.multiple.mult;
+    if ( cur->undotype==ut_composit )
+	cur = cur->u.composit.state;
+    if ( cur==NULL || (cur->undotype!=ut_state && cur->undotype!=ut_tstate &&
+	    cur->undotype!=ut_statehint && cur->undotype!=ut_statename ))
+return( NULL );
+    if ( cur->u.state.splines!=NULL || cur->u.state.refs==NULL ||
+	    cur->u.state.refs->next != NULL )
+return( NULL );
+    if ( sf!=cur->u.state.copied_from )
+return( NULL );
+
+return( cur->u.state.refs );
 }
 
 char **CopyGetPosSubData(enum possub_type *type) {

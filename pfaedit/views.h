@@ -704,6 +704,7 @@ extern void CVRemoveTopUndo(CharView *cv);
 extern enum undotype CopyUndoType(void);
 extern int CopyContainsSomething(void);
 extern int CopyContainsBitmap(void);
+extern RefChar *CopyContainsRef(SplineFont *);
 extern char **CopyGetPosSubData(enum possub_type *type);
 extern void CopyReference(SplineChar *sc);
 extern void CopySelected(CharView *cv);
