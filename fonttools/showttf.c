@@ -2560,6 +2560,51 @@ static void readttfgdef(FILE *ttf, FILE *util, struct ttfinfo *info) {
     if ( lco!=0 ) gdefshowligcaretlist(ttf,info->gdef_start+lco,info);
 }
 
+static void readttfkern(FILE *ttf, FILE *util, struct ttfinfo *info) {
+    int version, ntables;
+    int header_size, len, coverage, i;
+
+    fseek(ttf,info->kern_start,SEEK_SET);
+    printf( "\nkern table (at %d)\n", info->kern_start );
+    version = getushort(ttf);
+    if ( version!=0 ) {
+	fseek(ttf,info->kern_start,SEEK_SET);
+	version = getlong(ttf);
+	ntables = getlong(ttf);
+	printf( "\t version=%g (Apple format)\n\t num_tables=%d\n", ((double) version)/65536., ntables);
+	header_size = 8;
+    } else {
+	ntables = getushort(ttf);
+	printf( "\t version=%d (Old style)\n\t num_tables=%d\n", version, ntables);
+	header_size = 6;
+    }
+    for ( i=0; i<ntables; ++i ) {
+	if ( version==0 ) {
+	    printf( "\t Sub-table %d, version=%d\n", i, getushort(ttf));
+	    len = getushort(ttf);
+	    coverage = getushort(ttf);
+	    printf( "\t  len=%d coverage=%x %s%s%s%s format=%d\n", len, coverage,
+		    ( coverage&1 ) ? "Horizontal": "Vertical",
+		    ( coverage&2 ) ? " Minimum" : "",
+		    ( coverage&4 ) ? " cross-stream" : "",
+		    ( coverage&8 ) ? " override" : "",
+		    ( coverage>>8 ));
+	    if ( (coverage&0xff)==2 ) fprintf(stderr, "!!! Format 2 here!!!!\n" );
+	} else {
+	    len = getlong(ttf);
+	    coverage = getushort(ttf);
+	    printf( "\t  len=%d coverage=%x %s%s%s format=%d\n", len, coverage,
+		    ( coverage&0x8000 ) ? "Vertical": "Horizontal",
+		    ( coverage&0x4000 ) ? " cross-stream" : "",
+		    ( coverage&0x2000 ) ? " kern-variation" : "",
+		    ( coverage&0xff ));
+	    if ( (coverage&0xff)==2 ) fprintf(stderr, "!!! Format 2 here!!!!\n" );
+	    printf( "\t  tuple index=%d\n", getushort(ttf));
+	}
+	fseek(ttf,len-header_size,SEEK_CUR);
+    }
+}
+
 static void readttffontdescription(FILE *ttf, FILE *util, struct ttfinfo *info) {
     int n, i;
     uint32 tag, lval;
@@ -5354,6 +5399,8 @@ return;
 	readttfgsub(ttf,util,&info);
     if ( info.gpos_start!=0 )
 	readttfgpos(ttf,util,&info);
+    if ( info.kern_start!=0 )
+	readttfkern(ttf,util,&info);
     if ( info.gdef_start!=0 )
 	readttfgdef(ttf,util,&info);
     if ( info.bitmaploc_start!=0 && info.bitmapdata_start!=0 )
