@@ -85,6 +85,14 @@ int RealWithin(real a,real b,real fudge) {
 return( b>=a-fudge && b<=a+fudge );
 }
 
+int RealRatio(real a,real b,real fudge) {
+
+    if ( b==0 )
+return( RealWithin(a,b,fudge));
+
+return( RealWithin(a/b,1.0,fudge));
+}
+
 int SplineIsLinear(Spline *spline) {
     double t1,t2;
     int ret;
@@ -368,12 +376,12 @@ return( NULL );
     } else if ( fabs(vx)>fabs(vy) ) {
 	slope = vy/vx;
 	for ( i=0; i<cnt; ++i )
-	    if ( !RealNear(mid[i].y,from->me.y+slope*(mid[i].x-from->me.x)) )
+	    if ( !RealWithin(mid[i].y,from->me.y+slope*(mid[i].x-from->me.x),.7) )
 return( NULL );
     } else {
 	slope = vx/vy; 
 	for ( i=0; i<cnt; ++i )
-	    if ( !RealNear(mid[i].x,from->me.x+slope*(mid[i].y-from->me.y)) )
+	    if ( !RealWithin(mid[i].x,from->me.x+slope*(mid[i].y-from->me.y),.7) )
 return( NULL );
     }
     from->nonextcp = to->noprevcp = true;
@@ -1502,14 +1510,23 @@ return( false );
 	/*  remain straight... */
 	if ( mid->prev->knownlinear && mid->next->knownlinear ) {
 	    /* If both are straight, only allow a merge if lines are colinear*/
-	    if ( from->me.x==to->me.x ) {
+	    /*  (or if the distortion is tiny */
+	    double flen, tlen;
+	    flen = (from->me.x-mid->me.x)*(from->me.x-mid->me.x) +
+		    (from->me.y-mid->me.y)*(from->me.y-mid->me.y);
+	    tlen = (to->me.x-mid->me.x)*(to->me.x-mid->me.x) +
+		    (to->me.y-mid->me.y)*(to->me.y-mid->me.y);
+	    if ( (flen<.7 && tlen<.7) || flen<.25 || tlen<.25 )
+		/* Too short to matter */;
+	    else if ( from->me.x==to->me.x ) {
 		if ( mid->me.x!=to->me.x )
 return( false );
 	    } else if ( from->me.y==to->me.y ) {
 		if ( mid->me.y!=to->me.y )
 return( false );
-	    } else if ( !RealNear((from->me.y-to->me.y)/(from->me.x-to->me.x),
-				(mid->me.y-to->me.y)/(mid->me.x-to->me.x)) ) {
+	    } else if ( !RealRatio((from->me.y-to->me.y)/(from->me.x-to->me.x),
+				(mid->me.y-to->me.y)/(mid->me.x-to->me.x),
+			        .01) ) {
 return( false );
 	    }
 	} else if ( mid->prev->knownlinear ) {
