@@ -614,6 +614,7 @@ extern MinimumDistance *MinimumDistanceCopy(MinimumDistance *h);
 extern SplineChar *SplineCharCopy(SplineChar *sc);
 extern BDFChar *BDFCharCopy(BDFChar *bc);
 extern void BitmapsCopy(SplineFont *to, SplineFont *from, int to_index, int from_index );
+extern struct gimage *ImageAlterClut(struct gimage *image);
 extern void ImageListsFree(ImageList *imgs);
 extern void TTFLangNamesFree(struct ttflangname *l);
 extern void MinimumDistancesFree(MinimumDistance *md);

@@ -532,7 +532,7 @@ return;
 
 /************************** Normal Image Import *******************************/
 
-static GImage *ImageAlterClut(GImage *image) {
+GImage *ImageAlterClut(GImage *image) {
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     GClut *clut;
 

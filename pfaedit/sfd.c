@@ -1097,6 +1097,12 @@ static ImageList *SFDGetImage(FILE *sfd) {
     img->bb.minx = img->xoff; img->bb.maxy = img->yoff;
     img->bb.maxx = img->xoff + GImageGetWidth(img->image)*img->xscale;
     img->bb.miny = img->yoff - GImageGetHeight(img->image)*img->yscale;
+    /* In old sfd files I failed to recognize bitmap pngs as bitmap, so put */
+    /*  in a little check here that converts things which should be bitmap to */
+    /*  bitmap */ /* Eventually it can be removed as all old sfd files get */
+    /*  converted. 22/10/2002 */
+    if ( base->image_type==it_index && base->clut!=NULL && base->clut->clut_len==2 )
+	img->image = ImageAlterClut(img->image);
 return( img );
 }
 
