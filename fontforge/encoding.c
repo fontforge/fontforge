@@ -123,7 +123,6 @@ const char *FindUCS2Name(void) {
     /*  different versions of each use still different names? */
     /* Even worse, both accept UCS-2, but under iconv it means native byte */
     /*  ordering and under libiconv it means big-endian */
-    /* On solaris 9, iconv doesn't support unicode at all and is useless to us*/
     iconv_t test;
     static char *goodname = NULL;
     static char *names[] = { "UCS-2", "UCS-2-INTERNAL", "UCS2", "ISO-10646/UCS2", "UNICODE", NULL };
@@ -172,8 +171,7 @@ return( goodname );
 
     test = iconv_open(names[i],"Mac");
     if ( test==(iconv_t) -1 || test==NULL ) {
-	IError( "Your version of iconv does not support the \"Mac Roman\" encoding. Reconfigure --without-iconv." );
-	exit( 1 );
+	IError( "Your version of iconv does not support the \"Mac Roman\" encoding.\nIf this causes problems, reconfigure --without-iconv." );
     } else
 	iconv_close(test);
 
@@ -220,7 +218,7 @@ static int TryEscape( Encoding *enc,char *escape_sequence ) {
 return( enc->has_2byte );
 }
 
-Encoding *FindOrMakeEncoding(const char *name) {
+Encoding *_FindOrMakeEncoding(const char *name,int make_it) {
     Encoding *enc;
     char buffer[20];
     const char *iconv_name;
@@ -374,6 +372,8 @@ return( NULL );
     }
     if ( !temp.has_1byte && !temp.has_2byte )
 return( NULL );
+    if ( !make_it )
+return( NULL );
 
     enc = chunkalloc(sizeof(Encoding));
     *enc = temp;
@@ -407,6 +407,10 @@ return( NULL );
 	enc->hidden = true;
 
 return( enc );
+}
+
+Encoding *FindOrMakeEncoding(const char *name) {
+return( _FindOrMakeEncoding(name,true));
 }
 
 static char *getPfaEditEncodings(void) {
@@ -674,6 +678,8 @@ return;
     EncodingFree(me);
     if ( default_encoding == me )
 	default_encoding = FindOrMakeEncoding("ISO8859-1");
+    if ( default_encoding == NULL )
+	default_encoding = &custom;
     DumpPfaEditEncodings();
 }
 

@@ -1110,6 +1110,8 @@ return( NULL );
 			                      "EUC-CN" );
 	char *in, *out;
 	size_t inlen, outlen;
+	if ( enc==NULL )
+return( NULL );
 	in = (char *) str;
 	inlen = strlen(in);
 	outlen = (inlen+1)*sizeof(unichar_t);
@@ -1160,6 +1162,8 @@ return( NULL );
 			                      "EUC-CN" );
 	char *in, *out;
 	size_t inlen, outlen;
+	if ( enc==NULL )
+return( NULL );
 	in = (char *) ustr;
 	inlen = u_strlen(ustr)*sizeof(unichar_t);
 	outlen = 3*u_strlen(ustr);

@@ -3665,16 +3665,20 @@ static void AddEncodedName(NamTab *nt,unichar_t *uniname,uint16 lang,uint16 stri
 			nt->encoding_name->is_simplechinese ? "EUC-CN" :
 			    nt->encoding_name->enc_name;
 	    enc = FindOrMakeEncoding(encname);
-	    outlen = 3*u_strlen(uniname)+10;
-	    out = space = galloc(outlen+2);
-	    in = (char *) uniname; inlen = 2*u_strlen(uniname);
-	    iconv(enc->fromunicode,NULL,NULL,NULL,NULL);	/* should not be needed, but just in case */
-	    iconv(enc->fromunicode,&in,&inlen,&out,&outlen);
-	    out[0] = '\0'; out[1] = '\0';
-	    ne->offset = ftell(nt->strings);
-	    ne->len    = strlen(space);
-	    dumpstr(nt->strings,space);
-	    free(space);
+	    if ( enc==NULL )
+		--ne;
+	    else {
+		outlen = 3*u_strlen(uniname)+10;
+		out = space = galloc(outlen+2);
+		in = (char *) uniname; inlen = 2*u_strlen(uniname);
+		iconv(enc->fromunicode,NULL,NULL,NULL,NULL);	/* should not be needed, but just in case */
+		iconv(enc->fromunicode,&in,&inlen,&out,&outlen);
+		out[0] = '\0'; out[1] = '\0';
+		ne->offset = ftell(nt->strings);
+		ne->len    = strlen(space);
+		dumpstr(nt->strings,space);
+		free(space);
+	    }
 	}
 	++ne;
     }
