@@ -376,6 +376,18 @@ return( l );
 return( NULL );
 }
 
+static PST *HasAForm(PST *pst) {
+    for ( ; pst!=NULL; pst=pst->next ) {
+	if ( pst->tag==CHR('i','n','i','t') ||
+		pst->tag==CHR('m','e','d','i') ||
+		pst->tag==CHR('f','i','n','a') ||
+		pst->tag==CHR('i','s','o','l'))
+return( pst );
+    }
+
+return( NULL );
+}
+
 struct transition { uint16 next_state, dontconsume, trans_ent; LigList *l; };
 struct trans_entries { uint16 next_state, flags, act_index; LigList *l; };
 static void morx_dumpLigaFeature(FILE *temp,SplineChar **glyphs,int gcnt,
@@ -629,8 +641,199 @@ return( features);
 	}
     }
 
+    free(glyphs);
     free(ligtags);
     SFLigatureCleanup(sf);
+return( features);
+}
+
+static void morx_dumpContGlyphFeature(FILE *temp,SplineChar **glyphs,uint16 *forms[4], int gcnt,
+	struct alltabs *at, SplineFont *sf, uint32 script ) {
+    uint16 *used = gcalloc(at->maxp.numGlyphs,sizeof(uint16));
+    SplineChar **cglyphs, *sc;
+    uint16 *map;
+    int i,j,k,f;
+    uint32 start, pos, here;
+    int any[4];
+    PST *pst;
+
+    any[0] = any[1]= any[2]= any[3] = 0;
+    /* figure out the classes, only one of any importance: Letter in this script */
+    /* might already be formed. Might be a lig. Might be normal */
+    for ( i=0; i<gcnt; ++i ) for ( f=0; f<4; ++f) if ( forms[f][i]!=0 ) {
+	used[ forms[f][i] ] = 4;
+	any[f] = true;
+    }
+    for ( i=0; i<sf->charcnt; ++i) if ( (sc=sf->chars[i])!=NULL && sc->script==script && sc->ttf_glyph!=-1) {
+	if ( sc->unicodeenc>=0 && sc->unicodeenc<0x10000 && isalpha(sc->unicodeenc))
+	    used[sc->ttf_glyph] = 4;
+	else {
+	    for ( pst=sc->possub; pst!=NULL; pst=pst->next )
+		if ( pst->type==pst_ligature &&
+			(pst->tag==CHR('l','i','g','a') || pst->tag==CHR('r','l','i','g') || pst->tag==CHR('d','l','i','g'))) {
+		    used[sc->ttf_glyph] = 4;
+	    break;
+		}	/* T.alt? etc? Too hard */
+	}
+    }
+    for ( i=0; i<gcnt; ++i )
+	used[ glyphs[i]->ttf_glyph ] = 4;
+
+    for ( i=k=0; i<at->maxp.numGlyphs; ++i )
+	if ( used[i] ) ++k;
+    cglyphs = galloc((k+1)*sizeof(SplineChar *));
+    map = galloc((k+1)*sizeof(uint16));
+    j=0;
+    for ( i=k=0; i<at->maxp.numGlyphs; ++i ) if ( used[i] ) {
+	for ( ; j<sf->charcnt; ++j )
+	    if ( sf->chars[j]!=NULL && sf->chars[j]->ttf_glyph==i )
+	break;
+	if ( j<sf->charcnt ) {
+	    cglyphs[k] = sf->chars[j];
+	    map[k++] = used[i];
+	}
+    }
+    cglyphs[k] = NULL;
+
+    start = ftell(temp);
+    putlong(temp,5);			/* # classes */
+    putlong(temp,5*sizeof(uint32));	/* class offset */
+    putlong(temp,0);			/* state offset */
+    putlong(temp,0);			/* transition entry offset */
+    putlong(temp,0);			/* substitution table offset */
+    morx_lookupmap(temp,cglyphs,map,k);	/* dump the class lookup table */
+    here = ftell(temp);
+    fseek(temp,start+2*sizeof(uint32),SEEK_SET);
+    putlong(temp,here-start);			/* Point to start of state arrays */
+    putlong(temp,here-start+5*4*sizeof(uint16));/* Point to end of state arrays */
+    putlong(temp,here-start+5*4*sizeof(uint16)+8*4*sizeof(uint16));/* Point to end of transitions arrays */
+    fseek(temp,0,SEEK_END);
+
+    /* State 0,1 are start states */
+    /* State 2 means we have found one interesting letter, and marked it (so it will become either initial or isolated) */
+    /* State 3 means we have found two interesting letters, and marked (so the last will be either medial or final) */
+    putshort(temp,0); putshort(temp,0); putshort(temp,0); putshort(temp,0); putshort(temp,1);		/* State 0 */
+    putshort(temp,0); putshort(temp,0); putshort(temp,0); putshort(temp,0); putshort(temp,1);		/* State 1 */
+    putshort(temp,3); putshort(temp,3); putshort(temp,4); putshort(temp,3); putshort(temp,3);		/* State 2 */
+    putshort(temp,5); putshort(temp,5); putshort(temp,7); putshort(temp,5); putshort(temp,6);		/* State 3 */
+
+    /* Transition 0 goes to state 0, no substitutions, no marks */
+    /* Transition 1 goes to state 2, no subs, marks glyph */
+    /* Transition 2 goes to state 3, marked glyph=>initial, marks glyph */
+    /* Transition 3 goes to state 0, marked glyph=>isolated, no marks */
+    /* Transition 4 goes to state 2, no subs, no marks (for deleted) */
+    /* Transition 5 goes to state 3, marked glyph=>medial, marks glyph */
+    /* Transition 6 goes to state 0, marked glyph=>final, no marks */
+    /* Transition 7 goes to state 3, no subs, no marks (for deleted) */
+    putshort(temp,0); putshort(temp,0x0000); putshort(temp,0xffff); putshort(temp,0xffff);
+    putshort(temp,2); putshort(temp,0x8000); putshort(temp,0xffff); putshort(temp,0xffff);
+    putshort(temp,3); putshort(temp,0x8000); putshort(temp,any[0]?0:0xffff); putshort(temp,0xffff);
+    putshort(temp,0); putshort(temp,0x0000); putshort(temp,any[1]?any[0]:0xffff); putshort(temp,0xffff);
+    putshort(temp,2); putshort(temp,0x0000); putshort(temp,0xffff); putshort(temp,0xffff);
+    putshort(temp,3); putshort(temp,0x8000); putshort(temp,any[2]?any[0]+any[1]:0xffff); putshort(temp,0xffff);
+    putshort(temp,0); putshort(temp,0x0000); putshort(temp,any[3]?any[0]+any[1]+any[2]:0xffff); putshort(temp,0xffff);
+    putshort(temp,3); putshort(temp,0x0000); putshort(temp,0xffff); putshort(temp,0xffff);
+
+    /* Substitution 0 is initial */
+    /* Substitution 1 is isolated */
+    /* Substitution 2 is medial */
+    /* Substitution 3 is final */
+    pos = ftell(temp);
+    for ( i=0; i<any[0]+any[1]+any[2]+any[3]; ++i )
+	putlong(temp,0);		/* Fixup later */
+
+    j = 0;
+    for ( f=0; f<4; ++f ) if ( any[f] ) {
+	here = ftell(temp);
+	fseek(temp,pos+j++*sizeof(uint32),SEEK_SET);
+	putlong(temp,here-pos);
+	fseek(temp,0,SEEK_END);
+	k=0;
+	for ( i=0; i<gcnt; ++i ) if ( forms[f][i]!=0 ) {
+	    cglyphs[k] = glyphs[i];
+	    map[k++] = forms[f][i];
+	}
+	cglyphs[k] = NULL;
+	morx_lookupmap(temp,cglyphs,map,k);	/* dump this substitution lookup table */
+    }
+
+    /* clean up */
+    free(used);
+    free(cglyphs); free(map);
+}
+
+/* take care of arabic "forms" like initial, medial, final, isolated */
+/*  could happen in other languages (long-s is initial, medial) */
+static struct feature *aat_dumpmorx_glyphforms(struct alltabs *at, SplineFont *sf,
+	FILE *temp, struct feature *features) {
+    int i, k, gcnt, f;
+    SplineChar *sc, *ssc, *rsc, **glyphs;
+    uint16 *forms[4];
+    struct feature *cur;
+    PST *pst;
+
+    glyphs = galloc((at->maxp.numGlyphs+1)*sizeof(SplineChar *));
+    for ( i=0; i<4; ++i )
+	forms[i] = galloc((at->maxp.numGlyphs+1)*sizeof(uint16));
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
+	sf->chars[i]->ticked = false;
+    for ( i=0; i<sf->charcnt; ++i )
+	    if ( (sc=sf->chars[i])!=NULL && !sc->ticked &&
+		    HasAForm(sc->possub)) {
+	for ( f=0; f<4; ++f) forms[f][0] = 0;
+	for ( k=i, gcnt=0; k<sf->charcnt; ++k )
+		if ( (ssc=sf->chars[k])!=NULL && !ssc->ticked &&
+			ssc->script == sc->script ) {
+	    int any = false, which;
+	    for ( pst=ssc->possub; pst!=NULL; pst=pst->next ) {
+		if ( pst->tag==CHR('i','n','i','t')) which = 0;
+		else if ( pst->tag==CHR('m','e','d','i')) which = 1;
+		else if ( pst->tag==CHR('f','i','n','a')) which = 2;
+		else if ( pst->tag==CHR('i','s','o','l')) which = 3;
+		else
+	    continue;
+		rsc = SFGetCharDup(sf,-1,pst->u.subs.variant);
+		if ( rsc==NULL || rsc->ttf_glyph==-1 )
+	    continue;
+		forms[which][gcnt] = rsc->ttf_glyph;
+		any = true;
+	    }
+	    if ( any ) {
+		glyphs[gcnt++] = ssc;
+		for ( f=0; f<4; ++f) forms[f][gcnt] = 0;
+	    }
+	    ssc->ticked = true;
+	}
+	glyphs[gcnt] = NULL;
+	if ( gcnt!=0 ) {
+	    cur = chunkalloc(sizeof(struct feature));
+	    cur->otftag = CHR('i','n','i','t');
+	    cur->featureType = 2;		/* Cursive connection */
+	    cur->featureSetting = 2;		/* full cursive */
+	    cur->offSetting = 0;		/* unconnected */
+	    cur->name = "Full Cursive Connection";
+	    cur->offname = "No Cursive Connection";
+	    cur->ismutex = false;
+	    cur->defaultOn = true;
+	    cur->vertOnly = false;
+	    cur->r2l = sc->script==CHR('a','r','a','b') || sc->script==CHR('h','e','b','r');
+	    cur->next = features;
+	    features = cur;
+	    cur->subtable_type = 1;		/* contextual glyph subs */
+	    cur->feature_start = ftell(temp);
+	    morx_dumpContGlyphFeature(temp,glyphs,forms,gcnt,at,sf,sc->script);
+	    if ( (ftell(temp)-cur->feature_start)&1 )
+		putc('\0',temp);
+	    if ( (ftell(temp)-cur->feature_start)&2 )
+		putshort(temp,0);
+	    cur->feature_len = ftell(temp)-cur->feature_start;
+	}
+    }
+    free(glyphs);
+    for ( i=0; i<4; ++i )
+	free(forms[i]);
+
 return( features);
 }
 
@@ -874,8 +1077,9 @@ void aat_dumpmorx(struct alltabs *at, SplineFont *sf) {
     struct feature *features = NULL;
     int nchains, i;
 
-    features = aat_dumpmorx_ligatures(at,sf,temp,features);
     features = aat_dumpmorx_substitutions(at,sf,temp,features);
+    features = aat_dumpmorx_glyphforms(at,sf,temp,features);
+    features = aat_dumpmorx_ligatures(at,sf,temp,features);
     if ( features==NULL ) {
 	fclose(temp);
 return;

@@ -4663,6 +4663,13 @@ static void dumpstr(FILE *file,char *str) {
     } while ( *str++!='\0' );
 }
 
+static void dumpc2ustr(FILE *file,char *str) {
+    do {
+	putc('\0',file);
+	putc(*str,file);
+    } while ( *str++!='\0' );
+}
+
 static void dumpustr(FILE *file,unichar_t *str) {
     do {
 	putc(*str>>8,file);
@@ -4774,9 +4781,10 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
     /* once of mac roman encoding, once for mac unicode and once for windows unicode 409 */
 
     /* The examples I've seen of the feature table only contain mac roman english */
+    /*  but I'm including apple unicode too */
     if ( at->feat_name!=NULL ) {
 	for ( i=0; at->feat_name[i].strid!=0; ++i )
-	    ++strcnt;
+	    strcnt += 2;
     }
 
     at->name = tmpfile();
@@ -4796,6 +4804,18 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
 	    putshort(at->name,pos);
 	    posses[i] = pos;
 	    pos += 2*u_strlen(dummy.names[i])+2;
+	    ++cnt;
+	}
+    }
+    if ( at->feat_name!=NULL ) {
+	for ( i=0; at->feat_name[i].strid!=0; ++i ) {
+	    putshort(at->name,0);	/* apple unicode */
+	    putshort(at->name,3);	/* Unicode 2.0 */
+	    putshort(at->name,0);	/*  */
+	    putshort(at->name,at->feat_name[i].strid);
+	    putshort(at->name,2*strlen(at->feat_name[i].name));
+	    putshort(at->name,pos);
+	    pos += 2*strlen(at->feat_name[i].name)+2;
 	    ++cnt;
 	}
     }
@@ -4925,6 +4945,10 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
 
     for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL )
 	dumpustr(at->name,dummy.names[i]);
+    if ( at->feat_name!=NULL ) {
+	for ( i=0; at->feat_name[i].strid!=0; ++i )
+	    dumpc2ustr(at->name,at->feat_name[i].name);
+    }
     for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL )
 	dumpmacstr(at->name,dummy.names[i]);
     if ( at->feat_name!=NULL ) {
