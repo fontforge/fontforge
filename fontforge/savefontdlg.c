@@ -2402,15 +2402,20 @@ static void GFD_exists(GIOControl *gio) {
 }
 
 static void _GFD_SaveOk(struct gfc_data *d) {
-    unichar_t *ret = GGadgetGetTitle(d->gfc);
+    GGadget *tf;
+    unichar_t *ret;
     int formatstate = GGadgetGetFirstListSelectedItem(d->pstype);
 
-    if ( formatstate!=ff_none )	/* are we actually generating an outline font? */
-	GIOfileExists(GFileChooserReplaceIO(d->gfc,
-		GIOCreate(ret,d,GFD_exists,GFD_doesnt)));
-    else
-	GFD_doesnt(GIOCreate(ret,d,GFD_exists,GFD_doesnt));	/* No point in bugging the user if we aren't doing anything */
-    free(ret);
+    GFileChooserGetChildren(d->gfc,NULL,NULL,&tf);
+    if ( *_GGadgetGetTitle(tf)!='\0' ) {
+	ret = GGadgetGetTitle(d->gfc);
+	if ( formatstate!=ff_none )	/* are we actually generating an outline font? */
+	    GIOfileExists(GFileChooserReplaceIO(d->gfc,
+		    GIOCreate(ret,d,GFD_exists,GFD_doesnt)));
+	else
+	    GFD_doesnt(GIOCreate(ret,d,GFD_exists,GFD_doesnt));	/* No point in bugging the user if we aren't doing anything */
+	free(ret);
+    }
 }
 
 static int GFD_SaveOk(GGadget *g, GEvent *e) {
