@@ -252,6 +252,7 @@ return( pt );
 
 static void TraceMassage(TraceData *head, TraceData *end) {
     TraceData *pt, *npt, *last, *nnpt;
+    double nangle, pangle;
     /* Look for corners that are too close together */
     /* Paired tangents that might better be a single curve */
     /* tangent corner tangent that might better be a single curve */
@@ -327,20 +328,76 @@ static void TraceMassage(TraceData *head, TraceData *end) {
 	    } else if ( (nnpt = TraceNextPoint(npt))!=NULL &&
 		    nnpt->next && !nnpt->next->online ) {
 		/* We've got tangent corner tangent */
-		forever {
-		    pt->online = pt->use_as_pt = false;
-		    if ( pt==nnpt )
-		break;
-		    pt = pt->next;
+		pangle = atan2(npt->y-pt->y,npt->x-pt->x);
+		nangle = atan2(nnpt->y-npt->y,nnpt->x-npt->x);
+		if ( pangle<0 && nangle>0 && nangle-pangle>=3.1415926 )
+		    pangle += 2*3.1415926535897932;
+		else if ( pangle>0 && nangle<0 && pangle-nangle>=3.1415926 )
+		    nangle += 2*3.1415926535897932;
+		if ( nangle-pangle<1 && nangle-pangle>-1 ) {
+		    forever {
+			pt->online = pt->use_as_pt = false;
+			if ( pt==nnpt )
+		    break;
+			pt = pt->next;
+		    }
+		    pt = npt;
+		    pt->use_as_pt = true;
 		}
-		pt = npt;
-		pt->use_as_pt = true;
 	    }
 	}
 	if ( pt->use_as_pt )
 	    last = pt;
     }
     head->use_as_pt = end->use_as_pt = true;
+}
+
+static void MakeExtremum(SplinePoint *cur,enum extreme extremum) {
+    double len;
+    /* If we decided this point should be an exteme point, then make sure */
+    /*  the control points agree with that (ie. must be horizontal or vertical)*/
+
+    if ( cur->pointtype==pt_tangent )
+return;
+    if ( extremum>=e_ymin ) {
+	if ( cur->me.y!=cur->nextcp.y ) {
+	    len = sqrt((cur->nextcp.y-cur->me.y)*(cur->nextcp.y-cur->me.y) +
+			(cur->nextcp.x-cur->me.x)*(cur->nextcp.x-cur->me.x) );
+	    cur->nextcp.y = cur->me.y;
+	    if ( cur->me.x>cur->nextcp.x )
+		cur->nextcp.x = cur->me.x-len;
+	    else
+		cur->nextcp.x = cur->me.x+len;
+	}
+	if ( cur->me.y!=cur->prevcp.y ) {
+	    len = sqrt((cur->prevcp.y-cur->me.y)*(cur->prevcp.y-cur->me.y) +
+			(cur->prevcp.x-cur->me.x)*(cur->prevcp.x-cur->me.x) );
+	    cur->prevcp.y = cur->me.y;
+	    if ( cur->me.x>cur->prevcp.x )
+		cur->prevcp.x = cur->me.x-len;
+	    else
+		cur->prevcp.x = cur->me.x+len;
+	}
+    } else {
+	if ( cur->me.x!=cur->nextcp.x ) {
+	    len = sqrt((cur->nextcp.x-cur->me.x)*(cur->nextcp.x-cur->me.x) +
+			(cur->nextcp.y-cur->me.y)*(cur->nextcp.y-cur->me.y) );
+	    cur->nextcp.x = cur->me.x;
+	    if ( cur->me.y>cur->nextcp.y )
+		cur->nextcp.y = cur->me.y-len;
+	    else
+		cur->nextcp.y = cur->me.y+len;
+	}
+	if ( cur->me.x!=cur->prevcp.x ) {
+	    len = sqrt((cur->prevcp.x-cur->me.x)*(cur->prevcp.x-cur->me.x) +
+			(cur->prevcp.y-cur->me.y)*(cur->prevcp.y-cur->me.y) );
+	    cur->prevcp.x = cur->me.x;
+	    if ( cur->me.y>cur->prevcp.y )
+		cur->prevcp.y = cur->me.y-len;
+	    else
+		cur->prevcp.y = cur->me.y+len;
+	}
+    }
 }
 
 static SplineSet *TraceCurve(CharView *cv) {
@@ -454,6 +511,7 @@ static SplineSet *TraceCurve(CharView *cv) {
     else
 	spl->last->pointtype = pt_curve;
     if ( spl->first->next!=NULL ) {
+	pt = head;
 	for ( cur=spl->first->next->to; cur->next!=NULL ; cur = cur->next->to ) {
 	    if ( cur->nonextcp && cur->noprevcp )
 		cur->pointtype = pt_corner;
@@ -463,6 +521,9 @@ static SplineSet *TraceCurve(CharView *cv) {
 		else
 		    cur->pointtype = pt_tangent;
 		SPAverageCps(cur);
+		while ( pt!=NULL && pt->num<cur->ptindex ) pt=pt->next;
+		if ( pt!=NULL && pt->extremum!=e_none )
+		    MakeExtremum(cur,pt->extremum);
 		if ( !cur->noprevcp )
 		    ApproximateSplineFromPointsSlopes(cur->prev->from,cur,
 			    mids+cur->prev->from->ptindex+1,
@@ -496,6 +557,8 @@ void CVMouseMoveFreeHand(CharView *cv, GEvent *event) {
 void CVMouseUpFreeHand(CharView *cv) {
 
     if ( cv->freehand.current_trace!=NULL ) {
+	SplineCharAddExtrema(cv->freehand.current_trace,false);
+	SplinePointListSimplify(cv->sc,cv->freehand.current_trace,false);
 	cv->freehand.current_trace->next = *cv->heads[cv->drawmode];
 	*cv->heads[cv->drawmode] = cv->freehand.current_trace;
 	cv->freehand.current_trace = NULL;
