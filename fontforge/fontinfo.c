@@ -666,6 +666,12 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_LineGap		3007
 #define CID_VLineGap		3008
 #define CID_VLineGapLab		3009
+#define CID_WinAscent		3010
+#define CID_WinAscentLab	3011
+#define CID_WinAscentIsOff	3012
+#define CID_WinDescent		3013
+#define CID_WinDescentLab	3014
+#define CID_WinDescentIsOff	3015
 
 #define CID_PanFamily		4001
 #define CID_PanSerifs		4002
@@ -3952,7 +3958,8 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	int enc, interp;
 	int reformat_fv=0, enc_changed, retitle_fv=false;
 	int upos, uwid, as, des, nchar, oldcnt=sf->charcnt, err = false, weight=0;
-	int uniqueid, linegap=0, vlinegap;
+	int uniqueid, linegap=0, vlinegap=0, winascent=0, windescent=0;
+	int winaoff=true, windoff=true;
 	int force_enc=0;
 	real ia, cidversion;
 	const unichar_t *txt; unichar_t *end;
@@ -4015,6 +4022,10 @@ return(true);
 	    linegap = GetIntR(gw,CID_LineGap,_STR_LineGap,&err);
 	    if ( vmetrics )
 		vlinegap = GetIntR(gw,CID_VLineGap,_STR_VLineGap,&err);
+	    winaoff = GGadgetIsChecked(GWidgetGetControl(gw,CID_WinAscentIsOff));
+	    windoff = GGadgetIsChecked(GWidgetGetControl(gw,CID_WinDescentIsOff));
+	    winascent  = GetIntR(gw,CID_WinAscent,winaoff ? _STR_WinAscentOff : _STR_WinAscent,&err);
+	    windescent = GetIntR(gw,CID_WinDescent,windoff ? _STR_WinDescentOff : _STR_WinDescent,&err);
 	}
 	if ( d->tex_set ) {
 	    if ( !ParseTeX(d))
@@ -4188,6 +4199,10 @@ return(true);
 	    sf->pfminfo.linegap = linegap;
 	    if ( vmetrics )
 		sf->pfminfo.vlinegap = vlinegap;
+	    sf->pfminfo.os2_winascent = winascent;
+	    sf->pfminfo.os2_windescent = windescent;
+	    sf->pfminfo.winascent_add = winaoff;
+	    sf->pfminfo.windescent_add = windoff;
 	    sf->pfminfo.pfmset = true;
 	}
 	if ( order2!=sf->order2 ) {
@@ -4267,6 +4282,40 @@ return( encodingtypes );
 return( ti );
 }
 
+static void GFI_AsDsLab(struct gfi_data *d, int cid) {
+    int isoffset = GGadgetIsChecked(GWidgetGetControl(d->gw,cid));
+    DBounds b;
+    int ocid = cid==CID_WinAscentIsOff ? CID_WinAscent : CID_WinDescent;
+    double val;
+    char buf[40];
+    unichar_t ubuf[40];
+
+    if ( cid==CID_WinAscentIsOff )
+	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_WinAscentLab),
+		GStringGetResource(isoffset?_STR_WinAscentOff:_STR_WinAscent,NULL));
+    else
+	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_WinDescentLab),
+		GStringGetResource(isoffset?_STR_WinDescentOff:_STR_WinDescent,NULL));
+    CIDFindBounds(d->sf,&b);
+    b.miny = -b.miny;
+
+    val = u_strtod(_GGadgetGetTitle(GWidgetGetControl(d->gw,ocid)),NULL);
+    if ( isoffset )
+	sprintf( buf,"%g",rint( val-(cid==CID_WinAscentIsOff ? b.maxy : -b.miny)) );
+    else
+	sprintf( buf,"%g",rint( val+(cid==CID_WinAscentIsOff ? b.maxy : -b.miny)) );
+    uc_strcpy(ubuf,buf);
+    GGadgetSetTitle(GWidgetGetControl(d->gw,ocid),ubuf);
+}
+
+static int GFI_AsDesIsOff(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	GFI_AsDsLab(d,GGadgetGetCid(g));
+    }
+return( true );
+}
+
 static void TTFSetup(struct gfi_data *d) {
     struct pfminfo info;
     char buffer[10]; unichar_t ubuf[10];
@@ -4325,6 +4374,17 @@ static void TTFSetup(struct gfi_data *d) {
     sprintf( buffer, "%d", info.vlinegap );
     uc_strcpy(ubuf,buffer);
     GGadgetSetTitle(GWidgetGetControl(d->gw,CID_VLineGap),ubuf);
+
+    GGadgetSetChecked(GWidgetGetControl(d->gw,CID_WinAscentIsOff),info.winascent_add);
+    GFI_AsDsLab(d,CID_WinAscentIsOff);
+    sprintf( buffer, "%d", info.os2_winascent );
+    uc_strcpy(ubuf,buffer);
+    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_WinAscent),ubuf);
+    GGadgetSetChecked(GWidgetGetControl(d->gw,CID_WinDescentIsOff),info.windescent_add);
+    GFI_AsDsLab(d,CID_WinDescentIsOff);
+    sprintf( buffer, "%d", info.os2_windescent );
+    uc_strcpy(ubuf,buffer);
+    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_WinDescent),ubuf);
 }
 
 static int mathparams[] = { _STR_Num1, _STR_Num2,  _STR_Num3, _STR_Denom1,
@@ -4582,11 +4642,11 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GWindowAttrs wattrs;
     GTabInfo aspects[15], conaspects[7], smaspects[5];
     GGadgetCreateData mgcd[10], ngcd[13], egcd[14], psgcd[24], tngcd[7],
-	pgcd[8], vgcd[16], pangcd[22], comgcd[3], atgcd[7], txgcd[23],
+	pgcd[8], vgcd[22], pangcd[22], comgcd[3], atgcd[7], txgcd[23],
 	congcd[3], csubgcd[fpst_max-pst_contextpos][6], smgcd[3], smsubgcd[4][6],
 	mfgcd[8], mcgcd[8];
     GTextInfo mlabel[10], nlabel[13], elabel[14], pslabel[24], tnlabel[7],
-	plabel[8], vlabel[16], panlabel[22], comlabel[3], atlabel[7], txlabel[23],
+	plabel[8], vlabel[22], panlabel[22], comlabel[3], atlabel[7], txlabel[23],
 	csublabel[fpst_max-pst_contextpos][6], smsublabel[4][6],
 	mflabel[8], mclabel[8], *list;
     struct gfi_data *d;
@@ -5260,7 +5320,8 @@ return;
     vgcd[6].gd.popup_msg = GStringGetResource(_STR_EmbeddablePopup,NULL);
     vgcd[6].creator = GLabelCreate;
 
-    vgcd[7].gd.pos.x = 100; vgcd[7].gd.pos.y = vgcd[6].gd.pos.y-6; vgcd[7].gd.pos.width = 140;
+    vgcd[7].gd.pos.x = 100; vgcd[7].gd.pos.y = vgcd[6].gd.pos.y-6;
+    vgcd[7].gd.pos.width = 140;
     vgcd[7].gd.flags = gg_visible | gg_enabled;
     vgcd[7].gd.cid = CID_FSType;
     vgcd[7].gd.u.list = fstype;
@@ -5301,44 +5362,102 @@ return;
     vgcd[9].gd.cid = CID_OnlyBitmaps;
     vgcd[9].creator = GCheckBoxCreate;
 
-    vgcd[10].gd.pos.x = 10; vgcd[10].gd.pos.y = vgcd[9].gd.pos.y+26+6;
-    vlabel[10].text = (unichar_t *) _STR_LineGap;
+    vgcd[10].gd.pos.x = 10; vgcd[10].gd.pos.y = vgcd[9].gd.pos.y+26+4;
+    vlabel[10].text = (unichar_t *) _STR_WinAscentOff;
     vlabel[10].text_in_resource = true;
     vgcd[10].gd.label = &vlabel[10];
     vgcd[10].gd.flags = gg_visible | gg_enabled;
-    vgcd[10].gd.popup_msg = GStringGetResource(_STR_LineGapPopup,NULL);
+    vgcd[10].gd.popup_msg = GStringGetResource(_STR_WinAscentPopup,NULL);
+    vgcd[10].gd.cid = CID_WinAscentLab;
     vgcd[10].creator = GLabelCreate;
 
-    vgcd[11].gd.pos.x = 100; vgcd[11].gd.pos.y = vgcd[10].gd.pos.y-6; vgcd[11].gd.pos.width = 140;
+    vgcd[11].gd.pos.x = 105; vgcd[11].gd.pos.y = vgcd[10].gd.pos.y-4;
+    vgcd[11].gd.pos.width = 50;
     vgcd[11].gd.flags = gg_visible | gg_enabled;
-	/* Line gap value set later */
-    vgcd[11].gd.cid = CID_LineGap;
+	/* value set later */
+    vgcd[11].gd.cid = CID_WinAscent;
     vgcd[11].gd.popup_msg = vgcd[10].gd.popup_msg;
     vgcd[11].creator = GTextFieldCreate;
 
-    vgcd[12].gd.pos.x = 10; vgcd[12].gd.pos.y = vgcd[11].gd.pos.y+26+6;
-    vlabel[12].text = (unichar_t *) _STR_VLineGap;
+    vgcd[12].gd.pos.x = 160; vgcd[12].gd.pos.y = vgcd[11].gd.pos.y;
+    vlabel[12].text = (unichar_t *) _STR_IsOffset;
     vlabel[12].text_in_resource = true;
     vgcd[12].gd.label = &vlabel[12];
-    vgcd[12].gd.flags = sf->hasvmetrics ? (gg_visible | gg_enabled) : gg_visible;
-    vgcd[12].gd.popup_msg = GStringGetResource(_STR_VLineGapPopup,NULL);
-    vgcd[12].gd.cid = CID_VLineGapLab;
-    vgcd[12].creator = GLabelCreate;
+    vgcd[12].gd.flags = gg_visible | gg_enabled;
+	/* value set later */
+    vgcd[12].gd.cid = CID_WinAscentIsOff;
+    vgcd[12].gd.popup_msg = vgcd[10].gd.popup_msg;
+    vgcd[12].gd.handle_controlevent = GFI_AsDesIsOff;
+    vgcd[12].creator = GCheckBoxCreate;
 
-    vgcd[13].gd.pos.x = 100; vgcd[13].gd.pos.y = vgcd[12].gd.pos.y-6; vgcd[13].gd.pos.width = 140;
-    vgcd[13].gd.flags = sf->hasvmetrics ? (gg_visible | gg_enabled) : gg_visible;
-	/* V Line gap value set later */
-    vgcd[13].gd.cid = CID_VLineGap;
-    vgcd[13].gd.popup_msg = vgcd[11].gd.popup_msg;
-    vgcd[13].creator = GTextFieldCreate;
+    vgcd[13].gd.pos.x = 10; vgcd[13].gd.pos.y = vgcd[11].gd.pos.y+26+4;
+    vlabel[13].text = (unichar_t *) _STR_WinDescentOff;
+    vlabel[13].text_in_resource = true;
+    vgcd[13].gd.label = &vlabel[13];
+    vgcd[13].gd.flags = gg_visible | gg_enabled;
+    vgcd[13].gd.popup_msg = vgcd[10].gd.popup_msg;
+    vgcd[13].gd.cid = CID_WinDescentLab;
+    vgcd[13].creator = GLabelCreate;
 
-    vgcd[14].gd.pos.x = 10; vgcd[14].gd.pos.y = vgcd[13].gd.pos.y+26;
-    vlabel[14].text = (unichar_t *) _STR_SetGSUBOrder;
-    vlabel[14].text_in_resource = true;
-    vgcd[14].gd.label = &vlabel[14];
+    vgcd[14].gd.pos.x = 105; vgcd[14].gd.pos.y = vgcd[13].gd.pos.y-4;
+    vgcd[14].gd.pos.width = 50;
     vgcd[14].gd.flags = gg_visible | gg_enabled;
-    vgcd[14].gd.handle_controlevent = OrderGSUB;
-    vgcd[14].creator = GButtonCreate;
+	/* value set later */
+    vgcd[14].gd.cid = CID_WinDescent;
+    vgcd[14].gd.popup_msg = vgcd[10].gd.popup_msg;
+    vgcd[14].creator = GTextFieldCreate;
+
+    vgcd[15].gd.pos.x = 160; vgcd[15].gd.pos.y = vgcd[14].gd.pos.y;
+    vlabel[15].text = (unichar_t *) _STR_IsOffset;
+    vlabel[15].text_in_resource = true;
+    vgcd[15].gd.label = &vlabel[15];
+    vgcd[15].gd.flags = gg_visible | gg_enabled;
+	/* value set later */
+    vgcd[15].gd.cid = CID_WinDescentIsOff;
+    vgcd[15].gd.popup_msg = vgcd[10].gd.popup_msg;
+    vgcd[15].gd.handle_controlevent = GFI_AsDesIsOff;
+    vgcd[15].creator = GCheckBoxCreate;
+
+    vgcd[16].gd.pos.x = 10; vgcd[16].gd.pos.y = vgcd[14].gd.pos.y+26+4;
+    vlabel[16].text = (unichar_t *) _STR_LineGap;
+    vlabel[16].text_in_resource = true;
+    vgcd[16].gd.label = &vlabel[16];
+    vgcd[16].gd.flags = gg_visible | gg_enabled;
+    vgcd[16].gd.popup_msg = GStringGetResource(_STR_LineGapPopup,NULL);
+    vgcd[16].creator = GLabelCreate;
+
+    vgcd[17].gd.pos.x = 105; vgcd[17].gd.pos.y = vgcd[16].gd.pos.y-4;
+    vgcd[17].gd.pos.width = 50;
+    vgcd[17].gd.flags = gg_visible | gg_enabled;
+	/* Line gap value set later */
+    vgcd[17].gd.cid = CID_LineGap;
+    vgcd[17].gd.popup_msg = vgcd[16].gd.popup_msg;
+    vgcd[17].creator = GTextFieldCreate;
+
+    vgcd[18].gd.pos.x = 10; vgcd[18].gd.pos.y = vgcd[17].gd.pos.y+26+6;
+    vlabel[18].text = (unichar_t *) _STR_VLineGap;
+    vlabel[18].text_in_resource = true;
+    vgcd[18].gd.label = &vlabel[18];
+    vgcd[18].gd.flags = sf->hasvmetrics ? (gg_visible | gg_enabled) : gg_visible;
+    vgcd[18].gd.popup_msg = GStringGetResource(_STR_VLineGapPopup,NULL);
+    vgcd[18].gd.cid = CID_VLineGapLab;
+    vgcd[18].creator = GLabelCreate;
+
+    vgcd[19].gd.pos.x = 105; vgcd[19].gd.pos.y = vgcd[18].gd.pos.y-6;
+    vgcd[19].gd.pos.width = 50;
+    vgcd[19].gd.flags = sf->hasvmetrics ? (gg_visible | gg_enabled) : gg_visible;
+	/* V Line gap value set later */
+    vgcd[19].gd.cid = CID_VLineGap;
+    vgcd[19].gd.popup_msg = vgcd[17].gd.popup_msg;
+    vgcd[19].creator = GTextFieldCreate;
+
+    vgcd[20].gd.pos.x = 10; vgcd[20].gd.pos.y = vgcd[19].gd.pos.y+26;
+    vlabel[20].text = (unichar_t *) _STR_SetGSUBOrder;
+    vlabel[20].text_in_resource = true;
+    vgcd[20].gd.label = &vlabel[20];
+    vgcd[20].gd.flags = gg_visible | gg_enabled;
+    vgcd[20].gd.handle_controlevent = OrderGSUB;
+    vgcd[20].creator = GButtonCreate;
 
 /******************************************************************************/
     memset(&tnlabel,0,sizeof(tnlabel));

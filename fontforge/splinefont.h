@@ -832,6 +832,8 @@ typedef struct splinefont {
     char *xuid;
     struct pfminfo {		/* A misnomer now. OS/2 info would be more accurate, but that's stuff in here from all over ttf files */
 	unsigned int pfmset: 1;
+	unsigned int winascent_add: 1;
+	unsigned int windescent_add: 1;
 	unsigned char pfmfamily;
 	int16 weight;
 	int16 width;

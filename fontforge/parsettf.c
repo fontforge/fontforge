@@ -4364,6 +4364,21 @@ static void MMFillFromVAR(SplineFont *sf, struct ttfinfo *info) {
     VariationFree(info);
 }
 
+static void SFRelativeWinAsDs(SplineFont *sf) {
+    if ( !sf->pfminfo.winascent_add || sf->pfminfo.windescent_add ) {
+	DBounds b;
+	CIDFindBounds(sf,&b);
+	if ( !sf->pfminfo.winascent_add ) {
+	    sf->pfminfo.winascent_add = true;
+	    sf->pfminfo.os2_winascent -= b.maxy;
+	}
+	if ( !sf->pfminfo.windescent_add ) {
+	    sf->pfminfo.windescent_add = true;
+	    sf->pfminfo.os2_windescent += b.miny;
+	}
+    }
+}
+
 static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     SplineFont *sf, *_sf;
     int i,k;
@@ -4506,6 +4521,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 	    ++k;
 	} while ( k<sf->subfontcnt );
     }
+    SFRelativeWinAsDs(sf);
 return( sf );
 }
 

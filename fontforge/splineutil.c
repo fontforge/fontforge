@@ -735,6 +735,13 @@ void CIDFindBounds(SplineFont *cidmaster,DBounds *bounds) {
     DBounds b;
     real factor;
 
+    if ( cidmaster->cidmaster )
+	cidmaster = cidmaster->cidmaster;
+    if ( cidmaster->subfonts==NULL ) {
+	SplineFontFindBounds(cidmaster,bounds);
+return;
+    }
+
     sf = cidmaster->subfonts[0];
     SplineFontFindBounds(sf,bounds);
     factor = 1000.0/(sf->ascent+sf->descent);

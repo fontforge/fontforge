@@ -2784,6 +2784,8 @@ void SFDefaultOS2Simple(struct pfminfo *pfminfo,SplineFont *sf) {
     pfminfo->panose[2] = 5;
     pfminfo->width = 5;
     pfminfo->panose[3] = 3;
+    pfminfo->winascent_add = pfminfo->windescent_add = true;
+    pfminfo->os2_winascent = pfminfo->os2_windescent = 0;
 
     if ( sf->subfonts!=NULL ) sf = sf->subfonts[0];
     pfminfo->linegap = pfminfo->vlinegap =
@@ -2965,9 +2967,12 @@ static void WinBB(SplineFont *_sf,uint16 *winascent,uint16 *windescent,struct al
     /*  that's Latin1 with a few additions */
     /* Well, that's what is documented, but the documentation says contradictory */
     /*  things. I believe that winAscent should be the same as hhea.ascent */
+
 #if 1
     *winascent = at->head.ymax;
     *windescent = -at->head.ymin;		/* Should be positive */
+    if ( _sf->cidmaster!=NULL )
+	_sf = _sf->cidmaster;
 #else
     int i,k;
     int first = true;
@@ -3018,6 +3023,14 @@ static void WinBB(SplineFont *_sf,uint16 *winascent,uint16 *windescent,struct al
 	*windescent = -rint(b.miny);		/* Should be positive */
     }
 #endif
+    if ( _sf->pfminfo.winascent_add )
+	*winascent += _sf->pfminfo.os2_winascent;
+    else
+	*winascent  = _sf->pfminfo.os2_winascent;
+    if ( _sf->pfminfo.windescent_add )
+	*windescent += _sf->pfminfo.os2_windescent;
+    else
+	*windescent  = _sf->pfminfo.os2_windescent;
 }
 
 static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *_sf,
