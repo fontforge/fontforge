@@ -1239,7 +1239,7 @@ return;
     CVCharChangedUpdate(cv);
 }
 
-static void Layer2Menu(CharView *cv,GEvent *event) {
+static void Layer2Menu(CharView *cv,GEvent *event, int nolayer) {
     GMenuItem mi[20];
     int i;
     static int names[] = { _STR_LayerInfo, _STR_NewLayer, _STR_DelLayer, -1,
@@ -1259,6 +1259,8 @@ static void Layer2Menu(CharView *cv,GEvent *event) {
 	mi[i].ti.bg = COLOR_DEFAULT;
 	mi[i].mid = mids[i];
 	mi[i].invoke = CVLayer2Invoked;
+	if ( mids[i]!=MID_NewLayer && nolayer )
+	    mi[i].ti.disabled = true;
 	if (( mids[i]==MID_First || mids[i]==MID_Earlier ) && layer==ly_fore )
 	    mi[i].ti.disabled = true;
 	if (( mids[i]==MID_Last || mids[i]==MID_Later ) && layer==cv->sc->layer_cnt-1 )
@@ -1326,7 +1328,10 @@ return( true );
 		cv->drawmode = layer==0 ? dm_grid : dm_back;
 		layer2.active = layer;
 	    } else if ( layer-1+layer2.offtop >= cv->sc->layer_cnt ) {
-		GDrawBeep(NULL);
+		if ( event->u.mouse.button==3 )
+		    Layer2Menu(cv,event,true);
+		else
+		    GDrawBeep(NULL);
 return(true);
 	    } else {
 		layer2.active = layer+layer2.offtop;
@@ -1336,8 +1341,8 @@ return(true);
 	    GDrawRequestExpose(cvlayers2,NULL,false);
 	    GDrawRequestExpose(cv->v,NULL,false);
 	    GDrawRequestExpose(cv->gw,NULL,false);	/* the logo (where the scrollbars join) shows what layer we are in */
-	    if ( event->u.mouse.button==3 && cv->drawmode==dm_fore )
-		Layer2Menu(cv,event);
+	    if ( event->u.mouse.button==3 )
+		Layer2Menu(cv,event,cv->drawmode!=dm_fore);
 	    else if ( event->u.mouse.clicks==2 && cv->drawmode==dm_fore ) {
 		if ( LayerDialog(cv->layerheads[cv->drawmode]))
 		    CVCharChangedUpdate(cv);
