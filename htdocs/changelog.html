@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 12-Jul-2003 -->
+  <!-- AP: Last modified: 14-Jul-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,28 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    14-Jul-2003 (Bastille Day!)
+    <UL>
+      <LI>
+	There are still cases where I'm getting the truetype point count wrong. If
+	a truetype file had a control point that lay under an end point, then I would
+	treat that as a "no control point" mark, and ignore the cp. But if I do that
+	blindly I mess up the point count, so during font generation I must be prepared
+	to put the cp back.
+      <LI>
+	Kanou provided a patch to fix a bug in the underlying graphics library.
+      <LI>
+	Add a popup menu to Show Att to allow those data to be saved (as utf8 text)
+      <LI>
+	Fixed (I hope) right to left kerning
+      <LI>
+	Added 'ccmp' entries by default for Hebrew
+      <LI>
+	Fixed a couple of bugs with the new simplify more options
+      <LI>
+	pfaedit didn't compile on solaris. It now does.
+    </UL>
   <LI>
     12-Jul-2003
     <UL>
@@ -64,6 +86,20 @@
 	upgraded</STRONG></FONT>)
       <LI>
 	Added a new preference item CharCenterHighest to assist in accent placement.
+	  <HR>
+      <LI>
+	Oh. This isn't documented, but each langsys table can only point to one (1)
+	feature with a given tag. So if I have multiple 'mark' lookups, I can't have
+	multiple 'mark' features, I must have one 'mark' feature with pointers to
+	many lookups.
+      <LI>
+	PfaEdit could crash when generating a tfm file from a CID keyed font
+      <LI>
+	Change GDEF output so that the class def table isn't generated when it isn't
+	needed (we used to generate a 0 length one, which would confuse the freetype-1
+	opentype code, and perhaps others).
+      <LI>
+	Fixed a bug in autohint caused by negative stem widths.
     </UL>
   <LI>
     4-July-2003

@@ -2,16 +2,17 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 4-Jul-2003 -->
+  <!-- AP: Last modified: 14-Jul-2003 -->
   <TITLE>Advanced Typography tables</TITLE>
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
-  Advanced Typograph Tables
+  Advanced Typography Tables
 </H1>
 <P>
-These differ between OpenType and Apple. My support for Apple is minimal
-as yet. My support for OpenType is not complete.
+These differ between OpenType (originally called TrueType Open) and Apple
+(GX or Apple Advanced Typography). My support for Apple is minimal as yet.
+My support for OpenType is not complete.
 <UL>
   <LI>
     <A HREF="#opentype">The <B><CODE>GPOS</CODE></B>,
@@ -20,6 +21,8 @@ as yet. My support for OpenType is not complete.
     <A HREF="#AAT">Apple Advanced Typography</A>
   <LI>
     <A HREF="TrueOpenTables.html">other true type and open type tables</A>
+  <LI>
+    <A HREF="#Unsupported">What is unsupported</A>
 </UL>
 <H2>
   The <B><CODE>GPOS,</CODE></B> <B><CODE>GSUB</CODE></B> and
@@ -29,7 +32,7 @@ as yet. My support for OpenType is not complete.
 These two tables are used for positioning and substituting glyphs. The GPOS
 table can control things like: kerning, accent positioning, cursive joining,
 etc. The GSUB table can control things like: ligatures, arabic forms, vertical
-rotation, conversion to small caps, indic glyph rearangment, etc.
+rotation, conversion to small caps, indic glyph rearrangement, etc.
 <P>
 This page assumes basic familiarity with the abilities of the tables, for
 more information on them read, study and inwardly digest the opentype docs
@@ -56,7 +59,7 @@ on:
     list of script tags supported by opentype</A>
   <LI>
     <A HREF="http://partners.adobe.com/asn/developer/opentype/appendices/languagetags.html">The
-    list of language tags supported by opentype</A> 
+    list of language tags supported by opentype</A>
 </UL>
 <P>
 The basic idea of the GPOS and GSUB tables is that each script (or language
@@ -94,7 +97,7 @@ PfaEdit will read the following sub tables of the GPOS table:
       pair of character. The most common use of this is for kerning where the advance
       width of the first character is altered depending on which character follows
       it. But the table is more general than that and could support mark (accent,
-      vowel) positioning over a base character (though that is more efficeintly
+      vowel) positioning over a base character (though that is more efficiently
       done with the mark to base subtable).</TD>
     <TD>Only the 'kern' feature is supported for this sub-table. These may be
       created from the <A HREF="metricsview.html">Metrics View</A></TD>
@@ -330,10 +333,12 @@ the following tables:
 <P>
 <P>
 PfaEdit has minimal support now for the <CODE>'mort'</CODE> and
-<CODE>'<A NAME="morx">morx</A>'</CODE> tables (Glyph metamorphasis and extended
-glyph metamorphasis tables). These correspond vaguely to the
+<CODE>'<A NAME="morx">morx</A>'</CODE> tables (Glyph metamorphosis and extended
+glyph metamorphosis tables). These correspond vaguely to the
 <A HREF="#GSUB">GSUB</A> table. Note: Currently only feature type/setting
-combinations which correspond directly to an open type feature are saved.
+combinations which correspond directly to an open type feature are saved
+(use <A HREF="prefs.html#Mac">File-&gt;Preferences</A> to extend PfaEdit's
+mapping from feature type/setting to opentype tags).
 <TABLE BORDER CELLPADDING="2">
   <CAPTION>
     Sub tables of <CODE>'mort'</CODE> or <CODE>'morx'</CODE> currently supported
@@ -376,7 +381,7 @@ combinations which correspond directly to an open type feature are saved.
 <P>
 <TABLE BORDER CELLPADDING="2">
   <CAPTION>
-    Correspondances between Apple and OpenType
+    Correspondences between Apple and OpenType
     <A NAME="OT-Mac-features">features</A><BR>
     (that I support)
   </CAPTION>
@@ -506,6 +511,81 @@ PfaEdit will retain the order of features in the morx table, and the user
 may adjust it with the <A HREF="fontinfo.html#Order">Element-&gt;Font Info</A>
 command. (this is the same list as that used for GSUB table. GSUB features
 that don't correspond to mac features will be ignored).
+<H2>
+  What is <A NAME="Unsupported">Unsupported</A>?
+</H2>
+<P>
+PfaEdit does not (yet) support all the advanced typographic features available
+in either opentype or apple advanced typography.
+<H3>
+  OpenType
+</H3>
+<UL>
+  <LI>
+    PfaEdit does not support required features for a script/language combination
+  <LI>
+    PfaEdit does not support contextual positioning or chaining contextual
+    positioning in GPOS
+  <LI>
+    PfaEdit does not support contextual substitution, chaining contextual
+    substitution nor reverse chaining contextual substitution in GSUB.
+  <LI>
+    PfaEdit does not provide an attachment list subtable nor a MarkAttachClassDef
+    subtable of the GDEF table.
+  <LI>
+    PfaEdit does not support the BASE and JUST tables
+  <LI>
+    PfaEdit has minimal support for VORG
+</UL>
+<H3>
+  Apple Advanced Typography
+</H3>
+<UL>
+  <LI>
+    PfaEdit only supports apple features if it has a mapping between that feature
+    and an opentype feature tag. Use the
+    <A HREF="prefs.html#Mac">File-&gt;Preference dialog</A> to extend PfaEdit's
+    default mapping.
+  <LI>
+    PfaEdit does not support Indic rearrangement or contextual glyph insertion
+    in 'mort'/'morx' tables.
+  <LI>
+    PfaEdit will generate (but not read) a contextual glyph substitution sub-table
+    for the specific case of arabic forms
+  <LI>
+    PfaEdit supports no other contextual glyph substitution sub-tables.
+  <LI>
+    PfaEdit will never generate a 'mort' table. It can read 'mort' tables, but
+    it will only produce 'morx' tables.
+  <LI>
+    PfaEdit does not support the following Apple specific tables
+    <UL>
+      <LI>
+	acnt (accent attachment)
+      <LI>
+	avar (axis variation)
+      <LI>
+	bsln (baseline)
+      <LI>
+	cvar (CVT variation)
+      <LI>
+	fdsc (font descriptor)
+      <LI>
+	fmtx (font metrics)
+      <LI>
+	fvar (font variation)
+      <LI>
+	gvar (glyph variation)
+      <LI>
+	hsty (horizontal style)
+      <LI>
+	just (justification)
+      <LI>
+	trak (tracking)
+      <LI>
+	Zapf (glyph reference)
+    </UL>
+</UL>
 <P>
 <P ALIGN=Center>
 -- <A HREF="generate.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
