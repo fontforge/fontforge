@@ -914,6 +914,9 @@ static int e_h(GWindow gw, GEvent *event) {
 return( false );
     } else if ( event->type==et_map ) {
 	GDrawRaise(gw);
+    } else if ( event->type == et_mousemove ) {
+	struct gfc_data *d = GDrawGetUserData(gw);
+	GFileChooserPopupCheck(d->gfc,event);
     }
 return( true );
 }

@@ -340,7 +340,7 @@ return( handled );
 		handled = (gadget->funcs->handle_timer)(gadget,event);
 	}
     }
-    if ( !handled && gd->e_h!=NULL )
+    if ( gd->e_h!=NULL && (!handled || event->type==et_mousemove ))
 	handled = (gd->e_h)(gw,event);
     if ( event->type == et_destroy ) {
 	GGadget *prev;

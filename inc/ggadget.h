@@ -256,6 +256,7 @@ void GMenuBarSetItemChecked(GGadget *g, int mid, int check);
 void GMenuBarSetItemEnabled(GGadget *g, int mid, int enabled);
 void GMenuBarSetItemName(GGadget *g, int mid, const unichar_t *name);
 
+void GFileChooserPopupCheck(GGadget *g,GEvent *e);
 void GFileChooserFilterIt(GGadget *g);
 void GFileChooserRefreshList(GGadget *g);
 int GFileChooserFilterEh(GGadget *g,GEvent *e);

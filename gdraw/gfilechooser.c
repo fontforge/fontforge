@@ -565,6 +565,20 @@ return(true);
 return( true );
 }
 
+/* Routine to be called as the mouse moves across the dlg */
+void GFileChooserPopupCheck(GGadget *g,GEvent *e) {
+    GFileChooser *gfc = (GFileChooser *) g;
+
+    if ( e->type == et_mousemove && (e->u.mouse.state&ksm_buttons)==0 ) {
+	GGadgetEndPopup();
+	if ( e->u.mouse.x >= gfc->filterb->g.r.x &&
+		 e->u.mouse.x<gfc->filterb->g.r.x+gfc->filterb->g.r.width &&
+		e->u.mouse.y >= gfc->filterb->g.r.y &&
+		 e->u.mouse.y<gfc->filterb->g.r.y+gfc->filterb->g.r.height )
+	    GGadgetPreparePopup(g->base,gfc->wildcard);
+    }
+}
+
 /* Routine to be called by the filter button */
 void GFileChooserFilterIt(GGadget *g) {
     GFileChooser *gfc = (GFileChooser *) g;
@@ -574,6 +588,12 @@ void GFileChooserFilterIt(GGadget *g) {
     wasdir = gfc->lastname!=NULL;
 
     spt = (unichar_t *) _GGadgetGetTitle(&gfc->name->g);
+    if ( *spt=='\0' ) {		/* Werner tells me that pressing the Filter button with nothing should show the default filter mask */
+	if ( gfc->wildcard!=NULL )
+	    GGadgetSetTitle(&gfc->name->g,gfc->wildcard);
+return;
+    }
+
     if (( slashpt = u_strrchr(spt,'/'))==NULL )
 	slashpt = spt;
     else
