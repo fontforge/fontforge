@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 23-Feb-2002 -->
+  <!-- AP: Last modified: 4-Mar-2002 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -357,8 +357,9 @@ a[4][0] = "Nested array";
   <DD>
     Returns a substring of the string argument. The substring beings at position
     indexed by start and ends at the position indexed by end (if end is omitted
-    the end of the string will be used). Thus <CODE>Strsub("abcdef",2,2) == "b"
-    </CODE>and <CODE>Strsub("abcdef",2) == "bcdef"</CODE>
+    the end of the string will be used, the first position is position 0). Thus
+    <CODE>Strsub("abcdef",2,3) == "c" </CODE>and <CODE>Strsub("abcdef",2) ==
+    "cdef"</CODE>
   <DT>
     Strlen(str)
   <DD>
@@ -417,7 +418,7 @@ a[4][0] = "Nested array";
     sfd file (if the font has no sfd file then this is an error). With one argument
     it executes a SaveAs command, saving the current font to that filename.
   <DT>
-    Generate(filename[,bitmaptype])
+    Generate(filename[,bitmaptype[,fmflags]])
   <DD>
     Generates a font. The type of font is determined by the extension of the
     filename. If present, bitmaptype may be one of:
@@ -441,7 +442,17 @@ a[4][0] = "Nested array";
     </UL>
     <P>
     If you do not wish to generate an outline font then give the filename the
-    extension of ".bdf".
+    extension of ".bdf".<BR>
+    fmflags controls whether an afm or pfm file should be generated
+    <UL>
+      <LI>
+	-1 =&gt; default (generate an afm file for postscript fonts, never generate
+	a pfm file)
+      <LI>
+	fmflags&amp;1 =&gt; generate an afm file
+      <LI>
+	fmflags&amp;2 =&gt; generate a pfm file
+    </UL>
   <DT>
     Import
   <DD>
@@ -482,6 +493,11 @@ a[4][0] = "Nested array";
 	the extension should be "eps" rather than an image extension). PfaEdit is
 	very limitted in its ability to read eps files.
     </UL>
+  <DT>
+    MergeKern(filename)
+  <DD>
+    Loads Kerning info out of either an afm or a tfm file and merges it into
+    the current font.
   <DT>
     Quit(status)
   <DD>
@@ -723,6 +739,10 @@ a[4][0] = "Nested array";
     Sets the kern between any selected characters and the character ch2 to be
     offset. The first argument may be specified as in Select(), the second is
     an integer representing the kern offset.
+  <DT>
+    RemoveAllKerns()
+  <DD>
+    Removes all kern pairs from the current font.
   <DD>
       <HR>
   <DT>
