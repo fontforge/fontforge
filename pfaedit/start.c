@@ -79,13 +79,19 @@ static void _dousage(void) {
     printf( "\t-usage\t\t\t (displays this message, and exits)\n" );
     printf( "\t-help\t\t\t (displays this message, invokes a browser)\n\t\t\t\t  (Using the BROWSER environment variable)\n" );
     printf( "\t-version\t\t (prints the version of pfaedit and exits)\n" );
+    printf( "\t-script scriptfile\t (executes scriptfile)\n" );
     printf( "\n" );
     printf( "pfaedit will read postscript (pfa, pfb, ps, cid), opentype (otf),\n" );
     printf( "\ttruetype (ttf,ttc), macintosh resource fonts (dfont,bin,hqx),\n" );
     printf( "\tand bdf and pcf fonts. It will also read it's own format --\n" );
     printf( "\tsfd files.\n" );
     printf( "If no fontfiles are specified (and -new is not either and there's nothing\n" );
-    printf( "\tto recover) then pfaedit will produce an open font dlg.\n\n" );
+    printf( "\tto recover) then pfaedit will produce an open font dlg.\n" );
+    printf( "If a scriptfile is specified then PfaEdit will not open the X display\n" );
+    printf( "\tnor will it process any additional arguments. It will execute the\n" );
+    printf( "\tscriptfile and give it any remaining arguments\n" );
+    printf( "If the first argument is an executable filename, and that file's first\n" );
+    printf( "\tline contains \"pfaedit\" then it will be treated as a scriptfile.\n\n" );
     printf( "For more information see:\n\thttp://pfaedit.sourceforge.net/\n" );
     printf( "Send bug reports to:\tgww@silcom.com\n" );
 }
