@@ -4694,12 +4694,12 @@ static void MaxpFromTable(struct alltabs *at,SplineFont *sf) {
 return;
     /* We can figure out the others ourselves, but these depend on the contents */
     /*  of uninterpretted tables */
-    at->maxp.maxZones = memushort(maxp->data,7*sizeof(uint16));
-    at->maxp.maxTwilightPts = memushort(maxp->data,8*sizeof(uint16));
-    at->maxp.maxStorage = memushort(maxp->data,9*sizeof(uint16));
-    at->maxp.maxFDEFs = memushort(maxp->data,10*sizeof(uint16));
-    at->maxp.maxIDEFs = memushort(maxp->data,11*sizeof(uint16));
-    at->maxp.maxStack = memushort(maxp->data,12*sizeof(uint16));
+    at->maxp.maxZones = memushort(maxp->data,maxp->len, 7*sizeof(uint16));
+    at->maxp.maxTwilightPts = memushort(maxp->data,maxp->len, 8*sizeof(uint16));
+    at->maxp.maxStorage = memushort(maxp->data,maxp->len, 9*sizeof(uint16));
+    at->maxp.maxFDEFs = memushort(maxp->data,maxp->len, 10*sizeof(uint16));
+    at->maxp.maxIDEFs = memushort(maxp->data,maxp->len, 11*sizeof(uint16));
+    at->maxp.maxStack = memushort(maxp->data,maxp->len, 12*sizeof(uint16));
 }
 
 static FILE *dumpstoredtable(SplineFont *sf,uint32 tag,int *len) {

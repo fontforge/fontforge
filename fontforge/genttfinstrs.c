@@ -57,7 +57,7 @@ int TTF__getcvtval(SplineFont *sf,int val) {
 	sf->ttf_tables = cvt_tab;
     }
     for ( i=0; sizeof(uint16)*i<cvt_tab->len; ++i ) {
-	int tval = memushort(cvt_tab->data,sizeof(uint16)*i);
+	int tval = memushort(cvt_tab->data,cvt_tab->len, sizeof(uint16)*i);
 	if ( val>=tval-1 && val<=tval+1 )
 return( i );
     }

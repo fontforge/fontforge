@@ -1338,8 +1338,14 @@ static void readttfsimpleglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, in
     int i, j, tot, len;
     int last_pos;
 
-    for ( i=0; i<path_cnt; ++i )
+    for ( i=0; i<path_cnt; ++i ) {
 	endpt[i] = getushort(ttf);
+	if ( i!=0 && endpt[i]<endpt[i-1] ) {
+	    fprintf( stderr, "Bad tt font: contour ends make no sense in glyph %d.\n",
+		    sc->enc );
+return;
+	}
+    }
     if ( path_cnt==0 ) {
 	tot = 0;
 	pts = galloc(sizeof(BasePoint));
@@ -1366,9 +1372,11 @@ static void readttfsimpleglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, in
 		flags[i+j+1] = flags[i];
 	    i += cnt;
 	}
+	if ( feof(ttf))
+    break;
     }
     if ( i!=tot )
-	IError("Flag count is wrong (or total is): %d %d", i, tot );
+	IError("Flag count is wrong (or total is): %d %d in glyph %d", i, tot, sc->enc );
 
     last_pos = 0;
     for ( i=0; i<tot; ++i ) {
@@ -3840,13 +3848,21 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 		start = getlong(ttf);
 		end = getlong(ttf);
 		startglyph = getlong(ttf);
-		if ( justinuse )
+		if ( justinuse ) {
 		    for ( i=start; i<=end; ++i )
-			info->inuse[startglyph+i-start]= 1;
-		else
+			if ( startglyph+i-start < info->glyph_cnt )
+			    info->inuse[startglyph+i-start]= 1;
+			else
+		    break;
+		} else
 		    for ( i=start; i<=end; ++i ) {
-			(sc = info->chars[startglyph+i-start])->unicodeenc = i;
-			sc->enc = i;
+			if ( startglyph+i-start >= info->glyph_cnt ) {
+			    fprintf( stderr, "Bad font: Encoding data out of range.\n" );
+		    break;
+			} else {
+			    (sc = info->chars[startglyph+i-start])->unicodeenc = i;
+			    sc->enc = i;
+			}
 		    }
 	    }
 	}
