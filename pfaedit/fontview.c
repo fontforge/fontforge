@@ -4376,7 +4376,7 @@ static void FVMouse(FontView *fv,GEvent *event) {
     if ( sc==NULL )
 	sc = SCBuildDummy(&dummy,fv->sf,pos);
     if ( event->type == et_mouseup && event->u.mouse.clicks==2 ) {
-	if ( sc==&dummy )
+	if ( sc==&dummy )	/* I got a crash here once. Stack was corrupted, no idea how */
 	    sc = SFMakeChar(fv->sf,pos);
 	if ( fv->show==fv->filled ) {
 	    CharViewCreate(sc,fv);
