@@ -295,7 +295,7 @@ return( pt_number );
 		*val = r;
 return( pt_number );
 	    }
-	} else if ( *pt=='.' || *pt=='e' || *pt=='E' ) {
+	} else {
 	    *val = strtod(tokbuf,&end);
 	    if ( *end=='\0' )		/* It's a real */
 return( pt_number );
