@@ -1028,9 +1028,7 @@ static unichar_t *str_Dxa = { 0x2206, 'X','A','d','v','a','n','c','e', ':' };
 static unichar_t *str_Dya = { 0x2206, 'Y','A','d','v','a','n','c','e', ':' };
     /* Import */
 static char str_Duppixelsize[] = "Dimensione di pixel ripetuta";
-/* "The font database already contains a bitmap\nfont with this pixelsize (%d)\nDo you want to overwrite it?" */
-static char str_Duppixelsizepre[] = "Il font contiene già delle bitmap di questa grandezza";
-static char str_Duppixelsizepost[] = "\nLa vuoi cancellare?";
+static char str_DupPixelSizeLong = "Il font contiene già delle bitmap di questa grandezza %d.\nLa vuoi cancellare?";
 static char str_NoBitmapFont = "Manca il font bitmap";
 static char str_NoBitmapFontIn = "Manca il font bitmap in %hs";
  /* Ligature feature tags */

@@ -549,9 +549,9 @@ int ttfcopyfile(FILE *ttf, FILE *other, int pos) {
     int ret = 1;
 
     if ( ferror(ttf) || ferror(other)) {
-	GDrawIError("Disk error of some nature. Perhaps no space on device?\nGenerated font will be unusable" );
+	IError("Disk error of some nature. Perhaps no space on device?\nGenerated font will be unusable" );
     } else if ( pos!=ftell(ttf)) {
-	GDrawIError("File Offset wrong for ttf table, %d expected %d", ftell(ttf), pos );
+	IError("File Offset wrong for ttf table, %d expected %d", ftell(ttf), pos );
     }
     rewind(other);
     while (( ch = getc(other))!=EOF )
@@ -778,7 +778,7 @@ int SSAddPoints(SplineSet *ss,int ptcnt,BasePoint *bp, char *flags,
 	bp[ptcnt].x = rint(ss->first->prevcp.x);
 	bp[ptcnt++].y = rint(ss->first->prevcp.y);
     } else if ( has_instrs && ss->first->ttfindex!=ptcnt && ss->first->ttfindex!=0xfffe )
-	GDrawIError("Unexpected point count in SSAddPoints" );
+	IError("Unexpected point count in SSAddPoints" );
 
     first = NULL;
     for ( sp=ss->first; sp!=first ; ) {
@@ -1282,7 +1282,7 @@ return;
 	putshort(gi->glyphs,ptcnt-1);
     }
     if ( ptcnt!=origptcnt )
-	GDrawIError( "Point count wrong calculated=%d, actual=%d in %.20s", origptcnt, ptcnt, sc->name );
+	IError( "Point count wrong calculated=%d, actual=%d in %.20s", origptcnt, ptcnt, sc->name );
     gi->pointcounts[gi->next_glyph++] = ptcnt;
 
     dumpinstrs(gi,isc->ttf_instrs,isc->ttf_instrs_len);
@@ -2167,7 +2167,7 @@ static void dumpcffdictindex(SplineFont *sf,struct alltabs *at) {
 	at->fds[i].fillindictmark = dumpcffdict(sf->subfonts[i],at);
 	at->fds[i].eodictmark = ftell(at->fdarray);
 	if ( at->fds[i].eodictmark>65536 )
-	    GDrawIError("The DICT INDEX got too big, result won't work");
+	    IError("The DICT INDEX got too big, result won't work");
     }
     fseek(at->fdarray,2*sizeof(short)+sizeof(char),SEEK_SET);
     for ( i=0; i<sf->subfontcnt; ++i )
@@ -5138,7 +5138,7 @@ return( false );
     }
 
     if ( i>=MAX_TAB )
-	GDrawIError("Miscalculation of number of tables needed. Up sizeof tabs array in struct tabdir in ttf.h" );
+	IError("Miscalculation of number of tables needed. Up sizeof tabs array in struct tabdir in ttf.h" );
     
     at->tabdir.numtab = i;
     at->tabdir.searchRange = (i<16?8:i<32?16:i<64?32:64)*16;

@@ -227,7 +227,7 @@ static IntersectionList *IntersectionOf(Edge *wasleft,Edge *wasright,
     break;
  nlt = SplineSolve(lsp,lbottom,ltop,(mbottom+mtop)/2,.0001);
  nrt = SplineSolve(rsp,rbottom,rtop,(mbottom+mtop)/2,.0001);	/* Debug */
-	    GDrawIError("Request for an intersection out of range");
+	    IError("Request for an intersection out of range");
 return( old );
 	}
 	lt = nlt; rt = nrt;
@@ -629,7 +629,7 @@ static void DoIntersections(SplineChar *sc,SplineTList *me,IntersectionList *ili
 	    /* Seem to get a lot of zero length splines, especially at the */
 	    /*  endpoints. Should be ok just to ignore them */
 	else if ( tbase>=1 ) {
-	    GDrawIError( "Bad value for tbase in %s", sc==NULL?"<nameless char>": sc->name );
+	    IError( "Bad value for tbase in %s", sc==NULL?"<nameless char>": sc->name );
     break;
 	} else {
 	    t = (cur->tl->t-tbase)/(1.0-tbase);
@@ -955,7 +955,7 @@ static EI *CountDuplicates(SplineChar *sc,enum overlap_type ot,
 		(cnt!=0 && cnt+tot!=0)) {	/* Normal case of internal lines */
 #if DEBUG
 	    if ( needed!=NULL && !needed->spline->isunneeded )
-		GDrawIError( c==1?
+		IError( c==1?
 		    "A spline is both needed and unneeded in CountDuplicates#1 in %s":
 		    "A set of tangent splines is both needed and unneeded in CountDuplicates#1 in %s",
 		    sc!=NULL?sc->name:"<nameless char>");
@@ -967,7 +967,7 @@ static EI *CountDuplicates(SplineChar *sc,enum overlap_type ot,
 	    if ( needed )
 		/* Already done */;
 	    else if ( notunneeded==NULL )
-		GDrawIError( c==1?
+		IError( c==1?
 		    "A spline is both needed and unneeded in CountDuplicates#2 in %s":
 		    "A set of tangent splines is both needed and unneeded in CountDuplicates#2 in %s",
 		    sc!=NULL?sc->name:"<nameless char>");
@@ -1000,7 +1000,7 @@ static EI *CountDuplicates(SplineChar *sc,enum overlap_type ot,
 		( cnt!=0 && cnt+tot!=0 && ecnt==0 && etot==0 ) ) {
 #if DEBUG
 	    if ( needed!=NULL && !needed->spline->isunneeded )
-		GDrawIError( c==1?
+		IError( c==1?
 		    "A spline is both needed and unneeded in CountDuplicates#3 in %s":
 		    "A set of tangent splines is both needed and unneeded in CountDuplicates#3 in %s",
 		    sc!=NULL?sc->name:"<nameless char>");
@@ -1012,7 +1012,7 @@ static EI *CountDuplicates(SplineChar *sc,enum overlap_type ot,
 	    if ( needed )
 		/* Already done */;
 	    else if ( notunneeded==NULL )
-		GDrawIError( c==1?
+		IError( c==1?
 		    "A spline is both needed and unneeded in CountDuplicates#4 in %s":
 		    "A set of tangent splines is both needed and unneeded in CountDuplicates#4 in %s",
 		    sc!=NULL?sc->name:"<nameless char>");
@@ -1075,7 +1075,7 @@ static void _FindNeeded(SplineChar *sc,EIList *el, int major) {
 	}
 	active = EIActiveListReorder(active,&subchange);
 	if ( subchange )
-	    GDrawIError("There should be no crossovers in _FindNeeded in %s", sc!=NULL?sc->name:"<nameless char>");
+	    IError("There should be no crossovers in _FindNeeded in %s", sc!=NULL?sc->name:"<nameless char>");
 	while ( el->bottoms[bpos]!=NULL && pos==el->bottoms[bpos]->coordmin[major] ) {
 	    Spline1D *osp;
 	    npt = el->bottoms[bpos++];
@@ -1239,10 +1239,10 @@ static void SplinesMergeLists(SplineChar *sc,Spline *before, Spline *after) {
 
     if ( !RealNearish(before->to->me.x,after->from->me.x) ||
 	    !RealNearish(before->to->me.y,after->from->me.y) )
-	GDrawIError("Attempt to merge two splines which don't meet in %s",
+	IError("Attempt to merge two splines which don't meet in %s",
 		sc!=NULL?sc->name:"<nameless char>");
     if ( before->to->next!=NULL || after->from->prev!=NULL )
-	GDrawIError("Attempt to merge two splines which are already attached to stuff in %s",
+	IError("Attempt to merge two splines which are already attached to stuff in %s",
 		sc!=NULL?sc->name:"<nameless char>");
     before->to->nextcp = after->from->nextcp;
     before->to->nonextcp = after->from->nonextcp;
@@ -1257,14 +1257,14 @@ static SplineSet *SplineSetCreate(SplineChar *sc,SplinePoint *from, SplinePoint 
     SplineSet *spl;
 
     if ( from->prev!=NULL || to->next!=NULL )
-	GDrawIError("Attempt to create a splineset from two points not at end in %s",
+	IError("Attempt to create a splineset from two points not at end in %s",
 		sc!=NULL?sc->name:"<nameless char>");
     if ( from->me.x != to->me.x || from->me.y!=to->me.y )
-	GDrawIError("Attempt to create a splineset from two points which aren't at the same place in %s",
+	IError("Attempt to create a splineset from two points which aren't at the same place in %s",
 		sc!=NULL?sc->name:"<nameless char>");
     if ( /*from->next->isticked ||*/ !from->next->isneeded || /*to->prev->isticked ||*/
 	    !to->prev->isneeded )
-	GDrawIError("Bad choice of splines in SplineSetCreate in %s",
+	IError("Bad choice of splines in SplineSetCreate in %s",
 		sc!=NULL?sc->name:"<nameless char>");
     from->next->isticked = to->prev->isticked = true;
     SplinesMergeLists(sc,to->prev,from->next);
@@ -1281,13 +1281,13 @@ static void ILRemoveSplineFrom(SplineChar *sc,IntersectionList *il,BasePoint *iv
     while ( il!=NULL && (il->intersection.x!=ival->x || il->intersection.y!=ival->y))
 	il = il->next;
     if ( il==NULL )
-	GDrawIError("Couldn't find intersection in ILRemoveSplineFrom in %s",
+	IError("Couldn't find intersection in ILRemoveSplineFrom in %s",
 		sc!=NULL?sc->name:"<nameless char>");
     else {
 	slprev = NULL;
 	for ( sl = il->splines; sl!=NULL && sl->spline!=spline; slprev = sl, sl = sl->next );
 	if ( sl==NULL )
-	    GDrawIError("Couldn't find spline in ILRemoveSplineFrom in %s",
+	    IError("Couldn't find spline in ILRemoveSplineFrom in %s",
 		    sc!=NULL?sc->name:"<nameless char>");
 	else {
 	    if ( slprev==NULL )
@@ -1308,7 +1308,7 @@ static void SplineListFree(SplineChar *sc,SplineList *sl,IntersectionList *ilist
 	for ( spline = sl->spline; spline !=NULL; spline = snext ) {
 	    snext = spline->to->next;
 	    if ( spline->isneeded || !spline->isunneeded )
-		GDrawIError("Spline which is needed (or not unneeded) when about to be freed in %s",
+		IError("Spline which is needed (or not unneeded) when about to be freed in %s",
 			sc!=NULL?sc->name:"<nameless char>");
 	    if ( spline->to->isintersection )
 		ILRemoveSplineFrom(sc,ilist,&spline->to->me,spline);
@@ -1321,7 +1321,7 @@ static void SplineListFree(SplineChar *sc,SplineList *sl,IntersectionList *ilist
 	for ( spline = sl->spline; spline !=NULL; spline = snext ) {
 	    snext = spline->from->prev;
 	    if ( spline->isneeded || !spline->isunneeded )
-		GDrawIError("Spline which is needed (or not unneeded) when about to be freed in %s",
+		IError("Spline which is needed (or not unneeded) when about to be freed in %s",
 			sc!=NULL?sc->name:"<nameless char>");
 	    if ( spline->from->isintersection )
 		ILRemoveSplineFrom(sc,ilist,&spline->from->me,spline);
@@ -1329,7 +1329,7 @@ static void SplineListFree(SplineChar *sc,SplineList *sl,IntersectionList *ilist
 	    SplineFree(spline);
 	}
     } else
-	GDrawIError( "Couldn't identify intersection in SplineListFree in %s",
+	IError( "Couldn't identify intersection in SplineListFree in %s",
 		sc!=NULL?sc->name:"<nameless char>");
     free(sl);
 }
@@ -1343,7 +1343,7 @@ static void ILFreeUnusedSplines(SplineChar *sc,IntersectionList *ilist) {
 	    snext = sl->next;
 	    if ( sl->spline->isunneeded ) {
 		if ( sl->spline->isneeded )
-		    GDrawIError("Spline which is both needed and unneeded in ILFreeUnusedSplines in %s",
+		    IError("Spline which is both needed and unneeded in ILFreeUnusedSplines in %s",
 			    sc!=NULL?sc->name:"<nameless char>");
 		if ( prev==NULL )
 		    ilist->splines = snext;
@@ -1353,7 +1353,7 @@ static void ILFreeUnusedSplines(SplineChar *sc,IntersectionList *ilist) {
 		snext = (prev==NULL)?ilist->splines:prev->next;
 	    } else {
 		if ( !sl->spline->isneeded )
-		    GDrawIError("Spline which is neither needed nor unneeded in ILFreeUnusedSplines in %s",
+		    IError("Spline which is neither needed nor unneeded in ILFreeUnusedSplines in %s",
 			    sc!=NULL?sc->name:"<nameless char>");
 		prev = sl;
 	    }
@@ -1406,7 +1406,7 @@ return( SplineSetCreate(sc,good1->from,good1->to));
     if ( good1==NULL )
 return( NULL );
     else if ( good2==NULL ) {
-	GDrawIError( "Single needed spline at an intersection in %s",
+	IError( "Single needed spline at an intersection in %s",
 		sc!=NULL?sc->name:"<nameless char>");
 return( NULL );
     }
@@ -1417,7 +1417,7 @@ return( NULL );
     while ( 1 ) {
 	for ( last=cur; last->to->next!=NULL; last=last->to->next) {
 	    if ( last->isunneeded || !last->isneeded )
-		GDrawIError( "Spline unneeded (or not needed) when it should have been in %s",
+		IError( "Spline unneeded (or not needed) when it should have been in %s",
 			sc!=NULL?sc->name:"<nameless char>");
 	}
 	last->isticked = true;
@@ -1454,7 +1454,7 @@ return( SplineSetCreate(sc,good1->from,last->to));
 	}
 	if ( cur==NULL ) {
 	    SplinePointList *spl;
-	    GDrawIError("Found an intersection with no exit in %s",
+	    IError("Found an intersection with no exit in %s",
 		    sc!=NULL?sc->name:"<nameless char>");
 	    spl = chunkalloc(sizeof(SplinePointList));
 	    spl->first = good1->from; spl->last = last->to;
@@ -1558,7 +1558,7 @@ static SplineSet *SSRemoveAllUnneeded(SplineChar *sc,
 	break;
 	    }
 	    if ( spline->isneeded )
-		GDrawIError("Spline both needed and unneeded in SSRemoveAllUnneeded in %s",
+		IError("Spline both needed and unneeded in SSRemoveAllUnneeded in %s",
 			sc!=NULL?sc->name:"<nameless char>");
 	    if ( first==NULL ) first=spline;
 	}
@@ -1612,7 +1612,7 @@ static SplineSet *SSRemoveAllNeeded(SplineChar *sc,SplineSet **base, Intersectio
 		for ( spline = spl->first->next; spline!=NULL && !spline->isticked; spline = spline->to->next ) {
 		    spline->isticked = true;
 		    if ( spline->to->isintersection )
-			GDrawIError("Spline in a fully-needed splineset has an intersection in SSRemoveAllNeeded in %s",
+			IError("Spline in a fully-needed splineset has an intersection in SSRemoveAllNeeded in %s",
 				sc!=NULL?sc->name:"<nameless char>");
 		}
 	    } else
@@ -1758,7 +1758,7 @@ return( test );
 	}
 	spl = spl->next;
     }
-    GDrawIError("Failed to find transformed spline" );
+    IError("Failed to find transformed spline" );
 return( NULL );
 }
 
@@ -1864,7 +1864,7 @@ return;
 	cil = FindIntersectionAt(ilist,csp->me.x,csp->me.y);
 	nil = FindIntersectionAt(ilist,nsp->me.x,nsp->me.y);
 	if ( cil==NULL || nil==NULL )
-	    GDrawIError("Failed to find intersection");
+	    IError("Failed to find intersection");
 	else if ( cil==nil ) {
 	    /* Can't guess whether this path is needed or unneeded. Since */
 	    /*  it starts and ends at the same point, either way will work */
@@ -1906,7 +1906,7 @@ return;
 	}
       tryagain:;
     }
-    GDrawIError("Couldn't guess needed/unneeded in ForceAllSame");
+    IError("Couldn't guess needed/unneeded in ForceAllSame");
 }
 
 static void RefigureNeeded(SplineSet *base) {
@@ -1996,12 +1996,12 @@ static void SSValidate(SplineChar *sc,SplineSet *spl) {
 		/* Exactly one is set, that's good */;
 	    else {
 		if ( spline->isneeded )
-		    GDrawIError( "Spline is both needed and unneeded in SSValidate\n(%g,%g)->(%g,%g) in %s",
+		    IError( "Spline is both needed and unneeded in SSValidate\n(%g,%g)->(%g,%g) in %s",
 			    spline->from->me.x, spline->from->me.y,
 			    spline->to->me.x, spline->to->me.y,
 			    sc!=NULL?sc->name:"<nameless char>");
 		else
-		    GDrawIError( "Spline is neither needed nor unneeded in SSValidate\n(%g,%g)->(%g,%g) in %s",
+		    IError( "Spline is neither needed nor unneeded in SSValidate\n(%g,%g)->(%g,%g) in %s",
 			    spline->from->me.x, spline->from->me.y,
 			    spline->to->me.x, spline->to->me.y,
 			    sc!=NULL?sc->name:"<nameless char>");

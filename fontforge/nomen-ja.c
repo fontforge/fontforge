@@ -2085,8 +2085,7 @@ static char str_NoMatch = "一致する文字がありません";
     /* Import */
 static char str_Duppixelsize[] = "ピクセルサイズが重複しています.";
 /* "The font database already contains a bitmap\nfont with this pixelsize (%d)\nDo you want to overwrite it?" */
-static char str_Duppixelsizepre[] = "フォントデータベースには, 既にこのピクセルサイズ\n(";
-static char str_Duppixelsizepost[] = " ドット)のビットマップフォントが含まれています.\n上書きしますか?";
+static char str_DupPixelSizeLong = "フォントデータベースには, 既にこのピクセルサイズ\n(%d ドット)のビットマップフォントが含まれています.\n上書きしますか?";
 static char str_NoBitmapFont = "ビットマップフォントがありません.";
 static char str_NoBitmapFontIn = "ビットマップフォントが %hs から見つかりませんでした.";
     /* Private Info */

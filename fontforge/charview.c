@@ -1622,8 +1622,8 @@ static void _CVFit(CharView *cv,DBounds *b) {
     left = b->minx;
     right = b->maxx;
 
-    if ( top<bottom ) GDrawIError("Bottom bigger than top!");
-    if ( right<left ) GDrawIError("Left bigger than right!");
+    if ( top<bottom ) IError("Bottom bigger than top!");
+    if ( right<left ) IError("Left bigger than right!");
     top -= bottom;
     right -= left;
     if ( top==0 ) top = 1000;

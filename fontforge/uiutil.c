@@ -26,6 +26,7 @@
  */
 #include "pfaeditui.h"
 #include <gfile.h>
+#include <stdarg.h>
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <utype.h>
 #include <ustring.h>
@@ -210,7 +211,11 @@ static void do_windows_browser(char *fullspec) {
     if ( format==NULL )
 	format = win_program_from_extension(".htm");
     if ( format==NULL ) {
-	GDrawError("Could not find a browser. Set the BROWSER environment variable to point to one" );
+#if defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("No Browser"),_("Could not find a browser. Set the BROWSER environment variable to point to one"));
+#else
+	GWidgetErrorR(_STR_NoBrowser,_STR_NoBrowserLong);
+#endif
 return;
     }
 
@@ -298,7 +303,11 @@ void help(char *file) {
 	findbrowser();
 #ifndef __CygWin
     if ( browser[0]=='\0' ) {
-	GDrawError("Could not find a browser. Set the BROWSER environment variable to point to one" );
+#if defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("No Browser"),_("Could not find a browser. Set the BROWSER environment variable to point to one"));
+#else
+	GWidgetErrorR(_STR_NoBrowser,_STR_NoBrowserLong);
+#endif
 return;
     }
 #endif
@@ -408,4 +417,26 @@ return;
 	system(temp);
     }
     free(temp);
+}
+
+void IError(const char *format,...) {
+    va_list ap;
+#if defined( FONTFORGE_CONFIG_NO_WINDOWING_UI )
+    va_start(ap,format);
+    fprintf(stderr, "Internal Error: " );
+    vfprintf(stderr,format,ap);
+#elif defined( FONTFORGE_CONFIG_GDRAW )
+    char buffer[300];
+    va_start(ap,format);
+    vsnprintf(buffer,sizeof(buffer),format,ap);
+    GDrawIError("%s",buffer);
+#elif defined( FONTFORGE_CONFIG_GTK )
+    char buffer[340];
+    int len;
+    va_start(ap,format);
+    strcpy(buffer,_("Internal Error: "));
+    len = strlen(buffer);
+    vsnprintf(buffer+len,sizeof(buffer)-len,format,ap);
+#endif
+    va_end(ap);
 }

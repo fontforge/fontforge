@@ -2428,7 +2428,7 @@ static void EntityCharCorrectDir(EntityChar *ec) {
 	    if ( ent->type == et_splines && ent->u.splines.fill.col!=0xffffffff ) {
 		for ( ss=ent->u.splines.splines; ss!=NULL; ss=ss->next ) {
 		    if ( cur==NULL ) {
-			GDrawIError("SplineSets do not match");
+			IError("SplineSets do not match");
 		break;
 		    }
 		    ss->first = cur->first;

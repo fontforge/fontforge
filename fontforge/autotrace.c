@@ -441,13 +441,15 @@ return( args );
 void FVAutoTrace(FontView *fv,int ask) {
     char **args;
     int i,cnt;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GCursor ct=0;
+#endif
 
     if ( FindAutoTraceName()==NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_NoAutotrace,_STR_NoAutotraceProg);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Can't find autotrace"),_("Can't find autotrace program (set AUTOTRACE environment variable) or download from:\n  http://sf.net/projects/autotrace/"));
+#else
+	GWidgetErrorR(_STR_NoAutotrace,_STR_NoAutotraceProg);
 #endif
 return;
     }
@@ -455,6 +457,7 @@ return;
     args = AutoTraceArgs(ask);
     if ( args==(char **) -1 )
 return;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     if ( fv->v!=NULL ) {
 	ct = GDrawGetCursor(fv->v);
 	GDrawSetCursor(fv->v,ct_watch);
@@ -465,9 +468,18 @@ return;
     for ( i=cnt=0; i<fv->sf->charcnt; ++i )
 	if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->layers[ly_back].images )
 	    ++cnt;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressStartIndicatorR(10,_STR_Autotracing,_STR_Autotracing,0,cnt,1);
 #elif defined(FONTFORGE_CONFIG_GTK)
+    if ( fv->v!=NULL ) {
+	/* !!!! */
+	ct = GDrawGetCursor(fv->v);
+	GDrawSetCursor(fv->v,ct_watch);
+	GDrawSync(NULL);
+	GDrawProcessPendingEvents(NULL);
+    }
+    for ( i=cnt=0; i<fv->sf->charcnt; ++i )
+	if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->layers[ly_back].images )
+	    ++cnt;
     gwwv_progress_start_indicator(10,_("Autotracing..."),_("Autotracing..."),0,cnt,1);
 #endif
 
@@ -486,11 +498,13 @@ return;
     }
 #if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressEndIndicator();
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gwwv_progress_end_indicator();
-#endif
     if ( fv->v!=NULL )
 	GDrawSetCursor(fv->v,ct);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+    if ( fv->v!=NULL )
+	GDrawSetCursor(fv->v,ct);	/* !!!! */
+#endif
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI

@@ -144,7 +144,7 @@ return;
 	}
     }
     if ( cnt!=cnt1 )
-	GDrawIError( "Bad counts in MenuRecentBuild");
+	IError( "Bad counts in MenuRecentBuild");
     mi->sub = sub;
 }
 

@@ -336,7 +336,7 @@ static void KCD_DrawGlyph(GWindow pixmap,int x,int baseline,BDFChar *bdfc) {
 	Color fg, bg;
 	base.image_type = it_index;
 	clut.clut_len = 1<<scale;
-	bg = GDrawGetDefaultBackground(NULL);
+	bg = default_background;
 	fg = 0x808080;
 	for ( l=0; l<(1<<scale); ++l )
 	    clut.clut[l] =

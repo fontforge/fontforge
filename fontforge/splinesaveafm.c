@@ -569,7 +569,7 @@ return( false );
     else if ( sf->mm!=NULL ) sf=sf->mm->normal;
 
     if ( sf->script_lang==NULL ) {
-	GDrawIError("How can there be ligatures with no script/lang list?");
+	IError("How can there be ligatures with no script/lang list?");
 return( lig_script==CHR('*',' ',' ',' ') && lig_lang==CHR('*',' ',' ',' ') );
     }
 
@@ -1887,7 +1887,7 @@ static int CoalesceValues(double *values,int max,int *index) {
 	if ( values[0]!=0 ) {
 	    for ( i=0; i<top && values[i]!=0; ++i );
 	    if ( i==top )
-		GDrawIError("zero must be present in tfm arrays");
+		IError("zero must be present in tfm arrays");
 	    else {
 		values[i] = values[0];
 		values[0] = 0;

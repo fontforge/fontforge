@@ -171,7 +171,7 @@ void ParseEncodingFile(char *filename) {
 #if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Missing encoding file"),_("Couldn't open encoding file: %s"), orig );
 #else
-	    GDrawError("Couldn't open encoding file: %s", orig);
+	    GWidgetErrorR(_STR_CouldNotOpenFile, _STR_CouldNotOpenFileName, orig);
 #endif
 return;
     }
@@ -772,12 +772,21 @@ static struct cidmap *LoadMapFromFile(char *file,char *registry,char *ordering,
 
     f = fopen( file,"r" );
     if ( f==NULL ) {
-	GDrawError("Couldn't open %s", file );
+#if defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Missing cidmap file"),_("Couldn't open cidmap file: %s"), file );
+#else
+	GWidgetErrorR(_STR_CouldNotOpenFile, _STR_CouldNotOpenFileName, file);
+#endif
 	ret->cidmax = ret->namemax = 0;
 	ret->unicode = NULL; ret->name = NULL;
     } else if ( fscanf( f, "%d %d", &ret->cidmax, &ret->namemax )!=2 ) {
-	GDrawError( "%s is not a cidmap file, please download\nhttp://fontforge.sourceforge.net/cidmaps.tgz", file );
+#if defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Bad cidmap file"),_("%s is not a cidmap file, please download\nhttp://fontforge.sourceforge.net/cidmaps.tgz"), file );
+	fprintf( stderr, _("%s is not a cidmap file, please download\nhttp://fontforge.sourceforge.net/cidmaps.tgz"), file );
+#else
+	GWidgetErrorR(_STR_BadCidmap, _STR_BadCidmapLong, file);
 	fprintf( stderr, "%s is not a cidmap file, please download\nhttp://fontforge.sourceforge.net/cidmaps.tgz", file );
+#endif
 	ret->cidmax = ret->namemax = 0;
 	ret->unicode = NULL; ret->name = NULL;
     } else {
@@ -909,12 +918,12 @@ return( maybe );
 		    getPfaEditShareDir()==NULL?"/usr/share/fontforge":getPfaEditShareDir()
 #endif
 		    );
-	    if ( ret==1 || screen_display==NULL )
+	    if ( ret==1 || no_windowing_ui )
 		ubuf[0] = '\0';
 	}
 	if ( ubuf[0]=='\0' )
 	    uret = NULL;
-	else if ( screen_display!=NULL ) {
+	else if ( !no_windowing_ui ) {
 	    if ( sf!=NULL ) sf->loading_cid_map = true;
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    uret = GWidgetOpenFile(GStringGetResource(_STR_FindCharset,NULL),NULL,ubuf,NULL,NULL);
@@ -927,10 +936,10 @@ return( maybe );
 	if ( uret==NULL ) {
 	    if ( maybe==NULL && maybefile==NULL )
 		/* No luck */;
-	    else if ( screen_display==NULL && maybe!=NULL ) {
+	    else if ( no_windowing_ui && maybe!=NULL ) {
 		maybe->maxsupple = supplement;
 return( maybe );
-	    } else if ( screen_display==NULL ) {
+	    } else if ( no_windowing_ui ) {
 		file = maybefile;
 		maybefile = NULL;
 #if defined(FONTFORGE_CONFIG_GDRAW)
@@ -1149,12 +1158,15 @@ struct cidmap *AskUserForCIDMap(SplineFont *sf) {
     choices = gcalloc(block.cur+2,sizeof(unichar_t *));
 #if defined(FONTFORGE_CONFIG_GDRAW)
     choices[0] = u_copy(GStringGetResource(_STR_Browse,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-    choices[0] = u_copy(_("Browse..."));
-#endif
     for ( i=0; i<block.cur; ++i )
 	choices[i+1] = uc_copy(block.maps[i]);
     ret = GWidgetChoicesR(_STR_FindCharset,choices,i+1,0,_STR_SelectCIDOrdering);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    choices[0] = strdup(_("Browse..."));
+    for ( i=0; i<block.cur; ++i )
+	choices[i+1] = strdup(block.maps[i]);
+    ret = gwwv_choose(_("Find a cidmap file..."),(const unichar_t **) choices,i+1,0,_("Please select a CID ordering"));
+#endif
     for ( i=0; i<=block.cur; ++i )
 	free( (unichar_t *) choices[i] );
     free(choices);
@@ -1890,7 +1902,7 @@ return;
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	int enc = sf->chars[i]->old_enc;
 	if ( enc>=cnt ) {
-	    GDrawIError("Compacted font isn't" );
+	    IError("Compacted font isn't" );
 	    free( newchars );
 return;
 	}

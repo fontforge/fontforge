@@ -522,7 +522,7 @@ return;
 	    putshort( at->cvar, rint(16384*mm->positions[i*mm->axis_count+j]) );
     }
     if ( ftell( at->cvar )!=8+cnt*tuple_size )
-	GDrawIError( "Data offset wrong" );
+	IError( "Data offset wrong" );
 
     for ( i=cnt=0; i<mm->instance_count; ++i ) if ( deltas[i]!=NULL ) {
 	start = ftell(at->cvar);

@@ -293,7 +293,7 @@ return;		/* No subtables */
 	ttfcopyfile(file,pfed.subtabs[i].data,pfed.subtabs[i].offset);
     }
     if ( ftell(file)&3 )
-	GDrawIError("'PfEd' table not properly aligned");
+	IError("'PfEd' table not properly aligned");
     at->pfedlen = ftell(file);
 }
 

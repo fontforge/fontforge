@@ -599,7 +599,7 @@ static void clslistitem2rule(const unichar_t *ret,struct fpst_rule *r) {
 	while ( *pt!='[' && *pt!=']' && *pt!=0x21d2 && *pt!='\0' ) {
 	    if ( isdigit( *pt )) {
 		if ( len>=(&r->u.class.ncnt)[i] )
-		    GDrawIError( "clslistitem2rule bad memory");
+		    IError( "clslistitem2rule bad memory");
 		(&r->u.class.nclasses)[i][len++] = u_strtol(pt,&end,10);
 		pt = end;
 	    } else if ( *pt!=' ' && *pt!='[' && *pt!=']' && *pt!=0x21d2 && *pt!='\0' )
@@ -747,7 +747,7 @@ static void CCD_EnableNextPrev(struct contextchaindlg *ccd) {
 	GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_OK),true);
       break;
       default:
-	GDrawIError("Can't get here");
+	IError("Can't get here");
       break;
     }
 }
@@ -976,7 +976,7 @@ return( false );
 	while ( *pt==' ' ) ++pt;
 	if ( *pt=='\0' )
     break;
-	if ( any>=r->u.class.ncnt ) GDrawIError("ReasonableClassNumber unreasonable");
+	if ( any>=r->u.class.ncnt ) IError("ReasonableClassNumber unreasonable");
 	r->u.class.nclasses[any++] = u_strtol(pt,&end,10);
     }
 
@@ -985,7 +985,7 @@ return( false );
 	while ( *pt==' ' ) ++pt;
 	if ( *pt=='\0' )
     break;
-	if (r->u.class.bcnt-1-any<0 || r->u.class.bcnt-1-any>=r->u.class.bcnt ) GDrawIError("ReasonableClassNumber unreasonable");
+	if (r->u.class.bcnt-1-any<0 || r->u.class.bcnt-1-any>=r->u.class.bcnt ) IError("ReasonableClassNumber unreasonable");
 	r->u.class.bclasses[r->u.class.bcnt-1-any++] = u_strtol(pt,&end,10);
     }
 
@@ -994,7 +994,7 @@ return( false );
 	while ( *pt==' ' ) ++pt;
 	if ( *pt=='\0' )
     break;
-	if ( any>=r->u.class.fcnt ) GDrawIError("ReasonableClassNumber unreasonable");
+	if ( any>=r->u.class.fcnt ) IError("ReasonableClassNumber unreasonable");
 	r->u.class.fclasses[any++] = u_strtol(pt,&end,10);
     }
 return( true );
@@ -1858,7 +1858,7 @@ return;
 	}
       break;
       default:
-	GDrawIError("The OK button should not be enabled here");
+	IError("The OK button should not be enabled here");
 return;
     }
     if ( ccd->isnew )
@@ -1907,7 +1907,7 @@ static int CCD_Next(GGadget *g, GEvent *e) {
 	    CCD_FinishEditNew(ccd);
 	  break;
 	  default:
-	    GDrawIError("The next button should not be enabled here");
+	    IError("The next button should not be enabled here");
 	  break;
 	}
 	CCD_EnableNextPrev(ccd);
@@ -1949,7 +1949,7 @@ static int CCD_Prev(GGadget *g, GEvent *e) {
 	    GDrawSetVisible(ccd->formats,true);
 	  break;
 	  default:
-	    GDrawIError("Can't get here");
+	    IError("Can't get here");
 	  break;
 	}
 	CCD_EnableNextPrev(ccd);

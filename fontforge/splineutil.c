@@ -144,7 +144,7 @@ return;
 		  ((char *) (chunklists[index]))+size>(char *) item) ||
 		( ((char *) (chunklists[index]))>(char *) item &&
 		  ((char *) (chunklists[index]))<((char *) item)+size))
-	      GDrawIError( "Memory mixup. Chunk list is wrong!!!" );
+	      IError( "Memory mixup. Chunk list is wrong!!!" );
 #endif
 	((struct chunk *) item)->next = chunklists[index];
 #  ifdef FLAG
@@ -2216,7 +2216,7 @@ return( NULL );
 	/* There better not be any references (seac's) because we have no */
 	/*  encoding on which to base any fixups */
 	if ( chars[i]->layers[ly_fore].refs!=NULL )
-	    GDrawIError( "Reference found in CID font. Can't fix it up");
+	    IError( "Reference found in CID font. Can't fix it up");
 	chars[i]->enc = i;
 	sf->subfonts[j]->charcnt = i+1;
 #if defined(FONTFORGE_CONFIG_GDRAW)
@@ -2682,7 +2682,7 @@ return( -1 );
     if ( c<0 )
 return( -1 );
     if ( !RealNear(b*b-4*a*c,0) )
-	GDrawIError("Failure in quartic");
+	IError("Failure in quartic");
 
     b = -sqrt(a);
     c = sq+zs[0]-sqrt(c);
@@ -2710,7 +2710,7 @@ return( -1 );
     work.d = q->d-e*c;
     f = work.c;
     if ( !RealNear(work.d-f*b,0) || !RealNear(q->e-f*c,0))
-	GDrawIError("Polynomial division failed");
+	IError("Polynomial division failed");
     if ( e*e-4*d*f >= 0 ) {
 	sq = sqrt(e*e-4*d*f);
 	ts[i++] = (-e+sq)/(2*d);

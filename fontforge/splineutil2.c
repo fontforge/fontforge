@@ -207,7 +207,7 @@ static void FigureSpline1(Spline1 *sp1,double t0, double t1, Spline1D *sp ) {
 	sp1->s1 = sp1->sp.a+sp1->sp.b+sp1->sp.c+sp1->sp.d;
 	if ( ((sp1->s1>.001 || sp1->s1<-.001) && !RealNear((double) sp1->sp.a+sp1->sp.b+sp1->sp.c+sp1->sp.d,sp1->s1)) ||
 		!RealNear(sp1->sp.d,sp1->s0))
-	    GDrawIError( "Created spline does not work in FigureSpline1");
+	    IError( "Created spline does not work in FigureSpline1");
 #endif
     }
     sp1->c0 = sp1->sp.c/3 + sp1->sp.d;
@@ -225,7 +225,7 @@ SplinePoint *SplineBisect(Spline *spline, double t) {
 
 #ifdef DEBUG
     if ( t<=1e-3 || t>=1-1e-3 )
-	GDrawIError("Bisection to create a zero length spline");
+	IError("Bisection to create a zero length spline");
 #endif
     xstart.s0 = xsp->d; ystart.s0 = ysp->d;
     xend.s1 = (double) xsp->a+xsp->b+xsp->c+xsp->d;
@@ -395,7 +395,7 @@ static void CleanupDir(BasePoint *newcp,BasePoint *oldcp,BasePoint *base) {
 	len = (newcp->x-base->x)*c + (newcp->y-base->y)*s;
 	newcp->x = len*c; newcp->y = len*s;
 	if ( newcp->x*(oldcp->x-base->x) + newcp->y*(oldcp->y-base->y)<0 ) {
-	    GDrawIError( "Control points in wrong direction" );
+	    IError( "Control points in wrong direction" );
 	    newcp->x = -newcp->x; newcp->y = -newcp->y;
 	}
 	newcp->x += base->x; newcp->y += base->y;
@@ -1142,7 +1142,7 @@ return( NULL );			/* Some one else should free it and reorder the spline set lis
     }
 
     /* when we get here spl->first is not selected */
-    if ( spl->first->selected ) GDrawIError( "spl->first is selected in SplinePointListMerge");
+    if ( spl->first->selected ) IError( "spl->first is selected in SplinePointListMerge");
     curp = spl->first;
     selectme = NULL;
     while ( 1 ) {
@@ -2707,6 +2707,10 @@ SplineSet *SplineSetsDetectDir(SplineSet **_base,int *_lastscan) {
     dummy.layer_cnt = 2;
     dummy.layers[ly_fore].splines = base;
     ELFindEdges(&dummy,&el);
+    if ( el.coordmax[1]-el.coordmin[1] > 1.e6 ) {
+	fprintf( stderr, "Warning: Unreasonably big splines. They will be ignored.\n" );
+return( NULL );
+    }
     el.major = 1;
     ELOrder(&el,el.major);
 
@@ -2789,6 +2793,10 @@ return( -1 );		/* Open paths, (open paths with only one point are a special case
     dummy.layers[ly_fore].splines = spl;
     next = spl->next; spl->next = NULL;
     ELFindEdges(&dummy,&el);
+    if ( el.coordmax[1]-el.coordmin[1] > 1.e6 ) {
+	fprintf( stderr, "Warning: Unreasonably big splines. They will be ignored.\n" );
+return( -1 );
+    }
     el.major = 1;
     ELOrder(&el,el.major);
 

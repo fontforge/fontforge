@@ -598,7 +598,7 @@ static void MFixupSC(SplineFont *sf, SplineChar *sc,int i) {
 	/*  new font too (was either already there or just got copied) */
 	ref->local_enc =  _SFFindChar(sf,ref->sc->unicodeenc,ref->sc->name);
 	if ( ref->local_enc==-1 ) {
-	    GDrawIError("Bad reference, can't fix it up");
+	    IError("Bad reference, can't fix it up");
 	    if ( ref==sc->layers[ly_fore].refs ) {
 		sc->layers[ly_fore].refs = ref->next;
  goto retry;

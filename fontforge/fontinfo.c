@@ -1891,7 +1891,7 @@ return( false );
 	    }
 	}
     }
-    if ( epos!=enc_cnt+extras ) GDrawIError( "Bad count in ReencodeFont");
+    if ( epos!=enc_cnt+extras ) IError( "Bad count in ReencodeFont");
     free(sf->chars);
     sf->chars = chars;
     sf->charcnt = enc_cnt+extras;

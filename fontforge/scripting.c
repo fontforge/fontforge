@@ -1078,7 +1078,7 @@ static void bControlAfmLigatureOutput(Context *c) {
 	if ( i<=cnt )
 	    lig_tags[i++] = (temp[0]<<24)|(temp[1]<<16)|(temp[2]<<8)|temp[3];
 	else
-	    GDrawIError("Bad ligature tag count");
+	    IError("Bad ligature tag count");
 	pt = strchr(str,',');
 	if ( pt==NULL )
 	    str += strlen(str);

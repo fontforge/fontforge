@@ -1059,7 +1059,7 @@ return;
 
 void DebuggerSetWatches(struct debugger_context *dc,int n, uint8 *w) {
     free(dc->watch); dc->watch=NULL;
-    if ( n!=dc->n_points ) GDrawIError("Bad watchpoint count");
+    if ( n!=dc->n_points ) IError("Bad watchpoint count");
     else {
 	dc->watch = w;
 	if ( dc->exc ) {

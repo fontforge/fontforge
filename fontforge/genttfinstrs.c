@@ -519,7 +519,7 @@ static struct dstemlist *BuildDStemIntersection(DStem *d,DStem *ds,
 	ds->intersects = i2;
     }
     if ( i1->is[which]!=NULL )
-	GDrawIError("BuildDStemIntersection: is[%d] set twice", which);
+	IError("BuildDStemIntersection: is[%d] set twice", which);
     i1->is[which] = inter;
     i1->pnum[which] = pnum;
     if ( which==in_rl ) which = in_lr;
@@ -1108,7 +1108,7 @@ return( pt );
 		    t1 = outer1; b2 = outer2; b1 = ds->pnum[3]; t2 = nextds->pnum[0];
 		}
 	    } else {
-		GDrawIError( "Failed to find intersection in DStemFixConnected" );
+		IError( "Failed to find intersection in DStemFixConnected" );
 return( pt );
 	    }
 	    if ( inner == ds->pnum[0] ) sw1 = -sw1;
@@ -1151,7 +1151,7 @@ return( pt );
 		    outer1 = outer2 = ds->pnum[3];
 		}
 	    } else {
-		GDrawIError( "Failed to find intersection in DStemFixConnected" );
+		IError( "Failed to find intersection in DStemFixConnected" );
 return( pt );
 	    }
 	    if ( inner == ds->pnum[1] ) sw1 = -sw1;

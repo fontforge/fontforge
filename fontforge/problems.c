@@ -179,7 +179,7 @@ static void FixIt(struct problems *p) {
 	    SCOutOfDateBackground(p->sc);
 	    SCUpdateAll(p->sc);
 	} else
-	    GDrawIError("Could not find hint");
+	    IError("Could not find hint");
 return;
     }
     if ( p->explaining==_STR_ProbHintVWidth ) {
@@ -189,7 +189,7 @@ return;
 	    SCOutOfDateBackground(p->sc);
 	    SCUpdateAll(p->sc);
 	} else
-	    GDrawIError("Could not find hint");
+	    IError("Could not find hint");
 return;
     }
 #endif
@@ -203,7 +203,7 @@ return;
 	    if ( changed )
 		SCCharChangedUpdate(p->sc);
 	} else
-	    GDrawIError("Could not find referenc");
+	    IError("Could not find referenc");
 return;
     } else if ( p->explaining==_STR_ProbBadWidth ) {
 	SCSynchronizeWidth(p->sc,p->advancewidthval,p->sc->width,NULL);
@@ -227,7 +227,7 @@ return;
     break;
     }
     if ( sp==NULL ) {
-	GDrawIError("Nothing selected");
+	IError("Nothing selected");
 return;
     }
 
@@ -258,7 +258,7 @@ return;
 	if ( sp->me.y!=p->found ) {
 	    sp=sp->next->to;
 	    if ( !sp->selected || sp->me.y!=p->found ) {
-		GDrawIError("Couldn't find line");
+		IError("Couldn't find line");
 return;
 	    }
 	}
@@ -276,7 +276,7 @@ return;
 	    other = &sp->nextcp;
 	}
 	if ( tofix->y!=p->found ) {
-	    GDrawIError("Couldn't find control point");
+	    IError("Couldn't find control point");
 return;
 	}
 	tofix->y = p->expected;
@@ -288,7 +288,7 @@ return;
 	if ( sp->me.x!=p->found ) {
 	    sp=sp->next->to;
 	    if ( !sp->selected || sp->me.x!=p->found ) {
-		GDrawIError("Couldn't find line");
+		IError("Couldn't find line");
 return;
 	    }
 	}
@@ -306,7 +306,7 @@ return;
 	    other = &sp->nextcp;
 	}
 	if ( tofix->x!=p->found ) {
-	    GDrawIError("Couldn't find control point");
+	    IError("Couldn't find control point");
 return;
 	}
 	tofix->x = p->expected;
@@ -338,7 +338,7 @@ return;
 	    }
 	}
     } else
-	GDrawIError("Did not fix: %d", p->explaining );
+	IError("Did not fix: %d", p->explaining );
     if ( sp->next!=NULL )
 	SplineRefigure(sp->next);
     if ( sp->prev!=NULL )
@@ -2312,7 +2312,11 @@ static void DoProbs(struct problems *p) {
 	    }
     }
     if ( !ret )
-	GDrawError( "No problems found");
+#if defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("No problems found"),_("No problems found"));
+#else
+	GWidgetErrorR(_STR_NoProblemsFound,_STR_NoProblemsFound);
+#endif
 }
 
 static void FigureStandardHeights(struct problems *p) {

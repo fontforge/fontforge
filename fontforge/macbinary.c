@@ -276,7 +276,7 @@ static struct resource *PSToResources(FILE *res,FILE *pfbfile) {
     cnt = 0;
     forever {
 	if ( getc(pfbfile)!=0x80 ) {
-	    GDrawIError("We made a pfb file, but didn't get one. Hunh?" );
+	    IError("We made a pfb file, but didn't get one. Hunh?" );
 return( NULL );
 	}
 	type = getc(pfbfile);
@@ -2056,10 +2056,20 @@ return( (SplineFont *) ret );
 		free(fn);
 	    }
 	    free(find);
-	} else if ( screen_display==NULL )
+#if defined(FONTFORGE_CONFIG_GDRAW)
+	} else if ( no_windowing_ui )
 	    which = 0;
 	else
 	    which = GWidgetChoicesR(_STR_PickFont,(const unichar_t **) names,subcnt,0,_STR_MultipleFontsPick);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	} else if ( no_windowing_ui )
+	    which = 0;
+	else
+	    which = gwwv_choose(_("Pick a font, any font..."),(const unichar_t **) names,subcnt,0,_("There are multiple fonts in this file, pick one"));
+#elif defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
+	} else
+	    which = 0;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	if ( lparen==NULL && which!=-1 )
 	    chosenname = cu_copy(names[which]);
 	for ( i=0; i<subcnt; ++i )
@@ -2543,10 +2553,20 @@ return( test );
 	free(find);
     } else if ( cnt==1 )
 	which = 0;
-    else if ( screen_display==NULL )
+#if defined(FONTFORGE_CONFIG_GDRAW)
+    else if ( no_windowing_ui )
 	which = 0;
     else
 	which = GWidgetChoicesR(_STR_PickFont,(const unichar_t **) names,cnt,0,_STR_MultipleFontsPick);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    else if ( no_windowing_ui )
+	which = 0;
+    else
+	which = gwwv_choose(_("Pick a font, any font..."),(const unichar_t **) names,subcnt,0,_("There are multiple fonts in this file, pick one"));
+#elif defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
+    else
+	which = 0;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
     if ( which!=-1 ) {
 	fond = fonds[which];

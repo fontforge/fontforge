@@ -1610,7 +1610,7 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
 	    n = f->next;
     }
 
-    if ( cnt>32 ) GDrawIError("Too many features in chain");
+    if ( cnt>32 ) IError("Too many features in chain");
     for ( i=0; i<cnt; ++i ) for ( j=i+1; j<cnt; ++j ) {
 	if ( TTFFeatureIndex(all[i]->otftag,ord,true)>TTFFeatureIndex(all[j]->otftag,ord,true)) {
 	    ftemp = all[i];

@@ -68,7 +68,7 @@ static void RemoveBDFWindows(BDFFont *bdf) {
 	    GDrawDestroyWindow(bv->gw);
 	}
     }
-    if ( screen_display!=NULL ) {
+    if ( !no_windowing_ui ) {
 	GDrawSync(NULL);
 	GDrawProcessPendingEvents(NULL);
 	/* Just in case... */
@@ -282,19 +282,13 @@ static int FVRegenBitmaps(CreateBitmapData *bd,int32 *sizes,int usefreetype) {
 		(bdf->pixelsize!=(sizes[i]&0xffff) || BDFDepth(bdf)!=(sizes[i]>>16));
 		bdf=bdf->next );
 	if ( bdf==NULL ) {
-	    unichar_t temp[100];
-	    char buffer[10];
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    u_strcpy(temp,GStringGetResource(_STR_BadRegenSize,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    u_strcpy(temp,_("Attempt to regenerate a pixel size that has not been created: "));
+#if defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_notice(_("Missing Bitmap"),_("Attempt to regenerate a pixel size that has not been created (%d@%d)",
+			    sizes[i]&0xffff, sizes[i]>>16);
+#else
+	    GWidgetPostNoticeR(_STR_MissingBitmap,_STR_MissingRegenBitmapLong,
+		    sizes[i]&0xffff, sizes[i]>>16);
 #endif
-	    if ( (sizes[i]>>16)==1 )
-		sprintf(buffer,"%d", sizes[i]&0xffff);
-	    else
-		sprintf(buffer,"%d@%d", sizes[i]&0xffff, sizes[i]>>16);
-	    uc_strcat(temp,buffer);
-	    GWidgetPostNotice(temp,temp);
 return( false );
 	}
     }
@@ -334,11 +328,13 @@ return( false );
 	}
     }
     sf->changed = true;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( fv->show!=fv->filled ) {
 	for ( i=0; sizes[i]!=0 && ((sizes[i]&0xffff)!=fv->show->pixelsize || (sizes[i]>>16)!=BDFDepth(fv->show)); ++i );
 	if ( sizes[i]!=0 && fv->v!=NULL )
 	    GDrawRequestExpose(fv->v,NULL,false );
     }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 return( true );
 }
 

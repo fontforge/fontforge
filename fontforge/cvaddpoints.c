@@ -258,7 +258,7 @@ return;			/* We clicked on the active point, that's a no-op */
 	if ( base->next!=NULL )
 	    SplineSetReverse(sel);
 	if ( base->next!=NULL )
-	    GDrawIError("Base point not at end of splineset in CVMouseDownPoint");
+	    IError("Base point not at end of splineset in CVMouseDownPoint");
 	if ( sp==NULL || (sp->next!=NULL && sp->prev!=NULL) || sp==base ) {
 	    /* Add a new point */
 	    sp = chunkalloc(sizeof(SplinePoint));
@@ -314,7 +314,7 @@ return;			/* We clicked on the active point, that's a no-op */
 	    if ( sp->prev!=NULL )
 		SplineSetReverse(cv->p.spl);
 	    if ( sp->prev!=NULL )
-		GDrawIError("Base point not at start of splineset in CVMouseDownPoint");
+		IError("Base point not at start of splineset in CVMouseDownPoint");
 	    /* remove the old spl entry from the chain */
 	    if ( cv->p.spl==cv->layerheads[cv->drawmode]->splines )
 		cv->layerheads[cv->drawmode]->splines = cv->p.spl->next;

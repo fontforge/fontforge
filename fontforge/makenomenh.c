@@ -13,6 +13,11 @@
 #include <charset.h>
 #include <chardata.h>
 
+#ifdef FONTFORGE_CONFIG_NO_WINDOWING_UI
+int local_encoding = e_iso8859_1;
+char *iconv_local_encoding_name = NULL;
+#endif
+
 #define e_hexjis	100
 
 static char *istandard[] = { "buttonsize", "ScaleFactor", NULL };

@@ -108,7 +108,7 @@ static int NumberHints(SplineChar *scs[MmMax], int instance_count) {
 	if ( cnt==-1 )
 	    cnt = i;
 	else if ( cnt!=i )
-	    GDrawIError("MM font with different hint counts");
+	    IError("MM font with different hint counts");
     }
 return( i );
 }
@@ -1782,7 +1782,7 @@ return( NULL );
     }
     chrs->next = cnt;
     if ( chrs->next>chrs->cnt )
-	GDrawIError("Character estimate failed, about to die..." );
+	IError("Character estimate failed, about to die..." );
 return( chrs );
 }
 
@@ -2408,7 +2408,7 @@ static void DumpHintMasked(GrowBuf *gb,RefChar *cur,StemInfo *h,StemInfo *v) {
     int cnt;
 
     if ( h==NULL && v==NULL )
-	GDrawIError("hintmask invoked when there are no hints");
+	IError("hintmask invoked when there are no hints");
     memset(masks,'\0',sizeof(masks));
     cnt = 0;
     while ( h!=NULL && h->hintnumber>=0 ) {
@@ -2441,7 +2441,7 @@ static void ExpandRefList2(GrowBuf *gb, SplineChar *sc, RefChar *refs, RefChar *
 	/* All the hints live in this one reference, and its subroutine */
 	/*  contains them and it has its own rmoveto */
 	if ( unsafe->sc->lsidebearing==0x7fff )
-	    GDrawIError("Attempt to reference an unreferenceable glyph %s", unsafe->sc->name );
+	    IError("Attempt to reference an unreferenceable glyph %s", unsafe->sc->name );
 	AddNumber2(gb,unsafe->sc->lsidebearing,round);
 	if ( gb->pt+1>=gb->end )
 	    GrowBuffer(gb);
@@ -2489,7 +2489,7 @@ static void ExpandRefList2(GrowBuf *gb, SplineChar *sc, RefChar *refs, RefChar *
 		    current.y==bpt[0].y+r->transform[5]?22:	/* hmoveto */
 		    21;						/* rmoveto */
 	if ( r->sc->lsidebearing==0x7fff )
-	    GDrawIError("Attempt to reference an unreferenceable glyph %s", r->sc->name );
+	    IError("Attempt to reference an unreferenceable glyph %s", r->sc->name );
 	AddNumber2(gb,r->sc->lsidebearing,round);
 	if ( gb->pt+1>=gb->end )
 	    GrowBuffer(gb);

@@ -398,7 +398,7 @@ return;
     /*  then just load that strike. Don't ask */
     if ( info->glyphlocations_start==0 && info->cff_start==0 && cnt==1 )
 	sel[0] = true;
-    else if ( screen_display==NULL ) {
+    else if ( no_windowing_ui ) {
 	if ( onlyone ) {
 	    biggest=0;
 	    for ( i=1; i<cnt; ++i )
@@ -851,7 +851,7 @@ static struct bitmapSizeTable *ttfdumpstrikelocs(FILE *bloc,FILE *bdat,
     for ( i=0; i<bdf->charcnt && (bdf->chars[i]==NULL || bdf->chars[i]->sc->ttf_glyph==-1); ++i );
     for ( j=bdf->charcnt-1; j>=0 && (bdf->chars[j]==NULL || bdf->chars[j]->sc->ttf_glyph==-1); --j );
     if ( j==-1 ) {
-	GDrawIError("No characters to output in strikes");
+	IError("No characters to output in strikes");
 return(NULL);
     }
     size->flags = 0x01;		/* horizontal */

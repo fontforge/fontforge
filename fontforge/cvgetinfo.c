@@ -1882,7 +1882,7 @@ static int PI_HintSel(GGadget *g, GEvent *e) {
 		j = i;
 		for ( h=ci->cv->sc->vstem; h!=NULL && i!=e->u.control.u.list.changed_index; h=h->next, ++i );
 		if ( h==NULL )
-		    GDrawIError("Failed to find hint");
+		    IError("Failed to find hint");
 		else {
 		    for ( h2 = ci->cv->sc->hstem, i=j ; h2!=NULL; h2=h2->next, ++i ) {
 			if ( h2!=h && GGadgetIsListItemSelected(g,i)) {
