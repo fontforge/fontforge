@@ -45,9 +45,6 @@
 /*  (I think only for what happens if !ARGS_ARE_XY) */
 /*  http://freetype.sourceforge.net/ */
 
-static int default_to_Apple = 0;	/* Normally we assume the MS interpretation */
-		/* At the moment this only controls composit offsets */
-
 /* !!!I don't currently parse instructions to get hints */
 
 int getushort(FILE *ttf) {
@@ -1068,10 +1065,13 @@ static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, 
 	    cur->transform[2] = get2dot14(ttf);
 	    cur->transform[3] = get2dot14(ttf);
 	}
-	/* If neither SCALED/UNSCALED specified I'll just assume MS interpretation */
-	/*  because I at least understand that method */
-	if ( ((default_to_Apple && !(flags&_UNSCALED_OFFSETS)) ||
-		 (flags & _SCALED_OFFSETS)) &&
+#ifdef __Mac
+	/* On mac assume scaled offsets unless told unscaled explicitly */
+	if ( !(flags&_UNSCALED_OFFSETS) &&
+#else
+	/* everywhere else assume unscaled offsets unless told scaled explicitly */
+	if ( (flags & _SCALED_OFFSETS) &&
+#endif
 		(flags & _ARGS_ARE_XY) && (flags&(_SCALE|_XY_SCALE|_MATRIX))) {
 	    static int asked = 0;
 	    /* This is not what Apple documents on their website. But it is */
