@@ -143,7 +143,12 @@ static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
 	}
     } else {
 	if ( enc!=-1 && enc<sf->charcnt && sf->chars[enc]!=NULL &&
-		strcmp(sf->chars[enc]->name,name)==0 )
+		(strcmp(sf->chars[enc]->name,name)==0 || UniFromName(name)==enc ))
+	    i = enc;
+	else if ( enc<sf->charcnt && sf->chars[enc]!=NULL &&
+		  ((enc==0x2206 && strcmp(name,"Delta")==0) ||
+		   (enc==0x2126 && strcmp(name,"Omega")==0) ||
+		   (enc==0xb5 && strcmp(name,"mu")==0) ))
 	    i = enc;
 	else for ( i=sf->charcnt-1; i>=0 ; --i ) if ( sf->chars[i]!=NULL ) {
 	    if ( strcmp(name,sf->chars[i]->name)==0 )
