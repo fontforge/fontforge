@@ -1796,12 +1796,14 @@ const char *cffnames[] = {
 };
 const int nStdStrings = sizeof(cffnames)/sizeof(cffnames[0])-1;
 
-static char **readcfffontnames(FILE *ttf) {
+static char **readcfffontnames(FILE *ttf,int *cnt) {
     uint16 count = getushort(ttf);
     int offsize;
     uint32 *offsets;
     char **names;
     int i,j;
+
+    if ( cnt!=NULL ) *cnt = count;
 
     if ( count==0 )
 return( NULL );
@@ -2349,12 +2351,15 @@ return( NULL );
 return( dicts );
 }
 
-static const char *getsid(int sid,char **strings) {
+static const char *getsid(int sid,char **strings,int scnt) {
     if ( sid==-1 )
 return( NULL );
     else if ( sid<nStdStrings )
 return( cffnames[sid] );
-    else
+    else if ( sid-nStdStrings>scnt ) {
+	fprintf( stderr, "Bad sid %d (must be less than %d)\n", sid, scnt+nStdStrings );
+return( NULL );
+    } else
 return( strings[sid-nStdStrings]);
 }
 
@@ -2371,7 +2376,7 @@ return( d );
 /* I really expect to deal with encodings in ttf cmap, but ocasionally we */
 /*  get a bare cff */
 static void readcffenc(FILE *ttf,struct topdicts *dict,struct ttfinfo *info,
-	char **strings) {
+	char **strings, int scnt) {
     int format, cnt, i, j, pos, first, last, dupenc, sid, next;
     extern char *AdobeStandardEncoding[], *AdobeExpertEncoding[];
     const char *name;
@@ -2404,7 +2409,7 @@ return;
 	format = getc(ttf);
 	if ( (format&0x7f)==0 ) {
 	    cnt = getc(ttf);
-	    for ( i=0; i<cnt && i<info->glyph_cnt; ++i )
+	    for ( i=1; i<=cnt && i<info->glyph_cnt; ++i )
 		info->chars[i]->enc = getc(ttf);
 	    next = 256;
 	    for ( ; i<info->glyph_cnt; ++i )
@@ -2435,7 +2440,9 @@ return;
 	    for ( i=0; i<cnt; ++i ) {
 		dupenc = getc(ttf);
 		sid = getushort(ttf);
-		name = getsid(sid,strings);
+		name = getsid(sid,strings,scnt);
+		if ( name==NULL )	/* Table is erroneous */
+	    break;
 		for ( j=0; j<info->glyph_cnt; ++j )
 		    if ( strcmp(name,info->chars[j]->name)==0 )
 		break;
@@ -2675,12 +2682,13 @@ static void cffprivatefillup(struct psdict *private, struct topdicts *dict) {
     privateaddreal(private,"ExpansionFactor",dict->expansionfactor);
 }
 
-static SplineFont *cffsffillup(struct topdicts *subdict, char **strings ) {
+static SplineFont *cffsffillup(struct topdicts *subdict, char **strings,
+	int scnt) {
     SplineFont *sf = SplineFontEmpty();
     int emsize;
     static int nameless;
 
-    sf->fontname = copy(getsid(subdict->sid_fontname,strings));
+    sf->fontname = copy(getsid(subdict->sid_fontname,strings,scnt));
     if ( sf->fontname==NULL ) {
 	char buffer[40];
 	sprintf(buffer,"UntitledSubFont_%d", ++nameless );
@@ -2695,13 +2703,13 @@ static SplineFont *cffsffillup(struct topdicts *subdict, char **strings ) {
     sf->ascent = .8*emsize;
     sf->descent = emsize - sf->ascent;
     if ( subdict->copyright!=-1 )
-	sf->copyright = copy(getsid(subdict->copyright,strings));
+	sf->copyright = copy(getsid(subdict->copyright,strings,scnt));
     else
-	sf->copyright = copy(getsid(subdict->notice,strings));
-    sf->familyname = copy(getsid(subdict->familyname,strings));
-    sf->fullname = copy(getsid(subdict->fullname,strings));
-    sf->weight = copy(getsid(subdict->weight,strings));
-    sf->version = copy(getsid(subdict->version,strings));
+	sf->copyright = copy(getsid(subdict->notice,strings,scnt));
+    sf->familyname = copy(getsid(subdict->familyname,strings,scnt));
+    sf->fullname = copy(getsid(subdict->fullname,strings,scnt));
+    sf->weight = copy(getsid(subdict->weight,strings,scnt));
+    sf->version = copy(getsid(subdict->version,strings,scnt));
     sf->italicangle = subdict->italicangle;
     sf->upos = subdict->underlinepos;
     sf->uwidth = subdict->underlinewidth;
@@ -2716,7 +2724,7 @@ return( sf );
 }
 
 static void cffinfofillup(struct ttfinfo *info, struct topdicts *dict,
-	char **strings ) {
+	char **strings, int scnt ) {
 
     info->glyph_cnt = dict->glyphs.cnt;
 
@@ -2733,24 +2741,24 @@ static void cffinfofillup(struct ttfinfo *info, struct topdicts *dict,
     if ( dict->copyright!=-1 || dict->notice!=-1 )
 	free( info->copyright );
     if ( dict->copyright!=-1 )
-	info->copyright = copy(getsid(dict->copyright,strings));
+	info->copyright = copy(getsid(dict->copyright,strings,scnt));
     else if ( dict->notice!=-1 )
-	info->copyright = copy(getsid(dict->notice,strings));
+	info->copyright = copy(getsid(dict->notice,strings,scnt));
     if ( dict->familyname!=-1 ) {
 	free(info->familyname);
-	info->familyname = copy(getsid(dict->familyname,strings));
+	info->familyname = copy(getsid(dict->familyname,strings,scnt));
     }
     if ( dict->fullname!=-1 ) {
 	free(info->fullname);
-	info->fullname = copy(getsid(dict->fullname,strings));
+	info->fullname = copy(getsid(dict->fullname,strings,scnt));
     }
     if ( dict->weight!=-1 ) {
 	free(info->weight);
-	info->weight = copy(getsid(dict->weight,strings));
+	info->weight = copy(getsid(dict->weight,strings,scnt));
     }
     if ( dict->version!=-1 ) {
 	free(info->version);
-	info->version = copy(getsid(dict->version,strings));
+	info->version = copy(getsid(dict->version,strings,scnt));
     }
     if ( dict->fontname!=NULL ) {
 	free(info->fontname);
@@ -2767,22 +2775,22 @@ static void cffinfofillup(struct ttfinfo *info, struct topdicts *dict,
 	cffprivatefillup(info->private,dict);
     }
     if ( dict->ros_registry!=-1 ) {
-	info->cidregistry = copy(getsid(dict->ros_registry,strings));
-	info->ordering = copy(getsid(dict->ros_ordering,strings));
+	info->cidregistry = copy(getsid(dict->ros_registry,strings,scnt));
+	info->ordering = copy(getsid(dict->ros_ordering,strings,scnt));
 	info->supplement = dict->ros_supplement;
 	info->cidfontversion = dict->cidfontversion;
     }
 }
 
 static void cfffigure(struct ttfinfo *info, struct topdicts *dict,
-	char **strings, struct pschars *gsubrs) {
+	char **strings, int scnt, struct pschars *gsubrs) {
     int i, cstype;
     struct pschars *subrs;
     struct pscontext pscontext;
 
     memset(&pscontext,0,sizeof(pscontext));
 
-    cffinfofillup(info, dict, strings );
+    cffinfofillup(info, dict, strings, scnt );
 
 /* The format allows for some dicts that are type1 strings and others that */
 /*  are type2s. Which means that the global subrs will have a different bias */
@@ -2802,7 +2810,7 @@ static void cfffigure(struct ttfinfo *info, struct topdicts *dict,
     for ( i=0; i<info->glyph_cnt; ++i ) {
 	info->chars[i] = PSCharStringToSplines(
 		dict->glyphs.values[i], dict->glyphs.lens[i],&pscontext,
-		subrs,gsubrs,getsid(dict->charset[i],strings));
+		subrs,gsubrs,getsid(dict->charset[i],strings,scnt));
 	info->chars[i]->vwidth = info->emsize;
 	if ( cstype==2 ) {
 	    if ( info->chars[i]->width == (int16) 0x8000 )
@@ -2816,7 +2824,7 @@ static void cfffigure(struct ttfinfo *info, struct topdicts *dict,
 }
 
 static void cidfigure(struct ttfinfo *info, struct topdicts *dict,
-	char **strings, struct pschars *gsubrs, struct topdicts **subdicts,
+	char **strings, int scnt, struct pschars *gsubrs, struct topdicts **subdicts,
 	uint8 *fdselect) {
     int i, j, cstype, uni, cid;
     struct pschars *subrs;
@@ -2827,13 +2835,13 @@ static void cidfigure(struct ttfinfo *info, struct topdicts *dict,
 
     memset(&pscontext,0,sizeof(pscontext));
 
-    cffinfofillup(info, dict, strings );
+    cffinfofillup(info, dict, strings, scnt );
 
     for ( j=0; subdicts[j]!=NULL; ++j );
     info->subfontcnt = j;
     info->subfonts = gcalloc(j+1,sizeof(SplineFont *));
     for ( j=0; subdicts[j]!=NULL; ++j ) 
-	info->subfonts[j] = cffsffillup(subdicts[j],strings);
+	info->subfonts[j] = cffsffillup(subdicts[j],strings,scnt);
     for ( i=0; i<info->glyph_cnt; ++i ) {
 	sf = info->subfonts[ fdselect[i] ];
 	cid = dict->charset[i];
@@ -2900,6 +2908,7 @@ static int readcffglyphs(FILE *ttf,struct ttfinfo *info) {
     int i, j, which;
     struct pschars gsubs;
     uint8 *fdselect;
+    int scnt;
 
     fseek(ttf,info->cff_start,SEEK_SET);
     if ( getc(ttf)!='\1' ) {		/* Major version */
@@ -2911,7 +2920,7 @@ return( 0 );
     offsize = getc(ttf);
     if ( hdrsize!=4 )
 	fseek(ttf,info->cff_start+hdrsize,SEEK_SET);
-    fontnames = readcfffontnames(ttf);
+    fontnames = readcfffontnames(ttf,NULL);
     which = 0;
     if ( fontnames[1]!=NULL ) {		/* More than one? Can that even happen in OpenType? */
 	which = PickCFFFont(fontnames);
@@ -2924,7 +2933,7 @@ return( 0 );
     }
     dicts = readcfftopdicts(ttf,fontnames,info->cff_start);
 	/* String index is just the same as fontname index */
-    strings = readcfffontnames(ttf);
+    strings = readcfffontnames(ttf,&scnt);
     readcffsubrs(ttf,&gsubs );
     /* Can be many fonts here. Only decompose the one */
 	if ( dicts[which]->charstringsoff!=-1 ) {
@@ -2936,7 +2945,7 @@ return( 0 );
 	if ( dicts[which]->charsetoff!=-1 )
 	    readcffset(ttf,dicts[which]);
 	if ( dicts[which]->fdarrayoff==-1 )
-	    cfffigure(info,dicts[which],strings,&gsubs);
+	    cfffigure(info,dicts[which],strings,scnt,&gsubs);
 	else {
 	    fseek(ttf,info->cff_start+dicts[which]->fdarrayoff,SEEK_SET);
 	    subdicts = readcfftopdicts(ttf,NULL,info->cff_start);
@@ -2948,13 +2957,13 @@ return( 0 );
 		if ( subdicts[j]->charsetoff!=-1 )
 		    readcffset(ttf,subdicts[j]);
 	    }
-	    cidfigure(info,dicts[which],strings,&gsubs,subdicts,fdselect);
+	    cidfigure(info,dicts[which],strings,scnt,&gsubs,subdicts,fdselect);
 	    for ( j=0; subdicts[j]!=NULL; ++j )
 		TopDictFree(subdicts[j]);
 	    free(subdicts); free(fdselect);
 	}
 	if ( dicts[which]->encodingoff!=-1 )
-	    readcffenc(ttf,dicts[which],info,strings);
+	    readcffenc(ttf,dicts[which],info,strings,scnt);
 
     if ( info->to_order2 ) {
 	for ( i=0; i<info->glyph_cnt; ++i )
@@ -4109,8 +4118,13 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
 
     if ( info->barecff ) {
 	max = 256;
+	if ( oldcnt>1 && oldchars[0]!=NULL && oldchars[1]!=NULL &&
+		oldchars[0]->enc==0 && oldchars[1]->enc==0 ) {
+	    extras++;
+	    oldchars[0]->enc = 256;
+	}
 	for ( i=0; i<oldcnt; ++i ) if ( oldchars[i]!=NULL ) {
-	    if ( oldchars[i]->enc>=256 )
+	    if ( oldchars[i]->enc>=256 || (oldchars[i]->enc==0 && i>1 ))
 		++extras;
 	    oldchars[i]->parent = sf;
 	}
@@ -4148,7 +4162,7 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
     newcharcnt = epos+extras;
     newchars = gcalloc(newcharcnt,sizeof(SplineChar *));
     for ( i=0; i<oldcnt; ++i ) if ( oldchars[i]!=NULL ) {
-	if ( oldchars[i]->enc!=0 || i==0 )
+	if ( oldchars[i]->enc!=0 || i==0 || (i==1 && info->barecff))
 	    newchars[oldchars[i]->enc] = oldchars[i];
 	else {
 	    oldchars[i]->enc = epos;
@@ -4535,7 +4549,7 @@ return( NULL );
     offsize = getc(cff);
     if ( hdrsize!=4 )
 	fseek(cff,hdrsize,SEEK_SET);
-    fontnames = readcfffontnames(cff);
+    fontnames = readcfffontnames(cff,NULL);
     fclose(cff);
 return( fontnames );
 }

@@ -1733,12 +1733,13 @@ static void dumpcffencoding(SplineFont *sf,struct alltabs *at) {
     /* I always use a format 0 encoding. ie. an array of glyph indexes */
     putc(0xff,at->encoding);		/* fixup later */
 
-    last = -1;
+    last = 0;
     anydups = 0;
     for ( i=0; i<256 && i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
 	if ( sc != SCDuplicate(sc) ) {
-	    ++anydups;
-	} else if ( sc->ttf_glyph!=-1 && sc->ttf_glyph>last ) {
+	    if ( SCDuplicate(sc)->ttf_glyph<255 )
+		++anydups;
+	} else if ( sc->ttf_glyph>0 && sc->ttf_glyph>last ) {
 	    if ( sc->ttf_glyph>=255 )
     break;
 	    for ( j=last+1; j<sc->ttf_glyph && j<255; ++j )
