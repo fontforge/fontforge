@@ -503,6 +503,52 @@ return( CHR('l','a','t','n'));
 return( 0 );
 }
 
+uint32 SCScriptFromUnicode(SplineChar *sc) {
+    PST *pst;
+    SplineFont *sf;
+    int i;
+
+    if ( sc==NULL )
+return( 0 );
+
+    sf = sc->parent;
+    if ( sc->unicodeenc!=-1 )
+return( ScriptFromUnicode( sc->unicodeenc,sf ));
+
+    if ( sf->cidmaster ) sf=sf->cidmaster;
+    for ( i=0; i<2; ++i ) {
+	for ( pst=sc->possub; pst!=NULL; pst=pst->next ) if ( pst->script_lang_index!=0xffff ) {
+	    if ( i==1 || sf->script_lang[pst->script_lang_index][1].script==0 )
+return( sf->script_lang[pst->script_lang_index]->script );
+	}
+    }
+return( ScriptFromUnicode( sc->unicodeenc,sf ));
+}
+
+int SFAddScriptLangIndex(SplineFont *sf,uint32 script,uint32 lang) {
+    int i;
+
+    if ( sf->cidmaster ) sf = sf->cidmaster;
+    if ( script==0 ) script=DEFAULT_SCRIPT;
+    if ( lang==0 ) lang=DEFAULT_LANG;
+    if ( sf->script_lang==NULL )
+	sf->script_lang = gcalloc(2,sizeof(struct script_record *));
+    for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
+	if ( sf->script_lang[i][0].script==script && sf->script_lang[i][1].script==0 &&
+		sf->script_lang[i][0].langs[0]==lang &&
+		sf->script_lang[i][0].langs[1]==0 )
+return( i );
+    }
+    sf->script_lang = grealloc(sf->script_lang,(i+2)*sizeof(struct script_record *));
+    sf->script_lang[i] = gcalloc(2,sizeof(struct script_record));
+    sf->script_lang[i][0].script = script;
+    sf->script_lang[i][0].langs = galloc(2*sizeof(uint32));
+    sf->script_lang[i][0].langs[0] = lang;
+    sf->script_lang[i][0].langs[1] = 0;
+    sf->script_lang[i+1] = NULL;
+return( i );
+}
+
 #if HANYANG
 void SFDDumpCompositionRules(FILE *sfd,struct compositionrules *rules) {
 }
