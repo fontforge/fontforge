@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 4-Aug-2002 -->
+  <!-- AP: Last modified: 7-Aug-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -60,7 +60,11 @@ Contents
   <LI>
     <A HREF="#change-log">Change Log</A>
   <LI>
+    <A HREF="faqFS.html">FAQ</A>
+  <LI>
     <A HREF="index.html#Lacks">Things missing...</A>
+  <LI>
+    <A HREF="#Mail">Mailing Lists</A>
   <LI>
     <A HREF="#known-bugs">Known Bugs</A>
   <LI>
@@ -85,8 +89,8 @@ let me know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-020804.tgz">Download pfaedit linux-i386 Redhat 7.3
-    </A><A NAME="downloads">executable</A> Version: 4-August-2002
+    <A HREF="pfaedit-020807.tgz">Download pfaedit linux-i386 Redhat 7.3
+    </A><A NAME="downloads">executable</A> Version: 7-August-2002
   <LI>
     <A HREF="pfaedit-020709-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
     Version: 9-July-2002 (Redhat 7.1)
@@ -101,7 +105,7 @@ let me know when you do</A>.
     is available at the debian site.</A>
   <LI>
     <A HREF="Problems-MacOSX.html#binary">A Mac OS/X distribution</A> (with Caveats).
-    Version 13-July-2002
+    Version 7-August-2002
   <LI>
     <A HREF="pfaedit_cygwin-020715.tgz">A cygwin version</A>. Version: 15-July-2002
   <LI>
@@ -123,9 +127,9 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-020709-1.src.rpm">source RPM</A>: Version:
 9-July-2002<BR>
-Or you can download the <A HREF="pfaedit_full-020804.tgz">entire source tree
+Or you can download the <A HREF="pfaedit_full-020807.tgz">entire source tree
 </A>in one .tgz file: Version
-4-August-2002<!--
+7-August-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -247,6 +251,33 @@ should install them properly for you 8-Feb-2002.
 Or you can just browse the <A HREF="overview.html">docs online</A>. (Always
 current)
 <H2>
+  Installing it
+</H2>
+<P>
+The executable tarball contains the pfaedit executable and a man page. Put
+it wherever you'd like.
+<P>
+The build script will do an install to /usr/local/bin if you want it to.
+<H2>
+  Running it
+</H2>
+<P>
+<KBD>$ pfaedit font.pfa font2.pfb font3.sfd font4.ttf font5.otf font6.gsf
+font7.bdf</KBD> <BR>
+will start pfaedit looking at the fonts you specify on the command line.
+It can read either pfb or pfa fonts, and some ps fonts (type 0 fonts based
+on a type 1 dictionary) as well as truetype fonts, non-CID open type fonts
+and bitmap fonts.<BR>
+<KBD>$ pfaedit -new</KBD><BR>
+will cause pfaedit to create a new font (in iso-8859-1 encoding)<BR>
+<KBD>$ pfaedit</KBD><BR>
+will open up a file picker dialog and allow you to browse till you've found
+a font file (or have created a new one). <KBD>$ pfaedit -script script.pe
+fonts...</KBD><BR>
+This will invoke pfaedit in a non-interactive mode, and have it run the named
+script. Any further arguments on the command line will be passed as arguments
+to the script and processed (or not) by it.
+<H2>
   License
 </H2>
 <BLOCKQUOTE>
@@ -285,6 +316,31 @@ current)
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    7-Aug-2002
+    <UL>
+      <LI>
+	The 21-July autowidth/kern change broke autowidth/kern scripting.
+      <LI>
+	And the serif detection failed if the character I did not reach the baseline.
+      <LI>
+	PfaEdit read RGB png files incorrectly.
+      <LI>
+	PfaEdit used to bring up most dialogs underneath the cursor. Now it only
+	does that if the focus is set to FocusFollowsMouse, and otherwise centers
+	dlgs.
+      <LI>
+	PfaEdit now will draw metrics lines in the fontview if you want it to.
+      <LI>
+	PfaEdit remembers what outline character views were open when a font was
+	saved (as an sfd file) and will automagically reopen them when you next load
+	that font.
+      <LI>
+	Added <CODE>View-&gt;Find In Font View</CODE> command to the outline character
+	view. Will scroll the fontview to display the current character.
+      <LI>
+	Textfields within PfaEdit ignored the numeric keypad
+    </UL>
   <LI>
     4-Aug-2002
     <UL>
@@ -733,95 +789,6 @@ current)
 	More fixes for cid fonts
     </UL>
   <LI>
-    18-May-2002
-    <UL>
-      <LI>
-	Font Info will prompt user about changing the UniqueID/XUID if the font name
-	is changed without changing them.
-      <LI>
-	Fixed some Mac configuration problems.
-    </UL>
-  <LI>
-    16-May-2002
-    <UL>
-      <LI>
-	PfaEdit would not compile when trying to used libjpeg as a static library
-	(as on Mac OS/X)
-      <LI>
-	Use psili rather than koronis where appropriate
-      <LI>
-	It was not possible to select the ellipse/star tool from the tools palette.
-    </UL>
-  <LI>
-    14-May-2002
-    <UL>
-      <LI>
-	Made pfaedit work without X (ie. the scripting engine can be linked without
-	requiring that X be present. Possibly useful for Mac OS/X, Cygwin) 
-	  <HR>
-      <LI>
-	When showing what a greek accented character will be built from, the character
-	info dlg will now show the non-unicode alternate whether or not the characters
-	needed exist in the font.
-      <LI>
-	The Reference Info dlg will now include the unicode value of the referenced
-	character
-      <LI>
-	The positioning of ypogegrammeni with respect to eta was broken (again)
-      <LI>
-	Some more greek fixes.
-    </UL>
-  <LI>
-    13-May-2002
-    <UL>
-      <LI>
-	Various fixes for greek accented characters
-    </UL>
-  <LI>
-    7-May-2002
-    <UL>
-      <LI>
-	PfaEdit would crash when attempting to Flatten a CID keyed font (introduced
-	16-Apr with the multiple fontview support)
-      <LI>
-	PfaEdit did not process panose information correctly (broken 21-Jan, comment
-	change)
-      <LI>
-	PfaEdit did not create new ttf names properly when they were for a language
-	which had not been used before in the font.
-    </UL>
-  <LI>
-    6-May-2002
-    <UL>
-      <LI>
-	Oops. Adobe describes two naming conventions for ligatures and I only supported
-	one of them. I should support the other one now.
-      <LI>
-	Fixed a number of bugs caused by custom encodings.
-      <LI>
-	If the selection in the font view contained either "dotlessi" or "dotlessj"
-	and the Element menu was pulled down then the dotless characters would be
-	created from their dotted variants (you didn't even have to select anything
-	from the menu) (broken 24-Feb-2002)
-      <LI>
-	PfaEdit had trouble reading non-empty ttf glyphs with 0 contours.
-      <LI>
-	PfaEdit failed to read images from an sfd file without a transparent colour
-      <LI>
-	Allow parens in familyname in the fontinfo dlg.
-      <LI>
-	When the width was selected, depressing a mouse button would snap the logical
-	pointer location to a random x coordinate (often 0).
-      <LI>
-	When generating a ttf file from a subfont of a CID keyed font pfaedit would
-	crash. This has been fixed.
-      <LI>
-	When exiting with multiple font views looking at one (changed) font, there
-	would be no prompt to save the font.
-      <LI>
-	Added a <A HREF="search.html">Find/Replace</A> feature
-    </UL>
-  <LI>
     <A HREF="oldchangelog.html">Earlier Changes </A>
 </UL>
 <H2>
@@ -852,13 +819,31 @@ prepared to save frequently and always work on a copy of the original.
     PfaEdit's support for Apple's Advanced Typography tables (AAT) is non-existent.
 </UL>
 <H2>
-  <A NAME="known-bugs">Bugs</A>
+  <A NAME="Mail">Mailing Lists</A>
 </H2>
+<P>
+There are currently three mailing lists established for PfaEdit. You may
+subscribe to any of them on sourceforge:
+<A HREF="http://sourceforge.net/mail/?group_id=25752">http://sourceforge.net/mail/?group_id=25752</A>
 <UL>
   <LI>
-    When reading in TrueType PfaEdit will not get the correct offset for composite
-    glyphs where offsets are specified by point matching rather than as x,y values.
-    (some mac fonts)
+    <A HREF="mailto:pfaedit-devel@lists.sourceforge.net">pfaedit-devel</A> --
+    for reporting bugs, requesting features and such
+  <LI>
+    <A HREF="mailto:pfaedit-users@lists.sourceforge.net">pfaedit-users </A>--
+    for general discussion of pfaedit
+  <LI>
+    <A HREF="mailto:pfaedit-announce@lists.sourceforge.net">pfaedit-announce</A>
+    -- used to report major changes, etc.
+</UL>
+<H2>
+  <A NAME="known-bugs">Bugs</A>
+</H2>
+<P>
+This list includes the gross bugs that I'm aware of but don't know how to
+fix. Minor bugs get reported to me and are generally fixed within a week
+and rarely appear on this list.
+<UL>
   <LI>
     My truetype hinting is still bad. Especially for diagonals.
   <LI>
@@ -872,11 +857,13 @@ prepared to save frequently and always work on a copy of the original.
     PfaEdit will not read the instructions. In most fonts this would be the wrong
     thing to do, and I don't know how I could tell when it needs to be done...
   <LI>
-    After adding the Johab encoding, any old fonts which had a unicode encoding
-    will suddenly claim to have a Johab encoding. I don't see a way around this
-    at the moment. Just reencode them as unicode and all should be well.
+    After adding the Johab encoding 23/Nov/01, any old fonts (in sfd files) which
+    had a unicode encoding will suddenly claim to have a Johab encoding. I don't
+    see a way around this at the moment. Just reencode them as unicode and all
+    should be well.
   <LI>
-    I'm told AutoKern doesn't work too well.
+    I'm told AutoKern doesn't work too well. <SMALL>(I may have fixed this, but
+    I'm not sure)</SMALL>
   <LI>
     PfaEdit is confused by small splines, on the order of one em unit. If you
     need something that small, scale the font up by a factor of 2 or more (including
@@ -894,29 +881,6 @@ prepared to save frequently and always work on a copy of the original.
     ???
 </UL>
 <H2>
-  Installing it
-</H2>
-<P>
-The executable tarball contains the pfaedit executable and a man page. Put
-it wherever you'd like.
-<P>
-The build script will do an install to /usr/local/bin if you want it to.
-<H2>
-  Running it
-</H2>
-<P>
-<KBD>$ pfaedit font.pfa font2.pfb font3.sfd font4.ttf font5.otf font6.gsf
-font7.bdf</KBD> <BR>
-will start pfaedit looking at the fonts you specify on the command line.
-It can read either pfb or pfa fonts, and some ps fonts (type 0 fonts based
-on a type 1 dictionary) as well as truetype fonts, non-CID open type fonts
-and bitmap fonts.<BR>
-<KBD>$ pfaedit -new</KBD><BR>
-will cause pfaedit to create a new font (in iso-8859-1 encoding)<BR>
-<KBD>$ pfaedit</KBD><BR>
-will open up a file picker dialog and allow you to browse till you've found
-a font file (or have created a new one).
-<H2>
   Reporting <A NAME="bugs">bugs</A>...
 </H2>
 <P>
@@ -925,7 +889,7 @@ minimal case, that would be great. The executable has symbols in it so if
 you run it in gdb you should be able to get a stack trace... Do what you
 can.
 <P>
-<A HREF="mailto:gww@silcom.com">gww@silcom.com</A>
+<A HREF="mailto:pfaedit-devel@lists.sourceforge.net">pfaedit-devel@lists.sourceforge.net</A>
 <H2>
   <A NAME="assistance">How else you can help.</A>
 </H2>

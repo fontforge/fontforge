@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 4-Aug-2002 -->
+  <!-- AP: Last modified: 5-Aug-2002 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -54,6 +54,8 @@
     <A HREF="#font-install">How do I install the fonts once I've made them?</A>
   <LI>
     <A HREF="#How-mac">How do I edit fonts from my macintoy?</A>
+  <LI>
+    <A HREF="faq.html#windows">How do I edit fonts on MS windows?</A>
   <LI>
     <A HREF="#simplify">Does the simplify command lose accuracy?</A>
   <LI>
@@ -471,10 +473,6 @@ $ xset fp+ `pwd`
 	    Fonts)
 	</OL>
 	<P>
-	<STRONG>Caveat: </STRONG>I do not understand how to generate a font that
-	handles 2 byte encodings on the mac. All the docs I've read seem to imply
-	a 1 byte limitation. So all of these fonts will have a FOND that only knows
-	about the first 256 characters.<BR>
 	<STRONG>Caveat:</STRONG> A postscript font is useless on a macintosh unless
 	it is acompanied by at least one bitmap font. If you generate a postscript
 	font make sure you also generate an NFNT as well (this has the FOND).<BR>
@@ -499,14 +497,44 @@ $ xset fp+ `pwd`
       <DT>
 	Mac OS/X
       <DD>
-	On Mac OS/X you can run PfaEdit directly (if you've got XDarwin installed).
-	OS/X has at least two font formats, some fonts are stored in the old format
-	(see above), while others are stored as data fork resources. The data fork
-	font files generally have the extension ".dfont", and PfaEdit can edit these
-	directly.<BR>
+	On Mac OS/X you can run <A HREF="Problems-MacOSX.html#Running">PfaEdit
+	directly</A> (if you've got XDarwin installed). OS/X has at least two font
+	formats, some fonts are stored in the old format (see above), while others
+	are stored as data fork resources. The data fork font files generally have
+	the extension ".dfont", and PfaEdit can edit these directly. I am told that
+	OS/X also supports normal .otf and .ttf font files. I have not tested this.<BR>
 	Editing old style fonts requires going through the same arcane procedures
 	described above.
     </DL>
+  <DT>
+    <B>How do I edit fonts on MS <A NAME="windows">windows</A>?</B>
+  <DD>
+    To run PfaEdit under MS windows you must first install the
+    <A HREF="http://www.cygwin.com/">cygwin environment</A>.
+    <UL>
+      <LI>
+	First download the setup.exe program from
+	<A HREF="http://www.cygwin.com/">http://www.cygwin.com/</A>
+      <LI>
+	Run this program. It will ask you what components of cygwin you wish to install
+      <LI>
+	You will definitely need the base components and the X window system (you
+	might need some others I have not tested the minimum requirements accurately)
+      <LI>
+	Once you have cygwin installed, start it. This should give you a terminal
+	window running bash (a unix shell)
+      <LI>
+	Type: <CODE>xinit</CODE>
+      <LI>
+	This should bring up X in a large window that covers the screen and within
+	that should be a subwindow, an xterm, running bash.
+      <LI>
+	From the xterm you should be able start PfaEdit.
+    </UL>
+    <P>
+    If you want to be able to build PfaEdit under cygwin, you will need to grab
+    some other cygwin components, like gcc, the image processing libraries, freetype,
+    etc.
   <DT>
     <B>Does the <A NAME="simplify">simplify</A> command lose accuracy?</B>
   <DD>

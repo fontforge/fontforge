@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 3-Aug-2002 -->
+  <!-- AP: Last modified: 6-Aug-2002 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -835,7 +835,8 @@ a[4][0] = "Nested array";
     AutoWidth(spacing)
   <DD>
     Guesses at the widths of all selected characters so that two adjacent "I"
-    characters will appear to be spacing em-units apart.
+    characters will appear to be spacing em-units apart. (if spacing is the negative
+    of the em-size (sum of ascent and descent) then a default value will be used).
   <DT>
     AutoKern(spacing,threshold[,kernfile])
   <DD>
@@ -866,9 +867,9 @@ a[4][0] = "Nested array";
     Sets various postscript names associated with the top level cid font. If
     a name is omitted (or is the empty string) it will not be changed. (this
     is just like SetFontNames except it works on the top level cid font rather
-    than the current font). 
+    than the current font).
   <DT>
-    CIDFlattenByCMap(cmap-filename)
+    CIDFlattenByCMap(cmap-filename) 
       <HR>
   <DT>
     CharCnt()

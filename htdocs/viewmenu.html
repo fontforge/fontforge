@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 6-Jun-2002 -->
+  <!-- AP: Last modified: 7-Aug-2002 -->
   <TITLE>The View Menu</TITLE>
 </HEAD>
 <BODY>
@@ -27,6 +27,12 @@
     <A HREF="#PrevDef">Prev Defined Char</A>
   <LI>
     <A HREF="#Goto">Goto</A>
+  <LI>
+    <A HREF="#FindInFV">Find In Font View</A>
+  <LI>
+    <A HREF="#HMetrics">View H. Metrics</A>
+  <LI>
+    <A HREF="#VMetrics">View V. Metrics</A>
   <LI>
     <A HREF="#px24">24 pixel outline</A>
   <LI>
@@ -130,6 +136,8 @@
       <LI>
 	Arabic letters may also be named as: <CODE>afii57442.isolated </CODE>or
 	<CODE>0x642.initial</CODE>
+      <LI>
+	A single unicode character
     </UL>
     <P>
     In the font view the view will scroll so that this character is visible and
@@ -137,6 +145,25 @@
     <P>
     In the bitmap and outline views, the current character will change to be
     the one specified.
+  <DT>
+    <A NAME="FindInFV">Find In Font View</A>
+  <DD>
+    In the outline, bitmap and metrics views this will scroll the associated
+    font view so that the current character is displayed (and selected) in the
+    fontview.
+  <DT>
+    <A NAME="HMetrics">View H. Metrics</A>
+  <DD>
+    In the font view this will control whether the horizontal metrics lines are
+    draw across the displayed glyphs. In the outline character view the same
+    functionality is available from one of the palettes.
+  <DT>
+    <A NAME="VMetrics">View V. Metrics</A>
+  <DD>
+    In the font view this will control whether the vertical metrics lines are
+    draw across the displayed glyphs. In the outline character view the same
+    functionality is available from one of the palettes. (This will be greyed
+    out if your font does not have vertical metrics in it).
   <DT>
     <A NAME="px24">24 pixel </A>outline
   <DD>

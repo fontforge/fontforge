@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 16-Sep-2001 -->
-  <!-- AP: Last modified: 9-Jul-2002 -->
+  <!-- AP: Last modified: 5-Aug-2002 -->
   <TITLE>Older changes to PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,95 @@
 <A HREF="index.html#change-log">Current changes</A>
 <P>
 <UL>
+  <LI>
+    18-May-2002
+    <UL>
+      <LI>
+	Font Info will prompt user about changing the UniqueID/XUID if the font name
+	is changed without changing them.
+      <LI>
+	Fixed some Mac configuration problems.
+    </UL>
+  <LI>
+    16-May-2002
+    <UL>
+      <LI>
+	PfaEdit would not compile when trying to used libjpeg as a static library
+	(as on Mac OS/X)
+      <LI>
+	Use psili rather than koronis where appropriate
+      <LI>
+	It was not possible to select the ellipse/star tool from the tools palette.
+    </UL>
+  <LI>
+    14-May-2002
+    <UL>
+      <LI>
+	Made pfaedit work without X (ie. the scripting engine can be linked without
+	requiring that X be present. Possibly useful for Mac OS/X, Cygwin) 
+	  <HR>
+      <LI>
+	When showing what a greek accented character will be built from, the character
+	info dlg will now show the non-unicode alternate whether or not the characters
+	needed exist in the font.
+      <LI>
+	The Reference Info dlg will now include the unicode value of the referenced
+	character
+      <LI>
+	The positioning of ypogegrammeni with respect to eta was broken (again)
+      <LI>
+	Some more greek fixes.
+    </UL>
+  <LI>
+    13-May-2002
+    <UL>
+      <LI>
+	Various fixes for greek accented characters
+    </UL>
+  <LI>
+    7-May-2002
+    <UL>
+      <LI>
+	PfaEdit would crash when attempting to Flatten a CID keyed font (introduced
+	16-Apr with the multiple fontview support)
+      <LI>
+	PfaEdit did not process panose information correctly (broken 21-Jan, comment
+	change)
+      <LI>
+	PfaEdit did not create new ttf names properly when they were for a language
+	which had not been used before in the font.
+    </UL>
+  <LI>
+    6-May-2002
+    <UL>
+      <LI>
+	Oops. Adobe describes two naming conventions for ligatures and I only supported
+	one of them. I should support the other one now.
+      <LI>
+	Fixed a number of bugs caused by custom encodings.
+      <LI>
+	If the selection in the font view contained either "dotlessi" or "dotlessj"
+	and the Element menu was pulled down then the dotless characters would be
+	created from their dotted variants (you didn't even have to select anything
+	from the menu) (broken 24-Feb-2002)
+      <LI>
+	PfaEdit had trouble reading non-empty ttf glyphs with 0 contours.
+      <LI>
+	PfaEdit failed to read images from an sfd file without a transparent colour
+      <LI>
+	Allow parens in familyname in the fontinfo dlg.
+      <LI>
+	When the width was selected, depressing a mouse button would snap the logical
+	pointer location to a random x coordinate (often 0).
+      <LI>
+	When generating a ttf file from a subfont of a CID keyed font pfaedit would
+	crash. This has been fixed.
+      <LI>
+	When exiting with multiple font views looking at one (changed) font, there
+	would be no prompt to save the font.
+      <LI>
+	Added a <A HREF="search.html">Find/Replace</A> feature
+    </UL>
   <LI>
     16-Apr-2002
     <UL>
