@@ -48,12 +48,8 @@ static void initadobeenc(void) {
 	if ( strcmp(AdobeStandardEncoding[i],".notdef")==0 )
 	    unicode_from_adobestd[i] = 0xfffd;
 	else {
-	    for ( j=0; j<psunicodenames_cnt; ++j )
-		if ( psunicodenames[j]==NULL )
-		    /* Tum ty tum tum */;
-		else if ( strcmp(AdobeStandardEncoding[i],psunicodenames[j])==0 )
-	    break;
-	    if ( j==psunicodenames_cnt ) j = 0xfffd;
+	    j = UniFromName(AdobeStandardEncoding[i]);
+	    if ( j==-1 ) j = 0xfffd;
 	    unicode_from_adobestd[i] = j;
 	}
     }
