@@ -530,6 +530,8 @@ return(true);
 	    GGadgetSetTitle(&gfc->name->g,ti->text);
 	    if ( gfc->filterb!=NULL && gfc->ok!=NULL )
 		_GWidget_MakeDefaultButton(&gfc->ok->g);
+	    free(gfc->lastname);
+	    gfc->lastname = NULL;
 	}
     } else if ( e->u.control.subtype==et_listselected ) {
 	unichar_t *val, *upt = galloc((len+1)*sizeof(unichar_t));
