@@ -757,13 +757,16 @@ uint16 *ClassesFromNames(SplineFont *sf,char **classnames,int class_cnt,
     if ( glyphs ) *glyphs = gs = gcalloc(numGlyphs,sizeof(SplineChar *));
     for ( i=1; i<class_cnt; ++i ) {
 	for ( pt = classnames[i]; *pt; pt = end+1 ) {
+	    while ( *pt==' ' ) ++pt;
+	    if ( *pt=='\0' )
+	break;
 	    end = strchr(pt,' ');
 	    if ( end==NULL )
 		end = pt+strlen(pt);
 	    ch = *end;
 	    *end = '\0';
 	    sc = SFGetCharDup(sf,-1,pt);
-	    if ( sc->ttf_glyph!=-1 ) {
+	    if ( sc!=NULL || sc->ttf_glyph!=-1 ) {
 		class[sc->ttf_glyph] = i;
 		if ( gs!=NULL )
 		    gs[sc->ttf_glyph] = sc;
