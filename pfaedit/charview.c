@@ -4169,29 +4169,67 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static void SPChangePointType(SplinePoint *sp, int pointtype) {
+    BasePoint unitnext, unitprev;
+    double nextlen, prevlen;
+    int makedflt;
 
-    if ( sp->pointtype==pointtype )
+    if ( sp->pointtype==pointtype ) {
+	if ( pointtype==pt_curve ) {
+	    if ( !sp->nextcpdef && sp->next!=NULL && !sp->next->order2 )
+		SplineCharDefaultNextCP(sp);
+	    if ( !sp->prevcpdef && sp->prev!=NULL && !sp->prev->order2 )
+		SplineCharDefaultPrevCP(sp);
+	}
 return;
+    }
     sp->pointtype = pointtype;
-    
+
     if ( pointtype==pt_corner ) {
 	/* Leave control points as they are */;
 	sp->nextcpdef = sp->nonextcp;
 	sp->prevcpdef = sp->noprevcp;
     } else if ( pointtype==pt_tangent ) {
-	SplineCharTangentPrevCP(sp);
-	SplineCharTangentNextCP(sp);
-    } else {
-	sp->nextcpdef = sp->prevcpdef = true;
-	if (( sp->prev!=NULL && sp->prev->order2 ) ||
-		(sp->next!=NULL && sp->next->order2)) {
-	    if ( sp->prev!=NULL )
-		SplineRefigureFixup(sp->prev);
-	    if ( sp->next!=NULL )
-		SplineRefigureFixup(sp->next);
+	if ( sp->next!=NULL && !sp->nonextcp && sp->next->knownlinear ) {
+	    sp->nonextcp = true;
+	    sp->nextcp = sp->me;
 	} else {
-	    SplineCharDefaultPrevCP(sp);
-	    SplineCharDefaultNextCP(sp);
+	    SplineCharTangentNextCP(sp);
+	    if ( sp->next ) SplineRefigure(sp->next);
+	}
+	if ( sp->prev!=NULL && !sp->noprevcp && sp->prev->knownlinear ) {
+	    sp->noprevcp = true;
+	    sp->prevcp = sp->me;
+	} else {
+	    SplineCharTangentPrevCP(sp);
+	    if ( sp->prev ) SplineRefigure(sp->prev);
+	}
+    } else {
+	unitnext.x = sp->nextcp.x-sp->me.x; unitnext.y = sp->nextcp.y-sp->me.y;
+	nextlen = sqrt(unitnext.x*unitnext.x + unitnext.y*unitnext.y);
+	unitprev.x = sp->me.x-sp->prevcp.x; unitprev.y = sp->me.y-sp->prevcp.y;
+	prevlen = sqrt(unitprev.x*unitprev.x + unitprev.y*unitprev.y);
+	makedflt=true;
+	if ( nextlen!=0 && prevlen!=0 ) {
+	    unitnext.x /= nextlen; unitnext.y /= nextlen;
+	    unitprev.x /= prevlen; unitprev.y /= prevlen;
+	    if ( unitnext.x*unitprev.x + unitnext.y*unitprev.y>=.95 ) {
+		/* If the control points are essentially in the same direction*/
+		/*  (so valid for a curve) then leave them as is */
+		makedflt = false;
+	    }
+	}
+	if ( makedflt ) {
+	    sp->nextcpdef = sp->prevcpdef = true;
+	    if (( sp->prev!=NULL && sp->prev->order2 ) ||
+		    (sp->next!=NULL && sp->next->order2)) {
+		if ( sp->prev!=NULL )
+		    SplineRefigureFixup(sp->prev);
+		if ( sp->next!=NULL )
+		    SplineRefigureFixup(sp->next);
+	    } else {
+		SplineCharDefaultPrevCP(sp);
+		SplineCharDefaultNextCP(sp);
+	    }
 	}
     }
 }
