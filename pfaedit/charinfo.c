@@ -2154,7 +2154,6 @@ return;
 	boxset = 1;
     }
 
-    if ( ci->gw==NULL ) {
 	memset(&wattrs,0,sizeof(wattrs));
 	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
 	wattrs.event_masks = ~(1<<et_charup);
@@ -2459,7 +2458,6 @@ return;
 	mgcd[4].creator = GButtonCreate;
 
 	GGadgetsCreate(ci->gw,mgcd);
-    }
 
     CIFillup(ci);
 
