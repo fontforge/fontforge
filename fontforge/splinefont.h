@@ -1622,6 +1622,7 @@ extern int PSDictChangeEntry(struct psdict *dict, char *key, char *newval);
 
 extern void SplineSetsRound2Int(SplineSet *spl,real factor);
 extern void SCRound2Int(SplineChar *sc,real factor);
+extern int SCRoundToCluster(SplineChar *sc,int layer,int sel,double within,double max);
 extern int hascomposing(SplineFont *sf,int u,SplineChar *sc);
 #if 0
 extern void SFFigureGrid(SplineFont *sf);
