@@ -30,6 +30,7 @@
 #include <sys/time.h>
 #include <locale.h>
 #include <unistd.h>
+#include <ustring.h>
 
 unsigned short unicode_from_adobestd[256];
 struct lconv localeinfo;
@@ -104,13 +105,57 @@ static void BuildCharHook(GDisplay *gd) {
 extern GImage splashimage;
 static GWindow splashw;
 static GTimer *autosave_timer, *splasht;
+static GFont *splash_font, *splash_italic;
+static int as,fh, linecnt;
+static unichar_t msg[300];
+static unichar_t *lines[20], *is, *ie;
+
 struct delayed_event {
     void *data;
     void (*func)(void *);
 };
 
 void ShowAboutScreen(void) {
+    static int first=1;
+
+    if ( first ) {
+	GDrawResize(splashw,splashimage.u.image->width,splashimage.u.image->height+linecnt*fh);
+	first = false;
+    }
+    if ( splasht!=NULL )
+	GDrawCancelTimer(splasht);
+    splasht=NULL;
     GDrawSetVisible(splashw,true);
+}
+
+static void SplashLayout() {
+    unichar_t *start, *pt, *lastspace;
+
+    uc_strcpy(msg, "When my father finished his book on Renaissance printing (The Craft of Printing and the Publication of Shakespeare's Works) he told me that I would have to write the chapter on computer typography. This is my attempt to do so.");
+
+    GDrawSetFont(splashw,splash_font);
+    linecnt = 0;
+    lines[linecnt++] = msg-1;
+    for ( start = msg; *start!='\0'; start = pt ) {
+	lastspace = NULL;
+	for ( pt=start; ; ++pt ) {
+	    if ( *pt==' ' || *pt=='\0' ) {
+		if ( GDrawGetTextWidth(splashw,start,pt-start,NULL)<splashimage.u.image->width-10 )
+		    lastspace = pt;
+		else
+	break;
+		if ( *pt=='\0' )
+	break;
+	    }
+	}
+	if ( lastspace!=NULL )
+	    pt = lastspace;
+	lines[linecnt++] = pt;
+	if ( *pt ) ++pt;
+    }
+    lines[linecnt] = NULL;
+    is = u_strchr(msg,'(');
+    ie = u_strchr(msg,')');
 }
 
 void DelayEvent(void (*func)(void *), void *data) {
@@ -132,11 +177,27 @@ static void DoDelayedEvents(GEvent *event) {
 static int splash_e_h(GWindow gw, GEvent *event) {
     static int splash_cnt;
     GRect old;
+    int i, y, x;
     static int foolishness[] = { _STR_FreePress, _STR_GaudiamusLigature };
 
     if ( event->type == et_expose ) {
 	GDrawPushClip(gw,&event->u.expose.rect,&old);
 	GDrawDrawImage(gw,&splashimage,NULL,0,0);
+	GDrawSetFont(gw,splash_font);
+	y = splashimage.u.image->height + as + fh/2;
+	for ( i=1; i<linecnt; ++i ) {
+	    if ( is>=lines[i-1]+1 && is<lines[i] ) {
+		x = 8+GDrawDrawText(gw,8,y,lines[i-1]+1,is-lines[i-1]-1,NULL,0x000000);
+		GDrawSetFont(gw,splash_italic);
+		GDrawDrawText(gw,x,y,is,lines[i]-is,NULL,0x000000);
+	    } else if ( ie>=lines[i-1]+1 && ie<lines[i] ) {
+		x = 8+GDrawDrawText(gw,8,y,lines[i-1]+1,ie-lines[i-1]-1,NULL,0x000000);
+		GDrawSetFont(gw,splash_font);
+		GDrawDrawText(gw,x,y,ie,lines[i]-ie,NULL,0x000000);
+	    } else
+		GDrawDrawText(gw,8,y,lines[i-1]+1,lines[i]-lines[i-1]-1,NULL,0x000000);
+	    y += fh;
+	}
 	GDrawPopClip(gw,&old);
     } else if ( event->type == et_map ) {
 	splash_cnt = 0;
@@ -151,6 +212,7 @@ static int splash_e_h(GWindow gw, GEvent *event) {
 	    GGadgetEndPopup();
 	    GDrawSetVisible(gw,false);
 	    GDrawCancelTimer(splasht);
+	    splasht = NULL;
 	}
     } else if ( event->type == et_timer ) {
 	DoDelayedEvents(event);
@@ -181,6 +243,10 @@ int main( int argc, char **argv ) {
     int any;
     char *display = NULL;
     int recover=1;
+    FontRequest rq;
+    static unichar_t times[] = { 't', 'i', 'm', 'e', 's',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t', '\0' };
+    int ds, ld;
+
 
     fprintf( stderr, "Copyright \251 2000-2002 by George Williams.\n Executable based on sources from %s.\n",
 	    link_time_str );
@@ -247,17 +313,29 @@ int main( int argc, char **argv ) {
     /*  the window around, which I can determine if I have a positioned */
     /*  decorated window created at the begining */
     /* Actually I don't care any more */
-    wattrs.mask = wam_events|wam_cursor|wam_bordwidth|wam_positioned|wam_wtitle|wam_isdlg;
+    wattrs.mask = wam_events|wam_cursor|wam_bordwidth|wam_backcol|wam_positioned|wam_wtitle|wam_isdlg;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.positioned = 1;
     wattrs.cursor = ct_pointer;
     wattrs.window_title = GStringGetResource(_STR_PfaEdit,NULL);
     wattrs.border_width = 2;
+    wattrs.background_color = 0xffffff;
     wattrs.is_dlg = true;
     pos.x = pos.y = 200;
     pos.width = splashimage.u.image->width;
     pos.height = splashimage.u.image->height-50;
     splashw = GDrawCreateTopWindow(NULL,&pos,splash_e_h,NULL,&wattrs);
+	memset(&rq,0,sizeof(rq));
+	rq.family_name = times;
+	rq.point_size = 12;
+	rq.weight = 400;
+	splash_font = GDrawInstanciateFont(NULL,&rq);
+	rq.style = fs_italic;
+	splash_italic = GDrawInstanciateFont(NULL,&rq);
+	GDrawSetFont(splashw,splash_font);
+	GDrawFontMetrics(splash_font,&as,&ds,&ld);
+	fh = as+ds+ld;
+	SplashLayout();
     if ( splash ) {
 	GDrawSetVisible(splashw,true);
 	GDrawSync(NULL);
