@@ -314,10 +314,10 @@ return( any );
 }
 
 static void svg_scpathdump(FILE *file, SplineChar *sc,char *endpath) {
-    int i,j;
     RefChar *ref;
     int lineout;
 #ifdef FONTFORGE_CONFIG_TYPE3
+    int i,j;
     SplineSet *transed;
 #endif
 
