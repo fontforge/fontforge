@@ -70997,6 +70997,16 @@ const struct psaltnames  {
 	{ "longs_longs", 0xf523, 1 },
 	{ "longs_longs_i", 0xf524, 1 },
 	{ "longs_longs_l", 0xf525, 1 },
+/* Adobe now seems to use "acute.cap" rather than "Acute" in Minion, etc. */
+/*  so I assume these guys should too... (these are the obsolete letters */
+/*  I don't give them a provenance here either) */
+	{ "dotaccent.cap", 0xefed },
+	{ "breve.cap", 0xefee },
+	{ "ogonek.cap", 0xeff1 },
+	{ "cedilla.cap", 0xeff2 },
+	{ "ring.cap", 0xeff3 },
+	{ "tilde.cap", 0xeff5 },
+	{ "circumflex.cap", 0xeff7 },
 /* AMS PUA glyphnames & TeX->Unicode mappings */
 /*     http://www.ams.org/STIX/bnb/stix-tbl.asc-2003-10-10 */
 	{ "closure", 0x2050, 3 },
