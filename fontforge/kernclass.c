@@ -1216,7 +1216,7 @@ return;
 static int KCD_Delete(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	KernClassDlg *kcd = GDrawGetUserData(GGadgetGetWindow(g));
-	int off = GGadgetGetCid(g)-CID_ClassEdit;
+	int off = GGadgetGetCid(g)-CID_ClassDel;
 	GGadget *list = GWidgetGetControl(kcd->gw,CID_ClassList+off);
 	int32 len;
 
