@@ -114,8 +114,8 @@ static Encoding compact = { "Compacted", 0, NULL, NULL, &original,		  1, 1, 0, 0
 static Encoding unicodebmp = { "UnicodeBmp", 65536, NULL, NULL, &compact, 	  1, 1, 0, 0, 1, 1, 0, 0, 0, 0 };
 static Encoding unicodefull = { "UnicodeFull", 17*65536, NULL, NULL, &unicodebmp, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0 };
 static Encoding adobestd = { "AdobeStandard", 256, unicode_from_adobestd, AdobeStandardEncoding, &unicodefull,
-										  1, 1, 1, 1, 0, 0, 1, 0, 0, 0 };
-static Encoding symbol = { "Symbol", 256, unicode_from_MacSymbol, NULL, &adobestd,1, 1, 1, 1, 0, 0, 1, 0, 0, 0 };
+										  1, 1, 1, 1, 0, 0, 0, 0, 0, 0 };
+static Encoding symbol = { "Symbol", 256, unicode_from_MacSymbol, NULL, &adobestd,1, 1, 1, 1, 0, 0, 0, 0, 0, 0 };
 Encoding *enclist = &symbol;
 
 const char *FindUCS2Name(void) {
