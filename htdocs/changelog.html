@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 15-Oct-2003 -->
+  <!-- AP: Last modified: 23-Oct-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -11,12 +11,70 @@
 </H1>
 <UL>
   <LI>
+    23-Oct-2003
+    <UL>
+      <LI>
+	The change on the 20th to make custom encoding support 32bit unicode was
+	incomplete and made custom encodings crash instead.
+      <LI>
+	The File-&gt;Display dialog ignored the left-sidebearing of a glyph causing
+	output of some fonts to look awful.
+      <LI>
+	Was getting the AdobeStandardEncoding a bit wrong (after the 5-Oct change
+	to the new unicode glyph list which does not contain "fi" nor "fl")
+      <LI>
+	I used to set the "widthset" bit on .notdef characters, but there's really
+	no point to that.
+      <LI>
+	Maxim Iorsh tells me that U+fb4f should be a historic ligature.
+      <LI>
+	On some displays right scrolling the Histogram dlg would leave black lines
+	on the window.
+      <LI>
+	AutoHint removed too many hints on some very bold fonts
+    </UL>
+  <LI>
+    20-Oct-2003
+    <UL>
+      <LI>
+	Windows XP &amp; 2000 insist on having (what cygwin describes as) the execute
+	bit of the file set. So PfaEdit now sets execute permissions on ttf, otf
+	and pfb fonts on the cygwin platform.
+      <LI>
+	If a menu was so big that it had to be positioned over the menubar (instead
+	of above or below it), and the user clicked on the menubar to invoke it,
+	then the mouse release would go to the new menu and invoke whatever item
+	happened to be under the cursor. Not good.
+      <LI>
+	Oops. The Effects sub-menu should have been disabled for quadratic (truetype)
+	fonts.
+      <LI>
+	Added a new configuration option --with-regular-link to disable my dlopening
+	of libraries. I dislike this. I don't think it is anywhere near as flexible
+	as the dlopen method. It makes it much harder to ship something that will
+	work with freetype (detecting whether the bytecode interpreter is present
+	must be done at link time rather than run time and that is a severe disadvantage.
+	But I have been asked for it.
+      <LI>
+	Change internal format so that custom encodings can handle 32 bit unicode.
+    </UL>
+  <LI>
+    16-Oct-2003
+    <UL>
+      <LI>
+	PfaEdit was still outputting a disordered name table.
+      <LI>
+	The source tarball on the website included many files twice and some files
+	that it should not have included at all. I should now be less than half the
+	size it used to be.
+    </UL>
+  <LI>
     15-Oct-2003
     <UL>
       <LI>
 	PfaEdit did not bother to open files in binary mode. If cygwin was configured
 	with DOS linebreaks, then pfaedit failed to generate valid font files on
-	cygwin.
+	cygwin. 
 	  <HR>
       <LI>
 	Added some more warnings to the default build list and fixed the problems
