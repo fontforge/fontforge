@@ -2312,8 +2312,7 @@ static void _SMD_Finish(SMD *smd, int success) {
 
     GDrawDestroyWindow(smd->gw);
 
-    if ( smd->isnew )
-	GFI_FinishSMNew(smd->d,smd->sm,success);
+    GFI_FinishSMNew(smd->d,smd->sm,success,smd->isnew);
     GFI_SMDEnd(smd->d);
 
     GTextInfoListFree(smd->mactags);

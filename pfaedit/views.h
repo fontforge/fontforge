@@ -950,7 +950,7 @@ extern char *cu_copybetween(const unichar_t *start, const unichar_t *end);
 
 extern struct statemachinedlg *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d);
 extern void SMD_Close(struct statemachinedlg *smd);
-extern void GFI_FinishSMNew(struct gfi_data *d,ASM *sm, int success);
+extern void GFI_FinishSMNew(struct gfi_data *d,ASM *sm, int success,int isnew);
 extern void GFI_SMDEnd(struct gfi_data *d);
 extern ASM *SMConvertDlg(SplineFont *sf);
 

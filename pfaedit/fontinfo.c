@@ -2975,7 +2975,7 @@ void GFI_SMDEnd(struct gfi_data *d) {
     }
 }
 
-void GFI_FinishSMNew(struct gfi_data *d,ASM *sm, int success) {
+void GFI_FinishSMNew(struct gfi_data *d,ASM *sm, int success, int isnew) {
     int off;
     GGadget *list;
 
@@ -2984,8 +2984,13 @@ void GFI_FinishSMNew(struct gfi_data *d,ASM *sm, int success) {
 		sm->type == asm_context ? 100 :
 		sm->type == asm_insert ? 200 : 300;
 	list = GWidgetGetControl(d->gw,CID_SMList+off);
-	GListAppendLine(list,FeatSetName(d->sf,sm->feature,sm->setting),false)->userdata = sm;
-    } else {
+	if ( isnew )
+	    GListAppendLine(list,FeatSetName(d->sf,sm->feature,sm->setting),
+		    false)->userdata = sm;
+	else
+	    GListChangeLine(list,GGadgetGetFirstListSelectedItem(list),
+		    FeatSetName(d->sf,sm->feature,sm->setting));
+    } else if ( isnew ) {
 	chunkfree(sm,sizeof(ASM));
     }
 }

@@ -356,6 +356,7 @@ struct feature {
     unsigned int vertOnly: 1;
     unsigned int r2l: 1;	/* I think this is the "descending" flag */
     unsigned int needsOff: 1;
+    unsigned int singleMutex: 1;
     uint8 subtable_type;
     int chain;
     int32 flag;
@@ -1296,8 +1297,11 @@ static struct feature *featuresOrderByType(struct feature *features) {
     int i, j, cnt;
 
     for ( cnt=0, f=features; f!=NULL; f=f->next, ++cnt );
-    if ( cnt==1 )
+    if ( cnt==1 ) {
+	if ( !features->needsOff )
+	    features->singleMutex = true;
 return( features );
+    }
     all = galloc(cnt*sizeof(struct feature *));
     for ( i=0, f=features; f!=NULL; f=f->next, ++i )
 	all[i] = f;
@@ -1311,7 +1315,7 @@ return( features );
     }
     for ( i=0; i<cnt; ++i ) {
 	if ( !all[i]->needsOff && (i==cnt-1 || all[i]->featureType!=all[i+1]->featureType))
-	    all[i]->needsOff = true;
+	    all[i]->singleMutex = true;
 	else {
 	    while ( i<cnt-1 && all[i]->featureType==all[i+1]->featureType )
 		++i;
@@ -1492,7 +1496,7 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
     int subcnt=0, scnt=0;
     uint32 chain_start, end;
     char *buf;
-    int len, tot, cnt;
+    int len, tot, cnt, offFlag;
     struct feature *all[32], *ftemp;
     int i,j;
 
@@ -1504,7 +1508,11 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
 		if ( n->ms!=NULL && n->ms->initially_enabled )
 		    def_flags |= n->flag;
 		++scnt;
-		if ( n->mf!=NULL && !n->mf->ismutex )
+		if ( n->needsOff ) {
+		    ++scnt;
+		    if ( n->next!=NULL && n->next->featureSetting==n->featureSetting+1 )
+			n = n->next;
+		} else if ( n->singleMutex )
 		    ++scnt;
 	    }
 	} else
@@ -1533,14 +1541,27 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
 	    for ( n=f; n!=NULL && n->featureType==f->featureType; n=n->next ) {
 		putshort(at->morx,n->featureType);
 		putshort(at->morx,n->featureSetting);
+		offFlag = 0;
+		if ( n->needsOff && n->next!=NULL && n->featureSetting+1==n->next->featureSetting )
+		    offFlag = n->next->flag;
 		putlong(at->morx,n->flag);
-		putlong(at->morx,0xffffffff);
-		if ( n->mf!=NULL && !n->mf->ismutex ) {
+		putlong(at->morx,~offFlag);
+		if ( n->needsOff ) {
 		    putshort(at->morx,n->featureType);
 		    putshort(at->morx,n->featureSetting+1);
+		    putlong(at->morx,offFlag);
+		    putlong(at->morx,~n->flag);
+		} else if ( n->singleMutex ) {
+		    /* This doesn't handle cursive connection where there */
+		    /*  are three choices. If we get the two on choices we */
+		    /*  won't generate code to turn them both off with 0 */
+		    putshort(at->morx,n->featureType);
+		    putshort(at->morx,n->featureSetting==0?1:0);
 		    putlong(at->morx,0);
 		    putlong(at->morx,~n->flag);
 		}
+		if ( n->needsOff && n->next!=NULL && n->featureSetting+1==n->next->featureSetting )
+		    n = n->next;
 	    }
 	} else
 	    n = f->next;
