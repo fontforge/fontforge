@@ -1047,6 +1047,12 @@ static char str_PostBaseForms = "Post Base Forms"
 static char str_PostBaseSubs = "Post Base Substitutions"
 static char str_Reph = "Reph Form"
 static char str_VattuVariants = "Vattu Variants"
+static char str_MacLogos = "Logos (Mac Only)"
+static char str_MacRebus = "Rebuses (Mac Only)"
+static char str_MacDiphthongLig = "Diphthong Ligatures (Mac Only)"
+static char str_MacSquareLig = "Square Ligatures (Mac Only)"
+static char str_MacAbbrevSquareLig = "Abbreviated Square Ligatures (Mac Only)"
+static char str_MacUnicodeDecomposition = "Unicode Decomposition (Mac Only)"
  /* simple positioning feature tags */
 static char str_CaseSensForms = "Case-Sensitive Forms";
 static char str_CapitalSpacing = "Capital Spacing";
@@ -1112,6 +1118,12 @@ static char str_VerticalRot = "Vertical Alternates (obs)";
 static char str_VertRotAlt = "Vertical Rotation & Alternates"
 static char str_VertKana = "Vertical Kana Alternates"
 static char str_SlashedZero = "Slashed Zero"
+static char str_MacWordInitialSwash = "Word Initial Swash (Mac Only)"
+static char str_MacWordFinalSwash = "Word Final Swash (Mac Only)"
+static char str_MacLineInitialSwash = "Line Initial Swash (Mac Only)"
+static char str_MacLineFinalSwash = "Line Final Swash (Mac Only)"
+static char str_MacNonFinalSwash = "Non-Final Swash (Mac Only)"
+static char str_MacMonospaceWidth = "Monospace Width (Mac Only)"
  /* (multiple) alternate substitution feature tags */
 static char str_FinalGlyphLine = "Final Glyph On Line"
 static char str_JustificationAlt = "Justification Alternatives"

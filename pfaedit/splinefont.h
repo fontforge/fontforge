@@ -163,8 +163,10 @@ typedef struct generic_pst {
 
 typedef struct liglist {
     PST *lig;
+    struct splinechar *first;		/* First component */
     struct splinecharlist *components;	/* Other than the first */
     struct liglist *next;
+    int ccnt;				/* Component count. (includes first component) */
 } LigList;
 
 typedef struct undoes {
@@ -914,6 +916,7 @@ extern void GlyphHashFree(SplineFont *sf);
 extern int SFFindChar(SplineFont *sf, int unienc, char *name );
 extern int SFCIDFindChar(SplineFont *sf, int unienc, char *name );
 extern SplineChar *SFGetChar(SplineFont *sf, int unienc, char *name );
+extern SplineChar *SFGetCharDup(SplineFont *sf, int unienc, char *name );
 extern SplineChar *SFGetOrMakeChar(SplineFont *sf, int unienc, char *name );
 extern int SFFindExistingChar(SplineFont *sf, int unienc, char *name );
 extern int SFCIDFindExistingChar(SplineFont *sf, int unienc, char *name );

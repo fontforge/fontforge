@@ -663,6 +663,8 @@ void SFLigaturePrepare(SplineFont *sf) {
     char *pt, *ligstart;
     SplineChar *sc, *tsc;
     struct splinecharlist *head, *last;
+    int ccnt, lcnt, lmax=20;
+    LigList **all = galloc(lmax*sizeof(LigList *));
 
     /* First clear out any old stuff */
     for ( j=0; j<sf->charcnt; ++j ) if ( sf->chars[j]!=NULL )
@@ -672,6 +674,7 @@ void SFLigaturePrepare(SplineFont *sf) {
     /* Figure out what the components are, and if they all exist */
     /* we're only interested in the lig if all components are worth outputting */
     for ( i=0 ; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->possub!=NULL ) {
+	lcnt = 0;
 	for ( lig = sf->chars[i]->possub; lig!=NULL; lig=lig->next ) if ( lig->type==pst_ligature ) {
 	    ligstart = lig->u.lig.components;
 	    last = head = NULL; sc = NULL;
@@ -679,7 +682,7 @@ void SFLigaturePrepare(SplineFont *sf) {
 		char *start = pt;
 		for ( ; *pt!='\0' && *pt!=' '; ++pt );
 		ch = *pt; *pt = '\0';
-		tsc = SFGetChar(sf,-1,start);
+		tsc = SFGetCharDup(sf,-1,start);
 		*pt = ch;
 		if ( tsc!=NULL ) {
 		    if ( !SCWorthOutputting(tsc)) {
@@ -688,6 +691,7 @@ void SFLigaturePrepare(SplineFont *sf) {
 		    }
 		    if ( sc==NULL ) {
 			sc = tsc;
+			ccnt = 1;
 		    } else {
 			struct splinecharlist *cur = chunkalloc(sizeof(struct splinecharlist));
 			if ( head==NULL )
@@ -697,6 +701,7 @@ void SFLigaturePrepare(SplineFont *sf) {
 			last = cur;
 			cur->sc = tsc;
 			cur->next = NULL;
+			++ccnt;
 		    }
 		} else {
 		    sc = NULL;
@@ -708,8 +713,11 @@ void SFLigaturePrepare(SplineFont *sf) {
 		ll = galloc(sizeof(LigList));
 		ll->lig = lig;
 		ll->next = sc->ligofme;
+		ll->first = sc;
 		ll->components = head;
+		ll->ccnt = ccnt;
 		sc->ligofme = ll;
+		++lcnt;
 	    } else {
 		while ( head!=NULL ) {
 		    last = head->next;
@@ -718,7 +726,25 @@ void SFLigaturePrepare(SplineFont *sf) {
 		}
 	    }
 	}
+	/* Finally, order the list so that the longest ligatures are first */
+	if ( lcnt>1 ) {
+	    if ( lcnt>=lmax )
+		all = grealloc(all,(lmax=lcnt+30)*sizeof(LigList *));
+	    for ( ll=sc->ligofme, i=0; ll!=NULL; ll=ll->next, ++i )
+		all[i] = ll;
+	    for ( i=0; i<lcnt-1; ++i ) for ( j=i+1; j<lcnt; ++j )
+		if ( all[i]->ccnt<all[j]->ccnt ) {
+		    ll = all[i];
+		    all[i] = all[j];
+		    all[j] = ll;
+		}
+	    sc->ligofme = all[0];
+	    for ( i=0; i<lcnt-1; ++i )
+		all[i]->next = all[i];
+	    all[i]->next = NULL;
+	}
     }
+    free( all );
 }
 
 static void putlshort(short val,FILE *pfm) {

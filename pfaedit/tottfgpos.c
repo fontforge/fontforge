@@ -197,7 +197,7 @@ static SplineChar **FindSubs(SplineChar *sc,uint32 tag, enum possub_type type) {
 		pt = strchr(start,' ');
 		if ( pt!=NULL )
 		    *pt = '\0';
-		subssc = SFGetChar(sc->parent,-1,start);
+		subssc = SFGetCharDup(sc->parent,-1,start);
 		if ( subssc!=NULL && subssc->ttf_glyph!=-1 &&
 			cnt<sizeof(space)/sizeof(space[0]) )
 		    space[cnt++] = subssc;

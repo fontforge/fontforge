@@ -437,6 +437,10 @@ return( sf->subfonts[j]->chars[ind] );
 return( NULL );
 }
 
+SplineChar *SFGetCharDup(SplineFont *sf, int unienc, char *name ) {
+return( SCDuplicate(SFGetChar(sf,unienc,name)) );
+}
+
 SplineChar *SFGetOrMakeChar(SplineFont *sf, int unienc, char *name ) {
     int ind = SFFindChar(sf,unienc,name);
 

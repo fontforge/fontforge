@@ -141,6 +141,12 @@ static GTextInfo ligature_tags[] = {
     { (unichar_t *) _STR_PostBaseSubs, NULL, 0, 0, (void *) CHR('p','s','t','s'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_Reph, NULL, 0, 0, (void *) CHR('r','e','p','h'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_VattuVariants, NULL, 0, 0, (void *) CHR('v','a','t','u'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_MacLogos, NULL, 0, 0, (void *) CHR('M','L','O','G'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_MacRebus, NULL, 0, 0, (void *) CHR('M','R','E','B'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_MacDiphthongLig, NULL, 0, 0, (void *) CHR('M','D','L','G'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_MacSquareLig, NULL, 0, 0, (void *) CHR('M','S','L','G'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_MacAbbrevSquareLig, NULL, 0, 0, (void *) CHR('M','A','L','G'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_MacUnicodeDecomposition, NULL, 0, 0, (void *) CHR('M','U','C','M'), NULL, false, false, false, false, false, false, false, true },
     { NULL }
 };
 
@@ -218,6 +224,12 @@ GTextInfo simplesubs_tags[] = {
     { (unichar_t *) _STR_VertRotAlt, NULL, 0, 0, (void *) CHR('v','r','t','2'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_VertKana, NULL, 0, 0, (void *) CHR('v','k','n','a'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_SlashedZero, NULL, 0, 0, (void *) CHR('z','e','r','o'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_MacWordInitialSwash, NULL, 0, 0, (void *) CHR('M','S','W','I'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_MacWordFinalSwash, NULL, 0, 0, (void *) CHR('M','S','W','F'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_MacLineInitialSwash, NULL, 0, 0, (void *) CHR('M','S','L','I'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_MacLineFinalSwash, NULL, 0, 0, (void *) CHR('M','S','L','F'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_MacNonFinalSwash, NULL, 0, 0, (void *) CHR('M','S','N','F'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_MacMonospaceWidth, NULL, 0, 0, (void *) CHR('M','W','I','D'), NULL, false, false, false, false, false, false, false, true },
     { NULL }
 };
 
@@ -1280,18 +1292,21 @@ static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
     char *components = NULL;
     int len;
     const char *uname;
+    unichar_t hack[30], *upt;
 
-    /* If it's not unicode we have no info on it */
+    /* If it's not (bmp) unicode we have no info on it */
     /*  Unless it looks like one of adobe's special ligature names */
-    if ( uni==-1 || uni>=0x110000 )
+    if ( uni==-1 || uni>=0x10000 )
 	/* Nope */;
     else if ( isdecompositionnormative(uni) &&
 		unicode_alternates[uni>>8]!=NULL &&
 		(alt = unicode_alternates[uni>>8][uni&0xff])!=NULL ) {
 	if ( alt[1]=='\0' )
 	    alt = NULL;		/* Single replacements aren't ligatures */
+#if 0
 	else if ( iscombining(alt[1]) && ( alt[2]=='\0' || iscombining(alt[2])))
 	    alt = NULL;		/* Don't treat accented letters as ligatures */
+#endif	/* The mac does treat accented letters as ligatures (Unicode decomposition) */
 	else if ( _UnicodeNameAnnot!=NULL &&
 		(uname = _UnicodeNameAnnot[uni>>16][(uni>>8)&0xff][uni&0xff].name)!=NULL &&
 		strstr(uname,"LIGATURE")==NULL &&
@@ -1311,12 +1326,34 @@ return( AdobeLigatureFormat(name));
 	components = copy("ff l");
     else if ( alt!=NULL ) {
 	if ( alt[1]==0x2044 && alt[3]==0 && alt_lig==1 ) {
-	    static unichar_t hack[4];
 	    u_strcpy(hack,alt);
 	    hack[1] = '/';
 	    alt = hack;
 	} else if ( alt_lig )
 return( NULL );
+
+	if ( isarabisolated(uni) || isarabinitial(uni) || isarabmedial(uni) || isarabfinal(uni) ) {
+	    /* If it is arabic, then convert from the unformed version to the formed */
+	    if ( u_strlen(alt)<sizeof(hack)/sizeof(hack[0])-1 ) {
+		u_strcpy(hack,alt);
+		for ( upt=hack ; *upt ; ++upt ) {
+		    /* Make everything medial */
+		    if ( *upt>=0x600 && *upt<=0x6ff )
+			*upt = ArabicForms[*upt-0x600].medial;
+		}
+		if ( isarabisolated(uni) || isarabfinal(uni) ) {
+		    int len = upt-hack-1;
+		    if ( alt[len]>=0x600 && alt[len]<=0x6ff )
+			hack[len] = ArabicForms[alt[len]-0x600].final;
+		}
+		if ( isarabisolated(uni) || isarabinitial(uni) ) {
+		    if ( alt[0]>=0x600 && alt[0]<=0x6ff )
+			hack[0] = ArabicForms[alt[0]-0x600].initial;
+		}
+		alt = hack;
+	    }
+	}
+
 	components=NULL;
 	while ( 1 ) {
 	    len = 0;
@@ -1498,6 +1535,15 @@ uint32 LigTagFromUnicode(int uni) {
       case 0xfefb: case 0xfefc:	/* Lam & Alef, required ligs */
 	tag = CHR('r','l','i','g');
       break;
+    }
+    if ( tag==CHR('l','i','g','a') && uni!=-1 && uni<0x10000 ) {
+	const unichar_t *alt=NULL;
+	if ( isdecompositionnormative(uni) &&
+		    unicode_alternates[uni>>8]!=NULL &&
+		(alt = unicode_alternates[uni>>8][uni&0xff])!=NULL ) {
+	    if ( iscombining(alt[1]) && ( alt[2]=='\0' || iscombining(alt[2])))
+		tag = CHR('M','U','C','M');
+	}
     }
 return( tag );
 }
@@ -1807,8 +1853,30 @@ static void SCMergePSList(SplineChar *sc,PST *list) {
 }
 
 void SCLigDefault(SplineChar *sc) {
-    PSTFree(sc->possub);
-    sc->possub = LigDefaultList(sc,0xffffffff);
+    PST *pst, *prev, *n;
+
+    /* Free any ligatures */
+    for ( prev=NULL, pst = sc->possub; pst!=NULL; pst = n ) {
+	n = pst->next;
+	if ( pst->type == pst_ligature ) {
+	    if ( prev==NULL )
+		sc->possub = n;
+	    else
+		prev->next = n;
+	    pst->next = NULL;
+	    PSTFree(pst);
+	} else
+	    prev = pst;
+    }
+
+    if ( LigTagFromUnicode(sc->unicodeenc)!=CHR('M','U','C','M') ) {
+	pst = LigDefaultList(sc,0xffffffff);
+	if ( pst!=NULL ) {
+	    for ( n=pst; n->next!=NULL ; n=n->next );
+	    n->next = sc->possub;
+	    sc->possub = pst;
+	}
+    }
 }
 
 void SCTagDefault(SplineChar *sc,uint32 tag) {

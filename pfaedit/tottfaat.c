@@ -243,7 +243,7 @@ static void morxfeaturesfree(struct feature *features) {
     }
 }
 
-static void morx_dumpSubsFeature(FILE *temp,SplineChar **glyphs,SplineChar **maps,int gcnt) {
+static void morx_lookupmap(FILE *temp,SplineChar **glyphs,uint16 *maps,int gcnt) {
     int i, j, k, l, seg_cnt, tot, last, offset;
     /* We do four passes. The first just calculates how much space we will need (if any) */
     /*  the second provides the top-level lookup table structure */
@@ -254,13 +254,13 @@ static void morx_dumpSubsFeature(FILE *temp,SplineChar **glyphs,SplineChar **map
 	    if ( k==1 )
 		tot = 0;
 	    else if ( k==2 ) {
-		putshort(temp,maps[i]->ttf_glyph);
+		putshort(temp,maps[i]);
 	    }
 	    for ( j=i+1, ++tot; j<gcnt && glyphs[j]->ttf_glyph==glyphs[i]->ttf_glyph+j-i; ++j ) {
 		++tot;
 		last = j;
 		if ( k==2 ) {
-		    putshort(temp,maps[j]->ttf_glyph);
+		    putshort(temp,maps[j]);
 		}
 	    }
 	    if ( k==1 ) {
@@ -293,17 +293,19 @@ return;
     }
 }
 
+static void morx_dumpSubsFeature(FILE *temp,SplineChar **glyphs,uint16 *maps,int gcnt) {
+    morx_lookupmap(temp,glyphs,maps,gcnt);
+}
+
 static struct feature *aat_dumpmorx_substitutions(struct alltabs *at, SplineFont *sf,
 	FILE *temp, struct feature *features) {
     int i, max, cnt, j, k, gcnt;
     uint32 *subtags;
     int ft, fs;
-    SplineChar *sc, *msc, **glyphs, **maps;
+    SplineChar *sc, *msc, **glyphs;
+    uint16 *maps;
     struct feature *cur;
     PST *pst;
-
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
-	sf->chars[i]->ticked= false;
 
     max = 30; cnt = 0;
     subtags = galloc(max*sizeof(uint32));
@@ -329,10 +331,10 @@ static struct feature *aat_dumpmorx_substitutions(struct alltabs *at, SplineFont
 		    for ( pst=sc->possub; pst!=NULL && pst->tag!=subtags[j]; pst=pst->next );
 		    if ( pst!=NULL ) {
 			if ( k==1 ) {
-			    msc = SFGetChar(sf,-1,pst->u.subs.variant);
+			    msc = SFGetCharDup(sf,-1,pst->u.subs.variant);
 			    if ( msc!=NULL && msc->ttf_glyph!=-1 ) {
 				glyphs[gcnt] = sc;
-			        maps[gcnt++] = msc;
+			        maps[gcnt++] = msc->ttf_glyph;
 			    }
 			} else
 			    ++gcnt;
@@ -340,9 +342,9 @@ static struct feature *aat_dumpmorx_substitutions(struct alltabs *at, SplineFont
 		}
 		if ( k==0 ) {
 		    glyphs = galloc((gcnt+1)*sizeof(SplineChar *));
-		    maps = galloc((gcnt+1)*sizeof(SplineChar *));
+		    maps = galloc((gcnt+1)*sizeof(uint16));
 		} else {
-		    glyphs[gcnt] = maps[gcnt] = NULL;
+		    glyphs[gcnt] = NULL; maps[gcnt] = 0;
 		}
 	    }
 	    cur = featureFromTag(subtags[j]);
@@ -363,11 +365,259 @@ static struct feature *aat_dumpmorx_substitutions(struct alltabs *at, SplineFont
 return( features);
 }
 
+static LigList *LigListMatchOtfTag(LigList *ligs,uint32 tag) {
+    LigList *l;
+
+    for ( l=ligs; l!=NULL; l=l->next )
+	if ( l->lig->tag == tag )
+return( l );
+return( NULL );
+}
+
+struct transition { uint16 next_state, dontconsume, trans_ent; LigList *l; };
+struct trans_entries { uint16 next_state, flags, act_index; LigList *l; };
+static void morx_dumpLigaFeature(FILE *temp,SplineChar **glyphs,int gcnt,
+	uint32 otf_tag, struct alltabs *at, SplineFont *sf ) {
+    LigList *l;
+    struct splinecharlist *comp;
+    uint16 *used = gcalloc(at->maxp.numGlyphs,sizeof(uint16));
+    SplineChar **cglyphs;
+    uint16 *map;
+    int i,j,k,class, state_max, state_cnt, base, last;
+    uint32 start;
+    struct transition **states;
+    struct trans_entries *trans;
+    int trans_cnt;
+    int maxccnt=0;
+    int acnt, lcnt;
+    uint32 *actions;
+    uint16 *components, *lig_glyphs;
+    uint32 here;
+    struct splinecharlist *scl;
+
+    /* figure out the classes (one for each character used to make a lig) */
+    for ( i=0; i<gcnt; ++i ) {
+	used[glyphs[i]->ttf_glyph] = true;
+	for ( l=glyphs[i]->ligofme; l!=NULL; l=l->next ) if ( l->lig->tag==otf_tag ) {
+	    for ( comp = l->components; comp!=NULL; comp=comp->next )
+		used[comp->sc->ttf_glyph] = true;
+	}
+    }
+    class = 4;
+    for ( i=0; i<at->maxp.numGlyphs; ++i ) if ( used[i] )
+	used[i] = class++;
+    cglyphs = galloc((class+1)*sizeof(SplineChar *));
+    map = galloc((class+1)*sizeof(uint16));
+    for ( i=k=0; i<at->maxp.numGlyphs; ++i ) if ( used[i] ) {
+	cglyphs[k] = sf->chars[i];
+	map[k] = used[i];
+    }
+
+    start = ftell(temp);
+    putlong(temp,class);
+    putlong(temp,7*sizeof(uint32));
+    putlong(temp,0);		/* Fill in later */
+    putlong(temp,0);
+    putlong(temp,0);
+    putlong(temp,0);
+    putlong(temp,0);
+    morx_lookupmap(temp,cglyphs,map,class);	/* dump the class lookup table */
+    free( cglyphs ); free( map );
+    here = ftell(temp);
+    fseek(temp,start+sizeof(uint32),SEEK_SET);
+    putlong(temp,here-start);			/* Point to start of state arrays */
+    fseek(temp,0,SEEK_END);
+
+    /* Now build the state machine */
+    /* Note: the ligofme list is so ordered that the longest ligatures come first */
+    /*  we will depend on that in the case of "ffl", "ffi", "ff" */
+    state_max = 40; state_cnt = 2;
+    states = galloc(state_max*sizeof(struct transition *));
+    states[0] = gcalloc(class,sizeof(struct transition));	/* Initial state */
+    states[1] = gcalloc(class,sizeof(struct transition));	/* other Initial state */
+    for ( i=0; i<gcnt; ++i ) {
+	if ( state_cnt>=state_max )
+	    states = grealloc(states,(state_max += 40)*sizeof(struct transition *));
+	base = state_cnt;
+	states[0][used[glyphs[i]->ttf_glyph]].next_state = state_cnt;
+	states[1][used[glyphs[i]->ttf_glyph]].next_state = state_cnt;
+	states[state_cnt++] = gcalloc(class,sizeof(struct transition));
+	for ( l=glyphs[i]->ligofme; l!=NULL; l=l->next ) if ( l->lig->tag==otf_tag ) {
+	    if ( l->ccnt > maxccnt ) maxccnt = l->ccnt;
+	    last = base;
+	    for ( comp = l->components; comp!=NULL; comp=comp->next ) {
+		if ( states[last][used[comp->sc->ttf_glyph]].next_state==0 ) {
+		    if ( comp->next==NULL )
+			states[last][used[comp->sc->ttf_glyph]].l = l;
+		    else {
+			states[last][used[comp->sc->ttf_glyph]].next_state = state_cnt;
+			if ( state_cnt>=state_max )
+			    states = grealloc(states,(state_max += 40)*sizeof(struct transition *));
+			last = state_cnt;
+			states[state_cnt++] = gcalloc(class,sizeof(struct transition));
+		    }
+		} else {
+		    last = states[last][used[comp->sc->ttf_glyph]].next_state;
+		    if ( comp->next==NULL ) {
+			/* this is where we depend on the ordering */
+			for ( j=0; j<class; ++j ) if ( states[last][j].next_state==0 ) {
+			    states[last][j].l = l;
+			    states[last][j].dontconsume = true;
+			    /* the next state should continue to be 0 (initial) */
+			}
+		    }
+		}
+	    }
+	}
+    }
+    /* Ok, we've got the state machine now. Convert it into apple's wierd */
+    /*  (space saving) format */
+    trans = galloc(class*state_cnt*sizeof(struct trans_entries));
+    trans_cnt = 0;
+    for ( i=0; i<state_cnt; ++i ) for ( j=0; j<class; ++j ) {
+	for ( k=0; k<trans_cnt; ++k ) {
+	    if ( trans[k].next_state==states[i][j].next_state &&
+		    trans[k].l ==states[i][j].l )
+	break;
+	}
+	states[i][j].trans_ent = k;
+	if ( k==trans_cnt ) {
+	    trans[k].next_state = states[i][j].next_state;
+	    trans[k].l = states[i][j].l;
+	    trans[k].flags = 0;
+	    if ( states[i][j].dontconsume )
+		trans[k].flags = 0x4000;
+	    else if ( trans[k].next_state!=0 || trans[k].l!=NULL )
+		trans[k].flags = 0x8000;
+	    if ( trans[k].l!=NULL )
+		trans[k].flags |= 0x2000;
+	    trans[k].act_index = 0;
+	    ++trans_cnt;
+	}
+    }
+    /* Dump out the state machine */
+    for ( i=0; i<state_cnt; ++i ) for ( j=0; j<class; ++j )
+	putshort( temp, states[i][j].trans_ent );
+
+    /* Now figure out the ligature actions (and all the other tables) */
+    actions = galloc(trans_cnt*maxccnt*sizeof(uint32));
+    components = galloc(trans_cnt*maxccnt*sizeof(uint16));
+    lig_glyphs = galloc(trans_cnt*sizeof(uint16));
+    acnt = lcnt = 0;
+    for ( i=0; i<trans_cnt; ++i ) if ( trans[i].l!=NULL ) {
+	lig_glyphs[lcnt] = trans[i].l->lig->u.lig.lig->ttf_glyph;
+	/* component Glyphs get popped off the stack in the reverse order */
+	/*  so we must built our tables backwards */
+	components[acnt+trans[i].l->ccnt-1] = lcnt;
+	actions[acnt+trans[i].l->ccnt-1] = 0x80000000 |
+		((acnt+trans[i].l->ccnt-1 - trans[i].l->first->ttf_glyph)&0x3fffffff);
+	for ( scl=trans[i].l->components,j=trans[i].l->ccnt-2; scl!=NULL; scl=scl->next, --j ) {
+	    components[acnt+j] = 0;
+	    actions[acnt+j] = (acnt+j - scl->sc->ttf_glyph)&0x3fffffff;
+	}
+	trans[i].act_index = acnt;
+	++lcnt;
+	acnt += trans[i].l->ccnt;
+    }
+
+    /* Now we know how big all the tables will be. Dump out their locations */
+    here = ftell(temp);
+    fseek(temp,start+2*sizeof(uint32),SEEK_SET);
+    putlong(temp,here-start);			/* Point to start of entry array */
+    putlong(temp,here-start+6*trans_cnt);	/* Point to start of actions */
+    putlong(temp,here-start+6*trans_cnt+4*acnt);/* Point to start of components */
+    putlong(temp,here-start+6*trans_cnt+6*acnt);/* Point to start of ligatures */
+    fseek(temp,0,SEEK_END);
+
+    /* Now dump the transitions */
+    for ( i=0; i<trans_cnt; ++i ) {
+	putshort(temp,trans[i].next_state);
+	putshort(temp,trans[i].flags);
+	putshort(temp,trans[i].act_index);
+    }
+    /* And the actions */
+    for ( i=0; i<acnt; ++i )
+	putlong(temp,actions[i]);
+    /* And the components */
+    for ( i=0; i<acnt; ++i )
+	putshort(temp,components[i]);
+    /* Do A simple check on the validity of what we've done */
+    if ( here+6*trans_cnt+6*acnt != ftell(temp) )
+	fprintf( stderr, "Offset wrong in morx ligature table\n" );
+    /* And finally the ligature glyph indeces */
+    for ( i=0; i<lcnt; ++i )
+	putshort(temp,lig_glyphs[i]);
+
+    /* clean up */
+    free(actions); free(components); free(lig_glyphs);
+    free(trans);
+    for ( i=0; i<state_cnt; ++i )
+	free(states[i]);
+    free(states);
+    free(used);
+}
 
 static struct feature *aat_dumpmorx_ligatures(struct alltabs *at, SplineFont *sf,
 	FILE *temp, struct feature *features) {
+    int i, max, cnt, j, k, gcnt;
+    uint32 *ligtags;
+    int ft, fs;
+    SplineChar *sc, *ssc, **glyphs;
+    struct feature *cur;
+    LigList *l;
+
     SFLigaturePrepare(sf);
-    
+
+    max = 30; cnt = 0;
+    ligtags = galloc(max*sizeof(uint32));
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL && sc->ttf_glyph!=-1) {
+	for ( l=sc->ligofme; l!=NULL; l=l->next ) {
+	    if ( OTTagToMacFeature(l->lig->tag,&ft,&fs)) {
+		for ( j=cnt-1; j>=0 && ligtags[j]!=l->lig->tag; --j );
+		if ( j>=0 ) {
+		    if ( cnt>=max )
+			ligtags = grealloc(ligtags,(max+=30)*sizeof(uint32));
+		    ligtags[cnt++] = l->lig->tag;
+		}
+	    }
+	}
+    }
+    if ( cnt==0 ) {
+	free( ligtags );
+	SFLigatureCleanup(sf);
+return( features);
+    }
+
+    glyphs = galloc((at->maxp.numGlyphs+1)*sizeof(SplineChar *));
+    for ( j=0; j<cnt; ++j ) {
+	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
+	    sf->chars[i]->ticked = false;
+	for ( i=0; i<sf->charcnt; ++i )
+		if ( (sc=sf->chars[i])!=NULL && !sc->ticked &&
+			LigListMatchOtfTag(sc->ligofme,ligtags[j])) {
+	    for ( k=i, gcnt=0; k<sf->charcnt; ++k )
+		    if ( (ssc=sf->chars[k])!=NULL && !ssc->ticked &&
+			    ssc->script == sc->script &&
+			    LigListMatchOtfTag(ssc->ligofme,ligtags[j])) {
+		glyphs[gcnt++] = ssc;
+	    }
+	    glyphs[gcnt] = NULL;
+	    cur = featureFromTag(ligtags[j]);
+	    cur->next = features;
+	    features = cur;
+	    cur->subtable_type = 2;		/* ligature */
+	    cur->feature_start = ftell(temp);
+	    morx_dumpLigaFeature(temp,glyphs,gcnt,ligtags[j],at,sf);
+	    if ( (ftell(temp)-cur->feature_start)&1 )
+		putc('\0',temp);
+	    if ( (ftell(temp)-cur->feature_start)&2 )
+		putshort(temp,0);
+	    cur->feature_len = ftell(temp)-cur->feature_start;
+	}
+    }
+
+    free(ligtags);
     SFLigatureCleanup(sf);
 return( features);
 }
@@ -786,7 +1036,7 @@ static uint16 *props_array(SplineFont *sf,struct alltabs *at) {
 	    isfloat = doit = true;
 	isbracket = offset = 0;
 	if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 && tomirror(sc->unicodeenc)!=0 ) {
-	    bsc = SFGetChar(sf,tomirror(sc->unicodeenc),NULL);
+	    bsc = SFGetCharDup(sf,tomirror(sc->unicodeenc),NULL);
 	    if ( bsc!=NULL && bsc->ttf_glyph-sc->ttf_glyph>-8 && bsc->ttf_glyph-sc->ttf_glyph<8 ) {
 		isbracket = true;
 		offset = bsc->ttf_glyph-sc->ttf_glyph;
@@ -795,7 +1045,7 @@ static uint16 *props_array(SplineFont *sf,struct alltabs *at) {
 	if ( !isbracket ) {
 	    for ( pst=sc->possub; pst!=NULL && pst->tag!=CHR('r','t','l','a'); pst=pst->next );
 	    if ( pst!=NULL && pst->type==pst_substitution &&
-		    (bsc=SFGetChar(sf,-1,pst->u.subs.variant))!=NULL &&
+		    (bsc=SFGetCharDup(sf,-1,pst->u.subs.variant))!=NULL &&
 		    bsc->ttf_glyph!=-1 && bsc->ttf_glyph-sc->ttf_glyph>-8 && bsc->ttf_glyph-sc->ttf_glyph<8 ) {
 		isbracket = true;
 		offset = bsc->ttf_glyph-sc->ttf_glyph;
@@ -956,7 +1206,7 @@ static struct {
     { 4, 0, 1, 0, 1, CHR('v','r','t','2'), "Vertical Forms", "No Vertical Forms" },	/* vertical forms => vertical rotation */
     { 4, 0, 1, 0, 1, CHR('v','k','n','a'), "Vertical Forms", "No Vertical Forms" },	/* vertical forms => vertical kana */
     { 6, 0, 1, 1, 0, CHR('t','n','u','m'), "Monospaced Numbers", "Proportional Numbers" },	/* monospace numbers => Tabular numbers */
-    { 8, 0, 1, 0, 0, CHR('M','S','W','I'), "Word Initial Swash", "No Word Initial Swash" },
+    { 8, 0, 1, 0, 1, CHR('M','S','W','I'), "Word Initial Swash", "No Word Initial Swash" },
     { 8, 2, 3, 0, 1, CHR('M','S','W','F'), "Word Final Swash", "No Word Final Swash" },
     { 8, 4, 5, 0, 1, CHR('M','S','L','I'), "Line Initial Swash", "No Line Initial Swash" },
     { 8, 6, 7, 0, 1, CHR('M','S','L','F'), "Line Final Swash", "No Line Final Swash" },
@@ -981,6 +1231,7 @@ static struct {
     { 25, 1, 0, 0, 1, CHR('p','w','i','d'), "Proportional Kana", "Full Width Kana"  },	/* proportional kana => proportional widths */
     { 26, 0, -1, 1, 1, CHR('f','w','i','d'), "Full Width Ideograph", NULL },	/* full width ideograph => full widths */
     { 26, 1, 0, 1, 0, CHR('p','w','i','d'), "Proportional Ideograph", "Full Width Ideograph" },	/* proportional ideograph => proportional widths */
+    { 27, 1, 0, 0, 1, CHR('M','U','C','M'), "Compose", "Off" },	/* Unicode decomposition */
     { 103, 0, -1, 1, 1, CHR('h','w','i','d'), "Half Width CJK Roman", NULL },	/* half width cjk roman => half widths */
     { 103, 1, 0, 1, 0, CHR('p','w','i','d'), "Proportional CJK Roman", "Half Width CJK Roman"  },	/* proportional cjk roman => proportional widths */
     { 103, 2, 0, 1, 0, CHR('M','W','I','D'), "Monospace CJK Roman", "Half Width CJK Roman" },	/* proportional text => proportional widths */
