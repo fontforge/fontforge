@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 3-Dec-2004 -->
+  <!-- AP: Last modified: 13-Dec-2004 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -237,7 +237,8 @@ the statements once for each glyph in the selection. Within the statements
 only one glyph at a time will be selected. After execution the selection
 will be restored to what it was initially. (Caveat: Don't reencode the font
 within a foreach statement).<BR>
-Statements are terminated either by a new line or a semicolon.
+Statements are terminated either by a new line (you can break up long lnes
+with backslash newline) or a semicolon.
 <P>
 Trivial example:
 <BLOCKQUOTE>
@@ -515,6 +516,10 @@ a[4][0] = "Nested array";
     unicode code point. If passed an array of integers it will generate a utf8
     string containing all of those unicode code points. (it does not expect to
     get surrogates).
+  <DT>
+    Rand()
+  <DD>
+    returns a random integer
   <DT>
       <HR>
   <DT>
