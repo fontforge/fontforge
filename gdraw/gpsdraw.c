@@ -27,6 +27,9 @@
 #include <stdio.h>
 #include <math.h>
 #include <time.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 #include "gpsdrawP.h"
 #include "gresource.h"
@@ -940,6 +943,72 @@ static void PSInitJob(GPSWindow ps, unichar_t *title) {
     PSPageInit(ps);
 }
 
+static int PSQueueFile(GPSWindow ps) {
+    GPSDisplay *gdisp = ps->display;
+    int pid = fork();
+
+    rewind( ps->init_file );
+    if ( pid==0 ) {
+	/* In child */
+	int in = fileno(stdin);
+	char *prog;
+	char *argv[30];
+	int argc=0;
+	char pbuf[200], cbuf[40];
+	char buffer[1000];
+	char *parg, *carg, *spt, *pt;
+
+	close(in);
+	dup2(fileno(ps->init_file),in);
+	close(fileno(ps->init_file));
+	
+	if ( gdisp->use_lpr ) {
+	    prog = "lpr";
+	    parg = "P";
+	    carg = "#";
+	} else {
+	    prog = "lp";
+	    parg = "d";
+	    carg = "n";
+	}
+	argv[argc++] = prog;
+	if ( !gdisp->use_lpr )
+	    argv[argc++] = "-s";
+	if ( gdisp->printer_name!=NULL ) {
+	    sprintf(pbuf, "-%s%s ", parg, gdisp->printer_name );
+	    argv[argc++] = pbuf;
+	}
+	if ( gdisp->num_copies!=0 ) {
+	    sprintf(cbuf, "-%s%d ", carg, gdisp->num_copies );
+	    argv[argc++] = pbuf;
+	}
+	if ( gdisp->lpr_args!=NULL ) {
+	    strcpy(buffer, gdisp->lpr_args );
+	    for ( spt = buffer; *spt==' '; ++spt );
+	    while ( (pt = strchr(spt,' '))!=NULL ) {
+		argv[argc++] = spt;
+		*pt = '\0';
+		for ( spt=pt+1; *spt==' '; ++spt );
+	    }
+	    if ( *spt!='\0' )
+		argv[argc++] = spt;
+	}
+	argv[argc] = NULL;
+	if ( execvp(prog,argv)==-1 )
+	    _exit(1);
+    } else if ( pid==-1 )
+return( false );
+    else {
+	/* in parent */
+	int status;
+	if ( waitpid(pid,&status,0)==-1 )
+return( false );
+	if ( WIFEXITED(status))
+return( true );
+    }
+return( false );
+}
+
 static int PSFinishJob(GPSWindow ps,int cancel) {
     GPSDisplay *gdisp = ps->display;
     int error = ferror(ps->output_file);
@@ -950,41 +1019,22 @@ static int PSFinishJob(GPSWindow ps,int cancel) {
 	fclose(ps->output_file);
     }
     error |= ferror(ps->init_file);
-    fclose(ps->init_file);
     if ( error || cancel ) {
 	if ( !cancel )
 	    GDrawError("An error occured while saving the print job to disk.\nNot printed." );
-	GFileUnlink(gdisp->filename);
+	if ( gdisp->filename!=NULL )
+	    GFileUnlink(gdisp->filename);
+	fclose(ps->init_file);
 return(false);
     }
     if ( !gdisp->print_to_file ) {
-	char buffer[1000];
-	char *parg, *carg;
-	if ( gdisp->use_lpr ) {
-	    strcpy(buffer,"lpr -r ");
-	    parg = "P";
-	    carg = "#";
-	} else {
-	    strcpy(buffer,"lp -s ");
-	    parg = "d";
-	    carg = "n";
-	}
-	if ( gdisp->printer_name!=NULL )
-	    sprintf(buffer+strlen(buffer), "-%s%s ", parg, gdisp->printer_name );
-	if ( gdisp->num_copies!=0 )
-	    sprintf(buffer+strlen(buffer), "-%s%d ", carg, gdisp->num_copies );
-	if ( gdisp->lpr_args!=NULL )
-	    sprintf(buffer+strlen(buffer), "%s ", gdisp->lpr_args );
-	strcat(buffer, gdisp->filename );
-	if ( !gdisp->use_lpr ) {
-	    strcat(buffer, " ; rm " );
-	    strcat(buffer, gdisp->filename );
-	}
-	if ( system(buffer)!=0 ) {
+	if ( !PSQueueFile(ps)) {
 	    GDrawError("Could not queue print job" );
+	    fclose(ps->init_file);
 return( false );
 	}
     }
+    fclose(ps->init_file);
 return( true );
 }
 
@@ -1084,9 +1134,13 @@ return( NULL );
 	    oldea = NULL;
 	gfree(oldfn); gfree(oldpn); gfree(oldea);
     }
-    if ( gdisp->filename==NULL )
-	gdisp->filename = tempnam(NULL,"gprnt");
-    if (( init = fopen(gdisp->filename,"w"))==NULL ) {
+    if ( gdisp->filename==NULL ) {
+	init = tmpfile();
+	if ( init==NULL ) {
+	    GDrawError("Can't open printer temporary file" );
+return( NULL );
+	}
+    } else if (( init = fopen(gdisp->filename,"w"))==NULL ) {
 	GDrawError("Can't open %s: %s", gdisp->print_to_file?"user file":"printer spooling file",
 		gdisp->filename);
 return( NULL );
