@@ -1135,6 +1135,7 @@ static void RemoveSplineChar(SplineFont *sf, int enc) {
     SplineChar *sc = sf->chars[enc];
     BitmapView *bv, *bvnext;
     RefChar *refs, *rnext;
+    FontView *fvs;
 
     if ( sc!=NULL ) {
 	if ( sc->views ) {
@@ -1157,6 +1158,21 @@ static void RemoveSplineChar(SplineFont *sf, int enc) {
 		rnext = rf->next;
 		if ( rf->sc==sc )
 		    SCRefToSplines(dsc,rf);
+	    }
+	}
+	for ( fvs=sc->parent->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+	    if ( fvs->sv!=NULL ) {
+		RefChar *rf, *rnext;
+		for ( rf = fvs->sv->sc_srch.refs; rf!=NULL; rf=rnext ) {
+		    rnext = rf->next;
+		    if ( rf->sc==sc )
+			SCRefToSplines(&fvs->sv->sc_srch,rf);
+		}
+		for ( rf = fvs->sv->sc_rpl.refs; rf!=NULL; rf=rnext ) {
+		    rnext = rf->next;
+		    if ( rf->sc==sc )
+			SCRefToSplines(&fvs->sv->sc_rpl,rf);
+		}
 	    }
 	}
 	sf->chars[enc] = NULL;
@@ -1808,10 +1824,7 @@ return( false );
 return( false );
     }
     while ( *ufamily ) {
-	if ( *ufamily<' ' || *ufamily>=0x7f ||
-		*ufamily=='(' || *ufamily=='[' || *ufamily=='{' || *ufamily=='<' ||
-		*ufamily==')' || *ufamily==']' || *ufamily=='}' || *ufamily=='>' ||
-		*ufamily=='%' || *ufamily=='/' ) {
+	if ( *ufamily<' ' || *ufamily>=0x7f ) {
 	    GWidgetErrorR(_STR_BadFamilyName,_STR_BadPSName);
 return( false );
 	}
