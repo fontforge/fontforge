@@ -605,6 +605,14 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	fprintf(stderr, "Unknown encoding %d\n", sf->encoding_name );
     } else
 	fprintf(sfd, "Encoding: %s\n", charset_names[sf->encoding_name+1] );
+    if ( sf->remap!=NULL ) {
+	struct remap *map;
+	int n;
+	for ( n=0,map = sf->remap; map->infont!=-1; ++n, ++map );
+	fprintf( sfd, "RemapN: %d\n", n );
+	for ( map = sf->remap; map->infont!=-1; ++map )
+	    fprintf(sfd, "Remap: %x %x %d\n", map->firstenc, map->lastenc, map->infont );
+    }
     if ( sf->display_size!=0 )
 	fprintf( sfd, "DisplaySize: %d\n", sf->display_size );
     if ( sf->display_antialias!=0 )
@@ -808,7 +816,7 @@ static int gethex(FILE *sfd, int *val) {
     }
     *pt='\0';
     ungetc(ch,sfd);
-    *val = strtol(tokbuf,NULL,16);
+    *val = strtoul(tokbuf,NULL,16);
 return( pt!=tokbuf?1:ch==EOF?-1: 0 );
 }
 
@@ -1519,7 +1527,7 @@ return( old );
 static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
     SplineFont *sf;
     SplineChar *sc;
-    int realcnt, i, eof;
+    int realcnt, i, eof, mappos=-1;
 
     sf = SplineFontEmpty();
     sf->cidmaster = cidmaster;
@@ -1632,6 +1640,23 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    sf->ordering = copy(tok);
 	} else if ( strmatch(tok,"Supplement:")==0 ) {
 	    getint(sfd,&sf->supplement);
+	} else if ( strmatch(tok,"RemapN:")==0 ) {
+	    int n;
+	    getint(sfd,&n);
+	    sf->remap = gcalloc(n+1,sizeof(struct remap));
+	    sf->remap[n].infont = -1;
+	    mappos = 0;
+	} else if ( strmatch(tok,"Remap:")==0 ) {
+	    int f, l, p;
+	    gethex(sfd,&f);
+	    gethex(sfd,&l);
+	    getint(sfd,&p);
+	    if ( sf->remap!=NULL && sf->remap[mappos].infont!=-1 ) {
+		sf->remap[mappos].firstenc = f;
+		sf->remap[mappos].lastenc = l;
+		sf->remap[mappos].infont = p;
+		mappos++;
+	    }
 	} else if ( strmatch(tok,"CIDVersion:")==0 ) {
 	    real temp;
 	    getreal(sfd,&temp);
