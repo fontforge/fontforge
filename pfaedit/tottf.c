@@ -4601,7 +4601,7 @@ return( false );
 
     pfed_dump(at,sf);
 
-    if ( format==ff_otf || format==ff_otfcid || bf==bf_otb ) {
+    if ( format==ff_otf || format==ff_otfcid ) {
 	at->tabdir.version = CHR('O','T','T','O');
     } else if ( at->applemode && !at->opentypemode ) {
 	at->tabdir.version = CHR('t','r','u','e');
