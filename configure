@@ -7946,9 +7946,9 @@ fi
 if test \( "$gww_hasbytecode" = "yes" \) -a \( "$FreeType2_IncRoot" != "" \); then
  gww_hasbytecode="no"
 
-# Check whether --with-freetype or --without-freetype was given.
-if test "${with_freetype+set}" = set; then
-  withval="$with_freetype"
+# Check whether --with-freetype-src or --without-freetype-src was given.
+if test "${with_freetype_src+set}" = set; then
+  withval="$with_freetype_src"
 
     if test "$withval" != "no" >/dev/null 2>&1 ; then
 	FreeType2_TT_BUILD_INC="$withval/src/truetype"

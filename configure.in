@@ -90,7 +90,7 @@ fi
 
 if test \( "$gww_hasbytecode" = "yes" \) -a \( "$FreeType2_IncRoot" != "" \); then
  gww_hasbytecode="no"
- AC_ARG_WITH(freetype,
+ AC_ARG_WITH(freetype-src,
  [  --with-freetype-src=dir   Specify freetype source directory],
  [
     if test "$withval" != "no" >/dev/null 2>&1 ; then
