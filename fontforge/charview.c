@@ -5540,13 +5540,12 @@ static void _CVMenuOverlap(CharView *cv,enum overlap_type ot) {
 					: cv->layerheads[dm_fore] - cv->sc->layers;
 
     DoAutoSaves();
-    if ( !SCRoundToCluster(cv->sc,layer,true,.01,.04))
+    if ( !SCRoundToCluster(cv->sc,layer,false,.01,.04))
 	CVPreserveState(cv);	/* SCRound2Cluster does this when it makes a change, not otherwise */
     if ( cv->drawmode==dm_fore ) {
 	MinimumDistancesFree(cv->sc->md);
 	cv->sc->md = NULL;
     }
-    SCRound2Int(cv->sc,256);
     cv->layerheads[cv->drawmode]->splines = SplineSetRemoveOverlap(cv->sc,cv->layerheads[cv->drawmode]->splines,ot);
     CVCharChangedUpdate(cv);
 }
@@ -7684,7 +7683,10 @@ static void SVMenuStroke(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void SVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SearchView *sv = (SearchView *) GDrawGetUserData(gw);
     CharView *cv = sv->cv_srch.inactive ? &sv->cv_rpl : &sv->cv_srch;
-    _CVMenuOverlap(cv,e!=NULL && (e->u.mouse.state&ksm_shift));
+    int anysel;
+
+    (void) CVAnySel(cv,&anysel,NULL,NULL,NULL);
+    _CVMenuOverlap(cv,anysel ? over_rmselected: over_remove);
 }
 
 static void SVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
