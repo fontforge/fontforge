@@ -187,6 +187,8 @@ return( NULL );
 	ret = GImageCreate(info_ptr->bit_depth != 1? it_index : it_mono,
 		info_ptr->width,info_ptr->height);
 	clut = ret->u.image->clut;
+	if ( clut==NULL )
+	    clut = ret->u.image->clut = gcalloc(1,sizeof(GClut));
 	clut->is_grey = true;
 	clut->clut_len = info_ptr->num_palette;
 	for ( i=0; i<info_ptr->num_palette; ++i )
