@@ -883,6 +883,9 @@ extern void KCLD_End(struct kernclasslistdlg *kcld);
 extern void KCLD_MvDetach(struct kernclasslistdlg *kcld,MetricsView *mv);
 
 extern void FVSelectByPST(FontView *fv);
+extern int FVParseSelectByPST(FontView *fv,int type,
+	const unichar_t *tags,const unichar_t *contents,
+	int search_type);
 
 extern GMenuItem helplist[];
 #endif

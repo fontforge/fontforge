@@ -4540,23 +4540,23 @@ static GTextInfo **LListFromList(GTextInfo *array) {
 return( ti );
 }
     
-static int SelectStuff(struct sel_dlg *sld,GWindow gw) {
+int FVParseSelectByPST(FontView *fv,int type,
+	const unichar_t *tags,const unichar_t *contents,
+	int search_type) {
     struct match_data md;
-    int type = (int) (GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_PST))->userdata);
     const unichar_t *ret;
     uint8 u[4];
     int i, j;
     int (*tester)(SplineChar *sc,struct match_data *md);
-    FontView *fv;
     SplineFont *sf;
     AnchorClass *ac;
     int first;
 
     memset(&md,0,sizeof(md));
-    md.sf = sld->fv->sf;
+    md.sf = fv->sf;
     md.type = type;
     if ( type!=pst_anchors || type!=pst_position || type!=pst_lcaret ) {
-	md.contains = cu_copy( _GGadgetGetTitle(GWidgetGetControl(gw,CID_Contents)));
+	md.contains = cu_copy( contents );
 	if ( strcmp( md.contains,"" )==0 || strcmp( md.contains,"*" )==0 ) {
 	    free( md.contains );
 	    md.contains = NULL;
@@ -4572,9 +4572,8 @@ return( false );
 	}
     }
     if ( type==pst_anchors ) {
-	ret = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Tag));
 	for ( ac = md.sf->anchor; ac!=NULL; ac=ac->next )
-	    if ( u_strcmp(ret,ac->name)==0 )
+	    if ( u_strcmp(tags,ac->name)==0 )
 	break;
 	md.ac = ac;
 	if ( ac==NULL ) {
@@ -4583,18 +4582,17 @@ return( false );
 return( false );
 	}
     } else if ( type!=pst_kerning || type!=pst_lcaret ) {
-	ret = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Tag));
-	if ( uc_strcmp( ret,"" )==0 || uc_strcmp( ret,"*" )==0 )
+	if ( uc_strcmp( tags,"" )==0 || uc_strcmp( tags,"*" )==0 )
 	    md.tagcnt = 0;
 	else {
-	    for ( i=0; i<sizeof(md.tags)/sizeof(md.tags[0]) && *ret!='\0'; ++i ) {
+	    for ( i=0; i<sizeof(md.tags)/sizeof(md.tags[0]) && *tags!='\0'; ++i ) {
 		memset(u,' ',4);
-		for ( j=0; j<4 && *ret!='\0' && *ret!=',' && *ret!=' '; ++j )
-		    u[j] = *ret++;
-		while ( *ret==',' || *ret==' ' ) ++ret;
+		for ( j=0; j<4 && *tags!='\0' && *tags!=',' && *tags!=' '; ++j )
+		    u[j] = *tags++;
+		while ( *tags==',' || *tags==' ' ) ++tags;
 		md.tags[i] = (u[0]<<24) | (u[1]<<16) | (u[2]<<8) | u[3];
 	    }
-	    if ( *ret!='\0' ) {
+	    if ( *tags!='\0' ) {
 		GWidgetErrorR(_STR_SelectByATT,_STR_TooManyTags);
 		free( md.contains );
 return( false );
@@ -4612,28 +4610,39 @@ return( false );
     else
 	tester = SCMatchPST;
 
-    fv = sld->fv;
     sf = fv->sf;
     first = -1;
-    if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_SelectResults)) ) {
+    if ( search_type==1 ) {	/* Select results */
 	for ( i=0; i<sf->charcnt; ++i )
 	    if ( (fv->selected[i] = tester(sf->chars[i],&md)) && first==-1 )
 		first = i;
-    } else if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_MergeResults)) ) {
+    } else if ( search_type==2) {/* merge results */
 	for ( i=0; i<sf->charcnt; ++i ) if ( !fv->selected[i] )
 	    if ( (fv->selected[i] = tester(sf->chars[i],&md)) && first==-1 )
 		first = i;
-    } else {
+    } else {			/* restrict selection */
 	for ( i=0; i<sf->charcnt; ++i ) if ( fv->selected[i] )
 	    if ( (fv->selected[i] = tester(sf->chars[i],&md)) && first==-1 )
 		first = i;
     }
     if ( first!=-1 )
 	FVScrollToChar(fv,first);
-    else
+    else if (screen_display!=NULL )
 	GWidgetPostNoticeR(_STR_SelectByATT,_STR_NoMatch);
-    GDrawRequestExpose(fv->v,NULL,false);
+    if ( screen_display!=NULL )
+	GDrawRequestExpose(fv->v,NULL,false);
 return( true );
+}
+    
+static int SelectStuff(struct sel_dlg *sld,GWindow gw) {
+    int type = (int) (GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_PST))->userdata);
+    int search_type = GGadgetIsChecked(GWidgetGetControl(gw,CID_SelectResults)) ? 1 :
+	    GGadgetIsChecked(GWidgetGetControl(gw,CID_MergeResults)) ? 2 :
+		3;
+return( FVParseSelectByPST(sld->fv, type,
+	_GGadgetGetTitle(GWidgetGetControl(gw,CID_Tag)),
+	_GGadgetGetTitle(GWidgetGetControl(gw,CID_Contents)),
+	search_type));
 }
 
 static int selpst_e_h(GWindow gw, GEvent *event) {

@@ -1219,6 +1219,27 @@ static void bSelectIf(Context *c) {
     c->return_val.u.ival = bDoSelect(c,false);
 }
 
+static void bSelectByATT(Context *c) {
+    unichar_t *tags, *contents;
+
+    if ( c->a.argc!=5 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_int ||
+	    c->a.vals[2].type!=v_str || c->a.vals[3].type!=v_str ||
+	    c->a.vals[4].type!=v_int )
+	error(c,"Bad argument type");
+    else if ( c->a.vals[4].u.ival<1 || c->a.vals[4].u.ival>3 ||
+	    c->a.vals[1].u.ival<pst_position ||c->a.vals[1].u.ival>pst_max+2 )
+	error(c,"Bad argument value");
+    tags = uc_copy(c->a.vals[2].u.sval);
+    contents = uc_copy(c->a.vals[3].u.sval);
+    c->return_val.type = v_int;
+    c->return_val.u.ival = FVParseSelectByPST(c->curfv,c->a.vals[1].u.ival,
+	    tags,contents,c->a.vals[4].u.ival);
+    free(tags);
+    free(contents);
+}
+
 /* **** Element Menu **** */
 #define em_unknown (em_none-3)
 static void bReencode(Context *c) {
@@ -2704,6 +2725,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SelectMore", bSelectMore },
     { "Select", bSelect },
     { "SelectIf", bSelectIf },
+    { "SelectByATT", bSelectByATT },
 /* Element Menu */
     { "Reencode", bReencode },
     { "SetCharCnt", bSetCharCnt },
