@@ -300,7 +300,7 @@ extern void MenuHelp(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuAbout(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuNew(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void MergeKernInfo(SplineFont *sf);
-extern int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype);
+extern int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype,int fmflags);
 extern int FontMenuGeneratePostscript(SplineFont *sf);
 extern void FontInfo(SplineFont *sf);
 extern void FontMenuFontInfo(void *fv);

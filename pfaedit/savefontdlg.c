@@ -307,7 +307,7 @@ static int _DoSave(SplineFont *sf,char *newname,real *sizes) {
 return( err );
 }
 
-int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype) {
+int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags) {
     int i;
     static char *bitmaps[] = {"bdf", "ms", "apple", "sbit", "gdf", "bin", "dfont", NULL };
     real *sizes=NULL;
@@ -354,11 +354,17 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype) {
     if ( i==bf_sfnt_dfont )
 	oldformatstate = ff_none;
 
-    oldafmstate = true;
-    if ( oldformatstate==ff_ttf || oldformatstate==ff_ttfsym || oldformatstate==ff_otf ||
-	    oldformatstate==ff_ttfdfont || oldformatstate==ff_otfdfont || oldformatstate==ff_otfciddfont ||
-	    oldformatstate==ff_otfcid || oldformatstate==ff_ttfmacbin || oldformatstate==ff_none )
-	oldafmstate = false;
+    if ( fmflags==-1 ) {
+	oldafmstate = true;
+	if ( oldformatstate==ff_ttf || oldformatstate==ff_ttfsym || oldformatstate==ff_otf ||
+		oldformatstate==ff_ttfdfont || oldformatstate==ff_otfdfont || oldformatstate==ff_otfciddfont ||
+		oldformatstate==ff_otfcid || oldformatstate==ff_ttfmacbin || oldformatstate==ff_none )
+	    oldafmstate = false;
+	oldpfmstate = false;
+    } else {
+	oldafmstate = fmflags&1;
+	oldpfmstate = (fmflags&2)?1:0;
+    }
 
     if ( oldbitmapstate!=bf_none ) {
 	BDFFont *bdf;

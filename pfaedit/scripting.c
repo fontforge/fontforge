@@ -604,14 +604,19 @@ static void bSave(Context *c) {
 static void bGenerate(Context *c) {
     SplineFont *sf = c->curfv->sf;
     char *bitmaptype = "";
+    int fmflags = -1;
 
-    if ( c->a.argc!=2 && c->a.argc!=3 )
+    if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=4 )
 	error( c, "Wrong number of arguments to Generate");
-    if ( c->a.vals[1].type!=v_str || (c->a.argc==3 && c->a.vals[2].type!=v_str ))
-	error( c, "Bad type of arguments to Generate");
-    if ( c->a.argc==3 )
+    if ( c->a.vals[1].type!=v_str ||
+	    (c->a.argc>=3 && c->a.vals[2].type!=v_str ) ||
+	    (c->a.argc>=4 && c->a.vals[3].type!=v_int ))
+	error( c, "Bad type of argument");
+    if ( c->a.argc>=3 )
 	bitmaptype = c->a.vals[2].u.sval;
-    if ( !GenerateScript(sf,c->a.vals[1].u.sval,bitmaptype) )
+    if ( c->a.argc>=4 )
+	fmflags = c->a.vals[3].u.ival;
+    if ( !GenerateScript(sf,c->a.vals[1].u.sval,bitmaptype,fmflags) )
 	error(c,"Save failed");
 }
 
@@ -695,6 +700,19 @@ static void bImport(Context *c) {
 	ok = FVImportImageTemplate(c->curfv,c->a.vals[1].u.sval,isimage);
     if ( !ok )
 	error(c,"Import failed" );
+}
+
+static void bMergeKern(Context *c) {
+    int isafm;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_str )
+	error( c, "Bad type of arguments");
+    isafm = strstrmatch(c->a.vals[1].u.sval,".afm")!=NULL;
+    if ( (isafm && !LoadKerningDataFromAfm(c->curfv->sf,c->a.vals[1].u.sval)) ||
+	    (!isafm && !LoadKerningDataFromTfm(c->curfv->sf,c->a.vals[1].u.sval)) )
+	error( c, "Failed to find kern info in file" );
 }
 
 /* **** Edit menu **** */
@@ -1412,6 +1430,13 @@ return;		/* It already has a kern==0 with everything */
     }
 }
 
+static void bClearAllKerns(Context *c) {
+
+    if ( c->a.argc!=1 )
+	error( c, "Wrong number of arguments" );
+    FVRemoveKerns(c->curfv);
+}
+
 /* **** CID menu **** */
 
 static void bCIDChangeSubFont(Context *c) {
@@ -1587,6 +1612,7 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "Save", bSave },
     { "Generate", bGenerate },
     { "Import", bImport },
+    { "MergeKern", bMergeKern },
 /* Edit Menu */
     { "Cut", bCut },
     { "Copy", bCopy },
@@ -1638,6 +1664,7 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "SetLBearing", bSetLBearing },
     { "SetRBearing", bSetRBearing },
     { "SetKern", bSetKern },
+    { "RemoveAllKerns", bClearAllKerns },
 /* CID Menu */
     { "CIDChangeSubFont", bCIDChangeSubFont },
     { "CIDSetFontNames", bCIDSetFontNames },
