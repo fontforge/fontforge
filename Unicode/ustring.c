@@ -505,7 +505,7 @@ return( ubuf );
 
 unichar_t *utf82u_copyn(const char *utf8buf,int len) {
     unichar_t *ubuf = galloc((len+1)*sizeof(unichar_t));
-return( utf82u_strncpy(ubuf,utf8buf,len));
+return( utf82u_strncpy(ubuf,utf8buf,len+1));
 }
 
 char *utf82u_strcpy(char *utf8buf,const unichar_t *ubuf) {

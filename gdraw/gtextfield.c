@@ -101,7 +101,7 @@ static void GTextFieldProcessBi(GTextField *gt, int start_of_change) {
     gt->dobitext = (i!=1);
     if ( gt->dobitext ) {
 	int cnt = u_strlen(gt->text);
-	if ( cnt>= gt->bilen ) {
+	if ( cnt+1>= gt->bilen ) {
 	    gt->bilen = cnt + 50;
 	    free(gt->bidata.text); free(gt->bidata.level);
 	    free(gt->bidata.override); free(gt->bidata.type);
@@ -379,8 +379,12 @@ return( refresh );
 
 static void *genunicodedata(void *_gt,int32 *len) {
     GTextField *gt = _gt;
-    *len = gt->sel_end-gt->sel_start;
-return( u_copyn(gt->text+gt->sel_start,gt->sel_end-gt->sel_start));
+    unichar_t *temp;
+    *len = gt->sel_end-gt->sel_start + 1;
+    temp = galloc((*len+1)*sizeof(unichar_t));
+    temp[0] = 0xfeff;		/* KDE expects a byte order flag */
+    u_strncpy(temp+1,gt->text+gt->sel_start,gt->sel_end-gt->sel_start);
+return( temp );
 }
 
 static void *genutf8data(void *_gt,int32 *len) {
@@ -429,9 +433,13 @@ static void GTextFieldGrabPrimarySelection(GTextField *gt) {
 	    sizeof(unichar_t),
 	    genunicodedata,noop);
     GDrawAddSelectionType(gt->g.base,sn_primary,"UTF8_STRING",gt,gt->sel_end-gt->sel_start,
-	    sizeof(unichar_t),
+	    sizeof(char),
 	    genutf8data,noop);
-    GDrawAddSelectionType(gt->g.base,sn_primary,"STRING",gt,gt->sel_end-gt->sel_start,sizeof(char),
+    GDrawAddSelectionType(gt->g.base,sn_primary,"text/plain;charset=UTF-8",gt,gt->sel_end-gt->sel_start,
+	    sizeof(char),
+	    genutf8data,noop);
+    GDrawAddSelectionType(gt->g.base,sn_primary,"STRING",gt,gt->sel_end-gt->sel_start,
+	    sizeof(char),
 	    genlocaldata,noop);
 }
 
@@ -449,16 +457,30 @@ static void GTextFieldGrabSelection(GTextField *gt, enum selnames sel ) {
 
     if ( gt->sel_start!=gt->sel_end ) {
 	unichar_t *temp;
-	char *ctemp;
+	char *ctemp, *ctemp2;
+
 	GDrawGrabSelection(gt->g.base,sel);
-	temp = u_copyn(gt->text+gt->sel_start,gt->sel_end-gt->sel_start);
-	ctemp = u2utf8_copy(temp);
-	GDrawAddSelectionType(gt->g.base,sel,"text/plain;charset=ISO-10646-UCS-2",temp,u_strlen(temp),sizeof(unichar_t),
+	temp = galloc((gt->sel_end-gt->sel_start + 2)*sizeof(unichar_t));
+	temp[0] = 0xfeff;		/* KDE expects a byte order flag */
+	u_strncpy(temp+1,gt->text+gt->sel_start,gt->sel_end-gt->sel_start);
+	ctemp = u2utf8_copy(temp+1);
+	ctemp2 = u2def_copy(temp+1);
+	GDrawAddSelectionType(gt->g.base,sel,"text/plain;charset=ISO-10646-UCS-2",temp,u_strlen(temp),
+		sizeof(unichar_t),
 		NULL,NULL);
-	GDrawAddSelectionType(gt->g.base,sel,"UTF8_STRING",ctemp,strlen(ctemp),sizeof(char),
+	GDrawAddSelectionType(gt->g.base,sel,"UTF8_STRING",copy(ctemp),strlen(ctemp),
+		sizeof(char),
 		NULL,NULL);
-	GDrawAddSelectionType(gt->g.base,sel,"STRING",u2def_copy(temp),u_strlen(temp),sizeof(char),
+	GDrawAddSelectionType(gt->g.base,sel,"text/plain;charset=UTF-8",ctemp,strlen(ctemp),
+		sizeof(char),
 		NULL,NULL);
+
+	if ( ctemp2!=NULL && strlen(ctemp2)==gt->sel_end-gt->sel_start )
+	    GDrawAddSelectionType(gt->g.base,sel,"STRING",ctemp2,strlen(ctemp2),
+		    sizeof(char),
+		    NULL,NULL);
+	else
+	    free(ctemp2);
     }
 }
 
@@ -553,8 +575,9 @@ static void GTextFieldPaste(GTextField *gt,enum selnames sel) {
 	temp = GDrawRequestSelection(gt->g.base,sel,"Unicode",&len);
 	if ( temp==NULL || len==0 )
 	    temp = GDrawRequestSelection(gt->g.base,sel,"text/plain;charset=ISO-10646-UCS-2",&len);
-	if ( temp!=NULL ) 
-	    GTextField_Replace(gt,temp);
+	/* Bug! I don't handle byte reversed selections. But I don't think there should be any anyway... */
+	if ( temp!=NULL )
+	    GTextField_Replace(gt,temp[0]==0xfeff?temp+1:temp);
 	free(temp);
     } else if ( GDrawSelectionHasType(gt->g.base,sel,"UTF8_STRING") ||
 	    GDrawSelectionHasType(gt->g.base,sel,"text/plain;charset=UTF-8")) {

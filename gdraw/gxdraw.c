@@ -3230,6 +3230,7 @@ static void GXDrawClearSelData(GXDisplay *gd,enum selnames sel) {
 	sd = next;
     }
     gd->selinfo[sel].datalist = NULL;
+    gd->selinfo[sel].owner = NULL;
 }
 
 static void GXDrawGrabSelection(GWindow w,enum selnames sel) {
