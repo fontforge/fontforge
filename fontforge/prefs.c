@@ -419,9 +419,12 @@ int SetPrefs(char *name,Val *val1, Val *val2) {
 return( -1 );
 		*((int *) (pf->val)) = val1->u.ival;
 	    } else if ( pf->type == pr_real ) {
-		if ( val1->type!=v_int || (val2!=NULL && val2->type!=v_int ))
+		if ( val1->type==v_real && val2==NULL )
+		    *((float *) (pf->val)) = val1->u.fval;
+		else if ( val1->type!=v_int || (val2!=NULL && val2->type!=v_int ))
 return( -1 );
-		*((float *) (pf->val)) = (val2==NULL ? val1->u.ival : val1->u.ival / (double) val2->u.ival);
+		else
+		    *((float *) (pf->val)) = (val2==NULL ? val1->u.ival : val1->u.ival / (double) val2->u.ival);
 	    } else if ( pf->type == pr_string || pf->type == pr_file ) {
 		if ( val1->type!=v_str || val2!=NULL )
 return( -1 );
