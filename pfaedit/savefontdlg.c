@@ -1142,12 +1142,21 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
     int iscid, i;
     Encoding *item=NULL;
     struct sflist *sfs=NULL, *cur;
+    static int buts[] = { _STR_Yes, _STR_No, 0 };
+
+    for ( i=d->sf->charcnt-1; i>=1; --i )
+	if ( d->sf->chars[i]!=NULL && strcmp(d->sf->chars[i]->name,".notdef")==0 &&
+		(d->sf->chars[i]->splines!=NULL || d->sf->chars[i]->refs!=NULL))
+    break;
+    if ( i!=0 ) {
+	if ( GWidgetAskR(_STR_NotdefName,buts,0,1,_STR_NotdefChar,i)==1 )
+return;
+    }
 
     temp = u2def_copy(path);
     oldformatstate = GGadgetGetFirstListSelectedItem(d->pstype);
     iscid = oldformatstate==ff_cid || oldformatstate==ff_otfcid || oldformatstate==ff_otfciddfont;
     if ( !iscid && (d->sf->cidmaster!=NULL || d->sf->subfontcnt>1)) {
-	static int buts[] = { _STR_Yes, _STR_No, 0 };
 	if ( GWidgetAskR(_STR_NotCID,buts,0,1,_STR_NotCIDOk)==1 )
 return;
     }

@@ -791,6 +791,8 @@ static char *str_BadFamilyForMac = "Bad Mac Family";
 static char *str_BadMacFamily = "To generate a Mac family file, the current font must have plain (Normal, Regular, etc.) style, and there must be other open fonts with the same family name.";
 static char *str_TwoFontsSameStyle = "There are two open fonts with the current family name and the same style. %.30hs and %.30hs";
 static char *str_DifferentEncodings = "The font %1$.30hs has a different encoding than that of %2$.30hs";
+static char *str_NotdefName = "Notdef name";
+static char *str_NotdefChar = "The character at encoding %d is named \".notdef\" but contains an outline. Because it is called \".notdef\" it will not be included in the generated font. You may give it a new name using Element->Char Info. Do you wish to continue font generation (and omit this character)?";
     /* Goto character ... */
 static char str_Badnumberin[] = "Bad Number in ";
 static char str_Enternameofchar[] = "Enter the name of a character in the font";
