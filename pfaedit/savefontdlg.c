@@ -1256,7 +1256,7 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	if ( !set )				/* Don't default to generating pfms */
 	    GGadgetSetChecked(d->dopfm,set);
 	GGadgetSetVisible(d->psnames,format==ff_ttf || format==ff_ttfsym ||
-		format==ff_otf || format==ff_otfdfont ||
+		/*format==ff_otf || format==ff_otfdfont ||*/
 		format==ff_ttfdfont || format==ff_ttfmacbin || format==ff_none);
 	GGadgetSetVisible(d->ttfhints,format==ff_ttf || format==ff_ttfsym ||
 		format==ff_ttfdfont || format==ff_ttfmacbin || format==ff_none);
@@ -1574,8 +1574,8 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     gcd[11].gd.popup_msg = GStringGetResource(_STR_PSNamesPopup,NULL);
     gcd[11].gd.label = &label[11];
     gcd[11].creator = GCheckBoxCreate;
-    if ( ofs==ff_ttf || ofs==ff_ttfsym || ofs==ff_ttfdfont || ofs==ff_otf ||
-	    ofs==ff_otfdfont || ofs==ff_ttfmacbin || ofs==ff_none )
+    if ( ofs==ff_ttf || ofs==ff_ttfsym || ofs==ff_ttfdfont || /*ofs==ff_otf ||
+	    ofs==ff_otfdfont ||*/ ofs==ff_ttfmacbin || ofs==ff_none )
 	gcd[11].gd.flags |=  gg_visible;
 
     gcd[12].gd.pos.x = gcd[11].gd.pos.x; gcd[12].gd.pos.y = gcd[10].gd.pos.y;
