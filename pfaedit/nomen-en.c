@@ -1518,6 +1518,8 @@ static char *str_BuildingKoreanFont = "Building Korean Font";
     /* Transform */
 static char *str_TransformBackground = "Transform Background Too";
 static char mnemonic_TransformBackground = 'B';
+static char *str_Warning = "Warning";
+static char *str_RotateSkewWarning = "After rotating or skewing a character you should probably apply Element->Add Extrema";
     /* scripting */
 static char *str_Call = "Call...";
 static char mnemonic_Call = 'a';

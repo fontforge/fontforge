@@ -113,6 +113,7 @@ static int Trans_OK(GGadget *g, GEvent *e) {
     BasePoint base;
     int origin, bvpos=0;
     BVTFunc bvts[TCnt+1];
+    static int warned = false;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	TransData *td = GDrawGetUserData(GGadgetGetWindow(g));
@@ -225,6 +226,10 @@ return(true);
 	transform[4] += base.x;
 	transform[5] += base.y;
 
+	if (( transform[1]!=0 || transform[2]!=0 ) && !warned ) {
+	    GWidgetPostNoticeR(_STR_Warning,_STR_RotateSkewWarning);
+	    warned = true;
+	}
 	(td->transfunc)(td->userdata,transform,origin,bvts,
 		dobackground|(round_2_int?fvt_round_to_int:0));
 	td->done = true;
