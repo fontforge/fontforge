@@ -1037,18 +1037,18 @@ static void bImport(Context *c) {
 	format = fv_pk;
 	back = 1;
     } else if ( strmatch(ext,".eps")==0 || strmatch(ext,".ps")==0 ||
-	    strstrmatch(ext,".art")==0 ) {
-	if ( strchr(filename,'*')==NULL )
+	    strmatch(ext,".art")==0 ) {
+	if ( strchr(filename,'*')!=NULL )
 	    format = fv_epstemplate;
 	else
 	    format = fv_eps;
     } else if ( strmatch(ext,".svg")==0 ) {
-	if ( strchr(filename,'*')==NULL )
+	if ( strchr(filename,'*')!=NULL )
 	    format = fv_svgtemplate;
 	else
 	    format = fv_svg;
     } else {
-	if ( strchr(filename,'*')==NULL )
+	if ( strchr(filename,'*')!=NULL )
 	    format = fv_imgtemplate;
 	else
 	    format = fv_image;

@@ -893,6 +893,7 @@ int FVImportImageTemplate(FontView *fv,char *path,int format) {
     struct dirent *entry;
     SplineChar *sc;
     BDFFont *bdf;
+    char start [1025];
 
     ext = strrchr(path,'.');
     name = strrchr(path,'/');
@@ -933,6 +934,7 @@ return( false );
 		(isc && entry->d_name[0]=='c' && entry->d_name[1]=='i' && entry->d_name[2]=='d' && (val=strtol(entry->d_name+3,&end,10), end==pt)) ||
 		(ise && entry->d_name[0]=='e' && entry->d_name[1]=='n' && entry->d_name[2]=='c' && (val=strtol(entry->d_name+3,&end,10), end==pt)) ))
     continue;
+	sprintf (start, "%s/%s", dirname, entry->d_name);
 	if ( isu ) {
 	    i = SFFindChar(fv->sf,val,NULL);
 	    if ( i==-1 ) {
@@ -962,14 +964,14 @@ return( false );
 	    sc = SFMakeChar(fv->sf,val);
 	}
 	if ( format==fv_imgtemplate ) {
-	    image = GImageRead(entry->d_name);
+	    image = GImageRead(start);
 	    if ( image==NULL ) {
-		GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileName,entry->d_name);
+		GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileName,start);
     continue;
 	    }
 	    base = image->list_len==0?image->u.image:image->u.images[0];
 	    if ( base->image_type!=it_mono ) {
-		GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileNotBitmap,entry->d_name);
+		GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileNotBitmap,start);
 		GImageDestroy(image);
     continue;
 	    }
@@ -977,11 +979,11 @@ return( false );
 	    SCAddScaleImage(sc,image,true);
 #ifndef _NO_LIBXML
 	} else if ( format==fv_svgtemplate ) {
-	    SCImportSVG(sc,dm_fore,entry->d_name,false);
+	    SCImportSVG(sc,dm_fore,start,false);
 	    ++tot;
 #endif
 	} else {
-	    SCImportPS(sc,entry->d_name);
+	    SCImportPS(sc,start);
 	    ++tot;
 	}
     }
