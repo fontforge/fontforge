@@ -7,6 +7,8 @@
 .B fontforge - create and modify PostScript, TrueType and SVG fonts
 .SH SYNOPSIS
 .B fontforge
+.RB [ \-c
+.IR string ]
 .RB [ \-cmap
 .IR maptype ]
 .RB [ \-depth
@@ -80,7 +82,11 @@ This manual page is intended only as a rudimentary overview;
 see the HTML Users Manual for more complete information.
 .SH OPTIONS
 .TP
-.B \-cmap maptype 
+.BI \-c string 
+Must be the first argument. Executes "string" as a set of scripting commands.
+Any additional arguments will be passed to the script.
+.TP
+.BI \-cmap maptype 
 Employ the specified method to control 8-bit colormaps,
 where
 .I maptype
