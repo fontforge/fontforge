@@ -751,7 +751,8 @@ typedef struct splinechar {
     unsigned int blended: 1;	/* An MM blended character */
     unsigned int unused_so_far: 1;
     unsigned int glyph_class: 3; /* 0=> fontforge determines class automagically, else one more than the class value in gdef */
-    /* 13 bits left */
+    unsigned int numberpointsbackards: 1;
+    /* 12 bits left */
 #if HANYANG
     unsigned int compositionunit: 1;
     int16 jamo, varient;

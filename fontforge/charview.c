@@ -2605,34 +2605,61 @@ int SCNumberPoints(SplineChar *sc) {
     uint8 *instrs = sc->ttf_instrs==NULL && sc->parent->mm!=NULL && sc->parent->mm->apple ?
 		sc->parent->mm->normal->chars[sc->enc]->ttf_instrs : sc->ttf_instrs;
 
-    for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
-	starts_with_cp = (ss->first->ttfindex == pnum+1 || ss->first->ttfindex==0xffff) &&
-		!ss->first->noprevcp;
-	startcnt = pnum;
-	if ( starts_with_cp ) ++pnum;
-	for ( sp=ss->first; ; ) {
-	    if ( ((instrs!=NULL && sp->ttfindex==0xffff) ||
-		    ( sp!=ss->first && !sp->nonextcp && !sp->noprevcp &&
-		     !sp->roundx && !sp->roundy && !sp->dontinterpolate &&
-		     instrs==NULL )) &&
- 		    (sp->nextcp.x+sp->prevcp.x)/2 == sp->me.x &&
-		    (sp->nextcp.y+sp->prevcp.y)/2 == sp->me.y )
-		sp->ttfindex = 0xffff;
-	    else
-		sp->ttfindex = pnum++;
-	    if ( instrs!=NULL && sp->nextcpindex!=0xffff && sp->nextcpindex!=0xfffe ) {
-		if ( sp->nextcpindex!=startcnt || !starts_with_cp )
-		    sp->nextcpindex = pnum++;
-	    } else if ( (instrs==NULL || sp->nextcpindex==0xfffe) && !sp->nonextcp ) {
-		if ( sp->next==NULL || sp->next->to!=ss->first )
-		    sp->nextcpindex = pnum++;
-	    } else
-		sp->nextcpindex = 0xffff;
-	    if ( sp->next==NULL )
-	break;
-	    sp = sp->next->to;
-	    if ( sp==ss->first )
-	break;
+    if ( sc->parent->order2 ) {		/* TrueType and its complexities. I ignore svg here */
+	for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+	    starts_with_cp = (ss->first->ttfindex == pnum+1 || ss->first->ttfindex==0xffff) &&
+		    !ss->first->noprevcp;
+	    startcnt = pnum;
+	    if ( starts_with_cp ) ++pnum;
+	    for ( sp=ss->first; ; ) {
+		if ( ((instrs!=NULL && sp->ttfindex==0xffff) ||
+			( sp!=ss->first && !sp->nonextcp && !sp->noprevcp &&
+			 !sp->roundx && !sp->roundy && !sp->dontinterpolate &&
+			 instrs==NULL )) &&
+			(sp->nextcp.x+sp->prevcp.x)/2 == sp->me.x &&
+			(sp->nextcp.y+sp->prevcp.y)/2 == sp->me.y )
+		    sp->ttfindex = 0xffff;
+		else
+		    sp->ttfindex = pnum++;
+		if ( instrs!=NULL && sp->nextcpindex!=0xffff && sp->nextcpindex!=0xfffe ) {
+		    if ( sp->nextcpindex!=startcnt || !starts_with_cp )
+			sp->nextcpindex = pnum++;
+		} else if ( (instrs==NULL || sp->nextcpindex==0xfffe) && !sp->nonextcp ) {
+		    if ( sp->next==NULL || sp->next->to!=ss->first )
+			sp->nextcpindex = pnum++;
+		} else
+		    sp->nextcpindex = 0xffff;
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==ss->first )
+	    break;
+	    }
+	}
+    } else {		/* cubic (PostScript/SVG) splines */
+	int layer;
+	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	    for ( ss = sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
+		for ( sp=ss->first; ; ) {
+		    sp->ttfindex = pnum++;
+		    sp->nextcpindex = 0xffff;
+		    if ( sc->numberpointsbackards ) {
+			if ( sp->prev==NULL )
+		break;
+			if ( !sp->noprevcp || !sp->prev->from->nonextcp )
+			    pnum += 2;
+			sp = sp->prev->from;
+		    } else {
+			if ( sp->next==NULL )
+		break;
+			if ( !sp->nonextcp || !sp->next->to->noprevcp )
+			    pnum += 2;
+			sp = sp->next->to;
+		    }
+		    if ( sp==ss->first )
+		break;
+		}
+	    }
 	}
     }
 return( pnum );
@@ -2687,6 +2714,17 @@ return;
     }
 }
 
+static void ptcountcheck(SplineChar *sc) {
+    CharView *cv;
+
+    for ( cv = sc->views; cv!=NULL ; cv=cv->next ) {
+	if ( cv->showpointnumbers ) {
+	    SCNumberPoints(sc);
+    break;
+	}
+    }
+}
+
 void CVSetCharChanged(CharView *cv,int changed) {
     FontView *fv = cv->fv;
     SplineFont *sf = fv->sf;
@@ -2710,10 +2748,10 @@ void CVSetCharChanged(CharView *cv,int changed) {
 		sf->changed = true;
 		if ( fv->cidmaster!=NULL )
 		    fv->cidmaster->changed = true;
-		if ( changed && sc->ttf_instrs )
+		if ( sc->ttf_instrs )
 		    instrcheck(sc);
-		if ( changed )
-		    SCDeGridFit(sc);
+		SCDeGridFit(sc);
+		ptcountcheck(sc);
 	    }
 	}
 	if ( changed ) {
@@ -2754,13 +2792,15 @@ void _SCCharChangedUpdate(SplineChar *sc,int changed) {
 	    sc->changed = changed;
 	    FVToggleCharChanged(sc);
 	    SCRefreshTitles(sc);
-	    if ( changed && sc->ttf_instrs )
-		instrcheck(sc);
-	    if ( changed )
-		SCDeGridFit(sc);
 	}
 	if ( !sf->changed && sf->fv!=NULL )
 	    FVSetTitle(sf->fv);
+	if ( changed ) {
+	    if ( sc->ttf_instrs )
+		instrcheck(sc);
+	    SCDeGridFit(sc);
+	    ptcountcheck(sc);
+	}
 	sc->changedsincelasthinted = true;
 	sc->changed_since_search = true;
 	sf->changed = true;
@@ -3712,6 +3752,10 @@ return( true );
 #define MID_KernPairs	2018
 #define MID_AnchorPairs	2019
 #define MID_ShowGridFit 2020
+#define MID_PtsNone	2021
+#define MID_PtsTrue	2022
+#define MID_PtsPost	2023
+#define MID_PtsSVG	2024
 #define MID_Ligatures	2021
 #define MID_Cut		2101
 #define MID_Copy	2102
@@ -4062,6 +4106,29 @@ static void CVMenuShowHide(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     CVShows.showpoints = cv->showpoints = !cv->showpoints;
     GDrawRequestExpose(cv->v,NULL,false);
+}
+
+static void CVMenuNumberPoints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    switch ( mi->mid ) {
+      case MID_PtsNone:
+	cv->showpointnumbers = false;
+      break;
+      case MID_PtsTrue:
+	cv->showpointnumbers = true;
+      break;
+      case MID_PtsPost:
+	cv->showpointnumbers = true;
+	cv->sc->numberpointsbackards = true;
+      break;
+      case MID_PtsSVG:
+	cv->showpointnumbers = true;
+	cv->sc->numberpointsbackards = false;
+      break;
+    }
+    SCNumberPoints(cv->sc);
+    SCUpdateAll(cv->sc);
 }
 
 static void CVMenuMarkExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -6275,6 +6342,31 @@ static void cv_cblistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
+static void cv_nplistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
+    SplineChar *sc = cv->sc;
+    int order2 = sc->parent->order2;
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_PtsNone:
+	    mi->ti.checked = !cv->showpointnumbers;
+	  break;
+	  case MID_PtsTrue:
+	    mi->ti.disabled = !order2;
+	    mi->ti.checked = cv->showpointnumbers && order2;
+	  break;
+	  case MID_PtsPost:
+	    mi->ti.disabled = order2;
+	    mi->ti.checked = cv->showpointnumbers && !order2 && sc->numberpointsbackards;
+	  break;
+	  case MID_PtsSVG:
+	    mi->ti.disabled = order2;
+	    mi->ti.checked = cv->showpointnumbers && !order2 && !sc->numberpointsbackards;
+	  break;
+	}
+    }
+}
+
 static void cv_vwlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
     int pos;
     SplineFont *sf = cv->sc->parent;
@@ -6328,6 +6420,11 @@ static void cv_vwlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 static void cblistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     cv_cblistcheck(cv,mi,e);
+}
+
+static void nplistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    cv_nplistcheck(cv,mi,e);
 }
 
 static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -6694,6 +6791,14 @@ static GMenuItem cblist[] = {
     NULL
 };
 
+static GMenuItem nplist[] = {
+    { { (unichar_t *) _STR_None, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'K' }, '\0', 0, NULL, NULL, CVMenuNumberPoints, MID_PtsNone },
+    { { (unichar_t *) _STR_TrueType, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'A' }, '\0', 0, NULL, NULL, CVMenuNumberPoints, MID_PtsTrue },
+    { { (unichar_t *) _STR_PostScript, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'L' }, '\0', ksm_shift|ksm_control, NULL, NULL, CVMenuNumberPoints, MID_PtsPost },
+    { { (unichar_t *) _STR_SVG, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'L' }, '\0', ksm_shift|ksm_control, NULL, NULL, CVMenuNumberPoints, MID_PtsSVG },
+    NULL
+};
+
 static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_Fit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'F', ksm_control, NULL, NULL, CVMenuScale, MID_Fit },
     { { (unichar_t *) _STR_Zoomout, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, '-', ksm_control|ksm_meta, NULL, NULL, CVMenuScale, MID_ZoomOut },
@@ -6711,6 +6816,7 @@ static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_FindInFontView, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, '<', ksm_shift|ksm_control, NULL, NULL, CVMenuFindInFontView, MID_FindInFontView },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Hidepoints, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, 'D', ksm_control, NULL, NULL, CVMenuShowHide, MID_HidePoints },
+    { { (unichar_t *) _STR_NumberPoints, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, '\0', ksm_control, nplist, nplistcheck },
     { { (unichar_t *) _STR_MarkExtrema, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'M' }, '\0', ksm_control, NULL, NULL, CVMenuMarkExtrema, MID_MarkExtrema },
     { { (unichar_t *) _STR_Fill, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'l' }, '\0', 0, NULL, NULL, CVMenuFill, MID_Fill },
     { { (unichar_t *) _STR_ShowGridFitDDD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'l' }, '\0', 0, NULL, NULL, CVMenuShowGridFit, MID_ShowGridFit },
