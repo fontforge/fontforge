@@ -540,7 +540,11 @@ void CVToolsSetCursor(CharView *cv, int state, char *device) {
     else if ( cv->pressed_display!=cvt_none )
 	shouldshow = cv->pressed_display;
     else if ( device==NULL || strcmp(device,"Mouse1")==0 ) {
-	if ( (state&ksm_control) && (state&(ksm_button2|ksm_super)) )
+	if ( (state&(ksm_shift|ksm_control)) && (state&ksm_button4))
+	    shouldshow = cvt_magnify;
+	else if ( (state&(ksm_shift|ksm_control)) && (state&ksm_button5))
+	    shouldshow = cvt_minify;
+	else if ( (state&ksm_control) && (state&(ksm_button2|ksm_super)) )
 	    shouldshow = cv->cb2_tool;
 	else if ( (state&(ksm_button2|ksm_super)) )
 	    shouldshow = cv->b2_tool;
@@ -2304,7 +2308,11 @@ void BVToolsSetCursor(BitmapView *bv, int state,char *device) {
     else if ( bv->pressed_display!=bvt_none )
 	shouldshow = bv->pressed_display;
     else if ( device==NULL || strcmp(device,"Mouse1")==0 ) {
-	if ( (state&ksm_control) && (state&(ksm_button2|ksm_super)) )
+	if ( (state&(ksm_shift|ksm_control)) && (state&ksm_button4))
+	    shouldshow = bvt_magnify;
+	else if ( (state&(ksm_shift|ksm_control)) && (state&ksm_button5))
+	    shouldshow = bvt_minify;
+	else if ( (state&ksm_control) && (state&(ksm_button2|ksm_super)) )
 	    shouldshow = bv->cb2_tool;
 	else if ( (state&(ksm_button2|ksm_super)) )
 	    shouldshow = bv->b2_tool;

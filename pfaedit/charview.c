@@ -3038,7 +3038,7 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 	    real cx, cy;
 	    cx = (event->u.mouse.x-cv->xoff)/cv->scale ;
 	    cy = (cv->height-event->u.mouse.y-cv->yoff)/cv->scale ;
-	    CVMagnify(cv,cx,cy,event->u.mouse.state&ksm_meta?-1:1);
+	    CVMagnify(cv,cx,cy,cv->active_tool==cvt_minify?-1:1);
         } else {
 	    DBounds b;
 	    if ( cv->p.cx>cv->info.x ) {
@@ -3170,6 +3170,7 @@ static int v_e_h(GWindow gw, GEvent *event) {
 
     if (( event->type==et_mouseup || event->type==et_mousedown ) &&
 	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+	if ( !(event->u.mouse.state&(ksm_shift|ksm_control)) )	/* bind shift to magnify/minify */
 return( GGadgetDispatchEvent(cv->vsb,event));
     }
 
