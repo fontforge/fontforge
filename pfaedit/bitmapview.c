@@ -234,11 +234,11 @@ void BVChar(BitmapView *bv, GEvent *event ) {
 
 #if _ModKeysAutoRepeat
 	/* Under cygwin these keys auto repeat, they don't under normal X */
-	if ( cv->autorpt!=NULL ) {
-	    GDrawCancelTimer(cv->autorpt); cv->autorpt = NULL;
-	    if ( cv->keysym == event->u.chr.keysym )	/* It's an autorepeat, ignore it */
+	if ( bv->autorpt!=NULL ) {
+	    GDrawCancelTimer(bv->autorpt); bv->autorpt = NULL;
+	    if ( bv->keysym == event->u.chr.keysym )	/* It's an autorepeat, ignore it */
 return;
-	    CVToolsSetCursor(cv,cv->oldstate);
+	    BVToolsSetCursor(bv,bv->oldstate);
 	}
 #endif
 
