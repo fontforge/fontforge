@@ -2123,6 +2123,8 @@ static void g___HandleNested(FILE *lfile,SplineFont *sf,int gpos,
 			    ligtags.flags = pst->flags;
 			    ligtags.tag = pp->feature_tag;
 			    glyphs = generateGlyphTypeList(sf,type,&ligtags,&map);
+			    if ( glyphs==NULL )
+ goto failure;
 			    new = LookupFromTagFlagLang(&ligtags);
 			    new->offset = ftell(lfile);
 			    if ( type==pst_position ) {
@@ -2155,6 +2157,7 @@ static void g___HandleNested(FILE *lfile,SplineFont *sf,int gpos,
 	    break;
 	    }
 	}
+ failure:
 	buf[0] = pp->feature_tag>>24; buf[1] = (pp->feature_tag>>16)&0xff;
 	buf[2] = (pp->feature_tag>>8)&0xff; buf[3] = pp->feature_tag&0xff;
 	buf[4] = 0;
