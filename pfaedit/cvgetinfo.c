@@ -1281,7 +1281,8 @@ static void PI_FigureNext(GIData *ci) {
 			(cursp->nextcp.y-cursp->me.y)*(cursp->nextcp.y-cursp->me.y));
 		cursp->nextcp.x=cursp->me.x-dx*len2/len;
 		cursp->nextcp.y=cursp->me.y-dy*len2/len;
-		SplineRefigure(cursp->next);
+		if ( cursp->next!=NULL )
+		    SplineRefigure(cursp->next);
 		CVCharChangedUpdate(ci->cv);
 		PIFillup(ci,-1);
 	    }
@@ -1303,7 +1304,8 @@ static void PI_FigurePrev(GIData *ci) {
 			(cursp->prevcp.y-cursp->me.y)*(cursp->prevcp.y-cursp->me.y));
 		cursp->prevcp.x=cursp->me.x-dx*len2/len;
 		cursp->prevcp.y=cursp->me.y-dy*len2/len;
-		SplineRefigure(cursp->prev);
+		if ( cursp->prev!=NULL )
+		    SplineRefigure(cursp->prev);
 		CVCharChangedUpdate(ci->cv);
 		PIFillup(ci,-1);
 	    }
