@@ -55,7 +55,7 @@ extern GImage GIcon_smallskew, GIcon_smallscale, GIcon_smallrotate,
 	GIcon_smallpointer, GIcon_smallruler, GIcon_smallelipse,
 	GIcon_smallrect, GIcon_smallpoly, GIcon_smallstar,
 	GIcon_smallpencil, GIcon_smallhand,
-	GIcon_PfaEditLogo;
+	GIcon_PfaEditLogo, GIcon_PfaEditBack, GIcon_PfaEditGuide;
 GImage def_image, red_image, blue_image, green_image, magenta_image,
 	yellow_image, cyan_image, white_image;
 

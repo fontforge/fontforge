@@ -569,7 +569,7 @@ return;
     GDrawDrawLine(pixmap,0,bv->mbh+bv->infoh-1,bv->width+300,bv->mbh+bv->infoh-1,0);
 
     r.x = bv->width; r.y = bv->height+bv->infoh+bv->mbh;
-    LogoExpose(pixmap,event,&r);
+    LogoExpose(pixmap,event,&r,dm_fore);
 
     GDrawPopClip(pixmap,&old);
 }

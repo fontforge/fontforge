@@ -735,6 +735,7 @@ return( true );
       break;
       case et_controlevent:
 	if ( event->u.control.subtype == et_radiochanged ) {
+	    enum drawmode dm = cv->drawmode;
 	    switch(GGadgetGetCid(event->u.control.g)) {
 	      case CID_VFore:
 		CVShows.showfore = cv->showfore = GGadgetIsChecked(event->u.control.g);
@@ -787,6 +788,8 @@ return( true );
 	      break;
 	    }
 	    GDrawRequestExpose(cv->v,NULL,false);
+	    if ( dm!=cv->drawmode )
+		GDrawRequestExpose(cv->gw,NULL,false);	/* the logo (where the scrollbars join) shows what layer we are in */
 	}
       break;
     }

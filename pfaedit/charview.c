@@ -80,6 +80,7 @@ const int input_em_cnt = sizeof(input_em)/sizeof(input_em[0])-1;
 #define SAN_DATA	303		/* Any text for it */
 #define MAG_BASE	333		/* Place to draw magnification icon */
 #define MAG_DATA	344		/* Any text for it */
+#define LAYER_DATA	404		/* Text to show the current layer */
 
 void CVDrawRubberRect(GWindow pixmap, CharView *cv) {
     GRect r;
@@ -1097,12 +1098,14 @@ static void SCRegenDependents(SplineChar *sc) {
 }
 
 static void CVUpdateInfo(CharView *cv, GEvent *event) {
+    GRect r;
 
     cv->info_within = true;
     cv->e.x = event->u.mouse.x; cv->e.y = event->u.mouse.y;
     cv->info.x = (event->u.mouse.x-cv->xoff)/cv->scale;
     cv->info.y = (cv->height-event->u.mouse.y-cv->yoff)/cv->scale;
-    CVInfoDraw(cv,cv->gw);
+    r.x = 0; r.y = cv->mbh; r.width = cv->width+100; r.height = cv->height+cv->infoh;
+    GDrawRequestExpose(cv->gw,&r,false);
 }
 
 static void CVNewScale(CharView *cv) {
@@ -1263,6 +1266,8 @@ static unichar_t *CVMakeTitles(CharView *cv,unichar_t *ubuf) {
 
     u_sprintf(ubuf,GStringGetResource(_STR_CvTitle,NULL),
 	    sc->name, sc->enc, sc->parent->fontname);
+    if ( sc->changed )
+	uc_strcat(ubuf," *");
     title = u_copy(ubuf);
     if ( sc->unicodeenc!=-1 && sc->unicodeenc<65536 &&
 	    UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff]!=NULL ) {
@@ -1570,6 +1575,8 @@ static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
     GDrawFillRect(pixmap,&r,bg);
     r.x = MAG_DATA; r.width = 60;
     GDrawFillRect(pixmap,&r,bg);
+    r.x = LAYER_DATA; r.width = 60;
+    GDrawFillRect(pixmap,&r,bg);
 
     if ( !cv->info_within )
 return;
@@ -1587,6 +1594,10 @@ return;
 	sprintf( buffer, "%.3g%%", (100*cv->scale));
     uc_strcpy(ubuffer,buffer);
     GDrawDrawText(pixmap,MAG_DATA,ybase,ubuffer,-1,NULL,0);
+    GDrawDrawText(pixmap,LAYER_DATA,ybase,
+	    GStringGetResource(cv->drawmode==dm_fore ? _STR_Fore :
+				cv->drawmode==dm_back ? _STR_Back : _STR_Grid, NULL ),
+	    -1,NULL,0);
     sp = cv->p.sp!=NULL ? cv->p.sp : cv->lastselpt;
     if ( sp==NULL ) if ( cv->active_tool==cvt_rect || cv->active_tool==cvt_elipse ||
 	    cv->active_tool==cvt_poly || cv->active_tool==cvt_star ) {
@@ -2039,6 +2050,7 @@ void CVSetCharChanged(CharView *cv,int changed) {
 	if ( cv->sc->changed != changed ) {
 	    cv->sc->changed = changed;
 	    FVToggleCharChanged(cv->sc);
+	    SCRefreshTitles(cv->sc);
 	    if ( changed ) {
 		cv->sc->parent->changed = true;
 		if ( cv->fv->cidmaster!=NULL )
@@ -2078,6 +2090,7 @@ void SCCharChangedUpdate(SplineChar *sc) {
     if ( !sc->changed && !sf->onlybitmaps ) {
 	sc->changed = true;
 	FVToggleCharChanged(sc);
+	SCRefreshTitles(sc);
     }
     sc->changedsincelasthinted = true;
     sc->changed_since_search = true;
@@ -2743,7 +2756,7 @@ static void CVVScroll(CharView *cv,struct sbevent *sb) {
     }
 }
 
-void LogoExpose(GWindow pixmap,GEvent *event, GRect *r) {
+void LogoExpose(GWindow pixmap,GEvent *event, GRect *r,enum drawmode dm) {
     int sbsize = GDrawPointsToPixels(pixmap,_GScrollBar_Width);
     GRect old;
 
@@ -2752,11 +2765,14 @@ void LogoExpose(GWindow pixmap,GEvent *event, GRect *r) {
 	    event->u.expose.rect.y+event->u.expose.rect.height >= r->y ) {
 	/* Put something into the little box where the two scroll bars meet */
 	int xoff, yoff;
-	struct _GImage *base = GIcon_PfaEditLogo.u.image;
+	GImage *which = (dm==dm_fore) ? &GIcon_PfaEditLogo :
+			(dm==dm_back) ? &GIcon_PfaEditBack :
+			    &GIcon_PfaEditGuide;
+	struct _GImage *base = which->u.image;
 	xoff = (sbsize-base->width);
 	yoff = (sbsize-base->height);
 	GDrawPushClip(pixmap,r,&old);
-	GDrawDrawImage(pixmap,&GIcon_PfaEditLogo,NULL,
+	GDrawDrawImage(pixmap,which,NULL,
 		r->x+(xoff-xoff/2),r->y+(yoff-yoff/2));
 	GDrawPopClip(pixmap,&old);
     }
@@ -2768,7 +2784,7 @@ static void CVLogoExpose(CharView *cv,GWindow pixmap,GEvent *event) {
 
     r.x = cv->width+rh;
     r.y = cv->height+cv->mbh+cv->infoh+rh;
-    LogoExpose(pixmap,event,&r);
+    LogoExpose(pixmap,event,&r,cv->drawmode);
 }
 
 static int cv_e_h(GWindow gw, GEvent *event) {

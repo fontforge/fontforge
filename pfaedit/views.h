@@ -102,7 +102,7 @@ typedef struct bvtfunc {
     enum bvtools func;
     int x,y;		/* used by skew and move */
 } BVTFunc;
-    
+
 typedef struct charview {
     SplineChar *sc;
     unsigned int showback:1;
@@ -572,7 +572,7 @@ extern void CVMouseUpKnife(CharView *cv);
 extern void CVMouseDownShape(CharView *cv);
 extern void CVMouseMoveShape(CharView *cv);
 extern void CVMouseUpShape(CharView *cv);
-extern void LogoExpose(GWindow pixmap,GEvent *event, GRect *r);
+extern void LogoExpose(GWindow pixmap,GEvent *event, GRect *r,enum drawmode dm);
 
 extern int GotoChar(SplineFont *sf);
 
