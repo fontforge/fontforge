@@ -3357,6 +3357,8 @@ static int SplineCharIsFlexible(SplineChar *sc, int blueshift) {
 	}
 	sp=spl->first;
 	do {
+	    if ( sp->next==NULL || sp->prev==NULL )
+	break;
 	    np = sp->next->to;
 	    pp = sp->prev->from;
 	    if ( !pp->flexx && !pp->flexy ) {
