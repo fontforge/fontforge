@@ -177,7 +177,7 @@ void _heaCreateEditor(Table *tab,TtfView *tfv) {
     GGadgetCreateData gcd[34];
     GTextInfo label[34];
     int i;
-    static unichar_t title[60];
+    unichar_t title[60];
     char version[8], asc[8], dsc[8], lg[8], advance[8], ltb[8], rb[8], extent[8],
 	    crise[8], crun[8], coffset[8], df[8], mc[8];
 
@@ -195,6 +195,7 @@ void _heaCreateEditor(Table *tab,TtfView *tfv) {
     title[3] = (tab->name    )&0xff;
     title[4] = ' ';
     u_strncpy(title+5, hv->font->fontname, sizeof(title)/sizeof(title[0])-6);
+    title[sizeof(title)/sizeof(title[0])-1] = '\0';
     
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_icon;
@@ -229,7 +230,7 @@ void _heaCreateEditor(Table *tab,TtfView *tfv) {
     gcd[1].gd.cid = CID_Version;
     gcd[1].creator = GTextFieldCreate;
 
-    label[2].text = (unichar_t *) (title[0]=='h'?_STR_TypoAscender:_STR_Ascent);
+    label[2].text = (unichar_t *) (title[0]=='h'?_STR_TypoAscender:_STR_TypoRight);
     label[2].text_in_resource = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.pos.x = 5; gcd[2].gd.pos.y = gcd[1].gd.pos.y+24+6; 
@@ -245,7 +246,7 @@ void _heaCreateEditor(Table *tab,TtfView *tfv) {
     gcd[3].gd.cid = CID_Ascender;
     gcd[3].creator = GTextFieldCreate;
 
-    label[4].text = (unichar_t *) (title[0]=='h'?_STR_TypoDescender:_STR_Descent);
+    label[4].text = (unichar_t *) (title[0]=='h'?_STR_TypoDescender:_STR_TypoLeft);
     label[4].text_in_resource = true;
     gcd[4].gd.label = &label[4];
     gcd[4].gd.pos.x = 5+gcd[1].gd.pos.x+gcd[1].gd.pos.width; gcd[4].gd.pos.y = gcd[2].gd.pos.y; 
@@ -261,11 +262,11 @@ void _heaCreateEditor(Table *tab,TtfView *tfv) {
     gcd[5].gd.cid = CID_Descender;
     gcd[5].creator = GTextFieldCreate;
 
-    label[6].text = (unichar_t *) _STR_TypoLineGap;
+    label[6].text = (unichar_t *) (title[0]=='h'?_STR_TypoLineGap:_STR_TypoLineSpacing);
     label[6].text_in_resource = true;
     gcd[6].gd.label = &label[6];
     gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = gcd[4].gd.pos.y+24; 
-    gcd[6].gd.flags = (title[0]=='h'?gg_enabled|gg_visible:gg_visible);
+    gcd[6].gd.flags = gg_enabled|gg_visible;
     gcd[6].creator = GLabelCreate;
 
     sprintf( lg, "%d", (short) tgetushort(tab,8) );
@@ -273,7 +274,7 @@ void _heaCreateEditor(Table *tab,TtfView *tfv) {
     label[7].text_is_1byte = true;
     gcd[7].gd.label = &label[7];
     gcd[7].gd.pos.x = gcd[1].gd.pos.x; gcd[7].gd.pos.y = gcd[6].gd.pos.y-6;  gcd[7].gd.pos.width = 50;
-    gcd[7].gd.flags = (title[0]=='h'?gg_enabled|gg_visible:gg_visible);
+    gcd[7].gd.flags = gg_enabled|gg_visible;
     gcd[7].gd.cid = CID_LineGap;
     gcd[7].creator = GTextFieldCreate;
 

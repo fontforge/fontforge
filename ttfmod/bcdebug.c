@@ -410,6 +410,10 @@ static void doiup(struct ttfstate *state,int instr) {
 
     if ( state->zp2==0 )
 	fprintf( stderr, "MS says it is an error to apply IUP to zone 0, but that is done here.\n" );
+    if ( state->in_fpgm || state->in_prep ) {
+	fprintf( stderr, "Attempt to use IUP when in fpgm or prep\n" );
+return;
+    }
 
     mask = instr==ttf_iup ? pt_ytouched : pt_xtouched;
     start = 0;
@@ -1093,6 +1097,10 @@ return;
 	    fprintf( stderr, "We executed an ENDF instruction. That shouldn't happen.\n" );
 	  break;
 	  case ttf_call: case ttf_loopcall:
+	    if ( state->sp<=0 ) {
+		fprintf(stderr, "Attempt to pop something off the stack when it is empty in CALL\nAborting...\n" );
+return;
+	    }
 	    val = pop(state,args);
 	    val2 = 1;
 	    if ( instr == ttf_loopcall )
@@ -1114,26 +1122,41 @@ return;
 	  break;
 /* Jumps */
 	  case ttf_jmpr:
-	    state->pc += pop(state,args)-1;
-	    if ( state->pc>state->end_pc+1 || state->pc<state->startcall )
-		fprintf( stderr, "Jump beyond end (or before start)\n" );
-	  break;
-	  case ttf_jrof:
-	    val = pop(state,args);
-	    val2 = pop(state,args);
-	    if ( val==0 ) {
-		state->pc += val2-1;
+	    if ( state->sp==0 ) {
+		fprintf(stderr, "Attempt to jump when the stack is empty, giving up\n" );
+		state->pc = state->end_pc+1;
+	    } else {
+		state->pc += pop(state,args)-1;
 		if ( state->pc>state->end_pc+1 || state->pc<state->startcall )
 		    fprintf( stderr, "Jump beyond end (or before start)\n" );
 	    }
 	  break;
+	  case ttf_jrof:
+	    if ( state->sp<2 ) {
+		fprintf(stderr, "Attempt to jump when the stack is empty, giving up\n" );
+		state->pc = state->end_pc+1;
+	    } else {
+		val = pop(state,args);
+		val2 = pop(state,args);
+		if ( val==0 ) {
+		    state->pc += val2-1;
+		    if ( state->pc>state->end_pc+1 || state->pc<state->startcall )
+			fprintf( stderr, "Jump beyond end (or before start)\n" );
+		}
+	    }
+	  break;
 	  case ttf_jrot:
-	    val = pop(state,args);
-	    val2 = pop(state,args);
-	    if ( val!=0 ) {
-		state->pc += val2-1;
-	    if ( state->pc>state->end_pc+1 || state->pc<state->startcall )
-		    fprintf( stderr, "Jump beyond end (or before start)\n" );
+	    if ( state->sp<2 ) {
+		fprintf(stderr, "Attempt to jump when the stack is empty, giving up\n" );
+		state->pc = state->end_pc+1;
+	    } else {
+		val = pop(state,args);
+		val2 = pop(state,args);
+		if ( val!=0 ) {
+		    state->pc += val2-1;
+		    if ( state->pc>state->end_pc+1 || state->pc<state->startcall )
+			    fprintf( stderr, "Jump beyond end (or before start)\n" );
+		}
 	    }
 	  break;
 /* Flip from on to off curve */
@@ -1251,11 +1274,15 @@ return;
 	    val = (rpm->x-rpo->x)*state->projection.x + (rpm->y-rpo->y)*state->projection.y;
 	    if ( instr==ttf_shz || instr==ttf_shz+1 ) {
 		val2 = pop(state,args);	/* zone */
-		for ( i=0; i<state->zones[val2].point_cnt; ++i ) {
-		    int flag = state->zones[val2].flags[i];
-		    if ( &state->zones[val2].points[i]!=rpo )	/* Don't shift ref pt again */
-			AdjustPointBy(state,i,val2,val,false);	/* A noop unless TT_CONFIG_OPTION_BYTECODE_INTERPRETER */
-		    state->zones[val2].flags[i] = flag;
+		if ( val2!=0 && val2!=1 ) {
+		    fprintf( stderr, "Bad zone (%d) in SHZ\n", val2 );
+		} else {
+		    for ( i=0; i<state->zones[val2].point_cnt; ++i ) {
+			int flag = state->zones[val2].flags[i];
+			if ( &state->zones[val2].points[i]!=rpo )	/* Don't shift ref pt again */
+			    AdjustPointBy(state,i,val2,val,false);	/* A noop unless TT_CONFIG_OPTION_BYTECODE_INTERPRETER */
+			state->zones[val2].flags[i] = flag;
+		    }
 		}
 	    } else if ( instr==ttf_shp || instr==ttf_shp + 1 ) {
 		if ( args!=NULL ) {
@@ -1314,6 +1341,10 @@ return;
 		args->used |= ttf_rp0;
 		if ( state->loop>1 )
 		    args->used |= ttf_inloop;
+	    }
+	    if ( state->zp0==1 && (state->in_fpgm || state->in_prep)) {
+		fprintf( stderr, "Attempt to access a point in zone 1 from the fpgm or prep routines\n" );
+	  break;
 	    }
 	    val = state->projection.x*state->zones[state->zp0].moved[state->rp0].x +
 		    state->projection.y*state->zones[state->zp0].moved[state->rp0].y;
@@ -1541,7 +1572,13 @@ return;
 	  case ttf_iup: case ttf_iup+1:
 	    doiup(state,instr);
 	  break;
-	  case ttf_ip: {
+	  case ttf_ip:
+	    if ( !state->in_glyf && (state->zp0==1 || state->zp1==1) )
+		fprintf( stderr, "Attempt to use zone 1 when not in glyf. In IP\n" );
+	    else if ( state->rp1>=state->zones[state->zp0].point_cnt ||
+		    state->rp2>=state->zones[state->zp1].point_cnt )
+		fprintf( stderr, "Attempt to access a point that's not in the zone in IP\n" );
+	  else {
 	    IPoint *pre = &state->zones[state->zp0].points[state->rp1],
 		    *orig,
 		    *post = &state->zones[state->zp1].points[state->rp2];
@@ -1554,7 +1591,6 @@ return;
 	    /*  this instruction does that. So I guessed it probably didn't */
 	    /* But I was wrong. I can rely on the docs to be wrong. */
 	    /*  FreeType has the special case */
-	    /* I still haven't implemented it though!!! */
 	    if ( args!=NULL ) {
 		args->loopcnt += state->loop-1;
 		args->used |= ttf_rp1|ttf_rp2;

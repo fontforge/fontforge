@@ -212,6 +212,7 @@ void shortCreateEditor(Table *tab,TtfView *tfv);
 void metricsCreateEditor(Table *tab,TtfView *tfv);
 void gaspCreateEditor(Table *tab,TtfView *tfv);
 void fontCreateEditor(Table *tab,TtfView *tfv);		/* glyph, loca */
+void VORGCreateEditor(Table *tab,TtfView *tfv);
 
 void InstrModCreate(struct instrinfo *ii);
 

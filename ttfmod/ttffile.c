@@ -320,7 +320,7 @@ return( uc_copy("<nameless>"));
     }
     if ( fullval==0 ) {
 	if ( famval==0 )
-return( NULL );
+return( uc_copy("<nameless>") );
 	fullstr = famstr;
 	fulllen = famlen;
     }
@@ -338,6 +338,8 @@ static void free_enctabledata(void *_data) {
 	free(enc);
     }
 }
+
+struct subhead { uint16 first, cnt, delta, rangeoff; };	/* a sub header in 8/16 cmap table */
 
 static void write_enctabledata(FILE *tottf,Table *cmap) {
     /* !!!! */
@@ -439,7 +441,10 @@ return;
 					    j-startchars[i] ];
 			if ( index!=0 ) {
 			    index = (unsigned short) (index+delta[i]);
-			    if ( index>=enc->cnt ) GDrawIError( "Bad index" );
+			    if ( index>=enc->cnt )
+				/*GDrawIError( "Bad index" );*/
+			        /* Actually MS uses this in kaiu.ttf to mean */
+			        /*  notdef */;
 			    else if ( enc->enc[index]==0xffff ) enc->enc[index] = j;
 			}
 		    }
@@ -459,11 +464,66 @@ return;
 		j = getushort(ttf);
 		enc->enc[j] = first+i;
 	    }
+	} else if ( enc->format==2 ) {
+	    int max_sub_head_key = 0, cnt, last;
+	    struct subhead *subheads;
+
+	    for ( i=0; i<256; ++i ) {
+		table[i] = getushort(ttf)/8;	/* Sub-header keys */
+		if ( table[i]>max_sub_head_key )
+		    max_sub_head_key = table[i];	/* The entry is a byte pointer, I want a pointer in units of struct subheader */
+	    }
+	    subheads = galloc((max_sub_head_key+1)*sizeof(struct subhead));
+	    for ( i=0; i<=max_sub_head_key; ++i ) {
+		subheads[i].first = getushort(ttf);
+		subheads[i].cnt = getushort(ttf);
+		subheads[i].delta = getushort(ttf);
+		subheads[i].rangeoff = (getushort(ttf)-
+				(max_sub_head_key-i)*sizeof(struct subhead)-
+				sizeof(short))/sizeof(short);
+	    }
+	    cnt = (enc->len-(ftell(ttf)-(tab->start+enc->offset)))/sizeof(short);
+	    /* The count is the number of glyph indexes to read. it is the */
+	    /*  length of the entire subtable minus that bit we've read so far */
+	    glyphs = galloc(cnt*sizeof(short));
+	    for ( i=0; i<cnt; ++i )
+		glyphs[i] = getushort(ttf);
+	    last = -1;
+	    for ( i=0; i<256; ++i ) {
+		if ( table[i]==0 ) {
+		    /* Special case, single byte encoding entry, look i up in */
+		    /*  subhead */
+		    /* In the one example I've got of this encoding (wcl-02.ttf) the chars */
+		    /* 0xfd, 0xfe, 0xff are said to exist but there is no mapping */
+		    /* for them. */
+		    if ( last!=-1 )
+			index = 0;	/* the subhead says there are 256 entries, but in fact there are only 193, so attempting to find these guys should give an error */
+		    else if ( i<subheads[0].first || i>=subheads[0].first+subheads[0].cnt ||
+			    subheads[0].rangeoff+(i-subheads[0].first)>=cnt )
+			index = 0;
+		    else if ( (index = glyphs[subheads[0].rangeoff+(i-subheads[0].first)])!= 0 )
+			index = (uint32) (index+subheads[0].delta);
+		    /* I assume the single byte codes are just ascii or latin1*/
+		    if ( index!=0 && index<enc->cnt )
+			enc->enc[index] = i;
+		} else {
+		    int k = table[i];
+		    for ( j=0; j<subheads[k].cnt; ++j ) {
+			if ( subheads[k].rangeoff+j>=cnt )
+			    index = 0;
+			else if ( (index = glyphs[subheads[k].rangeoff+j])!= 0 )
+			    index = (uint16) (index+subheads[k].delta);
+			if ( index!=0 && index<enc->cnt )
+			    enc->enc[index] = (i<<8)|(j+subheads[k].first);
+		    }
+		    if ( last==-1 ) last = i;
+		}
+	    }
+	    free(subheads);
+	    free(glyphs);
 	} else {
 	    free(enc->enc); enc->enc=NULL;
-	    if ( enc->format==2 ) {
-		fprintf(stderr,"I don't support mixed 8/16 bit characters (no shit jis for me)");
-	    } else if ( enc->format==8 ) {
+	    if ( enc->format==8 ) {
 		fprintf(stderr,"I don't support mixed 16/32 bit characters (no unicode surogates)");
 	    } else if ( enc->format==10 || enc->format==12 ) {
 		fprintf(stderr,"I don't support 32 bit characters");
@@ -525,10 +585,10 @@ return;
 	      case 0: type = em_symbol; break;
 	      case 1: type = em_unicode; break;
 	      case 2: type = em_jis208; break;
-	      case 3: type = em_big5; break;
-	      /* 4, PRC */
+	      /* 3, PRC */
+	      case 4: type = em_big5; break;
 	      case 5: type = em_ksc5601; break;
-	      /* 6, Johab */
+	      case 6: type = em_johab; break;
 	      case 10: type = em_unicode; break;	/* 4byte iso10646 */
 	    }
 	  break;
@@ -549,6 +609,13 @@ return;
 		else if ( type==em_big5 ) {
 		    if ( enc->enc[i]>0xa100 )
 			enc->uenc[i] = unicode_from_big5[enc->enc[i]-0xa100];
+		    else if ( enc->enc[i]>0x100 )
+			enc->uenc[i] = 0xffff;
+		    else
+			enc->uenc[i] = enc->enc[i];
+		} else if ( type==em_johab ) {
+		    if ( enc->enc[i]>0x8400 )
+			enc->uenc[i] = unicode_from_johab[enc->enc[i]-0x8400];
 		    else if ( enc->enc[i]>0x100 )
 			enc->uenc[i] = 0xffff;
 		    else

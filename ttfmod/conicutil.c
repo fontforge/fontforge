@@ -457,6 +457,8 @@ static ConicSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
     ConicPoint *sp;
 
     for ( path=i=0; path<path_cnt; ++path ) {
+	if ( endpt[path]<i )	/* Sigh. Yes there are fonts with bad endpt info */
+    continue;
 	cur = chunkalloc(sizeof(ConicSet));
 	if ( head==NULL )
 	    head = cur;
@@ -497,7 +499,14 @@ static ConicSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 	    }
 	    ++i;
 	}
-	if ( !(flags[start]&_On_Curve) && !(flags[i-1]&_On_Curve) ) {
+	if ( start==i-1 ) {
+	    /* MS chinese fonts have contours consisting of a single off curve*/
+	    /*  point. What on earth do they think that means? */
+	    sp = chunkalloc(sizeof(ConicPoint));
+	    sp->me.x = pts[start].x;
+	    sp->me.y = pts[start].y;
+	    cur->first = cur->last = sp;
+	} else if ( !(flags[start]&_On_Curve) && !(flags[i-1]&_On_Curve) ) {
 	    sp = chunkalloc(sizeof(ConicPoint));
 	    sp->me.x = (pts[start].x+pts[i-1].x)/2;
 	    sp->me.y = (pts[start].y+pts[i-1].y)/2;
@@ -596,9 +605,9 @@ static void readttfsimpleglyph(FILE *ttf,ConicChar *cc, int path_cnt) {
 #define _ARGS_ARE_XY	2
 #define _ROUND		4		/* offsets rounded to grid */
 #define _SCALE		8
+#define _MORE		0x20
 #define _XY_SCALE	0x40
 #define _MATRIX		0x80
-#define _MORE		0x20
 #define _INSTR		0x100
 #define _MY_METRICS	0x200
 #define _OVERLAP_COMPOUND	0x400	/* Used in Apple GX fonts */
@@ -608,7 +617,7 @@ static void readttfsimpleglyph(FILE *ttf,ConicChar *cc, int path_cnt) {
 #define _UNSCALED_OFFSETS	0x1000	/* Use MS definition */
 
 
-static void readttfcompositglyph(FILE *ttf,ConicFont *cf,ConicChar *cc) {
+static void readttfcompositglyph(FILE *ttf,ConicFont *cf,ConicChar *cc, int32 end) {
     RefChar *head=NULL, *last=NULL, *cur;
     int flags, arg1, arg2;
     int i, pnum;
@@ -616,6 +625,10 @@ static void readttfcompositglyph(FILE *ttf,ConicFont *cf,ConicChar *cc) {
     ConicPoint *sp;
 
     do {
+	if ( ftell(ttf)>=end ) {
+	    fprintf( stderr, "Bad flags value, implied MORE components at end of glyph\n" );
+    break;
+	}
 	cur = chunkalloc(sizeof(RefChar));
 	flags = getushort(ttf);
 	cur->glyph = getushort(ttf);
@@ -694,6 +707,10 @@ static void readttfcompositglyph(FILE *ttf,ConicFont *cf,ConicChar *cc) {
 	else
 	    last->next = cur;
 	last = cur;
+	if ( feof(ttf)) {
+	    fprintf(stderr, "Reached end of file when reading composit glyph\n" );
+    break;
+	}
     } while ( flags&_MORE );
     cc->refs = head;
     if ( flags&_INSTR ) {
@@ -768,12 +785,12 @@ return( cc );
     if ( path_cnt>=0 )
 	readttfsimpleglyph(ttf,cc,path_cnt);
     else
-	readttfcompositglyph(ttf,cf,cc);
+	readttfcompositglyph(ttf,cf,cc,cf->glyphs->start+cc->glyph_offset+cc->glyph_len);
 return( cc );
 }
 
 ConicFont *LoadConicFont(TtfFont *tfont) {
-    int i, mcnt, start, next;
+    int i, mcnt, start, next, lcnt;
     Table *glyphs=NULL, *loca=NULL, *hmetrics=NULL, *hheader=NULL, *head;
     ConicFont *cf;
 
@@ -796,6 +813,18 @@ return( NULL );
     TableFillup(hmetrics);
     TableFillup(loca);
     TableFillup(head);
+
+    lcnt = loca->len;
+    if ( ptgetushort(head->data+50))		/* Long format */
+	lcnt /= sizeof(int32);
+    else
+	lcnt /= sizeof(int16);
+    --lcnt;
+    if ( lcnt!=tfont->glyph_cnt ) {
+	GDrawError("TTF Font has bad glyph count field. maxp says: %d sizeof(loca)=>%d", tfont->glyph_cnt, lcnt);
+	if ( lcnt<tfont->glyph_cnt )
+	    tfont->glyph_cnt = lcnt;
+    }
 
     cf = gcalloc(1,sizeof(ConicFont));
     cf->glyph_cnt = tfont->glyph_cnt;

@@ -219,7 +219,7 @@ static void CCPreparePopup(GWindow gw,struct enctab *enc, int index) {
     char cspace[40];
     int upos;
 
-    if ( index<0 || index>=enc->cnt || (upos=enc->uenc[index])==CHAR_UNDEF )
+    if ( enc==NULL || index<0 || index>=enc->cnt || (upos=enc->uenc[index])==CHAR_UNDEF )
 return;
 
     if ( UnicodeCharacterNames[upos>>8][upos&0xff]!=NULL ) {

@@ -324,7 +324,7 @@ return;
 return;
     }
 
-    if ( _FT_Load_Glyph(face,cv->cc->glyph,FT_LOAD_DEFAULT)) {
+    if ( _FT_Load_Glyph(face,cv->cc->glyph,FT_LOAD_DEFAULT/*FT_LOAD_NO_HINTING*/)) {
 	_FT_Done_Face(face);
 return;
     }

@@ -597,7 +597,10 @@ static char *str_CPUS = "437 US";
 static char *str_Typography = "Typo";
 static char *str_TypoAscender = "Ascender:";
 static char *str_TypoDescender = "Descender:";
+static char *str_TypoRight = "Typo Right:";
+static char *str_TypoLeft = "Typo Left:";
 static char *str_TypoLineGap = "Line Gap:";
+static char *str_TypoLineSpacing = "Line Spacing:";
 static char *str_WinAscent = "Win Ascent:";
 static char *str_WinDescent = "Win Descent:";
 static char *str_XHeightC = "X-Height:";
@@ -858,10 +861,39 @@ static char *str_CantRecoverFromSave="Can't recover from failed save.";
 static char *str_Count = "Count:";
 static char *str_GridFit = "GridFit";
 static char *str_AntiAlias = "AntiAlias";
+    /* VORG */
+static char *str_Minor = "Minor:";
+static char *str_DefYOrig = "Default Y Origin:";
+static char *str_AddOrig = "Additional Origins:";
     /* fontview */
 static char *str_CouldntReadGlyphs = "Couldn't read glyphs";
     /* charview */
 static char *str_CouldntReadGlyph = "Couldn't read glyph";
 static char *str_CouldntReadGlyphd = "Couldn't read glyph %d";
+    /* instrmod.c */
+static char *str_Pushes = "Pushes";
+static char *str_UBytes = "Unsigned Bytes";
+static char *str_Shorts = "Signed Shorts";
+static char *str_Stack = "Stack Manipulation";
+static char *str_StorageOps = "Storage Ops.";
+static char *str_Unary = "Unary Ops.";
+static char *str_Binary = "Binary Ops.";
+static char *str_Logical = "Logical Ops.";
+static char *str_Conditional = "Conditional Ops.";
+static char *str_Routines = "Functions";
+static char *str_Vectors = "Vectors";
+static char *str_SetState = "Set State";
+static char *str_SetRegisters = "Set Registers";
+static char *str_GetInfo = "Get Info";
+static char *str_PointState = "PointState";
+static char *str_MovePoints = "MovePoints";
+static char *str_MDRP = "MDRP";
+static char *str_MIRP = "MIRP";
+static char *str_Deltas = "Deltas";
+static char *str_NoInstruction = "No Instruction";
+static char *str_CouldntParseInstr = "Couldn't Parse Instruction: %s";
+static char *str_ValueOutOfBounds = "Value Out Of Bounds";
+static char *str_ValueMustBeShort = "Value must be between -32768 and 32767";
+
 
 static int num_buttonsize = 55;

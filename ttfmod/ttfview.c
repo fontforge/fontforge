@@ -99,7 +99,7 @@ static struct tableinfo {
     { CHR('G','S','U','B'), _STR_Tbl_GSUB, NULL, "http://partners.adobe.com/asn/developer/opentype/gsub.html" },
     { CHR('J','S','T','F'), _STR_Tbl_JSTF, NULL, "http://partners.adobe.com/asn/developer/opentype/jstf.html" },
     { CHR('D','S','I','G'), _STR_Tbl_DSIG, NULL, "http://partners.adobe.com/asn/developer/opentype/dsig.html" },
-    { CHR('V','O','R','G'), _STR_Tbl_VORG, NULL, "http://partners.adobe.com/asn/developer/opentype/vorg.html" },
+    { CHR('V','O','R','G'), _STR_Tbl_VORG, VORGCreateEditor, "http://partners.adobe.com/asn/developer/opentype/vorg.html" },
 /* Apple only (GX?) tables */
     { CHR('a','c','n','t'), _STR_Tbl_acnt, NULL, "http://fonts.apple.com/TTRefMan/RM06/Chap6acnt.html" },
     { CHR('a','v','a','r'), _STR_Tbl_avar, NULL, "http://fonts.apple.com/TTRefMan/RM06/Chap6avar.html" },
