@@ -4208,12 +4208,12 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 
     for ( i=sf->charcnt-1; i>0 ; --i ) {
 	if ( SCWorthOutputting(sf->chars[i])) {
+	    anyglyphs = true;
 	    if ( sf->chars[i]->unicodeenc!=-1 )
     break;
-	    anyglyphs = true;
 	}
     }
-    if ( SCWorthOutputting(sf->chars[0]) && !SCIsNotdef(sf->chars[0],at->gi.fixed_width))
+    if ( sf->subfonts==NULL && SCWorthOutputting(sf->chars[0]) && !SCIsNotdef(sf->chars[0],at->gi.fixed_width))
 	anyglyphs = true;
     if ( sf->subfontcnt==0 && !anyglyphs ) {
 #if defined(FONTFORGE_CONFIG_GTK)
