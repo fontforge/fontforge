@@ -45,6 +45,7 @@ int adjustlbearing = true;
 Encoding *default_encoding = NULL;
 int autohint_before_rasterize = 1;
 int autohint_before_generate = 1;
+int use_freetype_to_rasterize_fv = 1;
 int ItalicConstrained=true;
 int accent_offset = 6;
 int GraveAcuteCenterBottom = 1;
@@ -277,6 +278,7 @@ static struct prefs_list {
 	{ "ResourceFile", pr_file, &xdefs_filename, NULL, NULL, 'R', NULL, 0, _STR_PrefsPopupXRF },
 	{ "HelpDir", pr_file, &helpdir, NULL, NULL, 'R', NULL, 0, _STR_PrefsPopupHLP },
 	{ "OtherSubrsFile", pr_file, &othersubrsfile, NULL, NULL, 'O', NULL, 0, _STR_PrefsPopupOSF },
+	{ "FreeTypeInFontView", pr_bool, &use_freetype_to_rasterize_fv, NULL, NULL, 'O', NULL, 0, _STR_PrefsPopupFTR },
 	{ NULL }
 },
   editing_list[] = {
