@@ -518,11 +518,11 @@ return;
     gc = getushort(ttf);
     gvarflags = getushort(ttf);
     dataoff = getlong(ttf) + info->gvar_start;
-    if ( globaltc==0 || globaltc>100 ) {
+    if ( globaltc==0 || globaltc>AppleMmMax ) {
 	if ( globaltc==0 )
 	    fprintf( stderr, "Hmm, no global tuples specified in the 'gvar' table.\n" );
 	else
-	    fprintf( stderr, "Hmm, too many global tuples specified in the 'gvar' table.\n" );
+	    fprintf( stderr, "Hmm, too many global tuples specified in the 'gvar' table.\n FontForge only supports %d\n", AppleMmMax );
 	VariationFree(info);
 return;
     }

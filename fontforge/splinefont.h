@@ -38,7 +38,8 @@
 
 #define CHR(ch1,ch2,ch3,ch4) (((ch1)<<24)|((ch2)<<16)|((ch3)<<8)|(ch4))
 
-#define MmMax	16		/* PS says at most this many instances for type1/2 mm fonts */
+#define MmMax		16	/* PS says at most this many instances for type1/2 mm fonts */
+#define AppleMmMax	26	/* Apple sort of has a limit of 4095, but we only support this many */
 
 typedef struct val {
     enum val_type { v_int, v_str, v_unicode, v_lval, v_arr, v_arrfree,
