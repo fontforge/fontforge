@@ -125,10 +125,10 @@ gww_iconv_t gww_iconv_open(const char *toenc,const char *fromenc) {
     stuff.to = name_to_enc(toenc);
     if ( stuff.from==(enum encoding) -1 || stuff.to==(enum encoding) -1 ) {
 	fprintf( stderr, "Unknown encoding\n" );
-return( NULL );
+return( (iconv_t)(-1) );
     } else if ( stuff.from!=e_unicode && stuff.to!=e_unicode ) {
 	fprintf( stderr, "Bad call to gww_iconv_open, neither arg is UCS2\n" );
-return( NULL );
+return( (iconv_t)(-1) );
     }
 
     ret = galloc(sizeof(struct gww_iconv_t));

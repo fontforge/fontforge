@@ -542,7 +542,7 @@ char *u322utf8_strncpy(char *utf8buf, const int32 *ubuf,int len) {
     break;
 	    *pt++ = 0xc0 | (*upt>>6);
 	    *pt++ = 0x80 | (*upt&0x3f);
-	} else if ( *upt<=0x10000 ) {
+	} else if ( *upt<=0xffff ) {
 	    if ( pt+2>=end )
     break;
 	    *pt++ = 0xe0 | (*upt>>12);
