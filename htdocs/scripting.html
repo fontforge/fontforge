@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 9-Jun-2003 -->
+  <!-- AP: Last modified: 15-Jun-2003 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -866,6 +866,39 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 	-1 =&gt; there was an error and at least one character was selected before
 	that.<B></B>
     </UL>
+  <DT>
+    SelectByATT(type,tags,contents,search-type)
+  <DD>
+    See the <A HREF="selectbyatt.html">Select By ATT menu command</A>. The values
+    for type are:
+    <OL>
+      <LI>
+	Simple position
+      <LI>
+	Simple substitution
+      <LI>
+	Alternate substitution
+      <LI>
+	Multiple substitution
+      <LI>
+	Ligature
+      <LI>
+	Ligature caret
+      <LI>
+	Kerning
+      <LI>
+	Anchor class
+    </OL>
+    <P>
+    And for search_type
+    <OL>
+      <LI>
+	Select Results
+      <LI>
+	Merge Selection
+      <LI>
+	Restrict Selection
+    </OL>
   <DT>
       <HR>
   <DT>
