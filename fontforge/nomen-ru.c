@@ -800,6 +800,8 @@ static char *str_Ukrainian = "Украинский uk_UA";
     /* Generate fonts */ /* savefontdlg */
 static char str_Format[] = "Формат:";
 static char str_Savefailedtitle[] = "Не удалось сохранить";
+static char str_GenerateHints[] = "Инструкции";
+static char str_PSRound = "Круглый";
 static char str_Outputafm[] = "Создавать AFM";
 static char str_Outputpfm[] = "Создавать PFM";
 static char *str_OutputAfmPopup = "Файл AFM содержит информацию о метриках, которую будут использовать большинство текстовых процессоров при работе с PostScript\256 шрифтом.";
