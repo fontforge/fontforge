@@ -2795,6 +2795,7 @@ static void bCharInfo(Context *c) {
     SplineChar *sc;
     DBounds b;
     KernClass *kc;
+    int i;
 
     if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=5 )
 	error( c, "Wrong number of arguments");
@@ -2863,7 +2864,18 @@ static void bCharInfo(Context *c) {
 		c->return_val.u.ival = b.minx;
 	    else if ( strmatch( c->a.vals[1].u.sval,"RBearing")==0 )
 		c->return_val.u.ival = sc->width-b.maxx;
-	    else
+	    else if ( strmatch( c->a.vals[1].u.sval,"BBox")==0 ) {
+		c->return_val.type = v_arr;
+		c->return_val.u.aval = galloc(sizeof(Array));
+		c->return_val.u.aval->argc = 4;
+		c->return_val.u.aval->vals = galloc(4*sizeof(Val));
+		for ( i=0; i<4; ++i )
+		    c->return_val.u.aval->vals[i].type = v_int;
+		c->return_val.u.aval->vals[0].u.ival = rint(b.minx);
+		c->return_val.u.aval->vals[1].u.ival = rint(b.miny);
+		c->return_val.u.aval->vals[2].u.ival = rint(b.maxx);
+		c->return_val.u.aval->vals[3].u.ival = rint(b.maxy);
+	    } else
 		errors(c,"Unknown tag", c->a.vals[1].u.sval);
 	}
     }
