@@ -1463,6 +1463,18 @@ static void bPasteInto(Context *c) {
     doEdit(c,9);
 }
 
+static void bPasteWithOffset(Context *c) {
+    real trans[6];
+    memset(trans,0,sizeof(trans));
+    trans[0] = trans[3] = 1;
+    if ( c->a.argc!=3 )
+	error( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int )
+	error( c, "Bad type for argument");
+    trans[4] = c->a.vals[1].u.ival; trans[5] = c->a.vals[2].u.ival;
+    PasteIntoFV(c->curfv,3,trans);
+}
+
 static void bClear(Context *c) {
     doEdit(c,5);
 }
@@ -3983,6 +3995,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "CopyGlyphFeatures", bCopyGlyphFeatures },
     { "Paste", bPaste },
     { "PasteInto", bPasteInto },
+    { "PasteWithOffset", bPasteWithOffset },
     { "SameGlyphAs", bSameGlyphAs },
     { "Clear", bClear },
     { "ClearBackground", bClearBackground },
