@@ -1455,6 +1455,9 @@ return;		/* Ignore any splines which are just dots */
 			    ((nsp->me.x-nsp->prevcp.x)*(sp->nextcp.x-sp->me.x) +
 			     (nsp->me.y-nsp->prevcp.y)*(sp->nextcp.y-sp->me.y))<=0 )
 		break;
+		    if ( nsp->pointtype==pt_curve && !nsp->nonextcp &&
+			    (nsp->nextcp.x == nsp->me.x || nsp->nextcp.y==nsp->me.y))
+		break;
 		}
 		/* nsp is something we don't want to remove */
 		if ( nsp==sp )
