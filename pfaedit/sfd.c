@@ -28,7 +28,7 @@
 #include "splinefont.h"
 #include "gdraw.h"
 #include "ustring.h"
-#include "utype.h"
+#include <utype.h>
 #include <unistd.h>
 #include <locale.h>
 #include <gwidget.h>
