@@ -619,6 +619,21 @@ return( ret );
 return( NULL );
 }
 
+static char *SearchNoLibsDirForCidMap(char *dir,char *registry,char *ordering,
+	int supplement,char **maybefile) {
+    char *ret;
+
+    if ( dir==NULL || strstr(dir,"/.libs")==NULL )
+return( NULL );
+
+    dir = copy(dir);
+    *strstr(dir,"/.libs") = '\0';
+
+    ret = SearchDirForCidMap(dir,registry,ordering,supplement,maybefile);
+    free(dir);
+return( ret );
+}
+
 static struct cidmap *MakeDummyMap(char *registry,char *ordering,int supplement) {
     struct cidmap *ret = galloc(sizeof(struct cidmap));
 
@@ -713,6 +728,8 @@ return( maybe );	/* User has said it's ok to use maybe at this supplement level 
     file = SearchDirForCidMap(".",registry,ordering,supplement,&maybefile);
     if ( file==NULL )
 	file = SearchDirForCidMap(GResourceProgramDir,registry,ordering,supplement,&maybefile);
+    if ( file==NULL )
+	file = SearchNoLibsDirForCidMap(GResourceProgramDir,registry,ordering,supplement,&maybefile);
 #ifdef SHAREDIR
     if ( file==NULL )
 	file = SearchDirForCidMap(SHAREDIR,registry,ordering,supplement,&maybefile);
@@ -936,6 +953,18 @@ return;
     }
 }
 
+static void FindMapsInNoLibsDir(struct block *block,char *dir) {
+
+    if ( dir==NULL || strstr(dir,"/.libs")==NULL )
+return;
+
+    dir = copy(dir);
+    *strstr(dir,"/.libs") = '\0';
+
+    FindMapsInDir(block,dir);
+    free(dir);
+}
+
 struct cidmap *AskUserForCIDMap(SplineFont *sf) {
     struct block block;
     struct cidmap *map = NULL;
@@ -954,6 +983,7 @@ struct cidmap *AskUserForCIDMap(SplineFont *sf) {
     }
     FindMapsInDir(&block,".");
     FindMapsInDir(&block,GResourceProgramDir);
+    FindMapsInNoLibsDir(&block,GResourceProgramDir);
 #ifdef SHAREDIR
     FindMapsInDir(&block,SHAREDIR);
 #endif
