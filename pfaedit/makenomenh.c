@@ -261,6 +261,20 @@ return( unicode_from_jis201[ch1]);
 	    ch2 -= 31;
 	}
 return( unicode_from_jis208[(ch1-0x21)*94+(ch2-0x21)]);
+    } else if ( enc == e_euc ) {
+	ch1 = charval(buffer);
+	if ( ch1 < 0x80 )
+return( ch1 );
+	ch2 = charval(buffer);
+	if ( ch1 == 0x8e )	/* SS1: katakana */
+return( unicode_from_jis201[ch2] );
+	else if ( ch1 != 0x8f )
+return( unicode_from_jis208[(ch1-0xa1)*94+(ch2-0xa1)]);
+	else {			/* SS2: suppl. Kanji */
+            ch1 = ch2;
+	    ch2 = charval(buffer);
+return( unicode_from_jis212[(ch1-0xa1)*94+(ch2-0xa1)]);
+	}
     } else {
 	fprintf( stderr, "Don't support this encoding\n" );
 	exit( 1 );
@@ -429,6 +443,7 @@ static int getencoding(char *str) {
 	{ e_big5, "e_big5" },
 	{ e_johab, "e_johab" },
 	{ e_sjis, "e_sjis" },
+	{ e_euc, "e_euc" },
 	{ e_hexjis, "e_hexjis" },
 	{ 0, NULL}};
     int i;
