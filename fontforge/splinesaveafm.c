@@ -712,9 +712,26 @@ return( sc!=NULL && sc->enc==0 && sc->layers[ly_fore].refs==NULL && strcmp(sc->n
 	 (sc->width==fixed && fixed!=-1 && sc->widthset)));
 }
 
+int SCDrawsSomething(SplineChar *sc) {
+    int layer,l;
+    RefChar *ref;
+
+    if ( sc==NULL )
+return( false );
+    for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
+	if ( sc->layers[layer].splines!=NULL || sc->layers[layer].images!=NULL )
+return( true );
+	for ( ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next )
+	    for ( l=0; l<ref->layer_cnt; ++l )
+		if ( ref->layers[l].splines!=NULL )
+return( true );
+    }
+return( false );
+}
+
 int SCWorthOutputting(SplineChar *sc) {
 return( sc!=NULL &&
-	( sc->layers[ly_fore].splines!=NULL || sc->layers[ly_fore].refs!=NULL || sc->widthset || sc->anchor!=NULL ||
+	( SCDrawsSomething(sc) || sc->widthset || sc->anchor!=NULL ||
 #if HANYANG
 	    sc->compositionunit ||
 #endif
