@@ -862,7 +862,11 @@ return( NULL );
 		outline.points = galloc(pcnt*sizeof(FT_Vector));
 		outline.tags = gcalloc(pcnt,sizeof(char));
 		outline.contours = galloc(ccnt*sizeof(short));
-		outline.flags = ft_outline_reverse_fill;
+		/* You might think we should set ft_outline_reverse_fill here */
+		/*  because this is a postscript font. But ff stores fonts */
+		/*  internally in truetype order, and we didn't reverse it */
+		/*  above (the way we would if we were really generating PS) */
+		outline.flags = ft_outline_none;
 	    }
 	}
     }
