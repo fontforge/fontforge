@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 11-May-2003 -->
+  <!-- AP: Last modified: 12-May-2003 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -1021,7 +1021,7 @@ ApplySubstitution("*","*","vrt2")
     be in the same proportion to the new em (which is the sum of ascent and descent)
     value that it was to the old value.
   <DT>
-    NonLinearTransform(x-expression,y-expression)
+    <A NAME="NonLinear">NonLinearTransform</A>(x-expression,y-expression)
   <DD>
     Takes two string arguments which must contain valid expressions of x and
     y and transforms all selected characters using those expressions.
@@ -1048,6 +1048,9 @@ ApplySubstitution("*","*","vrt2")
       <PRE>NonLinearTrans("200+(x-200)*abs(y-300)/300","y")
 </PRE>
     </BLOCKQUOTE>
+    <P>
+    This command is not available in the default build, you must modify the file
+    <CODE>configure-pfaedit.h</CODE> and then rebuild PfaEdit.
   <DT>
     ExpandStroke(width)<BR>
     ExpandStroke(width,line cap, line join)<BR>

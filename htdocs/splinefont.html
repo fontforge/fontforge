@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Feb-2001 -->
-  <!-- AP: Last modified: 22-Feb-2001 -->
+  <!-- AP: Last modified: 12-May-2003 -->
   <TITLE>The basic spline data structures of PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -82,7 +82,7 @@ A SplinePoint contains an x,y location of the point, and the locations of
 the two control points associated with that point. A control point may be
 coincident with the main point. SplinePoints may have two splines, a previous
 Spline and a next Spline. A Spline contains pointers to two SplinePoints
-(a start and an end point) it also contains the parameters of the bezier
+(a start and an end point) it also contains the parameters of the B&eacute;zier
 curve that those two points describe (x = a*t^3+b*t^2+c*t+d, y=ditto). Splines
 are straight lines of the two control points that are meaningful to that
 spline are coincident with their respective SplinePoints.

@@ -2,32 +2,33 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Dec-2000 -->
-  <!-- AP: Last modified: 8-Apr-2003 -->
-  <TITLE>Bezier Splines</TITLE>
+  <!-- AP: Last modified: 12-May-2003 -->
+  <TITLE>B&eacute;zier Splines</TITLE>
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
-  Bezier Splines
+  B&eacute;zier<SUP><SMALL><A HREF="#bezier">1</A></SMALL></SUP> Splines
 </H1>
 <P>
 <IMG SRC="splines.gif" WIDTH="172" HEIGHT="179" ALIGN="Left">Technically
-PostScript uses cubic Bezier splines. Each control point determines the slope
-of the spline at the corresponding end point. TrueType uses quadratic Bezier
-splines, in these there is only one control point between two end points
-and that point determines the slope of the spline at both end points.
+PostScript uses cubic B&eacute;zier splines. Each control point determines
+the slope of the spline at the corresponding end point. TrueType uses quadratic
+B&eacute;zier splines, in these there is only one control point between two
+end points and that point determines the slope of the spline at both end
+points.
 <P>
-It is also possible to have higher degree Bezier splines. For a quartic spline
-there would be 3 control points, for a quintic 4 control points, etc.
+It is also possible to have higher degree B&eacute;zier splines. For a quartic
+spline there would be 3 control points, for a quintic 4 control points, etc.
 <P>
 In general if there are n+1 points labeled P<SUB>0</SUB>, P<SUB>1</SUB>,
 ... P<SUB>n</SUB>, with P<SUB>0</SUB> and P<SUB>n</SUB> the end points (and
-all the others control points) then the equation of the Bezier spline between
-them is: <IMG SRC="bezier.gif" WIDTH="137" HEIGHT="56" ALIGN="Middle">. If
-there are two points then this is just the line between the two end points,
+all the others control points) then the equation of the B&eacute;zier spline
+between them is: <IMG SRC="Bezier.gif" WIDTH="137" HEIGHT="56" ALIGN="Middle">.
+If there are two points then this is just the line between the two end points,
 if three then the quadratic spline used by TrueType, if four then the cubic
 spline used by PostScript.
 <P>
-A cubic Bezier curve may be viewed as:
+A cubic B&eacute;zier curve may be viewed as:
 <BLOCKQUOTE>
   x = a<SUB>x</SUB>*t<SUP>3</SUP> + b<SUB>x</SUB>*t<SUP>2</SUP> +
   c<SUB>x</SUB>*t +d<SUB>x</SUB><BR>
@@ -59,7 +60,7 @@ Where
   </TR>
 </TABLE>
 <P>
-And a quadratic Bezier curve:
+And a quadratic B&eacute;zier curve:
 <TABLE CELLPADDING="2">
   <TR>
     <TD>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TD>
@@ -147,4 +148,7 @@ Open Type will not require converting between PostScript and True Type.
 <P ALIGN=Center>
 -- <A HREF="sfdformat.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
 <A HREF="corpchar.html">Next</A> --
+<P ALIGN=Left>
+<SUP><A NAME="bezier">1 </A></SUP>B&eacute;zier splines were developed by
+Pierre B&eacute;zier.
 </BODY></HTML>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 8-Jan-2002 -->
+  <!-- AP: Last modified: 12-May-2003 -->
   <TITLE>The Element Menu</TITLE>
 </HEAD>
 <BODY>
@@ -90,6 +90,16 @@ This menu is not present in the Metrics View.
     <A HREF="#Interpolate">Interpolate Fonts...</A>
 </UL>
 <P>
+There are also two menu entries which are not part of the default build but
+which may be configured by modifying <CODE>configure-pfaedit.h</CODE> before
+compiling PfaEdit.
+<UL>
+  <LI>
+    <A HREF="#TilePath">Tile Path</A>
+  <LI>
+    <A HREF="#NonLinear">Non Linear Transform...</A>
+</UL>
+<P>
 <DL>
   <DT>
     <A NAME="Font">Font</A> Info
@@ -102,8 +112,8 @@ This menu is not present in the Metrics View.
   <DT>
     Char <A NAME="CharInfo">Info</A>
   <DD>
-    In the all views this brings up the
-    <A HREF="charinfo.html#Character">Character Info dialog</A>.
+    In the all views this brings up the <A HREF="charinfo.html#Character">Character
+    Info dialog</A>.
   <DT>
     Get <A NAME="Info">Info</A>
   <DD>
@@ -114,26 +124,29 @@ This menu is not present in the Metrics View.
     Default <A NAME="DefaultATT">ATT</A>
   <DD>
     In the font view this is a sub-menu which allows you to generate default
-    values for various features of the 
-<A HREF="http://partners.adobe.com/asn/developer/opentype/gpos.html">GPOS</A>
-and
-<A HREF="http://partners.adobe.com/asn/developer/opentype/gsub.html">GSUB</A>
-tables.
-<P>
-The sub-menu consists of a list of feature names (and a few more generic names
-like "All" which will provide defaults for everything it can figure out, and
-"Ligatures" which will provide defaults for all ligatures). PfaEdit will look
-for defaults for all selected characters. There is also one
-special entry:
-<DL><DT>Suffix to Tag...
-<DD>In adobe's glyph naming conventions, alternate forms of glyphs may be
-named by appending a suffix to the normal glyph's name. Thus a swash variant of
-"A" might be named "A.swash".
-<P>
-Using this command you can tell PfaEdit to associate a given suffix with a
-feature tag. (in the above example you could associate ".swash" with 'swsh' --
-except you don't need to, because PfaEdit already knows about that one).
-</DL>
+    values for various features of the
+    <A HREF="http://partners.adobe.com/asn/developer/opentype/gpos.html">GPOS</A>
+    and
+    <A HREF="http://partners.adobe.com/asn/developer/opentype/gsub.html">GSUB</A>
+    tables.
+    <P>
+    The sub-menu consists of a list of feature names (and a few more generic
+    names like "All" which will provide defaults for everything it can figure
+    out, and "Ligatures" which will provide defaults for all ligatures). PfaEdit
+    will look for defaults for all selected characters. There is also one special
+    entry:
+    <DL>
+      <DT>
+	Suffix to Tag...
+      <DD>
+	In adobe's glyph naming conventions, alternate forms of glyphs may be named
+	by appending a suffix to the normal glyph's name. Thus a swash variant of
+	"A" might be named "A.swash".
+	<P>
+	Using this command you can tell PfaEdit to associate a given suffix with
+	a feature tag. (in the above example you could associate ".swash" with 'swsh'
+	-- except you don't need to, because PfaEdit already knows about that one).
+    </DL>
   <DT>
     Show <A NAME="Dependencies">Dependencies</A>
   <DD>
@@ -291,6 +304,16 @@ except you don't need to, because PfaEdit already knows about that one).
 	3 pixel rise in y, skew the bitmap one pixel horizontally.
     </DL>
   <DT>
+    <A NAME="NonLinear">Non Linear </A>Transform...
+  <DD>
+    This command is not available in the default build, you must modify the file
+    <CODE>configure-pfaedit.h</CODE> and then rebuild PfaEdit. This command allows
+    the user to specify a non-linear transformation as a pair of expressions
+    (the first specifies the transformation for the x coordinate, the second
+    for the y coordinate). These expressions may be fairly general functions
+    of x and y. See the <A HREF="scripting.html#NonLinear">scripting page</A>
+    for a description of the syntax.
+  <DT>
     <A NAME="Expand">Expand</A> Stroke...
   <DD>
     Not in the bitmap view. In the font view it applies to all foreground splines
@@ -301,12 +324,19 @@ except you don't need to, because PfaEdit already knows about that one).
     <IMG SRC="expandedlines.png" WIDTH="247" HEIGHT="247"><BR>
     Above is a simple example of what expand stroke can do. It takes the two
     open paths above left and turns them into the two closed paths right.<BR>
-    <IMG SRC="expandstroke.png" WIDTH="323" HEIGHT="337"><BR>
+    <IMG SRC="expandstroke.png" WIDTH="323" HEIGHT="358"><BR>
     The Expand Stroke dialog gives you control over various aspects of the expansion
     process. You can chose a stroke width, how the ends of an open path should
     be drawn, and how the path should look when two splines (or lines) join which
     do not have the same slope (ie. at a corner point). Or you may choose to
     have the path be that which would be traced by a calligraphic pen.
+  <DT>
+    <A NAME="TilePath">Tile Path</A>
+  <DD>
+    This command is not available in the default build, you must modify the file
+    <CODE>configure-pfaedit.h</CODE> and then rebuild PfaEdit. This command takes
+    the contents of the clipboard and treats it as a tile which is applied to
+    any selected contours.
   <DT>
     <A NAME="Remove">Remove</A> Overlap
   <DD>
@@ -322,10 +352,10 @@ except you don't need to, because PfaEdit already knows about that one).
   <DT>
     Find Intersections
   <DD>
-    This is a varient of the Remove Overlap command, obtainable if you hold down the
-    shift key when invoking from the menu. It does half of what remove overlap does--
-    it finds the places where overlapping contours intersect and inserts points
-    at those locations.
+    This is a varient of the Remove Overlap command, obtainable if you hold down
+    the shift key when invoking from the menu. It does half of what remove overlap
+    does-- it finds the places where overlapping contours intersect and inserts
+    points at those locations.
     <P>
     If Remove Overlap fails on a character, this command may be useful if you
     decide to do it manually.
@@ -344,12 +374,15 @@ except you don't need to, because PfaEdit already knows about that one).
   <DD>
     This is a varient of the simplify command, obtainable if you hold down the
     shift key when invoking from the menu. It brings up a dialog which gives
-    you control over what sorts of errors this simplification is allowed to
-    induce. You can control:
+    you control over what sorts of errors this simplification is allowed to induce.
+    You can control:
     <UL>
-      <LI>How far the simplified contour is allowed to stray from the original
-      <LI>Whether to allow removal of extreme points
-      <LI>Whether to allow the slope to change at points.
+      <LI>
+	How far the simplified contour is allowed to stray from the original
+      <LI>
+	Whether to allow removal of extreme points
+      <LI>
+	Whether to allow the slope to change at points.
     </UL>
   <DT>
     <A NAME="Cleanup">Cleanup Char</A>
@@ -535,27 +568,30 @@ except you don't need to, because PfaEdit already knows about that one).
     PfaEdit does the following when merging CID-keyed fonts:
     <UL>
       <LI>
-	If the font in the window (the mergee) is a normal font and the other font (the merger) is
-	a CID keyed font, then the merger font is effectively flattened and the result merged
-	into the mergee.
+	If the font in the window (the mergee) is a normal font and the other font
+	(the merger) is a CID keyed font, then the merger font is effectively flattened
+	and the result merged into the mergee.
       <LI>
-	If the mergee is a CID keyed font and the merger font is a normal font
-	then the merger font will be merged into whichever of the mergee's subfonts
-	is currently active.
+	If the mergee is a CID keyed font and the merger font is a normal font then
+	the merger font will be merged into whichever of the mergee's subfonts is
+	currently active.
       <LI>
 	If both are CID keyed fonts, then they should:
-	  <UL>
-	  <LI>Have the same registry and ordering
-	  <LI>The supplement number of the mergee should be at least as big as that of the merger
-	  <LI>The mergee should have at least as many subfonts as the merger.
-	  </UL>
-	  <P>
-	  If these conditions be met then any CIDs from the merger which are
-	  not present in the mergee will be merged into the same subfont of the
-	  mergee as they came from in the merger.
-	  <P>
-	  This strikes me as somewhat problematic, but I can't think of a better
-	  solution.
+	<UL>
+	  <LI>
+	    Have the same registry and ordering
+	  <LI>
+	    The supplement number of the mergee should be at least as big as that of
+	    the merger
+	  <LI>
+	    The mergee should have at least as many subfonts as the merger.
+	</UL>
+	<P>
+	If these conditions be met then any CIDs from the merger which are not present
+	in the mergee will be merged into the same subfont of the mergee as they
+	came from in the merger.
+	<P>
+	This strikes me as somewhat problematic, but I can't think of a better solution.
     </UL>
   <DT>
     <A NAME="Interpolate">Interpolate</A> Fonts...
