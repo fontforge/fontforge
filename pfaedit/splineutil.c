@@ -1567,7 +1567,7 @@ return;		/* It's just the expected matrix */
 }
 
 static void SplineFontFromType1(SplineFont *sf, FontDict *fd) {
-    int i, isnotdef;
+    int i, j, isnotdef;
     RefChar *refs, *next, *pr;
     char **encoding;
     int istype2 = fd->fonttype==2;		/* Easy enough to deal with even though it will never happen... */
@@ -1661,6 +1661,18 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd) {
 		sf->chars[i]->refs = next;
 	    else
 		pr->next = next;
+	}
+    }
+    if ( fd->metrics!=NULL ) {
+	for ( i=0; i<fd->metrics->next; ++i ) {
+	    int width = strtol(fd->metrics->values[i],NULL,10);
+	    for ( j=sf->charcnt-1; j>=0; --j ) {
+		if ( sf->chars[j]!=NULL && sf->chars[j]->name!=NULL &&
+			strcmp(fd->metrics->keys[i],sf->chars[j]->name)==0 ) {
+		    sf->chars[j]->width = width;
+	    break;
+		}
+	    }
 	}
     }
     for ( i=0; i<sf->charcnt; ++i ) for ( refs = sf->chars[i]->refs; refs!=NULL; refs=next ) {
@@ -3346,7 +3358,41 @@ void KernClassListFree(KernClass *kc) {
 	chunkfree(kc,sizeof(KernClass));
 	kc = n;
     }
-}    
+}
+
+void MacNameListFree(struct macname *mn) {
+    struct macname *next;
+
+    while ( mn!=NULL ) {
+	next = mn->next;
+	free(mn->name);
+	chunkfree(mn,sizeof(struct macname));
+	mn = next;
+    }
+}
+
+void MacSettingListFree(struct macsetting *ms) {
+    struct macsetting *next;
+
+    while ( ms!=NULL ) {
+	next = ms->next;
+	MacNameListFree(ms->setname);
+	chunkfree(ms,sizeof(struct macsetting));
+	ms = next;
+    }
+}
+
+void MacFeatListFree(MacFeat *mf) {
+    MacFeat *next;
+
+    while ( mf!=NULL ) {
+	next = mf->next;
+	MacNameListFree(mf->featname);
+	MacSettingListFree(mf->settings);
+	chunkfree(mf,sizeof(MacFeat));
+	mf = next;
+    }
+}
 
 void SplineFontFree(SplineFont *sf) {
     int i;

@@ -114,8 +114,8 @@ typedef struct fontdict {
 /* Type1 specific values */
     int painttype;		/* 0 (filled) 2 (stroked) */
     real strokewidth;		/* (optional) only if painttype==2 */
-    struct metrics *metrics;	/* (optional) */
-    struct metrics *metrics2;	/* (optional) */
+    struct psdict *metrics;	/* (optional) */
+    struct psdict *metrics2;	/* (optional) */
     struct pschars *chars;
     struct charprocs *charprocs;
     struct private *private;

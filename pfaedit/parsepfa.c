@@ -41,6 +41,9 @@ struct fontparse {
     unsigned int inchars:1;
     unsigned int inprivate:1;
     unsigned int insubs:1;
+    unsigned int inmetrics: 1;
+    unsigned int inmetrics2: 1;
+    unsigned int inbb: 1;
     unsigned int inencoding: 1;
     unsigned int multiline: 1;
     unsigned int instring: 1;
@@ -1060,8 +1063,18 @@ return;
 	    fp->fd->encoding_name = em_none;
 	    fp->inencoding = 1;
 	}
-	fp->infi = fp->inprivate = false;
+	fp->infi = fp->inprivate = fp->inbb = fp->inmetrics = fp->inmetrics2 = false;
 	fp->doneencoding = true;
+    } else if ( mycmp("BoundingBoxes",line+1,endtok)==0 ) {
+	fp->infi = fp->inprivate = fp->inencoding = fp->inmetrics = fp->inmetrics2 = false;
+	fp->inbb = true;
+    } else if ( mycmp("Metrics",line+1,endtok)==0 ) {
+	fp->infi = fp->inprivate = fp->inbb = fp->inencoding = fp->inmetrics2 = false;
+	fp->inmetrics = true;
+	fp->fd->metrics = gcalloc(1,sizeof(struct psdict));
+	fp->fd->metrics->cnt = strtol(endtok,NULL,10);
+	fp->fd->metrics->keys = galloc(fp->fd->metrics->cnt*sizeof(char *));
+	fp->fd->metrics->values = galloc(fp->fd->metrics->cnt*sizeof(char *));
     } else if ( fp->infi ) {
 	if ( endtok==NULL && strncmp(line,"end", 3)==0 ) {
 	    fp->infi=0;
@@ -1164,10 +1177,12 @@ return;
 	    fp->fd->supplement = strtol(endtok,NULL,0);
     } else {
 	if ( strstr(line,"/Private")!=NULL ) {
+	    fp->infi = fp->inbb = fp->inmetrics = fp->inmetrics2 = false;
 	    fp->inprivate = 1;
 	    InitDict(fp->fd->private->private,line);
 return;
 	} else if ( strstr(line,"/FontInfo")!=NULL ) {
+	    fp->inprivate = fp->inbb = fp->inmetrics = fp->inmetrics2 = false;
 	    fp->infi = 1;
 return;
 	} else if ( strstr(line,"/CharStrings")!=NULL ) {
@@ -1177,13 +1192,22 @@ return;
 		InitChars(fp->fd->chars,line);
 	    fp->inchars = 1;
 	    fp->insubs = 0;
+	    fp->infi = fp->inprivate = fp->inbb = fp->inmetrics = fp->inmetrics2 = false;
 return;
 	} else if ( mycmp("/CharProcs",line,endtok)==0 ) {
 	    InitCharProcs(fp->fd->charprocs,line);
+	    fp->infi = fp->inprivate = fp->inbb = fp->inmetrics = fp->inmetrics2 = false;
 	    fp->insubs = 0;
 return;
 	} else if ( strstr(line,"/CIDSystemInfo")!=NULL ) {
 	    fp->incidsysteminfo = 1;
+return;
+	} else if ( fp->inmetrics ) {
+	    if ( endtok!=NULL )
+		AddValue(fp,fp->fd->metrics,line,endtok);
+return;
+	} else if ( fp->inbb ) {
+	    /* Ignore it */;
 return;
 	}
 	if ( endtok==NULL ) {
