@@ -2799,9 +2799,17 @@ static void bCorrectDirection(Context *c) {
 }
 
 static void bReplaceOutlineWithReference(Context *c) {
-    if ( c->a.argc!=1 )
+    double fudge = .01;
+
+    if ( c->a.argc!=1 && c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
-    FVReplaceOutlineWithReference(c->curfv);
+    if ( c->a.argc==3 ) {
+	if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int ||
+		c->a.vals[2].u.ival==0 )
+	error(c,"Bad argument type");
+	fudge = c->a.vals[1].u.ival/(double) c->a.vals[2].u.ival;
+    }
+    FVReplaceOutlineWithReference(c->curfv,fudge);
 }
 
 static void bBuildComposit(Context *c) {
