@@ -1207,6 +1207,15 @@ return( true );
 return( true );
     }
 
+    if ( searcher->dummy_sf.order2 != fv->sf->order2 ) {
+	SCClearContents(&searcher->sc_srch);
+	SCClearContents(&searcher->sc_rpl);
+	for ( i=0; i<searcher->sc_srch.layer_cnt; ++i )
+	    UndoesFree(searcher->sc_srch.layers[i].undoes);
+	for ( i=0; i<searcher->sc_rpl.layer_cnt; ++i )
+	    UndoesFree(searcher->sc_rpl.layers[i].undoes);
+    }
+
     for ( doit=!ask_if_difficult; doit<=1; ++doit ) {
 	for ( i=0; i<2; ++i ) {
 	    rprev = NULL;
@@ -1292,6 +1301,7 @@ static SearchView *SVFillup(SearchView *sv, FontView *fv) {
     sv->dummy_sf.origname = "dummy";
     sv->dummy_sf.ascent = fv->sf->ascent;
     sv->dummy_sf.descent = fv->sf->descent;
+    sv->dummy_sf.order2 = fv->sf->order2;
     sv->sc_srch.width = sv->sc_srch.vwidth = sv->sc_rpl.vwidth = sv->sc_rpl.width =
 	    sv->dummy_sf.ascent + sv->dummy_sf.descent;
     sv->sc_srch.parent = sv->sc_rpl.parent = &sv->dummy_sf;
