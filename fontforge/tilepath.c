@@ -28,6 +28,7 @@
 #include <math.h>
 #include <gkeysym.h>
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #ifdef FONTFORGE_CONFIG_TILEPATH
 /* Given a path and a splineset */
 /* Treat the splineset as a tile and lay it down on the path until we reach the*/
@@ -647,6 +648,7 @@ static void TileIt(SplineSet **head,SplineSet *tile,
     TileSplineSets(&td,head,order2);
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static enum tilepos tilepos=tp_center;
 static enum tilescale tilescale=ts_tilescale;
 
@@ -922,4 +924,6 @@ return;
 	}
     SplinePointListsFree(tile);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 #endif 		/* FONTFORGE_CONFIG_TILEPATH */
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

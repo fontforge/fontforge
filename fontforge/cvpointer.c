@@ -25,9 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-#include <math.h>
 #include <utype.h>
+#include <math.h>
 
 extern int stop_at_join;
 
@@ -127,6 +126,7 @@ return;
     }
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi, int *anya) {
     int anypoints = 0, anyrefs=0, anyimages=0, anyanchor=0;
     SplinePointList *spl;

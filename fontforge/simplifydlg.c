@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include "ustring.h"
 
 #define CID_Extrema	1000
@@ -355,3 +356,4 @@ return( false );
     smpl->linefixup = sim.linefixup;
 return( true );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

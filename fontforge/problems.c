@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <gwidget.h>
 #include <ustring.h>
 #include <math.h>
@@ -3270,3 +3271,4 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     if ( p.explainw!=NULL )
 	GDrawDestroyWindow(p.explainw);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

@@ -25,14 +25,15 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#include "ustring.h"
+#include "gfile.h"
+#include "gresource.h"
+#include "utype.h"
+#include "gio.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include "utype.h"
-#include "ustring.h"
-#include "gfile.h"
-#include "gio.h"
-#include "gresource.h"
 #include "gicons.h"
 #include <gkeysym.h>
 #include "psfont.h"
@@ -78,6 +79,7 @@ struct gfc_data {
     int psotb_flags;
     SplineFont *sf;
 };
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 #if __Mac
 static char *extensions[] = { ".pfa", ".pfb", "", "%s.pfb", ".pfa", ".pfb", ".pt3", ".ps",
@@ -92,6 +94,7 @@ static char *extensions[] = { ".pfa", ".pfb", ".bin", "%s.pfb", ".pfa", ".pfb", 
 	".otf.dfont", ".svg", NULL };
 static char *bitmapextensions[] = { ".*bdf", ".ttf", ".dfont", ".bmap.bin", ".*fnt", ".otb", ".none", NULL };
 #endif
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static GTextInfo formattypes[] = {
     { (unichar_t *) "PS Type 1 (Ascii)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "PS Type 1 (Binary)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
@@ -140,6 +143,7 @@ static GTextInfo bitmaptypes[] = {
     { (unichar_t *) _STR_Nobitmapfonts, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }
 };
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 #if __Mac
 int old_ttf_flags = ttf_flag_applemode;
@@ -157,7 +161,7 @@ extern int alwaysgenapple, alwaysgenopentype;
 
 static const char *pfaeditflag = "SplineFontDB:";
 
-
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 int32 *ParseBitmapSizes(GGadget *g,int msg,int *err) {
     const unichar_t *val = _GGadgetGetTitle(g), *pt; unichar_t *end, *end2;
     int i;
@@ -196,6 +200,7 @@ return( NULL );
     sizes[i] = 0;
 return( sizes );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static int WriteAfmFile(char *filename,SplineFont *sf, int formattype) {
     char *buf = galloc(strlen(filename)+6), *pt, *pt2;
@@ -385,6 +390,7 @@ return( false );
 return( 0 );
 return( ret );
 }
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 
 static int OPT_PSHints(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
@@ -859,132 +865,6 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     GDrawDestroyWindow(gw);
 }
 
-#if 0
-static int ad_e_h(GWindow gw, GEvent *event) {
-    if ( event->type==et_close ) {
-	int *done = GDrawGetUserData(gw);
-	*done = -1;
-    } else if ( event->type == et_char ) {
-return( false );
-    } else if ( event->type == et_map ) {
-	/* Above palettes */
-	GDrawRaise(gw);
-    } else if ( event->type==et_controlevent && event->u.control.subtype == et_buttonactivate ) {
-	int *done = GDrawGetUserData(gw);
-	if ( GGadgetGetCid(event->u.control.g)==1001 )
-	    *done = true;
-	else
-	    *done = -1;
-    }
-return( true );
-}
-
-static int AskDepth() {
-    GRect pos;
-    static GWindow gw;
-    GWindowAttrs wattrs;
-    GGadgetCreateData gcd[9];
-    GTextInfo label[9];
-    int done=false;
-
-    if ( gw==NULL ) {
-	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
-	wattrs.event_masks = ~(1<<et_charup);
-	wattrs.restrict_input_to_me = 1;
-	wattrs.undercursor = 1;
-	wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	wattrs.window_title = GStringGetResource(_STR_GreymapDepth,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	wattrs.window_title = _("Bits per Pixel in the greymap");
-#endif
-	wattrs.is_dlg = true;
-	pos.x = pos.y = 0;
-	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,150));
-	pos.height = GDrawPointsToPixels(NULL,75);
-	gw = GDrawCreateTopWindow(NULL,&pos,ad_e_h,&done,&wattrs);
-
-	memset(&label,0,sizeof(label));
-	memset(&gcd,0,sizeof(gcd));
-
-	label[0].text = (unichar_t *) _STR_GreymapDepth;
-	label[0].text_in_resource = true;
-	gcd[0].gd.label = &label[0];
-	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 7; 
-	gcd[0].gd.flags = gg_enabled|gg_visible;
-	gcd[0].creator = GLabelCreate;
-
-	label[1].text = (unichar_t *) "2";
-	label[1].text_is_1byte = true;
-	gcd[1].gd.label = &label[1];
-	gcd[1].gd.pos.x = 20; gcd[1].gd.pos.y = 13+7;
-	gcd[1].gd.flags = gg_enabled|gg_visible;
-	gcd[1].gd.cid = 2;
-	gcd[1].creator = GRadioCreate;
-
-	label[2].text = (unichar_t *) "4";
-	label[2].text_is_1byte = true;
-	gcd[2].gd.label = &label[2];
-	gcd[2].gd.pos.x = 50; gcd[2].gd.pos.y = gcd[1].gd.pos.y; 
-	gcd[2].gd.flags = gg_enabled|gg_visible;
-	gcd[2].gd.cid = 4;
-	gcd[2].creator = GRadioCreate;
-
-	label[3].text = (unichar_t *) "8";
-	label[3].text_is_1byte = true;
-	gcd[3].gd.label = &label[3];
-	gcd[3].gd.pos.x = 80; gcd[3].gd.pos.y = gcd[1].gd.pos.y;
-	gcd[3].gd.flags = gg_enabled|gg_visible|gg_cb_on;
-	gcd[3].gd.cid = 8;
-	gcd[3].creator = GRadioCreate;
-
-	gcd[4].gd.pos.x = 15-3; gcd[4].gd.pos.y = gcd[1].gd.pos.y+20;
-	gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
-	gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[4].text = (unichar_t *) _STR_OK;
-	label[4].text_in_resource = true;
-	gcd[4].gd.mnemonic = 'O';
-	gcd[4].gd.label = &label[4];
-	gcd[4].gd.cid = 1001;
-	/*gcd[4].gd.handle_controlevent = CH_OK;*/
-	gcd[4].creator = GButtonCreate;
-
-	gcd[5].gd.pos.x = -15; gcd[5].gd.pos.y = gcd[4].gd.pos.y+3;
-	gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
-	gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[5].text = (unichar_t *) _STR_Cancel;
-	label[5].text_in_resource = true;
-	gcd[5].gd.label = &label[5];
-	gcd[5].gd.mnemonic = 'C';
-	/*gcd[5].gd.handle_controlevent = CH_Cancel;*/
-	gcd[5].gd.cid = 1002;
-	gcd[5].creator = GButtonCreate;
-
-	gcd[6].gd.pos.x = 2; gcd[6].gd.pos.y = 2;
-	gcd[6].gd.pos.width = pos.width-4; gcd[6].gd.pos.height = pos.height-2;
-	gcd[6].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-	gcd[6].creator = GGroupCreate;
-
-	GGadgetsCreate(gw,gcd);
-    }
-
-    GWidgetHidePalettes();
-    GDrawSetVisible(gw,true);
-    while ( !done )
-	GDrawProcessOneEvent(NULL);
-    GDrawSetVisible(gw,false);
-    if ( done==-1 )
-return( -1 );
-    if ( GGadgetIsChecked(GWidgetGetControl(gw,2)) )
-return( 2 );
-    if ( GGadgetIsChecked(GWidgetGetControl(gw,4)) )
-return( 4 );
-    /*if ( GGadgetIsChecked(GWidgetGetControl(gw,8)) )*/
-return( 8 );
-}
-#endif
-
 static int br_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	int *done = GDrawGetUserData(gw);
@@ -1158,6 +1038,7 @@ return( bf == bf_bdf ? 100 : 120 );
 return( -1 );
     }
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static int WriteBitmaps(char *filename,SplineFont *sf, int32 *sizes,int res, int bf) {
     char *buf = galloc(strlen(filename)+30), *pt, *pt2;
@@ -1330,6 +1211,7 @@ return( NULL );
 return( ret );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static enum fchooserret GFileChooserFilterWernerSFDs(GGadget *g,GDirEntry *ent,
 	const unichar_t *dir) {
     enum fchooserret ret = GFileChooserDefFilter(g,ent,dir);
@@ -1354,6 +1236,7 @@ static enum fchooserret GFileChooserFilterWernerSFDs(GGadget *g,GDirEntry *ent,
     }
 return( ret );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static char *GetWernerSFDFile(SplineFont *sf) {
     char *def=NULL, *ret;
@@ -2184,6 +2067,7 @@ return( !WriteMultiplePSFont(sf,filename,sizes,res,subfontdefinition));
 return( !_DoSave(sf,filename,sizes,res));
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void DoSave(struct gfc_data *d,unichar_t *path) {
     int err=false;
     char *temp;
@@ -3159,3 +3043,4 @@ return( 0 );
     GDrawDestroyWindow(gw);
 return(d.ret);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

@@ -24,13 +24,14 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "pfaeditui.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <stdlib.h>
 #include <string.h>
 #include <ustring.h>
 #include <gdraw.h>
 #include <gwidget.h>
 #include <ggadget.h>
-#include "pfaeditui.h"
 
 struct gfc_data {
     int done;
@@ -267,3 +268,4 @@ unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfile,
     free( d.lastpopupfontname );
 return(d.ret);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

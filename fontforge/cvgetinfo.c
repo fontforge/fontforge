@@ -514,6 +514,7 @@ return(NULL);
     sc->anchor = ap;
 return( ap );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void SCOrderAP(SplineChar *sc) {
     int lc=0, cnt=0, out=false, i,j;
@@ -547,6 +548,7 @@ return;
     free( array );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void AI_SelectList(GIData *ci,AnchorPoint *ap) {
     int i;
     AnchorClass *an;
@@ -1242,6 +1244,7 @@ return;
     GDrawDestroyWindow(gi.gw);
     AnchorPointsFree(gi.oldaps);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void MDReplace(MinimumDistance *md,SplineSet *old,SplineSet *rpl) {
     /* Replace all the old points with the ones in rpl in the minimu distance hints */
@@ -1269,6 +1272,7 @@ void MDReplace(MinimumDistance *md,SplineSet *old,SplineSet *rpl) {
     }
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 void PI_ShowHints(SplineChar *sc, GGadget *list, int set) {
     StemInfo *h;
     int32 i, len;

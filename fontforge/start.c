@@ -122,6 +122,7 @@ void doversion(void) {
 exit(0);
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void _dousage(void) {
     printf( "fontforge [options] [fontfiles]\n" );
     printf( "\t-new\t\t\t (creates a new font)\n" );
@@ -174,6 +175,7 @@ static void dohelp(void) {
     help("overview.html");
 exit(0);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static void initrand(void) {
     struct timeval tv;
@@ -475,10 +477,12 @@ static void AddR(char *prog, char *name, char *val ) {
 #endif
 
 int main( int argc, char **argv ) {
-    int i;
     extern const char *source_modtime_str;
+#if !defined( FONTFORGE_CONFIG_NO_WINDOWING_UI )
+    int i;
     int splash = 1;
     int recover=1;
+#endif
 #ifdef FONTFORGE_CONFIG_GDRAW
     int any;
     int next_recent=0;
@@ -521,6 +525,8 @@ int main( int argc, char **argv ) {
     gtk_init (&argc, &argv);
 
     add_pixmap_directory (PACKAGE_DATA_DIR "/" PACKAGE "/pixmaps");
+#else
+    GResourceSetProg(argv[0]);
 #endif
     LoadPrefs();
     initadobeenc();

@@ -25,11 +25,10 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#include <gfile.h>
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <utype.h>
 #include <ustring.h>
-#include <gfile.h>
-
-extern char *helpdir;
 
 #if __CygWin
 #include <unistd.h>
@@ -131,6 +130,9 @@ int GetIntR(GWindow gw,int cid,int namer,int *err) {
     }
 return( val );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+
+extern char *helpdir;
 
 #if __CygWin
 /* Try to find the default browser by looking it up in the windows registry */

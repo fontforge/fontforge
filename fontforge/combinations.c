@@ -49,6 +49,7 @@ GTextInfo sortby[] = {
     { (unichar_t *) _STR_KernSize, NULL, 0, 0, (void *) sb_kern, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL }
 };
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 int PSTContains(const char *components,const char *name) {
     const char *pt;
@@ -61,6 +62,7 @@ return( true );
 return( false );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 void SFShowLigatures(SplineFont *sf,SplineChar *searchfor) {
     int i, cnt;
     unichar_t **choices=NULL;
@@ -311,6 +313,7 @@ return;
     }
     KPSortEm(kpd,sb_first);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 AnchorClass *AnchorClassMatch(SplineChar *sc1,SplineChar *sc2,AnchorClass *restrict_,
 	AnchorPoint **_ap1,AnchorPoint **_ap2 ) {
@@ -371,6 +374,7 @@ return( ap1->anchor );
 return( NULL );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void KPBuildAnchorList(KPData *kpd) {
     int i, j, cnt;
     AnchorClass *ac;

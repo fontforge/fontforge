@@ -211,6 +211,7 @@ typedef struct scinfo {
     real rbearing;		/* Only used if !meta->scalewidth */
     real width;
 } SCI;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 
 void SCCopyFgToBg(SplineChar *sc, int show) {
@@ -228,6 +229,7 @@ void SCCopyFgToBg(SplineChar *sc, int show) {
 	    SCCharChangedUpdate(sc);
     }
 }
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 
 static SCI *SCIinit(SplineChar *sc,MetaFontDlg *meta) {
     /* Does five or six things:

@@ -26,9 +26,9 @@
  */
 
 #include "pfaeditui.h"
+#include <utype.h>
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <ustring.h>
-#include <utype.h>
 
 struct unicoderange {
     char *name;		/* The range's name */
@@ -326,6 +326,7 @@ static GTextInfo *AvailableRanges(SplineFont *sf) {
     qsort(ret,cnt,sizeof(GTextInfo),alpha);
 return( ret );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 int NameToEncoding(SplineFont *sf,const unichar_t *uname) {
     int enc, uni, i;
@@ -395,6 +396,7 @@ return( enc );
 	} else {
 	    if ( enc==-1 ) {
 		uni = UniFromName(name);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 		if ( uni<0 ) {
 		    for ( i=0; specialnames[i].name!=NULL; ++i )
 			if ( strcmp(name,specialnames[i].name)==0 ) {
@@ -402,6 +404,7 @@ return( enc );
 		    break;
 			}
 		}
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 		if ( uni<0 && name[1]=='\0' )
 		    uni = name[0];
 	    }
@@ -446,6 +449,7 @@ return( -1 );
     }
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 typedef struct gotodata {
     SplineFont *sf;
     GWindow gw;

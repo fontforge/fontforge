@@ -409,12 +409,12 @@ return( ret==0 );
 }
 #endif
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 int _FVMenuGenerate(FontView *fv,int family) {
     FVFlattenAllBitmapSelections(fv);
 return( SFGenerateFont(fv->sf,family) );
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuGenerate(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -3376,7 +3376,24 @@ void FontViewMenu_Interpolate(GtkMenuItem *menuitem, gpointer user_data) {
 # endif
     FVInterpolateFonts(fv);
 }
-#endif
+
+static void FVShowInfo(FontView *fv);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+
+void FVChangeChar(FontView *fv,int i) {
+
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    if ( i!=-1 ) {
+	FVDeselectAll(fv);
+	fv->selected[i] = true;
+	fv->sel_index = 1;
+	fv->end_pos = fv->pressed_pos = i;
+	FVToggleCharSelected(fv,i);
+	FVScrollToChar(fv,i);
+	FVShowInfo(fv);
+    }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+}
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 void FVScrollToChar(FontView *fv,int i) {
@@ -3395,20 +3412,6 @@ return;
 	    GScrollBarSetPos(fv->vsb,fv->rowoff);
 	    GDrawRequestExpose(fv->v,NULL,false);
 	}
-    }
-}
-
-static void FVShowInfo(FontView *fv);
-void FVChangeChar(FontView *fv,int i) {
-
-    if ( i!=-1 ) {
-	FVDeselectAll(fv);
-	fv->selected[i] = true;
-	fv->sel_index = 1;
-	fv->end_pos = fv->pressed_pos = i;
-	FVToggleCharSelected(fv,i);
-	FVScrollToChar(fv,i);
-	FVShowInfo(fv);
     }
 }
 
@@ -3894,6 +3897,7 @@ void FVShowFilled(FontView *fv) {
 	    FVChangeDisplayFont(fvs,fvs->filled);
     fv->sf->display_size = -fv->filled->pixelsize;
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void FVMetricsCenter(FontView *fv,int docenter) {
     int i;
@@ -3914,6 +3918,7 @@ void FVMetricsCenter(FontView *fv,int docenter) {
     }
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuCenter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -8326,7 +8331,7 @@ return( fv );
 }
 
 static SplineFont *SFReadPostscript(char *filename) {
-    FontDict *fd;
+    FontDict *fd=NULL;
     SplineFont *sf=NULL;
 
 # ifdef FONTFORGE_CONFIG_GDRAW
@@ -8339,6 +8344,8 @@ static SplineFont *SFReadPostscript(char *filename) {
     fd = ReadPSFont(filename);
     gwwv_progress_next_stage();
     gwwv_progress_change_line2(_("Interpreting Glyphs"));
+# else
+    fd = ReadPSFont(filename);
 # endif
     if ( fd!=NULL ) {
 	sf = SplineFontFromPSFont(fd);

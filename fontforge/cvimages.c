@@ -271,7 +271,9 @@ return;
 	free(e);
     }
     sc->layer_cnt += cnt;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     SCMoreLayers(sc);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 }
 #endif
 
@@ -1255,10 +1257,10 @@ return( false );
 	}
     }
     if ( tot==0 )
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_NothingLoaded,_STR_NothingLoaded);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Nothing Loaded"),_("Nothing Loaded"));
+#else
+	GWidgetErrorR(_STR_NothingLoaded,_STR_NothingLoaded);
 #endif
 return( true );
 }

@@ -3986,6 +3986,8 @@ return( 0 );
 	buts[2] = GTK_STOCK_CANCEL;
 	buts[3] = NULL;
 	int choice = gwwv_ask(_("Pick a font, any font..."),buts,0,2,_("This font contains both a TrueType 'glyf' table and an OpenType 'CFF ' table. FontForge can only deal with one at a time, please pick which one you want to use"));
+#else
+	int choice = 0;
 #endif
 	if ( choice==2 )
 return( 0 );

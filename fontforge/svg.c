@@ -803,18 +803,23 @@ static xmlNodePtr SVGPickFont(xmlNodePtr *fonts,char *filename) {
 	if ( choice==-1 ) {
 	    char *fn = copy(filename);
 	    fn[lparen-filename] = '\0';
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_NotInCollection,_STR_FontNotInCollection,find,fn);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Not in Collection"),_("%s is not in %.100s"),find,fn);
+#else
+	    GWidgetErrorR(_STR_NotInCollection,_STR_FontNotInCollection,find,fn);
 #endif
 	    free(fn);
 	}
 	free(find);
-    } else if ( screen_display==NULL )
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    } else if ( no_windowing_ui )
 	choice = 0;
     else
 	choice = GWidgetChoicesR(_STR_PickFont,(const unichar_t **) names,cnt,0,_STR_MultipleFontsPick);
+#else
+    } else
+	choice = 0;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     for ( cnt=0; names[cnt]!=NULL; ++cnt )
 	free(names[cnt]);
     free(names);

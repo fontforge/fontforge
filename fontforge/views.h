@@ -63,7 +63,6 @@ typedef struct drect {
     real width, height;
 } DRect;
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 typedef struct pressedOn {
     int x,y;			/* screen location of the press */
     real cx, cy;		/* Translated into character space */
@@ -89,6 +88,7 @@ typedef struct pressedOn {
     BasePoint cp;		/* Original control point position */
 } PressedOn;
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 /* Note: These are ordered as they are displayed in the tools palette */
 enum cvtools { cvt_pointer, cvt_magnify,
 	cvt_freehand, cvt_hand,
@@ -189,7 +189,9 @@ typedef struct debugview {
 } DebugView;
 
 enum dv_coderange { cr_none=0, cr_fpgm, cr_prep, cr_glyph };	/* cleverly chosen to match ttobjs.h */
+#endif
 
+#if !defined( FONTFORGE_CONFIG_NO_WINDOWING_UI ) || defined(_DEFINE_SEARCHVIEW_)
 typedef struct charview {
     SplineChar *sc;
     unsigned int showback:1;
@@ -243,6 +245,8 @@ typedef struct charview {
     GTimer *pressed;
     GWindow backimgs;
     GIC *gic;
+#else
+    void *gw, *v;
 #endif
     int width, height;
     int xoff, yoff;
@@ -264,7 +268,9 @@ typedef struct charview {
 #endif
     struct charview *next;
     struct fontview *fv;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     PressedOn p;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     SplinePoint *lastselpt;
     /*GWindow tools, layers;*/
     int8 b1_tool, cb1_tool, b2_tool, cb2_tool;		/* Button 3 does a popup */
@@ -309,10 +315,14 @@ typedef struct charview {
     real ft_pointsize;
     SplineSet *gridfit;
     struct freetype_raster *raster;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     DebugView *dv;
+#endif
     uint32 mmvisible;
 } CharView;
+#endif
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 typedef struct bitmapview {
     BDFChar *bc;
     BDFFont *bdf;
@@ -420,7 +430,7 @@ typedef struct metricsview {
     int scale_index;
     int cur_sli;
 } MetricsView;
-#endif
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 enum fv_metrics { fvm_baseline=1, fvm_origin=2, fvm_advanceat=4, fvm_advanceto=8 };
 typedef struct fontview {
@@ -483,7 +493,6 @@ typedef struct fontview {
     int sel_index;
 } FontView;
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 typedef struct findsel {
 #if defined(FONTFORGE_CONFIG_GTK)
     GdkEvent *e;
@@ -498,6 +507,7 @@ typedef struct findsel {
     PressedOn *p;
 } FindSel;
 
+#if !defined( FONTFORGE_CONFIG_NO_WINDOWING_UI ) || defined(_DEFINE_SEARCHVIEW_)
 typedef struct searchview {
     FontView dummy_fv;
     SplineFont dummy_sf;
@@ -515,6 +525,8 @@ typedef struct searchview {
     GWindow gw;
     GGadget *mb;
     GFont *plain, *bold;
+#else
+    void *gw;
 #endif
     int mbh;
     int fh, as;
@@ -689,6 +701,9 @@ extern void SCDoRedo(SplineChar *sc,int layer);
 extern void SCDoUndo(SplineChar *sc,int layer);
 extern void SCCopyWidth(SplineChar *sc,enum undotype);
 extern void SCAppendPosSub(SplineChar *sc,enum possub_type type, char **d,SplineFont *copied_from);
+#if !defined( FONTFORGE_CONFIG_NO_WINDOWING_UI ) || defined(_DEFINE_SEARCHVIEW_)
+extern void PasteToCV(CharView *cv);
+#endif
 
 extern void MDReplace(MinimumDistance *md,SplineSet *old,SplineSet *rpl);
 
@@ -761,6 +776,20 @@ extern void skewselect(BVTFunc *bvtf,real t);
 
 extern int UserFeaturesDiffer(void);
 
+extern unichar_t *PrtBuildDef( SplineFont *sf, int istwobyte );
+
+extern unichar_t *ScriptLangLine(struct script_record *sr);
+extern int  SLICount(SplineFont *sf);
+extern unichar_t *ClassName(const unichar_t *name,uint32 feature_tag,
+	uint16 flags, int script_lang_index, int merge_with, int act_type,
+	int macfeature);
+extern unichar_t *DecomposeClassName(const unichar_t *clsnm, unichar_t **name,
+	uint32 *feature_tag, int *macfeature,
+	uint16 *flags, uint16 *script_lang_index,int *merge_with,int *act_type);
+extern PST *AddSubs(PST *last,uint32 tag,char *name,uint16 flags,
+	uint16 sli,SplineChar *sc);
+
+
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 extern void FVSetTitle(FontView *fv);
@@ -792,18 +821,11 @@ extern GTextInfo **AnchorClassesLList(SplineFont *sf);
 extern GTextInfo **AnchorClassesSimpleLList(SplineFont *sf);
 extern GTextInfo *AddMacFeatures(GTextInfo *opentype,enum possub_type type,SplineFont *sf);
 #endif
-extern unichar_t *ClassName(const unichar_t *name,uint32 feature_tag,
-	uint16 flags, int script_lang_index, int merge_with, int act_type,
-	int macfeature);
-extern unichar_t *DecomposeClassName(const unichar_t *clsnm, unichar_t **name,
-	uint32 *feature_tag, int *macfeature,
-	uint16 *flags, uint16 *script_lang_index,int *merge_with,int *act_type);
+extern int SCAnyFeatures(SplineChar *sc);
+extern void SCCopyFeatures(SplineChar *sc);
 extern unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag,uint16 flags,
 	int script_lang_index, enum possub_type type, SplineFont *sf, SplineChar *default_script,
 	int merge_with,int act_type);
-extern PST *AddSubs(PST *last,uint32 tag,char *name,uint16 flags,
-	uint16 sli,SplineChar *sc);
-extern int  SLICount(SplineFont *sf);
 extern unichar_t *ShowScripts(unichar_t *usedef);
 extern GTextInfo *SFLangList(SplineFont *sf,int addfinal,SplineChar *default_script);
 extern GTextInfo **SFLangArray(SplineFont *sf,int addfinal);
@@ -996,7 +1018,6 @@ extern void CVRemoveTopUndo(CharView *cv);
 extern void CopySelected(CharView *cv);
 extern void CVCopyGridFit(CharView *cv);
 extern void CopyWidth(CharView *cv,enum undotype);
-extern void PasteToCV(CharView *cv);
 extern void MVCopyChar(MetricsView *mv, SplineChar *sc, int fullcopy);
 extern void PasteIntoMV(MetricsView *mv,SplineChar *sc, int doclear);
 
@@ -1046,7 +1067,6 @@ extern void SCAutoTrace(SplineChar *sc,GWindow v,int ask);
 extern unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfile,
 	const unichar_t *initial_filter, unichar_t **mimetypes,int mult,int newok);
 
-extern unichar_t *PrtBuildDef( SplineFont *sf, int istwobyte );
 extern void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv);
 
 enum sftf_fonttype { sftf_pfb, sftf_ttf, sftf_httf, sftf_otf, sftf_bitmap, sftf_pfaedit };
@@ -1110,15 +1130,11 @@ extern void CVDebugReInit(CharView *cv,int restart_debug,int dbg_fpgm);
 extern void CVDebugFree(DebugView *dv);
 extern int DVChar(DebugView *dv, GEvent *e);
 
-extern unichar_t *ScriptLangLine(struct script_record *sr);
 extern void ShowKernClasses(SplineFont *sf,MetricsView *mv,int isv);
 extern void KCLD_End(struct kernclasslistdlg *kcld);
 extern void KCLD_MvDetach(struct kernclasslistdlg *kcld,MetricsView *mv);
 
 extern void FVSelectByPST(FontView *fv);
-
-extern int SCAnyFeatures(SplineChar *sc);
-extern void SCCopyFeatures(SplineChar *sc);
 
 enum hist_type { hist_hstem, hist_vstem, hist_blues };
 struct psdict;
