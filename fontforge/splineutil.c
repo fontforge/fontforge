@@ -48,7 +48,7 @@ typedef struct quartic {
 /*  into splinefont.h after (or instead of) the definition of chunkalloc()*/
 
 #ifndef chunkalloc
-#define ALLOC_CHUNK	100		/* Number of small chunks to malloc at a time */
+#define ALLOC_CHUNK	1		/* Number of small chunks to malloc at a time */
 #define CHUNK_MAX	40		/* Maximum size (in chunk units) that we are prepared to allocate */
 					/* The size of our data structures */
 # define CHUNK_UNIT	sizeof(void *)	/*  will vary with the word size of */
@@ -1454,7 +1454,9 @@ static void InstanciateReference(SplineFont *sf, RefChar *topref, RefChar *refs,
     int i;
 
     if ( !refs->checked ) {
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
+	if ( refs->sc!=NULL )
+	    i = refs->sc->enc;		/* Can happen in type3 fonts */
+	else for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
 	    if ( strcmp(sf->chars[i]->name,AdobeStandardEncoding[refs->adobe_enc])==0 )
 	break;
 	if ( i!=sf->charcnt && !sf->chars[i]->ticked ) {
@@ -1492,11 +1494,40 @@ return;
     }
     rsc->ticked = false;
 
-    new = SplinePointListTransform(SplinePointListCopy(rsc->layers[ly_fore].splines),transform,true);
-    if ( new!=NULL ) {
-	for ( spl = new; spl->next!=NULL; spl = spl->next );
-	spl->next = topref->layers[0].splines;
-	topref->layers[0].splines = new;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    if ( sf->multilayer ) {
+	int lbase = topref->layer_cnt;
+	if ( topref->layer_cnt==0 ) {
+	    topref->layers = gcalloc(rsc->layer_cnt-1,sizeof(struct reflayer));
+	    topref->layer_cnt = rsc->layer_cnt-1;
+	} else {
+	    topref->layer_cnt += rsc->layer_cnt-1;
+	    topref->layers = grealloc(topref->layers,(rsc->layer_cnt-1)*sizeof(struct reflayer));
+	    memset(topref->layers+lbase,0,(rsc->layer_cnt-1)*sizeof(struct reflayer));
+	}
+	for ( i=ly_fore; i<rsc->layer_cnt; ++i ) {
+	    topref->layers[i-ly_fore+lbase].splines = SplinePointListTransform(SplinePointListCopy(rsc->layers[i].splines),transform,true);
+	    topref->layers[i-ly_fore+lbase].fill_brush = rsc->layers[i].fill_brush;
+	    topref->layers[i-ly_fore+lbase].stroke_pen = rsc->layers[i].stroke_pen;
+	    topref->layers[i-ly_fore+lbase].dofill = rsc->layers[i].dofill;
+	    topref->layers[i-ly_fore+lbase].dostroke = rsc->layers[i].dostroke;
+	    topref->layers[i-ly_fore+lbase].fillfirst = rsc->layers[i].fillfirst;
+	    /* ??? and images? Can't read images yet, so not a problem yet */
+	}
+    } else {
+	if ( topref->layer_cnt==0 ) {
+	    topref->layers = gcalloc(1,sizeof(struct reflayer));
+	    topref->layer_cnt = 1;
+	}
+#else
+    {
+#endif
+	new = SplinePointListTransform(SplinePointListCopy(rsc->layers[ly_fore].splines),transform,true);
+	if ( new!=NULL ) {
+	    for ( spl = new; spl->next!=NULL; spl = spl->next );
+	    spl->next = topref->layers[0].splines;
+	    topref->layers[0].splines = new;
+	}
     }
 }
 
@@ -1815,6 +1846,10 @@ static void _SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext 
     sf->charcnt = 256+CharsNotInEncoding(fd);
     encoding = gcalloc(sf->charcnt,sizeof(char *));
     sf->chars = gcalloc(sf->charcnt,sizeof(SplineChar *));
+#ifdef FONTFORGE_CONFIG_TYPE3
+    if ( fd->charprocs!=NULL && fd->charprocs->next!=0 )	/* We read a type3 */
+	sf->multilayer = true;
+#endif
     for ( i=0; i<256; ++i )
 	encoding[i] = copy(fd->encoding[i]);
     if ( sf->charcnt>256 ) {
@@ -1866,10 +1901,7 @@ static void _SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext 
 		    pscontext,fd->private->subrs,NULL,encoding[i]);
 	    used[k] = true;
 	} else {
-	    if ( fd->charprocs->values[k]->unicodeenc==-2 )
-		sf->chars[i] = fd->charprocs->values[k];
-	    else
-		sf->chars[i] = SplineCharCopy(fd->charprocs->values[k],sf);
+	    sf->chars[i] = fd->charprocs->values[k];
 	    if ( sf->chars[i]!=NULL )
 		sf->chars[i]->changed = false;
 	    used[k] = true;

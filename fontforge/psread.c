@@ -40,8 +40,9 @@
 typedef struct entitychar {
     Entity *splines;
     RefChar *refs;
-    int width;
+    int width, vwidth;
     SplineChar *sc;
+    uint8 fromtype3;
 } EntityChar;
 
 typedef struct _io {
@@ -839,6 +840,35 @@ static Entity *EntityCreate(SplinePointList *head,int linecap,int linejoin,
 return( ent );
 }
 
+static void HandleType3Reference(IO *wrapper,EntityChar *ec,real transform[6],
+	char *tokbuf, int toksize) {
+    int tok;
+    real dval;
+    char *glyphname;
+    RefChar *ref;
+
+   tok = nextpstoken(wrapper,&dval,tokbuf,toksize);
+   if ( strcmp(tokbuf,"get")!=0 )
+return;		/* Hunh. I don't understand it. I give up */
+   tok = nextpstoken(wrapper,&dval,tokbuf,toksize);
+   if ( tok!=pt_namelit )
+return;		/* Hunh. I don't understand it. I give up */
+    glyphname = copy(tokbuf);
+   tok = nextpstoken(wrapper,&dval,tokbuf,toksize);
+   if ( strcmp(tokbuf,"get")!=0 )
+return;		/* Hunh. I don't understand it. I give up */
+   tok = nextpstoken(wrapper,&dval,tokbuf,toksize);
+   if ( strcmp(tokbuf,"exec")!=0 )
+return;		/* Hunh. I don't understand it. I give up */
+
+    /* Ok, it looks very much like a reference to glyphname */
+    ref = chunkalloc(sizeof(RefChar));
+    memcpy(ref->transform,transform,sizeof(ref->transform));
+    ref->sc = (SplineChar *) glyphname;
+    ref->next = ec->refs;
+    ec->refs = ref;
+}
+
 static void InterpretPS(FILE *ps, char *psstr, EntityChar *ec, RetStack *rs) {
     SplinePointList *cur=NULL, *head=NULL;
     BasePoint current, temp;
@@ -877,10 +907,21 @@ static void InterpretPS(FILE *ps, char *psstr, EntityChar *ec, RetStack *rs) {
     memset(&gb,'\0',sizeof(GrowBuf));
     memset(&dict,'\0',sizeof(dict));
 
-    memset(ec,'\0',sizeof(EntityChar));
     transform[0] = transform[3] = 1.0;
     transform[1] = transform[2] = transform[4] = transform[5] = 0;
     current.x = current.y = 0;
+
+    if ( ec->fromtype3 ) {
+	/* My type3 fonts have two things pushed on the stack when they */
+	/*  start. One is a dictionary, the other a flag (number). If the */
+	/*  flag is non-zero then we are a nested call (a reference char) */
+	/*  if 0, we're normal. We don't want to do setcachedevice for */
+	/*  reference chars.  We can't represent a dictionary on the stack */
+	/*  so just push two 0s */
+	stack[0].type = stack[1].type = ps_num;
+	stack[0].u.val = stack[1].u.val = 0;
+	sp = 2;
+    }
 
     while ( (tok = nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf)))!=pt_eof ) {
 	if ( endedstopped(&wrapper)) {
@@ -1054,7 +1095,7 @@ printf( "-%s-\n", toknames[tok]);
 	  case pt_index:
 	    if ( sp>0 ) {
 		i = stack[--sp].u.val;
-		if ( sp>=i && i>=0 ) {
+		if ( sp>i && i>=0 ) {
 		    stack[sp] = stack[sp-i-1];
 		    if ( stack[sp].type==ps_string || stack[sp].type==ps_instr ||
 			    stack[sp].type==ps_lit )
@@ -1363,8 +1404,8 @@ printf( "-%s-\n", toknames[tok]);
 	  case pt_setcachedevice:
 	    if ( sp>=6 ) {
 		ec->width = stack[sp-6].u.val;
+		ec->vwidth = stack[sp-5].u.val;
 		/* I don't care about the bounding box */
-		/* I don't support a "height" (ie. for CJK vertical spacing) */
 		sp-=6;
 	    }
 	  break;
@@ -1473,7 +1514,9 @@ printf( "-%s-\n", toknames[tok]);
 	    }
 	  break;
 	  case pt_namelit:
-	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
+	    if ( strcmp(tokbuf,"CharProcs")==0 && ec!=NULL ) {
+		HandleType3Reference(&wrapper,ec,transform,tokbuf,sizeof(tokbuf));
+	    } else if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
 		stack[sp].type = ps_lit;
 		stack[sp++].u.str = copy(tokbuf);
 	    }
@@ -2593,8 +2636,9 @@ static void SCInterpretPS(FILE *ps,SplineChar *sc, int *flags) {
     if ( nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf))!=pt_opencurly )
 	fprintf(stderr, "We don't understand this font\n" );
     memset(&ec,'\0',sizeof(ec));
-    InterpretPS(ps,NULL,&ec,NULL);
+    ec.fromtype3 = true;
     ec.sc = sc;
+    InterpretPS(ps,NULL,&ec,NULL);
     sc->width = ec.width;
 #ifdef FONTFORGE_CONFIG_TYPE3
     sc->layer_cnt = 1;
@@ -2633,6 +2677,8 @@ void PSFontInterpretPS(FILE *ps,struct charprocs *cp) {
        		gwwv_progress_next();
 #endif
 	    } else {
+		memset(&dummy,0,sizeof(dummy));
+		dummy.fromtype3 = true;
 		InterpretPS(ps,NULL,&dummy,NULL);
 	    }
 	}
@@ -2643,6 +2689,7 @@ void PSFontInterpretPS(FILE *ps,struct charprocs *cp) {
     /*  ref->sc (which is a hack). Now look up all those names and replace */
     /*  with the appropriate splinechar. If we can't find anything then throw */
     /*  out the reference */
+    /* Further fixups come later, where all ps refs are fixedup */
     for ( i=0; i<cp->next; ++i ) {
 	for ( p=NULL, ref=cp->values[i]->layers[ly_fore].refs; ref!=NULL; ref=next ) {
 	    next = ref->next;
@@ -2661,6 +2708,7 @@ void PSFontInterpretPS(FILE *ps,struct charprocs *cp) {
 		    cp->values[i]->layers[ly_fore].refs = next;
 		else
 		    p->next = next;
+		ref->next = NULL;
 		RefCharFree(ref);
 	    }
 	}
