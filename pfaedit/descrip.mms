@@ -17,7 +17,7 @@ pfaedit_OBJECTS =  alignment.obj,autohint.obj,autosave.obj,autowidth.obj,\
  freetype.obj,gotodlg.obj,search.obj
  
 pfaedit_OBJECTS2=displayfonts.obj,combinations.obj,sftextfield.obj,ikarus.obj,\
-        cvfreehand.obj,cvhand.obj,simplifydlg.obj
+        cvfreehand.obj,cvhand.obj,simplifydlg.obj,winfonts.obj
 
 
 pfaedit.exe : nomen.h $(pfaedit_OBJECTS) $(pfaedit_OBJECTS2)
