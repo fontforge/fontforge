@@ -1,0 +1,77 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 14-Dec-2000 -->
+  <!-- AP: Last modified: 12-Apr-2001 -->
+  <TITLE>Get Info</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+  Get Info
+</H1>
+<P>
+In the Outline View the Get Info command can generate one of four different
+dialogs depending on what is selected. If one thing is selected, and that
+thing is a point then the point info dialog is brought up, if one thing is
+selected and that thing is a reference then the reference dialog is brought
+up, if one thing is selected and it is a background image then the image
+dialog is brought up. Otherwise the <A HREF="#Character">Character info</A>
+dialog is brought up.
+<H2>
+  Point Info
+</H2>
+<P>
+<IMG SRC="pointinfo.png" WIDTH="254" HEIGHT="295">
+<P>
+This shows information about the current point. The Base position is where
+the point itself is. The Next CP shows both the location of the next control
+point, and the offset to that point, while the Prev CP does the same for
+the previous control point. You may change any of these and the change is
+reflected in the outline view. You may move on to the next or previous point
+on the path. If you cancel then all changes to all points are canceled.
+<H2>
+  <A NAME="Character">Character</A> Info
+</H2>
+<P>
+<IMG SRC="charinfo.png" WIDTH="276" HEIGHT="321">
+<P>
+This dialog allows you to set the name and unicode encoding of a given character.
+If you know the name of the character then PfaEdit can tell you the encoding
+(if you press Set From Name), similarly if you know the encoding then PfaEdit
+can tell you the name.
+<P>
+The ligature field allows you to tell PfaEdit that the current character
+is a ligature composed of several other characters. PfaEdit will often be
+able to fill this in with the right default value, but occasionally you may
+want to change it. The value should be a list of postscript character names
+seperated by spaces. If a character may be viewed as two different ligatures
+then they may both be specified seperated by a semicolon. For example "ffi"
+may be viewed as a ligature of "f" "f" and "i" or of "ff" and "i", the
+specification should be "f f i; ff i"
+<P>
+In the font view the Next and Prev buttons are not greyed out and you can
+change move on to the next character (if, for example, you need to enter
+encodings for a range of characters).
+<P>
+The Cancel (or Done) button only Cancels work in the current character. If
+you used Next or Prev then those changes will not be cancelled.
+<H2>
+  Reference Info
+</H2>
+<P>
+This dialog shows the name of the selected reference, its encoding in the
+font and its postscript transformation matrix. Currently you may not alter
+anything here, it is purely informational. There is a button in the dialog
+which will open another character outline view showing the character being
+referred to.
+<H2>
+  Image Info
+</H2>
+<P>
+This dialog gives the offset to the lower left corner of the image and the
+scale factors applied to the image. Currently you may not alter anything
+here, it is purely informational.
+<P ALIGN=Center>
+-- <A HREF="elementmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A>
+-- <A HREF="elementmenu.html">Next</A> --
+</BODY></HTML>

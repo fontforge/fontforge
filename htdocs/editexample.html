@@ -1,0 +1,127 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 6-Dec-2000 -->
+  <!-- AP: Last modified: 9-Mar-2001 -->
+  <TITLE>Steps to creating a font...</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+  Font creation
+</H1>
+<P>
+First create a new font with the <CODE>New</CODE> command in the
+<CODE>File</CODE> menu (or by using the <KBD>-new</KBD> argument at startup).
+<P>
+<IMG SRC="newfont.png" WIDTH="419" HEIGHT="189">
+<P>
+Give the font a name with the <CODE><A HREF="fontinfo.html">Font
+Info</A></CODE> command from the <CODE>Element</CODE> menu. You use this
+same command to change the encoding (ie what characters are available in
+the font), set the copyright message and change the ascent and descent (the
+sum of these two determines the size of the em square for the font, and by
+convention is 1000).
+<P>
+<IMG SRC="fontinfo.png" WIDTH="354" HEIGHT="374">
+<P>
+Once you have done that you are read to start editing characters. Double
+click on the entry for "C" in the font view above. You should now have an
+empty Outline Character window:
+<P>
+<IMG SRC="C1.png" WIDTH="272" HEIGHT="283">
+<P>
+Select the Import command from the File menu and import an image of the character
+you are creating. It will be scaled so that it is as high as the em-square.
+<P>
+<IMG SRC="C2.png" WIDTH="272" HEIGHT="283">
+<P>
+Select the background layer as editable from the layers palette, move the
+mouse pointer to one of the edges of the image, hold down the shift key,
+depress and drag the corner until the image is a reasonable size, then move
+the pointer onto the dark part of the image, depress the mouse and drag until
+the image is properly positioned.
+<P>
+<IMG SRC="C3.png" WIDTH="272" HEIGHT="283">
+<P>
+If you have downloaded the
+<A HREF="http://homepages.go.com/~martweb/AutoTrace.htm">autotrace program</A>
+you can invoke <CODE>Element-&gt;AutoTrace</CODE> to generate an outline
+from the image. But if you have not you must add points yourself. Change
+the active layer to be the foreground, and go to the tools palette and select
+the round (or curve) point. Then move the pointer to the edge of the image
+and add a point. I find that it is best to add points at places where the
+curve is horizontal or vertical, or changes inflection.
+<P>
+<IMG SRC="C4.png" WIDTH="272" HEIGHT="283">
+<P>
+It is best to enter a curve in a clockwise fashion, so the next point should
+be added up at the top of the image on the flat section. Because it is flat,
+a curve point is not appropriate here, rather a tangent point is (this looks
+like a little triangle on the tools palette). A tangent point makes a nice
+transition from curves to straight lines because the curve leaves the point
+with the same slope the line had when it entered.
+<P>
+<IMG SRC="C5.png" WIDTH="272" HEIGHT="283">
+<P>
+At the moment this "curve" doesn't match the image at all, don't worry about
+that we'll fix it later, and anyway it will change on its own as we continue.
+Note that we now have a control point attached to the tangent point (the
+little blue x). The next point needs to go where the image changes direction
+abruptly. Neither a curve nor a tangent point is appropriate here, instead
+we must use a corner point (one of the little squares on the tools palette).
+<P>
+<IMG SRC="C6.png" WIDTH="272" HEIGHT="283">
+<P>
+As you see the old curve now follows the image a bit more closely. We continue
+adding points until we are ready to close the path.
+<P>
+<IMG SRC="C7.png" WIDTH="272" HEIGHT="283">
+<P>
+Then we close the path just by adding a new point on top of the old start
+point
+<P>
+<IMG SRC="C8.png" WIDTH="272" HEIGHT="283">
+<P>
+Now we must make the curve track the image more closely, to do this we must
+adjust the control points. To make all the control points visible select
+the pointer tool and double-click on the curve and then move the control
+points around until the curve looks right.
+<P>
+<IMG SRC="C9.png" WIDTH="266" HEIGHT="279">
+<P>
+Finally we set width. Again with the pointer tool, move the mouse to the
+width line on the right edge of the screen, depress and drag the line back
+to a reasonable location.
+<P>
+<IMG SRC="C10.png" WIDTH="266" HEIGHT="279">
+<P>
+And we are done with this character.
+<P>
+Do this for all the characters in the font and you have created your first
+font. You can use <CODE>View-&gt;Next Char</CODE> and <CODE>View-&gt;Prev
+Char</CODE> to look at additional characters.
+<P>
+One of the hardest tasks of all is getting to spaces around the characters
+to look nice. PfaEdit has a <CODE>Metrics-&gt;Auto Width</CODE> command which
+attempts to guess reasonable values for the character spacings in your font.
+Just select the "All" radio button in both sets of buttons and press OK.<BR>
+<IMG SRC="autowidth.png" WIDTH="276" HEIGHT="316">
+<P>
+At this point you might want some bitmaps to go with the postscript (this
+is not compulsory). Go to <CODE>Element-&gt;Bitmaps Available</CODE> and
+select the pixel sizes you want bitmaps in (Note, that on X pixel sizes often
+do not correspond exactly to point sizes. You can then use the bitmap editor
+(<CODE>File-&gt;Open Bitmap</CODE>) to clean up the bitmaps, or you can generate
+your bitmap fonts and then
+<A HREF="http://clr.nmsu.edu/~mleisher/download.html">use someone else's
+bitmap editor to clean them up</A>.
+<P>
+<IMG SRC="BitmapView.png" WIDTH="254" HEIGHT="273">
+<P>
+Last of all you can generate font files. Select <CODE>File-&gt;Generate
+Fonts</CODE>, select the outline font format, and which (if any) of your
+bitmaps you want converted into a bdf font.
+<P ALIGN=Center>
+-- <A HREF="overview.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
+<A HREF="fontview.html">Next</A> --
+</BODY></HTML>

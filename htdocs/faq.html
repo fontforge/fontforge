@@ -1,0 +1,112 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 7-Mar-2001 -->
+  <!-- AP: Last modified: 11-Apr-2001 -->
+  <TITLE>Frequently Asked Questions</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+  Frequently Asked Questions<BR>
+  <SMALL>(or all the questions I've been asked so far)</SMALL>
+</H1>
+<P>
+<UL>
+  <LI>
+    <A HREF="#widget-set">Why is PfaEdit based on a non-standard widget set?</A>
+  <LI>
+    <A HREF="#hint-subs">How do I make it use hint substitution?</A>
+  <LI>
+    <A HREF="#flex-hints">How do I make it use flex hints?</A>
+  <LI>
+    <A HREF="#new-name">How do I add a character with a new name?</A>
+  <LI>
+    <A HREF="#Open-size">Why isn't my Open Type font much smaller than the .pfb
+    file?</A>
+  <LI>
+    <A HREF="faq.html#Open-difference">What's the difference between OpenType
+    and PostScript (or TrueType) fonts?</A>
+</UL>
+<P>
+  <HR>
+<DL>
+  <DT>
+    <A NAME="widget-set"><B>Why is PfaEdit based on a non-standard widget
+    set?</B></A>
+  <DD>
+    I wanted a widget set that would handle Unicode reasonably well. In particular
+    I thought support for bidi text was important for hebrew and arabic typography.
+    As I was unaware of any widget sets that did that, I wrote my own.
+  <DT>
+    <A NAME="hint-subs"><B>How do I make PfaEdit use hint substitution?</B></A>
+  <DD>
+    At the momemnt PfaEdit will not generate PostScript fonts using hint
+    substitution. With one exception: If you load a type1 font into PfaEdit which
+    uses hint substitution, modify a few characters, and then generate a new
+    type1 font, then the unmodified characters will continue to use hint substitution
+    if they did before.
+  <DT>
+    <A NAME="flex-hints"><B>How do I make Pfaedit use flex hints?</B></A>
+  <DD>
+    PfaEdit will now generate flex hints in situations where it is appropriate
+    to do so. You don't need to do anything. If flex hints are used then the
+    necessary subroutines will be added to the font. If they are not needed then
+    the subroutines will not be added.
+  <DT>
+    <A NAME="new-name"><B>How do I add a character with a new name?</B></A>
+  <DD>
+    Let's say you wanted to add a "dotlessi" character to an ISO-8859-1 font
+    (this encoding does not include dotlessi). There are two ways to approach
+    the problem:
+    <OL>
+      <LI>
+	Bring up <CODE>Element-&gt;Font Info</CODE><BR>
+	Increment the <CODE>Number of Characters</CODE> field by one (probably to
+	<CODE>257</CODE>)<BR>
+	Press <CODE>OK</CODE><BR>
+	Scroll down to the end of the font and find the new character<BR>
+	Select it<BR>
+	Bring up <CODE>Element-&gt;Character Info</CODE><BR>
+	Type your new name into the <CODE>Unicode Name</CODE> field (in this case
+	you'd type in <CODE>dotlessi</CODE>)<BR>
+	Press the <CODE>Set From Name</CODE> button<BR>
+	Press <CODE>OK</CODE><BR>
+	Now draw a dotlessi in the character.
+      <LI>
+	Bring up <CODE>Element-&gt;Font Info</CODE><BR>
+	Change the <CODE>Encoding</CODE> to <CODE>ISO-10646-1 (Unicode)</CODE><BR>
+	Press <CODE>OK</CODE><BR>
+	Bring up <CODE>View-&gt;Goto</CODE><BR>
+	Type in <CODE>dotlessi</CODE><BR>
+	Press <CODE>OK</CODE><BR>
+	Now draw the dotlessi character in the selected character slot<BR>
+	Bring up <CODE>Element-&gt;Font Info </CODE>again<BR>
+	Change the <CODE>Encoding</CODE> back to whatever it was
+    </OL>
+  <DT>
+    <A NAME="Open-size">Why isn't my Open Type font much smaller than the .pfb
+    file?</A>
+  <DD>
+    This is probably because you didn't round to int before saving the font.
+    PfaEdit will save the font using fixed point numbers which take up a lot
+    more space than normal integers.
+  <DT>
+    <A NAME="Open-difference">What's the difference between OpenType and PostScript
+    (or TrueType) fonts?</A>
+  <DD>
+    Both PostScript and TrueType define a file format and a glyph format. OpenType
+    uses the TrueType file format with a PostScript glyph format (actually OpenType
+    includes the TrueType glyph format as well, but the OpenType definition says
+    they should still be called TrueType fonts so I ignore that aspect).
+    <P>
+    The PostScript used in OpenType is slightly different from that used in .pfa
+    and .pfb files. They are Type1 fonts while OpenType uses Type2 fonts. Type2
+    is almost a superset of Type1 with a few minor changes and many extension.
+    Adobe's extensions to Type1 (flex hints, hint substitution, counter hints)
+    by using subroutines have been added to Type2 as direct instructions.
+</DL>
+<P>
+<P ALIGN=Center>
+-- <A HREF="xres.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
+<A HREF="license.html">Next</A> --
+</BODY></HTML>

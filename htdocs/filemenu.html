@@ -1,0 +1,307 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 10-Dec-2000 -->
+  <!-- AP: Last modified: 23-Apr-2001 -->
+  <TITLE>The File Menu</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+  The File Menu
+</H1>
+<UL>
+  <LI>
+    <A HREF="#New">New</A>
+  <LI>
+    <A HREF="#Open">Open</A>
+  <LI>
+    <A HREF="#Recent">Recent</A>
+  <LI>
+    <A HREF="#Close">Close</A>
+  <LI>
+    <A HREF="#Outline">Open Outline</A>
+  <LI>
+    <A HREF="#Bitmap">Open Bitmap</A>
+  <LI>
+    <A HREF="#Metrics">Open Metrics</A>
+  <LI>
+    <A HREF="#Save">Save</A>
+  <LI>
+    <A HREF="#SaveAs">Save As...</A>
+  <LI>
+    <A HREF="#Generate">Generate Fonts...</A>
+  <LI>
+    <A HREF="#Revert">Revert</A>
+  <LI>
+    <A HREF="#Export">Export...</A>
+  <LI>
+    <A HREF="#Import">Import...</A>
+  <LI>
+    <A HREF="#prefs">Preferences...</A>
+  <LI>
+    <A HREF="#Quit">Quit</A>
+</UL>
+<P>
+<DL>
+  <DT>
+    <A NAME="New">New</A>
+  <DD>
+    Creates a new font with ISO 8859-1 (Latin1) encoding.
+  <DT>
+    <A NAME="Open">Open</A>
+  <DD>
+    Brings up a file chooser and allows you to open a font in any of the formats
+    PfaEdit understands.
+    <P>
+    If you open a truetype font all character hinting (instructions) will be
+    lost.
+    <P>
+    By default this dialog will display all files with extensions of pfa, pfb,
+    sfd, ttf, otf and bdf. If you would also like it to display .ps files then
+    enter *.{pfa,pfb,ttf,otf,bdf,sfd,ps} and press the Filter button. If you
+    only want it to display sfd files enter *.sfd and press Filter.<BR>
+    You may select multiple files (by holding down the shift or control keys
+    when clicking on them), and all selected files will be opened.
+  <DT>
+    <A NAME="Recent">Recent</A>
+  <DD>
+    A submenu showing recently used sfd files.
+  <DT>
+    <A NAME="Close">Close</A>
+  <DD>
+    Closes the current window.
+    <P>
+    If this is a font view and the font has been changed, then it will ask whether
+    you want to save the font. It will also close any outline character, bitmap
+    character or metrics views associated with the font.
+  <DT>
+    Open <A NAME="Outline">Outline</A>
+  <DD>
+    In the font view this will open outline views on all selected characters
+    (if there are more than 15 or so it will ask whether you really meant to
+    do that).
+    <P>
+    In the bitmap view it will open an outline view on the current character.
+    <P>
+    In the metrics view it will open an outline view on whatever character is
+    active.
+    <P>
+    This menu item is always grey in an outline view.
+    <P>
+    Note: It is possible to have more than one window displaying the same character.
+    Any editing that occurs in one should be reflected in all.
+  <DT>
+    Open <A NAME="Bitmap">Bitmap</A>
+  <DD>
+    In the font view this will open bitmap views on all selected characters (if
+    there are more than 15 or so it will ask whether you really meant to do that).
+    If the font view is displaying a bitmap then it will open a bitmap view showing
+    that pixelsize, otherwise it will pick a pixelsize.
+    <P>
+    In the outline view it will open a bitmap view on the current character.
+    It will pick a pointsize.
+    <P>
+    In the metrics view it will open an outline view on whatever character is
+    active, as with the font view, if it is displaying a bitmap it will use its
+    pixelsize, otherwise it will pick a pixelsize.
+    <P>
+    This menu item is always grey in an bitmap view.
+    <P>
+    Note: It is possible to have more than one window displaying the same character.
+    Any editing that occurs in one should be reflected in all.
+  <DT>
+    Open <A NAME="Metrics">Metrics</A>
+  <DD>
+    In the font view it will open a metrics view displaying all selected characters.
+    The new metrics view will display whatever the font view displays (outline
+    or bitmap).
+    <P>
+    In the outline view it will open a metrics view displaying the current character.
+    The display will be an outline.
+    <P>
+    In the bitmap view it will open a metrics view displaying the current character.
+    The display will be a bitmap in the current size.
+    <P>
+    This menu item is always grey in the metrics view.
+    <P>
+    It is possible to have more than one metrics view open at a time.
+  <DT>
+    <A NAME="Save">Save</A>
+  <DD>
+    Saves the current file. If it is associated with a spline font database it
+    will be saved there and a backup file will be created. If it is a new font,
+    or if the font has been read from a postscript font file, then a Save As
+    dialog will pop up.
+    <P>
+    If you are editing a font "Ambrosia.sfd" then the backup file will be called
+    "Ambrosia~.sfd".
+  <DT>
+    <A NAME="SaveAs">Save</A> As...
+  <DD>
+    Allows you to give a new name to the current spline font database. Pops up
+    a file picker.
+  <DT>
+    <A NAME="Generate">Generate</A> Fonts...
+  <DD>
+    This generates font files, both outline and bitmap. You may choose not to
+    generate either, you may generate an afm file, you may select the type of
+    postscript output, you may select which pixelsizes of bitmap to generate.
+    <P>
+    The outline types are:
+    <UL>
+      <LI>
+	PostScript Type1 font, binary format (a .pfb file, this may be used by adobe
+	type manager or by the new x font server)
+      <LI>
+	PostScript Type1 font, ascii format (a .pfa file, this is used by printers)
+      <LI>
+	PostScript Type3 font (a .ps font, this is also used by printers and is not
+	encrypted)
+      <LI>
+	PostScript Type0 font, this is only available if you have a font encoded
+	with Unicode or one of the CJK encodings. Type0 fonts can have up to 65536
+	characters in them (as opposed to 256 for Type1s and Type3s).
+      <LI>
+	True Type. The instructions (hinting) are probably not very good. No diagonal
+	stems are hinted. Instructing is based on the hints used for postscript,
+	with some additional work done for serifs, and some recognition that all
+	characters of approximately the same height should have the same height at
+	small pointsizes (equivalent to PostScript's BlueValues).
+      <LI>
+	True Type Symbol. Same as True Type, except it uses a symbol encoding scheme.
+      <LI>
+	Open Type. Officially Open Type includes True Type, but Open Type True Type
+	fonts are no different from plain True Type fonts, so they might as well
+	just be called True Type. So by Open Type I mean Open Type with a CFF Postscript
+	Type 2 font inside it.
+      <LI>
+	None
+    </UL>
+    <P>
+    The bitmap types are:
+    <UL>
+      <LI>
+	BDF -- The internal bitmap fonts will be saved in bdf format. You may only
+	select sizes for which you have already generated fonts
+      <LI>
+	GDF -- Greymap Distribution Format, used for saving anti-aliased fonts. The
+	format is exactly the same as BDF except for one extra header "BITSPERPIXEL"
+	which may have a value of 2, 4 or 8. You may pick any size you like (within
+	reason), and an anti-aliased font will be generated for that size. As far
+	as I know this is a totally useless format since I just created it, but I
+	thought it a kind of neat idea.
+      <LI>
+	None
+    </UL>
+    <P>
+    TTF (and Open Type) fonts are generated in MicroSoft's Unicode encoding (unless
+    you specifically request TrueType Symbol), there will also be a tiny macintosh
+    encoding for the first 256 positions. Postscript fonts are generated in whatever
+    encoding the font is using (expect you take a two byte encoding and generate
+    a Type1 font (rather than a Type0) then only the first few characters will
+    be encoded).
+  <DT>
+    <A NAME="Revert">Revert</A>
+  <DD>
+    Rereads the font from the file on the disk. All changes are lost.
+  <DT>
+    <A NAME="Export">Export</A>...
+  <DD>
+    In the Outline view this allows you to export the splines that make up the
+    character into an encapsulated postscript (.eps) file or a file in xfig format
+    (.fig -- the conversion to fig format is not the best). You may also have
+    the character rasterized and output in either .xbm or .bmp formats (PfaEdit
+    will prompt you for a pixelsize. bmp also allows you to generate an anti-aliased
+    image, and you will be prompted for bits per pixel. 1 bit per pixel is a
+    bitmap).
+    <P>
+    In the Bitmap view this allows you to export the current character as either
+    a .xbm or a .bmp (always as a bitmap) file.
+    <P>
+    This menu item is not available in the Font or Metrics Views.
+  <DT>
+    <A NAME="Import">Import</A>...
+  <DD>
+    In the Font View this allows you to import a bitmap font (.bdf) and merge
+    it into the list of bitmap sizes stored in the database.
+    <P>
+    In the Outline View this allows you to import an image into the background,
+    or import encapsulated postscript or fig files into the foreground (the xfig
+    conversion is really bad).
+    <P>
+    In the Bitmap View this allows you to import a bitmap image into the character.
+    <P>
+    This menu item is not available in the Metrics View<BR>
+    &nbsp; <BR>
+    In the font view you may select multiple files (by holding down the shift
+    or control keys when clicking on them), and all selected bitmap fonts will
+    be imported into the sfd.
+  <DT>
+    <A NAME="prefs">Preferences...</A>
+  <DD>
+    This pops up a dialog which allows you to specify
+    <UL>
+      <LI>
+	Whether you want the widths of accented characters to track the width of
+	the base character (so if you modify the width of A then the width of &Agrave;
+	will automagically change, if &Agrave; is built as a reference to A and a
+	reference to grave)
+      <LI>
+	Whether you want left side bearings of accented characters to track the left
+	side bearing of base characters (so if you shift A left, then the accent
+	in &Agrave; will also be shifted left)
+      <LI>
+	Whether characters should be automagically hinted before a bitmap character
+	is generated (improves the quality of the bitmap)
+      <LI>
+	The default encoding used to create new fonts. Normally this is ISO 8859-1.
+      <LI>
+	The default encoding used by the operating system (ie. text that is pasted
+	into pfaedit will be assumed to be in this encoding).
+      <LI>
+	The "Foundry Name". Used in generating bdf files (part of the X Windows font
+	naming convention).
+      <LI>
+	The base
+	"<A HREF="http://partners.adobe.com/asn/developer/type/uniqueid.html">XUID</A>".
+	Should uniquely identify the user's organization. If present then every new
+	font will be given an XUID generated by appending a random number to the
+	end of this string (which should consist of a set of numbers seperated by
+	spaces). Whenever a postscript font is generated then this last number will
+	be incremented by 1.
+    </UL>
+    <P>
+    A number of things that might be controlled from a preference window are
+    controlled by <A HREF="xres.html">X Resources</A>.
+  <DT>
+    <A NAME="Quit">Quit</A>
+  <DD>
+    Exits the program, prompting you whether to save any changed fonts.
+</DL>
+<P>
+<H2>
+  Other menus
+</H2>
+<UL>
+  <LI>
+    <A HREF="filemenu.html">File</A>
+  <LI>
+    <A HREF="editmenu.html">Edit</A>
+  <LI>
+    <A HREF="pointmenu.html">Point</A>
+  <LI>
+    <A HREF="elementmenu.html">Element</A>
+  <LI>
+    <A HREF="hintsmenu.html">Hints</A>
+  <LI>
+    <A HREF="viewmenu.html">View</A>
+  <LI>
+    <A HREF="metricsmenu.html">Metrics</A>
+  <LI>
+    <A HREF="windowmenu.html">Window</A>
+</UL>
+<P ALIGN=Center>
+-- <A HREF="metricsview.html">Prev</A> -- <A HREF="overview.html">TOC</A>
+-- <A HREF="editmenu.html">Next</A> --
+<P>
+</BODY></HTML>

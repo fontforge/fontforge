@@ -1,0 +1,326 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 21-Jan-2001 -->
+  <!-- AP: Last modified: 7-Mar-2001 -->
+  <TITLE>X Resources</TITLE>
+</HEAD>
+<BODY>
+<P>
+Every X application has an inordinate number of resources that you can tweak.
+This one is no exception. However I don't follow standard conventions, so
+it's all different. Sorry (a little anyway).
+<P>
+To use an X resource add a series of lines to your .Xdefaults file and then
+run "$ xrdb ~/.Xdefaults". For example:
+<BLOCKQUOTE>
+  <PRE>Gdraw.ScreenWidthInches: 14.7
+Gdraw.GGadget.Popup.Font: 10pt helvetica
+Gdraw.Background: white
+</PRE>
+</BLOCKQUOTE>
+<P>
+If a resource begins with "<CODE>Gdraw.</CODE>" or "<CODE>pfaedit.</CODE>"
+then the program will look at it.
+<DL>
+  <DT>
+    <CODE>Gdraw.ScreenWidthInches</CODE>
+  <DD>
+    A double. (inches)<BR>
+    X usually does not know the physical width of a screen (it knows the logical,
+    pixel width). Gdraw's internals are based on points rather than pixels, and
+    it will sometimes pick a font that is too small or too large if it relies
+    on X's idea of how wide the screen is.
+  <DT>
+    Gdraw.ScreenWidthPixels
+  <DD>
+    An integer (pixels)<BR>
+    When X creates a virtual screen it may not be possible for Gdraw to find
+    the actual number of pixels on the screen. This again will throw off point
+    calculations.
+  <DT>
+    Gdraw.ScreenHeightPixels
+  <DD>
+    An integer (pixels)<BR>
+    When X creates a virtual screen it may not be possible for Gdraw to find
+    the actual number of pixels on the screen. This is not used in point
+    calculations.
+  <DT>
+    <CODE>Gdraw.DoDithering</CODE>
+  <DD>
+    An integer (0 or 1)<BR>
+    You can use this to turn off dithering of images on an 8bit screen.
+  <DT>
+    <CODE>Gdraw.MultiClickTime</CODE>
+  <DD>
+    An integer (milliseconds)<BR>
+    The maximum amount of time allowed between two clicks for them to be considered
+    a double (triple, etc.) click.
+  <DT>
+    <CODE>Gdraw.MultiClickWiggle</CODE>
+  <DD>
+    An integer (pixels)<BR>
+    The maximum number of pixels the mouse is allowed to move between two clicks
+    and have them still be considered a double click.
+  <DT>
+    <CODE>Gdraw.SelectionNotifyTimeout</CODE>
+  <DD>
+    An integer (seconds)<BR>
+    Gdraw will wait this many seconds after making a request for a selection
+    (ie. when doing a Paste). If it gets no responce after that period it reports
+    a failure.
+  <DT>
+    <CODE>Gdraw.Background</CODE>
+  <DD>
+    A <A HREF="#color">color</A><BR>
+    Gdraw will use this as the default background color for the windows.
+  <DT>
+    <CODE>Gdraw.Foreground</CODE>
+  <DD>
+    A <A HREF="#color">color</A><BR>
+    Gdraw will use this as the default foreground color for dialogs.
+  <DT>
+    <CODE>Gdraw.GGadget.Popup.Foreground</CODE>
+  <DD>
+    A <A HREF="#color">color</A><BR>
+    Specifies the foreground color of popup messages.
+  <DT>
+    <CODE>Gdraw.GGadget.Popup.Background</CODE>
+  <DD>
+    A <A HREF="#color">color</A><BR>
+    Specifies the background color of popup messages.
+  <DT>
+    <CODE>Gdraw.GGadget.Popup.Delay</CODE>
+  <DD>
+    An integer (milliseconds).<BR>
+    Specifies the amount of time the cursor must remain motionless before a popup
+    message pops up.
+  <DT>
+    <CODE>Gdraw.GGadget.Popup.Font</CODE>
+  <DD>
+    A <A HREF="#font">font</A><BR>
+    Specifies the font to use in a popup message.
+  <DT>
+    <CODE>Gdraw.GGadget...</CODE>
+  <DD>
+    Every ggadget in enclosed in a box. The following information may be supplied
+    for any box:
+    <DL>
+      <DT>
+	<CODE>...Box.BorderType</CODE>
+      <DD>
+	one of "none", "box", "raised", "lowered", "engraved", "embossed", "double"<BR>
+	For a description of these see the css manual.
+      <DT>
+	<CODE>...Box.BorderShape</CODE>
+      <DD>
+	one of "rect", "roundrect", "elipse", "diamond"<BR>
+	Describes the basic shape of the box. (some ggadgets must be in rectangles).
+      <DT>
+	<CODE>...Box.BorderWidth</CODE>
+      <DD>
+	An integer (points)<BR>
+	Specifies the width of the box's border in points (NOT pixels)
+      <DT>
+	<CODE>...Box.Padding</CODE>
+      <DD>
+	An integer (points)<BR>
+	Specifies the padding between the interior of the box and the border
+      <DT>
+	<CODE>...Box.Radius</CODE>
+      <DD>
+	An integer (points)<BR>
+	Specifies the radius of a roundrect. Ignored for everything else.
+      <DT>
+	<CODE>...Box.BorderInner</CODE>
+      <DD>
+	A boolean (true, on or 1, false, off or 0)<BR>
+	Specifies whether a black line should be drawn inside the border.
+      <DT>
+	<CODE>...Box.BorderOuter</CODE>
+      <DD>
+	A boolean (true, on or 1, false, off or 0)<BR>
+	Specifies whether a black line should be drawn outside the border.
+      <DT>
+	<CODE>...Box.ActiveInner</CODE>
+      <DD>
+	A boolean (true, on or 1, false, off or 0)<BR>
+	Specifies whether a yellow line should be drawn inside the border when the
+	gadget is active (not all gadgets support this).
+      <DT>
+	<CODE>...Box.DoDepressedBackground</CODE>
+      <DD>
+	A boolean (true, on or 1, false, off or 0)<BR>
+	Changes the color of the background while a button is depressed.
+      <DT>
+	<CODE>...Box.BorderBrightest</CODE>
+      <DD>
+	A <A HREF="#color">color</A><BR>
+	The color of the brightest edge of the border (usually the left edge)
+      <DT>
+	<CODE>...Box.BorderBrighter</CODE>
+      <DD>
+	A <A HREF="#color">color</A><BR>
+	The color of the next to brightest edge of the border (usually the top edge)
+      <DT>
+	<CODE>...Box.BorderDarkest</CODE>
+      <DD>
+	A <A HREF="#color">color</A><BR>
+	The color of the darkest edge of the border (usually the right edge)
+      <DT>
+	<CODE>...Box.BorderDarker</CODE>
+      <DD>
+	A <A HREF="#color">color</A><BR>
+	The color of the next to next to darkest edge of the border. (usually the
+	bottom edge)
+      <DT>
+	<CODE>...Box.NormalBackground</CODE>
+      <DD>
+	A <A HREF="#color">color</A><BR>
+	The color of a normal background (not disabled, not depressed)
+      <DT>
+	<CODE>...Box.NormalForeground</CODE>
+      <DD>
+	A <A HREF="#color">color</A><BR>
+	The color of a normal foreground (not disabled)
+      <DT>
+	<CODE>...Box.DisabledBackground</CODE>
+      <DD>
+	A <A HREF="#color">color</A><BR>
+	The color of a disabled background .
+      <DT>
+	<CODE>...Box.DisabledForeground</CODE>
+      <DD>
+	A <A HREF="#color">color</A><BR>
+	The color of a normal foreground.
+      <DT>
+	<CODE>...Box.ActiveBorder</CODE>
+      <DD>
+	A <A HREF="#color">color</A><BR>
+	The color of an ActiveInner border.
+      <DT>
+	<CODE>...Box.PressedBackground</CODE>
+      <DD>
+	A <A HREF="#color">color</A><BR>
+	The color of a depressed background.
+      <DT>
+	<CODE>...Font</CODE>
+      <DD>
+	A <A HREF="#font">font</A><BR>
+	Specifies the default font for a ggadget.
+    </DL>
+  <DT>
+    <CODE>Gdraw.GButton...<BR>
+    Gdraw.GLabel...<BR>
+    Gdraw.GRadio...<BR>
+    Gdraw.GCheckBox...<BR>
+    Gdraw.GTextField...<BR>
+    Gdraw.GList...<BR>
+    Gdraw.GScrollBar...<BR>
+    Gdraw.GScrollBarThumb...<BR>
+    Gdraw.GGroup...<BR>
+    Gdraw.GLine...<BR>
+    Gdraw.GMenu...<BR>
+    Gdraw.GMenuBar...<BR>
+    Gdraw.GTabSet...</CODE>
+  <DD>
+    As above.<BR>
+    Specifies the box for this particular type of ggadget.
+  <DT>
+    <CODE>Gdraw.GScrollBar.Width</CODE>
+  <DD>
+    An integer (points)<BR>
+    Specifies the scrollbar width in points (for horizontal scrollbars it specifies
+    the height)
+  <DT>
+    Gdraw.GWidget.BrokenPalettes
+  <DD>
+    A boolean<BR>
+    On many window managers the palette code doesn't work (they steal focus from
+    menus, they don't track the main window properly, ...). Use this resource
+    to turn off the broken bits. The results are non-optimal, but they should
+    be functional.
+  <DT>
+    ...
+</DL>
+<P>
+<DL>
+  <DT>
+    <A NAME="color">Colors</A>
+  <DD>
+    Colors may be specified as:
+    <UL>
+      <LI>
+	rgb(r%,g%,b%)<BR>
+	where r, g, and b are doubles between 0% and 100%
+      <LI>
+	r g b<BR>
+	where r, g, and b are integers between 0 and 255
+      <LI>
+	#rgb<BR>
+	where r, g, and b are hex digits between 0 and 15 (0xf)
+      <LI>
+	#rrggbb<BR>
+	where rr, gg, bb are hex numbers between 0x00 and 0xff
+      <LI>
+	#rrrrggggbbbb<BR>
+	where rrrr, gggg, bbbb are hex numbers between 0x0000 and 0xffff
+      <LI>
+	or one of the color names accepted on the net (red, green, blue, cyan, magenta,
+	yellow, white, black, maroon, olive, navy, purple, lime, aqua, teal, fuchsia,
+	silver)
+    </UL>
+  <DT>
+    <A NAME="font">Fonts</A>
+  <DD>
+    A font may be specified as:<BR>
+    &lt;boldness&gt; &lt;italicness&gt; &lt;pointsize&gt;
+    &lt;familyname&gt;<BR>
+    (I know the order looks a bit weird but that's what is used by css).
+    <UL>
+      <LI>
+	&lt;boldness&gt; can be:
+	<UL>
+	  <LI>
+	    nothing -- the font is not bold
+	  <LI>
+	    bold -- the font is bold
+	  <LI>
+	    a number -- (between 0 and 999), a numeric value that gives some idea of
+	    how bold the font should be. 200 would be a light font, 400 an normal font,
+	    700 a bold font and 999 and ultra-black font.
+	</UL>
+      <LI>
+	&lt;italicness&gt; can be:
+	<UL>
+	  <LI>
+	    nothing -- the font is not italic
+	  <LI>
+	    italic -- the font is italic
+	  <LI>
+	    oblique -- the font is oblique (italic)
+	</UL>
+      <LI>
+	&lt;pointsize&gt; can be:
+	<UL>
+	  <LI>
+	    nothing -- a default point size is chosen
+	  <LI>
+	    a number followed by "pt" -- specifies the point size.
+	</UL>
+    </UL>
+    <P>
+    Examples
+    <UL>
+      <LI>
+	bold 14pt helvetica<BR>
+	Helvetica Bold at 14 points
+      <LI>
+	italic 10pt times<BR>
+	Times italic at 10 points
+    </UL>
+</DL>
+<P ALIGN=Center>
+-- <A HREF="sfdformat.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
+<A HREF="faq.html">Next</A> --
+</BODY></HTML>

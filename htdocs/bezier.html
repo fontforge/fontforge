@@ -1,0 +1,140 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 18-Dec-2000 -->
+  <!-- AP: Last modified: 9-Apr-2001 -->
+  <TITLE>Bezier Splines</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+  Bezier Splines
+</H1>
+<P>
+<IMG SRC="splines.gif" WIDTH="172" HEIGHT="179" ALIGN="Left">Technically
+PostScript uses cubic Bezier splines. Each control point determines the slope
+of the spline at the corresponding end point. TrueType uses quadratic Bezier
+splines, in these there is only one control point between two end points
+and that point determines the slope of the spline at both end points.
+<P>
+It is also possible to have higher degree Bezier splines. For a quartic spline
+there would be 3 control points, for a quintic 4 control points, etc.
+<P>
+In general if there are n+1 points labeled P<SUB>0</SUB>, P<SUB>1</SUB>,
+... P<SUB>n</SUB>, with P<SUB>0</SUB> and P<SUB>n</SUB> the end points (and
+all the others control points) then the equation of the Bezier spline between
+them is: <IMG SRC="bezier.gif" WIDTH="137" HEIGHT="56" ALIGN="Middle">. If
+there are two points then this is just the line between the two end points,
+if three then the quadratic spline used by TrueType, if four then the cubic
+spline used by PostScript.
+<P>
+A cubic Bezier curve may be viewed as:
+<BLOCKQUOTE>
+  x = a<SUB>x</SUB>*t<SUP>3</SUP> + b<SUB>x</SUB>*t<SUP>2</SUP> +
+  c<SUB>x</SUB>*t +d<SUB>x</SUB><BR>
+  y = a<SUB>y</SUB>*t<SUP>3</SUP> + b<SUB>y</SUB>*t<SUP>2</SUP> +
+  c<SUB>y</SUB>*t +d<SUB>y</SUB>
+</BLOCKQUOTE>
+<P>
+Where
+<TABLE CELLPADDING="2">
+  <TR>
+    <TD>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TD>
+    <TD>d<SUB>x </SUB>= P0.x</TD>
+    <TD>d<SUB>y</SUB> = P0.y</TD>
+  </TR>
+  <TR>
+    <TD></TD>
+    <TD>c<SUB>x</SUB> = 3*P1.x-3*P0.x</TD>
+    <TD>c<SUB>y</SUB> = 3*P1.y-3*P0.y</TD>
+  </TR>
+  <TR>
+    <TD></TD>
+    <TD>b<SUB>x</SUB> = 3*P2.x-6*P1.x+3*P0.x</TD>
+    <TD>b<SUB>y</SUB> = 3*P2.y-6*P1.y+3*P0.y</TD>
+  </TR>
+  <TR>
+    <TD></TD>
+    <TD>a<SUB>x</SUB> = P3.x-P2.x+P1.x-P0.x</TD>
+    <TD>a<SUB>y</SUB> = P3.y-P2.y+P1.y-P0.y</TD>
+  </TR>
+</TABLE>
+<P>
+And a quadratic Bezier curve:
+<TABLE CELLPADDING="2">
+  <TR>
+    <TD>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TD>
+    <TD>d<SUB>x </SUB>= P0.x</TD>
+    <TD>d<SUB>y</SUB> = P0.y</TD>
+  </TR>
+  <TR>
+    <TD></TD>
+    <TD>c<SUB>x</SUB> = 2*P1.x-2*P0.x</TD>
+    <TD>c<SUB>y</SUB> = 2*P1.y-2*P0.y</TD>
+  </TR>
+  <TR>
+    <TD></TD>
+    <TD>b<SUB>x</SUB> = P2.x-2*P1.x+P0.x</TD>
+    <TD>b<SUB>y</SUB> = P2.y-2*P1.y+P0.y</TD>
+  </TR>
+</TABLE>
+<H2>
+  Converting TrueType to PostScript
+</H2>
+<P>
+Any quadratic spline can be expressed as a cubic (where the cubic term is
+zero). The end points of the cubic will be the same as the quadratic's.
+<BLOCKQUOTE>
+  CP<SUB>0</SUB> = QP<SUB>0</SUB><BR>
+  CP<SUB>3</SUB> = QP<SUB>2</SUB>
+</BLOCKQUOTE>
+<P>
+The two control points for the cubic are:
+<BLOCKQUOTE>
+  CP<SUB>1</SUB> = QP<SUB>0</SUB> + 2/3
+  *(QP<SUB>1</SUB>-QP<SUB>0</SUB>)<BR>
+  CP<SUB>2</SUB> = CP<SUB>1</SUB> + 1/3 *(QP<SUB>2</SUB>-QP<SUB>0</SUB>)
+</BLOCKQUOTE>
+<P>
+So converting from TrueType to PostScript is trivial. There is a slight error
+introduced due to rounding, but it is unlikely to be noticeable.
+<H2>
+  Converting Postscript to TrueType
+</H2>
+<P>
+Most cubic splines cannot be represented exactly by a quadratic (or even
+by a series of quadratics). The best that can be done is to approximate the
+cubic to within some margin of error. Here is a way to do that:
+<P>
+Start from the end of the spline and every so often (ie. within the margin
+of error) check to see if the one permissible quadratic approximation actually
+matches the cubic closely enough (the one quadratic has its end points as
+the end points of the interval, and its control point is determined by the
+intersections of the lines tangent to the cubic at the start and end of the
+interval).
+<P>
+If this approximation works then keep it as part of the result, and continue
+the process by advancing our start point along to the cubic spline to the
+end of the quadratic we just created.
+<P>
+(There are some slight complexities introduced because there may not be a
+quadratic approximation at a given point (if the tangents happen to be parallel)
+or because the approximation happens to be linear, but these are easily dealt
+with).
+<P>
+It may, of course, happen that the "cubic" we are given is actually a quadratic
+(if it's third degree term is 0), the most likely cause is that the font
+came from a truetype source. In that case the control point for the quadratic
+is at:
+<BLOCKQUOTE>
+  QP<SUB>1</SUB> = CP<SUB>0</SUB> + 3/2 * (CP<SUB>1</SUB> - CP<SUB>0</SUB>)
+</BLOCKQUOTE>
+<H2>
+  Open Type, another solution
+</H2>
+<P>
+Adobe and Microsoft decided to produce one font format which could hold either
+a true type font or a postscript font. This is called Open Type. It is
+essentially a superset of TrueType. Any TrueType font is a valid Open Type
+font, but Open Type fonts can also contain postscript. Anything that supports
+Open Type will not require converting between PostScript and True Type.
+</BODY></HTML>

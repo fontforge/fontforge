@@ -1,0 +1,1170 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 7-Nov-2000 -->
+  <!-- AP: Last modified: 28-Apr-2001 -->
+  <TITLE>PfaEdit</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+  <A href="http://sourceforge.net"><IMG src="http://sourceforge.net/sflogo.php?group_id=25752&amp;type=1"
+      width="88" height="31" border="0" alt="SourceForge Logo" ALIGN=right> </A>
+  PfaEdit
+</H1>
+<P>
+<FONT COLOR="Red"><STRONG>PfaEdit</STRONG></FONT> -- A postscript font editor
+that lets you create your own postscript, truetype, opentype and bitmap (bdf)
+fonts, or edit existing ones. Also lets you convert one format to another.
+<P>
+Contents
+<UL>
+  <LI>
+    <A HREF="overview.html">User manual</A>.
+  <LI>
+    <A HREF="http://sourceforge.net/projects/pfaedit/">SourceForge Project page</A>
+  <LI>
+    <A HREF="#downloads">Downloads</A>
+  <LI>
+    <A HREF="#license">License</A>
+  <LI>
+    <A HREF="#change-log">Change Log</A>
+  <LI>
+    <A HREF="#known-bugs">Known Bugs</A>
+  <LI>
+    <A HREF="#bugs">Reporting Bugs</A>
+  <LI>
+    <A HREF="#Acknowledgements">Acknowledgements</A>
+  <LI>
+    <A HREF="#tools">Similar tools</A>
+</UL>
+<P>
+This is beta software. Expect to find bugs. <A HREF="#bugs">Please let me
+know when you do</A>.
+<H2>
+  <A NAME="binary">Binary</A> distributions:
+</H2>
+<UL>
+  <LI>
+    <A HREF="pfaedit-280401.tgz">Download pfaedit linux-i386 RedHat 7.0
+    </A><A NAME="downloads">executable</A> Version: 28-Apr-2001
+  <LI>
+    <A HREF="pfaedit_nbsd_alpha_tar.gz">Download pfaedit netbsd-alpha</A> executable
+    with library Version: 14-Dec-2000<BR>
+    &nbsp;
+  <LI>
+    If you want to do autotracing around character images you should also download
+    Martin Weber's
+    <A HREF="http://homepages.go.com/~martweb/AutoTrace.htm">autotrace program.</A>
+</UL>
+<H2>
+  <A NAME="source">Source</A> distribution
+</H2>
+<P>
+You must download the following three packages. Version: 28-Apr-2001
+<UL>
+  <LI>
+    <A HREF="libgunicode-280401.tgz">Unicode library source</A> (28 Apr 2001)<BR>
+    --
+    <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
+  <LI>
+    <A HREF="libgdraw-280401.tgz">Unicode widget library source</A> (28 Apr
+    2001)<BR>
+    --
+    <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
+  <LI>
+    <A HREF="pfaedit_src-280401.tgz">Pfaedit source</A> (28 Apr 2001)<BR>
+    (<A HREF="pfaedit_src-290301.tgz">old source</A>, in case opentype broke
+    stuff)<BR>
+    -- <A HREF="overview.html">docs</A>
+  <LI>
+    If you want to do autotracing around character images you should also download
+    Martin Weber's
+    <A HREF="http://homepages.go.com/~martweb/AutoTrace.htm">autotrace program.</A>
+</UL>
+<P>
+You might also want to pull down some unicode bitmap fonts that pfaedit uses
+<UL>
+  <LI>
+    <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/../fonts/Monospace/index.html">my
+    monospace fonts</A>
+  <LI>
+    <A HREF="http://czyborra.com/unifont/">The unifont</A>
+  <LI>
+    <A HREF="http://clr.nmsu.edu/~mleisher/cu.html">ClearlyU's font</A>
+  <LI>
+    <A HREF="http://www.cl.cam.ac.uk/~mgk25/ucs-fonts.html">X fixed</A>
+</UL>
+<BLOCKQUOTE>
+  <BLOCKQUOTE>
+    <A NAME="license">Copyright</A> &copy; 2000,2001 by George Williams
+    <P>
+    Redistribution and use in source and binary forms, with or without modification,
+    are permitted provided that the following conditions are met:
+    <P>
+    Redistributions of source code must retain the above copyright notice, this
+    list of conditions and the following disclaimer.
+    <P>
+    Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+    <P>
+    The name of the author may not be used to endorse or promote products derived
+    from this software without specific prior written permission.
+    <P>
+    THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+    WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+    MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+    EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+    EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+    OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+    STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+    OF SUCH DAMAGE.
+  </BLOCKQUOTE>
+</BLOCKQUOTE>
+<P>
+<P>
+  <HR>
+<H2>
+  <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
+</H2>
+<UL>
+  <LI>
+    28 Apr 2001
+    <UL>
+      <LI>
+	Transform from the font view will (for some transformations and if
+	<A HREF="editmenu.html#From">Copy From</A> is set to All Fonts) transform
+	the bitmap associated bitmap characters as well as the outline characters.
+      <LI>
+	Cleaned up Build Accented character so that it behaves consistantly between
+	font/outline views, works with Copy From. The two different aspects of the
+	command (Accented vs. Composite) are now controlled by whether the Shift
+	key is down when the menu is invoked.
+      <LI>
+	Some more locale tweaking for reading in/writing out postscript.
+      <LI>
+	The Preference encoding for new fonts didn't work if set to a user defined
+	encoding. Should be fixed now.
+    </UL>
+  <LI>
+    27 Apr 2001
+    <UL>
+      <LI>
+	Tangent points should display a little better now.
+      <LI>
+	If a font is a 94x94 CJK font then the LanguageGroup field of the Private
+	dictionary will be set to 1.
+      <LI>
+	Fixed a recently introduced crash bug that happens on non-unicode fonts with
+	accented characters.
+      <LI>
+	If a character contained a reference and that character could not be converted
+	into a seac then there would be no hints for the reference. That should be
+	fixed now.
+      <LI>
+	Accented bitmaps should be positioned better now.
+      <LI>
+	Added a couple of progress indicators to font level operations (transform,
+	paste, etc.)
+      <LI>
+	Expand stroke didn't work from the font view.
+    </UL>
+  <LI>
+    23 Apr 2001
+    <UL>
+      <LI>
+	Fixed a clipping problem
+      <LI>
+	Redid a change from yesterday. It should now work for the stuff that used
+	to work (as well as for what I fixed yesterday)
+      <LI>
+	(moved to
+	<A href="http://sourceforge.net"><IMG SRC="http://sourceforge.net/sflogo.php?group_id=25752&amp;type=1"
+	    WIDTH="88" HEIGHT="31" BORDER="0" ALT="SourceForge Logo"></A>)
+    </UL>
+  <LI>
+    22 Apr 2001
+    <UL>
+      <LI>
+	Added code to allow users to select more than one bitmap font at a time to
+	be imported into an sfd.
+      <LI>
+	Cleaned up opening a bdf file.
+      <LI>
+	Fixed various crash bugs dealing with missing bitmap characters where there
+	were outline characters.
+      <LI>
+	Fixed various problems with building greek accented characters (Unicode 3's
+	decompositions are no longer helpful)
+      <LI>
+	Added some support for
+	<A HREF="http://partners.adobe.com/asn/developer/type/corporateuse.txt">Adobe's
+	documented corporate use</A> characters (Small Caps, Old Style numbers...)
+      <LI>
+	Cleaned up the outline character's icon (got broken when I added anti-aliasing)
+      <LI>
+	em space character kept vanishing. Fixed that.
+      <LI>
+	Fixed many other small bugs.
+    </UL>
+  <LI>
+    20 Apr 2001
+    <UL>
+      <LI>
+	Addition improvements to the handling of format0 (1byte) encodings
+      <LI>
+	Put a Symbol encoding into the FontInfo encoding list.
+      <LI>
+	Oops. Ligature's had their semi-colons in the wrong place in afm files.
+    </UL>
+  <LI>
+    19 Apr 2001
+    <UL>
+      <LI>
+	Yesterday's builds were transfered as ASCII not BINARY and are totally useless.
+      <LI>
+	Added a macintosh encoding to ttf output
+      <LI>
+	Slight improvement to ttf output (I hope)
+    </UL>
+  <LI>
+    18 Apr 2001
+    <UL>
+      <LI>
+	Crash when reading a ttf font fixed (introduced by ligature code).
+      <LI>
+	Crash when generating almost any postscript Type1 font (recently introduced)
+      <LI>
+	Added code to read ligature information from the TTF/OTF GSUB table.
+      <LI>
+	List buttons near the bottom of the screen would popup their list in
+	inappropriate places.
+      <LI>
+	Fixed two bugs in cubic-&gt;quadratic spline conversion.
+      <LI>
+	Added support for TrueType Symbol encodings
+    </UL>
+  <LI>
+    17 Apr 2001
+    <UL>
+      <LI>
+	Menus would go into an infinite loop if you: depressed the mouse on the menu
+	bar (and pulled down a menu) and then moved the mouse so that it was above
+	the menubar when the menu was below it. Should be fixed.
+    </UL>
+  <LI>
+    12 Apr 2001
+    <UL>
+      <LI>
+	Added a submenu of recent files and a pull down list in the open dlg.
+      <LI>
+	Added stuff to put ligature info into an afm file (But not the GSUB table
+	of ttf/otf)
+    </UL>
+  <LI>
+    10 Apr 2001
+    <UL>
+      <LI>
+	Fixed a crash bug when making an encoding from a font with a non-unicode
+	character in it.
+      <LI>
+	Reencoding a font got confused if the new encoding contained more than one
+	instance of the same glyph (common example is to have both 0x20 and 0xA0
+	point to space) or if it contained a non-unicode character. This should be
+	fixed now.
+      <LI>
+	Fixed a couple of problems with reading otf files
+      <LI>
+	Added ability to save an Open Type font
+      <LI>
+	Added a "Round to Int" command
+      <LI>
+	.sfd files contain decimal points. This means they are locale specific. Changed
+	the input routines so that it would accept either "." or "," as a decimal
+	point.
+    </UL>
+  <LI>
+    2 Apr 2001
+    <UL>
+      <LI>
+	PfaEdit provides some support for XUIDs
+      <LI>
+	PfaEdit now has a button in the font info dialog which may be able to guess
+	the italic angle for the font.
+      <LI>
+	AutoWidth/Kern didn't work well when the font was missing "A"
+      <LI>
+	AutoWidth/Kern didn't work well when the font was italic/oblique
+      <LI>
+	Build Accented Character didn't work too well when the font was italic/oblique
+      <LI>
+	Previously opening a Type1 font failed to read /OtherSubrs correctly
+      <LI>
+	Oops. In the Open Font Dialog, typing a wildcard changed the default button
+	to [New] rather than [Filter]. And pressing on [Filter] caused a crash.
+      <LI>
+	Added ability to open an Open Type font (Postscript Type2 in a TrueType wrapper)
+    </UL>
+  <LI>
+    29 Mar 2001
+    <UL>
+      <LI>
+	It is now possible to edit bdf fonts directly (without first creating a dummy
+	postscript font to contain them)
+      <LI>
+	Fixed crash bug under kde
+    </UL>
+  <LI>
+    28 Mar 2001
+    <UL>
+      <LI>
+	Made it possible to for the user to new encodings
+      <LI>
+	(added TeX base encoding)
+      <LI>
+	slight improvements to the palette code
+    </UL>
+  <LI>
+    26 Mar 2001
+    <UL>
+      <LI>
+	Fixed a clipping problem in the Metricsview
+      <LI>
+	Fixed various other display problems in Metrics
+      <LI>
+	Fixed various display problems in the fontview
+      <LI>
+	Added "Remove All Kern Pairs" menu item
+      <LI>
+	Fixed Auto Kern yet again
+      <LI>
+	Added a preference item to control the foundry name for generated bdf fonts.
+    </UL>
+  <LI>
+    25 Mar 2001
+    <UL>
+      <LI>
+	Oops. Fixed a typo in auto-kerning code. It should work now...
+      <LI>
+	From the outline view, exporting to a bmp file allows you to save an anti-aliased
+	character as well as a bitmap.
+      <LI>
+	The Generate Fonts command allows you to save anti-aliased greymap fonts.
+	The format they are saved in was invented by me an hour ago so it's totally
+	useless (it's exactly the same as bdf except there's one extra header
+	"BITSPERPIXEL" which may be 1, 2, 4 or 8 (1 would be the same as bdf), and
+	the number of pixels packed into a byte is 8/BITSPERPIXEL (so 8, 4, 2 or
+	1 respectively).
+      <LI>
+	If you selected "No Outline font" in the Generate fonts dialog, it would
+	generate a postscript font anyway. This has been fixed.
+    </UL>
+  <LI>
+    24 Mar 2001
+    <UL>
+      <LI>
+	AutoKerning now lets you specify the number of kerning pairs the font may
+	have.
+      <LI>
+	I'm told that ttf fonts can only have 2048 kerning pairs, so if a font has
+	more, the ttf generator will only save the 2048 ones with the biggest (absolute)
+	kerning offset.
+      <LI>
+	Fixed a bug in autowidth (would make some characters far too wide).
+      <LI>
+	Fixed a bug in autokern which caused it to kern things too closely together.
+	This also reduced the number of kern pairs generated.
+      <LI>
+	Fixed a crash when loading a truetype font (if a glyph's start point and
+	end point were both off-curve points then the point between them was interpolated
+	incorrectly).
+      <LI>
+	PfaEdit should now work with XFree 4.0.* before it would crash after putting
+	up the splash screen.
+    </UL>
+  <LI>
+    21 Mar 2001
+    <UL>
+      <LI>
+	Fixed yet another remove overlap bug.
+    </UL>
+  <LI>
+    12 Mar 2001
+    <UL>
+      <LI>
+	a number of small improvements
+      <LI>
+	fixed a crash bug (occurred when holding down the alt key, using the pointer
+	tool, and no reference was selected)
+    </UL>
+  <LI>
+    9 Mar 2001
+    <UL>
+      <LI>
+	Fixed a small bug in the hinting of glyph 0 (the unknown character)
+      <LI>
+	Added "rulers" to the character outline view
+      <LI>
+	Expanded the abilities of the postscript importer
+      <LI>
+	Fixed yet another clipping bug.
+      <LI>
+	Fixed a problem displaying tangent points when the control point was less
+	than 1 unit away
+      <LI>
+	Provides an interface to the autotrace program to autotrace background images
+      <LI>
+	Fixed a crash when drawing large images.
+      <LI>
+	Fixed a problem with detecting clockwise paths.
+      <LI>
+	Fixed a bug with reading in Type3 fonts
+    </UL>
+  <LI>
+    5 Mar 2001
+    <UL>
+      <LI>
+	Minimal truetype instructing (hinting) is now in place.
+	<TABLE CELLPADDING="2" BORDER=1>
+	  <TR>
+	    <TD><P ALIGN=Center>
+	      <IMG SRC="HI.nohints.png" WIDTH="44" HEIGHT="28"><BR>
+	      no hints</TD>
+	    <TD><P ALIGN=Center>
+	      <IMG SRC="HI.hints.png" WIDTH="44" HEIGHT="28"><BR>
+	      hints</TD>
+	  </TR>
+	</TABLE>
+	<P>
+	This includes applying instructions to all points that lie on the Hints generated
+	for Postscript, a certain amount of extra effort to detect serifs, and
+	application of the PostScript BlueValues to the TrueType cvt.
+      <LI>
+	AutoHint has been improved for some characters again.
+    </UL>
+  <LI>
+    4 Mar 2001
+    <UL>
+      <LI>
+	When Get Info is applied to a single selected reference character the dialog
+	now has a button which will bring up a window displaying the character refered
+	to.
+      <LI>
+	The Font View now displays info on the current character
+      <LI>
+	Selecting by dragging out a rectangle in the character outline view would
+	sometimes miss points. I think that's fixed.
+      <LI>
+	Doing a multi-character copy in the fontview would remove non-existant characters
+	from the copy set. They are no longer removed.
+      <LI>
+	Build Accented character would always use a dotlessi when building an character
+	based on an "i". This behavior is only correct if the accent added is above
+	the letter. Adding an ogonek for example should retain the dot. This is now
+	fixed. (In theory the same problem could occur for j, but I don't think there
+	are any cases where it does).
+      <LI>
+	When generating a type1 font PfaEdit will detect whether Flex hints can be
+	used and use them if appropriate.
+      <LI>
+	There was a bug in the routine that read in flex hints. It would leave behind
+	6 extra points not on any path in most characters with a flex hint. These
+	points were not harmful, but they should not have been there.
+      <LI>
+	I found some cases where autohint picked the wrong hints. I cleaned them
+	up. I hope I haven't broken others...
+      <LI>
+	Fixed another clipping problem.
+      <LI>
+	(Various experiments with instructing truetype have yielded no display
+	improvement)
+    </UL>
+  <LI>
+    25 Feb 2001
+    <UL>
+      <LI>
+	PfaEdit no longer crashes on high-end systems where the default visual has
+	a smaller depth than the maximum the screen supports.
+      <LI>
+	PfaEdit no longer crashes on systems with no bitmap unicode fonts installed.
+      <LI>
+	When PfaEdit reads in a Type1 font it will preserve the original character
+	strings (the type1 strings that define the glyph shape) and will write them
+	out again when you save the font. If you modify a character (even something
+	innocuous like setting the width) the string for that character will be lost.
+	This means that any characters you do not modify will retain flex hints and
+	hint substitution. (the Subrs and OtherSubrs arrays are also preserved).
+      <LI>
+	There is now a way to edit the entries in the Private dictionary (well most
+	of them. No way to edit the Subrs entry). The program will guess at good
+	values for some entries (like StdHW or BlueValues). If there is no BlueValues
+	entry present when a type1 font is generated then the program will guess
+	at good values (and will also guess at values for OtherBlues), otherwise
+	it will use the one supplied. Similarly for StdHW and StdVW (if StdHW is
+	absent then the program will guess at SnapStemH too, similarly for SnapStemV).
+	If UniqueID is present in the Private dictionary then that value will be
+	used in the font dictionary, if no UniqueID is present then the program will
+	generate a random number in the allowed range. 
+	  <HR>
+      <LI>
+	Removed a number of warnings from the code
+      <LI>
+	Made arrow keys functional in the fontview
+      <LI>
+	Changed type0 unicode generation so that if the font does not contain
+	U+2700-U+27FF the printer's own ZapfDingbats (if present) will be mapped
+	there.
+      <LI>
+	Added Adobe Standard to the Font Info Encoding list.
+    </UL>
+  <LI>
+    20 Feb 2001
+    <UL>
+      <LI>
+	Fixed some problems in saving both Type1s and TrueType fonts.
+      <LI>
+	Added clipping code to the outline character view. (Before at magnifications
+	around 100 or so we'd run into overflow problems)
+      <LI>
+	Added progress widget to font generation (and font database saving)
+    </UL>
+  <LI>
+    13 Feb 2001
+    <UL>
+      <LI>
+	Fixed some problems with the configure script (handles libraries now)
+      <LI>
+	Added a progress widget to show how things are going on long operations (currenly
+	only font opens)
+      <LI>
+	Fixed numerous small annoyances
+      <LI>
+	Fixed a crash I introduced into build accented characters.
+      <LI>
+	Fixed a couple of bugs in truetype generation
+    </UL>
+  <LI>
+    11 Feb 2001
+    <UL>
+      <LI>
+	Added a configure script
+      <LI>
+	Rearranged (simplified) the directory structure
+      <LI>
+	Improved the build accented character function
+      <LI>
+	(similar improvements to display of unicode text (in text fields, etc.) with
+	composing characters)
+      <LI>
+	BiDi text was previously confused by composed characters and would put them
+	on the wrong letter. Fixed.
+    </UL>
+  <LI>
+    9 Feb 2001
+    <UL>
+      <LI>
+	Tweaked some include files so pfaedit might compile under Irix
+      <LI>
+	Added anti-aliasing code to the font view.
+      <LI>
+	Fixed bugs where server has 24bit depth but 32bit pixel size
+      <LI>
+	Added a resource which turn palettes off (so they stop trying to steal focus
+	and stop trying to track the main window)
+    </UL>
+  <LI>
+    7 Feb 2001
+    <UL>
+      <LI>
+	Some improvement in processing of postscript names in true type fonts (will
+	make truetype output marginally smaller in most cases)
+      <LI>
+	Fixed a bug with popup menus.
+      <LI>
+	Holding down the meta key allows you to drag (rather than resize) references
+	which fill the bounding box.
+      <LI>
+	Improved saving of both postscript and truetype fonts when there are composite
+	characters referring to other composits.
+      <LI>
+	Fixed bug in file chooser where typing into the listbox (to select a file)
+	made it think (sometimes) that it had a directory.
+      <LI>
+	Fixed bug in Goto Char code where it would refuse to go to a character's
+	location (sometimes) if the character had not been created yet.
+      <LI>
+	Improved drawing of palettes on indexed displays
+      <LI>
+	Improved accent processing in build accented characters
+    </UL>
+  <LI>
+    26 Jan 2001
+    <UL>
+      <LI>
+	Fixed a bug that kept the file chooser (the open file dlg, etc.) from browsing
+	the root directory.
+      <LI>
+	Realized that libgif is just a symbolic link to libungif. Made the readgif
+	routine use either one
+      <LI>
+	A typo in writepng caused it to require libpng at link time, this has been
+	fixed, it should now only need libpng if someone actually loads a png file.
+    </UL>
+  <LI>
+    21 Jan 2001
+    <UL>
+      <LI>
+	Added a preference dlg. Not much in it as yet.
+      <LI>
+	fixed a number of bugs
+	<UL>
+	  <LI>
+	    Timers sometimes failed to go off -&gt; splash screen might not vanish, popups
+	    might not pop, autosave might not happen...
+	  <LI>
+	    Vertical lines might cause divide by 0 errors on some systems when reading
+	    in a font
+	  <LI>
+	    Some fonts were thought not to have characters they actually had.
+	  <LI>
+	    94x94 fonts were encoded as 92x94 (losing 188 characters)
+	  <LI>
+	    Fixed problems with kuten decoding
+	  <LI>
+	    Fixed various crashes involving selecting and deselecting non-existant characters
+	</UL>
+    </UL>
+  <LI>
+    9 Jan 2001
+    <UL>
+      <LI>
+	Added Tom Harvey's man page to the distribution (Thanks Tom!)
+      <LI>
+	Fixed a bug where radio buttons, etc. sometimes got left highlit
+      <LI>
+	Added an interpreter for (some) postscript type 3 fonts
+      <LI>
+	made libgdraw and friends into one shared library
+    </UL>
+  <LI>
+    6 Jan 2001
+    <UL>
+      <LI>
+	More distribution bug fixes
+      <LI>
+	Fixed bugs in Overlap &amp; AutoWidth
+      <LI>
+	Added new command to Metrics menu (Thirds in Width)
+    </UL>
+  <LI>
+    4 Jan 2001
+    <UL>
+      <LI>
+	Fixed a distribution bug
+      <LI>
+	Fixed some problems with build accented character
+    </UL>
+  <LI>
+    2 Jan 2001
+    <UL>
+      <LI>
+	Many small improvements and bug fixes.
+      <LI>
+	More remove overlap corrections
+    </UL>
+  <LI>
+    21 Dec 2000
+    <UL>
+      <LI>
+	I think I'm reading xfig splines properly now. The conversion to postscript
+	still leaves something to be desired, but it's as good as I'm likely to make
+	it.
+    </UL>
+  <LI>
+    20 Dec 2000
+    <UL>
+      <LI>
+	Generate Fonts can produce TrueType
+    </UL>
+  <LI>
+    17 Dec 2000
+    <UL>
+      <LI>
+	TrueType reader now gets (horizontal) kerning info
+      <LI>
+	Added code that automagically preserves changes if the program should crash
+	(but does not save on the source file unless you ask it to).
+      <LI>
+	Added a Revert File command.
+    </UL>
+  <LI>
+    16 Dec 2000
+    <UL>
+      <LI>
+	PfaEdit will now read in a TrueType font
+	<UL>
+	  <LI>
+	    (it doesn't read hints from the font)
+	  <LI>
+	    (it doesn't read bitmaps from the font)
+	</UL>
+    </UL>
+  <LI>
+    14 Dec 2000
+    <UL>
+      <LI>
+	Got PfaEdit to build on a netbsd alpha box
+      <LI>
+	Added Auto Width &amp; Auto Kern commands
+      <LI>
+	If you do a translation which is of the entire outline character and is only
+	in the x-direction, then all the character's hints will be translated too,
+	and if the character is a letter then in any characters which depend on this
+	one, the other things in the character will also be translated.
+    </UL>
+  <LI>
+    12 Dec 2000
+    <UL>
+      <LI>
+	Added a skew command to the bitmap view
+      <LI>
+	Added Interpolate Fonts
+    </UL>
+  <LI>
+    11 Dec 2000
+    <UL>
+      <LI>
+	fixed more remove overlap bugs (don't know of any left)
+      <LI>
+	Added Merge Font command
+    </UL>
+  <LI>
+    10 Dec 2000
+    <UL>
+      <LI>
+	fixed many small bugs with constrained movements
+      <LI>
+	fixed many autohinting bugs
+      <LI>
+	Fixed some remove overlap bugs
+      <LI>
+	Added backup files when saving sfd files
+    </UL>
+  <LI>
+    5 Dec 2000
+    <UL>
+      <LI>
+	Added a command that automagically builds an accented (or general composit)
+	character. (<A HREF="elementmenu.html#Accented">see below</A>)
+      <LI>
+	Added support for various CJK encodings (JIS 208, JIS 212, old KSC 5601,
+	GB 2302, all 94x94)
+      <LI>
+	Implemented a fairly poor importer/exporter of xfig files. (I don't know
+	how to convert XSplines to Bezier Splines reasonably).
+      <LI>
+	Implemented a metrics window, added support for kerning (kern info only lives
+	in the afm file, not in the font itself)
+      <LI>
+	Metrics window will also display text from bitmap fonts (but you mayn't change
+	a bitmap's metrics)
+      <LI>
+	Reexamined palette code with transient windows. It seems to work on kde now.
+      <LI>
+	Fixed blinking cursor on 8&amp;16 bit-depth displays
+    </UL>
+  <LI>
+    1 Dec 2000
+    <UL>
+      <LI>
+	Generate &amp; save bitmaps
+      <LI>
+	Bitmap editor (added a couple of tools like flipping and corner turning,
+	circle drawing, etc. that aren't in fontographer)
+      <LI>
+	fontview can display a bitmap, if it does then double clicking on a char
+	will display the bitmap
+      <LI>
+	Changing the width of a character (in outline view) will automatically change
+	the width of all bitmaps of that character. Also if the character is a letter
+	and there are accented characters which refer to it and the accented characters
+	have the same with that the letter used to have, then the accented characters
+	(and their bitmaps) will also have their width updated.
+      <LI>
+	Can import and export bitmap images into bitmap window
+      <LI>
+	Can import a bdf file
+      <LI>
+	Can copy and paste in the fontview (bitmaps can be affected as well as outlines)
+    </UL>
+  <LI>
+    28 Nov 2000
+    <UL>
+      <LI>
+	Improved star tool
+      <LI>
+	Added various metrics menu items
+      <LI>
+	Added a simplify command
+      <LI>
+	fixed bugs in the merge command
+      <LI>
+	Made font view functional, can apply to many outline characters at once
+	<UL>
+	  <LI>
+	    transform
+	  <LI>
+	    expand stroke
+	  <LI>
+	    remove overlap
+	  <LI>
+	    simplify
+	  <LI>
+	    metrics items above
+	  <LI>
+	    Char Info
+	</UL>
+    </UL>
+  <LI>
+    19 Nov 2000
+    <UL>
+      <LI>
+	Added Caligraphic expand stroke
+      <LI>
+	Added Get Info
+      <LI>
+	Added Correct Path Direction
+      <LI>
+	Added Remove Overlap (probably very buggy)
+      <LI>
+	Enhanced support for Unicode, added type0 font output.
+      <LI>
+	Added type3 output (not compressed type 3, can't open a type3 or type0)
+      <LI>
+	Sped up background image drawing.
+      <LI>
+	Implemented drag-resize of images and referenced characters
+      <LI>
+	Added Rectangle, Elipse, Polygon and Star tools.
+    </UL>
+  <LI>
+    14 Nov 2000
+    <UL>
+      <LI>
+	Added expand stroke
+      <LI>
+	Paths stored in .sfd files are now closed (bug fix)
+    </UL>
+  <LI>
+    13 Nov 2000
+    <UL>
+      <LI>
+	Added the equivalent of a .fog file (Spline Font Database, sfd files)
+      <LI>
+	Implemented transform tools
+      <LI>
+	continued fixing palettes
+    </UL>
+  <LI>
+    11 Nov 2000
+    <UL>
+      <LI>
+	Imports and exports simple eps files for characters
+      <LI>
+	Transform allows you to pick origin
+      <LI>
+	Bunch of menu items for manual hinting added. (I hope I'm done with hints
+	now... at least till I look at truetype)
+      <LI>
+	Clockwise now agrees with Fontographer (and everyone else)
+      <LI>
+	Added "pen" , and a knife tools
+      <LI>
+	(Added many other tools pictures, but they aren't implemented yet)
+      <LI>
+	Fixed many palette problems. (including kde's not doing menu shortcuts)
+      <LI>
+	Put in menu items to show/hide palettes
+    </UL>
+  <LI>
+    9 Nov 2000
+    <UL>
+      <LI>
+	It can now calculate hints, font wide stem hints and character specific hints.
+      <LI>
+	Transform should do rotations right now.
+      <LI>
+	Metamorphosis file format bug should be fixed
+    </UL>
+</UL>
+<H2>
+  Lacks
+</H2>
+<P>
+PfaEdit is by no means complete. And probably doesn't work very well. Be
+prepared to save frequently and always work on a copy of the original.
+<UL>
+  <LI>
+    No attempt has been made to be efficient.
+  <LI>
+    No attempt has been made to read truetype instructions (hints)
+  <LI>
+    Many type 3 fonts will not be read in correctly (those generated by pfaedit
+    should always be acceptable)
+  <LI>
+    Importing a type0 font loses the encoding. PfaEdit only imports simple type0
+    fonts (such as those made by itself), will get confused if there's more than
+    one font with a chars dictionary.
+  <LI>
+    No Change Weight command
+</UL>
+<H2>
+  <A NAME="known-bugs">Bugs</A>
+</H2>
+<UL>
+  <LI>
+    Different Window Managers introduce different bugs into palette code. I've
+    tested this under twm, kde and gnome sawtooth.
+  <LI>
+    My rasterizer will never be as good as adobe's.
+  <LI>
+    ???
+</UL>
+<H2>
+  Installing it
+</H2>
+<P>
+The executable tarball contains the pfaedit executable and a man page. Put
+it wherever you'd like.
+<P>
+The build script will do an install to /usr/local/bin if you want it to.
+<H2>
+  Running it
+</H2>
+<P>
+<KBD>$ pfaedit font.pfa font2.pfb font3.sfd font4.ttf font5.otf font6.bdf</KBD>
+<BR>
+will start pfaedit looking at the fonts you specify on the command line.
+It can read either pfb or pfa fonts, and some ps fonts (type 0 fonts based
+on a type 1 dictionary) as well as truetype fonts, non-CID open type fonts
+and bitmap fonts.<BR>
+<KBD>$ pfaedit -new</KBD><BR>
+will cause pfaedit to create a new font (in iso-8859-1 encoding)<BR>
+<KBD>$ pfaedit</KBD><BR>
+will open up a file picker dialog and allow you to browse till you've found
+a font file (or have created a new one).
+<H2>
+  Reporting <A NAME="bugs">bugs</A>...
+</H2>
+<P>
+I'm sure you'll find some. If you can isolate it and come up with a reproduceable
+minimal case, that would be great. The executable has symbols in it so if
+you run it in gdb you should be able to get a stack trace... Do what you
+can.
+<P>
+<A HREF="mailto:gww@silcom.com">gww@silcom.com</A>
+<H2>
+  <A NAME="Acknowledgements">Acknowledgements</A>
+</H2>
+<P>
+The following people have helped debug pfaedit. Many thanks!
+<UL>
+  <LI>
+    Tom Harvey
+  <LI>
+    Ken Chilton
+  <LI>
+    <A HREF="http://www.killesreiter.de/">Gerhard Killesreiter</A>
+  <LI>
+    Alexander Kotelnikov
+  <LI>
+    <A HREF="http://rcswww.urz.tu-dresden.de/~koloska/">Uwe Koloska</A>
+  <LI>
+    Max Neunhoeffer
+  <LI>
+    Martin Giese
+  <LI>
+    E.J. Neafsey
+  <LI>
+    Norvell Spearman
+  <LI>
+    Stefan Fendt
+  <LI>
+    <A HREF="http://www.mp3.com/aurora-australis/">Harald ?Gleis?</A>
+  <LI>
+    Valek FIlippov
+  <LI>
+    Pasi Eronen
+  <LI>
+    <A HREF="http://jeff.cs.mcgill.ca/~luc/">Luc Devroye</A>
+</UL>
+<P>
+PfaEdit was inspired by AltSys's
+<A HREF="http://www.macromedia.com/software/fontographer/">Fontographer</A>
+now placed in graceful retirement by MacroMedia.
+<H2>
+  Font File Formats
+</H2>
+<UL>
+  <LI>
+    <A HREF="http://partners.adobe.com/asn/developer/PDFS/TN/T1_SPEC.PDF">Postscript
+    Type1</A>
+    <UL>
+      <LI>
+	<A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5015.Type1_Supp.pdf">Supplement</A>
+	(discussion of multiple master fonts &amp; counter hints)
+      <LI>
+	<A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/T1Format.pdf">Format</A>
+      <LI>
+	<A HREF="http://partners.adobe.com/asn/developer/type/unicodegn.html">Postscript
+	unicode character names</A>
+    </UL>
+  <LI>
+    <A HREF="http://partners.adobe.com/asn/developer/PDFS/TN/5004.AFM_Spec.pdf">AFM</A>
+  <LI>
+    <A HREF="http://partners.adobe.com/asn/developer/PDFS/TN/5005.BDF_Spec.pdf">BDF</A>
+    <UL>
+      <LI>
+	<A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5006.ABF_Spec.pdf">ABF</A>
+	-- Binary format
+    </UL>
+  <LI>
+    True Type Standard<BR>
+    (Sadly different sources have slightly different definitions of less important
+    parts of the standard, be warned)
+    <UL>
+      <LI>
+	<A HREF="http://fonts.apple.com/TTRefMan/">Apple</A>
+      <LI>
+	<A HREF="http://www.microsoft.com/typography/tt/tt.htm">Microsoft</A> (This
+	now describes OpenType)
+      <LI>
+	<A HREF="http://www.truetype.demon.co.uk/ttspec.htm">random useful site</A>
+      <LI>
+	<A HREF="http://partners.adobe.com/asn/developer/opentype/otff.html">TTC</A>
+	-- True Type Font Collection
+    </UL>
+  <LI>
+    <A HREF="http://partners.adobe.com/asn/developer/type/opentype.html">OpenType</A>
+    <UL>
+      <LI>
+	Postscript
+	<A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5177.Type2.pdf">Type2</A>
+      <LI>
+	<A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5176.CFF.pdf">CFF</A>
+      <LI>
+	<A HREF="http://partners.adobe.com/asn/developer/opentype/appendices/ttoreg.html">script
+	&amp; language names for GSUB table</A>
+      <LI>
+	<A HREF="http://www.microsoft.com/typography/tt/tt.htm">Microsoft's version</A>
+    </UL>
+  <LI>
+    <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5012.Type42_Spec.pdf">Postscript
+    Type42</A> (the opposite of opentype, it's truetype embedded in postscript)
+  <LI>
+    <A HREF="http://www.bitstream.com/categories/developer/truedoc/pfrspec.html">OpenDoc</A>.
+    Sadly Proprietary so I can't support it.
+</UL>
+<P>
+Other font links
+<UL>
+  <LI>
+    <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5040.Download_Fonts.pdf">Adobe's
+    downloadable font spec</A>
+  <LI>
+    <A HREF="http://www.fonts.com/hp/panose/greybook/frame.htm">Panose font
+    classification scheme</A>
+  <LI>
+    <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/psrefman.pdf">Postscript
+    reference manual</A>
+</UL>
+<H2>
+  Unicode
+</H2>
+<UL>
+  <LI>
+    <A HREF="http://www.unicode.org/">Unicode consortium</A>
+  <LI>
+    <A HREF="http://partners.adobe.com/asn/developer/type/corporateuse.txt">Adobe's
+    corporate use extensions</A>
+  <LI>
+    <A HREF="http://www.egt.ie/standards/iso10646/bmp-roadmap-table.html">Pictures
+    of the characters</A>
+</UL>
+<H2>
+  Other <A NAME="tools">Tools</A>
+</H2>
+<UL>
+  <LI>
+    BDF editors
+    <UL>
+      <LI>
+	<A HREF="http://crl.nmsu.edu/~mleisher/xmbdfed.html">xmbdfed</A> -- bdf editor.
+      <LI>
+	<A HREF="http://www.gnu.org/software/gfe/gfe.html">gfe</A> -- GNU font editor.
+	Eventually supposed to support other formats
+    </UL>
+  <LI>
+    Postscript/ttf font editors
+    <UL>
+      <LI>
+	<A HREF="http://www.gh.cs.su.oz.au/~matty/Spif/">spif</A> -- under development
+      <LI>
+	<A HREF="http://www.levien.com/gfonted/">gfonted</A> -- under development
+    </UL>
+  <LI>
+    Postscript utilities
+    <UL>
+      <LI>
+	<A HREF="http://gfontview.sourceforge.net/">gfontview</A> -- displays a
+	postscript/ttf font
+      <LI>
+	<A HREF="http://rpmfind.net/linux/RPM/contrib/libc6/i386/gglyph-0.1.3-1.i386.html">gglyph</A>
+	-- another font displayer
+      <LI>
+	<A HREF="http://www.lcdf.org/type/">t1utils</A> -- Type 1 utility programs
+	&amp; multiple master utilities
+      <LI>
+	<A HREF="ftp://metalab.unc.edu/pub/Linux/X11/xutils/type1inst-0.6.1.tar.gz">Type1inst</A>
+	-- helps to instal type 1 fonts under X and ghostscript
+      <LI>
+	<A HREF="http://ttf2pt1.sourceforge.net/">ttf2pt1</A> -- Converts truetype
+	to type1 postscript fonts and preserves hints
+      <LI>
+	<A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/MyToys.html">my stuff
+	</A>-- Type 1 decoders and converters. True Type &amp; open type decoder.
+    </UL>
+  <LI>
+    TrueType utilities
+    <UL>
+      <LI>
+	Microsoft provides a bunch of stuff
+	<UL>
+	  <LI>
+	    <A HREF="http://www.microsoft.com/typography/tools/tools.htm">Various tools</A>
+	  <LI>
+	    <A HREF="http://www.microsoft.com/typography/property/fpedit.htm">Font Properties
+	    Editor</A>
+	  <LI>
+	    <A HREF="http://www.microsoft.com/typography/creators.htm">Font instructors</A>
+	</UL>
+    </UL>
+  <LI>
+    Rasterizers
+    <UL>
+      <LI>
+	<A HREF="http://www.freetype.org/">FreeType's True Type Rasterizer</A>
+      <LI>
+	<A HREF="http://www.neuroinformatik.ruhr-uni-bochum.de/ini/PEOPLE/rmz/t1lib/t1lib.html">t1lib</A>
+	-- Type1 Rasterizer
+    </UL>
+</UL>
+<P ALIGN=Center>
+<P ALIGN=Center>
+<A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/MyToys.html"><IMG SRC="http://bibliofile.mc.duke.edu/gww/FreeWare/../uparrow.gif"
+    WIDTH="30" HEIGHT="30" ALIGN="Middle"></A> <A href="http://sourceforge.net">
+<IMG src="http://sourceforge.net/sflogo.php?group_id=25752&amp;type=1" width="88"
+    height="31" border="0" alt="SourceForge Logo"> </A>
+</BODY></HTML>

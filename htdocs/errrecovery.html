@@ -1,0 +1,28 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 17-Dec-2000 -->
+  <!-- AP: Last modified: 17-Dec-2000 -->
+  <TITLE>Error Recovery</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+  Error Recovery
+</H1>
+<P>
+All programs crash, and new programs (like this one) crash a lot.
+<P>
+Every minute or so PfaEdit looks around and sees if anything has changed
+since the last time it checked. If it finds a font that has had changes,
+it will save a small file in its private directory (~/.PfaEdit/autosave)
+which consists of all changed characters in the changed font.
+<P>
+When PfaEdit starts up it checks this directory, and if it finds anything
+there it attempts to apply those changes to the original font. So if PfaEdit
+crashes, or if your machine crashes, the next time you start PfaEdit it will
+figure out what you were doing and recover it as best it can.
+<P>
+<P ALIGN=Center>
+-- <A HREF="windowmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A>
+-- <A HREF="sfdformat.html">Next</A> --
+</BODY></HTML>

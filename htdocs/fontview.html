@@ -1,0 +1,156 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 6-Dec-2000 -->
+  <!-- AP: Last modified: 23-Apr-2001 -->
+  <TITLE>The Font View</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+  Font View
+</H1>
+<P>
+<IMG SRC="AmbrosiaFV.png" WIDTH="423" HEIGHT="226">
+<P>
+The font view is a list of all the characters available in the given font.
+<P>
+You may chose to display it at various sizes, by default it will be displayed
+with the outline font rasterized on a 24 pixel em square. You may display
+it at 36 and 48 pixel sizes as well. You may also choose to look at an
+anti-aliased greymap (the above image is anti-aliased). These are slower
+to generate but look nicer (<A HREF="AA-Comparison.html">Comparison</A>).
+<P>
+If you look at a bitmap version of the font, and it does not contain a character
+for which there is an outline character (ie. the font needs its bitmaps
+regenerated) then the missing character will be outlined in red to bring
+it to your attention more easily.
+<P>
+Underneath the menu bar is some information on the last character selected.
+First is the encoding of the character in the current font expressed in decimal.
+Next is the unicode code point for the character (or ???? if it is not a
+unicode character). Next the postscript name for the character, and finally
+the unicode name. Not all unicode characters will have unicode names (the
+CJK characters do not for example)
+<P>
+Or you may display any of the bitmap fonts you have generated from the outline
+characters. Simply go to the View menu and select the one you want.
+<P>
+You may select any number of characters in the font by dragging through them.
+You may use shift-click to select (or deselect) additional characters. You
+may also use the arrow keys to move around (and shift-arrow to select).
+<P>
+You can perform various operations on the selected characters:
+<UL>
+  <LI>
+    Apply a general transformation (ie. move 20 units right and then rotate
+    180&#176;)
+  <LI>
+    Expand all paths to be stroked paths
+  <LI>
+    Clean up areas where several paths intersect
+  <LI>
+    Simplify paths
+  <LI>
+    Build Accented Characters
+  <LI>
+    Regenerate bitmaps
+  <LI>
+    Autohint
+  <LI>
+    Control various metrics settings
+</UL>
+<P>
+And, of course, you can cut and paste. Normally copying a character will
+copy that character and any bitmaps associated with it, but you can use the
+Edit-&gt;Copy From menu item to change this so that only entries from the
+currently displayed font are copied. So if a 12 pixel font is being displayed
+then only the bitmaps from the 12 pixel bitmap font will be copied in this
+mode. Cut and Clear will clear those things which would be copied.
+<P>
+Paste is a little more complicated. In general it will paste whatever is
+in the clipboard, regardless of the copy mode. So if the clipboard contains
+a 12pixel bitmap and the font view is displaying outlines, then pasting it
+will paste it into the 12pixel font none the less. There is one exception
+to this. If the clipboard contains a 12 pixel bitmap and the font view is
+currently display a 17pixel bitmap then the paste will go into the displayed
+bitmap.
+<P>
+A Paste from the font view will delete whatever splines were in the character
+beforehand (while a paste in the outline character view will merge the new
+set of splines with the old). Paste from the font view will also set the
+width of the character.
+<P>
+You can scroll the display to any particular character by typing that character.
+There is also a dialog which allows a slightly more general way of jumping
+around. You may type in the character's name (all characters in a font will
+be named), its encoding value, its unicode encoding value, or (for 2 byte
+fonts) its ku ten specification.
+<H2>
+  <A NAME="Encodings">Encodings and Character Sets</A>
+</H2>
+<P>
+A Character Set is a set of characters (for example all the letters of the
+alphabet would be one character set). An encoding is a function that takes
+a number (often between 0 and 255) and maps it to a character. Often these
+two are used synonymously as an encoding implies a given character set.
+<P>
+All fonts in pfaedit have both a character set and an encoding. The character
+set is just the set of characters in the font. The encoding is the way those
+characters are ordered (or sometimes, the way the first 256 are ordered).
+The font info dialog allows you to chose the encoding (and character set)
+you wish for a font. Often a font will have a few extra characters that don't
+fit into the character set specified by the encoding, these characters will
+be placed at the end of the font and when the font is output (ie. postscript
+is generated, or a bitmap font created) the characters will be included in
+the font but they will not be encoded (this can be useful, especially in
+postscript where it is possible to reencode a font at run time. Thus a font
+might have all the characters needed both for a cyrillic font and for a latin
+font, but only one character set at a time would be encoded).
+<P>
+You may also create a custom encoding. (Custom encodings may not have more
+than 256 encoded characters). You may change the name of any character in
+the font with the Element-&gt;Char Info command. This will force the font
+to have a custom encoding.
+<P>
+There are many standard encodings built in to the program. There are 14 ISO
+8859 encodings, the encoding used by the Macintosh for the US and Western
+Europe, the encoding used by MS Windows for the US and Europe (which is a
+slight extension of ISO 8859-1). There are also 5 2-byte encodings built
+in. One of these is unicode whose goal is to specify every character currently
+used by humans. The other 4 are CJK (Chinese, Japanese, Korean) 94x94 encodings
+(two bytes where each byte ranges over the 94 ASCII characters excluding
+the space character). You can also add your own encodings with the
+<A HREF="fontinfo.html">Element-&gt;Font Info</A> dialog.
+<P>
+There may be some slight differences between one vendor's definition of an
+encoding and another. I try to follow those encoding specified by the Unicode
+consortium. I notice that the Symbol encoding used by Microsoft differs from
+the Unicode one (usually just be substituting synonems, Omega for Ohm sign
+for instance).
+<H3>
+  <A NAME="Unicode">Unicode</A> (ISO 10646)
+</H3>
+<P>
+PostScript&reg; assigns a name to every unicode character. Some of these
+names are fairly obvious like "A" for the first letter of the latin alphabet,
+others are more obscure like "afii57664" for hebrew alef, while others are
+just "uni8765" for the unicode character at 0x8765.
+<P>
+PostScript Unicode encoding does not quite mesh with the unicode standard.
+This is probably because PostScript deals in glyphs and Unicode deals with
+characters so PostScript sees no distinction between space and nobreak space
+(and so does not encode the latter) while Unicode does.
+<P>
+According to the <A HREF="http://www.unicode.org/">unicode website</A> the
+first 256 character positions of unicode and ISO 8859-1 (ISO Latin1) are
+the same. However the PostScript encoding of ISOLatin1 is slightly different
+from that specified for unicode. I cannot explain the reasoning behind this.
+PfaEdit does not use PostScript's ISOLatin1 Encoding vector, instead it uses
+the first 256 code positions of the unicode encoding vector (slightly modified
+by me to conform to Unicode conventions rather than PostScript. So I include
+nobreak space and the soft-hyphen)..
+<P>
+<P ALIGN=Center>
+-- <A HREF="editexample.html">Prev</A> -- <A HREF="overview.html">TOC</A>
+-- <A HREF="charview.html">Next</A> --
+</BODY></HTML>

@@ -1,0 +1,248 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 7-Dec-2000 -->
+  <!-- AP: Last modified: 23-Feb-2001 -->
+  <TITLE>Spline Font Database File Format</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+  Spline Font Database
+</H1>
+<P>
+PfaEdit's <A HREF="sfd.html">sfd</A> files are ASCII files (so they can be
+copied easily across the internet). They contain a full description of your
+font.
+<P>
+They are vaguely modeled on bdf files. The first few lines contain general
+font properties, then there's a section for each character, then a section
+for each bitmap font.
+<P>
+Here is an example of what the first few lines look like:
+<BLOCKQUOTE>
+  <PRE>SplineFontDB: 1.0
+FontName: Ambrosia
+FullName: Ambrosia
+FamilyName: Ambrosia
+Weight: Medium
+Copyright: Copyright (C) 1995-2000 by George Williams
+Version: 001.000
+ItalicAngle: 0
+UnderlinePosition: -133
+UnderlineWidth: 20
+Ascent: 800
+Descent: 200
+Encoding: -1
+DisplaySize: 24
+AntiAlias: 1
+</PRE>
+</BLOCKQUOTE>
+<P>
+The first line just identifies the file as an sfd file. The next few lines
+give the various different names that postscript allows fonts to have. Then
+some fairly self-explanatory items. The thing that probably needs explanation
+is the encoding, this is an enum some of whose values are:
+<UL>
+  <LI>
+    -1 -- custom encoding
+  <LI>
+    0 -- ISO 8859-1
+  <LI>
+    1 -- ISO 8859-2
+  <LI>
+    ... (there is no ISO 8859-12 so)
+  <LI>
+    11 -- ISO 8859-13
+  <LI>
+    ...
+  <LI>
+    16 -- Windows
+  <LI>
+    17 -- Macintosh
+  <LI>
+    20 -- Adobe Standard
+  <LI>
+    23 -- JIS 208
+  <LI>
+    28 -- Unicode
+</UL>
+<P>
+Then
+<BLOCKQUOTE>
+  <PRE>BeginChars: 285
+</PRE>
+</BLOCKQUOTE>
+<P>
+This means that the font has room for 285 characters, not necessarily that
+285 characters follow (there may be some holes, for example the control
+characters are generally omitted). A character looks like:
+<BLOCKQUOTE>
+  <PRE>StartChar: exclam
+Encoding: 33 33
+Width: 258
+Flags: 
+HStem: 736 13  -14 88  
+VStem: 71 84  
+Fore
+195 742 m 0
+ 195 738 193 736 189 736 c 0
+ 175 736 155 743 155 682 c 0
+ 155 661 130 249 130 131 c 0
+ 130 100 96 99 96 131 c 0
+ 96 149 71 662 71 682 c 0
+ 71 731 51 736 37 736 c 0
+ 33 736 31 738 31 742 c 0
+ 31 748 36 747 38 749 c 1
+ 188 749 l 1
+ 190 747 195 748 195 742 c 0
+80 32 m 0
+ 81 53 95 75 116 74 c 0
+ 137 73 150 53 150 32 c 0
+ 150 10 137 -14 115 -14 c 0
+ 93 -14 79 10 80 32 c 0
+EndSplineSet
+EndChar
+</PRE>
+</BLOCKQUOTE>
+<P>
+The first line names the character, the next line gives the encoding, first
+in the current font, then in unicode. Then the width. Then horizontal and
+vertical stem hints (set of several two number pairs, the first number in
+the pair is the location of the stem, the next number is the width of the
+stem). The entry <CODE>Fore</CODE> starts the foreground splines, they are
+encoded as postscript commands with moveto abbreviated to m, curveto to c
+and lineto to l (lower case el). The digit after after the letter indicates
+whether the point is curve (0), corner (1) or tangent (2). A set of splines
+in the background is similar, it will be introduced by a <CODE>Back</CODE>
+entry.
+<BLOCKQUOTE>
+  <PRE>StartChar: semicolon
+Encoding: 59 59
+Width: 264
+Flags: 
+HStem: 
+VStem: 
+Ref: 44 N 1 0 0 1 0 0
+Ref: 46 N 1 0 0 1 0 414
+EndChar
+</PRE>
+</BLOCKQUOTE>
+<P>
+A character need not contain any splines. Here is one with just references
+to other characters (a semi-colon is drawn here by drawing a comma and stacking
+a period on top of it). The first number is the local encoding of the character
+being refered to, the N says the reference is not selected, the remaining
+6 numbers are a postscript transformation matrix, the one for comma (44)
+is the identity matrix, while the one for period (46) just translates it
+vertically 414 units. A background image is store in the following horrible
+format:
+<BLOCKQUOTE>
+  <PRE>StartChar: A
+...
+Image: 167 301 0 21 2 1 23 753 2.53892 2.53892
+J:N0SYd"0-qu?]szzz!!#7`s7cQozzz!!!!(s8Viozzzz"98E!zzzz!!3-"rVuouzzz!!!'"
+s8N'!zzz!!!!$s8W,7zzzz"98E$huE`WzJ+s!Dz!"],0s6p!g!!!!"s8W-!n,NFg!!!Q0s8Vio
+z5QCc`s82is!!!!`s8W,gz!WW3"s8W&amp;uzJ,fQKp](9o!!iQ(s8W-!z!&lt;&lt;*!s7cQo!!",@s8W-!
+...
+EndImage
+EndChar
+</PRE>
+</BLOCKQUOTE>
+<P>
+Where the numbers on the image line mean respectively: width (of image in
+pixels), height, image type (0=&gt;mono, 1=&gt;indexed, 2=&gt;true), bytes
+per line, number of color entries in the color table, the index in the color
+table of the transparent color (or for true color images the transparent
+color itself), the x and y coordinates of the upper left corner of the image,
+the x and y scale factors to convert image pixels into character units. Then
+follows a bunch of binary data encoded using Adobe's Encode85 filter. These
+data contain all the colors in the color table followed by a dump of the
+image pixel data.
+<P>
+If a character has been read in from a type1 font, and you have not changed
+the character then it will have a <CODE>OrigType1</CODE> entry as well. This
+is the original (unencoded) string describing the character read in from
+the font. It is followed by a number indicating the length of the string,
+and then followed (on a new line) by the string encoded in the Encode85 filter
+above. It will be followed by an <CODE>EndType1</CODE> line.
+<P>
+After all the outline characters have been described there is an EndChars
+entry and then follow any bitmap fonts:
+<BLOCKQUOTE>
+  <PRE>EndChars
+BitmapFont: 12 285 10 2
+BDFChar: 32 3 0 0 0 0
+z
+BDFChar: 33 3 0 1 0 9
+^d(.M5X7S"!'gMa
+</PRE>
+</BLOCKQUOTE>
+<P>
+The bitmap font line contains the following numbers: the pixelsize of the
+font, the number of potential characters in the font, the ascent and the
+descent of the font. This is followed by a list of bitmap characters, the
+bitmap character line contains the following numbers: the encoding (local),
+the width, the minimum x value, the minimum y value, the maximum x value
+and the maximum y value. This is followed by another set of binary data encoded
+as above there will be (ymax-ymin+1)* ((xmax-xmin+8)/8) (unencoded) bytes,
+there is no color table here (the high order bit comes first in the image,
+set bits should be colored black, clear bits transparent).
+<P>
+A bitmap font is ended by:
+<BLOCKQUOTE>
+  <PRE>EndBitmapFont
+BitmapFont: 17 285 14 3
+BDFChar: 0 17 0 0 0 0
+z
+...
+EndBitmapFont
+EndSplineFont
+</PRE>
+</BLOCKQUOTE>
+<P>
+If the font has been read in from a type1 postscript font, then there may
+also be entries for a subroutine list. These are type1 strings (similar to
+origtype1 in the character entry). A subroutine list starts with at
+<CODE>BeginSubrs:</CODE> keyword which is followed by the number of subroutines.
+Then a new line, on which the length of each subroutine will appear (this
+may take more than one line if there are lots of subroutines). Then (on the
+next line) an encode85ed string containing all the bytes in all the subroutines
+(the lengths above provide enough information to map a byte to the appropriate
+subroutine). Finally a keyword <CODE>EndSubrs</CODE>.
+<P>
+A font may also have some private data (either from reading at type1 font,
+or because the user created it), this is mostly hinting information. Private
+data begins with the keyword <CODE>BeginPrivate:</CODE> and is followed by
+the count of private items. Each private item starts on a new line, it begins
+with the name of the entry, is followed by a number (containing the length
+of the entry's value) and then then entry's value. The value may contain
+new lines. There will be a newline after the value. The private list is ended
+by an <CODE>EndPrivate</CODE> keyword.
+<H2>
+  Autosave Format
+</H2>
+<P>
+<A HREF="errrecovery.html">Error recovery</A> files are saved in
+~/.PfaEdit/autosave, they have quite random looking names and end in .asfd.
+They look very similar to .sfd files above.
+<P>
+If an asfd file starts with a line:
+<BLOCKQUOTE>
+  <PRE>Base: /home/gww/myfonts/pfaedit/Ambrosia.sfd
+</PRE>
+</BLOCKQUOTE>
+<P>
+Then it is assumed to be a list of changes applied to that file (which may
+be an sfd file or a font file). If it does not start with a
+"<CODE>Base:</CODE>" line then it is assumed to be a new font. The next line
+contains the encoding, as above. The next line is a <CODE>BeginChars</CODE>
+line. The number given on the line is not the number of characters in the
+file, but is the maximum number that could appear in the font. Then follows
+a list of all changed characters in the font (in the format described above).
+<P>
+Bitmaps are not preserved. Grid changes are not preserved.
+<P>
+<P ALIGN=Center>
+-- <A HREF="errrecovery.html">Prev</A> -- <A HREF="overview.html">TOC</A>
+-- <A HREF="xres.html">Next</A> --
+</BODY></HTML>

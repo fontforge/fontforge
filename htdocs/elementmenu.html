@@ -1,0 +1,310 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 11-Dec-2000 -->
+  <!-- AP: Last modified: 28-Apr-2001 -->
+  <TITLE>The Element Menu</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+  The Element Menu
+</H1>
+<P>
+This menu is not present in the Metrics View.
+<P>
+<UL>
+  <LI>
+    <A HREF="#Font">Font Info</A>
+  <LI>
+    <A HREF="#Private">Private Info</A>
+  <LI>
+    <A HREF="#Info">Get/Char Info</A>
+  <LI>
+    <A HREF="#Bitmaps">Bitmaps Available...</A>
+  <LI>
+    <A HREF="#Regenerate">Regenerate Bitmaps...</A>
+  <LI>
+    <A HREF="#Transform">Transform...</A>
+    <UL>
+      <LI>
+	<A HREF="#Flip">Flip Horizontally</A>
+      <LI>
+	<A HREF="#FlipV">Flip Vertically</A>
+      <LI>
+	<A HREF="#Rotate">Rotate 90&#176; CW</A>
+      <LI>
+	<A HREF="#Rotate90CCW">Rotate 90&#176; CCW</A>
+      <LI>
+	<A HREF="#Rotate180">Rotate 180&#176;</A>
+      <LI>
+	<A HREF="#Skew">Skew</A>
+    </UL>
+  <LI>
+    <A HREF="#Expand">Expand Stroke...</A>
+  <LI>
+    <A HREF="#Remove">Remove Overlap</A>
+  <LI>
+    <A HREF="#Simplify">Simplify</A>
+  <LI>
+    <A HREF="#Round">Round to Int</A>
+  <LI>
+    <A HREF="#AutoTrace">AutoTrace</A>
+  <LI>
+    <A HREF="#Clockwise">Clockwise</A>
+  <LI>
+    <A HREF="#Counter">Counter-Clockwise</A>
+  <LI>
+    <A HREF="#Correct">Correct Direction</A>
+  <LI>
+    <A HREF="#Accented">Build Accented Char</A>
+  <LI>
+    <A HREF="#Merge">Merge Fonts...</A>
+  <LI>
+    <A HREF="#Interpolate">Interpolate Fonts...</A>
+</UL>
+<P>
+<DL>
+  <DT>
+    <A NAME="Font">Font</A> Info
+  <DD>
+    In all views this brings up the <A HREF="fontinfo.html">Font Info dialog</A>.
+  <DT>
+    <A NAME="Private">Private</A> Info
+  <DD>
+    Brings up the <A HREF="private.html">Private dialog</A> which allows you
+    to set stuff related to hinting the font as a whole (Like the BlueValues,
+    Stem widths, etc.)
+  <DT>
+    Get/Char <A NAME="Info">Info</A>
+  <DD>
+    In the outline view this brings up <A HREF="getinfo.html">one of four different
+    dialogs</A> (Point Info, Image Info, Reference Info or Character Info) depending
+    on what is selected.<BR>
+    In the font and bitmap view this only brings up the
+    <A HREF="getinfo.html#Character">Character Info dialog</A>.
+  <DT>
+    <A NAME="Bitmaps">Bitmaps</A> Available...
+  <DD>
+    This brings up a list of pixel sizes for bitmap fonts.<BR>
+    <IMG SRC="bitmapsavail.png" WIDTH="263" HEIGHT="298"><BR>
+    If you have bitmap fonts this will show their pixel sizes. If you remove
+    a size that is in the list then that font will be deleted from the sfd file.
+    If you add a size then that size font will be created and stored in the sfd
+    file. Note that on X the conversion between pixel size and point size is
+    dependent on the screen resolution. Two common resolutions are used on X:
+    75dpi and 100dpi. This dialog provides the conversion between pixel size
+    and point sizes at these resolutions.
+    <P>
+    Normally the new characters are created by rasterizing the outline font,
+    but if you are only editing bitmaps (with no outline font) then the new
+    characters will be created by scaling the font displayed in the font view.
+  <DT>
+    <A NAME="Regenerate">Regenerate</A> Bitmaps...
+  <DD>
+    If you have changed the outline that a bitmap is based one then you should
+    (at some point) look into changing the bitmap too. This command allows you
+    to regenerate a subset of the characters in a given bitmap font. In the font
+    view you can regenerate all selected characters, while in the bitmap and
+    outline views you can regenerate the current character. You can pick what
+    pixel sizes should be regenerated too (unlike the above command, removing
+    a bitmap size from the regenerate list will not delete it).
+  <DT>
+    <A NAME="Transform">Transform</A>...
+  <DD>
+    <A HREF="transform.html">In the Font and Outline Views this brings up a
+    dialog</A>, but in the bitmap view there is a submenu with a selection of
+    choices that are meaningful in a bitmap.
+    <DL>
+      <DT>
+	<A NAME="Flip">Flip</A> Horizontally
+      <DD>
+	Flips the bitmap horizontally.
+      <DT>
+	<A NAME="FlipV">Flip</A> Vertically
+      <DD>
+	Flips the bitmap vertically.
+      <DT>
+	<A NAME="Rotate">Rotate</A> 90&#176; CW
+      <DD>
+	Rotates the bitmap 90&#176; clockwise.
+      <DT>
+	<A NAME="Rotate90CCW">Rotate</A> 90&#176; CCW
+      <DD>
+	Rotates the bitmap 90&#176; counter-clockwise.
+      <DT>
+	<A NAME="Rotate180">Rotate</A> 180&#176;
+      <DD>
+	Rotates the bitmap 180&#176;
+      <DT>
+	<A NAME="Skew">Skew</A>
+      <DD>
+	Allows you to specify a ratio by which to skew the bitmap 1:3 means for every
+	3 pixel rise in y, skew the bitmap one pixel horizontally.
+    </DL>
+  <DT>
+    <A NAME="Expand">Expand</A> Stroke...
+  <DD>
+    Only in the font and outline views. In the font view it applies to all foreground
+    splines in all selected characters. In the outline view it applies to all
+    paths that have at least one point selected (or if no points are selected
+    then it applies to all paths).<BR>
+    <IMG SRC="twolines.png" WIDTH="247" HEIGHT="247">
+    <IMG SRC="expandedlines.png" WIDTH="247" HEIGHT="247"><BR>
+    Above is a simple example of what expand stroke can do. It takes the two
+    open paths above left and turns them into the two closed paths right.<BR>
+    <IMG SRC="expandstroke.png" WIDTH="317" HEIGHT="295"><BR>
+    The Expand Stroke dialog gives you control over various aspects of the expansion
+    process. You can chose a stroke width, how the ends of an open path should
+    be drawn, and how the path should look when two splines (or lines) join which
+    do not have the same slope (ie. at a corner point). Or you may choose to
+    have the path be that which would be traced by a calligraphic pen.
+  <DT>
+    <A NAME="Remove">Remove</A> Overlap
+  <DD>
+    Only in the font and outline views. If two closed paths intersect then there
+    will be overlap. This will get rid of it, leaving one closed path behind.
+    (if the path directions are wonky, strange things result).<BR>
+    <IMG SRC="expandedlines.png" WIDTH="247" HEIGHT="247">
+    <IMG SRC="overlappedlines.png" WIDTH="247" HEIGHT="247">
+  <DT>
+    <A NAME="Simplify">Simplify</A>
+  <DD>
+    Only in the font and outline views. If you have lots of points on a path,
+    some of which do not materially add to the path's shape, then this command
+    will remove the extraneous points.
+  <DT>
+    <A NAME="Round">Round</A> to Int
+  <DD>
+    Only in the font and outline views. PfaEdit stores point locations as real
+    numbers (ie. it retains fractional values). TrueType and PostScript Type1
+    only support integral values (Well with vast effort Type1 fonts can be made
+    to support real numbers but PfaEdit doesn't), so when generating the font
+    points are rounded to integral values. Open Type allows real numbers easily.
+    But they make the font file bigger. This command will round all selected
+    locations to the closest integer.
+  <DT>
+    <A NAME="AutoTrace">AutoTrace</A>
+  <DD>
+    This command is only available if you have downloaded Martin Weber's
+    <A HREF="http://homepages.go.com/~martweb/AutoTrace.htm">autotrace program</A>.
+    If you have a background image in a character then autotrace will automagically
+    trace the outlines of that image.<BR>
+    I may not be loading the results of autotrace properly in all cases (I do
+    in my test cases, of course). AutoTrace traces out both foreground and background
+    regions, so I may sometimes leave behind a lump which represents a background
+    area. Just delete it if it happens (and send me the image so I can fix things
+    up).
+  <DT>
+    <A NAME="Clockwise">Clockwise</A>
+  <DD>
+    Only in the outline view. If all selected paths have a clockwise direction
+    then this will be checked. Selecting it will make all paths be clockwise.
+  <DT>
+    <A NAME="Counter">Counter</A>-Clockwise
+  <DD>
+    Only in the outline view. If all selected paths have a counter-clockwise
+    direction then this will be checked. Selecting it will make all paths be
+    counter-clockwise.
+  <DT>
+    <A NAME="Correct">Correct</A> Direction
+  <DD>
+    Only in the outline view. Sets the direction of outermost paths to be clockwise.
+    The next path crossed will be made counter-clockwise, the next clockwise,
+    etc.
+  <DT>
+    Build <A NAME="Accented">Accented/Composite</A> Char
+  <DD>
+    Only in the font and outline views.
+    <P>
+    If the shift key is not depressed when selecting the menu item this will
+    only build accented letters, if the shift key is depressed it will build
+    general composite characters (fractions, ligatures, digits inside parens,
+    roman numerals, etc.) as well. If invoked by short-cut (Ctl-Shft-A) or mnemonic
+    it will only build accented letters.
+    <P>
+    If the current character is an accented character (and all the base characters
+    and accents have already been created) then this command will delete anything
+    that is currently in the foreground and put a reference to the base character
+    and another reference to the accent character into the foreground. So if
+    the current character were "&Agrave;" then a reference to "A" would be added
+    to it, and a reference to "`" would be centered above the "A". <BR>
+    If <A HREF="editmenu.html#From">Copy From</A> is set to All Fonts then any
+    bitmaps will have a similar process done (even in the outline character view).
+    <P>
+    Choosing accents can be a slightly tricky process. Unicode says that accented
+    letters should be built out of the accents in the range 0x300-0x340, but
+    this does not work too well in postscript. A Type1 font works better if the
+    accented character is in the Adobe Standard Encoding, which means either
+    using accents around 0x2d0 or ascii characters. Pfaedit will first attempt
+    to find an accent around 0x2d0, then in ascii and finally in the 0x300-0x340
+    range.
+    <P>
+    Not all accents should be centered above the base character, a cedilla is
+    (usually) centered underneath the base, while other accents need to be placed
+    to the left or right, or even overstruck. PfaEdit should know about proper
+    placement of most accents.
+    <P>
+    Some Unicode characters contain more than one accent. Additional accents
+    will be treated similarly. This command can also be used to generate more
+    general composite characters (in the outline view). Unicode 0x2163 is the
+    roman numeral IV and this command may be used to build it. Greek capital
+    Alpha looks exactly like Latin capital A and can be created. On the other
+    hand the oe ligature will be replaced by an "o" followed by "e", so be a
+    little careful. Some accents (for example cedilla) are treated unexpectedly
+    on certain letters (different ways in different languages), so be careful
+    of g-cedilla. &Aring; often merges the ring into the top of the A, but here
+    it will float above it. Be alert.
+    <P>
+    <FONT COLOR="Red"><STRONG><SMALL>NOTE:</SMALL></STRONG></FONT> My centering
+    algorithms attempt to guess what will look centered to the human eye (centering
+    it in the middle of the character will often not look centered). You should
+    examine all built characters and be prepared to adjust the accent.
+    <P>
+    The algorithms take some account of the italicangle
+  <DT>
+    <A NAME="Merge">Merge</A> Fonts...
+  <DD>
+    Only in the font view. If you are building a unicode font you will often
+    want to merge in fonts with other encodings. You can, of course, cut and
+    paste from one to the other, but usually that needs to be done one character
+    at a time (because the encoding may not be ordered the same as Unicode).
+    Instead, if your fonts are properly encoded (with proper unicode names),
+    then the Merge Fonts command will put them into the right places in the current
+    font.
+  <DT>
+    <A NAME="Interpolate">Interpolate</A> Fonts...
+  <DD>
+    Only in the font view. If you have a bold font and a light font and would
+    like to create a medium font, then you can interpolate a font between the
+    two (or you can extrapolate a font that's even bolder or lighter). Your two
+    fonts must have the same sets of characters, and each character must have
+    the same number of paths (ordered similarly) and each path must have the
+    same number of points on it, and must have the same references.
+</DL>
+<P>
+<H2>
+  Other menus
+</H2>
+<UL>
+  <LI>
+    <A HREF="filemenu.html">File</A>
+  <LI>
+    <A HREF="editmenu.html">Edit</A>
+  <LI>
+    <A HREF="pointmenu.html">Point</A>
+  <LI>
+    <A HREF="elementmenu.html">Element</A>
+  <LI>
+    <A HREF="hintsmenu.html">Hints</A>
+  <LI>
+    <A HREF="viewmenu.html">View</A>
+  <LI>
+    <A HREF="metricsmenu.html">Metrics</A>
+  <LI>
+    <A HREF="windowmenu.html">Window</A>
+</UL>
+<P ALIGN=Center>
+-- <A HREF="pointmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
+<A HREF="hintsmenu.html">Next</A> --
+<P>
+</BODY></HTML>

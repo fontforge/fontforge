@@ -1,0 +1,161 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 11-Dec-2000 -->
+  <!-- AP: Last modified: 26-Mar-2001 -->
+  <TITLE>The Metric Menu</TITLE>
+</HEAD>
+<BODY>
+<P>
+<H1 ALIGN=Center>
+  The Metrics Menu
+</H1>
+<P>
+This menu is not present in the Bitmap View, and the Metrics View only contains
+"Center in Width" and "Thirds in Width".
+<P>
+<UL>
+  <LI>
+    <A HREF="#Center">Center in Width</A>
+  <LI>
+    <A HREF="#Thirds">Thirds in Width</A>
+  <LI>
+    <A HREF="#Width">Set Width...</A>
+  <LI>
+    <A HREF="#LBearing">Set LBearing...</A>
+  <LI>
+    <A HREF="#RBearing">Set RBearing...</A>
+  <LI>
+    <A HREF="#Auto">Auto Width...</A>
+  <LI>
+    <A HREF="#Kern">Auto Kern...</A>
+  <LI>
+    <A HREF="#Remove">Remove All Kern Pairs</A>
+</UL>
+<P>
+<DL>
+  <DT>
+    <A NAME="Center">Center</A> in Width
+  <DD>
+    In the Outline and Metrics Views this centers the current character (makes
+    its lbearing be the same as its rbearing) within the current width.
+    <P>
+    In the Font View the same thing is done for all selected characters.
+  <DT>
+    <A NAME="Thirds">Thirds</A> in Width
+  <DD>
+    This is very like Center in Width above... except that I happen to prefer
+    having a bit more white space after my characters than before them. So this
+    command makes the rbearing twice the lbearing (instead of making them be
+    the same).
+  <DT>
+    Set <A NAME="Width">Width</A>...
+  <DD>
+    <IMG SRC="setwidth.png" WIDTH="290" HEIGHT="186"><BR>
+    The Set Width command allows you to change the width of the current character
+    (in the outline view) or all selected characters (in the font view). You
+    may either set the width to an absolute value, change the width by adding
+    a constant value to it, or multiply it by a scale factor.
+  <DT>
+    Set <A NAME="LBearing">LBearing</A>...
+  <DD>
+    The Set LBearing command is similar to the Set Width command above, the dialog
+    is pretty much the same except that it applies to the left side bearing rather
+    than to the width.
+  <DT>
+    Set <A NAME="RBearing">RBearing</A>...
+  <DD>
+    The Set RBearing command is similar to the Set Width command above, the dialog
+    is pretty much the same except that it applies to the right side bearing
+    rather than to the width.
+  <DT>
+    <A NAME="Auto">Auto</A> Width...
+  <DD>
+    This command is only available in the font view.<BR>
+    <IMG SRC="autowidth.png" WIDTH="276" HEIGHT="316"><BR>
+    The Auto Width command will attempt to guess reasonable widths (more accurately
+    reasonable left and right side bearings) for your font. The command looks
+    at all possible combinations of indicated characters (if you request more
+    than 300 characters it will only look at the first 300 to avoid running out
+    of memory (300*300 takes up a fair amount of room). You must specify two
+    different sets, one for the character on the left (which will have its right
+    side bearing adjusted) and one for the character on the right (which will
+    have its left side bearing adjusted. I know that sounds backwards but think
+    about it a little), of course these two sets may be the same. You may apply
+    the command to all characters in the font (if there are few than 300 of course),
+    to all the selected characters, the the characters A-Z, a-z and 0-9 or to
+    a list of characters you specify yourself (characters may be specified either
+    by themselves or by a range, so "ace-g" means the characters a, c, e, f and
+    g (if you put commas and spaces in the list they will be treated as characters.
+    If you want to specify a hyphen, put it first or last, so "-a-z" means hyphen
+    and all letters a-z)). <A HREF="metricsview.html#Entering">For information
+    on entering non-ASCII characters see that section in the metrics view</A>,
+    ranges are based on Unicode code points.
+    <P>
+    Last of all the Spacing text box allows you to say how close you want the
+    characters to be. If you look at a sanserif capital I, and you autowidth
+    it with itself (and nothing else) the sum of the left and right side bearings
+    should be equal to the spacing. If you have serifs and curved letters things
+    are more complex, but that is roughly what's going on. The number here is
+    chosen to be a reasonable spacing for a sanserif font. You may need to adjust
+    it to suit your own preferences.
+  <DT>
+    Auto <A NAME="Kern">Kern</A>...
+  <DD>
+    This command is only available from the font view. <BR>
+    <IMG SRC="autokern.png" WIDTH="276" HEIGHT="395"><BR>
+    The Auto Kern dialog looks almost exactly like the Auto Width dialog above.
+    For each character pair, it will set the sum of <BR>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;right bearing of
+    left character&gt; + &lt;left bearing of right character&gt; + &lt;kern&gt;
+    = &lt;spacing&gt; + &lt;character shape fudge factor&gt;<BR>
+    The "fudge factor" is determined by dividing the character into a series
+    of zones (it figures out where the serifs are and each serif has its own
+    zone (descender, baseline, x-height, ascender, cap-height), then the gaps
+    between the serifs are also zones). It looks for the closest approach of
+    the two characters within each zone and performs a complicated average to
+    figure out the fudge. If that fudge would lead to a &lt;kern&gt; which causes
+    any zone to be too close then it is adjusted up. The exact method is subject
+    to change as bugs are found.<BR>
+    If the absolute value of a &lt;kern&gt; is less than the threshold then no
+    kerning information will be produced for that pair of characters. If the
+    algorithem (and any previously existing kern pairs) lead to more pairs than
+    specified by "Total Kerns" then a new threshold value will be determined
+    and any pairs whose &lt;kern&gt; is less (in absolute value) than this new
+    threshold will be removed.<BR>
+    Remember kerning is not part of PostScript&reg;, whatever word processor
+    you use needs to read the kerning information from the afm file.
+  <DT>
+    <A NAME="Remove">Remove</A> All Kern Pairs
+  <DD>
+    In the font view removes all kern pairs in the font.<BR>
+    In the outline character view removes all kern pairs where the current character
+    is the left hand character.<BR>
+    Not present in the Metrics or Bitmap views.
+</DL>
+<H2>
+  Other menus
+</H2>
+<UL>
+  <LI>
+    <A HREF="filemenu.html">File</A>
+  <LI>
+    <A HREF="editmenu.html">Edit</A>
+  <LI>
+    <A HREF="pointmenu.html">Point</A>
+  <LI>
+    <A HREF="elementmenu.html">Element</A>
+  <LI>
+    <A HREF="hintsmenu.html">Hints</A>
+  <LI>
+    <A HREF="viewmenu.html">View</A>
+  <LI>
+    <A HREF="metricsmenu.html">Metrics</A>
+  <LI>
+    <A HREF="windowmenu.html">Window</A>
+</UL>
+<P ALIGN=Center>
+-- <A HREF="viewmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
+<A HREF="windowmenu.html">Next</A> --
+<P>
+</BODY></HTML>

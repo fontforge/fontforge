@@ -1,0 +1,107 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 14-Dec-2000 -->
+  <!-- AP: Last modified: 20-Apr-2001 -->
+  <TITLE>Font Info</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+  Font Info
+</H1>
+<P>
+<IMG SRC="fontinfo.png" WIDTH="358" HEIGHT="479">
+<P>
+The Font Info dialog is available from all views. It allows you to name your
+font, to set its <A HREF="fontview.html#Encodings">encoding</A> and various
+other useful bits of information.
+<P>
+Postscript fonts have several different names, but basically there are two
+important ones: the family name (like times) and the fontname (which is the
+family name with a bunch of modifiers like Bold Italic Condensed tacked on
+to the end.
+<P>
+The Italic Angle indicates the slant of the font. PfaEdit can attempt to
+guess a good value for you by looking at the stems of certain letters ("I"
+for instance).
+<P>
+The sum of the ascent and descent describes the bounds of the em-square for
+the font, and in most postscript fonts will be1000 (this is convention, it
+does not need to be 1000), while in most TrueType fonts it will be 2048 (also
+a convention, but TrueType claims rasterization is faster if the sum is a
+power of 2). Since both TrueType and Type1 (postscript) fonts represent numbers
+as 16-bit integers ascent and descent must be less than 32767. TrueType is
+more restrictive and requires their sum to be less than 16384.
+<P>
+The copyright could be whatever you want to put there, but it's a good place
+to put a copyright.
+<P>
+The XUID field is a collection of numbers seperated by spaces and enclosed
+in brackets. This allows you to specify the extended unique ID of the font.
+If you have set the XUID preference entry then PfaEdit will assign values
+to all new fonts (by appending a number unique to this font to the end of
+your preference item). Adobe recommends that the XUID be changed every time
+the font is changed, so each time you generate a postscript font, that font's
+XUID (if present) will be incremented by 1.
+<P>
+You may want to add characters to or removed characters from your font. You
+can specify how many characters you want in the font here. <STRONG></STRONG>
+<P>
+<STRONG>Note</STRONG> some encodings have different numbers of characters,
+and it may be hard to guess how many will be used. But if you have changed
+the encoding but not altered the "Number of Characters" box, then the value
+in the Number box will be ignored and the correct number will come from the
+encoding process.
+<P>
+  <HR>
+<P>
+You can also use this dialog to add new encodings to the set that PfaEdit
+knows about. There are three buttons that manipulate a set of user defined
+encodings. As always these specify both a character set and an encoding.
+The encoding has a maximum of 256 entries, but the character set may be larger
+(up to 1024). This means that you can define a font with extra characters.
+Since postscript fonts can be reencoded at runtime this can be useful.
+<P>
+The button <CODE>[Load]</CODE> allows you to load an encoding(s) from a file.
+Currently the file must either be in the format used by the unicode consortium
+for <A HREF="http://www.unicode.org/Public/MAPPINGS/ISO8859/">mapping ISO
+8859</A> encodings to unicode, or it must be a postscript encoding array.
+The first format looks like this:
+<BLOCKQUOTE>
+  <PRE>0x20	0x0020	#	SPACE
+0x21	0x0021	#	EXCLAMATION MARK
+...
+</PRE>
+</BLOCKQUOTE>
+<P>
+A postscript file looks like:
+<BLOCKQUOTE>
+  <PRE>/TeXBase1Encoding [
+ % 00
+ /.notdef /dotaccent /fi /fl
+ /fraction /hungarianumlaut /Lslash /lslash
+ ...
+] def
+</PRE>
+</BLOCKQUOTE>
+<P>
+There may be more than one encoding in a postscript file. The encoding parser
+is not smart. It will only read arrays specified like this, don't try any
+of the innumerable other ways of specifying an array in postscript.
+<P>
+Here's an <A HREF="Encodings.ps.gz">example of a postscript encoding file</A>.
+It contains 3 encodings used by TeX, and one encoding which specifies a character
+set that includes all characters in ISO 8859 Latin fonts, and the Adobe Expert
+Encoding.
+<P>
+If the font has a custom encoding then the <CODE>[Make From Font]</CODE>
+button is enabled. This allows you to name the encoding you have defined
+for the current font.
+<P>
+The <CODE>[Remove]</CODE> button brings up a list showing all the custom
+encodings and allows you to delete them.
+<P>
+<P ALIGN=Center>
+-- <A HREF="elementmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A>
+-- <A HREF="elementmenu.html">Next</A> --
+</BODY></HTML>

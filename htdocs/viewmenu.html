@@ -1,0 +1,221 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 11-Dec-2000 -->
+  <!-- AP: Last modified: 7-Mar-2001 -->
+  <TITLE>The View Menu</TITLE>
+</HEAD>
+<BODY>
+<P>
+<H1 ALIGN=Center>
+  The View Menu
+</H1>
+<UL>
+  <LI>
+    <A HREF="#Fit">Fit</A>
+  <LI>
+    <A HREF="#Out">Zoom Out</A>
+  <LI>
+    <A HREF="#In">Zoom In</A>
+  <LI>
+    <A HREF="#Next">Next Char</A>
+  <LI>
+    <A HREF="#Prev">Prev Char</A>
+  <LI>
+    <A HREF="#Goto">Goto</A>
+  <LI>
+    <A HREF="#px24">24 pixel outline</A>
+  <LI>
+    <A HREF="#px36">36 pixel outline</A>
+  <LI>
+    <A HREF="#px48">48 pixel outline</A>
+  <LI>
+    <A HREF="#AntiAlias">AntiAlias</A>
+  <LI>
+    <A HREF="#bitmaps">&lt;list of bitmap pixel sizes, if any&gt;</A>
+  <LI>
+    <A HREF="#grid">Show/Hide Grid</A>
+  <LI>
+    <A HREF="#Outline">Outline</A>
+  <LI>
+    <A HREF="#Points">Show/Hide Points</A>
+  <LI>
+    <A HREF="#Fill">Fill</A>
+  <LI>
+    <A HREF="#Bigger">Bigger Pixel Size</A>
+  <LI>
+    <A HREF="#Smaller">Smaller Pixel Size</A>
+  <LI>
+    <A HREF="#Palettes">Palettes</A>
+    <UL>
+      <LI>
+	<A HREF="#Tools">Tools</A>
+      <LI>
+	<A HREF="#Layers">Layers</A>
+    </UL>
+  <LI>
+    <A HREF="#Rulers">Show/Hide Rulers</A>
+</UL>
+<P>
+<DL>
+  <DT>
+    <A NAME="Fit">Fit</A>
+  <DD>
+    In the outline and bitmap views this will scale the current character to
+    the largest setting where it all fits in the view.
+  <DT>
+    Zoom <A NAME="Out">Out</A>
+  <DD>
+    Only in the outline and bitmap views. Centered on the middle of the view.
+  <DT>
+    Zoom <A NAME="In">In</A>
+  <DD>
+    Only in the outline and bitmap views. Centered on the middle of the view.
+  <DT>
+    <A NAME="Next">Next</A> Char
+  <DD>
+    In the metrics, outline and bitmap view this changes the current character
+    to be the previous one in the font.
+    <P>
+    In the font view this selects the next character in the font (and scrolls,
+    if necessary, to display that character).
+  <DT>
+    <A NAME="Prev">Prev</A> Char
+  <DD>
+    In the font view this selects the next character in the font (and scrolls,
+    if necessary, to display that character).
+  <DT>
+    <A NAME="Goto">Goto</A>
+  <DD>
+    In the Font, Outline and Bitmap views this brings up a dialog in which you
+    may type either:
+    <UL>
+      <LI>
+	A number (indicating the character you are interested in, in the current
+	encoding)
+      <LI>
+	A hex number (preceded by either 0x or U+) indicating the character you are
+	interested in in unicode.
+      <LI>
+	A ku ten representation of a CJK font (two comma separated numbers)
+      <LI>
+	A name of a character in the current font
+      <LI>
+	A character
+    </UL>
+    <P>
+    In the font view the view will scroll so that this character is visible and
+    it will be selected
+    <P>
+    In the bitmap and outline views, the current character will change to be
+    the one specified.
+  <DT>
+    <A NAME="px24">24 pixel </A>outline
+  <DD>
+    In the font view you may choose how large you want the rasterized representation
+    of the outline view to be. The default is to rasterize it on a 24 pixel block.
+    If this item is checked then a 24 pixel version of the outline font is displayed,
+    selecting it will display a 24 pixel version of the font.
+  <DT>
+    <A NAME="px36">36 pixel </A>outline
+  <DD>
+    Similar to the above but for a 36 pixel version.
+  <DT>
+    <A NAME="px48">48 pixel </A>outline
+  <DD>
+    Similar to the above but for a 48 pixel version.
+  <DT>
+    <A NAME="AntiAlias">AntiAlias</A>
+  <DD>
+    Toggles between whether the font displayed in the font view is a bitmapped
+    font or an anti-aliased font. An Anti-aliased font shows levels of grey rather
+    than just black and white. It often looks better than a bitmap, but it is
+    slower to generate and draw.
+  <DT>
+    &lt;list of <A NAME="bitmap">bitmap</A> pixel sizes, if any&gt;
+  <DD>
+    In the font view or metrics view there is a list of all generated bitmap
+    fonts. You may select to have one of them displayed in the view rather than
+    a rasterized version of the outline font. If one is checked then that one
+    is currently displayed, if you select one then it will be displayed.
+  <DT>
+    Show/Hide <A NAME="Grid">Grid</A>
+  <DD>
+    In the Metrics View there is no layers palette. This entry allows you to
+    turn on or off the lines marking the edges of the characters on display.
+  <DT>
+    <A NAME="Outline">Outline</A>
+  <DD>
+    In the Metrics View this will be checked when the outline font is bring
+    displayed. Selecting it will display the outline font (rather than a bitmap
+    font).
+  <DT>
+    Show/Hide <A NAME="Points">Points</A>
+  <DD>
+    This hides or displays the points in the outline character view.
+  <DT>
+    <A NAME="Fill">Fill</A>
+  <DD>
+    In the Outline view this fills in the character outline as you edit it. (this
+    can be very slow. If the character is too big (too magnified) then filling
+    will not be done).
+  <DT>
+    <A NAME="Bigger">Bigger</A> Pixel Size
+  <DD>
+    In the bitmap view this displays the current character in next larger bitmap
+    font (if there is one)
+  <DT>
+    <A NAME="Smaller">Smaller</A> Pixel Size
+  <DD>
+    In the bitmap view this displays the current character in next smaller bitmap
+    font (if there is one)
+  <DT>
+    <A NAME="Palettes">Palettes</A>
+  <DD>
+    <DL>
+      <DT>
+	<A NAME="Tools">Tools</A>
+      <DD>
+	If this item is checked then the tools palette (in the outline and bitmap
+	views) is visible. Selecting it toggles whether the palette is visible or
+	not.
+      <DT>
+	<A NAME="Layers">Layers</A>
+      <DD>
+	If this item is checked then the layers palette (in the outline and bitmap
+	views) is visible. Selecting it toggles whether the palette is visible or
+	not.
+    </DL>
+  <DT>
+    Show/Hide <A NAME="Rulers">Rulers</A>
+  <DD>
+    In the Character Outline View toggles whether rulers appear at the top and
+    to the left of the editing area.
+</DL>
+<P>
+<H2>
+  Other menus
+</H2>
+<UL>
+  <LI>
+    <A HREF="filemenu.html">File</A>
+  <LI>
+    <A HREF="editmenu.html">Edit</A>
+  <LI>
+    <A HREF="pointmenu.html">Point</A>
+  <LI>
+    <A HREF="elementmenu.html">Element</A>
+  <LI>
+    <A HREF="hintsmenu.html">Hints</A>
+  <LI>
+    <A HREF="viewmenu.html">View</A>
+  <LI>
+    <A HREF="metricsmenu.html">Metrics</A>
+  <LI>
+    <A HREF="windowmenu.html">Window</A>
+</UL>
+<P ALIGN=Center>
+-- <A HREF="hintsmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
+<A HREF="metricsmenu.html">Next</A> --
+<P>
+</BODY></HTML>
