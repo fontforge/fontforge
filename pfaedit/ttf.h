@@ -426,3 +426,5 @@ struct alltabs {
 };
 
 struct subhead { uint16 first, cnt, delta, rangeoff; };	/* a sub header in 8/16 cmap table */
+
+enum touchflags { tf_x=1, tf_y=2, tf_d=4, tf_endcontour=0x80, tf_startcontour=0x40 };

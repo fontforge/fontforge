@@ -1513,7 +1513,8 @@ typedef struct dstem {
     struct dstem *next;
     BasePoint leftedgetop, leftedgebottom, rightedgetop, rightedgebottom;
     int pnum[4];
-    struct dsteminfolist { struct dsteminfolist *next; DStemInfo *d; int pnum[4];} *dl;
+    /*struct dsteminfolist { struct dsteminfolist *next; DStemInfo *d; int pnum[4];} *dl;*/
+    uint8 *used;	/* Points lying near this diagonal 1=>left edge, 2=> right, 0=> off */
     struct dstemlist { struct dstemlist *next; struct dstem *ds; BasePoint *is[4]; int pnum[4]; int done;} *intersects;
     struct dstemlist *top, *bottom;
     unsigned int done: 1;
@@ -1542,36 +1543,6 @@ return( false );
 return( true );
 }
 
-static int OnEdge(BasePoint *test, BasePoint *top, BasePoint *bottom) {
-    double slope;
-
-    if ( top->y==bottom->y ) {
-	if ( !RealWithin(test->y,top->y,1))
-return( false );
-	if ( top->x>bottom->x ) {
-	    if ( test->x<=bottom->x || test->x>=top->x )
-return( false );
-	} else {
-	    if ( test->x>=bottom->x || test->x<=top->x )
-return( false );
-	}
-    } else if ( top->x==bottom->x ) {
-	if ( !RealWithin(test->x,top->x,1))
-return( false );
-	if ( test->y<=bottom->y || test->y>=top->y )
-return( false );
-    } else {
-	slope = (top->y-bottom->y)/(top->x-bottom->x);
-	if ( !RealWithin(test->y,bottom->y+slope*(test->x-bottom->x),2) )
-return( false );
-
-	if ( test->y<=bottom->y || test->y>=top->y )
-return( false );
-    }
-
-return( true );
-}
-
 static int BpIndex(BasePoint *search,BasePoint *bp,int ptcnt) {
     int i;
 
@@ -1582,11 +1553,10 @@ return( i );
 return( -1 );
 }
 
-static DStem *DStemMerge(DStemInfo *d, BasePoint *bp, int ptcnt) {
+static DStem *DStemMerge(DStemInfo *d, BasePoint *bp, int ptcnt, uint8 *touched) {
     DStemInfo *di, *di2;
     DStem *head=NULL, *cur;
-    struct dsteminfolist *dl;
-    int i;
+    int i, j, nexti;
     BasePoint *top, *bottom;
     DStem **map[2];
 
@@ -1594,16 +1564,17 @@ static DStem *DStemMerge(DStemInfo *d, BasePoint *bp, int ptcnt) {
     for ( di=d; di!=NULL; di=di->next ) if ( !di->used ) {
 	cur = chunkalloc(sizeof(DStem));
 	memset(cur->pnum,-1,sizeof(cur->pnum));
-	cur->dl = chunkalloc(sizeof(struct dsteminfolist));
-	cur->dl->d = di;
+	cur->used = gcalloc(ptcnt,sizeof(uint8));
 	cur->leftedgetop = di->leftedgetop;
-	cur->dl->pnum[0] = cur->pnum[0] = BpIndex(&di->leftedgetop,bp,ptcnt);
+	cur->pnum[0] = BpIndex(&di->leftedgetop,bp,ptcnt);
 	cur->leftedgebottom = di->leftedgebottom;
-	cur->dl->pnum[1] = cur->pnum[1] = BpIndex(&di->leftedgebottom,bp,ptcnt);
+	cur->pnum[1] = BpIndex(&di->leftedgebottom,bp,ptcnt);
 	cur->rightedgetop = di->rightedgetop;
-	cur->dl->pnum[2] = cur->pnum[2] = BpIndex(&di->rightedgetop,bp,ptcnt);
+	cur->pnum[2] = BpIndex(&di->rightedgetop,bp,ptcnt);
 	cur->rightedgebottom = di->rightedgebottom;
-	cur->dl->pnum[3] = cur->pnum[3] = BpIndex(&di->rightedgebottom,bp,ptcnt);
+	cur->pnum[3] = BpIndex(&di->rightedgebottom,bp,ptcnt);
+	cur->used[cur->pnum[0]] = cur->used[cur->pnum[1]] = 1;
+	cur->used[cur->pnum[2]] = cur->used[cur->pnum[3]] = 2;
 	cur->next = head;
 	head = cur;
 	for ( di2 = di->next; di2!=NULL; di2 = di2->next ) if ( !di2->used ) {
@@ -1619,43 +1590,41 @@ static DStem *DStemMerge(DStemInfo *d, BasePoint *bp, int ptcnt) {
 		     di->rightedgetop.y==di2->rightedgetop.y &&
 		     di->rightedgebottom.x==di2->rightedgebottom.x &&
 		     di->rightedgebottom.y==di2->rightedgebottom.y )) {
-		dl = chunkalloc(sizeof(struct dsteminfolist));
-		dl->d = di2;
-		dl->next = cur->dl;
-		cur->dl = dl;
-		if ( di->leftedgetop.x==di2->leftedgetop.x &&
-			 di->leftedgetop.y==di2->leftedgetop.y &&
-			 di->leftedgebottom.x==di2->leftedgebottom.x &&
-			 di->leftedgebottom.y==di2->leftedgebottom.y ) {
-		     dl->pnum[0] = dl->pnum[1] = -1;
-		 } else {
-		    dl->pnum[0] = BpIndex(&di2->leftedgetop,bp,ptcnt);
-		    dl->pnum[1] = BpIndex(&di2->leftedgebottom,bp,ptcnt);
+		if ( di->leftedgetop.x!=di2->leftedgetop.x ||
+			 di->leftedgetop.y!=di2->leftedgetop.y ) {
+		    i = BpIndex(&di2->leftedgetop,bp,ptcnt);
+		    cur->used[i] = 1;
+		    if ( cur->leftedgetop.y<di2->leftedgetop.y ) {
+			cur->leftedgetop = di2->leftedgetop;
+			cur->pnum[0] = i;
+		    }
 		}
-		if ( di->rightedgetop.x==di2->rightedgetop.x &&
-			 di->rightedgetop.y==di2->rightedgetop.y &&
-			 di->rightedgebottom.x==di2->rightedgebottom.x &&
-			 di->rightedgebottom.y==di2->rightedgebottom.y ) {
-		    dl->pnum[2] = dl->pnum[3] = -1;
-		} else {
-		    dl->pnum[2] = BpIndex(&di2->rightedgetop,bp,ptcnt);
-		    dl->pnum[3] = BpIndex(&di2->rightedgebottom,bp,ptcnt);
+		if ( di->leftedgebottom.x!=di2->leftedgebottom.x ||
+			 di->leftedgebottom.y!=di2->leftedgebottom.y ) {
+		    i = BpIndex(&di2->leftedgebottom,bp,ptcnt);
+		    cur->used[i] = 1;
+		    if ( cur->leftedgebottom.y>di2->leftedgebottom.y ) {
+			cur->leftedgebottom = di2->leftedgebottom;
+			cur->pnum[1] = i;
+		    }
 		}
-		if ( cur->leftedgetop.y<di2->leftedgetop.y ) {
-		    cur->leftedgetop = di2->leftedgetop;
-		    cur->pnum[0] = dl->pnum[0];
+		if ( di->rightedgetop.x!=di2->rightedgetop.x ||
+			 di->rightedgetop.y!=di2->rightedgetop.y ) {
+		    i = BpIndex(&di2->rightedgetop,bp,ptcnt);
+		    cur->used[i] = 2;
+		    if ( cur->rightedgetop.y<di2->rightedgetop.y ) {
+			cur->rightedgetop = di2->rightedgetop;
+			cur->pnum[2] = i;
+		    }
 		}
-		if ( cur->leftedgebottom.y>di2->leftedgebottom.y ) {
-		    cur->leftedgebottom = di2->leftedgebottom;
-		    cur->pnum[1] = dl->pnum[1];
-		}
-		if ( cur->rightedgetop.y<di2->rightedgetop.y ) {
-		    cur->rightedgetop = di2->rightedgetop;
-		    cur->pnum[2] = dl->pnum[2];
-		}
-		if ( cur->rightedgebottom.y>di2->rightedgebottom.y ) {
-		    cur->rightedgebottom = di2->rightedgebottom;
-		    cur->pnum[3] = dl->pnum[3];
+		if ( di->rightedgebottom.x!=di2->rightedgebottom.x ||
+			 di->rightedgebottom.y!=di2->rightedgebottom.y ) {
+		    i = BpIndex(&di2->rightedgebottom,bp,ptcnt);
+		    cur->used[i] = 2;
+		    if ( cur->rightedgebottom.y>di2->rightedgebottom.y ) {
+			cur->rightedgebottom = di2->rightedgebottom;
+			cur->pnum[3] = i;
+		    }
 		}
 		di2->used = true;
 	    }
@@ -1665,10 +1634,10 @@ static DStem *DStemMerge(DStemInfo *d, BasePoint *bp, int ptcnt) {
     map[0] = gcalloc(ptcnt,sizeof(DStem *));
     map[1] = gcalloc(ptcnt,sizeof(DStem *));
     for ( cur = head; cur!=NULL; cur=cur->next ) {
-	for ( dl=cur->dl; dl!=NULL; dl=dl->next ) {
-	    for ( i=0; i<4; ++i ) if ( dl->pnum[i]!=-1 ) {
-		if ( map[0][dl->pnum[i]]==NULL ) map[0][dl->pnum[i]] = cur;
-		else map[1][dl->pnum[i]] = cur;
+	for ( i=0; i<ptcnt; ++i ) {
+	    if ( cur->used[i]) {
+		if ( map[0][i]==NULL ) map[0][i] = cur;
+		else map[1][i] = cur;
 	    }
 	}
     }
@@ -1676,64 +1645,47 @@ static DStem *DStemMerge(DStemInfo *d, BasePoint *bp, int ptcnt) {
     /* sometimes we don't find all the bits of a diagonal stem */
     /* "k" is an example, we don't notice the stub between the vertical stem and the lower diagonal stem */
     for ( cur = head; cur!=NULL; cur=cur->next ) {
-	for ( i=0; i<ptcnt-1; ++i ) {
+	for ( i=0; i<ptcnt; ++i ) {
 	    if ( map[1][i]!=NULL || map[1][i+1]!=NULL ||
 		    (map[0][i]!=NULL && map[0][i]==map[0][i+1] ))
 	continue;	/* These points are already on a diagonal, off just enough that we can't find a line... */
-	    if ( CoLinear(&cur->leftedgetop,&cur->leftedgebottom,&bp[i],&bp[i+1])) {
-		top = &bp[i]; bottom = &bp[i+1];
+	    nexti = i+1;
+	    if ( touched[i]&tf_endcontour ) {
+		for ( j=i; j>0 && !(touched[j]&tf_startcontour); --j);
+		nexti = j;
+	    }
+	    if ( CoLinear(&cur->leftedgetop,&cur->leftedgebottom,&bp[i],&bp[nexti])) {
+		top = &bp[i]; bottom = &bp[nexti];
 		if ( top->y<bottom->y ) { top = bottom; bottom = &bp[i]; }
-		di = chunkalloc(sizeof(DStemInfo));
-		di->leftedgetop = *top;
-		di->leftedgebottom = *bottom;
-		di->rightedgetop.x = di->rightedgebottom.x = 0x80000000;
-		di->temporary = di->onlyleft = true;
-		dl = chunkalloc(sizeof(struct dsteminfolist));
-		memset(dl->pnum,-1,sizeof(dl->pnum));
-		dl->next = cur->dl;
-		dl->d = di;
-		cur->dl = dl;
-		dl->pnum[0] = top==&bp[i]?i:i+1;
-		dl->pnum[1] = bottom==&bp[i]?i:i+1;
-		if ( cur->leftedgetop.y<top->y ) {
+		cur->used[i] = cur->used[nexti] = 1;
+		if ( cur->leftedgetop.y>top->y ) {
 		    cur->leftedgetop = *top;
-		    cur->pnum[0] = dl->pnum[0];
+		    cur->pnum[0] = i;
 		}
 		if ( cur->leftedgebottom.y>bottom->y ) {
 		    cur->leftedgebottom = *bottom;
-		    cur->pnum[1] = dl->pnum[1];
+		    cur->pnum[1] = i;
 		}
 		if ( map[0][i]==NULL ) map[0][i] = cur;
 		else map[1][i] = cur;
-		if ( map[0][i+1]==NULL ) map[0][i+1] = cur;
-		else map[1][i+1] = cur;
-	    } else if ( CoLinear(&cur->rightedgetop,&cur->rightedgebottom,&bp[i],&bp[i+1])) {
-		top = &bp[i]; bottom = &bp[i+1];
+		if ( map[0][nexti]==NULL ) map[0][nexti] = cur;
+		else map[1][nexti] = cur;
+	    } else if ( CoLinear(&cur->rightedgetop,&cur->rightedgebottom,&bp[i],&bp[nexti])) {
+		top = &bp[i]; bottom = &bp[nexti];
 		if ( top->y<bottom->y ) { top = bottom; bottom = &bp[i]; }
-		di = chunkalloc(sizeof(DStemInfo));
-		di->rightedgetop = *top;
-		di->rightedgebottom = *bottom;
-		di->leftedgetop.x = di->leftedgebottom.x = 0x80000000;
-		di->temporary = di->onlyright = true;
-		dl = chunkalloc(sizeof(struct dsteminfolist));
-		memset(dl->pnum,-1,sizeof(dl->pnum));
-		dl->next = cur->dl;
-		dl->d = di;
-		cur->dl = dl;
-		dl->pnum[2] = top==&bp[i]?i:i+1;
-		dl->pnum[3] = bottom==&bp[i]?i:i+1;
-		if ( cur->rightedgetop.y<top->y ) {
+		cur->used[i] = cur->used[nexti] = 1;
+		if ( cur->rightedgetop.y>top->y ) {
 		    cur->rightedgetop = *top;
-		    cur->pnum[2] = dl->pnum[2];
+		    cur->pnum[2] = i;
 		}
 		if ( cur->rightedgebottom.y>bottom->y ) {
 		    cur->rightedgebottom = *bottom;
-		    cur->pnum[3] = dl->pnum[3];
+		    cur->pnum[3] = i;
 		}
 		if ( map[0][i]==NULL ) map[0][i] = cur;
 		else map[1][i] = cur;
-		if ( map[0][i+1]==NULL ) map[0][i+1] = cur;
-		else map[1][i+1] = cur;
+		if ( map[0][nexti]==NULL ) map[0][nexti] = cur;
+		else map[1][nexti] = cur;
 	    }
 	}
     }
@@ -1746,22 +1698,16 @@ return( head );
 
 static void DStemFree(DStem *d) {
     DStem *next;
-    struct dsteminfolist *dl, *dlnext;
     struct dstemlist *dsl, *dslnext;
 
     while ( d!=NULL ) {
 	next = d->next;
-	for ( dl=d->dl; dl!=NULL; dl=dlnext ) {
-	    dlnext = dl->next;
-	    if ( dl->d->temporary )
-		chunkfree(dl->d,sizeof(DStemInfo));
-	    chunkfree(dl,sizeof(struct dsteminfolist));
-	}
 	for ( dsl=d->intersects; dsl!=NULL; dsl=dslnext ) {
 	    dslnext = dsl->next;
 	    chunkfree(dsl,sizeof(struct dstemlist));
 	}
 	chunkfree(d,sizeof(DStem));
+	free(d->used);
 	d = next;
     }
 }
@@ -1794,14 +1740,13 @@ static struct dstemlist *BuildDStemIntersection(DStem *d,DStem *ds,
 return( i1 );
 }
 
-static void DStemIntersect(DStem *d) {
+static void DStemIntersect(DStem *d,BasePoint *bp,int ptcnt) {
     /* For each DStem, see if it intersects any other dstems */
     /* This is combinatorial hell. the only relief is that there are usually */
     /*  not very many dstems */
     DStem *ds;
     struct dstemlist *i1, *i2;
-    struct dsteminfolist *dl, *dl2;
-    int i,j;
+    int i;
     real maxy1, miny1, maxy2, miny2;
 
     while ( d!=NULL ) {
@@ -1814,14 +1759,10 @@ static void DStemIntersect(DStem *d) {
 	continue;
 
 	    i1 = i2 = NULL;
-	    for ( dl=d->dl; dl!=NULL; dl = dl->next ) {
-		for ( dl2=ds->dl; dl2!=NULL; dl2 = dl2->next ) {
-		    for ( i=0; i<4; ++i ) if ( dl->pnum[i]!=-1 ) for ( j=0; j<4; ++j ) if ( dl2->pnum[j]!=-1 ) {
-			if ( dl->pnum[i]==dl2->pnum[j] ) {
-			    i1 = BuildDStemIntersection(d,ds,i1,&i2,
-				    &(&dl->d->leftedgetop)[i],(i>=2)+2*(j>=2),dl2->pnum[j]);
-			}
-		    }
+	    for ( i=0; i<ptcnt; ++i ) {
+		if ( d->used[i] && ds->used[i] ) {
+		    i1 = BuildDStemIntersection(d,ds,i1,&i2,
+			    &bp[i],(d->used[i]==1?0:1)+(ds->used[i]==1?0:2),i);
 		}
 	    }
 	}
@@ -1831,7 +1772,6 @@ static void DStemIntersect(DStem *d) {
 
 /* There is always the possibility that the top might intersect two different*/
 /*  dstems (an example would be a misaligned X) */
-/* I'm going to ignore that case for now */
 static struct dstemlist *DStemTopAtIntersection(DStem *ds) {
     struct dstemlist *dl, *found=NULL;
 
@@ -1872,8 +1812,8 @@ static int IsVStemIntersection(struct dstemlist *dl) {
     /*  if it is at the end-point then it is a "V" intersection, otherwise */
     /*  it might be a "k". */
     if ( ds->pnum[0] == dl->pnum[in_ll] || ds->pnum[0]==dl->pnum[in_lr] || ds->pnum[0]==dl->pnum[in_rl] ||
-	    ds->pnum[1] == dl->pnum[in_rr] || ds->pnum[1]==dl->pnum[in_lr] || ds->pnum[1]==dl->pnum[in_rl] ||
-	    ds->pnum[2] == dl->pnum[in_ll] || ds->pnum[2]==dl->pnum[in_lr] || ds->pnum[2]==dl->pnum[in_rl] ||
+	    ds->pnum[1] == dl->pnum[in_ll] || ds->pnum[1]==dl->pnum[in_lr] || ds->pnum[1]==dl->pnum[in_rl] ||
+	    ds->pnum[2] == dl->pnum[in_rr] || ds->pnum[2]==dl->pnum[in_lr] || ds->pnum[2]==dl->pnum[in_rl] ||
 	    ds->pnum[3] == dl->pnum[in_rr] || ds->pnum[3]==dl->pnum[in_lr] || ds->pnum[3]==dl->pnum[in_rl] )
 return( true );
 
@@ -1927,8 +1867,8 @@ static uint8 *KStemMoveToEdge(struct glyphinfo *gi, uint8 *pt,
 
     d1 = (dl->ds->leftedgetop.y-dl->ds->leftedgebottom.y)*(bp->x-dl->ds->leftedgebottom.x) -
 	 (dl->ds->leftedgetop.x-dl->ds->leftedgebottom.x)*(bp->y-dl->ds->leftedgebottom.y);
-    d2 = (dl->ds->leftedgetop.y-dl->ds->leftedgebottom.y)*(bp->x-dl->ds->rightedgebottom.x) -
-	 (dl->ds->leftedgetop.x-dl->ds->leftedgebottom.x)*(bp->y-dl->ds->rightedgebottom.y);
+    d2 = (dl->ds->rightedgetop.y-dl->ds->rightedgebottom.y)*(bp->x-dl->ds->rightedgebottom.x) -
+	 (dl->ds->rightedgetop.x-dl->ds->rightedgebottom.x)*(bp->y-dl->ds->rightedgebottom.y);
     if ( d1<0 ) d1 = -d1;
     if ( d2<0 ) d2 = -d2;
 
@@ -2796,34 +2736,32 @@ static uint8 *DStemMakeColinear(struct glyphinfo *gi,uint8 *pt,DStem *ds,
 	/* touched[]&4 indicates a diagonal touch, only interested in points */
 	/*  which have not been diagonally touched */
 	established = positioned = 0;
-	for ( i=0; i<ptcnt; ++i ) if ( !(touched[i]&4) && i!=ds->pnum[0] && i!=ds->pnum[1]) {
-	    if ( OnEdge(&bp[i],&ds->leftedgetop,&ds->leftedgebottom) ) {
-		if ( !established ) {
-		    pt = SetPFVectorsToSlope(pt,ds->pnum[0],ds->pnum[1]);
-		    pt = pushpoint(pt,ds->pnum[0]);
-		    *pt++ = 0x10;		/* SRP0 */
-		    established = any = true;
-		}
-		pt = pushpointstem(pt,i,zerocvt);
-		*pt++ = 0xe0;			/* MIRP[00000] */
-		touched[i] |= 4;
+	for ( i=0; i<ptcnt; ++i ) if ( !(touched[i]&4) && ds->used[i]==1 &&
+		i!=ds->pnum[0] && i!=ds->pnum[1]) {
+	    if ( !established ) {
+		pt = SetPFVectorsToSlope(pt,ds->pnum[0],ds->pnum[1]);
+		pt = pushpoint(pt,ds->pnum[0]);
+		*pt++ = 0x10;		/* SRP0 */
+		established = any = true;
 	    }
+	    pt = pushpointstem(pt,i,zerocvt);
+	    *pt++ = 0xe0;			/* MIRP[00000] */
+	    touched[i] |= 4;
 	}
-	for ( i=0; i<ptcnt; ++i ) if ( !(touched[i]&4) && i!=ds->pnum[2] && i!=ds->pnum[3]) {
-	    if ( OnEdge(&bp[i],&ds->rightedgetop,&ds->rightedgebottom) ) {
-		if ( !established ) {
-		    pt = SetPFVectorsToSlope(pt,ds->pnum[0],ds->pnum[1]);
-		    established = any = true;
-		}
-		if ( !positioned ) {
-		    pt = pushpoint(pt,ds->pnum[2]);
-		    *pt++ = 0x10;		/* SRP0 */
-		    positioned = true;
-		}
-		pt = pushpointstem(pt,i,zerocvt);
-		*pt++ = 0xe0;			/* MIRP[00000] */
-		touched[i] |= 4;
+	for ( i=0; i<ptcnt; ++i ) if ( !(touched[i]&4) && ds->used[i]==2 &&
+		i!=ds->pnum[2] && i!=ds->pnum[3]) {
+	    if ( !established ) {
+		pt = SetPFVectorsToSlope(pt,ds->pnum[0],ds->pnum[1]);
+		established = any = true;
 	    }
+	    if ( !positioned ) {
+		pt = pushpoint(pt,ds->pnum[2]);
+		*pt++ = 0x10;		/* SRP0 */
+		positioned = true;
+	    }
+	    pt = pushpointstem(pt,i,zerocvt);
+	    *pt++ = 0xe0;			/* MIRP[00000] */
+	    touched[i] |= 4;
 	}
 	ds = ds->next;
     }
@@ -2836,14 +2774,14 @@ static uint8 *DStemInfoGeninst(struct glyphinfo *gi,uint8 *pt,DStemInfo *d,
 	uint8 *touched, BasePoint *bp, int ptcnt) {
     DStem *ds;
 
-    /*if ( ds==NULL )*/
+    if ( ds==NULL )		/* Comment out this line to turn off diagonal hinting !!!*/
 return( pt );
-    ds = DStemMerge(d,bp,ptcnt);
+    ds = DStemMerge(d,bp,ptcnt,touched);
 
     *pt++ = 0x30;	/* Interpolate Untouched Points y */
     *pt++ = 0x31;	/* Interpolate Untouched Points x */
 
-    DStemIntersect(ds);
+    DStemIntersect(ds,bp,ptcnt);
     pt = DStemEstablishEndPoints(gi,pt,ds,touched,bp,ptcnt);
     pt = DStemISectMidPoints(pt,ds,touched);
     pt = DStemMakeColinear(gi,pt,ds,touched,bp,ptcnt);
@@ -2995,11 +2933,11 @@ static void initforinstrs(SplineChar *sc) {
 }
 
 static void dumpgeninstructions(SplineChar *sc, struct glyphinfo *gi,
-	int *contourends, BasePoint *bp, int ptcnt, SplineSet *ttfss) {
+	int *contourends, BasePoint *bp, int ptcnt, SplineSet *ttfss,
+	uint8 *touched) {
     StemInfo *hint;
     uint8 *instrs, *pt;
     int max;
-    uint8 *touched;
     DStemInfo *dstem;
 
     if ( sc->vstem==NULL && sc->hstem==NULL && sc->dstem==NULL && sc->md==NULL ) {
@@ -3019,7 +2957,6 @@ return;
     max += 6*ptcnt;			/* in case there are any rounds */
     max += 6*ptcnt;			/* paranoia */
     instrs = pt = galloc(max);
-    touched = gcalloc(1,ptcnt);
 
     for ( hint=sc->vstem; hint!=NULL; hint=hint->next )
 	hint->enddone = hint->startdone = false;
@@ -3211,6 +3148,7 @@ static void dumpglyph(SplineChar *sc, struct glyphinfo *gi) {
     int *contourends;
     BasePoint *bp;
     char *fs;
+    uint8 *touched;
 
     gi->loca[gi->next_glyph++] = ftell(gi->glyphs);
 
@@ -3236,15 +3174,18 @@ static void dumpglyph(SplineChar *sc, struct glyphinfo *gi) {
 
     bp = galloc(ptcnt*sizeof(BasePoint));
     fs = galloc(ptcnt);
+    touched = gcalloc(ptcnt,1);
     ptcnt = contourcnt = 0;
     for ( ss=ttfss; ss!=NULL; ss=ss->next ) {
+	touched[ptcnt] |= tf_startcontour;
 	ptcnt = SSAddPoints(ss,ptcnt,bp,fs);
 	putshort(gi->glyphs,ptcnt-1);
+	touched[ptcnt-1] |= tf_endcontour;
 	contourends[contourcnt++] = ptcnt-1;
     }
 
     contourends[contourcnt] = 0;
-    dumpgeninstructions(sc,gi,contourends,bp,ptcnt,ttfss);
+    dumpgeninstructions(sc,gi,contourends,bp,ptcnt,ttfss,touched);
     dumppointarrays(gi,bp,fs,ptcnt);
     SplinePointListFree(ttfss);
     free(bp);
