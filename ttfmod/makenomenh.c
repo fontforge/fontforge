@@ -203,6 +203,26 @@ return( *bpt );
 return( val );
 }
 
+static int twocharval(char **buffer,int enc) {
+    /* Currently only support korean... */
+    int ch1, ch2;
+
+    if ( enc==e_wansung ) {
+	ch1 = charval(buffer);
+	if ( ch1<0xa1 )
+return( ch1 );
+	ch1 -= 0xa1;
+	ch2 = charval(buffer)-0xa1;
+	ch1 = ch1*94 + ch2;
+	ch1 = unicode_from_ksc5601[ch1];
+return( ch1 );
+    } else {
+	fprintf( stderr, "Don't support this encoding\n" );
+	exit( 1 );
+    }
+return( -1 );
+}
+
 static unichar_t *slurpchars(char *filename, char *name,int enc,char *buffer) {
     unichar_t space[1024], *pt;
     const unichar_t *table = unicode_from_alphabets[enc==e_utf8?e_iso8859_1:enc];
@@ -234,6 +254,30 @@ static unichar_t *slurpchars(char *filename, char *name,int enc,char *buffer) {
 	    while ( *buffer!='"' && *buffer!= '\0' ) {
 		*pt++ = table[charval(&buffer)];
 	    }
+	}
+	*pt = 0;
+    } else {
+	fprintf( stderr, "Could not parse initializer for %s in %s\n", name, filename );
+	space[0] = 0;
+    }
+return( u_copy(space));
+}
+
+static unichar_t *slurp2bytes(char *filename, char *name,int enc,char *buffer) {
+    unichar_t space[1024], *pt;
+
+    while ( isspace( *buffer )) ++buffer;
+    if ( *buffer=='{' ) ++ buffer;
+    while ( isspace( *buffer )) ++buffer;
+    if ( *buffer=='\'' ) {
+	++buffer;
+	space[0] = twocharval(&buffer,enc);
+	space[1] = '\0';
+    } else if ( *buffer=='"' ) {
+	++buffer;
+	pt = space;
+	while ( *buffer!='"' && *buffer!= '\0' ) {
+	    *pt++ = twocharval(&buffer,enc);
 	}
 	*pt = 0;
     } else {
@@ -336,6 +380,8 @@ static int getencoding(char *str) {
 	{ e_win, "e_win" },
 	{ e_mac, "e_mac" },
 	{ e_utf8, "e_utf8" },
+	{ e_wansung, "e_wansung" },
+	{ e_johab, "e_johab" },
 	{ 0, NULL}};
     int i;
     char *pt;
@@ -451,6 +497,8 @@ return;
 	*bpt = '\0';
 	if ( isuni )
 	    init = slurpunichars(filename,buffer+off,pt);
+	else if ( enc>=e_first2byte )
+	    init = slurp2bytes(filename,buffer,enc,pt);
 	else
 	    init = slurpchars(filename,buffer,enc,pt);
 	if ( init==NULL )

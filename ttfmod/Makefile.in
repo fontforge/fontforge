@@ -7,7 +7,7 @@ X_PRE_LIBS = @X_PRE_LIBS@
 
 TABLEOBJS = maxp.o OS2.o instrs.o binary.o shorts.o metrics.o _hea.o head.o \
 	post.o gasp.o VORG.o
-GLYPHOBJS = fontview.o conicutil.o charview.o freetype.o bcdebug.o
+GLYPHOBJS = fontview.o conicutil.o charview.o freetype.o bcdebug.o instrmod.o
 ttfmod_OBJECTS = ttfmod-ui.o start.o splashimage.o uiutil.o ttfview.o ttffile.o \
 	openfontdlg.o prefs.o cursors.o windowmenu.o psunicodenames.o \
 	ttfsave.o $(TABLEOBJS) $(GLYPHOBJS)
