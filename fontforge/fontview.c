@@ -4696,7 +4696,6 @@ return( rot );
 
 static GImage *UniGetRotatedGlyph(SplineFont *sf, SplineChar *sc,int uni) {
     int cid=-1;
-    SplineChar *cidsc, dummy;
     static GWindow pixmap=NULL;
     GRect r;
     unichar_t buf[2];
@@ -4704,26 +4703,14 @@ static GImage *UniGetRotatedGlyph(SplineFont *sf, SplineChar *sc,int uni) {
 
     if ( uni!=-1 )
 	/* Do nothing */;
-    else if ( sscanf(sc->name,"vertuni%x", (unsigned *) &uni)!=1 &&
+    else if ( sscanf(sc->name,"vertuni%x", (unsigned *) &uni)==1 )
+	/* All done */;
+    else if ( sf->cidmaster!=NULL &&
 	    (sscanf( sc->name, "cid-%d", &cid)==1 ||
 	     sscanf( sc->name, "vertcid_%d", &cid)==1 ||	/* Obsolete names */
 	     sscanf( sc->name, "cid_%d", &cid)==1 )) {
-	cidsc = NULL;
-	if ( !sf->compacted ) {
-	    if ( sf->cidmaster==NULL ) {
-		if ( cid>=0 && cid<sf->charcnt )
-		    cidsc = sf->chars[cid];
-	    } else {
-		cidsc = SCBuildDummy(&dummy,sf,cid);
-	    }
-	} else {
-	    int i;
-	    for (i=0; i<sf->charcnt && sf->chars[i]->old_enc!=cid; i++);
-	    cidsc = SCBuildDummy(&dummy,sf,i);
-	}
-	if ( cidsc==NULL || cidsc->unicodeenc==-1 )
-return( NULL );
-	uni = cidsc->unicodeenc;
+	uni = CID2Uni(FindCidMap(sf->cidmaster->cidregistry,sf->cidmaster->ordering,sf->cidmaster->supplement,sf->cidmaster),
+		cid);
     }
     if ( uni&0x10000 ) uni -= 0x10000;		/* Bug in some old cidmap files */
     if ( uni<0 || uni>0xffff )
@@ -4968,7 +4955,17 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		    else if ( n>=5 && n<=7 && sc->name[0]=='u' &&
 			    (i=strtol(sc->name+1,&end,16), end-sc->name==n))
 			buf[0] = i;
-		    else for ( i=0; i<psunicodenames_cnt; ++i )
+		    else if ( sc->name[0]=='c' && sc->name[1]=='i' && sc->name[2]=='d' &&
+			    fv->sf->cidmaster!=NULL &&
+			    (i=strtol(sc->name+3,&end,10), end-sc->name==n)) {
+			SplineFont *cidmaster = fv->sf->cidmaster;
+			int uni;
+			if ( i<0 ) i= -i;
+			uni = CID2Uni(FindCidMap(cidmaster->cidregistry,cidmaster->ordering,cidmaster->supplement,cidmaster),
+				i);
+			if ( uni!=-1 )
+			    buf[0] = uni;
+		    } else for ( i=0; i<psunicodenames_cnt; ++i )
 			if ( psunicodenames[i]!=NULL && strncmp(sc->name,psunicodenames[i],n)==0 &&
 				psunicodenames[i][n]=='\0' ) {
 			    buf[0] = i;

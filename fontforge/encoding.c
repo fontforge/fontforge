@@ -504,6 +504,23 @@ struct cidmap {
 
 static struct cidmap *cidmaps = NULL;
 
+int CID2Uni(struct cidmap *map,int cid) {
+    unsigned int uni;
+
+    if ( map==NULL )
+return( -1 );
+    else if ( cid==0 )
+return( 0 );
+    else if ( cid<map->namemax && map->unicode[cid]!=0 )
+return( map->unicode[cid] );
+    else if ( cid<map->namemax && map->name[cid]!=NULL ) {
+	if ( sscanf(map->name[cid],"uni%x", &uni )==1 )
+return( uni );
+    }
+
+return( -1 );
+}
+
 int CID2NameEnc(struct cidmap *map,int cid, char *buffer, int len) {
     int enc = -1;
 
