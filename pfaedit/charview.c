@@ -1199,8 +1199,9 @@ void CVChar(CharView *cv, GEvent *event ) {
 		else
 		    CVHScroll(cv,&sb);
 	    } else {
+		extern float arrowAmount;
 		CVPreserveState(cv);
-		CVMoveSelection(cv,dx,dy);
+		CVMoveSelection(cv,dx*arrowAmount,dy*arrowAmount);
 		/* Check for merge!!!! */
 		CVCharChangedUpdate(cv);
 		CVInfoDraw(cv,cv->gw);

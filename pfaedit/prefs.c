@@ -40,6 +40,7 @@ int default_encoding = em_iso8859_1;
 int autohint_before_rasterize = 1;
 int ItalicConstrained=true;
 int accent_offset = 4;
+float arrowAmount=1;
 char *BDFFoundry=NULL;
 char *xuid=NULL;
 char *RecentFiles[RECENT_MAX] = { NULL };
@@ -80,7 +81,7 @@ static GTextInfo localencodingtypes[] = {
     { NULL }};
 
 /* don't use mnemonics 'C' or 'O' (Cancel & OK) */
-enum pref_types { pr_int, pr_bool, pr_enum, pr_encoding, pr_string };
+enum pref_types { pr_int, pr_real, pr_bool, pr_enum, pr_encoding, pr_string };
 struct enums { char *name; int value; };
 
 struct enums fvsize_enums[] = { NULL };
@@ -115,6 +116,7 @@ static struct prefs_list {
 	{ "GreekFixup", pr_bool, &greekfixup, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupGF },
 	{ "OnlyCopyDisplayed", pr_bool, &onlycopydisplayed, NULL, NULL, '\0', NULL, 1 },
 	{ "CopyMetaData", pr_bool, &copymetadata, NULL, NULL, '\0', NULL, 1 },
+	{ "ArrowMoveSize", pr_real, &arrowAmount, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupAA },
 	{ NULL }
 },
  oldnames[] = {
@@ -318,6 +320,9 @@ return;
 	  case pr_bool: case pr_int:
 	    sscanf( pt, "%d", pl->val );
 	  break;
+	  case pr_real:
+	    sscanf( pt, "%f", pl->val );
+	  break;
 	  case pr_string:
 	    if ( *pt=='\0' ) pt=NULL;
 	    if ( pl->val!=NULL )
@@ -356,6 +361,9 @@ return;
 	  break;
 	  case pr_bool: case pr_int:
 	    fprintf( p, "%s:\t%d\n", prefs_list[i].name, *(int *) (prefs_list[i].val) );
+	  break;
+	  case pr_real:
+	    fprintf( p, "%s:\t%g\n", prefs_list[i].name, (double) *(float *) (prefs_list[i].val) );
 	  break;
 	  case pr_string:
 	    if ( (prefs_list[i].val)!=NULL )
@@ -399,6 +407,8 @@ static int Prefs_Ok(GGadget *g, GEvent *e) {
 	continue;
 	    if ( prefs_list[i].type==pr_int ) {
 		GetInt(gw,1000+i,prefs_list[i].name,&err);
+	    } else if ( prefs_list[i].type==pr_int ) {
+		GetReal(gw,1000+i,prefs_list[i].name,&err);
 	    } else if ( prefs_list[i].val == &local_encoding ) {
 		enc = GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,1000+i));
 		lc = (int) (localencodingtypes[enc].userdata);
@@ -420,6 +430,9 @@ return( true );
 	      break;
 	      case pr_bool:
 	        *((int *) (prefs_list[i].val)) = GGadgetIsChecked(GWidgetGetControl(gw,1000+i));
+	      break;
+	      case pr_real:
+	        *((float *) (prefs_list[i].val)) = GetReal(gw,1000+i,prefs_list[i].name,&err);
 	      break;
 	      case pr_encoding:
 		if ( prefs_list[i].val==&local_encoding )
@@ -545,6 +558,12 @@ void DoPrefs(void) {
 	    gcd[gc++].creator = GTextFieldCreate;
 	    y += 26;
 	  break;
+	  case pr_real:
+	    sprintf(buf,"%g", *((float *) prefs_list[i].val));
+	    label[gc].text = (unichar_t *) copy( buf );
+	    gcd[gc++].creator = GTextFieldCreate;
+	    y += 26;
+	  break;
 	  case pr_encoding:
 	    if ( prefs_list[i].val==&local_encoding ) {
 		gcd[gc].gd.u.list = localencodingtypes;
@@ -622,7 +641,7 @@ void DoPrefs(void) {
 	    if ( gcd[gc+1].gd.u.list!=encodingtypes && gcd[gc+1].gd.u.list!=localencodingtypes )
 		GTextInfoListFree(gcd[gc+1].gd.u.list);
 	  } break;
-	  case pr_string: case pr_int:
+	  case pr_string: case pr_int: case pr_real:
 	    free(label[gc+1].text);
 	  break;
 	}

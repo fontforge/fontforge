@@ -3591,10 +3591,7 @@ return( NULL );
     GProgressEndIndicator();
 
     if ( sf==NULL ) {
-	u_strcpy(ubuf,GStringGetResource(_STR_CouldntOpenFont,NULL));
-	len = u_strlen(ubuf);
-	uc_strncat(ubuf,GFileNameTail(filename),100);
-	ubuf[100+len] = '\0';
+	GWidgetErrorR(_STR_CouldntOpenFontTitle,_STR_CouldntOpenFont,GFileNameTail(filename));
     } else
 	sf->origname = copy(filename);
 

@@ -1884,6 +1884,29 @@ static unichar_t _hangulsijo9[] = { '-', ' ', 0xc815, 0xcca0,  0 };
 static unichar_t *hangulsijo[] = { _hangulsijo1, _hangulsijo2, _hangulsijo3,
     _hangulsijo4, _hangulsijo5, _hangulsijo6, _hangulsijo7, _hangulsijo8,
     _hangulsijo9, NULL };
+/* Chinese traditional */
+static unichar_t _LiiBair1[] = { 0x5c07, 0x9032, 0x9152,  0 };
+static unichar_t _LiiBair2[] = { 0 };
+static unichar_t _LiiBair3[] = { 0x541b, 0x4e0d, 0x898b, ' ', 0x9ec3, 0x6cb3, 0x4e4b, 0x6c34, 0x5929, 0x4e0a, 0x4f86, ' ', 0x5954, 0x6d41, 0x5230, 0x6d77, 0x4e0d, 0x5fa9, 0x56de,  0 };
+static unichar_t _LiiBair4[] = { 0x541b, 0x4e0d, 0x898b, ' ', 0x9ad8, 0x5802, 0x660e, 0x93e1, 0x60b2, 0x767d, 0x9aee, ' ', 0x671d, 0x5982, 0x9752, 0x7d72, 0x66ae, 0x6210, 0x96ea,  0 };
+static unichar_t _LiiBair5[] = { 0x4eba, 0x751f, 0x5f97, 0x610f, 0x9808, 0x76e1, 0x6b61, ' ', 0x83ab, 0x4f7f, 0x91d1, 0x6a3d, 0x7a7a, 0x5c0d, 0x2e9d,  0 };
+static unichar_t _LiiBair6[] = { 0x5929, 0x751f, 0x6211, 0x6750, 0x5fc5, 0x6709, 0x7528, ' ', 0x5343, 0x91d1, 0x6563, 0x76e1, 0x9084, 0x5fa9, 0x4f86,  0 };
+static unichar_t _LiiBair7[] = { 0x70f9, 0x7f8a, 0x5bb0, 0x725b, 0x4e14, 0x70ba, 0x6a02, ' ', 0x6703, 0x9808, 0x4e00, 0x98f2, 0x4e09, 0x767e, 0x676f,  0 };
+static unichar_t _LiiBair8[] = { 0x5c91, 0x592b, 0x5b50, ' ', 0x4e39, 0x4e18, 0x751f, ' ', 0x5c07, 0x9032, 0x9152, ' ', 0x541b, 0x83ab, 0x505c,  0 };
+static unichar_t _LiiBair9[] = { 0x8207, 0x541b, 0x6b4c, 0x4e00, 0x66f2, ' ', 0x8acb, 0x541b, 0x70ba, 0x6211, 0x5074, 0x8033, 0x807d,  0 };
+static unichar_t _LiiBair10[] = { 0 };
+static unichar_t _LiiBair11[] = { 0x9418, 0x9f13, 0x994c, 0x7389, 0x4e0d, 0x8db3, 0x8cb4, ' ', 0x4f46, 0x9858, 0x9577, 0x9189, 0x4e0d, 0x9858, 0x9192,  0 };
+static unichar_t _LiiBair12[] = { 0x53e4, 0x4f86, 0x8056, 0x8ce2, 0x7686, 0x5bc2, 0x5bde, ' ', 0x60df, 0x6709, 0x98f2, 0x8005, 0x7559, 0x5176, 0x540d,  0 };
+static unichar_t _LiiBair13[] = {0x9673, 0x738b, 0x6614, 0x6642, 0x5bb4, 0x5e73, 0x6a02, ' ', 0x6597, 0x9152, 0x5341, 0x5343, 0x6063, 0x8b99, 0x8b14,  0 };
+static unichar_t _LiiBair14[] = { 0x4e3b, 0x4eba, 0x4f55, 0x70ba, 0x8a00, 0x5c11, 0x9322, ' ', 0x5f91, 0x9808, 0x6cbd, 0x53d6, 0x5c0d, 0x541b, 0x914c,  0 };
+static unichar_t _LiiBair15[] = { 0x4e94, 0x82b1, 0x99ac, ' ', 0x5343, 0x91d1, 0x88d8, ' ', 0x547c, 0x5152, 0x5c07, 0x51fa, 0x63db, 0x7f8e, 0x9152,  0 };
+static unichar_t _LiiBair16[] = { 0x8207, 0x723e, 0x540c, 0x6d88, 0x842c, 0x53e4, 0x6101,  0 };
+static unichar_t *LiiBair[] = { _LiiBair1, _LiiBair2, _LiiBair3, _LiiBair4,
+	_LiiBair5, _LiiBair6, _LiiBair7, _LiiBair8, _LiiBair9, _LiiBair10,
+	_LiiBair11, _LiiBair12, _LiiBair13, _LiiBair14, _LiiBair15, _LiiBair16,
+	NULL };
+static unichar_t *LiiBairShort[] = { _LiiBair1, _LiiBair2, _LiiBair3, _LiiBair4,
+	NULL };
 
 /* The following translations of the gospel according to John are all from */
 
@@ -2028,7 +2051,7 @@ static unichar_t *thaijohn[] = { _thaijohn1, NULL };
 /* I've omitted cornish. no interesting letters. no current speakers */
 
 static unichar_t **sample[] = { simple, simplecyrill, faust, pheadra, antigone,
-	annakarenena, debello, hebrew, hangulsijo, donquixote, inferno, beorwulf, muchado,
+	annakarenena, debello, hebrew, hangulsijo, LiiBair, donquixote, inferno, beorwulf, muchado,
 	mabinogion, goodsoldier, macedonian, bulgarian, belorussianjohn,
 	churchjohn,
 	lithuanian, polish, slovene, irishjohn, basquejohn, portjohn,
@@ -2095,7 +2118,7 @@ static void u_stupidstrcpy( unichar_t *pt1, unichar_t *pt2 ) {
 
 static unichar_t *BuildDef( SplineFont *sf) {
     int i, j, gotem, len, any=0;
-    unichar_t *ret=NULL;
+    unichar_t *ret=NULL, **cur;
 
     for ( j=0; simplechoices[j]!=NULL; ++j );
     simple[0] = simplechoices[rand()%j];
@@ -2106,14 +2129,24 @@ static unichar_t *BuildDef( SplineFont *sf) {
 	len = any = 0;
 	for ( i=0; sample[i]!=NULL; ++i ) {
 	    gotem = true;
-	    for ( j=0; sample[i][j]!=NULL && gotem; ++j )
-		gotem = AllChars(sf,sample[i][j]);
+	    cur = sample[i];
+	    for ( j=0; cur[j]!=NULL && gotem; ++j )
+		gotem = AllChars(sf,cur[j]);
+	    if ( !gotem && sample[i]==simple ) {
+		gotem = true;
+		simple[0] = _simple1;
+	    } else if ( !gotem && sample[i]==LiiBair ) {
+		cur = LiiBairShort;
+		gotem = true;
+		for ( j=0; cur[j]!=NULL && gotem; ++j )
+		    gotem = AllChars(sf,cur[j]);
+	    }
 	    if ( gotem ) {
 		++any;
-		for ( j=0; sample[i][j]!=NULL; ++j ) {
+		for ( j=0; cur[j]!=NULL; ++j ) {
 		    if ( ret )
-			u_stupidstrcpy(ret+len,sample[i][j]);
-		    len += u_strlen(sample[i][j]);
+			u_stupidstrcpy(ret+len,cur[j]);
+		    len += u_strlen(cur[j]);
 		    if ( ret )
 			ret[len] = '\n';
 		    ++len;

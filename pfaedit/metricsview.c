@@ -1343,6 +1343,8 @@ return;
 	GGadgetMove(mv->perchar[i].rbearing,mv->perchar[i].mx,mv->displayend+2+3*(mv->fh+4));
 	if ( mv->perchar[i].kern!=NULL )
 	    GGadgetMove(mv->perchar[i].kern,mv->perchar[i].mx-mv->perchar[i].mwidth/2,mv->displayend+2+4*(mv->fh+4));
+	if ( i!=0 )
+	    MVRefreshKern(mv,i);
     }
     GGadgetMove(mv->namelab,2,mv->displayend+2);
     GGadgetMove(mv->widthlab,2,mv->displayend+2+mv->fh+4);

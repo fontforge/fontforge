@@ -204,7 +204,7 @@ return( val );
 }
 
 static int twocharval(char **buffer,int enc) {
-    /* Currently only support korean... */
+    /* Currently only support a few */
     int ch1, ch2;
 
     if ( enc==e_wansung ) {
@@ -215,6 +215,14 @@ return( ch1 );
 	ch2 = charval(buffer)-0xa1;
 	ch1 = ch1*94 + ch2;
 	ch1 = unicode_from_ksc5601[ch1];
+return( ch1 );
+    } else if ( enc==e_big5 ) {
+	ch1 = charval(buffer);
+	if ( ch1<0xa1 )
+return( ch1 );
+	ch2 = charval(buffer);
+	ch1 = (ch1<<8) + ch2;
+	ch1 = unicode_from_big5[ch1-0xa100];
 return( ch1 );
     } else {
 	fprintf( stderr, "Don't support this encoding\n" );
@@ -381,6 +389,7 @@ static int getencoding(char *str) {
 	{ e_mac, "e_mac" },
 	{ e_utf8, "e_utf8" },
 	{ e_wansung, "e_wansung" },
+	{ e_big5, "e_big5" },
 	{ e_johab, "e_johab" },
 	{ 0, NULL}};
     int i;
@@ -440,7 +449,7 @@ return;
 	if ( strncmp(buffer+off,"enum encoding enc =",19)==0 ) {
 	    enc = getencoding(buffer+off+19);
 	    if ( enc==-1 ) {
-		fprintf(stderr, "Invalid encoding line: %s", buffer );
+		fprintf(stderr, "Invalid encoding line: %s\n", buffer );
 		fclose(namef);
 return;
 	    }
