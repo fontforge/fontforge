@@ -2,9 +2,9 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-May-2001 -->
-  <!-- AP: Last modified: 16-Apr-2004 -->
-  <LINK REL="icon" href="ffanvil16.png">
+  <!-- AP: Last modified: 10-Oct-2004 -->
   <TITLE>Printing</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
@@ -23,8 +23,8 @@ When you choose to print you have the option of printing:
     Certain selected characters, one per page, at a scale to fill up the page<BR>
     <IMG SRC="CharPrint.png" WIDTH="283" HEIGHT="392">
   <LI>
-    Certain selected characters at various pointsizes (36, 24, 20, 18, 16, 15,
-    14, 13, 12, 11, 10, 9, 8, 7.5, 7, 6.5, 6, 5.5, 5, 4.5, 4)<BR>
+    Certain selected characters at various pointsizes (72, 48, 36, 24, 20, 18,
+    16, 15, 14, 13, 12, 11, 10, 9, 8, 7.5, 7, 6.5, 6, 5.5, 5, 4.5, 4)<BR>
     <IMG SRC="MultiPrint.png" WIDTH="227" HEIGHT="259">
   <LI>
     A sample of the font in use. This will handle kerning, bi-directional text,
@@ -57,15 +57,16 @@ in ucs2 (possibly byte reversed, determined by the initial U+FEFF), in utf8
 <P>
 The Setup button allows you to pick a printer, pagesize, etc.<BR Clear=ALL>
 <P>
-<IMG SRC="PageSetup.png" WIDTH="344" HEIGHT="260" ALIGN="Left">You may choose
+<IMG SRC="PageSetup.png" WIDTH="351" HEIGHT="273" ALIGN="Left">You may choose
 to queue the result with lp or lpr, you may also direct it to ghostview,
-or simply print to a file (if you send it to a file you will be prompted
-for a filename after you click OK in the Print (not the PageSetup) dialog).
-You can also direct the print run to any command you choose (the "Other"
-option). This command must expect to find a postscript file on its standard
-input, if the command needs any arguments (a common example might be the
-"-" used by many commands to make them read standard input) they should be
-placed in the text field with the command name.
+or simply print to a file. Files may be written in either postscript or pdf
+formats (if you send output to a file you will be prompted for a filename
+after you click OK in the Print (not the PageSetup) dialog). You can also
+direct the print run to any command you choose (the "Other" option). This
+command must expect to find a postscript file on its standard input, if the
+command needs any arguments (a common example might be the "-" used by many
+commands to make them read standard input) they should be placed in the text
+field with the command name.
 <P>
 FontForge knows about certain standard sizes of paper. If you want to use
 a size which isn't on the list then enter it as 8.5x11in or 21x29.7cm.
@@ -80,7 +81,7 @@ or printing to a file.
 <P Clear=ALL>
 Obviously my samples are based on european and CJK character sets. If anyone
 has a small section of text in any language not represented please send me
-a copy. Preferably in a unicode encoding...
+a copy. Copyright free, of course, and preferably in a unicode encoding...
 <P>
 <A HREF="quotations.html">Sources of the samples</A>...
 <P>
