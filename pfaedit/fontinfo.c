@@ -1292,6 +1292,45 @@ return( false );
 return( true );
 }
 
+void SFFindNearTop(SplineFont *sf) {
+    FontView *fv;
+    int i,k;
+
+    if ( sf->cidmaster!=NULL )
+	sf = sf->cidmaster;
+    if ( sf->subfontcnt==0 ) {
+	for ( fv=sf->fv; fv!=NULL; fv=fv->nextsame ) {
+	    fv->sc_near_top = NULL;
+	    for ( i=fv->rowoff*fv->colcnt; i<sf->charcnt && i<(fv->rowoff+fv->rowcnt)*fv->colcnt; ++i )
+		if ( sf->chars[i]!=NULL ) {
+		    fv->sc_near_top = sf->chars[i];
+	    break;
+		}
+	}
+    } else {
+	for ( fv=sf->fv; fv!=NULL; fv=fv->nextsame ) {
+	    fv->sc_near_top = NULL;
+	    for ( i=fv->rowoff*fv->colcnt; i<fv->sf->charcnt && i<(fv->rowoff+fv->rowcnt)*fv->colcnt; ++i ) {
+		for ( k=0; k<sf->subfontcnt; ++k )
+		    if ( sf->subfonts[k]->chars[i]!=NULL )
+			fv->sc_near_top = sf->subfonts[k]->chars[i];
+	    }
+	}
+    }
+}
+
+void SFRestoreNearTop(SplineFont *sf) {
+    FontView *fv;
+
+    for ( fv=sf->fv; fv!=NULL; fv=fv->nextsame ) if ( fv->sc_near_top!=NULL ) {
+	/* Note: For CID keyed fonts, we don't care if sc is in the currenly */
+	/*  displayed font, all we care about is the CID (->enc) */
+	fv->rowoff = fv->sc_near_top->enc/fv->colcnt;
+	GScrollBarSetPos(fv->vsb,fv->rowoff);
+	/* Don't ask for an expose event yet. We'll get one soon enough */
+    }
+}
+
 /* see also SplineFontNew in splineutil2.c */
 static int _SFReencodeFont(SplineFont *sf,enum charset new_map, SplineFont *target) {
     const unsigned short *table;
@@ -1303,17 +1342,9 @@ static int _SFReencodeFont(SplineFont *sf,enum charset new_map, SplineFont *targ
     Encoding *item=NULL;
     uint8 *used;
     RefChar *refs;
-    FontView *fv;
     CharView *cv;
 
-    for ( fv=sf->fv; fv!=NULL; fv=fv->nextsame ) {
-	fv->sc_near_top = NULL;
-	for ( i=fv->rowoff*fv->colcnt; i<fv->sf->charcnt && i<(fv->rowoff+fv->rowcnt)*fv->colcnt; ++i )
-	    if ( fv->sf->chars[i]!=NULL ) {
-		fv->sc_near_top = fv->sf->chars[i];
-	break;
-	    }
-    }
+    SFFindNearTop(sf);
 
     if ( target==NULL ) {
 	if ( sf->encoding_name==new_map )
@@ -1450,11 +1481,7 @@ return( false );
     sf->encodingchanged = true;
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
 	SCRefreshTitles(sf->chars[i]);
-    for ( fv=sf->fv; fv!=NULL; fv=fv->nextsame ) if ( fv->sc_near_top!=NULL ) {
-	fv->rowoff = fv->sc_near_top->enc/fv->colcnt;
-	GScrollBarSetPos(fv->vsb,fv->rowoff);
-	/* Don't ask for an expose event yet. We'll get one soon enough */
-    }
+    SFRestoreNearTop(sf);
 return( true );
 }
 

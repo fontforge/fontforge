@@ -1352,6 +1352,7 @@ return;
 	}
     }
 
+    SFFindNearTop(sf);
     curmax = 0;
     for ( k=0; k<sf->subfontcnt; ++k )
 	if ( curmax < sf->subfonts[k]->charcnt )
@@ -1414,6 +1415,7 @@ return;
     sf = CIDFlatten(sf,chars,max+extras);
     sf->remap = cmap->remap; cmap->remap = NULL;
     cmapfree(cmap);
+    SFRestoreNearTop(sf);
 }
 
 static int Enc2CMap(struct cmap *cmap,int enc) {
@@ -1464,6 +1466,7 @@ SplineFont *MakeCIDMaster(SplineFont *sf,int bycmap,char *cmapfilename) {
     int freeme;
 
     cidmaster = SplineFontEmpty();
+    SFFindNearTop(sf);
     if ( bycmap ) {
 	freeme = false;
 	if ( cmapfilename==NULL ) {
@@ -1516,6 +1519,7 @@ return(NULL);
 	free(fvs->selected);
 	fvs->selected = gcalloc(fvs->sf->charcnt,sizeof(char));
     }
+    SFRestoreNearTop(sf);
     FontViewReformatAll(sf);
 return( cidmaster );
 }
@@ -1569,6 +1573,8 @@ int SFCompactFont(SplineFont *sf) {
     if ( sf->compacted )
 return( false );
 
+    SFFindNearTop(sf);
+
     for ( i=cnt=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	sf->chars[i]->old_enc = i;
 	++cnt;
@@ -1586,6 +1592,7 @@ return( false );
     sf->compacted = true;
     sf->encodingchanged = true;
     BDFsToo(sf,cnt);
+    SFRestoreNearTop(sf);
 return( true );
 }
 
@@ -1602,6 +1609,8 @@ return( false );
     }
     if ( cnt==0 )
 return( false );
+
+    SFFindNearTop(sf);
     if ( (i=CountOfEncoding(sf->old_encname))>cnt )
 	cnt = i;
     newchars = gcalloc(cnt,sizeof(SplineChar *));
@@ -1623,5 +1632,6 @@ return( false );
     sf->encodingchanged = true;
 
     BDFsToo(sf,cnt);
+    SFRestoreNearTop(sf);
 return( true );
 }

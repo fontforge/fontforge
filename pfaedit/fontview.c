@@ -2478,6 +2478,8 @@ static void FVMenuFlatten(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     if ( cidmaster==NULL )
 return;
+    /* This doesn't change the ordering, so no need for special tricks to */
+    /*  preserve scrolling location. */
     for ( i=max=0; i<cidmaster->subfontcnt; ++i )
 	if ( max<cidmaster->subfonts[i]->charcnt )
 	    max = cidmaster->subfonts[i]->charcnt;
