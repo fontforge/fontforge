@@ -507,7 +507,7 @@ static void dumpothersubrs(void (*dumpchar)(int ch,void *data), void *data,
             dumpchar('\n',data);
         }
     }
-    /*dumpstr(dumpchar,data,"def\n" );*/
+    dumpstr(dumpchar,data,"def\n" );
 }
 
 static void dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data,
