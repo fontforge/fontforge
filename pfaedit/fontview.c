@@ -3902,7 +3902,6 @@ return;
 
 int32 UniFromEnc(int enc, enum charset encname) {
     int32 uni = -1;
-    int i;
 
     if ( encname==em_custom )
 return( -1 );
@@ -3946,7 +3945,7 @@ return( enc + ((encname-em_unicodeplanes)<<16) );
 	if ( item!=NULL && enc>=item->char_cnt ) item = NULL;
 	if ( item==NULL )
 return( -1 );
-return( item->unicode[i] );
+return( item->unicode[enc] );
     } else {
 	if ( enc>=65536 || enc<0 )
 return( -1 );
