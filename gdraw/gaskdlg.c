@@ -38,6 +38,7 @@ struct dlg_info {
     int ret;
     int multi;
     int exposed;
+    int size_diff;
 };
 
 static int d_e_h(GWindow gw, GEvent *event) {
@@ -594,10 +595,20 @@ return( true );
 
 static int c_e_h(GWindow gw, GEvent *event) {
     struct dlg_info *d = GDrawGetUserData(gw);
+    GRect pos;
 
     if ( event->type==et_close ) {
 	d->done = true;
 	d->ret = -1;
+    } else if ( event->type==et_resize ) {
+	GGadgetResize(GWidgetGetControl(gw,CID_List),
+		event->u.resize.size.width - 2*GDrawPointsToPixels(gw,8),
+		event->u.resize.size.height - d->size_diff);
+	GGadgetMove(GWidgetGetControl(gw,CID_OK),GDrawPointsToPixels(gw,15)-3,
+		event->u.resize.size.height - GDrawPointsToPixels(gw,34)-3);
+	GGadgetMove(GWidgetGetControl(gw,CID_Cancel),event->u.resize.size.width - GDrawPointsToPixels(gw,GIntGetResource(_NUM_Buttonsize)+15),
+		event->u.resize.size.height - GDrawPointsToPixels(gw,34));
+	GDrawRequestExpose(gw,NULL,false);
     } else if ( event->type==et_controlevent &&
 	    (event->u.control.subtype == et_buttonactivate ||
 	     event->u.control.subtype == et_listdoubleclick )) {
@@ -629,7 +640,7 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
     extern FontInstance *_ggadget_default_font;
     int as, ds, ld, fh;
     int w, maxw;
-    int i, y;
+    int i, y, listi;
     unichar_t ubuf[300];
 
     GProgressPauseTimer();
@@ -710,6 +721,7 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
 	gcd[i].gd.flags |= gg_list_exactlyone;
     gcd[i].gd.u.list = llabels;
     gcd[i].gd.cid = CID_List;
+    listi = i;
     gcd[i++].creator = GListCreate;
     y += gcd[i-1].gd.pos.height + GDrawPointsToPixels(gw,10);
 
@@ -767,6 +779,7 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
     GDrawSetVisible(gw,true);
     memset(d,'\0',sizeof(d));
     d->ret = -1;
+    d->size_diff = pos.height - gcd[listi].gd.pos.height;
     free(llabels);
     free(gcd);
     for ( i=0; i<lb; ++i )

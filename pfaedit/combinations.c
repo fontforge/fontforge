@@ -65,8 +65,9 @@ void SFShowLigatures(SplineFont *sf,SplineChar *searchfor) {
     int i, cnt;
     unichar_t **choices=NULL;
     int *where=NULL;
-    SplineChar *sc;
-    unichar_t *pt;
+    SplineChar *sc, *sc2;
+    unichar_t *pt, *line;
+    char *start, *end, ch;
     PST *pst;
 
     while ( 1 ) {
@@ -76,14 +77,37 @@ void SFShowLigatures(SplineFont *sf,SplineChar *searchfor) {
 			if ( pst->type==pst_ligature &&
 				(searchfor==NULL || PSTContains(pst->u.lig.components,searchfor->name))) {
 		    if ( choices!=NULL ) {
-			pt = galloc((3+strlen(pst->u.lig.components))*sizeof(unichar_t));
-			if ( sc->unicodeenc==-1 )
-			    *pt = 0xfffd;
-			else
-			    *pt = sc->unicodeenc;
-			pt[1] = ' ';
-			uc_strcpy(pt+2,pst->u.lig.components);
-			choices[cnt] = pt;
+			line = pt = galloc((strlen(sc->name)+8+3*strlen(pst->u.lig.components))*sizeof(unichar_t));
+			uc_strcpy(pt,sc->name);
+			pt += u_strlen(pt);
+			if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 ) {
+			    *pt++='(';
+			    *pt++ = sc->unicodeenc;
+			    *pt++=')';
+			}
+			*pt++ = ' ';
+			*pt++ = 0x21d0;
+			*pt++ = ' ';
+			for ( start= pst->u.lig.components; ; start=end ) {
+			    while ( *start==' ' ) ++start;
+			    if ( *start=='\0' )
+			break;
+			    for ( end=start+1; *end!='\0' && *end!=' '; ++end );
+			    ch = *end;
+			    *end = '\0';
+			    uc_strcpy( pt,start );
+			    pt += u_strlen(pt);
+			    sc2 = SFGetChar(sf,-1,start);
+			    *end = ch;
+			    if ( sc2!=NULL && sc2->unicodeenc!=-1 && sc2->unicodeenc<0x10000 ) {
+				*pt++='(';
+				*pt++ = sc2->unicodeenc;
+				*pt++=')';
+			    }
+			    *pt++ = ' ';
+			}
+			pt[-1] = '\0';
+			choices[cnt] = line;
 			where[cnt] = i;
 		    }
 		    ++cnt;
