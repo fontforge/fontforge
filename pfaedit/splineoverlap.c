@@ -397,7 +397,7 @@ static IntersectionList *FindLinearIntersections(SplineSet *spl, IntersectionLis
 		    if (( sp->islinear || sp2->islinear ) &&
 			    SplinesIntersect(sp,sp2,pts,t1s,t2s)>0 ) {
 			for ( i=0; i<4 && t1s[i]!=-1; ++i )
-			    if ( (t1s[i]!=0 && t1s[i]!=1) || (t2s[i]!=0 || t2s[i]!=1))
+			    if ( (t1s[i]!=0 && t1s[i]!=1) || (t2s[i]!=0 && t2s[i]!=1))
 				sofar = AddIntersection(sofar,sp,sp2,t1s[i],t2s[i],
 					pts[i].x,pts[i].y);
 		    }
