@@ -620,23 +620,29 @@ static void FVMenuMergeKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 void MenuOpen(GWindow base,struct gmenuitem *mi,GEvent *e) {
-    char *temp = GetPostscriptFontName(true);
+    char *temp;
     char *eod, *fpt, *file, *full;
+    FontView *test; int fvcnt, fvtest;
 
-    if ( temp==NULL )
-return;
-    eod = strrchr(temp,'/');
-    *eod = '\0';
-    file = eod+1;
+    for ( fvcnt=0, test=fv_list; test!=NULL; ++fvcnt, test=test->next );
     do {
-	fpt = strstr(file,"; ");
-	if ( fpt!=NULL ) *fpt = '\0';
-	full = galloc(strlen(temp)+1+strlen(file)+1);
-	strcpy(full,temp); strcat(full,"/"); strcat(full,file);
-	ViewPostscriptFont(full);
-	file = fpt+2;
-    } while ( fpt!=NULL );
-    free(temp);
+	temp = GetPostscriptFontName(true);
+	if ( temp==NULL )
+return;
+	eod = strrchr(temp,'/');
+	*eod = '\0';
+	file = eod+1;
+	do {
+	    fpt = strstr(file,"; ");
+	    if ( fpt!=NULL ) *fpt = '\0';
+	    full = galloc(strlen(temp)+1+strlen(file)+1);
+	    strcpy(full,temp); strcat(full,"/"); strcat(full,file);
+	    ViewPostscriptFont(full);
+	    file = fpt+2;
+	} while ( fpt!=NULL );
+	free(temp);
+	for ( fvtest=0, test=fv_list; test!=NULL; ++fvtest, test=test->next );
+    } while ( fvtest==fvcnt );	/* did the load fail for some reason? try again */
 }
 
 void MenuHelp(GWindow base,struct gmenuitem *mi,GEvent *e) {
