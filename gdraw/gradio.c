@@ -30,6 +30,16 @@
 #include "ustring.h"
 #include "gkeysym.h"
 
+static GBox radio_box = { /* Don't initialize here */ 0 };
+static GBox radio_on_box = { /* Don't initialize here */ 0 };
+static GBox radio_off_box = { /* Don't initialize here */ 0 };
+static GBox checkbox_box = { /* Don't initialize here */ 0 };
+static GBox checkbox_on_box = { /* Don't initialize here */ 0 };
+static GBox checkbox_off_box = { /* Don't initialize here */ 0 };
+static GImage *radon, *radoff, *checkon, *checkoff;
+static FontInstance *checkbox_font = NULL;
+static int gradio_inited = false;
+
 static void GRadioChanged(GRadio *gr) {
     GEvent e;
 
@@ -81,6 +91,17 @@ return( false );
 	GDrawDrawScaledImage(pixmap,gr->ison?gr->on:gr->off,
 		gr->onoffinner.x,gr->onoffinner.y);
 	GDrawPopClip(pixmap,&old3);
+    } else if ( gr->ison && gr->onbox == &checkbox_on_box ) {
+	Color fg = g->state==gs_disabled?g->box->disabled_foreground:
+			g->box->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap)):
+			g->box->main_foreground;
+	int bp = GDrawPointsToPixels(pixmap,gr->onbox->border_width);
+	GDrawDrawLine(pixmap, gr->onoffrect.x+bp,gr->onoffrect.y+bp,
+				gr->onoffrect.x+gr->onoffrect.width-1-bp,gr->onoffrect.y+gr->onoffrect.height-1-bp,
+			        fg);
+	GDrawDrawLine(pixmap, gr->onoffrect.x+gr->onoffrect.width-1-bp,gr->onoffrect.y+bp,
+				gr->onoffrect.x+bp,gr->onoffrect.y+gr->onoffrect.height-1-bp,
+			        fg);
     }
     GDrawPopClip(pixmap,&old2);
     x = gr->onoffrect.x + gr->onoffrect.width + GDrawPointsToPixels(pixmap,4);
@@ -271,16 +292,6 @@ struct gfuncs gradio_funcs = {
     GRadioSetFont,
     GRadioGetFont
 };
-
-static GBox radio_box = { /* Don't initialize here */ 0 };
-static GBox radio_on_box = { /* Don't initialize here */ 0 };
-static GBox radio_off_box = { /* Don't initialize here */ 0 };
-static GBox checkbox_box = { /* Don't initialize here */ 0 };
-static GBox checkbox_on_box = { /* Don't initialize here */ 0 };
-static GBox checkbox_off_box = { /* Don't initialize here */ 0 };
-static GImage *radon, *radoff, *checkon, *checkoff;
-static FontInstance *checkbox_font = NULL;
-static int gradio_inited = false;
 
 static void GRadioInit() {
     _GGadgetCopyDefaultBox(&radio_box);
