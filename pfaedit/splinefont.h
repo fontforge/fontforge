@@ -740,6 +740,7 @@ extern SplineFont *SFReadMacBinary(char *filename);
 extern SplineFont *LoadSplineFont(char *filename,enum openflags);
 extern SplineFont *ReadSplineFont(char *filename,enum openflags);	/* Don't use this, use LoadSF instead */
 extern uint16 MacStyleCode( SplineFont *sf );
+extern SplineFont *SFReadIkarus(char *fontname);
 
 extern const char *UnicodeRange(int unienc);
 extern SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i);

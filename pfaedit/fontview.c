@@ -34,7 +34,6 @@
 #include <math.h>
 #include <gresource.h>
 #include <unistd.h>
-#include "nomen.h"
 
 int onlycopydisplayed = 0;
 int copymetadata = 0;
@@ -593,7 +592,7 @@ void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e) {
 char *GetPostscriptFontName(char *dir, int mult) {
     /* Some people use pf3 as an extension for postscript type3 fonts */
     static unichar_t fontmacsuit[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','m','a','c','-','s','u','i','t', '\0' };
-    static unichar_t wild[] = { '*', '.', '{', 'p','f','a',',','p','f','b',',','s','f','d',',','t','t','f',',','b','d','f',',','o','t','f',',','p','f','3',',','t','t','c',',','g','s','f',',', 'c','i','d',',','b','i','n',',','h','q','x',',','d','f','o','n','t',',','m','f','}', 
+    static unichar_t wild[] = { '*', '.', '{', 'p','f','a',',','p','f','b',',','s','f','d',',','t','t','f',',','b','d','f',',','o','t','f',',','p','f','3',',','t','t','c',',','g','s','f',',', 'c','i','d',',','b','i','n',',','h','q','x',',','d','f','o','n','t',',','m','f',',','i','k','}', 
 	     '{','.','g','z',',','.','Z',',','.','b','z','2',',','}',  '\0' };
     static unichar_t *mimes[] = { fontmacsuit, NULL };
     unichar_t *ret, *u_dir;
@@ -4630,6 +4629,8 @@ return( NULL );
 	sf = SFReadPostscript(fullname);
     } else if ( strmatch(fullname+strlen(fullname)-3, ".mf")==0 ) {
 	sf = SFFromMF(fullname);
+    } else if ( strmatch(fullname+strlen(fullname)-3, ".ik")==0 ) {
+	sf = SFReadIkarus(fullname);
     } else {
 	FILE *foo = fopen(strippedname,"r");
 	if ( foo!=NULL ) {
@@ -4638,6 +4639,10 @@ return( NULL );
 	    int ch2 = getc(foo);
 	    int ch3 = getc(foo);
 	    int ch4 = getc(foo);
+	    int ch5, ch6;
+	    fseek(foo, 98, SEEK_SET);
+	    ch5 = getc(foo);
+	    ch6 = getc(foo);
 	    fclose(foo);
 	    if (( ch1==0 && ch2==1 && ch3==0 && ch4==0 ) ||
 		    (ch1=='O' && ch2=='T' && ch3=='T' && ch4=='O') ||
@@ -4654,13 +4659,13 @@ return( NULL );
 		sf = SFDRead(fullname);
 		fromsfd = true;
 	    } else if ( ch1=='S' && ch2=='T' && ch3=='A' && ch4=='R' ) {
-		sf = SplineFontNew();
-		SFImportBDF(sf,fullname,false, false);
-		sf->changed = false;
+		sf = SFFromBDF(fullname,0,false);
 	    } else if ( ch1=='\1' && ch2=='f' && ch3=='c' && ch4=='p' ) {
-		sf = SplineFontNew();
-		SFImportBDF(sf,fullname,2, false);
-		sf->changed = false;
+		sf = SFFromBDF(fullname,2,false);
+	    } else if ( ch5=='I' && ch6=='K' && ch3==0 && ch4==55 ) {
+		/* Ikarus font type appears at word 50 (byte offset 98) */
+		/* Ikarus name section length (at word 2, byte offset 2) was 55 in the 80s at URW */
+		sf = SFReadIkarus(fullname);
 	    } else
 		sf = SFReadMacBinary(fullname);
 	}

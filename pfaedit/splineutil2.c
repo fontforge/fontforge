@@ -1395,6 +1395,8 @@ SplineFont *SplineFontBlank(int encoding_name,int charcnt) {
     sf->chars = gcalloc(charcnt,sizeof(SplineChar *));
     sf->encoding_name = encoding_name;
     sf->pfminfo.fstype = -1;
+    sf->display_antialias = default_fv_antialias;
+    sf->display_size = -default_fv_font_size;
 return( sf );
 }
 
@@ -1467,8 +1469,6 @@ SplineFont *SplineFontNew(void) {
 	table = unicode_from_alphabets[default_encoding+3];
 
     sf = SplineFontBlank(default_encoding,enclen);
-    sf->display_antialias = default_fv_antialias;
-    sf->display_size = -default_fv_font_size;
     sf->onlybitmaps = true;
     for ( i=0; i<enclen && i<256; ++i ) {
 	SplineChar *sc = sf->chars[i] = SplineCharCreate();
@@ -1657,7 +1657,7 @@ return;
 	    base->nonextcp = true;
 	}
     } else /* tangent */ {
-	if ( next->pointtype == pt_corner ) {
+	if ( next->pointtype != pt_curve ) {
 	    base->nonextcp = true;
 	} else {
 	    if ( prev!=NULL ) {
@@ -1727,7 +1727,7 @@ return;
 	    base->noprevcp = true;
 	}
     } else /* tangent */ {
-	if ( prev->pointtype == pt_corner ) {
+	if ( prev->pointtype != pt_curve ) {
 	    base->noprevcp = true;
 	} else {
 	    if ( next!=NULL ) {
