@@ -54,6 +54,8 @@ void ttf_dumpkerns(struct alltabs *at, SplineFont *sf) {
     threshold = KernThreshold(sf,2048);
 #endif
 
+    SFKernPrepare(sf);		/* Until I figure out how to do kernclasses for apple */
+
     cnt = m = 0;
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	j = 0;
@@ -111,6 +113,7 @@ return;
 	putshort(at->kern,0);		/* pad it */
     free(offsets);
     free(glnum);
+    SFKernCleanup(sf);
 }
 
 /* ************************************************************************** */

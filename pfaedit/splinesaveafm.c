@@ -544,6 +544,7 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype) {
 
     SFLigaturePrepare(sf);
     LigatureClosure(sf);		/* Convert 3 character ligs to a set of two character ones when possible */
+    SFKernPrepare(sf);			/* Undoes kern classes */
 
     if ( iscid && sf->cidmaster!=NULL ) sf = sf->cidmaster;
 
@@ -721,6 +722,7 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype) {
     fprintf( afm, "EndFontMetrics\n" );
 
     SFLigatureCleanup(sf);
+    SFKernCleanup(sf);
 
 return( !ferror(afm));
 }
@@ -892,6 +894,105 @@ static void LigatureClosure(SplineFont *sf) {
     }
 }
 
+void SFKernCleanup(SplineFont *sf) {
+    int i;
+    KernPair *kp, *p, *n;
+
+    if ( sf->kerns==NULL )	/* can't have gotten messed up */
+return;
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	for ( kp = sf->chars[i]->kerns, p=NULL; kp!=NULL; kp = n ) {
+	    n = kp->next;
+	    if ( kp->kcid!=0 ) {
+		if ( p==NULL )
+		    sf->chars[i]->kerns = n;
+		else
+		    p->next = n;
+		chunkfree(kp,sizeof(*kp));
+	    } else
+		p = kp;
+	}
+    }
+}
+
+static void KCSfree(SplineChar ***scs,int cnt) {
+    int i;
+    for ( i=1; i<cnt; ++i )
+	free( scs[i]);
+    free(scs);
+}
+
+static SplineChar ***KernClassToSC(SplineFont *sf, char **classnames, int cnt) {
+    SplineChar ***scs, *sc;
+    int i,j;
+    char *pt, *end, ch;
+
+    scs = galloc(cnt*sizeof(SplineChar **));
+    for ( i=1; i<cnt; ++i ) {
+	for ( pt=classnames[i]-1, j=0; pt!=NULL; pt=strchr(pt+1,' ') )
+	    ++j;
+	scs[i] = galloc((j+1)*sizeof(SplineChar *));
+	for ( pt=classnames[i], j=0; *pt!='\0'; pt=end+1 ) {
+	    end = strchr(pt,' ');
+	    if ( end==NULL )
+		end = pt+strlen(pt);
+	    ch = *end;
+	    *end = '\0';
+	    sc = SFGetCharDup(sf,-1,pt);
+	    if ( sc!=NULL )
+		scs[i][j++] = sc;
+	    if ( ch=='\0' )
+	break;
+	    *end = ch;
+	}
+	scs[i][j] = NULL;
+    }
+return( scs );
+}
+
+static void AddTempKP(SplineChar *first,SplineChar *second,
+	int16 offset, uint16 sli, uint16 flags,uint16 kcid) {
+    KernPair *kp;
+
+    for ( kp=first->kerns; kp!=NULL; kp=kp->next )
+	if ( kp->sc == second )
+    break;
+    if ( kp==NULL ) {
+	kp = chunkalloc(sizeof(KernPair));
+	kp->sc = second;
+	kp->off = offset;
+	kp->sli = sli;
+	kp->flags = flags;
+	kp->kcid = kcid;
+	kp->next = first->kerns;
+	first->kerns = kp;
+    }
+}
+
+void SFKernPrepare(SplineFont *sf) {
+    KernClass *kc;
+    SplineChar ***first, ***last;
+    int i, j, k, l;
+
+    for ( kc = sf->kerns, i=0; kc!=NULL; kc = kc->next )
+	kc->kcid = ++i;
+    for ( kc = sf->kerns; kc!=NULL; kc = kc->next ) {
+	first = KernClassToSC(sf,kc->firsts,kc->first_cnt);
+	last = KernClassToSC(sf,kc->seconds,kc->second_cnt);
+	for ( i=1; i<kc->first_cnt; ++i ) for ( j=1; j<kc->second_cnt; ++j ) {
+	    if ( kc->offsets[i*kc->second_cnt+j]!=0 ) {
+		for ( k=0; first[i][k]!=NULL; ++k )
+		    for ( l=0; last[j][l]!=NULL; ++l )
+			AddTempKP(first[i][k],last[j][l],
+				kc->offsets[i*kc->second_cnt+j],
+			        kc->sli,kc->flags, kc->kcid);
+	    }
+	}
+	KCSfree(first,kc->first_cnt);
+	KCSfree(last,kc->first_cnt);
+    }
+}
+
 static void putlshort(short val,FILE *pfm) {
     putc(val&0xff,pfm);
     putc(val>>8,pfm);
@@ -914,6 +1015,7 @@ int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0) {
     long size, devname, facename, extmetrics, exttable, driverinfo, kernpairs, pos;
     DBounds b;
 
+    SFKernPrepare(sf);
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	if ( sf->chars[i]!=NULL && sf->chars[i]->unicodeenc==' ' )
 	    spacepos = i;
@@ -1121,6 +1223,8 @@ int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0) {
     pos = ftell(pfm);
     fseek(pfm,size,SEEK_SET);
     putlint(pos,pfm);
+
+    SFKernCleanup(sf);
 
 return( !ferror(pfm));
 }

@@ -3728,7 +3728,7 @@ static void readvaluerecord(struct valuerecord *vr,int vf,FILE *ttf) {
 }
 
 static void addKernPair(struct ttfinfo *info, int glyph1, int glyph2,
-	int16 offset, uint16 sli) {
+	int16 offset, uint16 sli, uint16 flags) {
     KernPair *kp;
     if ( glyph1<info->glyph_cnt && glyph2<info->glyph_cnt ) {
 	for ( kp=info->chars[glyph1]->kerns; kp!=NULL; kp=kp->next )
@@ -3739,6 +3739,7 @@ static void addKernPair(struct ttfinfo *info, int glyph1, int glyph2,
 	    kp->sc = info->chars[glyph2];
 	    kp->off = offset;
 	    kp->sli = sli;
+	    kp->flags = flags;
 	    kp->next = info->chars[glyph1]->kerns;
 	    info->chars[glyph1]->kerns = kp;
 	}
@@ -3783,9 +3784,9 @@ return;
 		readvaluerecord(&vr1,vf1,ttf);
 		readvaluerecord(&vr2,vf2,ttf);
 		if ( lookup->flags&1 )	/* R2L */
-		    addKernPair(info, glyphs[i], glyph2, vr2.xadvance+vr1.xplacement,lookup->script_lang_index);
+		    addKernPair(info, glyphs[i], glyph2, vr2.xadvance+vr1.xplacement,lookup->script_lang_index,lookup->flags);
 		else
-		    addKernPair(info, glyphs[i], glyph2, vr1.xadvance+vr2.xplacement,lookup->script_lang_index);
+		    addKernPair(info, glyphs[i], glyph2, vr1.xadvance+vr2.xplacement,lookup->script_lang_index,lookup->flags);
 	    }
 	}
 	free(ps_offsets); free(glyphs);

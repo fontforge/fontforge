@@ -231,13 +231,16 @@ return;
 	r.x = mv->width - r.x - r.width;
     GDrawRequestExpose(mv->gw,&r,false);
     if ( mv->perchar[i].selected && i!=0 ) {
-	KernPair *kp;
+	KernPair *kp; KernClass *kc; int index;
 	for ( kp=mv->perchar[i-1].sc->kerns; kp!=NULL; kp=kp->next )
 	    if ( kp->sc == mv->perchar[i].sc )
 	break;
 	if ( kp!=NULL ) {
 	    mv->cur_sli = kp->sli;
 	    GGadgetSelectOneListItem(mv->sli_list,kp->sli);
+	} else if ( (kc=SFFindKernClass(mv->fv->sf,mv->perchar[i-1].sc,mv->perchar[i].sc,&index,false))!=NULL ) {
+	    mv->cur_sli = kc->sli;
+	    GGadgetSelectOneListItem(mv->sli_list,kc->sli);
 	}
     }
 }
@@ -299,6 +302,8 @@ static void MVRefreshKern(MetricsView *mv, int i) {
     /* We need to look through the kern pairs at sc[i-1] to see if the is a */
     /*  match for sc[i] */
     KernPair *kp;
+    KernClass *kc=NULL;
+    int index, sli, off;
     unichar_t ubuf[40];
     char buf[40];
 
@@ -307,17 +312,26 @@ return;
     for ( kp=mv->perchar[i-1].sc->kerns; kp!=NULL; kp=kp->next )
 	if ( kp->sc == mv->perchar[i].sc )
     break;
-    if ( kp==NULL || kp->off == 0 )
+    sli = -1; off = 0;
+    if ( kp!=NULL && kp->off != 0 ) {
+	off = kp->off;
+	sli = kp->sli;
+    } else if ( (kc=SFFindKernClass(mv->fv->sf,mv->perchar[i-1].sc,mv->perchar[i].sc,&index,false))!=NULL ) {
+	off = kc->offsets[index];
+	sli = kc->sli;
+    } else if ( kp!=NULL )
+	sli = kp->sli;
+    if ( off==0 )
 	buf[0] = '\0';
     else
-	sprintf(buf,"%d",kp->off);
+	sprintf(buf,"%d",off);
     uc_strcpy(ubuf,buf);
     GGadgetSetTitle(mv->perchar[i].kern,ubuf);
-    mv->perchar[i-1].kernafter = (kp==NULL?0:kp->off) * mv->pixelsize/
+    mv->perchar[i-1].kernafter = off * mv->pixelsize/
 	    (mv->fv->sf->ascent+mv->fv->sf->descent);
-    if ( kp!=NULL ) {
-	mv->cur_sli = kp->sli;
-	GGadgetSelectOneListItem(mv->sli_list,kp->sli);
+    if ( sli!=-1 ) {
+	mv->cur_sli = sli;
+	GGadgetSelectOneListItem(mv->sli_list,sli);
     }
 }
 
@@ -644,6 +658,12 @@ return( true );
 return( true );
 }
 
+static int AskNewKernClassEntry(SplineChar *fsc,SplineChar *lsc) {
+    static int buts[] = { _STR_Yes, _STR_No, 0 };
+return( GWidgetAskR(_STR_NewKernClassEntTitle,buts,0,1,_STR_NewKernClassEntry,
+	fsc->name,lsc->name)==0 );
+}
+
 static int MV_KernChanged(GGadget *g, GEvent *e) {
     MetricsView *mv = GDrawGetUserData(GGadgetGetWindow(g));
     int which = (int) GGadgetGetUserData(g);
@@ -658,18 +678,30 @@ return( true );
 	SplineChar *psc = mv->perchar[which-1].sc;
 	static unichar_t zerostr[] = { /*'0',*/  '\0' };
 	KernPair *kp;
+	KernClass *kc; int index;
 	if ( *end )
 	    GDrawBeep(NULL);
 	else {
+	    kc = NULL;
 	    for ( kp = psc->kerns; kp!=NULL && kp->sc!=sc; kp = kp->next );
-	    if ( kp==NULL ) {
-		kp = chunkalloc(sizeof(KernPair));
-		kp->sc = sc;
-		kp->next = psc->kerns;
-		psc->kerns = kp;
+	    if ( kp==NULL )
+		kc=SFFindKernClass(mv->fv->sf,psc,sc,&index,true);
+	    if ( kc!=NULL ) {
+		if ( kc->offsets[index]==0 && !AskNewKernClassEntry(psc,sc))
+		    kc=NULL;
+		else
+		    kc->offsets[index] = val;
 	    }
-	    kp->off = val;
-	    kp->sli = mv->cur_sli;
+	    if ( kc==NULL ) {
+		if ( kp==NULL ) {
+		    kp = chunkalloc(sizeof(KernPair));
+		    kp->sc = sc;
+		    kp->next = psc->kerns;
+		    psc->kerns = kp;
+		}
+		kp->off = val;
+		kp->sli = mv->cur_sli;
+	    }
 	    mv->perchar[which-1].kernafter = (val*mv->pixelsize)/
 		    (mv->fv->sf->ascent+mv->fv->sf->descent);
 	    for ( i=which; i<mv->charcnt; ++i )
@@ -1096,8 +1128,9 @@ static int MV_SLIChanged(GGadget *g, GEvent *e) {
 	MetricsView *mv = GGadgetGetUserData(g);
 	int32 len;
 	GTextInfo **ti = GGadgetGetList(g,&len);
-	int i;
+	int i,index;
 	KernPair *kp;
+	KernClass *kc;
 
 	if ( ti[len-1]->selected ) /* Edit script/lang list */
 	    ScriptLangList(mv->fv->sf,g,mv->cur_sli);
@@ -1113,6 +1146,11 @@ static int MV_SLIChanged(GGadget *g, GEvent *e) {
 			kp->sli = mv->cur_sli;
 		break;
 		    }
+		}
+		if ( kp==NULL ) {
+		    kc=SFFindKernClass(mv->fv->sf,mv->perchar[i-1].sc,mv->perchar[i].sc,&index,false);
+		    if ( kc!=NULL )
+			kc->sli = mv->cur_sli;
 		}
 	    }
 	}
@@ -2754,9 +2792,17 @@ return;
 	    int ow = mv->perchar[i-1].kernafter;
 	    KernPair *kp;
 	    int kpoff;
+	    KernClass *kc;
+	    int index;
 	    for ( kp = mv->perchar[i-1].sc->kerns; kp!=NULL && kp->sc!=mv->perchar[i].sc; kp = kp->next );
-	    kpoff = (kp==NULL?0:kp->off) * mv->pixelsize /
-		    (mv->fv->sf->descent+mv->fv->sf->ascent);
+	    if ( kp!=NULL )
+		kpoff = kp->off;
+	    else if ( (kc=SFFindKernClass(mv->fv->sf,mv->perchar[i-1].sc,mv->perchar[i].sc,&index,false))!=NULL )
+		kpoff = kc->offsets[index];
+	    else
+		kpoff = 0;
+	    kpoff = kpoff * mv->pixelsize /
+			(mv->fv->sf->descent+mv->fv->sf->ascent);
 	    if ( mv->right_to_left ) diff = -diff;
 	    mv->perchar[i-1].kernafter = kpoff + diff;
 	    if ( ow!=mv->perchar[i-1].kernafter ) {
@@ -2806,17 +2852,29 @@ return;
 	    diff = diff*(mv->fv->sf->ascent+mv->fv->sf->descent)/mv->pixelsize;
 	    if ( diff!=0 ) {
 		KernPair *kp;
+		KernClass *kc=NULL;
+		int index;
 		for ( kp = mv->perchar[i-1].sc->kerns; kp!=NULL && kp->sc!=mv->perchar[i].sc; kp = kp->next );
-		if ( kp==NULL ) {
-		    kp = chunkalloc(sizeof(KernPair));
-		    kp->sc = mv->perchar[i].sc;
-		    kp->next = mv->perchar[i-1].sc->kerns;
-		    mv->perchar[i-1].sc->kerns = kp;
-		}
+		if ( kp==NULL )
+		    kc=SFFindKernClass(mv->fv->sf,mv->perchar[i-1].sc,mv->perchar[i].sc,&index,true);
 		if ( mv->right_to_left ) diff = -diff;
-		kp->off += diff;
-		kp->sli = mv->cur_sli;
-		mv->perchar[i-1].kernafter = kp->off*mv->pixelsize/
+		if ( kc!=NULL ) {
+		    if ( kc->offsets[index]==0 && !AskNewKernClassEntry(mv->perchar[i-1].sc,mv->perchar[i].sc))
+			kc=NULL;
+		    else
+			kc->offsets[index] += diff;
+		}
+		if ( kc==NULL ) {
+		    if ( kp==NULL ) {
+			kp = chunkalloc(sizeof(KernPair));
+			kp->sc = mv->perchar[i].sc;
+			kp->next = mv->perchar[i-1].sc->kerns;
+			mv->perchar[i-1].sc->kerns = kp;
+		    }
+		    kp->off += diff;
+		    kp->sli = mv->cur_sli;
+		}
+		mv->perchar[i-1].kernafter = (kp==NULL?kc->offsets[index]:kp->off)*mv->pixelsize/
 			(mv->fv->sf->ascent+mv->fv->sf->descent);
 		MVRefreshValues(mv,i-1,mv->perchar[i-1].sc);
 		for ( ; i<mv->charcnt; ++i )

@@ -370,8 +370,9 @@ typedef struct refchar {
 
 typedef struct kernpair {
     struct splinechar *sc;
-    uint16 sli;
     int16 off;
+    uint16 sli, flags;
+    uint16 kcid;
     struct kernpair *next;
 } KernPair;
 
@@ -382,6 +383,7 @@ typedef struct kernclass {
     					/*  and means everything not specified elsewhere */
     uint16 sli;
     uint16 flags;
+    uint16 kcid;
     int16 *offsets;			/* array of first_cnt*second_cnt entries */
     struct kernclass *next;
 } KernClass;
@@ -781,6 +783,7 @@ extern void MinimumDistancesFree(MinimumDistance *md);
 extern SplineChar *SplineCharCreate(void);
 extern void ScriptRecordFree(struct script_record *sr);
 extern void ScriptRecordListFree(struct script_record **script_lang);
+extern void KernClassListFree(KernClass *kc);
 extern void SplineCharListsFree(struct splinecharlist *dlist);
 extern void SplineCharFreeContents(SplineChar *sc);
 extern void SplineCharFree(SplineChar *sc);
@@ -947,6 +950,10 @@ extern int PfmSplineFont(FILE *pfm, SplineFont *sf,int type0);
 extern char *EncodingName(int map);
 extern void SFLigaturePrepare(SplineFont *sf);
 extern void SFLigatureCleanup(SplineFont *sf);
+extern void SFKernPrepare(SplineFont *sf);
+extern void SFKernCleanup(SplineFont *sf);
+extern KernClass *SFFindKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
+	int *index,int allow_zero);
 extern int SCSetMetaData(SplineChar *sc,char *name,int unienc,const unichar_t *comment);
 
 extern int SFDWrite(char *filename,SplineFont *sf);

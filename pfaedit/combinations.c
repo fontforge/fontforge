@@ -619,9 +619,32 @@ return;
 static void KP_RefreshKP(KPData *kpd,int index) {
     GRect sel;
 
+    if ( index<kpd->off_top || index>kpd->off_top+kpd->wh )
+return;
     sel.x = 0; sel.width = kpd->vwidth;
     sel.y = (index-kpd->off_top)*kpd->uh; sel.height = kpd->uh;
     GDrawRequestExpose(kpd->v,&sel,false);
+}
+
+static void KP_KernClassAlter(KPData *kpd,int index) {
+    KernPair *kp = kpd->kerns[index].kp;
+    int kc_pos, kc_pos2;
+    KernClass *kc = SFFindKernClass(kpd->sf,kpd->kerns[index].first,kpd->kerns[index].second,
+	    &kc_pos,false);
+    int i;
+
+    if ( kc==NULL )
+return;
+
+    for ( i=0; i<kpd->kcnt; ++i ) if ( i!=index &&
+	    kpd->kerns[i].kp->kcid==kp->kcid &&
+	    kpd->kerns[i].kp->off==kp->off ) {
+	if ( SFFindKernClass(kpd->sf,kpd->kerns[i].first,kpd->kerns[i].second,
+		&kc_pos2,false)==kc && kc_pos==kc_pos2 ) {
+	    kpd->kerns[i].newoff = kpd->kerns[index].newoff;
+	    KP_RefreshKP(kpd,i);
+	}
+    }
 }
 
 static BDFChar *KP_Inside(KPData *kpd, GEvent *e) {
@@ -709,12 +732,16 @@ static void KP_Commands(KPData *kpd, GEvent *e) {
 	    if ( kpd->last_index!=-1 ) {
 		kpd->kerns[kpd->last_index].newoff = kpd->old_val;
 		KP_RefreshKP(kpd,kpd->last_index);
+		if ( kpd->kerns[kpd->last_index].kp->kcid!=0 )
+		    KP_KernClassAlter(kpd,kpd->last_index);
 		kpd->last_index = -1;
 	    }
 	} else if ( e->u.chr.state&ksm_meta ) {
 	    if ( kpd->selected!=-1 ) {
 		kpd->kerns[kpd->selected].newoff = kpd->kerns[kpd->selected].kp->off;
 		KP_RefreshKP(kpd,kpd->selected);
+		if ( kpd->kerns[kpd->selected].kp->kcid!=0 )
+		    KP_KernClassAlter(kpd,kpd->selected);
 		kpd->last_index = -1;
 	    }
 	}
@@ -748,6 +775,8 @@ static void KP_Commands(KPData *kpd, GEvent *e) {
 	    kpd->old_val = kpd->kerns[kpd->selected].newoff;
 	    kpd->kerns[kpd->selected].newoff += amount;
 	    KP_RefreshKP(kpd,kpd->selected);
+	    if ( kpd->kerns[kpd->selected].kp->kcid!=0 )
+		KP_KernClassAlter(kpd,kpd->selected);
 	}
       break;
     }
@@ -909,7 +938,6 @@ return( true );
 	    kpd->pressed_x = -1;
       break;
       case et_mouseup:
-	kpd->pressed = false;
 	if ( kpd->pressed_x!=-1 )
 	    kpd->last_index = kpd->selected;
 	else
@@ -951,7 +979,11 @@ return( true );
 		    KP_RefreshKP(kpd,kpd->selected);
 		}
 	    }
+	    if ( kpd->ac==NULL && kpd->kerns[index].kp->kcid!=0 && event->type==et_mouseup )
+		KP_KernClassAlter(kpd,index);
 	}
+	if ( event->type==et_mouseup )
+	    kpd->pressed = false;
       break;
     }
 return( true );

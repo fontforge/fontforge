@@ -1414,7 +1414,6 @@ static void FVMenuAATSuffix(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     int i;
     extern GTextInfo simplesubs_tags[];
     uint16 flags;
-    int sli=0;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i])
 	if ( SCScriptFromUnicode(fv->sf->chars[i])!=0 )
@@ -2100,7 +2099,9 @@ static void FVMenuLigatures(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void FVMenuKernPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
+    SFKernPrepare(fv->sf);
     SFShowKernPairs(fv->sf,NULL,NULL);
+    SFKernCleanup(fv->sf);
 }
 
 static void FVMenuAnchorPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -3276,6 +3277,7 @@ static void cblistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     int i, anyligs=0, anykerns=0;
     PST *pst;
 
+    if ( sf->kerns ) anykerns=true;
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
 	    if ( pst->type==pst_ligature ) {

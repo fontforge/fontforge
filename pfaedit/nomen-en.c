@@ -2556,5 +2556,10 @@ static char *str_ExitDebugger = "Exit Debugger"
     /* showatt */
 static char *str_NoAdvancedTypography = "No Advanced Typography";
 static char *str_AppleAdvancedTypography = "Apple Advanced Typography";
+    /* Metricsview */
+static char *str_NewKernClassEntry = "This kerning pair (%.20hs and %.20hs) is currently part of a kerning class with a 0 offset for this combination. Would you like to alter this kerning class entry (or create a kerning pair for just these two glyphs)?";
+static char *str_NewKernClassEntTitle = "Use Kerning Class?"
+
+
 static int num_buttonsize = 55;
 static int num_ScaleFactor = 100;
