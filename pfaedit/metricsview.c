@@ -868,6 +868,9 @@ return( true );
 		    kc->offsets[index] = val;
 	    }
 	    if ( kc==NULL ) {
+		if ( !mv->vertical )
+		    MMKern(sc->parent,psc,sc,kp==NULL?val:val-kp->off,
+			    mv->cur_sli,kp);
 		if ( kp==NULL ) {
 		    kp = chunkalloc(sizeof(KernPair));
 		    kp->sc = sc;
@@ -3622,6 +3625,8 @@ return;
 			kc->offsets[index] += diff;
 		}
 		if ( kc==NULL ) {
+		    MMKern(mv->fv->sf,mv->perchar[i-1].sc,mv->perchar[i].sc,
+			    diff,mv->cur_sli,kp);
 		    if ( kp==NULL ) {
 			kp = chunkalloc(sizeof(KernPair));
 			kp->sc = mv->perchar[i].sc;

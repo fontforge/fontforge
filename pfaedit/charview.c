@@ -1255,6 +1255,33 @@ static void DrawVLine(CharView *cv,GWindow pixmap,real pos,Color fg, int flags) 
     }
 }
 
+static void DrawMMGhosts(CharView *cv,GWindow pixmap,DRect *clip) {
+    /* In an MM font, draw any selected alternate versions of the current char */
+    MMSet *mm = cv->sc->parent->mm;
+    int j;
+    SplineFont *sub;
+    SplineChar *sc;
+    RefChar *rf;
+
+    if ( mm==NULL )
+return;
+    for ( j = 0; j<mm->instance_count+1; ++j ) {
+	if ( j==0 )
+	    sub = mm->normal;
+	else
+	    sub = mm->instances[j-1];
+	sc = NULL;
+	if ( cv->sc->parent!=sub && (cv->mmvisible & (1<<j)) &&
+		cv->sc->enc<sub->charcnt )
+	    sc = sub->chars[cv->sc->enc];
+	if ( sc!=NULL ) {
+	    for ( rf=sc->refs; rf!=NULL; rf = rf->next )
+		CVDrawSplineSet(cv,pixmap,rf->splines,backoutlinecol,false,clip);
+	    CVDrawSplineSet(cv,pixmap,sc->splines,backoutlinecol,false,clip);
+	}
+    }
+}
+
 static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     SplineFont *sf = cv->sc->parent;
     RefChar *rf;
@@ -1381,6 +1408,8 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    if ( cv->template2!=NULL )
 		CVDrawTemplates(cv,pixmap,cv->template2,&clip);
 	}
+	if ( cv->showback && cv->mmvisible!=0 )
+	    DrawMMGhosts(cv,pixmap,&clip);
     }
 
     if ( cv->showfore || (cv->drawmode==dm_fore && !cv->show_ft_results && cv->dv==NULL))  {
@@ -3722,6 +3751,9 @@ return( true );
 #define MID_Recent	2703
 #define MID_Display	2706
 #define MID_RevertGlyph	2707
+
+#define MID_MMAll	2801
+#define MID_MMNone	2802
 
 static void CVMenuClose(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     GDrawDestroyWindow(gw);
@@ -6251,7 +6283,173 @@ static GMenuItem vwlist[] = {
     { NULL }
 };
 
+static void CVMenuShowMMMask(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    uint32 changemask = (uint32) mi->ti.userdata;
+    /* Change which mms get displayed in the "background" */
+
+    if ( mi->mid==MID_MMAll ) {
+	if ( (cv->mmvisible&changemask)==changemask ) cv->mmvisible = 0;
+	else cv->mmvisible = changemask;
+    } else if ( mi->mid == MID_MMNone ) {
+	if ( cv->mmvisible==0 ) cv->mmvisible = (1<<(cv->sc->parent->mm->instance_count+1))-1;
+	else cv->mmvisible = 0;
+    } else
+	cv->mmvisible ^= changemask;
+    GDrawRequestExpose(cv->v,NULL,false);
+}
+
+static GMenuItem mvlist[] = {
+    { { (unichar_t *) _STR_All, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xffffffff, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, CVMenuShowMMMask, MID_MMAll },
+    { { (unichar_t *) _STR_None, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, CVMenuShowMMMask, MID_MMNone },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
+    /* 16 subfonts max */
+    { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
+    { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
+    { NULL }, { NULL },
+    { NULL }
+};
+
+static void mvlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    int i, base, j;
+    extern void GMenuItemArrayFree(GMenuItem *mi);
+    extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
+    MMSet *mm = cv->sc->parent->mm;
+    uint32 submask;
+    SplineFont *sub;
+    static GMenuItem mvtemp[] = {
+	{ { (unichar_t *) _STR_All, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xffffffff, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, CVMenuShowMMMask, MID_MMAll },
+	{ { (unichar_t *) _STR_None, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, CVMenuShowMMMask, MID_MMNone },
+	{ { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
+	/* 16 subfonts max */
+	{ NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
+	{ NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
+	{ NULL }, { NULL },
+	{ NULL }
+    };
+
+    if ( mvtemp[0].ti.text_in_resource ) {
+	mvtemp[0].ti.text = u_copy(GStringGetResource((int) mvtemp[0].ti.text,NULL));
+	mvtemp[0].ti.text_in_resource = false;
+	mvtemp[1].ti.text = u_copy(GStringGetResource((int) mvtemp[1].ti.text,NULL));
+	mvtemp[1].ti.text_in_resource = false;
+    }
+    base = 3;
+    for ( i=base; mvtemp[i].ti.text!=NULL; ++i ) {
+	free( mvtemp[i].ti.text);
+	mvtemp[i].ti.text = NULL;
+    }
+
+    if ( mm!=NULL ) {
+	for ( j = 0, i=base; 
+		i<sizeof(mvtemp)/sizeof(mvtemp[0])-1 && j<mm->instance_count+1;
+		++i, ++j ) {
+	    if ( j==0 )
+		sub = mm->normal;
+	    else
+		sub = mm->instances[j-1];
+	    mvtemp[i].ti.text = uc_copy(sub->fontname);
+	    mvtemp[i].ti.checkable = true;
+	    mvtemp[i].ti.checked = (cv->mmvisible & (1<<j))?1:0;
+	    mvtemp[i].ti.userdata = (void *) (1<<j);
+	    mvtemp[i].ti.disabled = sub==cv->sc->parent;
+	    mvtemp[i].invoke = CVMenuShowMMMask;
+	    mvtemp[i].ti.fg = mvtemp[i].ti.bg = COLOR_DEFAULT;
+	    if ( sub==cv->sc->parent )
+		submask = (1<<j);
+	}
+	/* All */
+	mvtemp[0].ti.userdata = (void *) ((1<<j)-1);
+	mvtemp[0].ti.checked = (cv->mmvisible == (uint32) mvtemp[0].ti.userdata);
+	    /* None */
+	mvtemp[1].ti.checked = (cv->mmvisible == 0 || cv->mmvisible == submask);
+    }
+    GMenuItemArrayFree(mi->sub);
+    mi->sub = GMenuItemArrayCopy(mvtemp,NULL);
+}
+
+/* additions here should go to mmtemp below */
+static GMenuItem mmlist[] = {
+    { { (unichar_t *) _STR_View, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, 0, 0, mvlist, mvlistcheck },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
+    /* 16 subfonts max */
+    { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
+    { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
+    { NULL }, { NULL },
+    { NULL }
+};
+
+static void CVMenuShowSubChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    SplineFont *new = mi->ti.userdata;
+    /* Change to the same char in a different instance font of the mm */
+
+    CVChangeSC(cv,SFMakeChar(new,cv->sc->enc));
+}
+
+static void mmlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    int i, base, j;
+    extern void GMenuItemArrayFree(GMenuItem *mi);
+    extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
+    MMSet *mm = cv->sc->parent->mm;
+    SplineFont *sub;
+    static GMenuItem mmtemp[] = {
+	{ { (unichar_t *) _STR_View, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, 0, 0, mvlist, mvlistcheck },
+	{ { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
+	/* 16 subfonts max */
+	{ NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
+	{ NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
+	{ NULL }, { NULL },
+	{ NULL }
+    };
+
+    if ( mmtemp[0].ti.text_in_resource ) {
+	mmtemp[0].ti.text = u_copy(GStringGetResource((int) mmtemp[0].ti.text,NULL));
+	mmtemp[0].ti.text_in_resource = false;
+    }
+    base = 2;
+    for ( i=base; mmtemp[i].ti.text!=NULL; ++i ) {
+	free( mmtemp[i].ti.text);
+	mmtemp[i].ti.text = NULL;
+    }
+
+    if ( mm!=NULL ) {
+	for ( j = 0, i=base; 
+		i<sizeof(mmtemp)/sizeof(mmtemp[0])-1 && j<mm->instance_count+1;
+		++i, ++j ) {
+	    if ( j==0 )
+		sub = mm->normal;
+	    else
+		sub = mm->instances[j-1];
+	    mmtemp[i].ti.text = uc_copy(sub->fontname);
+	    mmtemp[i].ti.checkable = true;
+	    mmtemp[i].ti.checked = sub==cv->sc->parent;
+	    mmtemp[i].ti.userdata = sub;
+	    mmtemp[i].invoke = CVMenuShowSubChar;
+	    mmtemp[i].ti.fg = mmtemp[i].ti.bg = COLOR_DEFAULT;
+	}
+    }
+    GMenuItemArrayFree(mi->sub);
+    mi->sub = GMenuItemArrayCopy(mmtemp,NULL);
+}
+
 static GMenuItem mblist[] = {
+    { { (unichar_t *) _STR_File, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 0, 0, fllist, fllistcheck },
+    { { (unichar_t *) _STR_Edit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'E' }, 0, 0, edlist, edlistcheck },
+    { { (unichar_t *) _STR_Point, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 0, 0, ptlist, ptlistcheck },
+    { { (unichar_t *) _STR_Element, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, 0, 0, ellist, ellistcheck },
+    { { (unichar_t *) _STR_Hints, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, 0, 0, htlist, htlistcheck },
+    { { (unichar_t *) _STR_View, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, 0, 0, vwlist, vwlistcheck },
+    { { (unichar_t *) _STR_Metric, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 0, 0, mtlist, mtlistcheck },
+    { { (unichar_t *) _STR_MM, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, 0, 0, mmlist, mmlistcheck },
+    { { (unichar_t *) _STR_Window, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'W' }, 0, 0, NULL, WindowMenuBuild },
+    { { (unichar_t *) _STR_Help, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, 0, 0, helplist, NULL },
+    { NULL }
+};
+
+static GMenuItem mblist_nomm[] = {
     { { (unichar_t *) _STR_File, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 0, 0, fllist, fllistcheck },
     { { (unichar_t *) _STR_Edit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'E' }, 0, 0, edlist, edlistcheck },
     { { (unichar_t *) _STR_Point, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 0, 0, ptlist, ptlistcheck },
@@ -6470,7 +6668,7 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv) {
 
     memset(&gd,0,sizeof(gd));
     gd.flags = gg_visible | gg_enabled;
-    gd.u.menu = mblist;
+    gd.u.menu = sc->parent->mm==NULL ? mblist_nomm : mblist;
     cv->mb = GMenuBarCreate( gw, &gd, NULL);
     GGadgetGetSize(cv->mb,&gsize);
     cv->mbh = gsize.height;

@@ -820,7 +820,30 @@ typedef struct splinefont {
     ASM *sm;				/* asm is a keyword */
     MacFeat *features;
     char *chosenname;			/* Set for files with multiple fonts in them */
+    struct mmset *mm;			/* If part of a multiple master set */
 } SplineFont;
+
+/* I am going to simplify my life and not encourage intermediate designs */
+/*  this means I can easily calculate ConvertDesignVector, and don't have */
+/*  to bother the user with specifying it. */
+/* (NormalizeDesignVector is fairly basic and shouldn't need user help ever) */
+/*  (As long as they want piecewise linear) */
+typedef struct mmset {
+    int axis_count;
+    char *axes[4];
+    int instance_count;
+    SplineFont **instances;
+    SplineFont *normal;
+    real *positions;	/* array[instance][axis] saying where each instance lies on each axis */
+    real *defweights;	/* array[instance] saying how much of each instance makes the normal font */
+    struct axismap {
+	int points;
+	real *blends;	/* between [0,1] ordered so that blend[0]<blend[1]<... */
+	real *designs;	/* between the design ranges for this axis, typically [1,999] or [6,72] */
+    } *axismaps;
+    real forceboldthreshold;
+    char *cdv, *ndv;
+} MMSet;
 
 /* mac styles. Useful idea we'll just steal it */
 enum style_flags { sf_bold = 1, sf_italic = 2, sf_underline = 4, sf_outline = 8,
@@ -879,8 +902,12 @@ extern int SFOneWidth(SplineFont *sf);
 extern int CIDOneWidth(SplineFont *sf);
 extern int SFOneHeight(SplineFont *sf);
 extern int SFIsCJK(SplineFont *sf);
+enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_multiple, ff_mm,
+	ff_ptype3, ff_ptype0, ff_cid, ff_cff, ff_cffcid,
+	ff_ttf, ff_ttfsym, ff_ttfmacbin, ff_ttfdfont, ff_otf, ff_otfdfont,
+	ff_otfcid, ff_otfciddfont, ff_svg, ff_none };
 extern struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
-	struct pschars *subrs,int flags);
+	struct pschars *subrs,int flags,enum fontformat format);
 struct cidbytes;
 struct fd2data;
 struct ttfinfo;
@@ -888,14 +915,10 @@ struct alltabs;
 extern struct pschars *CID2Chrs(SplineFont *cidmaster,struct cidbytes *cidbytes,int flags);
 extern struct pschars *SplineFont2Subrs2(SplineFont *sf,int flags);
 extern struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
-	struct pschars *subrs,int flags);
+	struct pschars *subrs,int flags/*, enum fontformat format*/);
 extern struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds,int flags);
-enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_multiple,
-	ff_ptype3, ff_ptype0, ff_cid, ff_cff, ff_cffcid,
-	ff_ttf, ff_ttfsym, ff_ttfmacbin, ff_ttfdfont, ff_otf, ff_otfdfont,
-	ff_otfcid, ff_otfciddfont, ff_svg, ff_none };
 enum bitmapformat { bf_bdf, bf_ttf, bf_sfnt_dfont, 
-	bf_nfntmacbin, bf_nfntdfont, bf_fon, bf_otb, bf_none };
+	bf_nfntmacbin, /*bf_nfntdfont, */bf_fon, bf_otb, bf_none };
 extern SplineChar *SFFindExistingCharMac(SplineFont *,int unienc);
 extern int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags);
 extern int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format,int flags);
@@ -1010,6 +1033,7 @@ extern void SplineCharListsFree(struct splinecharlist *dlist);
 extern void SplineCharFreeContents(SplineChar *sc);
 extern void SplineCharFree(SplineChar *sc);
 extern void SplineFontFree(SplineFont *sf);
+extern void MMSetFree(MMSet *mm);
 extern void SFRemoveUndoes(SplineFont *sf,uint8 *selected);
 extern void SplineRefigure3(Spline *spline);
 extern void SplineRefigure(Spline *spline);
@@ -1266,7 +1290,13 @@ extern SplineSet *SplinePointListInterpretSVG(char *filename,int em_size, int as
 extern SplinePointList *SplinePointListInterpretPS(FILE *ps);
 extern void PSFontInterpretPS(FILE *ps,struct charprocs *cp);
 extern struct enc *PSSlurpEncodings(FILE *file);
-extern SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
+struct pscontext {
+    int is_type2;
+    int instance_count;
+    real blend_values[17];
+    int blend_warn;
+};
+extern SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *context,
 	struct pschars *subrs, struct pschars *gsubrs, const char *name);
 extern void MatMultiply(real m1[6], real m2[6], real to[6]);
 
@@ -1404,6 +1434,15 @@ extern int32 EncFromSF(int32 uni, SplineFont *sf);
 
 enum psstrokeflags { sf_toobigwarn=1, sf_removeoverlap=2, sf_handle_eraser=4 };
 extern enum psstrokeflags PsStrokeFlagsDlg(void);
+
+extern char *MMMakeMasterFontname(MMSet *mm,int ipos,char **fullname);
+extern char *MMGuessWeight(MMSet *mm,int ipos,char *def);
+extern char *MMExtractNth(char *pt,int ipos);
+extern char *MMExtractArrayNth(char *pt,int ipos);
+extern int MMValid(MMSet *mm,int complain,int fullcheck);
+extern void MMKern(SplineFont *sf,SplineChar *first,SplineChar *second,int diff,
+	int sli,KernPair *oldkp);
+extern SplineChar *SCMostConflictsMM(MMSet *mm,int enc, int ish, int *index);
 
 # if HANYANG
 extern void SFDDumpCompositionRules(FILE *sfd,struct compositionrules *rules);

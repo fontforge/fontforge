@@ -1581,15 +1581,10 @@ static void BDFsToo(SplineFont *sf,int cnt) {
     }
 }
 
-int SFCompactFont(SplineFont *sf) {
-    int cnt, i;
+static void _SFCompactFont(SplineFont *sf) {
+    int i, cnt;
     SplineChar **newchars;
-
-    if ( sf->compacted )
-return( false );
-
-    SFFindNearTop(sf);
-
+ 
     for ( i=cnt=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	sf->chars[i]->old_enc = i;
 	++cnt;
@@ -1608,34 +1603,50 @@ return( false );
     sf->compacted = true;
     sf->encodingchanged = true;
     BDFsToo(sf,cnt);
+}
+
+int SFCompactFont(SplineFont *sf) {
+    MMSet *mm = sf->mm;
+    int i;
+
+    if ( sf->compacted )
+return( false );
+
+    SFFindNearTop(sf);
+
+    if ( mm==NULL )
+	_SFCompactFont(sf);
+    else {
+	for ( i=0; i<mm->instance_count; ++i )
+	    _SFCompactFont(mm->instances[i]);
+	_SFCompactFont(mm->normal);
+    }
+
     SFRestoreNearTop(sf);
 return( true );
 }
 
-int SFUncompactFont(SplineFont *sf) {
+static void _SFUncompactFont(SplineFont *sf) {
     int i,cnt;
     SplineChar **newchars;
 
-    if ( !sf->compacted )
-return( false );
     cnt = 0;
     for ( i=sf->charcnt-1; i>=0; --i ) if ( sf->chars[i]!=NULL ) {
 	cnt = sf->chars[i]->old_enc+1;
     break;
     }
-    if ( cnt==0 )
-return( false );
-
-    SFFindNearTop(sf);
     if ( (i=CountOfEncoding(sf->old_encname))>cnt )
 	cnt = i;
+    if ( cnt==0 )
+return;
+
     newchars = gcalloc(cnt,sizeof(SplineChar *));
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	int enc = sf->chars[i]->old_enc;
 	if ( enc>=cnt ) {
 	    GDrawIError("Compacted font isn't" );
 	    free( newchars );
-return( false );
+return;
 	}
 	newchars[enc] = sf->chars[i];
 	newchars[enc]->enc = enc;
@@ -1648,6 +1659,32 @@ return( false );
     sf->encodingchanged = true;
 
     BDFsToo(sf,cnt);
+}
+
+int SFUncompactFont(SplineFont *sf) {
+    int i, cnt;
+    MMSet *mm = sf->mm;
+
+    if ( !sf->compacted )
+return( false );
+    cnt = 0;
+    for ( i=sf->charcnt-1; i>=0; --i ) if ( sf->chars[i]!=NULL ) {
+	cnt = sf->chars[i]->old_enc+1;
+    break;
+    }
+    if ( cnt==0 )
+return( false );
+
+    SFFindNearTop(sf);
+
+    if ( mm==NULL )
+	_SFUncompactFont(sf);
+    else {
+	for ( i=0; i<mm->instance_count; ++i )
+	    _SFUncompactFont(mm->instances[i]);
+	_SFUncompactFont(mm->normal);
+    }
+
     SFRestoreNearTop(sf);
 return( true );
 }

@@ -24,13 +24,10 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "pfaedit.h"
-#include <stdio.h>
+#include "pfaeditui.h"
 #include <math.h>
-#include "splinefont.h"
 #include "psfont.h"
 #include "ustring.h"
-#include "string.h"
 #include "utype.h"
 #include "views.h"		/* for FindSel structure */
 
@@ -1530,7 +1527,7 @@ return;		/* It's just the expected matrix */
     }
 }
 
-static void SplineFontFromType1(SplineFont *sf, FontDict *fd) {
+static void SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext *pscontext) {
     int i, j, isnotdef;
     RefChar *refs, *next, *pr;
     char **encoding;
@@ -1586,13 +1583,13 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd) {
 	}
 	if ( k==-1 ) {
 	    /* 0 500 hsbw endchar */
-	    sf->chars[i] = PSCharStringToSplines((uint8 *) "\213\370\210\015\016",5,false,fd->private->subrs,NULL,".notdef");
+	    sf->chars[i] = PSCharStringToSplines((uint8 *) "\213\370\210\015\016",5,pscontext,fd->private->subrs,NULL,".notdef");
 	    sf->chars[i]->width = sf->ascent+sf->descent;
 	} else if ( used[k] && !isnotdef && strcmp(encoding[i],".notdef")!=0 ) {
 	    sf->chars[i] = DuplicateNameReference(sf,encoding,i);
 	} else if ( k2==-1 ) {
 	    sf->chars[i] = PSCharStringToSplines(fd->chars->values[k],fd->chars->lens[k],
-		    istype2,fd->private->subrs,NULL,encoding[i]);
+		    pscontext,fd->private->subrs,NULL,encoding[i]);
 	    used[k] = true;
 	} else {
 	    if ( fd->charprocs->values[k]->unicodeenc==-2 )
@@ -1659,7 +1656,215 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd) {
 	TransByFontMatrix(sf,fd->fontmatrix);
 }
 
-static SplineFont *SplineFontFromCIDType1(SplineFont *sf, FontDict *fd) {
+static SplineFont *SplineFontFromMMType1(SplineFont *sf, FontDict *fd, struct pscontext *pscontext) {
+    char *pt, *end;
+    MMSet *mm;
+    int ipos, apos, ppos, item, i;
+    real blends[12];	/* At most twelve points/axis in a blenddesignmap */
+    real designs[12];
+
+    if ( fd->weightvector==NULL || fd->fontinfo->blenddesignpositions==NULL ||
+	    fd->fontinfo->blenddesignmap==NULL || fd->fontinfo->blendaxistypes==NULL ) {
+	GWidgetErrorR(_STR_BadMM,_STR_BadMM);
+	SplineFontFree(sf);
+return( NULL );
+    }
+
+    mm = chunkalloc(sizeof(MMSet));
+
+    pt = fd->weightvector;
+    while ( *pt==' ' || *pt=='[' ) ++pt;
+    while ( *pt!=']' && *pt!='\0' ) {
+	pscontext->blend_values[ pscontext->instance_count ] =
+		strtod(pt,&end);
+	if ( pt==end )
+    break;
+	++(pscontext->instance_count);
+	if ( pscontext->instance_count>=sizeof(pscontext->blend_values)/sizeof(pscontext->blend_values[0])) {
+	    fprintf( stderr, "Multiple master font with more than 16 instances\n" );
+    break;
+	}
+	for ( pt = end; *pt==' '; ++pt );
+    }
+
+    mm->instance_count = pscontext->instance_count;
+    mm->instances = galloc(pscontext->instance_count*sizeof(SplineFont *));
+    mm->defweights = galloc(mm->instance_count*sizeof(real));
+    memcpy(mm->defweights,pscontext->blend_values,mm->instance_count*sizeof(real));
+    mm->normal = sf;
+    SplineFontFromType1(mm->normal,fd,pscontext);
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
+	sf->chars[i]->blended = true;
+    sf->mm = mm;
+
+    pt = fd->fontinfo->blendaxistypes;
+    while ( *pt==' ' || *pt=='[' ) ++pt;
+    while ( *pt!=']' && *pt!='\0' ) {
+	if ( *pt=='/' ) ++pt;
+	for ( end=pt; *end!=' ' && *end!=']' && *end!='\0'; ++end );
+	if ( pt==end )
+    break;
+	if ( mm->axis_count>=sizeof(mm->axes)/sizeof(mm->axes[0])) {
+	    fprintf( stderr, "Multiple master font with more than 4 axes\n" );
+    break;
+	}
+	mm->axes[ mm->axis_count++ ] = copyn( pt,end-pt );
+	for ( pt = end; *pt==' '; ++pt );
+    }
+
+    if ( mm->instance_count < (1<<mm->axis_count) )
+	GWidgetErrorR(_STR_BadMM,_STR_MMTooFewMasters,mm->instance_count,1<<mm->axis_count,mm->axis_count);
+    else if ( mm->instance_count > (1<<mm->axis_count) )
+	GWidgetErrorR(_STR_BadMM,_STR_MMHasInstances,mm->instance_count,1<<mm->axis_count,mm->axis_count);
+    mm->positions = gcalloc(mm->axis_count*mm->instance_count,sizeof(real));
+    pt = fd->fontinfo->blenddesignpositions;
+    while ( *pt==' ' ) ++pt;
+    if ( *pt=='[' ) ++pt;
+    ipos = 0;
+    while ( *pt!=']' && *pt!='\0' ) {
+	while ( *pt==' ' ) ++pt;
+	if ( *pt==']' || *pt=='\0' )
+    break;
+	if ( ipos>=mm->instance_count )
+    break;
+	if ( *pt=='[' ) {
+	    ++pt;
+	    apos=0;
+	    while ( *pt!=']' && *pt!='\0' ) {
+		if ( apos>=mm->axis_count ) {
+		    fprintf( stderr, "Too many axis positions specified in /BlendDesignPositions.\n" );
+	    break;
+		}
+		mm->positions[ipos*mm->axis_count+apos] =
+			strtod(pt,&end);
+		if ( pt==end )
+	    break;
+		++apos;
+		for ( pt = end; *pt==' '; ++pt );
+	    }
+	    if ( *pt==']' ) ++pt;
+	    ++ipos;
+	} else
+	    ++pt;
+    }
+    
+    mm->axismaps = gcalloc(mm->axis_count,sizeof(struct axismap));
+    pt = fd->fontinfo->blenddesignmap;
+    while ( *pt==' ' ) ++pt;
+    if ( *pt=='[' ) ++pt;
+    apos = 0;
+    while ( *pt!=']' && *pt!='\0' ) {
+	while ( *pt==' ' ) ++pt;
+	if ( *pt==']' || *pt=='\0' )
+    break;
+	if ( apos>=mm->axis_count )
+    break;
+	if ( *pt=='[' ) {
+	    ++pt;
+	    ppos=0;
+	    while ( *pt!=']' && *pt!='\0' ) {
+		if ( ppos>=12 ) {
+		    fprintf( stderr, "Too many mapping data points specified in /BlendDesignMap for axis %s.\n", mm->axes[apos] );
+	    break;
+		}
+		while ( *pt==' ' ) ++pt;
+		if ( *pt=='[' ) {
+		    ++pt;
+		    designs[ppos] = strtod(pt,&end);
+		    blends[ppos] = strtod(end,&end);
+		    if ( blends[ppos]<0 || blends[ppos]>1 ) {
+			fprintf( stderr, "Bad value for blend in /BlendDesignMap for axis %s.\n", mm->axes[apos] );
+			if ( blends[ppos]<0 ) blends[ppos] = 0;
+			if ( blends[ppos]>1 ) blends[ppos] = 1;
+		    }
+		    pt = end;
+		    while ( *pt!=']' && *pt!='\0' ) ++pt;
+		    ppos ++;
+		}
+		++pt;
+		while ( *pt==' ' ) ++pt;
+	    }
+	    if ( *pt==']' ) ++pt;
+	    if ( ppos<2 )
+		fprintf( stderr, "Bad few values in /BlendDesignMap for axis %s.\n", mm->axes[apos] );
+	    mm->axismaps[apos].points = ppos;
+	    mm->axismaps[apos].blends = galloc(ppos*sizeof(real));
+	    mm->axismaps[apos].designs = galloc(ppos*sizeof(real));
+	    memcpy(mm->axismaps[apos].blends,blends,ppos*sizeof(real));
+	    memcpy(mm->axismaps[apos].designs,designs,ppos*sizeof(real));
+	    ++apos;
+	} else
+	    ++pt;
+    }
+
+    mm->cdv = copy(fd->cdv);
+    mm->ndv = copy(fd->ndv);
+
+    pt = PSDictHasEntry(sf->private,"ForceBoldThreshold");
+    if ( pt!=NULL )
+	mm->forceboldthreshold = strtod(pt,NULL);
+
+    /* Now figure out the master designs, being careful to interpolate */
+    /* BlueValues, ForceBold, UnderlinePosition etc. We need to copy private */
+    /* generate a font name */
+    for ( ipos = 0; ipos<mm->instance_count; ++ipos ) {
+	free(fd->fontname);
+	free(fd->fontinfo->fullname);
+	fd->fontname = MMMakeMasterFontname(mm,ipos,&fd->fontinfo->fullname);
+	fd->fontinfo->weight = MMGuessWeight(mm,ipos,fd->fontinfo->weight);
+	if ( fd->blendfontinfo!=NULL ) {
+	    for ( item=0; item<3; ++item ) {
+		static char *names[] = { "ItalicAngle", "UnderlinePosition", "UnderlineThickness" };
+		pt = PSDictHasEntry(fd->blendfontinfo,names[item]);
+		if ( pt!=NULL ) {
+		    pt = MMExtractNth(pt,ipos);
+		    if ( pt!=NULL ) {
+			double val = strtod(pt,NULL);
+			free(pt);
+			switch ( item ) {
+			  case 0: fd->fontinfo->italicangle = val; break;
+			  case 1: fd->fontinfo->underlineposition = val; break;
+			  case 2: fd->fontinfo->underlinethickness = val; break;
+			}
+		    }
+		}
+	    }
+	}
+	fd->private->private = PSDictCopy(sf->private);
+	if ( fd->blendprivate!=NULL ) {
+	    static char *arrnames[] = { "BlueValues", "OtherBlues", "FamilyBlues", "FamilyOtherBlues", "StdHW", "StdVW", "StemSnapH", "StemSnapV", NULL };
+	    static char *scalarnames[] = { "ForceBold", "BlueFuzz", "BlueScale", "BlueShift", NULL };
+	    for ( item=0; scalarnames[item]!=NULL; ++item ) {
+		pt = PSDictHasEntry(fd->blendprivate,scalarnames[item]);
+		if ( pt!=NULL ) {
+		    pt = MMExtractNth(pt,ipos);
+		    PSDictChangeEntry(fd->private->private,scalarnames[item],pt);
+		    free(pt);
+		}
+	    }
+	    for ( item=0; arrnames[item]!=NULL; ++item ) {
+		pt = PSDictHasEntry(fd->blendprivate,arrnames[item]);
+		if ( pt!=NULL ) {
+		    pt = MMExtractArrayNth(pt,ipos);
+		    PSDictChangeEntry(fd->private->private,arrnames[item],pt);
+		    free(pt);
+		}
+	    }
+	}
+	for ( item=0; item<mm->instance_count; ++item )
+	    pscontext->blend_values[item] = 0;
+	pscontext->blend_values[ipos] = 1;
+
+	mm->instances[ipos] = SplineFontEmpty();
+	SplineFontMetaData(mm->instances[ipos],fd);
+	SplineFontFromType1(mm->instances[ipos],fd,pscontext);
+	mm->instances[ipos]->mm = mm;
+    }
+return( sf );
+}
+
+static SplineFont *SplineFontFromCIDType1(SplineFont *sf, FontDict *fd,
+	struct pscontext *pscontext) {
     int i,j, bad, uni;
     SplineChar **chars;
     char buffer[100];
@@ -1704,8 +1909,9 @@ return( NULL );
     for ( i=0; i<fd->cidcnt; ++i ) if ( fd->cidlens[i]>0 ) {
 	j = fd->cidfds[i];		/* We get font indexes of 255 for non-existant chars */
 	uni = CID2NameEnc(map,i,buffer,sizeof(buffer));
+	pscontext->is_type2 = fd->fds[j]->fonttype==2;
 	chars[i] = PSCharStringToSplines(fd->cidstrs[i],fd->cidlens[i],
-		    fd->fds[j]->fonttype==2,fd->fds[j]->private->subrs,
+		    pscontext,fd->fds[j]->private->subrs,
 		    NULL,buffer);
 	chars[i]->vwidth = sf->subfonts[j]->ascent+sf->subfonts[j]->descent;
 	chars[i]->unicodeenc = uni;
@@ -1734,15 +1940,21 @@ return( sf );
 
 SplineFont *SplineFontFromPSFont(FontDict *fd) {
     SplineFont *sf = SplineFontEmpty();
+    struct pscontext pscontext;
+
+    memset(&pscontext,0,sizeof(pscontext));
+    pscontext.is_type2 = fd->fonttype==2;
 
     SplineFontMetaData(sf,fd);
     if ( fd->wascff ) {
 	SplineFontFree(sf);
 	sf = fd->sf;
-    } else if ( fd->fdcnt==0 )
-	SplineFontFromType1(sf,fd);
+    } else if ( fd->fdcnt!=0 )
+	sf = SplineFontFromCIDType1(sf,fd,&pscontext);
+    else if ( fd->weightvector!=NULL )
+	SplineFontFromMMType1(sf,fd,&pscontext);
     else
-	sf = SplineFontFromCIDType1(sf,fd);
+	SplineFontFromType1(sf,fd,&pscontext);
     if ( loaded_fonts_same_as_new && new_fonts_are_order2 )
 	SFConvertToOrder2(sf);
 return( sf );
@@ -2347,6 +2559,8 @@ return( 0 );
     t2max = ISolveWithin(&s2->splines[major],(&max.x)[major],lowt2,hight2);
     t2min = ISolveWithin(&s2->splines[major],(&min.x)[major],lowt2,hight2);
     t1diff = (t1max-t1min)/64.0;
+    if ( t1diff==0 )
+return( 0 );
 
     t1 = t1min; t2 = t2min;
     o1o = ((s1->splines[other].a*t1+s1->splines[other].b)*t1+
@@ -3412,6 +3626,10 @@ void SplineFontFree(SplineFont *sf) {
 
     if ( sf==NULL )
 return;
+    if ( sf->mm!=NULL ) {
+	MMSetFree(sf->mm);
+return;
+    }
     PasteRemoveSFAnchors(sf);
     for ( bdf = sf->bitmaps; bdf!=NULL; bdf = bnext ) {
 	bnext = bdf->next;
@@ -3452,4 +3670,30 @@ return;
     ASMFree(sf->sm);
     free(sf->gentags.tagtype);
     free(sf);
+}
+
+void MMSetFree(MMSet *mm) {
+    int i;
+
+    for ( i=0; i<mm->instance_count; ++i ) {
+	mm->instances[i]->mm = NULL;
+	SplineFontFree(mm->instances[i]);
+    }
+    mm->normal->mm = NULL;
+    SplineFontFree(mm->normal);
+    free(mm->instances);
+
+    free(mm->positions);
+    free(mm->defweights);
+
+    for ( i=0; i<mm->axis_count; ++i ) {
+	free(mm->axes[i]);
+	free(mm->axismaps[i].blends);
+	free(mm->axismaps[i].designs);
+    }
+    free(mm->axismaps);
+    free(mm->cdv);
+    free(mm->ndv);
+
+    chunkfree(mm,sizeof(*mm));
 }

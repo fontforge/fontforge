@@ -46,13 +46,18 @@ struct fontparse {
     unsigned int inbb: 1;
     unsigned int inencoding: 1;
     unsigned int multiline: 1;
-    unsigned int instring: 1;
     unsigned int incidsysteminfo: 1;
+    unsigned int inblendfi:1;
+    unsigned int inblendprivate:1;
+    unsigned int skipping_mbf: 1;
+    unsigned int inblend: 1;
     unsigned int iscid: 1;
     unsigned int iscff: 1;
     unsigned int useshexstrings: 1;
     unsigned int doneencoding: 1;
+    int instring;
     int fdindex;
+    char **pending_parse;
 
     unsigned int alreadycomplained: 1;
 
@@ -1072,8 +1077,13 @@ static void ContinueValue(struct fontparse *fp, struct psdict *dict, char *line)
 	    /*  expression rather than just an array. This is ok. The expression */
 	    /*  converts itself into an array. We could just truncate to the */
 	    /*  default array, but I don't see any reason to do so */
-	    dict->values[dict->next] = copyn(fp->vbuf,fp->vpt-fp->vbuf);
-	    ++dict->next;
+	    if ( fp->pending_parse!=NULL ) {
+		*fp->pending_parse = copyn(fp->vbuf,fp->vpt-fp->vbuf);
+		fp->pending_parse = NULL;
+	    } else {
+		dict->values[dict->next] = copyn(fp->vbuf,fp->vpt-fp->vbuf);
+		++dict->next;
+	    }
 	    fp->vpt = fp->vbuf;
 	    fp->multiline = false;
 return;
@@ -1085,11 +1095,11 @@ return;
 	    fp->vmax = fp->vbuf+len;
 	}
 	if ( fp->instring ) {
-	    if ( *line==')' ) fp->instring=false;
+	    if ( *line==')' ) --fp->instring;
 	} else if ( incomment ) {
 	    /* Do Nothing */;
 	} else if ( *line=='(' )
-	    fp->instring = true;
+	    ++fp->instring;
 	else if ( *line=='%' )
 	    incomment = true;
 	else if ( *line=='[' || *line=='{' )
@@ -1103,12 +1113,14 @@ return;
 static void AddValue(struct fontparse *fp, struct psdict *dict, char *line, char *endtok) {
     char *pt;
 
-    if ( dict->next>=dict->cnt ) {
-	dict->cnt += 10;
-	dict->keys = grealloc(dict->keys,dict->cnt*sizeof(char *));
-	dict->values = grealloc(dict->values,dict->cnt*sizeof(char *));
+    if ( dict!=NULL ) {
+	if ( dict->next>=dict->cnt ) {
+	    dict->cnt += 10;
+	    dict->keys = grealloc(dict->keys,dict->cnt*sizeof(char *));
+	    dict->values = grealloc(dict->values,dict->cnt*sizeof(char *));
+	}
+	dict->keys[dict->next] = copyn(line+1,endtok-(line+1));
     }
-    dict->keys[dict->next] = copyn(line+1,endtok-(line+1));
     pt = line+strlen(line)-1;
     while ( isspace(*endtok)) ++endtok;
     while ( pt>endtok && isspace(*pt)) --pt;
@@ -1131,8 +1143,13 @@ return;
 	else
 	    break;
     }
-    dict->values[dict->next] = copyn(endtok,pt-endtok);
-    ++dict->next;
+    if ( dict!=NULL ) {
+	dict->values[dict->next] = copyn(endtok,pt-endtok);
+	++dict->next;
+    } else {
+	*fp->pending_parse = copyn(endtok,pt-endtok);
+	fp->pending_parse = NULL;
+    }
 }
 
 static int hex(int ch1, int ch2) {
@@ -1319,6 +1336,24 @@ return;
     if ( *line=='/' )
 	for ( endtok=line+1; !isspace(*endtok) && *endtok!='(' &&
 		*endtok!='{' && *endtok!='[' && *endtok!='\0'; ++endtok );
+
+    if ( fp->skipping_mbf ) {	/* Skip over the makeblendedfont defn in a multimaster font */
+	if ( fp->multiline )
+	    ContinueValue(fp,NULL,line);
+	else if ( strstr( line,"/NormalizeDesignVector" )!=NULL ) {
+	    fp->pending_parse = &fp->fd->ndv;
+	    AddValue(fp,NULL,line,endtok);
+	} else if ( strstr( line,"/ConvertDesignVector" )!=NULL ) {
+	    fp->pending_parse = &fp->fd->cdv;
+	    AddValue(fp,NULL,line,endtok);
+	}
+return;
+    }
+    if ( strstr(line,"/shareddict")!=NULL && strstr(line,"where")!=NULL ) {
+	fp->skipping_mbf = true;
+return;
+    }
+
     if ( mycmp("Encoding",line+1,endtok)==0 && !fp->doneencoding ) {
 	if ( strstr(endtok,"StandardEncoding")!=NULL ) {
 	    fp->fd->encoding_name = em_adobestandard;
@@ -1342,7 +1377,25 @@ return;
 	fp->fd->metrics->cnt = strtol(endtok,NULL,10);
 	fp->fd->metrics->keys = galloc(fp->fd->metrics->cnt*sizeof(char *));
 	fp->fd->metrics->values = galloc(fp->fd->metrics->cnt*sizeof(char *));
+    } else if ( strstr(line,"/Private")!=NULL && strstr(line,"/Blend")!=NULL ) {
+	fp->infi = fp->inbb = fp->inmetrics = fp->inmetrics2 = false;
+	fp->inprivate = fp->inblendprivate = fp->inblendfi = false;
+	fp->inblendprivate = 1;
+	fp->fd->blendprivate = gcalloc(1,sizeof(struct psdict));
+	InitDict(fp->fd->blendprivate,line);
+return;
+    } else if ( strstr(line,"/FontInfo")!=NULL && strstr(line,"/Blend")!=NULL ) {
+	fp->infi = fp->inbb = fp->inmetrics = fp->inmetrics2 = false;
+	fp->inprivate = fp->inblendprivate = fp->inblendfi = false;
+	fp->inblendfi = 1;
+	fp->fd->blendfontinfo = gcalloc(1,sizeof(struct psdict));
+	InitDict(fp->fd->blendfontinfo,line);
+return;
     } else if ( fp->infi ) {
+	if ( fp->multiline ) {
+	    ContinueValue(fp,NULL,line);
+return;
+	}
 	if ( endtok==NULL && strncmp(line,"end", 3)==0 ) {
 	    fp->infi=0;
 return;
@@ -1383,10 +1436,39 @@ return;
 	    fp->fd->fontinfo->descent = strtol(endtok,NULL,10);
 	else if ( mycmp("FSType",line+1,endtok)==0 )
 	    fp->fd->fontinfo->fstype = strtol(endtok,NULL,10);
-	else if ( !fp->alreadycomplained ) {
+	else if ( mycmp("BlendDesignPositions",line+1,endtok)==0 ) {
+	    fp->pending_parse = &fp->fd->fontinfo->blenddesignpositions;
+	    AddValue(fp,NULL,line,endtok);
+	} else if ( mycmp("BlendDesignMap",line+1,endtok)==0 ) {
+	    fp->pending_parse = &fp->fd->fontinfo->blenddesignmap;
+	    AddValue(fp,NULL,line,endtok);
+	} else if ( mycmp("BlendAxisTypes",line+1,endtok)==0 ) {
+	    fp->pending_parse = &fp->fd->fontinfo->blendaxistypes;
+	    AddValue(fp,NULL,line,endtok);
+	} else if ( !fp->alreadycomplained ) {
 	    fprintf( stderr, "Didn't understand |%s", line );
 	    fp->alreadycomplained = true;
 	}
+    } else if ( fp->inblend ) {
+	if ( endtok==NULL ) {
+	    if ( *line!='/' && strstr(line,"end")!=NULL )
+		fp->inblend = false;
+return;
+	}
+	/* Ignore anything in the blend dict defn */
+    } else if ( fp->inblendprivate || fp->inblendfi ) {
+	struct psdict *subdict = fp->inblendfi ? fp->fd->blendfontinfo : fp->fd->blendprivate;
+	if ( fp->multiline ) {
+	    ContinueValue(fp,subdict,line);
+return;
+	} else if ( endtok==NULL ) {
+	    if ( *line!='/' && strstr(line,"end")!=NULL ) {
+		fp->inblendprivate = fp->inblendfi = false;
+		fp->inprivate = true;
+	    }
+return;
+	} else
+	    AddValue(fp,subdict,line,endtok);
     } else if ( fp->inprivate ) {
 	if ( strstr(line,"/CharStrings")!=NULL ) {
 	    if ( strstr(line,"dict")==NULL )		/* In my type0 fonts, the string "/CharStrings" pops up many times, only first time is meaningful */
@@ -1445,12 +1527,31 @@ return;
     } else {
 	if ( strstr(line,"/Private")!=NULL ) {
 	    fp->infi = fp->inbb = fp->inmetrics = fp->inmetrics2 = false;
-	    fp->inprivate = 1;
-	    InitDict(fp->fd->private->private,line);
+	    fp->inprivate = fp->inblendprivate = fp->inblendfi = false;
+	    if ( strstr(line,"/Blend")!=NULL ) {
+		fp->inblendprivate = 1;
+		fp->fd->blendprivate = gcalloc(1,sizeof(struct psdict));
+		InitDict(fp->fd->blendprivate,line);
+	    } else {
+		fp->inprivate = 1;
+		InitDict(fp->fd->private->private,line);
+	    }
 return;
 	} else if ( strstr(line,"/FontInfo")!=NULL ) {
 	    fp->inprivate = fp->inbb = fp->inmetrics = fp->inmetrics2 = false;
-	    fp->infi = 1;
+	    fp->infi = fp->inblendprivate = fp->inblendfi = false;
+	    if ( strstr(line,"/Blend")!=NULL ) {
+		fp->inblendfi = 1;
+		fp->fd->blendfontinfo = gcalloc(1,sizeof(struct psdict));
+		InitDict(fp->fd->blendfontinfo,line);
+	    } else {
+		fp->infi = 1;
+	    }
+return;
+	} else if ( strstr(line,"/Blend")!=NULL && strstr(line,"dict")!=NULL ) {
+	    fp->inprivate = fp->inbb = fp->inmetrics = fp->inmetrics2 = false;
+	    fp->infi = fp->inblendprivate = fp->inblendfi = false;
+	    fp->inblend = true;
 return;
 	} else if ( strstr(line,"/CharStrings")!=NULL ) {
 	    if ( strstr(line,"dict")==NULL )		/* In my type0 fonts, the string "/CharStrings" pops up many times, only first time is meaningful */
@@ -1460,6 +1561,7 @@ return;
 	    fp->inchars = 1;
 	    fp->insubs = 0;
 	    fp->infi = fp->inprivate = fp->inbb = fp->inmetrics = fp->inmetrics2 = false;
+	    fp->inblendprivate = fp->inblendfi = false;
 return;
 	} else if ( mycmp("/CharProcs",line,endtok)==0 ) {
 	    InitCharProcs(fp->fd->charprocs,line);
@@ -1477,6 +1579,12 @@ return;
 	    /* Ignore it */;
 return;
 	}
+
+	if ( fp->multiline ) {
+	    ContinueValue(fp,NULL,line);
+return;
+	}
+	
 	if ( endtok==NULL ) {
 	    if ( fp->fdindex!=-1 && strstr(line,"end")!=NULL ) {
 		if ( ++fp->fdindex>=fp->mainfd->fdcnt )
@@ -1520,7 +1628,13 @@ return;
 		fillintarray(fp->fd->xuid,endtok,20);
 	} else if ( mycmp("StrokeWidth",line+1,endtok)==0 )
 	    fp->fd->strokewidth = strtod(endtok,NULL);
-	else if ( mycmp("BuildChar",line+1,endtok)==0 )
+	else if ( mycmp("WeightVector",line+1,endtok)==0 ) {
+	    fp->pending_parse = &fp->fd->weightvector;
+	    AddValue(fp,NULL,line,endtok);
+	} else if ( mycmp("$Blend",line+1,endtok)==0 ) {
+	    fp->pending_parse = &fp->fd->blendfunc;
+	    AddValue(fp,NULL,line,endtok);
+	} else if ( mycmp("BuildChar",line+1,endtok)==0 )
 	    /* Do Nothing */;
 	else if ( mycmp("BuildGlyph",line+1,endtok)==0 )
 	    /* Do Nothing */;
@@ -2078,11 +2192,14 @@ static void realdecrypt(struct fontparse *fp,FILE *in, FILE *temp) {
     char buffer[256];
     int first, hassectionheads;
     char rdtok[20];
+    int saw_blend = false;
 
     strcpy(rdtok,"RD");
 
     first = 1; hassectionheads = 0;
     while ( myfgets(buffer,sizeof(buffer),in)!=NULL ) {
+	if ( strstr(buffer, "Blend")!=NULL )
+	    saw_blend = true;
 	if ( first && buffer[0]=='\200' ) {
 	    hassectionheads = 1;
 	    fp->fd->wasbinary = true;
@@ -2091,7 +2208,10 @@ static void realdecrypt(struct fontparse *fp,FILE *in, FILE *temp) {
 	    parsetype3(fp,in);
 return;
 	} else if ( !fp->iscid ) {
-	    if ( strstr(buffer,"/CharStrings")!=NULL && strstr(buffer,"begin")!=NULL ) {
+	    if ( saw_blend )
+		parseline(fp,buffer,in);
+		/* But if it's a multi master font, don't do the special private hack */
+	    else if ( strstr(buffer,"/CharStrings")!=NULL && strstr(buffer,"begin")!=NULL ) {
 		/* gsf files are not eexec encoded, but the charstrings are encoded*/
 		InitChars(fp->fd->chars,buffer);
 		fp->inchars = 1;
@@ -2116,8 +2236,10 @@ return;
 	first = 0;
 	if ( strstr(buffer,"%%BeginData: ")!=NULL )
     break;
-	if ( strstr(buffer,"currentfile")!=NULL && strstr(buffer, "eexec")!=NULL )
+	if ( strstr(buffer,"currentfile")!=NULL && strstr(buffer, "eexec")!=NULL ) {
+	    fp->skipping_mbf = false;
     break;
+	}
     }
 
     if ( strstr(buffer,"%%BeginData: ")!=NULL ) {
@@ -2221,6 +2343,9 @@ static void FontInfoFree(struct fontinfo *fi) {
     free(fi->notice);
     free(fi->weight);
     free(fi->version);
+    free(fi->blenddesignpositions);
+    free(fi->blenddesignmap);
+    free(fi->blendaxistypes);
     free(fi);
 }
 
@@ -2256,6 +2381,14 @@ void PSFontFree(FontDict *fd) {
 	    PSFontFree(fd->fds[i]);
 	free(fd->fds);
     }
+    free(fd->blendfunc);
+    free(fd->weightvector);
+    free(fd->cdv);
+    free(fd->ndv);
+
+    PSDictFree(fd->blendprivate);
+    PSDictFree(fd->blendfontinfo);
+    
     free(fd);
 }
 

@@ -478,6 +478,13 @@ static char *str_RemoveFont = "Remove Font";
 static char mnemonic_RemoveFont = 'R';
 static char *str_CIDFontInfo = "CID Font Info...";
 static char mnemonic_CIDFontInfo = 'I';
+static char *str_MM = "MM";
+static char *str_MMInfo = "MM Info...";
+static char mnemonic_MMInfo = 'I';
+static char *str_ConvertToMM = "Convert to MM...";
+static char mnemonic_ConvertToMM = 'C';
+static char *str_MMValid = "MM Validity Check";
+static char mnemonic_MMValid = 'V';
 
     /* Font Info dlg */
 static char str_Custom[] = "Custom";
@@ -3278,6 +3285,22 @@ static char *str_AnyScript = "Any Script";
 static char *str_BadTag = "Bad Tag";
 static char *str_RetagWith = "Retag with...";
 static char *str_NoSelectedFont = "No Selected Font";
+    /* spline util */
+static char *str_BadMM = "Bad Multiple Master Font";
+static char *str_MMTooFewMasters = "This multiple master font has %1$d instance fonts, but it needs at least %2$d master fonts for %3$d axes. PfaEdit will not be able to edit this correctly";
+static char *str_MMHasInstances = "This multiple master font has %1$d instance fonts, but PfaEdit can only handle %2$d master fonts for %3$d axes. PfaEdit will not be able to edit this correctly";
+static char *str_MMDifferentNumChars = "The fonts %1$.30hs and %2$.30hs have a different number of characters"
+static char *str_MMDifferentOrder = "The fonts %1$.30hs and %2$.30hs use different types of splines (one quadratic, one cubic)"
+static char *str_MMUndefChar = "The character %1$.30hs is defined in font %2$.30hs but not in %3$.30hs"
+static char *str_MMWrongContourCount = "The character %1$.30hs has a different number of contours in font %2$.30hs than in %3$.30hs"
+static char *str_MMMismatchContoursPt = "The character %1$.30hs in font %2$.30hs has a different number of points (or control points) on its contours than in %3$.30hs"
+static char *str_MMMismatchContoursDir = "The character %1$.30hs in font %2$.30hs has contours running in a different direction than in %3$.30hs"
+static char *str_MMMismatchRefs = "The character %1$.30hs in font %2$.30hs has contours running in a different direction than in %3$.30hs"
+static char *str_MMMismatchHints = "The %1$hs hints in character \"%2$.30hs\" in font %3$.30hs do not match those in %4$.30hs (different number or different overlap criteria)"
+static char *str_MMMismatchKerns = "The character %1$.30hs in font %2$.30hs has a different set of kern pairs than in %3$.30hs"
+static char *str_MMNeedsBoldThresh = "There is no ForceBoldThreshold entry in the weighted font, but there is a ForceBold entry in font %30hs"
+static char *str_MMPrivateMismatch = "The entry \"%1$.20hs\" is not present in the private dictionary of both %2$.30hs and %3$.30hs"
+static char *str_NoProblems = "No problems detected"
     /* Adjectives, etc. that are sometimes masculine and sometimes feminine in french (perhaps other langs) */
 static char str_NewDDD_fem[] = "New...";
 static unichar_t mnemonic_NewDDD_fem[] = 'N';

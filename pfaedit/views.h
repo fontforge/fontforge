@@ -269,6 +269,7 @@ typedef struct charview {
     SplineSet *gridfit;
     struct freetype_raster *raster;
     DebugView *dv;
+    uint32 mmvisible;
 } CharView;
 
 typedef struct bitmapview {

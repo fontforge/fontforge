@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <math.h>
 #include <utype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -41,6 +42,12 @@
 #undef __Mac
 #define __Mac 0
 #endif
+
+const int mac_dpi = 72;
+/* I had always assumed that the mac still believed in 72dpi screens, but I */
+/*  see that in geneva under OS/9, the pointsize does not match the pixel */
+/*  size of the font. But the dpi is not constant (and the differences */
+/*  excede those supplied by rounding errors) varying between 96 and 84dpi */
 
 /* A Mac Resource fork */
 /*  http://developer.apple.com/techpubs/mac/MoreToolbox/MoreToolbox-9.html */
@@ -939,8 +946,9 @@ static uint32 SFsToFOND(FILE *res,struct sflist *sfs,uint32 id,int format,int bf
     /* then do bitmap faces (if any) */ /* Ordered by size damn it */
     for ( size=1; size<256; ++size ) {
 	for ( i=0; i<96; ++i ) if ( faces[i]!=NULL && faces[i]->ids!=NULL ) {
-	    for ( j=0; faces[i]->ids[j]!=0 ; ++j ) if ( faces[i]->bdfs[j]->pixelsize==size ) {
-		putshort(res,faces[i]->bdfs[j]->pixelsize);
+	    int pointsize = rint( (faces[i]->bdfs[j]->pixelsize*72.0/mac_dpi) );
+	    for ( j=0; faces[i]->ids[j]!=0 ; ++j ) if ( pointsize==size ) {
+		putshort(res,size);
 		putshort(res,i);		/* style */
 		putshort(res,faces[i]->ids[j]);
 	    }
@@ -1600,7 +1608,8 @@ return( ret );
 
 /* We have to worry about these font formats:
   ff_pfbmacbin, ff_ttfmacbin, ff_ttfdfont, ff_otfdfont, ff_otfciddfont, ff_none
-  bf_ttf, bf_sfnt_dfont, bf_nfntmacbin, bf_nfntdfont,
+  bf_ttf, bf_sfnt_dfont, bf_nfntmacbin,
+  bf_nfntdfont	I no long support this. OS/X doesn't support NFNTs so there's no point
 */
 
 int WriteMacFamily(char *filename,struct sflist *sfs,enum fontformat format,
@@ -1674,7 +1683,7 @@ return( 0 );
     }
 
     if ( format==ff_ttfdfont || format==ff_otfdfont || format==ff_otfciddfont ||
-	    bf==bf_sfnt_dfont || (format==ff_none && bf==bf_nfntdfont))
+	    bf==bf_sfnt_dfont /*|| (format==ff_none && bf==bf_nfntdfont)*/)
 	WriteDummyDFontHeaders(res);
     else
 	WriteDummyMacHeaders(res);
@@ -1701,7 +1710,7 @@ return( 0 );
 	    resources[r++].res = BuildDummyNFNTfamilyList(res,sfs,id);
 	}
     }
-    if ( bf==bf_nfntmacbin || bf==bf_nfntdfont ) {
+    if ( bf==bf_nfntmacbin /*|| bf==bf_nfntdfont */) {
 	resources[r].tag = CHR('N','F','N','T');
 	resources[r++].res = SFsToNFNTs(res,sfs,id);
     }
@@ -2238,8 +2247,14 @@ return;
     bdf->descent = font.descent;
     bdf->encoding_name = sf->encoding_name;
     bdf->res = 72;
-    for ( i=font.firstChar; i<=font.lastChar; ++i )
+    for ( i=font.firstChar; i<=font.lastChar; ++i ) {
+	SFMakeChar(sf,i);
 	bdf->chars[i] = NFNTCvtBitmap(&font,i-font.firstChar,sf);
+	if ( sf->chars[i]!=NULL && !sf->chars[i]->widthset && bdf->chars[i]!=NULL ) {
+	    sf->chars[i]->width = bdf->chars[i]->width*(sf->ascent+sf->descent)/bdf->pixelsize;
+	    sf->chars[i]->widthset = true;
+	}
+    }
 
     free(font.fontImage);
     free(font.locs);

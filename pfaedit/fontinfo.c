@@ -1491,9 +1491,9 @@ static void RemoveSplineChar(SplineFont *sf, int enc) {
     }
 }
 
-static int _SFReencodeFont(SplineFont *sf,enum charset new_map, SplineFont *target);
+static int __SFReencodeFont(SplineFont *sf,enum charset new_map, SplineFont *target);
 
-int SFForceEncoding(SplineFont *sf,enum charset new_map) {
+static int _SFForceEncoding(SplineFont *sf,enum charset new_map) {
     int enc_cnt=256,i;
     BDFFont *bdf;
     Encoding *item=NULL;
@@ -1510,7 +1510,7 @@ return(false);
 	    sf->chars[i]->orig_pos = enc_cnt++;
 	if ( sf->charcnt==enc_cnt )
 return( false );
-return( _SFReencodeFont(sf,em_original,NULL));
+return( __SFReencodeFont(sf,em_original,NULL));
     }
 	
 
@@ -1556,6 +1556,19 @@ return( false );
 return( true );
 }
 
+int SFForceEncoding(SplineFont *sf,enum charset new_map) {
+    if ( sf->mm!=NULL ) {
+	MMSet *mm = sf->mm;
+	int i;
+	for ( i=0; i<mm->instance_count; ++i )
+	    _SFForceEncoding(mm->instances[i],new_map);
+	_SFForceEncoding(mm->normal,new_map);
+    } else
+return( _SFForceEncoding(sf,new_map));
+
+return( true );
+}
+
 void SFFindNearTop(SplineFont *sf) {
     FontView *fv;
     int i,k;
@@ -1597,7 +1610,8 @@ void SFRestoreNearTop(SplineFont *sf) {
 }
 
 /* see also SplineFontNew in splineutil2.c */
-static int _SFReencodeFont(SplineFont *sf,enum charset new_map, SplineFont *target) {
+static int __SFReencodeFont(SplineFont *sf,enum charset new_map,
+	SplineFont *target) {
     const unsigned short *table=NULL;
     int i, extras, epos;
     SplineChar **chars;
@@ -1608,8 +1622,6 @@ static int _SFReencodeFont(SplineFont *sf,enum charset new_map, SplineFont *targ
     uint8 *used;
     RefChar *refs;
     CharView *cv;
-
-    SFFindNearTop(sf);
 
     if ( target==NULL ) {
 	if ( sf->encoding_name==new_map )
@@ -1771,8 +1783,26 @@ return( false );
     sf->compacted = false;
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
 	SCRefreshTitles(sf->chars[i]);
-    SFRestoreNearTop(sf);
 return( true );
+}
+
+static int _SFReencodeFont(SplineFont *sf,enum charset new_map, SplineFont *target) {
+    MMSet *mm = sf->mm;
+    int i, ret;
+
+    SFFindNearTop(sf);
+
+    if ( mm==NULL )
+	ret = __SFReencodeFont(sf,new_map,target);
+    else {
+	ret = false;
+	for ( i=0; i<mm->instance_count; ++i )
+	    ret |= __SFReencodeFont(mm->instances[i],new_map,target);
+	ret |= __SFReencodeFont(mm->normal,new_map,target);
+    }
+
+    SFRestoreNearTop(sf);
+return( ret );
 }
 
 int SFReencodeFont(SplineFont *sf,enum charset new_map) {
@@ -1788,13 +1818,13 @@ int SFMatchEncoding(SplineFont *sf,SplineFont *target) {
 return( _SFReencodeFont(sf,em_none,target));
 }
 
-int SFAddDelChars(SplineFont *sf, int nchars) {
+static void _SFAddDelChars(SplineFont *sf, int nchars) {
     int i;
     BDFFont *bdf;
     MetricsView *mv, *mnext;
 
     if ( nchars==sf->charcnt )
-return( false );
+return;
     if ( nchars>sf->charcnt ) {
 	sf->chars = grealloc(sf->chars,nchars*sizeof(SplineChar *));
 	for ( i=sf->charcnt; i<nchars; ++i )
@@ -1828,6 +1858,22 @@ return( false );
 	}
     }
     GlyphHashFree(sf);
+}
+
+int SFAddDelChars(SplineFont *sf, int nchars) {
+    int i;
+    MMSet *mm = sf->mm;
+
+    if ( nchars==sf->charcnt )
+return( false );
+
+    if ( mm==NULL )
+	_SFAddDelChars(sf,nchars);
+    else {
+	for ( i=0; i<mm->instance_count; ++i )
+	    _SFAddDelChars(mm->instances[i],nchars);
+	_SFAddDelChars(mm->normal,nchars);
+    }
 return( true );
 }
 

@@ -2535,7 +2535,10 @@ return;		/* It already has a kern==0 with everything */
 	for ( kp = isv ? sc1->vkerns : sc1->kerns; kp!=NULL && kp->sc!=sc2; kp = kp->next );
 	if ( kp==NULL && kern==0 )
     continue;
-	else if ( kp!=NULL ) {
+	if ( !isv )
+	    MMKern(sc1->parent,sc1,sc2,kp==NULL?kern:kern-kp->off,
+		    sli,kp);
+	if ( kp!=NULL ) {
 	    kp->off = kern;
 	    if ( sli!=-1 )
 		kp->sli = sli;
@@ -2586,6 +2589,70 @@ static void bVKernFromHKern(Context *c) {
     if ( c->a.argc!=1 )
 	error( c, "Wrong number of arguments" );
     FVVKernFromHKern(c->curfv);
+}
+
+/* **** MM menu **** */
+
+static void bMMInstanceNames(Context *c) {
+    int i;
+    MMSet *mm = c->curfv->sf->mm;
+
+    if ( c->a.argc!=1 )
+	error( c, "Wrong number of arguments");
+    else if ( mm==NULL )
+	error( c, "Not a multiple master font" );
+
+    c->return_val.type = v_arr;
+    c->return_val.u.aval = galloc(sizeof(Array));
+    c->return_val.u.aval->argc = mm->instance_count;
+    c->return_val.u.aval->vals = galloc(mm->instance_count*sizeof(Val));
+    for ( i=0; i<mm->instance_count; ++i ) {
+	c->return_val.u.aval->vals[i].type = v_str;
+	c->return_val.u.aval->vals[i].u.sval = copy(mm->instances[i]->fontname);
+    }
+}
+
+static void bMMWeightedName(Context *c) {
+    MMSet *mm = c->curfv->sf->mm;
+
+    if ( c->a.argc!=1 )
+	error( c, "Wrong number of arguments");
+    else if ( mm==NULL )
+	error( c, "Not a multiple master font" );
+
+    c->return_val.type = v_str;
+    c->return_val.u.sval = copy(mm->normal->fontname);
+}
+
+static void bMMChangeInstance(Context *c) {
+    int i;
+    MMSet *mm = c->curfv->sf->mm;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    else if ( mm==NULL )
+	error( c, "Not a multiple master font" );
+    else if ( c->a.vals[1].type==v_int ) {
+	if ( c->a.vals[1].u.ival==-1 )
+	    c->curfv->sf = mm->normal;
+	else if ( c->a.vals[1].u.ival<mm->instance_count )
+	    c->curfv->sf = mm->instances[ c->a.vals[1].u.ival ];
+	else
+	    error( c, "Mutilple Master instance index out of bounds" );
+    } else if ( c->a.vals[1].type==v_str ) {
+	if ( strcmp( mm->normal->fontname,c->a.vals[1].u.sval )==0 )
+	    c->curfv->sf = mm->normal;
+	else {
+	    for ( i=0; i<mm->instance_count; ++i )
+		if ( strcmp( mm->instances[i]->fontname,c->a.vals[1].u.sval )==0 ) {
+		    c->curfv->sf = mm->instances[i];
+	    break;
+		}
+	    if ( i==mm->instance_count )
+		errors( c, "No instance named", c->a.vals[1].u.sval );
+	}
+    } else
+	error( c, "Bad argument" );
 }
 
 /* **** CID menu **** */
@@ -3407,6 +3474,10 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SetVKern", bSetVKern },
     { "RemoveAllVKerns", bClearAllVKerns },
     { "VKernFromHKern", bVKernFromHKern },
+/* MM Menu */
+    { "MMInstanceNames", bMMInstanceNames },
+    { "MMWeightedName", bMMWeightedName },
+    { "MMChangeInstance", bMMChangeInstance },
 /* CID Menu */
     { "ConvertToCID", bConvertToCID },
     { "ConvertByCMap", bConvertByCMap },
@@ -3873,6 +3944,13 @@ static void handlename(Context *c,Val *val) {
 		val->type = v_str;
 		val->u.sval = copy(sf==NULL?"":
 			sf->filename!=NULL?sf->filename:sf->origname);
+	    } else if ( strcmp(name,"$mmcount")==0 ) {
+		if ( c->curfv==NULL ) error(c,"No current font");
+		if ( c->curfv->sf->mm==NULL )
+		    val->u.ival = 0;
+		else
+		    val->u.ival = c->curfv->sf->mm->instance_count;
+		val->type = v_int;
 	    } else if ( strcmp(name,"$curcid")==0 || strcmp(name,"$nextcid")==0 ||
 		    strcmp(name,"$firstcid")==0 ) {
 		if ( c->curfv==NULL ) error(c,"No current font");

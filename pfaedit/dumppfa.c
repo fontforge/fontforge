@@ -475,29 +475,39 @@ return( false );
 return( true );
 }
 
-static struct pschars *initsubrs(int needsflex) {
-    extern const uint8 *const subrs[4];
-    extern const int subrslens[4];
+static struct pschars *initsubrs(int needsflex,MMSet *mm) {
+    extern const uint8 *const subrs[10];
+    extern const int subrslens[10];
     int i;
     struct pschars *sub;
 
     sub = gcalloc(1,sizeof(struct pschars));
-    sub->cnt = 4;
-    sub->lens = galloc(4*sizeof(int));
-    sub->values = galloc(4*sizeof(uint8 *));
-    for ( i=0; i<4; ++i ) {
+    sub->cnt = 10;
+    sub->lens = galloc(10*sizeof(int));
+    sub->values = galloc(10*sizeof(uint8 *));
+    for ( i=0; i<5; ++i ) {
 	++sub->next;
 	sub->values[i] = (uint8 *) copyn((const char *) subrs[i],subrslens[i]);
 	sub->lens[i] = subrslens[i];
+    }
+    if ( mm!=NULL ) {
+	static int cnts[] = { 1,2,3,4,6 };
+	for ( ; i<10 && cnts[i-5]*mm->instance_count<22; ++i ) {
+	    ++sub->next;
+	    sub->values[i] = (uint8 *) copyn((const char *) subrs[i],subrslens[i]);
+	    sub->values[i][0] += cnts[i-5]*mm->instance_count;
+	    sub->lens[i] = subrslens[i];
+	}
     }
 return( sub );
 }
 
 static void dumpothersubrs(void (*dumpchar)(int ch,void *data), void *data,
-	int incid, int needsflex, int needscounters ) {
+	int incid, int needsflex, int needscounters, MMSet *mm ) {
     extern const char *othersubrs[];
     extern const char *othersubrsnoflex[];
     extern const char *othersubrscounters[];
+    extern const char *othersubrsnocounters[];
     extern const char *othersubrsend[];
     extern const char *cid_othersubrs[];
     int i;
@@ -515,7 +525,41 @@ static void dumpothersubrs(void (*dumpchar)(int ch,void *data), void *data,
                 dumpstr(dumpchar,data,othersubrscounters[i]);
                 dumpchar('\n',data);
             }
-        }
+        } else if ( mm!=NULL ) {
+	    for ( i=0; othersubrsnocounters[i]!=NULL; ++i ) {
+                dumpstr(dumpchar,data,othersubrsnocounters[i]);
+                dumpchar('\n',data);
+            }
+	}
+	if ( mm!=NULL ) {
+	    /* the code for the multiple master subroutines depends on */
+	    /*  the number of font instances, so we can't just blithely copy */
+	    /*  an example from Adobe (and they don't provide one anyway) */
+	    dumpf(dumpchar, data, "{ %d 1 roll $Blend } bind\n", mm->instance_count );
+	    if ( 2*mm->instance_count<22 )
+		dumpf(dumpchar, data, "{ exch %d %d roll $Blend exch %d 2 roll $Blend } bind\n",
+		    2*mm->instance_count, 1-mm->instance_count,
+		    mm->instance_count+1);
+	    if ( 3*mm->instance_count<22 )
+		dumpf(dumpchar, data, "{ 3 -1 roll %d %d roll $Blend 3 -1 roll %d %d roll $Blend 3 -1 roll %d 2 roll $Blend } bind\n",
+		    3*mm->instance_count, 1-mm->instance_count,
+		    2*mm->instance_count+1, 1-mm->instance_count,
+		    mm->instance_count+2);
+	    if ( 4*mm->instance_count<22 )
+		dumpf(dumpchar, data, "{ 4 -1 roll %d %d roll $Blend 4 -1 roll %d %d roll $Blend 4 -1 roll %d %d roll $Blend 4 -1 roll %d 3 roll $Blend } bind\n",
+		    4*mm->instance_count, 1-mm->instance_count,
+		    3*mm->instance_count+1, 1-mm->instance_count,
+		    2*mm->instance_count+2, 1-mm->instance_count,
+		    mm->instance_count+3);
+	    if ( 6*mm->instance_count<22 )
+		dumpf(dumpchar, data, "{ 6 -1 roll %d %d roll $Blend 6 -1 roll %d %d roll $Blend 6 -1 roll %d %d roll $Blend 6 -1 roll %d %d roll $Blend 6 -1 roll %d %d roll $Blend 6 -1 roll %d 5 roll $Blend } bind\n",
+		    6*mm->instance_count, 1-mm->instance_count,
+		    5*mm->instance_count+1, 1-mm->instance_count,
+		    4*mm->instance_count+2, 1-mm->instance_count,
+		    3*mm->instance_count+3, 1-mm->instance_count,
+		    2*mm->instance_count+4, 1-mm->instance_count,
+		    mm->instance_count+5);
+	}
         for ( i=0; othersubrsend[i]!=NULL; ++i ) {
             dumpstr(dumpchar,data,othersubrsend[i]);
             dumpchar('\n',data);
@@ -524,8 +568,81 @@ static void dumpothersubrs(void (*dumpchar)(int ch,void *data), void *data,
     dumpstr(dumpchar,data,incid?"def\n":"ND\n" );
 }
 
+static char *dumptospace(void (*dumpchar)(int ch,void *data), void *data,
+	char *str) {
+
+    while ( *str!=' ' && *str!=']' && *str!='\0' )
+	dumpchar(*str++,data);
+return( str );
+}
+
+static void dumpmmprivatearr(void (*dumpchar)(int ch,void *data), void *data,
+	char *privates[16], int instance_count) {
+    int j;
+
+    for ( j=0; j<instance_count; ++j )
+	while ( *privates[j]==' ' ) ++privates[j];
+
+    dumpchar('[',data);
+    if ( *privates[0]=='[' ) {
+	/* It's an array */
+	for ( j=0; j<instance_count; ++j )
+	    ++privates[j];
+	while ( *privates[0]!=']' && *privates[0]!='\0' ) {
+	    for ( j=0; j<instance_count; ++j )
+		while ( *privates[j]==' ' ) ++privates[j];
+	    if ( *privates[0]==']' || *privates[0]=='\0' )
+	break;
+	    dumpchar('[',data);
+	    privates[0] = dumptospace(dumpchar,data,privates[0]);
+	    for ( j=1; j<instance_count; ++j ) {
+		dumpchar(' ',data);
+		privates[j] = dumptospace(dumpchar,data,privates[j]);
+	    }
+	    dumpchar(']',data);
+	}
+    } else {
+	/* It's not an array */
+	dumpstr(dumpchar,data,privates[0]);
+	for ( j=1; j<instance_count; ++j ) {
+	    dumpchar(' ',data);
+	    dumpstr(dumpchar,data,privates[j]);
+	}
+    }
+    dumpchar(']',data);
+}
+
+static void dumpmmprivate(void (*dumpchar)(int ch,void *data), void *data,MMSet *mm) {
+    char *privates[16];
+    int j,k, missing, allsame;
+    struct psdict *private = mm->instances[0]->private;
+
+    if ( private==NULL )
+return;
+
+    dumpstr(dumpchar,data,"3 index /Blend get /Private get begin\n");
+    for ( k=0; k<private->next; ++k ) {
+	privates[0] = private->values[k];
+	missing = false; allsame = true;
+	for ( j=1; j<mm->instance_count; ++j ) {
+	    privates[j] = PSDictHasEntry(mm->instances[j]->private,private->keys[k]);
+	    if ( privates[j]==NULL ) {
+		missing = true;
+	break;
+	    } else if ( strcmp(privates[j],privates[0])!=0 )
+		allsame = false;
+	}
+	if ( missing || allsame )
+    continue;
+	dumpf(dumpchar,data," /%s ", private->keys[k]);
+	dumpmmprivatearr(dumpchar,data,privates,mm->instance_count);
+	dumpstr(dumpchar,data, " def\n" );
+    }
+    dumpstr(dumpchar,data,"end\n");
+}
+
 static int dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data,
-	SplineFont *sf, struct fddata *incid, int flags ) {
+	SplineFont *sf, struct fddata *incid, int flags, enum fontformat format ) {
     int cnt, mi;
     real bluevalues[14], otherblues[10];
     real snapcnt[12];
@@ -538,10 +655,11 @@ static int dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data,
     int iscjk;
     struct pschars *subrs, *chars;
     char *ND="def";
+    MMSet *mm = format==ff_mm ? sf->mm : NULL;
 
     if ( incid==NULL ) {
 	flex_max = SplineFontIsFlexible(sf,flags);
-	if ( (subrs = initsubrs(flex_max>0))==NULL )
+	if ( (subrs = initsubrs(flex_max>0,mm))==NULL )
 return( false );
 	iscjk = SFIsCJK(sf);
     } else {
@@ -599,7 +717,7 @@ return( false );
     if ( incid==NULL ) {
 	GProgressNextStage();
 	GProgressChangeLine1R(_STR_CvtPS);
-	if ( (chars = SplineFont2Chrs(sf,true,iscjk,subrs,flags))==NULL )
+	if ( (chars = SplineFont2Chrs(sf,true,iscjk,subrs,flags,format))==NULL )
 return( false );
 	GProgressNextStage();
 	GProgressChangeLine1R(_STR_SavingPSFont);
@@ -689,7 +807,11 @@ return( false );
 		dumpstr(dumpchar,data," def\n");
 	}
     }
-    dumpothersubrs(dumpchar,data,incid!=NULL,flex_max>0,iscjk);
+
+    if ( mm!=NULL )
+	dumpmmprivate(dumpchar,data,mm);
+
+    dumpothersubrs(dumpchar,data,incid!=NULL,flex_max>0,iscjk,mm);
     if ( incid!=NULL ) {
 	dumpf(dumpchar,data," /SubrMapOffset %d def\n", incid->subrmapoff );
 	dumpf(dumpchar,data," /SDBytes %d def\n", incid->sdbytes );
@@ -708,7 +830,8 @@ return( false );
 return( true );
 }
 
-static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, SplineFont *sf ) {
+static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, SplineFont *sf,
+	enum fontformat format) {
     int cnt;
 
     cnt = 0;
@@ -734,6 +857,8 @@ static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, Spline
 	++cnt;		/* descent */
 #endif
     }
+    if ( format==ff_mm )
+	cnt += 3;
 
     dumpf(dumpchar,data,"/FontInfo %d dict dup begin\n", cnt );
     if ( sf->subfontcnt==0 && sf->version )
@@ -772,6 +897,34 @@ static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, Spline
 	dumpf(dumpchar,data," /em %d def\n", sf->ascent+sf->descent );
 	dumpf(dumpchar,data," /descent %d def\n", sf->descent );
 #endif
+    }
+    if ( format==ff_mm ) {
+	MMSet *mm = sf->mm;
+	int j,k;
+
+	dumpstr(dumpchar,data," /BlendDesignPositions [" );
+	for ( j=0; j<mm->instance_count; ++j ) {
+	    dumpstr(dumpchar,data," [" );
+	    for ( k=0; k<mm->axis_count; ++k )
+		dumpf(dumpchar,data,"%g ", mm->positions[j*mm->axis_count+k]);
+	    dumpstr(dumpchar,data,"]" );
+	}
+	dumpstr(dumpchar,data," ] def\n" );
+
+	dumpstr(dumpchar,data," /BlendDesignMap [" );
+	for ( k=0; k<mm->axis_count; ++k ) {
+	    dumpstr(dumpchar,data," [" );
+	    for ( j=0; j<mm->axismaps[k].points; ++j )
+		dumpf(dumpchar,data,"[%g %g] ",
+			mm->axismaps[k].designs[j], mm->axismaps[k].blends[j]);
+	    dumpstr(dumpchar,data,"]" );
+	}
+	dumpstr(dumpchar,data," ] def\n" );
+
+	dumpstr(dumpchar,data," /BlendAxisTypes [" );
+	for ( k=0; k<mm->axis_count; ++k )
+	    dumpf(dumpchar,data,"/%s ", mm->axes[k]);
+	dumpstr(dumpchar,data," ] def\n" );
     }
     dumpstr(dumpchar,data,"end readonly def\n");
 }
@@ -838,6 +991,8 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 	++cnt;		/* chars */
     }
     if ( sf->xuid!=NULL ) ++cnt;
+    if ( format==ff_mm )
+	cnt += 7;
 
     if ( sf->uniqueid==0 )
 	uniqueid = 4000000 + (rand()&0x3ffff);
@@ -872,7 +1027,61 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 	    SFIncrementXUID(sf);
     }
     dumpf(dumpchar,data,"/PaintType %d def\n", 0/*fd->painttype*/ );
-    dumpfontinfo(dumpchar,data,sf);
+    if ( format==ff_mm ) {
+	MMSet *mm = sf->mm;
+	int j,k;
+	DBounds mb[16];
+	extern const char *mmfindfont[], *makeblendedfont[];
+
+	dumpstr(dumpchar,data," /WeightVector [" );
+	for ( j=0; j<mm->instance_count; ++j ) {
+	    dumpf(dumpchar,data,"%g ", mm->defweights[j]);
+	}
+	dumpstr(dumpchar,data," ] def\n" );
+
+	dumpstr(dumpchar,data," /$Blend {" );
+	if ( mm->instance_count==2 )
+	    dumpf(dumpchar,data,"%g mul add", mm->defweights[1]);
+	else {
+	    dumpf(dumpchar,data,"%g mul exch", mm->defweights[1]);
+	    for ( j=2; j<mm->instance_count-1; ++j )
+		dumpf(dumpchar,data,"%g mul add exch", mm->defweights[j]);
+	    dumpf(dumpchar,data,"%g mul add add", mm->defweights[j]);
+	}
+	dumpstr(dumpchar,data," } bind def\n" );
+
+	dumpstr(dumpchar,data," /Blend 3 dict dup begin" );
+	for ( j=0; j<mm->instance_count; ++j )
+	    SplineFontFindBounds(sf,&mb[j]);
+	dumpstr(dumpchar,data,"  /FontBBox{" );
+	for ( k=0; k<4; ++k ) {
+	    dumpstr(dumpchar,data,"{" );
+	    for ( j=0; j<mm->instance_count; ++j )
+		dumpf(dumpchar,data,"%g ", k==0 ? floor(mb[j].minx) :
+					   k==1 ? floor(mb[j].miny) :
+					   k==2 ? ceil(mb[j].maxx) :
+						  ceil(mb[j].maxy));
+	    dumpstr(dumpchar,data,"}" );
+	}
+	dumpstr(dumpchar,data,"} def\n" );
+
+	dumpf(dumpchar,data,"  /Private %d dict def", sf->private->next+10 );
+	dumpstr(dumpchar,data," end def		%End of Blend dict\n" );
+
+	dumpstr(dumpchar,data," /NormalizeDesignVector {\n" );
+	dumpstr(dumpchar,data, mm->ndv );
+	dumpstr(dumpchar,data," } bind def\n" );
+
+	dumpstr(dumpchar,data," /ConvertDesignVector {\n" );
+	dumpstr(dumpchar,data, mm->cdv );
+	dumpstr(dumpchar,data," } bind def\n" );
+
+	for ( j=0; makeblendedfont[j]!=NULL; ++j )
+	    dumpstr(dumpchar,data,makeblendedfont[j]);
+	for ( j=0; makeblendedfont[j]!=NULL; ++j )
+	    dumpstr(dumpchar,data,mmfindfont[j]);
+    }
+    dumpfontinfo(dumpchar,data,sf,format);
 
     for ( i=0; i<256 && i<sf->charcnt; ++i )
 	if ( SCWorthOutputting(sf->chars[i]) )
@@ -919,7 +1128,7 @@ static void dumpencodedstuff(void (*dumpchar)(int ch,void *data), void *data,
     void (*func)(int ch,void *data);
 
     func = startfileencoding(dumpchar,data,&fed,format==ff_pfb);
-    dumpprivatestuff(func,&fed,sf,NULL,flags);
+    dumpprivatestuff(func,&fed,sf,NULL,flags,format);
     if ( format==ff_ptype0 ) {
 	dumpstr(func,&fed, "/" );
 	dumpstr(func,&fed, sf->fontname );
@@ -1142,7 +1351,7 @@ static FILE *gencidbinarydata(SplineFont *cidmaster,struct cidbytes *cidbytes,in
 	sf = cidmaster->subfonts[i];
 	fd = &cidbytes->fds[i];
 	fd->flexmax = SplineFontIsFlexible(sf,flags);
-	fd->subrs = initsubrs(fd->flexmax>0);
+	fd->subrs = initsubrs(fd->flexmax>0,NULL);
 	if ( fd->subrs==NULL ) {
 	    int j;
 	    for ( j=0; j<i; ++j )
@@ -1303,7 +1512,7 @@ static int dumpcidstuff(FILE *out,SplineFont *cidmaster,int flags) {
 	/* SFIncrementXUID(cidmaster); */ /* Unique ID managment in CID fonts is too complex for this simple trick to work */
     }
 
-    dumpfontinfo((DumpChar) fputc,out,cidmaster);
+    dumpfontinfo((DumpChar) fputc,out,cidmaster,ff_cid);
 
     if ((binary = gencidbinarydata(cidmaster,&cidbytes,flags))==NULL )
 return( 0 );
@@ -1330,7 +1539,7 @@ return( 0 );
 		factor, factor );
 	fprintf( out, "  /PaintType 0 def\n" );
 	fprintf( out, "\n  %%ADOBeginPrivateDict\n" );
-	dumpprivatestuff((DumpChar) fputc,out,sf,&cidbytes.fds[i],flags);
+	dumpprivatestuff((DumpChar) fputc,out,sf,&cidbytes.fds[i],flags,ff_cid);
 	fprintf( out, "\n  %%ADOEndPrivateDict\n" );
 	fprintf( out, "  currentdict end\n%%ADOEndFontDict\n put\n\n" );
     }
@@ -1359,6 +1568,8 @@ int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags) {
 
     /* make sure that all reals get output with '.' for decimal points */
     oldloc = setlocale(LC_NUMERIC,"C");
+    if ( format==ff_mm && sf->mm!=NULL )
+	sf = sf->mm->normal;
     if ( format==ff_cid )
 	err = !dumpcidstuff(out,sf->subfontcnt>0?sf:sf->cidmaster,flags);
     else {

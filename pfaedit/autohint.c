@@ -956,6 +956,37 @@ static real EIFigurePos(EI *e,int other, int *hadpt ) {
 return( val );
 }
 
+static HintInstance *HIMerge(HintInstance *into, HintInstance *hi) {
+    HintInstance *n, *first = NULL, *last;
+
+    while ( into!=NULL && hi!=NULL ) {
+	if ( into->begin<hi->begin ) {
+	    n = into;
+	    into = into->next;
+	} else {
+	    n = hi;
+	    hi = hi->next;
+	}
+	if ( first==NULL )
+	    first = n;
+	else
+	    last->next = n;
+	last = n;
+    }
+    if ( into!=NULL ) {
+	if ( first==NULL )
+	    first = into;
+	else
+	    last->next = into;
+    } else if ( hi!=NULL ) {
+	if ( first==NULL )
+	    first = hi;
+	else
+	    last->next = hi;
+    }
+return( first );
+}
+
 StemInfo *HintCleanup(StemInfo *stem,int dosort) {
     StemInfo *s, *p=NULL, *t, *pt, *sn;
 
@@ -996,6 +1027,8 @@ StemInfo *HintCleanup(StemInfo *stem,int dosort) {
 	if ( stem!=NULL ) for ( p=stem, s=stem->next; s!=NULL; s = sn ) {
 	    sn = s->next;
 	    if ( p->start==s->start && p->width==s->width ) {
+		p->where = HIMerge(p->where,s->where);
+		s->where = NULL;
 		p->next = sn;
 		StemInfoFree(s);
 	    } else
@@ -2479,37 +2512,6 @@ HintInstance *HICopyTrans(HintInstance *hi, real mul, real offset) {
 return( first );
 }
 
-static HintInstance *HIMerge(HintInstance *into, HintInstance *hi) {
-    HintInstance *n, *first = NULL, *last;
-
-    while ( into!=NULL && hi!=NULL ) {
-	if ( into->begin<hi->begin ) {
-	    n = into;
-	    into = into->next;
-	} else {
-	    n = hi;
-	    hi = hi->next;
-	}
-	if ( first==NULL )
-	    first = n;
-	else
-	    last->next = n;
-	last = n;
-    }
-    if ( into!=NULL ) {
-	if ( first==NULL )
-	    first = into;
-	else
-	    last->next = into;
-    } else if ( hi!=NULL ) {
-	if ( first==NULL )
-	    first = hi;
-	else
-	    last->next = hi;
-    }
-return( first );
-}
-
 static int inhints(StemInfo *stems,real base, real width) {
 
     while ( stems!=NULL ) {
@@ -2830,18 +2832,20 @@ static StemInfo *SCFindStems(EIList *el, int major, int removeOverlaps,DStemInfo
 return( stems );
 }
 
-static HintInstance *SCGuessHintPoints(SplineChar *sc, StemInfo *stem,int major) {
+static HintInstance *SCGuessHintPoints(SplineChar *sc, StemInfo *stem,int major, int off) {
     SplinePoint *starts[20], *ends[20];
     int spt=0, ept=0;
     SplinePointList *spl;
     SplinePoint *sp, *np;
     int sm, wm, i, j, val;
+    real coord;
     HintInstance *head, *test, *cur, *prev;
 
     for ( spl=sc->splines; spl!=NULL; spl=spl->next ) {
 	for ( sp=spl->first; ; sp = np ) {
-	    sm = (major?sp->me.x:sp->me.y)==stem->start;
-	    wm = (major?sp->me.x:sp->me.y)==stem->start+stem->width;
+	    coord = (major?sp->me.x:sp->me.y);
+	    sm = coord>=stem->start-off && coord<=stem->start+off;
+	    wm = coord>=stem->start+stem->width-off && coord<=stem->start+stem->width+off;
 	    if ( sm && spt<20 )
 		starts[spt++] = sp;
 	    if ( wm && ept<20 )
@@ -2858,10 +2862,10 @@ static HintInstance *SCGuessHintPoints(SplineChar *sc, StemInfo *stem,int major)
     for ( i=0; i<spt; ++i ) {
 	val = 0x80000000;
 	for ( j=0; j<ept; ++j ) {
-	    if ( major && starts[i]->me.y==ends[j]->me.y ) {
+	    if ( major && starts[i]->me.y>=ends[j]->me.y-1 && starts[i]->me.y<=ends[j]->me.y+1 ) {
 		val = starts[i]->me.y;
 	break;
-	    } else if ( !major && starts[i]->me.x==ends[j]->me.x ) {
+	    } else if ( !major && starts[i]->me.x>=ends[j]->me.x-1 && starts[i]->me.x<=ends[j]->me.x+1 ) {
 		val = starts[i]->me.x;
 	break;
 	    }
@@ -2883,7 +2887,7 @@ return( head );
 static void SCGuessHintInstances(SplineChar *sc, StemInfo *stem,int major) {
     SplinePointList *spl;
     SplinePoint *sp, *np;
-    int sm, wm;
+    int sm, wm, off;
     real ob, oe;
     HintInstance *s=NULL, *w=NULL, *cur, *p, *t, *n, *w2;
     /* We've got a hint (from somewhere, old data, reading in a font, user specified etc.) */
@@ -3005,8 +3009,10 @@ static void SCGuessHintInstances(SplineChar *sc, StemInfo *stem,int major) {
     /* If we couldn't find anything, then see if there are two points which */
     /*  have the same x or y value and whose other coordinates match those of */
     /*  the hint */
-    if ( s==NULL )
-	s = SCGuessHintPoints(sc,stem,major);
+    /* Surprisingly many fonts have hints which don't accurately match the */
+    /*  points. Perhaps BlueFuzz (default 1) applies here too */
+    for ( off=0; off<1 && s==NULL; ++off )
+	s = SCGuessHintPoints(sc,stem,major,off);
 
     stem->where = s;
 }
@@ -3738,6 +3744,9 @@ static int _SplineCharIsFlexible(SplineChar *sc, int blueshift) {
     SplinePoint *sp, *np, *pp;
     int max=0, val;
 
+    if ( sc==NULL )
+return(false);
+
     for ( spl = sc->splines; spl!=NULL; spl=spl->next ) {
 	if ( spl->first->prev==NULL ) {
 	    /* Mark everything on the open path as inflexible */
@@ -3801,9 +3810,62 @@ static int _SplineCharIsFlexible(SplineChar *sc, int blueshift) {
 return( max );
 }
 
+static int MatchFlexes(MMSet *mm,int enc) {
+    int any=false, i;
+    SplineSet *spl[16];
+    SplinePoint *sp[16];
+    int mismatchx, mismatchy;
+
+    for ( i=0; i<mm->instance_count; ++i )
+	if ( enc<mm->instances[i]->charcnt && mm->instances[i]->chars[enc]!=NULL )
+	    spl[i] = mm->instances[i]->chars[enc]->splines;
+	else
+	    spl[i] = NULL;
+    while ( spl[0]!=NULL ) {
+	for ( i=0; i<mm->instance_count; ++i )
+	    if ( spl[i]!=NULL )
+		sp[i] = spl[i]->first;
+	    else
+		sp[i] = NULL;
+	while ( sp[0]!=NULL ) {
+	    mismatchx = mismatchy = false;
+	    for ( i=1 ; i<mm->instance_count; ++i ) {
+		if ( sp[i]==NULL )
+		    mismatchx = mismatchy = true;
+		else {
+		    if ( sp[i]->flexx != sp[0]->flexx )
+			mismatchx = true;
+		    if ( sp[i]->flexy != sp[0]->flexy )
+			mismatchy = true;
+		}
+	    }
+	    if ( mismatchx || mismatchy ) {
+		for ( i=0 ; i<mm->instance_count; ++i ) if ( sp[i]!=NULL ) {
+		    if ( mismatchx ) sp[i]->flexx = false;
+		    if ( mismatchy ) sp[i]->flexy = false;
+		}
+	    }
+	    if ( sp[0]->flexx || sp[0]->flexy )
+		any = true;
+	    for ( i=0 ; i<mm->instance_count; ++i ) if ( sp[i]!=NULL ) {
+		if ( sp[i]->next==NULL ) sp[i] = NULL;
+		else sp[i] = sp[i]->next->to;
+	    }
+	    if ( sp[0] == spl[0]->first )
+	break;
+	}
+	for ( i=0; i<mm->instance_count; ++i )
+	    if ( spl[i]!=NULL )
+		spl[i] = spl[i]->next;
+    }
+return( any );
+}
+
 int SplineCharIsFlexible(SplineChar *sc) {
     char *pt;
     int blueshift;
+    int i;
+    MMSet *mm;
 
     pt = PSDictHasEntry(sc->parent->private,"BlueShift");
     blueshift = 7;		/* use default value here */
@@ -3812,7 +3874,14 @@ int SplineCharIsFlexible(SplineChar *sc) {
 	if ( blueshift>21 ) blueshift = 21;
     } else if ( PSDictHasEntry(sc->parent->private,"BlueValues")!=NULL )
 	blueshift = 7;
+    if ( sc->parent->mm==NULL )
 return( _SplineCharIsFlexible(sc,blueshift));
+
+    mm = sc->parent->mm;
+    for ( i = 0; i<mm->instance_count; ++i )
+	if ( sc->enc<mm->instances[i]->charcnt && mm->instances[i]->chars[sc->enc]!=NULL )
+	    _SplineCharIsFlexible(mm->instances[i]->chars[sc->enc],blueshift);
+return( MatchFlexes(mm,sc->enc));	
 }
 
 static void SCUnflex(SplineChar *sc) {

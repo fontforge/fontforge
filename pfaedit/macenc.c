@@ -596,7 +596,7 @@ static unichar_t *macencodings[] = {
 	hebrew,
 	greek,
 	cyrillic,
-	NULL,
+	NULL,		/* rsymbol, whatever that is */
 	devanagari,
 /*10*/	gurmukhi,
 	gujarati,

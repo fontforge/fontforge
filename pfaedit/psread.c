@@ -2218,6 +2218,131 @@ return;		/* The "path" is just a single point created by a moveto */
     }
 }
 
+static void ExtendActiveHints(StemInfo *hints,double val) {
+    while ( hints!=NULL ) {
+	if ( hints->where->begin>val ) hints->where->begin = val;
+	if ( hints->where->end<val ) hints->where->end = val;
+	hints = hints->next;
+    }
+}
+
+static StemInfo *HintsAppend(StemInfo *to,StemInfo *extra) {
+    StemInfo *h;
+
+    if ( to==NULL )
+return( extra );
+    if ( extra==NULL )
+return( to );
+    for ( h=to; h->next!=NULL; h=h->next );
+    h->next = extra;
+return( to );
+}
+
+static HintInstance *HINew(HintInstance *old) {
+    HintInstance *hi;
+
+    hi = chunkalloc(sizeof(HintInstance));
+    hi->next = old;
+    hi->begin = 10000;
+    hi->end = -10000;
+return( hi );
+}
+
+static StemInfo *HintNew(double start,double width) {
+    StemInfo *h;
+
+    h = chunkalloc(sizeof(StemInfo));
+    h->start = start;
+    h->width = width;
+    h->where = HINew(NULL);
+return( h );
+}
+
+static void HICleanup(StemInfo *hints) {
+    HintInstance *hi, *p, *n, *rest, *last, *best, *bestp;
+
+    while ( hints!=NULL ) {
+	p = NULL;
+	for ( hi=hints->where; hi!=NULL; hi = n ) {
+	    n = hi->next;
+	    if ( hi->begin == 10000 && hi->end==-10000 ) {
+		if ( p==NULL )
+		    hints->where = n;
+		else
+		    p->next = n;
+		chunkfree(hi,sizeof(*hi));
+	    } else
+		p = hi;
+	}
+	if ( hints->where!=NULL && hints->where->next!=NULL ) {
+	    rest = hints->where; last = NULL;
+	    while ( rest!=NULL ) {
+		best = rest;
+		bestp = NULL;
+		p = rest;
+		for ( hi=rest->next; hi!=NULL; p=hi, hi=hi->next )
+		    if ( hi->begin<best->begin ) {
+			best = hi;
+			bestp = p;
+		    }
+		if ( last==NULL )
+		    hints->where = best;
+		else
+		    last->next = best;
+		last = best;
+		if ( bestp==NULL )
+		    rest = best->next;
+		else
+		    bestp->next = best->next;
+	    }
+	}
+	hints = hints->next;
+    }
+}
+
+static void FindActives(SplineChar *ret,StemInfo **activeh,StemInfo **activev,
+	uint8 *type1,int hint_cnt ) {
+    int i;
+    StemInfo *h, *p;
+    StemInfo *ah = *activeh, *av = *activev;
+
+    for ( i=0; i<hint_cnt; ++i ) {
+	if ( type1[i>>3]&(0x80>>(i&7)) ) {
+	    p = NULL;
+	    for ( h=ret->hstem; h!=NULL; p=h, h=h->next )
+		if ( h->hintnumber == i )
+	    break;
+	    if ( h!=NULL ) {
+		if ( p==NULL )
+		    ret->hstem = h->next;
+		else
+		    p->next = h->next;
+		h->next = ah;
+		h->where = HINew(h->where);
+		ah = h;
+	    } else {
+		p = NULL;
+		for ( h=ret->vstem; h!=NULL; p=h, h=h->next )
+		    if ( h->hintnumber == i )
+		break;
+		if ( h!=NULL ) {
+		    if ( p==NULL )
+			ret->vstem = h->next;
+		    else
+			p->next = h->next;
+		    h->next = av;
+		    h->where = HINew(h->where);
+		    av = h;
+		} else {
+		    fprintf( stderr, "Failed to find hint %d\n", i );
+		}
+	    }
+	}
+    }
+    *activeh = ah;
+    *activev = av;
+}
+
 /* this handles either Type1 or Type2 charstrings. Type2 charstrings have */
 /*  more operators than Type1s and the old operators have extended meanings */
 /*  (ie. the rlineto operator can produce more than one line). But pretty */
@@ -2225,8 +2350,9 @@ return;		/* The "path" is just a single point created by a moveto */
 /*  we'll get it right */
 /* Char width is done differently. Moveto starts a newpath. 0xff starts a 16.16*/
 /*  number rather than a 32 bit number */
-SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
+SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *context,
 	struct pschars *subrs, struct pschars *gsubrs, const char *name) {
+    int is_type2 = context->is_type2;
     real stack[50]; int sp=0, v;		/* Type1 stack is about 25 long, Type2 stack is 48 */
     real transient[32];
     SplineChar *ret = SplineCharCreate();
@@ -2245,6 +2371,8 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
     real coord;
     struct pschars *s;
     int hint_cnt = 0;
+    StemInfo *activeh=NULL, *activev=NULL;
+    int moved = false;
 
     ret->name = copy( name );
     ret->unicodeenc = -1;
@@ -2259,6 +2387,10 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	    sp = 48;
 	}
 	base = 0;
+	if ( moved ) {
+	    ExtendActiveHints(activeh,current.x);
+	    ExtendActiveHints(activev,current.y);
+	}
 	--len;
 	if ( (v = *type1++)>=32 ) {
 	    if ( v<=246) {
@@ -2301,46 +2433,30 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	      break;
 	      case 1: /* vstem3 */	/* specifies three v hints zones at once */
 		if ( sp<6 ) fprintf(stderr, "Stack underflow on vstem3 in %s\n", name );
-		hint = chunkalloc(sizeof(StemInfo));
-		hint->start = stack[0] + ret->lsidebearing;
-		hint->width = stack[1];
-		if ( ret->vstem==NULL )
-		    ret->vstem = hp = hint;
+		hint = HintNew(stack[0] + ret->lsidebearing,stack[1]);
+		if ( activev==NULL )
+		    activev = hp = hint;
 		else {
-		    for ( hp=ret->vstem; hp->next!=NULL; hp = hp->next );
+		    for ( hp=activev; hp->next!=NULL; hp = hp->next );
 		    hp->next = hint;
 		    hp = hint;
 		}
-		hint = chunkalloc(sizeof(StemInfo));
-		hint->start = stack[2] + ret->lsidebearing;
-		hint->width = stack[3];
-		hp->next = hint; hp = hint;
-		hint = chunkalloc(sizeof(StemInfo));
-		hint->start = stack[4] + ret->lsidebearing;
-		hint->width = stack[5];
-		hp->next = hint; 
+		hp->next = HintNew(stack[2] + ret->lsidebearing,stack[3]);
+		hp->next->next = HintNew(stack[4] + ret->lsidebearing,stack[5]);
 		sp = 0;
 	      break;
 	      case 2: /* hstem3 */	/* specifies three h hints zones at once */
 		if ( sp<6 ) fprintf(stderr, "Stack underflow on hstem3 in %s\n", name );
-		hint = chunkalloc(sizeof(StemInfo));
-		hint->start = stack[0];
-		hint->width = stack[1];
-		if ( ret->hstem==NULL )
-		    ret->hstem = hp = hint;
+		hint = HintNew(stack[0],stack[1]);
+		if ( activeh==NULL )
+		    activeh = hp = hint;
 		else {
-		    for ( hp=ret->hstem; hp->next!=NULL; hp = hp->next );
+		    for ( hp=activeh; hp->next!=NULL; hp = hp->next );
 		    hp->next = hint;
 		    hp = hint;
 		}
-		hint = chunkalloc(sizeof(StemInfo));
-		hint->start = stack[2];
-		hint->width = stack[3];
-		hp->next = hint; hp = hint;
-		hint = chunkalloc(sizeof(StemInfo));
-		hint->start = stack[4];
-		hint->width = stack[5];
-		hp->next = hint; 
+		hp->next = HintNew(stack[2],stack[3]);
+		hp->next->next = HintNew(stack[4],stack[5]);
 		sp = 0;
 	      break;
 	      case 6: /* seac */	/* build accented characters */
@@ -2361,6 +2477,11 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		r1->transform[0] = 1; r1->transform[3]=1;
 		r1->adobe_enc = stack[3];
 		r2->adobe_enc = stack[4];
+		if ( stack[3]<0 || stack[3]>=256 || stack[4]<0 || stack[4]>=256 ) {
+		    fprintf( stderr, "Reference encoding out of bounds in %s\n", name );
+		    r1->adobe_enc = 0;
+		    r2->adobe_enc = 0;
+		}
 		r1->next = r2;
 		if ( rlast!=NULL ) rlast->next = r1;
 		else ret->refs = r1;
@@ -2436,14 +2557,17 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		    fprintf(stderr, "Stack underflow on callothersubr in %s\n", name );
 		    sp = 0;
 		} else {
-		    int tot = stack[sp-2], k;
+		    int tot = stack[sp-2], i, k, j;
 		    popsp = 0;
 		    for ( k=sp-3; k>=sp-2-tot; --k )
 			pops[popsp++] = stack[k];
 		    /* othersubrs 0-3 must be interpretted. 0-2 are Flex, 3 is Hint Replacement */
 		    /* othersubrs 12,13 are for counter hints. We don't need to */
 		    /*  do anything to ignore them */
-		    if ( stack[sp-1]==3 ) {
+		    /* Subroutines 14-18 are multiple master blenders. We need */
+		    /*  to pay attention to them too */
+		    switch ( (int) stack[sp-1] ) {
+		      case 3: {
 			/* when we weren't capabable of hint replacement we */
 			/*  punted by putting 3 on the stack (T1 spec page 70) */
 			/*  subroutine 3 is a noop */
@@ -2451,7 +2575,10 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 			ret->manualhints = false;
 			/* We can manage hint substitution from hintmask though*/
 			/*  well enough that we needn't clear the manualhints bit */
-		    } else if ( stack[sp-1]==1 ) {
+			ret->hstem = HintsAppend(ret->hstem,activeh); activeh=NULL;
+			ret->vstem = HintsAppend(ret->vstem,activev); activev=NULL;
+		      } break;
+		      case 1: {
 			/* We punt for flex too. This is a bit harder */
 			/* Essentially what we want to do is draw a line from */
 			/*  where we are at the beginning to where we are at */
@@ -2467,9 +2594,11 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 			oldcurrent = current;
 			oldcur = cur;
 			cur->next = NULL;
-		    } else if ( stack[sp-1]==2 )
+		      } break;
+		      case 2: {
 			/* No op */;
-		    else if ( stack[sp-1]==0 ) {
+		      } break;
+		      case 0: {
 			SplinePointList *spl = oldcur->next;
 			if ( spl!=NULL && spl->next!=NULL &&
 				spl->next->next!=NULL &&
@@ -2523,6 +2652,29 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 			cur->next = NULL;
 			SplinePointListFree(spl);
 			oldcur = NULL;
+		      } break;
+		      case 14: 		/* results in 1 blended value */
+		      case 15:		/* results in 2 blended values */
+		      case 16:		/* results in 3 blended values */
+		      case 17:		/* results in 4 blended values */
+		      case 18: {	/* results in 6 blended values */
+			int cnt = stack[sp-1]-13;
+			if ( cnt==5 ) cnt=6;
+			if ( context->instance_count==0 )
+			    fprintf( stderr, "Attempt to use a multiple master subroutine in a non-mm font in %s.\n", name );
+			else if ( tot!=cnt*context->instance_count )
+			    fprintf( stderr, "Multiple master subroutine called with the wrong number of arguments in %s.\n", name );
+			else {
+			    popsp = 0;
+			    for ( i=0; i<cnt; ++i ) {
+				double sum = stack[sp-2-tot+ i];
+				for ( j=1; j<context->instance_count; ++j )
+				    sum += context->blend_values[j]*
+					    stack[sp-2-tot+ cnt +i*(context->instance_count-1)+ j-1];
+				pops[cnt-1-popsp++] = sum;
+			    }
+			}
+		      } break;
 		    }
 		    sp = k+1;
 		}
@@ -2536,7 +2688,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		}
 	      break;
 	      case 21: /* get */
-		if ( sp<1 ) fprintf(stderr, "Too few items on stack for put in %s\n", name );
+		if ( sp<1 ) fprintf(stderr, "Too few items on stack for get in %s\n", name );
 		else if ( stack[sp-1]<0 || stack[sp-1]>=32 ) fprintf(stderr,"Reference to transient memory out of bounds in put in %s\n", name );
 		else
 		    stack[sp-1] = transient[(int)stack[sp-1]];
@@ -2683,6 +2835,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		fprintf( stderr, "Uninterpreted opcode 12,%d in %s\n", v, name );
 	      break;
 	    }
+	    moved = true;
 	} else switch ( v ) {
 	  case 1: /* hstem */
 	  case 18: /* hstemhm */
@@ -2697,19 +2850,19 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	    /*	(actually relative to the y specified as lsidebearing y in sbw*/
 	    /* stack[1] is relative y for height of hint zone */
 	    coord = 0;
+	    hp = NULL;
+	    if ( activeh!=NULL )
+		for ( hp=activeh; hp->next!=NULL; hp = hp->next );
 	    while ( sp-base>=2 ) {
-		hint = chunkalloc(sizeof(StemInfo));
-		hint->start = stack[base]+coord;
-		hint->width = stack[base+1];
-		if ( ret->hstem==NULL )
-		    ret->hstem = hint;
-		else {
-		    for ( hp=ret->hstem; hp->next!=NULL; hp = hp->next );
+		hint = HintNew(stack[base]+coord,stack[base+1]);
+		hint->hintnumber = hint_cnt++;
+		if ( activeh==NULL )
+		    activeh = hint;
+		else
 		    hp->next = hint;
-		}
+		hp = hint;
 		base+=2;
 		coord = hint->start+hint->width;
-		++hint_cnt;
 	    }
 	    sp = 0;
 	  break;
@@ -2734,25 +2887,31 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		/* stack[0] is absolute x for start of vertical hint */
 		/*	(actually relative to the x specified as lsidebearing in h/sbw*/
 		/* stack[1] is relative x for height of hint zone */
-		coord = 0;
+		coord = ret->lsidebearing;
+		hp = NULL;
+		if ( activev!=NULL )
+		    for ( hp=activev; hp->next!=NULL; hp = hp->next );
 		while ( sp-base>=2 ) {
-		    hint = chunkalloc(sizeof(StemInfo));
-		    hint->start = stack[base] + coord + ret->lsidebearing;
-		    hint->width = stack[base+1];
-		    if ( ret->vstem==NULL )
-			ret->vstem = hint;
-		    else {
-			for ( hp=ret->vstem; hp->next!=NULL; hp = hp->next );
+		    hint = HintNew(stack[base]+coord,stack[base+1]);
+		    hint->hintnumber = hint_cnt++;
+		    if ( activev==NULL )
+			activev = hint;
+		    else
 			hp->next = hint;
-		    }
+		    hp = hint;
 		    base+=2;
 		    coord = hint->start+hint->width;
-		    ++hint_cnt;
 		}
 		sp = 0;
 	    }
 	    if ( v==19 || v==20 ) {		/* hintmask, cntrmask */
 		int bytes = (hint_cnt+7)/8;
+		if ( v==19 ) {
+		    ret->hstem = HintsAppend(ret->hstem,activeh); activeh=NULL;
+		    ret->vstem = HintsAppend(ret->vstem,activev); activev=NULL;
+		    FindActives(ret,&activeh,&activev,type1,hint_cnt);
+		    moved = false;
+		}
 		type1 += bytes;
 		len -= bytes;
 	    }
@@ -2776,6 +2935,8 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	    /*  In practice though, the EuroFont has a return statement after */
 	    /*  the endchar in a subroutine. So we won't try to catch that err*/
 	    /*  and just stop. */
+	    /* Adobe says it's not an error, but I can't understand their */
+	    /*  logic */
   goto done;
 	  break;
 	  case 13: /* hsbw (set left sidebearing and width) */
@@ -2792,6 +2953,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	  case 21: /* rmoveto */
 	  case 22: /* hmoveto */
 	  case 4: /* vmoveto */
+	    moved = true;
 	    if ( is_type2 ) {
 		if ( (v==21 && sp==3) || (v!=21 && sp==2)) {
 		    /* Character's width may be specified on the first moveto */
@@ -2809,6 +2971,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	  case 5: /* rlineto */
 	  case 6: /* hlineto */
 	  case 7: /* vlineto */
+	    moved = true;
 	    polarity = 0;
 	    while ( base<sp ) {
 		dx = dy = 0;
@@ -2871,6 +3034,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	  case 30: /* vhcurveto */
 	  case 27: /* hhcurveto */
 	  case 26: /* vvcurveto */
+	    moved = true;
 	    polarity = 0;
 	    while ( sp>base+2 ) {
 		dx = dy = dx2 = dy2 = dx3 = dy3 = 0;
@@ -2991,6 +3155,30 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		len = pcstack[pcsp].len;
 	    }
 	  break;
+	  case 16: { /* blend -- obsolete type 2 multiple master operator */
+	    int cnt,i,j;
+	    if ( context->instance_count==0 )
+		fprintf( stderr, "Attempt to use a multiple master subroutine in a non-mm font.\n" );
+	    else if ( sp<1 || sp<context->instance_count*stack[sp-1]+1 )
+		fprintf(stderr, "Too few items on stack for blend in %s\n", name );
+	    else {
+		if ( !context->blend_warn ) {
+		    fprintf( stderr, "Use of obsolete blend operator.\n" );
+		    context->blend_warn = true;
+		}
+		cnt = stack[sp-1];
+		sp -= context->instance_count*stack[sp-1]+1;
+		for ( i=0; i<cnt; ++i ) {
+		    for ( j=1; j<context->instance_count; ++j )
+			stack[sp+i] += context->blend_values[j]*stack[sp+
+				cnt+ i*(context->instance_count-1)+ j-1];
+		}
+		/* there will always be fewer pushes than there were pops */
+		/*  so I don't bother to check the stack */
+		sp += cnt;
+	    }
+	  }
+	  break;
 	  default:
 	    fprintf( stderr, "Uninterpreted opcode %d in %s\n", v, name );
 	  break;
@@ -3000,6 +3188,11 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
     if ( pcsp!=0 )
 	fprintf(stderr, "end of subroutine reached with no return in %s\n", name );
     SCCatagorizePoints(ret);
+
+    ret->hstem = HintsAppend(ret->hstem,activeh); activeh=NULL;
+    ret->vstem = HintsAppend(ret->vstem,activev); activev=NULL;
+    HICleanup(ret->hstem);
+    HICleanup(ret->vstem);
 
     /* Even in type1 fonts all paths should be closed. But if we close them at*/
     /*  the obvious moveto, that breaks flex hints. So we have a hack here at */
@@ -3011,14 +3204,16 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 
     /* For some reason, when I read splines in, I get their clockwise nature */
     /*  backwards ... at least backwards from fontographer ... so reverse 'em*/
+    /* Oh, I see. PS and TT disagree on which direction to use, so Fontographer*/
+    /*  chose the TT direction and we must reverse postscript */
     for ( cur = ret->splines; cur!=NULL; cur = cur->next )
 	SplineSetReverse(cur);
     if ( ret->hstem==NULL && ret->vstem==NULL )
 	ret->manualhints = false;
     ret->hstem = HintCleanup(ret->hstem,true);
     ret->vstem = HintCleanup(ret->vstem,true);
-    SCGuessHHintInstancesList(ret);
-    SCGuessVHintInstancesList(ret);
+    /*SCGuessHHintInstancesList(ret);*/
+    /*SCGuessVHintInstancesList(ret);*/
     ret->hconflicts = StemListAnyConflicts(ret->hstem);
     ret->vconflicts = StemListAnyConflicts(ret->vstem);
     if ( name!=NULL && strcmp(name,".notdef")!=0 )

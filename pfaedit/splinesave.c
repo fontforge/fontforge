@@ -88,21 +88,27 @@ static void GrowBuffer(GrowBuf *gb) {
     }
 }
 
-static int NumberHints(SplineChar *sc) {
-    int i;
+static int NumberHints(SplineChar *scs[16], int instance_count) {
+    int i,j, cnt=-1;
     StemInfo *s;
 
-    for ( s=sc->hstem, i=0; s!=NULL; s=s->next ) {
-	if ( i<96 )
-	    s->hintnumber = i++;
-	else
-	    s->hintnumber = -1;
-    }
-    for ( s=sc->vstem; s!=NULL; s=s->next ) {
-	if ( i<96 )
-	    s->hintnumber = i++;
-	else
-	    s->hintnumber = -1;
+    for ( j=0; j<instance_count; ++j ) {
+	for ( s=scs[j]->hstem, i=0; s!=NULL; s=s->next ) {
+	    if ( i<96 )
+		s->hintnumber = i++;
+	    else
+		s->hintnumber = -1;
+	}
+	for ( s=scs[j]->vstem; s!=NULL; s=s->next ) {
+	    if ( i<96 )
+		s->hintnumber = i++;
+	    else
+		s->hintnumber = -1;
+	}
+	if ( cnt==-1 )
+	    cnt = i;
+	else if ( cnt!=i )
+	    GDrawIError("MM font with different hint counts");
     }
 return( i );
 }
@@ -133,7 +139,11 @@ struct hintdb {
     int cnt;				/* number of hints */
     struct mhlist *sublist;
     struct pschars *subrs;
-    SplineChar *sc;
+    /*SplineChar *sc;*/
+    SplineChar **scs;
+    SplineChar *mostconflictedh, *mostconflictedv;
+    int mch, mcv;			/* Instance indeces */
+    int instance_count;
     unsigned int iscjk: 1;		/* If cjk then don't do stem3 hints */
 					/* Will be done with counters instead */
 	/* actually, most of the time we can't use stem3s, only if those three*/
@@ -185,51 +195,118 @@ static void AddNumber(GrowBuf *gb, real pos, int round) {
     gb->pt = str;
 }
 
-static int CvtPsStem3(GrowBuf *gb, StemInfo *h1, StemInfo *h2, StemInfo *h3, real off,
+/* When doing a multiple master font we have multiple instances of the same data */
+/*  which must all be added, and then a call made to the appropriate blend routine */
+/* This is complicated because all the data may not fit on the stack so we */
+/*  may need to make multiple calls */
+static void AddData(GrowBuf *gb, real data[16][6], int instances, int num_coords,
+	int round) {
+    int allsame = true, alls[6];
+    int i,j, chunk,min,max,subr;
+
+    for ( j=0; j<num_coords; ++j ) {
+	alls[j] = true;
+	for ( i=1; i<instances; ++i ) {
+	    if ( data[i][j]!=data[0][j] ) {
+		alls[j] = false;
+		allsame = false;
+	    break;
+	    }
+	}
+    }
+
+    if ( allsame ) {		/* No need for blending */
+				/*  Probably a normal font, but possible in an mm */
+	for ( j=0; j<num_coords; ++j )
+	    AddNumber(gb,data[0][j],round);
+return;
+    }
+
+    chunk = 22/instances;
+    if ( chunk == 5 ) chunk = 4;	/* No subroutine for 5 items */
+    min = 0;
+    while ( min<num_coords ) {
+	while ( min<num_coords && alls[min] ) {
+	    AddNumber(gb,data[0][min],round);
+	    ++min;
+	}
+	max = min+chunk;
+	if ( max>num_coords ) max = num_coords;
+	while ( max-1>min && alls[max-1] )
+	    --max;
+	if ( min<max ) {
+	    for ( j=min; j<max; ++j )
+		AddNumber(gb,data[0][j],round);
+	    for ( j=min; j<max; ++j )
+		for ( i=1; i<instances; ++i )
+		    AddNumber(gb,data[i][j]-data[0][j],round);
+	    subr = (j-min) + 4;
+	    if ( j-min==6 ) subr = 9;
+	    AddNumber(gb,subr,round);
+	    if ( gb->pt+1>=gb->end )
+		GrowBuffer(gb);
+	    *gb->pt++ = 10;			/* callsubr */
+	    min = j;
+	}
+    }
+}
+
+static int CvtPsStem3(GrowBuf *gb, SplineChar *scs[16], int instance_count,
 	int ishstem, int round) {
+    StemInfo *h1, *h2, *h3;
     StemInfo _h1, _h2, _h3;
+    real data[16][6];
+    int i;
+    real off;
 
-    if ( h1->width<0 ) {
-	_h1 = *h1;
-	_h1.start += _h1.width;
-	_h1.width = -_h1.width;
-	h1 = &_h1;
-    }
-    if ( h2->width<0 ) {
-	_h2 = *h2;
-	_h2.start += _h2.width;
-	_h2.width = -_h2.width;
-	h2 = &_h2;
-    }
-    if ( h3->width<0 ) {
-	_h3 = *h3;
-	_h3.start += _h3.width;
-	_h3.width = -_h3.width;
-	h3 = &_h3;
-    }
+    for ( i=0; i<instance_count; ++i ) {
+	h1 = ishstem ? scs[i]->hstem : scs[i]->vstem;
+	if ( h1==NULL || (h2 = h1->next)==NULL || (h3=h2->next)==NULL )
+return( false );
+	off = ishstem ? 0 : scs[i]->lsidebearing;
+	if ( h1->width<0 ) {
+	    _h1 = *h1;
+	    _h1.start += _h1.width;
+	    _h1.width = -_h1.width;
+	    h1 = &_h1;
+	}
+	if ( h2->width<0 ) {
+	    _h2 = *h2;
+	    _h2.start += _h2.width;
+	    _h2.width = -_h2.width;
+	    h2 = &_h2;
+	}
+	if ( h3->width<0 ) {
+	    _h3 = *h3;
+	    _h3.start += _h3.width;
+	    _h3.width = -_h3.width;
+	    h3 = &_h3;
+	}
 
-    if ( h1->start>h2->start ) {
-	StemInfo *ht = h1; h1 = h2; h2 = ht;
-    }
-    if ( h1->start>h3->start ) {
-	StemInfo *ht = h1; h1 = h3; h3 = ht;
-    }
-    if ( h2->start>h3->start ) {
-	StemInfo *ht = h2; h2 = h3; h3 = ht;
-    }
-    if ( h1->width != h3->width )
+	if ( h1->start>h2->start ) {
+	    StemInfo *ht = h1; h1 = h2; h2 = ht;
+	}
+	if ( h1->start>h3->start ) {
+	    StemInfo *ht = h1; h1 = h3; h3 = ht;
+	}
+	if ( h2->start>h3->start ) {
+	    StemInfo *ht = h2; h2 = h3; h3 = ht;
+	}
+	if ( h1->width != h3->width )
 return( false );
-    if ( (h2->start+h2->width/2) - (h1->start+h1->width/2) !=
-	    (h3->start+h3->width/2) - (h2->start+h2->width/2) )
+	if ( (h2->start+h2->width/2) - (h1->start+h1->width/2) !=
+		(h3->start+h3->width/2) - (h2->start+h2->width/2) )
 return( false );
-    if ( gb->pt+51>=gb->end )
+	data[i][0] = h1->start-off;
+	data[i][1] = h1->width;
+	data[i][2] = h2->start-off;
+	data[i][3] = h2->width;
+	data[i][4] = h3->start-off;
+	data[i][5] = h3->width;
+    }
+    AddData(gb,data,instance_count,6,round);
+    if ( gb->pt+3>=gb->end )
 	GrowBuffer(gb);
-    AddNumber(gb,h1->start-off,round);
-    AddNumber(gb,h1->width,round);
-    AddNumber(gb,h2->start-off,round);
-    AddNumber(gb,h2->width,round);
-    AddNumber(gb,h3->start-off,round);
-    AddNumber(gb,h3->width,round);
     *(gb->pt)++ = 12;
     *(gb->pt)++ = ishstem?2:1;				/* h/v stem3 */
 return( true );
@@ -251,47 +328,71 @@ static void HintDirection(StemInfo *h) {
     }
 }
 
-static void CvtPsHints(GrowBuf *gb, StemInfo *h, real off, int ishstem,
-	int round, int iscjk ) {
+static void CvtPsHints(GrowBuf *gb, SplineChar *scs[16], int instance_count,
+	int ishstem, int round, int iscjk, real *offsets ) {
+    StemInfo *hs[16];
+    real data[16][6];
+    int i;
+    real off;
 
-    if ( h!=NULL && h->next!=NULL && h->next->next!=NULL &&
-	    h->next->next->next==NULL )
-	if ( !iscjk && CvtPsStem3(gb, h, h->next, h->next->next, off, ishstem, round))
+    for ( i=0; i<instance_count; ++i )
+	hs[i] = ishstem ? scs[i]->hstem : scs[i]->vstem;
+
+    if ( hs[0]!=NULL && hs[0]->next!=NULL && hs[0]->next->next!=NULL &&
+	    hs[0]->next->next->next==NULL )
+	if ( !iscjk && CvtPsStem3(gb, scs, instance_count, ishstem, round))
 return;
 
-    while ( h!=NULL ) {
-	if ( h->backwards ) {
-	    AddNumber(gb,h->start-off+h->width,round);
-	    AddNumber(gb,-h->width,round);
-	} else {
-	    AddNumber(gb,h->start-off,round);
-	    AddNumber(gb,h->width,round);
+    while ( hs[0]!=NULL ) {
+	for ( i=0; i<instance_count; ++i ) {
+	    off = offsets!=NULL ? offsets[i] :
+		    ishstem ? 0 : scs[i]->lsidebearing;
+	    if ( hs[i]->backwards ) {
+		data[i][0] = hs[i]->start-off+hs[i]->width;
+		data[i][1] = -hs[i]->width;
+	    } else {
+		data[i][0] = hs[i]->start-off;
+		data[i][1] = hs[i]->width;
+	    }
 	}
+	AddData(gb,data,instance_count,2,round);
 	if ( gb->pt+1>=gb->end )
 	    GrowBuffer(gb);
 	*(gb->pt)++ = ishstem?1:3;			/* h/v stem */
-	h = h->next;
+	for ( i=0; i<instance_count; ++i )
+	    hs[i] = hs[i]->next;
     }
 }
 
-static void CvtPsMasked(GrowBuf *gb, StemInfo *h, real off, int ishstem,
-	int round, uint8 mask[12] ) {
+static void CvtPsMasked(GrowBuf *gb,SplineChar *scs[16], int instance_count,
+	int ishstem, int round, uint8 mask[12] ) {
+    StemInfo *hs[16];
+    real data[16][6], off;
+    int i;
 
-    while ( h!=NULL ) {
-	if ( h->hintnumber!=-1 &&
-		(mask[h->hintnumber>>3]&(0x80>>(h->hintnumber&7))) ) {
-	    if ( h->backwards ) {
-		AddNumber(gb,h->start-off+h->width,round);
-		AddNumber(gb,-h->width,round);
-	    } else {
-		AddNumber(gb,h->start-off,round);
-		AddNumber(gb,h->width,round);
+    for ( i=0; i<instance_count; ++i )
+	hs[i] = ishstem ? scs[i]->hstem : scs[i]->vstem;
+
+    while ( hs[0]!=NULL ) {
+	if ( hs[0]->hintnumber!=-1 &&
+		(mask[hs[0]->hintnumber>>3]&(0x80>>(hs[0]->hintnumber&7))) ) {
+	    for ( i=0; i<instance_count; ++i ) {
+		off = ishstem ? 0 : scs[i]->lsidebearing;
+		if ( hs[i]->backwards ) {
+		    data[i][0] = hs[i]->start-off+hs[i]->width;
+		    data[i][1] = -hs[i]->width;
+		} else {
+		    data[i][0] = hs[i]->start-off;
+		    data[i][1] = hs[i]->width;
+		}
 	    }
+	    AddData(gb,data,instance_count,2,round);
 	    if ( gb->pt+1>=gb->end )
 		GrowBuffer(gb);
 	    *(gb->pt)++ = ishstem?1:3;			/* h/v stem */
 	}
-	h = h->next;
+	for ( i=0; i<instance_count; ++i )
+	    hs[i] = hs[i]->next;
     }
 }
 
@@ -443,9 +544,8 @@ return( false );
 
 static void SubrsCheck(struct pschars *subrs) {
 	/* <subr number presumed to be on stack> 1 3 callother pop callsubr */
-    static uint8 special[] = { 1+139, 3+139, 12, 16, 12, 17, 10, 11 };
 
-    if ( subrs->next+(subrs->next==4)>=subrs->cnt ) {
+    if ( subrs->next>=subrs->cnt ) {
 	subrs->cnt += 100;
 	subrs->values = grealloc(subrs->values,subrs->cnt*sizeof(uint8 *));
 	subrs->lens = grealloc(subrs->lens,subrs->cnt*sizeof(int));
@@ -455,12 +555,6 @@ static void SubrsCheck(struct pschars *subrs) {
 	    for ( i=subrs->cnt-100; i<subrs->cnt; ++i )
 		subrs->keys[i] = NULL;
 	}
-    }
-    if ( subrs->next==4 ) {
-	/* Add a special subr that invokes othersubr 3 */
-	subrs->values[4] = (uint8 *) copyn( (char *) special, sizeof(special));
-	subrs->lens[4] = sizeof(special);
-	++subrs->next;
     }
 }
 
@@ -488,14 +582,14 @@ return( mh->subr );
     SubrsCheck(hdb->subrs);
 
     memset(&gb,0,sizeof(gb));
-    if ( !hdb->sc->hconflicts )
-	CvtPsHints(&gb,hdb->sc->hstem,0,true,round,hdb->iscjk);
+    if ( !hdb->scs[0]->hconflicts )
+	CvtPsHints(&gb,hdb->scs,hdb->instance_count,true,round,hdb->iscjk,NULL);
     else
-	CvtPsMasked(&gb,hdb->sc->hstem,0,true,round,mask);
-    if ( !hdb->sc->vconflicts )
-	CvtPsHints(&gb,hdb->sc->vstem,hdb->sc->lsidebearing,false,round,hdb->iscjk);
+	CvtPsMasked(&gb,hdb->scs,hdb->instance_count,true,round,mask);
+    if ( !hdb->scs[0]->vconflicts )
+	CvtPsHints(&gb,hdb->scs,hdb->instance_count,false,round,hdb->iscjk,NULL);
     else
-	CvtPsMasked(&gb,hdb->sc->vstem,hdb->sc->lsidebearing,false,round,mask);
+	CvtPsMasked(&gb,hdb->scs,hdb->instance_count,false,round,mask);
     if ( gb.pt+1 >= gb.end )
 	GrowBuffer(&gb);
     *gb.pt++ = 11;			/* return */
@@ -520,14 +614,24 @@ return( mh->subr );
 return( mh->subr );
 }
 
-static int BuildTranslatedHintSubr(struct pschars *subrs, SplineChar *sc,
-	RefChar *r, int round) {
+static int BuildTranslatedHintSubr(struct pschars *subrs, SplineChar *scs[16],
+	RefChar *refs[16], int instance_count, int round) {
     GrowBuf gb;
+    real offsets[16];
+    SplineChar *rscs[16];
+    int j;
 
     memset(&gb,0,sizeof(gb));
-    CvtPsHints(&gb,r->sc->hstem,-r->transform[5],true,round,true);	/* I claim to be cjk to avoid getting h/vstem3 */
-    CvtPsHints(&gb,r->sc->vstem,sc->lsidebearing-r->transform[4],false,
-		    round,true);					/* which are illegal in hint replacement */
+    for ( j=0; j<instance_count; ++j ) {
+	offsets[j] = -refs[j]->transform[5];
+	rscs[j] = refs[j]->sc;
+    }
+    CvtPsHints(&gb,rscs,instance_count,true,round,true,offsets);
+	    /* I claim to be cjk to avoid getting h/vstem3 */
+	    /* which are illegal in hint replacement */
+    for ( j=0; j<instance_count; ++j )
+	offsets[j] = scs[j]->lsidebearing-refs[j]->transform[4];
+    CvtPsHints(&gb,rscs,instance_count,false,round,true,offsets);
     if ( gb.pt+1 >= gb.end )
 	GrowBuffer(&gb);
     *gb.pt++ = 11;			/* return */
@@ -546,10 +650,10 @@ static int NeedsNewHintMask(struct hintdb *hdb, SplinePoint *to ) {
 return(false);
 
     /* Does this point lie on any hints? */
-    if ( hdb->sc->hconflicts )
-	h = OnHHint(to,hdb->sc->hstem);
-    if ( hdb->sc->vconflicts )
-	v = OnVHint(to,hdb->sc->vstem);
+    if ( hdb->scs[0]->hconflicts )
+	h = OnHHint(to,hdb->scs[0]->hstem);
+    if ( hdb->scs[0]->vconflicts )
+	v = OnVHint(to,hdb->scs[0]->vstem);
 
     /* Nothing to set, or already set */
     if ( (h==NULL || h->hintnumber==-1 || (hdb->mask[h->hintnumber>>3]&(0x80>>(h->hintnumber&7)))) &&
@@ -559,22 +663,24 @@ return(false);
 return( true );
 }
 
-static int FigureHintMask(struct hintdb *hdb, SplinePoint *to, uint8 mask[12] ) {
+/* The mask should be the same accross instances */
+static int FigureHintMask(struct hintdb *hdb, SplinePoint *toh, SplinePoint *tov,
+	uint8 mask[12] ) {
     StemInfo *h=NULL, *v=NULL, *s;
-    SplinePoint *tsp;
+    SplinePoint *tsph, *tspv;
     real lastx, lasty;
     SplineChar *sc;
     HintInstance *hi;
 
     if ( hdb==NULL || hdb->noconflicts )
 return(false);
-    sc = hdb->sc;
+    sc = hdb->scs[0];
 
     /* Does this point lie on any hints? */
-    if ( hdb->sc->hconflicts )
-	h = OnHHint(to,sc->hstem);
-    if ( hdb->sc->vconflicts )
-	v = OnVHint(to,sc->vstem);
+    if ( hdb->scs[0]->hconflicts )
+	h = OnHHint(toh,sc->hstem);
+    if ( hdb->scs[0]->vconflicts )
+	v = OnVHint(tov,sc->vstem);
 
     /* Nothing to set, or already set */
     if ( (h==NULL || h->hintnumber==-1 || (hdb->mask[h->hintnumber>>3]&(0x80>>(h->hintnumber&7)))) &&
@@ -596,66 +702,68 @@ return(false);
     if ( v!=NULL )
 	mask[v->hintnumber>>3] |= (0x80>>(v->hintnumber&7));
     
-    if ( hdb->sc->hconflicts ) {
+    if ( hdb->mostconflictedh->hconflicts ) {
 	/* Install all hints that should be active when the minor coord is that */
 	/*  of this point. So horizontal hints become active if the x coord matches */
-	for ( s=sc->hstem; s!=NULL; s=s->next )
+	for ( s=hdb->mostconflictedh->hstem; s!=NULL; s=s->next )
 	    if ( s->hintnumber!=-1 && s->hasconflicts &&
-		    !ConflictsWithMask(sc->hstem,mask,s)) {
+		    !ConflictsWithMask(hdb->mostconflictedh->hstem,mask,s)) {
 		for ( hi=s->where; hi!=NULL; hi=hi->next )
-		    if ( hi->begin<=to->me.x && hi->end>=to->me.x ) {
+		    if ( hi->begin<=toh->me.x && hi->end>=toh->me.x ) {
 			mask[s->hintnumber>>3] |= (0x80>>(s->hintnumber&7));
 		break;
 		    }
 	    }
     }
-    if ( hdb->sc->vconflicts ) {
+    if ( hdb->mostconflictedv->vconflicts ) {
 	/* Same for v. So vertical hints become active if the y coord matches */
-	for ( s=sc->vstem; s!=NULL; s=s->next )
+	for ( s=hdb->mostconflictedv->vstem; s!=NULL; s=s->next )
 	    if ( s->hintnumber!=-1 && s->hasconflicts &&
-		    ConflictsWithMask(sc->vstem,mask,s)) {
+		    ConflictsWithMask(hdb->mostconflictedv->vstem,mask,s)) {
 		for ( hi=s->where; hi!=NULL; hi=hi->next )
-		    if ( hi->begin<=to->me.y && hi->end>=to->me.y ) {
+		    if ( hi->begin<=tov->me.y && hi->end>=tov->me.y ) {
 			mask[s->hintnumber>>3] |= (0x80>>(s->hintnumber&7));
 		break;
 		    }
 	    }
     }
-    if ( hdb->sc->hconflicts || hdb->sc->vconflicts ) {
-	lastx = to->me.x; lasty = to->me.y;
+    if ( hdb->mostconflictedh->hconflicts || hdb->mostconflictedv->vconflicts ) {
+	lastx = tov->me.x; lasty = toh->me.y;
 	/* Now walk along the splineset adding what hints we can (so we don't */
 	/*  have to call another subroutine on the next point. Give up when we*/
 	/*  get a conflict */
-	if ( to->next!=NULL )
-	for ( tsp=to->next->to; tsp!=to; tsp = tsp->next->to ) {
-	    if ( hdb->sc->hconflicts && tsp->me.y!=lasty ) {
-		h = OnHHint(tsp,sc->hstem);
+	if ( toh->next!=NULL )
+	for ( tsph=toh->next->to, tspv=tov->next->to; tsph!=toh && tspv!=tov;
+		tsph = tsph->next->to, tspv = tspv->next->to ) {
+	    if ( hdb->mostconflictedh->hconflicts && tsph->me.y!=lasty ) {
+		h = OnHHint(tsph,sc->hstem);
 		if ( h!=NULL && h->hintnumber!=-1 && !(mask[h->hintnumber>>3]&(0x80>>(h->hintnumber&7))) ) {
 		    if ( h->hasconflicts && ConflictsWithMask(sc->hstem,mask,h))
 	break;
 		    mask[h->hintnumber>>3] |= (0x80>>(h->hintnumber&7));
 		}
 	    }
-	    if ( hdb->sc->vconflicts && tsp->me.x!=lastx ) {
-		h = OnVHint(tsp,sc->vstem);
+	    if ( hdb->mostconflictedv->vconflicts && tspv->me.x!=lastx ) {
+		h = OnVHint(tspv,sc->vstem);
 		if ( h!=NULL && h->hintnumber!=-1 && !(mask[h->hintnumber>>3]&(0x80>>(h->hintnumber&7))) ) {
 		    if ( h->hasconflicts && ConflictsWithMask(sc->vstem,mask,h))
 	break;
 		    mask[h->hintnumber>>3] |= (0x80>>(h->hintnumber&7));
 		}
 	    }
-	    if ( tsp->next==NULL )
+	    if ( tsph->next==NULL )
 	break;
 	}
     }
 return( true );
 }
 
-static void HintSetup(GrowBuf *gb,struct hintdb *hdb, SplinePoint *to, int round ) {
+static void HintSetup(GrowBuf *gb,struct hintdb *hdb, SplinePoint *toh,
+	SplinePoint *tov, int round ) {
     uint8 mask[12];
     int s;
 
-    if ( !FigureHintMask(hdb, to, mask ) )
+    if ( !FigureHintMask(hdb, toh, tov, mask ) )
 return;
 
     s = FindOrBuildHintSubr(hdb,mask,round);
@@ -679,31 +787,33 @@ return;						/* active then we are done */
 /* A more efficient approach would be for this routine to pick the first pt */
 /*  on a hint and call HintSetup with it, that way the hints will be right */
 /*  for the first point and we won't need a subr call when we get to it */
+/* Assume the mask for scs[0] is the same for all the others. It better be */
 static int InitialHintMask(struct hintdb *hdb, uint8 mask[12] ) {
     StemInfo *s=NULL;
-    SplineChar *sc = hdb->sc;
+    SplineChar *sch = hdb->mostconflictedh, *scv = hdb->mostconflictedv;
     real max;
-    SplineSet *spl;
-    SplinePoint *sp;
+    SplineSet *splv, *splh;
+    SplinePoint *sph, *spv;
 
-    if ( sc->hstem==NULL && sc->vstem==NULL )
+    if ( sch->hstem==NULL && scv->vstem==NULL )
 return(false);		/* Hint setup is trivial with no hints */
 
-    for ( spl=sc->splines; spl!=NULL; spl=spl->next ) {
-	for ( sp = spl->first; ; ) {
-	    if ( (sc->hconflicts && OnHHint(sp,sc->hstem)!=NULL) ||
-		    (sc->vconflicts && OnVHint(sp,sc->vstem)!=NULL ))
-return( FigureHintMask(hdb, sp, mask ) );
-	    if ( sp->next==NULL )
+    for ( splh=sch->splines, splv=scv->splines; splh!=NULL; splh=splh->next, splv=splv->next ) {
+	for ( sph = splh->first, spv=splv->first; ; ) {
+	    if ( (sch->hconflicts && OnHHint(sph,sch->hstem)!=NULL) ||
+		    (scv->vconflicts && OnVHint(spv,scv->vstem)!=NULL ))
+return( FigureHintMask(hdb, sph, spv, mask ) );
+	    if ( sph->next==NULL )
 	break;
-	    sp = sp->next->to;
-	    if ( sp==spl->first )
+	    sph = sph->next->to;
+	    spv = spv->next->to;
+	    if ( sph==splh->first )
 	break;
 	}
     }
 
     memset(mask,'\0',sizeof(uint8 [12]));
-    for ( s=sc->hstem; s!=NULL; ) {
+    for ( s=sch->hstem; s!=NULL; ) {
 	if ( s->hintnumber==-1 )
     break;
 	mask[s->hintnumber>>3] |= (0x80>>(s->hintnumber&7));
@@ -711,7 +821,7 @@ return( FigureHintMask(hdb, sp, mask ) );
 	for ( s=s->next; s!=NULL && s->start<max; s=s->next )
 	    if ( s->start+s->width>max ) max = s->start+s->width;
     }
-    for ( s=sc->vstem; s!=NULL; ) {
+    for ( s=scv->vstem; s!=NULL; ) {
 	if ( s->hintnumber==-1 )
     break;
 	mask[s->hintnumber>>3] |= (0x80>>(s->hintnumber&7));
@@ -729,14 +839,14 @@ static void InitialHintSetup(GrowBuf *gb,struct hintdb *hdb, int round ) {
 return;
 
 #if 0		/* Everybody else seems to put the initial hints in line, but a subr call seems to work and (potentially) saves space if we can reuse the subr */
-    if ( !hdb->sc->hconflicts )
-	CvtPsHints(gb,hdb->sc->hstem,0,true,round,hdb->iscjk);
+    if ( !hdb->scs[0]->hconflicts )
+	CvtPsHints(gb,hdb->scs,hdb->instance_count,true,round,hdb->iscjk,NULL);
     else
-	CvtPsMasked(gb,hdb->sc->hstem,0,true,round,mask);
-    if ( !hdb->sc->vconflicts )
-	CvtPsHints(gb,hdb->sc->vstem,hdb->sc->lsidebearing,false,round,hdb->iscjk);
+	CvtPsMasked(gb,hdb->scs,hdb->instance_count,true,round,mask);
+    if ( !hdb->scs[0]->vconflicts )
+	CvtPsHints(gb,hdb->scs,hdb->instance_count,false,round,hdb->iscjk,NULL);
     else
-	CvtPsMasked(gb,hdb->sc->vstem,hdb->sc->lsidebearing,false,round,mask);
+	CvtPsMasked(gb,hdb->scs,hdb->instance_count,false,round,mask);
 #else
     AddNumber(gb,FindOrBuildHintSubr(hdb,mask,round),round);
     if ( gb->pt+1 >= gb->end )
@@ -747,9 +857,11 @@ return;
     memcpy(hdb->mask,mask,sizeof(mask));
 }
 
-static void _moveto(GrowBuf *gb,BasePoint *current,BasePoint *to,
+static void _moveto(GrowBuf *gb,BasePoint *current,BasePoint *to,int instance_count,
 	int line, int round, struct hintdb *hdb) {
-    BasePoint temp;
+    BasePoint temp[16];
+    int i, samex, samey;
+    real data[16][6];
 
     if ( gb->pt+18 >= gb->end )
 	GrowBuffer(gb);
@@ -760,131 +872,214 @@ static void _moveto(GrowBuf *gb,BasePoint *current,BasePoint *to,
     } else
 #endif
     if ( round ) {
-	temp.x = rint(to->x);
-	temp.y = rint(to->y);
-	to = &temp;
+	for ( i=0; i<instance_count; ++i ) {
+	    temp[i].x = rint(to[i].x);
+	    temp[i].y = rint(to[i].y);
+	}
+	to = temp;
     }
-    if ( current->x==to->x ) {
-	AddNumber(gb,to->y-current->y,round);
+    samex = samey = true;
+    for ( i=0; i<instance_count; ++i ) {
+	if ( current[i].x!=to[i].x ) samex = false;
+	if ( current[i].y!=to[i].y ) samey = false;
+    }
+    if ( samex ) {
+	for ( i=0; i<instance_count; ++i )
+	    data[i][0] = to[i].y-current[i].y;
+	AddData(gb,data,instance_count,1,round);
 	*(gb->pt)++ = line ? 7 : 4;		/* v move/line to */
-    } else if ( current->y==to->y ) {
-	AddNumber(gb,to->x-current->x,round);
+    } else if ( samey ) {
+	for ( i=0; i<instance_count; ++i )
+	    data[i][0] = to[i].x-current[i].x;
+	AddData(gb,data,instance_count,1,round);
 	*(gb->pt)++ = line ? 6 : 22;		/* h move/line to */
     } else {
-	AddNumber(gb,to->x-current->x,round);
-	AddNumber(gb,to->y-current->y,round);
+	for ( i=0; i<instance_count; ++i ) {
+	    data[i][0] = to[i].x-current[i].x;
+	    data[i][1] = to[i].y-current[i].y;
+	}
+	AddData(gb,data,instance_count,2,round);
 	*(gb->pt)++ = line ? 5 : 21;		/* r move/line to */
     }
-    *current = *to;
+    for ( i=0; i<instance_count; ++i )
+	current[i] = to[i];
 }
 
-static void moveto(GrowBuf *gb,BasePoint *current,SplinePoint *to,
-	int line, int round, struct hintdb *hdb) {
+static void moveto(GrowBuf *gb,BasePoint *current,Spline *splines[16],
+	int instance_count, int line, int round, struct hintdb *hdb) {
+    BasePoint to[16];
+    int i;
 
-    if ( hdb!=NULL ) HintSetup(gb,hdb,to,round);
-    _moveto(gb,current,&to->me,line,round,hdb);
+    if ( hdb!=NULL ) HintSetup(gb,hdb,splines[hdb->mch]->to,splines[hdb->mcv]->to,round);
+    for ( i=0; i<instance_count; ++i )
+	to[i] = splines[i]->to->me;
+    _moveto(gb,current,to,instance_count,line,round,hdb);
 }
 
-static void curveto(GrowBuf *gb,BasePoint *current,Spline *spline,
+static void splmoveto(GrowBuf *gb,BasePoint *current,SplineSet *spl[16],
+	int instance_count, int line, int round, struct hintdb *hdb) {
+    BasePoint to[16];
+    int i;
+
+    if ( hdb!=NULL ) HintSetup(gb,hdb,spl[hdb->mch]->first,spl[hdb->mcv]->first,round);
+    for ( i=0; i<instance_count; ++i )
+	to[i] = spl[i]->first->me;
+    _moveto(gb,current,to,instance_count,line,round,hdb);
+}
+
+static void refmoveto(GrowBuf *gb,BasePoint *current,BasePoint startstop[16*2],
+	int instance_count, int line, int round, struct hintdb *hdb) {
+    BasePoint to[16];
+    int i;
+
+    for ( i=0; i<instance_count; ++i )
+	to[i] = startstop[i*2+0];
+    _moveto(gb,current,to,instance_count,line,round,hdb);
+}
+
+static void curveto(GrowBuf *gb,BasePoint *current,Spline *splines[16],int instance_count,
 	int round, struct hintdb *hdb) {
-    BasePoint temp1, temp2, temp3, *c0, *c1, *s1;
+    BasePoint temp1[16], temp2[16], temp3[16], *c0[16], *c1[16], *s1[16];
+    real data[16][6];
+    int i, op, opcnt;
+    int vh, hv;
 
-    if ( hdb!=NULL ) HintSetup(gb,hdb,spline->to,round);
+    if ( hdb!=NULL ) HintSetup(gb,hdb,splines[hdb->mch]->to,splines[hdb->mcv]->to,round);
 
     if ( gb->pt+50 >= gb->end )
 	GrowBuffer(gb);
 
-    c0 = &spline->from->nextcp;
-    c1 = &spline->to->prevcp;
-    s1 = &spline->to->me;
-    if ( round ) {
-	temp1.x = rint(c0->x);
-	temp1.y = rint(c0->y);
-	c0 = &temp1;
-	temp2.x = rint(c1->x);
-	temp2.y = rint(c1->y);
-	c1 = &temp2;
-	temp3.x = rint(s1->x);
-	temp3.y = rint(s1->y);
-	s1 = &temp3;
-	round = false;
+    vh = hv = true;
+    for ( i=0; i<instance_count; ++i ) {
+	c0[i] = &splines[i]->from->nextcp;
+	c1[i] = &splines[i]->to->prevcp;
+	s1[i] = &splines[i]->to->me;
+	if ( round ) {
+	    temp1[i].x = rint(c0[i]->x);
+	    temp1[i].y = rint(c0[i]->y);
+	    c0[i] = &temp1[i];
+	    temp2[i].x = rint(c1[i]->x);
+	    temp2[i].y = rint(c1[i]->y);
+	    c1[i] = &temp2[i];
+	    temp3[i].x = rint(s1[i]->x);
+	    temp3[i].y = rint(s1[i]->y);
+	    s1[i] = &temp3[i];
+	}
+	if ( current[i].x != c0[i]->x || c1[i]->y!=s1[i]->y ) vh = false;
+	if ( current[i].y != c0[i]->y || c1[i]->x!=s1[i]->x ) hv = false;
     }
-    if ( current->x==c0->x && c1->y==s1->y ) {
-	AddNumber(gb,c0->y-current->y,round);
-	AddNumber(gb,c1->x-c0->x,round);
-	AddNumber(gb,c1->y-c0->y,round);
-	AddNumber(gb,s1->x-c1->x,round);
-	*(gb->pt)++ = 30;		/* vhcurveto */
-    } else if ( current->y==c0->y && c1->x==s1->x ) {
-	AddNumber(gb,c0->x-current->x,round);
-	AddNumber(gb,c1->x-c0->x,round);
-	AddNumber(gb,c1->y-c0->y,round);
-	AddNumber(gb,s1->y-c1->y,round);
-	*(gb->pt)++ = 31;		/* hvcurveto */
+    if ( vh ) {
+	for ( i=0; i<instance_count; ++i ) {
+	    data[i][0] = c0[i]->y-current[i].y;
+	    data[i][1] = c1[i]->x-c0[i]->x;
+	    data[i][2] = c1[i]->y-c0[i]->y;
+	    data[i][3] = s1[i]->x-c1[i]->x;
+	}
+	op = 30;		/* vhcurveto */
+	opcnt = 4;
+    } else if ( hv ) {
+	for ( i=0; i<instance_count; ++i ) {
+	    data[i][0] = c0[i]->x-current[i].x;
+	    data[i][1] = c1[i]->x-c0[i]->x;
+	    data[i][2] = c1[i]->y-c0[i]->y;
+	    data[i][3] = s1[i]->y-c1[i]->y;
+	}
+	op = 31;		/* hvcurveto */
+	opcnt = 4;
     } else {
-	AddNumber(gb,c0->x-current->x,round);
-	AddNumber(gb,c0->y-current->y,round);
-	AddNumber(gb,c1->x-c0->x,round);
-	AddNumber(gb,c1->y-c0->y,round);
-	AddNumber(gb,s1->x-c1->x,round);
-	AddNumber(gb,s1->y-c1->y,round);
-	*(gb->pt)++ = 8;		/* rrcurveto */
+	for ( i=0; i<instance_count; ++i ) {
+	    data[i][0] = c0[i]->x-current[i].x;
+	    data[i][1] = c0[i]->y-current[i].y;
+	    data[i][2] = c1[i]->x-c0[i]->x;
+	    data[i][3] = c1[i]->y-c0[i]->y;
+	    data[i][4] = s1[i]->x-c1[i]->x;
+	    data[i][5] = s1[i]->y-c1[i]->y;
+	}
+	op = 8;		/* rrcurveto */
+	opcnt=6;
     }
-    *current = *s1;
+    AddData(gb,data,instance_count,opcnt,false);
+    if ( gb->pt+1 >= gb->end )
+	GrowBuffer(gb);
+    *(gb->pt)++ = op;
+
+    for ( i=0; i<instance_count; ++i )
+	current[i] = *s1[i];
 }
 
-static void flexto(GrowBuf *gb,BasePoint *current,Spline *pspline,int round,
-	struct hintdb *hdb) {
+static int SplinesAreFlexible(Spline *splines[16], int instance_count) {
+    int i, x=false, y=false;
+
+    for ( i=0; i<instance_count; ++i ) {
+	if ( !splines[i]->to->flexx && !splines[i]->to->flexy )
+return( false );
+	if (( x && splines[i]->to->flexy ) || ( y && splines[i]->to->flexx ))
+return( false );
+	x = splines[i]->to->flexx;
+	y = splines[i]->to->flexy;
+    }
+return( true );
+}
+
+static void flexto(GrowBuf *gb,BasePoint current[16],Spline *pspline[16],
+	int instance_count,int round, struct hintdb *hdb) {
     BasePoint *c0, *c1, *mid, *end;
     Spline *nspline;
-    BasePoint offsets[7];
-    int i;
+    BasePoint offsets[16][8];
+    int i,j;
     BasePoint temp1, temp2, temp3, temp;
+    real data[16][6];
 
-    c0 = &pspline->from->nextcp;
-    c1 = &pspline->to->prevcp;
-    mid = &pspline->to->me;
-    if ( round ) {
-	temp1.x = rint(c0->x);
-	temp1.y = rint(c0->y);
-	c0 = &temp1;
-	temp2.x = rint(c1->x);
-	temp2.y = rint(c1->y);
-	c1 = &temp2;
-	temp.x = rint(mid->x);
-	temp.y = rint(mid->y);
-	mid = &temp;
-    }
+    for ( j=0; j<instance_count; ++j ) {
+	c0 = &pspline[j]->from->nextcp;
+	c1 = &pspline[j]->to->prevcp;
+	mid = &pspline[j]->to->me;
+	if ( round ) {
+	    temp1.x = rint(c0->x);
+	    temp1.y = rint(c0->y);
+	    c0 = &temp1;
+	    temp2.x = rint(c1->x);
+	    temp2.y = rint(c1->y);
+	    c1 = &temp2;
+	    temp.x = rint(mid->x);
+	    temp.y = rint(mid->y);
+	    mid = &temp;
+	}
 /* reference point is same level as current point */
-    if ( current->y==pspline->to->next->to->me.y ) {
-	offsets[0].x = mid->x-current->x;	offsets[0].y = 0;
-	offsets[1].x = c0->x-mid->x;		offsets[1].y = c0->y-current->y;
-    } else {
-	offsets[0].x = 0;			offsets[0].y = mid->y-current->y;
-	offsets[1].x = c0->x-current->x;	offsets[1].y = c0->y-mid->y;
+	if ( current[j].y==pspline[j]->to->next->to->me.y ) {
+	    offsets[j][0].x = mid->x-current[j].x;	offsets[j][0].y = 0;
+	    offsets[j][1].x = c0->x-mid->x;		offsets[j][1].y = c0->y-current[j].y;
+	} else {
+	    offsets[j][0].x = 0;			offsets[j][0].y = mid->y-current[j].y;
+	    offsets[j][1].x = c0->x-current[j].x;	offsets[j][1].y = c0->y-mid->y;
+	}
+	offsets[j][2].x = c1->x-c0->x;		offsets[j][2].y = c1->y-c0->y;
+	offsets[j][3].x = mid->x-c1->x;		offsets[j][3].y = mid->y-c1->y;
+	nspline = pspline[j]->to->next;
+	c0 = &nspline->from->nextcp;
+	c1 = &nspline->to->prevcp;
+	end = &nspline->to->me;
+	if ( round ) {
+	    temp1.x = rint(c0->x);
+	    temp1.y = rint(c0->y);
+	    c0 = &temp1;
+	    temp2.x = rint(c1->x);
+	    temp2.y = rint(c1->y);
+	    c1 = &temp2;
+	    temp3.x = rint(end->x);
+	    temp3.y = rint(end->y);
+	    end = &temp3;
+	}
+	offsets[j][4].x = c0->x-mid->x;		offsets[j][4].y = c0->y-mid->y;
+	offsets[j][5].x = c1->x-c0->x;		offsets[j][5].y = c1->y-c0->y;
+	offsets[j][6].x = end->x-c1->x;		offsets[j][6].y = end->y-c1->y;
+	offsets[j][7].x = end->x;		offsets[j][7].y = end->y;
+	current[j] = *end;
     }
-    offsets[2].x = c1->x-c0->x;		offsets[2].y = c1->y-c0->y;
-    offsets[3].x = mid->x-c1->x;	offsets[3].y = mid->y-c1->y;
-    nspline = pspline->to->next;
-    c0 = &nspline->from->nextcp;
-    c1 = &nspline->to->prevcp;
-    end = &nspline->to->me;
-    if ( round ) {
-	temp1.x = rint(c0->x);
-	temp1.y = rint(c0->y);
-	c0 = &temp1;
-	temp2.x = rint(c1->x);
-	temp2.y = rint(c1->y);
-	c1 = &temp2;
-	temp3.x = rint(end->x);
-	temp3.y = rint(end->y);
-	end = &temp3;
-    }
-    offsets[4].x = c0->x-mid->x;	offsets[4].y = c0->y-mid->y;
-    offsets[5].x = c1->x-c0->x;		offsets[5].y = c1->y-c0->y;
-    offsets[6].x = end->x-c1->x;	offsets[6].y = end->y-c1->y;
 
-    if ( hdb!=NULL ) HintSetup(gb,hdb,nspline->to,round);
+    if ( hdb!=NULL )
+	HintSetup(gb,hdb,pspline[hdb->mch]->to->next->to,
+			    pspline[hdb->mcv]->to->next->to,round);
 
     if ( gb->pt+2 >= gb->end )
 	GrowBuffer(gb);
@@ -894,8 +1089,11 @@ static void flexto(GrowBuf *gb,BasePoint *current,Spline *pspline,int round,
     for ( i=0; i<7; ++i ) {
 	if ( gb->pt+20 >= gb->end )
 	    GrowBuffer(gb);
-	AddNumber(gb,offsets[i].x,round);
-	AddNumber(gb,offsets[i].y,round);
+	for ( j=0; j<instance_count; ++j ) {
+	    data[j][0] = offsets[j][i].x;
+	    data[j][1] = offsets[j][i].y;
+	}
+	AddData(gb,data,instance_count,2,round);
 	*(gb->pt)++ = 21;		/* rmoveto */
 	*(gb->pt)++ = 2+139;		/* 2 */
 	*(gb->pt)++ = 10;		/* callsubr */
@@ -903,66 +1101,107 @@ static void flexto(GrowBuf *gb,BasePoint *current,Spline *pspline,int round,
     if ( gb->pt+20 >= gb->end )
 	GrowBuffer(gb);
     *(gb->pt)++ = 50+139;		/* 50, .50 pixels */
-    AddNumber(gb,end->x,round);
-    AddNumber(gb,end->y,round);		/* final location, absolute position */
+    for ( j=0; j<instance_count; ++j ) {
+	data[j][0] = offsets[j][7].x;
+	data[j][1] = offsets[j][7].y;
+    }
+    AddData(gb,data,instance_count,2,round);
     *(gb->pt)++ = 0+139;		/* 0 */
     *(gb->pt)++ = 10;			/* callsubr */
 
     *current = *end;
 }
 
-static void CvtPsSplineSet(GrowBuf *gb, SplinePointList *spl, BasePoint *current,
+static void CvtPsSplineSet(GrowBuf *gb, SplineChar *scs[16], int instance_count,
+	BasePoint current[16],
 	int round, struct hintdb *hdb, BasePoint *start, int is_order2 ) {
-    Spline *spline, *first;
-    SplinePointList temp, *freeme=NULL;
+    Spline *spline[16], *first;
+    SplinePointList *spl[16];
+    SplinePointList temp[16], *freeme=NULL;
     int init=true;
+    int i;
 
-    if ( is_order2 )
-	freeme = spl = SplineSetsPSApprox(spl);
-    for ( ; spl!=NULL; spl = spl->next ) {
+    if ( is_order2 ) {
+	freeme = spl[0] = SplineSetsPSApprox(spl[0]);
+	instance_count = 1;
+    } else {
+	for ( i=0; i<instance_count; ++i )
+	    spl[i] = scs[i]->splines;
+    }
+    while ( spl[0]!=NULL ) {
 	first = NULL;
-	SplineSetReverse(spl);
+	for ( i=0; i<instance_count; ++i )
+	    SplineSetReverse(spl[i]);
 	/* For some reason fontographer reads its spline in in the reverse */
 	/*  order from that I use. I'm not sure how they do that. The result */
 	/*  being that what I call clockwise they call counter. Oh well. */
 	/*  If I reverse the splinesets after reading them in, and then again*/
 	/*  when saving them out, all should be well */
-	if ( spl->first->flexy || spl->first->flexx ) {
+	if ( spl[0]->first->flexy || spl[0]->first->flexx ) {
 	    /* can't handle a flex (mid) point as the first point. rotate the */
 	    /* list by one, this is possible because only closed paths have */
 	    /* points marked as flex, and because we can't have two flex mid- */
 	    /* points in a row */
-	    temp = *spl;
-	    temp.first = temp.last = spl->first->next->to;
-	    spl = &temp;
+	    for ( i = 0; i<instance_count; ++i ) {
+		temp[i] = *spl[i];
+		temp[i].first = temp[i].last = spl[i]->first->next->to;
+		spl[i] = &temp[i];
+	    }
 	}
 	if ( start==NULL || !init )
-	    moveto(gb,current,spl->first,false,round,hdb);
+	    splmoveto(gb,current,spl,instance_count,false,round,hdb);
 	else {
-	    *current = *start = spl->first->me;
+	    for ( i=0; i<instance_count; ++i )
+		current[i] = start[2*i] = spl[i]->first->me;
 	    init = false;
 	}
-	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-	    if ( first==NULL ) first = spline;
-	    if ( spline->to->flexx || spline->to->flexy ) {
-		flexto(gb,current,spline,round,hdb);	/* does two adjacent splines */
-		spline = spline->to->next;
-	    } else if ( spline->knownlinear && spline->to==spl->first ) {
+	for ( i=0; i<instance_count; ++i )
+	    spline[i] = spl[i]->first->next;
+	while ( spline[0]!=NULL && spline[0]!=first ) {
+	    if ( first==NULL ) first = spline[0];
+	    if ( SplinesAreFlexible(spline,instance_count) ) {
+		flexto(gb,current,spline,instance_count,round,hdb);	/* does two adjacent splines */
+		for ( i=0; i<instance_count; ++i )
+		    spline[i] = spline[i]->to->next;
+	    } else if ( spline[0]->knownlinear && spline[0]->to==spl[0]->first ) {
 		/* We can finish this off with the closepath */
 	break;
-	    } else if ( spline->knownlinear )
-		moveto(gb,current,spline->to,true,round,hdb);
+	    } else if ( spline[0]->knownlinear )
+		moveto(gb,current,spline,instance_count,true,round,hdb);
 	    else
-		curveto(gb,current,spline,round,hdb);
+		curveto(gb,current,spline,instance_count,round,hdb);
+	    for ( i=0; i<instance_count; ++i )
+		spline[i] = spline[i]->to->next;
 	}
 	if ( gb->pt+1 >= gb->end )
 	    GrowBuffer(gb);
 	*(gb->pt)++ = 9;			/* closepath */
-	SplineSetReverse(spl);
-	/* Of course, I have to Reverse again to get back to my convention after*/
-	/*  saving */
+	for ( i=0; i<instance_count; ++i ) {
+	    SplineSetReverse(spl[i]);
+	    /* Of course, I have to Reverse again to get back to my convention after*/
+	    /*  saving */
+	    spl[i] = spl[i]->next;
+	}
     }
     SplinePointListFree(freeme);
+}
+
+static void CvtPsRSplineSet(GrowBuf *gb, SplineChar *scs[16], int instance_count,
+	BasePoint *current,
+	int round, struct hintdb *hdb, BasePoint *startend, int is_order2 ) {
+    RefChar *refs[16];
+    SplineChar *rscs[16];
+    int i;
+
+    for ( i=0; i<instance_count; ++i )
+	refs[i] = scs[i]->refs;
+    while ( refs[0]!=NULL ) {
+	for ( i=0; i<instance_count; ++i ) {
+	    rscs[i] = refs[i]->sc;
+	    refs[i] = refs[i]->next;
+	}
+	CvtPsSplineSet(gb,rscs,instance_count,current,round,hdb,startend,scs[0]->parent->order2);
+    }
 }
 
 static RefChar *IsRefable(RefChar *ref, int isps, real transform[6], RefChar *sofar) {
@@ -1081,23 +1320,38 @@ return( NULL );
 return( reverserefs(ret) );
 }
 
-static int TrySubrRefs(GrowBuf *gb, struct pschars *subrs, SplineChar *sc,
-	RefChar *refs, int round) {
-    RefChar *r;
-    BasePoint current, *bp;
+static int TrySubrRefs(GrowBuf *gb, struct pschars *subrs, SplineChar *scs[16],
+	int instance_count, int round, int self) {
+    RefChar *refs[16], rtemp[16];
+    BasePoint current[16], *bp;
     DBounds sb, rb;
-    int first = true;
+    int j;
 
-    SplineCharFindBounds(sc,&sb);
-    for ( r=refs; r!=NULL; r=r->next ) {
-	if ( r->sc->hconflicts || r->sc->vconflicts || r->sc->anyflexes )
-	    SplineCharFindBounds(r->sc,&rb);
-	if ( r->sc->ttf_glyph==0x7fff ||
-		(( r->sc->hconflicts || r->sc->vconflicts || r->sc->anyflexes ) &&
-			(r->transform[4]!=0 || r->transform[5]!=0 ||
-				sb.minx!=rb.minx))) {
-	    RefCharsFreeRef(refs);
+    for ( j=0; j<instance_count; ++j ) {
+	SplineCharFindBounds(scs[j],&sb);
+	current[j].x = round?rint(sb.minx):sb.minx; current[j].y = 0;
+    }
+    if ( self ) {
+	memset(rtemp,0,sizeof(rtemp));
+	for ( j=0; j<instance_count; ++j ) {
+	    refs[j] = &rtemp[j];
+	    rtemp[j].sc = scs[j];
+	    rtemp[j].transform[0] = rtemp[j].transform[3] = 1;
+	}
+    } else {
+	for ( j=0; j<instance_count; ++j ) {
+	    RefChar *r;
+	    refs[j] = scs[j]->refs;
+	    for ( r=scs[j]->refs; r!=NULL; r=r->next ) {
+		if ( r->sc->hconflicts || r->sc->vconflicts || r->sc->anyflexes )
+		    SplineCharFindBounds(r->sc,&rb);
+		if ( r->sc->ttf_glyph==0x7fff ||
+			(( r->sc->hconflicts || r->sc->vconflicts || r->sc->anyflexes ) &&
+				(r->transform[4]!=0 || r->transform[5]!=0 ||
+					current[j].x!=rb.minx))) {
 return( false );
+		}
+	    }
 	}
     }
 
@@ -1107,12 +1361,11 @@ return( false );
     /* Exception: If a reffed char has hint conflicts (and it isn't translated) */
     /*  then its hints are built in */
     /* Then we need to do an rmoveto to do the appropriate translation */
-    current.x = round?rint(sb.minx):sb.minx; current.y = 0;
-    for ( r=refs; r!=NULL; r=r->next ) {
-	if ( r->sc->hconflicts || r->sc->vconflicts || r->sc->anyflexes )
+    while ( refs[0]!=NULL ) {
+	if ( refs[0]->sc->hconflicts || refs[0]->sc->vconflicts || refs[0]->sc->anyflexes )
 	    /* Hints already done */;
-	else if ( r->sc->hstem!=NULL || r->sc->vstem!=NULL ) {
-	    int s = BuildTranslatedHintSubr(subrs,sc,r,round);
+	else if ( refs[0]->sc->hstem!=NULL || refs[0]->sc->vstem!=NULL ) {
+	    int s = BuildTranslatedHintSubr(subrs,scs,refs,instance_count,round);
 	    AddNumber(gb,s,round);
 	    AddNumber(gb,4,round);		/* subr 4 is (my) magic subr that does the hint subs call */
 	    if ( gb->pt+1 >= gb->end )
@@ -1122,172 +1375,235 @@ return( false );
 	}
 	if ( gb->pt+20>=gb->end )
 	    GrowBuffer(gb);
-	bp = (BasePoint *) (subrs->keys[r->sc->ttf_glyph]);
-	if ( current.x!=bp[0].x+r->transform[4] || current.y!=bp[0].y+r->transform[5] || first ) {
-	    first = false;		/* Always need an initial move to */
-	    if ( current.x==bp[0].x+r->transform[4] ) {
-		AddNumber(gb,bp[0].y+r->transform[5]-current.y,round);
-		*(gb->pt)++ = 4;		/* v move to */
-	    } else if ( current.y==bp[0].y+r->transform[5] ) {
-		AddNumber(gb,bp[0].x+r->transform[4]-current.x,round);
-		*(gb->pt)++ = 22;		/* h move to */
-	    } else {
-		AddNumber(gb,bp[0].x+r->transform[4]-current.x,round);
-		AddNumber(gb,bp[0].y+r->transform[5]-current.y,round);
-		*(gb->pt)++ = 21;		/* r move to */
-	    }
+	bp = (BasePoint *) (subrs->keys[refs[0]->sc->ttf_glyph]);
+	refmoveto(gb,current,bp,instance_count,false,round,NULL);
+	AddNumber(gb,refs[0]->sc->ttf_glyph,round);
+	*gb->pt++ = 10;				/* callsubr */
+	for ( j=0; j<instance_count; ++j ) {
+	    current[j].x = refs[j]->transform[4] + bp[2*j+1].x; current[j].y = refs[j]->transform[5]+bp[2*j+1].y;
+	    refs[j] = refs[j]->next;
 	}
-	AddNumber(gb,r->sc->ttf_glyph,round);
-	*gb->pt++ = 10;					/* callsubr */
-	current.x = r->transform[4] + bp[1].x; current.y = r->transform[5]+bp[1].y;
     }
 
-    RefCharsFreeRef(refs);
 return( true );
 }
 
-static int IsSeacable(GrowBuf *gb, struct pschars *subrs, SplineChar *sc, int round, int iscjk) {
+static int IsPSRefable(SplineChar *sc) {
+    RefChar *ref;
+
+    if ( sc->refs==NULL || sc->splines!=NULL )
+return( false );
+
+    for ( ref=sc->refs; ref!=NULL; ref=ref->next ) {
+	if ( ref->transform[0]!=1 ||
+		ref->transform[1]!=0 ||
+		ref->transform[2]!=0 ||
+		ref->transform[3]!=1 )
+return( false );
+    }
+return( true );
+}
+
+static RefChar *RefFindAdobe(RefChar *r, RefChar *t) {
+    *t = *r;
+    while ( t->adobe_enc==-1 && t->sc->refs!=NULL && t->sc->refs->next==NULL &&
+	    t->sc->refs->transform[0]==1.0 &&
+	    t->sc->refs->transform[1]==0.0 &&
+	    t->sc->refs->transform[2]==0.0 &&
+	    t->sc->refs->transform[3]==1.0 ) {
+	t->transform[4] += t->sc->refs->transform[4];
+	t->transform[5] += t->sc->refs->transform[5];
+	t->adobe_enc = t->sc->refs->adobe_enc;
+	t->local_enc = t->sc->refs->local_enc;
+	t->sc = t->sc->refs->sc;
+    }
+return( t );
+}
+
+static int IsSeacable(GrowBuf *gb, struct pschars *subrs, SplineChar *scs[16],
+    int instance_count, int round, int iscjk) {
     /* can be at most two chars in a seac (actually must be exactly 2, but */
     /*  I'll put in a space if there's only one */
     RefChar *r1, *r2, *rt, *refs;
-    RefChar space;
+    RefChar space, t1, t2;
     DBounds b;
-    int i;
+    int i, j, swap;
+    real data[16][6];
 
-    if ( sc->ttf_glyph!=0x7fff ) {
-	refs = chunkalloc(sizeof(RefChar));
-	refs->sc = sc;
-	refs->transform[0] = refs->transform[3] = 1;
-return( TrySubrRefs(gb,subrs,sc,refs,round));
-    }
+    if ( scs[0]->ttf_glyph!=0x7fff )
+return( TrySubrRefs(gb,subrs,scs,instance_count,round,true));
 
-    refs = SCCanonicalRefs(sc,true);
+    for ( j=0 ; j<instance_count; ++j )
+	if ( !IsPSRefable(scs[j]))
+return( false );
+
+    refs = scs[0]->refs;
     if ( refs==NULL )
 return( false );
-/* CID fonts have no encodings. So we can't use seac to reference characters */
-/*  in them. The other requirements are just those of seac */
-    if ( (iscjk&0x100) || ( refs->next!=NULL && refs->next->next!=NULL ) ||
-	    refs->adobe_enc==-1 || ( refs->next!=NULL && refs->next->adobe_enc==-1) ||
-	    ((refs->next==NULL &&
-		(refs->transform[4]!=0 || refs->transform[5]!=0 || refs->sc->width!=sc->width )) ||
-	     (refs->next!=NULL &&
-		((refs->transform[4]!=0 || refs->transform[5]!=0 || refs->sc->width!=sc->width ) &&
-		 (refs->next->transform[4]!=0 || refs->next->transform[5]!=0 || refs->next->sc->width!=sc->width)))))
-return( TrySubrRefs(gb,subrs,sc,refs,round));
 
     r1 = refs;
     if ((r2 = r1->next)==NULL ) {
 	r2 = &space;
 	memset(r2,'\0',sizeof(space));
 	space.adobe_enc = ' ';
-	space.transform[0] = 1.0;
-	space.transform[3] = 1.0;
-	for ( i=0; i<sc->parent->charcnt; ++i )
-	    if ( sc->parent->chars[i]!=NULL &&
-		    strcmp(sc->parent->chars[i]->name,"space")==0 )
+	space.transform[0] = space.transform[3] = 1.0;
+	for ( i=0; i<scs[0]->parent->charcnt; ++i )
+	    if ( scs[0]->parent->chars[i]!=NULL &&
+		    strcmp(scs[0]->parent->chars[i]->name,"space")==0 )
 	break;
-	if ( i==sc->parent->charcnt ) {
-	    RefCharsFreeRef(refs);
-return( false );			/* No space???? */
+	if ( i==scs[0]->parent->charcnt )
+	    r2 = NULL;			/* No space???? */
+	else {
+	    space.sc = scs[0]->parent->chars[i];
+	    if ( space.sc->splines!=NULL || space.sc->refs!=NULL )
+		r2 = NULL;
 	}
-	space.sc = sc->parent->chars[i];
-	if ( space.sc->splines!=NULL || space.sc->refs!=NULL ) {
-	    RefCharsFreeRef(refs);
-return( false );
-	}
+    } else if ( r2->next!=NULL )
+	r2 = NULL;
+
+    /* check for something like "AcyrillicBreve" which has a ref to Acyril */
+    /*  (which doesn't have an adobe enc) which in turn has a ref to A (which */
+    /*  does) */
+    if ( r2!=NULL ) {
+	if ( r1->adobe_enc==-1 )
+	    r1 = RefFindAdobe(r1,&t1);
+	if ( r2->adobe_enc==-1 )
+	    r2 = RefFindAdobe(r2,&t2);
     }
-    if ( r1->adobe_enc==-1 || r2->adobe_enc==-1 ) {
-	RefCharsFreeRef(refs);
-return( false );
-    }
+
+/* CID fonts have no encodings. So we can't use seac to reference characters */
+/*  in them. The other requirements are just those of seac */
+    if ( (iscjk&0x100) || r2==NULL ||
+	    r1->adobe_enc==-1 ||
+	    r2->adobe_enc==-1 ||
+	    ((r1->transform[4]!=0 || r1->transform[5]!=0 || r1->sc->width!=scs[0]->width ) &&
+		 (r2->transform[4]!=0 || r2->transform[5]!=0 || r2->sc->width!=scs[0]->width)) )
+return( TrySubrRefs(gb,subrs,scs,instance_count,round,false));
+
+    swap = false;
     if ( r1->transform[4]!=0 || r1->transform[5]!=0 ) {
-	if ( r2->transform[4]!=0 || r2->transform[5]!=0 ) {
-	    RefCharsFreeRef(refs);
-return( false );			/* Only one can be translated */
-	}
 	rt = r1; r1 = r2; r2 = rt;
+	swap = !swap;
     }
-    if ( r1->sc->width!=sc->width && r2->sc->width==sc->width &&
+    if ( r1->sc->width!=scs[0]->width && r2->sc->width==scs[0]->width &&
 	    r2->transform[4]==0 && r2->transform[5]==0 ) {
 	rt = r1; r1 = r2; r2 = rt;
+	swap = !swap;
     }
-    if ( r1->sc->width!=sc->width ) {
-	RefCharsFreeRef(refs);
+    if ( r1->sc->width!=scs[0]->width || r1->transform[4]!=0 || r1->transform[5]!=0 )
 return( false );
+
+    for ( j=0; j<instance_count; ++j ) {
+	SplineChar *r2sc = scs[j]->parent->chars[r2->sc->enc];
+	RefChar *r3, t3;
+
+	SplineCharFindBounds(r2sc,&b);
+	if ( scs[j]->refs!=NULL && scs[j]->refs->next==NULL )
+	    r3 = r2;		/* Space, not offset */
+	else if ( swap )
+	    r3 = RefFindAdobe(scs[j]->refs->next,&t3);
+	else
+	    r3 = RefFindAdobe(scs[j]->refs,&t3);
+
+	if ( round ) b.minx = rint(b.minx);
+	data[j][0] = b.minx;
+	data[j][1] = r3->transform[4] + b.minx-scs[j]->lsidebearing;
+	data[j][2] = r3->transform[5];
     }
-
-    SplineCharFindBounds(r2->sc,&b);
-
-    if ( gb->pt+43>gb->end )
-	GrowBuffer(gb);
-    if ( round ) b.minx = rint(b.minx);
-    AddNumber(gb,b.minx,round);
-    AddNumber(gb,r2->transform[4] + b.minx-sc->lsidebearing,round);
-    AddNumber(gb,r2->transform[5],round);
+    AddData(gb,data,instance_count,3,round);
     AddNumber(gb,r1->adobe_enc,round);
     AddNumber(gb,r2->adobe_enc,round);
+    if ( gb->pt+2>gb->end )
+	GrowBuffer(gb);
     *(gb->pt)++ = 12;
     *(gb->pt)++ = 6;			/* seac 12,6 */
 
-    RefCharsFreeRef(refs);
 return( true );
 }
 
 static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
-	struct pschars *subrs,BasePoint *startend,int flags) {
+	struct pschars *subrs,BasePoint *startend,int flags,enum fontformat format) {
     DBounds b;
     GrowBuf gb;
-    BasePoint current;
-    RefChar *rf;
+    BasePoint current[16];
     unsigned char *ret;
     struct hintdb hintdb, *hdb=NULL;
-    StemInfo *oldh, *oldv;
-    int hc, vc;
+    StemInfo *oldh[16], *oldv[16];
+    int hc[16], vc[16];
+    int instance_count, i;
+    SplineChar *scs[16];
+    real data[16][6];
+    MMSet *mm = sc->parent->mm;
+    SplineChar *mostconflictedh, *mostconflictedv;
+    int mch, mcv;
+
+    if ( format==ff_mm && mm!=NULL ) {
+	instance_count = mm->instance_count;
+	if ( instance_count>16 )
+	    instance_count = 16;
+	for ( i=0; i<instance_count; ++i )
+	    scs[i] = mm->instances[i]->chars[sc->enc];
+	mostconflictedh = SCMostConflictsMM(mm,sc->enc,true,&mch);
+	mostconflictedv = SCMostConflictsMM(mm,sc->enc,false,&mcv);
+    } else {
+	instance_count = 1;
+	scs[0] = sc;
+	mm = NULL;
+	mostconflictedh = mostconflictedv = sc;
+	mcv = mch = 0;
+    }
 
     if ( flags&ps_flag_nohints ) {
-	oldh = sc->hstem; oldv = sc->vstem;
-	hc = sc->hconflicts; vc = sc->vconflicts;
-	sc->hstem = NULL; sc->vstem = NULL;
-	sc->hconflicts = false; sc->vconflicts = false;
+	for ( i=0; i<instance_count; ++i ) {
+	    oldh[i] = scs[i]->hstem; oldv[i] = scs[i]->vstem;
+	    hc[i] = scs[i]->hconflicts; vc[i] = scs[i]->vconflicts;
+	    scs[i]->hstem = NULL; scs[i]->vstem = NULL;
+	    scs[i]->hconflicts = false; scs[i]->vconflicts = false;
+	}
     }
 
     memset(&gb,'\0',sizeof(gb));
-    memset(&current,'\0',sizeof(current));
-    SplineCharFindBounds(sc,&b);
-    sc->lsidebearing = current.x = round?rint(b.minx):b.minx;
+    memset(current,'\0',sizeof(current));
+    for ( i=0; i<instance_count; ++i ) {
+	SplineCharFindBounds(scs[i],&b);
+	scs[i]->lsidebearing = current[i].x = round?rint(b.minx):b.minx;
+	data[i][0] = b.minx;
+	data[i][1] = scs[i]->width;
+    }
     if ( startend==NULL ) {
-	AddNumber(&gb,b.minx,round);
-	AddNumber(&gb,sc->width,round);
+	AddData(&gb,data,instance_count,2,round);
 	*gb.pt++ = 13;				/* hsbw, lbearing & width */
     }
-    NumberHints(sc);
+    NumberHints(scs,instance_count);
 
-    if ( IsSeacable(&gb,subrs,sc,round,iscjk)) {
+    if ( IsSeacable(&gb,subrs,scs,instance_count,round,iscjk)) {
 	/* All Done */;
+	/* All should share the same refs, so all should be seac-able if one is */
     } else {
 	iscjk &= ~0x100;
 	hdb = NULL;
-	if ( sc->ttf_glyph==0x7fff || ( !sc->hconflicts && !sc->vconflicts && !sc->anyflexes )) {
-	    if ( autohint_before_generate && sc->changedsincelasthinted && !sc->manualhints )
-		SplineCharAutoHint(sc,true);
-	    if ( iscjk )
+	if ( sc->ttf_glyph==0x7fff || ( !mostconflictedh->hconflicts && !mostconflictedv->vconflicts && !sc->anyflexes )) {
+	    if ( iscjk && instance_count==1 )
 		CounterHints1(&gb,sc,round);	/* Must come immediately after hsbw */
-	    if ( !sc->vconflicts && !sc->hconflicts ) {
-		CvtPsHints(&gb,sc->hstem,0,true,round,iscjk);
-		CvtPsHints(&gb,sc->vstem,sc->lsidebearing,false,round,iscjk);
+	    if ( !mostconflictedv->vconflicts && !mostconflictedh->hconflicts ) {
+		CvtPsHints(&gb,scs,instance_count,true,round,iscjk,NULL);
+		CvtPsHints(&gb,scs,instance_count,false,round,iscjk,NULL);
 	    } else {
 		memset(&hintdb,0,sizeof(hintdb));
-		hintdb.subrs = subrs; hintdb.iscjk = iscjk; hintdb.sc = sc;
+		hintdb.subrs = subrs; hintdb.iscjk = iscjk; hintdb.scs = scs;
+		hintdb.instance_count = instance_count;
+		hintdb.mostconflictedh = mostconflictedh; hintdb.mostconflictedv = mostconflictedv;
+		hintdb.mcv = mcv; hintdb.mch = mch;
 		hdb = &hintdb;
 		InitialHintSetup(&gb,hdb,round);
 	    }
 	}
 	if ( sc->ttf_glyph==0x7fff ) {
-	    CvtPsSplineSet(&gb,sc->splines,&current,round,hdb,startend,sc->parent->order2);
-	    for ( rf = sc->refs; rf!=NULL; rf = rf->next )
-		CvtPsSplineSet(&gb,rf->splines,&current,round,hdb,NULL,sc->parent->order2);
+	    CvtPsSplineSet(&gb,scs,instance_count,current,round,hdb,startend,sc->parent->order2);
+	    CvtPsRSplineSet(&gb,scs,instance_count,current,round,hdb,NULL,sc->parent->order2);
 	} else {
-	    _moveto(&gb,&current,&((BasePoint *) (subrs->keys[sc->ttf_glyph]))[0],false,round,NULL);
+	    refmoveto(&gb,current,(BasePoint *) (subrs->keys[sc->ttf_glyph]),
+		    instance_count,false,round,NULL);
 	    AddNumber(&gb,sc->ttf_glyph,round);
 	    if ( gb.pt+1>=gb.end )
 		GrowBuffer(&gb);
@@ -1308,12 +1624,40 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
     }
     free(gb.base);
     if ( startend!=NULL )
-	startend[1] = current;
+	for ( i=0; i<instance_count; ++i )
+	    startend[2*i+1] = current[i];
     if ( flags&ps_flag_nohints ) {
-	sc->hstem = oldh; sc->vstem = oldv;
-	sc->hconflicts = hc; sc->vconflicts = vc;
+	for ( i=0; i<instance_count; ++i ) {
+	    scs[i]->hstem = oldh[i]; scs[i]->vstem = oldv[i] = scs[i]->vstem;
+	    scs[i]->hconflicts = hc[i]; scs[i]->vconflicts = vc[i];
+	}
     }
 return( ret );
+}
+
+static void CvtSimpleHints(GrowBuf *gb, SplineChar *sc,BasePoint *startend,
+	int round, enum fontformat format) {
+    MMSet *mm = sc->parent->mm;
+    int i,instance_count;
+    SplineChar *scs[16];
+    BasePoint current[16];
+
+    if ( format==ff_mm && mm!=NULL ) {
+	instance_count = mm->instance_count;
+	if ( instance_count>16 )
+	    instance_count = 16;
+	for ( i=0; i<instance_count; ++i )
+	    scs[i] = mm->instances[i]->chars[sc->enc];
+    } else {
+	instance_count = 1;
+	scs[0] = sc;
+	mm = NULL;
+    }
+    memset(current,0,instance_count*sizeof(BasePoint));
+    CvtPsSplineSet(gb,scs,instance_count,current,round,NULL,startend,
+	    sc->parent->order2);
+    for ( i=0; i<instance_count; ++i )
+	startend[2*i+1] = current[i];
 }
 
 static int AlwaysSeacable(SplineChar *sc) {
@@ -1379,50 +1723,68 @@ return( false );
 }
 
 static void SplineFont2Subrs1(SplineFont *sf,int round, int iscjk,
-	struct pschars *subrs,int flags) {
-    int i,cnt;
+	struct pschars *subrs,int flags,enum fontformat format) {
+    int i,j,cnt, anydone;
     SplineChar *sc;
     uint8 *temp;
     int len;
     GrowBuf gb;
+    MMSet *mm = format==ff_mm ? sc->parent->mm : NULL;
+    int instance_count = mm!=NULL ? mm->instance_count : 1;
 
-    for ( i=cnt=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+    for ( i=cnt=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL )
 	sc->ttf_glyph = 0x7fff;
-	if ( !SCWorthOutputting(sc) || sc->refs!=NULL || sc!=SCDuplicate(sc))
-    continue;
-	/* Put the */
-	/*  character into a subr if it is referenced by other characters */
-	if ( (sc->dependents!=NULL &&
-		 ((!sc->hconflicts && !sc->vconflicts && !sc->anyflexes) ||
-		     SpecialCaseConflicts(sc)) &&
-		 !AlwaysSeacable(sc))) {
-	    BasePoint *bp = gcalloc(2,sizeof(BasePoint));
-		/* This contains the start and stop points of the splinesets */
-		/* we need this later when we invoke the subrs */
+    anydone = true;
+    while ( anydone ) {
+	anydone = false;
+	for ( i=cnt=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+	    if ( !SCWorthOutputting(sc) || sc!=SCDuplicate(sc) || sc->ttf_glyph!=0x7fff )
+	continue;
+	    /* Put the */
+	    /*  character into a subr if it is referenced by other characters */
+	    if ( (sc->dependents!=NULL &&
+		     ((!sc->hconflicts && !sc->vconflicts && !sc->anyflexes) ||
+			 SpecialCaseConflicts(sc)) &&
+		     !AlwaysSeacable(sc))) {
+		BasePoint *bp;
+		RefChar *r;
 
-	    /* None of the generated subrs starts with a moveto operator */
-	    /*  The invoker is expected to move to the appropriate place */
-	    if ( sc->hconflicts || sc->vconflicts || sc->anyflexes ) {
-		temp = SplineChar2PS(sc,&len,round,iscjk,subrs,bp,flags);
-	    } else {
-		memset(&gb,'\0',sizeof(gb));
-		bp[1] = bp[0];
-		CvtPsSplineSet(&gb,sc->splines,&bp[1],round,NULL,&bp[0],sc->parent->order2);
-		if ( gb.pt+1>=gb.end )
-		    GrowBuffer(&gb);
-		*gb.pt++ = 11;				/* return */
-		temp = (unsigned char *) copyn((char *) gb.base,gb.pt-gb.base);
-		len = gb.pt-gb.base;
-		free(gb.base);
+		for ( r=sc->refs; r!=NULL; r=r->next )
+		    if ( r->sc->ttf_glyph==0x7fff )
+		break;
+		if ( r!=NULL )	/* Contains a reference to something which is not in a sub itself */
+	continue;
+
+		bp = gcalloc(2*instance_count,sizeof(BasePoint));
+		    /* This contains the start and stop points of the splinesets */
+		    /* we need this later when we invoke the subrs */
+
+		/* None of the generated subrs starts with a moveto operator */
+		/*  The invoker is expected to move to the appropriate place */
+		if ( sc->hconflicts || sc->vconflicts || sc->anyflexes ) {
+		    temp = SplineChar2PS(sc,&len,round,iscjk,subrs,bp,flags,format);
+		} else {
+		    memset(&gb,'\0',sizeof(gb));
+		    for ( j=0; j<instance_count; ++j )
+			bp[j*2+1] = bp[j*2+0];
+		    CvtSimpleHints(&gb,sc,bp,round,format);
+		    if ( gb.pt+1>=gb.end )
+			GrowBuffer(&gb);
+		    *gb.pt++ = 11;				/* return */
+		    temp = (unsigned char *) copyn((char *) gb.base,gb.pt-gb.base);
+		    len = gb.pt-gb.base;
+		    free(gb.base);
+		}
+
+		SubrsCheck(subrs);
+		subrs->values[subrs->next] = temp;
+		subrs->lens[subrs->next] = len;
+		if ( subrs->keys==NULL )
+		    subrs->keys = gcalloc(subrs->cnt,sizeof(char *));
+		subrs->keys[subrs->next] = (void *) bp;
+		sc->ttf_glyph = subrs->next++;
+		anydone = true;
 	    }
-
-	    SubrsCheck(subrs);
-	    subrs->values[subrs->next] = temp;
-	    subrs->lens[subrs->next] = len;
-	    if ( subrs->keys==NULL )
-		subrs->keys = gcalloc(subrs->cnt,sizeof(char *));
-	    subrs->keys[subrs->next] = (void *) bp;
-	    sc->ttf_glyph = subrs->next++;
 	}
     }
 }
@@ -1514,22 +1876,41 @@ return( true );
 return( !SCWorthOutputting(SFGetChar(sf,'A',NULL)) &&
 	!SCWorthOutputting(SFGetChar(sf,0x391,NULL)) &&		/* Alpha */
 	!SCWorthOutputting(SFGetChar(sf,0x410,NULL)) &&		/* Cyrillic A */
-	!SCWorthOutputting(SFGetChar(sf,-1,"hwA")) );		/* Halfwidth A, non standard name, from my cidmap */
+	!SCWorthOutputting(SFGetChar(sf,-1,"uni0041.hw")) );	/* Halfwidth A, non standard name, from my cidmap */
     }
 
 return( false );
 }
 
 struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
-	struct pschars *subrs,int flags) {
+	struct pschars *subrs,int flags, enum fontformat format) {
     struct pschars *chrs = gcalloc(1,sizeof(struct pschars));
-    int i, cnt;
-    char notdefentry[20];
-    int fixed = SFOneWidth(sf), notdefwidth;
+    int i, cnt, instance_count;
+    int fixed;
     int zero_is_notdef;
+    MMSet *mm = sf->mm;
+    real data[16][6];
+    GrowBuf gb;
 
-    notdefwidth = fixed;
-    if ( notdefwidth==-1 ) notdefwidth = sf->ascent+sf->descent;
+    if ( format==ff_mm && mm!=NULL ) {
+	instance_count = mm->instance_count;
+	sf = mm->instances[0];
+	fixed = 0;
+	for ( i=0; i<instance_count; ++i ) {
+	    data[i][0] = fixed = SFOneWidth(mm->instances[i]);
+	    if ( fixed==-1 )
+	break;
+	}
+	if ( fixed==-1 ) {
+	    for ( i=0; i<instance_count; ++i )
+		data[i][0] = mm->instances[i]->ascent+mm->instances[i]->descent;
+	}
+    } else {
+	data[0][0] = fixed = SFOneWidth(sf);
+	if ( fixed == -1 )
+	    data[0][0] = sf->ascent+sf->descent;
+	instance_count = 1;
+    }
 
     cnt = 0;
     for ( i=0; i<sf->charcnt; ++i )
@@ -1550,39 +1931,26 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
     chrs->lens = galloc(cnt*sizeof(int));
     chrs->values = galloc(cnt*sizeof(unsigned char *));
 
-    SplineFont2Subrs1(sf,round,iscjk,subrs,flags);
+    SplineFont2Subrs1(sf,round,iscjk,subrs,flags,format);
 
     i = cnt = 0;
     chrs->keys[0] = copy(".notdef");
     if ( zero_is_notdef ) {
-	chrs->values[0] = SplineChar2PS(sf->chars[0],&chrs->lens[0],round,iscjk,subrs,NULL,flags);
+	chrs->values[0] = SplineChar2PS(sf->chars[0],&chrs->lens[0],round,iscjk,
+		subrs,NULL,flags,format);
 	i = 1;
     } else {
-	char *pt = notdefentry;
-	*pt++ = '\213';		/* 0 */
-	if ( notdefwidth>=-107 && notdefwidth<=107 )
-	    *pt++ = notdefwidth+139;
-	else if ( notdefwidth>=108 && notdefwidth<=1131 ) {
-	    notdefwidth -= 108;
-	    *pt++ = (notdefwidth>>8)+247;
-	    *pt++ = notdefwidth&0xff;
-	} else if ( notdefwidth>=-1131 && notdefwidth<=-108 ) {
-	    notdefwidth = -notdefwidth;
-	    notdefwidth -= 108;
-	    *pt++ = (notdefwidth>>8)+251;
-	    *pt++ = notdefwidth&0xff;
-	} else {
-	    *pt++ = '\377';
-	    *pt++ = (notdefwidth>>24)&0xff;
-	    *pt++ = (notdefwidth>>16)&0xff;
-	    *pt++ = (notdefwidth>>8)&0xff;
-	    *pt++ = notdefwidth&0xff;
-	}
-	*pt++ = '\015';	/* hsbw */
-	*pt++ = '\016';	/* endchar */
-	*pt = '\0';
-	chrs->values[0] = (unsigned char *) copyn(notdefentry,pt-notdefentry);	/* 0 <w> hsbw endchar */
-	chrs->lens[0] = pt-notdefentry;
+	memset(&gb,'\0',sizeof(gb));
+	GrowBuffer(&gb);
+	*gb.pt++ = '\213';		/* 0 */	/* left side bearing */
+	AddData(&gb,data,instance_count,1,round);
+	if ( gb.pt+4>gb.end )
+	    GrowBuffer(&gb);
+	*gb.pt++ = '\015';	/* hsbw */
+	*gb.pt++ = '\016';	/* endchar */
+	*gb.pt = '\0';
+	chrs->values[0] = (unsigned char *) copyn((char *) gb.base,gb.pt-gb.base);	/* 0 <w> hsbw endchar */
+	chrs->lens[0] = gb.pt-gb.base;
 	i = 0;
 	if ( sf->chars[0]!=NULL && strcmp(sf->chars[0]->name,".notdef")==0 )
 	    i = 1;
@@ -1597,7 +1965,7 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
 	if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]==SCDuplicate(sf->chars[i])) {
 	    chrs->keys[cnt] = copy(sf->chars[i]->name);
 	    chrs->values[cnt] = SplineChar2PS(sf->chars[i],&chrs->lens[cnt],
-		    round,iscjk,subrs,NULL,flags);
+		    round,iscjk,subrs,NULL,flags,format);
 	    ++cnt;
 	}
 	if ( !GProgressNext()) {
@@ -1617,6 +1985,7 @@ struct pschars *CID2Chrs(SplineFont *cidmaster,struct cidbytes *cidbytes,int fla
     char notdefentry[20];
     SplineFont *sf = NULL;
     struct fddata *fd;
+    /* I don't support mm cid files. I don't think adobe does either */
 
     cnt = 0;
     for ( i=0; i<cidmaster->subfontcnt; ++i )
@@ -1627,7 +1996,7 @@ struct pschars *CID2Chrs(SplineFont *cidmaster,struct cidbytes *cidbytes,int fla
     for ( i=0; i<cidmaster->subfontcnt; ++i ) {
 	sf = cidmaster->subfonts[i];
 	fd = &cidbytes->fds[i];
-	SplineFont2Subrs1(sf,true,fd->iscjk|0x100,fd->subrs,flags);
+	SplineFont2Subrs1(sf,true,fd->iscjk|0x100,fd->subrs,flags,ff_cid);
     }
 
     chrs->cnt = cnt;
@@ -1679,7 +2048,7 @@ struct pschars *CID2Chrs(SplineFont *cidmaster,struct cidbytes *cidbytes,int fla
 	    fd = &cidbytes->fds[i];
 	    cidbytes->fdind[cid] = i;
 	    chrs->values[cid] = SplineChar2PS(sf->chars[cid],&chrs->lens[cid],
-		    true,fd->iscjk|0x100,fd->subrs,NULL,flags);
+		    true,fd->iscjk|0x100,fd->subrs,NULL,flags,ff_cid);
 	}
 	if ( !GProgressNext()) {
 	    PSCharsFree(chrs);
@@ -1805,7 +2174,7 @@ static void CounterHints2(GrowBuf *gb, StemInfo *hs, StemInfo *vs) {
 static int HintSetup2(GrowBuf *gb,struct hintdb *hdb, SplinePoint *to ) {
     uint8 mask[12];
 
-    if ( !FigureHintMask(hdb, to, mask ) )
+    if ( !FigureHintMask(hdb, to, to, mask ) )
 return( false );
 
     AddMask2(gb,mask,hdb->cnt,19);		/* hintmask */
@@ -2279,6 +2648,7 @@ static unsigned char *SplineChar2PSOutline2(SplineChar *sc,int *len,
     unsigned char *ret;
     StemInfo *oldh, *oldv;
     int hc, vc;
+    SplineChar *scs[16];
 
     if ( flags&ps_flag_nohints ) {
 	oldh = sc->hstem; oldv = sc->vstem;
@@ -2289,7 +2659,9 @@ static unsigned char *SplineChar2PSOutline2(SplineChar *sc,int *len,
 
     memset(&gb,'\0',sizeof(gb));
     memset(&hdb,'\0',sizeof(hdb));
-    hdb.sc = sc;
+    scs[0] = sc;
+    hdb.scs = scs;
+    hdb.mostconflictedh = hdb.mostconflictedv = sc;
 
     CvtPsSplineSet2(&gb,sc->splines,&hdb,startend,sc->parent->order2);
     for ( rf = sc->refs; rf!=NULL; rf = rf->next )
@@ -2317,6 +2689,7 @@ static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid,
     uint8 mask[12];
     StemInfo *oldh, *oldv;
     int hc, vc;
+    SplineChar *scs[16];
 
     if ( flags&ps_flag_nohints ) {
 	oldh = sc->hstem; oldv = sc->vstem;
@@ -2345,13 +2718,15 @@ static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid,
 	ExpandRefList2(&gb,&refs,sc->hconflicts||sc->vconflicts?&refs:NULL,subrs);
     } else {
 	memset(&hdb,'\0',sizeof(hdb));
-	hdb.sc = sc;
+	hdb.scs = scs;
+	scs[0] = sc;
+	hdb.mostconflictedh = hdb.mostconflictedv = sc;
 	hdb.noconflicts = !sc->hconflicts && !sc->vconflicts;
 	if ( autohint_before_generate && sc->changedsincelasthinted && !sc->manualhints )
 	    SplineCharAutoHint(sc,true);
 	HintDirection(sc->hstem);
 	HintDirection(sc->vstem);
-	hdb.cnt = NumberHints(sc);
+	hdb.cnt = NumberHints(hdb.scs,1);
 	DumpHints(&gb,sc->hstem,sc->hconflicts?18:1);
 	DumpHints(&gb,sc->vstem,sc->vconflicts || sc->hconflicts?-1:3);
 	CounterHints2(&gb, sc->hstem, sc->vstem);

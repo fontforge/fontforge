@@ -10,10 +10,29 @@ static const uint8 subrs1[] = { 0+139, 1+139, 12, 16, 11 };
 static const uint8 subrs2[] = { 0+139, 2+139, 12, 16, 11 };
 	/* return */
 static const uint8 subrs3[] = { 11 };
+	/* This one I created myself to do hint substitution */
+	/* <subr number presumed to be on stack> 1 3 callother pop callsubr */
+static const uint8 subrs4[] = { 1+139, 3+139, 12, 16, 12, 17, 10, 11 };
+
+	/* These others from adobe for multiple master */
+	/* They need some fix up before they are used (the stack count depends on the # instances). */
+	/* <n> 14 callothersubr pop return */
+static const uint8 subrs5[] = { 139, 14+139, 12, 16, 12, 17, 11 };
+	/* 2*<n> 15 callothersubr pop pop return */
+static const uint8 subrs6[] = { 139, 15+139, 12, 16, 12, 17, 12, 17, 11 };
+	/* 3*<n> 16 callothersubr pop pop pop return */
+static const uint8 subrs7[] = { 139, 16+139, 12, 16, 12, 17, 12, 17, 12, 17, 11 };
+	/* 4*<n> 17 callothersubr pop pop pop pop return */
+static const uint8 subrs8[] = { 139, 17+139, 12, 16, 12, 17, 12, 17, 12, 17, 12, 17, 11 };
+	/* 6*<n> 18 callothersubr pop pop pop pop  pop pop return */
+static const uint8 subrs9[] = { 139, 18+139, 12, 16, 12, 17, 12, 17, 12, 17, 12, 17, 12, 17, 12, 17, 11 };
 
 
-const uint8 *const subrs[4] = { subrs0, subrs1, subrs2, subrs3 };
-const int subrslens[4] = { sizeof(subrs0), sizeof(subrs1), sizeof(subrs2), sizeof(subrs3)};
+const uint8 *const subrs[] = { subrs0, subrs1, subrs2, subrs3, subrs4,
+	subrs5, subrs6, subrs7, subrs8, subrs9 };
+const int subrslens[] = { sizeof(subrs0), sizeof(subrs1), sizeof(subrs2),
+	sizeof(subrs3), sizeof(subrs4), sizeof(subrs5), sizeof(subrs6),
+	sizeof(subrs7), sizeof(subrs8), sizeof(subrs9) };
 
 /* Assumption: We always want to do hint substitution (anyway, it's small) */
 /* If we also want flex output use the "othersubrs" array. If no flex the "othersubrsnoflex" */
@@ -237,6 +256,23 @@ const char *othersubrscounters[] = {
 	NULL
 };
 
+const char *othersubrsnocounters[] = {
+	"{}",		/* Other subr 4 */
+	"{}",		/* Other subr 5 */
+	"{}",		/* Other subr 6 */
+	"{}",		/* Other subr 7 */
+	"{}",		/* Other subr 8 */
+	"{}",		/* Other subr 9 */
+	"{}",		/* Other subr 10 */
+	"{}",		/* Other subr 11 */
+	"{}",		/* Other Subr 12 */
+	"{}",		/* Other Subr 13 */
+	NULL
+};
+
+/* code for other subrs 14-18 must be done at run time as it depends on */
+/*  the number of font instances in the mm set */
+
 const char *othersubrsend[] = {
 	"] ",
 	NULL
@@ -281,4 +317,147 @@ const char *cid_othersubrs[] = {
 	"       repeat } bind",
 	"]",
 	NULL
+};
+
+
+const char *makeblendedfont[] = {
+	"% Copyright (c) 1990-1994 Adobe Systems Incorporated.",
+	"% All Rights Reserved.",
+/* Adobe has posted a copyright notice in 5015.Type1_Supp.pdf with the */
+/*  wrong comment here. I've changed it */
+	"% This code to be used for multiple master fonts.",
+	"% Version 11",
+	"/shareddict where",
+	"{ pop currentshared { setshared } true setshared shareddict }",
+	"{ {} userdict } ifelse dup",
+	"/makeblendedfont where {/makeblendedfont get dup type /operatortype eq {",
+	"pop false} { 0 get dup type /integertype ne",
+	"{pop false} {11 lt} ifelse} ifelse } {true}ifelse",
+	"{/makeblendedfont {",
+	"11 pop",
+	"2 copy length exch /WeightVector get length eq",
+	"{ dup 0 exch {add} forall 1 sub abs .001 gt }",
+	"{ true } ifelse",
+	"{ /makeblendedfont cvx errordict /rangecheck get exec } if",
+	"exch dup dup maxlength dict begin {",
+	"false {/FID /UniqueID /XUID } { 3 index eq or } forall",
+	" { pop pop } { def } ifelse",
+	"} forall",
+	"/XUID 2 copy known{",
+	"get dup length 2 index length sub dup 0 gt{",
+	"exch dup length array copy",
+	"exch 2 index{65536 mul cvi 3 copy put pop 1 add}forall pop/XUID exch def",
+	"}{pop pop}ifelse",
+	"}{pop pop}ifelse",
+	"{ /Private /FontInfo } {",
+	"dup load dup maxlength dict begin {",
+	"false { /UniqueID /XUID } { 3 index eq or } forall",
+	"{ pop pop }{ def } ifelse } forall currentdict end def",
+	"} forall",
+	"dup /WeightVector exch def",
+	"dup /$Blend exch [",
+	"exch false exch",
+	"dup length 1 sub -1 1 {",
+	"1 index dup length 3 -1 roll sub get",
+	"dup 0 eq {",
+	"pop 1 index {/exch load 3 1 roll} if",
+	"/pop load 3 1 roll",
+	"} {dup 1 eq {pop}",
+	"{2 index {/exch load 4 1 roll} if",
+	"3 1 roll /mul load 3 1 roll } ifelse",
+	"1 index {/add load 3 1 roll} if",
+	"exch pop true exch} ifelse",
+	"} for",
+	"pop { /add load } if",
+	"] cvx def",
+	"{2 copy length exch length ne {/makeblendedfont cvx errordict /typecheck get exec}if",
+	"0 0 1 3 index length 1 sub {",
+	"dup 4 index exch get exch 3 index exch get mul add",
+	"} for",
+	"exch pop exch pop}",
+	"{{dup type dup dup /arraytype eq exch /packedarraytype eq or {",
+	"  pop 1 index /ForceBold eq {",
+	"  5 index 0 0 1 3 index length 1 sub {",
+	"  dup 4 index exch get {2 index exch get add } {pop} ifelse",
+	"  } for exch pop exch pop",
+	"  2 index /ForceBoldThreshold get gt 3 copy} {",
+	"{length 1 index length ne { pop false } {",
+	"true exch { type dup /integertype eq exch /realtype eq exch or and } forall",
+	"} ifelse }",
+	"2 copy 8 index exch exec {pop 5 index 5 index exec}",
+	"{exch dup length array 1 index xcheck { cvx } if",
+	"dup length 1 sub 0 exch 1 exch {",
+	"dup 3 index exch get dup type dup /arraytype eq exch /packedarraytype eq or {",
+	"dup 10 index 6 index exec {",
+	"9 index exch 9 index exec} if } if 2 index 3 1 roll put",
+	"} for exch pop exch pop",
+	"} ifelse 3 copy",
+	"1 index dup /StemSnapH eq exch /StemSnapV eq or {",
+	"dup length 1 sub {dup 0 le { exit } if",
+	"dup dup 1 sub 3 index exch get exch 3 index exch get 2 copy eq {",
+	"pop 2 index 2 index 0 put 0 } if le {1 sub}",
+	"{dup dup 1 sub 3 index exch get exch 3 index exch get",
+	"3 index exch 3 index 1 sub exch put",
+	"3 copy put pop",
+	"2 copy exch length 1 sub lt {1 add} if} ifelse} loop pop",
+	"dup 0 get 0 le {",
+	"dup 0 exch {0 gt { exit } if 1 add} forall",
+	"dup 2 index length exch sub getinterval} if } if } ifelse put }",
+	"{/dicttype eq {6 copy 3 1 roll get exch 2 index exec}",
+	"{/makeblendedfont cvx errordict /typecheck get exec} ifelse",
+	"} ifelse pop pop } forall pop pop pop pop }",
+	"currentdict Blend 2 index exec",
+	"currentdict end",
+	"} bind put",
+	"/$fbf {FontDirectory counttomark 3 add -1 roll known {",
+	"cleartomark pop findfont}{",
+	"] exch findfont exch makeblendedfont",
+	"dup /Encoding currentfont /Encoding get put definefont",
+	"} ifelse currentfont /ScaleMatrix get makefont setfont",
+	"} bind put } { pop pop } ifelse exec",
+	NULL
+};
+
+const char *mmfindfont[] = {
+	"/$mmff_origfindfont where {",
+	"  pop save { restore } { pop pop }",
+	"} { {} { def } } ifelse",
+	"/setshared where { pop true } { false } ifelse",
+	"/findfont where pop dup systemdict eq {",
+	"pop { currentshared {{}} { true setshared { false setshared } } ifelse shareddict",
+	"} {{} userdict } ifelse begin",
+	"} { begin { currentdict scheck } { false } ifelse {",
+	"currentshared {{}} { true setshared { false setshared } } ifelse",
+	"} { {} } ifelse } ifelse",
+	"/$mmff_origfindfont /findfont load 3 index exec",
+	"/findfont {",
+	"dup FontDirectory exch known",
+	"{ dup FontDirectory exch get /FontType get 3 ne}",
+	"{ dup SharedFontDirectory exch known",
+	"{ dup SharedFontDirectory exch get /FontType get 3 ne}",
+	"{ false} ifelse} ifelse",
+	"{$mmff_origfindfont} { dup dup length string cvs (_) search {",
+	"cvn dup dup FontDirectory exch known exch SharedFontDirectory exch known or {",
+	"true} {dup length 7 add string dup 0 (%font%) putinterval",
+	"dup 2 index 6 exch dup length string cvs putinterval",
+	"{ status } stopped { pop false } if {",
+	"pop pop pop pop true} {false} ifelse} ifelse {",
+	"$mmff_origfindfont begin pop",
+	"[ exch { (_) search  { { cvr } stopped { pop pop } {",
+	"exch pop exch } ifelse",
+	"} { pop exit } ifelse } loop false /FontInfo where {",
+	"pop FontInfo /BlendAxisTypes 2 copy known {",
+	"get length counttomark 2 sub eq exch pop",
+	"} { pop pop } ifelse } if {",
+	"NormalizeDesignVector",
+	"ConvertDesignVector",
+	"] currentdict exch makeblendedfont",
+	"2 copy exch /FontName exch put",
+	"definefont} { cleartomark $mmff_origfindfont } ifelse end",
+	"} { pop pop pop $mmff_origfindfont } ifelse",
+	"} { pop $mmff_origfindfont } ifelse } ifelse",
+	"} bind 3 index exec",
+	"/SharedFontDirectory dup where { pop pop } { 0 dict 3 index exec } ifelse",
+	"end exec pop exec",
+NULL
 };

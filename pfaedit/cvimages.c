@@ -1194,7 +1194,7 @@ static int GFD_ImportOk(GGadget *g, GEvent *e) {
 	    else if ( format==fv_pcf )		/* pcf */
 		d->done = FVImportBDF(d->fv,temp,2, toback);
 	    else if ( format==fv_mac )
-		d->done = FVImportMult(d->fv,temp,toback,bf_nfntdfont);
+		d->done = FVImportMult(d->fv,temp,toback,bf_nfntmacbin);
 	    else if ( format==fv_win )
 		d->done = FVImportMult(d->fv,temp,toback,bf_fon);
 	    else if ( format==fv_image )

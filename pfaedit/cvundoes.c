@@ -1743,13 +1743,13 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
     }
 }
 
-static void _PasteToCV(CharView *cv,Undoes *paster) {
+static void _PasteToCV(CharView *cv,SplineChar *cvsc,Undoes *paster) {
     int refstate = 0;
     DBounds bb;
     real transform[6];
 
     if ( copybuffer.undotype == ut_none ) {
-	SCCheckXClipboard(cv->gw,cv->sc,cv->drawmode,false);
+	SCCheckXClipboard(cv->gw,cvsc,cv->drawmode,false);
 return;
     }
 
@@ -1760,14 +1760,14 @@ return;
       case ut_noop:
       break;
       case ut_state: case ut_statehint: case ut_statename:
-	if ( cv->drawmode==dm_fore && cv->sc->splines==NULL && cv->sc->refs==NULL ) {
-	    SCSynchronizeWidth(cv->sc,paster->u.state.width,cv->sc->width,NULL);
-	    cv->sc->vwidth = paster->u.state.vwidth;
+	if ( cv->drawmode==dm_fore && cvsc->splines==NULL && cvsc->refs==NULL ) {
+	    SCSynchronizeWidth(cvsc,paster->u.state.width,cvsc->width,NULL);
+	    cvsc->vwidth = paster->u.state.vwidth;
 	}
 	if ( paster->u.state.splines!=NULL ) {
 	    SplinePointList *spl, *new = SplinePointListCopy(paster->u.state.splines);
-	    if ( paster->was_order2 != cv->sc->parent->order2 )
-		new = SplineSetsConvertOrder(new,cv->sc->parent->order2 );
+	    if ( paster->was_order2 != cvsc->parent->order2 )
+		new = SplineSetsConvertOrder(new,cvsc->parent->order2 );
 	    SplinePointListSelect(new,true);
 	    for ( spl = new; spl->next!=NULL; spl = spl->next );
 	    spl->next = *cv->heads[cv->drawmode];
@@ -1781,14 +1781,14 @@ return;
 		new = galloc(sizeof(ImageList));
 		*new = *cimg;
 		new->selected = true;
-		new->next = cv->sc->backimages;
-		cv->sc->backimages = new;
+		new->next = cvsc->backimages;
+		cvsc->backimages = new;
 	    }
-	    SCOutOfDateBackground(cv->sc);
+	    SCOutOfDateBackground(cvsc);
 	} else if ( paster->undotype==ut_statehint && cv->searcher==NULL )
-	    ExtractHints(cv->sc,paster->u.state.u.hints,true);
-	if ( paster->u.state.anchor!=NULL && cv->drawmode==dm_fore && !cv->sc->searcherdummy )
-	    APMerge(cv->sc,paster->u.state.anchor);
+	    ExtractHints(cvsc,paster->u.state.u.hints,true);
+	if ( paster->u.state.anchor!=NULL && cv->drawmode==dm_fore && !cvsc->searcherdummy )
+	    APMerge(cvsc,paster->u.state.anchor);
 	if ( paster->u.state.refs!=NULL && cv->drawmode==dm_fore ) {
 	    RefChar *new, *refs;
 	    SplineChar *sc;
@@ -1796,8 +1796,8 @@ return;
 		if ( cv->searcher!=NULL )
 		    sc = FindCharacter(cv->searcher->fv->sf,refs);
 		else
-		    sc = FindCharacter(cv->sc->parent,refs);
-		if ( sc!=NULL && SCDependsOnSC(sc,cv->sc))
+		    sc = FindCharacter(cvsc->parent,refs);
+		if ( sc!=NULL && SCDependsOnSC(sc,cvsc))
 		    GWidgetErrorR(_STR_SelfRef,_STR_AttemptSelfRef);
 		else if ( sc!=NULL ) {
 		    new = chunkalloc(sizeof(RefChar));
@@ -1805,12 +1805,12 @@ return;
 		    new->splines = NULL;
 		    new->sc = sc;
 		    new->selected = true;
-		    new->next = cv->sc->refs;
-		    cv->sc->refs = new;
-		    SCReinstanciateRefChar(cv->sc,new);
-		    SCMakeDependent(cv->sc,sc);
+		    new->next = cvsc->refs;
+		    cvsc->refs = new;
+		    SCReinstanciateRefChar(cvsc,new);
+		    SCMakeDependent(cvsc,sc);
 		} else {
-		    PasteNonExistantRefCheck(cv->sc,paster,refs,&refstate);
+		    PasteNonExistantRefCheck(cvsc,paster,refs,&refstate);
 		}
 	    }
 	} else if ( paster->u.state.refs!=NULL && cv->drawmode==dm_back ) {
@@ -1823,65 +1823,70 @@ return;
 		if ( cv->searcher!=NULL )
 		    sc = FindCharacter(cv->searcher->fv->sf,refs);
 		else
-		    sc = FindCharacter(cv->sc->parent,refs);
+		    sc = FindCharacter(cvsc->parent,refs);
 		if ( sc!=NULL ) {
 		    new = SplinePointListTransform(SplinePointListCopy(sc->backgroundsplines),refs->transform,true);
 		    SplinePointListSelect(new,true);
 		    if ( new!=NULL ) {
 			for ( spl = new; spl->next!=NULL; spl = spl->next );
-			spl->next = cv->sc->backgroundsplines;
-			cv->sc->backgroundsplines = new;
+			spl->next = cvsc->backgroundsplines;
+			cvsc->backgroundsplines = new;
 		    }
 		}
 	    }
 	}
 	if ( paster->undotype==ut_statename ) {
-	    SplineChar *sc = cv->sc;
-	    SCSetMetaData(sc,paster->u.state.charname,
+	    SCSetMetaData(cvsc,paster->u.state.charname,
 		    paster->u.state.unicodeenc==0xffff?-1:paster->u.state.unicodeenc,
 		    paster->u.state.comment);
-	    PSTFree(sc->possub);
-	    sc->possub = paster->u.state.possub;
+	    PSTFree(cvsc->possub);
+	    cvsc->possub = paster->u.state.possub;
 	}
       break;
       case ut_possub:
-	SCAppendPosSub(cv->sc,paster->u.possub.pst,paster->u.possub.data);
+	SCAppendPosSub(cvsc,paster->u.possub.pst,paster->u.possub.data);
       break;
       case ut_width:
-	SCSynchronizeWidth(cv->sc,paster->u.width,cv->sc->width,NULL);
+	SCSynchronizeWidth(cvsc,paster->u.width,cvsc->width,NULL);
       break;
       case ut_vwidth:
-	if ( !cv->sc->parent->hasvmetrics )
+	if ( !cvsc->parent->hasvmetrics )
 	    GWidgetErrorR(_STR_NoVerticalMetrics,_STR_FontNoVerticalMetrics);
 	else
-	    cv->sc->vwidth = paster->u.state.vwidth;
+	    cvsc->vwidth = paster->u.state.vwidth;
       break;
       case ut_rbearing:
-	SplineCharFindBounds(cv->sc,&bb);
-	SCSynchronizeWidth(cv->sc,bb.maxx + paster->u.rbearing,cv->sc->width,cv->fv);
+	SplineCharFindBounds(cvsc,&bb);
+	SCSynchronizeWidth(cvsc,bb.maxx + paster->u.rbearing,cvsc->width,cv->fv);
       break;
       case ut_lbearing:
-	SplineCharFindBounds(cv->sc,&bb);
+	SplineCharFindBounds(cvsc,&bb);
 	transform[0] = transform[3] = 1.0;
 	transform[1] = transform[2] = transform[5] = 0;
 	transform[4] = paster->u.lbearing-bb.minx;
 	if ( transform[4]!=0 )
-	    FVTrans(cv->fv,cv->sc,transform,NULL,false);
-	/* FVTrans will preserver the state and update the chars */
+	    FVTrans(cv->fv,cvsc,transform,NULL,false);
+	/* FVTrans will preserve the state and update the chars */
 	/* CVPaste depends on this behavior */
       break;
       case ut_composit:
 	if ( paster->u.composit.state!=NULL )
-	    _PasteToCV(cv,paster->u.composit.state);
+	    _PasteToCV(cv,cvsc,paster->u.composit.state);
       break;
       case ut_multiple:
-	_PasteToCV(cv,paster->u.multiple.mult);
+	_PasteToCV(cv,cvsc,paster->u.multiple.mult);
       break;
     }
 }
 
 void PasteToCV(CharView *cv) {
-    _PasteToCV(cv,&copybuffer);
+    _PasteToCV(cv,cv->sc,&copybuffer);
+    if ( cv->sc->blended && cv->drawmode==dm_fore ) {
+	int j, enc = cv->sc->enc;
+	MMSet *mm = cv->sc->parent->mm;
+	for ( j=0; j<mm->instance_count; ++j )
+	    _PasteToCV(cv,mm->instances[j]->chars[enc],&copybuffer);
+    }
 }
 
 
@@ -2189,15 +2194,17 @@ return( bdf );
 void PasteIntoFV(FontView *fv,int doclear) {
     Undoes *cur=NULL, *bmp;
     BDFFont *bdf;
-    int i, cnt=0;
+    int i, j, cnt=0;
     int yestoall=0, first=true;
     uint8 *oldsel = fv->selected;
     extern int onlycopydisplayed;
+    SplineFont *sf = fv->sf, *origsf = sf;
+    MMSet *mm = sf->mm;
 
     fv->refstate = 0;
 
     cur = &copybuffer;
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] )
+    for ( i=0; i<sf->charcnt; ++i ) if ( fv->selected[i] )
 	++cnt;
     if ( cnt==0 ) {
 	fprintf( stderr, "No Selection\n" );
@@ -2205,8 +2212,15 @@ return;
     }
 
     if ( copybuffer.undotype == ut_none ) {
-	for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] )
-	    SCCheckXClipboard(fv->gw,SFMakeChar(fv->sf,i),dm_fore,doclear);
+	j = -1;
+	forever {
+	    for ( i=0; i<sf->charcnt; ++i ) if ( fv->selected[i] )
+		SCCheckXClipboard(fv->gw,SFMakeChar(sf,i),dm_fore,doclear);
+	    ++j;
+	    if ( mm==NULL || mm->normal!=origsf || j>=mm->instance_count )
+	break;
+	    sf = mm->instances[j];
+	}
 return;
     }
 
@@ -2217,10 +2231,10 @@ return;
     if ( cnt==1 && cur->undotype==ut_multiple && cur->u.multiple.mult->next!=NULL ) {
 	Undoes *tot; int j;
 	for ( cnt=0, tot=cur->u.multiple.mult; tot!=NULL; ++cnt, tot=tot->next );
-	fv->selected = galloc(fv->sf->charcnt);
-	memcpy(fv->selected,oldsel,fv->sf->charcnt);
-	for ( i=0; i<fv->sf->charcnt && !fv->selected[i]; ++i );
-	for ( j=0; j<cnt && i+j<fv->sf->charcnt; ++j )
+	fv->selected = galloc(sf->charcnt);
+	memcpy(fv->selected,oldsel,sf->charcnt);
+	for ( i=0; i<sf->charcnt && !fv->selected[i]; ++i );
+	for ( j=0; j<cnt && i+j<sf->charcnt; ++j )
 	    fv->selected[i+j] = 1;
 	cnt = j;
     }
@@ -2236,57 +2250,64 @@ return;
     /*  search for dotlessi, not find it and ignore the reference */
     if ( cur->undotype==ut_state || cur->undotype==ut_statehint || cur->undotype==ut_statename ||
 	    (cur->undotype==ut_composit && cur->u.composit.state!=NULL)) {
-	for ( i=0; i<fv->sf->charcnt; ++i )
-	    if ( fv->selected[i] && fv->sf->chars[i]==NULL )
-		SFMakeChar(fv->sf,i);
+	for ( i=0; i<sf->charcnt; ++i )
+	    if ( fv->selected[i] && sf->chars[i]==NULL )
+		SFMakeChar(sf,i);
     }
     cur = NULL;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
+    for ( i=0; i<origsf->charcnt; ++i ) if ( fv->selected[i] ) {
+	j=-1;
 	if ( cur==NULL ) {
 	    cur = &copybuffer;
 	    if ( cur->undotype==ut_multiple )
 		cur = cur->u.multiple.mult;
 	}
-	switch ( cur->undotype ) {
-	  case ut_noop:
-	  break;
-	  case ut_state: case ut_width: case ut_vwidth:
-	  case ut_lbearing: case ut_rbearing: case ut_possub:
-	  case ut_statehint: case ut_statename:
-	    if ( !fv->sf->hasvmetrics && cur->undotype==ut_vwidth) {
-		GWidgetErrorR(_STR_NoVerticalMetrics,_STR_FontNoVerticalMetrics);
+	forever {
+	    switch ( cur->undotype ) {
+	      case ut_noop:
+	      break;
+	      case ut_state: case ut_width: case ut_vwidth:
+	      case ut_lbearing: case ut_rbearing: case ut_possub:
+	      case ut_statehint: case ut_statename:
+		if ( !sf->hasvmetrics && cur->undotype==ut_vwidth) {
+		    GWidgetErrorR(_STR_NoVerticalMetrics,_STR_FontNoVerticalMetrics);
  goto err;
-	    }
-	    PasteToSC(SFMakeChar(fv->sf,i),cur,fv,doclear);
-	  break;
-	  case ut_bitmapsel: case ut_bitmap:
-	    if ( onlycopydisplayed && fv->show!=fv->filled )
-		_PasteToBC(BDFMakeChar(fv->show,i),fv->show->pixelsize,BDFDepth(fv->show),cur,doclear,fv);
-	    else {
-		for ( bdf=fv->sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=cur->u.bmpstate.pixelsize || BDFDepth(bdf)!=cur->u.bmpstate.depth); bdf=bdf->next );
-		if ( bdf==NULL ) {
-		    bdf = BitmapCreateCheck(fv,&yestoall,first,cur->u.bmpstate.pixelsize,cur->u.bmpstate.depth);
-		    first = false;
 		}
-		if ( bdf!=NULL )
-		    _PasteToBC(BDFMakeChar(bdf,i),bdf->pixelsize,BDFDepth(bdf),cur,doclear,fv);
+		PasteToSC(SFMakeChar(sf,i),cur,fv,doclear);
+	      break;
+	      case ut_bitmapsel: case ut_bitmap:
+		if ( onlycopydisplayed && fv->show!=fv->filled )
+		    _PasteToBC(BDFMakeChar(fv->show,i),fv->show->pixelsize,BDFDepth(fv->show),cur,doclear,fv);
+		else {
+		    for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=cur->u.bmpstate.pixelsize || BDFDepth(bdf)!=cur->u.bmpstate.depth); bdf=bdf->next );
+		    if ( bdf==NULL ) {
+			bdf = BitmapCreateCheck(fv,&yestoall,first,cur->u.bmpstate.pixelsize,cur->u.bmpstate.depth);
+			first = false;
+		    }
+		    if ( bdf!=NULL )
+			_PasteToBC(BDFMakeChar(bdf,i),bdf->pixelsize,BDFDepth(bdf),cur,doclear,fv);
+		}
+	      break;
+	      case ut_composit:
+		if ( cur->u.composit.state!=NULL )
+		    PasteToSC(SFMakeChar(sf,i),cur->u.composit.state,fv,doclear);
+		for ( bmp=cur->u.composit.bitmaps; bmp!=NULL; bmp = bmp->next ) {
+		    for ( bdf=sf->bitmaps; bdf!=NULL &&
+			    (bdf->pixelsize!=bmp->u.bmpstate.pixelsize || BDFDepth(bdf)!=bmp->u.bmpstate.depth);
+			    bdf=bdf->next );
+		    if ( bdf==NULL )
+			bdf = BitmapCreateCheck(fv,&yestoall,first,bmp->u.bmpstate.pixelsize,bmp->u.bmpstate.depth);
+		    if ( bdf!=NULL )
+			_PasteToBC(BDFMakeChar(bdf,i),bdf->pixelsize,BDFDepth(bdf),bmp,doclear,fv);
+		}
+		first = false;
+	      break;
 	    }
-	  break;
-	  case ut_composit:
-	    if ( cur->u.composit.state!=NULL )
-		PasteToSC(SFMakeChar(fv->sf,i),cur->u.composit.state,fv,doclear);
-	    for ( bmp=cur->u.composit.bitmaps; bmp!=NULL; bmp = bmp->next ) {
-		for ( bdf=fv->sf->bitmaps; bdf!=NULL &&
-			(bdf->pixelsize!=bmp->u.bmpstate.pixelsize || BDFDepth(bdf)!=bmp->u.bmpstate.depth);
-			bdf=bdf->next );
-		if ( bdf==NULL )
-		    bdf = BitmapCreateCheck(fv,&yestoall,first,bmp->u.bmpstate.pixelsize,bmp->u.bmpstate.depth);
-		if ( bdf!=NULL )
-		    _PasteToBC(BDFMakeChar(bdf,i),bdf->pixelsize,BDFDepth(bdf),bmp,doclear,fv);
-	    }
-	    first = false;
-	  break;
+	    ++j;
+	    if ( mm==NULL || mm->normal!=origsf || j>=mm->instance_count )
+	break;
+	    sf = mm->instances[j];
 	}
 	cur = cur->next;
 	if ( !GProgressNext())

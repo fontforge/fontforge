@@ -1823,6 +1823,35 @@ return( 1 );
 return( 0 );
 }
 
+static void skipcfft2thing(FILE *ttf) {
+    /* The old CFF spec allows little type2 programs to live in the CFF dict */
+    /*  indeces. These are designed to allow interpolation of values for mm */
+    /*  fonts. */
+    /* The Type2 program is terminated by an "endchar" operator */
+    /* I don't support this, but I shall try to skip over them properly */
+    /* There's no discussion about how values move from the t2 stack to the */
+    /*  cff stack, as there are no examples of this, it's hard to guess */
+    int ch;
+
+    fprintf( stderr, "PfaEdit does not support type2 programs embedded in CFF dict indeces.\n" );
+    forever {
+	ch = getc(ttf);
+	if ( ch>=247 && ch<=254 )
+	    getc(ttf);		/* Two byte number */
+	else if ( ch==255 ) {
+	    getc(ttf); getc(ttf); getc(ttf); getc(ttf);
+	    /* 16.16 number */
+	} else if ( ch==28 ) {
+	    getc(ttf);
+	    getc(ttf);
+	} else if ( ch==12 ) {
+	    getc(ttf);		/* Two byte operator */
+	} else if ( ch==14 ) {
+return;
+	}
+    }
+}
+
 struct topdicts {
     int32 cff_start;
 
@@ -1852,9 +1881,18 @@ struct topdicts {
     int private_offset;	/* from start of file */
     int synthetic_base;	/* font index */
     int postscript_code;	/* SID */
- /* synthetic fonts only */
+ /* synthetic fonts only (whatever they are) */
     int basefontname;		/* SID */
-    int basefontblend[16];	/* delta */
+ /* Multiple master/synthetic fonts */
+    real basefontblend[16];	/* delta */	/* No description of why this is relevant for mm fonts */
+ /* Multiple master fonts only */
+    int blendaxistypes[17];	/* SID */
+    int nMasters;
+    int nAxes;
+    real weightvector[17];
+    int lenBuildCharArray;	/* No description of what this means */
+    int NormalizeDesignVector;	/* SID */	/* No description of what this does */
+    int ConvertDesignVector;	/* SID */	/* No description of what this does */
  /* CID fonts only */
     int ros_registry;		/* SID */
     int ros_ordering;		/* SID */
@@ -1880,6 +1918,7 @@ struct topdicts {
     real stemsnaph[10];
     real stemsnapv[10];
     int forcebold;
+    real forceboldthreshold;
     int languagegroup;
     real expansionfactor;
     int initialRandomSeed;
@@ -1949,7 +1988,10 @@ static struct topdicts *readcfftopdict(FILE *ttf, char *fontname, int len) {
     td->postscript_code = td->basefontname = -1;
     td->synthetic_base = td->ros_registry = -1;
     td->fdarrayoff = td->fdselectoff = td->sid_fontname = -1;
+    td->blendaxistypes[0] = -1;
 
+    /* Multiple master fonts can have Type2 operators here, particularly */
+    /*  blend operators. We're ignoring that */
     while ( ftell(ttf)<base+len ) {
 	sp = 0;
 	while ( (ret=readcffthing(ttf,&ival,&stack[sp],&oval))!=3 && ftell(ttf)<base+len ) {
@@ -1958,7 +2000,9 @@ static struct topdicts *readcfftopdict(FILE *ttf, char *fontname, int len) {
 	    if ( ret!=0 && sp<45 )
 		++sp;
 	}
-	if ( sp==0 )
+	if ( ret==3 && oval==31 /* "T2" operator, can have 0 arguments */ ) {
+	    skipcfft2thing(ttf);
+	} else if ( sp==0 )
 	    fprintf( stderr, "No argument to operator\n" );
 	else if ( ret==3 ) switch( oval ) {
 	  case 0:
@@ -2027,6 +2071,7 @@ static struct topdicts *readcfftopdict(FILE *ttf, char *fontname, int len) {
 	    td->private_offset = stack[1];
 	  break;
 	  case (12<<8)+20:
+	    fprintf( stderr, "PfaEdit does not support synthetic fonts\n" );
 	    td->synthetic_base = stack[sp-1];
 	  break;
 	  case (12<<8)+21:
@@ -2038,6 +2083,20 @@ static struct topdicts *readcfftopdict(FILE *ttf, char *fontname, int len) {
 	  case (12<<8)+23:
 	    for ( i=0; i<sp && i<16; ++i )
 		td->basefontblend[i] = stack[i];
+	  break;
+	  case (12<<8)+24:
+	    fprintf( stderr, "PfaEdit does not support type2 multiple master fonts\n" );
+	    td->nMasters = stack[0];
+	    td->nAxes = sp-4;
+	    memcpy(td->weightvector,stack+1,(sp-4)*sizeof(real));
+	    td->lenBuildCharArray = stack[sp-3];
+	    td->NormalizeDesignVector = stack[sp-2];	/* These are type2 charstrings, even in type1 fonts */
+	    td->ConvertDesignVector = stack[sp-1];
+	  break;
+	  case (12<<8)+26:
+	    for ( i=0; i<sp && i<16; ++i )
+		td->blendaxistypes[i] = stack[i];
+	    td->blendaxistypes[i] = -1;
 	  break;
 	  case (12<<8)+30:
 	    td->ros_registry = stack[0];
@@ -2068,6 +2127,9 @@ static struct topdicts *readcfftopdict(FILE *ttf, char *fontname, int len) {
 	  case (12<<8)+38:
 	    td->sid_fontname = stack[sp-1];
 	  break;
+	  case (12<<8)+39:
+	    fprintf(stderr, "PfaEdit does not support Chameleon fonts\n");;
+	  break;
 	  default:
 	    fprintf(stderr,"Unknown operator in %s: %x\n", fontname, oval );
 	  break;
@@ -2097,7 +2159,9 @@ static void readcffprivate(FILE *ttf, struct topdicts *td) {
 	    if ( ret!=0 && sp<45 )
 		++sp;
 	}
-	if ( sp==0 && oval!=6 && oval!=7 && oval!=8 && oval!=9 && oval !=(12<<8)+12 && oval !=(12<<8)+13)
+	if ( ret==3 && oval==31 /* "T2" operator, can have 0 arguments */ ) {
+	    skipcfft2thing(ttf);
+	} else if ( sp==0 && oval!=6 && oval!=7 && oval!=8 && oval!=9 && oval !=(12<<8)+12 && oval !=(12<<8)+13)
 	    fprintf( stderr, "No argument to operator %d in private dict\n", oval );
 	else if ( ret==3 ) switch( oval ) {
 	  case 6:
@@ -2159,6 +2223,13 @@ static void readcffprivate(FILE *ttf, struct topdicts *td) {
 	  break;
 	  case (12<<8)+14:
 	    td->forcebold = stack[sp-1];
+	  break;
+	  case (12<<8)+15:
+	    td->forceboldthreshold = stack[sp-1];
+	  break;
+	  case (12<<8)+16:
+	    /* lenIV. -1 => unencrypted charstrings */
+	    /* obsolete */
 	  break;
 	  case (12<<8)+17:
 	    td->languagegroup = stack[sp-1];
@@ -2641,6 +2712,9 @@ static void cfffigure(struct ttfinfo *info, struct topdicts *dict,
 	char **strings, struct pschars *gsubrs) {
     int i, cstype;
     struct pschars *subrs;
+    struct pscontext pscontext;
+
+    memset(&pscontext,0,sizeof(pscontext));
 
     cffinfofillup(info, dict, strings );
 
@@ -2649,6 +2723,7 @@ static void cfffigure(struct ttfinfo *info, struct topdicts *dict,
 /*  as we flip from font to font. So we can't set the bias when we read in */
 /*  the subrs but must wait until we know which font we're working on. */
     cstype = dict->charstringtype;
+    pscontext.is_type2 = cstype-1;
     gsubrs->bias = cstype==1 ? 0 :
 	    gsubrs->cnt < 1240 ? 107 :
 	    gsubrs->cnt <33900 ? 1131 : 32768;
@@ -2660,7 +2735,7 @@ static void cfffigure(struct ttfinfo *info, struct topdicts *dict,
     info->chars = gcalloc(info->glyph_cnt,sizeof(SplineChar *));
     for ( i=0; i<info->glyph_cnt; ++i ) {
 	info->chars[i] = PSCharStringToSplines(
-		dict->glyphs.values[i], dict->glyphs.lens[i],cstype-1,
+		dict->glyphs.values[i], dict->glyphs.lens[i],&pscontext,
 		subrs,gsubrs,getsid(dict->charset[i],strings));
 	info->chars[i]->vwidth = info->emsize;
 	if ( cstype==2 ) {
@@ -2682,6 +2757,9 @@ static void cidfigure(struct ttfinfo *info, struct topdicts *dict,
     SplineFont *sf;
     struct cidmap *map;
     char buffer[100];
+    struct pscontext pscontext;
+
+    memset(&pscontext,0,sizeof(pscontext));
 
     cffinfofillup(info, dict, strings );
 
@@ -2715,6 +2793,7 @@ static void cidfigure(struct ttfinfo *info, struct topdicts *dict,
 /*  as we flip from font to font. So we can't set the bias when we read in */
 /*  the subrs but must wait until we know which font we're working on. */
 	cstype = subdicts[j]->charstringtype;
+	pscontext.is_type2 = cstype-1;
 	gsubrs->bias = cstype==1 ? 0 :
 		gsubrs->cnt < 1240 ? 107 :
 		gsubrs->cnt <33900 ? 1131 : 32768;
@@ -2726,7 +2805,7 @@ static void cidfigure(struct ttfinfo *info, struct topdicts *dict,
 	cid = dict->charset[i];
 	uni = CID2NameEnc(map,cid,buffer,sizeof(buffer));
 	info->chars[i] = PSCharStringToSplines(
-		dict->glyphs.values[i], dict->glyphs.lens[i],cstype-1,
+		dict->glyphs.values[i], dict->glyphs.lens[i],&pscontext,
 		subrs,gsubrs,buffer);
 	info->chars[i]->vwidth = sf->ascent+sf->descent;
 	info->chars[i]->unicodeenc = uni;

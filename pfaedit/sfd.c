@@ -559,6 +559,8 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
     fprintf(sfd, "Width: %d\n", sc->width );
     if ( sc->vwidth!=sc->parent->ascent+sc->parent->descent )
 	fprintf(sfd, "VWidth: %d\n", sc->vwidth );
+    if ( sc->glyph_class!=0 )
+	fprintf(sfd, "GlyphClass: %d\n", sc->glyph_class );
     if ( sc->changedsincelasthinted|| sc->manualhints || sc->widthset )
 	fprintf(sfd, "Flags: %s%s%s%s\n",
 		sc->changedsincelasthinted?"H":"",
@@ -1985,6 +1987,9 @@ return( NULL );
 	    getsint(sfd,&sc->width);
 	} else if ( strmatch(tok,"VWidth:")==0 ) {
 	    getsint(sfd,&sc->vwidth);
+	} else if ( strmatch(tok,"GlyphClass:")==0 ) {
+	    getint(sfd,&temp);
+	    sc->glyph_class = temp;
 	} else if ( strmatch(tok,"Flags:")==0 ) {
 	    while ( isspace(ch=getc(sfd)) && ch!='\n' && ch!='\r');
 	    while ( ch!='\n' && ch!='\r' ) {
