@@ -436,6 +436,7 @@ static int ImgRefEdgeSelected(CharView *cv, FindSel *fs,GEvent *event) {
 		if ( update )
 		    SCUpdateAll(cv->sc);
 		CVPreserveTState(cv);
+		cv->p.ref = ref;
 		SetCur(cv);
 return( true );
 	    }
@@ -449,6 +450,7 @@ return( true );
 	    if ( update )
 		SCUpdateAll(cv->sc);
 	    CVPreserveTState(cv);
+	    cv->p.img = img;
 	    SetCur(cv);
 return( true );
 	}

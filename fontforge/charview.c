@@ -2935,8 +2935,13 @@ return;
 	    int basey = cv->active_tool!=cvt_hand ?-cv->yoff + cv->height - rint(cv->p.constrain.y*cv->scale) : cv->p.y;
 	    int dx= event->u.mouse.x-basex, dy = event->u.mouse.y-basey;
 	    int sign = dx*dy<0?-1:1;
+	    double aspect = 1.0;
 
 	    if ( dx<0 ) dx = -dx; if ( dy<0 ) dy = -dy;
+	    if ( cv->p.img!=NULL && cv->p.img->bb.minx!=cv->p.img->bb.maxx )
+		aspect = (cv->p.img->bb.maxy - cv->p.img->bb.miny) / (cv->p.img->bb.maxx - cv->p.img->bb.minx);
+	    else if ( cv->p.ref!=NULL && cv->p.ref->bb.minx!=cv->p.ref->bb.maxx )
+		aspect = (cv->p.ref->bb.maxy - cv->p.ref->bb.miny) / (cv->p.ref->bb.maxx - cv->p.ref->bb.minx);
 	    if ( dy >= 2*dx ) {
 		p.x = fake.u.mouse.x = basex;
 		p.cx = cv->p.constrain.x;
@@ -2953,11 +2958,11 @@ return;
 		p.y = fake.u.mouse.y = basey;
 		p.cy = cv->p.constrain.y;
 	    } else if ( dx > dy ) {
-		p.x = fake.u.mouse.x = basex + sign * (event->u.mouse.y-basey);
-		p.cx = cv->p.constrain.x - sign * (p.cy-cv->p.constrain.y);
+		p.x = fake.u.mouse.x = basex + sign * (event->u.mouse.y-basey)/aspect;
+		p.cx = cv->p.constrain.x - sign * (p.cy-cv->p.constrain.y)/aspect;
 	    } else {
-		p.y = fake.u.mouse.y = basey + sign * (event->u.mouse.x-basex);
-		p.cy = cv->p.constrain.y - sign * (p.cx-cv->p.constrain.x);
+		p.y = fake.u.mouse.y = basey + sign * (event->u.mouse.x-basex)*aspect;
+		p.cy = cv->p.constrain.y - sign * (p.cx-cv->p.constrain.x)*aspect;
 	    }
 	}
 	event = &fake;
