@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 22-Oct-2002 -->
+  <!-- AP: Last modified: 24-Oct-2002 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,28 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    24-Oct-2002
+    <UL>
+      <LI>
+	Change the default configuration process to use dynamic libaries
+	<UL>
+	  <LI>
+	    Added "configure.static" which will configure for static libaries (On Mac
+	    OS/X the compiler gets internal compiler errors if asked to generate pic
+	    code)
+	</UL>
+      <LI>
+	Enable reading a straight ttf file out of a .bin or .hqx wrapper (ie. doesn't
+	need to be in a resource fork)
+      <LI>
+	The Kern Pairs dlg did not show Hebrew/Arabic right to left. Fixed
+      <LI>
+	Added a popup menu to Kern Pairs which will allow you to reset a kern pair
+      <LI>
+	Added a way to configure the font family used for info messages in the outline
+	and bitmap character views.
+    </UL>
   <LI>
     22-Oct-2002
     <UL>

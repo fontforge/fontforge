@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 22-Oct-2002 -->
+  <!-- AP: Last modified: 24-Oct-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -90,11 +90,11 @@ let me know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-021022.tgz">Download pfaedit linux-i386 Redhat 7.3
-    </A><A NAME="downloads">executable</A> Version: 22-Oct-2002
+    <A HREF="pfaedit-021024.tgz">Download pfaedit linux-i386 Redhat 7.3
+    </A><A NAME="downloads">executable</A> Version: 24-Oct-2002
   <LI>
-    <A HREF="pfaedit-020910-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
-    Version: 10-Sept-2002 (Redhat 7.3)
+    <A HREF="pfaedit-021024-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
+    Version: 24-Oct-2002 (Redhat 7.3)
   <LI>
     <A HREF="pfaedit-020910-1.ppc.rpm">Download pfaedit linux-ppc SUSE 7.1
     </A>binary rpm Version: 10-Sept-2002
@@ -131,11 +131,11 @@ If you want to edit CID keyed fonts you probably need these
   <A NAME="source">Source</A> distribution
 </H2>
 <P>
-You can download a <A HREF="pfaedit-020910-1.src.rpm">source RPM</A>: Version:
-10-Sept-2002<BR>
-Or you can download the <A HREF="pfaedit_full-021022.tgz">entire source tree
+You can download a <A HREF="pfaedit-021024-1.src.rpm">source RPM</A>: Version:
+24-Oct-2002<BR>
+Or you can download the <A HREF="pfaedit_full-021024.tgz">entire source tree
 </A>in one .tgz file: Version
-22-Oct-2002<!--
+24-Oct-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -260,13 +260,39 @@ should install them properly for you 8-Feb-2002.
 Or you can just browse the <A HREF="overview.html">docs online</A>. (Always
 current)
 <H2>
+  Building it
+</H2>
+<BLOCKQUOTE>
+  <PRE>$ gunzip pfaedit_full-*.tgz
+$ tar xf pfaedit-full*.tar
+$ cd pfaedit
+$ configure
+$ make
+$ su
+# make install
+</PRE>
+</BLOCKQUOTE>
+<P>
+PfaEdit now compiles dynamic libaries by default. If you would rather not
+deal with dynamic libraries (or if the compiler generates internal compiler
+errors when asked to generate PIC code, as Mac OS/X does for me) then use<BR>
+<CODE>&nbsp; &nbsp; &nbsp; &nbsp; $ configure.static</CODE><BR>
+instead and things should be configured for static libraries.
+<H2>
   Installing it
 </H2>
 <P>
-The executable tarball contains the pfaedit executable and a man page. Put
-it wherever you'd like.
+The executable tarball contains a shell script doinstall
+<BLOCKQUOTE>
+  <PRE>$ gunzip pfaedit-*.tgz
+$ tar xf pfaedit-*.tar
+$ cd pfaedit
+$ su
+# doinstall
+</PRE>
+</BLOCKQUOTE>
 <P>
-The build script will do an install to /usr/local/bin if you want it to.
+See above on how to install using the makefile.
 <H2>
   Running it
 </H2>
