@@ -1625,7 +1625,7 @@ void FontViewMenu_Paste(GtkMenuItem *menuitem, gpointer user_data) {
 # endif
     if ( FVAnyCharSelected(fv)==-1 )
 return;
-    PasteIntoFV(fv,false);
+    PasteIntoFV(fv,false,NULL);
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW
@@ -1637,7 +1637,7 @@ void FontViewMenu_PasteInto(GtkMenuItem *menuitem, gpointer user_data) {
 # endif
     if ( FVAnyCharSelected(fv)==-1 )
 return;
-    PasteIntoFV(fv,true);
+    PasteIntoFV(fv,true,NULL);
 }
 
 #ifdef FONTFORGE_CONFIG_PASTEAFTER
@@ -1651,7 +1651,7 @@ void FontViewMenu_PasteAfter(GtkMenuItem *menuitem, gpointer user_data) {
     int pos = FVAnyCharSelected(fv);
     if ( pos<0 )
 return;
-    PasteIntoFV(fv,2);
+    PasteIntoFV(fv,2,NULL);
 }
 #elif defined(FONTFORGE_CONFIG_GTK)
 void FontViewMenu_PasteAfter(GtkMenuItem *menuitem, gpointer user_data) {
@@ -1666,7 +1666,7 @@ static void FVSameGlyphAs(FontView *fv) {
 
     if ( FVAnyCharSelected(fv)==-1 || base==NULL || fv->cidmaster!=NULL )
 return;
-    PasteIntoFV(fv,false);
+    PasteIntoFV(fv,false,NULL);
     for ( i=0; i<sf->charcnt; ++i )
 	    if ( sf->chars[i]!=NULL && fv->selected[i] && base->local_enc!=i) {
 	free(sf->chars[i]->name);
@@ -9227,7 +9227,7 @@ void FVFakeMenus(FontView *fv,int cmd) {
 	FVCopyWidth(fv,ut_width);
       break;
       case 4:
-	PasteIntoFV(fv,false);
+	PasteIntoFV(fv,false,NULL);
       break;
       case 5:
 	FVClear(fv);
@@ -9242,7 +9242,7 @@ void FVFakeMenus(FontView *fv,int cmd) {
 	FVUnlinkRef(fv);
       break;
       case 9:
-	PasteIntoFV(fv,true);
+	PasteIntoFV(fv,true,NULL);
       break;
       case 10:
 	FVCopyWidth(fv,ut_vwidth);

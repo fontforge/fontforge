@@ -1756,9 +1756,10 @@ return;
 /* when pasting from the fontview we do a clear first */
 #ifdef FONTFORGE_CONFIG_TYPE3
 static void _PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
-	int layer) {
+	int layer, real trans[6]) {
 #else
-static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto) {
+static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
+	real trans[6]) {
     const int layer = ly_fore;
 #endif
     DBounds bb;
@@ -1815,6 +1816,8 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto) 
 		SCSynchronizeWidth(sc,sc->width+width,sc->width,fv);
 	    }
 #endif
+	} else if ( pasteinto==3 && trans!=NULL ) {
+	    xoff = trans[4]; yoff = trans[5];
 	}
 #ifdef FONTFORGE_CONFIG_TYPE3
 	if ( layer>=ly_fore && sc->layers[layer].splines==NULL &&
@@ -1830,13 +1833,11 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto) 
 #endif
 	if ( paster->u.state.splines!=NULL ) {
 	    SplinePointList *temp = SplinePointListCopy(paster->u.state.splines);
-#ifdef FONTFORGE_CONFIG_PASTEAFTER
-	    if ( pasteinto==2 && (xoff!=0 || yoff!=0)) {
+	    if ( (pasteinto==2 || pasteinto==3 ) && (xoff!=0 || yoff!=0)) {
 		transform[0] = transform[3] = 1; transform[1] = transform[2] = 0;
 		transform[4] = xoff; transform[5] = yoff;
 		temp = SplinePointListTransform(temp,transform,true);
 	    }
-#endif
 	    if ( paster->was_order2 != sc->parent->order2 )
 		temp = SplineSetsConvertOrder(temp,sc->parent->order2);
 	    if ( sc->layers[layer].splines!=NULL ) {
@@ -1896,9 +1897,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto) 
 		    new = RefCharCreate();
 		    *new = *refs;
 		    new->transform[4] *= scale; new->transform[5] *= scale;
-#ifdef FONTFORGE_CONFIG_PASTEAFTER
 		    new->transform[4] += xoff;  new->transform[5] += yoff;
-#endif
 #ifdef FONTFORGE_CONFIG_TYPE3
 		    new->layers = NULL;
 		    new->layer_cnt = 0;
@@ -1962,7 +1961,8 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto) 
 }
 
 #ifdef FONTFORGE_CONFIG_TYPE3
-static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto) {
+static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
+	real trans[6]) {
     if ( paster->undotype==ut_layers && sc->parent->multilayer ) {
 	int lc, start, layer;
 	Undoes *pl;
@@ -1985,16 +1985,16 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto) 
 	    sc->layer_cnt = start+lc;
 	}
 	for ( lc=0, pl = paster->u.multiple.mult; pl!=NULL; pl=pl->next, ++lc )
-	    _PasteToSC(sc,pl,fv,pasteinto,start+lc);
+	    _PasteToSC(sc,pl,fv,pasteinto,start+lc,trans);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	SCMoreLayers(sc);
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     } else if ( paster->undotype==ut_layers ) {
 	Undoes *pl;
 	for ( pl = paster->u.multiple.mult; pl!=NULL; pl=pl->next );
-	    _PasteToSC(sc,pl,fv,pasteinto,ly_fore);
+	    _PasteToSC(sc,pl,fv,pasteinto,ly_fore,trans);
     } else
-	_PasteToSC(sc,paster,fv,pasteinto,ly_fore);
+	_PasteToSC(sc,paster,fv,pasteinto,ly_fore,trans);
 }
 #endif
 
@@ -2506,7 +2506,7 @@ static BDFFont *BitmapCreateCheck(FontView *fv,int *yestoall, int first, int pix
 return( bdf );
 }
 
-void PasteIntoFV(FontView *fv,int pasteinto) {
+void PasteIntoFV(FontView *fv,int pasteinto,real trans[6]) {
     Undoes *cur=NULL, *bmp;
     BDFFont *bdf;
     int i, j, cnt=0;
@@ -2600,7 +2600,7 @@ return;
 #endif
  goto err;
 		}
-		PasteToSC(SFMakeChar(sf,i),cur,fv,pasteinto);
+		PasteToSC(SFMakeChar(sf,i),cur,fv,pasteinto,trans);
 	      break;
 	      case ut_bitmapsel: case ut_bitmap:
 		if ( onlycopydisplayed && fv->show!=fv->filled )
@@ -2617,7 +2617,7 @@ return;
 	      break;
 	      case ut_composit:
 		if ( cur->u.composit.state!=NULL )
-		    PasteToSC(SFMakeChar(sf,i),cur->u.composit.state,fv,pasteinto);
+		    PasteToSC(SFMakeChar(sf,i),cur->u.composit.state,fv,pasteinto,trans);
 		for ( bmp=cur->u.composit.bitmaps; bmp!=NULL; bmp = bmp->next ) {
 		    for ( bdf=sf->bitmaps; bdf!=NULL &&
 			    (bdf->pixelsize!=bmp->u.bmpstate.pixelsize || BDFDepth(bdf)!=bmp->u.bmpstate.depth);
@@ -2684,7 +2684,7 @@ return;
 #endif
 return;
 	}
-	PasteToSC(sc,cur,mv->fv,!doclear);
+	PasteToSC(sc,cur,mv->fv,!doclear,NULL);
       break;
       case ut_bitmapsel: case ut_bitmap:
 	if ( onlycopydisplayed && mv->bdf!=NULL )
@@ -2703,7 +2703,7 @@ return;
       break;
       case ut_composit:
 	if ( cur->u.composit.state!=NULL )
-	    PasteToSC(sc,cur->u.composit.state,mv->fv,!doclear);
+	    PasteToSC(sc,cur->u.composit.state,mv->fv,!doclear,NULL);
 	for ( bmp=cur->u.composit.bitmaps; bmp!=NULL; bmp = bmp->next ) {
 	    for ( bdf=mv->fv->sf->bitmaps; bdf!=NULL &&
 		    (bdf->pixelsize!=bmp->u.bmpstate.pixelsize || BDFDepth(bdf)!=bmp->u.bmpstate.depth);

@@ -689,7 +689,7 @@ extern void BCCopySelected(BDFChar *bc,int pixelsize,int depth);
 extern void PasteToBC(BDFChar *bc,int pixelsize,int depth,FontView *fv);
 extern void FVCopyWidth(FontView *fv,enum undotype ut);
 extern void FVCopy(FontView *fv, int fullcopy);
-extern void PasteIntoFV(FontView *fv, int pasteinto);
+extern void PasteIntoFV(FontView *fv, int pasteinto, real trans[6]);
 
 extern void SCUpdateAll(SplineChar *sc);
 extern void SCOutOfDateBackground(SplineChar *sc);
