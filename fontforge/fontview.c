@@ -5108,7 +5108,9 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		GDrawDrawLine(pixmap,x,y,xend,yend,0xd08080);
 		GDrawDrawLine(pixmap,x,yend,xend,y,0xd08080);
 	    }
-	    if ( fv->show!=NULL && fv->show->chars[index]==NULL &&
+	    if ( fv->show!=NULL &&
+		    index < fv->show->charcnt &&
+		    fv->show->chars[index]==NULL &&
 		    SCWorthOutputting(fv->sf->chars[index]) ) {
 		/* If we have an outline but no bitmap for this slot */
 		box.x = j*fv->cbw+1; box.width = fv->cbw-2;
