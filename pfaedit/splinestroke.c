@@ -82,26 +82,29 @@ static double SplineExpand(Spline *spline,real t,real toff, StrokeInfo *si,
 	BasePoint *plus, BasePoint *minus) {
     Spline1D *xsp = &spline->splines[0], *ysp = &spline->splines[1];
     BasePoint base;
-    double lineangle, c,s;
+    double lineangle, c,s, factor = 1.0;
 
     base.x = ((xsp->a*t+xsp->b)*t+xsp->c)*t + xsp->d;
     base.y = ((ysp->a*t+ysp->b)*t+ysp->c)*t + ysp->d;
 
+    if ( si->factor!=NULL )
+	factor = (si->factor)(si->data,spline,t);
+
     lineangle = SplineAngle(spline,t+toff);
     if ( !si->caligraphic ) {
-	c = si->radius*cos(lineangle+PI/2);
-	s = si->radius*sin(lineangle+PI/2);
+	c = si->radius*factor*cos(lineangle+PI/2);
+	s = si->radius*factor*sin(lineangle+PI/2);
 	plus->y = base.y+s;
 	plus->x = base.x+c;
 	minus->y = base.y-s;
 	minus->x = base.x-c;
     } else {
 	int corner = PenCorner(lineangle,si);
-	plus->x = base.x + si->xoff[corner];
-	plus->y = base.y + si->yoff[corner];
+	plus->x = base.x + factor*si->xoff[corner];
+	plus->y = base.y + factor*si->yoff[corner];
 	corner += 2;
-	minus->x = base.x + si->xoff[corner];
-	minus->y = base.y + si->yoff[corner];
+	minus->x = base.x + factor*si->xoff[corner];
+	minus->y = base.y + factor*si->yoff[corner];
     }
 return( lineangle );
 }
@@ -137,6 +140,8 @@ static void StrokeEnd(SplinePoint *base, StrokeInfo *si, SplinePoint **_plus, Sp
     real c,s;
     real angle;
     real sign;
+    real factor = base->next==NULL || si->factor==NULL ? 1.0 :
+	    (si->factor)(si->data,base->next,0);
 
     if ( base->next==NULL && base->prev==NULL ) {
 	/* A single point, is kind of dull.
@@ -147,13 +152,13 @@ static void StrokeEnd(SplinePoint *base, StrokeInfo *si, SplinePoint **_plus, Sp
 		but how does one orient that square? probably a circle is best
 		here too
 	*/
+	/* We don't have a spline, so don't try guessing factor */
 	if ( si->caligraphic ) {
-	    double c = cos(si->penangle), s = sin(si->penangle);
-	    plus = SplinePointCreate(base->me.x+si->radius*c - si->thickness*s,base->me.y+si->thickness*c + s*si->radius);
+	    plus = SplinePointCreate(base->me.x+si->xoff[0],base->me.y+si->yoff[0]);
 	    plus->pointtype = pt_corner;
-	    cur = makeline(plus,base->me.x+si->radius*c + si->thickness*s,base->me.y-si->thickness*c + s*si->radius);
-	    cur = makeline(cur,base->me.x-si->radius*c + si->thickness*s,base->me.y-si->thickness*c - s*si->radius);
-	    cur = makeline(cur,base->me.x-si->radius*c - si->thickness*s,base->me.y+si->thickness*c - s*si->radius);
+	    cur = makeline(plus,base->me.x+si->xoff[1],base->me.y+si->yoff[1]);
+	    cur = makeline(cur,base->me.x+si->xoff[2],base->me.y+si->yoff[2]);
+	    cur = makeline(cur,base->me.x+si->xoff[3],base->me.y+si->yoff[3]);
 	    SplineMake(cur,plus);
 	    *_plus = *_minus = plus;
 	} else if ( si->cap!=lc_butt ) {
@@ -179,9 +184,9 @@ static void StrokeEnd(SplinePoint *base, StrokeInfo *si, SplinePoint **_plus, Sp
 	    corner = PenCorner(lineangle,si)+4;
 	    incr = -1;
 	}
-	plus = SplinePointCreate(base->me.x+si->xoff[corner],base->me.y+si->yoff[corner]);
-	cur = makeline(plus,base->me.x+si->xoff[corner+incr],base->me.y+si->yoff[corner+incr]);
-	*_minus = makeline(cur,base->me.x+si->xoff[corner+2*incr],base->me.y+si->yoff[corner+2*incr]);
+	plus = SplinePointCreate(base->me.x+factor*si->xoff[corner],base->me.y+factor*si->yoff[corner]);
+	cur = makeline(plus,base->me.x+factor*si->xoff[corner+incr],base->me.y+factor*si->yoff[corner+incr]);
+	*_minus = makeline(cur,base->me.x+factor*si->xoff[corner+2*incr],base->me.y+factor*si->yoff[corner+2*incr]);
 	plus->pointtype = pt_corner;
 	*_plus = plus;
     } else {
@@ -224,8 +229,8 @@ static void StrokeEnd(SplinePoint *base, StrokeInfo *si, SplinePoint **_plus, Sp
 	    mid1->me.x = base->me.x+ sign*(plus->me.y-base->me.y);
 	    mid1->me.y = base->me.y- sign*(plus->me.x-base->me.x);
 	    mid1->pointtype = pt_curve;
-	    c = .552*si->radius*cos(angle);
-	    s = .552*si->radius*sin(angle);
+	    c = .552*si->radius*factor*cos(angle);
+	    s = .552*si->radius*factor*sin(angle);
 	    plus->nextcp.x = plus->me.x + c;
 	    plus->nextcp.y = plus->me.y + s;
 	    minus->prevcp.x = minus->me.x +c;
@@ -291,7 +296,8 @@ static void CirclePoint(TPoint *tp,BasePoint *center,BasePoint *dir,real radius)
 
 static void MakeJoints(JointPoint *ret,StrokeInfo *si,
 	BasePoint *_from,BasePoint *_to, BasePoint *center,
-	int incr,double pangle, double nangle, BasePoint *base) {
+	int incr,double pangle, double nangle, BasePoint *base,
+	real factor) {
     SplinePoint *from, *to, *mid;
     BasePoint temp;
     TPoint approx[4];
@@ -322,7 +328,7 @@ static void MakeJoints(JointPoint *ret,StrokeInfo *si,
 	    i = cstart + incr;		/* First one is from */
 	    mid = from;
 	    while ( i!=cend ) {
-		mid = makeline(mid,base->x+si->xoff[i],base->y+si->yoff[i]);
+		mid = makeline(mid,base->x+factor*si->xoff[i],base->y+factor*si->yoff[i]);
 		i += incr;
 	    }
 	    SplineMake(mid,to);
@@ -336,11 +342,11 @@ static void MakeJoints(JointPoint *ret,StrokeInfo *si,
 	SplineMake(mid,to);
     } else {
 	from->pointtype = to->pointtype = pt_curve;
-	CirclePoint(&approx[0],center,&ret->inter,si->radius); approx[0].t = .5;
+	CirclePoint(&approx[0],center,&ret->inter,factor*si->radius); approx[0].t = .5;
 	temp.x = (ret->inter.x+from->me.x)/2; temp.y = (ret->inter.y+from->me.y)/2;
-	CirclePoint(&approx[1],center,&temp,si->radius); approx[1].t = .25;
+	CirclePoint(&approx[1],center,&temp,factor*si->radius); approx[1].t = .25;
 	temp.x = (ret->inter.x+to->me.x)/2; temp.y = (ret->inter.y+to->me.y)/2;
-	CirclePoint(&approx[2],center,&temp,si->radius); approx[2].t = .75;
+	CirclePoint(&approx[2],center,&temp,factor*si->radius); approx[2].t = .75;
 	ApproximateSplineFromPoints(from,to,approx,3);
     }
 }
@@ -351,6 +357,7 @@ static void StrokeJoint(SplinePoint *base,StrokeInfo *si,JointPoint *plus,JointP
     BasePoint nplus, nminus, pplus,pminus;
     double nangle, pangle;
     int pinner;
+    real factor = si->factor==NULL ? 1.0 : (si->factor)(si->data,base->next,0);
 
     SplineIsLinearMake(base->prev);
     SplineIsLinearMake(base->next);
@@ -387,7 +394,7 @@ static void StrokeJoint(SplinePoint *base,StrokeInfo *si,JointPoint *plus,JointP
 		 base->next->splines[1].c);
 	if ( !pinner ) {
 	    SplineSet junk;
-	    MakeJoints(plus,si,&pplus,&nplus,&base->me,1,pangle,nangle,&base->me);
+	    MakeJoints(plus,si,&pplus,&nplus,&base->me,1,pangle,nangle,&base->me,factor);
 	    junk.first = plus->from; junk.last = plus->to;
 	    SplineSetReverse(&junk);
 	    plus->from = junk.first; plus->to = junk.last;
@@ -399,7 +406,7 @@ static void StrokeJoint(SplinePoint *base,StrokeInfo *si,JointPoint *plus,JointP
 	    SplineSet junk;
 	    if (( pangle += PI )>PI ) pangle -= 2*PI;
 	    if (( nangle += PI )>PI ) nangle -= 2*PI;
-	    MakeJoints(minus,si,&nminus,&pminus,&base->me,-1,pangle,nangle,&base->me);
+	    MakeJoints(minus,si,&nminus,&pminus,&base->me,-1,pangle,nangle,&base->me,factor);
 	    junk.first = minus->from; junk.last = minus->to;
 	    SplineSetReverse(&junk);
 	    minus->from = junk.first; minus->to = junk.last;
@@ -576,6 +583,14 @@ return( ssplus );
 	    if ( plus->nonextcp && plus->noprevcp ) plus->pointtype = pt_corner;
 	    if ( minus->nonextcp && minus->noprevcp ) minus->pointtype = pt_corner;
 	} else if ( si->caligraphic ) {
+	    /* At each t where the spline is tangent to one of the pen-angles */
+	    /*  we need to figure out which side is inner and which is outer */
+	    /*  the outer side gets a copy of the appropriate pen side (with corner points tangent) */
+	    /*  the inner side is going to be a single corner point at the */
+	    /*  intersection of the splines from the two corners */
+	    /* And if (god help us) we've got a point of inflection here then */
+	    /*  we get half the pen on each side */
+	    /* So this code is quite wrong !!!! */
 	    cnt = SplineSolveForPen(spline,si,ts,t_start,t_end);
 	    p_to = m_to = NULL;
 	    for ( j=1; j<cnt; ++j ) {

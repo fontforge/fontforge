@@ -1566,16 +1566,17 @@ static void bScaleToEm(Context *c) {
 static void bExpandStroke(Context *c) {
     StrokeInfo si;
     /* Arguments:
-	1 => stroke width (implied butt, round)
-	2 => stroke width, caligraphic angle
-	3 => stroke width, line cap, line join
+	2 => stroke width (implied butt, round)
+	4 => stroke width, line cap, line join
+	5 => stroke width, caligraphic angle, thickness-numerator, thickness-denom
     */
 
-    if ( c->a.argc==1 || c->a.argc>4 )
+    if ( c->a.argc!=2 && c->a.argc!=4 && c->a.argc!=7 )
 	error( c, "Wrong number of arguments to ExpandStroke");
     if ( c->a.vals[1].type!=v_int ||
-	    (c->a.argc>=3 && c->a.vals[2].type!=v_int ) ||
-	    (c->a.argc==4 && c->a.vals[3].type!=v_int ))
+	    (c->a.argc>=4 && c->a.vals[2].type!=v_int ) ||
+	    (c->a.argc>=4 && c->a.vals[3].type!=v_int ) ||
+	    (c->a.argc>=5 && c->a.vals[4].type!=v_int ))
 	error(c,"Bad argument type in ExpandStroke");
     memset(&si,0,sizeof(si));
     si.radius = c->a.vals[1].u.ival/2.;
@@ -1588,6 +1589,7 @@ static void bExpandStroke(Context *c) {
     } else {
 	si.caligraphic = true;
 	si.penangle = 3.1415926535897932*c->a.vals[2].u.ival/180;
+	si.thickness = c->a.vals[3].u.ival / (double) c->a.vals[4].u.ival;
     }
     FVStrokeItScript(c->curfv, &si);
 }

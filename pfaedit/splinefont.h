@@ -61,6 +61,7 @@ enum linecap {
     lc_square		/* Extend lines by radius, then join them */
 };
 
+struct spline;
 typedef struct strokeinfo {
     real radius;			/* or major axis of pen */
     enum linejoin join;
@@ -71,6 +72,8 @@ typedef struct strokeinfo {
     real thickness;			/* half-thickness actually */
     double c,s;
     real xoff[8], yoff[8];
+    void *data;
+    double (*factor)(void *data,struct spline *spline,real t);
 } StrokeInfo;
 
 typedef struct ipoint {
