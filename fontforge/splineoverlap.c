@@ -469,6 +469,7 @@ static void GradImproveInter(Monotonic *m1, Monotonic *m2,
     double error, olderr=1e10;
     double factor = 4096;
     double t1=*_t1, t2=*_t2;
+    double off, off2, yoff;
     /*int cnt=0;*/
     /* We want to find (t1,t2) so that (m1(t1)-m2(t2))^2==0 */
     /* Find the gradiant and move in the reverse direction */
@@ -529,6 +530,36 @@ static void GradImproveInter(Monotonic *m1, Monotonic *m2,
     y1 = ((s1->splines[1].a*t1 + s1->splines[1].b)*t1 + s1->splines[1].c)*t1 + s1->splines[1].d;
     y2 = ((s2->splines[1].a*t2 + s2->splines[1].b)*t2 + s2->splines[1].c)*t2 + s2->splines[1].d;
     inter->x = (x1+x2)/2; inter->y = (y1+y2)/2;
+
+    if ( (off=x1-x2)<0 ) off = -off;
+    if ( (yoff=y1-y2)<0 ) yoff = -yoff;
+    off += yoff;
+
+    if ( t1<.0001 ) {
+	t1 = 0;
+	x1 = s1->splines[0].d;
+	y1 = s1->splines[1].d;
+    } else if ( t1>.9999 ) {
+	t1 = 1.0;
+	x1 = s1->splines[0].a+s1->splines[0].b+s1->splines[0].c+s1->splines[0].d;
+	y1 = s1->splines[1].a+s1->splines[1].b+s1->splines[1].c+s1->splines[1].d;
+    }
+    if ( t2<.0001 ) {
+	t2=0;
+	x2 = s2->splines[0].d;
+	y2 = s2->splines[1].d;
+    } else if ( t2>.9999 ) {
+	t2=1.0;
+	x2 = s2->splines[0].a+s2->splines[0].b+s2->splines[0].c+s2->splines[0].d;
+	y2 = s2->splines[1].a+s2->splines[1].b+s2->splines[1].c+s2->splines[1].d;
+    }
+    if ( (off2=x1-x2)<0 ) off2 = -off2;
+    if ( (yoff=y1-y2)<0 ) yoff = -yoff;
+    off2 += yoff;
+    if ( off2<=off ) {
+	*_t1 = t1; *_t2 = t2;
+	inter->x = (x1+x2)/2; inter->y = (y1+y2)/2;
+    }
 }
 
 static Intersection *AddIntersection(Intersection *ilist,Monotonic *m1,
