@@ -622,6 +622,7 @@ static void _MergeFont(SplineFont *into,SplineFont *other) {
 	SplineFontFree(other);
     into->changed = true;
     FontViewReformatAll(into);
+    GlyphHashFree(into);
 }
 
 static void CIDMergeFont(SplineFont *into,SplineFont *other) {
@@ -662,6 +663,7 @@ static void CIDMergeFont(SplineFont *into,SplineFont *other) {
     } while ( k<other->subfontcnt );
     FontViewReformatAll(into);
     into->changed = true;
+    GlyphHashFree(into);
 }
 
 void MergeFont(FontView *fv,SplineFont *other) {

@@ -2854,5 +2854,6 @@ return;
 	SplineFontFree(sf->subfonts[i]);
     free(sf->subfonts);
     free(sf->remap);
+    GlyphHashFree(sf);
     free(sf);
 }
