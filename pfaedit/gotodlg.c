@@ -41,6 +41,7 @@ struct unicoderange {
     { "Basic Multilingual Plane", 0, 0xffff, ' ' },
     { "Alphabetic", 0, 0x1fff, 'A' },
     { "C0 Control Character", 0, ' '-1, 0 },
+    { "NUL, Default Character", 0, 0, 0 },
     { "Basic Latin", ' ', 0x7e, 'A' },
     { "Delete Character", 0x7f, 0x7f, 0x7f },
     { "C1 Control Character", 0x80, 0x9f, 0x80 },
