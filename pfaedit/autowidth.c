@@ -807,6 +807,10 @@ static void FindFontParameters(WidthInfo *wi) {
     } else
 	serifsize = .06*(sf->ascent+sf->descent);
     serifsize = rint(serifsize);
+    if ( seriflength>.1*(sf->ascent+sf->descent) || serifsize<0 ) {
+	seriflength = 0;		/* that's an unreasonable value, we must be wrong */
+	serifsize = 0;
+    }
 
     if ( (si=SFFindExistingChar(sf,'n',"n"))!=-1 && sf->chars[si]!=NULL ) {
 	SplineChar *sc = sf->chars[si];
