@@ -4972,6 +4972,7 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
     AnchorPoint *ap;
     KernPair *kp;
     PST *pst;
+    int j;
 
     SplinePointListTransform(cv->layerheads[cv->drawmode]->splines,transform,!anysel);
     if ( flags&fvt_round_to_int )
@@ -4981,9 +4982,10 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
 	SCOutOfDateBackground(cv->sc);
     }
     if ( cv->drawmode==dm_fore ) {
-	for ( refs = cv->sc->layers[ly_fore].refs; refs!=NULL; refs=refs->next )
+	for ( refs = cv->layerheads[cv->drawmode]->refs; refs!=NULL; refs=refs->next )
 	    if ( refs->selected || !anysel ) {
-		SplinePointListTransform(refs->layers[0].splines,transform,true);
+		for ( j=0; j<refs->layer_cnt; ++j )
+		    SplinePointListTransform(refs->layers[j].splines,transform,true);
 		t[0] = refs->transform[0]*transform[0] +
 			    refs->transform[1]*transform[2];
 		t[1] = refs->transform[0]*transform[1] +
@@ -5003,7 +5005,7 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
 		    t[5] = rint( t[5] );
 		}
 		memcpy(refs->transform,t,sizeof(t));
-		SplineSetFindBounds(refs->layers[0].splines,&refs->bb);
+		RefCharFindBounds(refs);
 	    }
 	if ( cv->showanchor ) {
 	    for ( ap=cv->sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->selected || !anysel )

@@ -877,6 +877,7 @@ int CVMoveSelection(CharView *cv, real dx, real dy) {
     AnchorPoint *ap;
     double fudge;
     extern float snapdistance;
+    int j;
 
     transform[0] = transform[3] = 1.0;
     transform[1] = transform[2] = 0.0;
@@ -890,7 +891,8 @@ return(false);
 	refs->transform[5] += transform[5];
 	refs->bb.minx += transform[4]; refs->bb.maxx += transform[4];
 	refs->bb.miny += transform[5]; refs->bb.maxy += transform[5];
-	SplinePointListTransform(refs->layers[0].splines,transform,true);
+	for ( j=0; j<refs->layer_cnt; ++j )
+	    SplinePointListTransform(refs->layers[j].splines,transform,true);
     }
     if ( cv->drawmode==dm_fore ) {
 	if ( cv->showanchor ) {
