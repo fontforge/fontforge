@@ -1376,7 +1376,7 @@ int SFScaleToEm(SplineFont *sf, int as, int des) {
 return( false );
     }
 
-    scale = (as+des)/(sf->ascent+sf->descent);
+    scale = (as+des)/(double) (sf->ascent+sf->descent);
     transform[0] = transform[3] = scale;
     transform[1] = transform[2] = transform[4] = transform[5] = 0;
     bvts.func = bvt_none;
