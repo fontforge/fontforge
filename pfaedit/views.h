@@ -335,6 +335,8 @@ extern void FVDelay(FontView *fv,void (*func)(FontView *));
 extern void FVAutoKern(FontView *fv);
 extern void FVAutoWidth(FontView *fv);
 extern void FVRemoveKerns(FontView *fv);
+extern int AutoWidthScript(SplineFont *sf,int spacing);
+extern int AutoKernScript(SplineFont *sf,int spacing, int threshold);
 
 extern void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 	Color fg, int dopoints, DRect *clip );

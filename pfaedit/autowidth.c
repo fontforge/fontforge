@@ -1369,3 +1369,81 @@ void FVRemoveKerns(FontView *fv) {
 	    MVReKern(mv);
     }
 }
+
+/* Scripting hooks */
+
+static struct charone **autowidthBuildCharList(SplineFont *sf, int base, int *tot) {
+    int i, cnt, doit;
+    struct charone **ret=NULL;
+
+    for ( doit=0; doit<2; ++doit ) {
+      for ( i=cnt=0; i<sf->charcnt && cnt<300; ++i ) {
+	if ( sf->fv->selected[i] && sf->chars[i]!=NULL &&
+	     (sf->chars[i]->splines!=NULL || sf->chars[i]->refs!=NULL )) {
+	  if ( doit )
+	    ret[cnt++] = MakeCharOne(sf->chars[i]);
+	  else
+	    ++cnt;
+	}
+      }
+      
+      if ( !doit )
+	ret = galloc((cnt+1)*sizeof(struct charone *));
+      else
+	ret[cnt] = NULL;
+    }
+    *tot = cnt;
+    return( ret );
+}
+
+int AutoWidthScript(SplineFont *sf,int spacing) {
+    WidthInfo wi;
+
+    memset(&wi,'\0',sizeof(wi));
+    wi.autokern = 0;
+    wi.sf = sf;
+    FindZones(&wi);
+    wi.spacing = spacing;
+
+    wi.left = autowidthBuildCharList(wi.sf,CID_LeftBase, &wi.lcnt );
+    wi.right = autowidthBuildCharList(wi.sf,CID_RightBase, &wi.rcnt );
+    if ( wi.lcnt==0 || wi.rcnt==0 ) {
+	FreeCharList(wi.left);
+	FreeCharList(wi.right);
+return( 0 );
+    }
+    wi.done = true;
+    BuildCharPairs(&wi);
+    AutoWidth(&wi);
+    FreeCharList(wi.left);
+    FreeCharList(wi.right);
+    FreeCharPairs(wi.pairs,wi.lcnt*wi.rcnt);
+return( true );
+}
+
+int AutoKernScript(SplineFont *sf,int spacing, int threshold) {
+    WidthInfo wi;
+
+    memset(&wi,'\0',sizeof(wi));
+    wi.autokern = 1;
+    wi.sf = sf;
+    FindZones(&wi);
+    wi.spacing = spacing;    
+    wi.threshold = threshold;    
+
+    wi.left = autowidthBuildCharList(wi.sf,CID_LeftBase, &wi.lcnt );
+    wi.right = autowidthBuildCharList(wi.sf,CID_RightBase, &wi.rcnt );
+    if ( wi.lcnt==0 || wi.rcnt==0 ) {
+	FreeCharList(wi.left);
+	FreeCharList(wi.right);
+return( false );
+    }
+    wi.done = true;
+    BuildCharPairs(&wi);
+    AutoKern(&wi);
+    KernRemoveBelowThreshold(wi.sf,KernThreshold(wi.sf,0));
+    FreeCharList(wi.left);
+    FreeCharList(wi.right);
+    FreeCharPairs(wi.pairs,wi.lcnt*wi.rcnt);
+return( true );
+}

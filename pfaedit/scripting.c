@@ -1388,6 +1388,28 @@ static void bSetRBearing(Context *c) {
     FVSetWidthScript(c->curfv,wt_rbearing,c->a.vals[1].u.ival);
 }
 
+static void bAutoWidth(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+
+    if ( c->a.argc != 2 )
+	error( c, "Wrong number of arguments to AutoWidth");
+    if ( c->a.vals[1].type!=v_int )
+	error(c,"Bad argument type in AutoWidth");
+    if ( !AutoWidthScript(sf,c->a.vals[1].u.ival))
+	error(c,"No characters selected.");
+}
+
+static void bAutoKern(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+
+    if ( c->a.argc != 3 )
+	error( c, "Wrong number of arguments to AutoKern");
+    if ( c->a.vals[1].type!=v_int && c->a.vals[2].type!=v_int)
+	error(c,"Bad argument type in AutoKern");
+    if ( !AutoKernScript(sf,c->a.vals[1].u.ival,c->a.vals[2].u.ival))
+	error(c,"No characters selected.");
+}
+
 static void bCenterInWidth(Context *c) {
     if ( c->a.argc!=1 )
 	error( c, "Wrong number of arguments");
@@ -1670,6 +1692,8 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "SetLBearing", bSetLBearing },
     { "SetRBearing", bSetRBearing },
     { "CenterInWidth", bCenterInWidth },
+    { "AutoWidth", bAutoWidth },
+    { "AutoKern", bAutoKern },
     { "SetKern", bSetKern },
     { "RemoveAllKerns", bClearAllKerns },
 /* CID Menu */
