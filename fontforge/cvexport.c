@@ -643,8 +643,9 @@ void ScriptExport(SplineFont *sf, BDFFont *bdf, int format, int enc) {
     if ( sc==NULL )
 return;
 
-#ifdef __CygWin
+#if defined( __CygWin ) || defined(__Mac)
     /* Windows file systems are not case conscious */
+    /*  nor is the default mac filesystem */
     { char *pt, *bpt, *end;
     bpt = buffer; end = buffer+40;
     for ( pt=sc->name; *pt!='\0' && bpt<end; ) {
@@ -1019,7 +1020,7 @@ static int _Export(SplineChar *sc,BDFChar *bc) {
 	ext = _format==0 ? "xbm" : _format==1 ? "bmp" : "png";
     else
 	ext = _format==0?"eps":_format==1?"fig":_format==2?"xbm":_format==3?"bmp":"png";
-#ifdef __CygWin
+#if defined( __CygWin ) || defined(__Mac)
     /* Windows file systems are not case conscious */
     { char *pt, *bpt, *end;
     bpt = buffer; end = buffer+40;
