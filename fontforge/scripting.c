@@ -2325,25 +2325,47 @@ static void bScale(Context *c) {
 }
 
 static void bSkew(Context *c) {
+    /* Arguments:
+    2 => angle
+    3 => angle-numerator, angle-denom
+    4 => angle, origin-x, origin-y
+    5 => angle-numerator, angle-denom, origin-x, origin-y
+    */
+
     real trans[6];
     int otype = 1;
     BVTFunc bvts[2];
     double a;
 
-    if ( c->a.argc==1 || c->a.argc==3 || c->a.argc>4 )
-	error( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_int || (c->a.argc==4 &&
-	    (c->a.vals[2].type!=v_int || c->a.vals[3].type!=v_int )))
-	error(c,"Bad argument type in Skew");
-    if ( (c->a.vals[1].u.ival %= 360)<0 ) c->a.vals[1].u.ival += 360;
-    a = c->a.vals[1].u.ival *3.1415926535897932/180.;
+    if ( c->a.argc==1 || c->a.argc>5 )
+    error( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_int || (c->a.argc==3 && 
+c->a.vals[2].type!=v_int) ||
+        (c->a.argc==4 && (c->a.vals[2].type!=v_int || 
+c->a.vals[3].type!=v_int )) ||
+        (c->a.argc==5 && (c->a.vals[2].type!=v_int || 
+c->a.vals[3].type!=v_int ||
+                          c->a.vals[4].type!=v_int)))
+    error(c,"Bad argument type in Skew");
+    if (c->a.argc==3 || c->a.argc==5)
+        a = c->a.vals[1].u.ival / (double) c->a.vals[2].u.ival;
+    else {
+        if ( (c->a.vals[1].u.ival %= 360)<0 ) c->a.vals[1].u.ival += 360;
+        a = c->a.vals[1].u.ival;
+    }
+    a = a *3.1415926535897932/180.;
     trans[0] = trans[3] = 1;
     trans[1] = 0; trans[2] = tan(a);
     trans[4] = trans[5] = 0;
     if ( c->a.argc==4 ) {
-	trans[4] = c->a.vals[2].u.ival-(trans[0]*c->a.vals[2].u.ival+trans[2]*c->a.vals[3].u.ival);
-	trans[5] = c->a.vals[3].u.ival-(trans[1]*c->a.vals[2].u.ival+trans[3]*c->a.vals[3].u.ival);
-	otype = 0;
+        trans[4] = c->a.vals[2].u.ival-(trans[0]*c->a.vals[2].u.ival+trans[2]*c->a.vals[3].u.ival);
+        trans[5] = c->a.vals[3].u.ival-(trans[1]*c->a.vals[2].u.ival+trans[3]*c->a.vals[3].u.ival);
+        otype = 0;
+    }
+    if ( c->a.argc==5 ) {
+        trans[4] = c->a.vals[3].u.ival-(trans[0]*c->a.vals[3].u.ival+trans[2]*c->a.vals[4].u.ival);
+        trans[5] = c->a.vals[4].u.ival-(trans[1]*c->a.vals[3].u.ival+trans[3]*c->a.vals[4].u.ival);
+        otype = 0;
     }
     skewselect(&bvts[0],trans[2]);
     bvts[1].func = bvt_none;
