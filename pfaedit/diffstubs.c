@@ -299,7 +299,7 @@ return( SplineMake3(from,to));
 
 int SCWorthOutputting(SplineChar *sc) {
 return( sc!=NULL &&
-	( sc->splines!=NULL || sc->refs!=NULL || sc->widthset ||
+	( sc->layers[ly_fore].splines!=NULL || sc->layers[ly_fore].refs!=NULL || sc->widthset ||
 #if HANYANG
 	    sc->compositionunit ||
 #endif
@@ -314,6 +314,12 @@ SplineFont *SplineFontEmpty(void) {
     sf->pfminfo.fstype = -1;
     sf->encoding_name = em_none;
 return( sf );
+}
+
+RefChar *RefCharCreate(void) {
+    RefChar *ref = chunkalloc(sizeof(RefChar));
+    ref->layer_cnt = 1;
+return( ref );
 }
 
 void *chunkalloc(int size) {

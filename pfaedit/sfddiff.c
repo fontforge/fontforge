@@ -144,7 +144,7 @@ static RefChar *HasRef(SplineChar *sc,RefChar *r1) {
     RefChar *r;
 
     /* First look for one with exactly the same transform */
-    for ( r=sc->refs; r!=NULL; r=r->next )
+    for ( r=sc->layers[ly_fore].refs; r!=NULL; r=r->next )
 	if ( strcmp(r->sc->name,r1->sc->name)==0 &&
 		r->transform[0]==r1->transform[0] &&
 		r->transform[1]==r1->transform[1] &&
@@ -155,7 +155,7 @@ static RefChar *HasRef(SplineChar *sc,RefChar *r1) {
 return( r );
 
     /* If that fails try again with just same name */
-    for ( r=sc->refs; r!=NULL; r=r->next )
+    for ( r=sc->layers[ly_fore].refs; r!=NULL; r=r->next )
 	if ( strcmp(r->sc->name,r1->sc->name)==0 )
 return( r );
 
@@ -165,7 +165,7 @@ return( NULL );
 static int RefsDiff(SplineChar *sc1, SplineChar *sc2, int preverrs, int firstpass ) {
     RefChar *r1, *r2;
 
-    for ( r1=sc1->refs; r1!=NULL; r1=r1->next ) {
+    for ( r1=sc1->layers[ly_fore].refs; r1!=NULL; r1=r1->next ) {
 	r2 = HasRef(sc2,r1);
 	if ( r2==NULL ) {
 	    if ( !preverrs ) printf( "Differences in Enc=%-5d U+%04X %s\n",
@@ -282,16 +282,16 @@ static int SplineDiff(SplineChar *sc1,SplineChar *sc2,int preverrs) {
     int cnt1, cnt2, diff;
     SplineSet *ss1, *ss2;
 
-    for ( ss1=sc1->splines, cnt1=0; ss1!=NULL; ss1=ss1->next, ++cnt1 );
-    for ( ss2=sc2->splines, cnt2=0; ss2!=NULL; ss2=ss2->next, ++cnt2 );
+    for ( ss1=sc1->layers[ly_fore].splines, cnt1=0; ss1!=NULL; ss1=ss1->next, ++cnt1 );
+    for ( ss2=sc2->layers[ly_fore].splines, cnt2=0; ss2!=NULL; ss2=ss2->next, ++cnt2 );
     if ( cnt1!=cnt2 ) {
 	if ( !preverrs ) printf( "Differences in Enc=%-5d U+%04X %s\n",
 		sc1->enc, sc1->unicodeenc, sc1->name );
 	printf( "\tDifferent number of contours\n" );
 return( true );
     }
-    for ( ss1=sc1->splines; ss1!=NULL; ss1=ss1->next ) {
-	diff = SSsMatch(ss1,sc2->splines);
+    for ( ss1=sc1->layers[ly_fore].splines; ss1!=NULL; ss1=ss1->next ) {
+	diff = SSsMatch(ss1,sc2->layers[ly_fore].splines);
 	if ( diff==0 )
     continue;		/* same */
 	else {
@@ -404,7 +404,7 @@ static void dodiff( SplineFont *sf1, SplineFont *sf2, int checkhints,
 		printf( "\tComments are different\n" );
 	    }
 	    if ( any ) {
-		sc1->backgroundsplines = sc->splines;
+		sc1->layers[ly_back].splines = sc->layers[ly_fore].splines;
 		++adiff;
 	    }
 	}
