@@ -1627,6 +1627,7 @@ static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf) {
     AnchorPoint *lastap = NULL;
     int isliga, ispos, issubs, ismult, islcar;
     PST *last = NULL;
+    uint32 script = 0;
 
     if ( getname(sfd,tok)!=1 )
 return( NULL );
@@ -1649,6 +1650,17 @@ return( NULL );
 	    getint(sfd,&sc->unicodeenc);
 	} else if ( strmatch(tok,"OldEncoding:")==0 ) {
 	    getint(sfd,&sc->old_enc);
+        } else if ( strmatch(tok,"Script:")==0 ) {
+	    /* Obsolete. But still used for parsing obsolete ligature/subs tags */
+            while ( (ch=getc(sfd))==' ' || ch=='\t' );
+            if ( ch=='\n' || ch=='\r' )
+                script = 0;
+            else {
+                script = ch<<24;
+                script |= (getc(sfd)<<16);
+                script |= (getc(sfd)<<8);
+                script |= getc(sfd);
+            }
 	} else if ( strmatch(tok,"Width:")==0 ) {
 	    getsint(sfd,&sc->width);
 	} else if ( strmatch(tok,"VWidth:")==0 ) {
@@ -1755,7 +1767,7 @@ return( NULL );
 		while ( (ch=getc(sfd))==' ' || ch=='\t' );
 	    } else
 		liga->script_lang_index = SFAddScriptLangIndex(sc->parent,
-			SCScriptFromUnicode(sc),DEFAULT_LANG);
+			script!=0?script:SCScriptFromUnicode(sc),DEFAULT_LANG);
 	    if ( ch=='\'' ) {
 		liga->tag = getc(sfd)<<24;
 		liga->tag |= getc(sfd)<<16;
