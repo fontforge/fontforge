@@ -959,6 +959,7 @@ return( NULL );
 	SplineSetsAntiCorrect(internal);
     }
 
+    lines = NULL;
     bottom = AddVerticalExtremaAndMove(spl,shadow_length,wireframe,sc,&lines);
     if ( !wireframe ) 
 	spl = SplineSetRemoveOverlap(sc,spl,over_remove);	/* yes, spl, NOT frame. frame is always NULL if !wireframe */
