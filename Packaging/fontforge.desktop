@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=FontForge
+Comment=An outline font editor
+Exec=fontforge
+Icon=fontforge.png
+Terminal=false
+Type=Application
+Categories=Application;Graphics;
+Encoding=UTF-8

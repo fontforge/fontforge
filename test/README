@@ -1,0 +1,21 @@
+This is a minimal testsuite for pfaedit. I expect it will grow with time.
+
+You can execute the tests by:
+  $ <testdir>/runtests <pfaedit>
+(where <testdir> is the directory of the testsuite, and <pfaedit> is the
+ pathspec of the pfaedit program)
+
+Before you execute any of the tests you must download the test fonts.
+I do not provide these because most of them aren't my work. If you can't find
+one of the requisit fonts, simply comment out the tests which use it.
+
+These fonts must be placed in <testdir>/fonts/
+
+test001.pe
+  Caliban.sfd		http://pfaedit.sf.net/sfds/Caliban.sfd.gz
+  mingliu.ttc		(any other ttc file would do)
+  HanSans-Bold.otf	(any other cid-keyed otf file would do)
+  MunhwaGothic-Bold	ftp://ftp.ora.com/pub/examples/nutshell/ujip/adobe/samples/MunhwaGothic-Bold
+			(any other cid-keyed non-otf file would do)
+test002.pe
+  GillSans.dfont	Provided on Mac OS/X (but any truetype font would do)

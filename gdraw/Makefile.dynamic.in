@@ -1,0 +1,51 @@
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+top_builddir = ..
+VPATH = @srcdir@
+prefix = @prefix@
+bindir = @bindir@
+libdir = @libdir@
+
+GD_VERSION=1
+GD_REVISION=6
+GD_AGE=0
+
+LIBTOOL = @LIBTOOL@
+CC = @CC@
+
+X_CFLAGS = @X_CFLAGS@
+STATIC_LIBS = @STATIC_LIBS@
+
+libgdraw_OBJECTS =  choosericons.lo divisors.lo drawboxborder.lo \
+ fsys.lo gaskdlg.lo gbuttons.lo gchardlg.lo gcontainer.lo gdraw.lo \
+ gdrawbuildchars.lo gdrawerror.lo gdrawtxt.lo gdrawtxtinit.lo \
+ genkeysym.lo gfilechooser.lo gfiledlg.lo ggadgets.lo ggroupbox.lo \
+ gimage.lo gimageclut.lo gimagecvt.lo gimagepsdraw.lo gimageread.lo \
+ gimagereadbmp.lo gimagereadgif.lo gimagereadjpeg.lo gimagereadpng.lo \
+ gimagereadras.lo gimagereadrgb.lo gimagereadtiff.lo gimagereadxbm.lo \
+ gimagereadxpm.lo gimagewritebmp.lo gimagewriteeps.lo \
+ gimagewritegimage.lo gimagewritejpeg.lo gimagewritepng.lo \
+ gimagewritexbm.lo gimagewritexpm.lo gimagexdraw.lo gio.lo giofile.lo \
+ giohosts.lo giomime.lo giothread.lo giotrans.lo gkeysym.lo glist.lo \
+ gmenu.lo gprogress.lo gpsdraw.lo gpstxtinit.lo gradio.lo gresource.lo \
+ gresourceimage.lo gsavefiledlg.lo gscrollbar.lo gtabset.lo \
+ gtextfield.lo gtextinfo.lo gwidgets.lo gxdraw.lo
+
+Incs = -I$(top_srcdir)/inc -I/usr/pkg/include -I/usr/pkg/include/giflib
+WFLAGS = -Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type -Wparentheses \
+	-Wformat -Wchar-subscripts 
+CFLAGS = @CFLAGS@ $(Incs) $(WFLAGS) $(X_CFLAGS) -DNOTHREADS @DEFS@ -DLIBDIR='"$(libdir)"'
+
+../libgdraw.la: $(libgdraw_OBJECTS)
+	$(LIBTOOL) $(CC) $(CFLAGS) -o ../libgdraw.la $(libgdraw_OBJECTS) \
+	    $(STATIC_LIBS) \
+	    -rpath $(libdir) -version-info $(GD_VERSION):$(GD_REVISION):$(GD_AGE)
+
+%.lo: %.c
+	$(LIBTOOL) $(CC) $(CFLAGS) -c $<
+
+clean:
+	-rm -f *.lo *.o
+
+distclean cleaner:
+	-rm -f *.lo *.o ../libgdraw.la Makefile
