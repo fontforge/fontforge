@@ -1817,7 +1817,7 @@ return( 0 );
 	bitmaptypes[i].disabled = false;
     }
     old = oldbitmapstate;
-    if ( sf->onlybitmaps && old==bf_ttf )
+    if ( ofs==ff_none && old==bf_ttf )
 	old = bf_bdf;
     if ( family ) {
 	if ( old==bf_bdf ) {
@@ -1843,7 +1843,7 @@ return( 0 );
 	bitmaptypes[bf_nfntdfont].disabled = true;
     } else if ( ofs!=ff_none )
 	bitmaptypes[bf_sfnt_dfont].disabled = true;
-    if ( sf->onlybitmaps )
+    if ( ofs==ff_none )
 	bitmaptypes[bf_ttf].disabled = true;
     bitmaptypes[old].selected = true;
     gcd[8].gd.label = &bitmaptypes[old];
