@@ -2169,12 +2169,73 @@ static void bWorthOutputting(Context *c) {
 	error( c, "Bad type of argument to InFont");
 }
 
+static void PosSubInfo(SplineChar *sc,Context *c) {
+    uint32 tags[3];
+    int i;
+    enum possub_type type;
+    PST *pst;
+
+    if ( c->a.vals[2].type!=v_str || c->a.vals[3].type!=v_str  || c->a.vals[4].type!=v_str )
+	error( c, "Bad type for argument");
+    for ( i=0; i<3; ++i ) {
+	char *str = c->a.vals[i+2].u.sval;
+	char temp[4];
+	memset(temp,' ',4);
+	if ( *str ) {
+	    temp[0] = *str;
+	    if ( str[1] ) {
+		temp[1] = str[1];
+		if ( str[2] ) {
+		    temp[2] = str[2];
+		    if ( str[3] ) {
+			temp[3] = str[3];
+			if ( str[4] )
+			    error(c,"Tags/Scripts/Languages are represented by strings which are at most 4 characters long");
+		    }
+		}
+	    }
+	}
+	tags[i] = (temp[0]<<24)|(temp[1]<<16)|(temp[2]<<8)|temp[3];
+    }
+
+    if ( strcmp(c->a.vals[1].u.sval,"Position")==0 )
+	type = pst_position;
+    else if ( strcmp(c->a.vals[1].u.sval,"Substitution")==0 )
+	type = pst_substitution;
+    else if ( strcmp(c->a.vals[1].u.sval,"AltSubs")==0 )
+	type = pst_alternate;
+    else if ( strcmp(c->a.vals[1].u.sval,"MultSubs")==0 )
+	type = pst_multiple;
+    else if ( strcmp(c->a.vals[1].u.sval,"Ligature")==0 )
+	type = pst_ligature;
+    else
+	errors(c,"Unknown tag", c->a.vals[1].u.sval);
+
+    for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
+	if ( pst->type == type && pst->tag==tags[2] &&
+		ScriptLangMatch(c->curfv->sf->script_lang[pst->script_lang_index],
+			tags[0],tags[1]))
+    break;
+    }
+
+    if ( type==pst_position ) {
+	c->return_val.type = v_int;
+	c->return_val.u.ival = (pst!=NULL);
+    } else {
+	c->return_val.type = v_str;
+	if ( pst==NULL )
+	    c->return_val.u.sval = copy("");
+	else
+	    c->return_val.u.sval = copy(pst->u.subs.variant);	/* All other types have their strings in the same place in the union */
+    }
+}
+
 static void bCharInfo(Context *c) {
     SplineFont *sf = c->curfv->sf;
     SplineChar *sc;
     DBounds b;
 
-    if ( c->a.argc!=2 && c->a.argc!=3 )
+    if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=5 )
 	error( c, "Wrong number of arguments");
     else if ( c->a.vals[1].type!=v_str )
 	error( c, "Bad type for argument");
@@ -2182,7 +2243,10 @@ static void bCharInfo(Context *c) {
     sc = GetOneSelChar(c);
 
     c->return_val.type = v_int;
-    if ( c->a.argc==3 ) {
+    if ( c->a.argc==5 ) {
+	PosSubInfo(sc,c);
+
+    } else if ( c->a.argc==3 ) {
 	int ch2 = ParseCharIdent(c,&c->a.vals[2],true);
 	if ( strmatch( c->a.vals[1].u.sval,"Kern")==0 ) {
 	    c->return_val.u.ival = 0;

@@ -519,6 +519,7 @@ extern void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
 	enum fvtrans_flags );
 extern void FVTrans(FontView *fv,SplineChar *sc,real transform[6],char *sel,
 	enum fvtrans_flags);
+extern int ScriptLangMatch(struct script_record *sr,uint32 script,uint32 lang);
 extern void FVApplySubstitution(FontView *fv,uint32 script, uint32 lang, uint32 tag);
 extern void FVBuildAccent(FontView *fv,int onlyaccents);
 extern void FVChangeChar(FontView *fv,int encoding);

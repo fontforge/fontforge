@@ -1870,7 +1870,7 @@ static void FVMenuBuildComposite(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVBuildAccent( (FontView *) GDrawGetUserData(gw), false );
 }
 
-static int ScriptLangMatch(struct script_record *sr,uint32 script,uint32 lang) {
+int ScriptLangMatch(struct script_record *sr,uint32 script,uint32 lang) {
     int i, j;
 
     if ( script==CHR('*',' ',' ',' ') && lang==CHR('*',' ',' ',' ') )
