@@ -1784,7 +1784,12 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 		    new = RefCharCreate();
 		    *new = *refs;
 		    new->transform[4] *= scale; new->transform[5] *= scale;
+#ifdef FONTFORGE_CONFIG_TYPE3
+		    new->layers = NULL;
+		    new->layer_cnt = 0;
+#else
 		    new->layers[0].splines = NULL;
+#endif
 		    new->sc = rsc;
 		    new->next = sc->layers[layer].refs;
 		    sc->layers[layer].refs = new;
