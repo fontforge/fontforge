@@ -265,7 +265,12 @@ return;
     k = 0;
     do {
 	_sf = k<sf->subfontcnt ? sf->subfonts[k] : sf;
-	for ( i=0; i<_sf->charcnt; ++i ) if ( _sf->chars[i]!=NULL ) {
+	/* I walk backwards because there are some ttf files where multiple */
+	/*  glyphs get the same name. In the cases I've seen only one of these */
+	/*  has an encoding. That's the one we want. It will be earlier in the */
+	/*  font than the others. If we build the list backwards then it will */
+	/*  be the top name in the bucket, and will be the one we return */
+	for ( i=_sf->charcnt-1; i>=0; --i ) if ( _sf->chars[i]!=NULL ) {
 	    new = chunkalloc(sizeof(struct glyphnamebucket));
 	    new->sc = _sf->chars[i];
 	    hash = hashname(new->sc->name);
