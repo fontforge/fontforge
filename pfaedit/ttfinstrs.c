@@ -1346,8 +1346,10 @@ return( false );
 	}
 	GDrawDestroyWindow(id->id->gw);
     }
-    GDrawSync(NULL);
-    GDrawProcessPendingEvents(NULL);
+    if ( screen_display!=NULL ) {
+	GDrawSync(NULL);
+	GDrawProcessPendingEvents(NULL);
+    }
 return( true );
 }
 
