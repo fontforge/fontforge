@@ -70,17 +70,21 @@ struct font_decomp {
 /* Names from x server are in isolatin1, not unicode */
 static int decompose_screen_name(char *xname, struct font_decomp *info, int screen_res) {
     unichar_t weight[80], ital[80], prop[80], map[80], sans[80], conext[80];
+    char foundary[80];
     static unichar_t name[80];
     int pixelh, screenw, avgwid;
     register char *pt, *strt; char *pos;
 
     /* don't need foundary, um, pointh, screenh, whatsat */
+    /* well, let's keep the foundary to work around a bug in SUSE greek fonts */
     pt = xname;
     if ( *pt++!='-' )
 return( false );
+    strt = pt;
     while ( *pt!='-' && *pt!='\0' ) ++pt;	/* Skip foundary */
     if ( *pt=='\0' )
 return( false );
+    strncpy(foundary,strt,pt-strt); foundary[(pt-strt)] = '\0';
 
     strt = ++pt;
     while ( *pt!='-' && *pt!='\0' ) ++pt;	/* Get the name */
@@ -181,6 +185,10 @@ return( false );
 	    info->mapname = u_copy(map);
 	}
     }
+    /* SUSE bug */
+    if ( strcmp(foundary,"greek")==0 && info->map==em_iso8859_1 )
+	info->map = em_iso8859_7;
+    /* End workaround */
     if ( uc_strstrmatch(conext,"condensed")!=NULL )
 	info->style |= fs_condensed;
     else if ( uc_strstrmatch(conext,"extended")!=NULL )
