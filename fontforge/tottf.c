@@ -2668,13 +2668,20 @@ static void sethhead(struct hhead *hhead,struct hhead *vhead,struct alltabs *at,
     if ( hhead->minlsb>0 ) hhead->minlsb = 0;
     if ( hhead->minrsb>0 ) hhead->minrsb = 0;
     hhead->maxextent = at->head.xmax;
-    hhead->caretSlopeRise = 1;
+    if ( _sf->italicangle==0 )
+	hhead->caretSlopeRise = 1;
+    else {
+	hhead->caretSlopeRise = 100;
+	hhead->caretSlopeRun = (int) rint(100*tan(-_sf->italicangle*3.1415926535897/180.));
+    }
 
     vhead->maxwidth = height;
     vhead->minlsb = at->head.ymin;
     vhead->minrsb = bbearing;
     vhead->maxextent = at->head.ymax;
-    vhead->caretSlopeRise = 1;
+    vhead->caretSlopeRise = 0;
+    vhead->caretSlopeRun = 1;
+	/* Are there vertical oblique fonts? */
 
     hhead->numMetrics = at->gi.hfullcnt;
     vhead->numMetrics = at->gi.vfullcnt;
