@@ -4861,7 +4861,7 @@ static void _CVUnlinkRef(CharView *cv) {
     int anyrefs=0;
     RefChar *rf, *next;
 
-    if ( cv->drawmode==dm_fore && cv->sc->layers[ly_fore].refs!=NULL ) {
+    if ( cv->drawmode==dm_fore && cv->layerheads[dm_fore]->refs!=NULL ) {
 	CVPreserveState(cv);
 	for ( rf=cv->sc->layers[ly_fore].refs; rf!=NULL && !anyrefs; rf=rf->next )
 	    if ( rf->selected ) anyrefs = true;

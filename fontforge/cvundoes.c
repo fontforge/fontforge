@@ -1966,6 +1966,9 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
     if ( paster->undotype==ut_layers && sc->parent->multilayer ) {
 	int lc, start, layer;
 	Undoes *pl;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+	Layer *old = sc->layers;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	for ( lc=0, pl = paster->u.multiple.mult; pl!=NULL; pl=pl->next, ++lc );
 	if ( !pasteinto ) {
 	    start = ly_fore;
@@ -1987,7 +1990,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
 	for ( lc=0, pl = paster->u.multiple.mult; pl!=NULL; pl=pl->next, ++lc )
 	    _PasteToSC(sc,pl,fv,pasteinto,start+lc,trans);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	SCMoreLayers(sc);
+	SCMoreLayers(sc,old);
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     } else if ( paster->undotype==ut_layers ) {
 	Undoes *pl;
