@@ -578,6 +578,38 @@ return( greekalts );
     } else if (( base>=0xfb50 && base<=0xfdff ) || ( base>=0xfe70 && base<0xfeff ))
 return( arabicfixup(sf,upt,isarabisolated(base)||isarabinitial(base),
 		isarabisolated(base)||isarabfinal(base)));
+    else if ( base==0x0122 || base==0x0136 || base==0x137 ||
+	    base==0x013b || base==0x013c || base==0x0145 ||
+	    base==0x0146 || base==0x0156 || base==0x0157 ) {
+	/* Unicode says these use cedilla, but it looks like a comma below */
+	greekalts[0] = base==0x0122 ? 'G' :
+		       base==0x0136 ? 'K' :
+		       base==0x0137 ? 'k' :
+		       base==0x013b ? 'L' :
+		       base==0x013c ? 'l' :
+		       base==0x0145 ? 'N' :
+		       base==0x0146 ? 'n' :
+		       base==0x0156 ? 'R' :
+			   'r';
+	greekalts[1] = 0x326;
+	greekalts[2] = '\0';
+return( greekalts );
+    } else if ( base==0x0123 ) {
+	/* Unicode says this uses cedilla, but it looks like a turned comma above */
+	greekalts[0] = 'g';
+	greekalts[1] = 0x312;
+	greekalts[2] = '\0';
+return( greekalts );
+    } else if ( base==0x010f || base==0x013d || base==0x013e || base==0x0165 ) {
+	/* Unicode says these use caron, but it looks like comma above right */
+	greekalts[0] =  base==0x010f ? 'd' :
+			base==0x013d ? 'L' :
+			base==0x013e ? 'l' :
+			   't';
+	greekalts[1] = 0x315;
+	greekalts[2] = '\0';
+return( greekalts );
+    }
 
 return( upt );
 }
@@ -688,6 +720,8 @@ return( true );
 
 	if ( u>=0x1f70 && u<0x1f80 )
 return( true );			/* Yes. they do work, I don't care what it looks like */
+	if ( u==0x0149 )
+return( true );
     }
 return( false );
 }
@@ -1305,7 +1339,14 @@ static void _SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, SplineChar *rs
 	    bb.minx += (bb.maxx-bb.minx)/4;
 	}
     }
-    if ( (sc->unicodeenc==0x1fbd || sc->unicodeenc==0x1fbf ||
+    if ( sc->unicodeenc==0x0149 )
+	pos = ____ABOVE|____LEFT;
+    else if ( sc->unicodeenc==0x013d || sc->unicodeenc==0x013e )
+	pos = ____ABOVE|____RIGHT;
+    else if ( sc->unicodeenc==0x010f || sc->unicodeenc==0x013d ||
+	      sc->unicodeenc==0x013e || sc->unicodeenc==0x0165 )
+	pos = ____ABOVE|____RIGHT;
+    else if ( (sc->unicodeenc==0x1fbd || sc->unicodeenc==0x1fbf ||
 	    sc->unicodeenc==0x1ffe || sc->unicodeenc==0x1fc0 ) &&
 	    bb.maxy==0 && bb.miny==0 ) {
 	/* Building accents on top of space */
