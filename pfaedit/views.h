@@ -490,6 +490,7 @@ extern void CharViewFree(CharView *cv);
 extern int CVValid(SplineFont *sf, SplineChar *sc, CharView *cv);
 extern void CVDrawRubberRect(GWindow pixmap, CharView *cv);
 extern void CVSetCharChanged(CharView *cv,int changed);
+extern void _CVCharChangedUpdate(CharView *cv,int changed);
 extern void CVCharChangedUpdate(CharView *cv);
 extern void SCClearSelPt(SplineChar *sc);
 extern void SCCharChangedUpdate(SplineChar *sc);

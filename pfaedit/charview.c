@@ -3844,7 +3844,12 @@ static void transfunc(void *d,real transform[6],int otype,BVTFunc *bvts,
     CharView *cv = (CharView *) d;
 
     cv->p.transany = CVAnySel(cv,NULL,NULL,NULL);
-    CVPreserveState(cv);
+    if ( cv->drawmode==dm_fore ) {
+	SCPreserveState(cv->sc,true);
+	if ( (flags&fvt_dobackground) )
+	    SCPreserveBackground(cv->sc);
+    } else
+	CVPreserveState(cv);
     CVTransFunc(cv,transform,flags);
     CVCharChangedUpdate(cv);
 }

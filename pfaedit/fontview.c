@@ -1298,7 +1298,7 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], char *sel,
     RefChar *refs;
     real t[6];
 
-    SCPreserveState(sc,false);
+    SCPreserveState(sc,true);
     if ( transform[0]>0 && transform[3]>0 && transform[1]==0 && transform[2]==0 ) {
 	int widthset = sc->widthset;
 	SCSynchronizeWidth(sc,sc->width*transform[0]+transform[4],sc->width,fv);
