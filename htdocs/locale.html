@@ -1,0 +1,37 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 17-Jun-2001 -->
+  <!-- AP: Last modified: 17-Jun-2001 -->
+  <TITLE>Localization</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+  Localization
+</H1>
+<P>
+<IMG SRC="fontview.fr.png" WIDTH="423" HEIGHT="226">
+<P>
+PfaEdit can be localized with different message strings for different languages.
+<P>
+I have created an incomplete (and probably wrong in many places) french version.
+<P>
+PfaEdit will detect if the LANG variable is set at start up and if so will
+try to find an appropriate .ui file. You may also set the language file directly
+from the preference dialog (if you do this the LANG variable will not be
+examined).
+<P>
+  <HR>
+<P>
+PfaEdit probably doesn't support your language yet.
+<P>
+Take the file nomen.en.c and save it as nomen.&lt;your language code&gt;.c,
+then edit it and translate as many of the strings as you want to (remove
+the ones you don't translate). When you are done run makenomenh and it should
+create a file pfaedit.&lt;your language code&gt;.ui. If this is placed in
+the same directory as pfaedit then it should be found at start up.
+<P>
+<P ALIGN=Center>
+-- <A HREF="windowmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A>
+-- <A HREF="errrecovery.html">Next</A> --
+</BODY></HTML>
