@@ -210,7 +210,7 @@ return( found );
 /* When the user tries to add a point (by doing a mouse down with a point tool
   selected) there are several cases to be looked at:
 	If there is a single point selected and it is at the begining/end of an open spline set
-	    if we clicked on an other point which is the begining/end of an open splineset
+	    if we clicked on another point which is the begining/end of an open splineset
 		draw a spline connecting the two spline sets and merge them
 			(or if it's the same spline set, then close it)
 	    else
@@ -516,7 +516,22 @@ return;
 }
 
 void CVMouseUpPoint(CharView *cv,GEvent *event) {
-    cv->lastselpt = cv->active_sp;
+    SplinePoint *active = cv->active_sp;
+    if ( (event->u.mouse.state&ksm_capslock) &&
+	    active->prev!=NULL && active->noprevcp &&
+	    active->prev->from->nonextcp &&
+	    (active->prev->from->me.x!=active->me.x ||
+	     active->prev->from->me.y!=active->me.y)) {
+	SplinePoint *prev = active->prev->from;
+	active->prevcp.x = (2*active->me.x+prev->me.x)/3;
+	active->prevcp.y = (2*active->me.y+prev->me.y)/3;
+	prev->nextcp.x = (active->me.x+2*prev->me.x)/3;
+	prev->nextcp.y = (active->me.y+2*prev->me.y)/3;
+	active->noprevcp = false;
+	prev->nonextcp = false;
+	SCUpdateAll(cv->sc);
+    }
+    cv->lastselpt = active;
     cv->active_spl = NULL;
     cv->active_sp = NULL;
     cv->joinvalid = false;
