@@ -4467,6 +4467,14 @@ return( NULL );
 		int order2;
 		getint(sfd,&order2);
 		sf.order2 = order2;
+	    } else if ( strmatch(tok,"MultiLayer:")==0 ) {
+		int ml;
+		getint(sfd,&ml);
+		sf.multilayer = ml;
+	    } else if ( strmatch(tok,"StrokedFont:")==0 ) {
+		int stk;
+		getint(sfd,&stk);
+		sf.strokedfont = stk;
 	    } else if ( strmatch(tok,"Ascent:")==0 ) {
 		getint(sfd,&sf.ascent);
 	    } else if ( strmatch(tok,"Descent:")==0 ) {
@@ -4483,7 +4491,7 @@ return( sc );
 
 static int ModSF(FILE *asfd,SplineFont *sf) {
     Encoding *newmap;
-    int cnt, order2=0;
+    int cnt, order2=0, multilayer=0;
     char tok[200];
     int i,k;
     SplineChar *sc;
@@ -4520,6 +4528,19 @@ return( false );
 	else
 	    SFConvertToOrder3(sf);
     }
+#ifdef FONTFORGE_CONFIG_TYPE3
+    if ( strcmp(tok,"MultiLayer:")==0 ) {
+	getint(asfd,&multilayer);
+	if ( getname(asfd,tok)!=1 )
+return( false );
+    }
+    if ( multilayer!=sf->multilayer ) {
+	if ( !multilayer )
+	    SFSplinesFromLayers(sf,false);
+	sf->multilayer = multilayer;
+	/* SFLayerChange(sf);*/		/* Shouldn't have any open windows, should not be needed */
+    }
+#endif
     if ( strcmp(tok,"BeginChars:")!=0 )
 return(false);
     SFRemoveDependencies(sf);
@@ -4639,6 +4660,8 @@ return;
     fprintf( asfd, "UnicodeInterp: %s\n", unicode_interp_names[sf->uni_interp]);
     if ( sf->order2 )
 	fprintf( asfd, "Order2: %d\n", sf->order2 );
+    if ( sf->multilayer )
+	fprintf( asfd, "MultiLayer: %d\n", sf->multilayer );
     fprintf( asfd, "BeginChars: %d\n", max );
     for ( i=0; i<max; ++i ) {
 	ssf = sf;
