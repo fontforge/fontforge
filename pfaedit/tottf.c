@@ -1258,6 +1258,10 @@ return( false );
 
     /* extra location entry points to end of last glyph */
     gi->loca[gi->next_glyph] = ftell(gi->glyphs);
+    /* Microsoft's Font Validator wants the last loca entry to point into the */
+    /*  glyph table. I think that's an error on their part, but it's so easy */
+    /*  to fix, I might as well */
+    putlong(gi->glyphs,0);
     gi->glyph_len = ftell(gi->glyphs);
     gi->hmtxlen = ftell(gi->hmtx);
     /* pad out to four bytes */
@@ -3340,7 +3344,7 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
     }
 
     maxlen = 0;
-    for ( cur=sf->names; cur!=NULL && cur->lang<0x409; cur=cur->next ) {
+    for ( cur=sf->names; cur!=NULL; cur=cur->next ) if ( cur->lang<0x409 ) {
 	for ( i=0; i<ttf_namemax; ++i ) if ( cur->names[i]!=NULL ) {
 	    putshort(at->name,3);	/* MS platform */
 	    putshort(at->name,1);	/* unicode */
@@ -3365,8 +3369,7 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
 	putshort(at->name,posses[i]);
 	++cnt;
     }
-    if ( cur!=NULL && cur->lang==0x409 ) cur = cur->next;
-    for ( ; cur!=NULL ; cur=cur->next ) {
+    for ( cur=sf->names; cur!=NULL; cur=cur->next ) if ( cur->lang>0x409 ) {
 	for ( i=0; i<ttf_namemax; ++i ) if ( cur->names[i]!=NULL ) {
 	    putshort(at->name,3);	/* MS platform */
 	    putshort(at->name,1);	/* unicode */
@@ -4713,7 +4716,10 @@ return( false );
 			   tab->tag==CHR('h','m','t','x')? 14 :
 			   tab->tag==CHR('h','m','d','x')? 15 :
 			   tab->tag==CHR('g','l','y','f')? 16 :
-			   17;
+			   tab->tag==CHR('G','D','E','F')? 17 :
+			   tab->tag==CHR('G','S','U','B')? 18 :
+			   tab->tag==CHR('G','P','O','S')? 19 :
+			   20;
        }
 
     qsort(at->tabdir.ordered,at->tabdir.numtab,sizeof(struct taboff *),tcomp);
