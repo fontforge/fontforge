@@ -2638,7 +2638,7 @@ void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
     int i, cnt=0;
     BDFFont *bdf;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( SCWorthOutputting(fv->sf->chars[i]) && fv->selected[i] )
 	++cnt;
 
     if ( cnt>10 || cnt>fv->sf->charcnt/2 ) {
@@ -2657,7 +2657,7 @@ void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
     gwwv_progress_start_indicator(10,_("Transforming..."),_("Transforming..."),0,cnt,1);
 # endif
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( SCWorthOutputting(fv->sf->chars[i]) && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
 
 	if ( onlycopydisplayed && fv->show!=fv->filled ) {
