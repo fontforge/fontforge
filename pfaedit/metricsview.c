@@ -1423,10 +1423,35 @@ static void MVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     break;
     if ( i!=-1 ) {
 	SplineChar *sc = mv->perchar[i].sc;
-	int changed = false;
-	SCPreserveState(sc,false);
+	int changed = false, refchanged=false;
+	RefChar *ref;
+	int asked=-1;
+	static int buts[] = { _STR_Unlink, _STR_No, _STR_Cancel, 0 };
+
+	for ( ref=sc->refs; ref!=NULL; ref=ref->next ) {
+	    if ( ref->transform[0]*ref->transform[3]<0 ||
+		    (ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
+		if ( asked==-1 ) {
+		    asked = GWidgetAskR(_STR_FlippedRef,buts,0,2,_STR_FlippedRefUnlink, sc->name );
+		    if ( asked==2 )
+return;
+		    else if ( asked==1 )
+	break;
+		}
+		if ( asked==0 ) {
+		    if ( !refchanged ) {
+			refchanged = true;
+			SCPreserveState(sc,false);
+		    }
+		    SCRefToSplines(sc,ref);
+		}
+	    }
+	}
+
+	if ( !refchanged )
+	    SCPreserveState(sc,false);
 	sc->splines = SplineSetsCorrect(sc->splines,&changed);
-	if ( changed )
+	if ( changed || refchanged )
 	    SCCharChangedUpdate(sc);
     }
 }

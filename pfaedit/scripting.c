@@ -1296,9 +1296,9 @@ static void bMove(Context *c) {
     BVTFunc bvts[2];
 
     if ( c->a.argc!=3 )
-	error( c, "Wrong number of arguments to Move");
+	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int )
-	error(c,"Bad argument type in Move");
+	error(c,"Bad argument type");
     trans[0] = trans[3] = 1;
     trans[1] = trans[2] = 0;
     trans[4] = c->a.vals[1].u.ival; trans[5] = c->a.vals[2].u.ival;
@@ -1351,34 +1351,55 @@ static void bSimplify(Context *c) {
 
 static void bAddExtrema(Context *c) {
     if ( c->a.argc!=1 )
-	error( c, "Wrong number of arguments to AddExtrema");
+	error( c, "Wrong number of arguments");
     FVFakeMenus(c->curfv,102);
 }
 
 static void bRoundToInt(Context *c) {
     if ( c->a.argc!=1 )
-	error( c, "Wrong number of arguments to RoundToInt");
+	error( c, "Wrong number of arguments");
     FVFakeMenus(c->curfv,103);
 }
 
 static void bAutotrace(Context *c) {
     if ( c->a.argc!=1 )
-	error( c, "Wrong number of arguments to Autotrace");
+	error( c, "Wrong number of arguments");
     FVAutoTrace(c->curfv,false);
 }
 
 static void bCorrectDirection(Context *c) {
     int i;
     SplineFont *sf = c->curfv->sf;
-    int changed;
+    int changed, refchanged;
+    int checkrefs = true;
+    RefChar *ref;
+    SplineChar *sc;
 
-    if ( c->a.argc!=1 )
-	error( c, "Wrong number of arguments to CorrectDirection");
+    if ( c->a.argc!=1 && c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.argc==2 && c->a.vals[1].type!=v_int )
+	error(c,"Bad argument type");
+    else
+	checkrefs = c->a.vals[1].u.ival;
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && c->curfv->selected[i] ) {
-	SplineChar *sc = sf->chars[i];
-	changed = false;
+	sc = sf->chars[i];
+	changed = refchanged = false;
+	if ( checkrefs ) {
+	    for ( ref=sc->refs; ref!=NULL; ref=ref->next ) {
+		if ( ref->transform[0]*ref->transform[3]<0 ||
+			(ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
+		    if ( !refchanged ) {
+			refchanged = true;
+			SCPreserveState(sc,false);
+		    }
+		    SCRefToSplines(sc,ref);
+		}
+	    }
+	}
+	if ( !refchanged )
+	    SCPreserveState(sc,false);
 	sc->splines = SplineSetsCorrect(sc->splines,&changed);
-	if ( changed )
+	if ( changed || refchanged )
 	    SCCharChangedUpdate(sc);
     }
 }
