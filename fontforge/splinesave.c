@@ -2810,6 +2810,8 @@ struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
 	chrs->values[0] = (unsigned char *) copyn(notdefentry,pt-notdefentry);	/* 0 <w> hsbw endchar */
 	chrs->lens[0] = pt-notdefentry;
 	i = 0;
+	if ( sf->chars[0]!=NULL && strcmp(sf->chars[0]->name,".notdef")==0 )
+	    i=1;
     }
     cnt = 1;
     for ( ; i<sf->charcnt; ++i ) {

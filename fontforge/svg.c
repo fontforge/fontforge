@@ -568,7 +568,7 @@ static void svg_sfdump(FILE *file,SplineFont *sf) {
 	    svg_scdump(file, sf->chars[i],defwid);
     }
     for ( i=0; i<sf->charcnt; ++i ) {
-	if ( i==0 && SCIsNotdef(sf->chars[i],-1 ))
+	if ( i==0 && sf->chars[i]!=NULL && strcmp(sf->chars[i]->name,".notdef")==0 )
     continue;
 	if ( SCWorthOutputting(sf->chars[i]) && !HasLigature(sf->chars[i]) &&
 		(sf->chars[i]->unicodeenc==-1 || sf->chars[i]->unicodeenc>=0x10000 ||
