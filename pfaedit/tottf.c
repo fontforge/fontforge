@@ -858,7 +858,8 @@ static int getcvtval(struct glyphinfo *gi,int val) {
     int i;
 
     /* by default sign is unimportant in the cvt */
-    if ( val<0 ) val = -val;
+    /* if ( val<0 ) val = -val; */
+    /* Er, not quite, only in some instructions. MIAP still cares */
 
     if ( gi->cvtmax==0 ) {
 	gi->cvtmax = 100;
@@ -1348,6 +1349,20 @@ return( instrs );
 return( instrs );
 }
 
+static real BDFindValue(real base, BlueData *bd ) {
+    real replace = 0x80000000;
+    real fudge = bd->caphtop-bd->caph;
+
+    if ( base>= -fudge && base<=0 )
+	replace = 0;
+    else if ( base>=bd->caph && base<=bd->caphtop )
+	replace = bd->caph;
+    else if ( base>=bd->xheight && base<=bd->xheighttop )
+	replace = bd->xheight;
+    /* I'm allowing ascent and descent's to wiggle */
+return( replace );
+}
+
 /* Run through all points. For any on this hint's start, position them */
 /*  If the first point of this hint falls in a blue zone, do a cvt based */
 /*	positioning, else
@@ -1373,7 +1388,7 @@ static uint8 *geninstrs(struct glyphinfo *gi, uint8 *instrs,StemInfo *hint,
     int i;
     int last= -1;
     int stem, basecvt=-1;
-    real hbase, base, width;
+    real hbase, base, width, newbase;
     StemInfo *h;
     real fudge = gi->fudge;
     int inrp;
@@ -1389,21 +1404,15 @@ static uint8 *geninstrs(struct glyphinfo *gi, uint8 *instrs,StemInfo *hint,
     hbase = base = rint(hint->start); width = rint(hint->width);
     if ( !xdir ) {
 	/* check the "bluevalues" for things like cap height and xheight */
-	for ( i=0; i<gi->bcnt; i+=2 ) {
-	    if ( base>=gi->blues[i] && base<=gi->blues[i+1] ) {
-		base = (gi->blues[i]+gi->blues[i+1])/2;
-		basecvt = getcvtval(gi,(int)base);
-	break;
-	    }
+	if ( (newbase = BDFindValue(base,&gi->bd))!= 0x80000000 ) {
+	    base = newbase;
+	    basecvt = getcvtval(gi,(int)base);
 	}
 	if ( basecvt == -1 && !hint->startdone ) {
 	    hbase = (base += width);
-	    for ( i=0; i<gi->bcnt; i+=2 ) {
-		if ( base>=gi->blues[i] && base<=gi->blues[i+1] ) {
-		    base = (gi->blues[i]+gi->blues[i+1])/2;
-		    basecvt = getcvtval(gi,(int)base);
-	    break;
-		}
+	    if ( (newbase = BDFindValue(base,&gi->bd))!= 0x80000000 ) {
+		base = newbase;
+		basecvt = getcvtval(gi,(int)base);
 	    }
 	    if ( basecvt!=-1 )
 		width = -width;
@@ -1426,6 +1435,7 @@ static uint8 *geninstrs(struct glyphinfo *gi, uint8 *instrs,StemInfo *hint,
 		if ( basecvt!=-1 && last==-1 ) {
 		    instrs = pushpointstem(instrs,i,basecvt);
 		    *instrs++ = 0x3f;		/* MIAP, rounded, set rp0,rp1 */
+		    first = false;
 		    inrp = 1;
 		} else {
 		    instrs = pushpoint(instrs,i);
@@ -1987,12 +1997,10 @@ static void dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     int fixed = SFOneWidth(sf);
 
     GProgressChangeStages(2+gi->strikecnt);
-    FindBlues(sf,gi->blues,NULL);
+    QuickBlues(sf,&gi->bd);
+    /*FindBlues(sf,gi->blues,NULL);*/
     GProgressNextStage();
     gi->fudge = (sf->ascent+sf->descent)/500;	/* fudge factor for hint matches */
-
-    for ( i=12; i>=0 && (gi->blues[i]!=0 || gi->blues[i+1]!=0) ; i-=2 );
-    gi->bcnt = i+2;
 
     i=0, cnt=0;
     if ( sf->chars[0]!=NULL &&

@@ -338,8 +338,7 @@ struct glyphinfo {
     int cvtmax;
     int cvtcur;
     int xmin, ymin, xmax, ymax;
-    real blues[14];
-    int bcnt;
+    BlueData bd;
     int strikecnt;		/* number of bitmaps to dump */
     int fudge;
     int lasthwidth, lastvwidth;	/* encoding of last glyph for which we generate a full metrics entry */
