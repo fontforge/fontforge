@@ -36,10 +36,6 @@
 #include "ttf.h"
 #include "psfont.h"
 
-/* Caveat: I have no idea how the mac deals with two byte character sets */
-/*  all the docs I have found seem to talk as if fonts are limitted to 256 */
-/*  chars. So everything here is single byte */
-
 /* A Mac Resource fork */
 /*  http://developer.apple.com/techpubs/mac/MoreToolbox/MoreToolbox-9.html */
 /*    begins with a 16 byte header containing: */
@@ -1396,6 +1392,48 @@ return( sf );
 return( (SplineFont *) -1 );	/* It's a valid resource file, but just has no fonts */
 }
 
+#ifdef __Mac
+#include "MacFiles.h"
+
+static SplineFont *HasResourceFork(char *filename) {
+    /* If we're on a mac, we can try to see if we've got a real resource fork */
+    Str255 p_file;
+    FSSpec spec;
+    short res;
+    int cnt;
+    SplineFont *ret;
+    FILE *temp;
+    char *buf;
+
+    if ( strlen( filename )>255 )
+return( NULL );
+    p_file[0] = strlen(filename);
+    strncpy((char *) p_file+1,filename,strlen(filename));
+    if ( FSMakeFSSpec(0,0,p_file,&spec)!=noErr )
+return( NULL );
+    if ( FSpOpenRF(&spec,fsRdPerm,&res)!=noErr )
+return( NULL );
+    temp = tmpfile();
+    buf = malloc(8192);
+    while ( 1 ) {
+	cnt = 8192;
+	ret = FSRead(res,&cnt,buf);
+	if ( cnt!=0 )
+	    fwrite(buf,1,cnt,temp);
+	if ( ret==eofErr )
+    break;
+	if ( ret!=noErr )
+    break;
+    }
+    free(buf);
+    FSClose(res);
+    rewind(temp);
+    ret = IsResourceFork(temp,0,filename);
+    fclose(temp);
+return( ret );
+}
+#endif
+
 static SplineFont *IsResourceInBinary(FILE *f,char *filename) {
     unsigned char header[128];
     unsigned long offset;
@@ -1536,6 +1574,10 @@ return( sf );
 
     sf = IsResourceFork(f,0,filename);
     fclose(f);
+#ifdef __Mac
+    if ( sf==NULL )
+	sf = HasResourceFork(filename);
+#endif
 return( sf );
 }
 

@@ -148,9 +148,9 @@ enum fchooserret GFileChooserDefFilter(GGadget *g,GDirEntry *ent) {
 return( fc_hide );
     if ( ent->isdir )			/* Show all other directories */
 return( fc_show );
-					/* If we've got a wildcard, and it doesn't match, don't show */
-    if ( gfc->wildcard!=NULL && !GGadgetWildMatch(gfc->wildcard,ent->name,true))
-return( fc_hide );
+					/* If we've got a wildcard, and it matches, then show */
+    if ( gfc->wildcard!=NULL && GGadgetWildMatch(gfc->wildcard,ent->name,true))
+return( fc_show );
 					/* If no mimetypes then we're done */
     if ( gfc->mimetypes==NULL )
 return( fc_show );
@@ -219,7 +219,8 @@ return( &_GIcon_ttf );
 return( &_GIcon_cid );
     if ( cu_strstartmatch("application/x-macbinary",m) || cu_strstartmatch("application/x-mac-binhex40",m) )
 return( &_GIcon_mac );
-    if ( cu_strstartmatch("application/x-mac-dfont",m) )
+    if ( cu_strstartmatch("application/x-mac-dfont",m) ||
+	    cu_strstartmatch("application/x-mac-suit",m) )
 return( &_GIcon_macttf );
     if ( cu_strstartmatch("application/x-font/pcf",m) || cu_strstartmatch("application/x-font/snf",m))
 return( &_GIcon_textfontbdf );
@@ -639,6 +640,7 @@ void GFileChooserSetMimetypes(GGadget *g,unichar_t **mimetypes) {
 	gfc->mimetypes = galloc((i+1)*sizeof(unichar_t *));
 	for ( i=0; mimetypes[i]!=NULL; ++i )
 	    gfc->mimetypes[i] = u_copy(mimetypes[i]);
+	gfc->mimetypes[i] = NULL;
     } else
 	gfc->mimetypes = NULL;
 }

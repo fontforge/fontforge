@@ -51,6 +51,7 @@ unichar_t core[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','c'
 unichar_t fontttf[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','f','o','n','t','/','t','t','f', '\0' };
 unichar_t fontotf[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','f','o','n','t','/','o','t','f', '\0' };
 unichar_t fontcid[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','f','o','n','t','/','c','i','d', '\0' };
+unichar_t fontmacsuit[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','m','a','c','-','s','u','i','t', '\0' };
 unichar_t macbin[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','m','a','c','b','i','n','a','r','y', '\0' };
 unichar_t machqx[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','m','a','c','-','b','i','n','h','e','x','4','0', '\0' };
 unichar_t macdfont[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','m','a','c','-','d','f','o','n','t', '\0' };
@@ -58,6 +59,31 @@ unichar_t compressed[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','
 unichar_t tar[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','t','a','r', '\0' };
 unichar_t fontpcf[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','f','o','n','t','/','p','c','f', '\0' };
 unichar_t fontsnf[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','f','o','n','t','/','s','n','f', '\0' };
+
+#ifdef __Mac
+#include "MacFiles.h"
+#define CHR(ch1,ch2,ch3,ch4) (((ch1)<<24)|((ch2)<<16)|((ch3)<<8)|(ch4))
+
+static unichar_t *MacMime(const unichar_t *path) {
+    /* If we're on a mac, we can try to see if we've got a real resource fork */
+    Str255 p_file;
+    FSSpec spec;
+    FInfo info;
+
+    if ( u_strlen( path )>255 )
+return( NULL );
+    p_file[0] = u_strlen(path);
+    cu_strncpy((char *) p_file+1,path,u_strlen(path));
+    if ( FSMakeFSSpec(0,0,p_file,&spec)!=noErr )
+return( unknown );
+    if ( FSpGetFInfo(&spec,&info)!=noErr )
+return( unknown );
+    if ( info.fdType==CHR('F','F','I','L') )
+return( fontmacsuit );
+
+return( unknown );
+}
+#endif
 
 unichar_t *GIOguessMimeType(const unichar_t *path,int isdir) {
     unichar_t *pt;
@@ -130,5 +156,9 @@ return( fontpcf );
     else if ( uc_strmatch(pt,".snf")==0 )
 return( fontsnf );
 
+#ifdef __Mac
+return( MacMime( path ));
+#else
 return( unknown );
+#endif
 }
