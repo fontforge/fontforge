@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 27-Mar-2003 -->
+  <!-- AP: Last modified: 3-Jun-2003 -->
   <TITLE>Char Info</TITLE>
 </HEAD>
 <BODY>
@@ -139,6 +139,20 @@ for the latin script, german language. And there are some characters that
 don't fall into one single script. The same digits are used for latin, cyrillic,
 greek, hebrew, (sometimes arabic) and many other script systems, so any ligatures
 of the digits (such as fractions) should be available in all script systems.
+<P>
+The script names used by PfaEdit are those specified by
+<A HREF="http://partners.adobe.com/asn/developer/opentype/appendices/scripttags.html">Microsoft
+and Adobe for opentype</A>. These are almost compatible with
+<A HREF="http://www.evertype.com/standards/iso15924/document/dis15924.pdf">ISO
+15924</A> except that all opentype scripts are in lower case (while those
+in ISO 15924 all start with capital letters) and short script names (such
+as "Lao") are converted to 'lao ' rather than 'Laoo'. I have extended the
+set of opentype scripts with many of those in ISO 15924 by making them all
+lower case (I have not used everything from ISO 15924 because it contains
+script variants for things which I consider to be one script (eg. fraktur
+has a seperate script tag, but I consider it to be latin). I have also guessed
+at codes for Limbu, Tai Le, and Ugaritic ('limb','tail','ugrt'), which are
+scripts used in Unicode but not defined in ISO 15924.
 <H3>
   <A NAME="ScriptLang">The Script Language Dialog</A>
 </H3>
@@ -155,7 +169,11 @@ like (OpenType does not give a tag for the default language (it is has a
 special representation which does not involve tags), but for the sake of
 consistance I have assigned it the tag of 'dflt'. No 'dflt' tags will appear
 in the output font, instead they will be converted to the appropirate
-representation for the default language).<BR CLEAR=ALL>
+representation for the default language).
+<P>
+The language names used by PfaEdit are those specified by
+<A HREF="http://partners.adobe.com/asn/developer/opentype/appendices/languagetags.html">Microsoft
+and Adobe for opentype</A>.<BR CLEAR=ALL>
 <H3>
   <A NAME="Script"><IMG SRC="scriptsdlg.png" WIDTH="152" HEIGHT="215" ALIGN="Right">The
   Script Dialog</A>
