@@ -25,9 +25,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaedit.h"
-#include "chardata.h"
-#include "utype.h"
-#include "ustring.h"
+#include <chardata.h>
+#include <utype.h>
+#include <ustring.h>
 #include <math.h>
 #include <locale.h>
 #include <gwidget.h>
@@ -2759,6 +2759,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
     int index, last;
     int mod = 0;
     const unichar_t *trans=NULL;
+    SplineChar *sc;
 
     fseek(ttf,info->encoding_start,SEEK_SET);
     version = getushort(ttf);
@@ -2769,11 +2770,15 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	platform = getushort(ttf);
 	specific = getushort(ttf);
 	offset = getlong(ttf);
-	if (( platform==3 && specific==1 ) || /* MS Unicode */
+	if ( platform==3 && specific==10 ) { /* MS Unicode 4 byte */
+	    enc = em_unicode4;
+	    encoff = offset;
+	    mod = 0;
+	} else if (( platform==3 && specific==1 && enc!=em_unicode4 ) || /* MS Unicode */
 /* Well I should only deal with apple unicode specific==0 (default) and 3 (U2.0 semantics) */
 /*  but apple ships dfonts with specific==1 (Unicode 1.1 semantics) */
 /*  which is stupid of them */
-		( platform==0 /*&& (specific==0 || specific==3)*/ && enc!=em_unicode )) {	/* Apple Unicode */
+		( platform==0 /*&& (specific==0 || specific==3)*/ && enc!=em_unicode4 )) {	/* Apple Unicode */
 	    enc = em_unicode;
 	    encoff = offset;
 	    mod = 0;
@@ -2809,8 +2814,14 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
     if ( enc!=em_none ) {
 	fseek(ttf,info->encoding_start+encoff,SEEK_SET);
 	format = getushort(ttf);
-	len = getushort(ttf);
-	/* version/language = */ getushort(ttf);
+	if ( format!=12 && format!=10 && format!=8 ) {
+	    len = getushort(ttf);
+	    /* version/language = */ getushort(ttf);
+	} else {
+	    /* padding */ getushort(ttf);
+	    len = getlong(ttf);
+	    /* language = */ getlong(ttf);
+	}
 	if ( format==0 ) {
 	    for ( i=0; i<len-6; ++i )
 		table[i] = getc(ttf);
@@ -2894,8 +2905,10 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    free(startchars);
 	    free(endchars);
 	} else if ( format==6 ) {
-	    /* Apple's unicode format */
+	    /* array unicode format */
 	    int first, count;
+	    if ( enc!=em_unicode && enc!=em_unicode4 )
+		GDrawIError("I don't support truncated array encoding (format=6) except for unicode" );
 	    first = getushort(ttf);
 	    count = getushort(ttf);
 	    if ( justinuse )
@@ -2982,9 +2995,61 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    free(subheads);
 	    free(glyphs);
 	} else if ( format==8 ) {
-	    GDrawIError("I don't support mixed 16/32 bit characters (no unicode surogates)");
-	} else if ( format==10 || format==12 ) {
-	    GDrawIError("I don't support 32 bit characters");
+	    uint32 ngroups, start, end, startglyph;
+	    if ( enc!=em_unicode4 )
+		GDrawIError("I don't support 32 bit characters except for the UCS-4 (MS platform, specific=10)" );
+	    /* I'm now assuming unicode surrogate encoding, so I just ignore */
+	    /*  the is32 table (it will be set for the surrogates and not for */
+	    /*  anything else */
+	    fseek(ttf,8192,SEEK_CUR);
+	    ngroups = getlong(ttf);
+	    for ( j=0; j<ngroups; ++j ) {
+		start = getlong(ttf);
+		end = getlong(ttf);
+		startglyph = getlong(ttf);
+		if ( justinuse )
+		    for ( i=start; i<=end; ++i )
+			info->inuse[startglyph+i-start]= 1;
+		else
+		    for ( i=start; i<=end; ++i ) {
+			(sc = info->chars[startglyph+i-start])->unicodeenc =
+				((i>>16)-0xd800)*0x400 + (i&0xffff)-0xdc00 + 0x10000;
+			sc->enc = sc->unicodeenc;
+		    }
+	    }
+	} else if ( format==10 ) {
+	    /* same as format 6, except for 4byte chars */
+	    int first, count;
+	    if ( enc!=em_unicode4 )
+		GDrawIError("I don't support 32 bit characters except for the UCS-4 (MS platform, specific=10)" );
+	    first = getlong(ttf);
+	    count = getlong(ttf);
+	    if ( justinuse )
+		for ( i=0; i<count; ++i )
+		    info->inuse[getushort(ttf)]= 1;
+	    else
+		for ( i=0; i<count; ++i ) {
+		    (sc = info->chars[getushort(ttf)])->unicodeenc = first+i;
+		    sc->enc = first+i;
+		}
+	} else if ( format==12 ) {
+	    uint32 ngroups, start, end, startglyph;
+	    if ( enc!=em_unicode4 )
+		GDrawIError("I don't support 32 bit characters except for the UCS-4 (MS platform, specific=10)" );
+	    ngroups = getlong(ttf);
+	    for ( j=0; j<ngroups; ++j ) {
+		start = getlong(ttf);
+		end = getlong(ttf);
+		startglyph = getlong(ttf);
+		if ( justinuse )
+		    for ( i=start; i<=end; ++i )
+			info->inuse[startglyph+i-start]= 1;
+		else
+		    for ( i=start; i<=end; ++i ) {
+			(sc = info->chars[startglyph+i-start])->unicodeenc = i;
+			sc->enc = i;
+		    }
+	    }
 	}
     }
     if ( info->chars!=NULL && info->chars[0]!=NULL && info->chars[0]->unicodeenc==0xffff &&
@@ -3710,6 +3775,8 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
 
     if ( info->encoding_name>=em_first2byte && info->encoding_name<=em_last94x94 )
 	epos = ((max+95)/96)*96;
+    else if ( info->encoding_name==em_unicode4 )
+	epos = (max>=unicode4_size) ? max+1 : unicode4_size;
     else
 	epos = istwobyte?65536:256;
     sf->charcnt = epos+extras;
