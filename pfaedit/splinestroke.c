@@ -438,7 +438,8 @@ return( ssplus );
 		    sc==NULL?"<nameless char>": sc->name );
 	}
 	if ( spline->knownlinear ||
-		p_tcur<=0 || m_tcur>=1 || m_tlast<=0 || p_tlast>=1 ||
+/* 0 and 1 are valid values. They happen on circles for example */
+		p_tcur<0 || m_tcur>1 || m_tlast<0 || p_tlast>1 ||
 		m_tcur<=m_tlast || p_tcur>=p_tlast ) {
 	    pto->nonextcp = plus->noprevcp = true;
 	    minus->nonextcp = mto->noprevcp = true;
