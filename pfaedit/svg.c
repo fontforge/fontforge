@@ -51,7 +51,6 @@ static void latin1ToUtf8Out(FILE *file,char *str) {
 }
 
 static int svg_outfontheader(FILE *file, SplineFont *sf) {
-    char *pt;
     int defwid = SFFigureDefWidth(sf,NULL);
     struct pfminfo info;
     static const char *condexp[] = { "squinchy", "ultra-condensed", "extra-condensed",
@@ -72,18 +71,9 @@ static int svg_outfontheader(FILE *file, SplineFont *sf) {
     fprintf( file, "<?xml version=\"1.0\" standalone=\"no\"?>\n" );
     fprintf( file, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg11.dtd\" >\n" );
     if ( sf->comments!=NULL ) {
-	for ( pt=sf->comments; *pt!='\0'; ) {
-	    if ( *pt!='\n' ) {
-		fprintf( file, "<!-- " );
-		while ( *pt!='\n' && *pt!='\0' ) {
-		    putc(*pt,file);
-		    ++pt;
-		}
-		fprintf( file, " --!>" );
-	    }
-	    putc('\n',file);
-	    if ( *pt=='\n' ) ++pt;
-	}
+	fprintf( file, "<!--\n" );
+	latin1ToUtf8Out(file,sf->comments);
+	fprintf( file, "\n-->\n" );
     }
     fprintf( file, "<svg>\n" );
     time(&now);
@@ -300,6 +290,11 @@ static void svg_scdump(FILE *file, SplineChar *sc,int defwid) {
     int i, c, uni;
 
     best = HasLigature(sc);
+    if ( sc->comment!=NULL ) {
+	char *temp = u2utf8_copy(sc->comment);
+	fprintf( file, "\n<!--\n%s\n-->\n",temp );
+	free(temp);
+    }
     fprintf(file,"    <glyph glyph-name=\"%s\" ",sc->name );
     if ( best!=NULL ) {
 	c = LigCnt(sc->parent,best,univals,sizeof(univals)/sizeof(univals[0]));
