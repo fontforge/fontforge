@@ -430,7 +430,8 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
     GDrawFillRect(pixmap,&temp,GDrawGetDefaultBackground(NULL));
     for ( j=0; j<4; ++j ) {
 	GDrawDrawText(pixmap,2,i*27+j*12+10,_Mouse[j],-1,NULL,0x000000);
-	GDrawDrawImage(pixmap,smalls[(&cv->b1_tool)[j]],NULL,52-16,i*27+j*12);
+	if ( (&cv->b1_tool)[j]!=cvt_none )
+	    GDrawDrawImage(pixmap,smalls[(&cv->b1_tool)[j]],NULL,52-16,i*27+j*12);
     }
     GDrawPopClip(pixmap,&old);
     GDrawSetDither(NULL,dither);
@@ -545,7 +546,7 @@ static void ToolsMouse(CharView *cv, GEvent *event) {
     if ( pos<0 || pos>=cvt_max )
 	pos = cvt_none;
     if ( pos==cvt_freehand && cv->sc->parent->order2 )
-	pos = cvt_none;		/* Not available in order2 spline mode */
+return;			/* Not available in order2 spline mode */
     if ( event->type == et_mousedown ) {
 	if ( isstylus && event->u.mouse.button==2 )
 	    /* Not a real button press, only touch counts. This is a modifier */;
