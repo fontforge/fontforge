@@ -275,12 +275,12 @@ static void dumpdblmaxarray(void (*dumpchar)(int ch,void *data), void *data,
 }
 
 static void dumpdblarray(void (*dumpchar)(int ch,void *data), void *data,
-	char *name, double *arr, int len, char *modifiers) {
+	char *name, double *arr, int len, char *modifiers, int exec) {
     int i;
-    dumpf( dumpchar,data,"/%s [",name);
+    dumpf( dumpchar,data,"/%s %c",name, exec? '{' : '[' );
     for ( i=0; i<len; ++i )
 	dumpf( dumpchar,data,"%g ", arr[i]);
-    dumpf( dumpchar,data,"]%sdef\n", modifiers );
+    dumpf( dumpchar,data,"%c%sdef\n", exec ? '}' : ']', modifiers );
 }
 
 #if 0
@@ -855,7 +855,7 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
     dumpf(dumpchar,data,"/FontType %d def\n", format==ff_ptype3?3:1 );
     fm[0] = fm[3] = 1.0/((sf->ascent+sf->descent));
     fm[1] = fm[2] = fm[4] = fm[5] = 0;
-    dumpdblarray(dumpchar,data,"FontMatrix",fm,6,"readonly ");
+    dumpdblarray(dumpchar,data,"FontMatrix",fm,6,"readonly ",false);
     if ( sf->fontname!=NULL )
 	dumpf(dumpchar,data,"/FontName /%s def\n", sf->fontname );
     SplineFontFindBounds(sf,&b);
@@ -863,7 +863,7 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
     fm[1] = floor( b.miny);
     fm[2] = ceil( b.maxx);
     fm[3] = ceil( b.maxy);
-    dumpdblarray(dumpchar,data,"FontBBox",fm,4,"readonly ");
+    dumpdblarray(dumpchar,data,"FontBBox",fm,4,"readonly ", true);
     if ( uniqueid!=-1 )
 	dumpf(dumpchar,data,"/UniqueID %d def\n", uniqueid );
     if ( sf->xuid!=NULL ) {
