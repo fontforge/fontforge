@@ -1524,9 +1524,27 @@ return( str );
 return(ret);
 }
 
+char *XUIDFromFD(int xuid[20]) {
+    int i;
+    char *ret;
+
+    for ( i=19; i>=0 && xuid[i]==0; --i );
+    if ( i>=0 ) {
+	int j; char *pt;
+	ret = galloc(2+20*(i+1));
+	pt = ret;
+	*pt++ = '[';
+	for ( j=0; j<=i; ++j ) {
+	    sprintf(pt,"%d ", xuid[j]);
+	    pt += strlen(pt);
+	}
+	pt[-1] = ']';
+    }
+return( ret );
+}
+
 static void SplineFontMetaData(SplineFont *sf,struct fontdict *fd) {
     int em;
-    int i;
 
     sf->fontname = copy(fd->cidfontname?fd->cidfontname:fd->fontname);
     sf->display_size = -default_fv_font_size;
@@ -1553,18 +1571,7 @@ static void SplineFontMetaData(SplineFont *sf,struct fontdict *fd) {
     if ( sf->familyname==NULL ) sf->familyname = copy(sf->fontname);
     if ( sf->weight==NULL ) sf->weight = copy("Medium");
     sf->cidversion = fd->cidversion;
-    for ( i=19; i>=0 && fd->xuid[i]==0; --i );
-    if ( i>=0 ) {
-	int j; char *pt;
-	sf->xuid = galloc(2+20*(i+1));
-	pt = sf->xuid;
-	*pt++ = '[';
-	for ( j=0; j<=i; ++j ) {
-	    sprintf(pt,"%d ", fd->xuid[j]);
-	    pt += strlen(pt);
-	}
-	pt[-1] = ']';
-    }
+    sf->xuid = XUIDFromFD(fd->xuid);
     /*sf->wasbinary = fd->wasbinary;*/
     sf->encoding_name = fd->encoding_name;
     if ( fd->fontmatrix[0]==0 )
@@ -2260,26 +2267,31 @@ return( sf );
 }
 
 SplineFont *SplineFontFromPSFont(FontDict *fd) {
-    SplineFont *sf = SplineFontEmpty();
+    SplineFont *sf;
     struct pscontext pscontext;
 
-    memset(&pscontext,0,sizeof(pscontext));
-    pscontext.is_type2 = fd->fonttype==2;
-    pscontext.painttype = fd->painttype;
-
-    SplineFontMetaData(sf,fd);
-    if ( fd->wascff ) {
-	SplineFontFree(sf);
+    if ( fd->sf!=NULL )
 	sf = fd->sf;
-    } else if ( fd->fdcnt!=0 )
-	sf = SplineFontFromCIDType1(sf,fd,&pscontext);
-    else if ( fd->weightvector!=NULL )
-	SplineFontFromMMType1(sf,fd,&pscontext);
-    else
-	SplineFontFromType1(sf,fd,&pscontext);
-    if ( loaded_fonts_same_as_new && new_fonts_are_order2 &&
-	    fd->weightvector==NULL )
-	SFConvertToOrder2(sf);
+    else {
+	memset(&pscontext,0,sizeof(pscontext));
+	pscontext.is_type2 = fd->fonttype==2;
+	pscontext.painttype = fd->painttype;
+
+	sf = SplineFontEmpty();
+	SplineFontMetaData(sf,fd);
+	if ( fd->wascff ) {
+	    SplineFontFree(sf);
+	    sf = fd->sf;
+	} else if ( fd->fdcnt!=0 )
+	    sf = SplineFontFromCIDType1(sf,fd,&pscontext);
+	else if ( fd->weightvector!=NULL )
+	    SplineFontFromMMType1(sf,fd,&pscontext);
+	else
+	    SplineFontFromType1(sf,fd,&pscontext);
+	if ( loaded_fonts_same_as_new && new_fonts_are_order2 &&
+		fd->weightvector==NULL )
+	    SFConvertToOrder2(sf);
+    }
 return( sf );
 }
 

@@ -226,6 +226,7 @@ struct ttfinfo {
 	struct macname *head, *last;
 	struct macidname *next;
     } *macstrids;
+    struct fontdict *fd;	/* For reading in Type42 fonts. Glyph names in postscript section must be associated with glyphs in TTF section */
 };
 
 #define MAX_TAB	32

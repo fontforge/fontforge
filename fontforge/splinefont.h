@@ -1031,6 +1031,7 @@ struct enc;
 extern void *chunkalloc(int size);
 extern void chunkfree(void *, int size);
 
+extern char *XUIDFromFD(int xuid[20]);
 extern SplineFont *SplineFontFromPSFont(struct fontdict *fd);
 extern int CheckAfmOfPostscript(SplineFont *sf,char *psname);
 extern int LoadKerningDataFromAmfm(SplineFont *sf, char *filename);
@@ -1429,7 +1430,7 @@ extern unichar_t *TTFGetFontName(FILE *ttf,int32 offset,int32 off2);
 #endif
 extern void TTFLoadBitmaps(FILE *ttf,struct ttfinfo *info, int onlyone);
 enum ttfflags { ttf_onlystrikes=1, ttf_onlyonestrike=2, ttf_onlykerns=4, ttf_onlynames=8 };
-extern SplineFont *_SFReadTTF(FILE *ttf,int flags,char *filename);
+extern SplineFont *_SFReadTTF(FILE *ttf,int flags,char *filename,struct fontdict *fd);
 extern SplineFont *SFReadTTF(char *filename,int flags);
 extern SplineFont *SFReadSVG(char *filename,int flags);
 extern SplineFont *_CFFParse(FILE *temp,int len,char *fontsetname);
@@ -1694,8 +1695,6 @@ extern void MMKern(SplineFont *sf,SplineChar *first,SplineChar *second,int diff,
 extern int MMBlendChar(MMSet *mm, int enc);
 extern int MMReblend(struct fontview *fv, MMSet *mm);
 struct fontview *MMCreateBlendedFont(MMSet *mm,struct fontview *fv,real blends[MmMax],int tonew );
-
-extern char *EnforcePostScriptName(char *old);
 
 extern char *EnforcePostScriptName(char *old);
 

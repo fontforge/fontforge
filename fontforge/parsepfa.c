@@ -53,7 +53,6 @@ struct fontparse {
     unsigned int inblend: 1;
     unsigned int iscid: 1;
     unsigned int iscff: 1;
-    unsigned int insfnts: 1;
     unsigned int useshexstrings: 1;
     unsigned int doneencoding: 1;
     unsigned int ignore: 1;
@@ -1252,7 +1251,7 @@ static void findstring(struct fontparse *fp,struct pschars *subrs,int index,char
 /* Type42 charstrings are actually numbers */
 static void findnumbers(struct fontparse *fp,struct pschars *chars,char *str) {
     int val;
-    char *nametok, *end;
+    char *end;
 
     forever {
 	int index = chars->next;
@@ -1266,13 +1265,16 @@ static void findnumbers(struct fontparse *fp,struct pschars *chars,char *str) {
 	*str = '\0';
 	index = chars->next;
 
-	while ( isspace(*str)) ++str;
+	++str;
 	val = strtol(str,&end,10);
 	chars->lens[index] = 0;
-	chars->keys[index] = copy(nametok);
+	chars->keys[index] = copy(namestrt);
 	chars->values[index] = (void *) val;
 	chars->next = index+1;
 	str = end;
+	while ( isspace(*str)) ++str;
+	if ( str[0]=='d' && str[1]=='e' && str[2]=='f' )
+	    str += 3;
     }
 }
 
@@ -1480,7 +1482,7 @@ return;
 	while ( isspace(*line)) ++line;
 	if ( strncmp(line,"end",3)==0 )
 	    fp->ignore = fp->inchars = false;
-	else if ( *line!='\n' || *line=='\0' )
+	else if ( *line=='\n' || *line=='\0' )
 	    /* Ignore it */;
 	else if ( *line!='/' || !(isalpha(line[1]) || line[1]=='.')) {
 	    fprintf( stderr, "No name for CharStrings dictionary |%s", rmbinary(line) );
@@ -1503,6 +1505,7 @@ return;
 	    gwwv_progress_next();
 #endif
 	}
+return;
     }
     fp->inencoding = 0;
 
@@ -1727,6 +1730,7 @@ return;
 return;
 	} else if ( strstr(line,"/sfnts")!=NULL && strstr(line,"[")!=NULL ) {
 	    sfnts2tempfile(fp,in,line);
+return;
 	} else if ( strstr(line,"/CharStrings")!=NULL && strstr(line,"dict")!=NULL ) {
 	    if ( fp->fd->chars->next==0 ) {
 		InitChars(fp->fd->chars,line);
@@ -2420,7 +2424,9 @@ return;
 	    if ( saw_blend )
 		parseline(fp,buffer,in);
 		/* But if it's a multi master font, don't do the special private hack */
-	    else if ( strstr(buffer,"/CharStrings")!=NULL && strstr(buffer,"begin")!=NULL ) {
+	    else if ( strstr(buffer,"/CharStrings")!=NULL &&
+		    strstr(buffer,"begin")!=NULL &&
+		    (fp->fd->fonttype!=42 && fp->fd->cidfonttype!=2)) {
 		/* gsf files are not eexec encoded, but the charstrings are encoded*/
 		InitChars(fp->fd->chars,buffer);
 		fp->inchars = 1;
@@ -2449,12 +2455,14 @@ return;
 	    fp->skipping_mbf = false;
     break;
 	}
+	if ( strstr(buffer,"definefont")!=NULL )
+    break;
     }
 
     if ( strstr(buffer,"%%BeginData: ")!=NULL ) {
 	/* used by both CID fonts and CFF fonts (and chameleons, whatever they are) */
 	dodata(fp,in,temp);
-    } else {
+    } else if ( strstr(buffer,"eexec")!=NULL ) {
 	decrypteexec(in,temp,hassectionheads,strstr(buffer, "eexec")+5);
 	rewind(temp);
 	decryptagain(fp,temp,rdtok);
@@ -2462,6 +2470,9 @@ return;
 	    if ( buffer[0]!='\200' || !hassectionheads )
 		parseline(fp,buffer,in);
 	}
+    } else if (( fp->fd->fonttype==42 || fp->fd->cidfonttype==2 ) && fp->sfnts!=NULL ) {
+	fp->fd->sf = _SFReadTTF(fp->sfnts,0,"<Temp File>",fp->fd);
+	fclose(fp->sfnts);
     }
 }
 

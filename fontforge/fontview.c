@@ -998,6 +998,7 @@ char *GetPostscriptFontName(char *dir, int mult) {
 	   "pfa,"
 	   "pfb,"
 	   "pt3,"
+	   "t42,"
 	   "sfd,"
 	   "ttf,"
 	   "bdf,"
@@ -1062,6 +1063,7 @@ char *GetPostscriptFontName(char *dir, int mult) {
     static unichar_t wild[] = { '*', '.', '{', 'p','f','a',',',
 					       'p','f','b',',',
 					       'p','t','3',',',
+					       't','4','2',',',
 			                       's','f','d',',',
 			                       't','t','f',',',
 			                       'b','d','f',',',
