@@ -1,0 +1,3 @@
+?package(pfaedit):needs=X11 section=Apps/Editors\
+  title="pfaedit" command="/usr/bin/pfaedit" \
+  hints="Fonts"

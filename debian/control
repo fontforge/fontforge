@@ -1,0 +1,17 @@
+Source: pfaedit
+Section: x11
+Priority: optional
+Maintainer: Baruch Even <baruch@debian.org>
+Build-Depends: debhelper (>> 3.0.0), libjpeg62-dev, libtiff3g-dev, libpng2-dev,  libungif4-dev, xlibs-dev
+Standards-Version: 3.5.2
+
+Package: pfaedit
+Architecture: any
+Depends: ${shlibs:Depends}
+Recommends: libjpeg62, libtiff3g | libtiff3, libpng2, libungif4g
+Suggests: autotrace
+Description: Font Editor for PS, TrueType and OpenType fonts
+ PfaEdit allows you to edit outline and bitmap fonts.  You can create
+ new ones or modify old ones.  It is also a font format converter and
+ can convert among PostScript (ASCII & binary Type 1, some Type 3s,
+ some Type 0s), TrueType, and OpenType (Type2).
