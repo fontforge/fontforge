@@ -3445,8 +3445,8 @@ void SplineFontAutoHint( SplineFont *_sf) {
 
 static void FigureStems( SplineFont *sf, real snaps[12], real cnts[12],
 	int which ) {
-    int i, j, k, cnt, smax=0, smin=1000;
-    real stemwidths[1000];
+    int i, j, k, cnt, smax=0, smin=2000;
+    real stemwidths[2000];
     StemInfo *stems, *test;
     int len;
     HintInstance *hi;
@@ -3455,9 +3455,9 @@ static void FigureStems( SplineFont *sf, real snaps[12], real cnts[12],
 
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	stems = which?sf->chars[i]->hstem:sf->chars[i]->vstem;
-	for ( test=stems; test!=NULL; test = test->next ) {
+	for ( test=stems; test!=NULL; test = test->next ) if ( !test->ghost ) {
 	    if ( (j=test->width)<0 ) j= -j;
-	    if ( j<1000 ) {
+	    if ( j<2000 ) {
 		len = 0;
 		for ( hi=test->where; hi!=NULL; hi=hi->next )
 		    len += hi->end-hi->begin;
