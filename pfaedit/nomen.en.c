@@ -1307,6 +1307,10 @@ static char *str_Saving = "Saving...";
 static char *str_SavingDb = "Saving Spline Font Database";
 static char *str_SavingOutlines = "Saving Outlines";
 static char *str_SavingBitmaps = "Saving Bitmaps";
+static char *str_RecoveryFailed = "Recovery Failed";
+static char *str_RecoveryOfFailed = "Automagic recovery of changes to %.80hs failed.\nShould PfaEdit try again to recover next time you start it?";
+static char *str_TryAgain = "Try Again";
+static char *str_ForgetIt = "Forget It";
     /* start.c */
 static char *str_PfaEdit = "PfaEdit";
     /* cvpointer.c */

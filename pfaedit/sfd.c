@@ -31,6 +31,7 @@
 #include "utype.h"
 #include <unistd.h>
 #include <locale.h>
+#include <gwidget.h>
 
 static const char *charset_names[] = {
     "custom",
@@ -1714,8 +1715,8 @@ return(false);
 return(true);
 }
 
-static SplineFont *SlurpRecovery(FILE *asfd) {
-    char tok[1025], *pt; int ch;
+static SplineFont *SlurpRecovery(FILE *asfd,char *tok,int sizetok) {
+    char *pt; int ch;
     SplineFont *sf;
 
     ch=getc(asfd);
@@ -1727,13 +1728,14 @@ return(NULL);
 return(NULL);
 	while ( isspace(ch=getc(asfd)) && ch!=EOF && ch!='\n' );
 	for ( pt=tok; ch!=EOF && ch!='\n'; ch = getc(asfd) )
-	    if ( pt<tok+sizeof(tok)-2 )
+	    if ( pt<tok+sizetok-2 )
 		*pt++ = ch;
 	*pt = '\0';
 	sf = LoadSplineFont(tok);
     } else {
 	sf = SplineFontNew();
 	sf->onlybitmaps = false;
+	strcpy(tok,"<New File>");
     }
     if ( sf==NULL )
 return( NULL );
@@ -1749,11 +1751,17 @@ SplineFont *SFRecoverFile(char *autosavename) {
     FILE *asfd = fopen( autosavename,"r");
     SplineFont *ret;
     char *oldloc;
+    char tok[1025];
 
     if ( asfd==NULL )
 return(NULL);
     oldloc = setlocale(LC_NUMERIC,"C");
-    ret = SlurpRecovery(asfd);
+    ret = SlurpRecovery(asfd,tok,sizeof(tok));
+    if ( ret==NULL ) {
+	static int buts[] = { _STR_ForgetIt, _STR_TryAgain, 0 };
+	if ( GWidgetAskR(_STR_RecoveryFailed,buts,0,1,_STR_RecoveryOfFailed,tok)==0 )
+	    unlink(autosavename);
+    }
     setlocale(LC_NUMERIC,oldloc);
     fclose(asfd);
     if ( ret )
