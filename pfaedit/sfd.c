@@ -2018,6 +2018,9 @@ void SFAutoSave(SplineFont *sf) {
     char *oldloc;
     SplineFont *ssf;
 
+    if ( screen_display==NULL )		/* No autosaves when just scripting */
+return;
+
     if ( sf->cidmaster!=NULL ) sf=sf->cidmaster;
     asfd = fopen(sf->autosavename,"w");
     if ( asfd==NULL )
