@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 24-Jul-2002 -->
+  <!-- AP: Last modified: 26-Jul-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -85,8 +85,8 @@ let me know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-020723.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 23-July-2002
+    <A HREF="pfaedit-020726.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 26-July-2002
   <LI>
     <A HREF="pfaedit-020709-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
     Version: 9-July-2002 (Redhat 7.1)
@@ -94,8 +94,8 @@ let me know when you do</A>.
     <A HREF="pfaedit-020622-1.ppc.rpm">Download pfaedit linux-ppc SUSE 7.1
     </A>binary rpm Version: 22-June-2002
   <LI>
-    <A HREF="pfaedit-solaris-020722.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 22-July-2002
+    <A HREF="pfaedit-solaris-020724.tgz">Download pfaedit Solaris 8.0
+    </A>executable Version: 24-July-2002
   <LI>
     <A HREF="http://packages.debian.org/unstable/x11/pfaedit.html">A debian package
     is available at the debian site.</A>
@@ -123,9 +123,9 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-020709-1.src.rpm">source RPM</A>: Version:
 9-July-2002<BR>
-Or you can download the <A HREF="pfaedit_full-020723.tgz">entire source tree
+Or you can download the <A HREF="pfaedit_full-020726.tgz">entire source tree
 </A>in one .tgz file: Version
-23-July-2002<!--
+26-July-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -286,6 +286,21 @@ current)
 </H2>
 <UL>
   <LI>
+    26-July-2002
+    <UL>
+      <LI>
+	Added support for Werner's Sub Font Directory files which provide a way of
+	splitting up a 2 byte encoding into lots of little pfb fonts with 256 characters
+	in each.
+      <LI>
+	Normally in a ttf font, PfaEdit generates a 'post' table with the names of
+	all the characters in it. I've just added a way to make it generate a short
+	'post' table with no character names.
+      <LI>
+	PfaEdit generates bad truetype hints. There is now a way to turn these off
+	in the Generate Font dlg.
+    </UL>
+  <LI>
     24-July-2002
     <UL>
       <LI>
@@ -294,12 +309,16 @@ current)
 	Oops, the postscript parser was over-zealous about generating warnings.
       <LI>
 	Oops, the code which interprets results from autotrace was over-zealous on
-	getting rid of contours in small images.
+	getting rid of contours in small images. 
 	  <HR>
       <LI>
 	SetUnicodeValue did not behave as it should have.
       <LI>
-	Made acorn2sfd a little sturdier.
+	Made acorn2sfd a little sturdier. 
+	  <HR>
+      <LI>
+	Bitmap copies didn't work from the font view (probably broke when I added
+	anti-aliased support)
     </UL>
   <LI>
     23-July-2002

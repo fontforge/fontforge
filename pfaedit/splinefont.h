@@ -487,7 +487,7 @@ typedef struct splinefont {
 enum style_flags { sf_bold = 1, sf_italic = 2, sf_underline = 4, sf_outline = 8,
 	sf_shadow = 0x10, sf_condense = 0x20, sf_extend = 0x40 };
 
-enum ttf_flags { ttf_flag_shortps = 1 };
+enum ttf_flags { ttf_flag_shortps = 1, ttf_flag_nohints = 2 };
 
 struct fontdict;
 struct pschars;

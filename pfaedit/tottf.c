@@ -2945,6 +2945,9 @@ static void dumpgeninstructions(SplineChar *sc, struct glyphinfo *gi,
     if ( sc->vstem==NULL && sc->hstem==NULL && sc->dstem==NULL && sc->md==NULL ) {
 	putshort(gi->glyphs,0);		/* no instructions */
 return;
+    } else if ( gi->flags&ttf_flag_nohints ) {
+	putshort(gi->glyphs,0);		/* no instructions */
+return;
     }
     /* Maximum instruction length is 6 bytes for each point in each dimension */
     /*  2 extra bytes to finish up. And one byte to switch from x to y axis */
@@ -3058,7 +3061,8 @@ static void dumpcomposit(SplineChar *sc, RefChar *refs, struct glyphinfo *gi) {
     RefChar *ref;
 
     if ( sc->changedsincelasthinted && !sc->manualhints )
-	SplineCharAutoHint(sc,true);
+	if ( !(gi->flags&ttf_flag_nohints) )
+	    SplineCharAutoHint(sc,true);
 
     gi->loca[gi->next_glyph++] = ftell(gi->glyphs);
 
@@ -3130,7 +3134,8 @@ static void dumpcomposit(SplineChar *sc, RefChar *refs, struct glyphinfo *gi) {
 	/* we'd only want instructions if we scaled/rotated a ref */
 	/* (or if we wanted a seperation between two refs) */
     if ( sc->hstem || sc->vstem || sc->dstem )
-	dumpcompositinstrs(sc,gi,refs);
+	if ( !(gi->flags&ttf_flag_nohints) )
+	    dumpcompositinstrs(sc,gi,refs);
 #endif
 
     if ( gi->maxp->maxnumcomponents<i ) gi->maxp->maxnumcomponents = i;
@@ -3172,7 +3177,8 @@ return;
     gi->loca[gi->next_glyph++] = ftell(gi->glyphs);
 
     if ( sc->changedsincelasthinted && !sc->manualhints )
-	SplineCharAutoHint(sc,true);
+	if ( !(gi->flags&ttf_flag_nohints) )
+	    SplineCharAutoHint(sc,true);
     initforinstrs(sc);
 
     contourcnt = ptcnt = 0;
@@ -5770,7 +5776,8 @@ static void dumpnames(struct alltabs *at, SplineFont *sf) {
 
 static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format) {
     int pos, i,j;
-    int shorttable = (format==ff_otf || format==ff_otfcid || (at->flags&ttf_flag_shortps));
+    int shorttable = (format==ff_otf || format==ff_otfcid ||
+	    (at->gi.flags&ttf_flag_shortps));
 
     at->post = tmpfile();
 
@@ -6508,7 +6515,7 @@ static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format
 
     memset(at,'\0',sizeof(struct alltabs));
     at->msbitmaps = bf==bf_ttf_ms;
-    at->flags = flags;
+    at->gi.flags = flags;
     if ( bf!=bf_ttf_ms && bf!=bf_ttf_apple && bf!=bf_sfnt_dfont)
 	bsizes = NULL;
     if ( bsizes!=NULL ) {

@@ -349,6 +349,7 @@ struct glyphinfo {
     int hfullcnt, vfullcnt;
     FILE *fpgmf;
     int fpgmlen;
+    int flags;
 };
 
 struct vorg {
@@ -425,7 +426,6 @@ struct alltabs {
     struct glyphinfo gi;
     int isfixed;
     struct fd2data *fds;
-    int flags;
 };
 
 struct subhead { uint16 first, cnt, delta, rangeoff; };	/* a sub header in 8/16 cmap table */

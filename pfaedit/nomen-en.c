@@ -746,6 +746,7 @@ static char *str_FindMultipleMap = "Find Sub Font Directory file";
 static char *str_NoSubFontDirectoryFile = "No Sub Font Directory file";
 static char *str_PSNames = "PS Names";
 static char *str_PSNamesPopup = "Do you want the font file to contain the names of each character in the font?";
+static char *str_TTFHintsPopup = "Do you want the font file to contain truetype hints? Currently PfaEdit's hinting mechanism is very poor and you are probably better off without them."
     /* Goto character ... */
 static char str_Badnumberin[] = "Bad Number in ";
 static char str_Enternameofchar[] = "Enter the name of a character in the font";

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 24-Jul-2002 -->
+  <!-- AP: Last modified: 26-Jul-2002 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -441,7 +441,7 @@ a[4][0] = "Nested array";
     sfd file (if the font has no sfd file then this is an error). With one argument
     it executes a SaveAs command, saving the current font to that filename.
   <DT>
-    Generate(filename[,bitmaptype[,fmflags[,res]]])
+    Generate(filename[,bitmaptype[,fmflags[,res[,mult-sfd-file]]]])
   <DD>
     Generates a font. The type of font is determined by the extension of the
     filename. Valid extensions are:
@@ -454,6 +454,8 @@ a[4][0] = "Nested array";
 	bin (a mac postscript (pfb) resource in a mac binary wrapper)<BR>
 	res (on the Mac itself PfaEdit will put the result directly into a font suitcase
 	file, and the extension should be ".res" rather than ".bin")
+      <LI>
+	mult (splits a big font up into multiple pfb fonts each with 256 characters)
       <LI>
 	ps (type 0)
       <LI>
@@ -498,15 +500,27 @@ a[4][0] = "Nested array";
     <UL>
       <LI>
 	-1 =&gt; default (generate an afm file for postscript fonts, never generate
-	a pfm file)
+	a pfm file, full 'post' table, ttf hints)
       <LI>
 	fmflags&amp;1 =&gt; generate an afm file
       <LI>
 	fmflags&amp;2 =&gt; generate a pfm file
+      <LI>
+	fmflags&amp;4 =&gt; generate a short 'post' table with no character name
+	info in it.
+      <LI>
+	fmflags&amp;8 =&gt; generate ttf hints (PfaEdit does a bad job here (currently),
+	you may want this off)
     </UL>
     <P>
     res controls the resolution of generated bdf fonts. A value of -1 means pfaedit
     will guess for each strike.
+    <P>
+    If the filename has a ".mult" extension then a "mult-sfd-file" may be present.
+    This is the filename of a file containing the mapping from the current encoding
+    into the subfonts. <A HREF="big5.txt">Here is an example</A>. If this file
+    is not present PfaEdit will go through its default search process to find
+    a file for the encoding, and if it fails the fonts will not be saved.
   <DT>
     Import
   <DD>

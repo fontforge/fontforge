@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Dec-2000 -->
-  <!-- AP: Last modified: 23-Jul-2002 -->
+  <!-- AP: Last modified: 26-Jul-2002 -->
   <TITLE>The File Menu</TITLE>
 </HEAD>
 <BODY>
@@ -185,6 +185,11 @@
 	If you are on a mac then a resource fork will be generated directly, macbinary
 	will not be used.
       <LI>
+	Multiple PostScript Type 1 binary fonts (this is used to convert a large
+	font with a two byte encoding into a series of smaller pfb files with 256
+	characters in each. You may be prompted for a file to specify the conversion.
+	<A HREF="Big5.txt">Here is an example of what the file should look like</A>)
+      <LI>
 	PostScript Type3 font (a .ps font, this is also used by printers and is not
 	encrypted)
       <LI>
@@ -284,7 +289,14 @@
     TTF (and OpenType) fonts will produce vertical metrics tables if the font
     has vertical metrics enabled. Postscript encodings will not produce Metrics2
     dictionaries (If someone actually wants this let me know, it can be done,
-    but I get the impression that nobody uses this any more).
+    but I get the impression that nobody uses this any more).<BR>
+    PfaEdit will normally store the names of all the characters inside a TTF
+    font (in the 'post' table) if you do not want this to happen (it can take
+    up a fair amount of space) then uncheck the <TT>[PS Names]</TT>
+    checkbox.<BR>
+    PfaEdit currently generates bad ttf hints. You may find that your fonts look
+    better without any. The [Hints] checkbox allows you to turn this off for
+    truetype.
   <DT>
     <A NAME="Revert">Revert</A>
   <DD>

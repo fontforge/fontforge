@@ -46,6 +46,7 @@ struct gfc_data {
     GGadget *doafm;
     GGadget *dopfm;
     GGadget *psnames;
+    GGadget *ttfhints;
     SplineFont *sf;
 };
 
@@ -101,7 +102,7 @@ static GTextInfo bitmaptypes[] = {
 };
 
 static int oldafmstate = -1, oldpfmstate = false;
-int oldpsstate = true;
+int oldpsstate = true, oldttfhintstate = false;
 int oldformatstate = ff_pfb;
 int oldbitmapstate = 0;
 
@@ -850,6 +851,8 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 
     if ( !oldpsstate )
 	flags = ttf_flag_shortps;
+    if ( !oldttfhintstate )
+	flags |= ttf_flag_nohints;
 
     path = uc_copy(newname);
     GProgressStartIndicator(10,GStringGetResource(_STR_SavingFont,NULL),
@@ -980,10 +983,12 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    oldafmstate = false;
 	oldpfmstate = false;
 	oldpsstate = true;
+	oldttfhintstate = true;
     } else {
 	oldafmstate = fmflags&1;
 	oldpfmstate = (fmflags&2)?1:0;
 	oldpsstate = (fmflags&4)?0:1;
+	oldttfhintstate = (fmflags&8)?1:0;
     }
 
     if ( oldbitmapstate!=bf_none ) {
@@ -1040,6 +1045,7 @@ return;
     oldafmstate = GGadgetIsChecked(d->doafm);
     oldpfmstate = GGadgetIsChecked(d->dopfm);
     oldpsstate = GGadgetIsChecked(d->psnames);
+    oldttfhintstate = GGadgetIsChecked(d->ttfhints);
 
     err = _DoSave(d->sf,temp,sizes,-1);
 
@@ -1478,6 +1484,16 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
 	    ofs==ff_otfdfont || ofs==ff_ttfmacbin || ofs==ff_none )
 	gcd[11].gd.flags |=  gg_visible;
 
+    gcd[12].gd.pos.x = gcd[11].gd.pos.x; gcd[12].gd.pos.y = gcd[10].gd.pos.y;
+    gcd[12].gd.flags = gg_enabled | (oldttfhintstate ?gg_cb_on : 0 );
+    label[12].text = (unichar_t *) _STR_Hints;
+    label[12].text_in_resource = true;
+    gcd[12].gd.popup_msg = GStringGetResource(_STR_TTFHintsPopup,NULL);
+    gcd[12].gd.label = &label[12];
+    gcd[12].creator = GCheckBoxCreate;
+    if ( ofs==ff_ttf || ofs==ff_ttfsym || ofs==ff_ttfdfont || ofs==ff_ttfmacbin )
+	gcd[12].gd.flags |=  gg_visible;
+
     if ( ofs==ff_otfcid || ofs==ff_cid || ofs==ff_otfciddfont) {
 	/*gcd[5].gd.flags &= ~gg_visible;*/
 	gcd[10].gd.flags &= ~gg_visible;
@@ -1514,6 +1530,7 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     d.bmptype = gcd[8].ret;
     d.bmpsizes = gcd[9].ret;
     d.psnames = gcd[11].ret;
+    d.ttfhints = gcd[12].ret;
 
     GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
