@@ -347,15 +347,15 @@ static int BDFParseEnc(char *encname, int encoff) {
     int enc;
 
     enc = em_none;
-    if ( strcmp(encname,"ISO8859")==0 || strcmp(encname,"ISO-8859")==0 ) {
+    if ( strmatch(encname,"ISO8859")==0 || strmatch(encname,"ISO-8859")==0 ) {
 	enc = em_iso8859_1+encoff;
 	if ( enc<=em_iso8859_13 )
 	    --enc;
 	if ( enc>em_iso8859_15 ) enc = em_iso8859_15;
-    } else if ( strcmp(encname,"ISOLatin1Encoding")==0 ) {
+    } else if ( strmatch(encname,"ISOLatin1Encoding")==0 ) {
 	enc = em_iso8859_1;
-    } else if ( strcmp(encname,"ISO10646")==0 || strcmp(encname,"ISO-10646")==0 ||
-	    strcmp(encname,"Unicode")==0 || strcmp(encname,"UNICODE")==0 ) {
+    } else if ( strmatch(encname,"ISO10646")==0 || strmatch(encname,"ISO-10646")==0 ||
+	    strmatch(encname,"Unicode")==0 ) {
 	enc = em_unicode;
 	if ( encoff>1 )
 	    enc = em_unicodeplanes+encoff-1;
