@@ -1,0 +1,547 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 18-Jan-2002 -->
+  <!-- AP: Last modified: 19-Jan-2002 -->
+  <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+  Writing scripts to change fonts in PfaEdit
+</H1>
+<P>
+PfaEdit includes an interpreter so you can write scripts to modify fonts.
+<P>
+At the moment pfaedit will either run a script (and not put up any windows),
+or it will display windows and not run any scripts.
+<P>
+The scripting language provides access to much of the functionality found
+in the font view's menus. It does not currently (and probably never will)
+provide access to everything. (If you find a lack let me know, I may put
+it in for you). It does not provide commands for building up a character
+out of splines, instead it allows you to do high level modifications to
+characters.
+<P>
+In general I envision this as being useful for things like taking a latin
+font and extending it to contain cyrillic characters. So the script might:
+<UL>
+  <LI>
+    Reencode the font
+  <LI>
+    Place a reference to Latin "A" at Cyrillic "A"
+  <LI>
+    Copy Latin "R" to Cyrillic "YA"
+  <LI>
+    Flip "YA" horizontally
+  <LI>
+    Correct its direction
+  <LI>
+    ... and so forth
+</UL>
+<P>
+The syntax is rather like a mixture of C and shell commands. Every file
+corresponds to a procedure. As in a shell script arguments passed to the
+file are identified as $1, $2, ... $n. $0 is the file name itself. $argc
+gives the number of arguments. $argv[&lt;expr&gt;] provides array access
+to the arguments.
+<P>
+Terms can be
+<UL>
+  <LI>
+    A variable name (like "$1" or "i")
+  <LI>
+    an integer expressed in decimal, hex or octal
+  <LI>
+    a unicode code point (which has a prefix of "0u" or "0U" and is followed
+    by a string of hex digits. This is only used by the select command.
+  <LI>
+    A string which may be enclosed in either double or single quotes
+  <LI>
+    a procedure to call or file to invoke.
+  <LI>
+    an expression within parentheses
+</UL>
+<P>
+There are three different comments supported:
+<UL>
+  <LI>
+    Starting with a "#" character and proceding to end of line
+  <LI>
+    Starting with "//" and proceding to end of line
+  <LI>
+    Starting with "/*" and proceding to "*/"
+</UL>
+<P>
+Expressions are similar to those in C, a few operators have been omitted,
+a few added from shell scripts. Operator precedence has been simplified slightly.
+So operators (and their precedences) are:
+<UL>
+  <LI>
+    unary operators (+, -, !, ~, ++ (prefix and postfix), --(prefix and postfix),
+    () (procedure call), :h, :t, :r, :e<BR>
+    Most of these are as expected in C, the last four are borrowed from shell
+    scripts and are applied to strings
+    <UL>
+      <LI>
+	:h gives the head (directory) of a pathspec
+      <LI>
+	:t gives the tail (filename) of a pathspec
+      <LI>
+	:r gives the pathspec without the extension (if any)
+      <LI>
+	:e gives the extension
+    </UL>
+  <LI>
+    *, /, % (binary multiplicative operators)
+  <LI>
+    +, - (binary arithmetric operators)<BR>
+    If the first operand of + is a string then + will be treated as concatenation
+    rather than addition. If the second operand is a number it will be converted
+    to a string (decimal representation) and then concatenated.
+  <LI>
+    ==, !=, &gt;, &lt;, &gt;=, &lt;= (comparison operators, may be applied to
+    either two integers or two strings)
+  <LI>
+    &amp;&amp;, &amp; (logical and, bitwise and. (logical and will do short circuit
+    evaluation))
+  <LI>
+    ||, |, ^ (logical or, bitwise or, bitwise exclusive or (logical or will do
+    short circuit evaluation))
+  <LI>
+    =, +=, -=, *=, /=, %= (assignment operators as in C. The += will act as
+    concatenation if the first operand is a string.)
+</UL>
+<P>
+Note there is no comma operator, and no "?:" operator. The precedence of
+"and" and "or" has been simplified, as has that of the assignment operators.
+<P>
+Procedure calls may be applied either to a name token, or to a string. If
+the name or string is recognized as one of PfaEdit's internal procedures
+it will be executed, otherwise it will be assumed to be a filename containing
+another pfaedit script file, this file will be invoked (since filenames can
+contain characters not legal in name tokens it is important to allow general
+strings to specify filenames). If the procedure name does not contain a directory
+then it is assumed to be in the same directory as the current script file.
+<P>
+Variables may be created by assigning a value to them (only with the "="),
+so:<BR>
+<CODE>&nbsp; &nbsp; i=3</CODE><BR>
+could be used to define "i" as a variable. Variables are limited in scope
+to the current file, they will not be inherited by called procedures.
+<P>
+A statement may be
+<UL>
+  <LI>
+    an expression
+  <LI>
+    <CODE>if ( expression )<BR>
+    &nbsp; &nbsp; statements<BR>
+    {elseif ( expression )<BR>
+    &nbsp; &nbsp; statements}<BR>
+    [else<BR>
+    &nbsp; &nbsp; statements]<BR>
+    endif</CODE>
+  <LI>
+    <CODE>while ( expression )<BR>
+    &nbsp; &nbsp; statements<BR>
+    endloop</CODE>
+  <LI>
+    <CODE>return [ expression ]</CODE>
+  <LI>
+    <CODE>shift</CODE>
+</UL>
+<P>
+As with C, non-zero expressions are defined to be true.<BR>
+A return statement may be followed by a return value (the expression) or
+a procedure may return nothing (void).<BR>
+The shift statement is stolen from shell scripts and shifts all arguments
+down by one. (argument 0, the name of the script file, remains unchanged.<BR>
+Statements are terminated either by a new line or a semicolon.
+<P>
+Trivial example:
+<BLOCKQUOTE>
+  <PRE>i=0;	#semicolon is not needed here, but it's ok
+while ( i&lt;3 )
+   if ( i==1 /* pointless comment */ )
+	Print( "Got to one" )	// Another comment
+   endif
+   ++i
+endloop
+</PRE>
+</BLOCKQUOTE>
+<P>
+PfaEdit maintains the concept of a "current font" almost all commands refer
+only to the current font (and require that there be a font). The Open(),
+New() and Close() commands all change the current font. PfaEdit also maintains
+a list of all fonts that are currently open. This list is in no particular
+order.
+<P>
+All builtin variables begin with "$", you may not create any variables that
+start with "$" yourself (though you may assign to (some) already existing
+ones)
+<UL>
+  <LI>
+    <CODE>$0 </CODE>the current script filename
+  <LI>
+    <CODE>$1 </CODE>the first argument to the script file
+  <LI>
+    <CODE>$2 </CODE>the second argument to the script file
+  <LI>
+    ...
+  <LI>
+    <CODE>$argc</CODE> the number of arguments passed to the script file (this
+    will always be at least 1 as $0 is always present)
+  <LI>
+    <CODE>$argv[&lt;expr&gt;] </CODE>allows you to access the n'th argument
+  <LI>
+    <CODE>$curfont </CODE>the name of the filename in which the current font
+    resides
+  <LI>
+    <CODE>$firstfont </CODE>the name of the filename of the font which is first
+    on the font list
+  <LI>
+    <CODE>$nextfont </CODE>the name of the filename of the font which follows
+    the current font on the list (or the empty string if the current font is
+    the last one on the list)
+  <LI>
+    <CODE>$trace</CODE> if this is set to one then PfaEdit will trace each procedure
+    call.
+</UL>
+<P>
+The built in procedures are very similar to the menu items with the same
+names.
+<DL>
+  <DT>
+    Print(arg1,arg2,arg3,...)
+  <DD>
+    This corresponds to no menu item. It will print all of its arguments to stdout.
+    It can execute with no current font. 
+      <HR>
+  <DT>
+    Open(filename)
+  <DD>
+    This makes the font named by filename be the current font. If filename has
+    not yet been loaded into memory it will be loaded now. It can execute with
+    no current font.
+  <DT>
+    New()
+  <DD>
+    This creates a new font. It can execute with no current font.
+  <DT>
+    Close()
+  <DD>
+    This frees up any memory taken up by the current font and drops it off the
+    list of loaded fonts. After this executes there will be no current font.
+  <DT>
+    Save([filename])
+  <DD>
+    If no filename is specified then this saves the current font back into its
+    sfd file (if the font has no sfd file then this is an error). With one argument
+    it executes a SaveAs command, saving the current font to that filename.
+  <DT>
+    Generate(filename[,bitmaptype])
+  <DD>
+    Generates a font. The type of font is determined by the extension of the
+    filename. If present, bitmaptype may be one of:
+    <UL>
+      <LI>
+	bdf
+      <LI>
+	ms (for EBDT table in truetype)
+      <LI>
+	apple (for bdat table in truetype)
+      <LI>
+	gdf
+      <LI>
+	bin (for nfnt in macbinary)
+      <LI>
+	dfont (for nfnt in dfont)
+      <LI>
+	"" for no bitmaps
+    </UL>
+  <DT>
+    Quit(status)
+  <DD>
+    Causes PfaEdit to exit with the given status. It can execute with no current
+    font. 
+      <HR>
+  <DT>
+    Cut
+  <DD>
+    Makes a copy of all selected characters and saves it in the clipboard, then
+    clears out the selected characters
+  <DT>
+    Copy
+  <DD>
+    Makes a copy of all selected characters.
+  <DT>
+    Copy Reference
+  <DD>
+    Makes references to all selected characters and stores them in the clipboard.
+  <DT>
+    Copy Width
+  <DD>
+    Stores the widths of all selected characters in the clipboard
+  <DT>
+    Paste
+  <DD>
+    Copies the clipboard into the current font (removing what was there before)
+  <DT>
+    PasteInto
+  <DD>
+    Copies the clipboard into the current font (merging with what was there before)
+  <DT>
+    Clear
+  <DD>
+    Clears out all selected characters
+  <DT>
+    ClearBackground
+  <DD>
+    Clears the background of all selected characters
+  <DT>
+    CopyFgToBd
+  <DD>
+    Copies all foreground splines into the background in all selected characters
+  <DT>
+    UnlinkReference
+  <DD>
+    Unlinks all references within all selected characters
+  <DT>
+    SelectAll
+  <DD>
+    Selects all characters
+  <DT>
+    SelectNone
+  <DD>
+    Deselects all characters
+  <DT>
+    Select(arg1, arg2, ...)
+  <DD>
+    This clears out the current selection, then for each pair of arguments it
+    selects all characters between (inclusive) the bounds specified by the pair.
+    If there is a final singleton argument then that single character will be
+    selected. An argument may be specified by:
+    <UL>
+      <LI>
+	an integer which specifies the location in the current font's encoding
+      <LI>
+	a postscript unicode name which gets mapped into the current font's encoding
+      <LI>
+	a unicode code point (0u61) which gets mapped to the current font's encoding
+    </UL>
+  <DT>
+    SelectMore(arg1, arg2, ...)
+  <DD>
+    The same as the previous command except that it does not clear the selection,
+    so it extends the current selection. 
+      <HR>
+  <DT>
+    Reencode(encoding-name)
+  <DD>
+    Reencodes the current font into the given encoding which may be:<BR>
+    iso8859-1, isolatin1, latin1, iso8859-2, latin2, iso8859-3, latin3, iso8859-4,
+    latin4, iso8859-5, iso8859-6, iso8859-7, iso8859-8, iso8859-9, iso8859-10,
+    iso8859-13, iso8859-14, iso8859-15, latin0, koi8-r, AdobeStandardEncoding,
+    win, mac, wansung, big5, johab, jis208, unicode, iso10646-1 (or one of the
+    user defined encodings).
+  <DT>
+    Transform(t1,t2,t3,t4,t5,t6)
+  <DD>
+    Each argument will be divided by 100. and then all selected characters will
+    be transformed by this matrix
+  <DT>
+    HFlip([about-x])
+  <DD>
+    All selected characters will be horizontally flipped about the vertical line
+    through x=about-x. If no argument is given then all selected characters will
+    be flipped about their central point.
+  <DT>
+    VFlip([about-y])
+  <DD>
+    All selected characters will be vertically flipped about the horizontal line
+    through y=about-y. If no argument is given then all selected characters will
+    be flipped about their central point.
+  <DT>
+    Rotate(angle[,ox,oy])
+  <DD>
+    Rotates all selected character the specified number of degrees. If the last
+    two args are specified they provide the origin of the rotation, otherwise
+    the center of the character is used.
+  <DT>
+    Scale(factor[,yfactor][,ox,oy])
+  <DD>
+    All selected characters will be scaled (scale factors are in percent)
+    <UL>
+      <LI>
+	with one argument they will be scaled uniformly about the character's center
+	point
+      <LI>
+	with two arguments the first specifies the scale factor for x, the second
+	for y. Again scaling will be about the center point
+      <LI>
+	with three arguments they will be scaled uniformly about the specified center
+      <LI>
+	with four arguments they will be scaled differently about the specified center
+    </UL>
+  <DT>
+    Skew(angle[,ox,oy])
+  <DD>
+    All selected characters will be skewed by the given angle.
+  <DT>
+    Move(delta-x,delta-y)
+  <DD>
+    All selected characters will have their points moved the given amount.
+  <DT>
+    ExpandStroke(width)<BR>
+    ExpandStroke(width,caligraphic-angle)<BR>
+    ExpandStroke(width,line cap, line join)
+  <DD>
+    In the first format a line cap of "butt" and line join of "round" are implied.
+  <DT>
+    RemoveOverlap()
+  <DD>
+  <DT>
+    Simplify()
+  <DD>
+  <DT>
+    AddExtrema()
+  <DD>
+  <DT>
+    RoundToInt()
+  <DD>
+  <DT>
+    AutoTrace()
+  <DD>
+  <DT>
+    CorrectDirection()
+  <DD>
+  <DT>
+    BuildComposit()
+  <DD>
+  <DT>
+    BuildAccented()
+  <DD>
+  <DT>
+    MergeFonts(other-font-name)
+  <DD>
+      <HR>
+  <DT>
+    AutoHint()
+  <DD>
+  <DT>
+    SetWidth(width)
+  <DD>
+  <DT>
+    SetVWidth(vertical-width)
+  <DD>
+  <DT>
+    SetLBearing(lbearing)
+  <DD>
+  <DT>
+    SetRBearing(rbearing)
+  <DD>
+      <HR>
+  <DT>
+    CharCnt()
+  <DD>
+    Returns the number of characters in the current font
+  <DT>
+    InFont(arg)
+  <DD>
+    Returns whether the argument is in the font. The argument may be an integer
+    in which case true is returned if the value is &gt;= 0 and &lt; total number
+    of characters in the font. Otherwise if the argument is a unicode code point
+    or a postscript character name, true is returned if that character is in
+    the font.
+  <DT>
+    WorthOutputtin(arg)
+  <DD>
+    Arg is as above. This returns true if the character contains any splines,
+    references or has had its width set.
+</DL>
+<P>
+  <HR>
+<P>
+Example:
+<BLOCKQUOTE>
+  <PRE>#!/usr/local/bin/pfaedit
+#Take a Latin font and apply some simple transformations to it
+#prepriotory to adding cyrillic letters.
+Open($1);
+Reencode("KOI8-R");
+Select(0xa0,0xff);
+//Copy those things which look just like latin
+BuildComposit();
+BuildAccented();
+
+//Handle Ya which looks like a backwards "R"
+Select("R");
+Copy();
+Select("afii10049");
+Paste();
+HFlip();
+CorrectDirection();
+Copy();
+Select(0u044f);
+Paste();
+CopyFgToBg();
+Clear();
+
+//Gamma looks like an upside-down L
+Select("L");
+Copy();
+Select(0u0413);
+Paste();
+VFlip();
+CorrectDirection();
+Copy();
+Select(0u0433);
+Paste();
+CopyFgToBg();
+Clear();
+
+//Prepare for editing small caps K, etc.
+Select("K");
+Copy();
+Select(0u043a);
+Paste();
+CopyFgToBg();
+Clear();
+
+Select("H");
+Copy();
+Select(0u043d);
+Paste();
+CopyFgToBg();
+Clear();
+
+Select("T");
+Copy();
+Select(0u0442);
+Paste();
+CopyFgToBg();
+Clear();
+
+Select("B");
+Copy();
+Select(0u0432);
+Paste();
+CopyFgToBg();
+Clear();
+
+Select("M");
+Copy();
+Select(0u043C);
+Paste();
+CopyFgToBg();
+Clear();
+
+Save($1:r+"-koi8-r.sfd");
+Quit(0);
+</PRE>
+</BLOCKQUOTE>
+<P>
+<P ALIGN=Center>
+-- <A HREF="cliargs.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
+<A HREF="faqFS.html">Next</A> --
+</BODY></HTML>
