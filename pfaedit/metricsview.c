@@ -1013,6 +1013,7 @@ static void MVSetPos(MetricsView *mv,int i,SplineChar *sc) {
 	memset(mv->perchar+oldmax,'\0',(mv->max-oldmax)*sizeof(struct metricchar));
     }
     mv->perchar[i].sc = sc;
+    mv->perchar[i].basesc = NULL;
     mv->perchar[i].active_pos = NULL;
     if ( mv->bdf==NULL ) {
 	bdfc = MVRasterize(mv,sc);
@@ -2367,6 +2368,22 @@ return;
     free(mi);
 }
 
+static void MVRevertSubs(GWindow gw, GMenuItem *mi, GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    int i;
+
+    for ( i=0; i<mv->charcnt; ++i ) if ( mv->perchar[i].selected ) {
+	SplineChar *basesc = mv->perchar[i].basesc;
+	if ( basesc==NULL )
+return;
+	MVSetPos(mv,i,basesc);
+	/* Should I update the text field??? */
+	MVSetAnchor(mv);
+	GDrawRequestExpose(mv->gw,NULL,false);
+    break;
+    }
+}
+
 static void MVSubsInvoked(GWindow gw, GMenuItem *mi, GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     int i;
@@ -2374,6 +2391,8 @@ static void MVSubsInvoked(GWindow gw, GMenuItem *mi, GEvent *e) {
     for ( i=0; i<mv->charcnt; ++i ) if ( mv->perchar[i].selected ) {
 	char *name = mi->ti.userdata, *pt;
 	SplineChar *sc;
+	SplineChar *basesc = mv->perchar[i].basesc;
+	if ( basesc==NULL ) basesc = mv->perchar[i].sc;
 	pt = strchr(name,' ');
 	if ( pt!=NULL ) *pt = '\0';
 	sc = SFGetChar(mv->fv->sf,-1,name);
@@ -2383,6 +2402,7 @@ static void MVSubsInvoked(GWindow gw, GMenuItem *mi, GEvent *e) {
 	    GWidgetErrorR(_STR_CouldntfindcharT, _STR_CouldntFindSubstitution, name);
 	else {
 	    MVSetPos(mv,i,sc);
+	    mv->perchar[i].basesc = basesc;
 	    /* Should I update the text field??? */
 	    MVSetAnchor(mv);
 	    GDrawRequestExpose(mv->gw,NULL,false);
@@ -2421,7 +2441,7 @@ static void GMenuMakeSubSub(GMenuItem *mi,char *start,char *pt) {
     mi->invoke = MVSubsInvoked;
 }
 
-static GMenuItem *SubsMenuBuild(SplineChar *sc) {
+static GMenuItem *SubsMenuBuild(SplineChar *sc,SplineChar *basesc) {
     PST *pst;
     GMenuItem *mi;
     int cnt, i, j;
@@ -2432,6 +2452,10 @@ static GMenuItem *SubsMenuBuild(SplineChar *sc) {
     for ( cnt = 0, pst=sc->possub; pst!=NULL ; pst=pst->next )
 	if ( pst->type==pst_substitution || pst->type==pst_alternate )
 	    ++cnt;
+    if ( basesc!=NULL ) {
+	if ( cnt>0 ) cnt+=2;
+	else cnt = 1;
+    }
     if ( cnt==0 )
 return( NULL );
     mi = gcalloc(cnt+2,sizeof(GMenuItem));
@@ -2458,6 +2482,15 @@ return( NULL );
 		++i;
 	    }
 	}
+    }
+    if ( basesc!=NULL ) {
+	if ( i!=0 )
+	    mi[i++].ti.line = true;
+	mi[i].ti.text = u_copy((unichar_t *) GStringGetResource(_STR_RevertSubs,NULL));
+	mi[i].ti.fg = COLOR_DEFAULT;
+	mi[i].ti.bg = COLOR_DEFAULT;
+	mi[i].ti.userdata = basesc;
+	mi[i].invoke = MVRevertSubs;
     }
 return( mi );
 }
@@ -2912,10 +2945,10 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_Substitutions:
 	    PosSubsMenuFree(vwlist[i].sub);
 	    vwlist[i].sub = NULL;
-	    if ( !aselection || mv->perchar[j].sc->possub==NULL )
+	    if ( !aselection || (mv->perchar[j].sc->possub==NULL && mv->perchar[j].basesc==NULL) )
 		vwlist[i].ti.disabled = true;
 	    else {
-		vwlist[i].sub = SubsMenuBuild(mv->perchar[j].sc);
+		vwlist[i].sub = SubsMenuBuild(mv->perchar[j].sc,mv->perchar[j].basesc);
 		vwlist[i].ti.disabled = (vwlist[i].sub == NULL);
 	    }
 	  break;

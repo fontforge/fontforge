@@ -331,6 +331,7 @@ typedef struct metricsview {
 	unsigned int selected: 1;
 	GGadget *width, *lbearing, *rbearing, *kern, *name;
 	struct aplist *aps;
+	SplineChar *basesc;	/* If we've done a substitution, this lets us go back */
     } *perchar;
     SplineChar **sstr;		/* An array the same size as perchar (well 1 bigger, trailing null) */
     int16 mwidth, mbase;
