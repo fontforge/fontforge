@@ -243,7 +243,10 @@ const char *othersubrsend[] = {
 };
 
 /* Lives in private dictionary. Commonly used. I have no docs on it */
-/* The first numbers (9.5,72) change in different uses (4.5,34), (4.5,38), (5.5,41), (6.5,50) are other combo */
+/*  The first numbers (9.5,72) change in different uses (4.5,34), (4.5,38), (5.5,41), (6.5,50) are other combo */
+/* James Cloos notes that the second number is /StdVW, and the first number is */
+/*  StdVW 8 idiv .5 add */
+/* 
 const char *erode[] = {
 	"/Erode",
 	"{ 9.5 dup 3 -1 roll 0.1 mul exch 0.5 sub mul cvi sub dup mul",
