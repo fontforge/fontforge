@@ -1799,8 +1799,22 @@ static int CoalesceValues(double *values,int max,int *index) {
 	}
 	cnt[i] = j-i;
     }
-    if ( top<=max )
+    if ( top<=max ) {
+	if ( values[0]!=0 ) {
+	    for ( i=0; i<top && values[i]!=0; ++i );
+	    if ( i==top )
+		GDrawIError("zero must be present in tfm arrays");
+	    else {
+		values[i] = values[0];
+		values[0] = 0;
+		for ( k=0; k<257; ++k ) {
+		    if ( index[k]==0 ) index[k] = i;
+		    else if ( index[k]==i ) index[k] = 0;
+		}
+	    }
+	}
 return( top );
+    }
 
     for ( i=0; i<top; ++i ) {
 	topvalues[i] = values[i];
