@@ -748,6 +748,7 @@ return( NULL );
     new->ascent = (old->ascent*to+.5)/old->pixelsize;
     new->descent = to-new->ascent;
     new->encoding_name = old->encoding_name;
+    new->foundry = copy(old->foundry);
     for ( i=0; i<old->charcnt; ++i )
 	new->chars[i] = BCScale(old->chars[i],old->pixelsize,to);
 return( new );

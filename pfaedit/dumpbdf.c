@@ -243,7 +243,7 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding) {
 		squeeze);
     } else {
 	sprintf( buffer, "-%s-%s-%s-%s-%s-%s-%d-%d-%d-%d-%s-%d-%s",
-	    BDFFoundry==NULL?"PfaEdit":BDFFoundry,
+	    font->foundry!=NULL?font->foundry:BDFFoundry==NULL?"PfaEdit":BDFFoundry,
 	    family_name, weight_name, slant, squeeze, stylename,
 	    font->pixelsize, pnt, res, res, mono, avg, encoding );
 	if ( strchr(encoding,'-')==NULL )
@@ -311,7 +311,7 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding) {
 	fprintf( file, "DEFAULT_CHAR %d\n", def_ch );
     fprintf( file, "FONTNAME_REGISTRY \"\"\n" );
     fprintf( file, "FAMILY_NAME \"%s\"\n", family_name );
-    fprintf( file, "FOUNDRY \"%s\"\n", BDFFoundry==NULL?"PfaEdit":BDFFoundry );
+    fprintf( file, "FOUNDRY \"%s\"\n", font->foundry!=NULL?font->foundry:BDFFoundry==NULL?"PfaEdit":BDFFoundry );
     fprintf( file, "WEIGHT_NAME \"%s\"\n", weight_name );
     fprintf( file, "SETWIDTH_NAME \"%s\"\n", squeeze );
     fprintf( file, "SLANT \"%s\"\n", slant );

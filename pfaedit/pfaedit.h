@@ -73,7 +73,7 @@ extern int autohint_before_rasterize;
 extern int seperate_hint_controls;
 extern int ItalicConstrained;
 
-extern char *BDFFoundry;
+extern char *BDFFoundry, *TTFFoundry;
 extern char *xuid;
 
 extern int pagewidth, pageheight, printtype;	/* Printer defaults */

@@ -44,6 +44,7 @@ int GraveAcuteCenterBottom = 1;
 float arrowAmount=1;
 float snapdistance=3.5;
 char *BDFFoundry=NULL;
+char *TTFFoundry=NULL;
 char *xuid=NULL;
 char *RecentFiles[RECENT_MAX] = { NULL };
 /*struct cvshows CVShows = { 1, 1, 1, 1, 1, 0, 1 };*/ /* in charview */
@@ -114,6 +115,7 @@ static struct prefs_list {
 	{ "NewCharset", pr_encoding, &default_encoding, NULL, NULL, 'N', NULL, 0, _STR_PrefsPopupForNewFonts },
 	{ "ShowRulers", pr_bool, &CVShows.showrulers, NULL, NULL, '\0', NULL, 1, _STR_PrefsPopupRulers },
 	{ "FoundryName", pr_string, &BDFFoundry, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupFN },
+	{ "TTFFoundry", pr_string, &TTFFoundry, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupTFN },
 	{ "XUID-Base", pr_string, &xuid, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupXU },
 	{ "PageWidth", pr_int, &pagewidth, NULL, NULL, '\0', NULL, 1 },
 	{ "PageHeight", pr_int, &pageheight, NULL, NULL, '\0', NULL, 1 },

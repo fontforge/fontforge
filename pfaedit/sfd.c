@@ -329,8 +329,8 @@ static void SFDDumpBitmapFont(FILE *sfd,BDFFont *bdf) {
     int i;
 
     GProgressNextStage();
-    fprintf( sfd, "BitmapFont: %d %d %d %d %d\n", bdf->pixelsize, bdf->charcnt,
-	    bdf->ascent, bdf->descent, BDFDepth(bdf) );
+    fprintf( sfd, "BitmapFont: %d %d %d %d %d %s\n", bdf->pixelsize, bdf->charcnt,
+	    bdf->ascent, bdf->descent, BDFDepth(bdf), bdf->foundry?bdf->foundry:"" );
     for ( i=0; i<bdf->charcnt; ++i ) {
 	if ( bdf->chars[i]!=NULL )
 	    SFDDumpBitmapChar(sfd,bdf->chars[i]);
@@ -1258,6 +1258,7 @@ static int SFDGetBitmapFont(FILE *sfd,SplineFont *sf) {
     BDFFont *bdf, *prev;
     char tok[200];
     int pixelsize, ascent, descent, depth=1;
+    int ch;
 
     bdf = gcalloc(1,sizeof(BDFFont));
     bdf->encoding_name = sf->encoding_name;
@@ -1274,6 +1275,13 @@ return( 0 );
 	depth = 1;	/* old sfds don't have a depth here */
     else if ( depth!=1 && depth!=2 && depth!=4 && depth!=8 )
 return( 0 );
+    while ( (ch = getc(sfd))==' ' );
+    if ( ch!='\n' && ch!='\r' )
+	ungetc(ch,sfd);		/* old sfds don't have a foundry */
+    else {
+	getname(sfd,tok);
+	bdf->foundry = copy(tok);
+    }
     bdf->pixelsize = pixelsize;
     bdf->ascent = ascent;
     bdf->descent = descent;

@@ -861,6 +861,7 @@ static char *str_PrefsPopupForNewFonts[] = "Default encoding for\nnew fonts";
 static char *str_PrefsPopupLoc[] = "Character set used by the local\nclipboard, filesystem, etc. (only\n8bit charsets currently supported\nhere)";
 static char *str_PrefsPopupAH[] = "AutoHint before rasterizing";
 static char *str_PrefsPopupFN[] = "Name used for foundry field in bdf\nfont generation";
+static char *str_PrefsPopupTFN[] = "Name used for Vendor ID field in\nttf (OS/2 table) font generation.\nMust be no more than 4 characters";
 static char *str_PrefsPopupXU[] = "If specified this should be a space separated list of integers each\nless than 16777216 which uniquely identify your organization\nPfaEdit will generate a random number for the final component.";
 static char *str_PrefsPopupRulers[] = "Display rulers in the Outline Character View";
 static char *str_PrefsPopupSepHints[] = "Have seperate controls for display horizontal and vertical hints.";

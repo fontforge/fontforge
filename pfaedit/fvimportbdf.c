@@ -375,14 +375,17 @@ return( enc );
 }
 
 static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc,
-	char *family, char *mods, char *full, int *depth, struct metrics *defs) {
+	char *family, char *mods, char *full, int *depth, char *foundry,
+	char *comments, struct metrics *defs) {
     int pixelsize = -1;
     int ascent= -1, descent= -1, enc, cnt;
     char tok[100], encname[100], weight[100], italic[100];
     int ch;
+    int found_copyright=0;
 
     *depth = 1;
     encname[0]= '\0'; family[0] = '\0'; weight[0]='\0'; italic[0]='\0'; full[0]='\0';
+    foundry[0]= '\0'; comments[0] = '\0';
     while ( gettoken(bdf,tok,sizeof(tok))!=-1 ) {
 	if ( strcmp(tok,"CHARS")==0 ) {
 	    cnt=0;
@@ -426,6 +429,8 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc,
 	    fscanf(bdf, "%d", &defs->metricsset );
 	else if ( strcmp(tok,"VVECTOR")==0 )
 	    fscanf(bdf, "%*d %d", &defs->vertical_origin );
+	else if ( strcmp(tok,"FOUNDRY")==0 )
+	    fscanf(bdf, " \"%[^\"]", foundry );
 	else if ( strcmp(tok,"CHARSET_REGISTRY")==0 )
 	    fscanf(bdf, " \"%[^\"]", encname );
 	else if ( strcmp(tok,"CHARSET_ENCODING")==0 ) {
@@ -444,6 +449,32 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc,
 	    fscanf(bdf, " \"%[^\"]", weight );
 	else if ( strcmp(tok,"SLANT")==0 )
 	    fscanf(bdf, " \"%[^\"]", italic );
+	else if ( strcmp(tok,"COPYRIGHT")==0 ) {
+	    char *pt = comments;
+	    char *eoc = comments+1000-1;
+	    while ((ch=getc(bdf))==' ' || ch=='\t' );
+	    while ( ch!='\n' && ch!='\r' && ch!=EOF ) {
+		if ( pt<eoc )
+		    *pt++ = ch;
+		ch = getc(bdf);
+	    }
+	    *pt = '\0';
+	    ungetc('\n',bdf);
+	    found_copyright = true;
+	} else if ( strcmp(tok,"COMMENT")==0 && !found_copyright ) {
+	    char *pt = comments+strlen(comments);
+	    char *eoc = comments+1000-1;
+	    while ((ch=getc(bdf))==' ' || ch=='\t' );
+	    while ( ch!='\n' && ch!='\r' && ch!=EOF ) {
+		if ( pt<eoc )
+		    *pt++ = ch;
+		ch = getc(bdf);
+	    }
+	    if ( pt<eoc )
+		*pt++ = '\n';
+	    *pt = '\0';
+	    ungetc('\n',bdf);
+	}
 	while ( (ch=getc(bdf))!='\n' && ch!='\r' && ch!=EOF );
     }
     if ( pixelsize==-1 && ascent!=-1 && descent!=-1 )
@@ -464,6 +495,8 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc,
     else if ( strmatch(italic,"R")==0 )
 	strcpy(italic,"");		/* Ignore roman */
     sprintf(mods,"%s%s", weight, italic );
+    if ( comments[0]!='\0' && comments[strlen(comments)-1]=='\n' )
+	comments[strlen(comments)-1] = '\0';
 
     if ( *depth!=1 && *depth!=2 && *depth!=4 && *depth!=8 && *depth!=16 && *depth!=32 )
 	fprintf( stderr, "PfaEdit does not support this bit depth %d (must be 1,2,4,8,16,32)\n", *depth);
@@ -1346,13 +1379,14 @@ BDFFont *SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback) {
     char tok[100];
     int pixelsize, ascent, descent, enc;
     BDFFont *b;
-    char family[100], mods[200], full[300];
+    char family[100], mods[200], full[300], foundry[100], comments[1000];
     struct toc *toc=NULL;
     int depth=1;
     struct metrics defs;
 
     defs.swidth = defs.swidth1 = -1; defs.dwidth=defs.dwidth1=0;
     defs.metricsset = 0; defs.vertical_origin = 0;
+    foundry[0] = '\0';
 
     bdf = fopen(filename,"r");
     if ( bdf==NULL ) {
@@ -1384,7 +1418,8 @@ return( NULL );
 	    GWidgetErrorR(_STR_NotBdfFile, _STR_NotBdfFileName, filename );
 return( NULL );
 	}
-	pixelsize = slurp_header(bdf,&ascent,&descent,&enc,family,mods,full,&depth,&defs);
+	pixelsize = slurp_header(bdf,&ascent,&descent,&enc,family,mods,full,
+		&depth,foundry,comments,&defs);
     }
     if ( pixelsize==-1 )
 	pixelsize = askusersize(filename);
@@ -1401,6 +1436,8 @@ return( NULL );
 	    sf->vertical_origin = defs.vertical_origin==0?sf->ascent:defs.vertical_origin;
 	}
 	sf->display_size = pixelsize;
+	if ( comments[0]!='\0' )
+	    sf->copyright = copy(comments);
     }
 
     b = NULL;
@@ -1435,6 +1472,8 @@ return( NULL );
 	    SFOrderBitmapList(sf);
 	}
     }
+    free(b->foundry);
+    b->foundry = ( foundry[0]=='\0' ) ? NULL : copy(foundry);
     if ( ispk==1 ) {
 	while ( pk_char(bdf,sf,b));
     } else if ( ispk==2 ) {

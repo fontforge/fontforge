@@ -4611,6 +4611,7 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *_sf,
 	enum fontformat format) {
     int i,j,cnt1,cnt2,first,last,avg1,avg2,k;
     SplineFont *sf = _sf;
+    char *pt;
 
     os2->version = 1;
     os2->weightClass = sf->pfminfo.weight;
@@ -4656,10 +4657,12 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *_sf,
     } while ( k<_sf->subfontcnt );
     sf = _sf;
 
-    if ( BDFFoundry!=NULL && strcmp(BDFFoundry,"PfaEdit")!=0 )
-	strncpy(os2->achVendID,BDFFoundry,4);
+    if ( TTFFoundry!=NULL )
+	strncpy(os2->achVendID,TTFFoundry,4);
     else
 	memcpy(os2->achVendID,"PfEd",4);
+    for ( pt=os2->achVendID; pt<os2->achVendID && *pt!='\0'; ++pt );
+    while ( pt<os2->achVendID ) *pt++ = ' ';	/* Pad with spaces not NUL */
 
     if ( cnt1==27 )
 	os2->avgCharWid = avg1/cnt1;

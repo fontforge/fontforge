@@ -178,6 +178,7 @@ typedef struct bdffont {
     enum charset encoding_name;
     struct bdffont *next;
     struct clut *clut;
+    char *foundry;
 } BDFFont;
 
 enum pointtype { pt_curve, pt_corner, pt_tangent };
