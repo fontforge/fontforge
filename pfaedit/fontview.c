@@ -5143,10 +5143,14 @@ return( NULL );
 	free(fullname);
     GProgressEndIndicator();
 
-    if ( sf==NULL ) {
-	GWidgetErrorR(_STR_CouldntOpenFontTitle,_STR_CouldntOpenFont,GFileNameTail(filename));
-    } else
+    if ( sf!=NULL )
 	sf->origname = copy(filename);
+    else if ( !GFileExists(filename) )
+	GWidgetErrorR(_STR_CouldntOpenFontTitle,_STR_NoSuchFontFile,GFileNameTail(filename));
+    else if ( !GFileReadable(filename) )
+	GWidgetErrorR(_STR_CouldntOpenFontTitle,_STR_FontFileNotReadable,GFileNameTail(filename));
+    else
+	GWidgetErrorR(_STR_CouldntOpenFontTitle,_STR_CouldntParseFont,GFileNameTail(filename));
 
     if ( tmpfile!=NULL ) {
 	unlink(tmpfile);
