@@ -42,6 +42,7 @@ struct node {
     unsigned int children_checked: 1;
     unsigned int used: 1;
     unsigned int macfeat: 1;
+    unsigned int monospace: 1;
     uint16 cnt;
     struct node *children, *parent;
     void (*build)(struct node *,struct att_dlg *);
@@ -52,6 +53,7 @@ struct node {
 	AnchorClass *ac;
 	KernClass *kc;
 	FPST *fpst;
+	ASM *sm;
 	int index;
     } u;
     int lpos;
@@ -66,7 +68,7 @@ struct att_dlg {
     GWindow gw,v;
     GGadget *vsb, *hsb, *cancel;
     int fh, as;
-    GFont *font;
+    GFont *font, *monofont;
     struct node *current;
 };
 
@@ -673,6 +675,11 @@ static void BuildFeature_(struct node *node,struct att_dlg *att) {
     BuildFeatures(node,att, '*','*',feat,isgpos);
 }
 
+static void BuildFeature__(struct node *node,struct att_dlg *att) {
+    uint32 feat=node->tag;
+    BuildFeatures(node,att, '*','*',feat,false);
+}
+
 static void FigureBuild(struct node *node,uint32 tag,SplineFont *sf) {
     FPST *fpst;
     AnchorClass *ac;
@@ -924,6 +931,128 @@ static void BuildFPST(struct node *node,struct att_dlg *att) {
 	    node->cnt = len;
 	}
     }
+}
+
+static void BuildASM(struct node *node,struct att_dlg *att) {
+    ASM *sm = node->u.sm;
+    int len, i, j, k, scnt = 0;
+    struct node *lines;
+    char buf[200], *space;
+    static char *type[] = { "Indic Reordering", "Contextual Substitution",
+	    "Ligatures", "<undefined>", "Simple Substitution",
+	    "Glyph Insertion" };
+    uint32 *subs=NULL;
+
+    if ( sm->type == asm_context ) {
+	subs = galloc(sm->class_cnt*sm->state_cnt*2*sizeof(uint32));
+	for ( i=scnt=0; i<sm->class_cnt*sm->state_cnt; ++i ) {
+	    int tag;
+	    tag = sm->state[i].u.context.mark_tag;
+	    if ( tag!=0 ) {
+		for ( k=0; k<scnt && subs[k]!=tag; ++k );
+		if ( k==scnt ) subs[scnt++] = tag;
+	    }
+	    tag = sm->state[i].u.context.cur_tag;
+	    if ( tag!=0 ) {
+		for ( k=0; k<scnt && subs[k]!=tag; ++k );
+		if ( k==scnt ) subs[scnt++] = tag;
+	    }
+	}
+    }
+
+    lines = NULL;
+    space = galloc( 5*sm->class_cnt+40 );
+    for ( i=0; i<2; ++i ) {
+	len = 0;
+
+	if ( i ) {
+	    lines[len].label = uc_copy(type[sm->type]);
+	    lines[len].parent = node;
+	}
+	++len;
+	for ( j=4; j<sm->class_cnt ; ++j ) {
+	    if ( i ) {
+		sprintf(buf, "Class %d: ", j);
+		lines[len].label = galloc((strlen(buf)+strlen(sm->classes[j])+1)*sizeof(unichar_t));
+		uc_strcpy(lines[len].label,buf);
+		uc_strcat(lines[len].label,sm->classes[j]);
+		lines[len].parent = node;
+	    }
+	    ++len;
+	}
+	for ( j=0; j<sm->state_cnt; ++j ) {
+	    if ( i ) {
+		sprintf(space, "State %4d Next: ", j );
+		for ( k=0; k<sm->class_cnt; ++k )
+		    sprintf( space+strlen(space), "%5d", sm->state[j*sm->class_cnt+k].next_state );
+		lines[len].label = uc_copy(space);
+		lines[len].parent = node;
+		lines[len].monospace = true;
+	    }
+	    ++len;
+	    if ( i ) {
+		sprintf(space, "State %4d Flags:", j );
+		for ( k=0; k<sm->class_cnt; ++k )
+		    sprintf( space+strlen(space), " %04x", sm->state[j*sm->class_cnt+k].flags );
+		lines[len].label = uc_copy(space);
+		lines[len].parent = node;
+		lines[len].monospace = true;
+	    }
+	    ++len;
+	    if ( sm->type==asm_context ) {
+		if ( i ) {
+		    sprintf(space, "State %4d Mark: ", j );
+		    for ( k=0; k<sm->class_cnt; ++k )
+			if ( sm->state[j*sm->class_cnt+k].u.context.mark_tag==0 )
+			    strcat(space,"     ");
+			else
+			    sprintf( space+strlen(space), " %c%c%c%c",
+				    sm->state[j*sm->class_cnt+k].u.context.mark_tag>>24,
+				    (sm->state[j*sm->class_cnt+k].u.context.mark_tag>>16)&0xff,
+				    (sm->state[j*sm->class_cnt+k].u.context.mark_tag>>8)&0xff,
+				    sm->state[j*sm->class_cnt+k].u.context.mark_tag&0xff );
+		    lines[len].label = uc_copy(space);
+		    lines[len].parent = node;
+		    lines[len].monospace = true;
+		}
+		++len;
+		if ( i ) {
+		    sprintf(space, "State %4d Cur:  ", j );
+		    for ( k=0; k<sm->class_cnt; ++k )
+			if ( sm->state[j*sm->class_cnt+k].u.context.cur_tag==0 )
+			    strcat(space,"     ");
+			else
+			    sprintf( space+strlen(space), " %c%c%c%c",
+				    sm->state[j*sm->class_cnt+k].u.context.cur_tag>>24,
+				    (sm->state[j*sm->class_cnt+k].u.context.cur_tag>>16)&0xff,
+				    (sm->state[j*sm->class_cnt+k].u.context.cur_tag>>8)&0xff,
+				    sm->state[j*sm->class_cnt+k].u.context.cur_tag&0xff );
+		    lines[len].label = uc_copy(space);
+		    lines[len].parent = node;
+		    lines[len].monospace = true;
+		}
+		++len;
+	    }
+	}
+	for ( j=0; j<scnt; ++j ) {
+	    if ( i ) {
+		sprintf(buf, "Nested Substitution '%c%c%c%c'",
+			subs[j]>>24, (subs[j]>>16)&0xff,
+			(subs[j]>>8)&0xff, subs[j]&0xff );
+		lines[len].label = uc_copy(buf);
+		lines[len].parent = node;
+		lines[len].tag = subs[j];
+		lines[len].build = BuildFeature__;
+	    }
+	    ++len;
+	}
+	if ( i==0 ) {
+	    node->children = lines = gcalloc(len+1,sizeof(struct node));
+	    node->cnt = len;
+	}
+    }
+    free(space);
+    free(subs);
 }
 
 static void BuildGSUBfeatures(struct node *node,struct att_dlg *att) {
@@ -1499,9 +1628,12 @@ static void BuildTable(struct node *node,struct att_dlg *att) {
     PST *pst;
     KernPair *kp;
     unichar_t ubuf[120];
+    char buf[32];
+    unichar_t *setname;
     AnchorClass *ac;
     int isv;
     FPST *fpst;
+    ASM *sm;
 
     /* Build the list of scripts that are mentioned in the font */
     for ( j=0; j<2; ++j ) {
@@ -1647,6 +1779,30 @@ return;
 			        BuildGSUBscript;
 	scriptnodes[i].parent = node;
     }
+    /* Sadly I have no script for the morx state machines */
+    if ( ismorx && _sf->sm!=NULL ) {
+	for ( j=0, sm=_sf->sm; sm!=NULL; sm=sm->next, ++j );
+	scriptnodes = grealloc(scriptnodes,(i+j+1)*sizeof(scriptnodes[0]));
+	memset(scriptnodes+i,0,(j+1)*sizeof(scriptnodes[0]));
+	for ( j=0, sm=_sf->sm; sm!=NULL; sm=sm->next, ++j ) {
+	    scriptnodes[i+j].macfeat = true;
+	    scriptnodes[i+j].parent = node;
+	    scriptnodes[i+j].build = BuildASM;
+	    scriptnodes[i+j].tag = (sm->feature<<16)|sm->setting;
+	    scriptnodes[i+j].u.sm = sm;
+
+	    setname = PickNameFromMacName(FindMacSettingName(sf,sm->feature,sm->setting));
+	    if ( setname==NULL )
+		setname = uc_copy("");
+	    sprintf( buf, "<%d,%d> ", sm->feature,sm->setting );
+	    scriptnodes[i+j].label = galloc((strlen(buf)+u_strlen(setname)+1)*sizeof(unichar_t));
+	    uc_strcpy(scriptnodes[i+j].label,buf);
+	    u_strcat(scriptnodes[i+j].label,setname);
+	    free(setname);
+	}
+	qsort(scriptnodes+i,j,sizeof(struct node),compare_tag);
+	i += j;
+    }
     node->children = scriptnodes;
     node->cnt = i;
 }
@@ -1730,6 +1886,8 @@ static void BuildTop(struct att_dlg *att) {
 	if ( FPSTisMacable(sf,fpst))
 	    hasmorx = true;
     }
+    if ( sf->sm != NULL )
+	hasmorx = true;
 
     if ( hasgsub+hasgpos+hasgdef+hasmorx+haskern+haslcar+hasopbd+hasprop==0 ) {
 	tables = gcalloc(2,sizeof(struct node));
@@ -1818,7 +1976,7 @@ static void BuildTop(struct att_dlg *att) {
 	    }
 	    if ( hasprop ) {
 		tables[i].children[j].label = uc_copy("'prop' Glyph Properties Table");
-		tables[i].children[j].tag = CHR('o','p','b','d');
+		tables[i].children[j].tag = CHR('p','r','o','p');
 		tables[i].children[j].build = BuildProperties;
 		tables[i].children[j++].parent = &tables[i];
 	    }
@@ -1833,9 +1991,13 @@ static void BuildTop(struct att_dlg *att) {
 static int _SizeCnt(struct att_dlg *att,struct node *node, int lpos,int depth) {
     int i, len;
 
+    if ( node->monospace )
+	GDrawSetFont(att->v,att->monofont);
     node->lpos = lpos++;
     len = 5+8*depth+ att->as + 5 + GDrawGetTextWidth(att->v,node->label,-1,NULL);
     if ( len>att->maxl ) att->maxl = len;
+    if ( node->monospace )
+	GDrawSetFont(att->v,att->font);
 
     if ( node->open ) {
 	if ( !node->children_checked && node->build!=NULL ) {
@@ -1932,7 +2094,11 @@ static void AttExpose(struct att_dlg *att,GWindow pixmap,GRect *rect) {
 		GDrawDrawLine(pixmap,r.x+att->as/2,r.y+2,r.x+att->as/2,r.y+att->as-2,
 			fg);
 	}
+	if ( node->monospace )
+	    GDrawSetFont(pixmap,att->monofont);
 	GDrawDrawText(pixmap,r.x+r.width+5,y,node->label,-1,NULL,fg);
+	if ( node->monospace )
+	    GDrawSetFont(pixmap,att->font);
 	node = NodeNext(node,&depth);
 	y += att->fh;
     }
@@ -2282,6 +2448,7 @@ void ShowAtt(SplineFont *sf) {
     GWindowAttrs wattrs;
     FontRequest rq;
     static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
+    static unichar_t courier[] = { 'c', 'o', 'u', 'r', 'i', 'e', 'r', ',', 'm','o','n','o','s','p','a','c','e',',','c','l','e','a','r','l','y','u',',', 'u','n','i','f','o','n','t', '\0' };
     int as, ds, ld;
     GGadgetCreateData gcd[5];
     GTextInfo label[4];
@@ -2310,6 +2477,8 @@ void ShowAtt(SplineFont *sf) {
     rq.point_size = 12;
     rq.weight = 400;
     att.font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(att.gw),&rq);
+    rq.family_name = courier;		/* I want to show tabluar data sometimes */
+    att.monofont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(att.gw),&rq);
     GDrawFontMetrics(att.font,&as,&ds,&ld);
     att.fh = as+ds; att.as = as;
 

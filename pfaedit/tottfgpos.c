@@ -2383,6 +2383,8 @@ return( i );
     switch ( tag ) {
 /* GSUB ordering */
       case CHR('c','c','m','p'):	/* Must be first? */
+return( -2 );
+      case CHR('l','o','c','l'):	/* Dunno what this is, but needs to be done early */
 return( -1 );
       case CHR('i','s','o','l'):
 return( 0 );

@@ -52,6 +52,7 @@ struct gfi_data {
     struct anchor_shows { CharView *cv; SplineChar *sc; int restart; } anchor_shows[2];
     struct texdata texdata;
     struct contextchaindlg *ccd;
+    struct statemachinedlg *smd;
 };
 
 GTextInfo emsizes[] = {
@@ -559,6 +560,10 @@ static struct langstyle outlines[] = { {0x409, outlineeng}, {0x40c, outlinefren}
 static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, heavys, blacks,
 	lights, thins, italics, obliques, condenseds, expandeds, outlines, NULL };
 
+#define CID_Features	101		/* Mac stuff */
+#define CID_FeatureDel	103
+#define CID_FeatureEdit	105
+
 #define CID_Encoding	1001
 #define CID_Family	1002
 #define CID_Weight	1003
@@ -636,11 +641,16 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_TeXExtraSpLabel	8006
 #define CID_TeX			8007	/* through 8014 */
 
-#define CID_ContextClasses	9001
+#define CID_ContextClasses	9001	/* Variants at +n*100 */
 #define CID_ContextNew		9002
 #define CID_ContextDel		9003
 #define CID_ContextEdit		9004
 #define CID_ContextEditData	9005
+
+#define CID_SMList		9011	/* Variants at +n*100 */
+#define CID_SMNew		9012
+#define CID_SMDel		9013
+#define CID_SMEdit		9014
 
 struct psdict *PSDictCopy(struct psdict *dict) {
     struct psdict *ret;
@@ -2131,6 +2141,8 @@ static void GFI_Close(struct gfi_data *d) {
 
     if ( d->ccd )
 	CCD_Close(d->ccd);
+    if ( d->smd )
+	SMD_Close(d->smd);
     GFI_CleanupContext(d);
     PSDictFree(d->private);
     for ( i=0; i<ttf_namemax; ++i )
@@ -2153,6 +2165,12 @@ static void GFI_Close(struct gfi_data *d) {
     }
     d->done = true;
     /* d will be freed by destroy event */;
+}
+
+static void GFI_CancelClose(struct gfi_data *d) {
+    MacFeatListFree(GGadgetGetUserData((GWidgetGetControl(
+	    d->gw,CID_Features))));
+    GFI_Close(d);
 }
 
 GTextInfo *AnchorClassesList(SplineFont *sf) {
@@ -2764,10 +2782,149 @@ static int GFI_ContextSelChanged(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static unichar_t *FeatSetName(SplineFont *sf, int feat, int set) {
+    char buf[32];
+    unichar_t *temp, *full;
+
+    sprintf( buf, "<%d,%d> ", feat, set );
+    temp = PickNameFromMacName(FindMacSettingName(sf,feat,set));
+    if ( temp==NULL )
+	full = uc_copy(buf);
+    else {
+	full = galloc((strlen(buf)+u_strlen(temp)+1)*sizeof(unichar_t));
+	uc_strcpy(full,buf);
+	u_strcat(full,temp);
+	free(temp);
+    }
+return( full );
+}
+
+static GTextInfo *SMList(SplineFont *sf,enum asm_type type) {
+    int len;
+    ASM *sm;
+    GTextInfo *ti;
+
+    for ( len=0, sm = sf->sm; sm!=NULL; sm=sm->next )
+	if ( sm->type == type )
+	    ++len;
+    ti = gcalloc(len+1,sizeof(GTextInfo));
+    for ( len=0, sm = sf->sm; sm!=NULL; sm=sm->next ) if ( sm->type==type ) {
+	ti[len].text = FeatSetName(sf,sm->feature,sm->setting);
+	ti[len].fg = ti[len].bg = COLOR_DEFAULT;
+	ti[len++].userdata = sm;
+    }
+return( ti );
+}
+
+void GFI_SMDEnd(struct gfi_data *d) {
+    int i;
+
+    d->smd = NULL;
+    for ( i=0; i<3; ++i ) {
+	GGadget *list = GWidgetGetControl(d->gw,CID_SMList+i*100);
+	int sel = GGadgetGetFirstListSelectedItem(list);
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_SMDel+i*100),sel!=-1);
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_SMEdit+i*100),sel!=-1);
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_SMNew+i*100),true);
+    }
+}
+
+void GFI_FinishSMNew(struct gfi_data *d,ASM *sm, int success) {
+    int off;
+    GGadget *list;
+
+    if ( success ) {
+	off = sm->type == asm_indic ? 000 :
+		sm->type == asm_context ? 100 : 200;
+	list = GWidgetGetControl(d->gw,CID_SMList+off);
+	GListAppendLine(list,FeatSetName(d->sf,sm->feature,sm->setting),false)->userdata = sm;
+    } else {
+	chunkfree(sm,sizeof(ASM));
+    }
+}
+
+static int GFI_SMNew(GGadget *g, GEvent *e) {
+    int i;
+    ASM *sm;
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	int which = (GGadgetGetCid(g)-CID_SMNew)/100;
+
+	if ( d->smd )
+return( true );
+
+	sm = chunkalloc(sizeof(sm));
+	sm->type = which==0 ? asm_indic : which==1 ? asm_context : asm_insert;
+	if ( (d->smd = StateMachineEdit(d->sf,sm,d))!=NULL ) {
+	    for ( i=0; i<3; ++i ) {
+		GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_SMDel+i*100),false);
+		GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_SMEdit+i*100),false);
+		GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_SMNew+i*100),false);
+	    }
+	}
+    }
+return( true );
+}
+
+static int GFI_SMDel(GGadget *g, GEvent *e) {
+    GGadget *list;
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	int off = GGadgetGetCid(g)-CID_SMDel;
+	list = GWidgetGetControl(GGadgetGetWindow(g),CID_SMList+off);
+	GListDelSelected(list);
+	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_SMDel+off),false);
+	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_SMEdit+off),false);
+    }
+return( true );
+}
+
+static int GFI_SMEdit(GGadget *g, GEvent *e) {
+    int i;
+    GTextInfo *ti;
+    GGadget *list;
+    ASM *sm;
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	int which = (GGadgetGetCid(g)-CID_SMEdit)/100;
+	list = GWidgetGetControl(GGadgetGetWindow(g),CID_SMList+which*100);
+	if ( (ti = GGadgetGetListItemSelected(list))==NULL )
+return( true );
+	if ( d->smd!=NULL )
+return( true );
+	sm = (ASM *) (ti->userdata);
+	if ( (d->smd = StateMachineEdit(d->sf,sm,d))!=NULL ) {
+	    for ( i=0; i<3; ++i ) {
+		GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_SMDel+i*100),false);
+		GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_SMEdit+i*100),false);
+		GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_SMNew+i*100),false);
+	    }
+	}
+    }
+return( true );
+}
+
+static int GFI_SMSelChanged(GGadget *g, GEvent *e) {
+    struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+    int sel = GGadgetGetFirstListSelectedItem(g);
+    int off = GGadgetGetCid(g)-CID_SMList;
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_SMDel+off),sel!=-1 && d->ccd==NULL);
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_SMEdit+off),sel!=-1 && d->ccd==NULL);
+    } else if ( e->type==et_controlevent && e->u.control.subtype == et_listdoubleclick ) {
+	e->u.control.subtype = et_buttonactivate;
+	g = GWidgetGetControl(GGadgetGetWindow(g),GGadgetGetCid(g)-CID_SMList+CID_SMEdit);
+	GFI_SMEdit(g,e);
+    }
+return( true );
+}
+
 static int GFI_Cancel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	GFI_Close(d);
+	GFI_CancelClose(d);
     }
 return( true );
 }
@@ -3566,6 +3723,8 @@ return( true );
 	    TNFinishFormer(d);
 	if ( d->ccd )
 	    CCD_Close(d->ccd);
+	if ( d->smd )
+	    SMD_Close(d->smd);
 
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Family));
 	if ( !isalpha(*txt)) {
@@ -3760,6 +3919,8 @@ return(true);
 		GDrawRequestExpose(cv->v,NULL,false);
 	    }
 	}
+	MacFeatListFree(sf->features);
+	sf->features = GGadgetGetUserData(GWidgetGetControl(d->gw,CID_Features));
 	last_aspect = d->old_aspect;
 	GFI_Close(d);
     }
@@ -4078,7 +4239,7 @@ return( true );
 static int e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	struct gfi_data *d = GDrawGetUserData(gw);
-	GFI_Close(d);
+	GFI_CancelClose(d);
     } else if ( event->type==et_destroy ) {
 	struct gfi_data *d = GDrawGetUserData(gw);
 	free(d);
@@ -4092,9 +4253,9 @@ return( true );
 	    MenuSaveAll(NULL,NULL,NULL);
 return( true );
 	} else if ( event->u.chr.keysym=='q' && (event->u.chr.state&ksm_control)) {
-	    if ( event->u.chr.state&ksm_shift )
-		GFI_Close(GDrawGetUserData(gw));
-	    else
+	    if ( event->u.chr.state&ksm_shift ) {
+		GFI_CancelClose(GDrawGetUserData(gw));
+	    } else
 		MenuExit(NULL,NULL,NULL);
 return( true );
 	}
@@ -4115,13 +4276,15 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GTabInfo aspects[12], conaspects[7];
+    GTabInfo aspects[15], conaspects[7], smaspects[4];
     GGadgetCreateData mgcd[10], ngcd[13], egcd[12], psgcd[23], tngcd[7],
 	pgcd[8], vgcd[16], pangcd[22], comgcd[3], atgcd[7], txgcd[23],
-	congcd[3], csubgcd[fpst_max-pst_contextpos][6];
+	congcd[3], csubgcd[fpst_max-pst_contextpos][6], smgcd[3], smsubgcd[3][6],
+	mfgcd[8], ogcd[8];
     GTextInfo mlabel[10], nlabel[13], elabel[12], pslabel[23], tnlabel[7],
 	plabel[8], vlabel[16], panlabel[22], comlabel[3], atlabel[7], txlabel[23],
-	csublabel[fpst_max-pst_contextpos][6], *list;
+	csublabel[fpst_max-pst_contextpos][6], smsublabel[3][6],
+	mflabel[8], olabel[8], *list;
     struct gfi_data *d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20], ncbuf[20],
 	    vbuf[20], uibuf[12], regbuf[100], vorig[20], embuf[20];
@@ -4134,6 +4297,8 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GFont *font;
     static int connames[] = { _STR_ContextPos, _STR_ContextSub, _STR_ChainPos, _STR_ChainSub, _STR_ReverseChainSub, 0 };
     static int contypes[] = { pst_contextpos, pst_contextsub, pst_chainpos, pst_chainsub, pst_reversesub, 0 };
+    static int smnames[] = { _STR_Indic, _STR_ContextSub, _STR_ContextIns, 0 };
+    static int smtypes[] = { asm_indic, asm_context, asm_insert };
 
     for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
 	if ( fvs->fontinfo ) {
@@ -5218,6 +5383,8 @@ return;
 	csubgcd[i][4].creator = GButtonCreate;
     }
 
+    conaspects[3].selected = true;	/* chaining subs is most likely to be used, so select it by default */
+
     congcd[0].gd.pos.x = 4; congcd[0].gd.pos.y = 10;
     congcd[0].gd.pos.width = 250;
     congcd[0].gd.pos.height = 260;
@@ -5225,6 +5392,77 @@ return;
     congcd[0].gd.flags = gg_visible | gg_enabled;
     /*congcd[0].gd.handle_controlevent = GFI_AspectChange;*/
     congcd[0].creator = GTabSetCreate;
+
+/******************************************************************************/
+    memset(&ogcd,0,sizeof(ogcd));
+    memset(&olabel,'\0',sizeof(olabel));
+
+/******************************************************************************/
+    memset(&smsublabel,0,sizeof(smsublabel));
+    memset(&smsubgcd,0,sizeof(smsubgcd));
+    memset(&smgcd,0,sizeof(smgcd));
+    memset(&smaspects,'\0',sizeof(smaspects));
+
+    for ( i=0; i<3; ++i ) {
+	smaspects[i].text = (unichar_t *) smnames[i];
+	smaspects[i].text_in_resource = true;
+	smaspects[i].gcd = smsubgcd[i];
+
+	smsubgcd[i][0].gd.pos.x = 10; smsubgcd[i][0].gd.pos.y = 10;
+	smsubgcd[i][0].gd.pos.width = ngcd[7].gd.pos.width;
+	smsubgcd[i][0].gd.pos.height = 150;
+	smsubgcd[i][0].gd.flags = gg_visible | gg_enabled;
+	smsubgcd[i][0].gd.cid = CID_SMList+i*100;
+	smsubgcd[i][0].gd.u.list = SMList(sf,smtypes[i]);
+	smsubgcd[i][0].gd.handle_controlevent = GFI_SMSelChanged;
+	smsubgcd[i][0].creator = GListCreate;
+
+	smsubgcd[i][1].gd.pos.x = 10; smsubgcd[i][1].gd.pos.y = smsubgcd[i][0].gd.pos.y+smsubgcd[i][0].gd.pos.height+4;
+	smsubgcd[i][1].gd.pos.width = -1;
+	smsubgcd[i][1].gd.flags = gg_visible | gg_enabled;
+	smsublabel[i][1].text = (unichar_t *) _STR_NewDDD;
+	smsublabel[i][1].text_in_resource = true;
+	smsubgcd[i][1].gd.label = &smsublabel[i][1];
+	smsubgcd[i][1].gd.cid = CID_SMNew+i*100;
+	smsubgcd[i][1].gd.handle_controlevent = GFI_SMNew;
+	smsubgcd[i][1].creator = GButtonCreate;
+
+	smsubgcd[i][2].gd.pos.x = 10+(smsubgcd[i][0].gd.pos.width-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor))/2; smsubgcd[i][2].gd.pos.y = smsubgcd[i][1].gd.pos.y;
+	smsubgcd[i][2].gd.pos.width = -1;
+	smsubgcd[i][2].gd.flags = gg_visible;
+	smsublabel[i][2].text = (unichar_t *) _STR_Delete;
+	smsublabel[i][2].text_in_resource = true;
+	smsubgcd[i][2].gd.label = &smsublabel[i][2];
+	smsubgcd[i][2].gd.cid = CID_SMDel+i*100;
+	smsubgcd[i][2].gd.handle_controlevent = GFI_SMDel;
+	smsubgcd[i][2].creator = GButtonCreate;
+
+	smsubgcd[i][3].gd.pos.x = 10+(smsubgcd[i][0].gd.pos.width-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor)); smsubgcd[i][3].gd.pos.y = smsubgcd[i][1].gd.pos.y;
+	smsubgcd[i][3].gd.pos.width = -1;
+	smsubgcd[i][3].gd.flags = gg_visible;
+	smsublabel[i][3].text = (unichar_t *) _STR_EditDDD;
+	smsublabel[i][3].text_in_resource = true;
+	smsubgcd[i][3].gd.label = &smsublabel[i][3];
+	smsubgcd[i][3].gd.cid = CID_SMEdit+i*100;
+	smsubgcd[i][3].gd.handle_controlevent = GFI_SMEdit;
+	smsubgcd[i][3].creator = GButtonCreate;
+    }
+
+    smaspects[1].selected = true;	/* Contextual glyph subs is most likely to be used, so select it by default */
+
+    smgcd[0].gd.pos.x = 4; smgcd[0].gd.pos.y = 10;
+    smgcd[0].gd.pos.width = 250;
+    smgcd[0].gd.pos.height = 260;
+    smgcd[0].gd.u.tabs = smaspects;
+    smgcd[0].gd.flags = gg_visible | gg_enabled;
+    /*smgcd[0].gd.handle_controlevent = GFI_AspectChange;*/
+    smgcd[0].creator = GTabSetCreate;
+
+/******************************************************************************/
+    memset(&mfgcd,0,sizeof(mfgcd));
+    memset(&mflabel,'\0',sizeof(mflabel));
+
+    GCDFillMacFeat(mfgcd,mflabel,250,sf->features, false);
 
 /******************************************************************************/
 
@@ -5283,6 +5521,18 @@ return;
     aspects[i].text = (unichar_t *) _STR_Contextual;
     aspects[i].text_in_resource = true;
     aspects[i++].gcd = congcd;
+
+    aspects[i].text = (unichar_t *) _STR_Order;
+    aspects[i].text_in_resource = true;
+    aspects[i++].gcd = ogcd;
+
+    aspects[i].text = (unichar_t *) _STR_MacFeatures;
+    aspects[i].text_in_resource = true;
+    aspects[i++].gcd = mfgcd;
+
+    aspects[i].text = (unichar_t *) _STR_MacStateMachine;
+    aspects[i].text_in_resource = true;
+    aspects[i++].gcd = smgcd;
 
     aspects[defaspect].selected = true;
 
@@ -5360,5 +5610,5 @@ void FontMenuFontInfo(void *_fv) {
 
 void FontInfoDestroy(FontView *fv) {
     if ( fv->fontinfo )
-	GFI_Close( (struct gfi_data *) (fv->fontinfo) );
+	GFI_CancelClose( (struct gfi_data *) (fv->fontinfo) );
 }

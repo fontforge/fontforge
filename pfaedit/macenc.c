@@ -2135,10 +2135,14 @@ static GTextInfo *Pref_SettingsList(struct macsetting *all) {
     for ( i=0, ms=all; ms!=NULL; ms=ms->next, ++i ) {
 	temp = PickNameFromMacName(ms->setname);
 	sprintf(buf,"%3d ", ms->setting);
-	full = galloc((strlen(buf)+u_strlen(temp)+1)*sizeof(unichar_t));
-	uc_strcpy(full,buf);
-	u_strcat(full,temp);
-	free(temp);
+	if ( temp==NULL )
+	    full = uc_copy(buf);
+	else {
+	    full = galloc((strlen(buf)+u_strlen(temp)+1)*sizeof(unichar_t));
+	    uc_strcpy(full,buf);
+	    u_strcat(full,temp);
+	    free(temp);
+	}
 	ti[i].text = full;
 	ti[i].userdata = ms;
     }
@@ -2158,10 +2162,14 @@ static GTextInfo *Pref_FeaturesList(MacFeat *all) {
     for ( i=0, mf=all; mf!=NULL; mf=mf->next, ++i ) {
 	temp = PickNameFromMacName(mf->featname);
 	sprintf(buf,"%3d ", mf->feature);
-	full = galloc((strlen(buf)+u_strlen(temp)+1)*sizeof(unichar_t));
-	uc_strcpy(full,buf);
-	u_strcat(full,temp);
-	free(temp);
+	if ( temp==NULL )
+	    full = uc_copy(buf);
+	else {
+	    full = galloc((strlen(buf)+u_strlen(temp)+1)*sizeof(unichar_t));
+	    uc_strcpy(full,buf);
+	    u_strcat(full,temp);
+	    free(temp);
+	}
 	ti[i].text = full;
 	ti[i].userdata = mf;
     }

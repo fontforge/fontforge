@@ -2225,6 +2225,10 @@ static void SFDFixupRef(SplineChar *sc,RefChar *ref) {
     RefChar *rf;
 
     for ( rf = ref->sc->refs; rf!=NULL; rf=rf->next ) {
+	if ( rf->sc==sc ) {	/* Huh? */
+	    ref->sc->refs = NULL;
+    break;
+	}
 	if ( rf->splines==NULL )
 	    SFDFixupRef(ref->sc,rf);
     }

@@ -130,11 +130,11 @@ struct macsettingname macfeat_otftag[] = {
     { 1, 4, CHR('d','l','i','g') },	/* rare ligatures => discretionary */
 #if 0
     { 1, 4, CHR('h','l','i','g') },	/* rare ligatures => historic */
-    { 1, 4, CHR('a','l','i','g') },	/* rare ligatures => historic */
+    { 1, 4, CHR('a','l','i','g') },	/* rare ligatures => ?ancient? */
+#endif
     /* 2, 1, partially connected cursive */
     { 2, 2, CHR('i','s','o','l') },	/* Arabic forms */
     { 2, 2, CHR('c','a','l','t') },	/* ??? */
-#endif
     /* 3, 2, all caps */
     /* 3, 3, all lower */
     { 3, 4, CHR('s','m','c','p') },	/* small caps */

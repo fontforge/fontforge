@@ -27,6 +27,8 @@
  
 #include "psfont.h"		/* for struct fddata */
 
+#define MAC_DELETED_GLYPH_NAME	"<Delete>"
+
 /* Some glyphs have multiple encodings ("A" might be used for Alpha and Cyrillic A) */
 struct dup {
     SplineChar *sc;

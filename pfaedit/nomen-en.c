@@ -632,6 +632,16 @@ static char str_EditContextSub = "Edit Contextual Substitution";
 static char str_EditChainPos = "Edit Chaining Position";
 static char str_EditChainSub = "Edit Chaining Substitution";
 static char str_EditReverseChainSub = "Edit Reverse Chaining Substitution";
+static char str_MacFeatures = "Mac Features";
+static char str_Order = "Order";
+static char str_MacStateMachine = "Mac SM";
+static char str_Indic = "Indic";
+static char str_ContextIns = "Context Ins";
+static char str_NewIndic = "New Indic Rearrangement";
+static char str_EditIndic = "Edit Indic Rearrangement";
+static char str_NewInsert = "New Contextual Glyph Insertion";
+static char str_EditInsert = "Edit Contextual Glyph Insertion";
+
  /* Names of otf tags for GPOS features for anchor */
 static char *str_abvm = "Above Base Mark";
 static char *str_blwm = "Below Base Mark";
@@ -3153,6 +3163,8 @@ static char *str_MutuallyExclusive = "Mutually Exclusive";
 static char *str_Enabled = "Enabled";
 static char mnemonic_Enabled = 'E';
 static char *str_ThisSettingIsAlreadyUsed = "This setting is already used";
+    /* apple statemachine */
+static char *str_FeatureSetting = "Feature, Setting:"
 
 static int num_buttonsize = 55;
 static int num_ScaleFactor = 100;

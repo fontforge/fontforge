@@ -477,9 +477,12 @@ static struct feature *aat_dumpmorx_substitutions(struct alltabs *at, SplineFont
 		    if ( pst!=NULL ) {
 			if ( k==1 ) {
 			    msc = SFGetCharDup(sf,-1,pst->u.subs.variant);
+			    glyphs[gcnt] = sc;
 			    if ( msc!=NULL && msc->ttf_glyph!=-1 ) {
-				glyphs[gcnt] = sc;
 			        maps[gcnt++] = msc->ttf_glyph;
+			    } else if ( msc==NULL &&
+				    strcmp(pst->u.subs.variant,MAC_DELETED_GLYPH_NAME)==0 ) {
+			        maps[gcnt++] = 0xffff;
 			    }
 			} else
 			    ++gcnt;

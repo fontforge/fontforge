@@ -32,6 +32,7 @@
 
 struct gfi_data;
 struct contextchaindlg;
+struct statemachinedlg;
 
 extern struct cvshows {
     int showfore, showback, showgrids, showhhints, showvhints, showdhints;
@@ -500,6 +501,7 @@ extern int SFGenerateFont(SplineFont *sf,int family);
 extern GTextInfo *AnchorClassesList(SplineFont *sf);
 extern GTextInfo **AnchorClassesLList(SplineFont *sf);
 extern GTextInfo **AnchorClassesSimpleLList(SplineFont *sf);
+extern GTextInfo *AddMacFeatures(GTextInfo *opentype,enum possub_type type,SplineFont *sf);
 extern unichar_t *ClassName(const unichar_t *name,uint32 feature_tag,
 	uint16 flags, int script_lang_index, int merge_with, int act_type,
 	int macfeature);
@@ -924,6 +926,12 @@ extern GTextInfo **SFGenTagListFromType(struct gentagtype *gentags,enum possub_t
 extern struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
 	struct gfi_data *gfi,unichar_t *newname);
 extern void CCD_Close(struct contextchaindlg *ccd);
+
+extern struct statemachinedlg *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d);
+extern void SMD_Close(struct statemachinedlg *smd);
+extern void GFI_FinishSMNew(struct gfi_data *d,ASM *sm, int success);
+extern void GFI_SMDEnd(struct gfi_data *d);
+
 
 extern GMenuItem helplist[];
 #endif

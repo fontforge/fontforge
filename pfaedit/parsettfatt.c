@@ -2770,10 +2770,11 @@ return;
     if ( gnum<0 || gnum>=info->glyph_cnt ) {
 	fprintf( stderr, "Glyph out of bounds in 'mort' table %d\n", gnum );
 return;
-    } else if ( gsubs<0 || gsubs>=info->glyph_cnt ) {
+    } else if ( gsubs<0 || (gsubs>=info->glyph_cnt && gsubs!=0xffff)) {
 	fprintf( stderr, "Substitute glyph out of bounds in 'mort' table %d\n", gsubs );
 return;
-    } else if ( (sc=info->chars[gnum])==NULL || (ssc=info->chars[gsubs])==NULL )
+    } else if ( (sc=info->chars[gnum])==NULL ||
+	    (gsubs!=0xffff && (ssc=info->chars[gsubs])==NULL) )
 return;
 
     pst = chunkalloc(sizeof(PST));
@@ -2785,7 +2786,7 @@ return;
 	    SLIFromInfo(info,sc,DEFAULT_LANG);
     pst->next = sc->possub;
     sc->possub = pst;
-    pst->u.subs.variant = copy(ssc->name);
+    pst->u.subs.variant = gsubs!=0xffff ? copy(ssc->name) : copy(MAC_DELETED_GLYPH_NAME);
 }
 
 static void mort_apply_values(struct ttfinfo *info, int gfirst, int glast,FILE *ttf) {
@@ -3344,13 +3345,14 @@ static void read_perglyph_subs(FILE *ttf,struct ttfinfo *info,
     /*   be substituted then we know it is ignorable. */
     /*  If the putative substitution glyph is not a valid glyph then we know */
     /*   it is ignorable */
-    int i, subs;
+    int i, subs, was = info->mort_tag_mac;
     uint32 here;
 
+    info->mort_tag_mac = false;
     for ( i=0; i<info->glyph_cnt; ++i ) {
 	here = ftell(ttf);
 	subs = getushort(ttf);
-	if ( subs>=info->glyph_cnt )
+	if ( subs>=info->glyph_cnt && subs!=0xffff )	/* 0xffff means delete the substituted glyph */
     continue;
 	if ( here<subs_base )
     continue;
@@ -3366,16 +3368,19 @@ static void read_perglyph_subs(FILE *ttf,struct ttfinfo *info,
 	    if ( !classes_subbed[st->classes[i-st->first_glyph]] )
     continue;
 	}
+	
 	TTF_SetMortSubs(info, i, subs);
     }
+    info->mort_tag_mac = was;
 }
 
-static int sm_lookupfind(uint32 *lookups,int *_lm,int off) {
+static int sm_lookupfind(int32 *lookups,int *_lm,int off) {
     int lm = *_lm, i;
     for ( i=0; i<=lm; ++i )
 	if ( lookups[i]==off )
 return( i );
     (*_lm)++;
+    lookups[i] = off;
 return( i );
 }
 
@@ -3481,7 +3486,7 @@ return;
 	/*  wrong */
 	uint8 *classes_subbed = gcalloc(st->nclasses,1);
 	int lookup_max = -1, index;
-	uint32 *lookups = galloc(st->nclasses*st->nstates*sizeof(uint32));
+	int32 *lookups = galloc(st->nclasses*st->nstates*sizeof(int32));
 
 	for ( i=0; i<st->nstates; ++i ) for ( j=0; j<st->nclasses; ++j ) {
 	    if ( (as->state[i*st->nclasses+j].flags&0x8000) ||	/* Set Mark */
@@ -3490,25 +3495,25 @@ return;
 	}
 	for ( i=0; i<st->nclasses*st->nstates; ++i ) {
 	    if ( as->state[i].u.context.mark_tag!=0 ) {
-		index = sm_lookupfind(lookups,&lookup_max,as->state[i].u.context.mark_tag);
+		index = sm_lookupfind(lookups,&lookup_max,(int16) as->state[i].u.context.mark_tag);
 		as->state[i].u.context.mark_tag = TagFromInfo(info,index);
 	    }
 	    if ( as->state[i].u.context.cur_tag!=0 ) {
-		index = sm_lookupfind(lookups,&lookup_max,as->state[i].u.context.cur_tag);
+		index = sm_lookupfind(lookups,&lookup_max,(int16) as->state[i].u.context.cur_tag);
 		as->state[i].u.context.cur_tag = TagFromInfo(info,index);
 	    }
 	}
-	for ( i=0; i<lookup_max; ++i ) {
+	for ( i=0; i<=lookup_max; ++i ) {
 	    info->mort_subs_tag = TagFromInfo(info,i);
 	    info->mort_is_nested = true;
-	    fseek(ttf,here+st->extra_offsets[0]+lookups[i]*2,SEEK_SET);
+	    fseek(ttf,here/*+st->extra_offsets[0]*/+lookups[i]*2,SEEK_SET);
 	    read_perglyph_subs(ttf,info,here+st->extra_offsets[0],here+subtab_len,
 		    st,classes_subbed);
 	}
 	info->mort_is_nested = false;
 	free(classes_subbed);
 	free(lookups);
-	info->gentags.tt_cur += lookup_max;
+	info->gentags.tt_cur += lookup_max+1;
     } else if ( ismorx && type == asm_context ) {
 	int lookup_max= -1;
 	uint32 *lookups;
@@ -3608,6 +3613,16 @@ return( chain_len );
 	flags = getlong(ttf);
 	for ( j=k-1; j>=0 && !(flags&tmf[j].enable_flags); --j );
 	if ( j>=0 ) {
+	    if ( !tmf[j].ismac &&
+		    ((coverage&0xff)==0 ||
+		     (coverage&0xff)==1 ||
+		     (coverage&0xff)==5 )) {
+		/* Only do the opentype tag conversion if we've got a format */
+		/*  we can convert to opentype. Otherwise it is useless and */
+		/*  confusing */
+		tmf[j].ismac = true;
+		tmf[j].tag = (tmf[j].feat<<16) | tmf[j].set;
+	    }
 	    info->mort_subs_tag = tmf[j].tag;
 	    info->mort_r2l = r2l;
 	    info->mort_tag_mac = tmf[j].ismac;

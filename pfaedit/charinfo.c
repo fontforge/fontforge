@@ -31,6 +31,7 @@
 #include <utype.h>
 #include <gkeysym.h>
 #include <chardata.h>
+#include "ttf.h"		/* For MAC_DELETED_GLYPH_NAME */
 
 typedef struct charinfo {
     CharView *cv;
@@ -1754,6 +1755,7 @@ unichar_t *DecomposeClassName(const unichar_t *clsnm, unichar_t **name,
 	tag = (temp<<16)|u_strtol(end+1,&end,10);
 	for ( clsnm=end; isspace(*clsnm); ++clsnm );
 	if ( *clsnm=='>' ) ++clsnm;
+	if ( *clsnm==' ' ) ++clsnm;
 	wasmac = true;
     }
     if ( feature_tag!=NULL )
@@ -1786,20 +1788,20 @@ unichar_t *DecomposeClassName(const unichar_t *clsnm, unichar_t **name,
 return( end );
 }
 
-static GTextInfo *AddMacFeatures(GTextInfo *opentype,enum possub_type type,SplineFont *sf) {
+GTextInfo *AddMacFeatures(GTextInfo *opentype,enum possub_type type,SplineFont *sf) {
     MacFeat *from_p, *from_f;
     struct macsetting *s;
     int i, feat, set, none, cnt;
     GTextInfo *res = NULL;
 
-    if ( type!=pst_substitution && type!=pst_ligature )
+    if ( type!=pst_substitution && type!=pst_ligature && type != pst_max )
 return( opentype );
 
     if ( sf->cidmaster ) sf = sf->cidmaster;
 
     cnt = 0;		/* Yes, I want it outside, look at the end of the loop */
     for ( i=0; i<2; ++i ) {
-	for ( feat=0; ; ++feat ) {
+	for ( feat=1; ; ++feat ) {	/* I'm excluding "all typographic features", it isn't meaningful here */
 	    none=true;
 	    for ( from_f = sf->features; from_f!=NULL && from_f->feature!=feat; from_f=from_f->next )
 		if ( from_f->feature>feat )
@@ -1817,14 +1819,15 @@ return( opentype );
 			if ( s->setting>set )
 			    none = false;
 		}
-		if ( s==NULL && from_p!=NULL ) {
+		if ( s!=NULL ) none=false;	/* It might lack a name */
+		if ( (s==NULL || s->setname==NULL ) && from_p!=NULL ) {
 		    for ( s = from_p->settings; s!=NULL && s->setting!=set; s=s->next )
 			if ( s->setting>set )
 			    none = false;
 		}
 		if ( s==NULL && none )
 	    break;
-		if ( s!=NULL ) {
+		if ( s!=NULL && s->setname!=NULL ) {
 		    if ( res!=NULL ) {
 			res[cnt].text = PickNameFromMacName(s->setname);
 			res[cnt].image_precedes = true;	/* flag to say it's a mac thing */
@@ -1838,11 +1841,16 @@ return( opentype );
 	    int c;
 	    if ( cnt==0 )
 return( opentype );
-	    for ( c=0; opentype[c].text!=NULL; ++c );
-	    res = gcalloc(c+3+cnt,sizeof(GTextInfo));
-	    memcpy(res,opentype,c*sizeof(GTextInfo));
-	    res[c].line = true;
-	    cnt = c;
+	    if ( opentype!=NULL ) {
+		for ( c=0; opentype[c].text!=NULL; ++c );
+		res = gcalloc(c+3+cnt,sizeof(GTextInfo));
+		memcpy(res,opentype,c*sizeof(GTextInfo));
+		res[c].line = true;
+		cnt = c+1;
+	    } else {
+		res = gcalloc(3+cnt,sizeof(GTextInfo));
+		cnt = 0;
+	    }
 	}
     }
 return( res );
@@ -2905,6 +2913,9 @@ return( GWidgetAskR(_STR_Multiple,buts,0,1,_STR_AlreadyLigature,sf->chars[i]->na
 		}
 	    }
     }
+
+    if ( type==pst_substitution && uc_strcmp(components,MAC_DELETED_GLYPH_NAME)==0 )
+return( true );
 
     start = components;
     while ( 1 ) {
