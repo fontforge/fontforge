@@ -73,6 +73,7 @@ typedef struct edgelist {
     Edge *majors;		/* ordered so that lowest edge is first */
     Edge *majorhold;		/* to hold major edges as we pass them and they become useless */
     Hints *hhints, *vhints;
+    int is_overlap;
 } EdgeList;
 
 extern void FreeEdges(EdgeList *es);

@@ -729,6 +729,7 @@ static IntersectionList *SplineSetFindIntersections(SplineSet *base) {
     es.sc = NULL;
     es.major = 1; es.other = 0;
     es.genmajoredges = true;
+    es.is_overlap = true;
     FindEdgesSplineSet(base,&es);
     ilist = _FindIntersections(&es,ilist);
     FreeEdges(&es);
