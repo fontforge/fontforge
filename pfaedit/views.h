@@ -660,6 +660,8 @@ extern SplinePointList *CVAnySelPointList(CharView *cv);
 extern SplinePoint *CVAnySelPoint(CharView *cv);
 extern int CVOneThingSel(CharView *cv, SplinePoint **sp, SplinePointList **spl,
 	RefChar **ref, ImageList **img, AnchorPoint **ap);
+extern int CVOneContourSel(CharView *cv, SplinePointList **_spl,
+	RefChar **ref, ImageList **img);
 extern void RevertedGlyphReferenceFixup(SplineChar *sc, SplineFont *sf);
 extern void CVInfoDraw(CharView *cv, GWindow pixmap );
 enum fvformats { fv_bdf, fv_ttf, fv_pk, fv_pcf, fv_mac, fv_win, fv_image,

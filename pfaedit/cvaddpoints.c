@@ -98,6 +98,63 @@ return( true );
 return( false );
 }
 
+int CVOneContourSel(CharView *cv, SplinePointList **_spl,
+	RefChar **ref, ImageList **img) {
+    /* if there is exactly one contour/image/reg selected return it */
+    SplinePointList *spl, *found=NULL;
+    Spline *spline;
+    RefChar *refs, *foundref=NULL;
+    ImageList *imgs, *foundimg=NULL;
+    AnchorPoint *aps, *foundap=NULL;
+
+    *_spl=NULL; *ref=NULL; *img = NULL;
+    for ( spl= *cv->heads[cv->drawmode]; spl!=NULL; spl=spl->next ) {
+	if ( spl->first->selected ) {
+	    if ( found!=NULL && found!=spl )
+return( 0 );			/* At least two contours */
+	    found = spl;
+	}
+	for ( spline = spl->first->next; spline!=NULL ; spline=spline->to->next ) {
+	    if ( spline->to==spl->first )
+	break;
+	    if ( spline->to->selected ) {
+		if ( found!=NULL && found!=spl )
+return( 0 );
+		found = spl;
+	    }
+	}
+    }
+    *_spl = found;
+
+    if ( cv->drawmode==dm_fore ) {
+	for ( refs=cv->sc->refs; refs!=NULL; refs = refs->next ) {
+	    if ( refs->selected ) {
+		if ( found!=NULL || foundref!=NULL )
+return( 0 );
+		foundref = refs;
+	    }
+	}
+	*ref = foundref;
+    }
+
+    if ( cv->drawmode==dm_back ) {
+	for ( imgs=cv->sc->backimages; imgs!=NULL; imgs = imgs->next ) {
+	    if ( imgs->selected ) {
+		if ( found!=NULL || foundimg!=NULL )
+return( 0 );
+		foundimg = imgs;
+	    }
+	}
+	*img = foundimg;
+    }
+    if ( found )
+return( foundimg==NULL && foundref==NULL );
+    else if ( foundref || foundimg )
+return( true );
+
+return( false );
+}
+
 SplinePointList *CVAnySelPointList(CharView *cv) {
     /* if there is exactly one point selected and it is on an open splineset */
     /*  and it is one of the endpoints of the splineset, then return that */

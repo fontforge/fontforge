@@ -273,18 +273,20 @@ return;
 
 void SplinePointListMDFree(SplineChar *sc,SplinePointList *spl) {
     Spline *first, *spline, *next;
+    int same;
 
     if ( spl==NULL )
 return;
     if ( spl->first!=NULL ) {
 	first = NULL;
+	same = ( spl->first->next == spl->first->prev );
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = next ) {
 	    next = spline->to->next;
 	    SplinePointMDFree(sc,spline->to);
 	    SplineFree(spline);
 	    if ( first==NULL ) first = spline;
 	}
-	if ( spl->last!=spl->first || spl->first->next==NULL )
+	if ( !same && ( spl->last!=spl->first || spl->first->next==NULL ))
 	    SplinePointMDFree(sc,spl->first);
     }
     chunkfree(spl,sizeof(SplinePointList));

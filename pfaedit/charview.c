@@ -3700,6 +3700,10 @@ return( true );
 #define MID_FindInter	2230
 #define MID_Effects	2231
 #define MID_SimplifyMore	2232
+#define MID_First	2233
+#define MID_Earlier	2234
+#define MID_Later	2235
+#define MID_Last	2236
 #define MID_CharInfo	2240
 #define MID_Corner	2301
 #define MID_Tangent	2302
@@ -5170,6 +5174,165 @@ static void CVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 			  over_findinter);
 }
 
+static void CVMenuOrder(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    SplinePointList *spl;
+    RefChar *r;
+    ImageList *im;
+    int exactlyone = CVOneContourSel(cv,&spl,&r,&im);
+
+    if ( !exactlyone )
+return;
+
+    CVPreserveState(cv);
+    if ( spl!=NULL ) {
+	SplinePointList *p, *pp, *t;
+	p = pp = NULL;
+	for ( t=*cv->heads[cv->drawmode]; t!=NULL && t!=spl; t=t->next ) {
+	    pp = p; p = t;
+	}
+	switch ( mi->mid ) {
+	  case MID_First:
+	    if ( p!=NULL ) {
+		p->next = spl->next;
+		spl->next = *cv->heads[cv->drawmode];
+		*cv->heads[cv->drawmode] = spl;
+	    }
+	  break;
+	  case MID_Earlier:
+	    if ( p!=NULL ) {
+		p->next = spl->next;
+		spl->next = p;
+		if ( pp==NULL ) {
+		    *cv->heads[cv->drawmode] = spl;
+		} else {
+		    pp->next = spl;
+		}
+	    }
+	  break;
+	  case MID_Last:
+	    if ( spl->next!=NULL ) {
+		for ( t=*cv->heads[cv->drawmode]; t->next!=NULL; t=t->next );
+		t->next = spl;
+		if ( p==NULL )
+		    *cv->heads[cv->drawmode] = spl->next;
+		else
+		    p->next = spl->next;
+		spl->next = NULL;
+	    }
+	  break;
+	  case MID_Later:
+	    if ( spl->next!=NULL ) {
+		t = spl->next;
+		spl->next = t->next;
+		t->next = spl;
+		if ( p==NULL )
+		    *cv->heads[cv->drawmode] = t;
+		else
+		    p->next = t;
+	    }
+	  break;
+	}
+    } else if ( r!=NULL ) {
+	RefChar *p, *pp, *t;
+	p = pp = NULL;
+	for ( t=cv->sc->refs; t!=NULL && t!=r; t=t->next ) {
+	    pp = p; p = t;
+	}
+	switch ( mi->mid ) {
+	  case MID_First:
+	    if ( p!=NULL ) {
+		p->next = r->next;
+		r->next = cv->sc->refs;
+		cv->sc->refs = r;
+	    }
+	  break;
+	  case MID_Earlier:
+	    if ( p!=NULL ) {
+		p->next = r->next;
+		r->next = p;
+		if ( pp==NULL ) {
+		    cv->sc->refs = r;
+		} else {
+		    pp->next = r;
+		}
+	    }
+	  break;
+	  case MID_Last:
+	    if ( r->next!=NULL ) {
+		for ( t=cv->sc->refs; t->next!=NULL; t=t->next );
+		t->next = r;
+		if ( p==NULL )
+		    cv->sc->refs = r->next;
+		else
+		    p->next = r->next;
+		r->next = NULL;
+	    }
+	  break;
+	  case MID_Later:
+	    if ( r->next!=NULL ) {
+		t = r->next;
+		r->next = t->next;
+		t->next = r;
+		if ( p==NULL )
+		    cv->sc->refs = t;
+		else
+		    p->next = t;
+	    }
+	  break;
+	}
+    } else if ( im!=NULL ) {
+	ImageList *p, *pp, *t;
+	p = pp = NULL;
+	for ( t=cv->sc->backimages; t!=NULL && t!=im; t=t->next ) {
+	    pp = p; p = t;
+	}
+	switch ( mi->mid ) {
+	  case MID_First:
+	    if ( p!=NULL ) {
+		p->next = im->next;
+		im->next = cv->sc->backimages;
+		cv->sc->backimages = im;
+	    }
+	  break;
+	  case MID_Earlier:
+	    if ( p!=NULL ) {
+		p->next = im->next;
+		im->next = p;
+		if ( pp==NULL ) {
+		    cv->sc->backimages = im;
+		} else {
+		    pp->next = im;
+		}
+	    }
+	  break;
+	  case MID_Last:
+	    if ( im->next!=NULL ) {
+		for ( t=cv->sc->backimages; t->next!=NULL; t=t->next );
+		t->next = im;
+		if ( p==NULL )
+		    cv->sc->backimages = im->next;
+		else
+		    p->next = im->next;
+		im->next = NULL;
+	    }
+	  break;
+	  case MID_Later:
+	    if ( im->next!=NULL ) {
+		t = im->next;
+		im->next = t->next;
+		t->next = im;
+		if ( p==NULL )
+		    cv->sc->backimages = t;
+		else
+		    p->next = t;
+	    }
+	  break;
+	}
+    }
+    CVCharChangedUpdate(cv);
+}
+
 static void _CVMenuAddExtrema(CharView *cv) {
     int anysel;
 
@@ -6208,6 +6371,48 @@ static void smlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
+static GMenuItem orlist[] = {
+    { { (unichar_t *) _STR_First, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuOrder, MID_First },
+    { { (unichar_t *) _STR_Earlier, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, '\0', ksm_control|ksm_shift|ksm_meta, NULL, NULL, CVMenuOrder, MID_Earlier },
+    { { (unichar_t *) _STR_Later, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'n' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuOrder, MID_Later },
+    { { (unichar_t *) _STR_Last, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'n' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuOrder, MID_Last },
+    { NULL }
+};
+
+static void orlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    SplinePointList *spl;
+    RefChar *r;
+    ImageList *im;
+    int exactlyone = CVOneContourSel(cv,&spl,&r,&im);
+    int isfirst, islast;
+
+    isfirst = islast = false;
+    if ( spl!=NULL ) {
+	isfirst = *cv->heads[cv->drawmode]==spl;
+	islast = spl->next==NULL;
+    } else if ( r!=NULL ) {
+	isfirst = cv->sc->refs==r;
+	islast = r->next==NULL;
+    } else if ( im!=NULL ) {
+	isfirst = cv->sc->backimages==im;
+	islast = im->next!=NULL;
+    }
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_First:
+	  case MID_Earlier:
+	    mi->ti.disabled = !exactlyone || isfirst;
+	  break;
+	  case MID_Last:
+	  case MID_Later:
+	    mi->ti.disabled = !exactlyone || islast;
+	  break;
+	}
+    }
+}
+
 static GMenuItem rmlist[] = {
     { { (unichar_t *) _STR_Rmoverlap, &GIcon_rmoverlap, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 0, 1, 0, 'R' }, 'O', ksm_control|ksm_shift, NULL, NULL, CVMenuOverlap, MID_RmOverlap },
     { { (unichar_t *) _STR_Intersect, &GIcon_intersection, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuOverlap, MID_Intersection },
@@ -6257,6 +6462,7 @@ static GMenuItem ellist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Align, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, '\0', ksm_control|ksm_shift, allist, allistcheck },
     { { (unichar_t *) _STR_Round2int, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '_', ksm_control|ksm_shift, NULL, NULL, CVMenuRound2Int, MID_Round },
+    { { (unichar_t *) _STR_Order, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, orlist, orlistcheck },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Clockwise, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'o' }, '\0', 0, NULL, NULL, CVMenuDir, MID_Clockwise },
     { { (unichar_t *) _STR_Cclockwise, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'n' }, '\0', 0, NULL, NULL, CVMenuDir, MID_Counter },
