@@ -1419,3 +1419,49 @@ SplineSet *SplineSetsCorrect(SplineSet *base) {
     }
 return( open );
 }
+
+void SFFigureGrid(SplineFont *sf) {
+    /* Look for any horizontal/vertical lines in the grid splineset */
+    int hsnaps[40], hcnt=0, vsnaps[40], vcnt=0, i;
+    SplineSet *ss;
+    Spline *s, *first;
+
+    for ( ss = sf->gridsplines; ss!=NULL; ss=ss->next ) {
+	first = NULL;
+	for ( s=ss->first->next; s!=NULL && s!=first; s=s->to->next ) {
+	    if ( s->knownlinear ) {
+		if ( s->from->me.x==s->to->me.x && hcnt<40 )
+		    hsnaps[hcnt++] = s->from->me.x;
+		if ( s->from->me.y==s->to->me.y && vcnt<40 )
+		    vsnaps[vcnt++] = s->from->me.y;
+	    }
+	    if ( first==NULL ) first = s;
+	}
+    }
+
+    if ( sf->hsnaps!=NULL ) {
+	for ( i=0; i<hcnt && sf->hsnaps[i]==hsnaps[i]; ++i );
+	if ( i!=hcnt || sf->hsnaps[i]!=0x80000000 ) {
+	    free( sf->hsnaps );
+	    sf->hsnaps = NULL;
+	}
+    }
+    if ( sf->vsnaps!=NULL ) {
+	for ( i=0; i<vcnt && sf->vsnaps[i]==vsnaps[i]; ++i );
+	if ( i!=vcnt || sf->vsnaps[i]!=0x80000000 ) {
+	    free( sf->vsnaps );
+	    sf->vsnaps = NULL;
+	}
+    }
+
+    if ( hcnt!=0 && sf->hsnaps==NULL ) {
+	sf->hsnaps = galloc((hcnt+1)*sizeof(int));
+	memcpy(sf->hsnaps,hsnaps,hcnt*sizeof(int));
+	sf->hsnaps[hcnt] = 0x80000000;
+    }
+    if ( vcnt!=0 && sf->vsnaps==NULL ) {
+	sf->vsnaps = galloc((vcnt+1)*sizeof(int));
+	memcpy(sf->vsnaps,vsnaps,vcnt*sizeof(int));
+	sf->vsnaps[vcnt] = 0x80000000;
+    }
+}

@@ -81,4 +81,58 @@ extern void FindEdgesSplineSet(SplinePointList *spl, EdgeList *es);
 extern Edge *ActiveEdgesInsertNew(EdgeList *es, Edge *active,int i);
 extern Edge *ActiveEdgesRefigure(EdgeList *es, Edge *active,double i);
 extern Edge *ActiveEdgesFindStem(Edge *apt, Edge **prev, double i);
+
+/* Version which is better for everything other than rasterization */
+/*  (I think) */
+typedef struct edgeinfo {
+    /* The spline is broken up at all points of inflection. So... */
+    /*  The spline between tmin and tmax is monotonic in both coordinates */
+    /*  If the spline becomes vert/horizontal that will be at one of the */
+    /*   end points too */
+    Spline *spline;
+    double tmin, tmax;
+    double coordmin[2];
+    double coordmax[2];
+    unsigned int up: 1;
+    unsigned int hv: 1;
+    unsigned int hvbottom: 1;
+    unsigned int hvtop: 1;
+    unsigned int hor: 1;
+    unsigned int vert: 1;
+    unsigned int almosthor: 1;
+    unsigned int almostvert: 1;
+    unsigned int horattmin: 1;
+    unsigned int horattmax: 1;
+    unsigned int vertattmin: 1;
+    unsigned int vertattmax: 1;
+    unsigned hup: 1;
+    unsigned vup: 1;
+    double tcur;		/* Value of t for current major coord */
+    double ocur;		/* Value of the other coord for current major coord */
+    struct edgeinfo *next;
+    struct edgeinfo *ordered;
+    struct edgeinfo *aenext;
+    struct edgeinfo *splinenext;
+    SplineChar *sc;
+    int major;
+} EI;
+
+typedef struct eilist {
+    EI *edges;
+    double coordmin[2];
+    double coordmax[2];
+    int low, high, cnt;
+    EI **ordered;
+    char *ends;			/* flag to say an edge ends on this line */
+    SplineChar *sc;
+    int major;
+    EI *splinelast, *splinefirst;
+} EIList;
+
+extern void ElFreeEI(EIList *el);
+extern void ELFindEdges(SplineChar *sc, EIList *el);
+extern double EITOfNextMajor(EI *e, EIList *el, double sought_m );
+extern EI *EIActiveEdgesFindStem(EI *apt, double i, int major);
+extern EI *EIActiveEdgesRefigure(EIList *el, EI *active,double i,int major,
+	int *_change);
 #endif

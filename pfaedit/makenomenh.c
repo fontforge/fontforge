@@ -182,6 +182,20 @@ return( *bpt );
 	    while ( isdigit(*bpt) && bpt-start<3 )
 		val = (val<<3) | (*bpt++-'0');
 	    --bpt;
+	} else if ( *bpt=='x' ) {
+	    unsigned char *start = bpt;
+	    val = 0;
+	    while ( (isdigit(*bpt) || (*bpt>='a' && *bpt<='f') || (*bpt>='A' && *bpt<='F')) &&
+		    bpt-start<3 ) {
+		val <<= 4;
+		if ( isdigit(*bpt))
+		    val |= *bpt++-'0';
+		else if ( *bpt>='a' && *bpt<='f' )
+		    val |= (*bpt++-'a'+10);
+		else
+		    val |= (*bpt++-'A'+10);
+	    }
+	    --bpt;
 	}
     }
     *buffer = (char *) bpt+1;

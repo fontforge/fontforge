@@ -302,7 +302,7 @@ int GWidgetAskR_(int title,const unichar_t *question, int *answers, int def, int
 
     for ( i=0; answers[i]!=0 && answers[i]!=0x80000000; ++i );
     ans = gcalloc(i+1,sizeof(unichar_t *));
-    mn = gcalloc(1,sizeof(unichar_t));
+    mn = gcalloc(i,sizeof(unichar_t));
     for ( i=0; answers[i]!=0 && answers[i]!=0x80000000; ++i )
 	ans[i] = GStringGetResource(answers[i],&mn[i]);
     ret = GWidgetAsk(GStringGetResource(title,NULL),question,

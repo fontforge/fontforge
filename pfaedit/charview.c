@@ -1370,6 +1370,38 @@ static void CVSetConstrainPoint(CharView *cv, GEvent *event) {
     }
 }
 
+static void CVDoSnaps(CharView *cv, FindSel *fs) {
+    PressedOn *p = fs->p;
+
+    if ( p->cx>-fs->fudge && p->cx<fs->fudge )
+	p->cx = 0;
+    else if ( p->cx>cv->sc->width-fs->fudge && p->cx<cv->sc->width+fs->fudge &&
+	    !cv->p.width)
+	p->cx = cv->sc->width;
+    else if ( cv->p.width && p->cx>cv->p.cx-fs->fudge && p->cx<cv->p.cx+fs->fudge )
+	p->cx = cv->p.cx;		/* cx contains the old width */
+    else if ( cv->sc->parent->hsnaps!=NULL && cv->drawmode!=dm_grid ) {
+	int i, *hsnaps = cv->sc->parent->hsnaps;
+	for ( i=0; hsnaps[i]!=0x80000000; ++i ) {
+	    if ( p->cx>hsnaps[i]-fs->fudge && p->cx<hsnaps[i]+fs->fudge ) {
+		p->cx = hsnaps[i];
+	break;
+	    }
+	}
+    }
+    if ( p->cy>-fs->fudge && p->cy<fs->fudge )
+	p->cy = 0;
+    else if ( cv->sc->parent->vsnaps!=NULL && cv->drawmode!=dm_grid ) {
+	int i, *vsnaps = cv->sc->parent->vsnaps;
+	for ( i=0; vsnaps[i]!=0x80000000; ++i ) {
+	    if ( p->cy>vsnaps[i]-fs->fudge && p->cy<vsnaps[i]+fs->fudge ) {
+		p->cy = vsnaps[i];
+	break;
+	    }
+	}
+    }
+}
+
 static void CVMouseDown(CharView *cv, GEvent *event ) {
     FindSel fs;
     PressedOn temp;
@@ -1422,8 +1454,12 @@ return;
     } else if ( cv->active_tool == cvt_curve || cv->active_tool == cvt_corner ||
 	    cv->active_tool == cvt_tangent || cv->active_tool == cvt_pen ) {
 	InSplineSet(&fs,*cv->heads[cv->drawmode]);
+	if ( fs.p->sp==NULL )
+	    CVDoSnaps(cv,&fs);
     } else {
 	NearSplineSetPoints(&fs,*cv->heads[cv->drawmode]);
+	if ( fs.p->sp==NULL )
+	    CVDoSnaps(cv,&fs);
     }
 
     cv->e.x = event->u.mouse.x; cv->e.y = event->u.mouse.y;
@@ -1481,8 +1517,10 @@ void SCClearOrig(SplineChar *sc) {
 
 void CVSetCharChanged(CharView *cv,int changed) {
     if ( cv->drawmode==dm_grid ) {
-	if ( changed )
+	if ( changed ) {
 	    cv->fv->sf->changed = true;
+	    SFFigureGrid(cv->fv->sf);
+	}
     } else {
 	if ( cv->drawmode==dm_fore )
 	    cv->sc->parent->onlybitmaps = false;
@@ -1628,15 +1666,7 @@ return;
 	p.cx = p.sp->me.x;
 	p.cy = p.sp->me.y;
     } else {
-	if ( p.cx>-fs.fudge && p.cx<fs.fudge )
-	    p.cx = 0;
-	else if ( p.cx>cv->sc->width-fs.fudge && p.cx<cv->sc->width+fs.fudge &&
-		!cv->p.width)
-	    p.cx = cv->sc->width;
-	else if ( cv->p.width && p.cx>cv->p.cx-fs.fudge && p.cx<cv->p.cx+fs.fudge )
-	    p.cx = cv->p.cx;		/* cx contains the old width */
-	if ( p.cy>-fs.fudge && p.cy<fs.fudge )
-	    p.cy = 0;
+	CVDoSnaps(cv,&fs);
     }
     cx = (p.cx -cv->p.cx) / cv->scale;
     cy = (p.cy - cv->p.cy) / cv->scale;

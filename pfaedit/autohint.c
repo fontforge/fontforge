@@ -31,6 +31,7 @@
 #include "views.h"
 #include <utype.h>
 #include <chardata.h>
+#include "edgelist.h"
 
 /* to create a type 1 font we must come up with the following entries for the
   private dictionary:
@@ -356,52 +357,7 @@ void QuickBlues(SplineFont *sf, BlueData *bd) {
     bd->ascent = ascent; bd->descent = descent;
 }
 
-typedef struct edgeinfo {
-    /* The spline is broken up at all points of inflection. So... */
-    /*  The spline between tmin and tmax is monotonic in both coordinates */
-    /*  If the spline becomes vert/horizontal that will be at one of the */
-    /*   end points too */
-    Spline *spline;
-    double tmin, tmax;
-    double coordmin[2];
-    double coordmax[2];
-    unsigned int up: 1;
-    unsigned int hv: 1;
-    unsigned int hvbottom: 1;
-    unsigned int hvtop: 1;
-    unsigned int hor: 1;
-    unsigned int vert: 1;
-    unsigned int almosthor: 1;
-    unsigned int almostvert: 1;
-    unsigned int horattmin: 1;
-    unsigned int horattmax: 1;
-    unsigned int vertattmin: 1;
-    unsigned int vertattmax: 1;
-    unsigned hup: 1;
-    unsigned vup: 1;
-    double tcur;		/* Value of t for current major coord */
-    double ocur;		/* Value of the other coord for current major coord */
-    struct edgeinfo *next;
-    struct edgeinfo *ordered;
-    struct edgeinfo *aenext;
-    struct edgeinfo *splinenext;
-    SplineChar *sc;
-    int major;
-} EI;
-
-typedef struct eilist {
-    EI *edges;
-    double coordmin[2];
-    double coordmax[2];
-    int low, high, cnt;
-    EI **ordered;
-    char *ends;			/* flag to say an edge ends on this line */
-    SplineChar *sc;
-    int major;
-    EI *splinelast, *splinefirst;
-} EIList;
-
-static void ElFreeEI(EIList *el) {
+void ElFreeEI(EIList *el) {
     EI *e, *next;
 
     for ( e = el->edges; e!=NULL; e = next ) {
@@ -511,7 +467,7 @@ static void EIAddSpline(Spline *spline, EIList *el) {
 	EIAddEdge(spline,ts[i],ts[i+1],el);
 }
 
-static void ELFindEdges(SplineChar *sc, EIList *el) {
+void ELFindEdges(SplineChar *sc, EIList *el) {
     Spline *spline, *first;
     SplineSet *spl;
 
@@ -1009,7 +965,7 @@ static void StemCloseUntouched(StemInfo *stems,int i ) {
 }
 
 
-static double EITOfNextMajor(EI *e, EIList *el, double sought_m ) {
+double EITOfNextMajor(EI *e, EIList *el, double sought_m ) {
     /* We want to find t so that Mspline(t) = sought_m */
     /*  the curve is monotonic */
     Spline1D *msp = &e->spline->splines[el->major];
@@ -1048,7 +1004,7 @@ return( new_t );
     }
 }
 
-static EI *EIActiveEdgesRefigure(EIList *el, EI *active,double i,int major, int *_change) {
+EI *EIActiveEdgesRefigure(EIList *el, EI *active,double i,int major, int *_change) {
     EI *apt, *pr, *npt;
     int any;
     int change = false;
@@ -1169,7 +1125,7 @@ return( n->up==t->up );
 return( false );
 }
 
-static EI *EIActiveEdgesFindStem(EI *apt, double i, int major) {
+EI *EIActiveEdgesFindStem(EI *apt, double i, int major) {
     int cnt=apt->up?1:-1;
     EI *pr, *e, *p;
 

@@ -474,7 +474,7 @@ static char *str_IsVis="Is Layer Visible?";
 /* For Foreground. Should be short */
 static char *str_Fore="Fore";
 static char *str_Back="Back";
-static char *str_Grid="Grid";
+static char *str_Grid="Guide";
 static char *str_HHints="HHints";
 static char *str_VHints="VHints";
 static char *str_DHints="DHints";

@@ -376,6 +376,7 @@ typedef struct splinefont {
     enum charset encoding_name;
     SplinePointList *gridsplines;
     Undoes *gundoes, *gredoes;
+    int *hsnaps, *vsnaps;
     BDFFont *bitmaps;
     char *origname;		/* filename of font file (ie. if not an sfd) */
     char *autosavename;
@@ -586,4 +587,6 @@ extern int PSDictChangeEntry(struct psdict *dict, char *key, char *newval);
 
 extern void SCRound2Int(SplineChar *sc,struct fontview *);
 extern int hascomposing(SplineFont *sf,int u);
+extern void SFFigureGrid(SplineFont *sf);
 #endif
+

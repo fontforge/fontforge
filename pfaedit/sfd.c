@@ -1217,6 +1217,7 @@ return( NULL );
 	    }
 	} else if ( strmatch(tok,"Grid")==0 ) {
 	    sf->gridsplines = SFDGetSplineSet(sfd);
+	    SFFigureGrid(sf);
 	} else if ( strmatch(tok,"BeginPrivate:")==0 ) {
 	    SFDGetPrivate(sfd,sf);
 	} else if ( strmatch(tok,"BeginSubrs:")==0 ) {

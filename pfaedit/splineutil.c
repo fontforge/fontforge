@@ -1707,6 +1707,8 @@ void SplineFontFree(SplineFont *sf) {
     free(sf->origname);
     free(sf->autosavename);
     free(sf->version);
+    free(sf->hsnaps);
+    free(sf->vsnaps);
     SplinePointListFree(sf->gridsplines);
     UndoesFree(sf->gundoes);
     UndoesFree(sf->gredoes);
