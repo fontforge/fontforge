@@ -854,7 +854,11 @@ void BCCompressBitmap(BDFChar *bdfc) {
     }
 }
 
-BDFChar *SplineCharRasterize(SplineChar *sc, int pixelsize) {
+/* Yes, I really do want a double, even though it will almost always be an */
+/*  integer value there are a few cases (fill pattern for charview) where */
+/*  I need more precision and the pixelsize itself is largely irrelevant */
+/*  (I care about the scale though) */
+BDFChar *SplineCharRasterize(SplineChar *sc, double pixelsize) {
     EdgeList es;
     DBounds b;
     BDFChar *bdfc;
@@ -874,7 +878,7 @@ return( NULL );
 	open = SplineSetsExtractOpen(&sc->splines);
 #endif
 	SplineCharFindBounds(sc,&b);
-	es.scale = (pixelsize-.3) / (real) (sc->parent->ascent+sc->parent->descent);
+	es.scale = (pixelsize-.1) / (real) (sc->parent->ascent+sc->parent->descent);
 	es.mmin = floor(b.miny*es.scale);
 	es.mmax = ceil(b.maxy*es.scale);
 	es.omin = b.minx*es.scale;

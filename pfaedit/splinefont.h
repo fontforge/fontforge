@@ -1020,7 +1020,7 @@ extern void BCRegularizeBitmap(BDFChar *bdfc);
 extern void BCRegularizeGreymap(BDFChar *bdfc);
 extern void BCPasteInto(BDFChar *bc,BDFChar *rbc,int ixoff,int iyoff, int invert, int cleartoo);
 extern void BCRotateCharForVert(BDFChar *bc,BDFChar *from, BDFFont *frombdf);
-extern BDFChar *SplineCharRasterize(SplineChar *sc, int pixelsize);
+extern BDFChar *SplineCharRasterize(SplineChar *sc, double pixelsize);
 extern BDFFont *SplineFontToBDFHeader(SplineFont *_sf, int pixelsize, int indicate);
 extern BDFFont *SplineFontRasterize(SplineFont *sf, int pixelsize, int indicate);
 extern BDFChar *SplineCharAntiAlias(SplineChar *sc, int pixelsize,int linear_scale);

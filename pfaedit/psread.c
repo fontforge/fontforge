@@ -1921,6 +1921,9 @@ static SplinePointList *SplinesFromEntities(EntityChar *ec) {
 	    } else {
 		new = ent->u.splines.splines;
 	    }
+/* !!!!! if the fill/stroke color is white then I should probably do a */
+/*  RemoveIntersection rather than add the splines to the list.  But */
+/*  RemoveIntersection doesn't work well enough for me to depend on it here */
 	    if ( head==NULL )
 		head = new;
 	    else
