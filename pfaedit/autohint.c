@@ -292,6 +292,42 @@ void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]) {
     }
 }
 
+static int PVAddBlues(BlueData *bd,int bcnt,char *pt) {
+    char *end;
+    real val1, val2;
+    int i,j;
+
+    if ( pt==NULL )
+return( bcnt );
+
+    while ( isspace(*pt) || *pt=='[' ) ++pt;
+    while ( *pt!=']' && *pt!='\0' ) {
+	val1 = strtod(pt,&end);
+	if ( *end=='\0' || end==pt )
+    break;
+	for ( pt=end; isspace(*pt) ; ++pt );
+	val2 = strtod(pt,&end);
+	if ( end==pt )
+    break;
+	if ( bcnt==0 || val1>bd->blues[bcnt-1][0] )
+	    i = bcnt;
+	else {
+	    for ( i=0; i<bcnt && val1>bd->blues[i][0]; ++i );
+	    for ( j=bcnt; j>i; --j ) {
+		bd->blues[j][0] = bd->blues[j-1][0];
+		bd->blues[j][1] = bd->blues[j-1][1];
+	    }
+	}
+	bd->blues[i][0] = val1;
+	bd->blues[i][1] = val2;
+	++bcnt;
+	if ( bcnt>=sizeof(bd->blues)/sizeof(bd->blues[0]))
+    break;
+	for ( pt=end; isspace(*pt) ; ++pt );
+    }
+return( bcnt );
+}
+
 /* Quick and dirty (and sometimes wrong) approach to figure out the common */
 /* alignment zones in latin (greek, cyrillic) alphabets */
 void QuickBlues(SplineFont *_sf, BlueData *bd) {
@@ -302,8 +338,9 @@ void QuickBlues(SplineFont *_sf, BlueData *bd) {
     SplineFont *sf;
     SplinePoint *sp;
     SplineSet *spl;
-    int i,j;
+    int i,j, bcnt;
     SplineChar *t;
+    char *pt;
 
     /* Get the alignment zones we care most about */
 
@@ -321,7 +358,7 @@ void QuickBlues(SplineFont *_sf, BlueData *bd) {
 /*  various characters and not just x and o. Italic "x"s often have strange */
 /*  shapes */
 		    enc=='u' || enc=='v' || enc=='w' || enc=='y' || enc=='z' ||
-		    enc=='1' || enc=='0' ||
+		    enc=='7' || enc=='8' ||	/* numbers with ascenders */
 		    enc==0x399 || enc==0x39f || enc==0x3ba || enc==0x3bf || enc==0x3c1 || enc==0x3be || enc==0x3c7 ||
 		    enc==0x41f || enc==0x41e || enc==0x43e || enc==0x43f || enc==0x440 || enc==0x452 || enc==0x445 ) {
 		t = sf->chars[i];
@@ -359,8 +396,8 @@ void QuickBlues(SplineFont *_sf, BlueData *bd) {
 			else if ( enc==0x3c1 && descent>0 ) descent = min;
 		    } else {
 			if ( enc=='I' ) { caph = max; base = min; }
-			else if ( enc=='O' ) { caphtop = max; basebelow = min; }
-			else if ( enc=='1' ) numh = max;
+			else if ( enc=='8' ) { caphtop = max; basebelow = min; }
+			else if ( enc=='7' ) numh = max;
 			else if ( enc=='0' ) numhtop = max;
 			else if ( enc=='x' || enc=='o' || enc=='u' || enc=='v' ||
 				enc =='w' || enc=='y' || enc=='z' ) {
@@ -368,6 +405,7 @@ void QuickBlues(SplineFont *_sf, BlueData *bd) {
 			    if ( xheight==-1e10 ) xheight = max;
 			    if ( max > xheighttop ) xheighttop = max;
 			    else if ( max<xheight && max>20 ) xheight = max;
+			    if ( enc=='y' && descent==1e10 ) descent = min;
 			} else if ( enc=='l' ) ascent = max;
 			else descent = min;
 		    }
@@ -386,6 +424,72 @@ void QuickBlues(SplineFont *_sf, BlueData *bd) {
     bd->numh = numh; bd->numhtop = numhtop;
     bd->ascent = ascent; bd->descent = descent;
     bd->base = base; bd->basebelow = basebelow;
+
+    bcnt = 0;
+    if ( (pt=PSDictHasEntry(sf->private,"BlueValues"))!=NULL )
+	bcnt = PVAddBlues(bd,bcnt,pt);
+    if ( (pt=PSDictHasEntry(sf->private,"OtherBlues"))!=NULL )
+	bcnt = PVAddBlues(bd,bcnt,pt);
+    if ( bcnt==0 ) {
+	if ( basebelow==-1e10 ) basebelow = base;
+	if ( base==-1e10 ) base = basebelow;
+	if ( xheight==-1e10 ) xheight = xheighttop;
+	if ( xheighttop==-1e10 ) xheighttop = xheight;
+	if ( caph==-1e10 ) caph = caphtop;
+	if ( caphtop==-1e10 ) caphtop = caph;
+	if ( numh==-1e10 ) numh = numhtop;
+	if ( numhtop==-1e10 ) numhtop = numh;
+	if ( numh!=-1e10 && (numhtop>caph-2 && numh<caphtop+2)) {
+	    if ( numh<caph ) caph=numh;
+	    if ( numhtop>caphtop ) caphtop = numhtop;
+	    numh = numhtop = -1e10;
+	}
+	if ( ascent!=-1e10 && (ascent>caph-2 && ascent<caphtop+2)) {
+	    if ( ascent<caph ) caph=ascent;
+	    if ( ascent>caphtop ) caphtop = ascent;
+	    ascent = -1e10;
+	}
+	if ( ascent!=-1e10 && (ascent>numh-2 && ascent<numhtop+2)) {
+	    if ( ascent<numh ) numh=ascent;
+	    if ( ascent>numhtop ) numhtop = ascent;
+	    ascent = -1e10;
+	    if ( numhtop>caph-2 && numh<caphtop+2 ) {
+		if ( numh<caph ) caph=numh;
+		if ( numhtop>caphtop ) caphtop = numhtop;
+		numh = numhtop = -1e10;
+	    }
+	}
+
+	if ( descent!=1e10 ) {
+	    bd->blues[0][0] = bd->blues[0][1] = descent;
+	    ++bcnt;
+	}
+	if ( basebelow!=-1e10 ) {
+	    bd->blues[bcnt][0] = basebelow;
+	    bd->blues[bcnt][1] = base;
+	    ++bcnt;
+	}
+	if ( xheight!=-1e10 ) {
+	    bd->blues[bcnt][0] = xheight;
+	    bd->blues[bcnt][1] = xheighttop;
+	    ++bcnt;
+	}
+	if ( numh!=-1e10 ) {
+	    bd->blues[bcnt][0] = numh;
+	    bd->blues[bcnt][1] = numhtop;
+	    ++bcnt;
+	}
+	if ( caph!=-1e10 ) {
+	    bd->blues[bcnt][0] = caph;
+	    bd->blues[bcnt][1] = caphtop;
+	    ++bcnt;
+	}
+	if ( ascent!=-1e10 ) {
+	    bd->blues[bcnt][0] = bd->blues[bcnt][1] = ascent;
+	    ++bcnt;
+	}
+    }
+    bd->bluecnt = bcnt;
 }
 
 void ElFreeEI(EIList *el) {
@@ -2049,8 +2153,9 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
     SplineSet *spl;
     Spline *spline, *first;
     real base, width;
+    int i,startfound, widthfound;
 
-    /* Get the alignment zones we care most about */
+    /* Get the alignment zones */
     QuickBlues(sf,&bd);
 
     /* look for any stems stretching from one zone to another and remove them */
@@ -2059,14 +2164,14 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
     /*  the narrow stems provide the hints that PS needs */
     for ( prev=NULL, s=stems; s!=NULL; s=snext ) {
 	snext = s->next;
-	if (( s->start==0 || (s->start>=bd.caph && s->start<=bd.caphtop) ||
-		(s->start>=bd.numh && s->start<=bd.numhtop) ||
-		(s->start>=bd.xheight && s->start<=bd.xheighttop) || s->start==bd.descent ) &&
-		(s->start+s->width==0 ||
-		 (s->start+s->width>=bd.caph && s->start+s->width<=bd.caphtop) ||
-		 (s->start+s->width>=bd.numh && s->start+s->width<=bd.numhtop) ||
-		 (s->start+s->width>=bd.xheight  && s->start+s->width<=bd.xheighttop) ||
-		 s->start+s->width==bd.descent)) {
+	startfound = widthfound = 0;
+	for ( i=0; i<bd.bluecnt; ++i ) {
+	    if ( s->start>=bd.blues[i][0]-1 && s->start<=bd.blues[i][1]+1 )
+		startfound = true;
+	    else if ( s->start+s->width>=bd.blues[i][0]-1 && s->start+s->width<=bd.blues[i][1]+1 )
+		widthfound = true;
+	}
+	if ( startfound && widthfound ) {
 	    if ( prev==NULL )
 		stems = snext;
 	    else
@@ -2083,15 +2188,15 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
 	first = NULL;
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = spline->to->next ) {
 	    base = spline->from->me.y;
-	    if ( spline->knownlinear && base == spline->to->me.y &&
-		    (base == 0 || (base >= bd.xheight && base<=bd.xheighttop) ||
-		     (base>=bd.numh && base<=bd.numhtop) ||
-		     (base>=bd.caph && base<=bd.caphtop) || base==bd.descent ) &&
-		    spline->from->prev!=NULL && spline->to->next!=NULL &&
-		    (spline->from->prev->from->me.y > base) ==
-			(spline->to->next->to->me.y > base)) {
-		width = (spline->from->prev->from->me.y > spline->from->me.y)?21:20;
-		ghosts = GhostAdd(ghosts,stems, base,width,spline->from->me.x,spline->to->me.x);
+	    if ( spline->knownlinear && base == spline->to->me.y ) {
+		for ( i=0; i<bd.bluecnt; ++i ) {
+		    if ( base>=bd.blues[i][0]-1 && base<=bd.blues[i][1]+1 )
+		break;
+		}
+		if ( i!=bd.bluecnt ) {
+		    width = (spline->from->prev->from->me.y > spline->from->me.y)?21:20;
+		    ghosts = GhostAdd(ghosts,stems, base,width,spline->from->me.x,spline->to->me.x);
+		}
 	    }
 	    if ( first==NULL ) first = spline;
 	}

@@ -98,7 +98,9 @@ typedef struct bluedata {
     real base, basebelow;		/* bottom of "I" and "O" */
     real ascent;			/* height of "l" */
     real descent;			/* depth of "p" */
-    real numh, numhtop;			/* height of "1" and "0" */
+    real numh, numhtop;			/* height of "7" and "8" */ /* numbers with ascenders */
+    int bluecnt;			/* If the private dica contains bluevalues... */
+    real blues[12][2];			/* 7 pairs from bluevalues, 5 from otherblues */
 } BlueData;
 
 typedef struct bdffloat {
