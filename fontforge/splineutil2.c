@@ -1349,6 +1349,16 @@ return( true );
     nsp = sp->next->to;
     psp = sp->prev->from;
 
+    /* A point that changes from curved to straight horizontal/vertical should*/
+    /*  be treated as an extremum */
+    if (( !sp->next->knownlinear && sp->prev->knownlinear &&
+		(RealWithin(sp->me.x,sp->prev->from->me.x,.02) ||
+		 RealWithin(sp->me.y,sp->prev->from->me.y,.02))) ||
+	    ( !sp->prev->knownlinear && sp->next->knownlinear &&
+		(RealWithin(sp->me.x,sp->next->to->me.x,.02) ||
+		 RealWithin(sp->me.y,sp->next->to->me.y,.02))))
+return( true );
+
     if ( !sp->noprevcp && !sp->prev->knownlinear )
 	prev = &sp->prevcp;
     else if ( !psp->nonextcp && !sp->prev->knownlinear )
