@@ -70,9 +70,13 @@ Autokern has similar ideas, but is simpler:
     No, I think it is better not to propigate kerning.
 */
 
+static SplineFont *old_sf=NULL;
+static int old_spaceguess;
+
 struct charone {
     real lbearing, rmax;
     real newl, newr;
+    int baseserif, lefttops, righttops;		/* serif zones which affect this character */
     SplineChar *sc;
     int base, top;		/* bottom of character, number of decimation zones we've got */
     short *ledge;
@@ -263,7 +267,8 @@ static void CheckOutOfBounds(WidthInfo *wi) {
 	    wi->right[i]->newl = -rint(minsp);
     }
     for ( i=0; i<wi->real_lcnt; ++i ) {
-	if ( wi->left[i]->newr<-wi->spacing || wi->left[i]->newr>wi->spacing ) {
+	if ( wi->left[i]->newr<-wi->spacing-wi->seriflength ||
+		wi->left[i]->newr>wi->spacing+wi->seriflength ) {
 	    fprintf( stderr, "AutoWidth failure on %s\n", wi->right[i]->sc->name );
 	    if ( wi->left[i]->newr>wi->spacing )
 		wi->left[i]->newr = wi->spacing;
@@ -497,6 +502,7 @@ return( min );
 
 static void SCFindEdges(struct charone *ch,WidthInfo *wi) {
     RefChar *ref;
+    SplineChar *sc;
     int i;
     DBounds bb;
 
@@ -519,6 +525,28 @@ static void SCFindEdges(struct charone *ch,WidthInfo *wi) {
 	    if ( ch->rmax==NOTREACHED || ch->redge[i]>ch->rmax )
 		ch->rmax = ch->redge[i];
     }
+
+    /* In accented characters find the base letter, compute its dimensions */
+    /*  then figure out its serif zones */
+    sc = ch->sc;
+    while ( sc->refs!=NULL ) {
+	for ( ref=ch->sc->refs; ref!=NULL; ref=ref->next )
+	    if ( ref->sc->unicodeenc!=-1 && isalpha(ref->sc->unicodeenc))
+	break;
+	if ( ref==NULL )
+    break;
+	sc = ref->sc;
+    }
+    SplineCharQuickBounds(ch->sc,&bb);
+    if ( sc->unicodeenc=='k' ) {
+	ch->baseserif = 1;
+	ch->lefttops = 3;
+	ch->righttops = 2;
+    } else {
+	ch->baseserif = ( bb.miny>=0 || -bb.miny<-wi->descent/2 )? 1 : 0;
+	ch->lefttops = ch->righttops =
+		( bb.maxy<=wi->xheight || bb.maxy-wi->xheight<wi->caph-bb.maxy )? 2 : 3;
+    }
 }
 
 /* See the discussion at LineFindLeftDistance for the basic idea on guessing */
@@ -532,7 +560,11 @@ static void PairFindDistance(struct charpair *cp,WidthInfo *wi) {
     int i,j, wasserif, wasseriff;
     real sum, cnt, min, fudge, minf, temp;
     struct charone *left=cp->left, *right=cp->right;
-    int fudgerange = rint(wi->caph/(20*wi->decimation) );
+    int fudgerange;
+
+    fudgerange = rint(wi->caph/(20*wi->decimation) );
+    if ( wi->serifsize!=0 )		/* the serifs provide some fudging themselves */
+	fudgerange = rint(wi->caph/(30*wi->decimation) );
 
     cp->base = (left->base>right->base?left->base : right->base) - fudgerange;
     cp->top = (left->top<right->top ? left->top : right->top) + fudgerange;
@@ -554,14 +586,10 @@ static void PairFindDistance(struct charpair *cp,WidthInfo *wi) {
 			    left->rmax-left->redge[i-left->base];
 		    if ( minf==NOTREACHED || temp<minf ) {
 			minf = temp;
-			wasseriff = ((i<wi->serifs[0][0] || i>wi->serifs[0][1]) &&
-				(i<wi->serifs[1][0] || i>wi->serifs[1][1]) &&
-				(i<wi->serifs[2][0] || i>wi->serifs[2][1]) &&
-				(i<wi->serifs[3][0] || i>wi->serifs[3][1]) &&
-				(j<wi->serifs[0][0] || j>wi->serifs[0][1]) &&
-				(j<wi->serifs[1][0] || j>wi->serifs[1][1]) &&
-				(j<wi->serifs[2][0] || j>wi->serifs[2][1]) &&
-				(j<wi->serifs[3][0] || j>wi->serifs[3][1]));
+			wasseriff = ((i>=wi->serifs[left->baseserif][0] && i<=wi->serifs[left->baseserif][1]) ||
+				(i>=wi->serifs[left->lefttops][0] && i<=wi->serifs[left->lefttops][1]) ||
+				(j>=wi->serifs[right->baseserif][0] && j<=wi->serifs[right->baseserif][1]) ||
+				(j>=wi->serifs[right->righttops][0] && j<=wi->serifs[right->righttops][1]));
 		    }
 		}
 	    }
@@ -589,8 +617,8 @@ static void PairFindDistance(struct charpair *cp,WidthInfo *wi) {
 	    cp->visual = min;		/* Can't happen */
 	else
 	    cp->visual = (min+sum/cnt)/2;
-	if ( wasserif )
-	    cp->visual -= fudge;
+	if ( !wasserif )
+	    cp->visual -= wi->seriflength/2;
     }
 }
 
@@ -722,7 +750,9 @@ static void FindFontParameters(WidthInfo *wi) {
 	wi->serifs[3][1] = rint(caph/wi->decimation);
     }
 
-    if ( caph!=sf->ascent && ds!=-sf->descent )
+    if ( wi->sf==old_sf )
+	wi->space_guess = old_spaceguess;
+    else if ( caph!=sf->ascent && ds!=-sf->descent )
 	wi->space_guess = rint(.205*(caph-ds));
     else
 	wi->space_guess = rint(.184*(sf->ascent+sf->descent));
@@ -1257,6 +1287,9 @@ static int AW_OK(GGadget *g, GEvent *e) {
 	}
 	if ( err )
 return( true );
+
+	old_sf = wi->sf;
+	old_spaceguess = wi->spacing;
 
 	wi->done = true;
 	GDrawSetVisible(gw,false);
