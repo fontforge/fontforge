@@ -1036,42 +1036,42 @@ static void dumptype0stuff(FILE *out,SplineFont *sf) {
 
     dumpreencodeproc(out);
     notdefname = dumpnotdefenc(out,sf);
-    if ( sf->encoding_name >= em_first2byte ) {
-	for ( i=1; i<256; ++i ) {
-	    if ( somecharsused(sf,i<<8, (i<<8)+0xff)) {
-		fprintf( out, "/%sBase /%s%d [\n", sf->fontname, sf->fontname, i );
-		for ( j=0; j<256; ++j )
-		    fprintf( out, " /%s\n",
-			    sf->chars[(i<<8)+j]!=NULL?sf->chars[(i<<8)+j]->name:
-			    notdefname );
-		fprintf( out, "] ReEncode\n\n" );
-	    } else if ( i==0x27 && sf->encoding_name==em_unicode ) {
-		fprintf( out, "%% Add Zapf Dingbats to unicode font at 0x2700\n" );
-		fprintf( out, "%%  But only if on the printer, else use notdef\n" );
-		fprintf( out, "%%  gv, which has no Zapf, maps courier to the name\n" );
-		fprintf( out, "%%  so we must check a bit more than is it null or not...\n" );
+    for ( i=1; i<256; ++i ) {
+	if ( somecharsused(sf,i<<8, (i<<8)+0xff)) {
+	    fprintf( out, "/%sBase /%s%d [\n", sf->fontname, sf->fontname, i );
+	    for ( j=0; j<256 && (i<<8)+j<sf->charcnt; ++j )
+		fprintf( out, " /%s\n",
+			sf->chars[(i<<8)+j]!=NULL?sf->chars[(i<<8)+j]->name:
+			notdefname );
+	    for ( ; j<256; ++j )
+		fprintf( out, " /%s\n", notdefname );
+	    fprintf( out, "] ReEncode\n\n" );
+	} else if ( i==0x27 && sf->encoding_name==em_unicode ) {
+	    fprintf( out, "%% Add Zapf Dingbats to unicode font at 0x2700\n" );
+	    fprintf( out, "%%  But only if on the printer, else use notdef\n" );
+	    fprintf( out, "%%  gv, which has no Zapf, maps courier to the name\n" );
+	    fprintf( out, "%%  so we must check a bit more than is it null or not...\n" );
 /* gv with no ZapfDingbats installed does weird stuff. */
 /*  If I do "/ZapfDingbats findfont" then it returns "/Courier findfont" the */
 /*  first time, but the second time it returns null */
 /* So even if the printer thinks it's got Zapf we must check to make sure it's*/
 /*  the real Zapf. We do that by examining the name. If it's ZapfDingbats all*/
 /*  should be well, if it's Courier, then that counts as non-existant */
-		fprintf( out, "/ZapfDingbats findfont pop\n" );
-		fprintf( out, "/ZapfDingbats findfont null eq\n" );
-		fprintf( out, "{ true }\n" );
-		fprintf( out, " { /ZapfDingbats findfont /FontName get (ZapfDingbats) ne }\n" );
-		fprintf( out, " ifelse\n" );
-		fprintf( out, "{ /%s%d /%sNotDef findfont definefont pop }\n",
-			sf->fontname, i, sf->fontname);
-		fprintf( out, " { /ZapfDingbats /%s%d [\n", sf->fontname, i );
-		for ( j=0; j<0xc0; ++j )
-		    fprintf( out, " /%s\n",
-			    zapfexists[j]?zapfnomen[j]:".notdef" );
-		for ( ;j<256; ++j )
-		    fprintf( out, " /%s\n", ".notdef" );
-		fprintf( out, "] ReEncode\n\n" );
-		fprintf( out, "  } ifelse\n\n" );
-	    }
+	    fprintf( out, "/ZapfDingbats findfont pop\n" );
+	    fprintf( out, "/ZapfDingbats findfont null eq\n" );
+	    fprintf( out, "{ true }\n" );
+	    fprintf( out, " { /ZapfDingbats findfont /FontName get (ZapfDingbats) ne }\n" );
+	    fprintf( out, " ifelse\n" );
+	    fprintf( out, "{ /%s%d /%sNotDef findfont definefont pop }\n",
+		    sf->fontname, i, sf->fontname);
+	    fprintf( out, " { /ZapfDingbats /%s%d [\n", sf->fontname, i );
+	    for ( j=0; j<0xc0; ++j )
+		fprintf( out, " /%s\n",
+			zapfexists[j]?zapfnomen[j]:".notdef" );
+	    for ( ;j<256; ++j )
+		fprintf( out, " /%s\n", ".notdef" );
+	    fprintf( out, "] ReEncode\n\n" );
+	    fprintf( out, "  } ifelse\n\n" );
 	}
     }
 
