@@ -568,6 +568,7 @@ typedef struct splinefont {
     unsigned int changed_since_autosave: 1;
     unsigned int changed_since_xuidchanged: 1;
     unsigned int display_antialias: 1;
+    unsigned int display_bbsized: 1;
     unsigned int dotlesswarn: 1;		/* User warned that font doesn't have a dotless i character */
     unsigned int onlybitmaps: 1;		/* it's a bdf editor, not a postscript editor */
     unsigned int serifcheck: 1;			/* Have we checked to see if we have serifs? */

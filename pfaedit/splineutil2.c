@@ -1722,6 +1722,9 @@ SplineFont *SplineFontEmpty(void) {
     sf->encoding_name = em_none;
     sf->top_enc = -1;
     sf->desired_row_cnt = 4; sf->desired_col_cnt = 16;
+    sf->display_antialias = default_fv_antialias;
+    sf->display_bbsized = default_fv_bbsized;
+    sf->display_size = -default_fv_font_size;
 return( sf );
 }
 
@@ -1771,8 +1774,6 @@ SplineFont *SplineFontBlank(int encoding_name,int charcnt) {
     sf->chars = gcalloc(charcnt,sizeof(SplineChar *));
     sf->encoding_name = encoding_name;
     sf->pfminfo.fstype = -1;
-    sf->display_antialias = default_fv_antialias;
-    sf->display_size = -default_fv_font_size;
     sf->order2 = false;
 return( sf );
 }

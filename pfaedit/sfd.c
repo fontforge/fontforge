@@ -864,8 +864,8 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
     }
     if ( sf->display_size!=0 )
 	fprintf( sfd, "DisplaySize: %d\n", sf->display_size );
-    if ( sf->display_antialias!=0 )
-	fprintf( sfd, "AntiAlias: %d\n", sf->display_antialias );
+    fprintf( sfd, "AntiAlias: %d\n", sf->display_antialias );
+    fprintf( sfd, "FitToEm: %d\n", sf->display_bbsized );
     {
 	int rc, cc, te;
 	if ( (te = FVWinInfo(sf->fv,&cc,&rc))!= -1 )
@@ -2304,6 +2304,10 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    int temp;
 	    getint(sfd,&temp);
 	    sf->display_antialias = temp;
+	} else if ( strmatch(tok,"FitToEm:")==0 ) {
+	    int temp;
+	    getint(sfd,&temp);
+	    sf->display_bbsized = temp;
 	} else if ( strmatch(tok,"OnlyBitmaps:")==0 ) {
 	    int temp;
 	    getint(sfd,&temp);

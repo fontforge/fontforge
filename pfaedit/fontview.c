@@ -2366,6 +2366,7 @@ static void FVMenuSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	default_fv_font_size = dspsize = 96;
     else if ( mi->mid == MID_FitToEm ) {
 	default_fv_bbsized = fv->bbsized = !fv->bbsized;
+	fv->sf->display_bbsized = fv->bbsized;
 	changedmodifier = true;
     } else {
 	default_fv_antialias = fv->antialias = !fv->antialias;
@@ -2929,6 +2930,7 @@ return;
     if ( !PSDictHasEntry(new->private,"lenIV"))
 	PSDictChangeEntry(new->private,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
     new->display_antialias = fv->sf->display_antialias;
+    new->display_bbsized = fv->sf->display_bbsized;
     new->display_size = fv->sf->display_size;
     FVInsertInCID(fv,new);
 }
@@ -2944,6 +2946,7 @@ return;
     sf = SplineFontBlank(em_none,MaxCID(map));
     sf->cidmaster = cidmaster;
     sf->display_antialias = fv->sf->display_antialias;
+    sf->display_bbsized = fv->sf->display_bbsized;
     sf->display_size = fv->sf->display_size;
     sf->private = gcalloc(1,sizeof(struct psdict));
     PSDictChangeEntry(sf->private,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
@@ -5162,7 +5165,7 @@ FontView *_FontViewCreate(SplineFont *sf) {
     fv->cbw = (ps*fv->magnify)+1;
     fv->cbh = (ps*fv->magnify)+1+FV_LAB_HEIGHT+1;
     fv->antialias = sf->display_antialias;
-    fv->bbsized = default_fv_bbsized;
+    fv->bbsized = sf->display_bbsized;
 return( fv );
 }
 
