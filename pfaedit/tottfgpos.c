@@ -1525,7 +1525,7 @@ return( 0 );
     
 static void DumpLigCarets(FILE *gdef,SplineChar *sc) {
     PST *pst;
-    int i, j;
+    int i, j, offset;
 
     for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
 	if ( pst->type == pst_lcaret )
@@ -1553,6 +1553,11 @@ return;
     }
 
     putshort(gdef,pst->u.lcaret.cnt);	/* this many carets */
+    offset = 2*pst->u.lcaret.cnt;
+    for ( i=0; i<pst->u.lcaret.cnt; ++i ) {
+	putshort(gdef,offset);
+	offset+=4;
+    }
     for ( i=0; i<pst->u.lcaret.cnt; ++i ) {
 	putshort(gdef,1);		/* Format 1 */
 	putshort(gdef,pst->u.lcaret.carets[i]);
@@ -1661,7 +1666,7 @@ return;					/* No anchor positioning, no ligature carets */
 	offset = 2*lcnt+4;
 	for ( i=0; i<lcnt; ++i ) {
 	    putshort(at->gdef,offset);
-	    offset+=2+4*LigCaretCnt(glyphs[i]);
+	    offset+=2+6*LigCaretCnt(glyphs[i]);
 	}
 	for ( i=0; i<lcnt; ++i )
 	    DumpLigCarets(at->gdef,glyphs[i]);

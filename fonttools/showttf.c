@@ -2507,7 +2507,8 @@ static void gdefshowglyphclassdef(FILE *ttf,int offset,struct ttfinfo *info) {
 
 static void gdefshowligcaretlist(FILE *ttf,int offset,struct ttfinfo *info) {
     int coverage, cnt, i, j, cc, format;
-    uint16 *lc_offsets, *glyphs;
+    uint16 *lc_offsets, *glyphs, *offsets;
+    uint32 caret_base;
 
     fseek(ttf,offset,SEEK_SET);
     printf( "  Ligature Caret List\n" );
@@ -2521,8 +2522,13 @@ static void gdefshowligcaretlist(FILE *ttf,int offset,struct ttfinfo *info) {
 	fseek(ttf,offset+lc_offsets[i],SEEK_SET);
 	printf("\t    Carets for glyph %d (%s)\n", glyphs[i],
 		glyphs[i]>=info->glyph_cnt ? "!!! Bad Glyph !!!" : info->glyph_names==NULL ? "" : info->glyph_names[glyphs[i]]);
+	caret_base = ftell(ttf);
 	printf("\t     Count = %d\n", cc = getushort(ttf));
+	offsets = malloc(cc*sizeof(uint16));
+	for ( j=0; j<cc; ++j )
+	    offsets[j] = getushort(ttf);
 	for ( j=0; j<cc; ++j ) {
+	    fseek(ttf,caret_base+offsets[j],SEEK_SET);
 	    format=getushort(ttf);
 	    if ( format==1 ) {
 		printf("\t\tCaret[%d] at %d\n", j, (short) getushort(ttf));

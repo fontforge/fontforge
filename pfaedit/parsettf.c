@@ -3356,6 +3356,31 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	free(indexes);
     }
 
+    /* where no names are given, but we've got a unicode encoding use */
+    /*  that to guess at them */
+    for ( i=0; i<info->glyph_cnt; ++i ) {
+	/* info->chars[i] can be null in some TTC files */
+	if ( info->chars[i]==NULL || info->chars[i]->name!=NULL )
+    continue;
+	if ( i==0 )
+	    name = ".notdef";
+	else if ( info->chars[i]->unicodeenc==-1 ) {
+	    /* Do this later */;
+	    name = NULL;
+	} else if ( info->chars[i]->unicodeenc<psunicodenames_cnt &&
+		psunicodenames[info->chars[i]->unicodeenc]!=NULL )
+	    name = psunicodenames[info->chars[i]->unicodeenc];
+	else {
+	    if ( info->chars[i]->unicodeenc<0x10000 )
+		sprintf( buffer, "uni%04X", info->chars[i]->unicodeenc );
+	    else
+		sprintf( buffer, "u%04X", info->chars[i]->unicodeenc );
+	    name = buffer;
+	}
+	GProgressNext();
+	info->chars[i]->name = copy(name);
+    }
+
     /* If we have a GSUB table we can give some unencoded glyphs name */
     /*  for example if we have a vrt2 substitution of A to <unencoded> */
     /*  we could name the unencoded "A.vrt2" (though in this case we might */
@@ -3368,31 +3393,15 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
     if ( i>=0 && info->gsub_start!=0 )
 	GuessNamesFromGSUB(ttf,info);
 
-    /* where no names are given, use the encoding to guess at them */
-    /*  (or if the names default to the macintosh standard) */
     for ( i=0; i<info->glyph_cnt; ++i ) {
 	/* info->chars[i] can be null in some TTC files */
 	if ( info->chars[i]==NULL || info->chars[i]->name!=NULL )
     continue;
-	if ( i==0 )
-	    name = ".notdef";
-	else if ( info->chars[i]->unicodeenc==-1 ) {
-	    if ( info->chars[i]->enc!=0 )
-		sprintf(buffer, "nounicode_%x", info->chars[i]->enc );
-	    else
-		sprintf( buffer, "unencoded_%d", i );
-	    name = buffer;
-	} else if ( info->chars[i]->unicodeenc<psunicodenames_cnt &&
-		psunicodenames[info->chars[i]->unicodeenc]!=NULL )
-	    name = psunicodenames[info->chars[i]->unicodeenc];
-	else {
-	    if ( info->chars[i]->unicodeenc<0x10000 )
-		sprintf( buffer, "uni%04X", info->chars[i]->unicodeenc );
-	    else
-		sprintf( buffer, "u%04X", info->chars[i]->unicodeenc );
-	    name = buffer;
-	}
-	info->chars[i]->name = copy(name);
+	if ( info->chars[i]->enc!=0 )
+	    sprintf(buffer, "nounicode_%x", info->chars[i]->enc );
+	else
+	    sprintf( buffer, "unencoded_%d", i );
+	info->chars[i]->name = copy(buffer);
 	GProgressNext();
     }
     GProgressNextStage();
@@ -3971,9 +3980,20 @@ static void gposExtensionSubTable(FILE *ttf, int stoffset,
 
 enum gsub_inusetype { git_normal, git_justinuse, git_findnames };
 
+static struct { uint32 tag; char *str; } tagstr[] = {
+    { CHR('v','r','t','2'), "vert" },
+    { CHR('s','m','c','p'), "sc" },
+    { CHR('s','m','c','p'), "small" },
+    { CHR('o','n','u','m'), "oldstyle" },
+    { CHR('s','u','p','s'), "superior" },
+    { CHR('s','u','b','s'), "inferior" },
+    { CHR('s','w','s','h'), "swash" },
+    { 0, NULL }
+};
+
 static void gsubSimpleSubTable(FILE *ttf, int stoffset, struct ttfinfo *info,
 	struct lookup *lookup, int justinuse) {
-    int coverage, cnt, i, which;
+    int coverage, cnt, i, j, which;
     uint16 format;
     uint16 *glyphs, *glyph2s=NULL;
     int delta=0;
@@ -4004,20 +4024,20 @@ return;
 		if ( info->chars[which]->name==NULL ) {
 		    char *basename = info->chars[glyphs[i]]->name;
 		    char *str = galloc(strlen(basename)+6);
-		    char tag[4];
-		    tag[0] = lookup->tag>>24;
-		    if ( (tag[1] = (lookup->tag>>16)&0xff)==' ' ) tag[1] = '\0';
-		    if ( (tag[2] = (lookup->tag>>8)&0xff)==' ' ) tag[2] = '\0';
-		    if ( (tag[3] = (lookup->tag)&0xff)==' ' ) tag[3] = '\0';
-#if 0
-		    script[0] = lookup->script>>24;
-		    if ( (script[1] = (lookup->script>>16)&0xff)==' ' ) script[1] = '\0';
-		    if ( (script[2] = (lookup->script>>8)&0xff)==' ' ) script[2] = '\0';
-		    if ( (script[3] = (lookup->script)&0xff)==' ' ) script[3] = '\0';
-		    sprintf(str,"%s.%s.%s", basename, script, tag );
-#else
-		    sprintf(str,"%s.%s", basename, tag );
-#endif
+		    char tag[5], *pt=tag;
+		    for ( j=0; tagstr[j].tag!=0 && tagstr[j].tag!=lookup->tag; ++j );
+		    if ( tagstr[j].tag!=0 )
+			pt = tagstr[j].str;
+		    else {
+			tag[0] = lookup->tag>>24;
+			if ( (tag[1] = (lookup->tag>>16)&0xff)==' ' ) tag[1] = '\0';
+			if ( (tag[2] = (lookup->tag>>8)&0xff)==' ' ) tag[2] = '\0';
+			if ( (tag[3] = (lookup->tag)&0xff)==' ' ) tag[3] = '\0';
+			tag[4] = '\0';
+			pt = tag;
+		    }
+		    str = galloc(strlen(basename)+strlen(pt)+2);
+		    sprintf(str,"%s.%s", basename, pt );
 		    info->chars[which]->name = str;
 		}
 	    }
@@ -4572,7 +4592,8 @@ return;
 static void readttfgdef(FILE *ttf,struct ttfinfo *info) {
     int lclo;
     int coverage, cnt, i,j, format;
-    uint16 *glyphs, *lc_offsets;
+    uint16 *glyphs, *lc_offsets, *offsets;
+    uint32 caret_base;
     PST *pst;
     SplineChar *sc;
 
@@ -4606,10 +4627,15 @@ return;
 	    sc->possub = pst;
 	    pst->type = pst_lcaret;
 	}
+	caret_base = ftell(ttf);
 	pst->u.lcaret.cnt = getushort(ttf);
 	if ( pst->u.lcaret.carets!=NULL ) free(pst->u.lcaret.carets);
+	offsets = galloc(pst->u.lcaret.cnt*sizeof(int16));
+	for ( j=0; j<pst->u.lcaret.cnt; ++j )
+	    offsets[j] = getushort(ttf);
 	pst->u.lcaret.carets = galloc(pst->u.lcaret.cnt*sizeof(int16));
 	for ( j=0; j<pst->u.lcaret.cnt; ++j ) {
+	    fseek(ttf,caret_base+offsets[j],SEEK_SET);
 	    format=getushort(ttf);
 	    if ( format==1 ) {
 		pst->u.lcaret.carets[i] = getushort(ttf);
@@ -4623,6 +4649,7 @@ return;
 		fprintf( stderr, "!!!! Unknown caret format %d !!!!\n", format );
 	    }
 	}
+	free(offsets);
     }
     free(lc_offsets);
     free(glyphs);
