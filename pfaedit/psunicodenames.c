@@ -67699,7 +67699,7 @@ struct psaltnames  {
 	{ "Omegasmall", 0xf518 },
 	{ "Iotadieresissmall", 0xf519 },
 	{ "Upsilondieresissmall", 0xf51a },
-/* from glyphlist.txt (reachable from http://partners.adobe.com/asn/developer/typeforum/unicodegn.html) */
+/* from glyphlist.txt (http://partners.adobe.com/asn/developer/type/glyphlist.txt) */
 	{ "Abreveacute", 0x1eae },
 	{ "Abrevecyrillic", 0x04d0 },
 	{ "Abrevedotbelow", 0x1eb6 },

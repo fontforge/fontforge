@@ -2324,6 +2324,8 @@ void DoPrefs(void) {
 	  } break;
 	  case pr_string: case pr_file: case pr_int: case pr_real:
 	    free(plabels[k][gc+1].text);
+	    if ( pl->type==pr_file )
+		++gc;
 	  break;
 	}
 	gc += 2;
