@@ -334,7 +334,7 @@ return( NULL );
 }
 
 static char **args=NULL;
-int autotrace_ask=0, mf_ask=0, mf_clearbackgrounds;
+int autotrace_ask=0, mf_ask=0, mf_clearbackgrounds=0, mf_showerrors=0;
 char *mf_args = NULL;
 
 void *GetAutoTraceArgs(void) {
@@ -604,14 +604,16 @@ return( NULL );
 	/* Child */
 	int fd;
 	chdir(tempdir);
-	close(1);		/* mf generates a lot of verbiage to stdout. Throw it away */
-	fd = open("/dev/null",O_WRONLY);
-	if ( fd!=1 )
-	    dup2(fd,1);
-	close(0);		/* mf sometimes asks the user questions, but I have no answers... */
-	fd = open("/dev/null",O_RDONLY);
-	if ( fd!=0 )
-	    dup2(fd,0);
+	if ( !mf_showerrors ) {
+	    close(1);		/* mf generates a lot of verbiage to stdout. Throw it away */
+	    fd = open("/dev/null",O_WRONLY);
+	    if ( fd!=1 )
+		dup2(fd,1);
+	    close(0);		/* mf sometimes asks the user questions, but I have no answers... */
+	    fd = open("/dev/null",O_RDONLY);
+	    if ( fd!=0 )
+		dup2(fd,0);
+	}
 	exit(execvp(arglist[0],arglist)==-1);	/* If exec fails, then die */
     } else if ( pid!=-1 ) {
 	GProgressShow();

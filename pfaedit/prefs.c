@@ -66,6 +66,7 @@ extern int oldsystem;			/* in bitmapdlg.c */
 extern int autotrace_ask;		/* in autotrace.c */
 extern int mf_ask;			/* in autotrace.c */
 extern int mf_clearbackgrounds;		/* in autotrace.c */
+extern int mf_showerrors;		/* in autotrace.c */
 extern char *mf_args;			/* in autotrace.c */
 unichar_t *script_menu_names[SCRIPT_MENU_MAX];
 char *script_filenames[SCRIPT_MENU_MAX];
@@ -136,6 +137,7 @@ static struct prefs_list {
 	{ "MfArgs", pr_string, &mf_args, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupMFA },
 	{ "MfAsk", pr_bool, &mf_ask, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupMFK },
 	{ "MfClearBg", pr_bool, &mf_clearbackgrounds, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupMFB },
+	{ "MfShowErr", pr_bool, &mf_showerrors, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupMFE },
 	{ NULL }
 },
  generate_list[] = {
@@ -175,7 +177,7 @@ static struct prefs_list {
 
 struct visible_prefs_list { int tab_name; struct prefs_list *pl; } visible_prefs_list[] = {
     { _STR_Generic, general_list},
-    { _STR_PrefsArgs, args_list},
+    { _STR_PrefsApps, args_list},
     { _STR_PrefsFontInfo, generate_list},
     { 0 }
  };
