@@ -1194,7 +1194,10 @@ static void InstrDlgCreate(struct instrdata *id,unichar_t *title) {
     wattrs.window_title = title;
     wattrs.icon = ttf_icon;
     pos.x = pos.y = 0;
-    pos.width = 270;
+    if ( GIntGetResource(_NUM_Buttonsize)>65 )
+	pos.width = GDrawPointsToPixels(NULL,3*GIntGetResource(_NUM_Buttonsize)+40);
+    else
+	pos.width = GDrawPointsToPixels(NULL,250);
     iv->oc_height = GDrawPointsToPixels(NULL,37);
     pos.height = GDrawPointsToPixels(NULL,100) + iv->oc_height;
     iv->gw = gw = GDrawCreateTopWindow(NULL,&pos,iv_e_h,iv,&wattrs);
@@ -1537,7 +1540,7 @@ return;
 	    event->u.resize.size.height-GDrawPointsToPixels(sv->gw,60));
     
     GDrawRequestExpose(sv->gw,NULL,false);
-    GDrawRequestExpose(sv->v,NULL,false);
+    GDrawRequestExpose(sv->v,NULL,true);
 }
 
 static void short_expose(ShortView *sv,GWindow pixmap,GRect *rect) {
@@ -1695,7 +1698,7 @@ return( true );
 static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     ShortView *sv = gcalloc(1,sizeof(ShortView));
     unichar_t title[60];
-    GRect pos, gsize;
+    GRect pos, subpos, gsize;
     GWindow gw;
     GWindowAttrs wattrs;
     FontRequest rq;
@@ -1741,7 +1744,10 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     wattrs.window_title = title;
     wattrs.icon = ttf_icon;
     pos.x = pos.y = 0;
-    pos.width =GDrawPointsToPixels(NULL,150);
+    if ( GIntGetResource(_NUM_Buttonsize)>60 )
+	pos.width = GDrawPointsToPixels(NULL,2*GIntGetResource(_NUM_Buttonsize)+30);
+    else
+	pos.width = GDrawPointsToPixels(NULL,150);
     pos.height = GDrawPointsToPixels(NULL,200);
     sv->gw = gw = GDrawCreateTopWindow(NULL,&pos,sv_e_h,sv,&wattrs);
 
@@ -1780,9 +1786,9 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     sv->sbw = gsize.width;
 
     wattrs.mask = wam_events|wam_cursor;
-    pos.x = 0; pos.y = 0;
-    pos.width = gd.pos.x; pos.height -= sv->bh;
-    sv->v = GWidgetCreateSubWindow(gw,&pos,sv_v_e_h,sv,&wattrs);
+    subpos.x = 0; subpos.y = 0;
+    subpos.width = gd.pos.x; subpos.height -= sv->bh;
+    sv->v = GWidgetCreateSubWindow(gw,&subpos,sv_v_e_h,sv,&wattrs);
     GDrawSetVisible(sv->v,true);
 
     memset(&rq,0,sizeof(rq));
