@@ -28,6 +28,8 @@
 #include <math.h>
 #include <ustring.h>
 
+extern char *coord_sep;
+
 /* ********************************* Undoes ********************************* */
 
 static int maxundoes = 12;		/* -1 is infinite */
@@ -895,7 +897,7 @@ return( copy(""));
     }
 
     sp = cur->u.state.splines->first;
-    sprintf(buffer,"(%g , %g)", sp->me.x, sp->me.y );
+    sprintf(buffer,"(%g%s%g)", sp->me.x, coord_sep, sp->me.y );
     *len = strlen(buffer);
 return( copy(buffer));
 }

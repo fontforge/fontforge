@@ -35,6 +35,7 @@
 
 extern int _GScrollBar_Width;
 extern struct lconv localeinfo;
+extern char *coord_sep;
 struct bvshows BVShows = { 1, 1, 1, 0 };
 
 #define RPT_BASE	3		/* Place to draw the pointer icon */
@@ -499,13 +500,13 @@ static void BVInfoDrawText(BitmapView *bv, GWindow pixmap ) {
     r.y = bv->mbh; r.height = 36 /* bv->infoh-1 */;
     GDrawFillRect(pixmap,&r,bg);
 
-    sprintf(buffer,"%d%s%d", bv->info_x, localeinfo.thousands_sep, bv->info_y );
+    sprintf(buffer,"%d%s%d", bv->info_x, coord_sep, bv->info_y );
     buffer[11] = '\0';
     uc_strcpy(ubuffer,buffer);
     GDrawDrawText(pixmap,bv->infoh+RPT_DATA,ybase,ubuffer,-1,NULL,0);
 
     if ( bv->active_tool!=cvt_none ) {
-	sprintf(buffer,"%d%s%d", bv->info_x-bv->pressed_x, localeinfo.thousands_sep, bv->info_y-bv->pressed_y );
+	sprintf(buffer,"%d%s%d", bv->info_x-bv->pressed_x, coord_sep, bv->info_y-bv->pressed_y );
 	buffer[11] = '\0';
 	uc_strcpy(ubuffer,buffer);
 	GDrawDrawText(pixmap,bv->infoh+RPT_DATA,ybase+bv->sfh+10,ubuffer,-1,NULL,0);

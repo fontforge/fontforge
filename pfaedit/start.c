@@ -35,6 +35,7 @@
 
 unsigned short unicode_from_adobestd[256];
 struct lconv localeinfo;
+char *coord_sep = ",";		/* Not part of locale data */
 
 static void initadobeenc(void) {
     int i,j;
@@ -274,11 +275,9 @@ int main( int argc, char **argv ) {
 	    source_modtime_str );
     setlocale(LC_ALL,"");
     localeinfo = *localeconv();
-    if ( *localeinfo.thousands_sep=='\0' ) {
-	if ( *localeinfo.decimal_point=='.' ) localeinfo.thousands_sep=",";
-	else if ( *localeinfo.decimal_point==',' ) localeinfo.thousands_sep=";";
-	else localeinfo.thousands_sep = " ";
-    }
+    coord_sep = ",";
+    if ( *localeinfo.decimal_point=='.' ) coord_sep=",";
+    else if ( *localeinfo.decimal_point!='.' ) coord_sep=" ";
     GResourceAddResourceString(NULL,argv[0]);
     LoadPrefs();
     CheckIsScript(argc,argv);		/* Will run the script and exit if it is a script */

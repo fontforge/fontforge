@@ -35,6 +35,7 @@
 
 extern int _GScrollBar_Width;
 extern struct lconv localeinfo;
+extern char *coord_sep;
 struct cvshows CVShows = {
 	1,		/* show foreground */
 	1,		/* show background */
@@ -1547,9 +1548,9 @@ static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
 return;
 
     if ( cv->info.x>=1000 || cv->info.x<=-1000 || cv->info.y>=1000 || cv->info.y<=-1000 )
-	sprintf(buffer,"%d%s%d", (int) cv->info.x, localeinfo.thousands_sep, (int) cv->info.y );
+	sprintf(buffer,"%d%s%d", (int) cv->info.x, coord_sep, (int) cv->info.y );
     else
-	sprintf(buffer,"%.4g%s%.4g", cv->info.x, localeinfo.thousands_sep, cv->info.y );
+	sprintf(buffer,"%.4g%s%.4g", cv->info.x, coord_sep, cv->info.y );
     buffer[11] = '\0';
     uc_strcpy(ubuffer,buffer);
     GDrawDrawText(pixmap,RPT_DATA,ybase,ubuffer,-1,NULL,0);
@@ -1578,9 +1579,9 @@ return;
 	ydiff = cv->info.y-sely;
 
 	if ( selx>=1000 || selx<=-1000 || sely>=1000 || sely<=-1000 )
-	    sprintf(buffer,"%d%s%d", (int) selx, localeinfo.thousands_sep, (int) sely );
+	    sprintf(buffer,"%d%s%d", (int) selx, coord_sep, (int) sely );
 	else
-	    sprintf(buffer,"%.4g%s%.4g", selx, localeinfo.thousands_sep, sely );
+	    sprintf(buffer,"%.4g%s%.4g", selx, coord_sep, sely );
 	buffer[11] = '\0';
 	uc_strcpy(ubuffer,buffer);
 	GDrawDrawText(pixmap,SPT_DATA,ybase,ubuffer,-1,NULL,0);
@@ -1594,9 +1595,9 @@ return;
 return;
 
     if ( xdiff>=1000 || xdiff<=-1000 || ydiff>=1000 || ydiff<=-1000 )
-	sprintf(buffer,"%d%s%d", (int) xdiff, localeinfo.thousands_sep, (int) ydiff );
+	sprintf(buffer,"%d%s%d", (int) xdiff, coord_sep, (int) ydiff );
     else
-	sprintf(buffer,"%.4g%s%.4g", xdiff, localeinfo.thousands_sep, ydiff );
+	sprintf(buffer,"%.4g%s%.4g", xdiff, coord_sep, ydiff );
     buffer[11] = '\0';
     uc_strcpy(ubuffer,buffer);
     GDrawDrawText(pixmap,SOF_DATA,ybase,ubuffer,-1,NULL,0);
