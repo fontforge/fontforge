@@ -2436,7 +2436,7 @@ return( subrs);
 
     for ( i=cnt=0; i<sf->charcnt; ++i ) {
 	sc = sf->chars[i];
-	if ( sc==NULL )
+	if ( sc==NULL || sc!=SCDuplicate(sc))
 	    /* Do Nothing */;
 	else if ( sc->lsidebearing!=0x7fff ) {
 	    subrs->keys[cnt] = gcalloc(2,sizeof(BasePoint));
