@@ -363,12 +363,14 @@ static int MVSetAnchor(MetricsView *mv) {
 	mv->sstr[i] = mv->perchar[i].sc;
 	aplistfree(mv->perchar[i].aps);
 	mv->perchar[i].aps = NULL;
+	if ( mv->perchar[i].xoff!=0 || mv->perchar[i].yoff!=0 ||
+		mv->perchar[i].hoff!=0 || mv->perchar[i].voff!=0 ) {
+	    mv->perchar[i].xoff = mv->perchar[i].yoff = 0;
+	    mv->perchar[i].hoff = mv->perchar[i].voff = 0;
+	    changed = true;
+	}
     }
     mv->sstr[i] = NULL;
-    if ( mv->perchar[0].xoff!=0 || mv->perchar[0].yoff!=0 ) {
-	mv->perchar[0].xoff = mv->perchar[0].yoff = 0;
-	changed = true;
-    }
     for ( i=0; i<mv->charcnt; ++i ) {
 	apos = AnchorPositioning(mv->sstr[i],NULL,mv->sstr+i+1);
 	base = i;
