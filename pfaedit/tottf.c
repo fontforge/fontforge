@@ -3242,6 +3242,14 @@ static void dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
 		dumpcomposit(sf->chars[i],refs,gi);
 	    else if ( sf->chars[i]->splines==NULL && sf->chars[i]->refs==NULL )
 		dumpspace(sf->chars[i],gi);
+/* I haven't seen this documented, but ttf rasterizers are unhappy with a */
+/*  glyph that consists of a single point. Glyphs containing two single points*/
+/*  are ok, glyphs with a single point and anything else are ok, glyphs with */
+/*  a line are ok. But a single point is not ok. Dunno why */
+	    else if ( sf->chars[i]->refs==NULL &&
+		    (sf->chars[i]->splines->first->next==NULL ||
+		     sf->chars[i]->splines->first->next->to == sf->chars[i]->splines->first))
+		dumpspace(sf->chars[i],gi);
 	    else
 		dumpglyph(sf->chars[i],gi);
 	}
