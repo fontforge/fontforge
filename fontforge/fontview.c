@@ -9050,10 +9050,13 @@ return( NULL );
 	int ch2 = getc(foo);
 	int ch3 = getc(foo);
 	int ch4 = getc(foo);
-	int ch5, ch6;
+	int ch5 = getc(foo);
+	int ch6 = getc(foo);
+	int ch7 = getc(foo);
+	int ch9, ch10;
 	fseek(foo, 98, SEEK_SET);
-	ch5 = getc(foo);
-	ch6 = getc(foo);
+	ch9 = getc(foo);
+	ch10 = getc(foo);
 	fclose(foo);
 	if (( ch1==0 && ch2==1 && ch3==0 && ch4==0 ) ||
 		(ch1=='O' && ch2=='T' && ch3=='T' && ch4=='O') ||
@@ -9067,6 +9070,10 @@ return( NULL );
 	    sf = CFFParse(fullname);
 	} else if ( ch1=='<' && ch2=='?' && (ch3=='x'||ch3=='X') && (ch4=='m'||ch4=='M') ) {
 	    sf = SFReadSVG(fullname,0);
+	} else if ( ch1==0xef && ch2==0xbb && ch3==0xbf &&
+		ch4=='<' && ch5=='?' && (ch6=='x'||ch6=='X') && (ch7=='m'||ch7=='M') ) {
+	    /* UTF-8 SVG with initial byte ordering mark */
+	    sf = SFReadSVG(fullname,0);
 #if 0		/* I'm not sure if this is a good test for mf files... */
 	} else if ( ch1=='%' && ch2==' ' ) {
 	    sf = SFFromMF(fullname);
@@ -9078,7 +9085,7 @@ return( NULL );
 	    sf = SFFromBDF(fullname,0,false);
 	} else if ( ch1=='\1' && ch2=='f' && ch3=='c' && ch4=='p' ) {
 	    sf = SFFromBDF(fullname,2,false);
-	} else if ( ch5=='I' && ch6=='K' && ch3==0 && ch4==55 ) {
+	} else if ( ch9=='I' && ch10=='K' && ch3==0 && ch4==55 ) {
 	    /* Ikarus font type appears at word 50 (byte offset 98) */
 	    /* Ikarus name section length (at word 2, byte offset 2) was 55 in the 80s at URW */
 	    sf = SFReadIkarus(fullname);
