@@ -94,6 +94,7 @@ AC_ARG_WITH(freetype-bytecode,
  [  --with-freetype-bytecode   Control whether we build with the bytecode interpreter],
  [
     gww_hasbytecode="$withval"
+    AC_CHECK_LIB(freetype, FT_New_Memory_Face)
  ],
  [
   AC_CHECK_LIB(freetype, FT_New_Memory_Face, [
