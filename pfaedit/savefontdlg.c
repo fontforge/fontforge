@@ -1784,6 +1784,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    if ( fmflags&0x40000 ) old_ps_flags |= ps_flag_noflex;
 	    if ( fmflags&0x80000 ) old_ps_flags |= ps_flag_nohints;
 	    if ( fmflags&0x100000 ) old_ps_flags |= ps_flag_restrict256;
+	    if ( fmflags&0x200000 ) old_ps_flags |= ps_flag_round;
 	    if ( i==bf_otb ) {
 		if ( fmflags&4 ) old_ttf_flags |= ttf_flag_shortps;
 		if ( fmflags&0x20 ) old_ttf_flags |= ttf_flag_pfed_comments;
