@@ -1257,6 +1257,7 @@ static void CVRegenFill(CharView *cv) {
 	cv->gi.u.image->bytes_per_line = cv->filled->bytes_per_line;
 	cv->gi.u.image->width = cv->filled->xmax-cv->filled->xmin+1;
 	cv->gi.u.image->height = cv->filled->ymax-cv->filled->ymin+1;
+	GDrawRequestExpose(cv->v,NULL,false);
     }
 }
 
