@@ -479,7 +479,14 @@ return( 0 );
 	version = getlong(ttf);
     }
 
-    if ( (version)!=0x00010000 && version!=CHR('t','r','u','e') &&
+    /* Apple says that 'typ1' is a valid code for a type1 font wrapped up in */
+    /*  a truetype table structure, but gives no docs on what tables get used */
+    /*  or how */
+    if ( version==CHR('t','y','p','1')) {
+	if ( filename==NULL ) filename = "it";
+	fprintf( stderr, "Interesting, I've never seen an example of this type of font, could you\nsend me a copy of %s?\nThanks\n  gww@silcom.com", filename );
+    }
+    if ( version!=0x00010000 && version!=CHR('t','r','u','e') &&
 	    version!=CHR('O','T','T','O'))
 return( 0 );			/* Not version 1 of true type, nor Open Type */
     info->numtables = getushort(ttf);
