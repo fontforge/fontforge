@@ -30,7 +30,7 @@
 #include <ustring.h>
 #include <gkeysym.h>
 
-void FPSTRuleContentsFree(struct fpst_rule *r, enum fpossub_format format) {
+static void FPSTRuleContentsFree(struct fpst_rule *r, enum fpossub_format format) {
     int j;
 
     switch ( format ) {

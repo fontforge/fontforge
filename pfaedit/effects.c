@@ -972,8 +972,8 @@ return( NULL );
 	    si.removeoverlapifneeded = true;
 	    fatframe = SSStroke(spl,&si,sc);
 	    SplinePointListsFree(spl);
-#if 0
-	    spl = SplineSetRemoveOverlap(sc,fatframe,over_remove);	/* To likely to cause remove overlap problems */
+#if 1
+	    spl = SplineSetRemoveOverlap(sc,fatframe,over_remove);	/* Too likely to cause remove overlap problems */
 #else
 	    spl = fatframe;
 #endif

@@ -1418,8 +1418,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	char *pt, *end; int ch;
 	for ( pst = sc->possub ; pst!=NULL; pst=pst->next ) {
 	    if ( pst->type==pst_substitution || pst->type==pst_alternate ||
-		    pst->type==pst_multiple || pst->type==pst_ligature ||
-		    pst->type==pst_pair ) {
+		    pst->type==pst_multiple || pst->type==pst_ligature ) {
 		for ( pt=pst->u.subs.variant; *pt!='\0' ; pt=end ) {
 		    end = strchr(pt,' ');
 		    if ( end==NULL ) end=pt+strlen(pt);
