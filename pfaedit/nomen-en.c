@@ -195,6 +195,8 @@ static char str_Transform[] = "Transform...";
 static unichar_t mnemonic_Transform[] = 'T';
 static char str_Stroke[] = "Expand Stroke...";
 static unichar_t mnemonic_Stroke[] = 'E';
+static char str_TilePath[] = "Tile Path...";
+static unichar_t mnemonic_TilePath[] = 'P';
 static char str_Rmoverlap[] = "Remove Overlap";
 static unichar_t mnemonic_Rmoverlap[] = 'v';
 static char str_Simplify[] = "Simplify";
@@ -1549,6 +1551,26 @@ static char *str_SortBy = "Sort By:"
 static char *str_FirstChar = "Left Char"
 static char *str_SecondChar = "Right Char"
 static char *str_KernSize = "Kern Size"
+    /* tilepath */
+static char *str_Center_ = "Center";
+static char mnemonic_Center_ = 'e';
+static char *str_CenterPopup = "The tile (in the clipboard) should be centered on the path"
+static char *str_Left = "Left";
+static char mnemonic_Left = 'L';
+static char *str_LeftPopup = "The tile (in the clipboard) should be placed to the left of the path\nas the path is traced from its start point to its end"
+static char *str_Right = "Right";
+static char mnemonic_Right = 'R';
+static char *str_RightPopup = "The tile (in the clipboard) should be placed to the right of the path\nas the path is traced from its start point to its end"
+static char *str_Tile = "Tile";
+static char mnemonic_Tile = 'T';
+static char *str_TilePopup = "Multiple copies of the selection should be tiled onto the path"
+static char *str_Scale = "Scale";
+static char mnemonic_Scale = 'S';
+static char *str_ScalePopup = "The selection should be scaled so that it will cover the path's length"
+static char *str_TileScale = "Scale & Tile";
+static char mnemonic_TileScale = 'a';
+static char *str_TileScalePopup = "An integral number of the selection will be used to cover the path\nAnd if the path length is not evenly divisible by the selection's\nheight then the selection should be scaled slightly."
+
 
 static int num_buttonsize = 55;
 static int num_ScaleFactor = 100;

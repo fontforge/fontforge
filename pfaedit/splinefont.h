@@ -654,10 +654,12 @@ extern int NearSpline(struct findsel *fs, Spline *spline);
 extern real SplineNearPoint(Spline *spline, BasePoint *bp, real fudge);
 extern void SCMakeDependent(SplineChar *dependent,SplineChar *base);
 extern SplinePoint *SplineBisect(Spline *spline, double t);
+extern Spline *SplineSplit(Spline *spline, real ts[3]);
 extern Spline *ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
 	TPoint *mid, int cnt);
 extern Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
 	TPoint *mid, int cnt);
+extern double SplineLength(Spline *spline);
 extern int SplineIsLinear(Spline *spline);
 extern int SplineIsLinearMake(Spline *spline);
 extern int SplineInSplineSet(Spline *spline, SplineSet *spl);

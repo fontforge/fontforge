@@ -1312,6 +1312,41 @@ void PasteToCV(CharView *cv) {
     _PasteToCV(cv,&copybuffer);
 }
 
+
+SplineSet *ClipBoardToSplineSet(void) {
+    Undoes *paster = &copybuffer;
+
+    while ( paster!=NULL ) {
+	switch ( paster->undotype ) {
+	  default:
+	  case ut_noop: case ut_none:
+return( NULL );
+	  break;
+	  case ut_state: case ut_statehint: case ut_statename:
+	    if ( paster->u.state.refs!=NULL )
+return( NULL );
+
+return( paster->u.state.splines );
+	  break;
+	  case ut_width:
+return( NULL );
+	  case ut_vwidth:
+return( NULL );
+	  case ut_rbearing:
+return( NULL );
+	  case ut_lbearing:
+return( NULL );
+	  case ut_composit:
+	    paster = paster->u.composit.state;
+	  break;
+	  case ut_multiple:
+	    paster = paster->u.multiple.mult;
+	  break;
+	}
+    }
+return( NULL );
+}
+
 void BCCopySelected(BDFChar *bc,int pixelsize,int depth) {
 
     CopyBufferFree();

@@ -970,6 +970,7 @@ return( true );
 #define MID_ShowDependents	2222
 #define MID_AddExtrema	2224
 #define MID_CleanupChar	2225
+#define MID_TilePath	2226
 #define MID_Center	2600
 #define MID_OpenBitmap	2700
 #define MID_OpenOutline	2701
@@ -1323,6 +1324,19 @@ static void MVMenuStroke(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	SCStroke(mv->perchar[i].sc);
 }
 
+#ifdef PFAEDIT_CONFIG_TILEPATH
+static void MVMenuTilePath(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    int i;
+
+    for ( i=mv->charcnt-1; i>=0; --i )
+	if ( mv->perchar[i].selected )
+    break;
+    if ( i!=-1 )
+	SCTile(mv->perchar[i].sc);
+}
+#endif
+
 static void MVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     int i;
@@ -1653,6 +1667,9 @@ static GMenuItem ellist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Transform, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'T' }, '\\', ksm_control, NULL, NULL, MVMenuTransform, MID_Transform },
     { { (unichar_t *) _STR_Stroke, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'E' }, 'E', ksm_control|ksm_shift, NULL, NULL, MVMenuStroke, MID_Stroke },
+#ifdef PFAEDIT_CONFIG_TILEPATH
+    { { (unichar_t *) _STR_TilePath, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, MVMenuTilePath, MID_TilePath },
+#endif
     { { (unichar_t *) _STR_Rmoverlap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'O' }, 'O', ksm_control|ksm_shift, NULL, NULL, MVMenuOverlap, MID_RmOverlap },
     { { (unichar_t *) _STR_Simplify, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 'M', ksm_control|ksm_shift, NULL, NULL, MVMenuSimplify, MID_Simplify },
     { { (unichar_t *) _STR_CleanupChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'n' }, '\0', ksm_control|ksm_shift, NULL, NULL, MVMenuCleanup, MID_CleanupChar },
@@ -1812,6 +1829,11 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_Round: case MID_Correct:
 	    mi->ti.disabled = sc==NULL || mv->fv->sf->onlybitmaps;
 	  break;
+#ifdef PFAEDIT_CONFIG_TILEPATH
+	  case MID_TilePath:
+	    mi->ti.disabled = sc==NULL || mv->fv->sf->onlybitmaps || ClipBoardToSplineSet()==NULL;
+	  break;
+#endif
 	  case MID_Simplify:
 	    mi->ti.disabled = sc==NULL || mv->fv->sf->onlybitmaps;
 	    free(mi->ti.text);

@@ -33,6 +33,7 @@
 #include <gprogress.h>
 #include "splinefont.h"
 #include "nomen.h"
+#include "configure-pfaedit.h"
 
 typedef struct enc {
     int enc_num;

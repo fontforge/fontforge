@@ -765,6 +765,7 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_ShowDependents	2222
 #define MID_AddExtrema	2224
 #define MID_CleanupChar	2225
+#define MID_TilePath	2226
 #define MID_Center	2600
 #define MID_Thirds	2601
 #define MID_SetWidth	2602
@@ -1417,6 +1418,13 @@ static void FVMenuStroke(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVStroke(fv);
 }
 
+#ifdef PFAEDIT_CONFIG_TILEPATH
+static void FVMenuTilePath(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    FVTile(fv);
+}
+#endif
+
 static void FVOverlap(FontView *fv) {
     int i, cnt=0;
 
@@ -2024,6 +2032,11 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_Round: case MID_Correct:
 	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps;
 	  break;
+#ifdef PFAEDIT_CONFIG_TILEPATH
+	  case MID_TilePath:
+	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps || ClipBoardToSplineSet()==NULL;
+	  break;
+#endif
 	  case MID_RegenBitmaps:
 	    mi->ti.disabled = fv->sf->bitmaps==NULL || fv->sf->onlybitmaps;
 	  break;
@@ -2637,6 +2650,9 @@ static GMenuItem ellist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Transform, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'T' }, '\\', ksm_control, NULL, NULL, FVMenuTransform, MID_Transform },
     { { (unichar_t *) _STR_Stroke, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'E' }, 'E', ksm_control|ksm_shift, NULL, NULL, FVMenuStroke, MID_Stroke },
+#ifdef PFAEDIT_CONFIG_TILEPATH
+    { { (unichar_t *) _STR_TilePath, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuTilePath, MID_TilePath },
+#endif
     { { (unichar_t *) _STR_Rmoverlap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'O' }, 'O', ksm_control|ksm_shift, NULL, NULL, FVMenuOverlap, MID_RmOverlap },
     { { (unichar_t *) _STR_Simplify, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 'M', ksm_control|ksm_shift, NULL, NULL, FVMenuSimplify, MID_Simplify },
     { { (unichar_t *) _STR_CleanupChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'n' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuCleanup, MID_CleanupChar },

@@ -2806,6 +2806,7 @@ return( true );
 #define MID_ShowDependents	2223
 #define MID_AddExtrema	2224
 #define MID_CleanupChar	2225
+#define MID_TilePath	2226
 #define MID_Corner	2301
 #define MID_Tangent	2302
 #define MID_Curve	2303
@@ -3801,6 +3802,13 @@ static void CVMenuStroke(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CVStroke(cv);
 }
 
+#ifdef PFAEDIT_CONFIG_TILEPATH
+static void CVMenuTilePath(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    CVTile(cv);
+}
+#endif
+
 static void _CVMenuOverlap(CharView *cv) {
     /* We know it's more likely that we'll find a problem in the overlap code */
     /*  than anywhere else, so let's save the current state against a crash */
@@ -4002,6 +4010,22 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
     Spline *spline, *first;
     int onlyaccents;
 
+#ifdef PFAEDIT_CONFIG_TILEPATH
+    int badsel = false;
+    RefChar *ref;
+    ImageList *il;
+
+    if ( cv->drawmode==dm_fore ) {
+	for ( ref=cv->sc->refs; ref!=NULL; ref=ref->next )
+	    if ( ref->selected )
+		badsel = true;
+    } else if ( cv->drawmode==dm_back ) {
+	for ( il=cv->sc->backimages; il!=NULL; il=il->next )
+	    if ( il->selected )
+		badsel = true;
+    }
+#endif
+
     sel = NULL;
     for ( spl = *cv->heads[cv->drawmode]; spl!=NULL; spl = spl->next ) {
 	first = NULL;
@@ -4054,6 +4078,11 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	  case MID_Stroke: case MID_RmOverlap:
 	    mi->ti.disabled = ( *cv->heads[cv->drawmode]==NULL );
 	  break;
+#ifdef PFAEDIT_CONFIG_TILEPATH
+	  case MID_TilePath:
+	    mi->ti.disabled = badsel || ClipBoardToSplineSet()==NULL;
+	  break;
+#endif
 	  case MID_RegenBitmaps:
 	    mi->ti.disabled = cv->fv->sf->bitmaps==NULL;
 	  break;
@@ -4636,6 +4665,9 @@ static GMenuItem ellist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Transform, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'T' }, '\\', ksm_control, NULL, NULL, CVMenuTransform },
     { { (unichar_t *) _STR_Stroke, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'E' }, 'E', ksm_control|ksm_shift, NULL, NULL, CVMenuStroke, MID_Stroke },
+#ifdef PFAEDIT_CONFIG_TILEPATH
+    { { (unichar_t *) _STR_TilePath, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuTilePath, MID_TilePath },
+#endif
     { { (unichar_t *) _STR_Rmoverlap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'v' }, 'O', ksm_control|ksm_shift, NULL, NULL, CVMenuOverlap, MID_RmOverlap },
     { { (unichar_t *) _STR_Simplify, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 'M', ksm_control|ksm_shift, NULL, NULL, CVMenuSimplify, MID_Simplify },
     { { (unichar_t *) _STR_CleanupChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'n' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuCleanupChar, MID_CleanupChar },

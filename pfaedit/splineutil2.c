@@ -186,18 +186,19 @@ static void FigureSpline1(Spline1 *sp1,double t0, double t1, Spline1D *sp ) {
 	sp1->sp.d = sp->d + t0*sp->c;
 	sp1->sp.c = s*sp->c;
 	sp1->sp.b = sp1->sp.a = 0;
-	sp1->c0 = sp1->s0; sp1->c1 = sp1->s1;
+	sp1->c0 = sp1->sp.d; sp1->c1 = sp1->sp.c+sp1->sp.d;
     } else {
 	sp1->sp.d = sp->d + t0*(sp->c + t0*(sp->b + t0*sp->a));
 	sp1->sp.c = s*(sp->c + t0*(2*sp->b + 3*sp->a*t0));
 	sp1->sp.b = s*s*(sp->b+3*sp->a*t0);
 	sp1->sp.a = s*s*s*sp->a;
 #if 0		/* Got invoked once on a perfectly good spline */
+	sp1->s1 = sp1->sp.a+sp1->sp.b+sp1->sp.c+sp1->sp.d;
 	if ( ((sp1->s1>.001 || sp1->s1<-.001) && !RealNear((double) sp1->sp.a+sp1->sp.b+sp1->sp.c+sp1->sp.d,sp1->s1)) ||
 		!RealNear(sp1->sp.d,sp1->s0))
 	    GDrawIError( "Created spline does not work in FigureSpline1");
 #endif
-	sp1->c0 = sp1->sp.c/3 + sp1->s0;
+	sp1->c0 = sp1->sp.c/3 + sp1->sp.d;
 	sp1->c1 = sp1->c0 + (sp1->sp.b+sp1->sp.c)/3;
     }
 }
@@ -268,6 +269,53 @@ SplinePoint *SplineBisect(Spline *spline, double t) {
     }
     SplineRefigure(spline2);
 return( mid );
+}
+
+Spline *SplineSplit(Spline *spline, real ts[3]) {
+    /* Split the current spline in up to 3 places */
+    Spline1 splines[2][4];
+    int i,cnt;
+    real base;
+    SplinePoint *last, *sp;
+    Spline *new;
+
+    memset(splines,0,sizeof(splines));
+    base=0;
+    for ( i=cnt=0; i<3 && ts[i]!=-1; ++i ) {
+	if ( base>1-1e-3 )			/* Avoid tiny splines */
+    break;
+	else if ( base<ts[i]-1e-3 ) {
+	    FigureSpline1(&splines[0][cnt],base,ts[i],&spline->splines[0]);
+	    FigureSpline1(&splines[1][cnt++],base,ts[i],&spline->splines[1]);
+	    base = ts[i];
+	}
+    }
+    if ( base==0 )
+return( spline );
+
+    FigureSpline1(&splines[0][cnt],base,1.0,&spline->splines[0]);
+    FigureSpline1(&splines[1][cnt],base,1.0,&spline->splines[1]);
+
+    last = spline->from;
+    for ( i=0; i<=cnt; ++i ) {
+	last->nextcp.x = splines[0][i].c0;
+	last->nextcp.y = splines[1][i].c0;
+	if ( i==cnt )
+	    sp = spline->to;
+	else {
+	    sp = chunkalloc(sizeof(SplinePoint));
+	    sp->me.x = splines[0][i+1].sp.d;
+	    sp->me.y = splines[1][i+1].sp.d;
+	}
+	sp->prevcp.x = splines[0][i].c1;
+	sp->prevcp.y = splines[1][i].c1;
+	SplineMake(last,sp);
+	last = sp;
+    }
+
+    new = spline->from->next;
+    SplineFree(spline);
+return( new );
 }
 
 static Spline *IsLinearApprox(SplinePoint *from, SplinePoint *to,
@@ -706,6 +754,22 @@ static double SplineLenApprox(Spline *spline) {
 	if ( (temp = spline->to->me.y-spline->to->prevcp.y)<0 ) temp = -temp;
 	slen += temp;
 	len = (len + slen)/2;
+    }
+return( len );
+}
+
+double SplineLength(Spline *spline) {
+    /* I ignore the constant term. It's just an unneeded addition */
+    double len, t;
+    double lastx = 0, lasty = 0;
+    double curx, cury;
+
+    len = 0;
+    for ( t=1.0/128; t<=1.0001 ; t+=1.0/128 ) {
+	curx = ((spline->splines[0].a*t+spline->splines[0].b)*t+spline->splines[0].c)*t;
+	cury = ((spline->splines[1].a*t+spline->splines[1].b)*t+spline->splines[1].c)*t;
+	len += sqrt( (curx-lastx)*(curx-lastx) + (cury-lasty)*(cury-lasty) );
+	lastx = curx; lasty = cury;
     }
 return( len );
 }

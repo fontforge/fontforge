@@ -1,0 +1,67 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 4-Sep-2002 -->
+  <!-- AP: Last modified: 4-Sep-2002 -->
+  <TITLE>Tile Path</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+  Tile Path
+</H1>
+<P>
+The Tile Path command may be used to apply a repetative decoration to a font.
+A decoration is copied into the selection (this is the "tile") and the command
+is invoked on a character. All paths in that character will be replaced by
+the tile fit to the curve.
+<P>
+Consider the following:
+<TABLE BORDER CELLPADDING="2">
+  <TR ALIGN=Center>
+    <TD><IMG SRC="tilepath-selection.png" WIDTH="64" HEIGHT="220"><BR>
+      The tile</TD>
+    <TD><IMG SRC="tilepath-orig.png" WIDTH="188" HEIGHT="220"><BR>
+      Two paths to be tiled.</TD>
+    <TD><IMG SRC="tilepath-final.png" WIDTH="188" HEIGHT="220"><BR>
+      The result.</TD>
+  </TR>
+</TABLE>
+<P>
+The tile has been replicated (and warped) to follow the original contours.
+<P>
+<IMG SRC="TilePath.png" WIDTH="303" HEIGHT="148"><BR>
+The Tile Path dialog gives you a few choices to control how the tile is placed.
+The tile can be either centered on the path, or be tangent to the left edge
+of the path (for a clockwise path, the left edge is outside the path), or
+be tangent to the right edge (for a clockwise path the right edge is inside
+the path).
+<P>
+You can also chose whether you want the tile to be tiled without scaling
+(in which case you will probably be left with a fraction of the tile at one
+end), tiled with scaling (the tile will be scaled so that it fits on the
+path an integral number of times), or simply scaled (in which case there
+will be exactly one tile and it will be scaled to be as long as the path.
+<TABLE BORDER CELLPADDING="2">
+  <TR ALIGN=Center>
+    <TD><IMG SRC="tilepath-left.png" WIDTH="153" HEIGHT="244"><BR>
+      left (outside)</TD>
+    <TD><IMG SRC="tilepath-center.png" WIDTH="153" HEIGHT="244"><BR>
+      center</TD>
+    <TD><IMG SRC="tilepath-right.png" WIDTH="153" HEIGHT="244"><BR>
+      right (inside)</TD>
+  </TR>
+  <TR ALIGN=Center>
+    <TD><IMG SRC="tilepath-tile.png" WIDTH="77" HEIGHT="220"><BR>
+      tile</TD>
+    <TD><IMG SRC="tilepath-ts.png" WIDTH="70" HEIGHT="220"><BR>
+      tile &amp; scale</TD>
+    <TD><IMG SRC="tilepath-scale.png" WIDTH="74" HEIGHT="220"><BR>
+      scale</TD>
+  </TR>
+</TABLE>
+<P>
+<P ALIGN=Center>
+-- <A HREF="elementmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A>
+-- <A HREF="elementmenu.html">Next</A> --
+<P>
+</BODY></HTML>
