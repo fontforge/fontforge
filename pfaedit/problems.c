@@ -101,9 +101,12 @@ static real near=3, xval=0, yval=0, widthval=50;
 static void FixIt(struct problems *p) {
     SplinePointList *spl;
     SplinePoint *sp;
-    StemInfo *h;
+    /*StemInfo *h;*/
     RefChar *r;
 
+#if 0	/* The ultimate cause (the thing we need to fix) for these two errors */
+	/* is that the stem is wrong, it's too hard to fix that here, so best */
+	/* not to attempt to fix the proximal cause */
     if ( p->explaining==_STR_ProbHintHWidth ) {
 	for ( h=p->sc->hstem; h!=NULL && !h->active; h=h->next );
 	if ( h!=NULL ) {
@@ -124,6 +127,7 @@ return;
 	    GDrawIError("Could not find hint");
 return;
     }
+#endif
     if ( p->explaining==_STR_ProbFlippedRef ) {
 	for ( r=p->sc->refs; r!=NULL && !r->selected; r = r->next );
 	if ( r!=NULL ) {
@@ -361,7 +365,7 @@ return;
     } else
 	GGadgetSetTitle(p->explaintext,GStringGetResource(explain,NULL));
     p->explaining = explain;
-    fixable = explain==_STR_ProbHintHWidth || explain==_STR_ProbHintVWidth ||
+    fixable = explain==/*_STR_ProbHintHWidth || explain==_STR_ProbHintVWidth ||*/
 	    explain==_STR_ProbFlippedRef ||
 	    explain==_STR_ProbXNear || explain==_STR_ProbPtNearVHint ||
 	    explain==_STR_ProbYNear || explain==_STR_ProbPtNearHHint ||
