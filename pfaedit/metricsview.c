@@ -251,7 +251,10 @@ return;
     for ( kp=mv->perchar[i-1].sc->kerns; kp!=NULL; kp=kp->next )
 	if ( kp->sc == mv->perchar[i].sc )
     break;
-    sprintf(buf,"%d",kp==NULL?0:kp->off);
+    if ( kp==NULL || kp->off == 0 )
+	buf[0] = '\0';
+    else
+	sprintf(buf,"%d",kp->off);
     uc_strcpy(ubuf,buf);
     GGadgetSetTitle(mv->perchar[i].kern,ubuf);
     mv->perchar[i-1].kernafter = (kp==NULL?0:kp->off) * mv->pixelsize/
@@ -515,7 +518,7 @@ return( true );
 	int val = u_strtol(_GGadgetGetTitle(g),&end,10);
 	SplineChar *sc = mv->perchar[which].sc;
 	SplineChar *psc = mv->perchar[which-1].sc;
-	static unichar_t zerostr[] = { '0',  '\0' };
+	static unichar_t zerostr[] = { /*'0',*/  '\0' };
 	KernPair *kp;
 	if ( *end )
 	    GDrawBeep(NULL);
