@@ -2391,7 +2391,7 @@ static int GFI_AnchorShowBase(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static int AnchorClassesNextMerge(AnchorClass *ac) {
+int AnchorClassesNextMerge(AnchorClass *ac) {
     int max=0;
 
     while ( ac!=NULL ) {

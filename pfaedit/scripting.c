@@ -2766,11 +2766,193 @@ static void bDefaultATT(Context *c) {
 	SCTagDefault(sf->chars[i],ftag);
 }
 
+static int32 ParseTag(Context *c,Val *tagstr) {
+    char tag[4];
+    int feat,set;
+    char *str;
+
+    memset(tag,' ',4);
+    str = tagstr->u.sval;
+    if ( *str=='<' ) {
+	if ( sscanf(str,"<%d,%d>", &feat, &set)!=2 )
+	    error(c,"Bad Apple feature/setting");
+return( (feat<<16) | set );
+    } else if ( *str ) {
+	tag[0] = *str;
+	if ( str[1] ) {
+	    tag[1] = str[1];
+	    if ( str[2] ) {
+		tag[2] = str[2];
+		if ( str[3] ) {
+		    tag[3] = str[3];
+		    if ( str[4] )
+			error(c,"Tags/Scripts/Languages are represented by strings which are at most 4 characters long");
+		}
+	    }
+	}
+    }
+return( (tag[0]<<24)|(tag[1]<<16)|(tag[2]<<8)|tag[3] );
+}
+
+static void bAddAnchorClass(Context *c) {
+    AnchorClass *ac, *t;
+    unichar_t *ustr;
+    SplineFont *sf = c->curfv->sf;
+
+    if ( c->a.argc!=7 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str ||
+	    c->a.vals[3].type!=v_str || c->a.vals[4].type!=v_str ||
+	    c->a.vals[5].type!=v_int || c->a.vals[6].type!=v_str )
+	error( c, "Bad type for argument");
+
+    ac = chunkalloc(sizeof(AnchorClass));
+
+    ac->name = utf82u_copy( c->a.vals[1].u.sval );
+    for ( t=sf->anchor; t!=NULL; t=t->next )
+	if ( u_strcmp(ac->name,t->name)==0 )
+    break;
+    if ( t!=NULL )
+	errors(c,"This font already contains an anchor class with this name: ", c->a.vals[1].u.sval );
+
+    ac->feature_tag = ParseTag( c, &c->a.vals[4] );
+    ac->flags = c->a.vals[5].u.ival;
+    if ( c->a.vals[5].u.ival == -1 )
+	ac->flags = PSTDefaultFlags(ac->feature_tag,NULL);
+
+    if ( strmatch(c->a.vals[2].u.sval,"default")==0 || strmatch(c->a.vals[2].u.sval,"mark")==0 )
+	ac->type = act_mark;
+    else if ( strmatch(c->a.vals[2].u.sval,"mk-mk")==0 || strmatch(c->a.vals[2].u.sval,"mkmk")==0)
+	ac->type = act_mkmk;
+    else if ( strmatch(c->a.vals[2].u.sval,"cursive")==0 || strmatch(c->a.vals[2].u.sval,"curs")==0)
+	ac->type = act_curs;
+    else
+	errors(c,"Unknown type of anchor class. Must be one of \"default\", \"mk-mk\", or \"cursive\". ",  c->a.vals[2].u.sval);
+
+    ustr = uc_copy(c->a.vals[3].u.sval);
+    ac->script_lang_index = SFAddScriptLangRecord(sf,SRParse(ustr));
+    free(ustr);
+
+    ustr = utf82u_copy( c->a.vals[6].u.sval );
+    if ( *ustr=='\0' || u_strcmp(ustr,ac->name)==0 )
+	ac->merge_with = AnchorClassesNextMerge(sf->anchor);
+    else {
+	for ( t=sf->anchor; t!=NULL; t=t->next )
+	    if ( u_strcmp(ustr,t->name)==0 )
+	break;
+	if ( t==NULL )
+	    errors(c,"Attempt to merge with unknown anchor class: ", c->a.vals[6].u.sval );
+	ac->merge_with = t->merge_with;
+    }
+    ac->next = sf->anchor;
+    sf->anchor = ac;
+}
+
+static void bRemoveAnchorClass(Context *c) {
+    AnchorClass *t;
+    unichar_t *name;
+    SplineFont *sf = c->curfv->sf;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str )
+	error( c, "Bad type for argument");
+
+    name = utf82u_copy( c->a.vals[1].u.sval );
+    for ( t=sf->anchor; t!=NULL; t=t->next )
+	if ( u_strcmp(name,t->name)==0 )
+    break;
+    if ( t==NULL )
+	errors(c,"This font does not contain an anchor class with this name: ", c->a.vals[1].u.sval );
+    SFRemoveAnchorClass(sf,t);
+    free(name);
+}
+
+static void bAddAnchorPoint(Context *c) {
+    AnchorClass *t;
+    unichar_t *name;
+    SplineFont *sf = c->curfv->sf;
+    int type;
+    SplineChar *sc;
+    AnchorPoint *ap;
+    int ligindex = 0;
+
+    if ( c->a.argc<5 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str ||
+	    c->a.vals[3].type!=v_int || c->a.vals[4].type!=v_int )
+	error( c, "Bad type for argument");
+
+    name = utf82u_copy( c->a.vals[1].u.sval );
+    for ( t=sf->anchor; t!=NULL; t=t->next )
+	if ( u_strcmp(name,t->name)==0 )
+    break;
+    if ( t==NULL )
+	errors(c,"This font does not contain an anchor class with this name: ", c->a.vals[1].u.sval );
+    free(name);
+
+    if ( strmatch(c->a.vals[2].u.sval,"mark")==0 )
+	type = at_mark;
+    else if ( strmatch(c->a.vals[2].u.sval,"basechar")==0 )
+	type = at_basechar;
+    else if ( strmatch(c->a.vals[2].u.sval,"baselig")==0 )
+	type = at_baselig;
+    else if ( strmatch(c->a.vals[2].u.sval,"basemark")==0 )
+	type = at_basemark;
+    else if ( strmatch(c->a.vals[2].u.sval,"cursentry")==0 )
+	type = at_centry;
+    else if ( strmatch(c->a.vals[2].u.sval,"cursexit")==0 )
+	type = at_cexit;
+    else
+	errors(c,"Unknown type for anchor point: ", c->a.vals[2].u.sval );
+
+    if ( type== at_baselig ) {
+	if ( c->a.argc!=6 )
+	    error( c, "Wrong number of arguments");
+	else if ( c->a.vals[5].type!=v_int )
+	    error( c, "Bad type for argument");
+	ligindex = c->a.vals[5].u.ival;
+    } else {
+	if ( c->a.argc!=5 )
+	    error( c, "Wrong number of arguments");
+    }
+
+    if (( type==at_baselig && t->type!=act_mark ) ||
+	    ( type==at_basechar && t->type!=act_mark ) ||
+	    ( type==at_basemark && t->type!=act_mkmk ) ||
+	    ( type==at_mark && !(t->type==act_mark || t->type==act_mkmk) ) ||
+	    ( (type==at_centry || type==at_cexit) && t->type!=act_curs ))
+	error(c,"Type of anchor class does not match type requested for anchor point" );
+
+    sc = GetOneSelChar(c);
+    for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
+	if ( ap->anchor == t ) {
+	    if ( type==at_centry || type==at_cexit ) {
+		if ( ap->type == type )
+    break;
+	    } else if ( type==at_baselig ) {
+		if ( ap->lig_index == ligindex )
+    break;
+	    } else
+    break;
+	}
+    }
+    if ( ap!=NULL )
+	error(c,"This character already has an Anchor Point in the given anchor class" );
+
+    ap = chunkalloc(sizeof(AnchorPoint));
+    ap->anchor = t;
+    ap->me.x = c->a.vals[3].u.ival;
+    ap->me.y = c->a.vals[4].u.ival;
+    ap->type = type;
+    ap->lig_index = ligindex;
+    ap->next = sc->anchor;
+    sc->anchor = ap;
+}
+
 static void bAddATT(Context *c) {
     SplineChar *sc;
     PST temp, *pst;
-    char tag[4];
-    char *str;
     unichar_t *ustr;
 
     memset(&temp,0,sizeof(temp));
@@ -2816,23 +2998,7 @@ static void bAddATT(Context *c) {
 	    errors(c,"Unknown tag", c->a.vals[1].u.sval);
     }
 
-    memset(tag,' ',4);
-    str = c->a.vals[3].u.sval;
-    if ( *str ) {
-	tag[0] = *str;
-	if ( str[1] ) {
-	    tag[1] = str[1];
-	    if ( str[2] ) {
-		tag[2] = str[2];
-		if ( str[3] ) {
-		    tag[3] = str[3];
-		    if ( str[4] )
-			error(c,"Tags/Scripts/Languages are represented by strings which are at most 4 characters long");
-		}
-	    }
-	}
-    }
-    temp.tag = (tag[0]<<24)|(tag[1]<<16)|(tag[2]<<8)|tag[3];
+    temp.tag = ParseTag( c,&c->a.vals[3] );
     temp.flags = c->a.vals[4].u.ival;
 
     sc = GetOneSelChar(c);
@@ -3213,6 +3379,9 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "AddATT", bAddATT },
     { "DefaultATT", bDefaultATT },
     { "RemoveATT", bRemoveATT },
+    { "AddAnchorClass", bAddAnchorClass },
+    { "RemoveAnchorClass", bRemoveAnchorClass },
+    { "AddAnchorPoint", bAddAnchorPoint },
     { "BuildComposit", bBuildComposit },
     { "BuildAccented", bBuildAccented },
     { "MergeFonts", bMergeFonts },
