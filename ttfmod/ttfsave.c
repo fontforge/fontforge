@@ -149,7 +149,26 @@ exit(1);
     }
 }
 
-static int32 filecheck(FILE *file) {
+uint8 *copyregion(FILE *to, FILE *from, int32 start, int32 tot, uint8 *buf) {
+    int bsize, len;
+    /* I wonder... Are modern buses limited to transfers of 32768 the */
+    /*  way the dear old unibus was? I'm probably way out of date here*/
+
+    bsize = tot<=32768? tot : 32768;
+    if ( buf==NULL )
+	buf = galloc(32768);
+    fseek(from,start,SEEK_SET);
+    while ( (len = fread(buf,1,bsize,from))>0 ) {
+	fwrite(buf,1,len,to);
+	tot -= len;
+	if ( tot==0 )
+    break;
+	if ( bsize>tot ) bsize = tot;
+    }
+return( buf );
+}
+
+int32 filecheck(FILE *file) {
     uint32 sum = 0, chunk;
 
     rewind(file);
@@ -162,7 +181,7 @@ static int32 filecheck(FILE *file) {
 return( sum );
 }
 
-static int32 figurecheck(FILE *file,int32 start, int32 lcnt) {
+int32 figurecheck(FILE *file,int32 start, int32 lcnt) {
     uint32 sum = 0, chunk;
 
     fseek(file,start,SEEK_SET);
@@ -202,8 +221,8 @@ return( t1->orderingval - t2->orderingval );
 }
 
 static void ttfdumpfonttables(FILE *newf,TtfFile *ttf) {
-    int i, j, cnt, bsize, len, tot;
-    char *buf=NULL;
+    int i, j, cnt;
+    uint8 *buf=NULL;
     FILE *old = ttf->file;
     Table *tab, **ordered;
 
@@ -231,20 +250,7 @@ static void ttfdumpfonttables(FILE *newf,TtfFile *ttf) {
 	else if ( tab->data )
 	    fwrite(tab->data,1,tab->newlen,newf);
 	else {
-	    /* I wonder... Are modern buses limited to transfers of 32768 the */
-	    /*  way the dear old unibus was? I'm probably way out of date here*/
-	    bsize = tab->len<=32768? tab->len : 32768;
-	    if ( buf==NULL )
-		buf = galloc(32768);
-	    fseek(old,tab->start,SEEK_SET);
-	    tot = tab->len;
-	    while ( (len = fread(buf,1,bsize,old))>0 ) {
-		fwrite(buf,1,len,newf);
-		tot -= len;
-		if ( tot==0 )
-	    break;
-		if ( bsize>tot ) bsize = tot;
-	    }
+	    buf = copyregion(newf,old,tab->start,tab->len,buf);
 	    tab->newchecksum = tab->oldchecksum;
 	}
 	tab->newlen = ftell(newf)-tab->newstart;
@@ -268,7 +274,7 @@ static void ttfwrite(FILE *newf, TtfFile *ttf, TtfFont *font) {
     ttfdumpfontheader(newf,font);		/* Placeholder */
     ttfdumpfonttables(newf,ttf);
     fseek(newf,0,SEEK_SET);
-    ttfdumpfontheader(newf,font);		/* Fillin */
+    ttfdumpfontheader(newf,font);		/* Fillin with correct values now we know them */
 }
 
 static void ttcwrite(FILE *newf, TtfFile *ttf) {

@@ -123,6 +123,7 @@ real ptgetvfixed(uint8 *data);
 void putushort(FILE *file,uint16 val);
 void putshort(FILE *file,uint16 val);
 void putlong(FILE *file,uint32 val);
+void put2d14(FILE *file,real dval);
 void ptputushort(uint8 *data, uint16 val);
 void ptputlong(uint8 *data, uint32 val);
 void ptputfixed(uint8 *data,real val);
@@ -135,4 +136,12 @@ extern TtfFile *ReadTtfFont(char *filename);
 extern TtfFile *LoadTtfFont(char *filename);
 extern int TtfSave(TtfFile *ttf,char *newpath);
 
+Table *TTFFindTable(TtfFont *tf, uint32 name);
+
+uint8 *copyregion(FILE *to, FILE *from, int32 start, int32 len,uint8 *buf);
+int32 filecheck(FILE *file);
+int32 figurecheck(FILE *file,int32 start, int32 lcnt);
+
+struct conicchar;
+FILE *Ttf_MakeTinyFont(struct conicchar *cc);
 #endif

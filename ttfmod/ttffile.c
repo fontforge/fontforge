@@ -190,6 +190,16 @@ void putlong(FILE *file,uint32 val) {
     putc((val&0xff),file);
 }
 
+void put2d14(FILE *file,real dval) {
+    int val;
+    int mant;
+
+    val = floor(dval);
+    mant = floor(16384.*(dval-val));
+    val = (val<<14) | mant;
+    putshort(file,val);
+}
+
 void ptputushort(uint8 *data, uint16 val) {
     data[0] = (val>>8);
     data[1] = val&0xff;
@@ -274,6 +284,17 @@ return( false );
 	}
     }
 return(true);
+}
+
+Table *TTFFindTable(TtfFont *tf, uint32 name) {
+    int i;
+
+    for ( i=0; i<tf->tbl_cnt; ++i )
+	if ( tf->tbls[i]->name == name )
+    break;
+    if ( i==tf->tbl_cnt )
+return( NULL );
+return( tf->tbls[i] );
 }
 
 static unichar_t *TTFGetFontName(FILE *ttf,TtfFont *tf) {
