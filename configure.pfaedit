@@ -2053,7 +2053,7 @@ fi
 echo "$as_me:2053: result: $ac_cv_file__usr_local_include_freetype2" >&5
 echo "${ECHO_T}$ac_cv_file__usr_local_include_freetype2" >&6
 if test $ac_cv_file__usr_local_include_freetype2 = yes; then
-  CFLAGS="$CFLAGS -I/usr/local/include/freetype2/"
+  CFLAGS="$CFLAGS -I/usr/local/include -I/usr/local/include/freetype2/"
 else
 
 echo "$as_me:2059: checking for /usr/X11R6/include/freetype2" >&5
@@ -2074,7 +2074,7 @@ fi
 echo "$as_me:2074: result: $ac_cv_file__usr_X11R6_include_freetype2" >&5
 echo "${ECHO_T}$ac_cv_file__usr_X11R6_include_freetype2" >&6
 if test $ac_cv_file__usr_X11R6_include_freetype2 = yes; then
-  CFLAGS="$CFLAGS -I/usr/X11R6/include/freetype2/"
+  CFLAGS="$CFLAGS -I/usr/X11R6/include -I/usr/X11R6/include/freetype2/"
 fi
 
 fi

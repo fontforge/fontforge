@@ -33,8 +33,8 @@ dnl Is there a better way to search for the freetype2 includes?
 dnl Is there a better way to add a directory to the include path?
 
 AC_CHECK_FILE(/usr/include/freetype2,CFLAGS="$CFLAGS -I/usr/include/freetype2/",[
-AC_CHECK_FILE(/usr/local/include/freetype2,CFLAGS="$CFLAGS -I/usr/local/include/freetype2/",[
-AC_CHECK_FILE(/usr/X11R6/include/freetype2,CFLAGS="$CFLAGS -I/usr/X11R6/include/freetype2/",)])])
+AC_CHECK_FILE(/usr/local/include/freetype2,CFLAGS="$CFLAGS -I/usr/local/include -I/usr/local/include/freetype2/",[
+AC_CHECK_FILE(/usr/X11R6/include/freetype2,CFLAGS="$CFLAGS -I/usr/X11R6/include -I/usr/X11R6/include/freetype2/",)])])
 
 dnl Some old versions of lib(un)gif don't work for us, they've got the
 dnl Function argument in the wrong place. So two checks for gif.
