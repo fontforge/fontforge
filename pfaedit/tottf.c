@@ -5847,25 +5847,34 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
 	}
     }
     DefaultTTFEnglishNames(&dummy, sf);
-    for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL ) strcnt+=3+extra;
-    	/* once of mac roman encoding, once for mac unicode and once for windows unicode 409 */
+    for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL ) {
+	if ( i==6 && at->applemode ) ++strcnt;	/* Apple insists there only be 1 */
+	else strcnt+=3+extra;
+    }
+    /* once of mac roman encoding, once for mac unicode and once for windows unicode 409 */
 
     at->name = tmpfile();
     putshort(at->name,0);	/* format */
     putshort(at->name,strcnt);	/* numrec */
     putshort(at->name,(3+strcnt*6)*sizeof(int16));	/* offset to strings */
     for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL ) {
-	putshort(at->name,0);	/* apple unicode */
-	putshort(at->name,3);	/* 3 => Unicode 2.0 semantics */ /* 0 ("default") is also a reasonable value */
-	putshort(at->name,0);	/*  */
-	putshort(at->name,i);
-	putshort(at->name,2*u_strlen(dummy.names[i]));
-	putshort(at->name,pos);
-	posses[i] = pos;
-	pos += 2*u_strlen(dummy.names[i])+2;
-	++cnt;
+	if (i==6 && at->applemode )
+	    /* No output, but increment the string table point none the less */
+	    pos += 2*u_strlen(dummy.names[i])+2;
+	else {
+	    putshort(at->name,0);	/* apple unicode */
+	    putshort(at->name,3);	/* 3 => Unicode 2.0 semantics */ /* 0 ("default") is also a reasonable value */
+	    putshort(at->name,0);	/*  */
+	    putshort(at->name,i);
+	    putshort(at->name,2*u_strlen(dummy.names[i]));
+	    putshort(at->name,pos);
+	    posses[i] = pos;
+	    pos += 2*u_strlen(dummy.names[i])+2;
+	    ++cnt;
+	}
     }
     for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL ) {
+	/* here is the one place we always have postscript, nameid==6 */
 	putshort(at->name,1);	/* apple */
 	putshort(at->name,0);	/*  */
 	putshort(at->name,0);	/* Roman alphabet */
@@ -5876,7 +5885,7 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
 	++cnt;
     }
     if ( format==ff_ttfsym ) {
-	for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL ) {
+	for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL && (i!=6 || !at->applemode) ) {
 	    putshort(at->name,3);	/* MS platform */
 	    putshort(at->name,0);
 	    putshort(at->name,0x0409);	/* american english language */
@@ -5901,7 +5910,7 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
     }
 
     maxlen = 0;
-    for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL ) {
+    for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL && (i!=6 || !at->applemode) ) {
 	putshort(at->name,3);	/* MS platform */
 	putshort(at->name,1);
 	putshort(at->name,0x0409);	/* american english language */
@@ -5942,7 +5951,7 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
 	else if ( sf->encoding_name==em_jis208 ) enc = em_sjis;
 	maxlen = 3*maxlen+10;
 	space = galloc(maxlen);
-	for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL ) {
+	for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL && (i!=6 || !at->applemode) ) {
 	    putshort(at->name,3);	/* MS platform */
 	    putshort(at->name,specific);
 	    putshort(at->name,0x0409);	/* american english language */
@@ -6814,11 +6823,7 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
     SFDefaultOS2Info(&sf->pfminfo,sf,sf->fontname);
 
     memset(at,'\0',sizeof(struct alltabs));
-    at->msbitmaps = bf==bf_ttf_ms;
-    at->gi.flags = flags;
-    at->gi.fixed_width = CIDOneWidth(sf);
-    at->isotf = format==ff_otf || format==ff_otfcid;
-    if ( bf!=bf_ttf_ms && bf!=bf_ttf_apple && bf!=bf_sfnt_dfont)
+    if ( bf!=bf_ttf && bf!=bf_sfnt_dfont)
 	bsizes = NULL;
     if ( bsizes!=NULL ) {
 	for ( i=j=0; bsizes[i]!=0; ++i ) {
@@ -6831,6 +6836,11 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
 	at->gi.strikecnt = i;
 	if ( i==0 ) bsizes=NULL;
     }
+    at->applemode = (flags&ttf_flag_applemode)?1:0;
+    at->msbitmaps = bsizes!=NULL && !at->applemode;
+    at->gi.flags = flags;
+    at->gi.fixed_width = CIDOneWidth(sf);
+    at->isotf = format==ff_otf || format==ff_otfcid;
 
     at->maxp.version = 0x00010000;
     if ( format==ff_otf || format==ff_otfcid || format==ff_none )

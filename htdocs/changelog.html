@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 6-Sep-2002 -->
+  <!-- AP: Last modified: 7-Sep-2002 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -11,7 +11,7 @@
 </H1>
 <UL>
   <LI>
-    ???
+    7-Sept-2002
     <UL>
       <LI>
 	The ruler tool will give the length of a spline if applied between the spline's
@@ -24,6 +24,26 @@
 	-->
       <LI>
 	Added a dlg to <A HREF="display.html">display fonts </A>using freetype.
+      <LI>
+	Added support for the obselete _XFREE86_GLYPH_RANGES property and then turned
+	it off by default.
+      <LI>
+	Improvements to type2 output.
+      <LI>
+	Changed greek accents to use 0x384 rather than 0x30d when substituting for
+	0x301
+      <LI>
+	I've found another case where Apple and MS/Adobe disagree on the format of
+	ttf/otf files. So there's now a check box in the Generate dlg which allows
+	you to select between the two defns. I've removed the two different kinds
+	of bitmaps for ttf files, these are now controlled by this new checkbox too.
+      <LI>
+	Fixed a bug in the generation of ttf/otf fonts with big5/sjis/wansung encodings.
+      <LI>
+	The ligature dlg had a bad habit of crashing.
+      <LI>
+	On the Mac, Obliqued fonts are stored in a weird postscript format. Try to
+	support them
     </UL>
   <LI>
     2-Sept-2002

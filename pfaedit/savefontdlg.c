@@ -34,6 +34,7 @@
 #include "gio.h"
 #include "gresource.h"
 #include "gicons.h"
+#include <gkeysym.h>
 #include "psfont.h"
 
 struct gfc_data {
@@ -47,6 +48,7 @@ struct gfc_data {
     GGadget *dopfm;
     GGadget *psnames;
     GGadget *ttfhints;
+    GGadget *ttfapple;
     SplineFont *sf;
 };
 
@@ -88,8 +90,7 @@ static GTextInfo formattypes[] = {
 };
 static GTextInfo bitmaptypes[] = {
     { (unichar_t *) "BDF", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "In TTF (MS)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "In TTF (Apple)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "In TTF", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "sbits only (dfont)", NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
 #if __Mac
     { (unichar_t *) "NFNT (Resource)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
@@ -105,6 +106,11 @@ static int oldafmstate = -1, oldpfmstate = false;
 int oldpsstate = true, oldttfhintstate = false;
 int oldformatstate = ff_pfb;
 int oldbitmapstate = 0;
+#if __Mac
+int oldttfapplestate = 1;
+#else
+int oldttfapplestate = 0;
+#endif
 
 static const char *pfaeditflag = "SplineFontDB:";
 
@@ -938,6 +944,8 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 	flags = ttf_flag_shortps;
     if ( !oldttfhintstate )
 	flags |= ttf_flag_nohints;
+    if ( oldttfapplestate )
+	flags |= ttf_flag_applemode;
 
     path = uc_copy(newname);
     GProgressStartIndicator(10,GStringGetResource(_STR_SavingFont,NULL),
@@ -1009,7 +1017,7 @@ return( err );
 int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	int res, char *subfontdefinition) {
     int i;
-    static char *bitmaps[] = {"bdf", "ms", "apple", "sbit", "bin", "dfont", NULL };
+    static char *bitmaps[] = {"bdf", "ttf", "sbit", "bin", "dfont", NULL };
     int32 *sizes=NULL;
     char *end = filename+strlen(filename);
 
@@ -1051,7 +1059,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
     oldformatstate = i;
 
     if ( sf->bitmaps==NULL ) i = bf_none;
-    else if ( strmatch(bitmaptype,"ttf")==0 ) i = bf_ttf_ms;
+    else if ( strmatch(bitmaptype,"otf")==0 ) i = bf_ttf;
     else for ( i=0; bitmaps[i]!=NULL; ++i ) {
 	if ( strmatch(bitmaptype,bitmaps[i])==0 )
     break;
@@ -1069,11 +1077,13 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	oldpfmstate = false;
 	oldpsstate = true;
 	oldttfhintstate = true;
+	oldttfapplestate = false;
     } else {
 	oldafmstate = fmflags&1;
 	oldpfmstate = (fmflags&2)?1:0;
 	oldpsstate = (fmflags&4)?0:1;
 	oldttfhintstate = (fmflags&8)?1:0;
+	oldttfapplestate = (fmflags&16)?1:0;
     }
 
     if ( oldbitmapstate!=bf_none ) {
@@ -1131,6 +1141,7 @@ return;
     oldpfmstate = GGadgetIsChecked(d->dopfm);
     oldpsstate = GGadgetIsChecked(d->psnames);
     oldttfhintstate = GGadgetIsChecked(d->ttfhints);
+    oldttfapplestate = GGadgetIsChecked(d->ttfapple);
 
     err = _DoSave(d->sf,temp,sizes,-1);
 
@@ -1255,6 +1266,15 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	GGadgetSetChecked(d->doafm,set);
 	if ( !set )				/* Don't default to generating pfms */
 	    GGadgetSetChecked(d->dopfm,set);
+	GGadgetSetVisible(d->dopfm,set);
+	GGadgetSetVisible(d->ttfapple,!set);
+	if ( !set ) {
+	    if ( format==ff_ttfdfont || format==ff_otfdfont || format==ff_otfciddfont ||
+		    format==ff_ttfmacbin )
+		GGadgetSetChecked(d->ttfapple,true);
+	    else if ( format!=ff_none && !oldttfapplestate )
+		GGadgetSetChecked(d->ttfapple,false);
+	}
 	GGadgetSetVisible(d->psnames,format==ff_ttf || format==ff_ttfsym ||
 		/*format==ff_otf || format==ff_otfdfont ||*/
 		format==ff_ttfdfont || format==ff_ttfmacbin || format==ff_none);
@@ -1288,10 +1308,10 @@ return( true );
 	    if ( format!=ff_none && format != ff_cid && format != ff_otfcid && format!=ff_otfciddfont ) {
 		GGadgetSetTitle(d->bmpsizes,nullstr);
 		/*GGadgetSetVisible(d->doafm,true);*/
-		GGadgetSetVisible(d->dopfm,true);
+		/*GGadgetSetVisible(d->dopfm,true);*/
 	    } else {
 		/*GGadgetSetVisible(d->doafm,false);*/
-		GGadgetSetVisible(d->dopfm,false);
+		/*GGadgetSetVisible(d->dopfm,false);*/
 	    }
 	}
 
@@ -1301,24 +1321,20 @@ return( true );
 	    /* Don't worry about what formats are possible, they're disabled */;
 	else if ( set ) {
 	    /* If we're not in a ttf format (set) then we can't output ttf bitmaps */
-	    if ( bf==bf_ttf_ms || bf==bf_ttf_apple ||
+	    if ( bf==bf_ttf ||
 		    bf==bf_nfntmacbin || bf==bf_nfntdfont )
 		GGadgetSelectOneListItem(d->bmptype,bf_bdf);
 	    if ( format==ff_pfbmacbin )
 		GGadgetSelectOneListItem(d->bmptype,bf_nfntmacbin);
 	    else if ( bf==bf_nfntmacbin || bf==bf_nfntdfont )
-	    list[bf_ttf_ms]->disabled = true;
-	    list[bf_ttf_apple]->disabled = true;
+	    list[bf_ttf]->disabled = true;
 	} else {
-	    list[bf_ttf_ms]->disabled = false;
-	    list[bf_ttf_apple]->disabled = false;
+	    list[bf_ttf]->disabled = false;
 	    if ( bf==bf_none )
 		/* Do nothing, always appropriate */;
 	    else if ( format==ff_ttf || format==ff_ttfsym || format==ff_otf ||
 		    format==ff_otfcid )
-		GGadgetSelectOneListItem(d->bmptype,bf_ttf_ms);
-	    else
-		GGadgetSelectOneListItem(d->bmptype,bf_ttf_apple);
+		GGadgetSelectOneListItem(d->bmptype,bf_ttf);
 	}
 #if __Mac
 	{ GGadget *pulldown, *list, *tf;
@@ -1368,6 +1384,10 @@ static int e_h(GWindow gw, GEvent *event) {
 	d->done = true;
 	d->ret = false;
     } else if ( event->type == et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("generate.html");
+return( true );
+	}
 return( false );
     } else if ( event->type == et_mousemove ) {
 	struct gfc_data *d = GDrawGetUserData(gw);
@@ -1402,8 +1422,8 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[15];
-    GTextInfo label[15];
+    GGadgetCreateData gcd[16];
+    GTextInfo label[16];
     struct gfc_data d;
     GGadget *pulldown, *files, *tf;
     int i, old, ofs;
@@ -1533,15 +1553,13 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     old = oldbitmapstate;
     if ( sf->onlybitmaps ) {
 	old = 0;
-	bitmaptypes[bf_ttf_ms].disabled = true;
-	bitmaptypes[bf_ttf_apple].disabled = true;
+	bitmaptypes[bf_ttf].disabled = true;
     }
     temp = sf->cidmaster ? sf->cidmaster : sf;
     if ( temp->bitmaps==NULL ) {
 	old = bf_none;
 	bitmaptypes[bf_bdf].disabled = true;
-	bitmaptypes[bf_ttf_ms].disabled = true;
-	bitmaptypes[bf_ttf_apple].disabled = true;
+	bitmaptypes[bf_ttf].disabled = true;
 	bitmaptypes[bf_sfnt_dfont].disabled = true;
 	bitmaptypes[bf_nfntmacbin].disabled = true;
 	bitmaptypes[bf_nfntdfont].disabled = true;
@@ -1588,6 +1606,21 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     if ( ofs==ff_ttf || ofs==ff_ttfsym || ofs==ff_ttfdfont || ofs==ff_ttfmacbin )
 	gcd[12].gd.flags |=  gg_visible;
 
+    gcd[13].gd.pos.x = gcd[10].gd.pos.x; gcd[13].gd.pos.y = gcd[10].gd.pos.y;
+    gcd[13].gd.flags = gg_visible | gg_enabled | (oldttfapplestate ?gg_cb_on : 0 );
+    label[13].text = (unichar_t *) _STR_AppleMode;
+    label[13].text_in_resource = true;
+    gcd[13].gd.popup_msg = GStringGetResource(_STR_AppleModePopup,NULL);
+    gcd[13].gd.label = &label[13];
+    gcd[13].creator = GCheckBoxCreate;
+    if ( ofs==ff_ttf || ofs==ff_ttfsym || ofs==ff_otf ||
+	    ofs==ff_ttfdfont || ofs==ff_otfdfont || ofs==ff_otfciddfont ||
+	    ofs==ff_otfcid || ofs==ff_ttfmacbin || ofs==ff_none )
+	gcd[10].gd.flags &= ~gg_visible;
+    else
+	gcd[13].gd.flags = ~gg_visible;
+    
+
     if ( ofs==ff_otfcid || ofs==ff_cid || ofs==ff_otfciddfont) {
 	/*gcd[5].gd.flags &= ~gg_visible;*/
 	gcd[10].gd.flags &= ~gg_visible;
@@ -1625,6 +1658,7 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     d.bmpsizes = gcd[9].ret;
     d.psnames = gcd[11].ret;
     d.ttfhints = gcd[12].ret;
+    d.ttfapple = gcd[13].ret;
 
     GWidgetHidePalettes();
     GDrawSetVisible(gw,true);

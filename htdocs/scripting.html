@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 22-Aug-2002 -->
+  <!-- AP: Last modified: 7-Sep-2002 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -492,11 +492,9 @@ a[4][0] = "Nested array";
       <LI>
 	bdf
       <LI>
-	ms (for EBDT table in truetype)
+	ttf (for EBDT/bdat table in truetype/opentype)
       <LI>
-	apple (for bdat table in truetype)
-      <LI>
-	sbit (for bdat table in truetype without any outline font)
+	sbit (for EBDT/bdat table in truetype without any outline font)
       <LI>
 	bin (for nfnt in macbinary)
       <LI>
@@ -522,6 +520,13 @@ a[4][0] = "Nested array";
       <LI>
 	fmflags&amp;8 =&gt; generate ttf hints (PfaEdit does a bad job here (currently),
 	you may want this off)
+      <LI>
+	fmflags&amp;16 =&gt; where apple and ms/adobe differ about the format of
+	a true/open type file, use apple's definition (otherwise use
+	ms/adobe)<BR>
+	Currently this affects bitmaps store in the font (Apple calls the table 'bdat',
+	ms/adobe 'EBDT') and the PostScript name in the 'name' table (Apple says
+	it must occur exactly once, ms/adobe say at least twice)
     </UL>
     <P>
     res controls the resolution of generated bdf fonts. A value of -1 means pfaedit

@@ -497,7 +497,7 @@ typedef struct splinefont {
 enum style_flags { sf_bold = 1, sf_italic = 2, sf_underline = 4, sf_outline = 8,
 	sf_shadow = 0x10, sf_condense = 0x20, sf_extend = 0x40 };
 
-enum ttf_flags { ttf_flag_shortps = 1, ttf_flag_nohints = 2 };
+enum ttf_flags { ttf_flag_shortps = 1, ttf_flag_nohints = 2, ttf_flag_applemode=4 };
 enum openflags { of_fstypepermitted=1 };
 
 struct fontdict;
@@ -532,7 +532,7 @@ extern struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds);
 enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_multiple, ff_ptype3, ff_ptype0, ff_cid,
 	ff_ttf, ff_ttfsym, ff_ttfmacbin, ff_ttfdfont, ff_otf, ff_otfdfont,
 	ff_otfcid, ff_otfciddfont, ff_none };
-enum bitmapformat { bf_bdf, bf_ttf_ms, bf_ttf_apple, bf_sfnt_dfont, 
+enum bitmapformat { bf_bdf, bf_ttf, bf_sfnt_dfont, 
 	bf_nfntmacbin, bf_nfntdfont, bf_none };
 extern SplineChar *SFFindExistingCharMac(SplineFont *,int unienc);
 extern int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format);

@@ -63,6 +63,7 @@ extern int oldformatstate;		/* in savefontdlg.c */
 extern int oldbitmapstate;		/* in savefontdlg.c */
 extern int oldpsstate;			/* in savefontdlg.c */
 extern int oldttfhintstate;		/* in savefontdlg.c */
+extern int oldttfapplestate;		/* in savefontdlg.c */
 extern int oldsystem;			/* in bitmapdlg.c */
 extern int autotrace_ask;		/* in autotrace.c */
 extern int mf_ask;			/* in autotrace.c */
@@ -164,6 +165,7 @@ static struct prefs_list {
 	{ "DefaultBitmapFormat", pr_int, &oldbitmapstate, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultPSNameLength", pr_int, &oldpsstate, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultTTFHints", pr_int, &oldttfhintstate, NULL, NULL, '\0', NULL, 1 },
+	{ "DefaultTTFApple", pr_int, &oldttfapplestate, NULL, NULL, '\0', NULL, 1 },
 	{ "PageWidth", pr_int, &pagewidth, NULL, NULL, '\0', NULL, 1 },
 	{ "PageHeight", pr_int, &pageheight, NULL, NULL, '\0', NULL, 1 },
 	{ "PrintType", pr_int, &printtype, NULL, NULL, '\0', NULL, 1 },

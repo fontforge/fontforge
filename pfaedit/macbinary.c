@@ -1074,7 +1074,7 @@ return( 0 );
 	fclose(tempttf);
 return( 0 );
     }
-    if ( bf!=bf_ttf_apple && bf!=bf_ttf_ms && bf!=bf_sfnt_dfont )
+    if ( bf!=bf_ttf && bf!=bf_sfnt_dfont )
 	bsizes = NULL;		/* as far as the FOND for the truetype is concerned anyway */
 
     if ( __Mac && format==ff_ttfmacbin )
