@@ -290,3 +290,16 @@ return( img->u.image->height );
 return( img->u.images[0]->height );
     }
 }
+
+#if HANYANG
+void SFDDumpCompositionRules(FILE *sfd,struct compositionrules *rules) {
+}
+
+struct compositionrules *SFDReadCompositionRules(FILE *sfd) {
+    char buffer[200];
+    while ( fgets(buffer,sizeof(buffer),sfd)!=NULL )
+	if ( strstr(buffer, "EndCompositionRules")!=NULL )
+    break;
+return( NULL );
+}
+#endif
