@@ -191,7 +191,7 @@ return;
 	arglist[ac++] = prog;
 	arglist[ac++] = tempname;
 	arglist[ac++] = "--output-format=eps";
-	arglist[ac++] = "--input-format=bmp";
+	arglist[ac++] = "--input-format=BMP";
 	if ( args ) {
 	    for ( i=0; args[i]!=NULL && ac<sizeof(arglist)/sizeof(arglist[0])-2; ++i )
 		arglist[ac++] = args[i];
