@@ -486,7 +486,7 @@ return;
 	    GDrawDrawLine(pixmap,cx+3,cy-3,cx-3,cy+3,subcol);
 	    if ( cv->showpointnumbers || cv->show_ft_results || cv->dv ) {
 		pnum = sp->nextcpindex;
-		if ( pnum!=0xffff ) {
+		if ( pnum!=0xffff && pnum!=0xfffe ) {
 		    sprintf( buf,"%d", pnum );
 		    uc_strcpy(ubuf,buf);
 		    GDrawDrawText(pixmap,cx,cy-6,ubuf,-1,NULL,nextcpcol);
