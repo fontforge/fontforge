@@ -547,6 +547,22 @@ return( "FontSpecific" );
 return( name );
 }
 
+static char *_EncodingName(SplineFont *sf) {
+    int i;
+    char *name = sf->encoding_name->iconv_name != NULL ? sf->encoding_name->iconv_name : sf->encoding_name->enc_name;
+
+    if ( strmatch(name,"AdobeStandard")==0 ) {
+	for ( i=0; i<256 && i<sf->charcnt; ++i ) {
+	    if ( !SCWorthOutputting(sf->chars[i]))
+		/* That'll do */;
+	    else if ( strcmp(sf->chars[i]->name,AdobeStandardEncoding[i])!=0 )
+return( "FontSpecific" );
+	}
+return( "AdobeStandardEncoding" );
+    }
+return( EncodingName(sf->encoding_name ));
+}
+
 static int ScriptLangMatchLigOuts(PST *lig,SplineFont *sf) {
     int i,j;
     struct script_record *sr;
@@ -898,7 +914,7 @@ static void AfmSplineFontHeader(FILE *afm, SplineFont *sf, int formattype) {
     fprintf( afm, "UnderlineThickness %g\n", sf->uwidth );
     if ( !iscid ) {
 	if ( sf->version!=NULL ) fprintf( afm, "Version %s\n", sf->version );
-	fprintf( afm, "EncodingScheme %s\n", EncodingName(sf->encoding_name));
+	fprintf( afm, "EncodingScheme %s\n", _EncodingName(sf));
     }
     if ( iscid ) CIDFindBounds(sf,&b); else SplineFontFindBounds(sf,&b);
     fprintf( afm, "FontBBox %d %d %d %d\n",

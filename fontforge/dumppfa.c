@@ -235,7 +235,9 @@ static int isStdEncoding(char *encoding[256]) {
     int i;
 
     for ( i=0; i<256; ++i )
-	if ( strcmp(encoding[i],AdobeStandardEncoding[i])!=0 )
+	if ( strcmp(encoding[i],".notdef")==0 )
+	    /* that's ok */;
+	else if ( strcmp(encoding[i],AdobeStandardEncoding[i])!=0 )
 return( 0 );
 
 return( 1 );
