@@ -28,7 +28,7 @@ pfaedit_OBJECTS =  autohint.o autosave.o autowidth.o bitmapdlg.o \
  macbinary.o crctab.o
 
 WFLAGS = -Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type -Wparentheses
-CFLAGS = @CFLAGS@ -I$(top_srcdir)/inc -I$(srcdir) $(WFLAGS) $(X_CFLAGS) \
+CFLAGS = @CFLAGS@ -I$(top_srcdir)/inc -I$(srcdir) -I. $(WFLAGS) $(X_CFLAGS) \
     @DEFS@ '-DSHAREDIR="$(sharedir)"'
 
 LDFLAGS = @LDFLAGS@
