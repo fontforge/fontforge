@@ -1074,7 +1074,10 @@ return( false );
     if ( table==unicode_from_jis208 || table == unicode_from_ksc5601 )
 	tlen = 94*94;
 
-    for ( i=0; i<tlen && (sc->unicodeenc!=table[i] || (used[i>>3]&(1<<(i&7)))); ++i );
+    for ( i=0; i<tlen && (sc->unicodeenc!=table[i] || (used[i>>3]&(1<<(i&7))) ||
+	    !(table[i]!=0 || i==0 ||
+		(item!=NULL && item->psnames!=NULL && item->psnames[i]!=NULL &&
+		 strcmp(item->psnames[i],".notdef")==0))); ++i );
     if ( i==tlen && sc->unicodeenc<0x80 && tlen2==65536 && table == unicode_from_jis208 ) {
 	/* sjis often comes with a single byte encoding of ASCII */
 	sc->enc = sc->unicodeenc;

@@ -117,7 +117,7 @@ static Encoding *ParseConsortiumEncodingFile(FILE *file) {
     max = -1;
 
     while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
-	if ( buffer[0]=='0' ) {
+	if ( ishexdigit(buffer[0]) ) {
 	    if ( sscanf(buffer, "%x %x", &enc, &unienc)==2 && enc<1024 && enc>=0 ) {
 		encs[enc] = unienc;
 		if ( enc>max ) max = enc;
