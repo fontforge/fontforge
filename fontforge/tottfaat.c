@@ -69,6 +69,9 @@ int SLIHasDefault(SplineFont *sf,int sli) {
 
     if ( sli==SLI_NESTED || sli==SLI_UNKNOWN )
 return( false );
+
+    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+
     sr = sf->script_lang[sli];
 
     for ( i=0; sr[i].script!=0; ++i )
