@@ -4414,13 +4414,9 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
 static void expr(Context*,Val *val);
 static void statement(Context*);
 
-static int cgetc(Context *c) {
+static int _cgetc(Context *c) {
     int ch;
-    if ( c->ungotch ) {
-	ch = c->ungotch;
-	c->ungotch = 0;
-return( ch );
-    }
+
     ch = getc(c->script);
     if ( verbose>0 )
 	putchar(ch);
@@ -4433,6 +4429,25 @@ return( ch );
 	++c->lineno;
     } else if ( ch=='\n' )
 	++c->lineno;
+return( ch );
+}
+
+static int cgetc(Context *c) {
+    int ch;
+    if ( c->ungotch ) {
+	ch = c->ungotch;
+	c->ungotch = 0;
+return( ch );
+    }
+  tail_recursion:
+    ch = _cgetc(c);
+    if ( ch=='\\' ) {
+	ch = _cgetc(c);
+	if ( ch=='\n' )
+  goto tail_recursion;
+	c->ungotch = ch;
+	ch = '\\';
+    }
 return( ch );
 }
 
@@ -4693,19 +4708,6 @@ return( c->tok );
 	    else
 		cungetc(ch,c);
 	  break;
-	  case '\\':
-	    ch=cgetc(c);
-	    if ( ch=='\n' || ch=='\r' ) {
-		/* treat backslash newline as a space */
-		ch=cgetc(c);
-		if ( ch!='\n' && ch!='\r' )
-		    cungetc(ch,c);
-	break;
-	    } else {
-		cungetc(ch,c);
-		ch = '\\';
-		/* fall through */
-	    }
 	  default:
 	    fprintf( stderr, "%s:%d Unexpected character %c (%d)\n",
 		    c->filename, c->lineno, ch, ch);
