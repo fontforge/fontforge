@@ -3689,6 +3689,10 @@ static int mv_e_h(GWindow gw, GEvent *event) {
 	MVChar(mv,event);
       break;
       case et_mouseup: case et_mousemove: case et_mousedown:
+	if (( event->type==et_mouseup || event->type==et_mousedown ) &&
+		(event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+return( GGadgetDispatchEvent(mv->vsb,event));
+	}
 	MVMouse(mv,event);
       break;
       case et_drop:
