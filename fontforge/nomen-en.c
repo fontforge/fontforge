@@ -2238,6 +2238,7 @@ static char *str_PrefsPopupUndo = "The maximum number of Undoes/Redoes stored in
 static char *str_PrefsPopupHLP = "The directory on your local system in which FontForge will search for help\nfiles.  If a file is not found there, then FontForge will look for it on the net.";
 static char *str_PrefsPopupSAJ = "When dragging points in the outline view a join may occur\n(two open contours may connect at their endpoints). When\nthis is On a join will cause FontForge to stop moving the\nselection (as if the user had released the mouse button).\nThis is handy if your fingers are inclined to wiggle a bit."
 static char *str_PrefsPopupUF = "Figure out flex hints after every change";
+static char *str_PrefsPopupGAG = "Typing a normal character in the glyph view window changes the window to look at that character"
 static char *str_Generic[] = "Generic";
 static char *str_PrefsFontInfo[] = "Font Info";
 static char *str_PrefsApps[] = "Apps";
