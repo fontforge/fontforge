@@ -175,6 +175,7 @@ typedef struct gxdisplay /* : GDisplay */ {
     int16 screen;
     int16 depth;
     int16 pixel_size;				/* 32bit displays usually have a 24bit depth */
+    int16 bitmap_pad;				/* 8bit displays sometimes pad on 32bit boundaries */
     Visual *visual;
     Colormap cmap;
     struct colstate cs;

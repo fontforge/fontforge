@@ -1237,25 +1237,27 @@ return;
     if ( gdisp->gg.mask!=NULL )
 	XDestroyImage(gdisp->gg.mask);
     pixel_size = gdisp->pixel_size;
-    temp = galloc(((width*pixel_size+7)/8)*height);
+    temp = galloc(((width*pixel_size+gdisp->bitmap_pad-1)/gdisp->bitmap_pad)*
+	    (gdisp->bitmap_pad/8)*height);
     if ( temp==NULL ) {
 	GDrawIError("Can't create image draw area");
 	exit(1);
     }
     gdisp->gg.img = XCreateImage(gdisp->display,gdisp->visual,depth,
 	    depth==1?XYBitmap:ZPixmap,0,
-	    temp,width,height,gdisp->pixel_size==32?32:8,0);
+	    temp,width,height,gdisp->bitmap_pad,0);
     if ( gdisp->gg.img==NULL ) {
 	GDrawIError("Can't create image draw area");
 	exit(1);
     }
     if ( !FAST_BITS==0 ) pixel_size=1;
-    temp = galloc(((width*pixel_size+7)/8)*height);
+    temp = galloc(((width*pixel_size+gdisp->bitmap_pad-1)/gdisp->bitmap_pad)*
+	    (gdisp->bitmap_pad/8)*height);
     gdisp->gg.mask = NULL;
     if ( temp!=NULL ) {
 	gdisp->gg.mask = XCreateImage(gdisp->display,gdisp->visual,depth,
 		depth==1?XYBitmap:ZPixmap,
-		0,temp,width,height,pixel_size==32?32:8,0);
+		0,temp,width,height,gdisp->bitmap_pad,0);
 	if ( gdisp->gg.mask==NULL )
 	    free(temp);
     }
@@ -1522,7 +1524,7 @@ static XImage *gdraw_1_on_1_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhi
     XImage *xi;
 
     xi = XCreateImage(gdisp->display,gdisp->visual,1,XYBitmap,0,NULL,
-	    magsrc->width, magsrc->height,8,(magsrc->width+7)/8);
+	    magsrc->width, magsrc->height,8,(magsrc->width+gdisp->bitmap_pad-1)/gdisp->bitmap_pad*(gdisp->bitmap_pad/8));
     xi->data = galloc(xi->bytes_per_line*magsrc->height);
 
     for ( i=magsrc->y; i<magsrc->y+magsrc->height; ++i ) {

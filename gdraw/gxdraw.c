@@ -279,11 +279,12 @@ static void _GXDraw_FindVisual(GXDisplay *gdisp) {
     /* I can't get the code to work on Irix */
     gdisp->visual = DefaultVisual(display,gdisp->screen);
     gdisp->depth = DefaultDepth(display,gdisp->screen);
-    gdisp->pixel_size = gdisp->depth;
+    gdisp->bitmap_pad = gdisp->pixel_size = gdisp->depth;
     for ( i=0; i<((_XPrivDisplay) display)->nformats; ++i ) {
 	sf = &((_XPrivDisplay) display)->pixmap_format[i];
 	if ( sf->depth == gdisp->depth ) {
 	    gdisp->pixel_size = sf->bits_per_pixel;
+	    gdisp->bitmap_pad = sf->scanline_pad;
     break;
 	}
     }
@@ -361,11 +362,12 @@ static void _GXDraw_FindVisual(GXDisplay *gdisp) {
 	/* X11R5 doesn't define it either */ /* Not sure. Should it be struct Display * ? */
 # define _XPrivDisplay struct _XDisplay *
 #endif
-	gdisp->pixel_size = gdisp->depth;
+	gdisp->bitmap_pad = gdisp->pixel_size = gdisp->depth;
 	for ( i=0; i<((_XPrivDisplay) display)->nformats; ++i ) {
 	    sf = &((_XPrivDisplay) display)->pixmap_format[i];
-	    if ( sf->depth == gdisp->depth ) {
+	    if ( sf->depth == gdisp->depth ) { 
 		gdisp->pixel_size = sf->bits_per_pixel;
+		gdisp->bitmap_pad = sf->scanline_pad;
 	break;
 	    }
 	}
