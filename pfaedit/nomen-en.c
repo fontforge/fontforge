@@ -425,6 +425,8 @@ static char str_VKernFromHKern = "VKern From HKern";
 static char str_Outline[] = "Outline";
 static char str_OutlineMn[] = "Outline";
 static unichar_t mnemonic_OutlineMn[] = 'O';
+static char str_Vertical = "Vertical";
+static unichar_t mnemonic_Vertical = 'V';
 static char str_Showgrid[] = "Show Grid";
 static unichar_t mnemonic_Showgrid[] = 'G';
 static char str_Hidegrid[] = "Hide Grid";
@@ -2935,6 +2937,7 @@ static char *str_RequiredFeature = "Required Feature";
     /* Metricsview */
 static char *str_NewKernClassEntry = "This kerning pair (%.20hs and %.20hs) is currently part of a kerning class with a 0 offset for this combination. Would you like to alter this kerning class entry (or create a kerning pair for just these two glyphs)?";
 static char *str_NewKernClassEntTitle = "Use Kerning Class?"
+static char *str_MetricsTitle = "Metrics For %.50hs";
     /* Kernclass */
 static char *str_KernClass = "Kerning Class";
 static char *str_ClassCnt = "Class Count:";

@@ -311,18 +311,19 @@ typedef struct metricsview {
     int pixelsize;
     BDFFont *bdf;		/* We can also see metric info on a bitmap font */
     GWindow gw;
-    int16 width, height;
+    int16 width, height, dwidth;
     int16 mbh,sbh;
     int16 topend;		/* y value of the end of the region containing the text field */
     int16 displayend;		/* y value of the end of the region showing filled characters */
     GFont *font;
     int16 fh, as;
-    GGadget *hsb, *mb, *text, *sli_list;
+    GGadget *hsb, *vsb, *mb, *text, *sli_list;
     GGadget *namelab, *widthlab, *lbearinglab, *rbearinglab, *kernlab;
     struct metricchar {
 	SplineChar *sc;
 	BDFChar *show;
 	int16 dx, dwidth;	/* position and width of the displayed char */
+	int16 dy, dheight;	/*  displayed info for vertical metrics */
 	int16 mx, mwidth;	/* position and width of the text underneath */
 	int16 kernafter;
 	int16 xoff, yoff, hoff, voff;	/* adjustments by GPOS other than 'kern' (scaled) */
@@ -334,9 +335,9 @@ typedef struct metricsview {
     SplineChar **sstr;		/* An array the same size as perchar (well 1 bigger, trailing null) */
     int16 mwidth, mbase;
     int16 charcnt, max;
-    int16 pressed_x;
+    int16 pressed_x, pressed_y;
     int16 activeoff;
-    int xoff, coff;
+    int xoff, coff, yoff;
     struct metricsview *next;
     unsigned int right_to_left: 1;
     unsigned int pressed: 1;
@@ -344,6 +345,7 @@ typedef struct metricsview {
     unsigned int pressedkern: 1;
     unsigned int showgrid: 1;
     unsigned int antialias: 1;
+    unsigned int vertical: 1;
     struct aplist *pressed_apl;
     int xp, yp, ap_owner;
     BasePoint ap_start;
@@ -513,7 +515,9 @@ extern unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag,uint16 flag
 	int merge_with,int act_type);
 extern PST *AddSubs(PST *last,uint32 tag,char *name,uint16 flags,
 	uint16 sli,SplineChar *sc);
+extern int  SLICount(SplineFont *sf);
 extern GTextInfo *SFLangList(SplineFont *sf,int addfinal,SplineChar *default_script);
+extern GTextInfo **SFLangArray(SplineFont *sf,int addfinal);
 extern int  ScriptLangList(SplineFont *sf,GGadget *list,int sli);
 extern void GListDelSelected(GGadget *list);
 extern void GListMoveSelected(GGadget *list,int offset);

@@ -1179,6 +1179,8 @@ extern void SFKernPrepare(SplineFont *sf,int isv);
 extern void SFKernCleanup(SplineFont *sf,int isv);
 extern KernClass *SFFindKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
 	int *index,int allow_zero);
+extern KernClass *SFFindVKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
+	int *index,int allow_zero);
 extern int SCSetMetaData(SplineChar *sc,char *name,int unienc,const unichar_t *comment);
 
 enum uni_interp interp_from_encoding(enum charset enc,enum uni_interp interp);

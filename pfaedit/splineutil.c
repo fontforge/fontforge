@@ -3072,6 +3072,26 @@ return( kc );
 return( NULL );
 }
 
+KernClass *SFFindVKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
+	int *index,int allow_zero) {
+    int i,f,l;
+    KernClass *kc;
+
+    for ( i=0; i<=allow_zero; ++i ) {
+	for ( kc=sf->vkerns; kc!=NULL; kc=kc->next ) {
+	    f = KCFindName(first->name,kc->firsts,kc->first_cnt);
+	    l = KCFindName(last->name,kc->seconds,kc->second_cnt);
+	    if ( f!=0 && l!=0 ) {
+		if ( i || kc->offsets[f*kc->second_cnt+l]!=0 ) {
+		    *index = f*kc->second_cnt+l;
+return( kc );
+		}
+	    }
+	}
+    }
+return( NULL );
+}
+
 void KernPairsFree(KernPair *kp) {
     KernPair *knext;
     for ( ; kp!=NULL; kp = knext ) {

@@ -971,6 +971,14 @@ int SCDefaultSLI(SplineFont *sf, SplineChar *default_script) {
 return( def_sli );
 }
 
+int SLICount(SplineFont *sf) {
+    int i = 0;
+    if ( sf->cidmaster ) sf = sf->cidmaster;
+    if ( sf->script_lang!=NULL )
+	for ( i=0; sf->script_lang[i]!=NULL; ++i );
+return( i );
+}
+
 static int sli_names[] = { _STR_AnyScript, _STR_HHDefaultHH, _STR_Nested, _STR_EditLangList };
 static int sli_ud[] = { SLI_UNKNOWN, SLI_UNKNOWN, SLI_NESTED, -1 };
 
@@ -1006,7 +1014,7 @@ GTextInfo *SFLangList(SplineFont *sf,int addfinal,SplineChar *default_script) {
 return( ti );
 }
 
-static GTextInfo **SFLangArray(SplineFont *sf,int addfinal) {
+GTextInfo **SFLangArray(SplineFont *sf,int addfinal) {
     int i, bit, j, k;
     GTextInfo **ti;
 
