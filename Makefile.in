@@ -47,6 +47,8 @@ install_libs: libs
 	$(LIBTOOL) $(INSTALL) -c libgunicode.la $(libdir)/libgunicode.la
 	#cp .libs/*.so.*.* $(libdir)
 	$(LIBTOOL) --finish $(libdir)
+	mkdir -p $(libdir)/pkgconfig
+	$(LIBTOOL) $(INSTALL) -c fontforge.in $(libdir)/pkgconfig
 
 install: $(sharedir) all install_libs
 # You may need to be root to do the install

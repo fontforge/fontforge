@@ -203,6 +203,9 @@ AC_ARG_WITH(multilayer,
 
 test -d libs || mkdir libs
 
+AC_SUBST(VERSION)
+VERSION=`cat VERSION`
+
 AC_SUBST(WFLAGS)
 if test "$GCC" = yes; then
   WFLAGS="-Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type -Wparentheses -Wformat -Wchar-subscripts"
@@ -219,6 +222,7 @@ if test -e umap >/dev/null 2>&1 ; then
   cp umap/Makefile.static.in umap/Makefile.in
   AC_OUTPUT( umap/Makefile )
 fi
+AC_OUTPUT( fontforge.pc )
 
 echo Configuration defines: $DEFS
 echo CFLAGS: $CFLAGS
