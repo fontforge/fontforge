@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Sep-2003 -->
-  <!-- AP: Last modified: 13-Oct-2004 -->
+  <!-- AP: Last modified: 21-Mar-2005 -->
   <TITLE>The Mac State Machine dialog</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -21,10 +21,15 @@ substitution, indic rearrangement, contextual glyph insertion, and contextual
 kerning. The example at right is of contextual glyph substitution.
 <P>
 State machines have certain similar features. All but kerning be assigned
-to a feature/setting combination, they all have a set of flags indicating
-in what circumstances they apply, they all have the glyphs of the font assigned
-to a set of classes, and finally they all have a series of transitions indicating
-how each state behaves when given input from the specified class.
+to a
+<A HREF="http://developer.apple.com/fonts/Registry/index.html">feature/setting</A>
+combination, they all have a set of flags indicating in what circumstances
+they apply, they all have the glyphs of the font assigned to a set of classes,
+and finally they all have a series of transitions indicating how each state
+behaves when given input from the specified class.
+<P>
+An example conditional substitution state machine is provided in the
+<A HREF="editexample6-5.html#Apple">tutorial</A>.
 <P>
 On the mac there are four predefined classes, one meaning the end of input,
 one for all glyphs not specified elsewhere, one for the magic "deleted" glyph

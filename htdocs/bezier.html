@@ -2,9 +2,9 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Dec-2000 -->
-  <!-- AP: Last modified: 2-Mar-2004 -->
-  <LINK REL="icon" href="ffanvil16.png">
+  <!-- AP: Last modified: 22-Mar-2005 -->
   <TITLE>B&eacute;zier Splines</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
@@ -16,14 +16,17 @@ PostScript uses cubic B&eacute;zier splines. Each control point determines
 the slope of the spline at the corresponding end point. TrueType uses quadratic
 B&eacute;zier splines, in these there is only one control point between two
 end points and that point determines the slope of the spline at both end
-points.
+points. Both formats also use lines (which are linear B&eacute;zier splines).
 <P>
 <IMG SRC="quadbezier.gif" WIDTH="113" HEIGHT="88" ALIGN="Right">It is also
 possible to have other degree B&eacute;zier splines. For a quartic spline
 there would be 3 control points, for a quintic 4 control points, etc. Of
-these only the quadratic and cubic splines are interesting to us-- those
-used by TrueType and PostScript. As the example at right shows one control
-point is used to determine the slopes at both end points.
+these only the linear, quadratic and cubic splines are interesting to us--
+those used by TrueType and PostScript. 
+<P>
+The examples at left are cubic splines with two control points, each determining
+the slope at the nearest end point, while the example at right shows a quadratic
+spline with one control point used to determine the slopes at both end points.
 <P>
 In general if there are n+1 points labeled P<SUB>0</SUB>, P<SUB>1</SUB>,
 ... P<SUB>n</SUB>, with P<SUB>0</SUB> and P<SUB>n</SUB> the end points (and
@@ -83,9 +86,25 @@ And a quadratic B&eacute;zier curve:
     <TD>b<SUB>y</SUB> = P2.y-2*P1.y+P0.y</TD>
   </TR>
 </TABLE>
+<P>
+And a line:
+<TABLE CELLPADDING="2">
+  <TR>
+    <TD>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TD>
+    <TD>d<SUB>x </SUB>= P0.x</TD>
+    <TD>d<SUB>y</SUB> = P0.y</TD>
+  </TR>
+  <TR>
+    <TD></TD>
+    <TD>c<SUB>x</SUB> = P1.x-P0.x</TD>
+    <TD>c<SUB>y</SUB> = P1.y-P0.y</TD>
+  </TR>
+</TABLE>
 <H2>
   Converting TrueType to PostScript
 </H2>
+<P>
+Lines convert with no math whatsoever.
 <P>
 Any quadratic spline can be expressed as a cubic (where the cubic term is
 zero). The end points of the cubic will be the same as the quadratic's.
@@ -117,12 +136,15 @@ Most cubic splines cannot be represented exactly by a quadratic (or even
 by a series of quadratics). The best that can be done is to approximate the
 cubic to within some margin of error. Here is a way to do that:
 <P>
+Given a cubic spline. Look at two points on the spline. Then there is only
+one possible quadratic spline between those two points which has the desired
+slope at those two points. (the one quadratic has its end points as the end
+points of the interval, and its control point is determined by the intersections
+of the lines tangent to the cubic at the start and end of the interval).
+<P>
 Start from the end of the spline and every so often (ie. within the margin
 of error) check to see if the one permissible quadratic approximation actually
-matches the cubic closely enough (the one quadratic has its end points as
-the end points of the interval, and its control point is determined by the
-intersections of the lines tangent to the cubic at the start and end of the
-interval).
+matches the cubic closely enough .
 <P>
 If this approximation works then keep it as part of the result, and continue
 the process by advancing our start point along to the cubic spline to the

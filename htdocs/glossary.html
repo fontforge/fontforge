@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Oct-2002 -->
-  <!-- AP: Last modified: 26-Jan-2005 -->
+  <!-- AP: Last modified: 22-Mar-2005 -->
   <TITLE>Glossary of (some) typographical terms</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -89,19 +89,26 @@
 	  <A NAME="BMP">BMP</A> (Basic Multilingual Plane)
 	<DD>
 	  The first 65536 code points of Unicode. These contain most of the ordinary
-	  characters in the world.
+	  characters in the modern world.
 	<DT>
 	  <A NAME="bold">Bold</A>
 	<DD>
 	  A common font <A HREF="#style">style</A>. The stems of the glyphs are wider
-	  than in the normal font, given the letters a darker impression.
+	  than in the normal font, giving the letters a darker impression. Bold is
+	  one of the few <A HREF="#LGC">LGC</A> styles that translate readily to other
+	  scripts.
+	<DT>
+	  <A NAME="Bopomofo">Bopomofo</A>
+	<DD>
+	  A (modern--1911) Chinese (Mandarin) alphabet used to provide phonetic
+	  transliteration of Han ideographs in dictionaries.
 	<DT>
 	  <IMG SRC="boustrophedon.png" WIDTH="86" HEIGHT="54" ALIGN="Right"><A NAME="Boustrophedon">Boustrophedon</A>
 	<DD>
 	  Writing "as the ox plows", that is alternating between left to right and
 	  right to left. Early alphabets (Old Canaanite, and the very early greek writings
-	  (and, surprisingly, fu&thorn;ark)) used this. Often the right to left glyphs
-	  would be mirrors of the left to right ones.
+	  (and, surprisingly, <A HREF="#Futhark">fu&thorn;ark</A>)) used this. Often
+	  the right to left glyphs would be mirrors of the left to right ones.
       </DL>
     </TD>
   </TR>
@@ -112,16 +119,17 @@
 	  <A NAME="cap-height">Cap-height</A><IMG SRC="cap-height.png" WIDTH="55" HEIGHT="125"
 	      ALIGN="Right">
 	<DD>
-	  The height of a capital letter above the baseline (with a flat top like "I"
-	  as opposed to one with a curved to like "O").<BR>
+	  The height of a capital letter above the baseline (a letter with a flat top
+	  like "I" as opposed to one with a curved one like "O").<BR>
 	  See also <A HREF="#x-height">X-height</A>, <A HREF="#ascender">Ascender</A>,
 	  <A HREF="#descender">Descender</A>, <A HREF="#overshoot">Overshoot</A>,
 	  <A HREF="#baseline">Baseline</A>
 	<DT>
 	  <A NAME="CFF">CFF</A>
 	<DD>
-	  Compact Font Format used within <A HREF="glossary.html#opentype">OpenType</A>
-	  postscript fonts.
+	  Compact Font Format most commonly used within
+	  <A HREF="glossary.html#opentype">OpenType</A> postscript fonts, but is a
+	  valid font format even without a <A HREF="#SFNT">SFNT</A> wrapper.
 	<DT>
 	  <A NAME="character">Character</A>
 	<DD>
@@ -202,6 +210,10 @@
 	<DD>
 	  The European <A HREF="#point">point</A>. 62 <SUP>2</SUP>/<SMALL>3</SMALL>
 	  points per 23.566mm ( 2.66pt/mm or 67.54pt/inch )
+	<DT>
+	  Distortable font
+	<DD>
+	  See <A HREF="#Multi-Master">Multi-Master</A>
       </DL>
     </TD>
   </TR>
@@ -236,13 +248,20 @@
 	  which byte sequence represents which character. The words "encoding" and
 	  "character set" are often used synonymously. The specification for ASCII
 	  specifies both a character set and an encoding. But CJK character sets often
-	  have multiple encodings for the character set (end multiple character sets
+	  have multiple encodings for the character set (and multiple character sets
 	  for some encodings).
 	  <P>
 	  In more complicated cases it is possible to have multiple glyphs associated
 	  with each character (as in arabic where most characters have at least 4 different
 	  glyphs) and the client program must pick the appropriate glyph for the character
 	  in the current context.
+	<DT>
+	  <A NAME="Eth">Eth</A> -- Edh
+	<DD>
+	  The old germanic letter "&eth;" for the voiced (English) "th" sound (the
+	  sound in "this" -- most English speakers aren't even aware that "th" in English
+	  has two sounds associated with it, but it does see also
+	  <A HREF="#Thorn">Thorn</A>)
 	<DT>
 	  <A NAME="Even-Odd">Even-Odd </A>Fill rule
 	<DD>
@@ -265,6 +284,26 @@
     <TD BGCOLOR=yellow><A NAME="F">F</A></TD>
     <TD><DL>
 	<DT>
+	  <A NAME="Features">Features</A> (OpenType)
+	<DD>
+	  When creating fonts for complex scripts (and even for less complex scripts)
+	  various transformations (like ligatures) must be applied to the input glyphs
+	  before they are ready for display. These transformations are identified as
+	  font features and are tagged with (in OpenType) a 4 letter tag or (in Apple)
+	  a 2 number identfier. The meanings of these features are predefined by MicroSoft
+	  and Apple. FontForge's
+	  <A HREF="charinfo.html#Feature-Tag" TARGET="_top">Feature Tag </A>dialog
+	  (reachable from <A HREF="fontinfo.html" TARGET="_top">Element-&gt;Font Info</A>
+	  and <A HREF="charinfo.html" TARGET="_top">Element-&gt;Char Info</A>) can
+	  be used to produce new features.
+	<DT>
+	  Feature/Settings (Apple)
+	<DD>
+	  These are roughly equivalent to OpenType's
+	  <A HREF="glossary.html#Features">Features</A> above, they are
+	  <A HREF="http://developer.apple.com/fonts/Registry/index.html" TARGET="_top">defined
+	  by Apple</A>.
+	<DT>
 	  <A NAME="font">Font</A>
 	<DD>
 	  A collection of <A HREF="#glyph">glyphs</A>, generally with at least one
@@ -286,13 +325,18 @@
 	  <A NAME="FreeType" HREF="http://freetype.sf.net/">FreeType</A>
 	<DD>
 	  A library for rasterizing fonts. Used extensively in FontForge to understand
-	  the behavior of truetype fonts.
+	  the behavior of truetype fonts and to do better rasterization than FontForge
+	  could unaided.
 	<DT>
 	  <A NAME="fractur">Fractur</A>
 	<DD>
 	  The old black letter writing style used in Germany up until the end of world
 	  war II.<BR>
 	  See also <A HREF="#gothic">gothic</A>.
+	<DT>
+	  Fu&thorn;ark (<A NAME="Futhark">Futhark</A>)
+	<DD>
+	  The old germanic runic script
       </DL>
     </TD>
   </TR>
@@ -328,7 +372,7 @@
 	  The German monks at the time of Gutenberg used a black-letter writing style,
 	  and he copied their handwriting in his typefaces for printing. Italian type
 	  designers (after printing spread south) sneered at the style, preferring
-	  the type designs left by the romans. As a term of contempt they used the
+	  the type designs left by the Romans. As a term of contempt they used the
 	  word gothic, the style of the goths who helped destroy the roman empire.
 	<DT>
 	  Graphite tables
@@ -361,11 +405,34 @@
     <TD BGCOLOR=yellow><A NAME="H">H</A></TD>
     <TD><DL>
 	<DT>
+	  <A NAME="Han">Han</A> characters
+	<DD>
+	  The ideographic characters used in China,
+	  <A HREF="glossary.html#Kanji">Japan</A> and
+	  <A HREF="glossary.html#Hanja">Korea</A> (and, I believe, in various other
+	  asian countries as well), all based on the writing style that evolved in
+	  China.
+	<DT>
+	  <A NAME="Hangul">Hangul</A>
+	<DD>
+	  The Korean <A HREF="glossary.html#syllabary">syllabary</A>. The only syllabary
+	  (that I'm aware of anway) based on an alphabet -- the letters of the alphabet
+	  never appear alone, but only as groups of two or three making up a syllable.
+	<DT>
+	  <A NAME="Hanja">Hanja</A>
+	<DD>
+	  The Korean name for the <A HREF="glossary.html#Han">Han</A> characters
+	<DT>
 	  <A NAME="hints">Hints</A>
 	<DD>
 	  These are described in detail in <A HREF="overview.html#Hints">the main
 	  manual</A>. They help the rasterizer to draw a <A HREF="#glyph">glyph</A>
 	  well at small pointsizes.
+	<DT>
+	  <A NAME="Hiragona">Hiragona</A>
+	<DD>
+	  One of the two Japanese syllabaries. Both Hiragona and
+	  <A HREF="glossary.html#Katakana">Katakana</A> have the same sounds.
       </DL>
     </TD>
   </TR>
@@ -389,13 +456,32 @@
     <TD BGCOLOR=yellow><A NAME="J">J</A></TD>
     <TD><DL>
 	<DT>
+	  <A NAME="Jamo">Jamo</A>
 	<DD>
+	  The letters of the Korean alphabet. These are almost never seen alone, generally
+	  appearing in groups of three as part of a
+	  <A HREF="glossary.html#Hangul">Hangul</A> syllable. The Jamo are divided
+	  into three catagories (with considerable overlap between the first and third),
+	  the choseong -- initial consonants, the jungseong -- medial vowels, and the
+	  jongseong -- final consonants. A syllable is composed by placing a choseong
+	  glyph in the upper left of an em-square, a jungseong in the upper right,
+	  and optionally a jongseong in the lower portion of the square.
       </DL>
     </TD>
   </TR>
   <TR VALIGN=TOP>
     <TD BGCOLOR=yellow><A NAME="K">K</A></TD>
     <TD><DL>
+	<DT>
+	  <A NAME="Kanji">Kanji</A>
+	<DD>
+	  The Japanese name for the <A HREF="glossary.html#Han">Han</A> characters.
+	<DT>
+	  <A NAME="Katakana">Katakana</A>
+	<DD>
+	  One of the two Japanese syllabaries. Both
+	  <A HREF="glossary.html#Hiragona">Hiragona</A> and Katakana have the same
+	  sounds.
 	<DT>
 	  <A NAME="kerning">Kerning</A>
 	<DD>
@@ -449,21 +535,54 @@
     <TD BGCOLOR=yellow><A NAME="M">M</A></TD>
     <TD><DL>
 	<DT>
+	  <A NAME="monospace"></A>Manyogana
+	<DD>
+	  An early Japanese script, ancestral to both <A HREF="#hiragana">hiragana</A>
+	  and <A HREF="#katakana">katakana</A>.
+	  <A HREF="http://en.wikipedia.org/wiki/Manyogana">Manyogana</A> used kanji
+	  for their phontic sounds, and over the years these kanji were simplified
+	  into hiragana and katahana.
+	<DT>
 	  <A NAME="monospace">Monospace</A>
 	<DD>
 	  A font in which all glyphs have the same advance width. These are sometimes
 	  called typewriter fonts.
 	<DT>
-	  Multiple Master Font
+	  <A NAME="multi-layered">Multi-layered</A> fonts
+	<DD>
+	  PostScript type3 fonts and SVG fonts allow for more drawing possibilities
+	  than normal fonts. Normal fonts may only be filled with a single color inherited
+	  from the graphics environment. These two fonts may be filled with several
+	  different colors, stroked, and in the case of PostScript fonts may also draw
+	  bitmap images. FontForge can be configured to support these fonts (it does
+	  not do so by default because this takes up more memory).
+	  <BLOCKQUOTE>
+	    <PRE>$ configure --with-multilayer
+$ make
+$ make install
+</PRE>
+	  </BLOCKQUOTE>
+	  <P>
+	  See <A HREF="multilayer.html" TARGET="_top">Also</A>
+	  <UL>
+	    <LI>
+	      <A HREF="multilayer.html" TARGET="_top">general information</A>
+	    <LI>
+	      Setting font type with
+	      <A HREF="fontinfo.html#PS-General" TARGET="_top">Element-&gt;Font Info</A>
+	  </UL>
+	<DT>
+	  <A NAME="Multi-Master">Multiple Master </A>Font
 	<DD>
 	  A multiple master font is a PostScript font schema which defines an infinite
 	  number of related fonts. Multiple master fonts can vary along several axes,
 	  for example you might have a multiple master which defined both different
 	  weights and different widths of a font family, it could be used to generate:
-	  Normal, Semi-Bold, Bold, Condensed, Expanded, Bold-Condensed, etc.
+	  Thin, Normal, Semi-Bold, Bold, Condensed, Expanded, Bold-Condensed, etc.
 	  <P>
-	  FontForge does not currently support multiple master fonts (and Adobe is
-	  no longer developing them either).
+	  Adobe is no longer developing this format. Apple has a format which acheives
+	  the same effect but has not produced many examples. FontForge
+	  <A HREF="multiplemaster.html" TARGET="_top">supports both</A>.
       </DL>
     </TD>
   </TR>
@@ -488,6 +607,10 @@
     <TD BGCOLOR=yellow><A NAME="O">O</A></TD>
     <TD><DL>
 	<DT>
+	  <A NAME="opentype"></A>Ogham
+	<DD>
+	  The old Celtic inscription script.
+	<DT>
 	  <A NAME="opentype">OpenType</A>
 	<DD>
 	  A type of font. It is an attempt to merge postscript and truetype fonts into
@@ -497,8 +620,12 @@
 	  it.
 	  <P>
 	  It contains many of the same data tables for information like encodings that
-	  were present in truetype fonts. It also can contain additional information
-	  such as positional glyph selection (needed for arabic), ligatures, etc.
+	  were present in truetype fonts.
+	  <P>
+	  Confusingly it is also used to mean the advanced typographic tables that
+	  Adobe and MicroSoft (but not Apple) have added to TrueType. These include
+	  things like contextual ligatures, contextual kerning, glyph substitution,
+	  etc.
 	<DT>
 	  Open<A NAME="OpenType-tables">Type Tables</A>
 	<DD>
@@ -543,6 +670,9 @@
 	  <A HREF="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/gdi/fontext_48aa.asp">PANOSE
 	  classification in Windows</A>. There is also an extension called
 	  <A HREF="http://www.w3.org/Fonts/Panose/pan2.html">Panose 2</A>.
+	  <P>
+	  FontForge only knows about the classification scheme for Latin fonts. Other
+	  schemes exist for other scripts.
 	<DT>
 	  Phantom points
 	<DD>
@@ -586,7 +716,8 @@
 	  <A NAME="point-size">Point Size</A>
 	<DD>
 	  In traditional typography a 10pt font was one where the block of metal for
-	  each glyph was 10 points high.
+	  each glyph was 10 points high. The point size of a font is the unleaded baseline
+	  to baseline distance.
 	<DT>
 	  <A NAME="postScript">PostScript</A>
 	<DD>
@@ -703,11 +834,42 @@
 	  <P>
 	  I would welcome examples from other scripts of serifed and sans-serifed glyphs.
 	<DT>
+	  <A NAME="SFNT">SFNT</A>
+	<DD>
+	  The name for the generic font format which contains TrueType, OpenType, Apple's
+	  bitmap only, X11's bitmap only, and Adobe's SING fonts (and no doubt others).
+	  The SFNT format describes how font tables should be laid out within a file.
+	  Each of the above formats follow this general idea but include more specific
+	  requirements (such as what tables are needed, and the format of each table).
+	<DT>
 	  <A NAME="spline">Spline</A>
 	<DD>
 	  A curved line segment. See the <A HREF="overview.html#intro">section in the
-	  manual on splines</A>. The splines used in FontForge are all third order
-	  <A HREF="#bezier">B&eacute;zier</A> splines.
+	  manual on splines</A>. The splines used in FontForge are all second or third
+	  order <A HREF="#bezier">B&eacute;zier</A> splines.
+	<DT>
+	  State machine
+	<DD>
+	  A state machine is like a very simple little program, they are used on the
+	  mac for performing contextual substitutions, and kerning. The
+	  <A HREF="statemachine.html" TARGET="_top">state machine dialog </A>is reachable
+	  from <A HREF="fontinfo.html#Mac-SM" TARGET="_top">Element-&gt;Font
+	  Info-&gt;Mac State Machine</A>
+	  <P>
+	  The "state machine" consists of a table of states, each state in turn consists
+	  of a series of potential transitions (to the same or different states) depending
+	  on the input. In state machines within fonts, the machine starts out in a
+	  special state called the start state, and reads the glyph stream of the text.
+	  Each individual glyph will cause a state transition to occur. As these
+	  transitions occur the machine may also specify changes to the glyph stream
+	  (conditional substitutions or kerning).
+	  <P>
+	  <A HREF="editexample6-5.html#Apple" TARGET="_top">Example</A>
+	<DT>
+	  Strike
+	<DD>
+	  A particular instance of a font. Most commonly a bitmap strike is a particular
+	  pixelsize of a font.
 	<DT>
 	  <A NAME="style">Style</A>
 	<DD>
@@ -744,6 +906,13 @@
     <TD BGCOLOR=yellow><A NAME="T">T</A></TD>
     <TD><DL>
 	<DT>
+	  <A NAME="Thorn">Thorn</A>
+	<DD>
+	  The germanic letter "&thorn;" used for the unvoiced (English) "th" sound
+	  (as in the word "thorn"), I believe this is approximately the same sound
+	  value as Greek Theta. Currently a corrupt version of this glyph survives
+	  as "y<SUP>e</SUP>" for "the". See also <A HREF="#Eth">Eth</A>.
+	<DT>
 	  <A NAME="truetype">True Type</A>
 	<DD>
 	  A type of font invented by Apple and shared with MicroSoft. It specifies
@@ -751,8 +920,9 @@
 	  innovative hinting controls, and an expandable series of tables for containing
 	  whatever additional information is deemed imported to the font.
 	  <P>
-	  Apple and Adobe/MicroSoft have expanded these tables in different ways, although
-	  attempting to achieve the same effect.
+	  Apple and Adobe/MicroSoft have expanded these tables in different ways to
+	  include for advanced typographic features needed for non-latin scripts (or
+	  for complex latin scripts).
 	<DT>
 	  <A NAME="TrueType-tables">TrueType Tables</A>
 	<DD>
@@ -793,6 +963,14 @@
 	  used in the world. See the <A HREF="http://www.unicode.org/">Unicode
 	  consortium</A>.<BR>
 	  <A HREF="index.html#Unicode">More info.</A>
+	<DT>
+	  <A NAME="UniqueID">UniqueID</A>
+	<DD>
+	  This is a field in a PostScript font, it was formerly used as a mechanism
+	  for identifying fonts uniquely, then Adobe decided it was not sufficient
+	  and created the XUID (extended Unique ID) field. Adobe has now decided that
+	  both are unneeded.<BR>
+	  There is a very similar field in the TrueType 'name' table.
       </DL>
     </TD>
   </TR>

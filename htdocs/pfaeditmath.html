@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jul-2003 -->
-  <!-- AP: Last modified: 24-Feb-2005 -->
+  <!-- AP: Last modified: 22-Mar-2005 -->
   <TITLE>FontForge's math</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -187,7 +187,7 @@ slope (leaving me with component normal to the original slope), and take
 the dot product of this normal component with the slope from the <I>other</I>
 end-point, and multiply this by the unit slope of the <I>other</I> end point
 and adjust its control point by this amount (CP<SUB>o</SUB> +=
-len2*Unit-Slope<SUB>o</SUB>). 
+len2*Unit-Slope<SUB>o</SUB>).
 <H3>
   Nor did that
 </H3>
@@ -195,7 +195,7 @@ len2*Unit-Slope<SUB>o</SUB>).
 What I do now is calculate the slope vectors at the endpoints and then try
 many reasonable lengths for those vectors and see which yields the best
 approximation to the original curve (this gives us our new control points).
-No need for least squares at all.
+No need for least squares at all. 
   <HR>
 <H4>
   <SUP><A NAME="guess-t">1</A></SUP>Guessing values for t
@@ -277,7 +277,7 @@ must figure out either a round, miter or bevelled edge.
 </H3>
 <P>
 This is really just the same as a circular pen. Let us say we want an ellipse
-which is twice as wide as it is high. The before stroking the path, let's
+which is twice as wide as it is high. Then before stroking the path, let's
 scale it to 50% in the horizontal direction, then stroke it with a circular
 pen, and then scale it back by 200% horizontally. The result will be as if
 we had used an elliptical pen.
@@ -311,7 +311,8 @@ and on the inside edge we calculate a join as above.
 <P>
 FontForge does not currently do this (the UI for specifying an arbitrary
 polygon is a little difficult), but the same method which works for a rectangle
-can be extended without too much difficulty to any convex polygon.
+can be extended without too much difficulty to any convex polygon. (MetaFont
+fonts can be drawn with such a pen. I don't know if any are)
 <H3>
   A pen of variable width
 </H3>
@@ -322,6 +323,7 @@ Extending the above algorithms is fairly simple.
   A pen at a varying angle
 </H3>
 <P>
-FontForge does not support this. I don't see a good UI for it.
+FontForge does not support this. I don't see a good UI for it. (MetaFont
+fonts can be drawn with such a pen).
 <P>
 </BODY></HTML>

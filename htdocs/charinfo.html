@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 13-Oct-2004 -->
+  <!-- AP: Last modified: 22-Mar-2005 -->
   <TITLE>Char Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -137,7 +137,7 @@ In Latin, Cyrillic, Greek fonts only glyphs like "m" are allowed to have
 counter masks, and only in very controlled conditions. See the description
 of <A HREF="hinting.html#Counter">counter masks</A>.<BR CLEAR=ALL>
 <P>
-<IMG SRC="charinfo-counters.png" WIDTH="305" HEIGHT="400" ALIGN="Right">
+<IMG SRC="charinfo-counters.png" WIDTH="307" HEIGHT="409" ALIGN="Right">
 Some <A NAME="components">glyphs</A> (ligatures, accented glyphs, Hangul
 syllables, etc.) are built up out of other glyphs (at least according to
 unicode). This pane of the dlg shows the components that Unicode says make
@@ -168,12 +168,30 @@ These two dialogs allow you to specify an otf feature tag and all the other
 impedimenta that go along with it. They are used by
 <A HREF="charinfo.html#Character">Glyph Info</A> (above) to specify
 substitutions, positions, and ligatures, as well as by
-<A HREF="fontinfo.html#Anchors">Font Info</A> to specify anchor classes.
+<A HREF="fontinfo.html#Anchors">Font Info</A> to specify anchor classes and
+contextual features.
 <P>
-You must either specify an opentype feature tag (a four glyph tag like 'liga',
-see the section on <A HREF="gposgsub.html">GPOS and GSUB</A> for feature
-tags), or an apple feature/setting value (Something like &lt;2,2&gt; where
-the first number is the feature and the second the setting for that feature).
+You must either specify an opentype feature tag (a four glyph tag like 'liga'
+-- these are defined by
+<A HREF="http://partners.adobe.com/public/developer/opentype/index_tag3.html">Microsoft
+&amp; Adobe</A>, see the section on <A HREF="gposgsub.html">GPOS and GSUB</A>
+for more information), or an apple feature/setting value (Something like
+&lt;2,2&gt; where the first number is the feature and the second the setting
+for that feature). These features tell the opentype (or ATSUI) engine what
+this substitution is supposed to do.
+<P>
+<FONT COLOR="Red"><STRONG><BIG>CAVEAT: </BIG></STRONG></FONT>OpenType engines
+will only apply features which they believe are appropriate for the current
+script (in Latin scripts, Uniscribe will apply 'ccmp' and 'liga' (character
+composition/decomposition and ligature) features but will not apply 'medi'
+(substitution with a medial glyph variant) features because Latin doesn't
+need such a feature -- at least so they claim). Even worse, some applications
+may choose not to apply any features ever (Word does not do ligatures in
+latin).
+<A HREF="http://www.microsoft.com/typography/specs/default.htm">Microsoft
+tries to document </A>what features they apply for which scripts in Uniscribe,
+but that isn't very helpful since Word and Office have quite different behavior
+than the default.
 <P>
 In <A NAME="lookup-flags">addition</A> you must specify a set of
 <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats.html">flags</A>

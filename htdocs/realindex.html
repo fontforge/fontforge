@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 12-Feb-2003 -->
-  <!-- AP: Last modified: 10-Mar-2005 -->
+  <!-- AP: Last modified: 22-Mar-2005 -->
   <TITLE>Index</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -40,6 +40,8 @@
 	<LI>
 	  <A TARGET="_top" HREF="acorn2sfd.html">acorn2sfd</A>
 	<LI>
+	  <A HREF="FAQ.html#new-name" TARGET="_top">Adding more glyphs to a font</A>
+	<LI>
 	  Advance Width
 	  <UL>
 	    <LI>
@@ -48,7 +50,23 @@
 	      <A TARGET="_top" HREF="charview.html#set-width">Setting in outline glyph
 	      view</A>
 	    <LI>
+	      <A HREF="bitmapview.html#Tools" TARGET="_top">Setting in the bitmap view</A>
+	    <LI>
 	      <A TARGET="_top" HREF="metricsmenu.html#Width">Setting via menu item</A>
+	  </UL>
+	<LI>
+	  Advanced Typography
+	  <UL>
+	    <LI>
+	      <A HREF="gposgsub.html" TARGET="_top">GSUB, GPOS &amp; morx</A>
+	    <LI>
+	      <A HREF="showatt.html" TARGET="_top">Examining features</A>
+	    <LI>
+	      Creating with <A HREF="charinfo.html" TARGET="_top">Element-&gt;Glyph Info</A>
+	    <LI>
+	      Creating with <A HREF="fontinfo.html" TARGET="_top">Element-&gt;Font Info</A>
+	    <LI>
+	      See <A HREF="#Feature">Feature</A>
 	  </UL>
 	<LI>
 	  <A TARGET="_top" HREF="gposgsub.html#GSUB">alternate substitution</A> (in
@@ -68,6 +86,12 @@
 	    <LI>
 	      <A TARGET="_top" HREF="pointmenu.html#AddAnchor">Creating Anchor points (or
 	      attachment points)</A>
+	    <LI>
+	      <A HREF="anchorcontrol.html" TARGET="_top">Examining and changing</A>
+	      <UL>
+		<LI>
+		  <A HREF="anchorcontrol.html#DeviceTable">Device tables </A>and
+	      </UL>
 	  </UL>
 	<LI>
 	  Anchor points
@@ -264,6 +288,14 @@
 	      <A HREF="contextchain.html">Modifying</A>
 	  </UL>
 	<LI>
+	  <A HREF="changelog.html" TARGET="_top">Changelog</A>
+	  <UL>
+	    <LI>
+	      <A HREF="oldchangelog.html" TARGET="_top">older</A>
+	    <LI>
+	      <A HREF="pfaeditchangelog.html" TARGET="_top">oldest</A>
+	  </UL>
+	<LI>
 	  Character
 	  <UL>
 	    <LI>
@@ -308,7 +340,7 @@
 	  <A TARGET="_top" HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5176.CFF.pdf">Compact
 	  File Format (CFF)</A>
 	<LI>
-	  Condensed
+	  Condensed style
 	  <UL>
 	    <LI>
 	      <A TARGET="_top" HREF="glossary.html#condensed">Definition</A>
@@ -316,34 +348,32 @@
 	      <A TARGET="_top" HREF="metafont.html">Using the metafont command to create</A>
 	  </UL>
 	<LI>
-	  <A TARGET="_top" HREF="gposgsub.html#GPOS">contextual positioning</A> (in
-	  GPOS)
+	  Contextual features
 	  <UL>
 	    <LI>
-	      <A HREF="fontinfo.html#Contextual">Creating</A>
+	      OpenType (<A HREF="gposgsub.html#GSUB" TARGET="_top">substitutions</A>,
+	      <A HREF="gposgsub.html#GSUB" TARGET="_top">ligatures</A>,
+	      <A HREF="gposgsub.html#GPOS" TARGET="_top">kerning</A>, positioning)
+	      <UL>
+		<LI>
+		  <A HREF="fontinfo.html#Contextual" TARGET="_top">Creating</A>
+		<LI>
+		  <A HREF="contextchain.html" TARGET="_top">Modifying</A>
+		<LI>
+		  <A HREF="editexample6-5.html#Apple" TARGET="_top">Example</A>
+	      </UL>
 	    <LI>
-	      <A HREF="contextchain.html">Modifying</A>
-	  </UL>
-	<LI>
-	  <A TARGET="_top" HREF="gposgsub.html#morx">contextual glyph substitution
-	  </A>(in morx)
-	  <UL>
-	    <LI>
-	      In some cases this can be done. See the
-	      <A HREF="realindex.html#Contextual-Substitution-GSUB">OpenType Contextual
-	      Substitution</A> tables
-	  </UL>
-	<LI>
-	  <A TARGET="_top" HREF="gposgsub.html#morx">contextual glyph insertion </A>(in
-	  morx) (not supported yet)
-	<LI>
-	  <A TARGET="_top" HREF="gposgsub.html#GSUB">contextual substitution</A> (in
-	  <A NAME="Contextual-Substitution-GSUB">GSUB</A>)
-	  <UL>
-	    <LI>
-	      <A HREF="fontinfo.html#Contextual">Creating</A>
-	    <LI>
-	      <A HREF="contextchain.html">Modifying</A>
+	      Apple fonts (<A HREF="gposgsub.html#morx" TARGET="_top">substitutions</A>,
+	      <A HREF="gposgsub.html#morx" TARGET="_top">glyph insertion</A>, indic
+	      rearangement, <A HREF="gposgsub.html#kern" TARGET="_top">kerning</A>)
+	      <UL>
+		<LI>
+		  <A HREF="fontinfo.html#Mac-SM" TARGET="_top">Creating</A>
+		<LI>
+		  <A HREF="statemachine.html" TARGET="_top">Modifying</A>
+		<LI>
+		  <A HREF="editexample6-5.html#Apple" TARGET="_top">Example</A>
+	      </UL>
 	  </UL>
 	<LI>
 	  CopyMetaData
@@ -363,8 +393,17 @@
 	      Font Info</A>
 	  </UL>
 	<LI>
-	  <A TARGET="_top" HREF="gposgsub.html#GPOS">cursive attachment</A> (in GPOS)
+	  Cubic splines
+	  <UL>
+	    <LI>
+	      <A HREF="bezier.html" TARGET="_top">Example</A>
+	    <LI>
+	      <A HREF="fontinfo.html#PS-General" TARGET="_top">Setting font order</A> (by
+	      turning off quadratic splines)
+	  </UL>
 	<LI>
+	  <A TARGET="_top" HREF="gposgsub.html#GPOS">cursive attachment</A> (in GPOS)
+	  <P>
 	  <A TARGET="_top" HREF="gposgsub.html#cursive-connection">cursive connection
 	  </A>(in morx)
 	<LI>
@@ -410,6 +449,15 @@
 	      <A TARGET="_top" HREF="glossary.html#point">See also Point</A>
 	  </UL>
 	<LI>
+	  <A HREF="display.html" TARGET="_top">Display dialog</A> (for examining fonts
+	  on the screen)
+	<LI>
+	  Distortable font
+	  <UL>
+	    <LI>
+	      See <A HREF="realindex.html#Multi-Master">Multi-Master</A>
+	  </UL>
+	<LI>
 	  Downloads
 	  <UL>
 	    <LI>
@@ -434,6 +482,8 @@
   <TR VALIGN=TOP>
     <TD BGCOLOR=yellow><A NAME="E">E</A></TD>
     <TD><UL>
+	<LI>
+	  <A HREF="overview.html#three-sticks" TARGET="_top">Eeyore</A>
 	<LI>
 	  em
 	  <UL>
@@ -481,7 +531,7 @@
 	<LI>
 	  <A TARGET="_top" HREF="editexample2.html#even-odd">Even-Odd fill rule</A>
 	<LI>
-	  Extended
+	  Extended style
 	  <UL>
 	    <LI>
 	      <A TARGET="_top" HREF="glossary.html#extended">Definition</A>
@@ -508,6 +558,27 @@
 	  </UL>
 	<LI>
 	  <A TARGET="_top" HREF="faqFS.html">FAQ</A>
+	<LI>
+	  <A NAME="Feature">Feature</A> (in advanced typography tables)
+	  <UL>
+	    <LI>
+	      <A HREF="http://partners.adobe.com/public/developer/opentype/index_tag3.html"
+		  TARGET="_top">Feature tags (OpenType)</A>
+	    <LI>
+	      <A HREF="http://developer.apple.com/fonts/Registry/index.html" TARGET="_top">Feature/Settings
+	      (Apple)</A>
+	    <LI>
+	      <A HREF="gposgsub.html#OT-Mac-features">mapping between the two</A>
+	      <UL>
+		<LI>
+		  <A HREF="prefs.html#Mapping">changing the mapping</A>
+	      </UL>
+	    <LI>
+	      <A HREF="charinfo.html#Feature-Tag" TARGET="_top">Feature tag dialog</A>
+	    <LI>
+	      <A HREF="fontinfo.html#TTF-Values" TARGET="_top">ordering</A> features within
+	      GSUB/GPOS/morx
+	  </UL>
 	<LI>
 	  fig files (generated by xfig)
 	  <UL>
@@ -543,6 +614,8 @@
 	  </UL>
 	<LI>
 	  <A TARGET="_top" HREF="index.html#Formats">Font File Formats</A>
+	<LI>
+	  <A HREF="fontinfo.html" TARGET="_top">Font Info dialog</A>
 	<LI>
 	  <A TARGET="_top" HREF="http://www.fontlab.com/">FontLab</A>
 	<LI>
@@ -590,6 +663,13 @@
 	      Seeing the results of (freetype based) glyph
 	      <A HREF="charview.html#GridFit">grid fitting</A>
 	  </UL>
+	<LI>
+	  FullName
+	  <UL>
+	    <LI>
+	      <A TARGET="_top" HREF="fontinfo.html#Names">Setting with Font Info</A> (as
+	      human readable name)
+	  </UL>
       </UL>
     </TD>
   </TR>
@@ -605,9 +685,31 @@
 	  <UL>
 	    <LI>
 	      <A TARGET="_top" HREF="glossary.html#glyph">Definition</A>
+	    <LI>
+	      <A HREF="charinfo.html" TARGET="_top">Element-&gt;Glyph Info</A>
+	    <LI>
+	      <A HREF="charinfo.html#comment" TARGET="_top">Color</A>
+	    <LI>
+	      <A HREF="charinfo.html#comment" TARGET="_top">Comment</A>
+	    <LI>
+	      components
+	      <UL>
+		<LI>
+		  <A HREF="charinfo.html#components" TARGET="_top">Standard components as specified
+		  by Unicode</A>
+		<LI>
+		  <A HREF="charinfo.html#ligature" TARGET="_top">Actual components as given
+		  in ligatures</A>
+	      </UL>
+	    <LI>
+	      <A HREF="charinfo.html" TARGET="_top">Name</A>
+	    <LI>
+	      <A HREF="charinfo.html" TARGET="_top">Unicode code point assignment</A>
 	  </UL>
 	<LI>
 	  <A TARGET="_top" HREF="prefs.html#DumpGlyphMap">GlyphMap</A>
+	<LI>
+	  <A HREF="charinfo.html" TARGET="_top">Glyph Info dialog</A>
 	<LI>
 	  <A TARGET="_top" HREF="gposgsub.html#GPOS">GPOS</A> opentype table
 	<LI>
@@ -644,6 +746,14 @@
     <TD BGCOLOR=yellow><A NAME="H">H</A></TD>
     <TD><UL>
 	<LI>
+	  <A HREF="helpmenu.html" TARGET="_top">Help</A>
+	  <UL>
+	    <LI>
+	      <A HREF="cliargs.html#BROWSER" TARGET="_top">Specifying a browser</A>
+	  </UL>
+	<LI>
+	  <A HREF="prefs.html#HelpDir" TARGET="_top">HelpDir</A> preference item
+	<LI>
 	  <A NAME="Hints">Hints</A>
 	  <UL>
 	    <LI>
@@ -665,6 +775,8 @@
 		  <A HREF="histogram.html">BlueValues</A>
 		<LI>
 		  <A HREF="histogram.html">StemSnap</A>
+		<LI>
+		  <A HREF="fontinfo.html#Private" TARGET="_top">Setting in Private dictionary</A>
 	      </UL>
 	    <LI>
 	      <A HREF="overview.html#HintOrder">Order in which to use FontForge's commands
@@ -679,15 +791,9 @@
 	      </UL>
 	  </UL>
 	<LI>
-	  <A HREF="helpmenu.html" TARGET="_top">Help</A>
-	  <UL>
-	    <LI>
-	      <A HREF="cliargs.html#BROWSER" TARGET="_top">Specifying a browser</A>
-	  </UL>
-	<LI>
-	  <A HREF="prefs.html#HelpDir" TARGET="_top">HelpDir</A> preference item
-	<LI>
 	  <A TARGET="_top" HREF="prefs.html#HintForGen">HintForGen</A> preference item
+	<LI>
+	  <A HREF="histogram.html" TARGET="_top">Histograms</A> for StemSnap and BlueValues
 	<LI>
 	  <A TARGET="_top" HREF="HotKeys.html">Hot Keys</A>
       </UL>
@@ -794,18 +900,26 @@
 	      <A HREF="editexample5.html#VKern">Vertical Kerning</A>
 	  </UL>
 	<LI>
+	  <A HREF="metricsview.html#kernclass">Kerning by classes</A>
+	<LI>
 	  Kern pair
 	  <UL>
 	    <LI>
 	      <A TARGET="_top" HREF="glossary.html#kern-pair">Definition</A>
 	    <LI>
-	      Setting kern pairs from the metrics view
+	      <A HREF="metricsview.html" TARGET="_top">Setting kern pairs from the metrics
+	      view</A>
 	    <LI>
-	      Setting kern pairs with auto kern
+	      <A HREF="autowidth.html#AutoKern" TARGET="_top">Setting kern pairs with auto
+	      kern</A>
 	    <LI>
-	      Examining kern pairs from the metrics view
+	      <A HREF="metricsview.html" TARGET="_top">Examining kern pairs from the metrics
+	      view</A>
 	    <LI>
-	      Examining kern pairs from the combinations menu
+	      <A HREF="kernpair.html" TARGET="_top">Examining kern pairs from the combinations
+	      menu</A>
+	    <LI>
+	      <A HREF="metricsview.html#kernpair">And Device tables</A>
 	  </UL>
       </UL>
     </TD>
@@ -859,6 +973,14 @@
 	      <A TARGET="_top" HREF="fontinfo.html#TTF-Values">Setting with Font Info</A>
 	  </UL>
 	<LI>
+	  Line Spacing
+	  <UL>
+	    <LI>
+	      <A HREF="FAQ.html#pointsize" TARGET="_top">Traditional line spacing</A>
+	    <LI>
+	      <A HREF="FAQ.html#linespace" TARGET="_top">Setting line spacing in a font</A>
+	  </UL>
+	<LI>
 	  License
 	  <UL>
 	    <LI>
@@ -899,6 +1021,8 @@
 	      conversion</A> preference item
 	    <LI>
 	      <A HREF="gposgsub.html#AAT" TARGET="_top">Mac Features in morx table</A>
+	    <LI>
+	      <A HREF="macformats.html" TARGET="_top">Mac font formats</A>
 	  </UL>
 	<LI>
 	  <A TARGET="_top" HREF="index.html#Mail">Mailing lists</A>
@@ -955,6 +1079,8 @@
 	    <LI>
 	      <A TARGET="_top" HREF="cidmenu.html">CID</A>
 	    <LI>
+	      <A HREF="mmmenu.html" TARGET="_top">MM</A>
+	    <LI>
 	      <A TARGET="_top" HREF="windowmenu.html">Window</A>
 	    <LI>
 	      <A TARGET="_top" HREF="helpmenu.html">Help</A>
@@ -969,6 +1095,8 @@
 	    <LI>
 	      <A TARGET="_top" HREF="metricsview.html">In Depth</A>
 	  </UL>
+	<LI>
+	  <A HREF="overview.html#three-sticks" TARGET="_top">Milne, A. A.</A>
 	<LI>
 	  Monospace
 	  <UL>
@@ -985,8 +1113,27 @@
 	      to otf feature tags
 	  </UL>
 	<LI>
-	  <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5015.Type1_Supp.pdf">Multiple
-	  Master PostScript font</A>
+	  <A NAME="Multi-Master">Multiple</A> Master font
+	  <UL>
+	    <LI>
+	      <A HREF="mmmenu.html#Create" TARGET="_top">Creating</A>
+	    <LI>
+	      <A HREF="multiplemaster.html" TARGET="_top">Editing</A>
+	    <LI>
+	      <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5015.Type1_Supp.pdf"
+		  TARGET="_top">Adobe's docs</A>
+	    <LI>
+	      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6fvar.html" TARGET="_top">Apple's
+	      docs</A>
+	  </UL>
+	<LI>
+	  multi-layered fonts
+	  <UL>
+	    <LI>
+	      <A HREF="glossary.html#multi-layered" TARGET="_top">Discussion</A>
+	    <LI>
+	      <A HREF="fontinfo.html#PS-General" TARGET="_top">Setting font type</A>
+	  </UL>
 	<LI>
 	  <A TARGET="_top" HREF="gposgsub.html#GSUB">multiple substitution</A> (in
 	  GSUB)
@@ -997,6 +1144,8 @@
     <TD BGCOLOR=yellow><A NAME="N">N</A></TD>
     <TD><UL>
 	<LI>
+	  <A HREF="fontinfo.html#Names" TARGET="_top">Naming a font</A>
+	<LI>
 	  <A TARGET="_top" HREF="prefs.html#NewCharset">NewCharset</A> preference item
 	<LI>
 	  <A TARGET="_top" HREF="prefs.html#NewEmSize">NewEmSize</A> preference item
@@ -1006,6 +1155,11 @@
 	<LI>
 	  <A TARGET="_top" HREF="gposgsub.html#morx">non-contextual glyph substitution
 	  </A>(in morx)
+	<LI>
+	  <A HREF="non-standard.html" TARGET="_top">non-standard SFNT (TrueType)
+	  tables</A>
+	<LI>
+	  <A HREF="non-standard.html" TARGET="_top">non-standard OpenType features</A>
 	<LI>
 	  <A TARGET="_top" HREF="editexample2.html#non-zero">non-zero winding number
 	  rule</A>
@@ -1086,6 +1240,8 @@
 	      <A TARGET="_top" HREF="glossary.html#point">See Also Point</A>
 	  </UL>
 	<LI>
+	  <A HREF="overview.html#three-sticks" TARGET="_top">Piglet</A>
+	<LI>
 	  Point
 	  <UL>
 	    <LI>
@@ -1121,12 +1277,27 @@
 	    <LI>
 	      <A TARGET="_top" HREF="filemenu.html#prefs">Menu command</A>
 	  </UL>
+	<LI>
+	  Private dictionary
+	  <UL>
+	    <LI>
+	      <A HREF="fontinfo.html#Private" TARGET="_top">Setting font wide hinting
+	      information</A>
+	  </UL>
       </UL>
     </TD>
   </TR>
   <TR VALIGN=TOP>
     <TD BGCOLOR=yellow><A NAME="Q">Q</A></TD>
     <TD><UL>
+	<LI>
+	  Quadratic splines
+	  <UL>
+	    <LI>
+	      <A HREF="bezier.html" TARGET="_top">Example</A>
+	    <LI>
+	      <A HREF="fontinfo.html#PS-General" TARGET="_top">Setting font order</A>
+	  </UL>
 	<LI>
 	  Quit
 	  <UL>
@@ -1141,6 +1312,8 @@
   <TR VALIGN=TOP>
     <TD BGCOLOR=yellow><A NAME="R">R</A></TD>
     <TD><UL>
+	<LI>
+	  <A HREF="fontinfo.html#Encoding" TARGET="_top">Reencoding a font</A>
 	<LI>
 	  Reference
 	  <UL>
@@ -1206,6 +1379,11 @@
 	      </UL>
 	  </UL>
 	<LI>
+	  <A HREF="charinfo.html#lookup-flags">Script &amp; language dialog</A>
+	<LI>
+	  <A HREF="http://partners.adobe.com/public/developer/opentype/index_tag1.html"
+	      TARGET="_top">Script tags</A>
+	<LI>
 	  <A TARGET="_top" HREF="scripting.html">Scripting</A>
 	<LI>
 	  Script menu
@@ -1216,10 +1394,23 @@
 	      <A TARGET="_top" HREF="filemenu.html#ScriptMenu">menu</A>
 	  </UL>
 	<LI>
+	  Search
+	  <UL>
+	    <LI>
+	      <A HREF="search.html" TARGET="_top">Search for a shape</A> (and replace it
+	      with another)
+	  </UL>
+	<LI>
 	  Serif
 	  <UL>
 	    <LI>
 	      <A TARGET="_top" HREF="glossary.html#serif">Definition</A>
+	  </UL>
+	<LI>
+	  sfd (Spline Font Database)
+	  <UL>
+	    <LI>
+	      <A HREF="sfdformat.html" TARGET="_top">format</A>
 	  </UL>
 	<LI>
 	  <A TARGET="_top" HREF="sfddiff.html">sfddiff</A>
@@ -1249,6 +1440,14 @@
 	<LI>
 	  <A TARGET="_top" HREF="sfdformat.html">Spline font database format</A>
 	<LI>
+	  State machines
+	  <UL>
+	    <LI>
+	      <A HREF="statemachine.html" TARGET="_top">dialog</A>
+	    <LI>
+	      <A HREF="editexample6-5.html#Apple" TARGET="_top">example</A>
+	  </UL>
+	<LI>
 	  StdHW/StdVW
 	  <UL>
 	    <LI>
@@ -1273,6 +1472,13 @@
 	      <A HREF="charview.html#freehand">Freehand tool</A>
 	  </UL>
 	<LI>
+	  Stroked font
+	  <UL>
+	    <LI>
+	      Setting font type with
+	      <A HREF="fontinfo.html#PS-General" TARGET="_top">Element-&gt;FontInfo</A>
+	  </UL>
+	<LI>
 	  Style
 	  <UL>
 	    <LI>
@@ -1293,10 +1499,74 @@
     <TD BGCOLOR=yellow><A NAME="T">T</A></TD>
     <TD><UL>
 	<LI>
+	  <A HREF="TrueOpenTables.html">tables</A> (in SFNTs -- TrueType/OpenType files)
+	<LI>
+	  <A HREF="nvd.html">Table of Contents </A>(sort of )
+	<LI>
+	  Tags
+	  <UL>
+	    <LI>
+	      SFNT tags (table tags)
+	      <UL>
+		<LI>
+		  <A HREF="TrueOpenTables.html" TARGET="_top">Used in FontForge</A>
+		<LI>
+		  <A HREF="http://partners.adobe.com/public/developer/opentype/index_tables.html"
+		      TARGET="_top">Defined by OpenType</A>
+		<LI>
+		  <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6.html" TARGET="_top">Defined
+		  by Apple</A>
+	      </UL>
+	    <LI>
+	      OpenType tags
+	      <UL>
+		<LI>
+		  <A HREF="http://partners.adobe.com/public/developer/opentype/index_tag3.html"
+		      TARGET="_top">Feature</A>
+		<LI>
+		  <A HREF="http://partners.adobe.com/public/developer/opentype/index_tag1.html"
+		      TARGET="_top">Script</A>
+		<LI>
+		  <A HREF="http://partners.adobe.com/public/developer/opentype/index_tag2.html"
+		      TARGET="_top">Language</A>
+		<LI>
+		  <A HREF="http://partners.adobe.com/public/developer/opentype/index_tag4.html"
+		      TARGET="_top">Baseline</A>
+	      </UL>
+	  </UL>
+	<LI>
 	  TeX
 	  <UL>
 	    <LI>
 	      <A HREF="PfaEdit-TeX.html#TeX-Install">Installing fonts for TeX</A>
+	    <LI>
+	      <A HREF="fontinfo.html#TeX" TARGET="_top">font parameters</A>
+	    <LI>
+	      <A HREF="generate.html#TFM" TARGET="_top">generating tfm files</A>
+	    <LI>
+	      <A HREF="non-standard.html#TeX" TARGET="_top">'TeX ' table in SFNT files</A>
+	    <LI>
+	      <A HREF="PfaEdit-TeX.html" TARGET="_top">general notes</A>
+	  </UL>
+	<LI>
+	  tfm files
+	  <UL>
+	    <LI>
+	      <A HREF="generate.html#TFM" TARGET="_top">generating tfm files</A>
+	    <LI>
+	      <A HREF="filemenu.html#Merge-kern" TARGET="_top">loading kerning information
+	      from a tfm file</A>
+	  </UL>
+	<LI>
+	  Transform
+	  <UL>
+	    <LI>
+	      <A HREF="transform.html" TARGET="_top">Transform dialog</A>
+	    <LI>
+	      <A HREF="transform.html#Non-Linear" TARGET="_top">non-linear
+	      transformations</A>
+	    <LI>
+	      <A HREF="transform.html#PoV" TARGET="_top">Point of View transformations</A>
 	  </UL>
 	<LI>
 	  <A NAME="TrueType">True</A> Type
@@ -1385,12 +1655,17 @@
     <TD BGCOLOR=yellow><A NAME="U">U</A></TD>
     <TD><UL>
 	<LI>
+	  <A HREF="fontinfo.html#PS-General" TARGET="_top">Underline Position &amp;
+	  Size</A>
+	<LI>
 	  <A HREF="editmenu.html#Undo" TARGET="_top">Undo</A> menu item
 	<LI>
 	  <A HREF="prefs.html#UndoDepth" TARGET="_top">UndoDepth</A> preference item
 	<LI>
 	  UniqueID
 	  <UL>
+	    <LI>
+	      <A HREF="glossary.html#UniqueID" TARGET="_top">Discussion</A>
 	    <LI>
 	      <A TARGET="_top" HREF="fontinfo.html#PS-General">Setting with Font Info</A>
 	  </UL>
@@ -1411,12 +1686,33 @@
     <TD BGCOLOR=yellow><A NAME="V">V</A></TD>
     <TD><UL>
 	<LI>
+	  Version (Font Version)
+	  <UL>
+	    <LI>
+	      Setting PostScript with
+	      <A HREF="fontinfo.html#Names" TARGET="_top">Element-&gt;Font Info</A>
+	    <LI>
+	      Setting CID with
+	      <A HREF="fontinfo.html#Names" TARGET="_top">Element-&gt;Font Info</A>
+	    <LI>
+	      Setting TrueType with
+	      <A HREF="fontinfo.html#TTF-Names" TARGET="_top">Element-&gt;Font Info</A>
+	  </UL>
+	<LI>
+	  Vertical Advance Width
+	  <UL>
+	    <LI>
+	      <A HREF="metricsmenu.html#vertical" TARGET="_top">Setting via menu item</A>
+	    <LI>
+	      <A HREF="charview.html#set-width">Setting in outline glyph view</A>
+	  </UL>
+	<LI>
 	  Vertical Metrics
 	  <UL>
 	    <LI>
-	      <A TARGET="_top" HREF="fontinfo.html#PS-General">Setting with Font Info</A>
+	      <A TARGET="_top" HREF="fontinfo.html#PS-General">Enabling with Font Info</A>
 	    <LI>
-	      Setting in the glyph view
+	      <A HREF="charview.html#set-width">Setting in the glyph view</A>
 	  </UL>
 	<LI>
 	  Vertical Origin
@@ -1447,9 +1743,15 @@
 	      <A TARGET="_top" HREF="glossary.html#advance-width">Advance width</A>
 	    <LI>
 	      Vertical Advance Width
+	      <UL>
+		<LI>
+		  <A HREF="metricsmenu.html#vertical" TARGET="_top">Settng via menu item</A>
+	      </UL>
 	    <LI>
 	      <A TARGET="_top" HREF="charview.html#set-width">Setting in outline glyph
 	      view</A>
+	    <LI>
+	      <A HREF="bitmapview.html#Tools" TARGET="_top">Setting in bitmap view</A>
 	    <LI>
 	      <A TARGET="_top" HREF="metricsmenu.html#Width">Setting via menu item</A>
 	  </UL>
@@ -1488,6 +1790,8 @@
 	<LI>
 	  XUID
 	  <UL>
+	    <LI>
+	      <A HREF="glossary.html#UniqueID" TARGET="_top">Discussion</A>
 	    <LI>
 	      <A TARGET="_top" HREF="fontinfo.html#PS-General">Setting with Font Info</A>
 	    <LI>

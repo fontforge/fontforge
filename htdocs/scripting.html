@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 10-Mar-2005 -->
+  <!-- AP: Last modified: 13-Mar-2005 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -583,6 +583,46 @@ a[4][0] = "Nested array";
     Ceil(real)
   <DD>
     Converts a real number to the smallest integer larger than the real.
+  <DT>
+    IsNan(real)
+  <DD>
+    Returns whether the value is a nan.
+  <DT>
+    IsFinite(real)
+  <DD>
+    Returns whether the value is finite (not infinite and not a nan).
+  <DT>
+    Sqrt(val)
+  <DD>
+    Returns the square root
+  <DT>
+    Exp(val)
+  <DD>
+    Returns e^val
+  <DT>
+    Log(val)
+  <DD>
+    Returns the natural log of val.
+  <DT>
+    Pow(val1,val2)
+  <DD>
+    Returns val1^val2
+  <DT>
+    Sin(val)
+  <DD>
+    Returns the sine of val
+  <DT>
+    Cos(val)
+  <DD>
+    Returns the cosine of val
+  <DT>
+    Tan(val)
+  <DD>
+    Returns the tangent of val
+  <DT>
+    ATan2(val1,val2)
+  <DD>
+    Returns the arc-tangent. See atan2(3) for more info.
   <DT>
     Utf8(int)
   <DD>
@@ -1943,33 +1983,49 @@ ApplySubstitution("*","*","vrt2")
     Returns the entry indexed by key in the private dictionary. All return values
     will be strings. If an entry does not exist a null string is returned.
   <DT>
+    <A NAME="SelectBitmap">SelectBitmap</A>(size)
+  <DD>
+    In a bitmap only font this selects which bitmap strike will be used for units
+    in the following metrics commands. If no bitmap is selected, then the units
+    should be in em-units, otherwise units will be in pixels of the given bitmap
+    strike. The size should be the pixelsize of the font. If you use anti-aliased
+    fonts then size should be set to (depth&lt;&lt;16)|pixel_size. A value of
+    -1 for size deselects all bitmaps (units become em-units).
+  <DT>
     <A HREF="metricsmenu.html#Width">SetWidth</A>(width[,relative])
   <DD>
     If the second argument is absent or zero then the width will be set to the
     first argument, if the second argument is 1 then the width will be incremented
     by the first, and if the argument is 2 then the width will be scaled by
-    &lt;first argument&gt;/100.0 .
+    &lt;first argument&gt;/100.0 . In bitmap only fonts see the comment at
+    <A HREF="scripting.html#SelectBitmap">SelectBitmap</A> about units.
   <DT>
     <A HREF="metricsmenu.html#vertical">SetVWidth</A>(vertical-width[,relative])
   <DD>
     If the second argument is absent or zero then the vertical width will be
     set to the first argument, if the second argument is 1 then the vertical
     width will be incremented by the first, and if the argument is 2 then the
-    vertical width will be scaled by &lt;first argument&gt;/100.0 .
+    vertical width will be scaled by &lt;first argument&gt;/100.0 . In bitmap
+    only fonts see the comment at
+    <A HREF="scripting.html#SelectBitmap">SelectBitmap</A> about units.
   <DT>
     <A HREF="metricsmenu.html#LBearing">SetLBearing</A>(lbearing[,relative])
   <DD>
     If the second argument is absent or zero then the left bearing will be set
     to the first argument, if the second argument is 1 then the left bearing
     will be incremented by the first, and if the argument is 2 then the left
-    bearing will be scaled by &lt;first argument&gt;/100.0 .
+    bearing will be scaled by &lt;first argument&gt;/100.0 . In bitmap only fonts
+    see the comment at <A HREF="scripting.html#SelectBitmap">SelectBitmap</A>
+    about units.
   <DT>
     <A HREF="metricsmenu.html#RBearing">SetRBearing</A>(rbearing[,relative])
   <DD>
     If the second argument is absent or zero then the right bearing will be set
     to the first argument, if the second argument is 1 then the right bearing
     will be incremented by the first, and if the argument is 2 then the right
-    bearing will be scaled by &lt;first argument&gt;/100.0 .
+    bearing will be scaled by &lt;first argument&gt;/100.0 . In bitmap only fonts
+    see the comment at <A HREF="scripting.html#SelectBitmap">SelectBitmap</A>
+    about units.
   <DT>
     <A HREF="metricsmenu.html#Center">CenterInWidth</A>()
   <DD>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
-  <!-- AP: Last modified: 13-Oct-2004 -->
+  <!-- AP: Last modified: 22-Mar-2005 -->
   <TITLE>Building accented glyphs</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -35,6 +35,8 @@
     <A HREF="editexample6.html#Variants">Glyph variants</A>
   <LI>
     <A HREF="editexample6.html#Marks">Anchoring marks</A>
+  <LI>
+    <A HREF="editexample6-5.html#Conditional">Conditional features</A>
   <LI>
     <A HREF="editexample7.html#checking">Checking your font</A>
   <LI>
@@ -150,6 +152,16 @@ them on the origin FontForge will ignore them. But once you have built your
 ligature you might want to move the pointer tool over to the origin line,
 press the button and drag one of the caret lines to its correct location.
 (Only TrueType and OpenType support this).
+<P>
+<FONT COLOR="Red"><STRONG><BIG>CAVEAT: </BIG></STRONG></FONT>OpenType engines
+will only apply features which they believe are appropriate for the current
+script (in Latin scripts, Uniscribe will apply 'liga'). Even worse, some
+applications may choose not to apply any features ever (Word does not do
+ligatures in latin).
+<A HREF="http://www.microsoft.com/typography/specs/default.htm">Microsoft
+tries to document </A>what features they apply for which scripts in Uniscribe,
+but that isn't very helpful since Word and Office have quite different behavior
+than the default.
 <P>
 There are a good many ligatures needed for the indic scripts, but Unicode
 does not provide an encoding for them. If you wish to build a ligature that
