@@ -1,31 +1,86 @@
+INSTALLING A BINARY DISTRIBUTION
+    If I have an rpm for your system, use that. (my redhat rpms work on mandrake
+    too, they probably work on other i386 systems). There are debian packages
+    available on the debian site. 
+    Download the appropriate binary from
+    	http://pfaedit.sourceforge.net/index.html#binary
+    If it is a .tgz file then it should contain
+	A README file or two
+	pfaedit      -- the executable
+	pfaedit.1    --	the man page.
+	pfaedit-*.ui --	various user interface string files for different
+			languages
+    You should:
+    	$ su
+	# mkdir -p /usr/local/bin /usr/local/man/man1 /usr/local/share/pfaedit
+	# mv pfaedit /usr/local/bin
+	# mv pfaedit.1 /usr/local/man/man1
+	# mv *.ui /usr/local/share/pfaedit
 
-I appologize for the roughness of this process, this is all new stuff and it's
-not completely finished.
+    You may need to add /usr/local/bin to your PATH environment variable (and
+    /usr/local/man to your MANPATH environment variable). If you use bash edit
+    .bashrc and add
+    	PATH=${PATH}:/usr/local/bin
+	if test "${MANPATH:-}" == "" ; then
+	    MANPATH=/usr/local/man ; export MANPATH
+	else
+	    MANPATH=${MANPATH}:/usr/local/man ; export MANPATH
+	endif
+    Or if you use csh, tcsh, etc. edit your .cshrc and add:
+    	setenv PATH ${PATH}:/usr/local/bin
+	if ( $?MANPATH == "0" ) then
+	    setenv MANPATH /usr/local/man
+	else
+	    setenv MANPATH ${MANPATH}:/usr/local/man
+	endif
 
 BUILDING
-    This distribution comes in three parts which should merge nicely
-    If you just are interested in pfaedit then
-	cd to this directory
-	$ setenv CFLAGS -g
+    Just download the file pfaedit_full-*.tgz which you will find on
+	http://pfaedit.sourceforge.net/index.html#source
+    Move it somewhere appropriate (/usr/local/src perhaps?) and type:
+	$ gunzip pfaedit_full-*.tgz ; tar xf pfaedit_full-*.tar
+	$ cd pfaedit
 	$ configure
 	$ make
+	$ su
+	# make install
 
-    The first part is a unicode data library, to build it
-	cd to this directory
-	$ configure
-	$ make libgunicode
-    The second part is a unicode widget package, to build it
-	cd to this directory
-	$ configure
-	$ make gdraw
-    The third part is pfaedit.
-	cd to this directory
-	$ configure
-	$ make pfaedit
+More complex installations
+    "make install" will also install a few other things which are not part of
+    the standard package, but which are useful for some people.
+    CIDMAPS:
+	If you are going to be editing CID keyed fonts you should also down-
+	load my cidmap files from
+		http://pfaedit.sourceforge.net/cidmaps.tgz
+	put that file in the same place as you put pfaedit_full*.tgz, then
+	    $ mkdir -p pfaedit/cidmaps
+	    $ mv cidmaps.tgz pfaedit/cidmaps
+	    $ cd pfaedit/cidmaps
+	    $ gunzip *.tgz ; tar xf *.tar
+	    $ cd ../..
+	And then proceed to do the normal install.
+    DOCUMENTATION:
+	You can choose to install PfaEdit's documentation on your system, then
+	pressing the [Help] or [F1] key within PfaEdit will go to the local
+	docs rather than those on the web.
+	Download the doc bundle from
+	    http://pfaedit.sourceforge.net/index.html#docs
+	Then (assuming you have not changed the install prefix)
+	    # mkdir -p /usr/local/share/doc/pfaedit
+	    # mv pfaedit_htdocs-*.tgz /usr/local/share/doc/pfaedit
+	    # cd /usr/local/share/doc/pfaedit
+	    # gunzip *.tgz; tar xf *.tar
 
 BUILDING for OpenVMS
     Jouk Jansen has provided me with OpenVMS makefile scripts. There should
     be mms files in all the appropriate directories.
+
+BUILDING without X11
+    PfaEdit can be built without X11. You will probably only want to do this
+    if your system lacks X (in which case configure should figure that out and
+    do it automagically). But if, for some strange reason you wish to build a
+    non-X version on a machine with X type:
+	$ configure --without-x
 
 NOTE:
     During the beta process I have the program linked with static versions of
@@ -44,20 +99,8 @@ KNOWN BUILD PROBLEMS
 	  libdl is part of libc and can't be found. Just remove it from the
 	  LIBS list in the pfaedit/makefile and rebuild.
 
-INSTALLING
-    Er, I'm not really sure of the best way to do this. If you su root (or
-    	anyone else with write access to /usr/local) and type
-	$ make install
-	then it will copy the various bits to the appropriate places in
-	/usr/local.
-	On my system you still will need to set LD_LIBRARY_PATH to include
-	/usr/local/lib (during beta this comment is irrelevant)
-
-At some point I'm going to provide docs for gdraw and make it useful. For now
-It's just included as something pfaedit needs.
-
 Please report any bugs to
-	gww@silcom.com
+	pfaedit-devel@lists.sourceforge.net
 
 Documentation is at:
 	http://pfaedit.sourceforge.net/index.html
