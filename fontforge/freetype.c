@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#include "edgelist2.h"
 #include <gwidget.h>
 #include <ustring.h>
 #include <math.h>
@@ -553,7 +554,12 @@ static int FT_MoveTo(FT_Vector *to,void *user) {
     context->last = context->cpl->first = chunkalloc(sizeof(SplinePoint));
     context->last->me.x = to->x*context->scale;
     context->last->me.y = to->y*context->scale;
-    context->last->ttfindex = context->orig_sp?context->orig_sp->ttfindex: -2;
+    if ( context->orig_sp==NULL )
+	context->last->ttfindex = -2;
+    else {
+	context->last->ttfindex = context->orig_sp->ttfindex;
+	context->last->nextcpindex = context->orig_sp->nextcpindex;
+    }
 return( 0 );
 }
 
@@ -568,8 +574,10 @@ static int FT_LineTo(FT_Vector *to,void *user) {
 
     if ( context->orig_sp!=NULL && context->orig_sp->next!=NULL ) {
 	context->orig_sp = context->orig_sp->next->to;
-	if ( context->orig_sp!=NULL )
+	if ( context->orig_sp!=NULL ) {
 	    sp->ttfindex = context->orig_sp->ttfindex;
+	    sp->nextcpindex = context->orig_sp->nextcpindex;
+	}
     }
 return( 0 );
 }
@@ -589,8 +597,10 @@ static int FT_ConicTo(FT_Vector *_cp, FT_Vector *to,void *user) {
 
     if ( context->orig_sp!=NULL ) {
 	context->orig_sp = context->orig_sp->next->to;
-	if ( context->orig_sp!=NULL )
+	if ( context->orig_sp!=NULL ) {
 	    sp->ttfindex = context->orig_sp->ttfindex;
+	    sp->nextcpindex = context->orig_sp->nextcpindex;
+	}
     }
 return( 0 );
 }
@@ -922,7 +932,11 @@ void DebuggerReset(struct debugger_context *dc,real ptsize,int dpi,int dbg_fpgm)
 
     if ( dc->has_thread ) {
 	dc->terminate = true;
+	pthread_mutex_lock(&dc->child_mutex);
 	pthread_cond_signal(&dc->child_cond);	/* Wake up child and get it to clean up after itself */
+	pthread_mutex_unlock(&dc->child_mutex);
+	pthread_mutex_unlock(&dc->parent_mutex);
+
 	pthread_join(dc->thread,NULL);
 	dc->has_thread = false;
     }
@@ -1078,6 +1092,67 @@ return( dc->watch );
 int DebuggingFpgm(struct debugger_context *dc) {
 return( dc->debug_fpgm );
 }
+
+static void GridSetMonotonics(Monotonic *ms,Monotonic **space, uint8 *row,
+	double y, double x,int width, real grid_spacing) {
+    int i, b, winding;
+    Monotonic *m;
+
+    MonotonicFindAt(ms,1,y,space);
+    winding = 0;
+    b = 0;
+    for ( i=0; space[i]!=NULL; ++i ) {
+	m = space[i];
+	while ( x<m->other && b<width ) {
+	    if ( winding )
+		row[b>>3] |= 0x80>>(b&7);
+	    ++b;
+	    x += grid_spacing;
+	}
+	if ( m->yup ) ++winding; else --winding;
+    }
+    if ( winding!=0 )
+	fprintf( stderr, "Winding did not return to 0 when y=%g\n", y );
+}
+
+struct freetype_raster *DebuggerCurrentRasterization(SplineSet *spl,real grid_spacing) {
+    /* Do a very simple rasterization (no dropout work, etc.) based on testing*/
+    /*  whether the center of each grid point is within the splineset */
+    DBounds b;
+    Monotonic *ms, *m, **space;
+    struct freetype_raster *ret;
+    int cnt, i;
+
+    if ( spl==NULL )
+return( NULL );
+
+    SplineSetFindBounds(spl,&b);
+
+    ret = galloc(sizeof(struct freetype_raster));
+    ret->as = ceil(b.maxy/grid_spacing);
+    ret->lb = floor(b.minx/grid_spacing);
+    ret->rows = ret->as - floor(b.miny/grid_spacing) +1;
+    ret->cols = ceil(b.maxx/grid_spacing) - ret->lb +1;
+    ret->bytes_per_row = (ret->cols+7)/8;
+    ret->num_greys = 2;
+	/* Can't find any description of freetype's bitendianness */
+	/* But the obvious seems to work */
+    ret->bitmap = gcalloc(ret->rows*ret->bytes_per_row,1);
+
+    ms = SSsToMContours(spl,over_remove);	/* second argument is meaningless here */
+    for ( m=ms, cnt=0; m!=NULL; m=m->linked, ++cnt );
+    space = galloc((cnt+2)*sizeof(Monotonic*));
+
+    for ( i=0; i<ret->rows; ++i ) {
+	GridSetMonotonics(ms,space,ret->bitmap+i*ret->bytes_per_row,
+		(ret->as-i)*grid_spacing-grid_spacing/2,
+		ret->lb*grid_spacing+grid_spacing/2,ret->cols, grid_spacing);
+    }
+
+    free(space);
+    FreeMonotonics(ms);
+return( ret );
+}
 #else
 struct debugger_context;
 
@@ -1108,5 +1183,9 @@ return( NULL );
 
 int DebuggingFpgm(struct debugger_context *dc) {
 return( false );
+}
+
+struct freetype_raster *DebuggerCurrentRasterization(SplineSet *spl,real grid_spacing) {
+return( NULL );
 }
 #endif	/* FREETYPE_HAS_DEBUGGER && !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)*/

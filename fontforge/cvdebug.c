@@ -401,6 +401,7 @@ return( head );
 
 static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
     int range = exc==NULL ? cr_none : exc->curRange;
+    CharView *cv = dv->cv;
 
     /* Code to look for proper function/idef rather than the full fpgm table */
     if ( exc==NULL ) {
@@ -414,21 +415,29 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
     } else
 	IIScrollTo(&dv->ii,exc->IP,true);
 
-    if ( dv->cv!=NULL && dv->cv->coderange!=range ) {
-	dv->cv->coderange = range;
-	CVInfoDraw(dv->cv,dv->cv->gw);
+    if ( cv!=NULL && cv->coderange!=range ) {
+	cv->coderange = range;
+	CVInfoDraw(cv,cv->gw);
     }
-    
+
+    if ( cv!=NULL && cv->raster!=NULL ) {
+	FreeType_FreeRaster(cv->raster);
+	cv->raster = NULL;
+    }
 
     if ( exc!=NULL ) {
-	SplinePointListsFree(dv->cv->gridfit);
-	dv->cv->gridfit = SplineSetsFromPoints(&exc->pts,dv->scale);
+	SplinePointListsFree(cv->gridfit);
+	cv->gridfit = SplineSetsFromPoints(&exc->pts,dv->scale);
+	cv->raster = DebuggerCurrentRasterization(cv->gridfit,
+		(cv->sc->parent->ascent+cv->sc->parent->descent) / (real) cv->ft_ppem);
 	if ( exc->pts.n_points!=0 )
-	    dv->cv->ft_gridfitwidth = exc->pts.cur[exc->pts.n_points-1].x * dv->scale;
+	    cv->ft_gridfitwidth = exc->pts.cur[exc->pts.n_points-1].x * dv->scale;
 	else
-	    dv->cv->ft_gridfitwidth = 0;
-	GDrawRequestExpose(dv->cv->v,NULL,false);
+	    cv->ft_gridfitwidth = 0;
     }
+
+    if ( cv!=NULL )
+	GDrawRequestExpose(cv->v,NULL,false);
     if ( dv->regs!=NULL )
 	GDrawRequestExpose(dv->regs,NULL,false);
     if ( dv->stack!=NULL )
@@ -1086,7 +1095,8 @@ return( DVChar(dv,event));
       break;
       case et_destroy:
 	dv->dv = NULL;
-	CVDebugFree(dv);
+	if ( dv->cv!=NULL )
+	    CVDebugFree(dv);
 	free(dv->id.bts);
 	free(dv);
       break;
@@ -1155,6 +1165,7 @@ void CVDebugFree(DebugView *dv) {
 		CVInfoDraw(cv,cv->gw);
 	    }
 	}
+	dv->cv = NULL;
     }
 }
 
