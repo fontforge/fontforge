@@ -93,7 +93,11 @@ static int makenomenh() {
     char *pt;
     int off, i;
     int ismn;
+#ifdef __VMS
+    stat_t stat_buf;
+#else
     struct stat stat_buf;
+#endif
 
     names = malloc(nlen*sizeof(unichar_t *));
     hadmn = calloc(nlen,sizeof(char));
@@ -492,7 +496,11 @@ static void ProcessNames(char *filename,char *lc,char *uc) {
     int isuni, ismn, index, ch;
     int enc=0;
     int missing;
+#ifdef __VMS
+    stat_t stat_buf;
+#else
     struct stat stat_buf;
+#endif
 
     values = calloc(npos+1,sizeof(unichar_t *));
     mn = calloc(npos,sizeof(unichar_t));
