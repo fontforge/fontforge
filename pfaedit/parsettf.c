@@ -2068,6 +2068,51 @@ static struct dup *makedup(SplineChar *sc, int uni, struct dup *prev) {
 return( d );
 }
 
+static int modenc(int enc,int modtype) {
+    if ( modtype<=1 /* Unicode */ ) {
+	/* No conversion */;
+    } else if ( modtype==2 /* SJIS */ ) {
+	if ( enc<=127 ) {
+	    /* Latin */
+	    if ( enc=='\\' ) enc = 0xa5;	/* Yen */
+	} else if ( enc>=161 && enc<=223 ) {
+	    /* Katakana */
+	    enc = unicode_from_jis201[enc];
+	} else {
+	    int ch1 = enc>>8, ch2 = enc&0xff;
+	    if ( ch1 >= 129 && ch1<= 159 )
+		ch1 -= 112;
+	    else
+		ch1 -= 176;
+	    ch1 <<= 1;
+	    if ( ch2>=159 )
+		ch2-= 126;
+	    else if ( ch2>127 ) {
+		--ch1;
+		ch2 -= 32;
+	    } else {
+		--ch1;
+		ch2 -= 31;
+	    }
+	    enc = unicode_from_jis208[(ch1-0x21)*94+(ch2-0x21)];
+	}
+    } else if ( modtype==3 /* BIG5 */ ) {
+	if ( enc>0xa100 )
+	    enc = unicode_from_big5[enc-0xa100];
+	else if ( enc>0x100 )
+	    enc = -1;
+    } else if ( modtype==5 /* Wansung == KSC 5601, I hope */ ) {
+	if ( enc>0xa1a1 ) {
+	    enc -= 0xa1a1;
+	    enc = (enc>>8)*94 + (enc&0xff);
+	    enc = unicode_from_ksc5601[enc];
+	    if ( enc==0 ) enc = -1;
+	} else if ( enc>0x100 )
+	    enc = -1;
+    }
+return( enc );
+}
+
 static void readttfencodings(FILE *ttf,struct ttfinfo *info) {
     int i,j;
     int nencs, version;
@@ -2079,6 +2124,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info) {
     int segCount;
     uint16 *endchars, *startchars, *delta, *rangeOffset, *glyphs;
     int index;
+    int mod = 0;
 
     fseek(ttf,info->encoding_start,SEEK_SET);
     version = getushort(ttf);
@@ -2092,12 +2138,17 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info) {
 	if ( platform==3 && specific==1 ) {
 	    enc = em_unicode;
 	    encoff = offset;
+	    mod = 0;
 	} else if ( platform==3 && specific==0 && enc==em_none ) {
 	    /* Only select symbol if we don't have something better */
 	    enc = em_symbol;
 	    encoff = offset;
 	} else if ( platform==1 && specific==0 && enc!=em_unicode ) {
 	    enc = em_mac;
+	    encoff = offset;
+	} else if ( platform==3 && (specific==2 || specific==3 || specific==5) && enc!=em_unicode ) {
+	    enc = em_unicode;
+	    mod = specific;
 	    encoff = offset;
 	}
     }
@@ -2138,12 +2189,14 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info) {
 	    for ( i=0; i<len/2; ++i )
 		glyphs[i] = getushort(ttf);
 	    for ( i=0; i<segCount; ++i ) {
-		if ( rangeOffset[i]==0 ) {
+		if ( rangeOffset[i]==0 && startchars[i]==0xffff )
+		    /* Done */;
+		else if ( rangeOffset[i]==0 ) {
 		    for ( j=startchars[i]; j<=endchars[i]; ++j ) {
 			if ( info->chars[(uint16) (j+delta[i])]->unicodeenc==-1 )
-			    info->chars[(uint16) (j+delta[i])]->unicodeenc = j;
+			    info->chars[(uint16) (j+delta[i])]->unicodeenc = modenc(j,mod);
 			else
-			    info->dups = makedup(info->chars[(uint16) (j+delta[i])],j,info->dups);
+			    info->dups = makedup(info->chars[(uint16) (j+delta[i])],modenc(j,mod),info->dups);
 		    }
 		} else if ( rangeOffset[i]!=0xffff ) {
 		    /* It isn't explicitly mentioned by a rangeOffset of 0xffff*/
@@ -2154,9 +2207,9 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info) {
 			if ( index!=0 ) {
 			    index = (unsigned short) (index+delta[i]);
 			    if ( info->chars[index]->unicodeenc==-1 )
-				info->chars[index]->unicodeenc = j;
+				info->chars[index]->unicodeenc = modenc(j,mod);
 			    else
-				info->dups = makedup(info->chars[index],j,info->dups);
+				info->dups = makedup(info->chars[index],modenc(j,mod),info->dups);
 			}
 		    }
 		}
@@ -2644,6 +2697,12 @@ return( NULL );
     sf->fontname = info.fontname;
     sf->fullname = info.fullname;
     sf->familyname = info.familyname;
+    if ( sf->fontname==NULL ) {
+	sf->fontname = copy(sf->fullname);
+	if ( sf->fontname==NULL )
+	    sf->fontname = copy(sf->familyname);
+	if ( sf->fontname==NULL ) sf->fontname = copy("UntitledTTF");
+    }
     sf->weight = info.weight ? info.weight : copy("");
     sf->copyright = info.copyright;
     sf->version = info.version;
