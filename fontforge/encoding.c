@@ -1362,7 +1362,7 @@ return;
     CIDFlatten(cidmaster,chars,max);
 }
 
-void SFFlattenByCMap(SplineFont *sf,char *cmapname) {
+int SFFlattenByCMap(SplineFont *sf,char *cmapname) {
     struct cmap *cmap;
     int i,j,k,l,m, extras, max, curmax, warned;
     int found[4];
@@ -1372,7 +1372,7 @@ void SFFlattenByCMap(SplineFont *sf,char *cmapname) {
 	sf = sf->cidmaster;
     if ( sf->subfontcnt==0 ) {
 	GWidgetErrorR(_STR_NotACIDFont,_STR_NotACIDFont);
-return;
+return(false);
     }
     if ( cmapname==NULL ) {
 	unichar_t *uret = GWidgetOpenFile(GStringGetResource(_STR_FindCMap,NULL),NULL,NULL,NULL,CMapFilter);
@@ -1380,10 +1380,10 @@ return;
 	free(uret);
     }
     if ( cmapname==NULL )
-return;
+return(true);
     cmap = ParseCMap(cmapname);
     if ( cmap==NULL )
-return;
+return(false);
     CompressCMap(cmap);
     max = 0;
     for ( i=0; i<cmap->groups[cmt_cid].n; ++i ) {
@@ -1392,7 +1392,7 @@ return;
 	if ( cmap->groups[cmt_cid].ranges[i].last>0x100000 ) {
 	    GWidgetErrorR(_STR_EncodingTooLarge,_STR_EncodingTooLarge);
 	    cmapfree(cmap);
-return;
+return(false);
 	}
     }
 
@@ -1463,6 +1463,7 @@ return;
     sf->remap = cmap->remap; cmap->remap = NULL;
     cmapfree(cmap);
     SFRestoreNearTop(sf);
+return( true );
 }
 
 static int Enc2CMap(struct cmap *cmap,int enc) {
