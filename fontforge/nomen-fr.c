@@ -1114,6 +1114,7 @@ static unichar_t str_TeXMathExt = { 0x3a4, 0x3b5, 0x3a7, ' ','M','a','t','h',' '
 static char *str_MoreParams = "Autres paramètres" ;
 static char *str_DesignSize = "Corps optique :" ;
 static char *str_DesignSizePopup = "Le corps (en points) pour lequel cette fonte a été dessinée" ;
+static char *str_Pts = "Points" ;
 static char *str_Slant = "Pente :" ;
 static char *str_SlantPopup = "Dans une fonte italique, déplacement horizontal correspondant à un déplacement vertical de 1"
 static char *str_Space = "Espace mots :" ;
