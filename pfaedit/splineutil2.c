@@ -2623,11 +2623,19 @@ SplineSet *SplineSetsDetectDir(SplineSet **_base,int *_lastscan) {
     int i, winding,change,waschange;
     int lastscan = *_lastscan;
     SplineChar dummy;
+#ifdef PFAEDIT_CONFIG_TYPE3
+    Layer layers[2];
+#endif
 
     base = *_base;
 
     memset(&el,'\0',sizeof(el));
     memset(&dummy,'\0',sizeof(dummy));
+#ifdef PFAEDIT_CONFIG_TYPE3
+    memset(layers,0,sizeof(layers));
+    dummy.layers = layers;
+#endif
+    dummy.layer_cnt = 2;
     dummy.layers[ly_fore].splines = base;
     ELFindEdges(&dummy,&el);
     el.major = 1;
