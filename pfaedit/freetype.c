@@ -38,11 +38,11 @@ void *FreeTypeFontContext(SplineFont *sf,SplineChar *sc,int doall) {
 return( NULL );
 }
 
-BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize) {
+BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int bitmap) {
 return( NULL );
 }
 
-BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,int pixelsize) {
+BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,int pixelsize,int bitmap) {
 return( NULL );
 }
 
