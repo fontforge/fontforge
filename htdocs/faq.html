@@ -2,12 +2,14 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 20-Jan-2003 -->
+  <!-- AP: Last modified: 27-Jan-2003 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
 <TABLE ALIGN="Right">
-<TR><TD><A HREF="faqFS.html" TARGET="_top">Frames</A></TD></TR>
+  <TR>
+    <TD><A HREF="faqFS.html" TARGET="_top">Frames</A></TD>
+  </TR>
 </TABLE>
 <H1 ALIGN=Center>
   Frequently Asked Questions<BR>
@@ -28,14 +30,16 @@
     <A HREF="#How-mac">How do I edit fonts from my macintoy?</A>
     <UL>
       <LI>
-	<A HREF="#How-family">How do I create a mac font family? (How do I get the mac to group my fonts so that the italic and bold styles work)?</A>
+	<A HREF="#How-family">How do I create a mac font family? (How do I get the
+	mac to group my fonts so that the italic and bold styles work)?</A>
       <LI>
 	<A HREF="#Mac-ATM">Why doesn't ATM work with my fonts?</A>
     </UL>
   <LI>
     <A HREF="#windows">How do I edit fonts on MS windows?</A>
   <LI>
-    <A HREF="#kern-info">Does Pfaedit read in the old kerning information from fonts?</A>
+    <A HREF="#kern-info">Does Pfaedit read in the old kerning information from
+    fonts?</A>
   <LI>
     <A HREF="#hint-subs">How do I make it use hint substitution?</A>
   <LI>
@@ -68,14 +72,15 @@
     <A HREF="#no-copy-names">Why doesn't Edit-&gt;Copy copy character names as
     well as glyph info?</A>
   <LI>
-    <A HREF="#copy-names">Why does Edit-&gt;Paste complain about name duplication?</A>
+    <A HREF="#copy-names">Why does Edit-&gt;Paste complain about name
+    duplication?</A>
   <LI>
     <A HREF="#cidmaps">What on earth are the cidmap files, and should I care
     about them?</A>
-<UL>
-  <LI>
-    <A HREF="cidmenu.html#CID">(What is a CID-keyed font?)</A>
-</UL>
+    <UL>
+      <LI>
+	<A HREF="cidmenu.html#CID">(What is a CID-keyed font?)</A>
+    </UL>
   <LI>
     <A HREF="#simplify">Does the simplify command lose accuracy?</A>
   <LI>
@@ -104,9 +109,9 @@
     to build one of the Extended Greek characters (U+1F00-U+1FFF) PfaEdit picks
     the wrong accents. Why?</A>
   <LI>
-    <A HREF="#u-accents">When I use Element-&gt;Build Accented Character
-    to build accents over "u" or "y" I get the accent over one of the stems not
-    centered on the character. Why?</A>
+    <A HREF="#u-accents">When I use Element-&gt;Build Accented Character to build
+    accents over "u" or "y" I get the accent over one of the stems not centered
+    on the character. Why?</A>
   <LI>
     <A HREF="#ttf2afm">Why does ttf2afm crash on PfaEdit ttf files?</A>
   <LI>
@@ -126,9 +131,9 @@
 	There are lots of latin fonts. There are far fewer greek, cyrillic, indic,
 	thai, chinese, japanese, korean, unicode...
       <LI>
-	Even for latin, traditionally each new style of art and architecture has an associated style
-	of fonts. New fonts are always being created to reflect the esthetics of
-	the times.
+	Even for latin, traditionally each new style of art and architecture has
+	an associated style of fonts. New fonts are always being created to reflect
+	the esthetics of the times.
       <LI>
 	Computer font technology is constantly changing. A font-format that was useful
 	10 years ago may not be so now.
@@ -176,12 +181,15 @@
     My understanding of US law (but check with a lawyer before relying on this)
     is that:
     <UL>
-      <LI>There is no legal protection for font designs. So legally in the US
-      glyph images may be traced. Obviously this is not ethical if the font
-      designer is currently alive.
-      <LI>Font programs (such as a postscript or truetype font file, but not
-      a bitmap font file) may be copyrighted.
-      <LI>Font names may be trademarked.
+      <LI>
+	There is no legal protection for font designs. So legally in the US glyph
+	images may be traced. Obviously this is not ethical if the font designer
+	is currently alive.
+      <LI>
+	Font programs (such as a postscript or truetype font file, but not a bitmap
+	font file) may be copyrighted.
+      <LI>
+	Font names may be trademarked.
     </UL>
     <P>
     I would welcome any additions or corrections here, as well as info on the
@@ -252,7 +260,7 @@ $ xset fp+ `pwd`
 	<CODE> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; { "PFED", "PfaEdit" },</CODE>
 	<P>
 	Some versions of X (ie, those shipped by redhat) rely on the x font server
-	to do font work rather than the X server itself. You may want to use chkfontpath
+	to do font work rather than the X server itself. You may need to use chkfontpath
 	to add your new directory to the font server's font path (rather than xset
 	fp).<BR>
 	You may also need to insure that the font directory (and all its parent
@@ -282,10 +290,14 @@ $ xset fp+ `pwd`
       <DD>
 	You install truetype fonts on windows by dropping them into the \Windows\Fonts
 	directory on your machine.<BR>
-	If you want to use type1 or opentype fonts you may need to install adobe
-	type manager and follow its instructions.<BR>
+	If you want to use type1 fonts you will need to install adobe type manager
+	and follow its instructions.<BR>
+	If you want to install opentype fonts then on old systems (before windows
+	2000, I think) you need to install ATM, on more recent systems opentype should
+	work the same way truetype does.<BR>
 	I don't know how to install a bdf font. I'd look for a utility to convert
-	bdf files to FON files and then drop the FON files into \Windows\Fonts.
+	bdf files to FON files and then drop the FON files into \Windows\Fonts. Or
+	generate a bitmap-only truetype font.
       <DT>
 	<STRONG>Macintosh OS 9</STRONG>
       <DD>
@@ -309,7 +321,8 @@ $ xset fp+ `pwd`
 	(<CODE>~/Library/Fonts</CODE>).<BR>
 	Either a resource font (unwrapped from its macbinary wrapper) or a dfont
 	may be used. I'm not sure whether postscript Type1 resource fonts work, but
-	OpenType dfonts do (so if you want to use Postscript use OpenType).
+	OpenType dfonts do (so if you want to use Postscript use OpenType). You can
+	also use straight ttf and otf files.
     </DL>
   <DT>
     <A NAME="How-mac"><B>How do I edit fonts from my macintoy?</B></A>
@@ -319,8 +332,8 @@ $ xset fp+ `pwd`
 	Mac OS/9 (or less)
       <DD>
 	Traditionally the macintosh has stored fonts in the resource fork of files
-	(after about OS/8.5 I believe the mac also supported bare .ttf files).
-	This causes problems for any machine other than a mac, because the very concept
+	(after about OS/8.5 I believe the mac also supported bare .ttf files). This
+	causes problems for any machine other than a mac, because the very concept
 	of a resource fork is lacking.<BR>
 	There are several programs whose job it is to store all of a macintosh file
 	in one package that can be manipulated on other systems (mac binary and binhex
@@ -359,9 +372,9 @@ $ xset fp+ `pwd`
 	    Fonts)
 	</OL>
 	<P>
-	<STRONG>Note:</STRONG> make sure you either replace the original font
-	files, or that you rename the font within pfaedit and (for postscript
-	fonts) that you give it a new unique id. See the <A HREF="fontinfo.html">Font Info</A>
+	<STRONG>Note:</STRONG> make sure you either replace the original font files,
+	or that you rename the font within pfaedit and (for postscript fonts) that
+	you give it a new unique id. See the <A HREF="fontinfo.html">Font Info</A>
 	dlg.
 	<P>
 	<STRONG>Caveat:</STRONG> A postscript font is useless on a macintosh unless
@@ -388,23 +401,25 @@ $ xset fp+ `pwd`
       <DT>
 	Mac OS/X
       <DD>
-	On Mac OS/X you can run <A HREF="MacOSX.html#Running">PfaEdit
-	directly</A> (if you've got <A HREF="MacOSX.html#binary">XDarwin
-	installed</A>). OS/X has several font formats, some fonts are stored
-	in the old format (see above), while others are stored as data fork resources.
-	The data fork font files generally have the extension ".dfont". On a Mac
-	PfaEdit is able to edit both formats directly. OS/X also supports
-	normal .otf and .ttf font files.
+	On Mac OS/X you can run <A HREF="MacOSX.html#Running">PfaEdit directly</A>
+	(if you've got <A HREF="MacOSX.html#binary">XDarwin installed</A>). OS/X
+	has several font formats, some fonts are stored in the old format (see above),
+	while others are stored as data fork resources. The data fork font files
+	generally have the extension ".dfont". On a Mac PfaEdit is able to edit both
+	formats directly. OS/X also supports normal .otf and .ttf font files.
     </DL>
   <DT>
-    <B><A NAME="How-family">How do I create a mac font family? (How do I get the mac to group my fonts so that the italic and bold styles work)?</A></B>
+    <B><A NAME="How-family">How do I create a mac font family? (How do I get
+    the mac to group my fonts so that the italic and bold styles work)?</A></B>
   <DD>
-    For the Style menu in most mac applications to work on your fonts, you must create a font family.
-    You do this with the <A HREF="filemenu.html#GenerateMac">File->Generate Mac Family</A> command.
+    For the Style menu in most mac applications to work on your fonts, you must
+    create a font family. You do this with the
+    <A HREF="filemenu.html#GenerateMac">File-&gt;Generate Mac Family</A> command.
     <P>
-    All the fonts in a family must have the same Family name (See the <A HREF="fontinfo.html">font info</A> dialog).
-    Mac font families only support Italic, Bold, Outline, Expanded, and Condensed styles, they
-    do not support "Black", "DemiBold", "Light" or "Thin" varients.
+    All the fonts in a family must have the same Family name (See the
+    <A HREF="fontinfo.html">font info</A> dialog). Mac font families only support
+    Italic, Bold, Outline, Expanded, and Condensed styles, they do not support
+    "Black", "DemiBold", "Light" or "Thin" varients.
   <DT>
     <B><A NAME="Mac-ATM">Why doesn't ATM work on my fonts?</A></B>
   <DD>
@@ -413,10 +428,10 @@ $ xset fp+ `pwd`
     This is really a limitation on ATM's part and there's nothing PfaEdit can
     do about it.
     <P>
-    If you generate a font with an encoding other than Mac Roman, then the
-    Mac's default behavior is to force the postscript font to have a mac roman
-    encoding. There is a mechanism to turn this behavior off, but if it is turned
-    off then ATM won't work at all.
+    If you generate a font with an encoding other than Mac Roman, then the Mac's
+    default behavior is to force the postscript font to have a mac roman encoding.
+    There is a mechanism to turn this behavior off, but if it is turned off then
+    ATM won't work at all.
   <DT>
     <B>How do I edit fonts on MS <A NAME="windows">windows</A>?</B>
   <DD>
@@ -429,8 +444,8 @@ $ xset fp+ `pwd`
       <LI>
 	Run it. It will ask you what components of cygwin you wish to install
       <LI>
-	You will need the base components and the X window system (NOTE: These
-	are seperate packages)
+	You will need the base components and the X window system (NOTE: These are
+	seperate packages)
       <LI>
 	Once you have cygwin installed, start it. This should give you a terminal
 	window running bash (a unix shell)
@@ -450,7 +465,7 @@ $ mv pfaedit.1 /usr/local/share/man/man1
 	<P>
 	Then edit the file ~/.bashrc by (or by whatever other tool you prefer):
 	<BLOCKQUOTE>
-	  <PRE>$ cat >> ~/.bashrc
+	  <PRE>$ cat &gt;&gt; ~/.bashrc
 PATH=${PATH}:/usr/local/bin ; export PATH
 MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
 ^D
@@ -477,42 +492,48 @@ MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
     some other cygwin components, like gcc, the image processing libraries, freetype,
     etc.
   <DT>
-    <B><A NAME="kern-info">Does Pfaedit read in the old kerning information from fonts?</A></B>
+    <B><A NAME="kern-info">Does Pfaedit read in the old kerning information from
+    fonts?</A></B>
   <DD>
     This question needs to be broken down into cases:
     <DL>
-      <DT><B>TrueType and OpenType fonts</B>
-      <DD>Yes. The kerning information is stored in either the 'kern' or 'GPOS'
-      tables of these fonts and PfaEdit can read the most common formats (Apple
-      has made a number of extensions beyond the original truetype spec, and
-      PfaEdit does not handle all the Apple formats).
-      <DT><B>PostScript Type1 fonts anywhere other than the Mac.</B>
+      <DT>
+	<B>TrueType and OpenType fonts</B>
       <DD>
-      The kerning information is not stored in a Type 1 font file. Instead it
-      is stored in a file with the same filename as the font file but with the
-      extension ".afm". When PfaEdit reads a PostScript font it will check for
-      an associated afm file, and if found will read the kerning information
-      from it.
-      <DT><B>PostScript Type1 fonts on the Mac.</B>
+	Yes. The kerning information is stored in either the 'kern' or 'GPOS' tables
+	of these fonts and PfaEdit can read the most common formats (Apple has made
+	a number of extensions beyond the original truetype spec, and PfaEdit does
+	not handle all the Apple formats).
+      <DT>
+	<B>PostScript Type1 fonts anywhere other than the Mac.</B>
       <DD>
-      No. Again the kerning information is not stored in the font file (it is
-      stored in a bitmap font file), but
-      on the mac it is impossible to guess what name to use for the associated
-      bitmap file, and PfaEdit does not even try.<BR>
-      See the info below on FONDs.
-      <DT><B>AFM and TFM files.</B>
+	The kerning information is not stored in a Type 1 font file. Instead it is
+	stored in a file with the same filename as the font file but with the extension
+	".afm". When PfaEdit reads a PostScript font it will check for an associated
+	afm file, and if found will read the kerning information from it.
+      <DT>
+	<B>PostScript Type1 fonts on the Mac.</B>
       <DD>
-      PfaEdit can read kerning information directly from these files and
-      apply those data to a font. See the <A HREF="filemenu.html#Merge-kern">File->Merge Kern Info</A> menu command.
-      <DT><B>Mac resource files containing FOND resources.</B>
+	No. Again the kerning information is not stored in the font file (it is stored
+	in a bitmap font file), but on the mac it is impossible to guess what name
+	to use for the associated bitmap file, and PfaEdit does not even try.<BR>
+	See the info below on FONDs.
+      <DT>
+	<B>AFM and TFM files.</B>
       <DD>
-      The mac stores kerning information in the FOND resource associated with
-      a bitmap font (it is not stored in the file with the postscript font).
-      If you wish kerning data for a mac postscript font, you must find a
-      font file containing a bitmap font with the same family and style as the
-      postscript.
-      PfaEdit can read kerning information directly from these files and
-      apply those data to a font. See the <A HREF="filemenu.html#Merge-kern">File->Merge Kern Info</A> menu command.
+	PfaEdit can read kerning information directly from these files and apply
+	those data to a font. See the
+	<A HREF="filemenu.html#Merge-kern">File-&gt;Merge Kern Info</A> menu command.
+      <DT>
+	<B>Mac resource files containing FOND resources.</B>
+      <DD>
+	The mac stores kerning information in the FOND resource associated with a
+	bitmap font (it is not stored in the file with the postscript font). If you
+	wish kerning data for a mac postscript font, you must find a font file containing
+	a bitmap font with the same family and style as the postscript. PfaEdit can
+	read kerning information directly from these files and apply those data to
+	a font. See the <A HREF="filemenu.html#Merge-kern">File-&gt;Merge Kern Info</A>
+	menu command.
     </DL>
   <DT>
     <A NAME="hint-subs"><B>How do I make PfaEdit use hint substitution?</B></A>
@@ -539,27 +560,33 @@ MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
   <DT>
     <A NAME="new-encoding"><B>How I do tell pfaedit about a new encoding</B></A>
   <DD>
-    First ask yourself if you really need a new encoding? If you are using
-    OpenType or TrueType fonts you can usually get by with the standard unicode
-    encoding. But if you really need a new one here is a rough idea of what to do:
-    <P>Figure out what your encoding looks like. Often this will involve
-      searching around the web to find an example of that encoding. For instance
-      if you want a devanagari encoding you might look at
-      <A HREF="http://www.cwi.nl/~dik/english/codes/indic.html">a site which
-      shows the ISCII encodings</A>
-      <P>
-      These encodings only show the top 96 characters, presumably the others
-      are the same as US ASCII. Look at the images and figure out how they map
-      to unicode (or more precisely what the appropriate postscript names are
-      for those characters).
+    First ask yourself if you really need a new encoding? If you are using OpenType
+    or TrueType fonts you can usually get by with the standard unicode encoding.
+    But if you really need a new one here is a rough idea of what to do:
     <P>
-      Create a file (call it "Devanagari.ps" in this case). It should start with
-      a line:
-<BLOCKQUOTE><PRE>/Devanagari {</PRE></BLOCKQUOTE>
-      <P>This tells PfaEdit that the encoding is called "Devanagari", then follow
-      this with a list of all the character names (preceded by a slash). We start
-      with ASCII which starts with 32 .notdef characters, then space, etc.
-<BLOCKQUOTE><PRE>/Devanagari {
+    Figure out what your encoding looks like. Often this will involve searching
+    around the web to find an example of that encoding. For instance if you want
+    a devanagari encoding you might look at
+    <A HREF="http://www.cwi.nl/~dik/english/codes/indic.html">a site which shows
+    the ISCII encodings</A>
+    <P>
+    These encodings only show the top 96 characters, presumably the others are
+    the same as US ASCII. Look at the images and figure out how they map to unicode
+    (or more precisely what the appropriate postscript names are for those
+    characters).
+    <P>
+    Create a file (call it "Devanagari.ps" in this case). It should start with
+    a line:
+    <BLOCKQUOTE>
+      <PRE>/Devanagari {
+</PRE>
+    </BLOCKQUOTE>
+    <P>
+    This tells PfaEdit that the encoding is called "Devanagari", then follow
+    this with a list of all the character names (preceded by a slash). We start
+    with ASCII which starts with 32 .notdef characters, then space, etc.
+    <BLOCKQUOTE>
+      <PRE>/Devanagari {
  /.notdef
  /.notdef
  ...
@@ -577,10 +604,12 @@ MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
  /uni0902
  ...
  /uni096F
-}</PRE></BLOCKQUOTE>
-      <P>
-      Now load this file into PfaEdit's list of encodings with Element->Font Info->Encoding->Load, and
-      then apply it to whatever fonts you want.
+}
+</PRE>
+    </BLOCKQUOTE>
+    <P>
+    Now load this file into PfaEdit's list of encodings with Element-&gt;Font
+    Info-&gt;Encoding-&gt;Load, and then apply it to whatever fonts you want.
   <DT>
     <A NAME="new-name"><B>How do I add a character with a new name?</B></A>
   <DD>
@@ -702,9 +731,10 @@ MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
     in <A HREF="editmenu.html#CharName">Edit-&gt;Copy From-&gt;Char Name</A>
     which allows you to change the default behavior.
   <DT>
-    <A NAME="copy-names"><B>Why does Edit-&gt;Paste complain about name duplication?</B></A>
+    <A NAME="copy-names"><B>Why does Edit-&gt;Paste complain about name
+    duplication?</B></A>
   <DD>
-    Because you have Edit->Copy From->Copy Metadata checked. Uncheck it.
+    Because you have Edit-&gt;Copy From-&gt;Copy Metadata checked. Uncheck it.
   <DT>
     <A NAME="cidmaps"><B>What on earth are cidmap files and should I care about
     them?</B></A>
@@ -868,16 +898,16 @@ MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
     you fill these code points with the appropriate accents then PfaEdit will
     use these rather than the latin accents.
   <DT>
-    <A NAME="u-accents"><B>When I use Element-&gt;Build Accented Character
-    to build accents over "u" or "y" I get the accent over one of the stems not
+    <A NAME="u-accents"><B>When I use Element-&gt;Build Accented Character to
+    build accents over "u" or "y" I get the accent over one of the stems not
     centered on the character. Why?</B></A>
   <DD>
     One of your stems is a little taller than the other. PfaEdit centers accents
     over the tallest point on the character. If there are several points with
     the same height, then an average is used.
     <P>
-    If you make all your stems be the same height then the accent should be
-    properly centered.
+    If you make all your stems be the same height then the accent should be properly
+    centered.
   <DT>
     <A NAME="ttf2afm"><B>Why does ttf2afm crash on PfaEdit ttf files?</B></A>
   <DD>

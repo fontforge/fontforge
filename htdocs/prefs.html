@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 2-Sep-2002 -->
-  <!-- AP: Last modified: 21-Jan-2003 -->
+  <!-- AP: Last modified: 27-Jan-2003 -->
   <TITLE>Preferences Dialog</TITLE>
 </HEAD>
 <BODY>
@@ -36,12 +36,12 @@
   <DT>
     ResourceFile
   <DD>
-    PfaEdit will read <A HREF="xres.hmtl">X Resources</A> from a property on
+    PfaEdit will read <A HREF="xres.html">X Resources</A> from a property on
     the screen. But sometimes this isn't enough. You set this preference item
     to specify a file from which these resources should be read (those on the
-    screen will also be read and will supercede those in the file).
-    <BR Clear=all>
+    screen will also be read and will supercede those in the file). <BR Clear=all>
 </DL>
+<P>
 <IMG SRC="prefs-editing.png" WIDTH="294" HEIGHT="369" ALIGN="Right">
 <DL>
   <DT>
@@ -82,20 +82,20 @@
     SnapDistance
   <DD>
     The maximum distance at which pointer motion in the character view will be
-    snapped to an interesting object (ie. a point, baseline, width line,
-    etc.). This is measured in pixels.
+    snapped to an interesting object (ie. a point, baseline, width line, etc.).
+    This is measured in pixels.
   <DT>
     JoinSnap
   <DD>
     The maximum distance between the endpoints of two splines before they will
-    join with the Edit->Join command. This is measured in pixels in the char view
-    and em-units elsewhere.
+    join with the Edit-&gt;Join command. This is measured in pixels in the char
+    view and em-units elsewhere.
   <DT>
     CopyMetaData
   <DD>
-    Controls the behavior of Edit->Copy from the fontview. Normally Copy does not
-    copy a character's metadata (name, encoding, etc.) but if this is set then it
-    will.<BR Clear=all>
+    Controls the behavior of Edit-&gt;Copy from the fontview. Normally Copy does
+    not copy a character's metadata (name, encoding, etc.) but if this is set
+    then it will.<BR Clear=all>
 </DL>
 <P>
 <IMG SRC="prefs-font.png" WIDTH="294" HEIGHT="369" ALIGN="Right">
@@ -120,14 +120,17 @@
     spaces). Whenever a postscript font is generated then this last number will
     be incremented by 1.
     <P>
-    I have registered with Adobe and they have assigned PfaEdit an extended
-    unique id base of [1021]. When you first start PfaEdit, PfaEdit will itself
-    append a couple of random numbers to this to give you your own extended unique id.
+    I have registered with Adobe and they have assigned PfaEdit an extended unique
+    id base of [1021]. When you first start PfaEdit, PfaEdit will itself append
+    a couple of random numbers to this to give you your own extended unique id.
     And individual fonts will get a fourth number added to that.
     <P>
-    If you want you may <A HREF="http://partners.adobe.com/asn/developer/type/xuid/xuidregister.jsp">register directly with Adobe</A> for your own XUID base.
+    If you want you may
+    <A HREF="http://partners.adobe.com/asn/developer/type/xuid/xuidregister.jsp">register
+    directly with Adobe</A> for your own XUID base.
     <P>
-    See also Adobe's comments on <A HREF="http://partners.adobe.com/asn/developer/type/uniqueid.html">UniqueID</A>s.
+    See also Adobe's comments on
+    <A HREF="http://partners.adobe.com/asn/developer/type/uniqueid.html">UniqueID</A>s.
   <DT>
     AskBDFResolution
   <DD>
@@ -145,14 +148,13 @@
   <DT>
     PreferCJKEncoding
   <DD>
-    This controls the loading of truetype and opentype fonts.
-    If a font contains both an unicode encoding subtable and a cjk subtable, then
-    this item allows you to pick which one PfaEdit will choose to decode.<BR Clear=ALL>
+    This controls the loading of truetype and opentype fonts. If a font contains
+    both an unicode encoding subtable and a cjk subtable, then this item allows
+    you to pick which one PfaEdit will choose to decode.<BR Clear=ALL>
   <DT>
     HintForGen
   <DD>
-    Whether characters should be automagically hinted before a font
-    is generated.
+    Whether characters should be automagically hinted before a font is generated.
 </DL>
 <DL>
   <DT>
@@ -198,13 +200,16 @@ to be invoked. The "..." button allows you to browse for script files, which
 I think have extension .pe (but which can have whatever extension you prefer
 if you don't like my conventions).<BR Clear=All>
 <H2>
-Other ways of configuring
+  Other ways of configuring
 </H2>
+<P>
 A number of things that might be controlled from a preference window are
 controlled by
 <UL>
-<LI><A HREF="xres.html">X Resources</A>
-<LI><A HREF="cliargs.html#Environment">Environment Variables</A>
+  <LI>
+    <A HREF="xres.html">X Resources</A>
+  <LI>
+    <A HREF="cliargs.html#Environment">Environment Variables</A>
 </UL>
 <P ALIGN=Center>
 -- <A HREF="filemenu.html">Prev</A> -- <A HREF="overview.html">TOC</A> --

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Jun-2001 -->
-  <!-- AP: Last modified: 28-Aug-2002 -->
+  <!-- AP: Last modified: 27-Jan-2003 -->
   <TITLE>Finding common font problems automagically</TITLE>
 </HEAD>
 <BODY>
@@ -36,6 +36,22 @@ not assume that all problems are in fact errors. Some "problems" may be intended
 peculiarities of the font design. Don't just blindly press the [Fix] button).
 Behavior in the outline and metrics views is similar, except that only one
 character is searched for problems.
+<P>
+PfaEdit will be able to check for more problems if you:
+<UL>
+  <LI>
+    AutoHint the font first
+  <LI>
+    Bring up the <A HREF="fontinfo.html#Private">Element-&gt;Font Info-&gt;Private
+    </A>sub-dialog, add entries for BlueValues, StdHW and StdVW and press the
+    [Guess] button for each of them
+</UL>
+<P>
+Note: Some of these problems are geared specifically to the problems of
+Latin/Greek/Cyrillic fonts. I would be happy to hear of ways to extend these
+to other script systems, or of problems that are specific to other script
+systems
+(<A HREF="mailto:pfaedit@users.sourceforge.net">pfaedit@users.sourceforge.net</A>).
 <P>
 <IMG SRC="findprobs.png" WIDTH="301" HEIGHT="418" ALIGN="Right">PfaEdit can
 detect the following potential problems:
@@ -83,7 +99,8 @@ you fix things.
 <P>
 <STRONG><BIG>Control points near horizontal/vertical/italic</BIG></STRONG>
 <P>
-The above check only looks for straight lines, this one looks for curved
+This is similar to the <A HREF="problems.html">Edges near Horizontal option</A>
+below, but where that only looks for straight lines, this one looks for curved
 lines that begin or end near horizontal (vertical, italic angle).
 <P>
 <STRONG><BIG>Control points beyond

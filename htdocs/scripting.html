@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 23-Jan-2003 -->
+  <!-- AP: Last modified: 27-Jan-2003 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -504,7 +504,7 @@ a[4][0] = "Nested array";
       <LI>
 	dfont (for nfnt in dfont)
       <LI>
-        fnt (For windows FNT format)
+	fnt (For windows FNT format)
       <LI>
 	"" for no bitmaps
     </UL>
@@ -539,7 +539,7 @@ a[4][0] = "Nested array";
     <P>
     If the filename has a ".mult" extension then a "mult-sfd-file" may be present.
     This is the filename of a file containing the mapping from the current encoding
-    into the subfonts. <A HREF="big5.txt">Here is an example</A>. If this file
+    into the subfonts. <A HREF="Big5.txt">Here is an example</A>. If this file
     is not present PfaEdit will go through its default search process to find
     a file for the encoding, and if it fails the fonts will not be saved.
   <DT>
@@ -815,7 +815,9 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
   <DT>
     SetItalicAngle(angle[,denom])
   <DD>
-    Sets the postscript italic angle field appropriately. If denom is specified then angle will be divided by denom before setting the italic angle field (a hack to get real values). The angle should be in degrees.
+    Sets the postscript italic angle field appropriately. If denom is specified
+    then angle will be divided by denom before setting the italic angle field
+    (a hack to get real values). The angle should be in degrees.
   <DT>
     SetUniqueID(value)
   <DD>
@@ -929,11 +931,13 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     Simplify()<BR>
     Simplify(flags,error)
   <DD>
-    With no arguments it does the obvious. If flags is -1 it does a Cleanup, otherwise
-    flags should be a bitwise or of
+    With no arguments it does the obvious. If flags is -1 it does a Cleanup,
+    otherwise flags should be a bitwise or of
     <UL>
-	<LI>1 -- Slopes may change at the end points.
-	<LI>2 -- Points which are extremum may be removed
+      <LI>
+	1 -- Slopes may change at the end points.
+      <LI>
+	2 -- Points which are extremum may be removed
     </UL>
     <P>
     The error argument is the number of pixels by which the modified path is

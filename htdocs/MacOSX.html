@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 06-Dec-2002 -->
-  <!-- AP: Last modified: 10-Jan-2003 -->
+  <!-- AP: Last modified: 27-Jan-2003 -->
   <TITLE>Special issues for PfaEdit on Mac OS/X</TITLE>
 </HEAD>
 <BODY>
@@ -13,65 +13,70 @@
   Building PfaEdit
 </H2>
 <P>
-Before you do anything you must get a copy of the Mac Developer Tools. You can
-get this <A HREF="http://connect.apple.com/">from Apple</A> (you can either download
-a 250Meg file, or pay them $20 to FedEx you a CD.
+Before you do anything you must get a copy of the Mac Developer Tools. You
+can get this <A HREF="http://connect.apple.com/">from Apple</A> (you can
+either download a 250Meg file, or pay them $20 to FedEx you a CD.
 <P>
-Then you must install X11. <A HREF="http://www.osxgnu.org/">The GNU Mac OS/X site
-contains a complete X11 package</A>, probably other sites do too.
+Then you must install X11. <A HREF="http://www.osxgnu.org/">The GNU Mac OS/X
+site contains a complete X11 package</A>, probably other sites do too.
 <P>
-Neat. <A HREF="http://www.apple.com/macosx/x11/download/">Now Apple is also distributing X11</A>.
+Neat. <A HREF="http://www.apple.com/macosx/x11/download/">Now Apple is also
+distributing X11</A>.
 <P>
-It is possible to build PfaEdit without X11. There will be no user interface, but
-you can run scripts.
+It is possible to build PfaEdit without X11. There will be no user interface,
+but you can run scripts.
 <P>
 Thirdly you may choose to install some image libraries (I recommend at least
-installing libpng). Currently PfaEdit only tries to link statically with these
-libraries.
-    <UL>
-      <LI>
-	<A HREF="http://www.libpng.org/pub/png/libpng.html">libpng</A> (and required
-	helper <A HREF="http://www.gzip.org/zlib/">zlib</A>)
-      <LI>
-	<A HREF="http://www.libtiff.org/">libtiff</A>
-      <LI>
-	<A HREF="http://prtr-13.ucsc.edu/~badger/software/libungif/index.shtml">libungif</A>
-      <LI>
-	<A HREF="http://www.ijg.org/">libjpeg</A>
-    </UL>
+installing libpng). Currently PfaEdit only tries to link statically with
+these libraries.
+<UL>
+  <LI>
+    <A HREF="http://www.libpng.org/pub/png/libpng.html">libpng</A> (and required
+    helper <A HREF="http://www.gzip.org/zlib/">zlib</A>)
+  <LI>
+    <A HREF="http://www.libtiff.org/">libtiff</A>
+  <LI>
+    <A HREF="http://prtr-13.ucsc.edu/~badger/software/libungif/index.shtml">libungif</A>
+  <LI>
+    <A HREF="http://www.ijg.org/">libjpeg</A>
+</UL>
 <P>
-Finally you are ready to build pfaedit. Download the most recent sources <A HREF="index.html#source">from this site.</A>
-then:
-<BLOCKQUOTE><PRE>$ gunzip pfaedit_full-*.tgz
+Finally you are ready to build pfaedit. Download the most recent sources
+<A HREF="index.html#source">from this site.</A> then:
+<BLOCKQUOTE>
+  <PRE>$ gunzip pfaedit_full-*.tgz
 $ tar xf pfaedit_full-*.tar
 $ cd pfaedit
 $ configure
 $ make
 $ sudo make install
-</PRE></BLOCKQUOTE>
+</PRE>
+</BLOCKQUOTE>
 <H2>
   Installing the Mac OS/X <A NAME="binary">binary</A> distribution
 </H2>
 <P>
 Before installing PfaEdit you should ensure that you have X windows up and
-running. This is free software available from <A HREF="http://www.osxgnu.org/">the GNU Mac OS/X site</A>.
-(Or you can download the package built without X, which has no user interface but
-will let you run scripts).
+running. This is free software available from
+<A HREF="http://www.osxgnu.org/">the GNU Mac OS/X site</A>. (Or you can download
+the package built without X, which has no user interface but will let you
+run scripts).
 <P>
 After that you should just be able to unpack the packages provided.
 <UL>
   <LI>
-    <A HREF="PfaEdit-030109.pkg.sit">Download pfaedit Mac OS/X executable
-    </A>Version: 9-Dec-2003
+    <A HREF="PfaEdit-030125.pkg.sit">Download pfaedit Mac OS/X executable
+    </A>Version: 25-Jan-2003
   <LI>
-    <A HREF="PfaEdit-NoX-021205.pkg.sit">Download pfaedit Mac OS/X WITHOUT
-    X11</A> Version: 05-Dec-2002<BR>
+    <A HREF="PfaEdit-NoX-021205.pkg.sit">Download pfaedit Mac OS/X WITHOUT X11</A>
+    Version: 05-Dec-2002<BR>
     You might want this version if you aren't interested in downloading X onto
     your machine.<BR>
     Without X11 you will have no user interface, but you can run scripts.
   <LI>
-    On older versions of Mac OS/X the packages above will not install.
-    So I'm including <A HREF="pfaedit_MacOSX-030109.tgz">
+    On older versions of Mac OS/X the packages above will not install. So I'm
+    including <A HREF="pfaedit_MacOSX-030109.tgz">a version for really old
+    machines</A>
 </UL>
 <P>
 These packages install into /usr/local/bin. You may need to add that to your

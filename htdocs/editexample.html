@@ -2,13 +2,61 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 15-Sep-2002 -->
+  <!-- AP: Last modified: 27-Jan-2003 -->
   <TITLE>Steps to creating a font...</TITLE>
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
-  Font creation
+  Tutorial
 </H1>
+<P>
+I shall not presume to teach aesthetics, I concentrate solely on the mechanics
+here.
+<UL>
+  <LI>
+    <A HREF="editexample.html#FontCreate">Font Creation</A>
+  <LI>
+    <A HREF="editexample.html#CharCreate">Creating a character (tracing
+    outlines)</A>
+  <LI>
+    <A HREF="editexample2.html#Navigating">Navigating to other characters</A>
+  <LI>
+    <A HREF="editexample2.html#Creating-o">On to the next character (consistent
+    directions)</A>
+  <LI>
+    <A HREF="editexample3.html#consistent-stems">Consistent serifs and stem
+    widths</A>
+  <LI>
+    <A HREF="editexample4.html#accents">Building accented characters</A>
+  <LI>
+    <A HREF="editexample4.html#ligature">Building a ligature</A>
+  <LI>
+    <A HREF="editexample5.html#metrics">Examining metrics</A>
+  <LI>
+    <A HREF="editexample5.html#Kerning">Kerning</A>
+  <LI>
+    <A HREF="editexample6.html#Marks">Anchoring marks</A>
+  <LI>
+    <A HREF="editexample6.html#Variants">Character variants</A>
+  <LI>
+    <A HREF="editexample7.html#checking">Checking your font</A>
+  <LI>
+    <A HREF="editexample7.html#generating">Generating it</A>
+  <LI>
+    <A HREF="editexample7.html#Families">Font Families</A>
+  <LI>
+    <A HREF="editexample7.html#summary">Final Summary</A>
+  <LI>
+    <A HREF="scriptnotes.html#Special">Notes on various scripts</A>
+  <LI>
+    <A HREF="PfaEdit-TeX.html#TeX">PfaEdit and TeX</A>
+</UL>
+<P>
+If you wish to follow along with the tutorial, <A HREF="tutorial.tgz">this
+bundle</A> should provide you with the basic files you need.
+<H2>
+  <A NAME="FontCreate">Font creation</A>
+</H2>
 <P>
 First create a new font with the <CODE>New</CODE> command in the
 <CODE>File</CODE> menu (or by using the <KBD>-new</KBD> argument at startup).
@@ -23,7 +71,10 @@ sum of these two determines the size of the em square for the font, and by
 convention is 1000 for postscript fonts, a power of two (often 2048 or 4096)
 for truetype fonts and 15,000 for Ikarus fonts).
 <P>
-<IMG SRC="fontinfo.png" WIDTH="369" HEIGHT="506">
+<IMG SRC="fontinfo.png" WIDTH="376" HEIGHT="544">
+<H2>
+  <A NAME="CharCreate">Creating a character</A>
+</H2>
 <P>
 Once you have done that you are ready to start editing characters. Double
 click on the entry for "C" in the font view above. You should now have an
@@ -131,7 +182,7 @@ to look nice. PfaEdit has a
 command which attempts to guess reasonable values for the character spacings
 in your font. Just select the "All" radio button in both sets of buttons
 and press OK.<BR>
-<IMG SRC="autowidth.png" WIDTH="276" HEIGHT="316">
+<I><IMG SRC="autowidth.png" WIDTH="276" HEIGHT="268"></I>
 <P>
 At this point you might want some bitmaps to go with the postscript (this
 is not compulsory). Go to <CODE>Element-&gt;Bitmaps Available</CODE> and
@@ -149,5 +200,5 @@ Fonts</CODE>, select the outline font format, and which (if any) of your
 bitmaps you want converted into a bitmap font.
 <P ALIGN=Center>
 -- <A HREF="overview.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
-<A HREF="fontview.html">Next</A> --
+<A HREF="editexample2.html">Next</A> --
 </BODY></HTML>
