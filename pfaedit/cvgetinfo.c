@@ -49,6 +49,8 @@ typedef struct gidata {
 #define CID_UChar	1003
 #define CID_Ligature	1004
 #define CID_Cancel	1005
+#define CID_ComponentMsg	1006
+#define CID_Components	1007
 
 #define CID_BaseX	2001
 #define CID_BaseY	2002
@@ -62,7 +64,7 @@ typedef struct gidata {
 #define CID_PrevDef	2010
 
 #define CI_Width	200
-#define CI_Height	219
+#define CI_Height	249
 
 #define RI_Width	200
 #define RI_Height	110
@@ -402,6 +404,7 @@ static void CIFillup(GIData *ci) {
     unichar_t *temp;
     char buffer[10];
     unichar_t ubuf[2];
+    const unichar_t *bits;
 
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,-1),sc->enc>0);
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,1),sc->enc<sf->charcnt-1);
@@ -427,6 +430,28 @@ static void CIFillup(GIData *ci) {
 	temp = uc_copy("");
     GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_Ligature),temp);
     free(temp);
+
+    bits = SFGetAlternate(sc->parent,sc->unicodeenc);
+    GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_ComponentMsg),GStringGetResource(
+	bits==NULL ? _STR_NoComponents :
+	hascomposing(sc->parent,sc->unicodeenc) ? _STR_AccentedComponents :
+	    _STR_CompositComponents, NULL));
+    if ( bits==NULL ) {
+	ubuf[0] = '\0';
+	GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_Components),ubuf);
+    } else {
+	unichar_t *temp = galloc(11*u_strlen(bits)*sizeof(unichar_t));
+	unichar_t *upt=temp;
+	while ( *bits!='\0' ) {
+	    sprintf(buffer, "U+%04x ", *bits );
+	    uc_strcpy(upt,buffer);
+	    upt += u_strlen(upt);
+	    ++bits;
+	}
+	upt[-1] = '\0';
+	GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_Components),temp);
+	free(temp);
+    }
 }
 
 static int CI_NextPrev(GGadget *g, GEvent *e) {
@@ -481,8 +506,8 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
     static GIData gi;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[18];
-    GTextInfo label[18];
+    GGadgetCreateData gcd[21];
+    GTextInfo label[21];
 
     gi.sc = sc;
     gi.done = false;
@@ -613,7 +638,7 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
 	gcd[12].gd.flags = gg_visible | gg_enabled;
 	gcd[12].creator = GLineCreate;
 
-	gcd[13].gd.pos.x = 5; gcd[13].gd.pos.y = CI_Height-32-32-32-6;
+	gcd[13].gd.pos.x = 5; gcd[13].gd.pos.y = CI_Height-32-32-32-8-30;
 	gcd[13].gd.pos.width = CI_Width-10;
 	gcd[13].gd.flags = gg_visible | gg_enabled;
 	gcd[13].creator = GLineCreate;
@@ -621,18 +646,39 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
 	label[14].text = (unichar_t *) _STR_Ligature;
 	label[14].text_in_resource = true;
 	gcd[14].gd.label = &label[14];
-	gcd[14].gd.pos.x = 5; gcd[14].gd.pos.y = CI_Height-32-32-6-26+6; 
+	gcd[14].gd.pos.x = 5; gcd[14].gd.pos.y = CI_Height-32-32-6-26+6-30; 
 	gcd[14].gd.flags = gg_enabled|gg_visible;
 	gcd[14].gd.mnemonic = 'L';
-	gcd[15].gd.popup_msg = GStringGetResource(_STR_Ligpop,NULL);
+	gcd[14].gd.popup_msg = GStringGetResource(_STR_Ligpop,NULL);
 	gcd[14].creator = GLabelCreate;
 
-	gcd[15].gd.pos.x = 85; gcd[15].gd.pos.y = CI_Height-32-32-6-26;
+	gcd[15].gd.pos.x = 85; gcd[15].gd.pos.y = CI_Height-32-32-6-26-30;
 	gcd[15].gd.flags = gg_enabled|gg_visible;
 	gcd[15].gd.mnemonic = 'L';
 	gcd[15].gd.cid = CID_Ligature;
 	gcd[15].gd.popup_msg = GStringGetResource(_STR_Ligpop,NULL);
 	gcd[15].creator = GTextFieldCreate;
+
+	gcd[16].gd.pos.x = 5; gcd[16].gd.pos.y = CI_Height-32-32-8-27;
+	gcd[16].gd.pos.width = CI_Width-10;
+	gcd[16].gd.flags = gg_visible | gg_enabled;
+	gcd[16].creator = GLineCreate;
+
+	label[17].text = (unichar_t *) _STR_AccentedComponents;
+	label[17].text_in_resource = true;
+	gcd[17].gd.label = &label[17];
+	gcd[17].gd.pos.x = 5; gcd[17].gd.pos.y = CI_Height-32-32-6-24; 
+	gcd[17].gd.flags = gg_enabled|gg_visible;
+	gcd[17].gd.cid = CID_ComponentMsg;
+	/*gcd[17].gd.popup_msg = GStringGetResource(_STR_Ligpop,NULL);*/
+	gcd[17].creator = GLabelCreate;
+
+	gcd[18].gd.pos.x = 5; gcd[18].gd.pos.y = CI_Height-32-32-6-12;
+	gcd[18].gd.pos.width = CI_Width-10;
+	gcd[18].gd.flags = gg_enabled|gg_visible;
+	gcd[18].gd.cid = CID_Components;
+	/*gcd[18].gd.popup_msg = GStringGetResource(_STR_Ligpop,NULL);*/
+	gcd[18].creator = GLabelCreate;
 
 	GGadgetsCreate(gi.gw,gcd);
     }
