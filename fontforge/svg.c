@@ -249,9 +249,15 @@ static void svg_dumpstroke(FILE *file, struct pen *cpen, struct pen *fallback) {
 		pen.trans[0], pen.trans[1], pen.trans[2], pen.trans[3] );
 }
 
-static void svg_dumpfill(FILE *file, struct brush *cbrush, struct brush *fallback) {
+static void svg_dumpfill(FILE *file, struct brush *cbrush, struct brush *fallback,
+	int dofill) {
     struct brush brush;
 
+    if ( !dofill ) {
+	fprintf( file, "fill=\"none\" " );
+return;
+    }
+    
     brush = *cbrush;
     if ( fallback!=NULL ) {
 	if ( brush.col==COLOR_INHERITED ) brush.col = fallback->col;
@@ -280,13 +286,10 @@ return( SplinePointListTransform(SplinePointListCopy(
 }
 #endif
 
-static void svg_scpathdump(FILE *file, SplineChar *sc) {
+static int svg_sc_any(SplineChar *sc) {
     int i,j;
+    int any;
     RefChar *ref;
-    int lineout, any;
-#ifdef FONTFORGE_CONFIG_TYPE3
-    SplineSet *transed;
-#endif
 
     any = false;
     for ( i=ly_fore; i<sc->layer_cnt && !any; ++i ) {
@@ -295,7 +298,18 @@ static void svg_scpathdump(FILE *file, SplineChar *sc) {
 	    for ( j=0; j<ref->layer_cnt && !any; ++j )
 		any = ref->layers[j].splines!=NULL;
     }
-    if ( !any ) {
+return( any );
+}
+
+static void svg_scpathdump(FILE *file, SplineChar *sc,char *endpath) {
+    int i,j;
+    RefChar *ref;
+    int lineout;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    SplineSet *transed;
+#endif
+
+    if ( !svg_sc_any(sc) ) {
 	/* I think a space is represented by leaving out the d (path) entirely*/
 	/*  rather than having d="" */
 	fputs(" />\n",file);
@@ -310,7 +324,7 @@ static void svg_scpathdump(FILE *file, SplineChar *sc) {
     } else {
 	putc('>',file);
 #ifdef FONTFORGE_CONFIG_TYPE3
-	for ( i=ly_fore; i<sc->layer_cnt && !any; ++i ) {
+	for ( i=ly_fore; i<sc->layer_cnt ; ++i ) {
 	    if ( sc->layers[i].splines!=NULL ) {
 		fprintf(file, "  <g " );
 		transed = sc->layers[i].splines;
@@ -318,30 +332,28 @@ static void svg_scpathdump(FILE *file, SplineChar *sc) {
 		    svg_dumpstroke(file,&sc->layers[i].stroke_pen,NULL);
 		    transed = TransBy(transed,sc->layers[i].stroke_pen.trans);
 		}
-		if ( sc->layers[i].dofill )
-		    svg_dumpfill(file,&sc->layers[i].fill_brush,NULL);
+		svg_dumpfill(file,&sc->layers[i].fill_brush,NULL,sc->layers[i].dofill);
 		fprintf( file, ">\n" );
 		fprintf(file, "  <path d=\"\n");
 		svg_pathdump(file,transed,12);
-		fprintf(file, "/>\n" );
+		fprintf(file, "\"/>\n" );
 		if ( transed!=sc->layers[i].splines )
 		    SplinePointListsFree(transed);
 		fprintf(file, "  </g>\n" );
 	    }
-	    for ( ref=sc->layers[i].refs ; ref!=NULL && !any; ref = ref->next ) {
-		for ( j=0; j<ref->layer_cnt && !any; ++j ) if ( ref->layers[j].splines!=NULL ) {
+	    for ( ref=sc->layers[i].refs ; ref!=NULL; ref = ref->next ) {
+		for ( j=0; j<ref->layer_cnt; ++j ) if ( ref->layers[j].splines!=NULL ) {
 		    fprintf(file, "   <g " );
 		    transed = ref->layers[j].splines;
 		    if ( ref->layers[j].dostroke ) {
 			svg_dumpstroke(file,&ref->layers[j].stroke_pen,&sc->layers[i].stroke_pen);
 			transed = TransBy(transed,ref->layers[j].stroke_pen.trans);
 		    }
-		    if ( ref->layers[j].dofill )
-			svg_dumpfill(file,&ref->layers[j].fill_brush,&sc->layers[i].fill_brush);
+		    svg_dumpfill(file,&ref->layers[j].fill_brush,&sc->layers[i].fill_brush,ref->layers[j].dofill);
 		    fprintf( file, ">\n" );
 		    fprintf(file, "  <path d=\"\n");
 		    svg_pathdump(file,transed,12);
-		    fprintf(file, "/>\n" );
+		    fprintf(file, "\"/>\n" );
 		    if ( transed!=ref->layers[j].splines )
 			SplinePointListsFree(transed);
 		    fprintf(file, "   </g>\n" );
@@ -349,7 +361,7 @@ static void svg_scpathdump(FILE *file, SplineChar *sc) {
 	    }
 	}
 #endif
-	fputs(" </glyph>\n",file);
+	fputs(endpath,file);
     }
 }
 
@@ -464,7 +476,7 @@ static void svg_scdump(FILE *file, SplineChar *sc,int defwid) {
 	    fprintf( file,"arabic-form=isolated ");
     }
     putc('\n',file);
-    svg_scpathdump(file,sc);
+    svg_scpathdump(file,sc," </glyph>\n");
 }
 
 static void svg_notdefdump(FILE *file, SplineFont *sf,int defwid) {
@@ -478,7 +490,7 @@ static void svg_notdefdump(FILE *file, SplineFont *sf,int defwid) {
 	if ( sc->parent->hasvmetrics && sc->vwidth!=sc->parent->ascent+sc->parent->descent )
 	    fprintf( file, "vert-adv-y=\"%d\" ", sc->vwidth );
 	putc('\n',file);
-	svg_scpathdump(file,sc);
+	svg_scpathdump(file,sc," </glyph>\n");
     } else {
 	/* We'll let both the horiz and vert advances default to the values */
 	/*  specified by the font, and I think a space is done by omitting */
@@ -600,7 +612,7 @@ return( ret );
 }
 
 int _ExportSVG(FILE *svg,SplineChar *sc) {
-    char *oldloc;
+    char *oldloc, *end;
     int em_size;
 
     oldloc = setlocale(LC_NUMERIC,"C");
@@ -617,8 +629,14 @@ int _ExportSVG(FILE *svg,SplineChar *sc) {
     fprintf(svg, "     <line x1=\"%d\" y1=\"10\" x2=\"%d\" y2=\"-10\" />\n",
 	    sc->width, sc->width );
     fprintf(svg, "   </g>\n\n" );
-    fprintf(svg, "   <path fill=\"currentColor\"\n");
-    svg_scpathdump(svg,sc);
+    if ( !sc->parent->multilayer || !svg_sc_any(sc)) {
+	fprintf(svg, "   <path fill=\"currentColor\"\n");
+	end = "   </path>\n";
+    } else {
+	fprintf(svg, "   <g ");
+	end = "   </g>\n";
+    }
+    svg_scpathdump(svg,sc,end);
     fprintf(svg, "  </g>\n\n" );
     fprintf(svg, "</svg>\n" );
 

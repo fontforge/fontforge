@@ -1019,7 +1019,8 @@ static int _Export(SplineChar *sc,BDFChar *bc) {
     if ( bc!=NULL )
 	ext = _format==0 ? "xbm" : _format==1 ? "bmp" : "png";
     else
-	ext = _format==0?"eps":_format==1?"fig":_format==2?"xbm":_format==3?"bmp":"png";
+	ext = _format==0?"eps":_format==1?"fig":_format==2?"svg":
+		_format==3?"pdf":_format==4?"xbm":_format==5?"bmp":"png";
 #if defined( __CygWin ) || defined(__Mac)
     /* Windows file systems are not case conscious */
     { char *pt, *bpt, *end;
