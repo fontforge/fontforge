@@ -287,7 +287,7 @@ return;
 	if ( wd->type==st_set )
 	    width = bb.maxx + wd->setto;
 	else if ( wd->type == st_incr )
-	    width += wd->increment;
+	    width = sc->width+wd->increment;
 	else
 	    width = (sc->width-bb.maxx) * wd->scale/100 + bb.maxx;
 	if ( width!=sc->width ) {
