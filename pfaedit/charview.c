@@ -2880,7 +2880,8 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 	CVMouseUpPoint(cv,event);
       break;
       case cvt_magnify: case cvt_minify:
-	if ( cv->p.cx==cv->info.x && cv->p.cy==cv->info.y ) {
+	if ( cv->p.x>=event->u.mouse.x-4 && cv->p.x<=event->u.mouse.x+4 &&
+		 cv->p.y>=event->u.mouse.y-4 && cv->p.y<=event->u.mouse.y+4 ) {
 	    real cx, cy;
 	    cx = (event->u.mouse.x-cv->xoff)/cv->scale ;
 	    cy = (cv->height-event->u.mouse.y-cv->yoff)/cv->scale ;
