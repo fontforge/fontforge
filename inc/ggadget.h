@@ -204,6 +204,7 @@ void GGadgetSetEnabled(GGadget *g,int enabled);
 GWindow GGadgetGetWindow(GGadget *g);
 void *GGadgetGetUserData(GGadget *g);
 void GGadgetSetUserData(GGadget *g, void *d);
+void GGadgetSetPopupMsg(GGadget *g, const unichar_t *msg);
 GRect *GGadgetGetInnerSize(GGadget *g,GRect *rct);
 GRect *GGadgetGetSize(GGadget *g,GRect *rct);
 int GGadgetGetCid(GGadget *g);

@@ -784,6 +784,11 @@ void GGadgetSetUserData(GGadget *g,void *data) {
     g->data = data;
 }
 
+void GGadgetSetPopupMsg(GGadget *g,const unichar_t *msg) {
+    free(g->popup_msg);
+    g->popup_msg = u_copy(msg);
+}
+
 GWindow GGadgetGetWindow(GGadget *g) {
 return( g->base );
 }
