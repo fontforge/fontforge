@@ -315,60 +315,90 @@ return( ret );
 
 static int NameToEncoding(SplineFont *sf,const unichar_t *name) {
     int enc, uni, i;
-    unichar_t *end;
+    unichar_t *end, *dot=NULL, *freeme=NULL;
 
     enc = uni = -1;
-    if ( (*name=='U' || *name=='u') && name[1]=='+' ) {
-	uni = u_strtol(name+2,&end,16);
-	if ( *end!='\0' )
-	    uni = -1;
-    } else if ( name[0]=='u' && name[1]=='n' && name[2]=='i' ) {
-	uni = u_strtol(name+3,&end,16);
-	if ( *end!='\0' )
-	    uni = -1;
-    } else if ( isdigit(*name)) {
-	enc = u_strtol(name,&end,0);
-	if ( *end==',' && ((sf->encoding_name>=em_jis208 && sf->encoding_name<=em_last94x94) ||
-		sf->encoding_name == em_unicode )) {
-	    int j = u_strtol(end+1,&end,10);
-	    /* kuten */
+    while ( 1 ) {
+	if ( (*name=='U' || *name=='u') && name[1]=='+' ) {
+	    uni = u_strtol(name+2,&end,16);
 	    if ( *end!='\0' )
+		uni = -1;
+	} else if ( name[0]=='u' && name[1]=='n' && name[2]=='i' ) {
+	    uni = u_strtol(name+3,&end,16);
+	    if ( *end!='\0' )
+		uni = -1;
+	} else if ( isdigit(*name)) {
+	    enc = u_strtol(name,&end,0);
+	    if ( *end==',' && ((sf->encoding_name>=em_jis208 && sf->encoding_name<=em_last94x94) ||
+		    sf->encoding_name == em_unicode )) {
+		int j = u_strtol(end+1,&end,10);
+		/* kuten */
+		if ( *end!='\0' )
+		    enc = -1;
+		else if ( sf->encoding_name==em_unicode ) {
+		    if ( enc>=0 && enc<256 && j>=0 && j<256 )
+			enc = (enc<<8) |j;
+		    else
+			enc = -1;
+		} else {
+		    if ( enc>=1 && enc<=94 && j>=1 && j<=94 )
+			enc = (enc-1)*96 + j;
+		    else
+			enc = -1;
+		}
+	    } else if ( *end!='\0' )
 		enc = -1;
-	    else if ( sf->encoding_name==em_unicode ) {
-		if ( enc>=0 && enc<256 && j>=0 && j<256 )
-		    enc = (enc<<8) |j;
-		else
-		    enc = -1;
-	    } else {
-		if ( enc>=1 && enc<=94 && j>=1 && j<=94 )
-		    enc = (enc-1)*96 + j;
-		else
-		    enc = -1;
-	    }
-	} else if ( *end!='\0' )
-	    enc = -1;
-    } else {
-	for ( i=0; i<sf->charcnt; ++i )
-	    if ( sf->chars[i]!=NULL && uc_strcmp(name,sf->chars[i]->name)==0 ) {
-		enc = i;
-	break;
-	    }
-	if ( enc==-1 ) {
-	    for ( uni=psunicodenames_cnt-1; uni>=0 ; --uni )
-		if ( psunicodenames[uni]!=NULL )
-		    if ( uc_strmatch(name,psunicodenames[uni])== 0 )
+	} else {
+	    for ( i=0; i<sf->charcnt; ++i )
+		if ( sf->chars[i]!=NULL && uc_strcmp(name,sf->chars[i]->name)==0 ) {
+		    enc = i;
 	    break;
-	    if ( uni<0 ) {
-		for ( uni=65535; uni>=0 ; --uni )
-		    if ( UnicodeCharacterNames[uni>>8][uni&0xff]!=NULL )
-			if ( u_strmatch(name,UnicodeCharacterNames[uni>>8][uni&0xff])== 0 )
+		}
+	    if ( enc==-1 ) {
+		for ( uni=psunicodenames_cnt-1; uni>=0 ; --uni )
+		    if ( psunicodenames[uni]!=NULL )
+			if ( uc_strmatch(name,psunicodenames[uni])== 0 )
 		break;
+		if ( uni<0 ) {
+		    for ( uni=65535; uni>=0 ; --uni )
+			if ( UnicodeCharacterNames[uni>>8][uni&0xff]!=NULL )
+			    if ( u_strmatch(name,UnicodeCharacterNames[uni>>8][uni&0xff])== 0 )
+		    break;
+		}
 	    }
 	}
-    }
-    if ( enc==-1 && uni!=-1 )
-	enc = SFFindChar(sf,uni,NULL);
+	if ( enc==-1 && uni!=-1 )
+	    enc = SFFindChar(sf,uni,NULL);
+	if ( enc!=-1 && uni==-1 ) {
+	    if ( sf->chars[enc]!=NULL )
+		uni = sf->chars[enc]->unicodeenc;
+	    else if ( sf->encoding_name == em_unicode || sf->encoding_name==em_unicode4 )
+		uni = enc;
+	}
+	if ( dot!=NULL ) {
+	    free(freeme);
+	    if ( uni==-1 )
+return( -1 );
+	    if ( uni<0x600 || uni>0x6ff )
+return( -1 );
+	    if ( uc_strmatch(dot,".begin")==0 || uc_strmatch(dot,".initial")==0 )
+		uni = ArabicForms[uni-0x600].initial;
+	    else if ( uc_strmatch(dot,".end")==0 || uc_strmatch(dot,".final")==0 )
+		uni = ArabicForms[uni-0x600].final;
+	    else if ( uc_strmatch(dot,".medial")==0 )
+		uni = ArabicForms[uni-0x600].medial;
+	    else if ( uc_strmatch(dot,".isolated")==0 )
+		uni = ArabicForms[uni-0x600].isolated;
+	    else
+return( -1 );
+return( SFFindChar(sf,uni,NULL) );
+	} else 	if ( enc!=-1 )
 return( enc );
+	dot = u_strrchr(name,'.');
+	if ( dot==NULL )
+return( -1 );
+	name = freeme = u_copyn(name,dot-name);
+    }
 }
 
 typedef struct gotodata {
