@@ -847,7 +847,8 @@ static void SFDDumpPrivate(FILE *sfd,struct psdict *private) {
     /* These guys should all be ascii text */
     fprintf( sfd, "BeginPrivate: %d\n", private->next );
     for ( i=0; i<private->next ; ++i ) {
-	fprintf( sfd, "%s %d ", private->keys[i], strlen(private->values[i]));
+      fprintf( sfd, "%s %d ", private->keys[i],
+	       (int)strlen(private->values[i]));
 	for ( pt = private->values[i]; *pt; ++pt )
 	    putc(*pt,sfd);
 	putc('\n',sfd);
@@ -895,7 +896,8 @@ static void SFDDumpMacName(FILE *sfd,struct macname *mn) {
     char *pt;
 
     while ( mn!=NULL ) {
-	fprintf( sfd, "MacName: %d %d %d \"", mn->enc, mn->lang, strlen(mn->name) );
+      fprintf( sfd, "MacName: %d %d %d \"", mn->enc, mn->lang,
+	       (int)strlen(mn->name) );
 	for ( pt=mn->name; *pt; ++pt ) {
 	    if ( *pt<' ' || *pt>=0x7f || *pt=='\\' || *pt=='"' )
 		fprintf( sfd, "\\%03o", *(uint8 *) pt );
@@ -1047,9 +1049,11 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	    fprintf( sfd, "%s: %d %d %d %d\n", isv ? "VKernClass" : "KernClass",
 		    kc->first_cnt, kc->second_cnt, kc->sli, kc->flags );
 	    for ( i=1; i<kc->first_cnt; ++i )
-		fprintf( sfd, " %d %s\n", strlen(kc->firsts[i]), kc->firsts[i]);
+	      fprintf( sfd, " %d %s\n", (int)strlen(kc->firsts[i]),
+		       kc->firsts[i]);
 	    for ( i=1; i<kc->second_cnt; ++i )
-		fprintf( sfd, " %d %s\n", strlen(kc->seconds[i]), kc->seconds[i]);
+	      fprintf( sfd, " %d %s\n", (int)strlen(kc->seconds[i]),
+		       kc->seconds[i]);
 	    for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i )
 		fprintf( sfd, " %d", kc->offsets[i]);
 	    fprintf( sfd, "\n" );
@@ -1067,21 +1071,30 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 		(fpst->tag>>8)&0xff, fpst->tag&0xff,
 		fpst->nccnt, fpst->bccnt, fpst->fccnt, fpst->rule_cnt );
 	for ( i=1; i<fpst->nccnt; ++i )
-	    fprintf( sfd, "  Class: %d %s\n", strlen(fpst->nclass[i]), fpst->nclass[i]);
+	  fprintf( sfd, "  Class: %d %s\n", (int)strlen(fpst->nclass[i]),
+		   fpst->nclass[i]);
 	for ( i=1; i<fpst->bccnt; ++i )
-	    fprintf( sfd, "  BClass: %d %s\n", strlen(fpst->bclass[i]), fpst->bclass[i]);
+	  fprintf( sfd, "  BClass: %d %s\n", (int)strlen(fpst->bclass[i]),
+		   fpst->bclass[i]);
 	for ( i=1; i<fpst->fccnt; ++i )
-	    fprintf( sfd, "  FClass: %d %s\n", strlen(fpst->fclass[i]), fpst->fclass[i]);
+	  fprintf( sfd, "  FClass: %d %s\n", (int)strlen(fpst->fclass[i]),
+		   fpst->fclass[i]);
 	for ( i=0; i<fpst->rule_cnt; ++i ) {
 	    switch ( fpst->format ) {
 	      case pst_glyphs:
-		fprintf( sfd, " String: %d %s\n", strlen(fpst->rules[i].u.glyph.names), fpst->rules[i].u.glyph.names);
+		fprintf( sfd, " String: %d %s\n",
+			 (int)strlen(fpst->rules[i].u.glyph.names),
+			 fpst->rules[i].u.glyph.names);
 		if ( fpst->rules[i].u.glyph.back!=NULL )
-		    fprintf( sfd, " BString: %d %s\n", strlen(fpst->rules[i].u.glyph.back), fpst->rules[i].u.glyph.back);
+		  fprintf( sfd, " BString: %d %s\n",
+			   (int)strlen(fpst->rules[i].u.glyph.back),
+			   fpst->rules[i].u.glyph.back);
 		else
 		    fprintf( sfd, " BString: 0\n");
 		if ( fpst->rules[i].u.glyph.fore!=NULL )
-		    fprintf( sfd, " FString: %d %s\n", strlen(fpst->rules[i].u.glyph.fore), fpst->rules[i].u.glyph.fore);
+		  fprintf( sfd, " FString: %d %s\n",
+			   (int)strlen(fpst->rules[i].u.glyph.fore),
+			   fpst->rules[i].u.glyph.fore);
 		else
 		    fprintf( sfd, " FString: 0\n");
 	      break;
@@ -1101,11 +1114,17 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	      case pst_reversecoverage:
 		fprintf( sfd, " %d %d %d\n", fpst->rules[i].u.coverage.ncnt, fpst->rules[i].u.coverage.bcnt, fpst->rules[i].u.coverage.fcnt );
 		for ( j=0; j<fpst->rules[i].u.coverage.ncnt; ++j )
-		    fprintf( sfd, "  Coverage: %d %s\n", strlen(fpst->rules[i].u.coverage.ncovers[j]), fpst->rules[i].u.coverage.ncovers[j]);
+		  fprintf( sfd, "  Coverage: %d %s\n",
+			   (int)strlen(fpst->rules[i].u.coverage.ncovers[j]),
+			   fpst->rules[i].u.coverage.ncovers[j]);
 		for ( j=0; j<fpst->rules[i].u.coverage.bcnt; ++j )
-		    fprintf( sfd, "  BCoverage: %d %s\n", strlen(fpst->rules[i].u.coverage.bcovers[j]), fpst->rules[i].u.coverage.bcovers[j]);
+		  fprintf( sfd, "  BCoverage: %d %s\n",
+			   (int)strlen(fpst->rules[i].u.coverage.bcovers[j]),
+			   fpst->rules[i].u.coverage.bcovers[j]);
 		for ( j=0; j<fpst->rules[i].u.coverage.fcnt; ++j )
-		    fprintf( sfd, "  FCoverage: %d %s\n", strlen(fpst->rules[i].u.coverage.fcovers[j]), fpst->rules[i].u.coverage.fcovers[j]);
+		  fprintf( sfd, "  FCoverage: %d %s\n",
+			   (int)strlen(fpst->rules[i].u.coverage.fcovers[j]),
+			   fpst->rules[i].u.coverage.fcovers[j]);
 	      break;
 	    }
 	    switch ( fpst->format ) {
@@ -1122,7 +1141,9 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 			    (fpst->rules[i].lookups[j].lookup_tag)&0xff);
 	      break;
 	      case pst_reversecoverage:
-		fprintf( sfd, "  Replace: %d %s\n", strlen(fpst->rules[i].u.rcoverage.replacements), fpst->rules[i].u.rcoverage.replacements);
+		fprintf( sfd, "  Replace: %d %s\n",
+			 (int)strlen(fpst->rules[i].u.rcoverage.replacements),
+			 fpst->rules[i].u.rcoverage.replacements);
 	      break;
 	    }
 	}
@@ -1139,7 +1160,8 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 		sm->flags,
 		sm->class_cnt, sm->state_cnt );
 	for ( i=4; i<sm->class_cnt; ++i )
-	    fprintf( sfd, "  Class: %d %s\n", strlen(sm->classes[i]), sm->classes[i]);
+	  fprintf( sfd, "  Class: %d %s\n", (int)strlen(sm->classes[i]),
+		   sm->classes[i]);
 	for ( i=0; i<sm->class_cnt*sm->state_cnt; ++i ) {
 	    fprintf( sfd, " %d %d ", sm->state[i].next_state, sm->state[i].flags );
 	    if ( sm->type==asm_context ) {
@@ -1163,13 +1185,15 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 		if ( sm->state[i].u.insert.mark_ins==NULL )
 		    fprintf( sfd, "0 ");
 		else
-		    fprintf( sfd, "%d %s ", strlen(sm->state[i].u.insert.mark_ins),
-			    sm->state[i].u.insert.mark_ins );
+		  fprintf( sfd, "%d %s ",
+			   (int)strlen(sm->state[i].u.insert.mark_ins),
+			   sm->state[i].u.insert.mark_ins );
 		if ( sm->state[i].u.insert.cur_ins==NULL )
 		    fprintf( sfd, "0 ");
 		else
-		    fprintf( sfd, "%d %s ", strlen(sm->state[i].u.insert.cur_ins),
-			    sm->state[i].u.insert.cur_ins );
+		  fprintf( sfd, "%d %s ",
+			   (int)strlen(sm->state[i].u.insert.cur_ins),
+			   sm->state[i].u.insert.cur_ins );
 	    } else if ( sm->type == asm_kern ) {
 		fprintf( sfd, "%d ", sm->state[i].u.kern.kcnt );
 		for ( j=0; j<sm->state[i].u.kern.kcnt; ++j )

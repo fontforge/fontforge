@@ -466,7 +466,9 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding, int res) {
 	if ( pt==NULL )
 	    fprintf( file, "COPYRIGHT \"%s\"\n", font->sf->copyright );
 	else {
-	    fprintf( file, "COPYRIGHT \"%.*s\"\n", pt-font->sf->copyright, font->sf->copyright );
+	    fprintf( file, "COPYRIGHT \"%.*s\"\n",
+		     (int)(pt - font->sf->copyright),
+		     font->sf->copyright );
 	    forever {
 		++pt;
 		end = strchr(pt,'\n');
@@ -474,7 +476,7 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding, int res) {
 		    fprintf( file, "COMMENT %s\n", pt );
 	    break;
 		} else
-		    fprintf( file, "COMMENT %.*s\n", end-pt, pt );
+		  fprintf( file, "COMMENT %.*s\n", (int)(end-pt), pt );
 		pt = end;
 	    }
 	}

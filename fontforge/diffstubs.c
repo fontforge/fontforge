@@ -140,7 +140,7 @@ Encoding *FindOrMakeEncoding(const char *name) {
     uint8 good[256];
     int i, j, any, all;
     char from[8], ucs2[20];
-    uint fromlen, tolen;
+    size_t fromlen, tolen;
     char *fpt, *upt;
     /* iconv is not case sensitive */
 
