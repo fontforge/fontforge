@@ -2160,7 +2160,8 @@ return;
     unit.x = next->me.x - base->me.x;
     unit.y = next->me.y - base->me.y;
     ulen = sqrt(unit.x*unit.x + unit.y*unit.y);
-    unit.x /= ulen; unit.y /= ulen;
+    if ( ulen!=0 )
+	unit.x /= ulen, unit.y /= ulen;
     base->nonextcp = false;
 
     if ( base->pointtype == pt_curve ) {
@@ -2168,7 +2169,8 @@ return;
 	    unit.x = next->me.x - prev->me.x;
 	    unit.y = next->me.y - prev->me.y;
 	    ulen = sqrt(unit.x*unit.x + unit.y*unit.y);
-	    unit.x /= ulen; unit.y /= ulen;
+	    if ( ulen!=0 )
+		unit.x /= ulen, unit.y /= ulen;
 	    plen = sqrt((base->prevcp.x-base->me.x)*(base->prevcp.x-base->me.x) +
 		    (base->prevcp.y-base->me.y)*(base->prevcp.y-base->me.y));
 	    base->prevcp.x = base->me.x - plen*unit.x;
@@ -2180,7 +2182,8 @@ return;
 	    unit.x = base->me.x-base->prevcp.x;
 	    unit.y = base->me.y-base->prevcp.y;
 	    ulen = sqrt(unit.x*unit.x + unit.y*unit.y);
-	    unit.x /= ulen; unit.y /= ulen;
+	    if ( ulen!=0 )
+		unit.x /= ulen, unit.y /= ulen;
 	}
     } else if ( base->pointtype == pt_corner ) {
 	if ( next->pointtype != pt_curve ) {
@@ -2201,7 +2204,8 @@ return;
 		unit.x = base->me.x-prev->me.x;
 		unit.y = base->me.y-prev->me.y;
 		ulen = sqrt(unit.x*unit.x + unit.y*unit.y);
-		unit.x /= ulen; unit.y /= ulen;
+		if ( ulen!=0 )
+		    unit.x /= ulen, unit.y /= ulen;
 	    }
 	}
     }
@@ -2242,7 +2246,8 @@ return;
     unit.x = prev->me.x - base->me.x;
     unit.y = prev->me.y - base->me.y;
     ulen = sqrt(unit.x*unit.x + unit.y*unit.y);
-    unit.x /= ulen; unit.y /= ulen;
+    if ( ulen!=0 )
+	unit.x /= ulen, unit.y /= ulen;
     base->noprevcp = false;
 
     if ( base->pointtype == pt_curve ) {
@@ -2250,7 +2255,8 @@ return;
 	    unit.x = prev->me.x - next->me.x;
 	    unit.y = prev->me.y - next->me.y;
 	    ulen = sqrt(unit.x*unit.x + unit.y*unit.y);
-	    unit.x /= ulen; unit.y /= ulen;
+	    if ( ulen!=0 ) 
+		unit.x /= ulen, unit.y /= ulen;
 	    nlen = sqrt((base->nextcp.x-base->me.x)*(base->nextcp.x-base->me.x) +
 		    (base->nextcp.y-base->me.y)*(base->nextcp.y-base->me.y));
 	    base->nextcp.x = base->me.x - nlen*unit.x;
@@ -2262,7 +2268,8 @@ return;
 	    unit.x = base->me.x-base->nextcp.x;
 	    unit.y = base->me.y-base->nextcp.y;
 	    ulen = sqrt(unit.x*unit.x + unit.y*unit.y);
-	    unit.x /= ulen; unit.y /= ulen;
+	    if ( ulen!=0 )
+		unit.x /= ulen, unit.y /= ulen;
 	}
     } else if ( base->pointtype == pt_corner ) {
 	if ( prev->pointtype != pt_curve ) {
@@ -2283,7 +2290,8 @@ return;
 		unit.x = base->me.x-next->me.x;
 		unit.y = base->me.y-next->me.y;
 		ulen = sqrt(unit.x*unit.x + unit.y*unit.y);
-		unit.x /= ulen; unit.y /= ulen;
+		if ( ulen!=0 )
+		    unit.x /= ulen, unit.y /= ulen;
 	    }
 	}
     }
