@@ -3600,7 +3600,7 @@ static void dumpnames(struct alltabs *at, SplineFont *sf) {
 	    dumpshort(at->name,i);
 	    dumpshort(at->name,2*u_strlen(cur->names[i]));
 	    dumpshort(at->name,pos);
-	    pos += 2*u_strlen(dummy.names[i])+2;
+	    pos += 2*u_strlen(cur->names[i])+2;
 	}
     }
 
