@@ -41,7 +41,7 @@ typedef struct gidata {
     SplinePointList *curspl;
     SplinePointList *oldstate;
     GWindow gw;
-    int done, first;
+    int done, first, changed;
 } GIData;
 
 #define CID_UName	1001
@@ -69,7 +69,7 @@ typedef struct gidata {
 #define CI_Height	375
 
 #define RI_Width	215
-#define RI_Height	110
+#define RI_Height	180
 
 #define II_Width	130
 #define II_Height	70
@@ -513,19 +513,93 @@ return( true );
 return( true );
 }
 
-static int CI_Show(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
-	ci->done = true;
-	CharViewCreate(ci->rf->sc,ci->cv->fv);
-    }
-return( true );
-}
-
 static int CI_Cancel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
 	ci->done = true;
+    }
+return( true );
+}
+
+static int CI_TransChange(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	ci->changed = true;
+    }
+return( true );
+}
+
+static int CI_ROK_Do(GIData *ci) {
+    int errs=false,i;
+    real trans[6];
+    SplinePointList *spl, *new;
+    RefChar *ref = ci->rf, *subref;
+
+    for ( i=0; i<6; ++i ) {
+	trans[i] = GetRealR(ci->gw,1000+i,_STR_TransformationMatrix,&errs);
+	if ( !errs &&
+		((i<4 && (trans[i]>30 || trans[i]<-30)) ||
+		 (i>=4 && (trans[i]>16000 || trans[i]<-16000))) ) {
+	    /* Don't want the user to insert an enormous scale factor or */
+	    /*  it will move points outside the legal range. */
+	    GTextFieldSelect(GWidgetGetControl(ci->gw,1000+i),0,-1);
+	    GWidgetErrorR(_STR_OutOfRange,_STR_OutOfRange);
+	    errs = true;
+	}
+	if ( errs )
+return( false );
+    }
+
+    for ( i=0; i<6 && ref->transform[i]==trans[i]; ++i );
+    if ( i==6 )		/* Didn't really change */
+return( true );
+
+    for ( i=0; i<6; ++i )
+	ref->transform[i] = trans[i];
+    SplinePointListFree(ref->splines);
+    ref->splines = SplinePointListTransform(SplinePointListCopy(ref->sc->splines),trans,true);
+    spl = NULL;
+    if ( ref->splines!=NULL )
+	for ( spl = ref->splines; spl->next!=NULL; spl = spl->next );
+    for ( subref = ref->sc->refs; subref!=NULL; subref=subref->next ) {
+	new = SplinePointListTransform(SplinePointListCopy(subref->splines),trans,true);
+	if ( spl==NULL )
+	    ref->splines = new;
+	else
+	    spl->next = new;
+	if ( new!=NULL )
+	    for ( spl = new; spl->next!=NULL; spl = spl->next );
+    }
+
+    SplineSetFindBounds(ref->splines,&ref->bb);
+    CVCharChangedUpdate(ci->cv);
+return( true );
+}
+
+static int CI_ROK(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	if ( CI_ROK_Do(ci))
+	    ci->done = true;
+    }
+return( true );
+}
+
+static int CI_Show(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	if ( ci->changed ) {
+	    static int buts[] = { _STR_Change, _STR_Retain, _STR_Cancel, 0 };
+	    int ans = GWidgetAskR(_STR_TransformChanged,buts,0,2,_STR_TransformChangedApply);
+	    if ( ans==2 )
+return( true );
+	    else if ( ans==0 ) {
+		if ( !CI_ROK_Do(ci))
+return( true );
+	    }
+	}
+	ci->done = true;
+	CharViewCreate(ci->rf->sc,ci->cv->fv);
     }
 return( true );
 }
@@ -781,14 +855,15 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
     static GIData gi;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[13];
-    GTextInfo label[13];
+    GGadgetCreateData gcd[16];
+    GTextInfo label[16];
     char namebuf[100], tbuf[6][40];
     char ubuf[40];
     int i,j;
 
     gi.cv = cv;
     gi.rf = ref;
+    gi.changed = false;
     gi.done = false;
 
 	memset(&wattrs,0,sizeof(wattrs));
@@ -833,6 +908,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	gcd[j].gd.label = &label[j];
 	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+14;
 	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.popup_msg = GStringGetResource(_STR_TransformPopup,NULL);
 	gcd[j].creator = GLabelCreate;
 	++j;
 
@@ -841,12 +917,16 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	    label[i+j].text = (unichar_t *) tbuf[i];
 	    label[i+j].text_is_1byte = true;
 	    gcd[i+j].gd.label = &label[i+j];
-	    gcd[i+j].gd.pos.x = 20+((i&1)?60:0); gcd[i+j].gd.pos.y = gcd[j-1].gd.pos.y+14+(i/2)*13; 
+	    gcd[i+j].gd.pos.x = 20+((i&1)?85:0); gcd[i+j].gd.pos.width=75;
+	    gcd[i+j].gd.pos.y = gcd[j-1].gd.pos.y+14+(i/2)*26; 
 	    gcd[i+j].gd.flags = gg_enabled|gg_visible;
-	    gcd[i+j].creator = GLabelCreate;
+	    gcd[i+j].gd.cid = i+1000;
+	    gcd[i+j].gd.handle_controlevent = CI_TransChange;
+	    gcd[i+j].creator = GTextFieldCreate;
 	}
 
-	gcd[6+j].gd.pos.x = 30; gcd[6+j].gd.pos.y = RI_Height+(j==3?12:0)-32;
+	gcd[6+j].gd.pos.x = (RI_Width-GIntGetResource(_NUM_Buttonsize))/2;
+	gcd[6+j].gd.pos.y = RI_Height+(j==3?12:0)-64;
 	gcd[6+j].gd.pos.width = -1; gcd[6+j].gd.pos.height = 0;
 	gcd[6+j].gd.flags = gg_visible | gg_enabled ;
 	label[6+j].text = (unichar_t *) _STR_Show;
@@ -856,17 +936,36 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	gcd[6+j].gd.handle_controlevent = CI_Show;
 	gcd[6+j].creator = GButtonCreate;
 
-	gcd[7+j].gd.pos.x = -6-30; gcd[7+j].gd.pos.y = gcd[6+j].gd.pos.y-3;
+	gcd[7+j].gd.pos.x = 30-3; gcd[7+j].gd.pos.y = RI_Height+(j==3?12:0)-32-3;
 	gcd[7+j].gd.pos.width = -1; gcd[7+j].gd.pos.height = 0;
-	gcd[7+j].gd.flags = gg_visible | gg_enabled | gg_but_default | gg_but_cancel;
+	gcd[7+j].gd.flags = gg_visible | gg_enabled | gg_but_default;
 	label[7+j].text = (unichar_t *) _STR_OK;
 	label[7+j].text_in_resource = true;
 	gcd[7+j].gd.mnemonic = 'O';
 	gcd[7+j].gd.label = &label[7+j];
-	gcd[7+j].gd.handle_controlevent = CI_Cancel;
+	gcd[7+j].gd.handle_controlevent = CI_ROK;
 	gcd[7+j].creator = GButtonCreate;
 
+	gcd[8+j].gd.pos.x = -30; gcd[8+j].gd.pos.y = gcd[7+j].gd.pos.y+3;
+	gcd[8+j].gd.pos.width = -1; gcd[8+j].gd.pos.height = 0;
+	gcd[8+j].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	label[8+j].text = (unichar_t *) _STR_Cancel;
+	label[8+j].text_in_resource = true;
+	gcd[8+j].gd.mnemonic = 'C';
+	gcd[8+j].gd.label = &label[8+j];
+	gcd[8+j].gd.handle_controlevent = CI_Cancel;
+	gcd[8+j].creator = GButtonCreate;
+
+	gcd[9+j].gd.pos.x = 5; gcd[9+j].gd.pos.y = gcd[6+j].gd.pos.y-6;
+	gcd[9+j].gd.pos.width = RI_Width-10;
+	gcd[9+j].gd.flags = gg_visible | gg_enabled;
+	gcd[9+j].creator = GLineCreate;
+
+	gcd[10+j] = gcd[9+j];
+	gcd[9+j].gd.pos.y = gcd[7+j].gd.pos.y-3;
+
 	GGadgetsCreate(gi.gw,gcd);
+	GWidgetIndicateFocusGadget(gcd[j].ret);
 
     GWidgetHidePalettes();
     GDrawSetVisible(gi.gw,true);

@@ -842,6 +842,11 @@ static char *str_Color = "Color:";
 static char *str_TransformedBy = "Transformed by:";
 static char *str_NotUnicodeBMP = "Warning: This value is outside of the Unicode BMP.\nIs that really what you want?";
 static char *str_PossiblyTooBig = "Value possibly out of range";
+static char *str_OutOfRange = "Value out of range";
+static char *str_TransformationMatrix = "Transformation Matrix";
+static char *str_TransformChanged = "Transformation Matrix Changed";
+static char *str_TransformChangedApply = "You have changed the transformation matrix, do you wish to use the new version?";
+static char *str_TransformPopup = "The transformation matrix specifies how the points in\nthe source character should be transformed before\nthey are drawn in the current character.\n x(new) = tm[1,1]*x + tm[2,1]*y + tm[3,1]\n y(new) = tm[1,2]*x + tm[2,2]*y + tm[3,2]";
     /* Import */
 static char str_Duppixelsize[] = "Duplicate pixelsize";
 /* "The font database already contains a bitmap\nfont with this pixelsize (%d)\nDo you want to overwrite it?" */

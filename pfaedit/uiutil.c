@@ -43,6 +43,7 @@ real GetReal(GWindow gw,int cid,char *name,int *err) {
     txt = _GGadgetGetTitle(GWidgetGetControl(gw,cid));
     val = u_strtod(txt,&end);
     if ( *end!='\0' ) {
+	GTextFieldSelect(GWidgetGetControl(gw,cid),0,-1);
 	Protest(name);
 	*err = true;
     }
@@ -56,6 +57,7 @@ int GetInt(GWindow gw,int cid,char *name,int *err) {
     txt = _GGadgetGetTitle(GWidgetGetControl(gw,cid));
     val = u_strtol(txt,&end,10);
     if ( *end!='\0' ) {
+	GTextFieldSelect(GWidgetGetControl(gw,cid),0,-1);
 	Protest(name);
 	*err = true;
     }
@@ -82,6 +84,7 @@ real GetCalmRealR(GWindow gw,int cid,int namer,int *err) {
     if ( *txt=='-' && end==txt && txt[1]=='\0' )
 return( 0 );
     if ( *end!='\0' ) {
+	GTextFieldSelect(GWidgetGetControl(gw,cid),0,-1);
 	ProtestR(namer);
 	*err = true;
     }
@@ -95,6 +98,7 @@ real GetRealR(GWindow gw,int cid,int namer,int *err) {
     txt = _GGadgetGetTitle(GWidgetGetControl(gw,cid));
     val = u_strtod(txt,&end);
     if ( *end!='\0' ) {
+	GTextFieldSelect(GWidgetGetControl(gw,cid),0,-1);
 	ProtestR(namer);
 	*err = true;
     }
@@ -108,6 +112,7 @@ int GetIntR(GWindow gw,int cid,int namer,int *err) {
     txt = _GGadgetGetTitle(GWidgetGetControl(gw,cid));
     val = u_strtol(txt,&end,10);
     if ( *end!='\0' ) {
+	GTextFieldSelect(GWidgetGetControl(gw,cid),0,-1);
 	ProtestR(namer);
 	*err = true;
     }
