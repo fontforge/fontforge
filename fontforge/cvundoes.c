@@ -212,7 +212,8 @@ static void FixupRefChars(SplineChar *sc,RefChar *urefs,int layer) {
 }
 
 static void FixupImages(SplineChar *sc,ImageList *uimgs,int layer) {
-    ImageList *cimgs = sc->layers[layer].images, *cend, *cprev, *unext, *cnext;
+    ImageList *cimgs = layer==-1 ? sc->parent->grid.images : sc->layers[layer].images,
+	    *cend, *cprev, *unext, *cnext;
 
     cprev = NULL;
     while ( cimgs!=NULL && uimgs!=NULL ) {
@@ -712,8 +713,8 @@ static void SCUndoAct(SplineChar *sc,int layer, Undoes *undo) {
 	    undo->u.state.u.hints = hints;
 	}
 	if ( undo->undotype!=ut_statehint &&
-		!ImagesMatch(undo->u.state.u.images,sc->layers[layer].images)) {
-	    ImageList *images = ImageListCopy(sc->layers[layer].images);
+		!ImagesMatch(undo->u.state.u.images,head->images)) {
+	    ImageList *images = ImageListCopy(head->images);
 	    FixupImages(sc,undo->u.state.u.images,layer);
 	    undo->u.state.u.images = images;
 	    SCOutOfDateBackground(sc);
