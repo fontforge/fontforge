@@ -4863,9 +4863,9 @@ static void _CVUnlinkRef(CharView *cv) {
 
     if ( cv->drawmode==dm_fore && cv->layerheads[dm_fore]->refs!=NULL ) {
 	CVPreserveState(cv);
-	for ( rf=cv->sc->layers[ly_fore].refs; rf!=NULL && !anyrefs; rf=rf->next )
+	for ( rf=cv->layerheads[dm_fore]->refs; rf!=NULL && !anyrefs; rf=rf->next )
 	    if ( rf->selected ) anyrefs = true;
-	for ( rf=cv->sc->layers[ly_fore].refs; rf!=NULL ; rf=next ) {
+	for ( rf=cv->layerheads[dm_fore]->refs; rf!=NULL ; rf=next ) {
 	    next = rf->next;
 	    if ( rf->selected || !anyrefs) {
 		SCRefToSplines(cv->sc,rf);

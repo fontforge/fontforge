@@ -270,7 +270,7 @@ return;
     }
 
     mpos = (int) ceil(e->m_cur);
-    if ( mpos>e->mmax ) {
+    if ( mpos>e->mmax || mpos>=es->cnt ) {
 	free(e);
 return;
     }

@@ -3079,7 +3079,7 @@ void FontViewMenu_CorrectDir(GtkMenuItem *menuitem, gpointer user_data) {
 # endif
     int i, cnt=0, changed, refchanged, preserved, layer;
     int askedall=-1, asked;
-    RefChar *ref;
+    RefChar *ref, *next;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
 	++cnt;
@@ -3095,7 +3095,8 @@ void FontViewMenu_CorrectDir(GtkMenuItem *menuitem, gpointer user_data) {
 	changed = refchanged = preserved = false;
 	asked = askedall;
 	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
-	    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
+	    for ( ref=sc->layers[layer].refs; ref!=NULL; ref=next ) {
+		next = ref->next;
 		if ( ref->transform[0]*ref->transform[3]<0 ||
 			(ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
 		    if ( asked==-1 ) {
