@@ -35,6 +35,24 @@
 static int mv_antialias = true;
 static double mv_scales[] = { 1.0, 2.0/3.0, .5, 1.0/3.0, .25, .2, 1.0/6.0 };
 
+static void MVDrawAnchorPoint(GWindow pixmap,MetricsView *mv,int i,struct aplist *apl) {
+    SplineFont *sf = mv->fv->sf;
+    int emsize = sf->ascent+sf->descent;
+    double scale = mv->pixelsize / (double) emsize;
+    double scaleas = mv->pixelsize / (double) (mv_scales[mv->scale_index]*emsize);
+    AnchorPoint *ap = apl->ap;
+    int x,y;
+
+    if ( mv->bdf!=NULL )
+return;
+
+    y = mv->topend + 2 + scaleas * sf->ascent - mv->perchar[i].yoff - ap->me.y*scale;
+    x = mv->perchar[i].dx-mv->xoff+mv->perchar[i].xoff + ap->me.x*scale;
+    if ( mv->perchar[i].selected )
+	x += mv->activeoff;
+    DrawAnchorPoint(pixmap,x,y,apl->selected);
+}
+
 static void MVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
     GRect old, *clip, r, old2;
     int x,y,ybase, width,height, i;
@@ -45,6 +63,7 @@ static void MVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
     GClut clut;
     int si;
     int ke = mv->height-mv->sbh-(mv->fh+4);
+    struct aplist *apl;
 
     clip = &event->u.expose.rect;
     if ( clip->y+clip->height < mv->topend )
@@ -81,7 +100,7 @@ return;
     si = -1;
     for ( i=0; i<mv->charcnt; ++i ) {
 	if ( mv->perchar[i].selected ) si = i;
-	x = mv->perchar[i].dx-mv->xoff+mv->perchar[i].xoff;
+	x = mv->perchar[i].dx-mv->xoff;
 	if ( mv->right_to_left )
 	    x = mv->width - x - mv->perchar[i].dwidth - mv->perchar[i].kernafter;
 	if ( mv->bdf==NULL && mv->showgrid ) {
@@ -89,7 +108,9 @@ return;
 		    mv->topend,x+mv->perchar[i].dwidth+mv->perchar[i].kernafter,mv->displayend,0x808080);
 	}
 	if ( mv->right_to_left )
-	    x += mv->perchar[i].kernafter;
+	    x += mv->perchar[i].kernafter-mv->perchar[i].xoff;
+	else
+	    x += mv->perchar[i].xoff;
 	bdfc = mv->bdf==NULL ?	mv->perchar[i].show :
 				mv->bdf->chars[mv->perchar[i].sc->enc];
 	if ( bdfc==NULL )
@@ -136,6 +157,9 @@ return;
 	    base.height = height;
 	    GDrawDrawImage(pixmap,&gi,NULL,x,y);
 	}
+	if ( mv->perchar[i].selected )
+	    for ( apl=mv->perchar[i].aps; apl!=NULL; apl=apl->next )
+		MVDrawAnchorPoint(pixmap,mv,i,apl);
     }
     if ( si!=-1 && mv->bdf==NULL && mv->showgrid ) {
 	x = mv->perchar[si].dx-mv->xoff;
@@ -167,7 +191,16 @@ return;
     if ( mv->perchar[i].selected )
 	off = mv->activeoff;
     r.y = mv->topend; r.height = mv->displayend-mv->topend;
-    r.x = mv->perchar[i].dx-mv->xoff; r.width = mv->perchar[i].dwidth+mv->perchar[i].kernafter;
+    r.x = mv->perchar[i].dx-mv->xoff; r.width = mv->perchar[i].dwidth;
+    if ( mv->perchar[i].kernafter>0 )
+	r.width += mv->perchar[i].kernafter;
+    if ( mv->perchar[i].hoff>0 )
+	r.width += mv->perchar[i].hoff;
+    if ( mv->perchar[i].xoff<0 ) {
+	r.x += mv->perchar[i].xoff;
+	r.width -= mv->perchar[i].xoff;
+    } else
+	r.width += mv->perchar[i].xoff;
     bdfc = mv->bdf==NULL ? mv->perchar[i].show :
 			   mv->bdf->chars[mv->perchar[i].sc->enc];
     if ( bdfc==NULL )
@@ -262,14 +295,35 @@ return;
 	    (mv->fv->sf->ascent+mv->fv->sf->descent);
 }
 
+static void aplistfree(struct aplist *l) {
+    struct aplist *next;
+
+    for ( ; l!=NULL; l=next ) {
+	next = l->next;
+	chunkfree(l,sizeof(*l));
+    }
+}
+
+static struct aplist *aplistcreate(struct aplist *n,AnchorPoint *ap, int connect) {
+    struct aplist *l = chunkalloc(sizeof(*n));
+
+    l->next = n;
+    l->ap = ap;
+    l->connected_to = connect;
+return( l );
+}
+
 static int MVSetAnchor(MetricsView *mv) {
     int i, j, changed=false;
     AnchorPos *apos, *test;
     int base, newx, newy;
     int emsize = mv->fv->sf->ascent+mv->fv->sf->descent;
 
-    for ( i=0; i<mv->charcnt; ++i )
+    for ( i=0; i<mv->charcnt; ++i ) {
 	mv->sstr[i] = mv->perchar[i].sc;
+	aplistfree(mv->perchar[i].aps);
+	mv->perchar[i].aps = NULL;
+    }
     mv->sstr[i] = NULL;
     if ( mv->perchar[i].xoff!=0 || mv->perchar[i].yoff!=0 ) {
 	mv->perchar[i].xoff = mv->perchar[i].yoff = 0;
@@ -289,6 +343,8 @@ static int MVSetAnchor(MetricsView *mv) {
 		    mv->perchar[i].xoff = newx; mv->perchar[i].yoff = newy;
 		    changed = true;
 		}
+		mv->perchar[i].aps = aplistcreate(mv->perchar[i].aps,test->apm,j);
+		mv->perchar[j].aps = aplistcreate(mv->perchar[j].aps,test->apb,i);
 	    }
 	    if ( i<mv->charcnt ) {
 		if ( mv->perchar[i+1].xoff!=0 || mv->perchar[i+1].yoff!=0 ) {
@@ -1635,7 +1691,7 @@ static void MVMenuScale(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     mv->pixelsize = mv_scales[mv->scale_index]*(mv->displayend - mv->topend - 4);
     MVReRasterize(mv);
-    GDrawRequestExpose(mv->gw,NULL,true);
+    MVReKern(mv);
 }
 
 static void MVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2185,9 +2241,26 @@ return( bc->bitmap[y*bc->bytes_per_line+x] );
 return( bc->bitmap[y*bc->bytes_per_line+(x>>3)]&(1<<(7-(x&7))) );
 }
 
+static struct aplist *hitsaps(MetricsView *mv,int i, int x,int y) {
+    SplineFont *sf = mv->fv->sf;
+    int emsize = sf->ascent+sf->descent;
+    double scale = mv->pixelsize / (double) emsize;
+    struct aplist *apl;
+    int ax, ay;
+
+    for ( apl = mv->perchar[i].aps; apl!=NULL; apl=apl->next ) {
+	ax = apl->ap->me.x*scale;
+	ay = apl->ap->me.y*scale;
+	if ( x>ax-3 && x<ax+3   &&   y>ay-3 && y<ay+3 )
+return( apl );
+    }
+return( NULL );
+}
+
 static void MVMouse(MetricsView *mv,GEvent *event) {
     int i, x, y, j, within, sel, ybase;
     SplineChar *sc;
+    struct aplist *apl=NULL;
     int diff;
     int onwidth, onkern;
 
@@ -2211,6 +2284,12 @@ static void MVMouse(MetricsView *mv,GEvent *event) {
 return;
     }
 
+    if ( event->type==et_mouseup ) {
+	event->type = et_mousemove;
+	MVMouse(mv,event);
+	event->type = et_mouseup;
+    }
+
     event->u.mouse.x += mv->xoff;
     ybase = mv->topend + 2 + (mv->pixelsize/mv_scales[mv->scale_index] * mv->fv->sf->ascent /
 	    (mv->fv->sf->ascent+mv->fv->sf->descent));
@@ -2220,7 +2299,10 @@ return;
 	if ( mv->right_to_left )
 	    x = mv->width - x - mv->perchar[i].dwidth - mv->perchar[i].kernafter - mv->perchar[i].hoff;
 	y = ybase - mv->perchar[i].yoff;
-	if ( mv->bdf==NULL )
+	if ( mv->bdf==NULL ) {
+	    if ( mv->perchar[i].selected && mv->perchar[i].aps!=NULL &&
+		(apl=hitsaps(mv,i,event->u.mouse.x-x,y-event->u.mouse.y))!=NULL )
+    break;
 	    if ( event->u.mouse.x >= x+mv->perchar[i].show->xmin &&
 		event->u.mouse.x <= x+mv->perchar[i].show->xmax &&
 		event->u.mouse.y <= y-mv->perchar[i].show->ymin &&
@@ -2228,6 +2310,8 @@ return;
 		hitsbit(mv->perchar[i].show,event->u.mouse.x-x-mv->perchar[i].show->xmin,
 			mv->perchar[i].show->ymax-(y-event->u.mouse.y)) )
     break;
+	}
+	x += mv->right_to_left ? mv->perchar[i].xoff : -mv->perchar[i].xoff;
 	if ( event->u.mouse.x >= x && event->u.mouse.x < x+mv->perchar[i].dwidth+ mv->perchar[i].kernafter+ mv->perchar[i].hoff )
 	    within = i;
     }
@@ -2239,7 +2323,7 @@ return;
     diff = event->u.mouse.x-mv->pressed_x;
     /*if ( mv->right_to_left ) diff = -diff;*/
     sel = onwidth = onkern = false;
-    if ( sc==NULL ) {
+    if ( sc==NULL && apl==NULL ) {
 	if ( !mv->right_to_left ) {
 	    if ( within>0 && mv->perchar[within-1].selected &&
 		    event->u.mouse.x<mv->perchar[within].dx+3 )
@@ -2280,6 +2364,9 @@ return;
 	if ( mv->bdf!=NULL ) {
 	    if ( mv->cursor!=ct_mypointer )
 		ct = ct_mypointer;
+	} else if ( apl!=NULL ) {
+	    if ( mv->cursor!=ct_4way )
+		ct = ct_4way;
 	} else if ( sc!=NULL ) {
 	    if ( mv->cursor!=ct_lbearing )
 		ct = ct_lbearing;
@@ -2307,7 +2394,17 @@ return;
 /* Don't allow any editing when displaying a bitmap font */
     } else if ( event->type == et_mousedown && mv->bdf==NULL ) {
 	CVPaletteDeactivate();
-	if ( sc!=NULL ) {
+	if ( apl!=NULL ) {
+	    mv->pressed_apl = apl;
+	    apl->selected = true;
+	    mv->pressed = true;
+	    mv->ap_owner = i;
+	    mv->xp = event->u.mouse.x; mv->yp = event->u.mouse.y;
+	    mv->ap_start = apl->ap->me;
+	    MVRedrawI(mv,i,0,0);
+	    SCPreserveState(mv->perchar[i].sc,false);
+	    GWindowClearFocusGadgetOfWindow(mv->gw);
+	} else if ( sc!=NULL ) {
 	    for ( j=0; j<mv->charcnt; ++j )
 		if ( j!=i && mv->perchar[j].selected )
 		    MVDeselectChar(mv,j);
@@ -2341,7 +2438,13 @@ return;
 	mv->pressed_x = event->u.mouse.x;
     } else if ( event->type == et_mousemove && mv->pressed ) {
 	for ( i=0; i<mv->charcnt && !mv->perchar[i].selected; ++i );
-	if ( mv->pressedwidth ) {
+	if ( mv->pressed_apl ) {
+	    double scale = mv->pixelsize/(double) (mv->fv->sf->ascent+mv->fv->sf->descent);
+	    mv->pressed_apl->ap->me.x = mv->ap_start.x + (event->u.mouse.x-mv->xp)/scale;
+	    mv->pressed_apl->ap->me.y = mv->ap_start.y + (mv->yp-event->u.mouse.y)/scale;
+	    MVSetAnchor(mv);
+	    MVRedrawI(mv,mv->ap_owner,0,0);
+	} else if ( mv->pressedwidth ) {
 	    int ow = mv->perchar[i].dwidth;
 	    if ( mv->right_to_left ) diff = -diff;
 	    mv->perchar[i].dwidth = mv->perchar[i].show->width + diff;
@@ -2373,6 +2476,10 @@ return;
 	    (within!=-1 || sc!=NULL)) {
 	mv->pressed = false; mv->activeoff = 0;
 	mv->pressedwidth = mv->pressedkern = false;
+	if ( mv->pressed_apl!=NULL ) {
+	    mv->pressed_apl->selected = false;
+	    mv->pressed_apl = NULL;
+	}
 	if ( within==-1 ) within = i;
 	if ( mv->bdf==NULL )
 	    CharViewCreate(mv->perchar[within].sc,mv->fv);
@@ -2383,7 +2490,12 @@ return;
 	mv->pressed = false;
 	mv->activeoff = 0;
 	sc = mv->perchar[i].sc;
-	if ( mv->pressedwidth ) {
+	if ( mv->pressed_apl!=NULL ) {
+	    mv->pressed_apl->selected = false;
+	    mv->pressed_apl = NULL;
+	    MVRedrawI(mv,mv->ap_owner,0,0);
+	    SCCharChangedUpdate(mv->perchar[mv->ap_owner].sc);
+	} else if ( mv->pressedwidth ) {
 	    mv->pressedwidth = false;
 	    if ( mv->right_to_left ) diff = -diff;
 	    diff = diff*(mv->fv->sf->ascent+mv->fv->sf->descent)/mv->pixelsize;
@@ -2428,6 +2540,10 @@ return;
 		FVTrans(mv->fv,sc,transform,NULL,false);
 	}
     } else if ( event->type == et_mouseup && mv->bdf!=NULL && within!=-1 ) {
+	if ( mv->pressed_apl!=NULL ) {
+	    mv->pressed_apl->selected = false;
+	    mv->pressed_apl = NULL;
+	}
 	for ( j=0; j<mv->charcnt; ++j )
 	    if ( j!=within && mv->perchar[j].selected )
 		MVDeselectChar(mv,j);

@@ -893,9 +893,27 @@ return;
     GDrawDrawText(pixmap,x-len/2,y,namebuf,-1,NULL,fg);
 }
 
+void DrawAnchorPoint(GWindow pixmap,int x, int y,int selected) {
+    GPoint gp[9];
+    Color col = 0x0040ff;
+
+    gp[0].x = x-1; gp[0].y = y-1;
+    gp[1].x = x;   gp[1].y = y-6;
+    gp[2].x = x+1; gp[2].y = y-1;
+    gp[3].x = x+6; gp[3].y = y;
+    gp[4].x = x+1; gp[4].y = y+1;
+    gp[5].x = x;   gp[5].y = y+6;
+    gp[6].x = x-1; gp[6].y = y+1;
+    gp[7].x = x-6; gp[7].y = y;
+    gp[8] = gp[0];
+    if ( selected )
+	GDrawDrawPoly(pixmap,gp,9,col);
+    else
+	GDrawFillPoly(pixmap,gp,9,col);
+}
+
 static void CVDrawAnchorPoints(CharView *cv,GWindow pixmap) {
     int x,y, len, sel;
-    GPoint gp[9];
     Color col = 0x0040ff;
     AnchorPoint *ap;
     char buf[10];
@@ -913,19 +931,7 @@ return;
 	    if ( x<-400 || y<-40 || x>cv->width+400 || y>cv->height )
 	continue;
 
-	    gp[0].x = x-1; gp[0].y = y-1;
-	    gp[1].x = x;   gp[1].y = y-6;
-	    gp[2].x = x+1; gp[2].y = y-1;
-	    gp[3].x = x+6; gp[3].y = y;
-	    gp[4].x = x+1; gp[4].y = y+1;
-	    gp[5].x = x;   gp[5].y = y+6;
-	    gp[6].x = x-1; gp[6].y = y+1;
-	    gp[7].x = x-6; gp[7].y = y;
-	    gp[8] = gp[0];
-	    if ( ap->selected )
-		GDrawDrawPoly(pixmap,gp,9,col);
-	    else
-		GDrawFillPoly(pixmap,gp,9,col);
+	    DrawAnchorPoint(pixmap,x,y,ap->selected);
 	    if ( ap->type==at_basechar || ap->type==at_mark || ap->type==at_basemark )
 		name = ap->anchor->name;
 	    else if ( ap->type==at_centry || ap->type==at_cexit ) {

@@ -236,6 +236,8 @@ typedef struct bitmapview {
     int color;			/* for greyscale fonts */
 } BitmapView;
 
+struct aplist { AnchorPoint *ap; int connected_to, selected; struct aplist *next; };
+
 typedef struct metricsview {
     struct fontview *fv;
     int pixelsize;
@@ -259,8 +261,9 @@ typedef struct metricsview {
 	PST *active_pos;	/* Only support one simple positioning GPOS feature at a time */
 	unsigned int selected: 1;
 	GGadget *width, *lbearing, *rbearing, *kern, *name;
+	struct aplist *aps;
     } *perchar;
-    SplineChar **sstr;		/* An array the same size as perchar */
+    SplineChar **sstr;		/* An array the same size as perchar (well 1 bigger, trailing null) */
     int16 mwidth, mbase;
     int16 charcnt, max;
     int16 pressed_x;
@@ -273,6 +276,9 @@ typedef struct metricsview {
     unsigned int pressedkern: 1;
     unsigned int showgrid: 1;
     unsigned int antialias: 1;
+    struct aplist *pressed_apl;
+    int xp, yp, ap_owner;
+    BasePoint ap_start;
     int cursor;
     int scale_index;
 } MetricsView;
@@ -506,6 +512,7 @@ extern int CVExport(CharView *cv);
 extern int BVExport(BitmapView *bv);
 extern void ScriptExport(SplineFont *sf, BDFFont *bdf, int format, int enc);
 
+extern void DrawAnchorPoint(GWindow pixmap,int x, int y,int selected);
 extern void DefaultY(GRect *pos);
 extern CharView *CharViewCreate(SplineChar *sc,FontView *fv);
 extern void CharViewFree(CharView *cv);
