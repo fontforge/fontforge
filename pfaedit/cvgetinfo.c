@@ -1545,6 +1545,8 @@ return(NULL);
 	ap->type = at_basemark;
     else if ( sc->lig!=NULL || waslig )
 	ap->type = at_baselig;
+    if (( ap->type==at_basechar || ap->type==at_baselig ) && an->feature_tag==CHR('m','k','m','k') )
+	ap->type = at_basemark;
     ap->next = sc->anchor;
     ap->lig_index = waslig;
     sc->anchor = ap;
