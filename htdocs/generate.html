@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 15-Jul-2003 -->
+  <!-- AP: Last modified: 30-Jul-2003 -->
   <TITLE>Generate Font Dialog</TITLE>
 </HEAD>
 <BODY>
@@ -77,6 +77,8 @@ The outline types are:
   <LI>
     Open Type CID, This is only available if your font is a
     <A HREF="cidmenu.html">CID font</A>. It procudes an OpenType CID-keyed font.
+  <LI>
+    SVG font
   <LI>
     None
 </UL>
@@ -204,6 +206,8 @@ If you save a CID font with a format other than PS CID or OpenType CID, then
 only the currenly displayed subfont will be saved, with the current meaningless
 character ordering (I suppose this is useful if you wish to extract a sub-font
 from a CID font).
+<P>
+SVG fonts don't really have the concept of an encoding other than Unicode.
 <P>
 TTF (and OpenType) fonts will produce vertical metrics tables if the font
 has vertical metrics enabled. Postscript encodings will not produce Metrics2

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 14-Jul-2003 -->
+  <!-- AP: Last modified: 30-Jul-2003 -->
   <TITLE>Advanced Typography tables</TITLE>
 </HEAD>
 <BODY>
@@ -70,8 +70,8 @@ chinese ideographs. Two examples of features are 'kern' which provides kerning
 information between pairs of glyphs and 'init' which will transform one set
 of glyphs to another when those glyphs are at the beginning of a word.
 <P>
-PfaEdit does not support the full range of possibilities inherent in these
-tables.
+PfaEdit <A HREF="gposgsub.html#Unsupported">does not support </A>the full
+range of possibilities inherent in these tables.
 <H3>
   The <B><CODE><A NAME="GPOS">GPOS</A></CODE></B> table
 </H3>
@@ -522,10 +522,11 @@ in either opentype or apple advanced typography.
 </H3>
 <UL>
   <LI>
-    PfaEdit does not support required features for a script/language combination
-  <LI>
     PfaEdit does not support contextual positioning or chaining contextual
     positioning in GPOS
+  <LI>
+    The only kind of pair-wise positioning that PfaEdit supports is horizontal
+    kerning.
   <LI>
     PfaEdit does not support contextual substitution, chaining contextual
     substitution nor reverse chaining contextual substitution in GSUB.

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Feb-2001 -->
-  <!-- AP: Last modified: 11-Feb-2001 -->
+  <!-- AP: Last modified: 30-Jul-2003 -->
   <TITLE>UI data structures for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -84,7 +84,7 @@ enum cvtools { cvt_pointer, cvt_magnify,
 	cvt_scale, cvt_flip,
 	cvt_rotate, cvt_skew,
 	cvt_rect, cvt_poly,
-	cvt_elipse, cvt_star,
+	cvt_ellipse, cvt_star,
 	cvt_minify, cvt_max=cvt_minify,
 	cvt_none = -1};
 enum bvtools { bvt_pointer, bvt_magnify,
@@ -92,8 +92,8 @@ enum bvtools { bvt_pointer, bvt_magnify,
 	bvt_shift, bvt_hand,
 	bvt_minify, bvt_max=bvt_minify,
 	bvt_rect, bvt_filledrect,
-	bvt_elipse, bvt_filledelipse,
-	bvt_max2 = bvt_filledelipse,
+	bvt_ellipse, bvt_filledellipse,
+	bvt_max2 = bvt_filledellipse,
 	bvt_none = -1,
 	bvt_fliph=0, bvt_flipv, bvt_rotate90cw, bvt_rotate90ccw, bvt_rotate180, bvt_skew };
 enum drawmode { dm_fore, dm_back, dm_grid, dm_max };

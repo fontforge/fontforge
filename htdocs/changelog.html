@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 20-Jul-2003 -->
+  <!-- AP: Last modified: 30-Jul-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,26 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    30-Jul-2003
+    <UL>
+      <LI>
+	Add support for <A HREF="http://www.w3c.org/TR/SVG11/fonts.html">svg fonts</A>
+	(and add dependency on libxml2 for reading them in)
+      <LI>
+	Add support for importing/exporting svg files (again libxml2 needed for import)
+      <LI>
+	Add support for required features.
+      <LI>
+	In quadratic fonts the ellipse tool did not draw ellipses
+      <LI>
+	Add support for rectangles/ellipses drawn center out rather than just within
+	the bounding box
+      <LI>
+	Preserve the rect/ellipse tool settings across invocations
+      <LI>
+	Put a license entry into the help menu
+    </UL>
   <LI>
     20-Jul-2003
     <UL>
@@ -180,7 +200,7 @@
 	0, and now they default to that.
       <LI>
 	Several people at EuroTeX wanted more pen shapes in the expand stroke dlg.
-	Elipses are easy, so we add them.
+	Ellipses are easy, so we add them.
       <LI>
 	One guy at EuroTeX wanted to be able to store arbetrary per-glyph data in
 	the font, so add a new (private) true/open type table that can contain the
