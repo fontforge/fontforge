@@ -51,6 +51,7 @@ struct charshows charshows = {
     12			/* ppem for figuring gridlines and doing gridfitting */
 };
 
+#define BAR_WIDTH	4
 #define EDGE_SPACING	2
 #define INSTR_WIDTH	(2*EDGE_SPACING+21*cv->numlen)
 #define GLOSS_WIDTH	(2*EDGE_SPACING+28*cv->numlen)
@@ -365,13 +366,70 @@ return( sp );
 return( NULL );
 }
 
-static void char_resize(CharView *cv,GEvent *event) {
+static void cv_sizethings(CharView *cv) {
     GRect pos;
-    int wid=0;
     int x = 0, lh;
 
-    if ( cv->show.instrpane ) wid += INSTR_WIDTH+cv->sbw;
-    if ( cv->show.glosspane ) wid += GLOSS_WIDTH+cv->sbw;
+    pos.width = cv->sbw;
+    pos.height = cv->instrinfo.vheight;
+    pos.x = cv->iwidth; pos.y = cv->mbh+cv->infoh;
+    GGadgetResize(cv->instrinfo.vsb,pos.width,pos.height);
+    GGadgetMove(cv->instrinfo.vsb,pos.x,pos.y);
+    pos.width = pos.x; pos.x = 0;
+    GDrawResize(cv->instrinfo.v,pos.width,pos.height);
+    if ( cv->show.instrpane ) x += cv->iwidth+cv->sbw+BAR_WIDTH;
+
+    lh = cv->instrinfo.lheight;
+
+    GScrollBarSetBounds(cv->instrinfo.vsb,0,lh,cv->instrinfo.vheight/cv->fh);
+    if ( cv->instrinfo.lpos + cv->instrinfo.vheight/cv->fh > lh )
+	cv->instrinfo.lpos = lh-cv->instrinfo.vheight/cv->fh;
+    if ( cv->instrinfo.lpos < 0 ) cv->instrinfo.lpos = 0;
+    GScrollBarSetPos(cv->instrinfo.vsb,cv->instrinfo.lpos);
+
+
+#if TT_CONFIG_OPTION_BYTECODE_DEBUG
+    pos.width = cv->sbw;
+    pos.x = x+cv->gvwidth;
+    GGadgetResize(cv->gvsb,pos.width,pos.height);
+    GGadgetMove(cv->gvsb,pos.x,pos.y);
+    pos.width = pos.x-x; pos.x = x;
+    GDrawMove(cv->glossv,pos.x,pos.y);
+    GDrawResize(cv->glossv,pos.width,pos.height);
+    if ( cv->show.glosspane ) x += cv->gvwidth+cv->sbw+BAR_WIDTH;
+
+    GScrollBarSetBounds(cv->gvsb,0,cv->instrinfo.act_cnt,cv->instrinfo.vheight/cv->fh);
+    if ( cv->gvpos + cv->instrinfo.vheight/cv->fh > cv->instrinfo.act_cnt )
+	cv->gvpos = cv->instrinfo.act_cnt-cv->instrinfo.vheight/cv->fh;
+    if ( cv->gvpos < 0 ) cv->gvpos = 0;
+    GScrollBarSetPos(cv->gvsb,cv->gvpos);
+#endif
+
+
+    pos.width = cv->sbw;
+    pos.x = x+cv->vwidth;
+    pos.height -= cv->sbw;
+    GGadgetResize(cv->vsb,pos.width,pos.height);
+    GGadgetMove(cv->vsb,pos.x,pos.y);
+    pos.width = pos.x-x; pos.x = x;
+    GDrawMove(cv->v,pos.x,pos.y);
+    GDrawResize(cv->v,pos.width,pos.height);
+
+    pos.y += pos.height; pos.height = cv->sbw;
+	/* Without this next line the bottom bar looks funny */
+    if ( cv->show.glosspane || cv->show.instrpane ) { --pos.x; ++pos.width; }
+    GGadgetResize(cv->hsb,pos.width,pos.height);
+    GGadgetMove(cv->hsb,pos.x,pos.y);
+
+    GDrawRequestExpose(cv->gw,NULL,false);
+}
+
+static void char_resize(CharView *cv,GEvent *event) {
+    int wid=0;
+    int x = 0;
+
+    if ( cv->show.instrpane ) wid += cv->iwidth+cv->sbw+BAR_WIDTH;
+    if ( cv->show.glosspane ) wid += cv->gvwidth+cv->sbw+BAR_WIDTH;
     wid += MIN_CHAR_WIDTH+cv->sbw;
     /* height must be a multiple of the line height (if we are showing lines) */
     if ( (event->u.resize.size.height-cv->mbh-cv->infoh-2*EDGE_SPACING)%cv->fh!=0 ||
@@ -384,58 +442,20 @@ static void char_resize(CharView *cv,GEvent *event) {
 return;
     }
 
-    pos.width = cv->sbw;
-    pos.height = event->u.resize.size.height-cv->mbh-cv->infoh;
-    pos.x = INSTR_WIDTH; pos.y = cv->mbh+cv->infoh;
-    GGadgetResize(cv->instrinfo.vsb,pos.width,pos.height);
-    GGadgetMove(cv->instrinfo.vsb,pos.x,pos.y);
-    pos.width = pos.x; pos.x = 0;
-    GDrawResize(cv->instrinfo.v,pos.width,pos.height);
-    if ( cv->show.instrpane ) x += INSTR_WIDTH+cv->sbw;
+    if ( cv->show.instrpane ) x += cv->iwidth+cv->sbw+BAR_WIDTH;
 
-    cv->instrinfo.vheight = pos.height; cv->instrinfo.vwidth = pos.width;
-    lh = cv->instrinfo.lheight;
-
-    GScrollBarSetBounds(cv->instrinfo.vsb,0,lh,cv->instrinfo.vheight/cv->fh);
-    if ( cv->instrinfo.lpos + cv->instrinfo.vheight/cv->fh > lh )
-	cv->instrinfo.lpos = lh-cv->instrinfo.vheight/cv->fh;
-    if ( cv->instrinfo.lpos < 0 ) cv->instrinfo.lpos = 0;
-    GScrollBarSetPos(cv->instrinfo.vsb,cv->instrinfo.lpos);
-
+    cv->instrinfo.vheight = event->u.resize.size.height-cv->mbh-cv->infoh;
+    cv->instrinfo.vwidth = cv->iwidth;
 
 #if TT_CONFIG_OPTION_BYTECODE_DEBUG
-    pos.width = cv->sbw;
-    pos.x = x+GLOSS_WIDTH;
-    GGadgetResize(cv->gvsb,pos.width,pos.height);
-    GGadgetMove(cv->gvsb,pos.x,pos.y);
-    pos.width = pos.x-x; pos.x = x;
-    GDrawMove(cv->glossv,pos.x,pos.y);
-    GDrawResize(cv->glossv,pos.width,pos.height);
-    cv->gvwidth = GLOSS_WIDTH;
-    cv->gvheight = pos.height;
-    if ( cv->show.glosspane ) x += GLOSS_WIDTH+cv->sbw;
-
-    GScrollBarSetBounds(cv->gvsb,0,cv->instrinfo.act_cnt,cv->instrinfo.vheight/cv->fh);
-    if ( cv->gvpos + cv->instrinfo.vheight/cv->fh > cv->instrinfo.act_cnt )
-	cv->gvpos = cv->instrinfo.act_cnt-cv->instrinfo.vheight/cv->fh;
-    if ( cv->gvpos < 0 ) cv->gvpos = 0;
-    GScrollBarSetPos(cv->gvsb,cv->gvpos);
+    cv->gvheight = cv->instrinfo.vheight;
+    if ( cv->show.glosspane ) x += cv->gvwidth+cv->sbw+BAR_WIDTH;
 #endif
 
+    cv->vheight = cv->instrinfo.vheight;
+    cv->vwidth = event->u.resize.size.width-cv->sbw-x;
 
-    pos.width = cv->sbw;
-    pos.x = event->u.resize.size.width-cv->sbw;
-    pos.height -= cv->sbw;
-    GGadgetResize(cv->vsb,pos.width,pos.height);
-    GGadgetMove(cv->vsb,pos.x,pos.y);
-    pos.width = pos.x-x; pos.x = x;
-    GDrawMove(cv->v,pos.x,pos.y);
-    GDrawResize(cv->v,pos.width,pos.height);
-    cv->vheight = pos.height; cv->vwidth = pos.width;
-
-    pos.y += pos.height; pos.height = cv->sbw;
-    GGadgetResize(cv->hsb,pos.width,pos.height);
-    GGadgetMove(cv->hsb,pos.x,pos.y);
+    cv_sizethings(cv);
 
     CVFit(cv);
 }
@@ -968,7 +988,6 @@ static void char_glossexpose(CharView *cv,GWindow pixmap,GRect *rect) {
     struct ttfactions *act;
     char buf[100];
     unichar_t ubuf[100];
-    double scale = 64.0*cv->show.ppem/cv->cc->parent->em;
 
     GDrawSetFont(pixmap,cv->gfont);
     y = EDGE_SPACING+cv->as;
@@ -1007,13 +1026,13 @@ static void char_glossexpose(CharView *cv,GWindow pixmap,GRect *rect) {
 	    else if ( act->freedom.x==1.0 || act->freedom.y==1.0 )
 		strcpy(buf+strlen(buf)-3,"To ");
 	    else
-		strcpy(buf+strlen(buf)-3,"   ");
+		sprintf(buf+strlen(buf)-3,"%.1f,", act->is.x/64.0 );
 	    if ( act->freedom.x==1.0 )
 		sprintf( buf+strlen(buf), "%.2f ", act->is.x/64.0 );
 	    else if ( act->freedom.y==1.0 )
 		sprintf( buf+strlen(buf), "%.2f ", act->is.y/64.0 );
 	    else
-		sprintf( buf+strlen(buf), "    " );
+		sprintf( buf+strlen(buf), "%.1f ", act->is.y/64.0 );
 	    sprintf( buf+strlen(buf), "%c%c",
 		    act->rounded ? 'r' : ' ',
 		    act->min ? 'm' : ' ');
@@ -1506,12 +1525,124 @@ static int cv_gv_e_h(GWindow gw, GEvent *event) {
 return( true );
 }
 
+static void curse_all(CharView *cv, GCursor ct) {
+    GDrawSetCursor(cv->gw,ct);
+    GDrawSetCursor(cv->v,ct);
+    /*if ( cv->show.instrpane )*/ GDrawSetCursor(cv->instrinfo.v,ct);
+#if TT_CONFIG_OPTION_BYTECODE_DEBUG
+    /*if ( cv->show.glosspane )*/ GDrawSetCursor(cv->glossv,ct);
+#endif
+}
+    
+static void char_barexpose(CharView *cv,GWindow pixmap,GRect *rect) {
+    int x, y, yend;
+
+    x = 0;
+    y = cv->mbh+cv->infoh;
+    yend = y+cv->instrinfo.vheight+20;
+    if ( cv->show.instrpane ) {
+	x = cv->iwidth+cv->sbw;
+	GDrawDrawLine(pixmap,x,y,x,yend,0xffffff);
+	x += BAR_WIDTH;
+	GDrawDrawLine(pixmap,x-1,y,x-1,yend,0x000000);
+    }
+    if ( cv->show.glosspane ) {
+	x += cv->gvwidth+cv->sbw;
+	GDrawDrawLine(pixmap,x,y,x,yend,0xffffff);
+	x += BAR_WIDTH;
+	GDrawDrawLine(pixmap,x-1,y,x-1,yend,0x000000);
+    }
+}
+
+static void cv_mousebar(CharView *cv, GEvent *event) {
+    int x,y,yend, inglossbar, ininstrbar;
+
+    inglossbar = ininstrbar = -1;
+    x = 0;
+    y = cv->mbh+cv->infoh;
+    yend = y+cv->instrinfo.vheight;
+    if ( event->u.mouse.y>=y && event->u.mouse.y<yend ) {
+	if ( cv->show.instrpane ) {
+	    x = cv->iwidth+cv->sbw+BAR_WIDTH;
+	    if ( event->u.mouse.x>=x-BAR_WIDTH && event->u.mouse.x<x )
+		ininstrbar = event->u.mouse.x-x;
+	}
+	if ( cv->show.glosspane ) {
+	    x += cv->gvwidth+cv->sbw+BAR_WIDTH;
+	    if ( event->u.mouse.x>=x-BAR_WIDTH && event->u.mouse.x<x )
+		inglossbar = event->u.mouse.x-x;
+	}
+    }
+    if ( !cv->pressed && event->type == et_mousemove ) {
+	if ( cv->bar_cursor != (inglossbar!=-1 || ininstrbar!=-1)) {
+	    cv->bar_cursor = !cv->bar_cursor;
+	    curse_all(cv,cv->bar_cursor?ct_leftright:ct_pointer);
+	}
+    } else if ( event->type==et_mousemove &&
+	    event->u.mouse.y>=y && event->u.mouse.y<yend ) {
+	/* Keep going ... */
+    } else if ( event->type == et_mousedown && event->u.mouse.y>=y ) {
+	cv->pressed = true;
+	cv->in_gloss_bar = inglossbar;
+	cv->in_instr_bar = ininstrbar;
+    } else if ( event->type == et_mouseup ) {
+	int outside = true;
+	cv->pressed = false;
+	if ( cv->bar_cursor ) {
+#if TT_CONFIG_OPTION_BYTECODE_DEBUG
+	    if ( cv->in_gloss_bar!=-1 ) {
+		int ix = 0;
+		if ( cv->show.instrpane ) ix += cv->iwidth+cv->sbw+BAR_WIDTH;
+		x = event->u.mouse.x-(ix+cv->gvwidth+cv->sbw+BAR_WIDTH+cv->in_gloss_bar);
+		if ( cv->vwidth-x<MIN_CHAR_WIDTH )
+		    x = cv->vwidth-MIN_CHAR_WIDTH;
+		if ( cv->gvwidth+x<10 ) {
+		    cv->show.glosspane = false;
+		    GDrawSetVisible(cv->glossv,false);
+		    GGadgetSetVisible(cv->gvsb,false);
+		    x = -(cv->gvwidth+cv->sbw+BAR_WIDTH);
+		} else {
+		    cv->gvwidth += x;
+		    outside = false;
+		}
+		cv->vwidth -= x;
+	    } else
+#endif
+	    if ( cv->in_instr_bar!=-1 ) {
+		x = event->u.mouse.x-(cv->iwidth+cv->sbw+BAR_WIDTH+cv->in_instr_bar);
+		if ( cv->vwidth-x<MIN_CHAR_WIDTH )
+		    x = cv->vwidth-MIN_CHAR_WIDTH;
+		if ( cv->iwidth+x<10 ) {
+		    cv->show.instrpane = false;
+		    GDrawSetVisible(cv->instrinfo.v,false);
+		    GGadgetSetVisible(cv->instrinfo.vsb,false);
+		    x = -(cv->iwidth+cv->sbw+BAR_WIDTH);
+		} else {
+		    cv->iwidth += x;
+		    outside = false;
+		}
+		cv->vwidth -= x;
+		cv->instrinfo.vwidth = cv->iwidth;
+	    }
+	    cv_sizethings(cv);
+	}
+	if ( outside ) {
+	    curse_all(cv,ct_pointer);
+	    cv->bar_cursor = false;
+	}
+    } else if ( cv->bar_cursor ) {
+	curse_all(cv,ct_pointer);
+	cv->bar_cursor = false;
+    }
+}
+
 static int cv_e_h(GWindow gw, GEvent *event) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
     switch ( event->type ) {
       case et_expose:
 	char_infoexpose(cv,gw,&event->u.expose.rect);
+	char_barexpose(cv,gw,&event->u.expose.rect);
       break;
       case et_resize:
 	if ( event->u.resize.sized )
@@ -1538,6 +1669,7 @@ static int cv_e_h(GWindow gw, GEvent *event) {
       break;
       case et_mousemove: case et_mousedown: case et_mouseup:
 	GGadgetEndPopup();
+	cv_mousebar(cv,event);
       break;
       case et_close:
 	CVClose(cv);
@@ -1868,9 +2000,10 @@ return;
     cv->sas = as+1;
     cv->sfh = cv->sas+ds;
 
+    cv->iwidth = INSTR_WIDTH;
     gd.pos.y = cv->mbh+cv->infoh; gd.pos.height = pos.height-gd.pos.y;
     gd.pos.width = GDrawPointsToPixels(gw,_GScrollBar_Width);
-    gd.pos.x = INSTR_WIDTH;
+    gd.pos.x = cv->iwidth;
     gd.flags = gg_enabled|gg_pos_in_pixels|gg_sb_vert;
     if ( cv->show.instrpane )
 	gd.flags |= gg_visible;
@@ -1883,18 +2016,19 @@ return;
     pos.width = gd.pos.x; pos.height = gd.pos.height;
     cv->instrinfo.v = GWidgetCreateSubWindow(gw,&pos,cv_iv_e_h,cv,&wattrs);
     GDrawSetVisible(cv->instrinfo.v,cv->show.instrpane);
-    x = (cv->show.instrpane? INSTR_WIDTH+cv->sbw : 0);
+    x = (cv->show.instrpane? cv->iwidth+cv->sbw+BAR_WIDTH : 0);
+    cv->gvwidth = GLOSS_WIDTH;
 
-    gd.pos.x = x+GLOSS_WIDTH;
+    gd.pos.x = x+cv->gvwidth;
     gd.flags = gg_enabled|gg_pos_in_pixels|gg_sb_vert;
     if ( cv->show.glosspane )
 	gd.flags |= gg_visible;
     cv->gvsb = GScrollBarCreate(gw,&gd,cv);
 
-    pos.x = x; pos.width = GLOSS_WIDTH;
+    pos.x = x; pos.width = cv->gvwidth;
     cv->glossv = GWidgetCreateSubWindow(gw,&pos,cv_gv_e_h,cv,&wattrs);
     GDrawSetVisible(cv->glossv,cv->show.glosspane);
-    x += (cv->show.glosspane? GLOSS_WIDTH+cv->sbw : 0);
+    x += (cv->show.glosspane? cv->gvwidth+cv->sbw+BAR_WIDTH : 0);
 
     gd.pos.x = x+CHAR_WIDTH;
     gd.pos.height -= cv->sbw;

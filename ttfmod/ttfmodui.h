@@ -36,6 +36,7 @@
 
 extern TtfView *tfv_list;
 extern GWindow ttf_icon;
+extern GCursor ct_leftright;
 
 extern void InitCursors(void);
 

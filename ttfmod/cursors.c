@@ -24,7 +24,23 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "pfaeditui.h"
+#include "ttfmodui.h"
+
+GCursor ct_leftright;
+
+#define leftright_width 16
+#define leftright_height 9
+#define leftright_x_hot 7
+#define leftright_y_hot 4
+static unsigned char leftright_bits[] = {
+   0x80, 0x00, 0x88, 0x08, 0x84, 0x10, 0xfe, 0x3f, 0x81, 0x40, 0xfe, 0x3f,
+   0x84, 0x10, 0x88, 0x08, 0x80, 0x00};
 
 void InitCursors(void) {
+    GWindow mask, image;
+
+    image = GDrawCreateBitmap(NULL,leftright_width,leftright_height,leftright_bits);
+    ct_leftright = GDrawCreateCursor(image,image,0xff0000,0xffffff,leftright_x_hot,
+	    leftright_y_hot);
+    GDrawDestroyWindow(image);
 }

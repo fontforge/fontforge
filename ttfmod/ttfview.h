@@ -143,13 +143,17 @@ typedef struct charview {
     GGadget *mb, *gvsb, *vsb, *hsb;
     int xoff, yoff, gvpos;
     int16 as, fh, sas, sfh, numlen, infoh;
-    int16 vheight, vwidth, gvwidth, gvheight;
+    int16 vheight, vwidth, gvwidth, gvheight, iwidth;
     int16 mbh, sbw;
     GFont *gfont, *sfont;
     real scale;
     GPoint mouse;			/* Current mouse point */
     BasePoint info;			/* Expressed in char coordinate system */
     unsigned int destroyed: 1;		/* window has been destroyed */
+    unsigned int pressed:1;
+    signed int in_gloss_bar:4;
+    signed int in_instr_bar:4;
+    unsigned int bar_cursor;
     struct charshows show;
     struct instrinfo instrinfo;
 #if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
