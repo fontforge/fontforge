@@ -3615,6 +3615,10 @@ static void SFDCleanupAnchorClasses(SplineFont *sf) {
 }
 
 enum uni_interp interp_from_encoding(Encoding *enc,enum uni_interp interp) {
+
+    if ( enc==NULL )
+return( interp );
+
     if ( enc->is_japanese )
 	interp = ui_japanese;
     else if ( enc->is_korean )
