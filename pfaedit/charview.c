@@ -3568,6 +3568,7 @@ return( true );
 #define MID_Intersection	2229
 #define MID_FindInter	2230
 #define MID_Effects	2231
+#define MID_SimplifyMore	2232
 #define MID_CharInfo	2240
 #define MID_Corner	2301
 #define MID_Tangent	2302
@@ -5000,6 +5001,9 @@ static void CVMenuAddExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     static struct simplifyinfo smpl = { sf_normal,.75,.05,0 };
+
+    if ( cv->sc->parent->order2 )
+return;
     smpl.err = (cv->sc->parent->ascent+cv->sc->parent->descent)/1000.;
     CVPreserveState(cv);
     *cv->heads[cv->drawmode] = SplineCharSimplify(cv->sc,*cv->heads[cv->drawmode],
@@ -5010,6 +5014,9 @@ static void CVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVMenuSimplifyMore(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     static struct simplifyinfo smpl = { sf_normal,.75,.05,0 };
+
+    if ( cv->sc->parent->order2 )
+return;
 
     if ( !SimplifyDlg(cv->sc->parent,&smpl))
 return;
@@ -5964,10 +5971,22 @@ static GMenuItem allist[] = {
 
 static GMenuItem smlist[] = {
     { { (unichar_t *) _STR_Simplify, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 'M', ksm_control|ksm_shift, NULL, NULL, CVMenuSimplify, MID_Simplify },
-    { { (unichar_t *) _STR_SimplifyMore, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 'M', ksm_control|ksm_shift|ksm_meta, NULL, NULL, CVMenuSimplifyMore },
+    { { (unichar_t *) _STR_SimplifyMore, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 'M', ksm_control|ksm_shift|ksm_meta, NULL, NULL, CVMenuSimplifyMore, MID_SimplifyMore },
     { { (unichar_t *) _STR_CleanupChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'n' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuCleanupChar, MID_CleanupChar },
     { NULL }
 };
+
+static void smlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_Simplify: case MID_SimplifyMore:
+	    mi->ti.disabled = cv->sc->parent->order2;
+	  break;
+	}
+    }
+}
 
 static GMenuItem rmlist[] = {
     { { (unichar_t *) _STR_Rmoverlap, &GIcon_rmoverlap, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 0, 1, 0, 'R' }, 'O', ksm_control|ksm_shift, NULL, NULL, CVMenuOverlap, MID_RmOverlap },
@@ -6010,7 +6029,7 @@ static GMenuItem ellist[] = {
     { { (unichar_t *) _STR_TilePath, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuTilePath, MID_TilePath },
 #endif
     { { (unichar_t *) _STR_Overlap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'v' }, '\0', ksm_control|ksm_shift, rmlist, NULL, NULL, MID_RmOverlap },
-    { { (unichar_t *) _STR_Simplify, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, '\0', ksm_control|ksm_shift, smlist, NULL, NULL, MID_Simplify },
+    { { (unichar_t *) _STR_Simplify, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, '\0', ksm_control|ksm_shift, smlist, smlistcheck, NULL, MID_Simplify },
     { { (unichar_t *) _STR_AddExtrema, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'x' }, 'X', ksm_control|ksm_shift, NULL, NULL, CVMenuAddExtrema, MID_AddExtrema },
     { { (unichar_t *) _STR_Effects, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, eflist, NULL, NULL, MID_Effects },
     { { (unichar_t *) _STR_MetaFont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, '!', ksm_control|ksm_shift, NULL, NULL, CVMenuMetaFont, MID_MetaFont },
