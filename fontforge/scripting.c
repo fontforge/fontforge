@@ -3979,9 +3979,13 @@ static void bAddATT(Context *c) {
     if ( c->a.vals[4].u.ival == -1 )
 	temp.flags = PSTDefaultFlags(temp.type,sc);
 
-    ustr = uc_copy(c->a.vals[2].u.sval);
-    temp.script_lang_index = SFAddScriptLangRecord(sc->parent,SRParse(ustr));
-    free(ustr);
+    if ( strmatch( c->a.vals[2].u.sval,"Nested")==0 )
+	temp.script_lang_index = SLI_NESTED;
+    else {
+	ustr = uc_copy(c->a.vals[2].u.sval);
+	temp.script_lang_index = SFAddScriptLangRecord(sc->parent,SRParse(ustr));
+	free(ustr);
+    }
 
     if ( temp.type==pst_position ) {
 	temp.u.pos.xoff = c->a.vals[5].u.ival;
