@@ -53,12 +53,14 @@ struct fontparse {
     unsigned int inblend: 1;
     unsigned int iscid: 1;
     unsigned int iscff: 1;
+    unsigned int insfnts: 1;
     unsigned int useshexstrings: 1;
     unsigned int doneencoding: 1;
     unsigned int ignore: 1;
     int instring;
     int fdindex;
     char **pending_parse;
+    FILE *sfnts;
 
     unsigned int alreadycomplained: 1;
 
@@ -1247,6 +1249,33 @@ static void findstring(struct fontparse *fp,struct pschars *subrs,int index,char
     }
 }
 
+/* Type42 charstrings are actually numbers */
+static void findnumbers(struct fontparse *fp,struct pschars *chars,char *str) {
+    int val;
+    char *nametok, *end;
+
+    forever {
+	int index = chars->next;
+	char *namestrt;
+
+	while ( isspace(*str)) ++str;
+	if ( *str!='/' )
+    break;
+	namestrt = ++str;
+	while ( isalnum(*str) || *str=='.' ) ++str;
+	*str = '\0';
+	index = chars->next;
+
+	while ( isspace(*str)) ++str;
+	val = strtol(str,&end,10);
+	chars->lens[index] = 0;
+	chars->keys[index] = copy(nametok);
+	chars->values[index] = (void *) val;
+	chars->next = index+1;
+	str = end;
+    }
+}
+
 static char *rmbinary(char *line) {
     char *pt;
 
@@ -1266,6 +1295,107 @@ static char *rmbinary(char *line) {
 	}
     }
 return( line );
+}
+
+static void sfnts2tempfile(struct fontparse *fp,FILE *in,char *line) {
+    char *pt;
+    int instring = false, firstnibble=true, sofar=0, nibble;
+    int complained = false;
+    int ch;
+
+    fp->sfnts = tmpfile();
+
+    /* first finish off anything in the current line */
+    while ( (pt=strpbrk(line,"<]" ))!=NULL ) {
+	if ( *pt==']' )
+  goto skip_to_eol;
+
+	instring = true;
+	for ( ++pt; *pt && *pt!='>'; ++pt ) {
+	    if ( isspace(*pt))
+	continue;
+	    if ( isdigit(*pt))
+		nibble = *pt-'0';
+	    else if ( *pt>='a' && *pt<='f' )
+		nibble = *pt-'a'+10;
+	    else if ( *pt>='A' && *pt<='F' )
+		nibble = *pt-'A'+10;
+	    else {
+		if ( !complained ) {
+		    fprintf( stderr, "Invalid hex digit in sfnts array\n" );
+		    complained = true;
+		}
+		++pt;
+	continue;
+	    }
+	    if ( firstnibble ) {
+		sofar = nibble<<4;
+		firstnibble = false;
+	    } else {
+		putc(sofar|nibble,fp->sfnts);
+		sofar = 0;
+		firstnibble = true;
+	    }
+	}
+	if ( *pt=='>' ) {
+	    if ( ftell(fp->sfnts)&1 ) {	/* Strings must be contain an even number of bytes */
+		/* But may be padded with a trailing NUL */
+		fseek(fp->sfnts,-1,SEEK_CUR);
+	    }
+	    ++pt;
+	    instring = false;
+	}
+	line = pt;
+    }
+
+    while ( (ch=getc(in))!=EOF ) {
+	if ( ch==']' )
+  goto skip_to_eol;
+	if ( isspace(ch))
+    continue;
+	if ( !instring && ch=='<' ) {
+	    instring = true;
+	    firstnibble = true;
+	    sofar = 0;
+	} else if ( !instring ) {
+	    if ( !complained ) {
+		fprintf( stderr, "Invalid character outside of string in sfnts array\n" );
+		complained = true;
+	    }
+	} else if ( instring && ch=='>' ) {
+	    if ( ftell(fp->sfnts)&1 ) {	/* Strings must be contain an even number of bytes */
+		/* But may be padded with a trailing NUL */
+		fseek(fp->sfnts,-1,SEEK_CUR);
+	    }
+	    instring = false;
+	} else {
+	    if ( isdigit(ch))
+		nibble = ch-'0';
+	    else if ( ch>='a' && ch<='f' )
+		nibble = ch-'a'+10;
+	    else if ( ch>='A' && ch<='F' )
+		nibble = ch-'A'+10;
+	    else {
+		if ( !complained ) {
+		    fprintf( stderr, "Invalid hex digit in sfnts array\n" );
+		    complained = true;
+		}
+    continue;
+	    }
+	    if ( firstnibble ) {
+		sofar = nibble<<4;
+		firstnibble = false;
+	    } else {
+		putc(sofar|nibble,fp->sfnts);
+		sofar = 0;
+		firstnibble = true;
+	    }
+	}
+    }
+  skip_to_eol:
+    while ( ch!=EOF && ch!='\n' && ch!='\r' )
+	ch = getc(in);
+    rewind(fp->sfnts);
 }
 
 static void parseline(struct fontparse *fp,char *line,FILE *in) {
@@ -1359,6 +1489,8 @@ return;
 	    /* Do Nothing */;
 	} else if ( chars->next>=chars->cnt )
 	    fprintf( stderr, "Too many entries in CharStrings dictionary |%s", rmbinary(line) );
+	else if ( fp->fd->fonttype==42 || fp->fd->fonttype==11 || fp->fd->cidfonttype==2 )
+	    findnumbers(fp,chars,line);
 	else {
 	    int i = chars->next;
 	    char *namestrt = ++line;
@@ -1593,6 +1725,8 @@ return;
 	    fp->infi = fp->inblendprivate = fp->inblendfi = false;
 	    fp->inblend = true;
 return;
+	} else if ( strstr(line,"/sfnts")!=NULL && strstr(line,"[")!=NULL ) {
+	    sfnts2tempfile(fp,in,line);
 	} else if ( strstr(line,"/CharStrings")!=NULL && strstr(line,"dict")!=NULL ) {
 	    if ( fp->fd->chars->next==0 ) {
 		InitChars(fp->fd->chars,line);

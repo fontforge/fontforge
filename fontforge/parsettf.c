@@ -3735,6 +3735,14 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_change_line2(_("Reading Names"));
 #endif
+
+    /* Give ourselves an xuid, just in case they want to convert to PostScript*/
+    /*  (even type42)							      */
+    if ( xuid!=NULL ) {
+	info->xuid = galloc(strlen(xuid)+20);
+	sprintf(info->xuid,"[%s %d]", xuid, (rand()&0xffffff));
+    }
+
     if ( info->postscript_start!=0 ) {
 	fseek(ttf,info->postscript_start,SEEK_SET);
 	format = getlong(ttf);

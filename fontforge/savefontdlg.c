@@ -85,6 +85,7 @@ struct gfc_data {
 #if __Mac
 static char *extensions[] = { ".pfa", ".pfb", "", "%s.pfb", ".pfa", ".pfb", ".pt3", ".ps",
 	".cid", ".cff", ".cid.cff",
+	".t42", ".cid.t42",
 	".ttf", ".ttf", ".suit", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", ".svg", NULL };
 # ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -93,6 +94,7 @@ static char *bitmapextensions[] = { ".*bdf", ".ttf", ".dfont", ".bmap", ".dfont"
 #else
 static char *extensions[] = { ".pfa", ".pfb", ".bin", "%s.pfb", ".pfa", ".pfb", ".pt3", ".ps",
 	".cid", ".cff", ".cid.cff",
+	".t42", ".cid.t42",
 	".ttf", ".ttf", ".ttf.bin", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", ".svg", NULL };
 # ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -116,6 +118,8 @@ static GTextInfo formattypes[] = {
     { (unichar_t *) "PS CID", NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "CFF (Bare)", NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "CFF CID (Bare)", NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "Type42", NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "Type42 CID", NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "True Type", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "True Type (Symbol)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
 #if __Mac
@@ -1715,6 +1719,7 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 	    sf = sf->mm->instances[0];
 	  case ff_pfa: case ff_pfb: case ff_ptype3: case ff_ptype0:
 	  case ff_cid:
+	  case ff_type42: case ff_type42cid:
 #ifdef FONTFORGE_CONFIG_TYPE3
 	    if ( sf->multilayer && CheckIfTransparent(sf))
 return( true );
@@ -1894,6 +1899,8 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	i = ff_ttfsym;
     else if ( end-filename>8 && strmatch(end-strlen(".cid.cff"),".cid.cff")==0 )
 	i = ff_cffcid;
+    else if ( end-filename>8 && strmatch(end-strlen(".cid.t42"),".cid.t42")==0 )
+	i = ff_type42cid;
     else if ( end-filename>7 && strmatch(end-strlen(".mm.pfa"),".mm.pfa")==0 )
 	i = ff_mma;
     else if ( end-filename>7 && strmatch(end-strlen(".mm.pfb"),".mm.pfb")==0 )
@@ -2296,14 +2303,15 @@ static int GFD_Options(GGadget *g, GEvent *e) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	int fs = GGadgetGetFirstListSelectedItem(d->pstype);
 	int bf = GGadgetGetFirstListSelectedItem(d->bmptype);
-	int iscid = fs==ff_cid || fs==ff_cffcid || fs==ff_otfcid || fs==ff_otfciddfont;
+	int iscid = fs==ff_cid || fs==ff_cffcid || fs==ff_otfcid ||
+		fs==ff_otfciddfont || fs==ff_type42cid;
 	int which;
 	if ( fs==ff_none )
 	    which = 1;		/* Some bitmaps get stuffed int ttf files */
 	else if ( fs<=ff_cffcid )
 	    which = 0;		/* Postscript options */
 	else if ( fs<=ff_ttfdfont )
-	    which = 1;		/* truetype options */
+	    which = 1;		/* truetype options */ /* type42 also */
 	else
 	    which = 2;		/* opentype options */
 	if ( bf == bf_otb && which==0 )
@@ -2427,6 +2435,7 @@ return( true );
 	if ( uc_strcmp(pt-5, ".bmap.bin" )==0 ) pt -= 5;
 	if ( uc_strcmp(pt-4, ".ttf.bin" )==0 ) pt -= 4;
 	if ( uc_strcmp(pt-4, ".otf.dfont" )==0 ) pt -= 4;
+	if ( uc_strcmp(pt-4, ".cid.t42" )==0 ) pt -= 4;
 	if ( uc_strncmp(pt-2, "%s", 2 )==0 ) pt -= 2;
 	uc_strcpy(pt,extensions[format]);
 	GGadgetSetTitle(d->gfc,dup);
