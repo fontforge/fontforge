@@ -1994,6 +1994,7 @@ static void MVSimplify( MetricsView *mv,int type ) {
     static struct simplifyinfo smpl = { sf_normal,.75,.05,0 };
 
     smpl.err = (mv->fv->sf->ascent+mv->fv->sf->descent)/1000.;
+    smpl.linelenmax = (mv->fv->sf->ascent+mv->fv->sf->descent)/100.;
 
     if ( type==1 ) {
 	if ( !SimplifyDlg(mv->fv->sf,&smpl))

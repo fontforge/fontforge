@@ -2990,9 +2990,12 @@ void _FVSimplify(FontView *fv,struct simplifyinfo *smpl) {
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void FVSimplify(FontView *fv,int type) {
-    static struct simplifyinfo smpl = { sf_normal,.75,.05,0 };
+    static struct simplifyinfo smpl = { sf_normal,.75,.05,0,-1 };
 
-    smpl.err = (fv->sf->ascent+fv->sf->descent)/1000.;
+    if ( type==1 || smpl.linelenmax==-1 ) {
+	smpl.err = (fv->sf->ascent+fv->sf->descent)/1000.;
+	smpl.linelenmax = (fv->sf->ascent+fv->sf->descent)/100.;
+    }
 
     if ( type==1 ) {
 	if ( !SimplifyDlg(fv->sf,&smpl))

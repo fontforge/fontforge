@@ -3143,6 +3143,9 @@ static char mnemonic_FlattenBumps = 'f';
 static char *str_FlattenBumpsPopup = "If a line has a bump on it then flatten out that bump";
 static char *str_IfSmallerThan = "if smaller than";
 static char *str_BumpSize = "Bump Size";
+static char *str_LineLenMax = "Line length max";
+static char *str_DontSmoothLines = "Don't smooth lines";
+static char *str_LongerThan = "longer than";
     /* ttfinstrs */
 static char *str_TTFInstructionsFor = "TrueType Instructions for %.50hs"
 static char *str_Parse = "Parse"
