@@ -1387,7 +1387,7 @@ static void SVGFigureTransform(struct svg_state *st,char *name) {
 	    trans[0] = trans[3] = strtod(paren+1,&end);
 	    while ( isspace(*end)) ++end;
 	    if ( *end!=')' )
-		trans[5] = strtod(skipcomma(end),&end);
+		trans[3] = strtod(skipcomma(end),&end);
 	} else if ( strncmp(pt,"translate",paren-pt)==0 ) {
 	    trans[0] = trans[3] = 1;
 	    trans[1] = trans[2] = trans[5] = 0;
