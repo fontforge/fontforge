@@ -97,8 +97,7 @@ real GetCalmRealR(GWindow gw,int cid,int namer,int *err) {
     if ( *txt=='-' && end==txt && txt[1]=='\0' )
 return( 0 );
     if ( *end!='\0' ) {
-	GTextFieldSelect(GWidgetGetControl(gw,cid),0,-1);
-	ProtestR(namer);
+	GDrawBeep(NULL);
 	*err = true;
     }
 return( val );
