@@ -35,7 +35,7 @@ pfaedit_OBJECTS =  autohint.o autosave.o autowidth.o bitmapdlg.o \
  combinations.o tilepath.o sftextfield.o displayfonts.o ikarus.o \
  cvhand.o cvfreehand.o simplifydlg.o winfonts.o tottfgpos.o \
  tottfaat.o charinfo.o splineorder2.o genttfinstrs.o ttfinstrs.o \
- cvgridfit.o cvdebug.o showatt.o kernclass.o
+ cvgridfit.o cvdebug.o showatt.o kernclass.o nonlineartrans.o
 DIFFOBJS = sfddiff.o sfd.o diffstubs.o stamp.o
 ACORNOBJS = acorn2sfd.o sfd.o diffstubs.o psunicodenames.o stamp.o
 

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 9-May-2003 -->
+  <!-- AP: Last modified: 11-May-2003 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -558,7 +558,7 @@ a[4][0] = "Nested array";
 	fmflags&amp;4 =&gt; generate a short 'post' table with no character name
 	info in it.
       <LI>
-	fmflags&amp;8 =&gt; include ttf instructions 
+	fmflags&amp;8 =&gt; include ttf instructions
       <LI>
 	fmflags&amp;16 =&gt; where apple and ms/adobe differ about the format of
 	a true/open type file, use apple's definition (otherwise use ms/adobe)<BR>
@@ -1020,6 +1020,34 @@ ApplySubstitution("*","*","vrt2")
     Change the font's ascent and descent and scale everything in the font to
     be in the same proportion to the new em (which is the sum of ascent and descent)
     value that it was to the old value.
+  <DT>
+    NonLinearTransform(x-expression,y-expression)
+  <DD>
+    Takes two string arguments which must contain valid expressions of x and
+    y and transforms all selected characters using those expressions.
+    <BLOCKQUOTE>
+      <PRE>&lt;e0&gt; := "x" | "y" | "-" &lt;e0&gt; | "!" &lt;e0&gt; | "(" &lt;expr&gt; ")" |
+	"sin" "(" &lt;expr&gt; ")" | "cos" "(" &lt;expr&gt; ")" | "tan" "(" &lt;expr&gt; ")" | 
+	"log" "(" &lt;expr&gt; ")" | "exp" "(" &lt;expr&gt; ")" | "sqrt" "(" &lt;expr&gt; ")" |
+	"abs" "(" &lt;expr&gt; ")" | 
+	"rint" "(" &lt;expr&gt; ")" | "float" "(" &lt;expr&gt; ")" | "ceil" "(" &lt;expr&gt; ")"
+&lt;e1&gt; := &lt;e0&gt; "^" &lt;e1&gt;
+&lt;e2&gt; := &lt;e1&gt; "*" &lt;e2&gt; | &lt;e1&gt; "/" &lt;e2&gt; | &lt;e1&gt; "%" &lt;e2&gt; 
+&lt;e3&gt; := &lt;e2&gt; "+" &lt;e3&gt; | &lt;e2&gt; "-" &lt;e3&gt;
+&lt;e4&gt; := &lt;e3&gt; "==" &lt;e4&gt; | &lt;e3&gt; "!=" &lt;e4&gt; |
+	&lt;e3&gt; "&gt;=" &lt;e4&gt; | &lt;e3&gt; "&gt;" &lt;e4&gt; |
+	&lt;e3&gt; "&lt;=" &lt;e4&gt; | &lt;e3&gt; "&lt;" &lt;e4&gt; 
+&lt;e5&gt; := &lt;e4&gt; "&amp;&amp;" &lt;e5&gt; | &lt;e4&gt; "||" &lt;e5&gt;
+&lt;expr&gt; := &lt;e5&gt; "?" &lt;expr&gt; ":"
+
+</PRE>
+    </BLOCKQUOTE>
+    <P>
+    Example: To do a perspecitive transformation with a vanishing point at (200,300):
+    <BLOCKQUOTE>
+      <PRE>NonLinearTrans("200+(x-200)*abs(y-300)/300","y")
+</PRE>
+    </BLOCKQUOTE>
   <DT>
     ExpandStroke(width)<BR>
     ExpandStroke(width,line cap, line join)<BR>

@@ -743,6 +743,7 @@ extern void SplineFree(Spline *spline);
 extern SplinePoint *SplinePointCreate(real x, real y);
 extern void SplinePointFree(SplinePoint *sp);
 extern void SplinePointMDFree(SplineChar *sc,SplinePoint *sp);
+extern void SplinePointsFree(SplinePointList *spl);
 extern void SplinePointListFree(SplinePointList *spl);
 extern void SplinePointListMDFree(SplineChar *sc,SplinePointList *spl);
 extern void SplinePointListsFree(SplinePointList *head);

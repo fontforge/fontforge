@@ -1778,6 +1778,18 @@ static void bScaleToEm(Context *c) {
     SFScaleToEm(c->curfv->sf,c->a.vals[1].u.ival,c->a.vals[2].u.ival);
 }
 
+static void bNonLinearTransform(Context *c) {
+
+    if ( c->a.argc!=3 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str )
+	error(c,"Bad argument type");
+    if ( c->curfv->sf->order2 )
+	error(c,"Can only be applied to cubic (PostScript) fonts");
+    if ( !SFNLTrans(c->curfv,c->a.vals[1].u.sval,c->a.vals[2].u.sval))
+	error(c,"Bad expression");
+}
+
 static void bExpandStroke(Context *c) {
     StrokeInfo si;
     /* Arguments:
@@ -2561,7 +2573,7 @@ static void bCharInfo(Context *c) {
     }
 }
 
-struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[] = {
+static struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[] = {
 /* Generic utilities */
     { "Print", bPrint, 1 },
     { "Error", bError, 1 },
@@ -2639,6 +2651,7 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "Skew", bSkew },
     { "Move", bMove },
     { "ScaleToEm", bScaleToEm },
+    { "NonLinearTransform", bNonLinearTransform },
     { "ExpandStroke", bExpandStroke },
     { "RemoveOverlap", bRemoveOverlap },
     { "Simplify", bSimplify },

@@ -222,6 +222,26 @@ void SplinePointMDFree(SplineChar *sc, SplinePoint *sp) {
     chunkfree(sp,sizeof(SplinePoint));
 }
 
+void SplinePointsFree(SplinePointList *spl) {
+    Spline *first, *spline, *next;
+    int nonext;
+
+    if ( spl==NULL )
+return;
+    nonext = spl->first->next==NULL;
+    if ( spl->first!=NULL ) {
+	first = NULL;
+	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = next ) {
+	    next = spline->to->next;
+	    SplinePointFree(spline->to);
+	    SplineFree(spline);
+	    if ( first==NULL ) first = spline;
+	}
+	if ( spl->last!=spl->first || nonext )
+	    SplinePointFree(spl->first);
+    }
+}
+
 void SplinePointListFree(SplinePointList *spl) {
     Spline *first, *spline, *next;
     int nonext;
