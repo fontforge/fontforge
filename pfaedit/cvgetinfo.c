@@ -282,26 +282,38 @@ return( true );
 
 static int _CI_OK(GIData *ci) {
     int val;
-    int ret;
+    int ret, refresh_fvdi=0;
     char *lig, *name;
     const unichar_t *comment;
+    FontView *fvs;
 
     val = ParseUValue(ci->gw,CID_UValue,true,ci->sc->parent);
     if ( val==-2 )
 return( false );
     lig = cu_copy( _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_Ligature)) );
     name = cu_copy( _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_UName)) );
+    if ( strcmp(name,ci->sc->name)!=0 || val!=ci->sc->unicodeenc )
+	refresh_fvdi = 1;
     ret = SCSetMetaData(ci->sc,name,val,lig);
     free(name);
     free(lig);
+    if ( refresh_fvdi ) {
+	for ( fvs=ci->sc->parent->fv; fvs!=NULL; fvs=fvs->next )
+	    GDrawRequestExpose(fvs->gw,NULL,false);	/* Redraw info area just in case this char is selected */
+    }
     if ( ret ) {
 	comment = _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_Comment));
 	free(ci->sc->comment); ci->sc->comment = NULL;
 	if ( *comment!='\0' )
 	    ci->sc->comment = u_copy(comment);
 	val = GGadgetGetFirstListSelectedItem(GWidgetGetControl(ci->gw,CID_Color));
-	if ( val!=-1 )
-	    ci->sc->color = (int) (std_colors[val].userdata);
+	if ( val!=-1 ) {
+	    if ( ci->sc->color != (int) (std_colors[val].userdata) ) {
+		ci->sc->color = (int) (std_colors[val].userdata);
+		for ( fvs=ci->sc->parent->fv; fvs!=NULL; fvs=fvs->next )
+		    GDrawRequestExpose(fvs->v,NULL,false);	/* Redraw info area just in case this char is selected */
+	    }
+	}
     }
 return( ret );
 }
