@@ -1228,6 +1228,9 @@ static char *str_FailedGenPost = "Failed to generate postscript font";
 static char *str_PageSetup = "Page Setup";
 static char *str_Setup = "Setup";
 static char mnemonic_Setup = 'e';
+static char *str_Other2 = "Other";
+static char mnemonic_Other = 'o';
+static char *str_PrintOtherPopup = "Any other command with all its arguments.\nThe command must expect to deal with a postscript\nfile which it will find by reading its standard input.";
 static char *str_ToFile = "To File";
 static char mnemonic_ToFile = 'F';
 static char *str_PageSize = "PageSize:";
@@ -1249,6 +1252,7 @@ static char mnemonic_SampleText = 'S';
 static char *str_SampleTextC = "Sample Text:";
 static char mnemonic_SampleTextC = 'T';
 static char *str_FailedOpenTemp = "Failed to open temporary output file";
+static char *str_NoCommandSpecified = "No Command Specified";
     /* alignment */
 static char *str_CoordinateAlongWhich = "Coordinate along which to space";
 static char *str_X = "X";

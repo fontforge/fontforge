@@ -75,6 +75,7 @@ extern char *BDFFoundry;
 extern char *xuid;
 
 extern int pagewidth, pageheight, printtype;	/* Printer defaults */
+extern char *printcommand;
 
 extern Encoding *enclist;
 

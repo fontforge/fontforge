@@ -36,9 +36,10 @@
 #include <sys/wait.h>
 #include <gkeysym.h>
 
-enum { pt_lp, pt_lpr, pt_ghostview, pt_file, pt_unknown=-1 };
+enum { pt_lp, pt_lpr, pt_ghostview, pt_file, pt_other, pt_unknown=-1 };
 int pagewidth = 595, pageheight=792; 	/* Minimum size for US Letter, A4 paper, should work for either */
 static char *lastprinter=NULL;
+char *printcommand=NULL;
 int printtype = pt_unknown;
 static int use_gv;
 
@@ -864,11 +865,13 @@ static void PIGetPrinterDefs(PI *pi) {
 #define CID_lpr		1002
 #define	CID_ghostview	1003
 #define CID_File	1004
-#define	CID_Pagesize	1005
-#define CID_CopiesLab	1006
-#define CID_Copies	1007
-#define CID_PrinterLab	1008
-#define CID_Printer	1009
+#define CID_Other	1005
+#define CID_OtherCmd	1006
+#define	CID_Pagesize	1007
+#define CID_CopiesLab	1008
+#define CID_Copies	1009
+#define CID_PrinterLab	1010
+#define CID_Printer	1011
 
 static void PG_SetEnabled(PI *pi) {
     int enable;
@@ -880,6 +883,9 @@ static void PG_SetEnabled(PI *pi) {
     GGadgetSetEnabled(GWidgetGetControl(pi->setup,CID_Copies),enable);
     GGadgetSetEnabled(GWidgetGetControl(pi->setup,CID_PrinterLab),enable);
     GGadgetSetEnabled(GWidgetGetControl(pi->setup,CID_Printer),enable);
+
+    GGadgetSetEnabled(GWidgetGetControl(pi->setup,CID_OtherCmd),
+	    GGadgetIsChecked(GWidgetGetControl(pi->setup,CID_Other)));
 }
 
 static int PG_OK(GGadget *g, GEvent *e) {
@@ -892,6 +898,12 @@ static int PG_OK(GGadget *g, GEvent *e) {
 	copies = GetIntR(pi->setup,CID_Copies,_STR_Copies,&err);
 	if ( err )
 return(true);
+
+	if ( GGadgetIsChecked(GWidgetGetControl(pi->setup,CID_Other)) &&
+		*_GGadgetGetTitle(GWidgetGetControl(pi->setup,CID_OtherCmd))=='\0' ) {
+	    GWidgetErrorR(_STR_NoCommandSpecified,_STR_NoCommandSpecified);
+return(true);
+	}
 
 	ret = _GGadgetGetTitle(GWidgetGetControl(pi->setup,CID_Pagesize));
 	if ( uc_strstr(ret,"Letter")!=NULL ) {
@@ -944,7 +956,10 @@ return( true );
 	    pi->printtype = pt_lpr;
 	else if ( GGadgetIsChecked(GWidgetGetControl(pi->setup,CID_ghostview)))
 	    pi->printtype = pt_ghostview;
-	else
+	else if ( GGadgetIsChecked(GWidgetGetControl(pi->setup,CID_Other))) {
+	    pi->printtype = pt_other;
+	    printcommand = cu_copy(_GGadgetGetTitle(GWidgetGetControl(pi->setup,CID_OtherCmd)));
+	} else
 	    pi->printtype = pt_file;
 
 	printtype = pi->printtype;
@@ -1037,8 +1052,8 @@ return( ProgramExists(prog,buffer)!=NULL );
 static int PageSetup(PI *pi) {
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[14];
-    GTextInfo label[14];
+    GGadgetCreateData gcd[16];
+    GTextInfo label[16];
     char buf[10], pb[30];
     int pt;
     /* Don't translate these. we compare against the text */
@@ -1060,7 +1075,7 @@ static int PageSetup(PI *pi) {
     wattrs.window_title = GStringGetResource(_STR_PageSetup,NULL);
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,250));
-    pos.height = GDrawPointsToPixels(NULL,150);
+    pos.height = GDrawPointsToPixels(NULL,174);
     pi->setup = GDrawCreateTopWindow(NULL,&pos,pg_e_h,pi,&wattrs);
 
     memset(&label,0,sizeof(label));
@@ -1109,23 +1124,43 @@ static int PageSetup(PI *pi) {
     label[3].text_in_resource = true;
     gcd[3].gd.label = &label[3];
     gcd[3].gd.mnemonic = 'F';
-    gcd[3].gd.pos.x = gcd[1].gd.pos.x+50; gcd[3].gd.pos.y = gcd[1].gd.pos.y; 
+    gcd[3].gd.pos.x = gcd[2].gd.pos.x; gcd[3].gd.pos.y = gcd[1].gd.pos.y; 
     gcd[3].gd.flags = gg_visible | gg_enabled;
     gcd[3].gd.cid = CID_File;
     gcd[3].gd.handle_controlevent = PG_RadioSet;
     gcd[3].creator = GRadioCreate;
 
+    label[4].text = (unichar_t *) _STR_Other2;
+    label[4].text_in_resource = true;
+    gcd[4].gd.label = &label[4];
+    gcd[4].gd.mnemonic = 'O';
+    gcd[4].gd.pos.x = gcd[1].gd.pos.x; gcd[4].gd.pos.y = 22+gcd[1].gd.pos.y; 
+    gcd[4].gd.flags = gg_visible | gg_enabled;
+    gcd[4].gd.cid = CID_Other;
+    gcd[4].gd.handle_controlevent = PG_RadioSet;
+    gcd[4].gd.popup_msg = GStringGetResource(_STR_PrintOtherPopup,NULL);
+    gcd[4].creator = GRadioCreate;
+
     if ( (pt=pi->printtype)==pt_unknown ) pt = pt_lp;
     gcd[pt].gd.flags |= gg_cb_on;
 
+    label[5].text = (unichar_t *) (printcommand?printcommand:"");
+    label[5].text_is_1byte = true;
+    gcd[5].gd.label = &label[5];
+    gcd[5].gd.mnemonic = 'O';
+    gcd[5].gd.pos.x = gcd[2].gd.pos.x; gcd[5].gd.pos.y = gcd[4].gd.pos.y-4;
+    gcd[5].gd.pos.width = 120;
+    gcd[5].gd.flags = gg_visible | gg_enabled;
+    gcd[5].gd.cid = CID_OtherCmd;
+    gcd[5].creator = GTextFieldCreate;
 
-    label[4].text = (unichar_t *) _STR_PageSize;
-    label[4].text_in_resource = true;
-    gcd[4].gd.label = &label[4];
-    gcd[4].gd.mnemonic = 'S';
-    gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = 22+gcd[3].gd.pos.y+6; 
-    gcd[4].gd.flags = gg_visible | gg_enabled;
-    gcd[4].creator = GLabelCreate;
+    label[6].text = (unichar_t *) _STR_PageSize;
+    label[6].text_in_resource = true;
+    gcd[6].gd.label = &label[6];
+    gcd[6].gd.mnemonic = 'S';
+    gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = 24+gcd[4].gd.pos.y+6; 
+    gcd[6].gd.flags = gg_visible | gg_enabled;
+    gcd[6].creator = GLabelCreate;
 
     if ( pi->pagewidth==595 && pi->pageheight==792 )
 	strcpy(pb,"US Letter");		/* Pick a name, this is the default case */
@@ -1141,88 +1176,88 @@ static int PageSetup(PI *pi) {
 	strcpy(pb,"B4");
     else
 	sprintf(pb,"%dx%d mm", (int) (pi->pagewidth*25.4/72),(int) (pi->pageheight*25.4/72));
-    label[5].text = (unichar_t *) pb;
-    label[5].text_is_1byte = true;
-    gcd[5].gd.label = &label[5];
-    gcd[5].gd.mnemonic = 'S';
-    gcd[5].gd.pos.x = 60; gcd[5].gd.pos.y = gcd[4].gd.pos.y-6;
-    gcd[5].gd.pos.width = 90;
-    gcd[5].gd.flags = gg_visible | gg_enabled;
-    gcd[5].gd.cid = CID_Pagesize;
-    gcd[5].gd.u.list = pagesizes;
-    gcd[5].creator = GListFieldCreate;
-
-
-    label[6].text = (unichar_t *) _STR_Copies;
-    label[6].text_in_resource = true;
-    gcd[6].gd.label = &label[6];
-    gcd[6].gd.mnemonic = 'C';
-    gcd[6].gd.pos.x = 160; gcd[6].gd.pos.y = gcd[4].gd.pos.y; 
-    gcd[6].gd.flags = gg_visible | gg_enabled;
-    gcd[6].gd.cid = CID_CopiesLab;
-    gcd[6].creator = GLabelCreate;
-
-    sprintf(buf,"%d",pi->copies);
-    label[7].text = (unichar_t *) buf;
+    label[7].text = (unichar_t *) pb;
     label[7].text_is_1byte = true;
     gcd[7].gd.label = &label[7];
-    gcd[7].gd.mnemonic = 'C';
-    gcd[7].gd.pos.x = 200; gcd[7].gd.pos.y = gcd[5].gd.pos.y;
-    gcd[7].gd.pos.width = 40;
+    gcd[7].gd.mnemonic = 'S';
+    gcd[7].gd.pos.x = 60; gcd[7].gd.pos.y = gcd[6].gd.pos.y-6;
+    gcd[7].gd.pos.width = 90;
     gcd[7].gd.flags = gg_visible | gg_enabled;
-    gcd[7].gd.cid = CID_Copies;
-    gcd[7].creator = GTextFieldCreate;
+    gcd[7].gd.cid = CID_Pagesize;
+    gcd[7].gd.u.list = pagesizes;
+    gcd[7].creator = GListFieldCreate;
 
 
-    label[8].text = (unichar_t *) _STR_Printer;
+    label[8].text = (unichar_t *) _STR_Copies;
     label[8].text_in_resource = true;
     gcd[8].gd.label = &label[8];
-    gcd[8].gd.mnemonic = 'P';
-    gcd[8].gd.pos.x = 5; gcd[8].gd.pos.y = 30+gcd[5].gd.pos.y+6; 
+    gcd[8].gd.mnemonic = 'C';
+    gcd[8].gd.pos.x = 160; gcd[8].gd.pos.y = gcd[6].gd.pos.y; 
     gcd[8].gd.flags = gg_visible | gg_enabled;
-    gcd[8].gd.cid = CID_PrinterLab;
+    gcd[8].gd.cid = CID_CopiesLab;
     gcd[8].creator = GLabelCreate;
 
-    label[9].text = (unichar_t *) pi->printer;
+    sprintf(buf,"%d",pi->copies);
+    label[9].text = (unichar_t *) buf;
     label[9].text_is_1byte = true;
-    if ( pi->printer!=NULL )
-	gcd[9].gd.label = &label[9];
-    gcd[9].gd.mnemonic = 'P';
-    gcd[9].gd.pos.x = 60; gcd[9].gd.pos.y = gcd[8].gd.pos.y-6;
-    gcd[9].gd.pos.width = 90;
+    gcd[9].gd.label = &label[9];
+    gcd[9].gd.mnemonic = 'C';
+    gcd[9].gd.pos.x = 200; gcd[9].gd.pos.y = gcd[7].gd.pos.y;
+    gcd[9].gd.pos.width = 40;
     gcd[9].gd.flags = gg_visible | gg_enabled;
-    gcd[9].gd.cid = CID_Printer;
-    gcd[9].gd.u.list = PrinterList();
-    gcd[9].creator = GListFieldCreate;
+    gcd[9].gd.cid = CID_Copies;
+    gcd[9].creator = GTextFieldCreate;
 
 
-    gcd[10].gd.pos.x = 30-3; gcd[10].gd.pos.y = gcd[9].gd.pos.y+36;
-    gcd[10].gd.pos.width = -1; gcd[10].gd.pos.height = 0;
-    gcd[10].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[10].text = (unichar_t *) _STR_OK;
+    label[10].text = (unichar_t *) _STR_Printer;
     label[10].text_in_resource = true;
-    gcd[10].gd.mnemonic = 'O';
     gcd[10].gd.label = &label[10];
-    gcd[10].gd.handle_controlevent = PG_OK;
-    gcd[10].creator = GButtonCreate;
+    gcd[10].gd.mnemonic = 'P';
+    gcd[10].gd.pos.x = 5; gcd[10].gd.pos.y = 30+gcd[7].gd.pos.y+6; 
+    gcd[10].gd.flags = gg_visible | gg_enabled;
+    gcd[10].gd.cid = CID_PrinterLab;
+    gcd[10].creator = GLabelCreate;
 
-    gcd[11].gd.pos.x = -30; gcd[11].gd.pos.y = gcd[10].gd.pos.y+3;
-    gcd[11].gd.pos.width = -1; gcd[11].gd.pos.height = 0;
-    gcd[11].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[11].text = (unichar_t *) _STR_Cancel;
-    label[11].text_in_resource = true;
-    gcd[11].gd.label = &label[11];
-    gcd[11].gd.mnemonic = 'C';
-    gcd[11].gd.handle_controlevent = PG_Cancel;
-    gcd[11].creator = GButtonCreate;
+    label[11].text = (unichar_t *) pi->printer;
+    label[11].text_is_1byte = true;
+    if ( pi->printer!=NULL )
+	gcd[11].gd.label = &label[11];
+    gcd[11].gd.mnemonic = 'P';
+    gcd[11].gd.pos.x = 60; gcd[11].gd.pos.y = gcd[10].gd.pos.y-6;
+    gcd[11].gd.pos.width = 90;
+    gcd[11].gd.flags = gg_visible | gg_enabled;
+    gcd[11].gd.cid = CID_Printer;
+    gcd[11].gd.u.list = PrinterList();
+    gcd[11].creator = GListFieldCreate;
 
-    gcd[12].gd.pos.x = 2; gcd[12].gd.pos.y = 2;
-    gcd[12].gd.pos.width = pos.width-4; gcd[12].gd.pos.height = pos.height-2;
-    gcd[12].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-    gcd[12].creator = GGroupCreate;
+
+    gcd[12].gd.pos.x = 30-3; gcd[12].gd.pos.y = gcd[11].gd.pos.y+36;
+    gcd[12].gd.pos.width = -1; gcd[12].gd.pos.height = 0;
+    gcd[12].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[12].text = (unichar_t *) _STR_OK;
+    label[12].text_in_resource = true;
+    gcd[12].gd.mnemonic = 'O';
+    gcd[12].gd.label = &label[12];
+    gcd[12].gd.handle_controlevent = PG_OK;
+    gcd[12].creator = GButtonCreate;
+
+    gcd[13].gd.pos.x = -30; gcd[13].gd.pos.y = gcd[12].gd.pos.y+3;
+    gcd[13].gd.pos.width = -1; gcd[13].gd.pos.height = 0;
+    gcd[13].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[13].text = (unichar_t *) _STR_Cancel;
+    label[13].text_in_resource = true;
+    gcd[13].gd.label = &label[13];
+    gcd[13].gd.mnemonic = 'C';
+    gcd[13].gd.handle_controlevent = PG_Cancel;
+    gcd[13].creator = GButtonCreate;
+
+    gcd[14].gd.pos.x = 2; gcd[14].gd.pos.y = 2;
+    gcd[14].gd.pos.width = pos.width-4; gcd[14].gd.pos.height = pos.height-2;
+    gcd[14].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+    gcd[14].creator = GGroupCreate;
 
     GGadgetsCreate(pi->setup,gcd);
-    GTextInfoListFree(gcd[9].gd.u.list);
+    GTextInfoListFree(gcd[11].gd.u.list);
     PG_SetEnabled(pi);
     GDrawSetVisible(pi->setup,true);
     while ( !pi->done )
@@ -1247,7 +1282,7 @@ return( cnt);
 static void QueueIt(PI *pi) {
     int pid;
     int stdinno, i, status;
-    char *argv[8], buf[10];
+    char *argv[40], buf[10];
 
     if ( (pid=fork())==0 ) {
 	stdinno = fileno(stdin);
@@ -1273,7 +1308,7 @@ static void QueueIt(PI *pi) {
 		sprintf(buf,"%d", pi->copies );
 		argv[i++] = buf;
 	    }
-	} else {
+	} else if ( pi->printtype == pt_lpr ) {
 	    argv[i++] = "lpr";
 	    if ( pi->printer!=NULL ) {
 		argv[i++] = "-P";
@@ -1283,9 +1318,35 @@ static void QueueIt(PI *pi) {
 		sprintf(buf,"-#%d", pi->copies );
 		argv[i++] = buf;
 	    }
+	} else {
+	    char *temp, *pt, *start;
+	    int quoted=0;
+	    /* This is in the child. We're going to do an exec soon */
+	    /*  We don't need to free things here */
+	    temp = copy(printcommand);
+	    for ( pt=start=temp; *pt ; ++pt ) {
+		if ( *pt==quoted ) {
+		    quoted = 0;
+		    *pt = '\0';
+		} else if ( quoted )
+		    /* Do nothing */;
+		else if ( *pt=='"' || *pt=='\'' ) {
+		    start = pt+1;
+		    quoted = *pt;
+		} else if ( *pt==' ' )
+		    *pt = '\0';
+		if ( *pt=='\0' ) {
+		    if ( i<sizeof(argv)/sizeof(argv[0])-1 )
+			argv[i++] = start;
+		    while ( pt[1]==' ' ) ++pt;
+		    start = pt+1;
+		}
+	    }
+	    if ( pt>start && i<sizeof(argv)/sizeof(argv[0])-1 )
+		argv[i++] = start;
 	}
 	argv[i] = NULL;
- /*for ( i=0; argv[i]!=NULL; ++i ) printf( "%s ", argv[i]); printf("\n" );*/
+ for ( i=0; argv[i]!=NULL; ++i ) printf( "%s ", argv[i]); printf("\n" );
 	execvp(argv[0],argv);
 	if ( pi->printtype == pt_ghostview ) {
 	    argv[0] = "gv";

@@ -118,6 +118,7 @@ static struct prefs_list {
 	{ "PageWidth", pr_int, &pagewidth, NULL, NULL, '\0', NULL, 1 },
 	{ "PageHeight", pr_int, &pageheight, NULL, NULL, '\0', NULL, 1 },
 	{ "PrintType", pr_int, &printtype, NULL, NULL, '\0', NULL, 1 },
+	{ "PrintCommand", pr_string, &printcommand, NULL, NULL, '\0', NULL, 1 },
 	{ "ItalicConstrained", pr_bool, &ItalicConstrained, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupIC },
 	{ "AccentOffsetPercent", pr_int, &accent_offset, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupAO },
 	{ "AcuteCenterBottom", pr_bool, &GraveAcuteCenterBottom, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupGA },
