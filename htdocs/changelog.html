@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 5-Oct-2003 -->
+  <!-- AP: Last modified: 6-Oct-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,28 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    6-Oct-2003
+    <UL>
+      <LI>
+	Fixed a number of bugs in the new kerning class dlg including:
+	<UL>
+	  <LI>
+	    Vertical kerning classes were displayed horizontally
+	  <LI>
+	    When adding a new class the new offsets were garbage
+	</UL>
+      <LI>
+	The routine to convert a horizontal kerning class to the equivalent vertical
+	kerning class (of the vertical varients of the glyphs in the horizontal class)
+	didn't work.
+      <LI>
+	In Back and Lookup Classes of a contextual chaining substitution by class,
+	the [New] button was never enabled. (it was disabled if []SameAs was on,
+	and then never enabled).
+      <LI>
+	My new 94x94 encodings were actually 93x93. Patch by kanou.
+    </UL>
   <LI>
     5-Oct-2003
     <UL>
