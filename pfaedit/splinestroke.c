@@ -481,7 +481,7 @@ static void StrokeJoint(SplinePoint *base,StrokeInfo *si,JointPoint *plus,JointP
 
 	mfound = pfound = false;
 	lastpt = lastmt = 0;
-	for ( tt=1; ; ) {
+	if ( si->stroke_type != si_caligraphic ) for ( tt=1; ; ) {
 	    OnEdge(&pplus,&pminus,base->next,0,tt,base->prev,
 		    si,&pt,&mt,NULL,NULL);
 	    oldtt = tt;
@@ -511,7 +511,7 @@ static void StrokeJoint(SplinePoint *base,StrokeInfo *si,JointPoint *plus,JointP
 	if ( plus->tnext==0 ) pfound = false;
 	if ( minus->tnext==0 ) mfound = false;
 	lastpt = lastmt = 1;
-	for ( tt=0; ; ) {
+	if ( si->stroke_type != si_caligraphic ) for ( tt=0; ; ) {
 	    OnEdge(&nplus,&nminus,base->prev,1.,tt,base->next,
 		    si,NULL,NULL,&pt,&mt);
 	    oldtt = tt;
@@ -815,12 +815,12 @@ return( ssplus );
 	    /* I ignore the case of a point of inflection, and I don't */
 	    /*  find the real intersection point, I just guess that it is */
 	    /*  near the mid point of the pen */
-	    cnt = SplineSolveForPen(spline,si,ts,pinners,t_start,t_end);
+	    cnt = SplineSolveForPen(spline,si,ts,pinners+1,t_start,t_end);
 	    p_to = m_to = NULL;
 	    for ( j=1; j<cnt; ++j ) {
 		for ( i=0; i<Approx; ++i ) {
 		    real t = ts[j-1] + (i+1)*(ts[j]-ts[j-1])/(Approx+1);
-		    mmids[i].t = (i+1)/(Approx+1); pmids[i].t = 1-mmids[i].t;
+		    mmids[i].t = (i+1)/(double) (Approx+1); pmids[i].t = 1-mmids[i].t;
 		    SplineExpand(spline,t,0,si,&p,&m);
 		    pmids[i].x = p.x; pmids[i].y = p.y;
 		    mmids[i].x = m.x; mmids[i].y = m.y;
