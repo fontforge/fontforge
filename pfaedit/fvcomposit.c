@@ -448,11 +448,38 @@ return( NULL );
 return( sf->chars[i] );
 }
 
-static unichar_t *SFAlternateFromLigature(SplineFont *sf, int base) {
+static const unichar_t *arabicfixup(SplineFont *sf, const unichar_t *upt, int ini, int final) {
+    static unichar_t arabicalts[20];
+    unichar_t *apt; const unichar_t *pt;
+
+    for ( apt=arabicalts, pt = upt; *pt!='\0'; ++pt, ++apt ) {
+	if ( *pt==' ' ) {
+	    *apt = ' ';
+	    ini = true;
+	} else if ( *pt<0x600 || *pt>0x6ff )
+	    *apt = *pt;
+	else if ( ini ) {
+	    *apt = ArabicForms[*pt-0x600].initial;
+	    ini = false;
+	} else if ( pt[1]==' ' || (pt[1]=='\0' && final))
+	    *apt = ArabicForms[*pt-0x600].final;
+	else
+	    *apt = ArabicForms[*pt-0x600].medial;
+	if ( !haschar(sf,*apt))
+    break;
+    }
+    if ( *pt=='\0' ) {
+	*apt = '\0';
+return(arabicalts);
+    }
+return( upt );
+}
+
+static const unichar_t *SFAlternateFromLigature(SplineFont *sf, int base) {
     static unichar_t space[30];
     unichar_t *spt, *send = space+sizeof(space)/sizeof(space[0])-1;
     SplineChar *sc;
-    char *ligstart, *semi, *pt, sch, ch;
+    char *ligstart, *semi, *pt, sch, ch, *dpt;
     int j;
 
     if ( base<0 || base>=sf->charcnt || (sc=sf->chars[base])==NULL ||
@@ -465,13 +492,20 @@ return( NULL );
     sch = *semi; *semi = '\0';
     spt = space;
     for ( pt = ligstart; *pt!='\0'; ) {
-	char *start = pt;
+	char *start = pt; dpt=NULL;
 	for ( ; *pt!='\0' && *pt!=' '; ++pt );
 	ch = *pt; *pt = '\0';
 	for ( j=0; j<sf->charcnt; ++j )
 	    if ( sf->chars[j]!=NULL && strcmp(sf->chars[j]->name,start)==0 )
 	break;
 	*pt = ch;
+	if ( j==sf->charcnt && (dpt=strchr(start,'.'))!=NULL && dpt<pt ) {
+	    int dch = *dpt; *dpt='\0';
+	    for ( j=0; j<sf->charcnt; ++j )
+		if ( sf->chars[j]!=NULL && strcmp(sf->chars[j]->name,start)==0 )
+	    break;
+	    *dpt = dch;
+	}
 	if ( j>=sf->charcnt || sf->chars[j]->unicodeenc==-1 || spt>=send ) {
 	    *semi = sch;
 return( NULL );
@@ -481,12 +515,23 @@ return( NULL );
     }
     *spt ='\0';
     *semi = sch;
+
+    if ( *space>=0x0600 && *space<=0x6ff ) {
+	int ini=0, final=0;
+	if ( dpt==NULL || strncmp(dpt,".isolated",strlen(".isolated"))==0 )
+	    ini=final = true;
+	else if ( strncmp(dpt,".initial",strlen(".initial"))==0 )
+	    ini=true;
+	else if ( strncmp(dpt,".final",strlen(".final"))==0 )
+	    final=true;
+return( arabicfixup(sf,space,ini,final));
+    }
+
 return( space );
 }
 
 const unichar_t *SFGetAlternate(SplineFont *sf, int base) {
     static unichar_t greekalts[5];
-    static unichar_t arabicalts[20];
     const unichar_t *upt, *pt; unichar_t *gpt;
 
     if ( base>=0xac00 && base<=0xd7a3 ) { /* Hangul syllables */
@@ -542,35 +587,10 @@ return( greekalts );
 	    }
 return( greekalts );
 	}
-    } else if (( base>=0xfb50 && base<=0xfdff ) || ( base>=0xfe70 && base<0xfeff )) {
-	int ini=0, final=0;
-	if ( isarabisolated(base))
-	    ini = final = true;
-	else if ( isarabfinal(base))
-	    final = true;
-	else if ( isarabinitial(base))
-	    ini = true;
-	for ( gpt=arabicalts, pt = upt; *pt!='\0'; ++pt, ++gpt ) {
-	    if ( *pt==' ' ) {
-		*gpt = ' ';
-		ini = true;
-	    } else if ( *pt<0x600 || *pt>0x6ff )
-		*gpt = *pt;
-	    else if ( ini ) {
-		*gpt = ArabicForms[*pt-0x600].initial;
-		ini = false;
-	    } else if ( pt[1]==' ' || (pt[1]=='\0' && final))
-		*gpt = ArabicForms[*pt-0x600].final;
-	    else
-		*gpt = ArabicForms[*pt-0x600].medial;
-	    if ( !haschar(sf,*gpt))
-	break;
-	}
-	if ( *pt=='\0' ) {
-	    *gpt = '\0';
-return(arabicalts);
-	}
-    }
+    } else if (( base>=0xfb50 && base<=0xfdff ) || ( base>=0xfe70 && base<0xfeff ))
+return( arabicfixup(sf,upt,isarabisolated(base)||isarabinitial(base),
+		isarabisolated(base)||isarabfinal(base)));
+
 return( upt );
 }
 

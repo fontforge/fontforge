@@ -604,7 +604,7 @@ void SFLigaturePrepare(SplineFont *sf) {
     Ligature *lig;
     LigList *ll;
     int i,j,ch,sch;
-    char *pt, *semi, *ligstart;
+    char *pt, *semi, *ligstart, *dpt;
     SplineChar *sc;
     struct splinecharlist *head, *last;
 
@@ -631,6 +631,13 @@ void SFLigaturePrepare(SplineFont *sf) {
 		    if ( sf->chars[j]!=NULL && strcmp(sf->chars[j]->name,start)==0 )
 		break;
 		*pt = ch;
+		if ( j==sf->charcnt && (dpt=strchr(start,'.'))!=NULL && dpt<pt ) {
+		    ch = *dpt; *dpt='\0';
+		    for ( j=0; j<sf->charcnt; ++j )
+			if ( sf->chars[j]!=NULL && strcmp(sf->chars[j]->name,start)==0 )
+		    break;
+		    *dpt = ch;
+		}
 		if ( j<sf->charcnt ) {
 		    SplineChar *tsc = sf->chars[j];
 		    if ( !SCWorthOutputting(tsc)) {
@@ -653,7 +660,6 @@ void SFLigaturePrepare(SplineFont *sf) {
 		    sc = NULL;
 	    break;
 		}
-		*pt = ch;
 		while ( *pt==' ' ) ++pt;
 	    }
 	    if ( sc!=NULL ) {
