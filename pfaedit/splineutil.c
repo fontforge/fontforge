@@ -1609,7 +1609,7 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd) {
 	sf->chars[i]->unicodeenc = UniFromName(encoding[i]);
 	sf->chars[i]->script = ScriptFromUnicode(sf->chars[i]->unicodeenc,sf);
 	sf->chars[i]->parent = sf;
-	sf->chars[i]->lig = SCLigDefault(sf->chars[i]);		/* Should read from AFM file, but that's way too much work */
+	SCLigDefault(sf->chars[i]);		/* Also reads from AFM file, but it probably doesn't exist */
 	GProgressNext();
     }
     for ( i=0; i<sf->charcnt; ++i ) for ( pr=NULL, refs = sf->chars[i]->refs; refs!=NULL; refs=next ) {
@@ -2741,11 +2741,14 @@ void AnchorPointsFree(AnchorPoint *ap) {
     }
 }
 
-void LigatureFree(Ligature *lig) {
-    if ( lig==NULL )
-return;
-    free(lig->components);
-    free(lig);
+void PSTFree(PST *pst) {
+    PST *pnext;
+    for ( ; pst!=NULL; pst = pnext ) {
+	pnext = pst->next;
+	if ( pst->type!=pst_position )
+	    free(pst->u.subs.variant);
+	chunkfree(pst,sizeof(PST));
+    }
 }
 
 void MinimumDistancesFree(MinimumDistance *md) {
@@ -2804,7 +2807,7 @@ return;
     UndoesFree(sc->undoes[0]); UndoesFree(sc->undoes[1]);
     UndoesFree(sc->redoes[0]); UndoesFree(sc->redoes[1]);
     SplineCharListsFree(sc->dependents);
-    LigatureFree(sc->lig);
+    PSTFree(sc->possub);
 }
 
 void SplineCharFree(SplineChar *sc) {

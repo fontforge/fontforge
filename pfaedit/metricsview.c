@@ -1762,12 +1762,15 @@ static void cblistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     SplineFont *sf = mv->fv->sf;
     int i, anyligs=0, anykerns=0;
+    PST *pst;
 
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	if ( sf->chars[i]->lig!=NULL ) {
-	    anyligs = true;
-	    if ( anykerns )
+	for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
+	    if ( pst->type==pst_ligature ) {
+		anyligs = true;
+		if ( anykerns )
     break;
+	    }
 	}
 	if ( sf->chars[i]->kerns!=NULL ) {
 	    anykerns = true;

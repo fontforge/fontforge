@@ -2882,12 +2882,15 @@ static void cblistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     SplineFont *sf = fv->sf;
     int i, anyligs=0, anykerns=0;
+    PST *pst;
 
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	if ( sf->chars[i]->lig!=NULL ) {
-	    anyligs = true;
-	    if ( anykerns )
+	for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
+	    if ( pst->type==pst_ligature ) {
+		anyligs = true;
+		if ( anykerns )
     break;
+	    }
 	}
 	if ( sf->chars[i]->kerns!=NULL ) {
 	    anykerns = true;
@@ -3434,147 +3437,6 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 return( dummy );
 }
 
-char *AdobeLigatureFormat(char *name) {
-    /* There are two formats for ligs: <glyph-name>_<glyph-name>{...} or */
-    /*  uni<code><code>{...} (only works for BMP) */
-    /* I'm not checking to see if all the components are valid */
-    char *components, *pt, buffer[12];
-    const char *next;
-    int len = strlen(name), uni;
-
-    if ( strncmp(name,"uni",3)==0 && (len-3)%4==0 && len>7 ) {
-	pt = name+3;
-	components = galloc(1); *components = '\0';
-	while ( *pt ) {
-	    if ( sscanf(pt,"%4x", &uni )==0 ) {
-		free(components); components = NULL;
-	break;
-	    }
-	    if ( uni<psunicodenames_cnt && psunicodenames[uni]!=NULL )
-		next = psunicodenames[uni];
-	    else {
-		sprintf(buffer,"uni%04X", uni );
-		next = buffer;
-	    }
-	    components = grealloc(components,strlen(components) + strlen(next) + 2);
-	    if ( *components!='\0' )
-		strcat(components," ");
-	    strcat(components,next);
-	    pt += 4;
-	}
-	if ( components!=NULL )
-return( components );
-    }
-
-    if ( strchr(name,'_')==NULL )
-return( NULL );
-    pt = components = copy(name);
-    while ( (pt = strchr(pt,'_'))!=NULL )
-	*pt = ' ';
-return( components );
-}
-
-char *LigDefaultStr(int uni, char *name) {
-    const unichar_t *alt=NULL, *pt;
-    char *components = NULL;
-    int len;
-    const unichar_t *uname;
-
-    /* If it's not unicode we have no info on it */
-    /*  Unless it looks like one of adobe's special ligature names */
-    if ( uni==-1 || uni>=65536 )
-	/* Nope */;
-    else if ( isdecompositionnormative(uni) &&
-		unicode_alternates[uni>>8]!=NULL &&
-		(alt = unicode_alternates[uni>>8][uni&0xff])!=NULL ) {
-	if ( alt[1]=='\0' )
-	    alt = NULL;		/* Single replacements aren't ligatures */
-	else if ( iscombining(alt[1]) && ( alt[2]=='\0' || iscombining(alt[2])))
-	    alt = NULL;		/* Don't treat accented letters as ligatures */
-	else if ( UnicodeCharacterNames[uni>>8]!=NULL &&
-		(uname = UnicodeCharacterNames[uni>>8][uni&0xff])!=NULL &&
-		uc_strstr(uname,"LIGATURE")==NULL &&
-		uc_strstr(uname,"VULGAR FRACTION")==NULL )
-	    alt = NULL;
-    }
-    if ( alt==NULL ) {
-	if ( name==NULL )
-return( NULL );
-	components = AdobeLigatureFormat(name);
-	alt = NULL;
-    }
-
-    if ( components!=NULL )
-	/* All done */;
-    else if ( uni==0xfb03 )
-	components = copy("f f i; ff i");
-    else if ( uni==0xfb04 )
-	components = copy("f f l; ff l");
-    else if ( alt!=NULL ) {
-	if ( alt[1]==0x2044 && alt[3]==0 ) {
-	    static unichar_t hack[4];
-	    u_strcpy(hack,alt);
-	    hack[1] = '/';
-	    alt = hack;
-	}
-	components=NULL;
-	while ( 1 ) {
-	    len = 0;
-	    for ( pt=alt; *pt; ++pt ) {
-		if ( psunicodenames[*pt]!=NULL ) {
-		    if ( components!=NULL )
-			strcpy(components+len,psunicodenames[*pt]);
-		    len += strlen( psunicodenames[*pt])+1;
-		    if ( components!=NULL )
-			components[len-1] = ' ';
-		} else {
-		    if ( components!=NULL )
-			sprintf(components+len, "uni%04X ", *pt );
-		    len += 8;
-		}
-	    }
-	    if ( components!=NULL )
-	break;
-	    components = galloc(len+1);
-	}
-	components[len-1] = '\0';
-    }
-return( components );
-}
-
-uint32 LigTagFromUnicode(int uni) {
-    int tag = CHR('l','i','g','a');	/* standard */
-
-    if (( uni>=0xbc && uni<=0xbe ) || (uni>=0x2153 && uni<=0x215e) )
-	tag = CHR('f','r','a','c');	/* Fraction */
-    switch ( uni ) {
-      case 0xfb05:		/* long-s t */
-	tag = CHR('h','l','i','g');
-      break;
-      case 0xfb06:		/* s t */
-	tag = CHR('d','l','i','g');
-      break;
-      case 0xfefb: case 0xfefc:	/* Lam & Alef, required ligs */
-	tag = CHR('r','l','i','g');
-      break;
-    }
-return( tag );
-}
-
-Ligature *SCLigDefault(SplineChar *sc) {
-    char *components = LigDefaultStr(sc->unicodeenc,sc->name);
-    Ligature *lig;
-
-    if ( components==NULL )
-return( NULL );
-
-    lig = gcalloc(1,sizeof(Ligature));
-    lig->lig = sc;
-    lig->components = components;
-    lig->tag = LigTagFromUnicode(sc->unicodeenc);
-return( lig );
-}
-
 SplineChar *SFMakeChar(SplineFont *sf,int i) {
     SplineChar dummy, *sc;
     SplineFont *ssf;
@@ -3596,7 +3458,7 @@ return( ssf->chars[i] );
 	sf->chars[i] = sc = SplineCharCreate();
 	*sc = dummy;
 	sc->name = copy(sc->name);
-	sc->lig = SCLigDefault(sc);
+	SCLigDefault(sc);
 	sc->parent = sf;
     }
 return( sc );

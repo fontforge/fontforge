@@ -2210,7 +2210,7 @@ void _SCCharChangedUpdate(SplineChar *sc,int changed) {
     SplineFont *sf = sc->parent;
 
     sc->changed_since_autosave = true;
-    if ( sc->changed!=changed && !sf->onlybitmaps ) {
+    if ( sc->changed!=changed /*&& !sf->onlybitmaps*/ ) {	/* Why onlybitmaps? This broke charinfo on a new file */
 	sc->changed = changed;
 	FVToggleCharChanged(sc);
 	SCRefreshTitles(sc);

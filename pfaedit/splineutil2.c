@@ -1486,12 +1486,12 @@ return( sf );
 /* see also SFReencodeFont in fontinfo.c */
 SplineFont *SplineFontNew(void) {
     SplineFont *sf;
-    const char *name;
-    int i,uenc;
+    /*const char *name;*/
+    /*int i,uenc;*/
     /* Create an ISO 8859-1 (Latin1) font, actually whatever default_encoding is */
     const unsigned short *table;
     int tlen=256, enclen=256;
-    char buf[10];
+    /*char buf[10];*/
     extern unsigned short unicode_from_adobestd[256];
     Encoding *item=NULL;
 
@@ -1557,6 +1557,7 @@ SplineFont *SplineFontNew(void) {
 
     sf = SplineFontBlank(default_encoding,enclen);
     sf->onlybitmaps = true;
+#if 0    
     for ( i=0; i<enclen && i<256; ++i ) {
 	SplineChar *sc = sf->chars[i] = SplineCharCreate();
 	sc->vwidth = sf->ascent+sf->descent;
@@ -1605,8 +1606,9 @@ SplineFont *SplineFontNew(void) {
 	sc->width = sf->ascent+sf->descent;
 	sc->lsidebearing = 0;
 	sc->parent = sf;
-	sc->lig = SCLigDefault(sc);
+	SCLigDefault(sc);
     }
+#endif
 return( sf );
 }
 

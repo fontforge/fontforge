@@ -56,23 +56,25 @@ void SFShowLigatures(SplineFont *sf) {
     int *where=NULL;
     SplineChar *sc;
     unichar_t *pt;
+    PST *pst;
 
     while ( 1 ) {
 	for ( i=cnt=0; i<sf->charcnt; ++i ) {
-	    if ( (sc=sf->chars[i])!=NULL && (sc->splines!=NULL || sc->refs!=NULL) &&
-		    sc->lig!=NULL ) {
-		if ( choices!=NULL ) {
-		    pt = galloc((3+strlen(sc->lig->components))*sizeof(unichar_t));
-		    if ( sc->unicodeenc==-1 )
-			*pt = 0xfffd;
-		    else
-			*pt = sc->unicodeenc;
-		    pt[1] = ' ';
-		    uc_strcpy(pt+2,sc->lig->components);
-		    choices[cnt] = pt;
-		    where[cnt] = i;
+	    if ( (sc=sf->chars[i])!=NULL && (sc->splines!=NULL || sc->refs!=NULL) ) {
+		for ( pst=sc->possub; pst!=NULL; pst=pst->next ) if ( pst->type==pst_ligature ) {
+		    if ( choices!=NULL ) {
+			pt = galloc((3+strlen(pst->u.lig.components))*sizeof(unichar_t));
+			if ( sc->unicodeenc==-1 )
+			    *pt = 0xfffd;
+			else
+			    *pt = sc->unicodeenc;
+			pt[1] = ' ';
+			uc_strcpy(pt+2,pst->u.lig.components);
+			choices[cnt] = pt;
+			where[cnt] = i;
+		    }
+		    ++cnt;
 		}
-		++cnt;
 	    }
 	}
 	if ( choices!=NULL )

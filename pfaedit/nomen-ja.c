@@ -848,19 +848,11 @@ static char str_Elipse[] = "ÂÊ±ß";
 static char str_FilledElipse[] = "ÂÊ±ß(ÅÉ¤ê¤Ä¤Ö¤·)";
     /* Get Info ... */
 static char str_Multiple[] = "Multiple";
-/* "There is already a character with this Unicode encoding,\n(named %.10s at local encoding %d)\nIs that what you want?" */
-static char str_Alreadycharpre[] = "´û¤Ë, Unicode¤ËÊÑ´¹¤·¤¿»þ¤ÎÊ¸»ú¥³¡¼¥É¤¬¤³¤ÎÃÍ\n(Ì¾¾Î¤Ï";
-static char str_Alreadycharmid[] = ", ¸ÇÍ­¤ÎÊ¸»ú¥³¡¼¥É¤Ï";
-static char str_Alreadycharpost[] = ")\012¤Ë¤Ê¤ëÊ¸»ú¤¬¤¢¤ê¤Þ¤¹. ¤³¤Î¤Þ¤ÞÂ³¤±¤Þ¤¹¤«?";
+static char str_AlreadyCharUnicode[] = "´û¤Ë, Unicode¤ËÊÑ´¹¤·¤¿»þ¤ÎÊ¸»ú¥³¡¼¥É¤¬¤³¤ÎÃÍ\n(Ì¾¾Î¤Ï %1$.40hs, ÇÍ­¤ÎÊ¸»ú¥³¡¼¥É¤Ï %2$d)\012¤Ë¤Ê¤ëÊ¸»ú¤¬¤¢¤ê¤Þ¤¹. ¤³¤Î¤Þ¤ÞÂ³¤±¤Þ¤¹¤«?";
 static char str_Alreadycharnamed[] = "¤³¤ÎÌ¾Á°¤ò»ý¤ÄÊ¸»ú¤¬´û¤Ë¤¢¤ê¤Þ¤¹.\nÌ¾Á°¤ò¸ò´¹¤·¤Þ¤¹¤«?";
-/* There is already a ligature made from these components,\n(named %.10s at local encoding %d)\nIs that what you want? */
-static char str_Alreadyligpre[] = "¤³¤Î¹½À®Í×ÁÇ¤«¤é¤Ê¤ë¥ê¥¬¥Á¥ã\n(Ì¾Á°: ";
-static char str_Alreadyligmid[] = ", ¸ÇÍ­¥¨¥ó¥³¡¼¥Ç¥£¥ó¥°: ";
-static char str_Alreadyligpost[] = ")¤Ï,\012´û¤ËÄêµÁ¤µ¤ì¤Æ¤¤¤Þ¤¹. ¤³¤Î¤Þ¤ÞÂ³¤±¤Þ¤¹¤«?";
+static char str_AlreadyLigature[] = "¤³¤Î¹½À®Í×ÁÇ¤«¤é¤Ê¤ë¥ê¥¬¥Á¥ã\n(Ì¾Á°: %1$.40hs, ¸ÇÍ­¥¨¥ó¥³¡¼¥Ç¥£¥ó¥°: %2$d)¤Ï,\012´û¤ËÄêµÁ¤µ¤ì¤Æ¤¤¤Þ¤¹. ¤³¤Î¤Þ¤ÞÂ³¤±¤Þ¤¹¤«?";
 static char str_Badligature[] = "¥ê¥¬¥Á¥ã¤ò¹½À®¤¹¤ëÊ¸»ú¤Ë¤½¤ÎÊ¸»ú¼«¿È¤¬´Þ¤Þ¤ì¤Æ¤¤¤Æ¤Ï¤¤¤±¤Þ¤»¤ó.";
-/* "The component %.20s is not in this font,\nIs that what you want?" */
-static char str_Missingcomponantpre[] = "¤³¤Î¥Õ¥©¥ó¥È¤Ë¤Ï \"";
-static char str_Missingcomponantpost[] = "\" ¤È¤¤¤¦Ì¾Á°¤ÎÉôÉÊ¤Ï¤¢¤ê¤Þ¤»¤ó.\n¤³¤ÎÌ¾Á°¤ÇËÜÅö¤Ë¤¤¤¤¤Ç¤¹¤«?";
+static char str_MissingComponent[] = "¤³¤Î¥Õ¥©¥ó¥È¤Ë¤Ï \"%.40s\" ¤È¤¤¤¦Ì¾Á°¤ÎÉôÉÊ¤Ï¤¢¤ê¤Þ¤»¤ó.\n¤³¤ÎÌ¾Á°¤ÇËÜÅö¤Ë¤¤¤¤¤Ç¤¹¤«?";
 static char str_Done[] = "´°Î»(D)";
 static unichar_t mnemonic_Done[] = 'D';
 static char str_Ligpop[] = "¤â¤·¤³¤ÎÊ¸»ú¤¬¥ê¥¬¥Á¥ã¤Ç¤·¤¿¤é,\012¤³¤ìÊ¬²ò¤·¤¿»þ¤Î³ÆÊ¸»ú¤ÎÌ¾Á°¤ò\nÆþÎÏ¤·¤Æ¤¯¤À¤µ¤¤.";

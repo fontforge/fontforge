@@ -855,19 +855,13 @@ static char str_Elipse[] = "Ellipse";
 static char str_FilledElipse[] = "Ellipse pleine";
     /* Get Info ... */
 static char str_Multiple[] = "Plusieurs";
-/* "There is already a character with this Unicode encoding,\n(named %.10s at local encoding %d)\nIs that what you want?" */
-static char str_Alreadycharpre[] = "Il y a déjà un caractère avec cet encodage Unicode,\012(nommé ";
-static char str_Alreadycharmid[] = " dans l'encodage actuel ";
-static char str_Alreadycharpost[] = ")\012Est ce vraiment ce que vous souhaitez?";
+static char str_AlreadyCharUnicode[] = "Il y a déjà un caractère avec cet encodage Unicode,\012(nommé %$1.40hs, dans l'encodage actuel %$2d)\012Est ce vraiment ce que vous souhaitez?";
 static char str_Alreadycharnamed[] = "Il y a déjà un caractère portant ce nom,\012Voulez vous permuter les noms?";
 /* There is already a ligature made from these components,\n(named %.10s at local encoding %d)\nIs that what you want? */
-static char str_Alreadyligpre[] = "Il y a déjà une ligature  faite avec ces composants,\012(appelée ";
-static char str_Alreadyligmid[] = " dans l'encodage courant ";
-static char str_Alreadyligpost[] = ")\012Est ce vraiment ce que vous souhaitez?";
+static char str_AlreadyLigature[] = "Il y a déjà une ligature  faite avec ces composants,\012(appelée %1$.40hs dans l'encodage courant %2$d")\012Est ce vraiment ce que vous souhaitez?";
 static char str_Badligature[] = "Une ligature ne peut pas se composer d'elle même";
 /* "The component %.20s is not in this font,\nIs that what you want?" */
-static char str_Missingcomponantpre[] = "Le composant \"";
-static char str_Missingcomponantpost[] = "\" n'est pas dans cette police,\012Est ce vraiment ce que vous souhaitez?";
+static char str_MissingComponent[] = "Le composant \"%.40s\" n'est pas dans cette police,\012Est ce vraiment ce que vous souhaitez?";
 static char str_Done[] = "Done";
 static unichar_t mnemonic_Done[] = 'D';
 static char str_Ligpop[] = "Si ce caractère doit être une ligature,\012indiquez le nom des caractères dont il se compose";

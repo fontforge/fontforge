@@ -252,8 +252,10 @@ return;
 		fprintf( file, " /.notdef" );
 	    else if ( item->unicode[i]<psunicodenames_cnt && psunicodenames[item->unicode[i]]!=NULL )
 		fprintf( file, " /%s", psunicodenames[item->unicode[i]]);
-	    else
+	    else if ( item->unicode[i]<0x10000 )
 		fprintf( file, " /uni%04X", item->unicode[i]);
+	    else
+		fprintf( file, " /u%04X", item->unicode[i]);
 	    if ( (i&0xf)==0 )
 		fprintf( file, "\t\t%% 0x%02x\n", i );
 	    else

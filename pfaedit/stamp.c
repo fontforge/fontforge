@@ -1,5 +1,5 @@
 #include <time.h>
 
-const time_t source_modtime = 1041349903;
-const char *source_modtime_str = "7:51 31-12-2002";
-const char *source_version_str = "021231";
+const time_t source_modtime = 1041664783;
+const char *source_modtime_str = "23:19 3-1-2003";
+const char *source_version_str = "030103";

@@ -53,8 +53,6 @@ struct lookup {
     uint32 isligature: 1;
 };
 
-static int renaisanse=0;	/* Turn this on to get my long-s extensions */
-
 /* scripts (for opentype) that I understand */
 
 static uint32 scripts[][11] = {
@@ -157,206 +155,65 @@ return( CHR('l','a','t','n'));
 return( 0 );
 }
 
-struct simplesubs { uint16 orig, replacement; SplineChar *origsc; };
-
-static struct simplesubs *VerticalRotationGlyphs(SplineFont *sf) {
-    int cnt, i, j, k;
-    struct simplesubs *subs = NULL;
-    SplineFont *_sf = sf;
-    SplineChar *sc, *scbase;
-
-    for ( k=0; k<2; ++k ) {
-	cnt = 0;
-	j = 0;
-	do {
-	    sf = _sf->subfontcnt==0 ? _sf : _sf->subfonts[j];
-	    for ( i=0; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sc=sf->chars[i])) {
-		if ( sf->cidmaster!=NULL && strncmp(sc->name,"vertcid_",8)==0 ) {
-		    char *end;
-		    int cid = strtol(sc->name+8,&end,10), j;
-		    if ( *end!='\0' || (j=SFHasCID(sf,cid))==-1)
-	    continue;
-		    scbase = sf->cidmaster->subfonts[j]->chars[cid];
-		} else if ( strncmp(sc->name,"vertuni",7)==0 && strlen(sc->name)==11 ) {
-		    char *end;
-		    int uni = strtol(sc->name+7,&end,16), index;
-		    if ( *end!='\0' || (index = SFCIDFindExistingChar(sf,uni,NULL))==-1 )
-	    continue;
-		    if ( sf->cidmaster==NULL )
-			scbase = sf->chars[index];
-		    else
-			scbase = sf->cidmaster->subfonts[SFHasCID(sf,index)]->chars[index];
-		} else
-	    continue;
-		if ( !SCWorthOutputting(scbase))
-	    continue;
-		if ( subs!=NULL ) {
-		    subs[cnt].origsc = scbase;
-		    subs[cnt].orig = scbase->ttf_glyph;
-		    subs[cnt].replacement = sc->ttf_glyph;
-		}
-		++cnt;
-	    }
-	    ++j;
-	} while ( j<_sf->subfontcnt );
-	if ( cnt==0 )
-return( NULL );
-	else if ( subs!=NULL )
-return( subs );
-	subs = gcalloc(cnt+1,sizeof(struct simplesubs));
-    }
-return( NULL );
-}
-
-static SplineChar *SFFindSC(SplineFont *sf,int uni) {
-    int i = SFFindExistingChar(sf,uni,NULL);
-    if ( i==-1 )
-return( NULL );
-return( sf->chars[i] );
-}
-
-static struct simplesubs *longs(SplineFont *sf) {
-    struct simplesubs *subs = NULL;
-    SplineChar *sc, *scbase;
-    /* Convert s->longs initially and medially */
-
-    scbase = SFFindSC(sf,'s');
-    sc = SFFindSC(sf,0x17f);
-    if ( SCWorthOutputting(sc) && SCWorthOutputting(scbase)) {
-	subs = gcalloc(2,sizeof(struct simplesubs));
-	subs[0].origsc = scbase;
-	subs[0].orig = scbase->ttf_glyph;
-	subs[0].replacement = sc->ttf_glyph;
-    }
-return( subs );
-}
-
-static struct simplesubs *arabic_forms(SplineFont *sf, int form) {
-    /* data for arabic form conversion */
-    int cnt, j, k;
-    struct simplesubs *subs = NULL;
-    SplineChar *sc, *scbase;
-
-    for ( k=0; k<2; ++k ) {
-	cnt = 0;
-	for ( j = 0x0600; j<0x0700; ++j ) {
-	    if ( (&(ArabicForms[j-0x600].initial))[form]!=0 &&
-		    (&(ArabicForms[j-0x600].initial))[form]!=j &&
-		    (scbase = SFFindSC(sf,j))!=NULL &&
-		    (sc = SFFindSC(sf,(&(ArabicForms[j-0x600].initial))[form]))!=NULL &&
-		    SCWorthOutputting(scbase) &&
-		    SCWorthOutputting(sc)) {
-		if ( subs!=NULL ) {
-		    subs[cnt].origsc = scbase;
-		    subs[cnt].orig = scbase->ttf_glyph;
-		    subs[cnt].replacement = sc->ttf_glyph;
-		}
-		++cnt;
-	    }
-	}
-	if ( cnt==0 )
-return( NULL );
-	else if ( subs!=NULL )
-return( subs );
-	subs = gcalloc(cnt+1,sizeof(struct simplesubs));
-    }
-return( NULL );
-}
-
-static struct simplesubs *tosmallcaps(SplineFont *sf, int lc, struct simplesubs **greeks) {
-    /* data for small caps conversion */
-    /* There are two different tables c2sc which takes caps to smallcaps */
-    /*  and smcp which takes lowercase to smallcaps and digits to oldstyle */
-    /* Adobe has two naming conventions for smallcaps and oldstyle */
-    /*  If a name ends in "small" or "oldstyle" then it's smallcaps (oldstyle) */
-    /*  or it can end in ".sc" or ".oldstyle" 				       */
-    /* so check for both. If we find one, then look for the base form by */
-    /*  removing the modifier (".sc", "small", etc.) from the name and */
-    /*  searching for the result. Depending on whether we want the original */
-    /*  to be upper or lower case, we may need to change the case on the first */
-    /*  letter of the name */
-    /* I'm only prepared to deal with latin & greek. Cyrillic might make sense*/
-    /*  but lower case cyrillic is pretty nearly small caps anyway */
-    int latin_cnt, greek_cnt, j, k, i, oldstyle;
-    struct simplesubs *lsubs = NULL, *gsubs=NULL;
-    SplineChar *sc, *scorig;
-    char temp[200];
-    char *pt;
-
-    for ( k=0; k<2; ++k ) {
-	latin_cnt = greek_cnt = 0;
-	for ( j=0; j<sf->charcnt; ++j ) if ( SCWorthOutputting(sc=sf->chars[j]) ) {
-	    scorig = NULL;
-	    oldstyle = false;
-	    if ( (strlen(sc->name)>3 && strcmp(sc->name-3,".sc")==0) ||
-		    (strlen(sc->name)>5 && strcmp(sc->name-3,"small")==0) ||
-		    ( lc && strlen(sc->name)>8 && strcmp(sc->name-8,"oldstyle")==0 )) {
-		strncpy(temp,sc->name,sizeof(temp)); temp[sizeof(temp)-1] = '\0';
-		if ( (pt=strstr(temp,".sc"))!=NULL ) *pt='\0';
-		else if ( (pt=strstr(temp,"small"))!=NULL ) *pt='\0';
-		else if ( (pt=strstr(temp,".oldstyle"))!=NULL ) { *pt='\0'; oldstyle = true; }
-		else if ( (pt=strstr(temp,"oldstyle"))!=NULL ) { *pt='\0'; oldstyle = true; }
-		else
-	continue;
-		if ( !lc ) {
-		    if ( islower(temp[0]) )
-			temp[0] = toupper(temp[0]);
-		} else if ( lc && !oldstyle ) {
-		    if ( isupper(temp[0]))
-			temp[0] = tolower(temp[0]);
-		}
-		for ( i=0; i<sf->charcnt; ++i ) if ( (scorig=sf->chars[i])!=NULL )
-		    if ( strcmp(scorig->name,temp)==0 )
-		break;
-		if ( i==sf->charcnt ) scorig = NULL;
-	    }
-	    if ( SCWorthOutputting(scorig) ) {
-		if ( scorig->script==CHR('l','a','t','n') ) {
-		    if ( lsubs!=NULL ) {
-			lsubs[latin_cnt].origsc = scorig;
-			lsubs[latin_cnt].orig = scorig->ttf_glyph;
-			lsubs[latin_cnt].replacement = sc->ttf_glyph;
-		    }
-		    ++latin_cnt;
-		} else if ( scorig->script==CHR('g','r','e','k') ) {
-		    if ( gsubs!=NULL ) {
-			gsubs[greek_cnt].origsc = scorig;
-			gsubs[greek_cnt].orig = scorig->ttf_glyph;
-			gsubs[greek_cnt].replacement = sc->ttf_glyph;
-		    }
-		    ++greek_cnt;
-		}
-	    }
-	}
-	if ( latin_cnt==0 && greek_cnt==0 ) {
-	    *greeks = NULL;
-return( NULL );
-	}
-	else if ( lsubs!=NULL ) {
-	    if ( latin_cnt==0 ) { free(lsubs); lsubs=NULL; }
-	    if ( greek_cnt==0 ) { free(gsubs); gsubs=NULL; }
-	    *greeks = gsubs;
-return( lsubs );
-	}
-	lsubs = gcalloc(latin_cnt+1,sizeof(struct simplesubs));
-	gsubs = gcalloc(greek_cnt+1,sizeof(struct simplesubs));
-    }
-    *greeks = NULL;
-return( NULL );
-}
-
 static int LigListMatchTag(LigList *ligs,uint32 tag) {
     LigList *l;
 
     for ( l=ligs; l!=NULL; l=l->next )
 	if ( l->lig->tag == tag )
 return( true );
-    if ( tag==CHR('l','i','g','a') ) {		/* The ligature table will also include any required ligatures */
-	for ( l=ligs; l!=NULL; l=l->next )
-	    if ( l->lig->tag == CHR('r','l','i','g') )
-return( true );
-    }
 return( false );
+}
+
+static int PosSubMatchTag(PST *pst,uint32 tag,enum possub_type type) {
+
+    for ( ; pst!=NULL; pst=pst->next )
+	if ( pst->tag == tag && pst->type==type )
+return( true );
+return( false );
+}
+
+static void GlyphMapFree(SplineChar ***map) {
+    int i;
+
+    if ( map==NULL )
+return;
+    for ( i=0; map[i]!=NULL; ++i )
+	free(map[i]);
+    free(map);
+}
+
+static SplineChar **FindSubs(SplineChar *sc,uint32 tag, enum possub_type type) {
+    SplineChar *space[30];
+    int next = 0, cnt;
+    char *pt, *start;
+    SplineChar *subssc, **ret;
+    PST *pst;
+
+    for ( ; pst!=NULL; pst=pst->next ) {
+	if ( pst->tag == tag && pst->type==type ) {
+	    pt = pst->u.subs.variant;
+	    while ( 1 ) {
+		while ( *pt==' ' ) ++pt;
+		start = pt;
+		pt = strchr(start,' ');
+		if ( pt!=NULL )
+		    *pt = '\0';
+		subssc = SFGetChar(sc->parent,-1,start);
+		if ( subssc!=NULL && subssc->ttf_glyph!=-1 &&
+			next<sizeof(space)/sizeof(space[0]) )
+		    space[cnt++] = subssc;
+		if ( pt==NULL )
+	    break;
+		*pt=' ';
+	    }
+	}
+    }
+    if ( cnt==0 )	/* Might happen if the substitution names weren't in the font */
+return( NULL );
+    ret = galloc((cnt+1)*sizeof(SplineChar *));
+    memcpy(ret,space,cnt*sizeof(SplineChar *));
+    ret[cnt] = NULL;
+return( ret );
 }
 
 static SplineChar **generateGlyphList(SplineFont *sf, int iskern, uint32 script, uint32 tag) {
@@ -389,6 +246,56 @@ return( NULL );
 	}
     }
     glyphs[cnt] = NULL;
+return( glyphs );
+}
+
+static SplineChar **generateGlyphTypeList(SplineFont *sf, enum possub_type type,
+	uint32 script, uint32 tag, SplineChar ****map) {
+    int cnt;
+    SplineFont *sub;
+    SplineChar *sc;
+    int k,i,j;
+    SplineChar **glyphs=NULL, ***maps=NULL;
+
+    for ( j=0; j<2; ++j ) {
+	k = 0;
+	cnt = 0;
+	do {
+	    sub = ( sf->subfontcnt==0 ) ? sf : sf->subfonts[k];
+	    for ( i=0; i<sub->charcnt; ++i )
+		    if ( SCWorthOutputting(sc=sub->chars[i]) &&
+			    sc->script==script &&
+			    PosSubMatchTag(sc->possub,tag,type) ) {
+		if ( glyphs!=NULL ) {
+		    glyphs[cnt] = sc;
+		    if ( type==pst_substitution || type==pst_alternate || type==pst_multiple ) {
+			maps[cnt] = FindSubs(sc,tag,type);
+			if ( maps[cnt]==NULL )
+			    --cnt;		/* Couldn't find anything, toss it */
+		    }
+		}
+		++cnt;
+		sc->ticked = true;
+	    }
+	    ++k;
+	} while ( k<sf->subfontcnt );
+	if ( glyphs==NULL ) {
+	    if ( cnt==0 )
+return( NULL );
+	    glyphs = galloc((cnt+1)*sizeof(SplineChar *));
+	    if ( type==pst_substitution || type==pst_alternate || type==pst_multiple )
+		maps = galloc((cnt+1)*sizeof(SplineChar **));
+	}
+    }
+    glyphs[cnt] = NULL;
+    if ( maps!=NULL )
+	maps[cnt] = NULL;
+    if ( cnt==0 ) {
+	free(glyphs);
+	GlyphMapFree(maps);
+	glyphs = NULL; maps = NULL;
+    }
+    *map = maps;
 return( glyphs );
 }
 
@@ -811,6 +718,63 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *ac,
 return( lookups );
 }
 
+static void dumpGPOSsimplepos(FILE *gsub,SplineFont *sf,SplineChar **glyphs,uint32 tag) {
+    int cnt;
+    int32 coverage_pos, end;
+    PST *pst, *first=NULL;
+    int bits = 0, same=true;
+
+    for ( cnt=0; glyphs[cnt]!=NULL; ++cnt) {
+	for ( pst=glyphs[cnt]->possub; pst!=NULL; pst=pst->next ) {
+	    if ( pst->tag==tag && pst->type==pst_position ) {
+		if ( first==NULL ) first = pst;
+		else if ( same ) {
+		    if ( first->u.pos.xoff!=pst->u.pos.xoff ||
+			    first->u.pos.yoff!=pst->u.pos.yoff ||
+			    first->u.pos.h_adv_off!=pst->u.pos.h_adv_off ||
+			    first->u.pos.v_adv_off!=pst->u.pos.v_adv_off )
+			same = false;
+		}
+		if ( pst->u.pos.xoff!=0 ) bits |= 1;
+		if ( pst->u.pos.yoff!=0 ) bits |= 2;
+		if ( pst->u.pos.h_adv_off!=0 ) bits |= 4;
+		if ( pst->u.pos.v_adv_off!=0 ) bits |= 8;
+	break;
+	    }
+	}
+    }
+    if ( bits==0 ) bits=1;
+
+    putshort(gsub,same?1:2);	/* 1 means all value records same */
+    coverage_pos = ftell(gsub);
+    putshort(gsub,0);		/* offset to coverage table */
+    putshort(gsub,cnt);
+    putshort(gsub,bits);
+    if ( same ) {
+	if ( bits&1 ) putshort(gsub,first->u.pos.xoff);
+	if ( bits&2 ) putshort(gsub,first->u.pos.yoff);
+	if ( bits&4 ) putshort(gsub,first->u.pos.h_adv_off);
+	if ( bits&8 ) putshort(gsub,first->u.pos.v_adv_off);
+    } else {
+	for ( cnt = 0; glyphs[cnt]!=NULL; ++cnt ) {
+	    for ( pst=glyphs[cnt]->possub; pst!=NULL; pst=pst->next ) {
+		if ( pst->tag==tag && pst->type==pst_position ) {
+		    if ( bits&1 ) putshort(gsub,pst->u.pos.xoff);
+		    if ( bits&2 ) putshort(gsub,pst->u.pos.yoff);
+		    if ( bits&4 ) putshort(gsub,pst->u.pos.h_adv_off);
+		    if ( bits&8 ) putshort(gsub,pst->u.pos.v_adv_off);
+		}
+	    }
+	}
+    }
+    end = ftell(gsub);
+    fseek(gsub,coverage_pos,SEEK_SET);
+    putshort(gsub,end-coverage_pos+2);
+    fseek(gsub,end,SEEK_SET);
+    dumpcoveragetable(gsub,glyphs);
+    free(glyphs);
+}
+
 static void dumpgsubligdata(FILE *gsub,SplineFont *sf,uint32 script, uint32 tag,struct alltabs *at) {
     int32 coverage_pos, next_val_pos, here, lig_list_start;
     int cnt, i, pcnt, lcnt, max=100, j;
@@ -835,8 +799,7 @@ static void dumpgsubligdata(FILE *gsub,SplineFont *sf,uint32 script, uint32 tag,
     for ( i=0; i<cnt; ++i ) {
 	offsets[i] = ftell(gsub)-coverage_pos+2;
 	for ( pcnt = 0, ll = glyphs[i]->ligofme; ll!=NULL; ll=ll->next )
-	    if ( ll->lig->tag==tag ||
-		    (tag==CHR('l','i','g','a') && ll->lig->tag==CHR('r','l','i','g')))
+	    if ( ll->lig->tag==tag )
 		++pcnt;
 	putshort(gsub,pcnt);
 	if ( pcnt>=max ) {
@@ -847,10 +810,9 @@ static void dumpgsubligdata(FILE *gsub,SplineFont *sf,uint32 script, uint32 tag,
 	for ( j=0; j<pcnt; ++j )
 	    putshort(gsub,0);			/* Place holders */
 	for ( pcnt=0, ll = glyphs[i]->ligofme; ll!=NULL; ll=ll->next ) {
-	    if ( ll->lig->tag==tag ||
-		    (tag==CHR('l','i','g','a') && ll->lig->tag==CHR('r','l','i','g'))) {
+	    if ( ll->lig->tag==tag ) {
 		ligoffsets[pcnt] = ftell(gsub)-lig_list_start+2;
-		putshort(gsub,ll->lig->lig->ttf_glyph);
+		putshort(gsub,ll->lig->u.lig.lig->ttf_glyph);
 		for ( lcnt=0, scl=ll->components; scl!=NULL; scl=scl->next ) ++lcnt;
 		putshort(gsub, lcnt+1);
 		if ( lcnt+1>at->os2.maxContext )
@@ -880,33 +842,64 @@ static void dumpgsubligdata(FILE *gsub,SplineFont *sf,uint32 script, uint32 tag,
     }
 }
 
-static void dumpGSUBsimplesubs(FILE *gsub,SplineFont *sf,struct simplesubs *subs,struct alltabs *at) {
-    SplineChar **glyphs;
-    int cnt;
+static void dumpGSUBsimplesubs(FILE *gsub,SplineFont *sf,SplineChar **glyphs, SplineChar ***maps) {
+    int cnt, diff, ok = true;
     int32 coverage_pos, end;
 
-    for ( cnt = 0; subs[cnt].orig!=0; ++cnt );
-    glyphs = galloc((cnt+1)*sizeof(SplineChar *));
-    for ( cnt = 0; subs[cnt].orig!=0; ++cnt )
-	glyphs[cnt] = subs[cnt].origsc;
-    glyphs[cnt] = NULL;
+    diff = (*maps[0])->ttf_glyph - glyphs[0]->ttf_glyph;
+    for ( cnt=0; glyphs[cnt]!=NULL; ++cnt)
+	if ( diff!= maps[cnt][0]->ttf_glyph-glyphs[cnt]->ttf_glyph ) ok = false;
 
-    putshort(gsub,2);		/* glyph list format */
-    coverage_pos = ftell(gsub);
-    putshort(gsub,0);		/* offset to coverage table */
-    putshort(gsub,cnt);
-    for ( cnt = 0; subs[cnt].orig!=0; ++cnt )
-	putshort(gsub,subs[cnt].replacement);
+    if ( ok ) {
+	putshort(gsub,1);	/* delta format */
+	coverage_pos = ftell(gsub);
+	putshort(gsub,0);		/* offset to coverage table */
+	putshort(gsub,diff);
+    } else {
+	putshort(gsub,2);		/* glyph list format */
+	coverage_pos = ftell(gsub);
+	putshort(gsub,0);		/* offset to coverage table */
+	putshort(gsub,cnt);
+	for ( cnt = 0; glyphs[cnt]!=NULL; ++cnt )
+	    putshort(gsub,(*maps[cnt])->ttf_glyph);
+    }
     end = ftell(gsub);
     fseek(gsub,coverage_pos,SEEK_SET);
     putshort(gsub,end-coverage_pos+2);
     fseek(gsub,end,SEEK_SET);
     dumpcoveragetable(gsub,glyphs);
-    free(subs);
-    free(glyphs);
 }
 
-    
+static void dumpGSUBmultiplesubs(FILE *gsub,SplineFont *sf,SplineChar **glyphs, SplineChar ***maps) {
+    int cnt, offset;
+    int32 coverage_pos, end;
+    int gc;
+
+    for ( cnt=0; glyphs[cnt]!=NULL; ++cnt);
+
+    putshort(gsub,1);		/* glyph list format */
+    coverage_pos = ftell(gsub);
+    putshort(gsub,0);		/* offset to coverage table */
+    putshort(gsub,cnt);
+    offset = 6+2*cnt;
+    for ( cnt = 0; glyphs[cnt]!=NULL; ++cnt ) {
+	putshort(gsub,offset);
+	for ( gc=0; maps[cnt][gc]!=NULL; ++gc );
+	offset += 2+2*gc;
+    }
+    for ( cnt = 0; glyphs[cnt]!=NULL; ++cnt ) {
+	for ( gc=0; maps[cnt][gc]!=NULL; ++gc );
+	putshort(gsub,gc);
+	for ( gc=0; maps[cnt][gc]!=NULL; ++gc );
+	    putshort(gsub,maps[cnt][gc]->ttf_glyph);
+    }
+    end = ftell(gsub);
+    fseek(gsub,coverage_pos,SEEK_SET);
+    putshort(gsub,end-coverage_pos+2);
+    fseek(gsub,end,SEEK_SET);
+    dumpcoveragetable(gsub,glyphs);
+}
+
 static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 	struct alltabs *at) {
     /* We are prepared to deal with the following features */
@@ -919,10 +912,60 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
     /* When we find a feature, we split it out into various scripts */
     /*  dumping one lookup per script into the file */
     struct lookup *lookups = NULL, *new;
-    int i;
-    SplineChar **marks, **base, **lig, **mkmk;
+    int i, j;
+    SplineChar **marks, **base, **lig, **mkmk, ***map, **glyphs;
     SplineChar *sc;
     AnchorClass *ac;
+    uint32 *ligtags;
+    int max, cnt;
+    enum possub_type type;
+    PST *pst;
+
+    max = 30; cnt = 0;
+    ligtags = galloc(max*sizeof(uint32));
+
+    type = pst_position;
+    {
+	cnt = 0;
+	for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
+	    for ( pst = sf->chars[i]->possub; pst!=NULL; pst=pst->next ) if ( pst->type==type ) {
+		for ( j=0; j<cnt; ++j )
+		    if ( ligtags[j]==pst->tag )
+		break;
+		if ( j==cnt ) {
+		    if ( cnt>=max ) {
+			max += 30;
+			ligtags = grealloc(ligtags,max*sizeof(uint32));
+		    }
+		    ligtags[cnt++] = pst->tag;
+		}
+	    }
+	}
+
+	/* Look for substitutions/decompositions matching these tags */
+	for ( j=0; j<cnt; ++j ) {
+	    for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL )
+		sf->chars[i]->ticked = false;
+	    for ( i=0; i<sf->charcnt; i++ ) 
+		    if ( (sc=sf->chars[i])!=NULL && sc->possub!=NULL &&
+			    sc->script!=0 && !sc->ticked &&
+			    PosSubMatchTag(sc->possub,ligtags[j],type) ) {
+		glyphs = generateGlyphTypeList(sf,type,sc->script,ligtags[j],&map);
+		if ( glyphs!=NULL && glyphs[0]!=NULL ) {
+		    new = chunkalloc(sizeof(struct lookup));
+		    new->script = sc->script;
+		    new->feature_tag = ligtags[j];
+		    new->lookup_type = 1;
+		    new->offset = ftell(lfile);
+		    new->next = lookups;
+		    lookups = new;
+		    dumpGPOSsimplepos(lfile,sf,glyphs,ligtags[j]);
+		    free(glyphs);
+		}
+	    }
+	}
+    }
+    free(ligtags);
 
     /* Look for kerns */
     for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL )
@@ -985,9 +1028,11 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
     struct lookup *lookups = NULL, *new;
     uint32 *ligtags;
     int i, j, max, cnt;
-    struct simplesubs *subs, *greek_subs=NULL;
     LigList *ll;
+    PST *subs;
     SplineChar *sc;
+    enum possub_type type;
+    SplineChar **glyphs, ***map;
 
     /* Look for ligature tags used in the font */
     max = 30; cnt = 0;
@@ -1026,134 +1071,53 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
 	    dumpgsubligdata(lfile,sf,sc->script,ligtags[j],at);
 	}
     }
+
+    /* Now do something very similar for substitution and decomposition tags */
+    for ( type = pst_substitution; type<=pst_multiple; ++type ) {
+	cnt = 0;
+	for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
+	    for ( subs = sf->chars[i]->possub; subs!=NULL; subs=subs->next ) if ( subs->type==type ) {
+		for ( j=0; j<cnt; ++j )
+		    if ( ligtags[j]==subs->tag )
+		break;
+		if ( j==cnt ) {
+		    if ( cnt>=max ) {
+			max += 30;
+			ligtags = grealloc(ligtags,max*sizeof(uint32));
+		    }
+		    ligtags[cnt++] = subs->tag;
+		}
+	    }
+	}
+
+	/* Look for substitutions/decompositions matching these tags */
+	for ( j=0; j<cnt; ++j ) {
+	    for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL )
+		sf->chars[i]->ticked = false;
+	    for ( i=0; i<sf->charcnt; i++ ) 
+		    if ( (sc=sf->chars[i])!=NULL && sc->possub!=NULL &&
+			    sc->script!=0 && !sc->ticked &&
+			    PosSubMatchTag(sc->possub,ligtags[j],type) ) {
+		glyphs = generateGlyphTypeList(sf,type,sc->script,ligtags[j],&map);
+		if ( glyphs!=NULL && glyphs[0]!=NULL ) {
+		    new = chunkalloc(sizeof(struct lookup));
+		    new->script = sc->script;
+		    new->feature_tag = ligtags[j];
+		    new->lookup_type = type==pst_substitution?1:type==pst_multiple?2:3;
+		    new->offset = ftell(lfile);
+		    new->next = lookups;
+		    lookups = new;
+		    if ( type==pst_substitution )
+			dumpGSUBsimplesubs(lfile,sf,glyphs,map);
+		    else /* the format for multiple and alternate subs is the same. Only the semantics differ */
+			dumpGSUBmultiplesubs(lfile,sf,glyphs,map);
+		    free(glyphs);
+		    GlyphMapFree(map);
+		}
+	    }
+	}
+    }
     free(ligtags);
-
-    subs = VerticalRotationGlyphs(sf);
-    if ( subs!=NULL ) {
-	new = chunkalloc(sizeof(struct lookup));
-	new->script = CHR('h','a','n','i');	/* I assume. But if we rotate a latin letter, should it be 'latn'? */
-	new->feature_tag = CHR('v','r','t','2');
-	new->lookup_type = 1;			/* Simple replacement */
-	new->offset = ftell(lfile);
-	new->next = lookups;
-	lookups = new;
-	dumpGSUBsimplesubs(lfile,sf,subs,at);	/* this frees subs */
-    }
-
-    subs = tosmallcaps(sf,true,&greek_subs);
-    if ( subs!=NULL ) {
-	new = chunkalloc(sizeof(struct lookup));
-	new->script = CHR('l','a','t','n');
-	new->feature_tag = CHR('s','m','c','p');
-	new->lookup_type = 1;			/* Simple replacement */
-	new->offset = ftell(lfile);
-	new->next = lookups;
-	lookups = new;
-	dumpGSUBsimplesubs(lfile,sf,subs,at);	/* this frees subs */
-    }
-    if ( greek_subs!=NULL ) {
-	new = chunkalloc(sizeof(struct lookup));
-	new->script = CHR('g','r','e','k');
-	new->feature_tag = CHR('s','m','c','p');
-	new->lookup_type = 1;			/* Simple replacement */
-	new->offset = ftell(lfile);
-	new->next = lookups;
-	lookups = new;
-	dumpGSUBsimplesubs(lfile,sf,greek_subs,at);
-    }
-
-    subs = tosmallcaps(sf,false,&greek_subs);
-    if ( subs!=NULL ) {
-	new = chunkalloc(sizeof(struct lookup));
-	new->script = CHR('l','a','t','n');
-	new->feature_tag = CHR('c','2','s','c');
-	new->lookup_type = 1;			/* Simple replacement */
-	new->offset = ftell(lfile);
-	new->next = lookups;
-	lookups = new;
-	dumpGSUBsimplesubs(lfile,sf,subs,at);	/* this frees subs */
-    }
-    if ( greek_subs!=NULL ) {
-	new = chunkalloc(sizeof(struct lookup));
-	new->script = CHR('g','r','e','k');
-	new->feature_tag = CHR('c','2','s','c');
-	new->isr2l = 0;
-	new->offset = ftell(lfile);
-	new->next = lookups;
-	lookups = new;
-	dumpGSUBsimplesubs(lfile,sf,greek_subs,at);
-    }
-
-    /* If this were during the renaisanse then I'd map short-s to long-s */
-    /*  initially and medially. What I want now is a "historic initial" */
-    /*  substitution, but there is none such, just a 'hist'oric mark */
-    /*  the example given for 'hist' is, in fact, long-s, but the semantics */
-    /*  don't work. */
-    if ( renaisanse && (subs=longs(sf))!=NULL ) {
-	new = chunkalloc(sizeof(struct lookup));
-	new->script = CHR('l','a','t','n');
-	new->feature_tag = CHR('h','i','n','t');
-	new->lookup_type = 1;			/* Simple replacement */
-	new->offset = ftell(lfile);
-	new->next = lookups;
-	lookups = new;
-	dumpGSUBsimplesubs(lfile,sf,subs,at);	/* this frees subs */
-
-	subs = longs(sf);
-	new = chunkalloc(sizeof(struct lookup));
-	new->script = CHR('l','a','t','n');
-	new->feature_tag = CHR('h','m','e','d');
-	new->lookup_type = 1;			/* Simple replacement */
-	new->offset = ftell(lfile);
-	new->next = lookups;
-	lookups = new;
-	dumpGSUBsimplesubs(lfile,sf,subs,at);	/* this frees subs */
-    }
-
-    subs = arabic_forms(sf,0);
-    if ( subs!=NULL ) {
-	new = chunkalloc(sizeof(struct lookup));
-	new->script = CHR('a','r','a','b');
-	new->feature_tag = CHR('i','n','i','t');
-	new->lookup_type = 1;			/* Simple replacement */
-	new->offset = ftell(lfile);
-	new->next = lookups;
-	lookups = new;
-	dumpGSUBsimplesubs(lfile,sf,subs,at);	/* this frees subs */
-    }
-    subs = arabic_forms(sf,1);
-    if ( subs!=NULL ) {
-	new = chunkalloc(sizeof(struct lookup));
-	new->script = CHR('a','r','a','b');
-	new->feature_tag = CHR('m','e','d','i');
-	new->lookup_type = 1;			/* Simple replacement */
-	new->offset = ftell(lfile);
-	new->next = lookups;
-	lookups = new;
-	dumpGSUBsimplesubs(lfile,sf,subs,at);	/* this frees subs */
-    }
-    subs = arabic_forms(sf,2);
-    if ( subs!=NULL ) {
-	new = chunkalloc(sizeof(struct lookup));
-	new->script = CHR('a','r','a','b');
-	new->feature_tag = CHR('f','i','n','a');
-	new->lookup_type = 1;			/* Simple replacement */
-	new->offset = ftell(lfile);
-	new->next = lookups;
-	lookups = new;
-	dumpGSUBsimplesubs(lfile,sf,subs,at);	/* this frees subs */
-    }
-    subs = arabic_forms(sf,3);
-    if ( subs!=NULL ) {
-	new = chunkalloc(sizeof(struct lookup));
-	new->script = CHR('a','r','a','b');
-	new->feature_tag = CHR('i','s','o','l');
-	new->lookup_type = 1;			/* Simple replacement */
-	new->offset = ftell(lfile);
-	new->next = lookups;
-	lookups = new;
-	dumpGSUBsimplesubs(lfile,sf,subs,at);	/* this frees subs */
-    }
 return( lookups );
 }
 
@@ -1166,11 +1130,10 @@ static int FeatureIndex( uint32 tag ) {
 return( -1 );
       case CHR('i','n','i','t'): case CHR('m','e','d','i'): case CHR('f','i','n','a'): case CHR('i','s','o','l'):
       case CHR('h','i','n','i'): case CHR('h','m','e','d'):
+      case CHR('r','t','l','a'):
 return( 0 );
       case CHR('s','m','c','p'): case CHR('c','2','s','c'):
 return( 1 );
-      case CHR('v','r','t','2'):
-return( 2 );
       case CHR('l','i','g','a'): case CHR('r','l','i','g'):
       case CHR('d','l','i','g'): case CHR('h','l','i','g'):
       case CHR('f','r','a','c'):
@@ -1180,7 +1143,11 @@ return( 2 );
       case CHR('h','a','l','f'): case CHR('h','a','l','n'):
       case CHR('l','j','m','o'): case CHR('v','j','m','o'):
       case CHR('n','u','k','f'): case CHR('v','a','t','u'):
+return( 2 );
+      case CHR('f','a','l','t'): case CHR('j','a','l','t'):		/* must come after 'fina'/'isol' */
 return( 3 );
+      case CHR('v','r','t','2'): case CHR('v','e','r','t'):
+return( 101 );		/* Documented to come last */
 /* GPOS ordering */
       case CHR('c','u','r','s'):
 return( 0 );
@@ -1190,7 +1157,7 @@ return( 1 );
 return( 2 );
       case CHR('k','e','r','n'):
 return( 3 );
-/* Unknown things come last */
+/* Unknown things come after everything but vert/vrt2 */
       default:
 return( 100 );
     }
@@ -1416,8 +1383,8 @@ void otf_dumpgposkerns(struct alltabs *at, SplineFont *sf) {
 void otf_dumpgsub(struct alltabs *at, SplineFont *sf) {
     /* Ligatures, cjk vertical rotation replacement, arabic forms, small caps */
     SFLigaturePrepare(sf);
-    at->gsub = dumpg___info(at, sf, false);
     if ( at->gsub!=NULL ) {
+	at->gsub = dumpg___info(at, sf, false);
 	at->gsublen = ftell(at->gsub);
 	if ( at->gsublen&1 ) putc('\0',at->gsub);
 	if ( (at->gsublen+1)&2 ) putshort(at->gsub,0);

@@ -1839,6 +1839,7 @@ return( newname );
 struct ac_dlg {
     int done;
     int ok;
+    GTextInfo *tags;
 };
 
 static int acd_e_h(GWindow gw, GEvent *event) {
@@ -1857,7 +1858,7 @@ return( false );
 	acd->ok = GGadgetGetCid(event->u.control.g);
     } else if ( event->type==et_controlevent && event->u.control.subtype == et_textchanged &&
 	    event->u.control.u.tf_changed.from_pulldown!=-1 ) {
-	uint32 tag = (uint32) mark_tags[event->u.control.u.tf_changed.from_pulldown].userdata;
+	uint32 tag = (uint32) acd->tags[event->u.control.u.tf_changed.from_pulldown].userdata;
 	unichar_t ubuf[8];
 	/* If they select something from the pulldown, don't show the human */
 	/*  readable form, instead show the 4 character tag */
@@ -1871,7 +1872,7 @@ return( false );
 return( true );
 }
 
-static unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag) {
+unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, GTextInfo *tags) {
     static unichar_t nullstr[] = { 0 };
     struct ac_dlg acd;
     GRect pos;
@@ -1892,6 +1893,7 @@ static unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag) {
     }
 
 	memset(&acd,0,sizeof(acd));
+	acd.tags = tags;
 	memset(&wattrs,0,sizeof(wattrs));
 	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
 	wattrs.event_masks = ~(1<<et_charup);
@@ -1908,7 +1910,7 @@ static unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag) {
 	memset(&gcd,0,sizeof(gcd));
 	memset(&label,0,sizeof(label));
 
-	label[0].text = (unichar_t *) _STR_AnchorClassName;
+	label[0].text = (unichar_t *) (tags==mark_tags?_STR_AnchorClassName:_STR_Components);
 	label[0].text_in_resource = true;
 	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5;
@@ -1931,9 +1933,9 @@ static unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag) {
 	ubuf[0] = def_tag>>24; ubuf[1] = (def_tag>>16)&0xff; ubuf[2] = (def_tag>>8)&0xff; ubuf[3] = def_tag&0xff; ubuf[4] = 0;
 	label[3].text = ubuf;
 	gcd[3].gd.label = &label[3];
-	gcd[3].gd.pos.x = 10; gcd[3].gd.pos.y = gcd[2].gd.pos.y+13;
+	gcd[3].gd.pos.x = 10; gcd[3].gd.pos.y = gcd[2].gd.pos.y+14;
 	gcd[3].gd.flags = gg_enabled|gg_visible;
-	gcd[3].gd.u.list = mark_tags;
+	gcd[3].gd.u.list = tags;
 	gcd[3].creator = GListFieldCreate;
 
 	gcd[4].gd.pos.x = 15-3; gcd[4].gd.pos.y = gcd[3].gd.pos.y+30;
@@ -2091,32 +2093,13 @@ static int GFI_AnchorShowBase(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static int GFI_AnchorSelChanged(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
-	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	int sel = GGadgetGetFirstListSelectedItem(g), len;
-	GTextInfo **old = GGadgetGetList(g,&len);
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_AnchorDel),sel!=-1);
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_AnchorRename),sel!=-1);
-	d->anchor_shows[0].restart = true;
-	d->anchor_shows[1].restart = true;
-	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_ShowMark),
-		GStringGetResource(_STR_ShowFirstMark,NULL));
-	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_ShowBase),
-		GStringGetResource(_STR_ShowFirstBase,NULL));
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ShowMark),sel!=-1 && old[sel]->userdata!=NULL);
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ShowBase),sel!=-1 && old[sel]->userdata!=NULL);
-    }
-return( true );
-}
-
 static int GFI_AnchorNew(GGadget *g, GEvent *e) {
     int len, i;
     GTextInfo **old, **new;
     GGadget *list;
     unichar_t *newname;
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	newname = AskNameTag(_STR_NewAnchorClass,NULL,CHR('m','a','r','k'));
+	newname = AskNameTag(_STR_NewAnchorClass,NULL,CHR('m','a','r','k'),mark_tags);
 	if ( newname!=NULL ) {
 	    list = GWidgetGetControl(GGadgetGetWindow(g),CID_AnchorClasses);
 	    old = GGadgetGetList(list,&len);
@@ -2188,7 +2171,7 @@ static int GFI_AnchorRename(GGadget *g, GEvent *e) {
 	list = GWidgetGetControl(GGadgetGetWindow(g),CID_AnchorClasses);
 	if ( (ti = GGadgetGetListItemSelected(list))==NULL )
 return( true );
-	newname = AskNameTag(_STR_EditAnchorClass,ti->text,0);
+	newname = AskNameTag(_STR_EditAnchorClass,ti->text,0,mark_tags);
 	if ( newname!=NULL ) {
 	    old = GGadgetGetList(list,&len);
 	    if (( uc_strncmp(newname,"curs",4)==0 && uc_strncmp(ti->text,"curs",4)!=0 ) ||
@@ -2229,6 +2212,28 @@ return( false );
 	    new[i] = gcalloc(1,sizeof(GTextInfo));
 	    GGadgetSetList(list,new,false);
 	}
+    }
+return( true );
+}
+
+static int GFI_AnchorSelChanged(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	int sel = GGadgetGetFirstListSelectedItem(g), len;
+	GTextInfo **old = GGadgetGetList(g,&len);
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_AnchorDel),sel!=-1);
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_AnchorRename),sel!=-1);
+	d->anchor_shows[0].restart = true;
+	d->anchor_shows[1].restart = true;
+	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_ShowMark),
+		GStringGetResource(_STR_ShowFirstMark,NULL));
+	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_ShowBase),
+		GStringGetResource(_STR_ShowFirstBase,NULL));
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ShowMark),sel!=-1 && old[sel]->userdata!=NULL);
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ShowBase),sel!=-1 && old[sel]->userdata!=NULL);
+    } else if ( e->type==et_controlevent && e->u.control.subtype == et_listdoubleclick ) {
+	e->u.control.subtype = et_buttonactivate;
+	GFI_AnchorRename(g,e);
     }
 return( true );
 }
@@ -4218,7 +4223,6 @@ return;
     atlabel[2].text = (unichar_t *) _STR_Delete;
     atlabel[2].text_in_resource = true;
     atgcd[2].gd.label = &atlabel[2];
-    atgcd[1].gd.cid = CID_AnchorNew;
     atgcd[2].gd.cid = CID_AnchorDel;
     atgcd[2].gd.handle_controlevent = GFI_AnchorDel;
     atgcd[2].creator = GButtonCreate;

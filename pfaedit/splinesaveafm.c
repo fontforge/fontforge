@@ -87,6 +87,8 @@ int LoadKerningDataFromAfm(SplineFont *sf, char *filename) {
     char buffer[200], *pt, *ept, ch;
     SplineChar *sc1, *sc2;
     int off;
+    char name[44], second[44], lig[44];
+    PST *liga;
 
     if ( file==NULL )
 return( 0 );
@@ -105,6 +107,25 @@ return( 0 );
 	    *ept = ch;
 	    off = strtol(ept,NULL,10);
 	    KPInsert(sc1,sc2,off);
+	} else if ( sscanf( buffer, "C %*d ; WX %*d ; N %.40s ; B %*d %*d %*d %*d ; L %.40s %.40s",
+		name, second, lig)==3 ) {
+	    sc1 = SFFindName(sf,lig);
+	    if ( sc1!=NULL ) {
+		sprintf( buffer, "%s %s", name, second);
+		for ( liga=sc1->possub; liga!=NULL; liga=liga->next ) {
+		    if ( liga->type == pst_ligature && strcmp(liga->u.lig.components,buffer)==0 )
+		break;
+		}
+		if ( liga==NULL ) {
+		    liga = chunkalloc(sizeof(PST));
+		    liga->tag = CHR('l','i','g','a');
+		    liga->type = pst_ligature;
+		    liga->next = sc1->possub;
+		    sc1->possub = liga;
+		    liga->u.lig.lig = sc1;
+		    liga->u.lig.components = copy( buffer );
+		}
+	    }
 	}
     }
     fclose(file);
@@ -289,16 +310,16 @@ return( "FontSpecific" );
 
 static void AfmLigOut(FILE *afm, SplineChar *sc) {
     LigList *ll;
-    Ligature *lig;
+    PST *lig;
     char *pt, *eos;
 
     for ( ll=sc->ligofme; ll!=NULL; ll=ll->next ) {
 	lig = ll->lig;
-	pt = strchr(lig->components,' ');
-	eos = strrchr(lig->components,' ');
+	pt = strchr(lig->u.lig.components,' ');
+	eos = strrchr(lig->u.lig.components,' ');
 	if ( pt!=NULL && eos==pt )
 	    /* AFM files don't seem to support 3 (or more) letter combos */
-	    fprintf( afm, " L %s %s ;", pt+1, lig->lig->name );
+	    fprintf( afm, " L %s %s ;", pt+1, lig->u.lig.lig->name );
     }
 }
 
@@ -636,10 +657,10 @@ void SFLigatureCleanup(SplineFont *sf) {
 }
 
 void SFLigaturePrepare(SplineFont *sf) {
-    Ligature *lig;
+    PST *lig;
     LigList *ll;
-    int i,j,ch,sch;
-    char *pt, *semi, *ligstart, *dpt;
+    int i,j,ch;
+    char *pt, *ligstart, *dpt;
     SplineChar *sc;
     struct splinecharlist *head, *last;
 
@@ -650,13 +671,9 @@ void SFLigaturePrepare(SplineFont *sf) {
     /* Attach all the ligatures to the first character of their components */
     /* Figure out what the components are, and if they all exist */
     /* we're only interested in the lig if all components are worth outputting */
-    for ( i=0 ; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->lig!=NULL ) {
-	lig = sf->chars[i]->lig;
-	ligstart = lig->components;
-	while ( *ligstart!='\0' ) {
-	    semi = strchr(ligstart,';');
-	    if ( semi==NULL ) semi = ligstart+strlen(ligstart);
-	    sch = *semi; *semi = '\0';
+    for ( i=0 ; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->possub!=NULL ) {
+	for ( lig = sf->chars[i]->possub; lig!=NULL; lig=lig->next ) if ( lig->type==pst_ligature ) {
+	    ligstart = lig->u.lig.components;
 	    last = head = NULL; sc = NULL;
 	    for ( pt = ligstart; *pt!='\0'; ) {
 		char *start = pt;
@@ -710,10 +727,6 @@ void SFLigaturePrepare(SplineFont *sf) {
 		    head = last;
 		}
 	    }
-	    *semi = sch;
-	    if ( sch=='\0' )
-	break;
-	    for ( ligstart = semi+1; isspace(*ligstart); ++ligstart );
 	}
     }
 }

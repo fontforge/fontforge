@@ -864,19 +864,12 @@ static char str_Elipse[] = "Эллипс";
 static char str_FilledElipse[] = "Заполненный эллипс";
     /* Get Info ... */
 static char str_Multiple[] = "Multiple"; /*new*/
-/* "There is already a character with this Unicode encoding,\n(named %.10s at local encoding %d)\nIs that what you want?" */
-static char str_Alreadycharpre[] = "There is already a character with this Unicode encoding,\012(named "; /*new*/
-static char str_Alreadycharmid[] = " at local encoding "; /*new*/
-static char str_Alreadycharpost[] = ")\012Is that what you want?"; /*new*/
+static char str_AlreadyCharUnicode[] = "There is already a character with this Unicode encoding,\012(named %1$.40hs, at local encoding %2$d)\012Is that what you want?"; /*new*/
 static char str_Alreadycharnamed[] = "There is already a character with this name,\012do you want to swap names?"; /*new*/
-/* There is already a ligature made from these components,\n(named %.10s at local encoding %d)\nIs that what you want? */
-static char str_Alreadyligpre[] = "There is already a ligature made from these components,\012(named "; /*new*/
-static char str_Alreadyligmid[] = " at local encoding "; /*new*/
-static char str_Alreadyligpost[] = ")\012Is that what you want?"; /*new*/
+static char str_AlreadyLigature[] = "There is already a ligature made from these components,\012(named %1$.40hs at local encoding %2$d)\012Is that what you want?"; /*new*/
 static char str_Badligature[] = "A ligature may not be made up of itself"; /*new*/
 /* "The component %.20s is not in this font,\nIs that what you want?" */
-static char str_Missingcomponantpre[] = "The componant "; /*new*/
-static char str_Missingcomponantpost[] = " is not in this font,\012Is that what you want?"; /*new*/
+static char str_MissingComponent[] = "The componant %.40s is not in this font,\012Is that what you want?"; /*new*/
 static char str_Done[] = "Сделано";
 static unichar_t mnemonic_Done[] = 'D';
 static char str_Ligpop[] = "If this character is a ligature,\012then enter the names of the characters\012into which it decomposes"; /*new*/

@@ -386,6 +386,7 @@ static void ExtractHints(SplineChar *sc,void *hints,int docopy) {
 
 void UndoesFree(Undoes *undo) {
     Undoes *unext;
+    int i;
 
     while ( undo!=NULL ) {
 	unext = undo->next;
@@ -404,7 +405,8 @@ void UndoesFree(Undoes *undo) {
 		ImageListsFree(undo->u.state.u.images);
 	    if ( undo->undotype==ut_statename ) {
 		free( undo->u.state.charname );
-		free( undo->u.state.lig );
+		free( undo->u.state.comment );
+		PSTFree( undo->u.state.possub );
 	    }
 	    AnchorPointsFree(undo->u.state.anchor);
 	  break;
@@ -415,6 +417,11 @@ void UndoesFree(Undoes *undo) {
 	  case ut_composit:
 	    UndoesFree(undo->u.composit.state);
 	    UndoesFree(undo->u.composit.bitmaps);
+	  break;
+	  case ut_possub:
+	    for ( i=0; undo->u.possub.data[i]!=NULL; ++i )
+		free(undo->u.possub.data[i]);
+	    free(undo->u.possub.data);
 	  break;
 	  default:
 	    GDrawIError( "Unknown undo type in UndoesFree: %d", undo->undotype );
@@ -494,8 +501,8 @@ Undoes *SCPreserveState(SplineChar *sc,int dohints) {
 	    undo->u.state.unicodeenc = sc->unicodeenc;
 	    undo->u.state.script = sc->script;
 	    undo->u.state.charname = copy(sc->name);
-	    undo->u.state.lig = sc->lig? copy(sc->lig->components) : NULL;
-	    undo->u.state.ligtag = sc->lig ? sc->lig->tag : 0;
+	    undo->u.state.comment = u_copy(sc->comment);
+	    undo->u.state.possub = PSTCopy(sc->possub,sc);
 	}
     }
     undo->u.state.copied_from = sc->parent;
@@ -656,25 +663,21 @@ static void SCUndoAct(SplineChar *sc,int drawmode, Undoes *undo) {
 	    SCSynchronizeLBearing(sc,NULL,undo->u.state.lbearingchange);
 	}
 	if ( drawmode==dm_fore && undo->undotype==ut_statename ) {
-	    int temptag;
 	    char *temp = sc->name;
 	    int uni = sc->unicodeenc;
 	    uint32 script = sc->script;
+	    PST *possub = sc->possub;
+	    unichar_t *comment = sc->comment;
 	    sc->name = undo->u.state.charname;
 	    undo->u.state.charname = temp;
 	    sc->unicodeenc = undo->u.state.unicodeenc;
 	    undo->u.state.unicodeenc = uni;
 	    sc->script = undo->u.state.script;
 	    undo->u.state.script = script;
-	    temp = sc->lig==NULL ? NULL : sc->lig->components;
-	    temptag = sc->lig==NULL ? 0 : sc->lig->tag;
-	    free(sc->lig); sc->lig = NULL;
-	    if ( undo->u.state.lig!=NULL ) {
-		sc->lig = gcalloc(1,sizeof(Ligature)); sc->lig->lig = sc;
-		sc->lig->components = undo->u.state.lig;
-		sc->lig->tag = undo->u.state.ligtag;
-	    }
-	    undo->u.state.lig = temp; undo->u.state.ligtag = temptag;
+	    sc->possub = undo->u.state.possub;
+	    undo->u.state.possub = possub;
+	    sc->comment = undo->u.state.comment;
+	    undo->u.state.comment = comment;
 	}
       } break;
       default:
@@ -1048,6 +1051,17 @@ return( cur->u.composit.bitmaps!=NULL );
 return( cur->undotype==ut_bitmapsel || cur->undotype==ut_noop );
 }
 
+char **CopyGetPosSubData(enum possub_type *type) {
+    Undoes *cur = &copybuffer;
+
+    if ( cur->undotype==ut_multiple )
+	cur = cur->u.multiple.mult;
+    if ( cur->undotype!=ut_possub )
+return( NULL );
+    *type = cur->u.possub.pst;
+return( cur->u.possub.data );
+}
+
 int getAdobeEnc(char *name) {
     extern char *AdobeStandardEncoding[256];
     int i;
@@ -1139,9 +1153,8 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
 	    cur->u.state.unicodeenc = sc->unicodeenc;
 	    cur->u.state.script = sc->script;
 	    cur->u.state.charname = copymetadata ? copy(sc->name) : NULL;
-	    cur->u.state.lig = copymetadata && sc->lig? copy(sc->lig->components) : NULL;
-	    if ( sc->lig )
-		cur->u.state.ligtag = sc->lig->tag;
+	    cur->u.state.comment = copymetadata ? u_copy(sc->comment) : NULL;
+	    cur->u.state.possub = copymetadata ? PSTCopy(sc->possub,NULL) : NULL;
 	} else {		/* Or just make a reference */
 	    cur->undotype = ut_state;
 	    cur->u.state.refs = ref = chunkalloc(sizeof(RefChar));
@@ -1425,10 +1438,13 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 	if ( paster->undotype==ut_statehint || paster->undotype==ut_statename )
 	    if ( doclear )	/* Hints aren't meaningful unless we've cleared first */
 		ExtractHints(sc,paster->u.state.u.hints,true);
-	if ( paster->undotype==ut_statename )
+	if ( paster->undotype==ut_statename ) {
 	    SCSetMetaData(sc,paster->u.state.charname,
 		    paster->u.state.unicodeenc==0xffff?-1:paster->u.state.unicodeenc,
-		    paster->u.state.lig,paster->u.state.ligtag);
+		    paster->u.state.comment);
+	    PSTFree(sc->possub);
+	    sc->possub = paster->u.state.possub;
+	}
 	if ( paster->u.state.refs!=NULL ) {
 	    RefChar *new, *refs;
 	    SplineChar *rsc;
@@ -1456,6 +1472,9 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 	    }
 	}
 	SCCharChangedUpdate(sc);
+      break;
+      case ut_possub:
+	SCAppendPosSub(sc,paster->u.possub.pst,paster->u.possub.data);
       break;
       case ut_width:
 	SCPreserveWidth(sc);
@@ -1505,7 +1524,7 @@ return;
     switch ( paster->undotype ) {
       case ut_noop:
       break;
-      case ut_state: case ut_statehint:
+      case ut_state: case ut_statehint: case ut_statename:
 	if ( cv->drawmode==dm_fore && cv->sc->splines==NULL && cv->sc->refs==NULL ) {
 	    SCSynchronizeWidth(cv->sc,paster->u.state.width,cv->sc->width,NULL);
 	    cv->sc->vwidth = paster->u.state.vwidth;
@@ -1579,6 +1598,17 @@ return;
 		}
 	    }
 	}
+	if ( paster->undotype==ut_statename ) {
+	    SplineChar *sc = cv->sc;
+	    SCSetMetaData(sc,paster->u.state.charname,
+		    paster->u.state.unicodeenc==0xffff?-1:paster->u.state.unicodeenc,
+		    paster->u.state.comment);
+	    PSTFree(sc->possub);
+	    sc->possub = paster->u.state.possub;
+	}
+      break;
+      case ut_possub:
+	SCAppendPosSub(cv->sc,paster->u.possub.pst,paster->u.possub.data);
       break;
       case ut_width:
 	SCSynchronizeWidth(cv->sc,paster->u.width,cv->sc->width,NULL);
@@ -1985,7 +2015,7 @@ return;
 	  case ut_noop:
 	  break;
 	  case ut_state: case ut_width: case ut_vwidth:
-	  case ut_lbearing: case ut_rbearing:
+	  case ut_lbearing: case ut_rbearing: case ut_possub:
 	  case ut_statehint: case ut_statename:
 	    if ( !fv->sf->hasvmetrics && cur->undotype==ut_vwidth) {
 		GWidgetErrorR(_STR_NoVerticalMetrics,_STR_FontNoVerticalMetrics);
@@ -2135,3 +2165,11 @@ void PasteRemoveAnchorClass(SplineFont *sf,AnchorClass *dying) {
     _PasteAnchorClassManip(sf,NULL,dying);
 }
 
+void PosSubCopy(enum possub_type type, char **data) {
+
+    CopyBufferFreeGrab();
+
+    copybuffer.undotype = ut_possub;
+    copybuffer.u.possub.pst = type;
+    copybuffer.u.possub.data = data;
+}

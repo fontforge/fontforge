@@ -480,15 +480,17 @@ static const unichar_t *SFAlternateFromLigature(SplineFont *sf, int base,SplineC
     unichar_t *spt, *send = space+sizeof(space)/sizeof(space[0])-1;
     char *ligstart, *semi, *pt, sch, ch, *dpt;
     int j;
+    PST *pst;
 
     if ( sc==NULL && base>=0 ) {
 	int pos = SFFindExistingChar(sf,base,NULL);
 	if ( pos==-1 ) sc = NULL; else sc = sf->chars[pos];
     }
-    if ( sc==NULL || sc->lig==NULL )
+    for ( pst=sc->possub; pst!=NULL && pst->type!=pst_ligature; pst = pst->next );
+    if ( sc==NULL || pst==NULL )
 return( NULL );
 
-    ligstart=sc->lig->components;
+    ligstart=pst->u.lig.components;
     semi = strchr(ligstart,';');
     if ( semi==NULL ) semi = ligstart+strlen(ligstart);
     sch = *semi; *semi = '\0';

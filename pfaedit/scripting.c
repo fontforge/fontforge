@@ -1287,9 +1287,9 @@ return( SFMakeChar(sf,found));
 
 static void bSetCharName(Context *c) {
     SplineChar *sc;
-    char *ligature, *name, *end;
+    char *name, *end;
     int uni;
-    uint32 ltag;
+    unichar_t *comment;
 
     if ( c->a.argc!=2 && c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
@@ -1298,29 +1298,30 @@ static void bSetCharName(Context *c) {
     sc = GetOneSelChar(c);
     uni = sc->unicodeenc;
     name = c->a.vals[1].u.sval;
-    ligature = sc->lig==NULL?NULL : copy(sc->lig->components);
-    ltag = sc->lig==NULL ? CHR('l','i','g','a') : sc->lig->tag;
+    comment = u_copy(sc->comment);
 
-    if ( c->a.argc!=3 || c->a.vals[2].u.ival ) {
+    if ( c->a.argc!=3 || c->a.vals[2].u.ival==-1 ) {
 	if ( name[0]=='u' && name[1]=='n' && name[2]=='i' && strlen(name)==7 &&
 		(uni = strtol(name+3,&end,16), *end=='\0'))
+	    /* Good */;
+	else if ( name[0]=='u' && strlen(name)<=7 &&
+		(uni = strtol(name+1,&end,16), *end=='\0'))
 	    /* Good */;
 	else {
 	    for ( uni=psunicodenames_cnt-1; uni>=0; --uni )
 		if ( psunicodenames[uni]!=NULL && strcmp(name,psunicodenames[uni])==0 )
 	    break;
 	}
-	free( ligature );
-	ligature = LigDefaultStr(uni,name);
     }
-    SCSetMetaData(sc,name,uni,ligature,ltag);
+    SCSetMetaData(sc,name,uni,comment);
+    SCLigDefault(sc);
 }
 
 static void bSetUnicodeValue(Context *c) {
     SplineChar *sc;
-    char *ligature, *name;
+    char *name;
     int uni;
-    uint32 ltag;
+    unichar_t *comment;
 
     if ( c->a.argc!=2 && c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
@@ -1330,8 +1331,7 @@ static void bSetUnicodeValue(Context *c) {
     sc = GetOneSelChar(c);
     uni = c->a.vals[1].u.ival;
     name = copy(sc->name);
-    ligature = sc->lig==NULL?NULL : copy(sc->lig->components);
-    ltag = sc->lig==NULL ? CHR('l','i','g','a') : sc->lig->tag;
+    comment = u_copy(sc->comment);
 
     if ( c->a.argc!=3 || c->a.vals[2].u.ival ) {
 	free(name);
@@ -1346,10 +1346,9 @@ static void bSetUnicodeValue(Context *c) {
 	    name = copy(buf);
 	} else
 	    name = copy(".notdef");
-	free( ligature );
-	ligature = LigDefaultStr(uni,name);
     }
-    SCSetMetaData(sc,name,uni,ligature,ltag);
+    SCSetMetaData(sc,name,uni,comment);
+    SCLigDefault(sc);
 }
 
 static void bSetCharColor(Context *c) {

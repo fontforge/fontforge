@@ -516,6 +516,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
     RefChar *ref;
     ImageList *img;
     KernPair *kp;
+    PST *liga;
 
     fprintf(sfd, "StartChar: %s\n", sc->name );
     fprintf(sfd, "Encoding: %d %d\n", sc->enc, sc->unicodeenc);
@@ -574,14 +575,23 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
 		fprintf( sfd, " %d %d", kp->sc->enc, kp->off );
 	fprintf(sfd, "\n" );
     }
-    if ( sc->lig!=NULL ) {
-	if ( sc->lig->tag==0 )
-	    fprintf( sfd, "Ligature: %s\n", sc->lig->components );
-	else
-	    fprintf( sfd, "Ligature: '%c%c%c%c' %s\n",
-		    sc->lig->tag>>24, (sc->lig->tag>>16)&0xff,
-		    (sc->lig->tag>>8)&0xff, sc->lig->tag&0xff,
-		    sc->lig->components );
+    for ( liga=sc->possub; liga!=NULL; liga=liga->next ) {
+	if ( liga->tag==0 || liga->type==pst_null )
+	    /* Skip it */;
+	else {
+	    static char *keywords[] = { "Null:", "Position:", "Substitution:",
+		    "AlternateSubs:", "MultipleSubs:", "Ligature:", NULL };
+	    fprintf( sfd, "%s: '%c%c%c%c' ",
+		    keywords[liga->type],
+		    liga->tag>>24, (liga->tag>>16)&0xff,
+		    (liga->tag>>8)&0xff, liga->tag&0xff );
+	    if ( liga->type==pst_position )
+		fprintf( sfd, "dx=%d dy=%d dh=%d dv=%d\n",
+			liga->u.pos.xoff, liga->u.pos.yoff,
+			liga->u.pos.h_adv_off, liga->u.pos.v_adv_off);
+	    else
+		fprintf( sfd, "%s\n", liga->u.lig.components );
+	}
     }
     if ( sc->comment!=NULL ) {
 	fprintf( sfd, "Comment: " );
@@ -1458,12 +1468,29 @@ static RefChar *SFDGetRef(FILE *sfd) {
 return( rf );
 }
 
+/* I used to create multiple ligatures by putting ";" between them */
+/* that is the component string for "ffi" was "ff i ; f f i" */
+/* Now I want to have seperate ligature structures for each */
+static PST *LigaCreateFromOldStyleMultiple(PST *liga) {
+    char *pt;
+    PST *new;
+    while ( (pt = strrchr(liga->u.lig.components,';'))!=NULL ) {
+	new = chunkalloc(sizeof( PST ));
+	*new = *liga;
+	new->u.lig.components = copy(pt+1);
+	liga->next = new;
+	*pt = '\0';
+    }
+return( liga );
+}
+
 static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf) {
     SplineChar *sc;
     char tok[200], ch;
     RefChar *lastr=NULL, *ref;
     ImageList *lasti=NULL, *img;
     AnchorPoint *lastap = NULL;
+    int isliga, ispos, issubs, ismult;
 
     if ( getname(sfd,tok)!=1 )
 return( NULL );
@@ -1564,21 +1591,41 @@ return( NULL );
 		    last->next = kp;
 		last = kp;
 	    }
-	} else if ( strmatch(tok,"Ligature:")==0 ) {
-	    sc->lig = gcalloc(1,sizeof(Ligature));
-	    sc->lig->tag = CHR('l','i','g','a');
+	} else if ( (ispos = (strmatch(tok,"Position:")==0)) ||
+		(isliga = (strmatch(tok,"Ligature:")==0)) ||
+		( issubs = (strmatch(tok,"Substitution:")==0)) ||
+		( ismult = (strmatch(tok,"MultipleSubs:")==0)) ||
+		strmatch(tok,"AlternateSubs:")==0 ) {
+	    PST *liga = chunkalloc(sizeof(PST));
+	    liga->next = sc->possub;
+	    sc->possub = liga;
+	    liga->type = ispos ? pst_position :
+			 isliga ? pst_ligature :
+			 issubs ? pst_substitution :
+			 ismult ? pst_multiple :
+			 pst_alternate;
+	    liga->tag = CHR('l','i','g','a');
 	    while ( (ch=getc(sfd))==' ' || ch=='\t' );
 	    if ( ch=='\'' ) {
-		sc->lig->tag = getc(sfd)<<24;
-		sc->lig->tag |= getc(sfd)<<16;
-		sc->lig->tag |= getc(sfd)<<8;
-		sc->lig->tag |= getc(sfd);
+		liga->tag = getc(sfd)<<24;
+		liga->tag |= getc(sfd)<<16;
+		liga->tag |= getc(sfd)<<8;
+		liga->tag |= getc(sfd);
 		getc(sfd);
 	    } else
 		ungetc(ch,sfd);
-	    geteol(sfd,tok);
-	    sc->lig->components = copy(tok);
-	    sc->lig->lig = sc;
+	    if ( ispos )
+		fscanf( sfd, " dx=%hd dy=%hd dh=%hd dv=%hd\n",
+			&liga->u.pos.xoff, &liga->u.pos.yoff,
+			&liga->u.pos.h_adv_off, &liga->u.pos.v_adv_off);
+	    else {
+		geteol(sfd,tok);
+		liga->u.lig.components = copy(tok);	/* it's in the same place for all formats */
+		if ( isliga ) {
+		    liga->u.lig.lig = sc;
+		    sc->possub = LigaCreateFromOldStyleMultiple(liga);
+		}
+	    }
 	} else if ( strmatch(tok,"Colour:")==0 ) {
 	    int temp;
 	    gethex(sfd,&temp);

@@ -48,6 +48,27 @@ static RefChar *RefCharsCopy(RefChar *ref) {
 return( rhead );
 }
 
+
+PST *PSTCopy(PST *base,SplineChar *sc) {
+    PST *head=NULL, *last=NULL, *cur;
+
+    for ( ; base!=NULL; base = base->next ) {
+	cur = chunkalloc(sizeof(PST));
+	*cur = *base;
+	if ( cur->type==pst_ligature ) {
+	    cur->u.lig.components = copy(cur->u.lig.components);
+	    cur->u.lig.lig = sc;
+	} else if ( cur->type==pst_substitution || cur->type==pst_multiple || cur->type==pst_alternate )
+	    cur->u.subs.variant = copy(cur->u.subs.variant);
+	if ( head==NULL )
+	    head = cur;
+	else
+	    last->next = cur;
+	last = cur;
+    }
+return( head );
+}
+
 SplineChar *SplineCharCopy(SplineChar *sc) {
     SplineChar *nsc = SplineCharCreate();
 
@@ -68,12 +89,7 @@ SplineChar *SplineCharCopy(SplineChar *sc) {
     nsc->backimages = NULL;
     nsc->undoes[0] = nsc->undoes[1] = nsc->redoes[0] = nsc->redoes[1] = NULL;
     nsc->kerns = NULL;
-    if ( nsc->lig!=NULL ) {
-	nsc->lig = galloc(sizeof(Ligature));
-	nsc->lig->lig = nsc;
-	nsc->lig->components = copy(sc->lig->components);
-	nsc->lig->tag = sc->lig->tag;
-    }
+    nsc->possub = PSTCopy(nsc->possub,nsc);
 return(nsc);
 }
 

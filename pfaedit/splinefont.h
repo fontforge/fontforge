@@ -140,10 +140,30 @@ typedef struct anchorpoint {
     struct anchorpoint *next;
 } AnchorPoint;
 
+enum possub_type { pst_null, pst_position, pst_substitution, pst_alternate,
+	pst_multiple, pst_ligature, pst_max};
+typedef struct generic_pst {
+    enum possub_type type;
+    uint32 tag;
+    struct generic_pst *next;
+    union {
+	struct { int16 xoff, yoff, h_adv_off, v_adv_off; } pos;
+	struct { char *variant; } subs;
+	struct { char *components; } mult, alt;
+	struct { char *components; struct splinechar *lig; } lig;
+    } u;
+} PST;
+
+typedef struct liglist {
+    PST *lig;
+    struct splinecharlist *components;	/* Other than the first */
+    struct liglist *next;
+} LigList;
+
 typedef struct undoes {
     struct undoes *next;
     enum undotype { ut_none=0, ut_state, ut_tstate, ut_statehint, ut_statename,
-	    ut_width, ut_vwidth, ut_lbearing, ut_rbearing,
+	    ut_width, ut_vwidth, ut_lbearing, ut_rbearing, ut_possub,
 	    ut_bitmap, ut_bitmapsel, ut_composit, ut_multiple, ut_noop } undotype;
     unsigned int was_modified: 1;
     union {
@@ -153,8 +173,8 @@ typedef struct undoes {
 	    int unicodeenc;			/* only for ut_statename */
 	    uint32 script;			/* only for ut_statename */
 	    char *charname;			/* only for ut_statename */
-	    char *lig;				/* only for ut_statename */
-	    uint32 ligtag;			/* only for ut_statename */
+	    unichar_t *comment;			/* only for ut_statename */
+	    PST *possub;			/* only for ut_statename */
 	    struct splinepointlist *splines;
 	    struct refchar *refs;
 	    struct minimumdistance *md;
@@ -184,7 +204,11 @@ typedef struct undoes {
 	struct {
 	    struct undoes *mult; /* copy contains several sub copies (composits, or states or widths or...) */
 	} multiple;
-    uint8 *bitmap;
+	struct {
+	    enum possub_type pst;
+	    char **data;		/* First 4 bytes is tag, then space then data */
+	} possub;
+	uint8 *bitmap;
     } u;
 } Undoes;
 
@@ -394,18 +418,6 @@ typedef struct imagelist {
     unsigned int selected: 1;
 } ImageList;
 
-typedef struct ligature {
-    struct splinechar *lig;
-    char *components;
-    uint32 tag;
-} Ligature;
-
-typedef struct liglist {
-    Ligature *lig;
-    struct splinecharlist *components;	/* Other than the first */
-    struct liglist *next;
-} LigList;
-
 typedef struct minimumdistance {
     /* If either point is NULL it will be assumed to mean either the origin */
     /*  or the width point (depending on which is closer). This allows user */
@@ -432,6 +444,7 @@ typedef struct splinechar {
     MinimumDistance *md;
     RefChar *refs;
     struct charview *views;
+    struct charinfo *charinfo;
     struct splinefont *parent;
     unsigned int changed: 1;
     unsigned int changedsincelasthinted: 1;
@@ -460,7 +473,8 @@ typedef struct splinechar {
     Undoes *redoes[2];
     KernPair *kerns;
     /* KernPair *vkerns;*/
-    Ligature *lig;		/* If we are a ligature then this tells us what */
+    PST *possub;		/* If we are a ligature then this tells us what */
+				/*  It may also contain a bunch of other stuff now */
     LigList *ligofme;		/* If this is the first character of a ligature then this gives us the list of possible ones */
 				/*  this field must be regenerated before the font is saved */
     unichar_t *comment;
@@ -680,10 +694,12 @@ extern AnchorClass *AnchorClassMkMkMatch(SplineChar *sc1,SplineChar *sc2,
 	AnchorPoint **_ap1,AnchorPoint **_ap2 );
 extern AnchorClass *AnchorClassCursMatch(SplineChar *sc1,SplineChar *sc2,
 	AnchorPoint **_ap1,AnchorPoint **_ap2 );
-extern void LigatureFree(Ligature *lig);
+extern void PSTFree(PST *lig);
+extern void PSTsFree(PST *lig);
 extern StemInfo *StemInfoCopy(StemInfo *h);
 extern DStemInfo *DStemInfoCopy(DStemInfo *h);
 extern MinimumDistance *MinimumDistanceCopy(MinimumDistance *h);
+extern PST *PSTCopy(PST *base,SplineChar *sc);
 extern SplineChar *SplineCharCopy(SplineChar *sc);
 extern BDFChar *BDFCharCopy(BDFChar *bc);
 extern void BitmapsCopy(SplineFont *to, SplineFont *from, int to_index, int from_index );
@@ -830,7 +846,7 @@ extern int PfmSplineFont(FILE *pfm, SplineFont *sf,int type0);
 extern char *EncodingName(int map);
 extern void SFLigaturePrepare(SplineFont *sf);
 extern void SFLigatureCleanup(SplineFont *sf);
-extern int SCSetMetaData(SplineChar *sc,char *name,int unienc,char *lig,uint32 ltag);
+extern int SCSetMetaData(SplineChar *sc,char *name,int unienc,const unichar_t *comment);
 
 extern int SFDWrite(char *filename,SplineFont *sf);
 extern int SFDWriteBak(SplineFont *sf);
@@ -852,10 +868,9 @@ extern SplineFont *SFReadIkarus(char *fontname);
 extern const char *UnicodeRange(int unienc);
 extern SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i);
 extern SplineChar *SFMakeChar(SplineFont *sf,int i);
-extern char *LigDefaultStr(int uni, char *name);
 extern char *AdobeLigatureFormat(char *name);
 extern uint32 LigTagFromUnicode(int uni);
-extern Ligature *SCLigDefault(SplineChar *sc);
+extern void SCLigDefault(SplineChar *sc);
 extern BDFChar *BDFMakeChar(BDFFont *bdf,int i);
 
 extern void SCUndoSetLBearingChange(SplineChar *sc,int lb);
