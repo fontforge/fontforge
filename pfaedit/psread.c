@@ -96,6 +96,7 @@ enum pstoks { pt_eof=-1, pt_moveto, pt_rmoveto, pt_curveto, pt_rcurveto,
     pt_setcachedevice, pt_setcharwidth,
     pt_translate, pt_scale, pt_rotate, pt_concat, pt_end, pt_exec,
     pt_add, pt_sub, pt_mul, pt_div, pt_idiv, pt_mod, pt_neg,
+    pt_abs, pt_round, pt_ceiling, pt_floor, pt_truncate, pt_max, pt_min,
     pt_ne, pt_eq, pt_gt, pt_ge, pt_lt, pt_le, pt_and, pt_or, pt_xor, pt_not,
     pt_true, pt_false,
     pt_if, pt_ifelse, pt_def, pt_bind, pt_load,
@@ -119,6 +120,7 @@ char *toknames[] = { "moveto", "rmoveto", "curveto", "rcurveto",
 	"setcachedevice", "setcharwidth",
 	"translate", "scale", "rotate", "concat", "end", "exec",
 	"add", "sub", "mul", "div", "idiv", "mod", "neg",
+	"abs", "round", "ceiling", "floor", "truncate", "max", "min",
 	"ne", "eq", "gt", "ge", "lt", "le", "and", "or", "xor", "not",
 	"true", "false", 
 	"if", "ifelse", "def", "bind", "load",
@@ -131,10 +133,13 @@ char *toknames[] = { "moveto", "rmoveto", "curveto", "rcurveto",
 	"gsave", "grestore", "save", "restore", "currentmatrix", "setmatrix",
 	"setmiterlimit",
 
+	"opencurly", "closecurly", "openarray", "closearray", "string",
+	"number", "unknown", "namelit",
+
 	NULL };
 
 /* length (of string)
-    abs ceiling floor round truncate sqrt sin ...
+    sqrt sin ...
     fill eofill stroke
     gsave grestore
 */
@@ -532,6 +537,7 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
     int linecap=lc_butt, linejoin=lj_miter; real linewidth=1;
     Entity *ent;
     char *oldloc;
+    int warned = 0;
 
     oldloc = setlocale(LC_NUMERIC,"C");
 
@@ -547,6 +553,10 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
     current.x = current.y = 0;
 
     while ( (tok = nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf)))!=pt_eof ) {
+	if ( tok == pt_unknown && !warned ) {
+	    fprintf( stderr, "Warning: Unable to parse token %s, some features may be lost\n", tokbuf );
+	    warned = true;
+	}
 	if ( ccnt>0 ) {
 	    if ( tok==pt_closecurly )
 		--ccnt;
@@ -669,45 +679,95 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 	    }
 	  break;
 	  case pt_add:
-	    if ( sp>=2 ) {
+	    if ( sp>=2 && stack[sp-1].type==ps_num && stack[sp-2].type==ps_num ) {
 		stack[sp-2].u.val += stack[sp-1].u.val;
 		--sp;
 	    }
 	  break;
 	  case pt_sub:
-	    if ( sp>=2 ) {
+	    if ( sp>=2 && stack[sp-1].type==ps_num && stack[sp-2].type==ps_num ) {
 		stack[sp-2].u.val -= stack[sp-1].u.val;
 		--sp;
 	    }
 	  break;
 	  case pt_mul:
-	    if ( sp>=2 ) {
+	    if ( sp>=2 && stack[sp-1].type==ps_num && stack[sp-2].type==ps_num ) {
 		stack[sp-2].u.val *= stack[sp-1].u.val;
 		--sp;
 	    }
 	  break;
 	  case pt_div:
-	    if ( sp>=2 ) {
+	    if ( sp>=2 && stack[sp-1].type==ps_num && stack[sp-2].type==ps_num ) {
 		stack[sp-2].u.val /= stack[sp-1].u.val;
 		--sp;
 	    }
 	  break;
 	  case pt_idiv:
-	    if ( sp>=2 ) {
+	    if ( sp>=2 && stack[sp-1].type==ps_num && stack[sp-2].type==ps_num ) {
 		stack[sp-2].u.val = ((int) stack[sp-2].u.val) / ((int) stack[sp-1].u.val);
 		--sp;
 	    }
 	  break;
 	  case pt_mod:
-	    if ( sp>=2 ) {
+	    if ( sp>=2 && stack[sp-1].type==ps_num && stack[sp-2].type==ps_num ) {
 		stack[sp-2].u.val = ((int) stack[sp-2].u.val) % ((int) stack[sp-1].u.val);
+		--sp;
+	    }
+	  break;
+	  case pt_max:
+	    if ( sp>=2 && stack[sp-1].type==ps_num && stack[sp-2].type==ps_num ) {
+		if ( stack[sp-2].u.val < stack[sp-1].u.val )
+		    stack[sp-2].u.val = stack[sp-1].u.val;
+		--sp;
+	    }
+	  break;
+	  case pt_min:
+	    if ( sp>=2 && stack[sp-1].type==ps_num && stack[sp-2].type==ps_num ) {
+		if ( stack[sp-2].u.val > stack[sp-1].u.val )
+		    stack[sp-2].u.val = stack[sp-1].u.val;
 		--sp;
 	    }
 	  break;
 	  case pt_neg:
 	    if ( sp>=1 ) {
-		if ( stack[sp-1].type == ps_bool )
+		if ( stack[sp-1].type == ps_num )
 		    stack[sp-1].u.val = -stack[sp-1].u.val;
+	    }
+	  break;
+	  case pt_abs:
+	    if ( sp>=1 ) {
+		if ( stack[sp-1].type == ps_num )
+		    if ( stack[sp-1].u.val < 0 )
+			stack[sp-1].u.val = -stack[sp-1].u.val;
+	    }
+	  break;
+	  case pt_round:
+	    if ( sp>=1 ) {
+		if ( stack[sp-1].type == ps_num )
+		    stack[sp-1].u.val = rint(stack[sp-1].u.val);
+		    /* rint isn't quite right, round will take 6.5 to 7, 5.5 to 6, etc. while rint() will take both to 6 */
+	    }
+	  break;
+	  case pt_floor:
+	    if ( sp>=1 ) {
+		if ( stack[sp-1].type == ps_num )
+		    stack[sp-1].u.val = floor(stack[sp-1].u.val);
+	    }
+	  break;
+	  case pt_ceiling:
+	    if ( sp>=1 ) {
+		if ( stack[sp-1].type == ps_num )
+		    stack[sp-1].u.val = ceil(stack[sp-1].u.val);
+	    }
+	  break;
+	  case pt_truncate:
+	    if ( sp>=1 ) {
+		if ( stack[sp-1].type == ps_num ) {
+		    if ( stack[sp-1].u.val<0 )
+			stack[sp-1].u.val = ceil(stack[sp-1].u.val);
+		    else
+			stack[sp-1].u.val = floor(stack[sp-1].u.val);
+		}
 	    }
 	  break;
 	  case pt_ne: case pt_eq:
