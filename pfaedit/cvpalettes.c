@@ -37,16 +37,24 @@ static int palettesmoved=0;
 
 static GWindow CreatePalette(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs) {
     GWindow gw;
-    GPoint pt;
+    GPoint pt, base;
     GRect newpos;
     GWindow root;
-    GRect screensize;
+    GRect ownerpos, screensize;
 
     pt.x = pos->x; pt.y = pos->y;
     root = GDrawGetRoot(NULL);
+    GDrawGetSize(w,&ownerpos);
     GDrawGetSize(root,&screensize);
     GDrawTranslateCoordinates(w,root,&pt);
-    if ( pt.x<0 ) pt.x=0;
+    base.x = base.y = 0;
+    GDrawTranslateCoordinates(w,root,&base);
+    if ( pt.x<0 ) {
+	if ( base.x+ownerpos.width+20+pos->width+20 > screensize.width )
+	    pt.x=0;
+	else
+	    pt.x = base.x+ownerpos.width+20;
+    }
     if ( pt.y<0 ) pt.y=0;
     if ( pt.x+pos->width>screensize.width )
 	pt.x = screensize.width-pos->width;

@@ -1886,7 +1886,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		if ( v!=34 && v!=36 )
 		    dy4 = stack[base++];
 		dx5 = stack[base++];
-		if ( v!=34 && v!=36 )
+		if ( v!=34 )
 		    dy5 = stack[base++];
 		else
 		    dy5 = -dy2;

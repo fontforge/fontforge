@@ -68,12 +68,22 @@ FontView *fv_list=NULL;
 
 void FVToggleCharChanged(FontView *fv,SplineChar *sc) {
     int i, j;
+    int pos;
 
     if ( fv==NULL ) fv = sc->parent->fv;
     if ( fv->sf!=sc->parent )		/* Can happen in CID fonts if char's parent is not currently active */
 return;
-    i = sc->enc / fv->colcnt;
-    j = sc->enc - i*fv->colcnt;
+    pos = sc->enc;
+    if ( fv->mapping!=NULL ) {
+	for ( i=0; i<fv->mapcnt; ++i )
+	    if ( fv->mapping[i]==pos )
+	break;
+	if ( i==fv->mapcnt )		/* Not currently displayed */
+return;
+	pos = i;
+    }
+    i = pos / fv->colcnt;
+    j = pos - i*fv->colcnt;
     i -= fv->rowoff;
     if ( i>=0 && i<fv->rowcnt ) {
 	GRect r;
@@ -2474,8 +2484,13 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	GDrawDrawLine(pixmap,i*fv->cbw,0,i*fv->cbw,fv->height,0);
     for ( i=event->u.expose.rect.y/fv->cbh; i<=fv->rowcnt &&
 	    (event->u.expose.rect.y+event->u.expose.rect.height+fv->cbh-1)/fv->cbh; ++i ) for ( j=0; j<fv->colcnt; ++j ) {
-	if ( (i+fv->rowoff)*fv->colcnt+j < fv->sf->charcnt ) {
-	    int index = (i+fv->rowoff)*fv->colcnt+j;
+	int index = (i+fv->rowoff)*fv->colcnt+j;
+	if ( fv->mapping!=NULL ) {
+	    if ( index>=fv->mapcnt ) index = fv->sf->charcnt;
+	    else
+		index = fv->mapping[index];
+	}
+	if ( index < fv->sf->charcnt ) {
 	    SplineChar *sc = fv->sf->chars[index];
 	    unichar_t buf[2];
 	    Color fg = 0;
