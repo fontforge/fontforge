@@ -3975,7 +3975,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
     /*  appropriate as they are for 2byte encodings, but Apple uses them */
     /*  for one byte ones too */
     memset(table,'\0',sizeof(table));
-    for ( i=0; i<sf->charcnt ; ++i ) {
+    for ( i=0; i<256 ; ++i ) {
 	sc = SCDuplicate(SFFindExistingCharMac(sf,unicode_from_mac[i]));
 	if ( sc!=NULL && sc->ttf_glyph!=-1 )
 	    table[i] = sc->ttf_glyph;
