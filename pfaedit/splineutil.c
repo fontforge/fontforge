@@ -1064,7 +1064,7 @@ SplinePointList *SplinePointListCopySelected(SplinePointList *base) {
 		head = cur;
 	    else
 		last->next = cur;
-	    last = cur;
+	    for ( last = cur; last->next ; last = last->next );
 	}
     }
 return( head );
