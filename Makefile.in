@@ -40,9 +40,12 @@ install: $(sharedir)
 	cp pfaedit/pfaedit $(bindir)
 	cp pfaedit/sfddiff $(bindir)
 	cp pfaedit/pfaedit.*.ui $(sharedir)
+#The next line will fail for most installs. If you have downloaded the cidmaps
+# this will install them. If you haven't it won't. You only need the cidmaps
+# if you are editing CID keyed files (and even then you can live without them
+	-cp $(srcdir)/cidmap/*.cidmap $(sharedir) >/dev/null 2>&1
 	cp $(srcdir)/pfaedit/pfaedit.1 $(mandir)/man1
 	cp $(srcdir)/pfaedit/sfddiff.1 $(mandir)/man1
-#	cp $(srcdir)/*.cidmap $(sharedir)
 
 uninstall:
 	-rm $(bindir)/pfaedit
@@ -50,7 +53,7 @@ uninstall:
 	-rm $(sharedir)/pfaedit.*.ui
 	-rm $(mandir)/man1/pfaedit.1
 	-rm $(mandir)/man1/sfddiff.1
-#	-rm $(sharedir)/*.cidmap
+	-rm $(sharedir)/*.cidmap
 
 $(sharedir):
 	mkdir -p $(sharedir)
