@@ -1409,7 +1409,8 @@ return( strtol(val,NULL,10));
 
     if ( sf->encoding_name>=em_first2byte && sf->encoding_name<em_unicode )
 return( true );
-    if ( sf->encoding_name==em_unicode && 0x3000<sf->charcnt &&
+    if ( (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4) &&
+	    sf->charcnt>0x3000 &&
 	    SCWorthOutputting(sf->chars[0x3000]) &&
 	    !SCWorthOutputting(sf->chars['A']) )
 return( true );

@@ -55,7 +55,7 @@ enum charset { em_none = -1,
     em_jis201,
     em_win, em_mac, em_symbol, em_zapfding, em_user, em_adobestandard=em_user,
     em_jis208, em_jis212, em_ksc5601, em_gb2312, em_big5, em_johab /* Korean*/,
-    em_unicode, em_max, em_first2byte=em_jis208, em_last94x94=em_gb2312 };
+    em_unicode, em_unicode4, em_max, em_first2byte=em_jis208, em_last94x94=em_gb2312 };
 
 extern int /*enum charset*/ local_encoding;
 extern struct namemap { char *name; int map; } encodingnames[];

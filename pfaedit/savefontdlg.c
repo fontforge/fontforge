@@ -286,7 +286,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype) {
     break;
     }
     if ( extensions[i]==NULL ) i = ff_pfb;
-    if ( i==ff_ptype3 && sf->encoding_name>=em_first2byte && sf->encoding_name<=em_unicode )
+    if ( i==ff_ptype3 && sf->encoding_name>=em_first2byte && sf->encoding_name<=em_unicode4 )
 	i = ff_ptype0;
     else if ( i==ff_ttfdfont && strmatch(filename-strlen(".otf.dfont"),".otf.dfont")==0 )
 	i = ff_otfdfont;

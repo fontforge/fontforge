@@ -242,7 +242,7 @@ return( "ISO8859-13" );
 return( "ISO8859-14" );
       case em_iso8859_15:
 return( "ISO8859-15" );
-      case em_unicode:
+      case em_unicode: case em_unicode4:
 return( "ISO10646-1" );
       case em_mac:
 return( "MacRoman" );
@@ -397,7 +397,7 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype) {
     int i, j, cnt, max;
     int caph, xh, ash, dsh;
     int type0 = ( formattype==ff_ptype0 );
-    int encmax=!type0?256:sf->encoding_name==em_unicode?65536:94*94;
+    int encmax=!type0?256:sf->encoding_name<em_big5?65536:94*94;
     int anyzapf;
     int iscid = ( formattype==ff_cid || formattype==ff_otfcid );
     time_t now;
@@ -500,7 +500,7 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype) {
 	fprintf( afm, "Descender %d\n", dsh*1000/em );
 
     anyzapf = false;
-    if ( type0 && sf->encoding_name==em_unicode ) {
+    if ( type0 && (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4)) {
 	for ( i=0x2700; i<sf->charcnt && i<encmax && i<=0x27ff; ++i )
 	    if ( SCWorthOutputting(sf->chars[i]) ) 
 		anyzapf = true;

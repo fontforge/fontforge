@@ -1245,6 +1245,9 @@ SplineFont *SplineFontNew(void) {
     else if ( default_encoding==em_unicode ) {
 	table = NULL;
 	enclen = 65536;
+    } else if ( default_encoding==em_unicode4 ) {
+	table = NULL;
+	enclen = unicode4_size;
     } else if ( default_encoding==em_jis208 ) {
 	table = unicode_from_jis208;
 	tlen = 94*94;

@@ -755,7 +755,7 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 	dumpf(dumpchar,data,"%%%%Creator: %s\n", pt);
     endpwent();
 /* End comment */
-    if ( format==ff_ptype0 && sf->encoding_name==em_unicode )
+    if ( format==ff_ptype0 && (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4))
 	dumpf(dumpchar,data,"%%%%DocumentNeededResources: font ZapfDingbats\n" );
     dumpf(dumpchar,data, "%%%%DocumentSuppliedResources: font %s\n", sf->fontname );
     if ( sf->copyright!=NULL ) {
@@ -980,7 +980,7 @@ static void dumptype0stuff(FILE *out,SplineFont *sf) {
 
     dumpreencodeproc(out);
     notdefname = dumpnotdefenc(out,sf);
-    if ( sf->encoding_name == em_unicode ) {
+    if ( sf->encoding_name == em_unicode || sf->encoding_name == em_unicode4 ) {
 	for ( i=1; i<256; ++i ) {
 	    if ( somecharsused(sf,i<<8, (i<<8)+0xff)) {
 		fprintf( out, "/%sBase /%s%d [\n", sf->fontname, sf->fontname, i );
@@ -1048,7 +1048,7 @@ static void dumptype0stuff(FILE *out,SplineFont *sf) {
 	fprintf( out, " %d\n", i );
     fprintf( out, "] readonly def\n" );
     fprintf( out, "/FDepVector [\n" );
-    if ( sf->encoding_name == em_unicode ) {
+    if ( sf->encoding_name == em_unicode || sf->encoding_name == em_unicode4 ) {
 	fprintf( out, " /%sBase findfont\n", sf->fontname );
 	for ( i=1; i<256; ++i )
 	    if ( somecharsused(sf,i<<8, (i<<8)+0xff) || i==0x27 )

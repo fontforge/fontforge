@@ -353,7 +353,8 @@ static char str_Win[] = "Windows Latin (\042ANSI\042)";
 static char str_Adobestd[] = "Adobe Standard";
 static char str_Symbol[] = "Symbol";
 static unichar_t str_Texbase[] = { 0x3a4, 0x3b5, 0x3a7, ' Base',  '\0' };
-static char str_Unicode[] = "ISO 10646-1 (Unicode)";
+static char str_Unicode[] = "ISO 10646-1 (Unicode, BMP)";
+static char str_Unicode4[] = "ISO 10646-1 (Unicode, Full)";
 static char str_Jis208[] = "JIS 208 (Kanji)";
 static char str_Jis212[] = "JIS 212 (Kanji)";
 static char str_SJIS[] = "SJIS (Kanji)";
@@ -788,6 +789,8 @@ static char mnemonic_SetFromValue = 'u';
 static char *str_Ligature = "Ligature:";
 static char mnemonic_Ligature = 'L';
 static char *str_TransformedBy = "Transformed by:";
+static char *str_NotUnicodeBMP = "Warning: This value is outside of the Unicode BMP.\nIs that really what you want?";
+static char *str_PossiblyTooBig = "Value possibly out of range";
     /* Import */
 static char str_Duppixelsize[] = "Duplicate pixelsize";
 /* "The font database already contains a bitmap\nfont with this pixelsize (%d)\nDo you want to overwrite it?" */

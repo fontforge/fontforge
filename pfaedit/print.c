@@ -174,7 +174,7 @@ static void dump_prologue(PI *pi) {
     else
 	fprintf( pi->out, "%%%%Title: Character Displays from %s\n", pi->sf->fullname );
     fprintf( pi->out, "%%%%DocumentNeededResources: font Times-Bold\n" );
-    if ( pi->sf->encoding_name == em_unicode ) 
+    if ( pi->sf->encoding_name == em_unicode || pi->sf->encoding_name==em_unicode4 ) 
 	fprintf( pi->out, "%%%%DocumentNeededResources: font ZapfDingbats\n" );
     if ( pi->iscid && pi->fontfile!=NULL )
 	fprintf( pi->out, "%%%%DocumentNeededResources: ProcSet (CIDInit)\n" );
@@ -570,7 +570,7 @@ static SplineChar *findchar(PI *pi, int ch) {
 
     if ( ch<0 || ch>=65536 )
 return(NULL);
-    if ( sf->encoding_name==em_unicode ) {
+    if ( sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4) {
 	if ( SCWorthOutputting(sf->chars[ch]))
 return( sf->chars[ch]);
     } else if ( !pi->iscid ) {
@@ -2079,7 +2079,7 @@ static int AllChars( SplineFont *sf, unichar_t *str) {
     /*  area anyway so this is safe */
     /* We now do use characters in the 0xff00 so we can't do that any more */
 
-    if ( sf->encoding_name==em_unicode ) {
+    if ( sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4 ) {
 	while ( (ch = *str)!='\0' ) {
 	    /*if ( (ch&0xff00)==0xff00 ) ch &= 0xff;*/
 	    if ( !SCWorthOutputting(sf->chars[ch]))
@@ -2180,7 +2180,8 @@ static unichar_t *BuildDef( SplineFont *sf) {
 		    ret[len] = '\n';
 		++len;
 	    }
-	    if ( sf->encoding_name==em_unicode || sf->encoding_name==em_koi8_r || sf->encoding_name==em_iso8859_5 ) {
+	    if ( sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4 ||
+		    sf->encoding_name==em_koi8_r || sf->encoding_name==em_iso8859_5 ) {
 		if ( ret )
 		    ret[len] = '\n';
 		++len;
@@ -2229,7 +2230,8 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
 	pi.sf = mv->fv->sf;
     if ( pi.sf->cidmaster!=NULL ) pi.sf = pi.sf->cidmaster;
     pi.twobyte = pi.sf->encoding_name>=e_first2byte;
-    pi.iscjk = pi.sf->encoding_name>=e_first2byte && pi.sf->encoding_name!=em_unicode;
+    pi.iscjk = pi.sf->encoding_name>=e_first2byte &&
+	    pi.sf->encoding_name!=em_unicode && pi.sf->encoding_name!=em_unicode4;
     pi.iscid = pi.sf->subfontcnt!=0;
     pi.pointsize = pdefs[di].pointsize;
     if ( pi.pointsize==0 )

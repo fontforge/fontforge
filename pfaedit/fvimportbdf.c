@@ -145,7 +145,8 @@ static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
 	    if ( strcmp(name,sf->chars[i]->name)==0 )
 	break;
 	}
-	if ( i==-1 && (sf->encoding_name==em_unicode || sf->encoding_name==em_iso8859_1)) {
+	if ( i==-1 && (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4 ||
+		sf->encoding_name==em_iso8859_1)) {
 	    i = finduniname(name);
 	    if ( i==-1 || i>sf->charcnt || sf->chars[i]!=NULL )
 		i = -1;

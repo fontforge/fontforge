@@ -5829,6 +5829,9 @@ return( true );
 static int figureencoding(SplineFont *sf,int i) {
     switch ( sf->encoding_name ) {
       default:				/* Unicode */
+	  if ( sf->chars[i]->unicodeenc>=65536 )	/* No support for 4 byte encodings yet */
+return( -1 );
+
 return( sf->chars[i]->unicodeenc );
       case em_big5:			/* Taiwan, Hong Kong */
       case em_johab:			/* Korea */
@@ -5995,7 +5998,8 @@ return;		/* All Done */
 	putshort(at->cmap,0);		/* version */
 	putshort(at->cmap,enccnt);	/* num tables */
 
-	if ( sf->encoding_name==em_unicode && enccnt==3 ) {
+	if ( (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4 ) &&
+		enccnt==3 ) {
 	    /* big mac table, just a copy of the ms table */
 	    putshort(at->cmap,0);	/* mac unicode platform */
 	    putshort(at->cmap,3);	/* Unicode 2.0 */
@@ -6004,7 +6008,7 @@ return;		/* All Done */
 	putshort(at->cmap,1);		/* mac platform */
 	putshort(at->cmap,0);		/* plat specific enc, script=roman */
 	putlong(at->cmap,2*sizeof(uint16)+enccnt*(2*sizeof(uint16)+sizeof(uint32))+(8+4*segcnt+rpos)*sizeof(int16));	/* offset from tab start to sub tab start */
-	if ( sf->encoding_name!=em_unicode && enccnt==3 ) {
+	if ( sf->encoding_name!=em_unicode && sf->encoding_name!=em_unicode4 && enccnt==3 ) {
 	    /* big mac table, just a copy of the ms table */
 	    putshort(at->cmap,1);	/* mac platform */
 	    putshort(at->cmap,

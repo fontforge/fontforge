@@ -774,8 +774,10 @@ static void bReencode(Context *c) {
 	{ em_johab, "johab" },
 	{ em_jis208, "jis208" },
 	{ em_unicode, "unicode" },
+	{ em_unicode4, "unicode4" },
 	{ em_unicode, "iso10646" },
 	{ em_unicode, "iso10646-1" },
+	{ em_unicode4, "ucs4" },
 	{ 0, NULL}};
     if ( c->a.argc!=2 )
 	error( c, "Wrong number of arguments to Reencode");

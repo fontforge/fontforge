@@ -102,22 +102,26 @@ return( true );
 return( false );
 }
 
-static int ParseUValue(GWindow gw, int cid, int minusoneok) {
+static int ParseUValue(GWindow gw, int cid, int minusoneok, SplineFont *sf) {
     const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(gw,cid));
     unichar_t *end;
     int val;
 
     if (( *ret=='U' || *ret=='u' ) && ret[1]=='+' )
-	val = u_strtol(ret+2,&end,16);
+	val = u_strtoul(ret+2,&end,16);
     else if ( *ret=='#' )
-	val = u_strtol(ret+1,&end,16);
+	val = u_strtoul(ret+1,&end,16);
     else
-	val = u_strtol(ret,&end,16);
+	val = u_strtoul(ret,&end,16);
     if ( val==-1 && minusoneok )
 return( -1 );
-    if ( *end || val<0 || val>65535 ) {
+    if ( *end || val<0 || val>0x7fffffff ) {
 	ProtestR( _STR_UnicodeValue );
 return( -2 );
+    } else if ( val>65535 && sf->encoding_name!=em_unicode4 ) {
+	static int buts[] = { _STR_Yes, _STR_No, 0 };
+	if ( GWidgetAskR(_STR_PossiblyTooBig,buts,1,1,_STR_NotUnicodeBMP)==1 )
+return(-2);
     }
 return( val );
 }
@@ -245,12 +249,12 @@ return( false );
     free(sc->name);
     sc->name = copy(name);
     sf->changed = true;
-    if ( sf->encoding_name==em_unicode && unienc==sc->enc &&
-	    unienc>=0xe000 && unienc<=0xf8ff )
+    if ( (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4) &&
+	    unienc==sc->enc && unienc>=0xe000 && unienc<=0xf8ff )
 	/* Ok to name things in the private use area */;
     else if ( (sf->encoding_name<e_first2byte && sc->enc<256) ||
-	    (sf->encoding_name==em_unicode && sc->enc<65536 ) ||
-	    (sf->encoding_name>=e_first2byte && sf->encoding_name!=em_unicode && sc->enc<94*96 ) ||
+	    (sf->encoding_name>=em_big5 && sf->encoding_name<=em_unicode && sc->enc<65536 ) ||
+	    (sf->encoding_name>=e_first2byte && sf->encoding_name<em_unicode && sc->enc<94*96 ) ||
 	    sc->unicodeenc!=-1 )
 	sf->encoding_name = em_none;
     LigSet(sc,lig);
@@ -263,7 +267,7 @@ static int _CI_OK(GIData *ci) {
     int ret;
     char *lig, *name;
 
-    val = ParseUValue(ci->gw,CID_UValue,true);
+    val = ParseUValue(ci->gw,CID_UValue,true,ci->sc->parent);
     if ( val==-2 )
 return( false );
     lig = cu_copy( _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_Ligature)) );
@@ -350,7 +354,7 @@ static int CI_SValue(GGadget *g, GEvent *e) {	/* Set From Value */
 	unichar_t ubuf[2];
 	int val;
 
-	val = ParseUValue(ci->gw,CID_UValue,false);
+	val = ParseUValue(ci->gw,CID_UValue,false,ci->sc->parent);
 	if ( val<0 )
 return( true );
 

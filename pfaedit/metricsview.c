@@ -681,7 +681,7 @@ static void MVSetPos(MetricsView *mv,int i,SplineChar *sc) {
 static SplineChar *SCFromUnicode(SplineFont *sf, unichar_t ch) {
     int i;
 
-    if ( sf->encoding_name==em_unicode ) {
+    if ( sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4 ) {
 	if ( ch>=sf->charcnt )
 return( NULL );
 	else
@@ -697,7 +697,7 @@ return( NULL );
 static int SFContainsChar(SplineFont *sf, unichar_t ch) {
     int i;
 
-    if ( sf->encoding_name==em_unicode )
+    if ( sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4 )
 return( ch<sf->charcnt );
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
 	if ( sf->chars[i]->unicodeenc == ch )

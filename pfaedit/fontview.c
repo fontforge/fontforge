@@ -2660,6 +2660,8 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 		    i,namebuf,sizeof(namebuf));
     } else if ( sf->encoding_name==em_unicode || sf->encoding_name==em_iso8859_1 )
 	dummy->unicodeenc = i<65536 ? i : -1;
+    else if ( sf->encoding_name==em_unicode4 )
+	dummy->unicodeenc = i<=0x7fffffff ? i : -1;
     else if ( sf->encoding_name==em_adobestandard )
 	dummy->unicodeenc = i>=256?-1:unicode_from_adobestd[i];
     else if ( sf->encoding_name==em_none )
@@ -2894,7 +2896,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		sc = SCBuildDummy(&dummy,fv->sf,index);
 	    if ( sc->unicodeenc==0xad )
 		buf[0] = '-';
-	    else if ( sc->unicodeenc!=-1 )
+	    else if ( sc->unicodeenc!=-1 && sc->unicodeenc<65536 )
 		buf[0] = sc->unicodeenc;
 #if HANYANG
 	    else if ( sc->compositionunit ) {
@@ -3033,7 +3035,8 @@ return;
     sprintf( buffer+strlen(buffer), "  %.80s", sc->name );
 
     uc_strcpy(ubuffer,buffer);
-    if ( sc->unicodeenc!=-1 && UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff]!=NULL ) {
+    if ( sc->unicodeenc!=-1 && sc->unicodeenc<65536 &&
+	    UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff]!=NULL ) {
 	uc_strcat(ubuffer, "  ");
 	u_strncat(ubuffer, UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff], 80);
     }
@@ -3177,7 +3180,8 @@ static void FVChar(FontView *fv,GEvent *event) {
     } else if ( event->u.chr.chars[0]<=' ' || event->u.chr.chars[1]!='\0' ) {
 	/* Do Nothing */;
     } else {
-	if ( fv->sf->encoding_name==em_unicode || fv->sf->encoding_name==em_iso8859_1 ) {
+	if ( fv->sf->encoding_name==em_unicode || fv->sf->encoding_name==em_unicode4 ||
+		fv->sf->encoding_name==em_iso8859_1 ) {
 	    if ( event->u.chr.chars[0]<fv->sf->charcnt ) {
 		i = event->u.chr.chars[0];
 		SFMakeChar(fv->sf,i);
@@ -3194,8 +3198,8 @@ static void FVChar(FontView *fv,GEvent *event) {
 }
 
 void SCPreparePopup(GWindow gw,SplineChar *sc) {
-    static unichar_t space[300];
-    char cspace[80];
+    static unichar_t space[310];
+    char cspace[100];
     int upos;
     static char *chosung[] = { "G", "GG", "N", "D", "DD", "L", "M", "B", "BB", "S", "SS", "", "J", "JJ", "C", "K", "T", "P", "H", NULL };
     static char *jungsung[] = { "A", "AE", "YA", "YAE", "EO", "E", "YEO", "YE", "O", "WA", "WAE", "OE", "YO", "U", "WEO", "WE", "WI", "YU", "EU", "YI", "I", NULL };
@@ -3224,7 +3228,7 @@ void SCPreparePopup(GWindow gw,SplineChar *sc) {
 	GGadgetPreparePopup(gw,space);
 return;
     }
-    if ( UnicodeCharacterNames[upos>>8][upos&0xff]!=NULL ) {
+    if ( upos<65536 && UnicodeCharacterNames[upos>>8][upos&0xff]!=NULL ) {
 	sprintf( cspace, "%d U+%04x \"%.25s\" ", sc->enc, upos, sc->name==NULL?"":sc->name );
 	uc_strcpy(space,cspace);
 	u_strcat(space,UnicodeCharacterNames[upos>>8][upos&0xff]);
@@ -3236,7 +3240,7 @@ return;
 		jongsung[(upos-0xAC00)%28] );
 	uc_strcpy(space,cspace);
     } else {
-	sprintf( cspace, "%d U+%04x \"%.25s\" %.20s", sc->enc, upos, sc->name==NULL?"":sc->name,
+	sprintf( cspace, "%d U+%04x \"%.25s\" %.30s", sc->enc, upos, sc->name==NULL?"":sc->name,
 	    upos=='\0'				? "Null":
 	    upos=='\t'				? "Tab":
 	    upos=='\r'				? "Return":
@@ -3251,6 +3255,9 @@ return;
 	    upos>=0xDB80 && upos<=0xDBFF	? "Private Use High Surrogate":
 	    upos>=0xDC00 && upos<=0xDFFF	? "Low Surrogate":
 	    upos>=0xE000 && upos<=0xF8FF	? "Private Use":
+	    upos>=0x10000 && upos<=0x1ffff	? "Supplemental Multilingual" :
+	    upos>=0x20000 && upos<=0x2ffff	? "Supplemental Ideographic" :
+	    upos>=0xe0000 && upos<=0xeffff	? "Supplemental Special-purpose" :
 					      "Unencoded Unicode" );
 	uc_strcpy(space,cspace);
     }

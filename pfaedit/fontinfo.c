@@ -71,6 +71,7 @@ GTextInfo encodingtypes[] = {
     { (unichar_t *) _STR_Texbase, NULL, 0, 0, (void *) em_base, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
     { (unichar_t *) _STR_Unicode, NULL, 0, 0, (void *) em_unicode, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Unicode4, NULL, 0, 0, (void *) em_unicode4, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
     { (unichar_t *) _STR_Jis208, NULL, 0, 0, (void *) em_jis208, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Jis212, NULL, 0, 0, (void *) em_jis212, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -1160,6 +1161,8 @@ return( false );
 	}
     } else if ( new_map==em_unicode || new_map==em_big5 || new_map==em_johab )
 	enc_cnt = 65536;
+    else if ( new_map==em_unicode4 )
+	enc_cnt = unicode4_size;
     else if ( new_map>=em_first2byte )
 	enc_cnt = 94*96;
 
@@ -1224,6 +1227,9 @@ return( false );
 	else if ( new_map==em_unicode ) {
 	    table = NULL;
 	    tlen = 65536;
+	} else if ( new_map==em_unicode4 ) {
+	    table = NULL;
+	    tlen = unicode4_size;
 	} else if ( new_map==em_jis208 ) {
 	    table = unicode_from_jis208;
 	    tlen = 94*94;
@@ -1334,10 +1340,6 @@ int SFAddDelChars(SplineFont *sf, int nchars) {
     if ( nchars==sf->charcnt )
 return( false );
     if ( nchars>sf->charcnt ) {
-	int is_unicode = 1;
-	for ( i=0; i<sf->charcnt && is_unicode; ++i )
-	    if ( sf->chars[i]==NULL || sf->chars[i]->unicodeenc!=i )
-		is_unicode = false;
 	sf->chars = grealloc(sf->chars,nchars*sizeof(SplineChar *));
 	for ( i=sf->charcnt; i<nchars; ++i )
 	    sf->chars[i] = NULL;

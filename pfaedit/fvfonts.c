@@ -113,7 +113,8 @@ void BitmapsCopy(SplineFont *to, SplineFont *from, int to_index, int from_index 
 static int _SFFindChar(SplineFont *sf, int unienc, char *name ) {
     int index;
 
-    if ( sf->encoding_name==em_unicode && unienc!=-1 ) {
+    if ( (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4) &&
+	    unienc!=-1 ) {
 	index = unienc;
 	if ( index>=sf->charcnt || sf->chars[index]==NULL )
 	    index = -1;
@@ -137,7 +138,8 @@ return( index );
 int SFFindChar(SplineFont *sf, int unienc, char *name ) {
     int index;
 
-    if ( sf->encoding_name==em_unicode && unienc!=-1 ) {
+    if ( (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4) &&
+	    unienc!=-1 ) {
 	index = unienc;
 	if ( index>=sf->charcnt )
 	    index = -1;
@@ -338,7 +340,8 @@ static int EncodingHasChar(SplineFont *sf, int unienc ) {
     struct charmap2 *cm;
     Encoding *item;
 
-    if ( sf->encoding_name==em_unicode && unienc!=-1 )
+    if ( (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4) &&
+	    unienc!=-1 )
 return( unienc );
     else {
 	for ( index = sf->charcnt-1; index>=0; --index ) if ( sf->chars[index]!=NULL ) {
@@ -392,7 +395,9 @@ return( -1 );
 static int SFEncodingCnt(SplineFont *sf) {
     Encoding *item=NULL;
 
-    if ( sf->encoding_name == em_unicode || sf->encoding_name == em_big5 )
+    if ( sf->encoding_name == em_unicode4 )
+return( unicode4_size );
+    if ( sf->encoding_name == em_unicode || sf->encoding_name == em_big5 || sf->encoding_name == em_johab )
 return( 65536 );
     else if ( sf->encoding_name == em_none )
 return( sf->charcnt );

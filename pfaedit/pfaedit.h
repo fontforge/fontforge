@@ -44,6 +44,8 @@ typedef struct enc {
     unsigned int builtin: 1;
 } Encoding;
 
+static const int unicode4_size = 15*65536;
+
 enum { em_base = 0x100 };	/* an addition to enum charset, used as the base value for the encoding list above */
 
 extern void GDrawIError(const char *fmt,...);

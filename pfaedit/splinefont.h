@@ -114,7 +114,7 @@ typedef struct undoes {
 	struct {
 	    int16 width, vwidth;
 	    int16 lbearingchange;
-	    uint16 unicodeenc;			/* only for ut_statename */
+	    int unicodeenc;			/* only for ut_statename */
 	    char *charname;			/* only for ut_statename */
 	    char *lig;				/* only for ut_statename */
 	    struct splinepointlist *splines;

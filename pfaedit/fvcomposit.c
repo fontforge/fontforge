@@ -377,7 +377,8 @@ static unichar_t unicode_greekalts[256][3] = {
 static int haschar(SplineFont *sf,int ch) {
     int i;
 
-    if ( sf->encoding_name==em_unicode || (ch<0x100 && sf->encoding_name==em_iso8859_1))
+    if ( sf->encoding_name==em_unicode ||  sf->encoding_name==em_unicode4 ||
+	    (ch<0x100 && sf->encoding_name==em_iso8859_1))
 return( ch<sf->charcnt && sf->chars[ch]!=NULL &&
 	(sf->chars[ch]->splines!=NULL || sf->chars[ch]->refs!=NULL || sf->chars[ch]->widthset) );
 
@@ -390,7 +391,8 @@ return( i!=-1 && (sf->chars[i]->splines!=NULL || sf->chars[i]->refs!=NULL || (ch
 static SplineChar *findchar(SplineFont *sf,int ch) {
     int i;
 
-    if ( sf->encoding_name==em_unicode || (ch<0x100 && sf->encoding_name==em_iso8859_1))
+    if ( sf->encoding_name==em_unicode ||  sf->encoding_name==em_unicode4 ||
+	    (ch<0x100 && sf->encoding_name==em_iso8859_1))
 return( sf->chars[ch] );
 
     for ( i=sf->charcnt-1; i>=0; --i ) if ( sf->chars[i]!=NULL )
@@ -442,8 +444,6 @@ const unichar_t *SFGetAlternate(SplineFont *sf, int base) {
     static unichar_t greekalts[5];
     const unichar_t *upt, *pt; unichar_t *gpt;
 
-    if ( base==-1 )
-return( NULL );
     if ( base>=0xac00 && base<=0xd7a3 ) { /* Hangul syllables */
 	greekalts[0] = (base-0xac00)/(21*28) + 0x1100;
 	greekalts[1] = ((base-0xac00)/28)%21 + 0x1161;
@@ -454,7 +454,7 @@ return( NULL );
 	greekalts[3] = 0;
 return( greekalts );
     }
-    if ( unicode_alternates[base>>8]==NULL ||
+    if ( base==-1 || base>=65536 || unicode_alternates[base>>8]==NULL ||
 	    (upt = unicode_alternates[base>>8][base&0xff])==NULL )
 return( SFAlternateFromLigature(sf,base));
 

@@ -280,7 +280,7 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding) {
 	fprintf( file, "CHARSET_REGISTRY \"FontSpecific\"\n" );
     else if ( font->encoding_name<=em_iso8859_15 )
 	fprintf( file, "CHARSET_REGISTRY \"ISO8859\"\n" );
-    else if ( font->encoding_name==em_unicode )
+    else if ( font->encoding_name==em_unicode || font->encoding_name==em_unicode4 )
 	fprintf( file, "CHARSET_REGISTRY \"ISO10646\"\n" );
     else
 	fprintf( file, "CHARSET_REGISTRY \"%s\"\n", encoding );
@@ -317,13 +317,13 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding) {
 	fprintf( file, "ISO8859-4 " );
     if ( (codepages[0]&0x10000) && font->encoding_name!=em_iso8859_11 )
 	fprintf( file, "ISO8859-11 " );
-    if ( (codepages[0]&0x20000) && font->encoding_name==em_unicode )
+    if ( (codepages[0]&0x20000) && (font->encoding_name==em_unicode || font->encoding_name==em_unicode4 ))
 	fprintf( file, "JISX208 " );
-    if ( (codepages[0]&0x40000) && font->encoding_name==em_unicode )
+    if ( (codepages[0]&0x40000) && (font->encoding_name==em_unicode || font->encoding_name==em_unicode4 ) )
 	fprintf( file, "GB2312 " );
-    if ( (codepages[0]&0x80000) && font->encoding_name==em_unicode )
+    if ( (codepages[0]&0x80000) && (font->encoding_name==em_unicode || font->encoding_name==em_unicode4 ))
 	fprintf( file, "KSC5601 " );
-    if ( (codepages[0]&0x100000) && font->encoding_name==em_unicode )
+    if ( (codepages[0]&0x100000) && (font->encoding_name==em_unicode || font->encoding_name==em_unicode4 ))
 	fprintf( file, "BIG5 " );
     if ( (codepages[0]&0x80000000) && font->encoding_name!=em_symbol )
 	fprintf( file, "Symbol " );
@@ -380,7 +380,7 @@ int BDFFontDump(char *filename,BDFFont *font, char *encodingname) {
 		enc = (i/96+'!')*256 + i%96+' ';
 	    else if ( is94x94 )
 		enc = -1;
-	    else if ( i>=256 && font->sf->encoding_name!=em_unicode )
+	    else if ( i>=256 && font->sf->encoding_name!=em_unicode && font->sf->encoding_name!=em_unicode4 )
 		enc = -1;
 	    BDFDumpChar(file,font,font->chars[i],enc);
 	}

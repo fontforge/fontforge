@@ -1073,7 +1073,8 @@ static unichar_t *CVMakeTitles(CharView *cv,unichar_t *ubuf) {
     u_strcat(ubuf,GStringGetResource(_STR_Bvfrom,NULL));
     uc_strncat(ubuf,sc->parent->fontname,90);
     title = u_copy(ubuf);
-    if ( sc->unicodeenc!=-1 && UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff]!=NULL ) {
+    if ( sc->unicodeenc!=-1 && sc->unicodeenc<65536 &&
+	    UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff]!=NULL ) {
 	uc_strcat(ubuf," ");
 	u_strcat(ubuf, UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff]);
     }
@@ -2753,15 +2754,16 @@ return(-1);
 	    if ( *end!='\0' )
 		temp = -1;
 	} else {
-	    for ( temp=65535; temp>=0 ; --temp )
-		if ( UnicodeCharacterNames[temp>>8][temp&0xff]!=NULL )
-		    if ( u_strmatch(ret,UnicodeCharacterNames[temp>>8][temp&0xff])== 0 )
+	    for ( temp=psunicodenames_cnt-1; temp>=0 ; --temp )
+		if ( psunicodenames[temp]!=NULL )
+		    if ( uc_strmatch(ret,psunicodenames[temp])== 0 )
 	    break;
-	    if ( temp<0 )
-		for ( temp=psunicodenames_cnt-1; temp>=0 ; --temp )
-		    if ( psunicodenames[temp]!=NULL )
-			if ( uc_strmatch(ret,psunicodenames[temp])== 0 )
+	    if ( temp<0 ) {
+		for ( temp=65535; temp>=0 ; --temp )
+		    if ( UnicodeCharacterNames[temp>>8][temp&0xff]!=NULL )
+			if ( u_strmatch(ret,UnicodeCharacterNames[temp>>8][temp&0xff])== 0 )
 		break;
+	    }
 	}
 	if ( temp!=-1 ) {
 	    for ( i=0; i<sf->charcnt; ++i )
@@ -2770,7 +2772,8 @@ return(-1);
 	    break;
 		}
 	    if ( pos==-1 && temp<sf->charcnt &&
-		    ( sf->encoding_name==em_unicode || *ret=='0'))
+		    ( sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4 ||
+			    *ret=='0'))
 		pos = temp;
 	}
     }
@@ -2782,7 +2785,7 @@ return(-1);
 	    /* kuten */
 	    if ( *end!='\0' )
 		pos = -1;
-	    else if ( sf->encoding_name==em_unicode ) {
+	    else if ( sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4 ) {
 		if ( pos>=0 && pos<256 && j>=0 && j<256 )
 		    pos = (pos<<8) |j;
 		else
