@@ -1047,13 +1047,13 @@ return(stems);
 return( stems );
 	}
 	hi = chunkalloc(sizeof(HintInstance));
-	hi->begin = begun;
-	hi->end = i;
+	hi->begin = begun-1;	/* My algorithem misses the end points */
+	hi->end = i+1;		/*  so add/subtract 1 to make up for that */
 	hi->next = new->where;
 	new->where = hi;
     } else {
-	if ( new->where->end < i )
-	    new->where->end = i;
+	if ( new->where->end <= i )
+	    new->where->end = i+1;	/* see comment above */
 	new->where->closed = false;
     }
 return( stems );

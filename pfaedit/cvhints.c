@@ -106,11 +106,13 @@ return( DiagCheck(sp1,sp2,sp1->next,sp2->next,sp3,sp4) ||
 #define CID_Add		1009
 #define CID_Overlap	1010
 #define CID_Count	1011
+#define CID_MovePoints	1012
 
 typedef struct reviewhintdata {
     unsigned int done: 1;
     unsigned int ishstem: 1;
     unsigned int oldmanual: 1;
+    unsigned int undocreated: 1;
     CharView *cv;
     GWindow gw;
     StemInfo *active;
@@ -188,6 +190,87 @@ static void RH_SetupHint(ReviewHintData *hd) {
     RH_SetNextPrev(hd);
 }
 
+static int OnHint(StemInfo *hint,real major,real minor) {
+    HintInstance *hi;
+
+    if ( true /*hint->hasconflicts*/ ) {
+	for ( hi=hint->where; hi!=NULL; hi=hi->next ) {
+	    if ( minor>=hi->begin && minor<=hi->end )
+	break;
+	}
+	if ( hi==NULL )
+return( 0 );
+	/* Ok, it's active */
+    }
+    if ( major==hint->start )
+return( 1 );
+    else if ( major==hint->start+hint->width )
+return( 2 );
+
+return( 0 );
+}
+
+static void RH_MovePoints(ReviewHintData *hd,StemInfo *active,int start,int width) {
+    SplineChar *sc = hd->cv->sc;
+    SplineSet *spl;
+    SplinePoint *sp;
+    int which;
+
+    if ( !hd->undocreated ) {
+	SCPreserveState(sc,false);
+	hd->undocreated = true;
+    }
+
+    for ( spl=sc->splines; spl!=NULL; spl=spl->next ) {
+	for ( sp = spl->first ; ; ) {
+	    if ( hd->ishstem ) {
+		switch ((which = OnHint(active,sp->me.y,sp->me.x)) ) {
+		  case 1:
+		    sp->nextcp.y += start-sp->me.y;
+		    sp->prevcp.y += start-sp->me.y;
+		    sp->me.y = start;
+		  break;
+		  case 2:
+		    sp->nextcp.y += start+width-sp->me.y;
+		    sp->prevcp.y += start+width-sp->me.y;
+		    sp->me.y = start+width;
+		  break;
+		  case 0:
+		    /* Not on hint */;
+		  break;
+		}
+	    } else {
+		switch ( (which = OnHint(active,sp->me.x,sp->me.y)) ) {
+		  case 1:
+		    sp->nextcp.x += start-sp->me.x;
+		    sp->prevcp.x += start-sp->me.x;
+		    sp->me.x = start;
+		  break;
+		  case 2:
+		    sp->nextcp.x += start+width-sp->me.x;
+		    sp->prevcp.x += start+width-sp->me.x;
+		    sp->me.x = start+width;
+		  break;
+		  case 0:
+		    /* Not on hint */;
+		  break;
+		}
+	    }
+	    if ( which ) {
+		if ( sp->prev )
+		    SplineRefigure(sp->prev);
+		if ( sp->next )
+		    SplineRefigure(sp->next);
+	    }
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp== spl->first )
+	break;
+	}
+    }
+}
+
 static int RH_TextChanged(GGadget *g, GEvent *e) {
     int wasconflict;
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
@@ -198,6 +281,11 @@ static int RH_TextChanged(GGadget *g, GEvent *e) {
 	    int val = GetIntR(hd->gw,cid,cid==CID_Base?_STR_Base:_STR_Size,&err);
 	    if ( err )
 return( true );
+	    if ( GGadgetIsChecked(GWidgetGetControl(GGadgetGetWindow(g),CID_MovePoints)) ) {
+		RH_MovePoints(hd,hd->active,
+			cid==CID_Base?val:hd->active->start,
+			cid==CID_Base?hd->active->width:val);
+	    }
 	    if ( cid==CID_Base )
 		hd->active->start = val;
 	    else
@@ -240,6 +328,8 @@ static void DoCancel(ReviewHintData *hd) {
     hd->cv->sc->hconflicts = StemListAnyConflicts(hd->cv->sc->hstem);
     hd->cv->sc->vconflicts = StemListAnyConflicts(hd->cv->sc->vstem);
     hd->cv->sc->manualhints = hd->oldmanual;
+    if ( hd->undocreated )
+	SCDoUndo(hd->cv->sc,dm_fore);
     SCOutOfDateBackground(hd->cv->sc);
     SCUpdateAll(hd->cv->sc);
     hd->done = true;
@@ -336,8 +426,8 @@ void CVReviewHints(CharView *cv) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[16];
-    GTextInfo label[16];
+    GGadgetCreateData gcd[17];
+    GTextInfo label[17];
     static ReviewHintData hd;
 
     hd.done = false;
@@ -354,7 +444,7 @@ void CVReviewHints(CharView *cv) {
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,170));
-	pos.height = GDrawPointsToPixels(NULL,164);
+	pos.height = GDrawPointsToPixels(NULL,178);
 	hd.gw = gw = GDrawCreateTopWindow(NULL,&pos,rh_e_h,&hd,&wattrs);
 
 	memset(&label,0,sizeof(label));
@@ -363,11 +453,11 @@ void CVReviewHints(CharView *cv) {
 	label[0].text = (unichar_t *) _STR_Base;
 	label[0].text_in_resource = true;
 	gcd[0].gd.label = &label[0];
-	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 17+5+3; 
+	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 14+17+5+3; 
 	gcd[0].gd.flags = gg_enabled|gg_visible;
 	gcd[0].creator = GLabelCreate;
 
-	gcd[1].gd.pos.x = 37; gcd[1].gd.pos.y = 17+5;  gcd[1].gd.pos.width = 40;
+	gcd[1].gd.pos.x = 37; gcd[1].gd.pos.y = gcd[0].gd.pos.y-3;  gcd[1].gd.pos.width = 40;
 	gcd[1].gd.flags = gg_enabled|gg_visible;
 	gcd[1].gd.cid = CID_Base;
 	gcd[1].gd.handle_controlevent = RH_TextChanged;
@@ -376,17 +466,17 @@ void CVReviewHints(CharView *cv) {
 	label[2].text = (unichar_t *) _STR_Size;
 	label[2].text_in_resource = true;
 	gcd[2].gd.label = &label[2];
-	gcd[2].gd.pos.x = 90; gcd[2].gd.pos.y = 17+5+3; 
+	gcd[2].gd.pos.x = 90; gcd[2].gd.pos.y = gcd[0].gd.pos.y; 
 	gcd[2].gd.flags = gg_enabled|gg_visible;
 	gcd[2].creator = GLabelCreate;
 
-	gcd[3].gd.pos.x = 120; gcd[3].gd.pos.y = 17+5;  gcd[3].gd.pos.width = 40;
+	gcd[3].gd.pos.x = 120; gcd[3].gd.pos.y = gcd[1].gd.pos.y;  gcd[3].gd.pos.width = 40;
 	gcd[3].gd.flags = gg_enabled|gg_visible;
 	gcd[3].gd.cid = CID_Width;
 	gcd[3].gd.handle_controlevent = RH_TextChanged;
 	gcd[3].creator = GTextFieldCreate;
 
-	gcd[4].gd.pos.x = 20-3; gcd[4].gd.pos.y = 17+37+14+60;
+	gcd[4].gd.pos.x = 20-3; gcd[4].gd.pos.y = 14+17+37+14+60;
 	gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
 	gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_default;
 	label[4].text = (unichar_t *) _STR_OK;
@@ -396,7 +486,7 @@ void CVReviewHints(CharView *cv) {
 	gcd[4].gd.handle_controlevent = RH_OK;
 	gcd[4].creator = GButtonCreate;
 
-	gcd[5].gd.pos.x = -20; gcd[5].gd.pos.y = 17+37+3+14+60;
+	gcd[5].gd.pos.x = -20; gcd[5].gd.pos.y = gcd[4].gd.pos.y+3;
 	gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
 	gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
 	label[5].text = (unichar_t *) _STR_Cancel;
@@ -424,12 +514,12 @@ void CVReviewHints(CharView *cv) {
 	gcd[7].gd.handle_controlevent = RH_HVStem;
 	gcd[7].creator = GRadioCreate;
 
-	gcd[8].gd.pos.x = 5; gcd[8].gd.pos.y = 17+31+14+30;
+	gcd[8].gd.pos.x = 5; gcd[8].gd.pos.y = 14+17+31+14+30;
 	gcd[8].gd.pos.width = 170-10;
 	gcd[8].gd.flags = gg_enabled|gg_visible;
 	gcd[8].creator = GLineCreate;
 
-	gcd[9].gd.pos.x = 20; gcd[9].gd.pos.y = 17+14+33;
+	gcd[9].gd.pos.x = 20; gcd[9].gd.pos.y = 14+17+14+33;
 	gcd[9].gd.pos.width = -1; gcd[9].gd.pos.height = 0;
 	gcd[9].gd.flags = gg_visible | gg_enabled;
 	label[9].text = (unichar_t *) _STR_Create;
@@ -440,7 +530,7 @@ void CVReviewHints(CharView *cv) {
 	gcd[9].gd.handle_controlevent = RH_Add;
 	gcd[9].creator = GButtonCreate;
 
-	gcd[10].gd.pos.x = -20; gcd[10].gd.pos.y = 17+14+33;
+	gcd[10].gd.pos.x = -20; gcd[10].gd.pos.y = gcd[9].gd.pos.y;
 	gcd[10].gd.pos.width = -1; gcd[10].gd.pos.height = 0;
 	gcd[10].gd.flags = gg_visible | gg_enabled;
 	label[10].text = (unichar_t *) _STR_Remove;
@@ -451,7 +541,7 @@ void CVReviewHints(CharView *cv) {
 	gcd[10].gd.handle_controlevent = RH_Remove;
 	gcd[10].creator = GButtonCreate;
 
-	gcd[11].gd.pos.x = 20; gcd[11].gd.pos.y = 17+37+14+30;
+	gcd[11].gd.pos.x = 20; gcd[11].gd.pos.y = 14+17+37+14+30;
 	gcd[11].gd.pos.width = -1; gcd[11].gd.pos.height = 0;
 	gcd[11].gd.flags = gg_visible | gg_enabled;
 	label[11].text = (unichar_t *) _STR_PrevArrow;
@@ -462,7 +552,7 @@ void CVReviewHints(CharView *cv) {
 	gcd[11].gd.handle_controlevent = RH_NextPrev;
 	gcd[11].creator = GButtonCreate;
 
-	gcd[12].gd.pos.x = -20; gcd[12].gd.pos.y = 17+37+14+30;
+	gcd[12].gd.pos.x = -20; gcd[12].gd.pos.y = 14+17+37+14+30;
 	gcd[12].gd.pos.width = -1; gcd[12].gd.pos.height = 0;
 	gcd[12].gd.flags = gg_visible | gg_enabled;
 	label[12].text = (unichar_t *) _STR_NextArrow;
@@ -473,7 +563,7 @@ void CVReviewHints(CharView *cv) {
 	gcd[12].gd.handle_controlevent = RH_NextPrev;
 	gcd[12].creator = GButtonCreate;
 
-	gcd[13].gd.pos.x = 66; gcd[13].gd.pos.y = 17+30;
+	gcd[13].gd.pos.x = 66; gcd[13].gd.pos.y = 14+17+30;
 	gcd[13].gd.flags = gg_visible | gg_enabled;
 	label[13].text = (unichar_t *) "Overlap";
 	label[13].text_is_1byte = true;
@@ -489,6 +579,15 @@ void CVReviewHints(CharView *cv) {
 	gcd[14].gd.flags = gg_enabled|gg_visible;
 	gcd[14].gd.cid = CID_Count;
 	gcd[14].creator = GLabelCreate;
+
+	label[15].text = (unichar_t *) _STR_MovePoints;
+	label[15].text_in_resource = true;
+	gcd[15].gd.label = &label[15];
+	gcd[15].gd.pos.x = 3; gcd[15].gd.pos.y = 12+5+3; 
+	gcd[15].gd.flags = gg_enabled|gg_visible;
+	gcd[15].gd.cid = CID_MovePoints;
+	gcd[15].gd.popup_msg = GStringGetResource(_STR_MovePointsPopup,NULL);
+	gcd[15].creator = GCheckBoxCreate;
 
 	GGadgetsCreate(gw,gcd);
     } else
