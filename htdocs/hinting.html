@@ -1,0 +1,122 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 3-May-2001 -->
+  <!-- AP: Last modified: 6-May-2001 -->
+  <TITLE>Hinting</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+  Hinting
+</H1>
+<P>
+Postscript originally required that hints do not overlap. Now it requires
+that any active set of hints be non-overlapping, but it allows you to change
+sets as you move through the character.
+<P>
+So to implement hinting with hint substitution PfaEdit needs to know not
+only the position and width of the stem being hinted, but also where the
+stem should be active. And it needs to know what stems overlap which other
+stems.
+<P>
+<IMG SRC="Hints.png" WIDTH="406" HEIGHT="399" ALIGN="Left"> The horizontal
+stems are drawn in light green. The vertical stems are drawn in light blue.
+The areas where the stems are active are filled in as rectangles, outside
+of that area the stems' outlines are drawn with dotted lines. Most of these
+stems do not conflict with any other stems, but two, the bottom two horizontal
+stems conflict with each other. All the non-overlapping stem hints may be
+active at the same time, but only one of the two conflicting stem hints may
+be active. As PfaEdit outputs the character it decides at each point what
+stems need to be active, and activates them.
+<P>
+Postscript now allows PfaEdit to control relative counter sizes. Counters
+are the spaces between adjacent stems. In the example at left there are two
+counters of equal sizes on the between the horizontal stems on the left,
+and three counters of equal sizes on the right. These form two independent
+counter groups, and PfaEdit will generate a counter description for each
+of them (Postscript allows type designers to specify the relative importance
+of different counter groups. PfaEdit is not this sophisticated, counters
+are output in left to right (bottom to top for vertical) order.
+<P>
+Counters spaces appear between vertical stems too, and in this case Pfaedit
+would output one counter group for the vertical stems.
+<H2 Clear=All>
+  Serifs
+</H2>
+<P>
+<IMG SRC="serif.png" WIDTH="248" HEIGHT="227" ALIGN="Right">One of the major
+advantages of hint substitution is that it allows certain standard serif
+situations to be described. In the example at right, the serif one the left
+is smaller than the stem a bit further right.
+<P>
+<IMG SRC="serif2.png" WIDTH="158" HEIGHT="110" ALIGN="Left">But it doesn't
+solve all problems (or I don't know how to use it to do so). Consider the
+serif on the right. Hint substitution would allow us to define a hint for
+the main vertical stem and for the short vertical stem that corresponds to
+the serif. But the problem that needs to be solved is making the distance
+between the left edge of the serif and the left edge of the stem be the same
+as the distance between the right edge of the stem and the right edge of
+the serif. But doing so would require overlapping hints, active at the same
+time. <SMALL>I think</SMALL>
+<H2>
+  Manual Hinting
+</H2>
+<P>
+I hope that the PfaEdit's autohint command will be good enough that manual
+efforts will not be needed. But hopes are rarely fulfilled.
+<P>
+The AutoHint command should find all stems in a character. Some of them it
+deems to be useless and will remove them. If you find that PfaEdit is removing
+a hint that you think is important then invoke Hint-&gt;AutoHint with the
+shift key held down, this will tell PfaEdit not to prune any of the stems.
+You may then use Review Hints to prune things yourself.
+<P>
+If you find that you must create your own hints, PfaEdit will only allow
+you to specify the position and width of the hint, it will then go off and
+try to guess the extents where the hint should be active.
+<H2>
+  Hints and previously existing fonts.
+</H2>
+<P>
+PfaEdit will not be able to read hint info out of a TrueType font at all
+(the format is too complex, there are too many posibilities). From a Type1
+font without hint substitution it will happily read all the hints in a character.
+In a Type1 font with hint substitution it will read some random subset of
+the hints, and will mark the font as in need of having its hints regenerated.
+In an OpenType (Type2) font PfaEdit will read in all the hints, but it will
+have to figure out by itself where those hints are active (it will not read
+that from the font file).
+<H2>
+  Hint questions:
+</H2>
+<P>
+I find the hint documentation inadequate for me to do a good job at hinting.
+<UL>
+  <LI>
+    Do I need hstem hints at top and bottom of a character for blue values to
+    be looked at?
+  <LI>
+    Section 2.4 of
+    <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5015.Type1_Supp.pdf">T1_Supp.pdf
+    </A>says that vertical counters are offset from the lbearing, but the example
+    2.6 shows them being offset from 0.
+  <LI>
+    In
+    <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5177.Type2.pdf">Type2</A>
+    is it ok to use Counter mask if LanguageGroup is not 1 and the stems don't
+    fit into a *stem3 pattern? Or can cntrmask only be used for *stem3 in latin
+    letters?
+  <LI>
+    <IMG SRC="NoPointHint.png" WIDTH="194" HEIGHT="232" ALIGN="Right">How do
+    hints work? Is a hint meaningful if there are no points associated with it?
+    As in the "O" at right, where the two vertical stems have no points associated
+    with them.
+  <LI>
+    Is it meaningful for a hint to have points only on one side of it? Can reasonable
+    hints be written for the serif cap above left?
+</UL>
+<P>
+<A HREF="overview.html#Hints">Overview of Hinting in Postscript and
+TrueType</A>.<BR>
+<A HREF="hintsmenu.html">Hinting menu.</A>
+</BODY></HTML>
