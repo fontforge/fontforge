@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 3-Sep-2001 -->
-  <!-- AP: Last modified: 13-May-2002 -->
+  <!-- AP: Last modified: 21-Jun-2002 -->
   <TITLE>Change Log for TtfMod</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,17 @@
   Change Log for TtfMod
 </H2>
 <UL>
+  <LI>
+    21-June-2002
+    <UL>
+      <LI>
+	memory allocation optimizations didn't work if sizeof(int *)==8
+      <LI>
+	Found a race condition which could lead to a divide by 0
+      <LI>
+	Was writing outside of an array's bounds and (on some systems) corrupting
+	the return stack.
+    </UL>
   <LI>
     13-May-2002
     <UL>
