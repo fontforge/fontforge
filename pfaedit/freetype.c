@@ -322,7 +322,7 @@ BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,
 
     slot = ftc->face->glyph;
     sc = ftc->sf->chars[enc];
-    bdfc = gcalloc(1,sizeof(BDFChar));
+    bdfc = chunkalloc(sizeof(BDFChar));
     bdfc->sc = sc;
     bdfc->ymax = slot->bitmap_top-1;
     bdfc->ymin = slot->bitmap_top-slot->bitmap.rows;

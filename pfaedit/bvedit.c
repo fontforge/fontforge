@@ -684,7 +684,7 @@ static BDFChar *BCScale(BDFChar *old,int from, int to) {
 
     if ( old==NULL || old->byte_data )
 return( NULL );
-    new = gcalloc(1,sizeof(BDFChar));
+    new = chunkalloc(sizeof(BDFChar));
     new->sc = old->sc;
     new->xmin = rint(old->xmin*dto/from);
     new->ymin = rint(old->ymin*dto/from);

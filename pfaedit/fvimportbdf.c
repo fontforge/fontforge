@@ -244,7 +244,7 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,int depth, struct m
 	    free(bc->bitmap);
 	    BDFFloatFree(bc->selection);
 	} else {
-	    b->chars[i] = bc = gcalloc(1,sizeof(BDFChar));
+	    b->chars[i] = bc = chunkalloc(sizeof(BDFChar));
 	    bc->sc = sf->chars[i];
 	    bc->enc = i;
 	}
@@ -557,12 +557,12 @@ static BDFChar *SFGrowTo(SplineFont *sf,BDFFont *b, int cc) {
 	sf->chars[cc]->unicodeenc = -1;
     }
     if ( cc>=b->charcnt )
-	bc = gcalloc(1,sizeof(BDFChar));
+	bc = chunkalloc(sizeof(BDFChar));
     else if ( (bc=b->chars[cc])!=NULL ) {
 	free(bc->bitmap);
 	BDFFloatFree(bc->selection);
     } else {
-	b->chars[cc] = bc = gcalloc(1,sizeof(BDFChar));
+	b->chars[cc] = bc = chunkalloc(sizeof(BDFChar));
 	bc->sc = sf->chars[cc];
 	bc->enc = cc;
     }
@@ -1560,7 +1560,7 @@ return( false );
     b->charcnt = mcnt;
     b->chars = gcalloc(mcnt,sizeof(BDFChar *));
     for ( i=0; i<mcnt; ++i ) {
-	b->chars[i] = gcalloc(1,sizeof(BDFChar));
+	b->chars[i] = chunkalloc(sizeof(BDFChar));
 	b->chars[i]->xmin = metrics[i].lsb;
 	b->chars[i]->xmax = metrics[i].rsb;
 	b->chars[i]->ymin = -metrics[i].descent;

@@ -1479,7 +1479,7 @@ static int SFDGetBitmapChar(FILE *sfd,BDFFont *bdf) {
     struct enc85 dec;
     int i;
 
-    bfc = gcalloc(1,sizeof(BDFChar));
+    bfc = chunkalloc(sizeof(BDFChar));
     
     if ( getint(sfd,&bfc->enc)!=1 || bfc->enc<0 )
 return( 0 );

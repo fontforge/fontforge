@@ -869,7 +869,7 @@ return( NULL );
 #endif
     }
 
-    bdfc = gcalloc(1,sizeof(BDFChar));
+    bdfc = chunkalloc(sizeof(BDFChar));
     bdfc->sc = sc;
     bdfc->xmin = rint(es.omin);
     bdfc->ymin = es.mmin;
@@ -1367,7 +1367,7 @@ void BDFCharFree(BDFChar *bdfc) {
     if ( bdfc==NULL )
 return;
     free(bdfc->bitmap);
-    free(bdfc);
+    chunkfree(bdfc,sizeof(BDFChar));
 }
 
 void BDFFontFree(BDFFont *bdf) {

@@ -50,7 +50,7 @@ struct bigmetrics {
 static void ttfreadbmfglyph(FILE *ttf,struct ttfinfo *info,
 	int32 offset, int32 len, struct bigmetrics *metrics, int imageformat,
 	int enc, BDFFont *bdf) {
-    BDFChar *bdfc = gcalloc(1,sizeof(BDFChar));
+    BDFChar *bdfc = chunkalloc(sizeof(BDFChar));
     struct bigmetrics big;
     int i,j,ch,l,p, num;
 
