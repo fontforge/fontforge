@@ -38,6 +38,7 @@ typedef struct entitychar {
     Entity *splines;
     RefChar *refs;
     int width;
+    SplineChar *sc;
 } EntityChar;
 
 typedef struct _io {
@@ -1880,11 +1881,10 @@ printf( "-%s-\n", toknames[tok]);
     setlocale(LC_NUMERIC,oldloc);
 }
 
-static SplinePointList *SplinesFromEntities(EntityChar *ec) {
+static SplinePointList *SplinesFromEntities(EntityChar *ec,int *toobigwarn) {
     Entity *ent, *next;
     SplinePointList *head=NULL, *last, *new, *nlast, *temp, *each, *transed;
     StrokeInfo si;
-    int toobigwarn = false;
     real inversetrans[6];
 
     for ( ent=ec->splines; ent!=NULL; ent = next ) {
@@ -1892,7 +1892,7 @@ static SplinePointList *SplinesFromEntities(EntityChar *ec) {
 	if ( ent->type == et_splines ) {
 	    if ( ent->u.splines.stroke.col!=0xffffffff ) {
 		memset(&si,'\0',sizeof(si));
-		si.toobigwarn = toobigwarn;
+		si.toobigwarn = *toobigwarn;
 		si.join = ent->u.splines.join;
 		si.cap = ent->u.splines.cap;
 		si.radius = ent->u.splines.stroke_width/2;
@@ -1901,7 +1901,7 @@ static SplinePointList *SplinesFromEntities(EntityChar *ec) {
 		transed = SplinePointListTransform(SplinePointListCopy(
 			ent->u.splines.splines),inversetrans,true);
 		for ( each = transed; each!=NULL; each=each->next ) {
-		    temp = SplineSetStroke(each,&si,NULL);
+		    temp = SplineSetStroke(each,&si,ec->sc);
 		    if ( new==NULL )
 			new=temp;
 		    else
@@ -1917,7 +1917,7 @@ static SplinePointList *SplinesFromEntities(EntityChar *ec) {
 		    new = ent->u.splines.splines;
 		else
 		    nlast->next = ent->u.splines.splines;
-		toobigwarn = si.toobigwarn;
+		*toobigwarn = si.toobigwarn;
 	    } else {
 		new = ent->u.splines.splines;
 	    }
@@ -1938,10 +1938,11 @@ return( head );
 
 SplinePointList *SplinePointListInterpretPS(FILE *ps) {
     EntityChar ec;
+    int toobigwarn = false;
 
     memset(&ec,'\0',sizeof(ec));
     InterpretPS(ps,&ec);
-return( SplinesFromEntities(&ec));
+return( SplinesFromEntities(&ec,&toobigwarn));
 }
 
 Entity *EntityInterpretPS(FILE *ps) {
@@ -1952,7 +1953,7 @@ Entity *EntityInterpretPS(FILE *ps) {
 return( ec.splines );
 }
 
-static void SCInterpretPS(FILE *ps,SplineChar *sc) {
+static void SCInterpretPS(FILE *ps,SplineChar *sc, int *toobigwarn) {
     EntityChar ec;
     real dval;
     char tokbuf[10];
@@ -1965,9 +1966,10 @@ static void SCInterpretPS(FILE *ps,SplineChar *sc) {
 	fprintf(stderr, "We don't understand this font\n" );
     memset(&ec,'\0',sizeof(ec));
     InterpretPS(ps,&ec);
+    ec.sc = sc;
     sc->width = ec.width;
     sc->refs = ec.refs;
-    sc->splines = SplinesFromEntities(&ec);
+    sc->splines = SplinesFromEntities(&ec,toobigwarn);
     free(wrapper.top);
 }
     
@@ -1978,6 +1980,7 @@ void PSFontInterpretPS(FILE *ps,struct charprocs *cp) {
     SplineChar *sc; EntityChar dummy;
     RefChar *p, *ref, *next;
     IO wrapper;
+    int toobigwarn = false;
 
     wrapper.top = NULL;
     pushio(&wrapper,ps,NULL);
@@ -1988,8 +1991,8 @@ void PSFontInterpretPS(FILE *ps,struct charprocs *cp) {
 		sc = SplineCharCreate();
 		cp->keys[cp->next] = copy(tokbuf);
 		cp->values[cp->next++] = sc;
-		SCInterpretPS(ps,sc);
 		sc->name = copy(tokbuf);
+		SCInterpretPS(ps,sc,&toobigwarn);
        		GProgressNext();
 	    } else {
 		InterpretPS(ps,&dummy);
