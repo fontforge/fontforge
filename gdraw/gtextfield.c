@@ -728,7 +728,7 @@ return( NULL );
 	format = 3;		/* utf8 */
 	getc(file);
     } else {
-	getc(file);		/* rewind probably undoes this, but let's not depend on it */
+	getc(file);		/* rewind probably undoes the ungetc, but let's not depend on it */
 	rewind(file);
     }
     space = upt = galloc((max+1)*sizeof(unichar_t));
@@ -802,7 +802,7 @@ return;
     free(str);
 }
 
-static void GTextFieldSave(GTextField *gt) {
+static void GTextFieldSave(GTextField *gt,int utf8) {
     unichar_t *ret = GWidgetSaveAsFile(GStringGetResource(_STR_Save,NULL),NULL,
 	    txt,NULL,NULL);
     char *cret;
@@ -821,11 +821,35 @@ return;
     }
     free(cret);
 
-    putc(0xfeff>>8,file);		/* Zero width something or other. Marks this as unicode */
-    putc(0xfeff&0xff,file);
-    for ( pt = gt->text ; *pt; ++pt ) {
-	putc(*pt>>8,file);
-	putc(*pt&0xff,file);
+    if ( utf8 ) {
+	putc(0xef,file);		/* Zero width something or other. Marks this as unicode, utf8 */
+	putc(0xbb,file);
+	putc(0xbf,file);
+	for ( pt = gt->text ; *pt; ++pt ) {
+	    if ( *pt<0x80 )
+		putc(*pt,file);
+	    else if ( *pt<0x800 ) {
+		putc(0xc0 | (*pt>>6), file);
+		putc(0x80 | (*pt&0x3f), file);
+	    } else if ( *pt>=0xd800 && *pt<0xdc00 && pt[1]>=0xdc00 && pt[1]<0xe000 ) {
+		int u = ((*pt>>6)&0xf)+1, y = ((*pt&3)<<4) | ((pt[1]>>6)&0xf);
+		putc( 0xf0 | (u>>2),file );
+		putc( 0x80 | ((u&3)<<4) | ((*pt>>2)&0xf),file );
+		putc( 0x80 | y,file );
+		putc( 0x80 | (pt[1]&0x3f),file );
+	    } else {
+		putc( 0xe0 | (*pt>>12),file );
+		putc( 0x80 | ((*pt>>6)&0x3f),file );
+		putc( 0x80 | (*pt&0x3f),file );
+	    }
+	}
+    } else {
+	putc(0xfeff>>8,file);		/* Zero width something or other. Marks this as unicode */
+	putc(0xfeff&0xff,file);
+	for ( pt = gt->text ; *pt; ++pt ) {
+	    putc(*pt>>8,file);
+	    putc(*pt&0xff,file);
+	}
     }
     fclose(file);
 }
@@ -837,9 +861,10 @@ return;
 #define MID_SelectAll	4
 
 #define MID_Save	5
-#define MID_Import	6
+#define MID_SaveUCS2	6
+#define MID_Import	7
 
-#define MID_Undo	7
+#define MID_Undo	8
 
 static GTextField *popup_kludge;
 
@@ -866,7 +891,10 @@ return;
 	gtextfield_editcmd(&gt->g,ec_selectall);
       break;
       case MID_Save:
-	GTextFieldSave(gt);
+	GTextFieldSave(gt,true);
+      break;
+      case MID_SaveUCS2:
+	GTextFieldSave(gt,false);
       break;
       case MID_Import:
 	GTextFieldImport(gt);
@@ -882,7 +910,8 @@ static GMenuItem gtf_popuplist[] = {
     { { (unichar_t *) "Copy", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'C' }, 'C', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Copy },
     { { (unichar_t *) "Paste", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'P' }, 'V', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Paste },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) "Save", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'S' }, 'S', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Save },
+    { { (unichar_t *) "Save in UTF8", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'S' }, 'S', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Save },
+    { { (unichar_t *) "Save in UCS2", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '2' }, '\0', ksm_control, NULL, NULL, GTFPopupInvoked, MID_SaveUCS2 },
     { { (unichar_t *) "Import", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'I' }, 'I', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Import },
     { NULL }
 };
@@ -1118,7 +1147,7 @@ return( true );
 	  case 's': case 'S':
 	    if ( !( event->u.chr.state&ksm_control ) )
 return( false );
-	    GTextFieldSave(gt);
+	    GTextFieldSave(gt,true);
 return( 2 );
 	  break;
 	  case 'I': case 'i':

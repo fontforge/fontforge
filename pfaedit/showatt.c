@@ -1442,6 +1442,78 @@ return;
     }
 }
 
+static void pututf8(uint32 ch,FILE *file) {
+    if ( ch<0x80 )
+	putc(ch,file);
+    else if ( ch<0x800 ) {
+	putc(0xc0 | (ch>>6), file);
+	putc(0x80 | (ch&0x3f), file);
+    } else {
+	putc( 0xe0 | (ch>>12),file );
+	putc( 0x80 | ((ch>>6)&0x3f),file );
+	putc( 0x80 | (ch&0x3f),file );
+    }
+}
+
+static unichar_t txt[] = { '*','.','t','x','t',  '\0' };
+static void AttSave(struct att_dlg *att) {
+    unichar_t *ret = GWidgetSaveAsFile(GStringGetResource(_STR_Save,NULL),NULL,
+	    txt,NULL,NULL);
+    char *cret;
+    FILE *file;
+    unichar_t *pt;
+    struct node *node;
+    int depth=0, d;
+
+    if ( ret==NULL )
+return;
+    cret = u2def_copy(ret);
+    free(ret);
+    file = fopen(cret,"w");
+    if ( file==NULL ) {
+	GWidgetErrorR(_STR_SaveFailed,_STR_SaveFailed,cret);
+	free(cret);
+return;
+    }
+    free(cret);
+
+    pututf8(0xfeff,file);	/* Zero width something or other. Marks this as unicode, utf8 */
+    node = NodeFindLPos(att->tables,0,&depth);
+    while ( node!=NULL ) {
+	d = depth;
+	while ( d>=4 ) {
+	    pututf8('\t',file);
+	    d -= 4;
+	}
+	while ( d>0 ) {
+	    pututf8(' ',file);
+	    pututf8(' ',file);
+	    --d;
+	}
+	if ( !node->build && !node->children )
+	    pututf8(' ',file);
+	else if ( node->open )
+	    pututf8('-',file);
+	else
+	    pututf8('+',file);
+	for ( pt=node->label; *pt; ++pt )
+	    pututf8(*pt,file);
+	pututf8('\n',file);
+	node = NodeNext(node,&depth);
+    }
+    fclose(file);
+}
+
+static void AttSaveM(GWindow gw, GMenuItem *mi,GEvent *e) {
+    struct att_dlg *att = (struct att_dlg *) GDrawGetUserData(gw);
+    AttSave(att);
+}
+
+static GMenuItem att_popuplist[] = {
+    { { (unichar_t *) _STR_Save, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 'S', ksm_control, NULL, NULL, AttSaveM },
+    { NULL }
+};
+
 static void AttMouse(struct att_dlg *att,GEvent *event) {
     int l, depth, cnt;
     struct node *node;
@@ -1449,6 +1521,7 @@ static void AttMouse(struct att_dlg *att,GEvent *event) {
 
     if ( event->type!=et_mouseup )
 return;
+
     l = (event->u.mouse.y/att->fh);
     depth=0;
     node = NodeFindLPos(att->tables,l+att->off_top,&depth);
@@ -1609,6 +1682,10 @@ return( true );
       case GK_End: case GK_KP_End:
 	ATTChangeCurrent(att,NodeFindLPos(att->tables,att->open_cnt-1,&depth));
 return( true );
+      case 'S': case 's':
+	if ( event->u.mouse.state&ksm_control )
+	    AttSave(att);
+return( true );
     }
 return( false );
 }
@@ -1627,6 +1704,10 @@ return( GGadgetDispatchEvent(att->vsb,event));
       break;
       case et_char:
 return( AttChar(att,event));
+      case et_mousedown:
+	if ( event->u.mouse.button==3 )
+	    GMenuCreatePopupMenu(gw,event, att_popuplist);
+      break;
       case et_mouseup:
 	AttMouse(att,event);
       break;
