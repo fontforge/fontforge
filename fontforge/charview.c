@@ -2620,10 +2620,10 @@ int SCNumberPoints(SplineChar *sc) {
 		sp->ttfindex = 0xffff;
 	    else
 		sp->ttfindex = pnum++;
-	    if ( instrs!=NULL && sp->nextcpindex!=0xffff ) {
+	    if ( instrs!=NULL && sp->nextcpindex!=0xffff && sp->nextcpindex!=0xfffe ) {
 		if ( sp->nextcpindex!=startcnt || !starts_with_cp )
 		    sp->nextcpindex = pnum++;
-	    } else if ( !sp->nonextcp ) {
+	    } else if ( (instrs==NULL || sp->nextcpindex==0xfffe) && !sp->nonextcp ) {
 		if ( sp->next==NULL || sp->next->to!=ss->first )
 		    sp->nextcpindex = pnum++;
 	    } else

@@ -52,12 +52,7 @@ static struct shapedescrip { BasePoint me, prevcp, nextcp; int nocp; }
 static SplinePoint *SPMake(BasePoint *base,int pt) {
     SplinePoint *new;
 
-    new = chunkalloc(sizeof(SplinePoint));
-    new->me = *base;
-    new->nextcp = *base;
-    new->prevcp = *base;
-    new->nonextcp = new->noprevcp = true;
-    new->nextcpdef = new->prevcpdef = false;
+    new = SplinePointCreate(base->x,base->y);
     new->pointtype = pt;
     new->selected = true;
 return( new );
