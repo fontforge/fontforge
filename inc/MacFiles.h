@@ -43,9 +43,9 @@ typedef struct FSCatalogInfo {
 } FSCatalogInfo;
 
 short FSpOpenRF(const FSSpec *spec,char permission,short *refNum);
-short FSpCreateResFile(const FSSpec *spec,int creator,int type,short script);
-short FSRead(short refNum,int *cnt,char *buf);
-short FSWrite(short refNum,int *cnt,char *buf);
+void FSpCreateResFile(const FSSpec *spec,int creator,int type,short script);
+short FSRead(short refNum,long *cnt,char *buf);
+short FSWrite(short refNum,long *cnt,char *buf);
 short FSClose(short refNum );
 short FSpGetFInfo(const FSSpec *spec,FInfo *fndrInfo);
 short SetEOF(short refNum,int eofpos);

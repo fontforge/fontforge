@@ -1222,7 +1222,7 @@ return( true );
     char *buf, *dirname, *pt, *fname;
     Str255 damnthemac;
     FSCatalogInfo info;
-    int len;
+    long len;
     /* When on the mac let's just create a real resource fork. We do this by */
     /*  creating a mac file with a resource fork, opening that fork, and */
     /*  dumping all the data in the temporary file after the macbinary header */
@@ -1249,9 +1249,8 @@ return( false );
     if ( (ret=FSMakeFSSpec(spec.vRefNum,info.nodeID,damnthemac,&spec))!=noErr &&
 	    ret!=fnfErr )
 return( false );
-    if ( (ret=FSpCreateResFile(&spec,mb->creator,mb->type,smSystemScript))!=noErr &&
-	    ret!=dupFNErr )
-return( false );
+    FSpCreateResFile(&spec,mb->creator,mb->type,smSystemScript);
+	/* The header files say this returns void. I'd expect errors like dupFNErr, but appearently not */
     if ( FSpOpenRF(&spec,fsWrPerm,&macfile)!=noErr )
 return( false );
     SetEOF(macfile,0);		/* Truncate it just in case it existed... */
@@ -2415,7 +2414,7 @@ static SplineFont *HasResourceFork(char *filename,int flags) {
     FSRef ref;
     FSSpec spec;
     short res, err;
-    int cnt;
+    long cnt;
     SplineFont *ret;
     FILE *temp;
     char *buf;
