@@ -431,6 +431,7 @@ return(true);
 }
 
 static void PIFontDisplay(PI *pi) {
+    int wascompacted = pi->sf->compacted;
 
     pi->extravspace = pi->pointsize/6;
     pi->extrahspace = pi->pointsize/3;
@@ -445,16 +446,26 @@ static void PIFontDisplay(PI *pi) {
 	else if ( pi->max>=8 ) pi->max = 8;
 	else pi->max = 4;
     }
-    if ( !PIDownloadFont(pi))
-return;
 
-    while ( DumpLine(pi))
-	;
+    if ( wascompacted )
+	SFUncompactFont(pi->sf);
 
-    if ( pi->chline==0 )
-	GDrawError( "Warning: Font contained no characters" );
-    else
-	dump_trailer(pi);
+    if ( PIDownloadFont(pi)) {
+	while ( DumpLine(pi))
+	    ;
+    
+	if ( pi->chline==0 )
+	    GDrawError( "Warning: Font contained no characters" );
+	else
+	    dump_trailer(pi);
+    }
+
+    if ( wascompacted ) {
+	FontView *fvs;
+	SFCompactFont(pi->sf);
+	for ( fvs=pi->sf->fv; fvs!=NULL; fvs=fvs->nextsame )
+	    GDrawRequestExpose(fvs->v,NULL,false);
+    }
 }
 
 /* ************************************************************************** */
