@@ -2494,6 +2494,11 @@ static void sethhead(struct hhead *hhead,struct hhead *vhead,struct alltabs *at,
 	++j;
     } while ( j<_sf->subfontcnt );
 
+    if ( ymax==0 && ymin==0 ) {
+	/* this can happen in a bitmap only font */
+	ymax = sf->ascent;
+	ymin = -sf->descent;
+    }
     hhead->version = 0x00010000;
     hhead->ascender = ymax;
     hhead->descender = ymin;
@@ -4441,7 +4446,7 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
     else if ( format==ff_none && at->applemode ) {
 	AssignTTFGlyph(sf,bsizes);
 	aborted = !dumpcffhmtx(at,sf,true);
-    } else if ( format==ff_none && at->otbbitmaps ) {
+    } else if ( format==ff_none && at->msbitmaps ) {
 	AssignTTFGlyph(sf,bsizes);
 	aborted = !dumpcffhmtx(at,sf,true);
 	dumpnoglyphs(sf,&at->gi);
@@ -4471,17 +4476,25 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
 	AbortTTF(at,sf);
 return( false );
     }
+
+    if ( at->gi.xmin==15000 ) at->gi.xmin = 0;
+    if ( at->gi.ymin==15000 ) at->gi.ymin = 0;
+    if ( bsizes!=NULL && format==ff_none ) {
+	if (  sf->ascent >at->gi.ymax ) at->gi.ymax =  sf->ascent;
+	if ( -sf->descent<at->gi.ymin ) at->gi.ymin = -sf->descent;
+    }
     at->head.xmin = at->gi.xmin;
     at->head.ymin = at->gi.ymin;
     at->head.xmax = at->gi.xmax;
     at->head.ymax = at->gi.ymax;
+
     sethead(&at->head,sf);
     sethhead(&at->hhead,&at->vhead,at,sf);
     setvorg(&at->vorg,sf);
     setos2(&at->os2,at,sf,format);	/* should precede kern/ligature output */
     if ( at->gi.glyph_len<0x20000 )
 	at->head.locais32 = 0;
-    if ( at->otbbitmaps )
+    if ( at->msbitmaps )
 	dummyloca(at);
     else if ( format!=ff_otf && format!=ff_otfcid && (format!=ff_none || (bsizes!=NULL && !at->applemode && at->opentypemode)) )
 	redoloca(at);
