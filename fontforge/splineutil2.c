@@ -665,6 +665,31 @@ Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
     BasePoint nextcp, prevcp;
     int i;
 
+    /* If all the selected points are at the same spot, and one of the */
+    /*  end-points is also at that spot, then just copy the control point */
+    /* But our caller seems to have done that for us */
+#if 0
+    same = true;
+    start = from->next->to;
+    for ( sp=start; sp!=to; sp=sp->next->to )
+	if ( sp->me.x!=start->me.x || sp->me.y!=start->me.y ) {
+	    same = false;
+    break;
+	}
+    if ( same && to->me.x==start->me.x && to->me.y==start->me.y ) {
+	to->noprevcp = start->noprevcp;
+	to->prevcp = start->prevcp;
+	to->prevcpdef = start->prevcpdef;
+return( SplineMake(from,to,order2));
+    } else if ( same && from->me.x==start->me.x && from->me.y==start->me.y ) {
+	start = to->prev->from;
+	from->nonextcp = start->nonextcp;
+	from->nextcp = start->nextcp;
+	from->nextcpdef = start->nextcpdef;
+return( SplineMake(from,to,order2));
+    }
+#endif
+    
     /* If the two end-points are corner points then allow the slope to vary */
     /* Or if one end-point is a tangent but the point defining the tangent's */
     /*  slope is being removed then allow the slope to vary */
@@ -685,8 +710,9 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt,order2) );
     /* If we are going to honour the slopes of a quadratic spline, there is */
     /*  only one possibility */
     if ( order2 ) {
-	if ( from->nonextcp || to->noprevcp ||
-		!IntersectLines(&nextcp,&from->nextcp,&from->me,&to->prevcp,&to->me) ) {
+	if ( from->nonextcp || to->noprevcp )
+return( ApproximateSplineFromPoints(from,to,mid,cnt,order2) );
+	else if ( !IntersectLines(&nextcp,&from->nextcp,&from->me,&to->prevcp,&to->me) ) {
 	    from->nonextcp = to->noprevcp = true;
 	    from->nextcp = from->me;
 	    to->prevcp = to->me;
