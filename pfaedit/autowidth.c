@@ -1628,8 +1628,9 @@ void FVRemoveKerns(FontView *fv) {
 
 /* Scripting hooks */
 
-static struct charone **autowidthBuildCharList(SplineFont *sf, int base, int *tot) {
-    int i, cnt, doit;
+static struct charone **autowidthBuildCharList(SplineFont *sf, int base,
+	int *tot, int *rtot, int *ipos, int iswidth) {
+    int i, cnt, doit, s;
     struct charone **ret=NULL;
 
     for ( doit=0; doit<2; ++doit ) {
@@ -1644,9 +1645,25 @@ static struct charone **autowidthBuildCharList(SplineFont *sf, int base, int *to
       }
       
       if ( !doit )
-	ret = galloc((cnt+1)*sizeof(struct charone *));
-      else
+	ret = galloc((cnt+2)*sizeof(struct charone *));
+      else {
+	*rtot = cnt;
+	if ( iswidth ) {		/* I always want 'I' in the character list when doing widths */
+	    for ( s=0; s<cnt; ++s )
+		if ( ret[s]->sc->unicodeenc=='I' )
+	    break;
+	    if ( s==cnt ) {
+		i = SFFindExistingChar(sf,'I',NULL);
+		if ( i!=-1 && sf->chars[i]!=NULL &&
+			(sf->chars[i]->splines!=NULL || sf->chars[i]->refs!=NULL ))
+		    ret[cnt++] = MakeCharOne(sf->chars[i]);
+		else
+		    s = -1;
+	    }
+	    *ipos = s;
+	}
 	ret[cnt] = NULL;
+      }
     }
     *tot = cnt;
     return( ret );
@@ -1659,10 +1676,11 @@ int AutoWidthScript(SplineFont *sf,int spacing) {
     wi.autokern = 0;
     wi.sf = sf;
     FindFontParameters(&wi);
-    wi.spacing = spacing;
+    if ( spacing>0 )
+	wi.spacing = spacing;
 
-    wi.left = autowidthBuildCharList(wi.sf,CID_LeftBase, &wi.lcnt );
-    wi.right = autowidthBuildCharList(wi.sf,CID_RightBase, &wi.rcnt );
+    wi.left = autowidthBuildCharList(wi.sf,CID_LeftBase, &wi.lcnt, &wi.real_lcnt, &wi.l_Ipos, true );
+    wi.right = autowidthBuildCharList(wi.sf,CID_RightBase, &wi.rcnt, &wi.real_rcnt, &wi.r_Ipos, true );
     if ( wi.lcnt==0 || wi.rcnt==0 ) {
 	FreeCharList(wi.left);
 	FreeCharList(wi.right);
@@ -1685,12 +1703,13 @@ int AutoKernScript(SplineFont *sf,int spacing, int threshold,char *kernfile) {
     wi.autokern = 1;
     wi.sf = sf;
     FindFontParameters(&wi);
-    wi.spacing = spacing;    
+    if ( spacing>0 )
+	wi.spacing = spacing;    
     wi.threshold = threshold;    
 
     if ( kernfile==NULL ) {
-	wi.left = autowidthBuildCharList(wi.sf,CID_LeftBase, &wi.lcnt );
-	wi.right = autowidthBuildCharList(wi.sf,CID_RightBase, &wi.rcnt );
+	wi.left = autowidthBuildCharList(wi.sf,CID_LeftBase, &wi.lcnt, &wi.real_lcnt, &wi.l_Ipos, false );
+	wi.right = autowidthBuildCharList(wi.sf,CID_RightBase, &wi.rcnt, &wi.real_rcnt, &wi.r_Ipos, false );
 	if ( wi.lcnt==0 || wi.rcnt==0 ) {
 	    FreeCharList(wi.left);
 	    FreeCharList(wi.right);
