@@ -1,0 +1,262 @@
+.\" Manual page by Tom Harvey, subsequently modified by George Williams.
+.\" Copyright © 2000-2002 by George Williams.
+.\" Re-edited to use standard -man macros by RPC Rodgers, 23 October 2002.
+.ds Ps P\s-2OST\s+2S\s-2CRIPT\s+2
+.TH FONTFORGE 1 "2 March 2004"
+.SH NAME
+.B fontforge - create and modify PostScript, TrueType and SVG fonts
+.SH SYNOPSIS
+.B fontforge
+.RB [ \-cmap
+.IR maptype ]
+.RB [ \-depth
+.IR pixeld ]
+.RB [ \-display
+.IR str ]
+.RB [ \-last ]
+.RB [ \-help ]
+.RB [ \-keyboard
+.IR ktype ]
+.RB [ \-new ]
+.RB [ \-nosplash
+.RB [ \-recover
+.IR mode ]
+.RB [ \-script
+.IR file ]
+.RB [ \-sync
+.RB [ \-usage ]
+.RB [ \-vc
+.IR vclass ]
+.RB [ \-version ]
+.I fontfile ...
+.SH DESCRIPTION
+The program
+.I fontforge
+allows you to create and modify font files,
+accepting input in the following formats
+(with associated file extensions appearing in parentheses):
+.TP
+Glyph Bitmap Distribution (.bdf)
+.TP
+Macintosh resource fonts (.dfont, .bin, .hqx)
+.TP
+OpenType (.otf)
+.TP
+.IR fontforge "spline font database (.sfd)"
+.TP
+\*(Ps, which includes:
+.RS
+.TP
+ASCII format (.pfa)
+.TP
+Binary format (.pfb)
+.TP
+CID-keyed fonts, Adobe convention used primarily for Asian characters (.cid, .otf)
+.TP
+\*(Ps Type 0 (.ps)
+.TP
+\*(Ps Type 3 (.ps)
+.RE
+.TP
+Scaleable vector graphics fonts (.svg)
+.TP
+TeX bitmap (.pk)
+.TP
+TrueType (.ttf, .ttc)
+.TP
+X11 bitmap (.pcf)
+.LP
+If the argument list contains a font file name (or several),
+.I fontforge
+opens a
+.B fontview
+window for each font displaying the characters of the that font.
+In the absence of options or arguments,
+the program opens a file-picker window,
+allowing you to browse your disk to find a font file,
+or create a new one.
+.LP
+This manual page is intended only as a rudimentary overview;
+see the HTML Users Manual for more complete information.
+.SH OPTIONS
+.TP
+.B \-cmap maptype 
+Employ the specified method to control 8-bit colormaps,
+where
+.I maptype
+assumes one of these three values:
+.RS
+.TP
+.B current
+Attempt to allocate colors in the current (shared) colormap.
+The program will likely not find everything it requires.
+.TP
+.B copy
+Allocate what can be allocated, then copy the current colormap;
+it can thus make use of cells other programs are using.
+.TP
+.B private
+Create a new colormap and fill it with the required colors.
+.RE
+.TP
+.BI \-depth " pixeld" 
+Attempt to employ a visual that matches the specified pixel depth,
+.IR pixeld .
+.TP
+.BI \-display " str" 
+Employ the X display specified by the string
+.I str
+(for example: localhost:0).
+.TP
+.B \-help
+Display the usage description
+and start a web client displaying the online documentation.
+.TP
+.BI \-keyboard " ktype" 
+Alter the displayed menus to employ modifier keys appropriate
+to the specified keyboard type,
+where
+.I ktype
+assumes one of the following four values:
+.RS
+.TP
+.B ibm
+IBM PC type keyboard.
+.TP
+.B mac
+Apple Macintosh keyboard.
+.TP
+.B sun
+Sun workstation keyboard.
+.TP
+.B ppc
+Macintosh keyboard, but on a system running SuSe linux
+(the mappings differ from those used under MacOS X).
+.RE
+.TP
+.B \-last
+Opens whatever font you last edited with
+.I fontforge.
+If you specify
+.I n
+.B \-last
+.I fontforge
+will open the last
+.I n
+fonts.
+.TP
+.B \-new
+Create a new font with the ISO 8859-1 encoding
+(the international encoding standard for western Europe,
+and the standard for most X fonts).
+.TP
+.B \-nosplash
+Suppress display of the splash screen.
+.TP
+.BI \-recover " mode"
+Control the crash recovery mechanism
+(helpful if crash recovery causes problems),
+where
+.I mode
+takes on one of three allowed settings:
+.RS
+.TP
+.B auto
+perform automatic recovery (default) if the program crashed before saving changes.
+.TP
+.B clean
+Delete recovery information.
+.TP
+.B none
+Suppress crash recovery.
+.RE
+.TP
+.BI \-script " file"
+Execute the script named
+.IR file .
+Does not open the X display.
+This must be the first argument passed to fontforge. Any other arguments are
+handled by the scriptfile itself.
+Any other command line arguments will be passed to the script.
+The program contains a command interpreter which allows access to
+most but not all of its interactive features.
+If a scriptfile is executable, and if its first line contains
+the string "fontforge", then the argument
+.BI \-script
+may be omitted. This means that fontforge can be used as an interpreter.
+.TP
+.B \-sync
+Make X synchronous.
+Used primarily for debugging, this option slows X down.
+.TP
+.B \-usage
+Display the usage description.
+.TP
+.B \-vc vclass 
+Attempt to use a visual that matches the class,
+.IR vclass ,
+specified as either the name of a visual class
+or an integer enumerating a visual class.
+.TP
+.B \-version
+Display the current version
+(a six digit string containing the date stamp of the source files).
+.SH ENVIRONMENT
+If any of the following environment variables exist,
+they are used:
+.TP
+.B BROWSER
+Specifies the name of a browser program for examining documentation.
+.TP
+.B AUTOTRACE
+Specifies the location of the autotrace program (usually FontForge can figure
+this out without help, but not always).
+.TP
+.B MF
+Specifies the location of the metafont program.
+.TP
+.B FONTFORGE_VERBOSE
+Turns on verbose mode in scripting. Each statement is printed as it is executed.
+.SH FILES
+.TP
+.B ~/.PfaEdit/autosave/
+crash recovery directory
+.TP
+.B /usr/local/share/fontforge/*.ui
+translations for the user interface
+.TP
+.B /usr/local/share/doc/fontforge/*.html
+optional location for online documentation.
+.TP
+.B /usr/local/share/fontforge/*.cidmap
+"encoding" files for Adobe's cid formats
+from \fChttp://fontforge.sourceforge.net/cidmaps.tgz\fP
+.\"
+.SH "SEE ALSO"
+.BR sfddiff (1)
+.LP
+The HTML version of the
+.I fontforge
+manual,
+available online at:
+.TP
+\fChttp://fontforge.sourceforge.net/\fP
+.\" .SH STANDARDS
+.\" .SH HISTORY
+.SH NOTE
+.BR fontforge
+used to be called
+.BR pfaedit.
+.SH AUTHOR
+Copyright (C) 2000-2004 by George Williams (gww@silcom.com).
+Original manual page by Tom Harvey, subsequently modified by George Williams.
+Heavily rewritten and modified to use standard
+.IR \-man (5)macros by R.P.C. Rodgers (rodgers@nlm.nih.gov), 23 October 2002.
+.SH BUGS
+Undoubtedly many, but unknown and ever changing.
+See
+.IP
+\fChttp://fontforge.sourceforge.net/#known-bugs\fP
+for a current list.
+.\" end of file
+.\"

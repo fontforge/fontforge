@@ -1,0 +1,227 @@
+dnl Process this file with autoconf to produce a configure script.
+
+AC_INIT(fontforge/pfaedit.h)
+AC_PROG_CC
+AC_PROG_RANLIB
+
+gww_nodynamic="no"
+gww_needsstatic="no"
+AC_CANONICAL_HOST
+case "$host" in
+*-apple-darwin*) AC_DEFINE(NODYNAMIC)
+gww_nodynamic="yes"
+AC_DEFINE(_CursorsMustBe16x16)
+AC_DEFINE(_Keyboard,1)
+AC_DEFINE(__Mac,1)
+LIBS="/System/Library/Frameworks/CoreServices.framework/CoreServices $LIBS"
+ ;;
+powerpc-*-*linux*)
+AC_DEFINE(_Keyboard,3)
+ ;;
+*sparc*)
+AC_DEFINE(_Keyboard,2)
+ ;;
+*-pc-cygwin*)
+AC_DEFINE(_BrokenBitmapImages)
+AC_DEFINE(_ModKeysAutoRepeat)
+AC_DEFINE(__CygWin,1)
+AC_DEFINE(NODYNAMIC)
+gww_nodynamic="yes"
+gww_needsstatic="yes"
+ ;;
+esac
+
+AC_SEARCH_LIBS(dlopen, dl) dnl some systems have this in libc
+AC_SEARCH_LIBS(inet_aton, resolv) dnl some systems have this in libc
+AC_SEARCH_LIBS(libiconv, iconv) dnl linux has iconv in libc, mac has libiconv in libiconv, and a define to map iconv() to libiconv(), so we can't do the obvious check
+
+dnl Is there a better way to add a directory to the include path?
+
+FreeType2_IncRoot=
+if sh -c "freetype-config --prefix" >/dev/null 2>&1 ; then
+ FreeType2_IncRoot=`freetype-config --prefix`
+ AC_CHECK_FILE($FreeType2_IncRoot/include/freetype2,CFLAGS="$CFLAGS -I$FreeType2_IncRoot/include/freetype2/",FreeType2_IncRoot=)
+fi
+
+if test "FreeType2_IncRoot" = "" >/dev/null 2>&1 ; then
+ AC_CHECK_FILE(/usr/include/freetype2,[CFLAGS="$CFLAGS -I/usr/include/freetype2/"
+     FreeType2_IncRoot="/usr"
+ ],[
+ AC_CHECK_FILE(/usr/local/include/freetype2,[CFLAGS="$CFLAGS -I/usr/local/include -I/usr/local/include/freetype2/"
+     FreeType2_IncRoot="/usr/local/"
+ ],[
+ AC_CHECK_FILE(/usr/X11R6/include/freetype2,[CFLAGS="$CFLAGS -I/usr/X11R6/include -I/usr/X11R6/include/freetype2/"
+     FreeType2_IncRoot="/usr/X11R6/"
+ ],AC_DEFINE(_NO_FREETYPE))])])
+fi
+
+AC_CHECK_FILE(/usr/include/libxml2/libxml,[CFLAGS="$CFLAGS -I/usr/include/libxml2/"],[
+ AC_CHECK_FILE(/usr/local/include/libxml2/libxml,[CFLAGS="$CFLAGS -I/usr/local/include -I/usr/local/include/libxml2/"],
+  AC_DEFINE(_NO_LIBXML))])
+
+dnl Some old versions of lib(un)gif don't work for us, they've got the
+dnl Function argument in the wrong place. So two checks for gif.
+
+AC_CHECK_LIB(ungif, DGifOpenFileName, [
+echo -n checking for ExtensionBlock.Function in gif_lib.h...
+AC_TRY_COMPILE([#include <gif_lib.h>], [ ExtensionBlock foo; foo.Function=3; ], echo " " yes , [echo " " no
+    ac_cv_lib_ungif_DGifOpenFileName=no
+    AC_DEFINE(_NO_LIBUNGIF)])
+] , AC_DEFINE(_NO_LIBUNGIF))
+
+AC_CHECK_LIB(z, deflateEnd, : ,AC_DEFINE(_NO_LIBPNG), -lm) 
+AC_CHECK_LIB(png, png_create_read_struct, : ,[
+ AC_CHECK_LIB(png12, png_create_read_struct, AC_DEFINE(_LIBPNG12), AC_DEFINE(_NO_LIBPNG), -lz -lm)], -lz -lm)
+AC_CHECK_LIB(jpeg, jpeg_CreateDecompress, :  ,AC_DEFINE(_NO_LIBJPEG)) 
+AC_CHECK_LIB(tiff, TIFFOpen, : , AC_DEFINE(_NO_LIBTIFF), -lm )
+AC_CHECK_LIB(xml2, xmlParseFile, : , AC_DEFINE(_NO_LIBXML))
+
+AC_CHECK_HEADERS([iconv.h])
+
+gww_hasbytecode="no"
+AC_CHECK_LIB(freetype, FT_New_Memory_Face, [
+  echo checking for bytecode interpreter in freetype...
+  AC_CHECK_LIB(freetype, TT_RunIns, gww_hasbytecode="yes", : )],
+ AC_DEFINE(_NO_FREETYPE))
+if test "$gww_hasbytecode" = "yes" ; then
+ AC_CHECK_LIB(pthread, pthread_create, LIBS="$LIBS -lpthread", gww_hasbytecode="no")
+fi
+
+if test \( "$gww_hasbytecode" = "yes" \) -a \( "$FreeType2_IncRoot" != "" \); then
+ gww_hasbytecode="no"
+ AC_ARG_WITH(freetype-src,
+ [  --with-freetype-src=dir   Specify freetype source directory],
+ [
+    if test "$withval" != "no" >/dev/null 2>&1 ; then
+	FreeType2_TT_BUILD_INC="$withval/src/truetype"
+	AC_MSG_CHECKING(for valid freetype tree)
+	if test -f "$FreeType2_TT_BUILD_INC/ttobjs.h"; then
+		AC_MSG_RESULT(ok)
+	else
+		AC_MSG_RESULT(missing ttobjs.h)
+		echo "Unable to find $FreeType2_TT_BUILD_INC/ttobjs.h"
+	fi
+    fi
+ ],
+ [
+	dnl guess directory
+	AC_MSG_CHECKING(trying to find the freetype source directory -- be patient)
+	  FreeType2_TT_SRC_DIRs=`find / -name ttobjs.h -print 2>/dev/null |grep '[freetype[^/\]*2[^/\]*/src/truetype/ttobjs.h]' | sort -r | sed -e 's/ttobjs.h//'`
+	  for dir in $FreeType2_TT_SRC_DIRs; do
+	   if cmp -s ${dir}../../include/freetype/freetype.h ${FreeType2_IncRoot}/freetype/freetype.h >/dev/null 2>&1 ; then
+	    FreeType2_TT_BUILD_INC=$dir
+	  break
+	   fi
+	  done
+	  if test "$FreeType2_TT_BUILD_INC" = "" >/dev/null 2>&1 ; then
+	   for dir in $FreeType2_TT_SRC_DIRs; do
+	    has_goodft2sources="no"
+	    FreeType2_TT_BUILD_INC=$dir
+	   break
+	   done
+	  fi
+	  if test "$FreeType2_TT_BUILD_INC" = "" >/dev/null 2>&1 ; then
+	   echo " " no
+	  else
+	   echo " " probably
+	  fi
+ ])
+ if test "$FreeType2_TT_BUILD_INC" \!= "" >/dev/null 2>&1 ; then
+  if test -f $FreeType2_TT_BUILD_INC/ttdriver.h >/dev/null 2>&1 ; then
+   CFLAGS="$CFLAGS -I$FreeType2_TT_BUILD_INC"
+   gww_hasbytecode="yes"
+   AC_DEFINE(FREETYPE_HAS_DEBUGGER)
+  fi
+ fi
+fi
+
+dnl older libc's don't have snprintf
+
+AC_CHECK_FUNC(snprintf, : , AC_DEFINE(_NO_SNPRINTF))
+
+AC_C_CONST
+AC_PATH_XTRA
+AC_SUBST(X_11LIB)
+X_11LIB=-lX11
+if test "$no_x" = "yes"; then
+ X_11LIB=
+else
+ dnl AC_CHECK_HEADER("X11/extensions/XInput.h", : ,AC_DEFINE(_NO_XINPUT),)
+ dnl AC_CHECK_HEADER("X11/extensions/XI.h", : ,AC_DEFINE(_NO_XINPUT),)
+ dnl /usr/share/doc/XFree86-doc-4.2.0/Xi/lib.PS
+
+ AC_CHECK_LIB(Xi, XOpenDevice, X_11LIB="-lXi -lX11" ,AC_DEFINE(_NO_XINPUT), $X_LIBS $X_PRE_LIBS $X_EXTRA_LIBS -lX11 ) 
+ AC_CHECK_LIB(xkbui, XkbQueryExtension, X_11LIB="$X_11LIB -lxkbui" ,AC_DEFINE(_NO_XKB), $X_LIBS $X_PRE_LIBS $X_EXTRA_LIBS -lX11 ) 
+fi
+
+echo -n checking for long long ...
+AC_TRY_COMPILE(,[long long foo=0x400000000000;],[ AC_DEFINE(_HAS_LONGLONG)
+    echo " " yes] , echo " " no )
+
+dnl If we can't/don't want to use dynamic libraries then we must link with
+dnl the static libraries we've found
+
+AC_SUBST(STATIC_LIBS)
+STATIC_LIBS=
+if test "$gww_nodynamic" = "yes"; then
+ if test "$gww_needsstatic" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -static"
+ fi
+ if test "$ac_cv_lib_ungif_DGifOpenFileName" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lungif"
+ fi
+ if test "$ac_cv_lib_png_png_create_read_struct" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lpng -lz"
+ fi
+ if test "$ac_cv_lib_png12_png_create_read_struct" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lpng12 -lz"
+ fi
+ if test "$ac_cv_lib_tiff_TIFFOpen" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -ltiff"
+ fi
+ if test "$ac_cv_lib_jpeg_jpeg_CreateDecompress" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -ljpeg"
+ fi
+ if test "$ac_cv_lib_freetype_FT_New_Face" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lfreetype"
+ fi
+ AC_CHECK_LIB(uninameslist, UnicodeNameAnnot, [
+   STATIC_LIBS="$STATIC_LIBS -luninameslist"
+   AC_DEFINE(_STATIC_LIBUNINAMESLIST) ] , AC_DEFINE(_NO_LIBUNINAMESLIST))
+fi
+
+AC_ARG_WITH(multilayer,
+ [  --with-multilayer   Control whether we build with support for type3/svg fonts containing multilayered drawing with strokes, fills, images, etc.],
+ [
+    if test "$withval" != "no" >/dev/null 2>&1 ; then
+	AC_DEFINE(FONTFORGE_CONFIG_TYPE3)
+    fi
+ ], : )
+
+test -d libs || mkdir libs
+
+cp Makefile.static.in Makefile.in
+cp Unicode/Makefile.static.in Unicode/Makefile.in
+cp gdraw/Makefile.static.in gdraw/Makefile.in
+cp fontforge/Makefile.static.in fontforge/Makefile.in
+AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile fontforge/Makefile)
+if test -e umap >/dev/null 2>&1 ; then
+  cp umap/Makefile.static.in umap/Makefile.in
+  AC_OUTPUT( umap/Makefile )
+fi
+
+echo Configuration defines: $DEFS
+echo CFLAGS: $CFLAGS
+if test "$STATIC_LIBS" != ""; then
+  echo Static Libraries: $STATIC_LIBS
+fi
+
+if test "$no_x" = "yes"; then
+ echo " *******************************************************************"
+ echo " * This version of fontforge will only run scripts. No X libraries *"
+ echo " * were found so there is NO user interface!!!!! If you want a UI  *"
+ echo " * try installing X11 on your system.                              *"
+ echo " *******************************************************************"
+fi
+
+dnl EOF
