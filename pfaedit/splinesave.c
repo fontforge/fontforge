@@ -34,8 +34,6 @@
 #include <utype.h>
 #include <gwidget.h>
 
-extern int greekfixup;
-
 /* Let's talk about references. */
 /* If we are doing Type1 output, then the obvious way of doing them is seac */
 /*  but that's so limitting. It only works for exactly two characters both */
@@ -1392,13 +1390,9 @@ static void SplineFont2Subrs1(SplineFont *sf,int round, int iscjk,
 	sc->ttf_glyph = 0x7fff;
 	if ( !SCWorthOutputting(sc) || sc->refs!=NULL || sc!=SCDuplicate(sc))
     continue;
-	/* If we've got one of the badly named greek characters then put it */
-	/*  into a subr because we're going to duplicate it. Also put the */
+	/* Put the */
 	/*  character into a subr if it is referenced by other characters */
-	if ( sc->unicodeenc==0xb5 || sc->unicodeenc==0x3bc ||
-		sc->unicodeenc==0x394 || sc->unicodeenc==0x2206 ||
-		sc->unicodeenc==0x3a9 || sc->unicodeenc==0x2126 ||
-		(sc->dependents!=NULL &&
+	if ( (sc->dependents!=NULL &&
 		 ((!sc->hconflicts && !sc->vconflicts && !sc->anyflexes) ||
 		     SpecialCaseConflicts(sc)) &&
 		 !AlwaysSeacable(sc))) {
@@ -1526,94 +1520,11 @@ return( !SCWorthOutputting(SFGetChar(sf,'A',NULL)) &&
 return( false );
 }
 
-/* Adobe has decided that the name "mu" refers to the micro sign rather than */
-/*  the letter mu. But some font vendors use "mu" for the letter. So when we */
-/*  get a font with either "mu" or mu then make sure we output characters w/ */
-/*  name "mu", "uni00B5" or "uni03BC" */
-/* Same applies to "Delta", 394, 2206 and to "Omega", 3a9, 2126 */
-static int AddGreekDuplicates(struct pschars *chrs,SplineFont *sf,int cnt,
-	int round,int iscjk,struct pschars *subrs,int c1,int c2, int flags) {
-    int i1, i2, hasrealname1=false, hasrealname2=false, hasrealname;
-    const char *name; char uname[12];
-
-    if ( !greekfixup )
-return( cnt );
-
-    i1 = SFFindExistingChar(sf,c1,NULL);
-    i2 = SFFindExistingChar(sf,c2,NULL);
-    if ( i1 == -1 && i2 == -1 )
-return(cnt);
-    if ( i1!=-1 && *sf->chars[i1]->name!='u' )
-	hasrealname1 = true;
-    if ( i2!=-1 && *sf->chars[i2]->name!='u' )
-	hasrealname2 = true;
-    /* How very annoying. MS solves the problem a different way, they have */
-    /*  created "mu1", etc. for 0xb5 (which Adobe says should be mu) */
-    if ( hasrealname1 && hasrealname2 ) {
-	if ( strcmp(sf->chars[i1]->name,"mu")==0 ||
-		strcmp( sf->chars[i1]->name,"Omega")==0 ||
-		strcmp( sf->chars[i1]->name,"Delta")==0 )
-	    hasrealname2 = false;
-	else
-	    hasrealname1 = false;
-    }
-    hasrealname = hasrealname1 || hasrealname2;
-    if ( i1 == -1 || hasrealname1 ) {
-	if ( hasrealname || (name = psunicodenames[c1])==NULL ) {
-	    sprintf(uname,"uni%04X", c1);
-	    name = uname;
-	}
-	chrs->keys[cnt] = copy(name);
-	chrs->values[cnt] = SplineChar2PS(sf->chars[i1==-1?i2:i1],&chrs->lens[cnt],
-		round,iscjk,subrs,NULL,flags);
-	++cnt;
-    }
-    if ( i2 == -1 || hasrealname2 ) {
-	if ( hasrealname || (name = psunicodenames[c2])==NULL ) {
-	    sprintf(uname,"uni%04X", c2);
-	    name = uname;
-	}
-	chrs->keys[cnt] = copy(name);
-	chrs->values[cnt] = SplineChar2PS(sf->chars[i2==-1?i1:i2],&chrs->lens[cnt],
-		round,iscjk,subrs,NULL,flags);
-	++cnt;
-    }
-    if ( !hasrealname ) {
-	if ( (name = psunicodenames[c1])==NULL )
-	    name = psunicodenames[c2];
-	chrs->keys[cnt] = copy(name);
-	chrs->values[cnt] = SplineChar2PS(sf->chars[i1==-1?i2:i1],&chrs->lens[cnt],
-		round,iscjk,subrs,NULL,flags);
-	++cnt;
-    }
-return( cnt );
-}
-
-static int GreekExists(char exists[6],SplineFont *sf) {
-    int cnt;
-
-    exists[0] = SCWorthOutputting(SFGetChar(sf,0xb5,NULL));
-    exists[1] = SCWorthOutputting(SFGetChar(sf,0x3bc,NULL));
-    exists[2] = SCWorthOutputting(SFGetChar(sf,0x394,NULL));
-    exists[3] = SCWorthOutputting(SFGetChar(sf,0x2206,NULL));
-    exists[4] = SCWorthOutputting(SFGetChar(sf,0x3a9,NULL));
-    exists[5] = SCWorthOutputting(SFGetChar(sf,0x2126,NULL));
-    if ( !greekfixup )
-return( 0 );
-
-    cnt = 0;
-    if ( exists[0]!=exists[1] ) cnt+=2; else if ( exists[0]&&exists[1] ) ++cnt;
-    if ( exists[2]!=exists[3] ) cnt+=2; else if ( exists[2]&&exists[3] ) ++cnt;
-    if ( exists[4]!=exists[5] ) cnt+=2; else if ( exists[4]&&exists[5] ) ++cnt;
-return( cnt );
-}
-
 struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
 	struct pschars *subrs,int flags) {
     struct pschars *chrs = gcalloc(1,sizeof(struct pschars));
     int i, cnt;
     char notdefentry[20];
-    char exists[6];
     int fixed = SFOneWidth(sf), notdefwidth;
     int zero_is_notdef;
 
@@ -1633,8 +1544,6 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
     zero_is_notdef = SCIsNotdef(sf->chars[0],fixed);
     if ( !zero_is_notdef )
 	++cnt;		/* one notdef entry */
-    /* special greek hacks */
-    cnt += GreekExists(exists,sf);
 
     chrs->cnt = cnt;
     chrs->keys = galloc(cnt*sizeof(char *));
@@ -1696,12 +1605,6 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
 return( NULL );
 	}
     }
-    if ( exists[0] || exists[1] )
-	cnt = AddGreekDuplicates(chrs,sf,cnt,round,iscjk,subrs,0xb5,0x3bc,flags);
-    if ( exists[2] || exists[3] )
-	cnt = AddGreekDuplicates(chrs,sf,cnt,round,iscjk,subrs,0x394,0x2206,flags);
-    if ( exists[4] || exists[5] )
-	cnt = AddGreekDuplicates(chrs,sf,cnt,round,iscjk,subrs,0x3a9,0x2126,flags);
     chrs->next = cnt;
     if ( chrs->next>chrs->cnt )
 	GDrawIError("Character estimate failed, about to die..." );
@@ -2522,12 +2425,8 @@ struct pschars *SplineFont2Subrs2(SplineFont *sf,int flags) {
 	else if ( SCWorthOutputting(sc) &&
 	    (( sc->refs==NULL && sc->dependents!=NULL &&
 		    ( (!sc->hconflicts && !sc->vconflicts) ||
-			Type2SpecialCase(sc)) ) ||
-		    sc->unicodeenc==0xb5 || sc->unicodeenc==0x3bc ||
-		    sc->unicodeenc==0x394 || sc->unicodeenc==0x2206 ||
-		    sc->unicodeenc==0x3a9 || sc->unicodeenc==0x2126 )) {
-	/* If we've got one of the badly named greek characters then put it */
-	/*  into a subr because we're going to duplicate it. Also put the */
+			Type2SpecialCase(sc)) )  )) {
+	/* Put the */
 	/*  character into a subr if it is referenced by other characters */
 	    ++cnt;
 	    sc->lsidebearing = 0;	/* anything other than 0x7fff */

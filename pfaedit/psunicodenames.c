@@ -65699,6 +65699,8 @@ const struct psaltnames  {
 	{ "eight.inferior", 0x2088 },
 	{ "nine.inferior", 0x2089 },
 	{ "mu.greek", 0x03bc },
+	{ "Delta.greek", 0x0394 },
+	{ "Omega.greek", 0x03a9 },
 	{ "sigma.end", 0x03c2 },
 	{ "beta.alt", 0x03d0 },
 	{ "kappa.alt", 0x03f0 },

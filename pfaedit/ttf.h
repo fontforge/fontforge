@@ -67,6 +67,7 @@ struct ttfinfo {
     int fstype;
     struct psdict *private;	/* Only for open type cff fonts */
     enum charset encoding_name;/* from cmap */
+    enum uni_interp uni_interp;
     struct pfminfo pfminfo;
     struct ttflangname *names;
     char *fontcomments;

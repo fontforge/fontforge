@@ -1451,6 +1451,16 @@ static void SplineFontMetaData(SplineFont *sf,struct fontdict *fd) {
     sf->ordering = copy(fd->ordering);
     sf->supplement = fd->supplement;
     sf->pfminfo.fstype = fd->fontinfo->fstype;
+    if ( sf->ordering!=NULL ) {
+	if ( strnmatch(sf->ordering,"Japan",5)==0 )
+	    sf->uni_interp = ui_japanese;
+	else if ( strnmatch(sf->ordering,"Korea",5)==0 )
+	    sf->uni_interp = ui_korean;
+	else if ( strnmatch(sf->ordering,"CNS",3)==0 )
+	    sf->uni_interp = ui_trad_chinese;
+	else if ( strnmatch(sf->ordering,"GB",2)==0 )
+	    sf->uni_interp = ui_simp_chinese;
+    }
 }
 
 /* Adobe has (it seems to me) misnamed the greek letters so that "mu" actually*/
@@ -1725,6 +1735,7 @@ return( NULL );
 	sf->subfonts[i] = SplineFontEmpty();
 	SplineFontMetaData(sf->subfonts[i],fd->fds[i]);
 	sf->subfonts[i]->cidmaster = sf;
+	sf->subfonts[i]->uni_interp = sf->uni_interp;
 	if ( fd->fds[i]->fonttype==2 )
 	    fd->fds[i]->private->subrs->bias =
 		    fd->fds[i]->private->subrs->cnt<1240 ? 107 :

@@ -1781,6 +1781,7 @@ SplineFont *SplineFontBlank(int encoding_name,int charcnt) {
     struct passwd *pwd;
     time_t now;
     struct tm *tm;
+    extern int greeknames;
 
     sf = SplineFontEmpty();
     sf->fontname = GetNextUntitledName();
@@ -1820,6 +1821,7 @@ SplineFont *SplineFontBlank(int encoding_name,int charcnt) {
     sf->charcnt = charcnt;
     sf->chars = gcalloc(charcnt,sizeof(SplineChar *));
     sf->encoding_name = encoding_name;
+    sf->uni_interp = interp_from_encoding(encoding_name,greeknames ? ui_greek : ui_none);
     sf->pfminfo.fstype = -1;
     sf->order2 = false;
 return( sf );

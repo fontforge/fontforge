@@ -2936,6 +2936,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
     int i,j;
     int nencs, version;
     enum charset enc = em_none;
+    enum uni_interp interp = ui_none;
     int platform, specific;
     int offset, encoff=0;
     int format, len;
@@ -2958,6 +2959,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	platform = getushort(ttf);
 	specific = getushort(ttf);
 	offset = getlong(ttf);
+	interp = interp_from_encoding(enc_from_platspec(platform,specific),interp);
 	if ( platform==3 && specific==10 ) { /* MS Unicode 4 byte */
 	    enc = em_unicode4;
 	    encoff = offset;
@@ -3292,6 +3294,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    info->chars[0]->name!=NULL && strcmp(info->chars[0]->name,".notdef")==0 )
 	info->chars[0]->unicodeenc = -1;
     info->encoding_name = enc;
+    info->uni_interp = interp;
 }
 
 static int EncFromName(const char *name) {
@@ -3876,6 +3879,7 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
     free(oldchars);
 
     sf->encoding_name = info->encoding_name==-2? em_none : info->encoding_name;
+    sf->uni_interp = info->uni_interp;
 
     for ( bdf=sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
 	bdf->encoding_name = sf->encoding_name;

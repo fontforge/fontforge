@@ -4049,6 +4049,20 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
     else if ( dummy->unicodeenc!=-1  ) {
 	if ( dummy->unicodeenc<psunicodenames_cnt )
 	    dummy->name = (char *) psunicodenames[dummy->unicodeenc];
+	if ( dummy->name==NULL && sf->uni_interp==ui_adobe &&
+		((dummy->unicodeenc>=0xe000 && dummy->unicodeenc<=0xf7ff ) ||
+		 (dummy->unicodeenc>=0xfb00 && dummy->unicodeenc<=0xfb06 ))) {
+	    /* If we are using Adobe's interpretation of the private use */
+	    /*  area (which means small caps, etc. Then look for those */
+	    /*  names (also include the names for ligatures) */
+	    for ( j=0; psaltuninames[j].name!=NULL; ++j ) {
+		if ( psaltuninames[j].unicode == dummy->unicodeenc &&
+			strpbrk(psaltuninames[j].name,"._")!=NULL ) {
+		    dummy->name = psaltuninames[j].name;
+	    break;
+		}
+	    }
+	}
 	if ( dummy->name==NULL ) {
 	    if ( dummy->unicodeenc==0x2d )
 		dummy->name = "hyphen-minus";
@@ -4058,6 +4072,12 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 		dummy->name = ".notdef";
 	    else if ( dummy->unicodeenc==0xa0 )
 		dummy->name = "nonbreakingspace";
+	    else if ( dummy->unicodeenc==0x03bc && sf->uni_interp==ui_greek )
+		dummy->name = "mu.greek";
+	    else if ( dummy->unicodeenc==0x0394 && sf->uni_interp==ui_greek )
+		dummy->name = "Delta.greek";
+	    else if ( dummy->unicodeenc==0x03a9 && sf->uni_interp==ui_greek )
+		dummy->name = "Omega.greek";
 	    else {
 		if ( dummy->unicodeenc>=0x10000 )
 		    sprintf( namebuf, "u%04X", dummy->unicodeenc);
@@ -4209,9 +4229,12 @@ return( rot );
 }
 
 static int Use2ByteEnc(FontView *fv,SplineChar *sc, unichar_t *buf,FontMods *mods) {
-    int ch1 = sc->enc>>8, ch2 = sc->enc&0xff;
+    int ch1 = sc->enc>>8, ch2 = sc->enc&0xff, newch;
+    int enc = fv->sf->encoding_name;
+    unsigned short *subtable;
 
-    switch ( fv->sf->encoding_name ) {
+ retry:
+    switch ( enc ) {
       case em_big5: case em_big5hkscs:
 	if ( !GDrawFontHasCharset(fv->header,em_big5))
 return( false);
@@ -4268,18 +4291,71 @@ return( false );
 	buf[1] = 0;
 return( true );
       break;
-      case em_ksc5601: case em_jis208: case em_jis212:
-	if ( !GDrawFontHasCharset(fv->header,fv->sf->encoding_name))
+      case em_ksc5601: case em_jis208: case em_jis212: case em_gb2312:
+	if ( !GDrawFontHasCharset(fv->header,enc))
 return( false);
-	if ( ch1<0x21 || ch1>0x7d || ch2>0x21 || ch2<0x7d )
+	if ( ch1<0x21 || ch1>0x7d || ch2<0x21 || ch2>0x7d )
 return( false );
-	mods->has_charset = true; mods->charset = fv->sf->encoding_name;
-	buf[0] = sc->enc;
+	mods->has_charset = true; mods->charset = enc;
+	buf[0] = (ch1<<8)|ch2;
 	buf[1] = 0;
 return( true );
       break;
       default:
+    /* If possible, look at the unicode font using the appropriate glyphs */
+    /*  for the CJ language for which the font was designed */
+	ch1 = sc->unicodeenc>>8, ch2 = sc->unicodeenc&0xff;
+	switch ( fv->sf->uni_interp ) {
+	  case ui_japanese:
+	    if ( ch1>=jis_from_unicode.first && ch1<=jis_from_unicode.last &&
+		    (subtable = jis_from_unicode.table[ch1-jis_from_unicode.first])!=NULL &&
+		    (newch = subtable[ch2])!=0 ) {
+		if ( newch&0x8000 ) {
+		    if ( GDrawFontHasCharset(fv->header,em_jis212)) {
+			enc = em_jis212;
+			newch &= ~0x8000;
+			ch1 = newch>>8; ch2 = newch&0xff;
+		    } else
 return( false );
+		} else {
+		    if ( GDrawFontHasCharset(fv->header,em_jis208)) {
+			enc = em_jis208;
+			ch1 = newch>>8; ch2 = newch&0xff;
+		    } else
+return( false );
+		}
+	    } else
+return( false );
+	  break;
+	  case ui_korean:
+	    /* Don't know what to do about korean hanga chars */
+	    /* No ambiguity for hangul */
+return( false );
+	  break;
+	  case ui_trad_chinese:
+	    if ( ch1>=big5hkscs_from_unicode.first && ch1<=big5hkscs_from_unicode.last &&
+		    (subtable = big5hkscs_from_unicode.table[ch1-big5hkscs_from_unicode.first])!=NULL &&
+		    (newch = subtable[ch2])!=0 &&
+		    GDrawFontHasCharset(fv->header,em_big5)) {
+		enc = em_big5hkscs;
+		ch1 = newch>>8; ch2 = newch&0xff;
+	    } else
+return( false );
+	  break;
+	  case ui_simp_chinese:
+	    if ( ch1>=gb2312_from_unicode.first && ch1<=gb2312_from_unicode.last &&
+		    (subtable = gb2312_from_unicode.table[ch1-gb2312_from_unicode.first])!=NULL &&
+		    (newch = subtable[ch2])!=0 &&
+		    GDrawFontHasCharset(fv->header,em_gb2312)) {
+		enc = em_gb2312;
+		ch1 = newch>>8; ch2 = newch&0xff;
+	    } else
+return( false );
+	  break;
+	  default:
+return( false );
+	}
+ goto retry;
     }
 }
 
@@ -4414,7 +4490,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		rotated = NULL;
 	    } else {
 		if ( italic!=wasitalic ) GDrawSetFont(pixmap,italic?fv->iheader:fv->header);
-		width = GDrawGetTextWidth(pixmap,buf,1,NULL);
+		width = GDrawGetTextWidth(pixmap,buf,1,mods);
 		if ( sc->unicodeenc<0x80 || sc->unicodeenc>=0xa0 )
 		    GDrawDrawText(pixmap,j*fv->cbw+(fv->cbw-1-width)/2,i*fv->cbh+FV_LAB_HEIGHT-2,buf,1,mods,fg);
 		wasitalic = italic;

@@ -3498,11 +3498,6 @@ static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format)
 	    putc('\0',at->post);
 }
 
-static void SetTo(uint32 *avail,uint16 *sfind,int to,int from) {
-    avail[to] = avail[from];
-    if ( sfind!=NULL ) sfind[to] = sfind[from];
-}
-
 static FILE *Needs816Enc(SplineFont *sf,int *tlen) {
     int i, j, complained, pos, k, subheadindex, jj;
     uint16 table[256];
@@ -3821,7 +3816,6 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
     char table[256];
     SplineFont *sf = _sf;
     SplineChar *sc, notdef, nonmarkingreturn;
-    extern int greekfixup;
     int alreadyprivate = false;
 
     if ( sf->subfontcnt==0 && sf->chars[0]==NULL ) {	/* Encode the default notdef char at 0 */
@@ -3930,26 +3924,6 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 		}
 		++k;
 	    } while ( k<_sf->subfontcnt );
-	}
-	if ( _sf->encoding_name!=em_jis208 && _sf->encoding_name!=em_ksc5601 &&
-		_sf->encoding_name!=em_sjis && _sf->encoding_name!=em_wansung &&
-		_sf->encoding_name!=em_big5 && _sf->encoding_name!=em_big5hkscs &&
-		_sf->encoding_name!=em_johab &&
-		_sf->encoding_name!=em_gb2312 && _sf->encoding_name!=em_jisgb &&
-		!greekfixup ) {
-	    /* Duplicate glyphs for greek */	/* Only meaningful if unicode */
-	    if ( avail[0xb5]==0xffffffff && avail[0x3bc]!=0xffffffff )
-		SetTo(avail,sfind,0xb5,0x3bc);
-	    else if ( avail[0x3bc]==0xffffffff && avail[0xb5]!=0xffffffff )
-		SetTo(avail,sfind,0x3bc,0xb5);
-	    if ( avail[0x394]==0xffffffff && avail[0x2206]!=0xffffffff )
-		SetTo(avail,sfind,0x394,0x2206);
-	    else if ( avail[0x2206]==0xffffffff && avail[0x394]!=0xffffffff )
-		SetTo(avail,sfind,0x2206,0x394);
-	    if ( avail[0x3a9]==0xffffffff && avail[0x2126]!=0xffffffff )
-		SetTo(avail,sfind,0x3a9,0x2126);
-	    else if ( avail[0x2126]==0xffffffff && avail[0x3a9]!=0xffffffff )
-		SetTo(avail,sfind,0x2126,0x3a9);
 	}
 
 	j = -1;

@@ -105,6 +105,15 @@ GTextInfo encodingtypes[] = {
     { (unichar_t *) _STR_ChineseTrad, NULL, 0, 0, (void *) em_big5, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_ChineseTradHKSCS, NULL, 0, 0, (void *) em_big5hkscs, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
+GTextInfo interpretations[] = {
+    { (unichar_t *) _STR_None, NULL, 0, 0, (void *) ui_none, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_AdobePUA, NULL, 0, 0, (void *) ui_adobe, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacGreek, NULL, 0, 0, (void *) ui_greek, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacJapanese, NULL, 0, 0, (void *) ui_japanese, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacTraditionalChinese, NULL, 0, 0, (void *) ui_trad_chinese, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacSimplifiedChinese, NULL, 0, 0, (void *) ui_simp_chinese, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacKorean, NULL, 0, 0, (void *) ui_korean, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { NULL }};
 static GTextInfo widthclass[] = {
     { (unichar_t *) _STR_UltraCondensed, NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_ExtraCondensed, NULL, 0, 0, (void *) 2, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -583,6 +592,7 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_Em		1017
 #define CID_Scale	1018
 #define CID_IsOrder2	1019
+#define CID_Interpretation	1020
 
 #define CID_Make	1111
 #define CID_Delete	1112
@@ -3794,7 +3804,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	GWindow gw = GGadgetGetWindow(g);
 	struct gfi_data *d = GDrawGetUserData(gw);
 	SplineFont *sf = d->sf, *_sf;
-	int enc;
+	int enc, interp;
 	int reformat_fv=0;
 	int upos, uwid, as, des, nchar, oldcnt=sf->charcnt, err = false, weight=0;
 	int uniqueid, linegap=0, vlinegap;
@@ -3924,6 +3934,10 @@ return(true);
 
 	GFI_ProcessAnchor(d);
 	GFI_ProcessContexts(d);
+
+	interp = GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,CID_Interpretation));
+	if ( interp==-1 ) sf->uni_interp = ui_none;
+	else sf->uni_interp = (intpt) interpretations[interp].userdata;
 
 	enc = GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,CID_Encoding));
 	if ( enc!=-1 ) {
@@ -4368,11 +4382,11 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GWindow gw;
     GWindowAttrs wattrs;
     GTabInfo aspects[15], conaspects[7], smaspects[4];
-    GGadgetCreateData mgcd[10], ngcd[13], egcd[12], psgcd[23], tngcd[7],
+    GGadgetCreateData mgcd[10], ngcd[13], egcd[14], psgcd[23], tngcd[7],
 	pgcd[8], vgcd[16], pangcd[22], comgcd[3], atgcd[7], txgcd[23],
 	congcd[3], csubgcd[fpst_max-pst_contextpos][6], smgcd[3], smsubgcd[3][6],
 	mfgcd[8], ogcd[8];
-    GTextInfo mlabel[10], nlabel[13], elabel[12], pslabel[23], tnlabel[7],
+    GTextInfo mlabel[10], nlabel[13], elabel[14], pslabel[23], tnlabel[7],
 	plabel[8], vlabel[16], panlabel[22], comlabel[3], atlabel[7], txlabel[23],
 	csublabel[fpst_max-pst_contextpos][6], smsublabel[3][6],
 	mflabel[8], olabel[8], *list;
@@ -4641,25 +4655,47 @@ return;
     egcd[8].gd.cid = CID_NChars;
     egcd[8].creator = GTextFieldCreate;
 
+    egcd[9].gd.pos.x = 12; egcd[9].gd.pos.y = egcd[7].gd.pos.y+24;
+    egcd[9].gd.flags = gg_visible | gg_enabled;
+    elabel[9].text = (unichar_t *) _STR_Interpretation;
+    elabel[9].text_in_resource = true;
+    egcd[9].gd.label = &elabel[9];
+    egcd[9].creator = GLabelCreate;
+
+    egcd[10].gd.pos.x = egcd[1].gd.pos.x; egcd[10].gd.pos.y = egcd[9].gd.pos.y-6;
+    egcd[10].gd.flags = gg_visible | gg_enabled;
+    egcd[10].gd.u.list = interpretations;
+    egcd[10].gd.cid = CID_Interpretation;
+    egcd[10].gd.handle_controlevent = GFI_SelectEncoding;
+    egcd[10].creator = GListButtonCreate;
+    for ( i=0; interpretations[i].text!=NULL || interpretations[i].line; ++i ) {
+	if ( (void *) (sf->uni_interp)==interpretations[i].userdata &&
+		interpretations[i].text!=NULL ) {
+	    interpretations[i].selected = true;
+	    egcd[10].gd.label = &interpretations[i];
+	} else
+	    interpretations[i].selected = false;
+    }
+
     if ( sf->cidmaster || sf->subfontcnt!=0 ) {
 	SplineFont *master = sf->cidmaster?sf->cidmaster:sf;
 
-	egcd[9].gd.pos.x = 12; egcd[9].gd.pos.y = egcd[8].gd.pos.y+36+6;
-	egcd[9].gd.flags = gg_visible ;
-	egcd[9].gd.mnemonic = 'N';
-	elabel[9].text = (unichar_t *) _STR_CIDRegistry;
-	elabel[9].text_in_resource = true;
-	egcd[9].gd.label = &elabel[9];
-	egcd[9].creator = GLabelCreate;
+	egcd[11].gd.pos.x = 12; egcd[11].gd.pos.y = egcd[10].gd.pos.y+36+6;
+	egcd[11].gd.flags = gg_visible ;
+	egcd[11].gd.mnemonic = 'N';
+	elabel[11].text = (unichar_t *) _STR_CIDRegistry;
+	elabel[11].text_in_resource = true;
+	egcd[11].gd.label = &elabel[11];
+	egcd[11].creator = GLabelCreate;
 
-	egcd[10].gd.pos.x = egcd[1].gd.pos.x; egcd[10].gd.pos.y = egcd[9].gd.pos.y-6;
-	egcd[10].gd.pos.width = 140;
-	egcd[10].gd.flags = gg_visible ;
+	egcd[12].gd.pos.x = egcd[1].gd.pos.x; egcd[12].gd.pos.y = egcd[11].gd.pos.y-6;
+	egcd[12].gd.pos.width = 140;
+	egcd[12].gd.flags = gg_visible ;
 	sprintf( regbuf, "%.30s-%.30s-%d", master->cidregistry, master->ordering, master->supplement );
-	elabel[10].text = (unichar_t *) regbuf;
-	elabel[10].text_is_1byte = true;
-	egcd[10].gd.label = &elabel[10];
-	egcd[10].creator = GTextFieldCreate;
+	elabel[12].text = (unichar_t *) regbuf;
+	elabel[12].text_is_1byte = true;
+	egcd[12].gd.label = &elabel[12];
+	egcd[12].creator = GTextFieldCreate;
     }
 
     if ( sf->subfontcnt!=0 || sf->cidmaster!=NULL ) {

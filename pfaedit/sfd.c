@@ -44,6 +44,9 @@ static const char *charset_names[] = {
     "jis208", "jis212", "ksc5601", "gb2312", "big5", "big5hkscs", "johab",
     "unicode", "unicode4", "sjis", "wansung", "gb2312pk", NULL};
 
+static const char *unicode_interp_names[] = { "none", "adobe", "greek",
+    "japanese", "tradchinese", "simpchinese", "korean", NULL };
+
 signed char inbase64[256] = {
         -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
         -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -1079,6 +1082,7 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	SFDDumpEncoding(sfd,sf->old_encname,"OldEncoding");
     } else
 	SFDDumpEncoding(sfd,sf->encoding_name,"Encoding");
+    fprintf( sfd, "UnicodeInterp: %s\n", unicode_interp_names[sf->uni_interp]);
 	
     if ( sf->remap!=NULL ) {
 	struct remap *map;
@@ -2444,6 +2448,21 @@ static enum charset SFDGetEncoding(FILE *sfd, char *tok, SplineFont *sf) {
 return( encname );
 }
 
+static enum uni_interp SFDGetUniInterp(FILE *sfd, char *tok, SplineFont *sf) {
+    int uniinterp = ui_none;
+    int i;
+
+    geteol(sfd,tok);
+    uniinterp = em_none;
+    for ( i=0; unicode_interp_names[i]!=NULL; ++i )
+	if ( strcmp(tok,unicode_interp_names[i])==0 ) {
+	    uniinterp = i;
+    break;
+	}
+
+return( uniinterp );
+}
+
 static int SFAddScriptIndex(SplineFont *sf,uint32 *scripts,int scnt) {
     int i,j;
     struct script_record *sr;
@@ -2772,8 +2791,32 @@ static void SFDCleanupAnchorClasses(SplineFont *sf) {
 #undef S_MAX
 }
 
+enum uni_interp interp_from_encoding(enum charset enc,enum uni_interp interp) {
+
+    switch ( enc ) {
+      case em_sjis: case em_jis208: case em_jis212: case em_jis201:
+	interp = ui_japanese;
+      break;
+      case em_big5: case em_big5hkscs:
+	interp = ui_trad_chinese;
+      break;
+      case em_johab: case em_wansung: case em_ksc5601:
+	interp = ui_korean;
+      break;
+      case em_jisgb: case em_gb2312: case em_gb18030:
+	interp = ui_simp_chinese;
+      break;
+      case em_iso8859_7:
+	interp = ui_greek;
+      break;
+    }
+return( interp );
+}
+
 static void SFDCleanupFont(SplineFont *sf) {
     SFDCleanupAnchorClasses(sf);
+    if ( sf->uni_interp==ui_unset )
+	sf->uni_interp = interp_from_encoding(sf->encoding_name,ui_none);
 }
 
 static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
@@ -2788,6 +2831,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 
     sf = SplineFontEmpty();
     sf->cidmaster = cidmaster;
+    sf->uni_interp = ui_unset;
     while ( 1 ) {
 	if ( (eof = getname(sfd,tok))!=1 ) {
 	    if ( eof==-1 )
@@ -2912,6 +2956,8 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    sf->encoding_name = SFDGetEncoding(sfd,tok,sf);
 	} else if ( strmatch(tok,"OldEncoding:")==0 ) {
 	    sf->old_encname = SFDGetEncoding(sfd,tok,sf);
+	} else if ( strmatch(tok,"UnicodeInterp:")==0 ) {
+	    sf->uni_interp = SFDGetUniInterp(sfd,tok,sf);
 	} else if ( strmatch(tok,"Registry:")==0 ) {
 	    geteol(sfd,tok);
 	    sf->cidregistry = copy(tok);

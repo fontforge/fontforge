@@ -69,7 +69,7 @@ extern int maxundoes;			/* in cvundoes */
 extern int prefer_cjk_encodings;	/* in parsettf */
 /* int local_encoding; */		/* in gresource.c *//* not a charset */
 static int prefs_encoding = e_unknown;
-int greekfixup = true;
+int greeknames = false;
 extern int onlycopydisplayed, copymetadata;
 extern struct cvshows CVShows;
 extern int oldformatstate;		/* in savefontdlg.c */
@@ -265,7 +265,7 @@ static struct prefs_list {
 	{ "NewEmSize", pr_int, &new_em_size, NULL, NULL, 'S', NULL, 0, _STR_PrefsPopupNES },
 	{ "NewFontsQuadratic", pr_bool, &new_fonts_are_order2, NULL, NULL, 'Q', NULL, 0, _STR_PrefsPopupNOT },
 	{ "LoadedFontsAsNew", pr_bool, &loaded_fonts_same_as_new, NULL, NULL, 'L', NULL, 0, _STR_PrefsPopupLFN },
-	{ "GreekFixup", pr_bool, &greekfixup, NULL, NULL, 'G', NULL, 0, _STR_PrefsPopupGF },
+	{ "GreekNames", pr_bool, &greeknames, NULL, NULL, 'G', NULL, 0, _STR_PrefsPopupGN },
 	{ "ResourceFile", pr_file, &xdefs_filename, NULL, NULL, 'R', NULL, 0, _STR_PrefsPopupXRF },
 	{ "HelpDir", pr_file, &helpdir, NULL, NULL, 'R', NULL, 0, _STR_PrefsPopupHLP },
 	{ NULL }
@@ -580,64 +580,6 @@ return( e_iso8859_1 );
 return( enc );
 }
 
-static void GreekHack(void) {
-    int i;
-
-    if ( greekfixup ) {
-	psunicodenames[0x2206] = NULL;		/* Increment */
-	psunicodenames[0x2126] = NULL;		/* Ohm sign */
-	psunicodenames[0x0394] = "Delta";	/* Delta */
-	psunicodenames[0x03A9] = "Omega";	/* Omega */
-
-#if 0		/* I've moved these into the unicode alternate names table */
-	psunicodenames[0xf500] = "Alphasmall";
-	psunicodenames[0xf501] = "Betasmall";
-	psunicodenames[0xf502] = "Gammasmall";
-	psunicodenames[0xf503] = "Deltasmall";
-	psunicodenames[0xf504] = "Epsilonsmall";
-	psunicodenames[0xf505] = "Zetasmall";
-	psunicodenames[0xf506] = "Etasmall";
-	psunicodenames[0xf507] = "Thetasmall";
-	psunicodenames[0xf508] = "Iotasmall";
-	psunicodenames[0xf509] = "Kappasmall";
-	psunicodenames[0xf50a] = "Lambdasmall";
-	psunicodenames[0xf50b] = "Musmall";
-	psunicodenames[0xf50c] = "Nusmall";
-	psunicodenames[0xf50d] = "Xismall";
-	psunicodenames[0xf50e] = "Omicronsmall";
-	psunicodenames[0xf50f] = "Pismall";
-	psunicodenames[0xf510] = "Rhosmall";
-	psunicodenames[0xf511] = NULL,
-	psunicodenames[0xf512] = "Sigmasmall";
-	psunicodenames[0xf513] = "Tausmall";
-	psunicodenames[0xf514] = "Upsilonsmall";
-	psunicodenames[0xf515] = "Phismall";
-	psunicodenames[0xf516] = "Chismall";
-	psunicodenames[0xf517] = "Psismall";
-	psunicodenames[0xf518] = "Omegasmall";
-	psunicodenames[0xf519] = "Iotadieresissmall";
-	psunicodenames[0xf51a] = "Upsilondieresissmall";
-#endif
-    } else {
-	psunicodenames[0x2206] = "Delta";	/* Increment */
-	psunicodenames[0x2126] = "Omega";	/* Ohm sign */
-	psunicodenames[0x0394] = NULL;		/* Delta */
-	psunicodenames[0x03A9] = NULL;		/* Omega */
-	for ( i=0xf500; i<=0xf51a; ++i )
-	    psunicodenames[i] = NULL;
-    }
-    /* I'm leaving mu at 00b5 (rather than 03bc) */
-
-#if 0
-/* Adobe says 0x03d6 should be called "omega1", but Unicode says it's a varient of Pi */
-/* Done now with alternate PS names */
-    if ( getenv("PFAEDIT_PI1")!=NULL )
-	psunicodenames[0x03d6] = "pi1";
-    else
-	psunicodenames[0x03d6] = "omega1";
-#endif
-}
-
 static unichar_t *utf8_copy(char *src) {
     unichar_t *ret = galloc((strlen(src)+1)*sizeof(unichar_t)), *pt=ret;
 
@@ -751,7 +693,6 @@ void LoadPrefs(void) {
     PfaEditSetFallback();
     LoadPfaEditEncodings();
     CheckLang();
-    GreekHack();
 
     if ( prefs==NULL || (p=fopen(prefs,"r"))==NULL ) {
 	DoDefaults();
@@ -823,7 +764,6 @@ return;
 	}
     }
     fclose(p);
-    GreekHack();
     DefaultHelp();
     if ( prefs_encoding==e_unknown )
 	local_encoding = DefaultEncoding();
@@ -1868,7 +1808,6 @@ void DoPrefs(void) {
     while ( !p.done )
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(gw);
-    GreekHack();
 }
 
 void RecentFilesRemember(char *filename) {

@@ -1197,7 +1197,8 @@ static char *str_PrefsPopupIC[] = "Nella finestra 'Contorno' il tasto Shift impo
 static char *str_PrefsPopupAO[] = "Percentuale di un Em per separare un accento dal suo carattere di base\ncon il comando 'Crea caratteri accentati'";
 static char *str_PrefsPopupGA[] = "Quando mette un accento acuto o grave su una lettera, PfaEdit\ndeve centrarlo tendo conto della sua larghezza oppure lo deve centrare\ntendo conto del punto più basso dell'accento?";
 static char *str_PrefsPopupAA[] = "Numero di Em col quale le frecce di spostamento\nmuovono i punti selezionati";
-static char *str_PrefsPopupGF[] = "Adobe ha legato i nomi Delta, Omega et mu ai segni\nIncremento, Ohm e micro rispettivamente.\nQuesto appare molto strano ai disegnatori di font greci\nche usano quei nomi per le lettere dell'alfabeto.\nI nomi sono perciò ambigui. Pfaedit aggira l'ambiguità\ncreando i font con glifi supplementari.";
+/*static char *str_PrefsPopupGF[] = "Adobe ha legato i nomi Delta, Omega et mu ai segni\nIncremento, Ohm e micro rispettivamente.\nQuesto appare molto strano ai disegnatori di font greci\nche usano quei nomi per le lettere dell'alfabeto.\nI nomi sono perciò ambigui. Pfaedit aggira l'ambiguità\ncreando i font con glifi supplementari.";*/
+/* Now called PrefsPopupGN with slightly different text */
 static char *str_PrefsPopupSD[] = "Specifica la distanza alla quale il puntatore del mouse deve\nessere vicino a una linea notevole (linea di base, larghezza,\ngriglia, spline, ecc...), per agganciarsi ad essa.";
 static char *str_PrefsPopupBR[] = "Quando si crea un insieme di font BDF,\nPfaedit deve chiedere la risoluzione dello schermo, o\nla deve indovinare in funzione della dimensione dei pixel?";
 static char *str_PrefsPopupATA[] = "Parametri supplementari da passare ad 'autotrace'";

@@ -689,6 +689,8 @@ struct ttflangname {
 };
 
 struct remap { uint32 firstenc, lastenc; int32 infont; };
+enum uni_interp { ui_unset= -1, ui_none, ui_adobe, ui_greek, ui_japanese,
+	ui_trad_chinese, ui_simp_chinese, ui_korean };
 
 typedef struct splinefont {
     char *fontname, *fullname, *familyname, *weight;
@@ -720,6 +722,7 @@ typedef struct splinefont {
     unsigned int new: 1;			/* A new and unsaved font */
     struct fontview *fv;
     enum charset encoding_name, old_encname;
+    enum uni_interp uni_interp;
     SplinePointList *gridsplines;
     Undoes *gundoes, *gredoes;
     BDFFont *bitmaps;
@@ -1169,6 +1172,7 @@ extern KernClass *SFFindKernClass(SplineFont *sf,SplineChar *first,SplineChar *l
 	int *index,int allow_zero);
 extern int SCSetMetaData(SplineChar *sc,char *name,int unienc,const unichar_t *comment);
 
+enum uni_interp interp_from_encoding(enum charset enc,enum uni_interp interp);
 extern const char *EncName(int encname);
 extern void SFDDumpMacFeat(FILE *sfd,MacFeat *mf);
 extern MacFeat *SFDParseMacFeatures(FILE *sfd, char *tok);
