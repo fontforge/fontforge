@@ -1461,6 +1461,8 @@ return(NULL);
     cidmaster->cidversion = 1.0;
     cidmaster->display_antialias = sf->display_antialias;
     cidmaster->display_size = sf->display_size;
+    cidmaster->ascent = 800;
+    cidmaster->descent = 200;
     cidmaster->changed = cidmaster->changed_since_autosave = true;
     for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->next )
 	fvs->cidmaster = cidmaster;

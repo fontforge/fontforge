@@ -3419,9 +3419,9 @@ static void dumpdbl(FILE *cfff,double d) {
     else {
 	/* The type2 strings have a fixed format, but the dict data does not */
 	char buffer[20], *pt;
-	int sofar,n;
+	int sofar,n,odd;
 	sprintf( buffer, "%g", d);
-	sofar = 0;
+	sofar = 0; odd=true;
 	putc(30,cfff);		/* Start a double */
 	for ( pt=buffer; *pt; ++pt ) {
 	    if ( isdigit(*pt) )
@@ -3435,11 +3435,13 @@ static void dumpdbl(FILE *cfff,double d) {
 		++pt;
 	    } else if ( *pt=='E' || *pt=='e')
 		n = 0xb;
-	    if ( sofar==0 )
+	    if ( odd ) {
 		sofar = n<<4;
-	    else {
+		odd = false;
+	    } else {
 		putc(sofar|n,cfff);
 		sofar=0;
+		odd = true;
 	    }
 	}
 	if ( sofar==0 )
@@ -4539,12 +4541,12 @@ static void OS2WeightCheck(struct pfminfo *pfminfo,char *weight) {
 
 void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *_sf,char *fontname) {
     int samewid= -1;
-    SplineFont *sf, *first=NULL;
+    SplineFont *sf;
     char *weight = _sf->cidmaster==NULL ? _sf->weight : _sf->cidmaster->weight;
 
     if ( !pfminfo->pfmset ) {
 	memset(pfminfo,'\0',sizeof(*pfminfo));
-	samewid = CIDOneWidth(sf);
+	samewid = CIDOneWidth(_sf);
 	sf = _sf;
 
 	pfminfo->pfmfamily = 0x10;
@@ -4601,8 +4603,9 @@ void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *_sf,char *fontname) {
 	}
 	if ( samewid>0 )
 	    pfminfo->panose[3] = 9;
+	if ( sf->subfonts!=NULL ) sf = sf->subfonts[0];
 	pfminfo->linegap = pfminfo->vlinegap =
-		rint(.09*(first->ascent+first->descent));
+		rint(.09*(sf->ascent+sf->descent));
     }
 }
 
