@@ -1265,7 +1265,7 @@ static int infont(SplineChar *sc, const unsigned short *table, int tlen,
     /*  glyph. One obvious one is space: 0x20 and 0xA0. The used bit array */
     /*  is designed to handle that unpleasantness */
 
-    if ( table==NULL ) {
+    if ( table==NULL && item==NULL ) {
 	if ( sc->unicodeenc==-1 ) {
 	    if ( sc->enc!=0 || (used[0]&1) ) {
 		sc->enc = -1;
@@ -1317,15 +1317,21 @@ return( false );
 	}
     }
 
-    if ( table==unicode_from_jis208 ||
-	    table == unicode_from_ksc5601 ||
-	    table == unicode_from_gb2312 )
-	tlen = 94*94;
+    if ( item!=NULL ) {
+	const int32 *table32 = item->unicode;
+	for ( i=0; i<tlen && (sc->unicodeenc!=table32[i] || (used[i>>3]&(1<<(i&7))) ||
+		!(table32[i]!=0 || i==0 ||
+		    (item->psnames!=NULL && item->psnames[i]!=NULL &&
+		     strcmp(item->psnames[i],".notdef")==0))); ++i );
+    } else {
+	if ( table==unicode_from_jis208 ||
+		table == unicode_from_ksc5601 ||
+		table == unicode_from_gb2312 )
+	    tlen = 94*94;
 
-    for ( i=0; i<tlen && (sc->unicodeenc!=table[i] || (used[i>>3]&(1<<(i&7))) ||
-	    !(table[i]!=0 || i==0 ||
-		(item!=NULL && item->psnames!=NULL && item->psnames[i]!=NULL &&
-		 strcmp(item->psnames[i],".notdef")==0))); ++i );
+	for ( i=0; i<tlen && (sc->unicodeenc!=table[i] || (used[i>>3]&(1<<(i&7))) ||
+		!(table[i]!=0 || i==0 )); ++i );
+    }
     if ( i==tlen && sc->unicodeenc<0x80 && tlen2==65536 && table == unicode_from_jis208 ) {
 	/* sjis often comes with a single byte encoding of ASCII */
 	sc->enc = sc->unicodeenc;
@@ -1591,7 +1597,7 @@ void SFRestoreNearTop(SplineFont *sf) {
 
 /* see also SplineFontNew in splineutil2.c */
 static int _SFReencodeFont(SplineFont *sf,enum charset new_map, SplineFont *target) {
-    const unsigned short *table;
+    const unsigned short *table=NULL;
     int i, extras, epos;
     SplineChar **chars;
     int enc_cnt;
@@ -1630,7 +1636,7 @@ return(false);
 	    for ( item=enclist; item!=NULL && item->enc_num!=new_map; item=item->next );
 	    if ( item!=NULL ) {
 		tlen = item->char_cnt;
-		table = item->unicode;
+		table = NULL;
 	    } else {
 		GWidgetErrorR(_STR_InvalidEncoding,_STR_InvalidEncoding);
 return( false );

@@ -36,7 +36,7 @@
 
 static int enc_num = em_base;
 
-static unichar_t tex_base_encoding[] = {
+static int32 tex_base_encoding[] = {
     0x0000, 0x02d9, 0xfb01, 0xfb02, 0x2044, 0x02dd, 0x0141, 0x0142,
     0x02db, 0x02da, 0x000a, 0x02d8, 0x2212, 0x000d, 0x017d, 0x017e,
     0x02c7, 0x0131, 0xf6be, 0xfb00, 0xfb03, 0xfb04, 0x2260, 0x221e,
@@ -104,7 +104,7 @@ static void EncodingFree(Encoding *item) {
     /* # is a comment character (to eol) */
 static Encoding *ParseConsortiumEncodingFile(FILE *file) {
     char buffer[200];
-    unichar_t encs[1024];
+    int32 encs[1024];
     int enc, unienc, max, i;
     Encoding *item;
 
@@ -133,8 +133,8 @@ return( NULL );
     if ( max<256 ) max = 256;
     item = gcalloc(1,sizeof(Encoding));
     item->char_cnt = max;
-    item->unicode = galloc(max*sizeof(unichar_t));
-    memcpy(item->unicode,encs,max*sizeof(unichar_t));
+    item->unicode = galloc(max*sizeof(int32));
+    memcpy(item->unicode,encs,max*sizeof(int32));
 return( item );
 }
 
@@ -453,7 +453,7 @@ return(NULL);
     item->enc_name = cu_copy(name);
     free(name);
     item->char_cnt = sf->charcnt;
-    item->unicode = gcalloc(sf->charcnt,sizeof(unichar_t));
+    item->unicode = gcalloc(sf->charcnt,sizeof(int32));
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	if ( sf->chars[i]->unicodeenc!=-1 )
 	    item->unicode[i] = sf->chars[i]->unicodeenc;

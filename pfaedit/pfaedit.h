@@ -39,7 +39,7 @@ typedef struct enc {
     int enc_num;
     char *enc_name;
     int char_cnt;
-    unichar_t *unicode;
+    int32 *unicode;
     char **psnames;
     struct enc *next;
     unsigned int builtin: 1;

@@ -1830,13 +1830,8 @@ return( sf );
 /* see also SFReencodeFont in fontinfo.c */
 SplineFont *SplineFontNew(void) {
     SplineFont *sf;
-    /*const char *name;*/
-    /*int i,uenc;*/
     /* Create an ISO 8859-1 (Latin1) font, actually whatever default_encoding is */
-    const unsigned short *table;
-    int tlen=256, enclen=256;
-    /*char buf[10];*/
-    extern unsigned short unicode_from_adobestd[256];
+    int enclen=256;
     Encoding *item=NULL;
 
     if ( default_encoding>=em_base ) {
@@ -1845,68 +1840,42 @@ SplineFont *SplineFontNew(void) {
 	    default_encoding = em_iso8859_1;
     }
     if ( default_encoding==em_adobestandard ) {
-	table = unicode_from_adobestd;
-    } else if ( default_encoding==em_iso8859_1 )
-	table = unicode_from_i8859_1;
-    else if ( default_encoding==em_unicode ) {
-	table = NULL;
+    } else if ( default_encoding==em_iso8859_1 ) {
+    } else if ( default_encoding==em_unicode ) {
 	enclen = 65536;
     } else if ( default_encoding==em_unicode4 ) {
-	table = NULL;
 	enclen = unicode4_size;
     } else if ( default_encoding>=em_unicodeplanes && default_encoding<=em_unicodeplanesmax ) {
-	table = NULL;
 	enclen = 65536;
     } else if ( default_encoding==em_jis208 ) {
-	table = unicode_from_jis208;
-	tlen = 94*94;
 	enclen = 65536;
     } else if ( default_encoding==em_jis212 ) {
-	table = unicode_from_jis212;
-	tlen = 94*94;
 	enclen = 65536;
     } else if ( default_encoding==em_ksc5601 ) {
-	table = unicode_from_ksc5601;
-	tlen = 94*94;
 	enclen = 65536;
     } else if ( default_encoding==em_gb2312 ) {
-	table = unicode_from_gb2312;
-	tlen = 94*94;
 	enclen = 65536;
     } else if ( default_encoding==em_big5 ) {
-	table = unicode_from_big5;
-	tlen = 0x10000-0xa100;
 	enclen = 65536;
     } else if ( default_encoding==em_big5hkscs ) {
-	table = unicode_from_big5hkscs;
-	tlen = 0x10000-0x8100;
 	enclen = 65536;
     } else if ( default_encoding==em_johab ) {
-	table = unicode_from_johab;
-	tlen = 0x10000-0x8400;
 	enclen = 65536;
     } else if ( default_encoding==em_wansung ) {
-	table = unicode_from_ksc5601;
-	tlen = 0x10000-0x8400;
 	enclen = 65536;
     } else if ( default_encoding==em_jisgb ) {
-	table = unicode_from_gb2312;
-	tlen = 0x10000-0x8400;
 	enclen = 65536;
     } else if ( default_encoding==em_sjis ) {
-	table = unicode_from_jis208;
-	tlen = 257;
 	enclen = 65536;
     } else if ( item!=NULL ) {
-	table = item->unicode;
-	tlen = enclen = item->char_cnt;
+	enclen = item->char_cnt;
     } else
-	table = unicode_from_alphabets[default_encoding+3];
+	;
 
     sf = SplineFontBlank(default_encoding,enclen);
     sf->onlybitmaps = true;
     sf->new = true;
-#if 0    
+#if 0
     for ( i=0; i<enclen && i<256; ++i ) {
 	SplineChar *sc = sf->chars[i] = SplineCharCreate();
 	sc->vwidth = sf->ascent+sf->descent;
