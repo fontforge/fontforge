@@ -428,6 +428,8 @@ return( i!=-1 && (sf->chars[i]->splines!=NULL || sf->chars[i]->refs!=NULL || (ch
 static SplineChar *findchar(SplineFont *sf,int ch) {
     int i;
 
+    if ( ch==-1 )	/* should never happen */
+return( NULL );
     if ( sf->encoding_name==em_unicode ||  sf->encoding_name==em_unicode4 ||
 	    (ch<0x100 && sf->encoding_name==em_iso8859_1))
 return( sf->chars[ch] );
@@ -633,8 +635,9 @@ return( false );
 			/* It's ok */;
 		    if ( ch==0x31b && haschar(sf,','))
 			ch = ',';
-		    else if ( (ch != 0x32f && ch != 0x311 ) || !haschar(sf,0x2d8))
-return( false );
+		    else if ( (ch != 0x32f && ch != 0x311 ) || sf->italicangle!=0 ||
+			    !haschar(sf,0x2d8))
+return( false );		/* we can try inverting the breve for non-italic fonts... */
 		    else
 			ch = 0x2d8;
 		} else

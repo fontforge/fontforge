@@ -879,6 +879,7 @@ real SFGuessItalicAngle(SplineFont *sf) {
     int i,si;
     real as, topx, bottomx;
     DBounds bb;
+    double angle;
 
     for ( i=0; easyserif[i]!='\0'; ++i )
 	if ( (si=SFFindExistingChar(sf,easyserif[i],NULL))!=-1 && sf->chars[si]!=NULL )
@@ -894,7 +895,9 @@ return( 0 );
     if ( topx==bottomx )
 return( 0 );
 
-return( atan2(as/3,topx-bottomx)*180/3.1415926535897932-90 );
+    angle = atan2(as/3,topx-bottomx)*180/3.1415926535897932-90;
+    if ( angle<1 && angle>-1 ) angle = 0;
+return( angle );
 }
 
 void SFHasSerifs(SplineFont *sf) {
