@@ -4591,6 +4591,11 @@ static void FVScroll(FontView *fv,struct sbevent *sb) {
 static int v_e_h(GWindow gw, GEvent *event) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
+    if (( event->type==et_mouseup || event->type==et_mousedown ) &&
+	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+return( GGadgetDispatchEvent(fv->vsb,event));
+    }
+
     switch ( event->type ) {
       case et_expose:
 	FVExpose(fv,gw,event);
@@ -4693,6 +4698,11 @@ return;
 
 static int fv_e_h(GWindow gw, GEvent *event) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    if (( event->type==et_mouseup || event->type==et_mousedown ) &&
+	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+return( GGadgetDispatchEvent(fv->vsb,event));
+    }
 
     switch ( event->type ) {
       case et_selclear:

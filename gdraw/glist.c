@@ -514,6 +514,10 @@ return( false );
 
     if ( event->type == et_crossing )
 return( false );
+    if (( event->type==et_mouseup || event->type==et_mousedown ) &&
+	    (event->u.mouse.button==4 || event->u.mouse.button==5) &&
+	    gl->vsb!=NULL )
+return( GGadgetDispatchEvent(&gl->vsb->g,event));
     if ( event->type==et_mousemove && !gl->pressed && !gl->parentpressed ) {
 	if ( GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y) && g->popup_msg )
 	    GGadgetPreparePopup(g->base,g->popup_msg);

@@ -947,6 +947,11 @@ static void BVMouseUp(BitmapView *bv, GEvent *event) {
 static int v_e_h(GWindow gw, GEvent *event) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
 
+    if (( event->type==et_mouseup || event->type==et_mousedown ) &&
+	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+return( GGadgetDispatchEvent(bv->vsb,event));
+    }
+
     switch ( event->type ) {
       case et_selclear:
 	ClipboardClear();
@@ -994,6 +999,11 @@ return( true );
 
 static int bv_e_h(GWindow gw, GEvent *event) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
+
+    if (( event->type==et_mouseup || event->type==et_mousedown ) &&
+	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+return( GGadgetDispatchEvent(bv->vsb,event));
+    }
 
     switch ( event->type ) {
       case et_expose:

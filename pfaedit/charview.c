@@ -2594,6 +2594,11 @@ return;
 static int v_e_h(GWindow gw, GEvent *event) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
+    if (( event->type==et_mouseup || event->type==et_mousedown ) &&
+	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+return( GGadgetDispatchEvent(cv->vsb,event));
+    }
+
     switch ( event->type ) {
       case et_expose:
 	CVExpose(cv,gw,event);
@@ -2972,6 +2977,11 @@ static void CVLogoExpose(CharView *cv,GWindow pixmap,GEvent *event) {
 
 static int cv_e_h(GWindow gw, GEvent *event) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    if (( event->type==et_mouseup || event->type==et_mousedown ) &&
+	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+return( GGadgetDispatchEvent(cv->vsb,event));
+    }
 
     switch ( event->type ) {
       case et_selclear:

@@ -792,6 +792,17 @@ static int gfilechooser_expose(GWindow pixmap, GGadget *g, GEvent *event) {
 return( true );
 }
 
+static int gfilechooser_mouse(GGadget *g, GEvent *event) {
+    GFileChooser *gfc = (GFileChooser *) g;
+
+    if (( event->type==et_mouseup || event->type==et_mousedown ) &&
+	    (event->u.mouse.button==4 || event->u.mouse.button==5) &&
+	    gfc->files->vsb!=NULL )
+return( GGadgetDispatchEvent(&gfc->files->vsb->g,event));
+
+return( false );
+}
+
 static int gfilechooser_noop(GGadget *g, GEvent *event) {
 return( false );
 }
@@ -845,7 +856,7 @@ struct gfuncs GFileChooser_funcs = {
     sizeof(struct gfuncs),
 
     gfilechooser_expose,
-    gfilechooser_noop,
+    gfilechooser_mouse,
     gfilechooser_noop,
     NULL,
     NULL,

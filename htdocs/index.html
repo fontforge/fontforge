@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 14-Jan-2002 -->
+  <!-- AP: Last modified: 16-Jan-2003 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -97,11 +97,11 @@ let me know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-030114.tgz">Download pfaedit linux-i386 Redhat 7.3
-    </A><A NAME="downloads">executable</A> Version: 14-Jan-2003
+    <A HREF="pfaedit-030116.tgz">Download pfaedit linux-i386 Redhat 7.3
+    </A><A NAME="downloads">executable</A> Version: 16-Jan-2003
   <LI>
-    <A HREF="pfaedit-021223-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
-    Version: 23-Dec-2002 (Redhat 7.3)
+    <A HREF="pfaedit-030116-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
+    Version: 16-Jan-2003 (Redhat 7.3)
   <LI>
     <A HREF="pfaedit-020910-1.ppc.rpm">Download pfaedit linux-ppc SUSE 7.1
     </A>binary rpm Version: 10-Sept-2002
@@ -141,11 +141,11 @@ If you want to edit CID keyed fonts you probably need these
   <A NAME="source">Source</A> distribution
 </H2>
 <P>
-You can download a <A HREF="pfaedit-021223-1.src.rpm">source RPM</A>: Version:
-23-Dec-2002<BR>
-Or you can download the <A HREF="pfaedit_full-030114.tgz">entire source tree
+You can download a <A HREF="pfaedit-030116-1.src.rpm">source RPM</A>: Version:
+16-Jan-2003<BR>
+Or you can download the <A HREF="pfaedit_full-030116.tgz">entire source tree
 </A>in one .tgz file: Version
-14-Jan-2003<!--
+16-Jan-2003<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -164,6 +164,9 @@ Or you can download the following three packages. Version: 19-Jan-2002
 Or you can go to the
 <A HREF="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/pfaedit/pfaedit/">cvs
 tree</A> and get the most recent version.
+<H2>
+Dependencies
+</H2>
 <P>
 If you want to do autotracing around character images you should also download
 Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
@@ -191,6 +194,12 @@ have them and you want them they are available from:
     <A HREF="http://www.ijg.org/">libjpeg</A>
   <LI>
     <A HREF="http://freetype.sf.net/">freetype</A>
+</UL>
+<P>
+PfaEdit can display unicode names and annotations if the libuninameslist library
+is available.
+<UL>
+    <LI><A HREF="http://libuninameslist.sf.net">libuninameslist</A>
 </UL>
 <P>
 Normally PfaEdit depends on the X11 windowing system, but if you are just
@@ -253,7 +262,7 @@ bitmap fonts that pfaedit uses
 </H2>
 <P>
 All the documentation files in this directory bundled up into one
-<A HREF="pfaedit_htdocs-030114.tgz">tgz file</A> 14-Jan-2003.<BR>
+<A HREF="pfaedit_htdocs-030116.tgz">tgz file</A> 16-Jan-2003.<BR>
 If you do the following then PfaEdit will find the docs for you when you
 press F1 (ie. PfaEdit it will look in /usr/local/share/doc/pfaedit before it looks
 on the web):
@@ -452,6 +461,9 @@ and rarely appear on this list.
   <LI>
     Under kde, iconifying a PfaEdit window crashes the button bar at the bottom
     of the screen. Personally I consider this a bug in kde.
+  <LI>
+    When reading a ttc file with a GSUB table, pfaedit is likely to lose information
+    from that table.
   <LI>
     On cygwin I have
     no idea how to find the (Windows) default browser. And probably no idea how

@@ -76,6 +76,10 @@ return( false );
     } else if ( event->type == et_mousemove ) {
 	struct gfc_data *d = GDrawGetUserData(gw);
 	GFileChooserPopupCheck(d->gfc,event);
+    } else if (( event->type==et_mouseup || event->type==et_mousedown ) &&
+	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+	struct gfc_data *d = GDrawGetUserData(gw);
+return( GGadgetDispatchEvent((GGadget *) (d->gfc),event));
     }
 return( event->type!=et_char );
 }

@@ -207,6 +207,7 @@ typedef struct gscrollbar {		/* and slider */
 		    /* after the document */
     /*unsigned int vert: 1; */	/* Moved to GGadget, shared with line */
     unsigned int thumbpressed: 1;
+    unsigned int ignorenext45: 1;
     int8 repeatcmd;		/*  sb event to be generated on timer interupts (ie. upline)*/
     int8 thumbborder;		/* Size of the border of the thumbbox */
     int8 sbborder;		/* Size of the border of the main scrollbar */

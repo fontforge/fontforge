@@ -1461,6 +1461,11 @@ return( false );
 	    event->u.mouse.y<ge->buttonrect.y+ge->buttonrect.height ) ||
 	( gt->listfield && ge->popup!=NULL ))
 return( glistfield_mouse(ge,event));
+    if (( event->type==et_mouseup || event->type==et_mousedown ) &&
+	    (event->u.mouse.button==4 || event->u.mouse.button==5) &&
+	    gt->vsb!=NULL )
+return( GGadgetDispatchEvent(&gt->vsb->g,event));
+
     if ( gt->pressed==NULL && event->type == et_mousemove && g->popup_msg!=NULL &&
 	    GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y))
 	GGadgetPreparePopup(g->base,g->popup_msg);
