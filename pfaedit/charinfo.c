@@ -762,6 +762,10 @@ static void CI_DoCopy(CharInfo *ci) {
 
     sel = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_Tabs))-2;
     list = GWidgetGetControl(ci->gw,CID_List+sel*100);
+    if ( list==NULL ) {
+	GGadgetActiveGadgetEditCmd(ci->gw,ec_copy);
+return;
+    }
     tis = GGadgetGetList(list,&len);
     for ( i=cnt=0; i<len; ++i )
 	if ( tis[i]->selected )
@@ -815,6 +819,10 @@ static void CI_DoPaste(CharInfo *ci,char **data, enum possub_type type) {
 
     sel = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_Tabs))-2;
     list = GWidgetGetControl(ci->gw,CID_List+sel*100);
+    if ( list==NULL ) {
+	GGadgetActiveGadgetEditCmd(ci->gw,ec_paste);
+return;
+    }
     tis = GGadgetGetList(list,&len);
     if ( data==NULL )
 	data = CopyGetPosSubData(&type);
