@@ -53,7 +53,7 @@ install: $(sharedir) all install_libs
 	cp $(srcdir)/fontforge/fontforge.1 $(mandir)/man1
 	cp $(srcdir)/fontforge/sfddiff.1 $(mandir)/man1
 	mkdir -p $(libdir)/pkgconfig
-	$(LIBTOOL) $(INSTALL) -c fontforge.in $(libdir)/pkgconfig
+	$(LIBTOOL) $(INSTALL) -c fontforge.pc $(libdir)/pkgconfig
 
 uninstall:
 	-rm $(bindir)/fontforge

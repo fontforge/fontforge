@@ -48,7 +48,7 @@ install_libs: libs
 	#cp .libs/*.so.*.* $(libdir)
 	$(LIBTOOL) --finish $(libdir)
 	mkdir -p $(libdir)/pkgconfig
-	$(LIBTOOL) $(INSTALL) -c fontforge.in $(libdir)/pkgconfig
+	$(LIBTOOL) $(INSTALL) -c fontforge.pc $(libdir)/pkgconfig
 
 install: $(sharedir) all install_libs
 # You may need to be root to do the install
