@@ -282,8 +282,6 @@ static void FVMenuGenerate(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     _FVMenuGenerate(fv);
 }
 
-static void FVSetTitle(FontView *fv);
-
 int _FVMenuSaveAs(FontView *fv) {
     unichar_t *temp;
     unichar_t *ret;
@@ -1863,7 +1861,7 @@ static void FVMenuClearWidthMD(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
-static void FVSetTitle(FontView *fv) {
+void FVSetTitle(FontView *fv) {
     unichar_t *title, *ititle;
     char *file=NULL;
     int len;

@@ -274,6 +274,7 @@ typedef struct findsel {
 
 enum widthtype { wt_width, wt_lbearing, wt_rbearing, wt_vwidth };
 
+extern void FVSetTitle(FontView *fv);
 extern FontView *_FontViewCreate(SplineFont *sf);
 extern FontView *FontViewCreate(SplineFont *sf);
 extern void SplineFontSetUnChanged(SplineFont *sf);

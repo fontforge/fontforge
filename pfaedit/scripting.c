@@ -710,6 +710,10 @@ static void bReencode(Context *c) {
     SFReencodeFont(c->curfv->sf,new_map);
     free( c->curfv->selected );
     c->curfv->selected = gcalloc(c->curfv->sf->charcnt,1);
+    if ( screen_display!=NULL )
+	FontViewReformat(c->curfv);
+    c->curfv->sf->changed = true;
+    c->curfv->sf->changed_since_autosave = true;
 }
 
 static void bSetCharCnt(Context *c) {
@@ -729,6 +733,45 @@ return;
     c->curfv->selected = grealloc(c->curfv->selected,c->a.vals[1].u.ival);
     for ( i=oldcnt; i<c->a.vals[1].u.ival; ++i )
 	c->curfv->selected[i] = false;
+    if ( screen_display!=NULL )
+	FontViewReformat(c->curfv);
+    c->curfv->sf->changed = true;
+    c->curfv->sf->changed_since_autosave = true;
+}
+
+static void _SetFontNames(Context *c,SplineFont *sf) {
+    int i;
+
+    if ( c->a.argc==1 || c->a.argc>6 )
+	error( c, "Wrong number of arguments");
+    for ( i=1; i<c->a.argc; ++i )
+	if ( c->a.vals[i].type!=v_str )
+	    error(c,"Bad argument type");
+    if ( *c->a.vals[1].u.sval!='\0' ) {
+	free(sf->fontname);
+	sf->fontname = copy(c->a.vals[1].u.sval);
+    }
+    if ( c->a.argc>2 && *c->a.vals[2].u.sval!='\0' ) {
+	free(sf->familyname);
+	sf->familyname = copy(c->a.vals[2].u.sval);
+    }
+    if ( c->a.argc>3 && *c->a.vals[3].u.sval!='\0' ) {
+	free(sf->fullname);
+	sf->fullname = copy(c->a.vals[3].u.sval);
+    }
+    if ( c->a.argc>4 && *c->a.vals[4].u.sval!='\0' ) {
+	free(sf->weight);
+	sf->weight = copy(c->a.vals[4].u.sval);
+    }
+    if ( c->a.argc>5 && *c->a.vals[5].u.sval!='\0' ) {
+	free(sf->copyright);
+	sf->copyright = copy(c->a.vals[5].u.sval);
+    }
+}
+
+static void bSetFontNames(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+    _SetFontNames(c,sf);
 }
 
 static SplineChar *GetOneSelChar(Context *c) {
@@ -1164,6 +1207,54 @@ return;		/* It already has a kern==0 with everything */
     }
 }
 
+/* **** CID menu **** */
+
+static void bCIDChangeSubFont(Context *c) {
+    SplineFont *sf = c->curfv->sf, *new;
+    int i;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    if ( c->a.vals[1].type!=v_str )
+	error( c, "Bad argument type" );
+    if ( sf->cidmaster==NULL )
+	errors( c, "Not a cid-keyed font", sf->fontname );
+    for ( i=0; i<sf->cidmaster->subfontcnt; ++i )
+	if ( strcmp(sf->cidmaster->subfonts[i]->fontname,c->a.vals[1].u.sval)==0 )
+    break;
+    if ( i==sf->cidmaster->subfontcnt )
+	errors( c, "Not in the current cid font", c->a.vals[1].u.sval );
+    new = sf->cidmaster->subfonts[i];
+
+    if ( screen_display!=NULL ) {
+	MetricsView *mv, *mvnext;
+	for ( mv=c->curfv->metrics; mv!=NULL; mv = mvnext ) {
+	    /* Don't bother trying to fix up metrics views, just not worth it */
+	    mvnext = mv->next;
+	    GDrawDestroyWindow(mv->gw);
+	}
+	GDrawSync(NULL);
+	GDrawProcessPendingEvents(NULL);
+    }
+    if ( sf->charcnt!=new->charcnt ) {
+	free(c->curfv->selected);
+	c->curfv->selected = gcalloc(new->charcnt,sizeof(char));
+    }
+    c->curfv->sf = new;
+    if ( screen_display!=NULL ) {
+	FVSetTitle(c->curfv);
+	FontViewReformat(c->curfv);
+    }
+}
+
+static void bCIDSetFontNames(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+    
+    if ( sf->cidmaster==NULL )
+	errors( c, "Not a cid-keyed font", sf->fontname );
+    _SetFontNames(c,sf->cidmaster);
+}
+
 /* **** Info routines **** */
 
 static void bCharCnt(Context *c) {
@@ -1305,6 +1396,7 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
 /* Element Menu */
     { "Reencode", bReencode },
     { "SetCharCnt", bSetCharCnt },
+    { "SetFontNames", bSetFontNames },
     { "SetCharName", bSetCharName },
     { "SetUnicodeValue", bSetUnicodeValue },
     { "Transform", bTransform },
@@ -1331,6 +1423,9 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "SetLBearing", bSetLBearing },
     { "SetRBearing", bSetRBearing },
     { "SetKern", bSetKern },
+/* CID Menu */
+    { "CIDChangeSubFont", bCIDChangeSubFont },
+    { "CIDSetFontNames", bCIDSetFontNames },
 /* ***** */
     { "CharCnt", bCharCnt },
     { "InFont", bInFont },
@@ -1762,6 +1857,25 @@ static void handlename(Context *c,Val *val) {
 		val->type = v_str;
 		val->u.sval = copy(sf==NULL?"":
 			sf->filename!=NULL?sf->filename:sf->origname);
+	    } else if ( strcmp(name,"$curcid")==0 || strcmp(name,"$nextcid")==0 ||
+		    strcmp(name,"$firstcid")==0 ) {
+		if ( c->curfv==NULL ) error(c,"No current font");
+		if ( c->curfv->sf->cidmaster==NULL ) error(c,"Not a cid keyed font");
+		if ( strcmp(name,"$firstcid")==0 ) {
+		    sf = c->curfv->sf->cidmaster->subfonts[0];
+		} else {
+		    sf = c->curfv->sf;
+		    if ( strcmp(name,"$nextcid")==0 ) { int i;
+			for ( i = 0; i<sf->cidmaster->subfontcnt &&
+				sf->cidmaster->subfonts[i]!=sf; ++i );
+			if ( i>=sf->cidmaster->subfontcnt-1 )
+			    sf = NULL;		/* No next */
+			else
+			    sf = sf->cidmaster->subfonts[i+1];
+		    }
+		}
+		val->type = v_str;
+		val->u.sval = copy(sf==NULL?"":sf->fontname);
 	    } else if ( strcmp(name,"$fontname")==0 || strcmp(name,"familyname")==0 ||
 		    strcmp(name,"$fullname")==0 ) {
 		if ( c->curfv==NULL ) error(c,"No current font");
@@ -1769,6 +1883,12 @@ static void handlename(Context *c,Val *val) {
 		val->u.sval = copy(name[2]=='o'?c->curfv->sf->fontname:
 			name[2]=='a'?c->curfv->sf->familyname:
 				    c->curfv->sf->fullname);
+	    } else if ( strcmp(name,"$cidname")==0 ) {
+		if ( c->curfv==NULL ) error(c,"No current font");
+		if ( c->curfv->sf->cidmaster==NULL )
+		val->type = v_str;
+		val->u.sval = copy(c->curfv->sf->cidmaster==NULL?"":
+			c->curfv->sf->cidmaster->fontname);
 	    } else if ( strcmp(name,"$trace")==0 ) {
 		val->type = v_lval;
 		val->u.lval = &c->trace;
