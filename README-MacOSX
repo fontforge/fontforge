@@ -2,6 +2,8 @@ BEFORE INSTALLATION
  Before you install pfaedit under Mac OS/X you should first install the X
  window system. This is available at:
 	http://www.osxgnu.org/
+ or
+	http://www.apple.com/macosx/x11/download/
 
  It is possible to use pfaedit without X, but in this case there is no user
  interface and you are limited to running scripts. (see below for details)
