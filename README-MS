@@ -61,10 +61,13 @@ BUILDING
     Move it somewhere appropriate (/usr/local/src perhaps?) and type:
 	$ gunzip pfaedit_full-*.tgz ; tar xf pfaedit_full-*.tar
 	$ cd pfaedit
-	$ configure.static
+	$ configure
 	$ make
 	$ su
 	# make install
+
+If you want access to PfaEdit's type3 editing capabilities then
+	$ configure --with-multilayer
 
 More complex installations
     "make install" will also install a few other things which are not part of

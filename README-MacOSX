@@ -38,6 +38,9 @@ BUILDING
         $ sudo -s
         # make install
 
+If you want access to PfaEdit's type3 editing capabilities then
+	$ configure --with-multilayer
+
 More complex installations
     "make install" will also install a few other things which are not part of
     the standard package, but which are useful for some people.
