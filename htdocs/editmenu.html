@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 30-Dec-2001 -->
+  <!-- AP: Last modified: 12-Jan-2002 -->
   <TITLE>The Edit Menu</TITLE>
 </HEAD>
 <BODY>
@@ -157,7 +157,15 @@ in text fields.
     This command is only available in the Outline View. If a point on a path
     is selected, the the merge command will remove that point from the path and
     join the two points around the removed one with a new spline which approximates
-    the curve between the two before.
+    the curve between the two before. This command comes in two forms, in the
+    default case the two surrounding points will retain their slopes (unless
+    both are corner points), while in the other case (Elide)
+  <DT>
+    <A NAME="Elide">Elide</A>
+  <DD>
+    This is a varient of the Merge command, obtained by holding down the shift
+    key when bringing down the menu (or by Ctl-Alt-M). Allows the slopes of points
+    to change.
   <DT>
     <A NAME="CopyFg">Copy Fg To Bg</A>
   <DD>
