@@ -861,6 +861,8 @@ return( -1 );		/* Not in encoding */
 	table2 = &ksc5601_from_unicode;
     else if ( enc==em_big5 )
 	table2 = &big5_from_unicode;
+    else if ( enc==em_johab )
+	table2 = &johab_from_unicode;
     else
 return( -1 );
 

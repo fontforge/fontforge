@@ -655,7 +655,6 @@ static int GTextFieldDoChange(GTextField *gt, GEvent *event) {
     int pos, l, xpos, sel;
     unichar_t *bitext = gt->dobitext || gt->password?gt->bidata.text:gt->text;
     unichar_t *upt;
-    int wasselected = gt->sel_start!=gt->sel_end;
 
     if ( ( event->u.chr.state&(ksm_control|ksm_meta)) ||
 	    event->u.chr.keysym >= 0xff00 ) {
@@ -663,7 +662,7 @@ static int GTextFieldDoChange(GTextField *gt, GEvent *event) {
 	  case GK_BackSpace:
 	    if ( gt->sel_start==gt->sel_end ) {
 		if ( gt->sel_start==0 )
-return( false );
+return( 2 );
 		--gt->sel_start;
 	    }
 	    GTextFieldReplace(gt,nullstr);
@@ -672,7 +671,7 @@ return( true );
 	  case GK_Delete:
 	    if ( gt->sel_start==gt->sel_end ) {
 		if ( gt->text[gt->sel_start]==0 )
-return( false );
+return( 2 );
 		++gt->sel_end;
 	    }
 	    GTextFieldReplace(gt,nullstr);
@@ -692,10 +691,8 @@ return( true );
 	    } else {
 		gt->sel_end = gt->sel_base = gt->sel_start;
 	    }
-	    if ( GTextField_Show(gt,gt->sel_start) ||
-		    gt->sel_start!=gt->sel_end || wasselected )
-		_ggadget_redraw(&gt->g);
-return( false );
+	    GTextField_Show(gt,gt->sel_start);
+return( 2 );
 	  break;
 	  case GK_Right: case GK_KP_Right:
 	    if ( gt->sel_start==gt->sel_end ) {
@@ -711,10 +708,8 @@ return( false );
 	    } else {
 		gt->sel_start = gt->sel_base = gt->sel_end;
 	    }
-	    if ( GTextField_Show(gt,gt->sel_end) ||
-		    gt->sel_start!=gt->sel_end || wasselected )
-		_ggadget_redraw(&gt->g);
-return( false );
+	    GTextField_Show(gt,gt->sel_start);
+return( 2 );
 	  break;
 	  case GK_Up: case GK_KP_Up:
 	    if ( !gt->multi_line )
@@ -742,10 +737,8 @@ return( false );
 		    gt->sel_start = gt->sel_end = gt->sel_base = pos;
 		}
 	    }
-	    if ( GTextField_Show(gt,gt->sel_start) ||
-		    gt->sel_start!=gt->sel_end || wasselected )
-		_ggadget_redraw(&gt->g);
-return( false );
+	    GTextField_Show(gt,gt->sel_start);
+return( 2 );
 	  break;
 	  case GK_Down: case GK_KP_Down:
 	    if ( !gt->multi_line )
@@ -773,10 +766,8 @@ return( false );
 		    gt->sel_start = gt->sel_end = gt->sel_base = pos;
 		}
 	    }
-	    if ( GTextField_Show(gt,gt->sel_start) ||
-		    gt->sel_start!=gt->sel_end || wasselected )
-		_ggadget_redraw(&gt->g);
-return( false );
+	    GTextField_Show(gt,gt->sel_start);
+return( 2 );
 	  break;
 	  case GK_Home: case GK_Begin: case GK_KP_Home: case GK_KP_Begin:
 	    if ( !(event->u.chr.state&ksm_shift) ) {
@@ -784,10 +775,8 @@ return( false );
 	    } else {
 		gt->sel_start = 0; gt->sel_end = gt->sel_base;
 	    }
-	    if ( GTextField_Show(gt,gt->sel_start) ||
-		    gt->sel_start!=gt->sel_end || wasselected )
-		_ggadget_redraw(&gt->g);
-return( false );
+	    GTextField_Show(gt,gt->sel_start);
+return( 2 );
 	  break;
 	  /* Move to eol. (if already at eol, move to next eol) */
 	  case 'E': case 'e':
@@ -803,10 +792,8 @@ return( false );
 	    } else {
 		gt->sel_start = gt->sel_base; gt->sel_end = upt-gt->text;
 	    }
-	    if ( GTextField_Show(gt,gt->sel_start) ||
-		    gt->sel_start!=gt->sel_end || wasselected )
-		_ggadget_redraw(&gt->g);
-return( false );
+	    GTextField_Show(gt,gt->sel_start);
+return( 2 );
 	  break;
 	  case GK_End: case GK_KP_End:
 	    if ( !(event->u.chr.state&ksm_shift) ) {
@@ -814,16 +801,13 @@ return( false );
 	    } else {
 		gt->sel_start = gt->sel_base; gt->sel_end = u_strlen(gt->text);
 	    }
-	    if ( GTextField_Show(gt,gt->sel_start) ||
-		    gt->sel_start!=gt->sel_end || wasselected )
-		_ggadget_redraw(&gt->g);
-return( false );
+	    GTextField_Show(gt,gt->sel_start);
+return( 2 );
 	  break;
 	  case 'A': case 'a':
 	    if ( event->u.chr.state&ksm_control ) {	/* Select All */
 		gtextfield_editcmd(&gt->g,ec_selectall);
-		_ggadget_redraw(&gt->g);
-return( false );
+return( 2 );
 	    }
 	  break;
 	  case 'C': case 'c':
@@ -1331,10 +1315,13 @@ return( false );
 	gt->cursor_on = false;
     }
 
-    if ( GTextFieldDoChange(gt,event))
+    switch ( GTextFieldDoChange(gt,event)) {
+      case true:
 	GTextFieldChanged(gt,-1);
-    else
+      break;
+      case false:
 return( false );
+    }
     _ggadget_redraw(g);
 return( true );
 }
