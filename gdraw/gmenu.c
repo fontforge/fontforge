@@ -609,7 +609,7 @@ return( true );
 return( true );
 	}
 	/* Else fall into the "Up" case */
-      case GK_Up: case GK_KP_Up: {
+      case GK_Up: case GK_KP_Up: case GK_Page_Up: case GK_KP_Page_Up: {
 	int ns = m->line_with_mouse-1;
 	if ( m->line_with_mouse==-1 ) {
 	    GMenuDestroy(m);
@@ -638,7 +638,7 @@ return( true );
 return( true );
 	}
       /* Fall through into the "Down" case */
-      case GK_Down: case GK_KP_Down: {
+      case GK_Down: case GK_KP_Down: case GK_Page_Down: case GK_KP_Page_Down: {
 	int ns = m->line_with_mouse+1;
 	while ( ns<m->mcnt && (m->mi[ns].ti.disabled || m->mi[ns].ti.line)) ++ns;
 	if ( m->line_with_mouse==-1 && m->parent!=NULL )
@@ -647,6 +647,20 @@ return( true );
 	    GMenuChangeSelection(m,ns,event);
 	else if ( m->parent!=NULL )	/* If we've reached the end of a child */
 	    GMenuDestroy(m);		/*  go back to the parent */
+return( true );
+      }
+      case GK_Home: case GK_KP_Home: {
+	int ns=0;
+	while ( ns<m->mcnt && (m->mi[ns].ti.disabled || m->mi[ns].ti.line)) ++ns;
+	if ( ns!=m->mcnt )
+	    GMenuChangeSelection(m,ns,event);
+return( true );
+      }
+      case GK_End: case GK_KP_End: {
+	int ns=m->mcnt-1;
+	while ( ns>=0 && (m->mi[ns].ti.disabled || m->mi[ns].ti.line)) --ns;
+	if ( ns>=0 )
+	    GMenuChangeSelection(m,ns,event);
 return( true );
       }
     }
