@@ -750,10 +750,10 @@ static int geteol(FILE *sfd, char *tokbuf) {
 return( pt!=tokbuf?1:ch==EOF?-1: 0 );
 }
 
-static int getname(FILE *sfd, char *tokbuf) {
+static int getprotectedname(FILE *sfd, char *tokbuf) {
     char *pt=tokbuf, *end = tokbuf+100-2; int ch;
 
-    while ( isspace(ch = getc(sfd)));
+    while ( (ch = getc(sfd))==' ' || ch=='\t' );
     while ( ch!=EOF && !isspace(ch) && ch!='[' && ch!=']' && ch!='{' && ch!='}' && ch!='<' && ch!='%' ) {
 	if ( pt<end ) *pt++ = ch;
 	ch = getc(sfd);
@@ -764,6 +764,14 @@ static int getname(FILE *sfd, char *tokbuf) {
 	ungetc(ch,sfd);
     *pt='\0';
 return( pt!=tokbuf?1:ch==EOF?-1: 0 );
+}
+
+static int getname(FILE *sfd, char *tokbuf) {
+    int ch;
+
+    while ( isspace(ch = getc(sfd)));
+    ungetc(ch,sfd);
+return( getprotectedname(sfd,tokbuf));
 }
 
 static int getint(FILE *sfd, int *val) {
@@ -1532,7 +1540,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    getname(sfd,tok);
 	    sf->familyname = copy(tok);
 	} else if ( strmatch(tok,"Weight:")==0 ) {
-	    getname(sfd,tok);
+	    getprotectedname(sfd,tok);
 	    sf->weight = copy(tok);
 	} else if ( strmatch(tok,"Copyright:")==0 ) {
 	    sf->copyright = getquotedeol(sfd);
