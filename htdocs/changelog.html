@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 4-May-2003 -->
+  <!-- AP: Last modified: 5-May-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,34 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    5-May-2003
+    <UL>
+      <LI>
+	Made it possible to select kerning class 0 (ie. everything that isn't specified)
+      <LI>
+	Put in a check to make sure the user didn't add a glyph to two different
+	kerning classes
+      <LI>
+	<FONT COLOR="Red"><STRONG>PfaEdit was dumping out a full GSUB sub-table for
+	each character that sub-table applied to (rather than one sub-table for all
+	characters). So there were tons of duplicates.</STRONG></FONT>
+      <LI>
+	<FONT COLOR="Red"><STRONG>PfaEdit was producing extension sub-tables that
+	held an incorrect offset.</STRONG></FONT>
+      <LI>
+	Added some code to protect PfaEdit when it read incorrect ttf fonts like
+	those generated above.
+      <LI>
+	Drag and Drop to the Char Info dlg was broken.
+      <LI>
+	If a font had a non-notdef character at encoding 0 and we used freetype to
+	generate bitmaps for it, then those bitmaps would be assigned to the wrong
+	glyphs (ie. the bitmap for "A" would go to "B", etc.)
+      <LI>
+	I used "Mac Roman" in several places where I should have said "Macintosh
+	Latin"
+    </UL>
   <LI>
     4-May-2003
     <UL>
