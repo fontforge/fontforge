@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 26-Mar-2003 -->
+  <!-- AP: Last modified: 31-Mar-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -11,7 +11,7 @@
 </H1>
 <UL>
   <LI>
-    ??-Mar-2003
+    31-Mar-2003
     <UL>
       <LI>
 	PfaEdit was not reading pfb fonts properly if they had more than one binary
@@ -47,6 +47,61 @@
 	</UL>
       <LI>
 	Added a new preference item to allow the user to specify a local help directory
+      <LI>
+	Added a new scripting command SelectIf which allows you to determine whether
+	a character is in a font (Select signals an error if the character isn't
+	there, SelectIf returns failure).
+      <LI>
+	Added a new scripting command to change a font's order (from quadratic to
+	cubic)
+      <LI>
+	ScaleToEm scripting command will now accept a single argument, the em-size.
+      <LI>
+	Added a new scripting command to allow you to apply an otf substitution to
+	the font
+      <LI>
+	Added a new scripting command to give control over which ligatures are output
+	in an afm file
+	<UL>
+	  <LI>
+	    (it used to be that all ligatures were output in the afm file, no only 'liga'
+	    and 'rlig' that appear in a default language are output)
+	</UL>
+      <LI>
+	AFM files only support 2 character ligatures. So, when possible, generate
+	a sort of closure on the ligatures. So if we are given the two ligs "ffi-&gt;f
+	f i" and "ff-&gt;f f" then add the ligature "ffi-&gt;ff i". This means that
+	the sequence f+f-&gt;ff+i-&gt;ffi will eventually reach the ligature we want.
+      <LI>
+	Changed so that an untitled anchor class is now called "Anchor-*" rather
+	than "Untitled-*".
+      <LI>
+	Rewrote Merge &amp; Simplify commands. In my tests they now produce better
+	results.
+      <LI>
+	Type2 font generation did not make use of hv/vh curveto commands in some
+	cases
+      <LI>
+	When figuring out whether to synchronize the width/lbearing of a base character
+	with the composits containing it, I only checked if the base character was
+	alphabetic. But that doesn't work for hebrew where unicode says the marks
+	are alphabetic. So add an additional check that it can't be a combining
+	character.
+      <LI>
+	When pasting a composite character from one font to another, the saved width
+	is not useful. Added a check that finds the correct width of the appropriate
+	base character.
+      <LI>
+	When pasting a composite character from a font with one em-size to another
+	with a different em-size try to scale the amount references are translated
+	by an appropriate amount.
+      <LI>
+	CharInfo scripting command has been extended to allow users to test the presence
+	of substitutions
+      <LI>
+	Some fonts (bsmi00lp.ttf for one) have bad cmap tables which map several
+	glyphs to the same unicode code point. Put in a check for this and only map
+	one glyph to that code point now.
     </UL>
   <LI>
     13-Mar-2003

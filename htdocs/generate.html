@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 27-Feb-2003 -->
+  <!-- AP: Last modified: 27-Mar-2003 -->
   <TITLE>Generate Font Dialog</TITLE>
 </HEAD>
 <BODY>
@@ -118,7 +118,11 @@ The bitmap types are:
 There are also the following check boxes. Not all are visible at all times.
 <UL>
   <LI>
-    [] AFM -- Generate an adobe font metrics file
+    [] AFM -- Generate an adobe font metrics file<BR>
+    Note: Only 'liga' and 'rlig' ligatures will be output in the AFM file. If
+    this is not what you want, use the
+    <A HREF="scripting.html#ControlAfmLigatureOutput">ControlAfmLigatureOutput</A>
+    scripting command.
   <LI>
     [] PFM -- Generate a windows printer font metrics file
   <LI>

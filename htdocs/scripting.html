@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 17-Mar-2003 -->
+  <!-- AP: Last modified: 31-Mar-2003 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -594,7 +594,27 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 </PRE>
     </BLOCKQUOTE>
   <DT>
-    Import
+    ControlAfmLigatureOutput(script,lang,ligature-tag-list)
+  <DD>
+    All three arguments must be strings. The first two must be strings containing
+    four or fewer characters, the third a string containing a comma seperated
+    list of 4 (or fewer) character strings. Ligatures will be placed in an AFM
+    file only if
+    <UL>
+      <LI>
+	their tags match one of the entries in the list
+      <LI>
+	they are active in the given script with the given language ("*" acts as
+	a wildcard for both script and language).
+    </UL>
+    <P>
+    The default setting is:
+    <BLOCKQUOTE>
+      <PRE>ControlAfmLigatureOutput("*","dflt","liga,rlig")
+</PRE>
+    </BLOCKQUOTE>
+  <DT>
+    Import(filename)
   <DD>
     Either imports a bitmap font into the database, or imports background image[s]
     into various characters. There may be one or two arguments. The first must
@@ -818,7 +838,25 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     SelectMore(arg1, arg2, ...)
   <DD>
     The same as the previous command except that it does not clear the selection,
-    so it extends the current selection. 
+    so it extends the current selection.
+  <DT>
+    SelectIf(arg1,arg2, ...)
+  <DD>
+    The same as Select() except that instead of signalling an error when a character
+    is not in the font it returns an error code.
+    <UL>
+      <LI>
+	0 =&gt; there were no errors but no characters were selected
+      <LI>
+	&lt;a positive number&gt; =&gt; there were no errors and this many characters
+	were selected
+      <LI>
+	-2 =&gt; there was an error and no characters were selected
+      <LI>
+	-1 =&gt; there was an error and at least one character was selected before
+	that.<B></B>
+    </UL>
+  <DT>
       <HR>
   <DT>
     Reencode(encoding-name[,force])
@@ -836,6 +874,10 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     SetCharCnt(cnt)
   <DD>
     Sets the number of characters in the font.
+  <DT>
+    SetFontOrder(order)
+  <DD>
+    Sets the font's order. Order must be either 2 (quadratic) or 3 (cubic).
   <DT>
     SetFontNames(fontname[,family[,fullname[,weight[,copyright-notice[,fontversion]]]]])
   <DD>
@@ -894,6 +936,26 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     It will regenerate the bitmaps of all selected characters at the specified
     pixelsizes.
   <DT>
+    ApplySubstitution(script,lang,tag)
+  <DD>
+    All three arguments must be strings of no more that four characters (shorter
+    strings will be padded with blanks to become 4 character strings). For each
+    selected character this command will look up that character's list of
+    substitutions, and if it finds a substitution with the tag "tag" (and if
+    that substitution matches the script and language combination) then it will
+    apply the substitution-- that is it will find the variant character specified
+    in the substitution and replace the current character with the variant, and
+    remove the variant from the font.
+    <P>
+    PfaEdit recognizes the string "*" as a wildcard for both the script and the
+    language (not for the tag though). So you wish to replace all glyphs with
+    their vertical variants:
+    <BLOCKQUOTE>
+      <PRE>SelectAll()
+ApplySubstitution("*","*","vrt2")
+</PRE>
+    </BLOCKQUOTE>
+  <DT>
     Transform(t1,t2,t3,t4,t5,t6)
   <DD>
     Each argument will be divided by 100. and then all selected characters will
@@ -941,6 +1003,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
   <DD>
     All selected characters will have their points moved the given amount.
   <DT>
+    ScaleToEm(em-size)<BR>
     ScaleToEm(ascent,descent)
   <DD>
     Change the font's ascent and descent and scale everything in the font to
@@ -1099,7 +1162,9 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     Arg is as above. This returns true if the character contains any splines,
     references or has had its width set.
   <DT>
-    CharInfo(str)
+    CharInfo(str)<BR>
+    CharInfo("Kern",character-spec)<BR>
+    CharInfo(str,script,lang,tag)
   <DD>
     There must be exactly one character selected in the font, and this returns
     information on it. The information returned depends on str with the obvious
@@ -1132,6 +1197,28 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
       <LI>
 	"Changed" returns whether the character has been changed since the last save
 	or load.
+      <LI>
+	"Position" takes three additional arguments, a script, a language and a tag
+	(all 4 character strings) and returns whether the character has a Position
+	alternate with that tag.
+      <LI>
+	"Substitution" takes three additional arguments, a script, a language and
+	a tag (all 4 character strings) and returns the name of the Simple Substitution
+	alternate with that tag (or a null string if there is none).
+      <LI>
+	"AltSubs" takes three additional arguments, a script, a language and a tag
+	(all 4 character strings) and returns a space seperated list of the names
+	of all alternate substitutions with that tag (or a null string if there is
+	none).
+      <LI>
+	"MultSubs" takes three additional arguments, a script, a language and a tag
+	(all 4 character strings) and returns a space seperated list of all the names
+	of all glyphs this glyph gets decomposed into with that tag (or a null string
+	if there is none).
+      <LI>
+	"Ligature" takes three additional arguments, a script, a language and a tag
+	(all 4 character strings) and returns a space seperated list of the names
+	of all components with that tag (or a null string if there is none).
     </UL>
     <P>
     Examples:
@@ -1142,6 +1229,8 @@ kern = CharInfo("Kern","O")
 Select(0u410)
 SetLBearing(lbearing)
 SetKern(0u41e,kern)
+Select("a")
+verta = CharInfo("Substitution","*","dflt","vrt2")
 </PRE>
     </BLOCKQUOTE>
 </DL>
