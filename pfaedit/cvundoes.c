@@ -1239,7 +1239,7 @@ static void PasteNonExistantRefCheck(SplineChar *sc,Undoes *paster,RefChar *ref,
 	    char buf[10]; const char *name;
 	    if ( ref->unicode_enc==-1 )
 		name = "<Unknown>";
-	    else if ( psunicodenames[ref->unicode_enc]!=NULL )
+	    else if ( ref->unicode_enc<psunicodenames_cnt && psunicodenames[ref->unicode_enc]!=NULL )
 		name = psunicodenames[ref->unicode_enc];
 	    else {
 		if ( ref->unicode_enc<0x10000 )

@@ -250,7 +250,7 @@ return;
 		fprintf( file, " /%s", item->psnames[i]);
 	    else if ( item->unicode[i]<' ' || (item->unicode[i]>=0x7f && item->unicode[i]<0xa0))
 		fprintf( file, " /.notdef" );
-	    else if ( psunicodenames[item->unicode[i]]!=NULL )
+	    else if ( item->unicode[i]<psunicodenames_cnt && psunicodenames[item->unicode[i]]!=NULL )
 		fprintf( file, " /%s", psunicodenames[item->unicode[i]]);
 	    else
 		fprintf( file, " /uni%04X", item->unicode[i]);
@@ -511,7 +511,7 @@ int CID2NameEnc(struct cidmap *map,int cid, char *buffer, int len) {
 	strncpy(buffer,map->name[cid],len);
     else if ( cid==0 || (cid<map->namemax && map->unicode[cid]!=0 )) {
 	enc = map->unicode[cid];
-	if ( psunicodenames[enc]!=NULL )
+	if ( enc<psunicodenames_cnt && psunicodenames[enc]!=NULL )
 	    strncpy(buffer,psunicodenames[enc],len);
 	else if ( enc<0x10000 )
 	    sprintf(buffer,"uni%04X", enc);
@@ -529,7 +529,7 @@ int CID2NameEnc(struct cidmap *map,int cid, char *buffer, int len) {
 	    enc = 0;
 	else
 	    enc = map->unicode[cid];
-	if ( psunicodenames[enc]!=NULL )
+	if ( enc<psunicodenames_cnt && psunicodenames[enc]!=NULL )
 	    strncpy(buffer,psunicodenames[enc],len);
 	else if ( enc<0x10000 )
 	    snprintf(buffer,len,"uni%04X", enc);
