@@ -94,7 +94,7 @@ void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]) {
 	if ( sf->chars[i]!=NULL && sf->chars[i]->layers[ly_fore].splines!=NULL ) {
 	    int enc = sf->chars[i]->unicodeenc;
 	    const unichar_t *upt;
-	    if ( isalnum(enc) &&
+	    if ( enc<0x10000 && isalnum(enc) &&
 		    ((enc>=32 && enc<128 ) || enc == 0xfe || enc==0xf0 || enc==0xdf ||
 		      enc==0x131 ||
 		     (enc>=0x391 && enc<=0x3f3 ) ||
@@ -152,11 +152,11 @@ void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]) {
 		    digith[0] += b.maxy;
 		    digith[1] += b.maxy*b.maxy;
 		    ++digith[2];
-		} else if ( isdigit(enc) ) {
+		} else if ( enc<0x10000 && isdigit(enc) ) {
 		    otherdigits[0] += b.maxy;
 		    otherdigits[1] += b.maxy*b.maxy;
 		    ++otherdigits[2];
-		} else if ( isupper(enc) && enc!=0x462 && enc!=0x490 ) {
+		} else if ( enc<0x10000 && isupper(enc) && enc!=0x462 && enc!=0x490 ) {
 		    caph[0] += b.maxy;
 		    caph[1] += b.maxy*b.maxy;
 		    ++caph[2];
@@ -262,7 +262,7 @@ void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]) {
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	int enc = sf->chars[i]->unicodeenc;
 	const unichar_t *upt;
-	if ( isalnum(enc) &&
+	if ( enc<0x10000 && isalnum(enc) &&
 		((enc>=32 && enc<128 ) || enc == 0xfe || enc==0xf0 || enc==0xdf ||
 		 (enc>=0x391 && enc<=0x3f3 ) ||
 		 (enc>=0x400 && enc<=0x4e9 ) )) {
@@ -284,9 +284,9 @@ void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]) {
 		/*  are beyond 1 sd */
 		AddBlue(b.miny,base,enc=='O' || enc=='o');
 	    }
-	    if ( isdigit(enc)) {
+	    if ( enc<0x10000 && isdigit(enc)) {
 		AddBlue(b.maxy,digith,false);
-	    } else if ( isupper(enc)) {
+	    } else if ( enc<0x10000 && isupper(enc)) {
 		AddBlue(b.maxy,caph,enc=='O');
 	    } else if ( enc=='b' || enc=='d' || enc=='f' || enc=='h' || enc=='k' ||
 		    enc == 'l' || enc=='t' || enc==0xf0 || enc==0xfe || enc == 0xdf ||
@@ -3336,7 +3336,8 @@ static void AutoHintRefs(SplineChar *sc,int removeOverlaps) {
 	if ( ref->transform[1]==0 && ref->transform[2]==0 ) {
 	    if ( !ref->sc->manualhints && ref->sc->changedsincelasthinted )
 		SplineCharAutoHint(ref->sc,removeOverlaps);
-	    if ( ref->sc->unicodeenc!=-1 && isalnum(ref->sc->unicodeenc) ) {
+	    if ( ref->sc->unicodeenc!=-1 && ref->sc->unicodeenc<0x10000 &&
+		    isalnum(ref->sc->unicodeenc) ) {
 		sc->hstem = RefHintsMerge(sc->hstem,ref->sc->hstem,ref->transform[3], ref->transform[5], ref->transform[0], ref->transform[4]);
 		sc->vstem = RefHintsMerge(sc->vstem,ref->sc->vstem,ref->transform[0], ref->transform[4], ref->transform[3], ref->transform[5]);
 		sc->dstem = RefDHintsMerge(sc->dstem,ref->sc->dstem,ref->transform[0], ref->transform[4], ref->transform[3], ref->transform[5]);
@@ -3346,7 +3347,8 @@ static void AutoHintRefs(SplineChar *sc,int removeOverlaps) {
 
     for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	if ( ref->transform[1]==0 && ref->transform[2]==0 &&
-		(ref->sc->unicodeenc==-1 || !isalnum(ref->sc->unicodeenc)) ) {
+		(ref->sc->unicodeenc==-1 || ref->sc->unicodeenc>=0x10000 ||
+			!isalnum(ref->sc->unicodeenc)) ) {
 	    sc->hstem = RefHintsMerge(sc->hstem,ref->sc->hstem,ref->transform[3], ref->transform[5], ref->transform[0], ref->transform[4]);
 	    sc->vstem = RefHintsMerge(sc->vstem,ref->sc->vstem,ref->transform[0], ref->transform[4], ref->transform[3], ref->transform[5]);
 	    sc->dstem = RefDHintsMerge(sc->dstem,ref->sc->dstem,ref->transform[0], ref->transform[4], ref->transform[3], ref->transform[5]);
