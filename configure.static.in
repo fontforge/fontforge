@@ -5,6 +5,7 @@ AC_PROG_CC
 AC_PROG_RANLIB
 
 gww_nodynamic="no"
+gww_needsstatic="no"
 AC_CANONICAL_HOST
 case "$host" in
 *-apple-darwin*) AC_DEFINE(NODYNAMIC)
@@ -24,6 +25,8 @@ AC_DEFINE(_Keyboard,2)
 AC_DEFINE(_BrokenBitmapImages)
 AC_DEFINE(_ModKeysAutoRepeat)
 AC_DEFINE(__CygWin,1)
+gww_nodynamic="yes"
+gww_needsstatic="yes"
  ;;
 esac
 
@@ -81,6 +84,9 @@ dnl the static libraries we've found
 AC_SUBST(STATIC_LIBS)
 STATIC_LIBS=
 if test "$gww_nodynamic" = "yes"; then
+ if test "$gww_needsstatic" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -static"
+ fi
  if test "$ac_cv_lib_ungif_DGifOpenFileName" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -lungif"
  fi
