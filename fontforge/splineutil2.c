@@ -2063,35 +2063,45 @@ void SPAverageCps(SplinePoint *sp) {
 }
 
 void SplineCharTangentNextCP(SplinePoint *sp) {
-    double angle, len;
-    BasePoint *bp;
+    double len;
+    BasePoint *bp, unit;
 
     if ( sp->prev==NULL )
 return;
     bp = &sp->prev->from->me;
 
-    angle = atan2(sp->me.y-bp->y,sp->me.x-bp->x);
+    unit.y = sp->me.y-bp->y; unit.x = sp->me.x-bp->x;
+    len = sqrt( unit.x*unit.x + unit.y*unit.y );
+    if ( len!=0 ) {
+	unit.x /= len;
+	unit.y /= len;
+    }
     len = sqrt((sp->nextcp.y-sp->me.y)*(sp->nextcp.y-sp->me.y) + (sp->nextcp.x-sp->me.x)*(sp->nextcp.x-sp->me.x));
-    sp->nextcp.x = sp->me.x + len*cos(angle);
-    sp->nextcp.y = sp->me.y + len*sin(angle);
+    sp->nextcp.x = sp->me.x + len*unit.x;
+    sp->nextcp.y = sp->me.y + len*unit.y;
     sp->nextcp.x = rint(sp->nextcp.x*1024)/1024;
     sp->nextcp.y = rint(sp->nextcp.y*1024)/1024;
     if ( sp->next!=NULL && sp->next->order2 )
-	sp->next->from->prevcp = sp->nextcp;
+	sp->next->to->prevcp = sp->nextcp;
 }
 
 void SplineCharTangentPrevCP(SplinePoint *sp) {
-    double angle, len;
-    BasePoint *bp;
+    double len;
+    BasePoint *bp, unit;
 
     if ( sp->next==NULL )
 return;
     bp = &sp->next->to->me;
 
-    angle = atan2(sp->me.y-bp->y,sp->me.x-bp->x);
+    unit.y = sp->me.y-bp->y; unit.x = sp->me.x-bp->x;
+    len = sqrt( unit.x*unit.x + unit.y*unit.y );
+    if ( len!=0 ) {
+	unit.x /= len;
+	unit.y /= len;
+    }
     len = sqrt((sp->prevcp.y-sp->me.y)*(sp->prevcp.y-sp->me.y) + (sp->prevcp.x-sp->me.x)*(sp->prevcp.x-sp->me.x));
-    sp->prevcp.x = sp->me.x + len*cos(angle);
-    sp->prevcp.y = sp->me.y + len*sin(angle);
+    sp->prevcp.x = sp->me.x + len*unit.x;
+    sp->prevcp.y = sp->me.y + len*unit.y;
     sp->prevcp.x = rint(sp->prevcp.x*1024)/1024;
     sp->prevcp.y = rint(sp->prevcp.y*1024)/1024;
     if ( sp->prev!=NULL && sp->prev->order2 )
