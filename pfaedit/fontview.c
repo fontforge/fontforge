@@ -4576,13 +4576,13 @@ return( NULL );
 		strmatch(fullname+strlen(fullname)-4, ".otf")==0 ) {
 	sf = SFReadTTF(fullname,0);
     } else if ( strmatch(fullname+strlen(fullname)-4, ".bdf")==0 ) {
-	sf = SFFromBDF(fullname,0,true);
+	sf = SFFromBDF(fullname,0,false);
     } else if ( strmatch(fullname+strlen(fullname)-2, "pk")==0 ) {
 	sf = SFFromBDF(fullname,1,true);
     } else if ( strmatch(fullname+strlen(fullname)-2, "gf")==0 ) {
 	sf = SFFromBDF(fullname,3,true);
     } else if ( strmatch(fullname+strlen(fullname)-4, ".pcf")==0 ) {
-	sf = SFFromBDF(fullname,2,true);
+	sf = SFFromBDF(fullname,2,false);
     } else if ( strmatch(fullname+strlen(strippedname)-4, ".bin")==0 ||
 		strmatch(fullname+strlen(strippedname)-4, ".hqx")==0 ||
 		strmatch(fullname+strlen(strippedname)-6, ".dfont")==0 ) {
