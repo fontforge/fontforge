@@ -1234,7 +1234,7 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
 	iscjk &= ~0x100;
 	hdb = NULL;
 	if ( sc->ttf_glyph==0x7fff || ( !sc->hconflicts && !sc->vconflicts && !sc->anyflexes )) {
-	    if ( sc->changedsincelasthinted && !sc->manualhints )
+	    if ( autohint_before_generate && sc->changedsincelasthinted && !sc->manualhints )
 		SplineCharAutoHint(sc,true);
 	    if ( iscjk )
 		CounterHints1(&gb,sc,round);	/* Must come immediately after hsbw */
@@ -2351,7 +2351,7 @@ static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid,
 	memset(&hdb,'\0',sizeof(hdb));
 	hdb.sc = sc;
 	hdb.noconflicts = !sc->hconflicts && !sc->vconflicts;
-	if ( sc->changedsincelasthinted && !sc->manualhints )
+	if ( autohint_before_generate && sc->changedsincelasthinted && !sc->manualhints )
 	    SplineCharAutoHint(sc,true);
 	HintDirection(sc->hstem);
 	HintDirection(sc->vstem);
@@ -2388,7 +2388,8 @@ static int Type2SpecialCase(SplineChar *sc) {
 
     for ( d=sc->dependents; d!=NULL; d=d->next ) {
 	for ( r=d->sc->refs; r!=NULL; r = r->next ) {
-	    if ( r->sc!=NULL && r->sc->changedsincelasthinted && !r->sc->manualhints )
+	    if ( autohint_before_generate && r->sc!=NULL &&
+		    r->sc->changedsincelasthinted && !r->sc->manualhints )
 		SplineCharAutoHint(r->sc,true);
 	    if ( r->transform[0]!=1 || r->transform[1]!=0 ||
 		    r->transform[2]!=0 || r->transform[3]!=1 )
@@ -2413,7 +2414,8 @@ struct pschars *SplineFont2Subrs2(SplineFont *sf) {
     /*  instead we track down to the base ref */
     for ( i=cnt=0; i<sf->charcnt; ++i ) {
 	sc = sf->chars[i];
-	if ( sc!=NULL && sc->changedsincelasthinted && !sc->manualhints )
+	if ( autohint_before_generate && sc!=NULL &&
+		sc->changedsincelasthinted && !sc->manualhints )
 	    SplineCharAutoHint(sc,true);
 	if ( sc==NULL || sc!=SCDuplicate(sc))
 	    /* Do Nothing */;

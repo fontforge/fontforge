@@ -907,7 +907,7 @@ static int SCStemCheck(SplineFont *sf,int basech,DBounds *bb, DBounds *rbb,int p
     sc = findchar(sf,basech);
     if ( sc==NULL )
 return( 0x70000000 );
-    if ( sc->changedsincelasthinted && !sc->manualhints )
+    if ( autohint_before_generate && sc->changedsincelasthinted && !sc->manualhints )
 	SplineCharAutoHint(sc,true);
     if ( (best=sc->vstem)!=NULL ) {
 	if ( pos&____CENTERLEFT ) {
