@@ -2297,12 +2297,282 @@ static void AutoHintRefs(SplineChar *sc,int removeOverlaps) {
     }
 }
 
+static void SCAddWidthMD(SplineChar *sc) {
+    StemInfo *h;
+    DStemInfo *dh;
+    SplineSet *ss;
+    SplinePoint *sp;
+    int xmax = 0;
+    MinimumDistance *md;
+
+    /* find the max of: vertical stems, diagonal stems, md's */
+
+    if ( sc->vstem==NULL && sc->dstem==NULL && sc->md==NULL )
+return;
+
+    if ( sc->vstem!=NULL ) {
+	for ( h=sc->vstem; h->next!=NULL; h=h->next );
+	xmax = h->width>0?h->start+h->width:h->start;
+    }
+    for ( dh = sc->dstem; dh!=NULL; dh=dh->next ) {
+	if ( dh->rightedgetop.x>xmax ) xmax = dh->rightedgetop.x;
+	if ( dh->rightedgebottom.x>xmax ) xmax = dh->rightedgebottom.x;
+    }
+    for ( md=sc->md; md!=NULL; md=md->next ) {
+	if ( md->x && md->sp1!=NULL && md->sp1->me.x>xmax )
+	    xmax = md->sp1->me.x;
+	if ( md->x && md->sp2!=NULL && md->sp2->me.x>xmax )
+	    xmax = md->sp2->me.x;
+    }
+    if ( xmax<sc->width ) {
+	for ( ss=sc->splines; ss!=NULL; ss=ss->next) {
+	    for ( sp=ss->first ; ; ) {
+		if ( sp->me.x>=xmax-1 && sp->me.x<xmax+1 ) {
+		    md = chunkalloc(sizeof(MinimumDistance));
+		    md->x = true;
+		    md->sp1 = sp;
+		    md->sp2 = NULL;
+		    md->next = sc->md;
+		    sc->md = md;
+return;
+		}
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==ss->first )
+	    break;
+	    }
+	}
+    }
+    /* Couldn't find a point on the last hint. Oh well, no md */
+}
+
+void MDAdd(SplineChar *sc, int x, SplinePoint *sp1, SplinePoint *sp2) {
+    StemInfo *h;
+    real low, high, temp;
+    MinimumDistance *md;
+    int c1, c2, nc1;
+
+    /* Don't add this if there's an md with this info already... */
+    /* Also, don't add if there's an md with a stricter requirement (ie which */
+    /*  is closer */
+    for ( md=sc->md; md!=NULL; md = md->next ) {
+	if ( md->x==x && md->sp2==sp2 ) {
+	    if ( md->sp1==sp1 )
+return;
+	    if ( x ) {
+		c1 = md->sp1->me.x; nc1 = sp1->me.x;
+		c2 = sp2==NULL ? sc->width : sp2->me.x;
+	    } else {
+		c1 = md->sp1->me.y; nc1 = sp1->me.y;
+		c2 = sp2->me.y;
+	    }
+	    if ( c1>c2 && nc1>c2 ) {
+		if ( c1 > nc1 )
+		    md->sp1 = sp1;
+return;
+	    } else if ( c1<c2 && nc1<c2 ) {
+		if ( c1 < nc1 )
+		    md->sp1 = sp1;
+return;
+	    }
+	}
+	if ( md->x==x && md->sp1==sp2 && md->sp2==sp1 )
+return;
+    }
+
+    /* Don't add this if there's an hstem with this info already... */
+    if ( x ) {
+	low = sp1->me.x;
+	high = sp2->me.x;
+	h = sc->vstem;
+    } else {
+	low = sp1->me.y;
+	high = sp2->me.y;
+	h = sc->hstem;
+    }
+    if ( low>high ) {
+	temp = low;
+	low = high;
+	high = temp;
+    }
+    for ( ; h!=NULL && (h->start<low || (h->start==low && h->start+h->width!=high)); h = h->next );
+    if ( h==NULL || h->start!=low || h->start+h->width!=high ) {
+	md = chunkalloc(sizeof(MinimumDistance));
+	md->sp1 = sp1;
+	md->sp2 = sp2;
+	md->x = x;
+	md->next = sc->md;
+	sc->md = md;
+    }
+}
+
+/* Look for simple serifs (a vertical stem to the left or right of a hinted */
+/*  stem). Serifs will not be hinted because they overlap the main stem. */
+/*  To be a serif it must be a vertical stem that doesn't overlap (in y) the */
+/*  hinted stem. It must be to the left of the left edge, or to the right of */
+/*  the right edge of the hint. */
+/* This is a pretty dumb detector, but it gets simple cases */
+/*					 			*/
+/*  |		 |		 |		 |		*/
+/*  |		 |		 +		 +		*/
+/*  |		 |		 |		 |		*/
+/*  |		 |		  \		  \		*/
+/*  +----+	 +-----+	    -+---+	    -+		*/
+/*       |		+		 |	     |		*/
+/* +-----+	+------+	 +-------+	+----+		*/
+/*					 			*/
+/* Simplest case is just a slab serif, all right angles, no extrenious points */
+/*  slighlty more complex, we allow one curved point between the two on the */
+/*	vertical (now curved) edge (the remaining two cases can also have */
+/*	rounded edges on the bottom */
+/*  We can also have a curved segment connecting the slab to the stem */
+/*  and the curve may be so long that there is no horizontal edge to the slab */
+/* (I've only shown one orientation, but obviously these can be flipped) */
+static void ptserifcheck(SplineChar *sc,StemInfo *hint, SplinePoint *sp, int xdir) {
+    int up, right;
+    SplinePoint *serif0, *serif1, *serif2, *serif3;
+    int coord= !xdir, other=xdir;
+
+    if ( sp->prev==NULL || sp->next==NULL )
+return;
+
+    serif0 = sp;
+    if ( (&sp->prev->from->me.x)[coord]==(&sp->me.x)[coord] ) {
+	up = ((&sp->prev->from->me.x)[other]<(&sp->me.x)[other]);
+	serif1 = sp->next->to;
+	if ( serif1->next==NULL )
+return;
+	serif2 = serif1->next->to;
+	if ( (&serif1->me.x)[other]!=(&sp->me.x)[other] ) {
+	    if ( up!=((&sp->me.x)[other]<(&serif1->me.x)[other]))
+return;
+	    /* should be vertical at sp, and horizontal at serif1 */
+	    if ( !RealNear(sp->next->splines[coord].c,0) ||
+		    !RealNear(3*sp->next->splines[other].a+2*sp->next->splines[other].b+sp->next->splines[other].c,0))
+return;
+	    serif0 = serif1;
+	    serif1 = serif2;
+	    if ( (&serif0->me.x)[other]!=(&serif1->me.x)[other] )
+		serif1 = serif0;
+	    else {
+		if ( serif1->next==NULL )
+return;
+		serif2 = serif1->next->to;
+	    }
+	}
+	if ( serif2->next==NULL )
+return;
+	serif3 = serif2->next->to;
+	if ( (&serif1->me.x)[coord]!=(&serif2->me.x)[coord] && (&serif1->me.x)[coord]==(&serif3->me.x)[coord] ) {
+	    /* Allow for one curved point in the serif's "vertical" edge */
+	    serif2 = serif3;
+	    if ( serif2->next==NULL )
+return;
+	    serif3 = serif2->next->to;
+	}
+    } else if ( (&sp->next->to->me.x)[coord]==(&sp->me.x)[coord] ) {
+	up = (&sp->next->to->me.x)[other]<(&sp->me.x)[other];
+	serif1 = sp->prev->from;
+	if ( serif1->prev==NULL )
+return;
+	serif2 = serif1->prev->from;
+	if ( (&serif1->me.x)[other]!=(&sp->me.x)[other] ) {
+	    if ( up!=((&sp->me.x)[other]<(&serif1->me.x)[other]))
+return;
+	    /* should be vertical at sp, and horizontal at serif1 */
+	    if ( !RealNear(3*sp->prev->splines[coord].a+2*sp->prev->splines[coord].b+sp->prev->splines[coord].c,0) ||
+		    !RealNear(sp->prev->splines[other].c,0))
+return;
+	    serif0 = serif1;
+	    serif1 = serif2;
+	    if ( (&serif0->me.x)[other]!=(&serif1->me.x)[other] )
+		serif1 = serif0;
+	    else {
+		if ( serif1->prev==NULL )
+return;
+		serif2 = serif1->prev->from;
+	    }
+	}
+	if ( serif2->prev==NULL )
+return;
+	serif3 = serif2->prev->from;
+	if ( (&serif1->me.x)[coord]!=(&serif2->me.x)[coord] && (&serif1->me.x)[coord]==(&serif3->me.x)[coord] ) {
+	    /* Allow for one curved point in the serif's "vertical" edge */
+	    serif2 = serif3;
+	    if ( serif2->prev==NULL )
+return;
+	    serif3 = serif2->prev->from;
+	}
+    } else		/* no vertical stem here, unlikely to be serifs */
+return;
+
+    right = false;
+    if ( (&sp->me.x)[coord]>=hint->start-1 && (&sp->me.x)[coord]<=hint->start+1 )
+	right = hint->width<0;
+    else
+	right = hint->width>0;
+
+    /* must go in the right direction... */
+    if (( right && (&serif1->me.x)[coord]<=(&sp->me.x)[coord] ) ||
+	    ( !right && (&serif1->me.x)[coord]>=(&sp->me.x)[coord] ) ||
+	    ( up && (&serif2->me.x)[other]<(&sp->me.x)[other] ) ||
+	    ( !up && (&serif2->me.x)[other]>(&sp->me.x)[other] ))
+return;
+    if ( serif0!=sp ) {
+	if (( right && (&serif0->me.x)[coord]<=(&sp->me.x)[coord] ) ||
+		( !right && (&serif0->me.x)[coord]>=(&sp->me.x)[coord] ))
+return;
+    }
+    /* Must have a vertical edge between serif1 and serif2 */
+    if ( (&serif1->me.x)[coord]!=(&serif2->me.x)[coord] )
+return;
+    /* Must go in the same vertical direction as the stem's edge */
+    if ( up != (&serif1->next->to->me.x)[other]<(&serif2->me.x)[other] )
+return;
+    /* Must return back towards the stem */
+    if ( right != ( (&serif2->me.x)[coord]>(&serif3->me.x)[coord] ))
+return;
+
+    /* Well, It's probably a serif... */
+    /* So create a set of minimum distances for it */
+    MDAdd(sc,xdir,sp,serif1);
+    MDAdd(sc,xdir,sp,serif2);
+    MDAdd(sc,!xdir,serif2,serif0);
+}
+
+/* So. We look for all points that lie on the edges of all vertical stem hint */
+/*  and see if there are any serifs protruding from them */
+static void SCSerifCheck(SplineChar *sc,StemInfo *hint, int xdir) {
+    SplineSet *ss;
+    SplinePoint *sp;
+
+    for ( ; hint!=NULL ; hint=hint->next ) {
+	for ( ss=sc->splines; ss!=NULL; ss=ss->next ) {
+	    for ( sp=ss->first ; ; ) {
+		if ( xdir && ((sp->me.x>=hint->start-1 && sp->me.x<=hint->start+1) ||
+			(sp->me.x>=hint->start+hint->width-1 && sp->me.x<=hint->start+hint->width+2)) )
+		    ptserifcheck(sc,hint,sp,xdir);
+		else if (!xdir && ((sp->me.y>=hint->start-1 && sp->me.y<=hint->start+1) ||
+			(sp->me.y>=hint->start+hint->width-1 && sp->me.y<=hint->start+hint->width+2)) )
+		    ptserifcheck(sc,hint,sp,xdir);
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==ss->first )
+	    break;
+	    }
+	}
+    }
+}
+
 void SplineCharAutoHint( SplineChar *sc, int removeOverlaps ) {
     EIList el;
 
     StemInfosFree(sc->vstem); sc->vstem=NULL;
     StemInfosFree(sc->hstem); sc->hstem=NULL;
     DStemInfosFree(sc->dstem); sc->dstem=NULL;
+    MinimumDistancesFree(sc->md); sc->md=NULL;
 
     memset(&el,'\0',sizeof(el));
     ELFindEdges(sc, &el);
@@ -2312,6 +2582,9 @@ void SplineCharAutoHint( SplineChar *sc, int removeOverlaps ) {
 
     sc->vstem = SCFindStems(&el,1,removeOverlaps,&sc->dstem);
     sc->hstem = SCFindStems(&el,0,removeOverlaps,NULL);
+    SCSerifCheck(sc,sc->vstem,1);
+    SCSerifCheck(sc,sc->hstem,0);
+    SCAddWidthMD(sc);
     AutoHintRefs(sc,removeOverlaps);
     sc->vconflicts = StemListAnyConflicts(sc->vstem);
     sc->hconflicts = StemListAnyConflicts(sc->hstem);

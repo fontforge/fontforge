@@ -134,20 +134,62 @@ void SplinePointFree(SplinePoint *sp) {
     chunkfree(sp,sizeof(SplinePoint));
 }
 
+void SplinePointMDFree(SplineChar *sc, SplinePoint *sp) {
+    MinimumDistance *md, *prev, *next;
+
+    if ( sc!=NULL ) {
+	prev = NULL;
+	for ( md = sc->md; md!=NULL; md = next ) {
+	    next = md->next;
+	    if ( md->sp1==sp || md->sp2==sp ) {
+		if ( prev==NULL )
+		    sc->md = next;
+		else
+		    prev->next = next;
+		chunkfree(md,sizeof(MinimumDistance));
+	    } else
+		prev = md;
+	}
+    }
+
+    chunkfree(sp,sizeof(SplinePoint));
+}
+
 void SplinePointListFree(SplinePointList *spl) {
     Spline *first, *spline, *next;
 
     if ( spl==NULL )
 return;
-    first = NULL;
-    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = next ) {
-	next = spline->to->next;
-	SplinePointFree(spline->to);
-	SplineFree(spline);
-	if ( first==NULL ) first = spline;
+    if ( spl->first!=NULL ) {
+	first = NULL;
+	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = next ) {
+	    next = spline->to->next;
+	    SplinePointFree(spline->to);
+	    SplineFree(spline);
+	    if ( first==NULL ) first = spline;
+	}
+	if ( spl->last!=spl->first || spl->first->next==NULL )
+	    SplinePointFree(spl->first);
     }
-    if ( spl->last!=spl->first || spl->first->next==NULL )
-	SplinePointFree(spl->first);
+    chunkfree(spl,sizeof(SplinePointList));
+}
+
+void SplinePointListMDFree(SplineChar *sc,SplinePointList *spl) {
+    Spline *first, *spline, *next;
+
+    if ( spl==NULL )
+return;
+    if ( spl->first!=NULL ) {
+	first = NULL;
+	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = next ) {
+	    next = spline->to->next;
+	    SplinePointMDFree(sc,spline->to);
+	    SplineFree(spline);
+	    if ( first==NULL ) first = spline;
+	}
+	if ( spl->last!=spl->first || spl->first->next==NULL )
+	    SplinePointMDFree(sc,spl->first);
+    }
     chunkfree(spl,sizeof(SplinePointList));
 }
 
@@ -858,7 +900,7 @@ SplinePointList *SplinePointListCopySelected(SplinePointList *base) {
 return( head );
 }
 
-static SplinePointList *SplinePointListSplit(SplinePointList *spl) {
+static SplinePointList *SplinePointListSplit(SplineChar *sc,SplinePointList *spl) {
     SplinePointList *head=NULL, *last=NULL, *cur;
     SplinePoint *first, *start, *next;
 
@@ -885,7 +927,7 @@ static SplinePointList *SplinePointListSplit(SplinePointList *spl) {
 		SplineFree(start->next);
 	    } else
 		next = NULL;
-	    SplinePointFree(start);
+	    SplinePointMDFree(sc,start);
 	    start = next;
 	}
 	if ( start==NULL || start==first )
@@ -919,7 +961,7 @@ static SplinePointList *SplinePointListSplit(SplinePointList *spl) {
 return( last );
 }
 
-SplinePointList *SplinePointListRemoveSelected(SplinePointList *base) {
+SplinePointList *SplinePointListRemoveSelected(SplineChar *sc,SplinePointList *base) {
     SplinePointList *head=NULL, *last=NULL, *next;
     SplinePoint *pt, *first;
     int anysel, allsel;
@@ -936,7 +978,7 @@ SplinePointList *SplinePointListRemoveSelected(SplinePointList *base) {
 	break;
 	}
 	if ( allsel ) {
-	    SplinePointListFree(base);
+	    SplinePointListMDFree(sc,base);
     continue;
 	}
 	if ( head==NULL )
@@ -945,7 +987,7 @@ SplinePointList *SplinePointListRemoveSelected(SplinePointList *base) {
 	    last->next = base;
 	last = base;
 	if ( anysel )
-	    last = SplinePointListSplit(base);
+	    last = SplinePointListSplit(sc,base);
     }
     if ( last!=NULL ) last->next = NULL;
 return( head );
@@ -2290,6 +2332,16 @@ return;
     free(lig);
 }
 
+void MinimumDistancesFree(MinimumDistance *md) {
+    MinimumDistance *next;
+
+    while ( md!=NULL ) {
+	next = md->next;
+	chunkfree(md,sizeof(MinimumDistance));
+	md = next;
+    }
+}
+
 void TTFLangNamesFree(struct ttflangname *l) {
     struct ttflangname *next;
     int i;
@@ -2317,6 +2369,7 @@ return;
     StemInfosFree(sc->hstem);
     StemInfosFree(sc->vstem);
     DStemInfosFree(sc->dstem);
+    MinimumDistancesFree(sc->md);
     KernPairsFree(sc->kerns);
     UndoesFree(sc->undoes[0]); UndoesFree(sc->undoes[1]);
     UndoesFree(sc->redoes[0]); UndoesFree(sc->redoes[1]);
@@ -2324,9 +2377,6 @@ return;
 	dnext = dlist->next;
 	free(dlist);
     }
-#if 0
-    free(sc->origtype1);
-#endif
     LigatureFree(sc->lig);
     chunkfree(sc,sizeof(SplineChar));
 }

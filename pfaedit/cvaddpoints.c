@@ -338,7 +338,7 @@ void CVMergeSplineSets(CharView *cv, SplinePoint *active, SplineSet *activess,
     merge->next = NULL;
     if ( mergess==activess ) {
 	activess->first = activess->last = active;
-	SplinePointFree(merge);
+	SplinePointMDFree(cv->sc,merge);
     } else {
 	mergess->last = merge;
 	if ( mergess==*cv->heads[cv->drawmode] )
@@ -347,7 +347,7 @@ void CVMergeSplineSets(CharView *cv, SplinePoint *active, SplineSet *activess,
 	    for ( spl = *cv->heads[cv->drawmode]; spl->next!=mergess; spl=spl->next );
 	    spl->next = mergess->next;
 	}
-	SplinePointListFree(mergess);
+	SplinePointListMDFree(cv->sc,mergess);
     }
     AdjustControls(active);
 }

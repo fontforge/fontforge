@@ -65,7 +65,7 @@ static void CVStrokeIt(void *_cv, StrokeInfo *si) {
 		while ( cur->next ) cur=cur->next;
 		cur->next = snext;
 		spl->next = NULL;
-		SplinePointListFree(spl);
+		SplinePointListMDFree(cv->sc,spl);
 		prev = cur;
 	    } else
 		prev = spl;

@@ -638,11 +638,13 @@ return( true );
 	      break;
 	      case CID_VHHints:
 		CVShows.showhhints = cv->showhhints =
+		    CVShows.showmdy = cv->showmdy = 
 			GGadgetIsChecked(event->u.control.g);
 		cv->back_img_out_of_date = true;	/* only this cv */
 	      break;
 	      case CID_VVHints:
 		CVShows.showvhints = cv->showvhints =
+		    CVShows.showmdx = cv->showmdx = 
 			GGadgetIsChecked(event->u.control.g);
 		cv->back_img_out_of_date = true;	/* only this cv */
 	      break;

@@ -52,7 +52,9 @@ return( false );
     if ( cnt==2 ) {
 	if ( sp1!=NULL ) { *sp1 = sps[0]; *sp2 = sps[1]; }
 return( true );
-    }
+    } else if ( cnt==1 )
+	if ( sp1!=NULL ) *sp1 = sps[0];
+	/* But still return false */;
 return( false );
 }
 
@@ -655,4 +657,58 @@ void CVCreateHint(CharView *cv,int ishstem) {
     while ( !chd.done )
 	GDrawProcessOneEvent(NULL);
     GDrawSetVisible(gw,false);
+}
+
+void SCClearRounds(SplineChar *sc) {
+    SplineSet *ss;
+    SplinePoint *sp;
+
+    for ( ss=sc->splines; ss!=NULL; ss=ss->next ) {
+	for ( sp=ss->first; ; ) {
+	    sp->roundx = sp->roundy = false;
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
+	}
+    }
+}
+
+void SCRemoveSelectedMinimumDistances(SplineChar *sc,int inx) {
+    /* Remove any minimum distance where at least one of the two points is */
+    /*  selected */
+    MinimumDistance *md, *prev, *next;
+    SplineSet *ss;
+    SplinePoint *sp;
+
+    prev = NULL;
+    for ( md = sc->md; md!=NULL; md = next ) {
+	next = md->next;
+	if ( (inx==2 || inx==md->x) &&
+		((md->sp1!=NULL && md->sp1->selected) ||
+		 (md->sp2!=NULL && md->sp2->selected))) {
+	    if ( prev==NULL )
+		sc->md = next;
+	    else
+		prev->next = next;
+	    chunkfree(md,sizeof(MinimumDistance));
+	} else
+	    prev = md;
+    }
+
+    for ( ss=sc->splines; ss!=NULL; ss=ss->next ) {
+	for ( sp=ss->first; ; ) {
+	    if ( sp->selected ) {
+		if ( inx==2 ) sp->roundx = sp->roundy = false;
+		else if ( inx==1 ) sp->roundx = false;
+		else sp->roundy = false;
+	    }
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
+	}
+    }
 }

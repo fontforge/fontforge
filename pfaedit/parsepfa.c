@@ -1167,6 +1167,8 @@ static void addinfo(struct fontparse *fp,char *line,char *tok,char *binstart,int
 /* (oh. I see now. it's allowed to be either one "RD" or "-|", but nothing else*/
 /*  right) */
 /* It's defined as {string currentfile exch readstring pop} so look for that */
+/* Except that in gsf files we've also go "/-!{string currentfile exch readhexstring pop} readonly def" */
+/*  NOTE: readhexstring!!! */
 static int glorpline(struct fontparse *fp, FILE *temp, char *rdtok) {
     static char *buffer=NULL, *end;
     char *pt, *binstart;
@@ -1177,6 +1179,7 @@ static int glorpline(struct fontparse *fp, FILE *temp, char *rdtok) {
     char *tokpt = NULL, *rdpt;
     char temptok[255];
     int intok, first;
+    int wasminus=false, isminus, nibble, firstnibble, inhex;
 
     ch = getc(temp);
     if ( ch==EOF )
@@ -1188,6 +1191,7 @@ return( 0 );
 	end = buffer+3000;
     }
     innum = inr = 0; wasspace = 0; inbinary = 0; rpt = NULL; rdpt = NULL;
+    inhex = 0;
     pt = buffer; binstart=NULL; binlen = 0; intok=0; sptok=0; first=1;
     temptok[0] = '\0';
     while ( (ch=getc(temp))!=EOF ) {
@@ -1200,10 +1204,30 @@ return( 0 );
 	    binstart = buffer+(binstart-old);
 	}
 	*pt++ = ch;
+	isminus = ch=='-' && wasspace;
 	nownum = nowspace = nowr = 0;
 	if ( inbinary ) {
 	    if ( --cnt==0 )
 		inbinary = 0;
+	} else if ( inhex ) {
+	    if ( ishexdigit(ch)) {
+		int h;
+		if ( isdigit(ch)) h = ch-'0';
+		else if ( ch>='a' && ch<='f' ) h = ch-'a'+10;
+		else h = ch-'A'+10;
+		if ( firstnibble ) {
+		    nibble = h;
+		    --pt;
+		} else {
+		    pt[-1] = (nibble<<4)|h;
+		    if ( --cnt==0 )
+			inbinary = inhex = 0;
+		}
+		firstnibble = !firstnibble;
+	    } else {
+		--pt;
+		/* skip everything not hex */
+	    }
 	} else if ( ch=='/' ) {
 	    intok = 1;
 	    tokpt = temptok;
@@ -1255,8 +1279,19 @@ return( 0 );
 		}
 	    } else
 		nowr = 1;
+	} else if ( wasminus && ch=='!' ) {
+	    ch = getc(temp);
+	    *pt++ = ch;
+	    if ( isspace(ch) && val!=0 ) {
+		inhex = 1;
+		cnt = val;
+		binstart = pt;
+		binlen = val;
+		firstnibble = true;
+	    }
 	}
 	innum = nownum; wasspace = nowspace; inr = nowr;
+	wasminus = isminus;
 	first = 0;
     }
     *pt = '\0';
@@ -1352,9 +1387,7 @@ return;
     if ( ch1!=EOF ) ungetc(ch1,in);
 }
 
-static void decryptagain(struct fontparse *fp,FILE *temp) {
-    char rdtok[255];
-    strcpy(rdtok,"RD");
+static void decryptagain(struct fontparse *fp,FILE *temp,char *rdtok) {
     while ( glorpline(fp,temp,rdtok));
 }
 
@@ -1532,6 +1565,9 @@ static void dodata( struct fontparse *fp, FILE *in, FILE *temp) {
 static void realdecrypt(struct fontparse *fp,FILE *in, FILE *temp) {
     char buffer[256];
     int first, hassectionheads;
+    char rdtok[20];
+
+    strcpy(rdtok,"RD");
 
     first = 1; hassectionheads = 0;
     while ( myfgets(buffer,sizeof(buffer),in)!=NULL ) {
@@ -1550,6 +1586,11 @@ static void realdecrypt(struct fontparse *fp,FILE *in, FILE *temp) {
 	    parsetype3(fp,in);
 return;
 	}
+	if ( strstr(buffer,"CharStrings")!=NULL && strstr(buffer,"begin")!=NULL ) {
+	    /* gsf files are not eexec encoded, but the charstrings are encoded*/
+	    decryptagain(fp,in,rdtok);
+return;
+	}
     }
 
     if ( strstr(buffer,"%%BeginData: ")!=NULL ) {
@@ -1558,7 +1599,7 @@ return;
     } else {
 	decrypteexec(in,temp,hassectionheads);
 	rewind(temp);
-	decryptagain(fp,temp);
+	decryptagain(fp,temp,rdtok);
 	while ( myfgets(buffer,sizeof(buffer),in)!=NULL ) {
 	    if ( buffer[0]!='\200' || !hassectionheads )
 		parseline(fp,buffer,in);

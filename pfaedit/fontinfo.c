@@ -402,6 +402,8 @@ static struct langstyle *stylelist[] = {regs, demibolds, bolds, heavys, blacks,
 #define CID_XUID	1113
 #define CID_Human	1114
 
+#define CID_ForceEncoding	1215
+
 #define CID_PrivateEntries	2001
 #define	CID_PrivateValues	2002
 #define	CID_Add			2003
@@ -1108,8 +1110,58 @@ static void RemoveSplineChar(SplineFont *sf, int enc) {
     }
 }
 
+static int SFForceEncoding(SplineFont *sf,enum charset new_map) {
+    int enc_cnt=256,i;
+    BDFFont *bdf;
+    Encoding *item=NULL;
+
+    if ( sf->encoding_name==new_map )
+return(false);
+    if ( new_map==em_none ) {
+	sf->encoding_name=em_none;	/* Custom, it's whatever's there */
+return(false);
+    }
+
+    if ( new_map>=em_base ) {
+	for ( item=enclist; item!=NULL && item->enc_num!=new_map; item=item->next );
+	if ( item!=NULL ) {
+	    enc_cnt = item->char_cnt;
+	} else {
+	    GWidgetErrorR(_STR_InvalidEncoding,_STR_InvalidEncoding);
+return( false );
+	}
+    } else if ( new_map==em_unicode )
+	enc_cnt = 65536;
+    else if ( new_map>=em_first2byte )
+	enc_cnt = 94*96;
+
+    if ( sf->charcnt<enc_cnt ) {
+	sf->chars = grealloc(sf->chars,enc_cnt*sizeof(SplineChar *));
+	for ( i=sf->charcnt; i<enc_cnt; ++i )
+	    sf->chars[i] = NULL;
+	sf->charcnt = enc_cnt;
+    }
+    for ( bdf=sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
+	if ( bdf->charcnt<enc_cnt ) {
+	    bdf->chars = grealloc(bdf->chars,enc_cnt*sizeof(BDFChar *));
+	    for ( i=bdf->charcnt; i<enc_cnt; ++i )
+		bdf->chars[i] = NULL;
+	}
+	bdf->charcnt = enc_cnt;
+    }
+    sf->encoding_name = new_map;
+    for ( i=0; i<sf->charcnt && i<enc_cnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	SplineChar dummy;
+	SCBuildDummy(&dummy,sf,i);
+	sf->chars[i]->unicodeenc = dummy.unicodeenc;
+	free(sf->chars[i]->name);
+	sf->chars[i]->name = copy(dummy.name);
+    }
+return( true );
+}
+
 /* see also SplineFontNew in splineutil2.c */
-static int _SFReencodeFont(SplineFont *sf,enum charset new_map,SplineFont *target) {
+static int _SFReencodeFont(SplineFont *sf,enum charset new_map, SplineFont *target) {
     const unsigned short *table;
     int i, extras, epos;
     SplineChar **chars;
@@ -1164,6 +1216,14 @@ return( false );
 	tlen = target->charcnt;
     }
 
+    enc_cnt=tlen;
+    if ( target!=NULL )
+	/* Done */;
+    else if ( new_map==em_unicode )
+	enc_cnt = 65536;
+    else if ( tlen == 94*94 )
+	enc_cnt = 94*96;
+
     extras = 0;
     used = gcalloc((tlen+7)/8,sizeof(uint8));
     for ( i=0; i<sf->charcnt; ++i ) {
@@ -1180,13 +1240,6 @@ return( false );
 	}
     }
     free(used);
-    enc_cnt=tlen;
-    if ( target!=NULL )
-	/* Done */;
-    else if ( new_map==em_unicode )
-	enc_cnt = 65536;
-    else if ( tlen == 94*94 )
-	enc_cnt = 94*96;
     chars = gcalloc(enc_cnt+extras,sizeof(SplineChar *));
     for ( bdf=sf->bitmaps; bdf!=NULL; bdf = bdf->next )
 	bdf->temp = gcalloc(enc_cnt+extras,sizeof(BDFChar *));
@@ -1905,6 +1958,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	int reformat_fv=0;
 	int upos, uwid, as, des, nchar, oldcnt=sf->charcnt, err = false, weight=0;
 	int uniqueid;
+	int force_enc=0;
 	real ia, cidversion;
 	const unichar_t *txt; unichar_t *end;
 	int i;
@@ -1933,6 +1987,7 @@ return(true);
 	des = GetIntR(gw,CID_Descent,_STR_Descent,&err);
 	nchar = GetIntR(gw,CID_NChars,_STR_Numchars,&err);
 	uniqueid = GetIntR(gw,CID_UniqueID,_STR_UniqueID,&err);
+	force_enc = GGadgetIsChecked(GWidgetGetControl(gw,CID_ForceEncoding));
 	if ( sf->subfontcnt!=0 )
 	    cidversion = GetRealR(gw,CID_Version,_STR_Version,&err);
 	if ( d->ttf_set ) {
@@ -1966,7 +2021,10 @@ return(true);
 	enc = GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,CID_Encoding));
 	if ( enc!=-1 ) {
 	    enc = (int) (GGadgetGetListItem(GWidgetGetControl(gw,CID_Encoding),enc)->userdata);
-	    reformat_fv = SFReencodeFont(sf,enc);
+	    if ( force_enc )
+		reformat_fv = SFForceEncoding(sf,enc);
+	    else
+		reformat_fv = SFReencodeFont(sf,enc);
 	    if ( reformat_fv && nchar==oldcnt )
 		nchar = sf->charcnt;
 	}
@@ -2131,8 +2189,8 @@ void FontInfo(SplineFont *sf) {
     GWindow gw;
     GWindowAttrs wattrs;
     GTabInfo aspects[8];
-    GGadgetCreateData mgcd[10], ngcd[11], egcd[11], psgcd[16], tngcd[7],   pgcd[8], vgcd[11], pangcd[22];
-    GTextInfo mlabel[10], nlabel[11], elabel[11], pslabel[16], tnlabel[7], plabel[8], vlabel[11], panlabel[22], *list;
+    GGadgetCreateData mgcd[10], ngcd[11], egcd[12], psgcd[16], tngcd[7],   pgcd[8], vgcd[11], pangcd[22];
+    GTextInfo mlabel[10], nlabel[11], elabel[12], pslabel[16], tnlabel[7], plabel[8], vlabel[11], panlabel[22], *list;
     struct gfi_data d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20], ncbuf[20], vbuf[20], uibuf[12], regbuf[100];
     int i;
@@ -2317,40 +2375,50 @@ void FontInfo(SplineFont *sf) {
 
     egcd[6].gd.pos.x = 12; egcd[6].gd.pos.y = egcd[5].gd.pos.y+36+6;
     egcd[6].gd.flags = gg_visible | gg_enabled;
-    egcd[6].gd.mnemonic = 'N';
-    elabel[6].text = (unichar_t *) _STR_Numchars;
+    egcd[6].gd.mnemonic = 'F';
+    elabel[6].text = (unichar_t *) _STR_ForceEncoding;
     elabel[6].text_in_resource = true;
     egcd[6].gd.label = &elabel[6];
-    egcd[6].creator = GLabelCreate;
+    egcd[6].gd.popup_msg = GStringGetResource(_STR_ForceEncodingPopup,NULL);
+    egcd[6].gd.cid = CID_ForceEncoding;
+    egcd[6].creator = GCheckBoxCreate;
 
-    egcd[7].gd.pos.x = 123; egcd[7].gd.pos.y = egcd[6].gd.pos.y-6; egcd[7].gd.pos.width = 60;
+    egcd[7].gd.pos.x = 12; egcd[7].gd.pos.y = egcd[6].gd.pos.y+24+6;
     egcd[7].gd.flags = gg_visible | gg_enabled;
-    sprintf( ncbuf, "%d", sf->charcnt );
-    elabel[7].text = (unichar_t *) ncbuf;
-    elabel[7].text_is_1byte = true;
+    egcd[7].gd.mnemonic = 'N';
+    elabel[7].text = (unichar_t *) _STR_Numchars;
+    elabel[7].text_in_resource = true;
     egcd[7].gd.label = &elabel[7];
-    egcd[7].gd.cid = CID_NChars;
-    egcd[7].creator = GTextFieldCreate;
+    egcd[7].creator = GLabelCreate;
+
+    egcd[8].gd.pos.x = 123; egcd[8].gd.pos.y = egcd[7].gd.pos.y-6; egcd[8].gd.pos.width = 60;
+    egcd[8].gd.flags = gg_visible | gg_enabled;
+    sprintf( ncbuf, "%d", sf->charcnt );
+    elabel[8].text = (unichar_t *) ncbuf;
+    elabel[8].text_is_1byte = true;
+    egcd[8].gd.label = &elabel[8];
+    egcd[8].gd.cid = CID_NChars;
+    egcd[8].creator = GTextFieldCreate;
 
     if ( sf->cidmaster || sf->subfontcnt!=0 ) {
 	SplineFont *master = sf->cidmaster?sf->cidmaster:sf;
 
-	egcd[8].gd.pos.x = 12; egcd[8].gd.pos.y = egcd[7].gd.pos.y+36+6;
-	egcd[8].gd.flags = gg_visible ;
-	egcd[8].gd.mnemonic = 'N';
-	elabel[8].text = (unichar_t *) _STR_CIDRegistry;
-	elabel[8].text_in_resource = true;
-	egcd[8].gd.label = &elabel[8];
-	egcd[8].creator = GLabelCreate;
-
-	egcd[9].gd.pos.x = egcd[1].gd.pos.x; egcd[9].gd.pos.y = egcd[8].gd.pos.y-6;
-	egcd[9].gd.pos.width = 140;
+	egcd[9].gd.pos.x = 12; egcd[9].gd.pos.y = egcd[8].gd.pos.y+36+6;
 	egcd[9].gd.flags = gg_visible ;
-	sprintf( regbuf, "%.30s-%.30s-%d", master->cidregistry, master->ordering, master->supplement );
-	elabel[9].text = (unichar_t *) regbuf;
-	elabel[9].text_is_1byte = true;
+	egcd[9].gd.mnemonic = 'N';
+	elabel[9].text = (unichar_t *) _STR_CIDRegistry;
+	elabel[9].text_in_resource = true;
 	egcd[9].gd.label = &elabel[9];
-	egcd[9].creator = GTextFieldCreate;
+	egcd[9].creator = GLabelCreate;
+
+	egcd[10].gd.pos.x = egcd[1].gd.pos.x; egcd[10].gd.pos.y = egcd[9].gd.pos.y-6;
+	egcd[10].gd.pos.width = 140;
+	egcd[10].gd.flags = gg_visible ;
+	sprintf( regbuf, "%.30s-%.30s-%d", master->cidregistry, master->ordering, master->supplement );
+	elabel[10].text = (unichar_t *) regbuf;
+	elabel[10].text_is_1byte = true;
+	egcd[10].gd.label = &elabel[10];
+	egcd[10].creator = GTextFieldCreate;
     }
 
     if ( sf->subfontcnt!=0 || sf->cidmaster!=NULL ) {

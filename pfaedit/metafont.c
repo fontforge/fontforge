@@ -226,7 +226,7 @@ static SCI *SCIinit(SplineChar *sc,MetaFontDlg *meta) {
     SCPreserveState(sc,true);
     SCPreserveBackground(sc);
 
-    SplinePointListSimplify(sc->splines,true);		/* Get rid of two points at the same location, they cause us problems */
+    SplinePointListSimplify(sc,sc->splines,true);		/* Get rid of two points at the same location, they cause us problems */
     if ( sc->manualhints || sc->changedsincelasthinted )
 	SplineCharAutoHint(sc,true);
 

@@ -34,7 +34,20 @@
 
 extern int _GScrollBar_Width;
 extern struct lconv localeinfo;
-struct cvshows CVShows = { 1, 1, 1, 1, 1, 1, 1, 0, 1 };
+struct cvshows CVShows = {
+	1,		/* show foreground */
+	1,		/* show background */
+	1,		/* show grid plane */
+	1,		/* show horizontal hints */
+	1,		/* show vertical hints */
+	1,		/* show diagonal hints */
+	1,		/* show points */
+	0,		/* show filled */
+	1,		/* show rulers */
+	1,		/* show points which are to be rounded to the ttf grid and aren't on hints */
+	1,		/* show x minimum distances */
+	1		/* show y minimum distances */
+};
 
 /* Positions on the info line */
 #define RPT_BASE	5		/* Place to draw the pointer icon */
@@ -379,6 +392,12 @@ return;
 	else
 	    GDrawFillPoly(pixmap,gp,4,col);
     }
+    if (( sp->roundx || sp->roundy ) &&
+	    (((cv->showrounds&1) && cv->scale>=.3) || (cv->showrounds&2)) ) {
+	r.x = x-5; r.y = y-5;
+	r.width = r.height = 11;
+	GDrawDrawElipse(pixmap,&r,col);
+    }
 }
 
 static void DrawLine(CharView *cv, GWindow pixmap,
@@ -541,6 +560,46 @@ return;		/* Offscreen */
     GDrawFillPoly(pixmap,clipped,j,0xd0a0a0);
 }
 
+static void CVShowMinimumDistance(CharView *cv, GWindow pixmap,MinimumDistance *md) {
+    int x1,y1, x2,y2;
+    int xa, ya;
+
+    if (( md->x && !cv->showmdx ) || (!md->x && !cv->showmdy))
+return;
+    if ( md->sp1==NULL && md->sp2==NULL )
+return;
+    if ( md->sp1!=NULL ) {
+	x1 = cv->xoff + rint( md->sp1->me.x*cv->scale );
+	y1 = -cv->yoff + cv->height - rint(md->sp1->me.y*cv->scale);
+    } else {
+	x1 = cv->xoff + rint( cv->sc->width*cv->scale );
+	y1 = 0x80000000;
+    }
+    if ( md->sp2!=NULL ) {
+	x2 = cv->xoff + rint( md->sp2->me.x*cv->scale );
+	y2 = -cv->yoff + cv->height - rint(md->sp2->me.y*cv->scale);
+    } else {
+	x2 = cv->xoff + rint( cv->sc->width*cv->scale );
+	y2 = y1-8;
+    }
+    if ( y1==0x80000000 )
+	y1 = y2-8;
+    if ( md->x ) {
+	ya = (y1+y2)/2;
+	GDrawDrawArrow(pixmap, x1,ya, x2,ya, 2, 0xe04040);
+	GDrawSetDashedLine(pixmap,5,5,0);
+	GDrawDrawLine(pixmap, x1,ya, x1,y1, 0xe04040);
+	GDrawDrawLine(pixmap, x2,ya, x2,y2, 0xe04040);
+    } else {
+	xa = (x1+x2)/2;
+	GDrawDrawArrow(pixmap, xa,y1, xa,y2, 2, 0xe04040);
+	GDrawSetDashedLine(pixmap,5,5,0);
+	GDrawDrawLine(pixmap, xa,y1, x1,y1, 0xe04040);
+	GDrawDrawLine(pixmap, xa,y2, x2,y2, 0xe04040);
+    }
+    GDrawSetDashedLine(pixmap,0,0,0);
+}
+
 static void CVShowHints(CharView *cv, GWindow pixmap) {
     StemInfo *hint;
     GRect r;
@@ -548,6 +607,7 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
     int end;
     Color col;
     DStemInfo *dstem;
+    MinimumDistance *md;
 
     GDrawSetDashedLine(pixmap,5,5,0);
 
@@ -619,6 +679,9 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 	    GDrawDrawLine(pixmap,r.x+r.width-1,0,r.x+r.width-1,cv->height,col);
     }
     GDrawSetDashedLine(pixmap,0,0,0);
+
+    for ( md=cv->sc->md; md!=NULL; md=md->next )
+	CVShowMinimumDistance(cv, pixmap,md);
 }
 
 static void DrawImageList(CharView *cv,GWindow pixmap,ImageList *backimages) {
@@ -1000,6 +1063,7 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     CharIcon(cv,cv->fv);
     title = CVMakeTitles(cv,ubuf);
     GDrawSetWindowTitles(cv->gw,ubuf,title);
+    cv->lastselpt = NULL; cv->p.sp = NULL;
     CVInfoDraw(cv,cv->gw);
     free(title);
 }
@@ -1531,14 +1595,6 @@ return;
     }
 }
 
-#if 0
-void SCClearOrig(SplineChar *sc) {
-    free(sc->origtype1);
-    sc->origtype1 = NULL;
-    sc->origlen = 0;
-}
-#endif
-
 void CVSetCharChanged(CharView *cv,int changed) {
     if ( cv->drawmode==dm_grid ) {
 	if ( changed ) {
@@ -1550,10 +1606,6 @@ void CVSetCharChanged(CharView *cv,int changed) {
     } else {
 	if ( cv->drawmode==dm_fore )
 	    cv->sc->parent->onlybitmaps = false;
-#if 0
-	if ( cv->drawmode==dm_fore && cv->sc->origtype1!=NULL )
-	    SCClearOrig(cv->sc);
-#endif
 	if ( cv->sc->changed != changed ) {
 	    cv->sc->changed = changed;
 	    FVToggleCharChanged(cv->fv,cv->sc);
@@ -1576,6 +1628,14 @@ void CVSetCharChanged(CharView *cv,int changed) {
 	}
     }
     cv->recentchange = true;
+}
+
+void SCClearSelPt(SplineChar *sc) {
+    CharView *cv;
+
+    for ( cv=sc->views; cv!=NULL; cv=cv->next ) {
+	cv->lastselpt = cv->p.sp = NULL;
+    }
 }
 
 void SCCharChangedUpdate(SplineChar *sc,FontView *fv) {
@@ -2267,6 +2327,16 @@ return( true );
 #define MID_ReviewHints	2407
 #define MID_CreateHHint	2408
 #define MID_CreateVHint	2409
+#define MID_MinimumDistance	2410
+#define MID_ClearAllMD		2451
+#define MID_ClearSelMDX		2452
+#define MID_ClearSelMDY		2453
+#define MID_AddxMD		2454
+#define MID_AddyMD		2455
+#define MID_RoundX		2456
+#define MID_NoRoundX		2457
+#define MID_RoundY		2458
+#define MID_NoRoundY		2459
 #define MID_Tools	2501
 #define MID_Layers	2502
 #define MID_Center	2600
@@ -2620,7 +2690,10 @@ static void CVCopyWidth(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVDoClear(CharView *cv) {
 
     CVPreserveState(cv);
-    *cv->heads[cv->drawmode] = SplinePointListRemoveSelected(*cv->heads[cv->drawmode]);
+    if ( cv->drawmode==dm_fore )
+	SCRemoveSelectedMinimumDistances(cv->sc,2);
+    *cv->heads[cv->drawmode] = SplinePointListRemoveSelected(cv->sc,
+	    *cv->heads[cv->drawmode]);
     if ( cv->drawmode==dm_fore ) {
 	RefChar *refs, *next;
 	for ( refs=cv->sc->refs; refs!=NULL; refs = next ) {
@@ -2675,7 +2748,8 @@ static void CVMerge(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( !CVAnySel(cv,&anyp,NULL,NULL) || !anyp)
 return;
     CVPreserveState(cv);
-    SplineCharMerge(cv->heads[cv->drawmode]);
+    SplineCharMerge(cv->sc,cv->heads[cv->drawmode]);
+    SCClearSelPt(cv->sc);
     CVCharChangedUpdate(cv);
 }
 
@@ -3056,6 +3130,10 @@ static void CVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     DoAutoSaves();
 
     CVPreserveState(cv);
+    if ( cv->drawmode==dm_fore ) {
+	MinimumDistancesFree(cv->sc->md);
+	cv->sc->md = NULL;
+    }
     *cv->heads[cv->drawmode] = SplineSetRemoveOverlap(*cv->heads[cv->drawmode]);
     CVCharChangedUpdate(cv);
 }
@@ -3063,7 +3141,7 @@ static void CVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     CVPreserveState(cv);
-    *cv->heads[cv->drawmode] = SplineCharSimplify(*cv->heads[cv->drawmode],e!=NULL && (e->u.mouse.state&ksm_shift));
+    *cv->heads[cv->drawmode] = SplineCharSimplify(cv->sc,*cv->heads[cv->drawmode],e!=NULL && (e->u.mouse.state&ksm_shift));
     CVCharChangedUpdate(cv);
 }
 
@@ -3276,10 +3354,16 @@ static void CVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     } else if ( mi->mid==MID_ClearVStem ) {
 	StemInfoFree(cv->sc->vstem);
 	cv->sc->vstem = NULL;
-	cv->sc->hconflicts = false;
-    } else {
+	cv->sc->vconflicts = false;
+    } else if ( mi->mid==MID_ClearDStem ) {
 	DStemInfoFree(cv->sc->dstem);
 	cv->sc->dstem = NULL;
+    } else if ( mi->mid==MID_ClearAllMD ) {
+	MinimumDistancesFree(cv->sc->md);
+	cv->sc->md = NULL;
+	SCClearRounds(cv->sc);
+    } else {
+	SCRemoveSelectedMinimumDistances(cv->sc,mi->mid==MID_ClearSelMDX);
     }
     cv->sc->manualhints = true;
     SCOutOfDateBackground(cv->sc);
@@ -3365,6 +3449,136 @@ return;
     CVReviewHints(cv);
 }
 
+static void CVMenuRoundHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    SplineSet *ss;
+    SplinePoint *sp;
+
+    for ( ss=cv->sc->splines; ss!=NULL; ss=ss->next ) {
+	for ( sp=ss->first; ; ) {
+	    if ( sp->selected ) {
+		if ( mi->mid==MID_RoundX )
+		    sp->roundx = true;
+		else if ( mi->mid==MID_NoRoundX )
+		    sp->roundx = false;
+		else if ( mi->mid==MID_RoundY )
+		    sp->roundy = true;
+		else
+		    sp->roundy = false;
+	    }
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
+	}
+    }
+}
+
+static void CVMenuAddMD(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    SplineSet *ss;
+    SplinePoint *sp, *sel1=NULL, *sel2=NULL;
+
+    for ( ss=cv->sc->splines; ss!=NULL; ss=ss->next ) {
+	for ( sp=ss->first; ; ) {
+	    if ( sp->selected ) {
+		if ( sel1==NULL )
+		    sel1 = sp;
+		else if ( sel2==NULL )
+		    sel2 = sp;
+		else
+return;
+	    }
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
+	}
+    }
+    if ( sel1==NULL )
+return;
+    if ( sel2==NULL && mi->mid==MID_AddyMD )
+return;
+
+    if ( sel2!=NULL && sel1==cv->lastselpt ) {
+	sel1 = sel2;
+	sel2 = cv->lastselpt;
+    }
+    MDAdd(cv->sc,mi->mid==MID_AddxMD,sel1,sel2);
+    SCOutOfDateBackground(cv->sc);
+    SCUpdateAll(cv->sc);
+}
+
+static void mdlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    SplinePoint *sp, *sp1, *sp2;
+    SplineSet *ss;
+    int allrx=-1, allry=-1, cnt=0;
+
+    sp1 = sp2 = NULL;
+    for ( ss=cv->sc->splines; ss!=NULL; ss=ss->next ) {
+	for ( sp=ss->first; ; ) {
+	    if ( sp->selected ) {
+		++cnt;
+		if ( sp1==NULL )
+		    sp1 = sp;
+		else if ( sp2==NULL )
+		    sp2 = sp;
+		if ( allrx==-1 )
+		    allrx = sp->roundx;
+		else if ( allrx!=sp->roundx )
+		    allrx = -2;
+		if ( allry==-1 )
+		    allry = sp->roundy;
+		else if ( allry!=sp->roundy )
+		    allry = -2;
+	    }
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
+	}
+    }
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_ClearAllMD:
+	    mi->ti.disabled = cv->sc->md==NULL;
+	  break;
+	  case MID_ClearSelMDX: case MID_ClearSelMDY:
+	    mi->ti.disabled = cv->sc->md==NULL || cnt==0;
+	  break;
+	  case MID_AddyMD:
+	    mi->ti.disabled = cnt!=2 || sp2->me.y==sp1->me.y;
+	  break;
+	  case MID_AddxMD:
+	    mi->ti.disabled = cnt==0 || cnt>2 || (sp2!=NULL && sp2->me.x==sp1->me.x);
+	    free(mi->ti.text);
+	    mi->ti.text = u_copy(GStringGetResource(cnt==1?_STR_AddMD2Width: _STR_AddxMD,NULL));
+	  break;
+	  case MID_RoundX:
+	    mi->ti.disabled = cnt==0;
+	    mi->ti.checked = allrx==1;
+	  break;
+	  case MID_NoRoundX:
+	    mi->ti.disabled = cnt==0;
+	    mi->ti.checked = allrx==0;
+	  break;
+	  case MID_RoundY:
+	    mi->ti.disabled = cnt==0;
+	    mi->ti.checked = allry==1;
+	  break;
+	  case MID_NoRoundY:
+	    mi->ti.disabled = cnt==0;
+	    mi->ti.checked = allry==0;
+	  break;
+	}
+    }
+}
+
 static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     SplinePoint *sp1, *sp2, *sp3, *sp4;
@@ -3381,10 +3595,10 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.text = u_copy(GStringGetResource(removeOverlap?_STR_Autohint: _STR_FullAutohint,NULL));
 	  break;
 	  case MID_AddHHint:
-	    mi->ti.disabled = sp1==NULL || sp2->me.y==sp1->me.y;
+	    mi->ti.disabled = sp2==NULL || sp2->me.y==sp1->me.y;
 	  break;
 	  case MID_AddVHint:
-	    mi->ti.disabled = sp1==NULL || sp2->me.x==sp1->me.x;
+	    mi->ti.disabled = sp2==NULL || sp2->me.x==sp1->me.x;
 	  break;
 	  case MID_AddDHint:
 	    mi->ti.disabled = !CVIsDiagonalable(sp1,sp2,&sp3,&sp4);
@@ -3555,8 +3769,25 @@ static GMenuItem ellist[] = {
     { NULL }
 };
 
+static GMenuItem mdlist[] = {
+    { { (unichar_t *) _STR_ClearAllMD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, CVMenuClearHints, MID_ClearAllMD },
+    { { (unichar_t *) _STR_ClearSelXMD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 's' }, '\0', ksm_control, NULL, NULL, CVMenuClearHints, MID_ClearSelMDX },
+    { { (unichar_t *) _STR_ClearSelYMD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'e' }, '\0', ksm_control, NULL, NULL, CVMenuClearHints, MID_ClearSelMDY },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_AddxMD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'x' }, GK_F5, 0, NULL, NULL, CVMenuAddMD, MID_AddxMD },
+    { { (unichar_t *) _STR_AddyMD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'y' }, GK_F6, 0, NULL, NULL, CVMenuAddMD, MID_AddyMD },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_RoundX, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'r' }, GK_F7, 0, NULL, NULL, CVMenuRoundHint, MID_RoundX },
+    { { (unichar_t *) _STR_NoRoundX, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'n' }, GK_F8, 0, NULL, NULL, CVMenuRoundHint, MID_NoRoundX },
+    { { (unichar_t *) _STR_RoundY, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'u' }, GK_F9, 0, NULL, NULL, CVMenuRoundHint, MID_RoundY },
+    { { (unichar_t *) _STR_NoRoundY, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'o' }, GK_F10, 0, NULL, NULL, CVMenuRoundHint, MID_NoRoundY },
+    { NULL }
+};
+
 static GMenuItem htlist[] = {
     { { (unichar_t *) _STR_Autohint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, 'H', ksm_control|ksm_shift, NULL, NULL, CVMenuAutoHint, MID_AutoHint },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_MinimumDistance, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, 'H', ksm_control|ksm_shift, mdlist, mdlistcheck, NULL, MID_MinimumDistance },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Clearhstem, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, CVMenuClearHints, MID_ClearHStem },
     { { (unichar_t *) _STR_Clearvstem, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, '\0', ksm_control, NULL, NULL, CVMenuClearHints, MID_ClearVStem },
@@ -3650,6 +3881,9 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv) {
     cv->showpoints = CVShows.showpoints;
     cv->showrulers = CVShows.showrulers;
     cv->showfilled = CVShows.showfilled;
+    cv->showrounds = CVShows.showrounds;
+    cv->showmdx = CVShows.showmdx;
+    cv->showmdy = CVShows.showmdy;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_ititle;

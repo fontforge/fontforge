@@ -183,6 +183,10 @@ typedef struct splinepoint {
     unsigned int isintersection: 1;
     unsigned int flexy: 1;
     unsigned int flexx: 1;
+    unsigned int roundx: 1;	/* For true type hinting */
+    unsigned int roundy: 1;	/* For true type hinting */
+    unsigned int dontinterpolate: 1;	/* temporary in ttf output */
+	/* 3 bits left... */
     uint16 ptindex;		/* Temporary value used by metafont routine */
     struct spline *next;
     struct spline *prev;
@@ -331,6 +335,15 @@ typedef struct liglist {
     struct liglist *next;
 } LigList;
 
+typedef struct minimumdistance {
+    /* If either point is NULL it will be assumed to mean either the origin */
+    /*  or the width point (depending on which is closer). This allows user */
+    /*  to control metrics... */
+    SplinePoint *sp1, *sp2;
+    unsigned int x: 1;
+    struct minimumdistance *next;
+} MinimumDistance;
+
 typedef struct splinechar {
     char *name;
     int enc, unicodeenc;
@@ -342,6 +355,7 @@ typedef struct splinechar {
     StemInfo *hstem;		/* hstem hints have a vertical offset but run horizontally */
     StemInfo *vstem;		/* vstem hints have a horizontal offset but run vertically */
     DStemInfo *dstem;		/* diagonal hints for ttf */
+    MinimumDistance *md;
     RefChar *refs;
     struct charview *views;
     struct splinefont *parent;
@@ -477,7 +491,9 @@ extern void LineListFree(LineList *ll);
 extern void LinearApproxFree(LinearApprox *la);
 extern void SplineFree(Spline *spline);
 extern void SplinePointFree(SplinePoint *sp);
+extern void SplinePointMDFree(SplineChar *sc,SplinePoint *sp);
 extern void SplinePointListFree(SplinePointList *spl);
+extern void SplinePointListMDFree(SplineChar *sc,SplinePointList *spl);
 extern void SplinePointListsFree(SplinePointList *head);
 extern void RefCharFree(RefChar *ref);
 extern void RefCharsFree(RefChar *ref);
@@ -494,6 +510,7 @@ extern SplineChar *SplineCharCopy(SplineChar *sc);
 extern BDFChar *BDFCharCopy(BDFChar *bc);
 extern void ImageListsFree(ImageList *imgs);
 extern void TTFLangNamesFree(struct ttflangname *l);
+extern void MinimumDistancesFree(MinimumDistance *md);
 extern void SplineCharFree(SplineChar *sc);
 extern void SplineFontFree(SplineFont *sf);
 extern void SplineRefigure(Spline *spline);
@@ -512,7 +529,7 @@ extern SplinePointList *SplinePointListCopy(SplinePointList *base);
 extern SplinePointList *SplinePointListCopySelected(SplinePointList *base);
 extern SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[6], int allpoints );
 extern SplinePointList *SplinePointListShift(SplinePointList *base, real xoff, int allpoints );
-extern SplinePointList *SplinePointListRemoveSelected(SplinePointList *base);
+extern SplinePointList *SplinePointListRemoveSelected(SplineChar *sc,SplinePointList *base);
 extern void SplinePointListSet(SplinePointList *tobase, SplinePointList *frombase);
 extern void SplinePointListSelect(SplinePointList *spl,int sel);
 extern void SCRefToSplines(SplineChar *sc,RefChar *rf);
@@ -549,10 +566,10 @@ extern Spline *ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
 extern int SplineIsLinear(Spline *spline);
 extern int SplineIsLinearMake(Spline *spline);
 extern int SplineInSplineSet(Spline *spline, SplineSet *spl);
-extern void SplineCharMerge(SplineSet **head);
-extern void SplinePointListSimplify(SplinePointList *spl,int cleanup);
-extern SplineSet *SplineCharSimplify(SplineSet *head,int cleanup);
-extern SplineSet *SplineCharRemoveTiny(SplineSet *head);
+extern void SplineCharMerge(SplineChar *sc,SplineSet **head);
+extern void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,int cleanup);
+extern SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,int cleanup);
+extern SplineSet *SplineCharRemoveTiny(SplineChar *sc,SplineSet *head);
 extern SplineFont *SplineFontNew(void);
 extern char *GetNextUntitledName(void);
 extern SplineFont *SplineFontEmpty(void);
@@ -590,6 +607,7 @@ extern real HIoverlap( HintInstance *mhi, HintInstance *thi);
 extern int StemInfoAnyOverlaps(StemInfo *stems);
 extern int StemListAnyConflicts(StemInfo *stems);
 extern HintInstance *HICopyTrans(HintInstance *hi, real mul, real offset);
+extern void MDAdd(SplineChar *sc, int x, SplinePoint *sp1, SplinePoint *sp2);
 extern void SplineCharAutoHint( SplineChar *sc,int removeOverlaps);
 extern void SplineFontAutoHint( SplineFont *sf);
 extern StemInfo *HintCleanup(StemInfo *stem,int dosort);

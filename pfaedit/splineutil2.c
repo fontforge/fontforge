@@ -584,7 +584,7 @@ static void FixupCurveTanPoints(SplinePoint *from,SplinePoint *to,
 	SplineCharTangentNextCP(to);
 }
 
-static void SplinesRemoveBetween(SplinePoint *from, SplinePoint *to) {
+static void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint *to) {
     int tot;
     TPoint *tp;
     SplinePoint *np, *next;
@@ -598,14 +598,14 @@ static void SplinesRemoveBetween(SplinePoint *from, SplinePoint *to) {
 	if ( np==to )
     break;
 	next = np->next->to;
-	SplinePointFree(np);
+	SplinePointMDFree(sc,np);
     }
     ApproximateSplineFromPoints(from,to,tp,tot-1);
     FixupCurveTanPoints(from,to,&fncp,&tpcp);
     free(tp);
 }
 
-static SplinePointList *SplinePointListMerge(SplinePointList *spl) {
+static SplinePointList *SplinePointListMerge(SplineChar *sc, SplinePointList *spl) {
     Spline *spline, *first;
     SplinePoint *nextp, *curp;
     int all;
@@ -626,14 +626,14 @@ return( NULL );			/* Some one else should free it and reorder the spline set lis
 	while ( spl->first->selected ) {
 	    nextp = spl->first->next->to;
 	    SplineFree(spl->first->next);
-	    SplinePointFree(spl->first);
+	    SplinePointMDFree(sc,spl->first);
 	    spl->first = nextp;
 	    nextp->prev = NULL;
 	}
 	while ( spl->last->selected ) {
 	    nextp = spl->last->prev->from;
 	    SplineFree(spl->last->prev);
-	    SplinePointFree(spl->last);
+	    SplinePointMDFree(sc,spl->last);
 	    spl->last = nextp;
 	    nextp->next = NULL;
 	}
@@ -661,18 +661,18 @@ return( NULL );			/* Some one else should free it and reorder the spline set lis
 	for ( nextp=curp->next->to; nextp->selected; nextp = nextp->next->to );
 	/* we don't need to check for the end of the splineset here because */
 	/*  we know that spl->last is not selected */
-	SplinesRemoveBetween(curp->prev->from,nextp);
+	SplinesRemoveBetween(sc,curp->prev->from,nextp);
 	curp = nextp;
     }
 return( spl );
 }
 
-void SplineCharMerge(SplineSet **head) {
+void SplineCharMerge(SplineChar *sc,SplineSet **head) {
     SplineSet *spl, *prev=NULL, *next;
 
     for ( spl = *head; spl!=NULL; spl = next ) {
 	next = spl->next;
-	if ( SplinePointListMerge(spl)==NULL ) {
+	if ( SplinePointListMerge(sc,spl)==NULL ) {
 	    if ( prev==NULL )
 		*head = next;
 	    else
@@ -686,7 +686,7 @@ void SplineCharMerge(SplineSet **head) {
 /* Almost exactly the same as SplinesRemoveBetween, but this one is conditional */
 /*  the point is only removed if it doesn't perturb the spline much */
 /*  used for simplify */
-static int SplinesRemoveMidMaybe(SplinePoint *mid) {
+static int SplinesRemoveMidMaybe(SplineChar *sc,SplinePoint *mid) {
     int i,tot;
     SplinePoint *from, *to;
     TPoint *tp;
@@ -733,7 +733,7 @@ return( false );
     if ( good ) {
 	SplineFree(mid->prev);
 	SplineFree(mid->next);
-	SplinePointFree(mid);
+	SplinePointMDFree(sc,mid);
     } else {
 	SplineFree(from->next);
 	from->next = mid->prev;
@@ -750,7 +750,7 @@ return( good );
 
 /* Cleanup just turns splines with control points which happen to trace out */
 /*  lines into simple lines */
-void SplinePointListSimplify(SplinePointList *spl,int cleanup) {
+void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,int cleanup) {
     SplinePoint *first, *next, *sp;
 
 	/* Special case checks for paths containing only one point */
@@ -761,7 +761,7 @@ void SplinePointListSimplify(SplinePointList *spl,int cleanup) {
 	    first = spl->first->prev->from;
 	    if ( first->prev == first->next )
 return;
-	    if ( !SplinesRemoveMidMaybe(spl->first))
+	    if ( !SplinesRemoveMidMaybe(sc,spl->first))
 	break;
 	    if ( spl->first==spl->last )
 		spl->last = first;
@@ -779,7 +779,7 @@ return;
 		    sp->next->to->next->to == sp ))
 return;
 	if ( !cleanup )
-	    SplinesRemoveMidMaybe(sp);
+	    SplinesRemoveMidMaybe(sc,sp);
 	else {
 	    while ( sp->me.x==next->me.x && sp->me.y==next->me.y &&
 		    sp->nextcp.x>sp->me.x-1 && sp->nextcp.x<sp->me.x+1 &&
@@ -793,7 +793,7 @@ return;
 		sp->nextcp = next->nextcp;
 		sp->nonextcp = next->nonextcp;
 		sp->nextcpdef = next->nextcpdef;
-		SplinePointFree(next);
+		SplinePointMDFree(sc,next);
 		if ( sp->next!=NULL )
 		    next = sp->next->to;
 		else {
@@ -807,7 +807,7 @@ return;
     }
 }
 
-SplineSet *SplineCharSimplify(SplineSet *head,int cleanup) {
+SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,int cleanup) {
     SplineSet *spl, *prev, *snext;
     int anysel=0;
 
@@ -819,7 +819,7 @@ SplineSet *SplineCharSimplify(SplineSet *head,int cleanup) {
     for ( spl = head; spl!=NULL; spl = snext ) {
 	snext = spl->next;
 	if ( !anysel || PointListIsSelected(spl)) {
-	    SplinePointListSimplify(spl,cleanup);
+	    SplinePointListSimplify(sc,spl,cleanup);
 	    /* remove any singleton points */
 	    if ( spl->first->prev==spl->first->next &&
 		    (spl->first->prev==NULL ||
@@ -829,7 +829,7 @@ SplineSet *SplineCharSimplify(SplineSet *head,int cleanup) {
 		else
 		    prev->next = snext;
 		spl->next = NULL;
-		SplinePointListFree(spl);
+		SplinePointListMDFree(sc,spl);
 	    } else
 		prev = spl;
 	}
@@ -837,7 +837,7 @@ SplineSet *SplineCharSimplify(SplineSet *head,int cleanup) {
 return( head );
 }
 
-SplineSet *SplineCharRemoveTiny(SplineSet *head) {
+SplineSet *SplineCharRemoveTiny(SplineChar *sc,SplineSet *head) {
     SplineSet *spl, *snext, *pr;
     Spline *spline, *next, *first;
 
@@ -854,7 +854,7 @@ SplineSet *SplineCharRemoveTiny(SplineSet *head) {
 		if ( spl->last==spline->from ) spl->last = NULL;
 		if ( spl->first==spline->from ) spl->first = NULL;
 		if ( first==spline->from->prev ) first=NULL;
-		SplinesRemoveBetween(spline->from->prev->from,spline->to);
+		SplinesRemoveBetween(sc,spline->from->prev->from,spline->to);
 		if ( first==NULL ) first = next->from->prev;
 		if ( spl->first==NULL ) spl->first = next->from;
 		if ( spl->last==NULL ) spl->last = next->from;
@@ -865,7 +865,7 @@ SplineSet *SplineCharRemoveTiny(SplineSet *head) {
 	snext = spl->next;
 	if ( spl->first->next==spl->first->prev ) {
 	    spl->next = NULL;
-	    SplinePointListFree(spl);
+	    SplinePointListMDFree(sc,spl);
 	    if ( pr==NULL )
 		head = snext;
 	    else

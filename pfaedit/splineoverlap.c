@@ -1383,7 +1383,7 @@ SplineSet *SplineSetRemoveOverlap(SplineSet *base) {
 
     tbase = base;
     open = SplineSetsExtractOpen(&tbase);
-    tbase = SplineCharRemoveTiny(tbase);	/* remove tiny (<1unit long) splines. They confuse the needed checker */
+    tbase = SplineCharRemoveTiny(NULL,tbase);	/* remove tiny (<1unit long) splines. They confuse the needed checker */
     base = tbase;
     ilist = SplineSetFindIntersections(base);
     SplineSetFindNeeded(base);

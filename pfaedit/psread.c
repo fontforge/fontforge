@@ -2096,11 +2096,13 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	    base = 0;
 	    while ( sp>base+6 ) {
 		current.x += stack[base++]; current.y += stack[base++];
-		pt = chunkalloc(sizeof(SplinePoint));
-		pt->me = current;
-		pt->noprevcp = true; pt->nonextcp = true;
-		SplineMake(cur->last,pt);
-		cur->last = pt;
+		if ( cur!=NULL ) {
+		    pt = chunkalloc(sizeof(SplinePoint));
+		    pt->me = current;
+		    pt->noprevcp = true; pt->nonextcp = true;
+		    SplineMake(cur->last,pt);
+		    cur->last = pt;
+		}
 	    }
 	  case 24: /* rcurveline */
 	  case 8:  /* rrcurveto */

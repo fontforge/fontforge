@@ -771,6 +771,7 @@ static void PI_DoCancel(GIData *ci) {
     SplinePointListsFree(*cv->heads[cv->drawmode]);
     *cv->heads[cv->drawmode] = ci->oldstate;
     CVRemoveTopUndo(cv);
+    SCClearSelPt(cv->sc);
     SCUpdateAll(cv->sc);
 }
 

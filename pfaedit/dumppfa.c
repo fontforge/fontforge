@@ -799,8 +799,12 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 	dumpstr(dumpchar,data,"/Encoding StandardEncoding def\n");
     else {
 	dumpstr(dumpchar,data,"/Encoding 256 array\n" );
+	    /* older versions of dvipdfm assume the following line is present.*/
+	    /*  Perhaps others do too? */
+	dumpstr(dumpchar,data," 0 1 255 { 1 index exch /.notdef put} for\n" );
 	for ( i=0; i<256; ++i )
-	    dumpf(dumpchar,data,"dup %d/%s put\n", i, encoding[i] );
+	    if ( strcmp(encoding[i],".notdef")!=0 )
+		dumpf(dumpchar,data,"dup %d/%s put\n", i, encoding[i] );
 	dumpstr(dumpchar,data,"readonly def\n" );
     }
     if ( format==ff_ptype3 ) {

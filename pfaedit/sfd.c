@@ -48,7 +48,8 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
 			sp->prevcp.x, sp->prevcp.y,
 			sp->me.x, sp->me.y );
 	    fprintf(sfd, "%d\n", sp->pointtype|(sp->selected<<2)|
-			(sp->nextcpdef<<3)|(sp->prevcpdef<<4) );
+			(sp->nextcpdef<<3)|(sp->prevcpdef<<4)|
+			(sp->roundx<<5)|(sp->roundy<<6) );
 	    if ( sp==first )
 	break;
 	    if ( first==NULL ) first = sp;
@@ -57,6 +58,33 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
 	}
     }
     fprintf( sfd, "EndSplineSet\n" );
+}
+
+static void SFDDumpMinimumDistances(FILE *sfd,SplineChar *sc) {
+    MinimumDistance *md = sc->md;
+    SplineSet *ss;
+    SplinePoint *sp;
+    int pt=0;
+
+    if ( md==NULL )
+return;
+    for ( ss = sc->splines; ss!=NULL; ss=ss->next ) {
+	for ( sp=ss->first; ; ) {
+	    sp->ptindex = pt++;
+	    if ( sp->next == NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
+	}
+    }
+    fprintf( sfd, "MinimumDistance: " );
+    while ( md!=NULL ) {
+	fprintf( sfd, "%c%d,%d ", md->x?'x':'y', md->sp1?md->sp1->ptindex:-1,
+		md->sp2?md->sp2->ptindex:-1 );
+	md = md->next;
+    }
+    fprintf( sfd, "\n" );
 }
 
 struct enc85 {
@@ -226,6 +254,7 @@ return;
     if ( sc->splines!=NULL ) {
 	fprintf(sfd, "Fore\n" );
 	SFDDumpSplineSet(sfd,sc->splines);
+	SFDDumpMinimumDistances(sfd,sc);
     }
     for ( ref=sc->refs; ref!=NULL; ref=ref->next ) if ( ref->sc!=NULL ) {
 	if ( ref->sc->enc==0 && ref->sc->splines==NULL )
@@ -832,12 +861,76 @@ static SplineSet *SFDGetSplineSet(FILE *sfd) {
 	    pt->selected = val&4?1:0;
 	    pt->nextcpdef = val&8?1:0;
 	    pt->prevcpdef = val&0x10?1:0;
+	    pt->roundx = val&0x20?1:0;
+	    pt->roundy = val&0x40?1:0;
 	}
     }
     if ( cur!=NULL )
 	SFDCloseCheck(cur);
     getname(sfd,tok);
 return( head );
+}
+
+static void SFDGetMinimumDistances(FILE *sfd, SplineChar *sc) {
+    SplineSet *ss;
+    SplinePoint *sp;
+    int pt,i, val, err;
+    int ch;
+    SplinePoint **mapping=NULL;
+    MinimumDistance *last, *md;
+
+    for ( i=0; i<2; ++i ) {
+	pt = 0;
+	for ( ss = sc->splines; ss!=NULL; ss=ss->next ) {
+	    for ( sp=ss->first; ; ) {
+		if ( mapping!=NULL ) mapping[pt] = sp;
+		pt++;
+		if ( sp->next == NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==ss->first )
+	    break;
+	    }
+	}
+	if ( mapping==NULL )
+	    mapping = gcalloc(pt,sizeof(SplineChar *));
+    }
+
+    last = NULL;
+    for ( ch=getc(sfd); ch!=EOF && ch!='\n'; ch=getc(sfd)) {
+	err = false;
+	while ( isspace(ch) && ch!='\n' ) ch=getc(sfd);
+	if ( ch=='\n' )
+    break;
+	md = chunkalloc(sizeof(MinimumDistance));
+	if ( ch=='x' ) md->x = true;
+	getint(sfd,&val);
+	if ( val<-1 || val>=pt ) {
+	    fprintf( stderr, "Internal Error: Minimum Distance specifies bad point (%d) in sfd file\n", val );
+	    err = true;
+	} else if ( val!=-1 )
+	    md->sp1 = mapping[val];
+	ch = getc(sfd);
+	if ( ch!=',' ) {
+	    fprintf( stderr, "Internal Error: Minimum Distance lacks a comma where expected\n" );
+	    err = true;
+	}
+	getint(sfd,&val);
+	if ( val<-1 || val>=pt ) {
+	    fprintf( stderr, "Internal Error: Minimum Distance specifies bad point (%d) in sfd file\n", val );
+	    err = true;
+	} else if ( val!=-1 )
+	    md->sp2 = mapping[val];
+	if ( !err ) {
+	    if ( last==NULL )
+		sc->md = md;
+	    else
+		last->next = md;
+	    last = md;
+	} else
+	    chunkfree(md,sizeof(MinimumDistance));
+    }
+    free(mapping);
 }
 
 static HintInstance *SFDReadHintInstances(FILE *sfd, StemInfo *stem) {
@@ -969,6 +1062,8 @@ return( NULL );
 	    sc->dstem = SFDReadDHints(sfd);
 	} else if ( strmatch(tok,"Fore")==0 ) {
 	    sc->splines = SFDGetSplineSet(sfd);
+	} else if ( strmatch(tok,"MinimumDistance:")==0 ) {
+	    SFDGetMinimumDistances(sfd,sc);
 	} else if ( strmatch(tok,"Back")==0 ) {
 	    sc->backgroundsplines = SFDGetSplineSet(sfd);
 	} else if ( strmatch(tok,"Ref:")==0 ) {

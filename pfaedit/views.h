@@ -34,6 +34,8 @@ extern struct cvshows {
     int showfore, showback, showgrids, showhhints, showvhints, showdhints;
     int showpoints, showfilled;
     int showrulers;
+    int showrounds;		/* 0=>no, 1=>auto, 2=>always */
+    int showmdx, showmdy;	/* minimum distances x,y */
 } CVShows;
 
 extern struct bvshows {
@@ -106,6 +108,9 @@ typedef struct charview {
     unsigned int showpoints:1;
     unsigned int showfilled:1;
     unsigned int showrulers:1;
+    unsigned int showrounds:2;		/* 0=>no, 1=>auto, 2=>always */
+    unsigned int showmdx:1;
+    unsigned int showmdy:1;
     unsigned int needsrasterize:1;		/* Rasterization (of fill or fontview) needed on mouse up */
     unsigned int recentchange:1;		/* a change happened in the grids or background. don't need to rasterize */
     unsigned int drawmode:2;
@@ -324,6 +329,8 @@ extern void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BV
 extern void BitmapDlg(FontView *fv,SplineChar *sc, int isavail);
 extern void CVReviewHints(CharView *cv);
 extern void CVCreateHint(CharView *cv,int ishstem);
+extern void SCClearRounds(SplineChar *sc);
+extern void SCRemoveSelectedMinimumDistances(SplineChar *sc,int inx);
 extern int CVExport(CharView *cv);
 extern int BVExport(BitmapView *bv);
 
@@ -333,6 +340,7 @@ extern int CVValid(SplineFont *sf, SplineChar *sc, CharView *cv);
 extern void CVDrawRubberRect(GWindow pixmap, CharView *cv);
 extern void CVSetCharChanged(CharView *cv,int changed);
 extern void CVCharChangedUpdate(CharView *cv);
+extern void SCClearSelPt(SplineChar *sc);
 extern void SCCharChangedUpdate(SplineChar *sc,FontView *fv);
 extern void SCSynchronizeWidth(SplineChar *sc,real newwidth, real oldwidth,FontView *fv);
 extern void SCSynchronizeLBearing(SplineChar *sc,char *selected,real off);

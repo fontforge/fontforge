@@ -204,6 +204,7 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
     char *temp;
     real *sizes=NULL;
     int iscid;
+    Encoding *item=NULL;
 
     temp = cu_copy(path);
     oldformatstate = GGadgetGetFirstListSelectedItem(d->pstype);
@@ -213,7 +214,11 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
 	if ( GWidgetAskR(_STR_NotCID,buts,0,1,_STR_NotCIDOk)==1 )
 return;
     }
-    if ( oldformatstate<ff_ptype0 && d->sf->encoding_name>=em_first2byte ) {
+    if ( d->sf->encoding_name>=em_base )
+	for ( item=enclist; item!=NULL && item->enc_num!=d->sf->encoding_name; item=item->next );
+    if ( oldformatstate<ff_ptype0 &&
+	    ((d->sf->encoding_name>=em_first2byte && d->sf->encoding_name<em_base) ||
+	     (d->sf->encoding_name>=em_base && (item==NULL || item->char_cnt>256))) ) {
 	static int buts[3] = { _STR_Yes, _STR_Cancel, 0 };
 	if ( GWidgetAskR(_STR_EncodingTooLarge,buts,0,1,_STR_TwoBEncIn1BFont)==1 )
 return;

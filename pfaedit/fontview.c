@@ -527,7 +527,7 @@ void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e) {
 
 char *GetPostscriptFontName(int mult) {
     /* Some people use pf3 as an extension for postscript type3 fonts */
-    static unichar_t wild[] = { '*', '.', '{', 'p','f','a',',','p','f','b',',','s','f','d',',','t','t','f',',','b','d','f',',','o','t','f',',','p','f','3',',','t','t','c','}', 
+    static unichar_t wild[] = { '*', '.', '{', 'p','f','a',',','p','f','b',',','s','f','d',',','t','t','f',',','b','d','f',',','o','t','f',',','p','f','3',',','t','t','c',',','g','s','f','}', 
 	     '{','.','g','z',',','.','Z',',','.','b','z','2',',','}',  '\0' };
     unichar_t *ret = FVOpenFont(GStringGetResource(_STR_OpenPostscript,NULL),
 	    NULL,wild,NULL,mult,true);
@@ -674,6 +674,7 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_SetRBearing	2603
 #define MID_Thirds	2604
 #define MID_AutoHint	2501
+#define MID_ClearHints	2502
 #define MID_OpenBitmap	2700
 #define MID_OpenOutline	2701
 #define MID_Revert	2702
@@ -779,6 +780,7 @@ return;
     StemInfosFree(sc->hstem); sc->hstem = NULL;
     StemInfosFree(sc->vstem); sc->vstem = NULL;
     DStemInfosFree(sc->dstem); sc->dstem = NULL;
+    MinimumDistancesFree(sc->md); sc->md = NULL;
     SCOutOfDateBackground(sc);
     SCCharChangedUpdate(sc,fv);
 }
@@ -1119,6 +1121,8 @@ static void FVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
 	SCPreserveState(sc,false);
+	MinimumDistancesFree(sc->md);
+	sc->md = NULL;
 	sc->splines = SplineSetRemoveOverlap(sc->splines);
 	SCCharChangedUpdate(sc,fv);
 	if ( !GProgressNext())
@@ -1139,7 +1143,7 @@ static void FVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
 	SCPreserveState(sc,false);
-	sc->splines = SplineCharSimplify(sc->splines,cleanup);
+	sc->splines = SplineCharSimplify(sc,sc->splines,cleanup);
 	SCCharChangedUpdate(sc,fv);
 	if ( !GProgressNext())
     break;
@@ -1557,6 +1561,40 @@ static void FVMenuAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     GProgressEndIndicator();
 }
 
+static void FVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    int i;
+
+#if 0
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
+	++cnt;
+    GProgressStartIndicatorR(10,_STR_AutoHintingFont,_STR_AutoHintingFont,0,cnt,1);
+#endif
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
+	SplineChar *sc = fv->sf->chars[i];
+	sc->manualhints = true;
+	StemInfoFree(sc->hstem);
+	StemInfoFree(sc->vstem);
+	sc->hstem = sc->vstem = NULL;
+	sc->hconflicts = sc->vconflicts = false;
+	DStemInfoFree(sc->dstem);
+	sc->dstem = NULL;
+	MinimumDistancesFree(sc->md);
+	sc->md = NULL;
+	SCClearRounds(sc);
+	SCOutOfDateBackground(sc);
+	SCUpdateAll(sc);
+#if 0
+	if ( !GProgressNext())
+    break;
+#endif
+    }
+#if 0
+    GProgressEndIndicator();
+#endif
+}
+
 static void FVSetTitle(FontView *fv) {
     unichar_t *title;
 
@@ -1838,6 +1876,9 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    free(mi->ti.text);
 	    mi->ti.text = u_copy(GStringGetResource(removeOverlap?_STR_Autohint:_STR_FullAutohint,NULL));
 	  break;
+	  case MID_ClearHints:
+	    mi->ti.disabled = anychars==-1;
+	  break;
 	}
     }
 }
@@ -2026,6 +2067,7 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 
 static GMenuItem htlist[] = {
     { { (unichar_t *) _STR_Autohint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, 'H', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoHint, MID_AutoHint },
+    { { (unichar_t *) _STR_ClearHints, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuClearHints, MID_ClearHints },
     { NULL }
 };
 
@@ -2267,7 +2309,7 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 	    else if ( dummy->unicodeenc==0xa0 )
 		dummy->name = "nonbreakingspace";
 	    else {
-		sprintf( namebuf, "uni%04X", i);
+		sprintf( namebuf, "uni%04X", dummy->unicodeenc);
 		dummy->name = namebuf;
 	    }
 	}

@@ -134,10 +134,16 @@ return( false );
 return( true );
 }
 
-static SplinePoint *MakeQuadSpline(SplinePoint *start,Spline *ttf,real x, real y) {
+static SplinePoint *MakeQuadSpline(SplinePoint *start,Spline *ttf,real x,
+	real y, real tmax,SplinePoint *oldend) {
     Spline *new = chunkalloc(sizeof(Spline));
     SplinePoint *end = chunkalloc(sizeof(SplinePoint));
 
+    if ( tmax==1 ) {
+	end->roundx = oldend->roundx; end->roundy = oldend->roundy; end->dontinterpolate = oldend->dontinterpolate;
+	x = oldend->me.x; y = oldend->me.y;	/* Want it to compare exactly */
+    }
+    end->ptindex = -1;
     end->me.x = end->nextcp.x = x;
     end->me.y = end->nextcp.y = y;
     end->nonextcp = true;
@@ -165,6 +171,12 @@ static SplinePoint *LinearSpline(Spline *ps,SplinePoint *start, real tmax) {
 
     x = ((ps->splines[0].a*tmax+ps->splines[0].b)*tmax+ps->splines[0].c)*tmax+ps->splines[0].d;
     y = ((ps->splines[1].a*tmax+ps->splines[1].b)*tmax+ps->splines[1].c)*tmax+ps->splines[1].d;
+    if ( tmax==1 ) {
+	SplinePoint *oldend = ps->to;
+	end->roundx = oldend->roundx; end->roundy = oldend->roundy; end->dontinterpolate = oldend->dontinterpolate;
+	x = oldend->me.x; y = oldend->me.y;	/* Want it to compare exactly */
+    }
+    end->ptindex = -1;
     end->me.x = end->nextcp.x = end->prevcp.x = x;
     end->me.y = end->nextcp.y = end->prevcp.y = y;
     end->nonextcp = end->noprevcp = start->nonextcp = true;
@@ -211,7 +223,7 @@ static SplinePoint *LinearTest(Spline *ps,real tmin,real tmax,
 	if ( val<o-1 || val>o+1 )
 return( NULL );
     }
-return( MakeQuadSpline(start,&ttf,xmax,ymax));
+return( MakeQuadSpline(start,&ttf,xmax,ymax,tmax,ps->to));
 }
 
 static SplinePoint *ttfapprox(Spline *ps,real tmin, real tmax, SplinePoint *start) {
@@ -229,6 +241,8 @@ static SplinePoint *ttfapprox(Spline *ps,real tmin, real tmax, SplinePoint *star
 	Spline *spline;
 	sp = chunkalloc(sizeof(SplinePoint));
 	sp->me.x = ps->to->me.x; sp->me.y = ps->to->me.y;
+	sp->roundx = ps->to->roundx; sp->roundy = ps->to->roundy; sp->dontinterpolate = ps->to->dontinterpolate;
+	sp->ptindex = -1;
 	sp->nonextcp = true;
 	spline = chunkalloc(sizeof(Spline));
 	spline->from = start;
@@ -330,11 +344,13 @@ return( sp );
 	ttf.splines[1].c = 2*(cy-ymin);
 	ttf.splines[1].b = ymin+y-2*cy;
 	if ( comparespline(ps,&ttf,tmin,t) ) {
-	    sp = MakeQuadSpline(start,&ttf,x,y);
+	    sp = MakeQuadSpline(start,&ttf,x,y,t,ps->to);
 /* Without these two lines we would turn out the cps for cubic splines */
 /*  (what postscript uses). With the lines we get the cp for the quadratic */
 /* So with them we've got the wrong cps for cubic splines and can't manipulate*/
 /*  em properly within the editor */
+/* I made this conditional so that I could look at what I was generating with */
+/*  pfaedit, but it's probably pointless now */
 #if 1
 	    start->nextcp.x = sp->prevcp.x = cx;
 	    start->nextcp.y = sp->prevcp.y = cy;
@@ -895,6 +911,7 @@ static int SSPointCnt(SplineSet *ss) {
 
     for ( sp=ss->first, cnt=0; sp!=first ; ) {
 	if ( sp==ss->first || sp->nonextcp || sp->noprevcp ||
+		(sp->dontinterpolate || sp->roundx || sp->roundy) ||
 		(sp->prevcp.x+sp->nextcp.x)/2!=sp->me.x ||
 		(sp->prevcp.y+sp->nextcp.y)/2!=sp->me.y )
 	    ++cnt;
@@ -904,9 +921,6 @@ static int SSPointCnt(SplineSet *ss) {
 	if ( first==NULL ) first = sp;
 	sp = sp->next->to;
     }
-    /* this may produce a slight overcount if we find some points we can */
-    /*  omit (an on curve point that is midway between two off curve points */
-    /*  then we can omit it) */
 return( cnt );
 }
 
@@ -923,13 +937,15 @@ static int SSAddPoints(SplineSet *ss,int ptcnt,BasePoint *bp, char *flags) {
     first = NULL;
     for ( sp=ss->first; sp!=first ; ) {
 	if ( sp==ss->first || sp->nonextcp || sp->noprevcp ||
+		(sp->dontinterpolate || sp->roundx || sp->roundy) ||
 		(sp->prevcp.x+sp->nextcp.x)/2!=sp->me.x ||
 		(sp->prevcp.y+sp->nextcp.y)/2!=sp->me.y ) {
 	    /* If an on curve point is midway between two off curve points*/
 	    /*  it may be omitted and will be interpolated on read in */
 	    if ( flags!=NULL ) flags[ptcnt] = _On_Curve;
 	    bp[ptcnt].x = rint(sp->me.x);
-	    bp[ptcnt++].y = rint(sp->me.y);
+	    bp[ptcnt].y = rint(sp->me.y);
+	    sp->ptindex = ptcnt++;
 	}
 	if ( !sp->nonextcp ) {
 	    if ( flags!=NULL ) flags[ptcnt] = 0;
@@ -1194,80 +1210,25 @@ static uint8 *pushpointstem(uint8 *instrs,int pt, int stem) {
 return( addpoint(instrs,isword,stem));
 }
 
-/* Look for simple serifs (a vertical stem to the left or right of a hinted */
-/*  stem). Serifs will not be hinted because they overlap the main stem. */
-/*  To be a serif it must be a vertical stem that doesn't overlap (in y) the */
-/*  hinted stem. It must be to the left of the left edge, or to the right of */
-/*  the right edge of the hint. */
-/* This is a pretty dumb detector, but it gets simple cases */
-static uint8 *serifcheck(struct glyphinfo *gi, uint8 *instrs,StemInfo *hint,
-	int *contourends, BasePoint *bp, int ptcnt, int pt, char *touched) {
-    int up, right, prev;
+
+static uint8 *SetRP0To(uint8 *instrs, real hbase, BasePoint *bp, int ptcnt,
+	int xdir, real fudge) {
     int i;
-    int cs, ce;
 
-    for ( i=0; contourends[i]!=0; ++i )
-	if ( pt<=contourends[i] )
-    break;
-    cs = i==0?0:contourends[i-1]+1;
-    ce = contourends[i];
-
-    if ( pt>cs && bp[pt-1].x==bp[pt].x ) {
-	prev = true;
-	up = bp[pt-1].y<bp[pt].y;
-    } else if ( pt==cs && bp[ce].x==bp[pt].x ) {
-	prev = true;
-	up = bp[ce].y<bp[pt].y;
-    } else if ( pt<ce && bp[pt+1].x==bp[pt].x ) {
-	prev = false;
-	up = bp[pt+1].y<bp[pt].y;
-    } else if ( pt==ce && bp[0].x==bp[pt].x ) {
-	prev = false;
-	up = bp[cs].y<bp[pt].y;
-    } else		/* no vertical stem here, unlikely to be serifs */
+    for ( i=0; i<ptcnt; ++i ) {
+	if ( (xdir && bp[i].x==hbase) || (!xdir && bp[i].y==hbase) ) {
+	    instrs = pushpoint(instrs,i);
+	    *instrs++ = 0x10;		/* Set RP0, SRP0 */
 return( instrs );
-
-    right = (( hint->start==bp[pt].x && hint->width<0 ) ||
-	    (hint->start+hint->width==bp[pt].x && hint->width>0 ));
-    if ( prev ) {	/* the vstem comes before the point, serif must come after */
-	for ( i=pt+1; i<=ce; ++i ) {
-	    if ( (right && bp[i].x<=bp[i-1].x) || (!right && bp[i].x>=bp[i-1].x) ||
-		    (up && bp[i].y<bp[i-1].y) || (!up && bp[i].y>bp[i-1].y))
-return( instrs );
-	    else if ( bp[i].x<bp[pt].x-hint->width || bp[i].x>bp[pt].x+hint->width )
-return( instrs );
-	    else if ( touched[i]&1 )
-return( instrs );
-	    else if ( i<ce && bp[i].x==bp[i+1].x && 
-		    ((up && bp[i].y<bp[i+1].y) || (!up && bp[i].y>bp[i+1].y))) {
-		instrs = pushpointstem(instrs,i,getcvtval(gi,bp[i].x-bp[pt].x));
-		*instrs++ = 0xe0+0x0d;	/* MIRP, minimum, rounded, black */
-		touched[i] |= 1;
-		instrs = pushpoint(instrs,i+1);
-		*instrs++ = 0x32;	/* SHP, rp2 */
-		touched[i+1] |= 1;
-return( instrs );
-	    }
 	}
-    } else {
-	for ( i=pt-1; i>=cs; --i ) {
-	    if ( (right && bp[i].x<=bp[i+1].x) || (!right && bp[i].x>=bp[i+1].x) ||
-		    (up && bp[i].y<bp[i+1].y) || (!up && bp[i].y>bp[i+1].y))
+    }
+    /* couldn't find anything, fudge a little... */
+    for ( i=0; i<ptcnt; ++i ) {
+	if ( (xdir && bp[i].x>=hbase-fudge && bp[i].x<=hbase+fudge) ||
+		(!xdir && bp[i].y>=hbase-fudge && bp[i].y<=hbase+fudge) ) {
+	    instrs = pushpoint(instrs,i);
+	    *instrs++ = 0x10;		/* Set RP0, SRP0 */
 return( instrs );
-	    else if ( bp[i].x<bp[pt].x-hint->width || bp[i].x>bp[pt].x+hint->width )
-return( instrs );
-	    else if ( touched[i]&1 )
-return( instrs );
-	    else if ( i>cs && bp[i].x==bp[i-1].x && 
-		    ((up && bp[i].y<bp[i-1].y) || (!up && bp[i].y>bp[i-1].y))) {
-		instrs = pushpointstem(instrs,i,getcvtval(gi,bp[i].x-bp[pt].x));
-		*instrs++ = 0xe0+0x0d;	/* MIRP, minimum, rounded, black */
-		touched[i] |= 1;
-		instrs = pushpoint(instrs,i-1);
-		*instrs++ = 0x32;	/* SHP, rp2 */
-		touched[i+1] |= 1;
-return( instrs );
-	    }
 	}
     }
 return( instrs );
@@ -1293,16 +1254,23 @@ return( instrs );
 /*	establish a reference point on that edge, don't need to position all */
 /*	the points again. */
 static uint8 *geninstrs(struct glyphinfo *gi, uint8 *instrs,StemInfo *hint,
-	int *contourends, BasePoint *bp, int ptcnt, StemInfo *lasthint, int xdir,
+	int *contourends, BasePoint *bp, int ptcnt, StemInfo *firsthint, int xdir,
 	char *touched) {
     int i;
     int last= -1;
     int stem, basecvt=-1;
     real hbase, base, width;
     StemInfo *h;
-    int fudge = gi->fudge;
+    real fudge = gi->fudge;
     int inrp;
-    int first = ( lasthint==NULL || lasthint->start+lasthint->width>=hint->start );
+    StemInfo *lasthint=NULL, *testhint;
+    int first;
+
+    for ( testhint = firsthint; testhint!=NULL && testhint!=hint; testhint = testhint->next ) {
+	if ( HIoverlap(testhint->where,hint->where)!=0 )
+	    lasthint = testhint;
+    }
+    first = lasthint==NULL;
 
     hbase = base = rint(hint->start); width = rint(hint->width);
     if ( !xdir ) {
@@ -1354,15 +1322,15 @@ static uint8 *geninstrs(struct glyphinfo *gi, uint8 *instrs,StemInfo *hint,
 			inrp = 1;
 		    } else if ( last==-1 ) {
 			/* set rp0 relative to last hint */
-			*instrs++ = 0xc0+0x1c;	/* MDRP, set rp0,rp2, minimum, rounded, grey */
+			instrs = SetRP0To(instrs,lasthint->width>0?lasthint->start+lasthint->width:lasthint->start,
+				bp,ptcnt,xdir,fudge);
+			*instrs++ = 0xc0+0x1e;	/* MDRP, set rp0,rp2, minimum, rounded, white */
 			inrp = 2;
 		    } else {
 			*instrs++ = inrp==1?0x33:0x32;	/* SHP, rp1 or rp2 */
 		    }
 		}
 		touched[i] |= (xdir?1:2);
-		if ( xdir )
-		    instrs = serifcheck(gi,instrs,hint,contourends,bp,ptcnt,i,touched);
 		last = i;
 	    }
 	}
@@ -1372,13 +1340,7 @@ return(instrs);			/*  anywhere, can't give it a width */
     } else {
 	/* Need to find something to be a reference point, doesn't matter */
 	/*  what. Note that it should already have been positioned */
-	for ( i=0; i<ptcnt; ++i ) {
-	    if ( (xdir && bp[i].x==hbase) || (!xdir && bp[i].y==hbase) ) {
-		instrs = pushpoint(instrs,i);
-		*instrs++ = 0x10;		/* Set RP0, SRP0 */
-	break;
-	    }
-	}
+	instrs = SetRP0To(instrs,hbase, bp,ptcnt,xdir,fudge);
     }
 
     /* Position all points on this hint's base+width */
@@ -1390,8 +1352,6 @@ return(instrs);			/*  anywhere, can't give it a width */
 	    instrs = pushpointstem(instrs,i,stem);
 	    *instrs++ = 0xe0+0x0d;	/* MIRP, minimum, rounded, black */
 	    touched[i] |= (xdir?1:2);
-	    if ( xdir )
-		instrs = serifcheck(gi,instrs,hint,contourends,bp,ptcnt,i,touched);
 	    last = i;
 	}
     }
@@ -1542,160 +1502,135 @@ return( pt );
 return( pt );
 }
 
-/* When we have a closed contour we still may want to interpolate points */
-/*  across the beginning/end of the contour (cut is end, cut2 is beginning) */
-static uint8 *interpolatePointsBetween(uint8 *instrs,int i, int end, int cut, int cut2,
-	BasePoint *bp, char *touched, int tflag) {
-    int j;
-    int high, low, cnt, tot, done;
-    int highpt, lowpt;
-    int first = (i+1==cut)?cut2: i+1;
+static int MapSP2Index(SplineSet *ttfss,SplinePoint *csp, int ptcnt) {
+    SplineSet *ss;
+    SplinePoint *sp;
 
-    lowpt = i; highpt = end;
-    low = tflag==1 ? bp[i].x : bp[i].y;
-    high = tflag==1 ? bp[end].x : bp[end].y;
-    if ( low==high )
-return( instrs );
-
-    if ( high<low ) { j= low; low=high; high = j; lowpt=end; highpt=i; }
-    cnt = 0;
-    for ( j=first; j!=end; ++j==cut?j=cut2:j ) {
-	if (( tflag==1 && bp[j].x>=low && bp[j].x<=high ) ||
-		( tflag==2 && bp[j].y>=low && bp[j].y<=high ))
-	    ++cnt;
-    }
-    if ( cnt>250 ) cnt=250;
-    tot = 2+cnt;
-    if ( cnt>1 ) ++tot;
-    /* first push the points */
-    instrs = pushheader(instrs, end>255, tot);
-    /* we aren't going to try to handle more than 250 points to interp in */
-    /*  one instruction. But in the rare case where we do have more than */
-    /*  250 we skip the last few (that's what "done" is for) */
-    done = 0;
-    for ( j=first; j!=end && done<cnt; ++j==cut?j=cut2:j ) {
-	if (( tflag==1 && bp[j].x>=low && bp[j].x<=high ) ||
-		( tflag==2 && bp[j].y>=low && bp[j].y<=high )) {
-	    ++done;
-	    instrs = addpoint(instrs,end>255,j);
+    if ( csp==NULL )
+return( ptcnt+1 );		/* ptcnt+1 is the phantom point for the width */
+    for ( ss=ttfss; ss!=NULL; ss=ss->next ) {
+	for ( sp=ss->first;; ) {
+	    if ( sp->me.x==csp->me.x && sp->me.y==csp->me.y )
+return( sp->ptindex );
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
 	}
     }
-    /* then push the bounds */
-    instrs = addpoint(instrs,end>255,i);
-    instrs = addpoint(instrs,end>255,end);
-    /* then push the loop counter */
-    if ( cnt>1 ) {
-	instrs = addpoint(instrs,end>255,cnt);
-	*instrs++ = 0x17;		/* SLOOP */
-    }
-    *instrs++ = 0x12;		/* SRP2 */
-    *instrs++ = 0x11;		/* SRP1 */
-    if ( cnt>0 )
-	*instrs++ = 0x39;		/* IP */
+return( -1 );
+}
 
-    /* Now look for everything less than than the low value, and if there */
-    /*  are any such points shift them by the amount the lowpt got shifted*/
-    for ( j=first, cnt=0; j!=end && cnt<250; ++j==cut?j=cut2:j ) {
-	if (( tflag==1 && bp[j].x<low) || ( tflag==2 && bp[j].y<low)) {
-	    ++cnt;
-	}
-    }
-    if ( cnt>0 ) {
-	instrs = pushheader(instrs, end>255, cnt>1?cnt+1:cnt);
-	for ( j=first, cnt=0; j!=end && cnt<250; ++j==cut?j=cut2:j ) {
-	    if (( tflag==1 && bp[j].x<low) || ( tflag==2 && bp[j].y<low)) {
-		++cnt;
-		instrs = addpoint(instrs,end>255,j);
+static uint8 *gen_md_instrs(struct glyphinfo *gi, uint8 *instrs,MinimumDistance *md,
+	SplineSet *ttfss, BasePoint *bp, int ptcnt, int xdir, char *touched) {
+    int mask = xdir ? 1 : 2;
+    int pt1, pt2;
+
+    while ( md!=NULL ) {
+	if ( md->x==xdir ) {
+	    pt1 = MapSP2Index(ttfss,md->sp1,ptcnt);
+	    pt2 = MapSP2Index(ttfss,md->sp2,ptcnt);
+	    if ( pt1==ptcnt+1 ) {
+		pt1 = pt2;
+		pt2 = ptcnt+1;
+	    }
+	    if ( pt1==-1 || pt2==-1 )
+		fprintf(stderr, "Internal Error: Failed to find point in minimum distance check\n" );
+	    else if ( pt1!=ptcnt+1 && (touched[pt1]&mask) &&
+		    pt2!=ptcnt+1 && (touched[pt2]&mask) )
+		/* Already done */;
+	    else if ( pt2==ptcnt+1 || !(touched[pt2]&mask)) {
+		instrs = pushpointstem(instrs,pt2,pt1);	/* Misnomer, I'm pushing two points */
+		if ( !(touched[pt1]&mask))
+		    *instrs++ = 0x2f;			/* MDAP[rnd] */
+		else
+		    *instrs++ = 0x10;			/* SRP0 */
+		*instrs++ = 0xcc;			/* MDRP[01100] min, rnd, grey */
+		touched[pt1] |= mask;
+		if ( pt2!=ptcnt+1 )
+		    touched[pt2]|= mask;
+	    } else {
+		instrs = pushpointstem(instrs,pt1,pt2);	/* Misnomer, I'm pushing two points */
+		*instrs++ = 0x10;			/* SRP0 */
+		*instrs++ = 0xcc;			/* MDRP[01100] min, rnd, grey */
+		touched[pt1] |= mask;
 	    }
 	}
-	if ( cnt>1 ) {
-	    instrs = addpoint(instrs,end>255,cnt);
-	    *instrs++ = 0x17;		/* SLOOP */
-	}
-	/* i is in RP1, end is in RP2. */
-	*instrs++ = (lowpt==i?0x33:0x32);	/* SHP */
-    }
-
-    /* Now look for everything bigger than the high value */
-    for ( j=first, cnt=0; j!=end && cnt<250; ++j==cut?j=cut2:j ) {
-	if (( tflag==1 && bp[j].x>high) || ( tflag==2 && bp[j].y>high)) {
-	    ++cnt;
-	}
-    }
-    if ( cnt>0 ) {
-	instrs = pushheader(instrs, end>255, cnt>1?cnt+1:cnt);
-	for ( j=first, cnt=0; j!=end && cnt<250; ++j==cut?j=cut2:j ) {
-	    if (( tflag==1 && bp[j].x>high) || ( tflag==2 && bp[j].y>high)) {
-		++cnt;
-		instrs = addpoint(instrs,end>255,j);
-	    }
-	}
-	if ( cnt>1 ) {
-	    instrs = addpoint(instrs,end>255,cnt);
-	    *instrs++ = 0x17;		/* SLOOP */
-	}
-	/* i is in RP1, end is in RP2. */
-	*instrs++ = (highpt==i?0x33:0x32);	/* SHP */
+	md = md->next;
     }
 return(instrs);
 }
 
-static uint8 *interpolateinstrs(struct glyphinfo *gi,uint8 *instrs,BasePoint *bp,
-	int *contourends, char *touched, int ptcnt, int tflag) {
-    /* Search for groups of points that need to be interpolated but won't be */
-    /* noticed by IUP */
-    int i,c,end,startc, last,first;
+static uint8 *gen_rnd_instrs(struct glyphinfo *gi, uint8 *instrs,SplineSet *ttfss,
+	BasePoint *bp, int ptcnt, int xdir, char *touched) {
+    int mask = xdir ? 1 : 2;
+    SplineSet *ss;
+    SplinePoint *sp;
 
-    for ( c=0; contourends[c]!=0; ++c ) {
-	startc = c==0?0:(contourends[c-1]+1);
-	last= -1, first=-1;
-	for ( i=startc; i<=contourends[c]; ++i ) if ( (touched[i]&tflag)) {
-	    if ( first==-1 ) first = i;
-	    last = i;
-	    if ( !(touched[i+1]&tflag) ) {
-		for ( end=i+1; end<=contourends[c] && !(touched[end]&tflag); ++end );
-		if ( end==contourends[c]+1 || 	/* No final end point */
-			end==i+2 ) {	/*  Will be noticed by IUP */
-		    i = end-1;
-	continue;
-		}
-		last = end;
-		if ( first==-1 ) first = i;
-		instrs = interpolatePointsBetween(instrs,i, end,
-			contourends[c]+1, startc, bp, touched, tflag);
+    for ( ss=ttfss; ss!=NULL; ss=ss->next ) {
+	for ( sp=ss->first; ; ) {
+	    if ((( sp->roundx && xdir ) || ( sp->roundy && !xdir )) &&
+		    !(touched[sp->ptindex]&mask)) {
+		pushpoint(instrs,sp->ptindex);
+		*instrs++ = 0x2f;		/* MDAP[rnd] */
+		touched[sp->ptindex] |= mask;
 	    }
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp == ss->first )
+	break;
 	}
-	/* The wrap around case. Note that IUP won't catch this so do it even */
-	/*  if there is only one point between the two */
-	if ( first!=-1 && first!=last && (last!=contourends[c] || first!=startc))
-	    instrs = interpolatePointsBetween(instrs,last, first,
-		    contourends[c]+1, startc, bp, touched, tflag);
     }
 return( instrs );
 }
 
+static void initforinstrs(SplineChar *sc) {
+    SplineSet *ss;
+    SplinePoint *sp;
+    MinimumDistance *md;
+
+    for ( ss=sc->splines; ss!=NULL; ss=ss->next ) {
+	for ( sp=ss->first; ; ) {
+	    sp->dontinterpolate = false;
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp == ss->first )
+	break;
+	}
+    }
+
+    for ( md=sc->md; md!=NULL; md=md->next ) {
+	if ( md->sp1!=NULL ) md->sp1->dontinterpolate = true;
+	if ( md->sp2!=NULL ) md->sp2->dontinterpolate = true;
+    }
+}
+
 static void dumpgeninstructions(SplineChar *sc, struct glyphinfo *gi,
-	int *contourends, BasePoint *bp, int ptcnt) {
-    StemInfo *hint, *prev;
+	int *contourends, BasePoint *bp, int ptcnt, SplineSet *ttfss) {
+    StemInfo *hint;
     uint8 *instrs, *pt;
     int max;
     char *touched;
     DStemInfo *dstem;
 
-    if ( sc->vstem==NULL && sc->hstem==NULL && sc->dstem==NULL ) {
+    if ( sc->vstem==NULL && sc->hstem==NULL && sc->dstem==NULL && sc->md==NULL ) {
 	putshort(gi->glyphs,0);		/* no instructions */
 return;
     }
     /* Maximum instruction length is 6 bytes for each point in each dimension */
     /*  2 extra bytes to finish up. And one byte to switch from x to y axis */
     /* Diagonal take more space because we need to set the orientation on */
-    /*  each stem
+    /*  each stem */
     /*  That should be an over-estimate */
     max=2;
     if ( sc->vstem!=NULL ) max += 6*ptcnt;
     if ( sc->hstem!=NULL ) max += 6*ptcnt+1;
     for ( dstem=sc->dstem; dstem!=NULL; max+=7+4*6, dstem=dstem->next );
-    max += 10*ptcnt;			/* if we needed to interpolate every point... */
+    if ( sc->md!=NULL ) max += 12*ptcnt;
+    max += 6*ptcnt;			/* in case there are any rounds */
     max += 6*ptcnt;			/* paranoia */
     instrs = pt = galloc(max);
     touched = gcalloc(1,ptcnt);
@@ -1710,26 +1645,20 @@ return;
     /*  properly when it sets the projection vector */
     if ( sc->hstem!=NULL ) {
 	*pt++ = 0x00;	/* Set Vectors to y */
-	prev = NULL;
 	for ( hint=sc->hstem; hint!=NULL; hint=hint->next ) {
 	    if ( !hint->startdone || !hint->enddone )
-		pt = geninstrs(gi,pt,hint,contourends,bp,ptcnt,prev,false,touched);
-	    prev = hint;
+		pt = geninstrs(gi,pt,hint,contourends,bp,ptcnt,sc->hstem,false,touched);
 	}
-
-	/* IUP only works if both points immediately adjacent have been touched */
-	/*  often we'll want to do an interpolate over longer regions */
-	pt = interpolateinstrs(gi,pt,bp,contourends,touched,ptcnt,2);
     }
+    pt = gen_md_instrs(gi,pt,sc->md,ttfss,bp,ptcnt,false,touched);
+    pt = gen_rnd_instrs(gi,pt,ttfss,bp,ptcnt,false,touched);
 
     /* next instruct vertical stems (=> movement in x) */
     if ( pt != instrs )
 	*pt++ = 0x01;	/* Set Vectors to x */
-    prev = NULL;
     for ( hint=sc->vstem; hint!=NULL; hint=hint->next ) {
 	if ( !hint->startdone || !hint->enddone )
-	    pt = geninstrs(gi,pt,hint,contourends,bp,ptcnt,prev,true,touched);
-	prev = hint;
+	    pt = geninstrs(gi,pt,hint,contourends,bp,ptcnt,sc->vstem,true,touched);
     }
 
     /* finally instruct diagonal stems (=> movement in x) */
@@ -1737,7 +1666,9 @@ return;
 	for ( dstem = sc->dstem; dstem!=NULL; dstem=dstem->next )
 	    pt = gendinstrs(gi,pt,dstem,bp,ptcnt,touched);
     }
-    pt = interpolateinstrs(gi,pt,bp,contourends,touched,ptcnt,1);
+
+    pt = gen_md_instrs(gi,pt,sc->md,ttfss,bp,ptcnt,true,touched);
+    pt = gen_rnd_instrs(gi,pt,ttfss,bp,ptcnt,true,touched);
 
     /* there seems some discention as to which of these does x and which does */
     /*  y. So rather than try and be clever, let's always do both */
@@ -1897,6 +1828,7 @@ static void dumpglyph(SplineChar *sc, struct glyphinfo *gi) {
 
     if ( sc->changedsincelasthinted && !sc->manualhints )
 	SplineCharAutoHint(sc,true);
+    initforinstrs(sc);
 
     contourcnt = ptcnt = 0;
     ttfss = SCttfApprox(sc);
@@ -1923,10 +1855,10 @@ static void dumpglyph(SplineChar *sc, struct glyphinfo *gi) {
 	contourends[contourcnt++] = ptcnt-1;
     }
 
-    SplinePointListFree(ttfss);
     contourends[contourcnt] = 0;
-    dumpgeninstructions(sc,gi,contourends,bp,ptcnt);
+    dumpgeninstructions(sc,gi,contourends,bp,ptcnt,ttfss);
     dumppointarrays(gi,bp,fs,ptcnt);
+    SplinePointListFree(ttfss);
     free(bp);
     free(contourends);
     free(fs);
@@ -2941,7 +2873,7 @@ static void sethead(struct head *head,SplineFont *_sf) {
     head->version = 0x00010000;
     head->checksumAdj = 0;
     head->magicNum = 0x5f0f3cf5;
-    head->flags = 3;		/* baseline at 0, lsbline at 0 */
+    head->flags = 0x13;		/* baseline at 0, lsbline at 0, instructions change metrics */
     head->emunits = sf->ascent+sf->descent;
 /* Many of the following style names are truncated because that's what URW */
 /*  does. Only 4 characters for each style. Hence "obli" rather than "oblique"*/

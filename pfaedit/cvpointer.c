@@ -492,6 +492,7 @@ return;
     }
     if ( needsupdate )
 	SCUpdateAll(cv->sc);
+    /* lastselpt is set by our caller */
 }
 
 static int CVRectSelect(CharView *cv, real newx, real newy) {
@@ -571,6 +572,10 @@ static int CVRectSelect(CharView *cv, real newx, real newy) {
 		    ( bp->x>=new.minx && bp->x<new.maxx &&
 			bp->y>=new.miny && bp->y<new.maxy )) {
 		spl->first->selected = !spl->first->selected;
+		if ( spl->first->selected )
+		    cv->lastselpt = spl->first;
+		else if ( spl->first==cv->lastselpt )
+		    cv->lastselpt = NULL;
 		any = true;
 	    }
 	}
@@ -581,6 +586,10 @@ static int CVRectSelect(CharView *cv, real newx, real newy) {
 		    ( bp->x>=new.minx && bp->x<new.maxx &&
 			bp->y>=new.miny && bp->y<new.maxy )) {
 		spline->to->selected = !spline->to->selected;
+		if ( spline->to->selected )
+		    cv->lastselpt = spline->to;
+		else if ( spline->to==cv->lastselpt )
+		    cv->lastselpt = NULL;
 		any = true;
 	    }
 	    if ( first==NULL ) first = spline;
