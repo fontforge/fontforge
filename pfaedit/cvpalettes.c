@@ -1212,6 +1212,7 @@ void BVToolsSetCursor(BitmapView *bv, int state) {
 	tools[bvt_shift] = ct_shift;
 	tools[bvt_hand] = ct_myhand;
 	tools[bvt_minify] = ct_magminus;
+	tools[bvt_eyedropper] = ct_eyedropper;
 	tools[bvt_setwidth] = ct_setwidth;
 	tools[bvt_rect] = ct_rect;
 	tools[bvt_filledrect] = ct_filledrect;
@@ -1233,6 +1234,8 @@ void BVToolsSetCursor(BitmapView *bv, int state) {
 	shouldshow = bv->b1_tool;
     if ( shouldshow==bvt_magnify && (state&ksm_meta))
 	shouldshow = bvt_minify;
+    if ( shouldshow==bvt_pencil && (state&ksm_meta) && bv->bdf->clut!=NULL )
+	shouldshow = bvt_eyedropper;
     if ( shouldshow!=bv->showing_tool ) {
 	GDrawSetCursor(bv->v,tools[shouldshow]);
 	GDrawSetCursor(bvtools,tools[shouldshow]);

@@ -33,7 +33,7 @@
 GCursor ct_magplus, ct_magminus, ct_mypointer, ct_circle, ct_square, ct_triangle,
 	ct_ruler, ct_pen, ct_knife, ct_rotate, ct_skew, ct_scale, ct_flip;
 GCursor ct_rect, ct_elipse, ct_poly, ct_star, ct_pencil, ct_shift, ct_line,
-	ct_myhand, ct_filledrect, ct_filledelipse, ct_setwidth;
+	ct_myhand, ct_filledrect, ct_filledelipse, ct_setwidth, ct_eyedropper;
 GCursor ct_updown, ct_leftright, ct_nesw, ct_nwse;
 GCursor ct_rbearing, ct_kerning, ct_lbearing;
 
@@ -353,6 +353,20 @@ static unsigned char pencilmask_bits[] = {
    0x00, 0x00, 0x0e, 0x00, 0x1e, 0x00, 0x3e, 0x00, 0x7c, 0x00, 0xf8, 0x00,
    0xf0, 0x01, 0xe0, 0x03, 0xc0, 0x07, 0x80, 0x0f, 0x00, 0x1f, 0x00, 0x3e,
    0x00, 0x7c, 0x00, 0x98, 0x00, 0x50, 0x00, 0x20};
+#define eyedropper_width 16
+#define eyedropper_height 16
+#define eyedropper_x_hot 0
+#define eyedropper_y_hot 0
+static unsigned char eyedropper_bits[] = {
+   0x02, 0x00, 0x0d, 0x00, 0x12, 0x00, 0x22, 0x00, 0x44, 0x00, 0x88, 0x00,
+   0x10, 0x09, 0x20, 0x0e, 0x40, 0x0e, 0x80, 0x1f, 0x80, 0x7f, 0xc0, 0xff,
+   0x00, 0xfe, 0x00, 0xfc, 0x00, 0xfc, 0x00, 0x78};
+#define eyedroppermask_width 16
+#define eyedroppermask_height 16
+static unsigned char eyedroppermask_bits[] = {
+   0x03, 0x00, 0x0f, 0x00, 0x1e, 0x00, 0x3e, 0x00, 0x7c, 0x00, 0xf8, 0x00,
+   0xf0, 0x09, 0xe0, 0x0f, 0xc0, 0x0f, 0x80, 0x1f, 0x80, 0x7f, 0xc0, 0xff,
+   0x00, 0xfe, 0x00, 0xfc, 0x00, 0xfc, 0x00, 0x78};
 #define shift_width 16
 #define shift_height 16
 #define shift_x_hot 7
@@ -578,6 +592,11 @@ void InitCursors(void) {
     mask = GDrawCreateBitmap(NULL,pencil_width,pencil_height,pencilmask_bits);
     ct_pencil = GDrawCreateCursor(image,mask,0xff0000,0xffffff,pencil_x_hot,
 	    pencil_y_hot);
+    GDrawDestroyWindow(image); GDrawDestroyWindow(mask);
+    image = GDrawCreateBitmap(NULL,eyedropper_width,eyedropper_height,eyedropper_bits);
+    mask = GDrawCreateBitmap(NULL,eyedropper_width,eyedropper_height,eyedroppermask_bits);
+    ct_eyedropper = GDrawCreateCursor(image,mask,0xff0000,0xffffff,eyedropper_x_hot,
+	    eyedropper_y_hot);
     GDrawDestroyWindow(image); GDrawDestroyWindow(mask);
     image = GDrawCreateBitmap(NULL,shift_width,shift_height,shift_bits);
     ct_shift = GDrawCreateCursor(image,image,0xff0000,0xffffff,shift_x_hot,

@@ -218,7 +218,7 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,int depth) {
     int swidth= -1;
     int i;
     BitmapView *bv;
-    uint8 *pt, *end;
+    uint8 *pt, *end, *eol;
 
     gettoken(bdf,name,sizeof(tok));
     while ( gettoken(bdf,tok,sizeof(tok))!=-1 ) {
@@ -261,6 +261,7 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,int depth) {
 	bc->byte_data = ( depth!=1 );
 
 	pt = bc->bitmap; end = pt + bc->bytes_per_line*(ymax-ymin+1);
+	eol = pt + bc->bytes_per_line;
 	while ( pt<end ) {
 	    int ch1, ch2, val;
 	    while ( isspace(ch1=getc(bdf)) );
@@ -276,12 +277,12 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,int depth) {
 		*pt++ = val;
 	    else if ( depth==2 ) {		/* Internal representation is unpacked, one byte per pixel */
 		*pt++ = (val>>6);
-		if ( pt<end ) *pt++ = (val>>4)&3;
-		if ( pt<end ) *pt++ = (val>>2)&3;
-		if ( pt<end ) *pt++ = val&3;
+		if ( pt<eol ) *pt++ = (val>>4)&3;
+		if ( pt<eol ) *pt++ = (val>>2)&3;
+		if ( pt<eol ) *pt++ = val&3;
 	    } else if ( depth==4 ) {
 		*pt++ = (val>>4);
-		if ( pt<end ) *pt++ = val&0xf;
+		if ( pt<eol ) *pt++ = val&0xf;
 	    } else if ( depth==16 || depth==32 ) {
 		int i,j;
 		*pt++ = val;
@@ -291,6 +292,7 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,int depth) {
 		for ( i=0; i<j; ++j )
 		    ch2 = getc(bdf);
 	    }
+	    if ( pt>=eol ) eol += bc->bytes_per_line;
 	    if ( ch2==EOF )
 	break;
 	}
@@ -389,7 +391,8 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc,
 	    ungetc(ch,bdf);
 	    if ( isdigit(ch))
 		fscanf(bdf, "%d", depth);
-	} else if ( strcmp(tok,"BITSPERPIXEL")==0 ) {
+	} else if ( strcmp(tok,"BITSPERPIXEL")==0 ||
+		strcmp(tok,"BITS_PER_PIXEL")==0 ) {
 	    fscanf(bdf, "%d", depth);
 	} else if ( strcmp(tok,"QUAD_WIDTH")==0 && pixelsize==-1 )
 	    fscanf(bdf, "%d", &pixelsize );
@@ -400,9 +403,11 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc,
 	    fscanf(bdf, "%d", &descent );
 	else if ( strcmp(tok,"CHARSET_REGISTRY")==0 )
 	    fscanf(bdf, " \"%[^\"]", encname );
-	else if ( strcmp(tok,"CHARSET_ENCODING")==0 )
-	    fscanf(bdf, "%d", &enc );
-	else if ( strcmp(tok,"FAMILY_NAME")==0 ) {
+	else if ( strcmp(tok,"CHARSET_ENCODING")==0 ) {
+	    enc = 0;
+	    if ( fscanf(bdf, " \"%d", &enc )!=1 )
+		fscanf(bdf, "%d", &enc );
+	} else if ( strcmp(tok,"FAMILY_NAME")==0 ) {
 	    ch = getc(bdf);
 	    ch = getc(bdf); ungetc(ch,bdf);
 	    fscanf(bdf, " \"%[^\"]", family );

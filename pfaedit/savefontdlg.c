@@ -348,7 +348,11 @@ return( false );
 	if ( pt==NULL )
 	    pt = buf+strlen(buf);
 	if ( strcmp(pt-4,".otf.dfont")==0 || strcmp(pt-4,".ttf.bin")==0 ) pt-=4;
-	sprintf( pt, "-%d.%s", bdf->pixelsize, bdf->clut==NULL?"bdf":"gdf" );
+	if ( bdf->clut==NULL )
+	    sprintf( pt, "-%d.bdf", bdf->pixelsize );
+	else
+	    sprintf( pt, "-%d@%d.gdf", bdf->pixelsize, BDFDepth(bdf) );
+	
 	GProgressChangeLine2(temp=uc_copy(buf)); free(temp);
 	BDFFontDump(buf,bdf,EncodingName(sf->encoding_name));
 	if ( do_grey )

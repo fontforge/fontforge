@@ -188,6 +188,10 @@ static void BDFDumpChar(FILE *file,BDFFont *font,BDFChar *bdfc,int enc) {
 		    putc(n1+'0',file);
 	    }
 	}
+	if ( font->clut!=NULL )
+	    if ( ( font->clut->clut_len==16 && (bpl&1)) ||
+		    (font->clut->clut_len==4 && ((bpl&3)==1 || (bpl&3)==2)) )
+		putc('0',file);
 	putc('\n',file);
     }
     fprintf( file, "ENDCHAR\n" );
@@ -253,12 +257,8 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding) {
 #endif
     calculate_bounding_box(font,&fbb_width,&fbb_height,&fbb_lbearing,&fbb_descent);
     fprintf( file, "FONTBOUNDINGBOX %d %d %d %d\n", fbb_width, fbb_height, fbb_lbearing, fbb_descent);
-#if OLD_GREYMAP_FORMAT
     if ( font->clut!=NULL )
-	fprintf( file, "BITSPERPIXEL %d\n",
-		font->clut->clut_len==256 ? 8 :
-		font->clut->clut_len==16 ? 4 : 2);
-#endif
+	fprintf( file, "BITS_PER_PIXEL %d\n", BDFDepth(font));
     if ( !font->sf->onlybitmaps )
 	fprintf(file, "COMMENT \"This bdf font was generated from a postscript font, %s, by pfaedit\"\n", font->sf->fontname );
 
