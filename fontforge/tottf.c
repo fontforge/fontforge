@@ -4888,10 +4888,11 @@ return( false );
 	if (( at->opentypemode || at->applemode ) && sf->subfonts!=NULL )
 	    SFDummyUpCIDs(sf);	/* The advanced typography stuff is easier if we ignore the seperate fonts of a cid keyed fonts and treat it as flat */
 	if ( at->opentypemode ) {
-	    otf_orderlangs(sf);
-	    otf_dumpgpos(at,sf);	/* Must come before gsub: Uniscribe bug means we need to put all gpos scripts in gsub */
+	    otf_orderlangs(at,sf);
+	    otf_dumpgpos(at,sf);
 	    otf_dumpgsub(at,sf);
 	    otf_dumpgdef(at,sf);
+	    free(at->scripts); at->scripts = NULL;
 	}
 	if ( at->dovariations )
 	    ttf_dumpvariations(at,sf);

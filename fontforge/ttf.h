@@ -599,8 +599,13 @@ struct alltabs {
     short *gn_sid;
     enum fontformat format;
     int fontstyle_name_strid;	/* For GPOS 'size' */
-    int gpos_script_cnt;
-    uint32 *gpos_scripts;
+	/* Uniscribe has weird requirements for the presence of GPOS/GSUB */
+	/* in general it may reject a font for a given script unless both */
+	/* GPOS & GSUB have entries for that script. We place here a union */
+	/* of the scripts used in both tables, and we will later force both*/
+	/* tables to have all these scripts */
+    int script_cnt;
+    uint32 *scripts;
 };
 
 struct subhead { uint16 first, cnt, delta, rangeoff; };	/* a sub header in 8/16 cmap table */
@@ -634,7 +639,7 @@ struct contexttree {
 extern int ttfFixupRef(SplineChar **chars,int i);
 
     /* Open type Advanced Typography Tables */
-extern void otf_orderlangs(SplineFont *sf);
+extern void otf_orderlangs(struct alltabs *at, SplineFont *sf);
 extern void otf_dumpgpos(struct alltabs *at, SplineFont *sf);
 extern void otf_dumpgsub(struct alltabs *at, SplineFont *sf);
 extern void otf_dumpgdef(struct alltabs *at, SplineFont *sf);
