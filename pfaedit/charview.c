@@ -1281,6 +1281,20 @@ return;
 		CVInfoDraw(cv,cv->gw);
 	    }
 	}
+    } else if ( event->u.chr.keysym == GK_Page_Up ||
+	    event->u.chr.keysym == GK_KP_Page_Up ||
+	    event->u.chr.keysym == GK_Prior ||
+	    event->u.chr.keysym == GK_Page_Down ||
+	    event->u.chr.keysym == GK_KP_Page_Down ||
+	    event->u.chr.keysym == GK_Next ) {
+	/* Um... how do we scroll horizontally??? */
+	struct sbevent sb;
+	sb.type = et_sb_uppage;
+	if ( event->u.chr.keysym == GK_Page_Down ||
+		event->u.chr.keysym == GK_KP_Page_Down ||
+		event->u.chr.keysym == GK_Next )
+	    sb.type = et_sb_downpage;
+	CVVScroll(cv,&sb);
     } else if ( !(event->u.chr.state&(ksm_control|ksm_meta)) &&
 	    event->type == et_char &&
 	    event->u.chr.chars[0]>=' ' && event->u.chr.chars[1]=='\0' ) {
