@@ -846,7 +846,7 @@ extern void SVDetachFV(FontView *fv);
 
 extern void ShowAtt(SplineFont *sf);
 extern void SFShowKernPairs(SplineFont *sf,SplineChar *sc,AnchorClass *ac);
-extern void SFShowLigatures(SplineFont *sf);
+extern void SFShowLigatures(SplineFont *sf,SplineChar *sc);
 
 extern void SCEditInstructions(SplineChar *sc);
 extern void SFEditTable(SplineFont *sf, uint32 tag);
@@ -881,6 +881,7 @@ extern void ShowKernClasses(SplineFont *sf,MetricsView *mv);
 extern void KCLD_End(struct kernclasslistdlg *kcld);
 extern void KCLD_MvDetach(struct kernclasslistdlg *kcld,MetricsView *mv);
 
+extern void FVSelectByPST(FontView *fv);
 
 extern GMenuItem helplist[];
 #endif

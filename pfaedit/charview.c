@@ -3411,6 +3411,7 @@ return( true );
 #define MID_KernPairs	2018
 #define MID_AnchorPairs	2019
 #define MID_ShowGridFit 2020
+#define MID_Ligatures	2021
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -3819,6 +3820,11 @@ static void CVMenuClearInstrs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVMenuKernPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     SFShowKernPairs(cv->sc->parent,cv->sc,NULL);
+}
+
+static void CVMenuLigatures(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    SFShowLigatures(cv->fv->sf,cv->sc);
 }
 
 static void CVMenuAnchorPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -5580,9 +5586,53 @@ static void sllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     cv_sllistcheck(cv,mi,e);
 }
 
-static void cv_vwlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
-    int pos,i;
+static void cv_cblistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
+    int i;
     KernPair *kp;
+    SplineChar *sc = cv->sc;
+    SplineFont *sf = sc->parent;
+    PST *pst;
+    char *name;
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_AnchorPairs:
+	    mi->ti.disabled = sc->anchor==NULL;
+	  break;
+	  case MID_KernPairs:
+	    mi->ti.disabled = sc->kerns==NULL;
+	    if ( sc->kerns==NULL ) {
+		for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+		    for ( kp = sf->chars[i]->kerns; kp!=NULL; kp=kp->next ) {
+			if ( kp->sc == sc ) {
+			    mi->ti.disabled = false;
+		goto out;
+			}
+		    }
+		}
+	      out:;
+	    }
+	  break;
+	  case MID_Ligatures:
+	    name = sc->name;
+	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+		for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
+		    if ( pst->type==pst_ligature &&
+			    PSTContains(pst->u.lig.components,name)) {
+			mi->ti.disabled = false;
+	  goto break_out_2;
+		    }
+		}
+	    }
+	    mi->ti.disabled = true;
+	  break_out_2:;
+	  break;
+	}
+    }
+}
+
+static void cv_vwlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
+    int pos;
     SplineFont *sf = cv->sc->parent;
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
@@ -5594,24 +5644,6 @@ static void cv_vwlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	  case MID_PrevDef:
 	    for ( pos = cv->sc->enc-1; pos>=0 && sf->chars[pos]==NULL; --pos );
 	    mi->ti.disabled = pos==-1 || cv->searcher!=NULL;
-	  break;
-	  case MID_AnchorPairs:
-	    mi->ti.disabled = cv->sc->anchor==NULL;
-	  break;
-	  case MID_KernPairs:
-	    mi->ti.disabled = cv->sc->kerns==NULL;
-	    if ( cv->sc->kerns==NULL ) {
-		SplineFont *sf = cv->sc->parent;
-		for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-		    for ( kp = sf->chars[i]->kerns; kp!=NULL; kp=kp->next ) {
-			if ( kp->sc == cv->sc ) {
-			    mi->ti.disabled = false;
-		goto out;
-			}
-		    }
-		}
-	      out:;
-	    }
 	  break;
 	  case MID_Next:
 	    mi->ti.disabled = cv->searcher!=NULL || cv->sc->enc==cv->sc->parent->charcnt-1;
@@ -5647,6 +5679,11 @@ static void cv_vwlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 #endif
 	}
     }
+}
+
+static void cblistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    cv_cblistcheck(cv,mi,e);
 }
 
 static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -5917,6 +5954,13 @@ static GMenuItem pllist[] = {
     { NULL }
 };
 
+static GMenuItem cblist[] = {
+    { { (unichar_t *) _STR_KernPairs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'K' }, '\0', 0, NULL, NULL, CVMenuKernPairs, MID_KernPairs },
+    { { (unichar_t *) _STR_AnchoredPairs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, '\0', 0, NULL, NULL, CVMenuAnchorPairs, MID_AnchorPairs },
+    { { (unichar_t *) _STR_Ligatures, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'L' }, '\0', ksm_shift|ksm_control, NULL, NULL, CVMenuLigatures, MID_Ligatures },
+    NULL
+};
+
 static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_Fit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'F', ksm_control, NULL, NULL, CVMenuScale, MID_Fit },
     { { (unichar_t *) _STR_Zoomout, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, '-', ksm_control|ksm_meta, NULL, NULL, CVMenuScale, MID_ZoomOut },
@@ -5938,8 +5982,7 @@ static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_Fill, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'l' }, '\0', 0, NULL, NULL, CVMenuFill, MID_Fill },
     { { (unichar_t *) _STR_ShowGridFitDDD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'l' }, '\0', 0, NULL, NULL, CVMenuShowGridFit, MID_ShowGridFit },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
-    { { (unichar_t *) _STR_KernPairs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'K' }, '\0', 0, NULL, NULL, CVMenuKernPairs, MID_KernPairs },
-    { { (unichar_t *) _STR_AnchoredPairs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, '\0', 0, NULL, NULL, CVMenuAnchorPairs, MID_AnchorPairs },
+    { { (unichar_t *) _STR_Combinations, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'b' }, '\0', ksm_shift|ksm_control, cblist, cblistcheck },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
     { { (unichar_t *) _STR_Palettes, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', 0, pllist, pllistcheck },
     { { (unichar_t *) _STR_Hiderulers, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, '\0', ksm_control, NULL, NULL, CVMenuShowHideRulers, MID_HideRulers },

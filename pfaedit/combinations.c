@@ -50,7 +50,18 @@ GTextInfo sortby[] = {
     { NULL }
 };
 
-void SFShowLigatures(SplineFont *sf) {
+int PSTContains(const char *components,const char *name) {
+    const char *pt;
+    int len = strlen(name);
+
+    for ( pt = strstr(components,name); pt!=NULL; pt = strstr(pt+len,name)) {
+	if (( pt==components || pt[-1]==' ') && (pt[len]==' ' || pt[len]=='\0'))
+return( true );
+    }
+return( false );
+}
+
+void SFShowLigatures(SplineFont *sf,SplineChar *searchfor) {
     int i, cnt;
     unichar_t **choices=NULL;
     int *where=NULL;
@@ -61,7 +72,9 @@ void SFShowLigatures(SplineFont *sf) {
     while ( 1 ) {
 	for ( i=cnt=0; i<sf->charcnt; ++i ) {
 	    if ( (sc=sf->chars[i])!=NULL && (sc->splines!=NULL || sc->refs!=NULL) ) {
-		for ( pst=sc->possub; pst!=NULL; pst=pst->next ) if ( pst->type==pst_ligature ) {
+		for ( pst=sc->possub; pst!=NULL; pst=pst->next )
+			if ( pst->type==pst_ligature &&
+				(searchfor==NULL || PSTContains(pst->u.lig.components,searchfor->name))) {
 		    if ( choices!=NULL ) {
 			pt = galloc((3+strlen(pst->u.lig.components))*sizeof(unichar_t));
 			if ( sc->unicodeenc==-1 )

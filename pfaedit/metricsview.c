@@ -1843,7 +1843,7 @@ static void MVResetText(MetricsView *mv) {
 
 static void MVMenuLigatures(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-    SFShowLigatures(mv->fv->sf);
+    SFShowLigatures(mv->fv->sf,NULL);
 }
 
 static void MVMenuKernPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
