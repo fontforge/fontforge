@@ -1335,6 +1335,55 @@ void SplineCharMerge(SplineChar *sc,SplineSet **head,int type) {
     }
 }
 
+static int SPisExtremum(SplinePoint *sp) {
+    BasePoint *prev, *next;
+    SplinePoint *psp, *nsp;
+
+    if ( sp->prev==NULL || sp->next==NULL )
+return( true );
+
+    nsp = sp->next->to;
+    psp = sp->prev->from;
+
+    if ( !sp->noprevcp && !sp->prev->knownlinear )
+	prev = &sp->prevcp;
+    else if ( !psp->nonextcp && !sp->prev->knownlinear )
+	prev = &psp->nextcp;
+    else
+	prev = &psp->me;
+    if ( !sp->nonextcp && !sp->next->knownlinear )
+	next = &sp->nextcp;
+    else if ( !nsp->noprevcp && !sp->next->knownlinear )
+	next = &nsp->prevcp;
+    else
+	next = &nsp->me;
+
+    if ( sp->next->knownlinear && sp->prev->knownlinear &&
+	    ((sp->me.x==nsp->me.x && sp->me.x==psp->me.x &&
+	      ((sp->me.y<=nsp->me.y && psp->me.y<=sp->me.y) ||
+	       (sp->me.y>=nsp->me.y && psp->me.y>=sp->me.y))) ||
+	     (sp->me.y==nsp->me.y && sp->me.y==psp->me.y &&
+	      ((sp->me.x<=nsp->me.x && psp->me.x<=sp->me.x) ||
+	       (sp->me.x>=nsp->me.x && psp->me.x>=sp->me.x)))) )
+return( false );	/* A point in the middle of a horizontal/vertical line */
+			/*  is not an extrema and can be removed */
+
+    if ( prev->x==sp->me.x && next->x==sp->me.x ) {
+	if ( prev->y==sp->me.y && next->y==sp->me.y )
+return( false );		/* this should be caught above */
+	if (( prev->y<=sp->me.y && next->y <= sp->me.y ) ||
+		(prev->y>=sp->me.y && next->y >=sp->me.y ))
+return( true );
+    } else if (( prev->x<=sp->me.x && next->x<=sp->me.x ) ||
+	    (prev->x>=sp->me.x && next->x>=sp->me.x ))
+return( true );
+    else if (( prev->y<=sp->me.y && next->y<=sp->me.y ) ||
+	    (prev->y>=sp->me.y && next->y>=sp->me.y ))
+return( true );
+
+return( false );
+}
+
 /* Almost exactly the same as SplinesRemoveBetween, but this one is conditional */
 /*  the intermediate points/splines are removed only if we have a good match */
 /*  used for simplify */
@@ -1419,23 +1468,8 @@ return( false );
     /* Retain points which are horizontal or vertical, because postscript says*/
     /*  type1 fonts should always have a point at the extrema (except for small*/
     /*  things like serifs), and the extrema occur at horizontal/vertical points*/
-    if ( flags&sf_ignoreextremum )
-	/* Don't treat exterma specially, can remove them too */;
-    else if ( (!mid->nonextcp && (mid->nextcp.x==mid->me.x || mid->nextcp.y==mid->me.y)) ||
-	    (!mid->noprevcp && (mid->prevcp.x==mid->me.x || mid->prevcp.y==mid->me.y)) ) {
-	double x=mid->me.x, y=mid->me.y;
-	if (( mid->nextcp.x==x && mid->prevcp.x==x &&
-		 to->me.x==x && to->prevcp.x==x &&
-		 from->me.x==x && from->nextcp.x==x ) ||
-		( mid->nextcp.y==y && mid->prevcp.y==y &&
-		 to->me.y==y && to->prevcp.y==y &&
-		 from->me.y==y && from->nextcp.y==y ))
-	    /* On the other hand a point in the middle of a straight */
-	    /* horizontal/vertical line may still be removed with impunity */
-	    ;
-	else
+    if ( !(flags&sf_ignoreextremum) && SPisExtremum(mid) )
 return( false );
-    }
 
     fncp2 = fncp = from->nextcp; tpcp2 = tpcp = to->prevcp;
     fpt = from->pointtype; tpt = to->pointtype;
@@ -1641,22 +1675,11 @@ return;		/* Ignore any splines which are just dots */
 	for ( sp = spl->first; ; ) {
 	    if ( sp->next==NULL )
 	break;
-	    if ( sp->pointtype==pt_curve && !sp->nonextcp &&
-		    (sp->nextcp.x == sp->me.x || sp->nextcp.y==sp->me.y)) {
-		/* sp is an extremum */
+	    if ( SPisExtremum(sp) ) {
 		for ( nsp=sp->next->to; nsp!=sp; nsp = nsp->next->to ) {
-		    if ( nsp->pointtype!=pt_curve || nsp->next==NULL )
+		    if ( nsp->next==NULL )
 		break;
-		    if ( !nsp->nonextcp &&
-			    ((nsp->nextcp.x-nsp->me.x)*(sp->nextcp.x-sp->me.x) +
-			     (nsp->nextcp.y-nsp->me.y)*(sp->nextcp.y-sp->me.y))<=0 )
-		break;
-		    if ( !nsp->noprevcp &&
-			    ((nsp->me.x-nsp->prevcp.x)*(sp->nextcp.x-sp->me.x) +
-			     (nsp->me.y-nsp->prevcp.y)*(sp->nextcp.y-sp->me.y))<=0 )
-		break;
-		    if ( nsp->pointtype==pt_curve && !nsp->nonextcp &&
-			    (nsp->nextcp.x == nsp->me.x || nsp->nextcp.y==nsp->me.y))
+		    if ( SPisExtremum(nsp))
 		break;
 		}
 		/* nsp is something we don't want to remove */
