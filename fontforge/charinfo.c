@@ -2083,6 +2083,37 @@ return;
     }
 }
 
+static void TagPopupMessage(GGadget *g,SplineFont *sf) {
+    const unichar_t *ret = _GGadgetGetTitle(g);
+    uint32 tag;
+    int i,k;
+
+    if ( ret[0]=='<' ) {
+	unichar_t *end;
+	int feat = u_strtol(ret+1,&end,10);
+	int setting = u_strtol(end+1,&end,10);
+	for ( ret=end; isspace(*ret); ++ret );
+	if ( *ret=='>' ) {
+	    unichar_t *fs = PickNameFromMacName(
+		    FindMacSettingName(sf, feat, setting));
+	    if ( fs!=NULL ) {
+		GGadgetSetPopupMsg(g,fs);
+		free(fs);
+	    }
+	}
+    } else if ( u_strlen(ret)==4 ) {
+	tag = ((ret[0]&0xff)<<24) | ((ret[1]&0xff)<<16) | ((ret[2]&0xff)<<8) | (ret[3]&0xff);
+	for ( k=0; pst_tags[k]!=NULL; ++k ) {
+	    for ( i=0; pst_tags[k][i].text!=NULL; ++i ) {
+		if ( pst_tags[k][i].userdata == (void *) tag ) {
+		    GGadgetSetPopupMsg(g,GStringGetResource((intpt) pst_tags[k][i].text,NULL));
+return;
+		}
+	    }
+	}
+    }
+}
+
 static int acd_e_h(GWindow gw, GEvent *event) {
     struct ac_dlg *acd = GDrawGetUserData(gw);
     if ( event->type==et_close ) {
@@ -2120,6 +2151,7 @@ return( false );
 	} else
 	    ACD_SelectTag(acd);
 	ACD_RefigureMerge(acd,-1);
+	TagPopupMessage(event->u.control.g,acd->sf);
     } else if ( event->type==et_controlevent &&
 	    event->u.control.subtype == et_listselected &&
 	    GGadgetGetCid(event->u.control.g)==CID_ACD_Sli ) {
@@ -2385,6 +2417,7 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	if ( acd.sli==SLI_NESTED )
 	    ACD_ToggleNest(&acd);
 	ACD_SelectTag(&acd);
+	TagPopupMessage(acd.taglist,acd.sf);
 
     GDrawSetVisible(gw,true);
     GWidgetIndicateFocusGadget(gcd[1].ret);
@@ -2498,21 +2531,24 @@ return( false );
 	ptd->done = true;
 	ptd->ok = GGadgetGetCid(event->u.control.g);
     } else if ( event->type==et_controlevent && event->u.control.subtype == et_textchanged &&
-	    event->u.control.u.tf_changed.from_pulldown!=-1 && ptd->was_normalsli ) {
-	uint32 tag;
-	unichar_t ubuf[8];
-	/* If they select something from the pulldown, don't show the human */
-	/*  readable form, instead show the 4 character tag */
-	if ( ptd->ispair )
-	    tag = (uint32) pairpos_tags[event->u.control.u.tf_changed.from_pulldown].userdata;
-	else
-	    tag = (uint32) simplepos_tags[event->u.control.u.tf_changed.from_pulldown].userdata;
-	ubuf[0] = tag>>24;
-	ubuf[1] = (tag>>16)&0xff;
-	ubuf[2] = (tag>>8)&0xff;
-	ubuf[3] = tag&0xff;
-	ubuf[4] = 0;
-	GGadgetSetTitle(event->u.control.g,ubuf);
+	    event->u.control.g==ptd->taglist ) {
+	if ( event->u.control.u.tf_changed.from_pulldown!=-1 && ptd->was_normalsli ) {
+	    uint32 tag;
+	    unichar_t ubuf[8];
+	    /* If they select something from the pulldown, don't show the human */
+	    /*  readable form, instead show the 4 character tag */
+	    if ( ptd->ispair )
+		tag = (uint32) pairpos_tags[event->u.control.u.tf_changed.from_pulldown].userdata;
+	    else
+		tag = (uint32) simplepos_tags[event->u.control.u.tf_changed.from_pulldown].userdata;
+	    ubuf[0] = tag>>24;
+	    ubuf[1] = (tag>>16)&0xff;
+	    ubuf[2] = (tag>>8)&0xff;
+	    ubuf[3] = tag&0xff;
+	    ubuf[4] = 0;
+	    GGadgetSetTitle(event->u.control.g,ubuf);
+	}
+	TagPopupMessage(event->u.control.g,ptd->sf);
     } else if ( event->type==et_controlevent && event->u.control.subtype == et_listselected ) {
 	if ( ScriptLangList(ptd->sf,event->u.control.g,ptd->sli)!=ptd->was_normalsli )
 	    PTD_ToggleNest(ptd);
@@ -2841,6 +2877,7 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 	free(other);
 	GTextInfoListFree(gcd[sli_pos].gd.u.list);
 	ptd.taglist = gcd[tag_pos].ret;
+	TagPopupMessage(ptd.taglist,ptd.sf);
 
     GDrawSetVisible(gw,true);
     GWidgetIndicateFocusGadget(gcd[1].ret);
