@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 19-Jun-2003 -->
+  <!-- AP: Last modified: 30-Jun-2003 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -11,11 +11,11 @@
       src="http://sourceforge.net/sflogo.php?group_id=25752&amp;type=1" width="88"
       height="31" border="0" alt="SourceForge Logo" ALIGN=right> </A> PfaEdit
 </H1>
-<P ALIGN=Center>
+<!--<P ALIGN=Center>
 <FONT COLOR="Red"><BIG><B>I will not be responding to bug reports/feature
 requests/etc. between<BR>
 22 June and 29 June (I'll be at
-<A HREF="http://omega.enstb.org/eurotex2003/">EuroTeX</A>)</B></BIG></FONT>
+<A HREF="http://omega.enstb.org/eurotex2003/">EuroTeX</A>)</B></BIG></FONT>--!>
 <P>
 <FONT COLOR="Red"><STRONG>PfaEdit</STRONG></FONT> -- A postscript font editor
 that lets you create your own postscript, truetype, opentype, cid-keyed and
@@ -106,8 +106,8 @@ let me know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-030619.tgz">Download pfaedit linux-i386 Redhat 7.3
-    </A><A NAME="downloads">executable</A> Version: 19-June-2003
+    <A HREF="pfaedit-030630.tgz">Download pfaedit linux-i386 Redhat 7.3
+    </A><A NAME="downloads">executable</A> Version: 30-June-2003
   <LI>
     <A HREF="pfaedit-030605-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
     Version: 5-June-2003 (Redhat 7.3)
@@ -152,9 +152,9 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-030605-1.src.rpm">source RPM</A>: Version:
 5-June-2003<BR>
-Or you can download the <A HREF="pfaedit_full-030619.tgz">entire source tree
+Or you can download the <A HREF="pfaedit_full-030630.tgz">entire source tree
 </A>in one .tgz file: Version
-19-June-2003<!--
+30-June-2003<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -294,7 +294,7 @@ bitmap fonts that pfaedit uses
 </H2>
 <P>
 All the documentation files in this directory bundled up into one
-<A HREF="pfaedit_htdocs-030619.tgz">tgz file</A> 19-June-2003.<BR>
+<A HREF="pfaedit_htdocs-030630.tgz">tgz file</A> 30-June-2003.<BR>
 If you do the following then PfaEdit will find the docs for you when you
 press F1 (ie. PfaEdit it will look in /usr/local/share/doc/pfaedit before
 it looks on the web):
@@ -446,6 +446,10 @@ we were getting too much spam).
   <LI>
     <A HREF="mailto:pfaedit-announce@lists.sourceforge.net">pfaedit-announce</A>
     -- used to report major changes, etc.
+  <LI>
+    <A HREF="mailto:pfaedit-qaers@lists.sourceforge.net">pfaedit-qaers </A>--
+    experimental... if you want to be involved in Quality Assurance of PfaEdit,
+    please join. We'll see what happens.
 </UL>
 <H2>
   <A NAME="known-bugs">Bugs</A>
@@ -577,13 +581,9 @@ can.
     <I>TrueType AAT</I> (Apple Advanced Typography Tables)
     <UL>
       <LI>
-	Is not designed to allow font editors to understand the tables. I have spent
-	some time trying to figure out how to decompile apple's 'mort' (or 'morx'
-	which is essentially the same) table and it appears that the only way to
-	figure it out is to run the state machine with all possible inputs. And see
-	what happens. I'm not willing (yet) to go to that effort, but if someone
-	has code that parses the ligature sub-tables and returns a list of ligature
-	glyphs and their respective components I'd love to make use of it.
+	Apple's 'mort' and 'morx' tables use state machines to specify substitutions.
+	Parsing state machines is a dicy business, and my parser is not perfect.
+	If someone has better code I'd love to make use of it.
     </UL>
   <LI>
     <I>Tests</I>
@@ -595,6 +595,40 @@ can.
 	make sure it produces the right results. If anyone has a better idea for
 	an automated suite, or would like to contribute tests to the current stuff,
 	please let me know.
+    </UL>
+  <LI>
+    <I>QA</I>
+    <UL>
+      <LI>
+	I don't.<BR>
+	I find QA boring, and since no one is paying me for this I don't do very
+	much. This is obviously a problem. If anyone wants to undertake to do QA
+	<A HREF="mailto:pfaedit-qaers@lists.sourceforge.net">for me</A> (or several
+	anyones) I'd be delighted.
+    </UL>
+  <LI>
+    <I>Printing tests</I>
+    <UL>
+      <LI>
+	I'm always on the look out for short copyright free texts for printing. I'm
+	looking for samples from languages I don't have anything on, or in styles
+	that I don't have.<BR>
+	I'm also interested in phrases equivalent to "The quick brown fox jumps over
+	the lazy dog.". A short sentence which uses every latin letter.
+    </UL>
+  <LI>
+    <I>Indic information</I>
+    <UL>
+      <LI>
+	Indic languages have a series of special ligature features in opentype. I
+	believe that PfaEdit could probably generate some of these by default but
+	I don't know enough to say which. If you are familiar with indic scripts
+	could you give me a list of conversions in a format like
+	<BLOCKQUOTE>
+	  <PRE>
+U+0066 + U+0069 =&gt; U+FB01 'liga'
+</PRE>
+	</BLOCKQUOTE>
     </UL>
 </UL>
 <H2>
@@ -746,6 +780,9 @@ which company has given me the free time to write this program.
 	<A HREF="http://cm.bell-labs.com/who/hobby/MetaPost.html">MetaPost</A>, Uses
 	the metafont language to produce PostScript pictures.
       <LI>
+	<A HREF="ftp://bob.eps.gda.pl/pub/metatype1/">MetaType1</A>, Which attempts
+	to generate a type1 font directly from the metafont splines (I think)
+      <LI>
 	<A HREF="http://textrace.sf.net/">TeXTrace</A>, generates pfb fonts from
 	TeX fonts by rasterizing at high res and then autotracing them
       <LI>
@@ -809,6 +846,10 @@ which company has given me the free time to write this program.
 	    signer</A> (will produce a DSIG (digital signature) table for the font. You
 	    need to get a key from verisign first)
 	</UL>
+      <LI>
+	And Adobe provides a
+	<A HREF="http://partners.adobe.com/asn/developer/type/otfdk/main.html">Font
+	Developer Kit</A> (mostly for setting opentype tables I think)
       <LI>
 	<A HREF="http://developer.apple.com/fonts/Tools/">And Apple does too</A>
 	(mac only)

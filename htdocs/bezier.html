@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Dec-2000 -->
-  <!-- AP: Last modified: 19-Jun-2003 -->
+  <!-- AP: Last modified: 30-Jun-2003 -->
   <TITLE>B&eacute;zier Splines</TITLE>
 </HEAD>
 <BODY>
@@ -102,6 +102,12 @@ The two control points for the cubic are:
 <P>
 So converting from TrueType to PostScript is trivial. There is a slight error
 introduced due to rounding, but it is unlikely to be noticeable.
+<P>
+(Anish Mehta points out that in truetype it is possible to specify points
+which are in the middle of a pixel (ie. with an x or y value ending in 1/2).
+These will also introduce rounding errors when converted to postscript, but
+here the solution is simple: Scale the em-square of the font by a factor
+of 2 and the problem vanishes).
 <H2>
   Converting Postscript to TrueType
 </H2>
@@ -154,5 +160,5 @@ Open Type will not require converting between PostScript and True Type.
 <A HREF="corpchar.html">Next</A> --
 <P ALIGN=Left>
 <SUP><A NAME="bezier">1 </A></SUP>B&eacute;zier splines were developed by
-Pierre B&eacute;zier.
+Pierre B&eacute;zier (1910-1999).
 </BODY></HTML>

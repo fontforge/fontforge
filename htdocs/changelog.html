@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 17-Jun-2003 -->
+  <!-- AP: Last modified: 30-Jun-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,38 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    30-June-2003
+    <UL>
+      <LI>
+	I<FONT COLOR="Red"><STRONG>n the table of contents at the start of a true/open
+	type file the GDEF table was listed as having the wrong size. This caused
+	many applications to ignore it, which in turn meant that Mark to Base GPOS
+	tables were ignored </STRONG></FONT>(at least I hope that's what was going
+	on).
+      <LI>
+	On the mac local help files weren't working properly.
+      <LI>
+	Combining unicode characters (mark glyphs) should have an advance width of
+	0, and now they default to that.
+      <LI>
+	Several people at EuroTeX wanted more pen shapes in the expand stroke dlg.
+	Elipses are easy, so we add them.
+      <LI>
+	One guy at EuroTeX wanted to be able to store arbetrary per-glyph data in
+	the font, so add a new (private) true/open type table that can contain the
+	glyph comments. This table has tag 'PfEd' and can contain sub-tables containing
+	font comment, glyph comments, glyph colors. Perhaps other data as need arises.
+      <LI>
+	Kanou has added a new scripting command, SizeOf, to return the number of
+	elements in an array.
+    </UL>
+  <LI>
+    19-June-2003
+    <UL>
+      <LI>
+	Added a histogram dialog to help figure values for StemSnap[H/V]
+    </UL>
   <LI>
     17-June-2003
     <UL>
