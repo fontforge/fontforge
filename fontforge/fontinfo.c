@@ -3959,6 +3959,7 @@ return;
 		versionbuf[u_strlen(versionbuf)-1] = '\0';	/* Trailing space often omitted */
 	}
 	if ( english->names[dups[i].ttf]!=NULL &&
+		*(char **) (((char *) sf) + dups[i].off)!=NULL &&
 		uc_strcmp(txt,*(char **) (((char *) sf) + dups[i].off))!=0 &&
 		u_strcmp(txt1,english->names[dups[i].ttf])!=0 ) {
 	    /* If we've got an entry for this guy, and the user changed the ps */
