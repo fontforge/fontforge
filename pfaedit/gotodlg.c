@@ -57,8 +57,8 @@ struct unicoderange {
     { "Armenian", 0x530, 0x58f, 0x531 },
     { "Hebrew", 0x290, 0x5ff, 0x5d0 },
     { "Arabic", 0x600, 0x6ff, 0x627 },
-    { "Syriac", 0x700, 0x74f, -1 },	/* Don't know defined point */
-    { "N'ko", 0x750, 0x77f, -1 },
+    { "Syriac", 0x700, 0x74f, 0x710 },
+    { "N'ko", 0x750, 0x77f, -1 },	/* Don't know defined point */
     { "Thaana", 0x780, 0x7bf, -1 },
     { "Avestan", 0x7c0, 0x7ff, -1 },
     { "Phoenician", 0x800, 0x81f, -1 },
@@ -80,7 +80,7 @@ struct unicoderange {
     { "Thai", 0xe00, 0xe7f, 0xe01 },
     { "Lao", 0xe80, 0xeff, 0xe81 },
     { "Tibetan", 0xf00, 0xfff, 0xf00 },
-    { "Myanmar", 0x1000, 0x109f, -1 },
+    { "Myanmar", 0x1000, 0x109f, 0x1000 },
     { "Georgian", 0x10a0, 0x10ff, 0x10d0 },
     { "Hangul Jamo, Choseong", 0x1100, 0x115f, 0x1100 },
     { "Hangul Jamo, Jungseong", 0x1160, 0x11a7, 0x1161 },
@@ -109,11 +109,11 @@ struct unicoderange {
     { "Meithei/Manipuri", 0x1c00, 0x1c5f, -1 },
     { "Lepcha", 0x1c80, 0x1cbf, -1 },
     { "Kayah Li", 0x1cc0, 0x1cff, -1 },
-    { "Latin Extended-C", 0x1d00, 0x1dff, -1 },
+    { "Phonetic Extensions", 0x1d00, 0x1dff, 0x1d02 },
     { "Latin Extended Additional", 0x1e00, 0x1eff, 0x1e00 },
     { "Greek Extended", 0x1f00, 0x1fff, 0x1f00 },
     { "Symbols", 0x2000, 0x2bff, 0x2000 },
-    { "General Puntuation", 0x2000, 0x206f, 0x2000 },
+    { "General Punctuation", 0x2000, 0x206f, 0x2000 },
     { "Super and Sub scripts", 0x2070, 0x209f, 0x2070 },
     { "Currency Symbols", 0x20a0, 0x20cf, 0x20ac },
     { "Combining marks for Symbols", 0x20d0, 0x20ff, 0x20d0 },
@@ -130,7 +130,7 @@ struct unicoderange {
     { "Geometric Shapes", 0x25a0, 0x25ff, 0x25a0 },
     { "Miscellaneous Symbols", 0x2600, 0x267f, 0x2600 },
     { "Dingbats", 0x2700, 0x27bf, 0x2701 },
-    {  "Zapf Dingbats", 0x2700, 0x27bf, 0x2701 },		/* Synonem */
+    {  "Zapf Dingbats", 0x2700, 0x27bf, 0x2701 },		/* Synonym */
     { "Miscellaneous Math Symbols-A", 0x27c0, 0x27df, -1 },
     {  "Math Miscellaneous Symbols-A", 0x27c0, 0x27df, -1 },
     { "Supplemental Arrows-A", 0x27e0, 0x27ff, -1 },
@@ -178,7 +178,7 @@ struct unicoderange {
     { "Newari", 0xaa00, 0xaa5f, -1 },
     { "Siddham", 0xaa80, 0xaacf, -1 },
     { "Phags-pa", 0xab00, 0xab5f, -1 },
-    { "Hangul Syllable", 0xac00, 0xd7a3, 0xac00 },
+    { "Hangul Syllables", 0xac00, 0xd7a3, 0xac00 },
     { "High Surrogate", 0xd800, 0xdbff, -1 },		/* No characters defined */
     {  "Surrogate High", 0xd800, 0xdbff, -1 },
     { "Surrogate High, Non Private Use", 0xd800, 0xdb7f, -1 },
