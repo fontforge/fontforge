@@ -144,8 +144,7 @@ static void BDFDumpChar(FILE *file,BDFFont *font,BDFChar *bdfc,int enc) {
     int bpl;
     int em = ( font->sf->ascent+font->sf->descent );	/* Just in case em isn't 1000, be prepared to normalize */
 
-    if ( font->clut==NULL )
-	BCCompressBitmap(bdfc);
+    BCCompressBitmap(bdfc);
     if ( bdfc->enc==0xa0 && strcmp(bdfc->sc->name,"space")==0 )
 	fprintf( file, "STARTCHAR %s\n", "nonbreakingspace" );
     else if ( bdfc->enc==0xad && strcmp(bdfc->sc->name,"hyphen")==0 )
@@ -153,8 +152,17 @@ static void BDFDumpChar(FILE *file,BDFFont *font,BDFChar *bdfc,int enc) {
     else
 	fprintf( file, "STARTCHAR %s\n", bdfc->sc->name );
     fprintf( file, "ENCODING %d\n", enc );
-    fprintf( file, "SWIDTH %d 0\n", bdfc->sc->width*1000/em );
-    fprintf( file, "DWIDTH %d 0\n", bdfc->width );
+    if ( !font->sf->hasvmetrics || bdfc->sc->width!=em ) {
+	fprintf( file, "SWIDTH %d 0\n", bdfc->sc->width*1000/em );
+	fprintf( file, "DWIDTH %d 0\n", bdfc->width );
+    }
+    if ( font->sf->hasvmetrics && bdfc->sc->vwidth!=em ) {
+	fprintf( file, "SWIDTH1 %d 0\n", bdfc->sc->vwidth*1000/em );
+	fprintf( file, "DWIDTH1 %d 0\n", (bdfc->sc->vwidth*font->pixelsize+em/2)/em );
+	if ( font->sf->ascent!=bdfc->sc->parent->ascent )	/* For CID fonts */
+	    fprintf( file, "VVECTOR %d,%d\n", 500, 1000*bdfc->sc->parent->ascent/
+		    (bdfc->sc->parent->ascent+bdfc->sc->parent->descent)  );
+    }
     fprintf( file, "BBX %d %d %d %d\n", bdfc->xmax-bdfc->xmin+1, bdfc->ymax-bdfc->ymin+1,
 	    bdfc->xmin, bdfc->ymin );
     fprintf( file, "BITMAP\n" );
@@ -257,8 +265,22 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding) {
 #endif
     calculate_bounding_box(font,&fbb_width,&fbb_height,&fbb_lbearing,&fbb_descent);
     fprintf( file, "FONTBOUNDINGBOX %d %d %d %d\n", fbb_width, fbb_height, fbb_lbearing, fbb_descent);
-    if ( font->clut!=NULL )
-	fprintf( file, "BITS_PER_PIXEL %d\n", BDFDepth(font));
+    if ( font->sf->hasvmetrics ) {
+	fprintf( file, "METRICSSET 2\n" );	/* Both horizontal and vertical metrics */
+	fprintf( file, "SWIDTH 1000\n" );	/* Default advance width value */
+	fprintf( file, "DWIDTH %d\n", font->pixelsize ); /* Default advance width value */
+	fprintf( file, "SWIDTH1 1000\n" );	/* Default advance width value */
+	fprintf( file, "DWIDTH1 %d\n", font->pixelsize ); /* Default advance width value */
+	fprintf( file, "VVECTOR %d,%d\n", 500, 1000*font->sf->ascent/
+		(font->sf->ascent+font->sf->descent)  );
+		/* Spec doesn't say if vvector is in scaled or unscaled units */
+		/*  offset from horizontal origin to vertical orig */
+    }
+    /* the spec says we can omit SWIDTH/DWIDTH from character metrics if we */
+    /* specify it here. That would make monospaced fonts a lot smaller, but */
+    /* I worry that some parsers won't be able to handle it (my didn't until*/
+    /* just now), so I shan't do that */
+
     if ( !font->sf->onlybitmaps )
 	fprintf(file, "COMMENT \"This bdf font was generated from a postscript font, %s, by pfaedit\"\n", font->sf->fontname );
 
@@ -273,7 +295,8 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding) {
 	     font->sf->chars[0]->refs==NULL && strcmp(font->sf->chars[0]->name,".notdef")==0 ) )
 	def_ch = 0;
 
-    fprintf( file, "STARTPROPERTIES %d\n", 22+(x_h!=-1)+(cap_h!=-1)+(def_ch!=-1));
+    fprintf( file, "STARTPROPERTIES %d\n", 22+(x_h!=-1)+(cap_h!=-1)+
+	    (def_ch!=-1)+(font->clut!=NULL));
     fprintf( file, "FONT_ASCENT %d\n", font->ascent );
     fprintf( file, "FONT_DESCENT %d\n", font->descent );
     fprintf( file, "QUAD_WIDTH %d\n", font->pixelsize );
@@ -297,6 +320,8 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding) {
     fprintf( file, "RESOLUTION %d\n",res );
     fprintf( file, "SPACING \"%s\"\n", mono );
     fprintf( file, "AVERAGE_WIDTH %d\n", avg );
+    if ( font->clut!=NULL )
+	fprintf( file, "BITS_PER_PIXEL %d\n", BDFDepth(font));
     if ( font->encoding_name==em_none )
 	fprintf( file, "CHARSET_REGISTRY \"FontSpecific\"\n" );
     else if ( font->encoding_name<=em_iso8859_15 )

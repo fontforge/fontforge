@@ -139,7 +139,7 @@ static void MakeEncChar(SplineFont *sf,int enc,char *name) {
 }
 
 static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
-	int swidth) {
+	int swidth, int swidth1) {
     int i = -1;
 
     /* Need to do something about 94x94 encodings where the encoding we get */
@@ -154,6 +154,8 @@ static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
 	    if ( sf->onlybitmaps ) {
 		sf->chars[enc]->width = swidth;
 		sf->chars[enc]->widthset = true;
+		if ( swidth1!=-1 )
+		    sf->chars[enc]->vwidth = swidth1;
 	    }
 	}
     } else {
@@ -188,11 +190,15 @@ static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
 	if ( i!=-1 && sf->onlybitmaps && sf->bitmaps==b && b->next==NULL && swidth!=-1 ) {
 	    sf->chars[i]->width = swidth;
 	    sf->chars[i]->widthset = true;
+	    if ( swidth1!=-1 )
+		sf->chars[i]->vwidth = swidth1;
 	} else if ( i!=-1 && swidth!=-1 && sf->chars[i]!=NULL &&
 		sf->chars[i]->splines==NULL && sf->chars[i]->refs==NULL &&
 		!sf->chars[i]->widthset ) {
 	    sf->chars[i]->width = swidth;
 	    sf->chars[i]->widthset = true;
+	    if ( swidth1!=-1 )
+		sf->chars[i]->vwidth = swidth1;
 	}
     }
     if ( i==-1 && sf->onlybitmaps && sf->bitmaps==b && b->next==NULL ) {
@@ -211,11 +217,16 @@ return(-1);
 return( i );
 }
 
-static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,int depth) {
+struct metrics {
+    int swidth, dwidth, swidth1, dwidth1;	/* Font wide width defaults */
+    int metricsset;
+};
+
+static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,int depth, struct metrics *defs) {
     BDFChar *bc;
     char name[40], tok[100];
-    int enc=-1, width=0, xmin=0, xmax=0, ymin=0, ymax=0, hsz, vsz;
-    int swidth= -1;
+    int enc=-1, width=defs->dwidth, xmin=0, xmax=0, ymin=0, ymax=0, hsz, vsz;
+    int swidth= defs->swidth, swidth1=defs->swidth1;
     int i;
     BitmapView *bv;
     uint8 *pt, *end, *eol;
@@ -228,6 +239,8 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,int depth) {
 	    fscanf(bdf,"%d %*d",&width);
 	else if ( strcmp(tok,"SWIDTH")==0 )
 	    fscanf(bdf,"%d %*d",&swidth);
+	else if ( strcmp(tok,"SWIDTH1")==0 )
+	    fscanf(bdf,"%d %*d",&swidth1);
 	else if ( strcmp(tok,"BBX")==0 ) {
 	    fscanf(bdf,"%d %d %d %d",&hsz, &vsz, &xmin, &ymin );
 	    xmax = hsz+xmin-1;
@@ -235,7 +248,7 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,int depth) {
 	} else if ( strcmp(tok,"BITMAP")==0 )
     break;
     }
-    i = figureProperEncoding(sf,b,enc,name,swidth);
+    i = figureProperEncoding(sf,b,enc,name,swidth,swidth1);
     if ( i!=-1 ) {
 	if ( (bc=b->chars[i])!=NULL ) {
 	    free(bc->bitmap);
@@ -362,7 +375,7 @@ return( enc );
 }
 
 static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc,
-	char *family, char *mods, char *full, int *depth) {
+	char *family, char *mods, char *full, int *depth, struct metrics *defs) {
     int pixelsize = -1;
     int ascent= -1, descent= -1, enc, cnt;
     char tok[100], encname[100], weight[100], italic[100];
@@ -401,6 +414,16 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc,
 	    fscanf(bdf, "%d", &ascent );
 	else if ( strcmp(tok,"FONT_DESCENT")==0 )
 	    fscanf(bdf, "%d", &descent );
+	else if ( strcmp(tok,"SWIDTH")==0 )
+	    fscanf(bdf, "%d", &defs->swidth );
+	else if ( strcmp(tok,"SWIDTH1")==0 )
+	    fscanf(bdf, "%d", &defs->swidth1 );
+	else if ( strcmp(tok,"DWIDTH")==0 )
+	    fscanf(bdf, "%d", &defs->dwidth );
+	else if ( strcmp(tok,"DWIDTH1")==0 )
+	    fscanf(bdf, "%d", &defs->dwidth1 );
+	else if ( strcmp(tok,"METRICSSET")==0 )
+	    fscanf(bdf, "%d", &defs->metricsset );
 	else if ( strcmp(tok,"CHARSET_REGISTRY")==0 )
 	    fscanf(bdf, " \"%[^\"]", encname );
 	else if ( strcmp(tok,"CHARSET_ENCODING")==0 ) {
@@ -1196,7 +1219,7 @@ static void PcfReadEncodingsNames(FILE *file,struct toc *toc,SplineFont *sf, BDF
 	char *name;
 	if ( string!=NULL ) name = string+offsets[i];
 	else name = ".notdef";
-	b->chars[i]->enc = figureProperEncoding(sf,b,b->chars[i]->enc,name,-1);
+	b->chars[i]->enc = figureProperEncoding(sf,b,b->chars[i]->enc,name,-1,-1);
 	if ( b->chars[i]->enc!=-1 )
 	    b->chars[i]->sc = sf->chars[b->chars[i]->enc];
     }
@@ -1324,6 +1347,10 @@ BDFFont *SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback) {
     char family[100], mods[200], full[300];
     struct toc *toc=NULL;
     int depth=1;
+    struct metrics defs;
+
+    defs.swidth = defs.swidth1 = -1; defs.dwidth=defs.dwidth1=0;
+    defs.metricsset = 0;
 
     bdf = fopen(filename,"r");
     if ( bdf==NULL ) {
@@ -1355,7 +1382,7 @@ return( NULL );
 	    GWidgetErrorR(_STR_NotBdfFile, _STR_NotBdfFileName, filename );
 return( NULL );
 	}
-	pixelsize = slurp_header(bdf,&ascent,&descent,&enc,family,mods,full,&depth);
+	pixelsize = slurp_header(bdf,&ascent,&descent,&enc,family,mods,full,&depth,&defs);
     }
     if ( pixelsize==-1 )
 	pixelsize = askusersize(filename);
@@ -1367,6 +1394,8 @@ return( NULL );
 	/* Loading first bitmap into onlybitmap font sets the name and encoding */
 	SFSetFontName(sf,family,mods,full);
 	SFReencodeFont(sf,enc);
+	if ( defs.metricsset!=0 )
+	    sf->hasvmetrics = true;
 	sf->display_size = pixelsize;
     }
 
@@ -1414,7 +1443,7 @@ return( NULL );
     } else {
 	while ( gettoken(bdf,tok,sizeof(tok))!=-1 ) {
 	    if ( strcmp(tok,"STARTCHAR")==0 ) {
-		AddBDFChar(bdf,sf,b,depth);
+		AddBDFChar(bdf,sf,b,depth,&defs);
 		GProgressNext();
 	    }
 	}
