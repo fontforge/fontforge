@@ -274,6 +274,8 @@ return;
 	fprintf( stderr, "Can't back up with nothing on stack\n" );
     else if ( wrapper->top->backedup!=EOF )
 	fprintf( stderr, "Attempt to back up twice\n" );
+    else if ( wrapper->top->ps!=NULL )
+	ungetc(ch,wrapper->top->ps);
     else
 	wrapper->top->backedup = ch;
 }
@@ -994,6 +996,48 @@ for ( ii=0; ii<sp; ++ii )
   printf( "--???-- " );
 printf( "-%s-\n", toknames[tok]);
 #endif
+	if ( tok==pt_unknown ) {
+	    if ( strcmp(tokbuf,"Cache")==0 )	/* Fontographer type3s */
+		tok = pt_setcachedevice;
+	    else if ( strcmp(tokbuf,"SetWid")==0 ) {
+		tok = pt_setcharwidth;
+		if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
+		    stack[sp].type = ps_num;
+		    stack[sp++].u.val = 0;
+		}
+	    } else if ( strcmp(tokbuf,"rrcurveto")==0 ) {
+		if ( sp>=6 ) {
+		    stack[sp-4].u.val += stack[sp-6].u.val;
+		    stack[sp-3].u.val += stack[sp-5].u.val;
+		    stack[sp-2].u.val += stack[sp-4].u.val;
+		    stack[sp-1].u.val += stack[sp-3].u.val;
+		    tok = pt_rcurveto;
+		}
+	    } else if ( strcmp(tokbuf,"FillStroke")==0 ) {
+		if ( sp>0 )
+		    --sp;
+		tok = linewidth!=WIDTH_INHERITED ? pt_stroke : pt_fill;
+	    } else if ( strcmp(tokbuf,"SG")==0 ) {
+		if ( linewidth!=WIDTH_INHERITED && sp>1 )
+		    stack[sp-2].u.val = stack[sp-1].u.val;
+		if ( sp>0 )
+		    --sp;
+		if ( sp>0 )
+		    stack[sp-1].u.val = (stack[sp-1].u.val+99)/198.0;
+		tok = pt_setgray;
+	    } else if ( strcmp(tokbuf,"ShowInt")==0 ) {
+	    	/* Fontographer reference */
+		if ( sp>0 && stack[sp-1].type == ps_num &&
+			stack[sp-1].u.val>=0 && stack[sp-1].u.val<=255 ) {
+		    ref = chunkalloc(sizeof(RefChar));
+		    memcpy(ref->transform,transform,sizeof(ref->transform));
+		    ref->local_enc = stack[--sp].u.val;
+		    ref->next = ec->refs;
+		    ec->refs = ref;
+    continue;
+		}
+	    } 
+	}
 	switch ( tok ) {
 	  case pt_number:
 	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
@@ -1410,8 +1454,8 @@ printf( "-%s-\n", toknames[tok]);
 	    }
 	  break;
 	  case pt_setcharwidth:
-	    if ( sp>=1 )
-		ec->width = stack[--sp].u.val;
+	    if ( sp>=2 )
+		ec->width = stack[sp-=2].u.val;
 	  break;
 	  case pt_translate:
 	    if ( sp>=1 && stack[sp-1].type==ps_array )
@@ -2651,7 +2695,7 @@ static void SCInterpretPS(FILE *ps,SplineChar *sc, int *flags) {
     free(wrapper.top);
 }
     
-void PSFontInterpretPS(FILE *ps,struct charprocs *cp) {
+void PSFontInterpretPS(FILE *ps,struct charprocs *cp,char **encoding) {
     char tokbuf[100];
     int tok,i, j;
     real dval;
@@ -2665,6 +2709,11 @@ void PSFontInterpretPS(FILE *ps,struct charprocs *cp) {
 
     while ( (tok = nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf)))!=pt_eof && tok!=pt_end ) {
 	if ( tok==pt_namelit ) {
+	    if ( cp->next>=cp->cnt ) {
+		++cp->cnt;
+		cp->keys = grealloc(cp->keys,cp->cnt*sizeof(char *));
+		cp->values = grealloc(cp->values,cp->cnt*sizeof(char *));
+	    }
 	    if ( cp->next<cp->cnt ) {
 		sc = SplineCharCreate();
 		cp->keys[cp->next] = copy(tokbuf);
@@ -2692,9 +2741,12 @@ void PSFontInterpretPS(FILE *ps,struct charprocs *cp) {
     /* Further fixups come later, where all ps refs are fixedup */
     for ( i=0; i<cp->next; ++i ) {
 	for ( p=NULL, ref=cp->values[i]->layers[ly_fore].refs; ref!=NULL; ref=next ) {
+	    char *refname = (char *) (ref->sc);
 	    next = ref->next;
+	    if ( ref->sc==NULL )
+		refname=encoding[ref->local_enc];
 	    for ( j=0; j<cp->next; ++j )
-		if ( strcmp(cp->keys[j],(char *) (ref->sc))==0 )
+		if ( strcmp(cp->keys[j],refname)==0 )
 	    break;
 	    free(ref->sc);	/* a string, not a splinechar */
 	    if ( j!=cp->next ) {

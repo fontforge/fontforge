@@ -249,6 +249,9 @@ return( oldflags );
 void SCAppendEntityLayers(SplineChar *sc, Entity *ent) {
     int cnt, pos;
     Entity *e, *enext;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    Layer *old = sc->layers;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
     for ( e=ent, cnt=0; e!=NULL; e=e->next, ++cnt );
     pos = sc->layer_cnt;
@@ -279,7 +282,7 @@ return;
     }
     sc->layer_cnt += cnt;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    SCMoreLayers(sc);
+    SCMoreLayers(sc,old);
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 }
 #endif

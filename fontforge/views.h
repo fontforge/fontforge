@@ -703,7 +703,7 @@ extern void SCSynchronizeWidth(SplineChar *sc,real newwidth, real oldwidth,FontV
 extern void SCSynchronizeLBearing(SplineChar *sc,char *selected,real off);
 extern void BackgroundImageTransform(SplineChar *sc, ImageList *img,real transform[6]);
 extern void SCClearRounds(SplineChar *sc);
-extern void SCMoreLayers(SplineChar *);
+extern void SCMoreLayers(SplineChar *,Layer *old);
 extern void SCLayersChange(SplineChar *sc);
 extern void SFLayerChange(SplineFont *sf);
 extern void SCTile(SplineChar *sc);

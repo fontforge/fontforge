@@ -1502,7 +1502,7 @@ return;
 	    topref->layer_cnt = rsc->layer_cnt-1;
 	} else {
 	    topref->layer_cnt += rsc->layer_cnt-1;
-	    topref->layers = grealloc(topref->layers,(rsc->layer_cnt-1)*sizeof(struct reflayer));
+	    topref->layers = grealloc(topref->layers,topref->layer_cnt*sizeof(struct reflayer));
 	    memset(topref->layers+lbase,0,(rsc->layer_cnt-1)*sizeof(struct reflayer));
 	}
 	for ( i=ly_fore; i<rsc->layer_cnt; ++i ) {
@@ -2586,6 +2586,9 @@ void SCRefToSplines(SplineChar *sc,RefChar *rf) {
     int layer;
 
     if ( sc->parent->multilayer ) {
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+	Layer *old = sc->layers;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	sc->layers = grealloc(sc->layers,(sc->layer_cnt+rf->layer_cnt)*sizeof(Layer));
 	for ( layer = 0; layer<rf->layer_cnt; ++layer ) {
 	    LayerDefault(&sc->layers[sc->layer_cnt+layer]);
@@ -2602,8 +2605,9 @@ void SCRefToSplines(SplineChar *sc,RefChar *rf) {
 	    sc->layers[sc->layer_cnt+layer].dostroke = rf->layers[layer].dostroke;
 	    sc->layers[sc->layer_cnt+layer].fillfirst = rf->layers[layer].fillfirst;
 	}
+	sc->layer_cnt += rf->layer_cnt;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	SCMoreLayers(sc);
+	SCMoreLayers(sc,old);
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     } else {
 #else

@@ -1500,9 +1500,15 @@ return;
 static void LayersSwitch(CharView *cv) {
 }
 
-void SCMoreLayers(SplineChar *sc) { /* We've added more layers */
-    CharView *curcv;
-    if ( cvtools==NULL  || !sc->parent->multilayer )
+void SCMoreLayers(SplineChar *sc, Layer *old) { /* We've added more layers */
+    CharView *curcv, *cv;
+    if ( sc->parent==NULL || !sc->parent->multilayer )
+return;
+    for ( cv=sc->views; cv!=NULL ; cv=cv->next ) {
+	cv->layerheads[dm_fore] = &cv->sc->layers[cv->layerheads[dm_fore]-old];
+	cv->layerheads[dm_back] = &cv->sc->layers[ly_back];
+    }
+    if ( cvtools==NULL )
 return;
     curcv = GDrawGetUserData(cvtools);
     if ( curcv==NULL || curcv->sc!=sc )

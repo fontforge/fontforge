@@ -975,9 +975,9 @@ return( ret );
 static char *gettoken(char *start) {
     char *end, *ret;
 
-    while ( *start!='\0' && *start!='/' ) ++start;
-    if ( *start=='/' ) ++start;
-    for ( end = start; *end!='\0' && !isspace(*end) && *end!='[' && *end!='/' && *end!='{' && *end!='(' ; ++end );
+    while ( *start!='\0' && *start!='/' && *start!='(' ) ++start;
+    if ( *start=='/' || *start=='(' ) ++start;
+    for ( end = start; *end!='\0' && !isspace(*end) && *end!='[' && *end!='/' && *end!='{' && *end!='(' && *end!=')'; ++end );
     ret = galloc(end-start+1);
     if ( end>start )
 	strncpy(ret,start,end-start);
@@ -1263,6 +1263,7 @@ static void findstring(struct fontparse *fp,struct pschars *subrs,int index,char
 	}
 	decodestr((unsigned char *) buffer,bpt-buffer);
 	bs = buffer + fp->fd->private->leniv;
+	if ( bpt<bs ) bs=bpt;		/* garbage */ 
 	subrs->lens[index] = bpt-bs;
 	subrs->keys[index] = copy(nametok);
 	subrs->values[index] = galloc(bpt-bs);
@@ -1430,7 +1431,11 @@ static void parseline(struct fontparse *fp,char *line,FILE *in) {
     if ( line[0]=='%' && !fp->multiline )
 return;
 
-    if ( fp->inencoding && strncmp(line,"dup",3)==0 ) {
+    if (( fp->inencoding && strncmp(line,"dup",3)==0 ) ||
+	    ( strncmp(line,"dup ",4)==0 && isdigit(line[4]) &&
+	      strstr(line+strlen(line)-6," put")!=NULL && strchr(line,'/')!=NULL )) {
+	/* Fontographer's type3 fonts claim to be standard, but then aren't */
+	fp->fd->encoding_name = &custom;
 	/* Metamorphasis has multiple entries on a line */
 	while ( strncmp(line,"dup",3)==0 ) {
 	    char *end;
@@ -1754,7 +1759,8 @@ return;
 	} else if ( strstr(line,"/sfnts")!=NULL && strstr(line,"[")!=NULL ) {
 	    sfnts2tempfile(fp,in,line);
 return;
-	} else if ( strstr(line,"/CharStrings")!=NULL && strstr(line,"dict")!=NULL ) {
+	} else if ( strstr(line,"/CharStrings")!=NULL && strstr(line,"dict")!=NULL
+		&& fp->fd->fonttype!=3 ) {
 	    if ( fp->fd->chars->next==0 ) {
 		InitChars(fp->fd->chars,line);
 		fp->ignore = false;
@@ -2245,7 +2251,7 @@ static void decryptagain(struct fontparse *fp,FILE *temp,char *rdtok) {
 }
 
 static void parsetype3(struct fontparse *fp,FILE *in) {
-    PSFontInterpretPS(in,fp->fd->charprocs);
+    PSFontInterpretPS(in,fp->fd->charprocs,fp->fd->encoding );
 }
 
 static unsigned char *readt1str(FILE *temp,int offset,int len,int leniv) {
@@ -2441,6 +2447,10 @@ static void realdecrypt(struct fontparse *fp,FILE *in, FILE *temp) {
 	    fp->fd->wasbinary = true;
 	    parseline(fp,buffer+6,in);
 	} else if ( strstr(buffer,"CharProcs")!=NULL && strstr(buffer,"begin")!=NULL ) {
+	    parsetype3(fp,in);
+return;
+	} else if ( fp->fd->fonttype!=42 && strstr(buffer,"CharStrings")!=NULL && strstr(buffer,"begin")!=NULL ) {
+	    /* Fontographer uses CharStrings even though they aren't */
 	    parsetype3(fp,in);
 return;
 	} else if ( !fp->iscid ) {
