@@ -1301,11 +1301,13 @@ static void PIFontDisplay(PI *pi) {
     if ( pi->iscid && !pi->isunicode ) {
 	if ( pi->max>=20 ) pi->max = 20;
 	else if ( pi->max>=10 ) pi->max = 10;
-	else pi->max = 5;
+	else if ( pi->max >= 5 ) pi->max = 5;
+	else if ( pi->max >= 2 ) pi->max = 2;
     } else {
 	if ( pi->max>=16 ) pi->max = 16;
 	else if ( pi->max>=8 ) pi->max = 8;
-	else pi->max = 4;
+	else if ( pi->max >= 4 ) pi->max = 4;
+	else if ( pi->max >= 2 ) pi->max = 2;
     }
 
     if ( wascompacted )
