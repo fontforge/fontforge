@@ -2343,3 +2343,97 @@ return;
 	free( deps[i] );
     free(deps);
 }
+
+static int UsedIn(char *name, char *subs) {
+    int nlen = strlen( name );
+    while ( *subs!='\0' ) {
+	if ( strncmp(subs,name,nlen)==0 && (subs[nlen]==' ' || subs[nlen]=='\0'))
+return( true );
+	while ( *subs!=' ' && *subs!='\0' ) ++subs;
+	while ( *subs==' ' ) ++subs;
+    }
+return( false );
+}
+
+int SCUsedBySubs(SplineChar *sc) {
+    int k, i;
+    SplineFont *_sf, *sf;
+    PST *pst;
+
+    if ( sc==NULL )
+return( false );
+
+    _sf = sc->parent;
+    if ( _sf->cidmaster!=NULL ) _sf=_sf->cidmaster;
+    k=0;
+    do {
+	sf = _sf->subfontcnt==0 ? _sf : _sf->subfonts[k];
+	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	    for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
+		if ( pst->type==pst_substitution || pst->type==pst_alternate ||
+			pst->type==pst_multiple || pst->type==pst_ligature )
+		    if ( UsedIn(sc->name,pst->u.mult.components))
+return( true );
+	    }
+	}
+	++k;
+    } while ( k<_sf->subfontcnt );
+return( false );
+}
+
+void SCSubBy(SplineChar *sc) {
+    static int buts[] = { _STR_Show, _STR_Cancel };
+    int i,j,k,tot;
+    unichar_t **deps = NULL;
+    SplineChar **depsc;
+    unichar_t ubuf[100];
+    SplineFont *sf, *_sf;
+    PST *pst;
+
+    if ( sc==NULL )
+return;
+
+    _sf = sc->parent;
+    if ( _sf->cidmaster!=NULL ) _sf=_sf->cidmaster;
+    for ( j=0; j<2; ++j ) {
+	tot = 0;
+	k=0;
+	do {
+	    sf = _sf->subfontcnt==0 ? _sf : _sf->subfonts[k];
+	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+		for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
+		    if ( pst->type==pst_substitution || pst->type==pst_alternate ||
+			    pst->type==pst_multiple || pst->type==pst_ligature )
+			if ( UsedIn(sc->name,pst->u.mult.components)) {
+			    if ( deps!=NULL ) {
+				u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),
+					GStringGetResource(_STR_SubsInGlyph,NULL),
+			                pst->tag>>24, (pst->tag>>16)&0xff,
+			                (pst->tag>>8)&0xff, pst->tag&0xff,
+			                sf->chars[i]->name);
+				deps[tot] = u_copy(ubuf);
+			        depsc[tot] = sf->chars[i];
+			    }
+			    ++tot;
+			}
+		}
+	    }
+	    ++k;
+	} while ( k<_sf->subfontcnt );
+	if ( tot==0 )
+return;
+	if ( j==0 ) {
+	    deps = gcalloc(tot+1,sizeof(unichar_t *));
+	    depsc = galloc(tot*sizeof(SplineChar *));
+	}
+    }
+
+    i = GWidgetChoicesBR(_STR_DependentSubstitutions,(const unichar_t **) deps, tot, 0, buts, _STR_Dependents );
+    if ( i!=-1 ) {
+	CharViewCreate(depsc[i],sc->parent->fv);
+    }
+    for ( i=0; i<=tot; ++i )
+	free( deps[i] );
+    free(deps);
+    free(depsc);
+}

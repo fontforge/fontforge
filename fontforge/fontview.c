@@ -964,7 +964,7 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_Round	2213
 #define MID_MergeFonts	2214
 #define MID_InterpolateFonts	2215
-#define MID_ShowDependents	2222
+#define MID_ShowDependentRefs	2222
 #define MID_AddExtrema	2224
 #define MID_CleanupChar	2225
 #define MID_TilePath	2226
@@ -975,6 +975,7 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_Effects	2231
 #define MID_CopyFeatureToFont	2232
 #define MID_SimplifyMore	2233
+#define MID_ShowDependentSubs	2234
 #define MID_Center	2600
 #define MID_Thirds	2601
 #define MID_SetWidth	2602
@@ -1658,7 +1659,7 @@ static void FVMenuRetagFeature(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SFRetagFeatureDlg(fv->sf);
 }
 
-static void FVMenuShowDependents(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+static void FVMenuShowDependentRefs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int pos = FVAnyCharSelected(fv);
     if ( pos<0 )
@@ -1666,6 +1667,16 @@ return;
     if ( fv->sf->chars[pos]==NULL || fv->sf->chars[pos]->dependents==NULL )
 return;
     SCRefBy(fv->sf->chars[pos]);
+}
+
+static void FVMenuShowDependentSubs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    int pos = FVAnyCharSelected(fv);
+    if ( pos<0 )
+return;
+    if ( fv->sf->chars[pos]==NULL )
+return;
+    SCSubBy(fv->sf->chars[pos]);
 }
 
 static int getorigin(void *d,BasePoint *base,int index) {
@@ -2686,10 +2697,6 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = anychars<0 ||
 		    (fv->cidmaster!=NULL && fv->sf->chars[anychars]==NULL);
 	  break;
-	  case MID_ShowDependents:
-	    mi->ti.disabled = anychars<0 || fv->sf->chars[anychars]==NULL ||
-		    fv->sf->chars[anychars]->dependents == NULL;
-	  break;
 	  case MID_FindProblems:
 	    mi->ti.disabled = anychars==-1;
 	  break;
@@ -3483,6 +3490,24 @@ static void balistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
+static void delistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    int anychars = FVAnyCharSelected(fv);
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_ShowDependentRefs:
+	    mi->ti.disabled = anychars<0 || fv->sf->chars[anychars]==NULL ||
+		    fv->sf->chars[anychars]->dependents == NULL;
+	  break;
+	  case MID_ShowDependentSubs:
+	    mi->ti.disabled = anychars<0 || fv->sf->chars[anychars]==NULL ||
+		    !SCUsedBySubs(fv->sf->chars[anychars]);
+	  break;
+	}
+    }
+}
+
 static void aatlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     FontView *ofv;
@@ -3666,11 +3691,17 @@ static GMenuItem aatlist[] = {
     { NULL }
 };
 
+static GMenuItem delist[] = {
+    { { (unichar_t *) _STR_ReferencesDDD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'u' }, 'I', ksm_control|ksm_meta, NULL, NULL, FVMenuShowDependentRefs, MID_ShowDependentRefs },
+    { { (unichar_t *) _STR_SubstitutionsDDD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuShowDependentSubs, MID_ShowDependentSubs },
+    { NULL }
+};
+
 static GMenuItem ellist[] = {
     { { (unichar_t *) _STR_Fontinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'F', ksm_control|ksm_shift, NULL, NULL, FVMenuFontInfo },
     { { (unichar_t *) _STR_Charinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'I', ksm_control, NULL, NULL, FVMenuCharInfo, MID_CharInfo },
     { { (unichar_t *) _STR_TypoFeatures, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, '\0', ksm_control|ksm_meta, aatlist, aatlistcheck },
-    { { (unichar_t *) _STR_ShowDependents, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, 'I', ksm_control|ksm_meta, NULL, NULL, FVMenuShowDependents, MID_ShowDependents },
+    { { (unichar_t *) _STR_ShowDependents, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, 'I', ksm_control|ksm_meta, delist, delistcheck },
     { { (unichar_t *) _STR_Findprobs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, 'E', ksm_control, NULL, NULL, FVMenuFindProblems, MID_FindProblems },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Bitmapsavail, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'B', ksm_control|ksm_shift, NULL, NULL, FVMenuBitmaps, MID_AvailBitmaps },
