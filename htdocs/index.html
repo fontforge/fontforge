@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 11-Mar-2002 -->
+  <!-- AP: Last modified: 12-Mar-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -84,17 +84,17 @@ you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-020310.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 10-Mar-2002
+    <A HREF="pfaedit-020312.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 12-Mar-2002
   <LI>
     <A HREF="pfaedit_ppc-020208.tgz">Download pfaedit linux-ppc SUSE 7.1
     </A>executable Version: 8-Feb-2002
   <LI>
-    <A HREF="pfaedit-solaris-020310.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 10-Mar-2002
+    <A HREF="pfaedit-solaris-020312.tgz">Download pfaedit Solaris 8.0
+    </A>executable Version: 12-Mar-2002
   <LI>
-    <A HREF="pfaedit-020220-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
-    Version: 20-Feb-2002 (Redhat 7.1)
+    <A HREF="pfaedit-020312-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
+    Version: 12-Mar-2002 (Redhat 7.1)
   <LI>
     <A HREF="http://packages.debian.org/unstable/x11/pfaedit.html">A debian package
     is available at the debian site.</A>
@@ -102,7 +102,7 @@ you do</A>.
     <A HREF="Problems-MacOSX.html#binary">A Mac OS/X distribution</A> (with Caveats).
     Version 2-Mar-2002
   <LI>
-    <A HREF="pfaedit_cygwin-020310.tgz">A cygwin version</A>. Version: 10-Mar-2002
+    <A HREF="pfaedit_cygwin-020312.tgz">A cygwin version</A>. Version: 12-Mar-2002
   <LI>
     <A HREF="ftp://nchrem.tnw.tudelft.nl/pub/pfaedit/">An OpenVMS executable
     </A>(by Jacob Jansen): Version Approximately 23-Sept-2001<BR>
@@ -114,17 +114,17 @@ Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
 program.</A> (there's a new version as of Dec 2001)
 <P>
 If you want to edit CID keyed fonts you probably need these
-<A HREF="cidmaps.tgz">character set descriptions</A>. (These were last updated
+<A HREF="#cidmaps">character set descriptions</A>. (These were last updated
 6-Mar-2002)
 <H2>
   <A NAME="source">Source</A> distribution
 </H2>
 <P>
-You can download a <A HREF="pfaedit-020220-1.src.rpm">source RPM</A>: Version:
-20-Feb-2002<BR>
-Or you can download the <A HREF="pfaedit_full-020310.tgz">entire source tree
+You can download a <A HREF="pfaedit-020312-1.src.rpm">source RPM</A>: Version:
+12-Mar-2002<BR>
+Or you can download the <A HREF="pfaedit_full-020312.tgz">entire source tree
 </A>in one .tgz file: Version
-10-Mar-2002<!--
+12-Mar-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -145,9 +145,8 @@ If you want to do autotracing around character images you should also download
 Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
 program.</A>(there's a new version as of Dec 2001)
 <P>
-If you want to edit CID keyed fonts you need these
-<A HREF="cidmaps.tgz">character set descriptions</A>. (These were last updated
-6-Mar-2002)
+If you want to edit CID keyed fonts you need these <A HREF="#cidmaps">character
+set descriptions</A>. (These were last updated 6-Mar-2002)
 <P>
 With the appropriate <A NAME="image-libs">libraries</A>, PfaEdit can import
 png, tiff, and gif images to act as character backgrounds for tracing purposes
@@ -195,7 +194,13 @@ If you are editing <A NAME="cidmaps">CID keyed fonts </A>you should pull
 down the following file
 <UL>
   <LI>
-    <A HREF="cidmaps.tgz">cidmaps.tgz</A> (These were last updated 6-Mar-2002)
+    <A HREF="cidmaps.tgz">cidmaps.tgz</A> (These were last updated
+    6-Mar-2002)<BR>
+    and then<BR>
+    <CODE>$ gunzip cidmaps.tgz<BR>
+    $ tar xf cidmaps.tar <BR>
+    $ mkdir -p /usr/share/pfaedit<BR>
+    $ mv *.cidmap /usr/share/pfaedit</CODE>
 </UL>
 <P>
 <A NAME="suggested-fonts">You</A> might also want to pull down some unicode

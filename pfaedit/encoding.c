@@ -691,6 +691,7 @@ struct cidmap *FindCidMap(char *registry,char *ordering,int supplement,SplineFon
     int maybe_sup = -1;
     static int buts[] = { _STR_UseIt, _STR_Search, 0 };
     static int buts2[] = { _STR_UseIt, _STR_GiveUp, 0 };
+    static int buts3[] = { _STR_Browse, _STR_GiveUp, 0 };
     unichar_t ubuf[100]; char buf[100];
     int ret;
 
@@ -757,11 +758,28 @@ return( maybe );
 	snprintf(buf,sizeof(buf),"%s-%s-*.cidmap", registry, ordering );
 #endif
 	uc_strcpy(ubuf,buf);
-	if ( sf!=NULL ) sf->loading_cid_map = true;
-	uret = GWidgetOpenFile(GStringGetResource(_STR_FindCharset,NULL),NULL,ubuf,NULL);
-	if ( sf!=NULL ) sf->loading_cid_map = false;
+	if ( maybe==NULL && maybefile==NULL ) {
+	    ret = GWidgetAskR(_STR_NoCidmap,buts3,0,1,_STR_LookForCidmap,
+#ifdef SHAREDIR
+		    SHAREDIR
+#else
+		    getPfaEditShareDir()==NULL?"/usr/share/pfaedit":getPfaEditShareDir()
+#endif
+		    );
+	    if ( ret==1 )
+		ubuf[0] = '\0';
+	}
+	if ( ubuf[0]=='\0' )
+	    uret = NULL;
+	else {
+	    if ( sf!=NULL ) sf->loading_cid_map = true;
+	    uret = GWidgetOpenFile(GStringGetResource(_STR_FindCharset,NULL),NULL,ubuf,NULL);
+	    if ( sf!=NULL ) sf->loading_cid_map = false;
+	}
 	if ( uret==NULL ) {
-	    if ( GWidgetAskR(_STR_UseCidMap,buts2,0,1,_STR_AreYouSureCharset)==0 ) {
+	    if ( maybe==NULL && maybefile==NULL )
+		/* No luck */;
+	    else if ( GWidgetAskR(_STR_UseCidMap,buts2,0,1,_STR_AreYouSureCharset)==0 ) {
 		if ( maybe!=NULL ) {
 		    maybe->maxsupple = supplement;
 return( maybe );

@@ -107,7 +107,7 @@ unichar_t *GWidgetOpenFile(const unichar_t *title, const unichar_t *defaultfile,
     gcd[1].gd.handle_controlevent = GFD_Ok;
     gcd[1].creator = GButtonCreate;
 
-    gcd[2].gd.pos.x = (totwid-bs)*100/GIntGetResource(_NUM_ScaleFactor)/2; gcd[2].gd.pos.y = 222;
+    gcd[2].gd.pos.x = (totwid-bs)*100/GIntGetResource(_NUM_ScaleFactor)/2; gcd[2].gd.pos.y = gcd[1].gd.pos.y+3;
     gcd[2].gd.pos.width = -1;
     gcd[2].gd.flags = gg_visible | gg_enabled;
     label[2].text = (unichar_t *) _STR_Filter;
@@ -117,7 +117,7 @@ unichar_t *GWidgetOpenFile(const unichar_t *title, const unichar_t *defaultfile,
     gcd[2].gd.handle_controlevent = GFileChooserFilterEh;
     gcd[2].creator = GButtonCreate;
 
-    gcd[3].gd.pos.x = -gcd[1].gd.pos.x; gcd[3].gd.pos.y = 192;
+    gcd[3].gd.pos.x = -gcd[1].gd.pos.x; gcd[3].gd.pos.y = gcd[2].gd.pos.y;
     gcd[3].gd.pos.width = -1;
     gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
     label[3].text = (unichar_t *) _STR_Cancel;

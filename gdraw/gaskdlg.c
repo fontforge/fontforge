@@ -144,7 +144,7 @@ static GWindow DlgCreate(const unichar_t *title,const unichar_t *question,va_lis
     int as, ds, ld, fh;
     int w, maxw, bw, bspace;
     int i, y;
-    unichar_t ubuf[300];
+    unichar_t ubuf[800];
 
     u_vsnprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),question,ap);
     if ( screen_display==NULL ) {
