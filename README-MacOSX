@@ -134,10 +134,13 @@ DOCUMENTATION
 	http://pfaedit.sourceforge.net/overview.html
 
 FONTS UNDER Mac OS/X
- Fonts live in /Library/Fonts, /System/Library/Fonts or ~/Library/Fonts.
- On Mac OS/X PfaEdit can edit .dfont and resource fork fonts. On other systems
- PfaEdit can only edit Mac .dfonts (the concept of a resource fork is Mac 
- specific).
+ Macintosh fonts live in /Library/Fonts, /System/Library/Fonts or
+ ~/Library/Fonts. On Mac OS/X PfaEdit can edit .dfont and resource fork
+ fonts. On other systems PfaEdit can only edit Mac .dfonts (the concept
+ of a resource fork is Mac specific).
+
+ (X11 fonts on the mac are completely seperate from the mac fonts.
+ they reside somewhere in the X tree).
 
 FONTS UNDER Mac OS/9
  Note Bene: As far as I know PfaEdit has not been ported to Mac OS/9 (or 8 or 7)

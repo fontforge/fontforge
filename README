@@ -1,29 +1,41 @@
-INSTALLING A BINARY DISTRIBUTION
-    If I have an rpm for your system, use that. (my redhat rpms work on mandrake
-    too, they probably work on other i386 systems). There are debian packages
-    available on the debian site. 
-    Download the appropriate binary from
-    	http://pfaedit.sourceforge.net/index.html#binary
-    If it is a .tgz file then it should contain
+INSTALLATION NOTES:
+ This distribution may be in two formats, either it contains dynamic libraries
+ or it does not.
+
+INSTALLATION WITH DYNAMIC LIBRARIES
+ contains two executables:
+ 	pfaedit -- a font editor
+	sfddiff -- a program for comparing fonts
+ man pages for the above
+	pfaedit.1
+	sfddiff.1
+ two libraries
+	libgdraw.so
+	libgunicode.so
+ and some user interface files
+	pfaedit.{en,fr,de,ru,ja}.ui
+ and a shell script
+	doinstall
+ which should put everything into a reasonable place (you probably need to be
+ root to run it).
+
+ If you want to edit CID-keyed fonts (for CJK fonts) you may want to pull down
+ the cidmap package from http://pfaedit.sf.net/cidmaps.tgz and move the
+ contents to /usr/share/pfaedit also.
+
+INSTALLATION WITHOUT DYNAMIC LIBRARIES
+ Otherwise the package will contain:
 	A README file or two
 	pfaedit      -- the executable
 	pfaedit.1    --	the man page.
 	pfaedit-*.ui --	various user interface string files for different
 			languages
-      If it's on a machine where I can build dynamic libaries there will also
-      be:
-	lib{gdraw,gunicode}.so -- two libraries
-	sfddiff	     -- a program for comparing two sfd files
-
     You should:
     	$ su
-	# mkdir -p /usr/local/bin /usr/local/man/man1 /usr/local/share/pfaedit /usr/local/lib
+	# mkdir -p /usr/local/bin /usr/local/man/man1 /usr/local/share/pfaedit
 	# mv pfaedit /usr/local/bin
 	# mv *.1 /usr/local/man/man1
 	# mv *.ui /usr/local/share/pfaedit
-      For dynamic distributions
-	# mv sfddiff /usr/local/bin
-	# mv *.so /usr/local/lib
 
     You may need to add /usr/local/bin to your PATH environment variable (and
     /usr/local/man to your MANPATH environment variable). If you use bash edit
@@ -90,11 +102,6 @@ BUILDING without X11
     non-X version on a machine with X type:
 	$ configure --without-x
 
-NOTE:
-    During the beta process I have the program linked with static versions of
-    libgdraw and libgunicode. I intend to link with the dynamic ones once
-    debugging is not an issue (Ha!).
-
 KNOWN BUILD PROBLEMS
     * If the configure script doesn't work for you try using
 	$ make -f makefile.orig
@@ -105,8 +112,28 @@ KNOWN BUILD PROBLEMS
 	  libdl is part of libc and can't be found. Just remove it from the
 	  LIBS list in the pfaedit/makefile and rebuild.
 
+BITMAP FONTS
+ The program sort of assumes you've got some unicode fonts lying around.
+ The program will choose fonts as best it can depending on what you have
+ installed on your machine.
+   Sources of unicode fonts:
+	http://czyborra.com/unifont/
+	http://clr.nmsu.edu/~mleisher/cu.html
+	http://savannah.nongnu.org/projects/freefont
+        http://bibliofile.mc.duke.edu/gww/fonts/{Monospace,Caliban}
+	
+RUNNING
+$ pfaedit -new
+ Creates a new font
+$ pfaedit -nosplash
+ (No splash screen in case you have a very slow X connection)
+$ pfaedit font.pfa font2.pfb font3.ttf font4.otf font4.sfd
+ Opens those fonts (sfd files are pfaedit's own spline font database files)
+$ pfaedit
+ Brings up a file picker dlg.
+
+DOCUMENTATION
+	http://pfaedit.sourceforge.net/overview.html
+
 Please report any bugs to
 	pfaedit-devel@lists.sourceforge.net
-
-Documentation is at:
-	http://pfaedit.sourceforge.net/index.html
