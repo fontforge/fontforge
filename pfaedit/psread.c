@@ -342,8 +342,8 @@ static void MatInverse(real into[6], real orig[6]) {
 	memset(into,0,sizeof(*into));
     } else {
 	into[0] =  orig[3]/det;
-	into[1] = -orig[2]/det;
-	into[2] = -orig[1]/det;
+	into[1] = -orig[1]/det;
+	into[2] = -orig[2]/det;
 	into[3] =  orig[0]/det;
 	into[4] = -orig[4];
 	into[5] = -orig[5];
