@@ -1118,6 +1118,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	pos.y = pt.y;
 	if ( pos.y+pos.height+20 > screensize.height )
 	    pos.y = screensize.height - pos.height - 20;
+	if ( pos.y<0 ) pos.y = 0;
 	gi.gw = GDrawCreateTopWindow(NULL,&pos,pi_e_h,&gi,&wattrs);
 
 	memset(&gcd,0,sizeof(gcd));
