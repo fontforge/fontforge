@@ -3090,6 +3090,7 @@ void FontInfo(SplineFont *sf) {
     comgcd[0].gd.cid = CID_Comment;
     comlabel[0].text = (unichar_t *) sf->comments;
     comlabel[0].text_is_1byte = true;
+    if ( comlabel[0].text==NULL ) comlabel[0].text = "";
     comgcd[0].gd.label = &comlabel[0];
     comgcd[0].creator = GTextAreaCreate;
 /******************************************************************************/
