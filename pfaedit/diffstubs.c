@@ -241,6 +241,10 @@ void chunkfree(void *item,int size) {
     free(item);
 }
 
+SplineChar *SplineCharCreate(void) {
+return( gcalloc(1,sizeof(SplineChar)));
+}
+
 GImage *GImageCreate(enum image_type type, int32 width, int32 height) {
     GImage *gi;
     struct _GImage *base;
