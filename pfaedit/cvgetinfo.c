@@ -41,7 +41,7 @@ typedef struct gidata {
     SplinePointList *curspl;
     SplinePointList *oldstate;
     GWindow gw;
-    int done;
+    int done, first;
 } GIData;
 
 #define CID_UName	1001
@@ -517,6 +517,17 @@ return( true );
 return( true );
 }
 
+static int CI_CommentChanged(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	if ( ci->first && ci->sc->color==COLOR_DEFAULT &&
+		0==GGadgetGetFirstListSelectedItem(GWidgetGetControl(ci->gw,CID_Color)) )
+	    GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_Color),1);
+	ci->first = false;
+    }
+return( true );
+}
+
 static void CIFillup(GIData *ci) {
     SplineChar *sc = ci->sc;
     SplineFont *sf = sc->parent;
@@ -580,6 +591,7 @@ static void CIFillup(GIData *ci) {
 	if ( std_colors[i].userdata == (void *) sc->color )
 	    GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_Color),i);
     }
+    ci->first = sc->comment==NULL;
 }
 
 static int CI_NextPrev(GGadget *g, GEvent *e) {
@@ -788,6 +800,7 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
 	gcd[16].gd.pos.height = GDrawPointsToPixels(NULL,4*12+6);
 	gcd[16].gd.flags = gg_enabled|gg_visible|gg_textarea_wrap;
 	gcd[16].gd.cid = CID_Comment;
+	gcd[16].gd.handle_controlevent = CI_CommentChanged;
 	gcd[16].creator = GTextAreaCreate;
 
 	label[17].text = (unichar_t *) _STR_Color;
