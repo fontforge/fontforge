@@ -62,7 +62,7 @@ void SFShowLigatures(SplineFont *sf) {
 	    if ( (sc=sf->chars[i])!=NULL && (sc->splines!=NULL || sc->refs!=NULL) &&
 		    sc->lig!=NULL ) {
 		if ( choices!=NULL ) {
-		    pt = galloc(3+strlen(sc->lig->components));
+		    pt = galloc((3+strlen(sc->lig->components))*sizeof(unichar_t));
 		    if ( sc->unicodeenc==-1 )
 			*pt = 0xfffd;
 		    else
@@ -516,7 +516,7 @@ static int KP_ChangeSize(GGadget *g, GEvent *e) {
 	BDFFont *temp;
 	if ( newsize==kpd->bdf->pixelsize )
 return( true );
-	temp = SplineFontPieceMeal(kpd->sf,newsize,true);
+	temp = SplineFontPieceMeal(kpd->sf,newsize,true,NULL);
 	BDFFontFree(kpd->bdf);
 	kpd->bdf = temp;
 	KP_Resize(kpd);
@@ -843,7 +843,7 @@ return;
     wattrs.cursor = ct_mypointer;
     kpd.v = GWidgetCreateSubWindow(gw,&pos,kpdv_e_h,&kpd,&wattrs);
 
-    kpd.bdf = SplineFontPieceMeal(kpd.sf,(int) (gcd[1].gd.label->userdata),true);
+    kpd.bdf = SplineFontPieceMeal(kpd.sf,(int) (gcd[1].gd.label->userdata),true,NULL);
 
     memset(&rq,'\0',sizeof(rq));
     rq.family_name = helv;
