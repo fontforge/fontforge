@@ -529,7 +529,8 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
 	if ( ref->sc->enc==0 && ref->sc->splines==NULL )
 	    fprintf( stderr, "Using a reference to character 0, removed. In %s\n", sc->name);
 	else
-	fprintf(sfd, "Ref: %d %c %g %g %g %g %g %g\n", ref->sc->enc,
+	fprintf(sfd, "Ref: %d %d %c %g %g %g %g %g %g\n",
+		ref->sc->enc, ref->sc->unicodeenc,
 		ref->selected?'S':'N',
 		ref->transform[0], ref->transform[1], ref->transform[2],
 		ref->transform[3], ref->transform[4], ref->transform[5]);
@@ -1352,6 +1353,8 @@ static RefChar *SFDGetRef(FILE *sfd) {
     rf = chunkalloc(sizeof(RefChar));
     getint(sfd,&enc);
     rf->local_enc = enc;
+    if ( getint(sfd,&enc))
+	rf->unicode_enc = enc;
     while ( isspace(ch=getc(sfd)));
     if ( ch=='S' ) rf->selected = true;
     getreal(sfd,&rf->transform[0]);
@@ -1363,7 +1366,7 @@ static RefChar *SFDGetRef(FILE *sfd) {
 return( rf );
 }
 
-static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf) {
+static SplineChar *SFDGetChar(FILE *sfd,int emsize) {
     SplineChar *sc;
     char tok[200], ch;
     RefChar *lastr=NULL, *ref;
@@ -1378,7 +1381,7 @@ return( NULL );
 
     sc = SplineCharCreate();
     sc->name = copy(tok);
-    sc->vwidth = sf->ascent+sf->descent;
+    sc->vwidth = emsize;
     while ( 1 ) {
 	if ( getname(sfd,tok)!=1 )
 return( NULL );
@@ -1900,7 +1903,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	for ( i=0; i<sf->subfontcnt; ++i )
 	    sf->subfonts[i] = SFD_GetFont(sfd,sf,tok);
     } else {
-	while ( (sc = SFDGetChar(sfd,sf))!=NULL ) {
+	while ( (sc = SFDGetChar(sfd,sf->ascent+sf->descent))!=NULL ) {
 	    if ( sc->enc<sf->charcnt ) {
 		sf->chars[sc->enc] = sc;
 		sc->parent = sf;
@@ -1922,38 +1925,74 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 return( sf );
 }
 
-static SplineFont *SFDGetFont(FILE *sfd) {
-    char tok[2000];
+static int SFDStartsCorrectly(FILE *sfd,char *tok) {
     real dval;
     int ch;
 
     if ( getname(sfd,tok)!=1 )
-return( NULL );
+return( false );
     if ( strcmp(tok,"SplineFontDB:")!=0 )
-return( NULL );
+return( false );
     if ( getreal(sfd,&dval)!=1 || (dval!=0 && dval!=1))
-return( NULL );
+return( false );
     ch = getc(sfd); ungetc(ch,sfd);
     if ( ch!='\r' && ch!='\n' )
-return( NULL );
+return( false );
 
-return( SFD_GetFont(sfd,NULL,tok));
+return( true );
 }
 
 SplineFont *SFDRead(char *filename) {
     FILE *sfd = fopen(filename,"r");
-    SplineFont *sf;
+    SplineFont *sf=NULL;
     char *oldloc;
+    char tok[2000];
 
     if ( sfd==NULL )
 return( NULL );
     oldloc = setlocale(LC_NUMERIC,"C");
-    sf = SFDGetFont(sfd);
+    if ( SFDStartsCorrectly(sfd,tok) )
+	sf = SFD_GetFont(sfd,NULL,tok);
     setlocale(LC_NUMERIC,oldloc);
     if ( sf!=NULL )
 	sf->filename = copy(filename);
     fclose(sfd);
 return( sf );
+}
+
+SplineChar *SFDReadOneChar(char *filename,const char *name) {
+    FILE *sfd = fopen(filename,"r");
+    SplineChar *sc=NULL;
+    char *oldloc;
+    char tok[2000];
+    uint32 pos;
+    int ascent=800, descent=200;
+
+    if ( sfd==NULL )
+return( NULL );
+    oldloc = setlocale(LC_NUMERIC,"C");
+
+    if ( SFDStartsCorrectly(sfd,tok) ) {
+	pos = ftell(sfd);
+	while ( getname(sfd,tok)!=-1 ) {
+	    if ( strcmp(tok,"StartChar:")==0 ) {
+		if ( getname(sfd,tok)==1 && strcmp(tok,name)==0 ) {
+		    fseek(sfd,pos,SEEK_SET);
+		    sc = SFDGetChar(sfd,ascent+descent);
+	break;
+		}
+	    } else if ( strmatch(tok,"Ascent:")==0 ) {
+		getint(sfd,&ascent);
+	    } else if ( strmatch(tok,"Descent:")==0 ) {
+		getint(sfd,&descent);
+	    }
+	    pos = ftell(sfd);
+	}
+    }
+
+    setlocale(LC_NUMERIC,oldloc);
+    fclose(sfd);
+return( sc );
 }
 
 static int ModSF(FILE *asfd,SplineFont *sf) {
@@ -1978,7 +2017,7 @@ return(false);
 	for ( i=sf->charcnt; i<cnt; ++i )
 	    sf->chars[i] = NULL;
     }
-    while ( (sc = SFDGetChar(asfd,sf))!=NULL ) {
+    while ( (sc = SFDGetChar(asfd,sf->ascent+sf->descent))!=NULL ) {
 	ssf = sf;
 	for ( k=0; k<sf->subfontcnt; ++k ) {
 	    if ( sc->enc<sf->subfonts[k]->charcnt ) {

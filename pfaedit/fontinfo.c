@@ -1432,6 +1432,7 @@ return( false );
     }
     free(sf->remap);
     sf->remap = NULL;
+    sf->encodingchanged = true;
 return( true );
 }
 

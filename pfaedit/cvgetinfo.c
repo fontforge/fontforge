@@ -260,14 +260,18 @@ return( false );
 		}
 		free(sf->chars[i]->name);
 		sf->chars[i]->name = sc->name;
+		sf->chars[i]->namechanged = true;
 		sc->name = NULL;
 	    break;
 	    }
 	}
     }
     sc->unicodeenc = unienc;
-    free(sc->name);
-    sc->name = copy(name);
+    if ( strcmp(name,sc->name)!=0 ) {
+	free(sc->name);
+	sc->name = copy(name);
+	sc->namechanged = true;
+    }
     sf->changed = true;
     if ( (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4) &&
 	    unienc==sc->enc && unienc>=0xe000 && unienc<=0xf8ff )

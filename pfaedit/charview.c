@@ -2083,12 +2083,12 @@ void SCClearSelPt(SplineChar *sc) {
     }
 }
 
-void SCCharChangedUpdate(SplineChar *sc) {
+void _SCCharChangedUpdate(SplineChar *sc,int changed) {
     SplineFont *sf = sc->parent;
 
     sc->changed_since_autosave = true;
-    if ( !sc->changed && !sf->onlybitmaps ) {
-	sc->changed = true;
+    if ( sc->changed!=changed && !sf->onlybitmaps ) {
+	sc->changed = changed;
 	FVToggleCharChanged(sc);
 	SCRefreshTitles(sc);
     }
@@ -2105,6 +2105,10 @@ void SCCharChangedUpdate(SplineChar *sc) {
     SCRegenFills(sc);
     if ( sf->fv!=NULL )
 	FVRegenChar(sf->fv,sc);
+}
+
+void SCCharChangedUpdate(SplineChar *sc) {
+    _SCCharChangedUpdate(sc,true);
 }
 
 void _CVCharChangedUpdate(CharView *cv,int changed) {
@@ -2966,6 +2970,7 @@ return( true );
 #define MID_Revert	2702
 #define MID_Recent	2703
 #define MID_Display	2706
+#define MID_RevertGlyph	2707
 
 static void CVMenuClose(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     GDrawDestroyWindow(gw);
@@ -3021,6 +3026,73 @@ static void CVMenuRevert(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 			    /* we get a crash. So delay till after the menu completes */
 }
 
+void RevertedGlyphReferenceFixup(SplineChar *sc, SplineFont *sf) {
+    int i;
+    RefChar *refs, *prev, *next;
+
+    for ( prev=NULL, refs = sc->refs ; refs!=NULL; refs = next ) {
+	next = refs->next;
+	if ( sf->encodingchanged && refs->unicode_enc>0 ) {
+	    /* Well, try to fix things up based on the unicode encoding */
+	    /*  Old sfd files won't have this */
+	    if ( refs->local_enc<sf->charcnt &&
+		    sf->chars[refs->local_enc]!=NULL &&
+		    sf->chars[refs->local_enc]->unicodeenc == refs->unicode_enc )
+		/* Well, this character seems to be in the right place */;
+	    else {
+		for ( i=0 ; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
+		    if ( sf->chars[i]->unicodeenc==refs->unicode_enc ) {
+			refs->local_enc = i;
+		break;
+		    }
+	    }
+	}
+	if ( refs->local_enc<sf->charcnt && sf->chars[refs->local_enc]!=NULL ) {
+	    prev = refs;
+	    refs->sc = sf->chars[refs->local_enc];
+	    refs->unicode_enc = refs->sc->unicodeenc;
+	    SCReinstanciateRefChar(sc,refs);
+	    SCMakeDependent(sc,refs->sc);
+	} else {
+	    if ( prev==NULL )
+		sc->refs = next;
+	    else
+		prev->next = next;
+	    RefCharFree(refs);
+	}
+    }
+}
+
+static void CVMenuRevertGlyph(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    SplineChar *sc, temp;
+    static int buts[] = { _STR_OK, _STR_Cancel, 0 };
+
+    if ( cv->sc->parent->filename==NULL || cv->sc->namechanged )
+return;
+    sc = SFDReadOneChar(cv->sc->parent->filename,cv->sc->name);
+    if ( sc==NULL ) {
+	GWidgetErrorR(_STR_CantFindGlyph,_STR_CantRevertGlyph,cv->sc->name);
+	cv->sc->namechanged = true;
+    } else if ( sc->refs!=NULL && cv->sc->parent->encodingchanged &&
+	    GWidgetAskR(_STR_GlyphHasRefs,buts,0,1,_STR_GlyphHasRefsQuestion,cv->sc->name)==1 ) {
+	SplineCharFree(sc);
+    } else {
+	temp = *cv->sc;
+	cv->sc->dependents = NULL;
+	SplineCharFreeContents(cv->sc);
+	*cv->sc = *sc;
+	chunkfree(sc,sizeof(SplineChar));
+	cv->sc->parent = temp.parent;
+	cv->sc->dependents = temp.dependents;
+	cv->sc->views = temp.views;
+	cv->sc->changed = temp.changed;
+	cv->sc->enc = temp.enc;
+	RevertedGlyphReferenceFixup(cv->sc, temp.parent);
+	_CVCharChangedUpdate(cv,false);
+    }
+}
+
 static void CVMenuPrint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
@@ -3043,6 +3115,9 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_Revert:
 	    mi->ti.disabled = cv->fv->sf->origname==NULL;
+	  break;
+	  case MID_RevertGlyph:
+	    mi->ti.disabled = cv->fv->sf->filename==NULL || cv->sc->namechanged;
 	  break;
 	  case MID_Recent:
 	    mi->ti.disabled = !RecentFilesAny();
@@ -4783,6 +4858,7 @@ static GMenuItem fllist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Import, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'I', ksm_control|ksm_shift, NULL, NULL, CVMenuImport },
     { { (unichar_t *) _STR_Revertfile, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, 'R', ksm_control|ksm_shift, NULL, NULL, CVMenuRevert, MID_Revert },
+    { { (unichar_t *) _STR_RevertGlyph, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, 'R', ksm_control|ksm_meta, NULL, NULL, CVMenuRevertGlyph, MID_RevertGlyph },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Print, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'P', ksm_control, NULL, NULL, CVMenuPrint },
     { { (unichar_t *) _STR_Display, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, 'P', ksm_control|ksm_meta, NULL, NULL, CVMenuDisplay, MID_Display },

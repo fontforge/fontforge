@@ -493,6 +493,7 @@ extern void CVSetCharChanged(CharView *cv,int changed);
 extern void _CVCharChangedUpdate(CharView *cv,int changed);
 extern void CVCharChangedUpdate(CharView *cv);
 extern void SCClearSelPt(SplineChar *sc);
+extern void _SCCharChangedUpdate(SplineChar *sc,int changed);
 extern void SCCharChangedUpdate(SplineChar *sc);
 extern void SCSynchronizeWidth(SplineChar *sc,real newwidth, real oldwidth,FontView *fv);
 extern void SCSynchronizeLBearing(SplineChar *sc,char *selected,real off);
@@ -508,6 +509,7 @@ extern SplinePointList *CVAnySelPointList(CharView *cv);
 extern SplinePoint *CVAnySelPoint(CharView *cv);
 extern int CVOneThingSel(CharView *cv, SplinePoint **sp, SplinePointList **spl,
 	RefChar **ref, ImageList **img);
+extern void RevertedGlyphReferenceFixup(SplineChar *sc, SplineFont *sf);
 extern void CVInfoDraw(CharView *cv, GWindow pixmap );
 extern void SCImportPSFile(SplineChar *sc,enum drawmode dm,FILE *ps,int doclear);
 extern void SCAddScaleImage(SplineChar *sc,GImage *image,int doclear);

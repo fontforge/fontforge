@@ -560,6 +560,60 @@ static void FVMenuRevert(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVRevert(fv);
 }
 
+static void FVMenuRevertGlyph(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    int i;
+    int nc_state = -1, refs_state=-1, ret;
+    SplineFont *sf = fv->sf;
+    SplineChar *sc, *tsc;
+    SplineChar temp;
+    static int buts[] = { _STR_Yes, _STR_YesToAll, _STR_NoToAll, _STR_No, _STR_Cancel, 0 };
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( fv->selected[i] && sf->chars[i]!=NULL ) {
+	tsc = sf->chars[i];
+	if ( tsc->namechanged ) {
+	    if ( nc_state==-1 ) {
+		GWidgetErrorR(_STR_NameChanged,_STR_NameChangedGlyph,tsc->name);
+		nc_state = 0;
+	    }
+	} else {
+	    sc = SFDReadOneChar(sf->filename,tsc->name);
+	    if ( sc==NULL ) {
+		GWidgetErrorR(_STR_CantFindGlyph,_STR_CantRevertGlyph,tsc->name);
+		tsc->namechanged = true;
+	    } else {
+		if ( sc->refs!=NULL && sf->encodingchanged ) {
+		    if ( refs_state==-1 ) {
+			ret = GWidgetAskR(_STR_GlyphHasRefs,buts,0,1,_STR_GlyphHasRefsQuestion,tsc->name);
+			if ( ret == 1 || ret == 2 )
+			    refs_state = ret;
+		    } else
+			ret = refs_state;
+		    if ( ret >= 2 ) 	/* No, No to All, Cancel */
+			SplineCharFree(sc);
+		    if ( ret==4 )		/* Cancel */
+return;
+		} else
+		    ret = 0;
+		if ( ret==0 || ret==1 ) {
+		    temp = *tsc;
+		    tsc->dependents = NULL;
+		    SplineCharFreeContents(tsc);
+		    *tsc = *sc;
+		    chunkfree(sc,sizeof(SplineChar));
+		    tsc->parent = sf;
+		    tsc->dependents = temp.dependents;
+		    tsc->views = temp.views;
+		    tsc->changed = temp.changed;
+		    tsc->enc = temp.enc;
+		    RevertedGlyphReferenceFixup(tsc, sf);
+		    _SCCharChangedUpdate(tsc,false);
+		}
+	    }
+	}
+    }
+}
+
 void MenuPrefs(GWindow base,struct gmenuitem *mi,GEvent *e) {
     DoPrefs();
 }
@@ -792,6 +846,7 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_Print	2704
 #define MID_ScriptMenu	2705
 #define MID_Display	2706
+#define MID_RevertGlyph	2707
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -2605,6 +2660,9 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_Revert:
 	    mi->ti.disabled = fv->sf->origname==NULL;
 	  break;
+	  case MID_RevertGlyph:
+	    mi->ti.disabled = fv->sf->filename==NULL || !anychars;
+	  break;
 	  case MID_Recent:
 	    mi->ti.disabled = !RecentFilesAny();
 	  break;
@@ -2663,6 +2721,7 @@ static GMenuItem fllist[] = {
     { { (unichar_t *) _STR_Import, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'I', ksm_control|ksm_shift, NULL, NULL, FVMenuImport },
     { { (unichar_t *) _STR_Mergekern, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 'K', ksm_meta|ksm_shift, NULL, NULL, FVMenuMergeKern },
     { { (unichar_t *) _STR_Revertfile, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, 'R', ksm_control|ksm_shift, NULL, NULL, FVMenuRevert, MID_Revert },
+    { { (unichar_t *) _STR_RevertGlyph, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, 'R', ksm_control|ksm_meta, NULL, NULL, FVMenuRevertGlyph, MID_RevertGlyph },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Print, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'P', ksm_control, NULL, NULL, FVMenuPrint, MID_Print },
     { { (unichar_t *) _STR_Display, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, 'P', ksm_control|ksm_meta, NULL, NULL, FVMenuDisplay, MID_Display },

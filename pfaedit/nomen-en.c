@@ -64,6 +64,8 @@ static char str_ExecuteScript[] = "Execute Script...";
 static unichar_t mnemonic_ExecuteScript[] = 'x';
 static char str_Revertfile[] = "Revert File";
 static unichar_t mnemonic_Revertfile[] = 'R';
+static char str_RevertGlyph[] = "Revert Glyph";
+static unichar_t mnemonic_RevertGlyph[] = 'y';
 static char str_Saveas[] = "Save as...";
 static unichar_t mnemonic_Saveas[] = 'a';
 static char str_SaveAll[] = "Save All";
@@ -1097,6 +1099,12 @@ static char str_BadNumber[] = "Bad Number";
     /* Char View */
 /* "%s at %d from %s", charactername, encoding, fontname */
 static char *str_CvTitle = "%1$.80hs at %2$d from %3$.90hs"
+static char *str_CantFindGlyph = "Can't Find Glyph";
+static char *str_CantRevertGlyph = "The glyph, %.80hs, can't be found in the sfd file";
+static char *str_GlyphHasRefs = "Problems With References";
+static char *str_GlyphHasRefsQuestion = "The character, %.40hs, contained references, but the font's encoding has changed. I will probably not be able to map those references to the correct locations. If I proceed some references may be lost and others may link to incorrect characters. Do you want to proceed anyway?"
+static char *str_NameChanged = "Glyph Name Changed";
+static char *str_NameChangedGlyph = "The the name of character %.40hs has changed. This is what I use to find the glyph in the file, so I cannot revert this character.\n(You will not be warned for subsequent characters)"
     /* CV Export */
 static char *str_PixelSizeQ = "Pixel size?";
 static char *str_PixelSize = "Pixel size:";

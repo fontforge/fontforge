@@ -2635,7 +2635,7 @@ SplineChar *SplineCharCreate(void) {
 return( sc );
 }
 
-void SplineCharFree(SplineChar *sc) {
+void SplineCharFreeContents(SplineChar *sc) {
     struct splinecharlist *dlist, *dnext;
 
     if ( sc==NULL )
@@ -2658,6 +2658,13 @@ return;
 	free(dlist);
     }
     LigatureFree(sc->lig);
+}
+
+void SplineCharFree(SplineChar *sc) {
+
+    if ( sc==NULL )
+return;
+    SplineCharFreeContents(sc);
     chunkfree(sc,sizeof(SplineChar));
 }
 

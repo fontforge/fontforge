@@ -1584,6 +1584,7 @@ return( false );
     sf->old_encname = sf->encoding_name;
     sf->encoding_name = em_none;
     sf->compacted = true;
+    sf->encodingchanged = true;
     BDFsToo(sf,cnt);
 return( true );
 }
@@ -1619,6 +1620,7 @@ return( false );
     sf->charcnt = cnt;
     sf->encoding_name = sf->old_encname;
     sf->compacted = false;
+    sf->encodingchanged = true;
 
     BDFsToo(sf,cnt);
 return( true );

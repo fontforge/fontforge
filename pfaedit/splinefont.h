@@ -413,6 +413,8 @@ typedef struct splinechar {
     unsigned int searcherdummy: 1;
     unsigned int changed_since_search: 1;
     unsigned int wasopen: 1;
+    unsigned int namechanged: 1;
+    /* two bits left */
 #if HANYANG
     unsigned int compositionunit: 1;
     int16 jamo, varient;
@@ -470,6 +472,7 @@ typedef struct splinefont {
     unsigned int loading_cid_map: 1;
     unsigned int dupnamewarn: 1;		/* Warn about duplicate names when loading bdf font */
     unsigned int compacted: 1;			/* Font is in a compacted glyph list */
+    unsigned int encodingchanged: 1;		/* Font's encoding has changed since it was loaded */
     struct fontview *fv;
     enum charset encoding_name, old_encname;
     SplinePointList *gridsplines;
@@ -625,6 +628,7 @@ extern void ImageListsFree(ImageList *imgs);
 extern void TTFLangNamesFree(struct ttflangname *l);
 extern void MinimumDistancesFree(MinimumDistance *md);
 extern SplineChar *SplineCharCreate(void);
+extern void SplineCharFreeContents(SplineChar *sc);
 extern void SplineCharFree(SplineChar *sc);
 extern void SplineFontFree(SplineFont *sf);
 extern void SplineRefigure(Spline *spline);
@@ -764,6 +768,7 @@ extern int SCSetMetaData(SplineChar *sc,char *name,int unienc,char *lig);
 extern int SFDWrite(char *filename,SplineFont *sf);
 extern int SFDWriteBak(SplineFont *sf);
 extern SplineFont *SFDRead(char *filename);
+extern SplineChar *SFDReadOneChar(char *filename,const char *name);
 extern unichar_t *TTFGetFontName(FILE *ttf,int32 offset,int32 off2);
 extern void TTFLoadBitmaps(FILE *ttf,struct ttfinfo *info, int onlyone);
 enum ttfflags { ttf_onlystrikes=1, ttf_onlyonestrike=2 };
