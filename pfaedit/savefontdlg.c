@@ -61,6 +61,8 @@ static GTextInfo formattypes[] = {
 };
 static GTextInfo bitmaptypes[] = {
     { (unichar_t *) "BDF", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "In TTF (MS)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "In TTF (Apple)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "GDF", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_Nobitmapfonts, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }
@@ -200,7 +202,7 @@ return( true );
 static void DoSave(struct gfc_data *d,unichar_t *path) {
     int err=false;
     char *temp;
-    real *sizes;
+    real *sizes=NULL;
     int iscid;
 
     temp = cu_copy(path);
@@ -211,6 +213,9 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
 	if ( GWidgetAskR(_STR_NotCID,buts,0,1,_STR_NotCIDOk)==1 )
 return;
     }
+    oldbitmapstate = GGadgetGetFirstListSelectedItem(d->bmptype);
+    if ( oldbitmapstate!=bf_none )
+	sizes = ParseBitmapSizes(d->bmpsizes,&err);
 
     GProgressStartIndicator(10,GStringGetResource(_STR_SavingFont,NULL),
 		GStringGetResource(oldformatstate==ff_ttf || oldformatstate==ff_ttfsym?_STR_SavingTTFont:
@@ -223,7 +228,7 @@ return;
 	if ( (oldformatstate!=ff_ttf && oldformatstate!=ff_ttfsym && oldformatstate!=ff_otf && oldformatstate!=ff_otfcid &&
 		    !WritePSFont(temp,d->sf,oldformatstate)) ||
 		((oldformatstate==ff_ttf || oldformatstate==ff_ttfsym || oldformatstate==ff_otf || oldformatstate==ff_otfcid) &&
-		    !WriteTTFFont(temp,d->sf,oldformatstate)) ) {
+		    !WriteTTFFont(temp,d->sf,oldformatstate,sizes,oldbitmapstate)) ) {
 	    GWidgetErrorR(_STR_Savefailedtitle,_STR_Savefailedtitle);
 	    err = true;
 	}
@@ -246,15 +251,13 @@ return;
 	    err = true;
 	}
     }
-    oldbitmapstate = GGadgetGetFirstListSelectedItem(d->bmptype);
-    if ( oldbitmapstate!=2 && !err ) {
-	sizes = ParseBitmapSizes(d->bmpsizes,&err);
+    if ( (oldbitmapstate==bf_bdf || oldbitmapstate==bf_gdf) && !err ) {
 	GProgressChangeLine1R(_STR_SavingBitmapFonts);
 	GProgressIncrementBy(-d->sf->charcnt);
 	if ( !WriteBitmaps(temp,d->sf,sizes,oldbitmapstate))
 	    err = true;
-	free( sizes );
     }
+    free( sizes );
     if ( !err ) {
 	/*free(d->sf->filename);*/
 	/*d->sf->filename = copy(temp);*/
@@ -369,8 +372,10 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	unichar_t *pt, *dup, *tpt, *ret;
 	int format = GGadgetGetFirstListSelectedItem(d->pstype);
-	int set;
+	int set, len, bf;
 	static unichar_t nullstr[] = { 0 };
+	GTextInfo **list;
+	SplineFont *temp;
 
 	set = true;
 	if ( format==ff_ttf || format==ff_ttfsym || format==ff_otf || format==ff_otfcid || format==ff_none )
@@ -404,6 +409,22 @@ return( true );
 		/*GGadgetSetVisible(d->doafm,false);*/
 		GGadgetSetVisible(d->dopfm,false);
 	    }
+	}
+
+	bf = GGadgetGetFirstListSelectedItem(d->bmptype);
+	list = GGadgetGetList(d->bmptype,&len);
+	temp = d->sf->cidmaster ? d->sf->cidmaster : d->sf;
+	if ( temp->bitmaps==NULL )
+	    /* Don't worry about what formats are possible, they're disabled */;
+	else if ( set ) {
+	    /* If we're not in a ttf format (set) then we can't output ttf bitmaps */
+	    if ( bf==bf_ttf_ms || bf==bf_ttf_apple )
+		GGadgetSelectOneListItem(d->bmptype,bf_bdf);
+	    list[bf_ttf_ms]->disabled = true;
+	    list[bf_ttf_apple]->disabled = true;
+	} else {
+	    list[bf_ttf_ms]->disabled = false;
+	    list[bf_ttf_apple]->disabled = false;
 	}
     }
 return( true );
@@ -560,20 +581,24 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     gcd[8].gd.flags = gg_visible | gg_enabled;
     gcd[8].gd.u.list = bitmaptypes;
     gcd[8].creator = GListButtonCreate;
-    for ( i=0; i<sizeof(bitmaptypes)/sizeof(bitmaptypes[0]); ++i )
+    for ( i=0; i<sizeof(bitmaptypes)/sizeof(bitmaptypes[0]); ++i ) {
 	bitmaptypes[i].selected = false;
+	bitmaptypes[i].disabled = false;
+    }
     old = oldbitmapstate;
     if ( sf->onlybitmaps ) {
 	old = 0;
-	bitmaptypes[1].disabled = true;
-    } else
-	bitmaptypes[1].disabled = false;
+	bitmaptypes[bf_gdf].disabled = true;
+	bitmaptypes[bf_ttf_ms].disabled = true;
+	bitmaptypes[bf_ttf_apple].disabled = true;
+    }
     temp = sf->cidmaster ? sf->cidmaster : sf;
     if ( temp->bitmaps==NULL ) {
-	old = 2;
-	bitmaptypes[0].disabled = true;
-    } else
-	bitmaptypes[0].disabled = false;
+	old = bf_none;
+	bitmaptypes[bf_bdf].disabled = true;
+	bitmaptypes[bf_ttf_ms].disabled = true;
+	bitmaptypes[bf_ttf_apple].disabled = true;
+    }
     bitmaptypes[old].selected = true;
     gcd[8].gd.label = &bitmaptypes[old];
     gcd[8].gd.handle_controlevent = GFD_Bitmap;

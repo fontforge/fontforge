@@ -251,6 +251,9 @@ static void readttfbitmapfont(FILE *ttf,struct ttfinfo *info,
 	    }
 	    free(glyphs);
 	  break;
+	  default:
+	    fprintf(stderr,"Didn't understand index format: %d\n", indexformat );
+	  break;
 	}
 	fseek(ttf,loc,SEEK_SET);
     }
@@ -353,4 +356,385 @@ return;
 	GProgressNextStage();
     }
     free(sizes); free(sel);
+}
+
+/* ************************************************************************** */
+
+static int32 ttfdumpf2bchar(FILE *bdat, BDFChar *bc) {
+    /* format 2 character dump. small metrics, bit aligned data */
+    int32 pos = ftell(bdat);
+    int r,c,ch,bit;
+
+    /* dump small metrics */
+    putc(bc->ymax-bc->ymin+1,bdat);		/* height */
+    putc(bc->xmax-bc->xmin+1,bdat);		/* width */
+    putc(bc->xmin,bdat);			/* horiBearingX */
+    putc(bc->ymax,bdat);			/* horiBearingY */
+    putc(bc->width,bdat);			/* advance width */
+
+    /* dump image */
+    ch = 0; bit = 0x80;
+    for ( r=0; r<=bc->ymax-bc->ymin; ++r ) {
+	for ( c = 0; c<=bc->xmax-bc->xmin; ++c ) {
+	    if ( bc->bitmap[r*bc->bytes_per_line+(c>>3)] & (1<<(7-(c&7))) )
+		ch |= bit;
+	    bit >>= 1;
+	    if ( bit==0 ) {
+		putc(ch,bdat);
+		ch = 0;
+		bit = 0x80;
+	    }
+	}
+    }
+    if ( bit!=0x80 )
+	putc(ch,bdat);
+return( pos );
+}
+
+struct mymets {
+    int ymin, ymax;
+    int xmin, xmax;
+    int width;			/* xmax-xmin+1 */
+};
+
+static int32 ttfdumpf5bchar(FILE *bdat, BDFChar *bc, struct mymets *mets) {
+    /* format 5 character dump. no metrics, bit aligned data */
+    /* now it may be that some of the character we are dumping have bitmaps */
+    /*  that are a little smaller than the size specified in mymets. But that's*/
+    /*  ok, we just pad them out with null bits */
+    int32 pos = ftell(bdat);
+    int r,c,ch,bit;
+
+    /* dump image */
+    ch = 0; bit = 0x80;
+    for ( r=bc->ymax+1; r<=mets->ymax; ++r ) {
+	for ( c=0; c<mets->width; ++c ) {
+	    bit >>= 1;
+	    if ( bit==0 ) {
+		putc(ch,bdat);
+		ch = 0;
+		bit = 0x80;
+	    }
+	}
+    }
+    for ( r=0; r<=bc->ymax-bc->ymin; ++r ) {
+	for ( c = mets->xmin; c<bc->xmin; ++c ) {
+	    bit >>= 1;
+	    if ( bit==0 ) {
+		putc(ch,bdat);
+		ch = 0;
+		bit = 0x80;
+	    }
+	}
+	for ( c = 0; c<=bc->xmax-bc->xmin; ++c ) {
+	    if ( bc->bitmap[r*bc->bytes_per_line+(c>>3)] & (1<<(7-(c&7))) )
+		ch |= bit;
+	    bit >>= 1;
+	    if ( bit==0 ) {
+		putc(ch,bdat);
+		ch = 0;
+		bit = 0x80;
+	    }
+	}
+	for ( c = bc->xmax+1; c<=mets->xmax; ++c ) {
+	    bit >>= 1;
+	    if ( bit==0 ) {
+		putc(ch,bdat);
+		ch = 0;
+		bit = 0x80;
+	    }
+	}
+    }
+    for ( r=bc->ymin-1; r>=mets->ymin; --r ) {
+	for ( c=0; c<mets->width; ++c ) {
+	    bit >>= 1;
+	    if ( bit==0 ) {
+		putc(ch,bdat);
+		ch = 0;
+		bit = 0x80;
+	    }
+	}
+    }
+    if ( bit!=0x80 )
+	putc(ch,bdat);
+return( pos );
+}
+
+struct bitmapSizeTable {
+    int32 subtableoffset;
+    int32 tablesize;
+    int32 numsubtables;
+    int32 colorRef;
+    struct sbitLineMetrics {
+	int8 ascender;
+	int8 descender;
+	uint8 widthMax;
+	int8 caretRise;
+	int8 caretRun;
+	int8 caretOff;
+	int8 minoriginsb;
+	int8 minAdvancesb;
+	int8 maxbeforebl;
+	int8 minafterbl;
+	int8 pad1, pad2;
+    } hori, vert;
+    uint16 startGlyph;
+    uint16 endGlyph;
+    uint8 ppemX;
+    uint8 ppemY;
+    uint8 bitdepth;
+    int8 flags;
+    struct bitmapSizeTable *next;
+};
+struct indexarray {
+    uint16 first;
+    uint16 last;
+    uint32 additionalOffset;
+    struct indexarray *next;
+};
+
+static struct bitmapSizeTable *ttfdumpstrikelocs(FILE *bloc,FILE *bdat,BDFFont *bdf) {
+    struct bitmapSizeTable *size = gcalloc(1,sizeof(struct bitmapSizeTable));
+    struct indexarray *cur, *last=NULL, *head=NULL;
+    int i,j, final,cnt, first;
+    FILE *subtables = tmpfile();
+    struct mymets met;
+    int32 pos = ftell(bloc), startofsubtables, base;
+    BDFChar *bc, *bc2;
+
+    for ( i=0; i<bdf->charcnt && (bdf->chars[i]==NULL || bdf->chars[i]->sc->ttf_glyph==0); ++i );
+    for ( j=bdf->charcnt-1; j>=0 && (bdf->chars[j]==NULL || bdf->chars[j]->sc->ttf_glyph==0); --j );
+    size->flags = 0x01;		/* horizontal */
+    size->bitdepth = 1;
+    size->ppemX = size->ppemY = bdf->ascent+bdf->descent;
+    size->endGlyph = bdf->chars[j]->sc->ttf_glyph;
+    size->startGlyph = bdf->chars[i]->sc->ttf_glyph;
+    /* I shall ignore vertical metrics */
+    size->hori.caretRise = 1; /* other caret fields may be 0 */
+    first = true;
+    for ( ; i<bdf->charcnt ; ++i ) if ( (bc=bdf->chars[i])!=NULL ) {
+	if ( first ) {
+	    size->hori.ascender = bc->ymax;
+	    size->hori.descender = bc->ymin;
+	    size->hori.widthMax = bc->xmax-bc->xmin+1;
+	    size->hori.minoriginsb = bc->xmin;
+	    size->hori.minAdvancesb = bc->width-bc->xmax;
+	    size->hori.minafterbl = bc->ymin;
+	    size->hori.maxbeforebl = bc->ymax;
+	    first = false;
+	} else {
+	    if ( bc->ymax > size->hori.ascender ) size->hori.ascender = bc->ymax;
+	    if ( bc->ymin < size->hori.descender ) size->hori.descender = bc->ymin;
+	    if ( bc->xmax-bc->xmin+1 > size->hori.widthMax ) size->hori.widthMax = bc->xmax-bc->xmin+1;
+	    if ( bc->xmin < size->hori.minoriginsb ) size->hori.minoriginsb = bc->xmin;
+	    if ( bc->width-bc->xmax < size->hori.minAdvancesb ) size->hori.minAdvancesb = bc->width-bc->xmax;
+	    if ( bc->ymin < size->hori.minafterbl ) size->hori.minafterbl = bc->ymin;
+	    if ( bc->ymax > size->hori.maxbeforebl ) size->hori.maxbeforebl = bc->ymax;
+	}
+    }
+    size->subtableoffset = pos;
+
+    /* First figure out sequences of characters which all have about the same metrics */
+    /* then we dump out the subtables (to temp file) */
+    /* then we dump out the indexsubtablearray (to bloc) */
+    /* then we copy the subtables from the temp file to bloc */
+
+    for ( i=0; i<bdf->charcnt; ++i ) if ( bdf->chars[i]!=NULL ) {
+	bdf->chars[i]->widthgroup = false;
+	BCCompressBitmap(bdf->chars[i]);
+    }
+    for ( i=0; i<bdf->charcnt; ++i ) {
+	if ( (bc=bdf->chars[i])!=NULL && bc->sc->ttf_glyph!=0 &&
+		bc->xmin>=0 && bc->xmax<=bc->width &&
+		bc->ymax<bdf->ascent && bc->ymin>=-bdf->descent ) {
+	    cnt = 1;
+	    for ( j=i+1; j<bdf->charcnt; ++j )
+		    if ( (bc2=bdf->chars[i])!=NULL && bc2->sc->ttf_glyph!=0 ) {
+		if ( bc2->xmin<0 || bc2->xmax>bc->width || bc2->ymin<-bdf->descent ||
+		    bc2->ymax>=bdf->ascent || bc2->width!=bc->width ||
+		    bc2->sc->ttf_glyph!=bc->sc->ttf_glyph+cnt )
+	    break;
+		++cnt;
+	    }
+	    if ( cnt>20 ) {		/* We must have at least, oh, 20 chars with the same metrics */
+		bc->widthgroup = true;
+		cnt = 1;
+		for ( j=i+1; j<bdf->charcnt; ++j )
+			if ( (bc2=bdf->chars[i])!=NULL && bc2->sc->ttf_glyph!=0 ) {
+		    if ( bc2->xmin<0 || bc2->xmax>bc->width || bc2->ymin<-bdf->descent ||
+			bc2->ymax>=bdf->ascent || bc2->width!=bc->width ||
+			bc2->sc->ttf_glyph!=bc->sc->ttf_glyph+cnt )
+		break;
+		    ++cnt;
+		    bc2->widthgroup = true;
+		}
+	    }
+	}
+    }
+
+    /* Now the pointers */
+    for ( i=0; i<bdf->charcnt; ++i )
+	    if ( (bc=bdf->chars[i])!=NULL && bc->sc->ttf_glyph!=0) {
+	cur = galloc(sizeof(struct indexarray));
+	cur->next = NULL;
+	if ( last==NULL ) head = cur;
+	else last->next = cur;
+	last = cur;
+	cur->first = bc->sc->ttf_glyph;
+	cur->additionalOffset = ftell(subtables);
+
+	cnt = 1;
+	final = i;
+	for ( j=i+1; j<bdf->charcnt ; ++j ) {
+	    if ( (bc2=bdf->chars[j])==NULL )
+		/* Ignore it */;
+	    else if ( bc2->sc->ttf_glyph!=bc->sc->ttf_glyph+cnt )
+	break;
+	    else if ( bc2->widthgroup!=bc->widthgroup ||
+		    (bc->widthgroup && bc->width!=bc2->width) )
+	break;
+	    else {
+		++cnt;
+		final = j;
+	    }
+	}
+	cur->last = bdf->chars[final]->sc->ttf_glyph;
+
+	if ( !bc->widthgroup ) {
+	    putshort(subtables,1);	/* index format, 4byte offset, no metrics here */
+	    putshort(subtables,2);	/* data format, short metrics, bit aligned */
+	    base = ftell(bdat);
+	    putlong(subtables,base);	/* start of glyphs in bdat */
+	    putlong(subtables,ttfdumpf2bchar(bdat,bc)-base);
+	    for ( j=i+1; j<=final ; ++j ) if ( (bc2=bdf->chars[j])!=NULL ) {
+		putlong(subtables,ttfdumpf2bchar(bdat,bc2)-base);
+	    }
+	} else {
+	    met.xmin = bc->xmin; met.xmax = bc->xmax; met.ymin = bc->ymin; met.ymax = bc->ymax;
+	    for ( j=i+1; j<=final ; ++j ) if ( (bc2=bdf->chars[j])!=NULL ) {
+		if ( bc2->xmax>met.xmax ) met.xmax = bc2->xmax;
+		if ( bc2->xmin<met.xmin ) met.xmin = bc2->xmin;
+		if ( bc2->ymax>met.ymax ) met.ymax = bc2->ymax;
+		if ( bc2->ymin<met.ymin ) met.ymin = bc2->ymin;
+	    }
+	    met.width = (met.xmax-met.xmin+1);
+
+	    putshort(subtables,2);	/* index format, big metrics, all glyphs same size */
+	    putshort(subtables,5);	/* data format, bit aligned no metrics */
+	    putlong(subtables,ftell(bdat));	/* start of glyphs in bdat */
+	    putlong(subtables,met.width*(met.ymax-met.ymin+1));	/* glyph size */
+	    /* big metrics */
+	    putc(met.ymax-met.ymin+1,subtables);	/* image height */
+	    putc(met.width,subtables);			/* image width */
+	    putc(met.xmin,subtables);			/* horiBearingX */
+	    putc(met.ymax,subtables);			/* horiBearingY */
+	    putc(bc->width,subtables);			/* advance width */
+	    putc(-bc->width/2,subtables);		/* vertBearingX */
+	    putc(0,subtables);				/* vertBearingY */
+	    putc(bdf->ascent+bdf->descent,subtables);	/* advance height */
+	    ttfdumpf5bchar(bdat,bc,&met);
+	    for ( j=i+1; j<=final ; ++j ) if ( (bc2=bdf->chars[j])!=NULL ) {
+		ttfdumpf5bchar(bdat,bc2,&met);
+	    }
+	}
+	i = final;
+    }
+
+    /* now output the pointers */
+    for ( cur=head, cnt=0; cur!=NULL; cur=cur->next ) ++cnt;
+    startofsubtables = cnt*(2*sizeof(short)+sizeof(int32));
+    size->numsubtables = cnt;
+    for ( cur=head; cur!=NULL; cur = cur->next ) {
+	putshort(bloc,cur->first);
+	putshort(bloc,cur->last);
+	putlong(bloc,startofsubtables+cur->additionalOffset);
+    }
+
+    /* copy the index file and close it (and delete it) */
+    ttfcopyfile(bloc,subtables,pos+startofsubtables);
+
+    size->tablesize = ftell(bloc)-pos;
+
+    for ( cur=head; cur!=NULL; cur = last ) {
+	last = cur->next;
+	free(cur);
+    }
+return( size );
+}
+
+static void dumpbitmapSizeTable(FILE *bloc,struct bitmapSizeTable *size) {
+    putlong(bloc,size->subtableoffset);
+    putlong(bloc,size->tablesize);
+    putlong(bloc,size->numsubtables);
+    putlong(bloc,size->colorRef);
+    fwrite(&size->hori,1,sizeof(struct sbitLineMetrics),bloc);
+    fwrite(&size->vert,1,sizeof(struct sbitLineMetrics),bloc);
+    putshort(bloc,size->startGlyph);
+    putshort(bloc,size->endGlyph);
+    putc(size->ppemX,bloc);
+    putc(size->ppemY,bloc);
+    putc(size->bitdepth,bloc);
+    putc(size->flags,bloc);
+}
+
+void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,real *sizes) {
+    int i;
+    static struct bitmapSizeTable space;
+    struct bitmapSizeTable *head=NULL, *cur, *last;
+    BDFFont *bdf;
+
+    at->bdat = tmpfile();
+    at->bloc = tmpfile();
+    /* aside from the names the version number is about the only difference */
+    /*  I'm aware of. Oh MS adds a couple new sub-tables, but I haven't seen */
+    /*  them used, and Apple also has a subtable MS doesn't support, but so what? */
+    if ( at->msbitmaps ) {
+	putlong(at->bdat,0x20000);
+	putlong(at->bloc,0x20000);
+    } else {
+	putlong(at->bdat,0x10000);
+	putlong(at->bloc,0x10000);
+    }
+    putlong(at->bloc,at->gi.strikecnt);
+
+    /* leave space for the strike array at start of file */
+    for ( i=0; sizes[i]!=0; ++i )
+	dumpbitmapSizeTable(at->bloc,&space);
+
+    /* Dump out the strikes... */
+    GProgressChangeLine1R(_STR_SavingBitmapFonts);
+    for ( i=0; sizes[i]!=0; ++i ) {
+	GProgressNextStage();
+	for ( bdf=sf->bitmaps; bdf!=NULL && bdf->pixelsize!=sizes[i]; bdf=bdf->next );
+	cur = ttfdumpstrikelocs(at->bloc,at->bdat,bdf);
+	if ( head==NULL )
+	    head = cur;
+	else
+	    last->next = cur;
+	last = cur;
+    }
+
+    fseek(at->bloc,2*sizeof(int32),SEEK_SET);
+    for ( cur=head; cur!=NULL; cur=cur->next )
+	dumpbitmapSizeTable(at->bloc,cur);
+
+    for ( cur=head; cur!=NULL; cur=last ) {
+	last = cur->next;
+	free(cur);
+    }
+
+    at->bdatlen = ftell(at->bdat);
+    if ( (at->bdatlen&1)!=0 )
+	putc(0,at->bdat);
+    if ( ftell(at->bdat)&2 )
+	putshort(at->bdat,0);
+
+    fseek(at->bloc,0,SEEK_END);
+    at->bloclen = ftell(at->bloc);
+    if ( (at->bloclen&1)!=0 )
+	putc(0,at->bloc);
+    if ( ftell(at->bloc)&2 )
+	putshort(at->bloc,0);
+
+    GProgressChangeLine1R(_STR_SavingTTFont);
 }

@@ -33,7 +33,7 @@
 #include <locale.h>
 #include <chardata.h>
 
-#include "psfont.h"		/* for struct fddata */
+#include "ttf.h"
 
 /* This file produces a ttf file given a splinefont. The most interesting thing*/
 /*  it does is to figure out a quadratic approximation to the cubic splines */
@@ -415,202 +415,6 @@ additional tables
 	cvt		for hinting
 */
 
-struct tabdir {
-    int32 version;	/* 0x00010000 */
-    uint16 numtab;
-    uint16 searchRange;	/* (Max power of 2 <= numtab) *16 */
-    uint16 entrySel;	/* Log2(Max power of 2 <= numtab ) */
-    uint16 rangeShift;	/* numtab*16 - searchRange */
-    struct taboff {
-	uint32 tag;	/* Table name */
-	uint32 checksum;/* for table */
-	uint32 offset;	/* to start of table in file */
-	uint32 length;
-    } tabs[11];		/* room for all the above tables */
-};
-
-struct glyphhead {
-    int16 numContours;
-    int16 xmin;
-    int16 ymin;
-    int16 xmax;
-    int16 ymax;
-};
-
-struct head {
-    int32 version;	/* 0x00010000 */
-    int32 revision;	/* 0 */
-    uint32 checksumAdj;	/* set to 0, sum entire font, store 0xb1b0afba-sum */
-    uint32 magicNum;	/* 0x5f0f3cf5 */
-    uint16 flags;	/* 1 */
-    uint16 emunits;	/* sf->ascent+sf->descent */
-    int32 createtime[2];/* number of seconds since 1904 */
-    int32 modtime[2];
-    int16 xmin;		/* min for entire font */
-    int16 ymin;
-    int16 xmax;
-    int16 ymax;
-    uint16 macstyle;	/* 1=>Bold, 2=>Italic */
-    uint16 lowestreadable;	/* size in pixels. Say about 10? */
-    int16 dirhint;	/* 0=>mixed directional characters, */
-    int16 locais32;	/* is the location table 32bits or 16, 0=>16, 1=>32 */
-    int16 glyphformat;	/* 0 */
-    uint16 mbz;		/* padding */
-};
-
-struct hhead {
-    int32 version;	/* 0x00010000 */
-    int16 ascender;	/* sf->ascender */
-    int16 descender;	/* -sf->descender */
-    int16 linegap;	/* 0 */
-    int16 maxwidth;	/* of all characters */
-    int16 minlsb;	/* How is this different from xmin above? */
-    int16 minrsb;
-    int16 maxextent;	/* How is this different from xmax above? */
-    int16 caretSlopeRise;/* Uh... let's say 1? */
-    int16 caretSlopeRun;/* Uh... let's say 0 */
-    int16 mbz[5];
-    int16 metricformat;	/* 0 */
-    uint16 numMetrics;	/* just set to glyph count */
-};
-
-struct hmtx {
-    uint16 width;	/* NOTE: TTF only allows positive widths!!! */
-    int16 lsb;
-};
-
-struct kern {
-    uint16 version;	/* 0 */
-    uint16 ntab;	/* 1, number of subtables */
-    /* first (and only) subtable */
-    uint16 stversion;	/* 0 */
-    uint16 length;	/* length of subtable beginning at &stversion */
-    uint16 coverage;	/* 1, (set of flags&format) */
-    uint16 nPairs;	/* number of kern pairs */
-    uint16 searchRange;	/* (Max power of 2 <= nPairs) *6 */
-    uint16 entrySel;	/* Log2(Max power of 2 <= nPairs ) */
-    uint16 rangeShift;	/* numtab*6 - searchRange */
-    struct kp {
-	uint16 left;	/* left glyph num */
-	uint16 right;	/* right glyph num */
-	/* table is ordered by these two above treated as uint32 */
-	int16 offset;	/* kern amount */
-    } *kerns;		/* Array should be nPairs big */
-};
-
-struct maxp {
-    int32 version;	/* 0x00010000 */
-    uint16 numGlyphs;
-    uint16 maxPoints;	/* max number of points in a simple glyph */
-    uint16 maxContours;	/* max number of paths in a simple glyph */
-    uint16 maxCompositPts;
-    uint16 maxCompositCtrs;
-    uint16 maxZones;	/* 1 */
-    uint16 maxTwilightPts;	/* 0 */
-    uint16 maxStorage;	/* 0 */
-    uint16 maxFDEFs;	/* 0 */
-    uint16 maxIDEFs;	/* 0 */
-    uint16 maxStack;	/* 0 */
-    uint16 maxglyphInstr;/* 0 */
-    uint16 maxnumcomponents;	/* Maximum number of refs in any composit */
-    uint16 maxcomponentdepth;	/* 0 (if no composits), 1 else */
-    uint16 mbz;		/* pad out to a 4byte boundary */
-};
-
-struct nametab {
-    uint16 format;	/* 0 */
-    uint16 numrec;	/* 1 */
-    uint16 startOfStrings;	/* offset from start of table to start of strings */
-    struct namerec {
-	uint16 platform;	/* 3 => MS */
-	uint16 specific;	/* 1 */
-	uint16 language;	/* 0x0409 */
-	uint16 nameid;		/* 0=>copyright, 1=>family, 2=>weight, 4=>fullname */
-				/*  5=>version, 6=>postscript name */
-	uint16 strlen;
-	uint16 stroff;
-    } nr[6];
-};
-
-struct os2 {
-    uint16 version;	/* 1 */
-    int16 avgCharWid;	/* average width of a-z and space, if no lower case, then average all chars */
-    uint16 weightClass;	/* 100=>thin, 200=>extra-light, 300=>light, 400=>normal, */
-			/* 500=>Medium, 600=>semi-bold, 700=>bold, 800=>extra-bold, */
-			/* 900=>black */
-    uint16 widthClass;	/* 75=>condensed, 100, 125=>expanded */
-    int16 fstype;	/* 0x0008 => allow embedded editing */
-    int16 ysubXSize;	/* emsize/5 */
-    int16 ysubYSize;	/* emsize/5 */
-    int16 ysubXOff;	/* 0 */
-    int16 ysubYOff;	/* emsize/5 */
-    int16 ysupXSize;	/* emsize/5 */
-    int16 ysupYSize;	/* emsize/5 */
-    int16 ysupXOff;	/* 0 */
-    int16 ysupYOff;	/* emsize/5 */
-    int16 yStrikeoutSize;	/* 102/2048 *emsize */
-    int16 yStrikeoutPos;	/* 530/2048 *emsize */
-    int16 sFamilyClass;	/* ??? 0 */
-	/* high order byte is the "class", low order byte the sub class */
-	/* class = 0 => no classification */
-	/* class = 1 => old style serifs */
-	/*	subclass 0, no class; 1 ibm rounded; 2 garalde; 3 venetian; 4 mod venitian; 5 dutch modern; 6 dutch trad; 7 contemporary; 8 caligraphic; 15 misc */
-	/* class = 2 => transitional serifs */
-	/*	subclass 0, no class; 1 drect line; 2 script; 15 misc */
-	/* class = 3 => modern serifs */
-	/*	subclass: 1, italian; 2, script */
-	/* class = 4 => clarendon serifs */
-	/*	subclass: 1, clarendon; 2, modern; 3 trad; 4 newspaper; 5 stub; 6 monotone; 7 typewriter */
-	/* class = 5 => slab serifs */
-	/*	subclass: 1, monotone; 2, humanist; 3 geometric; 4 swiss; 5 typewriter */
-	/* class = 7 => freeform serifs */
-	/*	subclass: 1, modern */
-	/* class = 8 => sans serif */
-	/*	subclass: 1, ibm neogrotesque; 2 humanist; 3 low-x rounded; 4 high-x rounded; 5 neo-grotesque; 6 mod neo-grot; 9 typewriter; 10 matrix */
-	/* class = 9 => ornamentals */
-	/*	subclass: 1, engraver; 2 black letter; 3 decorative; 4 3D */
-	/* class = 10 => scripts */
-	/*	subclass: 1, uncial; 2 brush joined; 3 formal joined; 4 monotone joined; 5 calligraphic; 6 brush unjoined; 7 formal unjoined; 8 monotone unjoined */
-	/* class = 12 => symbolic */
-	/*	subclass: 3 mixed serif; 6 old style serif; 7 neo-grotesque sans; */
-    char panose[10];	/* can be set to zero */
-    uint32 unicoderange[4];	
-	/* 1<<0=>ascii, 1<<1 => latin1, 2=>100-17f, 3=>180-24f, 4=>250-2af */
-	/* 5=> 2b0-2ff, 6=>300-36f, ... */
-    char achVendID[4];	/* can be zero */
-    uint16 fsSel;	/* 1=> italic, 32=>bold, 64 => regular */
-    uint16 firstcharindex; /* minimum unicode encoding */
-    uint16 lastcharindex;  /* maximum unicode encoding */
-    uint16 ascender;	/* font ascender height (not ascent) */
-    uint16 descender;	/* font descender height */
-    uint16 linegap;	/* 0 */
-    uint16 winascent;	/* ymax */
-    uint16 windescent;	/* ymin */
-    uint32 ulCodePage[2];
-	/* 1<<0 => latin1, 1<<1=>latin2, cyrillic, greek, turkish, hebrew, arabic */
-	/* 1<<30 => mac, 1<<31 => symbol */
-    /* OTF stuff (version 2 of OS/2) */
-    short xHeight;
-    short capHeight;
-    short defChar;
-    short breakChar;
-    short maxContext;
-};
-
-struct post {
-    int32 formattype;		/* 0x00020000 */
-    int32 italicAngle;		/* in fixed format */
-    int16 upos;
-    int16 uwidth;
-    uint32 isfixed;
-    uint32 minmem42;
-    uint32 maxmem42;
-    uint32 minmem1;
-    uint32 maxmem1;
-    uint16 numglyphs;
-    uint16 glyphnameindex[1];
-};
-
 const char *ttfstandardnames[258] = {
 ".notdef",
 ".null",
@@ -962,69 +766,6 @@ static unichar_t uniranges[][2] = {
     { 0xffff, 0xffff}
 };
 
-struct glyphinfo {
-    struct maxp *maxp;		/* this one is given to dumpglyphs, rest blank */
-    uint32 *loca;
-    FILE *glyphs;
-    FILE *hmtx;
-    int hmtxlen;
-    int next_glyph;
-    int glyph_len;
-    short *cvt;
-    int cvtmax;
-    int cvtcur;
-    int xmin, ymin, xmax, ymax;
-    real blues[14];
-    int bcnt;
-};
-
-struct alltabs {
-    struct tabdir tabdir;
-    struct head head;
-    struct hhead hhead;
-    struct maxp maxp;
-    struct os2 os2;
-    FILE *loca;
-    int localen;
-    FILE *name;
-    int namelen;
-    FILE *post;
-    int postlen;
-    FILE *kern;
-    int kernlen;
-    FILE *cmap;
-    int cmaplen;
-    FILE *headf;
-    int headlen;
-    FILE *hheadf;
-    int hheadlen;
-    FILE *maxpf;
-    int maxplen;
-    FILE *os2f;
-    int os2len;
-    FILE *cvtf;
-    int cvtlen;
-    FILE *cfff;
-    int cfflen;
-    FILE *sidf;
-    FILE *sidh;
-    FILE *charset;
-    FILE *encoding;
-    FILE *private;
-    FILE *charstrings;
-    FILE *fdselect;
-    FILE *fdarray;
-    int defwid, nomwid;
-    int sidcnt;
-    int lenpos;
-    int privatelen;
-    unsigned int sidlongoffset: 1;
-    unsigned int cfflongoffset: 1;
-    struct glyphinfo gi;
-    int isfixed;
-    struct fd2data *fds;
-};
-
 static int32 getuint32(FILE *ttf) {
     int ch1 = getc(ttf);
     int ch2 = getc(ttf);
@@ -1035,53 +776,53 @@ return( EOF );
 return( (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4 );
 }
 
-static void dumpshort(FILE *file,int sval) {
+void putshort(FILE *file,int sval) {
     putc((sval>>8)&0xff,file);
     putc(sval&0xff,file);
 }
 
-static void dumplong(FILE *file,int val) {
+void putlong(FILE *file,int val) {
     putc((val>>24)&0xff,file);
     putc((val>>16)&0xff,file);
     putc((val>>8)&0xff,file);
     putc(val&0xff,file);
 }
-#define dumpabsoffset	dumplong
+#define dumpabsoffset	putlong
 
 static void dumpoffset(FILE *file,int offsize,int val) {
     if ( offsize==1 )
 	putc(val,file);
     else if ( offsize==2 )
-	dumpshort(file,val);
+	putshort(file,val);
     else if ( offsize==3 ) {
 	putc((val>>16)&0xff,file);
 	putc((val>>8)&0xff,file);
 	putc(val&0xff,file);
     } else
-	dumplong(file,val);
+	putlong(file,val);
 }
 
-static void dump2d14(FILE *file,real dval) {
+static void put2d14(FILE *file,real dval) {
     int val;
     int mant;
 
     val = floor(dval);
     mant = floor(16384.*(dval-val));
     val = (val<<14) | mant;
-    dumpshort(file,val);
+    putshort(file,val);
 }
 
-static void dumpfixed(FILE *file,real dval) {
+void putfixed(FILE *file,real dval) {
     int val;
     int mant;
 
     val = floor(dval);
     mant = floor(65536.*(dval-val));
     val = (val<<16) | mant;
-    dumplong(file,val);
+    putlong(file,val);
 }
 
-static void copyfile(FILE *ttf, FILE *other, int pos) {
+void ttfcopyfile(FILE *ttf, FILE *other, int pos) {
     int ch;
 
     if ( pos!=ftell(ttf))
@@ -1116,11 +857,11 @@ return( i );
 
 static void dumpghstruct(struct glyphinfo *gi,struct glyphhead *gh) {
 
-    dumpshort(gi->glyphs,gh->numContours);
-    dumpshort(gi->glyphs,gh->xmin);
-    dumpshort(gi->glyphs,gh->ymin);
-    dumpshort(gi->glyphs,gh->xmax);
-    dumpshort(gi->glyphs,gh->ymax);
+    putshort(gi->glyphs,gh->numContours);
+    putshort(gi->glyphs,gh->xmin);
+    putshort(gi->glyphs,gh->ymin);
+    putshort(gi->glyphs,gh->xmax);
+    putshort(gi->glyphs,gh->ymax);
     if ( gh->xmin<gi->xmin ) gi->xmin = gh->xmin;
     if ( gh->ymin<gi->ymin ) gi->ymin = gh->ymin;
     if ( gh->xmax>gi->xmax ) gi->xmax = gh->xmax;
@@ -1255,7 +996,7 @@ static void dumppointarrays(struct glyphinfo *gi,BasePoint *bp, char *fs, int pc
 	    else
 		putc(last.x-bp[i].x,gi->glyphs);
 	} else
-	    dumpshort(gi->glyphs,bp[i].x-last.x);
+	    putshort(gi->glyphs,bp[i].x-last.x);
 	last.x = bp[i].x;
     }
 	/* ycoords */
@@ -1269,7 +1010,7 @@ static void dumppointarrays(struct glyphinfo *gi,BasePoint *bp, char *fs, int pc
 	    else
 		putc(last.y-bp[i].y,gi->glyphs);
 	} else
-	    dumpshort(gi->glyphs,bp[i].y-last.y);
+	    putshort(gi->glyphs,bp[i].y-last.y);
 	last.y = bp[i].y;
     }
     if ( ftell(gi->glyphs)&1 )		/* Pad the file so that the next glyph */
@@ -1281,7 +1022,7 @@ static void dumpinstrs(struct glyphinfo *gi,uint8 *instrs,int cnt) {
 
  /*cnt = 0;		/* Debug */
     if ( gi->maxp->maxglyphInstr<cnt ) gi->maxp->maxglyphInstr=cnt;
-    dumpshort(gi->glyphs,cnt);
+    putshort(gi->glyphs,cnt);
     for ( i=0; i<cnt; ++i )
 	putc( instrs[i],gi->glyphs );
 }
@@ -1369,29 +1110,29 @@ static void dumpmissingglyph(SplineFont *sf,struct glyphinfo *gi) {
 	/* Don't need any IUP */
 
 	/* end contours array */
-    dumpshort(gi->glyphs,4-1);
-    dumpshort(gi->glyphs,8-1);
+    putshort(gi->glyphs,4-1);
+    putshort(gi->glyphs,8-1);
 	/* instruction length&instructions */
     dumpinstrs(gi,instrs,46);
 
     dumppointarrays(gi,bp,NULL,8);
 
-    dumpshort(gi->hmtx,gh.xmax + 2*stem);
-    dumpshort(gi->hmtx,stem);
+    putshort(gi->hmtx,gh.xmax + 2*stem);
+    putshort(gi->hmtx,stem);
 }
 
 static void dumpblankglyph(struct glyphinfo *gi,SplineFont *sf) {
     /* These don't get a glyph header, because there are no contours */
     gi->loca[gi->next_glyph++] = ftell(gi->glyphs);
-    dumpshort(gi->hmtx,gi->next_glyph==2?0:(sf->ascent+sf->descent)/3);
-    dumpshort(gi->hmtx,0);
+    putshort(gi->hmtx,gi->next_glyph==2?0:(sf->ascent+sf->descent)/3);
+    putshort(gi->hmtx,0);
 }
 
 static void dumpspace(SplineChar *sc, struct glyphinfo *gi) {
     /* These don't get a glyph header, because there are no contours */
     gi->loca[gi->next_glyph++] = ftell(gi->glyphs);
-    dumpshort(gi->hmtx,sc->width);
-    dumpshort(gi->hmtx,0);
+    putshort(gi->hmtx,sc->width);
+    putshort(gi->hmtx,0);
 }
 
 static void dumpcomposit(SplineChar *sc, RefChar *refs, struct glyphinfo *gi) {
@@ -1424,25 +1165,25 @@ static void dumpcomposit(SplineChar *sc, RefChar *refs, struct glyphinfo *gi) {
 	if ( ref->transform[4]<-128 || ref->transform[4]>127 ||
 		ref->transform[5]<-128 || ref->transform[5]>127 )
 	    flags |= (1<<0);
-	dumpshort(gi->glyphs,flags);
-	dumpshort(gi->glyphs,ref->sc->ttf_glyph);
+	putshort(gi->glyphs,flags);
+	putshort(gi->glyphs,ref->sc->ttf_glyph);
 	if ( flags&(1<<0) ) {
-	    dumpshort(gi->glyphs,(short)ref->transform[4]);
-	    dumpshort(gi->glyphs,(short)ref->transform[5]);
+	    putshort(gi->glyphs,(short)ref->transform[4]);
+	    putshort(gi->glyphs,(short)ref->transform[5]);
 	} else {
 	    putc((char) (ref->transform[4]),gi->glyphs);
 	    putc((char) (ref->transform[5]),gi->glyphs);
 	}
 	if ( flags&(1<<7) ) {
-	    dump2d14(gi->glyphs,ref->transform[0]);
-	    dump2d14(gi->glyphs,ref->transform[1]);
-	    dump2d14(gi->glyphs,ref->transform[2]);
-	    dump2d14(gi->glyphs,ref->transform[3]);
+	    put2d14(gi->glyphs,ref->transform[0]);
+	    put2d14(gi->glyphs,ref->transform[1]);
+	    put2d14(gi->glyphs,ref->transform[2]);
+	    put2d14(gi->glyphs,ref->transform[3]);
 	} else if ( flags&(1<<6) ) {
-	    dump2d14(gi->glyphs,ref->transform[0]);
-	    dump2d14(gi->glyphs,ref->transform[3]);
+	    put2d14(gi->glyphs,ref->transform[0]);
+	    put2d14(gi->glyphs,ref->transform[3]);
 	} else if ( flags&(1<<3) ) {
-	    dump2d14(gi->glyphs,ref->transform[0]);
+	    put2d14(gi->glyphs,ref->transform[0]);
 	}
 	contourtemp = pttemp = 0;
 	for ( ss=ref->splines; ss!=NULL ; ss=ss->next ) {
@@ -1455,8 +1196,8 @@ static void dumpcomposit(SplineChar *sc, RefChar *refs, struct glyphinfo *gi) {
     if ( gi->maxp->maxCompositPts<pttemp ) gi->maxp->maxCompositPts=pttemp;
     if ( gi->maxp->maxCompositCtrs<contourtemp ) gi->maxp->maxCompositCtrs=contourtemp;
 
-    dumpshort(gi->hmtx,sc->width);
-    dumpshort(gi->hmtx,gh.xmin);
+    putshort(gi->hmtx,sc->width);
+    putshort(gi->hmtx,gh.xmin);
     if ( ftell(gi->glyphs)&1 )		/* Pad the file so that the next glyph */
 	putc('\0',gi->glyphs);		/* on a word boundary, I think this can't happen here */
     RefCharsFree(refs);
@@ -1781,7 +1522,7 @@ static void dumpgeninstructions(SplineChar *sc, struct glyphinfo *gi,
     DStemInfo *dstem;
 
     if ( sc->vstem==NULL && sc->hstem==NULL && sc->dstem==NULL ) {
-	dumpshort(gi->glyphs,0);		/* no instructions */
+	putshort(gi->glyphs,0);		/* no instructions */
 return;
     }
     /* Maximum instruction length is 6 bytes for each point in each dimension */
@@ -1873,13 +1614,13 @@ static void dumpglyph(SplineChar *sc, struct glyphinfo *gi) {
     ptcnt = contourcnt = 0;
     for ( ss=sc->splines; ss!=NULL; ss=ss->next ) {
 	ptcnt = SSAddPoints(ss,ptcnt,bp,fs);
-	dumpshort(gi->glyphs,ptcnt-1);
+	putshort(gi->glyphs,ptcnt-1);
 	contourends[contourcnt++] = ptcnt-1;
     }
     for ( ref=sc->refs; ref!=NULL; ref=ref->next ) {
 	for ( ss=ref->splines; ss!=NULL; ss=ss->next ) {
 	    ptcnt = SSAddPoints(ss,ptcnt,bp,fs);
-	    dumpshort(gi->glyphs,ptcnt-1);
+	    putshort(gi->glyphs,ptcnt-1);
 	    contourends[contourcnt++] = ptcnt-1;
 	}
     }
@@ -1890,15 +1631,15 @@ static void dumpglyph(SplineChar *sc, struct glyphinfo *gi) {
     free(contourends);
     free(fs);
 
-    dumpshort(gi->hmtx,sc->width);
-    dumpshort(gi->hmtx,gh.xmin);
+    putshort(gi->hmtx,sc->width);
+    putshort(gi->hmtx,gh.xmin);
 }
 
 static void dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     int i, cnt;
     RefChar *refs;
 
-    GProgressChangeStages(2);
+    GProgressChangeStages(2+gi->strikecnt);
     FindBlues(sf,gi->blues,NULL);
     GProgressNextStage();
 
@@ -1975,14 +1716,14 @@ return( i );
 	news = tmpfile();
 	rewind(at->sidh);
 	for ( i=0; i<at->sidcnt; ++i )
-	    dumplong(news,getushort(at->sidh));
+	    putlong(news,getushort(at->sidh));
 	fclose(at->sidh);
 	at->sidh = news;
     }
     if ( at->sidlongoffset )
-	dumplong(at->sidh,pos);
+	putlong(at->sidh,pos);
     else
-	dumpshort(at->sidh,pos);
+	putshort(at->sidh,pos);
 
     if ( str!=NULL ) {
 	for ( pt=str; *pt; ++pt )
@@ -2143,7 +1884,7 @@ static void dumpcffheader(SplineFont *sf,FILE *cfff) {
 static void dumpcffnames(SplineFont *sf,FILE *cfff) {
     char *pt;
 
-    dumpshort(cfff,1);		/* One font name */
+    putshort(cfff,1);		/* One font name */
     putc('\1',cfff);		/* Offset size */
     putc('\1',cfff);		/* Offset to first name */
     putc('\1'+strlen(sf->fontname),cfff);
@@ -2160,11 +1901,11 @@ static void dumpcffcharset(SplineFont *sf,struct alltabs *at) {
     /* First element must be ".notdef" and is omitted */
     /* So if glyph 0 isn't notdef do something special */
     if ( SCWorthOutputting(sf->chars[0]) && strcmp(sf->chars[0]->name,".notdef")!=0 )
-	dumpshort(at->charset,storesid(at,sf->chars[0]->name));
+	putshort(at->charset,storesid(at,sf->chars[0]->name));
 
     for ( i=1; i<sf->charcnt; ++i )
 	if ( SCWorthOutputting(sf->chars[i]) )
-	    dumpshort(at->charset,storesid(at,sf->chars[i]->name));
+	    putshort(at->charset,storesid(at,sf->chars[i]->name));
 }
 
 static void dumpcffcidset(SplineFont *sf,struct alltabs *at) {
@@ -2184,8 +1925,8 @@ static void dumpcffcidset(SplineFont *sf,struct alltabs *at) {
 	}
 	if ( k==sf->subfontcnt ) {
 	    if ( start!=-1 ) {
-		dumpshort(at->charset,start);
-		dumpshort(at->charset,cid-1-start);	/* Count of glyphs in range excluding first */
+		putshort(at->charset,start);
+		putshort(at->charset,cid-1-start);	/* Count of glyphs in range excluding first */
 		start = -1;
 	    }
 	} else {
@@ -2193,8 +1934,8 @@ static void dumpcffcidset(SplineFont *sf,struct alltabs *at) {
 	}
     }
     if ( start!=-1 ) {
-	dumpshort(at->charset,start);
-	dumpshort(at->charset,cid-1-start);	/* Count of glyphs in range excluding first */
+	putshort(at->charset,start);
+	putshort(at->charset,cid-1-start);	/* Count of glyphs in range excluding first */
     }
 }
 
@@ -2203,7 +1944,7 @@ static void dumpcfffdselect(SplineFont *sf,struct alltabs *at) {
     int gid;
 
     putc(3,at->fdselect);
-    dumpshort(at->fdselect,0);		/* number of ranges, fill in later */
+    putshort(at->fdselect,0);		/* number of ranges, fill in later */
 
     for ( k=0; k<sf->subfontcnt; ++k )
 	if ( sf->subfonts[k]->charcnt>max ) max = sf->subfonts[k]->charcnt;
@@ -2212,7 +1953,7 @@ static void dumpcfffdselect(SplineFont *sf,struct alltabs *at) {
 	if ( SCWorthOutputting(sf->subfonts[k]->chars[0]))
     break;
     if ( k==sf->subfontcnt ) --k;	/* If CID 0 not defined, put it in last font */
-    dumpshort(at->fdselect,0);
+    putshort(at->fdselect,0);
     putc(k,at->fdselect);
     lastfd = k;
     cnt = 1;
@@ -2226,7 +1967,7 @@ static void dumpcfffdselect(SplineFont *sf,struct alltabs *at) {
 	    /* Doesn't map to a glyph, irrelevant */;
 	else {
 	    if ( k!=lastfd ) {
-		dumpshort(at->fdselect,gid);
+		putshort(at->fdselect,gid);
 		putc(k,at->fdselect);
 		lastfd = k;
 		++cnt;
@@ -2234,9 +1975,9 @@ static void dumpcfffdselect(SplineFont *sf,struct alltabs *at) {
 	    ++gid;
 	}
     }
-    dumpshort(at->fdselect,gid);
+    putshort(at->fdselect,gid);
     fseek(at->fdselect,1,SEEK_SET);
-    dumpshort(at->fdselect,cnt);
+    putshort(at->fdselect,cnt);
     fseek(at->fdselect,0,SEEK_END);
 }
 
@@ -2270,7 +2011,7 @@ static void _dumpcffstrings(FILE *file, struct pschars *strs) {
 	len += strs->lens[i];
 
     /* Then output the index size and offsets */
-    dumpshort( file, strs->cnt );
+    putshort( file, strs->cnt );
     if ( strs->cnt!=0 ) {
 	offsize = len<=255?1:len<=65535?2:len<=0xffffff?3:4;
 	putc(offsize,file);
@@ -2460,11 +2201,11 @@ static void dumpcfftopdict(SplineFont *sf,struct alltabs *at) {
     FILE *cfff = at->cfff;
     DBounds b;
 
-    dumpshort(cfff,1);		/* One top dict */
+    putshort(cfff,1);		/* One top dict */
     putc('\2',cfff);		/* Offset size */
-    dumpshort(cfff,1);		/* Offset to topdict */
+    putshort(cfff,1);		/* Offset to topdict */
     at->lenpos = ftell(cfff);
-    dumpshort(cfff,0);		/* placeholder for final position (final offset in index points beyond last element) */
+    putshort(cfff,0);		/* placeholder for final position (final offset in index points beyond last element) */
     dumpsid(cfff,at,sf->version,0);
     dumpsid(cfff,at,sf->copyright,1);
     dumpsid(cfff,at,sf->fullname,2);
@@ -2535,11 +2276,11 @@ static void dumpcffdictindex(SplineFont *sf,struct alltabs *at) {
     int i;
     int pos;
 
-    dumpshort(at->fdarray,sf->subfontcnt);
+    putshort(at->fdarray,sf->subfontcnt);
     putc('\2',at->fdarray);		/* DICTs aren't very big, and there are at most 255 */\
-    dumpshort(at->fdarray,1);		/* Offset to first dict */
+    putshort(at->fdarray,1);		/* Offset to first dict */
     for ( i=0; i<sf->subfontcnt; ++i )
-	dumpshort(at->fdarray,0);	/* Dump offset placeholders (note there's one extra to mark the end) */
+	putshort(at->fdarray,0);	/* Dump offset placeholders (note there's one extra to mark the end) */
     pos = ftell(at->fdarray)-1;
     for ( i=0; i<sf->subfontcnt; ++i ) {
 	at->fds[i].fillindictmark = dumpcffdict(sf->subfonts[i],at);
@@ -2549,7 +2290,7 @@ static void dumpcffdictindex(SplineFont *sf,struct alltabs *at) {
     }
     fseek(at->fdarray,2*sizeof(short)+sizeof(char),SEEK_SET);
     for ( i=0; i<sf->subfontcnt; ++i )
-	dumpshort(at->fdarray,at->fds[i].eodictmark-pos);
+	putshort(at->fdarray,at->fds[i].eodictmark-pos);
     fseek(at->fdarray,0,SEEK_END);
 }
 
@@ -2562,11 +2303,11 @@ static void dumpcffcidtopdict(SplineFont *sf,struct alltabs *at) {
     for ( k=0; k<sf->subfontcnt; ++k )
 	if ( sf->subfonts[k]->charcnt>cidcnt ) cidcnt = sf->subfonts[k]->charcnt;
 
-    dumpshort(cfff,1);		/* One top dict */
+    putshort(cfff,1);		/* One top dict */
     putc('\2',cfff);		/* Offset size */
-    dumpshort(cfff,1);		/* Offset to topdict */
+    putshort(cfff,1);		/* Offset to topdict */
     at->lenpos = ftell(cfff);
-    dumpshort(cfff,0);		/* placeholder for final position */
+    putshort(cfff,0);		/* placeholder for final position */
     dumpsid(cfff,at,sf->cidregistry,-1);
     dumpsid(cfff,at,sf->ordering,-1);
     dumpintoper(cfff,sf->supplement,(12<<8)|30);		/* ROS operator must be first */
@@ -2649,31 +2390,31 @@ static void finishup(SplineFont *sf,struct alltabs *at) {
 	putc(4,at->cfff);
     }
     fseek(at->cfff,at->lenpos,SEEK_SET);
-    dumpshort(at->cfff,eotop);
+    putshort(at->cfff,eotop);
     fseek(at->cfff,0,SEEK_END);
 
     /* String Index */
-    dumpshort(at->cfff,at->sidcnt-1);
+    putshort(at->cfff,at->sidcnt-1);
     if ( at->sidcnt!=1 ) {		/* Everybody gets an added NULL */
 	putc(at->sidlongoffset?4:2,at->cfff);
-	copyfile(at->cfff,at->sidh,base);
-	copyfile(at->cfff,at->sidf,base+shlen);
+	ttfcopyfile(at->cfff,at->sidh,base);
+	ttfcopyfile(at->cfff,at->sidf,base+shlen);
     }
 
     /* Global Subrs */
-    dumpshort(at->cfff,0);
+    putshort(at->cfff,0);
 
     /* Charset */
-    copyfile(at->cfff,at->charset,base+strlen+glen);
+    ttfcopyfile(at->cfff,at->charset,base+strlen+glen);
 
     /* Encoding */
-    copyfile(at->cfff,at->encoding,base+strlen+glen+csetlen);
+    ttfcopyfile(at->cfff,at->encoding,base+strlen+glen+csetlen);
 
     /* Char Strings */
-    copyfile(at->cfff,at->charstrings,base+strlen+glen+csetlen+enclen);
+    ttfcopyfile(at->cfff,at->charstrings,base+strlen+glen+csetlen+enclen);
 
     /* Private & Subrs */
-    copyfile(at->cfff,at->private,base+strlen+glen+csetlen+enclen+cstrlen);
+    ttfcopyfile(at->cfff,at->private,base+strlen+glen+csetlen+enclen+cstrlen);
 }
 
 static void finishupcid(SplineFont *sf,struct alltabs *at) {
@@ -2710,37 +2451,37 @@ static void finishupcid(SplineFont *sf,struct alltabs *at) {
     dumpsizedint(at->cfff,at->cfflongoffset,base+strlen+glen+csetlen+fdsellen+cstrlen,(12<<8)|36);	/* fdarray */
     eotop = base-strhead-at->lenpos-1;
     fseek(at->cfff,at->lenpos,SEEK_SET);
-    dumpshort(at->cfff,eotop);
+    putshort(at->cfff,eotop);
     fseek(at->cfff,0,SEEK_END);
 
     /* String Index */
-    dumpshort(at->cfff,at->sidcnt-1);
+    putshort(at->cfff,at->sidcnt-1);
     if ( at->sidcnt!=1 ) {		/* Everybody gets an added NULL */
 	putc(at->sidlongoffset?4:2,at->cfff);
-	copyfile(at->cfff,at->sidh,base);
-	copyfile(at->cfff,at->sidf,base+shlen);
+	ttfcopyfile(at->cfff,at->sidh,base);
+	ttfcopyfile(at->cfff,at->sidf,base+shlen);
     }
 
     /* Global Subrs */
-    dumpshort(at->cfff,0);
+    putshort(at->cfff,0);
 
     /* Charset */
-    copyfile(at->cfff,at->charset,base+strlen+glen);
+    ttfcopyfile(at->cfff,at->charset,base+strlen+glen);
 
     /* FDSelect */
-    copyfile(at->cfff,at->fdselect,base+strlen+glen+csetlen);
+    ttfcopyfile(at->cfff,at->fdselect,base+strlen+glen+csetlen);
 
     /* Char Strings */
-    copyfile(at->cfff,at->charstrings,base+strlen+glen+csetlen+fdsellen);
+    ttfcopyfile(at->cfff,at->charstrings,base+strlen+glen+csetlen+fdsellen);
 
     /* FDArray (DICT Index) */
-    copyfile(at->cfff,at->fdarray,base+strlen+glen+csetlen+fdsellen+cstrlen);
+    ttfcopyfile(at->cfff,at->fdarray,base+strlen+glen+csetlen+fdsellen+cstrlen);
 
     /* Private & Subrs */
     prvlen = 0;
     for ( i=0; i<sf->subfontcnt; ++i ) {
 	int temp = ftell(at->fds[i].private);
-	copyfile(at->cfff,at->fds[i].private,
+	ttfcopyfile(at->cfff,at->fds[i].private,
 		base+strlen+glen+csetlen+fdsellen+cstrlen+fdarrlen+prvlen);
 	prvlen += temp;
     }
@@ -2755,22 +2496,22 @@ static void dumpcffhmtx(struct alltabs *at,SplineFont *sf) {
 
     at->gi.hmtx = tmpfile();
     if ( SCWorthOutputting(sf->chars[0]) && strcmp(sf->chars[0]->name,".notdef")==0 ) {
-	dumpshort(at->gi.hmtx,sf->chars[0]->width);
+	putshort(at->gi.hmtx,sf->chars[0]->width);
 	SplineCharFindBounds(sf->chars[0],&b);
-	dumpshort(at->gi.hmtx,b.minx);
+	putshort(at->gi.hmtx,b.minx);
 	i = 1;
     } else {
 	i = 0;
-	dumpshort(at->gi.hmtx,sf->ascent+sf->descent);
-	dumpshort(at->gi.hmtx,0);
+	putshort(at->gi.hmtx,sf->ascent+sf->descent);
+	putshort(at->gi.hmtx,0);
     }
     cnt = 1;
     for ( i=1; i<sf->charcnt; ++i ) {
 	sc = sf->chars[i];
 	if ( SCWorthOutputting(sc)) {
-	    dumpshort(at->gi.hmtx,sc->width);
+	    putshort(at->gi.hmtx,sc->width);
 	    SplineCharFindBounds(sc,&b);
-	    dumpshort(at->gi.hmtx,b.minx);
+	    putshort(at->gi.hmtx,b.minx);
 	    ++cnt;
 	}
     }
@@ -2799,14 +2540,14 @@ static void dumpcffcidhmtx(struct alltabs *at,SplineFont *_sf) {
 	}
 	if ( i!=_sf->subfontcnt ) {
 	    sc = sf->chars[cid];
-	    dumpshort(at->gi.hmtx,sc->width);
+	    putshort(at->gi.hmtx,sc->width);
 	    SplineCharFindBounds(sc,&b);
-	    dumpshort(at->gi.hmtx,b.minx);
+	    putshort(at->gi.hmtx,b.minx);
 	    ++cnt;
 	} else if ( cid==0 && i==sf->subfontcnt ) {
 	    /* Use final subfont to contain mythical default if there is no real default */
-	    dumpshort(at->gi.hmtx,sf->ascent+sf->descent);
-	    dumpshort(at->gi.hmtx,0);
+	    putshort(at->gi.hmtx,sf->ascent+sf->descent);
+	    putshort(at->gi.hmtx,0);
 	    ++cnt;
 	}
     }
@@ -2831,7 +2572,7 @@ static void dumptype2glyphs(SplineFont *sf,struct alltabs *at) {
     dumpcffnames(sf,at->cfff);
     dumpcffcharset(sf,at);
     dumpcffencoding(sf,at);
-    GProgressChangeStages(2);
+    GProgressChangeStages(2+at->gi.strikecnt);
     dumpcffprivate(sf,at,-1);
     subrs = SplineFont2Subrs2(sf);
     _dumpcffstrings(at->private,subrs);
@@ -2958,13 +2699,13 @@ static void sethead(struct head *head,SplineFont *_sf) {
 
 static void sethhead(struct hhead *hhead,struct alltabs *at, SplineFont *_sf) {
     int i, width, rbearing;
-    SplineFont *sf;
+    SplineFont *sf=NULL;
     DBounds bb;
     int j;
 
     hhead->version = 0x00010000;
-    hhead->ascender = sf->ascent;
-    hhead->descender = -sf->descent;
+    hhead->ascender = _sf->ascent;
+    hhead->descender = -_sf->descent;
     hhead->linegap = 0;
     width = 0x80000000; rbearing = 0x7fffffff;
     at->isfixed = true;
@@ -3255,14 +2996,14 @@ static void redoloca(struct alltabs *at) {
     at->loca = tmpfile();
     if ( at->head.locais32 ) {
 	for ( i=0; i<=at->maxp.numGlyphs; ++i )
-	    dumplong(at->loca,at->gi.loca[i]);
+	    putlong(at->loca,at->gi.loca[i]);
 	at->localen = sizeof(int32)*(at->maxp.numGlyphs+1);
     } else {
 	for ( i=0; i<=at->maxp.numGlyphs; ++i )
-	    dumpshort(at->loca,at->gi.loca[i]/2);
+	    putshort(at->loca,at->gi.loca[i]/2);
 	at->localen = sizeof(int16)*(at->maxp.numGlyphs+1);
 	if ( ftell(at->loca)&2 )
-	    dumpshort(at->loca,0);
+	    putshort(at->loca,0);
     }
     free(at->gi.loca);
 }
@@ -3270,129 +3011,129 @@ static void redoloca(struct alltabs *at) {
 static void redohead(struct alltabs *at) {
     at->headf = tmpfile();
 
-    dumplong(at->headf,at->head.version);
-    dumplong(at->headf,at->head.revision);
-    dumplong(at->headf,at->head.checksumAdj);
-    dumplong(at->headf,at->head.magicNum);
-    dumpshort(at->headf,at->head.flags);
-    dumpshort(at->headf,at->head.emunits);
-    dumplong(at->headf,at->head.createtime[0]);
-    dumplong(at->headf,at->head.createtime[1]);
-    dumplong(at->headf,at->head.modtime[0]);
-    dumplong(at->headf,at->head.modtime[1]);
-    dumpshort(at->headf,at->head.xmin);
-    dumpshort(at->headf,at->head.ymin);
-    dumpshort(at->headf,at->head.xmax);
-    dumpshort(at->headf,at->head.ymax);
-    dumpshort(at->headf,at->head.macstyle);
-    dumpshort(at->headf,at->head.lowestreadable);
-    dumpshort(at->headf,at->head.dirhint);
-    dumpshort(at->headf,at->head.locais32);
-    dumpshort(at->headf,at->head.glyphformat);
+    putlong(at->headf,at->head.version);
+    putlong(at->headf,at->head.revision);
+    putlong(at->headf,at->head.checksumAdj);
+    putlong(at->headf,at->head.magicNum);
+    putshort(at->headf,at->head.flags);
+    putshort(at->headf,at->head.emunits);
+    putlong(at->headf,at->head.createtime[0]);
+    putlong(at->headf,at->head.createtime[1]);
+    putlong(at->headf,at->head.modtime[0]);
+    putlong(at->headf,at->head.modtime[1]);
+    putshort(at->headf,at->head.xmin);
+    putshort(at->headf,at->head.ymin);
+    putshort(at->headf,at->head.xmax);
+    putshort(at->headf,at->head.ymax);
+    putshort(at->headf,at->head.macstyle);
+    putshort(at->headf,at->head.lowestreadable);
+    putshort(at->headf,at->head.dirhint);
+    putshort(at->headf,at->head.locais32);
+    putshort(at->headf,at->head.glyphformat);
 
     at->headlen = ftell(at->headf);
     if ( (at->headlen&2)!=0 )
-	dumpshort(at->headf,0);
+	putshort(at->headf,0);
 }
 
 static void redohhead(struct alltabs *at) {
     int i;
     at->hheadf = tmpfile();
 
-    dumplong(at->hheadf,at->hhead.version);
-    dumpshort(at->hheadf,at->hhead.ascender);
-    dumpshort(at->hheadf,at->hhead.descender);
-    dumpshort(at->hheadf,at->hhead.linegap);
-    dumpshort(at->hheadf,at->hhead.maxwidth);
-    dumpshort(at->hheadf,at->hhead.minlsb);
-    dumpshort(at->hheadf,at->hhead.minrsb);
-    dumpshort(at->hheadf,at->hhead.maxextent);
-    dumpshort(at->hheadf,at->hhead.caretSlopeRise);
-    dumpshort(at->hheadf,at->hhead.caretSlopeRun);
+    putlong(at->hheadf,at->hhead.version);
+    putshort(at->hheadf,at->hhead.ascender);
+    putshort(at->hheadf,at->hhead.descender);
+    putshort(at->hheadf,at->hhead.linegap);
+    putshort(at->hheadf,at->hhead.maxwidth);
+    putshort(at->hheadf,at->hhead.minlsb);
+    putshort(at->hheadf,at->hhead.minrsb);
+    putshort(at->hheadf,at->hhead.maxextent);
+    putshort(at->hheadf,at->hhead.caretSlopeRise);
+    putshort(at->hheadf,at->hhead.caretSlopeRun);
     for ( i=0; i<5; ++i )
-	dumpshort(at->hheadf,at->hhead.mbz[i]);
-    dumpshort(at->hheadf,at->hhead.metricformat);
-    dumpshort(at->hheadf,at->hhead.numMetrics);
+	putshort(at->hheadf,at->hhead.mbz[i]);
+    putshort(at->hheadf,at->hhead.metricformat);
+    putshort(at->hheadf,at->hhead.numMetrics);
 
     at->hheadlen = ftell(at->hheadf);
     if ( (at->hheadlen&2)!=0 )
-	dumpshort(at->hheadf,0);
+	putshort(at->hheadf,0);
 }
 
 static void redomaxp(struct alltabs *at,enum fontformat format) {
     at->maxpf = tmpfile();
 
-    dumplong(at->maxpf,at->maxp.version);
-    dumpshort(at->maxpf,at->maxp.numGlyphs);
+    putlong(at->maxpf,at->maxp.version);
+    putshort(at->maxpf,at->maxp.numGlyphs);
     if ( format!=ff_otf && format!=ff_otfcid ) {
-	dumpshort(at->maxpf,at->maxp.maxPoints);
-	dumpshort(at->maxpf,at->maxp.maxContours);
-	dumpshort(at->maxpf,at->maxp.maxCompositPts);
-	dumpshort(at->maxpf,at->maxp.maxCompositCtrs);
-	dumpshort(at->maxpf,at->maxp.maxZones);
-	dumpshort(at->maxpf,at->maxp.maxTwilightPts);
-	dumpshort(at->maxpf,at->maxp.maxStorage);
-	dumpshort(at->maxpf,at->maxp.maxFDEFs);
-	dumpshort(at->maxpf,at->maxp.maxIDEFs);
-	dumpshort(at->maxpf,at->maxp.maxStack);
-	dumpshort(at->maxpf,at->maxp.maxglyphInstr);
-	dumpshort(at->maxpf,at->maxp.maxnumcomponents);
-	dumpshort(at->maxpf,at->maxp.maxcomponentdepth);
+	putshort(at->maxpf,at->maxp.maxPoints);
+	putshort(at->maxpf,at->maxp.maxContours);
+	putshort(at->maxpf,at->maxp.maxCompositPts);
+	putshort(at->maxpf,at->maxp.maxCompositCtrs);
+	putshort(at->maxpf,at->maxp.maxZones);
+	putshort(at->maxpf,at->maxp.maxTwilightPts);
+	putshort(at->maxpf,at->maxp.maxStorage);
+	putshort(at->maxpf,at->maxp.maxFDEFs);
+	putshort(at->maxpf,at->maxp.maxIDEFs);
+	putshort(at->maxpf,at->maxp.maxStack);
+	putshort(at->maxpf,at->maxp.maxglyphInstr);
+	putshort(at->maxpf,at->maxp.maxnumcomponents);
+	putshort(at->maxpf,at->maxp.maxcomponentdepth);
     }
 
     at->maxplen = ftell(at->maxpf);
     if ( (at->maxplen&2)!=0 )
-	dumpshort(at->maxpf,0);
+	putshort(at->maxpf,0);
 }
 
 static void redoos2(struct alltabs *at) {
     int i;
     at->os2f = tmpfile();
 
-    dumpshort(at->os2f,at->os2.version);
-    dumpshort(at->os2f,at->os2.avgCharWid);
-    dumpshort(at->os2f,at->os2.weightClass);
-    dumpshort(at->os2f,at->os2.widthClass);
-    dumpshort(at->os2f,at->os2.fstype);
-    dumpshort(at->os2f,at->os2.ysubXSize);
-    dumpshort(at->os2f,at->os2.ysubYSize);
-    dumpshort(at->os2f,at->os2.ysubXOff);
-    dumpshort(at->os2f,at->os2.ysubYOff);
-    dumpshort(at->os2f,at->os2.ysupXSize);
-    dumpshort(at->os2f,at->os2.ysupYSize);
-    dumpshort(at->os2f,at->os2.ysupXOff);
-    dumpshort(at->os2f,at->os2.ysupYOff);
-    dumpshort(at->os2f,at->os2.yStrikeoutSize);
-    dumpshort(at->os2f,at->os2.yStrikeoutPos);
-    dumpshort(at->os2f,at->os2.sFamilyClass);
+    putshort(at->os2f,at->os2.version);
+    putshort(at->os2f,at->os2.avgCharWid);
+    putshort(at->os2f,at->os2.weightClass);
+    putshort(at->os2f,at->os2.widthClass);
+    putshort(at->os2f,at->os2.fstype);
+    putshort(at->os2f,at->os2.ysubXSize);
+    putshort(at->os2f,at->os2.ysubYSize);
+    putshort(at->os2f,at->os2.ysubXOff);
+    putshort(at->os2f,at->os2.ysubYOff);
+    putshort(at->os2f,at->os2.ysupXSize);
+    putshort(at->os2f,at->os2.ysupYSize);
+    putshort(at->os2f,at->os2.ysupXOff);
+    putshort(at->os2f,at->os2.ysupYOff);
+    putshort(at->os2f,at->os2.yStrikeoutSize);
+    putshort(at->os2f,at->os2.yStrikeoutPos);
+    putshort(at->os2f,at->os2.sFamilyClass);
     for ( i=0; i<10; ++i )
 	putc(at->os2.panose[i],at->os2f);
     for ( i=0; i<4; ++i )
-	dumplong(at->os2f,at->os2.unicoderange[i]);
+	putlong(at->os2f,at->os2.unicoderange[i]);
     for ( i=0; i<4; ++i )
 	putc(at->os2.achVendID[i],at->os2f);
-    dumpshort(at->os2f,at->os2.fsSel);
-    dumpshort(at->os2f,at->os2.firstcharindex);
-    dumpshort(at->os2f,at->os2.lastcharindex);
-    dumpshort(at->os2f,at->os2.ascender);
-    dumpshort(at->os2f,at->os2.descender);
-    dumpshort(at->os2f,at->os2.linegap);
-    dumpshort(at->os2f,at->os2.winascent);
-    dumpshort(at->os2f,at->os2.windescent);
-    dumplong(at->os2f,at->os2.ulCodePage[0]);
-    dumplong(at->os2f,at->os2.ulCodePage[1]);
+    putshort(at->os2f,at->os2.fsSel);
+    putshort(at->os2f,at->os2.firstcharindex);
+    putshort(at->os2f,at->os2.lastcharindex);
+    putshort(at->os2f,at->os2.ascender);
+    putshort(at->os2f,at->os2.descender);
+    putshort(at->os2f,at->os2.linegap);
+    putshort(at->os2f,at->os2.winascent);
+    putshort(at->os2f,at->os2.windescent);
+    putlong(at->os2f,at->os2.ulCodePage[0]);
+    putlong(at->os2f,at->os2.ulCodePage[1]);
 
     if ( at->os2.version>=2 ) {
-	dumpshort(at->os2f,at->os2.xHeight);
-	dumpshort(at->os2f,at->os2.capHeight);
-	dumpshort(at->os2f,at->os2.defChar);
-	dumpshort(at->os2f,at->os2.breakChar);
-	dumpshort(at->os2f,at->os2.maxContext);
+	putshort(at->os2f,at->os2.xHeight);
+	putshort(at->os2f,at->os2.capHeight);
+	putshort(at->os2f,at->os2.defChar);
+	putshort(at->os2f,at->os2.breakChar);
+	putshort(at->os2f,at->os2.maxContext);
     }
 
     at->os2len = ftell(at->os2f);
     if ( (at->os2len&2)!=0 )
-	dumpshort(at->os2f,0);
+	putshort(at->os2f,0);
 }
 
 static void redocvt(struct alltabs *at) {
@@ -3400,10 +3141,10 @@ static void redocvt(struct alltabs *at) {
     at->cvtf = tmpfile();
 
     for ( i=0; i<at->gi.cvtcur; ++i )
-	dumpshort(at->cvtf,at->gi.cvt[i]);
+	putshort(at->cvtf,at->gi.cvt[i]);
     at->cvtlen = ftell(at->cvtf);
     if ( 1&at->gi.cvtcur )
-	dumpshort(at->cvtf,0);
+	putshort(at->cvtf,0);
 }
 
 static void dumpkerns(struct alltabs *at, SplineFont *sf) {
@@ -3426,17 +3167,17 @@ static void dumpkerns(struct alltabs *at, SplineFont *sf) {
 return;
 
     at->kern = tmpfile();
-    dumpshort(at->kern,0);		/* version */
-    dumpshort(at->kern,1);		/* number of subtables */
-    dumpshort(at->kern,0);		/* subtable version */
-    dumpshort(at->kern,(7+3*cnt)*sizeof(uint16)); /* subtable length */
-    dumpshort(at->kern,1);		/* coverage, flags&format */
-    dumpshort(at->kern,cnt);
+    putshort(at->kern,0);		/* version */
+    putshort(at->kern,1);		/* number of subtables */
+    putshort(at->kern,0);		/* subtable version */
+    putshort(at->kern,(7+3*cnt)*sizeof(uint16)); /* subtable length */
+    putshort(at->kern,1);		/* coverage, flags&format */
+    putshort(at->kern,cnt);
     for ( i=1,j=0; i<=cnt; i<<=1, ++j );
     i>>=1; --j;
-    dumpshort(at->kern,i*6);		/* binary search headers */
-    dumpshort(at->kern,j);
-    dumpshort(at->kern,6*(i-cnt));
+    putshort(at->kern,i*6);		/* binary search headers */
+    putshort(at->kern,j);
+    putshort(at->kern,6*(i-cnt));
 
     glnum = galloc(m*sizeof(uint16));
     offsets = galloc(m*sizeof(uint16));
@@ -3458,14 +3199,14 @@ return;
 	    }
 	}
 	for ( j=0; j<m; ++j ) {
-	    dumpshort(at->kern,sf->chars[i]->ttf_glyph);
-	    dumpshort(at->kern,glnum[j]);
-	    dumpshort(at->kern,offsets[j]);
+	    putshort(at->kern,sf->chars[i]->ttf_glyph);
+	    putshort(at->kern,glnum[j]);
+	    putshort(at->kern,offsets[j]);
 	}
     }
     at->kernlen = ftell(at->kern);
     if ( at->kernlen&2 )
-	dumpshort(at->kern,0);		/* pad it */
+	putshort(at->kern,0);		/* pad it */
 }
 
 static void dumpmacstr(FILE *file,unichar_t *str) {
@@ -3573,45 +3314,45 @@ static void dumpnames(struct alltabs *at, SplineFont *sf) {
     	/* once of mac roman encoding, once for mac unicode and once for windows unicode 409 */
 
     at->name = tmpfile();
-    dumpshort(at->name,0);	/* format */
-    dumpshort(at->name,strcnt);	/* numrec */
-    dumpshort(at->name,(3+strcnt*6)*sizeof(int16));	/* offset to strings */
+    putshort(at->name,0);	/* format */
+    putshort(at->name,strcnt);	/* numrec */
+    putshort(at->name,(3+strcnt*6)*sizeof(int16));	/* offset to strings */
     for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL ) {
-	dumpshort(at->name,1);	/* apple */
-	dumpshort(at->name,0);	/*  */
-	dumpshort(at->name,0);	/* Roman alphabet */
-	dumpshort(at->name,i);
-	dumpshort(at->name,u_strlen(dummy.names[i]));
-	dumpshort(at->name,pos);
+	putshort(at->name,1);	/* apple */
+	putshort(at->name,0);	/*  */
+	putshort(at->name,0);	/* Roman alphabet */
+	putshort(at->name,i);
+	putshort(at->name,u_strlen(dummy.names[i]));
+	putshort(at->name,pos);
 	pos += u_strlen(dummy.names[i])+1;
     }
     for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL ) {
-	dumpshort(at->name,0);	/* apple unicode */
-	dumpshort(at->name,3);	/* 3 => Unicode 2.0 semantics */ /* 0 ("default") is also a reasonable value */
-	dumpshort(at->name,0);	/*  */
-	dumpshort(at->name,i);
-	dumpshort(at->name,2*u_strlen(dummy.names[i]));
-	dumpshort(at->name,pos);
+	putshort(at->name,0);	/* apple unicode */
+	putshort(at->name,3);	/* 3 => Unicode 2.0 semantics */ /* 0 ("default") is also a reasonable value */
+	putshort(at->name,0);	/*  */
+	putshort(at->name,i);
+	putshort(at->name,2*u_strlen(dummy.names[i]));
+	putshort(at->name,pos);
 	posses[i] = pos;
 	pos += 2*u_strlen(dummy.names[i])+2;
     }
     for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL ) {
-	dumpshort(at->name,3);	/* MS platform */
-	dumpshort(at->name,1);	/* not symbol */
-	dumpshort(at->name,0x0409);	/* american english language */
-	dumpshort(at->name,i);
-	dumpshort(at->name,2*u_strlen(dummy.names[i]));
-	dumpshort(at->name,posses[i]);
+	putshort(at->name,3);	/* MS platform */
+	putshort(at->name,1);	/* not symbol */
+	putshort(at->name,0x0409);	/* american english language */
+	putshort(at->name,i);
+	putshort(at->name,2*u_strlen(dummy.names[i]));
+	putshort(at->name,posses[i]);
     }
 
     for ( cur=sf->names; cur!=NULL; cur=cur->next ) if ( cur->lang!=0x409 ) {
 	for ( i=0; i<ttf_namemax; ++i ) if ( cur->names[i]!=NULL ) {
-	    dumpshort(at->name,3);	/* MS platform */
-	    dumpshort(at->name,1);	/* not symbol */
-	    dumpshort(at->name,cur->lang);/* american english language */
-	    dumpshort(at->name,i);
-	    dumpshort(at->name,2*u_strlen(cur->names[i]));
-	    dumpshort(at->name,pos);
+	    putshort(at->name,3);	/* MS platform */
+	    putshort(at->name,1);	/* not symbol */
+	    putshort(at->name,cur->lang);/* american english language */
+	    putshort(at->name,i);
+	    putshort(at->name,2*u_strlen(cur->names[i]));
+	    putshort(at->name,pos);
 	    pos += 2*u_strlen(cur->names[i])+2;
 	}
     }
@@ -3637,34 +3378,34 @@ static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format)
 
     at->post = tmpfile();
 
-    dumplong(at->post,format!=ff_otf && format!=ff_otfcid?0x00020000:0x00030000);	/* formattype */
-    dumpfixed(at->post,sf->italicangle);
-    dumpshort(at->post,sf->upos);
-    dumpshort(at->post,sf->uwidth);
-    dumplong(at->post,at->isfixed);
-    dumplong(at->post,0);		/* no idea about memory */
-    dumplong(at->post,0);		/* no idea about memory */
-    dumplong(at->post,0);		/* no idea about memory */
-    dumplong(at->post,0);		/* no idea about memory */
+    putlong(at->post,format!=ff_otf && format!=ff_otfcid?0x00020000:0x00030000);	/* formattype */
+    putfixed(at->post,sf->italicangle);
+    putshort(at->post,sf->upos);
+    putshort(at->post,sf->uwidth);
+    putlong(at->post,at->isfixed);
+    putlong(at->post,0);		/* no idea about memory */
+    putlong(at->post,0);		/* no idea about memory */
+    putlong(at->post,0);		/* no idea about memory */
+    putlong(at->post,0);		/* no idea about memory */
     if ( format!=ff_otf && format!=ff_otfcid ) {
-	dumpshort(at->post,at->maxp.numGlyphs);
+	putshort(at->post,at->maxp.numGlyphs);
 
-	dumpshort(at->post,0);		/* glyph 0 is named .notdef */
-	dumpshort(at->post,1);		/* glyphs 1&2 are tab and cr */
-	dumpshort(at->post,2);		/* or something */
+	putshort(at->post,0);		/* glyph 0 is named .notdef */
+	putshort(at->post,1);		/* glyphs 1&2 are tab and cr */
+	putshort(at->post,2);		/* or something */
 	for ( i=pos=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=0 ) {
 	    if ( sf->chars[i]->unicodeenc<128 && sf->chars[i]->unicodeenc!=-1 )
-		dumpshort(at->post,sf->chars[i]->unicodeenc-32+3);
+		putshort(at->post,sf->chars[i]->unicodeenc-32+3);
 	    else if ( strcmp(sf->chars[i]->name,".notdef")==0 )
-		dumpshort(at->post,0);
+		putshort(at->post,0);
 	    else {
 		for ( j=127-32+3; j<258; ++j )
 		    if ( strcmp(sf->chars[i]->name,ttfstandardnames[j])==0 )
 		break;
 		if ( j!=258 )
-		    dumpshort(at->post,j);
+		    putshort(at->post,j);
 		else {
-		    dumpshort(at->post,pos+258);
+		    putshort(at->post,pos+258);
 		    /*pos += strlen( sf->chars[i]->name)+1*/ ++pos;
 		}
 	    }
@@ -3744,18 +3485,18 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 
     if ( format==ff_ttfsym || sf->encoding_name==em_symbol ) {
 	/* Two encoding table pointers, one for ms, one for mac */
-	dumpshort(at->cmap,0);		/* version */
-	dumpshort(at->cmap,2);		/* num tables */
-	dumpshort(at->cmap,3);		/* ms platform */
-	dumpshort(at->cmap,0);		/* plat specific enc, symbol */
-	dumplong(at->cmap,2*sizeof(uint16)+2*(2*sizeof(uint16)+sizeof(uint32)));	/* offset from tab start to sub tab start */
-	dumpshort(at->cmap,1);		/* mac platform */
-	dumpshort(at->cmap,32);		/* plat specific enc, uninterpretted */
-	dumplong(at->cmap,2*sizeof(uint16)+2*(2*sizeof(uint16)+sizeof(uint32))+262);	/* offset from tab start to sub tab start */
+	putshort(at->cmap,0);		/* version */
+	putshort(at->cmap,2);		/* num tables */
+	putshort(at->cmap,3);		/* ms platform */
+	putshort(at->cmap,0);		/* plat specific enc, symbol */
+	putlong(at->cmap,2*sizeof(uint16)+2*(2*sizeof(uint16)+sizeof(uint32)));	/* offset from tab start to sub tab start */
+	putshort(at->cmap,1);		/* mac platform */
+	putshort(at->cmap,32);		/* plat specific enc, uninterpretted */
+	putlong(at->cmap,2*sizeof(uint16)+2*(2*sizeof(uint16)+sizeof(uint32))+262);	/* offset from tab start to sub tab start */
 
-	dumpshort(at->cmap,0);		/* format */
-	dumpshort(at->cmap,262);	/* length = 256bytes + 6 header bytes */
-	dumpshort(at->cmap,0);		/* language = meaningless */
+	putshort(at->cmap,0);		/* format */
+	putshort(at->cmap,262);	/* length = 256bytes + 6 header bytes */
+	putshort(at->cmap,0);		/* language = meaningless */
 	for ( i=0; i<256; ++i )
 	    putc(table[i],at->cmap);
     } else {
@@ -3849,51 +3590,51 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	if ( _sf->subfontcnt!=0 ) free(sfind);
 
 	/* Two encoding table pointers, one for ms, one for mac */
-	dumpshort(at->cmap,0);		/* version */
-	dumpshort(at->cmap,2);		/* num tables */
-	dumpshort(at->cmap,3);		/* ms platform */
-	dumpshort(at->cmap,		/* plat specific enc */
+	putshort(at->cmap,0);		/* version */
+	putshort(at->cmap,2);		/* num tables */
+	putshort(at->cmap,3);		/* ms platform */
+	putshort(at->cmap,		/* plat specific enc */
 		sf->encoding_name==em_ksc5601 ? 5 :	/* Wansung */
 		sf->encoding_name==em_jis208 ? 2 :	/* SJIS */
 		 1 );					/* Unicode */
-	dumplong(at->cmap,2*sizeof(uint16)+2*(2*sizeof(uint16)+sizeof(uint32)));	/* offset from tab start to sub tab start */
-	dumpshort(at->cmap,1);		/* mac platform */
-	dumpshort(at->cmap,0);		/* plat specific enc, script=roman */
-	dumplong(at->cmap,2*sizeof(uint16)+2*(2*sizeof(uint16)+sizeof(uint32))+(8+4*segcnt+rpos)*sizeof(int16));	/* offset from tab start to sub tab start */
+	putlong(at->cmap,2*sizeof(uint16)+2*(2*sizeof(uint16)+sizeof(uint32)));	/* offset from tab start to sub tab start */
+	putshort(at->cmap,1);		/* mac platform */
+	putshort(at->cmap,0);		/* plat specific enc, script=roman */
+	putlong(at->cmap,2*sizeof(uint16)+2*(2*sizeof(uint16)+sizeof(uint32))+(8+4*segcnt+rpos)*sizeof(int16));	/* offset from tab start to sub tab start */
 
-	dumpshort(at->cmap,4);		/* format */
-	dumpshort(at->cmap,(8+4*segcnt+rpos)*sizeof(int16));
-	dumpshort(at->cmap,0);		/* language/version */
-	dumpshort(at->cmap,2*segcnt);	/* segcnt */
+	putshort(at->cmap,4);		/* format */
+	putshort(at->cmap,(8+4*segcnt+rpos)*sizeof(int16));
+	putshort(at->cmap,0);		/* language/version */
+	putshort(at->cmap,2*segcnt);	/* segcnt */
 	for ( j=0,i=1; i<=segcnt; i<<=1, ++j );
-	dumpshort(at->cmap,i);		/* 2*2^floor(log2(segcnt)) */
-	dumpshort(at->cmap,j-1);
-	dumpshort(at->cmap,2*segcnt-i);
+	putshort(at->cmap,i);		/* 2*2^floor(log2(segcnt)) */
+	putshort(at->cmap,j-1);
+	putshort(at->cmap,2*segcnt-i);
 	for ( i=0; i<segcnt; ++i )
-	    dumpshort(at->cmap,cmapseg[i].end);
-	dumpshort(at->cmap,0);
+	    putshort(at->cmap,cmapseg[i].end);
+	putshort(at->cmap,0);
 	for ( i=0; i<segcnt; ++i )
-	    dumpshort(at->cmap,cmapseg[i].start);
+	    putshort(at->cmap,cmapseg[i].start);
 	for ( i=0; i<segcnt; ++i )
-	    dumpshort(at->cmap,cmapseg[i].delta);
+	    putshort(at->cmap,cmapseg[i].delta);
 	for ( i=0; i<segcnt; ++i )
-	    dumpshort(at->cmap,cmapseg[i].rangeoff);
+	    putshort(at->cmap,cmapseg[i].rangeoff);
 	for ( i=0; i<rpos; ++i )
-	    dumpshort(at->cmap,ranges[i]);
+	    putshort(at->cmap,ranges[i]);
 	free(ranges);
 	free(cmapseg);
     }
 
     /* Mac table just same as symbol table */
-    dumpshort(at->cmap,0);		/* format */
-    dumpshort(at->cmap,262);	/* length = 256bytes + 6 header bytes */
-    dumpshort(at->cmap,0);		/* language = english */
+    putshort(at->cmap,0);		/* format */
+    putshort(at->cmap,262);	/* length = 256bytes + 6 header bytes */
+    putshort(at->cmap,0);		/* language = english */
     for ( i=0; i<256; ++i )
 	putc(table[i],at->cmap);
 
     at->cmaplen = ftell(at->cmap);
     if ( (at->cmaplen&2)!=0 )
-	dumpshort(at->cmap,0);
+	putshort(at->cmap,0);
 }
 
 static int32 filecheck(FILE *file) {
@@ -3910,10 +3651,26 @@ return( sum );
 }
 
 #define CHR(ch1,ch2,ch3,ch4) (((ch1)<<24)|((ch2)<<16)|((ch3)<<8)|(ch4))
-static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format) {
-    int i, pos;
+static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
+	real *bsizes, enum bitmapformat bf) {
+    int i, j, pos;
+    BDFFont *bdf;
 
     memset(at,'\0',sizeof(struct alltabs));
+    at->msbitmaps = bf==bf_ttf_ms;
+    if ( bf!=bf_ttf_ms && bf!=bf_ttf_apple )
+	bsizes = NULL;
+    if ( bsizes!=NULL ) {
+	for ( i=j=0; bsizes[i]!=0; ++i ) {
+	    for ( bdf=sf->bitmaps; bdf!=NULL && bdf->pixelsize!=bsizes[i]; bdf=bdf->next );
+	    if ( bdf!=NULL )
+		bsizes[j++] = bsizes[i];
+	}
+	bsizes[j] = 0;
+	for ( i=0; bsizes[i]!=0; ++i );
+	at->gi.strikecnt = i;
+	if ( i==0 ) bsizes=NULL;
+    }
 
     at->maxp.version = 0x00010000;
     if ( format==ff_otf || format==ff_otfcid )
@@ -3929,6 +3686,8 @@ static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format
 	dumpcidglyphs(sf,at);
     else
 	dumpglyphs(sf,&at->gi);
+    if ( bsizes!=NULL )
+	ttfdumpbitmap(sf,at,bsizes);
     at->head.xmin = at->gi.xmin;
     at->head.ymin = at->gi.ymin;
     at->head.xmax = at->gi.xmax;
@@ -3953,17 +3712,12 @@ static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format
 
     if ( format==ff_otf || format==ff_otfcid ) {
 	at->tabdir.version = CHR('O','T','T','O');
-	at->tabdir.numtab = 9+(at->kernlen!=0);
     } else {
 	at->tabdir.version = 0x00010000;
-	at->tabdir.numtab = 11+(at->kernlen!=0);
     }
-    at->tabdir.searchRange = 8*16;
-    at->tabdir.entrySel = 3;
-    at->tabdir.rangeShift = at->tabdir.numtab*16-at->tabdir.searchRange;
 
     i = 0;
-    pos = sizeof(int32)+4*sizeof(int16) + at->tabdir.numtab*4*sizeof(int32);
+    pos = 0;
 
     if ( format==ff_otf || format==ff_otfcid ) {
 	at->tabdir.tabs[i].tag = CHR('C','F','F',' ');
@@ -3973,11 +3727,43 @@ static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format
 	pos += ((at->cfflen+3)>>2)<<2;
     }
 
+    if ( at->bdat!=NULL && at->msbitmaps ) {
+	at->tabdir.tabs[i].tag = CHR('E','B','D','T');
+	at->tabdir.tabs[i].checksum = filecheck(at->bdat);
+	at->tabdir.tabs[i].offset = pos;
+	at->tabdir.tabs[i++].length = at->bdatlen;
+	pos += ((at->bdatlen+3)>>2)<<2;
+    }
+
+    if ( at->bloc!=NULL && at->msbitmaps ) {
+	at->tabdir.tabs[i].tag = CHR('E','B','L','C');
+	at->tabdir.tabs[i].checksum = filecheck(at->bloc);
+	at->tabdir.tabs[i].offset = pos;
+	at->tabdir.tabs[i++].length = at->bloclen;
+	pos += ((at->bloclen+3)>>2)<<2;
+    }
+
     at->tabdir.tabs[i].tag = CHR('O','S','/','2');
     at->tabdir.tabs[i].checksum = filecheck(at->os2f);
     at->tabdir.tabs[i].offset = pos;
     at->tabdir.tabs[i++].length = at->os2len;
     pos += ((at->os2len+3)>>2)<<2;
+
+    if ( at->bdat!=NULL && !at->msbitmaps ) {
+	at->tabdir.tabs[i].tag = CHR('b','d','a','t');
+	at->tabdir.tabs[i].checksum = filecheck(at->bdat);
+	at->tabdir.tabs[i].offset = pos;
+	at->tabdir.tabs[i++].length = at->bdatlen;
+	pos += ((at->bdatlen+3)>>2)<<2;
+    }
+
+    if ( at->bloc!=NULL && !at->msbitmaps ) {
+	at->tabdir.tabs[i].tag = CHR('b','l','o','c');
+	at->tabdir.tabs[i].checksum = filecheck(at->bloc);
+	at->tabdir.tabs[i].offset = pos;
+	at->tabdir.tabs[i++].length = at->bloclen;
+	pos += ((at->bloclen+3)>>2)<<2;
+    }
 
     at->tabdir.tabs[i].tag = CHR('c','m','a','p');
     at->tabdir.tabs[i].checksum = filecheck(at->cmap);
@@ -4050,55 +3836,71 @@ static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format
     at->tabdir.tabs[i].offset = pos;
     at->tabdir.tabs[i++].length = at->postlen;
     pos += ((at->postlen+3)>>2)<<2;
+
+    at->tabdir.numtab = i;
+    at->tabdir.searchRange = (i<16?8:i<32?16:32)*16;
+    at->tabdir.entrySel = (i<16?3:i<32?4:5);
+    at->tabdir.rangeShift = at->tabdir.numtab*16-at->tabdir.searchRange;
+    for ( i=0; i<at->tabdir.numtab; ++i )
+	at->tabdir.tabs[i].offset += sizeof(int32)+4*sizeof(int16) + at->tabdir.numtab*4*sizeof(int32);
 }
 
 static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
     int32 checksum;
     int i, head_index;
-    /* I can't use fwrite because I have to byte swap everything */
+    /* I can't use fwrite because I (may) have to byte swap everything */
 
-    dumplong(ttf,at->tabdir.version);
-    dumpshort(ttf,at->tabdir.numtab);
-    dumpshort(ttf,at->tabdir.searchRange);
-    dumpshort(ttf,at->tabdir.entrySel);
-    dumpshort(ttf,at->tabdir.rangeShift);
+    putlong(ttf,at->tabdir.version);
+    putshort(ttf,at->tabdir.numtab);
+    putshort(ttf,at->tabdir.searchRange);
+    putshort(ttf,at->tabdir.entrySel);
+    putshort(ttf,at->tabdir.rangeShift);
     for ( i=0; i<at->tabdir.numtab; ++i ) {
-	dumplong(ttf,at->tabdir.tabs[i].tag);
-	dumplong(ttf,at->tabdir.tabs[i].checksum);
-	dumplong(ttf,at->tabdir.tabs[i].offset);
-	dumplong(ttf,at->tabdir.tabs[i].length);
+	putlong(ttf,at->tabdir.tabs[i].tag);
+	putlong(ttf,at->tabdir.tabs[i].checksum);
+	putlong(ttf,at->tabdir.tabs[i].offset);
+	putlong(ttf,at->tabdir.tabs[i].length);
     }
 
     i=0;
     if ( format==ff_otf || format==ff_otfcid)
-	copyfile(ttf,at->cfff,at->tabdir.tabs[i++].offset);
-    copyfile(ttf,at->os2f,at->tabdir.tabs[i++].offset);
-    copyfile(ttf,at->cmap,at->tabdir.tabs[i++].offset);
+	ttfcopyfile(ttf,at->cfff,at->tabdir.tabs[i++].offset);
+    if ( at->bdat!=NULL && at->msbitmaps ) {
+	ttfcopyfile(ttf,at->bdat,at->tabdir.tabs[i++].offset);
+	ttfcopyfile(ttf,at->bloc,at->tabdir.tabs[i++].offset);
+    }
+    ttfcopyfile(ttf,at->os2f,at->tabdir.tabs[i++].offset);
+    if ( at->bdat!=NULL && !at->msbitmaps ) {
+	ttfcopyfile(ttf,at->bdat,at->tabdir.tabs[i++].offset);
+	ttfcopyfile(ttf,at->bloc,at->tabdir.tabs[i++].offset);
+    }
+    ttfcopyfile(ttf,at->cmap,at->tabdir.tabs[i++].offset);
     if ( format!=ff_otf && format!= ff_otfcid ) {
-	copyfile(ttf,at->cvtf,at->tabdir.tabs[i++].offset);
-	copyfile(ttf,at->gi.glyphs,at->tabdir.tabs[i++].offset);
+	ttfcopyfile(ttf,at->cvtf,at->tabdir.tabs[i++].offset);
+	ttfcopyfile(ttf,at->gi.glyphs,at->tabdir.tabs[i++].offset);
     }
     head_index = i;
-    copyfile(ttf,at->headf,at->tabdir.tabs[i++].offset);
-    copyfile(ttf,at->hheadf,at->tabdir.tabs[i++].offset);
-    copyfile(ttf,at->gi.hmtx,at->tabdir.tabs[i++].offset);
+    ttfcopyfile(ttf,at->headf,at->tabdir.tabs[i++].offset);
+    ttfcopyfile(ttf,at->hheadf,at->tabdir.tabs[i++].offset);
+    ttfcopyfile(ttf,at->gi.hmtx,at->tabdir.tabs[i++].offset);
     if ( at->kern!=NULL )
-	copyfile(ttf,at->kern,at->tabdir.tabs[i++].offset);
+	ttfcopyfile(ttf,at->kern,at->tabdir.tabs[i++].offset);
     if ( format!=ff_otf && format!=ff_otfcid )
-	copyfile(ttf,at->loca,at->tabdir.tabs[i++].offset);
-    copyfile(ttf,at->maxpf,at->tabdir.tabs[i++].offset);
-    copyfile(ttf,at->name,at->tabdir.tabs[i++].offset);
-    copyfile(ttf,at->post,at->tabdir.tabs[i++].offset);
+	ttfcopyfile(ttf,at->loca,at->tabdir.tabs[i++].offset);
+    ttfcopyfile(ttf,at->maxpf,at->tabdir.tabs[i++].offset);
+    ttfcopyfile(ttf,at->name,at->tabdir.tabs[i++].offset);
+    ttfcopyfile(ttf,at->post,at->tabdir.tabs[i++].offset);
 
     checksum = filecheck(ttf);
     checksum = 0xb1b0afba-checksum;
     fseek(ttf,at->tabdir.tabs[head_index].offset+2*sizeof(int32),SEEK_SET);
-    dumplong(ttf,checksum);
+    putlong(ttf,checksum);
 
-    /* copyfile closed all the files (except ttf) */
+    /* ttfcopyfile closed all the files (except ttf) */
 }
 
-int WriteTTFFont(char *fontname,SplineFont *sf,enum fontformat format) {
+int WriteTTFFont(char *fontname,SplineFont *sf,enum fontformat format,
+	real *bsizes, enum bitmapformat bf) {
     struct alltabs at;
     FILE *ttf;
     char *oldloc;
@@ -4111,7 +3913,7 @@ return( 0 );
     } else {
 	if ( sf->subfontcnt!=0 ) sf = sf->subfonts[0];
     }
-    initTables(&at,sf,format);
+    initTables(&at,sf,format,bsizes,bf);
     dumpttf(ttf,&at,format);
     setlocale(LC_NUMERIC,oldloc);
     if ( ferror(ttf)) {

@@ -153,6 +153,7 @@ typedef struct bdfchar {
     Undoes *redoes;
     unsigned int changed: 1;
     unsigned int byte_data: 1;		/* for anti-aliased chars entries are grey-scale bytes not bw bits */
+    unsigned int widthgroup: 1;		/* for ttf bitmap output */
     BDFFloat *selection;
 } BDFChar;
 
@@ -444,6 +445,7 @@ extern struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
 struct cidbytes;
 struct fd2data;
 struct ttfinfo;
+struct alltabs;
 extern struct pschars *CID2Chrs(SplineFont *cidmaster,struct cidbytes *cidbytes);
 extern struct pschars *SplineFont2Subrs2(SplineFont *sf);
 extern struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
@@ -451,15 +453,18 @@ extern struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
 extern struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds);
 enum fontformat { ff_pfa, ff_pfb, ff_ptype3, ff_ptype0, ff_cid,
 	ff_ttf, ff_ttfsym, ff_otf, ff_otfcid, ff_none };
+enum bitmapformat { bf_bdf, bf_ttf_ms, bf_ttf_apple, bf_gdf, bf_none };
 extern int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format);
 extern int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format);
-extern int WriteTTFFont(char *fontname,SplineFont *sf, enum fontformat format);
+extern int WriteTTFFont(char *fontname,SplineFont *sf, enum fontformat format,
+	real *bsizes, enum bitmapformat bf);
 extern void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf);
 extern void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname);
 extern int SFReencodeFont(SplineFont *sf,enum charset new_map);
 extern int SFMatchEncoding(SplineFont *sf,SplineFont *target);
 extern char *SFGetModifiers(SplineFont *sf);
 extern void SFSetFontName(SplineFont *sf, char *family, char *mods, char *full);
+extern void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,real *sizes);
 
 extern int RealNear(real a,real b);
 extern int RealNearish(real a,real b);
@@ -667,5 +672,9 @@ int32 getlong(FILE *ttf);
 int get3byte(FILE *ttf);
 real getfixed(FILE *ttf);
 real get2dot14(FILE *ttf);
+void putshort(FILE *file,int sval);
+void putlong(FILE *file,int val);
+void putfixed(FILE *file,real dval);
+void ttfcopyfile(FILE *ttf, FILE *other, int pos);
 #endif
 

@@ -27,7 +27,7 @@ LDFLAGS = @LDFLAGS@
 LIBS = -L../libs $(X_LIBS) ../libs/libgdraw.a ../libs/libgunicode.a \
     $(X_PRE_LIBS) -lX11 $(X_EXTRA_LIBS) @LIBS@ -L/usr/lib -lm
 
-all: pfaedit pfaedit.en.ui
+all: pfaedit.en.ui pfaedit
 
 pfaedit: nomen.h $(pfaedit_OBJECTS)
 	$(CC) -o pfaedit $(pfaedit_OBJECTS) $(LIBS)
@@ -40,7 +40,7 @@ nomen.h pfaedit-ui.c pfaedit.en.ui: nomen.*.c makenomenh.c
 	mv pfaedit-ui.en.c pfaedit-ui.c
 
 clean:
-	-rm -f *.o pfaedit *.ui
+	-rm -f *.o pfaedit *.ui nomen.h pfaedit-ui.c
 
 cleaner:
-	-rm -f *.o pfaedit *.ui Makefile
+	-rm -f *.o pfaedit *.ui nomen.h pfaedit-ui.c Makefile
