@@ -1683,6 +1683,7 @@ return( false );
 		oddcomplain = true;
 	    }
 	    ++kerns;
+	    ret = end;
 	}
 	this->next_state = ns;
 	this->flags = flags;
