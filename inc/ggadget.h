@@ -310,6 +310,8 @@ GGadget *CreateSlider(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *CreateFileChooser(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *CreateGadgets(struct gwindow *base, GGadgetCreateData *gcd);
 
+GTextInfo **GTextInfoArrayFromList(GTextInfo *ti, uint16 *cnt);
+
 #if 0
 void GadgetRedraw(Gadget *g);
 void GadgetSetBox(Gadget *g,Box *b);

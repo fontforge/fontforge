@@ -2302,7 +2302,10 @@ return( NULL );
     setlocale(LC_NUMERIC,oldloc);
     _xmlFreeDoc(doc);
 
-    order2 = SPLFindOrder(ret);
+    if ( loaded_fonts_same_as_new )
+	order2 = new_fonts_are_order2;
+    else
+	order2 = SPLFindOrder(ret);
     if ( order2==-1 ) order2 = 0;
     SPLSetOrder(ret,order2);
 

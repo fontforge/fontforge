@@ -51,6 +51,7 @@ struct gfi_data {
     unsigned int mpdone: 1;
     struct anchor_shows { CharView *cv; SplineChar *sc; int restart; } anchor_shows[2];
     struct texdata texdata;
+    struct contextchaindlg *ccd;
 };
 
 GTextInfo emsizes[] = {
@@ -540,16 +541,6 @@ static struct langstyle outlines[] = { {0x409, outlineeng}, {0x40c, outlinefren}
 static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, heavys, blacks,
 	lights, thins, italics, obliques, condenseds, expandeds, outlines, NULL };
 
-static GTextInfo mark_tags[] = {
-    { (unichar_t *) _STR_Abvm, NULL, 0, 0, (void *) CHR('a','b','v','m'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Blwm, NULL, 0, 0, (void *) CHR('b','l','w','m'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_MarkT, NULL, 0, 0, (void *) CHR('m','a','r','k'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Mkmk, NULL, 0, 0, (void *) CHR('m','k','m','k'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Curs, NULL, 0, 0, (void *) CHR('c','u','r','s'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_RQD, NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, false, true },
-    { NULL }
-};
-
 #define CID_Encoding	1001
 #define CID_Family	1002
 #define CID_Weight	1003
@@ -626,6 +617,12 @@ static GTextInfo mark_tags[] = {
 #define CID_MoreParams		8005
 #define CID_TeXExtraSpLabel	8006
 #define CID_TeX			8007	/* through 8014 */
+
+#define CID_ContextClasses	9001
+#define CID_ContextNew		9002
+#define CID_ContextDel		9003
+#define CID_ContextEdit		9004
+#define CID_ContextEditData	9005
 
 struct psdict *PSDictCopy(struct psdict *dict) {
     struct psdict *ret;
@@ -2012,11 +2009,99 @@ static int GFI_GuessItalic(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static void GFI_CleanupContext(struct gfi_data *d) {
+    FPST *fpst;
+    int i, j;
+
+    /* Free any context which were created but got [Cancelled] */
+    for ( i=0; i<fpst_max-pst_contextpos; ++i ) {
+	GGadget *list = GWidgetGetControl(d->gw,CID_ContextClasses+i*100);
+	int len;
+	GTextInfo **old = GGadgetGetList(list,&len);
+	for ( j=0; j<len; ++j ) {
+	    fpst = (FPST *) (old[j]->userdata);
+	    if ( fpst!=NULL ) fpst->ticked = false;
+	}
+    }
+    for ( fpst = d->sf->possub; fpst!=NULL; fpst=fpst->next )
+	fpst->ticked = true;
+    for ( i=0; i<fpst_max-pst_contextpos; ++i ) {
+	GGadget *list = GWidgetGetControl(d->gw,CID_ContextClasses+i*100);
+	int len;
+	GTextInfo **old = GGadgetGetList(list,&len);
+	for ( j=0; j<len; ++j ) {
+	    fpst = (FPST *) (old[j]->userdata);
+	    if ( fpst!=NULL && !fpst->ticked ) {
+		fpst->next = NULL;
+		FPSTFree(fpst);
+	    }
+	}
+    }
+}
+
+static void GFI_ProcessContexts(struct gfi_data *d) {
+    FPST *fpst, *next, *p, *last;
+    int i, j;
+
+    /* Free any contexts which have been deleted */
+    for ( fpst = d->sf->possub; fpst!=NULL; fpst=fpst->next )
+	fpst->ticked = false;
+    for ( i=0; i<fpst_max-pst_contextpos; ++i ) {
+	GGadget *list = GWidgetGetControl(d->gw,CID_ContextClasses+i*100);
+	int len;
+	GTextInfo **old = GGadgetGetList(list,&len);
+	for ( j=0; j<len; ++j ) {
+	    fpst = (FPST *) (old[j]->userdata);
+	    if ( fpst!=NULL ) fpst->ticked = true;
+	}
+    }
+    p = NULL;
+    for ( fpst = d->sf->possub; fpst!=NULL; fpst=next ) {
+	next = fpst->next;
+	if ( fpst->ticked )
+	    p = fpst;
+	else {
+	    if ( p==NULL )
+		d->sf->possub = next;
+	    else
+		p->next = next;
+	    fpst->next = NULL;
+	    FPSTFree(fpst);
+	}
+    }
+
+    /* Now build up a new list containing all active classes */
+    last = NULL;
+    for ( i=0; i<fpst_max-pst_contextpos; ++i ) {
+	GGadget *list = GWidgetGetControl(d->gw,CID_ContextClasses+i*100);
+	int len;
+	GTextInfo **old = GGadgetGetList(list,&len);
+	for ( j=0; j<len; ++j ) {
+	    fpst = (FPST *) (old[j]->userdata);
+	    if ( fpst!=NULL ) {
+		if ( last==NULL )
+		    d->sf->possub = fpst;
+		else
+		    last->next = fpst;
+		last = fpst;
+	    }
+	    old[j]->userdata = NULL;
+	}
+    }
+    if ( last==NULL )
+	d->sf->possub = NULL;
+    else
+	last->next = NULL;
+}
+
 static void GFI_Close(struct gfi_data *d) {
     FontView *fvs;
     SplineFont *sf = d->sf;
     int i;
 
+    if ( d->ccd )
+	CCD_Close(d->ccd);
+    GFI_CleanupContext(d);
     PSDictFree(d->private);
     for ( i=0; i<ttf_namemax; ++i )
 	free(d->def.names[i]);
@@ -2216,7 +2301,7 @@ static void GFI_GetAnchors(struct gfi_data *d) {
 }
 
 static unichar_t *GFI_AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
-	int sli, GTextInfo *tags, struct gfi_data *d,
+	int sli, enum possub_type type, struct gfi_data *d,
 	SplineChar *default_script, int merge_with, int act_type ) {
     AnchorClass *oldancs;
     unichar_t *newname;
@@ -2225,7 +2310,7 @@ static unichar_t *GFI_AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16
     d->sf->anchor = NULL;
     GFI_GetAnchors(d);
 
-    newname = AskNameTag(title,def,def_tag,flags,sli,tags,d->sf,
+    newname = AskNameTag(title,def,def_tag,flags,sli,type,d->sf,
 	    default_script,merge_with,act_type);
     AnchorClassesFree(d->sf->anchor);
     d->sf->anchor = oldancs;
@@ -2242,7 +2327,7 @@ static int GFI_AnchorNew(GGadget *g, GEvent *e) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 
 	newname = GFI_AskNameTag(_STR_NewAnchorClass,NULL,CHR('m','a','r','k'),0,
-		-1, mark_tags,d,NULL,AnchorClassesNextMerge(d->sf->anchor),act_mark);
+		-1, pst_anchors,d,NULL,AnchorClassesNextMerge(d->sf->anchor),act_mark);
 
 	if ( newname!=NULL ) {
 	    list = GWidgetGetControl(GGadgetGetWindow(g),CID_AnchorClasses);
@@ -2254,7 +2339,7 @@ static int GFI_AnchorNew(GGadget *g, GEvent *e) {
 	    if ( i<len ) {
 		GWidgetErrorR(_STR_DuplicateName,_STR_DuplicateName);
 		free(newname);
-return( false );
+return( true );
 	    }
 	    if ( uc_strncmp(newname,"curs",4)==0 ) {
 		for ( i=0; i<len; ++i ) {
@@ -2264,7 +2349,7 @@ return( false );
 		if ( i<len ) {
 		    GWidgetErrorR(_STR_OnlyOne,_STR_OnlyOneCurs);
 		    free(newname);
-return( false );
+return( true );
 		}
 	    }
 	    new = gcalloc(len+2,sizeof(GTextInfo *));
@@ -2333,7 +2418,7 @@ void GListDelSelected(GGadget *list) {
     GGadgetSetList(list,new,false);
 }
 
-void GListChangeLine(GGadget *list,int pos, unichar_t *line) {
+void GListChangeLine(GGadget *list,int pos, const unichar_t *line) {
     GTextInfo **old, **new;
     int32 i,len;
     
@@ -2345,13 +2430,13 @@ void GListChangeLine(GGadget *list,int pos, unichar_t *line) {
 	if ( i!=pos )
 	    new[i]->text = u_copy(new[i]->text);
 	else
-	    new[i]->text = line;
+	    new[i]->text = u_copy(line);
     }
     new[i] = gcalloc(1,sizeof(GTextInfo));
     GGadgetSetList(list,new,false);
 }
 
-GTextInfo *GListAppendLine(GGadget *list,unichar_t *line,int select) {
+GTextInfo *GListAppendLine(GGadget *list,const unichar_t *line,int select) {
     GTextInfo **old, **new;
     int32 i,len;
     
@@ -2366,7 +2451,7 @@ GTextInfo *GListAppendLine(GGadget *list,unichar_t *line,int select) {
     new[i] = gcalloc(1,sizeof(GTextInfo));
     new[i]->fg = new[i]->bg = COLOR_DEFAULT;
     new[i]->userdata = NULL;
-    new[i]->text = line;
+    new[i]->text = u_copy(line);
     new[i]->selected = select;
     new[i+1] = gcalloc(1,sizeof(GTextInfo));
     GGadgetSetList(list,new,false);
@@ -2395,7 +2480,7 @@ static int GFI_AnchorRename(GGadget *g, GEvent *e) {
 	list = GWidgetGetControl(GGadgetGetWindow(g),CID_AnchorClasses);
 	if ( (ti = GGadgetGetListItemSelected(list))==NULL )
 return( true );
-	newname = GFI_AskNameTag(_STR_EditAnchorClass,ti->text,0,0,0,mark_tags,
+	newname = GFI_AskNameTag(_STR_EditAnchorClass,ti->text,0,0,0,pst_anchors,
 		d,NULL,0,0);
 	if ( newname!=NULL ) {
 	    old = GGadgetGetList(list,&len);
@@ -2459,6 +2544,194 @@ static int GFI_AnchorSelChanged(GGadget *g, GEvent *e) {
     } else if ( e->type==et_controlevent && e->u.control.subtype == et_listdoubleclick ) {
 	e->u.control.subtype = et_buttonactivate;
 	GFI_AnchorRename(g,e);
+    }
+return( true );
+}
+
+static GTextInfo *FPSTList(SplineFont *sf,enum possub_type type) {
+    int len;
+    FPST *fpst;
+    GTextInfo *ti;
+    static const unichar_t nullstr[] = { 0 };
+
+    for ( len=0, fpst = sf->possub; fpst!=NULL; fpst=fpst->next )
+	if ( fpst->type == type )
+	    ++len;
+    ti = gcalloc(len+1,sizeof(GTextInfo));
+    for ( len=0, fpst = sf->possub; fpst!=NULL; fpst=fpst->next ) if ( fpst->type==type ) {
+	ti[len].text = ClassName(nullstr,fpst->tag,fpst->flags,
+		fpst->script_lang_index, -1, -1);
+	ti[len].fg = ti[len].bg = COLOR_DEFAULT;
+	ti[len++].userdata = fpst;
+    }
+return( ti );
+}
+
+void GFI_CCDEnd(struct gfi_data *d) {
+    int i;
+
+    d->ccd = NULL;
+    for ( i=0; i<fpst_max-pst_contextpos; ++i ) {
+	GGadget *list = GWidgetGetControl(d->gw,CID_ContextClasses+i*100);
+	int sel = GGadgetGetFirstListSelectedItem(list);
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextDel+i*100),sel!=-1);
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextEdit+i*100),sel!=-1);
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextEditData+i*100),sel!=-1);
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextNew+i*100),true);
+    }
+}
+
+void GFI_FinishContextNew(struct gfi_data *d,FPST *fpst, unichar_t *newname,
+	int success) {
+    int off;
+    GGadget *list;
+
+    if ( success ) {
+	off = fpst->type == pst_contextpos ? 000 :
+		fpst->type == pst_contextsub ? 100 :
+		fpst->type == pst_chainpos ? 200 :
+		fpst->type == pst_chainsub ? 300 : 400;
+	list = GWidgetGetControl(d->gw,CID_ContextClasses+off);
+	GListAppendLine(list,newname,false)->userdata = fpst;
+    } else {
+	chunkfree(fpst,sizeof(FPST));
+    }
+    free(newname);
+}
+
+static int GFI_ContextNew(GGadget *g, GEvent *e) {
+    int i;
+    unichar_t *newname;
+    FPST *fpst;
+    static int titles[] = { _STR_NewContextPos, _STR_NewContextSub,
+	_STR_NewChainPos, _STR_NewChainSub,
+	_STR_NewReverseChainSub,
+	0 };
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	int which = (GGadgetGetCid(g)-CID_ContextNew)/100;
+
+	if ( d->ccd )
+return( true );
+
+	newname = GFI_AskNameTag(titles[which],NULL,0,0,
+		-1, pst_contextpos+which,d,NULL,-2,-1);
+
+	if ( newname!=NULL ) {
+	    fpst = chunkalloc(sizeof(FPST));
+	    fpst->type = pst_contextpos + which;
+	    fpst->format = fpst->type==pst_reversesub ? pst_reversecoverage : pst_coverage;
+	    DecomposeClassName(newname,NULL,&fpst->tag,&fpst->flags,
+		    &fpst->script_lang_index,NULL,NULL);
+	    if ( (d->ccd = ContextChainEdit(d->sf,fpst,d,newname))!=NULL ) {
+	    for ( i=0; i<fpst_max-pst_contextpos; ++i ) {
+		    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextDel+i*100),false);
+		    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextEdit+i*100),false);
+		    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextEditData+i*100),false);
+		    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextNew+i*100),false);
+		}
+	    }
+	}
+    }
+return( true );
+}
+
+static int GFI_ContextDel(GGadget *g, GEvent *e) {
+    GGadget *list;
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	int off = GGadgetGetCid(g)-CID_ContextDel;
+	list = GWidgetGetControl(GGadgetGetWindow(g),CID_ContextClasses+off);
+	GListDelSelected(list);
+	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_ContextDel+off),false);
+	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_ContextEdit+off),false);
+	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_ContextEditData+off),false);
+    }
+return( true );
+}
+
+static int GFI_ContextEdit(GGadget *g, GEvent *e) {
+    int len, i;
+    GTextInfo **old, **new, *ti;
+    GGadget *list;
+    unichar_t *newname;
+    FPST *fpst;
+    static int titles[] = { _STR_EditContextPos, _STR_EditContextSub,
+	_STR_EditChainPos, _STR_EditChainSub,
+	_STR_EditReverseChainSub,
+	0 };
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	int which = (GGadgetGetCid(g)-CID_ContextEdit)/100;
+	list = GWidgetGetControl(GGadgetGetWindow(g),CID_ContextClasses+which*100);
+	if ( (ti = GGadgetGetListItemSelected(list))==NULL )
+return( true );
+	fpst = (FPST *) (ti->userdata);
+	newname = GFI_AskNameTag(titles[which],ti->text,0,0,0,
+		pst_contextpos+which, d,NULL,-2,-1);
+	if ( newname!=NULL ) {
+	    DecomposeClassName(newname,NULL,&fpst->tag,&fpst->flags,
+		    &fpst->script_lang_index,NULL,NULL);
+	    new = gcalloc(len+1,sizeof(GTextInfo *));
+	    for ( i=0; i<len; ++i ) {
+		new[i] = galloc(sizeof(GTextInfo));
+		*new[i] = *old[i];
+		if ( new[i]->selected && newname!=NULL ) {
+		    new[i]->text = newname;
+		    newname = NULL;
+		} else
+		    new[i]->text = u_copy(new[i]->text);
+	    }
+	    new[i] = gcalloc(1,sizeof(GTextInfo));
+	    GGadgetSetList(list,new,false);
+	}
+    }
+return( true );
+}
+
+static int GFI_ContextEditData(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	GGadget *list = GWidgetGetControl(d->gw,GGadgetGetCid(g)-CID_ContextEditData+CID_ContextClasses);
+	int sel = GGadgetGetFirstListSelectedItem(list), len;
+	GTextInfo **old = GGadgetGetList(list,&len);
+	int i;
+	if ( d->ccd )
+return( true );
+	if ( ((FPST *) (old[sel]->userdata))->format==pst_class )
+return( true );
+	if ( (d->ccd = ContextChainEdit(d->sf,(FPST *) (old[sel]->userdata),d,NULL))!=NULL ) {
+	    for ( i=0; i<fpst_max-pst_contextpos; ++i ) {
+		GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextDel+i*100),false);
+		GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextEdit+i*100),false);
+		GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextEditData+i*100),false);
+		GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextNew+i*100),false);
+	    }
+	}
+    }
+return( true );
+}
+
+static int GFI_ContextSelChanged(GGadget *g, GEvent *e) {
+    struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+    int sel = GGadgetGetFirstListSelectedItem(g), len;
+    int off = GGadgetGetCid(g)-CID_ContextClasses;
+    GTextInfo **old = GGadgetGetList(g,&len);
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextDel+off),sel!=-1 && d->ccd==NULL);
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextEdit+off),sel!=-1 && d->ccd==NULL);
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextEditData+off),
+		d->ccd==NULL && sel!=-1 &&
+		old[sel]->userdata!=NULL &&
+		(((FPST *) (old[sel]->userdata))->format==pst_glyphs ||
+		 ((FPST *) (old[sel]->userdata))->format==pst_coverage ||
+		 ((FPST *) (old[sel]->userdata))->format==pst_reversecoverage));
+    } else if ( e->type==et_controlevent && e->u.control.subtype == et_listdoubleclick ) {
+	e->u.control.subtype = et_buttonactivate;
+	g = GWidgetGetControl(GGadgetGetWindow(g),GGadgetGetCid(g)-CID_ContextClasses+CID_ContextEditData);
+	GFI_ContextEditData(g,e);
     }
 return( true );
 }
@@ -3263,6 +3536,8 @@ return( true );
 return( true );
 	if ( d->names_set )
 	    TNFinishFormer(d);
+	if ( d->ccd )
+	    CCD_Close(d->ccd);
 
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Family));
 	if ( !isalpha(*txt)) {
@@ -3370,6 +3645,7 @@ return(true);
 	sf->texdata = d->texdata;
 
 	GFI_ProcessAnchor(d);
+	GFI_ProcessContexts(d);
 
 	enc = GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,CID_Encoding));
 	if ( enc!=-1 ) {
@@ -3809,9 +4085,13 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GTabInfo aspects[11];
-    GGadgetCreateData mgcd[10], ngcd[13], egcd[12], psgcd[23], tngcd[7],   pgcd[8], vgcd[16], pangcd[22], comgcd[3], atgcd[7], txgcd[23];
-    GTextInfo mlabel[10], nlabel[13], elabel[12], pslabel[23], tnlabel[7], plabel[8], vlabel[16], panlabel[22], comlabel[3], atlabel[7], txlabel[23], *list;
+    GTabInfo aspects[12], conaspects[7];
+    GGadgetCreateData mgcd[10], ngcd[13], egcd[12], psgcd[23], tngcd[7],
+	pgcd[8], vgcd[16], pangcd[22], comgcd[3], atgcd[7], txgcd[23],
+	congcd[3], csubgcd[fpst_max-pst_contextpos][6];
+    GTextInfo mlabel[10], nlabel[13], elabel[12], pslabel[23], tnlabel[7],
+	plabel[8], vlabel[16], panlabel[22], comlabel[3], atlabel[7], txlabel[23],
+	csublabel[fpst_max-pst_contextpos][6], *list;
     struct gfi_data *d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20], ncbuf[20],
 	    vbuf[20], uibuf[12], regbuf[100], vorig[20], embuf[20];
@@ -3822,6 +4102,8 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     FontRequest rq;
     GFont *font;
+    static int connames[] = { _STR_ContextPos, _STR_ContextSub, _STR_ChainPos, _STR_ChainSub, _STR_ReverseChainSub, 0 };
+    static int contypes[] = { pst_contextpos, pst_contextsub, pst_chainpos, pst_chainsub, pst_reversesub, 0 };
 
     for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
 	if ( fvs->fontinfo ) {
@@ -4847,6 +5129,74 @@ return;
     txgcd[k++].creator = GButtonCreate;
 
 /******************************************************************************/
+    memset(&csublabel,0,sizeof(csublabel));
+    memset(&csubgcd,0,sizeof(csubgcd));
+    memset(&congcd,0,sizeof(congcd));
+    memset(&conaspects,'\0',sizeof(conaspects));
+
+    for ( i=0; i<fpst_max-pst_contextpos; ++i ) {
+	conaspects[i].text = (unichar_t *) connames[i];
+	conaspects[i].text_in_resource = true;
+	conaspects[i].gcd = csubgcd[i];
+
+	csubgcd[i][0].gd.pos.x = 10; csubgcd[i][0].gd.pos.y = 10;
+	csubgcd[i][0].gd.pos.width = ngcd[7].gd.pos.width;
+	csubgcd[i][0].gd.pos.height = 150;
+	csubgcd[i][0].gd.flags = gg_visible | gg_enabled;
+	csubgcd[i][0].gd.cid = CID_ContextClasses+i*100;
+	csubgcd[i][0].gd.u.list = FPSTList(sf,contypes[i]);
+	csubgcd[i][0].gd.handle_controlevent = GFI_ContextSelChanged;
+	csubgcd[i][0].creator = GListCreate;
+
+	csubgcd[i][1].gd.pos.x = 10; csubgcd[i][1].gd.pos.y = csubgcd[i][0].gd.pos.y+csubgcd[i][0].gd.pos.height+4;
+	csubgcd[i][1].gd.pos.width = -1;
+	csubgcd[i][1].gd.flags = gg_visible | gg_enabled;
+	csublabel[i][1].text = (unichar_t *) _STR_NewDDD;
+	csublabel[i][1].text_in_resource = true;
+	csubgcd[i][1].gd.label = &csublabel[i][1];
+	csubgcd[i][1].gd.cid = CID_ContextNew+i*100;
+	csubgcd[i][1].gd.handle_controlevent = GFI_ContextNew;
+	csubgcd[i][1].creator = GButtonCreate;
+
+	csubgcd[i][2].gd.pos.x = 10+(csubgcd[i][0].gd.pos.width-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor))/2; csubgcd[i][2].gd.pos.y = csubgcd[i][1].gd.pos.y;
+	csubgcd[i][2].gd.pos.width = -1;
+	csubgcd[i][2].gd.flags = gg_visible;
+	csublabel[i][2].text = (unichar_t *) _STR_Delete;
+	csublabel[i][2].text_in_resource = true;
+	csubgcd[i][2].gd.label = &csublabel[i][2];
+	csubgcd[i][2].gd.cid = CID_ContextDel+i*100;
+	csubgcd[i][2].gd.handle_controlevent = GFI_ContextDel;
+	csubgcd[i][2].creator = GButtonCreate;
+
+	csubgcd[i][3].gd.pos.x = 10+(csubgcd[i][0].gd.pos.width-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor)); csubgcd[i][3].gd.pos.y = csubgcd[i][1].gd.pos.y;
+	csubgcd[i][3].gd.pos.width = -1;
+	csubgcd[i][3].gd.flags = gg_visible;
+	csublabel[i][3].text = (unichar_t *) _STR_EditDDD;
+	csublabel[i][3].text_in_resource = true;
+	csubgcd[i][3].gd.label = &csublabel[i][3];
+	csubgcd[i][3].gd.cid = CID_ContextEdit+i*100;
+	csubgcd[i][3].gd.handle_controlevent = GFI_ContextEdit;
+	csubgcd[i][3].creator = GButtonCreate;
+
+	csubgcd[i][4].gd.pos.x = csubgcd[i][2].gd.pos.x-2; csubgcd[i][4].gd.pos.y = csubgcd[i][1].gd.pos.y+28;
+	csubgcd[i][4].gd.flags = gg_visible;
+	csublabel[i][4].text = (unichar_t *) _STR_EditDataDDD;
+	csublabel[i][4].text_in_resource = true;
+	csubgcd[i][4].gd.label = &csublabel[i][4];
+	csubgcd[i][4].gd.cid = CID_ContextEditData+i*100;
+	csubgcd[i][4].gd.handle_controlevent = GFI_ContextEditData;
+	csubgcd[i][4].creator = GButtonCreate;
+    }
+
+    congcd[0].gd.pos.x = 4; congcd[0].gd.pos.y = 10;
+    congcd[0].gd.pos.width = 250;
+    congcd[0].gd.pos.height = 260;
+    congcd[0].gd.u.tabs = conaspects;
+    congcd[0].gd.flags = gg_visible | gg_enabled;
+    /*congcd[0].gd.handle_controlevent = GFI_AspectChange;*/
+    congcd[0].creator = GTabSetCreate;
+
+/******************************************************************************/
 
     memset(&mlabel,0,sizeof(mlabel));
     memset(&mgcd,0,sizeof(mgcd));
@@ -4899,6 +5249,10 @@ return;
     aspects[i].text = (unichar_t *) _STR_AnchorClass;
     aspects[i].text_in_resource = true;
     aspects[i++].gcd = atgcd;
+
+    aspects[i].text = (unichar_t *) _STR_Contextual;
+    aspects[i].text_in_resource = true;
+    aspects[i++].gcd = congcd;
 
     aspects[defaspect].selected = true;
 

@@ -30,6 +30,9 @@
 #include "splinefont.h"
 #include "ggadget.h"
 
+struct gfi_data;
+struct contextchaindlg;
+
 extern struct cvshows {
     int showfore, showback, showgrids, showhhints, showvhints, showdhints;
     int showpoints, showfilled;
@@ -385,7 +388,7 @@ typedef struct fontview {
     struct searchview *sv;
     GIC *gic;
     GTimer *resize;
-    void *fontinfo;
+    struct gfi_data *fontinfo;
     SplineChar *sc_near_top;
     int sel_index;
 } FontView;
@@ -499,18 +502,24 @@ extern GTextInfo **AnchorClassesLList(SplineFont *sf);
 extern GTextInfo **AnchorClassesSimpleLList(SplineFont *sf);
 extern unichar_t *ClassName(const unichar_t *name,uint32 feature_tag,
 	uint16 flags, int script_lang_index, int merge_with, int act_type);
+extern void DecomposeClassName(const unichar_t *clsnm, unichar_t **name,
+	uint32 *feature_tag,
+	uint16 *flags, uint16 *script_lang_index,int *merge_with,int *act_type);
 extern unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag,uint16 flags,
-	int script_lang_index, GTextInfo *tags, SplineFont *sf, SplineChar *default_script,
+	int script_lang_index, enum possub_type type, SplineFont *sf, SplineChar *default_script,
 	int merge_with,int act_type);
 extern GTextInfo *SFLangList(SplineFont *sf,int addfinal,SplineChar *default_script);
-extern void ScriptLangList(SplineFont *sf,GGadget *list,int sli);
+extern int  ScriptLangList(SplineFont *sf,GGadget *list,int sli);
 extern void GListDelSelected(GGadget *list);
 extern void GListMoveSelected(GGadget *list,int offset);
-extern void GListChangeLine(GGadget *list,int pos, unichar_t *line);
-extern GTextInfo *GListAppendLine(GGadget *list,unichar_t *line,int select);
+extern void GListChangeLine(GGadget *list,int pos, const unichar_t *line);
+extern GTextInfo *GListAppendLine(GGadget *list,const unichar_t *line,int select);
 extern void FontInfo(SplineFont *sf,int aspect,int sync);
 extern void FontInfoDestroy(FontView *fv);
 extern void FontMenuFontInfo(void *fv);
+extern void GFI_FinishContextNew(struct gfi_data *d,FPST *fpst, unichar_t *newname,
+	int success);
+extern void GFI_CCDEnd(struct gfi_data *d);
 extern void DumpPfaEditEncodings(void);
 extern void ParseEncodingFile(char *filename);
 extern void LoadEncodingFile(void);
@@ -903,6 +912,11 @@ enum hist_type { hist_hstem, hist_vstem, hist_blues };
 struct psdict;
 extern void SFHistogram(SplineFont *sf,struct psdict *private,uint8 *selected,
 	enum hist_type which);
+
+extern GTextInfo **SFGenTagListFromType(struct gentagtype *gentags,enum possub_type type);
+extern struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
+	struct gfi_data *gfi,unichar_t *newname);
+extern void CCD_Close(struct contextchaindlg *ccd);
 
 extern GMenuItem helplist[];
 #endif

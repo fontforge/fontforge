@@ -1,0 +1,2052 @@
+/* Copyright (C) 2000-2003 by George Williams */
+/*
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+
+ * Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+
+ * Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+
+ * The name of the author may not be used to endorse or promote products
+ * derived from this software without specific prior written permission.
+
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+ * EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+#include "pfaeditui.h"
+#include <chardata.h>
+#include <utype.h>
+#include <ustring.h>
+#include <gkeysym.h>
+
+enum possub_type SFGTagUsed(struct gentagtype *gentags,uint32 tag) {
+    int i;
+
+    for ( i=0; i<gentags->tt_cur; ++i )
+	if ( gentags->tagtype[i].tag==tag )
+return( gentags->tagtype[i].type );
+
+return( pst_null );
+}
+
+uint32 SFGenerateNewFeatureTag(struct gentagtype *gentags,enum possub_type type,
+	uint32 suggested_tag) {
+    char buf[8],tbuf[8];
+    int i,j,k,l;
+
+    if ( gentags->tt_cur >= gentags->tt_max ) {
+	if ( gentags->tt_cur==0 ) {
+	    gentags->tagtype = galloc((gentags->tt_max=32)*sizeof(uint8));
+	} else {
+	    gentags->tt_max += 32;
+	    gentags->tagtype = grealloc(gentags->tagtype,gentags->tt_max*sizeof(uint8));
+	}
+    }
+    for ( i=0; i<gentags->tt_cur && gentags->tagtype[i].type!=pst_null; ++i );
+    if ( i==gentags->tt_cur ) ++gentags->tt_cur;
+    if ( suggested_tag==0 ) {
+	sprintf(buf, "%04d", i );
+	gentags->tagtype[i].type = type;
+	gentags->tagtype[i].tag = CHR(buf[0],buf[1],buf[2],buf[3]);
+    } else {
+	j = 0;
+	tbuf[0] = suggested_tag>>24;
+	tbuf[1] = (suggested_tag>>16)&0xff;
+	tbuf[2] = (suggested_tag>>8)&0xff;
+	tbuf[3] = suggested_tag&0xff;
+	while ( SFGTagUsed(gentags,suggested_tag)!=pst_null ) {
+	    sprintf(buf,"%d",j++);
+	    k = strlen(buf);
+	    for ( l=0; l<k; ++l )
+		tbuf[3-l] = buf[k-l-1];
+	    suggested_tag = CHR(tbuf[0],tbuf[1],tbuf[2],tbuf[3]);
+	}
+	gentags->tagtype[i].type = type;
+	gentags->tagtype[i].tag = suggested_tag;
+    }
+return( gentags->tagtype[i].tag );
+}
+
+void SFFreeGenerateFeatureTag(struct gentagtype *gentags,uint32 tag) {
+    int i;
+
+    for ( i=0; i<gentags->tt_cur; ++i )
+	if ( gentags->tagtype[i].tag==tag )
+    break;
+    if ( i==gentags->tt_cur-1 )
+	--gentags->tt_cur;
+    else if ( i<gentags->tt_cur ) {
+	gentags->tagtype[i].type = pst_null;
+	gentags->tagtype[i].tag = CHR(' ',' ',' ',' ');
+    } else
+	GDrawIError("Attempt to free an invalid generated tag" );
+}
+
+static int typematch(int tagtype, int searchtype) {
+return( tagtype==searchtype ||
+		    (searchtype==fpst_max &&
+			(tagtype==pst_position ||
+			 tagtype==pst_pair ||
+			 tagtype==pst_kerning ||
+			 tagtype==pst_vkerning ||
+			 tagtype==pst_anchors ||
+			 tagtype==pst_contextpos ||
+			 tagtype==pst_chainpos )) ||
+		    (searchtype==fpst_max+1 &&
+			(tagtype==pst_substitution ||
+			 tagtype==pst_alternate ||
+			 tagtype==pst_multiple ||
+			 tagtype==pst_ligature ||
+			 tagtype==pst_contextsub ||
+			 tagtype==pst_chainsub ||
+			 tagtype==pst_reversesub )) );
+}
+
+GTextInfo **SFGenTagListFromType(struct gentagtype *gentags,enum possub_type type) {
+    int len, i;
+    GTextInfo **ti;
+    char buf[8];
+
+    if ( type>=pst_lcaret && type<fpst_max && type!=pst_anchors )
+	len=0;		/* Each FPST, etc. represents one lookup, can't duplicate it */
+			/*  AnchorClasses can merge, so several make one lookup */
+    else {
+	len = 0;
+	for ( i=0; i<gentags->tt_cur; ++i )
+	    if ( typematch(gentags->tagtype[i].type,type))
+		++len;
+    }
+
+    ti = galloc((len+1)*sizeof(GTextInfo *));
+    ti[len] = gcalloc(1,sizeof(GTextInfo));
+    buf[4] = 0;
+    if ( type<pst_lcaret || type>=fpst_max ) {
+	len = 0;
+	for ( i=0; i<gentags->tt_cur; ++i )
+	    if ( typematch(gentags->tagtype[i].type,type) ) {
+		sprintf( buf, "%c%c%c%c",
+			gentags->tagtype[i].tag>>24,
+			(gentags->tagtype[i].tag>>16)&0xff,
+			(gentags->tagtype[i].tag>>8)&0xff,
+			gentags->tagtype[i].tag&0xff );
+		ti[len] = gcalloc(1,sizeof(GTextInfo));
+		ti[len]->userdata = (void *) gentags->tagtype[i].tag;
+		ti[len]->text = uc_copy(buf);
+		ti[len]->fg = ti[len]->bg = COLOR_DEFAULT;
+		++len;
+	    }
+    }
+return( ti );
+}
+
+static void FPSTRuleContentsFree(struct fpst_rule *r, enum fpossub_format format) {
+    int j;
+
+    switch ( format ) {
+      case pst_glyphs:
+	free(r->u.glyph.names);
+	free(r->u.glyph.back);
+	free(r->u.glyph.fore);
+      break;
+      case pst_class:
+	free(r->u.class.nclasses);
+	free(r->u.class.bclasses);
+	free(r->u.class.fclasses);
+      break;
+      case pst_reversecoverage:
+	free(r->u.rcoverage.replacements);
+      case pst_coverage:
+	for ( j=0 ; j<r->u.coverage.ncnt ; ++j )
+	    free(r->u.coverage.ncovers[j]);
+	free(r->u.coverage.ncovers);
+	for ( j=0 ; j<r->u.coverage.bcnt ; ++j )
+	    free(r->u.coverage.bcovers[j]);
+	free(r->u.coverage.bcovers);
+	for ( j=0 ; j<r->u.coverage.fcnt ; ++j )
+	    free(r->u.coverage.fcovers[j]);
+	free(r->u.coverage.fcovers);
+      break;
+    }
+    free(r->lookups);
+}
+
+static void FPSTRulesFree(struct fpst_rule *r, enum fpossub_format format, int rcnt) {
+    int i;
+    for ( i=0; i<rcnt; ++i )
+	FPSTRuleContentsFree(&r[i],format);
+    free(r);
+}
+
+#if 0
+static struct fpst_rule *RulesCopy(struct fpst_rule *from, int cnt,
+	enum fpossub_format format ) {
+    int i, j;
+    struct fpst_rule *to, *f, *t;
+
+    if ( cnt==0 )
+return( NULL );
+
+    to = gcalloc(cnt,sizeof(struct fpst_rule));
+    for ( i=0; i<cnt; ++i ) {
+	f = from+i; t = to+i;
+	switch ( format ) {
+	  case pst_glyphs:
+	    t->u.glyph.names = copy(f->u.glyph.names);
+	    t->u.glyph.back = copy(f->u.glyph.back);
+	    t->u.glyph.fore = copy(f->u.glyph.fore);
+	  break;
+	  case pst_class:
+	    t->u.class.ncnt = f->u.class.ncnt;
+	    t->u.class.bcnt = f->u.class.bcnt;
+	    t->u.class.fcnt = f->u.class.fcnt;
+	    t->u.class.nclasses = galloc( f->u.class.ncnt*sizeof(uint16));
+	    memcpy(t->u.class.nclasses,f->u.class.nclasses,
+		    f->u.class.ncnt*sizeof(uint16));
+	    if ( t->u.class.bcnt!=0 ) {
+		t->u.class.bclasses = galloc( f->u.class.bcnt*sizeof(uint16));
+		memcpy(t->u.class.bclasses,f->u.class.bclasses,
+			f->u.class.bcnt*sizeof(uint16));
+	    }
+	    if ( t->u.class.fcnt!=0 ) {
+		t->u.class.fclasses = galloc( f->u.class.fcnt*sizeof(uint16));
+		memcpy(t->u.class.fclasses,f->u.class.fclasses,
+			f->u.class.fcnt*sizeof(uint16));
+	    }
+	  break;
+	  case pst_reversecoverage:
+	    t->u.rcoverage.replacements = copy(f->u.rcoverage.replacements);
+	  case pst_coverage:
+	    t->u.coverage.ncnt = f->u.coverage.ncnt;
+	    t->u.coverage.bcnt = f->u.coverage.bcnt;
+	    t->u.coverage.fcnt = f->u.coverage.fcnt;
+	    t->u.coverage.ncovers = galloc( f->u.coverage.ncnt*sizeof(char *));
+	    for ( j=0; j<t->u.coverage.ncnt; ++j )
+		t->u.coverage.ncovers[j] = copy(f->u.coverage.ncovers[j]);
+	    if ( t->u.coverage.bcnt!=0 ) {
+		t->u.coverage.bcovers = galloc( f->u.coverage.bcnt*sizeof(char *));
+		for ( j=0; j<t->u.coverage.bcnt; ++j )
+		    t->u.coverage.bcovers[j] = copy(f->u.coverage.bcovers[j]);
+	    }
+	    if ( t->u.coverage.fcnt!=0 ) {
+		t->u.coverage.fcovers = galloc( f->u.coverage.fcnt*sizeof(char *));
+		for ( j=0; j<t->u.coverage.fcnt; ++j )
+		    t->u.coverage.fcovers[j] = copy(f->u.coverage.fcovers[j]);
+	    }
+	  break;
+	}
+	if ( f->lookup_cnt!=0 ) {
+	    t->lookup_cnt = f->lookup_cnt;
+	    t->lookups = galloc(t->lookup_cnt*sizeof(struct seqlookup));
+	    memcpy(t->lookups,f->lookups,t->lookup_cnt*sizeof(struct seqlookup));
+	}
+    }
+return( t );
+}
+#endif
+
+void FPSTFree(FPST *fpst) {
+    FPST *next;
+    int i;
+
+    while ( fpst!=NULL ) {
+	next = fpst->next;
+	for ( i=0; i<fpst->nccnt; ++i )
+	    free(fpst->nclass[i]);
+	for ( i=0; i<fpst->bccnt; ++i )
+	    free(fpst->bclass[i]);
+	for ( i=0; i<fpst->fccnt; ++i )
+	    free(fpst->fclass[i]);
+	free(fpst->nclass); free(fpst->bclass); free(fpst->fclass);
+	for ( i=0; i<fpst->rule_cnt; ++i ) {
+	    FPSTRuleContentsFree( &fpst->rules[i],fpst->format );
+	}
+	free(fpst->rules);
+	chunkfree(fpst,sizeof(FPST));
+	fpst = next;
+    }
+}
+
+/* ************************************************************************** */
+/* ************************ Context/Chaining Dialog ************************* */
+/* ************************************************************************** */
+struct contextchaindlg {
+    struct gfi_data *gfi;
+    SplineFont *sf;
+    FPST *fpst;
+    unichar_t *newname;
+    int isnew;
+    GWindow gw;
+    GWindow formats, coverage, glist, glyphs, cselect;
+    enum activewindow { aw_formats, aw_coverage, aw_glist, aw_glyphs, aw_cselect } aw;
+    uint8 wasedit;
+    uint8 wasoffset;
+    uint8 foredefault;
+    int subheightdiff, canceldrop;
+};
+
+#define CID_OK		100
+#define CID_Cancel	101
+#define CID_Next	102
+#define CID_Prev	103
+#define CID_Group	104
+
+#define CID_ByGlyph	200
+#define CID_ByCoverage	201
+
+/* There are more CIDs used in this file than those listed here */
+/* The CIDs given here are for glyph lists (aw_glyphs & aw_glist) */
+/*  similar controls refering to coverage tables have 100 added to them */
+/* The CIDs here are also for the "match" aspect of the tabsets */
+/*  those in backtrack get 20 added, those in lookahead get 40 */
+#define CID_New		300
+#define CID_Edit	301
+#define CID_Delete	302
+#define CID_Up		303
+#define CID_Down	304
+#define CID_GList	305
+
+#define CID_MatchType	1003
+#define CID_Set		1004
+#define CID_Select	1005
+#define CID_GlyphList	1006
+#define CID_Set2	1007
+#define CID_Select2	1008
+#define CID_RplList	1009
+#define CID_LookupList	1010
+#define CID_LNew	1011
+#define CID_LEdit	1012
+#define CID_LDelete	1013
+#define CID_LUp		1014
+#define CID_LDown	1015
+
+static char *cu_copybetween(const unichar_t *start, const unichar_t *end) {
+    char *ret = galloc(end-start+1);
+    cu_strncpy(ret,start,end-start);
+    ret[end-start] = '\0';
+return( ret );
+}
+
+static char *ccd_cu_copy(const unichar_t *start) {
+    char *ret, *pt;
+    int first;
+
+    while ( isspace(*start)) ++start;
+    if ( *start=='\0' )
+return( NULL );
+    ret = pt = galloc(u_strlen(start)+1);
+    first = true;
+    while ( *start ) {
+	while ( !isspace(*start) && *start!='\0' )
+	    *pt++ = *start++;
+	while ( isspace(*start)) ++start;
+	if ( *start!='\0' ) *pt++ = ' ';
+    }
+    *pt = '\0';
+return( ret );
+}
+
+static char *reversenames(char *str) {
+    char *ret;
+    char *rpt, *pt, *start, *spt;
+
+    if ( str==NULL )
+return( copy("") );
+
+    rpt = ret = galloc(strlen(str)+1);
+    for ( pt=str+strlen(str); pt>str; pt=start ) {
+	for ( start = pt-1; start>=str && *start!=' '; --start );
+	for ( spt=start+1; spt<pt; )
+	    *rpt++ = *spt++;
+	*rpt++ = ' ';
+    }
+    rpt[-1] = '\0';
+return( ret );
+}
+
+static int CCD_GlyphNameCnt(const unichar_t *pt) {
+    int cnt = 0;
+
+    while ( *pt ) {
+	while ( isspace( *pt )) ++pt;
+	if ( *pt=='\0' )
+return( cnt );
+	++cnt;
+	while ( !isspace(*pt) && *pt!='\0' ) ++pt;
+    }
+return( cnt );
+}
+
+static unichar_t *glistitem(struct fpst_rule *r) {
+    unichar_t *ret, *pt;
+    int len, i;
+    char buf[20];
+
+    len = (r->u.glyph.back==NULL ? 0 : strlen(r->u.glyph.back)) +
+	    strlen(r->u.glyph.names) +
+	    (r->u.glyph.fore==0 ? 0 : strlen(r->u.glyph.fore))+
+	    13*r->lookup_cnt;
+    ret = pt = galloc((len+8) * sizeof(unichar_t));
+    if ( r->u.glyph.back!=NULL ) {
+	char *temp = reversenames(r->u.glyph.back);
+	uc_strcpy(pt,temp);
+	pt += strlen(temp);
+	free(temp);
+	*pt++ = ' ';
+    }
+    *pt++ = '[';
+    *pt++ = ' ';
+    uc_strcpy(pt,r->u.glyph.names);
+    pt += strlen(r->u.glyph.names);
+    *pt++ = ' ';
+    *pt++ = ']';
+    *pt++ = ' ';
+    if ( r->u.glyph.fore!=NULL ) {
+	uc_strcpy(pt,r->u.glyph.fore);
+	pt += strlen(r->u.glyph.fore);
+	*pt++ = ' ';
+    }
+    *pt++ = 0x21d2;
+    for ( i=0; i<r->lookup_cnt; ++i ) {
+	sprintf( buf," %d '%c%c%c%c',", r->lookups[i].seq,
+		r->lookups[i].lookup_tag>>24,
+		(r->lookups[i].lookup_tag>>16)&0xff,
+		(r->lookups[i].lookup_tag>>8)&0xff,
+		r->lookups[i].lookup_tag&0xff );
+	uc_strcpy(pt, buf);
+	pt += u_strlen(pt);
+    }
+    if ( pt[-1]==',' ) pt[-1] = '\0';
+    *pt = '\0';
+return( ret );
+}
+
+static void glistitem2rule(const unichar_t *ret,struct fpst_rule *r) {
+    const unichar_t *pt; unichar_t *end;
+    char *temp;
+    int cnt;
+
+    for ( pt=ret; *pt!='\0' && *pt!='['; ++pt );
+    if ( *pt=='\0' )
+return;
+    if ( pt>ret ) {
+	temp = cu_copybetween(ret,pt-1);
+	r->u.glyph.back = reversenames(temp);
+	free(temp);
+    }
+    ret = pt+2;
+    for ( pt=ret; *pt!='\0' && *pt!=']'; ++pt );
+    if ( *pt=='\0' )
+return;
+    r->u.glyph.names = cu_copybetween(ret,pt-1);
+    ret = pt+2;
+    for ( pt=ret; *pt!='\0' && *pt!=0x21d2; ++pt );
+    if ( *pt=='\0' )
+return;
+    if ( pt!=ret )
+	r->u.glyph.fore = cu_copybetween(ret,pt-1);
+    ret = pt+2;
+    for ( pt = ret, cnt=0; pt!=NULL; pt = u_strchr(pt,',')) {
+	++cnt; ++pt;
+    }
+    r->lookup_cnt = cnt;
+    r->lookups = gcalloc(cnt,sizeof(struct seqlookup));
+    cnt = 0;
+    pt = ret;
+    forever {
+	r->lookups[cnt].seq = u_strtol(pt,&end,10);
+	pt = end+2;
+	r->lookups[cnt].lookup_tag = (pt[0]<<24) | (pt[1]<<16) | (pt[2]<<8) | pt[3];
+	pt += 5;
+	++cnt;
+	if ( *pt!=',' )
+    break;
+	++pt;
+    }
+}
+
+static GTextInfo **glistlist(FPST *fpst) {
+    GTextInfo **ti;
+    int i;
+
+    if ( fpst->format!=pst_glyphs || fpst->rule_cnt==0 )
+return(NULL);
+    ti = galloc((fpst->rule_cnt+1)*sizeof(GTextInfo *));
+    ti[fpst->rule_cnt] = gcalloc(1,sizeof(GTextInfo));
+    for ( i=0; i<fpst->rule_cnt; ++i ) {
+	ti[i] = gcalloc(1,sizeof(GTextInfo));
+	ti[i]->text = glistitem(&fpst->rules[i]);
+	ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;
+    }
+return( ti );
+}
+
+static GTextInfo **clistlist(FPST *fpst,int which) {
+    GTextInfo **ti;
+    int cnt, i;
+
+    if ( (fpst->format!=pst_coverage && fpst->format!=pst_reversecoverage) ||
+	    fpst->rule_cnt!=1 )
+return(NULL);
+    cnt = (&fpst->rules[0].u.coverage.ncnt)[which];
+    if ( cnt == 0 )
+return( NULL );
+    ti = galloc((cnt+1)*sizeof(GTextInfo *));
+    ti[cnt] = gcalloc(1,sizeof(GTextInfo));
+    if ( which != 1 ) {
+	for ( i=0; i<cnt; ++i ) {
+	    ti[i] = gcalloc(1,sizeof(GTextInfo));
+	    ti[i]->text = uc_copy((&fpst->rules[0].u.coverage.ncovers)[which][i]);
+	    ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;
+	}
+    } else {
+	for ( i=0; i<cnt; ++i ) {
+	    ti[i] = gcalloc(1,sizeof(GTextInfo));
+	    ti[i]->text = uc_copy(fpst->rules[0].u.coverage.bcovers[cnt-i-1]);
+	    ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;
+	}
+    }
+return( ti );
+}
+
+static GTextInfo **slistlist(struct fpst_rule *r) {
+    GTextInfo **ti;
+    char buf[20];
+    int i;
+
+    if ( r->lookup_cnt==0 )
+return(NULL);
+    ti = galloc((r->lookup_cnt+1)*sizeof(GTextInfo *));
+    ti[r->lookup_cnt] = gcalloc(1,sizeof(GTextInfo));
+    for ( i=0; i<r->lookup_cnt; ++i ) {
+	ti[i] = gcalloc(1,sizeof(GTextInfo));
+	sprintf( buf,"%d '%c%c%c%c'", r->lookups[i].seq,
+		r->lookups[i].lookup_tag>>24,
+		(r->lookups[i].lookup_tag>>16)&0xff,
+		(r->lookups[i].lookup_tag>>8)&0xff,
+		r->lookups[i].lookup_tag&0xff );
+	ti[i]->text = uc_copy(buf);
+	ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;
+    }
+return( ti );
+}
+
+static void CCD_ParseLookupList(struct fpst_rule *r,GGadget *list) {
+    int len, i;
+    GTextInfo **ti = GGadgetGetList(list,&len);
+    unichar_t *end;
+
+    r->lookup_cnt = len;
+    r->lookups = galloc(len*sizeof(struct seqlookup));
+    for ( i=0; i<len; ++i ) {
+	r->lookups[i].seq = u_strtol(ti[i]->text,&end,10);
+	while ( *end==' ') ++end;
+	if ( *end=='\'' ) ++end;
+	r->lookups[i].lookup_tag =
+	    ((*end&0xff)<<24) | ((end[1]&0xff)<<16) | ((end[2]&0xff)<<8)| (end[3]&0xff);
+    }
+}
+
+static void CCD_EnableNextPrev(struct contextchaindlg *ccd) {
+    /* Cancel is always enabled */
+    switch ( ccd->aw ) {
+      case aw_formats:
+	GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_Prev),false);
+	GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_Next),true);
+	GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_OK),false);
+      break;
+      case aw_glyphs:
+      case aw_cselect:
+	GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_Prev),true);
+	GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_Next),true);
+	GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_OK),false);
+      break;
+      case aw_coverage:
+      case aw_glist:
+	GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_Prev),ccd->fpst->format!=pst_reversecoverage);
+	GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_Next),false);
+	GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_OK),true);
+      break;
+      default:
+	GDrawIError("Can't get here");
+      break;
+    }
+}
+
+static int CCD_ValidNameList(const unichar_t *ret,int empty_bad) {
+    int first;
+
+    while ( isspace(*ret)) ++ret;
+    if ( *ret=='\0' )
+return( !empty_bad );
+
+    first = true;
+    while ( *ret ) {
+	if ( *ret>=0x7f || *ret<' ' )
+return( false );
+	if ( first && isdigit(*ret) )
+return( false );
+	first = !isspace(*ret);
+	if ( *ret=='(' || *ret=='[' || *ret=='{' || *ret=='<' ||
+		*ret==')' || *ret==']' || *ret=='}' || *ret=='>' ||
+		*ret=='%' || *ret=='/' )
+return( false );
+	++ret;
+    }
+return( true );
+}
+
+static void CCD_FinishEditNew(struct contextchaindlg *ccd) {
+    char *temp;
+
+    if ( ccd->wasoffset>=100 ) {		/* It's from coverage */
+	GGadget *list = GWidgetGetControl(ccd->gw,CID_GList+ccd->wasoffset);
+	const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList+100));
+	if ( !CCD_ValidNameList(ret,true)) {
+	    GWidgetErrorR(_STR_BadCoverage,_STR_BadCoverageLong);
+return;
+	}
+	if ( ccd->wasedit ) {
+	    GListChangeLine(list,GGadgetGetFirstListSelectedItem(list),ret);
+	} else {
+	    GListAppendLine(list,ret,false);
+	}
+	ccd->aw = aw_coverage;
+	GDrawSetVisible(ccd->cselect,false);
+	GDrawSetVisible(ccd->coverage,true);
+    } else {			/* It's from glyph list */
+	GGadget *list = GWidgetGetControl(ccd->gw,CID_GList+ccd->wasoffset);
+	struct fpst_rule dummy;
+	unichar_t *ret;
+	memset(&dummy,0,sizeof(dummy));
+	if ( !CCD_ValidNameList(_GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList)),true)) {
+	    GWidgetErrorR(_STR_BadGlyphList,_STR_BadMatchGlyphLong);
+return;
+	}
+	if ( !CCD_ValidNameList(_GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList+20)),false)) {
+	    GWidgetErrorR(_STR_BadBackGlyphList,_STR_BadGlyphNameListLong);
+return;
+	}
+	if ( !CCD_ValidNameList(_GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList+40)),false)) {
+	    GWidgetErrorR(_STR_BadForeGlyphList,_STR_BadGlyphNameListLong);
+return;
+	}
+	CCD_ParseLookupList(&dummy,GWidgetGetControl(ccd->gw,CID_LookupList));
+	if ( dummy.lookup_cnt==0 ) {
+	    GWidgetErrorR(_STR_BadSeqLookup,_STR_MissingSeqLookup);
+return;
+	}
+	dummy.u.glyph.names = ccd_cu_copy(_GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList)));
+	temp = ccd_cu_copy(_GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList+20)));
+	dummy.u.glyph.back = reversenames(temp);
+	free(temp);
+	dummy.u.glyph.fore = ccd_cu_copy(_GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList+40)));
+	ret = glistitem(&dummy);
+	FPSTRuleContentsFree(&dummy,pst_glyphs);
+	if ( ccd->wasedit ) {
+	    GListChangeLine(list,GGadgetGetFirstListSelectedItem(list),ret);
+	} else {
+	    GListAppendLine(list,ret,false);
+	}
+	ccd->aw = aw_glist;
+	GDrawSetVisible(ccd->glyphs,false);
+	GDrawSetVisible(ccd->glist,true);
+    }
+}
+
+static void _CCD_DoEditNew(struct contextchaindlg *ccd,int off,int isedit) {
+    static unichar_t nulstr[] = { 0 };
+    int i;
+    if ( off>=100 ) {		/* It's from coverage */
+	if ( isedit ) {
+	    GGadget *list = GWidgetGetControl(ccd->gw,CID_GList+off);
+	    int len;
+	    GTextInfo **old = GGadgetGetList(list,&len);
+	    i = GGadgetGetFirstListSelectedItem(list);
+	    if ( i==-1 )
+return;
+	    GGadgetSetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList+100),old[i]->text);
+	} else {
+	    GGadgetSetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList+100),nulstr);
+	}
+	ccd->aw = aw_cselect;
+	GDrawSetVisible(ccd->coverage,false);
+	GDrawSetVisible(ccd->cselect,true);
+    } else {			/* It's from glyph list */
+	unichar_t *temp; char *temp2;
+	if ( isedit ) {
+	    struct fpst_rule dummy;
+	    GGadget *list = GWidgetGetControl(ccd->gw,CID_GList+off);
+	    int len, i;
+	    GTextInfo **old = GGadgetGetList(list,&len), **ti;
+	    i = GGadgetGetFirstListSelectedItem(list);
+	    if ( i==-1 )
+return;
+	    memset(&dummy,0,sizeof(dummy));
+	    glistitem2rule(old[i]->text,&dummy);
+	    GGadgetSetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList),(temp=uc_copy(dummy.u.glyph.names)));
+	    free(temp);
+	    GGadgetSetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList+20),(temp=uc_copy(temp2 = reversenames(dummy.u.glyph.back))));
+	    free(temp); free(temp2);
+	    GGadgetSetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList+40),(temp=uc_copy(dummy.u.glyph.fore?dummy.u.glyph.fore:"")));
+	    free(temp);
+	    ti = slistlist(&dummy);
+	    GGadgetSetList(GWidgetGetControl(ccd->gw,CID_LookupList),ti,false);
+	    FPSTRuleContentsFree(&dummy,pst_glyphs);
+	} else {
+	    for ( i=0; i<3; ++i )
+		GGadgetSetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList+i*20),nulstr);
+	    GGadgetClearList(GWidgetGetControl(ccd->gw,CID_LookupList));
+	}
+	GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_LEdit),false);
+	GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_LDelete),false);
+	GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_LUp),false);
+	GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_LDown),false);
+	ccd->aw = aw_glyphs;
+	GDrawSetVisible(ccd->glist,false);
+	GDrawSetVisible(ccd->glyphs,true);
+    }
+    CCD_EnableNextPrev(ccd);
+    ccd->wasedit = isedit;
+    ccd->wasoffset = off;
+}
+
+static void _CCD_ToSelection(struct contextchaindlg *ccd,int cid,int order_matters ) {
+    const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(ccd->gw,cid));
+    SplineFont *sf = ccd->sf;
+    FontView *fv = sf->fv;
+    const unichar_t *end;
+    int i,pos, found=-1;
+    char *nm;
+
+    GDrawRaise(fv->gw);
+    GDrawSetVisible(fv->gw,true);
+    memset(fv->selected,0,sf->charcnt);
+    i=1;
+    while ( *ret ) {
+	end = u_strchr(ret,' ');
+	if ( end==NULL ) end = ret+u_strlen(ret);
+	nm = cu_copybetween(ret,end);
+	for ( ret = end; isspace(*ret); ++ret);
+	if (( pos = SFFindChar(sf,-1,nm))!=-1 ) {
+	    if ( found==-1 ) found = pos;
+	    fv->selected[pos] = i;
+	    if ( order_matters && i<255 ) ++i;
+	}
+	free(nm);
+    }
+
+    if ( found!=-1 )
+	FVScrollToChar(fv,found);
+    GDrawRequestExpose(fv->v,NULL,false);
+}
+
+static int CCD_ToSelection(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
+	int off = GGadgetGetCid(g)-CID_Select;
+	int isglyph = ccd->aw==aw_glyphs;
+
+	_CCD_ToSelection(ccd,CID_GlyphList+off,isglyph);
+    }
+return( true );
+}
+
+static int CCD_ToSelection2(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
+	int off = GGadgetGetCid(g)-CID_Select2;
+
+	_CCD_ToSelection(ccd,CID_RplList+off,true);
+    }
+return( true );
+}
+
+static void _CCD_FromSelection(struct contextchaindlg *ccd,int cid,int order_matters ) {
+    SplineFont *sf = ccd->sf;
+    FontView *fv = sf->fv;
+    unichar_t *vals, *pt;
+    int i, j, len, max;
+    SplineChar *sc;
+
+    for ( i=len=max=0; i<sf->charcnt; ++i ) if ( fv->selected[i]) {
+	sc = SFMakeChar(sf,i);
+	len += strlen(sc->name)+1;
+	if ( fv->selected[i]>max ) max = fv->selected[i];
+    }
+    pt = vals = galloc((len+1)*sizeof(unichar_t));
+    *pt = '\0';
+    if ( order_matters ) {
+	/* in a glyph string the order of selection is important */
+	/* also in replacement list */
+	for ( j=1; j<=max; ++j ) {
+	    for ( i=0; i<sf->charcnt; ++i ) if ( fv->selected[i]==j ) {
+		uc_strcpy(pt,sf->chars[i]->name);
+		pt += u_strlen(pt);
+		*pt++ = ' ';
+	    }
+	}
+    } else {
+	/* in a coverage table (or class) the order of selection is irrelevant */
+	for ( i=0; i<sf->charcnt; ++i ) if ( fv->selected[i] ) {
+	    uc_strcpy(pt,sf->chars[i]->name);
+	    pt += u_strlen(pt);
+	    *pt++ = ' ';
+	}
+    }
+    if ( pt>vals ) pt[-1]='\0';
+
+    GGadgetSetTitle(GWidgetGetControl(ccd->gw,cid),vals);
+    free(vals);
+}
+
+static int CCD_FromSelection(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
+	int off = GGadgetGetCid(g)-CID_Set;
+	int isglyph = ccd->aw==aw_glyphs;
+
+	_CCD_FromSelection(ccd,CID_GlyphList+off,isglyph);
+    }
+return( true );
+}
+
+static int CCD_FromSelection2(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
+	int off = GGadgetGetCid(g)-CID_Set2;
+
+	_CCD_FromSelection(ccd,CID_RplList+off,true);
+    }
+return( true );
+}
+
+static int CCD_Delete(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
+	int off = GGadgetGetCid(g)-CID_Delete;
+	GListDelSelected(GWidgetGetControl(ccd->gw,CID_GList+off));
+	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_Delete+off),false);
+	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_Edit+off),false);
+	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_Up+off),false);
+	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_Down+off),false);
+    }
+return( true );
+}
+
+static int CCD_Up(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
+	int off = GGadgetGetCid(g)-CID_Up;
+	GGadget *list = GWidgetGetControl(ccd->gw,CID_GList+off);
+	int len, i;
+
+	(void) GGadgetGetList(list,&len);
+	GListMoveSelected(list,-1);
+	i = GGadgetGetFirstListSelectedItem(list);
+	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_Up+off),i!=0);
+	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_Down+off),i!=len-1);
+    }
+return( true );
+}
+
+static int CCD_Down(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
+	int off = GGadgetGetCid(g)-CID_Down;
+	GGadget *list = GWidgetGetControl(ccd->gw,CID_GList+off);
+	int len, i;
+
+	(void) GGadgetGetList(list,&len);
+	GListMoveSelected(list,1);
+	i = GGadgetGetFirstListSelectedItem(list);
+	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_Up+off),i!=0);
+	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_Down+off),i!=len-1);
+    }
+return( true );
+}
+
+static int CCD_Edit(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
+	int off = GGadgetGetCid(g)-CID_Edit;
+	_CCD_DoEditNew(ccd,off,true);
+    }
+return( true );
+}
+
+static int CCD_New(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
+	int off = GGadgetGetCid(g)-CID_New;
+	_CCD_DoEditNew(ccd,off,false);
+    }
+return( true );
+}
+
+static int CCD_GlyphSelected(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
+	int off = GGadgetGetCid(g)-CID_GList;
+	int len, i;
+
+	(void) GGadgetGetList(g,&len);
+	i = GGadgetGetFirstListSelectedItem(g);
+	GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_Up+off),i>0);
+	GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_Down+off),i!=len-1 && i!=-1);
+	GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_Delete+off),i!=-1);
+	GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_Edit+off),i!=-1);
+    } else if ( e->type==et_controlevent && e->u.control.subtype == et_listdoubleclick ) {
+	struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
+	int off = GGadgetGetCid(g)-CID_GList;
+	_CCD_DoEditNew(ccd,off,true);
+    }
+return( true );
+}
+
+static int CCD_LDelete(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
+	int off = GGadgetGetCid(g)-CID_LDelete;
+	GListDelSelected(GWidgetGetControl(ccd->gw,CID_LookupList+off));
+	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_LDelete+off),false);
+	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_LEdit+off),false);
+	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_LUp+off),false);
+	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_LDown+off),false);
+    }
+return( true );
+}
+
+static int CCD_LUp(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
+	int off = GGadgetGetCid(g)-CID_LUp;
+	GGadget *list = GWidgetGetControl(ccd->gw,CID_LookupList+off);
+	int len, i;
+
+	(void) GGadgetGetList(list,&len);
+	GListMoveSelected(list,-1);
+	i = GGadgetGetFirstListSelectedItem(list);
+	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_LUp+off),i!=0);
+	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_LDown+off),i!=len-1);
+    }
+return( true );
+}
+
+static int CCD_LDown(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
+	int off = GGadgetGetCid(g)-CID_LDown;
+	GGadget *list = GWidgetGetControl(ccd->gw,CID_LookupList+off);
+	int len, i;
+
+	(void) GGadgetGetList(list,&len);
+	GListMoveSelected(list,1);
+	i = GGadgetGetFirstListSelectedItem(list);
+	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_LUp+off),i!=0);
+	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_LDown+off),i!=len-1);
+    }
+return( true );
+}
+
+struct seqlook_data {
+    int done;
+    int ok;
+};
+
+static int seqlook_e_h(GWindow gw, GEvent *e) {
+    if ( e->type==et_close ) {
+	struct seqlook_data *d = GDrawGetUserData(gw);
+	d->done = true;
+    } else if ( e->type == et_char ) {
+return( false );
+    } else if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct seqlook_data *d = GDrawGetUserData(gw);
+	d->done = true;
+	d->ok = GGadgetGetCid(e->u.control.g);
+    }
+return( true );
+}
+
+static void _CCD_DoLEditNew(struct contextchaindlg *ccd,int off,int isedit) {
+    int seq;
+    char cbuf[20];
+    unichar_t tagbuf[8], *end;
+    GGadget *list = GWidgetGetControl(ccd->gw,CID_LookupList+off);
+    struct seqlook_data d;
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[8];
+    GTextInfo label[8];
+    const unichar_t *pt;
+    unichar_t *line;
+    int selpos= -1;
+    int searchtype;
+
+    tagbuf[0] = 0; seq = 0;
+    if ( isedit ) {
+	int len;
+	GTextInfo **ti = GGadgetGetList(list,&len);
+	selpos = GGadgetGetFirstListSelectedItem(list);
+	seq = u_strtol(ti[selpos]->text,&end,10);
+	if ( *end==' ' ) ++end;
+	if ( *end=='\'' ) ++end;
+	u_strncpy(tagbuf,end,4);
+	tagbuf[4] = 0;
+    }
+
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.window_title = GStringGetResource(_STR_SeqLookup,NULL);
+    pos.x = pos.y = 0;
+    pos.width =GDrawPointsToPixels(NULL,180);
+    pos.height = GDrawPointsToPixels(NULL,130);
+    gw = GDrawCreateTopWindow(NULL,&pos,seqlook_e_h,&d,&wattrs);
+
+    memset(&label,0,sizeof(label));
+    memset(&gcd,0,sizeof(gcd));
+
+    label[0].text = (unichar_t *) _STR_Sequence;
+    label[0].text_in_resource = true;
+    gcd[0].gd.label = &label[0];
+    gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 6;
+    gcd[0].gd.flags = gg_visible | gg_enabled;
+    gcd[0].creator = GLabelCreate;
+
+    sprintf(cbuf,"%d",seq);
+    label[1].text = (unichar_t *) cbuf;
+    label[1].text_is_1byte = true;
+    gcd[1].gd.label = &label[1];
+    gcd[1].gd.pos.x = 10; gcd[1].gd.pos.y = 18;
+    gcd[1].gd.flags = gg_visible | gg_enabled;
+    gcd[1].gd.cid = 1000;
+    gcd[1].creator = GTextFieldCreate;
+
+    label[2].text = (unichar_t *) _STR_TagC;
+    label[2].text_in_resource = true;
+    gcd[2].gd.label = &label[2];
+    gcd[2].gd.pos.x = 5; gcd[2].gd.pos.y = gcd[1].gd.pos.y+25;
+    gcd[2].gd.flags = gg_visible | gg_enabled;
+    gcd[2].creator = GLabelCreate;
+
+    label[3].text = tagbuf;
+    gcd[3].gd.label = &label[3];
+    gcd[3].gd.pos.x = 10; gcd[3].gd.pos.y = gcd[2].gd.pos.y+12;
+    gcd[3].gd.flags = gg_visible | gg_enabled;
+    gcd[3].creator = GListFieldCreate;
+
+    gcd[4].gd.pos.x = 20-3; gcd[4].gd.pos.y = 130-35-3;
+    gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
+    gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[4].text = (unichar_t *) _STR_OK;
+    label[4].text_in_resource = true;
+    gcd[4].gd.label = &label[4];
+    gcd[4].gd.cid = true;
+    gcd[4].creator = GButtonCreate;
+
+    gcd[5].gd.pos.x = -20; gcd[5].gd.pos.y = 130-35;
+    gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
+    gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[5].text = (unichar_t *) _STR_Cancel;
+    label[5].text_in_resource = true;
+    gcd[5].gd.label = &label[5];
+    gcd[5].creator = GButtonCreate;
+
+    gcd[6].gd.pos.x = 2; gcd[6].gd.pos.y = 2;
+    gcd[6].gd.pos.width = pos.width-4; gcd[6].gd.pos.height = pos.height-2;
+    gcd[6].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+    gcd[6].creator = GGroupCreate;
+
+    GGadgetsCreate(gw,gcd);
+    if ( ccd->fpst->type==pst_contextpos || ccd->fpst->type==pst_chainpos )
+	searchtype = fpst_max;		/* Search for positioning tables */
+    else
+	searchtype = fpst_max+1;	/* Search for substitution tables */
+    GGadgetSetList(gcd[3].ret, SFGenTagListFromType(&ccd->sf->gentags,searchtype),false);
+    GDrawSetVisible(gw,true);
+
+  retry:
+    memset(&d,'\0',sizeof(d));
+    while ( !d.done )
+	GDrawProcessOneEvent(NULL);
+
+    if ( d.ok ) {
+	int err = false;
+	seq = GetIntR(gw,1000,_STR_Sequence,&err);
+	if ( err )
+  goto retry;
+	pt = _GGadgetGetTitle(gcd[3].ret);
+	if ( u_strlen(pt)!=4 ) {
+	    GWidgetErrorR(_STR_TagTooLong,_STR_TagTooLong);
+  goto retry;
+	}
+	sprintf(cbuf,"%d '",seq);
+	line = galloc((strlen(cbuf)+8)*sizeof(unichar_t));
+	uc_strcpy(line,cbuf);
+	u_strcat(line,pt);
+	uc_strcat(line,"'");
+	if ( isedit )
+	    GListChangeLine(list,selpos,line);
+	else
+	    GListAppendLine(list,line,false);
+	free(line);
+    }
+    GDrawDestroyWindow(gw);
+}
+
+static int CCD_LEdit(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
+	int off = GGadgetGetCid(g)-CID_LEdit;
+	_CCD_DoLEditNew(ccd,off,true);
+    }
+return( true );
+}
+
+static int CCD_LNew(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
+	int off = GGadgetGetCid(g)-CID_LNew;
+	_CCD_DoLEditNew(ccd,off,false);
+    }
+return( true );
+}
+
+static int CCD_LookupSelected(GGadget *g, GEvent *e) {
+    struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
+    int off = GGadgetGetCid(g)-CID_LookupList;
+    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	int len, i;
+
+	(void) GGadgetGetList(g,&len);
+	i = GGadgetGetFirstListSelectedItem(g);
+	GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_LUp+off),i>0);
+	GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_LDown+off),i!=len-1 && i!=-1);
+	GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_LDelete+off),i!=-1);
+	GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_LEdit+off),i!=-1);
+    } else if ( e->type==et_controlevent && e->u.control.subtype == et_listdoubleclick ) {
+	_CCD_DoLEditNew(ccd,off,true);
+    }
+return( true );
+}
+
+void CCD_Close(struct contextchaindlg *ccd) {
+    if ( ccd->isnew )
+	GFI_FinishContextNew(ccd->gfi,ccd->fpst,ccd->newname,false);
+    GFI_CCDEnd(ccd->gfi);
+    GDrawDestroyWindow(ccd->gw);
+}
+
+static char **CCD_ParseCoverageList(struct contextchaindlg *ccd,int cid,int *cnt) {
+    int i;
+    GTextInfo **ti = GGadgetGetList(GWidgetGetControl(ccd->gw,cid),cnt);
+    char **ret;
+
+    if ( *cnt==0 )
+return( NULL );
+    ret = galloc(*cnt*sizeof(char *));
+    for ( i=0; i<*cnt; ++i )
+	ret[i] = ccd_cu_copy(ti[i]->text);
+return( ret );
+}
+
+static void CoverageReverse(char **bcovers,int bcnt) {
+    int i;
+    char *temp;
+
+    for ( i=0; i<bcnt/2; ++i ) {
+	temp = bcovers[i];
+	bcovers[i] = bcovers[bcnt-i-1];
+	bcovers[bcnt-i-1] = temp;
+    }
+}
+
+static void _CCD_Ok(struct contextchaindlg *ccd) {
+    FPST *fpst = ccd->fpst;
+    int len, i;
+    GTextInfo **old;
+    struct fpst_rule dummy;
+
+    switch ( ccd->aw ) {
+      case aw_glist: {
+	old = GGadgetGetList(GWidgetGetControl(ccd->gw,CID_GList),&len);
+	if ( len==0 ) {
+	    GWidgetErrorR(_STR_MissingRules,_STR_MustBeRule);
+return;
+	}
+	FPSTRulesFree(fpst->rules,fpst->format,fpst->rule_cnt);
+	fpst->format = pst_glyphs;
+	fpst->rule_cnt = len;
+	fpst->rules = gcalloc(len,sizeof(struct fpst_rule));
+	for ( i=0; i<len; ++i )
+	    glistitem2rule(old[i]->text,&fpst->rules[i]);
+      } break;
+      case aw_coverage:
+	old = GGadgetGetList(GWidgetGetControl(ccd->gw,CID_GList+100),&len);
+	if ( len==0 ) {
+	    GWidgetErrorR(_STR_BadCoverage,_STR_MissingMatch);
+return;
+	}
+	if ( fpst->format==pst_reversecoverage ) {
+	    if ( len!=1 ) {
+		GWidgetErrorR(_STR_BadCoverage,_STR_MatchCntWrong);
+return;
+	    }
+	    if ( CCD_GlyphNameCnt(old[0]->text)!=CCD_GlyphNameCnt(
+		    _GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_RplList+100))) ) {
+		GWidgetErrorR(_STR_RplMismatch,_STR_ReplacementMismatch);
+return;
+	    }
+	    dummy.u.rcoverage.replacements = ccd_cu_copy(
+		    _GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_RplList+100)));
+	} else {
+	    CCD_ParseLookupList(&dummy,GWidgetGetControl(ccd->gw,CID_LookupList+100));
+	    if ( dummy.lookup_cnt==0 ) {
+		GWidgetErrorR(_STR_BadSeqLookup,_STR_MissingSeqLookup);
+return;
+	    }
+	}
+	FPSTRulesFree(fpst->rules,fpst->format,fpst->rule_cnt);
+	fpst->format = fpst->type==pst_reversesub ? pst_reversecoverage : pst_coverage;
+	fpst->rule_cnt = 1;
+	fpst->rules = gcalloc(1,sizeof(struct fpst_rule));
+	fpst->rules[0].u.coverage.ncovers = CCD_ParseCoverageList(ccd,CID_GList+100,&fpst->rules[0].u.coverage.ncnt);
+	fpst->rules[0].u.coverage.bcovers = CCD_ParseCoverageList(ccd,CID_GList+100+20,&fpst->rules[0].u.coverage.bcnt);
+	CoverageReverse(fpst->rules[0].u.coverage.bcovers,fpst->rules[0].u.coverage.bcnt);
+	fpst->rules[0].u.coverage.fcovers = CCD_ParseCoverageList(ccd,CID_GList+100+40,&fpst->rules[0].u.coverage.fcnt);
+	if ( fpst->format==pst_reversecoverage )
+	    fpst->rules[0].u.rcoverage.replacements = dummy.u.rcoverage.replacements;
+	else {
+	    fpst->rules[0].lookup_cnt = dummy.lookup_cnt;
+	    fpst->rules[0].lookups = dummy.lookups;
+	}
+      break;
+      default:
+	GDrawIError("The OK button should not be enabled here");
+return;
+    }
+    if ( ccd->isnew )
+	GFI_FinishContextNew(ccd->gfi,ccd->fpst,ccd->newname,true);
+    GFI_CCDEnd(ccd->gfi);
+    GDrawDestroyWindow(ccd->gw);
+}
+
+static int CCD_OK(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
+	_CCD_Ok(ccd);
+    }
+return( true );
+}
+
+static int CCD_Cancel(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
+	CCD_Close(ccd);
+    }
+return( true );
+}
+
+static int CCD_Next(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
+	switch ( ccd->aw ) {
+	  case aw_formats:
+	    GDrawSetVisible(ccd->formats,false);
+	    if ( GGadgetIsChecked(GWidgetGetControl(ccd->gw,CID_ByGlyph)) ) {
+		ccd->aw = aw_glist;
+		GDrawSetVisible(ccd->glist,true);
+	    } else {
+		ccd->aw = aw_coverage;
+		GDrawSetVisible(ccd->coverage,true);
+	    }
+	  break;
+	  case aw_glyphs:
+	  case aw_cselect:
+	    CCD_FinishEditNew(ccd);
+	  break;
+	  default:
+	    GDrawIError("The next button should not be enabled here");
+	  break;
+	}
+	CCD_EnableNextPrev(ccd);
+    }
+return( true );
+}
+
+static int CCD_Prev(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
+	switch ( ccd->aw ) {
+	  case aw_formats:
+	    CCD_Cancel(g,e);
+	  break;
+	  case aw_glyphs:
+	    ccd->aw = aw_glist;
+	    GDrawSetVisible(ccd->glyphs,false);
+	    GDrawSetVisible(ccd->glist,true);
+	  break;
+	  case aw_cselect:
+	    ccd->aw = aw_coverage;
+	    GDrawSetVisible(ccd->cselect,false);
+	    GDrawSetVisible(ccd->coverage,true);
+	  break;
+	  case aw_coverage:
+	  case aw_glist:
+	    ccd->aw = aw_formats;
+	    GDrawSetVisible(ccd->coverage,false);
+	    GDrawSetVisible(ccd->glist,false);
+	    GDrawSetVisible(ccd->formats,true);
+	  break;
+	  default:
+	    GDrawIError("Can't get here");
+	  break;
+	}
+	CCD_EnableNextPrev(ccd);
+    }
+return( true );
+}
+
+static void CCD_SimulateDefaultButton( struct contextchaindlg *ccd ) {
+    GEvent ev;
+    int i,j;
+
+    /* figure out what the default action should be */
+    memset(&ev,0,sizeof(ev));
+    ev.type = et_controlevent;
+    ev.u.control.subtype = et_buttonactivate;
+    if ( ccd->aw==aw_formats || ccd->aw == aw_glyphs || ccd->aw == aw_cselect ) {
+	ev.u.control.g = GWidgetGetControl(ccd->gw,CID_Next);
+	CCD_Next(ev.u.control.g,&ev);
+/* For the glyph list and the coverage list, the [Next] button is disabled */
+/* I think [OK] is probably inappropriate, so let's do either [New] or [Edit] */
+/*  (which are what [Next] would logically do) depending on which of the two */
+/*  is more appropriate */
+/*	ev.u.control.g = GWidgetGetControl(ccd->gw,CID_OK); */
+/*	CCD_OK(ev.u.control.g,&ev);			    */
+    } else if ( ccd->aw==aw_glist ) {
+	i = GGadgetGetFirstListSelectedItem( GWidgetGetControl(ccd->gw,CID_GList));
+	if ( i==-1 ) {
+	    ev.u.control.g = GWidgetGetControl(ccd->gw,CID_New);
+	    CCD_New(ev.u.control.g,&ev);
+	} else {
+	    ev.u.control.g = GWidgetGetControl(ccd->gw,CID_Edit);
+	    CCD_Edit(ev.u.control.g,&ev);
+	}
+    } else {
+	i = GTabSetGetSel( GWidgetGetControl(ccd->gw,CID_MatchType+100));
+	j = GGadgetGetFirstListSelectedItem( GWidgetGetControl(ccd->gw,CID_GList+100+i*20));
+	if ( j==-1 ) {
+	    ev.u.control.g = GWidgetGetControl(ccd->gw,CID_New+100+i*20);
+	    CCD_New(ev.u.control.g,&ev);
+	} else {
+	    ev.u.control.g = GWidgetGetControl(ccd->gw,CID_Edit+100+i*20);
+	    CCD_Edit(ev.u.control.g,&ev);
+	}
+    }
+}
+
+static void CCD_Drop(struct contextchaindlg *ccd,GEvent *event) {
+    char *cnames;
+    unichar_t *unames, *pt;
+    const unichar_t *ret;
+    GGadget *g;
+    int len;
+
+    if ( ccd->aw != aw_glyphs && ccd->aw != aw_cselect &&
+	    (ccd->aw != aw_coverage || ccd->fpst->format!=pst_reversecoverage)) {
+	GDrawBeep(NULL);
+return;
+    }
+
+    if ( ccd->aw==aw_cselect )
+	g = GWidgetGetControl(ccd->gw,CID_GlyphList+100);
+    else if ( ccd->aw==aw_glyphs ) {
+	int which = GTabSetGetSel(GWidgetGetControl(ccd->glyphs,CID_MatchType));
+	g = GWidgetGetControl(ccd->gw,CID_GlyphList+20*which);
+    } else {
+	int which = GTabSetGetSel(GWidgetGetControl(ccd->coverage,CID_MatchType+100));
+	if ( which!=0 ) {
+	    GDrawBeep(NULL);
+return;
+	}
+	g = GWidgetGetControl(ccd->gw,CID_RplList+100);
+    }
+
+    if ( !GDrawSelectionHasType(ccd->gw,sn_drag_and_drop,"STRING"))
+return;
+    cnames = GDrawRequestSelection(ccd->gw,sn_drag_and_drop,"STRING",&len);
+    if ( cnames==NULL )
+return;
+
+    ret = _GGadgetGetTitle(g);
+    unames = galloc((strlen(cnames)+u_strlen(ret)+8)*sizeof(unichar_t));
+    u_strcpy(unames,ret);
+    pt = unames+u_strlen(unames);
+    if ( pt>unames && pt[-1]!=' ' )
+	uc_strcpy(pt," ");
+    uc_strcat(pt,cnames);
+    free(cnames);
+
+    GGadgetSetTitle(g,unames);
+}
+
+static int subccd_e_h(GWindow gw, GEvent *event) {
+    if ( event->type==et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("contextchain.html");
+return( true );
+	} else if ( event->u.chr.keysym=='q' && (event->u.chr.state&ksm_control)) {
+	    if ( event->u.chr.state&ksm_shift )
+		CCD_Close(GDrawGetUserData(gw));
+	    else
+		MenuExit(NULL,NULL,NULL);
+return( true );
+	} else if ( event->u.chr.chars[0]=='\r' ) {
+	    CCD_SimulateDefaultButton( (struct contextchaindlg *) GDrawGetUserData(gw));
+return( true );
+	}
+return( false );
+    } else if ( event->type == et_drop ) {
+	CCD_Drop(GDrawGetUserData(gw),event);
+    }
+return( true );
+}
+
+static int ccd_e_h(GWindow gw, GEvent *event) {
+    if ( event->type==et_close ) {
+	struct contextchaindlg *ccd = GDrawGetUserData(gw);
+	CCD_Close(ccd);
+    } else if ( event->type==et_destroy ) {
+	struct contextchaindlg *ccd = GDrawGetUserData(gw);
+	chunkfree(ccd,sizeof(struct contextchaindlg));
+    } else if ( event->type==et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("contextchain.html");
+return( true );
+	} else if ( event->u.chr.keysym=='q' && (event->u.chr.state&ksm_control)) {
+	    if ( event->u.chr.state&ksm_shift )
+		CCD_Close(GDrawGetUserData(gw));
+	    else
+		MenuExit(NULL,NULL,NULL);
+return( true );
+	} else if ( event->u.chr.chars[0]=='\r' ) {
+	    CCD_SimulateDefaultButton( (struct contextchaindlg *) GDrawGetUserData(gw));
+return( true );
+	}
+return( false );
+    } else if ( event->type==et_resize ) {
+	int blen = GDrawPointsToPixels(NULL,GIntGetResource(_NUM_Buttonsize));
+	GRect wsize, csize;
+	struct contextchaindlg *ccd = GDrawGetUserData(gw);
+	GDrawGetSize(ccd->gw,&wsize);
+	GGadgetResize(GWidgetGetControl(ccd->gw,CID_Group),wsize.width-4,wsize.height-4);
+	GGadgetGetSize(GWidgetGetControl(ccd->gw,CID_OK),&csize);
+	GGadgetMove(GWidgetGetControl(ccd->gw,CID_OK),csize.x,wsize.height-ccd->canceldrop);
+	GGadgetGetSize(GWidgetGetControl(ccd->gw,CID_Next),&csize);
+	GGadgetMove(GWidgetGetControl(ccd->gw,CID_Next),csize.x,wsize.height-ccd->canceldrop);
+	GGadgetGetSize(GWidgetGetControl(ccd->gw,CID_Prev),&csize);
+	GGadgetMove(GWidgetGetControl(ccd->gw,CID_Prev),csize.x,wsize.height-ccd->canceldrop);
+	GGadgetGetSize(GWidgetGetControl(ccd->gw,CID_Cancel),&csize);
+	GGadgetMove(GWidgetGetControl(ccd->gw,CID_Cancel),wsize.width-blen-20,wsize.height-ccd->canceldrop);
+
+	GDrawResize(ccd->formats,wsize.width-8,wsize.height-ccd->subheightdiff);
+	GDrawResize(ccd->coverage,wsize.width-8,wsize.height-ccd->subheightdiff);
+	GDrawResize(ccd->glist,wsize.width-8,wsize.height-ccd->subheightdiff);
+	GDrawResize(ccd->glyphs,wsize.width-8,wsize.height-ccd->subheightdiff);
+	GDrawResize(ccd->cselect,wsize.width-8,wsize.height-ccd->subheightdiff);
+    } else if ( event->type == et_drop ) {
+	CCD_Drop(GDrawGetUserData(gw),event);
+    }
+return( true );
+}
+
+#define CCD_WIDTH	340
+#define CCD_HEIGHT	340
+
+static void CCD_AddSeqLookup(GGadgetCreateData *gcd, GTextInfo *label,int off, int y) {
+    int k, space;
+    int blen = GIntGetResource(_NUM_Buttonsize);
+
+    k = 0;
+    space = 10;
+    label[k].text = (unichar_t *) _STR_SeqLookList;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = y;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k++].creator = GLabelCreate;
+
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
+    gcd[k].gd.pos.width = CCD_WIDTH-20;
+    gcd[k].gd.pos.height = 4*13+10;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.handle_controlevent = CCD_LookupSelected;
+    gcd[k].gd.cid = CID_LookupList+off;
+    gcd[k++].creator = GListCreate;
+
+    label[k].text = (unichar_t *) _STR_New;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+gcd[k-1].gd.pos.height+10;
+    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.handle_controlevent = CCD_LNew;
+    gcd[k].gd.cid = CID_LNew+off;
+    gcd[k++].creator = GButtonCreate;
+
+    label[k].text = (unichar_t *) _STR_Edit;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+blen+space; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
+    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.flags = gg_visible;
+    gcd[k].gd.handle_controlevent = CCD_LEdit;
+    gcd[k].gd.cid = CID_LEdit+off;
+    gcd[k++].creator = GButtonCreate;
+
+    label[k].text = (unichar_t *) _STR_Delete;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+blen+space; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
+    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.flags = gg_visible;
+    gcd[k].gd.handle_controlevent = CCD_LDelete;
+    gcd[k].gd.cid = CID_LDelete+off;
+    gcd[k++].creator = GButtonCreate;
+
+    label[k].text = (unichar_t *) _STR_Up;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+blen+space+5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
+    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.flags = gg_visible;
+    gcd[k].gd.handle_controlevent = CCD_LUp;
+    gcd[k].gd.cid = CID_LUp+off;
+    gcd[k++].creator = GButtonCreate;
+
+    label[k].text = (unichar_t *) _STR_Down;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+blen+space; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
+    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.flags = gg_visible;
+    gcd[k].gd.handle_controlevent = CCD_LDown;
+    gcd[k].gd.cid = CID_LDown+off;
+    gcd[k++].creator = GButtonCreate;
+}
+
+static void CCD_AddReplacements(GGadgetCreateData *gcd, GTextInfo *label,
+	struct fpst_rule *r,int off, int y) {
+    int k;
+
+    k=0;
+    label[k].text = (unichar_t *) _STR_Replacements;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = y;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k++].creator = GLabelCreate;
+
+    label[k].text = (unichar_t *) _STR_Set;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
+    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.popup_msg = GStringGetResource(_STR_SetGlyphsFromSelectionPopup,NULL);
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.handle_controlevent = CCD_FromSelection2;
+    gcd[k].gd.cid = CID_Set2+off;
+    gcd[k++].creator = GButtonCreate;
+
+    label[k].text = (unichar_t *) _STR_Select_nom;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 70; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
+    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.popup_msg = GStringGetResource(_STR_SelectFromGlyphsPopup,NULL);
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.handle_controlevent = CCD_ToSelection2;
+    gcd[k].gd.cid = CID_Select2+off;
+    gcd[k++].creator = GButtonCreate;
+
+    if ( r!=NULL && r->u.rcoverage.replacements!=NULL ) {
+	label[k].text = (unichar_t *) r->u.rcoverage.replacements;
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+    }
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+25;
+    gcd[k].gd.pos.width = CCD_WIDTH-25; gcd[k].gd.pos.height = 4*13+4;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
+    gcd[k].gd.cid = CID_RplList+off;
+    gcd[k++].creator = GTextAreaCreate;
+}
+
+struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
+	struct gfi_data *gfi, unichar_t *newname) {
+    struct contextchaindlg *ccd;
+    int format;
+    int i,j,k, space;
+    static int titles[2][5] = {
+	{ _STR_EditContextPos, _STR_EditContextSub,
+	    _STR_EditChainPos, _STR_EditChainSub,
+	    _STR_EditReverseChainSub,
+	},
+	{ _STR_NewContextPos, _STR_NewContextSub,
+	    _STR_NewChainPos, _STR_NewChainSub,
+	    _STR_NewReverseChainSub
+	}};
+    GRect pos, subpos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GTabInfo faspects[5];
+    GGadgetCreateData glgcd[8], fgcd[3], ggcd[3][12], cgcd[3][15], csgcd[4];
+    GTextInfo gllabel[8], flabel[3], glabel[3][12], clabel[3][15], cslabel[4];
+    GGadgetCreateData bgcd[6], rgcd[15];
+    GTextInfo blabel[4], rlabel[15];
+    struct fpst_rule *r=NULL;
+    int blen = GIntGetResource(_NUM_Buttonsize);
+    int text[] = { _STR_OTCCSubFormat1, _STR_OTCCSubFormat2,
+	    _STR_OTCCSubFormat3, _STR_OTCCSubFormat4,
+	    _STR_OTCCSubFormat5, _STR_OTCCSubFormat6,
+	    _STR_OTCCSubFormat7, _STR_OTCCSubFormat8,
+	    _STR_OTCCSubFormat9, _STR_OTCCSubFormat10, 0 };
+
+    if ( fpst->format==pst_class )
+return( NULL );
+
+    ccd = chunkalloc(sizeof(struct contextchaindlg));
+    ccd->gfi = gfi;
+    ccd->sf = sf;
+    ccd->fpst = fpst;
+    ccd->newname = newname;
+    ccd->isnew = newname!=NULL;
+    format = fpst->format==pst_reversecoverage ? pst_coverage : fpst->format;
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.is_dlg = true;
+    wattrs.restrict_input_to_me = false;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.window_title = GStringGetResource(titles[ccd->isnew][fpst->type-pst_contextpos],NULL);
+    pos.x = pos.y = 0;
+    pos.width =GDrawPointsToPixels(NULL,GGadgetScale(CCD_WIDTH));
+    pos.height = GDrawPointsToPixels(NULL,CCD_HEIGHT);
+    ccd->gw = gw = GDrawCreateTopWindow(NULL,&pos,ccd_e_h,ccd,&wattrs);
+
+    subpos = pos;
+    subpos.y = subpos.x = 4;
+    subpos.width -= 8;
+    ccd->subheightdiff = GDrawPointsToPixels(NULL,44)-8;
+    subpos.height -= ccd->subheightdiff;
+
+
+    memset(&blabel,0,sizeof(blabel));
+    memset(&bgcd,0,sizeof(bgcd));
+
+    ccd->canceldrop = GDrawPointsToPixels(NULL,30);
+    bgcd[0].gd.pos.x = 20; bgcd[0].gd.pos.y = GDrawPixelsToPoints(NULL,pos.height)-33;
+    bgcd[0].gd.pos.width = -1; bgcd[0].gd.pos.height = 0;
+    bgcd[0].gd.flags = gg_visible | gg_enabled;
+    blabel[0].text = (unichar_t *) _STR_OK;
+    blabel[0].text_in_resource = true;
+    bgcd[0].gd.label = &blabel[0];
+    bgcd[0].gd.cid = CID_OK;
+    bgcd[0].gd.handle_controlevent = CCD_OK;
+    bgcd[0].creator = GButtonCreate;
+
+    space = (GGadgetScale(CCD_WIDTH)-4*blen-40)/3;
+    bgcd[1].gd.pos.x = bgcd[0].gd.pos.x+blen+space; bgcd[1].gd.pos.y = bgcd[0].gd.pos.y;
+    bgcd[1].gd.pos.width = -1; bgcd[1].gd.pos.height = 0;
+    bgcd[1].gd.flags = gg_visible;
+    blabel[1].text = (unichar_t *) _STR_PrevArrow;
+    blabel[1].text_in_resource = true;
+    bgcd[1].gd.label = &blabel[1];
+    bgcd[1].gd.handle_controlevent = CCD_Prev;
+    bgcd[1].gd.cid = CID_Prev;
+    bgcd[1].creator = GButtonCreate;
+
+    bgcd[2].gd.pos.x = bgcd[1].gd.pos.x+blen+space; bgcd[2].gd.pos.y = bgcd[1].gd.pos.y;
+    bgcd[2].gd.pos.width = -1; bgcd[2].gd.pos.height = 0;
+    bgcd[2].gd.flags = gg_visible;
+    blabel[2].text = (unichar_t *) _STR_NextArrow;
+    blabel[2].text_in_resource = true;
+    bgcd[2].gd.label = &blabel[2];
+    bgcd[2].gd.handle_controlevent = CCD_Next;
+    bgcd[2].gd.cid = CID_Next;
+    bgcd[2].creator = GButtonCreate;
+
+    bgcd[3].gd.pos.x = -20; bgcd[3].gd.pos.y = bgcd[1].gd.pos.y;
+    bgcd[3].gd.pos.width = -1; bgcd[3].gd.pos.height = 0;
+    bgcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    blabel[3].text = (unichar_t *) _STR_Cancel;
+    blabel[3].text_in_resource = true;
+    bgcd[3].gd.label = &blabel[3];
+    bgcd[3].gd.handle_controlevent = CCD_Cancel;
+    bgcd[3].gd.cid = CID_Cancel;
+    bgcd[3].creator = GButtonCreate;
+
+    bgcd[4].gd.pos.x = 2; bgcd[4].gd.pos.y = 2;
+    bgcd[4].gd.pos.width = pos.width-4; bgcd[4].gd.pos.height = pos.height-4;
+    bgcd[4].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+    bgcd[4].gd.cid = CID_Group;
+    bgcd[4].creator = GGroupCreate;
+
+    if ( fpst->type == pst_reversesub ) {
+	bgcd[1].gd.flags = bgcd[2].gd.flags = gg_visible;
+	ccd->aw = aw_coverage;
+    } else if ( ccd->isnew ) {
+	bgcd[0].gd.flags = gg_visible;
+	bgcd[2].gd.flags = gg_visible | gg_enabled;
+	ccd->aw = aw_formats;
+    } else if ( fpst->format==pst_coverage ) {
+	bgcd[1].gd.flags = bgcd[2].gd.flags = gg_visible | gg_enabled;
+	ccd->aw = aw_coverage;	/* flags are different from those of reversesub above */
+    } else {
+	bgcd[1].gd.flags = bgcd[2].gd.flags = gg_visible | gg_enabled;
+	ccd->aw = aw_glist;
+    }
+    
+    GGadgetsCreate(gw,bgcd);
+
+    wattrs.mask = wam_events;
+    ccd->formats = GWidgetCreateSubWindow(ccd->gw,&subpos,subccd_e_h,ccd,&wattrs);
+    memset(&rlabel,0,sizeof(rlabel));
+    memset(&rgcd,0,sizeof(rgcd));
+
+    for ( i=0; text[i]!=0; ++i ) {
+	rgcd[i].gd.pos.x = 5; rgcd[i].gd.pos.y = 5+i*13;
+	rgcd[i].gd.flags = gg_visible | gg_enabled;
+	rlabel[i].text = (unichar_t *) text[i];
+	rlabel[i].text_in_resource = true;
+	rgcd[i].gd.label = &rlabel[i];
+	rgcd[i].creator = GLabelCreate;
+    }
+
+    rgcd[i].gd.pos.x = 50; rgcd[i].gd.pos.y = rgcd[i-1].gd.pos.y+20;
+    rgcd[i].gd.flags = gg_visible | gg_enabled | (fpst->format==pst_glyphs ? gg_cb_on : 0 );
+    rlabel[i].text = (unichar_t *) _STR_ByGlyphs;
+    rlabel[i].text_in_resource = true;
+    rgcd[i].gd.label = &rlabel[i];
+    rgcd[i].gd.cid = CID_ByGlyph;
+    rgcd[i++].creator = GRadioCreate;
+
+    rgcd[i].gd.pos.x = rgcd[i-1].gd.pos.x; rgcd[i].gd.pos.y = rgcd[i-1].gd.pos.y+16;
+    rgcd[i].gd.flags = gg_visible ;
+    rlabel[i].text = (unichar_t *) _STR_ByClasses;
+    rlabel[i].text_in_resource = true;
+    rgcd[i].gd.label = &rlabel[i];
+    rgcd[i++].creator = GRadioCreate;
+
+    rgcd[i].gd.pos.x = rgcd[i-1].gd.pos.x; rgcd[i].gd.pos.y = rgcd[i-1].gd.pos.y+16;
+    rgcd[i].gd.flags = gg_visible | gg_enabled | (fpst->format!=pst_glyphs ? gg_cb_on : 0 );
+    rlabel[i].text = (unichar_t *) _STR_ByCoverage;
+    rlabel[i].text_in_resource = true;
+    rgcd[i].gd.label = &rlabel[i];
+    rgcd[i].gd.cid = CID_ByCoverage;
+    rgcd[i].creator = GRadioCreate;
+    GGadgetsCreate(ccd->formats,rgcd);
+
+
+    ccd->glyphs = GWidgetCreateSubWindow(ccd->gw,&subpos,subccd_e_h,ccd,&wattrs);
+    memset(&ggcd,0,sizeof(ggcd));
+    memset(&fgcd,0,sizeof(fgcd));
+    memset(&glabel,0,sizeof(glabel));
+    memset(&flabel,0,sizeof(flabel));
+    memset(&faspects,0,sizeof(faspects));
+    for ( i=0; i<3; ++i ) {
+	k = 0;
+	glabel[i][k].text = (unichar_t *) _STR_Set;
+	glabel[i][k].text_in_resource = true;
+	ggcd[i][k].gd.label = &glabel[i][k];
+	ggcd[i][k].gd.pos.x = 5; ggcd[i][k].gd.pos.y = 5;
+	ggcd[i][k].gd.pos.width = -1;
+	ggcd[i][k].gd.popup_msg = GStringGetResource(_STR_SetGlyphsFromSelectionPopup,NULL);
+	ggcd[i][k].gd.flags = gg_visible | gg_enabled;
+	ggcd[i][k].gd.handle_controlevent = CCD_FromSelection;
+	ggcd[i][k].gd.cid = CID_Set+(0*100)+(i*20);
+	ggcd[i][k++].creator = GButtonCreate;
+
+	glabel[i][k].text = (unichar_t *) _STR_Select_nom;
+	glabel[i][k].text_in_resource = true;
+	ggcd[i][k].gd.label = &glabel[i][k];
+	ggcd[i][k].gd.pos.x = 70; ggcd[i][k].gd.pos.y = 4;
+	ggcd[i][k].gd.pos.width = -1;
+	ggcd[i][k].gd.popup_msg = GStringGetResource(_STR_SelectFromGlyphsPopup,NULL);
+	ggcd[i][k].gd.flags = gg_visible | gg_enabled;
+	ggcd[i][k].gd.handle_controlevent = CCD_ToSelection;
+	ggcd[i][k].gd.cid = CID_Select+(0*100)+(i*20);
+	ggcd[i][k++].creator = GButtonCreate;
+
+	ggcd[i][k].gd.pos.x = 5; ggcd[i][k].gd.pos.y = 30;
+	ggcd[i][k].gd.pos.width = CCD_WIDTH-25; ggcd[i][k].gd.pos.height = 8*13+4;
+	ggcd[i][k].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
+	ggcd[i][k].gd.cid = CID_GlyphList+(0*100)+(i*20);
+	ggcd[i][k++].creator = GTextAreaCreate;
+
+	if ( i==0 )
+	    CCD_AddSeqLookup(&ggcd[i][k],&glabel[i][k],(i*20),ggcd[0][k-1].gd.pos.y+ggcd[0][k-1].gd.pos.height+10);
+    }
+
+    j = 0;
+
+    faspects[j].text = (unichar_t *) _STR_Match;
+    faspects[j].text_in_resource = true;
+    faspects[j].selected = true;
+    faspects[j].gcd = ggcd[j]; ++j;
+
+    faspects[j].text = (unichar_t *) _STR_Backtrack;
+    faspects[j].text_in_resource = true;
+    faspects[j].disabled = fpst->type==pst_contextpos || fpst->type==pst_contextsub;
+    faspects[j].gcd = ggcd[j]; ++j;
+
+    faspects[j].text = (unichar_t *) _STR_Lookahead;
+    faspects[j].text_in_resource = true;
+    faspects[j].disabled = fpst->type==pst_contextpos || fpst->type==pst_contextsub;
+    faspects[j].gcd = ggcd[j]; ++j;
+
+    flabel[0].text = (unichar_t *) _STR_AGlyphList;
+    flabel[0].text_in_resource = true;
+    fgcd[0].gd.label = &flabel[0];
+    fgcd[0].gd.pos.x = 5; fgcd[0].gd.pos.y = 5;
+    fgcd[0].gd.flags = gg_visible | gg_enabled;
+    fgcd[0].creator = GLabelCreate;
+
+    fgcd[1].gd.pos.x = 3; fgcd[1].gd.pos.y = 18;
+    fgcd[1].gd.pos.width = CCD_WIDTH-10;
+    fgcd[1].gd.pos.height = CCD_HEIGHT-60;
+    fgcd[1].gd.u.tabs = faspects;
+    fgcd[1].gd.flags = gg_visible | gg_enabled;
+    fgcd[1].gd.cid = CID_MatchType;
+    fgcd[1].creator = GTabSetCreate;
+    GGadgetsCreate(ccd->glyphs,fgcd);
+
+
+    ccd->coverage = GWidgetCreateSubWindow(ccd->gw,&subpos,subccd_e_h,ccd,&wattrs);
+    memset(&clabel,0,sizeof(clabel));
+    memset(&cgcd,0,sizeof(cgcd));
+
+    for ( i=0; i<3; ++i ) {
+	k = 0;
+	cgcd[i][k].gd.pos.x = 5; cgcd[i][k].gd.pos.y = 5;
+	cgcd[i][k].gd.pos.width = CCD_WIDTH-20;
+	cgcd[i][k].gd.pos.height = i==0 ? CCD_HEIGHT-250 : CCD_HEIGHT-150;
+	cgcd[i][k].gd.flags = gg_visible | gg_enabled;
+	cgcd[i][k].gd.handle_controlevent = CCD_GlyphSelected;
+	cgcd[i][k].gd.cid = CID_GList+100+i*20;
+	cgcd[i][k++].creator = GListCreate;
+
+	space = 10;
+	clabel[i][k].text = (unichar_t *) _STR_New;
+	clabel[i][k].text_in_resource = true;
+	cgcd[i][k].gd.label = &clabel[i][k];
+	cgcd[i][k].gd.pos.x = 5; cgcd[i][k].gd.pos.y = cgcd[i][k-1].gd.pos.y+cgcd[i][k-1].gd.pos.height+10;
+	cgcd[i][k].gd.pos.width = -1;
+	cgcd[i][k].gd.flags = gg_visible | gg_enabled;
+	cgcd[i][k].gd.handle_controlevent = CCD_New;
+	cgcd[i][k].gd.cid = CID_New+100+i*20;
+	cgcd[i][k++].creator = GButtonCreate;
+
+	clabel[i][k].text = (unichar_t *) _STR_Edit;
+	clabel[i][k].text_in_resource = true;
+	cgcd[i][k].gd.label = &clabel[i][k];
+	cgcd[i][k].gd.pos.x = 5+blen+space; cgcd[i][k].gd.pos.y = cgcd[i][k-1].gd.pos.y;
+	cgcd[i][k].gd.pos.width = -1;
+	cgcd[i][k].gd.flags = gg_visible;
+	cgcd[i][k].gd.handle_controlevent = CCD_Edit;
+	cgcd[i][k].gd.cid = CID_Edit+100+i*20;
+	cgcd[i][k++].creator = GButtonCreate;
+
+	clabel[i][k].text = (unichar_t *) _STR_Delete;
+	clabel[i][k].text_in_resource = true;
+	cgcd[i][k].gd.label = &clabel[i][k];
+	cgcd[i][k].gd.pos.x = cgcd[i][k-1].gd.pos.x+blen+space; cgcd[i][k].gd.pos.y = cgcd[i][k-1].gd.pos.y;
+	cgcd[i][k].gd.pos.width = -1;
+	cgcd[i][k].gd.flags = gg_visible;
+	cgcd[i][k].gd.handle_controlevent = CCD_Delete;
+	cgcd[i][k].gd.cid = CID_Delete+100+i*20;
+	cgcd[i][k++].creator = GButtonCreate;
+
+	clabel[i][k].text = (unichar_t *) _STR_Up;
+	clabel[i][k].text_in_resource = true;
+	cgcd[i][k].gd.label = &clabel[i][k];
+	cgcd[i][k].gd.pos.x = cgcd[i][k-1].gd.pos.x+blen+space+5; cgcd[i][k].gd.pos.y = cgcd[i][k-1].gd.pos.y;
+	cgcd[i][k].gd.pos.width = -1;
+	cgcd[i][k].gd.flags = gg_visible;
+	cgcd[i][k].gd.handle_controlevent = CCD_Up;
+	cgcd[i][k].gd.cid = CID_Up+100+i*20;
+	cgcd[i][k++].creator = GButtonCreate;
+
+	clabel[i][k].text = (unichar_t *) _STR_Down;
+	clabel[i][k].text_in_resource = true;
+	cgcd[i][k].gd.label = &clabel[i][k];
+	cgcd[i][k].gd.pos.x = cgcd[i][k-1].gd.pos.x+blen+space; cgcd[i][k].gd.pos.y = cgcd[i][k-1].gd.pos.y;
+	cgcd[i][k].gd.pos.width = -1;
+	cgcd[i][k].gd.flags = gg_visible;
+	cgcd[i][k].gd.handle_controlevent = CCD_Down;
+	cgcd[i][k].gd.cid = CID_Down+100+i*20;
+	cgcd[i][k++].creator = GButtonCreate;
+
+	if ( i==0 ) {
+	    if ( ccd->fpst->format!=pst_reversecoverage )
+		CCD_AddSeqLookup(&cgcd[i][k],&clabel[i][k],100,cgcd[0][k-1].gd.pos.y+40);
+	    else {
+		r = NULL;
+		if ( fpst->rule_cnt==1 ) r = &fpst->rules[0];
+		CCD_AddReplacements(&cgcd[i][k],&clabel[i][k],r,100,cgcd[0][k-1].gd.pos.y+40);
+	    }
+	}
+	faspects[i].gcd = cgcd[i];
+    }
+    flabel[0].text = (unichar_t *) _STR_ACoverageTable;
+    fgcd[1].gd.cid = CID_MatchType+100;
+    GGadgetsCreate(ccd->coverage,fgcd);
+    if (( fpst->format==pst_coverage || fpst->format==pst_reversecoverage ) &&
+	    fpst->rule_cnt==1 ) {
+	for ( i=0; i<3; ++i ) {
+	    if ( (&fpst->rules[0].u.coverage.ncnt)[i]!=0 )
+		GGadgetSetList(cgcd[i][0].ret,clistlist(fpst,i),false);
+	}
+	if ( fpst->format==pst_coverage ) {
+	    GTextInfo **ti = slistlist(&fpst->rules[0]);
+	    GGadgetSetList(GWidgetGetControl(ccd->gw,CID_LookupList+100),ti,false);
+	}
+    }
+
+    ccd->glist = GWidgetCreateSubWindow(ccd->gw,&subpos,subccd_e_h,ccd,&wattrs);
+    memset(&gllabel,0,sizeof(gllabel));
+    memset(&glgcd,0,sizeof(glgcd));
+
+    k = 0;
+    space = 10;
+    gllabel[k].text = (unichar_t *) _STR_GlyphLists;
+    gllabel[k].text_in_resource = true;
+    glgcd[k].gd.label = &gllabel[k];
+    glgcd[k].gd.pos.x = 5; glgcd[k].gd.pos.y = 5;
+    glgcd[k].gd.flags = gg_visible | gg_enabled;
+    glgcd[k++].creator = GLabelCreate;
+
+    glgcd[k].gd.pos.x = 5; glgcd[k].gd.pos.y = 5+13;
+    glgcd[k].gd.pos.width = CCD_WIDTH-20;
+    glgcd[k].gd.pos.height = CCD_HEIGHT-100;
+    glgcd[k].gd.flags = gg_visible | gg_enabled;
+    glgcd[k].gd.handle_controlevent = CCD_GlyphSelected;
+    glgcd[k].gd.cid = CID_GList;
+    glgcd[k++].creator = GListCreate;
+
+    gllabel[k].text = (unichar_t *) _STR_New;
+    gllabel[k].text_in_resource = true;
+    glgcd[k].gd.label = &gllabel[k];
+    glgcd[k].gd.pos.x = 5; glgcd[k].gd.pos.y = glgcd[k-1].gd.pos.y+glgcd[k-1].gd.pos.height+10;
+    glgcd[k].gd.pos.width = -1;
+    glgcd[k].gd.flags = gg_visible | gg_enabled;
+    glgcd[k].gd.handle_controlevent = CCD_New;
+    glgcd[k].gd.cid = CID_New;
+    glgcd[k++].creator = GButtonCreate;
+
+    gllabel[k].text = (unichar_t *) _STR_Edit;
+    gllabel[k].text_in_resource = true;
+    glgcd[k].gd.label = &gllabel[k];
+    glgcd[k].gd.pos.x = 5+blen+space; glgcd[k].gd.pos.y = glgcd[k-1].gd.pos.y;
+    glgcd[k].gd.pos.width = -1;
+    glgcd[k].gd.flags = gg_visible;
+    glgcd[k].gd.handle_controlevent = CCD_Edit;
+    glgcd[k].gd.cid = CID_Edit;
+    glgcd[k++].creator = GButtonCreate;
+
+    gllabel[k].text = (unichar_t *) _STR_Delete;
+    gllabel[k].text_in_resource = true;
+    glgcd[k].gd.label = &gllabel[k];
+    glgcd[k].gd.pos.x = glgcd[k-1].gd.pos.x+blen+space; glgcd[k].gd.pos.y = glgcd[k-1].gd.pos.y;
+    glgcd[k].gd.pos.width = -1;
+    glgcd[k].gd.flags = gg_visible;
+    glgcd[k].gd.handle_controlevent = CCD_Delete;
+    glgcd[k].gd.cid = CID_Delete;
+    glgcd[k++].creator = GButtonCreate;
+
+    gllabel[k].text = (unichar_t *) _STR_Up;
+    gllabel[k].text_in_resource = true;
+    glgcd[k].gd.label = &gllabel[k];
+    glgcd[k].gd.pos.x = glgcd[k-1].gd.pos.x+blen+space+5; glgcd[k].gd.pos.y = glgcd[k-1].gd.pos.y;
+    glgcd[k].gd.pos.width = -1;
+    glgcd[k].gd.flags = gg_visible;
+    glgcd[k].gd.handle_controlevent = CCD_Up;
+    glgcd[k].gd.cid = CID_Up;
+    glgcd[k++].creator = GButtonCreate;
+
+    gllabel[k].text = (unichar_t *) _STR_Down;
+    gllabel[k].text_in_resource = true;
+    glgcd[k].gd.label = &gllabel[k];
+    glgcd[k].gd.pos.x = glgcd[k-1].gd.pos.x+blen+space; glgcd[k].gd.pos.y = glgcd[k-1].gd.pos.y;
+    glgcd[k].gd.pos.width = -1;
+    glgcd[k].gd.flags = gg_visible;
+    glgcd[k].gd.handle_controlevent = CCD_Down;
+    glgcd[k].gd.cid = CID_Down;
+    glgcd[k++].creator = GButtonCreate;
+    GGadgetsCreate(ccd->glist,glgcd);
+    if ( fpst->format==pst_glyphs && fpst->rule_cnt>0 )
+	GGadgetSetList(glgcd[1].ret,glistlist(fpst),false);
+
+    ccd->cselect = GWidgetCreateSubWindow(ccd->gw,&subpos,subccd_e_h,ccd,&wattrs);
+    memset(&cslabel,0,sizeof(cslabel));
+    memset(&csgcd,0,sizeof(csgcd));
+
+    k = 0;
+    cslabel[k].text = (unichar_t *) _STR_Set;
+    cslabel[k].text_in_resource = true;
+    csgcd[k].gd.label = &cslabel[k];
+    csgcd[k].gd.pos.x = 5; csgcd[k].gd.pos.y = 5;
+    csgcd[k].gd.pos.width = -1;
+    csgcd[k].gd.popup_msg = GStringGetResource(_STR_SetGlyphsFromSelectionPopup,NULL);
+    csgcd[k].gd.flags = gg_visible | gg_enabled;
+    csgcd[k].gd.handle_controlevent = CCD_FromSelection;
+    csgcd[k].gd.cid = CID_Set+100;
+    csgcd[k++].creator = GButtonCreate;
+
+    cslabel[k].text = (unichar_t *) _STR_Select_nom;
+    cslabel[k].text_in_resource = true;
+    csgcd[k].gd.label = &cslabel[k];
+    csgcd[k].gd.pos.x = 70; csgcd[k].gd.pos.y = 4;
+    csgcd[k].gd.pos.width = -1;
+    csgcd[k].gd.popup_msg = GStringGetResource(_STR_SelectFromGlyphsPopup,NULL);
+    csgcd[k].gd.flags = gg_visible | gg_enabled;
+    csgcd[k].gd.handle_controlevent = CCD_ToSelection;
+    csgcd[k].gd.cid = CID_Select+100;
+    csgcd[k++].creator = GButtonCreate;
+
+    csgcd[k].gd.pos.x = 5; csgcd[k].gd.pos.y = 30;
+    csgcd[k].gd.pos.width = CCD_WIDTH-25; csgcd[k].gd.pos.height = 8*13+4;
+    csgcd[k].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
+    csgcd[k].gd.cid = CID_GlyphList+100;
+    csgcd[k++].creator = GTextAreaCreate;
+    GGadgetsCreate(ccd->cselect,csgcd);
+
+    if ( ccd->aw == aw_formats )
+	GDrawSetVisible(ccd->formats,true);
+    else if ( ccd->aw == aw_glist )
+	GDrawSetVisible(ccd->glist,true);
+    else
+	GDrawSetVisible(ccd->coverage,true);
+
+    GDrawSetVisible(gw,true);
+
+return( ccd );
+}

@@ -1465,13 +1465,12 @@ static void FVMenuAATSuffix(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     char *suffix;
     unichar_t *usuffix, *upt;
     int i;
-    extern GTextInfo simplesubs_tags[];
     uint16 flags;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i])
 	if ( SCScriptFromUnicode(fv->sf->chars[i])!=0 )
     break;
-    usuffix = AskNameTag(_STR_SuffixToTag,NULL,0,0,-1,simplesubs_tags,fv->sf,fv->sf->chars[i],-1,-1);
+    usuffix = AskNameTag(_STR_SuffixToTag,NULL,0,0,-1,pst_substitution,fv->sf,fv->sf->chars[i],-1,-1);
     if ( usuffix==NULL )
 return;
 
@@ -2215,7 +2214,7 @@ static void FVMenuCompact(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     for ( fvs=fv->sf->fv; fvs!=NULL; fvs = fvs->nextsame )
 	if ( fvs->fontinfo )
-	    FontInfoDestroy(fvs->fontinfo);
+	    FontInfoDestroy(fvs);
 
     if ( mi->mid==MID_CompactedView )
 	fv_reformat = SFCompactFont(fv->sf);

@@ -1267,11 +1267,11 @@ static void bSelectByATT(Context *c) {
 	else if ( strmatch(c->a.vals[1].u.sval,"LCaret")==0 )
 	    type = pst_lcaret;
 	else if ( strmatch(c->a.vals[1].u.sval,"Kern")==0 )
-	    type = pst_max;
+	    type = pst_kerning;
 	else if ( strmatch(c->a.vals[1].u.sval,"VKern")==0 )
-	    type = pst_max+1;
+	    type = pst_vkerning;
 	else if ( strmatch(c->a.vals[1].u.sval,"Anchor")==0 )
-	    type = pst_max+2;
+	    type = pst_anchors;
     }
     tags = uc_copy(c->a.vals[2].u.sval);
     contents = uc_copy(c->a.vals[3].u.sval);

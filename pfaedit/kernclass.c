@@ -467,7 +467,8 @@ static int KC_Set(GGadget *g, GEvent *e) {
 	    char *names;
 	    int len;
 	    for ( j=0; j<2 ; ++j ) {
-		for ( i=len=0; i<sf->charcnt; ++i ) if ( fv->selected[i] && sf->chars[i]!=NULL ) {
+		for ( i=len=0; i<sf->charcnt; ++i ) if ( fv->selected[i] ) {
+		    SFMakeChar(sf,i);
 		    if ( j==0 && (pos = ClassesFindName(classnames,sf->chars[i]->name,top,val))!=0 ) {
 			static int buts[] = { _STR_FromThis, _STR_FromOld, _STR_Cancel, 0 };
 			int ans = GWidgetAskR(_STR_AlreadyUsed,buts,0,2,_STR_AlreadyInClass, sf->chars[i]->name);
@@ -785,6 +786,7 @@ return;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.cid = CID_SelectClass1;
+    gcd[i].gd.popup_msg = GStringGetResource(_STR_SelectFromClassPopup,NULL);
     gcd[i].gd.handle_controlevent = KC_Select;
     gcd[i++].creator = GButtonCreate;
 
@@ -795,6 +797,7 @@ return;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.cid = CID_SelectClass2;
+    gcd[i].gd.popup_msg = GStringGetResource(_STR_SelectFromClassPopup,NULL);
     gcd[i].gd.handle_controlevent = KC_Select;
     gcd[i++].creator = GButtonCreate;
 
@@ -812,6 +815,7 @@ return;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.cid = CID_SetClass1;
+    gcd[i].gd.popup_msg = GStringGetResource(_STR_SetFromSelectionPopup,NULL);
     gcd[i].gd.handle_controlevent = KC_Set;
     gcd[i++].creator = GButtonCreate;
 
@@ -822,6 +826,7 @@ return;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.cid = CID_SetClass2;
+    gcd[i].gd.popup_msg = GStringGetResource(_STR_SetFromSelectionPopup,NULL);
     gcd[i].gd.handle_controlevent = KC_Set;
     gcd[i++].creator = GButtonCreate;
 

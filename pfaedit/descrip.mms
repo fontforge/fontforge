@@ -20,7 +20,7 @@ pfaedit_OBJECTS2=displayfonts.obj,combinations.obj,sftextfield.obj,ikarus.obj,\
 	gotodlg.obj,search.obj,tottfgpos.obj,charinfo.obj,tottfaat.obj,\
 	splineorder2.obj,genttfinstrs.obj,ttfinstrs.obj,cvgridfit.obj,\
 	cvdebug.obj,showatt.obj,kernclass.obj,nonlineartrans.obj,effects.obj,\
-	histograms.obj,ttfspecial.obj,svg.obj
+	histograms.obj,ttfspecial.obj,svg.obj,parsettfatt.obj,contextchain.obj
 
 pfaedit.exe : nomen.h $(pfaedit_OBJECTS) $(pfaedit_OBJECTS2) xlib.opt
         library/create tmp.olb $(pfaedit_OBJECTS)

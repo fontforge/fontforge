@@ -766,12 +766,13 @@ static void SFDDumpEncoding(FILE *sfd,int encname,char *keyword) {
 }
 
 static void SFD_Dump(FILE *sfd,SplineFont *sf) {
-    int i, realcnt;
+    int i, j, realcnt;
     BDFFont *bdf;
     struct ttflangname *ln;
     struct table_ordering *ord;
     struct ttf_table *tab;
     KernClass *kc;
+    FPST *fpst;
     int isv;
 
     fprintf(sfd, "FontName: %s\n", sf->fontname );
@@ -861,6 +862,99 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 		fprintf( sfd, " %d", kc->offsets[i]);
 	    fprintf( sfd, "\n" );
 	}
+    }
+    for ( fpst=sf->possub; fpst!=NULL; fpst=fpst->next ) {
+	static char *keywords[] = { "ContextPos:", "ContextSub:", "ChainPos:", "ChainSub:", "ReverseChain:", NULL };
+	static char *formatkeys[] = { "glyph", "class", "coverage", "revcov", NULL };
+	fprintf( sfd, "%s %s %d %d '%c%c%c%c' %d %d %d %d\n",
+		keywords[fpst->type-pst_contextpos],
+		formatkeys[fpst->format],
+		fpst->flags,
+		fpst->script_lang_index,
+		fpst->tag>>24, (fpst->tag>>16)&0xff,
+		(fpst->tag>>8)&0xff, fpst->tag&0xff,
+		fpst->nccnt, fpst->bccnt, fpst->fccnt, fpst->rule_cnt );
+	for ( i=1; i<fpst->nccnt; ++i )
+	    fprintf( sfd, "  Class: %d %s\n", strlen(fpst->nclass[i]), fpst->nclass[i]);
+	for ( i=1; i<fpst->bccnt; ++i )
+	    fprintf( sfd, "  BClass: %d %s\n", strlen(fpst->bclass[i]), fpst->bclass[i]);
+	for ( i=1; i<fpst->fccnt; ++i )
+	    fprintf( sfd, "  FClass: %d %s\n", strlen(fpst->fclass[i]), fpst->fclass[i]);
+	for ( i=0; i<fpst->rule_cnt; ++i ) {
+	    switch ( fpst->format ) {
+	      case pst_glyphs:
+		fprintf( sfd, " String: %d %s\n", strlen(fpst->rules[i].u.glyph.names), fpst->rules[i].u.glyph.names);
+		fprintf( sfd, " BString: %d %s\n", strlen(fpst->rules[i].u.glyph.back), fpst->rules[i].u.glyph.back);
+		fprintf( sfd, " FString: %d %s\n", strlen(fpst->rules[i].u.glyph.fore), fpst->rules[i].u.glyph.fore);
+	      break;
+	      case pst_class:
+		fprintf( sfd, " %d %d %d\n  ClsList:", fpst->rules[i].u.class.ncnt, fpst->rules[i].u.class.bcnt, fpst->rules[i].u.class.fcnt );
+		for ( j=0; j<fpst->rules[i].u.class.ncnt; ++j )
+		    fprintf( sfd, " %d", fpst->rules[i].u.class.nclasses[j]);
+		fprintf( sfd, "\n  BClsList:" );
+		for ( j=0; j<fpst->rules[i].u.class.bcnt; ++j )
+		    fprintf( sfd, " %d", fpst->rules[i].u.class.bclasses[j]);
+		fprintf( sfd, "\n  FClsList:" );
+		for ( j=0; j<fpst->rules[i].u.class.fcnt; ++j )
+		    fprintf( sfd, " %d", fpst->rules[i].u.class.fclasses[j]);
+		fprintf( sfd, "\n" );
+	      break;
+	      case pst_coverage:
+	      case pst_reversecoverage:
+		fprintf( sfd, " %d %d %d\n", fpst->rules[i].u.coverage.ncnt, fpst->rules[i].u.coverage.bcnt, fpst->rules[i].u.coverage.fcnt );
+		for ( j=0; j<fpst->rules[i].u.coverage.ncnt; ++j )
+		    fprintf( sfd, "  Coverage: %d %s\n", strlen(fpst->rules[i].u.coverage.ncovers[j]), fpst->rules[i].u.coverage.ncovers[j]);
+		for ( j=0; j<fpst->rules[i].u.coverage.bcnt; ++j )
+		    fprintf( sfd, "  BCoverage: %d %s\n", strlen(fpst->rules[i].u.coverage.bcovers[j]), fpst->rules[i].u.coverage.bcovers[j]);
+		for ( j=0; j<fpst->rules[i].u.coverage.fcnt; ++j )
+		    fprintf( sfd, "  FCoverage: %d %s\n", strlen(fpst->rules[i].u.coverage.fcovers[j]), fpst->rules[i].u.coverage.fcovers[j]);
+	      break;
+	    }
+	    switch ( fpst->format ) {
+	      case pst_glyphs:
+	      case pst_class:
+	      case pst_coverage:
+		fprintf( sfd, " %d\n", fpst->rules[i].lookup_cnt );
+		for ( j=0; j<fpst->rules[i].lookup_cnt; ++j )
+		    fprintf( sfd, "  SeqLookup: %d '%c%c%c%c'\n",
+			    fpst->rules[i].lookups[j].seq,
+			    fpst->rules[i].lookups[j].lookup_tag>>24,
+			    (fpst->rules[i].lookups[j].lookup_tag>>16)&0xff,
+			    (fpst->rules[i].lookups[j].lookup_tag>>8)&0xff,
+			    (fpst->rules[i].lookups[j].lookup_tag)&0xff);
+	      break;
+	      case pst_reversecoverage:
+		fprintf( sfd, "  Replace: %d %s\n", strlen(fpst->rules[i].u.rcoverage.replacements), fpst->rules[i].u.rcoverage.replacements);
+	      break;
+	    }
+	}
+	fprintf( sfd, "EndFPST\n" );
+    }
+    if ( sf->gentags.tt_cur>0 ) {
+	fprintf( sfd, "GenTags: %d", sf->gentags.tt_cur );
+	for ( i=0; i<sf->gentags.tt_cur; ++i ) {
+	    switch ( sf->gentags.tagtype[i].type ) {
+	      case pst_position:	fprintf(sfd," ps"); break;
+	      case pst_pair:		fprintf(sfd," pr"); break;
+	      case pst_substitution:	fprintf(sfd," sb"); break;
+	      case pst_alternate:	fprintf(sfd," as"); break;
+	      case pst_multiple:	fprintf(sfd," ms"); break;
+	      case pst_ligature:	fprintf(sfd," lg"); break;
+	      case pst_anchors:		fprintf(sfd," an"); break;
+	      case pst_contextpos:	fprintf(sfd," cp"); break;
+	      case pst_contextsub:	fprintf(sfd," cs"); break;
+	      case pst_chainpos:	fprintf(sfd," pc"); break;
+	      case pst_chainsub:	fprintf(sfd," sc"); break;
+	      case pst_reversesub:	fprintf(sfd," rs"); break;
+	      case pst_null:		fprintf(sfd," nl"); break;
+	    }
+	    fprintf(sfd,"'%c%c%c%c'",
+		    sf->gentags.tagtype[i].tag>>24,
+		    (sf->gentags.tagtype[i].tag>>16)&0xff,
+		    (sf->gentags.tagtype[i].tag>>8)&0xff,
+		    sf->gentags.tagtype[i].tag&0xff );
+	}
+	putc('\n',sfd);
     }
     for ( ord = sf->orders; ord!=NULL ; ord = ord->next ) {
 	for ( i=0; ord->ordered_features[i]!=0; ++i );
@@ -1836,7 +1930,7 @@ return( NULL );
 			 ismult ? pst_multiple :
 			 pst_alternate;
 	    liga->tag = CHR('l','i','g','a');
-	    liga->script_lang_index = 0xff;
+	    liga->script_lang_index = 0xffff;
 	    while ( (ch=getc(sfd))==' ' || ch=='\t' );
 	    if ( isdigit(ch)) {
 		int temp;
@@ -2232,6 +2326,122 @@ return( i );
 return( i );
 }
 
+static void SFDParseChainContext(FILE *sfd,SplineFont *sf,FPST *fpst, char *tok) {
+    int ch, i, j, k, temp;
+
+    fpst->type = strmatch(tok,"ContextPos:")==0 ? pst_contextpos :
+		strmatch(tok,"ContextSub:")==0 ? pst_contextsub :
+		strmatch(tok,"ChainPos:")==0 ? pst_chainpos :
+		strmatch(tok,"ChainSub:")==0 ? pst_chainsub : pst_reversesub;
+    getname(sfd,tok);
+    fpst->format = strmatch(tok,"glyph")==0 ? pst_glyphs :
+		    strmatch(tok,"class")==0 ? pst_class :
+		    strmatch(tok,"coverage")==0 ? pst_coverage : pst_reversecoverage;
+    fscanf(sfd, "%hd %hd", &fpst->flags, &fpst->script_lang_index );
+    while ( (ch=getc(sfd))==' ' || ch=='\t' );
+    if ( ch=='\'' ) {
+	fpst->tag = getc(sfd)<<24;
+	fpst->tag |= getc(sfd)<<16;
+	fpst->tag |= getc(sfd)<<8;
+	fpst->tag |= getc(sfd);
+	getc(sfd);	/* Final quote */
+    } else
+	ungetc(ch,sfd);
+    fscanf(sfd, "%hd %hd %hd %hd", &fpst->nccnt, &fpst->bccnt, &fpst->fccnt, &fpst->rule_cnt );
+    if ( fpst->nccnt!=0 || fpst->bccnt!=0 || fpst->fccnt!=0 ) {
+	fpst->nclass = galloc(fpst->nccnt*sizeof(char *));
+	if (fpst->nccnt!=0 ) fpst->nclass[0] = NULL;
+	if ( fpst->bccnt!=0 || fpst->fccnt!=0 ) {
+	    fpst->bclass = galloc(fpst->bccnt*sizeof(char *));
+	    if (fpst->bccnt!=0 ) fpst->bclass[0] = NULL;
+	    fpst->fclass = galloc(fpst->fccnt*sizeof(char *));
+	    if (fpst->fccnt!=0 ) fpst->fclass[0] = NULL;
+	}
+    }
+
+    for ( j=0; j<3; ++j ) {
+	for ( i=1; i<(&fpst->nccnt)[j]; ++i ) {
+	    getname(sfd,tok);
+	    getint(sfd,&temp);
+	    (&fpst->nclass)[j][i] = galloc(temp+1); (&fpst->nclass)[j][i][temp] = '\0';
+	    getc(sfd);	/* skip space */
+	    fread((&fpst->nclass)[j][i],1,temp,sfd);
+	}
+    }
+
+    fpst->rules = gcalloc(fpst->rule_cnt,sizeof(struct fpst_rule));
+    for ( i=0; i<fpst->rule_cnt; ++i ) {
+	switch ( fpst->format ) {
+	  case pst_glyphs:
+	    for ( j=0; j<3; ++j ) {
+		getname(sfd,tok);
+		getint(sfd,&temp);
+		(&fpst->rules[i].u.glyph.names)[j] = galloc(temp+1);
+		(&fpst->rules[i].u.glyph.names)[j][temp] = '\0';
+		getc(sfd);	/* skip space */
+		fread((&fpst->rules[i].u.glyph.names)[j],1,temp,sfd);
+	    }
+	  break;
+	  case pst_class:
+	    fscanf( sfd, "%d %d %d", &fpst->rules[i].u.class.ncnt, &fpst->rules[i].u.class.bcnt, &fpst->rules[i].u.class.fcnt );
+	    for ( j=0; j<3; ++j ) {
+		getname(sfd,tok);
+		(&fpst->rules[i].u.class.nclasses)[j] = galloc((&fpst->rules[i].u.class.ncnt)[j]*sizeof(uint16));
+		for ( k=0; k<(&fpst->rules[i].u.class.ncnt)[j]; ++k ) {
+		    getint(sfd,&temp);
+		    (&fpst->rules[i].u.class.nclasses)[j][k] = temp;
+		}
+	    }
+	  break;
+	  case pst_coverage:
+	  case pst_reversecoverage:
+	    fscanf( sfd, "%d %d %d", &fpst->rules[i].u.coverage.ncnt, &fpst->rules[i].u.coverage.bcnt, &fpst->rules[i].u.coverage.fcnt );
+	    for ( j=0; j<3; ++j ) {
+		(&fpst->rules[i].u.coverage.ncovers)[j] = galloc((&fpst->rules[i].u.coverage.ncnt)[j]*sizeof(char *));
+		for ( k=0; k<(&fpst->rules[i].u.coverage.ncnt)[j]; ++k ) {
+		    getname(sfd,tok);
+		    getint(sfd,&temp);
+		    (&fpst->rules[i].u.coverage.ncovers)[j][k] = galloc(temp+1);
+		    (&fpst->rules[i].u.coverage.ncovers)[j][k][temp] = '\0';
+		    getc(sfd);	/* skip space */
+		    fread((&fpst->rules[i].u.coverage.ncovers)[j][k],1,temp,sfd);
+		}
+	    }
+	  break;
+	}
+	switch ( fpst->format ) {
+	  case pst_glyphs:
+	  case pst_class:
+	  case pst_coverage:
+	    getint(sfd,&fpst->rules[i].lookup_cnt);
+	    fpst->rules[i].lookups = galloc(fpst->rules[i].lookup_cnt*sizeof(struct seqlookup));
+	    for ( j=0; j<fpst->rules[i].lookup_cnt; ++j ) {
+		getname(sfd,tok);
+		getint(sfd,&fpst->rules[i].lookups[j].seq);
+		while ( (ch=getc(sfd))==' ' || ch=='\t' );
+		if ( ch=='\'' ) {
+		    fpst->rules[i].lookups[j].lookup_tag = getc(sfd)<<24;
+		    fpst->rules[i].lookups[j].lookup_tag |= getc(sfd)<<16;
+		    fpst->rules[i].lookups[j].lookup_tag |= getc(sfd)<<8;
+		    fpst->rules[i].lookups[j].lookup_tag |= getc(sfd);
+		    getc(sfd);	/* Final quote */
+		} else
+		    ungetc(ch,sfd);
+	    }
+	  break;
+	  case pst_reversecoverage:
+	    getname(sfd,tok);
+	    getint(sfd,&temp);
+	    fpst->rules[i].u.rcoverage.replacements = galloc(temp+1);
+	    fpst->rules[i].u.rcoverage.replacements[temp] = '\0';
+	    getc(sfd);	/* skip space */
+	    fread(fpst->rules[i].u.rcoverage.replacements,1,temp,sfd);
+	  break;
+	}
+    }
+    getname(sfd,tok);
+}
+
 static void SFDCleanupAnchorClasses(SplineFont *sf) {
     AnchorClass *ac;
     AnchorPoint *ap;
@@ -2271,10 +2481,11 @@ static void SFDCleanupFont(SplineFont *sf) {
 static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
     SplineFont *sf;
     SplineChar *sc;
-    int realcnt, i, eof, mappos=-1, ch, glyph;
+    int realcnt, i, eof, mappos=-1, ch, ch2, glyph;
     struct table_ordering *lastord = NULL;
     struct ttf_table *lastttf = NULL;
     KernClass *lastkc=NULL, *kc, *lastvkc=NULL;
+    FPST *lastfp=NULL;
 
     sf = SplineFontEmpty();
     sf->cidmaster = cidmaster;
@@ -2503,6 +2714,16 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 		getint(sfd,&temp);
 		kc->offsets[i] = temp;
 	    }
+	} else if ( strmatch(tok,"ContextPos:")==0 || strmatch(tok,"ContextSub:")==0 ||
+		strmatch(tok,"ChainPos:")==0 || strmatch(tok,"ChainSub:")==0 ||
+		strmatch(tok,"ReverseChain:")==0 ) {
+	    FPST *fpst = chunkalloc(sizeof(FPST));
+	    if ( lastfp==NULL )
+		sf->possub = fpst;
+	    else
+		lastfp->next = fpst;
+	    lastfp = fpst;
+	    SFDParseChainContext(sfd,sf,fpst,tok);
 	} else if ( strmatch(tok,"TeXData:")==0 ) {
 	    int temp;
 	    getint(sfd,&temp);
@@ -2571,6 +2792,43 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 		else
 		    lastan->next = an;
 		lastan = an;
+	    }
+	} else if ( strmatch(tok,"GenTags:")==0 ) {
+	    int temp; uint32 tag;
+	    getint(sfd,&temp);
+	    sf->gentags.tt_cur = temp;
+	    sf->gentags.tt_max = sf->gentags.tt_cur+10;
+	    sf->gentags.tagtype = galloc(sf->gentags.tt_max*sizeof(struct tagtype));
+	    ch = getc(sfd);
+	    i = 0;
+	    while ( ch!='\n' ) {
+		while ( ch==' ' ) ch = getc(sfd);
+		if ( ch=='\n' || ch==EOF )
+	    break;
+		ch2 = getc(sfd);
+		if ( ch=='p' && ch2=='s' ) sf->gentags.tagtype[i].type = pst_position;
+		else if ( ch=='p' && ch2=='r' ) sf->gentags.tagtype[i].type = pst_pair;
+		else if ( ch=='s' && ch2=='b' ) sf->gentags.tagtype[i].type = pst_substitution;
+		else if ( ch=='a' && ch2=='s' ) sf->gentags.tagtype[i].type = pst_alternate;
+		else if ( ch=='m' && ch2=='s' ) sf->gentags.tagtype[i].type = pst_multiple;
+		else if ( ch=='l' && ch2=='g' ) sf->gentags.tagtype[i].type = pst_ligature;
+		else if ( ch=='a' && ch2=='n' ) sf->gentags.tagtype[i].type = pst_anchors;
+		else if ( ch=='c' && ch2=='p' ) sf->gentags.tagtype[i].type = pst_contextpos;
+		else if ( ch=='c' && ch2=='s' ) sf->gentags.tagtype[i].type = pst_contextsub;
+		else if ( ch=='p' && ch2=='c' ) sf->gentags.tagtype[i].type = pst_chainpos;
+		else if ( ch=='s' && ch2=='c' ) sf->gentags.tagtype[i].type = pst_chainsub;
+		else if ( ch=='r' && ch2=='s' ) sf->gentags.tagtype[i].type = pst_reversesub;
+		else if ( ch=='n' && ch2=='l' ) sf->gentags.tagtype[i].type = pst_null;
+		else ch2 = EOF;
+		(void) getc(sfd);
+		tag = getc(sfd)<<24;
+		tag |= getc(sfd)<<16;
+		tag |= getc(sfd)<<8;
+		tag |= getc(sfd);
+		(void) getc(sfd);
+		if ( ch2!=EOF )
+		    sf->gentags.tagtype[i++].tag = tag;
+		ch = getc(sfd);
 	    }
 	} else if ( strmatch(tok,"TtfTable:")==0 ) {
 	    lastttf = SFDGetTtfTable(sfd,sf,lastttf);

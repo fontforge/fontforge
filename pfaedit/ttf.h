@@ -171,6 +171,8 @@ struct ttfinfo {
     int mort_max;
 
     struct ttf_table *tabs;
+    FPST *possub;
+    struct gentagtype gentags;
 };
 
 struct tabdir {
@@ -496,6 +498,8 @@ struct alltabs {
     struct fd2data *fds;
 
     struct feat_name { int strid; char *name; } *feat_name;
+
+    int next_lookup;	/* for doing nested lookups in contextual features */
 };
 
 struct subhead { uint16 first, cnt, delta, rangeoff; };	/* a sub header in 8/16 cmap table */
@@ -562,3 +566,15 @@ extern void AnchorClassDecompose(SplineFont *sf,AnchorClass *_ac, int classcnt, 
 	/* My PfEd table for PfaEdit specific info */
 extern void pfed_dump(struct alltabs *at, SplineFont *sf);
 extern void pfed_read(FILE *ttf,struct ttfinfo *info);
+
+
+    /* Parsing advanced typography */
+extern void readttfkerns(FILE *ttf,struct ttfinfo *info);
+extern void readttfmort(FILE *ttf,struct ttfinfo *info);
+extern void readttfopbd(FILE *ttf,struct ttfinfo *info);
+extern void readttflcar(FILE *ttf,struct ttfinfo *info);
+extern void readttfprop(FILE *ttf,struct ttfinfo *info);
+extern void readttfgsubUsed(FILE *ttf,struct ttfinfo *info);
+extern void GuessNamesFromGSUB(FILE *ttf,struct ttfinfo *info);
+extern void readttfgpossub(FILE *ttf,struct ttfinfo *info,int gpos);
+extern void readttfgdef(FILE *ttf,struct ttfinfo *info);

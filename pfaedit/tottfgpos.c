@@ -24,7 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "pfaedit.h"
+#include "pfaeditui.h"
 #include <utype.h>
 #include <ustring.h>
 
@@ -43,6 +43,12 @@ struct lookup {
     struct lookup *feature_next;
     uint16 flags;
     int script_lang_index;
+};
+
+struct postponedlookup {
+    uint32 feature_tag;
+    int lookup_cnt;
+    struct postponedlookup *next;
 };
 
 /* Undocumented fact: Only one feature with a given tag allowed per script/lang */
@@ -253,7 +259,7 @@ static LigList *LigListMatchTag(LigList *ligs,struct tagflaglang *tfl) {
     LigList *l;
 
     for ( l=ligs; l!=NULL; l=l->next )
-	if ( l->lig->tag == tfl->tag && (l->lig->flags&~1)==tfl->flags &&
+	if ( l->lig->tag == tfl->tag && l->lig->flags==tfl->flags &&
 		l->lig->script_lang_index == tfl->script_lang_index )
 return( l );
 return( NULL );
@@ -274,7 +280,7 @@ return( true );
 static PST *PosSubMatchTag(PST *pst,struct tagflaglang *tfl,enum possub_type type) {
 
     for ( ; pst!=NULL; pst=pst->next )
-	if ( pst->tag == tfl->tag && pst->type==type && (pst->flags&~1)==tfl->flags &&
+	if ( pst->tag == tfl->tag && pst->type==type && pst->flags==tfl->flags &&
 		pst->script_lang_index == tfl->script_lang_index )
 return( pst );
 return( NULL );
@@ -298,7 +304,7 @@ static SplineChar **FindSubs(SplineChar *sc,struct tagflaglang *tfl, enum possub
     PST *pst;
 
     for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
-	if ( pst->tag == tfl->tag && (pst->flags&~1)==tfl->flags &&
+	if ( pst->tag == tfl->tag && pst->flags==tfl->flags &&
 		pst->script_lang_index == tfl->script_lang_index && pst->type==type ) {
 	    pt = pst->u.subs.variant;
 	    while ( 1 ) {
@@ -582,6 +588,55 @@ static void dumpcoveragetable(FILE *gpos,SplineChar **glyphs) {
     }
 }
 
+static SplineChar **GlyphsFromNames(SplineFont *sf,char *names) {
+    int cnt, ch;
+    char *pt, *end;
+    SplineChar *sc, **glyphs;
+
+    cnt = 0;
+    for ( pt = names; *pt; pt = end+1 ) {
+	++cnt;
+	end = strchr(pt,' ');
+	if ( end==NULL )
+    break;
+    }
+
+    glyphs = galloc((cnt+1)*sizeof(SplineChar *));
+    cnt = 0;
+    for ( pt = names; *pt; pt = end+1 ) {
+	end = strchr(pt,' ');
+	if ( end==NULL )
+	    end = pt+strlen(pt);
+	ch = *end;
+	*end = '\0';
+	sc = SFGetCharDup(sf,-1,pt);
+	if ( sc!=NULL && sc->ttf_glyph!=-1 )
+	    glyphs[cnt++] = sc;
+	*end = ch;
+	if ( ch=='\0' )
+    break;
+    }
+    glyphs[cnt] = NULL;
+return( glyphs );
+}
+
+static SplineChar **OrderedGlyphsFromNames(SplineFont *sf,char *names) {
+    SplineChar **glyphs = GlyphsFromNames(sf,names);
+    int i,j;
+
+    if ( glyphs==NULL || glyphs[0]==NULL )
+return( glyphs );
+
+    for ( i=0; glyphs[i+1]!=NULL; ++i ) for ( j=i+1; glyphs[j]!=NULL; ++j ) {
+	if ( glyphs[i]->ttf_glyph > glyphs[j]->ttf_glyph ) {
+	    SplineChar *sc = glyphs[i];
+	    glyphs[i] = glyphs[j];
+	    glyphs[j] = sc;
+	}
+    }
+return( glyphs );
+}
+
 static void dumpgposkerndata(FILE *gpos,SplineFont *sf,int sli,
 	    struct alltabs *at,int isv) {
     int32 coverage_pos, next_val_pos, here;
@@ -714,6 +769,28 @@ static SplineChar **GlyphsFromClasses(SplineChar **gs, int numGlyphs) {
 	    glyphs[cnt++] = gs[i];
     glyphs[cnt++] = NULL;
     free(gs);
+return( glyphs );
+}
+
+static SplineChar **GlyphsFromInitialClasses(SplineChar **gs, int numGlyphs, uint16 *classes, uint16 *initial) {
+    int i, j, cnt;
+    SplineChar **glyphs;
+
+    for ( i=cnt=0; i<numGlyphs; ++i ) {
+	for ( j=0; initial[j]!=0xffff; ++j )
+	    if ( initial[j]==classes[i])
+	break;
+	if ( initial[j]!=0xffff && gs[i]!=NULL ) ++cnt;
+    }
+    glyphs = galloc((cnt+1)*sizeof(SplineChar *));
+    for ( i=cnt=0; i<numGlyphs; ++i ) {
+	for ( j=0; initial[j]!=0xffff; ++j )
+	    if ( initial[j]==classes[i])
+	break;
+	if ( initial[j]!=0xffff && gs[i]!=NULL )
+	    glyphs[cnt++] = gs[i];
+    }
+    glyphs[cnt++] = NULL;
 return( glyphs );
 }
 
@@ -1089,7 +1166,7 @@ static void dumpGPOSsimplepos(FILE *gpos,SplineFont *sf,SplineChar **glyphs,
 
     for ( cnt=0; glyphs[cnt]!=NULL; ++cnt) {
 	for ( pst=glyphs[cnt]->possub; pst!=NULL; pst=pst->next ) {
-	    if ( pst->tag==tfl->tag && (pst->flags&~1)==tfl->flags &&
+	    if ( pst->tag==tfl->tag && pst->flags==tfl->flags &&
 		    pst->script_lang_index == tfl->script_lang_index && pst->type==pst_position ) {
 		if ( first==NULL ) first = pst;
 		else if ( same ) {
@@ -1122,7 +1199,7 @@ static void dumpGPOSsimplepos(FILE *gpos,SplineFont *sf,SplineChar **glyphs,
     } else {
 	for ( cnt = 0; glyphs[cnt]!=NULL; ++cnt ) {
 	    for ( pst=glyphs[cnt]->possub; pst!=NULL; pst=pst->next ) {
-		if ( pst->tag==tfl->tag && (pst->flags&~1)==tfl->flags &&
+		if ( pst->tag==tfl->tag && pst->flags==tfl->flags &&
 			pst->script_lang_index == tfl->script_lang_index && pst->type==pst_position ) {
 		    if ( bits&1 ) putshort(gpos,pst->u.pos.xoff);
 		    if ( bits&2 ) putshort(gpos,pst->u.pos.yoff);
@@ -1151,7 +1228,7 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,SplineChar **glyphs,
 
     for ( cnt=0; glyphs[cnt]!=NULL; ++cnt) {
 	for ( pst=glyphs[cnt]->possub; pst!=NULL; pst=pst->next ) {
-	    if ( pst->tag==tfl->tag && (pst->flags&~1)==tfl->flags &&
+	    if ( pst->tag==tfl->tag && pst->flags==tfl->flags &&
 		    pst->script_lang_index == tfl->script_lang_index &&
 		    pst->type==pst_pair ) {
 		if ( pst->u.pair.vr[0].xoff!=0 ) vf1 |= 1;
@@ -1185,14 +1262,14 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,SplineChar **glyphs,
 
 	subcnt=0;
 	for ( pst=glyphs[i]->possub; pst!=NULL; pst=pst->next ) {
-	    if ( pst->tag==tfl->tag && (pst->flags&~1)==tfl->flags &&
+	    if ( pst->tag==tfl->tag && pst->flags==tfl->flags &&
 		    pst->script_lang_index == tfl->script_lang_index &&
 		    pst->type==pst_pair )
 		++subcnt;
 	}
 	putshort(gpos,subcnt);
 	for ( pst=glyphs[i]->possub; pst!=NULL; pst=pst->next ) {
-	    if ( pst->tag==tfl->tag && (pst->flags&~1)==tfl->flags &&
+	    if ( pst->tag==tfl->tag && pst->flags==tfl->flags &&
 		    pst->script_lang_index == tfl->script_lang_index &&
 		    pst->type==pst_pair ) {
 		sc = SFGetCharDup(sf,-1,pst->u.pair.paired);
@@ -1244,7 +1321,7 @@ static void dumpgsubligdata(FILE *gsub,SplineFont *sf,
     for ( i=0; i<cnt; ++i ) {
 	offsets[i] = ftell(gsub)-coverage_pos+2;
 	for ( pcnt = 0, ll = glyphs[i]->ligofme; ll!=NULL; ll=ll->next )
-	    if ( ll->lig->tag==ligtag->tag && (ll->lig->flags&~1) == ligtag->flags &&
+	    if ( ll->lig->tag==ligtag->tag && ll->lig->flags == ligtag->flags &&
 		    ll->lig->script_lang_index == ligtag->script_lang_index &&
 		    AllToBeOutput(ll))
 		++pcnt;
@@ -1257,7 +1334,7 @@ static void dumpgsubligdata(FILE *gsub,SplineFont *sf,
 	for ( j=0; j<pcnt; ++j )
 	    putshort(gsub,0);			/* Place holders */
 	for ( pcnt=0, ll = glyphs[i]->ligofme; ll!=NULL; ll=ll->next ) {
-	    if ( ll->lig->tag==ligtag->tag && (ll->lig->flags&~1) == ligtag->flags &&
+	    if ( ll->lig->tag==ligtag->tag && ll->lig->flags == ligtag->flags &&
 		    ll->lig->script_lang_index==ligtag->script_lang_index  &&
 		    AllToBeOutput(ll)) {
 		ligoffsets[pcnt] = ftell(gsub)-lig_list_start+2;
@@ -1354,14 +1431,14 @@ static struct lookup *LookupFromTagFlagLang(struct tagflaglang *tfl ) {
 
     new = chunkalloc(sizeof(struct lookup));
     new->feature_tag = tfl->tag;
-    new->flags = tfl->flags&~1;
+    new->flags = tfl->flags;
     new->script_lang_index = tfl->script_lang_index;
 return( new );
 }
 
 static void TagFlagLangFromPST(struct tagflaglang *tfl,PST *pst) {
     tfl->script_lang_index = pst->script_lang_index;
-    tfl->flags = pst->flags&~1;
+    tfl->flags = pst->flags;
     tfl->tag = pst->tag;
 }
 
@@ -1405,22 +1482,639 @@ return( true );
 return( false );
 }
 
-static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
-	struct alltabs *at) {
-    /* When we find a feature, we split it out into various scripts */
-    /*  dumping one lookup per script into the file */
-    struct lookup *lookups = NULL, *new;
-    int i, j, cnt, max, isv;
+static uint16 *FigureInitialClasses(FPST *fpst) {
+    uint16 *initial = galloc((fpst->nccnt+1)*sizeof(uint16));
+    int i, cnt, j;
+
+    for ( i=cnt=0; i<fpst->rule_cnt; ++i ) {
+	for ( j=0; j<cnt ; ++j )
+	    if ( initial[j] == fpst->rules[i].u.class.nclasses[0] )
+	break;
+	if ( j==cnt )
+	    initial[cnt++] = fpst->rules[i].u.class.nclasses[0];
+    }
+    initial[cnt] = 0xffff;
+return( initial );
+}
+
+static SplineChar **OrderedInitialGlyphs(SplineFont *sf,FPST *fpst) {
+    SplineChar **glyphs, *sc;
+    int i, j, cnt, ch;
+    char *pt, *names;
+
+    glyphs = galloc((fpst->rule_cnt+1)*sizeof(SplineChar *));
+    for ( i=cnt=0; i<fpst->rule_cnt; ++i ) {
+	names = fpst->rules[i].u.glyph.names;
+	pt = strchr(names,' ');
+	if ( pt==NULL ) pt = names+strlen(names);
+	ch = *pt; *pt = '\0';
+	sc = SFGetCharDup(sf,-1,names);
+	*pt = ch;
+	for ( j=0; j<cnt; ++j )
+	    if ( glyphs[j]==sc )
+	break;
+	if ( j==cnt && sc!=NULL )
+	    glyphs[cnt++] = sc;
+    }
+    glyphs[cnt] = NULL;
+    if ( cnt==0 )
+return( glyphs );
+
+    for ( i=0; glyphs[i+1]!=NULL; ++i ) for ( j=i+1; glyphs[j]!=NULL; ++j ) {
+	if ( glyphs[i]->ttf_glyph > glyphs[j]->ttf_glyph ) {
+	    sc = glyphs[i];
+	    glyphs[i] = glyphs[j];
+	    glyphs[j] = sc;
+	}
+    }
+return( glyphs );
+}
+
+static int NamesStartWith(SplineChar *sc,char *names ) {
+    char *pt;
+
+    pt = strchr(names,' ');
+    if ( pt==NULL ) pt = names+strlen(names);
+    if ( pt-names!=strlen(sc->name))
+return( false );
+
+return( strncmp(sc->name,names,pt-names)==0 );
+}
+
+static int CntRulesStartingWith(FPST *fpst,SplineChar *sc) {
+    int i, cnt;
+
+    for ( i=cnt=0; i<fpst->rule_cnt; ++i ) {
+	if ( NamesStartWith(sc,fpst->rules[i].u.glyph.names))
+	    ++cnt;
+    }
+return( cnt );
+}
+
+static int CntRulesStartingWithClass(FPST *fpst,uint16 cval) {
+    int i, cnt;
+
+    for ( i=cnt=0; i<fpst->rule_cnt; ++i ) {
+	if ( fpst->rules[i].u.class.nclasses[0]==cval )
+	    ++cnt;
+    }
+return( cnt );
+}
+
+static int g___FigureNest(struct lookup **nested, struct postponedlookup **pp,
+	struct alltabs *at, uint32 tag) {
+    struct lookup *l;
+    struct postponedlookup *p, *prev;
+
+    for ( l=*nested; l!=NULL; l=l->next )
+	if ( l->feature_tag == tag )
+return( l->lookup_cnt );
+    prev = NULL;
+    for ( p = *pp; p!=NULL; p=p->next ) {
+	if ( p->feature_tag == tag )
+return( p->lookup_cnt );
+	prev = p;
+    }
+
+    p = chunkalloc(sizeof(struct postponedlookup));
+    p->feature_tag = tag;
+    p->lookup_cnt = at->next_lookup++;
+    if ( prev!=NULL )
+	prev->next = p;
+    else
+	*pp = p;
+return( p->lookup_cnt );
+}
+
+static void dumpg___ContextChainGlyphs(FILE *lfile,FPST *fpst,SplineFont *sf,
+	struct lookup **nested, struct postponedlookup **pp, struct alltabs *at) {
+    int iscontext = fpst->type==pst_contextpos || fpst->type==pst_contextsub;
+    uint32 base = ftell(lfile);
+    int i,cnt, subcnt, j,k,l, maxcontext,curcontext;
+    SplineChar **glyphs, **subglyphs;
+
+    glyphs = OrderedInitialGlyphs(sf,fpst);
+    for ( cnt=0; glyphs[cnt]!=NULL; ++cnt );
+
+    putshort(lfile,1);		/* Sub format 1 => glyph lists */
+    putshort(lfile,(3+cnt)*sizeof(short));	/* offset to coverage */
+    putshort(lfile,cnt);
+    for ( i=0; i<cnt; ++i )
+	putshort(lfile,0);	/* Offset to rule */
+    dumpcoveragetable(lfile,glyphs);
+
+    maxcontext = 0;
+
+    for ( i=0; i<cnt; ++i ) {
+	uint32 pos = ftell(lfile);
+	fseek(lfile,base+(3+i)*sizeof(short),SEEK_SET);
+	putshort(lfile,pos-base);
+	fseek(lfile,pos,SEEK_SET);
+	subcnt = CntRulesStartingWith(fpst,glyphs[i]);
+	putshort(lfile,subcnt);
+	for ( j=0; j<subcnt; ++j )
+	    putshort(lfile,0);
+	for ( j=k=0; k<fpst->rule_cnt; ++k ) if ( NamesStartWith(glyphs[i],fpst->rules[k].u.glyph.names )) {
+	    uint32 subpos = ftell(lfile);
+	    fseek(lfile,pos+(1+j)*sizeof(short),SEEK_SET);
+	    putshort(lfile,subpos-pos);
+	    fseek(lfile,subpos,SEEK_SET);
+
+	    if ( iscontext ) {
+		subglyphs = GlyphsFromNames(sf,fpst->rules[k].u.glyph.names);
+		for ( l=0; subglyphs[l]!=NULL; ++l );
+		putshort(lfile,l);
+		curcontext = l;
+		putshort(lfile,fpst->rules[k].lookup_cnt);
+		for ( l=1; subglyphs[l]!=NULL; ++l )
+		    putshort(lfile,subglyphs[l]->ttf_glyph);
+		free(subglyphs);
+	    } else {
+		subglyphs = GlyphsFromNames(sf,fpst->rules[k].u.glyph.back);
+		for ( l=0; subglyphs[l]!=NULL; ++l );
+		putshort(lfile,l);
+		curcontext = l;
+		for ( l=0; subglyphs[l]!=NULL; ++l )
+		    putshort(lfile,subglyphs[l]->ttf_glyph);
+		free(subglyphs);
+		subglyphs = GlyphsFromNames(sf,fpst->rules[k].u.glyph.names);
+		for ( l=0; subglyphs[l]!=NULL; ++l );
+		putshort(lfile,l);
+		curcontext += l;
+		for ( l=1; subglyphs[l]!=NULL; ++l )
+		    putshort(lfile,subglyphs[l]->ttf_glyph);
+		free(subglyphs);
+		subglyphs = GlyphsFromNames(sf,fpst->rules[k].u.glyph.fore);
+		for ( l=0; subglyphs[l]!=NULL; ++l );
+		putshort(lfile,l);
+		curcontext += l;
+		for ( l=0; subglyphs[l]!=NULL; ++l )
+		    putshort(lfile,subglyphs[l]->ttf_glyph);
+		free(subglyphs);
+		putshort(lfile,fpst->rules[k].lookup_cnt);
+	    }
+	    for ( l=0; l<fpst->rules[k].lookup_cnt; ++l ) {
+		putshort(lfile,fpst->rules[k].lookups[l].seq);
+		putshort(lfile,g___FigureNest(nested,pp,at,fpst->rules[k].lookups[l].lookup_tag));
+	    }
+	    ++j;
+	    if ( curcontext>maxcontext ) maxcontext = curcontext;
+	}
+    }
+    free(glyphs);
+
+    if ( maxcontext>at->os2.maxContext )
+	at->os2.maxContext = maxcontext;
+}
+
+static void dumpg___ContextChainClass(FILE *lfile,FPST *fpst,SplineFont *sf,
+	struct lookup **nested, struct postponedlookup **pp, struct alltabs *at) {
+    int iscontext = fpst->type==pst_contextpos || fpst->type==pst_contextsub;
+    uint32 base = ftell(lfile), rulebase, pos, subpos;
+    uint16 *initialclasses, *iclass, *bclass, *lclass;
+    SplineChar **iglyphs, **bglyphs, **lglyphs, **glyphs;
+    int i,cnt, subcnt, j,k,l , maxcontext,curcontext;
+
+    putshort(lfile,2);		/* Sub format 2 => class */
+    putshort(lfile,0);		/* offset to coverage table */
+    if ( iscontext )
+	putshort(lfile,0);	/* offset to input classdef */
+    else {
+	putshort(lfile,0);	/* offset to backtrack classdef */
+	putshort(lfile,0);	/* offset to input classdef */
+	putshort(lfile,0);	/* offset to lookahead classdef */
+    }
+    initialclasses = FigureInitialClasses(fpst);
+    for ( cnt=0; initialclasses[cnt]!=0xffff; ++cnt );
+    putshort(lfile,cnt);
+    rulebase = ftell(lfile);
+    for ( cnt=0; initialclasses[cnt]!=0xffff; ++cnt )
+	putshort(lfile,0);
+
+    iclass = ClassesFromNames(sf,fpst->nclass,fpst->nccnt,at->maxp.numGlyphs,&iglyphs);
+    lglyphs = bglyphs = NULL; bclass = lclass = NULL;
+    if ( !iscontext ) {
+	bclass = ClassesFromNames(sf,fpst->bclass,fpst->bccnt,at->maxp.numGlyphs,&bglyphs);
+	lclass = ClassesFromNames(sf,fpst->fclass,fpst->fccnt,at->maxp.numGlyphs,&lglyphs);
+    }
+    pos = ftell(lfile);
+    fseek(lfile,base+2,SEEK_SET);
+    putshort(lfile,pos-base);
+    fseek(lfile,pos,SEEK_SET);
+    glyphs = GlyphsFromInitialClasses(iglyphs,at->maxp.numGlyphs,iclass,initialclasses);
+    dumpcoveragetable(lfile,glyphs);
+    free(glyphs);
+    free(iglyphs); free(bglyphs); free(lglyphs);
+
+    if ( iscontext ) {
+	pos = ftell(lfile);
+	fseek(lfile,base+2*sizeof(uint16),SEEK_SET);
+	putshort(lfile,pos-base);
+	fseek(lfile,pos,SEEK_SET);
+	DumpClass(lfile,iclass,at->maxp.numGlyphs);
+	free(iclass);
+    } else {
+	pos = ftell(lfile);
+	fseek(lfile,base+2*sizeof(uint16),SEEK_SET);
+	putshort(lfile,pos-base);
+	fseek(lfile,pos,SEEK_SET);
+	DumpClass(lfile,bclass,at->maxp.numGlyphs);
+	pos = ftell(lfile);
+	fseek(lfile,base+3*sizeof(uint16),SEEK_SET);
+	putshort(lfile,pos-base);
+	fseek(lfile,pos,SEEK_SET);
+	DumpClass(lfile,iclass,at->maxp.numGlyphs);
+	pos = ftell(lfile);
+	fseek(lfile,base+4*sizeof(uint16),SEEK_SET);
+	putshort(lfile,pos-base);
+	fseek(lfile,pos,SEEK_SET);
+	DumpClass(lfile,lclass,at->maxp.numGlyphs);
+	free(iclass); free(bclass); free(lclass);
+    }
+
+    for ( i=0; i<cnt; ++i ) {
+	pos = ftell(lfile);
+	fseek(lfile,rulebase+i*sizeof(short),SEEK_SET);
+	putshort(lfile,pos-base);
+	fseek(lfile,pos,SEEK_SET);
+	subcnt = CntRulesStartingWithClass(fpst,initialclasses[i]);
+	putshort(lfile,subcnt);
+	for ( j=0; j<subcnt; ++j )
+	    putshort(lfile,0);
+	for ( j=k=0; k<fpst->rule_cnt; ++k ) if ( initialclasses[i]==fpst->rules[k].u.class.nclasses[0] ) {
+	    subpos = ftell(lfile);
+	    fseek(lfile,pos+(1+j)*sizeof(short),SEEK_SET);
+	    putshort(lfile,subpos-pos);
+	    fseek(lfile,subpos,SEEK_SET);
+
+	    if ( iscontext ) {
+		putshort(lfile,fpst->rules[k].u.class.ncnt);
+		putshort(lfile,fpst->rules[k].lookup_cnt);
+		for ( l=1; l<fpst->rules[k].u.class.ncnt; ++l )
+		    putshort(lfile,fpst->rules[k].u.class.nclasses[l]);
+	    } else {
+		putshort(lfile,fpst->rules[k].u.class.bcnt);
+		for ( l=0; l<fpst->rules[k].u.class.bcnt; ++l )
+		    putshort(lfile,fpst->rules[k].u.class.bclasses[l]);
+		putshort(lfile,fpst->rules[k].u.class.ncnt);
+		for ( l=1; l<fpst->rules[k].u.class.ncnt; ++l )
+		    putshort(lfile,fpst->rules[k].u.class.nclasses[l]);
+		putshort(lfile,fpst->rules[k].u.class.fcnt);
+		for ( l=0; l<fpst->rules[k].u.class.fcnt; ++l )
+		    putshort(lfile,fpst->rules[k].u.class.fclasses[l]);
+		putshort(lfile,fpst->rules[k].lookup_cnt);
+	    }
+	    for ( l=0; l<fpst->rules[k].lookup_cnt; ++l ) {
+		putshort(lfile,fpst->rules[k].lookups[l].seq);
+		putshort(lfile,g___FigureNest(nested,pp,at,fpst->rules[k].lookups[l].lookup_tag));
+	    }
+	    ++j;
+	}
+    }
+    free(initialclasses);
+
+    maxcontext = 0;
+    for ( i=0; i<fpst->rule_cnt; ++i ) {
+	curcontext = fpst->rules[i].u.class.ncnt+fpst->rules[i].u.class.bcnt+fpst->rules[i].u.class.fcnt;
+	if ( curcontext>maxcontext ) maxcontext = curcontext;
+    }
+    if ( maxcontext>at->os2.maxContext )
+	at->os2.maxContext = maxcontext;
+}
+
+static void dumpg___ContextChainCoverage(FILE *lfile,FPST *fpst,SplineFont *sf,
+	struct lookup **nested, struct postponedlookup **pp, struct alltabs *at) {
+    int iscontext = fpst->type==pst_contextpos || fpst->type==pst_contextsub;
+    uint32 base = ftell(lfile), ibase, lbase, bbase;
+    int i;
+    SplineChar **glyphs;
+    int curcontext;
+
+    if ( fpst->rule_cnt!=1 )
+	GDrawIError("Bad rule cnt in coverage context lookup");
+    if ( fpst->format==pst_reversecoverage && fpst->rules[0].u.rcoverage.always1!=1 )
+	GDrawIError("Bad input count in reverse coverage lookup" );
+
+    putshort(lfile,3);		/* Sub format 3 => coverage */
+    if ( iscontext ) {
+	putshort(lfile,fpst->rules[0].u.coverage.ncnt);
+	putshort(lfile,fpst->rules[0].lookup_cnt);
+	for ( i=0; i<fpst->rules[0].u.coverage.ncnt; ++i )
+	    putshort(lfile,0);
+	for ( i=0; i<fpst->rules[0].lookup_cnt; ++i ) {
+	    putshort(lfile,fpst->rules[0].lookups[i].seq);
+	    putshort(lfile,g___FigureNest(nested,pp,at,fpst->rules[0].lookups[i].lookup_tag));
+	}
+	for ( i=0; i<fpst->rules[0].u.coverage.ncnt; ++i ) {
+	    uint32 pos = ftell(lfile);
+	    fseek(lfile,base+4+2*i,SEEK_SET);
+	    putshort(lfile,pos-base);
+	    fseek(lfile,pos,SEEK_SET);
+	    glyphs = OrderedGlyphsFromNames(sf,fpst->rules[0].u.coverage.ncovers[i]);
+	    dumpcoveragetable(lfile,glyphs);
+	    free(glyphs);
+	}
+    } else {
+	if ( fpst->format==pst_reversecoverage ) {
+	    ibase = ftell(lfile);
+	    putshort(lfile,0);
+	}
+	putshort(lfile,fpst->rules[0].u.coverage.bcnt);
+	bbase = ftell(lfile);
+	for ( i=0; i<fpst->rules[0].u.coverage.bcnt; ++i )
+	    putshort(lfile,0);
+	if ( fpst->format==pst_coverage ) {
+	    putshort(lfile,fpst->rules[0].u.coverage.ncnt);
+	    ibase = ftell(lfile);
+	    for ( i=0; i<fpst->rules[0].u.coverage.ncnt; ++i )
+		putshort(lfile,0);
+	}
+	putshort(lfile,fpst->rules[0].u.coverage.fcnt);
+	lbase = ftell(lfile);
+	for ( i=0; i<fpst->rules[0].u.coverage.fcnt; ++i )
+	    putshort(lfile,0);
+	if ( fpst->format==pst_coverage ) {
+	    putshort(lfile,fpst->rules[0].lookup_cnt);
+	    for ( i=0; i<fpst->rules[0].lookup_cnt; ++i ) {
+		putshort(lfile,fpst->rules[0].lookups[i].seq);
+		putshort(lfile,g___FigureNest(nested,pp,at,fpst->rules[0].lookups[i].lookup_tag));
+	    }
+	} else {		/* reverse coverage */
+	    glyphs = GlyphsFromNames(sf,fpst->rules[0].u.rcoverage.replacements);
+	    for ( i=0; glyphs[i]!=0; ++i );
+	    putshort(lfile,i);
+	    for ( i=0; glyphs[i]!=0; ++i )
+		putshort(lfile,glyphs[i]->ttf_glyph);
+	}
+	for ( i=0; i<fpst->rules[0].u.coverage.ncnt; ++i ) {
+	    uint32 pos = ftell(lfile);
+	    fseek(lfile,ibase+2*i,SEEK_SET);
+	    putshort(lfile,pos-base);
+	    fseek(lfile,pos,SEEK_SET);
+	    glyphs = OrderedGlyphsFromNames(sf,fpst->rules[0].u.coverage.ncovers[i]);
+	    dumpcoveragetable(lfile,glyphs);
+	    free(glyphs);
+	}
+	for ( i=0; i<fpst->rules[0].u.coverage.bcnt; ++i ) {
+	    uint32 pos = ftell(lfile);
+	    fseek(lfile,bbase+2*i,SEEK_SET);
+	    putshort(lfile,pos-base);
+	    fseek(lfile,pos,SEEK_SET);
+	    glyphs = OrderedGlyphsFromNames(sf,fpst->rules[0].u.coverage.bcovers[i]);
+	    dumpcoveragetable(lfile,glyphs);
+	    free(glyphs);
+	}
+	for ( i=0; i<fpst->rules[0].u.coverage.fcnt; ++i ) {
+	    uint32 pos = ftell(lfile);
+	    fseek(lfile,lbase+2*i,SEEK_SET);
+	    putshort(lfile,pos-base);
+	    fseek(lfile,pos,SEEK_SET);
+	    glyphs = OrderedGlyphsFromNames(sf,fpst->rules[0].u.coverage.fcovers[i]);
+	    dumpcoveragetable(lfile,glyphs);
+	    free(glyphs);
+	}
+    }
+
+    curcontext = fpst->rules[0].u.coverage.ncnt+fpst->rules[0].u.coverage.bcnt+fpst->rules[0].u.coverage.fcnt;
+    if ( curcontext>at->os2.maxContext )
+	at->os2.maxContext = curcontext;
+}
+
+static void g___HandleNested(FILE *lfile,SplineFont *sf,int gpos,
+	struct lookup **nested,struct postponedlookup *pp, struct alltabs *at);
+
+static struct lookup *dumpg___ContextChain(FILE *lfile,FPST *fpst,SplineFont *sf,
+	struct lookup *lookups,struct lookup **nested,struct alltabs *at) {
+    struct lookup *new;
+    struct postponedlookup *pp = NULL;
+
+    new = chunkalloc(sizeof(struct lookup));
+    new->feature_tag = fpst->tag;
+    new->flags = fpst->flags;
+    new->script_lang_index = fpst->script_lang_index;
+    new->lookup_type =  fpst->type == pst_contextpos ? 7 :
+			fpst->type == pst_chainpos ? 8 :
+			fpst->type == pst_contextsub ? 5 :
+			fpst->type == pst_chainsub ? 6 :
+			/* fpst->type == pst_reversesub */ 8;
+    new->offset = ftell(lfile);
+    new->next = lookups;
+    lookups = new;
+
+    switch ( fpst->format ) {
+      case pst_glyphs:
+	dumpg___ContextChainGlyphs(lfile,fpst,sf,nested,&pp,at);
+      break;
+      case pst_class:
+	dumpg___ContextChainClass(lfile,fpst,sf,nested,&pp,at);
+      break;
+      case pst_coverage:
+      case pst_reversecoverage:
+	dumpg___ContextChainCoverage(lfile,fpst,sf,nested,&pp,at);
+      break;
+    }
+
+    fseek(lfile,0,SEEK_END);
+    new->len = ftell(lfile)-new->offset;
+
+    g___HandleNested(lfile,sf,fpst->type==pst_contextpos || fpst->type==pst_chainpos,
+	    nested,pp,at);
+return( lookups );
+}
+
+static struct lookup *AnchorsAway(FILE *lfile,SplineFont *sf,struct lookup *lookups,
+	uint32 tag ) {
+    SplineChar **base, **lig, **mkmk;
+    AnchorClass *ac, *ac2;
     SplineChar ***marks;
     int *subcnts;
-    SplineChar **base, **lig, **mkmk, ***map, **glyphs;
-    AnchorClass *ac, *ac2;
-    struct tagflaglang *ligtags;
     int cmax, classcnt;
+    int i;
+
+    marks = galloc((cmax=20)*sizeof(SplineChar **));
+    subcnts = galloc(cmax*sizeof(int));
+
+    for ( ac=sf->anchor; ac!=NULL; ac = ac->next ) {
+	if ( !ac->processed &&
+		((tag==0 && ac->script_lang_index!=SLI_NESTED) ||
+		 (tag!=0 && ac->script_lang_index==SLI_NESTED && ac->feature_tag == tag))) {
+	    if ( ac->type==act_curs )
+		lookups = dumpgposCursiveAttach(lfile,ac,sf,lookups);
+	    else if ( ac->has_mark ) {
+		ac->matches = ac->processed = true;
+		for ( ac2 = ac->next, classcnt=1; ac2!=NULL ; ac2 = ac2->next ) {
+		    if ( ac2->has_mark && !ac2->processed &&
+			    ac2->feature_tag==ac->feature_tag &&
+			    ac2->script_lang_index == ac->script_lang_index &&
+			    ac2->merge_with == ac->merge_with ) {
+			ac2->matches = true;
+			ac2->processed = true;
+			++classcnt;
+		    } else
+			ac2->matches = false;
+		}
+		if ( classcnt>cmax ) {
+		    marks = grealloc(marks,(cmax=classcnt+10)*sizeof(SplineChar **));
+		    subcnts = grealloc(subcnts,cmax*sizeof(int));
+		}
+		AnchorClassDecompose(sf,ac,classcnt,subcnts,marks,&base,&lig,&mkmk);
+		if ( marks[0]!=NULL && base!=NULL )
+		    lookups = dumpgposAnchorData(lfile,ac,at_basechar,marks,base,lookups,classcnt);
+		if ( marks[0]!=NULL && lig!=NULL )
+		    lookups = dumpgposAnchorData(lfile,ac,at_baselig,marks,lig,lookups,classcnt);
+		if ( marks[0]!=NULL && mkmk!=NULL )
+		    lookups = dumpgposAnchorData(lfile,ac,at_basemark,marks,mkmk,lookups,classcnt);
+		for ( i=0; i<classcnt; ++i )
+		    free(marks[i]);
+		free(base);
+		free(lig);
+		free(mkmk);
+	    }
+	}
+    }
+
+    free(marks);
+    free(subcnts);
+return( lookups );
+}
+
+static void g___HandleNested(FILE *lfile,SplineFont *sf,int gpos,
+	struct lookup **nested,struct postponedlookup *pp, struct alltabs *at) {
+    /* for each pp, we need to find some opentype feature with the given tag */
+    /*  name and SLI_NESTED, and we need to generate a lookup for it */
+    FPST *fpst;
+    AnchorClass *ac;
+    struct postponedlookup *pnext;
+    struct lookup *new;
+    struct tagflaglang ligtags;
+    LigList *ll;
+    PST *pst;
+    int i, start, end, type;
+    unichar_t buf[6];
+    SplineChar ***map, **glyphs;
+
+    for ( ; pp!=NULL ; pp = pnext ) {
+	pnext = pp->next;
+	new = NULL;
+
+	/* I don't think there is anything to be gained by nesting contexts */
+	/*  but they are easy to support, so do so */
+	for ( fpst=sf->possub; fpst!=NULL; fpst = fpst->next ) {
+	    if ((( gpos && (fpst->type==pst_contextpos || fpst->type==pst_chainpos)) ||
+		    (!gpos && (fpst->type==pst_contextsub || fpst->type==pst_chainsub || fpst->type==pst_reversesub ))) &&
+		    fpst->script_lang_index==SLI_NESTED && fpst->tag==pp->feature_tag ) {
+		new = dumpg___ContextChain(lfile,fpst,sf,NULL,nested,at);
+	break;
+	    }
+	}
+	/* I don't handle kerning, that could be done with pst_pair if needed */
+	if ( new==NULL && gpos ) {
+	    for ( ac=sf->anchor; ac!=NULL; ac=ac->next )
+		if ( ac->feature_tag==pp->feature_tag && ac->script_lang_index==SLI_NESTED ) {
+		    new = AnchorsAway(lfile,sf,NULL,pp->feature_tag);
+	    break;
+		}
+	}
+	if ( new==NULL && !gpos ) {
+	    for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
+		for ( ll = sf->chars[i]->ligofme; ll!=NULL; ll=ll->next ) {
+		    if ( ll->lig->script_lang_index!=SLI_NESTED &&
+			    ll->lig->tag == pp->feature_tag ) {
+			ligtags.script_lang_index = SLI_NESTED;
+			ligtags.flags = ll->lig->flags;
+			ligtags.tag = pp->feature_tag;
+			new = LookupFromTagFlagLang(&ligtags);
+			new->lookup_type = 4;		/* Ligature */
+			new->offset = ftell(lfile);
+			dumpgsubligdata(lfile,sf,&ligtags,at);
+			new->len = ftell(lfile)-new->offset;
+		break;
+		    }
+		}
+		if ( new!=NULL )
+	    break;
+	    }
+	}
+	if ( new==NULL ) {
+	    if ( gpos ) {
+		start = pst_position;
+		end = pst_pair;
+	    } else {
+		start = pst_substitution;
+		end = pst_multiple;
+	    }
+	    for ( type=start; type<=end; ++type ) {
+		for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
+		    for ( pst = sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
+			if ( pst->type==type &&
+				pst->script_lang_index == SLI_NESTED &&
+			        pst->tag == pp->feature_tag ) {
+			    ligtags.script_lang_index = SLI_NESTED;
+			    ligtags.flags = pst->flags;
+			    ligtags.tag = pp->feature_tag;
+			    glyphs = generateGlyphTypeList(sf,type,&ligtags,&map);
+			    new = LookupFromTagFlagLang(&ligtags);
+			    new->offset = ftell(lfile);
+			    if ( type==pst_position ) {
+				new->lookup_type = 1;
+				dumpGPOSsimplepos(lfile,sf,glyphs,&ligtags);
+			    } else if ( type==pst_pair ) {
+				dumpGPOSpairpos(lfile,sf,glyphs,&ligtags);
+				new->lookup_type = 2;
+			    } else if ( type==pst_substitution ) {
+				dumpGSUBsimplesubs(lfile,sf,glyphs,map);
+				new->lookup_type = 1;
+			    } else if ( type==pst_multiple ) {
+				new->lookup_type = 2;
+				dumpGSUBmultiplesubs(lfile,sf,glyphs,map);
+			    } else if ( type==pst_alternate ) {
+				new->lookup_type = 3;
+				dumpGSUBmultiplesubs(lfile,sf,glyphs,map);
+			    } else
+				GDrawIError("Unknown PST type in GPOS/GSUB figure lookups" );
+			    new->len = ftell(lfile)-new->offset;
+		    break;
+			}
+		    }
+		    if ( new!=NULL )
+		break;
+		}
+		if ( new!=NULL )
+	    break;
+	    }
+	}
+	buf[0] = pp->feature_tag>>24; buf[1] = (pp->feature_tag>>16)&0xff;
+	buf[2] = (pp->feature_tag>>8)&0xff; buf[3] = pp->feature_tag&0xff;
+	buf[4] = 0;
+	if ( new!=NULL ) {
+	    new->lookup_cnt = pp->lookup_cnt;
+	    if ( new->next )
+		GWidgetErrorR(_STR_MultipleLookup,_STR_MultipleLookupLong,buf);
+	    new->next = *nested;
+	    *nested = new;
+	} else {
+	    GWidgetErrorR(_STR_MissingLookup,_STR_MissingLookupLong,buf);
+	}
+	chunkfree(pp,sizeof(struct postponedlookup));
+    }
+}
+
+static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
+	struct alltabs *at,struct lookup **nested) {
+    /* When we find a feature, we split it out into various scripts */
+    /*  dumping one lookup per script into the file */
+    struct lookup *lookups = NULL, *new, *lo;
+    int i, j, cnt, max, isv;
+    SplineChar ***map, **glyphs;
+    AnchorClass *ac;
+    struct tagflaglang *ligtags;
     enum possub_type type;
     PST *pst;
     KernPair *kp;
     KernClass *kc;
+    FPST *fpst;
+
+    *nested = NULL;
 
     max = 30; cnt = 0;
     ligtags = galloc(max*sizeof(struct tagflaglang));
@@ -1428,9 +2122,9 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
     for ( type = pst_position; type<=pst_pair; ++type ) {
 	cnt = 0;
 	for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
-	    for ( pst = sf->chars[i]->possub; pst!=NULL; pst=pst->next ) if ( pst->type==type ) {
+	    for ( pst = sf->chars[i]->possub; pst!=NULL; pst=pst->next ) if ( pst->type==type && pst->script_lang_index!=SLI_NESTED ) {
 		for ( j=0; j<cnt; ++j )
-		    if ( ligtags[j].tag==pst->tag && (pst->flags&~1)==ligtags[j].flags &&
+		    if ( ligtags[j].tag==pst->tag && pst->flags==ligtags[j].flags &&
 			    pst->script_lang_index == ligtags[j].script_lang_index )
 		break;
 		if ( j==cnt ) {
@@ -1509,85 +2203,58 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
     }
     free(ligtags);
 
-    AnchorClassOrder(sf);	/* Don't really need this any more */
-
     if ( sf->anchor ) {
-	marks = galloc((cmax=20)*sizeof(SplineChar **));
-	subcnts = galloc(cmax*sizeof(int));
-    }
-    for ( ac=sf->anchor; ac!=NULL; ac = ac->next ) {
-	ac->processed = false;
-	if ( ac->type!=act_curs )
-	    ac->has_mark = AnchorHasMark(sf,ac);
-    }
-    for ( ac=sf->anchor; ac!=NULL; ac = ac->next ) if ( !ac->processed ) {
-	if ( ac->type==act_curs )
-	    lookups = dumpgposCursiveAttach(lfile,ac,sf,lookups);
-	else if ( ac->has_mark ) {
-	    ac->matches = ac->processed = true;
-	    for ( ac2 = ac->next, classcnt=1; ac2!=NULL ; ac2 = ac2->next ) {
-		if ( ac2->has_mark && !ac2->processed &&
-			ac2->feature_tag==ac->feature_tag &&
-			ac2->script_lang_index == ac->script_lang_index &&
-			ac2->merge_with == ac->merge_with ) {
-		    ac2->matches = true;
-		    ac2->processed = true;
-		    ++classcnt;
-		} else
-		    ac2->matches = false;
-	    }
-	    if ( classcnt>cmax ) {
-		marks = grealloc(marks,(cmax=classcnt+10)*sizeof(SplineChar **));
-		subcnts = grealloc(subcnts,cmax*sizeof(int));
-	    }
-	    AnchorClassDecompose(sf,ac,classcnt,subcnts,marks,&base,&lig,&mkmk);
-	    if ( marks[0]!=NULL && base!=NULL )
-		lookups = dumpgposAnchorData(lfile,ac,at_basechar,marks,base,lookups,classcnt);
-	    if ( marks[0]!=NULL && lig!=NULL )
-		lookups = dumpgposAnchorData(lfile,ac,at_baselig,marks,lig,lookups,classcnt);
-	    if ( marks[0]!=NULL && mkmk!=NULL )
-		lookups = dumpgposAnchorData(lfile,ac,at_basemark,marks,mkmk,lookups,classcnt);
-	    for ( i=0; i<classcnt; ++i )
-		free(marks[i]);
-	    free(base);
-	    free(lig);
-	    free(mkmk);
+	AnchorClassOrder(sf);	/* Don't really need this any more */
+	for ( ac=sf->anchor; ac!=NULL; ac = ac->next ) {
+	    ac->processed = false;
+	    if ( ac->type!=act_curs )
+		ac->has_mark = AnchorHasMark(sf,ac);
 	}
-    }
-    if ( sf->anchor ) {
-	free(marks);
-	free(subcnts);
+	AnchorsAway(lfile,sf,lookups,0);
 	AnchorGuessContext(sf,at);
     }
+
+    for ( cnt=0, lo = lookups; lo!=NULL; lo = lo->next )
+	++cnt;
+    for ( fpst=sf->possub; fpst!=NULL; fpst=fpst->next ) if ( fpst->script_lang_index!=SLI_NESTED )
+	if ( fpst->type==pst_contextpos || fpst->type==pst_chainpos )
+	    ++cnt;
+    at->next_lookup = cnt;
+    for ( fpst=sf->possub; fpst!=NULL; fpst=fpst->next ) if ( fpst->script_lang_index!=SLI_NESTED )
+	if ( fpst->type==pst_contextpos || fpst->type==pst_chainpos )
+	    lookups = dumpg___ContextChain(lfile,fpst,sf,lookups,nested,at);
 
 return( lookups );
 }
 
 static int SkipThisTag(uint32 tag) {
     /* Skip the tags that I've added to deal with mac features which don't */
-    /*  quite match */
+    /*  quite match any opentype tag */
     int type,setting;
 return( isupper(tag>>24) && isupper((tag>>16)&0xff) && isupper((tag>>8)&0xff) && isupper(tag&0xff) &&
 	OTTagToMacFeature(tag,&type,&setting));
 }
 
 static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
-	struct alltabs *at) {
-    struct lookup *lookups = NULL, *new;
+	struct alltabs *at, struct lookup **nested) {
+    struct lookup *lookups = NULL, *new, *lo;
     struct tagflaglang *ligtags;
     int i, j, max, cnt;
     LigList *ll;
     PST *subs;
     enum possub_type type;
     SplineChar **glyphs, ***map;
+    FPST *fpst;
+
+    *nested = NULL;
 
     /* Look for ligature tags used in the font */
     max = 30; cnt = 0;
     ligtags = galloc(max*sizeof(struct tagflaglang));
     for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
-	for ( ll = sf->chars[i]->ligofme; ll!=NULL; ll=ll->next ) if ( !SkipThisTag(ll->lig->tag)) {
+	for ( ll = sf->chars[i]->ligofme; ll!=NULL; ll=ll->next ) if ( !SkipThisTag(ll->lig->tag) && ll->lig->script_lang_index!=SLI_NESTED ) {
 	    for ( j=0; j<cnt; ++j )
-		if ( ligtags[j].tag==ll->lig->tag && (ll->lig->flags&~1)==ligtags[j].flags &&
+		if ( ligtags[j].tag==ll->lig->tag && ll->lig->flags==ligtags[j].flags &&
 			ll->lig->script_lang_index == ligtags[j].script_lang_index )
 	    break;
 	    if ( j==cnt ) {
@@ -1615,9 +2282,9 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
     for ( type = pst_substitution; type<=pst_multiple; ++type ) {
 	cnt = 0;
 	for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
-	    for ( subs = sf->chars[i]->possub; subs!=NULL; subs=subs->next ) if ( subs->type==type && !SkipThisTag(subs->tag)) {
+	    for ( subs = sf->chars[i]->possub; subs!=NULL; subs=subs->next ) if ( subs->type==type && !SkipThisTag(subs->tag) && subs->script_lang_index!=SLI_NESTED ) {
 		for ( j=0; j<cnt; ++j )
-		    if ( ligtags[j].tag==subs->tag && (subs->flags&~1)==ligtags[j].flags &&
+		    if ( ligtags[j].tag==subs->tag && subs->flags==ligtags[j].flags &&
 			    subs->script_lang_index == ligtags[j].script_lang_index )
 		break;
 		if ( j==cnt ) {
@@ -1650,6 +2317,17 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
 	}
     }
     free(ligtags);
+
+    for ( cnt=0, lo = lookups; lo!=NULL; lo = lo->next )
+	++cnt;
+    for ( fpst=sf->possub; fpst!=NULL; fpst=fpst->next ) if ( fpst->script_lang_index!=SLI_NESTED )
+	if ( fpst->type==pst_contextsub || fpst->type==pst_chainsub || fpst->type==pst_reversesub )
+	    ++cnt;
+    at->next_lookup = cnt;
+    for ( fpst=sf->possub; fpst!=NULL; fpst=fpst->next ) if ( fpst->script_lang_index!=SLI_NESTED )
+	if ( fpst->type==pst_contextsub || fpst->type==pst_chainsub || fpst->type==pst_reversesub )
+	    lookups = dumpg___ContextChain(lfile,fpst,sf,lookups,nested,at);
+
 return( lookups );
 }
 
@@ -1719,8 +2397,35 @@ static struct lookup *reverse_list(struct lookup *lookups) {
 return( lookups );
 }
 
+static struct lookup *order_nested(struct lookup *nested ) {
+    int cnt;
+    struct lookup **array, *n;
+    int i,j;
+
+    if ( nested==NULL || nested->next==NULL )
+return( nested );
+    for ( n=nested, cnt=0; n!=NULL; n=n->next, ++cnt );
+    array = galloc(cnt*sizeof(struct lookup *));
+    for ( n=nested, cnt=0; n!=NULL; n=n->next)
+	array[cnt++] = n;
+    for ( i=0; i<cnt-1; ++i ) for ( j=i+1; j<cnt; ++j ) {
+	if ( array[i]->lookup_cnt>array[j]->lookup_cnt ) {
+	    n = array[i];
+	    array[i] = array[j];
+	    array[j] = n;
+	}
+    }
+    for ( i=0; i<cnt-1; ++i )
+	array[i]->next = array[i+1];
+    array[cnt-1]->next = NULL;
+    nested = array[0];
+    free(array );
+return( nested );
+}
+
 static struct lookup *orderlookups(struct lookup **_lookups,
-	struct table_ordering *ord, FILE *ordered, FILE *disordered) {
+	struct table_ordering *ord, FILE *ordered, FILE *disordered,
+	struct lookup *nested) {
     int cnt,i,j;
     struct lookup **array, *l, *features, *temp;
     struct lookup *lookups = *_lookups;
@@ -1754,6 +2459,17 @@ static struct lookup *orderlookups(struct lookup **_lookups,
 	fseek(disordered,array[i]->offset,SEEK_SET);
 	array[i]->offset = ftell(ordered);
 	totlen = array[i]->len;
+	while ( totlen>0 ) {
+	    if ( (len = totlen)>bsize ) len = bsize;
+	    len = fread(buf,1,len,disordered);
+	    fwrite(buf,1,len,ordered);
+	    totlen -= len;
+	}
+    }
+    for ( l = nested; l!=NULL; l=l->next ) {
+	fseek(disordered,l->offset,SEEK_SET);
+	l->offset = ftell(ordered);
+	totlen = l->len;
 	while ( totlen>0 ) {
 	    if ( (len = totlen)>bsize ) len = bsize;
 	    len = fread(buf,1,len,disordered);
@@ -2166,7 +2882,7 @@ return( scripts );
 static FILE *dumpg___info(struct alltabs *at, SplineFont *sf,int is_gpos) {
     /* Dump out either a gpos or a gsub table. gpos handles kerns, gsub ligs */
     FILE *lfile, *lfile2, *g___, *efile;
-    struct lookup *lookups=NULL, *features_ordered, *l, *next;
+    struct lookup *lookups=NULL, *features_ordered, *l, *next, *nested;
     struct feature *features, *f, *fnext;
     struct sl *sl, *slnext;
     int cnt, fcnt, offset, i;
@@ -2177,13 +2893,14 @@ static FILE *dumpg___info(struct alltabs *at, SplineFont *sf,int is_gpos) {
     uint8 *touched, *used;
     int lc;
     SplineFont *master;
+    int lc_warned=false;
 
     lfile = tmpfile();
     if ( is_gpos ) {
-	lookups = GPOSfigureLookups(lfile,sf,at);
+	lookups = GPOSfigureLookups(lfile,sf,at,&nested);
 	for ( ord = sf->orders; ord!=NULL && ord->table_tag!=CHR('G','P','O','S'); ord = ord->next );
     } else {
-	lookups = GSUBfigureLookups(lfile,sf,at);
+	lookups = GSUBfigureLookups(lfile,sf,at,&nested);
 	for ( ord = sf->orders; ord!=NULL && ord->table_tag!=CHR('G','S','U','B'); ord = ord->next );
     }
     if ( lookups==NULL ) {
@@ -2192,8 +2909,9 @@ return( NULL );
     }
 
     lookups = reverse_list(lookups);
+    nested = order_nested(nested);
     lfile2 = tmpfile();
-    features_ordered = orderlookups(&lookups,ord,lfile2,lfile);
+    features_ordered = orderlookups(&lookups,ord,lfile2,lfile,nested);
     lfile = lfile2;
     features = CoalesceLookups(sf,features_ordered);
 
@@ -2267,12 +2985,20 @@ return( NULL );
     }
     /* So free the feature list */
 
-    for ( cnt=0, l=lookups; l!=NULL; l=l->next, ++cnt );
+    if ( lookups!=NULL ) {
+	for ( l=lookups; l->next!=NULL; l = l->next );
+	l->next = nested;
+    }
+    for ( cnt=0, l=lookups; l!=NULL; l=l->next, ++cnt )
+	if ( l->lookup_cnt!=cnt && !lc_warned ) {
+	    GDrawIError("GPOS/GSUB: Lookup ordering mismatch");
+	    lc_warned = true;
+	}
     lookup_list_table_start = ftell(g___);
     fseek(g___,8,SEEK_SET);
     putshort(g___,lookup_list_table_start);
     fseek(g___,0,SEEK_END);
-    putshort(g___,cnt);		/* same number of lookups as features */
+    putshort(g___,cnt);
     offset = 2+2*cnt;		/* Offset to start of first feature table from beginning of feature_list */
     for ( l=lookups; l!=NULL; l=l->next ) {
 	putshort(g___,offset);
@@ -2283,15 +3009,7 @@ return( NULL );
     efile=g___FigureExtensionSubTables(lookups,is_gpos);
     for ( i=0, l=lookups; l!=NULL; l=l->next, ++i ) {
 	putshort(g___,l->lookup_type);
-#if 0
-	/* The right to left flag is not relevant for most of the tables I generate */
-	/* but MS has it in tables where it is not relevant, so... */
-	flags = l->script==CHR('a','r','a','b') || l->script==CHR('h','e','b','r');
-	flags |= (l->flags&~1);
-	putshort(g___,flags);
-#else
 	putshort(g___,l->flags);
-#endif
 	putshort(g___,1);		/* Each table controls one lookup */
 	putshort(g___,(cnt-i)*8+l->offset); /* Offset to lookup data which is in the temp file */
 	    /* there are (cnt-i) lookup tables (of size 8) between here and */

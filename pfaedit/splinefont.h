@@ -157,7 +157,11 @@ typedef struct bdffloat {
 #define DEFAULT_SCRIPT		CHR('D','F','L','T')
 #define REQUIRED_FEATURE	CHR(' ','R','Q','D')
 
-enum pst_flags { pst_r2l=1, pst_ignorebaseglyphs=2, pst_ignoreligatures=4, pst_ignorecombiningmarks=8 };
+#define SLI_UNKNOWN		0xffff
+#define SLI_NESTED		0xfffe
+
+enum pst_flags { pst_r2l=1, pst_ignorebaseglyphs=2, pst_ignoreligatures=4,
+	pst_ignorecombiningmarks=8 };
 enum anchorclass_type { act_mark, /* act_mklg, */act_mkmk, act_curs };
 typedef struct anchorclass {
     unichar_t *name;
@@ -185,11 +189,17 @@ enum possub_type { pst_null, pst_position, pst_pair,
 	pst_substitution, pst_alternate,
 	pst_multiple, pst_ligature,
 	pst_lcaret /* must be pst_max-1, see charinfo.c*/,
-	pst_max};
+	pst_max,
+	/* These are not psts but are related so it's handly to have values for them */
+	pst_kerning = pst_max, pst_vkerning, pst_anchors,
+	/* And these are fpsts */
+	pst_contextpos, pst_contextsub, pst_chainpos, pst_chainsub,
+	pst_reversesub, fpst_max
+	};
 typedef struct generic_pst {
     /* enum possub_type*/ uint8 type;
-    uint8 script_lang_index;		/* 0xff means none */
-    uint16 flags;
+    uint8 flags;
+    uint16 script_lang_index;		/* 0xffff means none */
     uint32 tag;
     struct generic_pst *next;
     union {
@@ -209,6 +219,36 @@ typedef struct liglist {
     struct liglist *next;
     int ccnt;				/* Component count. (includes first component) */
 } LigList;
+
+enum fpossub_format { pst_glyphs, pst_class, pst_coverage,
+		    pst_reversecoverage, pst_formatmax };
+
+typedef struct generic_fpst {
+    uint16 /*enum sfpossub_type*/ type;
+    uint16 /*enum sfpossub_format*/ format;
+    uint16 script_lang_index;
+    uint16 flags;
+    uint32 tag;
+    struct generic_fpst *next;
+    uint16 nccnt, bccnt, fccnt;
+    uint16 rule_cnt;
+    char **nclass, **bclass, **fclass;
+    struct fpst_rule {
+	union {
+	    struct { char *names, *back, *fore; } glyph;
+	    struct { int ncnt, bcnt, fcnt; uint16 *nclasses, *bclasses, *fclasses; } class;
+	    struct { int ncnt, bcnt, fcnt; char **ncovers, **bcovers, **fcovers; } coverage;
+	    struct { int always1, bcnt, fcnt; char **ncovers, **bcovers, **fcovers; char *replacements; } rcoverage;
+	} u;
+	int lookup_cnt;
+	struct seqlookup {
+	    int seq;
+	    uint32 lookup_tag;
+	} *lookups;
+    } *rules;
+    uint8 ticked;
+} FPST;
+
 
 typedef struct undoes {
     struct undoes *next;
@@ -618,7 +658,7 @@ typedef struct splinefont {
 	int16 fstype;
 	int16 linegap;
 	int16 vlinegap;
-	int16 hhead_ascent, hhead_descent;
+	/*int16 hhead_ascent, hhead_descent;*/
 	int16 os2_typoascent, os2_typodescent;
 	int16 os2_winascent, os2_windescent;
     } pfminfo;
@@ -666,6 +706,14 @@ typedef struct splinefont {
 	int32 designsize;
 	int32 params[22];		/* param[6] has different meanings in normal and math fonts */
     } texdata;
+    struct gentagtype {
+	uint16 tt_cur, tt_max;
+	struct tagtype {
+	    enum possub_type type;
+	    uint32 tag;
+	} *tagtype;
+    } gentags;
+    FPST *possub;
 } SplineFont;
 
 /* mac styles. Useful idea we'll just steal it */
@@ -843,6 +891,7 @@ extern void ScriptRecordListFree(struct script_record **script_lang);
 extern KernClass *KernClassCopy(KernClass *kc);
 extern void KernClassListFree(KernClass *kc);
 extern int KernClassContains(KernClass *kc, char *name1, char *name2, int ordered );
+extern void FPSTFree(FPST *fpst);
 extern void SplineCharListsFree(struct splinecharlist *dlist);
 extern void SplineCharFreeContents(SplineChar *sc);
 extern void SplineCharFree(SplineChar *sc);
@@ -1185,6 +1234,9 @@ extern int  SCNumberPoints(SplineChar *sc);
 
 int SFFigureDefWidth(SplineFont *sf, int *_nomwid);
 
+extern enum possub_type SFGTagUsed(struct gentagtype *gentags,uint32 tag);
+extern uint32 SFGenerateNewFeatureTag(struct gentagtype *gentags,enum possub_type type,uint32 suggestion);
+extern void SFFreeGenerateFeatureTag(struct gentagtype *gentags,uint32 tag);
 
 # if HANYANG
 extern void SFDDumpCompositionRules(FILE *sfd,struct compositionrules *rules);

@@ -3390,5 +3390,7 @@ return;
     ScriptRecordListFree(sf->script_lang);
     KernClassListFree(sf->kerns);
     KernClassListFree(sf->vkerns);
+    FPSTFree(sf->possub);
+    free(sf->gentags.tagtype);
     free(sf);
 }
