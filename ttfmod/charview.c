@@ -1801,11 +1801,12 @@ static void CVMenuGridSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( ret==NULL )
 return;
     val = u_strtol(ret,&end,10);
-    free(ret);
     if ( *end || val<=1 ) {
 	ProtestR(_STR_GridSize);
+	free(ret);
 return;
     }
+    free(ret);
     if ( val == cv->show.ppem )
 return;
     cv->show.ppem = val;
