@@ -243,7 +243,7 @@ return;			/* We clicked on the active point, that's a no-op */
 		if ( sp->next ) SplineRefigure(sp->next );
 	    }
 	    ss->last = cv->p.spl->last;
-	    free( cv->p.spl );
+	    chunkfree( cv->p.spl,sizeof(SplinePointList) );
 	}
 	sp->selected = true;
 	if ( base->pointtype==pt_tangent ) {

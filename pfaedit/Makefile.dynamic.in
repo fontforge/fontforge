@@ -1,3 +1,4 @@
+sharedir = @prefix@/share/pfaedit
 top_srcdir = @top_srcdir@
 top_builddir = @top_srcdir@
 libdir = @libdir@
@@ -24,7 +25,7 @@ pfaedit_OBJECTS =  autohint.o autosave.o autowidth.o bitmapdlg.o \
  problems.o pfaedit-ui.o metafont.o alignment.o
 
 WFLAGS = -Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type -Wparentheses
-CFLAGS = @CFLAGS@ -I../inc $(WFLAGS) $(X_CFLAGS) @DEFS@
+CFLAGS = @CFLAGS@ -I../inc $(WFLAGS) $(X_CFLAGS) @DEFS@ '-DSHAREDIR="$(sharedir)"'
 
 LDFLAGS = @LDFLAGS@
 LIBS = $(X_LIBS) ../libgdraw.la ../libgunicode.la \

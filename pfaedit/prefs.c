@@ -65,7 +65,6 @@ static const unichar_t xu[] = { 'I','f',' ','s','p','e','c','i','f','i','e','d',
 static const unichar_t rulers[] = { 'D','i','s','p','l','a','y',' ','r','u','l','e','r','s',' ','i','n',' ','t','h','e',' ','O','u','t','l','i','n','e',' ','C','h','a','r','a','c','t','e','r',' ','V','i','e','w',  '\0' };
 static const unichar_t sephints[] = { 'H','a','v','e',' ','s','e','p','e','r','a','t','e',' ','c','o','n','t','r','o','l','s',' ','f','o','r',' ','d','i','s','p','l','a','y',' ','h','o','r','i','z','o','n','t','a','l',' ','a','n','d',' ','v','e','r','t','i','c','a','l',' ','h','i','n','t','s','.',  '\0' };
 static const unichar_t ic[] = { 'I','n',' ','t','h','e',' ','O','u','t','l','i','n','e',' ','V','i','e','w',',',' ','t','h','e',' ','S','h','i','f','t',' ','k','e','y',' ','c','o','n','s','t','r','a','i','n','s',' ','m','o','t','i','o','n',' ','t','o',' ','b','e',' ','p','a','r','a','l','l','e','l',' ','t','o',' ','t','h','e',' ','I','t','a','l','i','c','A','n','g','l','e',' ','r','a','t','h','e','r',' ','t','h','a','n',' ','t','h','e',' ','v','e','r','t','i','c','a','l','.',  '\0' };
-static const unichar_t lg[] = { 'T','h','e',' ','l','a','n','g','u','a','g','e',' ','u','s','e','d',' ','f','o','r',' ','t','h','e',' ','u','s','e','r',' ','i','n','t','e','r','f','a','c','e',  '\0' };
 
 struct enums fvsize_enums[] = { NULL };
 
@@ -174,6 +173,9 @@ return;
     strcat(buffer,loc);
     strcat(buffer,".ui");
     if ( !CheckLangDir(full,sizeof(full),GResourceProgramDir,loc) &&
+#ifdef SHAREDIR
+	    !CheckLangDir(full,sizeof(full),SHAREDIR,loc) &&
+#endif
 	    !CheckLangDir(full,sizeof(full),getPfaEditShareDir(),loc) &&
 	    !CheckLangDir(full,sizeof(full),"/usr/share/pfaedit",loc) )
 return;
@@ -370,7 +372,6 @@ void DoPrefs(void) {
     GGadgetCreateData *gcd;
     GTextInfo *label, **list;
     struct pref_data p;
-    static unichar_t title[] = { 'P','r','e','f','e','r','e','n','c','e','s',  '\0' };
     int i, gc, j, line, llen;
     char buf[20];
 
@@ -389,7 +390,7 @@ void DoPrefs(void) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = title;
+    wattrs.window_title = GStringGetResource(_STR_Prefs,NULL);
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,260);
     pos.height = GDrawPointsToPixels(NULL,line*30+45);
