@@ -26,6 +26,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
 #include "../inc/charset.h"
 #include "../inc/basics.h"
@@ -297,15 +298,14 @@ static void dumpjis(FILE *output,FILE *header) {
     unichar_t *table[256], *plane;
     char buffer[200];
 
-    for ( k=0; k<256; ++k ) table[k] = NULL;
+    memset(table,0,sizeof(table));
 
     j=0;
     file = fopen( adobecjk[j], "r" );
     if ( file==NULL ) {
 	fprintf( stderr, "Can't open %s\n", adobecjk[j]);
     } else {
-	for ( i=0; i<sizeof(unicode208)/sizeof(unicode208[0]); ++i )
-	    unicode208[i] = 0;
+	memset(unicode208,0,sizeof(unicode208));
 	while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
 	    if ( buffer[0]=='#' )
 	continue;
@@ -340,8 +340,7 @@ static void dumpjis(FILE *output,FILE *header) {
     if ( file==NULL ) {
 	fprintf( stderr, "Can't open %s\n", adobecjk[j]);
     } else {
-	for ( i=0; i<sizeof(unicode212)/sizeof(unicode212[0]); ++i )
-	    unicode212[i] = 0;
+	memset(unicode212,0,sizeof(unicode212));
 	while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
 	    if ( buffer[0]=='#' )
 	continue;
@@ -436,14 +435,13 @@ static void dumpbig5(FILE *output,FILE *header) {
 
     j = 2;
 
-    for ( k=0; k<256; ++k ) table[k] = NULL;
+    memset(table,0,sizeof(table));
 
     file = fopen( adobecjk[j], "r" );
     if ( file==NULL ) {
 	fprintf( stderr, "Can't open %s\n", adobecjk[j]);
     } else {
-	for ( i=0; i<sizeof(unicode)/sizeof(unicode[0]); ++i )
-	    unicode[i] = 0;
+	memset(unicode,0,sizeof(unicode));
 	while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
 	    if ( buffer[0]=='#' )
 	continue;
@@ -518,14 +516,15 @@ static void dumpWansung(FILE *output,FILE *header) {
     char buffer[200];
     /* Johab high=[0x84-0xf9] low=[0x31-0xfe] */
 
-    for ( k=0; k<256; ++k ) table[k] = NULL;
+	memset(table,0,sizeof(table));
+	memset(jtable,0,sizeof(jtable));
 
 	file = fopen( adobecjk[j], "r" );
 	if ( file==NULL ) {
 	    fprintf( stderr, "Can't open %s\n", adobecjk[j]);
 	} else {
-	    for ( i=0; i<sizeof(unicode)/sizeof(unicode[0]); ++i )
-		unicode[i] = 0;
+	    memset(unicode,0,sizeof(unicode));
+	    memset(junicode,0,sizeof(junicode));
 	    while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
 		if ( buffer[0]=='#' )
 	    continue;
@@ -670,15 +669,14 @@ static void dumpgb2312(FILE *output,FILE *header) {
     unichar_t *table[256], *plane;
     char buffer[200];
 
-    for ( k=0; k<256; ++k ) table[k] = NULL;
+    memset(table,0,sizeof(table));
 
     j = 3;
 	file = fopen( adobecjk[j], "r" );
 	if ( file==NULL ) {
 	    fprintf( stderr, "Can't open %s\n", adobecjk[j]);
 	} else {
-	    for ( i=0; i<sizeof(unicode)/sizeof(unicode[0]); ++i )
-		unicode[i] = 0;
+	    memset(unicode,0,sizeof(unicode));
 	    while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
 		if ( buffer[0]=='#' )
 	    continue;
