@@ -71,6 +71,7 @@ int SLIHasDefault(SplineFont *sf,int sli) {
 return( false );
 
     if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+    if ( sf->mm!=NULL ) sf = sf->mm->normal;
 
     sr = sf->script_lang[sli];
 
@@ -84,20 +85,20 @@ return( false );
 
 static int morx_dumpASM(FILE *temp,ASM *sm, struct alltabs *at, SplineFont *sf );
 
-void ttf_dumpkerns(struct alltabs *at, SplineFont *sf) {
-    int i, cnt, vcnt, j, k, m, kccnt=0, vkccnt=0, ksm=0, c, mh, mv;
+struct kerncounts {
+    int cnt;
+    int vcnt;
+    int mh, mv;
+    int kccnt;
+    int vkccnt;
+    int ksm;
+};
+
+static int CountKerns(struct alltabs *at, SplineFont *sf, struct kerncounts *kcnt) {
+    int i, cnt, vcnt, j, kccnt=0, vkccnt=0, ksm=0, mh, mv;
     KernPair *kp;
     KernClass *kc;
     ASM *sm;
-    uint16 *glnum, *offsets;
-    int version;
-    int isv;
-
-#if 0
-    /* I'm told that at most 2048 kern pairs are allowed in a ttf font */
-    /*  ... but can't find any data to back up that claim */
-    threshold = KernThreshold(sf,2048);
-#endif
 
     cnt = mh = vcnt = mv = 0;
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
@@ -121,27 +122,34 @@ void ttf_dumpkerns(struct alltabs *at, SplineFont *sf) {
 	    if ( sm->type == asm_kern )
 		++ksm;
     }
-    if ( cnt==0 && kccnt==0 && vcnt==0 && vkccnt==0 && ksm==0 )
+    kcnt->cnt = cnt;
+    kcnt->vcnt = vcnt;
+    kcnt->mh = mh;
+    kcnt->mv = mv;
+    kcnt->kccnt = kccnt;
+    kcnt->vkccnt = vkccnt;
+    kcnt->ksm = ksm;
+return( (cnt!=0) + (vcnt!=0) + kccnt + vkccnt + ksm );
+}
+
+static void ttf_dumpsfkerns(struct alltabs *at, SplineFont *sf, int tupleIndex, int version) {
+    struct kerncounts kcnt;
+    int i, j, k, m, c;
+    KernPair *kp;
+    KernClass *kc;
+    ASM *sm;
+    uint16 *glnum, *offsets;
+    int isv;
+    int tupleMask = tupleIndex==-1 ? 0 : 0x2000;
+
+    if ( CountKerns(at,sf,&kcnt)==0 )
 return;
 
-    /* Old kerning format (version 0) uses 16 bit quantities */
-    /* Apple's new format (version 0x00010000) uses 32 bit quantities */
-    at->kern = tmpfile();
-    if ( kccnt==0 && vkccnt==0 && ksm==0 ) {
-	/* MS does not support format 1,2,3 kern sub-tables so if we have them */
-	/*  we might as well admit that this table is for apple only and use */
-	/*  the new format apple recommends. Otherwise, use the old format */
-	putshort(at->kern,0);			/* version */
-	putshort(at->kern,(cnt!=0)+(vcnt!=0));	/* number of subtables */
-	version = 0;
-    } else {
-	putlong(at->kern,0x00010000);
-	putlong(at->kern,kccnt+vkccnt+(cnt!=0)+(vcnt!=0)+ksm);
-	version = 1;
-    }
+    if ( tupleIndex==-1 ) tupleIndex = 0;
+    
     for ( isv=0; isv<2; ++isv ) {
-	c = isv ? vcnt : cnt;
-	m = isv ? mv : mh;
+	c = isv ? kcnt.vcnt : kcnt.cnt;
+	m = isv ? kcnt.mv : kcnt.mh;
 	if ( c!=0 ) {
 	    if ( version==0 ) {
 		putshort(at->kern,0);		/* subtable version */
@@ -150,8 +158,9 @@ return;
 	    } else {
 		putlong(at->kern,(8+3*c)*sizeof(uint16)); /* subtable length */
 		/* Apple's new format has a completely different coverage format */
-		putshort(at->kern,isv?0x8000:0);/* format 0, horizontal/vertical flags (coverage) */
-		putshort(at->kern,0);		/* tuple index, whatever that means */
+		putshort(at->kern,(isv?0x8000:0)| /* format 0, horizontal/vertical flags (coverage) */
+				tupleMask);
+		putshort(at->kern,tupleIndex);
 	    }
 	    putshort(at->kern,c);
 	    for ( i=1,j=0; i<=c; i<<=1, ++j );
@@ -197,8 +206,9 @@ return;
 	    uint16 *class1, *class2;
 
 	    putlong(at->kern,0); /* subtable length */
-	    putshort(at->kern,isv?0x8002:2);	/* format 2, horizontal/vertical flags (coverage) */
-	    putshort(at->kern,0);		/* tuple index, whatever that means */
+	    putshort(at->kern,(isv?0x8002:2)|	/* format 2, horizontal/vertical flags (coverage) */
+			    tupleMask);
+	    putshort(at->kern,tupleIndex);
 
 	    putshort(at->kern,sizeof(uint16)*kc->second_cnt);
 	    putshort(at->kern,0);		/* left classes */
@@ -230,13 +240,14 @@ return;
 	}
     }
 
-    if ( ksm!=0 ) {
+    if ( kcnt.ksm!=0 ) {
 	for ( sm=sf->sm; sm!=NULL; sm=sm->next ) if ( sm->type == asm_kern ) {
 	    uint32 len_pos = ftell(at->kern), pos;
 
 	    putlong(at->kern,0); 		/* subtable length */
-	    putshort(at->kern,(sm->flags&0x8000)?0x8001:1);	/* format 2, horizontal/vertical flags (coverage) */
-	    putshort(at->kern,0);		/* tuple index, whatever that means */
+	    putshort(at->kern,((sm->flags&0x8000)?0x8001:1)|	/* format 1, horizontal/vertical flags (coverage) */
+			    tupleMask);
+	    putshort(at->kern,tupleIndex);
 	    morx_dumpASM(at->kern,sm,at,sf);
 
 	    pos = ftell(at->kern);
@@ -244,6 +255,45 @@ return;
 	    putlong(at->kern,pos-len_pos);
 	    fseek(at->kern,pos,SEEK_SET);
 	}
+    }
+}
+
+void ttf_dumpkerns(struct alltabs *at, SplineFont *sf) {
+    int i, mmcnt=0, sum;
+    int version;
+    MMSet *mm = at->dovariations ? sf->mm : NULL;
+    struct kerncounts kcnt;
+
+    if ( mm!=NULL ) {
+	for ( i=0; i<mm->instance_count; ++i )
+	    mmcnt += CountKerns(at,mm->instances[i],&kcnt);
+	sf = mm->normal;
+    }
+    sum = CountKerns(at,sf,&kcnt);
+    if ( sum==0 && mmcnt==0 )
+return;
+
+    /* Old kerning format (version 0) uses 16 bit quantities */
+    /* Apple's new format (version 0x00010000) uses 32 bit quantities */
+    at->kern = tmpfile();
+    if ( kcnt.kccnt==0 && kcnt.vkccnt==0 && kcnt.ksm==0 && mmcnt==0 ) {
+	/* MS does not support format 1,2,3 kern sub-tables so if we have them */
+	/*  we might as well admit that this table is for apple only and use */
+	/*  the new format apple recommends. Otherwise, use the old format */
+	/* If we might need to store tuple data, use the new format */
+	putshort(at->kern,0);			/* version */
+	putshort(at->kern,sum);			/* number of subtables */
+	version = 0;
+    } else {
+	putlong(at->kern,0x00010000);		/* version */
+	putlong(at->kern,sum+mmcnt);		/* number of subtables */
+	version = 1;
+    }
+
+    ttf_dumpsfkerns(at, sf, -1, version);
+    if ( mm!=NULL ) {
+	for ( i=0; i<mm->instance_count; ++i )
+	    ttf_dumpsfkerns(at, mm->instances[i], i, version);
     }
 
     at->kernlen = ftell(at->kern);
@@ -462,6 +512,7 @@ static int HasDefaultLang(SplineFont *sf,PST *lig,uint32 script) {
 return( false );
 
     if ( sf->cidmaster ) sf = sf->cidmaster;
+    else if ( sf->mm!=NULL ) sf=sf->mm->normal;
     sr = sf->script_lang[lig->script_lang_index];
     for ( i=0; sr[i].script!=0; ++i ) {
 	if ( script==0 || script==sr[i].script ) {
@@ -1254,6 +1305,7 @@ static struct feature *aat_dumpmorx_cvtopentype(struct alltabs *at, SplineFont *
 
     if ( sf->cidmaster!=NULL )
 	sf = sf->cidmaster;
+    else if ( sf->mm!=NULL ) sf=sf->mm->normal;
     genbase = sf->gentags.tt_cur;
 
     for ( fpst=sf->possub; fpst!=NULL; fpst=fpst->next ) {
@@ -1350,7 +1402,7 @@ static void aat_dumpfeat(struct alltabs *at, SplineFont *sf, struct feature *fea
     struct feature *f, *n, *p;
     int k;
     uint32 offset;
-    int strid = 256;
+    int strid = at->next_strid;
     int fn=0;
     MacFeat *mf, *smf;
     struct macsetting *ms, *sms;
@@ -1453,6 +1505,8 @@ return;
 	}
     }
     memset( &at->feat_name[fn],0,sizeof(struct feat_name));
+    at->next_strid = strid;
+
     at->featlen = ftell(at->feat);
     if ( at->featlen&2 )
 	putshort(at->feat,0);

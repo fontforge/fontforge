@@ -358,6 +358,7 @@ return( false );
     if ( sli==SLI_NESTED )
 return( script=='*' );
     if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+    else if ( sf->mm!=NULL ) sf = sf->mm->normal;
 
     sr = sf->script_lang[sli];
     for ( l=0; sr[l].script!=0 && sr[l].script!=script; ++l );
@@ -577,7 +578,7 @@ static void BuildMorxFeatures(struct node *node,struct att_dlg *att) {
 static void BuildMorxScript(struct node *node,struct att_dlg *att) {
     uint32 script = node->tag, lang = DEFAULT_LANG;
     int i,k,l,m, tot, max;
-    SplineFont *_sf = att->sf, *sf;
+    SplineFont *_sf = att->sf, *sf, *sf_sl;
     uint32 *feats;
     FPST *fpst, **fpsts;
     struct node *featnodes;
@@ -586,6 +587,10 @@ static void BuildMorxScript(struct node *node,struct att_dlg *att) {
     PST *pst;
     char buf[20];
     unichar_t *setname;
+
+    sf_sl = _sf;
+    if ( sf_sl->cidmaster ) sf_sl = sf_sl->cidmaster;
+    else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
 
     /* Build up the list of features in this "script" entry in morx */
     k=tot=0;
@@ -601,7 +606,7 @@ static void BuildMorxScript(struct node *node,struct att_dlg *att) {
 			    (pst->macfeature ||
 			     OTTagToMacFeature(pst->tag,&feat,&set))) {
 		int sli = pst->script_lang_index;
-		struct script_record *sr = _sf->script_lang[sli];
+		struct script_record *sr = sf_sl->script_lang[sli];
 		for ( l=0; sr[l].script!=0 && sr[l].script!=script; ++l );
 		if ( sr[l].script!=0 ) {
 		    for ( m=0; sr[l].langs[m]!=0 && sr[l].langs[m]!=lang; ++m );
@@ -623,7 +628,7 @@ static void BuildMorxScript(struct node *node,struct att_dlg *att) {
     for ( fpst = _sf->possub; fpst!=NULL; fpst=fpst->next ) {
 	if ( _sf->sm==NULL && FPSTisMacable(_sf,fpst,true)) {
 	    int sli = fpst->script_lang_index;
-	    struct script_record *sr = _sf->script_lang[sli];
+	    struct script_record *sr = sf_sl->script_lang[sli];
 	    for ( l=0; sr[l].script!=0 && sr[l].script!=script; ++l );
 	    if ( sr[l].script!=0 ) {
 		for ( m=0; sr[l].langs[m]!=0 && sr[l].langs[m]!=lang; ++m );
@@ -1249,7 +1254,7 @@ static void BuildGSUBlang(struct node *node,struct att_dlg *att) {
 }
 
 static void BuildGSUBscript(struct node *node,struct att_dlg *att) {
-    SplineFont *sf = att->sf;
+    SplineFont *sf = att->sf, *sf_sl = sf;
     int lang_max;
     int i,j,k,l;
     struct node *langnodes;
@@ -1258,15 +1263,18 @@ static void BuildGSUBscript(struct node *node,struct att_dlg *att) {
 
     /* Build the list of languages that are used in this script */
     /* Don't bother to check whether they actually get used */
+    if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
+    else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
+
     for ( j=0; j<2; ++j ) {
 	lang_max = 0;
-	if ( sf->script_lang!=NULL )
-	for ( i=0; sf->script_lang[i]!=NULL ; ++i ) {
-	    for ( k=0; sf->script_lang[i][k].script!=0; ++k ) {
-		if ( sf->script_lang[i][k].script == node->tag ) {
-		    for ( l=0; sf->script_lang[i][k].langs[l]!=0; ++l ) {
+	if ( sf_sl->script_lang!=NULL )
+	for ( i=0; sf_sl->script_lang[i]!=NULL ; ++i ) {
+	    for ( k=0; sf_sl->script_lang[i][k].script!=0; ++k ) {
+		if ( sf_sl->script_lang[i][k].script == node->tag ) {
+		    for ( l=0; sf_sl->script_lang[i][k].langs[l]!=0; ++l ) {
 			if ( j )
-			    langnodes[lang_max].tag = sf->script_lang[i][k].langs[l];
+			    langnodes[lang_max].tag = sf_sl->script_lang[i][k].langs[l];
 			++lang_max;
 		    }
 		}
@@ -1638,7 +1646,7 @@ return;
 }
 
 static void BuildTable(struct node *node,struct att_dlg *att) {
-    SplineFont *sf, *_sf = att->sf;
+    SplineFont *sf, *_sf = att->sf, *sf_sl = _sf;
     int script_max;
     int i,j,k,l;
     struct node *scriptnodes;
@@ -1658,14 +1666,17 @@ static void BuildTable(struct node *node,struct att_dlg *att) {
     FPST *fpst;
     ASM *sm;
 
+    if ( sf_sl->cidmaster != NULL ) sf_sl = sf_sl->cidmaster;
+    else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
+
     /* Build the list of scripts that are mentioned in the font */
     for ( j=0; j<2; ++j ) {
 	script_max = 0;
-	if ( _sf->script_lang!=NULL )
-	for ( i=0; _sf->script_lang[i]!=NULL ; ++i ) {
-	    for ( k=0; _sf->script_lang[i][k].script!=0; ++k ) {
+	if ( sf_sl->script_lang!=NULL )
+	for ( i=0; sf_sl->script_lang[i]!=NULL ; ++i ) {
+	    for ( k=0; sf_sl->script_lang[i][k].script!=0; ++k ) {
 		if ( j )
-		    scriptnodes[script_max].tag = _sf->script_lang[i][k].script;
+		    scriptnodes[script_max].tag = sf_sl->script_lang[i][k].script;
 		++script_max;
 	    }
 	}
@@ -1702,7 +1713,7 @@ return;
 		if ( pst->script_lang_index==SLI_NESTED || pst->script_lang_index==SLI_UNKNOWN ) relevant = false;
 		if ( relevant ) {
 		    int sli = pst->script_lang_index;
-		    struct script_record *sr = _sf->script_lang[sli];
+		    struct script_record *sr = sf_sl->script_lang[sli];
 		    for ( l=0; sr[l].script!=0 ; ++l ) {
 			for ( j=0; j<script_max && scriptnodes[j].tag!=sr[l].script; ++j );
 			if ( j<script_max )
@@ -1715,7 +1726,7 @@ return;
 		if ( head!=NULL && ((iskern && !isv) || (isvkern && isv) || isgpos)) {
 		    for ( kp = head; kp!=NULL; kp=kp->next ) {
 			int sli = kp->sli;
-			struct script_record *sr = _sf->script_lang[sli];
+			struct script_record *sr = sf_sl->script_lang[sli];
 			for ( l=0; sr[l].script!=0 ; ++l ) {
 			    for ( j=0; j<script_max && scriptnodes[j].tag!=sr[l].script; ++j );
 			    if ( j<script_max )
@@ -1733,7 +1744,7 @@ return;
 	    KernClass *kc;
 	    for ( kc = isv ? _sf->vkerns : _sf->kerns; kc!=NULL; kc=kc->next ) if ( kc->sli!=0xffff && kc->sli!=0xff ) {
 		int sli = kc->sli;
-		struct script_record *sr = _sf->script_lang[sli];
+		struct script_record *sr = sf_sl->script_lang[sli];
 		for ( l=0; sr[l].script!=0 ; ++l ) {
 		    for ( j=0; j<script_max && scriptnodes[j].tag!=sr[l].script; ++j );
 		    if ( j<script_max )
@@ -1746,7 +1757,7 @@ return;
     if ( isgpos && _sf->anchor!=NULL ) {
 	for ( ac=_sf->anchor; ac!=NULL; ac=ac->next ) if ( ac->script_lang_index!=SLI_NESTED && ac->script_lang_index!=SLI_UNKNOWN ) {
 	    int sli = ac->script_lang_index;
-	    struct script_record *sr = _sf->script_lang[sli];
+	    struct script_record *sr = sf_sl->script_lang[sli];
 	    for ( l=0; sr[l].script!=0 ; ++l ) {
 		for ( j=0; j<script_max && scriptnodes[j].tag!=sr[l].script; ++j );
 		if ( j<script_max )
@@ -1762,7 +1773,7 @@ return;
 		    ( ismorx && sf->sm==NULL && FPSTisMacable(sf,fpst,true))) &&
 		    fpst->script_lang_index!=SLI_NESTED && fpst->script_lang_index!=SLI_UNKNOWN ) {
 		int sli = fpst->script_lang_index;
-		struct script_record *sr = _sf->script_lang[sli];
+		struct script_record *sr = sf_sl->script_lang[sli];
 		for ( l=0; sr[l].script!=0 ; ++l ) {
 		    for ( j=0; j<script_max && scriptnodes[j].tag!=sr[l].script; ++j );
 		    if ( j<script_max )

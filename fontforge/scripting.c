@@ -3398,6 +3398,10 @@ static void PosSubInfo(SplineChar *sc,Context *c) {
     int i;
     enum possub_type type;
     PST *pst;
+    SplineFont *sf_sl = c->curfv->sf;
+
+    if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
+    else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
 
     if ( c->a.vals[2].type!=v_str || c->a.vals[3].type!=v_str  || c->a.vals[4].type!=v_str )
 	error( c, "Bad type for argument");
@@ -3439,7 +3443,7 @@ static void PosSubInfo(SplineChar *sc,Context *c) {
 
     for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
 	if ( pst->type == type && pst->tag==tags[2] &&
-		ScriptLangMatch(c->curfv->sf->script_lang[pst->script_lang_index],
+		ScriptLangMatch(sf_sl->script_lang[pst->script_lang_index],
 			tags[0],tags[1]))
     break;
     }

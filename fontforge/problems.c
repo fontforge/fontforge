@@ -2064,6 +2064,7 @@ static int CheckForATT(struct problems *p) {
     if ( p->DFLTscript && !p->finish ) {
 	sf = _sf;
 	if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+	else if ( sf->mm!=NULL ) sf = sf->mm->normal;
 	if ( sf->script_lang!=NULL ) {
 	    for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
 		if ( sf->script_lang[i][0].script == DEFAULT_SCRIPT ) {

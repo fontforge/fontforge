@@ -927,7 +927,7 @@ typedef struct mmset {
     char *cdv, *ndv;	/* for adobe */
     int named_instance_count;
     struct named_instance {	/* For mac */
-	real *coords;	/* array[axis] */
+	real *coords;	/* array[axis], these are in user units */
 	struct macname *names;
     } *named_instances;
     unsigned int changed: 1;
@@ -1544,6 +1544,7 @@ extern uint16 WinLangFromMac(int maclang);
 extern uint16 WinLangToMac(int winlang);
 extern int CanEncodingWinLangAsMac(int winlang);
 extern int MacLangFromLocale(void);
+extern unichar_t *FindEnglishNameInMacName(struct macname *mn);
 extern unichar_t *PickNameFromMacName(struct macname *mn);
 extern MacFeat *FindMacFeature(SplineFont *sf, int feat,MacFeat **secondary);
 extern struct macsetting *FindMacSetting(SplineFont *sf, int feat, int set,struct macsetting **secondary);

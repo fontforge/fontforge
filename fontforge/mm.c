@@ -30,6 +30,7 @@
 #include <gkeysym.h>
 #include <locale.h>
 #include <utype.h>
+#include "ttf.h"
 
 /* As far as I can tell, the CDV in AdobeSansMM is half gibberish */
 /* This is disturbing */
@@ -119,32 +120,107 @@ return( axismap->designs[j-1]+ t*(axismap->designs[j]-axismap->designs[j-1]) );
 return(axismap->designs[axismap->points-1]);
 }
 
-char *MMMakeMasterFontname(MMSet *mm,int ipos,char **fullname) {
-    char *pt, *pt2;
-    char *ret = galloc(strlen(mm->normal->familyname)+ mm->axis_count*15 + 1);
-    int i;
+#include <chardata.h>
+static char *ASCIIName(unichar_t *str) {
+    char *pt, *ret;
+    const unichar_t *upt;
 
-    pt = ret;
-    strcpy(pt,mm->normal->familyname);
-    pt += strlen(pt);
-    *pt++ = '_';
-    for ( i=0; i<mm->axis_count; ++i ) {
-	if ( !mm->apple )
-	    sprintf( pt, " %d%s", (int) rint(MMAxisUnmap(mm,i,mm->positions[ipos*mm->axis_count+i])),
-		    MMAxisAbrev(mm->axes[i]));
-	else
-	    sprintf( pt, " %.1f%s", MMAxisUnmap(mm,i,mm->positions[ipos*mm->axis_count+i]),
-		    MMAxisAbrev(mm->axes[i]));
-	pt += strlen(pt);
+    pt = ret = galloc(2*u_strlen(str)+1);
+    while ( *str ) {
+	if ( *str=='/' || *str=='[' || *str==']' || *str=='{' || *str=='}' ||
+		*str=='(' || *str==')' || *pt<=' ' )
+	    *pt++ = ' ';
+	else if ( *str<0x7f )
+	    *pt++ = *str;
+	else if ( *str==(uint8) 'Æ' ) {
+	    *pt++ = 'A'; *pt++ = 'E';
+	} else if ( *str==(uint8) 'æ' ) {
+	    *pt++ = 'a'; *pt++ = 'e';
+	} else if ( *str==0152 ) {
+	    *pt++ = 'O'; *pt++ = 'E';
+	} else if ( *str==0153 ) {
+	    *pt++ = 'o'; *pt++ = 'e';
+	} else if ( unicode_alternates[*str>>8]!=NULL &&
+		(upt = unicode_alternates[*str>>8][*str&0xff])!=NULL &&
+		((*upt>='A' && *upt<='Z') || (*upt>='a' && *upt<='z')))
+	    *pt++ = *upt;
+	else {
+	    free(ret);
+return( NULL );
+	}
+	++str;
     }
-    if ( pt>ret && pt[-1]==' ' )
-	--pt;
     *pt = '\0';
+return( ret );
+}
+
+char *MMMakeMasterFontname(MMSet *mm,int ipos,char **fullname) {
+    char *pt, *pt2, *hyphen=NULL;
+    char *ret = NULL;
+    int i,j;
+
+    if ( mm->apple ) {
+	for ( i=0; i<mm->named_instance_count; ++i ) {
+	    for ( j=0; j<mm->axis_count; ++j ) {
+		if (( mm->positions[ipos*mm->axis_count+j] == -1 &&
+			RealApprox(mm->named_instances[i].coords[j],mm->axismaps[j].min) ) ||
+		    ( mm->positions[ipos*mm->axis_count+j] ==  0 &&
+			RealApprox(mm->named_instances[i].coords[j],mm->axismaps[j].def) ) ||
+		    ( mm->positions[ipos*mm->axis_count+j] ==  1 &&
+			RealApprox(mm->named_instances[i].coords[j],mm->axismaps[j].max) ))
+		    /* A match so far */;
+		else
+	    break;
+	    }
+	    if ( j==mm->axis_count )
+	break;
+	}
+	if ( i!=mm->named_instance_count ) {
+	    unichar_t *styles = PickNameFromMacName(mm->named_instances[i].names);
+	    char *cstyles = ASCIIName(styles);
+	    free(styles);
+	    if ( cstyles==NULL ) {
+		styles = FindEnglishNameInMacName(mm->named_instances[i].names);
+		cstyles = ASCIIName(styles);
+		free(styles);
+	    }
+	    if ( cstyles!=NULL ) {
+		ret = galloc(strlen(mm->normal->familyname)+ strlen(cstyles)+3 );
+		strcpy(ret,mm->normal->familyname);
+		hyphen = ret+strlen(ret);
+		strcpy(hyphen," ");
+		strcpy(hyphen+1,cstyles);
+		free(cstyles);
+	    }
+	}
+    }
+
+    if ( ret==NULL ) {
+	pt = ret = galloc(strlen(mm->normal->familyname)+ mm->axis_count*15 + 1);
+	strcpy(pt,mm->normal->familyname);
+	pt += strlen(pt);
+	*pt++ = '_';
+	for ( i=0; i<mm->axis_count; ++i ) {
+	    if ( !mm->apple )
+		sprintf( pt, " %d%s", (int) rint(MMAxisUnmap(mm,i,mm->positions[ipos*mm->axis_count+i])),
+			MMAxisAbrev(mm->axes[i]));
+	    else
+		sprintf( pt, " %.1f%s", MMAxisUnmap(mm,i,mm->positions[ipos*mm->axis_count+i]),
+			MMAxisAbrev(mm->axes[i]));
+	    pt += strlen(pt);
+	}
+	if ( pt>ret && pt[-1]==' ' )
+	    --pt;
+	*pt = '\0';
+    }
+
     *fullname = ret;
 
     ret = copy(ret);
-    for ( pt=pt2=ret; *pt!='\0'; ++pt )
-	if ( *pt!=' ' )
+    for ( pt=*fullname, pt2=ret; *pt!='\0'; ++pt )
+	if ( pt==hyphen )
+	    *pt2++ = '-';
+	else if ( *pt!=' ' )
 	    *pt2++ = *pt;
     *pt2 = '\0';
 return( ret );
@@ -363,7 +439,7 @@ return( false );
 
     for ( ref1=sc1->layers[ly_fore].refs; ref1!=NULL ; ref1=ref1->next ) {
 	for ( ref2=sc2->layers[ly_fore].refs; ref2!=NULL ; ref2=ref2->next ) {
-	    if ( ref2->local_enc==ref1->local_enc && !ref2->checked )
+	    if ( ref2->sc->enc==ref1->sc->enc && !ref2->checked )
 	break;
 	}
 	if ( ref2==NULL )
@@ -371,6 +447,25 @@ return( false );
 	ref2->checked = true;
     }
 
+return( true );
+}
+
+static int RefTransformsMatch(SplineChar *sc1, SplineChar *sc2) {
+    /* Apple only provides a means to change the translation of a reference */
+    /*  so if rotation, skewing, scaling, etc. differ then we can't deal with */
+    /*  it. */
+    RefChar *r1 = sc1->layers[ly_fore].refs;
+    RefChar *r2 = sc2->layers[ly_fore].refs;
+
+    while ( r1!=NULL && r2!=NULL ) {
+	if ( r1->transform[0]!=r2->transform[0] ||
+		r1->transform[1]!=r2->transform[1] ||
+		r1->transform[2]!=r2->transform[2] ||
+		r1->transform[3]!=r2->transform[3] )
+return( false );
+	r1 = r1->next;
+	r2 = r2->next;
+    }
 return( true );
 }
 
@@ -440,16 +535,21 @@ int MMValid(MMSet *mm,int complain) {
 return( false );
 
     for ( i=0; i<mm->instance_count; ++i )
-	if ( mm->instances[i]->order2 ) {
-	    if ( complain )
-		GWidgetErrorR(_STR_BadMM,_STR_MMOrder2,
-			sf->fontname);
+	if ( mm->instances[i]->order2 != mm->apple ) {
+	    if ( complain ) {
+		if ( mm->apple )
+		    GWidgetErrorR(_STR_BadMM,_STR_MMOrder3,
+			    mm->instances[i]->fontname);
+		else
+		    GWidgetErrorR(_STR_BadMM,_STR_MMOrder2,
+			    mm->instances[i]->fontname);
+	    }
 return( false );
 	}
 
-    sf = mm->instances[0];
+    sf = mm->apple ? mm->normal : mm->instances[0];
 
-    if ( PSDictHasEntry(sf->private,"ForceBold")!=NULL &&
+    if ( !mm->apple && PSDictHasEntry(sf->private,"ForceBold")!=NULL &&
 	    PSDictHasEntry(mm->normal->private,"ForceBoldThreshold")==NULL) {
 	if ( complain )
 	    GWidgetErrorR(_STR_BadMM,_STR_MMNeedsBoldThresh,
@@ -457,7 +557,7 @@ return( false );
 return( false );
     }
 
-    for ( j=1; j<mm->instance_count; ++j ) {
+    for ( j=mm->apple ? 0 : 1; j<mm->instance_count; ++j ) {
 	if ( sf->charcnt!=mm->instances[j]->charcnt ||
 		sf->encoding_name!=mm->instances[j]->encoding_name ) {
 	    if ( complain )
@@ -470,26 +570,28 @@ return( false );
 			sf->fontname, mm->instances[j]->fontname);
 return( false );
 	}
-	if ( PSDictHasEntry(mm->instances[j]->private,"ForceBold")!=NULL &&
-		PSDictHasEntry(mm->normal->private,"ForceBoldThreshold")==NULL) {
-	    if ( complain )
-		GWidgetErrorR(_STR_BadMM,_STR_MMNeedsBoldThresh,
-			mm->instances[j]->fontname);
-return( false );
-	}
-	for ( i=0; arrnames[i]!=NULL; ++i ) {
-	    if ( ArrayCount(PSDictHasEntry(mm->instances[j]->private,arrnames[i]))!=
-			    ArrayCount(PSDictHasEntry(sf->private,arrnames[i])) ) {
+	if ( !mm->apple ) {
+	    if ( PSDictHasEntry(mm->instances[j]->private,"ForceBold")!=NULL &&
+		    PSDictHasEntry(mm->normal->private,"ForceBoldThreshold")==NULL) {
 		if ( complain )
-		    GWidgetErrorR(_STR_BadMM,_STR_MMPrivateMismatch,
-			    arrnames[i], sf->fontname, mm->instances[j]->fontname);
+		    GWidgetErrorR(_STR_BadMM,_STR_MMNeedsBoldThresh,
+			    mm->instances[j]->fontname);
 return( false );
+	    }
+	    for ( i=0; arrnames[i]!=NULL; ++i ) {
+		if ( ArrayCount(PSDictHasEntry(mm->instances[j]->private,arrnames[i]))!=
+				ArrayCount(PSDictHasEntry(sf->private,arrnames[i])) ) {
+		    if ( complain )
+			GWidgetErrorR(_STR_BadMM,_STR_MMPrivateMismatch,
+				arrnames[i], sf->fontname, mm->instances[j]->fontname);
+return( false );
+		}
 	    }
 	}
     }
 
     for ( i=0; i<sf->charcnt; ++i ) {
-	for ( j=1; j<mm->instance_count; ++j ) {
+	for ( j=mm->apple?0:1; j<mm->instance_count; ++j ) {
 	    if ( SCWorthOutputting(sf->chars[i])!=SCWorthOutputting(mm->instances[j]->chars[i]) ) {
 		if ( complain ) {
 		    FVChangeChar(sf->fv,i);
@@ -504,7 +606,24 @@ return( false );
 	    }
 	}
 	if ( SCWorthOutputting(sf->chars[i]) ) {
-	    for ( j=1; j<mm->instance_count; ++j ) {
+	    if ( mm->apple && sf->chars[i]->layers[ly_fore].refs!=NULL && sf->chars[i]->layers[ly_fore].splines!=NULL ) {
+		if ( complain ) {
+		    FVChangeChar(sf->fv,i);
+		    GWidgetErrorR(_STR_BadMM,_STR_MMBothRefSplines,
+			    sf->chars[i]->name,sf->fontname);
+		}
+return( false );
+	    }
+	    for ( j=mm->apple?0:1; j<mm->instance_count; ++j ) {
+		if ( mm->apple && mm->instances[j]->chars[i]->layers[ly_fore].refs!=NULL &&
+			mm->instances[j]->chars[i]->layers[ly_fore].splines!=NULL ) {
+		    if ( complain ) {
+			FVChangeChar(sf->fv,i);
+			GWidgetErrorR(_STR_BadMM,_STR_MMBothRefSplines,
+				sf->chars[i]->name,mm->instances[j]->fontname);
+		    }
+return( false );
+		}
 		if ( ContourCount(sf->chars[i])!=ContourCount(mm->instances[j]->chars[i])) {
 		    if ( complain ) {
 			FVChangeChar(sf->fv,i);
@@ -512,7 +631,7 @@ return( false );
 				sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
 		    }
 return( false );
-		} else if ( !ContourPtMatch(sf->chars[i],mm->instances[j]->chars[i])) {
+		} else if ( !mm->apple && !ContourPtMatch(sf->chars[i],mm->instances[j]->chars[i])) {
 		    if ( complain ) {
 			FVChangeChar(sf->fv,i);
 			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchContoursPt,
@@ -533,7 +652,14 @@ return( false );
 				sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
 		    }
 return( false );
-		} else if ( !KernsMatch(sf->chars[i],mm->instances[j]->chars[i])) {
+		} else if ( mm->apple && !RefTransformsMatch(sf->chars[i],mm->instances[j]->chars[i])) {
+		    if ( complain ) {
+			FVChangeChar(sf->fv,i);
+			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchRefTrans,
+				sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
+		    }
+return( false );
+		} else if ( !mm->apple && !KernsMatch(sf->chars[i],mm->instances[j]->chars[i])) {
 		    if ( complain ) {
 			FVChangeChar(sf->fv,i);
 			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchKerns,
@@ -542,35 +668,80 @@ return( false );
 return( false );
 		}
 	    }
-	    for ( j=1; j<mm->instance_count; ++j ) {
-		if ( !HintsMatch(sf->chars[i]->hstem,mm->instances[j]->chars[i]->hstem)) {
-		    if ( complain ) {
-			FVChangeChar(sf->fv,i);
-			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchHints,
-				"horizontal", sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
-		    }
+	    if ( mm->apple && !ContourPtNumMatch(mm,i)) {
+		if ( complain ) {
+		    FVChangeChar(sf->fv,i);
+		    GWidgetErrorR(_STR_BadMM,_STR_MMMismatchContoursPtNum,
+			    sf->chars[i]->name);
+		}
 return( false );
-		} else if ( !HintsMatch(sf->chars[i]->vstem,mm->instances[j]->chars[i]->vstem)) {
-		    if ( complain ) {
-			FVChangeChar(sf->fv,i);
-			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchHints,
-				"vertical", sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
+	    }
+	    if ( !mm->apple ) {
+		for ( j=1; j<mm->instance_count; ++j ) {
+		    if ( !HintsMatch(sf->chars[i]->hstem,mm->instances[j]->chars[i]->hstem)) {
+			if ( complain ) {
+			    FVChangeChar(sf->fv,i);
+			    GWidgetErrorR(_STR_BadMM,_STR_MMMismatchHints,
+				    "horizontal", sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
+			}
+return( false );
+		    } else if ( !HintsMatch(sf->chars[i]->vstem,mm->instances[j]->chars[i]->vstem)) {
+			if ( complain ) {
+			    FVChangeChar(sf->fv,i);
+			    GWidgetErrorR(_STR_BadMM,_STR_MMMismatchHints,
+				    "vertical", sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
+			}
+return( false );
 		    }
+		}
+		for ( j=1; j<mm->instance_count; ++j ) {
+		    if ( !ContourHintMaskMatch(sf->chars[i],mm->instances[j]->chars[i])) {
+			if ( complain ) {
+			    FVChangeChar(sf->fv,i);
+			    GWidgetErrorR(_STR_BadMM,_STR_MMMismatchHintMask,
+				    sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
+			}
+return( false );
+		    }
+		}
+	    }
+	}
+    }
+    if ( mm->apple ) {
+	struct ttf_table *cvt;
+	for ( cvt = mm->normal->ttf_tables; cvt!=NULL && cvt->tag!=CHR('c','v','t',' '); cvt=cvt->next );
+	if ( cvt==NULL ) {
+	    for ( j=0; j<mm->instance_count; ++j ) {
+		if ( mm->instances[j]->ttf_tables!=NULL ) {
+		    if ( complain )
+			GWidgetErrorR(_STR_BadMM,_STR_MMMissingCVT,
+				mm->instances[j]->fontname);
 return( false );
 		}
 	    }
-	    for ( j=1; j<mm->instance_count; ++j ) {
-		if ( !ContourHintMaskMatch(sf->chars[i],mm->instances[j]->chars[i])) {
-		    if ( complain ) {
-			FVChangeChar(sf->fv,i);
-			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchHintMask,
-				sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
-		    }
+	} else {
+	    /* Not all instances are required to have cvts, but any that do */
+	    /*  must be the same size */
+	    for ( j=0; j<mm->instance_count; ++j ) {
+		if ( mm->instances[j]->ttf_tables!=NULL &&
+			(mm->instances[j]->ttf_tables->next!=NULL ||
+			 mm->instances[j]->ttf_tables->tag!=CHR('c','v','t',' '))) {
+		    if ( complain )
+			GWidgetErrorR(_STR_BadMM,_STR_MMBadTable,
+				mm->instances[j]->fontname);
+return( false );
+		}
+		if ( mm->instances[j]->ttf_tables!=NULL &&
+			mm->instances[j]->ttf_tables->len!=cvt->len ) {
+		    if ( complain )
+			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchCVT,
+				mm->instances[j]->fontname);
 return( false );
 		}
 	    }
 	}
     }
+
     if ( complain )
 	GWidgetPostNoticeR(_STR_OK,_STR_NoProblems);
 return( true );

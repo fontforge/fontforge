@@ -81,6 +81,11 @@ Optional for bitmaps
 	GPOS		(opentype, if kern,anchor data are present)
 	GSUB		(opentype, if ligature (other subs) data are present)
 	GDEF		(opentype, if anchor data are present)
+Apple variation tables (for distortable (multiple master type) fonts)
+	fvar		(font variations)
+	gvar		(glyph variations)
+	cvar		(cvt variations)
+	avar		(axis variations)
 additional tables
 	cvt		for hinting
 	gasp		to control when things should be hinted
@@ -1272,7 +1277,7 @@ static int AssignTTFGlyph(SplineFont *sf,int32 *bsizes) {
 return( tg );
 }
 
-static void ReplaceChar(SplineFont *sf, int into, int from) {
+static void ReplaceChar(SplineFont *sf, int into, int from, int dovariations) {
     BDFFont *bdf;
 
     if ( into==from )
@@ -1286,12 +1291,22 @@ return;
 	bdf->chars[from] = NULL;
 	bdf->chars[into]->enc = into;
     }
+    if ( sf->mm!=NULL && dovariations ) {
+	int i;
+	MMSet *mm = sf->mm;
+	for ( i=0; i<mm->instance_count; ++i ) {
+	    mm->instances[i]->chars[into] = mm->instances[i]->chars[from];
+	    mm->instances[i]->chars[from] = NULL;
+	    mm->instances[i]->chars[into]->enc = into;
+	}
+    }
 }
 
 static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     int i, cnt, has1, has2;
     int fixed = gi->fixed_width;
     SplineChar *sc;
+    int onepos = -1, twopos = -1;
 
     GProgressChangeStages(2+gi->strikecnt);
     QuickBlues(sf,&gi->bd);
@@ -1305,12 +1320,14 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
 	    for ( i=0; i<sf->charcnt; ++i ) {
 		if ( sf->chars[i]!=NULL ) {
 		    sc = sf->chars[i];
-		    if ( sc->orig_pos==1 && sc->layers[ly_fore].splines==NULL && sc->layers[ly_fore].refs==NULL ) {
-			ReplaceChar(sf,1,i);
+		    if ( sc->orig_pos==1 && sc->layers[ly_fore].splines==NULL &&
+			    sc->layers[ly_fore].refs==NULL && sf->chars[1]==NULL ) {
+			ReplaceChar(sf,1,i,gi->dovariations); onepos = i;
 			if ( sf->chars[2]!=NULL )
 	    break;
-		    } else if ( sc->orig_pos==2 && sc->layers[ly_fore].splines==NULL && sc->layers[ly_fore].refs==NULL ) {
-			ReplaceChar(sf,2,i);
+		    } else if ( sc->orig_pos==2 && sc->layers[ly_fore].splines==NULL &&
+			    sc->layers[ly_fore].refs==NULL && sf->chars[2]==NULL ) {
+			ReplaceChar(sf,2,i,gi->dovariations); twopos = i;
 			if ( sf->chars[1]!=NULL )
 	    break;
 		    }
@@ -1393,6 +1410,11 @@ return( false );
 	gi->vmtxlen = ftell(gi->vmtx);
 	if ( gi->vmtxlen&2 ) putshort(gi->vmtx,0);
     }
+
+    if ( onepos!=-1 )
+	ReplaceChar(sf,onepos,1,gi->dovariations);
+    if ( twopos!=-1 )
+	ReplaceChar(sf,twopos,2,gi->dovariations);
 return( true );
 }
 
@@ -3381,6 +3403,7 @@ return( mn1->strid-mn2->strid );
 static int ATOrderFeatures(struct alltabs *at) {
     int i, cnt;
     struct macname *mn, *smn;
+    struct other_names *on, *onn;
 
     for ( i=cnt=0; at->feat_name[i].strid!=0; ++i ) {
 	for ( mn=at->feat_name[i].mn; mn!=NULL; mn=mn->next )
@@ -3388,6 +3411,10 @@ static int ATOrderFeatures(struct alltabs *at) {
 	for ( mn=at->feat_name[i].smn; mn!=NULL; mn=mn->next )
 	    ++cnt;
     }
+    for ( on = at->other_names; on!=NULL; on=on->next )
+	for ( mn = on->mn; mn!=NULL ; mn = mn->next )
+	    ++cnt;
+
     at->ordered_feat = galloc((cnt+1)*sizeof(struct macname2));
     for ( i=cnt=0; at->feat_name[i].strid!=0; ++i ) {
 	for ( mn=at->feat_name[i].mn; mn!=NULL; mn=mn->next ) {
@@ -3408,6 +3435,16 @@ static int ATOrderFeatures(struct alltabs *at) {
 	    at->ordered_feat[cnt].strid = at->feat_name[i].strid;
 	    at->ordered_feat[cnt++].name = smn->name;
 	}
+    }
+    for ( on = at->other_names; on!=NULL; on=onn ) {
+	for ( mn = on->mn; mn!=NULL ; mn = mn->next ) {
+	    at->ordered_feat[cnt].enc = mn->enc;
+	    at->ordered_feat[cnt].lang = mn->lang;
+	    at->ordered_feat[cnt].strid = on->strid;
+	    at->ordered_feat[cnt++].name = mn->name;
+	}
+	onn = on->next;
+	chunkfree(on,sizeof(*on));
     }
     memset(&at->ordered_feat[cnt],0,sizeof(struct macname2));
     qsort(at->ordered_feat,cnt,sizeof(struct macname2),compmacname);
@@ -4533,6 +4570,15 @@ static void AbortTTF(struct alltabs *at, SplineFont *sf) {
     if ( at->pfed!=NULL )
 	fclose(at->pfed);
 
+    if ( at->gvar!=NULL )
+	fclose(at->gvar);
+    if ( at->fvar!=NULL )
+	fclose(at->fvar);
+    if ( at->cvar!=NULL )
+	fclose(at->cvar);
+    if ( at->avar!=NULL )
+	fclose(at->avar);
+
     for ( i=0; i<sf->subfontcnt; ++i ) {
 	if ( at->fds[i].private!=NULL )
 	    fclose(at->fds[i].private);
@@ -4606,7 +4652,7 @@ static int tcomp(const void *_t1, const void *_t2) {
     struct taboff *t1 = *((struct taboff **) _t1), *t2 = *((struct taboff **) _t2);
 return( t1->orderingval - t2->orderingval );
 }
-   
+
 static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
 	int32 *bsizes, enum bitmapformat bf,int flags) {
     int i, j, aborted, ebdtpos, eblcpos, offset;
@@ -4724,8 +4770,9 @@ return( false );
 	otf_dumpgsub(at,sf);
 	otf_dumpgdef(at,sf);
     }
+    if ( at->dovariations )
+	ttf_dumpvariations(at,sf);
     if ( at->applemode ) {
-	aat_dumpacnt(at,sf);		/* Placeholder for now */
 	ttf_dumpkerns(at,sf);
 	aat_dumplcar(at,sf);
 	aat_dumpmorx(at,sf);		/* Sets the feat table too */
@@ -4975,6 +5022,28 @@ return( false );
 	at->tabdir.tabs[i].data = at->gi.vmtx;
 	at->tabdir.tabs[i++].length = at->gi.vmtxlen;
     }
+
+    if ( at->fvar!=NULL ) {
+	at->tabdir.tabs[i].tag = CHR('f','v','a','r');
+	at->tabdir.tabs[i].data = at->fvar;
+	at->tabdir.tabs[i++].length = at->fvarlen;
+    }
+    if ( at->gvar!=NULL ) {
+	at->tabdir.tabs[i].tag = CHR('g','v','a','r');
+	at->tabdir.tabs[i].data = at->gvar;
+	at->tabdir.tabs[i++].length = at->gvarlen;
+    }
+    if ( at->cvar!=NULL ) {
+	at->tabdir.tabs[i].tag = CHR('c','v','a','r');
+	at->tabdir.tabs[i].data = at->cvar;
+	at->tabdir.tabs[i++].length = at->cvarlen;
+    }
+    if ( at->avar!=NULL ) {
+	at->tabdir.tabs[i].tag = CHR('a','v','a','r');
+	at->tabdir.tabs[i].data = at->avar;
+	at->tabdir.tabs[i++].length = at->avarlen;
+    }
+
     if ( i>=MAX_TAB )
 	GDrawIError("Miscalculation of number of tables needed. Up sizeof tabs array in struct tabdir in ttf.h" );
     
@@ -5152,6 +5221,15 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
     at.gi.fixed_width = CIDOneWidth(sf);
     at.isotf = format==ff_otf || format==ff_otfcid;
     at.format = format;
+    at.next_strid = 256;
+    if ( at.applemode && sf->mm!=NULL && sf->mm->apple &&
+	    (format==ff_ttf || format==ff_ttfsym ||  format==ff_ttfmacbin ||
+			format==ff_ttfdfont) &&
+	    MMValid(sf->mm,false)) {
+	at.dovariations = true;
+	at.gi.dovariations = true;
+	sf = sf->mm->normal;
+    }
 
     if ( format==ff_cff || format==ff_cffcid ) {
 	dumpcff(&at,sf,format,ttf);

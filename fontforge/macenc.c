@@ -1263,7 +1263,7 @@ return( found );
 	found = 0;
 return( found );
 }
-    
+
 unichar_t *PickNameFromMacName(struct macname *mn) {
     int lang = MacLangFromLocale();
     struct macname *first=mn, *english=NULL;
@@ -1279,6 +1279,20 @@ unichar_t *PickNameFromMacName(struct macname *mn) {
 	mn = english;
     if ( mn==NULL )
 	mn = first;
+    if ( mn==NULL )
+return( NULL );
+
+return( MacStrToUnicode(mn->name,mn->enc,mn->lang));
+}
+
+unichar_t *FindEnglishNameInMacName(struct macname *mn) {
+    struct macname *first=mn, *english=NULL;
+
+    while ( mn!=NULL ) {
+	if ( mn->lang==0 )
+    break;
+	mn = mn->next;
+    }
     if ( mn==NULL )
 return( NULL );
 
