@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 11-Dec-2001 -->
+  <!-- AP: Last modified: 14-Dec-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -71,11 +71,11 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-011209.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 9-Dec-2001
+    <A HREF="pfaedit-011211.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 11-Dec-2001
   <LI>
-    <A HREF="pfaedit-solaris-011210.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 10-Dec-2001
+    <A HREF="pfaedit-solaris-011211.tgz">Download pfaedit Solaris 8.0
+    </A>executable Version: 11-Dec-2001
   <LI>
     <A HREF="pfaedit-011102-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
     Version: 2-Nov-2001 (Redhat 7.1)
@@ -110,22 +110,22 @@ If you want to edit CID keyed fonts you need these
 <P>
 You can download a <A HREF="pfaedit-011201-1.src.rpm">source RPM</A>: Version:
 1-Dec-2001<BR>
-Or you can download the following three packages. Version: 11-Dec-2001
+Or you can download the following three packages. Version: 14-Dec-2001
 <UL>
   <LI>
     <A HREF="libgunicode-011211.tgz">Unicode library source</A> (11-Dec-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
-    <A HREF="libgdraw-011211.tgz">Unicode widget library source</A>
-    (11-Dec-2001)<BR>
+    <A HREF="libgdraw-011214.tgz">Unicode widget library source</A>
+    (14-Dec-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-011211.tgz">Pfaedit source</A> (11-Dec-2001)<BR>
+    <A HREF="pfaedit_src-011214.tgz">Pfaedit source</A> (14-Dec-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
-    <A HREF="pfaedit_full-011211.tgz">All three bundled together </A>(11-Dec-2001)
+    <A HREF="pfaedit_full-011214.tgz">All three bundled together </A>(14-Dec-2001)
 </UL>
 <P>
 If you want to do autotracing around character images you should also download
@@ -236,6 +236,18 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
 </H2>
 <UL>
   <LI>
+    14-Dec-2001
+    <UL>
+      <LI>
+	Oops Edward Lee points out that I was missing some colons in my eps file
+	generation.
+      <LI>
+	Hot key added for Unlink Reference
+      <LI>
+	Werner found two more bugs when reading in cid keyed fonts without a
+	corresponding cidmap file.
+    </UL>
+  <LI>
     11-Dec-2001
     <UL>
       <LI>
@@ -245,6 +257,9 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
 	Cleaned up the distribution a bit per Werner's requests
       <LI>
 	Added a ScreenWidthCentimeters resource
+      <LI>
+	PfaEdit will no longer ask the X (Font) Server to scale bitmap fonts. It
+	will only used unscaled bitmaps or outline fonts.
     </UL>
   <LI>
     10-Dec-2001

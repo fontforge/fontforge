@@ -1234,6 +1234,8 @@ return( true );
 	    ++upt;
 	}
 
+	if ( u>=0x1f70 && u<0x1f80 )
+return( true );			/* Yes. they do work, I don't care what it looks like */
 	if ( u>=0x1f70 && u<0x2000 ) {
 	    upt = SFGetAlternate(sf,u);
 	    while ( *upt ) {

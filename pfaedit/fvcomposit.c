@@ -142,12 +142,8 @@ return( sf->chars[i] );
 const unichar_t *SFGetAlternate(SplineFont *sf, int base) {
     static unichar_t greekubases[] = { 0x391, 0x395, 0x397, 0x399, 0x39f, 0x3d2, 0x3a9 };
     static unichar_t greeklbases[] = { 0x3b1, 0x3b5, 0x3b7, 0x3b9, 0x3bf, 0x3c5, 0x3c9 };
-    static unichar_t greekaccents[] = { 0x1fcd, 0x1fdd, 0x1fce, 0x1fde };
+    static unichar_t greekaccents[] = { 0x1fbd, 0x1ffe, 0x1fcd, 0x1fdd, 0x1fce, 0x1fde, 0x1fcf, 0x1fdf };
     static unichar_t greekalts[5];
-    static const unichar_t check[] = {0x1fbb, 0x1fc9, 0x1fcb, 0x1fdb, 0x1feb, 0x1ff9, 0x1ffb,
-				0x1f71, 0x1f73, 0x1f75, 0x1f77, 0x1f7b, 0x1f79, 0x1f7d, 0 };
-    static const unichar_t to[] = {0x391, 0x395, 0x397, 0x399, 0x3A5, 0x39f, 0x3a9,
-			    0x3b1, 0x3b5, 0x3b7, 0x3b9, 0x3c5, 0x3bf, 0x3c9, 0 };
     const unichar_t *upt, *pt; unichar_t *gpt;
     int ch, i;
 
@@ -161,29 +157,77 @@ return( NULL );
 	    /* The definitions of some of the greek letters may make some */
 	    /*  linguistic sense, but I can't use it to place the accents */
 	    /*  properly. So I redefine them here */
-    if ( base>=0x1f00 && base<0x1f70 ) {
-	if ( (base&0x7)>=0x2 &&(base&0x7)<=0x5 ) {
+    if ( base>=0x1f00 && base<0x2000 ) {
+	if ( base<0x1f70 ) {
 	    if ( base&0x8 )
 		greekalts[0] = greekubases[(base>>4)&7];
 	    else
 		greekalts[0] = greeklbases[(base>>4)&7];
-	    ch = greekaccents[(base&7)-2];
+	    ch = greekaccents[(base&7)];
 	    if ( haschar(sf,ch)) {
 		greekalts[1] = ch;
 		greekalts[2] = 0;
 	    } else {
-		greekalts[1] = ( base&2 ) ? 0x300 : 0x301;
-		greekalts[2] = ( base&1 ) ? 0x313 : 0x314;
-		greekalts[3] = 0;
+		switch ( base&0x7 ) {
+		  case 0: case 1:
+		    greekalts[1] = ( base&1 ) ? 0x314 : 0x313;
+		    greekalts[2] = 0;
+		  break;
+		  case 2: case 3: case 4: case 5:
+		    greekalts[1] = ( base&2 ) ? 0x300 : 0x301;
+		    greekalts[2] = ( base&1 ) ? 0x313 : 0x314;
+		    greekalts[3] = 0;
+		  case 6: case 7:
+		    greekalts[1] = ( base&1 ) ? 0x314 : 0x313;
+		    greekalts[2] = 0x342;
+		    greekalts[3] = 0;
+		  break;
+		}
 	    }
 return( greekalts );
-	}
-    } else if ( base>=0x1f70 && base<0x2000 ) {
-	for ( i=0; check[i]!=0; ++i ) if ( check[i]==base ) {
-	    /* These are the old decomposition. The new one says it's the same */
-	    /*  as Alpha tonos -- maybe semantically, but doesn't look like it */
-	    greekalts[0] = to[i]; greekalts[1] = 0x0301; greekalts[2] = 0;
+	} else if ( base<0x1f80 ) {
+	    /* unicode maps alpha with oxia to alpha with tonos */
+	    if ( !(base&1) ) {
+		greekalts[0] = *upt;
+		greekalts[1] = 0x1fef;
+	    } else {
+		greekalts[0] = *upt==0x3ac?0x3b1:
+				*upt==0x3ad?0x3b5:
+				*upt==0x3ae?0x3b7:
+				*upt==0x3af?0x3b9:
+				*upt==0x3cc?0x3bf:
+				*upt==0x3cd?0x3c5:
+				/**upt==0x3ce?*/0x3c9;
+		greekalts[1] = 0x1ffd;
+	    }
+	    greekalts[2] = '\0';
+	    if ( haschar(sf,greekalts[1]))
 return( greekalts );
+	} else if ( base<0x1fb0 ) {
+	    /* unicode decomposition should work for these guys */
+	} else if ( base==0x1fd7 || base == 0x1fe7 ) {
+	    greekalts[0] = *upt;
+	    greekalts[1] = 0x1fc1;
+	    greekalts[2] = '\0';
+	    if ( haschar(sf,greekalts[1]))
+return( greekalts );
+	} else if ( base==0x1fd2 || base==0x1fd3 || base == 0x1fe2 || base==0x1fe3 ) {
+	    greekalts[0] = *upt;
+	    greekalts[1] = (base&1)?0x1fee:0x1fed;
+	    greekalts[2] = '\0';
+	    if ( haschar(sf,greekalts[1]))
+return( greekalts );
+	} else {
+	    static int bads [] = { 0x0300, 0x0301, 0x0342, 0x0314, 0x0313, 0 };
+	    static int goods[] = { 0x1fef, 0x1ffd, 0x1fc0, 0x1ffe, 0x1fbf, 0 };
+	    for ( pt = upt, gpt = greekalts; *pt; ++pt, ++gpt ) {
+		*gpt = *pt;
+		for ( i=0; bads[i]!=0; ++i )
+		    if ( bads[i]==*pt ) {
+			*gpt = goods[i];
+		break;
+		    }
+	    }
 	}
      } else if ( base>=0x380 && base<=0x3ff && upt!=NULL ) {
 	/* In version 3 of unicode tonos gets converted to accute, which it */
@@ -477,6 +521,10 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
     rsc = findchar(sf,ach);
     SplineCharFindSlantedBounds(rsc,&rbb,ia);
     ybase = SplineCharFindSlantedBounds(sc,&bb,ia);
+    if ( basech>=0x1f20 && basech<=0x1f27 && ch==0x345 ) {
+	bb.miny = 0;		/* ypogegrammeni rides below baseline, not below bottom stem */
+	bb.minx -= (bb.maxx-bb.minx)/3;	/* Should also be centered on left stem of eta, but I don't know how to do that..., hence this hack */
+    }
 
     transform[0] = transform[3] = 1;
     transform[1] = transform[2] = transform[4] = transform[5] = 0;
@@ -990,7 +1038,7 @@ return;
 	if ( !SCMakeBaseReference(sc,sf,ch,copybmp) )
 return;
 	while ( iscombining(*pt) || (ch!='l' && *pt==0xb7) ||	/* b7, centered dot is used as a combining accent for Ldot but as a lig for ldot */
-		*pt==0x1fcd || *pt==0x1fdd || *pt==0x1fce || *pt==0x1fde )	/* Special greek accents */
+		(*pt>=0x1fbd && *pt<=0x1fff ))			/* Special greek accents */
 	    SCCenterAccent(sc,sf,*pt++,copybmp,ia, ch);
 	while ( *pt )
 	    SCPutRefAfter(sc,sf,*pt++,copybmp);

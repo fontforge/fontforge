@@ -68,7 +68,7 @@ static const int poses300[] = {
     _Above,
     _Above,
     _Above,
-    _Above,
+    _Below,
     0
 };
 static const int poses360[] = {
@@ -818,6 +818,37 @@ static const int poses18A9[] = {
     _Above|_Left
 };
 
+static const int poses1FBD[] = {	/* These aren't listed as combiners, but if we don't use them as such greek fonts don't work */
+    _Above,
+    _Above,
+    _Above,
+    _Above,
+    _Above
+};
+
+static const int poses1FCD[] = {	/* These aren't listed as combiners, but if we don't use them as such greek fonts don't work */
+    _Above,
+    _Above,
+    _Above
+};
+
+static const int poses1FDD[] = {	/* These aren't listed as combiners, but if we don't use them as such greek fonts don't work */
+    _Above,
+    _Above,
+    _Above
+};
+
+static const int poses1FED[] = {	/* These aren't listed as combiners, but if we don't use them as such greek fonts don't work */
+    _Above,
+    _Above,
+    _Above
+};
+
+static const int poses1FFD[] = {	/* These aren't listed as combiners, but if we don't use them as such greek fonts don't work */
+    _Above,
+    _Above
+};
+
 static const int poses20D0[] = {
     _Above,
     _Above,
@@ -965,6 +996,11 @@ const static struct {
     { 0x1056, 0x1059, poses1056 },
     { 0x17B4, 0x17D3, poses17B4 },
     { 0x18A9, 0x18A9, poses18A9 },
+    { 0x1FBD, 0x1FC2, poses1FBD },
+    { 0x1FCD, 0x1FCF, poses1FCD },
+    { 0x1FDD, 0x1FDF, poses1FDD },
+    { 0x1FED, 0x1FEF, poses1FED },
+    { 0x1FFD, 0x1FFE, poses1FFD },
     { 0x20D0, 0x20E3, poses20D0 },
     { 0x302A, 0x302F, poses302A },
     { 0x3099, 0x309A, poses3099 },
