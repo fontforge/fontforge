@@ -201,7 +201,7 @@ static int WriteBitmaps(char *filename,SplineFont *sf, real *sizes, int do_grey)
 	    if ( freetypecontext==NULL )
 		bdf = SplineFontAntiAlias(sf,(int) sizes[i],4);
 	    else
-		bdf = SplineFontFreeTypeRasterize(freetypecontext,sizes[i],true);
+		bdf = SplineFontFreeTypeRasterize(freetypecontext,sizes[i],false);
 	    if ( bdf==NULL )
 		sprintf(buffer,"Couldn't generate an anti-aliased font at the requested size (%d)", (int) sizes[i]);
 	} else {
