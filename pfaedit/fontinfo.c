@@ -2259,7 +2259,7 @@ static void GFI_ProcessContexts(struct gfi_data *d) {
 
     /* Now build up a new list containing all active state machines */
     lastsm = NULL;
-    for ( i=0; i<3; ++i ) {
+    for ( i=0; i<4; ++i ) {
 	GGadget *list = GWidgetGetControl(d->gw,CID_SMList+i*100);
 	int len;
 	GTextInfo **old = GGadgetGetList(list,&len);
@@ -2982,18 +2982,21 @@ void GFI_SMDEnd(struct gfi_data *d) {
 void GFI_FinishSMNew(struct gfi_data *d,ASM *sm, int success, int isnew) {
     int off;
     GGadget *list;
+    unichar_t *name;
 
     if ( success ) {
 	off = sm->type == asm_indic ? 000 :
 		sm->type == asm_context ? 100 :
 		sm->type == asm_insert ? 200 : 300;
 	list = GWidgetGetControl(d->gw,CID_SMList+off);
-	if ( isnew )
-	    GListAppendLine(list,FeatSetName(d->sf,sm->feature,sm->setting),
-		    false)->userdata = sm;
+	if ( sm->type!=asm_kern )
+	    name = FeatSetName(d->sf,sm->feature,sm->setting);
 	else
-	    GListChangeLine(list,GGadgetGetFirstListSelectedItem(list),
-		    FeatSetName(d->sf,sm->feature,sm->setting));
+	    name = u_copy(GStringGetResource(_STR_Kerning,NULL));
+	if ( isnew )
+	    GListAppendLine(list,name,false)->userdata = sm;
+	else
+	    GListChangeLine(list,GGadgetGetFirstListSelectedItem(list),name);
     } else if ( isnew ) {
 	chunkfree(sm,sizeof(ASM));
     }

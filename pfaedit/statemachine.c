@@ -2364,6 +2364,8 @@ return( SMD_Next(g,e));
 	if ( *end==',' && ( set = u_strtol(end+1,&end,10), *end=='>' || *end=='\0')) {
 	    sm->feature = feat;
 	    sm->setting = set;
+	} else if ( sm->type==asm_kern ) {	/* Kerns don't get feature/settings */
+	    sm->feature = sm->setting = 0xffff;
 	} else {
 	    GWidgetErrorR(_STR_BadFeatureSetting,_STR_BadFeatureSetting);
 return( true );
@@ -2557,7 +2559,8 @@ return;
 		    kddd = ( strlen(buf)>5 );
 		    buf[5] = '\0';
 		    uc_strcpy(ubuf,buf);
-		}
+		} else
+		    kddd = false;
 	    }
 	    len = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
 	    GDrawDrawText(pixmap,x+(smd->statew-len)/2,y+2*smd->fh+smd->as+1,
