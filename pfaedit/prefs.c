@@ -56,6 +56,7 @@ char *RecentFiles[RECENT_MAX] = { NULL };
 extern int default_fv_showhmetrics;	/* in fontview */
 extern int default_fv_showvmetrics;	/* in fontview */
 extern int palettes_docked;		/* in cvpalettes */
+extern int prefer_cjk_encodings;	/* in parsettf */
 /* int local_encoding; */		/* in gresource.c *//* not a charset */
 static int prefs_encoding = e_unknown;
 int greekfixup = true;
@@ -156,6 +157,7 @@ static struct prefs_list {
 	{ "XUID-Base", pr_string, &xuid, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupXU },
 	{ "AskBDFResolution", pr_bool, &ask_user_for_resolution, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupBR },
 	{ "DumpGlyphMap", pr_bool, &glyph_2_name_map, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupG2N },
+	{ "PreferCJKEncodings", pr_bool, &prefer_cjk_encodings, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupPCE },
 	{ NULL }
 },
  hidden_list[] = {

@@ -47,6 +47,8 @@
 
 /* !!!I don't currently parse instructions to get hints */
 
+int prefer_cjk_encodings=false;
+
 int getushort(FILE *ttf) {
     int ch1 = getc(ttf);
     int ch2 = getc(ttf);
@@ -2860,11 +2862,12 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    enc = em_unicode4;
 	    encoff = offset;
 	    mod = 0;
-	} else if (( platform==3 && specific==1 && enc!=em_unicode4 ) || /* MS Unicode */
+	} else if ( (enc!=em_unicode4 || (!prefer_cjk_encodings || (enc!=em_sjis && enc!=em_wansung && enc!=em_big5 && enc!=em_johab))) &&
+		(( platform==3 && specific==1 ) || /* MS Unicode */
 /* Well I should only deal with apple unicode specific==0 (default) and 3 (U2.0 semantics) */
 /*  but apple ships dfonts with specific==1 (Unicode 1.1 semantics) */
 /*  which is stupid of them */
-		( platform==0 /*&& (specific==0 || specific==3)*/ && enc!=em_unicode4 && enc!=em_symbol )) {	/* Apple Unicode */
+		( platform==0 /*&& (specific==0 || specific==3)*/ && enc!=em_symbol ))) {	/* Apple Unicode */
 	    enc = em_unicode;
 	    encoff = offset;
 	    mod = 0;
@@ -2882,14 +2885,15 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    enc = em_mac;
 	    encoff = offset;
 	    trans = unicode_from_mac;
-	} else if ( platform==1 && (specific==2 ||specific==1) /*&& enc!=em_unicode*/ ) {
+	} else if ( platform==1 && (specific==2 ||specific==1) &&
+		(prefer_cjk_encodings || enc!=em_unicode) ) {
 	    /* I've seen an example of a big5 encoding so I know this is right*/
 	    /*  Japanese appears to be sjis */
 	    enc = specific==1?em_sjis:specific==2?em_big5:specific==3?em_wansung:em_gb2312;
 	    mod = specific==1?2:specific==2?4:specific==3?5:3;		/* convert to ms specific */
 	    encoff = offset;
-	} else if ( platform==3 && (specific==2 || specific==4 || specific==5 || specific==6 ) /*&&
-		enc!=em_unicode*/ ) {
+	} else if ( platform==3 && (specific==2 || specific==4 || specific==5 || specific==6 ) &&
+		(prefer_cjk_encodings || enc!=em_unicode) ) {
 	    /* Old ms docs say that specific==3 => big 5, new docs say specific==4 => big5 */
 	    /*  Ain't that jus' great? */
 	    enc = specific==2? em_sjis : specific==5 ? em_wansung : specific==4? em_big5 : em_johab;
@@ -3016,13 +3020,15 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 		for ( i=0; i<count; ++i )
 		    info->chars[getushort(ttf)]->unicodeenc = first+i;
 	} else if ( format==2 ) {
-	    int max_sub_head_key = 0, cnt;
+	    int max_sub_head_key = 0, cnt, max_pos= -1;
 	    struct subhead *subheads;
-
+	    
 	    for ( i=0; i<256; ++i ) {
 		table[i] = getushort(ttf)/8;	/* Sub-header keys */
-		if ( table[i]>max_sub_head_key )
+		if ( table[i]>max_sub_head_key ) {
 		    max_sub_head_key = table[i];	/* The entry is a byte pointer, I want a pointer in units of struct subheader */
+		    max_pos = i;
+		}
 	    }
 	    subheads = galloc((max_sub_head_key+1)*sizeof(struct subhead));
 	    for ( i=0; i<=max_sub_head_key; ++i ) {
@@ -3042,12 +3048,12 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    last = -1;
 	    for ( i=0; i<256; ++i ) {
 		if ( table[i]==0 ) {
-		    /* Special case, single byte encoding entry, look i up in */
+		    /* Special case, single byte encoding entry, look it up in */
 		    /*  subhead */
 		    /* In the one example I've got of this encoding (wcl-02.ttf) the chars */
 		    /* 0xfd, 0xfe, 0xff are said to exist but there is no mapping */
 		    /* for them. */
-		    if ( last!=-1 )
+		    if ( i>=max_pos )
 			index = 0;	/* the subhead says there are 256 entries, but in fact there are only 193, so attempting to find these guys should give an error */
 		    else if ( i<subheads[0].first || i>=subheads[0].first+subheads[0].cnt ||
 			    subheads[0].rangeoff+(i-subheads[0].first)>=cnt )
@@ -3087,7 +3093,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 				info->dups = makedup(info->chars[index],umodenc(enc,mod),modenc(enc,mod),info->dups);
 			}
 		    }
-		    if ( last==-1 ) last = i;
+		    /*if ( last==-1 ) last = i;*/
 		}
 	    }
 	    free(subheads);
