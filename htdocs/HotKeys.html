@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Nov-2001 -->
-  <!-- AP: Last modified: 6-Jan-2005 -->
+  <!-- AP: Last modified: 16-Jan-2005 -->
   <TITLE>Hot Keys</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -176,7 +176,7 @@
     <TD><A HREF="editmenu.html#PasteInto">Paste Into</A></TD>
   </TR>
   <TR>
-    <TD><A HREF="editmenu.html#PasteInto">Ctl-W</A></TD>
+    <TD>Ctl-W</TD>
     <TD><A HREF="editmenu.html#PasteInto"><A HREF="editmenu.html#Width">Copy
       Width</A></A></TD>
     <TD>Ctl-Shft-W</TD>
@@ -407,6 +407,135 @@ with hot-key indicators that match the host machine. If you are displaying
 on a different machine from the one you are running on the menu names may
 be wrong. You can fix this up with the <A HREF="xres.html#Keyboard">keyboard
 resource</A>, or the -keyboard command line argument.
+<H2>
+  Tool modifiers in the Outline Glyph Window
+</H2>
+<TABLE BORDER CELLPADDING="2">
+  <TR>
+    <TH>Tool</TH>
+    <TH>Modifier</TH>
+    <TH>Result</TH>
+    <TH>Tool</TH>
+    <TH>Modifier</TH>
+    <TH>Result</TH>
+  </TR>
+  <TR>
+    <TD ROWSPAN=3>pointer</TD>
+    <TD>Shift</TD>
+    <TD>Constrain horizontal/vert or italic angle/45&#176;</TD>
+    <TD ROWSPAN=3>Magnify</TD>
+    <TD ROWSPAN=3><TABLE CELLPADDING="2">
+	<TR>
+	  <TD>Shift<BR>
+	  </TD>
+	</TR>
+	<TR>
+	  <TD>Alt</TD>
+	</TR>
+      </TABLE>
+    </TD>
+    <TD ROWSPAN=3><TABLE CELLPADDING="2">
+	<TR>
+	  <TD>When dragging a magnification area,<BR>
+	    make it square</TD>
+	</TR>
+	<TR>
+	  <TD>minify</TD>
+	</TR>
+      </TABLE>
+    </TD>
+  </TR>
+  <TR>
+    <TD>Alt</TD>
+    <TD>Select control points before normal points</TD>
+  </TR>
+  <TR>
+    <TD>Shift-Alt</TD>
+    <TD>Constrain control point motion to original angle from point</TD>
+  </TR>
+  <TR VALIGN="Top">
+    <TD>freehand</TD>
+    <TD>Shift</TD>
+    <TD>Constrain horizontal/vert/45&#176;</TD>
+    <TD>scroll</TD>
+    <TD>Shift</TD>
+    <TD>Constrain scroll either in single direction or<BR>
+      by same amount in both directions</TD>
+  </TR>
+  <TR>
+    <TD>add curve</TD>
+    <TD>Shift</TD>
+    <TD>Constrain horizontal/vert/45&#176; from last point</TD>
+    <TD>add corner</TD>
+    <TD>Shift</TD>
+    <TD>Constrain horizontal/vert/45&#176; from last point</TD>
+  </TR>
+  <TR VALIGN="Top">
+    <TD>add tangent</TD>
+    <TD>Shift</TD>
+    <TD>Constrain horizontal/vert/45&#176; from last point</TD>
+    <TD>pen</TD>
+    <TD>Shift</TD>
+    <TD>Constrain points h/v/45 from last point<BR>
+      Constrain control points h/v/45 from point</TD>
+  </TR>
+  <TR>
+    <TD>knife</TD>
+    <TD>Shift</TD>
+    <TD>Constrain horizontal/vert/45&#176;</TD>
+    <TD>ruler</TD>
+    <TD>Shift</TD>
+    <TD>Constrain measurement to one direction</TD>
+  </TR>
+  <TR VALIGN="Top">
+    <TD>scale</TD>
+    <TD>Shift</TD>
+    <TD>Constrain either to scale along x or y axis or<BR>
+      scale both axes the same</TD>
+    <TD>flip</TD>
+    <TD></TD>
+    <TD></TD>
+  </TR>
+  <TR>
+    <TD>rotate</TD>
+    <TD>Shift</TD>
+    <TD>Constrain rotation to a multiple of 45&#176;</TD>
+    <TD>skew</TD>
+    <TD></TD>
+    <TD></TD>
+  </TR>
+  <TR>
+    <TD>3d rotate</TD>
+    <TD></TD>
+    <TD></TD>
+    <TD>perspective</TD>
+    <TD></TD>
+    <TD></TD>
+  </TR>
+  <TR>
+    <TD>rect/elipse</TD>
+    <TD>Shft</TD>
+    <TD>square/circle</TD>
+    <TD>polygon/star</TD>
+    <TD>Shift</TD>
+    <TD>Constrains so that one of the vertices is<BR>
+      horizontal/vertical/45&#176;</TD>
+  </TR>
+</TABLE>
+<H2>
+  Modifer keys for arrow keys in the Outline Glyph Window
+</H2>
+<P>
+<TABLE BORDER CELLPADDING="2">
+  <TR>
+    <TD>Control</TD>
+    <TD>Makes the arrow keys scroll</TD>
+  </TR>
+  <TR>
+    <TD>Alt</TD>
+    <TD>Makes the arrow keys move by ten times as much as they would otherwise</TD>
+  </TR>
+</TABLE>
 <H2>
   The menus
 </H2>
