@@ -442,9 +442,9 @@ return( "KSC5601.1992" );
       case em_gb2312: case em_jisgb:
 return( "GB2312.1980" );
       case em_big5:
-return( "BIG5" );
+return( "BIG5" );			/* 2002? */
       case em_big5hkscs:
-return( "BIG5HKSCS" );
+return( "BIG5HKSCS.2001" );
       case em_johab:
 return( "Johab" );
       default:
