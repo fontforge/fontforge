@@ -1583,7 +1583,7 @@ static void SFDFixupRef(SplineChar *sc,RefChar *ref) {
 
 static void SFDFixupRefs(SplineFont *sf) {
     int i;
-    RefChar *refs;
+    RefChar *refs, *rnext, *rprev;
     /*int isautorecovery = sf->changed;*/
     KernPair *kp, *prev, *next;
 
@@ -1594,12 +1594,23 @@ static void SFDFixupRefs(SplineFont *sf) {
 	/*  by another character then we need to fix up that other char too*/
 	/*if ( isautorecovery && !sf->chars[i]->changed )*/
     /*continue;*/
-	for ( refs = sf->chars[i]->refs; refs!=NULL; refs=refs->next ) {
+	rprev = NULL;
+	for ( refs = sf->chars[i]->refs; refs!=NULL; refs=rnext ) {
+	    rnext = refs->next;
 	    if ( refs->local_enc<sf->charcnt )
 		refs->sc = sf->chars[refs->local_enc];
+	    if ( refs->sc==NULL )
+		refs->sc = SFMakeChar(sf,refs->local_enc);
 	    if ( refs->sc!=NULL ) {
 		refs->unicode_enc = refs->sc->unicodeenc;
 		refs->adobe_enc = getAdobeEnc(refs->sc->name);
+		rprev = refs;
+	    } else {
+		RefCharFree(refs);
+		if ( rprev!=NULL )
+		    rprev->next = rnext;
+		else
+		    sf->chars[i]->refs = rnext;
 	    }
 	}
 	/*if ( isautorecovery && !sf->chars[i]->changed )*/

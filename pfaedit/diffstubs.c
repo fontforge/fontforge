@@ -29,6 +29,7 @@ void GProgressChangeStages(int stages) { }
 int GWidgetAskR(int title, int *answers, int def, int cancel,int question,...) { return cancel; }
 SplineFont *LoadSplineFont(char *filename, enum openflags of) { return NULL; }
 int SFReencodeFont(SplineFont *sf,enum charset new_map) { return 0 ; }
+void RefCharFree(RefChar *ref) {}
 void LinearApproxFree(LinearApprox *la) {}
 SplineFont *SplineFontNew(void) {return NULL; }
 void SplineFontFree(SplineFont *sf) { }
@@ -40,6 +41,7 @@ void SCGuessHHintInstancesList(SplineChar *sc) { }
 void SCGuessVHintInstancesList(SplineChar *sc) { }
 int StemListAnyConflicts(StemInfo *stems) { return 0 ; }
 int getAdobeEnc(char *name) { return -1; }
+SplineChar *SFMakeChar(SplineFont *sf, int enc) { return NULL; }
 GDisplay *screen_display=NULL;
 
 /* ************************************************************************** */
