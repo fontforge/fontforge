@@ -3837,7 +3837,7 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 		kc->first_cnt = getc(ttf);
 		kc->second_cnt = getc(ttf);
 		flags = getc(ttf);
-		if ( gc!=info->glyph_cnt )
+		if ( gc>info->glyph_cnt )
 		    fprintf( stderr, "Kerning subtable 3 says the glyph count is %d, but maxp says %d\n",
 			    gc, info->glyph_cnt );
 		class1 = gcalloc(gc>info->glyph_cnt?gc:info->glyph_cnt,sizeof(uint16));
@@ -3846,9 +3846,9 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 		kc->offsets = galloc(kc->first_cnt*kc->second_cnt*sizeof(int16));
 		for ( i=0; i<kv; ++i )
 		    kvs[i] = (int16) getushort(ttf);
-		for ( i=0; i<kc->first_cnt; ++i )
+		for ( i=0; i<gc; ++i )
 		    class1[i] = getc(ttf);
-		for ( i=0; i<kc->second_cnt; ++i )
+		for ( i=0; i<gc; ++i )
 		    class2[i] = getc(ttf);
 		for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i )
 		    kc->offsets[i] = kvs[getc(ttf)];
