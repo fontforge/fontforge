@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 16-Aug-2003 -->
+  <!-- AP: Last modified: 18-Aug-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -11,7 +11,22 @@
 </H1>
 <UL>
   <LI>
-    ???
+    18-Aug-2003
+    <UL>
+      <LI>
+	<FONT COLOR="Red"><STRONG><BIG>PfaEdit did not interpret SVG relative paths
+	properly, and did not generate correct SVG output because of
+	this</BIG></STRONG></FONT>. PfaEdit was mistakenly assuming things should
+	be interpreted as in the Type1 rrcurveto operator (where each point is relative
+	to the previous point in the operator) rather than the rcurveto operator
+	(where each point is relative to the initial point).
+      <LI>
+	If PfaEdit opened a Bold font stored in OTF CFF format, then when it closed
+	that font it would either crash, or screw up memory so that a crash would
+	happen later.
+    </UL>
+  <LI>
+    17-Aug-2003
     <UL>
       <LI>
 	Support for contextual, chaining contextual and reverse chaining contextual
@@ -78,6 +93,12 @@
       <LI>
 	Add a new command line argument "-last" which will load the last sfd file
 	closed.
+	  <HR>
+      <LI>
+	PfaEdit would crash when importing bitmap fonts
+      <LI>
+	PfaEdit would crash when trying to do an Element-&gt;Default ATT-&gt;Suffix
+	to Tag command
     </UL>
   <LI>
     3-Aug-2003
