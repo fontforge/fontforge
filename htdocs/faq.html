@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 10-Dec-2001 -->
+  <!-- AP: Last modified: 14-Jan-2002 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -92,6 +92,8 @@
 	  <LI>
 	    No matching cyrillic or greek characters
 	</UL>
+      <LI>
+	Everybody wants a font of his/her own handwriting.
     </OL>
   <DT>
     <A NAME="widget-set"><B>Why is PfaEdit based on a non-standard widget
@@ -236,7 +238,10 @@
     <A HREF="fontinfo.html#Encoding">encoding</A>.<BR>
     Secondly because most of the time you don't want the name copied.<BR>
     Thirdly because it is esthetically better that copy should only work with
-    data and not meta-data.
+    data and not meta-data.<BR>
+    HOWEVER... enough people have asked this question that I've enabled a mode
+    in <A HREF="editmenu.html#CharName">Edit-&gt;Copy From-&gt;Char Name</A>
+    which allows you to change the default behavior.
   <DT>
     <A NAME="cidmaps">What on earth are cidmap files and should I care about
     them?</A>
@@ -346,7 +351,10 @@ $ xset fp+ `pwd`
 	directories) are readable to world. (the font server runs as a non-priviledged
 	user)
 	<P>
-	As far as I know no version of X supports <EM>opentype</EM> fonts yet.
+	I haven't seen anything that says X supports <EM>opentype</EM> fonts yet,
+	but since freetype does (and I think X's rasterizer uses freetype) then X
+	might support them too. Installing them will require manual editing of
+	fonts.scale though (mkttfdir uses freetype1 which doesn't support otf files).
 	<P>
 	That sounds really confusing. I appologize, I'm not a good writer and there
 	are too many choices in configuring X...
@@ -519,7 +527,7 @@ $ xset fp+ `pwd`
 </DL>
 <P>
 <P ALIGN=Center>
--- <A HREF="xres.html" TARGET="_top">Prev</A> --
+-- <A HREF="cliargs.html">Prev</A> --
 <A HREF="overview.html" TARGET="_top">TOC</A> --
 <A HREF="license.html" TARGET="_top">Next</A> --
 </BODY></HTML>

@@ -2,10 +2,13 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 21-Jan-2001 -->
-  <!-- AP: Last modified: 5-Jan-2002 -->
+  <!-- AP: Last modified: 15-Jan-2002 -->
   <TITLE>X Resources</TITLE>
 </HEAD>
 <BODY>
+<H1 ALIGN=Center>
+  X Resources
+</H1>
 <P>
 Every X application has an inordinate number of resources that you can tweak.
 This one is no exception. However I don't follow standard conventions, so
@@ -378,7 +381,33 @@ then the program will look at it.
 	Times italic at 10 points
     </UL>
 </DL>
+<P>
+<H2>
+  <A NAME="Keyboards">Keyboards and Mice.</A>
+</H2>
+<P>
+PfaEdit assumes that your keyboard has a control key and some equivalent
+of a meta key. PfaEdit works best with a three button mouse. 
+<P>
+Almost all keyboards now-a-days will have the needed modifier keys, but which
+key is used for what will depend on the keyboard and the OS (for instance
+XDarwin and suse linux use quite different mappings for the modifier keys
+on the mac keyboard). Usually this is only relevant for menus (and mnemonics).
+PfaEdit tries to guess the keyboard from the environment in which it was
+compiled. But with X this may not always be appropriate. So the
+"<A HREF="xres.html#Keyboard">Gdraw.Keyboard</A>" resource above may be used
+to change this. (Currently this setting only control the labels that appear
+in menus for the hotkeys).
+<P>
+Mice are more problematic. On PCs we usually have two button mice and on
+mac single button mice. Many linuxes that run on a PC will give you an option
+of simulating the middle button of the mouse by depressing the left and right
+buttons simultaneously. PfaEdit will also allow you to simulate it by holding
+down the super key (usually this is the one with the picture of a windows
+flag on it) while depressing either mouse button.
+<P>
+On the mac I don't see any good way of simulating a three button mouse...
 <P ALIGN=Center>
 -- <A HREF="sfdformat.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
-<A HREF="faqFS.html">Next</A> --
+<A HREF="cliargs.html">Next</A> --
 </BODY></HTML>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 14-Jan-2002 -->
+  <!-- AP: Last modified: 17-Jan-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -72,11 +72,11 @@ you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-020114.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 14-Jan-2002
+    <A HREF="pfaedit-020117.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 17-Jan-2002
   <LI>
-    <A HREF="pfaedit-solaris-020102.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 2-Jan-2002
+    <A HREF="pfaedit-solaris-020117.tgz">Download pfaedit Solaris 8.0
+    </A>executable Version: 17-Jan-2002
   <LI>
     <A HREF="pfaedit-011219-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
     Version: 19-Dec-2001 (Redhat 7.1)
@@ -107,22 +107,22 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-011219-1.src.rpm">source RPM</A>: Version:
 19-Dec-2001<BR>
-Or you can download the following three packages. Version: 14-Jan-2002
+Or you can download the <A HREF="pfaedit_full-020117.tgz">entire source tree
+</A>in one .tgz file: Version 17-Jan-2002<BR>
+Or you can download the following three packages. Version: 17-Jan-2002
 <UL>
   <LI>
-    <A HREF="libgunicode-020111.tgz">Unicode library source</A> (11-Jan-2002)<BR>
+    <A HREF="libgunicode-020117.tgz">Unicode library source</A> (17-Jan-2002)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
-    <A HREF="libgdraw-020112.tgz">Unicode widget library source</A>
-    (12-Jan-2002)<BR>
+    <A HREF="libgdraw-020117.tgz">Unicode widget library source</A>
+    (17-Jan-2002)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-020114.tgz">Pfaedit source</A> (14-Jan-2002)<BR>
+    <A HREF="pfaedit_src-020117.tgz">Pfaedit source</A> (17-Jan-2002)<BR>
     -- <A HREF="overview.html">docs</A>
-  <LI>
-    <A HREF="pfaedit_full-020114.tgz">All three bundled together </A>(14-Jan-2002)
 </UL>
 <P>
 If you want to do autotracing around character images you should also download
@@ -235,9 +235,34 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
 </H2>
 <UL>
   <LI>
-    ???
+    17-Jan-2002
     <UL>
       <LI>
+	PfaEdit used to crash (sometimes anyway) if a list popup were active when
+	a window was destroyed.
+      <LI>
+	TextFields within tabsets (like Font Info) responded to some events twice.
+      <LI>
+	Bug in the new TTF hinting routines could cause a crash (and did cause glyph
+	programs which were erroneous)
+      <LI>
+	Crash caused by long names in /etc/passwd when creating a new font
+      <LI>
+	Redid fontname handling in Font Info dlg to allow URW names to pass through
+	unscathed
+	<UL>
+	  <LI>
+	    Recognize "Regu" as meaning "Regular"
+	  <LI>
+	    Only updates the fullname (human readable name) if it were previously in
+	    sync
+	  <LI>
+	    Recognize "-" as starting the modifiers rather than trying to find the end
+	    of the family name
+	  <LI>
+	    If you don't change the family or the modifiers then pfaedit will now leave
+	    the fontname untouched
+	</UL>
     </UL>
   <LI>
     14 Jan 2002

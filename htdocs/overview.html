@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 15-Dec-2001 -->
+  <!-- AP: Last modified: 15-Jan-2002 -->
   <TITLE>PfaEdit -- A postscript&reg; font editor</TITLE>
 </HEAD>
 <BODY>
@@ -108,6 +108,12 @@
     <A HREF="sfdformat.html">Spline Font Database File Format</A>
   <LI>
     <A HREF="xres.html">X Resources</A>
+    <UL>
+      <LI>
+	<A HREF="xres.html#Keyboards">Keyboards and Mice</A>
+    </UL>
+  <LI>
+    <A HREF="cliargs.html">Command line arguments</A>
   <LI>
     <A HREF="faqFS.html">Frequently Asked Questions</A>
   <LI>
@@ -122,7 +128,8 @@
     Area</A><BR>
     &nbsp;
   <LI>
-    <A HREF="src.html">Source file overview</A><BR>
+    <A HREF="src.html">Source file overview</A> (out of date, but goes over the
+    basics)<BR>
     &nbsp;
   <LI>
     <A HREF="sfds/index.html">Font samples</A>
@@ -159,13 +166,12 @@ in several different postscript formats, and generate bitmaps.
 </H3>
 <UL>
   <LI>
-    Copy the <A HREF="index.html#source">three source archives</A> to some directory
-    on your machine
+    Copy the <A HREF="index.html#source">complete source archive</A> to some
+    directory on your machine
   <LI>
     <KBD>$ gunzip *.tgz</KBD>
   <LI>
-    <KBD>$ tar xf libgunicode.tar ; tar xf libgdraw.tar ; tar xf
-    pfaedit_src.tar</KBD>
+    <KBD>$ tar xf pfaedit_full.tar</KBD>
   <LI>
     <KBD>$ cd pfaedit </KBD>
   <LI>
@@ -178,6 +184,9 @@ in several different postscript formats, and generate bitmaps.
 <P>
 Obviously you may choose to place the executable somewhere other than
 /usr/local/bin.
+<P>
+(If you have already pulled down the sources and just want to update to a
+new version then you only need to pull down those archives which have changed)
 <P>
 You may also want to pull down some extra fonts
 <UL>
@@ -220,13 +229,20 @@ on your machine (put it in your .xsession file).
     <CODE>$ pfaedit fontname</CODE>
   <DD>
     Will open a <A HREF="#FontView">font view</A> looking at the font you selected.
-    This may be a binary or ascii postscript type1 font (.pfa or .pfb extensions)
-    or one of pfaedit's spline font database files (.<A HREF="sfd.html">sfd</A>
-    extension), or a postscript type 0 font (.ps extension, though the encoding
-    will probably be lost here), or a truetype font (.ttf extension), or an Open
-    Type font (.otf) or even a bitmap font (.bdf).
+    This may be a binary or ascii postscript type1 font (.pfa, .pfb or .gsf
+    extensions), one of pfaedit's spline font database files
+    (.<A HREF="sfd.html">sfd</A> extension), a postscript type 0 font (.ps extension,
+    though the encoding will probably be lost here), a truetype font (.ttf or
+    .ttc extension), an Open Type font (.otf) a mac resource file (.bin, .hqx
+    or .dfont), or even a bitmap font (.bdf).
     <P>
     More than one fontname may be specified on the command line.
+  <DT>
+    <CODE>$ pfaedit "gulim.ttc(GulimChe)"</CODE>
+  <DD>
+    If a file format supports several fonts within the file (.ttc or mac resource
+    files) then you may specify which font you want by following the filename
+    with the font name in parentheses.
   <DT>
     <CODE>$ pfaedit</CODE>
   <DD>
@@ -235,22 +251,26 @@ on your machine (put it in your .xsession file).
 </DL>
 <P>
 On Mac OS/X you must start XDarwin before you can start pfaedit. See the
-<A HREF="Problems-MacOSX.html#Running">Mac specific notes</A> for more info.
+<A HREF="Problems-MacOSX.html#Running">Mac specific notes</A> for more
+info.<BR>
+On windows under cygwin you must again start X first
 <H3>
   <A NAME="intro">Introductory</A> concepts: Splines, Lines, Points and Paths
 </H3>
 <P>
 What is a postscript font? What is a bitmap font?
 <P>
-Each character in a font has a shape and there are various ways of describing
-that shape on a computer. Postscript fonts generally describe the outline
-of the shape and then color in the interior of that outline, this coloring
-process is called rasterizing. On the other hand a bitmap font describes
-each character by drawing a picture of that character on a rectangular grid
-of pixels. There is a third type, a stroked font, where each stem of the
-character is represented by one line down the center of the stem, and the
-line is later drawn with a certain width. We will not deal with stroked fonts
-directly (the Expand Stroke command can be used to turn them into outlines).
+Each character (or to be more precise, each glyph) in a font has a shape
+and there are various ways of describing that shape on a computer. Postscript
+fonts generally describe the outline of the shape and then color in the interior
+of that outline, this coloring process is called rasterizing. On the other
+hand a bitmap font describes each character by drawing a picture of that
+character on a rectangular grid of pixels. There is a third type, a stroked
+font, where each stem of the character is represented by one line down the
+center of the stem, and the line is later drawn with a certain width. We
+will not deal with stroked fonts directly (the
+<A HREF="elementmenu.html#Expand">Expand Stroke</A> command can be used to
+turn them into outlines).
 <TABLE BORDER CELLPADDING="2">
   <TR>
     <TD><P ALIGN=Center>
@@ -569,8 +589,9 @@ characters.
 </BLOCKQUOTE>
 <P>
 In TrueType characters refered to must not themselves contain reference
-characters, references may be skewed and rotated as well as translated, and
-may be scaled as long as it is by an amount less than 2.
+characters (at least in some versions of TrueType), references may be skewed
+and rotated as well as translated, and may be scaled as long as it is by
+an amount less than 2.
 <BLOCKQUOTE>
   <STRONG><SMALL><SMALL>Technical and confusing:</SMALL></SMALL></STRONG> So
   in the example above a generated TrueType font would also have U+04D2 composed
