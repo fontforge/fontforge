@@ -1756,6 +1756,7 @@ return( bdf );
 
 BDFChar *BDFPieceMeal(BDFFont *bdf, int index) {
     SplineChar *sc;
+    extern int use_freetype_to_rasterize_fv;
 
     if ( index==-1 )
 return( NULL );
@@ -1766,7 +1767,8 @@ return(NULL);
 	bdf->chars[index] = SplineCharFreeTypeRasterize(bdf->freetype_context,
 		sc->enc,bdf->truesize,bdf->clut?8:1);
     else {
-	if ( !sc->parent->multilayer && !sc->parent->strokedfont )
+	if ( use_freetype_to_rasterize_fv && !sc->parent->multilayer &&
+		!sc->parent->strokedfont )
 	    bdf->chars[index] = SplineCharFreeTypeRasterizeNoHints(sc,
 		    bdf->truesize,bdf->clut?4:1);
 	else
