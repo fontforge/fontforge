@@ -1509,9 +1509,7 @@ static int ParseCharIdent(Context *c, Val *val, int signal_error) {
 	if ( val->type==v_unicode )
 	    bottom = SFFindChar(sf,val->u.ival,NULL);
 	else {
-	    unichar_t *temp = uc_copy(val->u.sval);
-	    bottom = NameToEncoding(sf,temp);
-	    free(temp);
+	    bottom = SFFindChar(sf,-1,val->u.sval);
 	}
     } else {
 	if ( signal_error )
@@ -5707,6 +5705,8 @@ void ScriptDlg(FontView *fv) {
     /* Selection may be out of date, force a refresh */
     for ( list = fv_list; list!=NULL; list=list->next )
 	GDrawRequestExpose(list->v,NULL,false);
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
 #endif
 }
 #endif
