@@ -142,121 +142,55 @@ static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
 		    sf->chars[enc]->vwidth = swidth1;
 	    }
 	}
-    } else {
-	if ( enc!=-1 && enc<sf->charcnt && sf->encoding_name==encname ) {
-	    i = enc;
-	} else if ( enc!=-1 && enc<CountOfEncoding(encname) &&
-		  (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4 || sf->encoding_name==em_iso8859_1) ) {
-	    if ( enc>255 && sf->encoding_name==em_iso8859_1 )
-		SFReencodeFont(sf,em_unicode);
-	    switch (encname) {
-	      case em_iso8859_2: i = unicode_from_i8859_2[enc]; break;
-	      case em_iso8859_3: i = unicode_from_i8859_3[enc]; break;
-	      case em_iso8859_4: i = unicode_from_i8859_4[enc]; break;
-	      case em_iso8859_5: i = unicode_from_i8859_5[enc]; break;
-	      case em_iso8859_6: i = unicode_from_i8859_6[enc]; break;
-	      case em_iso8859_7: i = unicode_from_i8859_7[enc]; break;
-	      case em_iso8859_8: i = unicode_from_i8859_8[enc]; break;
-	      case em_iso8859_9: i = unicode_from_i8859_9[enc]; break;
-	      case em_iso8859_10: i = unicode_from_i8859_10[enc]; break;
-	      case em_iso8859_11: i = unicode_from_i8859_11[enc]; break;
-	      case em_iso8859_13: i = unicode_from_i8859_13[enc]; break;
-	      case em_iso8859_14: i = unicode_from_i8859_14[enc]; break;
-	      case em_iso8859_15: i = unicode_from_i8859_15[enc]; break;
-	      case em_koi8_r: i = unicode_from_koi8_r[enc]; break;
-	      case em_jis201: i = unicode_from_jis201[enc]; break;
-	      case em_win: i = unicode_from_win[enc]; break;
-	      case em_mac:  i = unicode_from_mac[enc]; break;
-	      case em_symbol: i = unicode_from_MacSymbol[enc]; break;
-	      case em_zapfding:  i = unicode_from_ZapfDingbats[enc]; break;
-	      case em_adobestandard: i = unicode_from_adobestd[enc]; break;
-	      case em_jis208: case em_jis212: case em_ksc5601: case em_gb2312: {
-		  int ch1 = (enc>>8)-0x21, ch2 = (enc&0xff)-0x21;
-		  int index = ch1*94+ch2;
-		  if ( ch1<0 || ch1>0x7e - 0x21 || ch2<0 || ch2>0x7e - 0x21 )
-		      i = -1;
-		  else switch ( encname ) {
-		      case em_jis208: i = unicode_from_jis208[index]; break;
-		      case em_jis212: i = unicode_from_jis212[index]; break;
-		      case em_ksc5601: i = unicode_from_ksc5601[index]; break;
-		      case em_gb2312: i = unicode_from_gb2312[index]; break;
-		  }
-	      } break;
-	      case em_big5: i = unicode_from_big5[enc-0xa100]; break;
-	      case em_big5hkscs: i = unicode_from_big5hkscs[enc-0x8100]; break;
-	      case em_johab: i = unicode_from_johab[enc-0x8400]; break;
-              default: i = -1; break;
-	    }
-	    if ( i==0 && enc!=0 )
-		i = -1;
-	} else if ( enc<sf->charcnt && sf->chars[enc]!=NULL &&
-		  ((sf->chars[enc]->unicodeenc==0x2206 && strcmp(name,"Delta")==0) ||
-		   (sf->chars[enc]->unicodeenc==0x2126 && strcmp(name,"Omega")==0) ||
-		   (sf->chars[enc]->unicodeenc==0xb5 && strcmp(name,"mu")==0) ))
-	    i = enc;
-	else for ( i=sf->charcnt-1; i>=0 ; --i ) if ( sf->chars[i]!=NULL ) {
-	    if ( strcmp(name,sf->chars[i]->name)==0 )
-	break;
-	}
-	if ( i!=-1 && i<sf->charcnt && sf->chars[i]==NULL ) {
-	    SFMakeChar(sf,i);
-	    if ( sf->onlybitmaps && ((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) ) {
-		free(sf->chars[i]->name);
-		sf->chars[i]->name = copy(name);
-	    }
-	}
-	if ( i==-1 && (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4 ||
-		sf->encoding_name==em_iso8859_1)) {
-	    i = UniFromName(name);
-	    if ( i==-1 || i>sf->charcnt || sf->chars[i]!=NULL )
-		i = -1;
-	    if ( i!=-1 )
-		SFMakeChar(sf,i);
-	}
-	if ( sf->onlybitmaps && i!=-1 &&
-		((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) &&
-		i!=enc && enc!=-1 && (enc>=sf->charcnt || sf->chars[enc]==NULL)) {
-	    i = -1;
-	    if ( !sf->dupnamewarn ) {
-		/*GWidgetErrorR(_STR_DuplicateName,_STR_DuplicateCharName,name);*/
-		/* happens too often, no break space for example */
-		sf->dupnamewarn = true;
-	    }
-	}
-	if ( i==-1 && sf->onlybitmaps && enc!=-1 &&
-		((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) ) {
+    } else if ( sf->encoding_name==encname ||
+	    (sf->encoding_name==em_custom && sf->onlybitmaps)) {
+	i = enc;
+	if ( i>sf->charcnt )
 	    MakeEncChar(sf,enc,name);
-	    i = enc;
-	}
-	if ( i!=-1 && sf->onlybitmaps && swidth!=-1 &&
-		((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) ) {
-	    sf->chars[i]->width = swidth;
-	    sf->chars[i]->widthset = true;
-	    if ( swidth1!=-1 )
-		sf->chars[i]->vwidth = swidth1;
-	} else if ( i!=-1 && swidth!=-1 && sf->chars[i]!=NULL &&
-		sf->chars[i]->splines==NULL && sf->chars[i]->refs==NULL &&
-		!sf->chars[i]->widthset ) {
-	    sf->chars[i]->width = swidth;
-	    sf->chars[i]->widthset = true;
-	    if ( swidth1!=-1 )
-		sf->chars[i]->vwidth = swidth1;
+    } else {
+	int32 uni = UniFromEnc(enc,encname);
+	if ( uni==-1 )
+	    uni = UniFromName(name);
+	i = EncFromSF(uni,sf);
+	if ( uni!=-1 && i>=sf->charcnt &&
+		(sf->encoding_name==em_iso8859_1 || sf->encoding_name==em_unicode))
+	    SFReencodeFont(sf,uni>0xffff ? em_unicode4 : em_unicode);
+	if ( i==-1 ) {
+	    for ( i=sf->charcnt-1; i>=0 ; --i ) if ( sf->chars[i]!=NULL ) {
+		if ( strcmp(name,sf->chars[i]->name)==0 )
+	    break;
+	    }
+	    if ( i==-1 && sf->onlybitmaps && enc!=-1 &&
+		    ((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) ) {
+		MakeEncChar(sf,enc,name);
+		i = enc;
+	    }
 	}
     }
-    if ( i==-1 && sf->onlybitmaps &&
-	    ((sf->bitmaps==b && b->next==NULL ) || sf->bitmaps==NULL) ) {
+    if ( i==-1 ) {
 	/* try adding it to the end of the font */
-	if ( enc>=sf->charcnt ) i=enc;
-	else {
-	    int cnt = CountOfEncoding(sf->encoding_name);
-	    i = sf->charcnt;
-	    while ( i>cnt && i>0 && sf->chars[i-1]==NULL )
-		--i;
-	}
+	int encmax = CountOfEncoding(sf->encoding_name);
+	for ( i=sf->charcnt-1; i>=encmax && sf->chars[i]==NULL; --i );
+	++i;
 	MakeEncChar(sf,i,name);
     }
-    if ( i==-1 )	/* Can't guess the proper encoding, ignore it */
-return(-1);
+
+    if ( i!=-1 && i<sf->charcnt && sf->chars[i]==NULL ) {
+	SFMakeChar(sf,i);
+	if ( sf->onlybitmaps && ((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) ) {
+	    free(sf->chars[i]->name);
+	    sf->chars[i]->name = copy(name);
+	}
+    }
+    if ( i!=-1 && swidth!=-1 &&
+	    ((sf->onlybitmaps && ((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) ) ||
+	     (sf->chars[i]!=NULL && sf->chars[i]->splines==NULL && sf->chars[i]->refs==NULL &&
+	       !sf->chars[i]->widthset)) ) {
+	sf->chars[i]->width = swidth;
+	sf->chars[i]->widthset = true;
+	if ( swidth1!=-1 )
+	    sf->chars[i]->vwidth = swidth1;
+    }
     if ( i!=enc && enc!=-1 && sf->onlybitmaps && sf->chars[enc]!=NULL &&
 	    ((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) ) {
 	free(sf->chars[enc]->name);
@@ -400,14 +334,14 @@ static int BDFParseEnc(char *encname, int encoff) {
     int enc;
 
     enc = em_none;
-    if ( strmatch(encname,"ISO8859")==0 || strmatch(encname,"ISO-8859")==0 ) {
+    if ( strmatch(encname,"ISO8859")==0 || strmatch(encname,"ISO-8859")==0 || strmatch(encname,"ISO_8859")==0 ) {
 	enc = em_iso8859_1+encoff;
 	if ( enc<=em_iso8859_13 )
 	    --enc;
 	if ( enc>em_iso8859_15 ) enc = em_iso8859_15;
     } else if ( strmatch(encname,"ISOLatin1Encoding")==0 ) {
 	enc = em_iso8859_1;
-    } else if ( strmatch(encname,"ISO10646")==0 || strmatch(encname,"ISO-10646")==0 ||
+    } else if ( strmatch(encname,"ISO10646")==0 || strmatch(encname,"ISO-10646")==0 || strmatch(encname,"ISO_10646")==0 ||
 	    strmatch(encname,"Unicode")==0 ) {
 	enc = em_unicode;
 	if ( encoff>1 )

@@ -990,7 +990,6 @@ extern void ScriptRecordListFree(struct script_record **script_lang);
 extern KernClass *KernClassCopy(KernClass *kc);
 extern void KernClassListFree(KernClass *kc);
 extern int KernClassContains(KernClass *kc, char *name1, char *name2, int ordered );
-extern void FPSTRuleContentsFree(struct fpst_rule *r, enum fpossub_format format);
 extern void FPSTFree(FPST *fpst);
 extern void ASMFree(ASM *sm);
 extern void MacNameListFree(struct macname *mn);
@@ -1380,6 +1379,10 @@ extern unichar_t *PickNameFromMacName(struct macname *mn);
 extern MacFeat *FindMacFeature(SplineFont *sf, int feat,MacFeat **secondary);
 extern struct macsetting *FindMacSetting(SplineFont *sf, int feat, int set,struct macsetting **secondary);
 extern struct macname *FindMacSettingName(SplineFont *sf, int feat, int set);
+
+extern int32 UniFromEnc(int enc, enum charset encname);
+extern int32 EncFromUni(int32 uni, enum charset encname);
+extern int32 EncFromSF(int32 uni, SplineFont *sf);
 
 # if HANYANG
 extern void SFDDumpCompositionRules(FILE *sfd,struct compositionrules *rules);

@@ -3889,8 +3889,257 @@ return;
 	FVRegenChar(fv,dlist->sc);
 }
 
+int32 UniFromEnc(int enc, enum charset encname) {
+    int32 uni = -1;
+    int i;
+
+    if ( encname==em_custom )
+return( -1 );
+    else if ( encname<=em_adobestandard ) {
+	if ( enc>=256 || enc<0 )
+return( -1 );
+	switch (encname) {
+	  case em_iso8859_1: uni = enc; break;
+	  case em_iso8859_2: uni = unicode_from_i8859_2[enc]; break;
+	  case em_iso8859_3: uni = unicode_from_i8859_3[enc]; break;
+	  case em_iso8859_4: uni = unicode_from_i8859_4[enc]; break;
+	  case em_iso8859_5: uni = unicode_from_i8859_5[enc]; break;
+	  case em_iso8859_6: uni = unicode_from_i8859_6[enc]; break;
+	  case em_iso8859_7: uni = unicode_from_i8859_7[enc]; break;
+	  case em_iso8859_8: uni = unicode_from_i8859_8[enc]; break;
+	  case em_iso8859_9: uni = unicode_from_i8859_9[enc]; break;
+	  case em_iso8859_10: uni = unicode_from_i8859_10[enc]; break;
+	  case em_iso8859_11: uni = unicode_from_i8859_11[enc]; break;
+	  case em_iso8859_13: uni = unicode_from_i8859_13[enc]; break;
+	  case em_iso8859_14: uni = unicode_from_i8859_14[enc]; break;
+	  case em_iso8859_15: uni = unicode_from_i8859_15[enc]; break;
+	  case em_koi8_r: uni = unicode_from_koi8_r[enc]; break;
+	  case em_jis201: uni = unicode_from_jis201[enc]; break;
+	  case em_win: uni = unicode_from_win[enc]; break;
+	  case em_mac: uni = unicode_from_mac[enc]; break;
+	  case em_symbol: uni = unicode_from_MacSymbol[enc]; break;
+	  case em_zapfding: uni = unicode_from_ZapfDingbats[enc]; break;
+	  case em_adobestandard: uni = unicode_from_adobestd[enc]; break;
+	  default: uni = -1;	/* Unreachable I hope */
+	}
+    } else if ( encname==em_unicode4 ) {
+return( enc );
+    } else if ( encname>=em_unicodeplanes && encname<em_unicodeplanesmax ) {
+	if ( enc>=65536 || enc<0 )
+return( -1 );
+
+return( enc + ((encname-em_unicodeplanes)<<16) );
+    } else if ( encname>=em_base ) {
+	Encoding *item=NULL;
+	for ( item=enclist; item!=NULL && item->enc_num!=encname; item=item->next );
+	if ( item!=NULL && enc>=item->char_cnt ) item = NULL;
+	if ( item==NULL )
+return( -1 );
+return( item->unicode[i] );
+    } else {
+	if ( enc>=65536 || enc<0 )
+return( -1 );
+	switch (encname) {
+	  case em_unicode: uni = enc; break;
+	  case em_jis208: case em_jis212: case em_ksc5601: case em_gb2312: {
+	      int ch1 = (enc>>8)-0x21, ch2 = (enc&0xff)-0x21;
+	      int index = ch1*94+ch2;
+	      if ( ch1<0 || ch1>0x7e - 0x21 || ch2<0 || ch2>0x7e - 0x21 )
+		  uni = -1;
+	      else switch ( encname ) {
+		  case em_jis208: uni = unicode_from_jis208[index]; break;
+		  case em_jis212: uni = unicode_from_jis212[index]; break;
+		  case em_ksc5601: uni = unicode_from_ksc5601[index]; break;
+		  case em_gb2312: uni = unicode_from_gb2312[index]; break;
+	      }
+	  } break;
+	  case em_big5:
+	      if (enc<0x7f ) uni = enc;
+	      else if ( enc<0xa100 ) uni = -1;
+	      else if (enc-0xa100<24584) uni = unicode_from_big5[enc-0xa100];
+	  break;
+	  case em_big5hkscs:
+	      if (enc<0x7f ) uni = enc;
+	      else if ( enc<0x8100 ) uni = -1;
+	      else if (enc-0x8100<32776) uni = unicode_from_big5hkscs[enc-0x8100];
+	  break;
+	  case em_johab:
+	      if (enc<0x7f ) uni = enc;
+	      else if ( enc<0x8400 ) uni = -1;
+	      else if (enc-0x8400<31752) uni = unicode_from_big5hkscs[enc-0x8400];
+	  break;
+	  case em_sjis:
+	    if ( enc<0x80 )
+		uni = enc;
+	    else if ( enc>=0xa1 && enc<=0xdf )
+		uni = unicode_from_jis201[enc];
+	    else if (( ((enc>>8)>=129 && (enc>>8)<=159) || ((enc>>8)>=224 && (enc>>8)<=0xef) ) &&
+		     ( (enc&0xff)>=64 && (enc&0xff)<=252 && (enc&0xff)!=127 )) {
+		int ch1 = enc>>8, ch2 = enc&0xff;
+		int temp;
+		if ( ch1 >= 129 && ch1<= 159 )
+		    ch1 -= 112;
+		else
+		    ch1 -= 176;
+		ch1 <<= 1;
+		if ( ch2>=159 )
+		    ch2-= 126;
+		else if ( ch2>127 ) {
+		    --ch1;
+		    ch2 -= 32;
+		} else {
+		    --ch1;
+		    ch2 -= 31;
+		}
+		temp = (ch1-0x21)*94+(ch2-0x21);
+		if ( temp>=94*94 )
+		    temp = -1;
+		else
+		    temp = unicode_from_jis208[(ch1-0x21)*94+(ch2-0x21)];
+		uni = temp;
+	    }
+	  break;
+	  case em_wansung:
+	  case em_jisgb:
+	    if ( enc<0x7f )
+		uni = enc;
+	    else if ( (enc&0xff00)>=0xa100 && (enc&0xff)>=0xa1 &&
+			(enc&0xff00)<0xa100+(94<<8) && (enc&0xff)<0xa1+94 ) {
+		int temp = enc-0xa1a1;
+		temp = (temp>>8)*94 + (temp&0xff);
+		if ( encname == em_wansung )
+		    temp = unicode_from_ksc5601[temp];
+		else
+		    temp = unicode_from_gb2312[temp];
+		uni = temp;
+	    } else
+		uni = -1;
+	  break;
+	  default: uni = -1; break;
+	}
+    }
+    if ( uni==0 && enc!=0 ) uni = -1;
+return( uni );
+}
+
+int32 EncFromUni(int32 uni, enum charset encname) {
+    int ch1 = uni>>8;
+    int i, ret;
+    struct charmap2 *cm2;
+
+    if ( encname<=em_custom )
+return( -1 );
+    else if ( encname==em_iso8859_1 || encname==em_unicode || encname==em_unicode4 ) {
+	if (( encname==em_iso8859_1 && uni>=256 ) ||
+	    ( encname==em_unicode && uni>=65536 ))
+return( -1 );
+
+return( uni );
+    } else if ( encname>=em_unicodeplanes && encname<em_unicodeplanesmax ) {
+	int p = (encname-em_unicodeplanes) << 16;
+	if ( uni<p || uni>p+0xffff )
+return( -1 );
+return( uni-p );
+    } else if ( encname<em_adobestandard ) {
+	struct charmap *cm = alphabets_from_unicode[encname+3];
+	if ( ch1<cm->first || ch1>cm->last )
+return( -1 );
+	ret = cm->table[ch1-cm->first]==NULL ? -1 :
+		cm->table[ch1-cm->first][uni&0xff];
+	if ( ret==0 ) ret=-1;
+return( ret );
+    } else if ( encname>=em_base ) {
+	Encoding *item;
+	for ( item=enclist; item!=NULL && item->enc_num!=encname; item=item->next );
+	if ( item==NULL )
+return( -1 );
+	for ( i=item->char_cnt-1; i>=0 && item->unicode[i]!=uni; --i );
+return( i );
+    }
+
+    cm2 = NULL;
+    switch ( encname ) {
+      case em_sjis: case em_jis208: case em_jis212:
+	cm2 = &jis_from_unicode;
+      break;
+      case em_gb2312: case em_jisgb:
+	cm2 = &gb2312_from_unicode;
+      break;
+      case em_big5:
+	cm2 = &big5_from_unicode;
+      break;
+      case em_big5hkscs:
+	cm2 = &big5hkscs_from_unicode;
+      break;
+      case em_wansung: case em_ksc5601:
+	cm2 = &ksc5601_from_unicode;
+      break;
+      case em_johab:
+	cm2 = &johab_from_unicode;
+      break;
+      default:
+return( -1 );
+    }
+
+    if ( uni<0x7f &&
+	    (encname==em_wansung || encname==em_big5hkscs || encname==em_big5 ||
+	     encname==em_sjis ))
+return( uni );
+    else if ( uni>=0xff61 && uni<=0xff9f && encname==em_sjis )
+return( EncFromUni(uni,em_jis201));
+
+    if ( ch1<cm2->first || ch1>cm2->last )
+return( -1 );
+    ret = cm2->table[ch1-cm2->first]==NULL ? -1 :
+	    cm2->table[ch1-cm2->first][uni&0xff];
+    if ( ret==0 ) ret=-1;
+
+    if ( ret!=-1 ) {
+	if ( encname==em_jisgb || encname==em_wansung ) {
+	    ret += 0x8080;
+	} else if ( encname==em_jis208 ) {
+	    if ( ret&0x8000 )
+		ret = -1;
+	} else if ( encname==em_jis212 ) {
+	    if ( ret&0x8000 )
+		ret &= ~0x8000;
+	    else
+		ret = -1;
+	} else if ( encname==em_sjis ) {
+	    if ( ret&0x8000 )
+		ret = -1;
+	    else {
+		int ch1 = ret>>8, ch2 = ret&0xff, ro, co;
+		ro = ch1<95 ? 112 : 176;
+		co = (ch1&1) ? (ch2>95?32:31) : 126;
+		ret = ((((ch1+1)>>1) + ro )<<8 )    |    (ch2+co);
+	    }
+	}
+    }
+return( ret );
+}
+
+int32 EncFromSF(int32 uni, SplineFont *sf) {
+    int enc = EncFromUni(uni,sf->encoding_name);
+    int i;
+
+    if ( enc!=-1 )
+return( enc );
+    if ( sf->cidmaster!=NULL || sf->subfontcnt!=0 ) {
+	struct cidmap *map;
+	if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+	map=FindCidMap(sf->cidregistry,sf->ordering,sf->supplement,sf);
+return( NameEnc2CID(map,uni,NULL));
+    } else {
+	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	    if ( sf->chars[i]->unicodeenc==uni )
+return( i );
+	}
+    }
+return( -1 );
+}
+
 SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
-    extern unsigned short unicode_from_adobestd[256];
     static char namebuf[100];
     Encoding *item=NULL;
     int j;
@@ -3914,108 +4163,9 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 	else
 	    dummy->unicodeenc = CID2NameEnc(FindCidMap(sf->cidmaster->cidregistry,sf->cidmaster->ordering,sf->cidmaster->supplement,sf->cidmaster),
 		    i,namebuf,sizeof(namebuf));
-    } else if ( sf->encoding_name==em_unicode )
-	dummy->unicodeenc = i<65536 ? i : -1;
-    else if ( sf->encoding_name==em_unicode4 )
-	dummy->unicodeenc = i<=0x7fffffff ? i : -1;
-    else if ( sf->encoding_name>=em_unicodeplanes && sf->encoding_name<=em_unicodeplanesmax )
-	dummy->unicodeenc = i<65536 ? i+((sf->encoding_name-em_unicodeplanes)<<16) : -1;
-    else if ( sf->encoding_name==em_adobestandard )
-	dummy->unicodeenc = i>=256?-1:unicode_from_adobestd[i];
-    else if ( sf->encoding_name==em_none )
-	dummy->unicodeenc = -1;
-    else if ( sf->encoding_name>=em_base ) {
-	dummy->unicodeenc = -1;
-	for ( item=enclist; item!=NULL && item->enc_num!=sf->encoding_name; item=item->next );
-	if ( item!=NULL && i>=item->char_cnt ) item = NULL;
-	if ( item!=NULL )
-	    dummy->unicodeenc = item->unicode[i];
-    } else if ( sf->encoding_name==em_big5 ) {
-	if ( i<160 )
-	    dummy->unicodeenc = i;
-	else if ( i>=0xa100 )
-	    dummy->unicodeenc = unicode_from_big5[i-0xa100];
-	else
-	    dummy->unicodeenc = -1;
-    } else if ( sf->encoding_name==em_big5hkscs ) {
-	if ( i<0x80 )
-	    dummy->unicodeenc = i;
-	else if ( i>=0x8100 )
-	    dummy->unicodeenc = unicode_from_big5hkscs[i-0x8100];
-	else
-	    dummy->unicodeenc = -1;
-    } else if ( sf->encoding_name==em_johab ) {
-	if ( i<160 )
-	    dummy->unicodeenc = i;
-	else if ( i>=0x8400 )
-	    dummy->unicodeenc = unicode_from_johab[i-0x8400];
-	else
-	    dummy->unicodeenc = -1;
-    } else if ( sf->encoding_name==em_wansung || sf->encoding_name==em_wansung ) {
-	if ( i<160 )
-	    dummy->unicodeenc = i;
-	else if ( (i&0xff00)>=0xa100 && (i&0xff)>=0xa1 &&
-		    (i&0xff00)<0xa100+(94<<8) && (i&0xff)<0xa1+94 ) {
-	    int temp = i-0xa1a1;
-	    temp = (temp>>8)*94 + (temp&0xff);
-	    if ( sf->encoding_name == em_wansung )
-		temp = unicode_from_ksc5601[temp];
-	    else
-		temp = unicode_from_gb2312[temp];
-	    if ( temp==0 ) temp = -1;
-	    dummy->unicodeenc = temp;
-	} else
-	    dummy->unicodeenc = -1;
-    } else if ( sf->encoding_name==em_sjis ) {
-	if ( i<0x80 )
-	    dummy->unicodeenc = i;
-	else if ( i>=0xa1 && i<=0xdf )
-	    dummy->unicodeenc = unicode_from_jis201[i];
-	else if (( ((i>>8)>=129 && (i>>8)<=159) || ((i>>8)>=224 && (i>>8)<=0xef) ) &&
-		 ( (i&0xff)>=64 && (i&0xff)<=252 && (i&0xff)!=127 )) {
-	    int ch1 = i>>8, ch2 = i&0xff;
-	    int temp;
-	    if ( ch1 >= 129 && ch1<= 159 )
-		ch1 -= 112;
-	    else
-		ch1 -= 176;
-	    ch1 <<= 1;
-	    if ( ch2>=159 )
-		ch2-= 126;
-	    else if ( ch2>127 ) {
-		--ch1;
-		ch2 -= 32;
-	    } else {
-		--ch1;
-		ch2 -= 31;
-	    }
-	    temp = (ch1-0x21)*94+(ch2-0x21);
-	    if ( temp>=94*94 )
-		temp = -1;
-	    else
-		temp = unicode_from_jis208[(ch1-0x21)*94+(ch2-0x21)];
-	    if ( temp==0 ) temp = -1;
-	    dummy->unicodeenc = temp;
-	} else
-	    dummy->unicodeenc = -1;
-    } else if ( sf->encoding_name==em_jis208 && i>=0x2121 && i<=0x7e7e &&
-	    (i&0xff)>=0x21 && (i&0xff)<=0x7e )
-	dummy->unicodeenc = unicode_from_jis208[((i-0x2121)>>8)*94+((i&0xff)-0x21)];
-    else if ( sf->encoding_name==em_jis212 && i>=0x2121 && i<=0x7e7e &&
-	    (i&0xff)>=0x21 && (i&0xff)<=0x7e )
-	dummy->unicodeenc = unicode_from_jis212[((i-0x2121)>>8)*94+((i&0xff)-0x21)];
-    else if ( sf->encoding_name==em_ksc5601 && i>=0x2121 && i<=0x7e7e &&
-	    (i&0xff)>=0x21 && (i&0xff)<=0x7e )
-	dummy->unicodeenc = unicode_from_ksc5601[((i-0x2121)>>8)*94+((i&0xff)-0x21)];
-    else if ( sf->encoding_name==em_gb2312 && i>=0x2121 && i<=0x7e7e &&
-	    (i&0xff)>=0x21 && (i&0xff)<=0x7e )
-	dummy->unicodeenc = unicode_from_gb2312[((i-0x2121)>>8)*94+((i&0xff)-0x21)];
-    else if ( sf->encoding_name>=em_jis208 )
-	dummy->unicodeenc = -1;
-    else
-	dummy->unicodeenc = i>=256?-1:unicode_from_alphabets[sf->encoding_name+3][i];
-    if ( dummy->unicodeenc==0 && i!=0 )
-	dummy->unicodeenc = -1;
+    } else
+	dummy->unicodeenc = UniFromEnc(i,sf->encoding_name);
+
     if ( sf->cidmaster!=NULL )
 	dummy->name = namebuf;
     else if ( (dummy->unicodeenc>=0 && dummy->unicodeenc<' ') ||
