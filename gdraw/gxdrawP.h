@@ -186,10 +186,10 @@ struct gxseltypes {
 };
 
 struct xthreaddata {
-#ifndef NOTHREADS
+# ifndef NOTHREADS
     pthread_mutex_t sync_mutex;		/* controls access to the rest of this structure */
     struct things_to_do { void (*func)(void *); void *data; struct things_to_do *next; } *things_to_do;
-#endif
+# endif
     int sync_sock, send_sock;		/* socket on which to send sync events to thread displaying screen */
 };
 
@@ -271,30 +271,34 @@ typedef struct gxdisplay /* : GDisplay */ {
     struct inputdevices {
 	char *name;
 	int devid;
+# ifndef _NO_XINPUT
 	XDevice *dev;
+# else
+	int *dev;
+# endif
 	int event_types[5];	/* mousemove, mousedown, mouseup, char, charup */
     } *inputdevices;
     int n_inputdevices;
-#ifdef _WACOM_DRV_BROKEN
+# ifdef _WACOM_DRV_BROKEN
     struct wacom_state *wacom_state;
     int wacom_fd;
-#endif
+# endif
     GXWindow default_icon;
     struct xkb {
 	int opcode, event, error;
     } xkb;
 } GXDisplay;
 
-#define Pixel32(gdisp,col) Pixel16(gdisp,col)
-#define Pixel24(gdisp,col) ( ((((col)>>16)&0xff)<<(gdisp)->cs.red_shift) | ((((col)>>8)&0xff)<<(gdisp)->cs.green_shift) | (((col)&0xff)<<(gdisp)->cs.blue_shift) )
-#define Pixel16(gdisp,col) ( ((((col)>>(gdisp)->cs.red_bits_shift)&(gdisp)->cs.red_bits_mask)<<(gdisp)->cs.red_shift) | ((((col)>>(gdisp)->cs.green_bits_shift)&(gdisp)->cs.green_bits_mask)<<(gdisp)->cs.green_shift) | (((col>>(gdisp)->cs.blue_bits_shift)&(gdisp)->cs.blue_bits_mask)<<(gdisp)->cs.blue_shift) )
-#define FixEndian16(col)	((((col)&0xff)<<8) | ((col>>8)&0xff))
-#define FixEndian32(col)	((((col)&0xff)<<24) | ((col&0xff00)<<8) | ((col>>8)&0xff00))
+# define Pixel32(gdisp,col) Pixel16(gdisp,col)
+# define Pixel24(gdisp,col) ( ((((col)>>16)&0xff)<<(gdisp)->cs.red_shift) | ((((col)>>8)&0xff)<<(gdisp)->cs.green_shift) | (((col)&0xff)<<(gdisp)->cs.blue_shift) )
+# define Pixel16(gdisp,col) ( ((((col)>>(gdisp)->cs.red_bits_shift)&(gdisp)->cs.red_bits_mask)<<(gdisp)->cs.red_shift) | ((((col)>>(gdisp)->cs.green_bits_shift)&(gdisp)->cs.green_bits_mask)<<(gdisp)->cs.green_shift) | (((col>>(gdisp)->cs.blue_bits_shift)&(gdisp)->cs.blue_bits_mask)<<(gdisp)->cs.blue_shift) )
+# define FixEndian16(col)	((((col)&0xff)<<8) | ((col>>8)&0xff))
+# define FixEndian32(col)	((((col)&0xff)<<24) | ((col&0xff00)<<8) | ((col>>8)&0xff00))
 
 #else /* No X */
 
-#define gxwindow gwindow
-#define gxdisplay gdisplay
+# define gxwindow gwindow
+# define gxdisplay gdisplay
 typedef struct gwindow *GXWindow;
 typedef struct gdisplay GXDisplay;
 
