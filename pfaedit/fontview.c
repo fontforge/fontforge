@@ -3575,7 +3575,7 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	    mi->ti.disabled = anychars<0;
 	  break;
 	  case MID_NextDef:
-	    if ( anychars==-1 ) pos = sf->charcnt;
+	    if ( anychars<0 ) pos = sf->charcnt;
 	    else for ( pos = anychars+1; pos<sf->charcnt && sf->chars[pos]==NULL; ++pos );
 	    mi->ti.disabled = pos==sf->charcnt;
 	  break;
@@ -4673,6 +4673,9 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		    ++b.x; ++b.y; b.width -= 2; b.height -= 2;
 		    GDrawDrawRect(pixmap,&b,0x008000);
 		}
+		/* I assume that the bitmap image matches the bounding*/
+		/*  box. In some bitmap fonts the bitmap has white space on the*/
+		/*  right. This can throw off the centering algorithem */
 		if ( fv->magnify>1 ) {
 		    GDrawDrawImageMagnified(pixmap,&gi,NULL,
 			    j*fv->cbw+(fv->cbw-1-fv->magnify*base.width)/2,
