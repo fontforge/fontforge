@@ -6,6 +6,7 @@
 #include <math.h>
 #include <charset.h>
 #include <ustring.h>
+#include <sys/types.h>
 
 int local_encoding = e_iso8859_1;
 char *iconv_local_encoding_name = NULL;
