@@ -623,8 +623,10 @@ static void SplineFindBounds(Spline *sp, DBounds *bounds) {
 
 static void _SplineSetFindBounds(SplinePointList *spl, DBounds *bounds) {
     Spline *spline, *first;
+    /* Ignore contours consisting of a single point (used for hinting, anchors */
+    /*  for mark to base, etc. */
 
-    for ( ; spl!=NULL; spl = spl->next ) {
+    for ( ; spl!=NULL; spl = spl->next ) if ( spl->first->next!=NULL && spl->first->next->to != spl->first ) {
 	first = NULL;
 	if ( bounds->minx==0 && bounds->maxx==0 && bounds->miny==0 && bounds->maxy == 0 ) {
 	    bounds->minx = bounds->maxx = spl->first->me.x;
