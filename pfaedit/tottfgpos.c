@@ -176,6 +176,9 @@ return( ScriptFromUnicode( sc->unicodeenc,sf ));
 return( ScriptFromUnicode( uni,sf ));
     }
 
+    if ( sf==NULL )
+return( 0 );
+
     if ( sf->cidmaster ) sf=sf->cidmaster;
     for ( i=0; i<2; ++i ) {
 	for ( pst=sc->possub; pst!=NULL; pst=pst->next ) if ( pst->script_lang_index!=0xffff ) {

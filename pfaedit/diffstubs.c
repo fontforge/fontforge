@@ -514,6 +514,8 @@ return( 0 );
     sf = sc->parent;
     if ( sc->unicodeenc!=-1 )
 return( ScriptFromUnicode( sc->unicodeenc,sf ));
+    if ( sf==NULL )
+return( 0 );
 
     if ( sf->cidmaster ) sf=sf->cidmaster;
     for ( i=0; i<2; ++i ) {
