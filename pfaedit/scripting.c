@@ -596,6 +596,61 @@ static FontView *FVAppend(FontView *fv) {
 return( fv );
 }
 
+static char **GetFontNames(char *filename) {
+    FILE *foo = fopen(filename,"r");
+    char **ret = NULL;
+
+    if ( foo!=NULL ) {
+	/* Try to guess the file type from the first few characters... */
+	int ch1 = getc(foo);
+	int ch2 = getc(foo);
+	int ch3 = getc(foo);
+	int ch4 = getc(foo);
+	int ch5, ch6;
+	fseek(foo, 98, SEEK_SET);
+	ch5 = getc(foo);
+	ch6 = getc(foo);
+	fclose(foo);
+	if (( ch1==0 && ch2==1 && ch3==0 && ch4==0 ) ||
+		(ch1=='O' && ch2=='T' && ch3=='T' && ch4=='O') ||
+		(ch1=='t' && ch2=='r' && ch3=='u' && ch4=='e') ||
+		(ch1=='t' && ch2=='t' && ch3=='c' && ch4=='f') ) {
+	    ret = NamesReadTTF(filename);
+	} else if ( ch1=='%' && ch2=='!' ) {
+	    ret = NamesReadPostscript(filename);
+	} else if ( ch1=='<' && ch2=='?' && (ch3=='x'||ch3=='X') && (ch4=='m'||ch4=='M') ) {
+	    ret = NamesReadSVG(filename);
+	} else if ( ch1=='S' && ch2=='p' && ch3=='l' && ch4=='i' ) {
+	    ret = NamesReadSFD(filename);
+	} else /* Too hard to figure out a valid mark for a mac resource file */
+	    ret = NamesReadMacBinary(filename);
+    }
+return( ret );
+}
+
+static void bFontsInFile(Context *c) {
+    char **ret;
+    int cnt;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str )
+	error( c, "FontsInFile expects a filename" );
+    ret = GetFontNames(c->a.vals[1].u.sval);
+
+    cnt = 0;
+    if ( ret!=NULL ) for ( cnt=0; ret[cnt]!=NULL; ++cnt );
+    c->return_val.type = v_arr;
+    c->return_val.u.aval = galloc(sizeof(Array));
+    c->return_val.u.aval->argc = cnt;
+    c->return_val.u.aval->vals = galloc((cnt==0?1:cnt)*sizeof(Val));
+    if ( ret!=NULL ) for ( cnt=0; ret[cnt]!=NULL; ++cnt ) {
+	c->return_val.u.aval->vals[cnt].type = v_str;
+	c->return_val.u.aval->vals[cnt].u.sval = ret[cnt];
+    }
+    free(ret);
+}
+
 static void bOpen(Context *c) {
     SplineFont *sf;
     int openflags=0;
@@ -2902,6 +2957,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "UnicodeFromName", bUnicodeFromName, 1 },
 /* File menu */
     { "Quit", bQuit, 1 },
+    { "FontsInFile", bFontsInFile, 1 },
     { "Open", bOpen, 1 },
     { "New", bNew, 1 },
     { "Close", bClose },

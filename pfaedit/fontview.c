@@ -5604,8 +5604,7 @@ return( NULL );
 		/* Ikarus font type appears at word 50 (byte offset 98) */
 		/* Ikarus name section length (at word 2, byte offset 2) was 55 in the 80s at URW */
 		sf = SFReadIkarus(fullname);
-	    } else if ( ((ch2<<8)|ch1)==0x5A4D || ((ch2<<8)|ch1)==0x200 || ((ch2<<8)|ch1)==0x300 ) {
-	    } else
+	    } else /* Too hard to figure out a valid mark for a mac resource file */
 		sf = SFReadMacBinary(fullname,0);
 	}
     }

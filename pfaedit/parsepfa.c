@@ -1939,3 +1939,34 @@ void PSFontFree(FontDict *fd) {
     }
     free(fd);
 }
+
+char **_NamesReadPostscript(FILE *ps) {
+    char **ret = NULL;
+    char buffer[2000], *pt, *end;
+
+    if ( ps!=NULL ) {
+	while ( fgets(buffer,sizeof(buffer),ps)!=NULL ) {
+	    if ( strstr(buffer,"/FontName")!=NULL ||
+		    strstr(buffer,"/CIDFontName")!=NULL ) {
+		pt = strstr(buffer,"FontName");
+		pt += strlen("FontName");
+		while ( isspace(*pt)) ++pt;
+		if ( *pt=='/' ) ++pt;
+		for ( end = pt; *end!='\0' && !isspace(*end); ++end );
+		ret = galloc(2*sizeof(char *));
+		ret[0] = copyn(pt,end-pt);
+		ret[1] = NULL;
+	break;
+	    } else if ( strstr(buffer,"currentfile")!=NULL && strstr(buffer,"eexec")!=NULL )
+	break;
+	    else if ( strstr(buffer,"%%BeginData")!=NULL )
+	break;
+	}
+	fclose(ps);
+    }
+return( ret );
+}
+
+char **NamesReadPostscript(char *filename) {
+return( _NamesReadPostscript( fopen(filename,"r")));
+}

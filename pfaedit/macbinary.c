@@ -1750,7 +1750,7 @@ void SfListFree(struct sflist *sfs) {
 /* ******************************** Reading ********************************* */
 
 static SplineFont *SearchPostscriptResources(FILE *f,long rlistpos,int subcnt,long rdata_pos,
-	long name_list) {
+	long name_list, int flags) {
     long here = ftell(f);
     long *offsets, lenpos;
     int rname = -1, tmp;
@@ -1825,7 +1825,7 @@ return(NULL);
 	    free(buffer);
 	    max = rlen;
 	    if ( max<0x800 ) max = 0x800;
-	    buffer=malloc(max);
+	    buffer=galloc(max);
 	    if ( buffer==NULL ) {
 		fprintf( stderr, "Out of memory\n" );
 		exit( 1 );
@@ -1845,6 +1845,9 @@ return(NULL);
     putc(len&0xff,pfb);
     fseek(f,here,SEEK_SET);
     rewind(pfb);
+    if ( flags&ttf_onlynames )
+return( (SplineFont *) _NamesReadPostscript(pfb) );	/* This closes the font for us */
+
     fd = _ReadPSFont(pfb);
     sf = NULL;
     if ( fd!=NULL ) {
@@ -1873,7 +1876,7 @@ static SplineFont *SearchTtfResources(FILE *f,long rlistpos,int subcnt,long rdat
     char *pt,*lparen;
 
     fseek(f,rlistpos,SEEK_SET);
-    if ( subcnt>1 ) {
+    if ( subcnt>1 || (flags&ttf_onlynames) ) {
 	names = gcalloc(subcnt,sizeof(unichar_t *));
 	for ( i=0; i<subcnt; ++i ) {
 	    /* resource id = */ getushort(f);
@@ -1890,6 +1893,15 @@ static SplineFont *SearchTtfResources(FILE *f,long rlistpos,int subcnt,long rdat
 		names[i] = uc_copy(buffer);
 	    }
 	    fseek(f,here,SEEK_SET);
+	}
+	if ( flags&ttf_onlynames ) {
+	    char **ret = gcalloc(subcnt+1,sizeof(char *));
+	    for ( i=0; i<subcnt; ++i ) {
+		ret[i] = cu_copy(names[i]);
+		free(names[i]);
+	    }
+	    free(names);
+return( (SplineFont *) ret );
 	}
 	if ((pt = strrchr(filename,'/'))==NULL ) pt = filename;
 	if ( (lparen = strchr(pt,'('))!=NULL && strchr(lparen,')')!=NULL ) {
@@ -2440,6 +2452,17 @@ static SplineFont *MightBeTrueType(FILE *binary,int32 pos,int32 dlen,int flags) 
     int len;
     SplineFont *sf;
 
+    if ( flags&ttf_onlynames ) {
+	char **ret;
+	unichar_t *utemp = TTFGetFontName(binary,pos,pos);
+	if ( utemp==NULL )
+return( NULL );
+	ret = galloc(2*sizeof(char *));
+	ret[0] = cu_copy(utemp);
+	ret[1] = NULL;
+return( (SplineFont *) ret );
+    }
+
     fseek(binary,pos,SEEK_SET);
     while ( dlen>0 ) {
 	len = dlen > 8192 ? 8192 : dlen;
@@ -2511,7 +2534,7 @@ return( NULL );
 	rpos = type_list+getushort(f);
 	sf = NULL;
 	if ( tag==CHR('P','O','S','T') && !(flags&(ttf_onlystrikes|ttf_onlykerns)))		/* No FOND */
-	    sf = SearchPostscriptResources(f,rpos,subcnt,rdata_pos,name_list);
+	    sf = SearchPostscriptResources(f,rpos,subcnt,rdata_pos,name_list,flags);
 	else if ( tag==CHR('s','f','n','t') && !(flags&ttf_onlykerns))
 	    sf = SearchTtfResources(f,rpos,subcnt,rdata_pos,name_list,filename,flags);
 	else if ( tag==CHR('N','F','N','T') ) {
@@ -2527,6 +2550,9 @@ return( NULL );
 	if ( sf!=NULL )
 return( sf );
     }
+    if ( flags&ttf_onlynames )			/* Not interested in bitmap resources here */
+return( NULL );
+
     if ( flags&ttf_onlykerns ) {		/* For kerns */
 	if ( fond_subcnt!=0 )
 	    fondlist = BuildFondList(f,fond_pos,fond_subcnt,rdata_pos,name_list,flags);
@@ -2831,4 +2857,8 @@ int LoadKerningDataFromMacFOND(SplineFont *sf, char *filename) {
 return ( false );
 
 return( true );
+}
+
+char **NamesReadMacBinary(char *filename) {
+return( (char **) FindResourceFile(filename,ttf_onlynames,NULL));
 }

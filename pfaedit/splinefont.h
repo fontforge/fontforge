@@ -1087,7 +1087,7 @@ extern SplineFont *SFDRead(char *filename);
 extern SplineChar *SFDReadOneChar(char *filename,const char *name);
 extern unichar_t *TTFGetFontName(FILE *ttf,int32 offset,int32 off2);
 extern void TTFLoadBitmaps(FILE *ttf,struct ttfinfo *info, int onlyone);
-enum ttfflags { ttf_onlystrikes=1, ttf_onlyonestrike=2, ttf_onlykerns=4 };
+enum ttfflags { ttf_onlystrikes=1, ttf_onlyonestrike=2, ttf_onlykerns=4, ttf_onlynames=8 };
 extern SplineFont *_SFReadTTF(FILE *ttf,int flags,char *filename);
 extern SplineFont *SFReadTTF(char *filename,int flags);
 extern SplineFont *SFReadSVG(char *filename,int flags);
@@ -1098,6 +1098,12 @@ extern SplineFont *LoadSplineFont(char *filename,enum openflags);
 extern SplineFont *ReadSplineFont(char *filename,enum openflags);	/* Don't use this, use LoadSF instead */
 extern uint16 MacStyleCode( SplineFont *sf, uint16 *psstyle );
 extern SplineFont *SFReadIkarus(char *fontname);
+extern char **NamesReadSFD(char *filename);
+extern char **NamesReadTTF(char *filename);
+extern char **NamesReadPostscript(char *filename);
+extern char **_NamesReadPostscript(FILE *ps);
+extern char **NamesReadSVG(char *filename);
+extern char **NamesReadMacBinary(char *filename);
 
 extern const char *UnicodeRange(int unienc);
 extern SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i);

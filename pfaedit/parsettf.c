@@ -4061,3 +4061,41 @@ SplineFont *CFFParse(FILE *temp,int len, char *fontsetname) {
 return( NULL );
 return( SFFillFromTTF(&info));
 }
+
+char **NamesReadTTF(char *filename) {
+    FILE *ttf = fopen(filename,"r");
+    int32 version, cnt, *offsets;
+    int i,j;
+    char **ret;
+    unichar_t *utemp;
+
+    if ( ttf==NULL )
+return( NULL );
+    version=getlong(ttf);
+    if ( version==CHR('t','t','c','f')) {
+	/* TTCF version = */ getlong(ttf);
+	cnt = getlong(ttf);
+	offsets = galloc(cnt*sizeof(int32));
+	for ( i=0; i<cnt; ++i )
+	    offsets[i] = getlong(ttf);
+	ret = galloc(cnt*sizeof(char *));
+	for ( i=j=0; i<cnt; ++i ) {
+	    utemp = TTFGetFontName(ttf,offsets[i],0);
+	    if ( utemp!=NULL )
+		ret[j++] = cu_copy(utemp);
+	    free(utemp);
+	}
+	ret[j] = NULL;
+	free(offsets);
+    } else {
+	utemp = TTFGetFontName(ttf,0,0);
+	if ( utemp!=NULL ) {
+	    ret = galloc(2*sizeof(char *));
+	    ret[0] = cu_copy(utemp);
+	    ret[1] = NULL;
+	    free(utemp);
+	}
+    }
+    fclose(ttf);
+return(ret);
+}

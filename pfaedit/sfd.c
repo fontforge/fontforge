@@ -3185,3 +3185,35 @@ return;
     free(sf->autosavename);
     sf->autosavename = NULL;
 }
+
+char **NamesReadSFD(char *filename) {
+    FILE *sfd = fopen(filename,"r");
+    char *oldloc;
+    char tok[2000];
+    char **ret;
+    int eof;
+
+    if ( sfd==NULL )
+return( NULL );
+    oldloc = setlocale(LC_NUMERIC,"C");
+    if ( SFDStartsCorrectly(sfd,tok) ) {
+	while ( !feof(sfd)) {
+	    if ( (eof = getname(sfd,tok))!=1 ) {
+		if ( eof==-1 )
+	break;
+		geteol(sfd,tok);
+	continue;
+	    }
+	    if ( strmatch(tok,"FontName:")==0 ) {
+		getname(sfd,tok);
+		ret = galloc(2*sizeof(char*));
+		ret[0] = copy(tok);
+		ret[1] = NULL;
+	break;
+	    }
+	}
+    }
+    setlocale(LC_NUMERIC,oldloc);
+    fclose(sfd);
+return( ret );
+}

@@ -476,6 +476,10 @@ SplineFont *SFReadSVG(char *filename, int flags) {
 return( NULL );
 }
 
+char **NamesReadSVG(char *filename) {
+return( NULL );
+}
+
 SplineSet *SplinePointListInterpretSVG(char *filename,int em_size,int ascent) {
 return( NULL );
 }
@@ -2271,6 +2275,52 @@ return( NULL );
 	SFSetOrder(sf,sf->order2);
     }
 return( sf );
+}
+
+char **NamesReadSVG(char *filename) {
+    xmlNodePtr *fonts;
+    xmlDocPtr doc;
+    char **ret=NULL;
+    unichar_t *utemp;
+    int cnt;
+    xmlChar *name;
+
+    if ( !libxml_init_base()) {
+	fprintf( stderr, "Can't find libxml2.\n" );
+return( NULL );
+    }
+
+    doc = _xmlParseFile(filename);
+    if ( doc==NULL ) {
+	/* Can I get an error message from libxml? */
+return( NULL );
+    }
+
+    fonts = FindSVGFontNodes(doc);
+    if ( fonts==NULL || fonts[0]==NULL ) {
+	_xmlFreeDoc(doc);
+return( NULL );
+    }
+
+    for ( cnt=0; fonts[cnt]!=NULL; ++cnt);
+    ret = galloc((cnt+1)*sizeof(char *));
+    for ( cnt=0; fonts[cnt]!=NULL; ++cnt) {
+	name = _xmlGetProp(fonts[cnt],(xmlChar *) "id");
+	if ( name==NULL ) {
+	    ret[cnt] = copy("nameless-font");
+	} else {
+	    utemp = utf82u_copy((char *) name);
+	    ret[cnt] = cu_copy(utemp);
+	    free(utemp);
+	    _xmlFree(name);
+	}
+    }
+    ret[cnt] = NULL;
+
+    free(fonts);
+    _xmlFreeDoc(doc);
+
+return( ret );
 }
 
 SplineSet *SplinePointListInterpretSVG(char *filename,int em_size,int ascent) {
