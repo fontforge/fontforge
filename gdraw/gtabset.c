@@ -548,6 +548,9 @@ static int sendtoparent_eh(GWindow gw, GEvent *event) {
 	event->w = GDrawGetParentWindow(gw);
 	GDrawPostEvent(event);
       break;
+      case et_resize:
+	GDrawRequestExpose(gw,NULL,false);
+      break;
     }
 
 return( true );
