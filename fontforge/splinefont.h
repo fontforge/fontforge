@@ -1496,6 +1496,7 @@ extern int SFIsRotatable(SplineFont *sf,SplineChar *sc);
 extern int SCMakeDotless(SplineFont *sf, SplineChar *dotless, int copybmp, int doit);
 extern void SCBuildComposit(SplineFont *sf, SplineChar *sc, int copybmp,
 	struct fontview *fv);
+extern int SCAppendAccent(SplineChar *sc,char *glyph_name,int uni,int pos);
 #ifdef FONTFORGE_CONFIG_GTK
 extern const char *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,int nocheck);
 #else

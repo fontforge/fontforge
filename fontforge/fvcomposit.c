@@ -1058,18 +1058,120 @@ return( 0 );
 return( 1 );
 }
 
-static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
-	real ia, int basech ) {
-    const unichar_t *apt, *end = apt;
+static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
+	int *invert,double ia) {
     int ach= -1;
-    int invert = false;
+    const unichar_t *apt, *end;
     SplineChar *rsc;
+
+    *invert = false;
+
+    /* cedilla on lower "g" becomes a turned comma above it */
+    if ( uni==0x327 && basech=='g' && haschar(sf,0x312))
+	uni = 0x312;
+    if ( uni>=BottomAccent && uni<=TopAccent ) {
+	apt = accents[uni-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
+	while ( *apt && apt<end && !haschar(sf,*apt)) ++apt;
+	if ( *apt!='\0' && apt<end )
+	    ach = *apt;
+	else if ( haschar(sf,uni))
+	    ach = uni;
+	else if ( uni==0x31b && haschar(sf,','))
+	    ach = ',';
+	else if (( uni == 0x32f || uni == 0x311 ) && haschar(sf,0x2d8) && ia==0 ) {
+	    /* In italic fonts invert is not enough, you must do more */
+	    ach = 0x2d8;
+	    *invert = true;
+	} else if ( (uni == 0x30c || uni == 0x32c ) &&
+		(haschar(sf,0x302) || haschar(sf,0x2c6) || haschar(sf,'^')) ) {
+	    *invert = true;
+	    if ( haschar(sf,0x2c6))
+		ach = 0x2c6;
+	    else if ( haschar(sf,'^') )
+		ach = '^';
+	    else
+		ach = 0x302;
+	}
+    } else
+	ach = uni;
+
+    rsc = SFGetChar(sf,ach,NULL);
+
+    /* Look to see if there are upper case variants of the accents available */
+    if ( isupper(basech) || (basech>=0x400 && basech<=0x52f) ) {
+	char *uc_accent = copyn(rsc->name,strlen(rsc->name)+10);
+	SplineChar *test = NULL;
+	char buffer[80];
+	char *suffix;
+
+	if ( basech>=0x400 && basech<=0x52f ) {
+	    if ( isupper(basech) )
+		suffix = "cyrcap";
+	    else
+		suffix = "cyr";
+	} else
+	    suffix = "cap";
+
+	if ( test==NULL && uni>=BottomAccent && uni<=TopAccent ) {
+	    apt = accents[uni-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
+	    while ( test==NULL && apt<end ) {
+		if ( psunicodenames[*apt]!=NULL )
+		    sprintf( buffer,"%.70s.%s", psunicodenames[*apt], suffix);
+		else
+		    sprintf( buffer,"uni%04X.%s", *apt, suffix);
+		if ( (test = SFGetChar(sf,-1,buffer))!=NULL )
+		    rsc = test;
+		++apt;
+	    }
+	}
+	if ( test==NULL && uni>=BottomAccent && uni<=TopAccent ) {
+	    apt = accents[uni-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
+	    while ( test==NULL && apt<end ) {
+		if ( psunicodenames[*apt]!=NULL ) {
+		    sprintf( buffer,"%.70s", psunicodenames[*apt]);
+		    if ( islower(buffer[0])) {
+			buffer[0] = toupper(buffer[0]);
+			if ( (test = SFGetChar(sf,-1,buffer))!=NULL )
+			    rsc = test;
+		    }
+		}
+		++apt;
+	    }
+	}
+	if ( uni>=BottomAccent && uni<BottomAccent+sizeof(uc_accent_names)/sizeof(uc_accent_names[0]) &&
+		uc_accent_names[uni-BottomAccent]!=NULL && isupper(basech))
+	    if ( (test = SFGetChar(sf,-1,uc_accent_names[uni-BottomAccent]))!=NULL )
+		rsc = test;
+	if ( test==NULL && islower(*uc_accent) && isupper(basech)) {
+	    *uc_accent = toupper(*uc_accent);
+	    if ( (test=SFGetChar(sf,-1,uc_accent))!=NULL )
+		rsc = test;
+	}
+#if 0
+	if ( test==NULL ) {
+	    /* Um, what was this supposed to do? It makes no sense to me now */
+	    /*  we take the first character of the composed glyph's name and */
+	    /*  append a suffix to it, and call that an accent name??? */
+	    *uc_accent = *sc->name;
+	    strcat(uc_accent,".");
+	    strcat(uc_accent,suffix);
+	    if ( (test=SFGetChar(sf,-1,uc_accent))!=NULL )
+		rsc = test;
+	}
+#endif
+	free(uc_accent);
+    }
+return( rsc );
+}
+
+static void _SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, SplineChar *rsc,
+	int copybmp, real ia, int basech, int invert, int pos ) {
     real transform[6];
     DBounds bb, rbb, bbb;
     real xoff, yoff;
     real spacing = (sf->ascent+sf->descent)*accent_offset/100;
     BDFChar *bc, *rbc;
-    int ixoff, iyoff, ispacing, pos;
+    int ixoff, iyoff, ispacing;
     BDFFont *bdf;
     real ybase, italicoff;
     const unichar_t *temp;
@@ -1086,95 +1188,6 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
     /* Similarly in Ø or ø, we really want to base the accents on O or o */
     if ( baserch==0xf8 ) baserch = 'o';
     else if ( baserch==0xd8 ) baserch = 'O';
-
-    /* cedilla on lower "g" becomes a turned comma above it */
-    if ( ch==0x327 && basech=='g' && haschar(sf,0x312))
-	ch = 0x312;
-    apt = accents[ch-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
-    if ( ch>=BottomAccent && ch<=TopAccent ) {
-	while ( *apt && apt<end && !haschar(sf,*apt)) ++apt;
-	if ( *apt!='\0' && apt<end )
-	    ach = *apt;
-	else if ( haschar(sf,ch))
-	    ach = ch;
-	else if ( ch==0x31b && haschar(sf,','))
-	    ach = ',';
-	else if (( ch == 0x32f || ch == 0x311 ) && haschar(sf,0x2d8) && ia==0 ) {
-	    /* In italic fonts invert is not enough, you must do more */
-	    ach = 0x2d8;
-	    invert = true;
-	} else if ( (ch == 0x30c || ch == 0x32c ) &&
-		(haschar(sf,0x302) || haschar(sf,0x2c6) || haschar(sf,'^')) ) {
-	    invert = true;
-	    if ( haschar(sf,0x2c6))
-		ach = 0x2c6;
-	    else if ( haschar(sf,'^') )
-		ach = '^';
-	    else
-		ach = 0x302;
-	}
-    } else
-	ach = ch;
-    rsc = SFGetChar(sf,ach,NULL);
-    /* Look to see if there are upper case variants of the accents available */
-    if ( isupper(basech) || (basech>=0x400 && basech<=0x52f) ) {
-	char *uc_accent = copyn(rsc->name,strlen(rsc->name)+10);
-	SplineChar *test = NULL;
-	char buffer[80];
-	char *suffix;
-
-	if ( basech>=0x400 && basech<=0x52f ) {
-	    if ( isupper(basech) )
-		suffix = "cyrcap";
-	    else
-		suffix = "cyr";
-	} else
-	    suffix = "cap";
-
-	if ( test==NULL ) {
-	    apt = accents[ch-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
-	    while ( test==NULL && apt<end ) {
-		if ( psunicodenames[*apt]!=NULL )
-		    sprintf( buffer,"%.70s.%s", psunicodenames[*apt], suffix);
-		else
-		    sprintf( buffer,"uni%04X.%s", *apt, suffix);
-		if ( (test = SFGetChar(sf,-1,buffer))!=NULL )
-		    rsc = test;
-		++apt;
-	    }
-	}
-	if ( test==NULL ) {
-	    apt = accents[ch-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
-	    while ( test==NULL && apt<end ) {
-		if ( psunicodenames[*apt]!=NULL ) {
-		    sprintf( buffer,"%.70s", psunicodenames[*apt]);
-		    if ( islower(buffer[0])) {
-			buffer[0] = toupper(buffer[0]);
-			if ( (test = SFGetChar(sf,-1,buffer))!=NULL )
-			    rsc = test;
-		    }
-		}
-		++apt;
-	    }
-	}
-	if ( ch>=BottomAccent && ch<BottomAccent+sizeof(uc_accent_names)/sizeof(uc_accent_names[0]) &&
-		uc_accent_names[ch-BottomAccent]!=NULL && isupper(basech))
-	    if ( (test = SFGetChar(sf,-1,uc_accent_names[ch-BottomAccent]))!=NULL )
-		rsc = test;
-	if ( test==NULL && islower(*uc_accent) && isupper(basech)) {
-	    *uc_accent = toupper(*uc_accent);
-	    if ( (test=SFGetChar(sf,-1,uc_accent))!=NULL )
-		rsc = test;
-	}
-	if ( test==NULL ) {
-	    *uc_accent = *sc->name;
-	    strcat(uc_accent,".");
-	    strcat(uc_accent,suffix);
-	    if ( (test=SFGetChar(sf,-1,uc_accent))!=NULL )
-		rsc = test;
-	}
-	free(uc_accent);
-    }
 
     SplineCharFindSlantedBounds(rsc,&rbb,ia);
     if ( ch==0x328 || ch==0x327 ) {	/* cedilla and ogonek */
@@ -1252,43 +1265,45 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 	transform[3] = -1;
 	transform[5] = rbb.maxy+rbb.miny;
     }
-    pos = ____utype2[1+ch];
-    /* In greek, PSILI and friends are centered above lower case, and kern left*/
-    /*  for upper case */
-    if (( basech>=0x390 && basech<=0x3ff) || (basech>=0x1f00 && basech<=0x1fff)) {
-	if ( ( basech==0x1fbf || basech==0x1fef || basech==0x1ffe ) &&
-		(ch==0x1fbf || ch==0x1fef || ch==0x1ffe || ch==0x1fbd || ch==0x1ffd )) {
-	    pos = ____ABOVE|____RIGHT;
-	} else if ( isupper(basech) &&
-		(ch==0x313 || ch==0x314 || ch==0x301 || ch==0x300 || ch==0x30d ||
-		 ch==0x1ffe || ch==0x1fbf || ch==0x1fcf || ch==0x1fdf ||
-		 ch==0x1fbd || ch==0x1fef || ch==0x1ffd ||
-		 ch==0x1fcd || ch==0x1fdd || ch==0x1fce || ch==0x1fde ) )
-	    pos = ____ABOVE|____LEFT;
-	else if ( isupper(basech) && ch==0x1fbe )
+    if ( pos==-1 ) {
+	pos = ____utype2[1+ch];
+	/* In greek, PSILI and friends are centered above lower case, and kern left*/
+	/*  for upper case */
+	if (( basech>=0x390 && basech<=0x3ff) || (basech>=0x1f00 && basech<=0x1fff)) {
+	    if ( ( basech==0x1fbf || basech==0x1fef || basech==0x1ffe ) &&
+		    (ch==0x1fbf || ch==0x1fef || ch==0x1ffe || ch==0x1fbd || ch==0x1ffd )) {
+		pos = ____ABOVE|____RIGHT;
+	    } else if ( isupper(basech) &&
+		    (ch==0x313 || ch==0x314 || ch==0x301 || ch==0x300 || ch==0x30d ||
+		     ch==0x1ffe || ch==0x1fbf || ch==0x1fcf || ch==0x1fdf ||
+		     ch==0x1fbd || ch==0x1fef || ch==0x1ffd ||
+		     ch==0x1fcd || ch==0x1fdd || ch==0x1fce || ch==0x1fde ) )
+		pos = ____ABOVE|____LEFT;
+	    else if ( isupper(basech) && ch==0x1fbe )
+		pos = ____RIGHT;
+	    else if ( ch==0x1fcd || ch==0x1fdd || ch==0x1fce || ch==0x1fde ||
+		     ch==0x1ffe || ch==0x1fbf || ch==0x1fcf || ch==0x1fdf ||
+		     ch==0x384 )
+		pos = ____ABOVE;
+	} else if ( (basech==0x1ffe || basech==0x1fbf) && (ch==0x301 || ch==0x300))
 	    pos = ____RIGHT;
-	else if ( ch==0x1fcd || ch==0x1fdd || ch==0x1fce || ch==0x1fde ||
-		 ch==0x1ffe || ch==0x1fbf || ch==0x1fcf || ch==0x1fdf ||
-		 ch==0x384 )
-	    pos = ____ABOVE;
-    } else if ( (basech==0x1ffe || basech==0x1fbf) && (ch==0x301 || ch==0x300))
-	pos = ____RIGHT;
-    else if ( sc->unicodeenc==0x1fbe && ch==0x345 )
-	pos = ____RIGHT;
-    else if ( basech=='l' && ch==0xb7 )
-	pos = ____RIGHT|____OVERSTRIKE;
-    else if ( ch==0xb7 )
-	pos = ____OVERSTRIKE;
-    else if ( basech=='A' && ch==0x30a )	/* Aring usually touches */
-	pos = ____ABOVE|____TOUCHING;
-    else if (( basech=='A' || basech=='a' || basech=='E' || basech=='u' ) &&
-	    ch == 0x328 )
-	pos = ____BELOW|____CENTERRIGHT|____TOUCHING;	/* ogonek off to the right for these in polish (but not lc e) */
-    else if (( basech=='N' || basech=='n' || basech=='K' || basech=='k' || basech=='R' || basech=='r' || basech=='H' || basech=='h' ) &&
-	    ch == 0x327 )
-	pos = ____BELOW|____CENTERLEFT|____TOUCHING;	/* cedilla off under left stem for these guys */
-    if ( basech==0x391 && pos==(____ABOVE|____LEFT) ) {
-	bb.minx += (bb.maxx-bb.minx)/4;
+	else if ( sc->unicodeenc==0x1fbe && ch==0x345 )
+	    pos = ____RIGHT;
+	else if ( basech=='l' && ch==0xb7 )
+	    pos = ____RIGHT|____OVERSTRIKE;
+	else if ( ch==0xb7 )
+	    pos = ____OVERSTRIKE;
+	else if ( basech=='A' && ch==0x30a )	/* Aring usually touches */
+	    pos = ____ABOVE|____TOUCHING;
+	else if (( basech=='A' || basech=='a' || basech=='E' || basech=='u' ) &&
+		ch == 0x328 )
+	    pos = ____BELOW|____CENTERRIGHT|____TOUCHING;	/* ogonek off to the right for these in polish (but not lc e) */
+	else if (( basech=='N' || basech=='n' || basech=='K' || basech=='k' || basech=='R' || basech=='r' || basech=='H' || basech=='h' ) &&
+		ch == 0x327 )
+	    pos = ____BELOW|____CENTERLEFT|____TOUCHING;	/* cedilla off under left stem for these guys */
+	if ( basech==0x391 && pos==(____ABOVE|____LEFT) ) {
+	    bb.minx += (bb.maxx-bb.minx)/4;
+	}
     }
     if ( (sc->unicodeenc==0x1fbd || sc->unicodeenc==0x1fbf ||
 	    sc->unicodeenc==0x1ffe || sc->unicodeenc==0x1fc0 ) &&
@@ -1414,6 +1429,14 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 	    }
 	}
     }
+}
+
+static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
+	real ia, int basech ) {
+    int invert = false;
+    SplineChar *rsc = GetGoodAccentGlyph(sf,ch,basech,&invert,ia);
+
+    _SCCenterAccent(sc,sf,ch,rsc,copybmp,ia,basech,invert,-1);
 }
 
 static void SCPutRefAfter(SplineChar *sc,SplineFont *sf,int ch, int copybmp) {
@@ -1973,4 +1996,53 @@ return;
 		BCCharChangedUpdate(bdf->chars[sc->enc]);
     }
 return;
+}
+
+int SCAppendAccent(SplineChar *sc,char *glyph_name,int uni,int pos) {
+    SplineFont *sf = sc->parent;
+    double ia;
+    int copybmp = true;
+    int basech;
+    RefChar *ref, *last=NULL;
+    int invert = false;
+    SplineChar *asc;
+    int i;
+    const unichar_t *apt, *end;
+
+    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
+	last = ref;
+    if ( last==NULL )
+return( 1 );
+    basech = last->sc->unicodeenc;
+
+    if (( ia = sf->italicangle )==0 )
+	ia = SFGuessItalicAngle(sf);
+    ia *= 3.1415926535897932/180;
+
+    SCPreserveState(sc,true);
+
+    if ( glyph_name!=NULL ) {
+	asc = SFGetCharDup(sf,-1,glyph_name);
+	if ( asc!=NULL )
+	    uni = asc->unicodeenc;
+    } else
+	asc = GetGoodAccentGlyph(sf,uni,basech,&invert,ia);
+    if ( asc==NULL )
+return( 2 );
+    if ( uni<=BottomAccent || uni>=TopAccent ) {
+	/* Find the real combining character that maps to this glyph */
+	/* that's where we store positioning info */
+	for ( i=BottomAccent; i<=TopAccent; ++i ) {
+	    apt = accents[i-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
+	    while ( apt<end && *apt!=uni )
+		++apt;
+	    if ( apt<end ) {
+		uni = i;
+	break;
+	    }
+	}
+    }
+
+    _SCCenterAccent(sc,sf,uni,asc,copybmp,ia,basech,invert,pos);
+return( 0 );
 }
