@@ -3284,7 +3284,7 @@ return;
 static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     int i, cnt;
     RefChar *refs;
-    int fixed = SFOneWidth(sf);
+    int fixed = gi->fixed_width;
 
     GProgressChangeStages(2+gi->strikecnt);
     QuickBlues(sf,&gi->bd);
@@ -3557,7 +3557,7 @@ static void dumpcffcharset(SplineFont *sf,struct alltabs *at) {
 
     /* First element must be ".notdef" and is omitted */
     /* So if glyph 0 isn't notdef do something special */
-    if ( !SCIsNotdef(sf->chars[0],-1) && SCWorthOutputting(sf->chars[0]) )
+    if ( !SCIsNotdef(sf->chars[0],at->gi.fixed_width) && SCWorthOutputting(sf->chars[0]) )
 	putshort(at->charset,storesid(at,sf->chars[0]->name));
 
     for ( i=1; i<sf->charcnt; ++i )
@@ -3647,7 +3647,7 @@ static void dumpcffencoding(SplineFont *sf,struct alltabs *at) {
     /* And I put in 255 of them (with the encoding for 0 implied, I hope) */
 
     offset = 0;
-    if ( SCIsNotdef(sf->chars[0],-1))
+    if ( SCIsNotdef(sf->chars[0],at->gi.fixed_width))
 	offset = 1;
 
     for ( i=pos=1; i<sf->charcnt && i<256; ++i )
@@ -3872,7 +3872,7 @@ static void dumpcfftopdict(SplineFont *sf,struct alltabs *at) {
     dumpsid(cfff,at,sf->fullname?sf->fullname:sf->fontname,2);
     dumpsid(cfff,at,sf->familyname,3);
     dumpsid(cfff,at,sf->weight,4);
-    if ( SFOneWidth(sf)!=-1 ) dumpintoper(cfff,1,(12<<8)|1);
+    if ( at->gi.fixed_width!=-1 ) dumpintoper(cfff,1,(12<<8)|1);
     if ( sf->italicangle!=0 ) dumpdbloper(cfff,sf->italicangle,(12<<8)|2);
     if ( sf->upos!=-100 ) dumpdbloper(cfff,sf->upos,(12<<8)|3);
     if ( sf->uwidth!=50 ) dumpdbloper(cfff,sf->uwidth,(12<<8)|4);
@@ -4155,13 +4155,13 @@ static int dumpcffhmtx(struct alltabs *at,SplineFont *sf,int bitmaps) {
     SplineChar *sc;
     int i,cnt;
     int dovmetrics = sf->hasvmetrics;
-    int width = SFOneWidth(sf);
+    int width = at->gi.fixed_width;
 
     at->gi.hmtx = tmpfile();
     if ( dovmetrics )
 	at->gi.vmtx = tmpfile();
     FigureFullMetricsEnd(sf,&at->gi);
-    if ( SCIsNotdef(sf->chars[0],-1)) {
+    if ( SCIsNotdef(sf->chars[0],width)) {
 	putshort(at->gi.hmtx,sf->chars[0]->width);
 	SplineCharFindBounds(sf->chars[0],&b);
 	putshort(at->gi.hmtx,b.minx);
@@ -4264,8 +4264,8 @@ static void dumpcffcidhmtx(struct alltabs *at,SplineFont *_sf) {
 		at->gi.hfullcnt = cnt;
 	    if ( cid==at->gi.lastvwidth )
 		at->gi.vfullcnt = cnt;
-	} else if ( cid==0 && i==sf->subfontcnt ) {
-	    /* Use final subfont to contain mythical default if there is no real default */
+	} else if ( cid==0 /*&& i==_sf->subfontcnt*/ ) {
+	    /* Create a dummy entry for .notdef */
 	    putshort(at->gi.hmtx,sf->ascent+sf->descent);
 	    putshort(at->gi.hmtx,0);
 	    ++cnt;
@@ -4389,6 +4389,18 @@ static void sethead(struct head *head,SplineFont *_sf) {
     SplineFont *sf = _sf;
 
     head->version = 0x00010000;
+    if ( _sf->version!=NULL ) {
+	char *pt=_sf->version;
+	double dval;
+	int val, mant;
+	while ( *pt && !isdigit(*pt) && *pt!='.' ) ++pt;
+	if ( *pt ) {
+	    dval = strtod(pt,NULL);
+	    val = floor(dval);
+	    mant = floor(65536.*(dval-val));
+	    head->revision = (val<<16) | mant;
+	}
+    }
     head->checksumAdj = 0;
     head->magicNum = 0x5f0f3cf5;
     head->flags = 3;
@@ -4478,7 +4490,7 @@ static void sethhead(struct hhead *hhead,struct hhead *vhead,struct alltabs *at,
 	}
 	++j;
     } while ( j<_sf->subfontcnt );
-    at->isfixed = SFOneWidth(sf)!=-1;
+    at->isfixed = at->gi.fixed_width!=-1;
     hhead->maxwidth = width;
     hhead->minlsb = at->head.xmin;
     hhead->minrsb = rbearing;
@@ -4758,7 +4770,7 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *_sf,
 	os2->ulCodePage[1] = 0;
 	first = 255; last = 0;
 	if ( sf->chars!=NULL && sf->chars[0]!=NULL && sf->chars[0]->ttf_glyph!=-1 &&
-		!SCIsNotdef(sf->chars[0],-1) )
+		!SCIsNotdef(sf->chars[0],at->gi.fixed_width) )
 	    first = 0;
 	for ( i=1; i<sf->charcnt && i<255; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
 	    if ( i<first ) first = i;
@@ -5784,7 +5796,10 @@ void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf) {
     if ( dummy->names[ttf_fullname]==NULL || *dummy->names[ttf_fullname]=='\0' )
 	dummy->names[ttf_fullname] = uc_copy(sf->fullname);
     if ( dummy->names[ttf_version]==NULL || *dummy->names[ttf_version]=='\0' ) {
-	sprintf(buffer,"Version %s ", sf->version);
+	if ( sf->version!=NULL )
+	    sprintf(buffer,"Version %s ", sf->version);
+	else
+	    strcpy(buffer,"Version 1.0" );
 	dummy->names[ttf_version] = uc_copy(buffer);
     }
     if ( dummy->names[ttf_postscriptname]==NULL || *dummy->names[ttf_postscriptname]=='\0' )
@@ -6396,7 +6411,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	for ( i=0; i<sf->charcnt; ++i ) {
 	    if ( sf->chars[i]!=&notdef && sf->chars[i]!=&nonmarkingreturn &&
 		    sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 &&
-		    !SCIsNotdef(sf->chars[i],-1) && i<=0xffff ) {
+		    !SCIsNotdef(sf->chars[i],at->gi.fixed_width) && i<=0xffff ) {
 		if ( i>=0xf000 && i<=0xf0ff )
 		    ++acnt;
 		else if ( i>=0x20 && i<=0xff )
@@ -6427,7 +6442,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	if ( !alreadyprivate ) {
 	    for ( i=0; i<sf->charcnt && i<256; ++i ) {
 		if ( sf->chars[i]!=&notdef && sf->chars[i]!=&nonmarkingreturn &&
-			sf->chars[i]!=NULL && !SCIsNotdef(sf->chars[i],-1)) {
+			sf->chars[i]!=NULL && !SCIsNotdef(sf->chars[i],at->gi.fixed_width)) {
 		    sf->chars[i]->enc = sf->chars[i]->unicodeenc;
 		    sf->chars[i]->unicodeenc = 0xf000 + i;
 		}
@@ -6786,6 +6801,7 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
     memset(at,'\0',sizeof(struct alltabs));
     at->msbitmaps = bf==bf_ttf_ms;
     at->gi.flags = flags;
+    at->gi.fixed_width = CIDOneWidth(sf);
     at->isotf = format==ff_otf || format==ff_otfcid;
     if ( bf!=bf_ttf_ms && bf!=bf_ttf_apple && bf!=bf_sfnt_dfont)
 	bsizes = NULL;

@@ -352,6 +352,7 @@ struct glyphinfo {
     FILE *fpgmf;
     int fpgmlen;
     int flags;
+    int fixed_width;
 };
 
 struct vorg {
