@@ -1223,7 +1223,7 @@ static void BuildGSUBlang(struct node *node,struct att_dlg *att) {
 	if ( f[i].feats==REQUIRED_FEATURE ) {
 	    u_strcpy(ubuf,GStringGetResource(_STR_RequiredFeature,NULL));
 	} else {
-	    for ( k=1; pst_tags[k]!=NULL; ++k ) {
+	    for ( k=0; pst_tags[k]!=NULL; ++k ) {
 		for ( j=0; pst_tags[k][j].text!=NULL && featnodes[i].tag!=(uint32) pst_tags[k][j].userdata; ++j );
 		if ( pst_tags[k][j].text!=NULL )
 	    break;
