@@ -1145,6 +1145,7 @@ extern int RealNear(real a,real b);
 extern int RealNearish(real a,real b);
 extern int RealApprox(real a,real b);
 extern int RealWithin(real a,real b,real fudge);
+extern int RealRatio(real a,real b,real fudge);
 
 extern void LineListFree(LineList *ll);
 extern void LinearApproxFree(LinearApprox *la);
@@ -1405,7 +1406,7 @@ extern void SCAutoInstr( SplineChar *sc,BlueData *bd );
 extern void SCClearHintMasks(SplineChar *sc,int counterstoo);
 extern void SCFigureCounterMasks(SplineChar *sc);
 extern void SCFigureHintMasks(SplineChar *sc);
-extern void SplineCharAutoHint( SplineChar *sc,int removeOverlaps);
+extern void SplineCharAutoHint( SplineChar *sc,BlueData *bd);
 extern void SplineFontAutoHint( SplineFont *sf);
 extern StemInfo *HintCleanup(StemInfo *stem,int dosort,int instance_count);
 extern int SplineFontIsFlexible(SplineFont *sf,int flags);

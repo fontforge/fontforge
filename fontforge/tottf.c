@@ -1128,7 +1128,7 @@ static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
     if ( autohint_before_generate && sc->changedsincelasthinted &&
 	    !sc->manualhints )
 	if ( !(gi->flags&ttf_flag_nohints) )
-	    SplineCharAutoHint(sc,true);
+	    SplineCharAutoHint(sc,NULL);
 #endif
 
     gi->loca[gi->next_glyph] = ftell(gi->glyphs);

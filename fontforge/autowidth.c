@@ -823,7 +823,7 @@ static void FindFontParameters(WidthInfo *wi) {
     if ( (si=SFFindExistingChar(sf,'n',"n"))!=-1 && sf->chars[si]!=NULL ) {
 	SplineChar *sc = sf->chars[si];
 	if ( sc->changedsincelasthinted && !sc->manualhints )
-	    SplineCharAutoHint(sc,true);
+	    SplineCharAutoHint(sc,NULL);
 	SplineCharQuickBounds(sc,&bb);
 	if ( sc->vstem!=NULL && sc->vstem->next!=NULL ) {
 	    wi->n_stem_exterior_width = sc->vstem->next->start+sc->vstem->next->width-

@@ -3951,7 +3951,6 @@ return( true );
 #define MID_AutoHint	2400
 #define MID_ClearHStem	2401
 #define MID_ClearVStem	2402
-#define MID_ClearDStem	2403
 #define MID_AddHHint	2404
 #define MID_AddVHint	2405
 #define MID_AddDHint	2406
@@ -3966,16 +3965,6 @@ return( true );
 #define MID_HintSubsPt	2415
 #define MID_AutoCounter	2416
 #define MID_DontAutoHint	2417
-#define MID_ClearAllMD		2451
-#define MID_ClearSelMDX		2452
-#define MID_ClearSelMDY		2453
-#define MID_AddxMD		2454
-#define MID_AddyMD		2455
-#define MID_RoundX		2456
-#define MID_NoRoundX		2457
-#define MID_RoundY		2458
-#define MID_NoRoundY		2459
-#define MID_ClearWidthMD	2460
 #define MID_Tools	2501
 #define MID_Layers	2502
 #define MID_DockPalettes	2503
@@ -6166,11 +6155,11 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void CVMenuAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    int removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);
+    /*int removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);*/
 
     /* !!!! Hint undoes???? */
     cv->sc->manualhints = false;
-    SplineCharAutoHint(cv->sc,removeOverlap);
+    SplineCharAutoHint(cv->sc,NULL);
     SCUpdateAll(cv->sc);
 }
 
@@ -6201,7 +6190,6 @@ static void CVMenuAutoInstr(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void CVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    MinimumDistance *md, *prev, *next;
 
     if ( mi->mid==MID_ClearHStem ) {
 	StemInfosFree(cv->sc->hstem);
@@ -6211,28 +6199,6 @@ static void CVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	StemInfosFree(cv->sc->vstem);
 	cv->sc->vstem = NULL;
 	cv->sc->vconflicts = false;
-    } else if ( mi->mid==MID_ClearDStem ) {
-	DStemInfosFree(cv->sc->dstem);
-	cv->sc->dstem = NULL;
-    } else if ( mi->mid==MID_ClearAllMD ) {
-	MinimumDistancesFree(cv->sc->md);
-	cv->sc->md = NULL;
-	SCClearRounds(cv->sc);
-    } else if ( mi->mid==MID_ClearWidthMD ) {
-	prev=NULL;
-	for ( md=cv->sc->md; md!=NULL; md=next ) {
-	    next = md->next;
-	    if ( md->sp2==NULL ) {
-		if ( prev==NULL )
-		    cv->sc->md = next;
-		else
-		    prev->next = next;
-		chunkfree(md,sizeof(MinimumDistance));
-	    } else
-		prev = md;
-	}
-    } else {
-	SCRemoveSelectedMinimumDistances(cv->sc,mi->mid==MID_ClearSelMDX);
     }
     cv->sc->manualhints = true;
     SCClearHintMasks(cv->sc,true);
@@ -6318,144 +6284,9 @@ return;
     CVReviewHints(cv);
 }
 
-static void CVMenuRoundHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    CharView *cv = (CharView *) GDrawGetUserData(gw);
-    SplineSet *ss;
-    SplinePoint *sp;
-
-    for ( ss=cv->sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
-	for ( sp=ss->first; ; ) {
-	    if ( sp->selected ) {
-		if ( mi->mid==MID_RoundX )
-		    sp->roundx = true;
-		else if ( mi->mid==MID_NoRoundX )
-		    sp->roundx = false;
-		else if ( mi->mid==MID_RoundY )
-		    sp->roundy = true;
-		else
-		    sp->roundy = false;
-	    }
-	    if ( sp->next==NULL )
-	break;
-	    sp = sp->next->to;
-	    if ( sp==ss->first )
-	break;
-	}
-    }
-}
-
-static void CVMenuAddMD(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    CharView *cv = (CharView *) GDrawGetUserData(gw);
-    SplineSet *ss;
-    SplinePoint *sp, *sel1=NULL, *sel2=NULL;
-
-    for ( ss=cv->sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
-	for ( sp=ss->first; ; ) {
-	    if ( sp->selected ) {
-		if ( sel1==NULL )
-		    sel1 = sp;
-		else if ( sel2==NULL )
-		    sel2 = sp;
-		else
-return;
-	    }
-	    if ( sp->next==NULL )
-	break;
-	    sp = sp->next->to;
-	    if ( sp==ss->first )
-	break;
-	}
-    }
-    if ( sel1==NULL )
-return;
-    if ( sel2==NULL && mi->mid==MID_AddyMD )
-return;
-
-    if ( sel2!=NULL && sel1==cv->lastselpt ) {
-	sel1 = sel2;
-	sel2 = cv->lastselpt;
-    }
-    MDAdd(cv->sc,mi->mid==MID_AddxMD,sel1,sel2);
-    SCOutOfDateBackground(cv->sc);
-    SCUpdateAll(cv->sc);
-}
-
-static void mdlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    CharView *cv = (CharView *) GDrawGetUserData(gw);
-    SplinePoint *sp, *sp1, *sp2;
-    SplineSet *ss;
-    int allrx=-1, allry=-1, cnt=0;
-
-    sp1 = sp2 = NULL;
-    for ( ss=cv->sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
-	for ( sp=ss->first; ; ) {
-	    if ( sp->selected ) {
-		++cnt;
-		if ( sp1==NULL )
-		    sp1 = sp;
-		else if ( sp2==NULL )
-		    sp2 = sp;
-		if ( allrx==-1 )
-		    allrx = sp->roundx;
-		else if ( allrx!=sp->roundx )
-		    allrx = -2;
-		if ( allry==-1 )
-		    allry = sp->roundy;
-		else if ( allry!=sp->roundy )
-		    allry = -2;
-	    }
-	    if ( sp->next==NULL )
-	break;
-	    sp = sp->next->to;
-	    if ( sp==ss->first )
-	break;
-	}
-    }
-
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-	switch ( mi->mid ) {
-	  case MID_ClearAllMD: case MID_ClearWidthMD:
-	    mi->ti.disabled = cv->sc->md==NULL;
-	  break;
-	  case MID_ClearSelMDX: case MID_ClearSelMDY:
-	    mi->ti.disabled = cv->sc->md==NULL || cnt==0;
-	  break;
-	  case MID_AddyMD:
-	    mi->ti.disabled = cnt!=2 || sp2->me.y==sp1->me.y;
-	  break;
-	  case MID_AddxMD:
-	    mi->ti.disabled = cnt==0 || cnt>2 || (sp2!=NULL && sp2->me.x==sp1->me.x);
-	    free(mi->ti.text);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    mi->ti.text = u_copy(GStringGetResource(cnt==1?_STR_AddMD2Width: _STR_AddxMD,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    mi->ti.text = u_copy(cnt==1?_("Add MD Here to Width"));
-#endif
-	  break;
-	  case MID_RoundX:
-	    mi->ti.disabled = cnt==0;
-	    mi->ti.checked = allrx==1;
-	  break;
-	  case MID_NoRoundX:
-	    mi->ti.disabled = cnt==0;
-	    mi->ti.checked = allrx==0;
-	  break;
-	  case MID_RoundY:
-	    mi->ti.disabled = cnt==0;
-	    mi->ti.checked = allry==1;
-	  break;
-	  case MID_NoRoundY:
-	    mi->ti.disabled = cnt==0;
-	    mi->ti.checked = allry==0;
-	  break;
-	}
-    }
-}
-
 static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     SplinePoint *sp1, *sp2, *sp3, *sp4;
-    int removeOverlap;
     int multilayer = cv->sc->parent->multilayer;
 
     sp1 = sp2 = NULL;
@@ -6465,13 +6296,6 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	switch ( mi->mid ) {
 	  case MID_AutoHint:
 	    mi->ti.disabled = multilayer;
-	    removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);
-	    free(mi->ti.text);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    mi->ti.text = u_copy(GStringGetResource(removeOverlap?_STR_Autohint: _STR_FullAutohint,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    mi->ti.text = u_copy(removeOverlap?_("AutoHint"));
-#endif
 	  break;
 	  case MID_HintSubsPt: case MID_AutoCounter:
 	    mi->ti.disabled = cv->sc->parent->order2 || multilayer;
@@ -7048,22 +6872,6 @@ static GMenuItem ellist[] = {
     { NULL }
 };
 
-static GMenuItem mdlist[] = {
-    { { (unichar_t *) _STR_ClearAllMD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, CVMenuClearHints, MID_ClearAllMD },
-    { { (unichar_t *) _STR_ClearSelXMD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 's' }, '\0', ksm_control, NULL, NULL, CVMenuClearHints, MID_ClearSelMDX },
-    { { (unichar_t *) _STR_ClearSelYMD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'e' }, '\0', ksm_control, NULL, NULL, CVMenuClearHints, MID_ClearSelMDY },
-    { { (unichar_t *) _STR_ClearWidthMD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'W' }, '\0', ksm_control, NULL, NULL, CVMenuClearHints, MID_ClearWidthMD },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_AddxMD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'x' }, GK_F5, 0, NULL, NULL, CVMenuAddMD, MID_AddxMD },
-    { { (unichar_t *) _STR_AddyMD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'y' }, GK_F6, 0, NULL, NULL, CVMenuAddMD, MID_AddyMD },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_RoundX, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'r' }, GK_F7, 0, NULL, NULL, CVMenuRoundHint, MID_RoundX },
-    { { (unichar_t *) _STR_NoRoundX, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'n' }, GK_F8, 0, NULL, NULL, CVMenuRoundHint, MID_NoRoundX },
-    { { (unichar_t *) _STR_RoundY, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'u' }, GK_F9, 0, NULL, NULL, CVMenuRoundHint, MID_RoundY },
-    { { (unichar_t *) _STR_NoRoundY, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'o' }, GK_F10, 0, NULL, NULL, CVMenuRoundHint, MID_NoRoundY },
-    { NULL }
-};
-
 static GMenuItem htlist[] = {
     { { (unichar_t *) _STR_Autohint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, 'H', ksm_control|ksm_shift, NULL, NULL, CVMenuAutoHint, MID_AutoHint },
     { { (unichar_t *) _STR_HintSubsPts, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuAutoHintSubs, MID_HintSubsPt },
@@ -7074,11 +6882,8 @@ static GMenuItem htlist[] = {
     { { (unichar_t *) _STR_EditInstructions, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, '\0', 0, NULL, NULL, CVMenuEditInstrs, MID_EditInstructions },
     { { (unichar_t *) _STR_DebugDDD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, '\0', 0, NULL, NULL, CVMenuDebug, MID_Debug },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_MinimumDistance, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, 'H', ksm_control|ksm_shift, mdlist, mdlistcheck, NULL, MID_MinimumDistance },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Clearhstem, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, CVMenuClearHints, MID_ClearHStem },
     { { (unichar_t *) _STR_Clearvstem, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, '\0', ksm_control, NULL, NULL, CVMenuClearHints, MID_ClearVStem },
-    { { (unichar_t *) _STR_Cleardstem, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, '\0', ksm_control, NULL, NULL, CVMenuClearHints, MID_ClearDStem },
     { { (unichar_t *) _STR_ClearInstructions, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, CVMenuClearInstrs, MID_ClearInstr },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Addhhint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, '\0', ksm_control, NULL, NULL, CVMenuAddHint, MID_AddHHint },

@@ -503,7 +503,7 @@ return( 0 );
 return( 0 );
     }
     if ( autohint_before_rasterize && sc->changedsincelasthinted && !sc->manualhints )
-	SplineCharAutoHint(sc,true);
+	SplineCharAutoHint(sc,NULL);
 
     memset(&gi,'\0', sizeof(gi));
     memset(&base,'\0', sizeof(base));

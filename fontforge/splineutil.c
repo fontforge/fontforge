@@ -3814,7 +3814,7 @@ void StemInfosFree(StemInfo *h) {
 
 void DStemInfoFree(DStemInfo *h) {
 
-    free(h);
+    chunkfree(h,sizeof(DStemInfo));
 }
 
 void DStemInfosFree(DStemInfo *h) {

@@ -939,7 +939,7 @@ static int SCStemCheck(SplineFont *sf,int basech,DBounds *bb, DBounds *rbb,int p
     if ( sc==NULL )
 return( 0x70000000 );
     if ( autohint_before_generate && sc->changedsincelasthinted && !sc->manualhints )
-	SplineCharAutoHint(sc,true);
+	SplineCharAutoHint(sc,NULL);
     if ( (best=sc->vstem)!=NULL ) {
 	if ( pos&____CENTERLEFT ) {
 	    for ( h=best->next; h!=NULL && h->start<best->start+best->width; h=h->next )

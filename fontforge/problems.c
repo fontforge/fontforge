@@ -902,7 +902,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     p->sc = sc;
     if (( p->ptnearhint || p->hintwidthnearval || p->hintwithnopt ) &&
 	    sc->changedsincelasthinted && !sc->manualhints )
-	SplineCharAutoHint(sc,true);
+	SplineCharAutoHint(sc,NULL);
 
     if ( p->openpaths ) {
 	for ( test=spl; test!=NULL && !p->finish; test=test->next ) {
