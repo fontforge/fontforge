@@ -36,6 +36,10 @@
 
 /*#define DEBUG 1*/
 
+typedef struct quartic {
+    double a,b,c,d,e;
+} Quartic;
+
 /* In an attempt to make allocation more efficient I just keep preallocated */
 /*  lists of certain common sizes. It doesn't seem to make much difference */
 /*  when allocating stuff, but does when freeing. If the extra complexity */
@@ -45,7 +49,7 @@
 /*  into splinefont.h after the (or instead of) the definition of chunkalloc()*/
 
 #ifndef chunkalloc
-#define ALLOC_CHUNK	1
+#define ALLOC_CHUNK	100
 #define CHUNK_MAX	100
 
 #if ALLOC_CHUNK>1
@@ -189,9 +193,6 @@ void SplineRefigure(Spline *spline) {
 #ifdef DEBUG
     if ( RealNear(from->me.x,to->me.x) && RealNear(from->me.y,to->me.y))
 	GDrawIError("Zero length spline created");
-    if (( from->me.x>0 && from->me.x<.001 ) || ( from->me.y>0 && from->me.y<.001 ) ||
-	    ( to->me.x>0 && to->me.x<.001 ) || ( to->me.y>0 && to->me.y<.001 ) )
-	fprintf( stderr, "very small number in SplineRefigure\n" );
 #endif
     xsp->d = from->me.x; ysp->d = from->me.y;
     if ( from->nonextcp ) from->nextcp = from->me;
@@ -231,8 +232,10 @@ void SplineRefigure(Spline *spline) {
     SplineIsLinear(spline);
     if ( !spline->islinear && spline->knownlinear ) {
 	spline->knownlinear = false;
-	SplineIsLinear(spline);		/* Debug */
     }
+    spline->isquadratic = false;
+    if ( !spline->islinear && xsp->a==0 && ysp->a==0 )
+	spline->isquadratic = true;	/* Only likely if we read in a TTF */
 }
 
 Spline *SplineMake(SplinePoint *from, SplinePoint *to) {
@@ -1501,90 +1504,196 @@ void SCRefToSplines(SplineChar *sc,RefChar *rf) {
     SCRemoveDependent(sc,rf);
 }
 
+/* This returns all real solutions, even those out of bounds */
+/* I use -999999 as an error flag, since we're really only interested in */
+/*  solns near 0 and 1 that should be ok. -1 is perhaps a little too close */
+static int _CubicSolve(Spline1D *sp,real ts[3]) {
+    double d, xN, yN, delta2, temp, delta, h, t2, t3, theta;
+    int i=0;
+
+    ts[0] = ts[1] = ts[2] = -999999;
+    if ( sp->a!=0 ) {
+    /* http://www.m-a.org.uk/eb/mg/mg077ch.pdf */
+    /* this nifty solution to the cubic neatly avoids complex arithmatic */
+	xN = -sp->b/(3*sp->a);
+	yN = ((sp->a*xN + sp->b)*xN+sp->c)*xN + sp->d;
+
+	delta2 = (sp->b*sp->b-3*sp->a*sp->c)/(9*sp->a*sp->a);
+	if ( RealNear(delta2,0) ) delta2 = 0;
+
+	/* the descriminant is yN^2-h^2, but delta might be <0 so avoid using h */
+	d = yN*yN - 4*sp->a*sp->a*delta2*delta2*delta2;
+	if ( ((yN>.01 || yN<-.01) && RealNear(d/yN,0)) || ((yN<=.01 && yN>=-.01) && RealNear(d,0)) )
+	    d = 0;
+	if ( d>0 ) {
+	    temp = sqrt(d);
+	    t2 = (-yN-temp)/(2*sp->a);
+	    t2 = (t2<0) ? -pow(-t2,1./3.) : pow(t2,1./3.);
+	    t3 = (-yN+temp)/(2*sp->a);
+	    t3 = (t3<0) ? -pow(-t3,1./3.) : pow(t3,1./3.);
+	    ts[0] = xN + t2 + t3;
+	} else if ( d<0 ) {
+	    if ( delta2>=0 ) {
+		delta = sqrt(delta2);
+		h = 2*sp->a*delta2*delta;
+		temp = -yN/h;
+		if ( temp>=-1.0001 && temp<=1.0001 ) {
+		    if ( temp<-1 ) temp = -1; else if ( temp>1 ) temp = 1;
+		    theta = acos(temp)/3;
+		    ts[i++] = xN+2*delta*cos(theta);
+		    ts[i++] = xN+2*delta*cos(2.0943951+theta);
+		    ts[i++] = xN+2*delta*cos(4.1887902+theta);
+		}
+	    }
+	} else if ( /* d==0 && */ delta2!=0 ) {
+	    delta = yN/(2*sp->a);
+	    delta = delta>=0 ? pow(delta,1./3.) : -pow(-delta,1./3.);
+	    ts[i++] = xN + delta;	/* this root twice, but that's irrelevant to me */
+	    ts[i++] = xN - 2*delta;
+	} else if ( /* d==0 && */ delta2==0 ) {
+	    if ( xN>=-0.0001 && xN<=1.0001 ) ts[0] = xN;
+	}
+    } else if ( sp->b!=0 ) {
+	double d = sp->c*sp->c-4*sp->b*sp->d;
+	if ( RealNear(d,0)) d=0;
+	if ( d<0 )
+return(false);		/* All roots imaginary */
+	d = sqrt(d);
+	ts[0] = (-sp->c-d)/(2*sp->b);
+	ts[1] = (-sp->c+d)/(2*sp->b);
+    } else if ( sp->c!=0 ) {
+	ts[0] = -sp->d/sp->c;
+    } else {
+	/* If it's a point then either everything is a solution, or nothing */
+    }
+return( ts[0]!=-1 );
+}
+
+int CubicSolve(Spline1D *sp,real ts[3]) {
+    double t;
+    /* This routine gives us all solutions between [0,1] with -1 as an error flag */
+
+    if ( !_CubicSolve(sp,ts))
+return( false );
+    if (ts[0]>1.0001 || ts[0]<-.0001 ) ts[0] = -1;
+    else if ( ts[0]<0 ) ts[0] = 0; else if ( ts[0]>1 ) ts[0] = 1;
+    if (ts[1]>1.0001 || ts[1]<-.0001 ) ts[1] = -1;
+    else if ( ts[1]<0 ) ts[1] = 0; else if ( ts[1]>1 ) ts[1] = 1;
+    if (ts[2]>1.0001 || ts[2]<-.0001 ) ts[2] = -1;
+    else if ( ts[2]<0 ) ts[2] = 0; else if ( ts[2]>1 ) ts[2] = 1;
+    if ( ts[1]==-1 ) { ts[1] = ts[2]; ts[2] = -1;}
+    if ( ts[0]==-1 ) { ts[0] = ts[1]; ts[1] = ts[2]; ts[2] = -1; }
+    if ( ts[0]==-1 )
+return( false );
+    if ( ts[0]>ts[2] && ts[2]!=-1 ) {
+	t = ts[0]; ts[0] = ts[2]; ts[2] = t;
+    }
+    if ( ts[0]>ts[1] && ts[1]!=-1 ) {
+	t = ts[0]; ts[0] = ts[1]; ts[1] = t;
+    }
+    if ( ts[1]>ts[2] && ts[2]!=-1 ) {
+	t = ts[1]; ts[1] = ts[2]; ts[2] = t;
+    }
+return( true );
+}
+
+static int QuarticSolve(Quartic *q,real ts[4]) {
+    Quartic work;
+    Spline1D sp;
+    real zs[3];
+    double sq, a, b, c, d, e, f;
+    int i;
+
+    work.a = 1;
+    work.b = 0;
+    work.c = (q->c-3*q->b*q->b/(8*q->a))/q->a;
+    work.d = (q->b*q->b*q->b/(8*q->a*q->a) - q->b*q->c/(2*q->a) + q->d)/q->a;
+    work.e = (-3*q->b*q->b*q->b*q->b/(256*q->a*q->a*q->a) + (q->b*q->b*q->c)/(16*q->a*q->a) -
+	    q->b*q->d/(4*q->a) + q->e)/q->a;
+
+    if ( RealNear(work.e,0))
+	work.e = 0;
+    if ( work.e<0 )		/* I hope this means no real roots, my cubic solver doesn't deal with complex coef */
+return( -1 );
+    sq = sqrt(work.e);
+    sp.a = 8;
+    sp.b = 24*sq-4*work.c;
+    sp.c = 16*work.e-8*sq*work.c;
+    sp.d = -work.d*work.d;
+    if ( !_CubicSolve(&sp,zs) )
+return( -1 );
+    a=2*sq-work.c+2*zs[0];
+    b= -work.d;
+    c= zs[0]*(zs[0]+2*sq);
+    if ( RealNear(c,0))
+	c = 0;
+    if ( c<0 )
+return( -1 );
+    if ( !RealNear(b*b-4*a*c,0) )
+	GDrawIError("Failure in quartic");
+
+    b = -sqrt(a);
+    c = sq+zs[0]-sqrt(c);
+    a = 1;
+    i = 0;
+    f = q->b/(4*q->a);
+    if ( b*b-4*c>= 0 ) {
+	sq = sqrt(b*b-4*c);
+	ts[i++] = (-b+sq)/2-f;
+	if ( sq!=0 )
+	    ts[i++] = (-b-sq)/2-f; 
+    }
+    /* Now the a,b,c polynomial above must be offset by f before it can */
+    /*  represent the roots of q */
+    c += f*f + b*f;
+    b += 2*f;
+
+	/* Now divide the original spline by this quadratic, and we will get */
+	/*  another quadratic with the other two roots */
+    d = q->a;
+    work.b = q->b-d*b;
+    work.c = q->c-d*c;
+    e = work.b;
+    work.c -= e*b;
+    work.d = q->d-e*c;
+    f = work.c;
+    if ( !RealNear(work.d-f*b,0) || !RealNear(q->e-f*c,0))
+	GDrawIError("Polynomial division failed");
+    if ( e*e-4*d*f >= 0 ) {
+	sq = sqrt(e*e-4*d*f);
+	ts[i++] = (-e+sq)/(2*d);
+	if ( sq!=0 )
+	    ts[i++] = (-e-sq)/(2*d);
+    }
+    while ( i<4 ) ts[i++] = -1;
+    for ( i=0; i<4 && ts[i]!=-1; ++i ) {
+	if ( ts[i]<-.001 || ts[i]>1.001 ) ts[i]=-1;
+	else if ( ts[i]<0 ) ts[i] = 0; else if ( ts[i]>1 ) ts[i] = 1;
+    }
+    if ( ts[2]==-1 ) { ts[2]= ts[3]; ts[3] = -1; }
+    if ( ts[1]==-1 ) { ts[1]= ts[2]; ts[2] = ts[3]; ts[3] = -1; }
+    if ( ts[0]==-1 ) { ts[0]= ts[1]; ts[1]= ts[2]; ts[2] = ts[3]; ts[3] = -1; }
+return( ts[0]!=-1 );
+}
+
 real SplineSolve(Spline1D *sp, real tmin, real tmax, real sought,real err) {
     /* We want to find t so that spline(t) = sought */
     /*  the curve must be monotonic */
     /* returns t which is near sought or -1 */
-    real slope;
-    real new_t, newer_t;
-    real found_y;
-    real t_ymax, t_ymin;
-    real ymax, ymin;
-    int up;
+    Spline1D temp;
+    real ts[3];
+    int i;
+    real t;
 
-    if ( sp->a==0 && sp->b==0 ) {
-	if ( sp->c==0 )
-return( sought==sp->d ? 0 : -1 );
-	new_t = (sought-sp->d)/sp->c;
-	if ( new_t >= 0 && new_t<=1 )
-return( new_t );
-return( -1 );
-    }
+    temp = *sp;
+    temp.d -= sought;
+    CubicSolve(&temp,ts);
+    if ( tmax<tmin ) { t = tmax; tmax = tmin; tmin = t; }
+    for ( i=0; i<3; ++i )
+	if ( ts[i]>=tmin && ts[i]<=tmax )
+return( ts[i] );
 
-    ymax = ((sp->a*tmax + sp->b)*tmax + sp->c)*tmax + sp->d;
-    ymin = ((sp->a*tmin + sp->b)*tmin + sp->c)*tmin + sp->d;
-    if ( ymax<ymin ) {
-	real temp = ymax;
-	ymax = ymin;
-	ymin = temp;
-	t_ymax = tmin;
-	t_ymin = tmax;
-	up = false;
-    } else {
-	t_ymax = tmax;
-	t_ymin = tmin;
-	up = true;
-    }
-    if ( sought<ymin || sought>ymax )
 return( -1 );
-    if ( sought==ymin )
-return(  t_ymin );
-    if ( sought==ymax )
-return( t_ymax );
-
-    slope = (3.0*sp->a*t_ymin+2.0*sp->b)*t_ymin + sp->c;
-    if ( slope==0 )	/* we often start at a point of inflection */
-	new_t = t_ymin + (t_ymax-t_ymin)* (sought-ymin)/(ymax-ymin);
-    else {
-	new_t = t_ymin + (sought-ymin)/slope;
-	if (( new_t>t_ymax && up ) ||
-		(new_t<t_ymax && !up) ||
-		(new_t<t_ymin && up ) ||
-		(new_t>t_ymin && !up ))
-	    new_t = t_ymin + (t_ymax-t_ymin)* (sought-ymin)/(ymax-ymin);
-
-    }
-    if ( isnan(new_t) ) {
-	GDrawIError( "NaN in splinesolve" );
-return( -1 );
-    }
-
-    while ( 1 ) {
-	found_y = ((sp->a*new_t+sp->b)*new_t+sp->c)*new_t + sp->d ;
-	if ( found_y>sought-err && found_y<sought+err ) {
-return( new_t );
-	}
-	newer_t = (t_ymax-t_ymin) * (sought-found_y)/(ymax-ymin);
-	if ( isnan(newer_t) ) {
-	    GDrawIError( "NaN in splinesolve" );
-return( -1 );
-	}
-	if ( found_y > sought ) {
-	    ymax = found_y;
-	    t_ymax = new_t;
-	} else {
-	    ymin = found_y;
-	    t_ymin = new_t;
-	}
-	if ( t_ymax==t_ymin )
-return( -1 );
-	new_t = newer_t;
-	if (( new_t>t_ymax && up ) ||
-		(new_t<t_ymax && !up) ||
-		(new_t<t_ymin && up ) ||
-		(new_t>t_ymin && !up ))
-	    new_t = (t_ymax+t_ymin)/2;
-    }
 }
 
 void SplineFindInflections(Spline1D *sp, real *_t1, real *_t2 ) {
@@ -1659,24 +1768,230 @@ void SplineRemoveInflectionsTooClose(Spline1D *sp, real *_t1, real *_t2 ) {
 }
 
 int SplineSolveFull(Spline1D *sp,real val, real ts[3]) {
-    real t1, t2;
-    int i=0;
+    Spline1D temp;
 
-    SplineFindInflections(sp, &t1, &t2 );
-    if ( t1>0 && t1<1 ) {
-	ts[i] = SplineSolve(sp,0,t1,val,.0001);
-	if ( ts[i]!=-1 ) ++i;
-    } else
-	t1 = 0;
-    if ( t2>0 && t2<1 ) {
-	ts[i] = SplineSolve(sp,t1,t2,val,.0001);
-	if ( ts[i]!=-1 ) ++i;
-    } else
-	t2 = t1;
-    ts[i++] = SplineSolve(sp,t2,1,val,.0001);
-    while ( i<3 )
-	ts[i++] = -1;
+    temp = *sp;
+    temp.d -= val;
+    CubicSolve(&temp,ts);
 return( ts[0]!=-1 );
+}
+
+#if 0
+static int CheckEndpoint(BasePoint *end,Spline *s,int te,BasePoint *pts,
+	real *tarray,real *ts,int soln) {
+    double t;
+    int i;
+
+    for ( i=0; i<soln; ++i )
+	if ( end->x==pts[i].x && end->y==pts[i].y )
+return( soln );
+
+    t = SplineNearPoint(s,end,.01);
+    if ( t<=0 || t>=1 )		/* If both splines are at end points then it's a join not an intersection */
+return( soln );
+    tarray[soln] = te;
+    ts[soln] = t;
+    pts[soln] = *end;
+return( soln+1 );
+}
+#endif
+
+static int AddPoint(real x,real y,real t,real s,BasePoint *pts,
+	real t1s[3],real t2s[3], int soln) {
+    int i;
+
+    for ( i=0; i<soln; ++i )
+	if ( x==pts[i].x && y==pts[i].y )
+return( soln );
+    t1s[soln] = t;
+    t2s[soln] = s;
+    pts[soln].x = x;
+    pts[soln].y = y;
+return( soln+1 );
+}
+
+static int AddQuadraticSoln(real s,Spline *s1, Spline *s2, BasePoint pts[3],
+	real t1s[3], real t2s[3], int soln ) {
+    double t, x, y, d;
+    int i;
+
+    if ( s<-.0001 || s>1.0001 )
+return( soln );
+    if ( s<0 ) s=0; else if ( s>1 ) s=1;
+
+    x = (s2->splines[0].b*s+s2->splines[0].c)*s+s2->splines[0].d;
+    y = (s2->splines[1].b*s+s2->splines[1].c)*s+s2->splines[1].d;
+
+    for ( i=0; i<soln; ++i )
+	if ( x==pts[i].x && y==pts[i].y )
+return( soln );
+
+    d = s1->splines[0].c*s1->splines[0].c-4*s1->splines[0].a*(s1->splines[0].d-x);
+    if ( RealNear(d,0)) d = 0;
+    if ( d<0 )
+return( soln );
+    t = (-s1->splines[0].c-d)/(2*s1->splines[0].b);
+    if ( t>-.0001 && t<1.0001 ) {
+	if ( t<=0 ) {t=0; x=s1->from->me.x; y = s1->from->me.y; }
+	else if ( t>=1 ) { t=1; x=s1->to->me.x; y = s1->to->me.y; }
+	if ( RealNear(y, (s1->splines[1].b*t+s1->splines[1].c)*t+s1->splines[1].d ) )
+return( AddPoint(x,y,t,s,pts,t1s,t2s,soln));
+    }
+    t = (-s1->splines[0].c+d)/(2*s1->splines[0].b);
+    if ( t>-.0001 && t<1.0001 ) {
+	if ( t<=0 ) {t=0; x=s1->from->me.x; y = s1->from->me.y; }
+	else if ( t>=1 ) { t=1; x=s1->to->me.x; y = s1->to->me.y; }
+	if ( RealNear(y, (s1->splines[1].b*t+s1->splines[1].c)*t+s1->splines[1].d) )
+return( AddPoint(x,y,t,s,pts,t1s,t2s,soln));
+    }
+return( soln );
+}
+
+/* returns 0=>no intersection, 1=>at least one, location in pts, t1s, t2s */
+/*  -1 => We couldn't figure it out in a closed form, have to do a numerical */
+/*  approximation */
+int SplinesIntersect(Spline *s1, Spline *s2, BasePoint pts[4], real t1s[4], real t2s[4]) {
+    BasePoint min1, max1, min2, max2;
+    int soln = 0;
+    double x,y,s,t;
+    double d;
+    int i;
+    Spline1D spline, temp;
+    Quartic quad;
+    real tempts[4];	/* 3 solns for cubics, 4 for quartics */
+
+    t1s[0] = t1s[1] = t1s[2] = t1s[3] = -1;
+    t2s[0] = t2s[1] = t2s[2] = t2s[3] = -1;
+
+    min1 = s1->from->me; max1 = min1;
+    min2 = s2->from->me; max2 = min2;
+    if ( s1->from->nextcp.x>max1.x ) max1.x = s1->from->nextcp.x;
+    else if ( s1->from->nextcp.x<min1.x ) min1.x = s1->from->nextcp.x;
+    if ( s1->from->nextcp.y>max1.y ) max1.y = s1->from->nextcp.y;
+    else if ( s1->from->nextcp.y<min1.y ) min1.y = s1->from->nextcp.y;
+    if ( s1->to->prevcp.x>max1.x ) max1.x = s1->to->prevcp.x;
+    else if ( s1->to->prevcp.x<min1.x ) min1.x = s1->to->prevcp.x;
+    if ( s1->to->prevcp.y>max1.y ) max1.y = s1->to->prevcp.y;
+    else if ( s1->to->prevcp.y<min1.y ) min1.y = s1->to->prevcp.y;
+    if ( s1->to->me.x>max1.x ) max1.x = s1->to->me.x;
+    else if ( s1->to->me.x<min1.x ) min1.x = s1->to->me.x;
+    if ( s1->to->me.y>max1.y ) max1.y = s1->to->me.y;
+    else if ( s1->to->me.y<min1.y ) min1.y = s1->to->me.y;
+
+    if ( s2->from->nextcp.x>max2.x ) max2.x = s2->from->nextcp.x;
+    else if ( s2->from->nextcp.x<min2.x ) min2.x = s2->from->nextcp.x;
+    if ( s2->from->nextcp.y>max2.y ) max2.y = s2->from->nextcp.y;
+    else if ( s2->from->nextcp.y<min2.y ) min2.y = s2->from->nextcp.y;
+    if ( s2->to->prevcp.x>max2.x ) max2.x = s2->to->prevcp.x;
+    else if ( s2->to->prevcp.x<min2.x ) min2.x = s2->to->prevcp.x;
+    if ( s2->to->prevcp.y>max2.y ) max2.y = s2->to->prevcp.y;
+    else if ( s2->to->prevcp.y<min2.y ) min2.y = s2->to->prevcp.y;
+    if ( s2->to->me.x>max2.x ) max2.x = s2->to->me.x;
+    else if ( s2->to->me.x<min2.x ) min2.x = s2->to->me.x;
+    if ( s2->to->me.y>max2.y ) max2.y = s2->to->me.y;
+    else if ( s2->to->me.y<min2.y ) min2.y = s2->to->me.y;
+    if ( min1.x>max2.x || min2.x>max1.x || min1.y>max2.y || min2.y>max1.y )
+return( false );		/* no intersection of bounding boxes */
+
+    /* Ignore splines which are just a point */
+    if ( s1->knownlinear && s1->splines[0].c==0 && s1->splines[1].c==0 )
+return( false );
+    if ( s2->knownlinear && s2->splines[0].c==0 && s2->splines[1].c==0 )
+return( false );
+
+    if ( s1->knownlinear )
+	/* Do Nothing */;
+    else if ( s2->knownlinear || (!s1->isquadratic && s2->isquadratic)) {
+	Spline *stemp = s1;
+	real *ts = t1s;
+	t1s = t2s; t2s = ts;
+	s1 = s2; s2 = stemp;
+    }
+
+#if 0
+    soln = CheckEndpoint(&s1->from->me,s2,0,pts,t1s,t2s,soln);
+    soln = CheckEndpoint(&s1->to->me,s2,1,pts,t1s,t2s,soln);
+    soln = CheckEndpoint(&s2->from->me,s1,0,pts,t2s,t1s,soln);
+    soln = CheckEndpoint(&s2->to->me,s1,1,pts,t2s,t1s,soln);
+#endif
+
+    if ( s1->islinear ) {
+	spline.d = s1->splines[1].c*(s2->splines[0].d-s1->splines[0].d)-
+		s1->splines[0].c*(s2->splines[1].d-s1->splines[1].d);
+	spline.c = s1->splines[1].c*s2->splines[0].c - s1->splines[0].c*s2->splines[1].c;
+	spline.b = s1->splines[1].c*s2->splines[0].b - s1->splines[0].c*s2->splines[1].b;
+	spline.a = s1->splines[1].c*s2->splines[0].a - s1->splines[0].c*s2->splines[1].a;
+	CubicSolve(&spline,tempts);
+	if ( tempts[0]==-1 )
+return( false );
+	for ( i = 0; i<3 && tempts[i]!=-1; ++i ) {
+	    x = ((s2->splines[0].a*tempts[i]+s2->splines[0].b)*tempts[i]+
+		    s2->splines[0].c)*tempts[i]+s2->splines[0].d;
+	    y = ((s2->splines[1].a*tempts[i]+s2->splines[1].b)*tempts[i]+
+		    s2->splines[1].c)*tempts[i]+s2->splines[1].d;
+	    if ( s1->splines[0].c!=0 )
+		t = (x-s1->splines[0].d)/s1->splines[0].c;
+	    else
+		t = (y-s1->splines[1].d)/s1->splines[1].c;
+	    if ( t<-.001 || t>1.001 )
+	continue;
+	    if ( t<=0 ) {t=0; x=s1->from->me.x; y = s1->from->me.y; }
+	    else if ( t>=1 ) { t=1; x=s1->to->me.x; y = s1->to->me.y; }
+	    soln = AddPoint(x,y,t,tempts[i],pts,t1s,t2s,soln);
+	}
+return( soln!=0 );
+    } else if ( s1->isquadratic && s2->isquadratic ) {
+	temp.a = 0;
+	temp.b = s1->splines[1].b*s2->splines[0].b - s1->splines[0].b*s2->splines[1].b;
+	temp.c = s1->splines[1].b*s2->splines[0].c - s1->splines[0].b*s2->splines[1].c;
+	temp.d = s1->splines[1].b*(s2->splines[0].d-s1->splines[0].d) -
+		 s1->splines[0].b*(s2->splines[1].d-s1->splines[1].d);
+	d = s1->splines[1].b*s1->splines[0].c - s1->splines[0].b*s1->splines[1].c;
+	if ( RealNear(d,0)) d=0;
+	if ( d!=0 ) {
+	    temp.b /= d; temp.c /= d; temp.d /= d;
+	    /* At this point t= temp.b*s^2 + temp.c*s + temp.d */
+	    /* We substitute this back into one of our equations and get a */
+	    /*  quartic in s */
+	    quad.a = s1->splines[0].b*temp.b*temp.b;
+	    quad.b = s1->splines[0].b*2*temp.b*temp.c;
+	    quad.c = s1->splines[0].b*(2*temp.b*temp.d+temp.c*temp.c);
+	    quad.d = s1->splines[0].b*2*temp.d*temp.c;
+	    quad.e = s1->splines[0].b*temp.d*temp.d;
+	    quad.b+= s1->splines[0].c*temp.b;
+	    quad.c+= s1->splines[0].c*temp.c;
+	    quad.d+= s1->splines[0].c*temp.d;
+	    quad.e+= s1->splines[0].d;
+	    quad.e-= s2->splines[0].d;
+	    quad.d-= s2->splines[0].c;
+	    quad.c-= s2->splines[0].b;
+	    if ( QuarticSolve(&quad,tempts)==-1 )
+return( -1 );
+	    for ( i=0; i<4 && tempts[i]!=-999999; ++i )
+		soln = AddQuadraticSoln(tempts[i],s1,s2,pts,t1s,t2s,soln);
+	} else {
+	    d = temp.c*temp.c-4*temp.b*temp.c;
+	    if ( RealNear(d,0)) d = 0;
+	    if ( d<0 )
+return( soln!=0 );
+	    d = sqrt(d);
+	    s = (-temp.c-d)/(2*temp.b);
+	    soln = AddQuadraticSoln(s,s1,s2,pts,t1s,t2s,soln);
+	    s = (-temp.c+d)/(2*temp.b);
+	    soln = AddQuadraticSoln(s,s1,s2,pts,t1s,t2s,soln);
+	}
+return( soln!=0 );
+    }
+    /* if one of the splines is quadratic then we can get an expression */
+    /*  relating c*t+d to poly(s^3), and substituting this back we get */
+    /*  a poly of degree 6 in s which could be solved iteratively */
+    /* however mixed quadratics and cubics are unlikely */
+
+    /* but if both splines are degree 3, the t is expressed as the sqrt of */
+    /*  a third degree poly, which must be substituted into a cubic, and */
+    /*  then squared to get rid of the sqrts leaving us with an ?18? degree */
+    /*  poly. Ick. */
+return( -1 );
 }
 
 static int XSolve(Spline *spline,real tmin, real tmax,FindSel *fs) {

@@ -215,6 +215,7 @@ typedef struct spline1d {
 
 typedef struct spline {
     unsigned int islinear: 1;		/* No control points */
+    unsigned int isquadratic: 1;	/* probably read in from ttf */
     unsigned int isticked: 1;
     unsigned int isneeded: 1;
     unsigned int isunneeded: 1;
@@ -522,6 +523,8 @@ extern BDFFont *BitmapFontScaleTo(BDFFont *old, int to);
 extern void BDFCharFree(BDFChar *bdfc);
 extern void BDFFontFree(BDFFont *bdf);
 extern int  BDFFontDump(char *filename,BDFFont *font, char *encodingname);
+extern int SplinesIntersect(Spline *s1, Spline *s2, BasePoint pts[4], real t1s[4], real t2s[4]);
+extern int CubicSolve(Spline1D *sp,real ts[3]);
 extern real SplineSolve(Spline1D *sp, real tmin, real tmax, real sought_y, real err);
 extern int SplineSolveFull(Spline1D *sp,real val, real ts[3]);
 extern void SplineFindInflections(Spline1D *sp, real *_t1, real *_t2 );
@@ -529,7 +532,7 @@ extern void SplineRemoveInflectionsTooClose(Spline1D *sp, real *_t1, real *_t2 )
 extern int NearSpline(struct findsel *fs, Spline *spline);
 extern real SplineNearPoint(Spline *spline, BasePoint *bp, real fudge);
 extern void SCMakeDependent(SplineChar *dependent,SplineChar *base);
-extern SplinePoint *SplineBisect(Spline *spline, real t);
+extern SplinePoint *SplineBisect(Spline *spline, double t);
 extern Spline *ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
 	TPoint *mid, int cnt);
 extern int SplineIsLinear(Spline *spline);

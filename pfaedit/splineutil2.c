@@ -174,8 +174,8 @@ typedef struct spline1 {
     real c0, c1;
 } Spline1;
 
-static void FigureSpline1(Spline1 *sp1,real t0, real t1, Spline1D *sp ) {
-    real s = (t1-t0);
+static void FigureSpline1(Spline1 *sp1,double t0, double t1, Spline1D *sp ) {
+    double s = (t1-t0);
     if ( sp->a==0 && sp->b==0 ) {
 	sp1->sp.d = sp->d + t0*sp->c;
 	sp1->sp.c = s*sp->c;
@@ -186,7 +186,7 @@ static void FigureSpline1(Spline1 *sp1,real t0, real t1, Spline1D *sp ) {
 	sp1->sp.c = s*(sp->c + t0*(2*sp->b + 3*sp->a*t0));
 	sp1->sp.b = s*s*(sp->b+3*sp->a*t0);
 	sp1->sp.a = s*s*s*sp->a;
-	if ( !RealNear(sp1->sp.a+sp1->sp.b+sp1->sp.c+sp1->sp.d,sp1->s1) ||
+	if ( ((sp1->s1>.001 || sp1->s1<-.001) && !RealNear((double) sp1->sp.a+sp1->sp.b+sp1->sp.c+sp1->sp.d,sp1->s1)) ||
 		!RealNear(sp1->sp.d,sp1->s0))
 	    GDrawIError( "Created spline does not work in FigureSpline1");
 	sp1->c0 = sp1->sp.c/3 + sp1->s0;
@@ -194,7 +194,7 @@ static void FigureSpline1(Spline1 *sp1,real t0, real t1, Spline1D *sp ) {
     }
 }
 
-SplinePoint *SplineBisect(Spline *spline, real t) {
+SplinePoint *SplineBisect(Spline *spline, double t) {
     Spline1 xstart, xend;
     Spline1 ystart, yend;
     Spline *spline1, *spline2;
@@ -207,8 +207,8 @@ SplinePoint *SplineBisect(Spline *spline, real t) {
 	GDrawIError("Bisection to create a zero length spline");
 #endif
     xstart.s0 = xsp->d; ystart.s0 = ysp->d;
-    xend.s1 = xsp->a+xsp->b+xsp->c+xsp->d;
-    yend.s1 = ysp->a+ysp->b+ysp->c+ysp->d;
+    xend.s1 = (double) xsp->a+xsp->b+xsp->c+xsp->d;
+    yend.s1 = (double) ysp->a+ysp->b+ysp->c+ysp->d;
     xstart.s1 = xend.s0 = ((xsp->a*t+xsp->b)*t+xsp->c)*t + xsp->d;
     ystart.s1 = yend.s0 = ((ysp->a*t+ysp->b)*t+ysp->c)*t + ysp->d;
     FigureSpline1(&xstart,0,t,xsp);

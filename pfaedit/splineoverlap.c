@@ -184,6 +184,8 @@ static IntersectionList *IntersectionOf(Edge *wasleft,Edge *wasright,
 	if ( nlt==-1 || nrt==-1 ) {
 	    if ( locur!=-1 )
     break;
+ nlt = SplineSolve(lsp,lbottom,ltop,(mbottom+mtop)/2,.0001);
+ nrt = SplineSolve(rsp,rbottom,rtop,(mbottom+mtop)/2,.0001);	/* Debug */
 	    GDrawIError("Request for an intersection out of range");
 return( old );
 	}
@@ -327,6 +329,7 @@ static IntersectionList *_FindIntersections(EdgeList *es, IntersectionList *sofa
 return( sofar );
 }
 
+#if 0
 static int IsHorVertSpline(Spline *sp) {
     int major;
     Spline1D *msp;
@@ -362,90 +365,38 @@ return( true );
     }
 return( false );
 }
-
-static IntersectionList *LinesIntersect(Spline *line1, Spline *line2, IntersectionList *sofar) {
-    /* If these two lines intersect, find that point */
-    real t1, t2;
-    real xpos, ypos;
-    real m1, m2;
-
-    if ( line1->to==line2->from || line2->to==line1->from )
-return( sofar );
-    if ( line1->from->me.x==line1->to->me.x ) {
-	if ( line1->from->me.y==line1->to->me.y )
-return( sofar );
-	if ( line2->from->me.x==line2->to->me.x )		/* if they are colinear we'll get them later, if not they don't intersect */
-return( sofar );
-	if (( line1->from->me.x>=line2->from->me.x && line1->from->me.x<=line2->to->me.x ) ||
-		( line1->from->me.x<=line2->from->me.x && line1->from->me.x>=line2->to->me.x )) {
-	    t2 = (line1->from->me.x-line2->from->me.x)/(line2->to->me.x-line2->from->me.x);
-	    ypos = line2->from->me.y + t2*(line2->to->me.y-line2->from->me.y);
-	    t1 = (ypos-line1->from->me.y)/(line1->to->me.y-line1->from->me.y);
-	    if ( t1<0 || t1>1 || t2<0 || t2>1 )
-return( sofar );
-return( AddIntersection(sofar,line1,line2,t1,t2,line1->from->me.x,ypos));
-	}
-return( sofar );
-    } else if ( line2->from->me.x==line2->to->me.x ) {
-	if ( line2->from->me.y==line2->to->me.y )
-return( sofar );
-	if (( line2->from->me.x>=line1->from->me.x && line2->from->me.x<=line1->to->me.x ) ||
-		( line2->from->me.x<=line1->from->me.x && line2->from->me.x>=line1->to->me.x )) {
-	    t1 = (line2->from->me.x-line1->from->me.x)/(line1->to->me.x-line1->from->me.x);
-	    ypos = line1->from->me.y + t1*(line1->to->me.y-line1->from->me.y);
-	    t2 = (ypos-line2->from->me.y)/(line2->to->me.y-line2->from->me.y);
-	    if ( t1<0 || t1>1 || t2<0 || t2>1 )
-return( sofar );
-return( AddIntersection(sofar,line2,line1,t2,t1,line2->from->me.x,ypos));
-	}
-return( sofar );
-    }
-    m1 = (line1->to->me.y-line1->from->me.y)/(line1->to->me.x-line1->from->me.x);
-    m2 = (line2->to->me.y-line2->from->me.y)/(line2->to->me.x-line2->from->me.x);
-    if ( RealNear(m1,m2) )
-return( sofar );
-    xpos = (line1->from->me.y-line2->from->me.y -
-	    m1*line1->from->me.x + m2*line2->from->me.x)/(m2-m1);
-    t1 = (xpos-line1->from->me.x)/(line1->to->me.x-line1->from->me.x);
-    if ( t1<0 || t1>1 )
-return( sofar );
-    t2 = (xpos-line2->from->me.x)/(line2->to->me.x-line2->from->me.x);
-    if ( t2<0 || t2>1 )
-return( sofar );
-    ypos = line1->from->me.y + m1*(xpos-line1->from->me.x);
-return( AddIntersection(sofar,line2,line1,t2,t1,xpos,ypos));
-}
+#endif
 
 static IntersectionList *FindLinearIntersections(SplineSet *spl, IntersectionList *sofar) {
     SplineSet *ss;
     Spline *first, *sp, *first2, *sp2;
+    BasePoint pts[4];
+    real t1s[4], t2s[4];
+    int i;
+    /* This used only to work if both splines were lines. Now it works if */
+    /*  at least one of the splines is a line */
 
     for ( ; spl!=NULL; spl = spl->next ) {
 	first = NULL;
 	for ( sp = spl->first->next; sp!=NULL && sp!=first; sp=sp->to->next ) {
 	    if ( first==NULL ) first = sp;
-	    if ( sp->knownlinear || IsHorVertSpline(sp)) {
-		for ( ss=spl; ss!=NULL; ss = ss->next ) {
-		    if ( ss==spl ) {
-			first2 = first;
-			sp2 = sp->to->next;
-		    } else {
-			first2 = NULL;
-			sp2 = ss->first->next;
+	    for ( ss=spl; ss!=NULL; ss = ss->next ) {
+		if ( ss==spl ) {
+		    first2 = first;
+		    sp2 = sp->to->next;
+		} else {
+		    first2 = NULL;
+		    sp2 = ss->first->next;
+		}
+		for ( ; sp2!=NULL && sp2!=first2; sp2 = sp2->to->next ) {
+		    if (( sp->islinear || sp2->islinear ) &&
+			    SplinesIntersect(sp,sp2,pts,t1s,t2s)>0 ) {
+			for ( i=0; i<4 && t1s[i]!=-1; ++i )
+			    if ( (t1s[i]!=0 && t1s[i]!=1) || (t2s[i]!=0 || t2s[i]!=1))
+				sofar = AddIntersection(sofar,sp,sp2,t1s[i],t2s[i],
+					pts[i].x,pts[i].y);
 		    }
-		    for ( ; sp2!=NULL && sp2!=first2; sp2 = sp2->to->next ) {
-			if ( sp2->knownlinear || IsHorVertSpline(sp)) {
-			    if (( sp->from->me.x>sp2->from->me.x && sp->from->me.x>sp2->to->me.x && sp->to->me.x>sp2->from->me.x && sp->to->me.x>sp2->to->me.x ) ||
-				    ( sp->from->me.x<sp2->from->me.x && sp->from->me.x<sp2->to->me.x && sp->to->me.x<sp2->from->me.x && sp->to->me.x<sp2->to->me.x ) ||
-				    ( sp->from->me.y>sp2->from->me.y && sp->from->me.y>sp2->to->me.y && sp->to->me.y>sp2->from->me.y && sp->to->me.y>sp2->to->me.y ) ||
-				    ( sp->from->me.y<sp2->from->me.y && sp->from->me.y<sp2->to->me.y && sp->to->me.y<sp2->from->me.y && sp->to->me.y<sp2->to->me.y ))
-				/* doesn't intersect */;
-			    else
-				/* it might */
-				sofar = LinesIntersect(sp,sp2,sofar);
-			}
-			if ( first2==NULL ) first2=sp2;
-		    }
+		    if ( first2==NULL ) first2 = sp2;
 		}
 	    }
 	}
@@ -692,14 +643,14 @@ static IntersectionList *SplineSetFindIntersections(SplineSet *base) {
     DBounds b;
     IntersectionList *ilist= NULL;
 
+    /* We miss intersections where the end-point of a spline is on */
+    /*  another spline. Check for them first */
+    ilist = FindVertexIntersections(base,ilist);
+
     /* We can find linear intersections exactly, so let's do so */
-    /* Do this first so we'll store the exact position, otherwise it might */
+    /* Do this early so we'll store the exact position, otherwise it might */
     /*  be an approximation */
     ilist = FindLinearIntersections(base,ilist);
-
-    /* And we also miss intersections where the end-point of a spline is on */
-    /*  another spline. Check for them too */
-    ilist = FindVertexIntersections(base,ilist);
 
     SplineSetFindBounds(base,&b);
     memset(&es,'\0',sizeof(es));
@@ -736,113 +687,226 @@ static IntersectionList *SplineSetFindIntersections(SplineSet *base) {
 return( ilist );
 }
 
-static void _FindNeeded(EdgeList *es) {
-    Edge *active=NULL, *apt, *pr, *e;
-    int i, cnt;
+static int bottomcmp(const void *_e1, const void *_e2) {
+    const EI *e1 = *(EI *const *) _e1, *e2 = *(EI *const *) _e2;
 
-    for ( i=0; i<es->cnt; ++i ) {
-	active = ActiveEdgesRefigure(es,active,i);
-	if ( es->edges[i]!=NULL )	/* Things can get way too complicated when */
-    continue;			/* we've got an intersection point. we've got too many splines */
-	for ( apt=active; apt!=NULL; apt = apt->aenext )
-	    if ( apt->mmax < i+1 )
-	break;
-	if ( apt!=NULL )
-    continue;			/* Again, avoid intersection points */
-	for ( apt=active; apt!=NULL; apt = e) {
-	    cnt=apt->up?1:-1;
+return( ( e1->coordmin[e1->major]>e2->coordmin[e1->major] ) ? 1 : 0 );
+}
 
-	    if ( apt->spline->isunneeded && !apt->spline->isneeded )
-#ifndef DEBUG
-		GDrawIError("Both needed and unneeded in _FindNeeded#1" );
-#else
-		printf( "IError: needed&unneeded (%g,%g) -> (%g,%g)\n",
-			apt->spline->from->me.x, apt->spline->from->me.y,
-			apt->spline->to->me.x, apt->spline->to->me.y);
-#endif
-	    apt->spline->isneeded = true;
-	    for ( pr=apt, e=apt->aenext; e!=NULL && cnt!=0; pr=e, e=e->aenext ) {
-		if ( pr->up!=e->up ) {
-		    cnt += (e->up?1:-1);
-		    if ( (cnt==0 && !e->spline->isneeded && e->spline->isunneeded ) ||
-			    (cnt!=0 && e->spline->isneeded && !e->spline->isunneeded ))
-#ifndef DEBUG
-			GDrawIError("Both needed and unneeded in _FindNeeded#2" );
-#else
-			printf( "IError: needed&unneeded (%g,%g) -> (%g,%g)\n",
-				e->spline->from->me.x, e->spline->from->me.y,
-				e->spline->to->me.x, e->spline->to->me.y);
-#endif
-		    if ( cnt==0 )
-			e->spline->isneeded = true;
+static int topcmp(const void *_e1, const void *_e2) {
+    const EI *e1 = *(EI *const *) _e1, *e2 = *(EI *const *) _e2;
+
+return( ( e1->coordmax[e1->major]>e2->coordmax[e1->major] ) ? 1 : 0 );
+}
+
+static void ELCarefullOrder(EIList *el, int major) {
+    int i, ecnt;
+    EI *e;
+
+    for ( i=ecnt=0; i<el->cnt; ++i ) {
+	for ( e=el->ordered[i]; e!=NULL; e=e->ordered )
+	    ++ecnt;
+    }
+    el->bottoms = galloc((ecnt+1)*sizeof(EI *));
+    el->tops    = galloc((ecnt+1)*sizeof(EI *));
+    for ( i=ecnt=0; i<el->cnt; ++i ) {
+	for ( e=el->ordered[i]; e!=NULL; e=e->ordered ) {
+	    if ( e->coordmin[major]!=e->coordmax[major] ) {
+		el->bottoms[ecnt] = el->tops[ecnt] = e;
+		++ecnt;
+	    }
+	    e->major = major;
+	}
+    }
+    el->bottoms[ecnt] = el->tops[ecnt] = NULL;
+    qsort(el->bottoms,ecnt,sizeof(EI *),bottomcmp);
+    qsort(el->tops,ecnt,sizeof(EI *),topcmp);
+}
+
+static int ExactlySame(EI *e1,EI *e2) {
+    if ( e1==e2 )
+return( true );
+
+    if ( e1->spline->from->me.x==e2->spline->from->me.x && e1->spline->from->me.y==e2->spline->from->me.y &&
+	    e1->spline->to->me.x==e2->spline->to->me.x && e1->spline->to->me.y==e2->spline->to->me.y &&
+	    e1->spline->from->nonextcp && e2->spline->from->nonextcp &&
+	    e1->spline->to->noprevcp && e2->spline->to->noprevcp )
+return( true );
+    /* And in reverse... */
+    if ( e1->spline->from->me.x==e2->spline->to->me.x && e1->spline->from->me.y==e2->spline->to->me.y &&
+	    e1->spline->to->me.x==e2->spline->from->me.x && e1->spline->to->me.y==e2->spline->from->me.y &&
+	    e1->spline->from->nonextcp && e2->spline->to->nonextcp &&
+	    e1->spline->to->noprevcp && e2->spline->from->noprevcp )
+return( true );
+
+return( false );
+}
+
+static EI *CountDuplicates(EI *apt,int *_cnt) {
+    int cnt = *_cnt, tot, c;
+    EI *test, *needed=NULL, *notunneeded=NULL;
+
+    /* If we have two (or more) tangent splines then they will add 2 to the */
+    /*  count. But they need to be treated carefully. One of them will always */
+    /*  have to go, but the other might be needed. And if we get the wrong one*/
+    /*  ... */
+    tot = c = 0;
+    for ( test=apt; test!=NULL && ExactlySame(apt,test); test=test->aenext ) {
+	if ( test->spline->isneeded ) needed = test;
+	if ( !test->spline->isunneeded ) notunneeded = test;
+	tot += test->up?1:-1;
+	++c;
+    }
+    if (( cnt==0 && tot==0 ) ||		/* The two (or more) lines cancel out */
+	    (cnt!=0 && cnt+tot!=0)) {	/* Normal case of internal lines */
+	if ( needed!=NULL && !needed->spline->isunneeded )
+	    GDrawIError( c==1?
+		"A spline is both needed and unneeded in CountDuplicates#1":
+		"A set of tangent splines is both needed and unneeded in CountDuplicates#1");
+	for ( test=apt; test!=NULL && ExactlySame(apt,test); test=test->aenext )
+	    test->spline->isunneeded = true;
+    } else if (( cnt==0 && tot!=0 ) || (cnt!=0 && cnt+tot==0)) {
+	if ( needed )
+	    /* Already done */;
+	else if ( notunneeded==NULL )
+	    GDrawIError( c==1?
+		"A spline is both needed and unneeded in CountDuplicates#2":
+		"A set of tangent splines is both needed and unneeded in CountDuplicates#2");
+	for ( test=apt; test!=NULL && ExactlySame(apt,test); test=test->aenext ) {
+	    test->spline->isunneeded = true;
+	    test->spline->isneeded = false;
+	}
+	apt->spline->isunneeded = false;
+	apt->spline->isneeded = true;
+    }
+    *_cnt += tot;
+return( test );
+}
+
+static void _FindNeeded(EIList *el, int major) {
+    EI *active=NULL, *apt, *e, *npt, *pr;
+    int bpos=0, tpos=0, cnt;
+    real pos, npos;
+    int other = !major, subchange;
+
+    el->major = major;
+    ELOrder(el,major);
+    ELCarefullOrder(el,major);
+
+    while ( el->bottoms[bpos]!=NULL || el->tops[tpos]!=NULL ) {
+	/* Figure out the next point of interest */
+	if ( el->tops[tpos]==NULL )
+	    pos = el->bottoms[bpos]->coordmin[major];
+	else if ( el->bottoms[bpos]==NULL )
+	    pos = el->tops[tpos]->coordmax[major];
+	else
+	    pos = el->tops[tpos]->coordmax[major]<=el->bottoms[bpos]->coordmin[major] ?
+		    el->tops[tpos]->coordmax[major] :
+		    el->bottoms[bpos]->coordmin[major];
+/* Much of this loop is a reworking of EIActiveEdgesRefigure, changed */
+/*  to support a non-integral approach. This works because there should be */
+/*  no crossings */
+	/* Then remove anything that ends here */
+	if ( el->tops[tpos]!=NULL && pos==el->tops[tpos]->coordmax[major] ) {
+	    for ( pr=NULL, apt=active; apt!=NULL; apt = apt->aenext ) {
+		if ( apt->coordmax[major]==pos ) {
+		    if ( pr==NULL )
+			active = apt->aenext;
 		    else
-			e->spline->isunneeded = true;
-		} else if ( (pr->before==e || pr->after==e ) &&
-			(( pr->mmax==i && e->mmin==i ) ||
-			 ( pr->mmin==i && e->mmax==i )) )
-		    /* This just continues the line and doesn't change count */;
-		else {
-		    cnt += (e->up?1:-1);
-		    if ( (cnt==0 && !e->spline->isneeded && e->spline->isunneeded ) ||
-			    (cnt!=0 && e->spline->isneeded && !e->spline->isunneeded ))
-#ifndef DEBUG
-			GDrawIError("Both needed and unneeded in _FindNeeded#3" );
-#else
-			printf( "IError: needed&unneeded (%g,%g) -> (%g,%g)\n",
-				e->spline->from->me.x, e->spline->from->me.y,
-				e->spline->to->me.x, e->spline->to->me.y);
-#endif
-		    if ( cnt==0 )
-			e->spline->isneeded = true;
+			pr->aenext = apt->aenext;
+		} else
+		    pr = apt;
+	    }
+	    while ( el->tops[tpos]!=NULL && pos==el->tops[tpos]->coordmax[major])
+		++tpos;
+	}
+	/* then move the active list to the next line */
+	for ( apt=active; apt!=NULL; apt = apt->aenext ) {
+	    Spline1D *osp = &apt->spline->splines[other];
+	    apt->tcur = EITOfNextMajor(apt,el,pos);
+	    apt->ocur = ( ((osp->a*apt->tcur+osp->b)*apt->tcur+osp->c)*apt->tcur + osp->d );
+	}
+	active = EIActiveListReorder(active,&subchange);
+	if ( subchange )
+	    GDrawIError("There should be no crossovers in _FindNeeded");
+	while ( el->bottoms[bpos]!=NULL && pos==el->bottoms[bpos]->coordmin[major] ) {
+	    Spline1D *osp;
+	    npt = el->bottoms[bpos++];
+	    osp = &npt->spline->splines[other];
+	    npt->tcur = npt->up?0:1;
+	    npt->ocur = ( ((osp->a*npt->tcur+osp->b)*npt->tcur+osp->c)*npt->tcur + osp->d );
+	    for ( pr=NULL, apt=active; apt!=NULL && npt!=NULL; ) {
+		if ( npt->ocur<apt->ocur ) {
+		    npt->aenext = apt;
+		    if ( pr==NULL )
+			active = npt;
 		    else
-			e->spline->isunneeded = true;
+			pr->aenext = npt;
+		    npt = NULL;
+	    break;
+		} else {
+		    pr = apt;
+		    apt = apt->aenext;
 		}
 	    }
-	    /* color a horizontal line that comes out of the last vertex */
-	    if ( e!=NULL && (e->before==pr || e->after==pr) &&
-			(( pr->mmax==i && e->mmin==i ) ||
-			 ( pr->mmin==i && e->mmax==i )) ) {
-		e->spline->isneeded = true;
-		if ( e->spline->isunneeded ) GDrawIError("Both needed and unneeded in _FindNeeded#3" );
-		pr = e;
-		e = e->aenext;
+	    if ( npt!=NULL ) {
+		if ( pr==NULL )
+		    active = npt;
+		else
+		    pr->aenext = npt;
+		npt->aenext = NULL;
+	    }
+	}
+/* End of EIActiveEdgesRefigure */
+/* Now for the part of the routine which actually does something... */
+	if ( el->tops[tpos]==NULL && el->bottoms[bpos]==NULL)
+    break;
+	if ( el->tops[tpos]==NULL )
+	    npos = el->bottoms[bpos]->coordmin[major];
+	else if ( el->bottoms[bpos]==NULL )
+	    npos = el->tops[tpos]->coordmax[major];
+	else
+	    npos = el->tops[tpos]->coordmax[major]<=el->bottoms[bpos]->coordmin[major] ?
+		    el->tops[tpos]->coordmax[major] :
+		    el->bottoms[bpos]->coordmin[major];
+	pos = (npos+pos)/2;
+	for ( apt=active; apt!=NULL; apt = apt->aenext ) {
+	    Spline1D *osp = &apt->spline->splines[other];
+	    apt->tcur = EITOfNextMajor(apt,el,pos);
+	    apt->ocur = ( ((osp->a*apt->tcur+osp->b)*apt->tcur+osp->c)*apt->tcur + osp->d );
+	}
+	active = EIActiveListReorder(active,&subchange);
+	for ( apt=active; apt!=NULL; apt = e ) {
+	    cnt = 0;
+	    e = CountDuplicates(apt,&cnt);
+	    for ( ; e!=NULL && cnt!=0; ) {
+		e = CountDuplicates(e,&cnt);
 	    }
 	}
     }
+    free(el->ordered);
+    free(el->ends);
+    free(el->bottoms);
+    free(el->tops);
 }
 
 static void SplineSetFindNeeded(SplineSet *base) {
-    EdgeList es;
-    DBounds b;
+    EIList el;
+    SplineChar sc;
 
-    SplineSetFindBounds(base,&b);
-    memset(&es,'\0',sizeof(es));
-    es.scale = 1.0;
-    es.mmin = floor(b.miny*es.scale);
-    es.mmax = ceil(b.maxy*es.scale);
-    es.omin = b.minx*es.scale;
-    es.omax = b.maxx*es.scale;
-    es.cnt = (int) (es.mmax-es.mmin) + 1;
-    es.edges = gcalloc(es.cnt,sizeof(Edge *));
-    es.interesting = gcalloc(es.cnt,sizeof(char));
-    es.sc = NULL;
-    es.major = 1; es.other = 0;
-    FindEdgesSplineSet(base,&es);
-    _FindNeeded(&es);
-    FreeEdges(&es);
+    memset(&sc,'\0',sizeof(sc));
+    sc.splines = base;
+
+    memset(&el,'\0',sizeof(el));
+    el.leavetiny = true;
+    ELFindEdges(&sc, &el);
+
+    _FindNeeded(&el,1);
 
     /* Have to check both directions, else we lose horizontal line intersections */
-    es.mmin = floor(b.minx*es.scale);
-    es.mmax = ceil(b.maxx*es.scale);
-    es.omin = b.miny*es.scale;
-    es.omax = b.maxy*es.scale;
-    es.cnt = (int) (es.mmax-es.mmin) + 1;
-    es.edges = gcalloc(es.cnt,sizeof(Edge *));
-    es.interesting = gcalloc(es.cnt,sizeof(char));
-    es.major = 0; es.other = 1;
-    FindEdgesSplineSet(base,&es);
-    _FindNeeded(&es);
-    FreeEdges(&es);
+    _FindNeeded(&el,0);
+
+    ElFreeEI(&el);
 }
 
 /* Ok. If we're going to refigure things we've got to make sure that each */

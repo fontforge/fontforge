@@ -1,0 +1,1463 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 16-Sep-2001 -->
+  <!-- AP: Last modified: 16-Sep-2001 -->
+  <TITLE>Older changes to PfaEdit</TITLE>
+</HEAD>
+<BODY>
+<P>
+<A HREF="index.html#change-log">Current changes</A>
+<P>
+<UL>
+  <LI>
+    31-August-2001
+    <UL>
+      <LI>
+	If you dragged on a new spline, and then translated one or both of its end-points
+	the spline reverted to its default configuration
+      <LI>
+	TTF files encoded in Wansung/SJIS will be read into a font encoded with either
+	KSC5601 or JIS208.
+    </UL>
+  <LI>
+    30-August-2001
+    <UL>
+      <LI>
+	Fixed some bugs in otf output:
+	<UL>
+	  <LI>
+	    hintmasks were being output incorrectly, omitting bytes of data. This could
+	    cause horrendous errors. If PfaEdit read in one of these fonts it would often
+	    report "stack underflow".
+	  <LI>
+	    Another hintmask problem caused characters to be offset from where they should
+	    be.
+	  <LI>
+	    Placing a hintmask between multiple [rhv]lineto s caused us to skip a line
+	    segment
+	  <LI>
+	    cleaned up generation of subroutines (used to be extraneous rmovetos)
+	  <LI>
+	    If the user gave bad input to certain Private values (BlueValues for instance),
+	    PfaEdit could go into an infinite loop.
+	</UL>
+      <LI>
+	Non-CID otf fonts did not get their encodings read
+      <LI>
+	Improved parsing of hints in a type1 font with hint substitution
+      <LI>
+	Fixed a crash bug in Inserting a font (or a blank font) into a CID font
+      <LI>
+	Generate font dialog would sometimes default to producing a CID keyed font
+	when it was not appropriate.
+      <LI>
+	I got the ulCodePageRange bits wrong of the CJK codepages (which meant that
+	windows thought the wrong characters were in the font)
+      <LI>
+	I generated a bad cmap (ttf encoding) table for CID keyed otf fonts.
+      <LI>
+	If a TTF/OTF font is encoded with KSC5601 or JIS208 then I will give it a
+	Wansung / SJIS encoding in the cmap (if a unicode encoding is desired then
+	reencode as unicode).
+      <LI>
+	Found format for afm files of CID fonts. Can now produce such for CID font
+	output.
+      <LI>
+	Improved reference handling in type1s. If a reference doesn't fit into a
+	"seac" then try to use subroutines. Subroutines are possible if:
+	<UL>
+	  <LI>
+	    None of the references in the character use hint substitution (or flex
+	    hints)<BR>
+	    &nbsp; &nbsp; &nbsp; - or -
+	  <LI>
+	    Only one of the references uses hint substitution and it isn't translated
+	    (not moved)
+	</UL>
+      <LI>
+	Improved reference handling in type2s (opentype). Allow a reference to a
+	character with hint substitutions to go into a subroutine if none of the
+	other referenced characters use any hints at all, and the character with
+	hint substitutions is not translated.
+      <LI>
+	Get Info was broken inside outline characters
+      <LI>
+	Made an attempt to speed up handling of larger fonts. Only noticeable difference
+	I've seen is that it speeds up freeing the font.
+      <LI>
+	Added a dialog to show what characters refer to the current character
+      <LI>
+	Made a feeble attempt to sort out the confusion engendered by adobe's naming
+	conventions for greek letters.
+	<UL>
+	  <LI>
+	    if a font contains either the of the characters U+00B5 or U+03BC then when
+	    saving the font PfaEdit ensures that characters with the names: "mu", "uni00B5"
+	    and "uni03BC" are all present. Similarly for Delta, uni0394 uni2206 and Omega,
+	    uni03A9 uni2126
+	</UL>
+      <LI>
+	Added support for command line arguments which begin with "--".
+      <LI>
+	Added -usage and -help arguments
+      <LI>
+	Added -recover={none,auto,clean} to give you control over the autorecovery
+	process.
+	<UL>
+	  <LI>
+	    -recover=none means that the current run will not perform auto recovery but
+	    will leave things so that the next run will do so. (Note: If you change a
+	    font that will be recovered later, the results are indeterminate).
+	  <LI>
+	    -recover=auto default behavior
+	  <LI>
+	    -recover=clean cleans out the autorecovery directory
+	</UL>
+      <LI>
+	extension guessing would do the wrong thing if we actually wanted to open
+	a font with no extension.
+    </UL>
+  <LI>
+    8-August-2001
+    <UL>
+      <LI>
+	Some minor fixes to gchardlg.c
+      <LI>
+	Try to upgrade the CJK translation tables to Unicode 3
+      <LI>
+	Improve processing of ttc files (I can actually read one no)
+      <LI>
+	chooser icon for cid-keyed fonts
+    </UL>
+  <LI>
+    6-August-2001
+    <UL>
+      <LI>
+	KSC5601-1987 was still wrong.
+      <LI>
+	Fixed a crash in FontInfo on CID fonts.
+    </UL>
+  <LI>
+    4-August-2001
+    <UL>
+      <LI>
+	Eek. FontInfo-&gt;Panose,TTF Values never got stored into the font.
+      <LI>
+	Also added access to Version, and UniqueID
+      <LI>
+	Was given a TTf font with no fontname. This caused a crash. PfaEdit now assigns
+	a fontname if the font doesn't provide one.
+      <LI>
+	Added support (well ability to read) for SJIS, Big5 and Wansung TTF encodings
+	(platform=3, specific=2,3,5)
+      <LI>
+	After playing with large asian fonts I am now making (minimal) attempts to
+	conserve memory and have changed all my doubles to floats (it's configurable
+	of course, but default is float).
+      <LI>
+	Fixed a number of bugs in open type output
+      <LI>
+	Was using out of date Korean-&gt;Unicode conversion. Should be fixed now.
+      <LI>
+	Initial support for <A HREF="cidmenu.html">CID keyed fonts</A>.
+    </UL>
+  <LI>
+    26-July-2001
+    <UL>
+      <LI>
+	Added a constrain points command to align a collection of points, or to space
+	points evenly on a line.
+    </UL>
+  <LI>
+    25-July-2001
+    <UL>
+      <LI>
+	Fixed a rare crash from closing the outline (or bitmap) view
+      <LI>
+	Added a new problem to find problems
+      <LI>
+	Fixed some small bugs in find problems
+      <LI>
+	Oops. TrueType names came out in the wrong endianness.
+    </UL>
+  <LI>
+    24-July-2001
+    <UL>
+      <LI>
+	Although the family name accepted spaces, it then silently removed them.
+	No longer. (I hope)
+      <LI>
+	PfaEdit is now more careful when you attempt to clear a character from the
+	font view which has dependents (at least one of which is not being cleared
+	itself). It will warn you and allow you not to clear that character.
+      <LI>
+	PfaEdit is also more careful when you attempt to paste a reference to a character
+	that does not exist in the current font. Before it silently ignored it. Now
+	it will warn you and give you the option of pasting the outlines of the original
+	character being refered to (if it can find that character).
+      <LI>
+	Fixed an uninitialized variable in print that could cause things to go into
+	an infinite loop.
+      <LI>
+	Fixed a rounding error problem in ttf generation that could cause an infinite
+	loop.
+      <LI>
+	Small bitmap fonts will be magnified in the font view
+      <LI>
+	Expand Stroke didn't work on counter-clockwise triangles (presumably other
+	shapes, but I didn't check). It also would randomly leave paths counter-clockwise
+	when they should have been clockwise.
+      <LI>
+	Finally!<BR>
+	Often when joining two paths (or closing one path) the point would jump when
+	you released the mouse. I finally figured out why.
+    </UL>
+  <LI>
+    22-July-2001
+    <UL>
+      <LI>
+	wrote a unicode printf which is now used by most of the error routines. Should
+	be no visible difference to users.
+      <LI>
+	cleaned up the truetype names aspect of the font info dlg.
+      <LI>
+	Added a Translate Styles button to the above aspect if the string is Style
+	and the language is American English. (Sorry about the linguistic chauvanism)
+      <LI>
+	Allowed spaces in the Postscript family name again
+      <LI>
+	Fixed a bug where the "lpr" radio button would sometimes be disabled.
+      <LI>
+	Various other small improvements to "Print".
+      <LI>
+	The "Clockwise" detector failed on some paths. I've rewritten it, it should
+	work better now.
+      <LI>
+	The clockwise detector in find problems also needed to be rewritten.
+      <LI>
+	Added a Find Problems detector for almost horizontal/vertical control points.
+      <LI>
+	Some improvements to metafont (well, a few characters look better anyway,
+	I hope it's an improvement). It still doesn't work of course.
+    </UL>
+  <LI>
+    17-July-2001
+    <UL>
+      <LI>
+	Using almost any stringized error routine would munch memory. Many inexplicable
+	errors resulted. I hope it is now fixed and that PfaEdit is stable again.
+      <LI>
+	Valek's improvements to Find Problems
+      <LI>
+	Valek's russian version of "A quick brown fox..."
+      <LI>
+	use textarea gadget for Font's copyright notice.
+    </UL>
+  <LI>
+    16-July-2001
+    <UL>
+      <LI>
+	PfaEdit did not do a very good job of guessing at where hints should be active
+	when they were supplied by the user. Should do better now.
+      <LI>
+	More tuneups for autohint.
+      <LI>
+	Added a command to the outline view to allow you to set the "First Point"
+	of each spline set. This is important for Interpolate font.
+      <LI>
+	Fixed a bug in Font Reencoding having to do with references.
+      <LI>
+	Added direction detection to Find Problems (to make sure outer paths are
+	clockwise)
+      <LI>
+	Cleared selections between explainations on Find Problems
+      <LI>
+	Gave some indication of how near horizontal/vertical lines are wrong in find
+	problems
+      <LI>
+	Fixed a crash in MetaFont
+      <LI>
+	Added a progress indicator to MetaFont
+      <LI>
+	Added some more to the print sample text (bulgarian, macedonian, welsh, czech,
+	lithuanian, polish, slovene)
+      <LI>
+	Stringized some more files
+    </UL>
+  <LI>
+    15-July-2001
+    <UL>
+      <LI>
+	PfaEdit should now be able to read truetype collection files and do something
+	reasonable --<BR>
+	At least in theory. I don't have any truetype collection files to test on.
+      <LI>
+	Oh dear. The rasterizer was looking at vertical hints when it should have
+	looked at horizontal ones, looking at no hints when it should have looked
+	at vertical ones. The result was that vertical edges weren't found.
+      <LI>
+	PfaEdit had problems reading in lone bdf fonts with strange encodings.
+      <LI>
+	Cleaned up print behavior slightly on systems without ghostview
+      <LI>
+	Find Problems would not always stop immediately after pressing the stop button.
+      <LI>
+	more files stringized
+    </UL>
+  <LI>
+    11-July-2001
+    <UL>
+      <LI>
+	Eek! Memory problem in metrics view (writing beyond what was allocated).
+	Fixed now.
+      <LI>
+	There is scrollbar in the metricsview again. This time it actually does
+	something.
+    </UL>
+  <LI>
+    10-July-2001
+    <UL>
+      <LI>
+	Did significant improvement to arabic ligature creation (at least it's done
+	right to left now and the proper forms will be picked).
+      <LI>
+	Improved the character icons of Anti-Aliased fonts.
+      <LI>
+	Oops. FontInfo would mistakenly complain about modifiers like "-Bold". Fixed.
+      <LI>
+	There's the start of a <A HREF="MetaFont.html">command to change the weight
+	of a font</A>. It doesn't work very well yet. It probably never will work
+	perfectly, but I hope it may eventually be useful.
+    </UL>
+  <LI>
+    7-July-2001
+    <UL>
+      <LI>
+	Fixed a crash when referring to a character whose encoding was bigger than
+	65535
+      <LI>
+	Rewrote the <A HREF="fontinfo.html">Font Info</A> dlg.
+	<UL>
+	  <LI>
+	    Made the dialog controlled by tabs instead of trying to show everything at
+	    once.
+	  <LI>
+	    Merged the private info dlg into it
+	  <LI>
+	    Provided access to some ttf settings which were previously hidden
+	  <LI>
+	    Provided access to the ttf name table (which allows you to give the font
+	    and its styles different names on different languages. So CaslonItalic could
+	    be CaslonItalique in French and CaslonKursive in German.
+	</UL>
+    </UL>
+  <LI>
+    30-June-2001
+    <UL>
+      <LI>
+	Fixed another crash from putting strings in resources.
+      <LI>
+	Added a snap-to feature on horizontal/vertical lines in the grid (guide)
+	layer.
+      <LI>
+	Missing a few files in the distribution of the 28th.
+    </UL>
+  <LI>
+    28-June-2001
+    <UL>
+      <LI>
+	Oops. Now all empty characters are nameless, not just controls.
+      <LI>
+	Many improvements to <A HREF="problems.html">find problems</A>.
+      <LI>
+	Added some new shortcuts to the menus.
+    </UL>
+  <LI>
+    27-June-2001
+    <UL>
+      <LI>
+	When generating truetype (or opentype) fonts, PfaEdit failed to set the
+	ulCodePageRange for encodings other than latin1/latin2. Should do a better
+	job now.
+      <LI>
+	Fixed a crash introduced by decompress.
+      <LI>
+	Fixed a crash when trying to merge two paths (by moving them with the mouse)
+	when the stationary "path" consisted of exactly one point.
+      <LI>
+	Sometimes control characters would be named "uni0001" (etc.) rather than
+	".notdef". Appropriate, but inconsistant. They should now always be called
+	".notdef" (unless explicitly renamed).
+    </UL>
+  <LI>
+    24-June-2001
+    <UL>
+      <LI>
+	Change configure script to work on solaris
+    </UL>
+  <LI>
+    23-June-2001
+    <UL>
+      <LI>
+	Make giofile.c compile on solaris
+      <LI>
+	Fix crash in autohint
+      <LI>
+	Decompress compressed font files automagically before loading them
+      <LI>
+	Update russian version.
+    </UL>
+  <LI>
+    21-June-2001
+    <UL>
+      <LI>
+	Copy Width did not work from the font view
+      <LI>
+	made the info display in the outline view more legible if the locale used
+	"," as decimal point.
+      <LI>
+	One more attempt to get palettes right. They would disappear if you went
+	to a non-outline view window and then returned to that same window.
+      <LI>
+	Some useful information will now be displayed in the outline view as you
+	add points to a path.
+      <LI>
+	And during rectangle, elipse, polygon and star generation.
+      <LI>
+	Build Composit Char will now create the characters 0x2000-0x2015 (spaces
+	and rules) if you ask it to.
+      <LI>
+	Fixed several bugs caused by the resource string changed.
+	<UL>
+	  <LI>
+	    This one showed up in font info when removing characters.
+	  <LI>
+	    And this on adding an encoding (to font info).
+	  <LI>
+	    Any simple request for a string got two OK buttons (ie. no Cancel)
+	</UL>
+      <LI>
+	Added some more strings.
+      <LI>
+	Cleaned up the hint translation code to work with the new (ie. hint subtitution,
+	diagonal)
+      <LI>
+	Improved UI for metrics view as per Valik's suggestions
+	<UL>
+	  <LI>
+	    Before it would wait until you depressed the mouse before changing the cursor,
+	    now it changes the cursor as you move.
+	  <LI>
+	    Better cursors (seperate cursors for kerning, setting rbearing (== width),
+	    setting lbearing)
+	  <LI>
+	    Selected character is drawn in a different color.
+	</UL>
+      <LI>
+	Implement ghost/edge hints. (Oops)
+    </UL>
+  <LI>
+    19-June-2001
+    <UL>
+      <LI>
+	Initial version of russian menus
+      <LI>
+	Recently AutoHint would remove control points from splines which traced out
+	a line (ie. if the control points were on the line segment between the two
+	end points). AutoHint shouldn't muck with things like that. And anyway it
+	got it wrong in several cases.
+      <LI>
+	The simplify command will now remove colinear control points from a spline.
+	And if you hold down the shift key when invoking the menu the simplify command
+	will only do this (and will change its name to cleanup).
+    </UL>
+  <LI>
+    18-June-2001
+    <UL>
+      <LI>
+	Oops. PfaEdit looked in the current directory, not the executable's directory
+	for the ui files. Should be looking in the executable's dir.
+      <LI>
+	Oops. The "font has changed" dialog caused a crash.
+      <LI>
+	The simplify command will remove control points if the spline traces out
+	a line.
+      <LI>
+	Cleaned up diagonal hints
+      <LI>
+	Made a change to menus which might fix Valek's menu crash. Or might not.
+      <LI>
+	Added some more strings to the ui files (yesterday files can't be used any
+	more)
+      <LI>
+	Cleaned up some problems with the metrics view.
+    </UL>
+  <LI>
+    17-June-2001
+    <UL>
+      <LI>
+	Added a minimal help menu
+      <LI>
+	If the Hint menu was invoked when there were not exactly two points selected,
+	then pfaedit would crash. Fixed
+      <LI>
+	Created a superstructure to allow localization of the UI. Created a small
+	(incomplete, probably wrong in many places) french ui.
+    </UL>
+  <LI>
+    13-June-2001
+    <UL>
+      <LI>
+	Palettes would vanish when the first outline character view was closed. That
+	should be fixed.
+      <LI>
+	Palettes should (I hope) do a better job of tracking windows.
+      <LI>
+	Fixed another clipping problem
+      <LI>
+	Added support for diagonal stems (for truetype instructioning. Not supported
+	by postscript hints)
+	<UL>
+	  <LI>
+	    AutoHint finds them
+	  <LI>
+	    There's a Clear DStem command, and an Add DStem
+	  <LI>
+	    Review Hints does not display them (they can't be described the same way
+	    as H and V stems).
+	</UL>
+      <LI>
+	Changed the background color to be dark green so it will stand out against
+	a filled character
+      <LI>
+	Previously if Pfaedit were given a corrupted font with no font name it would
+	crash. That should be fixed.
+    </UL>
+  <LI>
+    11-June-2001
+    <UL>
+      <LI>
+	Added ability to create a pfm file (for ATM under windows)
+      <LI>
+	Extended Font Info to allow you to set the FullName (the human readable font
+	name) from FontInfo
+      <LI>
+	Two bugs with hint substitution code:
+	<OL>
+	  <LI>
+	    It would occasionally generate one subr containing overlapping hints
+	  <LI>
+	    It would create a Subrs array much bigger than needed. For some reason xfs
+	    had caniptions over the blank (but unused) entries
+	</OL>
+    </UL>
+  <LI>
+    6-June-2001
+    <UL>
+      <LI>
+	Cleaned up Exit, close and fontinfo commands to avoid possible race conditions.
+    </UL>
+  <LI>
+    5-June-2001
+    <UL>
+      <LI>
+	Added a command to look for common problems
+      <LI>
+	Fixed a crash caused by removing character slots from a font (using Number
+	of Characters in Font Info)
+      <LI>
+	Fixed a crash caused by reading in a ttf file where the kerning info specified
+	a non-existant glyph
+      <LI>
+	Fixed a crash caused by reading in a pf* file where the encoding was specified
+	in a slightly different format from the one we expect
+      <LI>
+	Palettes should be controllable again.
+      <LI>
+	Menu shortcuts should be available from palettes
+    </UL>
+  <LI>
+    12-May-2001
+    <UL>
+      <LI>
+	That was a stupid idea (yesterday's). I've backed it out. Instead I've done
+	what Val asked for -- all windows share common palettes.
+    </UL>
+  <LI>
+    11-May-2001
+    <UL>
+      <LI>
+	Made a preference item so that palettes could live within the outline view.
+	It's sort of a temporary hack until I get palettes working (if ever) so it
+	isn't really well integrated with things...
+    </UL>
+  <LI>
+    10-May-2001
+    <UL>
+      <LI>
+	Fixed a crash bug which occurred when doing Transformations with the origin
+	set to Center of Selection (default) in a character with an unclosed path.
+      <LI>
+	Fixed a similar crash when generating postscript.
+      <LI>
+	And another when updating control points.
+      <LI>
+	Added much to printing, should be done for now.
+      <LI>
+	Valrk Filippov suggested that things should be constrainable to angles other
+	than horizontal, vertical and 45. In particular constraining to the ItalicAngle
+	of an Italic/Oblique font is very useful. So we do that now. Thanks Val!
+    </UL>
+  <LI>
+    7 May 2001
+    <UL>
+      <LI>
+	Fixed more locale problems (I hope)
+      <LI>
+	Info line should show the location of a point moved with the arrows.
+      <LI>
+	Added Next/Prev Point commands
+      <LI>
+	Added a Print to file command that displays the entire font, or fills a page
+	with the current character. More options to follow.
+      <LI>
+	Fixed a bug in seac output
+      <LI>
+	Fixed an introduced crash bug in hint output
+      <LI>
+	Fixed a crash bug caused by increasing the number of characters allowed in
+	the font with FontInfo.
+    </UL>
+  <LI>
+    6 May 2001
+    <UL>
+      <LI>
+	Redid <A HREF="hinting.html">hinting</A> to support hint substitution and
+	counter hinting in Postscript (&amp; opentype)
+	<UL>
+	  <LI>
+	    Hints now have an extent in both dimensions, indicating over what parts of
+	    a character they should be active.
+	  <LI>
+	    Dotted lines are used to show the extent of a hint in the primary dimension
+	  <LI>
+	    I draw horizontal hints and vertical hints in different colors now, otherwise
+	    it was too confusing guessing which was which.
+	  <LI>
+	    If a hint conflicts with another its dotted lines are shown in cyan (rather
+	    than light blue/green)
+	  <LI>
+	    When the Review hints dlg is active the current hint is shown in dark blue/green.
+	  <LI>
+	    The Review hints dlg shows whether a hint overlaps (conflicts with) another.
+	  <LI>
+	    Auto Hinting will generate a list of all horizontal and vertical stems, and
+	    then use some heuristics to remove some of the more annoying and less useful
+	    stems from the Hint list. If you don't want this automatic pruning then holding
+	    the Shift key down when you invoke AutoHint from the menu will leave you
+	    with the full stem list.
+	  <LI>
+	    Minor changes to truetype output to deal with the new hint list.
+	  <LI>
+	    Major changes to PostScript output to deal with counters and hint substitution
+	  <LI>
+	    <FONT COLOR="Red"><STRONG>No longer saves Type1 charstrings when loading
+	    a type1 font</STRONG></FONT>
+	</UL>
+      <LI>
+	The icon for outline character windows was <EM>still</EM> wrong for anti-alias
+	fonts if there were no bitmap fonts installed. Sigh.
+      <LI>
+	Added a Correct Direction command to the font view.
+      <LI>
+	Fixed many bugs with Correct Direction
+      <LI>
+	Improved accent placement when we have serifs (I hope), don't want to center
+	on top serif of "i" for example.
+      <LI>
+	Slight improvements when pasting bitmaps.
+      <LI>
+	Oops. 0x2d should be "hyphen" in the Adobe Standard Encoding rather than
+	"minus" as I had it.
+    </UL>
+  <LI>
+    3 May 2001
+    <UL>
+      <LI>
+	Opps. Generating postscript could crash if there were many blank characters.
+      <LI>
+	<FONT COLOR="Red"><STRONG>This is the last version which will allow you to
+	make small modifications to fonts while retaining the original hint
+	substitution</STRONG></FONT>
+    </UL>
+  <LI>
+    28 Apr 2001
+    <UL>
+      <LI>
+	Transform from the font view will (for some transformations and if
+	<A HREF="editmenu.html#From">Copy From</A> is set to All Fonts) transform
+	the bitmap associated bitmap characters as well as the outline characters.
+      <LI>
+	Cleaned up Build Accented character so that it behaves consistantly between
+	font/outline views, works with Copy From. The two different aspects of the
+	command (Accented vs. Composite) are now controlled by whether the Shift
+	key is down when the menu is invoked.
+      <LI>
+	Some more locale tweaking for reading in/writing out postscript.
+      <LI>
+	The Preference encoding for new fonts didn't work if set to a user defined
+	encoding. Should be fixed now.
+    </UL>
+  <LI>
+    27 Apr 2001
+    <UL>
+      <LI>
+	Tangent points should display a little better now.
+      <LI>
+	If a font is a 94x94 CJK font then the LanguageGroup field of the Private
+	dictionary will be set to 1.
+      <LI>
+	Fixed a recently introduced crash bug that happens on non-unicode fonts with
+	accented characters.
+      <LI>
+	If a character contained a reference and that character could not be converted
+	into a seac then there would be no hints for the reference. That should be
+	fixed now.
+      <LI>
+	Accented bitmaps should be positioned better now.
+      <LI>
+	Added a couple of progress indicators to font level operations (transform,
+	paste, etc.)
+      <LI>
+	Expand stroke didn't work from the font view.
+    </UL>
+  <LI>
+    23 Apr 2001
+    <UL>
+      <LI>
+	Fixed a clipping problem
+      <LI>
+	Redid a change from yesterday. It should now work for the stuff that used
+	to work (as well as for what I fixed yesterday)
+      <LI>
+	(moved to
+	<A href="http://sourceforge.net"><IMG SRC="http://sourceforge.net/sflogo.php?group_id=25752&amp;type=1"
+	    WIDTH="88" HEIGHT="31" BORDER="0" ALT="SourceForge Logo"></A>)
+    </UL>
+  <LI>
+    22 Apr 2001
+    <UL>
+      <LI>
+	Added code to allow users to select more than one bitmap font at a time to
+	be imported into an sfd.
+      <LI>
+	Cleaned up opening a bdf file.
+      <LI>
+	Fixed various crash bugs dealing with missing bitmap characters where there
+	were outline characters.
+      <LI>
+	Fixed various problems with building greek accented characters (Unicode 3's
+	decompositions are no longer helpful)
+      <LI>
+	Added some support for
+	<A HREF="http://partners.adobe.com/asn/developer/type/corporateuse.txt">Adobe's
+	documented corporate use</A> characters (Small Caps, Old Style numbers...)
+      <LI>
+	Cleaned up the outline character's icon (got broken when I added anti-aliasing)
+      <LI>
+	em space character kept vanishing. Fixed that.
+      <LI>
+	Fixed many other small bugs.
+    </UL>
+  <LI>
+    20 Apr 2001
+    <UL>
+      <LI>
+	Addition improvements to the handling of format0 (1byte) encodings
+      <LI>
+	Put a Symbol encoding into the FontInfo encoding list.
+      <LI>
+	Oops. Ligature's had their semi-colons in the wrong place in afm files.
+    </UL>
+  <LI>
+    19 Apr 2001
+    <UL>
+      <LI>
+	Yesterday's builds were transfered as ASCII not BINARY and are totally useless.
+      <LI>
+	Added a macintosh encoding to ttf output
+      <LI>
+	Slight improvement to ttf output (I hope)
+    </UL>
+  <LI>
+    18 Apr 2001
+    <UL>
+      <LI>
+	Crash when reading a ttf font fixed (introduced by ligature code).
+      <LI>
+	Crash when generating almost any postscript Type1 font (recently introduced)
+      <LI>
+	Added code to read ligature information from the TTF/OTF GSUB table.
+      <LI>
+	List buttons near the bottom of the screen would popup their list in
+	inappropriate places.
+      <LI>
+	Fixed two bugs in cubic-&gt;quadratic spline conversion.
+      <LI>
+	Added support for TrueType Symbol encodings
+    </UL>
+  <LI>
+    17 Apr 2001
+    <UL>
+      <LI>
+	Menus would go into an infinite loop if you: depressed the mouse on the menu
+	bar (and pulled down a menu) and then moved the mouse so that it was above
+	the menubar when the menu was below it. Should be fixed.
+    </UL>
+  <LI>
+    12 Apr 2001
+    <UL>
+      <LI>
+	Added a submenu of recent files and a pull down list in the open dlg.
+      <LI>
+	Added stuff to put ligature info into an afm file (But not the GSUB table
+	of ttf/otf)
+    </UL>
+  <LI>
+    10 Apr 2001
+    <UL>
+      <LI>
+	Fixed a crash bug when making an encoding from a font with a non-unicode
+	character in it.
+      <LI>
+	Reencoding a font got confused if the new encoding contained more than one
+	instance of the same glyph (common example is to have both 0x20 and 0xA0
+	point to space) or if it contained a non-unicode character. This should be
+	fixed now.
+      <LI>
+	Fixed a couple of problems with reading otf files
+      <LI>
+	Added ability to save an Open Type font
+      <LI>
+	Added a "Round to Int" command
+      <LI>
+	.sfd files contain decimal points. This means they are locale specific. Changed
+	the input routines so that it would accept either "." or "," as a decimal
+	point.
+    </UL>
+  <LI>
+    2 Apr 2001
+    <UL>
+      <LI>
+	PfaEdit provides some support for XUIDs
+      <LI>
+	PfaEdit now has a button in the font info dialog which may be able to guess
+	the italic angle for the font.
+      <LI>
+	AutoWidth/Kern didn't work well when the font was missing "A"
+      <LI>
+	AutoWidth/Kern didn't work well when the font was italic/oblique
+      <LI>
+	Build Accented Character didn't work too well when the font was italic/oblique
+      <LI>
+	Previously opening a Type1 font failed to read /OtherSubrs correctly
+      <LI>
+	Oops. In the Open Font Dialog, typing a wildcard changed the default button
+	to [New] rather than [Filter]. And pressing on [Filter] caused a crash.
+      <LI>
+	Added ability to open an Open Type font (Postscript Type2 in a TrueType wrapper)
+    </UL>
+  <LI>
+    29 Mar 2001
+    <UL>
+      <LI>
+	It is now possible to edit bdf fonts directly (without first creating a dummy
+	postscript font to contain them)
+      <LI>
+	Fixed crash bug under kde
+    </UL>
+  <LI>
+    28 Mar 2001
+    <UL>
+      <LI>
+	Made it possible to for the user to new encodings
+      <LI>
+	(added TeX base encoding)
+      <LI>
+	slight improvements to the palette code
+    </UL>
+  <LI>
+    26 Mar 2001
+    <UL>
+      <LI>
+	Fixed a clipping problem in the Metricsview
+      <LI>
+	Fixed various other display problems in Metrics
+      <LI>
+	Fixed various display problems in the fontview
+      <LI>
+	Added "Remove All Kern Pairs" menu item
+      <LI>
+	Fixed Auto Kern yet again
+      <LI>
+	Added a preference item to control the foundry name for generated bdf fonts.
+    </UL>
+  <LI>
+    25 Mar 2001
+    <UL>
+      <LI>
+	Oops. Fixed a typo in auto-kerning code. It should work now...
+      <LI>
+	From the outline view, exporting to a bmp file allows you to save an anti-aliased
+	character as well as a bitmap.
+      <LI>
+	The Generate Fonts command allows you to save anti-aliased greymap fonts.
+	The format they are saved in was invented by me an hour ago so it's totally
+	useless (it's exactly the same as bdf except there's one extra header
+	"BITSPERPIXEL" which may be 1, 2, 4 or 8 (1 would be the same as bdf), and
+	the number of pixels packed into a byte is 8/BITSPERPIXEL (so 8, 4, 2 or
+	1 respectively).
+      <LI>
+	If you selected "No Outline font" in the Generate fonts dialog, it would
+	generate a postscript font anyway. This has been fixed.
+    </UL>
+  <LI>
+    24 Mar 2001
+    <UL>
+      <LI>
+	AutoKerning now lets you specify the number of kerning pairs the font may
+	have.
+      <LI>
+	I'm told that ttf fonts can only have 2048 kerning pairs, so if a font has
+	more, the ttf generator will only save the 2048 ones with the biggest (absolute)
+	kerning offset.
+      <LI>
+	Fixed a bug in autowidth (would make some characters far too wide).
+      <LI>
+	Fixed a bug in autokern which caused it to kern things too closely together.
+	This also reduced the number of kern pairs generated.
+      <LI>
+	Fixed a crash when loading a truetype font (if a glyph's start point and
+	end point were both off-curve points then the point between them was interpolated
+	incorrectly).
+      <LI>
+	PfaEdit should now work with XFree 4.0.* before it would crash after putting
+	up the splash screen.
+    </UL>
+  <LI>
+    21 Mar 2001
+    <UL>
+      <LI>
+	Fixed yet another remove overlap bug.
+    </UL>
+  <LI>
+    12 Mar 2001
+    <UL>
+      <LI>
+	a number of small improvements
+      <LI>
+	fixed a crash bug (occurred when holding down the alt key, using the pointer
+	tool, and no reference was selected)
+    </UL>
+  <LI>
+    9 Mar 2001
+    <UL>
+      <LI>
+	Fixed a small bug in the hinting of glyph 0 (the unknown character)
+      <LI>
+	Added "rulers" to the character outline view
+      <LI>
+	Expanded the abilities of the postscript importer
+      <LI>
+	Fixed yet another clipping bug.
+      <LI>
+	Fixed a problem displaying tangent points when the control point was less
+	than 1 unit away
+      <LI>
+	Provides an interface to the autotrace program to autotrace background images
+      <LI>
+	Fixed a crash when drawing large images.
+      <LI>
+	Fixed a problem with detecting clockwise paths.
+      <LI>
+	Fixed a bug with reading in Type3 fonts
+    </UL>
+  <LI>
+    5 Mar 2001
+    <UL>
+      <LI>
+	Minimal truetype instructing (hinting) is now in place.
+	<TABLE CELLPADDING="2" BORDER=1>
+	  <TR>
+	    <TD><P ALIGN=Center>
+	      <IMG SRC="HI.nohints.png" WIDTH="44" HEIGHT="28"><BR>
+	      no hints</TD>
+	    <TD><P ALIGN=Center>
+	      <IMG SRC="HI.hints.png" WIDTH="44" HEIGHT="28"><BR>
+	      hints</TD>
+	  </TR>
+	</TABLE>
+      <LI>
+	This includes applying instructions to all points that lie on the Hints generated
+	for Postscript, a certain amount of extra effort to detect serifs, and
+	application of the PostScript BlueValues to the TrueType cvt.
+      <LI>
+	AutoHint has been improved for some characters again.
+    </UL>
+  <LI>
+    4 Mar 2001
+    <UL>
+      <LI>
+	When Get Info is applied to a single selected reference character the dialog
+	now has a button which will bring up a window displaying the character refered
+	to.
+      <LI>
+	The Font View now displays info on the current character
+      <LI>
+	Selecting by dragging out a rectangle in the character outline view would
+	sometimes miss points. I think that's fixed.
+      <LI>
+	Doing a multi-character copy in the fontview would remove non-existant characters
+	from the copy set. They are no longer removed.
+      <LI>
+	Build Accented character would always use a dotlessi when building an character
+	based on an "i". This behavior is only correct if the accent added is above
+	the letter. Adding an ogonek for example should retain the dot. This is now
+	fixed. (In theory the same problem could occur for j, but I don't think there
+	are any cases where it does).
+      <LI>
+	When generating a type1 font PfaEdit will detect whether Flex hints can be
+	used and use them if appropriate.
+      <LI>
+	There was a bug in the routine that read in flex hints. It would leave behind
+	6 extra points not on any path in most characters with a flex hint. These
+	points were not harmful, but they should not have been there.
+      <LI>
+	I found some cases where autohint picked the wrong hints. I cleaned them
+	up. I hope I haven't broken others...
+      <LI>
+	Fixed another clipping problem.
+      <LI>
+	(Various experiments with instructing truetype have yielded no display
+	improvement)
+    </UL>
+  <LI>
+    25 Feb 2001
+    <UL>
+      <LI>
+	PfaEdit no longer crashes on high-end systems where the default visual has
+	a smaller depth than the maximum the screen supports.
+      <LI>
+	PfaEdit no longer crashes on systems with no bitmap unicode fonts installed.
+      <LI>
+	When PfaEdit reads in a Type1 font it will preserve the original character
+	strings (the type1 strings that define the glyph shape) and will write them
+	out again when you save the font. If you modify a character (even something
+	innocuous like setting the width) the string for that character will be lost.
+	This means that any characters you do not modify will retain flex hints and
+	hint substitution. (the Subrs and OtherSubrs arrays are also preserved).
+      <LI>
+	There is now a way to edit the entries in the Private dictionary (well most
+	of them. No way to edit the Subrs entry). The program will guess at good
+	values for some entries (like StdHW or BlueValues). If there is no BlueValues
+	entry present when a type1 font is generated then the program will guess
+	at good values (and will also guess at values for OtherBlues), otherwise
+	it will use the one supplied. Similarly for StdHW and StdVW (if StdHW is
+	absent then the program will guess at SnapStemH too, similarly for SnapStemV).
+	If UniqueID is present in the Private dictionary then that value will be
+	used in the font dictionary, if no UniqueID is present then the program will
+	generate a random number in the allowed range. 
+	  <HR>
+      <LI>
+	Removed a number of warnings from the code
+      <LI>
+	Made arrow keys functional in the fontview
+      <LI>
+	Changed type0 unicode generation so that if the font does not contain
+	U+2700-U+27FF the printer's own ZapfDingbats (if present) will be mapped
+	there.
+      <LI>
+	Added Adobe Standard to the Font Info Encoding list.
+    </UL>
+  <LI>
+    20 Feb 2001
+    <UL>
+      <LI>
+	Fixed some problems in saving both Type1s and TrueType fonts.
+      <LI>
+	Added clipping code to the outline character view. (Before at magnifications
+	around 100 or so we'd run into overflow problems)
+      <LI>
+	Added progress widget to font generation (and font database saving)
+    </UL>
+  <LI>
+    13 Feb 2001
+    <UL>
+      <LI>
+	Fixed some problems with the configure script (handles libraries now)
+      <LI>
+	Added a progress widget to show how things are going on long operations (currenly
+	only font opens)
+      <LI>
+	Fixed numerous small annoyances
+      <LI>
+	Fixed a crash I introduced into build accented characters.
+      <LI>
+	Fixed a couple of bugs in truetype generation
+    </UL>
+  <LI>
+    11 Feb 2001
+    <UL>
+      <LI>
+	Added a configure script
+      <LI>
+	Rearranged (simplified) the directory structure
+      <LI>
+	Improved the build accented character function
+      <LI>
+	(similar improvements to display of unicode text (in text fields, etc.) with
+	composing characters)
+      <LI>
+	BiDi text was previously confused by composed characters and would put them
+	on the wrong letter. Fixed.
+    </UL>
+  <LI>
+    9 Feb 2001
+    <UL>
+      <LI>
+	Tweaked some include files so pfaedit might compile under Irix
+      <LI>
+	Added anti-aliasing code to the font view.
+      <LI>
+	Fixed bugs where server has 24bit depth but 32bit pixel size
+      <LI>
+	Added a resource which turn palettes off (so they stop trying to steal focus
+	and stop trying to track the main window)
+    </UL>
+  <LI>
+    7 Feb 2001
+    <UL>
+      <LI>
+	Some improvement in processing of postscript names in true type fonts (will
+	make truetype output marginally smaller in most cases)
+      <LI>
+	Fixed a bug with popup menus.
+      <LI>
+	Holding down the meta key allows you to drag (rather than resize) references
+	which fill the bounding box.
+      <LI>
+	Improved saving of both postscript and truetype fonts when there are composite
+	characters referring to other composits.
+      <LI>
+	Fixed bug in file chooser where typing into the listbox (to select a file)
+	made it think (sometimes) that it had a directory.
+      <LI>
+	Fixed bug in Goto Char code where it would refuse to go to a character's
+	location (sometimes) if the character had not been created yet.
+      <LI>
+	Improved drawing of palettes on indexed displays
+      <LI>
+	Improved accent processing in build accented characters
+    </UL>
+  <LI>
+    26 Jan 2001
+    <UL>
+      <LI>
+	Fixed a bug that kept the file chooser (the open file dlg, etc.) from browsing
+	the root directory.
+      <LI>
+	Realized that libgif is just a symbolic link to libungif. Made the readgif
+	routine use either one
+      <LI>
+	A typo in writepng caused it to require libpng at link time, this has been
+	fixed, it should now only need libpng if someone actually loads a png file.
+    </UL>
+  <LI>
+    21 Jan 2001
+    <UL>
+      <LI>
+	Added a preference dlg. Not much in it as yet.
+      <LI>
+	fixed a number of bugs
+	<UL>
+	  <LI>
+	    Timers sometimes failed to go off -&gt; splash screen might not vanish, popups
+	    might not pop, autosave might not happen...
+	  <LI>
+	    Vertical lines might cause divide by 0 errors on some systems when reading
+	    in a font
+	  <LI>
+	    Some fonts were thought not to have characters they actually had.
+	  <LI>
+	    94x94 fonts were encoded as 92x94 (losing 188 characters)
+	  <LI>
+	    Fixed problems with kuten decoding
+	  <LI>
+	    Fixed various crashes involving selecting and deselecting non-existant characters
+	</UL>
+    </UL>
+  <LI>
+    9 Jan 2001
+    <UL>
+      <LI>
+	Added Tom Harvey's man page to the distribution (Thanks Tom!)
+      <LI>
+	Fixed a bug where radio buttons, etc. sometimes got left highlit
+      <LI>
+	Added an interpreter for (some) postscript type 3 fonts
+      <LI>
+	made libgdraw and friends into one shared library
+    </UL>
+  <LI>
+    6 Jan 2001
+    <UL>
+      <LI>
+	More distribution bug fixes
+      <LI>
+	Fixed bugs in Overlap &amp; AutoWidth
+      <LI>
+	Added new command to Metrics menu (Thirds in Width)
+    </UL>
+  <LI>
+    4 Jan 2001
+    <UL>
+      <LI>
+	Fixed a distribution bug
+      <LI>
+	Fixed some problems with build accented character
+    </UL>
+  <LI>
+    2 Jan 2001
+    <UL>
+      <LI>
+	Many small improvements and bug fixes.
+      <LI>
+	More remove overlap corrections
+    </UL>
+  <LI>
+    21 Dec 2000
+    <UL>
+      <LI>
+	I think I'm reading xfig splines properly now. The conversion to postscript
+	still leaves something to be desired, but it's as good as I'm likely to make
+	it.
+    </UL>
+  <LI>
+    20 Dec 2000
+    <UL>
+      <LI>
+	Generate Fonts can produce TrueType
+    </UL>
+  <LI>
+    17 Dec 2000
+    <UL>
+      <LI>
+	TrueType reader now gets (horizontal) kerning info
+      <LI>
+	Added code that automagically preserves changes if the program should crash
+	(but does not save on the source file unless you ask it to).
+      <LI>
+	Added a Revert File command.
+    </UL>
+  <LI>
+    16 Dec 2000
+    <UL>
+      <LI>
+	PfaEdit will now read in a TrueType font
+	<UL>
+	  <LI>
+	    (it doesn't read hints from the font)
+	  <LI>
+	    (it doesn't read bitmaps from the font)
+	</UL>
+    </UL>
+  <LI>
+    14 Dec 2000
+    <UL>
+      <LI>
+	Got PfaEdit to build on a netbsd alpha box
+      <LI>
+	Added Auto Width &amp; Auto Kern commands
+      <LI>
+	If you do a translation which is of the entire outline character and is only
+	in the x-direction, then all the character's hints will be translated too,
+	and if the character is a letter then in any characters which depend on this
+	one, the other things in the character will also be translated.
+    </UL>
+  <LI>
+    12 Dec 2000
+    <UL>
+      <LI>
+	Added a skew command to the bitmap view
+      <LI>
+	Added Interpolate Fonts
+    </UL>
+  <LI>
+    11 Dec 2000
+    <UL>
+      <LI>
+	fixed more remove overlap bugs (don't know of any left)
+      <LI>
+	Added Merge Font command
+    </UL>
+  <LI>
+    10 Dec 2000
+    <UL>
+      <LI>
+	fixed many small bugs with constrained movements
+      <LI>
+	fixed many autohinting bugs
+      <LI>
+	Fixed some remove overlap bugs
+      <LI>
+	Added backup files when saving sfd files
+    </UL>
+  <LI>
+    5 Dec 2000
+    <UL>
+      <LI>
+	Added a command that automagically builds an accented (or general composit)
+	character. (<A HREF="elementmenu.html#Accented">see below</A>)
+      <LI>
+	Added support for various CJK encodings (JIS 208, JIS 212, old KSC 5601,
+	GB 2302, all 94x94)
+      <LI>
+	Implemented a fairly poor importer/exporter of xfig files. (I don't know
+	how to convert XSplines to Bezier Splines reasonably).
+      <LI>
+	Implemented a metrics window, added support for kerning (kern info only lives
+	in the afm file, not in the font itself)
+      <LI>
+	Metrics window will also display text from bitmap fonts (but you mayn't change
+	a bitmap's metrics)
+      <LI>
+	Reexamined palette code with transient windows. It seems to work on kde now.
+      <LI>
+	Fixed blinking cursor on 8&amp;16 bit-depth displays
+    </UL>
+  <LI>
+    1 Dec 2000
+    <UL>
+      <LI>
+	Generate &amp; save bitmaps
+      <LI>
+	Bitmap editor (added a couple of tools like flipping and corner turning,
+	circle drawing, etc. that aren't in fontographer)
+      <LI>
+	fontview can display a bitmap, if it does then double clicking on a char
+	will display the bitmap
+      <LI>
+	Changing the width of a character (in outline view) will automatically change
+	the width of all bitmaps of that character. Also if the character is a letter
+	and there are accented characters which refer to it and the accented characters
+	have the same with that the letter used to have, then the accented characters
+	(and their bitmaps) will also have their width updated.
+      <LI>
+	Can import and export bitmap images into bitmap window
+      <LI>
+	Can import a bdf file
+      <LI>
+	Can copy and paste in the fontview (bitmaps can be affected as well as outlines)
+    </UL>
+  <LI>
+    28 Nov 2000
+    <UL>
+      <LI>
+	Improved star tool
+      <LI>
+	Added various metrics menu items
+      <LI>
+	Added a simplify command
+      <LI>
+	fixed bugs in the merge command
+      <LI>
+	Made font view functional, can apply to many outline characters at once
+	<UL>
+	  <LI>
+	    transform
+	  <LI>
+	    expand stroke
+	  <LI>
+	    remove overlap
+	  <LI>
+	    simplify
+	  <LI>
+	    metrics items above
+	  <LI>
+	    Char Info
+	</UL>
+    </UL>
+  <LI>
+    19 Nov 2000
+    <UL>
+      <LI>
+	Added Caligraphic expand stroke
+      <LI>
+	Added Get Info
+      <LI>
+	Added Correct Path Direction
+      <LI>
+	Added Remove Overlap (probably very buggy)
+      <LI>
+	Enhanced support for Unicode, added type0 font output.
+      <LI>
+	Added type3 output (not compressed type 3, can't open a type3 or type0)
+      <LI>
+	Sped up background image drawing.
+      <LI>
+	Implemented drag-resize of images and referenced characters
+      <LI>
+	Added Rectangle, Elipse, Polygon and Star tools.
+    </UL>
+  <LI>
+    14 Nov 2000
+    <UL>
+      <LI>
+	Added expand stroke
+      <LI>
+	Paths stored in .sfd files are now closed (bug fix)
+    </UL>
+  <LI>
+    13 Nov 2000
+    <UL>
+      <LI>
+	Added the equivalent of a .fog file (Spline Font Database, sfd files)
+      <LI>
+	Implemented transform tools
+      <LI>
+	continued fixing palettes
+    </UL>
+  <LI>
+    11 Nov 2000
+    <UL>
+      <LI>
+	Imports and exports simple eps files for characters
+      <LI>
+	Transform allows you to pick origin
+      <LI>
+	Bunch of menu items for manual hinting added. (I hope I'm done with hints
+	now... at least till I look at truetype)
+      <LI>
+	Clockwise now agrees with Fontographer (and everyone else)
+      <LI>
+	Added "pen" , and a knife tools
+      <LI>
+	(Added many other tools pictures, but they aren't implemented yet)
+      <LI>
+	Fixed many palette problems. (including kde's not doing menu shortcuts)
+      <LI>
+	Put in menu items to show/hide palettes
+    </UL>
+  <LI>
+    9 Nov 2000
+    <UL>
+      <LI>
+	It can now calculate hints, font wide stem hints and character specific hints.
+      <LI>
+	Transform should do rotations right now.
+      <LI>
+	Metamorphosis file format bug should be fixed
+    </UL>
+</UL>
+</BODY></HTML>

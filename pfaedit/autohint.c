@@ -380,7 +380,7 @@ void ElFreeEI(EIList *el) {
     }
 }
 
-static void EIAddEdge(Spline *spline, real tmin, real tmax, EIList *el) {
+static int EIAddEdge(Spline *spline, real tmin, real tmax, EIList *el) {
     EI *new = gcalloc(1,sizeof(EI));
     real min, max, temp;
     Spline1D *s;
@@ -406,6 +406,12 @@ static void EIAddEdge(Spline *spline, real tmin, real tmax, EIList *el) {
     /*s = &spline->splines[0];*/
     min = ((s->a * tmin + s->b)* tmin + s->c)* tmin + s->d;
     max = ((s->a * tmax + s->b)* tmax + s->c)* tmax + s->d;
+    if ( tmax==1 ) max = spline->to->me.x;	/* beware rounding errors */
+    if ( !el->leavetiny && floor(min)==floor(max) ) {	/* If it doesn't cross a pixel boundary then it might as well be vertical */
+	if ( tmin==0 ) max = min;
+	else if ( tmax==1 ) min = max;
+	else max = min;
+    }
     if ( min==max )
 	new->vert = true;
     else if ( min<max )
@@ -413,7 +419,7 @@ static void EIAddEdge(Spline *spline, real tmin, real tmax, EIList *el) {
     else {
 	temp = min; min = max; max=temp;
     }
-    if ( min+1>max ) new->almostvert = true;
+    if ( !el->leavetiny && min+1>max ) new->almostvert = true;
     if ( 40*dxdtmin<dydtmin ) new->vertattmin = true;
     if ( 40*dxdtmax<dydtmax ) new->vertattmax = true;
     /*if ( new->vertattmin && new->vertattmax && s->a==0 && s->b==0 ) new->almostvert = true;*/
@@ -426,6 +432,12 @@ static void EIAddEdge(Spline *spline, real tmin, real tmax, EIList *el) {
     s = &spline->splines[1];
     min = ((s->a * tmin + s->b)* tmin + s->c)* tmin + s->d;
     max = ((s->a * tmax + s->b)* tmax + s->c)* tmax + s->d;
+    if ( tmax==1 ) max = spline->to->me.y;
+    if ( !el->leavetiny && floor(min)==floor(max) ) {	/* If it doesn't cross a pixel boundary then it might as well be horizontal */
+	if ( tmin==0 ) max = min;
+	else if ( tmax==1 ) min = max;
+	else max = min;
+    }
     if ( min==max )
 	new->hor = true;
     else if ( min<max )
@@ -433,7 +445,7 @@ static void EIAddEdge(Spline *spline, real tmin, real tmax, EIList *el) {
     else {
 	temp = min; min = max; max=temp;
     }
-    if ( min+1>max ) new->almosthor = true;
+    if ( !el->leavetiny && min+1>max ) new->almosthor = true;
     if ( 40*dydtmin<dxdtmin ) new->horattmin = true;
     if ( 40*dydtmax<dxdtmax ) new->horattmax = true;
     /*if ( new->horattmin && new->horattmax && s->a==0 && s->b==0 ) new->almosthor = true;*/
@@ -443,19 +455,26 @@ static void EIAddEdge(Spline *spline, real tmin, real tmax, EIList *el) {
     if ( el->coordmax[1]<max )
 	el->coordmax[1] = max;
 
-    new->next = el->edges;
-    el->edges = new;
+    if ( new->hor && new->vert ) {
+	/* This spline is too small for us to notice */
+	free(new);
+return( false );
+    } else {
+	new->next = el->edges;
+	el->edges = new;
+return( true );
+    }
 }
 
 static void EIAddSpline(Spline *spline, EIList *el) {
     real ts[6], temp;
-    int i, j, base;
+    int i, j, base, last;
 
     ts[0] = 0; ts[5] = 1.0;
     SplineFindInflections(&spline->splines[0],&ts[1],&ts[2]);
+    SplineFindInflections(&spline->splines[1],&ts[3],&ts[4]);
     /* avoid teeny tiny segments, they just confuse us */
     SplineRemoveInflectionsTooClose(&spline->splines[0],&ts[1],&ts[2]);
-    SplineFindInflections(&spline->splines[1],&ts[3],&ts[4]);
     SplineRemoveInflectionsTooClose(&spline->splines[1],&ts[3],&ts[4]);
     for ( i=0; i<4; ++i ) for ( j=i+1; j<5; ++j ) {
 	if ( ts[i]>ts[j] ) {
@@ -473,8 +492,10 @@ static void EIAddSpline(Spline *spline, EIList *el) {
 	    ++base;
 	}
     }
+    last = base;
     for ( i=base; i<5 ; ++i )
-	EIAddEdge(spline,ts[i],ts[i+1],el);
+	if ( EIAddEdge(spline,ts[last],ts[i+1],el) )
+	    last = i+1;
 }
 
 void ELFindEdges(SplineChar *sc, EIList *el) {
@@ -992,7 +1013,11 @@ real EITOfNextMajor(EI *e, EIList *el, real sought_m ) {
     real mmax, mmin;
 
     if ( msp->a==0 && msp->b==0 ) {
-	new_t = (sought_m+el->low-msp->d)/(msp->c);
+	if ( msp->c == 0 ) {
+	    GDrawIError("Hor/Vert line when not expected");
+return( 0 );
+	}
+	new_t = (sought_m-msp->d)/(msp->c);
 return( new_t );
     }
 
@@ -1000,7 +1025,7 @@ return( new_t );
     t_mmax = e->up?e->tmax:e->tmin;
     mmin = e->coordmin[el->major];
     t_mmin = e->up?e->tmin:e->tmax;
-    sought_m += el->low;
+    /* sought_m += el->low; */
 
     while ( 1 ) {
 	new_t = (t_mmin+t_mmax)/2;
@@ -1021,10 +1046,43 @@ return( new_t );
     }
 }
 
+EI *EIActiveListReorder(EI *active,int *change) {
+    int any;
+    EI *pr, *apt;
+
+    *change = false;
+    if ( active!=NULL ) {
+	any = true;
+	while ( any ) {
+	    any = false;
+	    for ( pr=NULL, apt=active; apt->aenext!=NULL; ) {
+		if ( apt->ocur <= apt->aenext->ocur ) {
+		    /* still ordered */;
+		    pr = apt;
+		    apt = apt->aenext;
+		} else if ( pr==NULL ) {
+		    active = apt->aenext;
+		    apt->aenext = apt->aenext->aenext;
+		    active->aenext = apt;
+		    *change = true;
+		    /* don't need to set any, since this reorder can't disorder the list */
+		    pr = active;
+		} else {
+		    pr->aenext = apt->aenext;
+		    apt->aenext = apt->aenext->aenext;
+		    pr->aenext->aenext = apt;
+		    any = *change = true;
+		    pr = pr->aenext;
+		}
+	    }
+	}
+    }
+return( active );
+}
+
 EI *EIActiveEdgesRefigure(EIList *el, EI *active,real i,int major, int *_change) {
     EI *apt, *pr, *npt;
-    int any;
-    int change = false;
+    int change = false, subchange;
     int other = !major;
 
     /* first remove any entry which doesn't intersect the new scan line */
@@ -1042,36 +1100,12 @@ EI *EIActiveEdgesRefigure(EIList *el, EI *active,real i,int major, int *_change)
     /* then move the active list to the next line */
     for ( apt=active; apt!=NULL; apt = apt->aenext ) {
 	Spline1D *osp = &apt->spline->splines[other];
-	apt->tcur = EITOfNextMajor(apt,el,i);
+	apt->tcur = EITOfNextMajor(apt,el,i+el->low);
 	apt->ocur = ( ((osp->a*apt->tcur+osp->b)*apt->tcur+osp->c)*apt->tcur + osp->d );
     }
     /* reorder list */
-    if ( active!=NULL ) {
-	any = true;
-	while ( any ) {
-	    any = false;
-	    for ( pr=NULL, apt=active; apt->aenext!=NULL; ) {
-		if ( apt->ocur <= apt->aenext->ocur ) {
-		    /* still ordered */;
-		    pr = apt;
-		    apt = apt->aenext;
-		} else if ( pr==NULL ) {
-		    active = apt->aenext;
-		    apt->aenext = apt->aenext->aenext;
-		    active->aenext = apt;
-		    change = true;
-		    /* don't need to set any, since this reorder can't disorder the list */
-		    pr = active;
-		} else {
-		    pr->aenext = apt->aenext;
-		    apt->aenext = apt->aenext->aenext;
-		    pr->aenext->aenext = apt;
-		    any = change = true;
-		    pr = pr->aenext;
-		}
-	    }
-	}
-    }
+    active = EIActiveListReorder(active,&subchange);
+    if ( subchange ) change = true;
 
     /* Insert new nodes */
     if ( el->ordered[(int) i]!=NULL ) change = true;
@@ -1142,6 +1176,7 @@ return( n->up==e->up );
 return( false );
 }
 
+#if 1
 int EISkipExtremum(EI *e, real i, int major) {
     EI *n = e->aenext, *t;
 
@@ -1177,6 +1212,23 @@ return( n->up!=e->up );
     }
 return( false );
 }
+#else
+int EISkipExtremum(EI *e, real pos, int major) {
+    Spline1D *s;
+    real slopem, slopeo;
+
+    s = &e->spline->splines[major];
+    slopem = (3*s->a*e->tcur+2*s->b)*e->tcur+s->c;
+    s = &e->spline->splines[!major];
+    slopeo = (3*s->a*e->tcur+2*s->b)*e->tcur+s->c;
+    if ( !RealNear(slopeo,0)) {
+	slopem/=slopeo;
+	if ( slopem>-.15 && slopem<.15 )
+return( true );
+    }
+return( false );
+}
+#endif
 
 EI *EIActiveEdgesFindStem(EI *apt, real i, int major) {
     int cnt=apt->up?1:-1;
@@ -1196,6 +1248,8 @@ return( NULL );
 	p = e;
 	if ( EISkipExtremum(e,i,major)) {
 	    e = e->aenext;
+	    if ( e==NULL )
+    break;
     continue;
 	}
 	if ( EISameLine(e,e->aenext,i,major))
