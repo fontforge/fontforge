@@ -357,8 +357,13 @@ static const unichar_t obliquefren[] = { 'O','b','l','i','q','u','e',  '\0' };
 static const unichar_t regulargerm[] = { 'S','t','a','n','d','a','r','d',  '\0' };
 static const unichar_t demiboldgerm[] = { 'H','a','l','b','f','e','t','t',  '\0' };
 static const unichar_t boldgerm[] = { 'F','e','t','t',  '\0' };
+static const unichar_t lightgerm[] = { 'M','a','g','e','r',  '\0' };
+static const unichar_t mediumgerm[] = { 'M','i','t','t','e','l',  '\0' };
+static const unichar_t bookgerm[] = { 'B','u','c','h','s','c','h','r','i','f','t',  '\0' };
 static const unichar_t italicgerm[] = { 'K','u','r','s','i','v',  '\0' };
-static const unichar_t obliquegerm[] = { 'S','c','h','r',0xe4,'g',  '\0' };	/* Guess */
+static const unichar_t obliquegerm[] = { 'S','c','h','r',0xe4,'g',  '\0' };
+static const unichar_t condensedgerm[] = { 'S','c','h','m','a','l',  '\0' };
+static const unichar_t expandedgerm[] = { 'B','r','e','i','t',  '\0' };
 
 static const unichar_t regularspan[] = { 'N','o','r','m','a','l',  '\0' };
 static const unichar_t boldspan[] = { 'N','i','g','r','i','t','a',  '\0' };
@@ -377,6 +382,8 @@ static const unichar_t condensedru[] = { 0x423, 0x437, 0x43a, 0x438, 0x439,  '\0
 static const unichar_t expandedru[] = { 0x428, 0x438, 0x440, 0x43e, 0x43a, 0x438, 0x439,  '\0' };
 
 static struct langstyle regs[] = { {0x409, regulareng}, { 0x40c, regularfren }, { 0x407, regulargerm }, { 0x40a, regularspan }, { 0x419, regularru }, { 0 }};
+static struct langstyle meds[] = { {0x409, mediumeng}, { 0x407, mediumgerm }, { 0 }};
+static struct langstyle books[] = { {0x409, bookeng}, { 0x407, bookgerm }, { 0 }};
 static struct langstyle bolds[] = { {0x409, boldeng}, { 0x40c, boldfren }, { 0x407, boldgerm }, { 0x40a, boldspan}, { 0x419, boldru }, { 0 }};
 static struct langstyle italics[] = { {0x409, italiceng}, { 0x40c, italicfren }, { 0x407, italicgerm }, { 0x40a, italicspan}, { 0x419, italicru }, { 0 }};
 static struct langstyle obliques[] = { {0x409, obliqueeng}, { 0x40c, obliquefren }, { 0x407, obliquegerm }, { 0x419, obliqueru }, { 0 }};
@@ -385,10 +392,10 @@ static struct langstyle demibolds[] = { {0x409, demiboldeng}, {0x409, demibolden
 static struct langstyle heavys[] = { {0x409, heavyeng}, { 0x419, heavyru }, { 0 }};
 static struct langstyle blacks[] = { {0x409, blackeng}, { 0x419, blackru }, { 0 }};
 static struct langstyle thins[] = { {0x409, thineng}, { 0x419, thinru }, { 0 }};
-static struct langstyle lights[] = { {0x409, lighteng}, { 0x419, lightru }, { 0 }};
-static struct langstyle condenseds[] = { {0x409, condensedeng}, { 0x419, condensedru }, { 0 }};
-static struct langstyle expandeds[] = { {0x409, expandedeng}, { 0x419, expandedru }, { 0 }};
-static struct langstyle *stylelist[] = {regs, demibolds, bolds, heavys, blacks,
+static struct langstyle lights[] = { {0x409, lighteng}, {0x407, lightgerm}, { 0x419, lightru }, { 0 }};
+static struct langstyle condenseds[] = { {0x409, condensedeng}, {0x407, lightgerm}, { 0x419, condensedru }, { 0 }};
+static struct langstyle expandeds[] = { {0x409, expandedeng}, {0x407, lightgerm}, { 0x419, expandedru }, { 0 }};
+static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, heavys, blacks,
 	lights, thins, italics, obliques, condenseds, expandeds, NULL };
 
 #define CID_Encoding	1001
