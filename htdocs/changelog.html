@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 4-Jun-2003 -->
+  <!-- AP: Last modified: 5-Jun-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,19 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    5-June-2003
+    <UL>
+      <LI>
+	PfaEdit was generating Apple 'morx' tables with the right to left bit reversed
+	(so it thought latin text was right to left and arabic was left to right).
+	This meant that ligatures happened backwards (the "ffi" ligature would be
+	invoked if you typed in "iff")
+      <LI>
+	PfaEdit was generating a format=1 glyph class definition sub-table of GDEF.
+	ttx didn't like this, I'm not sure why. Problem goes away if I generate a
+	format=2 sub-table.
+    </UL>
   <LI>
     4-Jun-2003
     <UL>
