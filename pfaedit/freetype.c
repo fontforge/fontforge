@@ -272,6 +272,7 @@ return( NULL );
 		AddIf(sf,new,old,'x');
 		AddIf(sf,new,old,'o');
 	    }
+	    AddIf(sf,new,old,0);	/* If there's a .notdef use it so that we don't generate our own .notdef (which can add cvt entries) */
 	    sf->chars = new;
 	}
 	switch ( ff ) {
