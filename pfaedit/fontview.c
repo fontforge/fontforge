@@ -1232,6 +1232,12 @@ static void FVMenuSelectAll(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVSelectAll(fv);
 }
 
+static void FVMenuDeselectAll(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    FVDeselectAll(fv);
+}
+
 static void FVMenuSelectColor(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
@@ -2867,6 +2873,7 @@ static GMenuItem edlist[] = {
     { { (unichar_t *) _STR_Join, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'J' }, 'J', ksm_control|ksm_shift, NULL, NULL, FVMenuJoin, MID_Join },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_SelectAll, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'A', ksm_control, NULL, NULL, FVMenuSelectAll },
+    { { (unichar_t *) _STR_DeselectAll, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, GK_Escape, 0, NULL, NULL, FVMenuDeselectAll },
     { { (unichar_t *) _STR_SelectColor, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, sclist },
     { { (unichar_t *) _STR_FindReplace, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'i' }, 'F', ksm_control|ksm_meta, NULL, NULL, FVMenuFindRpl },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
@@ -4356,7 +4363,7 @@ static void FVMouse(FontView *fv,GEvent *event) {
     if ( event->type == et_mousedown ) {
 	if ( fv->drag_and_drop ) {
 	    GDrawSetCursor(fv->v,ct_mypointer);
-	    fv->drag_and_drop = false;
+	    fv->any_dd_events_sent = fv->drag_and_drop = false;
 	}
 	if ( !(event->u.mouse.state&ksm_shift) && event->u.mouse.clicks<=1 ) {
 	    if ( !fv->selected[pos] )
@@ -4403,10 +4410,13 @@ static void FVMouse(FontView *fv,GEvent *event) {
 		GDrawSetCursor(fv->v,ct_ddcursor);
 	    }
 	    GDrawPostDragEvent(fv->v,event,event->type==et_mouseup?et_drop:et_drag);
+	    fv->any_dd_events_sent = true;
 	}
 	if ( event->type==et_mouseup ) {
 	    fv->drag_and_drop = fv->has_dd_no_cursor = false;
 	    GDrawSetCursor(fv->v,ct_mypointer);
+	    if ( !fv->any_dd_events_sent )
+		FVDeselectAll(fv);
 	}
     } else if ( fv->pressed!=NULL ) {
 	int showit = pos!=fv->end_pos;
