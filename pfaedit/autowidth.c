@@ -29,6 +29,8 @@
 #include "utype.h"
 #include <math.h>
 
+#define THIRDS_IN_WIDTH 0
+
 /* The basic idea behind autowidth:
     We figure out how high serifs are (and if they exist at all)
     And we guess at the cap height, xheight and descender and we mark off
@@ -242,7 +244,11 @@ static void FigureLR(WidthInfo *wi) {
 	for ( cp = ch->asleft; cp!=NULL; cp = cp->nextasleft )
 	    subsum += cp->visual;
 	subsum /= wi->rcnt;
+#if THIRDS_IN_WIDTH
 	ch->newr = rint( spacing*2/3.0 + sum-subsum );
+#else
+	ch->newr = rint( spacing/2.0 + sum-subsum );
+#endif
     }
     for ( i=0; i<wi->real_rcnt; ++i ) {
 	ch = wi->right[i];
@@ -250,7 +256,11 @@ static void FigureLR(WidthInfo *wi) {
 	for ( cp = ch->asright; cp!=NULL; cp = cp->nextasright )
 	    subsum += cp->visual;
 	subsum /= wi->lcnt;
+#if THIRDS_IN_WIDTH
 	ch->newl = rint( spacing/3.0+ sum-subsum );
+#else
+	ch->newl = rint( spacing/2.0+ sum-subsum );
+#endif
     }
 }
 
@@ -686,8 +696,10 @@ static void FindFontParameters(WidthInfo *wi) {
     if ( si!=-1 ) {
 	topx = SCFindMinXAtY(sf->chars[si],2*caph/3);
 	bottomx = SCFindMinXAtY(sf->chars[si],caph/3);
+	/* Some fonts don't sit on the baseline... */
+	SplineCharQuickBounds(sf->chars[si],&bb);
 	/* beware of slanted (italic, oblique) fonts */
-	ytop = caph/2; ybottom=0;
+	ytop = caph/2; ybottom=bb.miny;
 	stemx = SCFindMinXAtY(sf->chars[si],ytop);
 	if ( topx==bottomx ) {
 	    ca = 0;
@@ -718,10 +730,10 @@ static void FindFontParameters(WidthInfo *wi) {
 	else if ( ytop>caph/4 )
 	    serifsize = .06*(sf->ascent+sf->descent);
 	else
-	    serifsize = ytop;
+	    serifsize = ytop-bb.miny;
 
 	if ( serifsize!=0 ) {
-	    y = serifsize/4;
+	    y = serifsize/4 + bb.miny;
 	    testx = SCFindMinXAtY(sf->chars[si],y)+ (yorig-y)*ca;
 	    seriflength = stemx-testx;
 	}
@@ -1676,7 +1688,7 @@ int AutoWidthScript(SplineFont *sf,int spacing) {
     wi.autokern = 0;
     wi.sf = sf;
     FindFontParameters(&wi);
-    if ( spacing>0 )
+    if ( spacing>-(sf->ascent+sf->descent) )
 	wi.spacing = spacing;
 
     wi.left = autowidthBuildCharList(wi.sf,CID_LeftBase, &wi.lcnt, &wi.real_lcnt, &wi.l_Ipos, true );
@@ -1703,7 +1715,7 @@ int AutoKernScript(SplineFont *sf,int spacing, int threshold,char *kernfile) {
     wi.autokern = 1;
     wi.sf = sf;
     FindFontParameters(&wi);
-    if ( spacing>0 )
+    if ( spacing>-(sf->ascent+sf->descent) )
 	wi.spacing = spacing;    
     wi.threshold = threshold;    
 
