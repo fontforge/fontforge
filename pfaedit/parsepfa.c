@@ -103,7 +103,7 @@ char *AdobeStandardEncoding[] = {
 /* 002a */	"asterisk",
 /* 002b */	"plus",
 /* 002c */	"comma",
-/* 002d */	"minus",		/* or is it hyphen??? */
+/* 002d */	"hyphen",
 /* 002e */	"period",
 /* 002f */	"slash",
 /* 0030 */	"zero",
