@@ -4496,7 +4496,7 @@ return( NULL );
     /*  immediately. Otherwise delay a bit */
     GProgressStartIndicator(fv_list==NULL?0:10,GStringGetResource(_STR_Loading,NULL),ubuf,GStringGetResource(_STR_ReadingGlyphs,NULL),0,1);
     GProgressEnableStop(0);
-    if ( fv_list==NULL ) { GDrawSync(NULL); GDrawProcessPendingEvents(NULL); }
+    if ( fv_list==NULL && screen_display!=NULL ) { GDrawSync(NULL); GDrawProcessPendingEvents(NULL); }
 
     sf = NULL;
     if ( strmatch(fullname+strlen(fullname)-4, ".sfd")==0 ||
