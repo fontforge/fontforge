@@ -1397,6 +1397,7 @@ struct vanishing_point {
     double y_vanish;
 };
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void VanishingTrans(BasePoint *me,void *_vanish) {
     struct vanishing_point *vanish = _vanish;
 
@@ -1419,3 +1420,4 @@ return;
 	SplineSetNLTrans(spl,&c,false);
     }
 }
+#endif	/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

@@ -1079,6 +1079,8 @@ return( 0 );
 		if ( r<h && (ch&(1<<(7-j))) )
 		    bc->bitmap[r*bc->bytes_per_line+(c>>3)] |= (1<<(7-(c&7)));
 	    }
+	    if ( ftell(pk)>char_end )
+	break;
 	}
     } else {
 	/* We've got run-length encoded data */
@@ -1116,6 +1118,8 @@ return( 0 );
 		}
 	    }
 	    black = !black;
+	    if ( ftell(pk)>char_end )
+	break;
 	}
     }
     if ( cc>=b->charcnt )

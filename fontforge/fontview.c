@@ -7047,6 +7047,7 @@ SplineChar *SFMakeChar(SplineFont *sf,int i) {
 return( _SFMakeChar(sf,i));
 }
 
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 SplineChar *FVMakeChar(FontView *fv,int i) {
     SplineFont *sf = fv->sf;
     SplineChar *base_sc = SFMakeChar(sf,i), *feat_sc = NULL;
@@ -7100,6 +7101,12 @@ return( feat_sc );
     }
 return( sf->chars[feat_i] );
 }
+#else
+SplineChar *FVMakeChar(FontView *fv,int i) {
+    SplineFont *sf = fv->sf;
+return( SFMakeChar(sf,i) );
+}
+#endif
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static GImage *GImageCropAndRotate(GImage *unrot) {

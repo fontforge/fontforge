@@ -36,7 +36,9 @@
 # include <basics.h>
 # include <stdio.h>
 # include <string.h>
-# include <gprogress.h>
+# if defined( FONTFORGE_CONFIG_GDRAW )
+#  include <gprogress.h>
+# endif
 # include "nomen.h"
 #endif
 #include "splinefont.h"

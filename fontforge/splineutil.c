@@ -914,7 +914,7 @@ void SplinePointCatagorize(SplinePoint *sp) {
     } else if ( sp->nonextcp && sp->noprevcp ) {
 	;
     } else if ( !sp->nonextcp && !sp->noprevcp ) {
-	if ( sp->nextcp.y==sp->prevcp.y && sp->nextcp.y==sp->me.y ) {
+	if ( RealWithin(sp->nextcp.y,sp->prevcp.y,.1) && RealWithin(sp->nextcp.y,sp->me.y,.1) ) {
 	    if ( (sp->nextcp.x-sp->me.x<0 && sp->me.x-sp->prevcp.x<0) ||
 		    (sp->nextcp.x-sp->me.x>0 && sp->me.x-sp->prevcp.x>0))
 		sp->pointtype = pt_curve;
@@ -2800,6 +2800,7 @@ return ( RealNear( (3*sp->a*t + 2*sp->b)*t + sp->c,0) &&
 
 int Spline2DFindExtrema(Spline *sp, double extrema[4] ) {
     int i,j;
+    BasePoint last, cur, mid;
 
     SplineFindExtrema(&sp->splines[0],&extrema[0],&extrema[1]);
     SplineFindExtrema(&sp->splines[1],&extrema[2],&extrema[3]);
@@ -2818,7 +2819,31 @@ int Spline2DFindExtrema(Spline *sp, double extrema[4] ) {
 	    extrema[3] = -1;
 	}
     }
+
+    /* Extrema which are too close together are not interesting */
+    last = sp->from->me;
+    for ( i=0; i<4 && extrema[i]!=-1; ++i ) {
+	cur.x = ((sp->splines[0].a*extrema[i]+sp->splines[0].b)*extrema[i]+
+		sp->splines[0].c)*extrema[i]+sp->splines[0].d;
+	cur.y = ((sp->splines[1].a*extrema[i]+sp->splines[1].b)*extrema[i]+
+		sp->splines[1].c)*extrema[i]+sp->splines[1].d;
+	mid.x = (last.x+cur.x)/2; mid.y = (last.y+cur.y)/2;
+	if ( (mid.x==last.x || mid.x==cur.x) &&
+		(mid.y==last.y || mid.y==cur.y)) {
+	    for ( j=i+1; j<3; ++j )
+		extrema[j] = extrema[j+1]; 
+	} else
+	    last = cur;
+    }
     for ( i=0; i<4 && extrema[i]!=-1; ++i );
+    if ( i!=0 ) {
+	cur = sp->to->me;
+	mid.x = (last.x+cur.x)/2; mid.y = (last.y+cur.y)/2;
+	if ( (mid.x==last.x || mid.x==cur.x) &&
+		(mid.y==last.y || mid.y==cur.y))
+	    extrema[--i] = -1;
+    }
+
 return( i );
 }
 
