@@ -58,6 +58,7 @@ typedef struct gcstate {
     struct font_data *cur_font;
 } GCState;
 
+#ifndef X_DISPLAY_MISSING
 struct gxinput_context {
     GWindow w;
     enum gic_style style;
@@ -67,7 +68,6 @@ struct gxinput_context {
     XPoint sloc;
 };
 
-#ifndef X_DISPLAY_MISSING
 typedef struct gxwindow /* :GWindow */ {
     GGC *ggc;
     struct gxdisplay *display;
