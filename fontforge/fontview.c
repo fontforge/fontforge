@@ -1075,6 +1075,18 @@ return( -2 );
 return( val );
 }
 
+static int FVAllSelected(FontView *fv) {
+    int i, any = false;
+    /* Is everything real selected? */
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( SCWorthOutputting(fv->sf->chars[i])) {
+	if ( !fv->selected[i] )
+return( false );
+	any = true;
+    }
+return( any );
+}
+
 static void FVMenuCopyFrom(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     /*FontView *fv = (FontView *) GDrawGetUserData(gw);*/
 
@@ -1731,12 +1743,36 @@ void TransHints(StemInfo *stem,real mul1, real off1, real mul2, real off2, int r
     }
 }
 
+static void VrTrans(struct vr *vr,real transform[6]) {
+    /* I'm interested in scaling and skewing. I think translation should */
+    /*  not affect these guys (they are offsets, so offsets should be */
+    /*  unchanged by translation */
+    double x,y;
+
+    x = vr->xoff; y=vr->yoff;
+    vr->xoff = rint(transform[0]*x + transform[1]*y);
+    vr->yoff = rint(transform[2]*x + transform[3]*y);
+    x = vr->h_adv_off; y=vr->v_adv_off;
+    vr->h_adv_off = rint(transform[0]*x + transform[1]*y);
+    vr->v_adv_off = rint(transform[2]*x + transform[3]*y);
+}
+
+static void KCTrans(KernClass *kc,double scale) {
+    /* Again these are offsets, so I don't apply translation */
+    int i;
+
+    for ( i=kc->first_cnt*kc->second_cnt-1; i>=0; --i )
+	kc->offsets[i] = rint(scale*kc->offsets[i]);
+}
+
 void FVTrans(FontView *fv,SplineChar *sc,real transform[6], uint8 *sel,
 	enum fvtrans_flags flags) {
     RefChar *refs;
     real t[6];
     AnchorPoint *ap;
     int i,j;
+    KernPair *kp;
+    PST *pst;
 
     if ( sc->blended ) {
 	int j;
@@ -1752,6 +1788,18 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], uint8 *sel,
 	    SCSynchronizeWidth(sc,sc->width*transform[0]+transform[4],sc->width,fv);
 	    if ( !(flags&fvt_dontsetwidth) ) sc->widthset = widthset;
 	}
+    for ( kp=sc->kerns; kp!=NULL; kp=kp->next )
+	kp->off = rint(kp->off*transform[0]);
+    for ( kp=sc->vkerns; kp!=NULL; kp=kp->next )
+	kp->off = rint(kp->off*transform[3]);
+    for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
+	if ( pst->type == pst_position )
+	    VrTrans(&pst->u.pos,transform);
+	else if ( pst->type==pst_pair ) {
+	    VrTrans(&pst->u.pair.vr[0],transform);
+	    VrTrans(&pst->u.pair.vr[1],transform);
+	}
+    }
     for ( ap=sc->anchor; ap!=NULL; ap=ap->next )
 	ApTransform(ap,transform);
     for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
@@ -1861,6 +1909,15 @@ void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
     break;
     }
     GProgressEndIndicator();
+
+    if ( flags&fvt_scalekernclasses ) {
+	KernClass *kc;
+	SplineFont *sf = fv->cidmaster!=NULL ? fv->cidmaster : fv->sf;
+	for ( kc=sf->kerns; kc!=NULL; kc=kc->next )
+	    KCTrans(kc,transform[0]);
+	for ( kc=sf->vkerns; kc!=NULL; kc=kc->next )
+	    KCTrans(kc,transform[3]);
+    }
 }
 
 int SFScaleToEm(SplineFont *sf, int as, int des) {
@@ -1868,9 +1925,6 @@ int SFScaleToEm(SplineFont *sf, int as, int des) {
     real transform[6];
     BVTFunc bvts;
     uint8 *oldselected = sf->fv->selected;
-    int i;
-    KernPair *kp;
-    PST *pst;
 
     scale = (as+des)/(double) (sf->ascent+sf->descent);
     if ( sf->pfminfo.os2_typoascent!=0 ) {
@@ -1896,31 +1950,9 @@ return( false );
     sf->ascent = as; sf->descent = des;
 
     FVTransFunc(sf->fv,transform,0,&bvts,
-	    fvt_dobackground|fvt_round_to_int|fvt_dontsetwidth);
+	    fvt_dobackground|fvt_round_to_int|fvt_dontsetwidth|fvt_scalekernclasses);
     free(sf->fv->selected);
     sf->fv->selected = oldselected;
-
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	for ( kp=sf->chars[i]->kerns; kp!=NULL; kp=kp->next )
-	    kp->off = rint(scale*kp->off);
-	for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
-	    if ( pst->type==pst_position ) {
-		pst->u.pos.xoff = rint(scale*pst->u.pos.xoff);
-		pst->u.pos.yoff = rint(scale*pst->u.pos.yoff);
-		pst->u.pos.h_adv_off = rint(scale*pst->u.pos.h_adv_off);
-		pst->u.pos.v_adv_off = rint(scale*pst->u.pos.v_adv_off);
-	    } else if ( pst->type==pst_pair ) {
-		pst->u.pair.vr[0].xoff = rint(scale*pst->u.pair.vr[0].xoff);
-		pst->u.pair.vr[0].yoff = rint(scale*pst->u.pair.vr[0].yoff);
-		pst->u.pair.vr[0].h_adv_off = rint(scale*pst->u.pair.vr[0].h_adv_off);
-		pst->u.pair.vr[0].v_adv_off = rint(scale*pst->u.pair.vr[0].v_adv_off);
-		pst->u.pair.vr[1].xoff = rint(scale*pst->u.pair.vr[1].xoff);
-		pst->u.pair.vr[1].yoff = rint(scale*pst->u.pair.vr[1].yoff);
-		pst->u.pair.vr[1].h_adv_off = rint(scale*pst->u.pair.vr[1].h_adv_off);
-		pst->u.pair.vr[1].v_adv_off = rint(scale*pst->u.pair.vr[1].v_adv_off);
-	    }
-	}
-    }
 
     sf->changed = true;
 return( true );
@@ -1933,9 +1965,12 @@ static void FVMenuBitmaps(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void FVMenuTransform(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
+    int flags=0x3;
     if ( FVAnyCharSelected(fv)==-1 )
 return;
-    TransformDlgCreate(fv,FVTransFunc,getorigin,true);
+    if ( FVAllSelected(fv))
+	flags = 0x7;
+    TransformDlgCreate(fv,FVTransFunc,getorigin,flags);
 }
 
 #ifdef FONTFORGE_CONFIG_NONLINEAR

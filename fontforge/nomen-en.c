@@ -2894,6 +2894,8 @@ static char *str_FlipDDD = "Flip...";
 static char *str_SkewDDD = "Skew...";
 static char *str_TransformBackground = "Transform Background Too";
 static char mnemonic_TransformBackground = 'B';
+static char *str_TransformKernClass = "Transform Kerning Classes Too";
+static char mnemonic_TransformKernClass = 'K';
 static char *str_Warning = "Warning";
 static char *str_RotateSkewWarning = "After rotating or skewing a character you should probably apply Element->Add Extrema";
     /* scripting */
