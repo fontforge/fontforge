@@ -352,7 +352,7 @@ return( new );
 }
 
 static Spline *IsLinearApprox(SplinePoint *from, SplinePoint *to,
-	TPoint *mid, int cnt) {
+	TPoint *mid, int cnt, int order2) {
     double vx, vy, slope;
     int i;
 
@@ -373,7 +373,7 @@ return( NULL );
 return( NULL );
     }
     from->nonextcp = to->noprevcp = true;
-return( SplineMake3(from,to) );
+return( SplineMake(from,to,order2) );
 }
 
 #if 0
@@ -581,7 +581,7 @@ Spline *ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
     Spline *spline;
     BasePoint nextcp, prevcp;
 
-    if ( (spline = IsLinearApprox(from,to,mid,cnt))!=NULL )
+    if ( (spline = IsLinearApprox(from,to,mid,cnt,order2))!=NULL )
 return( spline );
 
     ret = _ApproximateSplineFromPoints(from,to,mid,cnt,&nextcp,&prevcp,order2);
@@ -600,7 +600,7 @@ return( spline );
 	to->prevcp = to->me;
 	to->noprevcp = true;
     }
-    spline = SplineMake3(from,to);
+    spline = SplineMake(from,to,order2);
     if ( SplineIsLinear(spline)) {
 	spline->islinear = from->nonextcp = to->noprevcp = true;
 	spline->from->nextcp = spline->from->me;
