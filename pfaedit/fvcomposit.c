@@ -574,7 +574,10 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
     /* In greek, PSILI and friends are centered above lower case, and kern left*/
     /*  for upper case */
     if (( basech>=0x390 && basech<=0x3ff) || (basech>=0x1f00 && basech<=0x1fff)) {
-	if ( isupper(basech) &&
+	if ( ( basech==0x1fbf || basech==0x1fef || basech==0x1ffe ) &&
+		(ch==0x1fbf || ch==0x1fef || ch==0x1ffe || ch==0x1fbd || ch==0x1ffd )) {
+	    pos = ____ABOVE|____RIGHT;
+	} else if ( isupper(basech) &&
 		(ch==0x313 || ch==0x314 || ch==0x301 || ch==0x300 || ch==0x30d ||
 		 ch==0x1ffe || ch==0x1fbf || ch==0x1fcf || ch==0x1fdf ||
 		 ch==0x1fbd || ch==0x1fbe || ch==0x1fef || ch==0x1ffd ||
