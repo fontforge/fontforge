@@ -2115,7 +2115,7 @@ return( (SplineFont *) ret );
 	    len += temp;
 	}
 	rewind(ttf);
-	sf = _SFReadTTF(ttf,flags,NULL);
+	sf = _SFReadTTF(ttf,flags,NULL,NULL);
 	fclose(ttf);
 	if ( sf!=NULL ) {
 	    free(buffer);
@@ -2724,7 +2724,7 @@ return( (SplineFont *) ret );
 	dlen -= len;
     }
     rewind(temp);
-    sf = _SFReadTTF(temp,flags,NULL);
+    sf = _SFReadTTF(temp,flags,NULL,NULL);
     fclose(temp);
     free(buffer);
 return( sf );

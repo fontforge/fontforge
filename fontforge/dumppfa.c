@@ -1788,7 +1788,10 @@ static void dumptype42(FILE *out, SplineFont *sf, int format, int flags ) {
 	    if ( sf->chars[i]!=NULL && sf->chars[i]==SCDuplicate(sf->chars[i]) &&
 		    SCWorthOutputting(sf->chars[i]))
 		++cnt;
-	fprintf( out, "  /CharStrings %d dict dup begin\n", cnt );
+	fprintf( out, "  /CharStrings %d dict dup begin\n", cnt+1 );
+	/* Why check to see if there's a not def char in the font? If there is*/
+	/*  we can define the dictionary entry twice */
+	fprintf( out, "    /.notdef 0 def\n" );
 	for ( i=0; i<sf->charcnt; ++i )
 	    if ( sf->chars[i]!=NULL && sf->chars[i]==SCDuplicate(sf->chars[i]) &&
 		    SCWorthOutputting(sf->chars[i]))

@@ -850,6 +850,9 @@ static void ValidatePostScriptFontName(char *str) {
 char *EnforcePostScriptName(char *old) {
     char *end, *pt, *npt, *str = copy(old);
 
+    if ( old==NULL )
+return( old );
+
     strtod(str,&end);
     if ( (*end=='\0' || (isdigit(str[0]) && strchr(str,'#')!=NULL)) &&
 	    *str!='\0' ) {
@@ -3860,7 +3863,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 
     /* Give ourselves an xuid, just in case they want to convert to PostScript*/
     /*  (even type42)							      */
-    if ( xuid!=NULL ) {
+    if ( xuid!=NULL && info->fd==NULL ) {
 	info->xuid = galloc(strlen(xuid)+20);
 	sprintf(info->xuid,"[%s %d]", xuid, (rand()&0xffffff));
     }
@@ -3909,6 +3912,23 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 		}
 	    }
 	    free(indexes);
+	}
+    }
+
+    if ( info->fd!=NULL && info->fd->chars!=NULL) {
+	/* In type42 fonts the names are stored in a postscript /CharStrings dictionary */
+	struct pschars *chars = info->fd->chars;
+	for ( i=0; i<chars->next; ++i ) {
+	    int gid = (intpt) (chars->values[i]);
+	    if ( gid>=0 && gid<info->glyph_cnt && chars->keys[i]!=NULL ) {
+		free(info->chars[gid]->name);
+		info->chars[gid]->name = chars->keys[i];
+		info->chars[gid]->unicodeenc = UniFromName(chars->keys[i],info->uni_interp,info->encoding_name);
+		info->chars[gid]->enc = info->chars[gid]->unicodeenc;
+		chars->keys[i] = NULL;
+		chars->values[i] = NULL;
+	    } else
+		chars->values[i] = NULL;
 	}
     }
 
@@ -4199,7 +4219,7 @@ return( 0 );
 	readttfwidths(ttf,info);
     if ( info->vmetrics_start!=0 && info->vhea_start!=0 )
 	readttfvwidths(ttf,info);
-    if ( info->cidregistry==NULL )
+    if ( info->cidregistry==NULL && info->encoding_start!=0 )
 	readttfencodings(ttf,info,false);
     if ( info->os2_start!=0 )
 	readttfos2metrics(ttf,info);
@@ -4648,6 +4668,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     struct table_ordering *ord;
     SplineChar *sc;
 
+    
     sf = SplineFontEmpty();
     sf->display_size = -default_fv_font_size;
     sf->display_antialias = default_fv_antialias;
@@ -4658,6 +4679,23 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->onlybitmaps = info->onlystrikes;
     sf->order2 = info->to_order2;
     sf->comments = info->fontcomments;
+
+    if ( info->fd!=NULL ) {		/* Special hack for type42 fonts */
+	sf->fontname = copy(info->fd->fontname);
+	sf->uniqueid = info->fd->uniqueid;
+	sf->xuid = XUIDFromFD(info->fd->xuid);
+	if ( info->fd->fontinfo!=NULL ) {
+	    sf->familyname = copy(info->fd->fontinfo->familyname);
+	    sf->fullname = copy(info->fd->fontinfo->fullname);
+	    sf->copyright = copy(info->fd->fontinfo->notice);
+	    sf->weight = copy(info->fd->fontinfo->weight);
+	    sf->version = copy(info->fd->fontinfo->version);
+	    sf->italicangle = info->fd->fontinfo->italicangle;
+	    sf->upos = info->fd->fontinfo->underlineposition*(sf->ascent+sf->descent);
+	    sf->uwidth = info->fd->fontinfo->underlinethickness*(sf->ascent+sf->descent);
+	}
+    }
+
     if ( sf->fontname==NULL ) {
 	sf->fontname = EnforcePostScriptName(sf->fullname);
 	if ( sf->fontname==NULL )
@@ -4787,7 +4825,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 return( sf );
 }
 
-SplineFont *_SFReadTTF(FILE *ttf, int flags,char *filename) {
+SplineFont *_SFReadTTF(FILE *ttf, int flags,char *filename,struct fontdict *fd) {
     struct ttfinfo info;
     int ret;
 
@@ -4795,6 +4833,7 @@ SplineFont *_SFReadTTF(FILE *ttf, int flags,char *filename) {
     info.onlystrikes = (flags&ttf_onlystrikes)?1:0;
     info.onlyonestrike = (flags&ttf_onlyonestrike)?1:0;
     info.uni_interp = ui_unset;
+    info.fd = fd;
     ret = readttf(ttf,&info,filename);
     if ( !ret )
 return( NULL );
@@ -4818,7 +4857,7 @@ SplineFont *SFReadTTF(char *filename, int flags) {
     if ( ttf==NULL )
 return( NULL );
 
-    sf = _SFReadTTF(ttf,flags,filename);
+    sf = _SFReadTTF(ttf,flags,filename,NULL);
     fclose(ttf);
 return( sf );
 }
