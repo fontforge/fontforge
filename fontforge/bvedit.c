@@ -652,6 +652,7 @@ void BCPasteInto(BDFChar *bc,BDFChar *rbc,int ixoff,int iyoff, int invert, int c
     int x,y;
     uint8 *bpt, *rpt;
 
+    x = 0;
     BCExpandBitmap(bc,rbc->xmin+ixoff,rbc->ymin+iyoff);
     BCExpandBitmap(bc,rbc->xmax+ixoff,rbc->ymax+iyoff);
     for ( y=rbc->ymin; y<=rbc->ymax; ++y ) {
@@ -661,7 +662,7 @@ void BCPasteInto(BDFChar *bc,BDFChar *rbc,int ixoff,int iyoff, int invert, int c
 	else
 	    rpt = rbc->bitmap + (rbc->ymax-y)*rbc->bytes_per_line;
 	if ( bc->byte_data )
-	    memcpy(bpt+x+ixoff-bc->xmax,rpt,rbc->xmax-rbc->xmin+1);
+	    memcpy(bpt+x+ixoff-bc->xmin,rpt,rbc->xmax-rbc->xmin+1);
 	else {
 	    for ( x=rbc->xmin; x<=rbc->xmax; ++x ) {
 		int bx = x+ixoff-bc->xmin, rx = x-rbc->xmin;
