@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 03-Nov-2002 -->
+  <!-- AP: Last modified: 08-Jan-2003 -->
   <TITLE>The View Menu</TITLE>
 </HEAD>
 <BODY>
@@ -25,6 +25,8 @@
     <A HREF="#NextDef">Next Defined Char</A>
   <LI>
     <A HREF="#PrevDef">Prev Defined Char</A>
+  <LI>
+    <A HREF="#Substitutions">Substitutions</A>
   <LI>
     <A HREF="#Goto">Goto</A>
   <LI>
@@ -98,11 +100,11 @@
   <DT>
     Zoom <A NAME="Out">Out</A>
   <DD>
-    Only in the outline and bitmap views. Centered on the middle of the view.
+    Not in the font view. Centered on the middle selection if there is one, else the middle of the view.
   <DT>
     Zoom <A NAME="In">In</A>
   <DD>
-    Only in the outline and bitmap views. Centered on the middle of the view.
+    Not in the font view. Centered on the middle selection if there is one, else the middle of the view.
   <DT>
     <A NAME="Next">Next</A> Char
   <DD>
@@ -129,6 +131,14 @@
   <DD>
     Similar to Prev Char, except it moves to the previous character defined in
     the font.
+  <DT>
+    <A NAME="Substitutions">Substitutions</A>
+  <DD>
+    Brings up a sub menu showing all the GSUB type 1 and type 3 substitutions (simple and alternate)
+    you have defined for the selected character and allows you to change the
+    character as directed by the substitution.
+    <P>
+    Substitutions may be set with the <A HREF="charinfo.html">Element->Char Info</A> command.
   <DT>
     <A NAME="Goto">Goto</A>
   <DD>

@@ -682,8 +682,13 @@ tag. The tag is meaningful in the context of the <A HREF="gposgsub.html">GPOS</A
 table and unless you are working with indic languages should probably be left
 as 'mark'.
 <P>
+The tag 'curs' is magic. This is used to build up a "cursive attachment" sub-table
+rather than a "mark to base" sub-table. In a cursive table each character may
+have two anchor points and entry and an exit point. The text layout program will
+attach the exit point of one character to the entry point of the next.
+<P>
 A character may contain several Anchor Points, there may be one for each
-anchor class (ligatures may have more than one for a class). You may create
+anchor class (ligatures may have more than one for a class, and 'curs' classes may have two). You may create
 a point with the <A HREF="pointmenu.html#AddAnchor">Point->Add Anchor command</A>.
 You must specify an anchor class, and whether this point is in a base character
 or in a mark character, and a location. So in the example above the anchor

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 29-Dec-2002 -->
+  <!-- AP: Last modified: 8-Jan-2003 -->
   <TITLE>Char Info</TITLE>
 </HEAD>
 <BODY>
@@ -10,7 +10,7 @@
   Char Info
 </H1>
 <H2>
-  <IMG SRC="charinfo.png" WIDTH="307" HEIGHT="359" ALIGN="Right">
+  <IMG SRC="charinfo.png" WIDTH="305" HEIGHT="400" ALIGN="Right">
   <A NAME="Character">Character</A> Info
 </H2>
 <P>
@@ -36,14 +36,53 @@ any text into this field. The comment is for your use, it will not go into
 any generated fonts. You may also assign a color to a character to make it
 stand out in the font view.<BR CLEAR=ALL>
 <P>
-<IMG SRC="charinfo-lig.png" WIDTH="307" HEIGHT="359" ALIGN="Right">The ligature field allows you to tell PfaEdit that the current character
+<IMG SRC="charinfo-pos.png" WIDTH="305" HEIGHT="400" ALIGN="Right">There are
+5 seperate sub-dialogs to help you edit the <A HREF="gposgsub.html">GPOS and GSUB</A> tables.
+The first of these is the alternate position dialog which allows you to associate
+certain modifications to a character's metrics with a feature in the GPOS table.
+<P>
+In the example at right the 'fwid' feature (full width) adds 400 units to the
+character's advance width and moves it horizontally by 200 units.
+<P>
+A new entry in the list may be created by pressing the [New] button and a dlg
+will pop up with fields for the metrics you can change. It will also have a
+field for a feature tag, and a set of check boxes for flags (these flags are
+not relevant here, but are included as an excercise in assinine completeness.
+<P>
+The [Delete] and [Edit] buttons should be fairly self-explanitory. [Copy] and
+[Paste] work as expected too. You can also paste something copied here into the
+font view (if you wish to have the same position information available in a
+large block of characters).
+<BR Clear=Right>
+<P>
+<IMG SRC="charinfo-subs.png" WIDTH="305" HEIGHT="400" ALIGN="Right">
+A simple substitution replaces one glyph with another. Here the glyph "one" has
+a substitution to "onesuperior" when that 'sups' (Superscript) feature is invoked.
+<P>
+You can generate a substitution most easily by draging a character from the font
+view and droping it here (you will then be prompted for a feature tag for the
+substitution table.
+<P>
+The multiple and alternate substitution sub-dialogs are very similar to this
+one except that they can take multiple glyph names. In a multiple substitution
+sub table each glyph is replaced by several other glyphs (sort of the reverse
+of a ligature), while in the alternate substitution sub-dialog each glyph is
+to be replaced by exactly one glyph from a list and the user is to be given a
+choice as to which glyph is to be chosen.
+<BR Clear=Right>
+<P>
+<IMG SRC="charinfo-lig.png" WIDTH="305" HEIGHT="400" ALIGN="Right">
+The ligature field allows you to tell PfaEdit that the current character
 is a ligature composed of several other characters. PfaEdit will often be
 able to fill this in with the right default value, but occasionally you may
 want to change it. The value should be a list of postscript character names
 separated by spaces. If a character may be viewed as two different ligatures
-then they may both be specified separated by a semicolon. For example "ffi"
-may be viewed as a ligature of "f" "f" and "i" or of "ff" and "i", the
-specification should be "f f i; ff i"
+then they may both be specified in different lines. For example "ffi"
+may be viewed as a ligature of "f" "f" and "i" or of "ff" and "i".
+<P>
+In the example at right the "m" character is one of a set of flags stored in
+the GSUB table. It indicates that combining marks should be ignored when looking
+for the ligature.
 <P>
 The <A HREF="gposgsub.html">GPOS and GSUB</A> tables allow further refinements
 of ligatures. You may classify a ligature as: Standard, Required, Discretionary,
@@ -51,7 +90,9 @@ Historic or Fraction. Required ligatures must be replaced, Standard ligatures
 should be, Discretionary ones may be, and Historic ones should only be used
 int appropriate circumstances. The pull down list on the Tag field allows you
 to pick what type of ligature this should be.
+<BR Clear=Right>
 <P>
+<IMG SRC="charinfo-comp.png" WIDTH="305" HEIGHT="400" ALIGN="Right">
 Some characters (ligatures, accented characters, Hangul syllables, etc.)
 are built up out of other characters. Displayed underneath the ligature field
 are the components of the current character, if those componants are in the
@@ -60,8 +101,8 @@ Element-&gt;Build Composit commands to create the current character. The
 information displayed here is informative only, you may not change this field
 directly.<BR CLEAR=ALL>
 <P>
-In the font view the Next and Prev buttons are not greyed out and you can
-change move on to the next character (if, for example, you need to enter
+The Next and Prev buttons allow you to move from one character to the next
+(if, for example, you need to enter
 encodings for a range of characters).
 <P>
 The Done (or Cancel) button only Cancels work in the current character. If

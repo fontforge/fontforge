@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 3-Aug-2002 -->
+  <!-- AP: Last modified: 8-Jan-2003 -->
   <TITLE>The Metrics View</TITLE>
 </HEAD>
 <BODY>
@@ -16,15 +16,19 @@ The metrics view allows you to examine how characters look together and to
 alter the spacing between them.
 <P>
 If the metrics view is created from the font view then any selected characters
-(well, the first 15 or so) will be displayed in the view. If it is created
+(well, the first 15 or so) will be displayed in the view in the order they were
+selected. If it is created
 from an outline or bitmap character view then only that character is displayed.
 If it is created from a bitmap character view (or from the font view when
 that view is displaying a bitmap font) then the metrics view will display
 bitmaps, but will not allow you to edit the bitmaps metrics (you must do
-you editing in one displaying outlines).
+your editing in one displaying outlines).
 <P>
 Underneath the menu bar is a text field which allows you to enter additional
 unicode characters to be displayed.
+<P>
+If you wish to enter non-unicode characters you may drag them from the font
+view and drop them into the metrics view where you want them to go.
 <P>
 The mid portion of the view is taken up with the displayed characters. For
 outline characters these are sized so that the em-height of the font just
@@ -58,14 +62,23 @@ character alone.
 terminal, medial, isolated) determination will be done in the display area
 (though they will be done in the text field above). If you want to correct
 form you must enter the unicode character for that form (as opposed to the
-character for the letter).
+character for the letter), or use the <A HREF="viewmenu.html#Substitutions">View->Substitutions</A> command.
 <P>
 <IMG SRC="HebrewMetrics.png" WIDTH="511" HEIGHT="323">
 <P>
 If you double click on one of the displayed characters then PfaEdit will
 bring up a outline character view to allow you to edit that character.
 <P>
-You can use the Edit menu to copy and paste metrics information.
+If the selected character contains active anchor points (that is something
+is attached to those anchor points) then you may move those anchor points around
+to see how they look. <STRONG>Note:</STRONG> When moving an anchor point in a
+mark, the result is counter-intuitive at first glance.
+<P>
+If you click in a character with the right button then a popup menu appears
+displaying all the simple positioning (GPOS type 1) features you have defined.
+You may select one of these and see the effect of applying it.
+<STRONG>Limitation</STRONG> PfaEdit currently only supports modifying the
+position, it will not display any modified advance widths.
 <H2>
   <A NAME="Entering">Entering non-ASCII characters</A>
 </H2>

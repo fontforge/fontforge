@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 31-Dec-2002 -->
+  <!-- AP: Last modified: 8-Jan-2003 -->
   <TITLE>The GPOS and GSUB opentype tables</TITLE>
 </HEAD>
 <BODY>
@@ -43,85 +43,50 @@ The <B><CODE>GPOS</CODE></B> table
 PfaEdit will read the following sub tables of the GPOS table:
 <TABLE Border=1>
 <TR>
-<TD>
-<CODE>'kern'</CODE>
-</TD><TD>
-The kerning sub-table
-</TD><TD>
-PfaEdit will read kerning information from the GPOS table, also from afm and tfm files
-and macintoy FOND resources. Users can create and modify kerning with the
-<A HREF="metricsview.html">metrics view.</A>
-</TD></TR>
+<TD>1</TD>
+<TD>single adjustment</TD>
+<TD>These can be created with the <A HREF="charinfo.html">Element->Char Info</A>->Position command.</TD>
+</TR>
 <TR>
-<TD>
-<CODE>'curs'</CODE>
-</TD><TD>
-Cursive Positioning
-</TD><TD>
-PfaEdit will read anchor points from the GPOS table. I am not aware of any
-way to provide this information with type1 fonts.
-Users can create and modify anchor points in the
-<A HREF="charview.html">character view.</A>
-<P>This table joins characters in cursive style writing.
-</TD></TR>
+<TD>2</TD>
+<TD>pair adjustment</TD>
+<TD>Only the 'kern' feature is supported for this sub-table. These may be
+created from the <A HREF="metricsview.html">Metrics View</A></TD>
+</TR>
 <TR>
-<TD>
-<CODE>'mark'</CODE>
-</TD><TD>
-Mark Positioning
-</TD><TD>
-PfaEdit will read anchor points from the GPOS table. I am not aware of any
-way to provide this information with type1 fonts.
-Users can create and modify anchor points in the
-<A HREF="charview.html">character view.</A>
-<HR>
-There are several different tables which specify anchor points which
-position other characters with respect to the current one.
-For a description of anchor points
-<A HREF="overview.html#Anchors">see the overview.</A>
-<P>This table is used for positioning marks (diacritic marks) around letters.
-</TD></TR>
-<TR>
-<TD>
-<CODE>'abvm'</CODE>
-</TD><TD>
-Above Baseline Mark Positioning
-</TD><TD>
-PfaEdit will read anchor points from the GPOS table. I do not know how this
-sub-table's semantics differ from those of the 'mark' table (the opentype
-docs say this has something to do with indic languages, but don't describe
-why 'mark' is inadiquate). PfaEdit treats this just like 'mark'.
-Users can create and modify anchor points in the
-<A HREF="charview.html">character view.</A>
-</TD></TR>
-<TR>
-<TD>
-<CODE>'blwm'</CODE>
-</TD><TD>
-Below Baseline Mark Positioning
-</TD><TD>
-PfaEdit will read anchor points from the GPOS table. I do not know how this
-sub-table's semantics differ from those of the 'mark' table (the opentype
-docs say this has something to do with indic languages, but don't describe
-why 'mark' is inadiquate). PfaEdit treats this just like 'mark'.
-Users can create and modify anchor points in the
-<A HREF="charview.html">character view.</A>
-</TD></TR>
-<TR>
-<TD>
-<CODE>'mkmk'</CODE>
-</TD><TD>
-Mark to Mark Positioning
-</TD><TD>
-PfaEdit will read anchor points from the GPOS table.
-Users can create and modify anchor points in the
-<A HREF="charview.html">character view.</A>
-<P>This table is used for positioning marks (diacritic marks) around other
-diacritic marks.
-</TD>
+<TD>3</TD>
+<TD>cursive attachment</TD>
+<TD>Only the 'curs' feature is supported for this sub-table. These may be
+created with the <A HREF="pointmenu.html#AddAnchor">Points->Add Anchor</A> command</TD>
+</TR>
+<TD>4</TD>
+<TD>mark to base</TD>
+<TD>These may be
+created with the <A HREF="pointmenu.html#AddAnchor">Points->Add Anchor</A> command</TD>
+</TR>
+<TD>5</TD>
+<TD>mark to ligature</TD>
+<TD>These may be
+created with the <A HREF="pointmenu.html#AddAnchor">Points->Add Anchor</A> command</TD>
+</TR>
+<TD>6</TD>
+<TD>mark to mark</TD>
+<TD>These may be
+created with the <A HREF="pointmenu.html#AddAnchor">Points->Add Anchor</A> command</TD>
+</TR>
+<TD>7</TD>
+<TD>contextual positioning</TD>
+<TD>PfaEdit does not support this sub-table yet.</TD>
+</TR>
+<TD>8</TD>
+<TD>chaining contextual positioning</TD>
+<TD>PfaEdit does not support this sub-table yet.</TD>
+</TR>
 </TABLE>
 <P>
-PfaEdit is also able to create a GPOS table with all the above sub-tables.
+PfaEdit also has built into it knowledge on how to provide default values for
+some features that use these menus. See <A HREF="elementmenu.html#DefaultATT">Element->Default ATT</A>
+command for that.
 <H2>
 The <B><CODE>GSUB</CODE></B> table
 </H2>
@@ -129,201 +94,39 @@ The <B><CODE>GSUB</CODE></B> table
 PfaEdit will read the following sub tables of the GSUB table:
 <TABLE Border=1>
 <TR>
-<TD>
-<CODE>'liga'</CODE>
-</TD><TD>
-The standard ligature sub-table.
-</TD><TD>
-PfaEdit will read ligature information from the GPOS table, also from afm and tfm files.
-Users can create and modify ligatures with the
-<A HREF="charinfo.html">character information dialog.</A>
-<HR>
-There are several different tables which specify ligature data. The different
-tables classify ligatures into groups as:
-<UL>
-<LI>Required ligatures must always be applied
-<LI>Standard ligatures should be applied
-<LI>Discretionary ligatures may be applied
-<LI>Historic ligatures were common at one point but have fallen out of use and
-in most cases should not be applied.
-<LI>Fractions will take the string "3/4" and replace it with "¾"
-</TD></TR>
-<TR>
-<TD>
-<CODE>'rlig'</CODE>
-</TD><TD>
-The required ligature sub-table.
-</TD><TD>
-PfaEdit will read ligature information from the GPOS table, also from afm and tfm files.
-Users can create and modify ligatures with the
-<A HREF="charinfo.html">character information dialog.</A>
-</TD></TR>
-<TR>
-<TD>
-<CODE>'dlig'</CODE>
-</TD><TD>
-The discretionary ligature sub-table.
-</TD><TD>
-PfaEdit will read ligature information from the GPOS table, also from afm and tfm files.
-Users can create and modify ligatures with the
-<A HREF="charinfo.html">character information dialog.</A>
-</TD></TR>
-<TR>
-<TD>
-<CODE>'hlig'</CODE>
-</TD><TD>
-The historic ligature sub-table.
-</TD><TD>
-PfaEdit will read ligature information from the GPOS table, also from afm and tfm files.
-Users can create and modify ligatures with the
-<A HREF="charinfo.html">character information dialog.</A>
-</TD></TR>
-<TR>
-<TD>
-<CODE>'frac'</CODE>
-</TD><TD>
-The fraction ligature sub-table.
-</TD><TD>
-PfaEdit will read ligature information from the GPOS table, also from afm and tfm files.
-Users can create and modify ligatures with the
-<A HREF="charinfo.html">character information dialog.</A>
-</TD></TR>
-<TR>
-<TD>
-<CODE>'abvs'</CODE> &nbsp;<BR>
-<CODE>'afrc'</CODE> &nbsp;<BR>
-<CODE>'akhn'</CODE> &nbsp;<BR>
-<CODE>'blwf'</CODE> &nbsp;<BR>
-<CODE>'blws'</CODE> &nbsp;<BR>
-<CODE>'ccmp'</CODE> &nbsp;<BR>
-<CODE>'half'</CODE> &nbsp;<BR>
-<CODE>'haln'</CODE> &nbsp;<BR>
-<CODE>'ljmo'</CODE> &nbsp;<BR>
-<CODE>'nukf'</CODE>&nbsp; <BR>
-<CODE>'pref'</CODE>&nbsp; <BR>
-<CODE>'pres'</CODE>&nbsp; <BR>
-<CODE>'pstf'</CODE>&nbsp; <BR>
-<CODE>'psts'</CODE> &nbsp;<BR>
-<CODE>'reph'</CODE>&nbsp; <BR>
-<CODE>'tjmo'</CODE> &nbsp;<BR>
-<CODE>'vjmo'</CODE>&nbsp; <BR>
-<CODE>'vatu'</CODE>&nbsp;
-</TD><TD>
-Above Base Substitutions<BR>
-Alternate Fractions<BR>
-Akhand<BR>
-Below Base Forms<BR>
-Below Base Substitutions<BR>
-Glyph Composition/Decomposition<BR>
-Half Forms<BR>
-Halant Forms<BR>
-Leading Jamo Forms<BR>
-Nukta Forms<BR>
-Pre Base Forms<BR>
-Pre Base Substitutions<BR>
-Post Base Forms<BR>
-Post Base Substitutions<BR>
-Reph Form<BR>
-Trailing Jamo Forms<BR>
-Vowel Jamo Forms<BR>
-Vattu Variants<BR>
-</TD><TD>
-For more information on these ligature tags see <A HREF="http://partners.adobe.com/asn/developer/opentype/appendices/feattags.html">the opentype docs</A>
-</TD></TR>
+<TD>1</TD>
+<TD>single substitution</TD>
+<TD>These can be created with the <A HREF="charinfo.html">Element->Char Info</A>->Substitution command.</TD>
+</TR>
+<TD>2</TD>
+<TD>multiple substitution</TD>
+<TD>These can be created with the <A HREF="charinfo.html">Element->Char Info</A>->Multiple Substitution command.</TD>
+</TR>
+<TD>3</TD>
+<TD>alternate substitution</TD>
+<TD>These can be created with the <A HREF="charinfo.html">Element->Char Info</A>->Alternate Substitution command.</TD>
+</TR>
+<TD>4</TD>
+<TD>ligature substitution</TD>
+<TD>These can be created with the <A HREF="charinfo.html">Element->Char Info</A>->Ligature command.</TD>
+</TR>
+<TD>5</TD>
+<TD>contextual substitution</TD>
+<TD>PfaEdit does not support this sub-table yet.</TD>
+</TR>
+<TD>6</TD>
+<TD>chaining contextual substitution</TD>
+<TD>PfaEdit does not support this sub-table yet.</TD>
+</TR>
+<TD>7</TD>
+<TD>reverse chaining contextual single substitution</TD>
+<TD>PfaEdit does not support this sub-table yet.</TD>
+</TR>
 </TABLE>
 <P>
-PfaEdit can write all the above subtables of GSUB, and it may also write
-<TABLE Border=1>
-<TR>
-<TD>
-<CODE>'vrt2'</CODE>
-</TD><TD>
-The vertical alternates and rotation sub-table
-</TD><TD>
-This is used when Japanese or Chinese or Korean
-writing is displayed vertically. Some characters have different varients
-depending on the writing direction (parentheses for instance), also roman text should be
-rotated. PfaEdit gathers the information for this table from the names of the
-characters in the font. If a character is named "vertuniXXXX" then it is assumed
-to be the vertical varient of "uniXXXX", or if a character is named "vertcid_nnn"
-it is assumed to be the vertical varient of CID nnn.
-</TD></TR>
-<TR>
-<TD>
-<CODE>'init'</CODE>
-</TD><TD>
-The initial forms sub-table
-</TD><TD>
-PfaEdit will generate this if the font contains arabic characters in the
-ranges U+0600-U+06ff and U+FB00-UFEFF. This will map each non-formed arabic
-character (the one in the U+0600 area) to its initial form varient (>U+FB00).
-<HR>
-In renaissance writing this sub-table might be used to map short-s to long.
-</TD></TR>
-<TR>
-<TD>
-<CODE>'medi'</CODE>
-</TD><TD>
-The medial forms sub-table
-</TD><TD>
-PfaEdit will generate this if the font contains arabic characters in the
-ranges U+0600-U+06ff and U+FB00-UFEFF. This will map each non-formed arabic
-character (the one in the U+0600 area) to its medial form varient (>U+FB00).
-<HR>
-In renaissance writing this sub-table might be used to map short-s to long.
-</TD></TR>
-<TR>
-<TD>
-<CODE>'fina'</CODE>
-</TD><TD>
-The final forms sub-table
-</TD><TD>
-PfaEdit will generate this if the font contains arabic characters in the
-ranges U+0600-U+06ff and U+FB00-UFEFF. This will map each non-formed arabic
-character (the one in the U+0600 area) to its final form varient (>U+FB00).
-<HR>
-In renaissance writing this sub-table might be used to map long-s to short.
-</TD></TR>
-<TR>
-<TD>
-<CODE>'isol'</CODE>
-</TD><TD>
-The isolated forms sub-table
-</TD><TD>
-PfaEdit will generate this if the font contains arabic characters in the
-ranges U+0600-U+06ff and U+FB00-UFEFF. This will map each non-formed arabic
-character (the one in the U+0600 area) to its isolated form varient (>U+FB00).
-</TD></TR>
-<TR>
-<TD>
-<CODE>'smcp'</CODE>
-</TD><TD>
-The Small Capitals sub-table
-</TD><TD>
-PfaEdit will generate this if the font contains glyphs with names that end in
-".sc" or ".oldstyle". It provides a mapping between "a" and "a.sc" (or between
-"zero" and "zero.oldstyle". I cannot fathom why Adobe had decided that oldstyle is similar to
-small caps, but they say that's what this table does.
-</TD></TR>
-<TR>
-<TD>
-<CODE>'c2sc'</CODE>
-</TD><TD>
-The Small Capitals from capitals sub-table
-</TD><TD>
-PfaEdit will generate this if the font contains glyphs with names that end in
-".sc". It provides a mapping between "A" and "a.sc".
-</TD></TR>
-<TR>
-<TD>
-<CODE>'rlig'</CODE>
-</TD><TD>
-The required ligature sub-table.
-</TD><TD>
-Any ligatures marked as required will automagically be added to the standard
-ligature sub-table as well as being output in the required ligature sub-table.
-</TD></TR>
-</TABLE>
+PfaEdit also has built into it knowledge on how to provide default values for
+some features that use these menus. See <A HREF="elementmenu.html#DefaultATT">Element->Default ATT</A>
+command for that.
 <P>
 <P ALIGN=Center>
 -- <A HREF="generate.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
