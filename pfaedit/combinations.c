@@ -100,6 +100,7 @@ struct kerns {
     SplineChar *first;
     SplineChar *second;
     int newoff;
+    unsigned int r2l: 1;
     KernPair *kp;
 };
 
@@ -180,6 +181,20 @@ static void KPSortEm(KPData *kpd,enum sortby sort_func) {
 	qsort(kpd->kerns,kpd->kcnt,sizeof(struct kerns), offcmpr );
 }
 
+static void CheckLeftRight(KPData *kpd) {
+    /* flag any hebrew/arabic entries */
+    int i;
+
+    for ( i=0; i<kpd->kcnt; ++i ) {
+	/* Figure that there won't be any mixed orientation kerns (no latin "A" with hebrew "Alef" kern) */
+	/*  but there might be some hebrew/arabic ligatures or something that */
+	/*  we don't recognize as right-to-left (ie. not in unicode) */
+	if (( kpd->kerns[i].first->unicodeenc!=-1 && isrighttoleft( kpd->kerns[i].first->unicodeenc )) ||
+		( kpd->kerns[i].second->unicodeenc!=-1 && isrighttoleft( kpd->kerns[i].second->unicodeenc )) )
+	    kpd->kerns[i].r2l = true;
+    }
+}
+
 static void KPBuildKernList(KPData *kpd) {
     int i, cnt, firstcnt=0;
     KernPair *kp;
@@ -241,6 +256,7 @@ return;
 	    kpd->firstcnt = firstcnt;
 	}
     }
+    CheckLeftRight(kpd);
     KPSortEm(kpd,sb_first);
 }
 
@@ -385,9 +401,18 @@ static void KP_ExposeKerns(KPData *kpd,GWindow pixmap,GRect *rect) {
 
 	BaseFillFromBDFC(&base,bdfc1);
 	base.trans = base.clut->trans_index = -1;
-	GDrawDrawImage(pixmap,&gi,NULL, 10,subclip.y+as-bdfc1->ymax);
-	x = 10 + (bdfc1->width-bdfc1->xmin) + bdfc2->xmin +
-		(kpd->kerns[i+kpd->off_top].newoff*kpd->bdf->pixelsize/em);
+	/* the peculiar behavior concerning xmin/xmax is because the bitmaps */
+	/*  don't contain the side-bearings, we have to add that spacing manually */
+	if ( !kern->r2l ) {
+	    GDrawDrawImage(pixmap,&gi,NULL, 10,subclip.y+as-bdfc1->ymax);
+	    x = 10 + (bdfc1->width-bdfc1->xmin) + bdfc2->xmin +
+		    (kern->newoff*kpd->bdf->pixelsize/em);
+	} else {
+	    x = kpd->vwidth-10-(bdfc1->xmax-bdfc1->xmin);
+	    GDrawDrawImage(pixmap,&gi,NULL, x,subclip.y+as-bdfc1->ymax);
+	    x -= bdfc1->xmin + (bdfc2->width-bdfc2->xmin) +
+		    (kern->newoff*kpd->bdf->pixelsize/em);
+	}
 	BaseFillFromBDFC(&base,bdfc2);
 #ifndef _BrokenBitmapImages
 	base.trans = base.clut->trans_index = 0;
@@ -449,10 +474,16 @@ return( NULL );
     bdfc2 = kpd->bdf->chars[index2];
     if ( bdfc1 ==NULL || bdfc2==NULL )
 return( NULL );
-    x = 10 + (bdfc1->width-bdfc1->xmin) + bdfc2->xmin +
-	    (kpd->kerns[i+kpd->off_top].newoff*kpd->bdf->pixelsize/em);
+    if ( !kern->r2l )
+	x = 10 + (bdfc1->width-bdfc1->xmin) + bdfc2->xmin +
+		(kpd->kerns[i+kpd->off_top].newoff*kpd->bdf->pixelsize/em);
+    else
+	x = kpd->vwidth-10- (bdfc1->xmax-bdfc1->xmin) - bdfc1->xmin -
+		(bdfc2->width-bdfc2->xmin) -
+		(kern->newoff*kpd->bdf->pixelsize/em);
     if ( e->u.mouse.x < x || e->u.mouse.x>= x+bdfc2->xmax-bdfc2->xmin )
 return( NULL );
+
     baseline = (i-kpd->off_top)*kpd->uh + kpd->sf->ascent * kpd->bdf->pixelsize / em + 3;
     if ( e->u.mouse.y < baseline-bdfc2->ymax || e->u.mouse.y >= baseline-bdfc2->ymin )
 return( NULL );
@@ -489,10 +520,20 @@ static void KP_ScrollTo(KPData *kpd,int where) {
     }
 }
 
+static void KPRemove(KPData *kpd) {
+    if ( kpd->selected!=-1 ) {
+	kpd->kerns[kpd->selected].newoff = 0;
+	GDrawRequestExpose(kpd->v,NULL,false);
+    }
+}
+
 static void KP_Commands(KPData *kpd, GEvent *e) {
     int old_sel, amount;
 
     switch( e->u.chr.keysym ) {
+      case '\177':
+	KPRemove(kpd);
+      break;
       case 'z': case 'Z':
 	if ( e->u.chr.state&ksm_control ) {
 	    if ( kpd->last_index!=-1 ) {
@@ -648,6 +689,16 @@ static int KP_Cancel(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static void KPMenuRemove(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    KPData *kpd = GDrawGetUserData(gw);
+    KPRemove(kpd);
+}
+
+static GMenuItem kernmenu[] = {
+    { { (unichar_t *) _STR_Clear, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, '\177', 0, NULL, NULL, KPMenuRemove },
+    { NULL }
+};
+
 static unichar_t upopupbuf[100];
 
 static int kpdv_e_h(GWindow gw, GEvent *event) {
@@ -678,7 +729,9 @@ return( true );
 	    KP_RefreshSel(kpd,old_sel);
 	    KP_RefreshSel(kpd,index);
 	}
-	if ( KP_Cursor(kpd,event)!=NULL ) {
+	if ( event->u.mouse.button==3 && index>=0 ) {
+	    GMenuCreatePopupMenu(gw,event, kernmenu);
+	} else if ( KP_Cursor(kpd,event)!=NULL ) {
 	    kpd->pressed_x = event->u.mouse.x;
 	    kpd->old_val = kpd->kerns[index].newoff;
 	} else
