@@ -309,7 +309,7 @@ return;
 }
 
 int LoadKerningDataFromTfm(SplineFont *sf, char *filename) {
-    FILE *file = fopen(filename,"r");
+    FILE *file = fopen(filename,"rb");
     int i, tag, left, ictag;
     uint8 *ligkerntab, *kerntab, *ext, *ictab;
     int head_len, first, last, width_size, height_size, depth_size, italic_size,

@@ -5727,7 +5727,7 @@ return( NULL );
     } else if ( strmatch(fullname+strlen(fullname)-3, ".ik")==0 ) {
 	sf = SFReadIkarus(fullname);
     } else {
-	FILE *foo = fopen(strippedname,"r");
+	FILE *foo = fopen(strippedname,"rb");
 	if ( foo!=NULL ) {
 	    /* Try to guess the file type from the first few characters... */
 	    int ch1 = getc(foo);
@@ -5852,7 +5852,7 @@ return( NULL );
 	/* For some reason Adobe distributes CID keyed fonts (both OTF and */
 	/*  postscript) as extensionless files */
 	int ok = false;
-	FILE *test = fopen(filename,"r");
+	FILE *test = fopen(filename,"rb");
 	if ( test!=NULL ) {
 #if 0
 	    int ch1 = getc(test);

@@ -231,7 +231,7 @@ static int WriteTfmFile(char *filename,SplineFont *sf, int formattype) {
 	strcpy(pt,".tfm");
     GProgressChangeLine1R(_STR_SavingTFM);
     GProgressChangeLine2(temp=uc_copy(buf)); free(temp);
-    tfm = fopen(buf,"w");
+    tfm = fopen(buf,"wb");
     if ( tfm==NULL )
 return( false );
     ret = TfmSplineFont(tfm,sf,formattype);
@@ -240,7 +240,7 @@ return( false );
 
     pt = strrchr(buf,'.');
     strcpy(pt,".enc");
-    enc = fopen(buf,"w");
+    enc = fopen(buf,"wb");
     free(buf);
     if ( enc==NULL )
 return( false );
@@ -293,7 +293,7 @@ int WritePfmFile(char *filename,SplineFont *sf, int type0) {
     else
 	strcpy(pt,".pfm");
     GProgressChangeLine2(temp=uc_copy(buf)); free(temp);
-    pfm = fopen(buf,"w");
+    pfm = fopen(buf,"wb");
     free(buf);
     if ( pfm==NULL )
 return( false );

@@ -1167,7 +1167,7 @@ return( NULL );
 	    GDrawError("Can't open printer temporary file" );
 return( NULL );
 	}
-    } else if (( init = fopen(gdisp->filename,"w"))==NULL ) {
+    } else if (( init = fopen(gdisp->filename,"wb"))==NULL ) {
 	GDrawError("Can't open %s: %s", gdisp->print_to_file?"user file":"printer spooling file",
 		gdisp->filename);
 return( NULL );

@@ -4056,7 +4056,7 @@ SplineFont *SFReadTTF(char *filename, int flags) {
 	pt = temp + (lparen-filename);
 	*pt = '\0';
     }
-    ttf = fopen(temp,"r");
+    ttf = fopen(temp,"rb");
     if ( temp!=filename ) free(temp);
     if ( ttf==NULL )
 return( NULL );
@@ -4080,7 +4080,7 @@ return( SFFillFromTTF(&info));
 }
 
 char **NamesReadTTF(char *filename) {
-    FILE *ttf = fopen(filename,"r");
+    FILE *ttf = fopen(filename,"rb");
     int32 version, cnt, *offsets;
     int i,j;
     char **ret;

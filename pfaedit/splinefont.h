@@ -39,12 +39,16 @@
 #define CHR(ch1,ch2,ch3,ch4) (((ch1)<<24)|((ch2)<<16)|((ch3)<<8)|(ch4))
 
 typedef struct val {
-    enum val_type { v_int, v_str, v_unicode, v_lval, v_arr, v_arrfree, v_void } type;
+    enum val_type { v_int, v_str, v_unicode, v_lval, v_arr, v_arrfree,
+	    v_int32pt, v_int16pt, v_int8pt, v_void } type;
     union {
 	int ival;
 	char *sval;
 	struct val *lval;
 	struct array *aval;
+	uint32 *u32ptval;
+	uint16 *u16ptval;
+	uint8  *u8ptval;
     } u;
 } Val;		/* Used by scripting */
 

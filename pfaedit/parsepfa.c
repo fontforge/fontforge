@@ -1903,7 +1903,7 @@ FontDict *ReadPSFont(char *fontname) {
     FILE *in;
     FontDict *fd;
 
-    in = fopen(fontname,"r");
+    in = fopen(fontname,"rb");
     if ( in==NULL ) {
 	fprintf( stderr, "Cannot open %s\n", fontname );
 return(NULL);
@@ -2028,5 +2028,5 @@ return( ret );
 }
 
 char **NamesReadPostscript(char *filename) {
-return( _NamesReadPostscript( fopen(filename,"r")));
+return( _NamesReadPostscript( fopen(filename,"rb")));
 }

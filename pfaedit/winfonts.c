@@ -364,7 +364,7 @@ SplineFont *SFReadWinFON(char *filename,int toback) {
     int font_count;
     BDFFont *bdf, *next;
 
-    fon = fopen(filename,"r");
+    fon = fopen(filename,"rb");
     if ( fon==NULL )
 return( NULL );
     magic = lgetushort(fon);
@@ -623,7 +623,7 @@ int FONFontDump(char *filename,BDFFont *font, int res) {
     FILE *file;
     int ret;
 
-    file = fopen(filename,"w");
+    file = fopen(filename,"wb");
     if ( file==NULL ) {
 	fprintf( stderr, "Can't open %s\n", filename );
 return( 0 );

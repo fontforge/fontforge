@@ -694,7 +694,7 @@ void _GPSDraw_ProcessFont(GPSWindow ps, struct font_data *fd) {
 	_GPSDraw_ProcessFont(ps,base);
     else if ( base->base==NULL ) {
 	if ( base->fontfile!=NULL && !base->copiedtoprinter ) {
-	    FILE *ff = fopen( base->fontfile,"r");
+	    FILE *ff = fopen( base->fontfile,"rb");
 	    if ( ff==NULL ) GDrawIError("Can't download font: %s", base->localname );
 	    else {
 		fprintf( output_file, "%%%%BeginResource: font %s\n", base->localname );

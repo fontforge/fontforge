@@ -1737,7 +1737,7 @@ BDFFont *SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback) {
 
     if ( ispk==1 && strcmp(filename+strlen(filename)-2,"gf")==0 )
 	ispk = 3;
-    bdf = fopen(filename,"r");
+    bdf = fopen(filename,"rb");
     if ( bdf==NULL ) {
 	GWidgetErrorR(_STR_CouldNotOpenFile, _STR_CouldNotOpenFileName, filename );
 return( NULL );

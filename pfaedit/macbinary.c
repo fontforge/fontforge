@@ -1420,7 +1420,7 @@ return( 0 );
     if ( __Mac && format==ff_pfbmacbin )
 	res = tmpfile();
     else
-	res = fopen(filename,"w+");
+	res = fopen(filename,"wb+");
     if ( res==NULL ) {
 	fclose(temppfb);
 return( 0 );
@@ -1484,7 +1484,7 @@ return( 0 );
     if ( __Mac && format==ff_ttfmacbin )
 	res = tmpfile();
     else
-	res = fopen(filename,"w+");
+	res = fopen(filename,"wb+");
     if ( res==NULL ) {
 	fclose(tempttf);
 return( 0 );
@@ -1560,7 +1560,7 @@ int WriteMacBitmaps(char *filename,SplineFont *sf, int32 *sizes, int is_dfont) {
     if ( __Mac && !is_dfont )
 	res = tmpfile();
     else
-	res = fopen(binfilename,"w+");
+	res = fopen(binfilename,"wb+");
     if ( res==NULL ) {
 	free(binfilename);
 return( 0 );
@@ -1666,7 +1666,7 @@ return( 0 );
 	    (format==ff_none && bf==bf_nfntmacbin)))
 	res = tmpfile();
     else
-	res = fopen(filename,"w+");
+	res = fopen(filename,"wb+");
     if ( res==NULL ) {
 	for ( sfsub=sfs; sfsub!=NULL; sfsub=sfsub->next )
 	    fclose( sfsub->tempttf );
@@ -2776,7 +2776,7 @@ static SplineFont *IsResourceInFile(char *filename,int flags,SplineFont *into) {
 	temp = copy(filename);
 	temp[lparen-filename] = '\0';
     }
-    f = fopen(temp,"r");
+    f = fopen(temp,"rb");
     if ( temp!=filename ) free(temp);
     if ( f==NULL )
 return( NULL );

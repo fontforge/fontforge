@@ -4778,7 +4778,7 @@ static void DumpGlyphToNameMap(char *fontname,SplineFont *sf) {
     if ( e==NULL ) e = newname+strlen(newname);
     strcpy(e,".g2n");
 
-    file = fopen(newname,"w");
+    file = fopen(newname,"wb");
     if ( file==NULL ) {
 	fprintf(stderr, "Failed to open glyph to name map file for writing: %s\n", newname );
 	free(newname);
@@ -4836,7 +4836,7 @@ int WriteTTFFont(char *fontname,SplineFont *sf,enum fontformat format,
     FILE *ttf;
     int ret;
 
-    if (( ttf=fopen(fontname,"w+"))==NULL )
+    if (( ttf=fopen(fontname,"wb+"))==NULL )
 return( 0 );
     ret = _WriteTTFFont(ttf,sf,format,bsizes,bf,flags);
     if ( ret && glyph_2_name_map )

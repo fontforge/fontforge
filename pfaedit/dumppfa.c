@@ -1371,7 +1371,7 @@ int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format,int flags) 
     FILE *out;
     int ret;
 
-    if (( out=fopen(fontname,"w"))==NULL )
+    if (( out=fopen(fontname,"wb"))==NULL )
 return( 0 );
     ret = _WritePSFont(out,sf,format,flags);
     if ( fclose(out)==-1 )

@@ -1710,7 +1710,7 @@ return(true);
 return(true);
 	    file = u2def_copy(ret);
 	    free(ret);
-	    pi->out = fopen(file,"w");
+	    pi->out = fopen(file,"wb");
 	    if ( pi->out==NULL ) {
 		GDrawError("Failed to open file %s for output", file );
 		free(file);
@@ -2931,7 +2931,7 @@ static unichar_t *FileToUString(char *filename,int max) {
     int format=0;
     unichar_t *space, *upt, *end;
 
-    file = fopen( filename,"r" );
+    file = fopen( filename,"rb" );
     if ( file==NULL )
 return( NULL );
     ch = getc(file); ch2 = getc(file);
@@ -2988,7 +2988,7 @@ void ScriptPrint(FontView *fv,int type,int32 *pointsizes,char *samplefile,
 	    sprintf(buf,"pr-%.90s.ps", pi.sf->fontname );
 	    outputfile = buf;
 	}
-	pi.out = fopen(outputfile,"w");
+	pi.out = fopen(outputfile,"wb");
 	if ( pi.out==NULL ) {
 	    GDrawError("Failed to open file %s for output", outputfile );
 return;
