@@ -946,6 +946,9 @@ static void CvtPsSplineSet(GrowBuf *gb, SplinePointList *spl, BasePoint *current
 	    if ( spline->to->flexx || spline->to->flexy ) {
 		flexto(gb,current,spline,round,hdb);	/* does two adjacent splines */
 		spline = spline->to->next;
+	    } else if ( spline->knownlinear && spline->to==spl->first ) {
+		/* We can finish this off with the closepath */
+	break;
 	    } else if ( spline->knownlinear )
 		moveto(gb,current,spline->to,true,round,hdb);
 	    else
