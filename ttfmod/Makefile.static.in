@@ -1,0 +1,25 @@
+CC = @CC@
+
+X_CFLAGS = @X_CFLAGS@
+X_LIBS = @X_LIBS@
+X_EXTRA_LIBS = @X_EXTRA_LIBS@
+X_PRE_LIBS = @X_PRE_LIBS@
+
+ttfmod_OBJECTS =  ttfmod-ui.o start.o splashimage.o uiutil.o ttfview.o ttffile.o \
+	openfontdlg.o prefs.o cursors.o windowmenu.o maxp.o
+
+WFLAGS = -Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type -Wparentheses
+CFLAGS = @CFLAGS@ -I../inc $(WFLAGS) $(X_CFLAGS) @DEFS@
+
+LDFLAGS = @LDFLAGS@
+LIBS = -L../libs $(X_LIBS) ../libs/libgdraw.a ../libs/libgunicode.a \
+    $(X_PRE_LIBS) -lX11 $(X_EXTRA_LIBS) @LIBS@ -lm
+
+ttfmod: $(ttfmod_OBJECTS)
+	$(CC) -o ttfmod $(ttfmod_OBJECTS) $(LIBS)
+
+clean:
+	-rm -f *.o
+
+cleaner:
+	-rm -f *.o Makefile
