@@ -2404,6 +2404,8 @@ return;
 		info->chars[i]->enc = next++;
 	}
     } else {
+	for ( i=0; i<info->glyph_cnt; ++i )
+	    info->chars[i]->enc = -1;
 	info->encoding_name = em_custom;
 	fseek(ttf,dict->cff_start+dict->encodingoff,SEEK_SET);
 	format = getc(ttf);
@@ -2411,9 +2413,6 @@ return;
 	    cnt = getc(ttf);
 	    for ( i=1; i<=cnt && i<info->glyph_cnt; ++i )
 		info->chars[i]->enc = getc(ttf);
-	    next = 256;
-	    for ( ; i<info->glyph_cnt; ++i )
-		info->chars[i]->enc = next++;
 	} else if ( (format&0x7f)==1 ) {
 	    cnt = getc(ttf);
 	    pos = 0;
@@ -2429,12 +2428,12 @@ return;
 		    ++first;
 		}
 	    }
-	    next = 256;
-	    for ( i=0; i<info->glyph_cnt; ++i )
-		if ( info->chars[i]->enc==-1 )
-		    info->chars[i]->enc = next++;
 	} else
 	    fprintf( stderr, "Unexpected encoding format in cff: %d\n", format );
+	next = 256;
+	for ( i=0; i<info->glyph_cnt; ++i )
+	    if ( info->chars[i]->enc==-1 )
+		info->chars[i]->enc = next++;
 	if ( format&0x80 ) {
 	    cnt = getc(ttf);
 	    for ( i=0; i<cnt; ++i ) {
