@@ -794,7 +794,7 @@ extern int FVParseSelectByPST(FontView *fv,int type,
 
 extern void FVSetWidthScript(FontView *fv,enum widthtype wtype,int val,int incr);
 
-extern void FVReplaceOutlineWithReference( FontView *fv );
+extern void FVReplaceOutlineWithReference( FontView *fv, double fudge );
 
 extern void skewselect(BVTFunc *bvtf,real t);
 
