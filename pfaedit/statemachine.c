@@ -750,7 +750,7 @@ return( sm );
 	/* ********************** From Coverage FPST ********************** */
 static SplineChar **morx_cg_FigureClasses(SplineChar ***tables,int match_len,
 	int ***classes, int *cc, uint16 **mp, int *gc,
-	FPST *fpst,SplineFont *sf) {
+	FPST *fpst,SplineFont *sf,int ordered) {
     int i,j,k, mask, max, class_cnt, gcnt, gtot;
     SplineChar ***temp, *sc, **glyphs, **gall;
     uint16 *map;
@@ -766,7 +766,10 @@ return( NULL );
     gtot = 0;
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	sf->chars[i]->lsidebearing = 1;
-	sf->chars[i]->ttf_glyph = gtot++;
+	if ( !ordered )
+	    sf->chars[i]->ttf_glyph = gtot++;
+	else
+	    gtot = sf->chars[i]->ttf_glyph+1;
     }
 
     max=0;
@@ -855,7 +858,7 @@ return( NULL );
 return( glyphs );
 }
 
-static ASM *ASMFromCoverageFPST(SplineFont *sf,FPST *fpst) {
+static ASM *ASMFromCoverageFPST(SplineFont *sf,FPST *fpst,int ordered) {
     SplineChar ***tables, **glyphs;
     int **classes, class_cnt, gcnt;
     int i, j, k, match_len;
@@ -891,7 +894,7 @@ static ASM *ASMFromCoverageFPST(SplineFont *sf,FPST *fpst) {
 return( NULL );
 
     glyphs = morx_cg_FigureClasses(tables,match_len,
-	    &classes,&class_cnt,&map,&gcnt,fpst,sf);
+	    &classes,&class_cnt,&map,&gcnt,fpst,sf,ordered);
     if ( glyphs==NULL )
 return( NULL );
 
@@ -1048,7 +1051,7 @@ static ASM *ASMFromClassFPST(SplineFont *sf,FPST *fpst, struct contexttree *tree
 return( sm );
 }
 
-ASM *ASMFromFPST(SplineFont *sf,FPST *fpst) {
+ASM *ASMFromFPST(SplineFont *sf,FPST *fpst,int ordered) {
     FPST *tempfpst=fpst;
     struct contexttree *tree=NULL;
     ASM *sm;
@@ -1056,7 +1059,7 @@ ASM *ASMFromFPST(SplineFont *sf,FPST *fpst) {
     if ( fpst->format==pst_glyphs )
 	tempfpst = FPSTGlyphToClass( fpst );
     if ( tempfpst->format==pst_coverage )
-return( ASMFromCoverageFPST(sf,fpst));
+return( ASMFromCoverageFPST(sf,fpst,ordered));
 
     tree = FPST2Tree(sf, tempfpst);
     if ( tree!=NULL ) {
@@ -1365,7 +1368,7 @@ static void _SMCVT_Convert(struct cvt_dlg *d) {
 	    uint32 val = (intpt) ti[i]->userdata;
 	    sm = ASMFromOpenTypeForms(d->sf,val>>16,val&0xffff);
 	} else {
-	    sm = ASMFromFPST(d->sf,(FPST *) (ti[i]->userdata));
+	    sm = ASMFromFPST(d->sf,(FPST *) (ti[i]->userdata),false);
 	}
 	sm->feature = feature; sm->setting = setting;
 	if ( d->ret==NULL )

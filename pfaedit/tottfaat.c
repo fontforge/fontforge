@@ -64,11 +64,12 @@ static void DumpKernClass(FILE *file, uint16 *class,int cnt,int add,int mul) {
 }
 
 int SLIHasDefault(SplineFont *sf,int sli) {
-    struct script_record *sr = sf->script_lang[sli];
+    struct script_record *sr;
     int i, j;
 
     if ( sli==SLI_NESTED || sli==SLI_UNKNOWN )
 return( false );
+    sr = sf->script_lang[sli];
 
     for ( i=0; sr[i].script!=0; ++i )
 	for ( j=0; sr[i].langs[j]!=0; ++j )
@@ -1139,7 +1140,7 @@ static struct feature *aat_dumpmorx_cvtopentype(struct alltabs *at, SplineFont *
 
     for ( fpst=sf->possub; fpst!=NULL; fpst=fpst->next ) {
 	if ( FPSTisMacable(sf,fpst,true)) {
-	    sm = ASMFromFPST(sf,fpst);
+	    sm = ASMFromFPST(sf,fpst,true);
 	    if ( sm!=NULL ) {
 		OTTagToMacFeature(fpst->tag,&featureType,&featureSetting);
 		sm->feature = featureType; sm->setting = featureSetting;

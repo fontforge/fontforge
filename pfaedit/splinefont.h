@@ -1361,7 +1361,7 @@ extern int ClassesMatch(int cnt1,char **classes1,int cnt2,char **classes2);
 extern FPST *FPSTGlyphToClass(FPST *fpst);
 
 extern ASM *ASMFromOpenTypeForms(SplineFont *sf,int sli,int flags);
-extern ASM *ASMFromFPST(SplineFont *sf,FPST *fpst);
+extern ASM *ASMFromFPST(SplineFont *sf,FPST *fpst,int ordered);
 extern struct sliflag { uint16 sli, flags; } *SFGetFormsList(SplineFont *sf,int test_dflt);
 extern int SFAnyConvertableSM(SplineFont *sf);
 
