@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 7-Jul-2001 -->
+  <!-- AP: Last modified: 8-Jul-2001 -->
   <TITLE>Font Info</TITLE>
 </HEAD>
 <BODY>
@@ -10,7 +10,7 @@
   Font Info
 </H1>
 <P>
-<IMG SRC="fontinfo.png" WIDTH="358" HEIGHT="479">
+<IMG SRC="fontinfo.png" WIDTH="369" HEIGHT="472">
 <P>
 The Font Info dialog is available from all views. It allows you to name your
 font, to set its <A HREF="fontview.html#Encodings">encoding</A> and various
@@ -32,14 +32,15 @@ look at the <A HREF="#TTF-Names">TTF Names</A> Section.
 The copyright field can contain whatever you want to put there, but it's
 a good place to put a copyright.
 <H2>
-  <A NAME="Encoding">Encoding</A>
+  <IMG SRC="fontinfo-encoding.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><A
+      NAME="Encoding">Encoding</A>
 </H2>
 <P>
 This sub dialog allows you to specify the encoding for your font, and to
 teach PfaEdit about new encodings.
 <P>
 You may want to add characters to or removed characters from your font. You
-can specify how many characters you want in the font here. 
+can specify how many characters you want in the font here.
 <P>
 <STRONG>Note</STRONG> some encodings have different numbers of characters,
 and it may be hard to guess how many will be used. But if you have changed
@@ -224,7 +225,8 @@ It contains:
     characters of almost every other encoding.
 </UL>
 <H2>
-  <A NAME="PS-General">PS General</A>
+  <IMG SRC="fontinfo-ps.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><A NAME="PS-General">PS
+  General</A>
 </H2>
 <P>
 This sub dialog contains a rather random collection of settings.
@@ -254,8 +256,68 @@ to all new fonts (by appending a number unique to this font to the end of
 your preference item). Adobe recommends that the XUID be changed every time
 the font is changed, so each time you generate a postscript font, that font's
 XUID (if present) will be incremented by 1.
+<BR Clear=ALL>
 <H2>
-  <A NAME="TTF-Values">TTF Values</A>
+  <A NAME="Private">Private</A> -- <SMALL>(font-wide postscript hinting)</SMALL>
+</H2>
+<P>
+<IMG SRC="fontinfo-private.png" WIDTH="369" HEIGHT="472" ALIGN="Right">This
+sub-dialog shows most entries in the font's Private dictionary. The interesting
+things in this dictionary are mostly concerned with hints appropriate for
+the entire font. I shall not go into detail about the meanings of the various
+entries, that is best understood by reading
+<A HREF="http://partners.adobe.com/asn/developer/PDFS/TN/T1_SPEC.PDF">Adobe's
+Type1 specification</A>.
+<P>
+Don't try to change these until you understand what they mean.
+<P>
+The dialog is shown at right. It consists of a list, an editable region and
+a series of buttons. The list gives the names (keys) of the dictionary entries,
+while the editable region displays the value of the currently selected entry.
+To change an entry, simply select its key and then modify the value below.
+<P>
+For example the <CODE>BlueValues</CODE> entry specifies certain key regions
+of the font in a vertical direction. For instance it might contain the baseline
+serif, the x-height serif, the cap-height serif. It is expressed as an array
+of numbers, grouped in pairs. The first number of a pair is the low end of
+the region and the second is the high end. So in the example at right, the
+value of <CODE>BlueValues</CODE> is <CODE>[-15 0 692 707 490 502 668 680
+742 742]</CODE> (some of the array is not shown, and the scroll bar must
+be used to display it).
+<P>
+When the <CODE>[Guess]</CODE> button is enabled PfaEdit thinks it can make
+a reasonable guess for the value of the currently selected entry. Often two
+entries in the dictionary will be closely linked and guessing at one will
+also guess at the value of the other (PfaEdit will warn you of this). In
+this case if PfaEdit were to guess the value of <CODE>BlueValues</CODE> it
+would also guess the value of <CODE>OtherBlues</CODE>.
+<P>
+You may also delete an entry from the dictionary with the <CODE>[Remove]
+</CODE>button. Some entries (such as <CODE>BlueValues</CODE>) are required
+to be present in any type1 font, but you may still delete them. PfaEdit will
+simply guess at a reasonable value when it needs to generate the font.<BR
+Clear=Right>
+<P>
+<IMG SRC="privatekey.png" WIDTH="208" HEIGHT="146" ALIGN="Left"><IMG SRC="privatekeymenu.png"
+    WIDTH="208" HEIGHT="202" ALIGN="Right">The <CODE>[Add]</CODE> button allows
+you to add new keys to the dictionary. Every key will be added with a blank
+value, and you will almost certainly need to provide an appropriate value
+for it. When you press <CODE>[Add]</CODE> a dialog pops up which allows you
+to enter the key's name. There is a pull down list of known keys (that aren't
+already in the dictionary), or you may add keys by typing them in.
+<P>
+Certain keys affect things other than hints. The <CODE>lenIV</CODE> entry
+controls how much random padding is placed around the type1 strings when
+the font is generated. Normally this will be 4, but if you want to save space
+(4 bytes per character in pfb format, 8 bytes in pfa) you may choose another
+value. The UniqueID key represents the font's Unique postscript ID. If you
+provide a value here then PfaEdit will copy it into the UniqueID field in
+the Font Dictionary. If you do not provide a UniqueID here, PfaEdit will
+generate a random one itself (this is different from True Type's UniqueID.
+They perform the same function but are formatted differently).
+<H2>
+  <IMG SRC="fontinfo-ttfvals.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><A
+      NAME="TTF-Values">TTF Values</A>
 </H2>
 <P>
 This sub dialog contains a few settings important on Windows platforms.
@@ -269,8 +331,10 @@ or expanded this font is.
 <P>
 The PFM Family is used when generating PFM files and classifies the font
 into some rather broad catagories (Serif, Sans, Monospace, Script, Decorative).
+<BR Clear=ALL>
 <H2>
-  <A NAME="TTF-Names">TTF Names</A>
+  <IMG SRC="fontinfo-ttfname.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><A
+      NAME="TTF-Names">TTF Names</A>
 </H2>
 <P>
 TrueType (and OpenType) fonts are allowed to have different names in different
@@ -379,11 +443,18 @@ type docs</A>, but they apply to
 <A HREF="http://partners.adobe.com/asn/developer/opentype/recom.html">open
 type</A> as well.
 <P>
+These settings specify strings for the windows platform. PfaEdit doesn't
+really support the macintosh platform very well (because I don't know how
+to make the mac do Unicode). It will, however, generate two additional string
+sets by taking the american english entries and creating a "Mactintosh English"
+and an "Apple Unicode (2.0)" set.
+<P>
 Generally fonts will have a fairly complete set of strings in the American
 English entry, with the Style string (and nothing else) translated into different
 languages.
 <H2>
-  <A NAME="Panose">Panose</A>
+  <IMG SRC="fontinfo-panose.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><A
+      NAME="Panose">Panose</A>
 </H2>
 <P>
 This sub-dialog allows you to describe your font in 10 different dimensions.
