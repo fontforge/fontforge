@@ -868,10 +868,9 @@ static EI *CountDuplicates(enum overlap_type ot, EI *apt,int *_cnt, int *_ecnt) 
 	}
     } else if ( ot == over_exclude ) {
 	int ecnt = *_ecnt;
-	if ( (abs(ecnt) >= abs(cnt) && abs(ecnt+etot) >= abs(cnt+tot)) ||	/* We're inside an excluded region, remove it */
-		( cnt==0 && tot==0 && ecnt==0 && etot==0 ) ||
-		( cnt>ecnt && etot==0 && cnt!=0 && cnt+tot!=0 ) ||
-		( ecnt>cnt && tot==0 && ecnt!=0 && ecnt+etot!=0 ) ) {
+	if ( ( ecnt!=0 && ecnt+etot!=0 ) ||
+		( cnt==0 && tot==0 ) ||
+		( cnt!=0 && cnt+tot!=0 && ecnt==0 && etot==0 ) ) {
 	    if ( needed!=NULL && !needed->spline->isunneeded )
 		GDrawIError( c==1?
 		    "A spline is both needed and unneeded in CountDuplicates#1":
