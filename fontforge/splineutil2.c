@@ -2101,8 +2101,8 @@ return;
 #define NICE_PROPORTION	.39
 void SplineCharDefaultNextCP(SplinePoint *base) {
     SplinePoint *prev=NULL, *next;
-    double len;
-    double angle, pangle, plen, ca;
+    double len, plen, ulen;
+    BasePoint unit;
 
     if ( base->next==NULL )
 return;
@@ -2121,30 +2121,30 @@ return;
 
     len = NICE_PROPORTION * sqrt((base->me.x-next->me.x)*(base->me.x-next->me.x) +
 	    (base->me.y-next->me.y)*(base->me.y-next->me.y));
-    angle = atan2( base->me.y-next->me.y , base->me.x-next->me.x );
+    unit.x = next->me.x - base->me.x;
+    unit.y = next->me.y - base->me.y;
+    ulen = sqrt(unit.x*unit.x + unit.y*unit.y);
+    unit.x /= ulen; unit.y /= ulen;
     base->nonextcp = false;
 
     if ( base->pointtype == pt_curve ) {
 	if ( prev!=NULL && (base->prevcpdef || base->noprevcp)) {
-	    pangle = atan2( prev->me.y-base->me.y , prev->me.x-base->me.x );
-	    if ( pangle<0 && angle>0 && angle-pangle>=3.1415926 )
-		pangle += 2*3.1415926535897932;
-	    else if ( pangle>0 && angle<0 && pangle-angle>=3.1415926 )
-		angle += 2*3.1415926535897932;
-	    angle = (angle+pangle)/2;
+	    unit.x = next->me.x - prev->me.x;
+	    unit.y = next->me.y - prev->me.y;
+	    ulen = sqrt(unit.x*unit.x + unit.y*unit.y);
+	    unit.x /= ulen; unit.y /= ulen;
 	    plen = sqrt((base->prevcp.x-base->me.x)*(base->prevcp.x-base->me.x) +
 		    (base->prevcp.y-base->me.y)*(base->prevcp.y-base->me.y));
-	    ca = cos(angle);
-	    if ( fabs(ca) > fabs(sin(angle)) )
-		if (( ca>0 && base->me.x>prev->me.x ) || (ca<0 && base->me.x<prev->me.x))
-		    angle += 3.1415926535897932;
-	    base->prevcp.x = base->me.x + plen*cos(angle);
-	    base->prevcp.y = base->me.y + plen*sin(angle);
+	    base->prevcp.x = base->me.x - plen*unit.x;
+	    base->prevcp.y = base->me.y - plen*unit.y;
 	    SplineRefigureFixup(base->prev);
 	} else if ( prev!=NULL ) {
 	    /* The prev control point is fixed. So we've got to use the same */
 	    /*  angle it uses */
-	    angle = atan2( base->prevcp.y-base->me.y , base->prevcp.x-base->me.x );
+	    unit.x = base->me.x-base->prevcp.x;
+	    unit.y = base->me.y-base->prevcp.y;
+	    ulen = sqrt(unit.x*unit.x + unit.y*unit.y);
+	    unit.x /= ulen; unit.y /= ulen;
 	}
     } else if ( base->pointtype == pt_corner ) {
 	if ( next->pointtype != pt_curve ) {
@@ -2158,19 +2158,22 @@ return;
 		if ( !base->noprevcp ) {
 		    plen = sqrt((base->prevcp.x-base->me.x)*(base->prevcp.x-base->me.x) +
 			    (base->prevcp.y-base->me.y)*(base->prevcp.y-base->me.y));
-		    base->prevcp.x = base->me.x + plen*cos(angle);
-		    base->prevcp.y = base->me.y + plen*sin(angle);
+		    base->prevcp.x = base->me.x - plen*unit.x;
+		    base->prevcp.y = base->me.y - plen*unit.y;
 		    SplineRefigureFixup(base->prev);
 		}
-		angle = atan2( prev->me.y-base->me.y , prev->me.x-base->me.x );
+		unit.x = base->me.x-prev->me.x;
+		unit.y = base->me.y-prev->me.y;
+		ulen = sqrt(unit.x*unit.x + unit.y*unit.y);
+		unit.x /= ulen; unit.y /= ulen;
 	    }
 	}
     }
     if ( base->nonextcp )
 	base->nextcp = base->me;
     else {
-	base->nextcp.x = base->me.x - len*cos(angle);
-	base->nextcp.y = base->me.y - len*sin(angle);
+	base->nextcp.x = base->me.x + len*unit.x;
+	base->nextcp.y = base->me.y + len*unit.y;
 	base->nextcp.x = rint(base->nextcp.x*1024)/1024;
 	base->nextcp.y = rint(base->nextcp.y*1024)/1024;
 	if ( base->next != NULL )
@@ -2180,8 +2183,8 @@ return;
 
 void SplineCharDefaultPrevCP(SplinePoint *base) {
     SplinePoint *next=NULL, *prev;
-    double len, nlen;
-    double angle, nangle, ca;
+    double len, nlen, ulen;
+    BasePoint unit;
 
     if ( base->prev==NULL )
 return;
@@ -2200,30 +2203,30 @@ return;
 
     len = NICE_PROPORTION * sqrt((base->me.x-prev->me.x)*(base->me.x-prev->me.x) +
 	    (base->me.y-prev->me.y)*(base->me.y-prev->me.y));
-    angle = atan2( base->me.y-prev->me.y , base->me.x-prev->me.x );
+    unit.x = prev->me.x - base->me.x;
+    unit.y = prev->me.y - base->me.y;
+    ulen = sqrt(unit.x*unit.x + unit.y*unit.y);
+    unit.x /= ulen; unit.y /= ulen;
     base->noprevcp = false;
 
     if ( base->pointtype == pt_curve ) {
 	if ( next!=NULL && (base->nextcpdef || base->nonextcp)) {
-	    nangle = atan2( next->me.y-base->me.y , next->me.x-base->me.x );
-	    if ( nangle<0 && angle>0 && angle-nangle>=3.1415926 )
-		nangle += 2*3.1415926535897932;
-	    else if ( nangle>0 && angle<0 && nangle-angle>=3.1415926 )
-		angle += 2*3.1415926535897932;
-	    angle = (angle+nangle)/2;
+	    unit.x = prev->me.x - next->me.x;
+	    unit.y = prev->me.y - next->me.y;
+	    ulen = sqrt(unit.x*unit.x + unit.y*unit.y);
+	    unit.x /= ulen; unit.y /= ulen;
 	    nlen = sqrt((base->nextcp.x-base->me.x)*(base->nextcp.x-base->me.x) +
 		    (base->nextcp.y-base->me.y)*(base->nextcp.y-base->me.y));
-	    ca = cos(angle);
-	    if ( fabs(ca) > fabs(sin(angle)) )
-		if (( ca>0 && base->me.x>next->me.x ) || (ca<0 && base->me.x<next->me.x))
-		    angle += 3.1415926535897932;
-	    base->nextcp.x = base->me.x + nlen*cos(angle);
-	    base->nextcp.y = base->me.y + nlen*sin(angle);
+	    base->nextcp.x = base->me.x - nlen*unit.x;
+	    base->nextcp.y = base->me.y - nlen*unit.y;
 	    SplineRefigureFixup(base->next);
 	} else if ( next!=NULL ) {
 	    /* The next control point is fixed. So we got to use the same */
 	    /*  angle it uses */
-	    angle = atan2( base->nextcp.y-base->me.y , base->nextcp.x-base->me.x );
+	    unit.x = base->me.x-base->nextcp.x;
+	    unit.y = base->me.y-base->nextcp.y;
+	    ulen = sqrt(unit.x*unit.x + unit.y*unit.y);
+	    unit.x /= ulen; unit.y /= ulen;
 	}
     } else if ( base->pointtype == pt_corner ) {
 	if ( prev->pointtype != pt_curve ) {
@@ -2237,19 +2240,22 @@ return;
 		if ( !base->nonextcp ) {
 		    nlen = sqrt((base->nextcp.x-base->me.x)*(base->nextcp.x-base->me.x) +
 			    (base->nextcp.y-base->me.y)*(base->nextcp.y-base->me.y));
-		    base->nextcp.x = base->me.x + nlen*cos(angle);
-		    base->nextcp.y = base->me.y + nlen*sin(angle);
+		    base->nextcp.x = base->me.x - nlen*unit.x;
+		    base->nextcp.y = base->me.y - nlen*unit.y;
 		    SplineRefigureFixup(base->next);
 		}
-		angle = atan2( next->me.y-base->me.y , next->me.x-base->me.x );
+		unit.x = base->me.x-next->me.x;
+		unit.y = base->me.y-next->me.y;
+		ulen = sqrt(unit.x*unit.x + unit.y*unit.y);
+		unit.x /= ulen; unit.y /= ulen;
 	    }
 	}
     }
     if ( base->noprevcp )
 	base->prevcp = base->me;
     else {
-	base->prevcp.x = base->me.x - len*cos(angle);
-	base->prevcp.y = base->me.y - len*sin(angle);
+	base->prevcp.x = base->me.x + len*unit.x;
+	base->prevcp.y = base->me.y + len*unit.y;
 	base->prevcp.x = rint(base->prevcp.x*1024)/1024;
 	base->prevcp.y = rint(base->prevcp.y*1024)/1024;
 	if ( base->prev!=NULL )
