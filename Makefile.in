@@ -22,6 +22,9 @@ libgdraw:
 clean:
 	-rm -f gdraw/*.o pfaedit/*.o Unicode/*.o
 
+cleaner:
+	-rm -f gdraw/*.o pfaedit/*.o Unicode/*.o gdraw/Makefile pfaedit/Makefile Unicode/Makefile
+
 install:
 # You may need to be root to do the install
 	cp pfaedit/pfaedit $(bindir)

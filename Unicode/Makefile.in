@@ -28,3 +28,6 @@ all: ../libs/libgunicode.a
 
 clean:
 	-rm -f *.o
+
+cleaner:
+	-rm -f *.o Makefile

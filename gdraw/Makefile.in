@@ -36,3 +36,6 @@ all: ../libs/libgdraw.a
 
 clean:
 	-rm -f *.o
+
+cleaner:
+	-rm -f *.o Makefile

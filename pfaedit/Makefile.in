@@ -30,3 +30,6 @@ pfaedit: $(pfaedit_OBJECTS)
 
 clean:
 	-rm -f *.o
+
+cleaner:
+	-rm -f *.o Makefile
