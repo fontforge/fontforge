@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 22-Aug-2003 -->
+  <!-- AP: Last modified: 25-Aug-2003 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -107,8 +107,8 @@ let me know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-030822.tgz">Download pfaedit linux-i386 Redhat 9.0
-    </A><A NAME="downloads">executable</A> Version: 22-Aug-2003
+    <A HREF="pfaedit-030825.tgz">Download pfaedit linux-i386 Redhat 9.0
+    </A><A NAME="downloads">executable</A> Version: 25-Aug-2003
   <LI>
     <A HREF="pfaedit-030817-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
     Version: 17-Aug-2003 (Redhat 9.0)
@@ -116,8 +116,8 @@ let me know when you do</A>.
     <A HREF="pfaedit-030226-1.ppc.rpm">Download pfaedit linux-ppc SUSE 7.1
     </A>binary rpm Version: 26-Feb-2003
   <LI>
-    <A HREF="pfaedit-solaris-030731.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 31-Jul-2003 (no XIM support, no freetype, no SVG
+    <A HREF="pfaedit-solaris-030822.tgz">Download pfaedit Solaris 8.0
+    </A>executable Version: 22-Aug-2003 (no XIM support, no freetype, no SVG
     import)
   <LI>
     <A HREF="http://packages.debian.org/unstable/x11/pfaedit.html">A debian package
@@ -152,7 +152,7 @@ You can download a <A HREF="pfaedit-030817-1.src.rpm">source RPM</A>: Version:
 17-Aug-2003<BR>
 Or you can download the <A HREF="pfaedit_full-030822.tgz">entire source tree
 </A>in one .tgz file: Version
-22-Aug-2003<!--
+25-Aug-2003<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -191,6 +191,9 @@ either
 <P>
 If you want to edit CID keyed fonts you need these <A HREF="#cidmaps">character
 set descriptions</A>. (These were last updated 3-Mar-2003)
+<P>
+You might want a copy of this extension to PfaEdit's built in
+<A HREF="Encodings.ps.gz">character set encodings.</A>
 <P>
 With the appropriate <A NAME="image-libs">libraries</A>, PfaEdit can import
 png, tiff, and gif images to act as character backgrounds for tracing purposes
@@ -255,7 +258,7 @@ they are available from:
     <TD>freetype</TD>
   </TR>
   <TR>
-    <TD>i386 builds</TD>
+    <TD>i386 linux builds</TD>
     <TD>3.1.2.2<BR>
       =1.2.2</TD>
     <TD>3.5<BR>
@@ -271,24 +274,41 @@ they are available from:
       =2.1.4</TD>
   </TR>
   <TR>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
+    <TD>solaris builds</TD>
+    <TD>2<BR>
+      =1.0.8</TD>
+    <TD>3<BR>
+      =19970127</TD>
+    <TD>
+	<HR>
+    </TD>
+    <TD>6<BR>
+      =62 (6b)</TD>
+    <TD>
+	<HR>
+    </TD>
+    <TD>
+	<HR>
+    </TD>
+    <TD>
+	<HR>
+    </TD>
   </TR>
   <TR>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
+    <TD>Mac OS/X builds</TD>
+    <TD>(static)</TD>
+    <TD>
+	<HR>
+    </TD>
+    <TD>(static)</TD>
+    <TD>(static)</TD>
+    <TD>2.5.0<BR>
+      =2.5.0</TD>
+    <TD>
+	<HR>
+    </TD>
+    <TD>6.3.3<BR>
+      =2.1.4</TD>
   </TR>
   <TR>
     <TD></TD>
@@ -327,18 +347,6 @@ PfaEdit has been ported to the following systems (at some point in its life)
     <A HREF="http://cygwin.com/">cygwin</A> with X running on top of MS windows.
 </UL>
 <P>
-If you are editing <A NAME="cidmaps">CID keyed fonts </A>you should pull
-down the following file
-<UL>
-  <LI>
-    <A HREF="cidmaps.tgz">cidmaps.tgz</A> (These were last updated 3-Mar-2003)<BR>
-    and then<BR>
-    <CODE>$ gunzip cidmaps.tgz<BR>
-    $ tar xf cidmaps.tar <BR>
-    $ mkdir -p /usr/local/share/pfaedit<BR>
-    $ mv *.cidmap /usr/local/share/pfaedit</CODE>
-</UL>
-<P>
 <A NAME="suggested-fonts">You</A> might also want to pull down some unicode
 bitmap fonts that pfaedit uses
 <UL>
@@ -365,7 +373,7 @@ bitmap fonts that pfaedit uses
 </H2>
 <P>
 All the documentation files in this directory bundled up into one
-<A HREF="pfaedit_htdocs-030822.tgz">tgz file</A> 22-Aug-2003.<BR>
+<A HREF="pfaedit_htdocs-030825.tgz">tgz file</A> 25-Aug-2003.<BR>
 If you do the following then PfaEdit will find the docs for you when you
 press F1 (ie. PfaEdit it will look in /usr/local/share/doc/pfaedit before
 it looks on the web):

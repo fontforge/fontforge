@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 24-Aug-2003 -->
+  <!-- AP: Last modified: 25-Aug-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -11,7 +11,7 @@
 </H1>
 <UL>
   <LI>
-    ???
+    25-Aug-2003
     <UL>
       <LI>
 	View-&gt;Show ATT didn't show contextual/chaining tables even if they would
@@ -21,6 +21,19 @@
       <LI>
 	Make it possible to edit contextual/chaining lookups that are formated by
 	class
+      <LI>
+	parsing/generating ttf files with class format context/chaining had problems
+      <LI>
+	loading a class format context/chaining lookup caused memory problems when
+	closing the file.
+      <LI>
+	PfaEdit would sometimes lose track of script/languages of lookups when reading
+	from a ttf file
+      <LI>
+	Added a conversion routine from glyph to class format context/chain
+      <LI>
+	Kanou points out that not all encodings available in Font Info-&gt;Encoding
+	are present in the scripting interface, and fixes that.
     </UL>
   <LI>
     22-Aug-2003
