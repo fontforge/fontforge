@@ -4614,6 +4614,40 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv) {
     GDrawSetVisible(cv->gw,true);
 }
 
+void DefaultY(GRect *pos) {
+    static int nexty=0;
+    GRect size;
+
+    GDrawGetSize(GDrawGetRoot(NULL),&size);
+    if ( nexty!=0 ) {
+	FontView *fv;
+	int any=0, i;
+	BDFFont *bdf;
+	/* are there any open cv/bv windows? */
+	for ( fv = fv_list; fv!=NULL && !any; fv = fv->next ) {
+	    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL ) {
+		if ( fv->sf->chars[i]->views!=NULL ) {
+		    any = true;
+	    break;
+		}
+	    }
+	    for ( bdf = fv->sf->bitmaps; bdf!=NULL && !any; bdf=bdf->next ) {
+		for ( i=0; i<bdf->charcnt; ++i ) if ( bdf->chars[i]!=NULL ) {
+		    if ( bdf->chars[i]->views!=NULL ) {
+			any = true;
+		break;
+		    }
+		}
+	    }
+	}
+	if ( !any ) nexty = 0;
+    }
+    pos->y = nexty;
+    nexty += 200;
+    if ( nexty+pos->height > size.height )
+	nexty = 0;
+}
+
 CharView *CharViewCreate(SplineChar *sc, FontView *fv) {
     CharView *cv = gcalloc(1,sizeof(CharView));
     GWindowAttrs wattrs;
@@ -4634,7 +4668,8 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv) {
     wattrs.icon = CharIcon(cv, fv);
     if ( wattrs.icon )
 	wattrs.mask |= wam_icon;
-    pos.x = pos.y = 0; pos.width=pos.height = 540;
+    pos.x = GGadgetScale(104)+6; pos.width=pos.height = 540;
+    DefaultY(&pos);
 
     cv->gw = gw = GDrawCreateTopWindow(NULL,&pos,cv_e_h,cv,&wattrs);
     free( (unichar_t *) wattrs.icon_title );

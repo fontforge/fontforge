@@ -1551,6 +1551,7 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv) {
     bv->fv = fv;
     bv->bdf = bdf;
     bv->color = 255;
+    bv->shades_hidden = bdf->clut==NULL;
 
     bv->showfore = BVShows.showfore;
     bv->showoutline = BVShows.showoutline;
@@ -1566,7 +1567,8 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv) {
     wattrs.icon = icon;
     if ( wattrs.icon )
 	wattrs.mask |= wam_icon;
-    pos.x = pos.y = 0; pos.width=270; pos.height = 250;
+    pos.x = 8+9*16+10; pos.width=270; pos.height = 250;
+    DefaultY(&pos);
 
     bv->gw = gw = GDrawCreateTopWindow(NULL,&pos,bv_e_h,bv,&wattrs);
     free( (unichar_t *) wattrs.icon_title );

@@ -34,6 +34,7 @@ static int cvvisible[2] = { 1, 1}, bvvisible[3]= { 1,1,1 };
 static GWindow cvlayers, cvtools, bvlayers, bvtools, bvshades;
 static GPoint cvtoolsoff = { -9999 }, cvlayersoff = { -9999 }, bvlayersoff = { -9999 }, bvtoolsoff = { -9999 }, bvshadesoff = { -9999 };
 static int palettesmoved=0;
+int palettes_fixed=1;
 
 static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
 static GFont *font;
@@ -46,23 +47,25 @@ static GWindow CreatePalette(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *),
     GRect ownerpos, screensize;
 
     pt.x = pos->x; pt.y = pos->y;
-    root = GDrawGetRoot(NULL);
-    GDrawGetSize(w,&ownerpos);
-    GDrawGetSize(root,&screensize);
-    GDrawTranslateCoordinates(w,root,&pt);
-    base.x = base.y = 0;
-    GDrawTranslateCoordinates(w,root,&base);
-    if ( pt.x<0 ) {
-	if ( base.x+ownerpos.width+20+pos->width+20 > screensize.width )
-	    pt.x=0;
-	else
-	    pt.x = base.x+ownerpos.width+20;
+    if ( !palettes_fixed ) {
+	root = GDrawGetRoot(NULL);
+	GDrawGetSize(w,&ownerpos);
+	GDrawGetSize(root,&screensize);
+	GDrawTranslateCoordinates(w,root,&pt);
+	base.x = base.y = 0;
+	GDrawTranslateCoordinates(w,root,&base);
+	if ( pt.x<0 ) {
+	    if ( base.x+ownerpos.width+20+pos->width+20 > screensize.width )
+		pt.x=0;
+	    else
+		pt.x = base.x+ownerpos.width+20;
+	}
+	if ( pt.y<0 ) pt.y=0;
+	if ( pt.x+pos->width>screensize.width )
+	    pt.x = screensize.width-pos->width;
+	if ( pt.y+pos->height>screensize.height )
+	    pt.y = screensize.height-pos->height;
     }
-    if ( pt.y<0 ) pt.y=0;
-    if ( pt.x+pos->width>screensize.width )
-	pt.x = screensize.width-pos->width;
-    if ( pt.y+pos->height>screensize.height )
-	pt.y = screensize.height-pos->height;
 
     newpos.x = pt.x; newpos.y = pt.y; newpos.width = pos->width; newpos.height = pos->height;
     wattrs->mask |= wam_positioned;
@@ -95,6 +98,8 @@ static void RestoreOffsets(GWindow main, GWindow palette, GPoint *off) {
     GWindow root,temp;
     GRect screensize, pos;
 
+    if ( palettes_fixed )
+return;
     pt = *off;
     root = GDrawGetRoot(NULL);
     GDrawGetSize(root,&screensize);
@@ -954,6 +959,10 @@ return( cvlayers );
 
 static void CVPaletteCheck(CharView *cv) {
     if ( cvtools==NULL ) {
+	if ( palettes_fixed ) {
+	    cvtoolsoff.x = 0; cvtoolsoff.y = 0;
+	    cvlayersoff.x = 0; cvlayersoff.y = 167+50+45/*25*/;	/* 45 is right if there's decor, 25 when none. twm gives none, kde gives decor */
+	}
 	CVMakeTools(cv);
 	CVMakeLayers(cv);
     }
@@ -1104,6 +1113,9 @@ return(bvlayers);
 
     r.width = GGadgetScale(73); r.height = 73;
     r.x = -r.width-6; r.y = bv->mbh+81+45/*25*/;	/* 45 is right if there's decor, is in kde, not in twm. Sigh */
+    if ( palettes_fixed ) {
+	r.x = 0; r.y = 61+45;
+    }
     bvlayers = CreatePalette( bv->gw, &r, bvlayers_e_h, bv, &wattrs );
 
     memset(&label,0,sizeof(label));
@@ -1300,9 +1312,12 @@ return( bvshades );
 
     r.width = 8+9*16; r.height = r.width;
     r.x = -r.width-6; r.y = bv->mbh+225;
+    if ( palettes_fixed ) {
+	r.x = 0; r.y = 205;
+    }
     bvshades = CreatePalette( bv->gw, &r, bvshades_e_h, bv, &wattrs );
     bv->shades_hidden = BDFDepth(bv->bdf)==1;
-    GDrawSetVisible(bvtools,!bv->shades_hidden);
+    GDrawSetVisible(bvshades,!bv->shades_hidden);
 return( bvshades );
 }
 
@@ -1482,6 +1497,9 @@ return( bvtools );
 
     r.width = 53; r.height = 80;
     r.x = -r.width-6; r.y = bv->mbh+20;
+    if ( palettes_fixed ) {
+	r.x = 0; r.y = 0;
+    }
     bvtools = CreatePalette( bv->gw, &r, bvtools_e_h, bv, &wattrs );
     GDrawSetVisible(bvtools,true);
 return( bvtools );
@@ -1616,7 +1634,7 @@ void BVPaletteActivate(BitmapView *bv) {
 	    RestoreOffsets(bv->gw,bvshades,&bvshadesoff);
 	GDrawSetVisible(bvtools,bvvisible[1]);
 	GDrawSetVisible(bvlayers,bvvisible[0]);
-	GDrawSetVisible(bvshades,bvvisible[2] && !bv->shades_hidden);
+	GDrawSetVisible(bvshades,bvvisible[2] && bv->bdf->clut!=NULL);
 	if ( bvvisible[1]) {
 	    bv->showing_tool = bvt_none;
 	    BVToolsSetCursor(bv,0);

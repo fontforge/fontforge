@@ -3946,6 +3946,8 @@ return( true );
 FontView *_FontViewCreate(SplineFont *sf) {
     FontView *fv = gcalloc(1,sizeof(FontView));
     int i;
+    int ps = sf->display_size<0 ? -sf->display_size :
+	     sf->display_size==0 ? default_fv_font_size : sf->display_size;
 
     fv->nextsame = sf->fv;
     sf->fv = fv;
@@ -3958,9 +3960,9 @@ FontView *_FontViewCreate(SplineFont *sf) {
 	fv->sf = sf = sf->subfonts[0];
     }
     fv->selected = gcalloc(sf->charcnt,sizeof(char));
-    fv->cbw = default_fv_font_size+1;
-    fv->cbh = default_fv_font_size+1+FV_LAB_HEIGHT+1;
-    fv->magnify = 1;
+    fv->magnify = (ps<=9)? 3 : (ps<20) ? 2 : 1;
+    fv->cbw = (ps*fv->magnify)+1;
+    fv->cbh = (ps*fv->magnify)+1+FV_LAB_HEIGHT+1;
     fv->antialias = sf->display_antialias;
 return( fv );
 }
@@ -3979,6 +3981,8 @@ FontView *FontViewCreate(SplineFont *sf) {
     static unichar_t *fontnames=NULL;
     static GWindow icon = NULL;
     BDFFont *bdf;
+    static int nexty=0;
+    GRect size;
 
     if ( icon==NULL )
 #ifdef BIGICONS
@@ -3987,14 +3991,19 @@ FontView *FontViewCreate(SplineFont *sf) {
 	icon = GDrawCreateBitmap(NULL,fontview2_width,fontview2_height,fontview2_bits);
 #endif
 
+    GDrawGetSize(GDrawGetRoot(NULL),&size);
+
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_icon;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.cursor = ct_pointer;
     wattrs.icon = icon;
-    pos.x = pos.y = 0;
     pos.width = 16*fv->cbw+1;
     pos.height = 4*fv->cbh+1;
+    pos.x = size.width-pos.width-30; pos.y = nexty;
+    nexty += 2*fv->cbh+50;
+    if ( nexty+pos.height > size.height )
+	nexty = 0;
     fv->gw = gw = GDrawCreateTopWindow(NULL,&pos,fv_e_h,fv,&wattrs);
     FVSetTitle(fv);
 

@@ -447,6 +447,7 @@ extern void SCRemoveSelectedMinimumDistances(SplineChar *sc,int inx);
 extern int CVExport(CharView *cv);
 extern int BVExport(BitmapView *bv);
 
+extern void DefaultY(GRect *pos);
 extern CharView *CharViewCreate(SplineChar *sc,FontView *fv);
 extern void CharViewFree(CharView *cv);
 extern int CVValid(SplineFont *sf, SplineChar *sc, CharView *cv);
