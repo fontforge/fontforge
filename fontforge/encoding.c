@@ -217,7 +217,7 @@ return( &unicodefull );
     memset(&temp,0,sizeof(temp));
     temp.builtin = true;
     temp.tounicode = iconv_open("UCS2",iconv_name);
-    if ( temp.tounicode==NULL )
+    if ( temp.tounicode==(iconv_t) -1 )
 return( NULL );			/* Iconv doesn't recognize this name */
     temp.fromunicode = iconv_open(iconv_name,"UCS2");
 
