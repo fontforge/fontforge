@@ -60,7 +60,7 @@ Color prevcpcol = 0xff00ff;
 
 GDevEventMask input_em[] = {
 	/* Event masks for wacom devices */
-    { et_mousemove|et_mousedown|et_mouseup, "Mouse1" },
+    /*{ et_mousemove|et_mousedown|et_mouseup, "Mouse1" },*/	/* No point in distinguishing this from core mouse */
     { et_mousemove|et_mousedown|et_mouseup|et_char, "stylus" },
     { et_mousemove|et_mousedown|et_mouseup, "eraser" },
     { 0, NULL }
