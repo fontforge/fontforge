@@ -4064,7 +4064,7 @@ return( NULL );		/* Doesn't have the single byte entries */
 		}
 	}
 	memset(tempglyphs,0,sizeof(tempglyphs));
-	for ( i=0; i<planesize; ++i )
+	for ( i=0; i<planesize && j+lbase+i<sf->charcnt; ++i )
 	    if ( sf->chars[j+lbase+i]!=NULL && SCDuplicate(sf->chars[j+lbase+i])->ttf_glyph!=-1 )
 		tempglyphs[i] = SCDuplicate(sf->chars[j+lbase+i])->ttf_glyph;
 	for ( i=1; i<pos; ++i ) {
