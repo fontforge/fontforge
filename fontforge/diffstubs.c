@@ -7,9 +7,295 @@
 #include <charset.h>
 #include <ustring.h>
 
-Encoding *enclist = NULL;
 int local_encoding = e_iso8859_1;
 char *iconv_local_encoding_name = NULL;
+
+
+static int32 tex_base_encoding[] = {
+    0x0000, 0x02d9, 0xfb01, 0xfb02, 0x2044, 0x02dd, 0x0141, 0x0142,
+    0x02db, 0x02da, 0x000a, 0x02d8, 0x2212, 0x000d, 0x017d, 0x017e,
+    0x02c7, 0x0131, 0xf6be, 0xfb00, 0xfb03, 0xfb04, 0x2260, 0x221e,
+    0x2264, 0x2265, 0x2202, 0x2211, 0x220f, 0x03c0, 0x0060, 0x0027,
+    0x0020, 0x0021, 0x0022, 0x0023, 0x0024, 0x0025, 0x0026, 0x2019,
+    0x0028, 0x0029, 0x002a, 0x002b, 0x002c, 0x002d, 0x002e, 0x002f,
+    0x0030, 0x0031, 0x0032, 0x0033, 0x0034, 0x0035, 0x0036, 0x0037,
+    0x0038, 0x0039, 0x003a, 0x003b, 0x003c, 0x003d, 0x003e, 0x003f,
+    0x0040, 0x0041, 0x0042, 0x0043, 0x0044, 0x0045, 0x0046, 0x0047,
+    0x0048, 0x0049, 0x004a, 0x004b, 0x004c, 0x004d, 0x004e, 0x004f,
+    0x0050, 0x0051, 0x0052, 0x0053, 0x0054, 0x0055, 0x0056, 0x0057,
+    0x0058, 0x0059, 0x005a, 0x005b, 0x005c, 0x005d, 0x005e, 0x005f,
+    0x2018, 0x0061, 0x0062, 0x0063, 0x0064, 0x0065, 0x0066, 0x0067,
+    0x0068, 0x0069, 0x006a, 0x006b, 0x006c, 0x006d, 0x006e, 0x006f,
+    0x0070, 0x0071, 0x0072, 0x0073, 0x0074, 0x0075, 0x0076, 0x0077,
+    0x0078, 0x0079, 0x007a, 0x007b, 0x007c, 0x007d, 0x007e, 0x007f,
+    0x20ac, 0x222b, 0x201a, 0x0192, 0x201e, 0x2026, 0x2020, 0x2021,
+    0x02c6, 0x2030, 0x0160, 0x2039, 0x0152, 0x2126, 0x221a, 0x2248,
+    0x0090, 0x0091, 0x0092, 0x201c, 0x201d, 0x2022, 0x2013, 0x2014,
+    0x02dc, 0x2122, 0x0161, 0x203a, 0x0153, 0x2206, 0x25ca, 0x0178,
+    0x0000, 0x00a1, 0x00a2, 0x00a3, 0x00a4, 0x00a5, 0x00a6, 0x00a7,
+    0x00a8, 0x00a9, 0x00aa, 0x00ab, 0x00ac, 0x002d, 0x00ae, 0x00af,
+    0x00b0, 0x00b1, 0x00b2, 0x00b3, 0x00b4, 0x00b5, 0x00b6, 0x00b7,
+    0x00b8, 0x00b9, 0x00ba, 0x00bb, 0x00bc, 0x00bd, 0x00be, 0x00bf,
+    0x00c0, 0x00c1, 0x00c2, 0x00c3, 0x00c4, 0x00c5, 0x00c6, 0x00c7,
+    0x00c8, 0x00c9, 0x00ca, 0x00cb, 0x00cc, 0x00cd, 0x00ce, 0x00cf,
+    0x00d0, 0x00d1, 0x00d2, 0x00d3, 0x00d4, 0x00d5, 0x00d6, 0x00d7,
+    0x00d8, 0x00d9, 0x00da, 0x00db, 0x00dc, 0x00dd, 0x00de, 0x00df,
+    0x00e0, 0x00e1, 0x00e2, 0x00e3, 0x00e4, 0x00e5, 0x00e6, 0x00e7,
+    0x00e8, 0x00e9, 0x00ea, 0x00eb, 0x00ec, 0x00ed, 0x00ee, 0x00ef,
+    0x00f0, 0x00f1, 0x00f2, 0x00f3, 0x00f4, 0x00f5, 0x00f6, 0x00f7,
+    0x00f8, 0x00f9, 0x00fa, 0x00fb, 0x00fc, 0x00fd, 0x00fe, 0x00ff
+};
+
+static int32 unicode_from_MacSymbol[] = {
+  0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007,
+  0x0008, 0x0009, 0x000a, 0x000b, 0x000c, 0x000d, 0x000e, 0x000f,
+  0x0010, 0x0011, 0x0012, 0x0013, 0x0014, 0x0015, 0x0016, 0x0017,
+  0x0018, 0x0019, 0x001a, 0x001b, 0x001c, 0x001d, 0x001e, 0x001f,
+  0x0020, 0x0021, 0x2200, 0x0023, 0x2203, 0x0025, 0x0026, 0x220d,
+  0x0028, 0x0029, 0x2217, 0x002b, 0x002c, 0x2212, 0x002e, 0x002f,
+  0x0030, 0x0031, 0x0032, 0x0033, 0x0034, 0x0035, 0x0036, 0x0037,
+  0x0038, 0x0039, 0x003a, 0x003b, 0x003c, 0x003d, 0x003e, 0x003f,
+  0x2245, 0x0391, 0x0392, 0x03a7, 0x0394, 0x0395, 0x03a6, 0x0393,
+  0x0397, 0x0399, 0x03d1, 0x039a, 0x039b, 0x039c, 0x039d, 0x039f,
+  0x03a0, 0x0398, 0x03a1, 0x03a3, 0x03a4, 0x03a5, 0x03c2, 0x03a9,
+  0x039e, 0x03a8, 0x0396, 0x005b, 0x2234, 0x005d, 0x22a5, 0x005f,
+  0xf8e5, 0x03b1, 0x03b2, 0x03c7, 0x03b4, 0x03b5, 0x03c6, 0x03b3,
+  0x03b7, 0x03b9, 0x03d5, 0x03ba, 0x03bb, 0x03bc, 0x03bd, 0x03bf,
+  0x03c0, 0x03b8, 0x03c1, 0x03c3, 0x03c4, 0x03c5, 0x03d6, 0x03c9,
+  0x03be, 0x03c8, 0x03b6, 0x007b, 0x007c, 0x007d, 0x223c, 0x007f,
+  0x0080, 0x0081, 0x0082, 0x0083, 0x0084, 0x0085, 0x0086, 0x0087,
+  0x0088, 0x0089, 0x008a, 0x008b, 0x008c, 0x008d, 0x008e, 0x008f,
+  0x0090, 0x0091, 0x0092, 0x0093, 0x0094, 0x0095, 0x0096, 0x0097,
+  0x0098, 0x0099, 0x009a, 0x009b, 0x009c, 0x009d, 0x009e, 0x009f,
+  0x0000, 0x03d2, 0x2032, 0x2264, 0x2044, 0x221e, 0x0192, 0x2663,
+  0x2666, 0x2665, 0x2660, 0x2194, 0x2190, 0x2191, 0x2192, 0x2193,
+  0x00b0, 0x00b1, 0x2033, 0x2265, 0x00d7, 0x221d, 0x2202, 0x2022,
+  0x00f7, 0x2260, 0x2261, 0x2248, 0x2026, 0xf8e6, 0xf8e7, 0x21b5,
+  0x2135, 0x2111, 0x211c, 0x2118, 0x2297, 0x2295, 0x2205, 0x2229,
+  0x222a, 0x2283, 0x2287, 0x2284, 0x2282, 0x2286, 0x2208, 0x2209,
+  0x2220, 0x2207, 0x00ae, 0x00a9, 0x2122, 0x220f, 0x221a, 0x22c5,
+  0x00ac, 0x2227, 0x2228, 0x21d4, 0x21d0, 0x21d1, 0x21d2, 0x21d3,
+  0x22c4, 0x2329, 0xf8e8, 0xf8e9, 0xf8ea, 0x2211, 0xf8eb, 0xf8ec,
+  0xf8ed, 0xf8ee, 0xf8ef, 0xf8f0, 0xf8f1, 0xf8f2, 0xf8f3, 0xf8f4,
+  0xf8ff, 0x232a, 0x222b, 0x2320, 0xf8f5, 0x2321, 0xf8f6, 0xf8f7,
+  0xf8f8, 0xf8f9, 0xf8fa, 0xf8fb, 0xf8fc, 0xf8fd, 0xf8fe, 0x02c7
+};
+
+/* I don't think iconv provides encodings for zapfdingbats nor jis201 */
+/*  Perhaps I should list them here for compatability, but I think I'll just */
+/*  leave them out. I doubt they get used.				     */
+static Encoding texbase = { "TeX-Base-Encoding", 256, tex_base_encoding, NULL, NULL, 1, 1, 1, 1 };
+       Encoding custom = { "Custom", 0, NULL, NULL, &texbase,			  1, 1, 0, 0, 0, 0, 0, 1, 0, 0 };
+static Encoding original = { "Original", 0, NULL, NULL, &custom,		  1, 1, 0, 0, 0, 0, 0, 0, 1, 0 };
+static Encoding compact = { "Compacted", 0, NULL, NULL, &original,		  1, 1, 0, 0, 0, 0, 0, 0, 0, 1 };
+static Encoding unicodebmp = { "UnicodeBmp", 65536, NULL, NULL, &compact, 	  1, 1, 0, 0, 1, 1, 0, 0, 0, 0 };
+static Encoding unicodefull = { "UnicodeFull", 17*65536, NULL, NULL, &unicodebmp, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0 };
+static Encoding symbol = { "Symbol", 256, unicode_from_MacSymbol, NULL, &unicodefull,1, 1, 1, 1, 0, 0, 1, 0, 0, 0 };
+Encoding *enclist = &symbol;
+
+static int TryEscape( Encoding *enc,char *escape_sequence ) {
+    char from[20], ucs2[20];
+    size_t fromlen, tolen;
+    char *fpt, *upt;
+    int i, j, low;
+    int esc_len = strlen(escape_sequence);
+
+    strcpy(from,escape_sequence);
+
+    enc->has_2byte = false;
+    low = -1;
+    for ( i=0; i<256; ++i ) if ( i!=escape_sequence[0] ) {
+	for ( j=0; j<256; ++j ) {
+	    from[esc_len] = i; from[esc_len+1] = j; from[esc_len+2] = 0;
+	    fromlen = esc_len+2;
+	    fpt = from;
+	    upt = ucs2;
+	    tolen = sizeof(ucs2);
+	    if ( iconv( enc->tounicode , &fpt, &fromlen, &upt, &tolen )!= (size_t) (-1) &&
+		    upt-ucs2==2 /* Exactly one character */ ) {
+		if ( low==-1 ) {
+		    enc->low_page = low = i;
+		    enc->has_2byte = true;
+		}
+		enc->high_page = i;
+	break;
+	    }
+	}
+    }
+    if ( enc->low_page==enc->high_page )
+	enc->has_2byte = false;
+    if ( enc->has_2byte ) {
+	strcpy(enc->iso_2022_escape, escape_sequence);
+	enc->iso_2022_escape_len = esc_len;
+    }
+return( enc->has_2byte );
+}
+
+Encoding *FindOrMakeEncoding(const char *name) {
+    Encoding *enc;
+    char buffer[20];
+    const char *iconv_name;
+    Encoding temp;
+    uint8 good[256];
+    int i, j, any, all;
+    char from[8], ucs2[20];
+    uint fromlen, tolen;
+    char *fpt, *upt;
+    /* iconv is not case sensitive */
+
+    if ( strncmp(name,"iso8859_",8)==0 || strncmp(name,"koi8_",5)==0 ) {
+	/* Fixup for old naming conventions */
+	strncpy(buffer,name,sizeof(buffer));
+	*strchr(buffer,'_') = '-';
+	name = buffer;
+    } else if ( strncmp(name,"iso-8859",8)==0 ) {
+	/* Fixup for old naming conventions */
+	strncpy(buffer,name,3);
+	strncpy(buffer+3,name+4,sizeof(buffer)-3);
+	name = buffer;
+    } else if ( strcmp(name,"AdobeStandardEncoding")==0 )
+	name = "AdobeStandard";
+    for ( enc=enclist; enc!=NULL; enc=enc->next )
+	if ( strmatch(name,enc->enc_name)==0 ||
+		(enc->iconv_name!=NULL && strmatch(name,enc->iconv_name)==0))
+return( enc );
+    if ( strmatch(name,"unicode")==0 )
+return( &unicodebmp );
+    if ( strmatch(name,"unicode4")==0 )
+return( &unicodefull );
+
+    iconv_name = name;
+    /* Mac seems to work ok */
+    if ( strcmp(name,"win")==0 )
+	iconv_name = "MS-ANSI";		/* "WINDOWS-1252";*/
+    else if ( strcmp(name,"jis208")==0 )
+	iconv_name = "ISO-2022-JP";
+    else if ( strcmp(name,"jis212")==0 )
+	iconv_name = "ISO-2022-JP-2";
+    else if ( strcmp(name,"ksc5601")==0 )
+	iconv_name = "ISO-2022-KR";
+    else if ( strcmp(name,"gb2312")==0 )
+	iconv_name = "ISO-2022-CN";
+    else if ( strcmp(name,"wansung")==0 )
+	iconv_name = "EUC-KR";
+    else if ( strcmp(name,"gb2312pk")==0 )
+	iconv_name = "EUC-CN";
+
+/* Escape sequences:					*/
+/*	ISO-2022-CN:     \e $ ) A ^N			*/
+/*	ISO-2022-KR:     \e $ ) C ^N			*/
+/*	ISO-2022-JP:     \e $ B				*/
+/*	ISO-2022-JP-2:   \e $ ( D			*/
+/*	ISO-2022-JP-3:   \e $ ( O			*/ /* Capital "O", not zero */
+/*	ISO-2022-CN-EXT: \e $ ) E ^N			*/ /* Not sure about this, also uses CN escape */
+
+    memset(&temp,0,sizeof(temp));
+    temp.builtin = true;
+    temp.tounicode = iconv_open("UCS2",iconv_name);
+    if ( temp.tounicode==NULL )
+return( NULL );			/* Iconv doesn't recognize this name */
+    temp.fromunicode = iconv_open(iconv_name,"UCS2");
+
+    memset(good,0,sizeof(good));
+    any = false; all = true;
+    for ( i=1; i<256; ++i ) {
+	from[0] = i; from[1] = 0;
+	fromlen = 1;
+	fpt = from;
+	upt = ucs2;
+	tolen = sizeof(ucs2);
+	if ( iconv( temp.tounicode , &fpt, &fromlen, &upt, &tolen )!= (size_t) (-1)) {
+	    good[i] = true;
+	    any = true;
+	} else
+	    all = false;
+    }
+    if ( any )
+	temp.has_1byte = true;
+    if ( all )
+	temp.only_1byte = true;
+
+    if ( !all ) {
+	for ( i=temp.has_1byte; i<256; ++i ) if ( !good[i] ) {
+	    for ( j=0; j<256; ++j ) {
+		from[0] = i; from[1] = j; from[2] = 0;
+		fromlen = 2;
+		fpt = from;
+		upt = ucs2;
+		tolen = sizeof(ucs2);
+		if ( iconv( temp.tounicode , &fpt, &fromlen, &upt, &tolen )!= (size_t) (-1) &&
+			upt-ucs2==2 /* Exactly one character */ ) {
+		    if ( temp.low_page==-1 )
+			temp.low_page = i;
+		    temp.high_page = i;
+		    temp.has_2byte = true;
+	    break;
+		}
+	    }
+	}
+	if ( temp.low_page==temp.high_page ) {
+	    temp.has_2byte = false;
+	    temp.low_page = temp.high_page = -1;
+	}
+	if ( !temp.has_2byte && !good[033]/* escape */ ) {
+	    if ( strstr(iconv_name,"2022")!=NULL &&
+		    strstr(iconv_name,"JP3")!=NULL &&
+		    TryEscape( &temp,"\33$(O" ))
+		;
+	    else if ( strstr(iconv_name,"2022")!=NULL &&
+		    strstr(iconv_name,"JP2")!=NULL &&
+		    TryEscape( &temp,"\33$(D" ))
+		;
+	    else if ( strstr(iconv_name,"2022")!=NULL &&
+		    strstr(iconv_name,"JP")!=NULL &&
+		    TryEscape( &temp,"\33$B" ))
+		;
+	    else if ( strstr(iconv_name,"2022")!=NULL &&
+		    strstr(iconv_name,"KR")!=NULL &&
+		    TryEscape( &temp,"\33$)C\16" ))
+		;
+	    else if ( strstr(iconv_name,"2022")!=NULL &&
+		    strstr(iconv_name,"CN")!=NULL &&
+		    TryEscape( &temp,"\33$)A\16" ))
+		;
+	}
+    }
+    if ( !temp.has_1byte && !temp.has_2byte )
+return( NULL );
+
+    enc = chunkalloc(sizeof(Encoding));
+    *enc = temp;
+    enc->enc_name = copy(name);
+    if ( iconv_name!=name )
+	enc->iconv_name = copy(name);
+    enc->next = enclist;
+    enc->builtin = true;
+    enclist = enc;
+    if ( enc->has_2byte )
+	enc->char_cnt = (enc->high_page<<8) + 256;
+    else {
+	enc->char_cnt = 256;
+	enc->only_1byte = true;
+    }
+    if ( strstrmatch(iconv_name,"JP")!=NULL )
+	enc->is_japanese = true;
+    else if ( strstrmatch(iconv_name,"KR")!=NULL )
+	enc->is_korean = true;
+    else if ( strstrmatch(iconv_name,"CN")!=NULL )
+	enc->is_simplechinese = true;
+    else if ( strstrmatch(iconv_name,"BIG")!=NULL && strstrmatch(iconv_name,"5")!=NULL )
+	enc->is_tradchinese = true;
+
+    if ( strstrmatch(name,"ISO8859")!=NULL &&
+	    strtol(name+strlen(name)-2,NULL,10)>=16 )
+	/* Not in our menu, don't hide */;
+    else if ( iconv_name!=name || strmatch(name,"mac")==0 || strstrmatch(name,"ISO8859")!=NULL ||
+	    strmatch(name,"koi8-r")==0 || strmatch(name,"sjis")==0 ||
+	    strmatch(name,"big5")==0 || strmatch(name,"big5hkscs")==0 )
+	enc->hidden = true;
+
+return( enc );
+}
 
 #if defined(FONTFORGE_CONFIG_GDRAW)
 void GProgressStartIndicator(
@@ -49,7 +335,7 @@ void gwwv_progress_change_stages(int stages) { }
 #endif
 
 SplineFont *LoadSplineFont(char *filename, enum openflags of) { return NULL; }
-int SFReencodeFont(SplineFont *sf,enum charset new_map) { return 0 ; }
+int SFReencodeFont(SplineFont *sf,Encoding *new_map) { return 0 ; }
 void RefCharFree(RefChar *ref) {}
 void LinearApproxFree(LinearApprox *la) {}
 SplineFont *SplineFontNew(void) {return NULL; }

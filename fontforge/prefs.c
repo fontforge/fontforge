@@ -539,9 +539,7 @@ return;
 }
 
 #if !defined(FONTFORGE_CONFIG_GTK)
-# ifdef FONTFORGE_CONFIG_ICONV_ENCODING
 #  include <charset.h>		/* we still need the charsets & encoding to set local_encoding */
-# endif
 static int encmatch(const char *enc,int subok) {
     static struct { char *name; int enc; } encs[] = {
 	{ "US-ASCII", e_usascii },
@@ -890,7 +888,7 @@ return;
     fclose(p);
 #if defined(FONTFORGE_CONFIG_GTK)
     /* Nothing */;
-#elif defined( FONTFORGE_CONFIG_ICONV_ENCODING )
+#else
     local_encoding = DefaultEncoding();
 #endif
 #if defined(FONTFORGE_CONFIG_GDRAW)
