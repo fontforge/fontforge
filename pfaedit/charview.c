@@ -4857,22 +4857,8 @@ static void _CVMenuOverlap(CharView *cv,enum overlap_type ot) {
     CVCharChangedUpdate(cv);
 }
 
-static void TestInt(SplineSet *spl) {
-    double t1s[10], t2s[10];
-    BasePoint bps[9];
-    int i;
-
-    if ( spl!=NULL && spl->first->next!=NULL && spl->next!=NULL && spl->next->first->next!=NULL ) {
-	SplinesIntersect(spl->first->next,spl->next->first->next,bps,t1s,t2s);
-	for ( i=0; t1s[i]!=-1; ++i )
-	    printf( "(%g,%g) %g %g\n", bps[i].x, bps[i].y, t1s[i], t2s[i]);
-	printf( "\n" );
-    }
-}
-
 static void CVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    TestInt(cv->sc->splines);
     _CVMenuOverlap(cv,mi->mid==MID_RmOverlap ? over_remove :
 		      mi->mid==MID_Intersection ? over_intersect :
 		      mi->mid==MID_Exclude ? over_exclude :
