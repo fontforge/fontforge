@@ -66,6 +66,7 @@ typedef struct gidata {
 #define CID_PrevR	2016
 #define CID_PrevTheta	2017
 #define CID_HintMask	2020
+#define CID_ActiveHints	2030
 #define CID_TabSet	2100
 
 #define CID_X		3001
@@ -1473,6 +1474,9 @@ static void PIChangePoint(GIData *ci) {
     int aspect = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_TabSet));
     GGadget *list = GWidgetGetControl(ci->gw,CID_HintMask);
     int32 i, len;
+    HintMask *hm;
+    SplinePoint *sp;
+    SplineSet *spl;
 
     GGadgetGetList(list,&len);
 
@@ -1484,7 +1488,33 @@ static void PIChangePoint(GIData *ci) {
 	for ( i=0; i<len && i<HntMax; ++i )
 	    GGadgetSelectListItem(list,i, (*ci->cursp->hintmask)[i>>3]&(0x80>>(i&7))?true:false );
     }
-    _PI_ShowHints(ci,aspect);
+    _PI_ShowHints(ci,aspect==1);
+
+    list = GWidgetGetControl(ci->gw,CID_ActiveHints);
+    hm = NULL;
+    /* Figure out what hintmask is active at the current point */
+    /* Note: we must walk each ss backwards because we reverse the splineset */
+    /*  when we output postscript */
+    for ( spl = ci->sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next ) {
+	for ( sp=spl->first; ; ) {
+	    if ( sp->hintmask )
+		hm = sp->hintmask;
+	    if ( sp==ci->cursp )
+	break;
+	    if ( sp->prev==NULL )
+	break;
+	    sp = sp->prev->from;
+	    if ( sp==spl->first )
+	break;
+	}
+    }
+    if ( hm==NULL ) {
+	for ( i=0; i<len; ++i )
+	    GGadgetSelectListItem(list,i,false);
+    } else {
+	for ( i=0; i<len && i<HntMax; ++i )
+	    GGadgetSelectListItem(list,i, (*hm)[i>>3]&(0x80>>(i&7))?true:false );
+    }
 }
 
 static int PI_Next(GGadget *g, GEvent *e) {
@@ -1760,7 +1790,7 @@ static int PI_AspectChange(GGadget *g, GEvent *e) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
 	int aspect = GTabSetGetSel(g);
 
-	_PI_ShowHints(ci,aspect);
+	_PI_ShowHints(ci,aspect==1);
     }
 return( true );
 }
@@ -1856,9 +1886,9 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
     static GIData gi;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[37], hgcd[2], mgcd[8];
+    GGadgetCreateData gcd[37], hgcd[2], h2gcd[2], mgcd[8];
     GTextInfo label[37], mlabel[8];
-    GTabInfo aspects[3];
+    GTabInfo aspects[4];
     static GBox cur, nextcp, prevcp;
     extern Color nextcpcol, prevcpcol;
     GWindow root;
@@ -1907,6 +1937,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	memset(&gcd,0,sizeof(gcd));
 	memset(&label,0,sizeof(label));
 	memset(&hgcd,0,sizeof(hgcd));
+	memset(&h2gcd,0,sizeof(h2gcd));
 	memset(&mgcd,0,sizeof(mgcd));
 	memset(&mlabel,0,sizeof(mlabel));
 	memset(&aspects,0,sizeof(aspects));
@@ -2147,6 +2178,13 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	hgcd[0].gd.handle_controlevent = PI_HintSel;
 	hgcd[0].creator = GListCreate;
 
+	h2gcd[0].gd.pos.x = 5; h2gcd[0].gd.pos.y = 5;
+	h2gcd[0].gd.pos.width = PI_Width-20; h2gcd[0].gd.pos.height = gcd[j-1].gd.pos.y+10;
+	h2gcd[0].gd.flags = gg_visible | gg_list_multiplesel;
+	h2gcd[0].gd.cid = CID_ActiveHints;
+	h2gcd[0].gd.u.list = SCHintList(cv->sc,NULL);
+	h2gcd[0].creator = GListCreate;
+
 	j = 0;
 
 	aspects[j].text = (unichar_t *) _STR_Location;
@@ -2156,6 +2194,10 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	aspects[j].text = (unichar_t *) _STR_HintMask;
 	aspects[j].text_in_resource = true;
 	aspects[j++].gcd = hgcd;
+
+	aspects[j].text = (unichar_t *) _STR_ActiveHints;
+	aspects[j].text_in_resource = true;
+	aspects[j++].gcd = h2gcd;
 
 	j = 0;
 
@@ -2226,6 +2268,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 
 	GGadgetsCreate(gi.gw,mgcd);
 	GTextInfoListFree(hgcd[0].gd.u.list);
+	GTextInfoListFree(h2gcd[0].gd.u.list);
 
 	PIChangePoint(&gi);
 

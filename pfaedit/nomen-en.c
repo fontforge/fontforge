@@ -1319,6 +1319,7 @@ static char *str_PrevCPAngle = "Prev CP Angle";
 static char *str_Type = "Type:";
 static char *str_Location = "Location";
 static char *str_HintMask = "Hint Mask";
+static char *str_ActiveHints = "Active Hints";
 static char *str_UnicodeL = "Unicode";
 static char *str_LigatureL = "Ligature";
 static char *str_Components = "Components";
