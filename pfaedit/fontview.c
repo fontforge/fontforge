@@ -3334,7 +3334,7 @@ return;
 
     if ( sf->remap!=NULL ) {
 	int localenc = fv->end_pos;
-	struct remap *map = fv->sf->remap;
+	struct remap *map = sf->remap;
 	while ( map->infont!=-1 ) {
 	    if ( localenc>=map->infont && localenc<=map->infont+(map->lastenc-map->firstenc) ) {
 		localenc += map->firstenc-map->infont;
@@ -3454,9 +3454,14 @@ static void FVChar(FontView *fv,GEvent *event) {
 	    event->u.chr.keysym == GK_Page_Down ||
 	    event->u.chr.keysym == GK_KP_Page_Down ||
 	    event->u.chr.keysym == GK_Next ) {
+	int end_pos = fv->end_pos;
+	/* We move the currently selected point. If there is none, then pick */
+	/*  something on the screen */
+	if ( end_pos==-1 )
+	    end_pos = (fv->rowoff+fv->rowcnt/2)*fv->colcnt;
 	switch ( event->u.chr.keysym ) {
 	  case GK_Tab:
-	    pos = fv->end_pos;
+	    pos = end_pos;
 	    do {
 		if ( event->u.chr.state&ksm_shift )
 		    --pos;
@@ -3464,30 +3469,30 @@ static void FVChar(FontView *fv,GEvent *event) {
 		    ++pos;
 		if ( pos>=fv->sf->charcnt ) pos = 0;
 		else if ( pos<0 ) pos = fv->sf->charcnt-1;
-	    } while ( pos!=fv->end_pos && !SCWorthOutputting(fv->sf->chars[pos]));
-	    if ( pos==fv->end_pos ) ++pos;
+	    } while ( pos!=end_pos && !SCWorthOutputting(fv->sf->chars[pos]));
+	    if ( pos==end_pos ) ++pos;
 	  break;
 #if GK_Tab!=GK_BackTab
 	  case GK_BackTab:
-	    pos = fv->end_pos;
+	    pos = end_pos;
 	    do {
 		--pos;
 		if ( pos<0 ) pos = fv->sf->charcnt-1;
-	    } while ( pos!=fv->end_pos && !SCWorthOutputting(fv->sf->chars[pos]));
-	    if ( pos==fv->end_pos ) --pos;
+	    } while ( pos!=end_pos && !SCWorthOutputting(fv->sf->chars[pos]));
+	    if ( pos==end_pos ) --pos;
 	  break;
 #endif
 	  case GK_Left: case GK_KP_Left:
-	    pos = fv->end_pos-1;
+	    pos = end_pos-1;
 	  break;
 	  case GK_Right: case GK_KP_Right:
-	    pos = fv->end_pos+1;
+	    pos = end_pos+1;
 	  break;
 	  case GK_Up: case GK_KP_Up:
-	    pos = fv->end_pos-fv->colcnt;
+	    pos = end_pos-fv->colcnt;
 	  break;
 	  case GK_Down: case GK_KP_Down:
-	    pos = fv->end_pos+fv->colcnt;
+	    pos = end_pos+fv->colcnt;
 	  break;
 	  case GK_End: case GK_KP_End:
 	    pos = fv->sf->charcnt;
