@@ -1305,10 +1305,12 @@ return;
     id->sf = sf;
     id->tag = tag;
     tab = SFFindTable(sf,tag);
-    id->instr_cnt = id->max = tab==NULL ? 1 : tab->len;
+    id->instr_cnt = id->max = tab==NULL ? 0 : tab->len;
     id->instrs = galloc(id->max+1);
     if ( tab!=NULL && tab->data!=NULL )
 	memcpy(id->instrs,tab->data,id->instr_cnt);
+    else
+	id->instrs[0]='\0';
     name[0] = name[5] = '\'';
     name[1] = tag>>24; name[2] = (tag>>16)&0xff; name[3] = (tag>>8)&0xff; name[4] = tag&0xff;
     name[6] = 0;
