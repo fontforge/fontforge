@@ -1458,9 +1458,12 @@ int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0) {
 	windows_encoding = strmatch(sf->encoding_name->enc_name,"symbol")==0?2:0;
     if ( windows_encoding==0 )
 	inwin(sf,winmap);
-    else
-	for ( i=0; i<256; ++i )
+    else {
+	for ( i=0; i<256 && i<sf->charcnt; ++i )
 	    winmap[i] = i;
+	for ( ; i<256; ++i )
+	    winmap[i] = -1;
+    }
 
     SFKernPrepare(sf,false);
     for ( ii=0; ii<256; ++ii ) if ( (i=winmap[ii])!=-1 ) {
