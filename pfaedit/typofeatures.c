@@ -47,10 +47,10 @@ uint32 SFGenerateNewFeatureTag(struct gentagtype *gentags,enum possub_type type,
 
     if ( gentags->tt_cur >= gentags->tt_max ) {
 	if ( gentags->tt_cur==0 ) {
-	    gentags->tagtype = galloc((gentags->tt_max=32)*sizeof(uint8));
+	    gentags->tagtype = galloc((gentags->tt_max=32)*sizeof(struct tagtype));
 	} else {
 	    gentags->tt_max += 32;
-	    gentags->tagtype = grealloc(gentags->tagtype,gentags->tt_max*sizeof(uint8));
+	    gentags->tagtype = grealloc(gentags->tagtype,gentags->tt_max*sizeof(struct tagtype));
 	}
     }
     for ( i=0; i<gentags->tt_cur && gentags->tagtype[i].type!=pst_null; ++i );

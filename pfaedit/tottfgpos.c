@@ -2089,7 +2089,7 @@ static void g___HandleNested(FILE *lfile,SplineFont *sf,int gpos,
 		end = pst_pair;
 	    } else {
 		start = pst_substitution;
-		end = pst_multiple;
+		end = pst_ligature;
 	    }
 	    for ( type=start; type<=end; ++type ) {
 		for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
@@ -2118,6 +2118,8 @@ static void g___HandleNested(FILE *lfile,SplineFont *sf,int gpos,
 			    } else if ( type==pst_alternate ) {
 				new->lookup_type = 3;
 				dumpGSUBmultiplesubs(lfile,sf,glyphs,map);
+			    } else if ( type==pst_ligature ) {
+				/* Already done */;
 			    } else
 				GDrawIError("Unknown PST type in GPOS/GSUB figure lookups" );
 			    new->len = ftell(lfile)-new->offset;
