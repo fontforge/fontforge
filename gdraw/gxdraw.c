@@ -2879,6 +2879,16 @@ return;
       case PropertyNotify:
 	gdisp->last_event_time = event->xproperty.time;
       break;
+      case ReparentNotify:
+	if ( event->xreparent.parent==gdisp->root ) {
+	    gw->parent = (GWindow) (gdisp->groot);
+	    gw->is_toplevel = true;
+	} else if ( XFindContext(gdisp->display,event->xreparent.parent,gdisp->mycontext,(void *) &ret)==0 ) {
+	    GWindow gparent = (GWindow) ret;
+	    gw->parent = gparent;
+	    gw->is_toplevel = (GXWindow) gparent==gdisp->groot;
+	}
+      break;
     }
     if ( gevent.type != et_noevent && gw!=NULL && gw->eh!=NULL )
 	(gw->eh)((GWindow) gw, &gevent);
