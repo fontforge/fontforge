@@ -2488,7 +2488,6 @@ return( 0 );
     k = 10;
     if ( family ) {
 	y = 250;
-	k = 14;
 
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = y;
 	gcd[k].gd.pos.width = totwid-5-5;
@@ -2534,7 +2533,7 @@ return( 0 );
     GGadgetsCreate(gw,gcd);
     GGadgetSetUserData(gcd[2].ret,gcd[0].ret);
     free(label[9].text);
-    for ( i=15; i<k; ++i ) if ( gcd[i].gd.popup_msg!=NULL )
+    for ( i=11; i<k; ++i ) if ( gcd[i].gd.popup_msg!=NULL )
 	free((unichar_t *) gcd[i].gd.popup_msg);
 
     GFileChooserConnectButtons(gcd[0].ret,gcd[1].ret,gcd[2].ret);
