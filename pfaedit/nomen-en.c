@@ -1182,6 +1182,7 @@ static char *str_SubsOnlyOne = "A simple substitution takes exactly one componen
 static char str_RequiredLig = "Required Ligatures"
 static char str_StandardLig = "Standard Ligatures"
 static char str_DiscretionaryLig = "Discretionary Ligatures"
+static char str_AncientLig = "Ancient Ligatures"
 static char str_HistoricLig = "Historic Ligatures"
 static char str_FractionLig = "Fraction Ligatures"
 static char str_AboveBaseSubs = "Above Base Substitutions"

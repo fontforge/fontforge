@@ -185,6 +185,7 @@ struct macsettingname macfeat_otftag[] = {
     { 1, 2, 3, 0, 1, CHR('l','i','g','a'), "Common Ligatures", "No Common Ligatures" },	/* Common ligatures */
     { 1, 4, 5, 0, 0, CHR('d','l','i','g'), "Rare Ligatures", "No Rare Ligatures" },	/* rare ligatures => discretionary */
     { 1, 4, 5, 0, 0, CHR('h','l','i','g'), "Rare Ligatures", "No Rare Ligatures" },	/* rare ligatures => historic */
+    { 1, 4, 5, 0, 0, CHR('a','l','i','g'), "Rare Ligatures", "No Rare Ligatures" },	/* rare ligatures => historic */
     { 1, 6, 7, 0, 0, CHR('M','L','O','G'), "Logos", "No Logos" },
     { 1, 8, 9, 0, 0, CHR('M','R','E','B'), "Rebus Pictures", "No Rebus Pictures" },
     { 1, 10, 11, 0, 0, CHR('M','D','L','G'), "Diphthong Ligatures", "No Diphthong Ligatures" },

@@ -559,6 +559,7 @@ GTextInfo languages[] = {
 };
 
 static GTextInfo ligature_tags[] = {
+    { (unichar_t *) _STR_AncientLig, NULL, 0, 0, (void *) CHR('a','l','i','g'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_DiscretionaryLig, NULL, 0, 0, (void *) CHR('d','l','i','g'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_HistoricLig, NULL, 0, 0, (void *) CHR('h','l','i','g'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_RequiredLig, NULL, 0, 0, (void *) CHR('r','l','i','g'), NULL, false, false, false, false, false, false, false, true },
