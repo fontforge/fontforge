@@ -31,6 +31,8 @@
 #include <math.h>
 #include <gkeysym.h>
 
+static int counterwarned = false;
+
 /* This module is designed to detect certain features of a character (like stems
  *  and counters, and then modify them in a useful way.
  * The most obvious examples are:
@@ -488,7 +490,7 @@ return( false );
 	if ( (lens[0]>0 && lens[0]<lens[1]) || lens[1]==0 )
 	    j = 0;
 	if ( i==3 )
-	    if ( lens[2]>0 && lens[3]<lens[j] )
+	    if ( lens[2]>0 && lens[2]<lens[j] )
 		j = 2;
     }
 
@@ -620,7 +622,7 @@ static void SplineFindOtherEdge(SCI *sci,Spline *spline) {
     SplineSet *ss;
     real rlen, llen, len;
     int bcnt;
-    int bad, lbad, rbad;
+    int bad = false, lbad = false, rbad = false;
 
     angle = atan2( (3*spline->splines[1].a*.5+2*spline->splines[1].b)*.5+spline->splines[1].c,
 		    (3*spline->splines[0].a*.5+2*spline->splines[0].b)*.5+spline->splines[0].c) +
@@ -806,7 +808,8 @@ return( false );
 }
 
 static void MapFromCounterGroup(struct map *map,MetaFontDlg *meta,
-	struct countergroup *cg, struct zonemap *extra, int ecnt, int isvert ) {
+	struct countergroup *cg, struct zonemap *extra, int ecnt, int isvert,
+	char *charname ) {
     real offset=0;
     int i=0,j,k;
     StemInfo *stem;
@@ -921,12 +924,15 @@ static void MapFromCounterGroup(struct map *map,MetaFontDlg *meta,
 		}
 		newcwidth = meta->counters[isvert].counter.factor*newcwidth +
 			meta->counters[isvert].counter.add;
-		if ( newcwidth<meta->counters[isvert].widthmin && counterwidth>=meta->counters[isvert].widthmin ) {
-		    GWidgetErrorR(_STR_CounterTooSmallT,_STR_CounterTooSmall);
-		    newcwidth = meta->counters[isvert].widthmin;
-		} else if ( newcwidth<0 ) {
-		    GWidgetErrorR(_STR_CounterTooSmallT,_STR_CounterTooSmall);
-		    newcwidth = 0;
+		if ( (newcwidth<meta->counters[isvert].widthmin && counterwidth>=meta->counters[isvert].widthmin) ||
+			newcwidth<0 ) {
+		    if ( !counterwarned )
+			GWidgetErrorR(_STR_CounterTooSmallT,_STR_CounterTooSmall, charname);
+		    counterwarned = true;
+		    if ( counterwidth>=meta->counters[isvert].widthmin )
+			newcwidth = meta->counters[isvert].widthmin;
+		    else
+			newcwidth = 0;
 		}
 		offset += newcwidth-counterwidth;
 	    }
@@ -1042,40 +1048,42 @@ return( cur );
 	cur->stems[0] = best;
 return( cur );
     } else if ( cnt==3 && anynonconflicts ) {
-	StemInfo *non, *first=NULL, *second;
+	StemInfo *non, *first=NULL, *second=NULL;
 	for ( s=stems; s!=NULL; s=s->next ) {
-	    if ( !s->hasconflicts )
+	    if ( !s->hasconflicts || s->where!=NULL )
 		non=s;
 	    else if ( first==NULL )
 		first = s;
 	    else
 		second = s;
 	}
-	if ( first->where->begin>second->where->end ) {
-	    StemInfo *temp = first; first = second; second = temp;
-	}
-	cg = cur = gcalloc(1,sizeof(struct countergroup));
-	cur->scnt = 2;
-	cur->stems = galloc(2*sizeof(StemInfo *));
-	cur->bottom = -1e8; cur->top = ceil(first->where->end);
-	cur->counternumber = 0;
-	if ( non->start< first->start ) {
-	    cur->stems[0] = non; cur->stems[1] = first;
-	} else {
-	    cur->stems[0] = first; cur->stems[1] = non;
-	}
-	cur = gcalloc(1,sizeof(struct countergroup));
-	cur->scnt = 2;
-	cur->stems = galloc(2*sizeof(StemInfo *));
-	cur->bottom = floor(second->where->begin); cur->top = 1e8;
-	cur->counternumber = 1;
-	if ( non->start< second->start ) {
-	    cur->stems[0] = non; cur->stems[1] = second;
-	} else {
-	    cur->stems[0] = second; cur->stems[1] = non;
-	}
-	cg->next = cur;
+	if ( first!=NULL && second!=NULL ) {
+	    if ( first->where->begin>second->where->end ) {
+		StemInfo *temp = first; first = second; second = temp;
+	    }
+	    cg = cur = gcalloc(1,sizeof(struct countergroup));
+	    cur->scnt = 2;
+	    cur->stems = galloc(2*sizeof(StemInfo *));
+	    cur->bottom = -1e8; cur->top = ceil(first->where->end);
+	    cur->counternumber = 0;
+	    if ( non->start< first->start ) {
+		cur->stems[0] = non; cur->stems[1] = first;
+	    } else {
+		cur->stems[0] = first; cur->stems[1] = non;
+	    }
+	    cur = gcalloc(1,sizeof(struct countergroup));
+	    cur->scnt = 2;
+	    cur->stems = galloc(2*sizeof(StemInfo *));
+	    cur->bottom = floor(second->where->begin); cur->top = 1e8;
+	    cur->counternumber = 1;
+	    if ( non->start< second->start ) {
+		cur->stems[0] = non; cur->stems[1] = second;
+	    } else {
+		cur->stems[0] = second; cur->stems[1] = non;
+	    }
+	    cg->next = cur;
 return( cg );
+	}
     }
 
     for ( s=stems; s!=NULL; ) {
@@ -1147,9 +1155,9 @@ return(cg);
 }
 
 static struct map *MapFromDiags(MetaFontDlg *meta,StemInfo *vstem, DStemInfo *dstem,
-	struct zonemap *extras, int ecnt) {
+	struct zonemap *extras, int ecnt, char *charname) {
     struct map *map = gcalloc(1,sizeof(struct map));
-    real minx, maxx, minxw, maxxw, olen, orthwidth, width;
+    real minx, maxx, minxw, maxxw, olen, orthwidth;
     BasePoint orthvector;
     StemInfo dummystems[2];
     StemInfo *stems[3];
@@ -1171,19 +1179,19 @@ static struct map *MapFromDiags(MetaFontDlg *meta,StemInfo *vstem, DStemInfo *ds
 		orthvector.y*(dstem->rightedgetop.y-dstem->leftedgetop.y);
 	if ( minx>dstem->leftedgetop.x ) {
 	    minx = dstem->leftedgetop.x;
-	    minxw = width;
+	    minxw = orthwidth;
 	}
 	if ( minx>dstem->leftedgebottom.x ) {
 	    minx = dstem->leftedgebottom.x;
-	    minxw = width;
+	    minxw = orthwidth;
 	}
 	if ( maxx<dstem->rightedgetop.x ) {
 	    maxx = dstem->rightedgetop.x;
-	    maxxw = width;
+	    maxxw = orthwidth;
 	}
 	if ( maxx<dstem->rightedgebottom.x ) {
 	    maxx = dstem->rightedgebottom.x;
-	    maxxw = width;
+	    maxxw = orthwidth;
 	}
 	dstem = dstem->next;
     }
@@ -1220,7 +1228,7 @@ static struct map *MapFromDiags(MetaFontDlg *meta,StemInfo *vstem, DStemInfo *ds
     } else {
 	stems[2] = vstem;
     }
-    MapFromCounterGroup(map,meta,&cg, extras,ecnt,false);
+    MapFromCounterGroup(map,meta,&cg, extras,ecnt,false, charname);
 return( map );
 }
 
@@ -1269,7 +1277,7 @@ static void SCIBuildMaps(SCI *sci, int isvert) {
 	/*  from the diagonal stems */
 	sci->mapd[0].mapcnt = 1;
 	sci->mapd[0].maps = MapFromDiags(meta,sci->sc->vstem,
-		sci->sc->dstem,extras,1);
+		sci->sc->dstem,extras,1,sci->sc->name);
     } else {
 	/* Horizontal counters need vertical stems, and vice versa */
 	countergroups = SCIFindCounterGroups(isvert ? sci->sc->hstem : sci->sc->vstem);
@@ -1279,7 +1287,7 @@ static void SCIBuildMaps(SCI *sci, int isvert) {
 	sci->mapd[isvert].maps = gcalloc(i,sizeof(struct map));
 	for ( i=0, cg=countergroups; cg!=NULL; ++i, cg=cg->next )
 	    MapFromCounterGroup(&sci->mapd[isvert].maps[i],meta,cg,
-		    extras,ecnt,isvert);
+		    extras,ecnt,isvert,sci->sc->name);
 	CounterGroupsFree(countergroups);
     }
     MapCleanup(&sci->mapd[isvert]);
@@ -1551,8 +1559,8 @@ static void PositionFromMidLen(SCI *sci,BasePoint *new,BasePoint *mid,SplinePoin
 
 static void SplineIntersectWithEdge(SCI *sci,SplinePoint *sp,Spline *s,
 	BasePoint *new,BasePoint *mid,BasePoint *v1) {
-    BasePoint new1 = *new, new2, other;
-    BasePoint v2;
+    BasePoint new1 = *new/*, new2, other*/;
+    /*BasePoint v2;*/
     real mapped;
 
     if ( s->knownlinear ) {
@@ -2017,6 +2025,7 @@ void MetaFont(FontView *fv,CharView *cv,SplineChar *sc) {
 
     memset(&meta,'\0',sizeof(meta));
     meta.fv = fv; meta.cv = cv; meta.sc = sc;
+    counterwarned = false;
     if ( cv!=NULL )
 	meta.sf = cv->sc->parent;
     else
