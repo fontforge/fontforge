@@ -1596,8 +1596,16 @@ static void realdecrypt(struct fontparse *fp,FILE *in, FILE *temp) {
 	    parsetype3(fp,in);
 return;
 	}
-	if ( strstr(buffer,"CharStrings")!=NULL && strstr(buffer,"begin")!=NULL ) {
+	if ( strstr(buffer,"/CharStrings")!=NULL && strstr(buffer,"begin")!=NULL ) {
 	    /* gsf files are not eexec encoded, but the charstrings are encoded*/
+	    InitChars(fp->fd->chars,buffer);
+	    fp->inchars = 1;
+	    decryptagain(fp,in,rdtok);
+return;
+	} else if ( strstr(buffer,"/Subrs")!=NULL && strstr(buffer,"array")!=NULL ) {
+	    /* Same case as above */
+	    InitChars(fp->fd->private->subrs,buffer);
+	    fp->insubs = 1;
 	    decryptagain(fp,in,rdtok);
 return;
 	}
