@@ -2667,7 +2667,7 @@ static void cfffigure(struct ttfinfo *info, struct topdicts *dict,
 	    if ( info->chars[i]->width == (int16) 0x8000 )
 		info->chars[i]->width = dict->defaultwidthx;
 	    else
-		info->chars[i]->width += dict->defaultwidthx;
+		info->chars[i]->width += dict->nominalwidthx;
 	}
     }
     /* Need to do a reference fixup here !!!!! just in case some idiot */
@@ -2739,7 +2739,7 @@ static void cidfigure(struct ttfinfo *info, struct topdicts *dict,
 	    if ( sf->chars[cid]->width == (int16) 0x8000 )
 		sf->chars[cid]->width = dict->defaultwidthx;
 	    else
-		sf->chars[cid]->width += dict->defaultwidthx;
+		sf->chars[cid]->width += dict->nominalwidthx;
 	}
 	GProgressNext();
     }
