@@ -1024,26 +1024,19 @@ return( FVOpenFont(_("Open Postscript Font"), dir,wild,mult));
 
 void MergeKernInfo(SplineFont *sf) {
 #ifndef __Mac
-    static char wild = "*.{afm,tfm,bin,hqx,dfont";
-    static char wild2[] = "*.{afm,amfm,tfm,bin,hqx,dfont}";
+    static char wild = "*.{afm,tfm,pfm,bin,hqx,dfont}";
+    static char wild2[] = "*.{afm,amfm,tfm,pfm,bin,hqx,dfont}";
 #else
     static char wild[] = "*";	/* Mac resource files generally don't have extensions */
     static char wild2[] = "*";
 #endif
     char *ret = gwwv_open_filename(_("Merge Kern Info"),
 	    sf->mm!=NULL?wild2:wild);
-    int isamfm, isafm, istfm;
 
     if ( ret==NULL )		/* Cancelled */
 return;
 
-    isamfm = strstrmatch(ret,".amfm")!=NULL;
-    isafm = strstrmatch(ret,".afm")!=NULL;
-    istfm = strstrmatch(ret,".tfm")!=NULL;
-    if ( (isafm && !LoadKerningDataFromAfm(sf,ret)) ||
-	    (isamfm && !LoadKerningDataFromAmfm(sf,ret)) ||
-	    (istfm && !LoadKerningDataFromTfm(sf,ret)) ||
-	    (!isafm && !istfm && !isamfm && !LoadKerningDataFromMacFOND(sf,ret)) )
+    if ( !LoadKerningDataFromMetricsFile(sf,ret))
 	gwwv_post_error( _("Failed to load kern data from %s"), ret);
     free(ret);
 }
@@ -1102,8 +1095,8 @@ return( temp );
 
 void MergeKernInfo(SplineFont *sf) {
 #ifndef __Mac
-    static unichar_t wild[] = { '*', '.', '{','a','f','m',',','t','f','m',',','b','i','n',',','h','q','x',',','d','f','o','n','t','}',  '\0' };
-    static unichar_t wild2[] = { '*', '.', '{','a','f','m',',','a','m','f','m',',','t','f','m',',','b','i','n',',','h','q','x',',','d','f','o','n','t','}',  '\0' };
+    static unichar_t wild[] = { '*', '.', '{','a','f','m',',','t','f','m',',','p','f','m',',','b','i','n',',','h','q','x',',','d','f','o','n','t','}',  '\0' };
+    static unichar_t wild2[] = { '*', '.', '{','a','f','m',',','a','m','f','m',',','t','f','m',',','p','f','m',',','b','i','n',',','h','q','x',',','d','f','o','n','t','}',  '\0' };
 #else
     static unichar_t wild[] = { '*', 0 };	/* Mac resource files generally don't have extensions */
     static unichar_t wild2[] = { '*', 0 };
@@ -1111,18 +1104,11 @@ void MergeKernInfo(SplineFont *sf) {
     unichar_t *ret = GWidgetOpenFile(GStringGetResource(_STR_MergeKernInfo,NULL),
 	    NULL,sf->mm!=NULL?wild2:wild,NULL,NULL);
     char *temp = u2def_copy(ret);
-    int isamfm, isafm, istfm;
 
     if ( temp==NULL )		/* Cancelled */
 return;
 
-    isamfm = strstrmatch(temp,".amfm")!=NULL;
-    isafm = strstrmatch(temp,".afm")!=NULL;
-    istfm = strstrmatch(temp,".tfm")!=NULL;
-    if ( (isafm && !LoadKerningDataFromAfm(sf,temp)) ||
-	    (isamfm && !LoadKerningDataFromAmfm(sf,temp)) ||
-	    (istfm && !LoadKerningDataFromTfm(sf,temp)) ||
-	    (!isafm && !istfm && !isamfm && !LoadKerningDataFromMacFOND(sf,temp)) )
+    if ( !LoadKerningDataFromMetricsFile(sf,temp))
 	GDrawError( "Failed to load kern data from %s", temp);
     free(ret); free(temp);
 }
