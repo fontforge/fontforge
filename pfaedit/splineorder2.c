@@ -153,10 +153,12 @@ static SplinePoint *MakeQuadSpline(SplinePoint *start,Spline *ttf,real x,
     if ( new->splines[0].b==0 && new->splines[1].b==0 ) {
 	end->noprevcp = true;
 	end->prevcp.x = x; end->prevcp.y = y;
+	new->islinear = new->knownlinear = true;
     } else {
 	end->prevcp.x = start->nextcp.x = ttf->splines[0].c/2+ttf->splines[0].d;
 	end->prevcp.y = start->nextcp.y = ttf->splines[1].c/2+ttf->splines[1].d;
 	start->nonextcp = end->noprevcp = false;
+	new->isquadratic = true;
     }
     new->order2 = true;
 return( end );
@@ -353,6 +355,8 @@ return( LinearSpline(ps,start,tmax));
 	start->prev->splines[1].b += ps->to->me.y-start->me.y;
 	start->prevcp.x += rend.x-start->me.x;
 	start->prevcp.y += rend.y-start->me.y;
+	if ( start->prev!=NULL && !start->prev->from->nonextcp )
+	    start->prev->from->nextcp = start->prevcp;
 	start->me = rend;
 return( start );
     }
