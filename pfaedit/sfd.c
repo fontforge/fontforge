@@ -1640,7 +1640,7 @@ static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf) {
     RefChar *lastr=NULL, *ref;
     ImageList *lasti=NULL, *img;
     AnchorPoint *lastap = NULL;
-    int isliga, ispos, issubs, ismult, islcar;
+    int isliga, ispos, issubs, ismult, islcar, temp;
     PST *last = NULL;
     uint32 script = 0;
 
@@ -1665,8 +1665,10 @@ return( NULL );
 	    getint(sfd,&sc->unicodeenc);
 	    while ( (ch=getc(sfd))==' ' || ch=='\t' );
 	    ungetc(ch,sfd);
-	    if ( ch!='\n' && ch!='\r' )
-		getint(sfd,&sc->orig_pos);
+	    if ( ch!='\n' && ch!='\r' ) {
+		getint(sfd,&temp);
+		sc->orig_pos = temp;
+	    }
 	} else if ( strmatch(tok,"OldEncoding:")==0 ) {
 	    getint(sfd,&sc->old_enc);
         } else if ( strmatch(tok,"Script:")==0 ) {
@@ -2385,6 +2387,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    getint(sfd,&temp); kc->flags = temp;
 	    kc->firsts = galloc(kc->first_cnt*sizeof(char *));
 	    kc->seconds = galloc(kc->first_cnt*sizeof(char *));
+	    kc->offsets = galloc(kc->first_cnt*kc->second_cnt*sizeof(int16));
 	    kc->firsts[0] = NULL;
 	    for ( i=1; i<kc->first_cnt; ++i ) {
 		getint(sfd,&temp);
