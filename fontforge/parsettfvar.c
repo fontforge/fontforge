@@ -182,6 +182,7 @@ static SplineChar **InfoCopyGlyphs(struct ttfinfo *info) {
 	    chars[i] = NULL;
 	else {
 	    chars[i] = SplineCharCopy(info->chars[i],NULL);
+	    PSTFree(chars[i]->possub); chars[i]->possub = NULL;
 	    chars[i]->changed = false;
 	}
     }

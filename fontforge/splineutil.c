@@ -4097,10 +4097,16 @@ void MMSetFreeContents(MMSet *mm) {
 	free(mm->axes[i]);
 	free(mm->axismaps[i].blends);
 	free(mm->axismaps[i].designs);
+	MacNameListFree(mm->axismaps[i].axisnames);
     }
     free(mm->axismaps);
     free(mm->cdv);
     free(mm->ndv);
+    for ( i=0; i<mm->named_instance_count; ++i ) {
+	free(mm->named_instances[i].coords);
+	MacNameListFree(mm->named_instances[i].names);
+    }
+    free(mm->named_instances);
 }
 
 void MMSetFree(MMSet *mm) {

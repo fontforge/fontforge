@@ -698,7 +698,23 @@ return;
 	}
     }
     /* Well, there are some things in the name table other than feature/setting*/
-    /*  names. I'm not interested in them yet though */
+    /*  names. Let's keep track of everything just in case.... */
+    if ( info->fvar_start!=0 ) {
+	struct macidname *mi, *p;
+	for ( p=NULL, mi=info->macstrids; mi!=NULL && mi->id!=id; p = mi, mi=mi->next );
+	if ( mi==NULL ) {
+	    mi = chunkalloc(sizeof(struct macidname));
+	    mi->id = id;
+	    mi->last = mi->head = AddMacName(ttf,strlen,stroff,spec,language,NULL);
+	    if ( p==NULL )
+		info->macstrids = mi;
+	    else
+		p->next = mi;
+	} else {
+	    mi->last->next = AddMacName(ttf,strlen,stroff,spec,language,NULL);
+	    mi->last = mi->last->next;
+	}
+    }
 }
 
 static void TTFAddLangStr(FILE *ttf, struct ttfinfo *info, int id,
@@ -706,7 +722,7 @@ static void TTFAddLangStr(FILE *ttf, struct ttfinfo *info, int id,
     struct ttflangname *cur, *prev;
     unichar_t *str;
 
-    if ( plat==1 && id>=256 && info->features!=NULL ) {
+    if ( plat==1 && id>=256 && (info->features!=NULL || info->fvar_start!=0)) {
 	MacFeatureAdd(ttf,info,id,strlen,stroff,spec,language);
 return;
     } else if ( id<0 || id>=ttf_namemax )
@@ -4193,6 +4209,16 @@ return( copy("Slant"));
 return( copy(buffer ));
 }
 
+static struct macname *FindMacName(struct ttfinfo *info, int strid) {
+    struct macidname *sid;
+
+    for ( sid=info->macstrids; sid!=NULL; sid=sid->next ) {
+	if ( sid->id == strid )
+return( sid->head );
+    }
+return( NULL );
+}
+
 static SplineFont *SFFromTuple(SplineFont *basesf,struct variations *v,int tuple,
 	MMSet *mm, struct ttfinfo *info) {
     SplineFont *sf;
@@ -4276,9 +4302,17 @@ static void MMFillFromVAR(SplineFont *sf, struct ttfinfo *info) {
 		mm->axismaps[i].blends[j] = v->axes[i].mapto[j];
 	    }
 	}
+	mm->axismaps[i].axisnames = MacNameCopy(FindMacName(info, v->axes[i].nameid));
     }
     for ( i=0; i<mm->instance_count; ++i )
 	mm->instances[i] = SFFromTuple(sf,v,i,mm,info);
+    mm->named_instance_count = v->instance_count;
+    mm->named_instances = galloc(v->instance_count*sizeof(struct named_instance));
+    for ( i=0; i<v->instance_count; ++i ) {
+	mm->named_instances[i].coords = v->instances[i].coords;
+	v->instances[i].coords = NULL;
+	mm->named_instances[i].names = MacNameCopy(FindMacName(info, v->instances[i].nameid));
+    }
     VariationFree(info);
 }
 
