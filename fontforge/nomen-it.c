@@ -1343,8 +1343,6 @@ static char *str_WinSizes = "Win";
 static char *str_MacSizes = "Mac";
 static char *str_UseFreeType = "Utilizza FreeType";
 static char *str_ScalingBitmaps = "Scalamento delle bitmap";
-static char *str_CantScaleGreymap = "Impossibile mettere in scal un font con diversi livelli di grigio";
-static char *str_CantDeleteAllBitmaps = "Impossibile sopprimere tutte le bitmap";
     /* Bitmap view */
 /* "%s at %d size %d from %s", charactername, encoding, pixelsize, fontname */
 static char *str_BvTitle = "%1$.75hs (%2$d) corpo %3$d derivante da %4$.75hs"
