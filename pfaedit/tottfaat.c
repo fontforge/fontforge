@@ -386,8 +386,6 @@ static void morx_lookupmap(FILE *temp,SplineChar **glyphs,uint16 *maps,int gcnt)
 	    i = j-1;
 	}
 	if ( k==0 ) {
-	    if ( seg_cnt==0 )
-return;
 	    putshort(temp,4);		/* Lookup table format 4 */
 		/* Binary search header */
 	    putshort(temp,6);		/* Entry size */
@@ -397,6 +395,8 @@ return;
 	    putshort(temp,6*l);
 	    putshort(temp,j);
 	    putshort(temp,6*(seg_cnt-l));
+	    if ( seg_cnt==0 )
+return;
 	    offset = 6*2 + seg_cnt*6 + 6;
 	} else if ( k==1 ) {		/* flag entry */
 	    putshort(temp,0xffff);
@@ -486,12 +486,16 @@ static struct feature *aat_dumpmorx_substitutions(struct alltabs *at, SplineFont
 		    }
 		}
 		if ( k==0 ) {
+		    if ( gcnt==0 )
+	    break;
 		    glyphs = galloc((gcnt+1)*sizeof(SplineChar *));
 		    maps = galloc((gcnt+1)*sizeof(uint16));
 		} else {
 		    glyphs[gcnt] = NULL; maps[gcnt] = 0;
 		}
 	    }
+	    if ( gcnt==0 )
+	continue;
 	    cur = featureFromTag(subtags[j]);
 	    cur->next = features;
 	    features = cur;
