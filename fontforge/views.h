@@ -763,7 +763,7 @@ extern void DebuggerTerminate(struct debugger_context *dc);
 extern void DebuggerReset(struct debugger_context *dc,real pointsize,int dpi,int dbg_fpgm);
 extern struct debugger_context *DebuggerCreate(SplineChar *sc,real pointsize,int dpi,int dbg_fpgm);
 enum debug_gotype { dgt_continue, dgt_step, dgt_next, dgt_stepout };
-extern void DebuggerGo(struct debugger_context *dc,enum debug_gotype);
+extern void DebuggerGo(struct debugger_context *dc,enum debug_gotype,DebugView *dv);
 extern struct  TT_ExecContextRec_ *DebuggerGetEContext(struct debugger_context *dc);
 extern void DebuggerToggleBp(struct debugger_context *dc,int range,int ip);
 extern int DebuggerBpCheck(struct debugger_context *dc,int range,int ip);
