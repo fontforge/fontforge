@@ -2558,8 +2558,11 @@ int CubicSolve(Spline1D *sp,double ts[3]) {
     double t;
     /* This routine gives us all solutions between [0,1] with -1 as an error flag */
 
-    if ( !_CubicSolve(sp,ts))
+    if ( !_CubicSolve(sp,ts)) {
+	ts[0] = ts[1] = ts[2] = -1;
 return( false );
+    }
+
     if (ts[0]>1.0001 || ts[0]<-.0001 ) ts[0] = -1;
     else if ( ts[0]<0 ) ts[0] = 0; else if ( ts[0]>1 ) ts[0] = 1;
     if (ts[1]>1.0001 || ts[1]<-.0001 ) ts[1] = -1;
