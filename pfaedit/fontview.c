@@ -3578,8 +3578,8 @@ return( true );
       case em_ksc5601: case em_jis208: case em_jis212:
 	if ( !GDrawFontHasCharset(fv->header,fv->sf->encoding_name))
 return( false);
-	ch1 = sc->enc/96; ch2 = sc->enc%96;
-	if ( ch1>0x7d-0x21 || ch2>94 )
+	ch1 = sc->enc/96; ch2 = (sc->enc%96)-1;
+	if ( ch1>0x7d-0x21 || ch2>94 || ch2<0 )
 return( false );
 	mods->has_charset = true; mods->charset = fv->sf->encoding_name;
 	buf[0] = ((ch1+0x21)<<8) + ch2+0x21;

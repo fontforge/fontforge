@@ -1073,8 +1073,10 @@ return( true );
 	}
     }
     if ( sc->unicodeenc==-1 ) {
-	if ( SCIsNotdef(sc,-1) && table[0]==0 && !(used[0]&1)) {
-	    used[0] |= 1;
+	if ( SCIsNotdef(sc,-1) && !(used[0]&1) &&
+		(table[0]==0 || new_map==em_sjis || new_map==em_wansung || new_map==em_johab || new_map==em_big5)) {
+	    if ( table[0]==0 )
+		used[0] |= 1;
 return( true );			/* .notdef goes to encoding 0 */
 	} else if ( item!=NULL && item->psnames!=NULL ) {
 	    for ( i=0; i<tlen ; ++i ) {
@@ -1131,7 +1133,7 @@ return( true );
 	} else if ( table==unicode_from_jis208 ) {
 	    /* sjis */
 	    int ch1, ch2, ro, co;
-	    ch1 = i/96; ch2 = i%96;
+	    ch1 = i/94; ch2 = i%94;
 	    ro = ch1<95 ? 112 : 176;
 	    co = (ch1&1) ? (ch2>95?32:31) : 126;
 	    sc->enc = ((((ch1+1)>>1) + ro )<<8 )    |    (ch2+co);
