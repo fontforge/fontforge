@@ -132,7 +132,7 @@ return;
     }
 }
 
-static void FVDeselectAll(FontView *fv) {
+void FVDeselectAll(FontView *fv) {
     int i;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) {
@@ -976,6 +976,7 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_ConvertToMM	2900
 #define MID_MMInfo	2901
 #define MID_MMValid	2902
+#define MID_ChangeMMBlend	2903
 #define MID_ModifyComposition	20902
 #define MID_BuildSyllables	20903
 
@@ -1086,24 +1087,11 @@ return;
     BCCharChangedUpdate(bc);
 }
 
-void SCClearAll(SplineChar *sc) {
+void SCClearContents(SplineChar *sc) {
     RefChar *refs, *next;
 
     if ( sc==NULL )
 return;
-    if ( sc->splines==NULL && sc->refs==NULL && !sc->widthset &&
-	    sc->hstem==NULL && sc->vstem==NULL && sc->anchor==NULL &&
-	    (!copymetadata ||
-		(sc->unicodeenc==-1 && strcmp(sc->name,".notdef")==0)))
-return;
-    SCPreserveState(sc,2);
-    if ( copymetadata ) {
-	sc->unicodeenc = -1;
-	free(sc->name);
-	sc->name = copy(".notdef");
-	PSTFree(sc->possub);
-	sc->possub = NULL;
-    }
     sc->widthset = false;
     sc->width = sc->parent->ascent+sc->parent->descent;
     SplinePointListsFree(sc->splines);
@@ -1123,6 +1111,26 @@ return;
     sc->ttf_instrs = NULL;
     sc->ttf_instrs_len = 0;
     SCOutOfDateBackground(sc);
+}
+
+void SCClearAll(SplineChar *sc) {
+
+    if ( sc==NULL )
+return;
+    if ( sc->splines==NULL && sc->refs==NULL && !sc->widthset &&
+	    sc->hstem==NULL && sc->vstem==NULL && sc->anchor==NULL &&
+	    (!copymetadata ||
+		(sc->unicodeenc==-1 && strcmp(sc->name,".notdef")==0)))
+return;
+    SCPreserveState(sc,2);
+    if ( copymetadata ) {
+	sc->unicodeenc = -1;
+	free(sc->name);
+	sc->name = copy(".notdef");
+	PSTFree(sc->possub);
+	sc->possub = NULL;
+    }
+    SCClearContents(sc);
     SCCharChangedUpdate(sc);
 }
 
@@ -3251,6 +3259,50 @@ static void FVMenuMMInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 return;
 }
 
+static void FVMenuChangeMMBlend(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    MMSet *mm = fv->sf->mm;
+    char buffer[MmMax*20], *pt;
+    unichar_t ubuf[MmMax*20], *upt, *uend, *newblends;
+    int i;
+    real blends[MmMax], sum;
+
+    if ( mm==NULL )
+return;
+    pt = buffer;
+    for ( i=0; i<mm->instance_count; ++i ) {
+	sprintf( pt, "%g, ", mm->defweights[i]);
+	pt += strlen(pt);
+    }
+    if ( pt>buffer )
+	pt[-2] = '\0';
+    uc_strcpy(ubuf,buffer);
+    newblends = GWidgetAskStringR(_STR_ChangeMMBlend,ubuf,_STR_NewMMBlend);
+    if ( newblends==NULL )
+return;
+    sum = 0;
+    for ( i=0, upt = newblends; i<mm->instance_count && *upt; ++i ) {
+	blends[i] = u_strtod(upt,&uend);
+	sum += blends[i];
+	if ( upt==uend )
+    break;
+	upt = uend;
+	while ( *upt==',' || *upt==' ' ) ++upt;
+    }
+    free(newblends);
+    if ( i!=mm->instance_count || *upt!='\0' ) {
+	GWidgetErrorR(_STR_BadMMWeights,_STR_BadOrFewWeights);
+return;
+    } else if ( sum<.99 || sum>1.01 ) {
+	GWidgetErrorR(_STR_BadMMWeights,_STR_WeightsMustBe1);
+return;
+    }
+    for ( i=0; i<mm->instance_count; ++i )
+	mm->defweights[i] = blends[i];
+    mm->changed = true;
+    MMReblend(fv,mm);
+}
+
 static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int anychars = FVAnyCharSelected(fv);
@@ -3890,6 +3942,7 @@ static GMenuItem mmlist[] = {
     { { (unichar_t *) _STR_MMValid, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuMMValid, MID_MMValid },
     { { (unichar_t *) _STR_ConvertToMM, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuConvertToMM, MID_ConvertToMM },
     { { (unichar_t *) _STR_MMInfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuMMInfo, MID_MMInfo },
+    { { (unichar_t *) _STR_ChangeMMBlend, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuChangeMMBlend, MID_ChangeMMBlend },
     { NULL },				/* Extra room to show sub-font names */
     /* 16 subfonts max */
     { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
@@ -3906,7 +3959,7 @@ static void mmlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     MMSet *mm = fv->sf->mm;
     SplineFont *sub;
 
-    for ( i=0; mmlist[i].mid!=MID_MMInfo; ++i );
+    for ( i=0; mmlist[i].mid!=MID_ChangeMMBlend; ++i );
     base = i+2;
     for ( i=base; mmlist[i].ti.text!=NULL; ++i ) {
 	free( mmlist[i].ti.text);
@@ -3941,7 +3994,7 @@ static void mmlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	  case MID_ConvertToMM:
 	    mi->ti.disabled = mm!=NULL;
 	  break;
-	  case MID_MMInfo: case MID_MMValid:
+	  case MID_MMInfo: case MID_MMValid: case MID_ChangeMMBlend:
 	    mi->ti.disabled = mm==NULL;
 	  break;
 	}

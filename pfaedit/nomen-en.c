@@ -508,6 +508,10 @@ static char *str_ConvertToMM = "Convert to MM...";
 static char mnemonic_ConvertToMM = 'C';
 static char *str_MMValid = "MM Validity Check";
 static char mnemonic_MMValid = 'V';
+static char *str_ChangeMMBlend = "MM Change Def Weights...";
+static char mnemonic_MMValid = 'W';
+static char *str_MMReblend = "MM Reblend";
+static char mnemonic_MMValid = 'R';
 
     /* Font Info dlg */
 static char str_Custom[] = "Custom";
@@ -3338,7 +3342,7 @@ static char *str_NoSelectedFont = "No Selected Font";
 static char *str_BadMM = "Bad Multiple Master Font";
 static char *str_MMTooFewMasters = "This multiple master font has %1$d instance fonts, but it needs at least %2$d master fonts for %3$d axes. PfaEdit will not be able to edit this correctly";
 static char *str_MMHasInstances = "This multiple master font has %1$d instance fonts, but PfaEdit can only handle %2$d master fonts for %3$d axes. PfaEdit will not be able to edit this correctly";
-static char *str_MMDifferentNumChars = "The fonts %1$.30hs and %2$.30hs have a different number of characters"
+static char *str_MMDifferentNumChars = "The fonts %1$.30hs and %2$.30hs have a different number of characters or different encodings"
 static char *str_MMDifferentOrder = "The fonts %1$.30hs and %2$.30hs use different types of splines (one quadratic, one cubic)"
 static char *str_MMUndefChar = "The character %1$.30hs is defined in font %2$.30hs but not in %3$.30hs"
 static char *str_MMWrongContourCount = "The character %1$.30hs has a different number of contours in font %2$.30hs than in %3$.30hs"
@@ -3352,6 +3356,23 @@ static char *str_MMPrivateMismatch = "The entry \"%1$.20hs\" is not present in t
 static char *str_MMMismatchHintMask = "The character %1$.30hs in font %2$.30hs has a different hint mask on its contours than in %3$.30hs"
 static char *str_MMOrder2 = "The font %.30hs contains quadratic splines. It must be converted to cubic splines before it can be used in a multiple master"
 static char *str_NoProblems = "No problems detected"
+static char *str_MMOrder2NoName = "One of the multiple master instances contains quadratic splines. It must be converted to cubic splines before it can be used in a multiple master"
+static char *str_MMDifferentNumCharsNoName = "The different instances of this mm have a different number of characters"
+static char *str_MMUndefCharNoName = "This glyph is defined in one instance font but not in another"
+static char *str_MMDiffNumRefs = "This glyph contains a different number of references in different instances"
+static char *str_MMDiffNumHints = "This glyph contains a different number of hints in different instances"
+static char *str_MMDiffRefEncodings = "A references in this glyph refers to a different encoding in different instances"
+static char *str_MMPointMismatch = "A contour in this glyph contains a different number of points in different instances"
+static char *str_MMContourMismatch = "This glyph contains a different number of contours in different instances"
+static char *str_MMNumHints = "This glyph contains a different number of hints in different instances"
+static char *str_MMDiffKerns = "This glyph contains different kerning pairs in different instances"
+static char *str_MMVariousErrors = "Various errors occurred at the selected glyphs";
+static char *str_MMSelErr = "The following error occurred on the selected glyphs: %.100s"
+static char *str_NewMMBlend = "Enter new values indicating the amount each instance font must be used to calculate the default version of the font"
+static char *str_BadMMWeights = "Bad MM Weights";
+static char *str_BadOrFewWeights = "Incorrect number of instances weights, or illegal numbers"
+static char *str_WeightsMustBe1 = "The weights for the default version of the font must sum to 1.0"
+
     /* Adjectives, etc. that are sometimes masculine and sometimes feminine in french (perhaps other langs) */
 static char str_NewDDD_fem[] = "New...";
 static unichar_t mnemonic_NewDDD_fem[] = 'N';

@@ -560,6 +560,7 @@ extern void FVApplySubstitution(FontView *fv,uint32 script, uint32 lang, uint32 
 extern void NonLinearDlg(FontView *fv,CharView *cv);
 extern void FVBuildAccent(FontView *fv,int onlyaccents);
 extern void FVChangeChar(FontView *fv,int encoding);
+extern void SCClearContents(SplineChar *sc);
 extern void SCClearAll(SplineChar *sc);
 extern void BCClearAll(BDFChar *bc);
 extern void UnlinkThisReference(FontView *fv,SplineChar *sc);
@@ -570,6 +571,8 @@ extern void FVMergeFonts(FontView *fv);
 extern void FVInterpolateFonts(FontView *fv);
 extern void FVRevert(FontView *fv);
 extern void FVDelay(FontView *fv,void (*func)(FontView *));
+
+extern void FVDeselectAll(FontView *fv);
 
 extern void FVAutoKern(FontView *fv);
 extern void FVAutoWidth(FontView *fv);

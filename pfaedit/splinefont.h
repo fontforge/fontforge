@@ -857,6 +857,7 @@ typedef struct mmset {
 	real *designs;	/* between the design ranges for this axis, typically [1,999] or [6,72] */
     } *axismaps;	 /* array[axis] */
     char *cdv, *ndv;
+    unsigned int changed: 1;
 } MMSet;
 
 /* mac styles. Useful idea we'll just steal it */
@@ -1466,7 +1467,8 @@ extern char *MMExtractArrayNth(char *pt,int ipos);
 extern int MMValid(MMSet *mm,int complain);
 extern void MMKern(SplineFont *sf,SplineChar *first,SplineChar *second,int diff,
 	int sli,KernPair *oldkp);
-extern SplineChar *SCMostConflictsMM(MMSet *mm,int enc, int ish, int *index);
+extern int MMBlendChar(MMSet *mm, int enc);
+extern int MMReblend(struct fontview *fv, MMSet *mm);
 
 # if HANYANG
 extern void SFDDumpCompositionRules(FILE *sfd,struct compositionrules *rules);

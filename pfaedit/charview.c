@@ -2689,21 +2689,23 @@ void _SCCharChangedUpdate(SplineChar *sc,int changed) {
     SplineFont *sf = sc->parent;
     extern int updateflex;
 
-    sc->changed_since_autosave = true;
-    if ( sc->changed!=changed ) {
-	sc->changed = changed;
-	FVToggleCharChanged(sc);
-	SCRefreshTitles(sc);
-	if ( changed && sc->ttf_instrs )
-	    instrcheck(sc);
-	if ( changed )
-	    SCDeGridFit(sc);
+    if ( changed != -1 ) {
+	sc->changed_since_autosave = true;
+	if ( sc->changed!=changed ) {
+	    sc->changed = changed;
+	    FVToggleCharChanged(sc);
+	    SCRefreshTitles(sc);
+	    if ( changed && sc->ttf_instrs )
+		instrcheck(sc);
+	    if ( changed )
+		SCDeGridFit(sc);
+	}
+	sc->changedsincelasthinted = true;
+	sc->changed_since_search = true;
+	sf->changed = true;
+	sf->changed_since_autosave = true;
+	sf->changed_since_xuidchanged = true;
     }
-    sc->changedsincelasthinted = true;
-    sc->changed_since_search = true;
-    sf->changed = true;
-    sf->changed_since_autosave = true;
-    sf->changed_since_xuidchanged = true;
     if ( sf->cidmaster!=NULL )
 	sf->cidmaster->changed = sf->cidmaster->changed_since_autosave =
 		sf->cidmaster->changed_since_xuidchanged = true;
@@ -3755,8 +3757,9 @@ return( true );
 #define MID_Display	2706
 #define MID_RevertGlyph	2707
 
-#define MID_MMAll	2801
-#define MID_MMNone	2802
+#define MID_MMReblend	2800
+#define MID_MMAll	2821
+#define MID_MMNone	2822
 
 static void CVMenuClose(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     GDrawDestroyWindow(gw);
@@ -6658,8 +6661,24 @@ static void mvlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     mi->sub = GMenuItemArrayCopy(mvtemp,NULL);
 }
 
+static void CVMenuReblend(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    int err;
+    MMSet *mm = cv->sc->parent->mm;
+
+    if ( mm==NULL )
+return;
+    err = MMBlendChar(mm,cv->sc->enc);
+    if ( mm->normal->chars[cv->sc->enc]!=NULL )
+	_SCCharChangedUpdate(mm->normal->chars[cv->sc->enc],-1);
+    if ( err!=0 )
+	GWidgetErrorR(_STR_BadMM,err);
+}
+
 /* additions here should go to mmtemp below */
 static GMenuItem mmlist[] = {
+    { { (unichar_t *) _STR_MMReblend, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, 0, 0, NULL, NULL, CVMenuReblend, MID_MMReblend },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
     { { (unichar_t *) _STR_View, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, 0, 0, mvlist, mvlistcheck },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
     /* 16 subfonts max */
@@ -6685,6 +6704,8 @@ static void mmlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     MMSet *mm = cv->sc->parent->mm;
     SplineFont *sub;
     static GMenuItem mmtemp[] = {
+	{ { (unichar_t *) _STR_MMReblend, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, 0, 0, NULL, NULL, CVMenuReblend, MID_MMReblend },
+	{ { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
 	{ { (unichar_t *) _STR_View, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, 0, 0, mvlist, mvlistcheck },
 	{ { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
 	/* 16 subfonts max */
@@ -6694,11 +6715,15 @@ static void mmlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	{ NULL }
     };
 
+    base = sizeof(mmtemp)/sizeof(mmtemp[0])-16-1;
     if ( mmtemp[0].ti.text_in_resource ) {
-	mmtemp[0].ti.text = u_copy(GStringGetResource((int) mmtemp[0].ti.text,NULL));
-	mmtemp[0].ti.text_in_resource = false;
+	for ( i=0; i<base; ++i ) {
+	    if ( mmtemp[i].ti.text_in_resource ) {
+		mmtemp[i].ti.text = u_copy(GStringGetResource((int) mmtemp[i].ti.text,NULL));
+		mmtemp[i].ti.text_in_resource = false;
+	    }
+	}
     }
-    base = 2;
     for ( i=base; mmtemp[i].ti.text!=NULL; ++i ) {
 	free( mmtemp[i].ti.text);
 	mmtemp[i].ti.text = NULL;
