@@ -4395,7 +4395,12 @@ static void sethead(struct head *head,SplineFont *_sf) {
     SplineFont *sf = _sf;
 
     head->version = 0x00010000;
-    if ( _sf->version!=NULL ) {
+    if ( _sf->subfontcnt!=0 ) {
+	int val, mant;
+	val = floor(_sf->cidversion);
+	mant = floor(65536.*(_sf->cidversion-val));
+	head->revision = (val<<16) | mant;
+    } else if ( _sf->version!=NULL ) {
 	char *pt=_sf->version;
 	double dval;
 	int val, mant;
@@ -5799,9 +5804,10 @@ void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf) {
     if ( dummy->names[ttf_uniqueid]==NULL || *dummy->names[ttf_uniqueid]=='\0' ) {
 	time(&now);
 	tm = localtime(&now);
-	sprintf( buffer, "%s : %s : %d-%d-%d", BDFFoundry?BDFFoundry:"PfaEdit 1.0",
+	sprintf( buffer, "%s : %s : %d-%d-%d",
+		BDFFoundry?BDFFoundry:TTFFoundry?TTFFoundry:"PfaEdit 1.0",
 		sf->fullname!=NULL?sf->fullname:sf->fontname,
-		tm->tm_mday, tm->tm_mon, tm->tm_year+1970 );
+		tm->tm_mday, tm->tm_mon, tm->tm_year+1900 );
 	dummy->names[ttf_uniqueid] = uc_copy(buffer);
     }
     if ( dummy->names[ttf_fullname]==NULL || *dummy->names[ttf_fullname]=='\0' )

@@ -2185,8 +2185,11 @@ return;
 	free(english->names[ttf_fullname]);
 	english->names[ttf_fullname]=NULL;
     }
-    if ( sf->version!=NULL ) {
-	sprintf(versionbuf,"Version %.20s ", sf->version);
+    if ( sf->subfontcnt!=0 || sf->version!=NULL ) {
+	if ( sf->subfontcnt!=0 )
+	    sprintf( versionbuf, "Version %f", sf->cidversion );
+	else
+	    sprintf(versionbuf,"Version %.20s ", sf->version);
 	if ( english->names[ttf_version]!=NULL &&
 		uc_strcmp(english->names[ttf_version],versionbuf)==0 ) {
 	    free(english->names[ttf_version]);

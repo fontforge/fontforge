@@ -1196,9 +1196,16 @@ return;
 	    /* Do Nothing */;
 	else if ( mycmp("CIDFontName",line+1,endtok)==0 )
 	    fp->fd->cidfontname = gettoken(endtok);
-	else if ( mycmp("CIDFontVersion",line+1,endtok)==0 )
+	else if ( mycmp("CIDFontVersion",line+1,endtok)==0 ) {
 	    fp->fd->cidversion = strtod(endtok,NULL);
-	else if ( mycmp("CIDFontType",line+1,endtok)==0 )
+#if 0
+	    if ( fp->fd->fontinfo->version==NULL ) {
+		char temp[40];
+		sprintf(temp,"%f", fp->fd->cidversion);
+		fp->fd->fontinfo->version = copy(temp);
+	    }
+#endif
+	} else if ( mycmp("CIDFontType",line+1,endtok)==0 )
 	    fp->fd->cidfonttype = strtol(endtok,NULL,10);
 	else if ( mycmp("UIDBase",line+1,endtok)==0 )
 	    fp->fd->uniqueid = strtol(endtok,NULL,10);
