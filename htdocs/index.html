@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 19-Sep-2001 -->
+  <!-- AP: Last modified: 20-Sep-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -113,12 +113,31 @@ Or you can download the following three packages. Version: 19-Sept-2001
   <LI>
     If you want to edit CID keyed fonts you need these
     <A HREF="cidmaps.tgz">character set descriptions</A>.
+  <LI>
+    With the appropriate libraries, PfaEdit can import png, tiff, gif and jpeg
+    images to act as character backgrounds for tracing purposes (PfaEdit can
+    import bmp and xbm formats without external libraries). None is required
+    for the proper compilation/execution of PfaEdit, if the libraries are not
+    present they will not be used. If your machine doesn't have them and you
+    want them they are available from:
+    <UL>
+      <LI>
+	<A HREF="http://www.libpng.org/pub/png/libpng.html">libpng</A> (and required
+	helper <A HREF="http://www.gzip.org/zlib/">zlib</A>)
+      <LI>
+	<A HREF="http://www.libtiff.org/">libtiff</A>
+      <LI>
+	<A HREF="http://prtr-13.ucsc.edu/~badger/software/libungif/index.shtml">libungif</A>
+      <LI>
+	<A HREF="http://www.ijg.org/">libjpeg</A>
+    </UL>
 </UL>
 <P>
 PfaEdit has been ported to the following systems (at some point in its life)
 <UL>
   <LI>
-    Linux (obviously, (redhat, debian, suse), 386&amp;spark so far)
+    Linux (obviously, (redhat, debian, suse),
+    386,spark,arm,alpha,ia64,m68k,mips,mipsel,powerpc,s390)
   <LI>
     Solaris
   <LI>
@@ -590,10 +609,13 @@ Other Encodings
 	links to font creation programs</A>
     </UL>
   <LI>
-    MetaFont the original computer vector font editor
+    MetaFont the original computer vector font editor &amp; other TeX utilities
     <UL>
       <LI>
 	<A HREF="http://www.tug.org/">(available with the TeX package)</A>
+      <LI>
+	<A HREF="http://www.inf.bme.hu/~pts/textrace/">TeXTrace</A>, generates pfb
+	fonts from TeX fonts by rasterizing at high res and then autotracing them
     </UL>
   <LI>
     Postscript utilities

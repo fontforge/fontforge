@@ -728,7 +728,11 @@ return( maybe );
 
     if ( file==NULL ) {
 	unichar_t *uret;
+#ifdef _NO_SNPRINTF
+	sprintf(buf,"%s-%s-*.cidmap", registry, ordering );
+#else
 	snprintf(buf,sizeof(buf),"%s-%s-*.cidmap", registry, ordering );
+#endif
 	uc_strcpy(ubuf,buf);
 	uret = GWidgetOpenFile(GStringGetResource(_STR_FindCharset,NULL),NULL,ubuf,NULL);
 	if ( uret==NULL ) {
