@@ -31,8 +31,15 @@
 #include "configure-pfaedit.h"
 #ifdef HAVE_ICONV_H
 # include <iconv.h>
+/* libiconv.h defines iconv as taking a const pointer for inbuf. iconv doesn't*/
+# ifdef _LIBICONV_VERSION
+#  define ICONV_CONST	const
+# else
+#  define ICONV_CONST
+# endif
 #else
 # include <gwwiconv.h>
+#  define ICONV_CONST
 #endif
 
 #ifdef USE_DOUBLE
@@ -1141,6 +1148,7 @@ struct fd2data;
 struct ttfinfo;
 struct alltabs;
 struct growbuf;
+struct glyphdata;
 extern int CvtPsStem3(struct growbuf *gb, SplineChar *scs[MmMax], int instance_count,
 	int ishstem, int round);
 extern struct pschars *CID2Chrs(SplineFont *cidmaster,struct cidbytes *cidbytes,int flags);
@@ -1471,8 +1479,10 @@ extern void MDAdd(SplineChar *sc, int x, SplinePoint *sp1, SplinePoint *sp2);
 extern int SFNeedsAutoHint( SplineFont *_sf);
 extern void SCAutoInstr( SplineChar *sc,BlueData *bd );
 extern void SCClearHintMasks(SplineChar *sc,int counterstoo);
+extern void SCFigureVerticalCounterMasks(SplineChar *sc);
 extern void SCFigureCounterMasks(SplineChar *sc);
 extern void SCFigureHintMasks(SplineChar *sc);
+extern void _SplineCharAutoHint( SplineChar *sc, BlueData *bd, struct glyphdata *gd2 );
 extern void SplineCharAutoHint( SplineChar *sc,BlueData *bd);
 extern void SplineFontAutoHint( SplineFont *sf);
 extern StemInfo *HintCleanup(StemInfo *stem,int dosort,int instance_count);

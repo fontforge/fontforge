@@ -1108,7 +1108,8 @@ return( NULL );
 					    macenc==sm_korean ? "EUC-KR" :
 			                    macenc==sm_tradchinese ? "Big5" :
 			                      "EUC-CN" );
-	char *in, *out;
+	ICONV_CONST char *in;
+	char *out;
 	size_t inlen, outlen;
 	if ( enc==NULL )
 return( NULL );
@@ -1160,7 +1161,8 @@ return( NULL );
 					    macenc==sm_korean ? "EUC-KR" :
 			                    macenc==sm_tradchinese ? "Big5" :
 			                      "EUC-CN" );
-	char *in, *out;
+	ICONV_CONST char *in;
+	char *out;
 	size_t inlen, outlen;
 	if ( enc==NULL )
 return( NULL );

@@ -205,7 +205,8 @@ return( NULL );
 	} else if ( enc->tounicode!=NULL ) {
 	    size_t inlen = len+1, outlen = 2*len+2;
 	    char *cstr = galloc(inlen);
-	    char *in = cstr, *out;
+	    ICONV_CONST char *in = cstr;
+	    char *out;
 	    str = galloc(outlen+2);
 	    out = (char *) str;
 	    iconv(enc->tounicode,&in,&inlen,&out,&outlen);
