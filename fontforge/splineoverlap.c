@@ -525,6 +525,8 @@ static Intersection *FindMonotonicIntersection(Intersection *ilist,Monotonic *m1
 
     if ( b.maxy==b.miny && b.minx==b.maxx ) {
 	double x1,y1, x2,y2;
+	if ( m1->next==m2 || m2->next==m1 )
+return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 	pt.x = b.minx; pt.y = b.miny;
 	if ( m1->b.maxx-m1->b.minx > m1->b.maxy-m1->b.miny )
 	    t1 = BoundIterateSplineSolve(&m1->s->splines[0],m1->tstart,m1->tend,b.minx,error);
@@ -544,6 +546,8 @@ static Intersection *FindMonotonicIntersection(Intersection *ilist,Monotonic *m1
 	}
     } else if ( b.maxy==b.miny ) {
 	double x1,x2;
+	if ( m1->next==m2 || m2->next==m1 )
+return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 	t1 = BoundIterateSplineSolve(&m1->s->splines[1],m1->tstart,m1->tend,b.miny,error);
 	t2 = BoundIterateSplineSolve(&m2->s->splines[1],m2->tstart,m2->tend,b.miny,error);
 	if ( t1!=-1 && t2!=-1 ) {
@@ -556,6 +560,8 @@ static Intersection *FindMonotonicIntersection(Intersection *ilist,Monotonic *m1
 	}
     } else if ( b.maxx==b.minx ) {
 	double y1,y2;
+	if ( m1->next==m2 || m2->next==m1 )
+return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 	t1 = BoundIterateSplineSolve(&m1->s->splines[0],m1->tstart,m1->tend,b.minx,error);
 	t2 = BoundIterateSplineSolve(&m2->s->splines[0],m2->tstart,m2->tend,b.minx,error);
 	if ( t1!=-1 && t2!=-1 ) {
