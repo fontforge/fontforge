@@ -72,8 +72,9 @@ AC_CHECK_LIB(tiff, TIFFOpen, : , AC_DEFINE(_NO_LIBTIFF), -lm )
 
 gww_hasbytecode="no"
 AC_CHECK_LIB(freetype, FT_New_Memory_Face, [
- echo checking for bytecode interpreter in freetype...
- AC_CHECK_LIB(freetype, TT_RunIns, gww_hasbytecode="yes", : )])
+  echo checking for bytecode interpreter in freetype...
+  AC_CHECK_LIB(freetype, TT_RunIns, gww_hasbytecode="yes", : )],
+ AC_DEFINE(_NO_FREETYPE))
 if test "$gww_hasbytecode" = "yes" ; then
  AC_CHECK_LIB(pthread, pthread_create, LIBS="$LIBS -lpthread", gww_hasbytecode="no")
 fi

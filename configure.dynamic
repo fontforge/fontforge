@@ -7810,8 +7810,8 @@ echo "$as_me:$LINENO: result: $ac_cv_lib_freetype_FT_New_Memory_Face" >&5
 echo "${ECHO_T}$ac_cv_lib_freetype_FT_New_Memory_Face" >&6
 if test $ac_cv_lib_freetype_FT_New_Memory_Face = yes; then
 
- echo checking for bytecode interpreter in freetype...
- echo "$as_me:$LINENO: checking for TT_RunIns in -lfreetype" >&5
+  echo checking for bytecode interpreter in freetype...
+  echo "$as_me:$LINENO: checking for TT_RunIns in -lfreetype" >&5
 echo $ECHO_N "checking for TT_RunIns in -lfreetype... $ECHO_C" >&6
 if test "${ac_cv_lib_freetype_TT_RunIns+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -7871,6 +7871,11 @@ if test $ac_cv_lib_freetype_TT_RunIns = yes; then
 else
   :
 fi
+
+else
+  cat >>confdefs.h <<\_ACEOF
+#define _NO_FREETYPE 1
+_ACEOF
 
 fi
 
