@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 10-Nov-2001 -->
+  <!-- AP: Last modified: 23-Nov-2001 -->
   <TITLE>The Element Menu</TITLE>
 </HEAD>
 <BODY>
@@ -200,7 +200,11 @@ This menu is not present in the Metrics View.
     will be overlap. This will get rid of it, leaving one closed path behind.
     (if the path directions are wonky, strange things result).<BR>
     <IMG SRC="expandedlines.png" WIDTH="247" HEIGHT="247">
-    <IMG SRC="overlappedlines.png" WIDTH="247" HEIGHT="247">
+    <IMG SRC="overlappedlines.png" WIDTH="247" HEIGHT="247"><BR>
+    This command is probably the buggiest in PfaEdit. So before PfaEdit invokes
+    the command it will save the state to the error recovery file.<BR>
+    Warning: Splines which are tangent (or nearly so) cause problems. Points
+    which are close together can cause problems.
   <DT>
     <A NAME="Simplify">Simplify</A>
   <DD>
@@ -211,9 +215,9 @@ This menu is not present in the Metrics View.
     Cleanup Char
   <DD>
     This is a variant on the simplify command, obtainable if you hold down the
-    shift key when invoking the menu. In this case if there is a spline which
-    actually traces out a line but none the less has control points, then this
-    command will remove the control points.
+    shift key when invoking from the menu. In this case if there is a spline
+    which actually traces out a line but none the less has control points, then
+    this command will remove the control points.
   <DT>
     <A NAME="MetaFont">MetaFont</A>...
   <DD>

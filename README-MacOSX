@@ -49,8 +49,7 @@ $ pfaedit
 CAVEATS
  1) PfaEdit does not conform to Apple's Human Interface Guidelines, and never
     will.
- 2) I do not know what font formats Apple uses on OS/X. PfaEdit is not able
-    to edit fonts from Mac OS/9.
+ 2) PfaEdit does not know how to read a font out of a resource file.
  3) The default window manager (twm) does not work well with PfaEdit when
     run in Rootless mode.
     PfaEdit allows the window manager to position its windows for it, and

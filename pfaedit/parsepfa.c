@@ -637,34 +637,45 @@ return( NULL );
 return( str );
 }
 
-static char *getstring(char *start) {
+static char *getstring(char *start,FILE *in) {
     char *end, *ret;
-    int parencnt=0;
-
-    while ( *start!='\0' && *start!='(' ) ++start;
-    if ( *start=='(' ) ++start;
-    for ( end = start; *end!='\0' && (*end!=')' || parencnt>0); ++end ) {
-	if ( *end=='\\' && (end[1]=='(' || end[1]==')'))
-	    ++end;
-	else if ( *end=='(' ) ++parencnt;
-	else if ( *end==')' ) --parencnt;
-    }
-    ret = galloc(end-start+1);
-    if ( end>start )
-	strncpy(ret,start,end-start);
-    ret[end-start] = '\0';
-return( ret );
-}
-
-static char *getlongstring(char *start,FILE *in) {
+    int parencnt=0, len=0;
     char buffer[512];
 
-    while ( *start!='\0' && *start!='(' ) ++start;
-    if ( *start!='\0' )
-return(getstring(start));
-    if ( myfgets(buffer,sizeof(buffer),in)==NULL )
+    forever {
+	while ( *start!='\0' && *start!='(' ) ++start;
+	if ( *start=='\0' ) {
+	    if ( myfgets(buffer,sizeof(buffer),in)==NULL )
 return( copy(""));
-return(getstring(buffer));
+	    start = buffer;
+	} else
+    break;
+    }
+    ++start;
+    ret = NULL; len = 1;
+    forever {
+	for ( end = start; *end!='\0' && (*end!=')' || parencnt>0); ++end ) {
+	    if ( *end=='\\' && (end[1]=='(' || end[1]==')'))
+		++end;
+	    else if ( *end=='(' ) ++parencnt;
+	    else if ( *end==')' ) --parencnt;
+	}
+	if ( end>start ) {
+	    if ( ret==NULL )
+		ret = galloc(end-start+1);
+	    else
+		ret = grealloc(ret,len+end-start);
+	    strncpy(ret+len-1,start,end-start);
+	    len += end-start;
+	    ret[len-1] = '\0';
+	}
+	if ( *end!='\0' )
+    break;
+	if ( myfgets(buffer,sizeof(buffer),in)==NULL )
+return( ret );
+	start = buffer;
+    }
+return( ret );
 }
 
 static char *gettoken(char *start) {
@@ -814,7 +825,6 @@ return;
 
 static void AddValue(struct fontparse *fp, struct psdict *dict, char *line, char *endtok) {
     char *pt;
-    /* Doesn't work for Erode (or any multi-line entry) */
 
     if ( dict->next>=dict->cnt ) {
 	dict->cnt += 10;
@@ -885,17 +895,17 @@ return;
 	} else if ( endtok==NULL )
 return;
 	if ( mycmp("version",line+1,endtok)==0 )
-	    fp->fd->fontinfo->version = getstring(endtok);
+	    fp->fd->fontinfo->version = getstring(endtok,in);
 	else if ( mycmp("Notice",line+1,endtok)==0 )
-	    fp->fd->fontinfo->notice = getlongstring(endtok,in);
+	    fp->fd->fontinfo->notice = getstring(endtok,in);
 	else if ( mycmp("Copyright",line+1,endtok)==0 )		/* cff spec allows for copyright and notice */
-	    fp->fd->fontinfo->notice = getlongstring(endtok,in);
+	    fp->fd->fontinfo->notice = getstring(endtok,in);
 	else if ( mycmp("FullName",line+1,endtok)==0 )
-	    fp->fd->fontinfo->fullname = getstring(endtok);
+	    fp->fd->fontinfo->fullname = getstring(endtok,in);
 	else if ( mycmp("FamilyName",line+1,endtok)==0 )
-	    fp->fd->fontinfo->familyname = getstring(endtok);
+	    fp->fd->fontinfo->familyname = getstring(endtok,in);
 	else if ( mycmp("Weight",line+1,endtok)==0 )
-	    fp->fd->fontinfo->weight = getstring(endtok);
+	    fp->fd->fontinfo->weight = getstring(endtok,in);
 	else if ( mycmp("ItalicAngle",line+1,endtok)==0 )
 	    fp->fd->fontinfo->italicangle = strtod(endtok,NULL);
 	else if ( mycmp("UnderlinePosition",line+1,endtok)==0 )
@@ -963,9 +973,9 @@ return;
 	} else if ( endtok==NULL )
 return;
 	if ( mycmp("Registry",line+1,endtok)==0 )
-	    fp->fd->registry = getstring(endtok);
+	    fp->fd->registry = getstring(endtok,in);
 	else if ( mycmp("Ordering",line+1,endtok)==0 )
-	    fp->fd->ordering = getstring(endtok);
+	    fp->fd->ordering = getstring(endtok,in);
 	else if ( mycmp("Supplement",line+1,endtok)==0 )		/* cff spec allows for copyright and notice */
 	    fp->fd->supplement = strtol(endtok,NULL,0);
     } else {

@@ -73,7 +73,9 @@ GTextInfo encodingtypes[] = {
     { (unichar_t *) _STR_Jis208, NULL, 0, 0, (void *) em_jis208, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Jis212, NULL, 0, 0, (void *) em_jis212, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Korean, NULL, 0, 0, (void *) em_ksc5601, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_KoreanJohab, NULL, 0, 0, (void *) em_johab, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Chinese, NULL, 0, 0, (void *) em_gb2312, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_ChineseTrad, NULL, 0, 0, (void *) em_big5, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
 static GTextInfo widthclass[] = {
     { (unichar_t *) _STR_UltraCondensed, NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -1032,6 +1034,16 @@ return( false );
     }
 
     for ( i=0; i<tlen && (sc->unicodeenc!=table[i] || (used[i>>3]&(1<<(i&7)))); ++i );
+    if ( i==tlen && tlen==0x10000-0xa100 && sc->unicodeenc<160 ) {
+	/* Big 5 often comes with a single byte encoding of ASCII */
+	sc->enc = sc->unicodeenc;
+return( true );
+    }
+    if ( i==tlen && tlen==0x10000-0x8400 && sc->unicodeenc<160 ) {
+	/* As does Johab */
+	sc->enc = sc->unicodeenc;
+return( true );
+    }
     if ( i==tlen ) {
 	sc->enc = -1;
 return( false );
@@ -1039,6 +1051,12 @@ return( false );
 	used[i>>3] |= (1<<(i&7));
 	if ( tlen==94*94 ) {
 	    sc->enc = (i/94)*96+(i%94)+1;
+return( true );
+	} else if ( tlen==0x10000-0xa100 ) {
+	    sc->enc = i+0xa100;
+return( true );
+	} else if ( tlen==0x10000-0x8400 ) {
+	    sc->enc = i+0x8400;
 return( true );
 	} else {
 	    sc->enc = i;
@@ -1131,7 +1149,7 @@ return(false);
 	    GWidgetErrorR(_STR_InvalidEncoding,_STR_InvalidEncoding);
 return( false );
 	}
-    } else if ( new_map==em_unicode )
+    } else if ( new_map==em_unicode || new_map==em_big5 || new_map==em_johab )
 	enc_cnt = 65536;
     else if ( new_map>=em_first2byte )
 	enc_cnt = 94*96;
@@ -1208,6 +1226,12 @@ return( false );
 	} else if ( new_map==em_gb2312 ) {
 	    table = unicode_from_gb2312;
 	    tlen = 94*94;
+	} else if ( new_map==em_big5 ) {
+	    table = unicode_from_big5;
+	    tlen = 0x10000-0xa100;	/* the big5 table starts at 0xa100 to save space */
+	} else if ( new_map==em_johab ) {
+	    table = unicode_from_johab;
+	    tlen = 0x10000-0x8400;	/* the johab table starts at 0x8400 to save space */
 	} else
 	    table = unicode_from_alphabets[new_map+3];
     } else {
@@ -1220,10 +1244,10 @@ return( false );
     enc_cnt=tlen;
     if ( target!=NULL )
 	/* Done */;
-    else if ( new_map==em_unicode )
-	enc_cnt = 65536;
     else if ( tlen == 94*94 )
 	enc_cnt = 94*96;
+    else if ( tlen == 0x10000-0xa100 || tlen==0x10000-0x8400 )
+	enc_cnt = 65536;
 
     extras = 0;
     used = gcalloc((tlen+7)/8,sizeof(uint8));
@@ -1261,49 +1285,6 @@ return( false );
 	}
     }
     if ( epos!=enc_cnt+extras ) GDrawIError( "Bad count in ReencodeFont");
-#if 0
-    if ( target!=NULL ) for ( i=0; i<256; ++i ) {
-	if ( chars[i]==NULL ) {
-	    SplineChar *sc = chars[i] = chunkalloc(sizeof(SplineChar));
-	    sc->enc = i;
-	    if ( table==NULL )
-		sc->unicodeenc = i;
-	    else if ( new_map>=em_jis208 && new_map<em_base ) {
-		if ( i%96==0 || i%96==95 )
-		    sc->unicodeenc = -1;
-		else
-		    sc->unicodeenc = table[(i/96)*94+(i%96-1)];
-		if ( sc->unicodeenc==0 ) sc->unicodeenc = -1;
-	    } else if ( ( sc->unicodeenc = table[i])==0xfffd )
-		sc->unicodeenc = -1;
-	    if ( sc->unicodeenc == 0 && i!=0 )
-		sc->unicodeenc = -1;
-	    if ( sc->unicodeenc!=-1 && sc->unicodeenc<psunicodenames_cnt )
-		sc->name = copy(psunicodenames[sc->unicodeenc]);
-	    if ( sc->name==NULL ) {
-		if ( sc->unicodeenc==0xa0 )
-		    sc->name = copy("nonbreakingspace");
-		else if ( sc->unicodeenc==0x2d )
-		    sc->name = copy("hyphen-minus");
-		else if ( sc->unicodeenc==0xad )
-		    sc->name = copy("softhyphen");
-		else if ( sc->unicodeenc==0x00 )
-		    sc->name = copy(".notdef");
-		else if ( sc->unicodeenc!=-1 ) {
-		    char buf[10];
-		    sprintf(buf,"uni%04X", sc->unicodeenc );
-		    sc->name = copy(buf);
-		} else if ( item!=NULL && item->psnames!=NULL && item->psnames[i]!=NULL ) {
-		    sc->name = copy(item->psnames[i]);
-		} else
-		    sc->name = copy(".notdef");
-	    }
-	    sc->width = sf->ascent+sf->descent;
-	    sc->parent = sf;
-	    sc->lig = SCLigDefault(sc);
-	}
-    }
-#endif
     free(sf->chars);
     sf->chars = chars;
     sf->charcnt = enc_cnt+extras;

@@ -32,6 +32,7 @@
 #include <ustring.h>
 #include <locale.h>
 #include <chardata.h>
+#include <gwidget.h>
 
 #include "ttf.h"
 
@@ -3133,10 +3134,8 @@ void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
 	CodePage[0] |= 1<<19;	/* korean wansung */
     else if ( sf->encoding_name==em_big5 )
 	CodePage[0] |= 1<<20;	/* traditional chinese */
-#if 0
-    else if ( sf->encoding_name==em_ksc5601 )
+    else if ( sf->encoding_name==em_johab )
 	CodePage[0] |= 1<<21;	/* korean johab */
-#endif
     else if ( sf->encoding_name==em_mac )
 	CodePage[0] |= 1<<29;	/* mac */
     else if ( sf->encoding_name==em_symbol )
@@ -4081,10 +4080,181 @@ static void SetTo(uint16 *avail,uint16 *sfind,int to,int from) {
     if ( sfind!=NULL ) sfind[to] = sfind[from];
 }
 
+static int Needs816Enc(struct alltabs *at, SplineFont *sf) {
+    int i, j, complained, pos, k, len;
+    uint16 table[256];
+    struct subhead subheads[128];
+    uint16 *glyphs;
+    uint16 tempglyphs[256];
+    uint32 macpos;
+    /* This only works for big5, johab */
+    int base, lbase, basebound, subheadcnt, planesize;
+
+    if ( sf->cidmaster!=NULL || sf->subfontcnt!=0 )
+return( false );
+    if ( sf->encoding_name==em_big5 ) {
+	base = 0xa1;
+	basebound = 0xfd;
+	lbase = 0x40;
+	subheadcnt = 93;
+	planesize = 191;
+    } else {
+	base = 0x84;
+	basebound = 0xf9+1;
+	lbase = 0x31;
+	subheadcnt = 0xf9-0x84+1+1;
+	planesize = 0xfe -0x31+1;	/* Stupid gcc bug, thinks 0xfe- is ambiguous (exponant) */
+    }
+    for ( i=0; i<base && i<sf->charcnt; ++i )
+	if ( SCWorthOutputting(sf->chars[i]))
+    break;
+    if ( i==base || i==sf->charcnt )
+return( false );		/* Doesn't have the single byte entries */
+	/* Can use the normal 16 bit encoding scheme */
+
+    for ( i=base; i<256 && i<sf->charcnt; ++i )
+	if ( SCWorthOutputting(sf->chars[i])) {
+	    GWidgetErrorR(_STR_BadEncoding,_STR_ExtraneousSingleByte,i);
+    break;
+	}
+    for ( i=256; i<(base<<8) && i<sf->charcnt; ++i )
+	if ( SCWorthOutputting(sf->chars[i])) {
+	    GWidgetErrorR(_STR_BadEncoding,_STR_OutOfEncoding,i);
+    break;
+	}
+    if ( i==(base<<8) )
+	for ( i=(basebound<<8); i<0x10000 && i<sf->charcnt; ++i )
+	    if ( SCWorthOutputting(sf->chars[i])) {
+		GWidgetErrorR(_STR_BadEncoding,_STR_OutOfEncoding,i);
+	break;
+	    }
+
+    memset(table,'\0',sizeof(table));
+    for ( i=base; i<basebound; ++i )
+	table[i] = 8*(i-base+1);
+    memset(subheads,'\0',sizeof(subheads));
+    subheads[0].first = 0; subheads[0].cnt = planesize;
+    for ( i=1; i<=92; ++i ) {
+	subheads[i].first = 64;
+	subheads[i].cnt = planesize;
+    }
+    glyphs = gcalloc(subheadcnt*planesize,sizeof(uint16));
+    subheads[0].rangeoff = 0;
+    for ( i=0; i<0xa1 && i<sf->charcnt; ++i )
+	if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=0)
+	    glyphs[i] = sf->chars[i]->ttf_glyph;
+    pos = 1;
+
+    complained = false;
+    for ( j=(base<<8); j<(basebound<<8); j+= 0x100 ) {
+	for ( i=0; i<lbase; ++i )
+	    if ( !complained && SCWorthOutputting(sf->chars[i+j])) {
+		GWidgetErrorR(_STR_BadEncoding,_STR_NotNormallyEncoded,i+j);
+		complained = true;
+	    }
+	if ( lbase==0x40 ) {
+	    /* big5 has a gap here. Does johab? */
+	    for ( i=0x7f; i<0xa1; ++i )
+		if ( !complained && SCWorthOutputting(sf->chars[i+j])) {
+		    GWidgetErrorR(_STR_BadEncoding,_STR_NotNormallyEncoded,i+j);
+		    complained = true;
+		}
+	}
+	if ( !complained && SCWorthOutputting(sf->chars[0xff+j])) {
+	    GWidgetErrorR(_STR_BadEncoding,_STR_NotNormallyEncoded,0xff+j);
+	    complained = true;
+	}
+	memset(tempglyphs,0,sizeof(tempglyphs));
+	for ( i=0; i<planesize; ++i )
+	    if ( sf->chars[j+lbase+i]!=NULL && sf->chars[j+lbase+i]->ttf_glyph!=0 )
+		tempglyphs[i] = sf->chars[j+lbase+i]->ttf_glyph;
+	for ( i=1; i<pos; ++i ) {
+	    int delta = (uint16) (tempglyphs[0]-glyphs[i*planesize]);
+	    for ( k=0; k<planesize; ++k )
+		if ( tempglyphs[k]==0 && glyphs[i*planesize+k]==0 )
+		    /* Still matches */;
+		else if ( tempglyphs[k]==(uint16) (glyphs[i*planesize+k]+delta) )
+		    /* Still matches */;
+		else
+	    break;
+	    if ( k==planesize ) {
+		subheads[(j>>8)-base+1].delta = delta;
+		subheads[(j>>8)-base+1].rangeoff = i*planesize;
+	break;
+	    }
+	}
+	if ( subheads[(j-0xa000)>>8].rangeoff==0 ) {
+	    memcpy(glyphs+pos*planesize,tempglyphs,planesize*sizeof(uint16));
+	    subheads[(j>>8)-base+1].rangeoff = (pos++)*planesize ;
+	}
+    }
+
+    /* fixup offsets */
+    /* my rangeoffsets are indexes into the glyph array. That's nice and */
+    /*  simple. Unfortunately ttf says they are offsets from the current */
+    /*  location in the file (sort of) so we now fix them up. */
+    for ( i=0; i<subheadcnt; ++i )
+	subheads[i].rangeoff = subheads[i].rangeoff*sizeof(uint16) +
+		(subheadcnt-i-1)*sizeof(struct subhead) + sizeof(uint16);
+
+    len = 3*sizeof(uint16) + 256*sizeof(uint16) + subheadcnt*sizeof(struct subhead) +
+	    pos*planesize*sizeof(uint16);
+
+    /* Two encoding table pointers, one for ms, one for mac */
+    putshort(at->cmap,0);		/* version */
+    putshort(at->cmap,2);		/* num tables */
+    putshort(at->cmap,3);		/* ms platform */
+    putshort(at->cmap,sf->encoding_name==em_big5?4:6);
+					/* plat specific enc, Big5/Johab */
+    putlong(at->cmap,2*sizeof(uint16)+2*(2*sizeof(uint16)+sizeof(uint32)));
+					/* offset from tab start to sub tab start */
+    putshort(at->cmap,1);		/* mac platform */
+    putshort(at->cmap,0);		/* plat specific enc, script=roman */
+    macpos = 2*sizeof(uint16)+2*(2*sizeof(uint16)+sizeof(uint32))+len;
+    putlong(at->cmap,macpos);		/* offset from tab start to sub tab start */
+
+    putshort(at->cmap,2);		/* 8/16 format */
+    putshort(at->cmap,len);		/* Subtable length */
+    putshort(at->cmap,0);		/* version/language, not meaningful in ms systems */
+    for ( i=0; i<256; ++i )
+	putshort(at->cmap,table[i]);
+    for ( i=0; i<subheadcnt; ++i ) {
+	putshort(at->cmap,subheads[i].first);
+	putshort(at->cmap,subheads[i].cnt);
+	putshort(at->cmap,subheads[i].delta);
+	putshort(at->cmap,subheads[i].rangeoff);
+    }
+    for ( i=0; i<pos*planesize; ++i )
+	putshort(at->cmap,glyphs[i]);
+    free(glyphs);
+
+    /* Mac table just the first 256 entries */
+    if ( ftell(at->cmap)!=macpos )
+	GDrawIError("Mac table not at right place %d should be %d", ftell(at->cmap), macpos );
+    memset(table,0,sizeof(table));
+    for ( i=0; i<256 && i<sf->charcnt; ++i )
+	if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=0 &&
+		sf->chars[i]->ttf_glyph<256 )
+	    table[i] = sf->chars[i]->ttf_glyph;
+    putshort(at->cmap,0);		/* format */
+    putshort(at->cmap,262);		/* length = 256bytes + 6 header bytes */
+    putshort(at->cmap,0);		/* language = english */
+    for ( i=0; i<256; ++i )
+	putc(table[i],at->cmap);
+
+    at->cmaplen = ftell(at->cmap);
+    if ( (at->cmaplen&2)!=0 )
+	putshort(at->cmap,0);
+return( true );
+}
+
 static int figureencoding(SplineFont *sf,int i) {
     switch ( sf->encoding_name ) {
       default:				/* Unicode */
 return( sf->chars[i]->unicodeenc );
+      case em_big5:			/* Taiwan, Hong Kong */
+      case em_johab:			/* Korea */
+return( i );
       case em_ksc5601:			/* Wansung */
 	if ( (i/96)>=94 )
 return( -1 );
@@ -4141,6 +4311,10 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	putshort(at->cmap,0);		/* language = meaningless */
 	for ( i=0; i<256; ++i )
 	    putc(table[i],at->cmap);
+    } else if ( sf->encoding_name==em_big5 && Needs816Enc(at,sf)) {
+return;		/* All Done */
+    } else if ( sf->encoding_name==em_johab && Needs816Enc(at,sf)) {
+return;		/* All Done */
     } else {
 	if ( _sf->subfontcnt!=0 ) sfind = gcalloc(65536,sizeof(uint16));
 	charcnt = _sf->charcnt;
@@ -4164,7 +4338,8 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 		++k;
 	    } while ( k<_sf->subfontcnt );
 	}
-	if ( _sf->encoding_name!=em_jis208 && _sf->encoding_name!=em_ksc5601 ) {
+	if ( _sf->encoding_name!=em_jis208 && _sf->encoding_name!=em_ksc5601 &&
+		_sf->encoding_name!=em_big5 && _sf->encoding_name!=em_johab ) {
 	    /* Duplicate glyphs for greek */	/* Only meaningful if unicode */
 	    if ( avail[0xb5]==0xffff && avail[0x3bc]!=0xffff )
 		SetTo(avail,sfind,0xb5,0x3bc);
@@ -4236,8 +4411,10 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	putshort(at->cmap,2);		/* num tables */
 	putshort(at->cmap,3);		/* ms platform */
 	putshort(at->cmap,		/* plat specific enc */
-		sf->encoding_name==em_ksc5601 ? 5 :	/* Wansung */
+		sf->encoding_name==em_ksc5601 ? 5 :	/* Wansung, korean */
 		sf->encoding_name==em_jis208 ? 2 :	/* SJIS */
+		sf->encoding_name==em_big5 ? 4 :	/* Big5, traditional Chinese */
+		sf->encoding_name==em_johab ? 6 :	/* Korean */
 		 1 );					/* Unicode */
 	putlong(at->cmap,2*sizeof(uint16)+2*(2*sizeof(uint16)+sizeof(uint32)));	/* offset from tab start to sub tab start */
 	putshort(at->cmap,1);		/* mac platform */

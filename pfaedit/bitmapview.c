@@ -897,6 +897,8 @@ return( true );
 #define MID_Prev	2008
 #define MID_Bigger	2009
 #define MID_Smaller	2010
+#define MID_NextDef	2012
+#define MID_PrevDef	2013
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -1004,12 +1006,21 @@ static void BVMenuScale(GWindow gw,struct gmenuitem *mi,GEvent *g) {
 
 static void BVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
+    SplineFont *sf = bv->bc->sc->parent;
     int pos = -1;
 
     if ( mi->mid == MID_Next ) {
 	pos = bv->bc->enc+1;
-    } else {
+    } else if ( mi->mid == MID_Prev ) {
 	pos = bv->bc->enc-1;
+    } else if ( mi->mid == MID_NextDef ) {
+	for ( pos = bv->bc->enc+1; pos<sf->charcnt && sf->chars[pos]==NULL; ++pos );
+	if ( pos==sf->charcnt )
+return;
+    } else if ( mi->mid == MID_PrevDef ) {
+	for ( pos = bv->bc->enc-1; pos>=0 && sf->chars[pos]==NULL; --pos );
+	if ( pos<0 )
+return;
     }
     if ( pos>=0 && pos<bv->fv->sf->charcnt )
 	BVChangeChar(bv,pos,false);
@@ -1287,6 +1298,8 @@ static GMenuItem vwlist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_NextChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, ']', ksm_control, NULL, NULL, BVMenuChangeChar, MID_Next },
     { { (unichar_t *) _STR_PrevChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '[', ksm_control, NULL, NULL, BVMenuChangeChar, MID_Prev },
+    { { (unichar_t *) _STR_NextDefChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, ']', ksm_control|ksm_meta, NULL, NULL, BVMenuChangeChar, MID_NextDef },
+    { { (unichar_t *) _STR_PrevDefChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'a' }, '[', ksm_control|ksm_meta, NULL, NULL, BVMenuChangeChar, MID_PrevDef },
     { { (unichar_t *) _STR_Goto, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'G' }, '>', ksm_shift|ksm_control, NULL, NULL, BVMenuGotoChar },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Bigger, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '+', ksm_shift|ksm_control, NULL, NULL, BVMenuChangePixelSize, MID_Bigger },

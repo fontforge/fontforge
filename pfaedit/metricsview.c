@@ -883,6 +883,8 @@ return( true );
 #define MID_Prev	2006
 #define MID_Outline	2007
 #define MID_ShowGrid	2008
+#define MID_NextDef	2012
+#define MID_PrevDef	2013
 #define MID_AvailBitmaps	2210
 #define MID_RegenBitmaps	2211
 #define MID_Center	2600
@@ -1033,6 +1035,7 @@ static void MVResetText(MetricsView *mv) {
 
 static void MVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    SplineFont *sf = mv->fv->sf;
     int i, pos;
 
     for ( i=0; i<mv->charcnt; ++i )
@@ -1041,8 +1044,16 @@ static void MVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( i!=mv->charcnt ) {
 	if ( mi->mid == MID_Next ) {
 	    pos = mv->perchar[i].sc->enc+1;
-	} else {
+	} else if ( mi->mid==MID_Prev ) {
 	    pos = mv->perchar[i].sc->enc-1;
+	} else if ( mi->mid==MID_NextDef ) {
+	    for ( pos = mv->perchar[i].sc->enc+1; pos<sf->charcnt && sf->chars[pos]==NULL; ++pos );
+	    if ( pos>=sf->charcnt )
+return;
+	} else if ( mi->mid==MID_PrevDef ) {
+	    for ( pos = mv->perchar[i].sc->enc-1; pos>=0 && sf->chars[pos]==NULL; --pos );
+	    if ( pos<0 )
+return;
 	}
 	if ( pos>=0 && pos<mv->fv->sf->charcnt ) {
 	    MVSetPos(mv,i,SFMakeChar(mv->fv->sf,pos));
@@ -1144,6 +1155,8 @@ static GMenuItem ellist[] = {
 static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_NextChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, ']', ksm_control, NULL, NULL, MVMenuChangeChar, MID_Next },
     { { (unichar_t *) _STR_PrevChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '[', ksm_control, NULL, NULL, MVMenuChangeChar, MID_Prev },
+    { { (unichar_t *) _STR_NextDefChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, ']', ksm_control|ksm_meta, NULL, NULL, MVMenuChangeChar, MID_NextDef },
+    { { (unichar_t *) _STR_PrevDefChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'a' }, '[', ksm_control|ksm_meta, NULL, NULL, MVMenuChangeChar, MID_PrevDef },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Hidegrid, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'G' }, '\0', ksm_control, NULL, NULL, MVMenuShowGrid, MID_ShowGrid },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},

@@ -58,11 +58,14 @@ extern struct charmap *alphabets_from_unicode[];
 extern const unichar_t unicode_from_jis208[];
 extern const unichar_t unicode_from_jis212[];
 extern struct charmap2 jis_from_unicode;
-/* Subtract 0xa140 before indexing this array */
+/* Subtract 0xa100 before indexing this array */
 extern const unichar_t unicode_from_big5[];
 extern struct charmap2 big5_from_unicode;
 extern const unichar_t unicode_from_ksc5601[];
 extern struct charmap2 ksc5601_from_unicode;
+/* Subtract 0x8400 before indexing this array */
+extern const unichar_t unicode_from_johab[];
+extern struct charmap2 johab_from_unicode;
 extern const unichar_t unicode_from_gb2312[];
 extern struct charmap2 gb2312_from_unicode;
 

@@ -245,8 +245,10 @@ return( index );
 	    cm = &jis_from_unicode;
 	else if ( sf->encoding_name==em_ksc5601 )
 	    cm = &ksc5601_from_unicode;
-	else
+	else if ( sf->encoding_name==em_gb2312 )
 	    cm = &gb2312_from_unicode;
+	else
+	    cm = &big5_from_unicode;
 	if ( (unienc>>8)<cm->first || (unienc>>8)>=cm->last ||
 		cm->table[(unienc>>8)-cm->first]==NULL )
 return( -1 );
@@ -267,7 +269,7 @@ return( -1 );
 static int SFEncodingCnt(SplineFont *sf) {
     Encoding *item=NULL;
 
-    if ( sf->encoding_name == em_unicode )
+    if ( sf->encoding_name == em_unicode || sf->encoding_name == em_big5 )
 return( 65536 );
     else if ( sf->encoding_name == em_none )
 return( sf->charcnt );

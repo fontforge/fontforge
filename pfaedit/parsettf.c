@@ -2318,16 +2318,19 @@ static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
     }
 }
 
-static struct dup *makedup(SplineChar *sc, int uni, struct dup *prev) {
+static struct dup *makedup(SplineChar *sc, int uni, int enc, struct dup *prev) {
     struct dup *d = gcalloc(1,sizeof(struct dup));
 
     d->sc = sc;
-    d->enc = uni;
+    d->uni = uni;
+    d->enc = enc;
     d->prev = prev;
 return( d );
 }
 
 static int modenc(int enc,int modtype) {
+    if ( modtype==-1 )
+return( -1 );
     if ( modtype<=1 /* Unicode */ ) {
 	/* No conversion */;
     } else if ( modtype==2 /* SJIS */ ) {
@@ -2355,7 +2358,7 @@ static int modenc(int enc,int modtype) {
 	    }
 	    enc = unicode_from_jis208[(ch1-0x21)*94+(ch2-0x21)];
 	}
-    } else if ( modtype==3 /* BIG5 */ ) {
+    } else if ( modtype==4 /* BIG5 */ ) {	/* old ms docs say big5 is modtype==3, but new ones say 4 */
 	if ( enc>0xa100 )
 	    enc = unicode_from_big5[enc-0xa100];
 	else if ( enc>0x100 )
@@ -2368,7 +2371,14 @@ static int modenc(int enc,int modtype) {
 	    if ( enc==0 ) enc = -1;
 	} else if ( enc>0x100 )
 	    enc = -1;
+    } else if ( modtype==6 /* Johab */ ) {
+	if ( enc>0x8400 )
+	    enc = unicode_from_johab[enc-0x8400];
+	else if ( enc>0x100 )
+	    enc = -1;
     }
+    if ( enc==0 )
+	enc = -1;
 return( enc );
 }
 
@@ -2382,7 +2392,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
     uint16 table[256];
     int segCount;
     uint16 *endchars, *startchars, *delta, *rangeOffset, *glyphs;
-    int index;
+    int index, last;
     int mod = 0;
     const unichar_t *trans=NULL;
 
@@ -2405,13 +2415,20 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    enc = em_symbol;
 	    encoff = offset;
 	    trans = unicode_from_MacSymbol;
-	} else if ( platform==1 && specific==0 && enc!=em_unicode ) {
+	} else if ( platform==1 && specific==0 && (enc==em_none||enc==em_symbol) ) {
 	    enc = em_mac;
 	    encoff = offset;
 	    trans = unicode_from_mac;
-	} else if ( platform==3 && (specific==2 || specific==3 || specific==5) && enc!=em_unicode ) {
-	    enc = specific==2? em_jis208 : specific==5 ? em_ksc5601 : em_unicode;
+	} else if ( platform==3 && (specific==2 || specific==4 || specific==5 || specific==6 ) &&
+		enc!=em_unicode ) {
+	    /* Old ms docs say that specific==3 => big 5, new docs say specific==4 => big5 */
+	    /*  Ain't that jus' great? */
+	    enc = specific==2? em_jis208 : specific==5 ? em_ksc5601 : specific==4? em_big5 : em_johab;
 	    mod = specific;
+	    encoff = offset;
+	} else if ( enc==em_none ) {
+	    enc = -2;
+	    mod = -1;
 	    encoff = offset;
 	}
     }
@@ -2469,7 +2486,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 			    info->chars[(uint16) (j+delta[i])]->unicodeenc = modenc(j,mod);
 			    info->chars[(uint16) (j+delta[i])]->enc = j;
 			} else
-			    info->dups = makedup(info->chars[(uint16) (j+delta[i])],modenc(j,mod),info->dups);
+			    info->dups = makedup(info->chars[(uint16) (j+delta[i])],modenc(j,mod),j,info->dups);
 		    }
 		} else if ( rangeOffset[i]!=0xffff ) {
 		    /* It isn't explicitly mentioned by a rangeOffset of 0xffff*/
@@ -2492,7 +2509,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 				info->chars[index]->unicodeenc = modenc(j,mod);
 				info->chars[index]->enc = j;
 			    } else
-				info->dups = makedup(info->chars[index],modenc(j,mod),info->dups);
+				info->dups = makedup(info->chars[index],modenc(j,mod),j,info->dups);
 			}
 		    }
 		}
@@ -2514,7 +2531,82 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 		for ( i=0; i<count; ++i )
 		    info->chars[getushort(ttf)]->unicodeenc = first+i;
 	} else if ( format==2 ) {
-	    GDrawIError("I don't support mixed 8/16 bit characters (no shit jis for me)");
+	    int max_sub_head_key = 0, cnt;
+	    struct subhead *subheads;
+
+	    for ( i=0; i<256; ++i ) {
+		table[i] = getushort(ttf)/8;	/* Sub-header keys */
+		if ( table[i]>max_sub_head_key )
+		    max_sub_head_key = table[i];	/* The entry is a byte pointer, I want a pointer in units of struct subheader */
+	    }
+	    subheads = galloc((max_sub_head_key+1)*sizeof(struct subhead));
+	    for ( i=0; i<=max_sub_head_key; ++i ) {
+		subheads[i].first = getushort(ttf);
+		subheads[i].cnt = getushort(ttf);
+		subheads[i].delta = getushort(ttf);
+		subheads[i].rangeoff = (getushort(ttf)-
+				(max_sub_head_key-i)*sizeof(struct subhead)-
+				sizeof(short))/sizeof(short);
+	    }
+	    cnt = (len-(ftell(ttf)-(info->encoding_start+encoff)))/sizeof(short);
+	    /* The count is the number of glyph indexes to read. it is the */
+	    /*  length of the entire subtable minus that bit we've read so far */
+	    glyphs = galloc(cnt*sizeof(short));
+	    for ( i=0; i<cnt; ++i )
+		glyphs[i] = getushort(ttf);
+	    last = -1;
+	    for ( i=0; i<256; ++i ) {
+		if ( table[i]==0 ) {
+		    /* Special case, single byte encoding entry, look i up in */
+		    /*  subhead */
+		    /* In the one example I've got of this encoding (wcl-02.ttf) the chars */
+		    /* 0xfd, 0xfe, 0xff are said to exist but there is no mapping */
+		    /* for them. */
+		    if ( last!=-1 )
+			index = 0;	/* the subhead says there are 256 entries, but in fact there are only 193, so attempting to find these guys should give an error */
+		    else if ( i<subheads[0].first || i>=subheads[0].first+subheads[0].cnt ||
+			    subheads[0].rangeoff+(i-subheads[0].first)>=cnt )
+			index = 0;
+		    else if ( (index = glyphs[subheads[0].rangeoff+(i-subheads[0].first)])!= 0 )
+			index = (uint32) (index+subheads[0].delta);
+		    /* I assume the single byte codes are just ascii or latin1*/
+		    if ( index!=0 && index<info->glyph_cnt ) {
+			if ( justinuse )
+			    info->inuse[index] = 1;
+			else if ( info->chars[index]==NULL )
+			    /* Do Nothing */;
+			else if ( info->chars[index]->unicodeenc==-1 ) {
+			    info->chars[index]->unicodeenc = i;
+			    info->chars[index]->enc = i;
+			} else
+			    info->dups = makedup(info->chars[index],i,i,info->dups);
+		    }
+		} else {
+		    int k = table[i];
+		    for ( j=0; j<subheads[k].cnt; ++j ) {
+			int enc;
+			if ( subheads[k].rangeoff+j>=cnt )
+			    index = 0;
+			else if ( (index = glyphs[subheads[k].rangeoff+j])!= 0 )
+			    index = (uint16) (index+subheads[k].delta);
+			if ( index!=0 && index<info->glyph_cnt ) {
+			    enc = (i<<8)|(j+subheads[k].first);
+			    if ( justinuse )
+				info->inuse[index] = 1;
+			    else if ( info->chars[index]==NULL )
+				/* Do Nothing */;
+			    else if ( info->chars[index]->unicodeenc==-1 ) {
+				info->chars[index]->unicodeenc = modenc(enc,mod);
+				info->chars[index]->enc = enc;
+			    } else
+				info->dups = makedup(info->chars[index],modenc(enc,mod),enc,info->dups);
+			}
+		    }
+		    if ( last==-1 ) last = i;
+		}
+	    }
+	    free(subheads);
+	    free(glyphs);
 	} else if ( format==8 ) {
 	    GDrawIError("I don't support mixed 16/32 bit characters (no unicode surogates)");
 	} else if ( format==10 || format==12 ) {
@@ -2650,11 +2742,12 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	    name = ".notdef";
 	else if ( info->chars[i]->unicodeenc==-1 ) {
 	    if ( info->chars[i]->enc!=0 )
-		sprintf(buffer, "missing_%x", info->chars[i]->enc );
+		sprintf(buffer, "nounicode_%x", info->chars[i]->enc );
 	    else
-		sprintf( buffer, "nameless%d", i );
+		sprintf( buffer, "unencoded_%d", i );
 	    name = buffer;
-	} else if ( psunicodenames[info->chars[i]->unicodeenc]!=NULL )
+	} else if ( info->chars[i]->unicodeenc<65536 &&
+		psunicodenames[info->chars[i]->unicodeenc]!=NULL )
 	    name = psunicodenames[info->chars[i]->unicodeenc];
 	else {
 	    sprintf( buffer, "uni%04X", info->chars[i]->unicodeenc );
@@ -3072,15 +3165,20 @@ static SplineChar *SFMakeDupRef(SplineFont *sf, int local_enc, struct dup *dup) 
     RefChar *ref = chunkalloc(sizeof(RefChar));
 
     sc->enc = local_enc;
-    sc->unicodeenc = dup->enc;
+    sc->unicodeenc = dup->uni;
     sc->width = dup->sc->width;
     sc->refs = ref;
     sc->parent = sf;
-    if ( psunicodenames[dup->enc]!=NULL )
+    if ( dup->uni>=0 && dup->uni<0x10000 && psunicodenames[dup->uni]!=NULL )
 	sc->name = copy(psunicodenames[dup->enc]);
     else {
 	char buffer[10];
-	sprintf( buffer, "uni%04X", dup->enc);
+	if ( dup->uni>=0 )
+	    sprintf( buffer, "uni%04X", dup->uni);
+	else if ( dup->enc!=0 )
+	    sprintf( buffer, "nounicode_%x", dup->enc);
+	else
+		sprintf( buffer, "unencoded_%d", local_enc );
 	sc->name = copy(buffer);
     }
 
@@ -3147,6 +3245,43 @@ static void CheckEncoding(struct ttfinfo *info) {
     info->glyph_cnt = 256+extras;
 }
 
+static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
+    int istwobyte = false, i, oldcnt = info->glyph_cnt, extras=0, epos;
+    SplineChar **oldchars = info->chars, **newchars;
+    struct dup *dup;
+
+    for ( i=0; i<oldcnt; ++i ) if ( oldchars[i]!=NULL ) {
+	if ( oldchars[i]->enc>=256 )
+	    istwobyte = true;
+	else if ( oldchars[i]->enc==0 && i!=0 )
+	    ++extras;
+	oldchars[i]->parent = sf;
+    }
+    for ( dup=info->dups; dup!=NULL && !istwobyte; dup=dup->prev )
+	if ( dup->enc>=256 ) istwobyte = true;
+
+    epos = (istwobyte?65536:256);
+    sf->charcnt = epos+extras;
+    newchars = gcalloc(sf->charcnt,sizeof(SplineChar *));
+    for ( i=0; i<oldcnt; ++i ) if ( oldchars[i]!=NULL ) {
+	if ( oldchars[i]->enc!=0 || i==0 )
+	    newchars[oldchars[i]->enc] = oldchars[i];
+	else {
+	    oldchars[i]->enc = epos;
+	    newchars[epos++] = oldchars[i];
+	}
+    }
+
+    sf->chars = oldchars;
+    for ( dup=info->dups; dup!=NULL; dup=dup->prev )
+	if ( sf->chars[dup->enc]==NULL )
+	    newchars[dup->enc] = SFMakeDupRef(sf,dup->enc,dup);
+    sf->chars = newchars;
+    free(oldchars);
+
+    sf->encoding_name = info->encoding_name==-2? em_none : info->encoding_name;
+}
+
 static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     SplineFont *sf;
     int i;
@@ -3193,16 +3328,18 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     }
 
     if ( info->subfontcnt == 0 ) {
-	sf->charcnt = info->glyph_cnt;
-	sf->chars = info->chars;
-	for ( i=0; i<info->glyph_cnt; ++i ) if ( info->chars[i]!=NULL ) {
-	    info->chars[i]->parent = sf;
-	    info->chars[i]->enc = i;
-	}
-	if ( info->dups!=NULL )
-	    SFAddDups(sf,info->dups);
 	if ( info->encoding_name!=em_none )
-	    SFReencodeFont(sf,info->encoding_name);
+	    UseGivenEncoding(sf,info);
+	else {
+	    sf->charcnt = info->glyph_cnt;
+	    sf->chars = info->chars;
+	    for ( i=0; i<info->glyph_cnt; ++i ) if ( info->chars[i]!=NULL ) {
+		info->chars[i]->parent = sf;
+		info->chars[i]->enc = i;
+	    }
+	    if ( info->dups!=NULL )
+		SFAddDups(sf,info->dups);
+	}
     } else {
 	sf->subfontcnt = info->subfontcnt;
 	sf->subfonts = info->subfonts;

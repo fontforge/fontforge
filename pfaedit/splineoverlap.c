@@ -683,6 +683,7 @@ static IntersectionList *SplineSetFindIntersections(SplineSet *base) {
     es.edges = gcalloc(es.cnt,sizeof(Edge *));
     es.interesting = gcalloc(es.cnt,sizeof(char));
     es.major = 0; es.other = 1;
+    es.majors = NULL;
     es.genmajoredges = true;
     FindEdgesSplineSet(base,&es);
     ilist = _FindIntersections(&es,ilist);
@@ -1024,7 +1025,8 @@ static void SplineListFree(SplineList *sl,IntersectionList *ilist) {
 	    SplinePointFree(spline->to);
 	    SplineFree(spline);
 	}
-    } else {
+    } else if ( sl->spline->to->me.x==ilist->intersection.x &&
+		sl->spline->to->me.y==ilist->intersection.y ) {
 	SplinePointFree(sl->spline->to);
 	for ( spline = sl->spline; spline !=NULL; spline = snext ) {
 	    snext = spline->from->prev;
@@ -1035,7 +1037,8 @@ static void SplineListFree(SplineList *sl,IntersectionList *ilist) {
 	    SplinePointFree(spline->from);
 	    SplineFree(spline);
 	}
-    }
+    } else
+	GDrawIError( "Couldn't identify intersection in SplineListFree" );
     free(sl);
 }
 
@@ -1053,7 +1056,8 @@ static void ILFreeUnusedSplines(IntersectionList *ilist) {
 		    ilist->splines = snext;
 		else
 		    prev->next = snext;
-		SplineListFree(sl,ilist);
+		SplineListFree(sl,ilist);	/* This might free snext */
+		snext = (prev==NULL)?ilist->splines:prev->next;
 	    } else {
 		if ( !sl->spline->isneeded )
 		    GDrawIError("Spline which is neither needed nor unneeded in ILFreeUnusedSplines" );

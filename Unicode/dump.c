@@ -447,10 +447,10 @@ static void dumpbig5(FILE *output,FILE *header) {
 	while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
 	    if ( buffer[0]=='#' )
 	continue;
-	    _orig = getnth(buffer,2);
-	    if ( /*_orig==-1*/ _orig<0xa140 )
+	    _orig = getnth(buffer,3);
+	    if ( /*_orig==-1*/ _orig<0xa100 )
 	continue;
-	    _unicode = getnth(buffer,4);
+	    _unicode = getnth(buffer,8);
 	    if ( _unicode==-1 ) {
 		fprintf( stderr, "Eh? BIG5 %x is unencoded\n", _orig );
 	continue;
@@ -466,7 +466,7 @@ static void dumpbig5(FILE *output,FILE *header) {
 	}
 	fclose(file);
 
-	fprintf( header, "/* Subtract 0xa140 before indexing this array */\n", cjknames[j] );
+	fprintf( header, "/* Subtract 0xa100 before indexing this array */\n" );
 	fprintf( header, "extern const unichar_t unicode_from_%s[];\n", cjknames[j] );
 	fprintf( output, "const unichar_t unicode_from_%s[] = {\n", cjknames[j] );
 	for ( i=0; i<sizeof(unicode)/sizeof(unicode[0]); i+=8 )
@@ -512,10 +512,11 @@ static void dumpbig5(FILE *output,FILE *header) {
 static void dumpWansung(FILE *output,FILE *header) {
     FILE *file;
     int i,j=4,k, first, last;
-    long _orig, _unicode;
-    unichar_t unicode[94*94];
-    unichar_t *table[256], *plane;
+    long _orig, _unicode, _johab;
+    unichar_t unicode[94*94], junicode[0x7c00];
+    unichar_t *table[256], *plane, *jtable[256];
     char buffer[200];
+    /* Johab high=[0x84-0xf9] low=[0x31-0xfe] */
 
     for ( k=0; k<256; ++k ) table[k] = NULL;
 
@@ -528,32 +529,48 @@ static void dumpWansung(FILE *output,FILE *header) {
 	    while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
 		if ( buffer[0]=='#' )
 	    continue;
+		_johab = getnth(buffer,7);
 		_orig = getnth(buffer,2);
-		if ( _orig<0x2121 || (_orig&0xff)<0x21 || _orig>0x7e7e || (_orig&0xff)>0x7e )
-	    continue;
 		_unicode = getnth(buffer,8);
 		if ( _unicode==-1 ) {
-		    fprintf( stderr, "Eh? Wansung %x is unencoded\n", _orig );
+		    if ( _orig>=0x2121 && (_orig&0xff)>=0x21 && _orig<=0x7e7e && (_orig&0xff)<=0x7e )
+			fprintf( stderr, "Eh? Wansung %x is unencoded\n", _orig );
+		    else if ( _johab>=0x8431 && _johab<=0xf9fe )
+			fprintf( stderr, "Eh? Johab %x is unencoded\n", _johab );
 	    continue;
 		}
-		if ( table[_unicode>>8]==NULL )
-		    table[_unicode>>8] = calloc(256,2);
-		table[_unicode>>8][_unicode&0xff] = _orig;
-		_orig -= 0x2121;
-		_orig = (_orig>>8)*94 + (_orig&0xff);
-		if ( _orig>=94*94 ) {
-		    fprintf( stderr, "Not 94x94\n" );
+		if ( _orig>=0x2121 && (_orig&0xff)>=0x21 && _orig<=0x7e7e && (_orig&0xff)<=0x7e ) {
+		    if ( table[_unicode>>8]==NULL )
+			table[_unicode>>8] = calloc(256,2);
+		    table[_unicode>>8][_unicode&0xff] = _orig;
+		    _orig -= 0x2121;
+		    _orig = (_orig>>8)*94 + (_orig&0xff);
+		    if ( _orig>=94*94 ) {
+			fprintf( stderr, "Not 94x94\n" );
 	    continue;
+		    }
+		    unicode[_orig] = _unicode;
+		    if ( used[_unicode>>8]==NULL ) {
+			used[_unicode>>8] = calloc(256,sizeof(long));
+		    }
+		    used[_unicode>>8][_unicode&0xff] |= (1<<cjkmaps[j]);
 		}
-		unicode[_orig] = _unicode;
-		if ( used[_unicode>>8]==NULL ) {
-		    used[_unicode>>8] = calloc(256,sizeof(long));
+		if ( _johab>=0x8431 && _johab<=0xf9fe ) {
+		    if ( jtable[_unicode>>8]==NULL )
+			jtable[_unicode>>8] = calloc(256,2);
+		    jtable[_unicode>>8][_unicode&0xff] = _johab;
+		    _johab -= 0x8400;
+		    junicode[_johab] = _unicode;
+		    if ( used[_unicode>>8]==NULL ) {
+			used[_unicode>>8] = calloc(256,sizeof(long));
+		    }
+		    used[_unicode>>8][_unicode&0xff] |= (1<<em_johab);
 		}
-		used[_unicode>>8][_unicode&0xff] |= (1<<cjkmaps[j]);
 	    }
 	    fclose(file);
 	}
 
+	/* First Wansung */
 	fprintf( header, "extern const unichar_t unicode_from_%s[];\n", cjknames[j] );
 	fprintf( output, "const unichar_t unicode_from_%s[] = {\n", cjknames[j] );
 	for ( i=0; i<sizeof(unicode)/sizeof(unicode[0]); i+=8 )
@@ -593,6 +610,52 @@ static void dumpWansung(FILE *output,FILE *header) {
 
 	if ( first==-1 )
 	    fprintf( stderr, "No Hangul\n" );
+	else for ( k=first; k<=last; ++k ) {
+	    free(table[k]);
+	    table[k]=NULL;
+	}
+
+	/* Then Johab */
+	fprintf( header, "/* Subtract 0x8400 before indexing this array */\n" );
+	fprintf( header, "extern const unichar_t unicode_from_johab[];\n" );
+	fprintf( output, "const unichar_t unicode_from_johab[] = {\n" );
+	for ( i=0; i<sizeof(junicode)/sizeof(junicode[0]); i+=8 )
+	    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,\n",
+		    junicode[i], junicode[i+1], junicode[i+2], junicode[i+3],
+		    junicode[i+4], junicode[i+5], junicode[i+6], junicode[i+7]);
+	fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
+		junicode[i], junicode[i+1], junicode[i+2], junicode[i+3],
+		junicode[i+4], junicode[i+5], junicode[i+6], junicode[i+7]);
+
+	first = last = -1;
+	for ( k=0; k<256; ++k ) {
+	    if ( jtable[k]!=NULL ) {
+		if ( first==-1 ) first = k;
+		last = k;
+		plane = jtable[k];
+		fprintf( output, "static unsigned short johab_from_unicode_%x[] = {\n", k );
+		for ( i=0; i<256-8; i+=8 )
+		    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,\n",
+			    plane[i], plane[i+1], plane[i+2], plane[i+3],
+			    plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
+		fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
+			    plane[i], plane[i+1], plane[i+2], plane[i+3],
+			    plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
+	    }
+	}
+	fprintf( output, "static const unsigned short * const johab_from_unicode_[] = {\n" );
+	for ( k=first; k<=last; ++k )
+	    if ( jtable[k]!=NULL )
+		fprintf( output, "    johab_from_unicode_%x%s", k, k!=last?",\n":"\n" );
+	    else
+		fprintf( output, "    u_allzeros,\n" );
+	fprintf( output, "};\n\n" );
+	fprintf( header, "extern struct charmap2 johab_from_unicode;\n" );
+	fprintf( output, "struct charmap2 johab_from_unicode = { %d, %d, (unsigned short **) johab_from_unicode_, (unsigned short *) unicode_from_johab };\n\n",
+		first, last );
+
+	if ( first==-1 )
+	    fprintf( stderr, "No Johab\n" );
 	else for ( k=first; k<=last; ++k ) {
 	    free(table[k]);
 	    table[k]=NULL;

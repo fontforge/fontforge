@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 17-Nov-2001 -->
+  <!-- AP: Last modified: 21-Nov-2001 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -54,6 +54,14 @@
     <A HREF="#font-install">How do I install the fonts once I've made them?</A>
   <LI>
     <A HREF="#How-mac">How do I edit fonts from my macintoy?</A>
+  <LI>
+    <A HREF="#simplify">Does the simplify command lose accuracy?</A>
+  <LI>
+    <A HREF="#cubic-quadratic">How does PfaEdit convert a cubic spline into a
+    quadratic spline for truetype?</A>
+  <LI>
+    <A HREF="#quadratic-cubic">How does PfaEdit convert a quadratic spline into
+    a cubic (when reading truetype)?</A>
 </UL>
 <P>
   <HR>
@@ -64,6 +72,9 @@
   <DD>
     Well... no. Otherwise I wouldn't be writing this.
     <OL>
+      <LI>
+	There are lots of latin fonts. There are far fewer greek, cyrillic, indic,
+	thai, chinese, japanese, korean, unicode...
       <LI>
 	Traditionally each new style of art and architecture has an associated style
 	of fonts. New fonts are always being created to reflect the esthetics of
@@ -426,9 +437,58 @@ $ xset fp+ `pwd`
 	NCenturySchoolbook =&gt; NCenSch
     </UL>
   <DT>
+    Does the <A NAME="simplify">simplify</A> command lose accuracy?
+  <DD>
+    Yes it does.<BR>
+    But not much.<BR>
+    It is designed to replace a set of splines with another spline that nowhere
+    differs from the original by more than one unit in the local coordinate
+    system.<BR>
+    If this level of accuracy is not good enough then (In the outline view):
+    <UL>
+      <LI>
+	Edit-&gt;Select All
+      <LI>
+	Element-&gt;Transform
+      <LI>
+	Scale Uniformly: 1000%
+      <LI>
+	OK
+      <LI>
+	Simplify
+      <LI>
+	Element-&gt;Transform
+      <LI>
+	Scale Uniformly: 10%
+      <LI>
+	OK
+    </UL>
+    <P>
+    This will replace a set of splines with a spline that differs from the original
+    by no more than .1 unit.
+  <DT>
+    <A NAME="cubic-quadratic">How does PfaEdit convert a cubic spline into a
+    quadratic spline for truetype?</A>
+  <DD>
+    Again this can involve a loss of accuracy.<BR>
+    First PfaEdit checks to see if the spline happens to be a quadratic already
+    (this would happen if you'd just read in a truetype font, or if a miracle
+    occurred when you generated the spline).<BR>
+    Otherwise PfaEdit will divide the original spline into smaller chunks and
+    try to find a set of quadratic splines that differ from the cubic by no more
+    than one unit anywhere. (Once you have picked two end-points and know the
+    slope at those end-points there is only one quadratic spline possible between
+    the two).
+  <DT>
+    <A NAME="quadratic-cubic">How does PfaEdit convert a quadratic spline into
+    a cubic (when reading truetype)?</A>
+  <DD>
+    This is easy since any quadratic spline can already be represented as a cubic,
+    it will just happen that the cubic term is always 0.
 </DL>
 <P>
 <P ALIGN=Center>
--- <A HREF="xres.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
-<A HREF="license.html">Next</A> --
+-- <A HREF="xres.html" TARGET="_top">Prev</A> --
+<A HREF="overview.html" TARGET="_top">TOC</A> --
+<A HREF="license.html" TARGET="_top">Next</A> --
 </BODY></HTML>

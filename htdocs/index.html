@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 17-Nov-2001 -->
+  <!-- AP: Last modified: 23-Nov-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -71,8 +71,8 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-011115.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 15-Nov-2001
+    <A HREF="pfaedit-011123.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 23-Nov-2001
   <LI>
     <A HREF="pfaedit-solaris-011102.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 2-Nov-2001
@@ -106,22 +106,22 @@ If you want to edit CID keyed fonts you need these
 <P>
 You can download a <A HREF="pfaedit-011102-1.src.rpm">source RPM</A>: Version:
 2-Nov-2001<BR>
-Or you can download the following three packages. Version: 15-Nov-2001
+Or you can download the following three packages. Version: 23-Nov-2001
 <UL>
   <LI>
-    <A HREF="libgunicode-011011.tgz">Unicode library source</A> (11-Oct-2001)<BR>
+    <A HREF="libgunicode-011123.tgz">Unicode library source</A> (23-Nov-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
-    <A HREF="libgdraw-011115.tgz">Unicode widget library source</A>
-    (15-Nov-2001)<BR>
+    <A HREF="libgdraw-011123.tgz">Unicode widget library source</A>
+    (23-Nov-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-011115.tgz">Pfaedit source</A> (15-Nov-2001)<BR>
+    <A HREF="pfaedit_src-011123.tgz">Pfaedit source</A> (23-Nov-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
-    <A HREF="pfaedit_full-011115.tgz">All three bundled together </A>(15-Nov-2001)
+    <A HREF="pfaedit_full-011123.tgz">All three bundled together </A>(23-Nov-2001)
 </UL>
 <P>
 If you want to do autotracing around character images you should also download
@@ -163,8 +163,7 @@ PfaEdit has been ported to the following systems (at some point in its life)
   <LI>
     NetBsd
   <LI>
-    Mac OS/X (<A HREF="Problems-MacOSX.html">the configuration script doesn't
-    work too well on Mac OS/X you may need to tweak some things</A>)
+    Mac OS/X
   <LI>
     OpenVMS7.3 for Alpha
 </UL>
@@ -231,6 +230,31 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    23-Nov-2001
+    <UL>
+      <LI>
+	Fixed a potential crash from popups in the fontview.
+      <LI>
+	Fixed three crashes in remove overlap (there are more problems)
+      <LI>
+	Added support for reading/writing mixed 8/16 bit encodings. (used in some
+	CJK fonts)
+      <LI>
+	Added support for big5, johab (johab is untested, big5 minimally)
+      <LI>
+	Improved treatment of ttf encodings we don't understand.
+      <LI>
+	Added a command to move to the next defined character (useful in CJK encodings
+	with great holes in the middle. Unicode too I suppose)
+      <LI>
+	Added a resource (<A HREF="xres.html">pfaedit.FontView.FontFamily</A>) to
+	control the font for the character labels that appear above every user defined
+	character.
+      <LI>
+	PfaEdit now supports multi-line copyright notices (must be less that 2000
+	ascii characters though).
+    </UL>
   <LI>
     17-Nov-2001
     <UL>
@@ -506,68 +530,6 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
 	Holding down the Shift key when invoking Element-&gt;AutoTrace will cause
 	it to prompt for command line arguments to the autotrace program (you have
 	to figure these arguments out yourself).
-    </UL>
-  <LI>
-    30-Sept-2001/1-Oct-2001
-    <UL>
-      <LI>
-	Improved importing background bitmap fonts (scaling factor set more accurately,
-	pk characters whose bitmap width was a factor of 8 had problems).
-      <LI>
-	Import width from background bitmap fonts if the outline character is empty.
-      <LI>
-	Merge Fonts was disabled except under bizarre circumstances, should be fixed.
-      <LI>
-	Makefiles should create the *.ui files now.
-      <LI>
-	Mac encoding table should include the Euro character now (I was using an
-	old version which had the currency symbol instead).
-    </UL>
-  <LI>
-    24-Sept-2001
-    <UL>
-      <LI>
-	<A HREF="Problems-MacOSX.html">Mac OS/X port </A>done (or at least a semi-working
-	version has been produced)
-      <LI>
-	Localization didn't work if there was no preference file. 
-	  <HR>
-      <LI>
-	Can now read metafont pk files as bitmap fonts (Warning: No encoding on these
-	files, you've got to guess at the encoding before loading them).
-      <LI>
-	Can now read kerning information from TeX .tfm files (Again, there's no encoding
-	in these guys, I just assume the font's encoding matches the tfm)
-    </UL>
-  <LI>
-    22-Sept-2001
-    <UL>
-      <LI>
-	Can now read bitmap fonts out of a truetype EBDT (or bdat) table
-      <LI>
-	Can import a bitmap and put it into the background of a font.
-      <LI>
-	PfaEdit would sometimes get character widths wrong when reading a ttc file.
-    </UL>
-  <LI>
-    19-Sept-2001
-    <UL>
-      <LI>
-	Major rewrite of Remove Overlap.
-      <LI>
-	Fixed potential crash in autohint
-      <LI>
-	I now find the intersection of a (cubic) spline and a line by the cubic
-	algorithem rather than by iteration.
-    </UL>
-  <LI>
-    15-Sept-2001
-    <UL>
-      <LI>
-	Fixed more remove overlap/merge/simplify problems related to having many
-	points at the same location.
-      <LI>
-	Fixed a bug in Point Info.
     </UL>
   <LI>
     <A HREF="oldchangelog.html">Earlier Changes </A>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 16-Sep-2001 -->
-  <!-- AP: Last modified: 21-Oct-2001 -->
+  <!-- AP: Last modified: 23-Nov-2001 -->
   <TITLE>Older changes to PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,68 @@
 <A HREF="index.html#change-log">Current changes</A>
 <P>
 <UL>
+  <LI>
+    30-Sept-2001/1-Oct-2001
+    <UL>
+      <LI>
+	Improved importing background bitmap fonts (scaling factor set more accurately,
+	pk characters whose bitmap width was a factor of 8 had problems).
+      <LI>
+	Import width from background bitmap fonts if the outline character is empty.
+      <LI>
+	Merge Fonts was disabled except under bizarre circumstances, should be fixed.
+      <LI>
+	Makefiles should create the *.ui files now.
+      <LI>
+	Mac encoding table should include the Euro character now (I was using an
+	old version which had the currency symbol instead).
+    </UL>
+  <LI>
+    24-Sept-2001
+    <UL>
+      <LI>
+	<A HREF="Problems-MacOSX.html">Mac OS/X port </A>done (or at least a semi-working
+	version has been produced)
+      <LI>
+	Localization didn't work if there was no preference file. 
+	  <HR>
+      <LI>
+	Can now read metafont pk files as bitmap fonts (Warning: No encoding on these
+	files, you've got to guess at the encoding before loading them).
+      <LI>
+	Can now read kerning information from TeX .tfm files (Again, there's no encoding
+	in these guys, I just assume the font's encoding matches the tfm)
+    </UL>
+  <LI>
+    22-Sept-2001
+    <UL>
+      <LI>
+	Can now read bitmap fonts out of a truetype EBDT (or bdat) table
+      <LI>
+	Can import a bitmap and put it into the background of a font.
+      <LI>
+	PfaEdit would sometimes get character widths wrong when reading a ttc file.
+    </UL>
+  <LI>
+    19-Sept-2001
+    <UL>
+      <LI>
+	Major rewrite of Remove Overlap.
+      <LI>
+	Fixed potential crash in autohint
+      <LI>
+	I now find the intersection of a (cubic) spline and a line by the cubic
+	algorithem rather than by iteration.
+    </UL>
+  <LI>
+    15-Sept-2001
+    <UL>
+      <LI>
+	Fixed more remove overlap/merge/simplify problems related to having many
+	points at the same location.
+      <LI>
+	Fixed a bug in Point Info.
+    </UL>
   <LI>
     14-Sept-2001
     <UL>

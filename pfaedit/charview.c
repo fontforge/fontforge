@@ -2284,6 +2284,8 @@ return( true );
 #define MID_HideRulers	2009
 #define MID_NextPt	2010
 #define MID_PrevPt	2011
+#define MID_NextDef	2012
+#define MID_PrevDef	2013
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -2497,12 +2499,27 @@ static void CVMenuFill(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void CVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
+    SplineFont *sf = cv->sc->parent;
     int pos = -1;
 
     if ( mi->mid == MID_Next ) {
 	pos = cv->sc->enc+1;
-    } else {
+    } else if ( mi->mid == MID_Prev ) {
 	pos = cv->sc->enc-1;
+    } else if ( mi->mid == MID_NextDef ) {
+	for ( pos = cv->sc->enc+1; pos<sf->charcnt && sf->chars[pos]==NULL; ++pos );
+	if ( pos>=sf->charcnt ) {
+	    if ( cv->sc->enc<0xa140 && sf->encoding_name==em_big5 )
+		pos = 0xa140;
+	    else if ( cv->sc->enc<0x8431 && sf->encoding_name==em_johab )
+		pos = 0x8431;
+	    if ( pos>=sf->charcnt )
+return;
+	}
+    } else if ( mi->mid == MID_PrevDef ) {
+	for ( pos = cv->sc->enc-1; pos>=0 && sf->chars[pos]==NULL; --pos );
+	if ( pos<0 )
+return;
     }
     if ( pos<0 ) pos = cv->sc->parent->charcnt-1;
     else if ( pos>= cv->sc->parent->charcnt ) pos = 0;
@@ -2600,7 +2617,8 @@ return(-1);
     }
     if ( pos==-1 ) {
 	pos = u_strtol(ret,&end,10);
-	if ( *end==',' && sf->encoding_name>=em_jis208 && sf->encoding_name<em_base ) {
+	if ( *end==',' && sf->encoding_name>=em_jis208 && sf->encoding_name<em_base &&
+		sf->encoding_name!=em_big5 ) {
 	    int j = u_strtol(end+1,&end,10);
 	    /* kuten */
 	    if ( *end!='\0' )
@@ -2616,7 +2634,7 @@ return(-1);
 		else
 		    pos = -1;
 	    }
-	} else
+	} else if ( *end!='\0' )
 	    pos = -1;
     }
     if ( pos<0 || pos>=sf->charcnt )
@@ -3668,11 +3686,21 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     SplinePoint *sp; SplineSet *spl; RefChar *r; ImageList *im;
     int exactlyone = CVOneThingSel(cv,&sp,&spl,&r,&im);
+    int pos;
+    SplineFont *sf = cv->sc->parent;
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_NextPt: case MID_PrevPt:
 	    mi->ti.disabled = !exactlyone;
+	  break;
+	  case MID_NextDef:
+	    for ( pos = cv->sc->enc+1; pos<sf->charcnt && sf->chars[pos]==NULL; ++pos );
+	    mi->ti.disabled = pos==sf->charcnt;
+	  break;
+	  case MID_PrevDef:
+	    for ( pos = cv->sc->enc-1; pos>=0 && sf->chars[pos]==NULL; --pos );
+	    mi->ti.disabled = pos==-1;
 	  break;
 	}
     }
@@ -3874,6 +3902,8 @@ static GMenuItem vwlist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_NextChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, ']', ksm_control, NULL, NULL, CVMenuChangeChar, MID_Next },
     { { (unichar_t *) _STR_PrevChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '[', ksm_control, NULL, NULL, CVMenuChangeChar, MID_Prev },
+    { { (unichar_t *) _STR_NextDefChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, ']', ksm_control|ksm_meta, NULL, NULL, CVMenuChangeChar, MID_NextDef },
+    { { (unichar_t *) _STR_PrevDefChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'a' }, '[', ksm_control|ksm_meta, NULL, NULL, CVMenuChangeChar, MID_PrevDef },
     { { (unichar_t *) _STR_Goto, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'G' }, '>', ksm_shift|ksm_control, NULL, NULL, CVMenuGotoChar },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Hidepoints, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, 'D', ksm_control, NULL, NULL, CVMenuShowHide, MID_HidePoints },

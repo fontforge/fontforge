@@ -979,6 +979,14 @@ SplineFont *SplineFontNew(void) {
 	table = unicode_from_gb2312;
 	tlen = 94*94;
 	enclen = 94*96;
+    } else if ( default_encoding==em_big5 ) {
+	table = unicode_from_big5;
+	tlen = 0x10000-0xa100;
+	enclen = 65536;
+    } else if ( default_encoding==em_johab ) {
+	table = unicode_from_johab;
+	tlen = 0x10000-0x8400;
+	enclen = 65536;
     } else if ( item!=NULL ) {
 	table = item->unicode;
 	tlen = enclen = item->char_cnt;
@@ -998,6 +1006,8 @@ SplineFont *SplineFontNew(void) {
 		uenc = -1;
 	    else
 		uenc = table[(i/96)*94+(i%96-1)];
+	} else if ( tlen==0x10000-0xa100 ) {
+	    uenc = ( i<160 )?i : -1;	/* deal with single byte encoding of big5 */
 	} else
 	    uenc = table[i];
 	sc->enc = i;

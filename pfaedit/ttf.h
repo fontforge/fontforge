@@ -31,6 +31,7 @@
 struct dup {
     SplineChar *sc;
     int enc;
+    int uni;
     struct dup *prev;
 };
 
@@ -390,3 +391,5 @@ struct alltabs {
     int isfixed;
     struct fd2data *fds;
 };
+
+struct subhead { uint16 first, cnt, delta, rangeoff; };	/* a sub header in 8/16 cmap table */

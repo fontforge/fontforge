@@ -310,9 +310,9 @@ return( unicode_from_alphabets[inschr.map+3][val] );
 	if ( val>=0 && val<unicode_ranges[inschr.map-em_max-1].len )
 return( unicode_ranges[inschr.map-em_max-1].first+val );
     } else if ( inschr.map==em_big5 ) {
-	if ( val<0xa140 || val>0xF9D5 )
+	if ( val<0xa100 || val>0xFfff )
 return( -1 );
-return( unicode_from_big5[val-0xa140] );
+return( unicode_from_big5[val-0xa100] );
     } else {
 	if ( (val>>8)<0x21 || (val>>8)>0x7e || (val&0xff)<0x21 || (val&0xff)>0x7e )
 return( -1 );
@@ -347,7 +347,7 @@ return( unicode_from_gb2312[(inschr.page-0x21)*94-0x21+ch]);
     } else if ( inschr.map==em_ksc5601 ) {
 return( unicode_from_ksc5601[(inschr.page-0x21)*94-0x21+ch]);
     } else if ( inschr.map==em_big5 ) {
-return( unicode_from_big5[inschr.page*256-0xa140+ch] );
+return( unicode_from_big5[inschr.page*256-0xa100+ch] );
     }
 return( 0x20 );
 }

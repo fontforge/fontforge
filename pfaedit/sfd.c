@@ -428,6 +428,25 @@ static void SFDDumpLangName(FILE *sfd, struct ttflangname *ln) {
     putc('\n',sfd);
 }
 
+static void putstring(FILE *sfd, char *header, char *body) {
+    fprintf( sfd, "%s", header );
+    while ( *body ) {
+	if ( *body=='\n' || *body == '\\' || *body=='\r' ) {
+	    putc('\\',sfd);
+	    if ( *body=='\\' )
+		putc('\\',sfd);
+	    else {
+		putc('n',sfd);
+		if ( *body=='\r' && body[1]=='\n' )
+		    ++body;
+	    }
+	} else
+	    putc(*body,sfd);
+	++body;
+    }
+    putc('\n',sfd);
+}
+
 static void SFD_Dump(FILE *sfd,SplineFont *sf) {
     int i, realcnt;
     BDFFont *bdf;
@@ -441,7 +460,7 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
     if ( sf->weight!=NULL )
 	fprintf(sfd, "Weight: %s\n", sf->weight );
     if ( sf->copyright!=NULL )
-	fprintf(sfd, "Copyright: %s\n", sf->copyright );
+	putstring(sfd, "Copyright: ", sf->copyright );
     if ( sf->version!=NULL )
 	fprintf(sfd, "Version: %s\n", sf->version );
     fprintf(sfd, "ItalicAngle: %g\n", sf->italicangle );
@@ -585,8 +604,24 @@ return( SFDWrite(sf->filename,sf));
 
 /* ********************************* INPUT ********************************** */
 
+static int getquotedeol(FILE *sfd, char *tokbuf) {
+    char *pt=tokbuf, *end = tokbuf+2000-2; int ch;
+
+    while ( isspace(ch = getc(sfd)) && ch!='\r' && ch!='\n' );
+    while ( ch!='\n' && ch!='\r' && ch!=EOF ) {
+	if ( ch=='\\' ) {
+	    ch = getc(sfd);
+	    if ( ch=='n' ) ch='\n';
+	}
+	if ( pt<end ) *pt++ = ch;
+	ch = getc(sfd);
+    }
+    *pt='\0';
+return( pt!=tokbuf?1:ch==EOF?-1: 0 );
+}
+
 static int geteol(FILE *sfd, char *tokbuf) {
-    char *pt=tokbuf, *end = tokbuf+200-2; int ch;
+    char *pt=tokbuf, *end = tokbuf+2000-2; int ch;
 
     while ( isspace(ch = getc(sfd)) && ch!='\r' && ch!='\n' );
     while ( ch!='\n' && ch!='\r' && ch!=EOF ) {
@@ -1398,9 +1433,8 @@ return( cur );
 return( old );
 }
 
-static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster) {
+static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
     SplineFont *sf;
-    char tok[200];
     SplineChar *sc;
     int realcnt, i, eof;
 
@@ -1426,7 +1460,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster) {
 	    getname(sfd,tok);
 	    sf->weight = copy(tok);
 	} else if ( strmatch(tok,"Copyright:")==0 ) {
-	    geteol(sfd,tok);
+	    getquotedeol(sfd,tok);
 	    sf->copyright = copy(tok);
 	} else if ( strmatch(tok,"Version:")==0 ) {
 	    geteol(sfd,tok);
@@ -1537,7 +1571,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster) {
 
     if ( sf->subfontcnt!=0 ) {
 	for ( i=0; i<sf->subfontcnt; ++i )
-	    sf->subfonts[i] = SFD_GetFont(sfd,sf);
+	    sf->subfonts[i] = SFD_GetFont(sfd,sf,tok);
     } else {
 	while ( (sc = SFDGetChar(sfd))!=NULL ) {
 	    if ( sc->enc<sf->charcnt ) {
@@ -1562,7 +1596,7 @@ return( sf );
 }
 
 static SplineFont *SFDGetFont(FILE *sfd) {
-    char tok[200];
+    char tok[2000];
     real dval;
     int ch;
 
@@ -1576,7 +1610,7 @@ return( NULL );
     if ( ch!='\r' && ch!='\n' )
 return( NULL );
 
-return( SFD_GetFont(sfd,NULL));
+return( SFD_GetFont(sfd,NULL,tok));
 }
 
 SplineFont *SFDRead(char *filename) {

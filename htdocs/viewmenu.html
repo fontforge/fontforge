@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 12-Nov-2001 -->
+  <!-- AP: Last modified: 22-Nov-2001 -->
   <TITLE>The View Menu</TITLE>
 </HEAD>
 <BODY>
@@ -21,6 +21,10 @@
     <A HREF="#Next">Next Char</A>
   <LI>
     <A HREF="#Prev">Prev Char</A>
+  <LI>
+    <A HREF="#NextDef">Next Defined Char</A>
+  <LI>
+    <A HREF="#PrevDef">Prev Defined Char</A>
   <LI>
     <A HREF="#Goto">Goto</A>
   <LI>
@@ -79,15 +83,28 @@
     <A NAME="Next">Next</A> Char
   <DD>
     In the metrics, outline and bitmap view this changes the current character
-    to be the previous one in the font.
+    to be the next one in the font.
     <P>
     In the font view this selects the next character in the font (and scrolls,
     if necessary, to display that character).
   <DT>
     <A NAME="Prev">Prev</A> Char
   <DD>
+    In the metrics, outline and bitmap view this changes the current character
+    to be the previous one in the font.
+    <P>
     In the font view this selects the next character in the font (and scrolls,
     if necessary, to display that character).
+  <DT>
+    <A NAME="NextDef">Next Defined Character</A>
+  <DD>
+    Similar to Next Char, except it moves to the next character defined in the
+    font.
+  <DT>
+    <A NAME="PrevDef">Prev Defined Character</A>
+  <DD>
+    Similar to Prev Char, except it moves to the previous character defined in
+    the font.
   <DT>
     <A NAME="Goto">Goto</A>
   <DD>

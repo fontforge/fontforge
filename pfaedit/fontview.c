@@ -32,6 +32,7 @@
 #include <gfile.h>
 #include <chardata.h>
 #include <math.h>
+#include <gresource.h>
 #include "nomen.h"
 
 #define XOR_COLOR	0x505050
@@ -662,6 +663,8 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_AntiAlias	2005
 #define MID_Next	2006
 #define MID_Prev	2007
+#define MID_NextDef	2012
+#define MID_PrevDef	2013
 #define MID_CharInfo	2201
 #define MID_FindProblems 2216
 #define MID_MetaFont	2217
@@ -1306,16 +1309,32 @@ static void FVChangeChar(FontView *fv,int i) {
 
 static void FVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
+    SplineFont *sf = fv->sf;
     int pos = FVAnyCharSelected(fv);
     if ( pos>=0 ) {
 	if ( mi->mid==MID_Next )
 	    ++pos;
-	else
+	else if ( mi->mid==MID_Prev )
 	    --pos;
+	else if ( mi->mid==MID_NextDef ) {
+	    for ( ++pos; pos<sf->charcnt && sf->chars[pos]==NULL; ++pos );
+	    if ( pos>=sf->charcnt ) {
+		if ( sf->encoding_name==em_big5 && FVAnyCharSelected(fv)<0xa140 )
+		    pos = 0xa140;
+		else if ( sf->encoding_name==em_johab && FVAnyCharSelected(fv)<0x8431 )
+		    pos = 0x8431;
+		if ( pos>=sf->charcnt )
+return;
+	    }
+	} else if ( mi->mid==MID_PrevDef ) {
+	    for ( --pos; pos>=0 && sf->chars[pos]==NULL; --pos );
+	    if ( pos<0 )
+return;
+	}
     }
-    if ( pos<0 ) pos = fv->sf->charcnt-1;
-    else if ( pos>= fv->sf->charcnt ) pos = 0;
-    if ( pos>=0 && pos<fv->sf->charcnt )
+    if ( pos<0 ) pos = sf->charcnt-1;
+    else if ( pos>= sf->charcnt ) pos = 0;
+    if ( pos>=0 && pos<sf->charcnt )
 	FVChangeChar(fv,pos);
 }
 
@@ -2044,6 +2063,8 @@ static GMenuItem ellist[] = {
 static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_NextChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, ']', ksm_control, NULL, NULL, FVMenuChangeChar, MID_Next },
     { { (unichar_t *) _STR_PrevChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '[', ksm_control, NULL, NULL, FVMenuChangeChar, MID_Prev },
+    { { (unichar_t *) _STR_NextDefChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, ']', ksm_control|ksm_meta, NULL, NULL, FVMenuChangeChar, MID_NextDef },
+    { { (unichar_t *) _STR_PrevDefChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'a' }, '[', ksm_control|ksm_meta, NULL, NULL, FVMenuChangeChar, MID_PrevDef },
     { { (unichar_t *) _STR_Goto, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'G' }, '>', ksm_shift|ksm_control, NULL, NULL, FVMenuGotoChar },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_24, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '2' }, '2', ksm_control, NULL, NULL, FVMenuSize, MID_24 },
@@ -2065,6 +2086,8 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     unichar_t buffer[50];
     extern void GMenuItemArrayFree(GMenuItem *mi);
     extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
+    int pos;
+    SplineFont *sf = fv->sf;
 
     for ( i=0; vwlist[i].ti.text!=(unichar_t *) _STR_Antialias; ++i );
     base = i+2;
@@ -2097,6 +2120,15 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	switch ( mi->mid ) {
 	  case MID_Next: case MID_Prev:
 	    mi->ti.disabled = anychars<0;
+	  break;
+	  case MID_NextDef:
+	    if ( anychars==-1 ) pos = sf->charcnt;
+	    else for ( pos = anychars+1; pos<sf->charcnt && sf->chars[pos]==NULL; ++pos );
+	    mi->ti.disabled = pos==sf->charcnt;
+	  break;
+	  case MID_PrevDef:
+	    for ( pos = anychars-1; pos>=0 && sf->chars[pos]==NULL; --pos );
+	    mi->ti.disabled = pos<0;
 	  break;
 	  case MID_24:
 	    mi->ti.checked = (fv->show!=NULL && fv->show==fv->filled && fv->show->pixelsize==24);
@@ -2338,6 +2370,20 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 	if ( item!=NULL && i>=item->char_cnt ) item = NULL;
 	if ( item!=NULL )
 	    dummy->unicodeenc = item->unicode[i];
+    } else if ( sf->encoding_name==em_big5 ) {
+	if ( i<160 )
+	    dummy->unicodeenc = i;
+	else if ( i>=0xa100 )
+	    dummy->unicodeenc = unicode_from_big5[i-0xa100];
+	else
+	    dummy->unicodeenc = -1;
+    } else if ( sf->encoding_name==em_johab ) {
+	if ( i<160 )
+	    dummy->unicodeenc = i;
+	else if ( i>=0x8400 )
+	    dummy->unicodeenc = unicode_from_johab[i-0x8400];
+	else
+	    dummy->unicodeenc = -1;
     } else if ( sf->encoding_name==em_jis208 && i<96*94 && i%96!=0 && i%96!=95 )
 	dummy->unicodeenc = unicode_from_jis208[(i/96)*94+(i%96-1)];
     else if ( sf->encoding_name==em_jis212 && i<96*94 && i%96!=0 && i%96!=95 )
@@ -2735,7 +2781,7 @@ static void FVChar(FontView *fv,GEvent *event) {
 
 void SCPreparePopup(GWindow gw,SplineChar *sc) {
     static unichar_t space[200];
-    char cspace[40];
+    char cspace[60];
     int upos;
 
     if ( sc->unicodeenc!=-1 )
@@ -2748,11 +2794,11 @@ void SCPreparePopup(GWindow gw,SplineChar *sc) {
 return;
     }
     if ( UnicodeCharacterNames[upos>>8][upos&0xff]!=NULL ) {
-	sprintf( cspace, "%04x \"%.20s\" ", upos, sc->name==NULL?"":sc->name );
+	sprintf( cspace, "%04x \"%.25s\" ", upos, sc->name==NULL?"":sc->name );
 	uc_strcpy(space,cspace);
 	u_strcat(space,UnicodeCharacterNames[upos>>8][upos&0xff]);
     } else {
-	sprintf( cspace, "%04x \"%.20s\" %s", upos, sc->name==NULL?"":sc->name,
+	sprintf( cspace, "%04x \"%.25s\" %.20s", upos, sc->name==NULL?"":sc->name,
 	    upos=='\0'				? "Null":
 	    upos=='\t'				? "Tab":
 	    upos=='\r'				? "Return":
@@ -2776,14 +2822,18 @@ return;
 static void FVMouse(FontView *fv,GEvent *event) {
     int pos = (event->u.mouse.y/fv->cbh + fv->rowoff)*fv->colcnt + event->u.mouse.x/fv->cbw;
     SplineChar *sc, dummy;
+    int dopopup = true;
 
     GGadgetEndPopup();
     if ( event->type==et_mousedown )
 	CVPaletteDeactivate();
-    if ( pos<0 )
+    if ( pos<0 ) {
 	pos = 0;
-    else if ( pos>=fv->sf->charcnt )
+	dopopup = false;
+    } else if ( pos>=fv->sf->charcnt ) {
 	pos = fv->sf->charcnt-1;
+	dopopup = false;
+    }
 
     sc = fv->sf->chars[pos];
     if ( sc==NULL )
@@ -2804,7 +2854,8 @@ static void FVMouse(FontView *fv,GEvent *event) {
 	    BitmapViewCreate(bdf->chars[pos],bdf,fv);
 	}
     } else if ( event->type == et_mousemove ) {
-	SCPreparePopup(fv->v,sc);
+	if ( dopopup )
+	    SCPreparePopup(fv->v,sc);
     }
     if ( event->type == et_mousedown ) {
 	if ( !(event->u.mouse.state&ksm_shift) /*&&
@@ -2832,7 +2883,7 @@ static void FVMouse(FontView *fv,GEvent *event) {
 	    fv->pressed = NULL;
 	}
     }
-    if ( event->type==et_mouseup )
+    if ( event->type==et_mouseup && dopopup )
 	SCPreparePopup(fv->v,sc);
 }
 
@@ -3062,6 +3113,7 @@ FontView *FontViewCreate(SplineFont *sf) {
     /* sadly, clearlyu is too big for the space I've got */
     /*static unichar_t clearly_monospace[] = { 'c','l','e','a','r','l','y','u',',',' ','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',  '\0' };*/
     static unichar_t monospace[] = { 'm', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','u','n','i','f','o','n','t', '\0' };
+    static unichar_t *fontnames=NULL;
     static GWindow icon = NULL;
     BDFFont *bdf;
     int i;
@@ -3119,8 +3171,13 @@ FontView *FontViewCreate(SplineFont *sf) {
     fv->v = GWidgetCreateSubWindow(gw,&pos,v_e_h,fv,&wattrs);
     GDrawSetVisible(fv->v,true);
 
+    if ( fontnames==NULL ) {
+	fontnames = uc_copy(GResourceFindString("FontView.FontFamily"));
+	if ( fontnames==NULL )
+	    fontnames = monospace;
+    }
     memset(&rq,0,sizeof(rq));
-    rq.family_name = monospace;
+    rq.family_name = fontnames;
     rq.point_size = -13;
     rq.weight = 400;
     fv->header = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
