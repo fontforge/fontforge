@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 18-Jun-2004 -->
+  <!-- AP: Last modified: 3-Jul-2004 -->
   <TITLE>Change log for FontForge</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,43 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    3-July-2004
+    <UL>
+      <LI>
+	Undoes in the Guide layer caused a crash (introduced with multi-layer)
+      <LI>
+	Fixed another problem with subroutine references in type1 output
+      <LI>
+	Preserve hhea.ascent/descent and some OS/2 values (no UI for these, but they
+	are retained)
+      <LI>
+	KANOU provided two patches
+	<UL>
+	  <LI>
+	    One to set the the average Char Width field of OS/2 properly
+	  <LI>
+	    One to set the 'gasp' table so that Windows would actually use embedded bitmaps
+	</UL>
+      <LI>
+	Added support (in build accent) to look for upper case and cyrillic variants
+	of accents (use grave.cap rather than grave, use breve.cyr rather than breve)
+	when building upper case or cyrillic letters.
+      <LI>
+	Points were not being properly renumbered if they were out of order (when
+	editing in quadratic mode)
+      <LI>
+	When a character had a color attached to it, it looked very strange if the
+	user changed it.
+      <LI>
+	Added an "x" to check boxes when checked
+      <LI>
+	FF did not realize that tonos should be treated as an accent (it is spacing,
+	which confused ff)
+      <LI>
+	Cleaned up an ancient message in the nomen files. Used to be three seperate
+	strings, now one with format specs in it.
+    </UL>
   <LI>
     18-June-2004
     <UL>
