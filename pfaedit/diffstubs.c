@@ -317,6 +317,8 @@ void BDFClut(BDFFont *bdf, int linear_scale) {
     clut->clut[scale-1] = 0;	/* avoid rounding errors */
 }
 
+GImage *ImageAlterClut(GImage *image) { return NULL; }
+
 int BDFDepth(BDFFont *bdf) {
     if ( bdf->clut==NULL )
 return( 1 );
