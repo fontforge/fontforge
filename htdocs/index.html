@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 14-May-2002 -->
+  <!-- AP: Last modified: 18-May-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -83,14 +83,14 @@ you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-020506.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 6-May-2002
+    <A HREF="pfaedit-020518.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 18-May-2002
   <LI>
     <A HREF="pfaedit-020312-1.ppc.rpm">Download pfaedit linux-ppc SUSE 7.1
     </A>binary rpm Version: 12-Mar-2002
   <LI>
-    <A HREF="pfaedit-solaris-020506.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 6-May-2002
+    <A HREF="pfaedit-solaris-020518.tgz">Download pfaedit Solaris 8.0
+    </A>executable Version: 18-May-2002
   <LI>
     <A HREF="pfaedit-020312-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
     Version: 12-Mar-2002 (Redhat 7.1)
@@ -121,9 +121,9 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-020312-1.src.rpm">source RPM</A>: Version:
 12-Mar-2002<BR>
-Or you can download the <A HREF="pfaedit_full-020514.tgz">entire source tree
+Or you can download the <A HREF="pfaedit_full-020518.tgz">entire source tree
 </A>in one .tgz file: Version
-14-May-2002<!--
+18-May-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -283,11 +283,43 @@ Or you can just browse the <A HREF="overview.html">docs online</A>.
 </H2>
 <UL>
   <LI>
+    18-May-2002
+    <UL>
+      <LI>
+	Font Info will prompt user about changing the UniqueID/XUID if the font name
+	is changed without changing them.
+      <LI>
+	Fixed some Mac configuration problems.
+    </UL>
+  <LI>
+    16-May-2002
+    <UL>
+      <LI>
+	PfaEdit would not compile when trying to used libjpeg as a static library
+	(as on Mac OS/X)
+      <LI>
+	Use psili rather than koronis where appropriate
+      <LI>
+	It was not possible to select the elipse/star tool from the tools palette.
+    </UL>
+  <LI>
     14-May-2002
     <UL>
       <LI>
 	Made pfaedit work without X (ie. the scripting engine can be linked without
-	requiring that X be present. Possibly useful for Mac OS/X, Cygwin)
+	requiring that X be present. Possibly useful for Mac OS/X, Cygwin) 
+	  <HR>
+      <LI>
+	When showing what a greek accented character will be built from, the character
+	info dlg will now show the non-unicode alternate whether or not the characters
+	needed exist in the font.
+      <LI>
+	The Reference Info dlg will now include the unicode value of the referenced
+	character
+      <LI>
+	The positioning of ypogegrammeni with respect to eta was broken (again)
+      <LI>
+	Some more greek fixes.
     </UL>
   <LI>
     13-May-2002
