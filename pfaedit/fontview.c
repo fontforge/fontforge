@@ -4446,7 +4446,8 @@ return;
 	sprintf( buffer+strlen(buffer), "U+%04X", sc->unicodeenc );
     else
 	sprintf( buffer+strlen(buffer), "U+????" );
-    sprintf( buffer+strlen(buffer), "  %.80s", sc->name );
+    sprintf( buffer+strlen(buffer), "  %.*s", sizeof(buffer)-strlen(buffer)-1,
+	    sc->name );
 
     strcat(buffer,"  ");
     uc_strcpy(ubuffer,buffer);
@@ -4690,7 +4691,7 @@ static void uc_annot_strncat(unichar_t *to, const char *from, int len) {
 
 void SCPreparePopup(GWindow gw,SplineChar *sc) {
     static unichar_t space[810];
-    char cspace[100];
+    char cspace[162];
     int upos=-1;
     int enc = sc->parent->encoding_name;
     int done = false;
@@ -4724,7 +4725,11 @@ void SCPreparePopup(GWindow gw,SplineChar *sc) {
 	    (enc<=em_zapfding || (enc>=em_big5 && enc<=em_unicode)))
 	upos = sc->enc;
     else {
+#if defined( _NO_SNPRINTF ) || defined( __VMS )
 	sprintf( cspace, "%u 0x%x U+???? \"%.25s\" ", localenc, localenc, sc->name==NULL?"":sc->name );
+#else
+	snprintf( cspace, sizeof(cspace), "%u 0x%x U+???? \"%.25s\" ", localenc, localenc, sc->name==NULL?"":sc->name );
+#endif
 	uc_strcpy(space,cspace);
 	done = true;
     }
@@ -4732,19 +4737,37 @@ void SCPreparePopup(GWindow gw,SplineChar *sc) {
 	/* Do Nothing */;
     else if ( upos<0x110000 && _UnicodeNameAnnot!=NULL &&
 	    _UnicodeNameAnnot[upos>>16][(upos>>8)&0xff][upos&0xff].name!=NULL ) {
+#if defined( _NO_SNPRINTF ) || defined( __VMS )
 	sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" %.100s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
 		_UnicodeNameAnnot[upos>>16][(upos>>8)&0xff][upos&0xff].name);
+#else
+	snprintf( cspace, sizeof(cspace), "%u 0x%x U+%04x \"%.25s\" %.100s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
+		_UnicodeNameAnnot[upos>>16][(upos>>8)&0xff][upos&0xff].name);
+#endif
 	uc_strcpy(space,cspace);
     } else if ( upos>=0xAC00 && upos<=0xD7A3 ) {
+#if defined( _NO_SNPRINTF ) || defined( __VMS )
 	sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" Hangul Syllable %s%s%s",
 		localenc, localenc, upos, sc->name==NULL?"":sc->name,
 		chosung[(upos-0xAC00)/(21*28)],
 		jungsung[(upos-0xAC00)/28%21],
 		jongsung[(upos-0xAC00)%28] );
+#else
+	snprintf( cspace, sizeof(cspace), "%u 0x%x U+%04x \"%.25s\" Hangul Syllable %s%s%s",
+		localenc, localenc, upos, sc->name==NULL?"":sc->name,
+		chosung[(upos-0xAC00)/(21*28)],
+		jungsung[(upos-0xAC00)/28%21],
+		jongsung[(upos-0xAC00)%28] );
+#endif
 	uc_strcpy(space,cspace);
     } else {
+#if defined( _NO_SNPRINTF ) || defined( __VMS )
 	sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" %.50s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
 	    	UnicodeRange(upos));
+#else
+	snprintf( cspace, sizeof(cspace), "%u 0x%x U+%04x \"%.25s\" %.50s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
+	    	UnicodeRange(upos));
+#endif
 	uc_strcpy(space,cspace);
     }
     if ( upos>=0 && upos<0x110000 && _UnicodeNameAnnot!=NULL &&
@@ -5403,7 +5426,11 @@ return( NULL );
     break;
     if ( i==-1 || compressors[i].ext==NULL ) i=-1;
     else {
+#if defined( _NO_SNPRINTF ) || defined( __VMS )
 	sprintf( buf, "%s %s", compressors[i].decomp, strippedname );
+#else
+	snprintf( buf, sizeof(buf), "%s %s", compressors[i].decomp, strippedname );
+#endif
 	if ( system(buf)==0 ) {
 	    *pt='\0';
 	} else {
@@ -5415,7 +5442,11 @@ return( NULL );
 	    strcat(tmpfile,"/");
 	    strcat(tmpfile,GFileNameTail(strippedname));
 	    *strrchr(tmpfile,'.') = '\0';
+#if defined( _NO_SNPRINTF ) || defined( __VMS )
 	    sprintf( buf, "%s -c %s > %s", compressors[i].decomp, strippedname, tmpfile );
+#else
+	    snprintf( buf, sizeof(buf), "%s -c %s > %s", compressors[i].decomp, strippedname, tmpfile );
+#endif
 	    if ( system(buf)==0 ) {
 		if ( strippedname!=filename ) free(strippedname);
 		strippedname = tmpfile;
@@ -5542,7 +5573,11 @@ return( NULL );
 	unlink(tmpfile);
 	free(tmpfile);
     } else if ( i!=-1 ) {
+#if defined( _NO_SNPRINTF ) || defined( __VMS )
 	sprintf( buf, "%s %s", compressors[i].recomp, filename );
+#else
+	snprintf( buf, sizeof(buf), "%s %s", compressors[i].recomp, filename );
+#endif
 	system(buf);
     }
     if ( (openflags&of_fstypepermitted) && sf!=NULL && (sf->pfminfo.fstype&0xff)==0x0002 ) {
