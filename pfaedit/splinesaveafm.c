@@ -566,11 +566,16 @@ return( !ferror(afm));
 
 void SFLigatureCleanup(SplineFont *sf) {
     LigList *l, *next;
+    struct splinecharlist *scl, *sclnext;
     int j;
 
     for ( j=0; j<sf->charcnt; ++j ) if ( sf->chars[j]!=NULL ) {
 	for ( l = sf->chars[j]->ligofme; l!=NULL; l = next ) {
 	    next = l->next;
+	    for ( scl = l->components; scl!=NULL; scl = sclnext ) {
+		sclnext = scl->next;
+		free(scl);
+	    }
 	    free( l );
 	}
 	sf->chars[j]->ligofme = NULL;
@@ -582,12 +587,16 @@ void SFLigaturePrepare(SplineFont *sf) {
     LigList *ll;
     int i,j,ch,sch;
     char *pt, *semi, *ligstart;
+    SplineChar *sc;
+    struct splinecharlist *head, *last;
 
     /* First clear out any old stuff */
     for ( j=0; j<sf->charcnt; ++j ) if ( sf->chars[j]!=NULL )
 	sf->chars[j]->ligofme = NULL;
 
     /* Attach all the ligatures to the first character of their componants */
+    /* Figure out what the components are, and if they all exist */
+    /* we're only interested in the lig if all components are worth outputting */
     for ( i=0 ; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->lig!=NULL ) {
 	lig = sf->chars[i]->lig;
 	ligstart = lig->componants;
@@ -595,18 +604,53 @@ void SFLigaturePrepare(SplineFont *sf) {
 	    semi = strchr(ligstart,';');
 	    if ( semi==NULL ) semi = ligstart+strlen(ligstart);
 	    sch = *semi; *semi = '\0';
-	    for ( pt=ligstart; *pt!='\0' && *pt!=' '; ++pt );
-	    ch = *pt; *pt = '\0';
-	    for ( j=0; j<sf->charcnt; ++j )
-		if ( sf->chars[j]!=NULL && strcmp(sf->chars[j]->name,ligstart)==0 )
+	    last = head = NULL; sc = NULL;
+	    for ( pt = ligstart; *pt!='\0'; ) {
+		char *start = pt;
+		for ( ; *pt!='\0' && *pt!=' '; ++pt );
+		ch = *pt; *pt = '\0';
+		for ( j=0; j<sf->charcnt; ++j )
+		    if ( sf->chars[j]!=NULL && strcmp(sf->chars[j]->name,start)==0 )
+		break;
+		*pt = ch;
+		if ( j<sf->charcnt ) {
+		    SplineChar *tsc = sf->chars[j];
+		    if ( !SCWorthOutputting(tsc)) {
+			sc = NULL;
 	    break;
-	    if ( j<sf->charcnt ) {
+		    }
+		    if ( sc==NULL ) {
+			sc = tsc;
+		    } else {
+			struct splinecharlist *cur = galloc(sizeof(struct splinecharlist));
+			if ( head==NULL )
+			    head = cur;
+			else
+			    last->next = cur;
+			last = cur;
+			cur->sc = tsc;
+			cur->next = NULL;
+		    }
+		} else {
+		    sc = NULL;
+	    break;
+		}
+		*pt = ch;
+		while ( *pt==' ' ) ++pt;
+	    }
+	    if ( sc!=NULL ) {
 		ll = galloc(sizeof(LigList));
 		ll->lig = lig;
-		ll->next = sf->chars[j]->ligofme;
-		sf->chars[j]->ligofme = ll;
+		ll->next = sc->ligofme;
+		ll->components = head;
+		sc->ligofme = ll;
+	    } else {
+		while ( head!=NULL ) {
+		    last = head->next;
+		    free(head);
+		    head = last;
+		}
 	    }
-	    *pt = ch;
 	    *semi = sch;
 	    if ( sch=='\0' )
 	break;

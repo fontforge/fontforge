@@ -2764,12 +2764,8 @@ static void FVMouse(FontView *fv,GEvent *event) {
     if ( sc==NULL )
 	sc = SCBuildDummy(&dummy,fv->sf,pos);
     if ( event->type == et_mouseup && event->u.mouse.clicks==2 ) {
-	if ( sc==&dummy ) {
-	    fv->sf->chars[pos] = sc = chunkalloc(sizeof(SplineChar));
-	    *sc = dummy;
-	    sc->name = copy(sc->name);
-	    sc->parent = fv->sf;
-	}
+	if ( sc==&dummy )
+	    sc = SFMakeChar(fv->sf,pos);
 	if ( fv->show==fv->filled ) {
 	    CharViewCreate(sc,fv);
 	} else {

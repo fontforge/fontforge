@@ -332,6 +332,7 @@ typedef struct ligature {
 
 typedef struct liglist {
     Ligature *lig;
+    struct splinecharlist *components;	/* Other than the first */
     struct liglist *next;
 } LigList;
 

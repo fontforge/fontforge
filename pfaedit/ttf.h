@@ -348,6 +348,8 @@ struct alltabs {
     int postlen;
     FILE *gpos;			/* Used instead of kern for opentype */
     int gposlen;
+    FILE *gsub;			/* Used for ligatures */
+    int gsublen;
     FILE *kern;
     int kernlen;
     FILE *cmap;
