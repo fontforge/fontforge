@@ -1182,11 +1182,13 @@ return;
 	    fp->fd->wmode = strtol(endtok,NULL,10);
 	else if ( mycmp("FontBBox",line+1,endtok)==0 )
 	     fillrealarray(fp->fd->fontbb,endtok,4);
-	else if ( mycmp("UniqueID",line+1,endtok)==0 )
-	    fp->fd->uniqueid = strtol(endtok,NULL,10);
-	else if ( mycmp("XUID",line+1,endtok)==0 )
-	     fillintarray(fp->fd->xuid,endtok,20);
-	else if ( mycmp("StrokeWidth",line+1,endtok)==0 )
+	else if ( mycmp("UniqueID",line+1,endtok)==0 ) {
+	    if ( fp->fd->uniqueid==0 )
+		fp->fd->uniqueid = strtol(endtok,NULL,10);
+	} else if ( mycmp("XUID",line+1,endtok)==0 ) {
+	    if ( fp->fd->xuid[0]==0 )
+		fillintarray(fp->fd->xuid,endtok,20);
+	} else if ( mycmp("StrokeWidth",line+1,endtok)==0 )
 	    fp->fd->strokewidth = strtod(endtok,NULL);
 	else if ( mycmp("BuildChar",line+1,endtok)==0 )
 	    /* Do Nothing */;
