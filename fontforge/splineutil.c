@@ -1600,40 +1600,6 @@ static void SplineFontMetaData(SplineFont *sf,struct fontdict *fd) {
     }
 }
 
-/* Adobe has (it seems to me) misnamed the greek letters so that "mu" actually*/
-/*  refers to the micro sign. Similar problems for Delta and Omega. When I get*/
-/*  a mu character I generate things named mu, uni00B5 and uni03BC. So here I */
-/*  check for instances where both mu and uni00B5 (which both map to 0xb5) I */
-/*  remove one of them */
-static void CleanupGreekNames(FontDict *fd) {
-    static char *namepairs[3][2] = {{ "mu", "uni00B5" /* 3bc */ },
-				    { "Delta", "uni0394" /* 2206 */ },
-				    { "Omega", "uni03A9" /* 2126 */ }};
-    int i,j,k;
-    struct pschars *chars = fd->chars;
-    char *namei, *namej;
-
-    for ( i=0; i<chars->cnt; ++i ) if ( (namei=chars->keys[i])!=NULL ) {
-	for ( k=0; k<3; ++k )
-	    if ( strcmp(namei,namepairs[k][0])==0 ) {
-		for ( j=0; j<chars->cnt; ++j ) if ( (namej=chars->keys[j])!=NULL ) {
-		    if ( strcmp(namej,namepairs[k][1])==0 ) {
-			if ( i>j ) --i;
-			free(chars->keys[j]);
-			free(chars->values[j]);
-			for ( k=j; k<chars->cnt-1; ++k ) {
-			    chars->keys[k] = chars->keys[k+1];
-			    chars->values[k] = chars->values[k+1];
-			    chars->lens[k] = chars->lens[k+1];
-			}
-			chars->keys[k] = NULL; chars->values[k] = NULL; chars->lens[k] = 0;
-		break;
-		    }
-		}
-	    }
-    }
-}
-
 SplineChar *MakeDupRef(SplineChar *base, int local_enc, int uni_enc) {
     SplineChar *sc = SplineCharCreate();
 
@@ -1746,6 +1712,71 @@ static void SFInstanciateRefs(SplineFont *sf) {
     }
 }
 
+static void GreekUnicodeCheck(SplineFont *sf) {
+    int i, changed, j;
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	SplineChar *sc = sf->chars[i];
+	changed = false;
+	if ( sc->unicodeenc==0x2206 && sf->chars[i-1]!=NULL &&
+		sf->chars[i-1]->unicodeenc==0x0393 ) {
+	    sc->unicodeenc = 0x394;		/* Delta should be Greek letter, not increment here */
+	    changed = 0x2206;
+	} else if ( sc->unicodeenc==0x2126 && sf->chars[i-1]!=NULL &&
+		sf->chars[i-1]->unicodeenc==0x03a8 ) {
+	    sc->unicodeenc = 0x3a9;		/* Omega should be Greek letter, not Ohm sign here */
+	    changed = 0x2126;
+	} else if ( sc->unicodeenc==0xb5 && sf->chars[i-1]!=NULL &&
+		sf->chars[i-1]->unicodeenc==0x03bb ) {
+	    sc->unicodeenc = 0x3bc;		/* mu should be Greek letter, not micro sign here */
+	    changed = 0xb5;
+	}
+	if ( changed ) {
+	    int o1pos = -1, rm1pos = -1, rm2pos = -1;
+	    for ( j=0; j<sf->charcnt; ++j ) if ( i!=j && sf->chars[j]!=NULL ) {
+		if ( sf->chars[j]->unicodeenc == changed ) {
+		    if ( o1pos==-1 ) o1pos = j;
+		    else rm1pos = j;
+		} else if ( sf->chars[j]->unicodeenc == sc->unicodeenc )
+		    rm2pos = j;
+	    }
+	    if ( rm2pos!=-1 && o1pos==-1 ) {
+		sf->chars[rm2pos]->unicodeenc = changed;
+		rm2pos = -1;
+	    }
+	    if ( rm2pos!=-1 ) {
+		SplineCharFree(sf->chars[rm2pos]);
+		sf->chars[rm2pos] = NULL;
+	    }
+	    if ( rm1pos!=-1 ) {
+		SplineCharFree(sf->chars[rm1pos]);
+		sf->chars[rm1pos] = NULL;
+	    }
+	} else if ( strcmp(sc->name,"uni00B5")==0 ) {
+	    int o1pos = -1, rm1pos = -1, o2pos=-1, rm2pos = -1;
+	    for ( j=0; j<sf->charcnt; ++j ) if ( i!=j && sf->chars[j]!=NULL ) {
+		if ( sf->chars[j]->unicodeenc == 0x3bc ) {
+		    if ( o1pos==-1 ) o1pos = j;
+		    else rm1pos = j;
+		} else if ( sf->chars[j]->unicodeenc == 0xb5 ) {
+		    if ( o2pos==-1 ) o2pos = j;
+		    else rm2pos = j;
+		}
+	    }
+	    if ( o2pos!=-1 )
+		rm2pos = i;
+	    if ( rm2pos!=-1 ) {
+		SplineCharFree(sf->chars[rm2pos]);
+		sf->chars[rm2pos] = NULL;
+	    }
+	    if ( rm1pos!=-1 ) {
+		SplineCharFree(sf->chars[rm1pos]);
+		sf->chars[rm1pos] = NULL;
+	    }
+	}
+    }
+}
+
 static void _SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext *pscontext) {
     int i, j, isnotdef;
     RefChar *refs, *next;
@@ -1753,7 +1784,6 @@ static void _SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext 
     int istype2 = fd->fonttype==2;		/* Easy enough to deal with even though it will never happen... */
     uint8 *used = gcalloc(fd->charprocs->next!=0?fd->charprocs->next:fd->chars->next,sizeof(uint8));
 
-    CleanupGreekNames(fd);
     if ( istype2 )
 	fd->private->subrs->bias = fd->private->subrs->cnt<1240 ? 107 :
 	    fd->private->subrs->cnt<33900 ? 1131 : 32768;
@@ -1827,6 +1857,7 @@ static void _SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext 
 	SCLigDefault(sf->chars[i]);		/* Also reads from AFM file, but it probably doesn't exist */
 	GProgressNext();
     }
+    GreekUnicodeCheck(sf);
     SFInstanciateRefs(sf);
     if ( fd->metrics!=NULL ) {
 	for ( i=0; i<fd->metrics->next; ++i ) {
@@ -1840,7 +1871,8 @@ static void _SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext 
 	    }
 	}
     }
-    for ( i=0; i<sf->charcnt; ++i ) for ( refs = sf->chars[i]->layers[ly_fore].refs; refs!=NULL; refs=next ) {
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
+	    for ( refs = sf->chars[i]->layers[ly_fore].refs; refs!=NULL; refs=next ) {
 	next = refs->next;
 	if ( refs->adobe_enc==' ' && refs->layers[0].splines==NULL ) {
 	    /* When I have a link to a single character I will save out a */
