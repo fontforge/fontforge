@@ -76,7 +76,7 @@ static int svg_outfontheader(FILE *file, SplineFont *sf) {
     }
     fprintf( file, "<svg>\n" );
     time(&now);
-    fprintf( file, "<metadata>\nCreated by PfaEdit at %s</metadata>\n", ctime(&now) );
+    fprintf( file, "<metadata>\nCreated by PfaEdit at %s", ctime(&now) );
 /* Can all be commented out if no pwd routines */
     pwd = getpwuid(getuid());
 #ifndef __VMS
