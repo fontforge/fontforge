@@ -732,7 +732,12 @@ void SplineRefigure2(Spline *spline) {
 	/* Ok */;
     else if ( from->nonextcp || to->noprevcp || from->nextcp.x!=to->prevcp.x ||
 	    from->nextcp.y!=to->prevcp.y ) {
-	GDrawIError("Invalid 2nd order spline in SplineRefigure2" );
+	if ( RealNear(from->nextcp.x,to->prevcp.x) &&
+		RealNear(from->nextcp.y,to->prevcp.y)) {
+	    from->nextcp.x = to->prevcp.x = (from->nextcp.x+to->prevcp.x)/2;
+	    from->nextcp.y = to->prevcp.y = (from->nextcp.y+to->prevcp.y)/2;
+	} else
+	    GDrawIError("Invalid 2nd order spline in SplineRefigure2" );
     }
 
     xsp->d = from->me.x; ysp->d = from->me.y;

@@ -27,6 +27,28 @@
 #include "pfaeditui.h"
 #include <math.h>
 
+static struct shapedescrip { BasePoint me, prevcp, nextcp; int nocp; }
+    ellipse3[] = {
+	{ {-1,0}, { -1, -.552 }, { -1, .552 }, false},
+	{ {0,1}, { -.552, 1 }, { .552, 1 }, false},
+	{ {1,0}, { 1, .552 }, { 1, -.552 }, false},
+	{ {0,-1}, {.552, -1 }, {-.552, -1 }, false},
+	{ {0,0}}},
+    ellipse2[] = {
+	{ {-1,0}, {-1,-.273}, {-1,.273}, false},
+	{ {-.866,.5},{-1,.273}, {-.707,.707}, false},
+	{ {-.5,.866},{-.707,.707},{-.273,1}, false},
+	{ {0,1},{-.273,1},{.273,1}, false},
+	{ {.5,.866},{.273,1}, {.707,.707}, false},
+	{ {.866,.5},{.707,.707},{1,.273}, false},
+	{ {1,0},{1,.273},{1,-.273}, false},
+	{ {.866,-.5},{1,-.273},{.707,-.707}, false},
+	{ {.5,-.866},{.707,-.707},{.273,-1}, false},
+	{ {0,-1},{.273,-1},{-.273,-1}, false},
+	{ {-.5,-.866},{-.273,-1},{-.707,-.707}, false},
+	{ {-.866,-.5},{-.707,-.707},{-1,-.273}, false},
+	{ {0,0}}};
+
 static SplinePoint *SPMake(BasePoint *base,int pt) {
     SplinePoint *new;
 
@@ -52,6 +74,7 @@ void CVMouseDownShape(CharView *cv) {
     SplinePoint *last;
     int i;
     int order2 = cv->sc->parent->order2;
+    struct shapedescrip *ellipse;
 
     CVClearSel(cv);
     CVPreserveState(cv);
@@ -79,10 +102,11 @@ void CVMouseDownShape(CharView *cv) {
 	}
       break;
       case cvt_elipse:
+	ellipse = order2 ? ellipse2 : ellipse3;
 	last->pointtype = pt_curve;
-	last = SPMakeTo(&cv->info,pt_curve,last,order2);
-	last = SPMakeTo(&cv->info,pt_curve,last,order2);
-	last = SPMakeTo(&cv->info,pt_curve,last,order2);
+	for ( i=1; ellipse[i].me.x!=0 || ellipse[i].me.y!=0 ; ++i ) {
+	    last = SPMakeTo(&cv->info,pt_curve,last,order2);
+	}
       break;
       case cvt_poly:
 	for ( i=1; i<points; ++i )
@@ -104,18 +128,11 @@ static void SetCorner(SplinePoint *sp,real x, real y) {
     sp->prevcp = sp->me;
 }
 
-static void SetCurve(SplinePoint *sp,real x, real y,real xrad, real yrad) {
-    sp->me.x = x; sp->me.y = y;
-    sp->nextcp = sp->me;
-    sp->prevcp = sp->me;
-    if ( !sp->next->order2 ) {
-	xrad *= .552;
-	yrad *= .552;
-    }
-    sp->nextcp.x += xrad;
-    sp->nextcp.y += yrad;
-    sp->prevcp.x -= xrad;
-    sp->prevcp.y -= yrad;
+static void SetCurve(SplinePoint *sp,BasePoint *center,real xrad, real yrad,
+	struct shapedescrip *pt_d) {
+    sp->me.x = center->x+xrad*pt_d->me.x; sp->me.y = center->y+yrad*pt_d->me.y;
+    sp->nextcp.x = center->x+xrad*pt_d->nextcp.x; sp->nextcp.y = center->y+yrad*pt_d->nextcp.y;
+    sp->prevcp.x = center->x+xrad*pt_d->prevcp.x; sp->prevcp.y = center->y+yrad*pt_d->prevcp.y;
     sp->nonextcp = sp->noprevcp = (xrad==0 && yrad==0);
 }
 
@@ -157,11 +174,14 @@ static void RedoActiveSplineSet(SplineSet *ss) {
 
 void CVMouseMoveShape(CharView *cv) {
     real radius = CVRoundRectRadius(); int points = CVPolyStarPoints();
-    real xrad,yrad;
+    int center_out = CVRectElipseCenter();
+    real xrad,yrad, xrr, yrr;
     real r2;
     SplinePoint *sp;
     real base, off;
     int i;
+    struct shapedescrip *ellipse;
+    BasePoint center;
 
     if ( cv->active_shape==NULL )
 return;
@@ -169,44 +189,81 @@ return;
       case cvt_rect:
 	if ( radius==0 ) {
 	    sp = cv->active_shape->first->next->to;
-	    SetCorner(sp,cv->p.cx,cv->info.y);
-	    SetCorner(sp=sp->next->to, cv->info.x,cv->info.y);
-	    SetCorner(sp=sp->next->to, cv->info.x,cv->p.cy);
+	    if ( !center_out ) {
+		SetCorner(sp,cv->p.cx,cv->info.y);
+		SetCorner(sp=sp->next->to, cv->info.x,cv->info.y);
+		SetCorner(sp=sp->next->to, cv->info.x,cv->p.cy);
+	    } else {
+		if (( xrad = (cv->p.cx-cv->info.x) )<0 ) xrad = -xrad;
+		if (( yrad = (cv->p.cy-cv->info.y) )<0 ) yrad = -yrad;
+		SetCorner(sp,cv->p.cx-xrad,cv->info.y);
+		SetCorner(sp=sp->next->to, cv->info.x,cv->info.y);
+		SetCorner(sp=sp->next->to, cv->info.x,cv->p.cy-yrad);
+		SetCorner(sp=sp->next->to, cv->p.cx-xrad,cv->p.cy-yrad);
+	    }
 	} else {
-	    if (( xrad = (cv->p.cx-cv->info.x)/2 )<0 ) xrad = -xrad;
-	    if (( yrad = (cv->p.cy-cv->info.y)/2 )<0 ) yrad = -yrad;
-	    if ( xrad>radius ) xrad = radius;
-	    if ( yrad>radius ) yrad = radius;
-	    if ( cv->info.x<cv->p.cx ) xrad = -xrad;
-	    if ( cv->info.y<cv->p.cy ) yrad = -yrad;
-	    sp = cv->active_shape->first;
-	    SetPTangent(sp,
-		cv->p.cx+xrad,cv->p.cy, -xrad,0);
-	    SetNTangent(sp=sp->next->to,
-		cv->info.x-xrad,cv->p.cy, xrad,0);
-	    SetPTangent(sp=sp->next->to,
-		cv->info.x,cv->p.cy+yrad, 0,-yrad);
-	    SetNTangent(sp=sp->next->to,
-		cv->info.x,cv->info.y-yrad, 0,yrad);
-	    SetPTangent(sp=sp->next->to,
-		cv->info.x-xrad,cv->info.y, xrad,0);
-	    SetNTangent(sp=sp->next->to,
-		cv->p.cx+xrad,cv->info.y, -xrad,0);
-	    SetPTangent(sp=sp->next->to,
-		cv->p.cx,cv->info.y-yrad, 0,yrad);
-	    SetNTangent(sp=sp->next->to,
-		cv->p.cx,cv->p.cy+yrad, 0,-yrad);
+	    if ( !center_out ) {
+		if (( xrad = (cv->p.cx-cv->info.x)/2 )<0 ) xrad = -xrad;
+		if (( yrad = (cv->p.cy-cv->info.y)/2 )<0 ) yrad = -yrad;
+		if ( xrad>radius ) xrr = radius; else xrr = xrad;
+		if ( yrad>radius ) yrr = radius; else yrr = yrad;
+		if ( cv->info.x<cv->p.cx ) xrr = -xrr;
+		if ( cv->info.y<cv->p.cy ) yrr = -yrr;
+		sp = cv->active_shape->first;
+		SetPTangent(sp,
+		    cv->p.cx+xrr,cv->p.cy, -xrr,0);
+		SetNTangent(sp=sp->next->to,
+		    cv->info.x-xrr,cv->p.cy, xrr,0);
+		SetPTangent(sp=sp->next->to,
+		    cv->info.x,cv->p.cy+yrr, 0,-yrr);
+		SetNTangent(sp=sp->next->to,
+		    cv->info.x,cv->info.y-yrr, 0,yrr);
+		SetPTangent(sp=sp->next->to,
+		    cv->info.x-xrr,cv->info.y, xrr,0);
+		SetNTangent(sp=sp->next->to,
+		    cv->p.cx+xrr,cv->info.y, -xrr,0);
+		SetPTangent(sp=sp->next->to,
+		    cv->p.cx,cv->info.y-yrr, 0,yrr);
+		SetNTangent(sp=sp->next->to,
+		    cv->p.cx,cv->p.cy+yrr, 0,-yrr);
+	    } else {
+		if (( xrad = (cv->p.cx-cv->info.x) )<0 ) xrad = -xrad;
+		if (( yrad = (cv->p.cy-cv->info.y) )<0 ) yrad = -yrad;
+		if ( xrad>radius ) xrr = radius; else xrr = xrad;
+		if ( yrad>radius ) yrr = radius; else yrr = yrad;
+		sp = cv->active_shape->first;
+		SetPTangent(sp,
+		    cv->p.cx-xrad+xrr,cv->p.cy-yrad, -xrr,0);
+		SetNTangent(sp=sp->next->to,
+		    cv->p.cx+xrad-xrr,cv->p.cy-yrad, xrr,0);
+		SetPTangent(sp=sp->next->to,
+		    cv->p.cx+xrad,cv->p.cy-yrad+yrr, 0,-yrr);
+		SetNTangent(sp=sp->next->to,
+		    cv->p.cx+xrad,cv->p.cy+yrad-yrr, 0,yrr);
+		SetPTangent(sp=sp->next->to,
+		    cv->p.cx+xrad-xrr,cv->p.cy+yrad, xrr,0);
+		SetNTangent(sp=sp->next->to,
+		    cv->p.cx-xrad+xrr,cv->p.cy+yrad, -xrr,0);
+		SetPTangent(sp=sp->next->to,
+		    cv->p.cx-xrad,cv->p.cy+yrad-yrr, 0,yrr);
+		SetNTangent(sp=sp->next->to,
+		    cv->p.cx-xrad,cv->p.cy-yrad+yrr, 0,-yrr);
+	    }
 	}
       break;
       case cvt_elipse:
-	SetCurve(sp = cv->active_shape->first,
-	    (cv->p.cx+cv->info.x)/2,cv->p.cy,-(cv->p.cx-cv->info.x)/2,0);
-	SetCurve(sp = sp->next->to,
-	    cv->info.x,(cv->p.cy+cv->info.y)/2,0,-(cv->p.cy-cv->info.y)/2);
-	SetCurve(sp = sp->next->to,
-	    (cv->p.cx+cv->info.x)/2,cv->info.y,(cv->p.cx-cv->info.x)/2,0);
-	SetCurve(sp = sp->next->to,
-	    cv->p.cx,(cv->p.cy+cv->info.y)/2,0,(cv->p.cy-cv->info.y)/2);
+	if ( !center_out ) {
+	    center.x = (cv->p.cx+cv->info.x)/2; center.y = (cv->p.cy+cv->info.y)/2;
+	    if (( xrad = (cv->p.cx-cv->info.x)/2 )<0 ) xrad = -xrad;
+	    if (( yrad = (cv->p.cy-cv->info.y)/2 )<0 ) yrad = -yrad;
+	} else {
+	    center.x = cv->p.cx; center.y = cv->p.cy;
+	    if (( xrad = (cv->p.cx-cv->info.x) )<0 ) xrad = -xrad;
+	    if (( yrad = (cv->p.cy-cv->info.y) )<0 ) yrad = -yrad;
+	}
+	ellipse = cv->sc->parent->order2 ? ellipse2 : ellipse3;
+	for ( i=0, sp=cv->active_shape->first; ellipse[i].me.x!=0 || ellipse[i].me.y!=0 ; ++i, sp=sp->next->to )
+	    SetCurve(sp,&center,xrad,yrad,&ellipse[i]);
       break;
       case cvt_poly:
 	base = atan2(cv->p.cy-cv->info.y,cv->p.cx-cv->info.x);

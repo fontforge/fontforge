@@ -1308,7 +1308,8 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	CVDrawRubberRect(pixmap,cv);
     if ( cv->p.rubberlining )
 	CVDrawRubberLine(pixmap,cv);
-    if (( cv->active_tool >= cvt_scale && cv->active_tool <= cvt_skew ) &&
+    if ((( cv->active_tool >= cvt_scale && cv->active_tool <= cvt_skew ) ||
+		cv->active_shape!=NULL ) &&
 	    cv->p.pressed )
 	DrawTransOrigin(cv,pixmap);
 

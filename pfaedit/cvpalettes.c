@@ -164,6 +164,7 @@ static int popupsres[] = { _STR_Pointer, _STR_PopMag,
 			            _STR_PopRectElipse, _STR_PopPolyStar};
 static int editablelayers[] = { _STR_Fore, _STR_Back, _STR_Grid };
 static int rectelipse=0, polystar=0, regular_star=1;
+static int center_out = false;
 static real rr_radius=0;
 static int ps_pointcnt=6;
 static real star_percent=1.7320508;	/* Regular 6 pointed star */
@@ -177,6 +178,10 @@ static StrokeInfo expand = { 25, lj_round, lc_butt, si_centerline,
 
 real CVRoundRectRadius(void) {
 return( rr_radius );
+}
+
+int CVRectElipseCenter(void) {
+return( center_out );
 }
 
 int CVPolyStarPoints(void) {
@@ -199,6 +204,7 @@ struct ask_info {
     int done;
     int ret;
     real *val;
+    int *co;
     GGadget *rb1;
     GGadget *reg;
     int isint;
@@ -216,8 +222,10 @@ static int TA_OK(GGadget *g, GEvent *e) {
 	    val = GetIntR(d->gw,CID_ValText,d->lab,&err);
 	    if ( !(regular_star = GGadgetIsChecked(d->reg)))
 		val2 = GetRealR(d->gw,CID_PointPercent,_STR_SizeOfPoints,&err);
-	} else
+	} else {
 	    val = GetRealR(d->gw,CID_ValText,d->lab,&err);
+	    *(d->co) = !GGadgetIsChecked(d->reg);
+	}
 	if ( err )
 return( true );
 	*d->val = val;
@@ -248,18 +256,19 @@ static int toolask_e_h(GWindow gw, GEvent *event) {
 return( event->type!=et_char );
 }
 
-static int Ask(int rb1, int rb2, int rb, int lab, real *val, int isint ) {
+static int Ask(int rb1, int rb2, int rb, int lab, real *val, int *co, int isint ) {
     struct ask_info d;
     char buffer[20], buf[20];
     GRect pos;
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[11];
     GTextInfo label[11];
-    int off = isint?30:0;
+    int off = isint?15:0;
 
     d.done = false;
     d.ret = rb;
     d.val = val;
+    d.co = co;
     d.isint = isint;
     d.lab = lab;
 
@@ -273,7 +282,7 @@ static int Ask(int rb1, int rb2, int rb, int lab, real *val, int isint ) {
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,190));
-	pos.height = GDrawPointsToPixels(NULL,105+off);
+	pos.height = GDrawPointsToPixels(NULL,120+off);
 	d.gw = GDrawCreateTopWindow(NULL,&pos,toolask_e_h,&d,&wattrs);
 
 	memset(&label,0,sizeof(label));
@@ -309,7 +318,7 @@ static int Ask(int rb1, int rb2, int rb, int lab, real *val, int isint ) {
 	gcd[3].gd.cid = CID_ValText;
 	gcd[3].creator = GTextFieldCreate;
 
-	gcd[4].gd.pos.x = 20-3; gcd[4].gd.pos.y = 70+off;
+	gcd[4].gd.pos.x = 20-3; gcd[4].gd.pos.y = 85+off;
 	gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
 	gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_default;
 	label[4].text = (unichar_t *) _STR_OK;
@@ -319,7 +328,7 @@ static int Ask(int rb1, int rb2, int rb, int lab, real *val, int isint ) {
 	gcd[4].gd.handle_controlevent = TA_OK;
 	gcd[4].creator = GButtonCreate;
 
-	gcd[5].gd.pos.x = -20; gcd[5].gd.pos.y = 70+3+off;
+	gcd[5].gd.pos.x = -20; gcd[5].gd.pos.y = 85+3+off;
 	gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
 	gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
 	label[5].text = (unichar_t *) _STR_Cancel;
@@ -359,6 +368,20 @@ static int Ask(int rb1, int rb2, int rb, int lab, real *val, int isint ) {
 	    gcd[9].gd.pos.x = 180; gcd[9].gd.pos.y = 70; 
 	    gcd[9].gd.flags = gg_enabled|gg_visible ;
 	    gcd[9].creator = GLabelCreate;
+	} else {
+	    label[6].text = (unichar_t *) _STR_WithinBoundingBox;
+	    label[6].text_in_resource = true;
+	    gcd[6].gd.label = &label[6];
+	    gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = 65; 
+	    gcd[6].gd.flags = gg_enabled|gg_visible | (*co==0?gg_cb_on:0);
+	    gcd[6].creator = GRadioCreate;
+
+	    label[7].text = (unichar_t *) _STR_CenterOut;
+	    label[7].text_in_resource = true;
+	    gcd[7].gd.label = &label[7];
+	    gcd[7].gd.pos.x = 90; gcd[7].gd.pos.y = 65; 
+	    gcd[7].gd.flags = gg_enabled|gg_visible | (*co==1?gg_cb_on:0);
+	    gcd[7].creator = GRadioCreate;
 	}
 	GGadgetsCreate(d.gw,gcd);
     d.rb1 = gcd[0].ret;
@@ -374,14 +397,15 @@ return( d.ret );
 
 static void CVRectElipse(CharView *cv) {
     rectelipse = Ask(_STR_Rectangle,_STR_Elipse,rectelipse,
-	    _STR_RRRad,&rr_radius,false);
+	    _STR_RRRad,&rr_radius,&center_out,false);
     GDrawRequestExpose(cvtools,NULL,false);
 }
 
 static void CVPolyStar(CharView *cv) {
     real temp = ps_pointcnt;
+    int foo;
     polystar = Ask(_STR_Polygon,_STR_Star,polystar,
-	    _STR_NumPSVert,&temp,true);
+	    _STR_NumPSVert,&temp,&foo,true);
     ps_pointcnt = temp;
 }
 

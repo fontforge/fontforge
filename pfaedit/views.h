@@ -558,6 +558,7 @@ extern GWindow BVMakeTools(BitmapView *bv);
 extern GWindow BVMakeLayers(BitmapView *bv);
 extern int CVPaletteMnemonicCheck(GEvent *event);
 extern real CVRoundRectRadius(void);
+extern int CVRectElipseCenter(void);
 extern real CVStarRatio(void);
 extern int CVPolyStarPoints(void);
 extern StrokeInfo *CVFreeHandInfo(void);
