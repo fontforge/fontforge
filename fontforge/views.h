@@ -200,6 +200,7 @@ typedef struct charview {
     unsigned int inactive:1;			/* When in a search view */
     unsigned int show_ft_results: 1;	/* 32 */
     unsigned int coderange: 2;			/* For the debugger */
+    unsigned int autonomous_ruler_w: 1;
     Layer *layerheads[dm_max];
     real scale;
     GWindow gw, v;
@@ -626,10 +627,12 @@ extern int CVPalettesWidth(void);
 extern int BVPalettesWidth(void);
 
 extern void BackgroundImageTransform(SplineChar *sc, ImageList *img,real transform[6]);
+extern void CVDoTransform(CharView *cv, enum cvtools cvt );
 extern void CVTransFunc(CharView *cv,real transform[6],enum fvtrans_flags);
 extern void skewselect(BVTFunc *bvtf,real t);
 extern void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *,enum fvtrans_flags),
-	int (*getorigin)(void *,BasePoint *,int), int enableback);
+	int (*getorigin)(void *,BasePoint *,int), int enableback,
+	enum cvtools cvt);
 extern void BitmapDlg(FontView *fv,SplineChar *sc, int isavail);
 extern int BitmapControl(FontView *fv,int32 *sizes,int isavail);
 extern void _FVSimplify(FontView *fv,struct simplifyinfo *smpl);
@@ -990,4 +993,6 @@ extern void CVLayerChange(CharView *cv);
 extern void SFLayerChange(SplineFont *sf);
 
 extern GMenuItem helplist[];
+extern BasePoint last_ruler_offset[];
+
 #endif

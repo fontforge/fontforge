@@ -1991,7 +1991,7 @@ static void FVMenuTransform(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 return;
     if ( FVAllSelected(fv))
 	flags = 0x7;
-    TransformDlgCreate(fv,FVTransFunc,getorigin,flags);
+    TransformDlgCreate(fv,FVTransFunc,getorigin,flags,cvt_none);
 }
 
 #ifdef FONTFORGE_CONFIG_NONLINEAR

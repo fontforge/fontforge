@@ -86,6 +86,9 @@ static GTextInfo transformtypes[] = {
     { (unichar_t *) _STR_ScaleDDD, NULL, 0, 0, (void *) 0x8, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_FlipDDD, NULL, 0, 0, (void *) 0x10, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_SkewDDD, NULL, 0, 0, (void *) 0x20, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_MoveByRulerDDD, NULL, 0, 0, (void *) 0x401, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_RotateByRulerDDD, NULL, 0, 0, (void *) 0x402, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_SkewByRulerDDD, NULL, 0, 0, (void *) 0x420, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};
 
 void skewselect(BVTFunc *bvtf,real t) {
@@ -260,6 +263,31 @@ static int Trans_TypeChange(GGadget *g, GEvent *e) {
 	int index = GGadgetGetFirstListSelectedItem(g);
 	int mask = (int) transformtypes[index].userdata;
 	int i;
+
+	if ( mask & 0x400 ) {
+	    real xoff = last_ruler_offset[0].x, yoff = last_ruler_offset[0].y;
+	    char buf[24]; unichar_t ubuf[24];
+	    if ( mask & 0x20 )
+		index -= 3;
+	    else
+		index -= 6;
+	    GGadgetSelectOneListItem( g,index );
+	    mask &= ~0x400;
+	    if ( mask&1 ) {		/* Move */
+		sprintf( buf, "%.1f", xoff );
+		uc_strcpy(ubuf,buf);
+		GGadgetSetTitle(GWidgetGetControl(bw,CID_XMove), ubuf );
+		sprintf( buf, "%.1f", yoff );
+		uc_strcpy(ubuf,buf);
+		GGadgetSetTitle(GWidgetGetControl(bw,CID_YMove), ubuf );
+	    } else {
+		sprintf( buf, "%.0f", atan2(yoff,xoff)*180/3.1415926535897932 );
+		uc_strcpy(ubuf,buf);
+		GGadgetSetTitle(GWidgetGetControl(bw,(mask&0x2)?CID_Angle:CID_SkewAng), ubuf );
+		GGadgetSetChecked(GWidgetGetControl(bw,CID_Clockwise), false );
+		GGadgetSetChecked(GWidgetGetControl(bw,CID_CounterClockwise), true );
+	    }
+	}
 
 	for ( i=CID_First; i<=CID_Last; ++i ) {
 	    GGadget *sg;
@@ -469,7 +497,8 @@ static void MakeTransBlock(TransData *td,int bnum) {
 }
 
 void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *,enum fvtrans_flags),
-	int (*getorigin)(void *,BasePoint *,int), int enableback) {
+	int (*getorigin)(void *,BasePoint *,int), int enableback,
+	enum cvtools cvt) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
@@ -593,6 +622,19 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	    ti[0]->selected = true;
 	    GGadgetSetTitle(orig,ti[0]->text);
 	}
+    }
+
+    if ( cvt!=cvt_none ) {
+	int index = cvt == cvt_scale  ? 4 :
+		    cvt == cvt_flip   ? 5 :
+		    cvt == cvt_rotate ? 2 :
+				        6 ;
+	GGadget *firstoption = GWidgetGetControl(td.tblock[0],CID_Type);
+	GEvent dummy;
+	GGadgetSelectOneListItem( firstoption, index );
+	memset(&dummy,0,sizeof(dummy));
+	dummy.type = et_controlevent; dummy.u.control.subtype = et_listselected;
+	Trans_TypeChange( firstoption, &dummy );
     }
 
     for ( i=0; i<TCnt; ++i ) {
