@@ -1008,14 +1008,17 @@ return( NULL );
 	    attrs.event_mask |= VisibilityChangeMask;
     }
 
-    if ( (wattrs->mask&wam_centered) && wattrs->centered && gw == gdisp->groot) {
+    /* Only put the new dlgs underneath the cursor if focusfollows mouse, where */
+    /*  they need to be there... */
+    if ( gw == gdisp->groot &&
+	    ( ((wattrs->mask&wam_centered) && wattrs->centered) ||
+	      ((wattrs->mask&wam_undercursor) && wattrs->undercursor && !gdisp->focusfollowsmouse)) ) {
 	pos->x = (gdisp->groot->pos.width-pos->width)/2;
 	pos->y = (gdisp->groot->pos.height-pos->height)/2;
 	if ( wattrs->centered==2 )
 	    pos->y = (gdisp->groot->pos.height-pos->height)/3;
 	nw->pos = *pos;
-    }
-    if ( (wattrs->mask&wam_undercursor) && wattrs->undercursor && gw == gdisp->groot) {
+    } else if ( (wattrs->mask&wam_undercursor) && wattrs->undercursor && gw == gdisp->groot) {
 	int junk;
 	Window wjunk;
 	int x, y; unsigned int state;
