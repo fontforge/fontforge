@@ -1802,6 +1802,7 @@ return;
     cv->cc->views = cv;
     cv->show = charshows;
     cv->instrinfo.showaddr = charshows.addr;
+    cv->scale = 1.0;
 
     sprintf(buf,"Glyph: %d ", glyph);
     uc_strcpy(title, buf);
