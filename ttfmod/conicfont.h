@@ -104,6 +104,7 @@ typedef struct refchar {
     unsigned int use_my_metrics: 1;
     unsigned int round: 1;
     unsigned int point_match: 1;
+    unsigned int tiny_output: 1;
     int glyph;
     real transform[6];		/* transformation matrix (first 2 rows of a 3x3 matrix, missing row is 0,0,1) */
     ConicPointList *conics;
@@ -136,6 +137,7 @@ typedef struct conicchar {
 	    /* The dependents list is a list of all characters which refenence*/
 	    /*  the current character directly */
     int32 glyph_offset, glyph_len;
+    int tiny_glyph;		/* Used when dumping a tiny ttf font */
 } ConicChar;
 
 typedef struct conicfont {

@@ -100,6 +100,10 @@ static int makenomenh() {
 	inames[i] = uc_copy(istandard[i]);
 
     in = fopen("nomen-en.c","r");
+    if ( in==NULL ) {
+	fprintf(stderr, "Missing required input file: nomen-en.c\n" );
+	exit( 1 );
+    }
     out = fopen("nomen.h","w");
     fprintf( out, "#ifndef _NOMEN_H\n" );
     fprintf( out, "#define _NOMEN_H\n" );

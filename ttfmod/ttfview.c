@@ -858,6 +858,7 @@ static void TFVExpose(TtfView *tfv,GWindow pixmap,GRect *rect) {
     TtfFont *font;
     unichar_t buffer[60];
     static unichar_t spec[] = { ' ', '%', '8', 'd', ' ', '%', '8', 'd',  '\0' };
+    static unichar_t spec_tch[] = { ' ', '%', '8', 'd', ' ', '?', '?', '?',  '\0' };
     GRect sel;
     static unichar_t unk[] = { '?','?','?',  '\0' };
 
@@ -888,8 +889,10 @@ static void TFVExpose(TtfView *tfv,GWindow pixmap,GRect *rect) {
 		buffer[1] = (font->tbls[j]->name>>16)&0xff;
 		buffer[2] = (font->tbls[j]->name>>8)&0xff;
 		buffer[3] = (font->tbls[j]->name   )&0xff;
-		u_sprintf(buffer+4, spec,
-			font->tbls[j]->start, font->tbls[j]->data==NULL ? font->tbls[j]->len: font->tbls[j]->newlen);
+		u_sprintf(buffer+4,
+			font->tbls[j]->td_changed? spec_tch : spec,
+			font->tbls[j]->start,
+			font->tbls[j]->changed ? font->tbls[j]->newlen: font->tbls[j]->len);
 		GDrawSetFont(pixmap, font->tbls[j]->changed ? tfv->bold : tfv->font);
 		GDrawDrawText(pixmap,3,(l-tfv->lpos)*tfv->fh+tfv->as+2,buffer,-1,NULL,0);
 	    }

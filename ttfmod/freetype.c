@@ -351,6 +351,8 @@ static FT_Error FreeType_FaceForCV(CharView *cv, FT_Face *face) {
     TtfFile *tfile = cv->cc->parent->tfile;
     int i;
 
+    /* Ttf_MakeTinyFont(cv->cc);*/	/* This makes the tiny font. Now figure out how to use it!!!! */
+
     for ( i=0; i<tfile->font_cnt; ++i )
 	if ( tfile->fonts[i]==cv->cc->parent->tfont )
     break;
