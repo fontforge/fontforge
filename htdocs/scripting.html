@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 17-Oct-2002 -->
+  <!-- AP: Last modified: 20-Oct-2002 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -54,9 +54,9 @@ for stdin. (If you build PfaEdit without X11 then pfaedit will attempt to
 read a script file from <CODE>stdin</CODE> if none is given on the command
 line.)
 <P>
-You can also start a script from within PfaEdit with File-&gt;Execute Script,
-and you can use the Preference Dlg to define a set of frequently used scripts
-which can be invoked directly by menu.
+You can also start a script from within PfaEdit with <CODE>File-&gt;Execute
+Script</CODE>, and you can use the Preference Dlg to define a set of frequently
+used scripts which can be invoked directly by menu.
 <P>
 The scripting language provides access to much of the functionality found
 in the font view's menus. It does not currently (and probably never will)
@@ -64,6 +64,10 @@ provide access to everything. (If you find a lack let me know, I may put
 it in for you). It does not provide commands for building up a character
 out of splines, instead it allows you to do high level modifications to
 characters.
+<P>
+If you set the environment variable <CODE>PFAEDIT_VERBOSE</CODE> (it doesn't
+need a value, just needs to be set) then PfaEdit will print scripts to stdout
+as it executes them.
 <P>
 In general I envision this as being useful for things like taking a latin
 font and extending it to contain cyrillic characters. So the script might:

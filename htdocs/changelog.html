@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 17-Oct-2002 -->
+  <!-- AP: Last modified: 20-Oct-2002 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,37 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    20-Oct-2002
+    <UL>
+      <LI>
+	Updated French and Japanese UI translations
+      <LI>
+	Use LC_CTYPE (rather than LC_MESSAGES) to determine the current local encoding
+      <LI>
+	If the width line were selected then PfaEdit would sometimes snap cursor
+	movements to an arbetrary x-value (often the axis)
+      <LI>
+	KANOU provided a patch which fixes some remove overlap problems.
+      <LI>
+	I had broken the generation of pure bitmap sfnts from scripts (7-Sept)
+      <LI>
+	Added a verbose mode to scripts (prints script to stdout as it is executed).
+    </UL>
+  <LI>
+    18-Oct-2002
+    <UL>
+      <LI>
+	Tweaked metrics view so that null kerning now displays as an empty string
+	rather than "0"
+      <LI>
+	If a font contained a kerning pair to a character that was omitted when saving
+	the sfd file, then loading that font would leave it in a bad state and eventually
+	cause a crash. Fixed on both ends (don't generate bad sfds any more, and
+	can deal with them properly when found)
+      <LI>
+	Improved the "Insert Character" dialog a bit.
+    </UL>
   <LI>
     17-Oct-2002
     <UL>

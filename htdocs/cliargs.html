@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Jan-2002 -->
-  <!-- AP: Last modified: 11-Mar-2002 -->
+  <!-- AP: Last modified: 20-Oct-2002 -->
   <TITLE>Command Line Arguments</TITLE>
 </HEAD>
 <BODY>
@@ -126,6 +126,60 @@ PfaEdit recognizes the following options:
     (See the X manuals for a description of what these mean). PfaEdit will search
     through the visuals in an attempt to find one with the desired VisualClass
     (given here) and depth (given with the -depth option).
+</DL>
+<H2>
+  <A NAME="Environment">Environment Variables</A>
+</H2>
+<P>
+PfaEdit examines the following environment variables:
+<DL>
+  <DT>
+    <CODE>BROWSER</CODE>
+  <DD>
+    Specifies the name of a browser program for examining documentation (must
+    be able to read a local or remote html file and display it reasonably)
+  <DT>
+    <CODE>AUTOTRACE</CODE>
+  <DD>
+    Specifies the name and location of the autotrace program. (if not specified
+    PfaEdit will try to find it in the user's path)
+  <DT>
+    <CODE>MF</CODE>
+  <DD>
+    Specifies the name and location of the metafont program. (if not specified
+    PfaEdit will try to find it in the user's path)
+  <DT>
+    <CODE>PFAEDIT_VERBOSE</CODE>
+  <DD>
+    Turns on verbose mode in script execution (the script will be printed to
+    stdout as it is executed).
+</DL>
+<P>
+  <HR>
+<DL>
+  <DT>
+    <CODE>LANG, LC_ALL, </CODE>etc.
+  <DD>
+    To determine the current locale, etc.
+  <DT>
+    <CODE>PATH</CODE>
+  <DD>
+    Used when looking for Autotrace or mf programs
+  <DT>
+    <CODE>TMPDIR</CODE>
+  <DD>
+    Temporary directory. Used for temporary files for which I need a filename
+    (ie. to pass to autotrace, etc.)
+  <DT>
+    <CODE>HOME</CODE>
+  <DD>
+    Used to figure out where to put the .PfaEdit directory which includes user
+    preferences and the recovery files.
+  <DT>
+    <CODE>USER</CODE>
+  <DD>
+    Used to create comments in new fonts about who created the font, or who saved
+    it.
 </DL>
 <P>
 <P>
