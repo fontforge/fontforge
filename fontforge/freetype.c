@@ -56,6 +56,10 @@ BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int dep
 return( NULL );
 }
 
+BDFFont *SplineFontFreeTypeRasterizeNoHints(SplineFont *sf,int pixelsize,int depth) {
+return( NULL );
+}
+
 BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,int pixelsize,int depth) {
 return( NULL );
 }
