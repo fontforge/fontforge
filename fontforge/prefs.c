@@ -66,6 +66,7 @@ extern int default_fv_showhmetrics;	/* in fontview */
 extern int default_fv_showvmetrics;	/* in fontview */
 extern int default_fv_glyphlabel;	/* in fontview */
 extern int palettes_docked;		/* in cvpalettes */
+extern int cvvisible[2], bvvisible[3];	/* in cvpalettes.c */
 extern int maxundoes;			/* in cvundoes */
 extern int prefer_cjk_encodings;	/* in parsettf */
 int greeknames = false;
@@ -321,6 +322,11 @@ static struct prefs_list {
 	{ "DefaultFVGlyphLabel", pr_int, &default_fv_glyphlabel, NULL, NULL, 'S', NULL, 1 },
 	{ "OnlyCopyDisplayed", pr_bool, &onlycopydisplayed, NULL, NULL, '\0', NULL, 1 },
 	{ "PalettesDocked", pr_bool, &palettes_docked, NULL, NULL, '\0', NULL, 1 },
+	{ "CVVisible0", pr_bool, &cvvisible[0], NULL, NULL, '\0', NULL, 1 },
+	{ "CVVisible1", pr_bool, &cvvisible[1], NULL, NULL, '\0', NULL, 1 },
+	{ "BVVisible0", pr_bool, &bvvisible[0], NULL, NULL, '\0', NULL, 1 },
+	{ "BVVisible1", pr_bool, &bvvisible[1], NULL, NULL, '\0', NULL, 1 },
+	{ "BVVisible2", pr_bool, &bvvisible[2], NULL, NULL, '\0', NULL, 1 },
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	{ "MarkExtrema", pr_int, &CVShows.markextrema, NULL, NULL, '\0', NULL, 1 },
 	{ "ShowRulers", pr_bool, &CVShows.showrulers, NULL, NULL, '\0', NULL, 1, _STR_PrefsPopupRulers },

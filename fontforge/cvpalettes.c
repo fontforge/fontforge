@@ -45,7 +45,7 @@ extern void *font_cvt(char *val, void *def);
 extern GDevEventMask input_em[];
 extern const int input_em_cnt;
 
-static int cvvisible[2] = { 1, 1}, bvvisible[3]= { 1,1,1 };
+int cvvisible[2] = { 1, 1}, bvvisible[3]= { 1,1,1 };
 static GWindow cvlayers, cvtools, bvlayers, bvtools, bvshades;
 #ifdef FONTFORGE_CONFIG_TYPE3
 static GWindow cvlayers2;
@@ -1004,7 +1004,8 @@ return( cvtools );
     rq.weight = 400;
     font = GDrawInstanciateFont(NULL,&rq);
 
-    GDrawSetVisible(cvtools,true);
+    if ( cvvisible[1])
+	GDrawSetVisible(cvtools,true);
 return( cvtools );
 }
 
@@ -1492,7 +1493,8 @@ return;
     if ( cv->showfore ) gcd[5].gd.flags |= gg_cb_on;
 
     GGadgetsCreate(cvlayers2,gcd);
-    GDrawSetVisible(cvlayers2,true);
+    if ( cvvisible[0] )
+	GDrawSetVisible(cvlayers2,true);
 }
 
 static void LayersSwitch(CharView *cv) {
@@ -2029,7 +2031,8 @@ return( cvlayers );
     }
 
     GGadgetsCreate(cvlayers,gcd);
-    GDrawSetVisible(cvlayers,true);
+    if ( cvvisible[0] )
+	GDrawSetVisible(cvlayers,true);
 return( cvlayers );
 }
 
@@ -2186,6 +2189,7 @@ void CVPaletteSetVisible(CharView *cv,int which,int visible) {
     else if ( which==0 && cvlayers!=NULL )
 	GDrawSetVisible(cvlayers,visible );
     cvvisible[which] = visible;
+    SavePrefs();
 }
 
 void CVPalettesRaise(CharView *cv) {
@@ -2483,7 +2487,8 @@ return(bvlayers);
     if ( bv->showgrid ) gcd[5].gd.flags |= gg_cb_on;
 
     GGadgetsCreate(bvlayers,gcd);
-    GDrawSetVisible(bvlayers,true);
+    if ( bvvisible[0] )
+	GDrawSetVisible(bvlayers,true);
 return( bvlayers );
 }
 
@@ -2631,7 +2636,8 @@ return( bvshades );
     }
     bvshades = CreatePalette( bv->gw, &r, bvshades_e_h, bv, &wattrs, bv->v );
     bv->shades_hidden = BDFDepth(bv->bdf)==1;
-    GDrawSetVisible(bvshades,!bv->shades_hidden);
+    if ( bvvisible[2] && !bv->shades_hidden )
+	GDrawSetVisible(bvshades,true);
 return( bvshades );
 }
 
@@ -2860,7 +2866,8 @@ return( bvtools );
 	r.x = 0; r.y = 0;
     }
     bvtools = CreatePalette( bv->gw, &r, bvtools_e_h, bv, &wattrs, bv->v );
-    GDrawSetVisible(bvtools,true);
+    if ( bvvisible[1] )
+	GDrawSetVisible(bvtools,true);
 return( bvtools );
 }
 
@@ -2965,11 +2972,12 @@ void BVPaletteSetVisible(BitmapView *bv,int which,int visible) {
     BVPaletteCheck(bv);
     if ( which==1 && bvtools!=NULL)
 	GDrawSetVisible(bvtools,visible );
-    else if ( which==1 && bvshades!=NULL)
+    else if ( which==2 && bvshades!=NULL)
 	GDrawSetVisible(bvshades,visible );
     else if ( which==0 && bvlayers!=NULL )
 	GDrawSetVisible(bvlayers,visible );
     bvvisible[which] = visible;
+    SavePrefs();
 }
 
 void BVPaletteActivate(BitmapView *bv) {
@@ -3094,7 +3102,7 @@ void BVPaletteColorUnderChange(BitmapView *bv,int color_under) {
 }
 
 void BVPaletteChangedChar(BitmapView *bv) {
-    if ( bvshades!=NULL ) {
+    if ( bvshades!=NULL && bvvisible[2]) {
 	int hidden = bv->bdf->clut==NULL;
 	if ( hidden!=bv->shades_hidden ) {
 	    GDrawSetVisible(bvshades,!hidden);
