@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 31-Aug-2003 -->
+  <!-- AP: Last modified: 3-Sep-2003 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -65,6 +65,8 @@
   <LI>
     <A HREF="#fuzzy">My characters are all perfectly hinted, why do some stems
     have different widths (or appear fuzzy, or fade away completely)?</A>
+  <LI>
+    <A HREF="#monospace">How do I mark a font as monospaced?</A>
   <LI>
     <A HREF="#new-encoding">How do I tell pfaedit about a new encoding?</A>
   <LI>
@@ -698,6 +700,17 @@ MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
     The solution to this is to run Element-&gt;Correct Direction on all your
     characters before generating a font.<BR>
     But sometimes the poor rasterizer just can't do the right thing...
+  <DT>
+    <B><A NAME="monospace">How do I mark a font as monospaced?</A></B>
+  <DD>
+    You don't. Just insure that all the characters in the font have the same
+    width and then PfaEdit will automatically mark it as monospaced for you.
+    (If you mark it as monospaced incorrectly some rasterizers will give strange
+    results).
+    <P>
+    If you are unsure whether all the characters in your font have the same advance
+    width use <A HREF="problems.html#Advance">Element-&gt;Find
+    Problems-&gt;Random-&gt;Check Advance.</A>
   <DT>
     <A NAME="new-encoding"><B>How I do tell pfaedit about a new encoding</B></A>
   <DD>

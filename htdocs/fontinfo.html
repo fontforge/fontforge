@@ -151,9 +151,12 @@ PfaEdit knows about the following encodings by default:
   <LI>
     Johab
   <LI>
-    GB 2312 -- Chinese
+    GB 2312 -- Simplified Chinese
   <LI>
-    Big5 
+    Packed GB 2312 -- (I don't know what the proper name for this is, ASCII for
+    bytes&lt;0x80, and GB 2312 EUC offset by 0x8080)
+  <LI>
+    Big5 -- Traditional Chinese
       <HR>
   <LI>
     Custom -- An unknown encoding
@@ -313,7 +316,8 @@ trick). (The XUID field is only meaningfull in PostScript fonts)
 <P>
 The UniqueID field is an older convention for the same purpose as XUID. If
 you do not fill in this field then PfaEdit will pick a random number for
-you in the allowable range. If you have talked to Adobe and been assigned
+you in the allowable range. If you want your font to have no unique id then
+give this the value of -1. If you have talked to Adobe and been assigned
 a real UniqueID then you may use this field, otherwise leave it blank. (The
 UniqueID field is only meaningfull in PostScript fonts)
 <P>
@@ -649,18 +653,19 @@ languages.
   </TR>
   <TR>
     <TH>Hungarian</TH>
-    <TD>Normàl</TD>
-    <TD>Kövér</TD>
-    <TD>FélkövérKövér</TD>
-    <TD>Világos</TD>
-    <TD>Közepes</TD>
-    <TD>Sötétes</TD>
+    <TD>Norm&agrave;l</TD>
+    <TD>K&ouml;v&eacute;r</TD>
+    <TD>F&eacute;lk&ouml;v&eacute;rK&ouml;v&eacute;r</TD>
+    <TD>Vil&aacute;gos</TD>
+    <TD>K&ouml;zepes</TD>
+    <TD>S&ouml;t&eacute;tes</TD>
     <TD>Fekete</TD>
-    <TD><!--D&#x151;lt-->Do"lt</TD>
-    <TD>Döntött</TD>
+    <TD><!--D&amp;#x151;lt-->
+      Do"lt</TD>
+    <TD>D&ouml;nt&ouml;tt</TD>
     <TD>Keskeny</TD>
-    <TD>Széles</TD>
-    <TD>Kontúros</TD>
+    <TD>Sz&eacute;les</TD>
+    <TD>Kont&uacute;ros</TD>
   </TR>
   <TR>
     <TH>Russian<BR>
