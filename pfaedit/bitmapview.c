@@ -1665,9 +1665,10 @@ BitmapView *BitmapViewCreatePick(int enc, FontView *fv) {
 
     sf = fv->cidmaster ? fv->cidmaster : fv->sf;
 
-    for ( bdf = sf->bitmaps; bdf!=NULL && bdf->pixelsize!=BVShows.lastpixelsize; bdf = bdf->next );
-    if ( bdf==NULL && fv->show!=fv->filled )
+    if ( fv->show!=fv->filled )
 	bdf = fv->show;
+    else
+	for ( bdf = sf->bitmaps; bdf!=NULL && bdf->pixelsize!=BVShows.lastpixelsize; bdf = bdf->next );
     if ( bdf==NULL )
 	bdf = sf->bitmaps;
 
