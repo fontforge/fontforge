@@ -643,6 +643,7 @@ static unichar_t mnemonic_Xuid[] = 'X';
 static char str_NumGlyphs[] = "Number of Glyphs:";
 static unichar_t mnemonic_NumGlyphs[] = 'N';
 static char str_CIDRegistry[] = "CID Registry:";
+static char str_CIDSupplement[] = "Supplement:";
 static char str_Guess[] = "Guess";
 static unichar_t mnemonic_Guess[] = 'G';
 static char str_Hist[] = "Hist";
@@ -960,7 +961,7 @@ static char *str_Trademark = "Trademark";
 static char *str_Manufacturer = "Manufacturer";
 static char *str_Designer = "Designer";
 static char *str_Descriptor = "Descriptor";
-static char *str_VendorURL = "Vendor URL";
+static char *str_VenderURL = "Vender URL";
 static char *str_DesignerURL = "Designer URL";
 static char *str_License = "License";
 static char *str_LicenseURL = "License URL";
@@ -3693,6 +3694,9 @@ static char *str_OverlapBadDir = "Glyph %.40hs contains an overlapped region whe
     /* anchorsaway */
 static char *str_Mag = "Mag:";
 static char *str_Cor = "Cor:";
+
+    /* group.c */
+static char *str_ShowGrp="Show Group";
 
     /* Adjectives, etc. that are sometimes masculine and sometimes feminine in french (perhaps other langs) */
 static char str_NewDDD_fem[] = "New...";
