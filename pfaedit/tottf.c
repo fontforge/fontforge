@@ -2342,28 +2342,15 @@ static void sethead(struct head *head,SplineFont *_sf) {
 
 static void sethhead(struct hhead *hhead,struct hhead *vhead,struct alltabs *at, SplineFont *_sf) {
     int i, width, rbearing, height, bbearing;
+    int ymax, ymin, xmax, xmin, off;
     SplineFont *sf=NULL;
     DBounds bb;
     int j;
     /* Might as well fill in the vhead even if we don't use it */
     /*  we just won't dump it out if we don't want it */
 
-    hhead->version = 0x00010000;
-    if ( _sf->pfminfo.hhead_ascent!=0 ) {
-	hhead->ascender = _sf->pfminfo.hhead_ascent;
-	hhead->descender = _sf->pfminfo.hhead_descent;
-    } else {
-	hhead->ascender = _sf->ascent;
-	hhead->descender = -_sf->descent;
-    }
-    hhead->linegap = _sf->pfminfo.linegap;
-
-    vhead->version = 0x00011000;
-    vhead->ascender = (_sf->ascent+_sf->descent)/2;
-    vhead->descender = -vhead->ascender;
-    vhead->linegap = _sf->pfminfo.linegap;
-
     width = 0x80000000; rbearing = 0x7fffffff; height = 0x80000000; bbearing=0x7fffffff;
+    xmax = ymax = 0x80000000; xmin = ymin = 0x7fffffff;
     j=0;
     do {
 	sf = ( _sf->subfontcnt==0 ) ? _sf : _sf->subfonts[j];
@@ -2373,9 +2360,25 @@ static void sethhead(struct hhead *hhead,struct hhead *vhead,struct alltabs *at,
 	    if ( sf->chars[i]->vwidth>height ) height = sf->chars[i]->vwidth;
 	    if ( sf->chars[i]->width-bb.maxx < rbearing ) rbearing = sf->chars[i]->width-bb.maxx;
 	    if ( sf->chars[i]->vwidth-bb.maxy < bbearing ) bbearing = sf->chars[i]->vwidth-bb.maxy;
+	    if ( bb.maxy > ymax ) ymax = bb.maxy;
+	    if ( bb.miny < ymin ) ymin = bb.miny;
+	    if ( bb.maxx > xmax ) xmax = bb.maxx;
+	    if ( bb.minx < xmin ) xmin = bb.minx;
 	}
 	++j;
     } while ( j<_sf->subfontcnt );
+
+    hhead->version = 0x00010000;
+    hhead->ascender = ymax;
+    hhead->descender = ymin;
+    hhead->linegap = _sf->pfminfo.linegap;
+
+    vhead->version = 0x00011000;
+    off = (_sf->ascent+_sf->descent)/2;
+    vhead->ascender = xmax-off;
+    vhead->descender = xmin-off;
+    vhead->linegap = _sf->pfminfo.linegap;
+
     at->isfixed = at->gi.fixed_width!=-1;
     hhead->maxwidth = width;
     hhead->minlsb = at->head.xmin;
