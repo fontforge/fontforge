@@ -1209,6 +1209,15 @@ return( false );
 
     r1 = refs;
     if ((r2 = r1->next)==NULL ) {
+	RefChar *refs = r1->sc->layers[ly_fore].refs;
+	if ( refs!=NULL && refs->next!=NULL && refs->next->next==NULL &&
+		r1->sc->layers[ly_fore].splines==NULL &&
+		refs->adobe_enc!=-1 && refs->next->adobe_enc!=-1 ) {
+	    r2 = refs->next;
+	    r1 = refs;
+	}
+    }
+    if ( r2==NULL ) {
 	r2 = &space;
 	memset(r2,'\0',sizeof(space));
 	space.adobe_enc = ' ';
