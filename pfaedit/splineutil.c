@@ -219,6 +219,8 @@ void SplineRefigure(Spline *spline) {
 	if ( ysp->a==0 && xsp->a==0 && ysp->b==0 && xsp->b==0 )
 	    spline->islinear = true;	/* I'm not sure if this can happen */
     }
+    if ( isnan(ysp->a) || isnan(xsp->a) )
+	GDrawIError("NaN value in spline creation");
     LinearApproxFree(spline->approx);
     spline->approx = NULL;
     spline->knowncurved = false;
@@ -1532,6 +1534,10 @@ return( -1 );
     }
     if ( sought<ymin || sought>ymax )
 return( -1 );
+    if ( sought==ymin )
+return(  t_ymin );
+    if ( sought==ymax )
+return( t_ymax );
 
     slope = (3.0*sp->a*t_ymin+2.0*sp->b)*t_ymin + sp->c;
     if ( slope==0 )	/* we often start at a point of inflection */
@@ -1543,6 +1549,11 @@ return( -1 );
 		(new_t<t_ymin && up ) ||
 		(new_t>t_ymin && !up ))
 	    new_t = t_ymin + (t_ymax-t_ymin)* (sought-ymin)/(ymax-ymin);
+
+    }
+    if ( isnan(new_t) ) {
+	GDrawIError( "NaN in splinesolve" );
+return( -1 );
     }
 
     while ( 1 ) {
@@ -1551,6 +1562,10 @@ return( -1 );
 return( new_t );
 	}
 	newer_t = (t_ymax-t_ymin) * (sought-found_y)/(ymax-ymin);
+	if ( isnan(newer_t) ) {
+	    GDrawIError( "NaN in splinesolve" );
+return( -1 );
+	}
 	if ( found_y > sought ) {
 	    ymax = found_y;
 	    t_ymax = new_t;

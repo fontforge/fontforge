@@ -277,7 +277,7 @@ return;
 }
 
 static void *UHintCopy(SplineChar *sc,int docopy) {
-    StemInfo *h = sc->hstem, *v = sc->vstem, *last;
+    StemInfo *h = sc->hstem, *v = sc->vstem, *last=NULL;
     DStemInfo *d = sc->dstem;
     void *ret = NULL;
 

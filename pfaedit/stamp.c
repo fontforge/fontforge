@@ -1,4 +1,4 @@
 #include <time.h>
 
-const time_t link_time = 1000016727;
-const char *link_time_str = "23:25 8-9-2001";
+const time_t link_time = 1000227795;
+const char *link_time_str = "10:03 11-9-2001";

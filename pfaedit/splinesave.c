@@ -1744,7 +1744,7 @@ static Spline *lineto2(GrowBuf *gb,struct hintdb *hdb,Spline *spline, Spline *do
 	++cnt;
 	lastgood = test;
 	test = test->to->next;
-	if ( test==done )
+	if ( test==done || test==NULL )
     break;
     }
 
@@ -1756,7 +1756,7 @@ static Spline *lineto2(GrowBuf *gb,struct hintdb *hdb,Spline *spline, Spline *do
     else if ( spline->from->me.y==spline->to->me.y )
 	hv = 0;		/* Horizontal */
     if ( hv!=-1 && cnt>1 ) {
-	for ( test=spline->to->next, hvcnt=1; ; test = test->to->next ) {
+	for ( test=spline->to->next, hvcnt=1; test!=NULL ; test = test->to->next ) {
 	    if ( hv==1 && test->from->me.y==test->to->me.y )
 		hv = 0;
 	    else if ( hv==0 && test->from->me.x==test->to->me.x )
@@ -1790,7 +1790,7 @@ return( test );
 	}
     }
 
-    for ( test=spline; ; test = test->to->next ) {
+    for ( test=spline; test!=NULL; test = test->to->next ) {
 	if ( NeedsNewHintMask(hdb,test->to))
     break;
 	AddNumber2(gb,test->to->me.x-hdb->current.x);
@@ -1842,7 +1842,7 @@ static Spline *curveto2(GrowBuf *gb,struct hintdb *hdb,Spline *spline, Spline *d
 	    hdb->current = spline->to->me;
 	    ++cnt;
 	    spline = spline->to->next;
-	    if ( spline==done || cnt>9 )
+	    if ( spline==done || spline==NULL || cnt>9 )
 	break;
 	}
 	if ( gb->pt+1 >= gb->end )
@@ -1863,7 +1863,7 @@ return( spline );
 	hdb->current = spline->to->me;
 	++cnt;
 	spline = spline->to->next;
-	if ( spline==done )
+	if ( spline==done || spline==NULL )
     break;
     }
     if ( gb->pt+1 >= gb->end )

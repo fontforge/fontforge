@@ -381,6 +381,8 @@ static TPoint *SplinesFigureTPsBetween(SplinePoint *from, SplinePoint *to,
 	if ( np==to )
     break;
     }
+    if ( len==0 )
+	GDrawIError("Zero length spline segment approximation in SplinesFigureTPsBetween" );
 
 #if 0
     extras = fcp = tcp = 0;
@@ -677,6 +679,29 @@ return( false );
     from = mid->prev->from; to = mid->next->to;
     fncp2 = fncp = from->nextcp; tpcp2 = tpcp = to->prevcp;
     fpt = from->pointtype; tpt = to->pointtype;
+
+    good = false;
+    /* if from, to and mid are all at the same location then our normal */
+    /*  methods don't work */
+    if ( mid->me.x==from->me.x && mid->me.y==from->me.y ) {
+	good = true;
+	from->nextcp = mid->nextcp;
+	from->nonextcp = mid->nonextcp;
+	from->nextcpdef = mid->nextcpdef;
+    } else if ( mid->me.x==to->me.x && mid->me.y==to->me.y ) {
+	good = true;
+	to->prevcp = mid->prevcp;
+	to->noprevcp = mid->noprevcp;
+	to->prevcpdef = mid->prevcpdef;
+    }
+    if ( good ) {
+	SplineFree(mid->prev);
+	SplineFree(mid->next);
+	SplinePointFree(mid);
+	SplineMake(from,to);
+return( true );
+    }
+
     /* if from or to is a tangent then we can only remove mid if it's on the */
     /*  line between them */
     if (( from->pointtype==pt_tangent && !from->noprevcp) ||
@@ -729,9 +754,16 @@ return( good );
 void SplinePointListSimplify(SplinePointList *spl,int cleanup) {
     SplinePoint *first, *next, *sp;
 
+	/* Special case checks for paths containing only one point */
+	/*  else we get lots of nans (or only two) */
+
     if ( !cleanup && spl->first->prev!=NULL ) {
 	while ( 1 ) {
 	    first = spl->first->prev->from;
+	    if ( first->prev == first->next || (first->next!=NULL &&
+		    first->next->to->next!=NULL &&
+		    first->next->to->next->to == first ))
+return;
 	    if ( !SplinesRemoveMidMaybe(spl->first))
 	break;
 	    if ( spl->first==spl->last )
@@ -745,6 +777,10 @@ return;
 	SplineIsLinearMake(sp->prev);		/* First see if we can turn it*/
 				/* into a line, then try to merge two splines */
 	next = sp->next->to;
+	if ( sp->prev == sp->next ||
+		(sp->next!=NULL && sp->next->to->next!=NULL &&
+		    sp->next->to->next->to == sp ))
+return;
 	if ( !cleanup )
 	    SplinesRemoveMidMaybe(sp);
 	else {
@@ -775,16 +811,31 @@ return;
 }
 
 void SplineCharSimplify(SplineSet *head,int cleanup) {
-    SplineSet *spl;
+    SplineSet *spl, *prev, *snext;
     int anysel=0;
 
     for ( spl = head; spl!=NULL && !anysel; spl = spl->next ) {
 	anysel = PointListIsSelected(spl);
     }
 
-    for ( spl = head; spl!=NULL; spl = spl->next ) {
-	if ( !anysel || PointListIsSelected(spl))
+    prev = NULL;
+    for ( spl = head; spl!=NULL; spl = snext ) {
+	snext = spl->next;
+	if ( !anysel || PointListIsSelected(spl)) {
 	    SplinePointListSimplify(spl,cleanup);
+	    /* remove any singleton points */
+	    if ( spl->first->prev==spl->first->next &&
+		    (spl->first->prev==NULL ||
+		     (spl->first->noprevcp && spl->first->nonextcp))) {
+		if ( prev==NULL )
+		    head = snext;
+		else
+		    prev->next = snext;
+		spl->next = NULL;
+		SplinePointListFree(spl);
+	    } else
+		prev = spl;
+	}
     }
 }
 

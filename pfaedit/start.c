@@ -210,6 +210,10 @@ int main( int argc, char **argv ) {
 		fprintf( stderr, "Invalid argument to -recover, must be none, auto or clean\n" );
 		dousage();
 	    }
+	} else if ( strcmp(pt,"-recover=none")==0 ) {
+	    recover = 0;
+	} else if ( strcmp(pt,"-recover=clean")==0 ) {
+	    recover = -1;
 	}
 	else if ( strcmp(pt,"-help")==0 )
 	    dohelp();
@@ -268,7 +272,8 @@ int main( int argc, char **argv ) {
 	    FontNew();
 	    any = 1;
 	} else if ( strcmp(pt,"-sync")==0 || strcmp(pt,"-memory")==0 ||
-		strcmp(pt,"-nosplash")==0 )
+		strcmp(pt,"-nosplash")==0 || strcmp(pt,"-recover=none")==0 ||
+		strcmp(pt,"-recover=clean")==0 || strcmp(pt,"-recover=auto")==0 )
 	    /* Already done, needed to be before display opened */;
 	else if ( (strcmp(pt,"-depth")==0 || strcmp(pt,"-vc")==0 ||
 		    strcmp(pt,"-display")==0 || strcmp(pt,"-recover")==0 ) &&

@@ -39,3 +39,6 @@ CFLAGS = -fpic @CFLAGS@ $(Incs) $(WFLAGS) $(X_CFLAGS) -DNOTHREADS @DEFS@
 
 clean:
 	-rm -f *.lo *.o
+
+cleaner:
+	-rm -f *.lo *.o ../libgdraw.la Makefile

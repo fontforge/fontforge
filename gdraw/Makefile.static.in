@@ -35,4 +35,7 @@ all: ../libs/libgdraw.a
 #	ln -s libgdraw.so.1 ../libs/libgdraw.so
 
 clean:
-	-rm -f *.o
+	-rm -f *.o ../libs/libgdraw.a
+
+cleaner:
+	-rm -f *.o ../libs/libgdraw.a Makefile

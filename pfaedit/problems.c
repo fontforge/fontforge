@@ -421,15 +421,22 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 
     if ( p->openpaths ) {
 	for ( test=spl; test!=NULL && !p->finish; test=test->next ) {
-	    if ( test->first!=NULL && test->first->prev==NULL ) {
+	    /* I'm also including in "open paths" the special case of a */
+	    /*  singleton point with connects to itself */
+	    if ( test->first!=NULL && ( test->first->prev==NULL ||
+		    ( test->first->prev == test->first->next &&
+			test->first->noprevcp && test->first->nonextcp))) {
 		sp = test->first;
 		changed = true;
-		while ( 1 ) {
+		if ( test->first->prev==NULL ) {
+		    while ( 1 ) {
+			sp->selected = true;
+			if ( sp->next==NULL )
+		    break;
+			sp = sp->next->to;
+		    }
+		} else
 		    sp->selected = true;
-		    if ( sp->next==NULL )
-		break;
-		    sp = sp->next->to;
-		}
 		ExplainIt(p,sc,_STR_ProbOpenPath,0,0);
 		if ( p->ignorethis ) {
 		    p->openpaths = false;

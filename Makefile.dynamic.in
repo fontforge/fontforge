@@ -21,7 +21,14 @@ libgdraw:
 	( cd gdraw ; $(MAKE) )
 
 clean:
-	-rm -f gdraw/*.o pfaedit/*.o Unicode/*.o
+	( cd pfaedit ; $(MAKE) clean )
+	( cd Unicode ; $(MAKE) clean )
+	( cd gdraw ; $(MAKE) clean )
+
+cleaner:
+	( cd pfaedit ; $(MAKE) cleaner )
+	( cd Unicode ; $(MAKE) cleaner )
+	( cd gdraw ; $(MAKE) cleaner )
 
 install: $(sharedir)
 # You may need to be root to do the install

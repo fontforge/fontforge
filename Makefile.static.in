@@ -21,12 +21,20 @@ libgdraw:
 	( cd gdraw ; $(MAKE) )
 
 clean:
-	-rm -f gdraw/*.o pfaedit/*.o Unicode/*.o
+	( cd pfaedit ; $(MAKE) clean )
+	( cd Unicode ; $(MAKE) clean )
+	( cd gdraw ; $(MAKE) clean )
+
+cleaner:
+	( cd pfaedit ; $(MAKE) cleaner )
+	( cd Unicode ; $(MAKE) cleaner )
+	( cd gdraw ; $(MAKE) cleaner )
+
 
 install:
 # You may need to be root to do the install
 # remove any files from old installs that put the ui in bin
 	-rm -f $(bindir)/pfaedit*.ui
 	cp pfaedit/pfaedit $(bindir)
-	cp pfaedit/pfaedit.*.ui $(bindir)
+	cp pfaedit/pfaedit.*.ui $(sharedir)
 	cp pfaedit/pfaedit.1 $(mandir)/man1
