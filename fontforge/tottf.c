@@ -2449,7 +2449,7 @@ static int dumpcffhmtx(struct alltabs *at,SplineFont *sf,int bitmaps) {
 	i = 0;
     for ( ; i<sf->charcnt; ++i ) {
 	sc = sf->chars[i];
-	if ( SCWorthOutputting(sc)) {
+	if ( SCWorthOutputting(sc) && sc==SCDuplicate(sc)) {
 	    if ( i<=at->gi.lasthwidth )
 		putshort(at->gi.hmtx,sc->width);
 	    SplineCharFindBounds(sc,&b);
