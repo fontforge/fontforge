@@ -1300,9 +1300,10 @@ return( false );
     GDrawPushClip(pixmap,&g->inner,&old2);
     GDrawSetFont(pixmap,gt->font);
 
-    fg = g->state==gs_disabled?g->box->disabled_foreground:
+    sel = fg = g->state==gs_disabled?g->box->disabled_foreground:
 		    g->box->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap)):
 		    g->box->main_foreground;
+    ll = 0;
     for ( i=gt->loff_top; i<gt->loff_top+gt->g.inner.height/gt->fh && gt->lines[i]!=-1; ++i ) {
 	/* there is an odd complication in drawing each line. */
 	/* normally we draw the selection rectangle(s) and then draw the text */
@@ -1326,7 +1327,7 @@ return( false );
 	    }
 	    GTextFieldDrawLineSel(pixmap,gt,i,fg,sel);
 	}
-	if ( sel==fg ) {
+	if ( sel==fg && ll!=0 ) {
 	    if ( i!=0 && (*(bitext+gt->lines[i]+ll-1)=='\n' || *(bitext+gt->lines[i]+ll-1)=='\r' ))
 		--ll;
 	    GDrawDrawText(pixmap,g->inner.x-gt->xoff_left,y+gt->as,
