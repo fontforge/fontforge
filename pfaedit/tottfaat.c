@@ -239,11 +239,11 @@ static void morxfeaturesfree(struct feature *features) {
 
     for ( ; features!=NULL; features=n ) {
 	n = features->next;
-	free( features );
+	chunkfree( features,sizeof(*features) );
     }
 }
 
-static void morx_lookupmap(FILE *temp,SplineChar **glyphs,uint16 *maps,int gcnt) {
+static void morx_lookupmap(FILE *temp,SplineChar **glyphs,uint16 *maps,int gcnt, int basis) {
     int i, j, k, l, seg_cnt, tot, last, offset;
     /* We do four passes. The first just calculates how much space we will need (if any) */
     /*  the second provides the top-level lookup table structure */
@@ -256,6 +256,7 @@ static void morx_lookupmap(FILE *temp,SplineChar **glyphs,uint16 *maps,int gcnt)
 	    else if ( k==2 ) {
 		putshort(temp,maps[i]);
 	    }
+	    last = i;
 	    for ( j=i+1, ++tot; j<gcnt && glyphs[j]->ttf_glyph==glyphs[i]->ttf_glyph+j-i; ++j ) {
 		++tot;
 		last = j;
@@ -284,7 +285,7 @@ return;
 	    putshort(temp,6*l);
 	    putshort(temp,j);
 	    putshort(temp,6*(seg_cnt-l));
-	    offset = 4+7*2 + seg_cnt*6 + 6;
+	    offset = basis + 6*2 + seg_cnt*6 + 6;
 	} else if ( k==1 ) {		/* flag entry */
 	    putshort(temp,0xffff);
 	    putshort(temp,0xffff);
@@ -294,7 +295,7 @@ return;
 }
 
 static void morx_dumpSubsFeature(FILE *temp,SplineChar **glyphs,uint16 *maps,int gcnt) {
-    morx_lookupmap(temp,glyphs,maps,gcnt);
+    morx_lookupmap(temp,glyphs,maps,gcnt,0);
 }
 
 static struct feature *aat_dumpmorx_substitutions(struct alltabs *at, SplineFont *sf,
@@ -314,7 +315,7 @@ static struct feature *aat_dumpmorx_substitutions(struct alltabs *at, SplineFont
 	for ( pst=sc->possub; pst!=NULL; pst=pst->next ) if ( pst->type == pst_substitution ) {
 	    if ( OTTagToMacFeature(pst->tag,&ft,&fs)) {
 		for ( j=cnt-1; j>=0 && subtags[j]!=pst->tag; --j );
-		if ( j>=0 ) {
+		if ( j<0 ) {
 		    if ( cnt>=max )
 			subtags = grealloc(subtags,(max+=30)*sizeof(uint32));
 		    subtags[cnt++] = pst->tag;
@@ -408,10 +409,17 @@ static void morx_dumpLigaFeature(FILE *temp,SplineChar **glyphs,int gcnt,
 	used[i] = class++;
     cglyphs = galloc((class+1)*sizeof(SplineChar *));
     map = galloc((class+1)*sizeof(uint16));
+    j=0;
     for ( i=k=0; i<at->maxp.numGlyphs; ++i ) if ( used[i] ) {
-	cglyphs[k] = sf->chars[i];
-	map[k] = used[i];
+	for ( ; j<sf->charcnt; ++j )
+	    if ( sf->chars[j]!=NULL && sf->chars[j]->ttf_glyph==i )
+	break;
+	if ( j<sf->charcnt ) {
+	    cglyphs[k] = sf->chars[j];
+	    map[k++] = used[i];
+	}
     }
+    cglyphs[k] = NULL;
 
     start = ftell(temp);
     putlong(temp,class);
@@ -421,10 +429,10 @@ static void morx_dumpLigaFeature(FILE *temp,SplineChar **glyphs,int gcnt,
     putlong(temp,0);
     putlong(temp,0);
     putlong(temp,0);
-    morx_lookupmap(temp,cglyphs,map,class);	/* dump the class lookup table */
+    morx_lookupmap(temp,cglyphs,map,k,7*sizeof(uint32));	/* dump the class lookup table */
     free( cglyphs ); free( map );
     here = ftell(temp);
-    fseek(temp,start+sizeof(uint32),SEEK_SET);
+    fseek(temp,start+2*sizeof(uint32),SEEK_SET);
     putlong(temp,here-start);			/* Point to start of state arrays */
     fseek(temp,0,SEEK_END);
 
@@ -460,11 +468,12 @@ static void morx_dumpLigaFeature(FILE *temp,SplineChar **glyphs,int gcnt,
 		    last = states[last][used[comp->sc->ttf_glyph]].next_state;
 		    if ( comp->next==NULL ) {
 			/* this is where we depend on the ordering */
-			for ( j=0; j<class; ++j ) if ( states[last][j].next_state==0 ) {
-			    states[last][j].l = l;
-			    states[last][j].dontconsume = true;
-			    /* the next state should continue to be 0 (initial) */
-			}
+			for ( j=0; j<class; ++j )
+			    if ( states[last][j].next_state==0 && states[last][j].l==NULL ) {
+				states[last][j].l = l;
+				states[last][j].dontconsume = true;
+				/* the next state should continue to be 0 (initial) */
+			    }
 		    }
 		}
 	    }
@@ -522,7 +531,7 @@ static void morx_dumpLigaFeature(FILE *temp,SplineChar **glyphs,int gcnt,
 
     /* Now we know how big all the tables will be. Dump out their locations */
     here = ftell(temp);
-    fseek(temp,start+2*sizeof(uint32),SEEK_SET);
+    fseek(temp,start+3*sizeof(uint32),SEEK_SET);
     putlong(temp,here-start);			/* Point to start of entry array */
     putlong(temp,here-start+6*trans_cnt);	/* Point to start of actions */
     putlong(temp,here-start+6*trans_cnt+4*acnt);/* Point to start of components */
@@ -575,7 +584,7 @@ static struct feature *aat_dumpmorx_ligatures(struct alltabs *at, SplineFont *sf
 	for ( l=sc->ligofme; l!=NULL; l=l->next ) {
 	    if ( OTTagToMacFeature(l->lig->tag,&ft,&fs)) {
 		for ( j=cnt-1; j>=0 && ligtags[j]!=l->lig->tag; --j );
-		if ( j>=0 ) {
+		if ( j<0 ) {
 		    if ( cnt>=max )
 			ligtags = grealloc(ligtags,(max+=30)*sizeof(uint32));
 		    ligtags[cnt++] = l->lig->tag;
@@ -601,6 +610,7 @@ return( features);
 			    ssc->script == sc->script &&
 			    LigListMatchOtfTag(ssc->ligofme,ligtags[j])) {
 		glyphs[gcnt++] = ssc;
+		ssc->ticked = true;
 	    }
 	    glyphs[gcnt] = NULL;
 	    cur = featureFromTag(ligtags[j]);
@@ -675,6 +685,7 @@ static void aat_dumpfeat(struct alltabs *at, struct feature *feature) {
     if ( feature==NULL )
 return;
 
+    fcnt = scnt = 0;
     for ( k=0; k<3; ++k ) {
 	for ( f=feature; f!=NULL; f=n ) {
 	    cnt=1;
@@ -705,19 +716,19 @@ return;
 	    } else if ( k==1 ) {
 		putshort(at->feat,f->featureType);
 		putshort(at->feat,cnt);
-		putshort(at->feat,offset);
+		putlong(at->feat,offset);
 		putshort(at->feat,f->ismutex?0xc000:0);
 		putshort(at->feat,strid);
 		at->feat_name[fn].name = FeatureNameFromType(f->featureType);
 		at->feat_name[fn++].strid = strid++;
-		offset += 12;
+		offset += 4*cnt;
 	    }
 	}
 	if ( k==0 ) {
 	    ++fcnt;		/* Add one for "All Typographic Features" */
 	    scnt += 1;		/* Add one for All Features Off */
 	    at->feat = tmpfile();
-	    at->feat_name = galloc(fcnt+scnt+1);
+	    at->feat_name = galloc((fcnt+scnt+1)*sizeof(struct feat_name));
 	    putlong(at->feat,0x00010000);
 	    putshort(at->feat,fcnt);
 	    putshort(at->feat,0);
@@ -726,12 +737,12 @@ return;
 		/* FeatureName entry for All Typographics */
 	    putshort(at->feat,0);
 	    putshort(at->feat,1);
-	    putshort(at->feat,offset);
+	    putlong(at->feat,offset);
 	    putshort(at->feat,0x0000);	/* non exclusive */
 	    putshort(at->feat,strid);
 	    at->feat_name[fn].name = "All Typographic Features";
 	    at->feat_name[fn++].strid = strid++;
-	    offset += 12;
+	    offset += 4;
 	} else if ( k==1 ) {
 		/* Setting Name Array for All Typographic Features */
 	    putshort(at->feat,1);
@@ -824,7 +835,7 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
     for ( f=features; f!=NULL; f=f->next ) if ( f->chain==chain ) {
 	putlong(at->morx,f->feature_len+12);		/* Size of header needs to be added */
 	putlong(at->morx,(f->vertOnly?0x80000000:0x20000000) | f->subtable_type);
-	putlong(at->morx,n->flag);
+	putlong(at->morx,f->flag);
 	tot = f->feature_len;
 	fseek(temp, f->feature_start, SEEK_SET);
 	while ( tot!=0 ) {
@@ -839,6 +850,7 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
 	    tot -= len;
 	}
     }
+    free(buf);
 
     /* Pad chain to a multiple of four */
     if ( (ftell(at->morx)-chain_start)&1 )
@@ -1276,6 +1288,8 @@ static struct feature *featureFromTag(uint32 tag ) {
 	    feat->featureType = macfeat_otftag[i].mac_feature_type;
 	    feat->featureSetting = macfeat_otftag[i].mac_feature_setting;
 	    feat->offSetting = macfeat_otftag[i].off_setting;
+	    feat->name = macfeat_otftag[i].on_name;
+	    feat->offname = macfeat_otftag[i].off_name;
 	    feat->ismutex = macfeat_otftag[i].ismutex;
 	    feat->defaultOn = macfeat_otftag[i].defaultOn;
 	    feat->vertOnly = tag==CHR('v','r','t','2') || tag==CHR('v','k','n','a');

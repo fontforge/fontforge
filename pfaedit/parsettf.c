@@ -4845,7 +4845,7 @@ return;
 	sm->lig_comp_glyphs[lcp] = i;
 	lig_offset += memushort(sm->data,2*( ((((int32) lig)<<2)>>2) + i ) );
 	if ( lig&0xc0000000 ) {
-	    if ( lig_offset+3 > sm->length ) {
+	    if ( lig_offset+1 > sm->length ) {
 		fprintf( stderr, "Invalid ligature offset\n" );
     break;
 	    }
@@ -4856,21 +4856,33 @@ return;
 		    fprintf(stderr,"%d ",sm->lig_comp_glyphs[j]);
 		fprintf(stderr,"\n");
 	    } else {
+		char *comp;
 		for ( len=0, j=lcp; j<sm->lcp; ++j )
 		    len += strlen(sm->info->chars[sm->lig_comp_glyphs[j]]->name)+1;
-		pst = chunkalloc(sizeof(PST));
-		pst->type = pst_ligature;
-		pst->tag = sm->info->mort_subs_tag;
-		pst->u.lig.components = galloc(len);
-		*pst->u.lig.components = '\0';
+		comp = galloc(len);
+		*comp = '\0';
 		for ( j=lcp; j<sm->lcp; ++j ) {
-		    strcat(pst->u.lig.components,sm->info->chars[sm->lig_comp_glyphs[j]]->name);
+		    strcat(comp,sm->info->chars[sm->lig_comp_glyphs[j]]->name);
 		    if ( j!=sm->lcp-1 )
-			strcat(pst->u.lig.components," ");
+			strcat(comp," ");
 		}
-		pst->u.lig.lig = sm->info->chars[lig_glyph];
-		pst->next = sm->info->chars[lig_glyph]->possub;
-		sm->info->chars[lig_glyph]->possub = pst;
+		for ( pst=sm->info->chars[lig_glyph]->possub; pst!=NULL; pst=pst->next )
+		    if ( pst->type==pst_ligature && pst->tag==sm->info->mort_subs_tag &&
+			    strcmp(comp,pst->u.lig.components)==0 )
+		break;
+		/* There are cases where there will be multiple entries for */
+		/*  the same lig. ie. if we have "ff" and "ffl" then there */
+		/*  will be multiple entries for "ff" */
+		if ( pst == NULL ) {
+		    pst = chunkalloc(sizeof(PST));
+		    pst->type = pst_ligature;
+		    pst->tag = sm->info->mort_subs_tag;
+		    pst->u.lig.components = comp;
+		    pst->u.lig.lig = sm->info->chars[lig_glyph];
+		    pst->next = sm->info->chars[lig_glyph]->possub;
+		    sm->info->chars[lig_glyph]->possub = pst;
+		} else
+		    free(comp);
 	    }
 	} else
 	    mort_figure_ligatures(sm,lcp-1,off,lig_offset);
@@ -4920,7 +4932,7 @@ return;
 	sm->lig_comp_glyphs[lcp] = i;
 	lig_offset += memushort(sm->data,sm->compOff + 2*( ((((int32) lig)<<2)>>2) + i ) );
 	if ( lig&0xc0000000 ) {
-	    if ( sm->ligOff+2*lig_offset+3 > sm->length ) {
+	    if ( sm->ligOff+2*lig_offset+1 > sm->length ) {
 		fprintf( stderr, "Invalid ligature offset\n" );
     break;
 	    }
@@ -4931,21 +4943,32 @@ return;
 		    fprintf(stderr,"%d ",sm->lig_comp_glyphs[j]);
 		fprintf(stderr,"\n");
 	    } else {
+		char *comp;
 		for ( len=0, j=lcp; j<sm->lcp; ++j )
 		    len += strlen(sm->info->chars[sm->lig_comp_glyphs[j]]->name)+1;
-		pst = chunkalloc(sizeof(PST));
-		pst->type = pst_ligature;
-		pst->tag = sm->info->mort_subs_tag;
-		pst->u.lig.components = galloc(len);
-		*pst->u.lig.components = '\0';
+		comp = galloc(len);
+		*comp = '\0';
 		for ( j=lcp; j<sm->lcp; ++j ) {
-		    strcat(pst->u.lig.components,sm->info->chars[sm->lig_comp_glyphs[j]]->name);
+		    strcat(comp,sm->info->chars[sm->lig_comp_glyphs[j]]->name);
 		    if ( j!=sm->lcp-1 )
-			strcat(pst->u.lig.components," ");
+			strcat(comp," ");
 		}
-		pst->u.lig.lig = sm->info->chars[lig_glyph];
-		pst->next = sm->info->chars[lig_glyph]->possub;
-		sm->info->chars[lig_glyph]->possub = pst;
+		for ( pst=sm->info->chars[lig_glyph]->possub; pst!=NULL; pst=pst->next )
+		    if ( pst->type==pst_ligature && pst->tag==sm->info->mort_subs_tag &&
+			    strcmp(comp,pst->u.lig.components)==0 )
+		break;
+		/* There are cases where there will be multiple entries for */
+		/*  the same lig. ie. if we have "ff" and "ffl" then there */
+		/*  will be multiple entries for "ff" */
+		if ( pst == NULL ) {
+		    pst = chunkalloc(sizeof(PST));
+		    pst->type = pst_ligature;
+		    pst->tag = sm->info->mort_subs_tag;
+		    pst->u.lig.components = comp;
+		    pst->u.lig.lig = sm->info->chars[lig_glyph];
+		    pst->next = sm->info->chars[lig_glyph]->possub;
+		    sm->info->chars[lig_glyph]->possub = pst;
+		}
 	    }
 	} else
 	    morx_figure_ligatures(sm,lcp-1,ligindex,lig_offset);
@@ -5102,7 +5125,7 @@ return( chain_len );
 		/*  offsets in the lookup table should be the start of the */
 		/*  mor[tx] table, it would make more sense for it to be the*/
 		/*  start of the lookup table instead (for format 4 lookups) */
-		readttf_applelookup(ttf,info,here,
+		readttf_applelookup(ttf,info,ftell(ttf),
 			mort_apply_values,mort_apply_value,NULL,NULL);
 	      break;
 	      case 5:

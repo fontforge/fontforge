@@ -659,7 +659,7 @@ void SFLigatureCleanup(SplineFont *sf) {
 void SFLigaturePrepare(SplineFont *sf) {
     PST *lig;
     LigList *ll;
-    int i,j,ch;
+    int i,j,k,ch;
     char *pt, *ligstart;
     SplineChar *sc, *tsc;
     struct splinecharlist *head, *last;
@@ -674,7 +674,6 @@ void SFLigaturePrepare(SplineFont *sf) {
     /* Figure out what the components are, and if they all exist */
     /* we're only interested in the lig if all components are worth outputting */
     for ( i=0 ; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->possub!=NULL ) {
-	lcnt = 0;
 	for ( lig = sf->chars[i]->possub; lig!=NULL; lig=lig->next ) if ( lig->type==pst_ligature ) {
 	    ligstart = lig->u.lig.components;
 	    last = head = NULL; sc = NULL;
@@ -717,7 +716,6 @@ void SFLigaturePrepare(SplineFont *sf) {
 		ll->components = head;
 		ll->ccnt = ccnt;
 		sc->ligofme = ll;
-		++lcnt;
 	    } else {
 		while ( head!=NULL ) {
 		    last = head->next;
@@ -726,22 +724,25 @@ void SFLigaturePrepare(SplineFont *sf) {
 		}
 	    }
 	}
+    }
+    for ( i=0 ; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL && sc->ligofme!=NULL ) {
+	for ( ll=sc->ligofme, lcnt=0; ll!=NULL; ll=ll->next, ++lcnt );
 	/* Finally, order the list so that the longest ligatures are first */
 	if ( lcnt>1 ) {
 	    if ( lcnt>=lmax )
 		all = grealloc(all,(lmax=lcnt+30)*sizeof(LigList *));
-	    for ( ll=sc->ligofme, i=0; ll!=NULL; ll=ll->next, ++i )
-		all[i] = ll;
-	    for ( i=0; i<lcnt-1; ++i ) for ( j=i+1; j<lcnt; ++j )
-		if ( all[i]->ccnt<all[j]->ccnt ) {
-		    ll = all[i];
-		    all[i] = all[j];
+	    for ( ll=sc->ligofme, k=0; ll!=NULL; ll=ll->next, ++k )
+		all[k] = ll;
+	    for ( k=0; k<lcnt-1; ++k ) for ( j=k+1; j<lcnt; ++j )
+		if ( all[k]->ccnt<all[j]->ccnt ) {
+		    ll = all[k];
+		    all[k] = all[j];
 		    all[j] = ll;
 		}
 	    sc->ligofme = all[0];
-	    for ( i=0; i<lcnt-1; ++i )
-		all[i]->next = all[i];
-	    all[i]->next = NULL;
+	    for ( k=0; k<lcnt-1; ++k )
+		all[k]->next = all[k+1];
+	    all[k]->next = NULL;
 	}
     }
     free( all );
