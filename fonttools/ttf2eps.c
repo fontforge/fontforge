@@ -989,7 +989,6 @@ static void DumpSimpleGlyph(FILE *ttf,FILE *eps,struct ttfinfo *info,
 	TransformPoint(&pts[i],trans);
 
     for ( path=i=0; path<path_cnt; ++path ) {
-	fprintf( eps,"newpath\n" );
 	start = i;
 	first = 1;
 	while ( i<=endpt[path] ) {
@@ -1060,9 +1059,10 @@ static void DoDumpGlyph(FILE *ttf, FILE *eps, struct ttfinfo *info, int glyph,
 	xmax = (short) getushort(ttf);
 	ymax = (short) getushort(ttf);
     }
-    if ( top )
+    if ( top ) {
 	DumpEpsHeader(eps,info,glyph,xmin,ymin,xmax,ymax);
-    else {
+	fprintf( eps,"newpath\n" );
+    } else {
 	fprintf( eps, "%% Glyph %d ", glyph );
 	if ( info->glyph_names!=NULL && info->glyph_names[glyph]!=NULL )
 	    fprintf( eps, " Name: %s", info->glyph_names[glyph]);
