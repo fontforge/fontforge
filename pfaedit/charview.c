@@ -641,76 +641,79 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
     Color col;
     DStemInfo *dstem;
     MinimumDistance *md;
-    int off = cv->xoff+cv->height-cv->yoff;
-
-    GDrawSetDashedLine(pixmap,5,5,off);
 
     if ( cv->showdhints ) for ( dstem = cv->sc->dstem; dstem!=NULL; dstem = dstem->next ) {
 	CVShowDHint(cv,pixmap,dstem);
     }
 
-    if ( cv->showhhints ) for ( hint = cv->sc->hstem; hint!=NULL; hint = hint->next ) {
-	if ( hint->width<0 ) {
-	    r.y = -cv->yoff + cv->height - rint(hint->start*cv->scale);
-	    r.height = rint(-hint->width*cv->scale)+1;
-	} else {
-	    r.y = -cv->yoff + cv->height - rint((hint->start+hint->width)*cv->scale);
-	    r.height = rint(hint->width*cv->scale)+1;
-	}
-	col = hint->active ? 0x00a000 : 0xa0d0a0;
-	/* XRectangles are shorts! */
-	if ( r.y<32767 && r.y+r.height>-32768 ) {
-	    if ( r.y<-32768 ) {
-		r.height -= (-32768-r.y);
-		r.y = -32768;
+    if ( cv->showhhints && cv->sc->hstem!=NULL ) {
+	GDrawSetDashedLine(pixmap,5,5,cv->xoff);
+	for ( hint = cv->sc->hstem; hint!=NULL; hint = hint->next ) {
+	    if ( hint->width<0 ) {
+		r.y = -cv->yoff + cv->height - rint(hint->start*cv->scale);
+		r.height = rint(-hint->width*cv->scale)+1;
+	    } else {
+		r.y = -cv->yoff + cv->height - rint((hint->start+hint->width)*cv->scale);
+		r.height = rint(hint->width*cv->scale)+1;
 	    }
-	    if ( r.y+r.height>32767 )
-		r.height = 32767-r.y;
-	    for ( hi=hint->where; hi!=NULL; hi=hi->next ) {
-		r.x = cv->xoff + rint(hi->begin*cv->scale);
-		end = cv->xoff + rint(hi->end*cv->scale);
-		if ( end>=0 && r.x<=cv->width ) {
-		    r.width = end-r.x+1;
-		    GDrawFillRect(pixmap,&r,col);
+	    col = hint->active ? 0x00a000 : 0xa0d0a0;
+	    /* XRectangles are shorts! */
+	    if ( r.y<32767 && r.y+r.height>-32768 ) {
+		if ( r.y<-32768 ) {
+		    r.height -= (-32768-r.y);
+		    r.y = -32768;
+		}
+		if ( r.y+r.height>32767 )
+		    r.height = 32767-r.y;
+		for ( hi=hint->where; hi!=NULL; hi=hi->next ) {
+		    r.x = cv->xoff + rint(hi->begin*cv->scale);
+		    end = cv->xoff + rint(hi->end*cv->scale);
+		    if ( end>=0 && r.x<=cv->width ) {
+			r.width = end-r.x+1;
+			GDrawFillRect(pixmap,&r,col);
+		    }
 		}
 	    }
+	    col = hint->hasconflicts? 0x00ffff : col;
+	    if ( r.y>=0 && r.y<=cv->height )
+		GDrawDrawLine(pixmap,0,r.y,cv->width,r.y,col);
+	    if ( r.y+r.height>=0 && r.y+r.height<=cv->width )
+		GDrawDrawLine(pixmap,0,r.y+r.height-1,cv->width,r.y+r.height-1,col);
 	}
-	col = hint->hasconflicts? 0x00ffff : col;
-	if ( r.y>=0 && r.y<=cv->height )
-	    GDrawDrawLine(pixmap,0,r.y,cv->width,r.y,col);
-	if ( r.y+r.height>=0 && r.y+r.height<=cv->width )
-	    GDrawDrawLine(pixmap,0,r.y+r.height-1,cv->width,r.y+r.height-1,col);
     }
-    if ( cv->showvhints ) for ( hint = cv->sc->vstem; hint!=NULL; hint = hint->next ) {
-	if ( hint->width<0 ) {
-	    r.x = cv->xoff + rint( (hint->start+hint->width)*cv->scale );
-	    r.width = rint(-hint->width*cv->scale)+1;
-	} else {
-	    r.x = cv->xoff + rint(hint->start*cv->scale);
-	    r.width = rint(hint->width*cv->scale)+1;
-	}
-	col = hint->active ? 0x0000ff : 0xc0c0ff;
-	if ( r.x<32767 && r.x+r.width>-32768 ) {
-	    if ( r.x<-32768 ) {
-		r.width -= (-32768-r.x);
-		r.x = -32768;
+    if ( cv->showvhints && cv->sc->vstem!=NULL ) {
+	GDrawSetDashedLine(pixmap,5,5,cv->height-cv->yoff);
+	for ( hint = cv->sc->vstem; hint!=NULL; hint = hint->next ) {
+	    if ( hint->width<0 ) {
+		r.x = cv->xoff + rint( (hint->start+hint->width)*cv->scale );
+		r.width = rint(-hint->width*cv->scale)+1;
+	    } else {
+		r.x = cv->xoff + rint(hint->start*cv->scale);
+		r.width = rint(hint->width*cv->scale)+1;
 	    }
-	    if ( r.x+r.width>32767 )
-		r.width = 32767-r.x;
-	    for ( hi=hint->where; hi!=NULL; hi=hi->next ) {
-		r.y = -cv->yoff + cv->height - rint(hi->end*cv->scale);
-		end = -cv->yoff + cv->height - rint(hi->begin*cv->scale);
-		if ( end>=0 && r.y<=cv->height ) {
-		    r.height = end-r.y+1;
-		    GDrawFillRect(pixmap,&r,col);
+	    col = hint->active ? 0x0000ff : 0xc0c0ff;
+	    if ( r.x<32767 && r.x+r.width>-32768 ) {
+		if ( r.x<-32768 ) {
+		    r.width -= (-32768-r.x);
+		    r.x = -32768;
+		}
+		if ( r.x+r.width>32767 )
+		    r.width = 32767-r.x;
+		for ( hi=hint->where; hi!=NULL; hi=hi->next ) {
+		    r.y = -cv->yoff + cv->height - rint(hi->end*cv->scale);
+		    end = -cv->yoff + cv->height - rint(hi->begin*cv->scale);
+		    if ( end>=0 && r.y<=cv->height ) {
+			r.height = end-r.y+1;
+			GDrawFillRect(pixmap,&r,col);
+		    }
 		}
 	    }
+	    col = hint->hasconflicts? 0x00ffff : col;
+	    if ( r.x>=0 && r.x<=cv->width )
+		GDrawDrawLine(pixmap,r.x,0,r.x,cv->height,col);
+	    if ( r.x+r.width>=0 && r.x+r.width<=cv->width )
+		GDrawDrawLine(pixmap,r.x+r.width-1,0,r.x+r.width-1,cv->height,col);
 	}
-	col = hint->hasconflicts? 0x00ffff : col;
-	if ( r.x>=0 && r.x<=cv->width )
-	    GDrawDrawLine(pixmap,r.x,0,r.x,cv->height,col);
-	if ( r.x+r.width>=0 && r.x+r.width<=cv->width )
-	    GDrawDrawLine(pixmap,r.x+r.width-1,0,r.x+r.width-1,cv->height,col);
     }
     GDrawSetDashedLine(pixmap,0,0,0);
 
