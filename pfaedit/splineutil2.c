@@ -1131,6 +1131,9 @@ return( good );
 void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,int flags,double err) {
     SplinePoint *first, *next, *sp;
 
+    if ( spl==NULL )
+return;
+
 	/* Special case checks for paths containing only one point */
 	/*  else we get lots of nans (or only two) */
 
