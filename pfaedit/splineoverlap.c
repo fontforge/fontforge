@@ -592,6 +592,7 @@ static void DoIntersections(SplineChar *sc,SplineTList *me,IntersectionList *ili
     IntersectionList *prev;
     Spline *lastspline=NULL;
     BasePoint test;
+    int atfrom, atto;
 
     while ( ilist!=NULL ) {
 	for ( tsp=ilist->oldsplines; tsp!=NULL; tsp=tsp->next ) {
@@ -625,13 +626,16 @@ static void DoIntersections(SplineChar *sc,SplineTList *me,IntersectionList *ili
 #else
 	    test = cur->tl->inter->intersection;
 #endif
-	    if ( to->prev->from->me.x>test.x-.005 && to->prev->from->me.x<test.x+.005 &&
-		    to->prev->from->me.y>test.y-.005 && to->prev->from->me.y<test.y+.005 ) {
+	    atfrom = ( to->prev->from->me.x>test.x-.005 && to->prev->from->me.x<test.x+.005 &&
+		    to->prev->from->me.y>test.y-.005 && to->prev->from->me.y<test.y+.005 );
+	    atto = ( to->me.x>test.x-.005 && to->me.x<test.x+.005 &&
+		to->me.y>test.y-.005 && to->me.y<test.y+.005 );
+	    if ( atfrom && ( !atto || cur->tl->t<.5 )) {
 		/* if the intersection occurs at an end point then we don't need */
 		/*  to cut the spline in two */
 		sp = to->prev->from;
 		t = 0;
-	    } else if ( to->me.x>test.x-.005 && to->me.x<test.x+.005 && to->me.y>test.y-.005 && to->me.y<test.y+.005 ) {
+	    } else if ( atto ) {
 		sp = to;
 		t = 1;
 	    } else {
@@ -1363,6 +1367,26 @@ return( spl );
 
 static SplineSet *SSRebuild(SplineChar *sc,IntersectionList *ilist) {
     SplineSet *head=NULL, *last=NULL, *cur;
+    IntersectionList *il;
+    SplineList *sl;
+
+    /* Look for any simple closed loops first. Not really needed, but I think */
+    /* results are better if we do this */
+    for ( il=ilist; il!=NULL; il=il->next ) {
+	for ( sl=il->splines; sl!=NULL; sl=sl->next ) {
+	    if ( sl->spline->isneeded && !sl->spline->isticked ) {
+		Spline *s = sl->spline;
+		if ( s->from->me.x == s->to->me.x && s->from->me.y==s->to->me.y ) {
+		    cur = SplineSetCreate(sc,s->from,s->to);
+		    if ( head==NULL )
+			head=cur;
+		    else
+			last->next = cur;
+		    last = cur;
+		}
+	    }
+	}
+    }
 
     while ( ilist!=NULL ) {
 	if ( !ilist->processed ) {
