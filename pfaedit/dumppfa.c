@@ -324,7 +324,7 @@ static int dumpcharstrings(void (*dumpchar)(int ch,void *data), void *data,
 	if ( !GProgressNext())
 return( false );
     }
-    dumpstr(dumpchar,data,"end readonly put\n");
+    dumpstr(dumpchar,data,"end end\nreadonly put\n");
 return( true );
 }
 
@@ -511,7 +511,7 @@ static void dumpothersubrs(void (*dumpchar)(int ch,void *data), void *data,
             dumpchar('\n',data);
         }
     }
-    dumpstr(dumpchar,data,"def\n" );
+    dumpstr(dumpchar,data,"ND\n" );
 }
 
 static int dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data,
@@ -683,7 +683,7 @@ return( false );
     } else {
 	dumpsubrs(dumpchar,data,sf,subrs);
 	dumpcharstrings(dumpchar,data,sf, chars );
-	dumpstr(dumpchar,data,"end put\n");
+	dumpstr(dumpchar,data,"put\n");
 
 	PSCharsFree(chars);
 	PSCharsFree(subrs);
@@ -760,6 +760,7 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
     DBounds b;
     char *pt;
     struct passwd *pwd;
+    int uniqueid;
 
     dumpf(dumpchar,data,"%%!PS-AdobeFont-1.0: %s %s\n", sf->fontname, sf->version?sf->version:"" );
     time(&now);
@@ -813,6 +814,17 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
     }
     if ( sf->xuid!=NULL ) ++cnt;
 
+    if ( sf->uniqueid==0 )
+	uniqueid = 4000000 + (rand()&0x3ffff);
+    else
+	uniqueid = sf->uniqueid ;
+
+    if ( format!=ff_ptype3 ) {
+	dumpf(dumpchar,data,"FontDirectory/%s known{/%s findfont dup/UniqueID known{dup\n", sf->fontname, sf->fontname);
+	dumpf(dumpchar,data,"/UniqueID get %d eq exch/FontType get 1 eq and}{pop false}ifelse\n", uniqueid );
+	dumpf(dumpchar,data,"{save true}{false}ifelse}{false}ifelse\n" );
+    }
+
     dumpf(dumpchar,data,"%d dict begin\n", cnt );
     dumpf(dumpchar,data,"/FontType %d def\n", format==ff_ptype3?3:1 );
     fm[0] = fm[3] = 1.0/((sf->ascent+sf->descent));
@@ -826,10 +838,7 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
     fm[2] = ceil( b.maxx);
     fm[3] = ceil( b.maxy);
     dumpdblarray(dumpchar,data,"FontBBox",fm,4,"readonly ");
-    if ( sf->uniqueid==0 )
-	dumpf(dumpchar,data,"/UniqueID %d def\n", 4000000 + (rand()&0x3ffff) );
-    else
-	dumpf(dumpchar,data,"/UniqueID %d def\n", sf->uniqueid );
+    dumpf(dumpchar,data,"/UniqueID %d def\n", uniqueid );
     if ( sf->xuid!=NULL ) {
 	dumpf(dumpchar,data,"/XUID %s def\n", sf->xuid );
 	SFIncrementXUID(sf);
@@ -898,7 +907,7 @@ static void dumpfinalascii(void (*dumpchar)(int ch,void *data), void *data) {
     dumpchar('\n',data);
     for ( i = 0; i<8; ++i )
 	dumpstr(dumpchar,data,"0000000000000000000000000000000000000000000000000000000000000000\n");
-    dumpstr(dumpchar,data,"cleartomark\n");
+    dumpstr(dumpchar,data,"cleartomark\n{restore}if");
 }
 
 static void mkheadercopyfile(FILE *temp,FILE *out,int headertype) {
