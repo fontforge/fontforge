@@ -274,23 +274,50 @@ return( t1<=0 );	/* if t1 < 0 then the intersection point is actually */
     }
 }
 
-static void CirclePoint(TPoint *tp,BasePoint *center,BasePoint *dir,real radius) {
-    BasePoint off;
-    off.x = dir->x-center->x;
-    off.y = dir->y-center->y;
-    radius /= sqrt(off.x*off.x+off.y*off.y);
-    off.x *= radius;
-    off.y *= radius;
-    tp->x = center->x + off.x;
-    tp->y = center->y + off.y;
+static double CircleCpDist(double angle) {
+    /* To draw an arc of length angle on a unit circle, the control points */
+    /*  should be this far from their base points. Determined empirically, */
+    /*  fit by least squares */
+
+    if ( angle<0 ) angle = -angle;
+    while ( angle>2*PI ) angle -= 2*PI;
+    if ( angle>PI ) angle = 2*PI-angle;
+return( ((0.0115445*angle - 0.0111987)*angle + 0.357114)*angle );
+}
+
+static SplinePoint *ChordMid(double angle,BasePoint *center,BasePoint *from,
+	double *_cpratio) {
+    BasePoint off, new;
+    double s,c,cpratio;
+    SplinePoint *sp;
+
+    if ( angle<0 ) angle = -angle;
+    while ( angle>2*PI ) angle -= 2*PI;
+    if ( angle>PI ) angle = 2*PI-angle;
+    angle /= 2;
+
+    off.x = from->x-center->x;
+    off.y = from->y-center->y;
+    s = sin(angle); c = cos(angle);
+    new.x = c*off.x - s*off.y;
+    new.y = s*off.x + c*off.y;
+    sp = SplinePointCreate(new.x+center->x,new.y+center->y);
+
+    *_cpratio = cpratio = CircleCpDist(angle);
+    new.x *= cpratio; new.y *= cpratio;		/* new is a vector of length radius pointing perp to the direction of the cps */
+		/* We need to multiply by cp ratio and rotate 90 degrees */
+    sp->prevcp.x = sp->me.x + new.y;
+    sp->prevcp.y = sp->me.y - new.x;
+    sp->nextcp.x = sp->me.x - new.y;
+    sp->nextcp.y = sp->me.y + new.x;
+    sp->nonextcp = sp->noprevcp = false;
+return( sp );
 }
 
 static void MakeJoints(SplinePoint *from,SplinePoint *to,StrokeInfo *si,
 	BasePoint *inter, BasePoint *center,
 	int incr,double pangle, double nangle, real factor) {
     SplinePoint *mid;
-    BasePoint temp;
-    TPoint approx[4];
     int cstart, cend, i;
 
     if ( si->stroke_type == si_caligraphic ) {
@@ -328,17 +355,27 @@ static void MakeJoints(SplinePoint *from,SplinePoint *to,StrokeInfo *si,
 	SplineMake3(from,mid);
 	SplineMake3(mid,to);
     } else {
+	double cplen = CircleCpDist(nangle-pangle);
+	mid = NULL;
+	if ( cplen>.6 ) {
+	    /* If angle of the arc is more than about 90 degrees a cubic */
+	    /*  spline is noticeably different from a circle's arc */
+	    /* So add an extra point to help things out */
+	    mid = ChordMid(nangle-pangle,center,&from->me,&cplen);
+	}
+	cplen *= si->radius*factor;
 	from->pointtype = to->pointtype = pt_curve;
-	from->nextcp.x = from->me.x-si->radius*cos(nangle);		/* Just care about angle, not length */
-	from->nextcp.y = from->me.y-si->radius*sin(nangle);
-	to->prevcp.x = to->me.x+si->radius*cos(pangle);
-	to->prevcp.y = to->me.y+si->radius*sin(pangle);
-	CirclePoint(&approx[0],center,inter,factor*si->radius); approx[0].t = .5;
-	temp.x = (inter->x+from->me.x)/2; temp.y = (inter->y+from->me.y)/2;
-	CirclePoint(&approx[1],center,&temp,factor*si->radius); approx[1].t = .25;
-	temp.x = (inter->x+to->me.x)/2; temp.y = (inter->y+to->me.y)/2;
-	CirclePoint(&approx[2],center,&temp,factor*si->radius); approx[2].t = .75;
-	ApproximateSplineFromPointsSlopes(from,to,approx,3,false);
+	from->nextcp.x = from->me.x-cplen*cos(nangle);
+	from->nextcp.y = from->me.y-cplen*sin(nangle);
+	to->prevcp.x = to->me.x+cplen*cos(pangle);
+	to->prevcp.y = to->me.y+cplen*sin(pangle);
+	from->nonextcp = false; to->noprevcp = false;
+	if ( mid==NULL )
+	    SplineMake3(from,to);
+	else {
+	    SplineMake3(from,mid);
+	    SplineMake3(mid,to);
+	}
     }
 }
 
@@ -1462,7 +1499,7 @@ return( ssplus );
 		    MSP(lastm->minusto,&cur->next->minusfrom,&cur->next->minusto);
 		else if ( cur==lastm )
 		    MakeJoints(lastm->minusto,cur->next->minusfrom,si,&cur->minterto,
-			    &cur->s->to->me,1,cur->nangle,cur->pangle,factor);
+			    &cur->s->to->me,1,PI+cur->nangle,PI+cur->pangle,factor);
 		else
 		    GDrawIError("Lastm not cur");
 	    }
@@ -1521,60 +1558,82 @@ static SplineSet *SSRemoveUTurns(SplineSet *base) {
     /*  if we have a spline which is all in a line, but the control points */
     /*  are such that it doubles back on itself ( "* +   * +", ie. cps */
     /*  outside of the points) then things get very unhappy */
-    SplineSet *spl;
-    Spline *first, *s;
+    SplineSet *spl= base;
+    Spline *first, *s, *next;
     double dx,dy, offx,offy, diff;
     int linear;
+    double len,lenf,lent, dott,dotf;
 
-    /*for ( spl=base; spl!=NULL; spl=spl->next )*/ spl=base; {
-	first = NULL;
-	for ( s = spl->first->next; s!=NULL && s!=first; s=s->to->next ) {
-	    if ( first==NULL ) first = s;
-	    dx = s->to->me.x-s->from->me.x;
-	    dy = s->to->me.y-s->from->me.y;
-	    offx = s->from->nextcp.x-s->from->me.x;
-	    offy = s->from->nextcp.y-s->from->me.y;
-	    if ( offx*dx + offy*dy<0 ) {
-		diff = offx*dy-offy*dx;
-		linear = ( diff<1 && diff>-1 );
-		if ( offx<0 ) offx = -offx;
-		if ( offy<0 ) offy = -offy;
-		if ( offx+offy<1 || linear ) {
-		    s->from->nextcp = s->from->me;
-		    s->from->nonextcp = true;
-		    if ( s->from->pointtype == pt_curve )
-			s->from->pointtype = pt_corner;
-		    if ( s->order2 ) {
-			s->to->prevcp = s->to->me;
-			s->to->noprevcp = true;
-			if ( s->to->pointtype==pt_curve )
-			    s->to->pointtype = pt_corner;
-		    }
-		    SplineRefigure(s);
-		}
-	    }
-	    offx = s->to->me.x-s->to->prevcp.x;
-	    offy = s->to->me.y-s->to->prevcp.y;
-	    if ( offx*dx + offy*dy<0 ) {
-		diff = offx*dy-offy*dx;
-		linear = ( diff<1 && diff>-1 );
-		if ( offx<0 ) offx = -offx;
-		if ( offy<0 ) offy = -offy;
-		if ( offx+offy<1 || linear ) {
+    first = NULL;
+    for ( s = spl->first->next; s!=NULL && s!=first; s=s->to->next ) {
+	if ( first==NULL ) first = s;
+	dx = s->to->me.x-s->from->me.x;
+	dy = s->to->me.y-s->from->me.y;
+	offx = s->from->nextcp.x-s->from->me.x;
+	offy = s->from->nextcp.y-s->from->me.y;
+	if ( offx*dx + offy*dy<0 ) {
+	    diff = offx*dy-offy*dx;
+	    linear = ( diff<1 && diff>-1 );
+	    if ( offx<0 ) offx = -offx;
+	    if ( offy<0 ) offy = -offy;
+	    if ( offx+offy<1 || linear ) {
+		s->from->nextcp = s->from->me;
+		s->from->nonextcp = true;
+		if ( s->from->pointtype == pt_curve )
+		    s->from->pointtype = pt_corner;
+		if ( s->order2 ) {
 		    s->to->prevcp = s->to->me;
 		    s->to->noprevcp = true;
 		    if ( s->to->pointtype==pt_curve )
 			s->to->pointtype = pt_corner;
-		    if ( s->order2 ) {
-			s->from->nextcp = s->from->me;
-			s->from->nonextcp = true;
-			if ( s->from->pointtype == pt_curve )
-			    s->from->pointtype = pt_corner;
-		    }
-		    SplineRefigure(s);
 		}
+		SplineRefigure(s);
 	    }
 	}
+	offx = s->to->me.x-s->to->prevcp.x;
+	offy = s->to->me.y-s->to->prevcp.y;
+	if ( offx*dx + offy*dy<0 ) {
+	    diff = offx*dy-offy*dx;
+	    linear = ( diff<1 && diff>-1 );
+	    if ( offx<0 ) offx = -offx;
+	    if ( offy<0 ) offy = -offy;
+	    if ( offx+offy<1 || linear ) {
+		s->to->prevcp = s->to->me;
+		s->to->noprevcp = true;
+		if ( s->to->pointtype==pt_curve )
+		    s->to->pointtype = pt_corner;
+		if ( s->order2 ) {
+		    s->from->nextcp = s->from->me;
+		    s->from->nonextcp = true;
+		    if ( s->from->pointtype == pt_curve )
+			s->from->pointtype = pt_corner;
+		}
+		SplineRefigure(s);
+	    }
+	}
+    }
+
+    /* Also if we have a spline which turns through about 180 degrees */
+    /*  our approximations degrade. So bisect any such splines */
+    first = NULL;
+    for ( s = spl->first->next; s!=NULL && s!=first; s=next ) {
+	next = s->to->next;
+	if ( first==NULL ) first = s;
+	len = sqrt( (s->from->me.x-s->to->me.x)*(s->from->me.x-s->to->me.x) +
+		    (s->from->me.y-s->to->me.y)*(s->from->me.y-s->to->me.y) );
+	lenf= sqrt( (s->from->me.x-s->from->nextcp.x)*(s->from->me.x-s->from->nextcp.x) +
+		    (s->from->me.y-s->from->nextcp.y)*(s->from->me.y-s->from->nextcp.y) );
+	dotf = ((s->from->me.x-s->to->me.x)*(s->from->me.x-s->from->nextcp.x) +
+		(s->from->me.y-s->to->me.y)*(s->from->me.y-s->from->nextcp.y))/
+		(len*lenf);
+	lent= sqrt( (s->to->prevcp.x-s->to->me.x)*(s->to->prevcp.x-s->to->me.x) +
+		    (s->to->prevcp.y-s->to->me.y)*(s->to->prevcp.y-s->to->me.y) );
+	dott = ((s->from->me.x-s->to->me.x)*(s->to->prevcp.x-s->to->me.x) +
+		(s->from->me.y-s->to->me.y)*(s->to->prevcp.y-s->to->me.y))/
+		(len*lent);
+	dotf = acos(dotf); dott = acos(dott);
+	if ( dotf+dott > 3*PI/4 )
+	    SplineBisect(s,.5);
     }
 return( base );
 }
