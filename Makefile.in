@@ -5,7 +5,7 @@ bindir = @bindir@
 libdir = @libdir@
 mandir = @mandir@
 includedir = @includedir@
-sharedir = $(prefix)/share/pfaedit
+sharedir = $(prefix)/share/fontforge
 
 srcdir = @srcdir@
 top_builddir = .
@@ -13,12 +13,12 @@ top_builddir = .
 LIBTOOL = @LIBTOOL@
 INSTALL = @INSTALL@
 
-all: pfaedit
+all: fontforge
 
 libs: libgunicode libgdraw
 
-pfaedit: libgunicode libgdraw
-	( cd pfaedit ; $(MAKE) )
+fontforge: libgunicode libgdraw
+	( cd fontforge ; $(MAKE) )
 
 libgunicode:
 	( cd Unicode ; $(MAKE) )
@@ -27,13 +27,13 @@ libgdraw:
 	( cd gdraw ; $(MAKE) )
 
 clean:
-	( cd pfaedit ; $(MAKE) clean )
+	( cd fontforge ; $(MAKE) clean )
 	( cd Unicode ; $(MAKE) clean )
 	( cd gdraw ; $(MAKE) clean )
 	-rm -rf .libs
 
 distclean cleaner:
-	( cd pfaedit ; $(MAKE) distclean )
+	( cd fontforge ; $(MAKE) distclean )
 	( cd Unicode ; $(MAKE) distclean )
 	( cd gdraw ; $(MAKE) distclean )
 	-rm -rf .libs
@@ -53,21 +53,21 @@ install: $(sharedir) all install_libs
 	mkdir -p $(bindir)
 	mkdir -p $(mandir)/man1
 	mkdir -p $(sharedir)
-	$(LIBTOOL) $(INSTALL) -c pfaedit/pfaedit $(bindir)
-	$(LIBTOOL) $(INSTALL) -c pfaedit/sfddiff $(bindir)
-	cp pfaedit/pfaedit-*.ui $(sharedir)
+	$(LIBTOOL) $(INSTALL) -c fontforge/fontforge $(bindir)
+	$(LIBTOOL) $(INSTALL) -c fontforge/sfddiff $(bindir)
+	cp fontforge/pfaedit-*.ui $(sharedir)
 #The next line will fail for most installs. If you have downloaded the cidmaps
 # this will install them. If you haven't it won't. You only need the cidmaps
 # if you are editing CID keyed files (and even then you can live without them
 	-cp $(srcdir)/cidmap/*.cidmap $(sharedir) >/dev/null 2>&1
-	cp $(srcdir)/pfaedit/pfaedit.1 $(mandir)/man1
-	cp $(srcdir)/pfaedit/sfddiff.1 $(mandir)/man1
+	cp $(srcdir)/fontforge/fontforge.1 $(mandir)/man1
+	cp $(srcdir)/fontforge/sfddiff.1 $(mandir)/man1
 
 uninstall:
-	-rm $(bindir)/pfaedit
+	-rm $(bindir)/fontforge
 	-rm $(bindir)/sfddiff
 	-rm $(sharedir)/pfaedit-*.ui
-	-rm $(mandir)/man1/pfaedit.1
+	-rm $(mandir)/man1/fontforge.1
 	-rm $(mandir)/man1/sfddiff.1
 	-rm $(libdir)/libgdraw.so*
 	-rm $(libdir)/libgunicode.so*

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 8-Feb-2004 -->
+  <!-- AP: Last modified: 2-Mar-2004 -->
   <TITLE>The Font View</TITLE>
 </HEAD>
 <BODY>
@@ -163,7 +163,7 @@ two are used synonymously as an encoding generally implies a given character
 set. (strictly speaking a character set is an unordered collection with no
 implied encoding, and some encodings work with multiple character sets).
 <P>
-All fonts in pfaedit have both a character set and an encoding. The character
+All fonts in fontforge have both a character set and an encoding. The character
 set is just the set of characters in the font. The encoding is the way those
 characters are ordered (or sometimes, the way the first 256 are ordered).
 The font info dialog allows you to chose the encoding (and character set)
@@ -179,10 +179,10 @@ for a latin one, but only one character set at a time would be encoded).
 It is possible for an encoding not to be one-to-one. That is there may be
 several characters that might lead to the same underlying glyph (the classic
 example is the non-breaking space which often uses the same glyph as the
-breaking space). When PfaEdit encounters such an encoding it will create
+breaking space). When FontForge encounters such an encoding it will create
 a character structure for each entry, one of those structures will contain
 the data for drawing the glyph, the other(s) will contain a reference to
-the one real character. All characters will have the same name. When PfaEdit
+the one real character. All characters will have the same name. When FontForge
 generates a font it looks for this case and turns it into a font whose encoding
 vector contains multiple references to a glyph.
 <P>
@@ -219,8 +219,8 @@ but "mu" is part of Adobe's Latin1 encoding and I can't change that.
 <P>
 CID fonts (see <A HREF="#CID">below</A>) have no encodings. Instead they
 are designed to be associated with one or several cmap files which provide
-encodings in a general way. cmap files are beyond the scope of PfaEdit. Adobe
-has defined many which are freely
+encodings in a general way. cmap files are beyond the scope of FontForge.
+Adobe has defined many which are freely
 <A HREF="http://www.adobe.com/products/acrobat/acrrasianfontpack.html">available</A>.
 <P>
 There is one final encoding called "Compacted". This encoding is just a
@@ -245,12 +245,12 @@ According to the <A HREF="http://www.unicode.org/">unicode website</A> the
 first 256 character positions of unicode and ISO 8859-1 (ISO Latin1) are
 the same. However the PostScript encoding of ISOLatin1 is slightly different
 from that specified for unicode. I cannot explain the reasoning behind this.
-PfaEdit does not use PostScript's ISOLatin1 Encoding vector, instead it uses
-the first 256 code positions of the unicode encoding vector (slightly modified
-by me to conform to Unicode conventions rather than PostScript. So I include
-nobreak space and the soft-hyphen).
+FontForge does not use PostScript's ISOLatin1 Encoding vector, instead it
+uses the first 256 code positions of the unicode encoding vector (slightly
+modified by me to conform to Unicode conventions rather than PostScript.
+So I include nobreak space and the soft-hyphen).
 <P>
-PfaEdit supports two slightly different unicode encodings. The first contains
+FontForge supports two slightly different unicode encodings. The first contains
 only the first 65536 characters of unicode (those in the
 <A HREF="http://www.unicode.org/roadmaps/bmp.html">Basic Multilingual
 Plane</A>, or BMP), while the second can contain as many characters as you
@@ -275,15 +275,15 @@ Adobe's current solution is the <A HREF="cidmenu.html#CID">CID-keyed font</A>,
 a font consisting of several subfonts each a collection of glyph descriptions
 with no encoding imposed on them and no names given to them.
 <P>
-If PfaEdit loads in a CID keyed font it will enable a special menu called
+If FontForge loads in a CID keyed font it will enable a special menu called
 <A HREF="cidmenu.html">CID</A> which (among other things) displays the list
-of all the sub-fonts in the font. When it starts up PfaEdit will pick
+of all the sub-fonts in the font. When it starts up FontForge will pick
 (practically at random) a sub-font to display in the font view. You may change
 which font is displayed by the CID menu.
 <P>
 The CID menu also allows you to turn a normal font into a CID keyed font.
 It creates a collection containing just the original font (you may add other
-fonts, or blank fonts, later). But before it can create a collection PfaEdit
+fonts, or blank fonts, later). But before it can create a collection FontForge
 needs to know what character set you will be using. A character set is just
 a collection of characters, and you may define your own if you wish (but
 if you do you have to define your own cmap files, etc and it's probably not
@@ -292,11 +292,11 @@ are two, one corresponding to JIS208 and one to JIS212), Korean (Wansung
 &amp; Johab), Traditional Chinese (Big5) and Simplified Chinese (GB2312).
 Although these character sets are based on the standards mentioned, they
 each have many additional characters. Adobe also defines a charset that works
-for Unicode, but it is called "Identity" instead. PfaEdit does not have these
-character sets built in to it, each must be loaded the first time it is used.
-I provide one file for each of the above character sets, they have an extension
-of ".cidmap", and you may download them all <A HREF="cidmaps.tgz">from
-here</A>.
+for Unicode, but it is called "Identity" instead. FontForge does not have
+these character sets built in to it, each must be loaded the first time it
+is used. I provide one file for each of the above character sets, they have
+an extension of ".cidmap", and you may download them all
+<A HREF="cidmaps.tgz">from here</A>.
 <P>
 (There are also a few other character sets floating around but they aren't
 in the public domain and I haven't been able to get my hands on them).
@@ -314,11 +314,11 @@ Adobe-Japan1-4.cidmap<BR>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Adobe-Korea1-2.cidmap
 <P>
 <FONT COLOR="Red"><STRONG><BIG>Warning:</BIG></STRONG></FONT> CID keyed fonts
-(actually any CJK font) use massive amounts of memory in PfaEdit. I am able
-to work on many of them on my 256M machine with 384M of swap space.
+(actually any CJK font) use massive amounts of memory in FontForge. I am
+able to work on many of them on my 256M machine with 384M of swap space.
 <P>
 The <A HREF="editmenu.html#Remove-Undoes">Remove Undoes </A>command will
-allow you to free up memory if you think you may be running short. PfaEdit
+allow you to free up memory if you think you may be running short. FontForge
 is not always able to protect itself against running out of memory, sometimes
 the OS just sends it a SIGKILL signal.
 <H2>
@@ -336,9 +336,9 @@ other commands for manipulating multiple masters.
 </H2>
 <P>
 CJK fonts generally should have vertical metrics. Latin (Cyrillic, Greek)
-fonts generally should not. If PfaEdit reads in a font with vertical metrics
-it will retain those metrics, but when PfaEdit creates a new font then that
-font will not have vertical metrics enabled.
+fonts generally should not. If FontForge reads in a font with vertical metrics
+it will retain those metrics, but when FontForge creates a new font then
+that font will not have vertical metrics enabled.
 <P>
 To enable vertical metrics for a font go to
 <CODE><A HREF="fontinfo.html#vertical">Element-&gt;Font Info</A></CODE> and

@@ -2,14 +2,20 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 1-Mar-2004 -->
-  <TITLE>Change log for PfaEdit</TITLE>
+  <!-- AP: Last modified: 2-Mar-2004 -->
+  <TITLE>Change log for FontForge</TITLE>
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    2-Mar-2004
+    <UL>
+      <LI>
+	Change to fontforge.
+	</UL>
   <LI>
     1-Mar-2004
     <UL>
@@ -22,7 +28,7 @@
 	Try to do a better job of guessing the correct direction of a path in an
 	eps file (or a type3 or svg font)
       <LI>
-	PfaEdit would crash when editing in the grid layer
+	FontForge would crash when editing in the grid layer
       <LI>
 	When the control key is down, make the scroll wheel do a magnify/minify.
       <LI>
@@ -44,7 +50,7 @@
     29-Feb-2004
     <UL>
       <LI>
-	PfaEdit could crash if given a bad 'cmap' subtable
+	FontForge could crash if given a bad 'cmap' subtable
       <LI>
 	Clean up generation of OS/2 a bit
       <LI>
@@ -63,7 +69,7 @@
       <LI>
 	Redid the way menus respond to arrow keys
       <LI>
-	a multilayer enabled PfaEdit would crash when editing a normal font.
+	a multilayer enabled FontForge would crash when editing a normal font.
     </UL>
   <LI>
     24-Feb-2004
@@ -71,7 +77,7 @@
       <LI>
 	Remove the AddHint command and replace it with AddHHint and AddVHint.
       <LI>
-	PfaEdit would crash when generating a mac family with NFNT bitmaps.
+	FontForge would crash when generating a mac family with NFNT bitmaps.
       <LI>
 	Added support of exporting a character into PDF format.
       <LI>
@@ -94,14 +100,14 @@
 </PRE>
 	</BLOCKQUOTE>
       <LI>
-	PfaEdit failed to interpret h/vstem3 commands properly when building a hintmask
-	(when reading a type1 font with hint substitution)
+	FontForge failed to interpret h/vstem3 commands properly when building a
+	hintmask (when reading a type1 font with hint substitution)
     </UL>
   <LI>
     11-Feb-2004
     <UL>
       <LI>
-	PfaEdit would crash when saving a non-multi master font.
+	FontForge would crash when saving a non-multi master font.
       <LI>
 	Adding new scripting commands ClearCharCounterMasks, SetCharCounterMask
     </UL>
@@ -109,40 +115,40 @@
     10-Feb-2004
     <UL>
       <LI>
-	PfaEdit could produce bad tfm files.
+	FontForge could produce bad tfm files.
       <LI>
 	Added CheckForAnchorClass scripting command
       <LI>
 	Added SetFontHasVerticalMetrics scripting command.
       <LI>
-	PfaEdit would crash if asked to generate a contextual lookup which refered
+	FontForge would crash if asked to generate a contextual lookup which refered
 	to a lookup which only was activated by a character(s) which was not worth
 	outputting.
       <LI>
-	PfaEdit did the wrong thing when evaluating the PostScript "index" command
+	FontForge did the wrong thing when evaluating the PostScript "index" command
 	(it returned the wrong value from the stack (stack index off by one))
       <LI>
 	Added support for the PostScript "for" loop.
       <LI>
-	I have created a simple (1 axis) Multiple Master Type1 font with PfaEdit.
+	I have created a simple (1 axis) Multiple Master Type1 font with FontForge.
 	It works with both ghostview and freetype.
       <LI>
-	PfaEdit would crash when generating a ttf file from an sfd file which contain
+	FontForge would crash when generating a ttf file from an sfd file which contain
 	an invalid script/lang index. Put in code to warn user about this, and in
 	some cases to correct it.
       <LI>
-	PfaEdit had problems reading sfd files in the old point count format, this
+	FontForge had problems reading sfd files in the old point count format, this
 	meant we still got bad point count errors.
       <LI>
-	PfaEdit wrote bad sfd files if there were countermasks (all the countours
+	FontForge wrote bad sfd files if there were countermasks (all the countours
 	of the glyph would be lost)
       <LI>
-	I finally figured out why PfaEdit kept crashing when palettes were docked
+	I finally figured out why FontForge kept crashing when palettes were docked
 	and an outline view was closed.
       <LI>
 	Fixed various crashes in Interpolate fonts
       <LI>
-	PfaEdit had problems with using subroutines to express references in PostScript
+	FontForge had problems with using subroutines to express references in PostScript
 	(introduced 30-Jan)
       <LI>
 	Added a new scripting commands AddHint and ReplaceCharCounterMasks.
@@ -170,7 +176,7 @@
 	Generating a postscript font from a database with quadratic splines didn't
 	work
       <LI>
-	PfaEdit crashed on a font with two /CharStrings entries
+	FontForge crashed on a font with two /CharStrings entries
       <LI>
 	Small tweak to menubar behavior given left/right arrow (for Werner)
       <LI>
@@ -196,8 +202,8 @@
     <UL>
       <LI>
 	In Type2 output, when putting a glyph into a subroutine, if that glyph had
-	no conflicts but had a hintmask pfaedit produced a bad font (which crashed
-	PfaEdit when it tried to read it in).
+	no conflicts but had a hintmask fontforge produced a bad font (which crashed
+	FontForge when it tried to read it in).
       <LI>
 	configure script still wasn't working on solaris (or mac with libiconv probably)
     </UL>
@@ -230,10 +236,10 @@
       <LI>
 	Added a fflush after doing Print()s in scripting
       <LI>
-	PfaEdit would crash when given an extremely long real number in a cff dictionary
-	(in this case the font itself was in error)
+	FontForge would crash when given an extremely long real number in a cff
+	dictionary (in this case the font itself was in error)
       <LI>
-	PfaEdit did not copy a bitmap character's width when it copied the bitmap.
+	FontForge did not copy a bitmap character's width when it copied the bitmap.
       <LI>
 	Char Info didn't handle pairwise positioning properly.
       <LI>
@@ -246,7 +252,7 @@
 	the hint masks are at those points. There is a new command which will
 	automatically figure out these points, and the user may control them directly
 	through Point Info (Element-&gt;Get Info). At the same time I figured I might
-	as well do the same thing for counter masks, so PfaEdit will read counter
+	as well do the same thing for counter masks, so FontForge will read counter
 	masks in from otf file (I did not implement this for type1s), there is a
 	new command to try and make a guess as to what they should be, and the user
 	may control them directly through Element-&gt;Char Info. (new scripting commands,
@@ -259,15 +265,15 @@
 	Added ability to control whether a PostScript font (type1&amp;type2) is output
 	with rounding.
       <LI>
-	PfaEdit could generate a bad 'post' table for bitmap only fonts.
+	FontForge could generate a bad 'post' table for bitmap only fonts.
       <LI>
-	PfaEdit didn't allow you to create two pairwise positioning items with the
-	same tag.
+	FontForge didn't allow you to create two pairwise positioning items with
+	the same tag.
       <LI>
 	Hungarian names for mac features and for some standard names like "Bold",
 	etc. provided by Laszlo Karoly.
       <LI>
-	Pierre HANSER noticed that if PfaEdit mapped a single glyph to two encodings
+	Pierre HANSER noticed that if FontForge mapped a single glyph to two encodings
 	then bitmap generation through freetype got confused.
       <LI>
 	If a font contained a non-.notdef character at encoding 0, then generating
@@ -291,9 +297,9 @@
     10-Jan-2003
     <UL>
       <LI>
-	PfaEdit would crash when asked to use the truetype debugger on fpgm
+	FontForge would crash when asked to use the truetype debugger on fpgm
       <LI>
-	PfaEdit always coloured the background of debugger windows grey.
+	FontForge always coloured the background of debugger windows grey.
       <LI>
 	The Points window did not show any points.
       <LI>
@@ -331,11 +337,11 @@
 	view) showing the direction of the contour.
       <LI>
 	The mac's interpretation of the CFF spec is very picky, but correct. If a
-	font contained no references then PfaEdit would generate an empty subroutine
+	font contained no references then FontForge would generate an empty subroutine
 	index. This is wrong. There should be no subroutine index, rather than an
 	empty one. (Strangely, global subroutines have the reverse requirement. Stupid).
-	Now if there are no references, then PfaEdit will not generate a local subroutine
-	index.
+	Now if there are no references, then FontForge will not generate a local
+	subroutine index.
       <LI>
 	Yannis Haralambous has corrected the French UI.
       <LI>
@@ -372,9 +378,9 @@
       <LI>
 	Update copyright notices.
       <LI>
-	Add code to protect PfaEdit against reading bad Apple lookup tables (I think
-	the Zapfino.dfont that ships with 10.3 has two bad lookups, but perhaps I
-	just don't understand them).
+	Add code to protect FontForge against reading bad Apple lookup tables (I
+	think the Zapfino.dfont that ships with 10.3 has two bad lookups, but perhaps
+	I just don't understand them).
       <LI>
 	Try harder to avoid using 'DFLT' script when coming up with a default script
 	for glyphs with no inate script.
@@ -387,7 +393,7 @@
       <LI>
 	On cygwin (perhaps elsewhere, but I was never able to find the bug elsewhere)
 	if you invoked one command from the menu while another was still executing,
-	then pfaedit would probably crash.
+	then fontforge would probably crash.
       <LI>
 	Support for reading and writing bare cff files.
       <LI>
@@ -400,14 +406,14 @@
       <LI>
 	RemoveATT scripting command didn't work if the third argument were "*"
       <LI>
-	PfaEdit's clipping in the character view left something to be desired.
+	FontForge's clipping in the character view left something to be desired.
       <LI>
 	Make Meta-Arrow move selected points by 10 times what Arrow would move them
 	by.
       <LI>
 	Grabbed the feature ordering for GPOS/GSUB specified on the
 	<A HREF="http://www.microsoft.com/typography/specs/default.htm">microsoft
-	site</A> and taught it to PfaEdit.
+	site</A> and taught it to FontForge.
       <LI>
 	Change the Point Info dlg
 	<UL>
@@ -424,7 +430,7 @@
 	Some MF fonts have glyph names with characters which aren't allowed in PostScript
 	names
       <LI>
-	PfaEdit failed to set widthset when it read in glyphs from a windows FNT
+	FontForge failed to set widthset when it read in glyphs from a windows FNT
 	(FON) file. This meant that some glyphs might be ignored.
       <LI>
 	The context chaining dialog had a bad test for valid glyph names and complained
@@ -455,7 +461,7 @@
 	the display properly.
       <LI>
 	Thanks to David Opstad, I now have an example of a format 1 kerning table
-	and have extended PfaEdit to support kerning by state machine.
+	and have extended FontForge to support kerning by state machine.
       <LI>
 	The code for generating and loading otb (OpenType bitmap) fonts was broken.
       <LI>
@@ -463,8 +469,8 @@
 	some flaws too (different flaws).
       <LI>
 	If I typed a character into a fontview (or char view) and the font did not
-	contain the character, pfaedit would not select that slot that encoded the
-	character, even if the character was in the encoding.
+	contain the character, fontforge would not select that slot that encoded
+	the character, even if the character was in the encoding.
       <LI>
 	When loading a ps type3 font, make sure that the glyph name is available
 	when parsing glyphs so we can produce reasonable error msgs. (mostly this
@@ -480,12 +486,12 @@
 	Merge fonts would crash when merging in a font containing either a ligature
 	caret or a nested lookup.
       <LI>
-	Made PfaEdit cognizant of the proposed unicode dotlessj character (0237),
+	Made FontForge cognizant of the proposed unicode dotlessj character (0237),
 	it will now use either this or the dotlessj in adobe's private use area
 	(depending on which is in the font)
       <LI>
-	PfaEdit would crash when trying to build an accented character based on inverted
-	breve in pala.ttf
+	FontForge would crash when trying to build an accented character based on
+	inverted breve in pala.ttf
 	<UL>
 	  <LI>
 	    It wrongly considered pala.ttf to be slightly italic (.0005&#176;)
@@ -505,11 +511,11 @@
     <UL>
       <LI>
 	When there were multiple features with the same tag (different scripts with
-	'kern' for instance) PfaEdit would produce multiple copies of the same lookup
-	instead of different lookups.
+	'kern' for instance) FontForge would produce multiple copies of the same
+	lookup instead of different lookups.
       <LI>
-	PfaEdit was not setting the right to left lookup flag bit properly for hebrew
-	(and presumably arabic) kerning
+	FontForge was not setting the right to left lookup flag bit properly for
+	hebrew (and presumably arabic) kerning
       <LI>
 	Remove overlap was coalescing some splines that it should not have.
       <LI>
@@ -543,7 +549,7 @@
     23-Nov-2003
     <UL>
       <LI>
-	PfaEdit would crash if given an encoding for the locale which it didn't
+	FontForge would crash if given an encoding for the locale which it didn't
 	understand
       <LI>
 	Center/Thirds in width from the font view would change the width
@@ -551,16 +557,16 @@
 	There was a synchronization problem and the truetype debugger window could
 	deadlock
       <LI>
-	PfaEdit failed to read a Contextual (but not Contextual chaining) Coverage
+	FontForge failed to read a Contextual (but not Contextual chaining) Coverage
 	lookup properly.
     </UL>
   <LI>
     10-Nov-2003
     <UL>
       <LI>
-	PfaEdit was crashing when loading a bitmap font with encoded characters outside
-	the range specified by the encoding (ie. a character 0x10000 in a unicode
-	BMP font).
+	FontForge was crashing when loading a bitmap font with encoded characters
+	outside the range specified by the encoding (ie. a character 0x10000 in a
+	unicode BMP font).
       <LI>
 	Fixes for several memory leaks provided by Kazuki Ohta
       <LI>
@@ -570,18 +576,18 @@
     8-Nov-2003
     <UL>
       <LI>
-	Bug introduced 6-Nov, PfaEdit generated a bad 'loca' table when outputing
+	Bug introduced 6-Nov, FontForge generated a bad 'loca' table when outputing
 	a ttf outline font with bitmaps.
       <LI>
-	PfaEdit was getting the truetype point number wrong when reading outlines
+	FontForge was getting the truetype point number wrong when reading outlines
 	from an sfd file.
       <LI>
-	If the loca table was 2 or 4 bytes long, PfaEdit failed to warn about a bad
-	glyph count.
+	If the loca table was 2 or 4 bytes long, FontForge failed to warn about a
+	bad glyph count.
       <LI>
-	PfaEdit got confused if two truetype glyphs had the same name.
+	FontForge got confused if two truetype glyphs had the same name.
       <LI>
-	When dumping out embedded ttf bitmaps, PfaEdit got confused by the extra
+	When dumping out embedded ttf bitmaps, FontForge got confused by the extra
 	glyphs (.null and return) and generated garbage.
       <LI>
 	Make View-&gt;Combinations-&gt;ligature dlg a bit better for non-latin glyphs
@@ -592,7 +598,7 @@
       <LI>
 	The clut used for drawing anti-alias bitmaps in the metrics view was wrong.
       <LI>
-	In a bitmap only ttf file, PfaEdit was usually producing bad line spacing
+	In a bitmap only ttf file, FontForge was usually producing bad line spacing
 	data as far as the mac was concerned.
       <LI>
 	When importing bitmaps into an empty font, we might as well change to font
@@ -614,9 +620,9 @@
     4-Nov-2003
     <UL>
       <LI>
-	When PfaEdit removes glyphs with Font Info-&gt;Encoding-&gt;Number of characters,
-	it will now run through the font and remove any ligatures, substitutions,
-	etc. refering to non-existant glyph names.
+	When FontForge removes glyphs with Font Info-&gt;Encoding-&gt;Number of
+	characters, it will now run through the font and remove any ligatures,
+	substitutions, etc. refering to non-existant glyph names.
       <LI>
 	Some improvements to remove overlap.
       <LI>
@@ -626,7 +632,7 @@
 	it will offer the choice of a symbol encoding.
       <LI>
 	If a reference were copied in the outline character view and pasted into
-	the font view, pfaedit would crash.
+	the font view, fontforge would crash.
       <LI>
 	the expand stroke patch on 29-Sept broke caligraphic and elipse modes.
       <LI>
@@ -645,7 +651,7 @@
 	Was not converting filenames to unicode properly for the open/generate progress
 	dlgs.
       <LI>
-	PfaEdit would crash when attempting to draw a character for which in had
+	FontForge would crash when attempting to draw a character for which in had
 	no (X11) glyph when doing bidirectional text.
     </UL>
   <LI>

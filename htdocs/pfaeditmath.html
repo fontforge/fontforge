@@ -2,37 +2,37 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jul-2003 -->
-  <!-- AP: Last modified: 3-Jan-2004 -->
-  <TITLE>PfaEdit's math</TITLE>
+  <!-- AP: Last modified: 2-Mar-2004 -->
+  <TITLE>FontForge's math</TITLE>
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
-  PfaEdit's math
+  FontForge's math
 </H1>
 <P>
-<EM>Being a brief description of the mathematics underlying various of PfaEdit's
-commands<BR>
+<EM>Being a brief description of the mathematics underlying various of
+FontForge's commands<BR>
 It is presumed that you understand about parameterized splines, if not look
 at the description of <A HREF="bezier.html">B&eacute;zier curves</A>.</EM>
 <H2>
   <A NAME="Approximating">Approximating</A> a spline
 </H2>
 <P>
-Many of PfaEdit's commands need to fit a spline to a series of points. The
-most obvious of these are the Edit-&gt;Merge, and Element-&gt;Simplify commands,
-but many others rely on the same technique. Let us consider the case of the
-Merge command, suppose we have the following splines and we wish to remove
-the middle point and generate a new spline that approximates the original
-two:
+Many of FontForge's commands need to fit a spline to a series of points.
+The most obvious of these are the Edit-&gt;Merge, and Element-&gt;Simplify
+commands, but many others rely on the same technique. Let us consider the
+case of the Merge command, suppose we have the following splines and we wish
+to remove the middle point and generate a new spline that approximates the
+original two:
 <P>
 &nbsp; &nbsp; &nbsp;
 <IMG SRC="mergepre.png" WIDTH="192" HEIGHT="120" ALIGN="Middle"> =&gt;
 <IMG SRC="mergepost.png" WIDTH="192" HEIGHT="120" ALIGN="Middle">
 <P>
-PfaEdit uses a least squares approximation to determine the new spline. It
-calculates the locations of several points along the old splines, and then
-it guesses<SUP><A HREF="#guess-t">1</A></SUP> at t values for those points.
-We want:
+FontForge uses a least squares approximation to determine the new spline.
+It calculates the locations of several points along the old splines, and
+then it guesses<SUP><A HREF="#guess-t">1</A></SUP> at t values for those
+points. We want:
 <BLOCKQUOTE>
   x = a<SUB>x</SUB>*t<SUP>3</SUP> + b<SUB>x</SUB>*t<SUP>2</SUP> +
   c<SUB>x</SUB>*t +d<SUB>x</SUB><BR>
@@ -192,7 +192,7 @@ len2*Unit-Slope<SUB>o</SUB>).
   <SUP><A NAME="guess-t">1</A></SUP>Guessing values for t
 </H4>
 <P>
-PfaEdit approximates the lengths of the two splines being merged. If
+FontForge approximates the lengths of the two splines being merged. If
 Point<SUB>i </SUB>= Spline1(old-t<SUB>i</SUB>), then we approximate ti by<BR>
 &nbsp; &nbsp; t<SUB>i</SUB> = old-t<SUB>i</SUB>
 *len(spline1)/(len(spline1)+len(spline2)<BR>
@@ -209,7 +209,7 @@ the two splines.
 </H3>
 <P>
 PostScript supports several variants on the theme of a circular pen, and
-PfaEdit tries to emulate them all. Basically PostScript "stroke"s a path
+FontForge tries to emulate them all. Basically PostScript "stroke"s a path
 at a certain width by:
 <P>
 at every location on the curve<BR>
@@ -235,10 +235,10 @@ above algorithm).
 <P>
 Unfortunately that doesn't always work. If the spline makes a very sharp
 bend, the our approximation method above is unable to produce a good
-approximation. When that happens PfaEdit attempts to break the spline in
+approximation. When that happens FontForge attempts to break the spline in
 two, and a point near the sharp bend. The approximation of the two sub-splines
-is generally much better. (How does PfaEdit figure out where to break a line?
-It uses two methods, one just adds points to the extrema of the original
+is generally much better. (How does FontForge figure out where to break a
+line? It uses two methods, one just adds points to the extrema of the original
 curve, and the other looks for places where the innermost path intersects
 itself).
 <P>
@@ -260,8 +260,8 @@ Things are a bit more complex at a joint
 <IMG SRC="expand-joint-pre.png" WIDTH="61" HEIGHT="78" ALIGN="Middle"> =&gt;
 <IMG SRC="expand-joint-post.png" WIDTH="69" HEIGHT="80" ALIGN="Middle">,
 the green lines in the right image show where the path would have gone had
-it not been constrained by a joint, so on the inside of the joint PfaEdit
-must figure out where this intersection occurs. While on the outside PfaEdit
+it not been constrained by a joint, so on the inside of the joint FontForge
+must figure out where this intersection occurs. While on the outside FontForge
 must figure out either a round, miter or bevelled edge.
 <H3>
   An elliptical pen
@@ -301,19 +301,19 @@ and on the inside edge we calculate a join as above.
   An arbitrary convex polygonal pen
 </H3>
 <P>
-PfaEdit does not currently do this (the UI for specifying an arbitrary polygon
-is a little difficult), but the same method which works for a rectangle can
-be extended without too much difficulty to any convex polygon.
+FontForge does not currently do this (the UI for specifying an arbitrary
+polygon is a little difficult), but the same method which works for a rectangle
+can be extended without too much difficulty to any convex polygon.
 <H3>
   A pen of variable width
 </H3>
 <P>
-If you have a wacom tablet then PfaEdit also supports variable width pens.
+If you have a wacom tablet then FontForge also supports variable width pens.
 Extending the above algorithms is fairly simple.
 <H3>
   A pen at a varying angle
 </H3>
 <P>
-PfaEdit does not support this. I don't see a good UI for it.
+FontForge does not support this. I don't see a good UI for it.
 <P>
 </BODY></HTML>

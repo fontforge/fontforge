@@ -2,15 +2,15 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 21-Feb-2004 -->
-  <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
+  <!-- AP: Last modified: 2-Mar-2004 -->
+  <TITLE>Writing scripts to change fonts in FontForge</TITLE>
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
-  Writing scripts to change fonts in PfaEdit
+  Writing scripts to change fonts in FontForge
 </H1>
 <P>
-PfaEdit includes an interpreter so you can write scripts to modify fonts.
+FontForge includes an interpreter so you can write scripts to modify fonts.
 <UL>
   <LI>
     <A HREF="#Starting">Starting a script</A>
@@ -33,30 +33,31 @@ PfaEdit includes an interpreter so you can write scripts to modify fonts.
   <A NAME="Starting">Starting scripts</A>
 </H2>
 <P>
-If you start pfaedit with a script on the command line it will not put up
-any windows and it will exit when the script is done.
+If you start fontforge with a script on the command line it will not put
+up any windows and it will exit when the script is done.
 <BLOCKQUOTE>
-  <PRE>$ pfaedit -script scriptfile.pe {fontnames}
+  <PRE>$ fontforge -script scriptfile.pe {fontnames}
 </PRE>
 </BLOCKQUOTE>
 <P>
-PfaEdit can also be used as an interpreter that the shell will automatically
+FontForge can also be used as an interpreter that the shell will automatically
 pass scripts to. If you a mark your script files as executable<BR>
 <CODE>&nbsp; &nbsp; $ chmod +x scriptfile.pe</CODE><BR>
 and begin each one with the line<BR>
-<CODE>&nbsp; &nbsp; #!/usr/local/bin/pfaedit</CODE><BR>
-(or wherever pfaedit happens to reside on your system) then you can invoke
+<CODE>&nbsp; &nbsp; #!/usr/local/bin/fontforge</CODE><BR>
+(or wherever fontforge happens to reside on your system) then you can invoke
 the script just by typing<BR>
 <CODE>&nbsp; &nbsp; $ scriptfile.pe {fontnames}</CODE>
 <P>
-If you wish PfaEdit to read a script from stdin then you can use "-" as a
-"filename" for stdin. (If you build PfaEdit without X11 then pfaedit will
-attempt to read a script file from <CODE>stdin</CODE> if none is given on
-the command line.)
+If you wish FontForge to read a script from stdin then you can use "-" as
+a "filename" for stdin. (If you build FontForge without X11 then fontforge
+will attempt to read a script file from <CODE>stdin</CODE> if none is given
+on the command line.)
 <P>
-You can also start a script from within PfaEdit with <CODE>File-&gt;Execute
-Script</CODE>, and you can use the Preference Dlg to define a set of frequently
-used scripts which can be invoked directly by menu.
+You can also start a script from within FontForge with
+<CODE>File-&gt;Execute Script</CODE>, and you can use the Preference Dlg
+to define a set of frequently used scripts which can be invoked directly
+by menu.
 <P>
 The scripting language provides access to much of the functionality found
 in the font view's menus. It does not currently (and probably never will)
@@ -66,8 +67,8 @@ out of splines, instead it allows you to do high level modifications to
 characters.
 <P>
 If you set the environment variable <CODE>PFAEDIT_VERBOSE</CODE> (it doesn't
-need a value, just needs to be set) then PfaEdit will print scripts to stdout
-as it executes them.
+need a value, just needs to be set) then FontForge will print scripts to
+stdout as it executes them.
 <P>
 In general I envision this as being useful for things like taking a latin
 font and extending it to contain cyrillic characters. So the script might:
@@ -184,12 +185,13 @@ Note there is no comma operator, and no "?:" operator. The precedence of
 "and" and "or" has been simplified, as has that of the assignment operators.
 <P>
 Procedure calls may be applied either to a name token, or to a string. If
-the name or string is recognized as one of PfaEdit's internal procedures
+the name or string is recognized as one of FontForge's internal procedures
 it will be executed, otherwise it will be assumed to be a filename containing
-another pfaedit script file, this file will be invoked (since filenames can
-contain characters not legal in name tokens it is important to allow general
-strings to specify filenames). If the procedure name does not contain a directory
-then it is assumed to be in the same directory as the current script file.
+another fontforge script file, this file will be invoked (since filenames
+can contain characters not legal in name tokens it is important to allow
+general strings to specify filenames). If the procedure name does not contain
+a directory then it is assumed to be in the same directory as the current
+script file.
 <P>
 Arrays are passed by reference, strings and integers are passed by value.
 <P>
@@ -249,15 +251,15 @@ endloop
 </PRE>
 </BLOCKQUOTE>
 <P>
-PfaEdit maintains the concept of a "current font" almost all commands refer
+FontForge maintains the concept of a "current font" almost all commands refer
 only to the current font (and require that there be a font). If you start
 a script with File-&gt;Execute Script, the font you were editing will be
 current, otherwise there will be no initial current font. The Open(), New()
-and Close() commands all change the current font. PfaEdit also maintains
+and Close() commands all change the current font. FontForge also maintains
 a list of all fonts that are currently open. This list is in no particular
 order. The list starts with $firstfont.
 <P>
-Similarly when working with cid keyed fonts, PfaEdit works in the "current
+Similarly when working with cid keyed fonts, FontForge works in the "current
 sub font", and most commands refer to this font. The CIDChangeSubFont() command
 can alter that.
 <P>
@@ -285,7 +287,7 @@ to (some) already existing ones)
     <CODE>$firstfont </CODE>the name of the filename of the font which is first
     on the font list (Can be used by Open()), if there are no fonts loaded this
     returns an empty string. This can be used to determine if any font at all
-    is loaded into pfaedit.
+    is loaded into fontforge.
   <LI>
     <CODE>$nextfont </CODE>the name of the filename of the font which follows
     the current font on the list (or the empty string if the current font is
@@ -344,11 +346,11 @@ to (some) already existing ones)
     <CODE>$panose</CODE> returns an array containing the 10 panose values for
     the font.
   <LI>
-    <CODE>$trace</CODE> if this is set to one then PfaEdit will trace each procedure
-    call.
+    <CODE>$trace</CODE> if this is set to one then FontForge will trace each
+    procedure call.
   <LI>
     <CODE>$version</CODE> returns a string containing the current version of
-    pfaedit. This should look something like "020817".
+    fontforge. This should look something like "020817".
   <LI>
     <CODE>$</CODE>&lt;<A NAME="Preference">Preference</A> Item&gt; (for example
     <CODE>$AutoHint</CODE>) allows you to examine the value of that preference
@@ -467,16 +469,16 @@ a[4][0] = "Nested array";
   <DT>
     UnicodeFromName(name)
   <DD>
-    Looks the string "name" up in PfaEdit's database of commonly used glyph names
-    and returns the unicode value associated with that name, or -1 if not found.
-    This does <EM>not</EM> check the current font (if any).
+    Looks the string "name" up in FontForge's database of commonly used glyph
+    names and returns the unicode value associated with that name, or -1 if not
+    found. This does <EM>not</EM> check the current font (if any).
   <DT>
     Chr(int)<BR>
     Chr(array)
   <DD>
     Takes an integer [0,255] and returns a single character string containing
-    that code point. Internally PfaEdit interprets strings as if they were in
-    ISO8859-1 (well really, PfaEdit just uses ASCII-US internally). If passed
+    that code point. Internally FontForge interprets strings as if they were
+    in ISO8859-1 (well really, FontForge just uses ASCII-US internally). If passed
     an array, it should be an array of integers and the result is the string.
   <DT>
     Ord(string[,pos])
@@ -544,8 +546,8 @@ a[4][0] = "Nested array";
 	pfb
       <LI>
 	bin (a mac postscript (pfb) resource in a mac binary wrapper)<BR>
-	res (on the Mac itself PfaEdit will put the result directly into a font suitcase
-	file, and the extension should be ".res" rather than ".bin")
+	res (on the Mac itself FontForge will put the result directly into a font
+	suitcase file, and the extension should be ".res" rather than ".bin")
 	<P>
 	Note: you must also create a bitmap font in NFNT format or the mac will not
 	recognize your postscript font.
@@ -571,7 +573,7 @@ a[4][0] = "Nested array";
 	sym.ttf (a truetype file with a symbol (custom) encoding)
       <LI>
 	ttf.bin (a mac truetype resource in a mac binary wrapper)<BR>
-	suit (on the Mac itself PfaEdit will put the result directly into a font
+	suit (on the Mac itself FontForge will put the result directly into a font
 	suitcase file, and the extension should be ".suit" not ".ttf.bin")
       <LI>
 	dfont (a mac truetype resource in a dfont file)
@@ -654,13 +656,13 @@ a[4][0] = "Nested array";
 	fmflags&amp;0x200000 =&gt; round postscript coordinates
     </UL>
     <P>
-    res controls the resolution of generated bdf fonts. A value of -1 means pfaedit
+    res controls the resolution of generated bdf fonts. A value of -1 means fontforge
     will guess for each strike.
     <P>
     If the filename has a ".mult" extension then a "mult-sfd-file" may be present.
     This is the filename of a file containing the mapping from the current encoding
     into the subfonts. <A HREF="Big5.txt">Here is an example</A>. If this file
-    is not present PfaEdit will go through its default search process to find
+    is not present FontForge will go through its default search process to find
     a file for the encoding, and if it fails the fonts will not be saved.
   <DT>
     GenerateFamily(filename,bitmaptype,fmflags,array-of-font-filenames)
@@ -668,7 +670,7 @@ a[4][0] = "Nested array";
     Generates a mac font family (FOND) from the fonts (which must be loaded)
     in the array-of-font-filenames. filename, bitmaptype, fmflags are as above.
     <BLOCKQUOTE>
-      <PRE>#!/usr/local/bin/pfaedit
+      <PRE>#!/usr/local/bin/fontforge
 a = Array($argc-1)
 i = 1
 j = 0
@@ -741,8 +743,8 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
       <LI>
 	Finally if the extension is "eps" then an encapsulated postscript file will
 	be merged into the foreground. The file may be specified as for images (except
-	the extension should be "eps" rather than an image extension). PfaEdit is
-	very limitted in its ability to read eps files.
+	the extension should be "eps" rather than an image extension). FontForge
+	is very limitted in its ability to read eps files.
     </UL>
   <DT>
     Export(format[,bitmap-size])
@@ -833,14 +835,14 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     If you selected print type 3 then you may provide the name of a file containing
     sample text. This file may either be in ucs2 format (preceded by a 0xfeff
     value), or in the current default encoding. A null string or an omitted argument
-    will cause PfaEdit to use a default value.
+    will cause FontForge to use a default value.
     <P>
     If your PrintSetup specified printing to a file then the fourth argument
     provides the filename of the output file.
   <DT>
     <A NAME="Quit">Quit</A>(status)
   <DD>
-    Causes PfaEdit to exit with the given status. It can execute with no current
+    Causes FontForge to exit with the given status. It can execute with no current
     font. 
       <HR>
   <DT>
@@ -1097,7 +1099,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
       </TR>
       <TR>
 	<TD>-1</TD>
-	<TD>PfaEdit should guess the styles from the fontname</TD>
+	<TD>FontForge should guess the styles from the fontname</TD>
       </TR>
     </TABLE>
     <P>
@@ -1136,7 +1138,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     SetUniqueID(value)
   <DD>
     Sets the postscript uniqueid field as requested. If you give a value of 0
-    then PfaEdit will pick a reasonable random number for you.
+    then FontForge will pick a reasonable random number for you.
   <DT>
     SetTeXParams(type,design-size,slant,space,stretch,shrink,xheight,quad,extraspace[...])
   <DD>
@@ -1204,9 +1206,9 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     in the substitution and replace the current character with the variant, and
     remove the variant from the font.
     <P>
-    PfaEdit recognizes the string "*" as a wildcard for both the script and the
-    language (not for the tag though). So you wish to replace all glyphs with
-    their vertical variants:
+    FontForge recognizes the string "*" as a wildcard for both the script and
+    the language (not for the tag though). So you wish to replace all glyphs
+    with their vertical variants:
     <BLOCKQUOTE>
       <PRE>SelectAll()
 ApplySubstitution("*","*","vrt2")
@@ -1296,7 +1298,7 @@ ApplySubstitution("*","*","vrt2")
     </BLOCKQUOTE>
     <P>
     This command is not available in the default build, you must modify the file
-    <CODE>configure-pfaedit.h</CODE> and then rebuild PfaEdit.
+    <CODE>configure-fontforge.h</CODE> and then rebuild FontForge.
   <DT>
     ExpandStroke(width)<BR>
     ExpandStroke(width,line cap, line join)<BR>
@@ -1385,7 +1387,7 @@ ApplySubstitution("*","*","vrt2")
     DefaultATT(tag)
   <DD>
     For all selected characters make a guess as to what might be an appropriate
-    value for the given tag. If the tag is "*" then PfaEdit will apply guesses
+    value for the given tag. If the tag is "*" then FontForge will apply guesses
     for all features it can.
   <DT>
     AddATT(type,script-lang,tag,flags,variant)<BR>
@@ -1402,7 +1404,7 @@ ApplySubstitution("*","*","vrt2")
     feature/setting).
     <P>
     The fourth argument should be the <A NAME="otf-flags">otf flags </A>(or -1
-    to make PfaEdit guess appropriate flags).
+    to make FontForge guess appropriate flags).
     <UL>
       <LI>
 	0x0001 =&gt; RightToLeft
@@ -1450,7 +1452,7 @@ ApplySubstitution("*","*","vrt2")
     <CODE>&nbsp; &nbsp; grek{dflt} latn{dflt,VIT ,ROM }</CODE><BR>
     The fourth arg should be a 4 character opentype feature tag. The fifth argument
     should be the <A HREF="scripting.html#otf-flags">otf flags </A>(or -1 to
-    make PfaEdit guess appropriate flags). The sixth and last argument should
+    make FontForge guess appropriate flags). The sixth and last argument should
     be the name of another AnchorClass to be merged into the same lookup (or
     a null string if this class merges with no other class yet).
   <DT>
@@ -1591,7 +1593,7 @@ ApplySubstitution("*","*","vrt2")
   <DD>
     (AutoKern doesn't work well in general)<BR>
     Guesses at kerning pairs by looking at all selected characters, or if a kernfile
-    is specified, PfaEdit will read the kern pairs out of the file.
+    is specified, FontForge will read the kern pairs out of the file.
   <DT>
     SetKern(ch2,offset)
   <DD>
@@ -1633,7 +1635,7 @@ ApplySubstitution("*","*","vrt2")
     MMChangeInstance(instance)
   <DD>
     Where instance is either a font name or a small integer. If passed a string
-    PfaEdit searches through all fonts in the multi master font set (instance
+    FontForge searches through all fonts in the multi master font set (instance
     fonts and the weighted font) and changes the current font to the indicated
     one. If passed a small integer, then -1 indicates the weighted font and values
     between [0,$mmcount) represent that specific instance in the font set. 
@@ -1780,7 +1782,7 @@ verta = CharInfo("Substitution","*","dflt","vrt2")
 </H2>
 <UL>
   <LI>
-    <A HREF="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/pfaedit/pfaedit/test/">PfaEdit's
+    <A HREF="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/pfaedit/pfaedit/test/">FontForge's
     testsuite</A> (such as it is)
   <LI>
     <A HREF="scripts/">Directory of donated scripts</A>
@@ -1796,7 +1798,7 @@ verta = CharInfo("Substitution","*","dflt","vrt2")
 </H3>
 <BLOCKQUOTE>
   <PRE>#Set the color of all selected characters to be yellow
-#designed to be run within an interactive pfaedit session.
+#designed to be run within an interactive fontforge session.
 foreach
   SetCharColor(0xffff00)
 endloop
@@ -1806,10 +1808,10 @@ endloop
   Example 2:
 </H3>
 <BLOCKQUOTE>
-  <PRE>#!/usr/local/bin/pfaedit
+  <PRE>#!/usr/local/bin/fontforge
 #Take a Latin font and apply some simple transformations to it
 #prior to adding cyrillic letters.
-#can be run in a non-interactive pfaedit session.
+#can be run in a non-interactive fontforge session.
 Open($1);
 Reencode("KOI8-R");
 Select(0xa0,0xff);
@@ -1887,13 +1889,14 @@ Quit(0);
   The <A NAME="Execute">Execute</A> Script dialog
 </H2>
 <P>
-This dialog allows you to type a script directly in to PfaEdit and then run
-it. Of course the most common case is that you'll have a script file somewhere
-that you want to execute, so there's a button [Call] down at the bottom of
-the dlg. Pressing [Call] will bring up a file picker dlg looking for files
-with the extension *.pe (you can change that by typing a wildcard sequence
-and pressing the [Filter] button). After you have selected your scipt the
-appropriate text to text to invoke it will be placed in the text area.
+This dialog allows you to type a script directly in to FontForge and then
+run it. Of course the most common case is that you'll have a script file
+somewhere that you want to execute, so there's a button [Call] down at the
+bottom of the dlg. Pressing [Call] will bring up a file picker dlg looking
+for files with the extension *.pe (you can change that by typing a wildcard
+sequence and pressing the [Filter] button). After you have selected your
+scipt the appropriate text to text to invoke it will be placed in the text
+area.
 <P>
 The current font of the script will be set to whatever font you invoked it
 from.

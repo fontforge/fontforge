@@ -2,40 +2,47 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 13-Nov-2002 -->
-  <!-- AP: Last modified: 11-Dec-2002 -->
-  <TITLE>Wacom graphics tablets and PfaEdit</TITLE>
+  <!-- AP: Last modified: 2-Mar-2004 -->
+  <TITLE>Wacom graphics tablets and FontForge</TITLE>
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
-Wacom graphics tablets and PfaEdit
+  Wacom graphics tablets and FontForge
 </H1>
 <P>
-I have added support to PfaEdit for the wacom graphics tablet. Eventually I will
-write some drawing tools that depend on pressure (and tilt perhaps).
+I have added support to FontForge for the wacom graphics tablet. Eventually
+I will write some drawing tools that depend on pressure (and tilt perhaps).
 <P>
 To install a wacom tablet on your (linux) machine you must do two things:
 <UL>
-<LI>Install a kernel module "wacom.o" into your system<BR>
-Unfortunately the module which ships with linux (Nov 2002) does not work but John Joganic has
-<A HREF="http://linux.joganic.com/wacom/">an execelent website</A> that will help you install
-a working driver.
-<LI>Install an X11 driver "wacom_drv.o"<BR>
-Again the X11 driver that ships with X does not work for USB tablets. Again
-John's website provides a patched driver.
+  <LI>
+    Install a kernel module "wacom.o" into your system<BR>
+    Unfortunately the module which ships with linux (Nov 2002) does not work
+    but John Joganic has <A HREF="http://linux.joganic.com/wacom/">an execelent
+    website</A> that will help you install a working driver.
+  <LI>
+    Install an X11 driver "wacom_drv.o"<BR>
+    Again the X11 driver that ships with X does not work for USB tablets. Again
+    John's website provides a patched driver.
 </UL>
 <P>
-If you can't get the X11 driver to work, I have hacked a little mini-driver into PfaEdit
-(this can take the place of the X11 driver, it depends on the kernel driver working).
-Since the configure
-script can't detect that you have a non-working X11 driver on your machine (or a tablet) you
-must configure this option by hand. So after the normal configure script has run (and before typing make):
-<BLOCKQUOTE><PRE>
+If you can't get the X11 driver to work, I have hacked a little mini-driver
+into FontForge (this can take the place of the X11 driver, it depends on
+the kernel driver working). Since the configure script can't detect that
+you have a non-working X11 driver on your machine (or a tablet) you must
+configure this option by hand. So after the normal configure script has run
+(and before typing make):
+<BLOCKQUOTE>
+  <PRE>
 $ su
 # chmod 644 /dev/input/event0
 # ^D
 $ cd gdraw
 $ vi Makefile
-</PRE></BLOCKQUOTE>
+</PRE>
+</BLOCKQUOTE>
 <P>
-Add <CODE>gdrawwacomdriver.lo</CODE> to the list of <CODE>libgdraw_OBJECTS</CODE> And add <CODE>-D_WACOM_DRV_BROKEN</CODE> to <CODE>CFLAGS</CODE>.
+Add <CODE>gdrawwacomdriver.lo</CODE> to the list of
+<CODE>libgdraw_OBJECTS</CODE> And add <CODE>-D_WACOM_DRV_BROKEN</CODE> to
+<CODE>CFLAGS</CODE>.
 </BODY></HTML>

@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(pfaedit/pfaedit.h)
+AC_INIT(fontforge/pfaedit.h)
 AC_PROG_CC
 AC_PROG_RANLIB
 
@@ -194,7 +194,7 @@ AC_ARG_WITH(multilayer,
  [  --with-multilayer   Control whether we build with support for type3/svg fonts containing multilayered drawing with strokes, fills, images, etc.],
  [
     if test "$withval" != "no" >/dev/null 2>&1 ; then
-	AC_DEFINE(PFAEDIT_CONFIG_TYPE3)
+	AC_DEFINE(FONTFORGE_CONFIG_TYPE3)
     fi
  ], : )
 
@@ -203,8 +203,8 @@ test -d libs || mkdir libs
 cp Makefile.static.in Makefile.in
 cp Unicode/Makefile.static.in Unicode/Makefile.in
 cp gdraw/Makefile.static.in gdraw/Makefile.in
-cp pfaedit/Makefile.static.in pfaedit/Makefile.in
-AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile pfaedit/Makefile)
+cp fontforge/Makefile.static.in fontforge/Makefile.in
+AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile fontforge/Makefile)
 if test -e umap >/dev/null 2>&1 ; then
   cp umap/Makefile.static.in umap/Makefile.in
   AC_OUTPUT( umap/Makefile )
@@ -217,11 +217,11 @@ if test "$STATIC_LIBS" != ""; then
 fi
 
 if test "$no_x" = "yes"; then
- echo " *****************************************************************"
- echo " * This version of pfaedit will only run scripts. No X libraries *"
- echo " * were found so there is NO user interface!!!! If you want a UI *"
- echo " * try installing X11 on your system.                            *"
- echo " *****************************************************************"
+ echo " *******************************************************************"
+ echo " * This version of fontforge will only run scripts. No X libraries *"
+ echo " * were found so there is NO user interface!!!!! If you want a UI  *"
+ echo " * try installing X11 on your system.                              *"
+ echo " *******************************************************************"
 fi
 
 dnl EOF

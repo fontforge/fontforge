@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 21-Feb-2004 -->
+  <!-- AP: Last modified: 2-Mar-2004 -->
   <TITLE>Generate Font Dialog</TITLE>
 </HEAD>
 <BODY>
@@ -165,7 +165,8 @@ Not all are enabled at all times.
     generate bad truetype instructions, now it merely inserts whatever truetype
     instructions are stored with the glyph. If these have been read from another
     truetype font they will probably be reasonable. If they have been generated
-    with PfaEdit's AutoInstr menu command they will probably make your font uglier.
+    with FontForge's AutoInstr menu command they will probably make your font
+    uglier.
     <UL>
       <LI>
 	R C van Dalen's <A HREF="http://home.kabelfoon.nl/~slam/fonts/">truetype
@@ -251,9 +252,9 @@ If you are generating a bdf font then you will be prompted for a resolution
 later.
 <P>
 If you generate a TrueType or OpenType font without the Apple mode set then
-PfaEdit will generate <A HREF="gposgsub.html">GPOS, GSUB, and GDEF tables</A>.
-These contain kerning, ligature information, arabic forms data, anchor points,
-etc.
+FontForge will generate <A HREF="gposgsub.html">GPOS, GSUB, and GDEF
+tables</A>. These contain kerning, ligature information, arabic forms data,
+anchor points, etc.
 <P>
 Apple does not support these OpenType layout tables. If you set Apple mode
 <A HREF="gposgsub.html#AAT">'kern', 'opbd', 'morx', 'feat', 'lcar' and 'prop'
@@ -275,7 +276,7 @@ support).
 brings up a dialog very similar to the above, but with a few added fields.
 Because this dialog is for Mac families, only Mac formats are supported.
 <P>
-Right above the [Save] button is a list of all fonts that PfaEdit thinks
+Right above the [Save] button is a list of all fonts that FontForge thinks
 should be included in this family, along with their bitmap info. If you don't
 want a font to be in the family simply uncheck its checkbox.
 <P>
@@ -283,7 +284,7 @@ The font styles that are allowed in a family are limitted by the capabilities
 of the mac 'FOND' resource which only allows one style of a given type and
 does not support the concepts of "Light", "Black" (if there is already a
 "Bold" style), "Oblique" (if there is already an "Italic" style), etc. Generally
-PfaEdit will be able to figure out a font's style from its fontname, but
+FontForge will be able to figure out a font's style from its fontname, but
 in some cases you may wish to override this by setting the
 <A HREF="fontinfo.html#Mac-Style">mac style </A>directly in fontinfo.
 <P>

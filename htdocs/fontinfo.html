@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 24-Feb-2004 -->
+  <!-- AP: Last modified: 2-Mar-2004 -->
   <TITLE>Font Info</TITLE>
 </HEAD>
 <BODY>
@@ -76,13 +76,13 @@ be used by default in ttf files.<BR Clear=ALL>
 </H2>
 <P>
 This sub dialog allows you to specify the encoding for your font, and to
-teach PfaEdit about new encodings.
+teach FontForge about new encodings.
 <P>
 There are two ways to change the encoding. The default assumes that the font
 currently has a reasonable encoding, but you want it to have a different
 one, here each character will be moved to the appropriate position in the
 new font. However if you check the <SAMP>[ ] Force Encoding box</SAMP>, then
-PfaEdit will assume that the characters are in the right order, but have
+FontForge will assume that the characters are in the right order, but have
 got the wrong names. It will go through and rename every character to match
 what it should be in the new encoding (this is for cases where people have
 given a font an inappropriate encoding but where the mapping from character
@@ -109,18 +109,18 @@ encodings, type1 fonts only support single byte encodings, etc.
 for understanding the font's behavior. For example a unicode font designed
 for a chinese system will look very different from a unicode font for a japanese
 system (The same unicode character may map to very different chinese or japanese
-glyphs). To handle this (and some other cases) PfaEdit has the concept of
-"Interpretation". There are several cases in which this field is useful.
+glyphs). To handle this (and some other cases) FontForge has the concept
+of "Interpretation". There are several cases in which this field is useful.
 <UL>
   <LI>
-    To allow PfaEdit to know whether a Unicode (or any other non-CJK encoding
+    To allow FontForge to know whether a Unicode (or any other non-CJK encoding
     which includes CJK glyphs) font should be viewed as Japanese, Chinese or
     Korean.
   <LI>
-    Can cause PfaEdit to use the names "Delta.greek", "Omega.greek" and "mu.greek"
+    Can cause FontForge to use the names "Delta.greek", "Omega.greek" and "mu.greek"
     for U+0396, U+03a9, U+03bc (instead of uni0396, etc.).
   <LI>
-    Can cause PfaEdit to name glyphs in the private use area after Adobe's
+    Can cause FontForge to name glyphs in the private use area after Adobe's
     assignments to that area (ie. small caps, etc.)
 </UL>
 <P>
@@ -129,7 +129,7 @@ glyphs). To handle this (and some other cases) PfaEdit has the concept of
   Built in <A NAME="Encodings">Encodings</A>
 </H3>
 <P>
-PfaEdit knows about the following encodings by default:
+FontForge knows about the following encodings by default:
 <UL>
   <LI>
     ISO-8859-1 (Latin1) -- traditional encoding for western european characters.
@@ -232,7 +232,7 @@ in unicode</A>.
 </H3>
 <P>
 You can also use the font info dialog to add new encodings to the set that
-PfaEdit knows about. There are three buttons that manipulate a set of user
+FontForge knows about. There are three buttons that manipulate a set of user
 defined encodings. As always these specify both a character set and an encoding.
 The encoding has a maximum of 256 entries, but the character set may be larger
 (up to 1024). This means that you can define a font with extra characters.
@@ -345,7 +345,7 @@ If you change the size of the Em you may choose to have all the outlines
 (and kerning info) scaled to have the same proportion to the new value that
 they had to the old.
 <P>
-The Italic Angle indicates the slant of the font. PfaEdit can attempt to
+The Italic Angle indicates the slant of the font. FontForge can attempt to
 guess a good value for you by looking at the stems of certain letters ("I"
 for instance).
 <P>
@@ -355,7 +355,7 @@ in this font.
 <P>
 The XUID field is a collection of numbers separated by spaces and enclosed
 in brackets. This allows you to specify the extended unique ID of the font.
-If you have set the XUID preference entry then PfaEdit will assign values
+If you have set the XUID preference entry then FontForge will assign values
 to all new fonts (by appending a number unique to this font to the end of
 your preference item). Adobe recommends that the XUID be changed every time
 the font is changed, so each time you generate a postscript font, that font's
@@ -364,7 +364,7 @@ in CID-keyed fonts, where the XUID behavior is too complex for this simple
 trick). (The XUID field is only meaningfull in PostScript fonts)
 <P>
 The UniqueID field is an older convention for the same purpose as XUID. If
-you do not fill in this field then PfaEdit will pick a random number for
+you do not fill in this field then FontForge will pick a random number for
 you in the allowable range. If you want your font to have no unique id then
 give this the value of -1. If you have talked to Adobe and been assigned
 a real UniqueID then you may use this field, otherwise leave it blank. (The
@@ -378,19 +378,19 @@ table will be added. The Vertical Origin is the vertical offset from the
 origin of the design coordinate system to the origin for the purposes of
 vertical metrics.
 <P>
-If you check <CODE>[*] Quadratic Splines </CODE>then PfaEdit will use quadratic
+If you check <CODE>[*] Quadratic Splines </CODE>then FontForge will use quadratic
 <A HREF="overview.html#spline">B&eacute;zier</A> splines for this font rather
-than cubic B&eacute;ziers, this means that PfaEdit will be using the native
-spline format of truetype rather than postscript (or opentype). When PfaEdit
+than cubic B&eacute;ziers, this means that FontForge will be using the native
+spline format of truetype rather than postscript (or opentype). When FontForge
 generates a font it will convert from whatever format is used internally
 to whatever format is required for the font, so there will be no problem
 if this is set incorrectly, but setting it correctly for your font means
 you get a clearer idea of what the outlines will look like. I find quadratic
 splines harder to edit with because each spline is less flexible (and a number
-of PfaEdit's commands will not work on them), but the advantage of actually
+of FontForge's commands will not work on them), but the advantage of actually
 seeing what your truetype font will look like may outweigh that.
 <P>
-If you have configured PfaEdit for <A HREF="multilayer.html">multi-layered
+If you have configured FontForge for <A HREF="multilayer.html">multi-layered
 editing</A> there will also be a checkbox here to turn that on.<BR Clear=ALL>
 <H2>
   <A NAME="Private">Private</A> -- <SMALL>(font-wide postscript hinting)</SMALL>
@@ -419,12 +419,12 @@ the region and the second is the high end. So in the example at right, the
 value of <CODE>BlueValues</CODE> is <CODE>[-20 0 437 457 583 603 623
 643</CODE>.
 <P>
-When the <CODE>[Guess]</CODE> button is enabled PfaEdit thinks it can make
+When the <CODE>[Guess]</CODE> button is enabled FontForge thinks it can make
 a reasonable guess for the value of the currently selected entry. Often two
 entries in the dictionary will be closely linked and guessing at one will
-also guess at the value of the other (PfaEdit will warn you of this). In
-this case if PfaEdit were to guess the value of <CODE>BlueValues</CODE> it
-would also guess the value of <CODE>OtherBlues</CODE>.
+also guess at the value of the other (FontForge will warn you of this). In
+this case if FontForge were to guess the value of <CODE>BlueValues</CODE>
+it would also guess the value of <CODE>OtherBlues</CODE>.
 <P>
 The [Hist] button is similar, it will bring up a
 <A HREF="histogram.html">dialog showing a histogram</A> of the values of
@@ -433,8 +433,8 @@ good value for the entry.
 <P>
 You may also delete an entry from the dictionary with the <CODE>[Remove]
 </CODE>button. Some entries (such as <CODE>BlueValues</CODE>) are required
-to be present in any type1 font, but you may still delete them. PfaEdit will
-simply guess at a reasonable value when it needs to generate the
+to be present in any type1 font, but you may still delete them. FontForge
+will simply guess at a reasonable value when it needs to generate the
 font.<BR Clear=Right>
 <P>
 <IMG SRC="privatekey.png" WIDTH="208" HEIGHT="146" ALIGN="Left"><IMG SRC="privatekeymenu.png"
@@ -450,9 +450,9 @@ controls how much random padding is placed around the type1 strings when
 the font is generated. Normally this will be 4, but if you want to save space
 (4 bytes per character in pfb format, 8 bytes in pfa) you may choose another
 value. The UniqueID key represents the font's Unique postscript ID. If you
-provide a value here then PfaEdit will copy it into the UniqueID field in
-the Font Dictionary. If you do not provide a UniqueID here, PfaEdit will
-generate a random one itself (this is different from True Type's UniqueID.
+provide a value here then FontForge will copy it into the UniqueID field
+in the Font Dictionary. If you do not provide a UniqueID here, FontForge
+will generate a random one itself (this is different from True Type's UniqueID.
 They perform the same function but are formatted differently).
 <P>
 These entries are only meaningfull for PostScript fonts.<BR CLEAR=ALL>
@@ -518,7 +518,7 @@ in a font menu, while a German user might see CaslonKursive. There are about
 Customizing one string does not mean that you must customize the others (indeed,
 usually only the Style string is customized).
 <P>
-If you don't include any values here when PfaEdit saves a font as truetype
+If you don't include any values here when FontForge saves a font as truetype
 it will create an entry with an American English language containing the
 postscript versions of the strings.
 <P>
@@ -545,7 +545,7 @@ The various strings and a brief description of their meanings are:
     UniqueID
   <DD>
     This is a string that uniquely identifies the font in a human readable fashion.
-    It's format is quite different from postscript's UniqueID and PfaEdit will
+    It's format is quite different from postscript's UniqueID and FontForge will
     create an appropriate string if you don't specify one (rather than copying
     from postscript).
   <DT>
@@ -555,8 +555,8 @@ The various strings and a brief description of their meanings are:
   <DT>
     Postscript Name
   <DD>
-    (PfaEdit will not let you set this. It will always be set directly the the
-    postscript fontname, only one instance of the tag is allowed in the font
+    (FontForge will not let you set this. It will always be set directly the
+    the postscript fontname, only one instance of the tag is allowed in the font
     and it must be ASCII)
   <DT>
     Trademark
@@ -712,7 +712,7 @@ languages.
     <TD>K&ouml;zepes</TD>
     <TD>S&ouml;t&eacute;tes</TD>
     <TD>Fekete</TD>
-    <TD><!--D&amp;amp;amp;amp;amp;amp;amp;amp;amp;#x151;lt-->
+    <TD><!--D&amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;#x151;lt-->
       Do"lt</TD>
     <TD>D&ouml;nt&ouml;tt</TD>
     <TD>Keskeny</TD>
@@ -742,12 +742,12 @@ languages.
 <P>
 When you are setting the Style string in American English another button
 appears in the dialog, labelled "Translate Style". If you press this button
-then PfaEdit will attempt to figure out the style of the font and then attempt
-to translate it into whatever other languages in knows about (essentially
+then FontForge will attempt to figure out the style of the font and then
+attempt to translate it into whatever other languages in knows about (essentially
 the above table). It will only translate to a language for which it knows
 all the componants and for which you have not already provided a translation.
 So if your style in American English is "BoldItalic" (and you have no other
-style entries) then after you press the "Translate Style" button PfaEdit
+style entries) then after you press the "Translate Style" button FontForge
 will generate "GrasItalique" for French, "FettKursiv" for German,
 "&Ouml;&Eacute;&Ograve;&Icirc;&Ugrave;&Ecirc;&euml;&Otilde;&Ograve;&Oacute;&Eacute;&#215;&Icirc;&Ugrave;&Ecirc;"
 for Russian and "NigritaCursiva" for Spanish.
@@ -793,8 +793,8 @@ It does not correspond to any postscript or truetype entity. It is intended
 to store a changelog for the font itself, but could be used for other purposes...
 <P>
 Various font formats allow a random comment to be place in the font, but
-no format makes use of it. This is primarily to be used inside PfaEdit. The
-comment should be in ISO Latin1.
+no format makes use of it. This is primarily to be used inside FontForge.
+The comment should be in ISO Latin1.
 <P>
 <BR Clear=ALL>
 <H2>
@@ -819,9 +819,9 @@ that class a name and requires that you associate it with a set of
 set some standard OTF flags.
 <P>
 There are three different types of anchor classes (well there are four, but
-PfaEdit doesn't need to distinguish between two of them), Mark to Base, Mark
-to Mark and Cursive. When you create an anchor class you must select which
-type it will be.
+FontForge doesn't need to distinguish between two of them), Mark to Base,
+Mark to Mark and Cursive. When you create an anchor class you must select
+which type it will be.
 <UL>
   <LI>
     Mark to Base is used for connecting marks (diacritic marks such as accents)
@@ -838,10 +838,10 @@ Generally in OpenType fonts several Anchor Classes will be treated as one
 unit if they refer to approximately the same set of base characters and have
 non-overlapping marks An example: there could be two types of marks that
 attach to the same set of letters, one attaching below and one above the
-letter, each would have its own anchor class, but you would tell PfaEdit
+letter, each would have its own anchor class, but you would tell FontForge
 to associate the two together by having them "Merge With" each other.
 <P>
-PfaEdit recognizes a special feature tag ' RQD' to indicate that this feature
+FontForge recognizes a special feature tag ' RQD' to indicate that this feature
 is required for the given script/language. Such a feature will always be
 applied.
 <P>
@@ -876,10 +876,10 @@ into Apple Advanced Typography tables too).<BR CLEAR=ALL>
   <A NAME="Mac-Style">Mac Style</A>
 </H2>
 <P>
-This sub-dialog allows you to set the mac style of your font. Normally PfaEdit
+This sub-dialog allows you to set the mac style of your font. Normally FontForge
 will be able to guess the style from the fontname (and various other clues),
 but sometimes the name will be non-standard (or perhaps just in a language
-PfaEdit doesn't know about), and other times you may wish to override this
+FontForge doesn't know about), and other times you may wish to override this
 default setting.
 <P>
 If you are happy with the default, just leave the Automatic button checked,

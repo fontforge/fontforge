@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
-  <!-- AP: Last modified: 12-Apr-2003 -->
+  <!-- AP: Last modified: 2-Mar-2004 -->
   <TITLE>Final cleanup</TITLE>
 </HEAD>
 <BODY>
@@ -53,14 +53,14 @@
 </H2>
 <P>
 After you have finished making all the characters in your font you should
-check it for inconsistencies. PfaEdit has a command,
+check it for inconsistencies. FontForge has a command,
 <A HREF="problems.html">Element-&gt;Find Problems</A> which is designed to
 find many common problems.
 <P>
 Simply select all the characters in the font and then bring up the Find Problems
 dialog. Be warned though: Not everything it reports as a problem is a real
-problem, some may be an element of the font's design that PfaEdit does not
-expect.
+problem, some may be an element of the font's design that FontForge does
+not expect.
 <P>
 The dialog can search for problems like:
 <UL>
@@ -98,20 +98,20 @@ bitmap editor to clean them up</A>.
   <A NAME="generating">Generating</A> a font
 </H2>
 <P>
-If you save your file it will be saved in a format that only PfaEdit understands
-(as far as I know anyway). This is not very helpful if you want to use the
-font.
+If you save your file it will be saved in a format that only FontForge
+understands (as far as I know anyway). This is not very helpful if you want
+to use the font.
 <P>
 <IMG SRC="generate.png" WIDTH="406" HEIGHT="411" ALIGN="Right">Instead you
 must use <A HREF="generate.html">File-&gt;Generate</A> to convert your font
-into one of the standard font formats. PfaEdit presents what looks like a
-vast array of font formats, but in reality there are just several variants
+into one of the standard font formats. FontForge presents what looks like
+a vast array of font formats, but in reality there are just several variants
 on a few basic font formats: PostScript Type 1, TrueType, OpenType (and for
 CJK fonts, also CID-keyed fonts).
 <P>
-You also have a choice of bitmap formats. PfaEdit supports bdf (used by X),
-mac NFNT (used by the Mac), Windows FNT (used by Windows 2.0 I think) and
-storing bitmaps inside true (or open) type wrappers.<BR CLEAR=RIGHT>
+You also have a choice of bitmap formats. FontForge supports bdf (used by
+X), mac NFNT (used by the Mac), Windows FNT (used by Windows 2.0 I think)
+and storing bitmaps inside true (or open) type wrappers.<BR CLEAR=RIGHT>
 <H2>
   Font <A NAME="Families">Families</A>
 </H2>
@@ -129,7 +129,7 @@ could be called simply "Helvetica" or "Helvetica-Regular", the bold style
 "Helvetica-Bold", the oblique (Helvetica doesn't have a true italic)
 "Helvetica-Oblique", etc.
 <P>
-PfaEdit has a command (which doesn't work well yet, but I hope to improve
+FontForge has a command (which doesn't work well yet, but I hope to improve
 eventually) <A HREF="MetaFont.html">Element-&gt;MetaFont</A> which is designed
 to help you create a bold (condensed, expanded, etc.) style from a plain
 one.
@@ -166,9 +166,9 @@ pointers to the various fonts in the family. If you open all the fonts you
 want to be in a given family (and if they have been given the proper names)
 and then from the plain font select
 <A HREF="filemenu.html#GenerateMac">File-&gt;Generate Family</A>. This will
-list all the fonts that PfaEdit thinks belong to the same family as the current
-font and will allow you to generate a FOND structure as well as font files
-for all family members (sometimes all the fonts live in one file, sometimes
+list all the fonts that FontForge thinks belong to the same family as the
+current font and will allow you to generate a FOND structure as well as font
+files for all family members (sometimes all the fonts live in one file, sometimes
 they don't, it depends on the font format chosen).
 <H2>
   <A NAME="summary">Final</A> Summary

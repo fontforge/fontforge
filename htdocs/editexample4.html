@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
-  <!-- AP: Last modified: 11-Apr-2003 -->
+  <!-- AP: Last modified: 2-Mar-2004 -->
   <TITLE>Building accented characters</TITLE>
 </HEAD>
 <BODY>
@@ -51,7 +51,7 @@
 </H2>
 <P>
 Latin, Greek and Cyrillic all have a large complement of accented characters.
-PfaEdit provides several ways to build accented characters out of base
+FontForge provides several ways to build accented characters out of base
 characters.
 <P>
 The most obvious mechanism is simple copy and paste:
@@ -66,7 +66,7 @@ so that it appears properly centered over the A.
 <P>
 This mechanism is not particularly efficient, if you change the shape of
 the letter "A" you will need to regenerate all the accented characters built
-from it. PfaEdit has the concept of a
+from it. FontForge has the concept of a
 <A HREF="overview.html#References">Reference</A> to a character. So you can
 Copy a Reference to "A", and Paste it, the Copy a Reference to tilde and
 Paste it Into, and then again adjust the position of the accent over the
@@ -75,7 +75,7 @@ A.
 Then if you change the shape of the A the shape of the A in "&Atilde;" will
 be updated automagically -- as will the width of "&Atilde;".
 <P>
-But PfaEdit knows that "&Atilde;" is built out of "A" and the tilde accent,
+But FontForge knows that "&Atilde;" is built out of "A" and the tilde accent,
 and it can easily create your accented characters itself by placing the
 references in "&Atilde;" and then positioning the accent over the "A". (Unicode
 provides a database which lists the components of every accented character
@@ -87,7 +87,7 @@ characters at encodings 0xc0-0xff, and then press
 all the accented characters will magically appear (there are a few characters
 in this range which are not accented, and they will remain blank).
 <P>
-PfaEdit has a heuristic for positioning accents (most accents are centered
+FontForge has a heuristic for positioning accents (most accents are centered
 over the highest point of the character), sometimes this will produce bad
 results (if the one of the two stems of "u" is slightly taller than the other
 the accent will be placed over it rather than being centered over the character),
@@ -102,7 +102,7 @@ Unicode contains a number of ligature characters (in latin we have: &AElig;,
 OE, fi, etc. while in arabic there are hundreds). Again Unicode provides
 a database listing the components of each standard ligature.
 <P>
-PfaEdit cannot create a nice ligature for you, but what it can do is put
+FontForge cannot create a nice ligature for you, but what it can do is put
 all the components of the ligature into the character with
 <A HREF="elementmenu.html#Accented">Element-&gt;Build-&gt;Build Composite</A>.
 This makes it slightly easier (at least in latin) to design a ligature.
@@ -146,10 +146,10 @@ that the user of that word processor does not need to know s/he is dealing
 with a ligature and sees behavior very similar to what s/he would see if
 the components were present. But if the word processor is to be able to do
 this it must have some information from the font designer giving the locations
-of appropriate caret positions. As soon as PfaEdit notices that a character
+of appropriate caret positions. As soon as FontForge notices that a character
 is a ligature it will insert in it enough caret location lines to fit between
-the ligature's components. PfaEdit places these on the origin, if you leave
-them on the origin PfaEdit will ignore them. But once you have built your
+the ligature's components. FontForge places these on the origin, if you leave
+them on the origin FontForge will ignore them. But once you have built your
 ligature you might want to move the pointer tool over to the origin line,
 press the button and drag one of the caret lines to its correct location.
 (Only TrueType and OpenType support this).
@@ -159,7 +159,7 @@ does not provide an encoding for them. If you wish to build a ligature that
 is not part of Unicode you may do so. First <A HREF="faq.html#new-name">add
 an unencoded character to your font</A> (or if your font is a Unicode font,
 use a code point in the private use area), and name the character. The name
-is important, if you name it correctly PfaEdit will be able to figure out
+is important, if you name it correctly FontForge will be able to figure out
 that it is a ligature and what its components are. If you want to build a
 ligature out of the characters "longs", "longs" and "l" then name it
 "longs_longs_l", if you want to build a ligature out of Unicode 0D15, 0D4D
@@ -171,7 +171,7 @@ Composite), you probably want to open the character,
 make a pleasing shape (as above).
 <P>
 <IMG SRC="charinfo-akhn.png" WIDTH="307" HEIGHT="401" ALT="Char Info for Akhand ligature type"
-    ALIGN="Right">Finally you should check that PfaEdit has marked your character
+    ALIGN="Right">Finally you should check that FontForge has marked your character
 as a ligature (and, if so, as the right kind of ligature). Bring up the
 <A HREF="charinfo.html#ligature">Element-&gt;Char Info-&gt;Ligature</A> dialog.
 You should see a line like:<BR>

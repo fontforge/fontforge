@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
-  <!-- AP: Last modified: 1-Oct-2003 -->
+  <!-- AP: Last modified: 2-Mar-2004 -->
   <TITLE>More advanced features, ligatures, mark positioning, character variants</TITLE>
 </HEAD>
 <BODY>
@@ -84,9 +84,9 @@ get another dialog. In the Components field, enter "one.prop", select
 and select the script set you are interested in (a script of 'latn' and a
 language of 'dflt' will cover many cases). Then press <CODE>[OK]</CODE>.
 <P>
-Some variant forms are built in to PfaEdit, and if you use
-<CODE>Element-&gt;Default ATT-&gt;(variant name)</CODE>, PfaEdit may be able
-to automate this process for you.
+Some variant forms are built in to FontForge, and if you use
+<CODE>Element-&gt;Default ATT-&gt;(variant name)</CODE>, FontForge may be
+able to automate this process for you.
 <P>
 (Note: Type0, Type1 and Type3 PostScript fonts have no notation to handle
 this. You need to be creating an OpenType or TrueType font for these varients
@@ -95,7 +95,7 @@ to be output).
   <A NAME="Conditional">Conditional</A> Variants
 </H3>
 <P>
-PfaEdit supports OpenType's Contextual Substitution and Chaining Contextual
+FontForge supports OpenType's Contextual Substitution and Chaining Contextual
 Substitution sub-tables, and to a lesser extent, Apple's contextual glyph
 substitution sub-table. This means that you can insert conditional variants
 into your font.
@@ -146,8 +146,8 @@ will attach at the same point, which would be ugly and confusing. Instead
 we create a different kind of anchor, a mark to mark anchor, on the circumflex
 and allow the accute accent to attach to that.
 <P>
-Before one can create an anchor in a character one must notify PfaEdit that
-this font will have anchors. You must create an
+Before one can create an anchor in a character one must notify FontForge
+that this font will have anchors. You must create an
 <A HREF="overview.html#Anchors">anchor class</A> for each type of attachment
 (thus in the case of A above with two types of attachments (one above and
 one below) you would create two anchor classes. The

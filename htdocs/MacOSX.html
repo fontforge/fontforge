@@ -2,15 +2,15 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 06-Dec-2002 -->
-  <!-- AP: Last modified: 1-Mar-2004 -->
-  <TITLE>Special issues for PfaEdit on Mac OS/X</TITLE>
+  <!-- AP: Last modified: 2-Mar-2004 -->
+  <TITLE>Special issues for FontForge on Mac OS/X</TITLE>
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
-  PfaEdit on Mac OS/X
+  FontForge on Mac OS/X
 </H1>
 <H2>
-  Building PfaEdit
+  Building FontForge
 </H2>
 <P>
 Before you do anything you must get a copy of the Mac Developer Tools. You
@@ -23,11 +23,11 @@ site contains a complete X11 package</A>, probably other sites do too.
 Neat. <A HREF="http://www.apple.com/macosx/x11/download/">Now Apple is also
 distributing X11</A>.
 <P>
-It is possible to build PfaEdit without X11. There will be no user interface,
+It is possible to build FontForge without X11. There will be no user interface,
 but you can run scripts.
 <P>
 Thirdly you may choose to install some image libraries (I recommend at least
-installing libpng). Currently PfaEdit only tries to link statically with
+installing libpng). Currently FontForge only tries to link statically with
 these libraries.
 <UL>
   <LI>
@@ -42,12 +42,12 @@ these libraries.
     complete list)
 </UL>
 <P>
-Finally you are ready to build pfaedit. Download the most recent sources
+Finally you are ready to build fontforge. Download the most recent sources
 <A HREF="index.html#source">from this site.</A> then:
 <BLOCKQUOTE>
-  <PRE>$ gunzip pfaedit_full-*.tgz
-$ tar xf pfaedit_full-*.tar
-$ cd pfaedit
+  <PRE>$ gunzip fontforge_full-*.tgz
+$ tar xf fontforge_full-*.tar
+$ cd fontforge
 $ configure
 $ make
 $ sudo make install
@@ -57,8 +57,8 @@ $ sudo make install
   Installing the Mac OS/X <A NAME="binary">binary</A> distribution
 </H2>
 <P>
-Before installing PfaEdit you should ensure that you have X windows up and
-running. You can get this
+Before installing FontForge you should ensure that you have X windows up
+and running. You can get this
 <A HREF="http://www.apple.com/macosx/x11/download/">from apple</A>, or from
 <A HREF="http://www.osxgnu.org/">the GNU Mac OS/X site</A>. (Or you can download
 the package built without X, which has no user interface but will let you
@@ -67,7 +67,7 @@ run scripts).
 After that you should just be able to unpack the packages provided.
 <UL>
   <LI>
-    <A HREF="PfaEdit-040301.pkg.sitx">Download pfaedit Mac OS/X executable
+    <A HREF="PfaEdit-040301.pkg.sitx">Download fontforge Mac OS/X executable
     </A>Version: 1-Mar-2004<BR>
     (if you can't unstuff the sitx format, download a new version of stuffit
     expander from
@@ -76,8 +76,8 @@ After that you should just be able to unpack the packages provided.
     why. So once again I am posting a nice simple
     .<A HREF="pfaedit_macosx-040211.tgz">tgz</A> package that does work. 11-Feb
   <LI>
-    <A HREF="PfaEdit-NoX-021205.pkg.sit">Download pfaedit Mac OS/X WITHOUT X11</A>
-    Version: 05-Dec-2002 (a year and more out of date)<BR>
+    <A HREF="PfaEdit-NoX-021205.pkg.sit">Download fontforge Mac OS/X WITHOUT
+    X11</A> Version: 05-Dec-2002 (a year and more out of date)<BR>
     You might want this version if you aren't interested in downloading X onto
     your machine.<BR>
     Without X11 you will have no user interface, but you can run scripts.
@@ -101,24 +101,24 @@ MANPATH=/usr/local/share/man:$MANPATH ; export MANPATH
 </BLOCKQUOTE>
 <P>
 See the <A HREF="index.html#Dependencies">dependencies</A> section for external
-libraries/programs you may want to add to your system to enhance PfaEdit's
+libraries/programs you may want to add to your system to enhance FontForge's
 capabilities.
 <H2>
-  <A NAME="Running">Running</A> PfaEdit on Mac OS/X
+  <A NAME="Running">Running</A> FontForge on Mac OS/X
 </H2>
 <P>
-The X server (XDarwin) must be running before PfaEdit can start. XDarwin
+The X server (XDarwin) must be running before FontForge can start. XDarwin
 lives in the Applications folder and may be started by double clicking on
 it.
 <P>
-You may start PfaEdit either from an xterm or from a Terminal window. If
+You may start FontForge either from an xterm or from a Terminal window. If
 you start it from a Terminal window you must first type:<BR>
 $ setenv DISPLAY :0
 <P>
-The default window manager (twm) doesn't work well with PfaEdit when X is
-running in rootless mode.
+The default window manager (twm) doesn't work well with FontForge when X
+is running in rootless mode.
 <P>
-PfaEdit allows the window manager to position its windows for it, and twm
+FontForge allows the window manager to position its windows for it, and twm
 does this by allowing the user to click anywhere on the screen to position
 the upper left corner of the new window. Unfortunately unless X has a window
 under the location where you want the upper left corner to be Aqua will put
@@ -132,7 +132,7 @@ windows.</STRONG></FONT>
 </H2>
 <OL>
   <LI>
-    PfaEdit does not conform to Apple's Human Interface Guidelines
+    FontForge does not conform to Apple's Human Interface Guidelines
 </OL>
 <P>
 <A HREF="http://www.hexley.com/"><IMG SRC="hexley.png" WIDTH="113" HEIGHT="127"></A><BR>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Jan-2002 -->
-  <!-- AP: Last modified: 16-Aug-2003 -->
+  <!-- AP: Last modified: 2-Mar-2004 -->
   <TITLE>Command Line Arguments</TITLE>
 </HEAD>
 <BODY>
@@ -10,20 +10,20 @@
   Command Line Arguments
 </H1>
 <P>
-<CODE>$ pfaedit [-options] [filenames]<BR>
-$ pfaedit [-script] scriptfile [arguments]</CODE>
+<CODE>$ fontforge [-options] [filenames]<BR>
+$ fontforge [-script] scriptfile [arguments]</CODE>
 <P>
 The filenames may specify any number of files in one of the font formats
-that PfaEdit recognizes (various postscript formats, truetype, opentype,
+that FontForge recognizes (various postscript formats, truetype, opentype,
 mac resource, bitmap).
 <P>
 Some files (.ttc or mac resource) may contain more than one outline font.
 You may pick which font you want by following the filename with the fontname
 in parentheses, thus:<BR>
-<CODE>&nbsp; &nbsp; $ pfaedit "gulim.ttc(GulimChe)"</CODE><BR>
+<CODE>&nbsp; &nbsp; $ fontforge "gulim.ttc(GulimChe)"</CODE><BR>
 will select the font GulimChe out of the font file gulim.ttc.
 <P>
-PfaEdit recognizes the following options:
+FontForge recognizes the following options:
 <DL>
   <DT>
     -cmap type
@@ -35,11 +35,11 @@ PfaEdit recognizes the following options:
   <DT>
     -depth val
   <DD>
-    Specifies that PfaEdit should search for a visual with the given depth
+    Specifies that FontForge should search for a visual with the given depth
   <DT>
     -display name
   <DD>
-    Specifies the name of the display on which PfaEdit will open its windows
+    Specifies the name of the display on which FontForge will open its windows
   <DT>
     -help
   <DD>
@@ -55,8 +55,8 @@ PfaEdit recognizes the following options:
     &nbsp; &nbsp; ibm | mac | sun | ppc | 0 | 1 | 2 | 3<BR>
     Allows you to specify the type of keyboard. Currently this is only relevent
     when generating menus. The modifier keys are in different locations on different
-    keyboards (under different operating systems) and if PfaEdit knows what keyboard
-    you are using it can make the hot-keys have better labels.
+    keyboards (under different operating systems) and if FontForge knows what
+    keyboard you are using it can make the hot-keys have better labels.
     <UL>
       <LI>
 	ibm | 0<BR>
@@ -83,7 +83,7 @@ PfaEdit recognizes the following options:
   <DT>
     -nosplash
   <DD>
-    PfaEdit will not display its splash screen on startup (for slow connections)
+    FontForge will not display its splash screen on startup (for slow connections)
   <DT>
     -recover type
   <DD>
@@ -100,20 +100,20 @@ PfaEdit recognizes the following options:
       <DT>
 	auto
       <DD>
-	recover any files which have been changed but which pfaedit crashed on before
-	saving.
+	recover any files which have been changed but which fontforge crashed on
+	before saving.
     </DL>
   <DT>
     -<A NAME="script">script</A> script-file
   <DD>
-    If PfaEdit's first argument is "-script" then the argument that follows will
-    be treated as a <A HREF="scripting.html">script file</A> and all the remaining
-    arguments will be passed as arguments to that file. (The "-script" argument
-    may be omitted, and if the first argument is an executable file which whose
-    first line starts with "#!" and contains "pfaedit". This means that pfaedit
-    may be used as an interpretter. Ie. you can create a pfaedit script file
-    and type its name to your shell and pfaedit will be invoked to process that
-    file as a script file (passing any arguments to it)).
+    If FontForge's first argument is "-script" then the argument that follows
+    will be treated as a <A HREF="scripting.html">script file</A> and all the
+    remaining arguments will be passed as arguments to that file. (The "-script"
+    argument may be omitted, and if the first argument is an executable file
+    which whose first line starts with "#!" and contains "fontforge". This means
+    that fontforge may be used as an interpretter. Ie. you can create a fontforge
+    script file and type its name to your shell and fontforge will be invoked
+    to process that file as a script file (passing any arguments to it)).
   <DT>
     -sync
   <DD>
@@ -128,15 +128,15 @@ PfaEdit recognizes the following options:
   <DD>
     Where type may be:<BR>
     StaticGray GrayScale StaticColor PsuedoColor TrueColor DirectColor<BR>
-    (See the X manuals for a description of what these mean). PfaEdit will search
-    through the visuals in an attempt to find one with the desired VisualClass
+    (See the X manuals for a description of what these mean). FontForge will
+    search through the visuals in an attempt to find one with the desired VisualClass
     (given here) and depth (given with the -depth option).
 </DL>
 <H2>
   <A NAME="Environment">Environment Variables</A>
 </H2>
 <P>
-PfaEdit examines the following environment variables:
+FontForge examines the following environment variables:
 <DL>
   <DT>
     <CODE><A NAME="BROWSER">BROWSER</A></CODE>
@@ -149,14 +149,14 @@ PfaEdit examines the following environment variables:
     <CODE><A NAME="AUTOTRACE">AUTOTRACE</A></CODE>
   <DD>
     Specifies the name and location of the autotrace program. (if not specified
-    PfaEdit will try to find it in the user's path)
+    FontForge will try to find it in the user's path)
   <DT>
     <CODE><A NAME="MF">MF</A></CODE>
   <DD>
     Specifies the name and location of the metafont program. (if not specified
-    PfaEdit will try to find it in the user's path)
+    FontForge will try to find it in the user's path)
   <DT>
-    <CODE>PFAEDIT_VERBOSE</CODE>
+    <CODE>FONTFORGE_VERBOSE</CODE>
   <DD>
     Turns on verbose mode in script execution (the script will be printed to
     stdout as it is executed).
@@ -180,7 +180,7 @@ PfaEdit examines the following environment variables:
   <DT>
     <CODE>HOME</CODE>
   <DD>
-    Used to figure out where to put the .PfaEdit directory which includes user
+    Used to figure out where to put the .FontForge directory which includes user
     preferences and the recovery files.
   <DT>
     <CODE>USER</CODE>

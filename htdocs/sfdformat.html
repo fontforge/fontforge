@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 24-Feb-2004 -->
+  <!-- AP: Last modified: 2-Mar-2004 -->
   <TITLE>Spline Font Database File Format</TITLE>
 </HEAD>
 <BODY>
@@ -19,8 +19,8 @@ and see what it parses. Some descriptions of esoteric features are not complete,
 but I hope they give you enough hints that you can figure the format out
 (especially after looking it up in sfd.c)
 <P>
-PfaEdit's <A HREF="sfd.html">sfd</A> files are ASCII files (so they can be
-copied easily across the internet and so that diffs are somewhat meaningful).
+FontForge's <A HREF="sfd.html">sfd</A> files are ASCII files (so they can
+be copied easily across the internet and so that diffs are somewhat meaningful).
 They contain a full description of your font.
 <P>
 They are vaguely modeled on bdf files. The first few lines contain general
@@ -52,7 +52,7 @@ ok, but there are a couple of cases than need to be avoided:
   <LI>
     If you copy a substitution (ligature, kern, contextual chaining, ...) item
     from one font to another, the substitution contains an index into a table
-    of script/languages maintained by the font. Bad things (PfaEdit crashes)
+    of script/languages maintained by the font. Bad things (FontForge crashes)
     can happen if these tables do not match.
 </UL>
 <H3>
@@ -158,7 +158,7 @@ VLineGap: 0
 </BLOCKQUOTE>
 <P>
 If loaded from a font with an OS/2 table there may also be the following
-fields (there is no ui to set these fields, but PfaEdit preserves them)
+fields (there is no ui to set these fields, but FontForge preserves them)
 <BLOCKQUOTE>
   <PRE>HheadAscent: 892
 HheadDescent: -200
@@ -258,8 +258,8 @@ TableOrder: GSUB 2
 </BLOCKQUOTE>
 <P>
 If the font contains ttf hinting, then the file may contain unparsed truetype
-tables (understanding ttf hinting is beyond PfaEdit's abilities, but it can
-at least preserve the data):
+tables (understanding ttf hinting is beyond FontForge's abilities, but it
+can at least preserve the data):
 <BLOCKQUOTE>
   <PRE>TtfTable: prep 4360
 5S;o3()It?eJ8r@H[HSJH[H^@!b&amp;BQ*?Vcm@'XSh+1MACZ&gt;Up/\,o1+Ca't2!&lt;ocH+Wn2p"@,t&amp;
@@ -462,14 +462,14 @@ also be other arguments depending on the type of the state machine.
   </TR>
 </TABLE>
 <P>
-The GenTags entry describes a list of feature tags that PfaEdit has generated
+The GenTags entry describes a list of feature tags that FontForge has generated
 itself
 <BLOCKQUOTE>
   <PRE>GenTags: 1 sb'rigl'
 </PRE>
 </BLOCKQUOTE>
 <P>
-This line says that PfaEdit has generated 1 tag, the generated tag is used
+This line says that FontForge has generated 1 tag, the generated tag is used
 for a substitution lookup (sb=&gt;substitution), and the tag is 'rig1'.
 <P>
 There may be a list of Mac Feature/Setting names
@@ -708,7 +708,7 @@ would have to be given as 0x3800 (because two bytes are needed to accomodate
 nine bits).
 <P>
 If a font has been loaded from a truetype file it may containing hinting
-information (PfaEdit does not attempt to understand truetype hints, just
+information (FontForge does not attempt to understand truetype hints, just
 to preserve them)
 <BLOCKQUOTE>
   <PRE>TtfInstrs: 107
@@ -794,7 +794,7 @@ or a color
   Outline character extensions for multilayered fonts (type3)
 </H4>
 <P>
-(these are only supported if PfaEdit has been configured for multi-layered
+(these are only supported if FontForge has been configured for multi-layered
 editing)
 <P>
 Instead of having a single "Fore"ground layer, multilayered fonts have
@@ -819,7 +819,7 @@ The LayerCount line gives the number of layers in the glyph (the background
 layer is layer 0, so this number is one more than the number of layers that
 will actually be specified -- the background layer is still specified the
 way it was before, but is included in this count). This line is not required,
-if omitted (or wrong) PfaEdit will figure that out.
+if omitted (or wrong) FontForge will figure that out.
 <P>
 The Layer line contains too much information. First is a number saying which
 layer, next are three booleans, the first specifies whether to fill the splineset
@@ -952,12 +952,12 @@ Finally we have the actual instance fonts.
 </H2>
 <P>
 <A HREF="errrecovery.html">Error recovery</A> files are saved in
-~/.PfaEdit/autosave, they have quite random looking names and end in .asfd.
+~/.FontForge/autosave, they have quite random looking names and end in .asfd.
 They look very similar to .sfd files above.
 <P>
 If an asfd file starts with a line:
 <BLOCKQUOTE>
-  <PRE>Base: /home/gww/myfonts/pfaedit/Ambrosia.sfd
+  <PRE>Base: /home/gww/myfonts/fontforge/Ambrosia.sfd
 </PRE>
 </BLOCKQUOTE>
 <P>

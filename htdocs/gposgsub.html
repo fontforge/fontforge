@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 3-Oct-2003 -->
+  <!-- AP: Last modified: 2-Mar-2004 -->
   <TITLE>Advanced Typography tables</TITLE>
 </HEAD>
 <BODY>
@@ -27,7 +27,7 @@ is incomplete.
   <LI>
     <A HREF="#Unsupported">What is unsupported</A>
   <LI>
-    <A HREF="non-standard.html">PfaEdit's non-standard extensions</A>
+    <A HREF="non-standard.html">FontForge's non-standard extensions</A>
 </UL>
 <H2>
   The <B><CODE>GPOS,</CODE></B> <B><CODE>GSUB</CODE></B> and
@@ -74,13 +74,13 @@ chinese ideographs. Two examples of features are 'kern' which provides kerning
 information between pairs of glyphs and 'init' which will transform one set
 of glyphs to another when those glyphs are at the beginning of a word.
 <P>
-PfaEdit <A HREF="gposgsub.html#Unsupported">does not support </A>the full
+FontForge <A HREF="gposgsub.html#Unsupported">does not support </A>the full
 range of possibilities inherent in these tables.
 <H3>
   The <B><CODE><A NAME="GPOS">GPOS</A></CODE></B> table
 </H3>
 <P>
-PfaEdit will read the following sub tables of the GPOS table:
+FontForge will read the following sub tables of the GPOS table:
 <TABLE Border=1>
   <TR>
     <TH></TH>
@@ -180,29 +180,29 @@ PfaEdit will read the following sub tables of the GPOS table:
     <TD>extension positioning</TD>
     <TD>This is used to allow for a GPOS table which is bigger than 64k. Its
       use should be quite invisible to the font designer</TD>
-    <TD>PfaEdit uses this sub-table when needed.</TD>
+    <TD>FontForge uses this sub-table when needed.</TD>
   </TR>
   <TR>
     <TD>10+</TD>
     <TD>reserved for future use</TD>
     <TD></TD>
-    <TD>PfaEdit does not support these sub-tables yet.<BR>
+    <TD>FontForge does not support these sub-tables yet.<BR>
       (nor does anyone)</TD>
   </TR>
 </TABLE>
 <P>
-PfaEdit also has built into it knowledge on how to provide default values
+FontForge also has built into it knowledge on how to provide default values
 for some features that use these tables. See
 <A HREF="elementmenu.html#DefaultATT">Element-&gt;Default ATT</A> command
 for that.
 <P>
-PfaEdit will retain the order of features in the GPOS table and when a font
-is generated the order should be the same as it was before.
+FontForge will retain the order of features in the GPOS table and when a
+font is generated the order should be the same as it was before.
 <H3>
   The <B><CODE><A NAME="GSUB">GSUB</A></CODE></B> table
 </H3>
 <P>
-PfaEdit will read the following sub tables of the GSUB table:
+FontForge will read the following sub tables of the GSUB table:
 <TABLE Border=1>
   <TR>
     <TH></TH>
@@ -276,7 +276,7 @@ PfaEdit will read the following sub tables of the GSUB table:
     <TD>extension positioning</TD>
     <TD>This is used to allow for a GSUB table which is bigger than 64k. Its
       use should be quite invisible to the font designer</TD>
-    <TD>PfaEdit uses this sub-table when needed.</TD>
+    <TD>FontForge uses this sub-table when needed.</TD>
   </TR>
   <TR>
     <TD>8</TD>
@@ -291,28 +291,28 @@ PfaEdit will read the following sub tables of the GSUB table:
     <TD>9+</TD>
     <TD>reserved for future use</TD>
     <TD></TD>
-    <TD>PfaEdit does not support these sub-tables yet.<BR>
+    <TD>FontForge does not support these sub-tables yet.<BR>
       (nor does anyone)</TD>
   </TR>
 </TABLE>
 <P>
-PfaEdit also has built into it knowledge on how to provide default values
+FontForge also has built into it knowledge on how to provide default values
 for some features that use these tables. See
 <A HREF="elementmenu.html#DefaultATT">Element-&gt;Default ATT</A> command
 for that.
 <P>
-PfaEdit can produce some of these tables, but the text layout/word processing
+FontForge can produce some of these tables, but the text layout/word processing
 program used has to look up the tables and do the actual work of rearranging
 the glyphs.
 <P>
-PfaEdit will retain the order of features in the GSUB table, and the user
+FontForge will retain the order of features in the GSUB table, and the user
 may adjust it with the <A HREF="fontinfo.html#Order">Element-&gt;Font Info</A>
 command.
 <H3>
   The <B><CODE><A NAME="GDEF">GDEF</A> </CODE></B>table
 </H3>
 <P>
-PfaEdit will read ligature carets out of a GDEF table.
+FontForge will read ligature carets out of a GDEF table.
 <P>
 It will generate a GDEF table containing a glyph class definition sub-table
 (if needed) or a ligature caret sub-table (if needed).
@@ -354,7 +354,7 @@ information see Apple's docs:
     'prop' (glyph properties) table</A>
 </UL>
 <P>
-PfaEdit will current read and produce (if Apple mode is set in font generation)
+FontForge will current read and produce (if Apple mode is set in font generation)
 the following tables:
 <TABLE BORDER CELLPADDING="2">
   <CAPTION>
@@ -369,16 +369,17 @@ the following tables:
   <TR>
     <TD><CODE>'lcar'</CODE></TD>
     <TD>ligature caret table</TD>
-    <TD>PfaEdit will read ligature carets</TD>
-    <TD>PfaEdit will produce this table if the user has specified ligature carets</TD>
+    <TD>FontForge will read ligature carets</TD>
+    <TD>FontForge will produce this table if the user has specified ligature
+      carets</TD>
   </TR>
   <TR>
     <TD><CODE>'prop'</CODE></TD>
     <TD>glyph properties table</TD>
-    <TD>PfaEdit will read this table to figure out which glyphs are hebrew and
-      arabic, and which have 'r2la' substitutions.</TD>
-    <TD>PfaEdit will generate this table if the font contains some right to left
-      characters.</TD>
+    <TD>FontForge will read this table to figure out which glyphs are hebrew
+      and arabic, and which have 'r2la' substitutions.</TD>
+    <TD>FontForge will generate this table if the font contains some right to
+      left characters.</TD>
   </TR>
 </TABLE>
 <P>
@@ -395,27 +396,27 @@ the following tables:
   <TR>
     <TD><CODE>'kern'</CODE></TD>
     <TD>kerning table</TD>
-    <TD>PfaEdit will read horizontal/vertical kerning pairs and classes.</TD>
-    <TD>PfaEdit will produce this if the font contains kerning data</TD>
+    <TD>FontForge will read horizontal/vertical kerning pairs and classes.</TD>
+    <TD>FontForge will produce this if the font contains kerning data</TD>
   </TR>
   <TR>
     <TD><CODE>'opbd'</CODE></TD>
     <TD>Optical bounds table</TD>
-    <TD>PfaEdit will read optical bounds</TD>
-    <TD>PfaEdit will produce this table if the user has specified right and left
-      bounds as simple positions ('lfbd' and 'rtbd').</TD>
+    <TD>FontForge will read optical bounds</TD>
+    <TD>FontForge will produce this table if the user has specified right and
+      left bounds as simple positions ('lfbd' and 'rtbd').</TD>
   </TR>
 </TABLE>
 <P>
 <P>
-PfaEdit has support for the <CODE>'mort'</CODE> and
+FontForge has support for the <CODE>'mort'</CODE> and
 <CODE>'<A NAME="morx">morx</A>'</CODE> tables (Glyph metamorphosis and extended
 glyph metamorphosis tables). These correspond vaguely to the
 <A HREF="#GSUB">GSUB</A> table. Note: Any feature type/setting combinations
 which correspond directly to an open type feature will be converted to the
 opentype tag when read in. It will be converted back to a feature/setting
 when an apple font is generated (use
-<A HREF="prefs.html#Mac">File-&gt;Preferences</A> to extend PfaEdit's mapping
+<A HREF="prefs.html#Mac">File-&gt;Preferences</A> to extend FontForge's mapping
 from feature type/setting to opentype tags).
 <TABLE BORDER CELLPADDING="2">
   <CAPTION>
@@ -430,34 +431,34 @@ from feature type/setting to opentype tags).
   <TR>
     <TD>0</TD>
     <TD>Indic style rearrangement</TD>
-    <TD>PfaEdit can read these and stores them as state machines (which can be
-      edited with <A HREF="fontinfo.html#Mac-SM">Font Info</A>)</TD>
+    <TD>FontForge can read these and stores them as state machines (which can
+      be edited with <A HREF="fontinfo.html#Mac-SM">Font Info</A>)</TD>
     <TD>Any indic state machines will be output in the generated font.</TD>
   </TR>
   <TR>
     <TD>1</TD>
     <TD>contextual glyph substitution</TD>
-    <TD>PfaEdit can read these and stores them as state machines (which can be
-      edited with <A HREF="fontinfo.html#Mac-SM">Font Info</A>)</TD>
+    <TD>FontForge can read these and stores them as state machines (which can
+      be edited with <A HREF="fontinfo.html#Mac-SM">Font Info</A>)</TD>
     <TD>If the font contains any state machines they will be output here. If
       there are no state machines then the following conversions of opentype features
       will be done:
       <UL>
 	<LI>
-	  PfaEdit will generate a <A NAME="cursive-connection">cursive connection
+	  FontForge will generate a <A NAME="cursive-connection">cursive connection
 	  </A>feature using this subtable type if the font contains 'init', 'medi',
 	  'fina' or 'isol' simple substitutions.
 	<LI>
-	  In <A HREF="gposgsub.html#sometimes">some cases</A> PfaEdit is able to convert
-	  an OpenType Contextual/Chaining substitution table into an Apple contextual
-	  glyph substitution table.
+	  In <A HREF="gposgsub.html#sometimes">some cases</A> FontForge is able to
+	  convert an OpenType Contextual/Chaining substitution table into an Apple
+	  contextual glyph substitution table.
       </UL>
     </TD>
   </TR>
   <TR>
     <TD>2</TD>
     <TD>ligature substitution</TD>
-    <TD>PfaEdit can read these and stores them as opentype ligatures. PfaEdit
+    <TD>FontForge can read these and stores them as opentype ligatures. FontForge
       will ignore any contextual ligature information. (which can be edited with
       <A HREF="charinfo.html#features">Char Info</A>)</TD>
     <TD>If there are any ligatures with an apple feature/setting (or which have
@@ -467,7 +468,7 @@ from feature type/setting to opentype tags).
   <TR>
     <TD>4</TD>
     <TD>non-contextual glyph substitution</TD>
-    <TD>PfaEdit can read these and stores them as opentype simple substitutions
+    <TD>FontForge can read these and stores them as opentype simple substitutions
       (which can be edited with <A HREF="charinfo.html#features">Char Info</A>)</TD>
     <TD>If there are any substitutions with an apple feature/setting (or which
       have an opentype tag which can be converted to an apple feature/setting)
@@ -476,8 +477,8 @@ from feature type/setting to opentype tags).
   <TR>
     <TD>5</TD>
     <TD>contextual glyph insertion</TD>
-    <TD>PfaEdit can read these and stores them as state machines (which can be
-      edited with <A HREF="fontinfo.html#Mac-SM">Font Info</A>)</TD>
+    <TD>FontForge can read these and stores them as state machines (which can
+      be edited with <A HREF="fontinfo.html#Mac-SM">Font Info</A>)</TD>
     <TD>Any glyph insertion state machines will be output in the generated font.</TD>
   </TR>
 </TABLE>
@@ -502,7 +503,7 @@ can sometimes be converted, and others have essentially no common ground.
     <TD VALIGN="Top"><P ALIGN=Center>
       lcar</TD>
     <TD>The ligature caret information in both 'GDEF' and 'lcar' is essentially
-      identical and PfaEdit has no trouble reading both and converting from one
+      identical and FontForge has no trouble reading both and converting from one
       to the other.</TD>
   </TR>
   <TR>
@@ -515,11 +516,11 @@ can sometimes be converted, and others have essentially no common ground.
       Both provide support for kerning by glyph pair and kerning by classes.
       <P>
       Apple's documentation mentions that the 'kern' table supports kerning by
-      state machine (ie. conditional kerning). PfaEdit does not (currently) read
+      state machine (ie. conditional kerning). FontForge does not (currently) read
       such sub-tables.
       <P>
       OpenType allows kerning data to under a conditional/chaining selection (ie.
-      conditional kerning). PfaEdit does support this.</TD>
+      conditional kerning). FontForge does support this.</TD>
   </TR>
   <TR>
     <TD><P ALIGN=Center>
@@ -527,8 +528,8 @@ can sometimes be converted, and others have essentially no common ground.
     <TD><P ALIGN=Center>
       opbd</TD>
     <TD>The GPOS features 'lfbd' and 'rtbd' provide the information needed to
-      generate an Apple opbd table. If PfaEdit reads a font with an opbd table
-      it will generate appropriate 'lfbd' and 'rtbd' features. If PfaEdit generates
+      generate an Apple opbd table. If FontForge reads a font with an opbd table
+      it will generate appropriate 'lfbd' and 'rtbd' features. If FontForge generates
       a font in apple mode that has these features it will create an opbd table.</TD>
   </TR>
   <TR>
@@ -546,7 +547,7 @@ can sometimes be converted, and others have essentially no common ground.
       morx</TD>
     <TD ROWSPAN=2>The 'mort' and 'morx' tables have the same capabilities ('mort'
       tables are an old format and Apple currently encourages that 'morx' tables
-      be used instead). PfaEdit can read either one, but only generates 'morx'
+      be used instead). FontForge can read either one, but only generates 'morx'
       tables. Interconversion depends on specific feature types and the sub-table
       formats, see below</TD>
   </TR>
@@ -562,13 +563,13 @@ can sometimes be converted, and others have essentially no common ground.
 </H4>
 <P>
 OpenType uses a four character feature tag (like 'liga') while Apple uses
-two numbers to represent a feature setting (&lt;1,2&gt;). For PfaEdit to
+two numbers to represent a feature setting (&lt;1,2&gt;). For FontForge to
 be able to inter-convert an OpenType feature into an Apple feature there
 must first be a correspondance between the two naming conventions. Sometimes
 there is an easy direct conversion (above 'liga' and &lt;1,2&gt; both represent
 "Common Ligatures") but far more often there is none. See
 <A HREF="gposgsub.html#OT-Mac-features">below</A> for a list of the tags
-and feature settings that PfaEdit considers similar enough to interconvert.
+and feature settings that FontForge considers similar enough to interconvert.
 <P>
 GSUB tables have 7 sub-table formats, while morx tables have 5.
 <TABLE BORDER CELLPADDING="2">
@@ -635,11 +636,11 @@ GSUB tables have 7 sub-table formats, while morx tables have 5.
       Ligature</TD>
     <TD>Both formats have ligature sub-tables. The 'GSUB' version is unconditional
       (the ligature is always applied). The 'morx' version can be contextual (though
-      in all fonts I have examined it is also uncontextual). PfaEdit only supports
+      in all fonts I have examined it is also uncontextual). FontForge only supports
       unconditional ligatures.
       <P>
-      PfaEdit can read all the unconditional ligatures from a 'morx' sub-table.
-      PfaEdit loses all contextual ligatures.
+      FontForge can read all the unconditional ligatures from a 'morx' sub-table.
+      FontForge loses all contextual ligatures.
       <P>
       In OpenType, contextual ligatures can be built by wrapping a ligature sub-table
       inside a Context or Chaining Context subtable.</TD>
@@ -698,9 +699,9 @@ GSUB tables have 7 sub-table formats, while morx tables have 5.
 <P>
 Sadly OpenType and AAT provide disjoint capabilities when it comes to contextual
 matching. AAT is more capable in some areas, OpenType more capable in others.
-PfaEdit is able to convert an OpenType contextual substitution into an AAT
-one if PfaEdit can detect that the OpenType substitution does not use capabilies
-beyond those of AAT. Currently this means:
+FontForge is able to convert an OpenType contextual substitution into an
+AAT one if FontForge can detect that the OpenType substitution does not use
+capabilies beyond those of AAT. Currently this means:
 <UL>
   <LI>
     There is an apple feature which matches the otf tag
@@ -822,7 +823,7 @@ beyond those of AAT. Currently this means:
     </OL>
 </UL>
 <P>
-PfaEdit does not even try to convert an AAT contextual glyph substitution
+FontForge does not even try to convert an AAT contextual glyph substitution
 sub-table, too few of these can be expressed in OpenType to make it worth
 while.
 <H4>
@@ -844,8 +845,8 @@ is missing from OpenType. So let's concentrate on contextual substitutions,
 which both appear to support. The argument that follows is based on the
 capabilities of contextual matching, it applies equally to contextual ligatures,
 glyph insertion and glyph substitution, the examples given are only of glyph
-substitution because it is easier to represent (and because PfaEdit is only
-willing to contvert contextual glyph substitutions) But even here, there
+substitution because it is easier to represent (and because FontForge is
+only willing to contvert contextual glyph substitutions) But even here, there
 is a very basic mismatch in concepts between the way OpenType and Apple specify
 contextual substitutions. Consider the following contextual sustitution in
 a glyph list format:
@@ -1106,7 +1107,7 @@ in the other.
   </TR>
 </TABLE>
 <P>
-PfaEdit will retain the order of features in the morx table, and the user
+FontForge will retain the order of features in the morx table, and the user
 may adjust it with the <A HREF="fontinfo.html#Order">Element-&gt;Font Info</A>
 command. (this is the same list as that used for GSUB table. GSUB features
 that don't correspond to mac features will be ignored).
@@ -1114,22 +1115,22 @@ that don't correspond to mac features will be ignored).
   What is <A NAME="Unsupported">Unsupported</A>?
 </H2>
 <P>
-PfaEdit does not (yet) support all the advanced typographic features available
+FontForge does not (yet) support all the advanced typographic features available
 in either opentype or apple advanced typography.
 <H3>
   OpenType
 </H3>
 <UL>
   <LI>
-    PfaEdit does not support device tables, nor does it support using truetype
+    FontForge does not support device tables, nor does it support using truetype
     points to control positioning
   <LI>
-    PfaEdit does not provide an attachment list subtable nor a MarkAttachClassDef
+    FontForge does not provide an attachment list subtable nor a MarkAttachClassDef
     subtable of the GDEF table.
   <LI>
-    PfaEdit does not support the BASE and JUST tables
+    FontForge does not support the BASE and JUST tables
   <LI>
-    PfaEdit has minimal support for VORG
+    FontForge has minimal support for VORG
 </UL>
 <P>
 <A HREF="TrueOpenTables.html">See here for a complete list of supported
@@ -1139,14 +1140,14 @@ tables</A>.
 </H3>
 <UL>
   <LI>
-    PfaEdit will never generate a 'mort' table. It can read 'mort' tables, but
-    it will only produce 'morx' tables.
+    FontForge will never generate a 'mort' table. It can read 'mort' tables,
+    but it will only produce 'morx' tables.
   <LI>
-    PfaEdit is unable to parse contextual ligatures. It can find ligatures which
-    start from state 0, but it will not find ligatures which start from other
-    states (that is, which are contextual)
+    FontForge is unable to parse contextual ligatures. It can find ligatures
+    which start from state 0, but it will not find ligatures which start from
+    other states (that is, which are contextual)
   <LI>
-    PfaEdit does not support the following Apple specific tables
+    FontForge does not support the following Apple specific tables
     <UL>
       <LI>
 	acnt (accent attachment)

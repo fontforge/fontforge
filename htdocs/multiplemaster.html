@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 5-Feb-2004 -->
-  <!-- AP: Last modified: 8-Feb-2004 -->
+  <!-- AP: Last modified: 2-Mar-2004 -->
   <TITLE>Multiple Master Dialog</TITLE>
 </HEAD>
 <BODY>
@@ -21,7 +21,7 @@ Type1</A>) font which contains, in one font description several extreme styles
 of a font family and code for interpolating between them to produce intermediate
 designs (Apple has a
 <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6fvar.html">similar
-concept </A>for TrueType which PfaEdit does not yet support).
+concept </A>for TrueType which FontForge does not yet support).
 <P>
 A multiple master font has several axes along which variation may occur.
 For example a font might allow variation along the Weight axis (everything
@@ -82,17 +82,17 @@ Then s/he needs to write two postscript functions
   <DT>
     NormalizeDesignVector
   <DD>
-    PfaEdit is always able to generate this function for the user (unless the
+    FontForge is always able to generate this function for the user (unless the
     user wants something non-linear). This maps a vector of design values to
     their normalized values (in our three axis case above it might map [400 500
     12] to [.4 .5 .09])
   <DT>
     ConvertDesignVector
   <DD>
-    In the usual cases PfaEdit is able to create this function for the user (but
-    in more complicated cases, with intermediate designs it is unable to do so).
-    This function takes a normalized vector (as produced above) and figures out
-    how much each weight to give each design in the final blend.
+    In the usual cases FontForge is able to create this function for the user
+    (but in more complicated cases, with intermediate designs it is unable to
+    do so). This function takes a normalized vector (as produced above) and figures
+    out how much each weight to give each design in the final blend.
 </DL>
 <P>
 Finally s/he provides a default vector of design weights (one for each design).
@@ -118,21 +118,21 @@ gives you control of each axis. There are a few standard axis types defined
 by Adobe (and one by Apple), but you could define your own.<BR CLEAR=ALL>
 <P>
 <IMG SRC="mmdesigns.png" WIDTH="476" HEIGHT="448" ALIGN="Right">Then you
-must assign a font to each of the master designs. You can either have PfaEdit
+must assign a font to each of the master designs. You can either have FontForge
 create a new font for you (as here), or use an already loaded font, or browse
 your disk for a font (don't try to use the same font twice).
 <P>
 You must also specify the coordinates of this design along the axes. If you
 use the minimum number of designs they will all be extremes and the coordinate
 values will be either 0 or 1. Unless you are working with intermediate designs
-it is best to let PfaEdit initialize this field for you.<BR CLEAR=ALL>
+it is best to let FontForge initialize this field for you.<BR CLEAR=ALL>
 <P>
 <IMG SRC="mmfuncs.png" WIDTH="476" HEIGHT="448" ALIGN="Right">This screen
 shows the postscript functions needed to map a design vector to a weight
 vector (ie. given positions on each of the design axes, these produce blending
-coefficients for each master design). In most useful case PfaEdit is able
+coefficients for each master design). In most useful case FontForge is able
 to generate these functions automatically, but if you use intermediate designs
-things get too complicated for PfaEdit and you must enter the functions
+things get too complicated for FontForge and you must enter the functions
 manually.<BR CLEAR=ALL>
 <P>
 <IMG SRC="mmfinal.png" WIDTH="476" HEIGHT="448" ALIGN="Right">The last screen
@@ -161,7 +161,7 @@ Width=1000.
 <IMG SRC="mmextrapolate2.png" WIDTH="132" HEIGHT="132">
 <P>
 First we must produce an intermediate design (which we will delete later),
-call it "I". Use PfaEdit's Element-&gt;Interpolate Fonts command to produce
+call it "I". Use FontForge's Element-&gt;Interpolate Fonts command to produce
 a design which is 50% of the way from design 1 to design 2 (This will be
 Weight=475, Width=550). Then produce another design with is 200% of the way
 from design 0 to design "I". This will be the desired extreme design.
@@ -171,6 +171,6 @@ but the multiple master operators were dropped from the Type2 spec, and the
 question is moot.
 <P>
 <P ALIGN=Center>
--- <A HREF="mmmenu.html">Up</A> -- <A HREF="overview.html">TOC</A> -- 
+-- <A HREF="mmmenu.html">Up</A> -- <A HREF="overview.html">TOC</A> --
 <P>
 </BODY></HTML>

@@ -2,15 +2,15 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 19-Feb-2004 -->
-  <!-- AP: Last modified: 19-Feb-2004 -->
-  <TITLE>Autotracing bitmaps in PfaEdit</TITLE>
+  <!-- AP: Last modified: 2-Mar-2004 -->
+  <TITLE>Autotracing bitmaps in FontForge</TITLE>
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
-  Autotracing bitmaps in PfaEdit
+  Autotracing bitmaps in FontForge
 </H1>
 <P>
-PfaEdit does not have a native autotrace, but it will happily use the output
+FontForge does not have a native autotrace, but it will happily use the output
 of two freely available programs which do autotracing. These are:
 <UL>
   <LI>
@@ -19,10 +19,10 @@ of two freely available programs which do autotracing. These are:
     Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
     program</A><BR>
     <FONT COLOR="Red"><STRONG>CAVEAT: </STRONG></FONT>Autotrace 2.8 changed its
-    argument conventions (around Dec 2001). New versions (after 15 Dec) of pfaedit
-    will not work with autotrace2.7, old versions of pfaedit will not work with
-    autotrace2.8. I see no way to make pfaedit work with both or to detect the
-    current version...<BR>
+    argument conventions (around Dec 2001). New versions (after 15 Dec) of fontforge
+    will not work with autotrace2.7, old versions of fontforge will not work
+    with autotrace2.8. I see no way to make fontforge work with both or to detect
+    the current version...<BR>
     <FONT COLOR="Red"><STRONG>CAVEAT2: </STRONG></FONT>I may not be loading the
     results of autotrace properly in all cases (I do in my test cases, of course).
     AutoTrace traces out both foreground and background regions, so I may sometimes
@@ -62,7 +62,7 @@ you want to autotrace. There are several ways of doing this:
   <DD>
     If you have an application that supports sending image selections by mime
     type (kde does this), then you should be able to copy the image in that
-    application and paste it into the appropriate glyph window in PfaEdit
+    application and paste it into the appropriate glyph window in FontForge
   <DT>
     From an image file
   <DD>
@@ -76,7 +76,7 @@ you want to autotrace. There are several ways of doing this:
       <LI>
 	File-&gt;Import
       <LI>
-	select Format=Image (this will show you any image format that pfaedit supports)
+	select Format=Image (this will show you any image format that fontforge supports)
       <LI>
 	Select your file
       <LI>
@@ -122,10 +122,10 @@ image. Autotrace programs work better the more resolution you give them.
 <P>
 If you hold down the shift key when you invoke AutoTrace from the menu then
 you will be prompted for arguments to pass to it, if you do not hold down
-the shift key PfaEdit will use the same arguments it used last time. AutoTrace's
-arguments are described in "$ autotrace -help" or in the README file that
-came with the program. Please do not specify input/output files or formats.
-PfaEdit fills these in.
+the shift key FontForge will use the same arguments it used last time.
+AutoTrace's arguments are described in "$ autotrace -help" or in the README
+file that came with the program. Please do not specify input/output files
+or formats. FontForge fills these in.
 <P>
 <P>
 <P ALIGN=Center>

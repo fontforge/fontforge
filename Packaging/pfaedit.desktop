@@ -1,9 +1,0 @@
-[Desktop Entry]
-Name=PfaEdit
-Comment=An outline font editor
-Exec=pfaedit
-Icon=pfaedit.png
-Terminal=false
-Type=Application
-Categories=Application;Graphics;
-Encoding=UTF-8

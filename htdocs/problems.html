@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Jun-2001 -->
-  <!-- AP: Last modified: 29-Feb-2004 -->
+  <!-- AP: Last modified: 2-Mar-2004 -->
   <TITLE>Finding common font problems automagically</TITLE>
 </HEAD>
 <BODY>
@@ -18,8 +18,8 @@ When you draw you characters you are likely to make some minor errors, like
 having stems with slightly different widths in different characters, or having
 lines which aren't quite vertical or...
 <P>
-PfaEdit's Find Problems command can help track down some common errors. In
-some cases it will be able to fix things for you, but it won't do so without
+FontForge's Find Problems command can help track down some common errors.
+In some cases it will be able to fix things for you, but it won't do so without
 your permission (who knows, some of the so-called "problems" might actually
 be what you wanted), but it will point things out to you that you should
 look at.
@@ -29,15 +29,15 @@ view. In the font view it will examine all selected characters for errors,
 and if it finds anything open a window looking at the character and post
 a (non-modal) dialog saying what the error is. You may then correct the problem
 and press the [Next] button in the dialog when you are done, or you may stop
-the command with the [Stop] button. Some errors PfaEdit will be able to fix
-automagically, and if so there will be a [Fix] button in this dlg
+the command with the [Stop] button. Some errors FontForge will be able to
+fix automagically, and if so there will be a [Fix] button in this dlg
 (<FONT COLOR="Red"><SMALL><STRONG>NOTE</STRONG></SMALL></FONT>: You should
 not assume that all problems are in fact errors. Some "problems" may be intended
 peculiarities of the font design. Don't just blindly press the [Fix] button).
 Behavior in the outline and metrics views is similar, except that only one
 character is searched for problems.
 <P>
-PfaEdit will be able to check for more problems if you:
+FontForge will be able to check for more problems if you:
 <UL>
   <LI>
     AutoHint the font first
@@ -51,17 +51,17 @@ Note: Some of these problems are geared specifically to the problems of
 Latin/Greek/Cyrillic fonts. I would be happy to hear of ways to extend these
 to other script systems, or of problems that are specific to other script
 systems
-(<A HREF="mailto:pfaedit-users@lists.sourceforge.net">pfaedit-users@lists.sourceforge.net</A>).
+(<A HREF="mailto:pfaedit-users@lists.sourceforge.net">fontforge-users@lists.sourceforge.net</A>).
 <P>
-<IMG SRC="findprobs.png" WIDTH="307" HEIGHT="431" ALIGN="Right">PfaEdit can
-detect the following potential problems:
+<IMG SRC="findprobs.png" WIDTH="307" HEIGHT="431" ALIGN="Right">FontForge
+can detect the following potential problems:
 <P>
 <STRONG><BIG>Points Too Close</BIG></STRONG>
 <P>
-Some of PfaEdit's own commands get confused by tiny splines, on the order
+Some of FontForge's own commands get confused by tiny splines, on the order
 of one unit or less, and anyway if you have several points very close together
 it is unlikely that they will make a detectable difference when the font
-is printed. Probably you should remove one of them... If PfaEdit detects
+is printed. Probably you should remove one of them... If FontForge detects
 two points on the same path which it deems to be too close it will select
 both, stop and let you fix things.
 <P>
@@ -70,10 +70,10 @@ both, stop and let you fix things.
 Often there will be a set of features which should be consistant across the
 entire file. For example the left side-bearing of the characters "BDEFHIKLMNPR"
 should perhaps all be the same. This will let you enter in the desired
-side-bearing value, and then PfaEdit will find all characters with points
+side-bearing value, and then FontForge will find all characters with points
 that are near, but not exactly on the desired value. Where "near" is defined
 at the bottom of the dialog (in this case, everything within 3 em-units --
-in either direction -- will be near). If it finds an errant point, PfaEdit
+in either direction -- will be near). If it finds an errant point, FontForge
 will select it, stop and let you fix it.
 <P>
 <STRONG><BIG>Y near [val]</BIG></STRONG>
@@ -85,17 +85,17 @@ check...
 <STRONG><BIG>Y near standard heights</BIG></STRONG>
 <P>
 In Latin, Greek and Cyrillic alphabets there are certain standard heights
-that PfaEdit expects to find: the baseline, the height of lower case letters,
+that FontForge expects to find: the baseline, the height of lower case letters,
 the height of capital letters, the height of lower case letters with ascenders
 (often the same as, or very close to, the capital height), and the depth
-of lower case letters with descenders. For this command PfaEdit defines these
-heights to be 0, the height of "x", the height of "I", the height of "l"
-and the depth of "p" (If you are working on a Greek or Cyrillic font and
-don't include the Latin alphabet, PfaEdit will pick similar letters from
-your alphabet). Then PfaEdit will search for any points which are "near",
-but not on, these heights. Again where "near" is defined at the bottom of
-the dialog. If it finds such a point, PfaEdit will select it, stop and let
-you fix things.
+of lower case letters with descenders. For this command FontForge defines
+these heights to be 0, the height of "x", the height of "I", the height of
+"l" and the depth of "p" (If you are working on a Greek or Cyrillic font
+and don't include the Latin alphabet, FontForge will pick similar letters
+from your alphabet). Then FontForge will search for any points which are
+"near", but not on, these heights. Again where "near" is defined at the bottom
+of the dialog. If it finds such a point, FontForge will select it, stop and
+let you fix things.
 <P>
 <STRONG><BIG>Control points near horizontal/vertical/italic</BIG></STRONG>
 <P>
@@ -129,7 +129,7 @@ All of your paths should be closed, that is they shouldn't have any end points
 the way a line segment does, but should connect back to their beginning.
 This is often caused by being a little careless with the last point on a
 path, and instead of joining it to the first, you just put it near the first.
-If PfaEdit detects any open paths it will select the entire path, and stop
+If FontForge detects any open paths it will select the entire path, and stop
 to let you fix things up.
 <P>
 <STRONG><BIG>Edges near horizontal/vertical/italic</BIG></STRONG>
@@ -137,8 +137,8 @@ to let you fix things up.
 It is very easy to create a line which is almost, but not quite, vertical.
 This will check for that situation. And for horizontal, and (if your font
 has an italic angle) for lines which are almost but not quite parallel to
-the italic angle. If it finds one of these, PfaEdit will select the two end
-points, stop and let you fix things.
+the italic angle. If it finds one of these, FontForge will select the two
+end points, stop and let you fix things.
 <P>
 For horizontal lines it will tell you the y coordinates of the two end-points,
 for vertical lines it will show you the x coordinates.
@@ -163,7 +163,7 @@ actually have a much higher limit, so you may change the limit to suit your
 desires. I believe that control points are included in the count. Note that
 when checking a quadratic font (ie. a truetype font) there will be at most
 one control point between any two end points, but when that font gets converted
-to PostScript there will be two. PfaEdit currently counts this as one point).
+to PostScript there will be two. FontForge currently counts this as one point).
 TrueType has no such limit.<BR Clear=all>
 <H3>
   <STRONG><IMG SRC="findprobs-refs.png" WIDTH="307" HEIGHT="431" ALIGN="Right">Flipped
@@ -181,7 +181,7 @@ Edit-&gt;Unlink the reference and Element-&gt;Correct Direction
 Appendix B of the the
 <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5177.Type2.pdf">Type2</A>
 spec says that an interpreter is only required to support subroutine nesting
-up to 10 levels. PfaEdit uses subroutine calls to handle referenced characters
+up to 10 levels. FontForge uses subroutine calls to handle referenced characters
 and sometimes also to handle hinting. Hinting will take up a maximum of 1
 level of subroutine calls leaving 9 available for references. TrueType has
 no such limit.<BR Clear=all>
@@ -196,15 +196,15 @@ I think is) a bug in ghostview. Consider the following character
 <IMG SRC="phi-nohints-filled.png" WIDTH="93" HEIGHT="121">
 <IMG SRC="phi-hints-outline.png" WIDTH="72" HEIGHT="133">
 <IMG SRC="phi-hints-filled.png" WIDTH="93" HEIGHT="125"><BR>
-The first two images show the character with no hints, first as seen in PfaEdit,
-then as displayed by ghostview. The result looks good. If we add hints to
-the two curved stems then ghostview gets very confused. I don't know enough
-about hints to know whether there should be hints there. I am assuming so,
-which is why PfaEdit will generate them. But this command will detect this
-problem if in fact it is a problem. If PfaEdit finds this it will select
-the offending hint and allow you to fix things (probably the best fix is
-to add curved points at the extrema of all the curved splines, this is actually
-recommended by adobe anyway
+The first two images show the character with no hints, first as seen in
+FontForge, then as displayed by ghostview. The result looks good. If we add
+hints to the two curved stems then ghostview gets very confused. I don't
+know enough about hints to know whether there should be hints there. I am
+assuming so, which is why FontForge will generate them. But this command
+will detect this problem if in fact it is a problem. If FontForge finds this
+it will select the offending hint and allow you to fix things (probably the
+best fix is to add curved points at the extrema of all the curved splines,
+this is actually recommended by adobe anyway
 (<A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/T1_Spec.pdf">T1_Spec.pdf
 </A>section 4.1)).
 <P>
@@ -214,14 +214,14 @@ If you have a character like "H" where the main vertical stems are broken
 by the cross bar, it is all too easy to make the top part of the stem a slightly
 different width than the bottom. (The hinting process figures out all the
 stems.) So this command, in essence, is looking for points which are slightly
-off from a stem. (again, near is defined at the bottom of the dlg). If PfaEdit
+off from a stem. (again, near is defined at the bottom of the dlg). If FontForge
 finds such a point it selects it, stops, and allows you to fix it up.
 <P>
 <BIG><STRONG>Hint width near [val]</STRONG></BIG>
 <P>
 Usually one wants many of the characters to have a constant stem width, and
 this command will check that all stems near the indicated value are that
-value (again near is defined at the bottom of the page). If PfaEdit finds
+value (again near is defined at the bottom of the page). If FontForge finds
 a bad stem it will select it, stop and allow you to fix things.
 <P>
 <BIG><STRONG>Almost stem3 hint</STRONG></BIG>
@@ -229,9 +229,9 @@ a bad stem it will select it, stop and allow you to fix things.
 Postscript has a special hint operator (hstem3 and vstem3) which is designed
 to hint the stems of things like "m" where there are three stems of equal
 width and equally far appart. It is easy for a character not to fit the criteria
-for this operator (which means PfaEdit won't use it). This will detect cases
-that are close to right. I found that I needed to adjust the "Near" value
-to be bigger than the default.
+for this operator (which means FontForge won't use it). This will detect
+cases that are close to right. I found that I needed to adjust the "Near"
+value to be bigger than the default.
 <P>
 <STRONG><BIG>Show exact stem3</BIG></STRONG>
 <P>
@@ -288,9 +288,9 @@ which does not exist in the font. This option will check for that error.
 <P>
 <STRONG><BIG>Using 'DFLT' Script</BIG></STRONG>
 <P>
-OpenType has depreciated the use of 'DFLT', but PfaEdit will sometimes use
-it when it can't make a better guess at the appropriate script for a glyph
-without an inate script.
+OpenType has depreciated the use of 'DFLT', but FontForge will sometimes
+use it when it can't make a better guess at the appropriate script for a
+glyph without an inate script.
 <P>
   <HR Clear=all>
 <P>

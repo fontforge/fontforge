@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 2-Sep-2002 -->
-  <!-- AP: Last modified: 3-Oct-2003 -->
+  <!-- AP: Last modified: 2-Mar-2004 -->
   <TITLE>Preferences Dialog</TITLE>
 </HEAD>
 <BODY>
@@ -21,8 +21,8 @@
     <A NAME="LocalEncoding">LocalEncoding</A>
   <DD>
     The default encoding used by the operating system (ie. text that is pasted
-    into pfaedit will be assumed to be in this encoding). If you select "Default"
-    here, pfaedit will attempt to guess the correct encoding by looking at:
+    into fontforge will be assumed to be in this encoding). If you select "Default"
+    here, fontforge will attempt to guess the correct encoding by looking at:
     LC_MESSAGES, LC_ALL, LANG environment variables.
   <DT>
     <A NAME="NewCharset">NewCharset</A>
@@ -39,17 +39,17 @@
   <DD>
     Splines in fonts may be either in quadratic or cubic format. TrueType fonts
     use quadratic splines while PostScript (and OpenType) fonts use cubic splines.
-    When PfaEdit generates a font it will convert from whatever format is used
+    When FontForge generates a font it will convert from whatever format is used
     internally to whatever format is required for the font, so there will be
     no problem if this is set incorrectly, but setting it correctly for your
     font means you get a clearer idea of what the outlines will look like.
   <DT>
     <A NAME="LoadedFontsAsNew">LoadedFontsAsNew</A>
   <DD>
-    When PfaEdit reads in a font it will generally keep the splines in the format
-    they used in the font (that is quadratic for truetype fonts and cubic for
-    postscript). If you set this flag then all loaded fonts will have the same
-    file format as that specified by NewFontsQuadratic above.
+    When FontForge reads in a font it will generally keep the splines in the
+    format they used in the font (that is quadratic for truetype fonts and cubic
+    for postscript). If you set this flag then all loaded fonts will have the
+    same file format as that specified by NewFontsQuadratic above.
   <DT>
     <A NAME="GreekNames">GreekNames</A>
   <DD>
@@ -58,14 +58,14 @@
   <DT>
     <A NAME="ResourceFile">ResourceFile</A>
   <DD>
-    PfaEdit will read <A HREF="xres.html">X Resources</A> from a property on
+    FontForge will read <A HREF="xres.html">X Resources</A> from a property on
     the screen. But sometimes this isn't enough. You set this preference item
     to specify a file from which these resources should be read (those on the
     screen will also be read and will supercede those in the file).
   <DT>
     <A NAME="HelpDir">HelpDir</A>
   <DD>
-    PfaEdit will search this directory for help files when the user presses
+    FontForge will search this directory for help files when the user presses
     [F1].<BR Clear=all>
 </DL>
 <P>
@@ -124,9 +124,9 @@
     When dragging points in the outline view, if the end point of one open contour
     is moved onto the end point of another open contour then those two contours
     will join. If you leave this Off then further motion will continue to move
-    the points, if you set this to On then PfaEdit will stop noticing mouse movements
-    (it pretends that you released the mouse button). This is useful if you hand
-    jitters a little on the mouse.
+    the points, if you set this to On then FontForge will stop noticing mouse
+    movements (it pretends that you released the mouse button). This is useful
+    if you hand jitters a little on the mouse.
   <DT>
     <A NAME="UpdateFlex">UpdateFlex</A>
   <DD>
@@ -179,10 +179,10 @@
     Whenever a postscript font is generated then this last number will be incremented
     by 1.
     <P>
-    I have registered with Adobe and they have assigned PfaEdit an extended unique
-    id base of [1021]. When you first start PfaEdit, PfaEdit will itself append
-    a couple of random numbers to this to give you your own extended unique id.
-    And individual fonts will get a fourth number added to that.
+    I have registered with Adobe and they have assigned FontForge an extended
+    unique id base of [1021]. When you first start FontForge, FontForge will
+    itself append a couple of random numbers to this to give you your own extended
+    unique id. And individual fonts will get a fourth number added to that.
     <P>
     If you want you may
     <A HREF="http://partners.adobe.com/asn/tech/type/xuidregister.jsp">register
@@ -193,8 +193,8 @@
   <DT>
     <A NAME="AskBDFResolution">AskBDFResolution</A>
   <DD>
-    Normally PfaEdit will guess at what screen resolution you intend based on
-    the pixel size of the font (ie. 17 pixel fonts are usually 100dpi (12pt)
+    Normally FontForge will guess at what screen resolution you intend based
+    on the pixel size of the font (ie. 17 pixel fonts are usually 100dpi (12pt)
     and 12 pixel fonts are usually 75dpi), but sometimes you will have more esoteric
     desires. Setting this will give you more control, but you have to click through
     another dlg.
@@ -209,7 +209,7 @@
   <DD>
     This controls the loading of truetype and opentype fonts. If a font contains
     both an unicode encoding subtable and a cjk subtable, then this item allows
-    you to pick which one PfaEdit will choose to decode.
+    you to pick which one FontForge will choose to decode.
   <DT>
     <A NAME="HintForGen">HintForGen</A>
   <DD>
@@ -249,8 +249,8 @@
   <DD>
     The mf program generates a fair amount of verbiage even when it is working
     correctly. And if it is working correctly you don't want to see those words.
-    So normally PfaEdit suppresses messages from mf. But if something goes wrong
-    you do want to see mf's output and setting this will allow you to do
+    So normally FontForge suppresses messages from mf. But if something goes
+    wrong you do want to see mf's output and setting this will allow you to do
     so.<BR Clear=all>
 </DL>
 <P>

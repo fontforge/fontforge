@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 17-Dec-2000 -->
-  <!-- AP: Last modified: 8-Apr-2003 -->
+  <!-- AP: Last modified: 2-Mar-2004 -->
   <TITLE>Error Recovery</TITLE>
 </HEAD>
 <BODY>
@@ -12,27 +12,27 @@
 <P>
 All programs crash, and new programs (like this one) crash a lot.
 <P>
-Every minute or so PfaEdit looks around and sees if anything has changed
+Every minute or so FontForge looks around and sees if anything has changed
 since the last time it checked. If it finds a font that has had changes,
-it will save a small file in its private directory (~/.PfaEdit/autosave)
+it will save a small file in its private directory (~/.FontForge/autosave)
 which consists of all changed characters in the changed font.
 <P>
-When PfaEdit starts up it checks this directory, and if it finds anything
-there it attempts to apply those changes to the original font. So if PfaEdit
-crashes, or if your machine crashes, the next time you start PfaEdit it will
-figure out what you were doing and recover it as best it can.
+When FontForge starts up it checks this directory, and if it finds anything
+there it attempts to apply those changes to the original font. So if FontForge
+crashes, or if your machine crashes, the next time you start FontForge it
+will figure out what you were doing and recover it as best it can.
 <P>
 When editing CID-keyed fonts there are a few potential gotchas:
 <UL>
   <LI>
-    PfaEdit does not keep track of gross changes (like adding or removing a sub
-    font)
+    FontForge does not keep track of gross changes (like adding or removing a
+    sub font)
   <LI>
-    PfaEdit does not keep track of which sub font a change occurred in, instead
+    FontForge does not keep track of which sub font a change occurred in, instead
     at recovery time it will look for a subfont that is contains a character
     at the CID that was changed. In almost all cases this will be right, but
     if you add characters or if you have two sub-fonts defining the same CID,
-    PfaEdit may guess wrong.
+    FontForge may guess wrong.
 </UL>
 <P>
 <P ALIGN=Center>

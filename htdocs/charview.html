@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 24-Feb-2004 -->
+  <!-- AP: Last modified: 2-Mar-2004 -->
   <TITLE>Outline Character View</TITLE>
 </HEAD>
 <BODY>
@@ -76,7 +76,7 @@ the mouse, then the effective location of the press will be the location
 of the point.
 <P>
 If you drag a character from the font view and drop it into a character view
-then PfaEdit will drop a reference to the dragged character into the view.
+then FontForge will drop a reference to the dragged character into the view.
 <H2>
   <A NAME="Layers">Layers</A>
 </H2>
@@ -96,7 +96,7 @@ The second is the background layer, this contains background images and splines.
 These do not go into the font, but may be helpful to you in tracing the outline
 of your character. It is possible to paste an image into the background if
 you have an image manipulation program that supports selection by mime type
-(the kde family of applications does this, perhaps others), then PfaEdit
+(the kde family of applications does this, perhaps others), then FontForge
 will be able to read images in either "image/png" or "image/bmp".
 <P>
 The third layer is a set of guide lines/splines. These are common to all
@@ -231,8 +231,11 @@ minify the view, again centered around the point at which you clicked. Again
 some window managers will steal meta-clicks, so you may have to use the View
 menu to minify (It's called Zoom Out
 <P>
-If you drag out a rectangle with this tool then when you release, PfaEdit
+If you drag out a rectangle with this tool then when you release, FontForge
 will shift and scale the view so that your rectangle just fits into the window.
+<P>
+If your mouse has a scroll wheel then holding down the control key with the
+scroll wheel causes it to magnify or minify the window.
 <H3>
   The hand tool
 </H3>
@@ -243,9 +246,9 @@ You can use this tool to scroll the window without using the scroll bars.
   <A NAME="freehand">freehand</A> tool
 </H3>
 <P>
-You can use this tool to draw a random curve which PfaEdit will then attempt
+You can use this tool to draw a random curve which FontForge will then attempt
 to convert into a set of splines. If you hold down the Alt (Meta) key then
-PfaEdit will close the curve when you release the mouse.
+FontForge will close the curve when you release the mouse.
 <P>
 If you double click on the icon in the tool palette you get a dialog similar
 to the <A HREF="elementmenu.html#Expand">Element-&gt;Expand Stroke</A> which
@@ -304,7 +307,7 @@ points rather than moving the point itself around.
   The knife tool
 </H3>
 <P>
-This tool is used to cut splines. As you drag it across the view pfaedit
+This tool is used to cut splines. As you drag it across the view fontforge
 draws a line showing where the cut will happen. When you release, every spline
 you intersect will be cut-- that is at the location where this line intersects
 the spline two new points will be created and the old spline will be split
@@ -409,7 +412,7 @@ performed (the example at right is 12pt on a 72dpi screen).<BR>
   <A NAME="Debugging">Debugging</A> View
 </H2>
 <P>
-PfaEdit has a truetype debugger -- provided you have a version of freetype
+FontForge has a truetype debugger -- provided you have a version of freetype
 on your machine with the bytecode interpreter enabled
 <FONT COLOR="Red"><STRONG>(Note: you need a license from Apple to enable
 this. It is protected by several patents)</STRONG></FONT>.
@@ -442,9 +445,9 @@ The red "STOPPED" arrow shows the current location of the instruction pointer
 <P>
 The fifth button allows you to set a watch point. You select a point (or
 several points) in the left hand pane, and press this button. Thereafter,
-whenever one of those points is moved PfaEdit will stop the glyph program.
+whenever one of those points is moved FontForge will stop the glyph program.
 <P>
-Flaw: PfaEdit only allows you to select a single control point (multiple
+Flaw: FontForge only allows you to select a single control point (multiple
 on-curve points, but only one control point) so currently there is no good
 way to watch several control points.
 <P>
@@ -547,8 +550,8 @@ background<BR CLEAR=ALL>
 <P>
 <IMG SRC="charview-multilayer.png" WIDTH="348" HEIGHT="571" ALIGN="Right">If
 you wish to <A HREF="multilayer.html">edit type3 fonts</A>, and you have
-configured PfaEdit correctly, the PfaEdit can display a glyph broken down
-into a series of strokes and fills and allow you to edit each one.
+configured FontForge correctly, the FontForge can display a glyph broken
+down into a series of strokes and fills and allow you to edit each one.
 <P>
 <P ALIGN=Center>
 -- <A HREF="fontview.html">Prev</A> -- <A HREF="overview.html">TOC</A> --

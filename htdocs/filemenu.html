@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Dec-2000 -->
-  <!-- AP: Last modified: 24-Feb-2004 -->
+  <!-- AP: Last modified: 2-Mar-2004 -->
   <TITLE>The File Menu</TITLE>
 </HEAD>
 <BODY>
@@ -68,37 +68,37 @@
     <A NAME="Open">Open</A>
   <DD>
     Brings up a file chooser and allows you to open a font in any of the formats
-    PfaEdit understands.
+    FontForge understands.
     <P>
     If you open a truetype font containing bitmaps then you will be asked if
     you want to load some of the bitmaps as well as the outlines.
     <P>
     By default this dialog will display all files with extensions of pfa, pfb,
     pt3, sfd, ttf, otf, otb, cef, cff, gsf, ttc, svg, ik, mf and bdf (possibly
-    others as PfaEdit comes to support more formats). If you would also like
+    others as FontForge comes to support more formats). If you would also like
     it to display .ps files then enter *.{pfa,pfb,ttf,otf,bdf,sfd,ps} and press
     the Filter button. If you only want it to display sfd files enter *.sfd and
     press Filter.<BR>
     You may select multiple files (by holding down the shift or control keys
     when clicking on them), and all selected files will be opened.<BR>
-    PfaEdit can open macbinary resource files containing postscript and truetype
+    FontForge can open macbinary resource files containing postscript and truetype
     fonts (it does not open bitmap fonts currently)<BR>
-    PfaEdit does not open Acorn RISC/OS files, but you can use
+    FontForge does not open Acorn RISC/OS files, but you can use
     <I><A HREF="acorn2sfd.html">acorn2sfd</A></I> to convert them into an sfd
-    file which PfaEdit can then open.<BR>
+    file which FontForge can then open.<BR>
     If you have <A HREF="http://www.tug.org/"><I>mf </I></A>and
     <I><A HREF="http://sourceforge.net/projects/autotrace/">autotrace</A>
-    </I>installed on your machine PfaEdit will process metafont's mf files for
-    you. But you might want to use <I>pktrace, mftrace</I> or some other standalone
-    program to do the job.
+    </I>installed on your machine FontForge will process metafont's mf files
+    for you. But you might want to use <I>pktrace, mftrace</I> or some other
+    standalone program to do the job.
     <P>
-    When importing a <A NAME="type3-import">type3</A> font PfaEdit will ask you
-    a few questions. It shouldn't have to ask these questions, but this is an
-    imperfect world and PfaEdit an imperfect program. In some rare cases PfaEdit
-    will crash if it tries to do a remove overlap. The remove overlap functionality
-    is important for interpretting stroked paths so you really should have it
-    on. But if a crash happens then, turn it off (and the crash should not repeat,
-    but some functionality will be lost).
+    When importing a <A NAME="type3-import">type3</A> font FontForge will ask
+    you a few questions. It shouldn't have to ask these questions, but this is
+    an imperfect world and FontForge an imperfect program. In some rare cases
+    FontForge will crash if it tries to do a remove overlap. The remove overlap
+    functionality is important for interpretting stroked paths so you really
+    should have it on. But if a crash happens then, turn it off (and the crash
+    should not repeat, but some functionality will be lost).
   <DT>
     <A NAME="Recent">Recent</A>
   <DD>
@@ -225,7 +225,7 @@
     character into an encapsulated postscript (.eps), pdf, svg or xfig format
     (.fig -- the conversion to fig format is not the best) file. You may also
     have the character rasterized and output in either .xbm or .bmp (or png if
-    you have that library) formats (PfaEdit will prompt you for a pixelsize.
+    you have that library) formats (FontForge will prompt you for a pixelsize.
     bmp also allows you to generate an anti-aliased image, and you will be prompted
     for bits per pixel. 1 bit per pixel is a bitmap).
     <P>
@@ -243,9 +243,9 @@
     (So "A" from the bitmap font goes into the background of the "A" outline
     character), this is to make tracing characters easier. Be careful, you need
     to load a big bitmap for autotrace to be useful.
-    <FONT COLOR="Red"><SMALL><STRONG>NOTE: </STRONG></SMALL></FONT>PfaEdit is
-    unable to read an encoding from pk files, you will may need to set it with
-    "Force Encoding" after you've loaded the pk file.<BR>
+    <FONT COLOR="Red"><SMALL><STRONG>NOTE: </STRONG></SMALL></FONT>FontForge
+    is unable to read an encoding from pk files, you will may need to set it
+    with "Force Encoding" after you've loaded the pk file.<BR>
     You may also load images into the character backgrounds. There are two ways
     to do this, you may either select several image files and they will be loaded
     consecutively into selected characters, or you may select an image template
@@ -259,19 +259,19 @@
     (and the number must be in decimal rather than hex).
     <P>
     If you are editing a <A HREF="multilayer.html">multi-layered font</A> (and
-    have a version of PfaEdit configured for it) then you can also import an
+    have a version of FontForge configured for it) then you can also import an
     image into one of the foreground layers.
     <P>
-    <SMALL>PfaEdit does best when given <A NAME="bitmapfiles">bitmap</A> images.
+    <SMALL>FontForge does best when given <A NAME="bitmapfiles">bitmap</A> images.
     It will grey out the foreground and make the background transparent. It will
     also compress them when it stores them in the sfd file. It will handle most
     other image formats but does not try to optimize them in anyway. Please use
     bitmaps here.</SMALL>
     <P>
     You may load an encapsulated postscript file (or rather the sub-set of postscript
-    that PfaEdit understands) into the foreground of characters. As with images
+    that FontForge understands) into the foreground of characters. As with images
     above this may import either depending on the selection or a template.<BR>
-    If you have libxml2 on your system then PfaEdit will also be able to import
+    If you have libxml2 on your system then FontForge will also be able to import
     svg files. As with postscript, only a subset of svg is understood).
     <P>
     In the Outline View this allows you to import an image into the background
@@ -291,20 +291,20 @@
   <DD>
     Only available in the font view window. This command will allow you to search
     for an afm, tfm or mac resource file containing kerning pairs for the specified
-    font. In many cases it will not be needed because when PfaEdit opens a .pfa
-    or .pfb font it will automagically search for an appropriate .afm file in
-    the same place. But sometimes afm files are stored in other directories.
+    font. In many cases it will not be needed because when FontForge opens a
+    .pfa or .pfb font it will automagically search for an appropriate .afm file
+    in the same place. But sometimes afm files are stored in other directories.
     And sometimes you want to import information from TeX or from mac files.<BR>
-    <FONT COLOR="Red"><SMALL><STRONG>NOTE: </STRONG></SMALL></FONT>PfaEdit is
-    unable to read an encoding from tfm files or from mac resource files, it
-    is your responsibility to ensure that the encoding of your font matches that
-    of the tfm file <EM>BEFORE</EM> merging kerning information. This is unfortunate,
-    sorry.
+    <FONT COLOR="Red"><SMALL><STRONG>NOTE: </STRONG></SMALL></FONT>FontForge
+    is unable to read an encoding from tfm files or from mac resource files,
+    it is your responsibility to ensure that the encoding of your font matches
+    that of the tfm file <EM>BEFORE</EM> merging kerning information. This is
+    unfortunate, sorry.
     <P>
     Note: When loading a postscript font from a mac resource file, the associated
     kerning data will be found in the FOND stored with a bitmap font for this
-    face. PfaEdit can't guess the name of this file when loading the font. You
-    must figure it out yourself.
+    face. FontForge can't guess the name of this file when loading the font.
+    You must figure it out yourself.
   <DT>
     <A NAME="Print">Print</A>...
   <DD>
@@ -340,7 +340,7 @@
     <A NAME="prefs">Preferences...</A>
   <DD>
     This pops up a <A HREF="prefs.html">dialog allowing you to configure various
-    esoteric bits of pfaedit</A>.
+    esoteric bits of fontforge</A>.
     <P>
     A number of things that might be controlled from a preference window are
     controlled by <A HREF="xres.html">X Resources</A>.

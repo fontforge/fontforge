@@ -2,18 +2,18 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 24-Feb-2004 -->
-  <TITLE>PfaEdit -- An outline font editor for PostScript&reg;, TrueType and
-  OpenType fonts</TITLE>
+  <!-- AP: Last modified: 2-Mar-2004 -->
+  <TITLE>FontForge -- An outline font editor for PostScript&reg;, TrueType
+  and OpenType fonts</TITLE>
 </HEAD>
 <BODY>
 <H1 Align=Center>
-  PfaEdit<BR>
+  FontForge<BR>
   <SMALL>An Outline Font Editor</SMALL>
 </H1>
 <H2>
-  <I><IMG SRC="splash.png" WIDTH="383" HEIGHT="398" ALIGN="Right" ALT="Gaudiamus ligature!"></I>Table
-  of Contents
+  <I><IMG SRC="FontForgeSplash.png" WIDTH="379" HEIGHT="375" ALT="Gaudiamus ligature!"
+      ALIGN="Right"></I>Table of Contents
 </H2>
 <UL>
   <LI>
@@ -128,7 +128,7 @@
     Apendices...
     <UL>
       <LI>
-	<A HREF="PfaEdit-TeX.html">Using PfaEdit with TeX</A>
+	<A HREF="PfaEdit-TeX.html">Using FontForge with TeX</A>
       <LI>
 	<A HREF="locale.html">Localization</A>
       <LI>
@@ -159,7 +159,7 @@
 	  <LI>
 	    <A HREF="bezier.html">PostScript &lt;-&gt; TrueType Conversions</A>
 	  <LI>
-	    <A HREF="corpchar.html">PfaEdit's use of the Unicode Private Use Area</A>
+	    <A HREF="corpchar.html">FontForge's use of the Unicode Private Use Area</A>
 	</UL>
       <LI>
 	<A HREF="sfds/index.html">Font samples</A>
@@ -221,7 +221,7 @@ Font design can be a Trap, but I find it a rather pleasant one. Caveat utor.
   <A NAME="Overview">Overview</A>
 </H2>
 <P>
-PfaEdit allows you to create and modify postscript, truetype and opentype
+FontForge allows you to create and modify postscript, truetype and opentype
 fonts. You can save fonts in many different outline formats, and generate
 bitmaps.
 <H3>
@@ -232,11 +232,11 @@ bitmaps.
     <A HREF="index.html#binary">Copy the distribution </A>to some directory on
     your machine
   <LI>
-    <KBD>$ gunzip pfaedit-*.tgz</KBD>
+    <KBD>$ gunzip fontforge-*.tgz</KBD>
   <LI>
-    <KBD>$ tar xfv pfaedit.tar</KBD>
+    <KBD>$ tar xfv fontforge.tar</KBD>
   <LI>
-    <KBD>$ cp pfaedit /usr/local/bin</KBD>
+    <KBD>$ cp fontforge /usr/local/bin</KBD>
     <!--<LI>
     <KBD>$ cp *.so* /usr/local/lib</KBD>
     <LI>
@@ -254,9 +254,9 @@ bitmaps.
   <LI>
     <KBD>$ gunzip *.tgz</KBD>
   <LI>
-    <KBD>$ tar xf pfaedit_full.tar</KBD>
+    <KBD>$ tar xf fontforge_full.tar</KBD>
   <LI>
-    <KBD>$ cd pfaedit </KBD>
+    <KBD>$ cd fontforge </KBD>
   <LI>
     <KBD>$ configure</KBD>
   <LI>
@@ -302,18 +302,18 @@ on your machine (put it in your .xsession file).
 </H3>
 <DL>
   <DT>
-    <CODE>$ pfaedit -new</CODE>
+    <CODE>$ fontforge -new</CODE>
   <DD>
     Will create a new postscript font with the ISO 8859-1 encoding (the international
     encoding standard for western europe, and the standard for most X fonts)
     and open a <A HREF="#FontView">font view </A>which will allow you to edit
     that font.
   <DT>
-    <CODE>$ pfaedit fontname</CODE>
+    <CODE>$ fontforge fontname</CODE>
   <DD>
     Will open a <A HREF="#FontView">font view</A> looking at the font you selected.
     This may be a binary or ascii postscript type1 font (.pfa, .pfb or .gsf
-    extensions), one of pfaedit's spline font database files
+    extensions), one of fontforge's spline font database files
     (.<A HREF="sfd.html">sfd</A> extension), a postscript type 0 font (.ps extension,
     though the encoding will probably be lost here), a truetype font (.ttf or
     .ttc extension), an Open Type font (.otf) a mac resource file (.bin, .hqx
@@ -321,19 +321,19 @@ on your machine (put it in your .xsession file).
     <P>
     More than one fontname may be specified on the command line.
   <DT>
-    <CODE>$ pfaedit "gulim.ttc(GulimChe)"</CODE>
+    <CODE>$ fontforge "gulim.ttc(GulimChe)"</CODE>
   <DD>
     If a file format supports several fonts within the file (.ttc or mac resource
     files) then you may specify which font you want by following the filename
     with the font name in parentheses.
   <DT>
-    <CODE>$ pfaedit</CODE>
+    <CODE>$ fontforge</CODE>
   <DD>
     Will open a file picker dialog and allow you to browse your disk to find
     the appropriate font file, or create a new one.
 </DL>
 <P>
-On Mac OS/X you must start XDarwin before you can start pfaedit. See the
+On Mac OS/X you must start XDarwin before you can start fontforge. See the
 <A HREF="MacOSX.html#Running">Mac specific notes</A> for more info.<BR>
 On windows under cygwin you must again start X first
 <H3>
@@ -382,7 +382,7 @@ all their points shown:
 <IMG SRC="splines.gif" WIDTH="172" HEIGHT="179" ALIGN="Left">
 <P>
 The points which describe the slope are called control points. They are
-represented here (and in pfaedit) by little colored x's. Moving a control
+represented here (and in fontforge) by little colored x's. Moving a control
 point will change the shape of the spline, but it will not alter where the
 spline begins or ends.
 <P>
@@ -399,11 +399,11 @@ at their point of intersection, in the third case there are two splines which
 are again tangent at their point of intersection. The point of intersection
 in the first case is called a corner point, and the incoming and outgoing
 splines or lines may be in any orientation with respect to each other. This
-is represented in pfaedit by a square box. In the second case the point of
-intersection is called a tangent point, it is represented by a triangle.
+is represented in fontforge by a square box. In the second case the point
+of intersection is called a tangent point, it is represented by a triangle.
 The third case is a curved point and is represented by a circle.
 <P>
-<IMG SRC="quadraticspline.png" WIDTH="127" HEIGHT="92" ALIGN="Left">PfaEdit
+<IMG SRC="quadraticspline.png" WIDTH="127" HEIGHT="92" ALIGN="Left">FontForge
 can also edit <A NAME="quadratic">quadratic</A> splines (these are the splines
 used in truetype fonts), here there is only one control point, and it controls
 the slopes at both end-points. Because of this quadratic splines cannot bend
@@ -441,7 +441,7 @@ All of these points (both the end points and the control points) are described
 mathematically. Each point is positioned on a cartesian coordinate system
 which has its origin on the character's base line (the line on which letters
 without descenders rest). Most font formats expect coordinates to be integers
-between -32768 and 32767, PfaEdit uses real numbers internally but (usually)
+between -32768 and 32767, FontForge uses real numbers internally but (usually)
 rounds to the nearest integer when generating a font file.
 <P>
 The horizontal distance between the origin and the leftmost edge of the character
@@ -481,7 +481,7 @@ usually a power of two, often 2048.
   <A NAME="PT">TrueType</A> vs. PostScript vs OpenType vs SVG fonts
 </H3>
 <P>
-PfaEdit can produce both TrueType and PostScript fonts. What's the difference?
+FontForge can produce both TrueType and PostScript fonts. What's the difference?
 <P>
 PostScript is based on a <A HREF="bezier.html">cubic spline</A> technology
 described above, while TrueType is based on a
@@ -493,7 +493,7 @@ be a slight loss of accuracy in most cases. This means it is easy to convert
 TrueType outlines to PostScript outlines, harder to convert PostScript to
 TrueType.
 <P>
-Within PfaEdit all spline editing is done on cubic splines. These are converted
+Within FontForge all spline editing is done on cubic splines. These are converted
 to quadratic when a truetype font is generated.
 <P>
 The other major difference between the two is how they solve the problem
@@ -511,7 +511,7 @@ What's SVG?
 <P>
 SVG (Scalable Vector Graphics) provides a relatively new font format, written
 in an xml dialect. SVG fonts can be either cubic or quadratic (or can use
-both, but PfaEdit is limited and will force a font to be either all cubic
+both, but FontForge is limited and will force a font to be either all cubic
 or all quadratic). SVG allows for two different types of fonts, one corresponds
 roughly to PostScript Type1 fonts, and the other, roughly to PostScript Type3
 fonts (except that images are not allowed in svg fonts -- or I haven't figured
@@ -524,7 +524,7 @@ Adobe could make Type1 fonts, but anyone could make Type3 fonts. Type3 fonts
 were unhinted, but could include any postscript command and so could produce
 a wider range of pictures (multi-colored glyphs, stroked glyphs, glyphs based
 on scaled images, etc.). Most of the time these extensions are unnecessary,
-and the disadvantage of being unhinted is onerous. If you compile PfaEdit
+and the disadvantage of being unhinted is onerous. If you compile FontForge
 with multilayer set you will be able to create type3 fonts.
 <P>
 What are Type1 fonts?
@@ -568,7 +568,7 @@ to draw small fonts.
     Adobe incorporated several different ways of providing hints for the rasterizer
     about how things should be treated. The most obvious of these are the horizontal
     and vertical stem hints.Each character has its own set of hints to tell the
-    rasterizer where to find stems. PfaEdit can usually figure out a reasonable
+    rasterizer where to find stems. FontForge can usually figure out a reasonable
     set of stem hints (a process called
     <A HREF="hintsmenu.html#AutoHint">autohinting</A>), but some characters are
     too complex for it and it can make bad choices. It also provides a mode for
@@ -577,7 +577,7 @@ to draw small fonts.
     Adobe also has a mechanism for handling dished serifs called flex hinting.
     This means a curve that is only slightly deformed from the horizontal (or
     vertical) will display as a line at small point sizes and as a curve at larger
-    ones. PfaEdit will use these when it seems appropriate.
+    ones. FontForge will use these when it seems appropriate.
     <P>
     The original version of hints did not allow them to overlap, this meant that
     most serifs could not be described, Adobe then developed a mechanism called
@@ -594,7 +594,7 @@ to draw small fonts.
     for the horizontal counters in "m" and the vertical counters in "E" but more
     complex shapes could not be dealt with. Counter Hints (in a type1 font) may
     only be used with non-latin (non-greek, non-cyrillic) character sets, in
-    type2 (OpenType) things are a bit more complicated,. PfaEdit will generate
+    type2 (OpenType) things are a bit more complicated,. FontForge will generate
     counter hints when appropriate.
     <P>
     Adobe provides some font-wide hinting mechanisms. The two most obvious are
@@ -607,13 +607,13 @@ to draw small fonts.
     will be slightly different (for instance an "o" and an "x" usually have slightly
     different heights, but displaying that at a small point size would be ugly).
     Similarly the StemSnap variables specify standard stem widths for the font.
-    PfaEdit will try to guess reasonable values for these. It also allows you
+    FontForge will try to guess reasonable values for these. It also allows you
     to override these guesses and <A HREF="fontinfo.html#Private">specify your
     own values</A>. For a more comprehensible description of the private dictionary
     and what it can do, look at
     <A HREF="http://partners.adobe.com/asn/developer/PDFS/TN/T1_SPEC.PDF">Adobe's
     Type1 font specification</A>.<BR>
-    <A NAME="HintOrder">PfaEdit</A>'s
+    <A NAME="HintOrder">FontForge</A>'s
     <A HREF="hintsmenu.html#AutoHint">AutoHint</A> command will work better if
     the BlueValues have been set. So before running AutoHint go to
     <A HREF="fontinfo.html#Private">Element-&gt; FontInfo-&gt; Private</A> to
@@ -637,18 +637,18 @@ to draw small fonts.
     that move points around until they are positioned appropriately for a given
     size.
     <P>
-    PfaEdit's hinting of True Type (properly called "instructing") is very primitive,
-    and is based on the stem hints also used by PostScript. It uses these hints
-    to determine which points to move and where to move them. It also supports
-    the concept of diagonal stems and hints them so they will have approximately
-    the same width. It does a little extra work, trying to detect serifs that
-    are attached to vertical stems and providing hints for them as well. It also
-    uses the equivalent of the PostScript BlueValues to generate cvt entries
-    that force characters to have the same height at small pointsizes.
+    FontForge's hinting of True Type (properly called "instructing") is very
+    primitive, and is based on the stem hints also used by PostScript. It uses
+    these hints to determine which points to move and where to move them. It
+    also supports the concept of diagonal stems and hints them so they will have
+    approximately the same width. It does a little extra work, trying to detect
+    serifs that are attached to vertical stems and providing hints for them as
+    well. It also uses the equivalent of the PostScript BlueValues to generate
+    cvt entries that force characters to have the same height at small pointsizes.
     <P>
     I am not happy with the instructions I generate for TrueType.
     <P>
-    When PfaEdit reads in a TrueType font it will store the instructions used,
+    When FontForge reads in a TrueType font it will store the instructions used,
     and when it next generates that font it will use those instructions -- provided
     no significant change has happened to a character.
 </DL>
@@ -667,10 +667,10 @@ space savings, and in ease of design (if you change the "a" character after
 making a reference to it the "&agrave;" character will automatically change
 to, whereas if you just copied the "a" you would have to recopy it.
 <P>
-PfaEdit has three commands for manipulating references, and one higher level
-command for building accented characters. The Edit-&gt;Copy Reference command
-will put a reference to the current character into the clipboard, which a
-subsequent Edit-&gt;Paste command will install as a reference. The
+FontForge has three commands for manipulating references, and one higher
+level command for building accented characters. The Edit-&gt;Copy Reference
+command will put a reference to the current character into the clipboard,
+which a subsequent Edit-&gt;Paste command will install as a reference. The
 Edit-&gt;Unlink Reference command will turn a reference in a character into
 it's component splines. The Element-&gt;Get Info command (when applied to
 a reference) will bring up a dialog showing you what character is referred
@@ -679,12 +679,12 @@ the <CODE>Element-&gt;Build Accented Characters</CODE> command will figure
 out what characters should be refered to to build this composite character,
 and then will make those references and position them appropriately. So if
 "&agrave;" were selected and you did a <CODE>Element-&gt;Build Accented
-Characters</CODE> command, the PfaEdit would make a reference to "a" and
+Characters</CODE> command, the FontForge would make a reference to "a" and
 another to "`", and place the accent above the letter, and centered on it.
 <P>
 Sadly life is not quite that simple. Both PostScript and TrueType place
 restrictions on what kinds of characters may be referenced, worse they make
-different restrictions. About the only restriction PfaEdit makes is that
+different restrictions. About the only restriction FontForge makes is that
 it won't let you put a reference to a character inside itself. When generating
 a font, if it finds a situation where it can't use a refered character as
 a reference it will fix it up somehow, usually this means replacing it with
@@ -700,19 +700,20 @@ may be rotated, skewed or scaled. There must be exactly two referenced
 characters, and the reference character which is not translated must have
 the same width as the one being built.
 <BLOCKQUOTE>
-  <STRONG><SMALL><SMALL>Technical and confusing:</SMALL></SMALL></STRONG> PfaEdit
+  <STRONG><SMALL><SMALL>Technical and confusing:</SMALL></SMALL></STRONG> FontForge
   has some tricks it can use to improve things. If you are working on U+04D2
   (Cyrillic capital letter A with diaeresis) and you make it out of U+0410
   (Cyrillic capital letter A) and U+00A8 (diaeresis) and U+0410 is itself a
-  reference to U+0041 (Latin capital letter A), then PfaEdit will generate
+  reference to U+0041 (Latin capital letter A), then FontForge will generate
   a postscript font where U+04D2 is a composite of U+0041 and U+00A8, both
   of which are in the Adobe Set (while U+0410 is not). Again when generating
-  U+0410 PfaEdit will make it be a composite of U+0041 and U+0020 (space) so
-  as to get exactly two characters.
+  U+0410 FontForge will make it be a composite of U+0041 and U+0020 (space)
+  so as to get exactly two characters.
   <P>
   <STRONG><SMALL><SMALL>Technical and confusing:</SMALL></SMALL></STRONG> If
-  that fails PfaEdit will attempt to put the referenced characters into subroutines
-  and then invoke those. This only works if the characters in question either:
+  that fails FontForge will attempt to put the referenced characters into
+  subroutines and then invoke those. This only works if the characters in question
+  either:
   <UL>
     <LI>
       Have no overlapping hints (don't need hint substitution) and don't require
@@ -735,7 +736,7 @@ an amount less than 2.
 </BLOCKQUOTE>
 <P>
 In OpenType (actually Postscript type2 fonts) things are different again.
-There is no direct support for references. PfaEdit will produce something
+There is no direct support for references. FontForge will produce something
 which will allow for the space saving that references provide (by using
 subroutines), but it will not be able to detect what's a reference and what
 isn't when it reads the font in. Any character which does not itself contain
@@ -787,8 +788,8 @@ joined to make the final result:
 The grave accent has been raised and moved to the right so that its anchor
 point is positioned where the anchor from "a" was.
 <P>
-PfaEdit does not compose these characters (well, it can, but that's a completely
-different area), instead it provides information with the
+FontForge does not compose these characters (well, it can, but that's a
+completely different area), instead it provides information with the
 <A HREF="gposgsub.html">font</A> to a text layout program so that it can
 do the composition.
 <P>
@@ -885,7 +886,7 @@ Another Wadalab font encapsulated in a CID keyed font
 </H3>
 <P>
 The <A HREF="charview.html">outline view</A> is probably the most complex
-view in PfaEdit. This is where you actually edit the splines
+view in FontForge. This is where you actually edit the splines
 (<A HREF="bezier.html">B&eacute;zier splines</A>) that make up your glyphs.
 <P>
 You may have a background image loaded into the view to help you trace out

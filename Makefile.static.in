@@ -5,19 +5,19 @@ bindir = @bindir@
 libdir = @libdir@
 mandir = @mandir@
 includedir = @includedir@
-sharedir = $(prefix)/share/pfaedit
+sharedir = $(prefix)/share/fontforge
 
 srcdir = @srcdir@
 top_builddir = .
 
 INSTALL = @INSTALL@
 
-all: pfaedit
+all: fontforge
 
 libs: libgunicode libgdraw
 
-pfaedit: libgunicode libgdraw
-	( cd pfaedit ; $(MAKE) )
+fontforge: libgunicode libgdraw
+	( cd fontforge ; $(MAKE) )
 
 libgunicode:
 	( cd Unicode ; $(MAKE) )
@@ -26,12 +26,12 @@ libgdraw:
 	( cd gdraw ; $(MAKE) )
 
 clean:
-	( cd pfaedit ; $(MAKE) clean )
+	( cd fontforge ; $(MAKE) clean )
 	( cd Unicode ; $(MAKE) clean )
 	( cd gdraw ; $(MAKE) clean )
 
 distclean cleaner:
-	( cd pfaedit ; $(MAKE) distclean )
+	( cd fontforge ; $(MAKE) distclean )
 	( cd Unicode ; $(MAKE) distclean )
 	( cd gdraw ; $(MAKE) distclean )
 	-rm Makefile config.cache config.log config.status libtool
@@ -43,21 +43,21 @@ install: $(sharedir) all install_libs
 	mkdir -p $(bindir)
 	mkdir -p $(mandir)/man1
 	mkdir -p $(sharedir)
-	cp pfaedit/pfaedit $(bindir)
-	cp pfaedit/sfddiff $(bindir)
-	cp pfaedit/pfaedit-*.ui $(sharedir)
+	cp fontforge/fontforge $(bindir)
+	cp fontforge/sfddiff $(bindir)
+	cp fontforge/pfaedit-*.ui $(sharedir)
 #The next line will fail for most installs. If you have downloaded the cidmaps
 # this will install them. If you haven't it won't. You only need the cidmaps
 # if you are editing CID keyed files (and even then you can live without them
 	-cp $(srcdir)/cidmap/*.cidmap $(sharedir) >/dev/null 2>&1
-	cp $(srcdir)/pfaedit/pfaedit.1 $(mandir)/man1
-	cp $(srcdir)/pfaedit/sfddiff.1 $(mandir)/man1
+	cp $(srcdir)/fontforge/fontforge.1 $(mandir)/man1
+	cp $(srcdir)/fontforge/sfddiff.1 $(mandir)/man1
 
 uninstall:
-	-rm $(bindir)/pfaedit
+	-rm $(bindir)/fontforge
 	-rm $(bindir)/sfddiff
 	-rm $(sharedir)/pfaedit-*.ui
-	-rm $(mandir)/man1/pfaedit.1
+	-rm $(mandir)/man1/fontforge.1
 	-rm $(mandir)/man1/sfddiff.1
 	-rm $(sharedir)/*.cidmap
 

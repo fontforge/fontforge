@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 29-Jan-2004 -->
+  <!-- AP: Last modified: 2-Mar-2004 -->
   <TITLE>Char Info</TITLE>
 </HEAD>
 <BODY>
@@ -41,15 +41,15 @@
 <P>
 <A NAME="Unicode">This dialog </A>allows you to set the name and unicode
 encoding of a given character. If you know the name of the character then
-PfaEdit can tell you the encoding (if you press Set From Name), similarly
-if you know the encoding then PfaEdit can tell you the name.
+FontForge can tell you the encoding (if you press Set From Name), similarly
+if you know the encoding then FontForge can tell you the name.
 <P>
 The name field contains a pull down list with (possibly) several synonyms
 for the name of this unicode code point.
 <P>
 The Glyph class field is for the opentype 'GDEF' table. You can usually leave
-it set to automatic. PfaEdit will then figure out the class, and whether
-it should be output into GDEF. You can see what PfaEdit does in
+it set to automatic. FontForge will then figure out the class, and whether
+it should be output into GDEF. You can see what FontForge does in
 <A HREF="showatt.html">View-&gt;Show ATT</A>.<BR CLEAR=ALL>
 <P>
 <IMG SRC="charinfo-comment.png" WIDTH="307" HEIGHT="359" ALIGN="Right">You
@@ -91,7 +91,7 @@ do that).<BR Clear=Right>
 Here the glyph "one" has a substitution to "onesuperior" when the 'sups'
 (Superscript) feature is invoked.
 <P>
-PfaEdit recognizes a special feature tag ' RQD' to indicate that this feature
+FontForge recognizes a special feature tag ' RQD' to indicate that this feature
 is required for the given script/language. Such a feature will always be
 applied.
 <P>
@@ -108,8 +108,8 @@ and the user is to be given a choice as to which glyph is to be chosen.
 <BR Clear=Right>
 <P>
 <IMG SRC="charinfo-lig.png" WIDTH="305" HEIGHT="400" ALIGN="Right"> The
-<A NAME="ligature">ligature</A> field allows you to tell PfaEdit that the
-current character is a ligature composed of several other characters. PfaEdit
+<A NAME="ligature">ligature</A> field allows you to tell FontForge that the
+current character is a ligature composed of several other characters. FontForge
 will often be able to fill this in with the right default value, but occasionally
 you may want to change it. The value should be a list of postscript character
 names separated by spaces. If a character may be viewed as two different
@@ -141,7 +141,7 @@ Some <A NAME="components">characters</A> (ligatures, accented characters,
 Hangul syllables, etc.) are built up out of other characters (at least according
 to unicode). This pane of the dlg shows the components that Unicode says
 make up the current character, if those componants are in the font then you
-can use PfaEdit's Element-&gt;Build Accented or Element-&gt;Build Composit
+can use FontForge's Element-&gt;Build Accented or Element-&gt;Build Composit
 commands to create the current character. The information displayed here
 is informative only, you may not change this field directly (it changes when
 you change the unicode value or glyph name associated with this
@@ -209,7 +209,7 @@ same digits are used for latin, cyrillic, greek, hebrew, (sometimes arabic)
 and many other script systems, so any ligatures of the digits (such as fractions)
 should be available in all script systems.
 <P>
-The script names used by PfaEdit are those specified by
+The script names used by FontForge are those specified by
 <A HREF="http://partners.adobe.com/asn/tech/type/opentype/appendices/scripttags.jsp">Microsoft
 and Adobe for opentype</A>. These are almost compatible with
 <A HREF="http://www.evertype.com/standards/iso15924/document/dis15924.pdf">ISO
@@ -231,7 +231,7 @@ shows all the script and language combinations which are in use in the current
 font. You may add a new combination or change an old one by pressing the
 obvious buttons.
 <P>
-If you want to specify a script or language that PfaEdit doesn't know about,
+If you want to specify a script or language that FontForge doesn't know about,
 then hold the control key down when pressing the [New...] or [Edit] buttons
 and you will get an unparsed dlg which will allow you to enter whatever you
 like (OpenType does not give a tag for the default language (it is has a
@@ -240,7 +240,7 @@ consistance I have assigned it the tag of 'dflt'. No 'dflt' tags will appear
 in the output font, instead they will be converted to the appropirate
 representation for the default language).
 <P>
-The language names used by PfaEdit are those specified by
+The language names used by FontForge are those specified by
 <A HREF="http://partners.adobe.com/asn/tech/type/opentype/appendices/languagetags.jsp">Microsoft
 and Adobe for opentype</A>.
 <P>

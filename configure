@@ -429,7 +429,7 @@ PACKAGE_VERSION=
 PACKAGE_STRING=
 PACKAGE_BUGREPORT=
 
-ac_unique_file="pfaedit/pfaedit.h"
+ac_unique_file="fontforge/pfaedit.h"
 # Factoring default headers for most tests.
 ac_includes_default="\
 #include <stdio.h>
@@ -10443,7 +10443,7 @@ if test "${with_multilayer+set}" = set; then
 
     if test "$withval" != "no" >/dev/null 2>&1 ; then
 	cat >>confdefs.h <<\_ACEOF
-#define PFAEDIT_CONFIG_TYPE3 1
+#define FONTFORGE_CONFIG_TYPE3 1
 _ACEOF
 
     fi
@@ -10457,8 +10457,8 @@ test -d libs || mkdir libs
 cp Makefile.dynamic.in Makefile.in
 cp Unicode/Makefile.dynamic.in Unicode/Makefile.in
 cp gdraw/Makefile.dynamic.in gdraw/Makefile.in
-cp pfaedit/Makefile.dynamic.in pfaedit/Makefile.in
-                                        ac_config_files="$ac_config_files Makefile Unicode/Makefile gdraw/Makefile pfaedit/Makefile"
+cp fontforge/Makefile.dynamic.in fontforge/Makefile.in
+                                        ac_config_files="$ac_config_files Makefile Unicode/Makefile gdraw/Makefile fontforge/Makefile"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -11012,7 +11012,7 @@ do
   "Makefile" ) CONFIG_FILES="$CONFIG_FILES Makefile" ;;
   "Unicode/Makefile" ) CONFIG_FILES="$CONFIG_FILES Unicode/Makefile" ;;
   "gdraw/Makefile" ) CONFIG_FILES="$CONFIG_FILES gdraw/Makefile" ;;
-  "pfaedit/Makefile" ) CONFIG_FILES="$CONFIG_FILES pfaedit/Makefile" ;;
+  "fontforge/Makefile" ) CONFIG_FILES="$CONFIG_FILES fontforge/Makefile" ;;
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
    { (exit 1); exit 1; }; };;
@@ -11922,7 +11922,7 @@ do
   "Makefile" ) CONFIG_FILES="$CONFIG_FILES Makefile" ;;
   "Unicode/Makefile" ) CONFIG_FILES="$CONFIG_FILES Unicode/Makefile" ;;
   "gdraw/Makefile" ) CONFIG_FILES="$CONFIG_FILES gdraw/Makefile" ;;
-  "pfaedit/Makefile" ) CONFIG_FILES="$CONFIG_FILES pfaedit/Makefile" ;;
+  "fontforge/Makefile" ) CONFIG_FILES="$CONFIG_FILES fontforge/Makefile" ;;
   "umap/Makefile" ) CONFIG_FILES="$CONFIG_FILES umap/Makefile" ;;
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
@@ -12286,10 +12286,10 @@ if test "$STATIC_LIBS" != ""; then
 fi
 
 if test "$no_x" = "yes"; then
- echo " *****************************************************************"
- echo " * This version of pfaedit will only run scripts. No X libraries *"
- echo " * were found so there is NO user interface!!!! If you want a UI *"
- echo " * try installing X11 on your system.                            *"
- echo " *****************************************************************"
+ echo " *******************************************************************"
+ echo " * This version of fontforge will only run scripts. No X libraries *"
+ echo " * were found so there is NO user interface!!!!! If you want a UI  *"
+ echo " * try installing X11 on your system.                              *"
+ echo " *******************************************************************"
 fi
 

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 5-Feb-2004 -->
+  <!-- AP: Last modified: 2-Mar-2004 -->
   <TITLE>The Hints Menu</TITLE>
 </HEAD>
 <BODY>
@@ -95,12 +95,12 @@ This menu is only present in the outline character view and the font view.
   <DT>
     <A NAME="AutoHint">AutoHint</A>
   <DD>
-    The Auto Hint command causes PfaEdit to throw away any existing hints for
+    The Auto Hint command causes FontForge to throw away any existing hints for
     the character and guess an new ones. In the outline view this operates on
     the current character, in the font view it operates on all selected
     characters.<BR>
-    PfaEdit will do a better job hinting a font if you have previously set the
-    BlueValues, StdVW and StdHW fields in
+    FontForge will do a better job hinting a font if you have previously set
+    the BlueValues, StdVW and StdHW fields in
     <A HREF="fontinfo.html#Private">Element-&gt;Font Info-&gt;PS Private</A>.
     These in turn depend on the hints so it is best to autohint the entire font,
     then set the above values, and then autohint the font again.
@@ -118,8 +118,8 @@ This menu is only present in the outline character view and the font view.
   <DT>
     <A NAME="DontAutoHint">Don</A>'t AutoHint
   <DD>
-    Tells PfaEdit not to do any implicit hinting on the selected characters.
-    (PfaEdit will normally perform an autohint on a character if the character's
+    Tells FontForge not to do any implicit hinting on the selected characters.
+    (FontForge will normally perform an autohint on a character if the character's
     contours have changed since it was last hinted and the user has not explicitly
     changed the hints). The user may turn this flag off by invoking AutoHint
     explicitly.
@@ -247,7 +247,7 @@ This menu is only present in the outline character view and the font view.
     one to be selected to the second. If one point is selected, creates a minimum
     distance hint from that point to the width.<BR>
     If you attempt to create two minimum distance hints to the same point in
-    the same direction, PfaEdit will only create the more restrictive of the
+    the same direction, FontForge will only create the more restrictive of the
     two.
   <DT>
     Add y <A NAME="MDY">MD</A>

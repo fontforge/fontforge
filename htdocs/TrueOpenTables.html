@@ -2,12 +2,12 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 13-Feb-2003 -->
-  <!-- AP: Last modified: 27-Sep-2003 -->
-  <TITLE>TrueType and OpenType tables supported by PfaEdit</TITLE>
+  <!-- AP: Last modified: 2-Mar-2004 -->
+  <TITLE>TrueType and OpenType tables supported by FontForge</TITLE>
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
-  TrueType and OpenType tables supported by PfaEdit
+  TrueType and OpenType tables supported by FontForge
 </H1>
 <P>
 <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6.html">Apple</A>,
@@ -19,7 +19,7 @@ are essentially the same, while Apple's differ significantly from either.
   <TR>
     <TH>name</TH>
     <TH>long name</TH>
-    <TH>PfaEdit's use</TH>
+    <TH>FontForge's use</TH>
     <TH>Apple<BR>
       docs</TH>
     <TH>Adobe<BR>
@@ -72,8 +72,8 @@ are essentially the same, while Apple's differ significantly from either.
     <TD>cmap</TD>
     <TD>character code mapping</TD>
     <TD>Provides at least one encoding from a stream of bytes to glyphs in the
-      font. PfaEdit provides at least three encodings in every font (one for Mac
-      Roman, one for Mac Unicode, one for MS Unicode). For some fonts it will
+      font. FontForge provides at least three encodings in every font (one for
+      Mac Roman, one for Mac Unicode, one for MS Unicode). For some fonts it will
       additionally provide a CJK encoding (Big5, SJIS, etc) or an extended unicode
       encoding which will cover code points outside of the BMP.
       <P>
@@ -88,7 +88,7 @@ are essentially the same, while Apple's differ significantly from either.
   <TR>
     <TD>cvt</TD>
     <TD>control value table</TD>
-    <TD>PfaEdit uses this when it attempts to hint truetype fonts.</TD>
+    <TD>FontForge uses this when it attempts to hint truetype fonts.</TD>
     <TD><P ALIGN=Center>
       <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6cvt.html">cvt</A></TD>
     <TD><P ALIGN=Center>
@@ -118,8 +118,8 @@ are essentially the same, while Apple's differ significantly from either.
     <TD>EBSC</TD>
     <TD>embedded bitmap scaling</TD>
     <TD>Provides information on how to scale bitmaps (on those rare occasions
-      where this is desirable). PfaEdit uses it when making bitmap only fonts for
-      windows.</TD>
+      where this is desirable). FontForge uses it when making bitmap only fonts
+      for windows.</TD>
     <TD><P ALIGN=Center>
       <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6EBSC.html">EBSC</A></TD>
     <TD><P ALIGN=Center>
@@ -129,15 +129,15 @@ are essentially the same, while Apple's differ significantly from either.
     <TD>feat</TD>
     <TD>layout feature table</TD>
     <TD>Maps features specified in Apple's 'morx' (or 'mort') tables into names
-      provided in the 'name' table. PfaEdit generates this when it generates a
-      'morx' table.</TD>
+      provided in the 'name' table. FontForge generates this when it generates
+      a 'morx' table.</TD>
     <TD><A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6feat.html">feat</A></TD>
     <TD>*</TD>
   </TR>
   <TR>
     <TD>gasp</TD>
     <TD>grid-fitting and scan conversion</TD>
-    <TD>When PfaEdit does not attempt to hint a truetype font it will generate
+    <TD>When FontForge does not attempt to hint a truetype font it will generate
       this table which tells the rasterizer not to to do grid-fitting (hinting)
       but to do anti-aliasing instead.</TD>
     <TD><A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6gasp.html">gasp</A></TD>
@@ -168,8 +168,8 @@ are essentially the same, while Apple's differ significantly from either.
     <TD>GPOS</TD>
     <TD>glyph positioning</TD>
     <TD>Provides kerning information, mark-to-base, etc. for opentype fonts.
-      See the <A HREF="gposgsub.html#GPOS">chapter on GPOS</A> in PfaEdit for more
-      information. Vaguely equivalent to 'kern' and 'opbd' tables.</TD>
+      See the <A HREF="gposgsub.html#GPOS">chapter on GPOS</A> in FontForge for
+      more information. Vaguely equivalent to 'kern' and 'opbd' tables.</TD>
     <TD><P ALIGN=Center>
       *</TD>
     <TD><P ALIGN=Center>
@@ -179,8 +179,8 @@ are essentially the same, while Apple's differ significantly from either.
     <TD>GSUB</TD>
     <TD>glyph substitution</TD>
     <TD>Provides ligature information, swash, etc. for opentype fonts. See the
-      <A HREF="gposgsub.html#GSUB">chapter on GSUB</A> in PfaEdit for more information.
-      Vaguely equivalent to 'morx'.</TD>
+      <A HREF="gposgsub.html#GSUB">chapter on GSUB</A> in FontForge for more
+      information. Vaguely equivalent to 'morx'.</TD>
     <TD><P ALIGN=Center>
       *</TD>
     <TD><P ALIGN=Center>
@@ -260,7 +260,7 @@ are essentially the same, while Apple's differ significantly from either.
   <TR>
     <TD>mort</TD>
     <TD>metamorphosis</TD>
-    <TD>PfaEdit will read this table but not generate it. This table has been
+    <TD>FontForge will read this table but not generate it. This table has been
       replaced by the 'morx' table which will be generated instead. It is vaguely
       equivalent to the GSUB table.</TD>
     <TD><P ALIGN=Center>
@@ -272,9 +272,9 @@ are essentially the same, while Apple's differ significantly from either.
     <TD>morx</TD>
     <TD>extended metamorphosis</TD>
     <TD>Provides ligature information, swash, etc. for apple's truetype fonts.
-      PfaEdit can read and write this table. See the
-      <A HREF="gposgsub.html#AAT">chapter on morx</A> in PfaEdit for more information.
-      Vaguely equivalent to 'GSUB'.</TD>
+      FontForge can read and write this table. See the
+      <A HREF="gposgsub.html#AAT">chapter on morx</A> in FontForge for more
+      information. Vaguely equivalent to 'GSUB'.</TD>
     <TD><P ALIGN=Center>
       <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6morx.html">morx</A></TD>
     <TD><P ALIGN=Center>
@@ -304,8 +304,8 @@ are essentially the same, while Apple's differ significantly from either.
   </TR>
   <TR>
     <TD>PfEd</TD>
-    <TD>PfaEdit's personal table</TD>
-    <TD>This table is unique to PfaEdit. It can contain things like PfaEdit's
+    <TD>FontForge's personal table</TD>
+    <TD>This table is unique to FontForge. It can contain things like FontForge's
       comments, and colors.I describe its format
       <A HREF="non-standard.html">here</A>.</TD>
     <TD><P ALIGN=Center>
@@ -336,8 +336,8 @@ are essentially the same, while Apple's differ significantly from either.
   <TR>
     <TD>vhea</TD>
     <TD>vertical header</TD>
-    <TD>PfaEdit generates this table for fonts with vertical metrics. This table
-      contains font-wide vertical metric information.</TD>
+    <TD>FontForge generates this table for fonts with vertical metrics. This
+      table contains font-wide vertical metric information.</TD>
     <TD><P ALIGN=Center>
       <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6vhea.html">vhea</A></TD>
     <TD><P ALIGN=Center>
@@ -346,8 +346,8 @@ are essentially the same, while Apple's differ significantly from either.
   <TR>
     <TD>vmtx</TD>
     <TD>vertical metrics</TD>
-    <TD>PfaEdit generates this table for fonts with vertical metrics. This contains
-      the per-glyph vertical metrics.</TD>
+    <TD>FontForge generates this table for fonts with vertical metrics. This
+      contains the per-glyph vertical metrics.</TD>
     <TD><P ALIGN=Center>
       <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6vmtx.html">vmtx</A></TD>
     <TD><P ALIGN=Center>
@@ -365,5 +365,5 @@ are essentially the same, while Apple's differ significantly from either.
   </TR>
 </TABLE>
 <P>
-<A HREF="gposgsub.html">Advanced Typography tables in PfaEdit</A>
+<A HREF="gposgsub.html">Advanced Typography tables in FontForge</A>
 </BODY></HTML>

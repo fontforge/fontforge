@@ -2,8 +2,8 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 1-Mar-2003 -->
-  <!-- AP: Last modified: 5-Jan-2004 -->
-  <TITLE>Viewing and Editing truetype instructions in PfaEdit.</TITLE>
+  <!-- AP: Last modified: 2-Mar-2004 -->
+  <TITLE>Viewing and Editing truetype instructions in FontForge.</TITLE>
 </HEAD>
 <BODY>
 <TABLE ALIGN=RIGHT>
@@ -13,7 +13,7 @@
   </TR>
 </TABLE>
 <H1 ALIGN=Center>
-  Viewing and Editing truetype instructions in PfaEdit.
+  Viewing and Editing truetype instructions in FontForge.
 </H1>
 <UL>
   <LI>
@@ -43,13 +43,13 @@ textarea containing the same instructions. You may modify these to your heart's
 content. Pressing the [Parse] will parse your modifications and (if they
 parse) return you to the "help" mode.
 <P>
-Instructions like MIRP may be entered either in PfaEdit's peculiar (but
+Instructions like MIRP may be entered either in FontForge's peculiar (but
 marginally more mnemonic) style: <CODE>MIRP[rnd,white] </CODE>or as
 <CODE>MIRP[00110]</CODE>, and <CODE>PUSHB_1</CODE> may be
 <CODE>PUSHB[000]</CODE>.
 <P>
 You may also include an stack arguments on the same line as the instruction
-and PfaEdit will convert them into the appropriate pushes. So...
+and FontForge will convert them into the appropriate pushes. So...
 <BLOCKQUOTE>
   <PRE>5 SRP0
 </PRE>
@@ -66,7 +66,7 @@ SRP0
 You may also use the expression <CODE>cvt(&lt;val&gt;)</CODE> instead of
 a number. This will be replaced by the index in the 'cvt ' table of an entry
 which is (within one em-unit of) &lt;val&gt;. So <CODE>cvt(100)</CODE> would
-return the index in 'cvt ' of 100. If there is no such entry, PfaEdit will
+return the index in 'cvt ' of 100. If there is no such entry, FontForge will
 create one.
 <H2>
   <IMG SRC="editcvt.png" WIDTH="194" HEIGHT="320" ALIGN="Right">Editing the

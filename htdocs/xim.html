@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 3-Aug-2002 -->
-  <!-- AP: Last modified: 30-Jul-2003 -->
+  <!-- AP: Last modified: 2-Mar-2004 -->
   <TITLE>X Input Methods</TITLE>
 </HEAD>
 <BODY>
@@ -11,9 +11,9 @@ For entering text in CJK languages, simple keyboard typing is not adequate.
 Instead there are programs that run and handle the conversion of keystrokes
 to characters these programs are called input methods.
 <P>
-I have tested PfaEdit with two freely available input methods (as well as
-one can who speaks neither Chinese, Japanese nor Korean) kinput2 (for Japanese)
-and <A HREF="http://xcin.linux.org.tw/">xcin</A> (for Chinese).
+I have tested FontForge with two freely available input methods (as well
+as one can who speaks neither Chinese, Japanese nor Korean) kinput2 (for
+Japanese) and <A HREF="http://xcin.linux.org.tw/">xcin</A> (for Chinese).
 <P>
 There is reasonably good (English) documentation on installing and using
 kinput2 on the modzilla site, and at
@@ -36,7 +36,7 @@ a different directory so after installing them I had to copy them from
 <CODE>/usr/share/locales</CODE> to <CODE>/usr/lib/locales</CODE>. The SUSE
 docs imply that the current SUSE distribution ships with these locales.
 <P>
-To start pfaedit with an input method you must first insure that the input
+To start fontforge with an input method you must first insure that the input
 method itself is running. For kinput2 do the following:
 <BLOCKQUOTE>
   <PRE>$ cannaserver &amp;
@@ -55,21 +55,21 @@ Beware: Different systems will have slightly different locale names (sometimes
 it's <CODE>zh_TW.big5</CODE>, or something else) so if things don't work
 try something else.
 <P>
-Once you've started your input method you must then start PfaEdit. You should
-set the LC_CTYPE environment variable (or LC_ALL or LANG) to the appropriate
-locale. You may (if you have multiple input methods running that support
-the same locale) need to set the XMODIFIERS environment variable to the name
-of your method (xcin can have multiple names, it prints out the one it is
-currently using on start-up).
+Once you've started your input method you must then start FontForge. You
+should set the LC_CTYPE environment variable (or LC_ALL or LANG) to the
+appropriate locale. You may (if you have multiple input methods running that
+support the same locale) need to set the XMODIFIERS environment variable
+to the name of your method (xcin can have multiple names, it prints out the
+one it is currently using on start-up).
 <BLOCKQUOTE>
   <PRE>$ setenv LC_CTYPE ja_JP.eucJP
 $ setenv XMODIFIERS "@im=kinput2"
-$ pfaedit -new
+$ fontforge -new
 </PRE>
 </BLOCKQUOTE>
 <P>
-PfaEdit will start up significantly more slowly when connecting to an IM,
-just be patient with it. PfaEdit supports OverTheSpot input in textfields
+FontForge will start up significantly more slowly when connecting to an IM,
+just be patient with it. FontForge supports OverTheSpot input in textfields
 and Root input in the font and outline character views. Not all textfields
 accept unicode input, but any that do should now accept input from an IM.
 <P>

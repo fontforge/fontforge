@@ -2,8 +2,8 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Feb-2001 -->
-  <!-- AP: Last modified: 12-May-2003 -->
-  <TITLE>The basic spline data structures of PfaEdit</TITLE>
+  <!-- AP: Last modified: 2-Mar-2004 -->
+  <TITLE>The basic spline data structures of FontForge</TITLE>
 </HEAD>
 <BODY>
 <H2>
@@ -382,8 +382,8 @@ while that associated with the previous Spline is at prevcp. Then there are
 a couple of flags that simplify tests. If the nextcp is degenerate (ie. at
 the same place as me) then nonextcp is set, similarly for prevcp. If the
 user has not touched the control points then they will have their default
-values, and when the user moves the point around pfaedit will update the
-control points apropriately, if they do not have default values then pfaedit
+values, and when the user moves the point around fontforge will update the
+control points apropriately, if they do not have default values then fontforge
 will only offset them.
 <P>
 If the point is selected then that bit will be set.
@@ -840,7 +840,7 @@ extern void PSFontInterpretPS(FILE *ps,struct charprocs *cp);
 
 extern int SFFindChar(SplineFont *sf, int unienc, char *name );
 
-extern char *getPfaEditDir(char *buffer);
+extern char *getFontForgeDir(char *buffer);
 extern void DoAutoSaves(void);
 extern int DoAutoRecovery(void);
 extern SplineFont *SFRecoverFile(char *autosavename);

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 23-Feb-2004 -->
-  <!-- AP: Last modified: 24-Feb-2004 -->
+  <!-- AP: Last modified: 2-Mar-2004 -->
   <TITLE>Multi Layered Editing of Type3 and SVG fonts</TITLE>
 </HEAD>
 <BODY>
@@ -10,17 +10,18 @@
   Multi Layered Editing of Type3 and SVG fonts
 </H1>
 <P>
-Normal builds of pfaedit do not have this mode enabled (it can eat up a lot
-of memory), if you wish to edit type3 fonts then configure pfaedit with
+Normal builds of fontforge do not have this mode enabled (it can eat up a
+lot of memory), if you wish to edit type3 fonts then configure fontforge
+with
 <BLOCKQUOTE>
   <PRE>$ configure --with-multilayer
 </PRE>
 </BLOCKQUOTE>
 <P>
 If you have done this, then loading a type3 font (or an svg font organized
-in a similar fashion) will cause PfaEdit to retain information on each stroke
-and fill command. Each command is placed in a seperate layer and may be edited
-in isolation.
+in a similar fashion) will cause FontForge to retain information on each
+stroke and fill command. Each command is placed in a seperate layer and may
+be edited in isolation.
 <P>
 A new font may be converted to a multi-layered font by selecting
 Element-&gt;Font Info-&gt;General-&gt;Multi Layered Editing.
@@ -94,7 +95,7 @@ bitmap will be drawn with the fill color), otherwise the image will be drawn
 with the colors specified in the image (Transpearant images are not supported
 here).
 <P>
-PfaEdit will not skew, flip or rotate images.
+FontForge will not skew, flip or rotate images.
 <H2>
   <IMG SRC="layerdlg.png" WIDTH="421" HEIGHT="462" ALIGN="Right">The
   <A NAME="Layer">Layer</A> dialog
@@ -124,8 +125,8 @@ Finally a stroke needs to know how to treat the ends of paths, and how to
 join non-tangent path-segments.
 <P>
 <P>
-PfaEdit's rasterization leaves much to be desired. It does not support full
-color (rounding everything to a shade of grey), and its stroking algorithem
+FontForge's rasterization leaves much to be desired. It does not support
+full color (rounding everything to a shade of grey), and its stroking algorithem
 is quite poor.
 <P>
 <P ALIGN=Center>
