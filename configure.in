@@ -105,10 +105,21 @@ if test "$gww_nodynamic" = "yes"; then
  fi
 fi
 
+AC_SUBST(LDARGS)
+LDARGS=
+if test "$GCC" = "yes"; then
+  LDARGS="-Wl,--rpath -Wl,$libdir"
+fi
+
 test -d libs || mkdir libs
 
+cp Makefile.dynamic.in Makefile.in
+cp Unicode/Makefile.dynamic.in Unicode/Makefile.in
+cp gdraw/Makefile.dynamic.in gdraw/Makefile.in
+cp pfaedit/Makefile.dynamic.in pfaedit/Makefile.in
 AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile pfaedit/Makefile)
 if test -e toys >/dev/null 2>&1 ; then
+  cp toys/Makefile.dynamic.in toys/Makefile.in
   AC_OUTPUT( toys/Makefile )
 fi
 

@@ -42,7 +42,7 @@ CFLAGS = @CFLAGS@ -I$(top_srcdir)/inc -I$(srcdir) -I. $(WFLAGS) $(X_CFLAGS) \
 LDFLAGS = @LDFLAGS@
 LIBS = @LDARGS@ $(X_LIBS) ../libgdraw.la ../libgunicode.la \
     $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS) @LIBS@ -L/usr/lib -lm
-DLIBS = -Wl,--rpath -Wl,$(libdir) ../libgunicode.la -lm
+DLIBS = @LDARGS@ ../libgunicode.la -lm
 
 all: pfaedit-en.ui pfaedit sfddiff
 

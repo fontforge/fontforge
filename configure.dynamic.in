@@ -106,6 +106,7 @@ if test "$gww_nodynamic" = "yes"; then
 fi
 
 AC_SUBST(LDARGS)
+LDARGS=
 if test "$GCC" = "yes"; then
   LDARGS="-Wl,--rpath -Wl,$libdir"
 fi
