@@ -526,10 +526,15 @@ return( false );
 return( false );
 }
 
+struct tagflag {
+    uint32 tag;
+    uint32 r2l;
+};
+
 static struct feature *aat_dumpmorx_substitutions(struct alltabs *at, SplineFont *sf,
 	FILE *temp, struct feature *features) {
     int i, max, cnt, j, k, gcnt;
-    uint32 *subtags;
+    struct tagflag *subtags;
     int ft, fs;
     SplineChar *sc, *msc, **glyphs;
     uint16 *maps;
@@ -537,7 +542,7 @@ static struct feature *aat_dumpmorx_substitutions(struct alltabs *at, SplineFont
     PST *pst;
 
     max = 30; cnt = 0;
-    subtags = galloc(max*sizeof(uint32));
+    subtags = galloc(max*sizeof(sizeof(struct tagflag)));
 
     for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL && sc->ttf_glyph!=-1) {
 	for ( pst=sc->possub; pst!=NULL; pst=pst->next ) if ( pst->type == pst_substitution ) {
@@ -550,11 +555,13 @@ static struct feature *aat_dumpmorx_substitutions(struct alltabs *at, SplineFont
 		    pst->type!=pst_pair &&
 		    pst->type!=pst_lcaret &&
 		    (pst->macfeature || OTTagToMacFeature(pst->tag,&ft,&fs))) {
-		for ( j=cnt-1; j>=0 && subtags[j]!=pst->tag; --j );
+		for ( j=cnt-1; j>=0 &&
+			(subtags[j].tag!=pst->tag || subtags[j].r2l!=(pst->flags&pst_r2l)); --j );
 		if ( j<0 ) {
 		    if ( cnt>=max )
 			subtags = grealloc(subtags,(max+=30)*sizeof(uint32));
-		    subtags[cnt++] = pst->tag;
+		    subtags[cnt].tag = pst->tag;
+		    subtags[cnt++].r2l = pst->flags & pst_r2l;
 		}
 	    }
 	}
@@ -566,9 +573,11 @@ static struct feature *aat_dumpmorx_substitutions(struct alltabs *at, SplineFont
 		gcnt = 0;
 		for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL && sc->ttf_glyph!=-1) {
 		    for ( pst=sc->possub; pst!=NULL &&
-			    (pst->tag!=subtags[j] || !HasDefaultLang(sf,pst,0) ||
+			    (pst->tag!=subtags[j].tag ||
+			     (pst->flags&pst_r2l) != subtags[j].r2l ||
 			     pst->type==pst_position || pst->type==pst_pair ||
-			     pst->type==pst_lcaret); pst=pst->next );
+			     pst->type==pst_lcaret ||
+			     !HasDefaultLang(sf,pst,0)); pst=pst->next );
 		    if ( pst!=NULL ) {
 			if ( k==1 ) {
 			    msc = SFGetCharDup(sf,-1,pst->u.subs.variant);
@@ -594,8 +603,9 @@ static struct feature *aat_dumpmorx_substitutions(struct alltabs *at, SplineFont
 	    }
 	    if ( gcnt==0 )
 	continue;
-	    cur = featureFromTag(sf,subtags[j]);
+	    cur = featureFromTag(sf,subtags[j].tag);
 	    cur->next = features;
+	    cur->r2l = subtags[j].r2l ? true : false;
 	    features = cur;
 	    cur->subtable_type = 4;
 	    cur->feature_start = ftell(temp);
@@ -612,11 +622,13 @@ static struct feature *aat_dumpmorx_substitutions(struct alltabs *at, SplineFont
 return( features);
 }
 
-static LigList *LigListMatchOtfTag(SplineFont *sf,LigList *ligs,uint32 tag) {
+static LigList *LigListMatchOtfTag(SplineFont *sf,LigList *ligs,uint32 tag,
+	int r2l) {
     LigList *l;
 
     for ( l=ligs; l!=NULL; l=l->next )
-	if ( l->lig->tag == tag && HasDefaultLang(sf,l->lig,0))
+	if ( l->lig->tag == tag && r2l == (l->lig->flags & pst_r2l) &&
+		HasDefaultLang(sf,l->lig,0))
 return( l );
 return( NULL );
 }
@@ -868,7 +880,7 @@ static void morx_dumpLigaFeature(FILE *temp,SplineChar **glyphs,int gcnt,
 static struct feature *aat_dumpmorx_ligatures(struct alltabs *at, SplineFont *sf,
 	FILE *temp, struct feature *features) {
     int i, max, cnt, j, k, gcnt;
-    uint32 *ligtags;
+    struct tagflag *ligtags;
     int ft, fs;
     SplineChar *sc, *ssc, **glyphs;
     struct feature *cur;
@@ -877,17 +889,20 @@ static struct feature *aat_dumpmorx_ligatures(struct alltabs *at, SplineFont *sf
     SFLigaturePrepare(sf);
 
     max = 30; cnt = 0;
-    ligtags = galloc(max*sizeof(uint32));
+    ligtags = galloc(max*sizeof(struct tagflag));
 
     for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL && sc->ttf_glyph!=-1) {
 	for ( l=sc->ligofme; l!=NULL; l=l->next ) {
 	    if ( HasDefaultLang(sf,l->lig,0) &&
 		    (l->lig->macfeature || OTTagToMacFeature(l->lig->tag,&ft,&fs))) {
-		for ( j=cnt-1; j>=0 && ligtags[j]!=l->lig->tag; --j );
+		for ( j=cnt-1; j>=0 &&
+			(ligtags[j].tag!=l->lig->tag || ligtags[j].r2l!=(l->lig->flags&pst_r2l));
+			--j );
 		if ( j<0 ) {
 		    if ( cnt>=max )
-			ligtags = grealloc(ligtags,(max+=30)*sizeof(uint32));
-		    ligtags[cnt++] = l->lig->tag;
+			ligtags = grealloc(ligtags,(max+=30)*sizeof(struct tagflag));
+		    ligtags[cnt].tag = l->lig->tag;
+		    ligtags[cnt++].r2l = l->lig->flags & pst_r2l;
 		}
 	    }
 	}
@@ -904,29 +919,29 @@ return( features);
 	    sf->chars[i]->ticked = false;
 	for ( i=0; i<sf->charcnt; ++i )
 		if ( (sc=sf->chars[i])!=NULL && !sc->ticked &&
-			(l = LigListMatchOtfTag(sf,sc->ligofme,ligtags[j]))!=NULL ) {
+			(l = LigListMatchOtfTag(sf,sc->ligofme,ligtags[j].tag,ligtags[j].r2l))!=NULL ) {
 	    uint32 script = SCScriptFromUnicode(sc);
 	    int ignoremarks = l->lig->flags & pst_ignorecombiningmarks ? 1 : 0 ;
 	    for ( k=i, gcnt=0; k<sf->charcnt; ++k )
 		    if ( (ssc=sf->chars[k])!=NULL && !ssc->ticked &&
 			    SCScriptFromUnicode(ssc) == script &&
-			    LigListMatchOtfTag(sf,ssc->ligofme,ligtags[j])) {
+			    LigListMatchOtfTag(sf,ssc->ligofme,ligtags[j].tag,ligtags[j].r2l)) {
 		glyphs[gcnt++] = ssc;
 		ssc->ticked = true;
 	    }
 	    glyphs[gcnt] = NULL;
-	    cur = featureFromTag(sf,ligtags[j]);
+	    cur = featureFromTag(sf,ligtags[j].tag);
 	    cur->next = features;
 	    features = cur;
 	    cur->subtable_type = 2;		/* ligature */
 	    cur->feature_start = ftell(temp);
-	    morx_dumpLigaFeature(temp,glyphs,gcnt,ligtags[j],at,sf,ignoremarks);
+	    morx_dumpLigaFeature(temp,glyphs,gcnt,ligtags[j].tag,at,sf,ignoremarks);
 	    if ( (ftell(temp)-cur->feature_start)&1 )
 		putc('\0',temp);
 	    if ( (ftell(temp)-cur->feature_start)&2 )
 		putshort(temp,0);
 	    cur->feature_len = ftell(temp)-cur->feature_start;
-	    cur->r2l = SCRightToLeft(sc);
+	    cur->r2l = ligtags[j].r2l ? true : false;
 	}
     }
 
