@@ -521,13 +521,56 @@ int32 *utf82u32_strncpy(int32 *ubuf,const char *utf8buf,int len) {
 	    w = ( ((*pt&0x7)<<2) | ((pt[1]&0x30)>>4) )-1;
 	    w = (w<<6) | ((pt[1]&0xf)<<2) | ((pt[2]&0x30)>>4);
 	    w2 = ((pt[2]&0xf)<<6) | (pt[3]&0x3f);
-	    *upt = w*0x400 + w2 + 0x10000;	/* !!!!! Is this right??? */
+	    *upt = w*0x400 + w2 + 0x10000;
 	    pt += 4;
 	}
 	++upt;
     }
     *upt = '\0';
 return( ubuf );
+}
+
+char *u322utf8_strncpy(char *utf8buf, const int32 *ubuf,int len) {
+    uint8 *pt=(uint8 *) utf8buf, *end=(uint8 *) utf8buf+len-1;
+    const int32 *upt = ubuf;
+
+    while ( *upt!='\0' && pt<end ) {
+	if ( *upt<=127 )
+	    *pt = *upt++;
+	else if ( *upt<=0x7ff ) {
+	    if ( pt+1>=end )
+    break;
+	    *pt++ = 0xc0 | (*upt>>6);
+	    *pt++ = 0x80 | (*upt&0x3f);
+	} else if ( *upt<=0x10000 ) {
+	    if ( pt+2>=end )
+    break;
+	    *pt++ = 0xe0 | (*upt>>12);
+	    *pt++ = 0x80 | ((*upt>>6)&0x3f);
+	    *pt++ = 0x80 | (*upt&0x3f);
+	} else {
+	    uint32 val = *upt-0x10000;
+	    int u = ((val&0xf0000)>>16)+1, z=(val&0x0f000)>>12, y=(val&0x00fc0)>>6, x=val&0x0003f;
+	    if ( pt+3>=end )
+    break;
+	    *pt++ = 0xf0 | (u>>2);
+	    *pt++ = 0x80 | ((u&3)<<4) | z;
+	    *pt++ = 0x80 | y;
+	    *pt++ = 0x80 | x;
+	}
+	++upt;
+    }
+    *pt = '\0';
+return( utf8buf );
+}
+
+char *u322utf8_copy(const int32 *ubuf) {
+    int i;
+    char *buf;
+
+    for ( i=0; ubuf[i]!=0; ++i );
+    buf = galloc(i*4+1);
+return( u322utf8_strncpy(buf,ubuf,i*4+1));
 }
 
 unichar_t *utf82u_copyn(const char *utf8buf,int len) {

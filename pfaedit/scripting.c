@@ -568,6 +568,41 @@ static void bUnicodeFromName(Context *c) {
     c->return_val.u.ival = UniFromName(c->a.vals[1].u.sval);
 }
 
+static void bChr(Context *c) {
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_int )
+	error( c, "Bad type for argument" );
+    else if ( c->a.vals[1].u.ival<-128 || c->a.vals[1].u.ival>255 )
+	error( c, "Bad value for argument" );
+    c->return_val.type = v_str;
+    c->return_val.u.sval = gcalloc(2,1);
+    c->return_val.u.sval[0] = c->a.vals[1].u.ival;
+}
+
+static void bUtf8(Context *c) {
+    int32 buf[2];
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_int )
+	error( c, "Bad type for argument" );
+    else if ( c->a.vals[1].u.ival<0 || c->a.vals[1].u.ival>0x10ffff )
+	error( c, "Bad value for argument" );
+    buf[0] = c->a.vals[1].u.ival; buf[1] = 0;
+    c->return_val.type = v_str;
+    c->return_val.u.sval = u322utf8_copy(buf);
+}
+
+static void bOrd(Context *c) {
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_str )
+	error( c, "Bad type for argument" );
+    c->return_val.type = v_int;
+    c->return_val.u.ival = (uint8) c->a.vals[1].u.sval[0];
+}
+
 /* **** File menu **** */
 
 static void bQuit(Context *c) {
@@ -2955,6 +2990,9 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "GetPref", bGetPrefs, 1 },
     { "SetPref", bSetPrefs, 1 },
     { "UnicodeFromName", bUnicodeFromName, 1 },
+    { "Chr", bChr, 1 },
+    { "Ord", bOrd, 1 },
+    { "Utf8", bUtf8, 1 },
 /* File menu */
     { "Quit", bQuit, 1 },
     { "FontsInFile", bFontsInFile, 1 },
