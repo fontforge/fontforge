@@ -1227,10 +1227,10 @@ static void g___ContextSubTable3(FILE *ttf, int stoffset,
     struct fpst_rule *rule;
 
     gcnt = getushort(ttf);
+    scnt = getushort(ttf);
     coverage = galloc(gcnt*sizeof(uint16));
     for ( i=0; i<gcnt; ++i )
 	coverage[i] = getushort(ttf);
-    scnt = getushort(ttf);
     sl = galloc(scnt*sizeof(struct seqlookup));
     for ( k=0; k<scnt; ++k ) {
 	sl[k].seq = getushort(ttf);
