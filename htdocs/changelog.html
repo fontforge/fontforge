@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 15-Aug-2004 -->
+  <!-- AP: Last modified: 17-Aug-2004 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -63,6 +63,16 @@
 	  </TR>
 	</TABLE>
       <LI>
+	Add a Point of View dialog to do real perspective projections
+      <LI>
+	Remove the FONTFORGE_CONFIG_NONLINEAR flag, and enable the nonlinear dlg
+	perminantly. I need some of its routines to do the projective projections.
+      <LI>
+	There was a path through LoadEncodingFile (in a script) where it would silently
+	fail.
+      <LI>
+	LoadEncodingFile would save default encodings even though it hadn't loaded
+	them. It no longer does this, but now SavePrefs does it instead.
     </UL>
   <LI>
     8-Aug-2004

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 12-Aug-2004 -->
+  <!-- AP: Last modified: 17-Aug-2004 -->
   <TITLE>The Element Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -49,8 +49,14 @@
   <LI>
     <A HREF="#Regenerate">Regenerate Bitmaps...</A>
   <LI>
-    <A HREF="#Transform">Transform...</A>
+    Transformatons
     <UL>
+      <LI>
+	<A HREF="#Transform">Transform</A>...
+      <LI>
+	<A HREF="#PoV">Point of View Projection</A>...
+      <LI>
+	<A HREF="elementmenu.html#Non-Linear">Non-Linear Transform</A>...<BR>
       <LI>
 	<A HREF="#Flip">Flip Horizontally</A>
       <LI>
@@ -371,37 +377,55 @@ compiling FontForge.
     As before, if you wish to change a greymap you should refer to it by
     &lt;pixel-size&gt;@&lt;bits-per-pixel&gt;.
   <DT>
-    <A NAME="Transform">Transform</A>...
+    Transformations
   <DD>
-    <A HREF="transform.html">In the Font and Outline Views this brings up a
-    dialog</A>, but in the bitmap view there is a submenu with a selection of
-    choices that are meaningful in a bitmap.
+    This sub-menu has rather different choices in the bitmap view from the other
+    views. (Because bitmaps are discrete and the continous transformations of
+    splines are not meaningful).
     <DL>
+      <DT>
+	<A NAME="Transform">Transform</A>...
+      <DD>
+	<A HREF="transform.html">In the Font and Outline Views this brings up the
+	transform dialog</A>. This provides the standard linear transformations you
+	expect to have available (rotation, scaling, translation, skewing).
+      <DT>
+	<A NAME="PoV">Point of View </A>Projection
+      <DD>
+	<A HREF="transform.html#PoV">This dialog </A>allows you to perform a perspective
+	transformation on your glyphs. (This is a non-linear transformation)
+      <DT>
+	<A NAME="Non-Linear">Non-Linear</A> Transform...
+      <DD>
+	<A HREF="transform.html#Non-Linear">This dialog</A> allows you to perform
+	a general transformation (which could be linear or which can be non-linear).
+	Essentially you provide two equations for how x and y should be mapped.<BR>
       <DT>
 	<A NAME="Flip">Flip</A> Horizontally
       <DD>
-	Flips the bitmap horizontally.
+	Flips the bitmap horizontally. (Only in bitmap view)
       <DT>
 	<A NAME="FlipV">Flip</A> Vertically
       <DD>
-	Flips the bitmap vertically.
+	Flips the bitmap vertically. (Only in bitmap view)
       <DT>
 	<A NAME="Rotate">Rotate</A> 90&#176; CW
       <DD>
-	Rotates the bitmap 90&#176; clockwise.
+	Rotates the bitmap 90&#176; clockwise. (Only in bitmap view)
       <DT>
 	<A NAME="Rotate90CCW">Rotate</A> 90&#176; CCW
       <DD>
-	Rotates the bitmap 90&#176; counter-clockwise.
+	Rotates the bitmap 90&#176; counter-clockwise. (Only in bitmap view)
       <DT>
 	<A NAME="Rotate180">Rotate</A> 180&#176;
       <DD>
-	Rotates the bitmap 180&#176;
+	Rotates the bitmap 180&#176; (Only in bitmap view)
       <DT>
 	<A NAME="Skew">Skew</A>
       <DD>
 	Allows you to specify a ratio by which to skew the bitmap 1:3 means for every
-	3 pixel rise in y, skew the bitmap one pixel horizontally.
+	3 pixel rise in y, skew the bitmap one pixel horizontally. (Only in bitmap
+	view)
     </DL>
   <DT>
     <A NAME="NonLinear">Non Linear </A>Transform...
