@@ -499,7 +499,12 @@ return( NULL );
 #define _xmlParseFile		xmlParseFile
 #define _xmlDocGetRootElement	xmlDocGetRootElement
 #define _xmlFreeDoc		xmlFreeDoc
-#define _xmlFree		xmlFree
+#ifdef __CygWin
+# define _xmlFree		free
+/* Nasty kludge, but xmlFree doesn't work on cygwin (or I can't get it to) */
+#else
+# define _xmlFree		xmlFree
+#endif
 #define _xmlStrcmp		xmlStrcmp
 #define _xmlGetProp		xmlGetProp
 
