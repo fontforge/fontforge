@@ -3140,6 +3140,7 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 	GDrawCancelTimer(cv->pressed);
 	cv->pressed = NULL;
     }
+    cv->p.pressed = false;
 
     if ( cv->p.rubberbanding ) {
 	CVDrawRubberRect(cv->v,cv);
@@ -3202,7 +3203,6 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
     }
     cv->active_tool = cvt_none;
     CVToolsSetCursor(cv,event->u.mouse.state&~(1<<(7+event->u.mouse.button)),event->u.mouse.device);		/* X still has the buttons set in the state, even though we just released them. I don't want em */
-    cv->p.pressed = false;
     if ( cv->needsrasterize || cv->recentchange )
 	CVCharChangedUpdate(cv);
 }

@@ -1019,6 +1019,7 @@ void CVMouseUpPointer(CharView *cv ) {
 #elif defined(FONTFORGE_CONFIG_GTK)
     static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
 #endif
+
     if ( cv->widthsel ) {
 	/* cv->widthsel = false; */
 	if ( cv->sc->width<0 && cv->oldwidth>=0 ) {
