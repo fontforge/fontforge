@@ -1326,10 +1326,12 @@ static void dumpmissingglyph(SplineFont *sf,struct glyphinfo *gi,int fixedwidth)
     }
 }
 
-static void dumpblankglyph(struct glyphinfo *gi,SplineFont *sf) {
+static void dumpblankglyph(struct glyphinfo *gi,SplineFont *sf,int fixedwidth) {
+    int advance = gi->next_glyph==1?0:fixedwidth==-1?(sf->ascent+sf->descent)/3:
+	    fixedwidth;
     /* These don't get a glyph header, because there are no contours */
     gi->loca[gi->next_glyph++] = ftell(gi->glyphs);
-    putshort(gi->hmtx,gi->next_glyph==2?0:(sf->ascent+sf->descent)/3);
+    putshort(gi->hmtx,advance);
     putshort(gi->hmtx,0);
     if ( sf->hasvmetrics ) {
 	putshort(gi->vmtx,gi->next_glyph==2?0:(sf->ascent+sf->descent));
@@ -3311,8 +3313,12 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
 	dumpglyph(sf->chars[i++],gi);
     else
 	dumpmissingglyph(sf,gi,fixed);
-    dumpblankglyph(gi,sf);	/* I'm not sure exactly why but there seem */
-    dumpblankglyph(gi,sf);	/* to be a couple of blank glyphs at the start*/
+    if ( fixed!=-1 ) {
+	gi->lasthwidth = -1;
+	gi->hfullcnt = 3;
+    }
+    dumpblankglyph(gi,sf,fixed);	/* I'm not sure exactly why but there seem */
+    dumpblankglyph(gi,sf,fixed);	/* to be a couple of blank glyphs at the start*/
     /* One is for NUL and one for CR I think... but why? */
     for ( cnt=0; i<sf->charcnt; ++i ) {
 	if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]==SCDuplicate(sf->chars[i])) {
