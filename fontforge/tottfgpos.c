@@ -1110,6 +1110,29 @@ static void dumpgposkernclass(FILE *gpos,SplineFont *sf,KernClass *kc,
     free(class2);
 }
 
+static void dumpanchor(FILE *gpos,AnchorPoint *ap) {
+    int base = ftell(gpos);
+
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    if ( ap->xadjust.corrections!=NULL || ap->yadjust.corrections!=NULL )
+	putshort(gpos,3);	/* format 3 w/ device tables */
+    else
+#endif
+	putshort(gpos,1);	/* Anchor format 1 just location*/
+    putshort(gpos,ap->me.x);	/* X coord of attachment */
+    putshort(gpos,ap->me.y);	/* Y coord of attachment */
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    if ( ap->xadjust.corrections!=NULL || ap->yadjust.corrections!=NULL ) {
+	putshort(gpos,ap->xadjust.corrections==NULL?0:
+		ftell(gpos)-base+4);
+	putshort(gpos,ap->xadjust.corrections==NULL?0:
+		ftell(gpos)-base+2+DevTabLen(&ap->xadjust));
+	dumpgposdevicetable(gpos,&ap->xadjust);
+	dumpgposdevicetable(gpos,&ap->yadjust);
+    }
+#endif
+}
+
 static struct lookup *dumpgposCursiveAttach(FILE *gpos,AnchorClass *ac,
 	SplineFont *sf, struct lookup *lookups) {
     struct lookup *new;
@@ -1149,11 +1172,19 @@ return( lookups );
 	    if ( entry!=NULL ) {
 		putshort(gpos,offset);
 		offset += 6;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+		if ( entry->xadjust.corrections!=NULL || entry->yadjust.corrections!=NULL )
+		    offset += 4 + DevTabLen(&entry->xadjust) + DevTabLen(&entry->yadjust);
+#endif
 	    } else
 		putshort(gpos,0);
 	    if ( exit!=NULL ) {
 		putshort(gpos,offset);
 		offset += 6;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+		if ( exit->xadjust.corrections!=NULL || exit->yadjust.corrections!=NULL )
+		    offset += 4 + DevTabLen(&exit->xadjust) + DevTabLen(&exit->yadjust);
+#endif
 	    } else
 		putshort(gpos,0);
 	}
@@ -1163,16 +1194,10 @@ return( lookups );
 		if ( ap->anchor==ac && ap->type==at_centry ) entry = ap;
 		if ( ap->anchor==ac && ap->type==at_cexit ) exit = ap;
 	    }
-	    if ( entry!=NULL ) {
-		putshort(gpos,1);		/* Anchor format 1 */
-		putshort(gpos,entry->me.x);	/* X coord of attachment */
-		putshort(gpos,entry->me.y);	/* Y coord of attachment */
-	    }
-	    if ( exit!=NULL ) {
-		putshort(gpos,1);		/* Anchor format 1 */
-		putshort(gpos,exit->me.x);	/* X coord of attachment */
-		putshort(gpos,exit->me.y);	/* Y coord of attachment */
-	    }
+	    if ( entry!=NULL )
+		dumpanchor(gpos,entry);
+	    if ( exit!=NULL )
+		dumpanchor(gpos,exit);
 	}
 	coverage_offset = ftell(gpos);
 	dumpcoveragetable(gpos,glyphs);
@@ -1213,27 +1238,6 @@ return( glyphlist[0]);
     }
     glyphs[k] = NULL;
 return( glyphs );
-}
-
-static void dumpanchor(FILE *gpos,AnchorPoint *ap,int base) {
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
-    if ( ap->xadjust.corrections!=NULL || ap->yadjust.corrections!=NULL )
-	putshort(gpos,3);	/* format 3 w/ device tables */
-    else
-#endif
-	putshort(gpos,1);	/* Anchor format 1 just location*/
-    putshort(gpos,ap->me.x);	/* X coord of attachment */
-    putshort(gpos,ap->me.y);	/* Y coord of attachment */
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
-    if ( ap->xadjust.corrections!=NULL || ap->yadjust.corrections!=NULL ) {
-	putshort(gpos,ap->xadjust.corrections==NULL?0:
-		ftell(gpos)-base+4);
-	putshort(gpos,ap->xadjust.corrections==NULL?0:
-		ftell(gpos)-base+2+DevTabLen(&ap->xadjust));
-	dumpgposdevicetable(gpos,&ap->xadjust);
-	dumpgposdevicetable(gpos,&ap->yadjust);
-    }
-#endif
 }
 
 static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
@@ -1283,7 +1287,7 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 #endif
 		      break;
 		      case 2:
-			dumpanchor(gpos,ap,new->offset);
+			dumpanchor(gpos,ap);
 		      break;
 		    }
 		}
@@ -1343,7 +1347,7 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 			/* !!! We could search through the character here to see */
 			/*  if there is any point with this coord, and if so connect */
 			/*  anchor to the point (anchor format 2) */
-			dumpanchor(gpos,aps[k*max+l],new->offset);
+			dumpanchor(gpos,aps[k*max+l]);
 		    }
 		}
 	    }
@@ -1389,7 +1393,7 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 	    if ( ap!=NULL )
 	break;
 	}
-	dumpanchor(gpos,ap,new->offset);
+	dumpanchor(gpos,ap);
     }
     if ( markglyphs!=marks[0] )
 	free(markglyphs);
