@@ -1024,6 +1024,7 @@ extern void CVMouseUpShape(CharView *cv);
 #ifdef FONTFORGE_CONFIG_GDRAW
 extern void LogoExpose(GWindow pixmap,GEvent *event, GRect *r,enum drawmode dm);
 #endif
+extern void CVDebugPointPopup(CharView *cv);
 
 extern int GotoChar(SplineFont *sf);
 
