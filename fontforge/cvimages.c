@@ -1108,9 +1108,9 @@ return(false);
     }
     if ( tot==0 )
 #if defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Nothing Selected"),_("Nothing Selected"));
+	gwwv_post_error(_("Nothing Selected"),_("You must select a glyph before you can import an image into it"));
 #else
-	GWidgetErrorR(_STR_NothingSelected,_STR_NothingSelected);
+	GWidgetErrorR(_STR_NothingSelected,_STR_NoGlyphSelectedForImport);
 #endif
     else if ( endpath!=NULL )
 #if defined(FONTFORGE_CONFIG_GTK)
