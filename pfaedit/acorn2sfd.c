@@ -14,6 +14,11 @@
 
 extern char *psunicodenames[];
 extern int psunicodenames_cnt;
+extern struct psaltnames {
+    char *name;
+    int unicode;
+} psaltuninames[];
+extern int psaltuninames_cnt;
 
 static int includestrokes = false;
 
@@ -128,7 +133,7 @@ static char *despace(char *fontname) {
 return( fontname );
 }
 
-static int UniFromName(char *name) {
+static int UnicodeFromName(char *name) {
     int i = -1;
 
     if ( strncmp(name,"uni",3)==0 ) { char *end;
@@ -717,7 +722,7 @@ return;
 		if ( sf->chars[pos]!=NULL ) {
 		    free(sf->chars[pos]->name);
 		    sf->chars[pos]->name = copyn(pt,end-pt);
-		    sf->chars[pos]->unicodeenc = UniFromName(sf->chars[pos]->name);
+		    sf->chars[pos]->unicodeenc = UnicodeFromName(sf->chars[pos]->name);
 		}
 		++pos;
 		pt = end;
