@@ -3569,7 +3569,7 @@ SplineFont *ReadSplineFont(char *filename) {
 	NULL
     };
     int i;
-    char *pt;
+    char *pt, *temp;
     int len;
 
     if ( filename==NULL )
@@ -3599,12 +3599,17 @@ return( NULL );
     GProgressEnableStop(0);
 
     sf = NULL;
+    temp = filename;
+    if ( strchr(filename,'(')!=NULL ) {
+	temp = copy(filename);
+	*strchr(temp,'(') = '\0';
+    }
     if ( strmatch(filename+strlen(filename)-4, ".sfd")==0 ||
 	 strmatch(filename+strlen(filename)-5, ".sfd~")==0 ) {
 	sf = SFDRead(filename);
 	fromsfd = true;
     } else if ( strmatch(filename+strlen(filename)-4, ".ttf")==0 ||
-		strmatch(filename+strlen(filename)-4, ".ttc")==0 ||
+		strmatch(filename+strlen(temp)-4, ".ttc")==0 ||
 		strmatch(filename+strlen(filename)-4, ".otf")==0 ) {
 	sf = SFReadTTF(filename,0);
     } else if ( strmatch(filename+strlen(filename)-4, ".bdf")==0 ) {
@@ -3615,9 +3620,9 @@ return( NULL );
 	sf = SplineFontNew();
 	SFImportBDF(sf,filename,true, false);
 	sf->changed = false;
-    } else if ( strmatch(filename+strlen(filename)-4, ".bin")==0 ||
-		strmatch(filename+strlen(filename)-4, ".hqx")==0 ||
-		strmatch(filename+strlen(filename)-6, ".dfont")==0 ) {
+    } else if ( strmatch(filename+strlen(temp)-4, ".bin")==0 ||
+		strmatch(filename+strlen(temp)-4, ".hqx")==0 ||
+		strmatch(filename+strlen(temp)-6, ".dfont")==0 ) {
 	sf = SFReadMacBinary(filename);
     } else if ( strmatch(filename+strlen(filename)-4, ".pfa")==0 ||
 		strmatch(filename+strlen(filename)-4, ".pfb")==0 ||
@@ -3627,7 +3632,7 @@ return( NULL );
 		strmatch(filename+strlen(filename)-4, ".ps")==0 ) {
 	sf = SFReadPostscript(filename);
     } else {
-	FILE *foo = fopen(filename,"r");
+	FILE *foo = fopen(temp,"r");
 	if ( foo!=NULL ) {
 	    /* Try to guess the file type from the first few characters... */
 	    int ch1 = getc(foo);
@@ -3653,6 +3658,8 @@ return( NULL );
 		sf = SFReadMacBinary(filename);
 	}
     }
+    if ( temp!=filename )
+	free(temp);
     GProgressEndIndicator();
 
     if ( sf==NULL ) {

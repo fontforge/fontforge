@@ -1102,7 +1102,7 @@ return( sf );
 }
 
 static SplineFont *SearchTtfResources(FILE *f,long rlistpos,int subcnt,long rdata_pos,
-	long name_list) {
+	long name_list,char *filename) {
     long here, start = ftell(f);
     long roff;
     int rname = -1;
@@ -1115,6 +1115,7 @@ static SplineFont *SearchTtfResources(FILE *f,long rlistpos,int subcnt,long rdat
     SplineFont *sf;
     int which = 0;
     unichar_t **names;
+    char *pt;
 
     fseek(f,rlistpos,SEEK_SET);
     if ( subcnt>1 ) {
@@ -1135,7 +1136,24 @@ static SplineFont *SearchTtfResources(FILE *f,long rlistpos,int subcnt,long rdat
 	    }
 	    fseek(f,here,SEEK_SET);
 	}
-	which = GWidgetChoicesR(_STR_PickFont,(const unichar_t **) names,subcnt,0,_STR_MultipleFontsPick);
+	if ( (pt = strchr(filename,'('))!=NULL ) {
+	    char *find = copy(pt+1);
+	    pt = strchr(find,')');
+	    if ( pt!=NULL ) *pt='\0';
+	    for ( which=subcnt-1; which>=0; --which )
+		if ( uc_strcmp(names[which],find)==0 )
+	    break;
+	    if ( which==-1 ) {
+		char *fn = copy(filename);
+		*strchr(fn,'(') = '\0';
+		GWidgetErrorR(_STR_NotInCollection,_STR_FontNotInCollection,find,fn);
+		free(fn);
+	    }
+	    free(find);
+	} else if ( screen_display==NULL )
+	    which = 0;
+	else
+	    which = GWidgetChoicesR(_STR_PickFont,(const unichar_t **) names,subcnt,0,_STR_MultipleFontsPick);
 	for ( i=0; i<subcnt; ++i )
 	    free(names[i]);
 	free(names);
@@ -1191,7 +1209,7 @@ return( sf );
 return( NULL );
 }
 
-static SplineFont *IsResourceFork(FILE *f, long offset) {
+static SplineFont *IsResourceFork(FILE *f, long offset,char *filename) {
     /* If it is a good resource fork then the first 16 bytes are repeated */
     /*  at the location specified in bytes 4-7 */
     /* We include an offset because if we are looking at a mac binary file */
@@ -1245,14 +1263,14 @@ return( NULL );
 	if ( tag==CHR('P','O','S','T'))		/* No FOND */
 	    sf = SearchPostscriptResources(f,rpos,subcnt,rdata_pos,name_list);
 	else if ( tag==CHR('s','f','n','t'))
-	    sf = SearchTtfResources(f,rpos,subcnt,rdata_pos,name_list);
+	    sf = SearchTtfResources(f,rpos,subcnt,rdata_pos,name_list,filename);
 	if ( sf!=NULL )
 return( sf );
     }
 return( (SplineFont *) -1 );	/* It's a valid resource file, but just has no fonts */
 }
 
-static SplineFont *IsResourceInBinary(FILE *f) {
+static SplineFont *IsResourceInBinary(FILE *f,char *filename) {
     unsigned char header[128];
     unsigned long offset;
 
@@ -1262,7 +1280,7 @@ return( NULL );
 	    header[1]>33 || header[63]!=0 || header[2+header[1]]!=0 )
 return( NULL );
     offset = 128+((header[0x53]<<24)|(header[0x54]<<16)|(header[0x55]<<8)|header[0x56]);
-return( IsResourceFork(f,offset));
+return( IsResourceFork(f,offset,filename));
 }
 
 static int lastch=0, repeat = 0;
@@ -1287,7 +1305,7 @@ static void outchr(FILE *binary, int ch) {
     }
 }
 
-static SplineFont *IsResourceInHex(FILE *f) {
+static SplineFont *IsResourceInHex(FILE *f,char *filename) {
     /* convert file from 6bit to 8bit */
     /* interesting data is enclosed between two colons */
     FILE *binary = tmpfile();
@@ -1352,7 +1370,7 @@ return( NULL );
 return( NULL );
     }
 
-    ret = IsResourceFork(binary,ftell(binary)+dlen+2);
+    ret = IsResourceFork(binary,ftell(binary)+dlen+2,filename);
 
     fclose(binary);
 return( ret );
@@ -1362,8 +1380,15 @@ static SplineFont *IsResourceInFile(char *filename) {
     FILE *f;
     char *spt, *pt;
     SplineFont *sf;
+    char *temp=filename;
 
-    f = fopen(filename,"r");
+    if ( strchr(filename,'(')!=NULL ) {
+	temp = copy(filename);
+	pt = strchr(temp,'(');
+	*pt = '\0';
+    }
+    f = fopen(temp,"r");
+    if ( temp!=filename ) free(temp);
     if ( f==NULL )
 return( NULL );
     spt = strrchr(filename,'/');
@@ -1371,19 +1396,19 @@ return( NULL );
     pt = strrchr(spt,'.');
     if ( pt!=NULL && (pt[1]=='b' || pt[1]=='B') && (pt[2]=='i' || pt[2]=='I') &&
 	    (pt[3]=='n' || pt[3]=='N') && pt[4]=='\0' ) {
-	if ( (sf = IsResourceInBinary(f))) {
+	if ( (sf = IsResourceInBinary(f,filename))) {
 	    fclose(f);
 return( sf );
 	}
     } else if ( pt!=NULL && (pt[1]=='h' || pt[1]=='H') && (pt[2]=='q' || pt[2]=='Q') &&
 	    (pt[3]=='x' || pt[3]=='X') && pt[4]=='\0' ) {
-	if ( (sf = IsResourceInHex(f))) {
+	if ( (sf = IsResourceInHex(f,filename))) {
 	    fclose(f);
 return( sf );
 	}
     }
 
-    sf = IsResourceFork(f,0);
+    sf = IsResourceFork(f,0,filename);
     fclose(f);
 return( sf );
 }

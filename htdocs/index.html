@@ -235,6 +235,11 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
 </H2>
 <UL>
   <LI>
+    ???
+    <UL>
+      <LI>
+    </UL>
+  <LI>
     14 Jan 2002
     <UL>
       <LI>
@@ -247,7 +252,18 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
 	Added a command to the font view to clear out the backgrounds of all selected
 	characters.
       <LI>
-	Fixed one more image freeing problem (see 29-Dec-2001)
+	Fixed one more image freeing problem (see 29-Dec-2001) 
+	  <HR>
+      <LI>
+	bdf fixes of 9&amp;11 Jan did not work on bdf files with character encodings
+	of "-1"
+      <LI>
+	Fixed several bugs with ttf bitmap tables.
+      <LI>
+	Added a mechanism for specifying a font inside a truetype collection from
+	the command line:<BR>
+	<CODE>&nbsp; &nbsp; $ pfaedit "gulim.ttc(GulimChe)"</CODE><BR>
+	will load the GulimChe font within the collection file.
     </UL>
   <LI>
     12 Jan 2002

@@ -1204,6 +1204,8 @@ static char *str_ReadingNames = "Reading Names";
 static char *str_FixingupReferences = "Fixing up References";
 static char *str_NoBitmaps = "No Bitmap Strikes";
 static char *str_NoBitmapsInTTF = "No (useable) bitmap strikes in this TTF font: %hs";
+static char *str_NotInCollection = "Not in Collection";
+static char *str_FontNotInCollection = "%hs is not in %.100hs";
     /* sfd */
 static char *str_Saving = "Saving...";
 static char *str_SavingDb = "Saving Spline Font Database";
