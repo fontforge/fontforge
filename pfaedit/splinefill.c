@@ -1191,16 +1191,25 @@ void BDFClut(BDFFont *bdf, int linear_scale) {
     clut->clut[scale-1] = 0;	/* avoid rounding errors */
 }
 
+int BDFDepth(BDFFont *bdf) {
+    if ( bdf->clut==NULL )
+return( 1 );
+
+return( bdf->clut->clut_len==256 ? 8 :
+	bdf->clut->clut_len==16 ? 4 : 2);
+}
+
 BDFChar *SplineCharAntiAlias(SplineChar *sc, int pixelsize, int linear_scale) {
     BDFChar *bc;
 
     bc = SplineCharRasterize(sc,pixelsize*linear_scale);
-    BDFCAntiAlias(bc,linear_scale);
+    if ( linear_scale!=1 )
+	BDFCAntiAlias(bc,linear_scale);
 return( bc );
 }
 
 BDFFont *SplineFontAntiAlias(SplineFont *_sf, int pixelsize, int linear_scale) {
-    BDFFont *bdf = gcalloc(1,sizeof(BDFFont));
+    BDFFont *bdf;
     int i,k;
     real scale;
     char csize[10]; unichar_t size[30];
@@ -1208,6 +1217,10 @@ BDFFont *SplineFontAntiAlias(SplineFont *_sf, int pixelsize, int linear_scale) {
     int max;
     SplineFont *sf;	/* The complexity here is to pick the appropriate subfont of a CID font */
 
+    if ( linear_scale==1 )
+return( SplineFontRasterize(_sf,pixelsize,true));
+
+    bdf = gcalloc(1,sizeof(BDFFont));
     sf = _sf;
     max = sf->charcnt;
     for ( i=0; i<_sf->subfontcnt; ++i ) {

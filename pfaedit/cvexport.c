@@ -398,7 +398,7 @@ return( 0 );
 	if ( (freetypecontext = FreeTypeFontContext(sc->parent,sc,false))==NULL )
 	    bdfc = SplineCharRasterize(sc,pixelsize);
 	else {
-	    bdfc = SplineCharFreeTypeRasterize(freetypecontext,sc->enc,pixelsize,true);
+	    bdfc = SplineCharFreeTypeRasterize(freetypecontext,sc->enc,pixelsize,1);
 	    FreeTypeFreeContext(freetypecontext);
 	}
 	BCRegularizeBitmap(bdfc);
@@ -417,10 +417,10 @@ return( 0 );
 	    ret = GImageWriteBmp(&gi,filename);
 	BDFCharFree(bdfc);
     } else {
-	if ( bitsperpixel!=8 || (freetypecontext = FreeTypeFontContext(sc->parent,sc,false))==NULL )
+	if ( (freetypecontext = FreeTypeFontContext(sc->parent,sc,false))==NULL )
 	    bdfc = SplineCharAntiAlias(sc,pixelsize,(1<<(bitsperpixel/2)));
 	else {
-	    bdfc = SplineCharFreeTypeRasterize(freetypecontext,sc->enc,pixelsize,false);
+	    bdfc = SplineCharFreeTypeRasterize(freetypecontext,sc->enc,pixelsize,bitsperpixel);
 	    FreeTypeFreeContext(freetypecontext);
 	}
 	BCRegularizeGreymap(bdfc);

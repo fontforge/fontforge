@@ -38,11 +38,11 @@ void *FreeTypeFontContext(SplineFont *sf,SplineChar *sc,int doall) {
 return( NULL );
 }
 
-BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int bitmap) {
+BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int depth) {
 return( NULL );
 }
 
-BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,int pixelsize,int bitmap) {
+BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,int pixelsize,int depth) {
 return( NULL );
 }
 
@@ -247,8 +247,18 @@ return( ftc );
 return( NULL );
 }
 
+static void BCTruncateToDepth(BDFChar *bdfc,int depth) {
+    int div = ((1<<depth)-1)/((1<<(depth/2))+1);
+    int i,j;
+
+    for ( i=0; i<bdfc->ymax-bdfc->ymin; ++i ) {
+	for ( j=0; j<bdfc->bytes_per_line; ++j )
+	    bdfc->bitmap[i*bdfc->bytes_per_line+j] /= div;
+    }
+}
+
 BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,
-	int pixelsize,int bitmap) {
+	int pixelsize,int depth) {
     FTC *ftc = freetypecontext;
     BDFChar *bdfc;
     SplineChar *sc;
@@ -259,7 +269,7 @@ BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,
     if ( _FT_Set_Pixel_Sizes(ftc->face,0,pixelsize))
  goto fail;
     if ( _FT_Load_Glyph(ftc->face,ftc->glyph_indeces[enc],
-	    bitmap?(FT_LOAD_RENDER|FT_LOAD_MONOCHROME):FT_LOAD_RENDER))
+	    depth==1?(FT_LOAD_RENDER|FT_LOAD_MONOCHROME):FT_LOAD_RENDER))
  goto fail;
 
     slot = ftc->face->glyph;
@@ -270,7 +280,7 @@ BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,
     bdfc->ymax = slot->bitmap_top;
     bdfc->ymin = slot->bitmap_top-slot->bitmap.rows+1;
     bdfc->xmax = slot->bitmap_left+slot->bitmap.width-1;
-    bdfc->byte_data = !bitmap;
+    bdfc->byte_data = (depth!=1);
     if ( sc!=NULL ) {
 	bdfc->width = rint(sc->width*pixelsize / (real) (sc->parent->ascent+sc->parent->descent));
 	bdfc->enc = enc;
@@ -279,20 +289,22 @@ BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,
     bdfc->bitmap = galloc(slot->bitmap.rows*bdfc->bytes_per_line);
     memcpy(bdfc->bitmap,slot->bitmap.buffer,slot->bitmap.rows*bdfc->bytes_per_line);
     BCCompressBitmap(bdfc);
+    if ( depth!=1 && depth!=8 )
+	BCTruncateToDepth(bdfc,depth);
 return( bdfc );
 
  fail:
 return( SplineCharRasterize(ftc->sf->chars[enc],pixelsize) );
 }
 
-BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int bitmap) {
+BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int depth) {
     FTC *ftc = freetypecontext, *subftc=NULL;
     SplineFont *sf = ftc->sf, *subsf;
     int i,k;
     BDFFont *bdf = SplineFontToBDFHeader(sf,pixelsize,true);
 
-    if ( !bitmap )
-	BDFClut(bdf,16);
+    if ( depth!=1 )
+	BDFClut(bdf, 1<<(depth/2) );
 
     k=0;
     do {
@@ -308,11 +320,11 @@ BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int bit
 		/* If we could not allocate an ftc for this subfont, the revert to*/
 		/*  our own rasterizer */
 		if ( subftc!=NULL )
-		    bdf->chars[i] = SplineCharFreeTypeRasterize(subftc,i,pixelsize,bitmap);
-		else if ( bitmap )
+		    bdf->chars[i] = SplineCharFreeTypeRasterize(subftc,i,pixelsize,depth);
+		else if ( depth==1 )
 		    bdf->chars[i] = SplineCharRasterize(subsf->chars[i],pixelsize);
 		else
-		    bdf->chars[i] = SplineCharAntiAlias(subsf->chars[i],pixelsize,16);
+		    bdf->chars[i] = SplineCharAntiAlias(subsf->chars[i],pixelsize,(1<<(depth/2)));
 		GProgressNext();
 	    } else
 		bdf->chars[i] = NULL;

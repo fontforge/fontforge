@@ -724,6 +724,7 @@ static char *str_NotCIDOk = "You are attempting to save a CID font in a non-CID 
 static char *str_PixelList = "Pixel List";
 static char *str_EncodingTooLarge="Encoding Too Large";
 static char *str_TwoBEncIn1BFont = "Your font has a 2 byte encoding, but you are attempting to save it in a format that only supports one byte encodings. This means that you won't be able to access anything after the first 256 characters without reencoding the font.\n\nDo you want to procede anyway?";
+static char *str_GreymapDepth = "Bits per Pixel in the greymap"
     /* Goto character ... */
 static char str_Badnumberin[] = "Bad Number in ";
 static char str_Enternameofchar[] = "Enter the name of a character in the font";

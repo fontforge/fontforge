@@ -181,6 +181,126 @@ return( 0 );
 return( ret );
 }
 
+static int ad_e_h(GWindow gw, GEvent *event) {
+    if ( event->type==et_close ) {
+	int *done = GDrawGetUserData(gw);
+	*done = -1;
+    } else if ( event->type == et_char ) {
+return( false );
+    } else if ( event->type == et_map ) {
+	/* Above palettes */
+	GDrawRaise(gw);
+    } else if ( event->type==et_controlevent && event->u.control.subtype == et_buttonactivate ) {
+	int *done = GDrawGetUserData(gw);
+	if ( GGadgetGetCid(event->u.control.g)==1001 )
+	    *done = true;
+	else
+	    *done = -1;
+    }
+return( true );
+}
+
+static int AskDepth() {
+    GRect pos;
+    static GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[9];
+    GTextInfo label[9];
+    int done=false;
+
+    if ( gw==NULL ) {
+	memset(&wattrs,0,sizeof(wattrs));
+	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.event_masks = ~(1<<et_charup);
+	wattrs.restrict_input_to_me = 1;
+	wattrs.undercursor = 1;
+	wattrs.cursor = ct_pointer;
+	wattrs.window_title = GStringGetResource(_STR_GreymapDepth,NULL);
+	wattrs.is_dlg = true;
+	pos.x = pos.y = 0;
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,150));
+	pos.height = GDrawPointsToPixels(NULL,75);
+	gw = GDrawCreateTopWindow(NULL,&pos,ad_e_h,&done,&wattrs);
+
+	memset(&label,0,sizeof(label));
+	memset(&gcd,0,sizeof(gcd));
+
+	label[0].text = (unichar_t *) _STR_GreymapDepth;
+	label[0].text_in_resource = true;
+	gcd[0].gd.label = &label[0];
+	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 7; 
+	gcd[0].gd.flags = gg_enabled|gg_visible;
+	gcd[0].creator = GLabelCreate;
+
+	label[1].text = (unichar_t *) "2";
+	label[1].text_is_1byte = true;
+	gcd[1].gd.label = &label[1];
+	gcd[1].gd.pos.x = 20; gcd[1].gd.pos.y = 13+7;
+	gcd[1].gd.flags = gg_enabled|gg_visible;
+	gcd[1].gd.cid = 2;
+	gcd[1].creator = GRadioCreate;
+
+	label[2].text = (unichar_t *) "4";
+	label[2].text_is_1byte = true;
+	gcd[2].gd.label = &label[2];
+	gcd[2].gd.pos.x = 50; gcd[2].gd.pos.y = gcd[1].gd.pos.y; 
+	gcd[2].gd.flags = gg_enabled|gg_visible;
+	gcd[2].gd.cid = 4;
+	gcd[2].creator = GRadioCreate;
+
+	label[3].text = (unichar_t *) "8";
+	label[3].text_is_1byte = true;
+	gcd[3].gd.label = &label[3];
+	gcd[3].gd.pos.x = 80; gcd[3].gd.pos.y = gcd[1].gd.pos.y;
+	gcd[3].gd.flags = gg_enabled|gg_visible|gg_cb_on;
+	gcd[3].gd.cid = 8;
+	gcd[3].creator = GRadioCreate;
+
+	gcd[4].gd.pos.x = 15-3; gcd[4].gd.pos.y = gcd[1].gd.pos.y+20;
+	gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
+	gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	label[4].text = (unichar_t *) _STR_OK;
+	label[4].text_in_resource = true;
+	gcd[4].gd.mnemonic = 'O';
+	gcd[4].gd.label = &label[4];
+	gcd[4].gd.cid = 1001;
+	/*gcd[4].gd.handle_controlevent = CH_OK;*/
+	gcd[4].creator = GButtonCreate;
+
+	gcd[5].gd.pos.x = -15; gcd[5].gd.pos.y = gcd[4].gd.pos.y+3;
+	gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
+	gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	label[5].text = (unichar_t *) _STR_Cancel;
+	label[5].text_in_resource = true;
+	gcd[5].gd.label = &label[5];
+	gcd[5].gd.mnemonic = 'C';
+	/*gcd[5].gd.handle_controlevent = CH_Cancel;*/
+	gcd[5].gd.cid = 1002;
+	gcd[5].creator = GButtonCreate;
+
+	gcd[6].gd.pos.x = 2; gcd[6].gd.pos.y = 2;
+	gcd[6].gd.pos.width = pos.width-4; gcd[6].gd.pos.height = pos.height-2;
+	gcd[6].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+	gcd[6].creator = GGroupCreate;
+
+	GGadgetsCreate(gw,gcd);
+    }
+
+    GWidgetHidePalettes();
+    GDrawSetVisible(gw,true);
+    while ( !done )
+	GDrawProcessOneEvent(NULL);
+    GDrawSetVisible(gw,false);
+    if ( done==-1 )
+return( -1 );
+    if ( GGadgetIsChecked(GWidgetGetControl(gw,2)) )
+return( 2 );
+    if ( GGadgetIsChecked(GWidgetGetControl(gw,4)) )
+return( 4 );
+    /*if ( GGadgetIsChecked(GWidgetGetControl(gw,8)) )*/
+return( 8 );
+}
+
 static int WriteBitmaps(char *filename,SplineFont *sf, real *sizes, int do_grey) {
     char *buf = galloc(strlen(filename)+20), *pt, *pt2;
     int i;
@@ -188,20 +308,24 @@ static int WriteBitmaps(char *filename,SplineFont *sf, real *sizes, int do_grey)
     unichar_t *temp;
     char buffer[100];
     void *freetypecontext = NULL;
+    int depth;
 
     if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
 
     for ( i=0; sizes[i]!=0; ++i );
     GProgressChangeStages(i);
-    if ( do_grey )
+    if ( do_grey ) {
+	if (( depth = AskDepth())==-1 )
+return( false );
 	freetypecontext = FreeTypeFontContext(sf,NULL,true);
+    }
     for ( i=0; sizes[i]!=0; ++i ) {
 	buffer[0] = '\0';
 	if ( do_grey ) {
 	    if ( freetypecontext==NULL )
-		bdf = SplineFontAntiAlias(sf,(int) sizes[i],4);
+		bdf = SplineFontAntiAlias(sf,(int) sizes[i],depth);
 	    else
-		bdf = SplineFontFreeTypeRasterize(freetypecontext,sizes[i],false);
+		bdf = SplineFontFreeTypeRasterize(freetypecontext,sizes[i],depth);
 	    if ( bdf==NULL )
 		sprintf(buffer,"Couldn't generate an anti-aliased font at the requested size (%d)", (int) sizes[i]);
 	} else {

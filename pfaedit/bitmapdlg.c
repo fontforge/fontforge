@@ -199,9 +199,9 @@ return;
 		SplineCharAutoHint(sf->chars[enc],true);
 	    first = false;
 	    if ( freetypecontext )
-		bdfc = SplineCharFreeTypeRasterize(freetypecontext,enc,bdf->pixelsize,true);
+		bdfc = SplineCharFreeTypeRasterize(freetypecontext,enc,bdf->pixelsize,BDFDepth(bdf));
 	    else
-		bdfc = SplineCharRasterize(sf->chars[enc],bdf->pixelsize);
+		bdfc = SplineCharAntiAlias(sf->chars[enc],bdf->pixelsize,(1<<(BDFDepth(bdf)/2)));
 	    if ( bdf->chars[enc]==NULL )
 		bdf->chars[enc] = bdfc;
 	    else {
