@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 2-Aug-2003 -->
+  <!-- AP: Last modified: 14-Aug-2003 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -465,20 +465,50 @@ a[4][0] = "Nested array";
     and returns the unicode value associated with that name, or -1 if not found.
     This does <EM>not</EM> check the current font (if any).
   <DT>
+    Chr(int)<BR>
+    Chr(array)
+  <DD>
+    Takes an integer [0,255] and returns a single character string containing
+    that code point. Internally PfaEdit interprets strings as if they were in
+    ISO8859-1 (well really, PfaEdit just uses ASCII-US internally). If passed
+    an array, it should be an array of integers and the result is the string.
+  <DT>
+    Ord(string[,pos])
+  <DD>
+    Returns an array of integers represenging the encoding of the characters
+    in the string. If pos is given it should be an integer less than the string
+    length and the function will return the integer encoding of that character
+    in the string.
+  <DT>
+    Utf8(int)
+  <DD>
+    Takes an integer [0,0x10ffff] and returns the utf8 string representing that
+    unicode code point. If passed an array of integers it will generate a utf8
+    string containing all of those unicode code points. (it does not expect to
+    get surrogates).
+  <DT>
       <HR>
+  <DT>
+    FontsInFile(filename)
+  <DD>
+    Returns an array of strings containing the names of all fonts within a file.
+    Most files contain one font, but some (mac font suitcases, dfonts, ttc files,
+    svg files, etc) may contain several. If the file contains no fonts (or the
+    file doesn't exist, or the fonts aren't named), a zero length array is returned.
+    It does not open the font. It can execute without a current font.
   <DT>
     Open(filename[,flags])
   <DD>
     This makes the font named by filename be the current font. If filename has
-    not yet been loaded into memory it will be loaded now. It can execute with
-    no current font.<BR>
-    When loading from a ttc file, a particular font may be selected by placing
-    the fontname in parens and appending it to the filename, as
-    <CODE>Open("gulim.ttc(Dotum)")</CODE><BR>
+    not yet been loaded into memory it will be loaded now. It can execute without
+    a current font.<BR>
+    When loading from a ttc file (mac suitcase, dfont, svg, etc), a particular
+    font may be selected by placing the fontname in parens and appending it to
+    the filename, as <CODE>Open("gulim.ttc(Dotum)")</CODE><BR>
     The optional flags argument current has only one flag in it:
     <UL>
       <LI>
-	1 =&gt; the user does have the appropriate lisence to examine the font no
+	1 =&gt; the user does have the appropriate license to examine the font no
 	matter what the fstype setting is.
     </UL>
   <DT>
@@ -532,6 +562,10 @@ a[4][0] = "Nested array";
 	otf.dfont (a mac opentype resource in a dfont file)
       <LI>
 	svg (an svg font)
+      <LI>
+	&lt;null extension&gt; If you don't want to generate an outline font at all
+	(but do want to provide a filename for bitmap or metrics files) then provide
+	a null extension (ie. <CODE>"Times."</CODE> but NOT <CODE>"Times"</CODE>).
     </UL>
     <P>
     If present, bitmaptype may be one of:
@@ -583,6 +617,9 @@ a[4][0] = "Nested array";
       <LI>
 	fmflags&amp;0x40 =&gt; generate a '<A HREF="non-standard.html#PfEd">PfEd</A>'
 	table and store glyph colors
+      <LI>
+	fmflags&amp;0x80 =&gt; generate tables so the font will work on both Apple
+	and MS platforms.
       <LI>
 	fmflags&amp;0x10000 =&gt; generate a tfm file
       <LI>
@@ -965,6 +1002,9 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     SetCharCnt(cnt)
   <DD>
     Sets the number of characters in the font.
+  <DT>
+    LoadEncodingFile(filename)
+  <DD>
   <DT>
     SetFontOrder(order)
   <DD>
@@ -1450,6 +1490,9 @@ ApplySubstitution("*","*","vrt2")
 	"LBearing" returns the character's left side bearing
       <LI>
 	"RBearing" returns the character's right side bearing
+      <LI>
+	"BBox" returns a 4 element array containing [minimum-x-value, minimum-y-value,
+	maximum-x-value, maximum-y-value] of the character.
       <LI>
 	"Kern" (there must be a second argument here which specifies another character
 	as in Select()) Returns the kern offset between the two characters (or 0

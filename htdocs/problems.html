@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Jun-2001 -->
-  <!-- AP: Last modified: 30-Jul-2003 -->
+  <!-- AP: Last modified: 17-Aug-2003 -->
   <TITLE>Finding common font problems automagically</TITLE>
 </HEAD>
 <BODY>
@@ -51,7 +51,7 @@ Note: Some of these problems are geared specifically to the problems of
 Latin/Greek/Cyrillic fonts. I would be happy to hear of ways to extend these
 to other script systems, or of problems that are specific to other script
 systems
-(<A HREF="mailto:pfaedit@users.sourceforge.net">pfaedit@users.sourceforge.net</A>).
+(<A HREF="mailto:pfaedit-users@lists.sourceforge.net">pfaedit-users@lists.sourceforge.net</A>).
 <P>
 <IMG SRC="findprobs.png" WIDTH="307" HEIGHT="431" ALIGN="Right">PfaEdit can
 detect the following potential problems:
@@ -240,7 +240,20 @@ metrics) differs from the specified value.
 Looks through all the 'GSUB' substitution, alternate substitution, multiple
 substitution and ligature entries that are attached to the current character
 and checks to make sure that all the named components are present in the
-font (and contain something). 
+font (and contain something). <BR Clear=ALL>
+<P>
+<IMG SRC="findprobs-att.png" WIDTH="307" HEIGHT="431" ALIGN="Right"><BIG><STRONG>Missing
+Glyph Names</STRONG></BIG>
+<P>
+It is possible to create a substitution, ligature, etc. which refers to a
+glyph name that is not in the font. This option will check for the above
+error.
+<P>
+<STRONG><BIG>Missing Lookup Tags</BIG></STRONG>
+<P>
+It is possible to create a contextual feature which refers to a lookup tag
+which does not exist in the font. This option will check for that error.
+<P>
   <HR Clear=all>
 <P>
 <IMG SRC="findprobs-cid.png" WIDTH="301" HEIGHT="418" ALIGN="Right">If your

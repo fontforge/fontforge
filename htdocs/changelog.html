@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 3-Aug-2003 -->
+  <!-- AP: Last modified: 16-Aug-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,75 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    ???
+    <UL>
+      <LI>
+	Support for contextual, chaining contextual and reverse chaining contextual
+	sub-tables of GPOS/GSUB.
+	<UL>
+	  <LI>
+	    Will generate an Apple contextual glyph substitution table if:
+	    <OL>
+	      <LI>
+		There is an apple feature which matches the otf tag
+	      <LI>
+		The sub-table is in coverage format
+	      <LI>
+		The sub-table contains either exactly one nested single glyph replacement
+		substitution, or<BR>
+		it contains exactly two single glyph replacements and one of them refers
+		to the last glyph matched (and the other does not)
+	    </OL>
+	</UL>
+      <LI>
+	KANOU points out that on screens with high dpi PfaEdit would sometimes draw
+	splines 2 pixels wide and sometimes 1 pixel wide (122dpi had this effect)
+      <LI>
+	KANOU provided another patch for reading bitmaps one part covered a memory
+	leak the other fixed a bug reading ttc files.
+      <LI>
+	Added a LoadEncodingFile scripting command
+      <LI>
+	New french ui.
+      <LI>
+	PfaEdit was using the wrong definition of ascent &amp; descent to set those
+	fields in the 'hhea' table. This confused some mac programs (perhaps others).
+      <LI>
+	Added a "BBox" item to CharInfo scripting.
+      <LI>
+	Added a FontsInFile scripting command to return an array containing the fontnames
+	of all fonts in a file. If an error occurs, a zero length array is returned.
+      <LI>
+	Change so that when opening a file containing multiple fonts the font's filename
+	contains the fontname (so it is possible to open other fonts from the same
+	file).
+      <LI>
+	Kanou provides a patch for compressing bitmaps with more than 8 bits of white
+	space to their left.
+      <LI>
+	Markus Schwarzenberg provides a patch to make pfaedit recognize $cidfamilyname
+	as it should have done.
+      <LI>
+	Add the ability to generate fonts which contain both OpenType and Apple Advanced
+	Typography tables (ie. a font that should work everywhere).
+      <LI>
+	Added Utf8(int), Chr(int), Ord(int) to interconvert between strings and their
+	encodings.
+      <LI>
+	Add two problems to Find problems
+	<UL>
+	  <LI>
+	    Search for substitutions, contexts, kerning classes, etc. which refer to
+	    a name which does not match any glyph in the font
+	  <LI>
+	    Search for contexts, chains, etc. which refer to a nested lookup which does
+	    not exist
+	</UL>
+      <LI>
+	Add a new command line argument "-last" which will load the last sfd file
+	closed.
+    </UL>
   <LI>
     3-Aug-2003
     <UL>
