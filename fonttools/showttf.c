@@ -547,7 +547,7 @@ static void readttfname(FILE *ttf, FILE *util, struct ttfinfo *info) {
 		id==8?"Manufacturer\n":
 		id==9?"Designer\n":
 		id==10?"Descriptor\n":
-		id==11?"Vender URL\n":
+		id==11?"Vendor URL\n":
 		id==12?"Designer URL\n":
 /* Guesse  based on ARIAL.TTF usage. Not documented that I've seen */
 		id==13?"License\n":
