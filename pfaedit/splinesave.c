@@ -39,7 +39,8 @@ extern int greekfixup;
 /* If we are doing Type1 output, then the obvious way of doing them is seac */
 /*  but that's so limitting. It only works for exactly two characters both */
 /*  of which are in Adobe's Standard Enc. Only translations allowed. Only */
-/*  one reference may be translated */
+/*  one reference may be translated and the width of the char must match */
+/*  that of the non-translated reference */
 /*   The first extension we can make is to allow a single character reference */
 /*  by making the other character be a space */
 /*   But if we want to do more than that we must use subrs. If we have two */
@@ -993,8 +994,10 @@ return( sofar );
 /*  one to nospacebreve (neither in adobe). But if cyrillic A was just a ref */
 /*  to A, and if nospacebreve was a ref to breve (both in adobe), then by going*/
 /*  one more level of indirection we can use refs in the font. */
-/* TrueType only allows refs to things which are themselves simple (ie. contain */
-/*  no refs. So if we use the above example we'd still end up with A and breve */
+/* Apple's docs say TrueType only allows refs to things which are themselves */
+/*  simple (ie. contain no refs). So if we use the above example we'd still */
+/*  end up with A and breve. I'm told that modern TT doesn't have this */
+/*  restriction, but it won't hurt to do things this way */
 /* They way I do Type2 postscript I can have as many refs as I like, they */
 /*  can only have translations (no scale, skew, rotation), they can't be */
 /*  refs themselves. They can't use hintmask commands inside */
@@ -1122,8 +1125,8 @@ return( false );
     if ( (iscjk&0x100) || ( refs->next!=NULL && refs->next->next!=NULL ) ||
 	    refs->adobe_enc==-1 || ( refs->next!=NULL && refs->next->adobe_enc==-1) ||
 	    (refs->next!=NULL &&
-		((refs->transform[4]!=0 || refs->transform[5]!=0) &&
-		 (refs->next->transform[4]!=0 || refs->next->transform[5]!=0))))
+		((refs->transform[4]!=0 || refs->transform[5]!=0 || refs->sc->width!=sc->width ) &&
+		 (refs->next->transform[4]!=0 || refs->next->transform[5]!=0 || refs->next->sc->width!=sc->width))))
 return( TrySubrRefs(gb,subrs,sc,refs,round));
 
     r1 = refs;
@@ -1150,6 +1153,12 @@ return( false );
 return( false );			/* Only one can be translated */
 	rt = r1; r1 = r2; r2 = rt;
     }
+    if ( r1->sc->width!=sc->width && r2->sc->width==sc->width &&
+	    r2->transform[4]==0 && r2->transform[5]==0 ) {
+	rt = r1; r1 = r2; r2 = rt;
+    }
+    if ( r1->sc->width!=sc->width )
+return( false );
 
     SplineCharFindBounds(r2->sc,&b);
 
