@@ -627,7 +627,7 @@ return( ret );
     if ( screen_display==NULL )
 return( NULL );
 
-    if ( def==NULL )
+    /*if ( def==NULL )*/
 	def = "*.sfd";
     uc_strcpy(ubuf,def);
     uret = GWidgetOpenFile(GStringGetResource(_STR_FindMultipleMap,NULL),NULL,ubuf,NULL,GFileChooserFilterWernerSFDs);
