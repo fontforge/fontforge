@@ -1206,7 +1206,7 @@ struct debugger_context *DebuggerCreate(SplineChar *sc,real pointsize,int dpi, i
 return( NULL );
 }
 
-void DebuggerGo(struct debugger_context *dc,enum debug_gotype go) {
+void DebuggerGo(struct debugger_context *dc,enum debug_gotype go,DebugView *dv) {
 }
 
 struct TT_ExecContextRec_ *DebuggerGetEContext(struct debugger_context *dc) {
