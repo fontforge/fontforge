@@ -30,9 +30,9 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <dirent.h>
-#include "gfile.h"
-#include "gio.h"
-#include "gresource.h"
+#include <gfile.h>
+#include <gio.h>
+#include <gresource.h>
 
 static int enc_num = em_base;
 
@@ -871,18 +871,19 @@ void SFEncodeToMap(SplineFont *sf,struct cidmap *map) {
     SplineChar *sc;
     int i,max=0, anyextras=0;
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL ) {
+    for ( i=0; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sc = sf->chars[i]) ) {
 	sc->enc = NameEnc2CID(map,sc->unicodeenc,sc->name);
 	if ( sc->enc>max ) max = sc->enc;
 	else if ( sc->enc==-1 ) ++anyextras;
-    }
+    } else if ( sc!=NULL )
+	sc->enc = -1;
 
     if ( anyextras ) {
 	static int buttons[] = { _STR_Delete, _STR_Add, 0 };
 	if ( GWidgetAskR(_STR_ExtraCharsTitle,buttons,0,1,_STR_ExtraChars)==1 ) {
 	    if ( map!=NULL && max<map->cidmax ) max = map->cidmax;
 	    anyextras = 0;
-	    for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL ) {
+	    for ( i=0; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sc = sf->chars[i]) ) {
 		if ( sc->enc == -1 ) sc->enc = max + anyextras++;
 	    }
 	    max += anyextras;

@@ -1228,6 +1228,7 @@ static char *str_Missingdotlessj="Your font is missing the dotlessj character,\n
     /* fv fonts */
 static char *str_MergingProb = "Merging Problem";
 static char *str_MergingFontSelf = "Merging a font with itself achieves nothing";
+static char *str_MergingCIDMismatch = "When merging two CID keyed fonts, they must have the same Registry and Ordering, and the font being merged into (the mergee) must have a supplement which is at least as recent as the other's. Furthermore the mergee must have at least as many subfonts as the merger."
 static char *str_Other = "Other ..."
 static char *str_FontToMergeInto = "Font to merge into %.20hs";
 static char *str_InterpolatingProb = "Interpolating Problem";

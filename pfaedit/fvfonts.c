@@ -405,86 +405,158 @@ return( sf->charcnt );
 return( cnt );
 }
 
-void MergeFont(FontView *fv,SplineFont *other) {
-    int i,cnt, doit, emptypos, index, enc_cnt, j;
+static void _MergeFont(SplineFont *into,SplineFont *other) {
+    int i,cnt, doit, emptypos, index, enc_cnt, j,k;
+    SplineFont *o_sf, *bitmap_into;
     BDFFont *bdf;
     FontView *fvs;
     int *mapping;
+
+    enc_cnt = SFEncodingCnt(into);
+    for ( i=into->charcnt-1; i>=enc_cnt && into->chars[i]==NULL; --i );
+    emptypos = i+1;
+    mapping = galloc(other->charcnt*sizeof(int));
+    memset(mapping,-1,other->charcnt*sizeof(int));
+
+    bitmap_into = into->cidmaster!=NULL? into->cidmaster : into;
+
+    for ( doit=0; doit<2; ++doit ) {
+	cnt = 0;
+	k = 0;
+	do {
+	    o_sf = ( other->subfonts==NULL ) ? other : other->subfonts[k];
+	    for ( i=0; i<o_sf->charcnt; ++i ) if ( o_sf->chars[i]!=NULL ) {
+		if ( o_sf->chars[i]->splines==NULL && o_sf->chars[i]->refs==NULL &&
+			!o_sf->chars[i]->widthset )
+		    /* Don't bother to copy it */;
+		else if ( !SFHasChar(into,o_sf->chars[i]->unicodeenc,o_sf->chars[i]->name)) {
+		    if ( o_sf->chars[i]->unicodeenc==-1 ) {
+			if ( (index=SFHasName(into,o_sf->chars[i]->name))== -1 )
+			    index = emptypos+cnt++;
+		    } else if ( (index = SFFindChar(into,o_sf->chars[i]->unicodeenc,NULL))==-1 )
+			index = emptypos+cnt++;
+		    if ( doit ) {
+			/* Bug here. Suppose someone has a reference to our empty */
+			/*  char */
+			SplineCharFree(into->chars[index]);
+			into->chars[index] = SplineCharCopy(o_sf->chars[i]);
+			if ( into->bitmaps!=NULL && other->bitmaps!=NULL )
+			    BitmapsCopy(bitmap_into,other,index,i);
+		    } else
+			mapping[i] = index;
+		}
+	    }
+	    if ( !doit ) {
+		if ( emptypos+cnt >= into->charcnt ) {
+		    into->chars = grealloc(into->chars,(emptypos+cnt)*sizeof(SplineChar *));
+		    for ( fvs = into->fv; fvs!=NULL; fvs=fvs->nextsame )
+			if ( fvs->sf == into ) {
+			    fvs->selected = grealloc(fvs->selected,emptypos+cnt);
+			    for ( j=into->charcnt; j<emptypos+cnt; ++j )
+				fvs->selected[j] = false;
+			}
+		    for ( bdf = bitmap_into->bitmaps; bdf!=NULL; bdf=bdf->next )
+			if ( emptypos+cnt > bdf->charcnt )
+			    bdf->chars = grealloc(bdf->chars,(emptypos+cnt)*sizeof(SplineChar *));
+		    for ( fvs = into->fv; fvs!=NULL; fvs=fvs->nextsame )
+			if ( fvs->filled!=NULL )
+			    fvs->filled->chars = grealloc(fvs->filled->chars,(emptypos+cnt)*sizeof(SplineChar *));
+		    for ( i=into->charcnt; i<emptypos+cnt; ++i ) {
+			into->chars[i] = NULL;
+			for ( fvs = into->fv; fvs!=NULL; fvs=fvs->nextsame )
+			    if ( fvs->filled!=NULL )
+				fvs->selected[i] = false;
+			for ( bdf = bitmap_into->bitmaps; bdf!=NULL; bdf=bdf->next )
+			    if ( emptypos+cnt > bdf->charcnt )
+				bdf->chars[i] = NULL;
+			for ( fvs = into->fv; fvs!=NULL; fvs=fvs->nextsame )
+			    if ( fvs->filled!=NULL )
+				fvs->filled->chars[i] = NULL;
+		    }
+		    into->charcnt = emptypos+cnt;
+		    for ( fvs = into->fv; fvs!=NULL; fvs=fvs->nextsame )
+			if ( fvs->filled!=NULL )
+			    fvs->filled->charcnt = emptypos+cnt;
+		    for ( bdf = bitmap_into->bitmaps; bdf!=NULL; bdf=bdf->next )
+			if ( emptypos+cnt > bdf->charcnt )
+			    bdf->charcnt = emptypos+cnt;
+		}
+	    }
+	    ++k;
+	} while ( k<other->subfontcnt );
+    }
+    for ( i=0; i<other->charcnt; ++i ) if ( (index=mapping[i])!=-1 )
+	into->chars[index]->kerns = KernsCopy(other->chars[i]->kerns,mapping,into,other);
+    free(mapping);
+    MergeFixupRefChars(into);
+    if ( other->fv==NULL )
+	SplineFontFree(other);
+    into->changed = true;
+    FontViewReformatAll(into);
+}
+
+static void CIDMergeFont(SplineFont *into,SplineFont *other) {
+    int i,j,k;
+    SplineFont *i_sf, *o_sf;
+    FontView *fvs;
+
+    k = 0;
+    do {
+	o_sf = other->subfonts[k];
+	i_sf = into->subfonts[k];
+	for ( i=o_sf->charcnt-1; i>=0 && o_sf->chars[i]==NULL; --i );
+	if ( i>=i_sf->charcnt ) {
+	    i_sf->chars = grealloc(i_sf->chars,(i+1)*sizeof(SplineChar *));
+	    for ( j=i_sf->charcnt; j<=i; ++j )
+		i_sf->chars[j] = NULL;
+	    for ( fvs = i_sf->fv; fvs!=NULL; fvs=fvs->nextsame )
+		if ( fvs->sf==i_sf ) {
+		    fvs->selected = grealloc(fvs->selected,i+1);
+		    for ( j=i_sf->charcnt; j<=i; ++j )
+			fvs->selected[j] = false;
+		}
+	    i_sf->charcnt = i+1;
+	}
+	for ( i=0; i<o_sf->charcnt; ++i ) if ( o_sf->chars[i]!=NULL ) {
+	    if ( o_sf->chars[i]->splines==NULL && o_sf->chars[i]->refs==NULL &&
+		    !o_sf->chars[i]->widthset )
+		/* Don't bother to copy it */;
+	    else if ( SFHasCID(into,i)==-1 ) {
+		SplineCharFree(i_sf->chars[i]);
+		i_sf->chars[i] = SplineCharCopy(o_sf->chars[i]);
+		if ( into->bitmaps!=NULL && other->bitmaps!=NULL )
+		    BitmapsCopy(into,other,i,i);
+	    }
+	}
+	MergeFixupRefChars(i_sf);
+	++k;
+    } while ( k<other->subfontcnt );
+    FontViewReformatAll(into);
+    into->changed = true;
+}
+
+void MergeFont(FontView *fv,SplineFont *other) {
 
     if ( fv->sf==other ) {
 	GWidgetErrorR(_STR_MergingProb,_STR_MergingFontSelf);
 return;
     }
-
-    enc_cnt = SFEncodingCnt(fv->sf);
-    for ( i=fv->sf->charcnt-1; i>=enc_cnt && fv->sf->chars[i]==NULL; --i );
-    emptypos = i+1;
-    mapping = galloc(other->charcnt*sizeof(int));
-    memset(mapping,-1,other->charcnt*sizeof(int));
-
-    for ( doit=0; doit<2; ++doit ) {
-	cnt = 0;
-	for ( i=0; i<other->charcnt; ++i ) if ( other->chars[i]!=NULL ) {
-	    if ( other->chars[i]->splines==NULL && other->chars[i]->refs==NULL &&
-		    !other->chars[i]->widthset )
-		/* Don't bother to copy it */;
-	    else if ( !SFHasChar(fv->sf,other->chars[i]->unicodeenc,other->chars[i]->name)) {
-		if ( other->chars[i]->unicodeenc==-1 ) {
-		    if ( (index=SFHasName(fv->sf,other->chars[i]->name))== -1 )
-			index = emptypos+cnt++;
-		} else if ( (index = SFFindChar(fv->sf,other->chars[i]->unicodeenc,NULL))==-1 )
-		    index = emptypos+cnt++;
-		if ( doit ) {
-		    /* Bug here. Suppose someone has a reference to our empty */
-		    /*  char */
-		    SplineCharFree(fv->sf->chars[index]);
-		    fv->sf->chars[index] = SplineCharCopy(other->chars[i]);
-		    if ( fv->sf->bitmaps!=NULL && other->bitmaps!=NULL )
-			BitmapsCopy(fv->sf,other,index,i);
-		} else
-		    mapping[i] = index;
-	    }
-	}
-	if ( !doit ) {
-	    if ( emptypos+cnt >= fv->sf->charcnt ) {
-		fv->sf->chars = grealloc(fv->sf->chars,(emptypos+cnt)*sizeof(SplineChar *));
-		for ( fvs = fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame )
-		    if ( fvs->sf == fv->sf ) {
-			fvs->selected = grealloc(fvs->selected,emptypos+cnt);
-			for ( j=fv->sf->charcnt; j<emptypos+cnt; ++j )
-			    fvs->selected[j] = false;
-		    }
-		for ( bdf = fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
-		    bdf->chars = grealloc(bdf->chars,(emptypos+cnt)*sizeof(SplineChar *));
-		for ( fvs = fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame )
-		    if ( fvs->filled!=NULL )
-			fvs->filled->chars = grealloc(fvs->filled->chars,(emptypos+cnt)*sizeof(SplineChar *));
-		for ( i=fv->sf->charcnt; i<emptypos+cnt; ++i ) {
-		    fv->sf->chars[i] = NULL;
-		    fv->selected[i] = false;
-		    for ( bdf = fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
-			bdf->chars[i] = NULL;
-		    for ( fvs = fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame )
-			if ( fvs->filled!=NULL )
-			    fvs->filled->chars[i] = NULL;
-		}
-		fv->sf->charcnt = emptypos+cnt;
-		for ( fvs = fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame )
-		    if ( fvs->filled!=NULL )
-			fvs->filled->charcnt = emptypos+cnt;
-		for ( bdf = fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
-		    bdf->charcnt = emptypos+cnt;
-	    }
-	}
+    if ( fv->sf->cidmaster!=NULL && other->subfonts!=NULL &&
+	    (strcmp(fv->sf->cidmaster->cidregistry,other->cidregistry)!=0 ||
+	     strcmp(fv->sf->cidmaster->ordering,other->ordering)!=0 ||
+	     fv->sf->cidmaster->supplement<other->supplement ||
+	     fv->sf->cidmaster->subfontcnt<other->subfontcnt )) {
+	GWidgetErrorR(_STR_MergingProb,_STR_MergingCIDMismatch);
+return;
     }
-    for ( i=0; i<other->charcnt; ++i ) if ( (index=mapping[i])!=-1 )
-	fv->sf->chars[index]->kerns = KernsCopy(other->chars[i]->kerns,mapping,fv->sf,other);
-    free(mapping);
-    MergeFixupRefChars(fv->sf);
-    if ( other->fv==NULL )
-	SplineFontFree(other);
-    fv->sf->changed = true;
-    FontViewReformatAll(fv->sf);
+    /* Ok. when merging CID fonts... */
+    /*  If fv is normal and other is CID then just flatten other and merge everything into fv */
+    /*  If fv is CID and other is normal then merge other into the currently active font */
+    /*  If both are CID then merge each subfont seperately */
+    if ( fv->sf->cidmaster!=NULL && other->subfonts!=NULL )
+	CIDMergeFont(fv->sf->cidmaster,other);
+    else
+	_MergeFont(fv->sf,other);
 }
 
 static void MergeAskFilename(FontView *fv) {

@@ -4449,7 +4449,8 @@ return;
 	if ( fv==NULL )
     break;
 	old = fv->filled;
-	new = SplineFontPieceMeal(sf,fv->filled->pixelsize,
+				/* In CID fonts fv->sf may not be same as sf */
+	new = SplineFontPieceMeal(fv->sf,fv->filled->pixelsize,
 		(fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0),
 		NULL);
 	for ( fvs=fv; fvs!=NULL; fvs=fvs->nextsame )
