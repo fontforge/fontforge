@@ -4146,7 +4146,7 @@ static void gsubExtensionSubTable(FILE *ttf, int stoffset,
     }
 }
 
-static struct feature *readttffeatures(FILE *ttf,int32 pos,int isgpos) {
+static struct feature *readttffeatures(FILE *ttf,int32 pos,int isgpos, struct ttfinfo *info) {
     /* read the features table returning an array containing all interesting */
     /*  features */
     int cnt;
@@ -4159,6 +4159,8 @@ static struct feature *readttffeatures(FILE *ttf,int32 pos,int isgpos) {
     if ( cnt<=0 )
 return( NULL );
     features = gcalloc(cnt+1,sizeof(struct feature));
+    info->feats[isgpos] = galloc((cnt+1)*sizeof(uint32));
+    info->feats[isgpos][0] = 0;
     for ( i=0; i<cnt; ++i ) {
 	features[i].tag = tag = getlong(ttf);
 	features[i].offset = getushort(ttf);
@@ -4176,7 +4178,7 @@ return( NULL );
 return( features );
 }
 
-static struct lookup *compactttflookups(struct feature *features) {
+static struct lookup *compactttflookups(struct feature *features,uint32 *feats) {
     /* go through the feature table we read, and return an array containing */
     /*  all lookup indeces which match the feature tag */
     int cnt;
@@ -4216,6 +4218,14 @@ return( NULL );
 
     lookups[j].lookup = -1;
     lookups[j].tag = lookups[j].script = 0;
+
+    for ( i=0; i<j ; ++i ) for ( k=0; k<j; ++k ) if ( lookups[k].lookup==i ) {
+	for ( l=0; feats[l]!=0 && feats[l]!=lookups[k].tag; ++l );
+	if ( feats[l]==0 ) {
+	    feats[l] = lookups[k].tag;
+	    feats[l+1] = 0;
+	}
+    }
 return( lookups );
 }
 
@@ -4350,11 +4360,11 @@ static void readttfgpossub(FILE *ttf,struct ttfinfo *info,int gpos) {
     script_off = getushort(ttf);
     feature_off = getushort(ttf);
     lookup_start = base+getushort(ttf);
-    features = readttffeatures(ttf,base+feature_off,gpos);
+    features = readttffeatures(ttf,base+feature_off,gpos,info);
     if ( features==NULL )		/* None of the data we care about */
 return;
     tagTtfFeaturesWithScript(ttf,base+script_off,features);
-    lookups = compactttflookups( features );
+    lookups = compactttflookups( features,info->feats[gpos] );
     if ( lookups==NULL )
 return;
     
@@ -4364,6 +4374,7 @@ return;
     lu_offsets = galloc(lu_cnt*sizeof(uint16));
     for ( i=0; i<lu_cnt; ++i )
 	lu_offsets[i] = getushort(ttf);
+
     for ( k=0; lookups[k].lookup!=(uint16) -1; ++k ) {
 	i = lookups[k].lookup;
 	if ( i>=lu_cnt )
@@ -5080,7 +5091,7 @@ static uint32 readmortchain(FILE *ttf,struct ttfinfo *info, uint32 base, int ism
     uint32 chain_len, nfeatures, nsubtables;
     uint32 enable_flags, disable_flags, flags;
     int featureType, featureSetting;
-    int i,j,k;
+    int i,j,k,l;
     uint32 length, coverage;
     uint32 here;
     uint32 tag;
@@ -5125,6 +5136,13 @@ return( chain_len );
 	for ( j=k-1; j>=0 && !(flags&tmf[j].enable_flags); --j );
 	if ( j>=0 ) {
 	    info->mort_subs_tag = tmf[j].tag;
+	    for ( l=0; info->feats[0][l]!=0; ++l )
+		if ( info->feats[0][l]==tmf[j].tag )
+	    break;
+	    if ( info->feats[0][l]==0 && l<info->mort_max ) {
+		info->feats[0][l] = tmf[j].tag;
+		info->feats[0][l+1] = 0;
+	    }
 	    switch( coverage&0xff ) {
 	      case 0:
 		/* Indic rearangement */
@@ -5168,6 +5186,9 @@ static void readttfmort(FILE *ttf,struct ttfinfo *info) {
     if ( version!=0x00010000 && version != 0x00020000 )
 return;
     nchains = getlong(ttf);
+    info->mort_max = nchains*33;		/* Maximum of one feature per bit ? */
+    info->feats[0] = galloc((info->mort_max+1)*sizeof(uint32));
+    info->feats[0][0] = 0;
     for ( i=0; i<nchains; ++i ) {
 	here = ftell(ttf);
 	len = readmortchain(ttf,info,base,ismorx);
@@ -5554,6 +5575,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     SplineFont *sf;
     int i;
     BDFFont *bdf;
+    struct table_ordering *ord;
 
     sf = SplineFontEmpty();
     sf->display_size = -default_fv_font_size;
@@ -5641,6 +5663,21 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 		SCLigDefault(sf->chars[i]);
 	}
     }
+
+    if ( info->feats[0]!=NULL ) {
+	ord = chunkalloc(sizeof(struct table_ordering));
+	ord->table_tag = CHR('G','S','U','B');		/* or mort/morx */
+	ord->ordered_features = info->feats[0];
+	sf->orders = ord;
+    }
+    if ( info->feats[1]!=NULL ) {
+	ord = chunkalloc(sizeof(struct table_ordering));
+	ord->table_tag = CHR('G','P','O','S');
+	ord->ordered_features = info->feats[1];
+	ord->next = sf->orders;
+	sf->orders = ord;
+    }
+
 return( sf );
 }
 

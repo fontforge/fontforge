@@ -714,6 +714,7 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
     int i, realcnt;
     BDFFont *bdf;
     struct ttflangname *ln;
+    struct table_ordering *ord;
 
     fprintf(sfd, "FontName: %s\n", sf->fontname );
     if ( sf->fullname!=NULL )
@@ -755,7 +756,16 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	putc('\n',sfd);
 	fprintf(sfd, "LineGap: %d\n", sf->pfminfo.linegap );
 	fprintf(sfd, "VLineGap: %d\n", sf->pfminfo.vlinegap );
-	putc('\n',sfd);
+	/*putc('\n',sfd);*/
+    }
+    for ( ord = sf->orders; ord!=NULL ; ord = ord->next ) {
+	for ( i=0; ord->ordered_features[i]!=0; ++i );
+	fprintf( sfd, "TableOrder: %c%c%c%c %d\n",
+		ord->table_tag>>24, (ord->table_tag>>16)&0xff, (ord->table_tag>>8)&0xff, ord->table_tag&0xff,
+		i );
+	for ( i=0; ord->ordered_features[i]!=0; ++i )
+	    fprintf( sfd, "\t%c%c%c%c\n",
+		    ord->ordered_features[i]>>24, (ord->ordered_features[i]>>16)&0xff, (ord->ordered_features[i]>>8)&0xff, ord->ordered_features[i]&0xff );
     }
     for ( ln = sf->names; ln!=NULL; ln=ln->next )
 	SFDDumpLangName(sfd,ln);
@@ -2128,6 +2138,25 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 		    lastan->next = an;
 		lastan = an;
 	    }
+	} else if ( strmatch(tok,"TableOrder:")==0 ) {
+	    int temp;
+	    struct table_ordering *ord;
+	    while ((ch=getc(sfd))==' ' );
+	    ord = chunkalloc(sizeof(struct table_ordering));
+	    ord->table_tag = (ch<<24) | (getc(sfd)<<16);
+	    ord->table_tag |= getc(sfd)<<8;
+	    ord->table_tag = getc(sfd);
+	    getint(sfd,&temp);
+	    ord->ordered_features = galloc((temp+1)*sizeof(uint32));
+	    ord->ordered_features[temp] = 0;
+	    for ( i=0; i<temp; ++i ) {
+		while ( isspace((ch=getc(sfd))) );
+		ord->ordered_features[i] = (ch<<24) | (getc(sfd)<<16);
+		ord->ordered_features[i] |= (getc(sfd)<<8);
+		ord->ordered_features[i] |= getc(sfd);
+	    }
+	    ord->next = sf->orders;
+	    sf->orders = ord;
 	} else if ( strmatch(tok,"BeginPrivate:")==0 ) {
 	    SFDGetPrivate(sfd,sf);
 	} else if ( strmatch(tok,"BeginSubrs:")==0 ) {	/* leave in so we don't croak on old sfd files */

@@ -148,6 +148,9 @@ struct ttfinfo {
 
     uint32 mort_subs_tag;
     uint16 *morx_classes;
+
+    uint32 *feats[2];			/* Order of gsub/gpos (morx) features */
+    int mort_max;
 };
 
 struct tabdir {
@@ -481,6 +484,8 @@ enum touchflags { tf_x=1, tf_y=2, tf_d=4, tf_endcontour=0x80, tf_startcontour=0x
 extern void otf_dumpgpos(struct alltabs *at, SplineFont *sf);
 extern void otf_dumpgsub(struct alltabs *at, SplineFont *sf);
 extern void otf_dumpgdef(struct alltabs *at, SplineFont *sf);
+
+extern int TTFFeatureIndex( uint32 tag, struct table_ordering *ord );
 
     /* Apple Advanced Typography Tables */
 extern void aat_dumpacnt(struct alltabs *at, SplineFont *sf);

@@ -980,17 +980,21 @@ return( 0 );
 return( chain+1 );
 }
 
-static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,FILE *temp) {
+static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
+	FILE *temp,struct table_ordering *ord) {
     uint32 def_flags=0;
     struct feature *f, *n;
     int subcnt=0, scnt=0;
     uint32 chain_start, end;
     char *buf;
-    int len, tot;
+    int len, tot, cnt;
+    struct feature *all[32], *ftemp;
+    int i,j;
 
-    for ( f=features; f!=NULL; f=n ) {
+    for ( f=features, cnt=0; f!=NULL; f=n ) {
 	if ( f->chain==chain ) {
 	    for ( n=f; n!=NULL && n->featureType==f->featureType; n=n->next ) {
+		all[cnt++] = n;
 		++subcnt;
 		if ( n->defaultOn )
 		    def_flags |= n->flag;
@@ -1000,6 +1004,16 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
 	} else
 	    n = f->next;
     }
+
+    if ( cnt>32 ) GDrawIError("Too many features in chain");
+    for ( i=0; i<cnt; ++i ) for ( j=i+1; j<cnt; ++j ) {
+	if ( TTFFeatureIndex(all[i]->otftag,ord)>TTFFeatureIndex(all[j]->otftag,ord)) {
+	    ftemp = all[i];
+	    all[i] = all[j];
+	    all[j] = ftemp;
+	}
+    }
+	
 
     /* Chain header */
     chain_start = ftell(at->morx);
@@ -1033,7 +1047,8 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
 
     buf = galloc(16*1024);
     /* Subtables */
-    for ( f=features; f!=NULL; f=f->next ) if ( f->chain==chain ) {
+    /* Ordered by tag */
+    for ( i=0; i<cnt; ++i ) if ( (f=all[i])->chain==chain ) {
 	putlong(at->morx,f->feature_len+12);		/* Size of header needs to be added */
 	putlong(at->morx,(f->vertOnly?0x80000000:f->r2l?0:0x20000000) | f->subtable_type);
 	putlong(at->morx,f->flag);
@@ -1068,6 +1083,7 @@ void aat_dumpmorx(struct alltabs *at, SplineFont *sf) {
     FILE *temp = tmpfile();
     struct feature *features = NULL;
     int nchains, i;
+    struct table_ordering *ord;
 
     features = aat_dumpmorx_substitutions(at,sf,temp,features);
     features = aat_dumpmorx_glyphforms(at,sf,temp,features);
@@ -1083,8 +1099,9 @@ return;
     at->morx = tmpfile();
     putlong(at->morx,0x00020000);
     putlong(at->morx,nchains);
+    for ( ord = sf->orders; ord!=NULL && ord->table_tag!=CHR('G','S','U','B'); ord = ord->next );
     for ( i=0; i<nchains; ++i )
-	morxDumpChain(at,features,i,temp);
+	morxDumpChain(at,features,i,temp,ord);
     fclose(temp);
     morxfeaturesfree(features);
     

@@ -2831,6 +2831,15 @@ void AnchorClassesFree(AnchorClass *an) {
     }
 }
 
+void TableOrdersFree(struct table_ordering *ord) {
+    struct table_ordering *onext;
+    for ( ; ord!=NULL; ord = onext ) {
+	onext = ord->next;
+	free(ord->ordered_features);
+	chunkfree(ord,sizeof(AnchorClass));
+    }
+}
+
 void SplineFontFree(SplineFont *sf) {
     int i;
 
@@ -2851,6 +2860,7 @@ return;
     free(sf->version);
     SplinePointListFree(sf->gridsplines);
     AnchorClassesFree(sf->anchor);
+    TableOrdersFree(sf->orders);
     UndoesFree(sf->gundoes);
     UndoesFree(sf->gredoes);
     PSDictFree(sf->private);

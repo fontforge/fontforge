@@ -584,6 +584,7 @@ typedef struct splinefont {
     uint16 desired_row_cnt, desired_col_cnt;
     AnchorClass *anchor;
     struct glyphnamehash *glyphnames;
+    struct table_ordering { uint32 table_tag; uint32 *ordered_features; struct table_ordering *next; } *orders;
 } SplineFont;
 
 /* mac styles. Useful idea we'll just steal it */
@@ -712,6 +713,7 @@ extern void SFRemoveAnchorClass(SplineFont *sf,AnchorClass *an);
 extern AnchorPoint *APAnchorClassMerge(AnchorPoint *anchors,AnchorClass *into,AnchorClass *from);
 extern void AnchorClassMerge(SplineFont *sf,AnchorClass *into,AnchorClass *from);
 extern void AnchorClassesFree(AnchorClass *kp);
+extern void TableOrdersFree(struct table_ordering *ord);
 extern AnchorClass *AnchorClassMatch(SplineChar *sc1,SplineChar *sc2,
 	AnchorClass *restrict_, AnchorPoint **_ap1,AnchorPoint **_ap2 );
 extern AnchorClass *AnchorClassMkMkMatch(SplineChar *sc1,SplineChar *sc2,

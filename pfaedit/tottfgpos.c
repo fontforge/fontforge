@@ -45,7 +45,7 @@ struct lookup {
     int lookup_type;
     int lookup_cnt;
     int feature_cnt;
-    uint32 offset;
+    uint32 offset, len;
     struct lookup *next;
     struct lookup *script_next;
     struct lookup *feature_next;
@@ -599,6 +599,7 @@ return( lookups );
 	fseek(gpos,new->offset+2,SEEK_SET);
 	putshort(gpos,coverage_offset-new->offset);
 	fseek(gpos,0,SEEK_END);
+	new->len = ftell(gpos)-new->offset;
     }
 return( lookups );
 }
@@ -607,7 +608,7 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *ac,
 	enum anchor_type at,
 	SplineChar **marks,SplineChar **base,struct lookup *lookups) {
     SplineChar **glyphs;
-    struct lookup *new, *end=lookups, *l;
+    struct lookup *new, *l;
     int i,j,cnt,k, pos, offset, suboffset, tot, max, mask;
     uint32 coverage_offset, markarray_offset;
     AnchorPoint *ap, **aps;
@@ -698,11 +699,12 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *ac,
 	fseek(gpos,0,SEEK_END);
 	dumpcoveragetable(gpos,glyphs);
 	free(glyphs);
-    }
-    /* All of the previous lookups share the same tables for their marks */
-    coverage_offset = ftell(gpos);
-    dumpcoveragetable(gpos,marks);
-    markarray_offset = ftell(gpos);
+
+    /* We tried sharing the mark table, (among all these sub-tables) but */
+    /*  that doesn't work once we need to be able to reorder the sub-tables */
+	coverage_offset = ftell(gpos);
+	dumpcoveragetable(gpos,marks);
+	markarray_offset = ftell(gpos);
 	for ( cnt=0; marks[cnt]!=NULL; ++cnt );
 	putshort(gpos,cnt);
 	offset = 2+4*cnt;
@@ -717,11 +719,14 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *ac,
 	    putshort(gpos,ap->me.x);	/* X coord of attachment */
 	    putshort(gpos,ap->me.y);	/* Y coord of attachment */
 	}
-    for ( l=lookups; l!=end; l=l->next ) {
+
 	fseek(gpos,l->offset+2,SEEK_SET);	/* mark coverage table offset */
-	putshort(gpos,coverage_offset-l->offset);
+	putshort(gpos,coverage_offset-new->offset);
 	fseek(gpos,4,SEEK_CUR);
-	putshort(gpos,markarray_offset-l->offset);
+	putshort(gpos,markarray_offset-new->offset);
+
+	fseek(gpos,0,SEEK_END);
+	new->len = ftell(gpos)-new->offset;
     }
     fseek(gpos,0,SEEK_END);
 return( lookups );
@@ -970,6 +975,7 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 		    new->next = lookups;
 		    lookups = new;
 		    dumpGPOSsimplepos(lfile,sf,glyphs,ligtags[j]);
+		    new->len = ftell(lfile)-new->offset;
 		}
 	    }
 	}
@@ -992,6 +998,7 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 	new->next = lookups;
 	lookups = new;
 	dumpgposkerndata(lfile,sf,sc->script,at);
+	new->len = ftell(lfile)-new->offset;
     }
 
     /* Every Anchor Class gets its own lookup (and may get several if it has */
@@ -1019,6 +1026,14 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 return( lookups );
 }
 
+static int SkipThisTag(uint32 tag) {
+    /* Skip the tags that I've added to deal with mac features which don't */
+    /*  quite match */
+    int type,setting;
+return( isupper(tag>>24) && isupper((tag>>16)&0xff) && isupper((tag>>8)&0xff) && isupper(tag&0xff) &&
+	OTTagToMacFeature(tag,&type,&setting));
+}
+
 static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
 	struct alltabs *at) {
     struct lookup *lookups = NULL, *new;
@@ -1039,7 +1054,7 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
 	    fprintf( stderr, "Warning: Ligature '%s' beginning with glyph '%s' has no associated script.\n No GSUB entry will be generated for it.\n",
 		    sf->chars[i]->ligofme->lig->u.lig.lig->name,
 		    sf->chars[i]->name );
-	for ( ll = sf->chars[i]->ligofme; ll!=NULL; ll=ll->next ) {
+	for ( ll = sf->chars[i]->ligofme; ll!=NULL; ll=ll->next ) if ( !SkipThisTag(ll->lig->tag)) {
 	    for ( j=0; j<cnt; ++j )
 		if ( ligtags[j]==ll->lig->tag ) {
 			flag_sets[j] |= 1<<(ll->lig->flags>>1);
@@ -1074,6 +1089,7 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
 	    new->next = lookups;
 	    lookups = new;
 	    dumpgsubligdata(lfile,sf,sc->script,ligtags[j],flags<<1,at);
+	    new->len = ftell(lfile)-new->offset;
 	}
     }
 
@@ -1081,7 +1097,7 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
     for ( type = pst_substitution; type<=pst_multiple; ++type ) {
 	cnt = 0;
 	for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
-	    for ( subs = sf->chars[i]->possub; subs!=NULL; subs=subs->next ) if ( subs->type==type ) {
+	    for ( subs = sf->chars[i]->possub; subs!=NULL; subs=subs->next ) if ( subs->type==type && !SkipThisTag(subs->tag)) {
 		if ( sf->chars[i]->script==0 )
 		    fprintf( stderr, "Warning: Substitution of '%s' has no associated script.\n No GSUB entry will be generated for it.\n",
 			    sf->chars[i]->name );
@@ -1126,6 +1142,7 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
 			dumpGSUBmultiplesubs(lfile,sf,glyphs,map);
 		    free(glyphs);
 		    GlyphMapFree(map);
+		    new->len = ftell(lfile)-new->offset;
 		}
 	    }
 	}
@@ -1135,19 +1152,29 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
 return( lookups );
 }
 
-static int FeatureIndex( uint32 tag ) {
+int TTFFeatureIndex( uint32 tag, struct table_ordering *ord ) {
     /* This is the order in which features should be executed */
+
+    if ( ord!=NULL ) {
+	int i;
+	for ( i=0; ord->ordered_features[i]!=0; ++i )
+	    if ( ord->ordered_features[i]==tag )
+	break;
+return( i );
+    }
 
     switch ( tag ) {
 /* GSUB ordering */
       case CHR('c','c','m','p'):	/* Must be first? */
 return( -1 );
-      case CHR('i','n','i','t'): case CHR('m','e','d','i'): case CHR('f','i','n','a'): case CHR('i','s','o','l'):
-      case CHR('h','i','n','i'): case CHR('h','m','e','d'):
-      case CHR('r','t','l','a'):
+      case CHR('i','s','o','l'):
 return( 0 );
-      case CHR('s','m','c','p'): case CHR('c','2','s','c'):
+      case CHR('i','n','i','t'): case CHR('m','e','d','i'): case CHR('f','i','n','a'):
+      /*case CHR('h','i','n','i'): case CHR('h','m','e','d'):*/
+      case CHR('r','t','l','a'):
 return( 1 );
+      case CHR('s','m','c','p'): case CHR('c','2','s','c'):
+return( 2 );
       case CHR('l','i','g','a'): case CHR('r','l','i','g'):
       case CHR('d','l','i','g'): case CHR('h','l','i','g'):
       case CHR('f','r','a','c'):
@@ -1157,9 +1184,9 @@ return( 1 );
       case CHR('h','a','l','f'): case CHR('h','a','l','n'):
       case CHR('l','j','m','o'): case CHR('v','j','m','o'):
       case CHR('n','u','k','f'): case CHR('v','a','t','u'):
-return( 2 );
-      case CHR('f','a','l','t'): case CHR('j','a','l','t'):		/* must come after 'fina'/'isol' */
 return( 3 );
+      case CHR('f','a','l','t'): case CHR('j','a','l','t'):		/* must come after 'fina'/'isol' */
+return( 4 );
       case CHR('v','r','t','2'): case CHR('v','e','r','t'):
 return( 101 );		/* Documented to come last */
 /* GPOS ordering */
@@ -1191,21 +1218,55 @@ static struct lookup *reverse_list(struct lookup *lookups) {
 return( lookups );
 }
 
-static struct lookup *orderlookups(struct lookup *lookups,struct lookup **features) {
+static struct lookup *orderlookups(struct lookup **_lookups,struct lookup **features,
+	struct table_ordering *ord, FILE *ordered, FILE *disordered) {
     int cnt,i,j;
     struct lookup **array, *l, *script_start, *temp;
+    struct lookup *lookups = *_lookups;
+    char *buf;
+    int bsize, len, totlen;
 
-    for ( l=lookups, cnt=0; l!=NULL; l=l->next )
-	l->lookup_cnt = cnt++;
+    for ( l=lookups, cnt=0; l!=NULL; l=l->next ) cnt++;
     array = galloc(cnt*sizeof(struct lookup *));
     for ( l=lookups, cnt=0; l!=NULL; l=l->next )
 	array[cnt++] = l;
+
+    /* sort by feature execution order */
+    for ( i=0; i<cnt-1; ++i ) for ( j=i+1; j<cnt; ++j ) {
+	if ( TTFFeatureIndex(array[i]->feature_tag,ord)>TTFFeatureIndex(array[j]->feature_tag,ord)) {
+	    temp = array[i];
+	    array[i] = array[j];
+	    array[j] = temp;
+	}
+    }
+    for ( i=0; i<cnt-1; ++i ) {
+	array[i]->next = array[i+1];
+	array[i]->lookup_cnt = i;
+    }
+    array[i]->lookup_cnt = i;
+    *_lookups = array[0];
+    /* Now reorder the lookup file so that it's also in execution order */
+    bsize = 16*1024;
+    buf = galloc(bsize);
+    for ( i=0; i<cnt; ++i ) {
+	fseek(disordered,array[i]->offset,SEEK_SET);
+	array[i]->offset = ftell(ordered);
+	totlen = array[i]->len;
+	while ( totlen>0 ) {
+	    if ( (len = totlen)>bsize ) len = bsize;
+	    len = fread(buf,1,len,disordered);
+	    fwrite(buf,1,len,ordered);
+	    totlen -= len;
+	}
+    }
+    fclose(disordered);
+    free(buf);
 
     /* sort by script */
     for ( i=0; i<cnt-1; ++i ) for ( j=i+1; j<cnt; ++j ) {
 	if ( array[i]->script > array[j]->script ||
 		(array[i]->script==array[j]->script &&
-		    FeatureIndex(array[i]->feature_tag)>FeatureIndex(array[j]->feature_tag))) {
+		    TTFFeatureIndex(array[i]->feature_tag,ord)>TTFFeatureIndex(array[j]->feature_tag,ord))) {
 	    temp = array[i];
 	    array[i] = array[j];
 	    array[j] = temp;
@@ -1300,31 +1361,30 @@ return( efile );
 
 static FILE *dumpg___info(struct alltabs *at, SplineFont *sf,int is_gpos) {
     /* Dump out either a gpos or a gsub table. gpos handles kerns, gsub ligs */
-    FILE *lfile, *g___, *efile;
+    FILE *lfile, *lfile2, *g___, *efile;
     struct lookup *lookups=NULL, *script_ordered, *feature_ordered, *l, *prev, *next;
     int cnt, offset, i, flags, subcnt;
     char *buf;
     uint32 lookup_list_table_start, feature_list_table_start;
+    struct table_ordering *ord;
 
     lfile = tmpfile();
     if ( is_gpos ) {
 	lookups = GPOSfigureLookups(lfile,sf,at);
+	for ( ord = sf->orders; ord!=NULL && ord->table_tag!=CHR('G','P','O','S'); ord = ord->next );
     } else {
 	lookups = GSUBfigureLookups(lfile,sf,at);
+	for ( ord = sf->orders; ord!=NULL && ord->table_tag!=CHR('G','S','U','B'); ord = ord->next );
     }
     if ( lookups==NULL ) {
-	fclose(lfile);
-return( NULL );
-    } else if ( lookups->offset>=65536 ) {
-	fprintf( stderr, "The %s table generated for this font is too big and won't work.\n"
-"There's just too much info to put in it, and the table is limited to 65k.\n",
-		is_gpos ? "GPOS" : "GSUB" );
 	fclose(lfile);
 return( NULL );
     }
 
     lookups = reverse_list(lookups);
-    script_ordered = orderlookups(lookups,&feature_ordered);
+    lfile2 = tmpfile();
+    script_ordered = orderlookups(&lookups,&feature_ordered,ord,lfile2,lfile);
+    lfile = lfile2;
 
     cnt = 1;
     prev = script_ordered;
@@ -1401,7 +1461,7 @@ return( NULL );
     efile=g___FigureExtensionSubTables(lookups,is_gpos);
     for ( i=0, l=lookups; l!=NULL; l=l->next, ++i ) {
 	putshort(g___,l->lookup_type);
-	/* The right to left flag is not relevant for any of the tables I generate */
+	/* The right to left flag is not relevant for most of the tables I generate */
 	/* but MS has it in tables where it is not relevant, so... */
 	flags = l->script==CHR('a','r','a','b') || l->script==CHR('h','e','b','r');
 	flags |= (l->flags&~1);
