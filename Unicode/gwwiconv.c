@@ -60,6 +60,8 @@ static void endian_detector(void) {
 static enum encoding name_to_enc(const char *encname) {
     struct { const char *name; enum encoding enc; } map[] = {
 	{ "UCS2", e_unicode },
+	{ "UCS-2", e_unicode },
+	{ "UCS-2-INTERNAL", e_unicode },
 	{ "iso8859-1", e_iso8859_1 },
 	{ "iso8859-2", e_iso8859_2 },
 	{ "iso8859-3", e_iso8859_3 },

@@ -632,6 +632,7 @@ static int encmatch(const char *enc,int subok) {
 	{ "ISO_10646/UTF-8", e_utf8 },
 	{ "UCS2", e_unicode },
 	{ "UCS-2", e_unicode },
+	{ "UCS-2-INTERNAL", e_unicode },
 	{ "ISO-10646", e_unicode },
 	{ "ISO_10646", e_unicode },
 #if 0
@@ -661,7 +662,7 @@ return( encs[i].enc );
 #if HAVE_ICONV_H
 	/* I only try to use iconv if the encoding doesn't match one I support*/
 	/*  loading iconv unicode data takes a while */
-	test = iconv_open(enc,"UCS2");
+	test = iconv_open(enc,FindUCS2Name());
 	if ( test==(iconv_t) (-1))
 	    fprintf( stderr, "Neither FontForge nor iconv() supports your encoding (%s) we will pretend\n you asked for latin1 instead.\n", enc );
 	else {

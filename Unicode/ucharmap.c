@@ -377,7 +377,13 @@ return( to_unicode!=(iconv_t) (-1) );
     free(old_local_name);
     old_local_name = copy(iconv_local_encoding_name);
     to_unicode = iconv_open("UCS2",iconv_local_encoding_name);
-    from_unicode = iconv_open(iconv_local_encoding_name,"UCS2");
+    if ( to_unicode!=(iconv_t) (-1) )
+	from_unicode = iconv_open(iconv_local_encoding_name,"UCS2");
+    else {
+	/* libiconv uses a different name */
+	to_unicode = iconv_open("UCS-2-INTERNAL",iconv_local_encoding_name);
+	from_unicode = iconv_open(iconv_local_encoding_name,"UCS-2-INTERNAL");
+    }
     if ( to_unicode == (iconv_t) (-1) ) {
 	fprintf( stderr, "iconv failed to understand encoding %s (or perhaps UCS2)\n",
 		iconv_local_encoding_name);
