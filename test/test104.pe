@@ -1,0 +1,10 @@
+#!/usr/local/bin/pfaedit
+#KANOU has provided a patch which fixes at least some of my remove overlap
+# problems
+
+Open("fonts/SplineOverlapBug1.sfd");
+SelectAll()
+RemoveOverlap()
+#Used to generate many error messages
+RemoveOverlap()
+#Used to crash here
