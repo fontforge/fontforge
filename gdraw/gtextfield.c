@@ -334,7 +334,7 @@ static int GTextField_Show(GTextField *gt, int pos) {
     i = GTextFieldFindLine(gt,pos);
 
     loff = gt->loff_top;
-    if ( gt->lcnt<gt->g.inner.height/gt->fh )
+    if ( gt->lcnt<gt->g.inner.height/gt->fh || loff==0 )
 	loff = 0;
     if ( i<loff )
 	loff = i;
@@ -1993,6 +1993,7 @@ static void gtextfield_resize(GGadget *g, int32 width, int32 height ) {
 	l = gt->loff_top;
 	if ( gt->loff_top>gt->lcnt-gt->g.inner.height/gt->fh )
 	    l = gt->lcnt-gt->g.inner.height/gt->fh;
+	if ( l<0 ) l = 0;
 	if ( l!=gt->loff_top ) {
 	    gt->loff_top = l;
 	    GScrollBarSetPos(&gt->vsb->g,l);
