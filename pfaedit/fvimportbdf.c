@@ -1964,7 +1964,7 @@ static void SFAddToBackground(SplineFont *sf,BDFFont *bdf) {
 
 	    clut = gcalloc(1,sizeof(GClut));
 	    clut->clut_len = 2;
-	    clut->clut[0] = GDrawGetDefaultBackground(NULL);
+	    clut->clut[0] = screen_display==NULL? 0xffffff : GDrawGetDefaultBackground(NULL);
 	    clut->clut[1] = 0x808080;
 	    clut->trans_index = 0;
 	    base->trans = 0;
