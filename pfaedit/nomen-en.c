@@ -3164,7 +3164,9 @@ static char *str_Enabled = "Enabled";
 static char mnemonic_Enabled = 'E';
 static char *str_ThisSettingIsAlreadyUsed = "This setting is already used";
     /* apple statemachine */
-static char *str_FeatureSetting = "Feature, Setting:"
+static char *str_FeatureSetting = "Feature, Setting:";
+static char *str_StartOfInput = "{Start of Input}";
+static char *str_StartOfLine = "{Start of Line}";
 
 static int num_buttonsize = 55;
 static int num_ScaleFactor = 100;

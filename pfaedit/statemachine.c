@@ -219,7 +219,47 @@ static int SMD_Ok(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static void SMD_Expose(SMD *smd,GWindow pixmap,GRect *area) {
+static void SMD_Mouse(SMD *smd,GEvent *event) {
+    static unichar_t space[100];
+    char buf[30];
+    int32 len;
+    GTextInfo **ti;
+
+    GGadgetEndPopup();
+    if ( event->u.mouse.x<smd->xstart || event->u.mouse.x>smd->xstart2+smd->width ||
+	    event->u.mouse.y<smd->ystart || event->u.mouse.y>smd->ystart2+smd->height )
+return;
+
+    if ( event->type==et_mousemove ) {
+	int c = (event->u.mouse.x - smd->xstart2)/smd->statew + smd->offleft;
+	int s = (event->u.mouse.y - smd->ystart2)/smd->stateh + smd->offtop;
+	space[0] = '\0';
+	if ( event->u.mouse.y>=smd->ystart2 && s<smd->state_cnt ) {
+	    sprintf( buf, "State %d\n", s );
+	    uc_strcpy(space,buf);
+	}
+	if ( event->u.mouse.x>=smd->xstart2 && c<smd->class_cnt ) {
+	    sprintf( buf, "Class %d\n", c );
+	    uc_strcat(space,buf);
+	    ti = GGadgetGetList(GWidgetGetControl(smd->gw,CID_Classes),&len);
+	    len = u_strlen(space);
+	    u_strncpy(space+len,ti[c]->text,(sizeof(space)/sizeof(space[0]))-1 - len);
+	} else if ( event->u.mouse.x<smd->xstart2 ) {
+	    if ( s==0 )
+		u_strcat(space,GStringGetResource(_STR_StartOfInput,NULL));
+	    else if ( s==1 )
+		u_strcat(space,GStringGetResource(_STR_StartOfLine,NULL));
+	}
+	if ( space[0]=='\0' )
+return;
+	if ( space[u_strlen(space)-1]=='\n' )
+	    space[u_strlen(space)-1]='\0';
+	GGadgetPreparePopup(smd->gw,space);
+    }
+}
+
+static void SMD_Expose(SMD *smd,GWindow pixmap,GEvent *event) {
+    GRect *area = &event->u.expose.rect;
     GRect rect;
     GRect clip,old1,old2;
     int len, off, i, j, x, y;
@@ -241,7 +281,7 @@ return;
     for ( i=0 ; smd->offtop+i<=smd->state_cnt && (i-1)*smd->stateh<smd->height; ++i ) {
 	GDrawDrawLine(pixmap,smd->xstart,smd->ystart2+i*smd->stateh,smd->xstart+rect.width,smd->ystart2+i*smd->stateh,
 		0x808080);
-	if ( i<smd->state_cnt ) {
+	if ( i+smd->offtop<smd->state_cnt ) {
 	    sprintf( buf, i+smd->offtop<100 ? "St%d" : "%d", i+smd->offtop );
 	    len = strlen( buf );
 	    off = (smd->stateh-len*smd->fh)/2;
@@ -255,7 +295,7 @@ return;
     for ( i=0 ; smd->offleft+i<=smd->class_cnt && (i-1)*smd->statew<smd->width; ++i ) {
 	GDrawDrawLine(pixmap,smd->xstart2+i*smd->statew,smd->ystart,smd->xstart2+i*smd->statew,smd->ystart+rect.height,
 		0x808080);
-	if ( i<smd->class_cnt ) {
+	if ( i+smd->offleft<smd->class_cnt ) {
 	    uc_strcpy(ubuf,"Class");
 	    GDrawDrawText(pixmap,smd->xstart2+i*smd->statew+1,smd->ystart+smd->as+1,
 		ubuf,-1,NULL,0xff0000);
@@ -340,17 +380,133 @@ return;
 	    0x000000);
     GDrawPopClip(pixmap,&old2);
     GDrawPopClip(pixmap,&old1);
-    --rect.width; --rect.height;
     GDrawDrawRect(pixmap,&rect,0x000000);
+    rect.y += rect.height;
+    rect.x += rect.width;
+    LogoExpose(pixmap,event,&rect,dm_fore);
+}
+
+static int SMD_SBReset(SMD *smd) {
+    int oldtop = smd->offtop, oldleft = smd->offleft;
+
+    GScrollBarSetBounds(smd->vsb,0,smd->state_cnt, smd->height/smd->stateh);
+    GScrollBarSetBounds(smd->hsb,0,smd->class_cnt, smd->width/smd->statew);
+    if ( smd->offtop + (smd->height/smd->stateh) >= smd->state_cnt )
+	smd->offtop = smd->state_cnt - (smd->height/smd->stateh);
+    if ( smd->offtop < 0 ) smd->offtop = 0;
+    if ( smd->offleft + (smd->width/smd->statew) >= smd->class_cnt )
+	smd->offleft = smd->class_cnt - (smd->width/smd->statew);
+    if ( smd->offleft < 0 ) smd->offleft = 0;
+    GScrollBarSetPos(smd->vsb,smd->offtop);
+    GScrollBarSetPos(smd->hsb,smd->offleft);
+
+return( oldtop!=smd->offtop || oldleft!=smd->offleft );
+}
+
+static void SMD_HScroll(SMD *smd,struct sbevent *sb) {
+    int newpos = smd->offleft;
+    GRect rect;
+
+    switch( sb->type ) {
+      case et_sb_top:
+        newpos = 0;
+      break;
+      case et_sb_uppage:
+	if ( smd->width/smd->statew == 1 )
+	    --newpos;
+	else
+	    newpos -= smd->width/smd->statew - 1;
+      break;
+      case et_sb_up:
+        --newpos;
+      break;
+      case et_sb_down:
+        ++newpos;
+      break;
+      case et_sb_downpage:
+	if ( smd->width/smd->statew == 1 )
+	    ++newpos;
+	else
+	    newpos += smd->width/smd->statew - 1;
+      break;
+      case et_sb_bottom:
+        newpos = smd->class_cnt - (smd->width/smd->statew);
+      break;
+      case et_sb_thumb:
+      case et_sb_thumbrelease:
+        newpos = -sb->pos;
+      break;
+    }
+    if ( newpos + (smd->width/smd->statew) >= smd->class_cnt )
+	newpos = smd->class_cnt - (smd->width/smd->statew);
+    if ( newpos < 0 ) newpos = 0;
+    if ( newpos!=smd->offleft ) {
+	int diff = newpos-smd->offleft;
+	smd->offleft = newpos;
+	GScrollBarSetPos(smd->hsb,newpos);
+	rect.x = smd->xstart2; rect.y = smd->ystart;
+	rect.width = smd->width;
+	rect.height = smd->height+(smd->ystart2-smd->ystart);
+	GDrawScroll(smd->gw,&rect,-diff*smd->statew,0);
+    }
+}
+
+static void SMD_VScroll(SMD *smd,struct sbevent *sb) {
+    int newpos = smd->offtop;
+    GRect rect;
+
+    switch( sb->type ) {
+      case et_sb_top:
+        newpos = 0;
+      break;
+      case et_sb_uppage:
+	if ( smd->height/smd->stateh == 1 )
+	    --newpos;
+	else
+	    newpos -= smd->height/smd->stateh - 1;
+      break;
+      case et_sb_up:
+        --newpos;
+      break;
+      case et_sb_down:
+        ++newpos;
+      break;
+      case et_sb_downpage:
+	if ( smd->height/smd->stateh == 1 )
+	    ++newpos;
+	else
+	    newpos += smd->height/smd->stateh - 1;
+      break;
+      case et_sb_bottom:
+        newpos = smd->state_cnt - (smd->height/smd->stateh);
+      break;
+      case et_sb_thumb:
+      case et_sb_thumbrelease:
+        newpos = -sb->pos;
+      break;
+    }
+    if ( newpos + (smd->height/smd->stateh) >= smd->state_cnt )
+	newpos = smd->state_cnt - (smd->height/smd->stateh);
+    if ( newpos < 0 ) newpos = 0;
+    if ( newpos!=smd->offtop ) {
+	int diff = newpos-smd->offtop;
+	smd->offtop = newpos;
+	GScrollBarSetPos(smd->vsb,newpos);
+	rect.x = smd->xstart; rect.y = smd->ystart2;
+	rect.width = smd->width+(smd->xstart2-smd->xstart);
+	rect.height = smd->height;
+	GDrawScroll(smd->gw,&rect,0,diff*smd->stateh);
+    }
 }
 
 static int smd_e_h(GWindow gw, GEvent *event) {
     SMD *smd = GDrawGetUserData(gw);
 
-    if ( event->type==et_close ) {
+    switch ( event->type ) {
+      case et_close:
 	_SMD_Cancel(smd);
-    } else if ( event->type==et_destroy ) {
-    } else if ( event->type==et_char ) {
+      break;
+      case et_char:
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("statemachine.html");
 return( true );
@@ -362,10 +518,10 @@ return( true );
 return( true );
 	}
 return( false );
-    } else if ( event->type==et_expose ) {
-	SMD_Expose(smd,gw,&event->u.expose.rect);
-return( false );
-    } else if ( event->type==et_resize ) {
+      case et_expose:
+	SMD_Expose(smd,gw,event);
+      break;
+      case et_resize: {
 	int blen = GDrawPointsToPixels(NULL,GIntGetResource(_NUM_Buttonsize));
 	GRect wsize, csize;
 
@@ -390,22 +546,39 @@ return( false );
 	smd->height = wsize.height-smd->sbdrop-smd->ystart2-csize.width;
 	GGadgetResize(smd->vsb,csize.width,wsize.height-smd->sbdrop-smd->ystart2-csize.width);
 	GGadgetMove(smd->vsb,wsize.width-csize.width-5,smd->ystart2);
+	SMD_SBReset(smd);
 
 	GDrawRequestExpose(smd->gw,NULL,false);
-    } else if ( event->type==et_controlevent && event->u.control.subtype == et_textchanged ) {
-	if ( event->u.control.u.tf_changed.from_pulldown!=-1 ) {
-	    uint32 tag = (uint32) smd->mactags[event->u.control.u.tf_changed.from_pulldown].userdata;
-	    unichar_t ubuf[20];
-	    char buf[20];
-	    /* If they select something from the pulldown, don't show the human */
-	    /*  readable form, instead show the numeric feature/setting */
-	    sprintf( buf,"<%d,%d>", tag>>16, tag&0xffff );
-	    uc_strcpy(ubuf,buf);
-	    GGadgetSetTitle(event->u.control.g,ubuf);
+      } break;
+      case et_mouseup: case et_mousemove: case et_mousedown:
+	SMD_Mouse(smd,event);
+      break;
+      case et_controlevent:
+	switch( event->u.control.subtype ) {
+	  case et_textchanged:
+	    if ( event->u.control.u.tf_changed.from_pulldown!=-1 ) {
+		uint32 tag = (uint32) smd->mactags[event->u.control.u.tf_changed.from_pulldown].userdata;
+		unichar_t ubuf[20];
+		char buf[20];
+		/* If they select something from the pulldown, don't show the human */
+		/*  readable form, instead show the numeric feature/setting */
+		sprintf( buf,"<%d,%d>", tag>>16, tag&0xffff );
+		uc_strcpy(ubuf,buf);
+		GGadgetSetTitle(event->u.control.g,ubuf);
+	    }
+	  break;
+	  case et_scrollbarchange:
+	    if ( event->u.control.g == smd->hsb )
+		SMD_HScroll(smd,&event->u.control.u.sb);
+	    else
+		SMD_VScroll(smd,&event->u.control.u.sb);
+	  break;
 	}
+      break;
 #if 0
-    } else if ( event->type == et_drop ) {
+      case et_drop:
 	smd_Drop(GDrawGetUserData(gw),event);
+      break;
 #endif
     }
 return( true );
