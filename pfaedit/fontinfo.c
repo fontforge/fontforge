@@ -347,6 +347,8 @@ return( false );
 	    if ( sf->chars[i]==NULL || sf->chars[i]->unicodeenc!=i )
 		is_unicode = false;
 	sf->chars = realloc(sf->chars,nchars*sizeof(SplineChar *));
+	for ( i=sf->charcnt; i<nchars; ++i )
+	    sf->chars[i] = NULL;
 #if 0
 	for ( i=sf->charcnt; i<nchars; ++i ) {
 	    SplineChar *sc = sf->chars[i] = calloc(1,sizeof(SplineChar));
@@ -368,6 +370,8 @@ return( false );
 	sf->charcnt = nchars;
 	for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
 	    bdf->chars = realloc(bdf->chars,nchars*sizeof(BDFChar *));
+	    for ( i=bdf->charcnt; i<nchars; ++i )
+		bdf->chars[i] = NULL;
 	    bdf->charcnt = nchars;
 	}
     } else {

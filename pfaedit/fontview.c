@@ -1108,6 +1108,8 @@ static void FVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	else
 	    --pos;
     }
+    if ( pos<0 ) pos = fv->sf->charcnt-1;
+    else if ( pos>= fv->sf->charcnt ) pos = 0;
     if ( pos>=0 && pos<fv->sf->charcnt )
 	FVChangeChar(fv,pos);
 }
@@ -1300,6 +1302,12 @@ static void FVMenuRemoveKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVRemoveKerns(fv);
 }
 
+static void FVMenuPrint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    SFPrintFontList(fv->sf);
+}
+
 static void mtlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int anychars = FVAnyCharSelected(fv);
@@ -1393,6 +1401,7 @@ static unichar_t saveas[] = { 'S', 'a', 'v', 'e', ' ', 'a', 's', '.', '.', '.', 
 static unichar_t generate[] = { 'G', 'e', 'n', 'e', 'r', 'a', 't', 'e', ' ', 'F','o','n','t','s', '.', '.', '.', '\0' };
 static unichar_t import[] = { 'I', 'm', 'p', 'o', 'r', 't',  '.', '.', '.', '\0' };
 static unichar_t close[] = { 'C', 'l', 'o', 's', 'e', '\0' };
+static unichar_t print[] = { 'P', 'r', 'i', 'n', 't', ' ','t','o',' ','f','i','l','e', '.', '.', '.',  '\0' };
 static unichar_t prefs[] = { 'P', 'r', 'e', 'f', 'e', 'r', 'e', 'n', 'c', 'e', 's', '.', '.', '.', '\0' };
 static unichar_t quit[] = { 'Q', 'u', 'i', 't', '\0' };
 static unichar_t _24[] = { '2', '4', ' ', 'p', 'i', 'x', 'e', 'l', ' ', 'o', 'u','t','l','i','n','e', '\0' };
@@ -1460,7 +1469,9 @@ static GMenuItem fllist[] = {
     { { mergekern, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'M' }, 'K', ksm_control|ksm_shift, NULL, NULL, FVMenuMergeKern },
     { { revert, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'R' }, 'R', ksm_control|ksm_shift, NULL, NULL, FVMenuRevert, MID_Revert },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { prefs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'P' }, '\0', ksm_control, NULL, NULL, MenuPrefs },
+    { { print, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'P' }, 'P', ksm_control, NULL, NULL, FVMenuPrint },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { prefs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'e' }, '\0', ksm_control, NULL, NULL, MenuPrefs },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { quit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'Q' }, 'Q', ksm_control, NULL, NULL, MenuExit },
     { NULL }
@@ -1704,7 +1715,7 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
     memset(dummy,'\0',sizeof(*dummy));
     dummy->enc = i;
     if ( sf->encoding_name==em_unicode || sf->encoding_name==em_iso8859_1 )
-	dummy->unicodeenc = i;
+	dummy->unicodeenc = i<65536 ? i : -1;
     else if ( sf->encoding_name==em_adobestandard )
 	dummy->unicodeenc = i>=256?-1:unicode_from_adobestd[i];
     else if ( sf->encoding_name==em_none )

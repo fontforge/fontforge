@@ -988,23 +988,29 @@ static void dumptype0stuff(FILE *out,SplineFont *sf) {
     fprintf( out, "%%%%EOF\n" );
 }
 
-int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format) {
-    FILE *out;
+int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format) {
     char *oldloc;
 
-    if (( out=fopen(fontname,"w"))==NULL )
-return( 0 );
     /* make sure that all doubles get output with '.' for decimal points */
     oldloc = setlocale(LC_NUMERIC,"C");
     dumpfontdict(out,sf,format);
     if ( format==ff_ptype0 )
 	dumptype0stuff(out,sf);
     setlocale(LC_NUMERIC,oldloc);
-    if ( ferror(out)) {
-	fclose(out);
+    if ( ferror(out))
 return( 0 );
-    }
+
+return( true );
+}
+
+int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format) {
+    FILE *out;
+    int ret;
+
+    if (( out=fopen(fontname,"w"))==NULL )
+return( 0 );
+    ret = _WritePSFont(out,sf,format);
     if ( fclose(out)==-1 )
-return( 0 );
-return( 1 );
+	ret = 0;
+return( ret );
 }

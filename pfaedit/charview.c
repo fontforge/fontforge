@@ -289,9 +289,10 @@ static GPointList *MakePoly(CharView *cv, SplinePointList *spl) {
 return( head );
 }
 
-static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp) {
+static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp, SplineSet *spl) {
     GRect r;
     int x, y, cx, cy;
+    Color col = sp==spl->first ? 0x707000 : 0xff0000;
 
     x =  cv->xoff + rint(sp->me.x*cv->scale);
     y = -cv->yoff + cv->height - rint(sp->me.y*cv->scale);
@@ -324,14 +325,14 @@ return;
     if ( sp->pointtype==pt_curve ) {
 	--r.x; --r.y; r.width +=2; r.height += 2;
 	if ( sp->selected )
-	    GDrawDrawElipse(pixmap,&r,0xff0000);
+	    GDrawDrawElipse(pixmap,&r,col);
 	else
-	    GDrawFillElipse(pixmap,&r,0xff0000);
+	    GDrawFillElipse(pixmap,&r,col);
     } else if ( sp->pointtype==pt_corner ) {
 	if ( sp->selected )
-	    GDrawDrawRect(pixmap,&r,0xff0000);
+	    GDrawDrawRect(pixmap,&r,col);
 	else
-	    GDrawFillRect(pixmap,&r,0xff0000);
+	    GDrawFillRect(pixmap,&r,col);
     } else {
 	GPoint gp[5];
 	int dir;
@@ -375,9 +376,9 @@ return;
 	}
 	gp[3] = gp[0];
 	if ( sp->selected )
-	    GDrawDrawPoly(pixmap,gp,4,0xff0000);
+	    GDrawDrawPoly(pixmap,gp,4,col);
 	else
-	    GDrawFillPoly(pixmap,gp,4,0xff0000);
+	    GDrawFillPoly(pixmap,gp,4,col);
     }
 }
 
@@ -413,11 +414,11 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 	if ( dopoints ) {
 	    first = NULL;
 	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-		DrawPoint(cv,pixmap,spline->from);
+		DrawPoint(cv,pixmap,spline->from,spl);
 		if ( first==NULL ) first = spline;
 	    }
 	    if ( spline==NULL )
-		DrawPoint(cv,pixmap,spl->last);
+		DrawPoint(cv,pixmap,spl->last,spl);
 	}
 	for ( cur=gpl; cur!=NULL; cur=cur->next )
 	    GDrawDrawPoly(pixmap,cur->gp,cur->cnt,fg);
@@ -841,6 +842,7 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     cv->heads[dm_fore] = &sc->splines; cv->heads[dm_back] = &sc->backgroundsplines;
     cv->uheads[dm_fore] = &sc->undoes[dm_fore]; cv->rheads[dm_back] = &sc->undoes[dm_back];
     cv->rheads[dm_fore] = &sc->redoes[dm_fore]; cv->rheads[dm_back] = &sc->redoes[dm_back];
+    cv->p.sp = cv->lastselpt = NULL;
 
     CVNewScale(cv);
 
@@ -851,6 +853,7 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     if ( sc->unicodeenc!=-1 && UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff]!=NULL )
 	u_strcat(ubuf, UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff]);
     GDrawSetWindowTitles(cv->gw,ubuf,title);
+    CVInfoDraw(cv,cv->gw);
     free(title);
 }
 
@@ -920,6 +923,7 @@ void CVChar(CharView *cv, GEvent *event ) {
 	    CVMoveSelection(cv,dx,dy);
 	    /* Check for merge!!!! */
 	    CVCharChangedUpdate(cv);
+	    CVInfoDraw(cv,cv->gw);
 	}
     } else if ( !(event->u.chr.state&(ksm_control|ksm_meta)) &&
 	    event->type == et_char &&
@@ -940,6 +944,7 @@ static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
     unichar_t ubuffer[50];
     int ybase = cv->mbh+(cv->infoh-cv->sfh)/2+cv->sas;
     double xdiff, ydiff;
+    SplinePoint *sp;
 
     GDrawSetFont(pixmap,cv->small);
     r.x = RPT_DATA; r.width = 60;
@@ -972,14 +977,15 @@ return;
 	sprintf( buffer, "%.3g%%", (100*cv->scale));
     uc_strcpy(ubuffer,buffer);
     GDrawDrawText(pixmap,MAG_DATA,ybase,ubuffer,-1,NULL,0);
-    if ( cv->p.sp!=NULL ) {
+    sp = cv->p.sp!=NULL ? cv->p.sp : cv->lastselpt;
+    if ( sp ) {
 	double selx, sely;
-	if ( cv->pressed ) {
+	if ( cv->pressed && sp==cv->p.sp ) {
 	    selx = cv->p.constrain.x;
 	    sely = cv->p.constrain.y;
 	} else {
-	    selx = cv->p.sp->me.x;
-	    sely = cv->p.sp->me.y;
+	    selx = sp->me.x;
+	    sely = sp->me.y;
 	}
 	xdiff=cv->info.x-selx;
 	ydiff = cv->info.y-sely;
@@ -1241,6 +1247,7 @@ return;
     if ( cv->active_tool == cvt_pointer ) {
 	fs.select_controls = true;
 	if ( event->u.mouse.state&ksm_meta ) fs.seek_controls = true;
+	cv->lastselpt = NULL;
 	if ( !InSplineSet(&fs,*cv->heads[cv->drawmode])) {
 	    if ( cv->drawmode==dm_fore) {
 		RefChar *rf;
@@ -1296,6 +1303,7 @@ return;
     switch ( cv->active_tool ) {
       case cvt_pointer:
 	CVMouseDownPointer(cv, &fs, event);
+	cv->lastselpt = fs.p->sp;
       break;
       case cvt_magnify: case cvt_minify:
       break;
@@ -1977,6 +1985,8 @@ return( true );
 #define MID_Next	2007
 #define MID_Prev	2008
 #define MID_HideRulers	2009
+#define MID_NextPt	2010
+#define MID_PrevPt	2011
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -2036,6 +2046,7 @@ static unichar_t recent[] = { 'R', 'e', 'c', 'e', 'n', 't',  '\0' };
 static unichar_t openoutline[] = { 'O', 'p', 'e', 'n', ' ', 'O', 'u', 't', 'l', 'i', 'n', 'e', '\0' };
 static unichar_t openbitmap[] = { 'O', 'p', 'e', 'n', ' ', 'B', 'i', 't', 'm', 'a', 'p', '\0' };
 static unichar_t openmetrics[] = { 'O', 'p', 'e', 'n', ' ', 'M', 'e', 't', 'r', 'i', 'c', 's', '\0' };
+static unichar_t print[] = { 'P', 'r', 'i', 'n', 't', ' ','t','o',' ','f','i','l','e', '.', '.', '.',  '\0' };
 static unichar_t revert[] = { 'R', 'e', 'v', 'e','r','t',' ', 'F','i','l','e','\0' };
 static unichar_t save[] = { 'S', 'a', 'v', 'e',  '\0' };
 static unichar_t saveas[] = { 'S', 'a', 'v', 'e', ' ', 'a', 's', '.', '.', '.', '\0' };
@@ -2054,6 +2065,8 @@ static unichar_t hidepoints[] = { 'H', 'i', 'd', 'e', ' ', 'P', 'o', 'i', 'n', '
 static unichar_t _showpoints[] = { 'S', 'h', 'o', 'w', ' ', 'P', 'o', 'i', 'n', 't', 's', '\0' };
 static unichar_t hiderulers[] = { 'H', 'i', 'd', 'e', ' ', 'R', 'u', 'l', 'e', 'r', 's', '\0' };
 static unichar_t _showrulers[] = { 'S', 'h', 'o', 'w', ' ', 'R', 'u', 'l', 'e', 'r', 's', '\0' };
+static unichar_t nextpoint[] = { 'N', 'e', 'x', 't', ' ', 'P', 'o', 'i', 'n', 't',  '\0' };
+static unichar_t prevpoint[] = { 'P', 'r', 'e', 'v', ' ', 'P', 'o', 'i', 'n', 't',  '\0' };
 static unichar_t fill[] = { 'F', 'i', 'l', 'l', '\0' };
 static unichar_t undo[] = { 'U', 'n', 'd', 'o',  '\0' };
 static unichar_t redo[] = { 'R', 'e', 'd', 'o',  '\0' };
@@ -2153,6 +2166,12 @@ static void CVMenuRevert(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 			    /* we get a crash. So delay till after the menu completes */
 }
 
+static void CVMenuPrint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    SCPrintCharacter(cv->sc);
+}
+
 static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
@@ -2243,8 +2262,52 @@ static void CVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     } else {
 	pos = cv->sc->enc-1;
     }
+    if ( pos<0 ) pos = cv->sc->parent->charcnt-1;
+    else if ( pos>= cv->sc->parent->charcnt ) pos = 0;
     if ( pos>=0 && pos<cv->sc->parent->charcnt )
 	CVChangeChar(cv,pos);
+}
+
+static void CVMenuNextPrevPt(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    SplinePoint *selpt, *other;
+    RefChar *r; ImageList *il;
+    SplineSet *spl, *ss;
+
+    if ( !CVOneThingSel(cv,&selpt,&spl,&r,&il))
+return;
+    other = selpt;
+    if ( mi->mid == MID_NextPt ) {
+	if ( other->next!=NULL && other->next->to!=spl->first )
+	    other = other->next->to;
+	else {
+	    if ( spl->next == NULL )
+		spl = *cv->heads[cv->drawmode];
+	    else
+		spl = spl->next;
+	    other = spl->first;
+	}
+    } else {
+	if ( other!=spl->first ) {
+	    other = other->prev->from;
+	} else {
+	    if ( spl==*cv->heads[cv->drawmode] ) {
+		for ( ss = *cv->heads[cv->drawmode]; ss->next!=NULL; ss=ss->next );
+	    } else {
+		for ( ss = *cv->heads[cv->drawmode]; ss->next!=spl; ss=ss->next );
+	    }
+	    spl = ss;
+	    other = ss->last;
+	    if ( spl->last==spl->first && spl->last->prev!=NULL )
+		other = other->prev->from;
+	}
+    }
+    selpt->selected = false;
+    other->selected = true;
+    cv->p.sp = NULL;
+    cv->lastselpt = other;
+    CVInfoDraw(cv,cv->gw);
+    SCUpdateAll(cv->sc);
 }
 
 int GotoChar(SplineFont *sf) {
@@ -2414,6 +2477,10 @@ static void CVDoClear(CharView *cv) {
 		/* garbage collection of images????!!!! */
 	    }
 	}
+    }
+    if ( cv->lastselpt!=NULL || cv->p.sp!=NULL ) {
+	cv->lastselpt = NULL; cv->p.sp = NULL;
+	CVInfoDraw(cv,cv->gw);
     }
 }
 
@@ -3038,6 +3105,20 @@ static void mtlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
+static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    SplinePoint *sp; SplineSet *spl; RefChar *r; ImageList *im;
+    int exactlyone = CVOneThingSel(cv,&sp,&spl,&r,&im);
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_NextPt: case MID_PrevPt:
+	    mi->ti.disabled = !exactlyone;
+	  break;
+	}
+    }
+}
+
 static void CVMenuCenter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     DBounds bb;
@@ -3098,6 +3179,8 @@ static GMenuItem fllist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { import, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'I' }, 'I', ksm_control|ksm_shift, NULL, NULL, CVMenuImport },
     { { revert, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'R' }, 'R', ksm_control|ksm_shift, NULL, NULL, CVMenuRevert, MID_Revert },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { print, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'P' }, 'P', ksm_control, NULL, NULL, CVMenuPrint },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { prefs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'P' }, '\0', ksm_control, NULL, NULL, MenuPrefs },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
@@ -3187,17 +3270,19 @@ static GMenuItem pllist[] = {
 
 static GMenuItem vwlist[] = {
     { { fit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'F' }, 'F', ksm_control, NULL, NULL, CVMenuScale, MID_Fit },
-    { { zoomout, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'i' }, '\0', ksm_control, NULL, NULL, CVMenuScale, MID_ZoomOut },
-    { { zoomin, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'o' }, '\0', ksm_control, NULL, NULL, CVMenuScale, MID_ZoomIn },
+    { { zoomout, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'o' }, '\0', ksm_control, NULL, NULL, CVMenuScale, MID_ZoomOut },
+    { { zoomin, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'i' }, '\0', ksm_control, NULL, NULL, CVMenuScale, MID_ZoomIn },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { next, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'N' }, ']', ksm_control, NULL, NULL, CVMenuChangeChar, MID_Next },
     { { prev, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'P' }, '[', ksm_control, NULL, NULL, CVMenuChangeChar, MID_Prev },
     { { _goto, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'G' }, '>', ksm_shift|ksm_control, NULL, NULL, CVMenuGotoChar },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { hidepoints, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'H' }, 'H', ksm_control, NULL, NULL, CVMenuShowHide, MID_HidePoints },
+    { { hidepoints, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'o' }, 'H', ksm_control, NULL, NULL, CVMenuShowHide, MID_HidePoints },
+    { { nextpoint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'e' }, '}', ksm_shift|ksm_control, NULL, NULL, CVMenuNextPrevPt, MID_NextPt },
+    { { prevpoint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'v' }, '{', ksm_shift|ksm_control, NULL, NULL, CVMenuNextPrevPt, MID_PrevPt },
     { { fill, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'l' }, '\0', 0, NULL, NULL, CVMenuFill, MID_Fill },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
-    { { palettes, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'l' }, '\0', 0, pllist, pllistcheck },
+    { { palettes, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'P' }, '\0', 0, pllist, pllistcheck },
     { { hiderulers, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'R' }, '\0', ksm_control, NULL, NULL, CVMenuShowHideRulers, MID_HideRulers },
     { NULL }
 };
@@ -3208,7 +3293,7 @@ static GMenuItem mblist[] = {
     { { point, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'P' }, 0, 0, ptlist, ptlistcheck },
     { { element, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'l' }, 0, 0, ellist, ellistcheck },
     { { hints, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'H' }, 0, 0, htlist, htlistcheck },
-    { { view, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'V' }, 0, 0, vwlist },
+    { { view, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'V' }, 0, 0, vwlist, vwlistcheck },
     { { metric, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'M' }, 0, 0, mtlist, mtlistcheck },
     { { window, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'W' }, 0, 0, NULL, WindowMenuBuild },
     { NULL }

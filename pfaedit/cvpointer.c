@@ -140,6 +140,7 @@ int CVClearSel(CharView *cv) {
     ImageList *img;
     int needsupdate = 0;
 
+    cv->lastselpt = NULL;
     for ( spl = *cv->heads[cv->drawmode]; spl!=NULL; spl = spl->next ) {
 	if ( spl->first->selected ) { needsupdate = true; spl->first->selected = false; }
 	first = NULL;
@@ -167,12 +168,14 @@ int CVSetSel(CharView *cv) {
     ImageList *img;
     int needsupdate = 0;
 
+    cv->lastselpt = NULL;
     for ( spl = *cv->heads[cv->drawmode]; spl!=NULL; spl = spl->next ) {
 	if ( !spl->first->selected ) { needsupdate = true; spl->first->selected = true; }
 	first = NULL;
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
 	    if ( !spline->to->selected )
 		{ needsupdate = true; spline->to->selected = true; }
+	    cv->lastselpt = spline->to;
 	    if ( first==NULL ) first = spline;
 	}
     }

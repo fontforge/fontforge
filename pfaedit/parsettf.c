@@ -29,6 +29,7 @@
 #include "utype.h"
 #include "ustring.h"
 #include <math.h>
+#include <locale.h>
 
 /* True Type is a really icky format. Nothing is together. It's badly described */
 /*  much of the description is misleading */
@@ -2299,6 +2300,7 @@ static void ttfFixupReferences(struct ttfinfo *info) {
 static int readttf(char *filename, struct ttfinfo *info) {
     FILE *ttf = fopen(filename,"r");
     int i;
+    char *oldloc;
 
     GProgressChangeStages(3);
     if ( ttf==NULL )
@@ -2308,6 +2310,7 @@ return( 0 );
 	fclose(ttf);
 return( 0 );
     }
+    oldloc = setlocale(LC_NUMERIC,"C");		/* TrueType doesn't need this but opentype dictionaries do */
     readttfpreglyph(ttf,info);
     GProgressChangeTotal(info->glyph_cnt);
 
@@ -2334,6 +2337,7 @@ return( 0 );
 	for ( i=0; i<info->glyph_cnt; ++i )
 	    info->chars[i]->lig = SCLigDefault(info->chars[i]);
     fclose(ttf);
+    setlocale(LC_NUMERIC,oldloc);
     ttfFixupReferences(info);
 return( true );
 }

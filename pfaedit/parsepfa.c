@@ -32,6 +32,7 @@
 #include <utype.h>
 #include <unistd.h>
 #include "psfont.h"
+#include <locale.h>
 
 struct fontparse {
     FontDict *fd;
@@ -1280,6 +1281,7 @@ FontDict *ReadPSFont(char *fontname) {
     FILE *in, *temp;
     char *tempname;
     struct fontparse fp;
+    char *oldloc;
 
     in = fopen(fontname,"r");
     if ( in==NULL ) {
@@ -1295,9 +1297,11 @@ return(NULL);
 return(NULL);
     }
 
+    oldloc = setlocale(LC_NUMERIC,"C");
     memset(&fp,'\0',sizeof(fp));
     fp.fd = MakeEmptyFont();
     doubledecrypt(&fp,in,temp);
+    setlocale(LC_NUMERIC,oldloc);
 
     fclose(in); fclose(temp);
     unlink(tempname);

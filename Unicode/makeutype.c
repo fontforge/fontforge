@@ -802,7 +802,7 @@ static void visualalts(void) {
 
     alts[0x269][0] = 0x3b9;
 
-    alts[0x278][0] = 0x3c6;		/* IPA */
+    alts[0x278][0] = 0x3a6;		/* IPA */
     alts[0x299][0] = 0x432;
     alts[0x292][0] = 0x1b7;
     alts[0x29c][0] = 0x43d;
@@ -1020,6 +1020,10 @@ static void visualalts(void) {
     alts[0x3009][0] = '>';
     alts[0x300a][0] = 0xab;
     alts[0x300b][0] = 0xbb;
+}
+
+
+static void cheat(void) {
 
 	    /* Adobe's private use symbols (some) */
     alts[0xf6de][0] = '-';		/* 3/4 em dash */
@@ -1154,10 +1158,6 @@ static void visualalts(void) {
    
     alts[0xf7fd][0] = 0xf779; alts[0xf7fd][1] = 0x301;
     alts[0xf7ff][0] = 0xf779; alts[0xf7ff][1] = 0x308;
-}
-
-
-static void cheat(void) {
 
     mytoupper[0xf6be] = 'J';		/* Adobe's dotlessj character */
     mytotitle[0xf6be] = 'J';

@@ -2180,11 +2180,13 @@ static void GXDrawSyncThread(GDisplay *gd, void (*func)(void *), void *data) {
 
 static void GXDrawProcessTimerEvent(GXDisplay *gdisp,GTimer *timer) {
     struct gevent gevent;
+    GWindow o;
 
     if ( timer->active )
 return;
     timer->active = true;
-    if ( timer->owner->eh!=NULL ) {
+    for ( o = timer->owner; o!=NULL && !o->is_dying; o=o->parent );
+    if ( timer->owner->eh!=NULL && o==NULL ) {
 	gevent.type = et_timer;
 	gevent.w = timer->owner;
 	gevent.u.timer.timer = timer;

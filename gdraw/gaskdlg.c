@@ -122,7 +122,7 @@ return( lb );
 
 static GWindow DlgCreate(const unichar_t *title,const unichar_t *question,
 	unichar_t **answers, const unichar_t *mn, int def, int cancel,
-	struct dlg_info *d, int add_text, int restrict_input) {
+	struct dlg_info *d, int add_text, int restrict_input, int center) {
     GTextInfo qlabels[GLINE_MAX+1], *blabels;
     GGadgetCreateData *gcd;
     int lb, bcnt=0;
@@ -145,15 +145,19 @@ static GWindow DlgCreate(const unichar_t *title,const unichar_t *question,
     /* If we have many questions in quick succession the dlg will jump around*/
     /*  as it tracks the cursor (which moves to the buttons). That's not good*/
     /*  So I don't do undercursor here */
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_centered;
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle;
     if ( restrict_input )
 	wattrs.mask |= wam_restrict;
     else 
 	wattrs.mask |= wam_notrestricted;
+    if ( center )
+	wattrs.mask |= wam_centered;
+    else
+	wattrs.mask |= wam_undercursor;
     wattrs.not_restricted = true;
     wattrs.restrict_input_to_me = 1;
     wattrs.event_masks = ~(1<<et_charup);
-    /*wattrs.undercursor = 1;*/
+    wattrs.undercursor = 1;
     wattrs.centered = 2;
     wattrs.cursor = ct_pointer;
     wattrs.window_title = (unichar_t *) title;
@@ -255,7 +259,20 @@ return( gw );
 int GWidgetAsk(const unichar_t *title,const unichar_t *question,
 	unichar_t **answers, const unichar_t *mn, int def, int cancel) {
     struct dlg_info d;
-    GWindow gw = DlgCreate(title,question,answers,mn,def,cancel,&d,false,true);
+    GWindow gw = DlgCreate(title,question,answers,mn,def,cancel,&d,false,true,false);
+
+    while ( !d.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+return(d.ret);
+}
+
+int GWidgetAskCentered(const unichar_t *title,const unichar_t *question,
+	unichar_t **answers, const unichar_t *mn, int def, int cancel) {
+    struct dlg_info d;
+    GWindow gw = DlgCreate(title,question,answers,mn,def,cancel,&d,false,true,true);
 
     while ( !d.done )
 	GDrawProcessOneEvent(NULL);
@@ -268,7 +285,7 @@ return(d.ret);
 unichar_t *GWidgetAskString(const unichar_t *title,const unichar_t *question,
 	const unichar_t *def) {
     struct dlg_info d;
-    GWindow gw = DlgCreate(title,question,ocb,ocmn,0,1,&d,true,true);
+    GWindow gw = DlgCreate(title,question,ocb,ocmn,0,1,&d,true,true,false);
     unichar_t *ret = NULL;
 
     if ( def!=NULL && *def!='\0' )
@@ -285,7 +302,7 @@ return(ret);
 
 void GWidgetPostNotice(const unichar_t *title,const unichar_t *statement) {
     struct dlg_info d;
-    GWindow gw = DlgCreate(title,statement,ob,ocmn,0,0,&d,false,false);
+    GWindow gw = DlgCreate(title,statement,ob,ocmn,0,0,&d,false,false,true);
     GDrawRequestTimer(gw,40*1000,0,NULL);
     /* Continue merrily on our way. Window will destroy itself in 40 secs */
     /*  or when user kills it. We can ignore it */

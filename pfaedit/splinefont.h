@@ -386,6 +386,7 @@ extern struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
 	struct pschars *subrs);
 enum fontformat { ff_pfa, ff_pfb, ff_ptype3, ff_ptype0, ff_ttf, ff_ttfsym,
 	ff_otf, ff_none };
+extern int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format);
 extern int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format);
 extern int WriteTTFFont(char *fontname,SplineFont *sf, enum fontformat format);
 extern int SFReencodeFont(SplineFont *sf,enum charset new_map);

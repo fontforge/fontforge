@@ -132,6 +132,7 @@ typedef struct charview {
     struct fontview *fv;
     GWindow icon;
     PressedOn p;
+    SplinePoint *lastselpt;
     GWindow tools, layers;
     int8 b1_tool, cb1_tool, b2_tool, cb2_tool;		/* Button 3 does a popup */
     int8 showing_tool, pressed_tool, pressed_display, had_control, active_tool;
@@ -433,4 +434,7 @@ extern char *FindAutoTraceName(void);
 
 extern unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfile,
 	const unichar_t *initial_filter, unichar_t **mimetypes,int mult);
+
+extern void SFPrintFontList(SplineFont *sf);
+extern void SCPrintCharacter(SplineChar *sc);
 #endif

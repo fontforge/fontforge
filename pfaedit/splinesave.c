@@ -619,7 +619,7 @@ return( FigureHintMask(hdb, sp, mask ) );
 	}
     }
 
-    memset(mask,'\0',sizeof(uint [12]));
+    memset(mask,'\0',sizeof(uint8 [12]));
     for ( s=sc->hstem; s!=NULL; ) {
 	if ( s->hintnumber==-1 )
     break;
@@ -984,7 +984,7 @@ return( false );
     if ( r1->transform[4]!=0 || r1->transform[5]!=0 ) {
 	if ( r2->transform[4]!=0 || r2->transform[5]!=0 )
 return( false );			/* Only one can be translated */
-	rt = r1; r1 = r2; r2 = r1;
+	rt = r1; r1 = r2; r2 = rt;
     }
 
     SplineCharFindBounds(r2->sc,&b);

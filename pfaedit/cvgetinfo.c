@@ -244,8 +244,11 @@ return( false );
     free(ci->sc->name);
     ci->sc->name = cu_copy(ret);
     sf->changed = true;
-    sf->encoding_name = em_none;
-	LigSet(ci->sc,lig);
+    if ( (sf->encoding_name<e_first2byte && ci->sc->enc<256) ||
+	    (sf->encoding_name==em_unicode && ci->sc->enc<65536 ) ||
+	    (sf->encoding_name>=e_first2byte && sf->encoding_name!=em_unicode && ci->sc->enc<94*96 ))
+	sf->encoding_name = em_none;
+    LigSet(ci->sc,lig);
 return( true );
 }
 

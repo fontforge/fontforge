@@ -30,6 +30,7 @@
 #include "ustring.h"
 #include "utype.h"
 #include <unistd.h>
+#include <locale.h>
 
 static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
     SplinePoint *first, *sp;
@@ -415,10 +416,13 @@ static void SFDDump(FILE *sfd,SplineFont *sf) {
 
 int SFDWrite(char *filename,SplineFont *sf) {
     FILE *sfd = fopen(filename,"w");
+    char *oldloc;
 
     if ( sfd==NULL )
 return( 0 );
+    oldloc = setlocale(LC_NUMERIC,"C");
     SFDDump(sfd,sf);
+    setlocale(LC_NUMERIC,oldloc);
 return( !ferror(sfd) && fclose(sfd)==0 );
 }
 
@@ -1197,10 +1201,13 @@ return( sf );
 SplineFont *SFDRead(char *filename) {
     FILE *sfd = fopen(filename,"r");
     SplineFont *sf;
+    char *oldloc;
 
     if ( sfd==NULL )
 return( NULL );
+    oldloc = setlocale(LC_NUMERIC,"C");
     sf = SFDGetFont(sfd);
+    setlocale(LC_NUMERIC,oldloc);
     if ( sf!=NULL )
 	sf->filename = copy(filename);
     fclose(sfd);
@@ -1276,10 +1283,13 @@ return( sf );
 SplineFont *SFRecoverFile(char *autosavename) {
     FILE *asfd = fopen( autosavename,"r");
     SplineFont *ret;
+    char *oldloc;
 
     if ( asfd==NULL )
 return(NULL);
+    oldloc = setlocale(LC_NUMERIC,"C");
     ret = SlurpRecovery(asfd);
+    setlocale(LC_NUMERIC,oldloc);
     fclose(asfd);
     if ( ret )
 	ret->autosavename = copy(autosavename);
@@ -1289,9 +1299,11 @@ return( ret );
 void SFAutoSave(SplineFont *sf) {
     int i;
     FILE *asfd = fopen(sf->autosavename,"w");
+    char *oldloc;
 
     if ( asfd==NULL )
 return;
+    oldloc = setlocale(LC_NUMERIC,"C");
     if ( sf->origname!=NULL )		/* might be a new file */
 	fprintf( asfd, "Base: %s\n", sf->origname );
     fprintf( asfd, "Encoding: %d\n", sf->encoding_name );
@@ -1301,6 +1313,7 @@ return;
     fprintf( asfd, "EndChars\n" );
     fprintf( asfd, "EndSplineFont\n" );
     fclose(asfd);
+    setlocale(LC_NUMERIC,oldloc);
     sf->changed_since_autosave = false;
 }
 

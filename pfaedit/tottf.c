@@ -30,6 +30,7 @@
 #include <utype.h>
 #include <time.h>
 #include "ustring.h"
+#include <locale.h>
 
 /* This file produces a ttf file given a splinefont. The most interesting thing*/
 /*  it does is to figure out a quadratic approximation to the cubic splines */
@@ -3269,11 +3270,14 @@ static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
 int WriteTTFFont(char *fontname,SplineFont *sf,enum fontformat format) {
     struct alltabs at;
     FILE *ttf;
+    char *oldloc;
 
     if (( ttf=fopen(fontname,"w+"))==NULL )
 return( 0 );
+    oldloc = setlocale(LC_NUMERIC,"C");		/* TrueType probably doesn't need this, but OpenType does for floats in dictionaries */
     initTables(&at,sf,format);
     dumpttf(ttf,&at,format);
+    setlocale(LC_NUMERIC,oldloc);
     if ( ferror(ttf)) {
 	fclose(ttf);
 return( 0 );

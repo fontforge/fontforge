@@ -458,6 +458,7 @@ return;
     undo->next = *cv->rheads[cv->drawmode];
     *cv->rheads[cv->drawmode] = undo;
     CVCharChangedUpdate(cv);
+    cv->lastselpt = NULL;
 return;
 }
 
@@ -472,6 +473,7 @@ return;
     undo->next = *cv->uheads[cv->drawmode];
     *cv->uheads[cv->drawmode] = undo;
     CVCharChangedUpdate(cv);
+    cv->lastselpt = NULL;
 return;
 }
 
@@ -775,6 +777,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv) {
 
 static void _PasteToCV(CharView *cv,Undoes *paster) {
 
+    cv->lastselpt = NULL;
     switch ( paster->undotype ) {
       case ut_noop:
       break;
@@ -1032,7 +1035,7 @@ static BDFFont *BitmapCreateCheck(FontView *fv,int *yestoall, int first, int pix
 	sprintf( buf, "The clipboard contains a bitmap character of size %d,\na size which is not in your database.\nWould you like to create a bitmap font of that size,\nor ignore this character?",
 		pixelsize );
 	uc_strcpy(ubuf,buf);
-	yes = GWidgetAsk(title,ubuf,buts,mn,0,2);
+	yes = GWidgetAskCentered(title,ubuf,buts,mn,0,2);
 	if ( yes==1 )
 	    *yestoall = true;
 	else

@@ -576,12 +576,15 @@ static int cvlayers_e_h(GWindow gw, GEvent *event) {
 	      break;
 	      case CID_EFore:
 		cv->drawmode = dm_fore;
+		cv->lastselpt = NULL;
 	      break;
 	      case CID_EBack:
 		cv->drawmode = dm_back;
+		cv->lastselpt = NULL;
 	      break;
 	      case CID_EGrid:
 		cv->drawmode = dm_grid;
+		cv->lastselpt = NULL;
 	      break;
 	    }
 	    GDrawRequestExpose(cv->v,NULL,false);

@@ -459,6 +459,8 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 	    pos = ____ABOVE;
     } else if ( (basech==0x1ffe || basech==0x1fbf) && (ch==0x301 || ch==0x300))
 	pos = ____RIGHT;
+    else if ( basech=='l' && ch==0xb7 )
+	pos = ____RIGHT|____OVERSTRIKE;
     else if ( ch==0xb7 )
 	pos = ____OVERSTRIKE;
 

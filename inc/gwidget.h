@@ -93,6 +93,8 @@ unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfil
 	const unichar_t *initial_filter, unichar_t **mimetypes);
 int GWidgetAsk(const unichar_t *title,const unichar_t *question,
 	unichar_t **answers, const unichar_t *mn, int def, int cancel);
+int GWidgetAskCentered(const unichar_t *title,const unichar_t *question,
+	unichar_t **answers, const unichar_t *mn, int def, int cancel);
 unichar_t *GWidgetAskString(const unichar_t *title,const unichar_t *question,
 	const unichar_t *def);
 void GWidgetPostNotice(const unichar_t *title,const unichar_t *statement);
