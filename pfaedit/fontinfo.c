@@ -1303,7 +1303,17 @@ static int _SFReencodeFont(SplineFont *sf,enum charset new_map, SplineFont *targ
     Encoding *item=NULL;
     uint8 *used;
     RefChar *refs;
+    FontView *fv;
     CharView *cv;
+
+    for ( fv=sf->fv; fv!=NULL; fv=fv->nextsame ) {
+	fv->sc_near_top = NULL;
+	for ( i=fv->rowoff*fv->colcnt; i<fv->sf->charcnt && i<(fv->rowoff+fv->rowcnt)*fv->colcnt; ++i )
+	    if ( fv->sf->chars[i]!=NULL ) {
+		fv->sc_near_top = fv->sf->chars[i];
+	break;
+	    }
+    }
 
     if ( target==NULL ) {
 	if ( sf->encoding_name==new_map )
@@ -1440,6 +1450,11 @@ return( false );
     sf->encodingchanged = true;
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
 	SCRefreshTitles(sf->chars[i]);
+    for ( fv=sf->fv; fv!=NULL; fv=fv->nextsame ) if ( fv->sc_near_top!=NULL ) {
+	fv->rowoff = fv->sc_near_top->enc/fv->colcnt;
+	GScrollBarSetPos(fv->vsb,fv->rowoff);
+	/* Don't ask for an expose event yet. We'll get one soon enough */
+    }
 return( true );
 }
 
@@ -2782,7 +2797,7 @@ return( false );
 	MenuExit(NULL,NULL,NULL);
 return( true );
 }
-
+		
 void FontInfo(SplineFont *sf) {
     GRect pos;
     GWindow gw;
