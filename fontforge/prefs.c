@@ -349,8 +349,8 @@ static struct prefs_list {
 	{ "AcuteCenterBottom", pr_bool, &GraveAcuteCenterBottom, NULL, NULL, '\0', NULL, 1, _STR_PrefsPopupGA },
 	{ NULL }
 },
- *prefs_list[] = { general_list, editing_list, args_list, generate_list, hidden_list, NULL },
- *load_prefs_list[] = { general_list, editing_list, args_list, generate_list, hidden_list, oldnames, NULL };
+ *prefs_list[] = { general_list, editing_list, accent_list, args_list, generate_list, hidden_list, NULL },
+ *load_prefs_list[] = { general_list, editing_list, accent_list, args_list, generate_list, hidden_list, oldnames, NULL };
 
 struct visible_prefs_list { int tab_name; struct prefs_list *pl; } visible_prefs_list[] = {
     { _STR_Generic, general_list},
