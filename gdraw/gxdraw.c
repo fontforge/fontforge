@@ -2760,6 +2760,7 @@ return;
 	gevent.u.mouse.y = event->xbutton.y;
 	gevent.u.mouse.button = event->xbutton.button;
 	gevent.u.mouse.device = NULL;
+	gevent.u.mouse.pressure = gevent.u.mouse.xtilt = gevent.u.mouse.ytilt = 0;
 	if ( (event->xbutton.state&0x40) && gdisp->twobmouse_win )
 	    gevent.u.mouse.button = 2;
 	if ( event->type == MotionNotify ) {
