@@ -697,21 +697,23 @@ static void readttfcompositglyph(FILE *ttf,ConicFont *cf,ConicChar *cc, int32 en
 	    cur->transform[3] = get2dot14(ttf);
 	}
 	/* If neither SCALED/UNSCALED specified I'll just assume MS interpretation */
-	/*  because I at least understand that method */
-	if ( (default_to_Apple || (flags & _SCALED_OFFSETS)) && (flags & _ARGS_ARE_XY)) {
-	    cur->transform[4] *= cur->transform[0];
-	    cur->transform[5] *= cur->transform[1];
-	    if ( (RealNear(cur->transform[1],cur->transform[2]) ||
-		    RealNear(cur->transform[1],-cur->transform[2])) &&
-		    !RealNear(cur->transform[1],0)) {
-		/* If it's rotated by a 45 degree angle then multiply by 2 */
-		/*  (presumably not if it's rotated by a multiple of 90) */
-		/*  God knows why, and God knows what we do if it's not a multiple of 45 */
-		cur->transform[4] *= 2;
-		cur->transform[5] *= 2;
+	if ( ((default_to_Apple && !(flags&_UNSCALED_OFFSETS)) ||
+		 (flags & _SCALED_OFFSETS)) &&
+		(flags & _ARGS_ARE_XY) && (flags&(_SCALE|_XY_SCALE|_MATRIX))) {
+	    static int asked = 0;
+	    /* This is not what Apple documents on their website. But it is */
+	    /*  what appears to match the behavior of their rasterizer */
+	    cur->transform[4] *= sqrt(cur->transform[0]*cur->transform[0]+
+		    cur->transform[1]*cur->transform[1]);
+	    cur->transform[5] *= sqrt(cur->transform[2]*cur->transform[2]+
+		    cur->transform[3]*cur->transform[3]);
+	    if ( strstr(cf->tfile->filename,"CompositeMac")==NULL && !asked ) {
+		/* Not interested in the test font I generated myself */
+		asked = true;
+		fprintf( stderr, "Neat! You've got a font that actually uses Apple's scaled composite offsets.\n" );
+		fprintf( stderr, "  I've never seen one, could you send me a copy of %s?\n", cf->tfile->filename );
+		fprintf( stderr, "  Thanks.  gww@silcom.com\n" );
 	    }
-	    fprintf( stderr, "TTF IError: I don't understand Apple's scaled offsets. Please send me a copy\n" );
-	    fprintf( stderr, "  of whatever ttf file you are loading. Thanks.  gww@silcom.com\n" );
 	}
 	cur->use_my_metrics = (flags&_MY_METRICS)?1:0;
 	cur->round = (flags&_ROUND)?1:0;
