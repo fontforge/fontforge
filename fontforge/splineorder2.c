@@ -496,6 +496,38 @@ static SplinePoint *ttfApprox(Spline *ps,real tmin, real tmax, SplinePoint *star
 return( _ttfapprox(ps,tmin,tmax,start));
 }
 
+static void ttfCleanup(SplinePoint *from) {
+    SplinePoint *test, *next;
+
+    for ( test = from; test->next!=NULL; test = next ) {
+	next = test->next->to;
+	/* Too close together to be meaningful when output as ttf */
+	if ( rint(test->me.x) == rint(next->me.x) &&
+		rint(test->me.y) == rint(next->me.y) ) {
+	    if ( next->next==NULL || next==from ) {
+		if ( test==from )
+    break;
+		next->prevcp = from->prevcp;
+		next->noprevcp = from->noprevcp;
+		next->prev = from->prev;
+		next->prev->to = next;
+		SplineFree(from->next);
+		SplinePointFree(from);
+	    } else {
+		test->nextcp = next->nextcp;
+		test->nonextcp = next->nonextcp;
+		test->next = next->next;
+		test->next->from = test;
+		SplineFree(next->prev);
+		SplinePointFree(next);
+		next = test->next->to;
+	    }
+	}
+	if ( next==from )
+    break;
+    }
+}
+
 SplinePoint *SplineTtfApprox(Spline *ps) {
     SplinePoint *from;
     from = chunkalloc(sizeof(SplinePoint));
@@ -529,6 +561,7 @@ SplineSet *SSttfApprox(SplineSet *ss) {
 	    ret->last = ret->first;
 	}
     }
+    ttfCleanup(ret->first);
 return( ret );
 }
 
