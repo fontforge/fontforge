@@ -81,6 +81,13 @@ double IterateSplineSolve(Spline1D *sp, double tmin, double tmax,
     temp = *sp;
     temp.d -= sought;
 
+    if ( temp.a==0 && temp.b==0 && temp.c!=0 ) {
+	t = -temp.d/temp.c;
+	if ( t<0 || t>1 )
+return( -1 );
+return( t );
+    }
+
     low = ((temp.a*tmin+temp.b)*tmin+temp.c)*tmin+temp.d;
     high = ((temp.a*tmax+temp.b)*tmax+temp.c)*tmax+temp.d;
     if ( low<err && low>-err )

@@ -5511,10 +5511,13 @@ static void _CVMenuOverlap(CharView *cv,enum overlap_type ot) {
 
 static void CVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    _CVMenuOverlap(cv,mi->mid==MID_RmOverlap ? over_remove :
-		      mi->mid==MID_Intersection ? over_intersect :
+    int anysel;
+
+    (void) CVAnySel(cv,&anysel,NULL,NULL,NULL);
+    _CVMenuOverlap(cv,mi->mid==MID_RmOverlap ? (anysel ? over_rmselected: over_remove) :
+		      mi->mid==MID_Intersection ? (anysel ? over_intersel : over_intersect ) :
 		      mi->mid==MID_Exclude ? over_exclude :
-			  over_findinter);
+			  (anysel ? over_fisel : over_findinter));
 }
 
 static void CVMenuOrder(GWindow gw,struct gmenuitem *mi,GEvent *e) {

@@ -457,7 +457,7 @@ typedef struct fontview {
     int16 infoh,mbh;
     int16 lab_height;
     int16 colcnt, rowcnt;
-    int32 rowoff, rowltot;		/* can be really big in full unicode */
+    int32 rowoff, rowltot;		/* Can be really big in full unicode */
     int16 cbw,cbh;			/* width/height of a character box */
     struct fontview *next;		/* Next on list of open fontviews */
     struct fontview *nextsame;		/* Next fv looking at this font */
@@ -626,7 +626,6 @@ extern int SFNLTrans(FontView *fv,char *x_expr,char *y_expr);
 extern void FVApplySubstitution(FontView *fv,uint32 script, uint32 lang, uint32 tag);
 extern void NonLinearDlg(FontView *fv,struct charview *cv);
 extern void FVPointOfView(FontView *fv,struct pov_data *);
-extern void CVYPerspective(CharView *cv,double x_vanish, double y_vanish);
 extern void FVBuildAccent(FontView *fv,int onlyaccents);
 extern void FVBuildDuplicate(FontView *fv);
 extern void FVChangeChar(FontView *fv,int encoding);
@@ -1192,6 +1191,8 @@ extern void CVPointOfView(CharView *cv,struct pov_data *);
 extern int PointOfViewDlg(struct pov_data *pov,SplineFont *sf,int flags);
 
 extern SplineChar *FVMakeChar(FontView *fv,int i);
+
+extern void CVYPerspective(CharView *cv,double x_vanish, double y_vanish);
 
 #ifdef FONTFORGE_CONFIG_GDRAW
 extern GMenuItem helplist[];

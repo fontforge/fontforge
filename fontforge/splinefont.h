@@ -129,7 +129,8 @@ typedef struct strokeinfo {
     double (*factor)(void *data,struct spline *spline,real t);
 } StrokeInfo;
 
-enum overlap_type { over_remove, over_intersect, over_exclude, over_findinter };
+enum overlap_type { over_remove, over_rmselected, over_intersect, over_intersel,
+	over_exclude, over_findinter, over_fisel };
 
 enum simpify_flags { sf_cleanup=-1, sf_normal=0, sf_ignoreslopes=1,
 	sf_ignoreextremum=2, sf_smoothcurves=4, sf_choosehv=8,
@@ -1598,11 +1599,12 @@ extern struct freetype_raster *FreeType_GetRaster(void *single_glyph_context,
 	int enc, real ptsize, int dpi);
 extern void FreeType_FreeRaster(struct freetype_raster *raster);
 
-extern int UniFromName(const char *name);
+extern int UniFromName(const char *name,enum uni_interp interp, int encname);
+extern char *StdGlyphName(char *buffer, int uni, enum uni_interp interp);
 #ifdef FONTFORGE_CONFIG_GTK
 #define uUniFromName UniFromName
 #else
-extern int uUniFromName(const unichar_t *name);
+extern int uUniFromName(const unichar_t *name,enum uni_interp interp, int encname);
 #endif
 
 extern void doversion(void);
