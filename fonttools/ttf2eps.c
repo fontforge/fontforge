@@ -787,7 +787,7 @@ static void DumpEpsHeader(FILE *eps, struct ttfinfo *info, int glyph,
 
     fprintf( eps, "%%!PS-Adobe-3.0 EPSF-3.0\n" );
     fprintf( eps, "%%%%BoundingBox: %g %g %g %g\n", xmin, ymin, xmax, ymax );
-    fprintf( eps, "%%%%Pages 0\n" );
+    fprintf( eps, "%%%%Pages: 0\n" );
     fprintf( eps, "%%%%Title: Glyph %d ", glyph );
     if ( info->glyph_names!=NULL && info->glyph_names[glyph]!=NULL )
 	fprintf( eps, " Name: %s", info->glyph_names[glyph]);
@@ -807,9 +807,9 @@ static void DumpEpsHeader(FILE *eps, struct ttfinfo *info, int glyph,
     if ( info->glyph_widths!=NULL )
 	fprintf( eps, "%%Character Width %d\n", info->glyph_widths[glyph]);
     if ( info->glyph_names!=NULL && info->glyph_names[glyph]!=NULL )
-	fprintf( eps, "%%%%Page \"%s\" 1\n", info->glyph_names[glyph] );
+	fprintf( eps, "%%%%Page: \"%s\" 1\n", info->glyph_names[glyph] );
     else
-	fprintf( eps, "%%%%Page \"Glyph%d\" 1\n", glyph );
+	fprintf( eps, "%%%%Page: \"Glyph%d\" 1\n", glyph );
 }
 
 static void DoDumpGlyph(FILE *ttf, FILE *eps, struct ttfinfo *info, int glyph,
