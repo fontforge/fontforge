@@ -354,7 +354,7 @@ static char *forceASCIIcopy(Context *c,char *str) {
     char *pt;
 
     for ( pt=str; *pt; ++pt ) {
-	if ( *pt<=' ' || *pt>=0x7f )
+	if ( *pt<' ' || *pt>=0x7f )
 	    errors(c,"Invalid ASCII character in: ", str );
     }
 return( copy( str ));
