@@ -344,7 +344,7 @@ extern void CVDrawRubberRect(GWindow pixmap, CharView *cv);
 extern void CVSetCharChanged(CharView *cv,int changed);
 extern void CVCharChangedUpdate(CharView *cv);
 extern void SCClearSelPt(SplineChar *sc);
-extern void SCCharChangedUpdate(SplineChar *sc,FontView *fv);
+extern void SCCharChangedUpdate(SplineChar *sc);
 extern void SCSynchronizeWidth(SplineChar *sc,real newwidth, real oldwidth,FontView *fv);
 extern void SCSynchronizeLBearing(SplineChar *sc,char *selected,real off);
 extern int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi);

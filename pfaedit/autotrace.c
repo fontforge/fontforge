@@ -232,7 +232,7 @@ return;
 	unlink(tempname);		/* Might not be needed, but probably is*/
     }
     if ( changed )
-	SCCharChangedUpdate(sc,sc->parent->fv);
+	SCCharChangedUpdate(sc);
 }
 
 static char **makevector(const char *str) {

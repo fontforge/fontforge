@@ -367,6 +367,7 @@ static void readttfhhea(FILE *ttf,struct ttfinfo *info) {
     fseek(ttf,info->hhea_start+4,SEEK_SET);		/* skip over the version number */
     info->ascent = getushort(ttf);
     info->descent = -(short) getushort(ttf);
+    info->pfminfo.linegap = getushort(ttf);
 
     /* fontographer puts the max ascender/min descender here instead. idiots */
     if ( info->ascent==0 && info->descent==0 )
@@ -2539,6 +2540,19 @@ static void readttfos2metrics(FILE *ttf,struct ttfinfo *info) {
 		      info->pfminfo.panose[0]==3 ? 0x41 :	/* Script */
 		      info->pfminfo.panose[0]==4 ? 0x51 :	/* Decorative */
 		      0x51;					/* And pictorial doesn't fit into pfm */
+    if ( info->pfminfo.linegap==0 ) {
+	/* unicoderange[] */ getlong(ttf);
+	/* unicoderange[] */ getlong(ttf);
+	/* unicoderange[] */ getlong(ttf);
+	/* unicoderange[] */ getlong(ttf);
+	/* vendor */ getlong(ttf);
+	/* fsselection */ getushort(ttf);
+	/* firstchar */ getushort(ttf);
+	/* lastchar */ getushort(ttf);
+	/* typoascender */ getushort(ttf);
+	/* typodescender */ getushort(ttf);
+	info->pfminfo.linegap = getushort(ttf);
+    }
     info->pfminfo.pfmset = true;
 }
 

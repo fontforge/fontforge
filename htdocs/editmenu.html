@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 6-Sep-2001 -->
+  <!-- AP: Last modified: 8-Nov-2001 -->
   <TITLE>The Edit Menu</TITLE>
 </HEAD>
 <BODY>
@@ -31,6 +31,8 @@ in text fields.
     <A HREF="#Clear">Clear</A>
   <LI>
     <A HREF="#Merge">Merge</A>
+  <LI>
+    <A HREF="#CopyFg">Copy Fg To Bg</A>
   <LI>
     <A HREF="#All">Select All</A>
   <LI>
@@ -152,6 +154,13 @@ in text fields.
     is selected, the the merge command will remove that point from the path and
     join the two points around the removed one with a new spline which approximates
     the curve between the two before.
+  <DT>
+    <A NAME="CopyFg">Copy Fg To Bg</A>
+  <DD>
+    This command is only available in the Outline and Font Views. It cleans out
+    all the splines in the background layer and replaces them with a copy of
+    all the splines in the foreground layer. Note: Any background images remain.
+    No references are copied.
   <DT>
     Select <A NAME="All">All</A>
   <DD>

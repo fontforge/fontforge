@@ -416,6 +416,7 @@ static struct langstyle *stylelist[] = {regs, demibolds, bolds, heavys, blacks,
 #define CID_FSType		3004
 #define CID_NoSubsetting	3005
 #define CID_OnlyBitmaps		3006
+#define CID_LineGap		3007
 
 #define CID_PanFamily		4001
 #define CID_PanSerifs		4002
@@ -1957,7 +1958,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	int enc;
 	int reformat_fv=0;
 	int upos, uwid, as, des, nchar, oldcnt=sf->charcnt, err = false, weight=0;
-	int uniqueid;
+	int uniqueid, linegap=0;
 	int force_enc=0;
 	real ia, cidversion;
 	const unichar_t *txt; unichar_t *end;
@@ -1997,6 +1998,7 @@ return(true);
 	    weight = u_strtol(_GGadgetGetTitle(GWidgetGetControl(gw,CID_WeightClass)),NULL,10);
 	    if ( weight == 0 )
 		weight = GetIntR(gw,CID_WeightClass,_STR_WeightClass,&err);
+	    linegap = GetIntR(gw,CID_LineGap,_STR_LineGap,&err);
 	}
 	if ( err )
 return(true);
@@ -2060,6 +2062,7 @@ return(true);
 		sf->pfminfo.fstype |=0x200;
 	    for ( i=0; i<10; ++i )
 		sf->pfminfo.panose[i] = (int) (GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_PanFamily+i))->userdata);
+	    sf->pfminfo.linegap = linegap;
 	    sf->pfminfo.pfmset = true;
 	}
 	if ( reformat_fv )
@@ -2129,9 +2132,16 @@ static void TTFSetup(struct gfi_data *d) {
 	/*  give the wrong answer. That's why we don't do this init until we */
 	/*  get to one of the ttf aspects, it gives the user time to set the */
 	/*  name properly */
+	/* And on CURRENT values of ascent and descent */
 	const unichar_t *ufamily = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Family));
 	const unichar_t *umods = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Modifiers));
 	char *n = galloc(u_strlen(ufamily)+u_strlen(umods)+1);
+	const unichar_t *as = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Ascent));
+	const unichar_t *ds = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Descent));
+	unichar_t *aend, *dend;
+	double av=u_strtod(as,&aend),dv=u_strtod(ds,&dend);
+	if ( *aend=='\0' && *dend=='\0' && info.linegap==0 )
+	    info.linegap = .9*(av+dv);
 	cu_strcpy(n,ufamily); cu_strcat(n,umods);
 	SFDefaultOS2Info(&info,d->sf,n);
 	free(n);
@@ -2155,6 +2165,9 @@ static void TTFSetup(struct gfi_data *d) {
 	GGadgetSelectOneListItem(GWidgetGetControl(d->gw,CID_PanFamily+i),info.panose[i]);
     d->ttf_set = true;
     /* FSType is already set */
+    sprintf( buffer, "%d", info.linegap );
+    uc_strcpy(ubuf,buffer);
+    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_LineGap),ubuf);
 }
 
 static int GFI_AspectChange(GGadget *g, GEvent *e) {
@@ -2189,8 +2202,8 @@ void FontInfo(SplineFont *sf) {
     GWindow gw;
     GWindowAttrs wattrs;
     GTabInfo aspects[8];
-    GGadgetCreateData mgcd[10], ngcd[11], egcd[12], psgcd[16], tngcd[7],   pgcd[8], vgcd[11], pangcd[22];
-    GTextInfo mlabel[10], nlabel[11], elabel[12], pslabel[16], tnlabel[7], plabel[8], vlabel[11], panlabel[22], *list;
+    GGadgetCreateData mgcd[10], ngcd[11], egcd[12], psgcd[16], tngcd[7],   pgcd[8], vgcd[13], pangcd[22];
+    GTextInfo mlabel[10], nlabel[11], elabel[12], pslabel[16], tnlabel[7], plabel[8], vlabel[13], panlabel[22], *list;
     struct gfi_data d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20], ncbuf[20], vbuf[20], uibuf[12], regbuf[100];
     int i;
@@ -2715,6 +2728,21 @@ void FontInfo(SplineFont *sf) {
     vgcd[9].gd.popup_msg = GStringGetResource(_STR_OnlyBitmapsPopup,NULL);
     vgcd[9].gd.cid = CID_OnlyBitmaps;
     vgcd[9].creator = GCheckBoxCreate;
+
+    vgcd[10].gd.pos.x = 10; vgcd[10].gd.pos.y = vgcd[9].gd.pos.y+26+6;
+    vlabel[10].text = (unichar_t *) _STR_LineGap;
+    vlabel[10].text_in_resource = true;
+    vgcd[10].gd.label = &vlabel[10];
+    vgcd[10].gd.flags = gg_visible | gg_enabled;
+    vgcd[10].gd.popup_msg = GStringGetResource(_STR_LineGapPopup,NULL);
+    vgcd[10].creator = GLabelCreate;
+
+    vgcd[11].gd.pos.x = 100; vgcd[11].gd.pos.y = vgcd[10].gd.pos.y-6; vgcd[11].gd.pos.width = 140;
+    vgcd[11].gd.flags = gg_visible | gg_enabled;
+	/* Line gap value set later */
+    vgcd[11].gd.cid = CID_LineGap;
+    vgcd[11].gd.popup_msg = vgcd[10].gd.popup_msg;
+    vgcd[11].creator = GTextFieldCreate;
     
 
 /******************************************************************************/

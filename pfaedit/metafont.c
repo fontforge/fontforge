@@ -208,6 +208,21 @@ typedef struct scinfo {
 } SCI;
 
 
+void SCCopyFgToBg(SplineChar *sc, int show) {
+    SplinePointList *fore, *end;
+
+    SCPreserveBackground(sc);
+    fore = SplinePointListCopy(sc->splines);
+    if ( fore!=NULL ) {
+	SplinePointListFree(sc->backgroundsplines);
+	sc->backgroundsplines = NULL;
+	for ( end = fore; end->next!=NULL; end = end->next );
+	end->next = sc->backgroundsplines;
+	sc->backgroundsplines = fore;
+	if ( show )
+	    SCCharChangedUpdate(sc);
+    }
+}
 
 static SCI *SCIinit(SplineChar *sc,MetaFontDlg *meta) {
     /* Does five or six things:
@@ -218,26 +233,18 @@ static SCI *SCIinit(SplineChar *sc,MetaFontDlg *meta) {
 	numbers the points
 	creates the pointinfo list
     */
-    SplinePointList *fore, *end, *ss, *ssnext, *prev;
+    SplinePointList *ss, *ssnext, *prev;
     SplinePoint *sp;
     int cnt;
     SCI *sci;
 
     SCPreserveState(sc,true);
-    SCPreserveBackground(sc);
 
     SplinePointListSimplify(sc,sc->splines,true);		/* Get rid of two points at the same location, they cause us problems */
     if ( sc->manualhints || sc->changedsincelasthinted )
 	SplineCharAutoHint(sc,true);
 
-    fore = SplinePointListCopy(sc->splines);
-    if ( fore!=NULL ) {
-	SplinePointListFree(sc->backgroundsplines);
-	sc->backgroundsplines = NULL;
-	for ( end = fore; end->next!=NULL; end = end->next );
-	end->next = sc->backgroundsplines;
-	sc->backgroundsplines = fore;
-    }
+    SCCopyFgToBg(sc,false);
 
     for ( prev=NULL, ss=sc->splines; ss!=NULL; ss = ssnext ) {
 	ssnext = ss->next;
@@ -1821,7 +1828,7 @@ return;
     StemInfosFree(sc->vstem); sc->vstem = NULL;
     DStemInfosFree(sc->dstem); sc->dstem = NULL;
     SCOutOfDateBackground(sc);
-    SCCharChangedUpdate(sc, meta->fv);
+    SCCharChangedUpdate(sc);
     SCIFree(sci);
 }
 

@@ -264,8 +264,28 @@ return( index );
 return( -1 );
 }
 
+static int SFEncodingCnt(SplineFont *sf) {
+    Encoding *item=NULL;
+
+    if ( sf->encoding_name == em_unicode )
+return( 65536 );
+    else if ( sf->encoding_name == em_none )
+return( sf->charcnt );
+    else if ( sf->encoding_name < em_first2byte )
+return( 256 );
+    else if ( sf->encoding_name <= em_last94x94 )
+return( 96*94 );
+    else if ( sf->encoding_name >= em_base ) {
+	for ( item=enclist; item!=NULL && item->enc_num!=sf->encoding_name;
+		item=item->next );
+	if ( item!=NULL )
+return( item->char_cnt );
+    }
+return( sf->charcnt );
+}
+
 static void MergeFont(FontView *fv,SplineFont *other) {
-    int i,cnt, doit, emptypos, index;
+    int i,cnt, doit, emptypos, index, enc_cnt;
     BDFFont *bdf;
 
     if ( fv->sf==other ) {
@@ -273,13 +293,15 @@ static void MergeFont(FontView *fv,SplineFont *other) {
 return;
     }
 
-    for ( i=fv->sf->charcnt-1; i>=0 && fv->sf->chars[i]==NULL; --i );
+    enc_cnt = SFEncodingCnt(fv->sf);
+    for ( i=fv->sf->charcnt-1; i>=enc_cnt && fv->sf->chars[i]==NULL; --i );
     emptypos = i+1;
 
     for ( doit=0; doit<2; ++doit ) {
 	cnt = 0;
 	for ( i=0; i<other->charcnt; ++i ) if ( other->chars[i]!=NULL ) {
-	    if ( other->chars[i]->splines==NULL && other->chars[i]->refs==NULL )
+	    if ( other->chars[i]->splines==NULL && other->chars[i]->refs==NULL &&
+		    !other->chars[i]->widthset )
 		/* Don't bother to copy it */;
 	    else if ( !SFHasChar(fv->sf,other->chars[i]->unicodeenc,other->chars[i]->name)) {
 		if ( other->chars[i]->unicodeenc==-1 ) {

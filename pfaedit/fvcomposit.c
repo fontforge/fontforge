@@ -320,8 +320,18 @@ return( ymin );
 static real SplineCharFindSlantedBounds(SplineChar *sc,DBounds *bounds, real ia) {
     int ymin, ymax;
     RefChar *rf;
+    BlueData bd;
 
     SplineCharFindBounds(sc,bounds);
+
+    QuickBlues(sc->parent,&bd);
+    if ( bounds->maxy >= bd.xheight-bd.xheight/25 && bounds->maxy <= bd.xheight+bd.xheight/25 )
+	bounds->maxy = bd.xheight;
+    else if ( bounds->maxy >= bd.caph-bd.xheight/25 && bounds->maxy <= bd.caph+bd.xheight/25 )
+	bounds->maxy = bd.caph;
+    else if ( bounds->maxy >= bd.ascent-bd.xheight/25 && bounds->maxy <= bd.ascent+bd.xheight/25 )
+	bounds->maxy = bd.ascent;
+
     ymin = bounds->miny-1, ymax = bounds->maxy+1;
 
     if ( ia!=0 ) {
@@ -409,7 +419,8 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
     real transform[6];
     DBounds bb, rbb;
     real xoff, yoff;
-    real spacing = (sf->ascent+sf->descent)/25;
+    extern int accent_offset;	/* in prefs.c */
+    real spacing = (sf->ascent+sf->descent)*accent_offset/100;
     BDFChar *bc, *rbc;
     int ixoff, iyoff, ispacing, pos;
     BDFFont *bdf;
@@ -519,7 +530,7 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
     if ( copybmp ) {
 	for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
 	    if ( bdf->chars[rsc->enc]!=NULL && bdf->chars[sc->enc]!=NULL ) {
-		if ( (ispacing = (bdf->pixelsize+10)/20)<=1 ) ispacing = 2;
+		if ( (ispacing = (bdf->pixelsize*accent_offset+50)/100)<=1 ) ispacing = 2;
 		rbc = bdf->chars[rsc->enc];
 		BCFlattenFloat(rbc);
 		BCCompressBitmap(rbc);
@@ -659,7 +670,7 @@ static void DoSpaces(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
 	    }
 	}
     }
-    SCCharChangedUpdate(sc,fv);
+    SCCharChangedUpdate(sc);
     if ( copybmp ) {
 	for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	    if ( bdf->chars[sc->enc]!=NULL )
@@ -763,7 +774,7 @@ static void DoRules(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
 	    }
 	}
     }
-    SCCharChangedUpdate(sc,fv);
+    SCCharChangedUpdate(sc);
     if ( copybmp ) {
 	for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	    if ( bdf->chars[sc->enc]!=NULL )
@@ -891,7 +902,7 @@ return;
 	while ( *pt )
 	    SCPutRefAfter(sc,sf,*pt++,copybmp);
     }
-    SCCharChangedUpdate(sc,fv);
+    SCCharChangedUpdate(sc);
     if ( copybmp ) {
 	for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	    if ( bdf->chars[sc->enc]!=NULL )

@@ -111,7 +111,7 @@ static void FVStrokeIt(void *_fv, StrokeInfo *si) {
 	}
 	SplinePointListsFree( sc->splines );
 	sc->splines = head;
-	SCCharChangedUpdate(sc,fv);
+	SCCharChangedUpdate(sc);
 	if ( !GProgressNext())
     break;
     }

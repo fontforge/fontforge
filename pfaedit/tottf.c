@@ -2965,7 +2965,7 @@ static void sethhead(struct hhead *hhead,struct alltabs *at, SplineFont *_sf) {
     hhead->version = 0x00010000;
     hhead->ascender = _sf->ascent;
     hhead->descender = -_sf->descent;
-    hhead->linegap = 0;
+    hhead->linegap = _sf->pfminfo.linegap;
     width = 0x80000000; rbearing = 0x7fffffff;
     j=0;
     do {
@@ -2987,13 +2987,14 @@ static void sethhead(struct hhead *hhead,struct alltabs *at, SplineFont *_sf) {
 
 void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *_sf,char *fontname) {
     int i, samewid= -1, j;
-    SplineFont *sf;
+    SplineFont *sf, *first=NULL;
 
     if ( !pfminfo->pfmset ) {
 	memset(pfminfo,'\0',sizeof(*pfminfo));
 	j=0;
 	do {
 	    sf = ( _sf->subfontcnt==0 ) ? _sf : _sf->subfonts[j];
+	    if ( first==NULL ) first = sf;
 	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 		if ( SCWorthOutputting(sf->chars[i]) ) {
 		    if ( samewid==-1 )
@@ -3094,6 +3095,8 @@ void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *_sf,char *fontname) {
 	}
 	if ( samewid>0 )
 	    pfminfo->panose[3] = 9;
+	if ( pfminfo->linegap == 0 )
+	    pfminfo->linegap = .09*(first->ascent+first->descent);
     }
 }
 
@@ -3184,8 +3187,6 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *_sf,
     int i,j,cnt1,cnt2,first,last,avg1,avg2,k;
     SplineFont *sf = _sf;
 
-    SFDefaultOS2Info(&sf->pfminfo,sf,sf->fontname);
-
     os2->version = 1;
     os2->weightClass = sf->pfminfo.weight;
     os2->widthClass = sf->pfminfo.width;
@@ -3203,7 +3204,7 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *_sf,
     os2->ascender = os2->winascent = at->head.ymax;
     os2->descender = at->head.ymin;
     os2->windescent = -at->head.ymin;
-    os2->linegap = 0;
+    os2->linegap = sf->pfminfo.linegap;
 
     avg1 = avg2 = last = 0; first = 0x10000;
     cnt1 = cnt2 = 0;
@@ -4295,6 +4296,8 @@ static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format
 	real *bsizes, enum bitmapformat bf) {
     int i, j, pos;
     BDFFont *bdf;
+
+    SFDefaultOS2Info(&sf->pfminfo,sf,sf->fontname);
 
     memset(at,'\0',sizeof(struct alltabs));
     at->msbitmaps = bf==bf_ttf_ms;

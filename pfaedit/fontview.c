@@ -704,6 +704,7 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_AllFonts	2112
 #define MID_DisplayedFont	2113
 #define MID_RemoveUndoes	2114
+#define MID_CopyFgToBg	2115
 #define MID_Convert2CID	2800
 #define MID_Flatten	2801
 #define MID_InsertFont	2802
@@ -760,6 +761,15 @@ return;
     PasteIntoFV(fv);
 }
 
+static void FVMenuCopyFgBg(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    int i;
+
+    for ( i=0; i<fv->sf->charcnt; ++i )
+	if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->splines!=NULL )
+	    SCCopyFgToBg(fv->sf->chars[i],true);
+}
+
 static void BCClearAll(BDFChar *bc,FontView *fv) {
     if ( bc==NULL )
 return;
@@ -793,7 +803,7 @@ return;
     DStemInfosFree(sc->dstem); sc->dstem = NULL;
     MinimumDistancesFree(sc->md); sc->md = NULL;
     SCOutOfDateBackground(sc);
-    SCCharChangedUpdate(sc,fv);
+    SCCharChangedUpdate(sc);
 }
 
 static int UnselectedDependents(FontView *fv, SplineChar *sc) {
@@ -893,7 +903,7 @@ static void FVMenuUnlinkRef(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    next = rf->next;
 	    SCRefToSplines(sc,rf);
 	}
-	SCCharChangedUpdate(sc,fv);
+	SCCharChangedUpdate(sc);
     }
 }
 
@@ -962,7 +972,7 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	switch ( mi->mid ) {
 	  case MID_Cut: case MID_Copy: case MID_Clear: case MID_CopyWidth:
 	  case MID_Paste: case MID_CopyRef: case MID_UnlinkRef:
-	  case MID_RemoveUndoes:
+	  case MID_RemoveUndoes: case MID_CopyFgToBg:
 	    mi->ti.disabled = pos==-1;
 	  break;
 	  case MID_Undo: case MID_Redo:
@@ -1057,7 +1067,7 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], char *sel) {
 	SCUndoSetLBearingChange(sc,(int) rint(transform[4]));
 	SCSynchronizeLBearing(sc,NULL,transform[4]);
     }
-    SCCharChangedUpdate(sc,fv);
+    SCCharChangedUpdate(sc);
 }
 
 static void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts) {
@@ -1135,7 +1145,7 @@ static void FVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	MinimumDistancesFree(sc->md);
 	sc->md = NULL;
 	sc->splines = SplineSetRemoveOverlap(sc->splines);
-	SCCharChangedUpdate(sc,fv);
+	SCCharChangedUpdate(sc);
 	if ( !GProgressNext())
     break;
     }
@@ -1155,7 +1165,7 @@ static void FVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	SplineChar *sc = fv->sf->chars[i];
 	SCPreserveState(sc,false);
 	sc->splines = SplineCharSimplify(sc,sc->splines,cleanup);
-	SCCharChangedUpdate(sc,fv);
+	SCCharChangedUpdate(sc);
 	if ( !GProgressNext())
     break;
     }
@@ -1174,7 +1184,7 @@ static void FVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	SplineChar *sc = fv->sf->chars[i];
 	SCPreserveState(sc,false);
 	sc->splines = SplineSetsCorrect(sc->splines);
-	SCCharChangedUpdate(sc,fv);
+	SCCharChangedUpdate(sc);
 	if ( !GProgressNext())
     break;
     }
@@ -1990,6 +2000,7 @@ static GMenuItem edlist[] = {
     { { (unichar_t *) _STR_Copywidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'W' }, 'W', ksm_control, NULL, NULL, FVMenuCopyWidth, MID_CopyWidth },
     { { (unichar_t *) _STR_Paste, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'V', ksm_control, NULL, NULL, FVMenuPaste, MID_Paste },
     { { (unichar_t *) _STR_Clear, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, 0, 0, NULL, NULL, FVMenuClear, MID_Clear },
+    { { (unichar_t *) _STR_CopyFgToBg, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'C', ksm_control|ksm_shift, NULL, NULL, FVMenuCopyFgBg, MID_CopyFgToBg },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_SelectAll, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'A', ksm_control, NULL, NULL, FVMenuSelectAll },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
@@ -3111,6 +3122,7 @@ FontView *FontViewCreate(SplineFont *sf) {
 	if ( bdf==NULL )
 	    bdf = fv->filled;
     }
+    fv->cbw = -1;
     FVChangeDisplayFont(fv,bdf);
     GMenuBarSetItemChecked(fv->mb,default_fv_font_size==24?MID_24:
 				  default_fv_font_size==36?MID_36:

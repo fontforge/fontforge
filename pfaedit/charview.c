@@ -1638,8 +1638,8 @@ void SCClearSelPt(SplineChar *sc) {
     }
 }
 
-void SCCharChangedUpdate(SplineChar *sc,FontView *fv) {
-    if ( fv==NULL ) fv = sc->parent->fv;
+void SCCharChangedUpdate(SplineChar *sc) {
+    FontView *fv = sc->parent->fv;
     sc->changed_since_autosave = true;
     if ( !sc->changed ) {
 	sc->changed = true;
@@ -2296,6 +2296,7 @@ return( true );
 #define MID_Redo	2110
 #define MID_CopyWidth	2111
 #define MID_RemoveUndoes	2112
+#define MID_CopyFgToBg	2115
 #define MID_Clockwise	2201
 #define MID_Counter	2202
 #define MID_GetInfo	2203
@@ -2765,6 +2766,14 @@ return;
     CVCharChangedUpdate(cv);
 }
 
+static void CVCopyFgBg(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    if ( cv->sc->splines==NULL )
+return;
+    SCCopyFgToBg(cv->sc,true);
+}
+
 static void CVSelectAll(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     if ( CVSetSel(cv))
@@ -2818,6 +2827,9 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_Cut: /*case MID_Copy:*/ case MID_Clear:
 	    /* If nothing is selected, copy copies everything */
 	    mi->ti.disabled = !anypoints && !anyrefs && !anyimages;
+	  break;
+	  case MID_CopyFgToBg:
+	    mi->ti.disabled = cv->sc->splines==NULL;
 	  break;
 	  case MID_Paste:
 	    mi->ti.disabled = !CopyContainsSomething();
@@ -2885,13 +2897,16 @@ static void CVMenuPointType(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void ptlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    int type = -2;
-    SplinePointList *spl;
+    int type = -2, cnt=0;
+    SplinePointList *spl, *sel=NULL;
     Spline *spline, *first;
+    SplinePoint *selpt=NULL;
 
     for ( spl = *cv->heads[cv->drawmode]; spl!=NULL && type!=-1; spl = spl->next ) {
 	first = NULL;
 	if ( spl->first->selected ) {
+	    sel = spl;
+	    selpt = spl->first; ++cnt;
 	    if ( type==-2 ) type = spl->first->pointtype;
 	    else if ( type!=spl->first->pointtype ) type = -1;
 	}
@@ -2899,8 +2914,9 @@ static void ptlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    if ( spline->to->selected ) {
 		if ( type==-2 ) type = spline->to->pointtype;
 		else if ( type!=spline->to->pointtype ) type = -1;
+		selpt = spline->to;
+		sel = spl; ++cnt;
 	    }
-	    SplineRefigure(spline);
 	    if ( first == NULL ) first = spline;
 	}
     }
@@ -2918,6 +2934,9 @@ static void ptlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_Curve:
 	    mi->ti.disabled = type==-2;
 	    mi->ti.checked = type==pt_curve;
+	  break;
+	  case MID_MakeFirst:
+	    mi->ti.disabled = cnt!=1 || sel->first->prev==NULL || sel->first==selpt;
 	  break;
 	}
     }
@@ -3075,7 +3094,7 @@ void SCRound2Int(SplineChar *sc,FontView *fv) {
 	r->transform[4] = rint(r->transform[4]);
 	r->transform[5] = rint(r->transform[5]);
     }
-    SCCharChangedUpdate(sc,fv);
+    SCCharChangedUpdate(sc);
 }
 
 static void CVMenuConstrain(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -3314,9 +3333,6 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_RegenBitmaps:
 	    mi->ti.disabled = cv->fv->sf->bitmaps==NULL;
-	  break;
-	  case MID_MakeFirst:
-	    mi->ti.disabled = anypoints!=1 || sel->first->prev==NULL || sel->first==selpt;
 	  break;
 	  case MID_Simplify:
 	    mi->ti.disabled = *cv->heads[cv->drawmode]==NULL;
@@ -3742,6 +3758,7 @@ static GMenuItem edlist[] = {
     { { (unichar_t *) _STR_Paste, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'V', ksm_control, NULL, NULL, CVPaste, MID_Paste },
     { { (unichar_t *) _STR_Clear, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, GK_Delete, 0, NULL, NULL, CVClear, MID_Clear },
     { { (unichar_t *) _STR_Merge, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 'M', ksm_control, NULL, NULL, CVMerge, MID_Merge },
+    { { (unichar_t *) _STR_CopyFgToBg, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'C', ksm_control|ksm_shift, NULL, NULL, CVCopyFgBg, MID_CopyFgToBg },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_SelectAll, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'A', ksm_control, NULL, NULL, CVSelectAll, MID_SelAll },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
@@ -3752,9 +3769,11 @@ static GMenuItem edlist[] = {
 };
 
 static GMenuItem ptlist[] = {
-    { { (unichar_t *) _STR_Curve, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'C' }, '1', ksm_control, NULL, NULL, CVMenuPointType, MID_Curve },
-    { { (unichar_t *) _STR_Corner, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'o' }, '2', ksm_control, NULL, NULL, CVMenuPointType, MID_Corner },
-    { { (unichar_t *) _STR_Tangent, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'T' }, '3', ksm_control, NULL, NULL, CVMenuPointType, MID_Tangent },
+    { { (unichar_t *) _STR_Curve, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'C' }, '2', ksm_control, NULL, NULL, CVMenuPointType, MID_Curve },
+    { { (unichar_t *) _STR_Corner, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'o' }, '3', ksm_control, NULL, NULL, CVMenuPointType, MID_Corner },
+    { { (unichar_t *) _STR_Tangent, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'T' }, '4', ksm_control, NULL, NULL, CVMenuPointType, MID_Tangent },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_MakeFirst, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'r' }, '1', ksm_control, NULL, NULL, CVMenuMakeFirst, MID_MakeFirst },
     { NULL }
 };
 
@@ -3785,7 +3804,6 @@ static GMenuItem ellist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Align, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, '\0', ksm_control|ksm_shift, allist, allistcheck },
     { { (unichar_t *) _STR_Round2int, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '_', ksm_control|ksm_shift, NULL, NULL, CVMenuRound2Int, MID_Round },
-    { { (unichar_t *) _STR_MakeFirst, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'r' }, '1', ksm_control, NULL, NULL, CVMenuMakeFirst, MID_MakeFirst },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Clockwise, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'o' }, '\0', 0, NULL, NULL, CVMenuDir, MID_Clockwise },
     { { (unichar_t *) _STR_Cclockwise, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'n' }, '\0', 0, NULL, NULL, CVMenuDir, MID_Counter },

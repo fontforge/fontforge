@@ -954,12 +954,12 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv) {
 		}
 	    }
 	}
-	SCCharChangedUpdate(sc,fv);
+	SCCharChangedUpdate(sc);
       break;
       case ut_width:
 	SCPreserveWidth(sc);
 	SCSynchronizeWidth(sc,paster->u.width,sc->width,fv);
-	SCCharChangedUpdate(sc,fv);
+	SCCharChangedUpdate(sc);
       break;
     }
 }

@@ -432,6 +432,7 @@ typedef struct splinefont {
 	unsigned short width;
 	char panose[10];
 	int fstype;
+	int linegap;
     } pfminfo;
     struct ttflangname *names;
     char *cidregistry, *ordering;
@@ -700,5 +701,7 @@ void putshort(FILE *file,int sval);
 void putlong(FILE *file,int val);
 void putfixed(FILE *file,real dval);
 int ttfcopyfile(FILE *ttf, FILE *other, int pos);
+
+extern void SCCopyFgToBg(SplineChar *sc,int show);
 #endif
 

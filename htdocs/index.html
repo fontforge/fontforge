@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 2-Nov-2001 -->
+  <!-- AP: Last modified: 8-Nov-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -30,6 +30,11 @@ Contents
 	<A HREF="index.html#binary">Binary</A>
       <LI>
 	<A HREF="index.html#source">Source</A>
+	<UL>
+	  <LI>
+	    <A HREF="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/pfaedit/pfaedit/">Access
+	    to the CVS tree</A>
+	</UL>
       <LI>
 	<A HREF="#image-libs">External libraries used (but not required)</A>
       <LI>
@@ -66,11 +71,11 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-011102.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 2-Nov-2001
+    <A HREF="pfaedit-011108.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 8-Nov-2001
   <LI>
-    <A HREF="pfaedit-solaris-010901.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 1-Sept-2001
+    <A HREF="pfaedit-solaris-011102.tgz">Download pfaedit Solaris 8.0
+    </A>executable Version: 2-Nov-2001
   <LI>
     <A HREF="pfaedit-011102-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
     Version: 2-Nov-2001
@@ -101,22 +106,22 @@ If you want to edit CID keyed fonts you need these
 <P>
 You can download a <A HREF="pfaedit-011102-1.src.rpm">source RPM</A>: Version:
 2-Nov-2001<BR>
-Or you can download the following three packages. Version: 2-Nov-2001
+Or you can download the following three packages. Version: 8-Nov-2001
 <UL>
   <LI>
     <A HREF="libgunicode-011011.tgz">Unicode library source</A> (11-Oct-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
-    <A HREF="libgdraw-011011.tgz">Unicode widget library source</A>
-    (11-Oct-2001)<BR>
+    <A HREF="libgdraw-011108.tgz">Unicode widget library source</A>
+    (8-Nov-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-011102.tgz">Pfaedit source</A> (2-Nov-2001)<BR>
+    <A HREF="pfaedit_src-011108.tgz">Pfaedit source</A> (8-Nov-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
-    <A HREF="pfaedit_full-011102.tgz">All three bundled together </A>(2-Nov-2001)
+    <A HREF="pfaedit_full-011108.tgz">All three bundled together </A>(8-Nov-2001)
 </UL>
 <P>
 If you want to do autotracing around character images you should also download
@@ -226,6 +231,43 @@ up into one <A HREF="pfaedit_htdocs-010925.tgz">tgz file</A> 25-Sept-2001.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    8-Nov-2001
+    <UL>
+      <LI>
+	PfaEdit will now save ligature information in the GSUB table when creating
+	an opentype font.
+      <LI>
+	When double clicking on a previously unused character, PfaEdit would not
+	set the default ligature properly.
+      <LI>
+	PfaEdit would crash if you merged a font containing ligature information
+	into another one (or diagonal stems or minimum distances).
+      <LI>
+	When opening some bdf files, pfaedit would display nothing until you resized
+	the window.
+      <LI>
+	Added the ability to set the TTF linegap fields. There are two of them (one
+	in OS/2 and one in hhea). I don't understand the distinction between them,
+	so I set both to the same value.
+      <LI>
+	When merging fonts, characters which did not fit in the current encoding
+	would be placed immediately after the last character with something in it.
+	The intent was that they should go to an unused slot outside of the encoding
+	rather than within. This has been fixed.
+      <LI>
+	I've added a preference item allowing you to configure the seperation between
+	the base character and the accent in the Build Accented Character command.
+	I've also changed it so that if the character is close to the x-height or
+	the cap height, the accent is positioned as if the character were at the
+	x-height (or cap height), this means the accents will be at a consistent
+	level rather than slightly ragged.
+      <LI>
+	I moved the Make First command to the Point menu.
+      <LI>
+	Added a command to copy the splines in the foreground layer into the background
+	layer.
+    </UL>
   <LI>
     2-Nov-2001
     <UL>
@@ -620,7 +662,9 @@ The following people have helped debug pfaedit. Many thanks!
   <LI>
     Jacob Jansen
   <LI>
-    Ulrich Klauer<BR>
+    Ulrich Klauer
+  <LI>
+    <A HREF="http://canopus.iacp.dvo.ru/~panov/">Andrey V. Panov</A><BR>
     &nbsp;
   <LI>
     And many others!
@@ -672,6 +716,7 @@ now placed in graceful retirement by MacroMedia.
     </UL>
   <LI>
     <A HREF="http://partners.adobe.com/asn/developer/type/opentype.html">OpenType</A>
+    (postscript embedded in a truetype wrapper)
     <UL>
       <LI>
 	Postscript
@@ -681,9 +726,6 @@ now placed in graceful retirement by MacroMedia.
       <LI>
 	<A HREF="http://partners.adobe.com/asn/developer/opentype/">Adobe's version
 	of file format</A>
-      <LI>
-	<A HREF="http://partners.adobe.com/asn/developer/opentype/appendices/ttoreg.html">script
-	&amp; language names for GSUB table</A>
       <LI>
 	<A HREF="http://www.microsoft.com/typography/otspec/default.htm">Microsoft's
 	version</A>

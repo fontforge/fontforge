@@ -219,7 +219,7 @@ static void ApplyChanges(WidthInfo *wi) {
 	transform[4] = ch->newl-ch->lbearing;
 	if ( transform[4]!=0 ) {
 	    FVTrans(wi->sf->fv,ch->sc,transform,rsel);
-	    SCCharChangedUpdate(ch->sc,wi->sf->fv);
+	    SCCharChangedUpdate(ch->sc);
 	}
     }
     free(rsel);
@@ -231,7 +231,7 @@ static void ApplyChanges(WidthInfo *wi) {
 	if ( width!=ch->sc->width ) {
 	    SCPreserveWidth(ch->sc);
 	    SCSynchronizeWidth(ch->sc,width,ch->sc->width,wi->sf->fv);
-	    SCCharChangedUpdate(ch->sc,wi->sf->fv);
+	    SCCharChangedUpdate(ch->sc);
 	}
     }
 }

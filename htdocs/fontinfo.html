@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 28-Oct-2001 -->
+  <!-- AP: Last modified: 6-Nov-2001 -->
   <TITLE>Font Info</TITLE>
 </HEAD>
 <BODY>
@@ -358,7 +358,21 @@ or expanded this font is.
 <P>
 The PFM Family is used when generating PFM files and classifies the font
 into some rather broad catagories (Serif, Sans, Monospace, Script, Decorative).
-<BR Clear=ALL>
+<P>
+You can control whether you want to allow your font to be embedded into other
+documents (most commonly pdf). You can restrict it so that it can never be
+embedded, it can be embedded into documents that can be printed (but not
+edited), it can be embedded into documents that can be edited, or it can
+be embedded into and editable document and later extracted and installed
+on a different system. You can also control whether the document producer
+is allowed to extract the characters it needs and make a new font from them
+(which saves space) or whether they must include the entire font if they
+use any of it. Finally you can restrict the embedding so that only bitmap
+versions of the font may be embedded. (meaningful in CID fonts as well as
+TTF).
+<P>
+You can also specify the default line gap, or leading between
+lines.<BR Clear=ALL>
 <H2>
   <IMG SRC="fontinfo-ttfname.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><A
       NAME="TTF-Names">TTF Names</A>

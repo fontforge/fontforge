@@ -481,7 +481,7 @@ void SCInsertBackImage(SplineChar *sc,GImage *image,real scale,real yoff,real xo
     sc->backimages = im;
     sc->parent->onlybitmaps = false;
     SCOutOfDateBackground(sc);
-    SCCharChangedUpdate(sc,NULL);
+    SCCharChangedUpdate(sc);
 }
 
 static void ImportImage(CharView *cv,char *path) {

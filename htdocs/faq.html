@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 24-Sep-2001 -->
+  <!-- AP: Last modified: 7-Nov-2001 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -48,6 +48,8 @@
   <LI>
     <A HREF="#cidmaps">What on earth are the cidmap files, and should I care
     about them?</A>
+  <LI>
+    <A HREF="#font-install">How do I install the fonts once I've made them?</A>
 </UL>
 <P>
   <HR>
@@ -257,6 +259,92 @@
     <P>
     So the cidmap files are only useful for people working on CID keyed CJK fonts.
     So most europeans/americans won't need them.
+  <DT>
+    <A NAME="font-install">How do I install the fonts once I've made them?</A>
+  <DD>
+    Well it rather depends on what system you are working on, and what type of
+    font you've got:
+    <DL>
+      <DT>
+	<STRONG>Unix &amp; X</STRONG>
+      <DD>
+	I'd suggest that you look at the
+	<A HREF="http://www.linuxdoc.org/HOWTO/Font-HOWTO.html">linux font HOWTO
+	file</A>, and the <A HREF="http://www.linuxdoc.org/HOWTO/mini/FDU/">font
+	deuglification HOWTO</A> as good starting points. But I'll run over the
+	highlights
+	<P>
+	Essentially you designate one (or several) directories as a "font directory".
+	You move your fonts to that directory. You build up certain data structures
+	that X needs, and you tell X to include this directory in your font path.
+	Sadly different versions of X and the X font server use slightly different
+	conventions. You may need to alter these procedures a bit.
+	<P>
+	For example, if you want to install a <EM>bdf font </EM>called frabnuts-13.bdf
+	then you might:
+	<BLOCKQUOTE>
+	  <PRE>$ mkdir my_fonts
+$ mv frabnuts-13.bdf my_fonts
+$ cd my_fonts
+$ bdftopcf frabnuts-13.bdf &gt;frabnuts-13.pcf
+$ mkfontdir
+$ xset fp+ `pwd`
+</PRE>
+	</BLOCKQUOTE>
+	<P>
+	and your fonts should be installed. After that, whenever you start X you
+	need to remind it of where your fonts live, so you should add<BR>
+	<CODE>&nbsp; &nbsp; $ xset fp+ /home/me/my_fonts</CODE><BR>
+	to your .xsession (or equivalent).
+	<P>
+	If you want to install <EM>postscript fonts</EM><BR>
+	You should generate them as postscript binary (.pfb) files, then move both
+	the .pfb and the .afm file into (one of) your font directory(ies) and run
+	<A HREF="http://rpmfind.net/linux/rpm2html/search.php?query=type1inst">type1inst</A>
+	in it.
+	<P>
+	If you want to install <EM>truetype fonts</EM><BR>
+	You move the .ttf file into your font directory and run mkttfdir and
+	mkfontdir.<BR>
+	(<A HREF="http://rpmfind.net/linux/rpm2html/search.php?query=mkttfdir">mkttfdir</A>
+	has a small problem with fonts created by PfaEdit, it will almost invariably
+	complain that it doesn't recognize the foundry. You can safely ignore this,
+	but if it bothers you then add a line to ttmkfdir.c at 936<BR>
+	<CODE> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; { "PFED", "PfaEdit" },</CODE>
+	<P>
+	Some versions of X (ie, those shipped by redhat) rely on the x font server
+	to do font work rather than the X server itself. You may want to use chkfontpath
+	to add your new directory to the font server's font path (rather than xset
+	fp).
+	<P>
+	As far as I know no version of X supports <EM>opentype</EM> fonts yet.
+	<P>
+	That sounds really confusing. I appologize, I'm not a good writer and there
+	are too many choices in configuring X...
+      <DT>
+	<STRONG>Windows</STRONG>
+      <DD>
+	You install truetype fonts on windows by dropping them into the \Windows\Fonts
+	directory on your machine.<BR>
+	If you want to use type1 or opentype fonts you may need to install adobe
+	type manager and follow its instructions.<BR>
+	I don't know how to install a bdf font. I'd look for a utility to convert
+	bdf files to FON files and then drop the FON files into \Windows\Fonts.
+      <DT>
+	<STRONG>Macintosh</STRONG>
+      <DD>
+	Oh dear. The mac sticks fonts into resource forks and wraps them up in its
+	own headers. Mac fonts aren't compatible with anybody else's, and they can't
+	even be generated on other systems because the rely on concepts like resource
+	forks which don't exist elsewhere.<BR>
+	I've written <A HREF="http://fondu.sourceforge.net/">some utilities
+	</A>designed to convert from one format machine to another and they may prove
+	useful.<BR>
+	<A HREF="http://babel.uoregon.edu/yamada/fontconversionfaq.html">University
+	of Oregon has some links that might be helpful</A>.<BR>
+	Once you've converted your fonts you just drop them into the System Folder
+	and they should be available after that.
+    </DL>
 </DL>
 <P>
 <P ALIGN=Center>

@@ -966,18 +966,20 @@ return( true );
 }
 	
 static void GListPopupFigurePos(GGadget *owner,GTextInfo **ti,GRect *pos) {
-    int width, height, width1;
+    int width, height, width1, maxh;
     int i;
     GWindow root = GDrawGetRoot(GDrawGetDisplayOfWindow(owner->base));
-    GRect rsize;
+    GRect rsize, rootsize;
     int bp;
     GPoint pt;
 
     if ( !glist_inited )
 	GListInit();
+    GDrawGetSize(GDrawGetRoot(GDrawGetDisplayOfWindow(owner->base)),&rootsize);
+    maxh = 2*rootsize.height/3;
     width = GTextInfoGetMaxWidth(owner->base,ti,list_font);
     height = 0;
-    for ( i=0; i<7 && (ti[i]->text!=NULL || ti[i]->image!=NULL || ti[i]->line); ++i )
+    for ( i=0; height<maxh && (ti[i]->text!=NULL || ti[i]->image!=NULL || ti[i]->line); ++i )
 	height += GTextInfoGetHeight(owner->base,ti[i],list_font);
     if ( ti[i]->text!=NULL || ti[i]->image!=NULL || ti[i]->line )	/* Need a scroll bar if more */
 	width += GDrawPointsToPixels(owner->base,_GScrollBar_Width) +

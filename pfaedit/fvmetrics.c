@@ -291,7 +291,7 @@ return;
 	    SCSynchronizeWidth(sc,width,sc->width,fv);
 	}
     }
-    SCCharChangedUpdate(sc,fv);
+    SCCharChangedUpdate(sc);
 }
 
 static void FVDoit(CreateWidthData *wd) {

@@ -372,7 +372,7 @@ return( true );
 	else if ( val!=sc->width ) {
 	    SCPreserveWidth(sc);
 	    sc->width = val;
-	    SCCharChangedUpdate(sc,mv->fv);
+	    SCCharChangedUpdate(sc);
 	}
     } else if ( e->u.control.subtype == et_textfocuschanged &&
 	    e->u.control.u.tf_focus.gained_focus ) {
@@ -443,7 +443,7 @@ return( true );
 		transform[4] = sc->width-val-bb.maxx;
 		FVTrans(mv->fv,sc,transform,NULL);
 	    }
-	    SCCharChangedUpdate(sc,mv->fv);
+	    SCCharChangedUpdate(sc);
 	}
     } else if ( e->u.control.subtype == et_textfocuschanged &&
 	    e->u.control.u.tf_focus.gained_focus ) {
@@ -1471,7 +1471,7 @@ return;
 	    if ( diff!=0 ) {
 		SCPreserveWidth(sc);
 		sc->width += diff;
-		SCCharChangedUpdate(sc,mv->fv);
+		SCCharChangedUpdate(sc);
 	    }
 	} else if ( mv->pressedkern ) {
 	    mv->pressedkern = false;
