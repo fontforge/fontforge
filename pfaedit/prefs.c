@@ -29,6 +29,7 @@
 #include "gfile.h"
 #include "gresource.h"
 #include "ustring.h"
+#include <gkeysym.h>
 
 #include <sys/types.h>
 #include <dirent.h>
@@ -631,7 +632,11 @@ static int e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	struct pref_data *p = GDrawGetUserData(gw);
 	p->done = true;
-    } else if ( event->type == et_char ) {
+    } else if ( event->type==et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("prefs.html");
+return( true );
+	}
 return( false );
     }
 return( true );
