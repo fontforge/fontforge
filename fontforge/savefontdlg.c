@@ -75,10 +75,11 @@ struct gfc_data {
     GGadget *bmptype;
     GGadget *bmpsizes;
     GGadget *options;
-    int ps_flags;
-    int ttf_flags;
-    int otf_flags;
+    int ps_flags;		/* The ordering of these flags fields is */
+    int ttf_flags;		/*  important. We index into them */
+    int otf_flags;		/*  don't reorder or put junk in between */
     int psotb_flags;
+    uint8 optset[3];
     SplineFont *sf;
 };
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
@@ -556,7 +557,9 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
 
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_Hints),!(flags&ttf_flag_nohints));
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_FullPS),!(flags&ttf_flag_shortps));
-    if ( which==0 || which==3 )	/* Postscript */
+    if ( d->optset[which] )
+	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_AppleMode),flags&ttf_flag_applemode);
+    else if ( which==0 || which==3 )	/* Postscript */
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_AppleMode),false);
     else if ( alwaysgenapple ||
 	    fs==ff_ttfmacbin || fs==ff_ttfdfont || fs==ff_otfdfont ||
@@ -564,7 +567,9 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_AppleMode),true);
     else
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_AppleMode),false);
-    if ( which==0 )	/* Postscript */
+    if ( d->optset[which] )
+	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OpenTypeMode),flags&ttf_flag_otmode);
+    else if ( which==0 )	/* Postscript */
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OpenTypeMode),false);
     else if ( (fs==ff_ttfmacbin || fs==ff_ttfdfont || fs==ff_otfdfont ||
 	     fs==ff_otfciddfont || d->family || (fs==ff_none && bf==bf_sfnt_dfont)))
@@ -603,6 +608,8 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEdColors),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_TeXTable),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_GlyphMap),which!=0);
+
+    d->optset[which] = true;
 }
 
 #define OPT_Width	230
