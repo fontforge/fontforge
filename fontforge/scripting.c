@@ -1124,11 +1124,13 @@ static void bBitmapsRegen(Context *c) {
 
 static void bImport(Context *c) {
     char *ext, *filename;
-    int format, back, ok;
+    int format, back, ok, flags;
 
-    if ( c->a.argc!=2 && c->a.argc!=3 )
+    if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=4 )
 	error( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_str || (c->a.argc==3 && c->a.vals[2].type!=v_int ))
+    if ( c->a.vals[1].type!=v_str ||
+	    (c->a.argc>=3 && c->a.vals[2].type!=v_int ) ||
+	    (c->a.argc==4 && c->a.vals[3].type!=v_int ))
 	error( c, "Bad type of argument");
     filename = GFileMakeAbsoluteName(c->a.vals[1].u.sval);
     ext = strrchr(filename,'.');
@@ -1138,7 +1140,7 @@ static void bImport(Context *c) {
 	if ( ext[0]!='p' || ext[1]!='k' )
 	    errors( c, "No extension in", filename);
     }
-    back = 0;
+    back = 0; flags = -1;
     if ( strmatch(ext,".bdf")==0 )
 	format = fv_bdf;
     else if ( strmatch(ext,".pcf")==0 )
@@ -1147,7 +1149,7 @@ static void bImport(Context *c) {
 	format = fv_ttf;
     else if ( strmatch(ext,"pk")==0 || strmatch(ext,".pk")==0 ) {
 	format = fv_pk;
-	back = 1;
+	back = true;
     } else if ( strmatch(ext,".eps")==0 || strmatch(ext,".ps")==0 ||
 	    strmatch(ext,".art")==0 ) {
 	if ( strchr(filename,'*')!=NULL )
@@ -1164,9 +1166,12 @@ static void bImport(Context *c) {
 	    format = fv_imgtemplate;
 	else
 	    format = fv_image;
+	back = true;
     }
-    if ( c->a.argc==3 )
+    if ( c->a.argc>=3 )
 	back = c->a.vals[2].u.ival;
+    if ( c->a.argc>=4 )
+	flags = c->a.vals[3].u.ival;
     if ( format==fv_bdf )
 	ok = FVImportBDF(c->curfv,filename,false, back);
     else if ( format==fv_pcf )
@@ -1176,9 +1181,9 @@ static void bImport(Context *c) {
     else if ( format==fv_pk )
 	ok = FVImportBDF(c->curfv,filename,true, back);
     else if ( format==fv_image || format==fv_eps || format==fv_svg )
-	ok = FVImportImages(c->curfv,filename,format);
+	ok = FVImportImages(c->curfv,filename,format,back,flags);
     else
-	ok = FVImportImageTemplate(c->curfv,filename,format);
+	ok = FVImportImageTemplate(c->curfv,filename,format,back,flags);
     free(filename);
     if ( !ok )
 	error(c,"Import failed" );

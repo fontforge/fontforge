@@ -277,7 +277,7 @@ return;
 }
 #endif
 
-void SCImportPSFile(SplineChar *sc,int layer,FILE *ps,int doclear) {
+void SCImportPSFile(SplineChar *sc,int layer,FILE *ps,int doclear,int flags) {
     SplinePointList *spl, *espl;
     SplineSet **head;
 
@@ -289,7 +289,7 @@ return;
     } else
 #endif
     {
-	spl = SplinePointListInterpretPS(ps);
+	spl = SplinePointListInterpretPS(ps,flags);
 	if ( spl==NULL ) {
 #if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Too Complex or Bad"),_("I'm sorry this file is too complex for me to understand (or is erroneous)"));
@@ -321,17 +321,17 @@ static void ImportPS(CharView *cv,char *path) {
 
     if ( ps==NULL )
 return;
-    SCImportPSFile(cv->sc,CVLayer(cv),ps,false);
+    SCImportPSFile(cv->sc,CVLayer(cv),ps,false,-1);
     fclose(ps);
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-static void SCImportPS(SplineChar *sc,char *path) {
+static void SCImportPS(SplineChar *sc,int layer,char *path,int flags) {
     FILE *ps = fopen(path,"r");
 
     if ( ps==NULL )
 return;
-    SCImportPSFile(sc,ly_fore,ps,false);
+    SCImportPSFile(sc,layer,ps,false,flags);
     fclose(ps);
 }
 
@@ -1066,7 +1066,7 @@ return( true );
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-int FVImportImages(FontView *fv,char *path,int format) {
+int FVImportImages(FontView *fv,char *path,int format,int toback, int flags) {
     GImage *image;
     /*struct _GImage *base;*/
     int tot;
@@ -1102,14 +1102,18 @@ return(false);
 	    }
 #endif
 	    ++tot;
+#ifdef FONTFORGE_CONFIG_TYPE3
+	    SCAddScaleImage(sc,image,true,toback?ly_back:ly_fore);
+#else
 	    SCAddScaleImage(sc,image,true,ly_back);
+#endif
 #ifndef _NO_LIBXML
 	} else if ( format==fv_svg ) {
-	    SCImportSVG(sc,ly_fore,start,false);
+	    SCImportSVG(sc,toback?ly_back:ly_fore,start,false);
 	    ++tot;
 #endif
 	} else if ( format==fv_eps ) {
-	    SCImportPS(sc,start);
+	    SCImportPS(sc,toback?ly_back:ly_fore,start,flags);
 	    ++tot;
 	}
 	if ( endpath==NULL )
@@ -1131,7 +1135,7 @@ return(false);
 return( true );
 }
 
-int FVImportImageTemplate(FontView *fv,char *path,int format) {
+int FVImportImageTemplate(FontView *fv,char *path,int format,int toback, int flags) {
     GImage *image;
     struct _GImage *base;
     int tot;
@@ -1253,14 +1257,18 @@ return( false );
     continue;
 	    }
 	    ++tot;
+#ifdef FONTFORGE_CONFIG_TYPE3
+	    SCAddScaleImage(sc,image,true,toback?ly_back:ly_fore);
+#else
 	    SCAddScaleImage(sc,image,true,ly_back);
+#endif
 #ifndef _NO_LIBXML
 	} else if ( format==fv_svgtemplate ) {
-	    SCImportSVG(sc,ly_fore,start,false);
+	    SCImportSVG(sc,toback?ly_back:ly_fore,start,false);
 	    ++tot;
 #endif
 	} else {
-	    SCImportPS(sc,start);
+	    SCImportPS(sc,toback?ly_back:ly_fore,start,flags);
 	    ++tot;
 	}
     }
@@ -1353,17 +1361,17 @@ return( true );
 	    else if ( format==fv_win )
 		d->done = FVImportMult(d->fv,temp,toback,bf_fon);
 	    else if ( format==fv_image )
-		d->done = FVImportImages(d->fv,temp,format);
+		d->done = FVImportImages(d->fv,temp,format,toback,-1);
 	    else if ( format==fv_imgtemplate )
-		d->done = FVImportImageTemplate(d->fv,temp,format);
+		d->done = FVImportImageTemplate(d->fv,temp,format,toback,-1);
 	    else if ( format==fv_eps )
-		d->done = FVImportImages(d->fv,temp,format);
+		d->done = FVImportImages(d->fv,temp,format,toback,-1);
 	    else if ( format==fv_epstemplate )
-		d->done = FVImportImageTemplate(d->fv,temp,format);
+		d->done = FVImportImageTemplate(d->fv,temp,format,toback,-1);
 	    else if ( format==fv_svg )
-		d->done = FVImportImages(d->fv,temp,format);
+		d->done = FVImportImages(d->fv,temp,format,toback,-1);
 	    else if ( format==fv_svgtemplate )
-		d->done = FVImportImageTemplate(d->fv,temp,format);
+		d->done = FVImportImageTemplate(d->fv,temp,format,toback,-1);
 	} else if ( d->bv!=NULL )
 	    d->done = BVImportImage(d->bv,temp);
 	else {
@@ -1408,12 +1416,17 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	    } else if ( format==fv_pk ) {
 		GGadgetSetChecked(d->background,true);
 		GGadgetSetEnabled(d->background,true);
-	    } else if ( format==fv_eps || format==fv_epstemplate ) {
+	    } else if ( format==fv_eps || format==fv_epstemplate ||
+			format==fv_svg || format==fv_svgtemplate ) {
 		GGadgetSetChecked(d->background,false);
-		GGadgetSetEnabled(d->background,false);
+		GGadgetSetEnabled(d->background,true);
 	    } else {			/* Images */
 		GGadgetSetChecked(d->background,true);
+#ifdef FONTFORGE_CONFIG_TYPE3
+		GGadgetSetEnabled(d->background,true);
+#else
 		GGadgetSetEnabled(d->background,false);
+#endif
 	    }
 	}
     }
@@ -1529,8 +1542,15 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     if ( fv!=NULL ) {
 	gcd[6].gd.pos.x = 180; gcd[6].gd.pos.y = gcd[5].gd.pos.y+4;
 	gcd[6].gd.flags = gg_visible | gg_enabled ;
+#ifdef FONTFORGE_CONFIG_TYPE3
+	if ( format==fv_pk || format==fv_image || format==fv_imgtemplate )
+	    gcd[6].gd.flags = gg_visible | gg_enabled | gg_cb_on;
+#else
 	if ( format==fv_pk )
 	    gcd[6].gd.flags = gg_visible | gg_enabled | gg_cb_on;
+	else if ( format==fv_image || format==fv_imgtemplate )
+	    gcd[6].gd.flags = gg_visible | gg_cb_on;
+#endif
 	label[6].text = (unichar_t *) _STR_AsBackground;
 	label[6].text_in_resource = true;
 	gcd[6].gd.label = &label[6];
