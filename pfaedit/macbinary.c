@@ -110,16 +110,37 @@ return( crc );
 }
 
 static uint16 HashToId(char *fontname,SplineFont *sf) {
-    int low = 128, high = 0x4000;
+    int low = 128, high = 0x3fff;
     /* A FOND ID should be between these two numbers for roman script (I think) */
     uint32 hash = 0;
     int i;
     SplineChar *sc;
 
-    /* Figure out what language we've got (no support for cid fonts here) */
+    /* Figure out what language we've got */
     /*  I'm not bothering with all of the apple scripts, and I don't know */
     /*  what to do about cjk fonts */
-    for ( i=0; i<sf->charcnt && i<256; ++i ) if ( (sc = sf->chars[i])!=NULL ) {
+    if ( sf->cidmaster!=NULL || sf->subfontcnt!=0 ) {
+	if ( sf->cidmaster != NULL ) sf = sf->cidmaster;
+	if ( sf->ordering != NULL ) {
+	    if ( strstrmatch(sf->ordering,"Japan")!=NULL ) {
+		low = 0x4000; high = 0x41ff;
+	    } else if ( strstrmatch(sf->ordering,"Korea")!=NULL ) {
+		low = 0x4400; high = 0x45ff;
+	    } else if ( strstrmatch(sf->ordering,"CNS")!=NULL ) {
+		low = 0x4200; high = 0x43ff;
+	    } else if ( strstrmatch(sf->ordering,"GB")!=NULL ) {
+		low = 0x7200; high = 0x73ff;
+	    }
+	}
+    } else if ( sf->encoding_name == em_big5 ) {
+	low = 0x4200; high = 0x43ff;
+    } else if ( sf->encoding_name == em_jis208 || sf->encoding_name == em_jis212 ) {
+	low = 0x4000; high = 0x41ff;
+    } else if ( sf->encoding_name == em_johab || sf->encoding_name == em_ksc5601 ) {
+	low = 0x4400; high = 0x45ff;
+    } else if ( sf->encoding_name == em_gb2312 ) {
+	low = 0x7200; high = 0x73ff;
+    } else for ( i=0; i<sf->charcnt && i<256; ++i ) if ( (sc = sf->chars[i])!=NULL ) {
 	/* Japanese between	0x4000 and 0x41ff */
 	/* Trad Chinese		0x4200 and 0x43ff */
 	/*  Simp Chinese	0x7200 and 0x73ff */
@@ -160,7 +181,7 @@ static uint16 HashToId(char *fontname,SplineFont *sf) {
 	hash = (hash<<4) | temp;
 	hash ^= *fontname++-' ';
     }
-    hash %= (high-low);
+    hash %= (high-low+1);
     hash += low;
 return( hash );
 }
@@ -209,6 +230,7 @@ return( cnt );
 
 struct resource {
     uint32 pos;
+    uint8 flags;
     uint16 id;
     char *name;
     uint32 nameloc;
@@ -249,6 +271,7 @@ return( NULL );
 	type = getc(pfbfile);
 	if ( type==3 ) {
 	/* 501 appears to be magic */
+	/* postscript resources seem to have flags of 0 */
 	    resstarts[cnt].id = 501+cnt;
 	    resstarts[cnt++].pos = ftell(res);
 	    putlong(res,2);	/* length */
@@ -429,6 +452,7 @@ static struct resource *SFToNFNTs(FILE *res, SplineFont *sf, real *sizes) {
     continue;
 	resstarts[i].id = baseresid+bdf->pixelsize;
 	resstarts[i].pos = BDFToNFNT(res,bdf);
+	/* NFNTs seem to have resource flags of 0 */
     }
 return(resstarts);
 }
@@ -439,7 +463,7 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,real *sizes)
     KernPair *kp;
     DBounds b;
     char *pt;
-    /* Fonds are generally marked system heap and sometimes purgeable */
+    /* Fonds are generally marked system heap and sometimes purgeable (resource flags) */
 
     putlong(res,0);			/* Fill in length later */
     putshort(res,IsMacMonospaced(sf)?0x9000:0x1000);
@@ -607,8 +631,8 @@ static void DumpResourceMap(FILE *res,struct resourcetype *rtypes,enum fontforma
 	for ( j=0; rtypes[i].res[j].pos!=0; ++j ) {
 	    putshort(res,rtypes[i].res[j].id);
 	    rtypes[i].res[j].nameptloc = ftell(res);
-	    putshort(res,0xffff);	/* assume no name at first */
-	    putc(0,res);		/* No flags */
+	    putshort(res,0xffff);		/* assume no name at first */
+	    putc(rtypes[i].res[j].flags,res);	/* resource flags */
 		/* three byte resource offset */
 	    putc( ((rtypes[i].res[j].pos-resource_base)>>16)&0xff, res );
 	    putc( ((rtypes[i].res[j].pos-resource_base)>>8)&0xff, res );
@@ -880,9 +904,11 @@ return( 0 );
     resources[0].res = rlist[0];
     rlist[0][0].pos = TTFToResource(res,tempttf);
     rlist[0][0].id = HashToId(sf->fontname,sf);
+    rlist[0][0].flags = 0x20;	/* sfnts generally have resource flags 0x20 */
     resources[1].tag = CHR('F','O','N','D');
     resources[1].res = rlist[1];
     rlist[1][0].pos = SFToFOND(res,sf,rlist[0][0].id,true,bsizes);
+    rlist[1][0].flags = 0x20;	/* I've seen FONDs with resource flags 0, 0x20, 0x60 */
     rlist[1][0].id = rlist[0][0].id;
     rlist[1][0].name = sf->familyname;
     fclose(tempttf);

@@ -2503,25 +2503,29 @@ void FontInfo(SplineFont *sf) {
     psgcd[3].gd.cid = CID_Descent;
     psgcd[3].creator = GTextFieldCreate;
 
-    psgcd[4].gd.pos.x = 12; psgcd[4].gd.pos.y = psgcd[3].gd.pos.y+26+6;
-    psgcd[4].gd.flags = gg_visible | gg_enabled;
-    psgcd[4].gd.mnemonic = 'I';
-    pslabel[4].text = (unichar_t *) _STR_Italicangle;
-    pslabel[4].text_in_resource = true;
-    psgcd[4].gd.label = &pslabel[4];
-    psgcd[4].creator = GLabelCreate;
-
-    psgcd[5].gd.pos.x = 103; psgcd[5].gd.pos.y = psgcd[4].gd.pos.y-6;
-    psgcd[5].gd.pos.width = 45;
+/* I've reversed the label, text field order in the gcd here because */
+/*  that way the text field will be displayed on top of the label rather */
+/*  than the reverse, and in Russian that's important translation of */
+/*  "Italic Angle" is too long. Oops, no it's the next one, might as well leave in here though */
+    psgcd[5].gd.pos.x = 12; psgcd[5].gd.pos.y = psgcd[3].gd.pos.y+26+6;
     psgcd[5].gd.flags = gg_visible | gg_enabled;
-    sprintf( iabuf, "%g", sf->italicangle );
-    pslabel[5].text = (unichar_t *) iabuf;
-    pslabel[5].text_is_1byte = true;
+    psgcd[5].gd.mnemonic = 'I';
+    pslabel[5].text = (unichar_t *) _STR_Italicangle;
+    pslabel[5].text_in_resource = true;
     psgcd[5].gd.label = &pslabel[5];
-    psgcd[5].gd.cid = CID_ItalicAngle;
-    psgcd[5].creator = GTextFieldCreate;
+    psgcd[5].creator = GLabelCreate;
 
-    psgcd[6].gd.pos.y = psgcd[5].gd.pos.y;
+    psgcd[4].gd.pos.x = 103; psgcd[4].gd.pos.y = psgcd[5].gd.pos.y-6;
+    psgcd[4].gd.pos.width = 45;
+    psgcd[4].gd.flags = gg_visible | gg_enabled;
+    sprintf( iabuf, "%g", sf->italicangle );
+    pslabel[4].text = (unichar_t *) iabuf;
+    pslabel[4].text_is_1byte = true;
+    psgcd[4].gd.label = &pslabel[4];
+    psgcd[4].gd.cid = CID_ItalicAngle;
+    psgcd[4].creator = GTextFieldCreate;
+
+    psgcd[6].gd.pos.y = psgcd[4].gd.pos.y;
     psgcd[6].gd.pos.width = GIntGetResource(_NUM_Buttonsize); psgcd[6].gd.pos.height = 0;
     psgcd[6].gd.pos.x = psgcd[3].gd.pos.x+psgcd[3].gd.pos.width-psgcd[6].gd.pos.width;
     /*if ( strstrmatch(sf->fontname,"Italic")!=NULL ||strstrmatch(sf->fontname,"Oblique")!=NULL )*/
@@ -2533,24 +2537,28 @@ void FontInfo(SplineFont *sf) {
     psgcd[6].gd.handle_controlevent = GFI_GuessItalic;
     psgcd[6].creator = GButtonCreate;
 
-    psgcd[7].gd.pos.x = 12; psgcd[7].gd.pos.y = psgcd[5].gd.pos.y+26+6;
-    psgcd[7].gd.flags = gg_visible | gg_enabled;
-    psgcd[7].gd.mnemonic = 'P';
-    pslabel[7].text = (unichar_t *) _STR_Upos;
-    pslabel[7].text_in_resource = true;
-    psgcd[7].gd.label = &pslabel[7];
-    psgcd[7].creator = GLabelCreate;
-
-    psgcd[8].gd.pos.x = 103; psgcd[8].gd.pos.y = psgcd[7].gd.pos.y-6; psgcd[8].gd.pos.width = 45;
+/* I've reversed the label, text field order in the gcd here because */
+/*  that way the text field will be displayed on top of the label rather */
+/*  than the reverse, and in Russian that's important translation of */
+/*  "Underline position" is too long. */
+    psgcd[8].gd.pos.x = 12; psgcd[8].gd.pos.y = psgcd[4].gd.pos.y+26+6;
     psgcd[8].gd.flags = gg_visible | gg_enabled;
-    sprintf( upbuf, "%g", sf->upos );
-    pslabel[8].text = (unichar_t *) upbuf;
-    pslabel[8].text_is_1byte = true;
+    psgcd[8].gd.mnemonic = 'P';
+    pslabel[8].text = (unichar_t *) _STR_Upos;
+    pslabel[8].text_in_resource = true;
     psgcd[8].gd.label = &pslabel[8];
-    psgcd[8].gd.cid = CID_UPos;
-    psgcd[8].creator = GTextFieldCreate;
+    psgcd[8].creator = GLabelCreate;
 
-    psgcd[9].gd.pos.x = 155; psgcd[9].gd.pos.y = psgcd[7].gd.pos.y;
+    psgcd[7].gd.pos.x = 103; psgcd[7].gd.pos.y = psgcd[8].gd.pos.y-6; psgcd[7].gd.pos.width = 45;
+    psgcd[7].gd.flags = gg_visible | gg_enabled;
+    sprintf( upbuf, "%g", sf->upos );
+    pslabel[7].text = (unichar_t *) upbuf;
+    pslabel[7].text_is_1byte = true;
+    psgcd[7].gd.label = &pslabel[7];
+    psgcd[7].gd.cid = CID_UPos;
+    psgcd[7].creator = GTextFieldCreate;
+
+    psgcd[9].gd.pos.x = 155; psgcd[9].gd.pos.y = psgcd[8].gd.pos.y;
     psgcd[9].gd.flags = gg_visible | gg_enabled;
     psgcd[9].gd.mnemonic = 'H';
     pslabel[9].text = (unichar_t *) _STR_Uheight;
@@ -2558,7 +2566,7 @@ void FontInfo(SplineFont *sf) {
     psgcd[9].gd.label = &pslabel[9];
     psgcd[9].creator = GLabelCreate;
 
-    psgcd[10].gd.pos.x = 200; psgcd[10].gd.pos.y = psgcd[8].gd.pos.y; psgcd[10].gd.pos.width = 45;
+    psgcd[10].gd.pos.x = 200; psgcd[10].gd.pos.y = psgcd[7].gd.pos.y; psgcd[10].gd.pos.width = 45;
     psgcd[10].gd.flags = gg_visible | gg_enabled;
     sprintf( uwbuf, "%g", sf->uwidth );
     pslabel[10].text = (unichar_t *) uwbuf;
@@ -3071,6 +3079,18 @@ void FontInfo(SplineFont *sf) {
     GGadgetsCreate(gw,mgcd);
     if ( list!=encodingtypes )
 	GTextInfoListFree(list);
+    if ( GTabSetGetTabLines(mgcd[0].ret)>2 ) {
+	int offset = (GTabSetGetTabLines(mgcd[0].ret)-2)*GDrawPointsToPixels(NULL,20);
+	GDrawResize(gw,pos.width,pos.height+offset);
+	GGadgetResize(mgcd[0].ret,GDrawPointsToPixels(NULL,mgcd[0].gd.pos.width),
+		GDrawPointsToPixels(NULL,mgcd[0].gd.pos.height)+offset);
+	GGadgetMove(mgcd[1].ret,GDrawPointsToPixels(NULL,mgcd[1].gd.pos.x),
+		GDrawPointsToPixels(NULL,mgcd[1].gd.pos.y)+offset);
+	GGadgetMove(mgcd[2].ret,GDrawPointsToPixels(NULL,mgcd[2].gd.pos.x),
+		GDrawPointsToPixels(NULL,mgcd[2].gd.pos.y)+offset);
+	GGadgetResize(mgcd[3].ret,GDrawPointsToPixels(NULL,mgcd[3].gd.pos.width),
+		GDrawPointsToPixels(NULL,mgcd[3].gd.pos.height)+offset);
+    }
     GWidgetIndicateFocusGadget(ngcd[1].ret);
     ProcessListSel(&d);
     /*GTextFieldSelect(gcd[1].ret,0,-1);*/

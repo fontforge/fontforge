@@ -545,7 +545,7 @@ static void readttfhhea(FILE *ttf,struct ttfinfo *info) {
     /* fontographer puts the max ascender/min descender here instead. idiots */
     if ( info->ascent==0 && info->descent==0 )
 	info->ascent = .8*info->emsize;
-    if ( info->ascent+info->descent!=info->emsize )
+    else if ( info->ascent+info->descent!=info->emsize )
 	info->ascent = info->ascent * ((real) info->emsize)/(info->ascent+info->descent);
     info->descent = info->emsize-info->ascent;
 

@@ -610,20 +610,28 @@ return( SFDWrite(sf->filename,sf));
 
 /* ********************************* INPUT ********************************** */
 
-static int getquotedeol(FILE *sfd, char *tokbuf) {
-    char *pt=tokbuf, *end = tokbuf+2000-2; int ch;
+static char *getquotedeol(FILE *sfd) {
+    char *pt, *str, *end;
+    int ch;
 
+    pt = str = galloc(100); end = str+100;
     while ( isspace(ch = getc(sfd)) && ch!='\r' && ch!='\n' );
     while ( ch!='\n' && ch!='\r' && ch!=EOF ) {
 	if ( ch=='\\' ) {
 	    ch = getc(sfd);
 	    if ( ch=='n' ) ch='\n';
 	}
-	if ( pt<end ) *pt++ = ch;
+	if ( pt>=end ) {
+	    pt = grealloc(str,end-str+100);
+	    end = pt+(end-str)+100;
+	    str = pt;
+	    pt = end-100;
+	}
+	*pt++ = ch;
 	ch = getc(sfd);
     }
     *pt='\0';
-return( pt!=tokbuf?1:ch==EOF?-1: 0 );
+return( str );
 }
 
 static int geteol(FILE *sfd, char *tokbuf) {
@@ -1437,8 +1445,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    getname(sfd,tok);
 	    sf->weight = copy(tok);
 	} else if ( strmatch(tok,"Copyright:")==0 ) {
-	    getquotedeol(sfd,tok);
-	    sf->copyright = copy(tok);
+	    sf->copyright = getquotedeol(sfd);
 	} else if ( strmatch(tok,"Version:")==0 ) {
 	    geteol(sfd,tok);
 	    sf->version = copy(tok);

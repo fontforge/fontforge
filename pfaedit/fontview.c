@@ -552,8 +552,12 @@ void MergeKernInfo(SplineFont *sf) {
     static unichar_t wild[] = { '*', '.', '[','a','t',']', 'f','m',  '\0' };
     unichar_t *ret = GWidgetOpenFile(GStringGetResource(_STR_MergeKernInfo,NULL),NULL,wild,NULL);
     char *temp = cu_copy(ret);
-    int isafm = strstrmatch(temp,".afm")!=NULL;
+    int isafm;
 
+    if ( temp==NULL )		/* Cancelled */
+return;
+
+    isafm = strstrmatch(temp,".afm")!=NULL;
     if ( (isafm && !LoadKerningDataFromAfm(sf,temp)) ||
 	    (!isafm && !LoadKerningDataFromTfm(sf,temp)) )
 	GDrawError( "Failed to load kern data from %s", temp);
