@@ -5853,7 +5853,7 @@ return( false );
     base2 = -1; base2bound = -2;
     if ( sf->encoding_name==em_big5 ) {
 	base = 0xa1;
-	basebound = 0xfd;
+	basebound = 0xfc;
 	lbase = 0x40;
 	subheadcnt = basebound-base+1;
 	planesize = 191;
@@ -6004,16 +6004,16 @@ return( false );		/* Doesn't have the single byte entries */
     /*  location in the file (sort of) so we now fix them up. */
     for ( i=0; i<subheadcnt+1; ++i )
 	subheads[i].rangeoff = subheads[i].rangeoff*sizeof(uint16) +
-		(subheadcnt-i-1)*sizeof(struct subhead) + sizeof(uint16);
+		(subheadcnt-i)*sizeof(struct subhead) + sizeof(uint16);
+
+    /* Two/Three encoding table pointers, one for ms, one for mac, one for mac roman */
+    enccnt = 3;
+    if ( sf->encoding_name==em_johab )
+	enccnt = 2;
 
     len = 3*sizeof(uint16) + 256*sizeof(uint16) + (subheadcnt+1)*sizeof(struct subhead) +
 	    ((pos-1)*planesize+plane0size)*sizeof(uint16);
     macpos = 2*sizeof(uint16)+enccnt*(2*sizeof(uint16)+sizeof(uint32))+len;
-
-    /* Two/Three encoding table pointers, one for ms, one for mac, one for macunicode (if ms is unicode) */
-    enccnt = 3;
-    if ( sf->encoding_name==em_johab )
-	enccnt = 2;
 
     /* Encodings are supposed to be ordered by platform, then by specific */
     putshort(at->cmap,0);		/* version */
@@ -6053,13 +6053,13 @@ return( false );		/* Doesn't have the single byte entries */
 	putshort(at->cmap,subheads[i].delta);
 	putshort(at->cmap,subheads[i].rangeoff);
     }
-    for ( i=0; i<pos*planesize; ++i )
+    for ( i=0; i<(pos-1)*planesize+plane0size; ++i )
 	putshort(at->cmap,glyphs[i]);
     free(glyphs);
 
     /* Mac table just the first 256 entries */
     if ( ftell(at->cmap)!=macpos )
-	GDrawIError("Mac table not at right place %d should be %d", ftell(at->cmap), macpos );
+	GDrawIError("Mac cmap sub-table not at right place is %d should be %d", ftell(at->cmap), macpos );
     memset(table,0,sizeof(table));
     for ( i=0; i<256 && i<sf->charcnt; ++i )
 	if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 &&
