@@ -7,6 +7,21 @@ AC_PROG_RANLIB
 #AC_DISABLE_STATIC
 #AC_PROG_LIBTOOL
 
+echo -n "checking for pfaedit... "
+if test \! -e inc/basics.h >/dev/null 2>&1 ; then
+  echo "no"
+  echo "You must install the source files for pfaedit (or at least its libaries)"
+  echo "before building ttfmod."
+  exit 1
+fi
+if test \! -e libs/libgunicode.a >/dev/null 2>&1 ; then
+  echo "maybe"
+  echo "warning: You must build pfaedit (or at least its libaries)"
+  echo "before building ttfmod."
+else
+  echo "pfaedit"
+fi
+
 AC_SEARCH_LIBS(dlopen, dl) dnl some systems have this in libc
 AC_SEARCH_LIBS(inet_aton, resolv) dnl some systems have this in libc
 
