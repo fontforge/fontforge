@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 15-Nov-2004 -->
+  <!-- AP: Last modified: 22-Nov-2004 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -11,6 +11,46 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    ???
+    <UL>
+      <LI>
+	Kevin Schoedel suggests a new scripting command DrawsSomething()
+      <LI>
+	Kevin Schoedel requests that PrintFont be able to print a string sample (as
+	opposed to a sample file)
+      <LI>
+	Kevin Schoedel points out that type1 fonts stuffed into mac resource forks
+	are to be read in resource order rather than file order (often the two are
+	the same) and provides a patch to fix this.
+      <LI>
+	Change the way the default language/locale is picked in fontinfo-&gt;TTF
+	Names
+      <LI>
+	Remember (across invocations) whether palettes should be hidden or not.
+      <LI>
+	Ignore NUL chars when reading PostScript strings (PS supports NULs in strings,
+	I'm not going to bother, but I don't want to parse incorrectly because of
+	them).
+      <LI>
+	ff lost the ability to Select("U+xxxx") or Select("=") from a script.
+      <LI>
+	Oops, the routine to read PostScript FontNames from a ttf file was broken
+	by the encoding change.
+      <LI>
+	If a ttf file contained an erroneous composite glyph with flags indicating
+	more components after the glyph had run out of data, then ff might attempt
+	to read instructions also and have problems.
+      <LI>
+	If a font contains multiple ttf names for a given string in a language then
+	allow the user to pick which one s/he likes best.
+      <LI>
+	Another case where a bad otf table crashes fontforge
+      <LI>
+	If a ttf/otf font does not contain a postscript FontName string in the name
+	table, then ff's attempt to synthesize one out of fullname/familyname did
+	not check for a valid name.
+    </UL>
   <LI>
     15-Nov-2004
     <UL>
@@ -25,6 +65,22 @@
 	If ff saved a utf7 string to an sfd file (ttf names, etc.) and that string
 	contained a hyphen that followed immediately after something that needed
 	to be encoded in base64, then the hyphen would be lost.
+      <LI>
+	new french UI
+      <LI>
+	ff was (usually) setting the ascent/descent fields of the 'hhea' table to
+	0. When the font was drawn on the mac it was clipped to nothing.
+	<FONT COLOR="Red"><STRONG><BIG>Caveat: Old sfd files are still broken and
+	there is no UI for fixing them. Instead you must edit them manually, and
+	change:</BIG></STRONG></FONT>
+	<PRE>HheadAOffset: 0
+HheadDOffset: 0
+</PRE>
+	<P>
+	to be:
+	<PRE>HheadAOffset: 1
+HheadDOffset: 1
+</PRE>
     </UL>
   <LI>
     12-Nov-2004
