@@ -424,6 +424,7 @@ Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
 	TPoint *mid, int cnt) {
     real t, t2, t3, t4, t5, x, y, xt, xt2, yt, yt2, tt, ttn;
     real sx, sy;
+    real minx, maxx, miny, maxy;
     int i;
     double v[6], m[6][6];	/* Yes! rounding errors cause problems here */
     Spline *spline;
@@ -450,6 +451,7 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
     t = t2 = t3 = t4 = t5 = 1;
     x = from->me.x+to->me.x; y = from->me.y+to->me.y;
     xt = xt2 = to->me.x; yt = yt2 = to->me.y;
+    minx = maxx = from->me.x; miny=maxy=from->me.y;
     for ( i=0; i<cnt; ++i ) {
 	x += mid[i].x;
 	y += mid[i].y;
@@ -463,6 +465,10 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
 	t3 += (ttn*=tt);
 	t4 += (ttn*=tt);
 	t5 += (ttn*=tt);
+	if ( mid[i].x>maxx ) maxx = mid[i].x;
+	if ( mid[i].x<minx ) minx = mid[i].x;
+	if ( mid[i].y>maxy ) maxy = mid[i].y;
+	if ( mid[i].y<miny ) miny = mid[i].y;
     }
 
     v[0] = to->me.x-from->me.x;		/* ax */
@@ -620,6 +626,11 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
     prevcp.y = nextcp.y + (v[5]+v[4])/3;
     n = from->nonextcp ? &to->me : &from->nextcp;
     p = to->noprevcp ? &from->me : &to->prevcp;
+#if 0
+    unit.x = to->me.x-from->me.x; unit.y = to->me.y-from->me.y;
+    len = sqrt(unit.x*unit.x + unit.y*unit.y);
+    unit.x /= len; unit.y /= len;
+#endif
     if ( prevcp.x > 65536 || prevcp.x < -65536 || prevcp.y > 65536 || prevcp.y < -65536 ||
 	    v[2] > 185536 || v[2] < -185536 || v[5] > 185536 || v[5] < -185536 ) {
 	/* Well these aren't reasonable values. I assume a rounding error */
@@ -639,6 +650,15 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
 	    fprintf( stderr, "(%g,%g,%g) ", mid[i].x, mid[i].y, mid[i].t );
 	fprintf( stderr, "\n");
 #endif
+    } else if ( nextcp.x<minx || nextcp.x>maxx || prevcp.x<minx || prevcp.x>maxx ||
+	     nextcp.y<miny || nextcp.y>maxy || prevcp.y<miny || prevcp.y>maxy ) {
+	 /* The control points are outside the bounding box of the spline */
+	 /*  That seems undesirable. I have observed this in a spline where */
+	 /*  the slopes at the end points were such that no good approximation*/
+	 /*  could be found. Again just leave the control points as they were */
+	 /* 170 452 m 16	*/
+	 /* 149 420 132.729 417.957 114 392 c 16	*/
+	 /* 57 313 61.3447 298.736 27 239.5 c 24	*/
     } else if ( v[2]*(n->x-from->me.x) + v[5]*(n->y-from->me.y)>=0 &&
 	    (prevcp.x-to->me.x)*(p->x-to->me.x) + (prevcp.y-to->me.y)*(p->y-to->me.y)>=0 ) {
 	/* if we had to throw out one of the slope eqns, we may not have a good slope */
@@ -650,7 +670,7 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
 	    CleanupDir(&prevcp,&to->prevcp,&to->me);
 	to->prevcp = prevcp;
 	to->noprevcp = prevcp.x==to->me.x && prevcp.y==to->me.y;
-    }
+    } 
     spline = SplineMake3(from,to);
     if ( SplineIsLinear(spline)) {
 	spline->islinear = from->nonextcp = to->noprevcp = true;
