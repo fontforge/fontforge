@@ -27,6 +27,7 @@
 #include "basics.h"
 #include "giofuncP.h"
 #include "gfile.h"
+#include "string.h"
 #include "ustring.h"
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -49,10 +50,14 @@ static unichar_t err501[] = { ' ','N','o','t',' ','I','m','p','l','e','m','e','n
 
 void _GIO_reporterror(GIOControl *gc, int errn) {
 
+#if 1
+    uc_strncpy(gc->status,strerror(errn),sizeof(gc->status)/sizeof(unichar_t));
+#else
     if ( errn<sys_nerr )
 	uc_strncpy(gc->status,sys_errlist[errn],sizeof(gc->status)/sizeof(unichar_t));
     else
 	gc->status[0] = '\0';
+#endif
 
     if ( errn==ENOENT || (gc->gf!=gf_dir && errn==ENOTDIR) ) {
 	gc->return_code = 404;
@@ -99,7 +104,7 @@ static void _gio_file_dir(GIOControl *gc,char *path) {
 return;
     }
 
-    buffer = galloc(strlen(path)+NAME_MAX+3);
+    buffer = galloc(strlen(path)+FILENAME_MAX+3);
     strcpy(buffer,path);
     ept = buffer+strlen(buffer);
     if ( ept[-1]!='/' )
