@@ -2787,6 +2787,15 @@ return( true );
 	    sd->changing->setname = GGadgetGetUserData(GWidgetGetControl(sd->gw,CID_NameList));
 	    sd->changing->setting = val1;
 	    sd->changing->initially_enabled = GGadgetIsChecked(GWidgetGetControl(sd->gw,CID_On));
+	    if ( sd->changing->initially_enabled &&
+		    GGadgetIsChecked(GWidgetGetControl(GGadgetGetWindow(sd->settinglist),CID_Mutex)) ) {
+		/* If the mutually exclusive bit were set in the feature then */
+		/*  turning this guy on, means we must turn others off */
+		struct macsetting *test;
+		for ( test = sd->all; test!=NULL; test = test->next )
+		    if ( test!=sd->changing )
+			test->initially_enabled = false;
+	    }
 
 	    sprintf(buf,"%3d ", val1);
 	    temp = PickNameFromMacName(sd->changing->setname);
