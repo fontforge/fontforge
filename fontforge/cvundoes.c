@@ -1268,6 +1268,15 @@ void CopyReference(SplineChar *sc) {
     copybuffer.u.state.vwidth = sc->vwidth;
     copybuffer.u.state.refs = ref = RefCharCreate();
     copybuffer.u.state.copied_from = sc->parent;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    if ( ly_fore<sc->layer_cnt ) {
+	copybuffer.u.state.fill_brush = sc->layers[ly_fore].fill_brush;
+	copybuffer.u.state.stroke_pen = sc->layers[ly_fore].stroke_pen;
+	copybuffer.u.state.dofill = sc->layers[ly_fore].dofill;
+	copybuffer.u.state.dostroke = sc->layers[ly_fore].dostroke;
+	copybuffer.u.state.fillfirst = sc->layers[ly_fore].fillfirst;
+    }
+#endif
     ref->unicode_enc = sc->unicodeenc;
     ref->local_enc = sc->enc;
     ref->adobe_enc = getAdobeEnc(sc->name);
@@ -1392,14 +1401,6 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
 		cur->u.state.comment = NULL;
 		cur->u.state.possub = NULL;
 	    }
-#ifdef FONTFORGE_CONFIG_TYPE3
-	    cur->u.state.u.images = ImageListCopy(sc->layers[layer].images);
-	    cur->u.state.fill_brush = sc->layers[layer].fill_brush;
-	    cur->u.state.stroke_pen = sc->layers[layer].stroke_pen;
-	    cur->u.state.dofill = sc->layers[layer].dofill;
-	    cur->u.state.dostroke = sc->layers[layer].dostroke;
-	    cur->u.state.fillfirst = sc->layers[layer].fillfirst;
-#endif
 	} else {		/* Or just make a reference */
 	    sc = SCDuplicate(sc);
 	    cur->undotype = ut_state;
@@ -1409,6 +1410,16 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
 	    ref->adobe_enc = getAdobeEnc(sc->name);
 	    ref->transform[0] = ref->transform[3] = 1.0;
 	}
+#ifdef FONTFORGE_CONFIG_TYPE3
+	if ( layer<sc->layer_cnt ) {
+	    cur->u.state.u.images = ImageListCopy(sc->layers[layer].images);
+	    cur->u.state.fill_brush = sc->layers[layer].fill_brush;
+	    cur->u.state.stroke_pen = sc->layers[layer].stroke_pen;
+	    cur->u.state.dofill = sc->layers[layer].dofill;
+	    cur->u.state.dostroke = sc->layers[layer].dostroke;
+	    cur->u.state.fillfirst = sc->layers[layer].fillfirst;
+	}
+#endif
 	cur->u.state.copied_from = sc->parent;
     }
 return( cur );
