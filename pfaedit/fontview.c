@@ -1256,7 +1256,9 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], char *sel,
 
     SCPreserveState(sc,false);
     if ( transform[0]>0 && transform[3]>0 && transform[1]==0 && transform[2]==0 ) {
+	int widthset = sc->widthset;
 	SCSynchronizeWidth(sc,sc->width*transform[0]+transform[4],sc->width,fv);
+	if ( flags&fvt_dontsetwidth ) sc->widthset = widthset;
     }
     SplinePointListTransform(sc->splines,transform,true);
     if ( flags&fvt_round_to_int )
@@ -1385,7 +1387,8 @@ return( false );
 
     sf->ascent = as; sf->descent = des;
 
-    FVTransFunc(sf->fv,transform,0,&bvts,fvt_dobackground|fvt_round_to_int);
+    FVTransFunc(sf->fv,transform,0,&bvts,
+	    fvt_dobackground|fvt_round_to_int|fvt_dontsetwidth);
     free(sf->fv->selected);
     sf->fv->selected = oldselected;
 
