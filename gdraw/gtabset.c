@@ -385,7 +385,7 @@ return( true );
 	} else {
 	    l = (event->u.mouse.y-gts->g.r.y)/gts->rowh;	/* screen row */
 	    if ( l>=gts->rcnt ) l = gts->rcnt-1;		/* can happen on single line tabsets (there's extra space then) */
-	    l = (l+gts->rcnt-1-gts->active_row)%gts->rcnt;	/* internal row number */
+	    l = (gts->rcnt-1-l+gts->active_row)%gts->rcnt;	/* internal row number */
 	    if ( event->u.mouse.x<gts->tabs[gts->rowstarts[l]].x )
 		sel = -1;
 	    else if ( event->u.mouse.x>=gts->tabs[gts->rowstarts[l+1]-1].x+gts->tabs[gts->rowstarts[l+1]-1].width )
@@ -639,4 +639,9 @@ GWindow GTabSetGetSubwindow(GGadget *g,int pos) {
 return( gts->tabs[pos].w );
 
 return( NULL );
+}
+
+int GTabSetGetTabLines(GGadget *g) {
+    GTabSet *gts = (GTabSet *) g;
+return( gts->rcnt );
 }
