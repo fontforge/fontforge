@@ -480,11 +480,8 @@ return;
 	    /* Do Nothing */;
 	else if ( sf->fv==fv )
 	    GWidgetErrorR(_STR_MergingProb,_STR_MergingFontSelf);
-	else {
+	else
 	    MergeFont(fv,sf);
-	    if ( sf->fv==NULL )
-		SplineFontFree(sf);
-	}
 	file = fpt+2;
     } while ( fpt!=NULL );
     free(filename);
