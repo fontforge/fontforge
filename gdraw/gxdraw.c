@@ -2673,16 +2673,6 @@ return;
 		gevent.u.chr.keysym = keysym;
 		def2u_strncpy(gevent.u.chr.chars,charbuf,
 			sizeof(gevent.u.chr.chars)/sizeof(gevent.u.chr.chars[0]));
-		if ( keysym==gdisp->mykey_keysym &&
-			(event->xkey.state&(ControlMask|Mod1Mask))==gdisp->mykey_mask ) {
-		    gdisp->mykeybuild = !gdisp->mykeybuild;
-		    gdisp->mykey_state = 0;
-		    gevent.u.chr.chars[0] = '\0';
-		    gevent.u.chr.keysym = '\0';
-		    if ( !gdisp->mykeybuild && _GDraw_BuildCharHook!=NULL )
-			(_GDraw_BuildCharHook)((GDisplay *) gdisp);
-		} else if ( gdisp->mykeybuild )
-		    _GDraw_ComposeChars((GDisplay *) gdisp,&gevent);
 	    } else {
 #ifdef X_HAVE_UTF8_STRING
 		len = Xutf8LookupString(((GXWindow) gw)->gic->ic,(XKeyPressedEvent*)event,
@@ -2708,6 +2698,16 @@ return;
 		gevent.u.chr.chars[0] = 0;
 #endif
 	    }
+	    if ( keysym==gdisp->mykey_keysym &&
+		    (event->xkey.state&(ControlMask|Mod1Mask))==gdisp->mykey_mask ) {
+		gdisp->mykeybuild = !gdisp->mykeybuild;
+		gdisp->mykey_state = 0;
+		gevent.u.chr.chars[0] = '\0';
+		gevent.u.chr.keysym = '\0';
+		if ( !gdisp->mykeybuild && _GDraw_BuildCharHook!=NULL )
+		    (_GDraw_BuildCharHook)((GDisplay *) gdisp);
+	    } else if ( gdisp->mykeybuild )
+		_GDraw_ComposeChars((GDisplay *) gdisp,&gevent);
 	} else {
 	    /* XLookupKeysym doesn't do shifts for us (or I don't know how to use the index arg to make it) */
 	    len = XLookupString((XKeyEvent *) event,charbuf,sizeof(charbuf),&keysym,&gdisp->buildingkeys);
