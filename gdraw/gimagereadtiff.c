@@ -43,7 +43,7 @@ static int a_file_must_define_something=0;	/* ANSI says so */
 static void *libtiff=NULL;
 static TIFF *(*_TIFFOpen)(char *, char *);
 static void (*_TIFFGetField)(TIFF *, int, uint32 *);
-static int (*_TIFFReadRGBAImage)(TIFF *, int, int, uint32 *, int);
+static int (*_TIFFReadRGBAImage)(TIFF *, uint32, uint32, uint32 *, int);
 static int (*_TIFFClose)(TIFF *);
 
 static int loadtiff() {
@@ -115,6 +115,8 @@ return( ret );
 #define uint8 _uint8
 
 #include "gdraw.h"
+
+#undef uint32
 
 GImage *GImageReadTiff(char *filename) {
     TIFF* tif;

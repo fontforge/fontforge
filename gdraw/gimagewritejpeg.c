@@ -340,7 +340,7 @@ return(0);
     fclose(outfile);
 return 0;
   }
-  jpeg_create_compress(&cinfo,JPEG_LIB_VERSION,(size_t) sizeof(struct jpeg_compress_struct));
+  jpeg_CreateCompress(&cinfo,JPEG_LIB_VERSION,(size_t) sizeof(struct jpeg_compress_struct));
   jpeg_stdio_dest(&cinfo, outfile);
 
   cinfo.image_width = base->width;
