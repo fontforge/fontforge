@@ -1467,12 +1467,11 @@ static char *str_BadEncFormat = "Bad encoding file format"; /*new*/
 static char *str_PleaseNameEnc = "Назовите эту кодировку";
 /* Either insert first, second or third, or the number followed by the "th" string (5th, 6th, etc.) */
 /* Please name the %d/first/second/third encoding in this file" */
-static char *str_PleaseNameEncPre = "Назовите ";
-static char *str_PleaseNameEncPost = " кодировку этого файла";
+static char *str_PleaseNameEncNamed = "Назовите %s кодировку этого файла";
+static char *str_PleaseNameEncNumeric = "Назовите %dый кодировку этого файла";
 static char *str_First = "Первый";
 static char *str_Second = "Второй";
 static char *str_Third = "Третий";
-static char *str_th = "ый";
 static char *str_RemoveEncoding = "Удалить кодировку";
 static char *str_LoadEncoding = "Загрузить кодировку";
 static char *str_UseCidMap = "Use CID Map"; /*new*/

@@ -2442,7 +2442,6 @@ static char str_Later = "Après";
 static char mnemonic_Later = 'P';
 static char *str_Second = "Deuxième" ;
 static char *str_Third = "Troisième" ;
-static char *str_th = "e" ;
 static char *str_RemoveEncoding = "Suppression du codage" ;
 static char *str_LoadEncoding = "Chargement du codage" ;
 static char *str_AdobePUA = "Définitions Adobe pour Usage Public (PUA)." ;

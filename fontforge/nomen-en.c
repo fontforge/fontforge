@@ -2489,11 +2489,10 @@ static char *str_BadEncFormat = "Bad encoding file format";
 static char *str_PleaseNameEnc = "Please name this encoding";
 /* Either insert first, second or third, or the number followed by the "th" string (5th, 6th, etc.) */
 /* Please name the %d/first/second/third encoding in this file" */
-static char *str_PleaseNameEncPre = "Please name the ";
-static char *str_PleaseNameEncPost = " encoding in this file";
+static char *str_PleaseNameEncNamed = "Please name the %s encoding in this file";
+static char *str_PleaseNameEncNumeric = "Please name the %dth encoding in this file";
 static char *str_Second = "Second";
 static char *str_Third = "Third";
-static char *str_th = "th";
 static char *str_RemoveEncoding = "Remove Encoding";
 static char *str_LoadEncoding = "Load Encoding";
 static char *str_AdobePUA = "Adobe Public Use Defs.";

@@ -1470,12 +1470,11 @@ static char *str_BadEncFormat = "Formato del file di encoding errato";
 static char *str_PleaseNameEnc = "Per favore, dai un nome a questo encoding";
 /* Either insert first, second or third, or the number followed by the "th" string (5th, 6th, etc.) */
 /* Please name the %d/first/second/third encoding in this file" */
-static char *str_PleaseNameEncPre = "Per favore, dai un nome al ";
-static char *str_PleaseNameEncPost = " encoding in questo file";
+static char *str_PleaseNameEncNamed = "Per favore, dai un nome al %s encoding in questo file";
+static char *str_PleaseNameEncNumeric = "Per favore, dai un nome al %d-esimo encoding in questo file";
 static char *str_First = "primo";
 static char *str_Second = "secondo";
 static char *str_Third = "terzo";
-static char *str_th = "-esimo";
 static char *str_RemoveEncoding = "Soppressione dell'encoding";
 static char *str_LoadEncoding = "Caricamanto dell'encoding";
 static char *str_UseCidMap = "Utilizzazione della mappa CID";
