@@ -379,6 +379,7 @@ static void GreekHack(void) {
 	psunicodenames[0x0394] = "Delta";	/* Delta */
 	psunicodenames[0x03A9] = "Omega";	/* Omega */
 
+#if 0		/* I've moved these into the unicode alternate names table */
 	psunicodenames[0xf500] = "Alphasmall";
 	psunicodenames[0xf501] = "Betasmall";
 	psunicodenames[0xf502] = "Gammasmall";
@@ -406,6 +407,7 @@ static void GreekHack(void) {
 	psunicodenames[0xf518] = "Omegasmall";
 	psunicodenames[0xf519] = "Iotadieresissmall";
 	psunicodenames[0xf51a] = "Upsilondieresissmall";
+#endif
     } else {
 	psunicodenames[0x2206] = "Delta";	/* Increment */
 	psunicodenames[0x2126] = "Omega";	/* Ohm sign */
