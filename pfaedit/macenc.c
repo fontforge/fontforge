@@ -924,6 +924,161 @@ static uint16 _WinLangFromMac[] = {
 	0xffff
 };
 
+static char *LanguageCodesFromMacLang[] = {
+	"en",		/* English */
+	"fr",		/* French */
+	"de",		/* German */
+	"it",		/* Italian */
+	"nl",		/* Dutch */
+	"sv",		/* Swedish */
+	"es",		/* Spanish */
+	"da",		/* Danish */
+	"pt",		/* Portuguese */
+	"no",		/* Norwegian */
+/*10*/	"he",		/* Hebrew */
+	"ja",		/* Japanese */
+	"ar",		/* Arabic */
+	"fi",		/* Finnish */
+	"el",		/* Greek */
+	"is",		/* Icelandic */
+	"ml",		/* Maltese */
+	"tr",		/* Turkish */
+	"hr",		/* Croatian */
+	"zh_TW",	/* Traditional Chinese */	/* zh_HK */
+/*20*/	"ur",		/* Urdu */
+	"hi",		/* Hindi */
+	"th",		/* Thai */
+	"ko",		/* Korean */
+	"lt",		/* Lithuanian */
+	"pl",		/* Polish */
+	"hu",		/* Hungarian */
+	"et",		/* Estonian */
+	"lv",		/* Latvian */
+	"smi",		/* Sami (Lappish) */
+/*30*/	"fo",		/* Faroese (Icelandic) */
+	"fa",		/* Farsi/Persian */
+	"ru",		/* Russian */
+	"zh_CN",	/* Simplified Chinese */
+	"nl_BE",	/* Flemish */	/* Flemish doesn't rate a language code, use dutch */
+	"ga",		/* Irish Gaelic */
+	"sq",		/* albanian */
+	"ro",		/* Romanian */
+	"cs",		/* Czech */
+	"sk",		/* Slovak */
+/*40*/	"sl",		/* Slovenian */
+	"yi",		/* Yiddish */
+	"sr",		/* Serbian */
+	"mk",		/* Macedonian */
+	"bg",		/* Bulgarian */
+	"uk",		/* Ukrainian */
+	"be",		/* Byelorussian */
+	"uz",		/* Uzbek */
+	"kk",		/* Kazakh */
+	NULL,		/* Axerbaijani (Cyrillic) */
+/*50*/	NULL,		/* Axerbaijani (Arabic) */
+	"hy",		/* Armenian */
+	"ka",		/* Georgian */
+	"mo",		/* Moldavian */
+	"ky",		/* Kirghiz */
+	"tg",		/* Tajiki */
+	"tk",		/* Turkmen */
+	"mn",		/* Mongolian (Mongolian) */
+	"mn",		/* Mongolian (cyrillic) */
+	"ps",		/* Pashto */
+/*60*/	"ku",		/* Kurdish */
+	"ks",		/* Kashmiri */
+	"sd",		/* Sindhi */
+	"bo",		/* Tibetan */
+	"ne",		/* Nepali */
+	"sa",		/* Sanskrit */
+	"mr",		/* Marathi */
+	"bn",		/* Bengali */
+	"as",		/* Assamese */
+	"gu",		/* Gujarati */
+/*70*/	NULL,		/* Punjabi */
+	"or",		/* Oriya */
+	"mal",		/* Malayalam */
+	"kn",		/* Kannada */
+	"ta",		/* Tamil */
+	"te",		/* Telugu */
+	"si",		/* Sinhalese */
+	"my",		/* Burmese */
+	"km",		/* Khmer */
+	"lo",		/* Lao */
+/*80*/	"vi",		/* Vietnamese */
+	"id",		/* Indonesian */
+	"tl",		/* Tagalog */
+	"ms",		/* Malay (roman) */
+	"ms",		/* Malay (arabic) */
+	"am",		/* Amharic */
+	"ti",		/* Tigrinya */
+	"gl",		/* Galla */
+	"so",		/* Somali */
+	"sw",		/* Swahili */
+/*90*/	"rw",		/* Kinyarwanda/Ruanda */
+	"rn",		/* Rundi */
+	"nya",		/* Nyanja/Chewa */
+	"mg",		/* Malagasy */
+/*94*/	"eo",		/* Esperanto */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+/*100*/	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+/*110*/	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+/*120*/	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+/*128*/	"cy",		/* Welsh */
+	"eu",		/* Basque */
+/*130*/	"ca",		/* Catalan */
+	"la",		/* Latin */
+	"qu",		/* Quechua */
+	"gn",		/* Guarani */
+	"ay",		/* Aymara */
+	"tt",		/* Tatar */
+	"ug",		/* Uighur */
+	"dz",		/* Dzongkha */
+	"jv",		/* Javanese (roman) */
+	"su",		/* Sundanese (roman) */
+/*140*/	NULL,		/* Galician */
+	"af",		/* Afrikaans */
+	"be",		/* Breton */
+	NULL,		/* Inuktitut */
+	"gae",		/* Scottish Gaelic */
+	"max",		/* Manx Gaelic */
+	NULL,		/* Irish Gaelic (with dot) */
+	"to",		/* Tongan */
+	"grc",		/* Greek (polytonic) */
+	"kl",		/* Greenlandic */	/* Presumably icelandic? */
+/*150*/	"az",		/* Azebaijani (roman) */
+	NULL
+};
+
 unichar_t *MacStrToUnicode(const char *str,int macenc,int maclang) {
     unichar_t *ret, *table, *rpt;
     const uint8 *ustr = (uint8 *) str;
@@ -1051,3 +1206,575 @@ return( false );
 
 return( true );
 }
+
+int MacLangFromLocale(void) {
+    /*const char *loc = setlocale(LC_MESSAGES,NULL);*/ /* This always returns "C" for me, even when it shouldn't be */
+    const char *loc;
+    static int found=-1;
+    int i;
+
+    if ( found!=-1 )
+return( found );
+
+    loc = getenv("LC_ALL");
+    if ( loc==NULL ) loc = getenv("LC_MESSAGES");
+    if ( loc==NULL ) loc = getenv("LANG");
+
+    if ( loc==NULL ) {
+	found=0;		/* Default to english */
+return(found);
+    }
+    if ( strncmp(loc,"nl_BE",5)==0 ) {
+	found = 34;
+return( found );
+    }
+    for ( i=0; i<sizeof(LanguageCodesFromMacLang)/sizeof(LanguageCodesFromMacLang[0]); ++i ) {
+	if ( LanguageCodesFromMacLang[i]!=NULL &&
+		strncmp(loc,LanguageCodesFromMacLang[i],strlen(LanguageCodesFromMacLang[i]))==0 ) {
+	    found = i;
+return( found );
+	}
+    }
+    if ( strncmp(loc,"zh_HK",5)==0 )
+	found = 19;
+    else
+	found = 0;
+return( found );
+}
+    
+unichar_t *PickNameFromMacName(struct macname *mn) {
+    int lang = MacLangFromLocale();
+    struct macname *first=mn, *english=NULL;
+
+    while ( mn!=NULL ) {
+	if ( mn->lang==lang )
+    break;
+	else if ( mn->lang==0 )
+	    english = mn;
+	mn = mn->next;
+    }
+    if ( mn==NULL )
+	mn = english;
+    if ( mn==NULL )
+	mn = first;
+    if ( mn==NULL )
+return( NULL );
+
+return( MacStrToUnicode(mn->name,mn->enc,mn->lang));
+}
+
+static struct macname fs_names[] = {
+	{ &fs_names[146], 0, 0, "All Typographic Features" },
+	{ &fs_names[147], 0, 0, "All Type Features" },
+	{ &fs_names[148], 0, 0, "Ligatures" },
+	{ &fs_names[149], 0, 0, "Required Ligatures" },
+	{ &fs_names[150], 0, 0, "Common Ligatures" },
+	{ &fs_names[151], 0, 0, "Rare Ligatures" },
+	{ NULL, 0, 0, "Logo Ligatures" },
+	{ NULL, 0, 0, "Rebus Ligatures" },
+	{ &fs_names[152], 0, 0, "Diphthong Ligatures" },
+	{ NULL, 0, 0, "Squared Ligatures" },
+	{ NULL, 0, 0, "Abbreviated Squared Ligatures" },
+	{ NULL, 0, 0, "Cursive connection" },
+	{ NULL, 0, 0, "Unconnected" },
+	{ NULL, 0, 0, "Partially connected" },
+	{ NULL, 0, 0, "Cursive" },
+	{ NULL, 0, 0, "Letter Case" },
+	{ &fs_names[154], 0, 0, "Upper & Lower Case" },
+	{ &fs_names[155], 0, 0, "All Capitals" },
+	{ NULL, 0, 0, "All Lower Case" },
+	{ &fs_names[156], 0, 0, "Small Caps" },
+	{ NULL, 0, 0, "Initial Caps" },
+	{ NULL, 0, 0, "Initial and Small Caps" },
+	{ &fs_names[157], 0, 0, "Vertical Substitution" },
+	{ &fs_names[158], 0, 0, "No Vertical Substitution" },
+	{ &fs_names[159], 0, 0, "Vertical Substitution" },
+	{ NULL, 0, 0, "Linguistic Rearrangement" },
+	{ NULL, 0, 0, "No Linguistic Rearrangement" },
+	{ NULL, 0, 0, "Linguistic Rearrangement" },
+	{ NULL, 0, 0, "Number Spacing" },
+	{ &fs_names[161], 0, 0, "Monospaced Numbers" },
+	{ &fs_names[162], 0, 0, "Proportional Numbers" },
+	{ &fs_names[163], 0, 0, "Smart Swashes" },
+	{ &fs_names[166], 0, 0, "Word Initial Swashes" },
+	{ &fs_names[167], 0, 0, "Word Final Swashes" },
+	{ &fs_names[165], 0, 0, "Line Initial Swashes" },
+	{ &fs_names[164], 0, 0, "Line Final Swashes" },
+	{ &fs_names[168], 0, 0, "Non-Final Swashes" },
+	{ NULL, 0, 0, "Diacritics" },
+	{ &fs_names[170], 0, 0, "Show Diacritics" },
+	{ NULL, 0, 0, "Hide Diacritics" },
+	{ &fs_names[171], 0, 0, "Decompose Diacritics" },
+	{ NULL, 0, 0, "Vertical Position" },
+	{ &fs_names[174], 0, 0, "Normal Vertical Position" },
+	{ &fs_names[173], 0, 0, "Superiors" },
+	{ &fs_names[175], 0, 0, "Inferiors" },
+	{ &fs_names[176], 0, 0, "Ordinals" },
+	{ &fs_names[177], 0, 0, "Fractions" },
+	{ &fs_names[178], 0, 0, "No Fractions" },
+	{ &fs_names[179], 0, 0, "Vertical Fractions" },
+	{ &fs_names[180], 0, 0, "Diagonal Fractions" },
+	{ NULL, 0, 0, "Overlapping Characters" },
+	{ &fs_names[182], 0, 0, "Prevent Overlap" },
+	{ NULL, 0, 0, "Allow Overlap" },
+	{ &fs_names[183], 0, 0, "Typographic Extras" },
+	{ NULL, 0, 0, "Hyphens to Em-dash" },
+	{ NULL, 0, 0, "Hyphens to En-dash" },
+	{ NULL, 0, 0, "Unslashed Zero" },
+	{ NULL, 0, 0, "Form Interrobang" },
+	{ &fs_names[184], 0, 0, "Smart Quotes" },
+	{ NULL, 0, 0, "Periods to Ellipsis" },
+	{ &fs_names[185], 0, 0, "Mathematical Extras" },
+	{ &fs_names[186], 0, 0, "Hyphen to Minus" },
+	{ &fs_names[187], 0, 0, "Asterisk to Multiply" },
+	{ NULL, 0, 0, "Slash to Divide" },
+	{ NULL, 0, 0, "Inequality Ligatures" },
+	{ NULL, 0, 0, "Exponents On" },
+	{ NULL, 0, 0, "Ornament Sets" },
+	{ &fs_names[189], 0, 0, "No Ornaments" },
+	{ NULL, 0, 0, "Dingbats" },
+	{ NULL, 0, 0, "Pi Characters" },
+	{ &fs_names[190], 0, 0, "Fleurons" },
+	{ NULL, 0, 0, "Decorative Borders" },
+	{ NULL, 0, 0, "International Symbols" },
+	{ NULL, 0, 0, "Math Symbols" },
+	{ NULL, 0, 0, "Character Alternates" },
+	{ &fs_names[192], 0, 0, "No Alternates" },
+	{ NULL, 0, 0, "Alternate Characters" },
+	{ NULL, 0, 0, "Other Alternates" },
+	{ NULL, 0, 0, "Design Complexity" },
+	{ &fs_names[194], 0, 0, "Design Level 1" },
+	{ &fs_names[195], 0, 0, "Design Level 2" },
+	{ &fs_names[196], 0, 0, "Design Level 3" },
+	{ &fs_names[197], 0, 0, "Design Level 4" },
+	{ NULL, 0, 0, "Design Level 5" },
+	{ NULL, 0, 0, "Style Options" },
+	{ NULL, 0, 0, "No Style Options" },
+	{ NULL, 0, 0, "Display Text" },
+	{ NULL, 0, 0, "Engraved Text" },
+	{ NULL, 0, 0, "Illuminated Caps" },
+	{ NULL, 0, 0, "Titling Caps" },
+	{ NULL, 0, 0, "Tail Caps" },
+	{ NULL, 0, 0, "Character Shape" },
+	{ NULL, 0, 0, "Traditional" },
+	{ NULL, 0, 0, "Simplified" },
+	{ NULL, 0, 0, "jis 1978" },
+	{ NULL, 0, 0, "jis 1983" },
+	{ NULL, 0, 0, "jis 1990" },
+	{ NULL, 0, 0, "Traditional Alt 1" },
+	{ NULL, 0, 0, "Traditional Alt 2" },
+	{ NULL, 0, 0, "Traditional Alt 3" },
+	{ NULL, 0, 0, "Traditional Alt 4" },
+	{ NULL, 0, 0, "Traditional Alt 5" },
+	{ NULL, 0, 0, "Expert" },
+	{ NULL, 0, 0, "Number Case" },
+	{ &fs_names[199], 0, 0, "Lower Case Numbers" },
+	{ &fs_names[200], 0, 0, "Upper Case Numbers" },
+	{ NULL, 0, 0, "Text Spacing" },
+	{ NULL, 0, 0, "Proportional" },
+	{ NULL, 0, 0, "Monospace" },
+	{ NULL, 0, 0, "Transliteration" },
+	{ NULL, 0, 0, "No Transliteration" },
+	{ NULL, 0, 0, "Hanja To Hangul" },
+	{ NULL, 0, 0, "Hiragana to Katakana" },
+	{ NULL, 0, 0, "Katakana to Hiragana" },
+	{ NULL, 0, 0, "Katakana to Roman" },
+	{ NULL, 0, 0, "Roman to Hiragana" },
+	{ NULL, 0, 0, "Roman to Katakana" },
+	{ NULL, 0, 0, "Hanja To Hangul Alt 1" },
+	{ NULL, 0, 0, "Hanja To Hangul Alt 2" },
+	{ NULL, 0, 0, "Hanja To Hangul Alt 3" },
+	{ NULL, 0, 0, "Annotation" },
+	{ NULL, 0, 0, "No Annotation" },
+	{ NULL, 0, 0, "Box Annotation" },
+	{ NULL, 0, 0, "Rounded Box Annotation" },
+	{ NULL, 0, 0, "Circle Annotation" },
+	{ NULL, 0, 0, "Inverted Circle Annotation" },
+	{ NULL, 0, 0, "Parenthesized Annotation" },
+	{ NULL, 0, 0, "Period Annotation" },
+	{ NULL, 0, 0, "Roman Numeral Annotation" },
+	{ NULL, 0, 0, "Diamond Annotation" },
+	{ NULL, 0, 0, "Kana Spacing" },
+	{ NULL, 0, 0, "Full-Width" },
+	{ NULL, 0, 0, "Proportional" },
+	{ &fs_names[136], 0, 0, "Ideographic Spacing" },
+	{ &fs_names[137], 0, 0, "Full-Width" },
+	{ &fs_names[138], 0, 0, "Proportional" },
+	{ NULL, 0, 0, "Ideographic Spacing" },
+	{ NULL, 0, 0, "Full-Width" },
+	{ NULL, 0, 0, "Proportional" },
+	{ NULL, 0, 0, "CJK Roman Spacing" },
+	{ NULL, 0, 0, "Half-Width" },
+	{ NULL, 0, 0, "Proportional" },
+	{ NULL, 0, 0, "Default" },
+	{ NULL, 0, 0, "Full-Width" },
+	{ &fs_names[201], 0, 0, "Unicode Decomposition" },
+	{ &fs_names[202], 0, 0, "Canonical Decomposition" },
+	{ &fs_names[203], 0, 1, "Fonctions typographiques" },
+	{ &fs_names[204], 0, 1, "Toutes fonctions typographiques" },
+	{ &fs_names[205], 0, 1, "Ligatures" },
+	{ NULL, 0, 1, "Ligatures requises" },
+	{ &fs_names[207], 0, 1, "Ligatures usuelles" },
+	{ &fs_names[206], 0, 1, "Ligatures rares" },
+	{ &fs_names[247], 0, 1, "Ligatures de diphtongues" },
+	{ &fs_names[208], 0, 1, "Caractères" },
+	{ &fs_names[209], 0, 1, "Majuscules et minuscules" },
+	{ &fs_names[210], 0, 1, "Majuscules" },
+	{ &fs_names[211], 0, 1, "Petites capitales" },
+	{ NULL, 0, 0, "Substitution vertical" },
+	{ NULL, 0, 0, "Aucun Substitution vertical" },
+	{ NULL, 0, 0, "Substitution vertical" },
+	{ &fs_names[212], 0, 1, "Espacement des nombres" },
+	{ &fs_names[213], 0, 1, "Espacement des nombres fixe" },
+	{ &fs_names[214], 0, 1, "Espacement des nombres proportionnel" },
+	{ &fs_names[215], 0, 1, "Parafes" },
+	{ &fs_names[216], 0, 1, "Parafes en fin de ligne" },
+	{ &fs_names[217], 0, 1, "Parafes en début de ligne" },
+	{ &fs_names[218], 0, 1, "Parafes en début de mot" },
+	{ &fs_names[219], 0, 1, "Parafes en fin de mot" },
+	{ &fs_names[220], 0, 1, "Parafes dans le mot" },
+	{ &fs_names[251], 0, 1, "Diacritiques" },
+	{ &fs_names[252], 0, 1, "Afficher les diacritiques" },
+	{ &fs_names[250], 0, 1, "Aucun changement" },
+	{ &fs_names[221], 0, 1, "Position verticale" },
+	{ &fs_names[222], 0, 1, "En exposant" },
+	{ &fs_names[223], 0, 1, "Position verticale normale" },
+	{ &fs_names[224], 0, 1, "En indice" },
+	{ &fs_names[225], 0, 1, "Position verticale ordinale" },
+	{ NULL, 0, 1, "Fractions" },
+	{ &fs_names[228], 0, 1, "Pas de fractions" },
+	{ NULL, 0, 1, "Fractions verticaux" },
+	{ &fs_names[227], 0, 1, "Fractions en diagonale" },
+	{ &fs_names[229], 0, 1, "Chevauchement des signes" },
+	{ &fs_names[230], 0, 1, "Pas de chevauchement des signes" },
+	{ &fs_names[248], 0, 1, "Compléments typographiques" },
+	{ &fs_names[249], 0, 1, "Guillemets typographiques" },
+	{ &fs_names[231], 0, 1, "Conversions mathématiques" },
+	{ &fs_names[232], 0, 1, "Remplacer tiret par signe moins" },
+	{ &fs_names[233], 0, 1, "Remplacer astérisque par signe multiplier" },
+	{ &fs_names[234], 0, 1, "Ornements" },
+	{ &fs_names[235], 0, 1, "Pas d’ornements" },
+	{ &fs_names[236], 0, 1, "Fleurons" },
+	{ &fs_names[237], 0, 1, "Autres glyphes" },
+	{ &fs_names[238], 0, 1, "Aucune alternative" },
+	{ &fs_names[239], 0, 1, "Complexité du graphisme" },
+	{ &fs_names[240], 0, 1, "Graphisme niveau 1" },
+	{ &fs_names[241], 0, 1, "Graphisme niveau 2" },
+	{ &fs_names[242], 0, 1, "Graphisme niveau 3" },
+	{ &fs_names[243], 0, 1, "Graphisme niveau 4" },
+	{ &fs_names[244], 0, 1, "Position des nombres" },
+	{ &fs_names[245], 0, 1, "Position des nombres traditionnelle" },
+	{ &fs_names[246], 0, 1, "Position des nombres moderne" },
+	{ &fs_names[253], 0, 1, "Décomposition Unicode" },
+	{ &fs_names[254], 0, 1, "Composition canonique" },
+	{ &fs_names[255], 0, 2, "Alle typografischen Möglichkeiten" },
+	{ &fs_names[256], 0, 2, "Alle Auszeichnungsarten" },
+	{ &fs_names[257], 0, 2, "Ligaturen" },
+	{ &fs_names[258], 0, 2, "Sonderligaturen" },
+	{ &fs_names[259], 0, 2, "Normale Ligaturen" },
+	{ &fs_names[260], 0, 2, "Schreibweise" },
+	{ &fs_names[261], 0, 2, "Groß/Klein" },
+	{ &fs_names[262], 0, 2, "Groß" },
+	{ &fs_names[263], 0, 2, "Kapitälchen" },
+	{ &fs_names[264], 0, 2, "Ziffernabstände" },
+	{ &fs_names[265], 0, 2, "Standard Ziffern" },
+	{ &fs_names[266], 0, 2, "Proportionale Ziffern" },
+	{ &fs_names[267], 0, 2, "Zierbuchstabe" },
+	{ &fs_names[268], 0, 2, "Zierbuchstabe Zeilenende" },
+	{ &fs_names[269], 0, 2, "Zierbuchstabe Zeilenanfang" },
+	{ &fs_names[270], 0, 2, "Zierbuchstabe Wortanfang" },
+	{ &fs_names[271], 0, 2, "Zierbuchstabe Wortende" },
+	{ &fs_names[272], 0, 2, "Zierbuchstabe Beliebig" },
+	{ &fs_names[273], 0, 2, "Hoch-/Tiefstellen" },
+	{ &fs_names[274], 0, 2, "Hochgestellt" },
+	{ &fs_names[275], 0, 2, "Normal" },
+	{ &fs_names[276], 0, 2, "Tiefgestellt" },
+	{ &fs_names[277], 0, 2, "Ordnungszahlen" },
+	{ &fs_names[278], 0, 2, "Brüche" },
+	{ &fs_names[279], 0, 2, "Diagonaler Bruch" },
+	{ &fs_names[280], 0, 2, "Kein Bruche" },
+	{ &fs_names[281], 0, 2, "Überlappen" },
+	{ &fs_names[282], 0, 2, "Überlappen  vermeiden" },
+	{ &fs_names[283], 0, 2, "Mathem. Sonderzeichen" },
+	{ &fs_names[284], 0, 2, "Minuszeichen" },
+	{ &fs_names[285], 0, 2, "Malzeichen" },
+	{ &fs_names[286], 0, 2, "Sonderzeichen" },
+	{ &fs_names[287], 0, 2, "Keine Sonderzeichen" },
+	{ &fs_names[288], 0, 2, "Pflanzenornamente" },
+	{ &fs_names[289], 0, 2, "Alternative Zeichen" },
+	{ &fs_names[290], 0, 2, "Keine Alternativ-Figuren" },
+	{ &fs_names[291], 0, 2, "Modifikationsgrad" },
+	{ &fs_names[292], 0, 2, "Design Stufe 1" },
+	{ &fs_names[293], 0, 2, "Design Stufe 2" },
+	{ &fs_names[294], 0, 2, "Design Stufe 3" },
+	{ &fs_names[295], 0, 2, "Design Stufe 4" },
+	{ &fs_names[296], 0, 2, "Zahlendarstellung" },
+	{ &fs_names[297], 0, 2, "Mediæval-Ziffern" },
+	{ &fs_names[298], 0, 2, "Normale Ziffern" },
+	{ &fs_names[299], 0, 2, "Diphtong Ligaturen" },
+	{ &fs_names[300], 0, 2, "Typografische Extras" },
+	{ &fs_names[301], 0, 2, "Ersetzen mit geschwungenen Anführungszeichen" },
+	{ &fs_names[302], 0, 2, "Keine Veränderung" },
+	{ &fs_names[303], 0, 2, "Diakritische Zeichen" },
+	{ &fs_names[304], 0, 2, "Diakritische Zeichen zeigen" },
+	{ &fs_names[305], 0, 2, "In Unicode zerlegen" },
+	{ &fs_names[306], 0, 2, "anerkannte Komposition" },
+	{ &fs_names[307], 0, 3, "Funzioni Tipografiche" },
+	{ &fs_names[308], 0, 3, "Tutte le Funzioni" },
+	{ &fs_names[309], 0, 3, "Legature" },
+	{ &fs_names[310], 0, 3, "Legature Rare" },
+	{ &fs_names[311], 0, 3, "Legature più Comuni" },
+	{ &fs_names[312], 0, 3, "Maiuscolo o Minuscolo" },
+	{ &fs_names[313], 0, 3, "Maiuscolo & minuscolo" },
+	{ &fs_names[314], 0, 3, "Tutto in Maiuscolo" },
+	{ &fs_names[315], 0, 3, "Maiuscoletto" },
+	{ &fs_names[316], 0, 3, "Spaziatura numeri" },
+	{ &fs_names[317], 0, 3, "Monospaziata" },
+	{ &fs_names[318], 0, 3, "Proporzionale" },
+	{ &fs_names[319], 0, 3, "Lettere Ornate" },
+	{ &fs_names[320], 0, 3, "Fine Riga" },
+	{ &fs_names[321], 0, 3, "Inizio Riga" },
+	{ &fs_names[322], 0, 3, "All'inizio" },
+	{ &fs_names[323], 0, 3, "Alla Fine" },
+	{ &fs_names[324], 0, 3, "All'interno" },
+	{ &fs_names[325], 0, 3, "Posizione Verticale" },
+	{ &fs_names[326], 0, 3, "Apice" },
+	{ &fs_names[327], 0, 3, "Posizione Normale" },
+	{ &fs_names[328], 0, 3, "Pedice" },
+	{ &fs_names[329], 0, 3, "Ordinali" },
+	{ &fs_names[330], 0, 3, "Frazioni" },
+	{ &fs_names[331], 0, 3, "Frazioni Diagonali" },
+	{ &fs_names[332], 0, 3, "Nessuna Frazione" },
+	{ &fs_names[333], 0, 3, "Caratteri Sovrapposti" },
+	{ &fs_names[334], 0, 3, "Nessuna Sovrapposizione" },
+	{ &fs_names[335], 0, 3, "Conversioni Matematiche" },
+	{ &fs_names[336], 0, 3, "Trattino per Sottrazione" },
+	{ &fs_names[337], 0, 3, "Asterisco per Moltiplicazione" },
+	{ &fs_names[338], 0, 3, "Impostazione Ornamenti" },
+	{ &fs_names[339], 0, 3, "Nessun Ornamento" },
+	{ &fs_names[340], 0, 3, "Fleurons" },
+	{ &fs_names[341], 0, 3, "Caratteri Alternativi" },
+	{ &fs_names[342], 0, 3, "Nessuna alternativa" },
+	{ &fs_names[343], 0, 3, "Design Complexity" },
+	{ &fs_names[344], 0, 3, "Livello 1" },
+	{ &fs_names[345], 0, 3, "Livello 2" },
+	{ &fs_names[346], 0, 3, "Livello 3" },
+	{ &fs_names[347], 0, 3, "Livello 4" },
+	{ &fs_names[348], 0, 3, "Posizione Numeri" },
+	{ &fs_names[349], 0, 3, "Sopra la Linea Base" },
+	{ &fs_names[350], 0, 3, "Tradizionale" },
+	{ &fs_names[351], 0, 3, "Legature dittonghi" },
+	{ &fs_names[352], 0, 3, "Extra tipografici" },
+	{ &fs_names[353], 0, 3, "Virgolette eleganti" },
+	{ &fs_names[354], 0, 3, "Nessuna modifica" },
+	{ &fs_names[355], 0, 3, "Diacritici" },
+	{ &fs_names[356], 0, 3, "Mostra diacritici" },
+	{ &fs_names[357], 0, 3, "Scomposizione unicode" },
+	{ &fs_names[358], 0, 3, "Composizione canonica" },
+	{ NULL, 0, 4, "Alle typografische functies" },
+	{ NULL, 0, 4, "Alle letterfuncties" },
+	{ NULL, 0, 4, "Ligaturen" },
+	{ NULL, 0, 4, "Zeldzame ligaturen" },
+	{ NULL, 0, 4, "Gebruikelijke ligaturen" },
+	{ NULL, 0, 4, "Soort letter" },
+	{ NULL, 0, 4, "Kapitaal en onderkast" },
+	{ NULL, 0, 4, "Geheel kapitaal" },
+	{ NULL, 0, 4, "Kleinkapitaal" },
+	{ NULL, 0, 4, "Cijferspatiëring" },
+	{ NULL, 0, 4, "Gelijk gespatieerde cijfers" },
+	{ NULL, 0, 4, "Proportioneel gespatieerde cijfers" },
+	{ NULL, 0, 4, "Sierletters" },
+	{ NULL, 0, 4, "Sierletters einde van regel" },
+	{ NULL, 0, 4, "Sierletters begin van regel" },
+	{ NULL, 0, 4, "Sierletters begin van woord" },
+	{ NULL, 0, 4, "Sierletters einde van woord" },
+	{ NULL, 0, 4, "Niet-afsluitende sierletters" },
+	{ NULL, 0, 4, "Verticale positie" },
+	{ NULL, 0, 4, "Superieur" },
+	{ NULL, 0, 4, "Normale positie" },
+	{ NULL, 0, 4, "Inferieur" },
+	{ NULL, 0, 4, "Rangtelwoord" },
+	{ NULL, 0, 4, "Breuken" },
+	{ NULL, 0, 4, "Diagonale breuken" },
+	{ NULL, 0, 4, "Geen breuken" },
+	{ NULL, 0, 4, "Overlappende tekens" },
+	{ NULL, 0, 4, "Voorkom overlap" },
+	{ NULL, 0, 4, "Wiskundige extra’s" },
+	{ NULL, 0, 4, "Divisie als minteken" },
+	{ NULL, 0, 4, "Asterisk als maalteken" },
+	{ NULL, 0, 4, "Ornamenten" },
+	{ NULL, 0, 4, "Geen ornamenten" },
+	{ NULL, 0, 4, "Fleurons" },
+	{ NULL, 0, 4, "Alternatieve lettertekens" },
+	{ NULL, 0, 4, "Geen alternatieven" },
+	{ NULL, 0, 4, "Complexiteit ontwerp" },
+	{ NULL, 0, 4, "Ontwerpniveau 1" },
+	{ NULL, 0, 4, "Ontwerpniveau 2" },
+	{ NULL, 0, 4, "Ontwerpniveau 3" },
+	{ NULL, 0, 4, "Ontwerpniveau 4" },
+	{ NULL, 0, 4, "Soort cijfers" },
+	{ NULL, 0, 4, "Uithangende cijfers" },
+	{ NULL, 0, 4, "Tabelcijfers" },
+	{ NULL, 0, 4, "Ligaturen van tweeklanken" },
+	{ NULL, 0, 4, "Extra typografische opties" },
+	{ NULL, 0, 4, "Gekrulde aanhalingstekens" },
+	{ NULL, 0, 4, "Geen wijziging" },
+	{ NULL, 0, 4, "Diakritische tekens" },
+	{ NULL, 0, 4, "Toon diakritische tekens" },
+	{ NULL, 0, 4, "Unicode-splitsing" },
+	{ NULL, 0, 4, "Klassieke weergave" },
+	 { NULL }
+};
+
+static struct macsetting fs_settings[] = {
+	{ NULL, 0, 0, &fs_names[1] },
+	{ NULL, 14, 0, &fs_names[10] },
+	{ &fs_settings[1], 12, 0, &fs_names[9] },
+	{ &fs_settings[2], 10, 0, &fs_names[8] },
+	{ &fs_settings[3], 8, 0, &fs_names[7] },
+	{ &fs_settings[4], 6, 0, &fs_names[6] },
+	{ &fs_settings[5], 4, 0, &fs_names[5] },
+	{ &fs_settings[6], 2, 0, &fs_names[4] },
+	{ &fs_settings[7], 0, 0, &fs_names[3] },
+	{ NULL, 2, 0, &fs_names[14] },
+	{ &fs_settings[9], 1, 0, &fs_names[13] },
+	{ &fs_settings[10], 0, 0, &fs_names[12] },
+	{ NULL, 5, 0, &fs_names[21] },
+	{ &fs_settings[12], 4, 0, &fs_names[20] },
+	{ &fs_settings[13], 3, 0, &fs_names[19] },
+	{ &fs_settings[14], 2, 0, &fs_names[18] },
+	{ &fs_settings[15], 1, 0, &fs_names[17] },
+	{ &fs_settings[16], 0, 0, &fs_names[16] },
+	{ NULL, 1, 0, &fs_names[24] },
+	{ &fs_settings[18], 0, 0, &fs_names[23] },
+	{ NULL, 1, 0, &fs_names[27] },
+	{ &fs_settings[20], 0, 0, &fs_names[26] },
+	{ NULL, 1, 0, &fs_names[30] },
+	{ &fs_settings[22], 0, 0, &fs_names[29] },
+	{ NULL, 8, 0, &fs_names[36] },
+	{ &fs_settings[24], 6, 0, &fs_names[35] },
+	{ &fs_settings[25], 4, 0, &fs_names[34] },
+	{ &fs_settings[26], 2, 0, &fs_names[33] },
+	{ &fs_settings[27], 0, 0, &fs_names[32] },
+	{ NULL, 2, 0, &fs_names[40] },
+	{ &fs_settings[29], 1, 0, &fs_names[39] },
+	{ &fs_settings[30], 0, 0, &fs_names[38] },
+	{ NULL, 3, 0, &fs_names[45] },
+	{ &fs_settings[32], 2, 0, &fs_names[44] },
+	{ &fs_settings[33], 1, 0, &fs_names[43] },
+	{ &fs_settings[34], 0, 0, &fs_names[42] },
+	{ NULL, 2, 0, &fs_names[49] },
+	{ &fs_settings[36], 1, 0, &fs_names[48] },
+	{ &fs_settings[37], 0, 0, &fs_names[47] },
+	{ NULL, 1, 0, &fs_names[52] },
+	{ &fs_settings[39], 0, 0, &fs_names[51] },
+	{ NULL, 10, 0, &fs_names[59] },
+	{ &fs_settings[41], 8, 0, &fs_names[58] },
+	{ &fs_settings[42], 6, 0, &fs_names[57] },
+	{ &fs_settings[43], 4, 0, &fs_names[56] },
+	{ &fs_settings[44], 2, 0, &fs_names[55] },
+	{ &fs_settings[45], 0, 0, &fs_names[54] },
+	{ NULL, 8, 0, &fs_names[65] },
+	{ &fs_settings[47], 6, 0, &fs_names[64] },
+	{ &fs_settings[48], 4, 0, &fs_names[63] },
+	{ &fs_settings[49], 2, 0, &fs_names[62] },
+	{ &fs_settings[50], 0, 0, &fs_names[61] },
+	{ NULL, 6, 0, &fs_names[73] },
+	{ &fs_settings[52], 5, 0, &fs_names[72] },
+	{ &fs_settings[53], 4, 0, &fs_names[71] },
+	{ &fs_settings[54], 3, 0, &fs_names[70] },
+	{ &fs_settings[55], 2, 0, &fs_names[69] },
+	{ &fs_settings[56], 1, 0, &fs_names[68] },
+	{ &fs_settings[57], 0, 0, &fs_names[67] },
+	{ NULL, 2, 0, &fs_names[77] },
+	{ &fs_settings[59], 1, 0, &fs_names[76] },
+	{ &fs_settings[60], 0, 0, &fs_names[75] },
+	{ NULL, 4, 0, &fs_names[83] },
+	{ &fs_settings[62], 3, 0, &fs_names[82] },
+	{ &fs_settings[63], 2, 0, &fs_names[81] },
+	{ &fs_settings[64], 1, 0, &fs_names[80] },
+	{ &fs_settings[65], 0, 0, &fs_names[79] },
+	{ NULL, 5, 0, &fs_names[90] },
+	{ &fs_settings[67], 4, 0, &fs_names[89] },
+	{ &fs_settings[68], 3, 0, &fs_names[88] },
+	{ &fs_settings[69], 2, 0, &fs_names[87] },
+	{ &fs_settings[70], 1, 0, &fs_names[86] },
+	{ &fs_settings[71], 0, 0, &fs_names[85] },
+	{ NULL, 10, 0, &fs_names[102] },
+	{ &fs_settings[73], 9, 0, &fs_names[101] },
+	{ &fs_settings[74], 8, 0, &fs_names[100] },
+	{ &fs_settings[75], 7, 0, &fs_names[99] },
+	{ &fs_settings[76], 6, 0, &fs_names[98] },
+	{ &fs_settings[77], 5, 0, &fs_names[97] },
+	{ &fs_settings[78], 4, 0, &fs_names[96] },
+	{ &fs_settings[79], 3, 0, &fs_names[95] },
+	{ &fs_settings[80], 2, 0, &fs_names[94] },
+	{ &fs_settings[81], 1, 0, &fs_names[93] },
+	{ &fs_settings[82], 0, 0, &fs_names[92] },
+	{ NULL, 1, 0, &fs_names[105] },
+	{ &fs_settings[84], 0, 0, &fs_names[104] },
+	{ NULL, 1, 0, &fs_names[108] },
+	{ &fs_settings[86], 0, 0, &fs_names[107] },
+	{ NULL, 9, 0, &fs_names[119] },
+	{ &fs_settings[88], 8, 0, &fs_names[118] },
+	{ &fs_settings[89], 7, 0, &fs_names[117] },
+	{ &fs_settings[90], 6, 0, &fs_names[116] },
+	{ &fs_settings[91], 5, 0, &fs_names[115] },
+	{ &fs_settings[92], 4, 0, &fs_names[114] },
+	{ &fs_settings[93], 3, 0, &fs_names[113] },
+	{ &fs_settings[94], 2, 0, &fs_names[112] },
+	{ &fs_settings[95], 1, 0, &fs_names[111] },
+	{ &fs_settings[96], 0, 0, &fs_names[110] },
+	{ NULL, 8, 0, &fs_names[129] },
+	{ &fs_settings[98], 7, 0, &fs_names[128] },
+	{ &fs_settings[99], 6, 0, &fs_names[127] },
+	{ &fs_settings[100], 5, 0, &fs_names[126] },
+	{ &fs_settings[101], 4, 0, &fs_names[125] },
+	{ &fs_settings[102], 3, 0, &fs_names[124] },
+	{ &fs_settings[103], 2, 0, &fs_names[123] },
+	{ &fs_settings[104], 1, 0, &fs_names[122] },
+	{ &fs_settings[105], 0, 0, &fs_names[121] },
+	{ NULL, 1, 0, &fs_names[132] },
+	{ &fs_settings[107], 0, 0, &fs_names[131] },
+	{ NULL, 1, 0, &fs_names[135] },
+	{ &fs_settings[109], 0, 0, &fs_names[134] },
+	{ NULL, 0, 0, &fs_names[145] },
+	{ NULL, 3, 0, &fs_names[143] },
+	{ &fs_settings[112], 2, 0, &fs_names[142] },
+	{ &fs_settings[113], 1, 0, &fs_names[141] },
+	{ &fs_settings[114], 0, 0, &fs_names[140] },
+	 { NULL }
+};
+
+static MacFeat fs_features[] = {
+	{ NULL, 103, 1, 0, 0, &fs_names[139], &fs_settings[115] },
+	{ &fs_features[0], 27, 0, 0, 0, &fs_names[144], &fs_settings[111] },
+	{ &fs_features[1], 26, 1, 0, 0, &fs_names[133], &fs_settings[110] },
+	{ &fs_features[2], 25, 1, 0, 0, &fs_names[130], &fs_settings[108] },
+	{ &fs_features[3], 24, 1, 0, 0, &fs_names[120], &fs_settings[106] },
+	{ &fs_features[4], 23, 1, 0, 0, &fs_names[109], &fs_settings[97] },
+	{ &fs_features[5], 22, 1, 0, 0, &fs_names[106], &fs_settings[87] },
+	{ &fs_features[6], 21, 1, 0, 0, &fs_names[103], &fs_settings[85] },
+	{ &fs_features[7], 20, 1, 0, 0, &fs_names[91], &fs_settings[83] },
+	{ &fs_features[8], 19, 1, 0, 0, &fs_names[84], &fs_settings[72] },
+	{ &fs_features[9], 18, 1, 0, 0, &fs_names[78], &fs_settings[66] },
+	{ &fs_features[10], 17, 1, 0, 0, &fs_names[74], &fs_settings[61] },
+	{ &fs_features[11], 16, 1, 0, 0, &fs_names[66], &fs_settings[58] },
+	{ &fs_features[12], 15, 0, 0, 0, &fs_names[60], &fs_settings[51] },
+	{ &fs_features[13], 14, 0, 0, 0, &fs_names[53], &fs_settings[46] },
+	{ &fs_features[14], 13, 1, 0, 0, &fs_names[50], &fs_settings[40] },
+	{ &fs_features[15], 11, 1, 0, 0, &fs_names[46], &fs_settings[38] },
+	{ &fs_features[16], 10, 1, 0, 0, &fs_names[41], &fs_settings[35] },
+	{ &fs_features[17], 9, 1, 0, 0, &fs_names[37], &fs_settings[31] },
+	{ &fs_features[18], 8, 0, 0, 0, &fs_names[31], &fs_settings[28] },
+	{ &fs_features[19], 6, 1, 0, 0, &fs_names[28], &fs_settings[23] },
+	{ &fs_features[20], 5, 1, 0, 0, &fs_names[25], &fs_settings[21] },
+	{ &fs_features[21], 4, 1, 0, 0, &fs_names[22], &fs_settings[19] },
+	{ &fs_features[22], 3, 1, 0, 0, &fs_names[15], &fs_settings[17] },
+	{ &fs_features[23], 2, 1, 0, 0, &fs_names[11], &fs_settings[11] },
+	{ &fs_features[24], 1, 0, 0, 0, &fs_names[2], &fs_settings[8] },
+	{ &fs_features[25], 0, 0, 0, 0, &fs_names[0], &fs_settings[0] },
+	 { NULL }
+};
+
+MacFeat *default_mac_feature_map = &fs_features[26];

@@ -616,11 +616,17 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
 		    "AlternateSubs:", "MultipleSubs:", "Ligature:",
 		    "LCarets:", NULL };
 	    if ( liga->tag==0 ) liga->tag = CHR(' ',' ',' ',' ');
-	    fprintf( sfd, "%s %d %d '%c%c%c%c' ",
+	    fprintf( sfd, "%s %d %d ",
 		    keywords[liga->type], liga->flags,
-		    liga->script_lang_index,
-		    liga->tag>>24, (liga->tag>>16)&0xff,
-		    (liga->tag>>8)&0xff, liga->tag&0xff );
+		    liga->script_lang_index );
+	    if ( liga->macfeature )
+		fprintf( sfd, "<%d,%d> ",
+			liga->tag>>16,
+			liga->tag&0xffff);
+	    else
+		fprintf( sfd, "'%c%c%c%c' ",
+			liga->tag>>24, (liga->tag>>16)&0xff,
+			(liga->tag>>8)&0xff, liga->tag&0xff );
 	    if ( liga->type==pst_position )
 		fprintf( sfd, "dx=%d dy=%d dh=%d dv=%d\n",
 			liga->u.pos.xoff, liga->u.pos.yoff,
@@ -2000,6 +2006,14 @@ return( NULL );
 		liga->tag |= getc(sfd)<<8;
 		liga->tag |= getc(sfd);
 		getc(sfd);	/* Final quote */
+	    } else if ( ch=='<' ) {
+		getint(sfd,&temp);
+		liga->tag = temp<<16;
+		getc(sfd);	/* comma */
+		getint(sfd,&temp);
+		liga->tag |= temp;
+		getc(sfd);	/* close '>' */
+		liga->macfeature = true;
 	    } else
 		ungetc(ch,sfd);
 	    if ( liga->type==pst_position )

@@ -100,7 +100,7 @@ int alwaysgenapple = false;
 int alwaysgenopentype = true;
 #endif
 char *helpdir;
-MacFeat *default_mac_feature_map=NULL;
+extern MacFeat *default_mac_feature_map;	/* from macenc.c */
 
 extern int rectelipse, polystar, regular_star;	/* from cvpalettes.c */
 extern int center_out;				/* from cvpalettes.c */

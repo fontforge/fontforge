@@ -197,7 +197,8 @@ enum possub_type { pst_null, pst_position, pst_pair,
 	pst_reversesub, fpst_max
 	};
 typedef struct generic_pst {
-    /* enum possub_type*/ uint8 type;
+    /* enum possub_type*/ unsigned int type: 7;
+    unsigned int macfeature: 1;		/* tag should be interpretted as <feature,setting> rather than 'abcd' */
     uint8 flags;
     uint16 script_lang_index;		/* 0xffff means none */
     uint32 tag;
@@ -1339,6 +1340,8 @@ extern uint8 MacEncFromMacLang(int maclang);
 extern uint16 WinLangFromMac(int maclang);
 extern uint16 WinLangToMac(int winlang);
 extern int CanEncodingWinLangAsMac(int winlang);
+extern int MacLangFromLocale(void);
+extern unichar_t *PickNameFromMacName(struct macname *mn);
 
 # if HANYANG
 extern void SFDDumpCompositionRules(FILE *sfd,struct compositionrules *rules);

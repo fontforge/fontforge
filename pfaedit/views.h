@@ -501,9 +501,10 @@ extern GTextInfo *AnchorClassesList(SplineFont *sf);
 extern GTextInfo **AnchorClassesLList(SplineFont *sf);
 extern GTextInfo **AnchorClassesSimpleLList(SplineFont *sf);
 extern unichar_t *ClassName(const unichar_t *name,uint32 feature_tag,
-	uint16 flags, int script_lang_index, int merge_with, int act_type);
-extern void DecomposeClassName(const unichar_t *clsnm, unichar_t **name,
-	uint32 *feature_tag,
+	uint16 flags, int script_lang_index, int merge_with, int act_type,
+	int macfeature);
+extern unichar_t *DecomposeClassName(const unichar_t *clsnm, unichar_t **name,
+	uint32 *feature_tag, int *macfeature,
 	uint16 *flags, uint16 *script_lang_index,int *merge_with,int *act_type);
 extern unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag,uint16 flags,
 	int script_lang_index, enum possub_type type, SplineFont *sf, SplineChar *default_script,

@@ -2164,7 +2164,7 @@ GTextInfo *AnchorClassesList(SplineFont *sf) {
     ti = gcalloc(cnt+1,sizeof(GTextInfo));
     for ( cnt=0, an=sf->anchor; an!=NULL; ++cnt, an=an->next ) {
 	ti[cnt].text = ClassName(an->name,an->feature_tag,an->flags,
-		an->script_lang_index, an->merge_with, an->type);
+		an->script_lang_index, an->merge_with, an->type,false);
 	ti[cnt].fg = ti[cnt].bg = COLOR_DEFAULT;
 	ti[cnt].userdata = an;
     }
@@ -2181,7 +2181,7 @@ GTextInfo **AnchorClassesLList(SplineFont *sf) {
     for ( cnt=0, an=sf->anchor; an!=NULL; ++cnt, an=an->next ) {
 	ti[cnt] = gcalloc(1,sizeof(GTextInfo));
 	ti[cnt]->text = ClassName(an->name,an->feature_tag,an->flags,
-		an->script_lang_index,an->merge_with, an->type);
+		an->script_lang_index,an->merge_with, an->type,false);
 	ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
 	ti[cnt]->userdata = an;
     }
@@ -2590,7 +2590,7 @@ static GTextInfo *FPSTList(SplineFont *sf,enum possub_type type) {
     ti = gcalloc(len+1,sizeof(GTextInfo));
     for ( len=0, fpst = sf->possub; fpst!=NULL; fpst=fpst->next ) if ( fpst->type==type ) {
 	ti[len].text = ClassName(nullstr,fpst->tag,fpst->flags,
-		fpst->script_lang_index, -1, -1);
+		fpst->script_lang_index, -1, -1,false);
 	ti[len].fg = ti[len].bg = COLOR_DEFAULT;
 	ti[len++].userdata = fpst;
     }
@@ -2652,7 +2652,7 @@ return( true );
 	    fpst = chunkalloc(sizeof(FPST));
 	    fpst->type = pst_contextpos + which;
 	    fpst->format = fpst->type==pst_reversesub ? pst_reversecoverage : pst_coverage;
-	    DecomposeClassName(newname,NULL,&fpst->tag,&fpst->flags,
+	    DecomposeClassName(newname,NULL,&fpst->tag,NULL,&fpst->flags,
 		    &fpst->script_lang_index,NULL,NULL);
 	    if ( (d->ccd = ContextChainEdit(d->sf,fpst,d,newname))!=NULL ) {
 	    for ( i=0; i<fpst_max-pst_contextpos; ++i ) {
@@ -2701,7 +2701,7 @@ return( true );
 	newname = GFI_AskNameTag(titles[which],ti->text,0,0,0,
 		pst_contextpos+which, d,NULL,-2,-1);
 	if ( newname!=NULL ) {
-	    DecomposeClassName(newname,NULL,&fpst->tag,&fpst->flags,
+	    DecomposeClassName(newname,NULL,&fpst->tag,NULL,&fpst->flags,
 		    &fpst->script_lang_index,NULL,NULL);
 	    new = gcalloc(len+1,sizeof(GTextInfo *));
 	    for ( i=0; i<len; ++i ) {

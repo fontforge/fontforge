@@ -1690,17 +1690,24 @@ return( true );
 }
 
 unichar_t *ClassName(const unichar_t *name,uint32 feature_tag,
-	uint16 flags, int script_lang_index,int merge_with,int act_type) {
+	uint16 flags, int script_lang_index,int merge_with,int act_type,
+	int macfeature) {
     unichar_t *newname, *upt;
     char index[20];
 
-    newname = galloc((u_strlen(name)+20)*sizeof(unichar_t));
-    if ( (newname[0] = feature_tag>>24)==0 ) newname[0] = ' ';
-    if ( (newname[1] = (feature_tag>>16)&0xff)==0 ) newname[1] = ' ';
-    if ( (newname[2] = (feature_tag>>8)&0xff)==0 ) newname[2] = ' ';
-    if ( (newname[3] = feature_tag&0xff)==0 ) newname[3] = ' ';
-    newname[4] = ' ';
-    upt = newname+5;
+    newname = galloc((u_strlen(name)+30)*sizeof(unichar_t));
+    if ( macfeature ) {
+	sprintf(index,"<%d,%d> ", feature_tag>>16, feature_tag&0xffff);
+	uc_strcpy(newname,index);
+	upt = newname+strlen(index);
+    } else {
+	if ( (newname[0] = feature_tag>>24)==0 ) newname[0] = ' ';
+	if ( (newname[1] = (feature_tag>>16)&0xff)==0 ) newname[1] = ' ';
+	if ( (newname[2] = (feature_tag>>8)&0xff)==0 ) newname[2] = ' ';
+	if ( (newname[3] = feature_tag&0xff)==0 ) newname[3] = ' ';
+	newname[4] = ' ';
+	upt = newname+5;
+    }
 
     *upt++ = flags&pst_r2l?'r':' ';
     *upt++ = flags&pst_ignorebaseglyphs?'b':' ';
@@ -1728,15 +1735,31 @@ unichar_t *ClassName(const unichar_t *name,uint32 feature_tag,
 return( newname );
 }
 
-void DecomposeClassName(const unichar_t *clsnm, unichar_t **name,
-	uint32 *feature_tag,
+unichar_t *DecomposeClassName(const unichar_t *clsnm, unichar_t **name,
+	uint32 *feature_tag, int *macfeature,
 	uint16 *flags, uint16 *script_lang_index,int *merge_with,int *act_type) {
-    int sli, type, mw;
+    int sli, type, mw, wasmac;
+    uint32 tag;
     unichar_t *end;
 
+    if ( clsnm[0]=='\0' ) {
+	tag = CHR(' ',' ',' ',' ');
+	wasmac = false;
+    } else if ( clsnm[0]!='<' ) {
+	tag = (clsnm[0]<<24) | (clsnm[1]<<16) | (clsnm[2]<<8) | clsnm[3];
+	clsnm += 5;
+	wasmac = false;
+    } else {
+	int temp = u_strtol(clsnm+1,&end,10);
+	tag = (temp<<16)|u_strtol(end+1,&end,10);
+	for ( clsnm=end; isspace(*clsnm); ++clsnm );
+	if ( *clsnm=='>' ) ++clsnm;
+	wasmac = true;
+    }
     if ( feature_tag!=NULL )
-	*feature_tag = (clsnm[0]<<24) | (clsnm[1]<<16) | (clsnm[2]<<8) | clsnm[3];
-    clsnm += 5;
+	*feature_tag = tag;
+    if ( macfeature!=NULL )
+	*macfeature = wasmac;
     if (( clsnm[0]=='r' || clsnm[0]==' ' ) &&
 	    ( clsnm[1]=='b' || clsnm[1]==' ' ) &&
 	    ( clsnm[2]=='l' || clsnm[2]==' ' ) &&
@@ -1760,7 +1783,69 @@ void DecomposeClassName(const unichar_t *clsnm, unichar_t **name,
     while ( *end==' ' ) ++end;
     if ( name!=NULL )
 	*name = u_copy(end);
-	
+return( end );
+}
+
+static GTextInfo *AddMacFeatures(GTextInfo *opentype,enum possub_type type,SplineFont *sf) {
+    MacFeat *from_p, *from_f;
+    struct macsetting *s;
+    int i, feat, set, none, cnt;
+    GTextInfo *res = NULL;
+
+    if ( type!=pst_substitution && type!=pst_ligature )
+return( opentype );
+
+    if ( sf->cidmaster ) sf = sf->cidmaster;
+
+    cnt = 0;		/* Yes, I want it outside, look at the end of the loop */
+    for ( i=0; i<2; ++i ) {
+	for ( feat=0; ; ++feat ) {
+	    none=true;
+	    for ( from_f = sf->features; from_f!=NULL && from_f->feature!=feat; from_f=from_f->next )
+		if ( from_f->feature>feat )
+		    none = false;
+	    for ( from_p = default_mac_feature_map; from_p!=NULL && from_p->feature!=feat; from_p=from_p->next )
+		if ( from_p->feature>feat )
+		    none = false;
+	    if ( from_f==NULL && from_p==NULL && none )
+	break;
+	    for ( set=0; ; ++set ) {
+		none = true;
+		s = NULL;
+		if ( from_f!=NULL ) {
+		    for ( s = from_f->settings; s!=NULL && s->setting!=set; s=s->next )
+			if ( s->setting>set )
+			    none = false;
+		}
+		if ( s==NULL && from_p!=NULL ) {
+		    for ( s = from_p->settings; s!=NULL && s->setting!=set; s=s->next )
+			if ( s->setting>set )
+			    none = false;
+		}
+		if ( s==NULL && none )
+	    break;
+		if ( s!=NULL ) {
+		    if ( res!=NULL ) {
+			res[cnt].text = PickNameFromMacName(s->setname);
+			res[cnt].image_precedes = true;	/* flag to say it's a mac thing */
+			res[cnt].userdata = (void *) ((feat<<16)|set);
+		    }
+		    ++cnt;
+		}
+	    }
+	}
+	if ( res==NULL ) {
+	    int c;
+	    if ( cnt==0 )
+return( opentype );
+	    for ( c=0; opentype[c].text!=NULL; ++c );
+	    res = gcalloc(c+3+cnt,sizeof(GTextInfo));
+	    memcpy(res,opentype,c*sizeof(GTextInfo));
+	    res[c].line = true;
+	    cnt = c;
+	}
+    }
+return( res );
 }
 
 #define CID_ACD_Tag	1001
@@ -1776,7 +1861,7 @@ struct ac_dlg {
     int ok;
     int sli;
     enum possub_type type;
-    GTextInfo *tags;
+    GTextInfo *tags, *mactags;
     GGadget *taglist;
     SplineFont *sf;
     GWindow gw;
@@ -1877,7 +1962,7 @@ static void ACD_ToggleNest(struct ac_dlg *acd) {
 
     acd->was_normalsli = !acd->was_normalsli;
     if ( acd->was_normalsli ) {
-	GGadgetSetList(acd->taglist,GTextInfoArrayFromList(acd->tags,NULL),false);
+	GGadgetSetList(acd->taglist,GTextInfoArrayFromList(acd->mactags,NULL),false);
     } else {
 	GGadgetSetList(acd->taglist,SFGenTagListFromType(&acd->sf->gentags,acd->type),false);
     }
@@ -1901,15 +1986,22 @@ return( false );
     } else if ( event->type==et_controlevent && event->u.control.subtype == et_textchanged &&
 	    event->u.control.g == acd->taglist && acd->was_normalsli) {
 	if ( event->u.control.u.tf_changed.from_pulldown!=-1 ) {
-	    uint32 tag = (uint32) acd->tags[event->u.control.u.tf_changed.from_pulldown].userdata;
-	    unichar_t ubuf[8];
+	    uint32 tag = (uint32) acd->mactags[event->u.control.u.tf_changed.from_pulldown].userdata;
+	    int macfeat = acd->mactags[event->u.control.u.tf_changed.from_pulldown].image_precedes;
+	    unichar_t ubuf[20];
+	    char buf[20];
 	    /* If they select something from the pulldown, don't show the human */
 	    /*  readable form, instead show the 4 character tag */
-	    ubuf[0] = tag>>24;
-	    ubuf[1] = (tag>>16)&0xff;
-	    ubuf[2] = (tag>>8)&0xff;
-	    ubuf[3] = tag&0xff;
-	    ubuf[4] = 0;
+	    if ( !macfeat ) {
+		ubuf[0] = tag>>24;
+		ubuf[1] = (tag>>16)&0xff;
+		ubuf[2] = (tag>>8)&0xff;
+		ubuf[3] = tag&0xff;
+		ubuf[4] = 0;
+	    } else {
+		sprintf( buf,"<%d,%d>", tag>>16, tag&0xffff );
+		uc_strcpy(ubuf,buf);
+	    }
 	    GGadgetSetTitle(event->u.control.g,ubuf);
 	}
 	ACD_RefigureMerge(acd,-1);
@@ -1946,54 +2038,25 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
     GGadgetCreateData gcd[18];
     GTextInfo label[18];
     GWindow gw;
-    unichar_t ubuf[8];
+    char buf[16];
+    unichar_t ubuf[16];
     unichar_t *ret;
     const unichar_t *name, *utag;
-    unichar_t *end;
+    unichar_t *end, *components=NULL;
     uint32 tag;
-    int temp, i, j;
-    GTextInfo *tags = pst_tags[type-1];
+    int i, j, macfeature = false;
+    GTextInfo *tags = pst_tags[type-1], *mactags = tags;
 
     if ( def==NULL ) def=nullstr;
-    if ( def_tag==0 && u_strlen(def)>4 && def[4]==' ' && def[0]<0x7f && def[1]<0x7f && def[2]<0x7f && def[3]<0x7f ) {
-	if ( def[0]!=' ' )
-	    def_tag = (def[0]<<24) | (def[1]<<16) | (def[2]<<8) | def[3];
-	def += 5;
-	if (( def[0]=='r' || def[0]==' ' ) &&
-		( def[1]=='b' || def[1]==' ' ) &&
-		( def[2]=='l' || def[2]==' ' ) &&
-		( def[3]=='m' || def[3]==' ' ) &&
-		def[4]==' ' ) {
-	    flags = 0;
-	    if ( def[0]=='r' ) flags |= pst_r2l;
-	    if ( def[1]=='b' ) flags |= pst_ignorebaseglyphs;
-	    if ( def[2]=='l' ) flags |= pst_ignoreligatures;
-	    if ( def[3]=='m' ) flags |= pst_ignorecombiningmarks;
-	    def += 5;
-	}
-	temp = u_strtol(def,&end,10);
-	if ( end!=def ) {
-	    script_lang_index = temp;
-	    def = end;
-	    if ( *def==' ' ) ++def;
-	}
-	if ( merge_with>=0 ) {
-	    temp = u_strtol(def,&end,10);
-	    if ( end!=def ) {
-		act_type = temp;
-		def = end;
-		if ( *def==' ' ) ++def;
-	    }
-	}
-	if ( merge_with>=0 ) {
-	    temp = u_strtol(def,&end,10);
-	    if ( end!=def ) {
-		merge_with = temp;
-		def = end;
-		if ( *def==' ' ) ++def;
-	    }
-	}
-    }
+    if ( def_tag==0 ) {
+	uint16 sli;
+	DecomposeClassName(def,&components,&def_tag,&macfeature,
+		&flags, &sli,
+		merge_with>=0 ? &merge_with : NULL,
+		merge_with>=0 ? &act_type: NULL);
+	script_lang_index = sli;
+    } else
+	components = u_copy(def);
 
 	memset(&acd,0,sizeof(acd));
 	acd.tags = tags;
@@ -2027,7 +2090,7 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	gcd[0].gd.flags = gg_enabled|gg_visible;
 	gcd[0].creator = GLabelCreate;
 
-	label[1].text = def;
+	label[1].text = components;
 	gcd[1].gd.label = &label[1];
 	gcd[1].gd.pos.x = 10; gcd[1].gd.pos.y = 5+13;
 	gcd[1].gd.pos.width = 140;
@@ -2049,12 +2112,20 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	gcd[2].gd.flags = gg_enabled|gg_visible;
 	gcd[2].creator = GLabelCreate;
 
-	ubuf[0] = def_tag>>24; ubuf[1] = (def_tag>>16)&0xff; ubuf[2] = (def_tag>>8)&0xff; ubuf[3] = def_tag&0xff; ubuf[4] = 0;
+	if ( type==pst_substitution || type==pst_ligature )
+	    mactags = AddMacFeatures(tags,type,sf);
+	acd.mactags = mactags;
+	if ( macfeature ) {
+	    sprintf(buf,"<%d,%d>", def_tag>>16, def_tag&0xffff );
+	    uc_strcpy(ubuf,buf);
+	} else {
+	    ubuf[0] = def_tag>>24; ubuf[1] = (def_tag>>16)&0xff; ubuf[2] = (def_tag>>8)&0xff; ubuf[3] = def_tag&0xff; ubuf[4] = 0;
+	}
 	label[3].text = ubuf;
 	gcd[3].gd.label = &label[3];
 	gcd[3].gd.pos.x = 10; gcd[3].gd.pos.y = gcd[2].gd.pos.y+14;
 	gcd[3].gd.flags = gg_enabled|gg_visible;
-	gcd[3].gd.u.list = tags;
+	gcd[3].gd.u.list = mactags;
 	gcd[3].gd.cid = CID_ACD_Tag;
 	gcd[3].creator = GListFieldCreate;
 
@@ -2192,6 +2263,7 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	gcd[i++].creator = GButtonCreate;
 
 	GGadgetsCreate(gw,gcd);
+	free(components);
 	acd.taglist = gcd[3].ret;
 	if ( merge_with!=-1 )
 	    ACD_RefigureMerge(&acd,merge_with);
@@ -2209,19 +2281,33 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	utag = _GGadgetGetTitle(gcd[3].ret);
 	script_lang_index = GetSLI(gcd[5].ret);
 	if ( (ubuf[0] = utag[0])==0 ) {
-	    ubuf[0] = ubuf[1] = ubuf[2] = ubuf[3] = ' ';
-	} else {
-	    if ( (ubuf[1] = utag[1])==0 )
-		ubuf[1] = ubuf[2] = ubuf[3] = ' ';
-	    else if ( (ubuf[2] = utag[2])==0 )
-		ubuf[2] = ubuf[3] = ' ';
-	    else if ( (ubuf[3] = utag[3])==0 )
-		ubuf[3] = ' ';
-	}
-	tag = (ubuf[0]<<24) | (ubuf[1]<<16) | (ubuf[2]<<8) | ubuf[3];
-	if ( u_strlen(utag)>4 || ubuf[0]>=0x7f || ubuf[1]>=0x7f || ubuf[2]>=0x7f || ubuf[3]>=0x7f ) {
-	    GWidgetErrorR(_STR_TagTooLong,_STR_FeatureTagTooLong);
+	    GWidgetErrorR(_STR_MissingTag,_STR_MissingTag);
  goto tryagain;
+	} else if ((( utag[0]=='<' && utag[u_strlen(utag)-1]=='>' ) ||
+		((u_strtol(utag,&end,10),*end==',') &&
+		 (u_strtol(end+1,&end,10),*end=='\0')) ) &&
+		(type==pst_substitution || pst_ligature)) {
+	    macfeature = true;
+	    if ( utag[0]=='<' ) ++utag;
+	    tag = u_strtol(utag,&end,10)<<16;
+	    tag |= u_strtol(end+1,&end,10);
+	} else {
+	    macfeature = false;
+	    if ( utag[0]=='\'' && utag[5]=='\'' ) {
+		memcpy(ubuf,utag+1,4*sizeof(unichar_t));
+	    } else {
+		if ( (ubuf[1] = utag[1])==0 )
+		    ubuf[1] = ubuf[2] = ubuf[3] = ' ';
+		else if ( (ubuf[2] = utag[2])==0 )
+		    ubuf[2] = ubuf[3] = ' ';
+		else if ( (ubuf[3] = utag[3])==0 )
+		    ubuf[3] = ' ';
+		if ( u_strlen(utag)>4 || ubuf[0]>=0x7f || ubuf[1]>=0x7f || ubuf[2]>=0x7f || ubuf[3]>=0x7f ) {
+		    GWidgetErrorR(_STR_TagTooLong,_STR_FeatureTagTooLong);
+ goto tryagain;
+		}
+	    }
+	    tag = (ubuf[0]<<24) | (ubuf[1]<<16) | (ubuf[2]<<8) | ubuf[3];
 	}
 	if ( script_lang_index==SLI_NESTED ) {
 	    enum possub_type pstype = SFGTagUsed(&sf->gentags,tag);
@@ -2246,10 +2332,13 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	    act_type = GGadgetIsChecked(gcd[10].ret) ? act_mark :
 			GGadgetIsChecked(gcd[11].ret) ? act_mkmk : act_curs;
 	}
-	ret = ClassName(name,tag,flags,script_lang_index,merge_with,act_type);
+	ret = ClassName(name,tag,flags,script_lang_index,merge_with,act_type,
+		macfeature);
     } else
 	ret = NULL;
     GDrawDestroyWindow(gw);
+    if ( mactags!=tags )
+	GTextInfoListFree(mactags);
 return( ret );
 }
 
@@ -2668,21 +2757,26 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 	    ptd.done = false;
  goto tryagain;
 	}
-	if ( (ubuf[0] = utag[0])==0 )
-	    tag = 0;
-	else {
-	    if ( (ubuf[1] = utag[1])==0 )
-		ubuf[1] = ubuf[2] = ubuf[3] = ' ';
-	    else if ( (ubuf[2] = utag[2])==0 )
-		ubuf[2] = ubuf[3] = ' ';
-	    else if ( (ubuf[3] = utag[3])==0 )
-		ubuf[3] = ' ';
-	    tag = (ubuf[0]<<24) | (ubuf[1]<<16) | (ubuf[2]<<8) | ubuf[3];
-	}
-	if ( u_strlen(utag)>4 || ubuf[0]>=0x7f || ubuf[1]>=0x7f || ubuf[2]>=0x7f || ubuf[3]>=0x7f || tag==0 ) {
-	    GWidgetErrorR(_STR_TagTooLong,_STR_FeatureTagTooLong);
-	    ptd.done = false;
+	if ( (ubuf[0] = utag[0])==0 ) {
+	    GWidgetErrorR(_STR_MissingTag,_STR_MissingTag);
  goto tryagain;
+	/* Can't get any mac features here */
+	} else {
+	    if ( utag[0]=='\'' && utag[5]=='\'' ) {
+		memcpy(ubuf,utag+1,4*sizeof(unichar_t));
+	    } else {
+		if ( (ubuf[1] = utag[1])==0 )
+		    ubuf[1] = ubuf[2] = ubuf[3] = ' ';
+		else if ( (ubuf[2] = utag[2])==0 )
+		    ubuf[2] = ubuf[3] = ' ';
+		else if ( (ubuf[3] = utag[3])==0 )
+		    ubuf[3] = ' ';
+		if ( u_strlen(utag)>4 || ubuf[0]>=0x7f || ubuf[1]>=0x7f || ubuf[2]>=0x7f || ubuf[3]>=0x7f ) {
+		    GWidgetErrorR(_STR_TagTooLong,_STR_FeatureTagTooLong);
+ goto tryagain;
+		}
+	    }
+	    tag = (ubuf[0]<<24) | (ubuf[1]<<16) | (ubuf[2]<<8) | ubuf[3];
 	}
 	if ( script_lang_index==SLI_NESTED ) {
 	    enum possub_type pstype = SFGTagUsed(&sf->gentags,tag);
@@ -2833,7 +2927,7 @@ static void CI_DoNew(CharInfo *ci, unichar_t *def) {
     int len, i, sel;
     GTextInfo **old, **new;
     GGadget *list;
-    unichar_t *newname, *pt;
+    unichar_t *newname, *upt;
     uint16 flags=0;
 
     sel = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_Tabs))-2;
@@ -2844,18 +2938,20 @@ static void CI_DoNew(CharInfo *ci, unichar_t *def) {
 	    : AskNameTag(newstrings[sel],def,0,flags,-1,sel+1,ci->sc->parent,ci->sc,-1,-1);
     if ( newname!=NULL ) {
 	if ( sel>1 ) {
-	    pt = newname+14;
-	    while ( isdigit(*pt)) ++pt; if ( *pt==' ' ) ++pt;
-	    if ( !LigCheck(ci->sc,sel+1,(newname[0]<<24)|(newname[1]<<16)|(newname[2]<<8)|newname[3],
-		    pt)) {
-		free(newname );
+	    uint32 tag; int macfeat;
+	    unichar_t *comp;
+	    DecomposeClassName(newname,&comp,&tag,&macfeat,NULL,NULL,NULL,NULL);
+	    if ( !LigCheck(ci->sc,sel+1,tag,comp)) {
+		free( newname ); free(comp);
 return;
 	    }
+	    free(comp);
 	}
 	list = GWidgetGetControl(ci->gw,CID_List+sel*100);
 	old = GGadgetGetList(list,&len);
+	upt = DecomposeClassName(newname,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
 	for ( i=0; i<len; ++i ) {
-	    if ( u_strncmp(old[i]->text,newname,4)==0 )
+	    if ( u_strncmp(old[i]->text,newname,upt-newname)==0 )
 	break;
 	}
 	if ( i<len && sel+1!=pst_ligature ) {
@@ -2880,12 +2976,12 @@ return;
 
 static void CI_Drop(CharInfo *ci, GEvent *e) {
     char *cnames;
-    unichar_t *unames;
+    unichar_t *unames, *ucnames;
     int sel;
     int32 len;
 
     sel = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_Tabs))-1;
-    if ( sel<=pst_position || sel>=pst_max ) {
+    if ( sel<=pst_pair || sel>=pst_lcaret ) {
 	GDrawBeep(NULL);
 return;
     }
@@ -2902,11 +2998,12 @@ return;
 return;
     }
 
-    unames = galloc((strlen(cnames)+10)*sizeof(unichar_t));
-    uc_strcpy(unames, "          ");
-    uc_strcpy(unames+10,cnames);
-    CI_DoNew(ci,unames);
+    ucnames = uc_copy(cnames);
     free(cnames);
+    unames = ClassName(ucnames,CHR(' ',' ',' ',' '),PSTDefaultFlags(sel,ci->sc),
+	    -1,-1,-1,false);
+    CI_DoNew(ci,unames);
+    free(ucnames);
     free(unames);
 }
 
@@ -2948,7 +3045,7 @@ static int CI_Edit(GGadget *g, GEvent *e) {
     GTextInfo **old, **new, *ti;
     GGadget *list;
     CharInfo *ci;
-    unichar_t *newname;
+    unichar_t *newname, *upt;
     int sel;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
@@ -2962,17 +3059,16 @@ return( true );
 		: AskNameTag(editstrings[sel],ti->text,0,0,0,sel+1,ci->sc->parent,ci->sc,-1,-1);
 	if ( newname!=NULL ) {
 	    old = GGadgetGetList(list,&len);
+	    upt = DecomposeClassName(newname,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
 	    for ( i=0; i<len; ++i ) if ( old[i]!=ti ) {
-		if ( u_strncmp(old[i]->text,newname,4)==0 )
+		if ( u_strncmp(old[i]->text,newname,upt-newname)==0 )
 	    break;
 	    }
-#if 0
 	    if ( i<len && sel+1!=pst_ligature) {
 		GWidgetErrorR(_STR_DuplicateTag,_STR_DuplicateTag);
 		free(newname);
 return( false );
 	    }
-#endif
 	    new = gcalloc(len+1,sizeof(GTextInfo *));
 	    for ( i=0; i<len; ++i ) {
 		new[i] = galloc(sizeof(GTextInfo));
@@ -3058,15 +3154,19 @@ static enum possub_type PSTGuess(char *data) {
     int i;
     uint32 tag;
 
-    tag = (((uint8 *) data)[0]<<24) | (((uint8 *) data)[1]<<16 ) |
-		(((uint8 *) data)[2]<<8) | ((uint8 *) data)[3];
-    for ( type=pst_position; type<pst_max; ++type ) {
-	for ( i=0; pst_tags[type-1][i].text!=NULL; ++i ) {
-	    if ( (uint32) pst_tags[type-1][i].userdata==tag )
+    if ( data[0]=='<' ) {
+	type=pst_max;
+    } else {
+	tag = (((uint8 *) data)[0]<<24) | (((uint8 *) data)[1]<<16 ) |
+		    (((uint8 *) data)[2]<<8) | ((uint8 *) data)[3];
+	for ( type=pst_position; type<pst_max; ++type ) {
+	    for ( i=0; pst_tags[type-1][i].text!=NULL; ++i ) {
+		if ( (uint32) pst_tags[type-1][i].userdata==tag )
+	    break;
+	    }
+	    if ( pst_tags[type-1][i].text!=NULL )
 	break;
 	}
-	if ( pst_tags[type-1][i].text!=NULL )
-    break;
     }
     if ( type==pst_max )
 return( pst_null );
@@ -3074,17 +3174,20 @@ return( pst_null );
 return( type );
 }
 
-static unichar_t *uc_copy_sli_check(SplineChar *sc,char *data) {
+static unichar_t *SLICheck(SplineChar *sc,unichar_t *data) {
     SplineFont *sf = sc->parent;
-    int sli, new, i;
-    char *end;
-    unichar_t *to;
-    char buffer[20];
+    int new, i;
+    int merge, act, macfeat;
+    uint32 tag;
+    uint16 flags, sli;
+    unichar_t *name, *ret;
+
+    DecomposeClassName(data,&name,&tag,&macfeat,&flags,&sli,&merge,&act);
 
     /* We've got a string. Don't know what font it came from, can't really */
     /*  make the sli right. Best we can do is insure against crashes and hope */
     /*  it was copied from us */
-    new = sli = strtol(data+10,&end,10);
+    new = sli;
     if ( sf->cidmaster ) sf = sf->cidmaster;
     if ( sf->script_lang==NULL )
 	new = SFAddScriptLangIndex(sf,SCScriptFromUnicode(sc),DEFAULT_LANG);
@@ -3094,15 +3197,14 @@ static unichar_t *uc_copy_sli_check(SplineChar *sc,char *data) {
 	    new = SFAddScriptLangIndex(sf,SCScriptFromUnicode(sc),DEFAULT_LANG);
     }
 
-    if ( sli==new )
-return( uc_copy(data) );
+    if ( sli==new ) {
+	free(name);
+return( data );
+    }
 
-    sprintf( buffer, "%2d", new);
-    to = galloc((strlen(data)+strlen(buffer)+1)*sizeof(unichar_t));
-    uc_strcpy(to,data);
-    uc_strcpy(to+10,buffer);
-    uc_strcat(to,end);
-return( to );
+    ret = ClassName(name,tag,flags,new,merge,act,macfeat);
+    free(name); free(data);
+return( ret );
 }
 
 static void CI_DoPaste(CharInfo *ci,char **data, enum possub_type type) {
@@ -3139,14 +3241,18 @@ return;
 		*pt = '\0';
 	    }
 	data = tempdata;
-	tag = (((uint8 *) paste)[0]<<24) | (((uint8 *) paste)[1]<<16 ) |
-		    (((uint8 *) paste)[2]<<8) | ((uint8 *) paste)[3];
-	type = pst_null;
-	if ( sel+1>pst_null && sel+1<pst_max ) {
-	    for ( i=0; pst_tags[sel][i].text!=NULL; ++i )
-		if ( (uint32) pst_tags[sel][i].userdata == tag ) {
-		    type = sel+1;
-	    break;
+	if ( paste[0]=='<' )
+	    type = pst_null;
+	else {
+	    tag = (((uint8 *) paste)[0]<<24) | (((uint8 *) paste)[1]<<16 ) |
+			(((uint8 *) paste)[2]<<8) | ((uint8 *) paste)[3];
+	    type = pst_null;
+	    if ( sel+1>pst_null && sel+1<pst_max ) {
+		for ( i=0; pst_tags[sel][i].text!=NULL; ++i )
+		    if ( (uint32) pst_tags[sel][i].userdata == tag ) {
+			type = sel+1;
+		break;
+		}
 	    }
 	}
 	if ( type==pst_null )
@@ -3167,16 +3273,18 @@ return;
     }
     k = 0;
     for ( i=0; i<cnt; ++i ) {
+	unichar_t *udata = uc_copy(data[i]);
+	unichar_t *upt = DecomposeClassName(udata,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
 	for ( j=0; j<len; ++j )
-	    if ( uc_strncmp(newlist[j]->text,data[i],4)==0 )
+	    if ( u_strncmp(newlist[j]->text,udata,upt-udata)==0 )
 	break;
 	if ( j<len ) {
 	    free(newlist[j]->text);
-	    newlist[j]->text = uc_copy_sli_check(ci->sc,data[i]);
+	    newlist[j]->text = SLICheck(ci->sc,udata);
 	} else {
 	    newlist[len+k] = gcalloc(1,sizeof(GTextInfo));
 	    newlist[len+k]->fg = newlist[len+k]->bg = COLOR_DEFAULT;
-	    newlist[len+k]->text = uc_copy_sli_check(ci->sc,data[i]);
+	    newlist[len+k]->text = SLICheck(ci->sc,udata);
 	    ++k;
 	}
     }
@@ -3285,15 +3393,15 @@ return( old );
 return( NULL );
 }
 
-static int ParseVR(char *end,struct vr *vr,char **done) {
-    char *pt;
+static int ParseVR(unichar_t *end,struct vr *vr,unichar_t **done) {
+    unichar_t *pt;
 
     for ( pt=end; *pt!='\0' && *pt!='='; ++pt ); if ( *pt=='=' ) ++pt;
-    vr->xoff = strtol(pt,&end,10);
+    vr->xoff = u_strtol(pt,&end,10);
     for ( pt=end; *pt!='\0' && *pt!='='; ++pt ); if ( *pt=='=' ) ++pt;
-    vr->yoff = strtol(pt,&end,10);
+    vr->yoff = u_strtol(pt,&end,10);
     for ( pt=end; *pt!='\0' && *pt!='='; ++pt ); if ( *pt=='=' ) ++pt;
-    vr->h_adv_off = strtol(pt,&end,10);
+    vr->h_adv_off = u_strtol(pt,&end,10);
     for ( pt=end; *pt!='\0' && *pt!='='; ++pt );
     if ( *pt=='=' )
 	++pt;
@@ -3301,15 +3409,18 @@ static int ParseVR(char *end,struct vr *vr,char **done) {
 	GWidgetErrorR(_STR_BadPOSSUB,_STR_ExpectedEquals);
 return(false);
     }
-    vr->v_adv_off = strtol(pt,&end,10);
+    vr->v_adv_off = u_strtol(pt,&end,10);
     *done = end;
 return( true );
 }
 
 void SCAppendPosSub(SplineChar *sc,enum possub_type type, char **d) {
     PST *new;
-    char *pt, *end, *data, *spt, *tpt, *other;
-    int i;
+    char *data;
+    unichar_t *pt, *end, *rest, *udata, *other, *spt, *tpt;
+    char *cend;
+    int i, macfeat;
+    uint16 flags;
 
     if ( sc->charinfo!=NULL ) {
 	CI_DoPaste(sc->charinfo,d,type);
@@ -3319,7 +3430,11 @@ return;
 
     for ( i=0; d[i]!=NULL; ++i ) {
 	data = d[i];
-	if ( strlen(data)<10 || data[4]!=' ' || data[9]!=' ' ) {
+	if ( data[0]=='<' && (strtol(data+1,&cend,10),*cend==',') &&
+		(strtol(cend+1,&cend,10),*cend=='>') && cend[1]==' ' &&
+		cend[6]==' ' )
+	    /* Don't check any further */;
+	else if ( strlen(data)<10 || data[4]!=' ' || data[9]!=' ' ) {
 	    GWidgetErrorR(_STR_BadPOSSUB,_STR_BadPOSSUBPaste);
 return;
 	}
@@ -3333,47 +3448,49 @@ return;
 
 	new = chunkalloc(sizeof(PST));
 	new->type = type;
-	new->tag = (((uint8 *) data)[0]<<24) | (((uint8 *) data)[1]<<16 ) |
-		    (((uint8 *) data)[2]<<8) | ((uint8 *) data)[3];
-	new->flags = 0;
-	if ( data[5]=='r' ) new->flags |= pst_r2l;
-	if ( data[6]=='b' ) new->flags |= pst_ignorebaseglyphs;
-	if ( data[7]=='l' ) new->flags |= pst_ignoreligatures;
-	if ( data[8]=='m' ) new->flags |= pst_ignorecombiningmarks;
-
-	new->script_lang_index = strtol(data+9,&end,10);
+	udata = uc_copy(data);
+	DecomposeClassName(udata,&rest,&new->tag,&macfeat,
+		&flags, &new->script_lang_index,
+		NULL,NULL);
+	new->flags = flags;
+	new->macfeature = macfeat;
+	free(udata);
 
 	if ( type==pst_position ) {
-	    if ( !ParseVR(end,&new->u.pos,&end)) {
+	    if ( !ParseVR(rest,&new->u.pos,&end)) {
 		chunkfree(new,sizeof(PST));
+		free(rest);
 return;
 	    }
 	} else if ( type==pst_pair ) {
-	    for ( pt=end; *pt==' ' ; ++pt );
+	    for ( pt=rest; *pt==' ' ; ++pt );
 	    other = pt;
 	    while ( *pt!=' ' && *pt!='\0' ) ++pt;
-	    new->u.pair.paired = copyn(other,pt-other);
+	    new->u.pair.paired = cu_copyn(other,pt-other);
 	    new->u.pair.vr = chunkalloc(sizeof(struct vr [2]));
-	    if ( !ParseVR(end,&new->u.pair.vr[0],&end)) {
+	    if ( !ParseVR(pt,&new->u.pair.vr[0],&end)) {
 		free(new->u.pair.paired);
 		chunkfree(new->u.pair.vr,sizeof(struct vr [2]));
 		chunkfree(new,sizeof(PST));
+		free(rest);
 return;
 	    }
 	    if ( !ParseVR(end,&new->u.pair.vr[1],&end)) {
 		free(new->u.pair.paired);
 		chunkfree(new->u.pair.vr,sizeof(struct vr [2]));
 		chunkfree(new,sizeof(PST));
+		free(rest);
 return;
 	    }
 	    
 	} else {
 	    /* remove leading/training spaces */
-	    for ( pt=end; *pt==' '; ++pt );
-	    for ( end=pt+strlen(pt)-1; *pt==' '; --pt )
+	    for ( pt=rest; *pt==' '; ++pt );
+	    for ( end=pt+u_strlen(pt)-1; *pt==' '; --pt )
 		*pt = '\0';
-	    if ( type==pst_substitution && strchr(pt,' ')!=NULL ) {
+	    if ( type==pst_substitution && u_strchr(pt,' ')!=NULL ) {
 		GWidgetErrorR(_STR_BadPOSSUB,_STR_SimpleSubsOneComponent);
+		free(rest);
 return;
 	    }
 	    /* Remove multiple spaces */
@@ -3385,12 +3502,13 @@ return;
 		}
 	    }
 	    *tpt = '\0';
-	    new->u.subs.variant = copy(pt);
+	    new->u.subs.variant = cu_copy(pt);
 	    if ( type==pst_ligature )
 		new->u.lig.lig = sc;
 	}
 
 	SCInsertPST(sc,new);
+	free(rest);
     }
     if ( i!=0 )
 	sc->parent->changed = true;
@@ -4404,14 +4522,13 @@ static void CIFillup(CharInfo *ci) {
     SplineChar *sc = ci->sc;
     SplineFont *sf = sc->parent;
     unichar_t *temp;
-    char buffer[200];
+    char buffer[400];
     unichar_t ubuf[200];
     const unichar_t *bits;
     int i,j;
     GTextInfo **arrays[pst_max];
     int cnts[pst_max];
     PST *pst;
-    char index[10];
 
     u_sprintf(ubuf,GStringGetResource(_STR_CharInfoFor,NULL),sc->name);
     GDrawSetWindowTitles(ci->gw, ubuf, GStringGetResource(_STR_Charinfo,NULL));
@@ -4454,36 +4571,38 @@ static void CIFillup(CharInfo *ci) {
 	j = cnts[pst->type]++;
 	arrays[pst->type][j] = gcalloc(1,sizeof(GTextInfo));
 	if ( pst->type==pst_position ) {
-	    sprintf(buffer,"          %3d dx=%d dy=%d dx_adv=%d dy_adv=%d",
-		    pst->script_lang_index,
-		    pst->u.pos.xoff, pst->u.pos.yoff,
-		    pst->u.pos.h_adv_off, pst->u.pos.v_adv_off );
-	    arrays[pst->type][j]->text = uc_copy(buffer);
-	} else if ( pst->type==pst_pair ) {
-	    sprintf(buffer,"          %3d %s dx=%d dy=%d dx_adv=%d dy_adv=%d | dx=%d dy=%d dx_adv=%d dy_adv=%d",
-		    pst->script_lang_index,
-		    pst->u.pair.paired,
-		    pst->u.pair.vr[0].xoff, pst->u.pair.vr[0].yoff,
-		    pst->u.pair.vr[0].h_adv_off, pst->u.pair.vr[0].v_adv_off,
-		    pst->u.pair.vr[1].xoff, pst->u.pair.vr[1].yoff,
-		    pst->u.pair.vr[1].h_adv_off, pst->u.pair.vr[1].v_adv_off );
-	    arrays[pst->type][j]->text = uc_copy(buffer);
+	    if ( pst->type==pst_position ) {
+		sprintf(buffer,"          %3d dx=%d dy=%d dx_adv=%d dy_adv=%d",
+			pst->script_lang_index,
+			pst->u.pos.xoff, pst->u.pos.yoff,
+			pst->u.pos.h_adv_off, pst->u.pos.v_adv_off );
+		arrays[pst->type][j]->text = uc_copy(buffer);
+	    } else if ( pst->type==pst_pair ) {
+		sprintf(buffer,"          %3d %s dx=%d dy=%d dx_adv=%d dy_adv=%d | dx=%d dy=%d dx_adv=%d dy_adv=%d",
+			pst->script_lang_index,
+			pst->u.pair.paired,
+			pst->u.pair.vr[0].xoff, pst->u.pair.vr[0].yoff,
+			pst->u.pair.vr[0].h_adv_off, pst->u.pair.vr[0].v_adv_off,
+			pst->u.pair.vr[1].xoff, pst->u.pair.vr[1].yoff,
+			pst->u.pair.vr[1].h_adv_off, pst->u.pair.vr[1].v_adv_off );
+		arrays[pst->type][j]->text = uc_copy(buffer);
+	    }
+	    arrays[pst->type][j]->text[0] = pst->tag>>24;
+	    arrays[pst->type][j]->text[1] = (pst->tag>>16)&0xff;
+	    arrays[pst->type][j]->text[2] = (pst->tag>>8)&0xff;
+	    arrays[pst->type][j]->text[3] = (pst->tag)&0xff;
+	    arrays[pst->type][j]->text[4] = ' ';
+	    arrays[pst->type][j]->text[5] = pst->flags&pst_r2l?'r':' ';
+	    arrays[pst->type][j]->text[6] = pst->flags&pst_ignorebaseglyphs?'b':' ';
+	    arrays[pst->type][j]->text[7] = pst->flags&pst_ignoreligatures?'l':' ';
+	    arrays[pst->type][j]->text[8] = pst->flags&pst_ignorecombiningmarks?'m':' ';
+	    arrays[pst->type][j]->text[9] = ' ';
 	} else {
-	    sprintf( index, "%3d ", pst->script_lang_index );
-	    arrays[pst->type][j]->text = galloc((strlen(pst->u.subs.variant)+11+strlen(index))*sizeof(unichar_t));;
-	    uc_strcpy(arrays[pst->type][j]->text+10,index);
-	    uc_strcat(arrays[pst->type][j]->text+10,pst->u.subs.variant);
+	    unichar_t *temp = uc_copy(pst->u.subs.variant);
+	    arrays[pst->type][j]->text = ClassName(temp,pst->tag,pst->flags,
+		    pst->script_lang_index,-1,-1,pst->macfeature);
+	    free(temp);
 	}
-	arrays[pst->type][j]->text[0] = pst->tag>>24;
-	arrays[pst->type][j]->text[1] = (pst->tag>>16)&0xff;
-	arrays[pst->type][j]->text[2] = (pst->tag>>8)&0xff;
-	arrays[pst->type][j]->text[3] = (pst->tag)&0xff;
-	arrays[pst->type][j]->text[4] = ' ';
-	arrays[pst->type][j]->text[5] = pst->flags&pst_r2l?'r':' ';
-	arrays[pst->type][j]->text[6] = pst->flags&pst_ignorebaseglyphs?'b':' ';
-	arrays[pst->type][j]->text[7] = pst->flags&pst_ignoreligatures?'l':' ';
-	arrays[pst->type][j]->text[8] = pst->flags&pst_ignorecombiningmarks?'m':' ';
-	arrays[pst->type][j]->text[9] = ' ';
 	arrays[pst->type][j]->fg = arrays[pst->type][j]->bg = COLOR_DEFAULT;
     }
     for ( i=pst_null+1; i<pst_lcaret /* == pst_max-1 */; ++i ) {
@@ -4743,7 +4862,7 @@ return;
 	    psgcd[i][0].gd.pos.width = CI_Width-28; psgcd[i][0].gd.pos.height = 7*12+10;
 	    psgcd[i][0].gd.flags = gg_visible | gg_enabled | gg_list_alphabetic | gg_list_multiplesel;
 	    psgcd[i][0].gd.cid = CID_List+i*100;
-	    psgcd[i][0].gd.u.list = pst_tags[i];
+	    /*psgcd[i][0].gd.u.list = pst_tags[i];*/	/* Hunh? what was I thinking? */
 	    psgcd[i][0].gd.handle_controlevent = CI_SelChanged;
 	    psgcd[i][0].gd.box = &smallbox;
 	    psgcd[i][0].creator = GListCreate;

@@ -111,5 +111,7 @@ extern char *RecentFiles[RECENT_MAX];
 extern unichar_t *script_menu_names[SCRIPT_MENU_MAX];
 extern char *script_filenames[SCRIPT_MENU_MAX];
 
+extern MacFeat *default_mac_feature_map;
+
 
 #endif
