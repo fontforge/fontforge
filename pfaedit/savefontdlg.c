@@ -1673,7 +1673,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    if ( strmatch(end-strlen(bitmaps[i]),bitmaps[i])==0 )
 	break;
 	}
-	if ( *filename=='\0' )
+	if ( *filename=='\0' || end[-1]=='.' )
 	    i = ff_none;
 	else if ( bitmaps[i]==NULL )
 	    i = ff_pfb;
