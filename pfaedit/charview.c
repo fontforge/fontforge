@@ -4347,9 +4347,12 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	    anypoints += splinepoints;
 	    if ( dir==-1 )
 		/* Do nothing */;
-	    else if ( spl->first!=spl->last || spl->first->next==NULL )
-		dir = -1;	/* Not a closed path, no direction */
-	    else if ( dir==-2 )
+	    else if ( spl->first!=spl->last || spl->first->next==NULL ) {
+		if ( dir==-2 || dir==2 )
+		    dir = 2;	/* Not a closed path, no direction */
+		else
+		    dir = -1;
+	    } else if ( dir==-2 )
 		dir = SplinePointListIsClockwise(spl);
 	    else {
 		int subdir = SplinePointListIsClockwise(spl);
@@ -4374,12 +4377,15 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	    mi->ti.disabled = cv->sc->dependents==NULL;
 	  break;
 	  case MID_Clockwise:
-	    mi->ti.disabled = !anypoints;
+	    mi->ti.disabled = !anypoints || dir==2;
 	    mi->ti.checked = dir==1;
 	  break;
 	  case MID_Counter:
-	    mi->ti.disabled = !anypoints;
+	    mi->ti.disabled = !anypoints || dir==2;
 	    mi->ti.checked = dir==0;
+	  break;
+	  case MID_Correct:
+	    mi->ti.disabled = !anypoints || dir==2;
 	  break;
 	  case MID_MetaFont:
 	    mi->ti.disabled = cv->drawmode!=dm_fore || cv->sc->refs!=NULL;
