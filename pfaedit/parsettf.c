@@ -1192,8 +1192,18 @@ static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, 
     break;
 	}
     } while ( flags&_MORE );
+    if ( (flags & _INSTR ) && info->to_order2 ) {
+	sc->ttf_instrs_len = getushort(ttf);
+	if ( sc->ttf_instrs_len != 0 ) {
+	    uint8 *instructions = galloc(sc->ttf_instrs_len);
+	    int i;
+	    for ( i=0; i<sc->ttf_instrs_len; ++i )
+		instructions[i] = getc(ttf);
+	    sc->ttf_instrs = instructions;
+	}
+    }
     /* I'm ignoring many things that I don't understand here */
-    /* Instructions, USE_MY_METRICS, what happens if ARGS AREN'T XY */
+    /* USE_MY_METRICS, what happens if ARGS AREN'T XY */
     /* ROUND means that offsets should rounded to the grid before being added */
     /*  (it's irrelevant for my purposes) */
     sc->refs = head;
