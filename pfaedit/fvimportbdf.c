@@ -1557,8 +1557,8 @@ static void PcfReadEncodingsNames(FILE *file,struct toc *toc,SplineFont *sf, BDF
 	for ( i=0; i<tot; ++i ) {
 	    glyph = getformint16(file,format);
 	    if ( glyph!=0xffff && glyph<b->charcnt ) {
-		b->chars[glyph]->enc = (i%(max2-min2+1)) + min2 +
-					(i/(max2-min2+1) + min1)*(max2-min2+1);
+		b->chars[glyph]->enc = (i/(max2-min2+1) + min2)*256 +
+					(i%(max2-min2+1) + min1);
 	    }
 	}
 	if ( def<b->charcnt && def!=0xffff )
@@ -1624,9 +1624,9 @@ return( false );
 
     if ( !PcfReadBitmaps(file,toc,b))
 return( false );
-    PcfReadEncodingsNames(file,toc,sf,b);
     if ( sf->onlybitmaps )
 	PcfReadSWidths(file,toc,b);
+    PcfReadEncodingsNames(file,toc,sf,b);
     new = gcalloc(sf->charcnt,sizeof(BDFChar *));
     mult = gcalloc(mcnt+1,sizeof(BDFChar *)); multcnt=0;
     for ( i=0; i<mcnt; ++i ) {
@@ -2004,7 +2004,8 @@ static void SFAddToBackground(SplineFont *sf,BDFFont *bdf) {
     GImage *img;
     int i;
     SplineChar *sc; BDFChar *bdfc;
-    real scale;
+    real scale = (sf->ascent+sf->descent)/(double) (bdf->ascent+bdf->descent);
+    real yoff = sf->ascent-bdf->ascent*scale;
 
     for ( i=0; i<sf->charcnt && i<bdf->charcnt; ++i ) {
 	if ( bdf->chars[i]!=NULL ) {
@@ -2032,8 +2033,7 @@ static void SFAddToBackground(SplineFont *sf,BDFFont *bdf) {
 	    img = gcalloc(1,sizeof(GImage));
 	    img->u.image = base;
 
-	    scale = (sf->ascent+sf->descent)/(double) (bdf->ascent+bdf->descent);
-	    SCInsertBackImage(sc,img,scale,(bdfc->ymax+1)*scale,bdfc->xmin*scale);
+	    SCInsertBackImage(sc,img,scale,yoff+(bdfc->ymax+1)*scale,bdfc->xmin*scale);
 	}
     }
     BDFFontFree(bdf);
