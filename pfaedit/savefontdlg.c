@@ -1106,7 +1106,7 @@ return( sizes );
 int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	int res, char *subfontdefinition, struct sflist *sfs) {
     int i;
-    static char *bitmaps[] = {"bdf", "ttf", "sbit", "bin", "dfont", NULL };
+    static char *bitmaps[] = {"bdf", "ttf", "sbit", "bin", "dfont", "fnt", NULL };
     int32 *sizes=NULL;
     char *end = filename+strlen(filename);
     struct sflist *sfi;
