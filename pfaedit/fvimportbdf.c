@@ -836,8 +836,7 @@ static int pcf_properties(FILE *file,struct toc *toc, int *_as, int *_ds,
     int pixelsize = -1;
     int ascent= -1, descent= -1, enc;
     char encname[100], weight[100], italic[100];
-
-    int cnt, i, format, strlen;
+    int cnt, i, format, strl;
     struct props { int name_offset; int isStr; int val; char *name; char *value; } *props;
     char *strs;
 
@@ -855,9 +854,9 @@ return(-2);
     }
     if ( cnt&3 )
 	fseek(file,4-(cnt&3),SEEK_CUR);
-    strlen = getformint32(file,format);
-    strs = galloc(strlen);
-    fread(strs,1,strlen,file);
+    strl = getformint32(file,format);
+    strs = galloc(strl);
+    fread(strs,1,strl,file);
     for ( i=0; i<cnt; ++i ) {
 	props[i].name = strs+props[i].name_offset;
 	if ( props[i].isStr )
