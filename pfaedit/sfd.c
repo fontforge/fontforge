@@ -311,7 +311,7 @@ static void SFDDumpBitmapChar(FILE *sfd,BDFChar *bfc) {
     enc.sfd = sfd;
     for ( i=0; i<=bfc->ymax-bfc->ymin; ++i ) {
 	uint8 *pt = (uint8 *) (bfc->bitmap + i*bfc->bytes_per_line);
-	uint8 *end = pt + (bfc->xmax-bfc->xmin)/8+1;
+	uint8 *end = pt + bfc->bytes_per_line;
 	while ( pt<end ) {
 	    SFDEnc85(&enc,*pt);
 	    ++pt;
@@ -329,8 +329,8 @@ static void SFDDumpBitmapFont(FILE *sfd,BDFFont *bdf) {
     int i;
 
     GProgressNextStage();
-    fprintf( sfd, "BitmapFont: %d %d %d %d\n", bdf->pixelsize, bdf->charcnt,
-	    bdf->ascent, bdf->descent );
+    fprintf( sfd, "BitmapFont: %d %d %d %d %d\n", bdf->pixelsize, bdf->charcnt,
+	    bdf->ascent, bdf->descent, BDFDepth(bdf) );
     for ( i=0; i<bdf->charcnt; ++i ) {
 	if ( bdf->chars[i]!=NULL )
 	    SFDDumpBitmapChar(sfd,bdf->chars[i]);
@@ -1230,7 +1230,12 @@ return( 0 );
 
     bdf->chars[bfc->enc] = bfc;
     bfc->sc = bdf->sf->chars[bfc->enc];
-    bfc->bytes_per_line = (bfc->xmax-bfc->xmin)/8 +1;
+    if ( bdf->clut==NULL )
+	bfc->bytes_per_line = (bfc->xmax-bfc->xmin)/8 +1;
+    else {
+	bfc->bytes_per_line = bfc->xmax-bfc->xmin +1;
+	bfc->byte_data = true;
+    }
     bfc->bitmap = gcalloc((bfc->ymax-bfc->ymin+1)*bfc->bytes_per_line,sizeof(char));
 
     memset(&dec,'\0', sizeof(dec)); dec.pos = -1;
@@ -1252,7 +1257,7 @@ return( 1 );
 static int SFDGetBitmapFont(FILE *sfd,SplineFont *sf) {
     BDFFont *bdf, *prev;
     char tok[200];
-    int pixelsize, ascent, descent;
+    int pixelsize, ascent, descent, depth=1;
 
     bdf = gcalloc(1,sizeof(BDFFont));
     bdf->encoding_name = sf->encoding_name;
@@ -1265,9 +1270,15 @@ return( 0 );
 return( 0 );
     if ( getint(sfd,&descent)!=1 || descent<0 )
 return( 0 );
+    if ( getint(sfd,&depth)!=1 )
+	depth = 1;	/* old sfds don't have a depth here */
+    else if ( depth!=1 && depth!=2 && depth!=4 && depth!=8 )
+return( 0 );
     bdf->pixelsize = pixelsize;
     bdf->ascent = ascent;
     bdf->descent = descent;
+    if ( depth!=1 )
+	BDFClut(bdf,(1<<(depth/2)));
 
     if ( sf->bitmaps==NULL )
 	sf->bitmaps = bdf;
