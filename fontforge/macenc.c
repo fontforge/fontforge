@@ -2086,7 +2086,7 @@ return( false );
 return( true );
 }
 
-static struct macname *MacNameCopy(struct macname *mn) {
+struct macname *MacNameCopy(struct macname *mn) {
     struct macname *head=NULL, *last, *cur;
 
     while ( mn!=NULL ) {

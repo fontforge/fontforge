@@ -215,6 +215,11 @@ struct ttfinfo {
     int macstyle;
     int lookup_cnt;		/* Max lookup in current GPOS/GSUB table */
     struct variations *variations;
+    struct macidname {
+	int id;
+	struct macname *head, *last;
+	struct macidname *next;
+    } *macstrids;
 };
 
 #define MAX_TAB	32

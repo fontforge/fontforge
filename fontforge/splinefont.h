@@ -921,12 +921,17 @@ typedef struct mmset {
 	int points;	/* size of the next two arrays */
 	real *blends;	/* between [0,1] ordered so that blend[0]<blend[1]<... */
 	real *designs;	/* between the design ranges for this axis, typically [1,999] or [6,72] */
-	real min, def, max;	/* For mac */
-    } *axismaps;	 /* array[axis] */
-    char *cdv, *ndv;
+	real min, def, max;		/* For mac */
+	struct macname *axisnames;	/* For mac */
+    } *axismaps;	/* array[axis] */
+    char *cdv, *ndv;	/* for adobe */
+    int named_instance_count;
+    struct named_instance {	/* For mac */
+	real *coords;	/* array[axis] */
+	struct macname *names;
+    } *named_instances;
     unsigned int changed: 1;
     unsigned int apple: 1;
-    /* Named instances, Names for axes */
 } MMSet;
 
 /* mac styles. Useful idea we'll just steal it */
@@ -1120,6 +1125,7 @@ extern void KernClassListFree(KernClass *kc);
 extern int KernClassContains(KernClass *kc, char *name1, char *name2, int ordered );
 extern void FPSTFree(FPST *fpst);
 extern void ASMFree(ASM *sm);
+extern struct macname *MacNameCopy(struct macname *mn);
 extern void MacNameListFree(struct macname *mn);
 extern void MacSettingListFree(struct macsetting *ms);
 extern void MacFeatListFree(MacFeat *mf);
