@@ -1305,6 +1305,10 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     cv->rheads[dm_fore] = &sc->redoes[dm_fore]; cv->rheads[dm_back] = &sc->redoes[dm_back];
     cv->p.sp = cv->lastselpt = NULL;
     cv->template1 = cv->template2 = NULL;
+#if HANYANG
+    if ( cv->sc->parent->rules!=NULL && cv->sc->compositionunit )
+	Disp_DefaultTemplate(cv);
+#endif
 
     CVNewScale(cv);
 
@@ -1314,10 +1318,6 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     cv->lastselpt = NULL; cv->p.sp = NULL;
     CVInfoDraw(cv,cv->gw);
     free(title);
-#if HANYANG
-    if ( cv->jamodisplay!=NULL )
-	Disp_JamoSetup(cv->jamodisplay,cv);
-#endif
 }
 
 static void CVChangeChar(CharView *cv, int i ) {
@@ -5041,7 +5041,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv) {
 
 #if HANYANG
     if ( sc->parent->rules!=NULL && sc->compositionunit )
-	CVInitialTemplate(cv);
+	Disp_DefaultTemplate(cv);
 #endif
 
     cv->olde.x = -1;

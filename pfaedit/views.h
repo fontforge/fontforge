@@ -688,9 +688,8 @@ extern void DictionaryFree(struct dictionary *dica);
 extern void MenuNewComposition(GWindow gw, struct gmenuitem *, GEvent *);
 extern void CVDisplayCompositions(GWindow gw, struct gmenuitem *, GEvent *);
 extern void Disp_DoFinish(struct jamodisplay *d, int cancel);
-extern int Disp_JamoSetup(struct jamodisplay *d,CharView *cv);
 extern void Disp_RefreshChar(SplineFont *sf,SplineChar *sc);
-extern void CVInitialTemplate(CharView *cv);
+extern void Disp_DefaultTemplate(CharView *cv);
 # endif
 
 extern SearchView *SVCreate(FontView *fv);
