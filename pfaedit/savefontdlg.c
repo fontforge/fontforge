@@ -1817,10 +1817,8 @@ return( 0 );
 	bitmaptypes[i].disabled = false;
     }
     old = oldbitmapstate;
-    if ( sf->onlybitmaps && old==bf_ttf ) {
+    if ( sf->onlybitmaps && old==bf_ttf )
 	old = bf_bdf;
-	bitmaptypes[bf_ttf].disabled = true;
-    }
     if ( family ) {
 	if ( old==bf_bdf ) {
 	    if ( ofs==ff_otfdfont || ofs==ff_otfciddfont || ofs==ff_ttfdfont )
@@ -1845,6 +1843,8 @@ return( 0 );
 	bitmaptypes[bf_nfntdfont].disabled = true;
     } else if ( ofs!=ff_none )
 	bitmaptypes[bf_sfnt_dfont].disabled = true;
+    if ( sf->onlybitmaps )
+	bitmaptypes[bf_ttf].disabled = true;
     bitmaptypes[old].selected = true;
     gcd[8].gd.label = &bitmaptypes[old];
     gcd[8].gd.handle_controlevent = GFD_BitmapFormat;
