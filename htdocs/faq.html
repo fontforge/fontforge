@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 5-May-2003 -->
+  <!-- AP: Last modified: 9-Jun-2003 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -31,6 +31,9 @@
     <A HREF="#legal">Is it legal to modify a font? Is it ethical?</A>
   <LI>
     <A HREF="#font-install">How do I install the fonts once I've made them?</A>
+  <LI>
+    <A HREF="faq.html#Bad-Windows-Install">Why won't PfaEdit's fonts install
+    on some MS Windows systems</A>
   <LI>
     <A HREF="#How-mac">How do I edit fonts from my macintoy?</A>
     <UL>
@@ -179,7 +182,7 @@
     my choice of language needed justification, but it appears to do so...
     <P>
     Basically because I don't find object-oriented practices helpful in most
-    cases, because I find C++ far too complex and badly designed and because
+    cases, and because I find C++ far too complex and badly designed, and because
     I can't debug it easily.
     <UL>
       <LI>
@@ -197,10 +200,10 @@
 	many inexplicable bugs caused by this
       <LI>
 	I find it extremely difficult to debug C++. Stepping through a statement
-	often ivolves many unexpected procedure calls (some of which are inlined
+	often involves many unexpected procedure calls (some of which are inlined
 	and not obvious). This distracts from my main purpose in debugging.
       <LI>
-	Finally I find the language badly specified and too complex. It's various
+	Finally I find the language badly specified and too complex. Its various
 	concepts do not fit well together. Each compiler seems to do things slightly
 	differently.
 	<P>
@@ -236,7 +239,7 @@
     OS/2 table called FSType which allows the font designer to place restrictions
     on what other people can do with the font. If this field prohibits modification
     pfaedit will ask you to make sure you have an agreement with the font designer
-    which suppercedes this field.
+    which supersedes this field.
     <P>
     My understanding of US law (but check with a lawyer before relying on this)
     is that:
@@ -325,7 +328,7 @@ $ xset fp+ `pwd`
 	to add your new directory to the font server's font path (rather than xset
 	fp).<BR>
 	You may also need to insure that the font directory (and all its parent
-	directories) are readable to world. (the font server runs as a non-priviledged
+	directories) are readable to world. (the font server runs as a non-privileged
 	user)
 	<P>
 	I haven't seen anything that says X supports <EM>opentype</EM> fonts yet,
@@ -333,7 +336,7 @@ $ xset fp+ `pwd`
 	might support them too. Installing them will require manual editing of
 	fonts.scale though (mkttfdir uses freetype1 which doesn't support otf files).
 	<P>
-	That sounds really confusing. I appologize, I'm not a good writer and there
+	That sounds really confusing. I apologize, I'm not a good writer and there
 	are too many choices in configuring X...
       <DT>
 	<STRONG>KDE</STRONG>
@@ -349,7 +352,7 @@ $ xset fp+ `pwd`
       <DT>
 	<STRONG>TeX</STRONG>
       <DD>
-	TeX has its own (platform independant) system for installing fonts. I've
+	TeX has its own (platform independent) system for installing fonts. I've
 	described my experiences so far
 	<A HREF="PfaEdit-TeX.html#TeX-Install" TARGET="_top">elsewhere in this
 	document</A>.
@@ -392,6 +395,16 @@ $ xset fp+ `pwd`
 	OpenType dfonts do (so if you want to use Postscript use OpenType). You can
 	also use straight ttf and otf files.
     </DL>
+  <DT>
+    <A NAME="Bad-Windows-Install"><B>Why won't PfaEdit's fonts install on some
+    MS Windows machines?</B></A>
+  <DD>
+    I am told that fonts produced by PfaEdit will not install on Windows 2000
+    systems. I don't have a machine to test this on. Fonts install fine on Windows
+    ME.
+    <P>
+    One user tells me that setting "Full Control" for the current user helps,
+    as does setting the "Read &amp; Execute" setting.
   <DT>
     <A NAME="How-mac"><B>How do I edit fonts from my macintoy?</B></A>
   <DD>
@@ -446,7 +459,7 @@ $ xset fp+ `pwd`
 	Info</A> dlg.
 	<P>
 	<STRONG>Caveat:</STRONG> A postscript font is useless on a macintosh unless
-	it is acompanied by at least one bitmap font. If you generate a postscript
+	it is accompanied by at least one bitmap font. If you generate a postscript
 	font make sure you also generate an NFNT as well (this has the FOND).<BR>
 	<STRONG>Caveat:</STRONG> The mac is picky about the filename used to contain
 	a postscript file. It is based on the postscript font name but suffers a
@@ -489,7 +502,7 @@ $ xset fp+ `pwd`
     All the fonts in a family must have the same Family name (See the
     <A TARGET="_top" HREF="fontinfo.html">font info</A> dialog). Mac font families
     only support Italic, Bold, Outline, Expanded, and Condensed styles, they
-    do not support "Black", "DemiBold", "Light" or "Thin" varients.
+    do not support "Black", "DemiBold", "Light" or "Thin" variants.
   <DT>
     <B><A NAME="Mac-ATM">Why doesn't ATM work on my fonts?</A></B>
   <DD>
@@ -516,7 +529,7 @@ $ xset fp+ `pwd`
 	Run it. It will ask you what components of cygwin you wish to install
       <LI>
 	You will need the base components and the X window system (NOTE: These are
-	seperate packages)
+	separate packages)
       <LI>
 	Once you have cygwin installed, start it. This should give you a terminal
 	window running bash (a unix shell)
@@ -570,6 +583,9 @@ MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
     entry for a SJIS font). Try going to
     <A TARGET="_top" HREF="fontinfo.html#TTF-Names">Element-&gt;Font Info-&gt;TTF
     Names </A>and adding a set of strings for your language.
+    <P>
+    Another posibility is discussed
+    <A HREF="faq.html#Bad-Windows-Install">here</A>.
   <DT>
     <B><A NAME="kern-info">Does Pfaedit read in the old kerning information from
     fonts?</A></B>
@@ -785,7 +801,7 @@ MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
     <A NAME="no-mu"><B>Why isn't there a character named "mu" in my greek
     font?</B></A>
   <DD>
-    Adobe was thinking more of backwards compatability than sense when they assigned
+    Adobe was thinking more of backwards compatibility than sense when they assigned
     the names of the greek letters in their unicode encoding. Thus the name "mu"
     refers to the Micro Sign (U+00B5) and not to the letter mu. They also assigned
     Delta to Increment, and Omega to Ohm Sign. I have chosen to disregard these
