@@ -61,10 +61,10 @@ extern struct charmap2 jis_from_unicode;
 /* Subtract 0xa140 before indexing this array */
 extern const unichar_t unicode_from_big5[];
 extern struct charmap2 big5_from_unicode;
-extern const unichar_t unicode_from_gb2312[];
-extern struct charmap2 gb2312_from_unicode;
 extern const unichar_t unicode_from_ksc5601[];
 extern struct charmap2 ksc5601_from_unicode;
+extern const unichar_t unicode_from_gb2312[];
+extern struct charmap2 gb2312_from_unicode;
 
 /* a mask for each character saying what charset(s) it may be found in */
 extern const unsigned long * const unicode_backtrans[];

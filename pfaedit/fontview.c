@@ -3065,7 +3065,7 @@ return( NULL );
 	sprintf( buf, "%s %s", compressors[i].recomp, filename );
 	system(buf);
     }
-    if ( !fromsfd && sf->pfminfo.fstype==0x0002 ) {
+    if ( !fromsfd && sf!=NULL && sf->pfminfo.fstype==0x0002 ) {
 	static int buts[] = { _STR_Yes, _STR_No, 0 };
 	if ( GWidgetAskR(_STR_RestrictedFont,buts,1,1,_STR_RestrictedRightsFont)==1 ) {
 	    SplineFontFree(sf);

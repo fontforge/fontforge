@@ -443,7 +443,7 @@ static void dumpbig5(FILE *output,FILE *header) {
 
 static void dumpWansung(FILE *output,FILE *header) {
     FILE *file;
-    int i,j=3,k, first, last;
+    int i,j=4,k, first, last;
     long _orig, _unicode;
     unichar_t unicode[94*94];
     unichar_t *table[256], *plane;
@@ -460,12 +460,17 @@ static void dumpWansung(FILE *output,FILE *header) {
 	    while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
 		if ( buffer[0]=='#' )
 	    continue;
-		sscanf(buffer, "%*d %lx %*x %*x %*x %*x 0x%lx", &_orig, &_unicode);
+		if ( sscanf(buffer, "%*d %lx %*x %*x %*x %*x %lx", &_orig, &_unicode)!=2 )
+	    continue;
 		if ( table[_unicode>>8]==NULL )
 		    table[_unicode>>8] = calloc(256,2);
 		table[_unicode>>8][_unicode&0xff] = _orig;
-		_orig -= 0x2121;
+		_orig -= 0xA1A1;
 		_orig = (_orig>>8)*94 + (_orig&0xff);
+		if ( _orig>=94*94 ) {
+		    fprintf( stderr, "Not 94x94\n" );
+	    continue;
+		}
 		unicode[_orig] = _unicode;
 		if ( used[_unicode>>8]==NULL ) {
 		    used[_unicode>>8] = calloc(256,sizeof(long));
@@ -512,7 +517,9 @@ static void dumpWansung(FILE *output,FILE *header) {
 	fprintf( output, "struct charmap2 %s_from_unicode = { %d, %d, (unsigned short **) %s_from_unicode_, (unsigned short *) unicode_from_%s };\n\n",
 		cjknames[j], first, last, cjknames[j], cjknames[j]);
 
-	for ( k=first; k<=last; ++k ) {
+	if ( first==-1 )
+	    fprintf( stderr, "No Hangul\n" );
+	else for ( k=first; k<=last; ++k ) {
 	    free(table[k]);
 	    table[k]=NULL;
 	}
@@ -528,7 +535,7 @@ static void dump94x94(FILE *output,FILE *header) {
 
     for ( k=0; k<256; ++k ) table[k] = NULL;
 
-    for ( j=4; cjk[j]!=NULL; ++j ) {
+    for ( j=3; j<4 && cjk[j]!=NULL; ++j ) {
 	file = fopen( cjk[j], "r" );
 	if ( file==NULL ) {
 	    fprintf( stderr, "Can't open %s\n", cjk[j]);
@@ -590,7 +597,9 @@ static void dump94x94(FILE *output,FILE *header) {
 	fprintf( output, "struct charmap2 %s_from_unicode = { %d, %d, (unsigned short **) %s_from_unicode_, (unsigned short *) unicode_from_%s };\n\n",
 		cjknames[j], first, last, cjknames[j], cjknames[j]);
 
-	for ( k=first; k<=last; ++k ) {
+	if ( first==-1 )
+	    fprintf( stderr, "No 94x94\n" );
+	else for ( k=first; k<=last; ++k ) {
 	    free(table[k]);
 	    table[k]=NULL;
 	}

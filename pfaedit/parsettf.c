@@ -2311,7 +2311,7 @@ static int modenc(int enc,int modtype) {
 	    enc = unicode_from_big5[enc-0xa100];
 	else if ( enc>0x100 )
 	    enc = -1;
-    } else if ( modtype==5 /* Wansung == KSC 5601, I hope */ ) {
+    } else if ( modtype==5 /* Wansung == KSC 5601-1987, I hope */ ) {
 	if ( enc>0xa1a1 ) {
 	    enc -= 0xa1a1;
 	    enc = (enc>>8)*94 + (enc&0xff);

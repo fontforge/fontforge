@@ -592,8 +592,13 @@ int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0) {
     fseek(pfm,facename,SEEK_SET);
     putlint(pos,pfm);
     fseek(pfm,pos,SEEK_SET);
-    for ( pt=sf->familyname; *pt; ++pt )
-	putc(*pt,pfm);
+    if ( sf->familyname!=NULL ) {
+	for ( pt=sf->familyname; *pt; ++pt )
+	    putc(*pt,pfm);
+    } else {
+	for ( pt=sf->fontname; *pt; ++pt )
+	    putc(*pt,pfm);
+    }
     putc('\0',pfm);
 
 /* extmetrics */

@@ -1448,7 +1448,11 @@ static void BadFamily() {
 char *SFGetModifiers(SplineFont *sf) {
     char *pt, *fpt;
 
-    for ( fpt = sf->familyname, pt = sf->fontname; *fpt!='\0' && *pt!='\0'; ) {
+    fpt = sf->familyname;
+    if ( sf->familyname==NULL )
+return( "" );
+
+    for ( pt = sf->fontname; *fpt!='\0' && *pt!='\0'; ) {
 	if ( *fpt == *pt ) {
 	    ++fpt; ++pt;
 	} else if ( *fpt==' ' )
@@ -1546,7 +1550,8 @@ static void SetFontName(GWindow gw, SplineFont *sf) {
     const unichar_t *uhum = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Human));
     char *family, *mods, *human;
 
-    if ( uc_strcmp(ufamily,sf->familyname)==0 && uc_strcmp(uhum,sf->fullname)==0 &&
+    if ( (sf->familyname!=NULL && uc_strcmp(ufamily,sf->familyname)==0) &&
+	    (sf->fullname!=NULL && uc_strcmp(uhum,sf->fullname)==0) &&
 	    uc_strcmp(umods,SFGetModifiers(sf))==0 )
 return;			/* Unchanged */
     family = cu_copy(ufamily); mods = cu_copy(umods); human = cu_copy(uhum);
@@ -2132,7 +2137,7 @@ void FontInfo(SplineFont *sf) {
 
     ngcd[1].gd.pos.x = 12; ngcd[1].gd.pos.y = ngcd[0].gd.pos.y+15; ngcd[1].gd.pos.width = 120;
     ngcd[1].gd.flags = gg_visible | gg_enabled;
-    nlabel[1].text = (unichar_t *) (sf->familyname);
+    nlabel[1].text = (unichar_t *) (sf->familyname?sf->familyname:sf->fontname);
     nlabel[1].text_is_1byte = true;
     ngcd[1].gd.label = &nlabel[1];
     ngcd[1].gd.cid = CID_Family;
@@ -2166,7 +2171,7 @@ void FontInfo(SplineFont *sf) {
 
     ngcd[5].gd.pos.x = 105; ngcd[5].gd.pos.y = ngcd[4].gd.pos.y-6; ngcd[5].gd.pos.width = 147;
     ngcd[5].gd.flags = gg_visible | gg_enabled;
-    nlabel[5].text = (unichar_t *) sf->fullname;
+    nlabel[5].text = (unichar_t *) (sf->fullname?sf->fullname:sf->fontname);
     nlabel[5].text_is_1byte = true;
     ngcd[5].gd.label = &nlabel[5];
     ngcd[5].gd.cid = CID_Human;
