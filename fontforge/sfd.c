@@ -3984,7 +3984,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    int temp;
 	    getint(sfd,&temp);
 	    sf->texdata.type = temp;
-	    getint(sfd,&sf->design_size);
+	    getsint(sfd,(int16 *) &sf->design_size);
 	    sf->design_size = (5*sf->design_size+(1<<18))>>19;
 	    for ( i=0; i<22; ++i )
 		getint(sfd,&sf->texdata.params[i]);
