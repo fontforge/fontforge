@@ -1024,10 +1024,10 @@ static char str_Duppixelsizepost[] = ")\012Voulew vous l'écraser?";
 static char str_NoBitmapFont = "Pas de police Bitmap";
 static char str_NoBitmapFontIn = "Pas de police Bitmap dans%hs";
  /* Ligature feature tags */
-static char str_RequiredLig   = "Requis"
-static char str_StandardLig   = "Standard"
-static char str_DiscretionaryLig = "Discrétionaire"
-static char str_HistoricLig   = "Historique"
+static char str_RequiredLig   = "Ligature Requis"
+static char str_StandardLig   = "Ligature Standard"
+static char str_DiscretionaryLig = "Ligature Discrétionaire"
+static char str_HistoricLig   = "Ligature Historique"
 static char str_FractionLig   = "Fraction"
 static char str_AboveBaseSubs = "Substitutions Numérateur"
 static char str_AltFrac = "Autres Fractions"
