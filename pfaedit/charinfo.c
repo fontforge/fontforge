@@ -2773,15 +2773,16 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 	gcd[i].gd.pos.width = 140;
 	gcd[i].gd.flags = gg_enabled|gg_visible;
 	gcd[i].gd.u.list = SFLangList(sf,3,default_script);
-	j = script_lang_index;
 	if ( script_lang_index!=-1 ) {
-	    for ( i=0; gcd[i].gd.u.list[i].text!=NULL; ++i )
-		gcd[i].gd.u.list[i].selected = false;
+	    for ( j=0; gcd[i].gd.u.list[j].text!=NULL; ++j )
+		gcd[i].gd.u.list[j].selected = false;
 	    if ( script_lang_index==SLI_NESTED ) {
 		for ( j=0 ; gcd[i].gd.u.list[j].userdata!=(void *) SLI_NESTED; ++j );
 		gcd[i].gd.u.list[j].selected = true;
-	    } else
+	    } else {
 		gcd[i].gd.u.list[script_lang_index].selected = true;
+		j = script_lang_index;
+	    }
 	} else {
 	    for ( script_lang_index=0; !gcd[i].gd.u.list[script_lang_index].selected &&
 		    gcd[i].gd.u.list[script_lang_index].text!=NULL; ++script_lang_index );
@@ -4749,7 +4750,7 @@ static void CIFillup(CharInfo *ci) {
     for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
 	j = cnts[pst->type]++;
 	arrays[pst->type][j] = gcalloc(1,sizeof(GTextInfo));
-	if ( pst->type==pst_position ) {
+	if ( pst->type==pst_position || pst->type==pst_pair ) {
 	    if ( pst->type==pst_position ) {
 		sprintf(buffer,"          %3d dx=%d dy=%d dx_adv=%d dy_adv=%d",
 			pst->script_lang_index,
