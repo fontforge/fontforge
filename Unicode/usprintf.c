@@ -289,6 +289,7 @@ int u_vsnprintf(unichar_t *str, int len, const unichar_t *format, va_list ap ) {
 			val = 10*val + tovalue(*pt);
 		    if ( *pt=='$' ) temp.precision = -val;
 		} else if ( isdigit(*pt)) {
+		    temp.precision = 0;
 		    while ( isdigit(*pt)) {
 			temp.precision = 10*temp.precision + tovalue(*pt);
 			++pt;
