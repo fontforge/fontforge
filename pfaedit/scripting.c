@@ -2736,6 +2736,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "Inline", bInline },
     { "Outline", bOutline },
     { "Shadow", bShadow },
+    { "Wireframe", bWireframe },
     { "RemoveOverlap", bRemoveOverlap },
     { "OverlapIntersect", bOverlapIntersect },
     { "FindIntersections", bFindIntersections },

@@ -987,7 +987,7 @@ static char *str_TryRoundToInt = "Cette police contient au moins une coordonnée 
     /* Goto character ... */
 static char str_Badnumberin[] = "Numéro incorrect dans ";
 static char str_Enternameofchar[] = "Nom d'un caractère dans la police";
-static char str_Couldntfindchar[] = "Caractère introuvable: ";
+static char str_Couldntfindchar[] = "Caractère introuvable: %.70hs";
 static char str_CouldntFindSubstitution = "Caractère de substitution introuvable: %.40hs";
     /* Font has changed dlg */
 static char str_Dontsave[] = "Ne pas Enregistrer";

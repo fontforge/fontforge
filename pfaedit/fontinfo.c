@@ -2021,6 +2021,23 @@ GTextInfo **AnchorClassesLList(SplineFont *sf) {
 return( ti );
 }
 
+GTextInfo **AnchorClassesSimpleLList(SplineFont *sf) {
+    AnchorClass *an;
+    int cnt;
+    GTextInfo **ti;
+
+    for ( cnt=0, an=sf->anchor; an!=NULL; ++cnt, an=an->next );
+    ti = gcalloc(cnt+1,sizeof(GTextInfo*));
+    for ( cnt=0, an=sf->anchor; an!=NULL; ++cnt, an=an->next ) {
+	ti[cnt] = gcalloc(1,sizeof(GTextInfo));
+	ti[cnt]->text = u_copy(an->name);
+	ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
+	ti[cnt]->userdata = an;
+    }
+    ti[cnt] = gcalloc(1,sizeof(GTextInfo));
+return( ti );
+}
+
 static void GFI_AnchorShow(GGadget *g, int index) {
     struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
     int i, start;

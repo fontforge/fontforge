@@ -140,6 +140,8 @@ static char str_Select[] = "Select";
 static unichar_t mnemonic_Select[] = 'S';
 static char str_DeselectAll[] = "Deselect All";
 static unichar_t mnemonic_DeselectAll[] = 'D';
+static char str_SelectByATT[] = "Select By ATT...";
+static unichar_t mnemonic_SelectByATT[] = 'T';
 static char str_FirstPoint[] = "First Point";
 static unichar_t mnemonic_FirstPoint[] = 'F';
 static char str_Nextpoint[] = "Next Point";
@@ -1002,7 +1004,7 @@ static char *str_TryRoundToInt = "This font contains at least one non-integral c
     /* Goto character ... */
 static char str_Badnumberin[] = "Bad Number in ";
 static char str_Enternameofchar[] = "Enter the name of a character in the font";
-static char str_Couldntfindchar[] = "Could not find the character: ";
+static char str_Couldntfindchar[] = "Could not find the character: %.70hs";
 static char str_CouldntFindSubstitution = "Could not find substitution character: %.40hs";
     /* Font has changed dlg */
 static char str_Dontsave[] = "Don't Save";
@@ -1787,6 +1789,23 @@ static char str_NeedsScriptForSubsGuess = "If you specify positioning or substit
 static char str_ReallyNoScript = "You did not specify a script for this glyph (or PfaEdit failed to guess it). This may cause problems if you use this glyph in a GPOS or GSUB table.\nContinue anyway?"
 static char str_MergeWith = "Merge With:";
 static char str_MergeWithPopup = "PfaEdit will attempt to merge all anchor classes with the same value for \"Merge With\" into one GPOS lookup";
+  /* Select by att (pst) */
+static char str_SimpSubstitution = "Simple Substitution"
+static char str_AltSubstitutions = "Alternate Substitutions"
+static char str_MultSubstitution = "Multiple Substitution"
+static char str_SimpPos = "Simple Position"
+static char str_LigCaret = "Ligature Caret"
+static char str_Kerning = "Kerning"
+static char str_Containing = "Containing:"
+static char str_SelectResults = "Select Results";
+static char str_SelectResultsPopup = "Set the selection of the font view to the characters\nfound by this search";
+static char str_MergeResults = "Merge Results";
+static char str_MergeResultsPopup = "Expand the selection of the font view to include\nall the characters found by this search";
+static char str_RestrictSelection = "Restrict Selection";
+static char str_RestrictSelectionPopup = "Only search the selected characters, and unselect\nany characters which do not match this search";
+static char str_UnknownAnchorClass = "Unknown Anchor Class: %.70s";
+static char str_TooManyTags = "Too many tags specified";
+static char str_NoMatch = "No characters matched";
     /* Import */
 static char str_Duppixelsize[] = "Duplicate pixelsize";
 /* "The font database already contains a bitmap\nfont with this pixelsize (%d)\nDo you want to overwrite it?" */

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 9-Jun-2003 -->
+  <!-- AP: Last modified: 10-Jun-2003 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -73,7 +73,11 @@
     <A HREF="#save-no-change">After I generate a font and quit, why does PfaEdit
     ask if I want to save the font? I didn't change anything.</A>
   <LI>
-    <A HREF="#TeX">Why doesn't TeX work with my fonts?</A>
+    <A HREF="faq.html#TeX">Why doesn't TeX work with my fonts?</A>
+    <UL>
+      <LI>
+	<A HREF="#mf-files">Why doesn't PfaEdit let me edit an '.mf' file?</A>
+    </UL>
   <LI>
     <A HREF="#minify-iconify">Why does my window get iconified when I want to
     minify the view?</A>
@@ -782,7 +786,7 @@ MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
 	caching when you change an old version of the font for a new one).
     </OL>
   <DT>
-    <A NAME="Tex"><B>Why doesn't TeX work with my fonts?</B></A>
+    <B><A NAME="TeX">Why doesn't TeX work with my fonts?</A></B>
   <DD>
     I'm a total novice with TeX. I am told that TeX (or some part of the TeX
     chain, dvips perhaps) expects fonts to be encoded in TeX base Encoding --
@@ -790,6 +794,35 @@ MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
     base. So if you are having printing problems, missing glyphs, etc. try changing
     the encoding of your font to TeX Base (Go to Element-&gt;Font Info, select
     the Encoding tab, select TeX Base from the pulldown list).
+  <DT>
+    <A NAME="mf-files"><B>Why doesn't PfaEdit let me edit an '.mf' file?</B></A>
+  <DD>
+    As Knuth said "(the problem with WSYWYG is that...) What you see is
+    <I>all</I> you get." PfaEdit suffers from this.
+    <P>
+    Let us take a simple example. Suppose we have a point defined by<BR>
+    <CODE>&nbsp; &nbsp; &nbsp;top<SUB>1</SUB>y<SUB>2</SUB> = CapHeight</CODE><BR>
+    And the user tries to drag point 2 to a new y location. How should PfaEdit
+    interpret this? It could:
+    <UL>
+      <LI>
+	Change <CODE>CapHeight</CODE>
+      <LI>
+	Change the width of pen 1
+      <LI>
+	Change the equation to something like:<BR>
+	<CODE>&nbsp; &nbsp;top<SUB>1</SUB>y<SUB>2</SUB> = CapHeight - 30</CODE>
+      <LI>
+	Or to something like:<BR>
+	<CODE>&nbsp; &nbsp;top<SUB>1</SUB>y<SUB>2</SUB> = (CapHeight +
+	XHeight)/2</CODE>
+      <LI>
+	Or to half a dozen other things.
+    </UL>
+    <P>
+    So PfaEdit's method for moving a point around is ambiguous. And I haven't
+    been able to come up with any reasonable way for disambiguating it. Suggestions
+    are welcome (but there's no guarantee they'll be implemented).
   <DT>
     <A NAME="minify-iconify"><B>Why does my window get iconified when I want
     to minify the view?</B></A>

@@ -477,10 +477,9 @@ static int Goto_OK(GGadget *g, GEvent *e) {
 	    if ( d->ret<0 || d->ret>=d->sf->charcnt )
 		d->ret = -1;
 	    if ( d->ret==-1 ) {
-		unichar_t ubuf[100];
-		u_strcpy( ubuf, GStringGetResource(_STR_Couldntfindchar,NULL));
-		u_strncat(ubuf,ret,70);
-		GWidgetPostNotice(GStringGetResource(_STR_Goto,NULL),ubuf);
+		char *temp=cu_copy(ret);
+		GWidgetPostNoticeR(_STR_Goto,_STR_Couldntfindchar,temp);
+		free(temp);
 	    } else
 		d->done = true;
 	} else

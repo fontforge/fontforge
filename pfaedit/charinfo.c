@@ -61,6 +61,13 @@ typedef struct charinfo {
 #define CID_Copy	1024
 #define CID_Paste	1025
 
+#define CID_PST		1111
+#define CID_Tag		1112
+#define CID_Contents	1113
+#define CID_SelectResults	1114
+#define CID_MergeResults	1115
+#define CID_RestrictSelection	1116
+
 static GTextInfo std_colors[] = {
     { (unichar_t *) _STR_Default, &def_image, 0, 0, (void *) COLOR_DEFAULT, NULL, false, true, false, false, false, false, false, true },
     { NULL, &white_image, 0, 0, (void *) 0xffffff, NULL, false, true },
@@ -1917,7 +1924,6 @@ return( true );
 static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	int script_lang_index, GTextInfo *tags,SplineFont *sf,
 	SplineChar *default_script) {
-    static unichar_t nullstr[] = { 0 };
     struct pt_dlg ptd;
     GRect pos;
     GWindowAttrs wattrs;
@@ -1932,6 +1938,7 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
     char buf[100];
     unichar_t udx[12], udy[12], udxa[12], udya[12];
     int i, temp;
+    static unichar_t nullstr[] = { 0 };
 
     if ( def==NULL ) def=nullstr;
     if ( def_tag==0 && u_strlen(def)>4 && def[4]==' ' && def[0]<0x7f && def[1]<0x7f && def[2]<0x7f && def[3]<0x7f ) {
@@ -4313,4 +4320,489 @@ return;
 
 void CharInfoDestroy(CharInfo *ci) {
     GDrawDestroyWindow(ci->gw);
+}
+
+struct sel_dlg {
+    int done;
+    int ok;
+    FontView *fv;
+};
+
+enum { pst_kerning = pst_max, pst_anchors };
+
+GTextInfo pst_names[] = {
+    { (unichar_t *) _STR_LigatureL, NULL, 0, 0, (void *) pst_ligature, NULL, false, false, false, false, true, false, false, true },
+    { (unichar_t *) _STR_SimpSubstitution, NULL, 0, 0, (void *) pst_substitution, NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_AltSubstitutions, NULL, 0, 0, (void *) pst_alternate, NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_MultSubstitution, NULL, 0, 0, (void *) pst_multiple, NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_SimpPos, NULL, 0, 0, (void *) pst_position, NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Kerning, NULL, 0, 0, (void *) pst_kerning, NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_AnchorClass, NULL, 0, 0, (void *) pst_anchors, NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_LigCaret, NULL, 0, 0, (void *) pst_lcaret, NULL, false, false, false, false, false, false, false, true },
+    { NULL }
+};
+
+struct match_data {
+    SplineFont *sf;
+    enum possub_type type;
+    int tagcnt;
+    uint32 tags[10];
+    char *contains;
+    AnchorClass *ac;
+    SplineChar *kernwith;
+};
+
+static int SCMatchAnchor(SplineChar *sc,struct match_data *md) {
+    AnchorPoint *ap;
+
+    if ( sc==NULL )
+return( false );
+
+    for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
+	if ( ap->anchor==md->ac )
+return( true );
+    }
+return( false );
+}
+
+static int SCMatchPST(SplineChar *sc,struct match_data *md) {
+    PST *pst;
+    int j;
+
+    if ( sc==NULL )
+return( false );
+    for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
+	if ( pst->type == md->type ) {
+	    if ( md->tagcnt!=0 ) {
+		for ( j=md->tagcnt-1; j>=0; --j )
+		    if ( pst->tag==md->tags[j] )
+		break;
+		if ( j==-1 )
+    continue;
+	    }
+	    if ( md->type==pst_position || md->contains==NULL ||
+		    PSTContains(pst->u.lig.components,md->contains))
+return( true );
+	}
+    }
+return( false );
+}
+
+static int SCMatchLCaret(SplineChar *sc,struct match_data *md) {
+    PST *pst;
+    int j;
+
+    if ( sc==NULL )
+return( false );
+    for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
+	if ( pst->type == pst_lcaret ) {
+	    for ( j = pst->u.lcaret.cnt-1; j>=0; --j ) {
+		if ( pst->u.lcaret.carets[j]!=0 )
+return( true );
+	    }
+return( false );
+	}
+    }
+return( false );
+}
+
+static int SCMatchKern(SplineChar *sc,struct match_data *md) {
+    SplineFont *sf = md->sf;
+    int i;
+    KernPair *kp;
+    KernClass *kc;
+
+    if ( sc==NULL )
+return( false );
+
+    if ( md->kernwith==NULL ) {
+	/* Is the current character involved in ANY kerning */
+	if ( sc->kerns!=NULL )
+return( true );
+	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	    for ( kp = sf->chars[i]->kerns; kp!=NULL; kp = kp->next ) {
+		if ( kp->sc == sc )
+return( true );
+	    }
+	}
+	for ( kc = sf->kerns; kc!=NULL; kc=kc->next ) {
+	    for ( i=1; i<kc->first_cnt; ++i )
+		if ( PSTContains(kc->firsts[i],sc->name) )
+return( true );
+	    for ( i=1; i<kc->second_cnt; ++i )
+		if ( PSTContains(kc->seconds[i],sc->name) )
+return( true );
+	}
+    } else {
+	for ( kp=sc->kerns; kp!=NULL; kp=kp->next ) {
+	    if ( kp->sc==md->kernwith )
+return( true );
+	}
+	for ( kp=md->kernwith->kerns; kp!=NULL; kp=kp->next ) {
+	    if ( kp->sc==sc )
+return( true );
+	}
+	for ( kc = sf->kerns; kc!=NULL; kc=kc->next ) {
+	    int infirst=0, insecond=0, scpos, kwpos;
+	    for ( i=1; i<kc->first_cnt; ++i ) {
+		if ( PSTContains(kc->firsts[i],sc->name) ) {
+		    scpos = i;
+		    if ( ++infirst>=3 )
+	    break;
+		} else if ( PSTContains(kc->firsts[i],md->kernwith->name) ) {
+		    kwpos = i;
+		    if ( (infirst+=2)>=3 )
+	    break;
+		}
+	    }
+	    if ( infirst==0 || infirst==3 )
+	continue;
+	    for ( i=1; i<kc->second_cnt; ++i ) {
+		if ( PSTContains(kc->seconds[i],sc->name) ) {
+		    scpos = i;
+		    if ( ++insecond>=3 )
+	    break;
+		} else if ( PSTContains(kc->seconds[i],md->kernwith->name) ) {
+		    kwpos = i;
+		    if ( (insecond+=2)>=3 )
+	    break;
+		}
+	    }
+	    if ( insecond==0 || insecond==3 )
+	continue;
+	    if ( infirst==1 && insecond==2 ) {
+		if ( kc->offsets[scpos*kc->second_cnt+kwpos]!=0 )
+return( true );
+	    } else if ( infirst==2 && insecond==1 ) {
+		if ( kc->offsets[kwpos*kc->second_cnt+scpos]!=0 )
+return( true );
+	    }
+	}
+    }
+return( false );
+}
+
+static GTextInfo **LListFromList(GTextInfo *array) {
+    int cnt;
+    GTextInfo **ti;
+
+    for ( cnt=0; array[cnt].text!=NULL; ++cnt);
+    ti = galloc((cnt+1)*sizeof(GTextInfo *));
+    for ( cnt=0; array[cnt].text!=NULL; ++cnt) {
+	ti[cnt] = gcalloc(1,sizeof(GTextInfo));
+	*(ti[cnt]) = array[cnt];
+	if ( ti[cnt]->text_in_resource ) {
+	    ti[cnt]->text_in_resource = false;
+	    ti[cnt]->text = u_copy(GStringGetResource((int) ti[cnt]->text,NULL));
+	}
+	ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
+    }
+    ti[cnt] = gcalloc(1,sizeof(GTextInfo));
+return( ti );
+}
+    
+static int SelectStuff(struct sel_dlg *sld,GWindow gw) {
+    struct match_data md;
+    int type = (int) (GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_PST))->userdata);
+    const unichar_t *ret;
+    uint8 u[4];
+    int i, j;
+    int (*tester)(SplineChar *sc,struct match_data *md);
+    FontView *fv;
+    SplineFont *sf;
+    AnchorClass *ac;
+    int first;
+
+    memset(&md,0,sizeof(md));
+    md.sf = sld->fv->sf;
+    md.type = type;
+    if ( type!=pst_anchors || type!=pst_position || type!=pst_lcaret ) {
+	md.contains = cu_copy( _GGadgetGetTitle(GWidgetGetControl(gw,CID_Contents)));
+	if ( strcmp( md.contains,"" )==0 || strcmp( md.contains,"*" )==0 ) {
+	    free( md.contains );
+	    md.contains = NULL;
+	}
+	if ( type==pst_kerning && md.contains!=NULL ) {
+	    md.kernwith = SFGetCharDup(md.sf,-1,md.contains);
+	    if ( md.kernwith==NULL )
+		GWidgetErrorR(_STR_SelectByATT,_STR_Couldntfindchar,md.contains);
+	    free(md.contains);
+	    md.contains = NULL;
+	    if ( md.kernwith==NULL )
+return( false );
+	}
+    }
+    if ( type==pst_anchors ) {
+	ret = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Tag));
+	for ( ac = md.sf->anchor; ac!=NULL; ac=ac->next )
+	    if ( u_strcmp(ret,ac->name)==0 )
+	break;
+	md.ac = ac;
+	if ( ac==NULL ) {
+	    free( md.contains );
+	    GWidgetErrorR(_STR_SelectByATT,_STR_UnknownAnchorClass,ret);
+return( false );
+	}
+    } else if ( type!=pst_kerning || type!=pst_lcaret ) {
+	ret = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Tag));
+	if ( uc_strcmp( ret,"" )==0 || uc_strcmp( ret,"*" )==0 )
+	    md.tagcnt = 0;
+	else {
+	    for ( i=0; i<sizeof(md.tags)/sizeof(md.tags[0]) && *ret!='\0'; ++i ) {
+		memset(u,' ',4);
+		for ( j=0; j<4 && *ret!='\0' && *ret!=',' && *ret!=' '; ++j )
+		    u[j] = *ret++;
+		while ( *ret==',' || *ret==' ' ) ++ret;
+		md.tags[i] = (u[0]<<24) | (u[1]<<16) | (u[2]<<8) | u[3];
+	    }
+	    if ( *ret!='\0' ) {
+		GWidgetErrorR(_STR_SelectByATT,_STR_TooManyTags);
+		free( md.contains );
+return( false );
+	    }
+	    md.tagcnt = i;
+	}
+    }
+
+    if ( type==pst_anchors )
+	tester = SCMatchAnchor;
+    else if ( type==pst_lcaret )
+	tester = SCMatchLCaret;
+    else if ( type==pst_kerning )
+	tester = SCMatchKern;
+    else
+	tester = SCMatchPST;
+
+    fv = sld->fv;
+    sf = fv->sf;
+    first = -1;
+    if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_SelectResults)) ) {
+	for ( i=0; i<sf->charcnt; ++i )
+	    if ( (fv->selected[i] = tester(sf->chars[i],&md)) && first==-1 )
+		first = i;
+    } else if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_MergeResults)) ) {
+	for ( i=0; i<sf->charcnt; ++i ) if ( !fv->selected[i] )
+	    if ( (fv->selected[i] = tester(sf->chars[i],&md)) && first==-1 )
+		first = i;
+    } else {
+	for ( i=0; i<sf->charcnt; ++i ) if ( fv->selected[i] )
+	    if ( (fv->selected[i] = tester(sf->chars[i],&md)) && first==-1 )
+		first = i;
+    }
+    if ( first!=-1 )
+	FVScrollToChar(fv,first);
+    else
+	GWidgetPostNoticeR(_STR_SelectByATT,_STR_NoMatch);
+    GDrawRequestExpose(fv->v,NULL,false);
+return( true );
+}
+
+static int selpst_e_h(GWindow gw, GEvent *event) {
+    struct sel_dlg *sld = GDrawGetUserData(gw);
+    static unichar_t nullstr[] = { 0 };
+    static GTextInfo *tags[] = { NULL,
+	simplepos_tags,
+	simplesubs_tags,
+	alternatesubs_tags,
+	multiplesubs_tags,
+	ligature_tags,
+	NULL,
+	NULL,
+	NULL };
+
+    if ( event->type==et_close ) {
+	sld->done = true;
+	sld->ok = false;
+    } else if ( event->type==et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("filemenu.html#Select-By-ATT");
+return( true );
+	}
+return( false );
+    } else if ( event->type==et_controlevent && event->u.control.subtype == et_buttonactivate ) {
+	sld->ok = GGadgetGetCid(event->u.control.g);
+	if ( !sld->ok || SelectStuff(sld,gw))
+	    sld->done = true;
+    } else if ( event->type==et_controlevent &&
+	    event->u.control.subtype == et_listselected &&
+	    GGadgetGetCid(event->u.control.g)==CID_PST ) {
+	int type = (int) (GGadgetGetListItemSelected(event->u.control.g)->userdata);
+	if ( type==pst_anchors ) {
+	    GGadgetSetList(GWidgetGetControl(gw,CID_Tag),AnchorClassesSimpleLList(sld->fv->sf),false);
+	    GGadgetSetEnabled(GWidgetGetControl(gw,CID_Tag),true);
+	    GGadgetSetEnabled(GWidgetGetControl(gw,CID_Contents),false);
+	} else if ( type==pst_kerning ) {
+	    GGadgetSetTitle(GWidgetGetControl(gw,CID_Tag),nullstr);
+	    GGadgetSetEnabled(GWidgetGetControl(gw,CID_Tag),false);
+	    GGadgetSetEnabled(GWidgetGetControl(gw,CID_Contents),true);
+	} else if ( type==pst_lcaret ) {
+	    GGadgetSetTitle(GWidgetGetControl(gw,CID_Tag),nullstr);
+	    GGadgetSetEnabled(GWidgetGetControl(gw,CID_Tag),false);
+	    GGadgetSetEnabled(GWidgetGetControl(gw,CID_Contents),false);
+	} else if ( type==pst_position ) {
+	    GGadgetSetEnabled(GWidgetGetControl(gw,CID_Contents),false);
+	    GGadgetSetEnabled(GWidgetGetControl(gw,CID_Tag),true);
+	    GGadgetSetList(GWidgetGetControl(gw,CID_Tag),LListFromList(simplepos_tags),false);
+	} else {
+	    GGadgetSetEnabled(GWidgetGetControl(gw,CID_Contents),true);
+	    GGadgetSetEnabled(GWidgetGetControl(gw,CID_Tag),true);
+	    GGadgetSetList(GWidgetGetControl(gw,CID_Tag),LListFromList(tags[type]),false);
+	}
+    } else if ( event->type==et_controlevent && event->u.control.subtype == et_textchanged &&
+	    event->u.control.u.tf_changed.from_pulldown!=-1 &&
+	    GGadgetGetCid(event->u.control.g)==CID_Tag ) {
+	int type = (int) (GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_PST))->userdata);
+	if ( type!=pst_kerning && type!=pst_anchors && type!=pst_lcaret ) {
+	    uint32 tag = (uint32) tags[type][event->u.control.u.tf_changed.from_pulldown].userdata;
+	    unichar_t ubuf[8];
+	    /* If they select something from the pulldown, don't show the human */
+	    /*  readable form, instead show the 4 character tag */
+	    ubuf[0] = tag>>24;
+	    ubuf[1] = (tag>>16)&0xff;
+	    ubuf[2] = (tag>>8)&0xff;
+	    ubuf[3] = tag&0xff;
+	    ubuf[4] = 0;
+	    GGadgetSetTitle(event->u.control.g,ubuf);
+	}
+    }
+return( true );
+}
+
+void FVSelectByPST(FontView *fv) {
+    static struct sel_dlg sld;
+    static GWindow gw;
+    GRect pos;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[14];
+    GTextInfo label[14];
+    int i,j;
+
+    memset(&sld,0,sizeof(sld));
+    sld.fv = fv;
+    if ( gw==NULL ) {
+	memset(&wattrs,0,sizeof(wattrs));
+	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.event_masks = ~(1<<et_charup);
+	wattrs.restrict_input_to_me = 1;
+	wattrs.undercursor = 1;
+	wattrs.cursor = ct_pointer;
+	wattrs.window_title = GStringGetResource( _STR_SelectByATT,NULL );
+	wattrs.is_dlg = true;
+	pos.x = pos.y = 0;
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,160));
+	pos.height = GDrawPointsToPixels(NULL,204);
+	gw = GDrawCreateTopWindow(NULL,&pos,selpst_e_h,&sld,&wattrs);
+
+	memset(&gcd,0,sizeof(gcd));
+	memset(&label,0,sizeof(label));
+
+	i=0;
+	gcd[i].gd.label = &pst_names[0];
+	gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = 5+4;
+	gcd[i].gd.flags = gg_enabled|gg_visible/*|gg_list_exactlyone*/;
+	gcd[i].gd.u.list = pst_names;
+	gcd[i].gd.cid = CID_PST;
+	gcd[i++].creator = GListButtonCreate;
+	if ( fv->sf->anchor==NULL )
+	    for ( j=0; pst_names[j].text!=NULL; ++j )
+		if ( pst_names[j].text == (void *) _STR_AnchorClass )
+		    pst_names[j].disabled = true;
+
+	label[i].text = (unichar_t *) _STR_TagC;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+26; 
+	gcd[i].gd.flags = gg_enabled|gg_visible;
+	gcd[i++].creator = GLabelCreate;
+
+	gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+14;
+	gcd[i].gd.flags = gg_enabled|gg_visible;
+	gcd[i].gd.u.list = ligature_tags;
+	gcd[i].gd.cid = CID_Tag;
+	gcd[i++].creator = GListFieldCreate;
+
+	label[i].text = (unichar_t *) _STR_Containing;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+26; 
+	gcd[i].gd.flags = gg_enabled|gg_visible;
+	gcd[i++].creator = GLabelCreate;
+
+	gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+14;
+	gcd[i].gd.pos.width = 140;
+	gcd[i].gd.flags = gg_enabled|gg_visible;
+	gcd[i].gd.cid = CID_Contents;
+	gcd[i++].creator = GTextFieldCreate;
+
+	label[i].text = (unichar_t *) _STR_SelectResults;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+26; 
+	gcd[i].gd.flags = gg_enabled|gg_visible|gg_cb_on;
+	gcd[i].gd.popup_msg = GStringGetResource(_STR_SelectResultsPopup,NULL);
+	gcd[i].gd.cid = CID_SelectResults;
+	gcd[i++].creator = GRadioCreate;
+
+	label[i].text = (unichar_t *) _STR_MergeResults;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+15; 
+	gcd[i].gd.flags = gg_enabled|gg_visible;
+	gcd[i].gd.popup_msg = GStringGetResource(_STR_MergeResultsPopup,NULL);
+	gcd[i].gd.cid = CID_MergeResults;
+	gcd[i++].creator = GRadioCreate;
+
+	label[i].text = (unichar_t *) _STR_RestrictSelection;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+15; 
+	gcd[i].gd.flags = gg_enabled|gg_visible;
+	gcd[i].gd.popup_msg = GStringGetResource(_STR_RestrictSelectionPopup,NULL);
+	gcd[i].gd.cid = CID_RestrictSelection;
+	gcd[i++].creator = GRadioCreate;
+
+	gcd[i].gd.pos.x = 15-3; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+22;
+	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	label[i].text = (unichar_t *) _STR_OK;
+	label[i].text_in_resource = true;
+	gcd[i].gd.mnemonic = 'O';
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.cid = true;
+	gcd[i++].creator = GButtonCreate;
+
+	gcd[i].gd.pos.x = -15; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+3;
+	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	label[i].text = (unichar_t *) _STR_Cancel;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.mnemonic = 'C';
+	gcd[i].gd.cid = false;
+	gcd[i++].creator = GButtonCreate;
+
+	gcd[i].gd.pos.x = 2; gcd[i].gd.pos.y = 2;
+	gcd[i].gd.pos.width = pos.width-4; gcd[i].gd.pos.height = pos.height-4;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
+	gcd[i++].creator = GGroupCreate;
+
+	GGadgetsCreate(gw,gcd);
+    } else {
+	if ( (int) (GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_PST))->userdata) ==
+		pst_anchors ) {
+	    if ( fv->sf->anchor==NULL ) {
+		GGadgetSelectOneListItem(GWidgetGetControl(gw,CID_PST),0);
+		GGadgetSetList(GWidgetGetControl(gw,CID_Tag),LListFromList(ligature_tags),false);
+		GGadgetSetEnabled(GWidgetGetControl(gw,CID_Contents),true);
+	    } else
+		GGadgetSetList(GWidgetGetControl(gw,CID_Tag),AnchorClassesSimpleLList(fv->sf),false);
+	}
+    }
+
+    GDrawSetVisible(gw,true);
+    while ( !sld.done )
+	GDrawProcessOneEvent(NULL);
+    if ( sld.ok ) {
+    }
+    GDrawSetVisible(gw,false);
 }
