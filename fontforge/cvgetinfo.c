@@ -1673,6 +1673,10 @@ return( true );
 	cursp->me.y += dy;
 	cursp->nextcp.y += dy;
 	cursp->prevcp.y += dy;
+	if ( ci->sc->parent->order2 ) {
+	    SplinePointNextCPChanged2(cursp,false);
+	    SplinePointPrevCPChanged2(cursp,false);
+	}
 	if ( cursp->next!=NULL )
 	    SplineRefigure(cursp->next);
 	if ( cursp->prev!=NULL )
