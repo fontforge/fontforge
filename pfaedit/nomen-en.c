@@ -208,7 +208,7 @@ static unichar_t mnemonic_Rmoverlap[] = 'v';
 static char str_FindIntersections[] = "Find Intersections";
 static char str_Simplify[] = "Simplify";
 static unichar_t mnemonic_Simplify[] = 'S';
-static char str_SimplifyMore[] = "SimplifyMore";
+static char str_SimplifyMore[] = "Simplify More...";
 static char str_CleanupChar[] = "Cleanup Char";
 static unichar_t mnemonic_CleanupChar[] = 'n';
 static char str_AddExtrema[] = "Add Extrema";
@@ -1624,6 +1624,17 @@ static char *str_BadFont = "Bad Font";
     /* Mac specific */
 static char *str_LeaveX = "Leave X";
 static char *str_LeaveXLong = "A browser is probably running in the native Mac windowing system. You must leave the X environment to view it. Try Cmd-Opt-A";
+    /* Simplifydlg */
+static char *str_RemoveExtrema = "Allow removal of extrema";
+static char mnemonic_RemoveExtrema = 'r';
+static char *str_RemoveExtremaPopup = "Normally simplify will not remove points at the extrema of curves\n(both PostScript and TrueType suggest you retain these points)";
+static char *str_ChangeSlopes = "Allow slopes to change";
+static char mnemonic_ChangeSlopes = 's';
+static char *str_ChangeSlopesPopup = "Normally simplify will not change the slope of the contour at the points.";
+static char *str_ErrorLimit = "Error Limit:";
+static char mnemonic_ErrorLimit = 'E';
+static char *str_EmUnits = "em-units";
+
 
 static int num_buttonsize = 55;
 static int num_ScaleFactor = 100;

@@ -32,7 +32,7 @@ pfaedit_OBJECTS =  autohint.o autosave.o autowidth.o bitmapdlg.o \
  problems.o pfaedit-ui.o metafont.o alignment.o parsettfbmf.o \
  macbinary.o crctab.o scripting.o freetype.o gotodlg.o search.o \
  combinations.o tilepath.o sftextfield.o displayfonts.o ikarus.o \
- cvhand.o cvfreehand.o
+ cvhand.o cvfreehand.o simplifydlg.o
 DIFFOBJS = sfddiff.o sfd.o diffstubs.o stamp.o
 ACORNOBJS = acorn2sfd.o sfd.o diffstubs.o psunicodenames.o stamp.o
 

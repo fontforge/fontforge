@@ -1389,6 +1389,13 @@ static void MVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void MVSimplify( MetricsView *mv,int type ) {
     int i;
+    double err=.75;
+
+    if ( type==1 ) {
+	type = SimplifyDlg(&err);
+	if ( type==-1 )
+return;
+    }
 
     for ( i=mv->charcnt-1; i>=0; --i )
 	if ( mv->perchar[i].selected )
@@ -1396,7 +1403,7 @@ static void MVSimplify( MetricsView *mv,int type ) {
     if ( i!=-1 ) {
 	SplineChar *sc = mv->perchar[i].sc;
 	SCPreserveState(sc,false);
-	sc->splines = SplineCharSimplify(sc,sc->splines,type);
+	sc->splines = SplineCharSimplify(sc,sc->splines,type,err);
 	SCCharChangedUpdate(sc);
     }
 }

@@ -559,8 +559,11 @@ void CVMouseMoveFreeHand(CharView *cv, GEvent *event) {
 void CVMouseUpFreeHand(CharView *cv) {
 
     if ( cv->freehand.current_trace!=NULL ) {
+	SplinePointListSimplify(cv->sc,cv->freehand.current_trace,
+		sf_ignoreextremum,.75/cv->scale);
 	SplineCharAddExtrema(cv->freehand.current_trace,false);
-	SplinePointListSimplify(cv->sc,cv->freehand.current_trace,false);
+	SplinePointListSimplify(cv->sc,cv->freehand.current_trace,
+		sf_normal,.75/cv->scale);
 	cv->freehand.current_trace->next = *cv->heads[cv->drawmode];
 	*cv->heads[cv->drawmode] = cv->freehand.current_trace;
 	cv->freehand.current_trace = NULL;

@@ -25,10 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaedit.h"
-#include <stdio.h>
 #include <math.h>
 #include "ustring.h"
-#include "splinefont.h"
 #include "chardata.h"
 #include <unistd.h>
 #include <pwd.h>
@@ -1039,7 +1037,7 @@ void SplineCharMerge(SplineChar *sc,SplineSet **head,int type) {
 /*  the point is only removed if it doesn't perturb the spline much and if */
 /*  it isn't an extrema.
 /*  used for simplify */
-static int SplinesRemoveMidMaybe(SplineChar *sc,SplinePoint *mid, int type) {
+static int SplinesRemoveMidMaybe(SplineChar *sc,SplinePoint *mid, int flags, double err) {
     int i,tot;
     SplinePoint *from, *to;
     TPoint *tp;
@@ -1056,7 +1054,9 @@ return( false );
     /* Retain points which are horizontal or vertical, because postscript says*/
     /*  type1 fonts should always have a point at the extrema (except for small*/
     /*  things like serifs), and the extrema occur at horizontal/vertical points*/
-    if ( (!mid->nonextcp && (mid->nextcp.x==mid->me.x || mid->nextcp.y==mid->me.y)) ||
+    if ( flags&sf_ignoreextremum )
+	/* Don't treat exterma specially, can remove them too */;
+    else if ( (!mid->nonextcp && (mid->nextcp.x==mid->me.x || mid->nextcp.y==mid->me.y)) ||
 	    (!mid->noprevcp && (mid->prevcp.x==mid->me.x || mid->prevcp.y==mid->me.y)) ) {
 	real x=mid->me.x, y=mid->me.y;
 	if (( mid->nextcp.x==x && mid->prevcp.x==x &&
@@ -1089,7 +1089,7 @@ return( false );
 
     tp = SplinesFigureTPsBetween(from,to,&tot);
 
-    if ( !type )
+    if ( !(flags&sf_ignoreslopes) )
 	ApproximateSplineFromPointsSlopes(from,to,tp,tot-1);
     else {
 	ApproximateSplineFromPoints(from,to,tp,tot-1);
@@ -1104,7 +1104,7 @@ return( false );
 	/*  routine will sometimes reject the end-points of the spline */
 	/*  so just don't check it */
 	test.x = tp[i].x; test.y = tp[i].y;
-	good = SplineNearPoint(from->next,&test,.75)!= -1;
+	good = SplineNearPoint(from->next,&test,err)!= -1;
     }
 
     free(tp);
@@ -1128,18 +1128,18 @@ return( good );
 
 /* Cleanup just turns splines with control points which happen to trace out */
 /*  lines into simple lines */
-void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,int type) {
+void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,int flags,double err) {
     SplinePoint *first, *next, *sp;
 
 	/* Special case checks for paths containing only one point */
 	/*  else we get lots of nans (or only two) */
 
-    if ( type!=-1 && spl->first->prev!=NULL ) {
+    if ( flags!=sf_cleanup && spl->first->prev!=NULL ) {
 	while ( 1 ) {
 	    first = spl->first->prev->from;
 	    if ( first->prev == first->next )
 return;
-	    if ( !SplinesRemoveMidMaybe(sc,spl->first,type))
+	    if ( !SplinesRemoveMidMaybe(sc,spl->first,flags,err))
 	break;
 	    if ( spl->first==spl->last )
 		spl->last = first;
@@ -1156,8 +1156,8 @@ return;
 		(sp->next!=NULL && sp->next->to->next!=NULL &&
 		    sp->next->to->next->to == sp ))
 return;
-	if ( type!=-1 )
-	    SplinesRemoveMidMaybe(sc,sp,type);
+	if ( flags!=-1 )
+	    SplinesRemoveMidMaybe(sc,sp,flags,err);
 	else {
 	    while ( sp->me.x==next->me.x && sp->me.y==next->me.y &&
 		    sp->nextcp.x>sp->me.x-1 && sp->nextcp.x<sp->me.x+1 &&
@@ -1185,8 +1185,8 @@ return;
     }
 }
 
-/* cleanup may be: -1 => lines become lines, 0 => simplify & retain slopes, 1=> simplify and discard slopes */
-SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,int cleanup) {
+/* cleanup may be: -1 => lines become lines, 0 => simplify & retain slopes, 1=> simplify and discard slopes, 2=>discard extrema */
+SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,int flags,double err) {
     SplineSet *spl, *prev, *snext;
     int anysel=0;
 
@@ -1198,7 +1198,7 @@ SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,int cleanup) {
     for ( spl = head; spl!=NULL; spl = snext ) {
 	snext = spl->next;
 	if ( !anysel || PointListIsSelected(spl)) {
-	    SplinePointListSimplify(sc,spl,cleanup);
+	    SplinePointListSimplify(sc,spl,flags,err);
 	    /* remove any singleton points */
 	    if ( spl->first->prev==spl->first->next &&
 		    (spl->first->prev==NULL ||

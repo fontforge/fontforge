@@ -1509,7 +1509,13 @@ static void FVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void FVSimplify(FontView *fv,int type) {
     int i, cnt=0;
+    double err = .75;
 
+    if ( type==1 ) {
+	type = SimplifyDlg(&err);
+	if ( type==-1 )
+return;
+    }
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
 	++cnt;
     GProgressStartIndicatorR(10,_STR_Simplifying,_STR_Simplifying,0,cnt,1);
@@ -1517,7 +1523,7 @@ static void FVSimplify(FontView *fv,int type) {
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
 	SCPreserveState(sc,false);
-	sc->splines = SplineCharSimplify(sc,sc->splines,type);
+	sc->splines = SplineCharSimplify(sc,sc->splines,type,err);
 	SCCharChangedUpdate(sc);
 	if ( !GProgressNext())
     break;
