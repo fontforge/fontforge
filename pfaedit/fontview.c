@@ -1938,11 +1938,11 @@ static void FVMenuCompact(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	fv_reformat = SFUncompactFont(fv->sf);
     if ( !fv_reformat )
 return;
-    FontViewReformatAll(fv->sf);
     for ( fvs=fv->sf->fv; fvs!=NULL; fvs = fvs->nextsame ) {
 	free(fvs->selected);
 	fvs->selected = gcalloc(fv->sf->charcnt,sizeof(char));
     }
+    FontViewReformatAll(fv->sf);
 }
 
 static void FVChangeDisplayFont(FontView *fv,BDFFont *bdf) {
