@@ -2448,7 +2448,7 @@ static void cffprivatefillup(struct psdict *private, struct topdicts *dict) {
     privateadd(private,"SnapStemV",
 	    realarray2str(dict->stemsnapv,sizeof(dict->stemsnapv)/sizeof(dict->stemsnapv[0])));
     if ( dict->forcebold )
-	privateadd(private,"ForceBold","true");
+	privateadd(private,"ForceBold",copy("true"));
     privateaddint(private,"LanguageGroup",dict->languagegroup);
     privateaddreal(private,"ExpansionFactor",dict->expansionfactor);
 }
