@@ -230,6 +230,14 @@ return( greekalts );
 	    }
 	}
      } else if ( base>=0x380 && base<=0x3ff && upt!=NULL ) {
+	/* Use precombined accents when possible */
+	if ( base==0x390 || base==0x3b0 ) {
+	    greekalts[0] = base==0x390?0x3b1:0x3c5;
+	    greekalts[1] = 0x385;
+	    greekalts[2] = '\0';
+	    if ( haschar(sf,greekalts[1]))
+return( greekalts );
+	}
 	/* In version 3 of unicode tonos gets converted to accute, which it */
 	/*  doesn't look like. Convert it back */
 	for ( pt=upt ; *pt && *pt!=0x301; ++pt );
@@ -1038,7 +1046,7 @@ return;
 	if ( !SCMakeBaseReference(sc,sf,ch,copybmp) )
 return;
 	while ( iscombining(*pt) || (ch!='l' && *pt==0xb7) ||	/* b7, centered dot is used as a combining accent for Ldot but as a lig for ldot */
-		(*pt>=0x1fbd && *pt<=0x1fff ))			/* Special greek accents */
+		*pt==0x385 || (*pt>=0x1fbd && *pt<=0x1fff ))	/* Special greek accents */
 	    SCCenterAccent(sc,sf,*pt++,copybmp,ia, ch);
 	while ( *pt )
 	    SCPutRefAfter(sc,sf,*pt++,copybmp);

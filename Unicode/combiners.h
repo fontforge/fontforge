@@ -77,6 +77,9 @@ static const int poses360[] = {
     _Below|_Joins2,
     0
 };
+static const int poses385[] = {
+    _Above
+};
 static const int poses483[] = {
     _Above|_CenterLeft,
     _Above|_CenterLeft,
@@ -903,6 +906,7 @@ const static struct {
 } combiners[] = {
     { 0x300, 0x345, poses300 },
     { 0x360, 0x362, poses360 },
+    { 0x385, 0x385, poses385 },
     { 0x483, 0x486, poses483 },
     { 0x488, 0x489, poses488 },
     { 0x591, 0x5A1, poses591 },
