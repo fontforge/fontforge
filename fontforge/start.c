@@ -446,7 +446,7 @@ static int splash_e_h(GWindow gw, GEvent *event) {
 	DoAutoSaves();
     } else if ( event->type == et_timer && event->u.timer.timer==splasht ) {
 	if ( ++splash_cnt==1 )
-	    GDrawResize(gw,splashimage.u.image->width,splashimage.u.image->height-17);
+	    GDrawResize(gw,splashimage.u.image->width,splashimage.u.image->height-24);
 	else if ( splash_cnt==2 )
 	    GDrawResize(gw,splashimage.u.image->width,splashimage.u.image->height);
 	else if ( splash_cnt>=7 ) {
@@ -631,7 +631,7 @@ int main( int argc, char **argv ) {
     wattrs.is_dlg = true;
     pos.x = pos.y = 200;
     pos.width = splashimage.u.image->width;
-    pos.height = splashimage.u.image->height-54;
+    pos.height = splashimage.u.image->height-56;		/* 54 */
     splashw = GDrawCreateTopWindow(NULL,&pos,splash_e_h,NULL,&wattrs);
 	memset(&rq,0,sizeof(rq));
 	rq.family_name = times;
