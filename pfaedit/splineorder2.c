@@ -121,7 +121,7 @@ return( false );
 	    }
 	    ttf_t = (-ttf->splines[dim].c+sq)/(2*ttf->splines[dim].b);
 	}
-	if ( ttf_t>=0 && ttf_t<=1.0 ) {
+	if ( ttf_t>=-0.0001 && ttf_t<=1.0001 ) {	/* Optimizer gives us rounding errors */
 	    val = (ttf->splines[other].b*ttf_t+ttf->splines[other].c)*ttf_t+
 			ttf->splines[other].d;
 	    if ( val>o-err && val<o+err )
@@ -170,6 +170,22 @@ static int buildtestquads(Spline *ttf,real xmin,real ymin,real cx,real cy,
     BasePoint norm;
     real sq;
 #endif
+
+    /* test the control points are reasonable */
+    if ( xmin<x ) {
+	if ( cx<xmin-.1 || cx>x+.1 )
+return( false );
+    } else {
+	if ( cx<x-.1 || cx>xmin+.1 )
+return( false );
+    }
+    if ( ymin<y ) {
+	if ( cy<ymin-.1 || cy>y+.1 )
+return( false );
+    } else {
+	if ( cy<y-.1 || cy>ymin+.1 )
+return( false );
+    }
 
     ttf->splines[0].d = xmin;
     ttf->splines[0].c = 2*(cx-xmin);
