@@ -872,6 +872,7 @@ return;
 	GTextFieldImport(gt);
       break;
     }
+    _ggadget_redraw(&gt->g);
 }
 
 static GMenuItem gtf_popuplist[] = {
@@ -1470,12 +1471,6 @@ return( GGadgetDispatchEvent(&gt->vsb->g,event));
 	    GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y))
 	GGadgetPreparePopup(g->base,g->popup_msg);
 
-    if ( event->type == et_mousedown && event->u.mouse.button==3 &&
-	    GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y)) {
-	GTFPopupMenu(gt,event);
-return( true );
-    }
-
     if ( event->type == et_mousedown || gt->pressed ) {
 	i = (event->u.mouse.y-g->inner.y)/gt->fh + gt->loff_top;
 	if ( i<0 ) i = 0;
@@ -1519,7 +1514,7 @@ return( true );
 	    if ( !gt->hidden_cursor )
 		gt->old_cursor = GDrawGetCursor(gt->g.base);
 	    GDrawSetCursor(gt->g.base,ct_draganddrop);
-	} else if ( event->u.mouse.button!=3 && !(event->u.mouse.state&ksm_shift) ) {
+	} else if ( /*event->u.mouse.button!=3 &&*/ !(event->u.mouse.state&ksm_shift) ) {
 	    if ( event->u.mouse.button==1 )
 		GTextFieldGrabPrimarySelection(gt);
 	    gt->sel_start = gt->sel_end = gt->sel_base = end-gt->text;
@@ -1530,6 +1525,13 @@ return( true );
 	    gt->sel_start = end-gt->text;
 	    gt->sel_end = gt->sel_base;
 	}
+
+	if ( event->u.mouse.button==3 &&
+		GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y)) {
+	    GTFPopupMenu(gt,event);
+return( true );
+	}
+
 	if ( gt->pressed==NULL )
 	    gt->pressed = GDrawRequestTimer(gt->g.base,200,100,NULL);
 	if ( gt->sel_start > u_strlen( gt->text ))	/* Ok to have selection at end, but beyond is an error */
