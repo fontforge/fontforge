@@ -90,6 +90,8 @@ static char *cdv_4axis[3] = {
     "}"
 };
 
+static int axistablab[] = { _STR_Axis1, _STR_Axis2, _STR_Axis3, _STR_Axis4 };
+
 char *MMAxisAbrev(char *axis_name) {
     if ( strcmp(axis_name,"Weight")==0 )
 return( "wt" );
@@ -154,7 +156,7 @@ return( NULL );
 return( ret );
 }
 
-char *MMMakeMasterFontname(MMSet *mm,int ipos,char **fullname) {
+static char *_MMMakeFontname(MMSet *mm,real *normalized,char **fullname) {
     char *pt, *pt2, *hyphen=NULL;
     char *ret = NULL;
     int i,j;
@@ -162,11 +164,11 @@ char *MMMakeMasterFontname(MMSet *mm,int ipos,char **fullname) {
     if ( mm->apple ) {
 	for ( i=0; i<mm->named_instance_count; ++i ) {
 	    for ( j=0; j<mm->axis_count; ++j ) {
-		if (( mm->positions[ipos*mm->axis_count+j] == -1 &&
+		if (( normalized[j] == -1 &&
 			RealApprox(mm->named_instances[i].coords[j],mm->axismaps[j].min) ) ||
-		    ( mm->positions[ipos*mm->axis_count+j] ==  0 &&
+		    ( normalized[j] ==  0 &&
 			RealApprox(mm->named_instances[i].coords[j],mm->axismaps[j].def) ) ||
-		    ( mm->positions[ipos*mm->axis_count+j] ==  1 &&
+		    ( normalized[j] ==  1 &&
 			RealApprox(mm->named_instances[i].coords[j],mm->axismaps[j].max) ))
 		    /* A match so far */;
 		else
@@ -202,10 +204,10 @@ char *MMMakeMasterFontname(MMSet *mm,int ipos,char **fullname) {
 	*pt++ = '_';
 	for ( i=0; i<mm->axis_count; ++i ) {
 	    if ( !mm->apple )
-		sprintf( pt, " %d%s", (int) rint(MMAxisUnmap(mm,i,mm->positions[ipos*mm->axis_count+i])),
+		sprintf( pt, " %d%s", (int) rint(MMAxisUnmap(mm,i,normalized[i])),
 			MMAxisAbrev(mm->axes[i]));
 	    else
-		sprintf( pt, " %.1f%s", MMAxisUnmap(mm,i,mm->positions[ipos*mm->axis_count+i]),
+		sprintf( pt, " %.1f%s", MMAxisUnmap(mm,i,normalized[i]),
 			MMAxisAbrev(mm->axes[i]));
 	    pt += strlen(pt);
 	}
@@ -224,6 +226,10 @@ char *MMMakeMasterFontname(MMSet *mm,int ipos,char **fullname) {
 	    *pt2++ = *pt;
     *pt2 = '\0';
 return( ret );
+}
+
+char *MMMakeMasterFontname(MMSet *mm,int ipos,char **fullname) {
+return( _MMMakeFontname(mm,&mm->positions[ipos*mm->axis_count],fullname));
 }
 
 char *MMGuessWeight(MMSet *mm,int ipos,char *def) {
@@ -997,6 +1003,90 @@ return( _STR_MMDifferentNumCharsNoName );
 return(ret);
 }
 
+static struct psdict *BlendPrivate(struct psdict *private,MMSet *mm) {
+    struct psdict *other;
+    real sum, val;
+    char *data;
+    int i,j,k, cnt;
+    char *values[MmMax], buffer[32], *space, *pt, *end;
+
+    other = mm->instances[0]->private;
+    if ( other==NULL )
+return( private );
+
+    if ( private==NULL )
+	private = gcalloc(1,sizeof(struct psdict));
+
+    i = PSDictFindEntry(private,"ForceBoldThreshold");
+    if ( i!=-1 ) {
+	val = strtod(private->values[i],NULL);
+	sum = 0;
+	for ( j=0; j<mm->instance_count; ++j ) {
+	    i = PSDictFindEntry(mm->instances[j]->private,"ForceBold");
+	    if ( i!=-1 && strcmp(mm->instances[j]->private->values[i],"true")==0 )
+		sum += mm->defweights[j];
+	}
+	data = ( sum>=val ) ? "true" : "false";
+	PSDictChangeEntry(private,"ForceBold",data);
+    }
+    for ( i=0; i<other->next; ++i ) {
+	if ( *other->values[i]!='[' && !isdigit( *other->values[i]) && *other->values[i]!='.' )
+    continue;
+	for ( j=0; j<mm->instance_count; ++j ) {
+	    k = PSDictFindEntry(mm->instances[j]->private,other->keys[i]);
+	    if ( k==-1 )
+	break;
+	    values[j] = mm->instances[j]->private->values[k];
+	}
+	if ( j!=mm->instance_count )
+    continue;
+	if ( *other->values[i]!='[' ) {
+	    /* blend a real number */
+	    sum = 0;
+	    for ( j=0; j<mm->instance_count; ++j ) {
+		val = strtod(values[j],&end);
+		if ( end==values[j])
+	    break;
+		sum += val*mm->defweights[j];
+	    }
+	    if ( j!=mm->instance_count )
+    continue;
+	    sprintf(buffer,"%g",sum);
+	    PSDictChangeEntry(private,other->keys[i],buffer);
+	} else {
+	    /* Blend an array of numbers */
+	    for ( pt = values[0], cnt=0; *pt!='\0' && *pt!=']'; ++pt ) {
+		if ( *pt==' ' ) {
+		    while ( *pt==' ' ) ++pt;
+		    --pt;
+		    ++cnt;
+		}
+	    }
+	    space = pt = galloc((cnt+1)*24+4);
+	    *pt++ = '[';
+	    for ( j=0; j<mm->instance_count; ++j )
+		if ( *values[j]=='[' ) ++values[j];
+	    while ( *values[0]!=']' ) {
+		sum = 0;
+		for ( j=0; j<mm->instance_count; ++j ) {
+		    val = strtod(values[j],&end);
+		    sum += val*mm->defweights[j];
+		    while ( *end==' ' ) ++end;
+		    values[j] = end;
+		}
+		sprintf( pt,"%g ", sum);
+	    }
+	    if ( pt[-1]==' ' ) --pt;
+	    *pt++ = ']';
+	    *pt = '\0';
+	    PSDictChangeEntry(private,other->keys[i],space);
+	    free(space);
+	}
+    }
+
+return( private );
+}
+
 int MMReblend(FontView *fv, MMSet *mm) {
     int olderr, err, i, first = -1;
     SplineFont *sf = mm->instances[0];
@@ -1031,6 +1121,7 @@ int MMReblend(FontView *fv, MMSet *mm) {
 	    SCMakeDependent(sf->chars[i],ref->sc);
 	}
     }
+    sf->private = BlendPrivate(sf->private,mm);
 
     if ( olderr == 0 )	/* No Errors */
 return( true );
@@ -1167,6 +1258,211 @@ return( uc_copy(""));
 return( uc_copy( buffer ));
 }
 
+static SplineFont *_MMNewFont(MMSet *mm,int index,char *familyname,real *normalized) {
+    SplineFont *sf, *base;
+    char *pt1, *pt2;
+    int i;
+
+    sf = SplineFontNew();
+    sf->order2 = mm->apple;
+    free(sf->fontname); free(sf->familyname); free(sf->fullname); free(sf->weight);
+    sf->familyname = copy(familyname);
+    if ( index==-1 ) {
+	sf->fontname = copy(familyname);
+	for ( pt1=pt2=sf->fontname; *pt1; ++pt1 )
+	    if ( *pt1!=' ' )
+		*pt2++ = *pt1;
+	*pt2='\0';
+	sf->fullname = copy(familyname);
+    } else
+	sf->fontname = _MMMakeFontname(mm,normalized,&sf->fullname);
+    sf->weight = copy( "All" );
+
+    base = NULL;
+    if ( mm->normal!=NULL )
+	base = mm->normal;
+    else {
+	for ( i=0; i<mm->instance_count; ++i )
+	    if ( mm->instances[i]!=NULL ) {
+		base = mm->instances[i];
+	break;
+	}
+    }
+
+    if ( base!=NULL ) {
+	free(sf->xuid);
+	sf->xuid = copy(base->xuid);
+	sf->encoding_name = base->encoding_name;
+	free(sf->chars);
+	sf->chars = gcalloc(base->charcnt,sizeof(SplineChar *));
+	sf->charcnt = base->charcnt;
+	sf->new = base->new;
+	sf->ascent = base->ascent;
+	sf->descent = base->descent;
+	free(sf->origname);
+	sf->origname = copy(base->origname);
+	if ( index<0 ) {
+	    free(sf->copyright);
+	    sf->copyright = copy(base->copyright);
+	}
+	/* Make sure we get the encoding exactly right */
+	for ( i=0; i<base->charcnt; ++i ) if ( base->chars[i]!=NULL ) {
+	    SplineChar *sc = SFMakeChar(sf,i), *bsc = base->chars[i];
+	    sc->width = bsc->width; sc->widthset = true;
+	    free(sc->name); sc->name = copy(bsc->name);
+	    sc->unicodeenc = bsc->unicodeenc;
+	}
+    }
+    sf->onlybitmaps = false;
+    sf->mm = mm;
+return( sf );
+}
+
+static SplineFont *MMNewFont(MMSet *mm,int index,char *familyname) {
+return( _MMNewFont(mm,index,familyname,&mm->positions[index*mm->axis_count]));
+}
+
+static real DoDelta(int16 **deltas,int pt,int is_y,real *blends,int instance_count) {
+    real diff = 0;
+    int j;
+
+    for ( j=0; j<instance_count; ++j ) {
+	if ( blends[j]!=0 && deltas[2*j+is_y]!=NULL )
+	    diff += blends[j]*deltas[2*j+is_y][pt];
+    }
+return( diff );
+}
+
+static void DistortChar(SplineFont *sf,MMSet *mm,int enc,real *blends) {
+    int i,j,ptcnt;
+    int16 **deltas;
+    SplineSet *ss;
+    SplinePoint *sp;
+    RefChar *ref;
+    SplineChar *sc = sf->chars[enc];
+    Spline *s, *first;
+
+    if ( sc==NULL )
+return;
+    deltas = SCFindDeltas(mm,enc,&ptcnt);
+    if ( deltas==NULL )
+return;
+    /* I never delta the left side bearing or top */
+    sc->width += DoDelta(deltas,ptcnt-3,0,blends,mm->instance_count);
+    sc->vwidth += DoDelta(deltas,ptcnt-1,1,blends,mm->instance_count);
+    if ( sc->layers[ly_fore].refs!=NULL ) {
+	for ( i=0,ref = sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next, ++i ) {
+	    ref->transform[4] += DoDelta(deltas,i,0,blends,mm->instance_count);
+	    ref->transform[5] += DoDelta(deltas,i,1,blends,mm->instance_count);
+	}
+    } else {
+	for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+	    for ( sp=ss->first;; ) {
+		if ( sp->ttfindex!=0xffff ) {
+		    sp->me.x += DoDelta(deltas,sp->ttfindex,0,blends,mm->instance_count);
+		    sp->me.y += DoDelta(deltas,sp->ttfindex,1,blends,mm->instance_count);
+		}
+		if ( sp->nextcpindex!=0xffff ) {
+		    sp->nextcp.x += DoDelta(deltas,sp->nextcpindex,0,blends,mm->instance_count);
+		    sp->nextcp.y += DoDelta(deltas,sp->nextcpindex,1,blends,mm->instance_count);
+		} else
+		    sp->nextcp = sp->me;
+		if ( sp->next!=NULL )
+		    sp->next->to->prevcp = sp->nextcp;
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==ss->first )
+	    break;
+	    }
+	    for ( sp=ss->first;; ) {
+		if ( sp->ttfindex==0xffff ) {
+		    sp->me.x = (sp->prevcp.x+sp->nextcp.x)/2;
+		    sp->me.y = (sp->prevcp.y+sp->nextcp.y)/2;
+		}
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==ss->first )
+	    break;
+	    }
+	    first = NULL;
+	    for ( s=ss->first->next; s!=NULL && s!=first; s=s->to->next ) {
+		SplineRefigure(s);
+		if ( first==NULL ) first = s;
+	    }
+	}
+    }
+    for ( j=0; j<2*mm->instance_count; ++j )
+	free( deltas[j]);
+    free(deltas);
+}
+
+static void DistortCvt(struct ttf_table *cvt,MMSet *mm,real *blends) {
+    int i,j,ptcnt;
+    real diff;
+    int16 **deltas;
+
+    deltas = CvtFindDeltas(mm,&ptcnt);
+    if ( deltas==NULL )
+return;
+    for ( i=0; i<ptcnt; ++i ) {
+	diff = 0;
+	for ( j=0; j<mm->instance_count; ++j ) {
+	    if ( blends[j]!=0 && deltas[j]!=NULL )
+		diff += blends[j]*deltas[j][i];
+	}
+	memputshort(cvt->data,2*i,memushort(cvt->data,2*i)+rint(diff));
+    }
+    for ( j=0; j<mm->instance_count; ++j )
+	free( deltas[j]);
+    free(deltas);
+}
+
+static void MakeAppleBlend(MMSet *mm,real *blends,real *normalized) {
+    SplineFont *base = mm->normal;
+    SplineFont *sf = _MMNewFont(mm,-2,base->familyname,normalized);
+    int i;
+    struct ttf_table *tab, *cvt=NULL, *last=NULL, *cur;
+    RefChar *ref;
+
+    sf->mm = NULL;
+    for ( i=0; i<base->charcnt && i<sf->charcnt; ++i ) if ( base->chars[i]!=NULL ) {
+	sf->chars[i] = SplineCharCopy(base->chars[i],base);
+	for ( ref=sf->chars[i]->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
+	    ref->sc = NULL;
+	sf->chars[i]->enc = i;
+	DistortChar(sf,mm,i,blends);
+    }
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
+	ttfFixupRef(sf->chars,i);
+    for ( tab=base->ttf_tables; tab!=NULL; tab=tab->next ) {
+	cur = chunkalloc(sizeof(struct ttf_table));
+	cur->tag = tab->tag;
+	cur->len = tab->len;
+	cur->data = galloc(tab->len);
+	memcpy(cur->data,tab->data,tab->len);
+	if ( cur->tag==CHR('c','v','t',' '))
+	    cvt = cur;
+	if ( last==NULL )
+	    sf->ttf_tables = cur;
+	else
+	    last->next = cur;
+	last = cur;
+    }
+    if ( cvt!=NULL )
+	DistortCvt(cvt,mm,blends);
+    /* I don't know how to blend kerns */
+    /* Apple's Skia has 5 kerning classes (one for the base font and one for */
+    /*  some of the instances) and the classes have different glyph classes */
+    /* I can't make a kern class out of them. I suppose I could generate a bunch */
+    /*  of kern pairs, but ug. */
+    /* Nor is it clear whether the kerning info is a delta or not */
+
+    sf->changed = true;
+    FontViewCreate(sf);
+}
+
 struct mmcb {
     int done;
     GWindow gw;
@@ -1179,6 +1475,41 @@ struct mmcb {
 #define	CID_ByDesign		6002
 #define CID_NewBlends		6003
 #define CID_NewDesign		6004
+#define CID_Knowns		6005
+
+static GTextInfo *MMCB_KnownValues(MMSet *mm) {
+    GTextInfo *ti = gcalloc(mm->named_instance_count+2,sizeof(GTextInfo));
+    int i;
+
+    ti[0].text = uc_copy(" --- ");
+    ti[0].bg = ti[0].fg = COLOR_DEFAULT;
+    for ( i=0; i<mm->named_instance_count; ++i ) {
+	ti[i+1].text = PickNameFromMacName(mm->named_instances[i].names);
+	ti[i+1].bg = ti[i+1].fg = COLOR_DEFAULT;
+    }
+return( ti );
+}
+
+static int MMCB_PickedKnown(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	struct mmcb *mmcb = GDrawGetUserData(GGadgetGetWindow(g));
+	int which = GGadgetGetFirstListSelectedItem(g);
+	char buffer[24];
+	int i;
+	unichar_t *temp;
+
+	--which;
+	if ( which<0 )
+return( true );
+	for ( i=0; i<mmcb->mm->axis_count; ++i ) {
+	    sprintf( buffer, "%.4g", mmcb->mm->named_instances[which].coords[i]);
+	    temp = uc_copy(buffer);
+	    GGadgetSetTitle(GWidgetGetControl(mmcb->gw,1000+i),temp);
+	    free(temp);
+	}
+    }
+return( true );
+}
 
 static int MMCB_Changed(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
@@ -1230,19 +1561,89 @@ return(false);
 return( true );
 }
 
+static int MMCB_OKApple(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct mmcb *mmcb = GDrawGetUserData(GGadgetGetWindow(g));
+	real newcoords[4];
+	int i, j, k, err=false;
+	real blends[AppleMmMax];
+	MMSet *mm = mmcb->mm;
+
+	for ( i=0; i<mm->axis_count; ++i )
+	    newcoords[i] = GetRealR(mmcb->gw,1000+i,axistablab[i],&err);
+	if ( err )
+return( true );
+	/* Now normalize each */
+	for ( i=0; i<mm->axis_count; ++i ) {
+	    for ( j=1; j<mm->axismaps[i].points; ++j ) {
+		if ( newcoords[i]<=mm->axismaps[i].designs[j] || j==mm->axismaps[i].points-1 ) {
+		    if ( mm->axismaps[i].designs[j]==mm->axismaps[i].designs[j-1] )
+			newcoords[i] = mm->axismaps[i].blends[j];
+		    else
+			newcoords[i] = mm->axismaps[i].blends[j-1] +
+				(newcoords[i]-mm->axismaps[i].designs[j-1])/
+			        (mm->axismaps[i].designs[j]-mm->axismaps[i].designs[j-1]) *
+			        (mm->axismaps[i].blends[j]-mm->axismaps[i].blends[j-1]);
+		    newcoords[i] = rint(8096*newcoords[i])/8096;	/* Apple's fixed numbers have a fair amount of rounding error */
+	    break;
+		}
+	    }
+	}
+	/* Now figure out the contribution of each design */
+	for ( k=0; k<mm->instance_count; ++k ) {
+	    real factor = 1.0;
+	    for ( i=0; i<mm->axis_count; ++i ) {
+		if ( (newcoords[i]<=0 && mm->positions[k*mm->axis_count+i]>0) ||
+			(newcoords[i]>=0 && mm->positions[k*mm->axis_count+i]<0)) {
+		    factor = 0;
+	    break;
+		}
+		if ( newcoords[i]==0 )
+	    continue;
+		if ( newcoords[i]<0 )
+		    factor *= -newcoords[i];
+		else
+		    factor *= newcoords[i];
+	    }
+	    blends[k] = factor;
+	}
+	MakeAppleBlend(mm,blends,newcoords);
+	mmcb->done = true;
+    }
+return( true );
+}
+
 static int MMCB_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct mmcb *mmcb = GDrawGetUserData(GGadgetGetWindow(g));
-	real blends[MmMax];
+	real blends[MmMax], oldblends[MmMax];
+	SplineFont *hold = mmcb->mm->normal;
 	int i;
+	FontView *fv;
 
 	if ( !GetWeights(mmcb->gw, blends, mmcb->mm, mmcb->mm->instance_count, mmcb->mm->axis_count))
 return( true );
 
-	for ( i=0; i<mmcb->mm->instance_count; ++i )
+	for ( i=0; i<mmcb->mm->instance_count; ++i ) {
+	    oldblends[i] = mmcb->mm->defweights[i];
 	    mmcb->mm->defweights[i] = blends[i];
-	mmcb->mm->changed = true;
-	MMReblend(mmcb->fv,mmcb->mm);
+	}
+	if ( mmcb->tonew ) {
+	    mmcb->mm->normal = MMNewFont(mmcb->mm,-1,hold->familyname);
+	    mmcb->mm->normal->private = BlendPrivate(PSDictCopy(hold->private),mmcb->mm);
+	    mmcb->mm->normal->fv = NULL;
+	    fv = FontViewCreate(mmcb->mm->normal);
+	    MMReblend(fv,mmcb->mm);
+	    fv->sf->mm = NULL;
+	    mmcb->mm->normal = hold;
+	    for ( i=0; i<mmcb->mm->instance_count; ++i )
+		mmcb->mm->defweights[i] = oldblends[i];
+	} else {
+	    for ( i=0; i<mmcb->mm->instance_count; ++i )
+		mmcb->mm->defweights[i] = blends[i];
+	    mmcb->mm->changed = true;
+	    MMReblend(mmcb->fv,mmcb->mm);
+	}
 	mmcb->done = true;
     }
 return( true );
@@ -1270,6 +1671,48 @@ return( false );
 return( true );
 }
 
+static int GCDFillupMacWeights(GGadgetCreateData *gcd, GTextInfo *label, int k,
+	unichar_t *axisnames[4], char axisval[4][24],
+	real *defcoords,int axis_count,MMSet *mm) {
+    int i;
+    unichar_t *an;
+    char axisrange[80];
+
+    for ( i=0; i<axis_count; ++i ) {
+	sprintf( axisrange, " [%.4g %.4g %.4g]", mm->axismaps[i].min,
+		mm->axismaps[i].def, mm->axismaps[i].max );
+	an = PickNameFromMacName(mm->axismaps[i].axisnames);
+	if ( an==NULL )
+	    an = uc_copy(mm->axes[i]);
+	axisnames[i] = galloc((strlen(axisrange)+3+u_strlen(an))*sizeof(unichar_t));
+	u_strcpy(axisnames[i],an);
+	uc_strcat(axisnames[i],axisrange);
+	sprintf(axisval[i],"%.4g", defcoords[i]);
+	free(an);
+    }
+    for ( ; i<4; ++i ) {
+	axisnames[i] = u_copy(GStringGetResource(axistablab[i],NULL));
+	axisval[i][0] = '\0';
+    }
+
+    for ( i=0; i<4; ++i ) {
+	label[k].text = axisnames[i];
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = k==0 ? 4 : gcd[k-1].gd.pos.y+28;
+	gcd[k].gd.flags = i<axis_count ? (gg_visible | gg_enabled) : gg_visible;
+	gcd[k++].creator = GLabelCreate;
+
+	label[k].text = (unichar_t *) axisval[i];
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+12;
+	gcd[k].gd.flags = gcd[k-1].gd.flags;
+	gcd[k].gd.cid = 1000+i;
+	gcd[k++].creator = GTextFieldCreate;
+    }
+return( k );
+}
+
 void MMChangeBlend(MMSet *mm,FontView *fv,int tonew) {
     char buffer[MmMax*20], *pt;
     unichar_t ubuf[MmMax*20];
@@ -1278,20 +1721,15 @@ void MMChangeBlend(MMSet *mm,FontView *fv,int tonew) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[12];
-    GTextInfo label[12];
+    GGadgetCreateData gcd[14];
+    GTextInfo label[14];
     unichar_t *utemp;
+    char axisval[4][24];
+    unichar_t *axisnames[4];
+    real defcoords[4];
 
     if ( mm==NULL )
 return;
-    pt = buffer;
-    for ( i=0; i<mm->instance_count; ++i ) {
-	sprintf( pt, "%g, ", mm->defweights[i]);
-	pt += strlen(pt);
-    }
-    if ( pt>buffer )
-	pt[-2] = '\0';
-    uc_strcpy(ubuf,buffer);
 
     memset(&mmcb,0,sizeof(mmcb));
     mmcb.mm = mm;
@@ -1305,103 +1743,168 @@ return;
     wattrs.restrict_input_to_me = true;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = GStringGetResource(_STR_ChangeMMBlend,NULL);
+    wattrs.window_title = GStringGetResource(tonew ? _STR_MMBlendToNew:_STR_ChangeMMBlend,NULL);
     pos.x = pos.y = 0;
-    pos.width =GDrawPointsToPixels(NULL,GGadgetScale(270));
-    pos.height = GDrawPointsToPixels(NULL,200);
-    mmcb.gw = gw = GDrawCreateTopWindow(NULL,&pos,mmcb_e_h,&mmcb,&wattrs);
 
-    memset(&gcd,0,sizeof(gcd));
-    memset(&label,0,sizeof(label));
+    if ( !mm->apple ) {
+	pt = buffer;
+	for ( i=0; i<mm->instance_count; ++i ) {
+	    sprintf( pt, "%g, ", mm->defweights[i]);
+	    pt += strlen(pt);
+	}
+	if ( pt>buffer )
+	    pt[-2] = '\0';
+	uc_strcpy(ubuf,buffer);
 
-    k=0;
-    label[k].text = (unichar_t *) _STR_ChangeBlend1;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 10;
-    gcd[k].gd.flags = gg_visible | gg_enabled;
-    gcd[k++].creator = GLabelCreate;
+	pos.width =GDrawPointsToPixels(NULL,GGadgetScale(270));
+	pos.height = GDrawPointsToPixels(NULL,200);
+	mmcb.gw = gw = GDrawCreateTopWindow(NULL,&pos,mmcb_e_h,&mmcb,&wattrs);
 
-    label[k].text = (unichar_t *) _STR_ChangeBlend2;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
-    gcd[k].gd.flags = gg_visible | gg_enabled;
-    gcd[k++].creator = GLabelCreate;
+	memset(&gcd,0,sizeof(gcd));
+	memset(&label,0,sizeof(label));
 
-    label[k].text = (unichar_t *) _STR_ChangeBlend3;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
-    gcd[k].gd.flags = gg_visible | gg_enabled;
-    gcd[k++].creator = GLabelCreate;
+	k=0;
+	label[k].text = (unichar_t *) _STR_ChangeBlend1;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 10;
+	gcd[k].gd.flags = gg_visible | gg_enabled;
+	gcd[k++].creator = GLabelCreate;
 
-    label[k].text = (unichar_t *) _STR_ChangeBlend4;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
-    gcd[k].gd.flags = gg_visible | gg_enabled;
-    gcd[k++].creator = GLabelCreate;
+	label[k].text = (unichar_t *) _STR_ChangeBlend2;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
+	gcd[k].gd.flags = gg_visible | gg_enabled;
+	gcd[k++].creator = GLabelCreate;
 
-    label[k].text = (unichar_t *) _STR_ContribOfMaster;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+16;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_cb_on;
-    gcd[k].gd.cid = CID_Explicit;
-    gcd[k].gd.handle_controlevent = MMCB_Changed;
-    gcd[k++].creator = GRadioCreate;
+	label[k].text = (unichar_t *) _STR_ChangeBlend3;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
+	gcd[k].gd.flags = gg_visible | gg_enabled;
+	gcd[k++].creator = GLabelCreate;
 
-    label[k].text = (unichar_t *) _STR_DesignAxisValues;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+45;
-    gcd[k].gd.flags = gg_visible | gg_enabled;
-    gcd[k].gd.cid = CID_ByDesign;
-    gcd[k].gd.handle_controlevent = MMCB_Changed;
-    gcd[k++].creator = GRadioCreate;
+	label[k].text = (unichar_t *) _STR_ChangeBlend4;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
+	gcd[k].gd.flags = gg_visible | gg_enabled;
+	gcd[k++].creator = GLabelCreate;
 
-    label[k].text = ubuf;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y+18;
-    gcd[k].gd.pos.width = 240;
-    gcd[k].gd.flags = gg_visible | gg_enabled;
-    gcd[k].gd.cid = CID_NewBlends;
-    gcd[k++].creator = GTextFieldCreate;
+	label[k].text = (unichar_t *) _STR_ContribOfMaster;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+16;
+	gcd[k].gd.flags = gg_visible | gg_enabled | gg_cb_on;
+	gcd[k].gd.cid = CID_Explicit;
+	gcd[k].gd.handle_controlevent = MMCB_Changed;
+	gcd[k++].creator = GRadioCreate;
 
-    label[k].text = utemp = MMDesignCoords(mm);
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y+18;
-    gcd[k].gd.pos.width = 240;
-    gcd[k].gd.flags = gg_visible;
-    gcd[k].gd.cid = CID_NewDesign;
-    gcd[k++].creator = GTextFieldCreate;
+	label[k].text = (unichar_t *) _STR_DesignAxisValues;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+45;
+	gcd[k].gd.flags = gg_visible | gg_enabled;
+	gcd[k].gd.cid = CID_ByDesign;
+	gcd[k].gd.handle_controlevent = MMCB_Changed;
+	gcd[k++].creator = GRadioCreate;
 
-    gcd[k].gd.pos.x = 30-3; gcd[k].gd.pos.y = GDrawPixelsToPoints(NULL,pos.height)-35-3;
-    gcd[k].gd.pos.width = -1;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[k].text = (unichar_t *) _STR_OK;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.handle_controlevent = MMCB_OK;
-    gcd[k++].creator = GButtonCreate;
+	label[k].text = ubuf;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y+18;
+	gcd[k].gd.pos.width = 240;
+	gcd[k].gd.flags = gg_visible | gg_enabled;
+	gcd[k].gd.cid = CID_NewBlends;
+	gcd[k++].creator = GTextFieldCreate;
 
-    gcd[k].gd.pos.x = -30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
-    gcd[k].gd.pos.width = -1;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[k].text = (unichar_t *) _STR_Cancel;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.handle_controlevent = MMCB_Cancel;
-    gcd[k++].creator = GButtonCreate;
+	label[k].text = utemp = MMDesignCoords(mm);
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y+18;
+	gcd[k].gd.pos.width = 240;
+	gcd[k].gd.flags = gg_visible;
+	gcd[k].gd.cid = CID_NewDesign;
+	gcd[k++].creator = GTextFieldCreate;
 
-    gcd[k].gd.pos.x = 2; gcd[k].gd.pos.y = 2;
-    gcd[k].gd.pos.width = pos.width-4; gcd[k].gd.pos.height = pos.height-4;
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-    gcd[k].creator = GGroupCreate;
+	gcd[k].gd.pos.x = 30-3; gcd[k].gd.pos.y = GDrawPixelsToPoints(NULL,pos.height)-35-3;
+	gcd[k].gd.pos.width = -1;
+	gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	label[k].text = (unichar_t *) _STR_OK;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.handle_controlevent = MMCB_OK;
+	gcd[k++].creator = GButtonCreate;
 
-    GGadgetsCreate(gw,gcd);
-    free(utemp);
+	gcd[k].gd.pos.x = -30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
+	gcd[k].gd.pos.width = -1;
+	gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	label[k].text = (unichar_t *) _STR_Cancel;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.handle_controlevent = MMCB_Cancel;
+	gcd[k++].creator = GButtonCreate;
+
+	gcd[k].gd.pos.x = 2; gcd[k].gd.pos.y = 2;
+	gcd[k].gd.pos.width = pos.width-4; gcd[k].gd.pos.height = pos.height-4;
+	gcd[k].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+	gcd[k].creator = GGroupCreate;
+
+	GGadgetsCreate(gw,gcd);
+	free(utemp);
+    } else {
+	pos.width =GDrawPointsToPixels(NULL,GGadgetScale(270));
+	pos.height = GDrawPointsToPixels(NULL,200);
+	mmcb.gw = gw = GDrawCreateTopWindow(NULL,&pos,mmcb_e_h,&mmcb,&wattrs);
+
+	memset(&gcd,0,sizeof(gcd));
+	memset(&label,0,sizeof(label));
+
+	memset(defcoords,0,sizeof(defcoords));
+	for ( i=0; i<mm->axis_count; ++i )
+	    defcoords[i] = mm->axismaps[i].def;
+
+	k=0;
+	k = GCDFillupMacWeights(gcd,label,k,axisnames,axisval,defcoords,
+		mm->axis_count,mm);
+
+	gcd[k].gd.pos.x = 130; gcd[k].gd.pos.y = gcd[k-4].gd.pos.y-12;
+	gcd[k].gd.flags = gg_visible | gg_enabled;
+	if ( mm->named_instance_count==0 )
+	    gcd[k].gd.flags = 0;
+	gcd[k].gd.u.list = MMCB_KnownValues(mm);
+	gcd[k].gd.cid = CID_Knowns;
+	gcd[k].gd.handle_controlevent = MMCB_PickedKnown;
+	gcd[k++].creator = GListButtonCreate;
+
+	gcd[k].gd.pos.x = 30-3; gcd[k].gd.pos.y = GDrawPixelsToPoints(NULL,pos.height)-35-3;
+	gcd[k].gd.pos.width = -1;
+	gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	label[k].text = (unichar_t *) _STR_OK;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.handle_controlevent = MMCB_OKApple;
+	gcd[k++].creator = GButtonCreate;
+
+	gcd[k].gd.pos.x = -30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
+	gcd[k].gd.pos.width = -1;
+	gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	label[k].text = (unichar_t *) _STR_Cancel;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.handle_controlevent = MMCB_Cancel;
+	gcd[k++].creator = GButtonCreate;
+
+	gcd[k].gd.pos.x = 2; gcd[k].gd.pos.y = 2;
+	gcd[k].gd.pos.width = pos.width-4; gcd[k].gd.pos.height = pos.height-4;
+	gcd[k].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+	gcd[k++].creator = GGroupCreate;
+
+	GGadgetsCreate(gw,gcd);
+	for ( i=0; i<4; ++i )
+	    free(axisnames[i]);
+	GTextInfoListFree(gcd[k-4].gd.u.list);
+	GWidgetIndicateFocusGadget(gcd[1].ret);
+    }
 
     GDrawSetVisible(gw,true);
 
@@ -1522,8 +2025,6 @@ typedef struct mmw {
 #define CID_NamedEdit		7003
 #define CID_NamedDelete		7004
 
-static int axistablab[] = { _STR_Axis1, _STR_Axis2, _STR_Axis3, _STR_Axis4 };
-
 struct esd {
     GWindow gw;
     MMW *mmw;
@@ -1616,10 +2117,10 @@ static void EditStyleName(MMW *mmw,int index) {
     unichar_t *pt = NULL, *end;
     real axes[4];
     struct macname *mn = NULL;
-    char axisrange[80], axisval[4][24];
-    unichar_t *axisnames[4], *an;
-    GGadgetCreateData gcd[16];
-    GTextInfo label[16];
+    char axisval[4][24];
+    unichar_t *axisnames[4];
+    GGadgetCreateData gcd[17];
+    GTextInfo label[17];
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
@@ -1639,23 +2140,6 @@ static void EditStyleName(MMW *mmw,int index) {
 		pt = end;
 	    }
 	}
-    }
-
-    for ( i=0; i<mmw->axis_count; ++i ) {
-	sprintf( axisrange, " [%g %g %g]", mmw->mm->axismaps[i].min,
-		mmw->mm->axismaps[i].def, mmw->mm->axismaps[i].max );
-	an = PickNameFromMacName(mmw->mm->axismaps[i].axisnames);
-	if ( an==NULL )
-	    an = uc_copy(mmw->mm->axes[i]);
-	axisnames[i] = galloc((strlen(axisrange)+3+u_strlen(an))*sizeof(unichar_t));
-	u_strcpy(axisnames[i],an);
-	uc_strcat(axisnames[i],axisrange);
-	sprintf(axisval[i],"%g", axes[i]);
-	free(an);
-    }
-    for ( ; i<4; ++i ) {
-	axisnames[i] = u_copy(GStringGetResource(axistablab[i],NULL));
-	axisval[i][0] = '\0';
     }
 
     memset(&esd,0,sizeof(esd));
@@ -1679,22 +2163,9 @@ static void EditStyleName(MMW *mmw,int index) {
     memset(gcd,0,sizeof(gcd));
     memset(label,0,sizeof(label));
     k = 0;
-    for ( i=0; i<4; ++i ) {
-	label[k].text = axisnames[i];
-	gcd[k].gd.label = &label[k];
-	gcd[k].gd.pos.x = 3; gcd[k].gd.pos.y = i==0 ? 4 : gcd[k-1].gd.pos.y+30;
-	gcd[k].gd.flags = i<mmw->axis_count ? (gg_visible | gg_enabled) : gg_visible;
-	gcd[k++].creator = GLabelCreate;
 
-	label[k].text = (unichar_t *) axisval[i];
-	label[k].text_is_1byte = true;
-	gcd[k].gd.label = &label[k];
-	gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+12;
-	gcd[k].gd.flags = gcd[k-1].gd.flags;
-	gcd[k].gd.cid = 1000+i;
-	gcd[k++].creator = GTextFieldCreate;
-    }
-
+    k = GCDFillupMacWeights(gcd,label,k,axisnames,axisval,axes,
+	    mmw->axis_count,mmw->mm);
     k = GCDBuildNames(gcd,label,k,mn);
 
     gcd[k].gd.pos.x = 20; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+33-3;
@@ -1713,7 +2184,12 @@ static void EditStyleName(MMW *mmw,int index) {
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.handle_controlevent = ESD_Cancel;
-    gcd[k].creator = GButtonCreate;
+    gcd[k++].creator = GButtonCreate;
+
+    gcd[k].gd.pos.x = 2; gcd[k].gd.pos.y = 2;
+    gcd[k].gd.pos.width = pos.width-4; gcd[k].gd.pos.height = pos.height-4;
+    gcd[k].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+    gcd[k].creator = GGroupCreate;
 
     GGadgetsCreate(gw,gcd);
 
@@ -2266,7 +2742,7 @@ return( NULL );
     for ( i=0; i<mmw->old->named_instance_count; ++i ) {
 	pt = buffer; *pt++='[';
 	for ( j=0; j<mmw->old->axis_count; ++j ) {
-	    sprintf( pt, "%g ", mmw->old->named_instances[i].coords[j]);
+	    sprintf( pt, "%.4g ", mmw->old->named_instances[i].coords[j]);
 	    pt += strlen(pt);
 	}
 	pt[-1] = ']';
@@ -2373,67 +2849,6 @@ static void MMW_DesignsSetup(MMW *mmw) {
 	GGadgetSetTitle(GWidgetGetControl(mmw->subwins[mmw_designs],CID_AxisWeights+i*DesignScaleFactor),
 		ubuf);
     }
-}
-
-static SplineFont *MMNewFont(MMSet *mm,int index,char *familyname) {
-    SplineFont *sf, *base;
-    char *pt1, *pt2;
-    int i;
-
-    sf = SplineFontNew();
-    sf->order2 = mm->apple;
-    free(sf->fontname); free(sf->familyname); free(sf->fullname); free(sf->weight);
-    sf->familyname = copy(familyname);
-    if ( index==-1 ) {
-	sf->fontname = copy(familyname);
-	for ( pt1=pt2=sf->fontname; *pt1; ++pt1 )
-	    if ( *pt1!=' ' )
-		*pt2++ = *pt1;
-	*pt2='\0';
-	sf->fullname = copy(familyname);
-    } else
-	sf->fontname = MMMakeMasterFontname(mm,index,&sf->fullname);
-    sf->weight = copy( "All" );
-
-    base = NULL;
-    if ( mm->normal!=NULL )
-	base = mm->normal;
-    else {
-	for ( i=0; i<mm->instance_count; ++i )
-	    if ( mm->instances[i]!=NULL ) {
-		base = mm->instances[i];
-	break;
-	}
-    }
-
-    if ( base!=NULL ) {
-	free(sf->xuid);
-	sf->xuid = copy(base->xuid);
-	sf->encoding_name = base->encoding_name;
-	free(sf->chars);
-	sf->chars = gcalloc(base->charcnt,sizeof(SplineChar *));
-	sf->charcnt = base->charcnt;
-	sf->new = base->new;
-	sf->ascent = base->ascent;
-	sf->descent = base->descent;
-	free(sf->origname);
-	sf->origname = copy(base->origname);
-	if ( index==-1 ) {
-	    free(sf->copyright);
-	    sf->copyright = copy(base->copyright);
-	}
-	/* Make sure we get the encoding exactly right */
-	for ( i=0; i<base->charcnt; ++i ) if ( base->chars[i]!=NULL ) {
-	    SplineChar *sc = SFMakeChar(sf,i), *bsc = base->chars[i];
-	    sc->width = bsc->width; sc->widthset = true;
-	    free(sc->name); sc->name = copy(bsc->name);
-	    sc->unicodeenc = bsc->unicodeenc;
-	}
-    }
-    sf->onlybitmaps = false;
-    sf->order2 = false;
-    sf->mm = mm;
-return( sf );
 }
 
 static void MMW_ParseNamedStyles(MMSet *setto,MMW *mmw) {
@@ -2615,17 +3030,17 @@ continue;
 	    PSDictChangeEntry(setto->normal->private,"ForceBoldThreshold",buffer);
 	}
     }
+    if ( !isapple ) {
+	setto->cdv = dlgmm->cdv;
+	setto->ndv = dlgmm->ndv;
+    } else
+	MMW_ParseNamedStyles(setto,mmw);
     for ( i=0; i<setto->instance_count; ++i ) {
 	if ( setto->instances[i]==NULL )
 	    setto->instances[i] = MMNewFont(setto,i,familyname);
 	setto->instances[i]->fv = fv;
     }
     free(dlgmm->instances);
-    if ( !isapple ) {
-	setto->cdv = dlgmm->cdv;
-	setto->ndv = dlgmm->ndv;
-    } else
-	MMW_ParseNamedStyles(setto,mmw);
     chunkfree(dlgmm,sizeof(MMSet));
     if ( origname!=NULL ) {
 	for ( i=0; i<setto->instance_count; ++i ) {
@@ -2640,6 +3055,8 @@ continue;
 	    setto->instances[i]->origname = copy(setto->normal->origname);
 	}
     }
+    if ( !isapple )
+	MMReblend(fv,setto);
     if ( fv!=NULL ) {
 	for ( i=0; i<setto->instance_count; ++i )
 	    if ( fv->sf==setto->instances[i])
@@ -2659,8 +3076,6 @@ continue;
 	}
     }
     free(familyname);
-    if ( !isapple )
-	MMReblend(fv,setto);
 
     /* Multi-Mastered bitmaps don't make much sense */
     /* Well, maybe grey-scaled could be interpolated, but yuck */
@@ -2742,7 +3157,11 @@ return;
 		GWidgetErrorR(_STR_BadAxis,_STR_SetAxisType);
 return;		/* Failure */
 	    }
-	    MacNameListFree(mmw->mm->axismaps[i].axisnames);
+	    /* Don't free the current value. If it is non-null then it just */
+	    /*  points into the data structure that the Names gadgets manipulate */
+	    /*  and they will have done any freeing that needs doing. Freeing */
+	    /*  it here would destroy the data they work on */
+	    /*MacNameListFree(mmw->mm->axismaps[i].axisnames);*/
 	    mmw->mm->axismaps[i].axisnames = NULL;
 	    if ( isapple ) {
 		mmw->mm->axismaps[i].axisnames = NameGadgetsGetNames(GTabSetGetSubwindow(
@@ -3421,10 +3840,10 @@ void MMWizard(MMSet *mm) {
 	    strcpy(axisdefs[i],"400");
 	    strcpy(axisends[i],"999");
 	} else {
-	    sprintf(axisbegins[i],"%g", mmw.mm->axismaps[i].designs[0]);
-	    sprintf(axisends[i],"%g", mmw.mm->axismaps[i].designs[mmw.mm->axismaps[i].points-1]);
+	    sprintf(axisbegins[i],"%.4g", mmw.mm->axismaps[i].designs[0]);
+	    sprintf(axisends[i],"%.4g", mmw.mm->axismaps[i].designs[mmw.mm->axismaps[i].points-1]);
 	    if ( mmw.mm->apple )
-		sprintf(axisdefs[i],"%g", mmw.mm->axismaps[i].def );
+		sprintf(axisdefs[i],"%.4g", mmw.mm->axismaps[i].def );
 	    else
 		sprintf(axisdefs[i],"%g", (mmw.mm->axismaps[i].designs[0]+
 			mmw.mm->axismaps[i].designs[mmw.mm->axismaps[i].points-1])/2);

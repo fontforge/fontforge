@@ -3380,7 +3380,7 @@ static void FVMenuBlendToNew(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     MMSet *mm = fv->sf->mm;
 
-    if ( mm==NULL || mm->apple )
+    if ( mm==NULL )
 return;
     MMChangeBlend(mm,fv,true);
 }

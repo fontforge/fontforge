@@ -50,6 +50,8 @@ static RefChar *RefCharsCopy(RefChar *ref) {
 	*cur = *ref;
 	cur->layers[0].splines = NULL;	/* Leave the old sc, we'll fix it later */
 #endif
+	if ( cur->sc!=NULL )
+	    cur->local_enc = cur->sc->enc;
 	cur->next = NULL;
 	if ( rhead==NULL )
 	    rhead = cur;
