@@ -1250,9 +1250,12 @@ return;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void MDReplace(MinimumDistance *md,SplineSet *old,SplineSet *rpl) {
-    /* Replace all the old points with the ones in rpl in the minimu distance hints */
+    /* Replace all the old points with the ones in rpl in the minimum distance hints */
     SplinePoint *osp, *rsp;
     MinimumDistance *test;
+
+    if ( md==NULL )
+return;
 
     while ( old!=NULL && rpl!=NULL ) {
 	osp = old->first; rsp = rpl->first;
@@ -1263,7 +1266,7 @@ void MDReplace(MinimumDistance *md,SplineSet *old,SplineSet *rpl) {
 		if ( test->sp2==osp )
 		    test->sp2 = rsp;
 	    }
-	    if ( osp->next==NULL )
+	    if ( osp->next==NULL || rsp->next==NULL )
 	break;
 	    osp = osp->next->to;
 	    rsp = rsp->next->to;
