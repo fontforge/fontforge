@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 23-Jun-2002 -->
+  <!-- AP: Last modified: 11-Sep-2002 -->
   <TITLE>The Edit Menu</TITLE>
 </HEAD>
 <BODY>
@@ -133,6 +133,10 @@ view this menu will be disabled when one of the text fields has the focus.
     <P>
     In the Bitmap View this will copy the selection into the clipboard, if there
     is no selection everything is copied.
+    <P>
+    If you Copy a series of characters into the clipboard, the only the first
+    one will be exported to external applications. The contours of the character
+    will be exported as a selection of type "image/eps".
   <DT>
     Copy <A NAME="Reference">Reference</A>
   <DD>
@@ -211,6 +215,20 @@ view this menu will be disabled when one of the text fields has the focus.
     <P>
     In the Bitmap View this command will flatten any floating selection and paste
     the contents of the clipboard into a new floating selection.
+    <P>
+    If the clipboard is owned by an external application PfaEdit will attempt
+    to Paste the following selection types (the bitmap view does not currently
+    respond to external clipboards):
+    <TABLE BORDER>
+      <TR>
+	<TD>"image/png", "image/bmp"</TD>
+	<TD>background images</TD>
+      </TR>
+      <TR>
+	<TD>"image/eps"</TD>
+	<TD>as spline data</TD>
+      </TR>
+    </TABLE>
   <DT>
     <A NAME="Clear">Clear</A>
   <DD>

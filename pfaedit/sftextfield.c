@@ -738,7 +738,7 @@ static void SFTextAreaGrabPrimarySelection(SFTextArea *st) {
 
     GDrawGrabSelection(st->g.base,sn_primary);
     st->sel_start = ss; st->sel_end = se;
-    GDrawAddSelectionType(st->g.base,sn_primary,"Unicode",st,st->sel_end-st->sel_start,
+    GDrawAddSelectionType(st->g.base,sn_primary,"text/plain;charset=ISO-10646-UCS-2",st,st->sel_end-st->sel_start,
 	    sizeof(unichar_t),
 	    genunicodedata,noop);
     GDrawAddSelectionType(st->g.base,sn_primary,"UTF8_STRING",st,3*(st->sel_end-st->sel_start),
@@ -751,7 +751,7 @@ static void SFTextAreaGrabPrimarySelection(SFTextArea *st) {
 static void SFTextAreaGrabDDSelection(SFTextArea *st) {
 
     GDrawGrabSelection(st->g.base,sn_drag_and_drop);
-    GDrawAddSelectionType(st->g.base,sn_drag_and_drop,"Unicode",st,st->sel_end-st->sel_start,
+    GDrawAddSelectionType(st->g.base,sn_drag_and_drop,"text/plain;charset=ISO-10646-UCS-2",st,st->sel_end-st->sel_start,
 	    sizeof(unichar_t),
 	    ddgenunicodedata,noop);
     GDrawAddSelectionType(st->g.base,sn_drag_and_drop,"STRING",st,st->sel_end-st->sel_start,sizeof(char),
@@ -766,7 +766,7 @@ static void SFTextAreaGrabSelection(SFTextArea *st, enum selnames sel ) {
 	GDrawGrabSelection(st->g.base,sel);
 	temp = u_copyn(st->text+st->sel_start,st->sel_end-st->sel_start);
 	ctemp = u2utf8_copy(temp);
-	GDrawAddSelectionType(st->g.base,sel,"Unicode",temp,u_strlen(temp),sizeof(unichar_t),
+	GDrawAddSelectionType(st->g.base,sel,"text/plain;charset=ISO-10646-UCS-2",temp,u_strlen(temp),sizeof(unichar_t),
 		NULL,NULL);
 	GDrawAddSelectionType(st->g.base,sel,"UTF8_STRING",ctemp,strlen(ctemp),sizeof(char),
 		NULL,NULL);
@@ -1117,7 +1117,7 @@ static void SFTFPopupMenu(SFTextArea *st, GEvent *event) {
     sftf_popuplist[0].ti.disabled = st->oldtext==NULL;	/* Undo */
     sftf_popuplist[2].ti.disabled = no_sel;		/* Cut */
     sftf_popuplist[3].ti.disabled = no_sel;		/* Copy */
-    sftf_popuplist[4].ti.disabled = !GDrawSelectionHasType(st->g.base,sn_clipboard,"Unicode") &&
+    sftf_popuplist[4].ti.disabled = !GDrawSelectionHasType(st->g.base,sn_clipboard,"text/plain;charset=ISO-10646-UCS-2") &&
 	    !GDrawSelectionHasType(st->g.base,sn_clipboard,"UTF8_STRING") &&
 	    !GDrawSelectionHasType(st->g.base,sn_clipboard,"STRING");
     popup_kludge = st;
