@@ -102,7 +102,8 @@ typedef struct statemachinedlg {
     int edit_done, edit_ok;
 } SMD;
 
-static int SMD_SBReset(SMD *smd);
+static int  SMD_SBReset(SMD *smd);
+static void SMD_HShow(SMD *smd,int pos);
 
 static char *indicverbs[2][16] = {
     { "", "Ax", "xD", "AxD", "ABx", "ABx", "xCD", "xCD",
@@ -1994,14 +1995,18 @@ return;
 
 static void _SMD_EnableButtons(SMD *smd) {
     GGadget *list = GWidgetGetControl(smd->gw,CID_Classes);
-    int32 i, len;
+    int32 i, len, j;
+    GTextInfo **ti;
 
-    (void) GGadgetGetList(list,&len);
+    ti = GGadgetGetList(list,&len);
     i = GGadgetGetFirstListSelectedItem(list);
     GGadgetSetEnabled(GWidgetGetControl(smd->gw,CID_Up),i>4);
     GGadgetSetEnabled(GWidgetGetControl(smd->gw,CID_Down),i!=len-1 && i>4);
     GGadgetSetEnabled(GWidgetGetControl(smd->gw,CID_Delete),i>=4);
-    GGadgetSetEnabled(GWidgetGetControl(smd->gw,CID_Edit),i>=4);
+    for ( j=i+1; j<len; ++j )
+	if ( ti[j]->selected )
+    break;
+    GGadgetSetEnabled(GWidgetGetControl(smd->gw,CID_Edit),i>=4 && j==len);
 }
 
 static int SMD_Up(GGadget *g, GEvent *e) {
@@ -2044,7 +2049,8 @@ return( true );
 static int SMD_Edit(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	SMD *smd = GDrawGetUserData(GGadgetGetWindow(g));
-	_SMD_DoEditNew(smd,true);
+	if ( GGadgetGetFirstListSelectedItem(GWidgetGetControl(smd->gw,CID_Classes))>0 )
+	    _SMD_DoEditNew(smd,true);
     }
 return( true );
 }
@@ -2061,8 +2067,10 @@ static int SMD_ClassSelected(GGadget *g, GEvent *e) {
     SMD *smd = GDrawGetUserData(GGadgetGetWindow(g));
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
 	_SMD_EnableButtons(smd);
+	SMD_HShow(smd,GGadgetGetFirstListSelectedItem(g));
     } else if ( e->type==et_controlevent && e->u.control.subtype == et_listdoubleclick ) {
-	_SMD_DoEditNew(smd,true);
+	if ( GGadgetGetFirstListSelectedItem(g)>0 )
+	    _SMD_DoEditNew(smd,true);
     }
 return( true );
 }
@@ -2088,6 +2096,10 @@ static void _SMD_Cancel(SMD *smd) {
 static int SMD_Cancel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	SMD *smd = GDrawGetUserData(GGadgetGetWindow(g));
+
+	if ( GDrawIsVisible(smd->cw))
+return( SMD_Prev(g,e));
+
 	_SMD_Cancel(smd);
     }
 return( true );
@@ -2102,6 +2114,9 @@ static int SMD_Ok(GGadget *g, GEvent *e) {
 	int32 len;
 	GTextInfo **ti = GGadgetGetList(GWidgetGetControl(smd->gw,CID_Classes),&len);
 	ASM *sm = smd->sm;
+
+	if ( GDrawIsVisible(smd->cw))
+return( SMD_Next(g,e));
 
 	if ( *ret=='<' )
 	    ++ret;
@@ -2140,8 +2155,8 @@ static void SMD_Mouse(SMD *smd,GEvent *event) {
     char buf[30];
     int32 len;
     GTextInfo **ti;
-    int pos = (event->u.mouse.y-smd->ystart2)/smd->stateh * smd->class_cnt +
-	    (event->u.mouse.x-smd->xstart2)/smd->statew;
+    int pos = ((event->u.mouse.y-smd->ystart2)/smd->stateh+smd->offtop) * smd->class_cnt +
+	    (event->u.mouse.x-smd->xstart2)/smd->statew + smd->offleft;
 
     GGadgetEndPopup();
 
@@ -2196,7 +2211,7 @@ static void SMD_Expose(SMD *smd,GWindow pixmap,GEvent *event) {
     GRect clip,old1,old2;
     int len, off, i, j, x, y;
     unichar_t ubuf[8];
-    char buf[8];
+    char buf[100];
 
     if ( area->y+area->height<smd->ystart )
 return;
@@ -2270,6 +2285,7 @@ return;
 	    GDrawDrawText(pixmap,x+(smd->statew-len)/2,y+smd->fh+smd->as+1,
 		ubuf,-1,NULL,0x000000);
 
+	    ubuf[0]='\0';
 	    if ( smd->sm->type==asm_indic ) {
 		uc_strcpy(ubuf,indicverbs[0][this->flags&0xf]);
 	    } else if ( smd->sm->type==asm_context ) {
@@ -2278,10 +2294,19 @@ return;
 		ubuf[2] = (this->u.context.mark_tag>>8)&0xff;
 		ubuf[3] = this->u.context.mark_tag&0xff;
 		ubuf[4] = 0;
-	    } else {
+	    } else if ( smd->sm->type==asm_insert ) {
 		ubuf[0] = '\0';
 		if ( this->u.insert.mark_ins!=NULL )
 		    uc_strncpy(ubuf,this->u.insert.mark_ins,5);
+	    } else { /* kern */
+		if ( this->u.kern.kerns!=NULL ) {
+		    int j;
+		    buf[0] = '\0';
+		    for ( j=0; j<this->u.kern.kcnt; ++j )
+			sprintf(buf+strlen(buf),"%d ", this->u.kern.kerns[j]);
+		    buf[5] = '\0';
+		    uc_strcpy(ubuf,buf);
+		}
 	    }
 	    len = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
 	    GDrawDrawText(pixmap,x+(smd->statew-len)/2,y+2*smd->fh+smd->as+1,
@@ -2295,10 +2320,12 @@ return;
 		ubuf[2] = (this->u.context.cur_tag>>8)&0xff;
 		ubuf[3] = this->u.context.cur_tag&0xff;
 		ubuf[4] = 0;
-	    } else {
+	    } else if ( smd->sm->type==asm_insert ) {
 		ubuf[0] = '\0';
 		if ( this->u.insert.cur_ins!=NULL )
 		    uc_strncpy(ubuf,this->u.insert.cur_ins,5);
+	    } else { /* kern */
+		ubuf[0] = '\0';
 	    }
 	    len = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
 	    GDrawDrawText(pixmap,x+(smd->statew-len)/2,y+3*smd->fh+smd->as+1,
@@ -2333,6 +2360,22 @@ static int SMD_SBReset(SMD *smd) {
     GScrollBarSetPos(smd->hsb,smd->offleft);
 
 return( oldtop!=smd->offtop || oldleft!=smd->offleft );
+}
+
+static void SMD_HShow(SMD *smd, int pos) {
+    if ( pos<0 || pos>=smd->class_cnt )
+return;
+#if 0
+    if ( pos>=smd->offleft && pos<smd->offleft+(smd->width/smd->statew) )
+return;		/* Already visible */
+#endif
+    --pos;	/* One line of context */
+    if ( pos + (smd->width/smd->statew) >= smd->class_cnt )
+	pos = smd->class_cnt - (smd->width/smd->statew);
+    if ( pos < 0 ) pos = 0;
+    smd->offleft = pos;
+    GScrollBarSetPos(smd->hsb,pos);
+    GDrawRequestExpose(smd->gw,NULL,false);
 }
 
 static void SMD_HScroll(SMD *smd,struct sbevent *sb) {
@@ -2798,7 +2841,7 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     gcd[k++].creator = GButtonCreate;
 
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 30;
-    gcd[k].gd.pos.width = SMD_HEIGHT-25; gcd[k].gd.pos.height = 8*13+4;
+    gcd[k].gd.pos.width = SMD_WIDTH-25; gcd[k].gd.pos.height = 8*13+4;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
     gcd[k].gd.cid = CID_GlyphList;
     gcd[k++].creator = GTextAreaCreate;
@@ -2806,9 +2849,9 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     label[k].text = (unichar_t *) _STR_PrevArrow;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 30; gcd[k].gd.pos.y = gcd[k].gd.pos.y+3;
+    gcd[k].gd.pos.x = 30; gcd[k].gd.pos.y = SMD_HEIGHT-SMD_CANCELDROP;
     gcd[k].gd.pos.width = -1;
-    gcd[k].gd.flags = gg_visible|gg_enabled | gg_but_cancel;
+    gcd[k].gd.flags = gg_visible|gg_enabled /*| gg_but_cancel*/;
     gcd[k].gd.handle_controlevent = SMD_Prev;
     gcd[k].gd.cid = CID_Prev;
     gcd[k++].creator = GButtonCreate;
@@ -2816,9 +2859,9 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     label[k].text = (unichar_t *) _STR_NextArrow;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = -30+3; gcd[k].gd.pos.y = SMD_HEIGHT-SMD_CANCELDROP-3;
+    gcd[k].gd.pos.x = -30+3; gcd[k].gd.pos.y = SMD_HEIGHT-SMD_CANCELDROP;
     gcd[k].gd.pos.width = -1;
-    gcd[k].gd.flags = gg_visible|gg_enabled | gg_but_default;
+    gcd[k].gd.flags = gg_visible|gg_enabled /*| gg_but_default*/;
     gcd[k].gd.handle_controlevent = SMD_Next;
     gcd[k].gd.cid = CID_Next;
     gcd[k++].creator = GButtonCreate;

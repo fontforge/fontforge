@@ -2950,6 +2950,9 @@ static char *str_AlreadyUsed = "Already in use";
 static char *str_AlreadyInClass = "The character %.30hs is already in a different class. Would you like to remove it from the old class, or remove it from this class?"
 static char *str_FromOld = "From old";
 static char *str_FromThis = "From this";
+static char *str_SelectAScript="Please select a script";
+static char *str_ClassZero = "Class 0"
+static char *str_ClassZeroOffsets = "The kerning values for class 0 (\"Everything Else\") should always be 0"
     /* nonlineartrans */
 static char *str_BadToken = "Bad Token";
 static char *str_BadNameToken = "Bad token \"%.30hs\"\nnear ...%40hs";
