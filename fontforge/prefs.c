@@ -399,8 +399,8 @@ int GetPrefs(char *name,Val *val) {
 		val->type = v_str;
 		val->u.sval = copy( (*((Encoding **) (pf->val)))->enc_name );
 	    } else if ( pf->type == pr_real ) {
-		val->type = v_int;
-		val->u.ival = *((float *) (pf->val));
+		val->type = v_real;
+		val->u.fval = *((float *) (pf->val));
 	    } else
 return( false );
 
