@@ -563,7 +563,7 @@ return;
     ii->vheight = pos.height; ii->vwidth = pos.width;
     lh = ii->lheight;
 
-    GScrollBarSetBounds(ii->vsb,0,lh+1,ii->vheight/ii->fh);
+    GScrollBarSetBounds(ii->vsb,0,lh+2,ii->vheight/ii->fh);
     if ( ii->lpos + ii->vheight/ii->fh > lh )
 	ii->lpos = lh-ii->vheight/ii->fh;
     if ( ii->lpos<0 ) ii->lpos = 0;
@@ -744,7 +744,7 @@ return( true );
     free(iv->instrdata->bts );
     iv->instrdata->bts = NULL;
     instr_typify(&iv->instrinfo);
-    GScrollBarSetBounds(iv->instrinfo.vsb,0,iv->instrinfo.lheight+1,
+    GScrollBarSetBounds(iv->instrinfo.vsb,0,iv->instrinfo.lheight+2,
 	    iv->instrinfo.vheight/iv->instrinfo.fh);
 return( true );
 }
@@ -1008,8 +1008,8 @@ void instr_scroll(struct instrinfo *ii,struct sbevent *sb) {
         newpos = sb->pos;
       break;
     }
-    if ( newpos>ii->lheight-ii->vheight/ii->fh )
-        newpos = ii->lheight-ii->vheight/ii->fh;
+    if ( newpos>ii->lheight+1-ii->vheight/ii->fh )
+        newpos = ii->lheight+1-ii->vheight/ii->fh;
     if ( newpos<0 ) newpos =0;
     if ( newpos!=ii->lpos ) {
 	GRect r;
@@ -1343,7 +1343,7 @@ void IIReinit(struct instrinfo *ii,int ip) {
     free(ii->instrdata->bts);
     ii->instrdata->bts = NULL;
     instr_typify(ii);
-    GScrollBarSetBounds(ii->vsb,0,ii->lheight+1, ii->vheight/ii->fh);
+    GScrollBarSetBounds(ii->vsb,0,ii->lheight+2, ii->vheight/ii->fh);
     IIScrollTo(ii,ip,true);
 }
 

@@ -3592,7 +3592,7 @@ return;
 	    cv->dv->ii.vheight = dvheight-cv->dv->toph;
 	    GDrawRequestExpose(cv->dv->dv,NULL,false);
 	    GDrawRequestExpose(cv->dv->ii.v,NULL,false);
-	    GScrollBarSetBounds(cv->dv->ii.vsb,0,cv->dv->ii.lheight,
+	    GScrollBarSetBounds(cv->dv->ii.vsb,0,cv->dv->ii.lheight+1,
 		    cv->dv->ii.vheight/cv->dv->ii.fh);
 	}
 	if ( cv->showrulers ) {
