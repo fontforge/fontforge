@@ -63,7 +63,6 @@ static int svg_outfontheader(FILE *file, SplineFont *sf) {
     time_t now;
     struct passwd *pwd;
 
-    info = sf->pfminfo;
     SFDefaultOS2Info(&info,sf,sf->fontname);
     SplineFontFindBounds(sf,&bb);
     QuickBlues(sf,&bd);

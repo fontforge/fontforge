@@ -2084,6 +2084,7 @@ static void dumpcffcidtopdict(SplineFont *sf,struct alltabs *at) {
 static void finishup(SplineFont *sf,struct alltabs *at) {
     int strlen, shlen, glen,enclen,csetlen,cstrlen,prvlen;
     int base, eotop, strhead;
+    int output_enc = ( at->format==ff_cff && sf->encoding_name!=em_adobestandard );
 
     storesid(at,NULL);		/* end the strings index */
     strlen = ftell(at->sidf) + (shlen = ftell(at->sidh));
@@ -2095,15 +2096,19 @@ static void finishup(SplineFont *sf,struct alltabs *at) {
     base = ftell(at->cfff);
     if ( base+6*3+strlen+glen+enclen+csetlen+cstrlen+prvlen > 32767 ) {
 	at->cfflongoffset = true;
-	base += ( sf->encoding_name!=em_adobestandard ) ? 5*5+4 : 4*5 + 3;
+	base += 5*5+4;
     } else
-	base += ( sf->encoding_name!=em_adobestandard ) ? 5*3+4 : 4*3 + 3;
+	base += 5*3+4;
     strhead = 2+(at->sidcnt>1);
     base += strhead;
 
     dumpsizedint(at->cfff,at->cfflongoffset,base+strlen+glen,15);		/* Charset */
-    if ( sf->encoding_name!=em_adobestandard )					/* default enc to adobe std */
+    if ( output_enc )					/* encoding offset */
 	dumpsizedint(at->cfff,at->cfflongoffset,base+strlen+glen+csetlen,16);	/* encoding offset */
+    else {
+	dumpsizedint(at->cfff,at->cfflongoffset,0,16);
+	enclen = 0;
+    }
     dumpsizedint(at->cfff,at->cfflongoffset,base+strlen+glen+csetlen+enclen,17);/* charstrings */
     dumpsizedint(at->cfff,at->cfflongoffset,at->privatelen,-1);
     dumpsizedint(at->cfff,at->cfflongoffset,base+strlen+glen+csetlen+enclen+cstrlen,18); /* private size */
@@ -2371,8 +2376,8 @@ return( false );
     PSCharsFree(subrs);
     if ( at->charstrings == NULL )
 return( false );
-    if ( sf->encoding_name!=em_adobestandard )		/* Do this after we've assigned glyph ids */
-	dumpcffencoding(sf,at);
+    if ( at->format==ff_cff && sf->encoding_name!=em_adobestandard )
+	dumpcffencoding(sf,at);		/* Do this after we've assigned glyph ids */
     dumpcfftopdict(sf,at);
     finishup(sf,at);
 
@@ -2664,7 +2669,7 @@ void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *_sf,char *fontname) {
     if ( _sf->pfminfo.pfmset ) {
 	if ( pfminfo!=&_sf->pfminfo )
 	    *pfminfo = _sf->pfminfo;
-    } else if ( pfminfo->pfmset ) {
+    } else {
 	memset(pfminfo,'\0',sizeof(*pfminfo));
 	SFDefaultOS2Simple(pfminfo,_sf);
 	samewid = CIDOneWidth(_sf);
