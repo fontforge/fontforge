@@ -1496,7 +1496,7 @@ static int SPLSmoothControlPoints(SplineSet *ss,double tan_bounds,int vert_check
 	    else
 		tn = norm/para;
 	    if ( tn<0 ) tn = -tn;
-	    if ( tn<tan_bounds ) {
+	    if ( tn<tan_bounds && para>0 ) {
 		found = 0;
 		unit2.x = sp->me.x-sp->prevcp.x;
 		unit2.y = sp->me.y-sp->prevcp.y;
