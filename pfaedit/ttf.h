@@ -488,6 +488,7 @@ struct alltabs {
     unsigned int cfflongoffset: 1;
     unsigned int applemode: 1;		/* Where apple & ms differ do things apple's way (bitmaps, name table PostScript) */
     unsigned int msbitmaps: 1;
+    unsigned int otbbitmaps: 1;
     unsigned int isotf: 1;
     unsigned int error: 1;
     struct glyphinfo gi;
