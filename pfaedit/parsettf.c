@@ -332,7 +332,7 @@ unichar_t *TTFGetFontName(FILE *ttf,int32 offset,int32 off2) {
     int32 tag, nameoffset, length, stringoffset;
     int plat, spec, lang, name, len, off, val;
     int fullval, fullstr, fulllen, famval, famstr, famlen;
-    int enc;
+    int enc, fullenc, famenc;
 
     fseek(ttf,offset,SEEK_SET);
     /* version = */ getlong(ttf);
@@ -355,7 +355,7 @@ return( NULL );
     /* format = */ getushort(ttf);
     num = getushort(ttf);
     stringoffset = nameoffset+getushort(ttf);
-    fullval = famval = 0;
+    fullval = famval = 0; fullenc = famenc = em_none;
     for ( i=0; i<num; ++i ) {
 	plat = getushort(ttf);
 	spec = getushort(ttf);
@@ -377,12 +377,14 @@ return( NULL );
 	    fullval = val;
 	    fullstr = off;
 	    fulllen = len;
+	    fullenc = enc;
 	    if ( val==12 )
     break;
 	} else if ( name==1 && val>famval ) {
 	    famval = val;
 	    famstr = off;
 	    famlen = len;
+	    famenc = enc;
 	}
     }
     if ( fullval==0 ) {
@@ -390,8 +392,9 @@ return( NULL );
 return( NULL );
 	fullstr = famstr;
 	fulllen = famlen;
+	fullenc = famenc;
     }
-return( _readencstring(ttf,stringoffset+fullstr,fulllen,enc));
+return( _readencstring(ttf,stringoffset+fullstr,fulllen,fullenc));
 }
 
 static int PickTTFFont(FILE *ttf,char *filename) {
