@@ -120,7 +120,10 @@ static void _GWidget_IndicateFocusGadget(GGadget *g, enum mnemonic_focus mf) {
     if ( td->gfocus==g && mf==mf_normal )
 return;
 
-    if ( top == current_focus_window && td->gfocus!=NULL &&
+/* Hmm. KDE doesn't give us a focus out event when we make a window invisible */
+/*  So to be on the save side lets send local focus out events even when not */
+/*  strictly needed */
+    if ( /*top == current_focus_window &&*/ td->gfocus!=NULL &&
 	    td->gfocus->funcs->handle_focus!=NULL ) {
 	e.type = et_focus;
 	e.w = top;
