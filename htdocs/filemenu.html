@@ -214,8 +214,8 @@
     <A NAME="Export">Export</A>...
   <DD>
     In the Outline view this allows you to export the splines that make up the
-    character into an encapsulated postscript (.eps) file or a file in xfig format
-    (.fig -- the conversion to fig format is not the best). You may also have
+    character into an encapsulated postscript (.eps), svg or xfig format (.fig
+    -- the conversion to fig format is not the best) file. You may also have
     the character rasterized and output in either .xbm or .bmp formats (PfaEdit
     will prompt you for a pixelsize. bmp also allows you to generate an anti-aliased
     image, and you will be prompted for bits per pixel. 1 bit per pixel is a
@@ -256,10 +256,11 @@
     other image formats but does not try to optimize them in anyway. Please use
     bitmaps here.</SMALL>
     <P>
-    Finally you may load an encapsulated postscript file (or rather the sub-set
-    of postscript that PfaEdit understands) into the foreground of characters.
-    As with images above this may either import depending on the selection or
-    a template.
+    You may load an encapsulated postscript file (or rather the sub-set of postscript
+    that PfaEdit understands) into the foreground of characters. As with images
+    above this may either import depending on the selection or a template.<BR>
+    If you have libxml2 on your system then PfaEdit will also be able to import
+    svg files. As with postscript, only a subset of svg is understood).
     <P>
     In the Outline View this allows you to import an image into the background
     (see the above remark about <A HREF="#bitmapfiles">bitmaps</A>, or import

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 30-Jul-2003 -->
+  <!-- AP: Last modified: 31-Jul-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,32 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    31-Jul-2003
+    <UL>
+      <LI>
+	Installed KANOU's fix for a buffer overrun
+      <LI>
+	Installed KANOU's fix for compacted cid-keyed fonts
+      <LI>
+	Fixed another bug with compacted cid-keyed fonts
+      <LI>
+	Mathias Wollin points out that my pfm files don't have the correct kerning
+	table format
+      <LI>
+	Handles the case where a font has both a 'glyf' and a 'CFF ' table by asking
+	user which to use
+      <LI>
+	Various improvements to the goto dialog from James Crippen.
+      <LI>
+	If the ttf "Apple" box got checked then it remained checked in subsequent
+	Generate Fonts even though the [Options] dialog did not show it checked.
+      <LI>
+	PfaEdit would crash if given an Anchor class with no marks.
+      <LI>
+	Hmm... I notice that volt only uses format 2 coverage tables. I wonder if
+	windows fails to handle format 1 tables...
+    </UL>
   <LI>
     30-Jul-2003
     <UL>
