@@ -1463,9 +1463,9 @@ static void FVMenuAATSuffix(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     uint32 tag;
     char *suffix;
-    unichar_t *usuffix, *upt;
+    unichar_t *usuffix, *upt, *end;
     int i;
-    uint16 flags;
+    uint16 flags, sli;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i])
 	if ( SCScriptFromUnicode(fv->sf->chars[i])!=0 )
@@ -1474,6 +1474,7 @@ static void FVMenuAATSuffix(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( usuffix==NULL )
 return;
 
+    upt = usuffix;
     tag  = (*upt++&0xff)<<24;
     tag |= (*upt++&0xff)<<16;
     tag |= (*upt++&0xff)<< 8;
@@ -1482,16 +1483,18 @@ return;
     if (( upt[0]=='b' || upt[0]==' ' ) &&
 	    ( upt[1]=='l' || upt[1]==' ' ) &&
 	    ( upt[2]=='m' || upt[2]==' ' ) &&
-	    upt[3]==' ' ) {
+	    ( upt[3]=='m' || upt[3]==' ' ) &&
+	    upt[4]==' ' ) {
 	flags = 0;
 	if ( upt[0]=='r' ) flags |= pst_r2l;
 	if ( upt[1]=='b' ) flags |= pst_ignorebaseglyphs;
 	if ( upt[2]=='l' ) flags |= pst_ignoreligatures;
 	if ( upt[3]=='m' ) flags |= pst_ignorecombiningmarks;
-	upt += 4;
+	upt += 5;
     }
+    sli = u_strtol(upt,&end,10);
 
-    suffix = cu_copy(upt);
+    suffix = cu_copy(end);
     free(usuffix);
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i])
 	SCSuffixDefault(SCDuplicate(fv->sf->chars[i]),tag,suffix,flags);

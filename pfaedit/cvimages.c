@@ -1016,7 +1016,7 @@ static GTextInfo formats[] = {
 static GTextInfo fvformats[] = {
     { (unichar_t *) "BDF", NULL, 0, 0, (void *) fv_bdf, 0, 0, 0, 0, 0, 1, 0, 1 },
     { (unichar_t *) "TTF", NULL, 0, 0, (void *) fv_ttf, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_TeXBitmap, (void *) fv_pk, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_TeXBitmap, NULL, 0, 0, (void *) fv_pk, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "PCF", NULL, 0, 0, (void *) fv_pcf, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_MacBitmap, NULL, 0, 0, (void *) fv_mac, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "Win FON", NULL, 0, 0, (void *) fv_win, 0, 0, 0, 0, 0, 0, 0, 1 },
