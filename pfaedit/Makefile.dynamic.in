@@ -26,7 +26,7 @@ pfaedit_OBJECTS =  autohint.o autosave.o autowidth.o bitmapdlg.o \
  start.o tottf.o transform.o uiutil.o utils.o windowmenu.o  \
  zapfnomen.o othersubrs.o autotrace.o openfontdlg.o encoding.o print.o \
  problems.o pfaedit-ui.o metafont.o alignment.o parsettfbmf.o \
- macbinary.o crctab.o scripting.o freetype.o
+ macbinary.o crctab.o scripting.o freetype.o gotodlg.o
 
 WFLAGS = -Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type -Wparentheses
 CFLAGS = @CFLAGS@ -I$(top_srcdir)/inc -I$(srcdir) -I. $(WFLAGS) $(X_CFLAGS) \
