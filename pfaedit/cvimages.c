@@ -831,7 +831,7 @@ enum fvformats { fv_bdf, fv_ttf, fv_pk, fv_pcf, fv_image, fv_imgtemplate, fv_eps
 static GTextInfo fvformats[] = {
     { (unichar_t *) "BDF", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 1, 0, 1 },
     { (unichar_t *) "TTF", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "pk", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_TeXBitmap, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "PCF", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_Image, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_Template, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
