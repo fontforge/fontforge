@@ -3970,7 +3970,7 @@ return;
 	}
     } else {
 	for ( i=0; glyphs[i]!=0xffff; ++i ) if ( glyphs[i]<info->glyph_cnt && info->chars[glyphs[i]]!=NULL ) {
-	    which = format==1 ? glyphs[i]+delta : glyph2s[i];
+	    which = format==1 ? (uint16) (glyphs[i]+delta) : glyph2s[i];
 	    if ( which>=info->glyph_cnt ) {
 		fprintf( stderr, "Bad substitution glyph: %d not less than %d\n",
 			which, info->glyph_cnt);
