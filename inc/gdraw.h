@@ -104,8 +104,10 @@ typedef struct {
 typedef struct {
     int16 letter_spacing;		/* in point tenths */
     unsigned int starts_word: 1;
+    unsigned int has_charset: 1;
     enum text_mods mods;
     enum text_lines lines;
+    enum charset charset;
 } FontMods;
 
 typedef struct gbidata {
@@ -421,6 +423,7 @@ extern int32 GDrawGetBiTextPtBeforePos(GWindow gw,unichar_t *text, int32 cnt, Fo
 	int32 maxwidth, unichar_t **end);
 extern int32 GDrawGetBiTextPtFromPos(GWindow gw,unichar_t *text, int32 cnt, FontMods *mods,
 	int32 maxwidth, unichar_t **end);
+extern int GDrawFontHasCharset(FontInstance *fi,/*enum charset*/int charset);
 extern int32 GDrawIsAllLeftToRight(unichar_t *text, int32 cnt);
 extern void GDrawBiText1(GBiText *bd, const unichar_t *text, int32 cnt);
 extern void GDrawBiText2(GBiText *bd, int32 start, int32 end);

@@ -1549,36 +1549,38 @@ static int32 _GDraw_Transform(GWindow gw, struct font_data *fd, struct font_data
 	lcstate = -1;
 	while ( olen<TB_MAX-4 && text<end ) {
 	    ch = *text++;
-	    started = starts_word;
-	    starts_word = isspace(ch) && !isnobreak(ch);
-	    if ( ch==_SOFT_HYPHEN && !(mods->mods&tm_showsofthyphen))
+	    if ( !mods->has_charset ) {
+		started = starts_word;
+		starts_word = isspace(ch) && !isnobreak(ch);
+		if ( ch==_SOFT_HYPHEN && !(mods->mods&tm_showsofthyphen))
 	continue;
-	    if ( iszerowidth(ch) || (iscombining(ch) && text-1!=strt))
+		if ( iszerowidth(ch) || (iscombining(ch) && text-1!=strt))
 	continue;
-	    if ( mods->mods&(tm_initialcaps|tm_upper|tm_lower) ) {
-		if ( mods->mods&tm_initialcaps ) {
-		    if ( started && ch==_DOUBLE_S ) { *opt++ = opt2->byte2 = 'S'; opt2++->byte1 = '\0'; ++olen; ch='s'; }
-		    else if ( started ) ch = totitle(ch);
-		} else if ( mods->mods&tm_upper ) {
-		    if ( ch==_DOUBLE_S ) { *opt++ = opt2->byte2 = 'S'; opt2++->byte1 = '\0'; ++olen; ch='S'; }
-		    else ch = toupper(ch);
-		} else if ( mods->mods&tm_lower ) {
-		    ch = tolower(ch);
+		if ( mods->mods&(tm_initialcaps|tm_upper|tm_lower) ) {
+		    if ( mods->mods&tm_initialcaps ) {
+			if ( started && ch==_DOUBLE_S ) { *opt++ = opt2->byte2 = 'S'; opt2++->byte1 = '\0'; ++olen; ch='s'; }
+			else if ( started ) ch = totitle(ch);
+		    } else if ( mods->mods&tm_upper ) {
+			if ( ch==_DOUBLE_S ) { *opt++ = opt2->byte2 = 'S'; opt2++->byte1 = '\0'; ++olen; ch='S'; }
+			else ch = toupper(ch);
+		    } else if ( mods->mods&tm_lower ) {
+			ch = tolower(ch);
+		    }
 		}
-	    }
-	    if ( sc!=NULL ) {
-		if ( lcstate==-1 ) lcstate = islower(ch);
-		else if ( lcstate!=islower(ch)) {
-		    --text;
+		if ( sc!=NULL ) {
+		    if ( lcstate==-1 ) lcstate = islower(ch);
+		    else if ( lcstate!=islower(ch)) {
+			--text;
 	break;
+		    }
+		    if ( lcstate ) {
+			if ( ch==_DOUBLE_S ) { *opt++ = opt2->byte2 = 'S'; opt2++->byte1 = '\0'; ++olen; ch='S'; }
+			else if ( islower(ch)) ch = toupper(ch);
+		    }
 		}
-		if ( lcstate ) {
-		    if ( ch==_DOUBLE_S ) { *opt++ = opt2->byte2 = 'S'; opt2++->byte1 = '\0'; ++olen; ch='S'; }
-		    else if ( islower(ch)) ch = toupper(ch);
-		}
-	    }
 
-	    if ( ch==0xa0 ) ch=' ';	/* Many iso8859-1 fonts have a zero width nbsp */
+		if ( ch==0xa0 ) ch=' ';	/* Many iso8859-1 fonts have a zero width nbsp */
+	    }
 	    if ( enc<em_first2byte ) {
 		int highch = ch>>8;
 		if ( highch>=table->first && highch<=table->last &&
@@ -1588,7 +1590,7 @@ static int32 _GDraw_Transform(GWindow gw, struct font_data *fd, struct font_data
 		    ++olen;
 		    if ( drawit>=tf_stopat ) cw = TextWidth1((lcstate>0)?sc:fd,opt-1,1)+letter_spacing;
 		}
-	    } else if ( enc!=em_unicode ) {
+	    } else if ( enc!=em_unicode && !mods->has_charset ) {
 		int highch = ch>>8;
 		if ( highch>=table2->first && highch<=table2->last &&
 			(plane2 = table2->table[highch-table2->first])!=NULL &&
@@ -1921,7 +1923,11 @@ return( 0 );
     if ( mods==NULL ) mods = &dummyfontmods;
 
     while ( text<end ) {
-	enc = GDrawFindEncoding(text,end-text,fi,&next,&ulevel);
+	if ( mods->has_charset ) {
+	    enc = mods->charset;
+	    next = end;
+	} else
+	    enc = GDrawFindEncoding(text,end-text,fi,&next,&ulevel);
 
 	fd = sc = NULL;
 	if ( enc==em_unicode ) {
@@ -1956,17 +1962,23 @@ return( 0 );
 	    /* if the string begins with a combining char, then just print it */
 	    /*  otherwise stop one character before the first combiner */
 	    /*  (as we'll join it with the combiner later) */
-	    for ( comb=text+1; comb<next && !iscombining(*comb); ++comb );
-	    if ( comb<next )
-		--comb;
-	    if ( comb>text ) {
-		if ( fd==NULL || fd->info==NULL ) 
-		    dist += _GDraw_DrawUnencoded(gw,fi,x+dist,y,text,comb,mods,col,drawit,arg);
-		else if ( fd->screen_font!=NULL )
-		    dist += _GDraw_ScreenDrawToImage(gw,fd,sc,enc,x+dist,y,text,comb,mods,col,drawit,arg);
-		else
-		    dist += _GDraw_Transform(gw,fd,sc,enc,x+dist,y,text,comb,mods,col,drawit,arg);
-		text = comb;
+	    if ( mods->has_charset ) {
+		if ( fd!=NULL && fd->info!=NULL )
+		    dist += _GDraw_Transform(gw,fd,sc,enc,x+dist,y,text,next,mods,col,drawit,arg);
+		text = comb = next;
+	    } else {
+		for ( comb=text+1; comb<next && !iscombining(*comb); ++comb );
+		if ( comb<next )
+		    --comb;
+		if ( comb>text ) {
+		    if ( fd==NULL || fd->info==NULL ) 
+			dist += _GDraw_DrawUnencoded(gw,fi,x+dist,y,text,comb,mods,col,drawit,arg);
+		    else if ( fd->screen_font!=NULL )
+			dist += _GDraw_ScreenDrawToImage(gw,fd,sc,enc,x+dist,y,text,comb,mods,col,drawit,arg);
+		    else
+			dist += _GDraw_Transform(gw,fd,sc,enc,x+dist,y,text,comb,mods,col,drawit,arg);
+		    text = comb;
+		}
 	    }
 	    if ( drawit>=tf_stopat && arg->width>=arg->maxwidth )
 return( dist );
@@ -2086,6 +2098,10 @@ void GDrawFontMetrics(FontInstance *fi,int *as, int *ds, int *ld) {
 	}
 #endif
     }
+}
+
+int GDrawFontHasCharset(FontInstance *fi,/*enum charset*/int charset) {
+return( fi!=NULL && fi->fonts[charset]!=NULL );
 }
 
 /************************** Arabic Form Translation ***************************/

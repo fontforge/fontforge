@@ -3464,6 +3464,70 @@ return( NULL );
 return( rot );
 }
 
+static int Use2ByteEnc(FontView *fv,SplineChar *sc, unichar_t *buf,FontMods *mods) {
+    int ch1 = sc->enc>>8, ch2 = sc->enc&0xff;
+
+    switch ( fv->sf->encoding_name ) {
+      case em_big5:
+	if ( !GDrawFontHasCharset(fv->header,em_big5))
+return( false);
+	if ( ch1<0xa1 || ch1>0xf9 || ch2<0x40 || ch2>0xfe || sc->enc> 0xf9fe )
+return( false );
+	mods->has_charset = true; mods->charset = em_big5;
+	buf[0] = sc->enc;
+	buf[1] = 0;
+return( true );
+      break;
+      case em_sjis:
+	if ( !GDrawFontHasCharset(fv->header,em_jis208))
+return( false);
+	if ( ch1>=129 && ch1<=159 )
+	    ch1-=112;
+	else if ( ch1>159 )
+	    ch1-=176;
+	else
+return( false );
+	ch1<<=1;
+	if ( ch2>=159 )
+	    ch2-=126;
+	else if ( ch2>127 ) {
+	    --ch1;
+	    ch2 -= 32;
+	} else {
+	    -- ch1;
+	    ch2 -= 31;
+	}
+	mods->has_charset = true; mods->charset = em_jis208;
+	buf[0] = (ch1<<8) | ch2;
+	buf[1] = 0;
+return( true );
+      break;
+      case em_wansung:
+	if ( !GDrawFontHasCharset(fv->header,em_ksc5601))
+return( false);
+	if ( ch1<0xa1 || ch1>0xfd || ch2<0xa1 || ch2>0xfe || sc->enc > 0xfdfe )
+return( false );
+	mods->has_charset = true; mods->charset = em_ksc5601;
+	buf[0] = sc->enc-0x8080;
+	buf[1] = 0;
+return( true );
+      break;
+      case em_ksc5601: case em_jis208: case em_jis212:
+	if ( !GDrawFontHasCharset(fv->header,fv->sf->encoding_name))
+return( false);
+	ch1 = sc->enc/96; ch2 = sc->enc%96;
+	if ( ch1>0x7d-0x21 || ch2>94 )
+return( false );
+	mods->has_charset = true; mods->charset = fv->sf->encoding_name;
+	buf[0] = ((ch1+0x21)<<8) + ch2+0x21;
+	buf[1] = 0;
+return( true );
+      break;
+      default:
+return( false );
+    }
+}
+
 static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
     int i, j, width;
     int changed;
@@ -3518,10 +3582,14 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	    unichar_t buf[2];
 	    Color fg = 0;
 	    BDFChar *bdfc;
+	    FontMods *mods=NULL;
+	    static FontMods for_charset;
 	    if ( sc==NULL )
 		sc = SCBuildDummy(&dummy,fv->sf,index);
 	    if ( sc->unicodeenc==0xad )
 		buf[0] = '-';
+	    else if ( Use2ByteEnc(fv,sc,buf,&for_charset))
+		mods = &for_charset;
 	    else if ( sc->unicodeenc!=-1 && sc->unicodeenc<65536 )
 		buf[0] = sc->unicodeenc;
 #if HANYANG
@@ -3590,7 +3658,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		if ( italic!=wasitalic ) GDrawSetFont(pixmap,italic?fv->iheader:fv->header);
 		width = GDrawGetTextWidth(pixmap,buf,1,NULL);
 		if ( sc->unicodeenc<0x80 || sc->unicodeenc>=0xa0 )
-		    GDrawDrawText(pixmap,j*fv->cbw+(fv->cbw-1-width)/2,i*fv->cbh+FV_LAB_HEIGHT-2,buf,1,NULL,fg);
+		    GDrawDrawText(pixmap,j*fv->cbw+(fv->cbw-1-width)/2,i*fv->cbh+FV_LAB_HEIGHT-2,buf,1,mods,fg);
 		wasitalic = italic;
 	    }
 	    changed = sc->changed;

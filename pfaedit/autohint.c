@@ -1027,7 +1027,7 @@ static StemInfo *StemAddUpdate(StemInfo *stems,EI *apt,EI *e, int i, int major,
 			begun = p->mpos;
 		    }
 		}
-	    new->haspoints = new->haspointleft && new->haspointright;
+	    /*new->haspoints = new->haspointleft && new->haspointright;*/
 	}
 	stems = StemInsert(stems,new);
     } else {

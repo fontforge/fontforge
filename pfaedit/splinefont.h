@@ -302,11 +302,6 @@ typedef struct steminfo {
 		    /* Type2 says: -20 is "width" of top edge, -21 is "width" of bottom edge, type1 accepts either */
     unsigned int haspointleft:1;
     unsigned int haspointright:1;
-    unsigned int haspoints:1;	/* both edges of the stem have points on them */
-				/*  at the stem left and right edge */
-			        /*  trivially true for horizontal/vertical lines */
-			        /*  true for curves if extrema have points */
-			        /*  except we aren't smart enough to detect that yet */
     unsigned int hasconflicts:1;/* Does this stem have conflicts within its cluster? */
     unsigned int used: 1;	/* Temporary for counter hints or hint substitution */
     unsigned int tobeused: 1;	/* Temporary for counter hints or hint substitution */
@@ -323,6 +318,7 @@ typedef struct steminfo {
     unsigned int linearedges: 1;/* If we have a nice rectangle then we aren't */
 				/*  interested in the orientation which is */
 			        /*  wider than long */
+    unsigned int bigsteminfo: 1;/* See following structure */
     int16 hintnumber;		/* when dumping out hintmasks we need to know */
 				/*  what bit to set for this hint */
     int mask;			/* Mask of all references that use this hint */
@@ -332,12 +328,24 @@ typedef struct steminfo {
     HintInstance *where;	/* location(s) in the other coord */
 } StemInfo;
 
+typedef struct pointlist { struct pointlist *next; SplinePoint *sp; } PointList;
+typedef struct bigsteminfo {
+    StemInfo s;
+    PointList *left, *right;
+} BigStemInfo;
+    
 typedef struct dsteminfo {
     struct dsteminfo *next;	/* First two fields match those in steminfo */
     unsigned int hinttype: 2;	/* Only used by undoes */
     unsigned int used: 1;	/* used only be tottf.c:gendinstrs to mark a hint that has been dealt with */
+    unsigned int bigsteminfo: 1;/* See following structure */
     BasePoint leftedgetop, leftedgebottom, rightedgetop, rightedgebottom;	/* this order is important in tottf.c: DStemInteresect */
 } DStemInfo;
+
+typedef struct bigdsteminfo {
+    DStemInfo s;
+    PointList *left, *right;
+} BigDStemInfo;
 
 typedef struct imagelist {
     struct gimage *image;
