@@ -482,6 +482,12 @@ Undoes *SCPreserveState(SplineChar *sc,int dohints) {
     if ( dohints ) {
 	undo->undotype = ut_statehint;
 	undo->u.state.u.hints = UHintCopy(sc,true);
+	if ( dohints==2 ) {
+	    undo->undotype = ut_statename;
+	    undo->u.state.unicodeenc = sc->unicodeenc;
+	    undo->u.state.charname = copy(sc->name);
+	    undo->u.state.lig = sc->lig? copy(sc->lig->components) : NULL;
+	}
     }
     undo->u.state.copied_from = sc->parent;
 return( AddUndo(undo,&sc->undoes[0],&sc->redoes[0]));
@@ -590,7 +596,7 @@ static void SCUndoAct(SplineChar *sc,int drawmode, Undoes *undo) {
 	sc->vwidth = undo->u.width;
 	undo->u.width = vwidth;
       } break;
-      case ut_state: case ut_tstate: case ut_statehint: {
+      case ut_state: case ut_tstate: case ut_statehint: case ut_statename: {
 	SplinePointList **head = drawmode==dm_fore ? &sc->splines :
 				 drawmode==dm_back ? &sc->backgroundsplines :
 				    &sc->parent->gridsplines;
@@ -631,6 +637,21 @@ static void SCUndoAct(SplineChar *sc,int drawmode, Undoes *undo) {
 	if ( undo->u.state.lbearingchange ) {
 	    undo->u.state.lbearingchange = -undo->u.state.lbearingchange;
 	    SCSynchronizeLBearing(sc,NULL,undo->u.state.lbearingchange);
+	}
+	if ( drawmode==dm_fore && undo->undotype==ut_statename ) {
+	    char *temp = sc->name;
+	    int uni = sc->unicodeenc;
+	    sc->name = undo->u.state.charname;
+	    undo->u.state.charname = temp;
+	    sc->unicodeenc = undo->u.state.unicodeenc;
+	    undo->u.state.unicodeenc = uni;
+	    temp = sc->lig==NULL ? NULL : sc->lig->components;
+	    free(sc->lig); sc->lig = NULL;
+	    if ( undo->u.state.lig!=NULL ) {
+		sc->lig = gcalloc(1,sizeof(Ligature)); sc->lig->lig = sc;
+		sc->lig->components = undo->u.state.lig;
+	    }
+	    undo->u.state.lig = temp;
 	}
       } break;
       default:
@@ -1094,12 +1115,20 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 	    sc->splines = NULL;
 	    SCRemoveDependents(sc);
 	}
-	if ( paster->u.state.splines!=NULL )
-	    sc->splines = SplinePointListCopy(paster->u.state.splines);
+	if ( paster->u.state.splines!=NULL ) {
+	    SplinePointList *temp = SplinePointListCopy(paster->u.state.splines);
+	    if ( sc->splines!=NULL ) {
+		SplinePointList *e = sc->splines;
+		while ( e->next!=NULL ) e = e->next;
+		e->next = temp;
+	    } else
+		sc->splines = temp;
+	}
 	/* Ignore any images, can't be in foreground level */
 	/* but might be hints */
 	if ( paster->undotype==ut_statehint || paster->undotype==ut_statename )
-	    ExtractHints(sc,paster->u.state.u.hints,true);
+	    if ( doclear )	/* Hints aren't meaningful unless we've cleared first */
+		ExtractHints(sc,paster->u.state.u.hints,true);
 	if ( paster->undotype==ut_statename )
 	    SCSetMetaData(sc,paster->u.state.charname,
 		    paster->u.state.unicodeenc==0xffff?-1:paster->u.state.unicodeenc,
