@@ -592,6 +592,140 @@ static void dumpgposkerndata(FILE *gpos,SplineFont *sf,int sli,
     }
 }
 
+static uint16 *ClassesFromNames(SplineFont *sf,char **classnames,int class_cnt,
+	int numGlyphs, SplineChar ***glyphs) {
+    uint16 *class;
+    int i;
+    char *pt, *end, ch;
+    SplineChar *sc, **gs=NULL;
+
+    class = gcalloc(numGlyphs,sizeof(uint16));
+    if ( glyphs ) *glyphs = gs = gcalloc(numGlyphs,sizeof(SplineChar *));
+    for ( i=1; i<class_cnt; ++i ) {
+	for ( pt = classnames[i]; *pt; pt = end+1 ) {
+	    end = strchr(pt,' ');
+	    if ( end==NULL )
+		end = pt+strlen(pt);
+	    ch = *end;
+	    *end = '\0';
+	    sc = SFGetCharDup(sf,-1,pt);
+	    if ( sc->ttf_glyph!=-1 ) {
+		class[sc->ttf_glyph] = i;
+		if ( gs!=NULL )
+		    gs[sc->ttf_glyph] = sc;
+	    }
+	    *end = ch;
+	    if ( ch=='\0' )
+	break;
+	}
+    }
+return( class );
+}
+
+static SplineChar **GlyphsFromClasses(SplineChar **gs, int numGlyphs) {
+    int i, cnt;
+    SplineChar **glyphs;
+
+    for ( i=cnt=0; i<numGlyphs; ++i )
+	if ( gs[i]!=NULL ) ++cnt;
+    glyphs = galloc((cnt+1)*sizeof(SplineChar *));
+    for ( i=cnt=0; i<numGlyphs; ++i )
+	if ( gs[i]!=NULL )
+	    glyphs[cnt++] = gs[i];
+    glyphs[cnt++] = NULL;
+    free(gs);
+return( glyphs );
+}
+
+static void DumpClass(FILE *gpos,uint16 *class,int numGlyphs) {
+    int ranges, i, cur, first, last, istart;
+
+    for ( i=ranges=0; i<numGlyphs; ) {
+	istart = i;
+	cur = class[i];
+	while ( i<numGlyphs && class[i]==cur )
+	    ++i;
+	if ( cur!=0 ) {
+	    ++ranges;
+	    if ( first==-1 ) first = istart;
+	    last = i-1;
+	}
+    }
+    if ( ranges*3+1>last-first+1+2 ) {
+	putshort(gpos,1);		/* Format 1, list of all posibilities */
+	putshort(gpos,first);
+	putshort(gpos,last-first+1);
+	for ( i=first; i<=last ; ++i )
+	    putshort(gpos,class[i]);
+    } else {
+	putshort(gpos,2);		/* Format 2, series of ranges */
+	putshort(gpos,ranges);
+	for ( i=0; i<numGlyphs; ) {
+	    istart = i;
+	    cur = class[i];
+	    while ( i<numGlyphs && class[i]==cur )
+		++i;
+	    if ( cur!=0 ) {
+		putshort(gpos,istart);
+		putshort(gpos,i-1);
+		putshort(gpos,cur);
+	    }
+	}
+    }
+}
+
+static void dumpgposkernclass(FILE *gpos,SplineFont *sf,KernClass *kc,
+	    struct alltabs *at) {
+    uint32 begin_off = ftell(gpos), pos;
+    uint32 script = sf->script_lang[kc->sli][0].script;
+    uint16 *class1, *class2;
+    SplineChar **glyphs;
+    int i;
+
+    putshort(gpos,2);		/* format 2 of the pair adjustment subtable */
+    putshort(gpos,0);		/* offset to coverage table */
+    if ( script==CHR('a','r','a','b') || script==CHR('h','e','b','r') ) {
+	/* Right to left kerns modify the second character's width */
+	/*  this doesn't make sense to me, but who am I to argue */
+	putshort(gpos,0x0000);	/* leave first char alone */
+	putshort(gpos,0x0004);	/* Alter XAdvance of second character */
+    } else {
+	putshort(gpos,0x0004);	/* Alter XAdvance of first character */
+	putshort(gpos,0x0000);	/* leave second char alone */
+    }
+    class1 = ClassesFromNames(sf,kc->firsts,kc->first_cnt,at->maxp.numGlyphs,&glyphs);
+    glyphs = GlyphsFromClasses(glyphs,at->maxp.numGlyphs);
+    class2 = ClassesFromNames(sf,kc->seconds,kc->second_cnt,at->maxp.numGlyphs,NULL);
+    putshort(gpos,0);		/* offset to first glyph classes */
+    putshort(gpos,0);		/* offset to second glyph classes */
+    putshort(gpos,kc->first_cnt);
+    putshort(gpos,kc->second_cnt);
+    for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i )
+	putshort(gpos,kc->offsets[i]);
+
+    pos = ftell(gpos);
+    fseek(gpos,begin_off+4*sizeof(uint16),SEEK_SET);
+    putshort(gpos,pos-begin_off);
+    fseek(gpos,pos,SEEK_SET);
+    DumpClass(gpos,class1,at->maxp.numGlyphs);
+
+    pos = ftell(gpos);
+    fseek(gpos,begin_off+5*sizeof(uint16),SEEK_SET);
+    putshort(gpos,pos-begin_off);
+    fseek(gpos,pos,SEEK_SET);
+    DumpClass(gpos,class2,at->maxp.numGlyphs);
+
+    pos = ftell(gpos);
+    fseek(gpos,begin_off+sizeof(uint16),SEEK_SET);
+    putshort(gpos,pos-begin_off);
+    fseek(gpos,pos,SEEK_SET);
+    dumpcoveragetable(gpos,glyphs);
+
+    free(glyphs);
+    free(class1);
+    free(class2);
+}
+
 static struct lookup *dumpgposCursiveAttach(FILE *gpos,AnchorClass *ac,
 	SplineFont *sf, struct lookup *lookups) {
     struct lookup *new;
@@ -1014,6 +1148,7 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
     enum possub_type type;
     PST *pst;
     KernPair *kp;
+    KernClass *kc;
 
     max = 30; cnt = 0;
     ligtags = galloc(max*sizeof(struct tagflaglang));
@@ -1089,6 +1224,19 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 	new->len = ftell(lfile)-new->offset;
     }
     free(ligtags);
+
+    for ( kc=sf->kerns; kc!=NULL; kc=kc->next ) {
+	new = chunkalloc(sizeof(struct lookup));
+	new->feature_tag = CHR('k','e','r','n');
+	new->flags = kc->flags;
+	new->script_lang_index = kc->sli;
+	new->lookup_type = 2;		/* Pair adjustment subtable type */
+	new->offset = ftell(lfile);
+	new->next = lookups;
+	lookups = new;
+	dumpgposkernclass(lfile,sf,kc,at);
+	new->len = ftell(lfile)-new->offset;
+    }
 
     /* Every Anchor Class gets its own lookup (and may get several if it has */
     /*  different anchor types or scripts) */

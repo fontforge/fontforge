@@ -154,6 +154,8 @@ struct ttfinfo {
     int anchor_class_cnt;		/* For GPOS */
     AnchorClass *ahead, *alast;
 
+    KernClass *khead, *klast;
+
     struct script_record **script_lang;
 
     uint32 mort_subs_tag;

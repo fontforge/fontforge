@@ -742,6 +742,7 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
     struct ttflangname *ln;
     struct table_ordering *ord;
     struct ttf_table *tab;
+    KernClass *kc;
 
     fprintf(sfd, "FontName: %s\n", sf->fontname );
     if ( sf->fullname!=NULL )
@@ -809,6 +810,16 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	    }
 	    fprintf( sfd,"\n");
 	}
+    }
+    for ( kc=sf->kerns; kc!=NULL; kc = kc->next ) {
+	fprintf( sfd, "KernClass: %d %d %d %d\n", kc->first_cnt, kc->second_cnt, kc->sli, kc->flags );
+	for ( i=1; i<kc->first_cnt; ++i )
+	    fprintf( sfd, " %d %s\n", strlen(kc->firsts[i]), kc->firsts[i]);
+	for ( i=1; i<kc->second_cnt; ++i )
+	    fprintf( sfd, " %d %s\n", strlen(kc->seconds[i]), kc->seconds[i]);
+	for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i )
+	    fprintf( sfd, " %d", kc->offsets[i]);
+	fprintf( sfd, "\n" );
     }
     for ( ord = sf->orders; ord!=NULL ; ord = ord->next ) {
 	for ( i=0; ord->ordered_features[i]!=0; ++i );
@@ -2180,6 +2191,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
     int realcnt, i, eof, mappos=-1, ch, glyph;
     struct table_ordering *lastord = NULL;
     struct ttf_table *lastttf = NULL;
+    KernClass *lastkc=NULL, *kc;
 
     sf = SplineFontEmpty();
     sf->cidmaster = cidmaster;
@@ -2347,6 +2359,37 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 			sf->script_lang[i][j].langs[k] |= getc(sfd);
 		    }
 		}
+	    }
+	} else if ( strmatch(tok,"KernClass:")==0 ) {
+	    int temp;
+	    kc = chunkalloc(sizeof(KernClass));
+	    if ( lastkc==NULL )
+		sf->kerns = kc;
+	    else
+		lastkc->next = kc;
+	    lastkc = kc;
+	    getint(sfd,&kc->first_cnt);
+	    getint(sfd,&kc->second_cnt);
+	    getint(sfd,&temp); kc->sli = temp;
+	    getint(sfd,&temp); kc->flags = temp;
+	    kc->firsts = galloc(kc->first_cnt*sizeof(char *));
+	    kc->seconds = galloc(kc->first_cnt*sizeof(char *));
+	    kc->firsts[0] = NULL;
+	    for ( i=1; i<kc->first_cnt; ++i ) {
+		getint(sfd,&temp);
+		kc->firsts[i] = galloc(temp+1); kc->firsts[i][temp] = '\0';
+		getc(sfd);	/* skip space */
+		fread(kc->firsts[i],1,temp,sfd);
+	    }
+	    for ( i=1; i<kc->second_cnt; ++i ) {
+		getint(sfd,&temp);
+		kc->seconds[i] = galloc(temp+1); kc->seconds[i][temp] = '\0';
+		getc(sfd);	/* skip space */
+		fread(kc->seconds[i],1,temp,sfd);
+	    }
+	    for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i ) {
+		getint(sfd,&temp);
+		kc->offsets[i] = temp;
 	    }
 	} else if ( strmatch(tok,"AnchorClass:")==0 ) {
 	    unichar_t *name;

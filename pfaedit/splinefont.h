@@ -375,6 +375,17 @@ typedef struct kernpair {
     struct kernpair *next;
 } KernPair;
 
+typedef struct kernclass {
+    int first_cnt, second_cnt;		/* Count of classes for first and second chars */
+    char **firsts;			/* list of a space seperated list of char names */
+    char **seconds;			/*  one entry for each class. Entry 0 is null */
+    					/*  and means everything not specified elsewhere */
+    uint16 sli;
+    uint16 flags;
+    int16 *offsets;			/* array of first_cnt*second_cnt entries */
+    struct kernclass *next;
+} KernClass;
+
 /* Some stems may appear, disappear, reapear several times */
 /* Serif stems on I which appear at 0, disappear, reappear at top */
 /* Or the major vertical stems on H which disappear at the cross bar */
@@ -615,6 +626,7 @@ typedef struct splinefont {
 	uint32 script;
 	uint32 *langs;
     } **script_lang;
+    struct kernclass *kerns;
 } SplineFont;
 
 /* mac styles. Useful idea we'll just steal it */

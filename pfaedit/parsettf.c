@@ -3682,6 +3682,31 @@ static uint16 *getClassDefTable(FILE *ttf, int classdef_offset, int cnt) {
 return glist;
 }
 
+static char **ClassToNames(struct ttfinfo *info,int class_cnt,uint16 *class,int glyph_cnt) {
+    char **ret = galloc(class_cnt*sizeof(char *));
+    int *lens = gcalloc(class_cnt,sizeof(int));
+    int i;
+
+    ret[0] = NULL;
+    for ( i=0 ; i<glyph_cnt; ++i ) if ( class[i]!=0 && info->chars[i]!=NULL )
+	lens[class[i]] += strlen(info->chars[i]->name)+1;
+    for ( i=1; i<class_cnt ; ++i )
+	ret[i] = galloc(lens[i]+1);
+    memset(lens,0,class_cnt*sizeof(int));
+    for ( i=0 ; i<glyph_cnt; ++i ) if ( class[i]!=0 && info->chars[i]!=NULL ) {
+	strcpy(ret[class[i]]+lens[class[i]], info->chars[i]->name );
+	lens[class[i]] += strlen(info->chars[i]->name)+1;
+	ret[class[i]][lens[class[i]]-1] = ' ';
+    }
+    for ( i=1; i<class_cnt ; ++i )
+	if ( lens[i]==0 )
+	    ret[i][0] = '\0';
+	else
+	    ret[i][lens[i]-1] = '\0';
+    free(lens);
+return( ret );
+}
+
 static void readvaluerecord(struct valuerecord *vr,int vf,FILE *ttf) {
     memset(vr,'\0',sizeof(struct valuerecord));
     if ( vf&1 )
@@ -3724,13 +3749,13 @@ static void addKernPair(struct ttfinfo *info, int glyph1, int glyph2,
 
 static void gposKernSubTable(FILE *ttf, int stoffset, struct ttfinfo *info, struct lookup *lookup) {
     int coverage, cnt, i, j, pair_cnt, vf1, vf2, glyph2;
-    int cd1, cd2, c1_cnt, c2_cnt, k, l;
-    int16 offset;
+    int cd1, cd2, c1_cnt, c2_cnt;
     uint16 format;
     uint16 *ps_offsets;
     uint16 *glyphs, *class1, *class2;
     struct valuerecord vr1, vr2;
     long foffset;
+    KernClass *kc;
 
     format=getushort(ttf);
     if ( format!=1 && format!=2 )	/* Unknown subtable format */
@@ -3773,20 +3798,25 @@ return;
 	fseek(ttf, foffset, SEEK_SET);	/* come back */
 	c1_cnt = getushort(ttf);
 	c2_cnt = getushort(ttf);
+	if ( info->khead==NULL )
+	    info->khead = kc = chunkalloc(sizeof(KernClass));
+	else
+	    kc = info->klast->next = chunkalloc(sizeof(KernClass));
+	info->klast = kc;
+	kc->first_cnt = c1_cnt; kc->second_cnt = c2_cnt;
+	kc->sli = lookup->script_lang_index;
+	kc->flags = lookup->flags;
+	kc->offsets = galloc(c1_cnt*c2_cnt*sizeof(int16));
+	kc->firsts = ClassToNames(info,c1_cnt,class1,info->glyph_cnt);
+	kc->seconds = ClassToNames(info,c2_cnt,class2,info->glyph_cnt);
 	for ( i=0; i<c1_cnt; ++i) {
 	    for ( j=0; j<c2_cnt; ++j) {
 		readvaluerecord(&vr1,vf1,ttf);
 		readvaluerecord(&vr2,vf2,ttf);
 		if ( lookup->flags&1 )	/* R2L */
-		    offset = vr2.xadvance+vr1.xplacement;
+		    kc->offsets[i*c2_cnt+j] = vr2.xadvance+vr1.xplacement;
 		else
-		    offset = vr1.xadvance+vr2.xplacement;
-		if( offset!=0 )
-		    for ( k=0; k<info->glyph_cnt; ++k )
-			if ( class1[k]==i )
-			    for ( l=0; l<info->glyph_cnt; ++l )
-				if ( class2[l]==j )
-				    addKernPair(info, k, l, offset,lookup->script_lang_index);
+		    kc->offsets[i*c2_cnt+j] = vr1.xadvance+vr2.xplacement;
 	    }
 	}
 	free(class1); free(class2);
@@ -6038,6 +6068,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->pfminfo = info->pfminfo;
     sf->names = info->names;
     sf->anchor = info->ahead;
+    sf->kerns = info->khead;
     sf->script_lang = info->script_lang;
     sf->ttf_tables = info->tabs;
     if ( info->encoding_name == em_symbol || info->encoding_name == em_mac )
