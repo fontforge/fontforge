@@ -404,8 +404,20 @@ int main( int argc, char **argv ) {
 		i<argc-1 )
 	    ++i; /* Already done, needed to be before display opened */
 	else {
-	    GFileGetAbsoluteName(argv[i],buffer,sizeof(buffer)); 
-	    if ( ViewPostscriptFont(buffer)!=0 )
+	    GFileGetAbsoluteName(argv[i],buffer,sizeof(buffer));
+	    if ( GFileIsDir(buffer)) {
+		char *fname;
+		if ( buffer[strlen(buffer)-1]!='/' ) {
+		    /* If dirname doesn't end in "/" we'll be looking in parent dir */
+		    buffer[strlen(buffer)+1]='\0';
+		    buffer[strlen(buffer)] = '/';
+		}
+		fname = GetPostscriptFontName(buffer,false);
+		if ( fname!=NULL )
+		    ViewPostscriptFont(fname);
+		any = 1;	/* Even if we didn't get a font, don't bring up dlg again */
+		free(fname);
+	    } else if ( ViewPostscriptFont(buffer)!=0 )
 		any = 1;
 	}
     }

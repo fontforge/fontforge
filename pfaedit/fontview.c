@@ -584,15 +584,19 @@ void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e) {
 	DelayEvent(_MenuExit,NULL);
 }
 
-char *GetPostscriptFontName(int mult) {
+char *GetPostscriptFontName(char *dir, int mult) {
     /* Some people use pf3 as an extension for postscript type3 fonts */
     static unichar_t fontmacsuit[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','m','a','c','-','s','u','i','t', '\0' };
     static unichar_t wild[] = { '*', '.', '{', 'p','f','a',',','p','f','b',',','s','f','d',',','t','t','f',',','b','d','f',',','o','t','f',',','p','f','3',',','t','t','c',',','g','s','f',',', 'c','i','d',',','b','i','n',',','h','q','x',',','d','f','o','n','t','}', 
 	     '{','.','g','z',',','.','Z',',','.','b','z','2',',','}',  '\0' };
     static unichar_t *mimes[] = { fontmacsuit, NULL };
-    unichar_t *ret = FVOpenFont(GStringGetResource(_STR_OpenPostscript,NULL),
-	    NULL,wild,mimes,mult,true);
-    char *temp = cu_copy(ret);
+    unichar_t *ret, *u_dir;
+    char *temp;
+
+    u_dir = uc_copy(dir);
+    ret = FVOpenFont(GStringGetResource(_STR_OpenPostscript,NULL),
+	    u_dir,wild,mimes,mult,true);
+    temp = cu_copy(ret);
 
     free(ret);
 return( temp );
@@ -626,7 +630,7 @@ void MenuOpen(GWindow base,struct gmenuitem *mi,GEvent *e) {
 
     for ( fvcnt=0, test=fv_list; test!=NULL; ++fvcnt, test=test->next );
     do {
-	temp = GetPostscriptFontName(true);
+	temp = GetPostscriptFontName(NULL,true);
 	if ( temp==NULL )
 return;
 	eod = strrchr(temp,'/');
@@ -2173,7 +2177,7 @@ static void FVMenuInsertFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( cidmaster==NULL || cidmaster->subfontcnt>=255 )	/* Open type allows 1 byte to specify the fdselect */
 return;
 
-    filename = GetPostscriptFontName(false);
+    filename = GetPostscriptFontName(NULL,false);
     if ( filename==NULL )
 return;
     new = LoadSplineFont(filename);

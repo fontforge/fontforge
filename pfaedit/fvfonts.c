@@ -468,7 +468,7 @@ return;
 }
 
 static void MergeAskFilename(FontView *fv) {
-    char *filename = GetPostscriptFontName(true);
+    char *filename = GetPostscriptFontName(NULL,true);
     SplineFont *sf;
     char *eod, *fpt, *file, *full;
 
@@ -848,7 +848,7 @@ return;
 }
 
 static void InterAskFilename(FontView *fv, real amount) {
-    char *filename = GetPostscriptFontName(false);
+    char *filename = GetPostscriptFontName(NULL,false);
     SplineFont *sf;
 
     if ( filename==NULL )
