@@ -432,7 +432,7 @@ static unichar_t *GenText(int32 *sizes,real scale) {
     unichar_t *uret;
 
     for ( i=0; sizes[i]!=0; ++i );
-    pt = cret = galloc(i*10);
+    pt = cret = galloc(i*10+1);
     for ( i=0; sizes[i]!=0; ++i ) {
 	if ( pt!=cret ) *pt++ = ',';
 	sprintf(pt,"%.1f",(sizes[i]&0xffff)*scale );
