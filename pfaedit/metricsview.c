@@ -1515,6 +1515,9 @@ return( true );
 #define MID_KernPairs	2021
 #define MID_AnchorPairs	2022
 #define MID_Vertical	2023
+#define MID_ReplaceChar	2024
+#define MID_InsertCharB	2025
+#define MID_InsertCharA	2026
 #define MID_CharInfo	2201
 #define MID_FindProblems 2216
 #define MID_MetaFont	2217
@@ -2185,6 +2188,43 @@ static void MVMenuScale(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MVSetVSb(mv);
 }
 
+static void MVMenuInsertChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    SplineFont *sf = mv->fv->sf;
+    int i, j, pos = GotoChar(sf);
+
+    if ( pos==-1 || pos>=sf->charcnt )
+return;
+
+    for ( i=0; i<mv->charcnt; ++i )
+	if ( mv->perchar[i].selected )
+    break;
+    if ( mi->mid==MID_InsertCharA ) {
+	if ( i==mv->charcnt ) i = mv->charcnt-1;
+	++i;
+    } else {
+	if ( i==mv->charcnt ) i = 0;
+    }
+
+    if ( mv->charcnt+1>=mv->max ) {
+	int oldmax=mv->max;
+	mv->max = mv->charcnt+10;
+	mv->perchar = grealloc(mv->perchar,mv->max*sizeof(struct metricchar));
+	mv->sstr = grealloc(mv->sstr,(mv->max+1)*sizeof(SplineChar *));
+	memset(mv->perchar+oldmax,'\0',(mv->max-oldmax)*sizeof(struct metricchar));
+    }
+    for ( j=mv->charcnt; j>i; --j )
+	MVSetPos(mv,j,mv->perchar[j-1].sc);
+    MVSetPos(mv,i,SFMakeChar(sf,pos));
+    MVDoSelect(mv,i);
+    for ( ; i<mv->charcnt; ++i )
+	if ( i!=0 )
+	    mv->perchar[i].dx = mv->perchar[i-1].dx + mv->perchar[i-1].dwidth + mv->perchar[i-1].kernafter + mv->perchar[i-1].hoff;
+    MVSetAnchor(mv);
+    GDrawRequestExpose(mv->gw,NULL,false);
+    MVResetText(mv);
+}
+
 static void MVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     SplineFont *sf = mv->fv->sf;
@@ -2206,12 +2246,17 @@ return;
 	    for ( pos = mv->perchar[i].sc->enc-1; pos>=0 && sf->chars[pos]==NULL; --pos );
 	    if ( pos<0 )
 return;
+	} else if ( mi->mid==MID_ReplaceChar ) {
+	    pos = GotoChar(sf);
+	    if ( pos<0 )
+return;
 	}
 	if ( pos>=0 && pos<mv->fv->sf->charcnt ) {
-	    MVSetPos(mv,i,SFMakeChar(mv->fv->sf,pos));
+	    MVSetPos(mv,i,SFMakeChar(sf,pos));
 	    /* May need to adjust start of current char if kerning changed */
-	    for ( /*i++*/ ; i<mv->charcnt; ++i )
-		mv->perchar[i].dx = mv->perchar[i-1].dx + mv->perchar[i-1].dwidth + mv->perchar[i-1].kernafter + mv->perchar[i-1].hoff;
+	    for ( ; i<mv->charcnt; ++i )
+		if ( i!=0 )
+		    mv->perchar[i].dx = mv->perchar[i-1].dx + mv->perchar[i-1].dwidth + mv->perchar[i-1].kernafter + mv->perchar[i-1].hoff;
 	    MVSetAnchor(mv);
 	    GDrawRequestExpose(mv->gw,NULL,false);
 	    MVResetText(mv);
@@ -2655,6 +2700,9 @@ static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_Zoomout, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, '-', ksm_control|ksm_meta, NULL, NULL, MVMenuScale, MID_ZoomOut },
     { { (unichar_t *) _STR_Zoomin, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'i' }, '+', ksm_shift|ksm_control|ksm_meta, NULL, NULL, MVMenuScale, MID_ZoomIn },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_InsertCharA, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, MVMenuInsertChar, MID_InsertCharA },
+    { { (unichar_t *) _STR_InsertCharB, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_control, NULL, NULL, MVMenuInsertChar, MID_InsertCharB },
+    { { (unichar_t *) _STR_ReplaceChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, 'G', ksm_control, NULL, NULL, MVMenuChangeChar, MID_ReplaceChar },
     { { (unichar_t *) _STR_NextChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, ']', ksm_control, NULL, NULL, MVMenuChangeChar, MID_Next },
     { { (unichar_t *) _STR_PrevChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '[', ksm_control, NULL, NULL, MVMenuChangeChar, MID_Prev },
     { { (unichar_t *) _STR_NextDefChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, ']', ksm_control|ksm_meta, NULL, NULL, MVMenuChangeChar, MID_NextDef },
@@ -2853,6 +2901,7 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    vwlist[i].ti.checked = mv->antialias;
 	    vwlist[i].ti.disabled = mv->bdf!=NULL;
 	  break;
+	  case MID_ReplaceChar:
 	  case MID_FindInFontView:
 	  case MID_Next:
 	  case MID_Prev:
