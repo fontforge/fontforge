@@ -5013,20 +5013,19 @@ static void FVChar(FontView *fv,GEvent *event) {
     } else if ( event->u.chr.chars[0]<=' ' || event->u.chr.chars[1]!='\0' ) {
 	/* Do Nothing */;
     } else {
-	if ( fv->sf->encoding_name==em_unicode || fv->sf->encoding_name==em_unicode4 ||
-		fv->sf->encoding_name==em_iso8859_1 ) {
-	    if ( event->u.chr.chars[0]<fv->sf->charcnt ) {
-		i = event->u.chr.chars[0];
-		SFMakeChar(fv->sf,i);
-	    } else
-		i = -1;
-	} else {
-	    for ( i=fv->sf->charcnt-1; i>=0; --i ) if ( fv->sf->chars[i]!=NULL ) {
-		if ( fv->sf->chars[i]->unicodeenc==event->u.chr.chars[0] )
-	    break;
-	    }
+	SplineFont *sf = fv->sf;
+	for ( i=0; i<sf->charcnt; ++i )
+	    if ( sf->chars[i]!=NULL )
+		if ( sf->chars[i]->unicodeenc==event->u.chr.chars[0] )
+	break;
+	if ( i==sf->charcnt ) for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]==NULL ) {
+	    SplineChar dummy;
+	    SCBuildDummy(&dummy,sf,i);
+	    if ( dummy.unicodeenc==event->u.chr.chars[0] )
+	break;
 	}
-	FVChangeChar(fv,i);
+	if ( i!=sf->charcnt )
+	    FVChangeChar(fv,i);
     }
 }
 

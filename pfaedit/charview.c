@@ -1921,8 +1921,18 @@ return;
 	int i;
 	for ( i=0; i<sf->charcnt; ++i )
 	    if ( sf->chars[i]!=NULL )
-		if ( sf->chars[i]->unicodeenc==event->u.chr.chars[0] )
+		if ( sf->chars[i]->unicodeenc==event->u.chr.chars[0] ) {
 		    CVChangeChar(cv,i);
+	break;
+		}
+	if ( i==sf->charcnt ) for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]==NULL ) {
+	    SplineChar dummy;
+	    SCBuildDummy(&dummy,sf,i);
+	    if ( dummy.unicodeenc==event->u.chr.chars[0] ) {
+		CVChangeChar(cv,i);
+	break;
+	    }
+	}
     }
 }
 
