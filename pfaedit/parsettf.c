@@ -3366,6 +3366,30 @@ static void readttfos2metrics(FILE *ttf,struct ttfinfo *info) {
     info->pfminfo.pfmset = true;
 }
 
+static int cmapEncFromName(struct ttfinfo *info,const char *nm, int glyphid) {
+    int uni = EncFromName(nm);
+    int i;
+
+    if ( uni==-1 )
+return( -1 );
+
+    for ( i=0; i<info->glyph_cnt; ++i ) if ( info->chars[i]!=NULL ) {
+	if ( info->chars[i]->unicodeenc==uni ) {
+	    if ( info->complainedmultname )
+		/* Don't do it again */;
+	    else if ( info->chars[i]->name!=NULL && strcmp(info->chars[i]->name,nm)==0 )
+		fprintf( stderr, "Warning: Glyph %d has the same name (%s) as Glyph %d\n",
+			i, nm, glyphid );
+	    else
+		fprintf( stderr, "Warning: Glyph %d is named %s which should mean it is mapped to\n Unicode U+%04X, but Glyph %d already has that encoding.\n",
+			glyphid, nm, uni, i);
+	    info->complainedmultname = true;
+return( -1 );
+	}
+    }
+return( uni );
+}
+
 static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
     int i,j;
     int format, len, gc, gcbig, val;
@@ -3401,7 +3425,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	    for ( i=0; i<258; ++i ) if ( indexes[i]!=0 || i==0 ) if ( info->chars[indexes[i]]!=NULL ) {
 		info->chars[indexes[i]]->name = copy(ttfstandardnames[i]);
 		if ( info->chars[indexes[i]]->unicodeenc==-1 )
-		    info->chars[indexes[i]]->unicodeenc = EncFromName(ttfstandardnames[i]);
+		    info->chars[indexes[i]]->unicodeenc = cmapEncFromName(info,ttfstandardnames[i],indexes[i]);
 	    }
 	    gcbig += 258;
 	    for ( i=258; i<gcbig; ++i ) {
@@ -3414,7 +3438,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 		if ( info->chars[indexes[i]]!=NULL ) {
 		    info->chars[indexes[i]]->name = nm;
 		    if ( info->chars[indexes[i]]->unicodeenc==-1 )
-			info->chars[indexes[i]]->unicodeenc = EncFromName(nm);
+			info->chars[indexes[i]]->unicodeenc = cmapEncFromName(info,nm,indexes[i]);
 		}
 	    }
 	    free(indexes);
