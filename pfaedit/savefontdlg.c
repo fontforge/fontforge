@@ -332,17 +332,14 @@ return( false );
 	    *done = true;
 	else
 	    *done = -1;
-    } else if ( event->type==et_controlevent && GGadgetGetCid(event->u.control.g)==1003 ) {
-	static int first = true;
-	if ( first )
-	    first = false;
-	else
-	    GGadgetSetChecked(GWidgetGetControl(gw,1004),true);
+    } else if ( event->type==et_controlevent && event->u.control.subtype == et_textchanged &&
+	    GGadgetGetCid(event->u.control.g)==1003 ) {
+	GGadgetSetChecked(GWidgetGetControl(gw,1004),true);
     }
 return( true );
 }
 
-static int AskResolution() {
+static int AskResolution(void) {
     GRect pos;
     static GWindow gw;
     GWindowAttrs wattrs;
@@ -448,7 +445,8 @@ return( -1 );
 	gcd[8].creator = GGroupCreate;
 
 	GGadgetsCreate(gw,gcd);
-    }
+    } else
+	GDrawSetUserData(gw,&done);
 
     GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
@@ -469,7 +467,7 @@ return( res );
 	}
 	GDrawSetVisible(gw,false);
 	if ( done==-1 )
-return( -1 );
+return( -2 );
 	if ( GGadgetIsChecked(GWidgetGetControl(gw,75)) )
 return( 75 );
 	if ( GGadgetIsChecked(GWidgetGetControl(gw,100)) )
