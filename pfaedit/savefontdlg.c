@@ -77,7 +77,7 @@ struct gfc_data {
 };
 
 #if __Mac
-static char *extensions[] = { ".pfa", ".pfb", "", ".mult", .ps", ".ps",
+static char *extensions[] = { ".pfa", ".pfb", "", ".mult", ".ps", ".ps",
 	".cid", ".cff", ".cid.cff",
 	".ttf", ".ttf", ".suit", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", ".svg", NULL };
