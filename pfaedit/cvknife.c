@@ -42,6 +42,8 @@ return;					/* Nothing to cut */
 
     if ( p->spline!=NULL )
 	p->sp = SplineBisect(p->spline,p->t);
+    if ( p->spl==NULL )		/* Kanou says this can happen. It doesn't hurt to check for it */
+return;
     if ( p->spl->first!=p->spl->last )
 	if ( p->sp==p->spl->first || p->sp==p->spl->last )
 return;					/* Already cut here */
