@@ -2674,10 +2674,11 @@ return;
 	gevent.type = event->type==KeyPress?et_char:et_charup;
 	gevent.u.chr.time = event->xkey.time;
 	gevent.u.chr.state = event->xkey.state;
-/*#ifdef _CursorsMustBe16x16*/
+/*#ifdef __Mac*/
 	/* On mac os x, map the command key to the control key. So Comand-Q=>^Q=>Quit */
 	/* I don't think it hurts to leave this enabled... */
-	if ( (event->xkey.state&0x20) && gdisp->macosx_cmd ) gevent.u.chr.state |= ksm_control;
+	if ( (event->xkey.state&ksm_cmdmacosx) && gdisp->macosx_cmd ) gevent.u.chr.state |= ksm_control;
+	if ( (event->xkey.state&ksm_option) && gdisp->macosx_cmd ) gevent.u.chr.state |= ksm_meta;
 /*#endif*/
 	gevent.u.chr.x = event->xkey.x;
 	gevent.u.chr.y = event->xkey.y;

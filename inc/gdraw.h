@@ -161,9 +161,13 @@ typedef struct gdisplay GDisplay;
 typedef struct gtimer GTimer;
 
 enum keystate_mask { ksm_shift=1, ksm_capslock=2, ksm_control=4, ksm_meta=8,
-	ksm_cmdmacosx=0x20,	/* But not the command key under suse ppc linux*/
+/* Suse X on a Mac maps command to meta. As of Mac 10.2, the command key is 0x10 */
+/*  In 10.0 the command key was 0x20 */
+	ksm_cmdmacosx=0x10,	/* But not the command key under suse ppc linux*/
 	ksm_super=0x40,		/* RedHat mask for the key with the windows flag on it */
 	ksm_hyper=0x80,
+/* Both Suse and Mac OS/X now map option to 0x2000, but under 10.0 it was meta */
+	ksm_option=0x2000,
 	ksm_button1=(1<<8), ksm_button2=(1<<9), ksm_button3=(1<<10),
 	ksm_buttons=(ksm_button1|ksm_button2|ksm_button3)};
 enum mnemonic_focus { mf_normal, mf_tab, mf_mnemonic, mf_shortcut };

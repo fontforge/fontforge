@@ -41,8 +41,10 @@ static int gmenubar_inited = false;
 # define _Keyboard 0
 #endif
 static enum { kb_ibm, kb_mac, kb_sun, kb_ppc } keyboard = _Keyboard;
-/* Sigh. In XonX the command key is mapped to 0x20 and Option to 0x8 (meta) */
+/* Sigh. In old XonX the command key is mapped to 0x20 and Option to 0x8 (meta) */
 /*  the option key conversions (option-c => ccidilla) are not done */
+/*  In the new X, the command key is mapped to 0x10 and Option to 0x2000 */
+/*  (again option key conversion are not done) */
 /*  While in Suse PPC X, the command key is 0x8 (meta) and option is 0x2000 */
 /*  and the standard mac option conversions are done */
 
