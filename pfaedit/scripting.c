@@ -1484,7 +1484,7 @@ static void bReencode(Context *c) {
 	{ em_jis208, "jis208" },
 	{ em_jis208, "jisx0208" },
 	{ em_sjis, "sjis" },
-	{ em_jis208, "jis212" },
+	{ em_jis212, "jis212" },
 	{ em_jis212, "jisx0212" },
 	{ em_unicode, "unicode" },
 	{ em_unicode4, "unicode4" },
