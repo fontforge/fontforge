@@ -1731,6 +1731,12 @@ static void bAutoHint(Context *c) {
     FVFakeMenus(c->curfv,200);
 }
 
+static void bAutoInstr(Context *c) {
+    if ( c->a.argc!=1 )
+	error( c, "Wrong number of arguments");
+    FVFakeMenus(c->curfv,202);
+}
+
 static void bClearHints(Context *c) {
     if ( c->a.argc!=1 )
 	error( c, "Wrong number of arguments");
@@ -2121,6 +2127,7 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "MergeFonts", bMergeFonts },
 /*  Menu */
     { "AutoHint", bAutoHint },
+    { "AutoInstr", bAutoInstr },
     { "ClearHints", bClearHints },
     { "SetWidth", bSetWidth },
     { "SetVWidth", bSetVWidth },
