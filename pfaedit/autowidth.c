@@ -725,7 +725,7 @@ static void FindFontParameters(WidthInfo *wi) {
 		    ybottom = y;
 	    }
 	}
-	if ( ytop<=.5 )
+	if ( ytop<=bb.miny+.5 )
 	    serifsize = 0;
 	else if ( ytop>caph/4 )
 	    serifsize = .06*(sf->ascent+sf->descent);
@@ -734,8 +734,15 @@ static void FindFontParameters(WidthInfo *wi) {
 
 	if ( serifsize!=0 ) {
 	    y = serifsize/4 + bb.miny;
-	    testx = SCFindMinXAtY(sf->chars[si],y)+ (yorig-y)*ca;
-	    seriflength = stemx-testx;
+	    testx = SCFindMinXAtY(sf->chars[si],y);
+	    if ( testx==NOTREACHED )
+		serifsize=0;
+	    else {
+		testx += (yorig-y)*ca;
+		seriflength = stemx-testx;
+		if ( seriflength < (sf->ascent+sf->descent)/200 )
+		    serifsize = 0;
+	    }
 	}
     } else
 	serifsize = .06*(sf->ascent+sf->descent);
