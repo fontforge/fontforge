@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 5-Aug-2002 -->
+  <!-- AP: Last modified: 29-Aug-2002 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -498,13 +498,12 @@ $ xset fp+ `pwd`
 	Mac OS/X
       <DD>
 	On Mac OS/X you can run <A HREF="Problems-MacOSX.html#Running">PfaEdit
-	directly</A> (if you've got XDarwin installed). OS/X has at least two font
-	formats, some fonts are stored in the old format (see above), while others
-	are stored as data fork resources. The data fork font files generally have
-	the extension ".dfont", and PfaEdit can edit these directly. I am told that
-	OS/X also supports normal .otf and .ttf font files. I have not tested this.<BR>
-	Editing old style fonts requires going through the same arcane procedures
-	described above.
+	directly</A> (if you've got <A HREF="Problems-MacOSX.html#binary">XDarwin
+	installed</A>). OS/X has at least two font formats, some fonts are stored
+	in the old format (see above), while others are stored as data fork resources.
+	The data fork font files generally have the extension ".dfont". On a Mac
+	PfaEdit is able to edit both formats directly. I am told that OS/X also supports
+	normal .otf and .ttf font files. I have not tested this.
     </DL>
   <DT>
     <B>How do I edit fonts on MS <A NAME="windows">windows</A>?</B>
@@ -516,7 +515,7 @@ $ xset fp+ `pwd`
 	First download the setup.exe program from
 	<A HREF="http://www.cygwin.com/">http://www.cygwin.com/</A>
       <LI>
-	Run this program. It will ask you what components of cygwin you wish to install
+	Run it. It will ask you what components of cygwin you wish to install
       <LI>
 	You will definitely need the base components and the X window system (you
 	might need some others I have not tested the minimum requirements accurately)
@@ -524,12 +523,40 @@ $ xset fp+ `pwd`
 	Once you have cygwin installed, start it. This should give you a terminal
 	window running bash (a unix shell)
       <LI>
-	Type: <CODE>xinit</CODE>
+	Download the <A HREF="index.html#binary">cygwin version of PfaEdit</A>, and
+	move it to whatever directory you think most appropriate
+	(<CODE>/usr/local/bin</CODE> is a reasonable choice)
+	<BLOCKQUOTE>
+	  <PRE>$ mkdir -p /usr/local/share/pfaedit /usr/local/bin /usr/local/share/man
+$ cd /usr/local/bin
+$ gunzip pfaedit_cygwin*.tgz
+$ tar xfv pfaedit_cygwin*.tar
+$ mv *.ui /usr/local/share/pfaedit
+$ mv pfaedit.1 /usr/local/share/man/man1
+</PRE>
+	</BLOCKQUOTE>
+	<P>
+	Then edit the file ~/.bashrc to contain the lines:
+	<BLOCKQUOTE>
+	  <PRE>PATH=/usr/local/bin:$PATH ; export PATH
+MANPATH=/usr/local/share/man:$MANPATH ; export MANPATH
+</PRE>
+	</BLOCKQUOTE>
+      <LI>
+	Then each time you want to run pfaedit, type:
+	<BLOCKQUOTE>
+	  <PRE>$ xinit
+</PRE>
+	</BLOCKQUOTE>
       <LI>
 	This should bring up X in a large window that covers the screen and within
 	that should be a subwindow, an xterm, running bash.
       <LI>
 	From the xterm you should be able start PfaEdit.
+	<BLOCKQUOTE>
+	  <PRE>$ pfaedit -new
+</PRE>
+	</BLOCKQUOTE>
     </UL>
     <P>
     If you want to be able to build PfaEdit under cygwin, you will need to grab

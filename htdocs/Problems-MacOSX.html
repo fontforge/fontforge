@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 24-Sep-2001 -->
-  <!-- AP: Last modified: 22-Aug-2002 -->
+  <!-- AP: Last modified: 29-Aug-2002 -->
   <TITLE>Special issues for PfaEdit on Mac OS/X</TITLE>
 </HEAD>
 <BODY>
@@ -103,16 +103,37 @@ running. This is free software available from:
 Then gunzip and untar my distribution
 <UL>
   <LI>
-    <A HREF="pfaedit_MacOSX-020822.tgz">Download pfaedit Mac OS/X executable
-    </A>Version: 22-August-2002
+    <A HREF="pfaedit_MacOSX-020829.tgz">Download pfaedit Mac OS/X executable
+    </A>Version: 29-August-2002
 </UL>
+<P>
+It is traditional to install programs like PfaEdit under /usr/local. My mac
+did not come with such a directory tree, so you might not want to
 <PRE>$ sudo -s
-# mkdir /usr/share/pfaedit
-# cp *.ui /usr/share/pfaedit
-# cp pfaedit /usr/bin
-# cp pfaedit.1 /usr/share/man/man1
+# mkdir -p /usr/local/share/pfaedit /usr/local/bin /usr/local/share/man
+# cp *.ui /usr/local/share/pfaedit
+# cp pfaedit /usr/local/bin
+# cp pfaedit.1 /usr/local/share/man/man1
 # ^D
 </PRE>
+<P>
+Edit your shell start up script (.bashrc, .cshrc, etc.) to set the PATH
+environment variable to include /usr/local/bin and the MANPATH variable to
+include /usr/local/share/man. If your shell is tcsh (or csh)
+<BLOCKQUOTE>
+  <PRE>$ vi ~/.cshrc
+setenv PATH /usr/local/bin:$PATH
+setenv MANPATH /usr/local/share/man:$MANPATH
+</PRE>
+</BLOCKQUOTE>
+<P>
+If your shell is bash
+<BLOCKQUOTE>
+  <PRE>$ vi ~/.bashrc
+PATH=/usr/local/bin:$PATH ; export PATH
+MANPATH=/usr/local/share/man:$MANPATH ; export MANPATH
+</PRE>
+</BLOCKQUOTE>
 <H2>
   <A NAME="Running">Running</A> PfaEdit on Mac OS/X
 </H2>
