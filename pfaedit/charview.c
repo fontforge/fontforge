@@ -2290,7 +2290,8 @@ static int cv_e_h(GWindow gw, GEvent *event) {
 	CVPaletteActivate(cv);
       break;
       case et_mousemove:
-	SCPreparePopup(cv->gw,cv->sc);
+	if ( event->u.mouse.y>cv->mbh )
+	    SCPreparePopup(cv->gw,cv->sc);
       break;
       case et_focus:
 #if 0
