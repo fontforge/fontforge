@@ -1,0 +1,183 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 30-Jun-2003 -->
+  <!-- AP: Last modified: 30-Jun-2003 -->
+  <TITLE>Non standard tables optionally placed by PfaEdit in True/Open Type</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+  Non standard tables optionally placed by PfaEdit in True/Open Type
+</H1>
+<UL>
+  <LI>
+    <A HREF="non-standard.html#PfEd">'PfEd' the PfaEdit extensions table</A>
+  <LI>
+    ????
+</UL>
+<H2>
+  '<A NAME="PfEd">PfEd</A>' -- the PfaEdit extensions table
+</H2>
+<BLOCKQUOTE>
+  The table begins with a table header containing a version number and a count
+  of sub-tables
+  <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+    <TR>
+      <TD>uint32</TD>
+      <TD>version</TD>
+      <TD>currently 0x00010000</TD>
+    </TR>
+    <TR>
+      <TD>uint32</TD>
+      <TD>count</TD>
+      <TD></TD>
+    </TR>
+  </TABLE>
+  <P>
+  This is followed by a table of contents, there will be count replications
+  of the following structure (ie. a tag and offset for each sub-table
+  <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+    <TR>
+      <TD>uint32</TD>
+      <TD>tag</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD>uint32</TD>
+      <TD>offset</TD>
+      <TD>from start of 'PfEd' table</TD>
+    </TR>
+  </TABLE>
+  <P>
+  The format of the subtable depends on the sub-table's tag. There are currently
+  3 tags supported, these are
+  <UL>
+    <LI>
+      '<A HREF="colr">colr</A>' -- per glyph color sub-table (stores the color
+      that appears in the font view)
+    <LI>
+      '<A HREF="non-standard.html#cmnt">cmnt</A>' -- per glyph comment sub-table
+      (stores the comment that appears in the Char Info dialog for the character)
+    <LI>
+      '<A HREF="non-standard.html#fcmt">fcmt</A>' -- the font comment sub-table
+      (stores the comment that appears in the Font Info dialog)
+  </UL>
+</BLOCKQUOTE>
+<H3>
+  '<A NAME="colr">colr</A>' -- the per-glyph color sub-table
+</H3>
+<BLOCKQUOTE>
+  The sub-table header begins with a version number, and a count of ranges
+  <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+    <TR>
+      <TD>uint16</TD>
+      <TD>version</TD>
+      <TD>0</TD>
+    </TR>
+    <TR>
+      <TD>uint16</TD>
+      <TD>count</TD>
+      <TD>of ranges</TD>
+    </TR>
+  </TABLE>
+  <P>
+  After this will be &lt;count&gt; instances of the following structure
+  <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+    <TR>
+      <TD>uint16</TD>
+      <TD>starting glyph index</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD>uint16</TD>
+      <TD>ending glyph index</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD>uint32</TD>
+      <TD>color</TD>
+      <TD>expressed as a 24bit rgb value</TD>
+    </TR>
+  </TABLE>
+</BLOCKQUOTE>
+<H3>
+  '<A NAME="cmnt">cmnt</A>' -- the per-glyph comment sub-table
+</H3>
+<BLOCKQUOTE>
+  The sub-table header begins with a version number, and a count of ranges
+  <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+    <TR>
+      <TD>uint16</TD>
+      <TD>version</TD>
+      <TD>0</TD>
+    </TR>
+    <TR>
+      <TD>uint16</TD>
+      <TD>count</TD>
+      <TD>of ranges</TD>
+    </TR>
+  </TABLE>
+  <P>
+  After this will be &lt;count&gt; instances of the following structure
+  <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+    <TR>
+      <TD>uint16</TD>
+      <TD>starting glyph index</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD>uint16</TD>
+      <TD>ending glyph index</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD>uint32</TD>
+      <TD>offset</TD>
+      <TD>from the start of this sub-table</TD>
+    </TR>
+  </TABLE>
+  <P>
+  The offset points to an array of offsets
+  (&lt;end&gt;-&lt;start&gt;+1+1) elements in the array, so one element for
+  each glyph index mentioned in the range structure above, with one left over
+  which allows readers to compute the the length of the last string.
+  <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+    <TR>
+      <TD>uint32</TD>
+      <TD>offset</TD>
+      <TD>from start of table</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>...</TD>
+      <TD></TD>
+    </TR>
+  </TABLE>
+  <P>
+  And each of these offsets points to a unicode (UCS2) string. The strings
+  are assumed to be consecutive, so the length of each may be calculated by
+  subtracting its offset from the offset to the next string.
+</BLOCKQUOTE>
+<H3>
+  '<A NAME="fcmt">fcmt</A>' -- the font comment sub-table
+</H3>
+<BLOCKQUOTE>
+  The sub-table header begins with a version number, and a count of ranges
+  <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+    <TR>
+      <TD>uint16</TD>
+      <TD>version</TD>
+      <TD>0</TD>
+    </TR>
+    <TR>
+      <TD>uint16</TD>
+      <TD>length</TD>
+      <TD>number of characters in the string</TD>
+    </TR>
+  </TABLE>
+  <P>
+  And this is followed by &lt;length&gt; Unicode (UCS2) characters. Currently
+  these unicode characters will always contain ASCII values, but that may change
+  some day.
+</BLOCKQUOTE>
+</BODY></HTML>
