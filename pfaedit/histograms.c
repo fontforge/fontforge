@@ -416,6 +416,7 @@ static void HistExpose(GWindow pixmap, struct hist_dlg *hist) {
     char buf[20];
     unichar_t ubuf[20];
 
+    GDrawSetLineWidth(pixmap,0);
     r.x = hist->x; r.y = hist->y;
     r.width = hist->hwidth; r.height = height;
     GDrawDrawRect(pixmap,&r,0x000000);
