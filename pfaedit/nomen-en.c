@@ -2372,6 +2372,8 @@ static char *str_ProbLeftOdd = "The control point left of the selected point is 
 static char *str_ProbCIDMult = "This character is defined in more than one of the CID subfonts";
 static char *str_ProbCIDBlank = "This character is not defined in any of the CID subfonts";
 static char *str_ProbIrrelCP = "This character contains control points which are probably too close to the main points to alter the look of the spline */
+static char *str_ProbBadSubs = "This character contains a substitution or ligature entry which refers to an empty char"
+static char *str_ProbBadSubs2 = "'%2$c%3$c%4$c%5$c' refers to an empty character \"%1$.20hs\"";
 static char *str_ProbExplain = "Problem explanation";
 static char *str_Fix = "Fix";
 static char *str_Stop = "Stop";
@@ -2461,6 +2463,8 @@ static char *str_AdvanceWidth = "Check Advance:
 static char *str_AdvanceWidthPopup = "Check for characters whose advance width is not the displayed value."
 static char *str_AdvanceVWidth = "Check VAdvance:
 static char *str_AdvanceVWidthPopup = "Check for characters whose vertical advance width is not the displayed value."
+static char *str_SubsToEmptyChar = "Check subtitutions for empty chars";
+static char *str_SubsToEmptyCharPopup = "Check for characters which contain 'GSUB' entries which refer to empty characters"
 
 	/* Meta font */
 static char *str_MetaFont = "Meta Font...";

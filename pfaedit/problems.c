@@ -57,6 +57,7 @@ struct problems {
     unsigned int stem3: 1;
     unsigned int showexactstem3: 1;
     unsigned int irrelevantcontrolpoints: 1;
+    unsigned int badsubs: 1;
     unsigned int explain: 1;
     unsigned int done: 1;
     unsigned int doneexplain: 1;
@@ -72,6 +73,8 @@ struct problems {
     GGadget *explaintext, *explainvals, *ignoregadg;
     SplineChar *lastcharopened;
     CharView *cvopened;
+    char *badsubsname;
+    uint32 badsubstag;
 };
 
 static int openpaths=1, pointstooclose=1/*, missing=0*/, doxnear=0, doynear=0;
@@ -79,6 +82,7 @@ static int doynearstd=1, linestd=1, cpstd=1, cpodd=1, hintnopt=0, ptnearhint=0;
 static int hintwidth=0, direction=0, flippedrefs=1, bitmaps=0;
 static int cidblank=0, cidmultiple=1, advancewidth=0, vadvancewidth=0;
 static int irrelevantcp=1;
+static int badsubs=1;
 static int stem3=0, showexactstem3=0;
 static real near=3, xval=0, yval=0, widthval=50, advancewidthval=0, vadvancewidthval=0;
 static real irrelevantfactor = .005;
@@ -118,6 +122,7 @@ static real irrelevantfactor = .005;
 #define CID_ShowExactStem3	1027
 #define CID_IrrelevantCP	1028
 #define CID_IrrelevantFactor	1029
+#define CID_BadSubs		1030
 
 
 static void FixIt(struct problems *p) {
@@ -436,7 +441,11 @@ return;
 	    explain==_STR_ProbBadVWidth;
     GGadgetSetVisible(GWidgetGetControl(p->explainw,CID_Fix),fixable);
 
-    if ( found==expected )
+    if ( explain==_STR_ProbBadSubs ) {
+	u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),
+		GStringGetResource(_STR_ProbBadSubs2,NULL), p->badsubsname,
+		(p->badsubstag>>24),(p->badsubstag>>16)&0xff,(p->badsubstag>>8)&0xff,p->badsubstag&0xff);
+    } else if ( found==expected )
 	ubuf[0]='\0';
     else {
 	u_strcpy(ubuf,GStringGetResource(_STR_Found,NULL));
@@ -461,10 +470,18 @@ return;
 	    GDrawRaise(sc->views->gw);
 	else
 	    p->cvopened = CharViewCreate(sc,p->fv);
+	GDrawSync(NULL);
 	GDrawProcessPendingEvents(NULL);
 	GDrawProcessPendingEvents(NULL);
 	p->lastcharopened = sc;
     }
+    if ( explain==_STR_ProbBadSubs ) {
+	SCCharInfo(sc);
+	GDrawSync(NULL);
+	GDrawProcessPendingEvents(NULL);
+	GDrawProcessPendingEvents(NULL);
+    }
+	
     SCUpdateAll(sc);		/* We almost certainly just selected something */
 
     GDrawSetVisible(p->explainw,true);
@@ -1289,6 +1306,39 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	}
     }
 
+    if ( p->badsubs && !p->finish ) {
+	PST *pst;
+	char *pt, *end; int ch;
+	for ( pst = sc->possub ; pst!=NULL; pst=pst->next ) {
+	    if ( pst->type==pst_substitution || pst->type==pst_alternate ||
+		    pst->type==pst_multiple || pst->type==pst_ligature ) {
+		for ( pt=pst->u.subs.variant; *pt!='\0' ; pt=end ) {
+		    end = strchr(pt,' ');
+		    if ( end==NULL ) end=pt+strlen(pt);
+		    ch = *end;
+		    *end = '\0';
+		    if ( !SCWorthOutputting(SFGetCharDup(sc->parent,-1,pt)) ) {
+			changed = true;
+			p->badsubsname = copy(pt);
+			*end = ch;
+			p->badsubstag = pst->tag;
+			ExplainIt(p,sc,_STR_ProbBadSubs,0,0);
+			free(p->badsubsname);
+			if ( p->ignorethis )
+			    p->badsubs = false;
+		    } else
+			*end = ch;
+		    while ( *end==' ' ) ++end;
+		    if ( !p->badsubs )
+		break;
+		}
+		if ( !p->badsubs )
+	    break;
+	    }
+	}
+    }
+
+
     if ( needsupdate || changed )
 	SCUpdateAll(sc);
 return( changed );
@@ -1416,6 +1466,7 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	bitmaps = p->bitmaps = GGadgetIsChecked(GWidgetGetControl(gw,CID_Bitmaps));
 	advancewidth = p->advancewidth = GGadgetIsChecked(GWidgetGetControl(gw,CID_AdvanceWidth));
 	irrelevantcp = p->irrelevantcontrolpoints = GGadgetIsChecked(GWidgetGetControl(gw,CID_IrrelevantCP));
+	badsubs = p->badsubs = GGadgetIsChecked(GWidgetGetControl(gw,CID_BadSubs));
 	stem3 = p->stem3 = GGadgetIsChecked(GWidgetGetControl(gw,CID_Stem3));
 	if ( stem3 )
 	    showexactstem3 = p->showexactstem3 = GGadgetIsChecked(GWidgetGetControl(gw,CID_ShowExactStem3));
@@ -1450,7 +1501,7 @@ return( true );
 		doynearstd || linestd || hintnopt || ptnearhint || hintwidth ||
 		direction || p->cidmultiple || p->cidblank || p->flippedrefs ||
 		p->bitmaps || p->advancewidth || p->vadvancewidth || p->stem3 ||
-		p->irrelevantcontrolpoints ) {
+		p->irrelevantcontrolpoints || p->badsubs ) {
 	    DoProbs(p);
 	}
 	p->done = true;
@@ -1493,8 +1544,8 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData pgcd[13], pagcd[5], hgcd[7], rgcd[6], cgcd[5], mgcd[10];
-    GTextInfo plabel[13], palabel[5], hlabel[7], rlabel[6], clabel[5], mlabel[10];
+    GGadgetCreateData pgcd[13], pagcd[5], hgcd[7], rgcd[7], cgcd[5], mgcd[10];
+    GTextInfo plabel[13], palabel[5], hlabel[7], rlabel[7], clabel[5], mlabel[10];
     GTabInfo aspects[9];
     struct problems p;
     char xnbuf[20], ynbuf[20], widthbuf[20], nearbuf[20], awidthbuf[20],
@@ -1837,6 +1888,16 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rgcd[4].gd.handle_controlevent = Prob_TextChanged;
     rgcd[4].data = (void *) CID_VAdvanceWidth;
     rgcd[4].creator = GTextFieldCreate;
+
+    rlabel[5].text = (unichar_t *) _STR_SubsToEmptyChar;
+    rlabel[5].text_in_resource = true;
+    rgcd[5].gd.label = &rlabel[5];
+    rgcd[5].gd.pos.x = 3; rgcd[5].gd.pos.y = rgcd[4].gd.pos.y+24; 
+    rgcd[5].gd.flags = gg_visible | gg_enabled;
+    if ( badsubs ) rgcd[5].gd.flags |= gg_cb_on;
+    rgcd[5].gd.popup_msg = GStringGetResource(_STR_SubsToEmptyCharPopup,NULL);
+    rgcd[5].gd.cid = CID_BadSubs;
+    rgcd[5].creator = GCheckBoxCreate;
 
 /* ************************************************************************** */
 
