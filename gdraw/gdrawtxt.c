@@ -949,7 +949,7 @@ static int TextWidth1(struct font_data *fd,char *transbuf,int len) {
     register XCharStruct *per_char = fd->info->per_char;
     register unsigned char *tpt = (unsigned char *) transbuf, *end = tpt+len;
     register struct kern_info **kerns=fd->kerns, *kpt;
-    int width = 0, cw;
+    int width = 0;
 
     if ( per_char==NULL )
 return( len*fd->info->max_bounds.width );
@@ -957,14 +957,15 @@ return( len*fd->info->max_bounds.width );
     if ( kerns==NULL ) {
 	ch1 = *tpt-offset;
 	while ( tpt<end ) {
-	    cw = per_char[ch1].width;
-	    width += cw;
+	    if ( ch1>=0 )
+		width += per_char[ch1].width;
 	    ch1 = *++tpt-offset;
 	}
     } else {
 	ch1 = *tpt-offset;
 	while ( tpt<end ) {
-	    width += per_char[ch1].width;
+	    if ( ch1>=0 )
+		width += per_char[ch1].width;
 	    ch2 = *++tpt;
 	    if ( (kpt=kerns[ch1])!=NULL && tpt<end ) {
 		while ( kpt!=NULL && kpt->following!=ch2 ) kpt = kpt->next;
@@ -2134,7 +2135,7 @@ static void GDrawArabicForms(GBiText *bd, int32 start, int32 end) {
 /* returns
 	-1 if the base direction is right2left
 	0  if the base direction is left2right but there are r2l things
-	1  if it's all r2l
+	1  if it's all l2r
 */
 int32 GDrawIsAllLeftToRight(unichar_t *text, int32 cnt) {
     unichar_t *end;
@@ -2206,7 +2207,7 @@ void GDrawBiText1(GBiText *bd, const unichar_t *text, int32 cnt) {
 	    bd->override[pos] = override;
 	    bd->type[pos] = ____utype[ch+1];
 	    bd->original[pos] = (unichar_t *) pt;
-	    if ( ch>=0x621 && ch<=0x6ff )
+	    if ( ch>=0x621 && ch<=0x6ff )	/* The other arabic chars have already been interpreted, presumably user knows what he's doing */
 		bd->interpret_arabic = true;
 	    ++pos;
 	}
@@ -2314,6 +2315,7 @@ void GDrawBiText2(GBiText *bd, int32 start, int32 end) {
 	    bd->text[pos] = ch;
     }
 
+#if 0
     /* do combiners */
     /* combiners must always follow (in string order) the character they modify*/
     for ( pos = start; pos<end; ++pos ) {
@@ -2327,6 +2329,7 @@ void GDrawBiText2(GBiText *bd, int32 start, int32 end) {
 	    if ( bd->level[pos]>maxlevel ) maxlevel = bd->level[pos];
 	}
     }
+#endif
 
     /* Reverse text */
     for ( level = maxlevel; level>0; --level ) {
@@ -2338,6 +2341,25 @@ void GDrawBiText2(GBiText *bd, int32 start, int32 end) {
 		bd->text[j] = temp;
 		bd->original[i] = bd->original[j];
 		bd->original[j] = tpt;
+	    }
+	    pos = epos;
+	}
+    }
+
+    /* do combiners */
+    /* combiners must always follow (in string order) the character they modify*/
+    /*  but now combiners in r2l text will precede it */
+    for ( pos = start; pos<end; ++pos ) {
+	if ( iscombining(bd->text[pos]) && (bd->level[pos]&1) && pos!=start ) {
+	    for ( epos = pos; epos<end && iscombining(bd->text[epos]) ; ++epos );
+	    if ( epos<end ) {
+		for ( i=pos,j=epos; i<j; ++i, --j ) {
+		    unichar_t temp = bd->text[i], *tpt = bd->original[i];
+		    bd->text[i] = bd->text[j];
+		    bd->text[j] = temp;
+		    bd->original[i] = bd->original[j];
+		    bd->original[j] = tpt;
+		}
 	    }
 	    pos = epos;
 	}
