@@ -4106,7 +4106,7 @@ static void BDFsSetAsDs(SplineFont *sf) {
     }
 }
 
-static int texparams[] = { _STR_Slant, _STR_Space, _STR_Stretch, _STR_Shrink, _STR_XHeightC, _STR_Quad, _STR_MathSp, 0 };
+static int texparams[] = { _STR_Slant, _STR_Space, _STR_Stretch, _STR_Shrink, _STR_XHeightC, _STR_Quad, _STR_ExtraSp, 0 };
 static int texpopups[] = { _STR_SlantPopup, _STR_SpacePopup, _STR_StretchPopup, _STR_ShrinkPopup, _STR_XHeightCPopup, _STR_QuadPopup, _STR_ExtraPopup, 0 };
 
 static int ParseTeX(struct gfi_data *d) {
