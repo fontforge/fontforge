@@ -131,6 +131,8 @@ if test "$gww_uselessiconv" = "no" ; then
  AC_CHECK_HEADERS([iconv.h])
 fi
 
+AC_CHECK_HEADERS([ieeefp.h])
+
 gww_hasbytecode="no"
 AC_ARG_WITH(freetype-bytecode,
  [  --with-freetype-bytecode   Control whether we build with the bytecode interpreter],
