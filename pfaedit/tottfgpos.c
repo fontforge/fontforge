@@ -551,7 +551,8 @@ static void dumpcoveragetable(FILE *gpos,SplineChar **glyphs) {
 	    ++range_cnt;
 	last = glyphs[i]->ttf_glyph;
     }
-    if ( i<=3*range_cnt ) {
+    /* I think Windows will only accept format 2 coverage tables? */
+    if ( false /*i<=3*range_cnt*/ ) {
 	/* We use less space with a list of glyphs than with a set of ranges */
 	putshort(gpos,1);		/* Coverage format=1 => glyph list */
 	putshort(gpos,i);		/* count of glyphs */
