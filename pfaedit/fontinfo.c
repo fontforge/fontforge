@@ -2293,8 +2293,8 @@ static void AnchorClassNameDecompose(AnchorClass *ac,const unichar_t *line) {
     line += 5;
     if (( line[0]=='r' || line[0]==' ' ) &&
 	    ( line[1]=='b' || line[1]==' ' ) &&
-	    ( line[2]=='l' || line[1]==' ' ) &&
-	    ( line[3]=='m' || line[2]==' ' ) &&
+	    ( line[2]=='l' || line[2]==' ' ) &&
+	    ( line[3]=='m' || line[3]==' ' ) &&
 	    line[4]==' ' ) {
 	ac->flags = 0;
 	if ( line[0]=='r' ) ac->flags |= pst_r2l;
