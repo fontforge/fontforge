@@ -1972,7 +1972,7 @@ static void bSetPanose(Context *c) {
     if ( c->a.argc!=2 && c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
     if ( c->a.argc==2 ) {
-	if ( c->a.vals[1].type!=v_arr || c->a.vals[1].type!=v_arrfree )
+	if ( c->a.vals[1].type!=v_arr && c->a.vals[1].type!=v_arrfree )
 	    error(c,"Bad argument type");
 	if ( c->a.vals[1].u.aval->argc!=10 )
 	    error(c,"Wrong size of array");
