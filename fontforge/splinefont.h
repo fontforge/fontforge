@@ -1456,6 +1456,7 @@ extern int ScriptLangMatch(struct script_record *sr,uint32 script,uint32 lang);
 extern int SRMatch(struct script_record *sr1,struct script_record *sr2);
 
 struct cidmap;			/* private structure to encoding.c */
+extern int CIDFromName(char *name,SplineFont *cidmaster);
 extern int CID2Uni(struct cidmap *map,int cid);
 extern int CID2NameEnc(struct cidmap *map,int cid, char *buffer, int len);
 extern int NameEnc2CID(struct cidmap *map,int enc, char *name);
