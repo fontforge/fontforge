@@ -29,6 +29,7 @@
 #include <math.h>
 #include "utype.h"
 #include "ustring.h"
+#include <chardata.h>
 #include <unistd.h>
 
 /* The pcf code is adapted from... */
@@ -124,7 +125,7 @@ static void MakeEncChar(SplineFont *sf,int enc,char *name) {
 }
 
 static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
-	int swidth, int swidth1) {
+	int swidth, int swidth1, enum charset encname) {
     int i = -1;
 
     if ( strcmp(name,".notdef")==0 ) {
@@ -133,7 +134,7 @@ static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
 	else if ( sf->onlybitmaps && ((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) ) i = enc;
 	if ( i>=sf->charcnt ) i = -1;
 	if ( i!=-1 && (sf->chars[i]==NULL || strcmp(sf->chars[i]->name,name)!=0 )) {
-	    MakeEncChar(sf,enc,name);
+	    SFMakeChar(sf,enc);
 	    if ( sf->onlybitmaps ) {
 		sf->chars[enc]->width = swidth;
 		sf->chars[enc]->widthset = true;
@@ -142,10 +143,53 @@ static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
 	    }
 	}
     } else {
-	if ( enc!=-1 && enc<sf->charcnt && sf->chars[enc]!=NULL &&
-		(strcmp(sf->chars[enc]->name,name)==0 || UniFromName(name)==enc ))
+	if ( enc!=-1 && enc<sf->charcnt && sf->encoding_name==encname ) {
 	    i = enc;
-	else if ( enc<sf->charcnt && sf->chars[enc]!=NULL &&
+	} else if ( enc!=-1 && enc<CountOfEncoding(encname) &&
+		  (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4 || sf->encoding_name==em_iso8859_1) ) {
+	    if ( enc>255 && sf->encoding_name==em_iso8859_1 )
+		SFReencodeFont(sf,em_unicode);
+	    switch (encname) {
+	      case em_iso8859_2: i = unicode_from_i8859_2[enc]; break;
+	      case em_iso8859_3: i = unicode_from_i8859_3[enc]; break;
+	      case em_iso8859_4: i = unicode_from_i8859_4[enc]; break;
+	      case em_iso8859_5: i = unicode_from_i8859_5[enc]; break;
+	      case em_iso8859_6: i = unicode_from_i8859_6[enc]; break;
+	      case em_iso8859_7: i = unicode_from_i8859_7[enc]; break;
+	      case em_iso8859_8: i = unicode_from_i8859_8[enc]; break;
+	      case em_iso8859_9: i = unicode_from_i8859_9[enc]; break;
+	      case em_iso8859_10: i = unicode_from_i8859_10[enc]; break;
+	      case em_iso8859_11: i = unicode_from_i8859_11[enc]; break;
+	      case em_iso8859_13: i = unicode_from_i8859_13[enc]; break;
+	      case em_iso8859_14: i = unicode_from_i8859_14[enc]; break;
+	      case em_iso8859_15: i = unicode_from_i8859_15[enc]; break;
+	      case em_koi8_r: i = unicode_from_koi8_r[enc]; break;
+	      case em_jis201: i = unicode_from_jis201[enc]; break;
+	      case em_win: i = unicode_from_win[enc]; break;
+	      case em_mac:  i = unicode_from_mac[enc]; break;
+	      case em_symbol: i = unicode_from_MacSymbol[enc]; break;
+	      case em_zapfding:  i = unicode_from_ZapfDingbats[enc]; break;
+	      case em_adobestandard: i = unicode_from_adobestd[enc]; break;
+	      case em_jis208: case em_jis212: case em_ksc5601: case em_gb2312: {
+		  int ch1 = (enc>>8)-0x21, ch2 = (enc&0xff)-0x21;
+		  int index = ch1*94+ch2;
+		  if ( ch1<0 || ch1>0x7e - 0x21 || ch2<0 || ch2>0x7e - 0x21 )
+		      i = -1;
+		  else switch ( encname ) {
+		      case em_jis208: i = unicode_from_jis208[index]; break;
+		      case em_jis212: i = unicode_from_jis212[index]; break;
+		      case em_ksc5601: i = unicode_from_ksc5601[index]; break;
+		      case em_gb2312: i = unicode_from_gb2312[index]; break;
+		  }
+	      } break;
+	      case em_big5: i = unicode_from_big5[enc-0xa100]; break;
+	      case em_big5hkscs: i = unicode_from_big5hkscs[enc-0x8100]; break;
+	      case em_johab: i = unicode_from_johab[enc-0x8400]; break;
+              default: i = -1; break;
+	    }
+	    if ( i==0 && enc!=0 )
+		i = -1;
+	} else if ( enc<sf->charcnt && sf->chars[enc]!=NULL &&
 		  ((sf->chars[enc]->unicodeenc==0x2206 && strcmp(name,"Delta")==0) ||
 		   (sf->chars[enc]->unicodeenc==0x2126 && strcmp(name,"Omega")==0) ||
 		   (sf->chars[enc]->unicodeenc==0xb5 && strcmp(name,"mu")==0) ))
@@ -153,6 +197,13 @@ static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
 	else for ( i=sf->charcnt-1; i>=0 ; --i ) if ( sf->chars[i]!=NULL ) {
 	    if ( strcmp(name,sf->chars[i]->name)==0 )
 	break;
+	}
+	if ( i!=-1 && i<sf->charcnt && sf->chars[i]==NULL ) {
+	    SFMakeChar(sf,i);
+	    if ( sf->onlybitmaps && ((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) ) {
+		free(sf->chars[i]->name);
+		sf->chars[i]->name = copy(name);
+	    }
 	}
 	if ( i==-1 && (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4 ||
 		sf->encoding_name==em_iso8859_1)) {
@@ -221,7 +272,8 @@ struct metrics {
     int res;
 };
 
-static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,int depth, struct metrics *defs) {
+static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,int depth,
+	struct metrics *defs, enum charset encname) {
     BDFChar *bc;
     char name[40], tok[100];
     int enc=-1, width=defs->dwidth, xmin=0, xmax=0, ymin=0, ymax=0, hsz, vsz;
@@ -245,6 +297,7 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,int depth, struct m
 		else
 		    ungetc(ch,bdf);
 	    }
+	    if ( enc<-1 ) enc = -1;
 	} else if ( strcmp(tok,"DWIDTH")==0 )
 	    fscanf(bdf,"%d %*d",&width);
 	else if ( strcmp(tok,"SWIDTH")==0 )
@@ -258,7 +311,7 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,int depth, struct m
 	} else if ( strcmp(tok,"BITMAP")==0 )
     break;
     }
-    i = figureProperEncoding(sf,b,enc,name,swidth,swidth1);
+    i = figureProperEncoding(sf,b,enc,name,swidth,swidth1,encname);
     if ( i!=-1 ) {
 	if ( (bc=b->chars[i])!=NULL ) {
 	    free(bc->bitmap);
@@ -1538,7 +1591,8 @@ return( false );
 return( true );
 }
 
-static void PcfReadEncodingsNames(FILE *file,struct toc *toc,SplineFont *sf, BDFFont *b) {
+static void PcfReadEncodingsNames(FILE *file,struct toc *toc,SplineFont *sf,
+	BDFFont *b, enum charset encname) {
     int format, cnt, i, stringsize;
     int *offsets=NULL;
     char *string=NULL;
@@ -1579,7 +1633,7 @@ static void PcfReadEncodingsNames(FILE *file,struct toc *toc,SplineFont *sf, BDF
 	char *name;
 	if ( string!=NULL ) name = string+offsets[i];
 	else name = ".notdef";
-	b->chars[i]->enc = figureProperEncoding(sf,b,b->chars[i]->enc,name,-1,-1);
+	b->chars[i]->enc = figureProperEncoding(sf,b,b->chars[i]->enc,name,-1,-1,encname);
 	if ( b->chars[i]->enc!=-1 )
 	    b->chars[i]->sc = sf->chars[b->chars[i]->enc];
     }
@@ -1606,7 +1660,8 @@ return( false );
 return( true );
 }
 
-static int PcfParse(FILE *file,struct toc *toc,SplineFont *sf,BDFFont *b) {
+static int PcfParse(FILE *file,struct toc *toc,SplineFont *sf,BDFFont *b,
+	enum charset encname) {
     int metrics_cnt;
     struct pcfmetrics *metrics = pcfGetMetricsTable(file,toc,PCF_METRICS,&metrics_cnt);
     int mcnt = metrics_cnt;
@@ -1634,14 +1689,14 @@ return( false );
 
     if ( !PcfReadBitmaps(file,toc,b))
 return( false );
-    PcfReadEncodingsNames(file,toc,sf,b);
+    PcfReadEncodingsNames(file,toc,sf,b,encname);
     if ( sf->onlybitmaps )
 	PcfReadSWidths(file,toc,b);
     new = gcalloc(sf->charcnt,sizeof(BDFChar *));
     mult = gcalloc(mcnt+1,sizeof(BDFChar *)); multcnt=0;
     for ( i=0; i<mcnt; ++i ) {
 	BDFChar *bc = b->chars[i];
- int j; for ( j=i+1; j<mcnt; ++j ) if ( b->chars[j]!=NULL && b->chars[j]->enc==bc->enc )
+ int j; if ( bc->enc!=-1 ) for ( j=i+1; j<mcnt; ++j ) if ( b->chars[j]!=NULL && b->chars[j]->enc==bc->enc )
   printf( "Duplicate encoding. Both %d and %d map to %d\n", i, j, bc->enc );
 	if ( bc->enc==-1 || bc->enc>=sf->charcnt )
 	    BDFCharFree(bc);
@@ -1844,13 +1899,13 @@ return( NULL );
     } else if ( ispk==3 ) {
 	while ( gf_char(bdf,sf,b));
     } else if ( ispk==2 ) {
-	if ( !PcfParse(bdf,toc,sf,b) ) {
+	if ( !PcfParse(bdf,toc,sf,b,enc) ) {
 	    GWidgetErrorR(_STR_NotPcfFile, _STR_NotPcfFileName, filename );
 	}
     } else {
 	while ( gettoken(bdf,tok,sizeof(tok))!=-1 ) {
 	    if ( strcmp(tok,"STARTCHAR")==0 ) {
-		AddBDFChar(bdf,sf,b,depth,&defs);
+		AddBDFChar(bdf,sf,b,depth,&defs,enc);
 		GProgressNext();
 	    }
 	}
