@@ -352,29 +352,34 @@ static void GListSetOrderer(GGadget *g,int (*orderer)(const void *, const void *
 
 static int glist_scroll(GGadget *g, GEvent *event);
 static void GListCheckSB(GList *gl) {
-    if ( GListLinesInWindow(gl,0)<gl->ltot ) {
-	if ( gl->vsb==NULL ) {
-	    GGadgetData gd;
-	    memset(&gd,'\0',sizeof(gd));
-	    gd.pos.y = gl->g.r.y; gd.pos.height = gl->g.r.height;
-	    gd.pos.width = GDrawPointsToPixels(gl->g.base,_GScrollBar_Width);
-	    gd.pos.x = gl->g.r.x+gl->g.r.width - gd.pos.width;
-	    gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_sb_vert|gg_pos_use0;
-	    gd.handle_controlevent = glist_scroll;
-	    gl->vsb = (GScrollBar *) GScrollBarCreate(gl->g.base,&gd,gl);
-	    gl->vsb->g.contained = true;
+    if ( gl->vsb==NULL ) {
+	GGadgetData gd;
+	memset(&gd,'\0',sizeof(gd));
+	gd.pos.y = gl->g.r.y; gd.pos.height = gl->g.r.height;
+	gd.pos.width = GDrawPointsToPixels(gl->g.base,_GScrollBar_Width);
+	gd.pos.x = gl->g.r.x+gl->g.r.width - gd.pos.width;
+	gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_sb_vert|gg_pos_use0;
+	gd.handle_controlevent = glist_scroll;
+	gl->vsb = (GScrollBar *) GScrollBarCreate(gl->g.base,&gd,gl);
+	gl->vsb->g.contained = true;
 
-	    gd.pos.width += GDrawPointsToPixels(gl->g.base,1);
-	    gl->g.r.width -= gd.pos.width;
-	    gl->g.inner.width -= gd.pos.width;
+	gd.pos.width += GDrawPointsToPixels(gl->g.base,1);
+	gl->g.r.width -= gd.pos.width;
+	gl->g.inner.width -= gd.pos.width;
+    }
+    if ( GListLinesInWindow(gl,0)<gl->ltot ) {
+	if ( gl->vsb->g.state == gs_invisible ) {
+	    int wid = gl->vsb->g.r.width + GDrawPointsToPixels(gl->g.base,1);
+	    gl->vsb->g.state = gs_enabled;
+	    gl->g.r.width -= wid;
+	    gl->g.inner.width -= wid;
 	}
 	GScrollBarSetBounds(&gl->vsb->g,0,gl->ltot,GListLinesInWindow(gl,0));
 	GScrollBarSetPos(&gl->vsb->g,gl->loff);
     } else {
-	if ( gl->vsb!=NULL ) {
+	if ( gl->vsb->g.state != gs_invisible ) {
 	    int wid = gl->vsb->g.r.width + GDrawPointsToPixels(gl->g.base,1);
-	    (gl->vsb->g.funcs->destroy)(&gl->vsb->g);
-	    gl->vsb = NULL;
+	    gl->vsb->g.state = gs_invisible;
 	    gl->g.r.width += wid;
 	    gl->g.inner.width += wid;
 	}
