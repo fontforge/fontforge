@@ -376,9 +376,15 @@ static void dodiff( SplineFont *sf1, SplineFont *sf2, int checkhints,
 	    for ( i=0; i<sf2->charcnt; ++i ) if ( sf2->chars[i]!=NULL ) {
 		sc = FindName(sf1,sf2->chars[i]->name,i);
 		if ( sc==NULL ) {
-		    sf1->chars[extras] = sf2->chars[i];
-		    sf1->chars[extras]->enc = extras;
-		    sf1->chars[extras++]->parent = sf1;
+		    if ( i<sf1->charcnt && sf1->chars[i]==NULL &&
+			    sf1->encoding_name == sf2->encoding_name ) {
+			sf1->chars[i] = sf2->chars[i];
+			sf1->chars[i]->parent = sf1;
+		    } else {
+			sf1->chars[extras] = sf2->chars[i];
+			sf1->chars[extras]->enc = extras;
+			sf1->chars[extras++]->parent = sf1;
+		    }
 		    sf2->chars[i] = NULL;
 		}
 	    }
