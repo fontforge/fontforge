@@ -844,7 +844,8 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype) {
 	    AfmSplineChar(afm,sf->chars[i],-1);
 	}
     fprintf( afm, "EndCharMetrics\n" );
-    if ( (cnt = anykerns(sf,false))>0 || (vcnt = anykerns(sf,true))>0) {
+    vcnt = anykerns(sf,true);
+    if ( (cnt = anykerns(sf,false))>0 || vcnt>0 ) {
 	fprintf( afm, "StartKernData\n" );
 	if ( cnt>0 ) {
 	    fprintf( afm, "StartKernPairs%s %d\n", vcnt==0?"":"0", cnt );
@@ -1159,7 +1160,7 @@ static void putlint(int val,FILE *pfm) {
 }
 
 int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0) {
-    int caph, xh, ash, dsh, cnt=0, first=-1, samewid=-1, maxwid= -1, last=0, wid=0, ymax=0, ymin=0;
+    int caph=0, xh=0, ash=0, dsh=0, cnt=0, first=-1, samewid=-1, maxwid= -1, last=0, wid=0, ymax=0, ymin=0;
     int kerncnt=0, spacepos=0x20;
     int i;
     char *pt;
