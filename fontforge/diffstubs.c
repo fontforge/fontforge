@@ -318,6 +318,15 @@ return( sf );
 
 RefChar *RefCharCreate(void) {
     RefChar *ref = chunkalloc(sizeof(RefChar));
+#ifdef FONTFORGE_CONFIG_TYPE3
+    ref->layers = gcalloc(1,sizeof(struct reflayer));
+    ref->layers[0].fill_brush.opacity = ref->layers[0].stroke_pen.brush.opacity = 1.0;
+    ref->layers[0].fill_brush.col = ref->layers[0].stroke_pen.brush.col = COLOR_INHERITED;
+    ref->layers[0].stroke_pen.width = WIDTH_INHERITED;
+    ref->layers[0].stroke_pen.linecap = lc_inherited;
+    ref->layers[0].stroke_pen.linejoin = lj_inherited;
+    ref->layers[0].dofill = true;
+#endif
     ref->layer_cnt = 1;
 return( ref );
 }
@@ -330,9 +339,32 @@ void chunkfree(void *item,int size) {
     free(item);
 }
 
+void LayerDefault(Layer *layer) {
+    memset(layer,0,sizeof(Layer));
+#ifdef FONTFORGE_CONFIG_TYPE3
+    layer->fill_brush.opacity = layer->stroke_pen.brush.opacity = 1.0;
+    layer->fill_brush.col = layer->stroke_pen.brush.col = COLOR_INHERITED;
+    layer->stroke_pen.width = WIDTH_INHERITED;
+    layer->stroke_pen.linecap = lc_inherited;
+    layer->stroke_pen.linejoin = lj_inherited;
+    layer->dofill = true;
+    layer->fillfirst = true;
+    layer->stroke_pen.trans[0] = layer->stroke_pen.trans[3] = 1.0;
+    layer->stroke_pen.trans[1] = layer->stroke_pen.trans[2] = 0.0;
+#endif
+}
+
 SplineChar *SplineCharCreate(void) {
     SplineChar *sc = gcalloc(1,sizeof(SplineChar));
     sc->color = COLOR_DEFAULT;
+    sc->orig_pos = 0xffff;
+    sc->unicodeenc = -1;
+    sc->layer_cnt = 2;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    sc->layers = gcalloc(2,sizeof(Layer));
+    LayerDefault(&sc->layers[0]);
+    LayerDefault(&sc->layers[1]);
+#endif
 return( sc );    
 }
 
