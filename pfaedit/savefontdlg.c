@@ -1487,7 +1487,7 @@ return( 1 );
     if ( oldbitmapstate==bf_bdf )
 	++filecnt;
 #endif
-    path = uc_copy(newname);
+    path = def2u_copy(newname);
     GProgressStartIndicator(10,GStringGetResource(_STR_SavingFont,NULL),
 	    GStringGetResource(_STR_SavingMultiplePSFonts,NULL),
 	    path,256,(max+1)*filecnt );
@@ -1527,7 +1527,7 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
     if ( oldformatstate<=ff_cid && oldbitmapstate==bf_otb )
 	flags = old_psotb_flags;
 
-    path = uc_copy(newname);
+    path = def2u_copy(newname);
     GProgressStartIndicator(10,GStringGetResource(_STR_SavingFont,NULL),
 		GStringGetResource(oldformatstate==ff_ttf || oldformatstate==ff_ttfsym ||
 		     oldformatstate==ff_ttfmacbin ?_STR_SavingTTFont:

@@ -135,17 +135,31 @@ return( NULL );
 	    if ( *from<=127 )
 		*upt = *from++;
 	    else if ( *from<=0xdf ) {
-		*upt = ((*from&0x1f)<<6) | (from[1]&0x3f);
-		from += 2;
+		if ( from[1]>=0x80 ) {
+		    *upt = ((*from&0x1f)<<6) | (from[1]&0x3f);
+		    from += 2;
+		} else {
+		    ++from;	/* Badly formed utf */
+		    *upt = 0xfffd;
+		}
 	    } else if ( *from<=0xef ) {
-		*upt = ((*from&0xf)<<12) | ((from[1]&0x3f)<<6) | (from[2]&0x3f);
-		from += 3;
+		if ( from[1]>=0x80 && from[2]>=0x80 ) {
+		    *upt = ((*from&0xf)<<12) | ((from[1]&0x3f)<<6) | (from[2]&0x3f);
+		    from += 3;
+		} else {
+		    ++from;	/* Badly formed utf */
+		    *upt = 0xfffd;
+		}
 	    } else if ( n>2 ) {
-		/* Um... I don't support surrogates */
-		int w = ( ((*from&0x7)<<2) | ((from[1]&0x30)>>4) )-1;
-		*upt++ = 0xd800 | (w<<6) | ((from[1]&0xf)<<2) | ((from[2]&0x30)>>4);
-		*upt   = 0xdc00 | ((from[2]&0xf)<<6) | (from[3]&0x3f);
-		from += 4;
+		if ( from[1]>=0x80 && from[2]>=0x80 && from[3]>=0x80 ) {
+		    int w = ( ((*from&0x7)<<2) | ((from[1]&0x30)>>4) )-1;
+		    *upt++ = 0xd800 | (w<<6) | ((from[1]&0xf)<<2) | ((from[2]&0x30)>>4);
+		    *upt   = 0xdc00 | ((from[2]&0xf)<<6) | (from[3]&0x3f);
+		    from += 4;
+		} else {
+		    ++from;	/* Badly formed utf */
+		    *upt = 0xfffd;
+		}
 	    } else {
 		/* no space for surrogate */
 		from += 4;

@@ -5744,7 +5744,7 @@ return( sf );
 /*  by LoadSplineFont (which does) and by RevertFile (which knows what it's doing) */
 SplineFont *ReadSplineFont(char *filename,enum openflags openflags) {
     SplineFont *sf;
-    unichar_t ubuf[150];
+    unichar_t ubuf[150], *temp;
     char buf[1500];
     int fromsfd = false;
     static struct { char *ext, *decomp, *recomp; } compressors[] = {
@@ -5815,7 +5815,8 @@ return( NULL );
 
     u_strcpy(ubuf,GStringGetResource(_STR_LoadingFontFrom,NULL));
     len = u_strlen(ubuf);
-    uc_strncat(ubuf,GFileNameTail(fullname),100);
+    u_strncat(ubuf,temp = def2u_copy(GFileNameTail(fullname)),100);
+    free(temp);
     ubuf[100+len] = '\0';
     /* If there are no pfaedit windows, give them something to look at */
     /*  immediately. Otherwise delay a bit */
