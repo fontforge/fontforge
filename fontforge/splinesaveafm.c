@@ -1020,7 +1020,7 @@ int AmfmSplineFont(FILE *amfm, MMSet *mm, int formattype) {
     fprintf( amfm, "BlendDesignMap [" );
     for ( i=0; i<mm->axis_count; ++i ) {
 	putc('[',amfm);
-	for ( j=0; j<mm->axismaps[j].points; ++j )
+	for ( j=0; j<mm->axismaps[i].points; ++j )
 	    fprintf(amfm, "[%g %g]", mm->axismaps[i].designs[j], mm->axismaps[i].blends[j]);
 	fprintf(amfm, i==mm->axis_count-1 ? "]" : "] " );
     }
