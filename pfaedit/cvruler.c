@@ -49,7 +49,7 @@ static int RulerText2(CharView *cv, unichar_t *ubuf) {
 	     len = SplineLength(cv->p.sp->next);
 	 else
 	     len = SplineLength(cv->p.sp->prev);
-	sprintf( buf, "Spline Len=%.1f", len);
+	sprintf( buf, "Spline Length=%.1f", len);
 	uc_strcpy(ubuf,buf);
 return( true );
     }
