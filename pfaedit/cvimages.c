@@ -82,7 +82,7 @@ static unichar_t *wildfnt[] = { wildbdf, wildttf, wildpk, wildpcf, wildmac, wild
 };
 
 #define PSSF_Width 220
-#define PSSF_Height 150
+#define PSSF_Height 165
 
 static int PSSF_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate )
@@ -104,14 +104,14 @@ return( true );
 }
 
 enum psstrokeflags PsStrokeFlagsDlg(void) {
-    static enum psstrokeflags oldflags = sf_removeoverlap/*|sf_handle_eraser*/;
+    static enum psstrokeflags oldflags = sf_correctdir|sf_removeoverlap/*|sf_handle_eraser*/;
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[11];
     GTextInfo label[11];
     int done = false;
-    int k, rm_k, he_k;
+    int k, rm_k, he_k, cd_k;
 
     if ( screen_display==NULL )
 return( oldflags );
@@ -168,6 +168,14 @@ return( oldflags );
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
 
+    cd_k = k;
+    label[k].text = (unichar_t *) _STR_Correct;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+15;
+    gcd[k].gd.flags = gg_enabled | gg_visible | (oldflags&sf_correctdir?gg_cb_on:0);
+    gcd[k++].creator = GCheckBoxCreate;
+
     rm_k = k;
     label[k].text = (unichar_t *) _STR_CleanupSelfIntersect;
     label[k].text_in_resource = true;
@@ -208,6 +216,8 @@ return( oldflags );
 
     /* This dlg can't be cancelled */
     oldflags = 0;
+    if ( GGadgetIsChecked(gcd[cd_k].ret) )
+	oldflags |= sf_correctdir;
     if ( GGadgetIsChecked(gcd[rm_k].ret) )
 	oldflags |= sf_removeoverlap;
     if ( GGadgetIsChecked(gcd[he_k].ret) )

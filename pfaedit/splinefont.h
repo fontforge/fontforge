@@ -1540,7 +1540,8 @@ extern int32 EncFromSF(int32 uni, SplineFont *sf);
 
 extern void MatInverse(real into[6], real orig[6]);
 
-enum psstrokeflags { sf_toobigwarn=1, sf_removeoverlap=2, sf_handle_eraser=4 };
+enum psstrokeflags { sf_toobigwarn=1, sf_removeoverlap=2, sf_handle_eraser=4,
+	sf_correctdir=8 };
 extern enum psstrokeflags PsStrokeFlagsDlg(void);
 
 extern char *MMAxisAbrev(char *axis_name);

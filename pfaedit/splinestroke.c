@@ -1558,7 +1558,8 @@ return( ssplus );
 	}
 	if ( reversed )		/* restore original, just in case we want it */
 	    SplineSetReverse(spl);
-    }
+    } else if ( si->stroke_type==si_std || si->stroke_type==si_elipse )
+	SplineSetReverse(ssplus);
     StrokedSplineFree(head);
 return( ssplus );
 }

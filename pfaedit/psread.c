@@ -2002,10 +2002,16 @@ static SplinePointList *SplinesFromLayers(SplineChar *sc,int *flags) {
     /*SplineSet *spl;*/
     int handle_eraser;
     real inversetrans[6], transform[6];
+    int changed;
 
     if ( *flags==-1 )
 	*flags = PsStrokeFlagsDlg();
-	
+
+    if ( *flags & sf_correctdir ) {
+	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) if ( sc->layers[layer].dofill )
+	    SplineSetsCorrect(sc->layers[layer].splines,&changed);
+    }
+
     handle_eraser = *flags & sf_handle_eraser;
 
     for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
@@ -2114,6 +2120,53 @@ void SFSplinesFromLayers(SplineFont *sf) {
 }
 #endif
 
+static void EntityCharCorrectDir(EntityChar *ec) {
+    SplineSet *head=NULL, *last=NULL, *cur, *ss;
+    Entity *ent;
+    int changed;
+
+    for ( ent=ec->splines; ent!=NULL; ent = ent->next ) {
+	/* ignore splines which are only stoked, but not filled */
+	if ( ent->type == et_splines && ent->u.splines.fill.col!=0xffffffff ) {
+	    for ( ss=ent->u.splines.splines; ss!=NULL; ss=ss->next ) {
+		cur = chunkalloc(sizeof(SplineSet));
+		*cur = *ss;
+		cur->next = NULL;
+		if ( head==NULL )
+		    head = cur;
+		else
+		    last->next = cur;
+		last = cur;
+	    }
+	}
+    }
+
+    SplineSetsCorrect(head,&changed);
+    if ( changed ) {
+	cur = head;
+	for ( ent=ec->splines; ent!=NULL; ent = ent->next ) {
+	    if ( ent->type == et_splines && ent->u.splines.fill.col!=0xffffffff ) {
+		for ( ss=ent->u.splines.splines; ss!=NULL; ss=ss->next ) {
+		    if ( cur==NULL ) {
+			GDrawIError("SplineSets do not match");
+		break;
+		    }
+		    ss->first = cur->first;
+		    ss->last = cur->last;
+		    cur = cur->next;
+		}
+	    }
+	    if ( cur==NULL )
+	break;
+	}
+    }
+
+    for ( cur=head; cur!=NULL; cur=last ) {
+	last = cur->next;
+	chunkfree(cur,sizeof(SplineSet));
+    }
+}
+
 static SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags) {
     Entity *ent, *next;
     SplinePointList *head=NULL, *last, *new, *nlast, *temp, *each, *transed;
@@ -2124,7 +2177,10 @@ static SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags) {
 
     if ( *flags==-1 )
 	*flags = PsStrokeFlagsDlg();
-	
+
+    if ( *flags & sf_correctdir )
+	EntityCharCorrectDir(ec);
+
     handle_eraser = *flags & sf_handle_eraser;
     if ( handle_eraser )
 	ec->splines = EntityReverse(ec->splines);
