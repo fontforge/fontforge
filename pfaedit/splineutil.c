@@ -1817,10 +1817,6 @@ return( NULL );
     mm->cdv = copy(fd->cdv);
     mm->ndv = copy(fd->ndv);
 
-    pt = PSDictHasEntry(sf->private,"ForceBoldThreshold");
-    if ( pt!=NULL )
-	mm->forceboldthreshold = strtod(pt,NULL);
-
     /* Now figure out the master designs, being careful to interpolate */
     /* BlueValues, ForceBold, UnderlinePosition etc. We need to copy private */
     /* generate a font name */

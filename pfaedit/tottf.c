@@ -3613,7 +3613,7 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
     if ( cnt!=strcnt )
 	fprintf(stderr, "String count wrong in 'name' table, is %d should be %d\n", cnt, strcnt );
     if ( ftell(at->name)!=(3+strcnt*6)*sizeof(int16) )
-	fprintf(stderr, "Table offset wrong in 'name' table, is %ld should be %d\n", ftell(at->name), (3+strcnt*6)*sizeof(short) );
+	fprintf(stderr, "Table offset wrong in 'name' table, is %ld should be %d\n", ftell(at->name), (int) (3+strcnt*6)*sizeof(short) );
 
     for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL )
 	dumpustr(at->name,dummy.names[i]);

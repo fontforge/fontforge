@@ -852,11 +852,10 @@ typedef struct mmset {
     real *positions;	/* array[instance][axis] saying where each instance lies on each axis */
     real *defweights;	/* array[instance] saying how much of each instance makes the normal font */
     struct axismap {
-	int points;
+	int points;	/* size of the next two arrays */
 	real *blends;	/* between [0,1] ordered so that blend[0]<blend[1]<... */
 	real *designs;	/* between the design ranges for this axis, typically [1,999] or [6,72] */
-    } *axismaps;
-    real forceboldthreshold;
+    } *axismaps;	 /* array[axis] */
     char *cdv, *ndv;
 } MMSet;
 

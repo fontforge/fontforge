@@ -783,7 +783,7 @@ static char *removeaccents(char *_str) {
 	    *pt = 'u';
 	else if ( *pt>=0xdd )
 	    *pt = 'Y';
-	else if ( *pt>=0xfd && *pt<=0xff )
+	else if ( *pt==0xfd || *pt==0xff )
 	    *pt = 'y';
 	++pt;
     }
@@ -2635,6 +2635,8 @@ static void cffprivatefillup(struct psdict *private, struct topdicts *dict) {
 	    realarray2str(dict->stemsnapv,sizeof(dict->stemsnapv)/sizeof(dict->stemsnapv[0])));
     if ( dict->forcebold )
 	privateadd(private,"ForceBold",copy("true"));
+    if ( dict->forceboldthreshold!=0 )
+	privateaddreal(private,"ForceBoldThreshold",dict->forceboldthreshold);
     privateaddint(private,"LanguageGroup",dict->languagegroup);
     privateaddreal(private,"ExpansionFactor",dict->expansionfactor);
 }

@@ -1229,6 +1229,46 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
     fprintf(sfd, sf->cidmaster==NULL?"EndSplineFont\n":"EndSubSplineFont\n" );
 }
 
+static void SFD_MMDump(FILE *sfd,SplineFont *sf) {
+    MMSet *mm = sf->mm;
+    int max, i, j;
+
+    fprintf( sfd, "MMCounts: %d %d\n", mm->instance_count, mm->axis_count );
+    fprintf( sfd, "MMAxis:" );
+    for ( i=0; i<mm->axis_count; ++i )
+	fprintf( sfd, " %s", mm->axes[i]);
+    putc('\n',sfd);
+    fprintf( sfd, "MMPositions:" );
+    for ( i=0; i<mm->axis_count*mm->instance_count; ++i )
+	fprintf( sfd, " %g", mm->positions[i]);
+    putc('\n',sfd);
+    fprintf( sfd, "MMWeights:" );
+    for ( i=0; i<mm->instance_count; ++i )
+	fprintf( sfd, " %g", mm->defweights[i]);
+    putc('\n',sfd);
+    for ( i=0; i<mm->axis_count; ++i ) {
+	fprintf( sfd, "MMAxisMap: %d %d", i, mm->axismaps[i].points );
+	for ( j=0; j<mm->axismaps[j].points; ++j )
+	    fprintf( sfd, " %g=>%g", mm->axismaps[i].blends[j], mm->axismaps[i].designs[j]);
+	fputc('\n',sfd);
+    }
+    fprintf( sfd, "MMCDV:\n" );
+    fputs(mm->cdv,sfd);
+    fprintf( sfd, "\nEndMMSubroutine\n" );
+    fprintf( sfd, "MMNDV:\n" );
+    fputs(mm->ndv,sfd);
+    fprintf( sfd, "\nEndMMSubroutine\n" );
+
+    for ( i=max=0; i<mm->instance_count; ++i )
+	if ( max<mm->instances[i]->charcnt )
+	    max = mm->instances[i]->charcnt;
+    fprintf(sfd, "BeginMMFonts: %d %d\n", mm->instance_count+1, max );
+    for ( i=0; i<mm->instance_count; ++i )
+	SFD_Dump(sfd,mm->instances[i]);
+    SFD_Dump(sfd,mm->normal);
+    fprintf(sfd, "EndMMFonts\n" );
+}
+
 static void SFDDump(FILE *sfd,SplineFont *sf) {
     int i, realcnt;
     BDFFont *bdf;
@@ -1244,7 +1284,10 @@ static void SFDDump(FILE *sfd,SplineFont *sf) {
 	    realcnt,i+1);
     GProgressEnableStop(false);
     fprintf(sfd, "SplineFontDB: %.1f\n", 1.0 );
-    SFD_Dump(sfd,sf);
+    if ( sf->mm != NULL )
+	SFD_MMDump(sfd,sf->mm->normal);
+    else
+	SFD_Dump(sfd,sf);
     GProgressEndIndicator();
 }
 
@@ -2887,6 +2930,29 @@ MacFeat *SFDParseMacFeatures(FILE *sfd, char *tok) {
 return( head );
 }
 
+static char *SFDParseMMSubroutine(FILE *sfd) {
+    char buffer[400], *sofar=gcalloc(1,1);
+    const char *endtok = "EndMMSubroutine";
+    int len = 0, blen, first=true;
+
+    while ( fgets(buffer,sizeof(buffer),sfd)!=NULL ) {
+	if ( strncmp(buffer,endtok,strlen(endtok))==0 )
+    break;
+	if ( first ) {
+	    first = false;
+	    if ( strcmp(buffer,"\n")==0 )
+    continue;
+	}
+	blen = strlen(buffer);
+	sofar = grealloc(sofar,len+blen+1);
+	strcpy(sofar+len,buffer);
+	len += blen;
+    }
+    if ( len>0 && sofar[len-1]=='\n' )
+	sofar[len-1] = '\0';
+return( sofar );
+}
+
 static void SFDCleanupAnchorClasses(SplineFont *sf) {
     AnchorClass *ac;
     AnchorPoint *ap;
@@ -3353,6 +3419,68 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    SFDGetPrivate(sfd,sf);
 	} else if ( strmatch(tok,"BeginSubrs:")==0 ) {	/* leave in so we don't croak on old sfd files */
 	    SFDGetSubrs(sfd,sf);
+	} else if ( strmatch(tok,"MMCounts:")==0 ) {
+	    MMSet *mm = sf->mm = chunkalloc(sizeof(MMSet));
+	    getint(sfd,&mm->instance_count);
+	    getint(sfd,&mm->axis_count);
+	    mm->instances = galloc(mm->instance_count*sizeof(SplineFont *));
+	    mm->positions = galloc(mm->instance_count*mm->axis_count*sizeof(real));
+	    mm->defweights = galloc(mm->instance_count*sizeof(real));
+	    mm->axismaps = galloc(mm->axis_count*sizeof(struct axismap));
+	} else if ( strmatch(tok,"MMAxis:")==0 ) {
+	    MMSet *mm = sf->mm;
+	    if ( mm!=NULL ) {
+		for ( i=0; i<mm->axis_count; ++i ) {
+		    getname(sfd,tok);
+		    mm->axes[i] = copy(tok);
+		}
+	    }
+	} else if ( strmatch(tok,"MMPositions:")==0 ) {
+	    MMSet *mm = sf->mm;
+	    if ( mm!=NULL ) {
+		for ( i=0; i<mm->axis_count*mm->instance_count; ++i )
+		    getreal(sfd,&mm->positions[i]);
+	    }
+	} else if ( strmatch(tok,"MMWeights:")==0 ) {
+	    MMSet *mm = sf->mm;
+	    if ( mm!=NULL ) {
+		for ( i=0; i<mm->instance_count; ++i )
+		    getreal(sfd,&mm->defweights[i]);
+	    }
+	} else if ( strmatch(tok,"MMAxisMap:")==0 ) {
+	    MMSet *mm = sf->mm;
+	    if ( mm!=NULL ) {
+		int index, points;
+		getint(sfd,&index); getint(sfd,&points);
+		mm->axismaps[index].points = points;
+		mm->axismaps[index].blends = galloc(points*sizeof(real));
+		mm->axismaps[index].designs = galloc(points*sizeof(real));
+		for ( i=0; i<points; ++i ) {
+		    getreal(sfd,&mm->axismaps[index].blends[i]);
+		    while ( (ch=getc(sfd))!=EOF && isspace(ch));
+		    ungetc(ch,sfd);
+		    if ( (ch=getc(sfd))!='=' )
+			ungetc(ch,sfd);
+		    else if ( (ch=getc(sfd))!='>' )
+			ungetc(ch,sfd);
+		    getreal(sfd,&mm->axismaps[index].designs[i]);
+		}
+	    }
+	} else if ( strmatch(tok,"MMCDV:")==0 ) {
+	    MMSet *mm = sf->mm;
+	    if ( mm!=NULL )
+		mm->cdv = SFDParseMMSubroutine(sfd);
+	} else if ( strmatch(tok,"MMNDV:")==0 ) {
+	    MMSet *mm = sf->mm;
+	    if ( mm!=NULL )
+		mm->ndv = SFDParseMMSubroutine(sfd);
+	} else if ( strmatch(tok,"BeginMMFonts:")==0 ) {
+	    int cnt;
+	    getint(sfd,&cnt);
+	    getint(sfd,&realcnt);
+	    GProgressChangeStages(cnt);
+	    GProgressChangeTotal(realcnt);
+    break;
 	} else if ( strmatch(tok,"BeginSubFonts:")==0 ) {
 	    getint(sfd,&sf->subfontcnt);
 	    sf->subfonts = gcalloc(sf->subfontcnt,sizeof(SplineFont *));
@@ -3396,6 +3524,17 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    break;
 		}
 	}
+    } else if ( sf->mm!=NULL ) {
+	MMSet *mm = sf->mm;
+	for ( i=0; i<mm->instance_count; ++i ) {
+	    mm->instances[i] = SFD_GetFont(sfd,NULL,tok);
+	    mm->instances[i]->mm = mm;
+	}
+	mm->normal = SFD_GetFont(sfd,NULL,tok);
+	mm->normal->mm = mm;
+	sf->mm = NULL;
+	SplineFontFree(sf);
+	sf = mm->normal;
     } else {
 	glyph = 0;
 	while ( (sc = SFDGetChar(sfd,sf))!=NULL ) {
