@@ -5622,6 +5622,12 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
     int pos;
     SplineFont *sf = fv->sf;
+    int anyglyphs = false;
+
+    for ( i=fv->sf->charcnt-1; i>=0 ; --i ) if ( SCWorthOutputting(fv->sf->chars[i])) {
+	anyglyphs = true;
+    break;
+    }
 
     for ( i=0; vwlist[i].ti.text!=(unichar_t *) _STR_FitToEm; ++i );
     base = i+2;
@@ -5670,9 +5676,11 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	  break;
 	  case MID_EncodedView:
 	    mi->ti.checked = !fv->sf->compacted;
+	    mi->ti.disabled = !anyglyphs;
 	  break;
 	  case MID_CompactedView:
 	    mi->ti.checked = fv->sf->compacted;
+	    mi->ti.disabled = !anyglyphs;
 	  break;
 	  case MID_DisplaySubs:
 	    mi->ti.checked = fv->cur_feat_tag!=0;
@@ -8141,6 +8149,8 @@ static void FVMouse(FontView *fv,GEvent *event) {
 	dopopup = false;
     } else if ( pos>=fv->sf->charcnt ) {
 	pos = fv->sf->charcnt-1;
+	if ( pos<0 )		/* No glyph slots in font */
+return;
 	dopopup = false;
     }
 
