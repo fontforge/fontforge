@@ -1322,6 +1322,8 @@ return( cur );
 }
 
 static void _PasteToBC(BDFChar *bc,int pixelsize, int depth, Undoes *paster, int clearfirst, FontView *fv) {
+    BDFFloat temp;
+
     switch ( paster->undotype ) {
       case ut_noop:
       break;
@@ -1337,9 +1339,14 @@ static void _PasteToBC(BDFChar *bc,int pixelsize, int depth, Undoes *paster, int
 	BCPreserveState(bc);
 	BCFlattenFloat(bc);
 	memset(bc->bitmap,0,bc->bytes_per_line*(bc->ymax-bc->ymin+1));
-	bc->selection = BDFFloatConvert(paster->u.bmpstate.selection,depth,paster->u.bmpstate.depth);
+	temp.xmin = paster->u.bmpstate.xmin; temp.xmax = paster->u.bmpstate.xmax;
+	temp.ymin = paster->u.bmpstate.ymin; temp.ymax = paster->u.bmpstate.ymax;
+	temp.bytes_per_line = paster->u.bmpstate.bytes_per_line; temp.byte_data = depth!=1;
+	temp.bitmap = paster->u.bmpstate.bitmap;
+	bc->selection = BDFFloatConvert(&temp,depth,paster->u.bmpstate.depth);
 	BCFlattenFloat(bc);
 	BCCompressBitmap(bc);
+	bc->selection = BDFFloatConvert(paster->u.bmpstate.selection,depth,paster->u.bmpstate.depth);
 	BCCharChangedUpdate(bc);
       break;
       case ut_composit:
