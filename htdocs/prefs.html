@@ -109,7 +109,13 @@
   <DD>
     Sometimes it is useful to have a mapping from ttf (or otf) glyph ID to character
     name. If you turn this on, then each time you generate a ttf/otf font you
-    will also get a file with extension .g2n containing this mapping.<BR Clear=ALL>
+    will also get a file with extension .g2n containing this mapping.
+  <DT>
+    PreferCJKEncoding
+  <DD>
+    This controls the loading of truetype and opentype fonts.
+    If a font contains both an unicode encoding subtable and a cjk subtable, then
+    this item allows you to pick which one PfaEdit will choose to decode.<BR Clear=ALL>
 </DL>
 <DL>
   <DT>

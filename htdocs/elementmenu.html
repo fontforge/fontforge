@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 05-Nov-2002 -->
+  <!-- AP: Last modified: 14-Nov-2002 -->
   <TITLE>The Element Menu</TITLE>
 </HEAD>
 <BODY>
@@ -312,8 +312,14 @@ This menu is not present in the Metrics View.
     Simplify More
   <DD>
     This is a varient of the simplify command, obtainable if you hold down the
-    shift key when invoking from the menu. It will allow the slope to change
-    on points around the points being removed.
+    shift key when invoking from the menu. It brings up a dialog which gives
+    you control over what sorts of errors this simplification is allowed to
+    induce. You can control:
+    <UL>
+      <LI>How far the simplified contour is allowed to stray from the original
+      <LI>Whether to allow removal of extreme points
+      <LI>Whether to allow the slope to change at points.
+    </UL>
   <DT>
     <A NAME="Cleanup">Cleanup Char</A>
   <DD>
@@ -488,6 +494,32 @@ This menu is not present in the Metrics View.
     Instead, if your fonts are properly encoded (with proper unicode names),
     then the Merge Fonts command will put them into the right places in the current
     font.
+    <P>
+    PfaEdit does the following when merging CID-keyed fonts:
+    <UL>
+      <LI>
+	If the font in the window (the mergee) is a normal font and the other font (the merger) is
+	a CID keyed font, then the merger font is effectively flattened and the result merged
+	into the mergee.
+      <LI>
+	If the mergee is a CID keyed font and the merger font is a normal font
+	then the merger font will be merged into whichever of the mergee's subfonts
+	is currently active.
+      <LI>
+	If both are CID keyed fonts, then they should:
+	  <UL>
+	  <LI>Have the same registry and ordering
+	  <LI>The supplement number of the mergee should be at least as big as that of the merger
+	  <LI>The mergee should have at least as many subfonts as the merger.
+	  </UL>
+	  <P>
+	  If these conditions be met then any CIDs from the merger which are
+	  not present in the mergee will be merged into the same subfont of the
+	  mergee as they came from in the merger.
+	  <P>
+	  This strikes me as somewhat problematic, but I can't think of a better
+	  solution.
+    </UL>
   <DT>
     <A NAME="Interpolate">Interpolate</A> Fonts...
   <DD>

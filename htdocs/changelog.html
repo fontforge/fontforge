@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 13-Nov-2002 -->
+  <!-- AP: Last modified: 22-Nov-2002 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,40 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    ??-Nov-2002
+    <UL>
+      <LI>
+	Harald Harders points out that UniqueID needs to be in both the font and
+	the Private dictionaries in a PostScript font.
+      <LI>
+	And provides access to UniqueID from the scripting language.
+      <LI>
+	More fixes for TeX sfd files.
+  <LI>
+    20-Nov-2002
+    <UL>
+      <LI>
+	Changed the Simplify More command to bring up a dlg giving the user control over what errors Simplify More is allowed to induce.
+      <LI>
+	Bug in import image with non-latin1 fontnames
+      <LI>
+	New Russian ui translation
+      <LI>
+	Merge fonts didn't work well with CID keyed fonts
+      <LI>
+	Fixed yet another problem with notdef generation.
+      <LI>
+	Fixed yet crash in sfddiff.
+      <LI>
+	Using Font Info to convert to SJIS didn't work.
+      <LI>
+	Merge fonts had problems when both fonts were CID keyed.
+      <LI>
+	Generate a unicode encoding subtable even when generating a CJK encoding subtable.
+      <LI>
+	Added a preference item to allow user to specify whether s/he would rather read in the unicode or the cjk encoding subtable.
+    </UL>
   <LI>
     13-Nov-2002
     <UL>
