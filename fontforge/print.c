@@ -1304,7 +1304,9 @@ static void PIFontDisplay(PI *pi) {
 	else if ( pi->max >= 5 ) pi->max = 5;
 	else if ( pi->max >= 2 ) pi->max = 2;
     } else {
-	if ( pi->max>=16 ) pi->max = 16;
+	if ( pi->max>=64 ) pi->max = 64;
+	else if ( pi->max>=32 ) pi->max = 32;
+	else if ( pi->max>=16 ) pi->max = 16;
 	else if ( pi->max>=8 ) pi->max = 8;
 	else if ( pi->max >= 4 ) pi->max = 4;
 	else if ( pi->max >= 2 ) pi->max = 2;
