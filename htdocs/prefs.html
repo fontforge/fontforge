@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 2-Sep-2002 -->
-  <!-- AP: Last modified: 2-Feb-2005 -->
+  <!-- AP: Last modified: 10-Mar-2005 -->
   <TITLE>Preferences Dialog</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -66,7 +66,14 @@
   <DD>
     Allows you to redefine the OtherSubrs routines used in type1 fonts. The file
     format is described at the scripting command
-    <A HREF="scripting.html#ReadOtherSubrsFile">ReadOtherSubrsFile</A>.<BR Clear=all>
+    <A HREF="scripting.html#ReadOtherSubrsFile">ReadOtherSubrsFile</A>.
+  <DT>
+    <A NAME="FreeTypeInFontView">FreeTypeInFontView</A>
+  <DD>
+    Normally FontForge will use the freetype library to generate glyphs for display
+    in the fontview. This is a bit slower, but creates better images than using
+    FontForge's built-in rasterizer. This preference item allows you to control
+    whether to use freetype or FontForge's own rasterizer.<BR Clear=all>
 </DL>
 <P>
 <IMG SRC="prefs-editing.png" WIDTH="286" HEIGHT="379" ALIGN="Right">

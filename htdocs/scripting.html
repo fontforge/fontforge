@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 16-Feb-2005 -->
+  <!-- AP: Last modified: 10-Mar-2005 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -124,7 +124,7 @@ Terms can be
     a unicode code point (which has a prefix of "0u" or "0U" and is followed
     by a string of hex digits. This is only used by the select command.
   <LI>
-    a real number
+    a real number (in "C" locale format -- "." as the decimal point character)
   <LI>
     A string which may be enclosed in either double or single quotes
   <LI>
@@ -461,6 +461,10 @@ a[4][0] = "Nested array";
     Parses as much of str as possible and returns the offset to the first character
     that could not be parsed.
   <DT>
+    Strtod(str)
+  <DD>
+    Converts a string to a real number.
+  <DT>
     LoadPrefs()
   <DD>
     Loads the user's preferences. This used to happen automatically at startup.
@@ -484,9 +488,7 @@ a[4][0] = "Nested array";
   <DD>
     Sets the value of the preference item whose name is contained in str. If
     the preference item has a real type then a second argument may be passed
-    and the value set will be val/val2. The NewCharset preference item may be
-    set to a magic number as provided by GetPref, or by one of the encoding strings
-    accepted by Reencode()
+    and the value set will be val/val2.
   <DT>
     DefaultOtherSubrs()
   <DD>
@@ -555,8 +557,9 @@ a[4][0] = "Nested array";
   <DD>
     Takes an integer [0,255] and returns a single character string containing
     that code point. Internally FontForge interprets strings as if they were
-    in ISO8859-1 (well really, FontForge just uses ASCII-US internally). If passed
-    an array, it should be an array of integers and the result is the string.
+    in utf8 (well really, FontForge almost always just uses ASCII-US internally).
+    If passed an array, it should be an array of integers and the result is the
+    string.
   <DT>
     Ord(string[,pos])
   <DD>
@@ -602,7 +605,7 @@ a[4][0] = "Nested array";
     file doesn't exist, or the fonts aren't named), a zero length array is returned.
     It does not open the font. It can execute without a current font.
   <DT>
-    Open(filename[,flags])
+    <A HREF="filemenu.html#Open">Open</A>(filename[,flags])
   <DD>
     This makes the font named by filename be the current font. If filename has
     not yet been loaded into memory it will be loaded now. It can execute without
@@ -617,7 +620,7 @@ a[4][0] = "Nested array";
 	matter what the fstype setting is.
     </UL>
   <DT>
-    New()
+    <A HREF="filemenu.html#New">New</A>()
   <DD>
     This creates a new font. It can execute with no current font.
   <DT>
@@ -626,13 +629,13 @@ a[4][0] = "Nested array";
     This frees up any memory taken up by the current font and drops it off the
     list of loaded fonts. After this executes there will be no current font.
   <DT>
-    Save([filename])
+    <A HREF="filemenu.html#Save">Save</A>([filename])
   <DD>
     If no filename is specified then this saves the current font back into its
     sfd file (if the font has no sfd file then this is an error). With one argument
     it executes a SaveAs command, saving the current font to that filename.
   <DT>
-    Generate(filename[,bitmaptype[,fmflags[,res[,mult-sfd-file]]]])
+    <A HREF="filemenu.html#Generate">Generate</A>(filename[,bitmaptype[,fmflags[,res[,mult-sfd-file]]]])
   <DD>
     Generates a font. The type of font is determined by the extension of the
     filename. Valid extensions are:
@@ -711,6 +714,8 @@ a[4][0] = "Nested array";
       <LI>
 	otb (For X11 opentype bitmap format)
       <LI>
+	pdb (for <A HREF="palmfonts.html">palm bitmap fonts</A>)
+      <LI>
 	"" for no bitmaps
     </UL>
     <P>
@@ -774,7 +779,7 @@ a[4][0] = "Nested array";
     is not present FontForge will go through its default search process to find
     a file for the encoding, and if it fails the fonts will not be saved.
   <DT>
-    GenerateFamily(filename,bitmaptype,fmflags,array-of-font-filenames)
+    <A HREF="filemenu.html#GenerateMac">GenerateFamily</A>(filename,bitmaptype,fmflags,array-of-font-filenames)
   <DD>
     Generates a mac font family (FOND) from the fonts (which must be loaded)
     in the array-of-font-filenames. filename, bitmaptype, fmflags are as above.
@@ -816,7 +821,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 </PRE>
     </BLOCKQUOTE>
   <DT>
-    Import(filename[,toback[,flags]])
+    <A HREF="filemenu.html#Import">Import</A>(filename[,toback[,flags]])
   <DD>
     Either imports a bitmap font into the database, or imports background image[s]
     into various glyphs. There may be one or two arguments. The first must be
@@ -872,7 +877,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 	2 =&gt; remove overlap
     </UL>
   <DT>
-    Export(format[,bitmap-size])
+    <A HREF="filemenu.html#Export">Export</A>(format[,bitmap-size])
   <DD>
     For each selected glyph in the current font, this command will export that
     glyph into a file in the current directory. Format must be a string and must
@@ -930,7 +935,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 	%% -- inserts a single '%'
     </UL>
   <DT>
-    MergeKern(filename)
+    <A HREF="filemenu.html#Merge-kern">MergeKern</A>(filename)
   <DD>
     Loads Kerning info out of either an afm or a tfm file and merges it into
     the current font.
@@ -964,7 +969,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     respectively. Units are in 1/72 inches (almost points), so 8.5x11" paper
     is 612,792 and A4 paper is (about) 595,842.
   <DT>
-    PrintFont(type[,pointsize[,sample-text/filename[,output-file]]])
+    <A HREF="filemenu.html#Print">PrintFont</A>(type[,pointsize[,sample-text/filename[,output-file]]])
   <DD>
     Prints the current font according to the
     <A HREF="scripting.html#PrintSetup">PrintSetup</A>. The values for type are
@@ -995,42 +1000,42 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     If your PrintSetup specified printing to a file (either PostScript or pdf)
     then the fourth argument provides the filename of the output file.
   <DT>
-    <A NAME="Quit">Quit</A>(status)
+    <A NAME="Quit" HREF="filemenu.html#Quit">Quit</A>(status)
   <DD>
-    Causes FontForge to exit with the given status. It can execute with no current
-    font. 
+    Causes FontForge to exit with the given status (no attempt is made to save
+    unsaved files). This command can execute with no current font. 
       <HR>
   <DT>
-    Cut
+    <A HREF="editmenu.html#Cut">Cut</A>
   <DD>
     Makes a copy of all selected glyphs and saves it in the clipboard, then clears
     out the selected glyphs
   <DT>
-    Copy
+    <A HREF="editmenu.html#Copy">Copy</A>
   <DD>
     Makes a copy of all selected glyphs.
   <DT>
-    CopyReference
+    <A HREF="editmenu.html#Reference">CopyReference</A>
   <DD>
     Makes references to all selected glyphs and stores them in the clipboard.
   <DT>
-    CopyWidth
+    <A HREF="editmenu.html#Width">CopyWidth</A>
   <DD>
     Stores the widths of all selected glyphs in the clipboard
   <DT>
-    CopyVWidth
+    <A HREF="editmenu.html#VWidth">CopyVWidth</A>
   <DD>
     Stores the vertical widths of all selected glyphs in the clipboard
   <DT>
-    CopyLBearing
+    <A HREF="editmenu.html#LBearing">CopyLBearing</A>
   <DD>
     Stores the left side bearing of all selected glyphs in the clipboard
   <DT>
-    CopyRBearing
+    <A HREF="editmenu.html#RBearing">CopyRBearing</A>
   <DD>
     Stores the right side bearing of all selected glyphs in the clipboard
   <DT>
-    CopyGlyphFeatures(arg,...)
+    <A HREF="editmenu.html#CopyGlyphFeatures">CopyGlyphFeatures</A>(arg,...)
   <DD>
     This copies features from the currently selected glyph (only one) and stores
     them in the clipboard.
@@ -1046,12 +1051,12 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     match any kerning pair that has the currently selected glyph as the last
     character of the two. Similary for 'vkrn' and '_vkn'.
   <DT>
-    Paste
+    <A HREF="editmenu.html#Paste">Paste</A>
   <DD>
     Copies the clipboard into the selected glyphs of the current font (removing
     what was there before)
   <DT>
-    PasteInto
+    <A HREF="editmenu.html#PasteInto">Paste Into</A>
   <DD>
     Copies the clipboard into the current font (merging with what was there before)
   <DT>
@@ -1060,37 +1065,37 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     Translates the clipboard by xoff,yoff before doing a PasteInto(). Can be
     used to build accented glyphs.
   <DT>
-    SameGlyphAs
+    <A HREF="editmenu.html#SameGlyphAs">SameGlyphAs</A>
   <DD>
     If the clipboard contains a reference to a single glyph then this makes all
     selected glyphs refer to that one.
   <DT>
-    Clear
+    <A HREF="editmenu.html#Clear">Clear</A>
   <DD>
     Clears out all selected glyphs
   <DT>
-    ClearBackground
+    <A HREF="editmenu.html#Background">ClearBackground</A>
   <DD>
     Clears the background of all selected glyphs
   <DT>
-    CopyFgToBd
+    <A HREF="editmenu.html#CopyFg">CopyFgToBd</A>
   <DD>
     Copies all foreground splines into the background in all selected glyphs
   <DT>
-    Join([fudge])
+    <A HREF="editmenu.html#Join">Join</A>([fudge])
   <DD>
     Joins open paths in selected glyphs. If fudge is specified then the endpoints
     only need to be within fudge em-units of each other to be merged.
   <DT>
-    UnlinkReference
+    <A HREF="editmenu.html#Unlink">UnlinkReference</A>
   <DD>
     Unlinks all references within all selected glyphs
   <DT>
-    SelectAll
+    <A HREF="editmenu.html#All">SelectAll</A>
   <DD>
     Selects all glyphs
   <DT>
-    SelectNone
+    <A HREF="editmenu.html#Deselect">SelectNone</A>
   <DD>
     Deselects all glyphs
   <DT>
@@ -1194,7 +1199,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
   <DT>
       <HR>
   <DT>
-    Reencode(encoding-name[,force])
+    <A HREF="fontinfo.html#Encoding">Reencode</A>(encoding-name[,force])
   <DD>
     Reencodes the current font into the given encoding which may be:<BR>
     compacted,original,<BR>
@@ -1203,9 +1208,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     isothai, iso8859-13, iso8859-14, iso8859-15, latin0, koi8-r, jis201, jisx0201,
     AdobeStandardEncoding, win, mac, symbol, wansung, big5, johab, jis208, jisx0208,
     jis212, jisx0212, sjis, gh2312, gb2312packed, unicode, iso10646-1,
-    TeX-Base-Encoding, one of the user defined encodings, or something of the
-    form "unicode-plane-%x" to represent the x'th iso10646 plane (where the BMP
-    is plane 0).<BR>
+    TeX-Base-Encoding, one of the user defined encodings.<BR>
     You may also specify that you want to force the encoding to be the given
     one.
   <DT>
@@ -1237,7 +1240,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
   <DD>
     Returns true if the font contains a preserved table with the given tag.
   <DT>
-    SetFontOrder(order)
+    <A HREF="fontinfo.html#PS-General">SetFontOrder</A>(order)
   <DD>
     Sets the font's order. Order must be either 2 (quadratic) or 3 (cubic). It
     returns the old order.
@@ -1307,7 +1310,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     If the argument is a string then the string should be the concatenation of
     various style names, as "Bold Italic Condensed"
   <DT>
-    SetTTFName(lang,nameid,utf8-string)<B></B>
+    <A HREF="fontinfo.html#TTF-Names">SetTTFName</A>(lang,nameid,utf8-string)
   <DD>
     Sets the indicated truetype name in the MS platform. Lang must be one of
     the
@@ -1327,7 +1330,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     as a utf8 encoded string. Combinations which are not present will be returned
     as "".
   <DT>
-    SetPanose(array)<BR>
+    <A HREF="fontinfo.html#Panose">SetPanose</A>(array)<BR>
     SetPanose(index,value)
   <DD>
     This sets the panose values for the font. Either it takes an array of 10
@@ -1339,7 +1342,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     Sets the postscript uniqueid field as requested. If you give a value of 0
     then FontForge will pick a reasonable random number for you.
   <DT>
-    SetTeXParams(type,design-size,slant,space,stretch,shrink,xheight,quad,extraspace[...])
+    <A HREF="fontinfo.html#TeX">SetTeXParams</A>(type,design-size,slant,space,stretch,shrink,xheight,quad,extraspace[...])
   <DD>
     Sets the TeX (text) font parameters for the font.<BR>
     Type may be 1, 2 or 3, depending on whether the font is text, math or math
@@ -1353,7 +1356,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     24 arguments are required (the remaining 15 are described in the metafont
     book). If type is 3 then 15 arguments are required.
   <DT>
-    SetCharName(name[,set-from-name-flag])
+    <A HREF="charinfo.html#Unicode">SetCharName</A>(name[,set-from-name-flag])
   <DD>
     Sets the currently selected glyph to have the given name. If set-from-name-flag
     is absent or is present and true then it will also set the unicode value
@@ -1376,7 +1379,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     Sets the currently selected glyph to have the given comment. The comment
     is converted via the current encoding to unicode.
   <DT>
-    BitmapsAvail(sizes)
+    <A HREF="elementmenu.html#Bitmaps">BitmapsAvail</A>(sizes)
   <DD>
     Controls what bitmap sizes are stored in the font's database. It is passed
     an array of sizes. If a size is specified which is not in the font database
@@ -1388,7 +1391,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     would be a 12 pixel font with 8 bits per pixel, while either 0xc or 0x1000c
     could be used to refer to a 12 pixel bitmap font.
   <DT>
-    BitmapsRegen(sizes)
+    <A HREF="elementmenu.html#Regenerate">BitmapsRegen</A>(sizes)
   <DD>
     Allows you to update specific bitmaps in an already generated bitmap font.
     It will regenerate the bitmaps of all selected glyphs at the specified
@@ -1414,7 +1417,7 @@ ApplySubstitution("*","*","vrt2")
 </PRE>
     </BLOCKQUOTE>
   <DT>
-    Transform(t1,t2,t3,t4,t5,t6)
+    <A HREF="elementmenu.html#Transform">Transform</A>(t1,t2,t3,t4,t5,t6)
   <DD>
     Each argument will be divided by 100. and then all selected glyphs will be
     transformed by this matrix
@@ -1500,7 +1503,7 @@ ApplySubstitution("*","*","vrt2")
     This command is not available in the default build, you must modify the file
     <CODE>configure-fontforge.h</CODE> and then rebuild FontForge.
   <DT>
-    ExpandStroke(width)<BR>
+    <A HREF="elementmenu.html#Expand">ExpandStroke</A>(width)<BR>
     ExpandStroke(width,line cap, line join)<BR>
     ExpandStroke(width,line cap, line join,0,removeinternal /external flag)<BR>
     ExpandStroke(width,calligraphic-angle,height-numerator,height-denom)<BR>
@@ -1551,26 +1554,26 @@ ApplySubstitution("*","*","vrt2")
 	4 =&gt; run remove overlap on result (buggy)
     </DL>
   <DT>
-    Outline(width)
+    <A HREF="elementmenu.html#Outline">Outline</A>(width)
   <DD>
     Strokes all selected glyphs with a stroke of the specified width (internal
     to the glyphs). The bounding box of the glyph will not change. In other words
     it produces what the mac calls the "Outline Style".
   <DT>
-    Inline(width,gap)
+    <A HREF="elementmenu.html#Inline">Inline</A>(width,gap)
   <DD>
     Produces an outline as above, and then shrinks the glyph so that it fits
     inside the outline. In other words, it produces an inlined glyph.
   <DT>
-    Shadow(angle,outline-width,shadow-width)
+    <A HREF="elementmenu.html#Shadow">Shadow</A>(angle,outline-width,shadow-width)
   <DD>
     Converts the selected glyphs into shadowed versions of themselves.
   <DT>
-    Wireframe(angle,outline-width,shadow-width)
+    <A HREF="elementmenu.html#Wireframe">Wireframe</A>(angle,outline-width,shadow-width)
   <DD>
     Converts the selected glyphs into wireframed versions of themselves.
   <DT>
-    RemoveOverlap()
+    <A HREF="elementmenu.html#Remove">RemoveOverlap</A>()
   <DD>
     Does the obvious.
   <DT>
@@ -1582,7 +1585,7 @@ ApplySubstitution("*","*","vrt2")
   <DD>
     Finds everywhere that splines cross and creates points there.
   <DT>
-    Simplify()<BR>
+    <A HREF="elementmenu.html#Simplify">Simplify</A>()<BR>
     Simplify(flags,error[,tan_bounds[,bump_size[,error_denom,line_len_max]]])
   <DD>
     With no arguments it does the obvious. If flags is -1 it does a Cleanup,
@@ -1655,17 +1658,17 @@ ApplySubstitution("*","*","vrt2")
       </TR>
     </TABLE>
   <DT>
-    AddExtrema()
+    <A HREF="elementmenu.html#Add-Extrema">AddExtrema</A>()
   <DD>
   <DT>
-    RoundToInt([factor])
+    <A HREF="elementmenu.html#Round">RoundToInt</A>([factor])
   <DD>
     Rounds all points/hints/reference-offsets to be integers. If the the "factor"
     argument is specified then it rounds like <CODE>rint(factor * x) /
     factor</CODE>, in other words if you set factor to 100 then it will round
     to hundredths.
   <DT>
-    RoundToCluster([within[,max]])
+    <A HREF="elementmenu.html#Cluster">RoundToCluster</A>([within[,max]])
   <DD>
     The first two provide a fraction that indicates a value within which similar
     coordinates will be bundled together. Max indicates how many "within"s from
@@ -1680,17 +1683,17 @@ ApplySubstitution("*","*","vrt2")
     <CODE>-.1,-.05,0,.05,.1,.15</CODE> will all be merged together because each
     is within .1 of the next, and none is more than .5 from the center.
   <DT>
-    AutoTrace()
+    <A HREF="elementmenu.html#AutoTrace">AutoTrace</A>()
   <DD>
   <DT>
-    CorrectDirection([unlinkrefs])
+    <A HREF="elementmenu.html#Correct">CorrectDirection</A>([unlinkrefs])
   <DD>
     If the an argument is present it must be integral and is treated as a flag
     controlling whether flipped references should be unlinked before the
     CorrectDirection code runs. If the argument is not present, or if it has
     a non-zero value then flipped references will be unlinked.
   <DT>
-    DefaultATT(tag)
+    <A HREF="elementmenu.html#DefaultATT">DefaultATT</A>(tag)
   <DD>
     For all selected glyphs make a guess as to what might be an appropriate value
     for the given tag. If the tag is "*" then FontForge will apply guesses for
@@ -1775,18 +1778,18 @@ ApplySubstitution("*","*","vrt2")
     values specify the location of the point. The final argument is only present
     for things of type "baselig".
   <DT>
-    BuildComposite()
+    <A HREF="elementmenu.html#Accented">BuildComposite</A>()
   <DD>
   <DT>
-    BuildAccented()
+    <A HREF="elementmenu.html#Accented">BuildAccented</A>()
   <DD>
   <DT>
-    BuildDuplicate()
+    <A HREF="elementmenu.html#BuildDuplicate">BuildDuplicate</A>()
   <DD>
   <DT>
     AddAccent(accent[,pos])
   <DD>
-    There must be exactly on glyph selected. The first argument should be either
+    There must be exactly one glyph selected. The first argument should be either
     the glyph-name of an accent, or the unicode code point of that accent (and
     it should be in the font). The second argument, if present indicates how
     the accent should be positioned... if omitted a default position will be
@@ -1843,7 +1846,7 @@ ApplySubstitution("*","*","vrt2")
       </TR>
     </TABLE>
   <DT>
-    ReplaceWithReference([fudge])
+    <A HREF="editmenu.html#ReplaceRef">ReplaceWithReference</A>([fudge])
   <DD>
     Finds any glyph which contains an inline copy of one of the selected glyphs,
     and converts that copy into a reference to the appropriate glyph. Selection
@@ -1852,14 +1855,14 @@ ApplySubstitution("*","*","vrt2")
     If specified the fudge argument specifie<B></B>s<B></B> the error allowed
     for coordinate differences.
   <DT>
-    MergeFonts(other-font-name[,flags])
+    <A HREF="elementmenu.html#Merge">MergeFonts</A>(other-font-name[,flags])
   <DD>
     Loads other-font-name, and extracts any glyphs from it which are not in the
     current font and moves them to the current font. The flags argument is the
     same as that for Open. Currently the only relevant flag is to say that you
     do have a license to use a font with fstype=2.
   <DT>
-    InterpolateFonts(percentage,other-font-name[,flags])
+    <A HREF="elementmenu.html#Interpolate">InterpolateFonts</A>(percentage,other-font-name[,flags])
   <DD>
     Interpolates a font which is percentage of the way from the current font
     to the one specified by other-font-name (note: percentage may be negative
@@ -1871,31 +1874,31 @@ ApplySubstitution("*","*","vrt2")
   <DT>
       <HR>
   <DT>
-    <A NAME="AutoHint">AutoHint</A>()
+    <A NAME="AutoHint" HREF="hintsmenu.html#AutoHint">AutoHint</A>()
   <DD>
     <B></B>
   <DT>
-    SubstitutionPoints()
+    <A HREF="hintsmenu.html#SubstitutionPt">SubstitutionPoints</A>()
   <DD>
   <DT>
-    AutoCounter()
+    <A HREF="hintsmenu.html#Counter">AutoCounter</A>()
   <DD>
   <DT>
-    DontAutoHint()
+    <A HREF="hintsmenu.html#DontAutoHint">DontAutoHint</A>()
   <DD>
   <DT>
-    AutoInstr()
+    <A HREF="hintsmenu.html#AutoInstr">AutoInstr</A>()
   <DD>
   <DT>
-    ClearHints()
+    <A HREF="hintsmenu.html#ClearHints">ClearHints</A>()
   <DD>
   <DT>
-    AddHHint(start,width)
+    <A HREF="hintsmenu.html#HHint">AddHHint</A>(start,width)
   <DD>
     Adds horizontal stem hint to any selected glyphs. The hint starts at location
     "start" and is width wide. A hint will be added to all selected glyphs.
   <DT>
-    AddVHint(start,width)
+    <A HREF="hintsmenu.html#VHint">AddVHint</A>(start,width)
   <DD>
     Adds a vertical stem hint to any selected glyphs. The hint starts at location
     "start" and is width wide. A hint will be added to all selected glyphs.
@@ -1924,12 +1927,12 @@ ApplySubstitution("*","*","vrt2")
     Array[i][0]&amp;0x40 corresponds to the second, Array[i][1]&amp;0x80 corresponds
     to the eighth hint, etc.
   <DT>
-    ClearPrivateEntry(key)
+    <A HREF="fontinfo.html#Private">ClearPrivateEntry</A>(key)
   <DD>
     Removes the entry indexed by the given key from the private dictionary of
     the font.
   <DT>
-    ChangePrivateEntry(key,val)
+    <A HREF="fontinfo.html#Private">ChangePrivateEntry</A>(key,val)
   <DD>
     Changes (or adds if the key is not already present) the value in the dictionary
     indexed by key. (all values must be strings even if they represent numbers
@@ -1940,44 +1943,44 @@ ApplySubstitution("*","*","vrt2")
     Returns the entry indexed by key in the private dictionary. All return values
     will be strings. If an entry does not exist a null string is returned.
   <DT>
-    SetWidth(width[,relative])
+    <A HREF="metricsmenu.html#Width">SetWidth</A>(width[,relative])
   <DD>
     If the second argument is absent or zero then the width will be set to the
     first argument, if the second argument is 1 then the width will be incremented
     by the first, and if the argument is 2 then the width will be scaled by
     &lt;first argument&gt;/100.0 .
   <DT>
-    SetVWidth(vertical-width[,relative])
+    <A HREF="metricsmenu.html#vertical">SetVWidth</A>(vertical-width[,relative])
   <DD>
     If the second argument is absent or zero then the vertical width will be
     set to the first argument, if the second argument is 1 then the vertical
     width will be incremented by the first, and if the argument is 2 then the
     vertical width will be scaled by &lt;first argument&gt;/100.0 .
   <DT>
-    SetLBearing(lbearing[,relative])
+    <A HREF="metricsmenu.html#LBearing">SetLBearing</A>(lbearing[,relative])
   <DD>
     If the second argument is absent or zero then the left bearing will be set
     to the first argument, if the second argument is 1 then the left bearing
     will be incremented by the first, and if the argument is 2 then the left
     bearing will be scaled by &lt;first argument&gt;/100.0 .
   <DT>
-    SetRBearing(rbearing[,relative])
+    <A HREF="metricsmenu.html#RBearing">SetRBearing</A>(rbearing[,relative])
   <DD>
     If the second argument is absent or zero then the right bearing will be set
     to the first argument, if the second argument is 1 then the right bearing
     will be incremented by the first, and if the argument is 2 then the right
     bearing will be scaled by &lt;first argument&gt;/100.0 .
   <DT>
-    CenterInWidth()
+    <A HREF="metricsmenu.html#Center">CenterInWidth</A>()
   <DD>
   <DT>
-    AutoWidth(spacing)
+    <A HREF="metricsmenu.html#Auto">AutoWidth</A>(spacing)
   <DD>
     Guesses at the widths of all selected glyphs so that two adjacent "I" glyphs
     will appear to be spacing em-units apart. (if spacing is the negative of
     the em-size (sum of ascent and descent) then a default value will be used).
   <DT>
-    AutoKern(spacing,threshold[,kernfile])
+    <A HREF="metricsmenu.html#Kern">AutoKern</A>(spacing,threshold[,kernfile])
   <DD>
     (AutoKern doesn't work well in general)<BR>
     Guesses at kerning pairs by looking at all selected glyphs, or if a kernfile
@@ -1989,7 +1992,7 @@ ApplySubstitution("*","*","vrt2")
     The first argument may be specified as in Select(), the second is an integer
     representing the kern offset.
   <DT>
-    RemoveAllKerns()
+    <A HREF="metricsmenu.html#Remove">RemoveAllKerns</A>()
   <DD>
     Removes all kern pairs and classes from the current font.
   <DT>
@@ -1999,13 +2002,13 @@ ApplySubstitution("*","*","vrt2")
     The first argument may be specified as in Select(), the second is an integer
     representing the kern offset.
   <DT>
-    VKernFromHKern()
+    <A HREF="metricsmenu.html#VKernFromHKern">VKernFromHKern</A>()
   <DD>
     Removes all vertical kern pairs and classes from the current font, and then
     generates new vertical kerning pairs by copying the horizontal kerning data
     for a pair of glyphs to the vertically rotated versions of those glyphs.
   <DT>
-    RemoveAllVKerns()
+    <A HREF="metricsmenu.html#VRemove">RemoveAllVKerns</A>()
   <DD>
     Removes all vertical kern pairs and classes from the current font.
   <DD>
@@ -2042,14 +2045,14 @@ ApplySubstitution("*","*","vrt2")
     one. If passed a small integer, then -1 indicates the weighted font and values
     between [0,$mmcount) represent that specific instance in the font set.
   <DT>
-    MMChangeWeight(weights)
+    <A HREF="mmmenu.html#DefWeights">MMChangeWeight</A>(weights)
   <DD>
     Weights is an array of integers, one for each axis. Each value should be
     65536 times the desired value (to deal with mac blends which tend to be small
     real numbers). This command changes the current multiple master font to have
     a different default weight, and sets that to be the current instance.
   <DT>
-    MMBlendToNewFont(weights)
+    <A HREF="mmmenu.html#NewFont">MMBlendToNewFont</A>(weights)
   <DD>
     Weights is an array of integers, one for each axis. Each value should be
     65536 times the desired value (to deal with mac blends which tend to be small
@@ -2064,29 +2067,29 @@ ApplySubstitution("*","*","vrt2")
     sub-font to be the one specified (the string should be the postscript FontName
     of the subfont)
   <DT>
-    CIDSetFontNames(fontname[,family[,fullname[,weight[,copyright-notice]]]])
+    <A HREF="cidmenu.html#FontInfo">CIDSetFontNames</A>(fontname[,family[,fullname[,weight[,copyright-notice]]]])
   <DD>
     Sets various postscript names associated with the top level cid font. If
     a name is omitted (or is the empty string) it will not be changed. (this
     is just like SetFontNames except it works on the top level cid font rather
     than the current font).
   <DT>
-    CIDFlatten()
+    <A HREF="cidmenu.html#Flatten">CIDFlatten</A>()
   <DD>
     Flattens a cid-keyed font.
   <DT>
-    CIDFlattenByCMap(cmap-filename)
+    <A HREF="cidmenu.html#FlattenCMap">CIDFlattenByCMap</A>(cmap-filename)
   <DD>
     Flattens a cid-keyed font, producing a font encoded with the result of the
     CMAP file.
   <DT>
-    ConvertToCID(registry, ordering, supplement)
+    <A HREF="cidmenu.html#Convert">ConvertToCID</A>(registry, ordering, supplement)
   <DD>
     Converts current font to a CID-keyed font using given registry, ordering
     and supplement. registry and ordering must be strings, supplement must be
     a integer.
   <DT>
-    ConvertByCMap(cmapfilename)
+    <A HREF="cidmenu.html#ConvertCMap">ConvertByCMap</A>(cmapfilename)
   <DD>
     Converts current font to a CID-keyed font using specified CMap file. cmapfilename
     must be a path name of a file conforming Adobe CMap File Format. 
