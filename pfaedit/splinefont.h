@@ -284,8 +284,11 @@ typedef struct splinepoint {
     unsigned int roundx: 1;	/* For true type hinting */
     unsigned int roundy: 1;	/* For true type hinting */
     unsigned int dontinterpolate: 1;	/* temporary in ttf output */
-	/* 3 bits left... */
+	/* 16+3 bits left... */
     uint16 ptindex;		/* Temporary value used by metafont routine */
+    uint16 ttfindex;		/* Truetype point index */
+	/* Special values 0xffff => point implied by averaging control points */
+	/*		  0xfffe => point created with no real number */
     struct spline *next;
     struct spline *prev;
 } SplinePoint;
@@ -502,6 +505,8 @@ typedef struct splinechar {
     uint32 /*Color*/ color;
     AnchorPoint *anchor;
     uint32 script;		/* an opentype script tag-- four letters naming a script like 'latn' */
+    uint8 *ttf_instrs;
+    int16 ttf_instrs_len;
 } SplineChar;
 
 enum ttfnames { ttf_copyright=0, ttf_family, ttf_subfamily, ttf_uniqueid,
@@ -585,6 +590,13 @@ typedef struct splinefont {
     AnchorClass *anchor;
     struct glyphnamehash *glyphnames;
     struct table_ordering { uint32 table_tag; uint32 *ordered_features; struct table_ordering *next; } *orders;
+    struct ttf_table {
+	uint32 tag;
+	int32 len, maxlen;
+	uint8 *data;
+	struct ttf_table *next;
+    } *ttf_tables;
+	/* We copy: fpgm, prep, cvt, maxp */
 } SplineFont;
 
 /* mac styles. Useful idea we'll just steal it */
@@ -714,6 +726,7 @@ extern AnchorPoint *APAnchorClassMerge(AnchorPoint *anchors,AnchorClass *into,An
 extern void AnchorClassMerge(SplineFont *sf,AnchorClass *into,AnchorClass *from);
 extern void AnchorClassesFree(AnchorClass *kp);
 extern void TableOrdersFree(struct table_ordering *ord);
+extern void TtfTablesFree(struct ttf_table *tab);
 extern AnchorClass *AnchorClassMatch(SplineChar *sc1,SplineChar *sc2,
 	AnchorClass *restrict_, AnchorPoint **_ap1,AnchorPoint **_ap2 );
 extern AnchorClass *AnchorClassMkMkMatch(SplineChar *sc1,SplineChar *sc2,
@@ -881,6 +894,7 @@ extern int StemListAnyConflicts(StemInfo *stems);
 extern HintInstance *HICopyTrans(HintInstance *hi, real mul, real offset);
 extern void MDAdd(SplineChar *sc, int x, SplinePoint *sp1, SplinePoint *sp2);
 extern int SFNeedsAutoHint( SplineFont *_sf);
+extern void SCAutoInstr( SplineChar *sc,BlueData *bd );
 extern void SplineCharAutoHint( SplineChar *sc,int removeOverlaps);
 extern void SplineFontAutoHint( SplineFont *sf);
 extern StemInfo *HintCleanup(StemInfo *stem,int dosort);

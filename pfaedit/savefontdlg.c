@@ -110,7 +110,7 @@ static GTextInfo bitmaptypes[] = {
 };
 
 static int oldafmstate = -1, oldpfmstate = false;
-int oldpsstate = true, oldttfhintstate = false;
+int oldpsstate = true, oldttfhintstate = true;
 int oldformatstate = ff_pfb;
 int oldbitmapstate = 0;
 extern int alwaysgenapple;

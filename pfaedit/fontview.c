@@ -867,6 +867,7 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_AutoHint	2501
 #define MID_ClearHints	2502
 #define MID_ClearWidthMD	2503
+#define MID_AutoInstr	2504
 #define MID_OpenBitmap	2700
 #define MID_OpenOutline	2701
 #define MID_Revert	2702
@@ -2452,6 +2453,28 @@ static void FVMenuAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVAutoHint( (FontView *) GDrawGetUserData(gw), removeOverlap );
 }
 
+static void FVAutoInstr(FontView *fv) {
+    BlueData bd;
+    int i, cnt=0;
+
+    QuickBlues(fv->sf,&bd);
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
+	++cnt;
+    GProgressStartIndicatorR(10,_STR_AutoInstructingFont,_STR_AutoInstructingFont,0,cnt,1);
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
+	SplineChar *sc = fv->sf->chars[i];
+	SCAutoInstr(sc,&bd);
+	if ( !GProgressNext())
+    break;
+    }
+    GProgressEndIndicator();
+}
+
+static void FVMenuAutoInstr(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FVAutoInstr( (FontView *) GDrawGetUserData(gw) );
+}
+
 static void FVClearHints(FontView *fv) {
     int i;
 
@@ -2772,6 +2795,9 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);
 	    free(mi->ti.text);
 	    mi->ti.text = u_copy(GStringGetResource(removeOverlap?_STR_Autohint:_STR_FullAutohint,NULL));
+	  break;
+	  case MID_AutoInstr:
+	    mi->ti.disabled = !fv->sf->order2;
 	  break;
 	  case MID_ClearHints: case MID_ClearWidthMD:
 	    mi->ti.disabled = anychars==-1;
@@ -3220,6 +3246,7 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 
 static GMenuItem htlist[] = {
     { { (unichar_t *) _STR_Autohint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, 'H', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoHint, MID_AutoHint },
+    { { (unichar_t *) _STR_AutoInstr, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'T', ksm_control, NULL, NULL, FVMenuAutoInstr, MID_AutoInstr },
     { { (unichar_t *) _STR_ClearHints, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuClearHints, MID_ClearHints },
     { { (unichar_t *) _STR_ClearWidthMD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuClearWidthMD, MID_ClearWidthMD },
     { NULL }
@@ -5396,6 +5423,9 @@ void FVFakeMenus(FontView *fv,int cmd) {
       break;
       case 201:
 	FVClearHints(fv);
+      break;
+      case 202:
+	FVAutoInstr(fv);
       break;
     }
 }

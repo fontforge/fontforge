@@ -142,7 +142,7 @@ static SplinePoint *MakeQuadSpline(SplinePoint *start,Spline *ttf,real x,
 	end->roundx = oldend->roundx; end->roundy = oldend->roundy; end->dontinterpolate = oldend->dontinterpolate;
 	x = oldend->me.x; y = oldend->me.y;	/* Want it to compare exactly */
     }
-    end->ptindex = -1;
+    end->ttfindex = 0xfffe;
     end->me.x = end->nextcp.x = x;
     end->me.y = end->nextcp.y = y;
     end->nonextcp = true;
@@ -222,7 +222,7 @@ static SplinePoint *LinearSpline(Spline *ps,SplinePoint *start, real tmax) {
 	end->roundx = oldend->roundx; end->roundy = oldend->roundy; end->dontinterpolate = oldend->dontinterpolate;
 	x = oldend->me.x; y = oldend->me.y;	/* Want it to compare exactly */
     }
-    end->ptindex = -1;
+    end->ttfindex = 0xfffe;
     end->me.x = end->nextcp.x = end->prevcp.x = x;
     end->me.y = end->nextcp.y = end->prevcp.y = y;
     end->nonextcp = end->noprevcp = start->nonextcp = true;
@@ -291,7 +291,7 @@ static SplinePoint *_ttfapprox(Spline *ps,real tmin, real tmax, SplinePoint *sta
 	sp = chunkalloc(sizeof(SplinePoint));
 	sp->me.x = ps->to->me.x; sp->me.y = ps->to->me.y;
 	sp->roundx = ps->to->roundx; sp->roundy = ps->to->roundy; sp->dontinterpolate = ps->to->dontinterpolate;
-	sp->ptindex = -1;
+	sp->ttfindex = 0xfffe;
 	sp->nonextcp = true;
 	spline = chunkalloc(sizeof(Spline));
 	spline->order2 = true;
@@ -663,6 +663,10 @@ void SCConvertToOrder3(SplineChar *sc) {
     sc->redoes[0] = sc->redoes[1] = NULL;
 
     MinimumDistancesFree(sc->md); sc->md = NULL;
+
+    free(sc->ttf_instrs);
+    sc->ttf_instrs = NULL; sc->ttf_instrs_len = 0;
+    /* If this character has any cv's showing instructions then remove the instruction pane!!!!! */
 }
 
 void SCConvertOrder(SplineChar *sc, int to_order2) {
@@ -694,6 +698,10 @@ void SFConvertToOrder3(SplineFont *_sf) {
 
 	UndoesFree(sf->gundoes); UndoesFree(sf->gredoes);
 	sf->gundoes = sf->gredoes = NULL;
+
+	TtfTablesFree(sf->ttf_tables);
+	sf->ttf_tables = NULL;
+
 	sf->order2 = false;
 	++k;
     } while ( k<_sf->subfontcnt );

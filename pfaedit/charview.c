@@ -2172,41 +2172,81 @@ return;
     }
 }
 
+static void instrcheck(SplineChar *sc) {
+    int pnum=0, skipit;
+    SplineSet *ss;
+    SplinePoint *sp;
+
+    if ( sc->ttf_instrs==NULL )
+return;
+    /* If the points are no longer in order then the instructions are not valid */
+    /*  (because they'll refer to the wrong points) and should be removed */
+    for ( ss = sc->splines; ss!=NULL; ss=ss->next ) {
+	for ( sp=ss->first; ; ) {
+	    skipit = sp!=ss->first && !sp->nonextcp && !sp->noprevcp &&
+		    !sp->roundx && !sp->roundy && !sp->dontinterpolate &&
+		    (sp->nextcp.x+sp->prevcp.x)/2 == sp->me.x &&
+		    (sp->nextcp.y+sp->prevcp.y)/2 == sp->me.y;
+	    if ( sp->ttfindex==0xffff && skipit )
+		/* Doesn't count */;
+	    else if ( sp->ttfindex!=pnum || skipit ) {
+		free(sc->ttf_instrs); sc->ttf_instrs = NULL;
+		sc->ttf_instrs_len = 0;
+return;
+	    } else
+		++pnum;
+	    if ( !sp->nonextcp )
+		++pnum;
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
+	}
+    }
+}
+
 void CVSetCharChanged(CharView *cv,int changed) {
+    FontView *fv = cv->fv;
+    SplineFont *sf = fv->sf;
+    SplineChar *sc = cv->sc;
+
     if ( cv->drawmode==dm_grid ) {
 	if ( changed ) {
-	    cv->fv->sf->changed = true;
-	    if ( cv->fv->cidmaster!=NULL )
-		cv->fv->cidmaster->changed = true;
+	    sf->changed = true;
+	    if ( fv->cidmaster!=NULL )
+		fv->cidmaster->changed = true;
 #if 0
-	    SFFigureGrid(cv->fv->sf);
+	    SFFigureGrid(sf);
 #endif
 	}
     } else {
 	if ( cv->drawmode==dm_fore )
-	    cv->sc->parent->onlybitmaps = false;
-	if ( cv->sc->changed != changed ) {
-	    cv->sc->changed = changed;
-	    FVToggleCharChanged(cv->sc);
-	    SCRefreshTitles(cv->sc);
+	    sf->onlybitmaps = false;
+	if ( sc->changed != changed ) {
+	    sc->changed = changed;
+	    FVToggleCharChanged(sc);
+	    SCRefreshTitles(sc);
 	    if ( changed ) {
-		cv->sc->parent->changed = true;
-		if ( cv->fv->cidmaster!=NULL )
-		    cv->fv->cidmaster->changed = true;
+		sf->changed = true;
+		if ( fv->cidmaster!=NULL )
+		    fv->cidmaster->changed = true;
+		if ( changed && sc->ttf_instrs )
+		    instrcheck(sc);
 	    }
 	}
 	if ( changed ) {
-	    cv->sc->changed_since_autosave = true;
-	    cv->sc->parent->changed_since_autosave = true;
-	    cv->sc->parent->changed_since_xuidchanged = true;
-	    if ( cv->fv->cidmaster!=NULL ) {
-		cv->fv->cidmaster->changed_since_autosave = true;
-		cv->fv->cidmaster->changed_since_xuidchanged = true;
+	    sc->changed_since_autosave = true;
+	    sf->changed_since_autosave = true;
+	    sf->changed_since_xuidchanged = true;
+	    if ( fv->cidmaster!=NULL ) {
+		fv->cidmaster->changed_since_autosave = true;
+		fv->cidmaster->changed_since_xuidchanged = true;
 	    }
 	}
 	if ( cv->drawmode==dm_fore ) {
 	    if ( changed )
-		cv->sc->changed_since_search = cv->sc->changedsincelasthinted = true;
+		sc->changed_since_search = cv->sc->changedsincelasthinted = true;
 	    cv->needsrasterize = true;
 	}
     }
@@ -2225,10 +2265,12 @@ void _SCCharChangedUpdate(SplineChar *sc,int changed) {
     SplineFont *sf = sc->parent;
 
     sc->changed_since_autosave = true;
-    if ( sc->changed!=changed /*&& !sf->onlybitmaps*/ ) {	/* Why onlybitmaps? This broke charinfo on a new file */
+    if ( sc->changed!=changed ) {
 	sc->changed = changed;
 	FVToggleCharChanged(sc);
 	SCRefreshTitles(sc);
+	if ( changed && sc->ttf_instrs )
+	    instrcheck(sc);
     }
     sc->changedsincelasthinted = true;
     sc->changed_since_search = true;
@@ -3150,6 +3192,7 @@ return( true );
 #define MID_CreateHHint	2408
 #define MID_CreateVHint	2409
 #define MID_MinimumDistance	2410
+#define MID_AutoInstr	2411
 #define MID_ClearAllMD		2451
 #define MID_ClearSelMDX		2452
 #define MID_ClearSelMDY		2453
@@ -4769,6 +4812,12 @@ static void CVMenuAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SCUpdateAll(cv->sc);
 }
 
+static void CVMenuAutoInstr(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    SCAutoInstr(cv->sc,NULL);
+}
+
 static void CVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     MinimumDistance *md, *prev, *next;
@@ -5030,6 +5079,9 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);
 	    free(mi->ti.text);
 	    mi->ti.text = u_copy(GStringGetResource(removeOverlap?_STR_Autohint: _STR_FullAutohint,NULL));
+	  break;
+	  case MID_AutoInstr:
+	    mi->ti.disabled = !cv->sc->parent->order2;
 	  break;
 	  case MID_AddHHint:
 	    mi->ti.disabled = sp2==NULL || sp2->me.y==sp1->me.y;
@@ -5370,6 +5422,7 @@ static GMenuItem mdlist[] = {
 
 static GMenuItem htlist[] = {
     { { (unichar_t *) _STR_Autohint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, 'H', ksm_control|ksm_shift, NULL, NULL, CVMenuAutoHint, MID_AutoHint },
+    { { (unichar_t *) _STR_AutoInstr, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'T', ksm_control, NULL, NULL, CVMenuAutoInstr, MID_AutoInstr },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_MinimumDistance, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, 'H', ksm_control|ksm_shift, mdlist, mdlistcheck, NULL, MID_MinimumDistance },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},

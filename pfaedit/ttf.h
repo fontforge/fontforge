@@ -112,6 +112,7 @@ struct ttfinfo {
     int loca_length;		/* actually glypn_cnt is wrong. Use the table length (divided by size) instead */
 		/* maxp */
     int maxp_start;		/* maximum number of glyphs */
+    int maxp_len;
 		/* name */
     int copyright_start;	/* copyright and fontname */
 		/* post */
@@ -134,6 +135,11 @@ struct ttfinfo {
     int mort_start;
     int morx_start;
 
+		/* Info for instructions */
+    int cvt_start, cvt_len;
+    int prep_start, prep_len;
+    int fpgm_start, fpgm_len;
+
     struct dup *dups;
     unsigned int one_of_many: 1;	/* A TTCF file, or a opentype font with multiple fonts */
     unsigned int obscomplain: 1;	/* We've complained about obsolete format 3 in EBDT table */
@@ -151,6 +157,8 @@ struct ttfinfo {
 
     uint32 *feats[2];			/* Order of gsub/gpos (morx) features */
     int mort_max;
+
+    struct ttf_table *tabs;
 };
 
 struct tabdir {
@@ -361,21 +369,16 @@ struct glyphinfo {
     int vmtxlen;
     int next_glyph;
     int glyph_len;
-    short *cvt;
-    int cvtmax;
-    int cvtcur;
     int xmin, ymin, xmax, ymax;
     BlueData bd;
     int strikecnt;		/* number of bitmaps to dump */
-    int fudge;
     int lasthwidth, lastvwidth;	/* encoding of last glyph for which we generate a full metrics entry */
     int hfullcnt, vfullcnt;
-    FILE *fpgmf;
-    int fpgmlen;
     int flags;
     int fixed_width;
     int32 *bsizes;
     unsigned int onlybitmaps: 1;
+    SplineFont *sf;
 };
 
 struct vorg {
@@ -425,6 +428,10 @@ struct alltabs {
     int os2len;
     FILE *cvtf;
     int cvtlen;
+    FILE *fpgmf;		/* Copied from an original ttf file and dumped out. Never generated */
+    int fpgmlen;
+    FILE *prepf;		/* Copied from an original ttf file and dumped out. Never generated */
+    int preplen;
     FILE *vheadf;
     int vheadlen;
     FILE *vorgf;
@@ -508,3 +515,13 @@ extern struct macsettingname {
     char *on_name;
     char *off_name;
 } macfeat_otftag[], *user_macfeat_otftag;
+
+    /* TrueType instructions */
+extern struct ttf_table *SFFindTable(SplineFont *sf,uint32 tag);
+extern int32 memlong(uint8 *data,int offset);
+extern int memushort(uint8 *data,int offset);
+extern void memputshort(uint8 *data,int offset,uint16 val);
+extern int TTF_getcvtval(SplineFont *sf,int val);
+extern void initforinstrs(SplineChar *sc);
+extern int SSPointCnt(SplineSet *ss);
+extern int SSAddPoints(SplineSet *ss,int ptcnt,BasePoint *bp, char *flags);

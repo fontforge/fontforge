@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 19-Feb-2003 -->
+  <!-- AP: Last modified: 26-Feb-2003 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -547,9 +547,10 @@ a[4][0] = "Nested array";
       <LI>
 	fmflags&amp;16 =&gt; where apple and ms/adobe differ about the format of
 	a true/open type file, use apple's definition (otherwise use ms/adobe)<BR>
-	Currently this affects bitmaps store in the font (Apple calls the table 'bdat',
-	ms/adobe 'EBDT') and the PostScript name in the 'name' table (Apple says
-	it must occur exactly once, ms/adobe say at least twice)
+	Currently this affects bitmaps stored in the font (Apple calls the table
+	'bdat', ms/adobe 'EBDT'), the PostScript name in the 'name' table (Apple
+	says it must occur exactly once, ms/adobe say at least twice), and whether
+	morx/feat/kern/opbd/prop/lcar or GSUB/GPOS/GDEF tables are generated.
     </UL>
     <P>
     res controls the resolution of generated bdf fonts. A value of -1 means pfaedit
@@ -997,17 +998,26 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     ClearHints()
   <DD>
   <DT>
-    SetWidth(width)
+    SetWidth(width[,relative])
   <DD>
+    If the second argument is absent or zero then the width will be set to the
+    first argument, otherwise it will be incremented by the first argument.
   <DT>
-    SetVWidth(vertical-width)
+    SetVWidth(vertical-width[,relative])
   <DD>
+    If the second argument is absent or zero then the vertical width will be
+    set to the first argument, otherwise it will be incremented by the first
+    argument.
   <DT>
-    SetLBearing(lbearing)
+    SetLBearing(lbearing[,relative])
   <DD>
+    If the second argument is absent or zero then the left bearing will be set
+    to the first argument, otherwise it will be incremented by the first argument.
   <DT>
-    SetRBearing(rbearing)
+    SetRBearing(rbearing[,relative])
   <DD>
+    If the second argument is absent or zero then the right bearing will be set
+    to the first argument, otherwise it will be incremented by the first argument.
   <DT>
     CenterInWidth()
   <DD>

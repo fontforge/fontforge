@@ -195,6 +195,7 @@ SplinePoint *SplinePointCreate(real x, real y) {
     sp->nextcp = sp->prevcp = sp->me;
     sp->nonextcp = sp->noprevcp = true;
     sp->nextcpdef = sp->prevcpdef = false;
+    sp->ttfindex = 0xfffe;
 return( sp );
 }
 
@@ -2821,6 +2822,7 @@ return;
     UndoesFree(sc->redoes[0]); UndoesFree(sc->redoes[1]);
     SplineCharListsFree(sc->dependents);
     PSTFree(sc->possub);
+    free(sc->ttf_instrs);
 }
 
 void SplineCharFree(SplineChar *sc) {
@@ -2848,6 +2850,16 @@ void TableOrdersFree(struct table_ordering *ord) {
     }
 }
 
+void TtfTablesFree(struct ttf_table *tab) {
+    struct ttf_table *next;
+
+    for ( ; tab!=NULL; tab = next ) {
+	next = tab->next;
+	free(tab->data);
+	chunkfree(tab,sizeof(struct ttf_table));
+    }
+}
+
 void SplineFontFree(SplineFont *sf) {
     int i;
 
@@ -2869,6 +2881,7 @@ return;
     SplinePointListFree(sf->gridsplines);
     AnchorClassesFree(sf->anchor);
     TableOrdersFree(sf->orders);
+    TtfTablesFree(sf->ttf_tables);
     UndoesFree(sf->gundoes);
     UndoesFree(sf->gredoes);
     PSDictFree(sf->private);

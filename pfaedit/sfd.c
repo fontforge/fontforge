@@ -275,7 +275,8 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
 			sp->me.x, sp->me.y );
 	    fprintf(sfd, "%d\n", sp->pointtype|(sp->selected<<2)|
 			(sp->nextcpdef<<3)|(sp->prevcpdef<<4)|
-			(sp->roundx<<5)|(sp->roundy<<6) );
+			(sp->roundx<<5)|(sp->roundy<<6)|
+			(sp->ttfindex==0xffff?(1<<7):0));
 	    if ( sp==first )
 	break;
 	    if ( first==NULL ) first = sp;
@@ -497,6 +498,36 @@ return;
     }
 }
 
+static void SFDDumpTtfInstrs(FILE *sfd,SplineChar *sc) {
+    struct enc85 enc;
+    int i;
+
+    memset(&enc,'\0',sizeof(enc));
+    enc.sfd = sfd;
+
+    fprintf( sfd, "TtfInstrs: %d\n", sc->ttf_instrs_len );
+    for ( i=0; i<sc->ttf_instrs_len; ++i )
+	SFDEnc85(&enc,sc->ttf_instrs[i]);
+    SFDEnc85EndEnc(&enc);
+    fprintf(sfd,"\nEndTtf\n" );
+}
+
+static void SFDDumpTtfTable(FILE *sfd,struct ttf_table *tab) {
+    struct enc85 enc;
+    int i;
+
+    memset(&enc,'\0',sizeof(enc));
+    enc.sfd = sfd;
+
+    fprintf( sfd, "TtfTable: %c%c%c%c %d\n",
+	    tab->tag>>24, (tab->tag>>16)&0xff, (tab->tag>>8)&0xff, tab->tag&0xff,
+	    tab->len );
+    for ( i=0; i<tab->len; ++i )
+	SFDEnc85(&enc,tab->data[i]);
+    SFDEnc85EndEnc(&enc);
+    fprintf(sfd,"\nEndTtf\n" );
+}
+
 static int SFDOmit(SplineChar *sc) {
     if ( sc==NULL )
 return( true );
@@ -546,6 +577,8 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
     SFDDumpHintList(sfd,"HStem: ", sc->hstem);
     SFDDumpHintList(sfd,"VStem: ", sc->vstem);
     SFDDumpDHintList(sfd,"DStem: ", sc->dstem);
+    if ( sc->ttf_instrs_len!=0 )
+	SFDDumpTtfInstrs(sfd,sc);
     if ( sc->splines!=NULL ) {
 	fprintf(sfd, "Fore\n" );
 	SFDDumpSplineSet(sfd,sc->splines);
@@ -715,6 +748,7 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
     BDFFont *bdf;
     struct ttflangname *ln;
     struct table_ordering *ord;
+    struct ttf_table *tab;
 
     fprintf(sfd, "FontName: %s\n", sf->fontname );
     if ( sf->fullname!=NULL )
@@ -767,6 +801,8 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	    fprintf( sfd, "\t%c%c%c%c\n",
 		    ord->ordered_features[i]>>24, (ord->ordered_features[i]>>16)&0xff, (ord->ordered_features[i]>>8)&0xff, ord->ordered_features[i]&0xff );
     }
+    for ( tab = sf->ttf_tables; tab!=NULL ; tab = tab->next )
+	SFDDumpTtfTable(sfd,tab);
     for ( ln = sf->names; ln!=NULL; ln=ln->next )
 	SFDDumpLangName(sfd,ln);
     if ( sf->subfontcnt!=0 ) {
@@ -1212,6 +1248,47 @@ static void SFDGetType1(FILE *sfd, SplineChar *sc) {
 	Dec85(&dec);
 }
 
+static void SFDGetTtfInstrs(FILE *sfd, SplineChar *sc) {
+    /* We've read the TtfInstr token, it is followed by a byte count */
+    /* and then the instructions in enc85 format */
+    int i,len;
+    struct enc85 dec;
+
+    memset(&dec,'\0', sizeof(dec)); dec.pos = -1;
+    dec.sfd = sfd;
+
+    getint(sfd,&len);
+    sc->ttf_instrs = galloc(len);
+    sc->ttf_instrs_len = len;
+    for ( i=0; i<len; ++i )
+	sc->ttf_instrs[i] = Dec85(&dec);
+}
+
+static void SFDGetTtfTable(FILE *sfd, SplineFont *sf) {
+    /* We've read the TtfTable token, it is followed by a tag and a byte count */
+    /* and then the instructions in enc85 format */
+    int i,len, ch;
+    struct enc85 dec;
+    struct ttf_table *tab = chunkalloc(sizeof(struct ttf_table));
+
+    memset(&dec,'\0', sizeof(dec)); dec.pos = -1;
+    dec.sfd = sfd;
+
+    while ( (ch=getc(sfd))==' ' );
+    tab->tag = (ch<<24)|(getc(sfd)<<16);
+    tab->tag |= getc(sfd)<<8;
+    tab->tag |= getc(sfd);
+
+    getint(sfd,&len);
+    tab->data = galloc(len);
+    tab->len = len;
+    for ( i=0; i<len; ++i )
+	tab->data[i] = Dec85(&dec);
+
+    tab->next = sf->ttf_tables;
+    sf->ttf_tables = tab;
+}
+
 static void SFDCloseCheck(SplinePointList *spl,int order2) {
     if ( spl->first!=spl->last &&
 	    RealNear(spl->first->me.x,spl->last->me.x) &&
@@ -1236,6 +1313,7 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd) {
     SplinePoint *pt;
     int ch;
     char tok[100];
+    int ttfindex = 0;
 
     current.x = current.y = 0;
     while ( 1 ) {
@@ -1300,6 +1378,10 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd) {
 	    pt->prevcpdef = val&0x10?1:0;
 	    pt->roundx = val&0x20?1:0;
 	    pt->roundy = val&0x40?1:0;
+	    if ( val&0x80 )
+		pt->ttfindex = 0xffff;
+	    else
+		pt->ttfindex = ttfindex++;
 	}
     }
     if ( cur!=NULL )
@@ -1599,6 +1681,8 @@ return( NULL );
 	    lastr = ref;
 	} else if ( strmatch(tok,"OrigType1:")==0 ) {	/* Accept, slurp, ignore contents */
 	    SFDGetType1(sfd,sc);
+	} else if ( strmatch(tok,"TtfInstrs:")==0 ) {
+	    SFDGetTtfInstrs(sfd,sc);
 	} else if ( strmatch(tok,"Image:")==0 ) {
 	    img = SFDGetImage(sfd);
 	    if ( lasti==NULL )
@@ -2138,6 +2222,8 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 		    lastan->next = an;
 		lastan = an;
 	    }
+	} else if ( strmatch(tok,"TtfTable:")==0 ) {
+	    SFDGetTtfTable(sfd,sf);
 	} else if ( strmatch(tok,"TableOrder:")==0 ) {
 	    int temp;
 	    struct table_ordering *ord;

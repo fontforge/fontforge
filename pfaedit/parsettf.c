@@ -47,7 +47,7 @@
 /* It grows on you though... now that I understand it better it seems better designed */
 /*  but the docs remain in conflict. Sometimes badly so */
 
-/* !!!I don't currently parse instructions to get hints */
+/* !!!I don't currently parse instructions to get hints, but I do save them */
 
 int prefer_cjk_encodings=false;
 
@@ -553,6 +553,7 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	  break;
 	  case CHR('m','a','x','p'):
 	    info->maxp_start = offset;
+	    info->maxp_len = length;
 	  break;
 	  case CHR('n','a','m','e'):
 	    info->copyright_start = offset;
@@ -572,6 +573,7 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	  case CHR('V','O','R','G'):
 	    info->vorg_start = offset;
 	  break;
+	      /* Apple stuff */
 	  case CHR('a','c','n','t'):
 	    info->acnt_start = offset;
 	  break;
@@ -592,6 +594,19 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	  break;
 	  case CHR('p','r','o','p'):
 	    info->prop_start = offset;
+	  break;
+	      /* to make sense of instrs */
+	  case CHR('c','v','t',' '):
+	    info->cvt_start = offset;
+	    info->cvt_len = length;
+	  break;
+	  case CHR('p','r','e','p'):
+	    info->prep_start = offset;
+	    info->prep_len = length;
+	  break;
+	  case CHR('f','p','g','m'):
+	    info->fpgm_start = offset;
+	    info->fpgm_len = length;
 	  break;
 	}
     }
@@ -907,7 +922,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 		sp = chunkalloc(sizeof(SplinePoint));
 		sp->me = sp->nextcp = sp->prevcp = pts[i];
 		sp->nonextcp = sp->noprevcp = true;
-		sp->ptindex = i;
+		sp->ttfindex = i;
 		if ( last_off && cur->last!=NULL )
 		    FigureControls(cur->last,sp,&pts[i-1],is_order2);
 		last_off = false;
@@ -919,7 +934,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 		sp->me.y = (pts[i].y+pts[i-1].y)/2;
 		sp->nextcp = sp->prevcp = sp->me;
 		sp->nonextcp = true;
-		sp->ptindex = 0xffff;
+		sp->ttfindex = 0xffff;
 		if ( last_off && cur->last!=NULL )
 		    FigureControls(cur->last,sp,&pts[i-1],is_order2);
 		/* last_off continues to be true */
@@ -944,7 +959,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 	    sp->me.y = pts[start].y;
 	    sp->nextcp = sp->prevcp = sp->me;
 	    sp->nonextcp = sp->noprevcp = true;
-	    sp->ptindex = i-1;
+	    sp->ttfindex = i-1;
 	    cur->first = cur->last = sp;
 	} else if ( !(flags[start]&_On_Curve) && !(flags[i-1]&_On_Curve) ) {
 	    sp = chunkalloc(sizeof(SplinePoint));
@@ -952,7 +967,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 	    sp->me.y = (pts[start].y+pts[i-1].y)/2;
 	    sp->nextcp = sp->prevcp = sp->me;
 	    sp->nonextcp = true;
-	    sp->ptindex = 0xffff;
+	    sp->ttfindex = 0xffff;
 	    FigureControls(cur->last,sp,&pts[i-1],is_order2);
 	    SplineMake(cur->last,sp,is_order2);
 	    cur->last = sp;
@@ -969,13 +984,9 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 return( head );
 }
 
-static void ttfstemhints(SplineChar *sc,char *instructions,int len) {
-    /* !!!!! I assume these instructions have some hints ????? */
-}
-
 static void readttfsimpleglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, int path_cnt) {
     uint16 *endpt = galloc((path_cnt+1)*sizeof(uint16));
-    char *instructions;
+    uint8 *instructions;
     char *flags;
     BasePoint *pts;
     int i, j, tot, len;
@@ -1042,11 +1053,14 @@ static void readttfsimpleglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, in
     }
 
     sc->splines = ttfbuildcontours(path_cnt,endpt,flags,pts,info->to_order2);
-    ttfstemhints(sc,instructions,len);
+    if ( info->to_order2 ) {
+	sc->ttf_instrs_len = len;
+	sc->ttf_instrs = instructions;
+    } else
+	free(instructions);
     SCCatagorizePoints(sc);
     free(endpt);
     free(flags);
-    free(instructions);
     free(pts);
     if ( feof(ttf))
 	fprintf( stderr, "Reached end of file when reading simple glyph\n" );
@@ -4855,14 +4869,19 @@ static void mortclass_apply_value(struct ttfinfo *info, int gfirst, int glast,FI
 	info->morx_classes[i] = class;
 }
 
-static int32 memlong(uint8 *data,int offset) {
+int32 memlong(uint8 *data,int offset) {
     int ch1 = data[offset], ch2 = data[offset+1], ch3 = data[offset+2], ch4 = data[offset+3];
 return( (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4 );
 }
 
-static int memushort(uint8 *data,int offset) {
+int memushort(uint8 *data,int offset) {
     int ch1 = data[offset], ch2 = data[offset+1];
 return( (ch1<<8)|ch2 );
+}
+
+void memputshort(uint8 *data,int offset,uint16 val) {
+    data[offset] = (val>>8);
+    data[offset+1] = val&0xff;
 }
 
 #define MAX_LIG_COMP	16
@@ -5233,7 +5252,7 @@ static int ttfFindPointInSC(SplineChar *sc,int pnum,BasePoint *pos) {
 
     for ( ss = sc->splines; ss!=NULL; ss=ss->next ) {
 	for ( sp=ss->first; ; ) {
-	    if ( sp->ptindex==pnum ) {
+	    if ( sp->ttfindex==pnum ) {
 		*pos = sp->me;
 return(-1);
 	    } else if ( !sp->nonextcp && last+1==pnum ) {
@@ -5241,12 +5260,12 @@ return(-1);
 		UnfigureControls(sp->next,pos);
 return( -1 );
 	    }
-	    if ( sp->ptindex==0xffff )
+	    if ( sp->ttfindex==0xffff )
 		++last;
 	    else if ( sp->nonextcp )
-		last = sp->ptindex;
+		last = sp->ttfindex;
 	    else
-		last = sp->ptindex+1;
+		last = sp->ttfindex+1;
 	    if ( sp->next==NULL )
 	break;
 	    sp = sp->next->to;
@@ -5320,6 +5339,22 @@ static void ttfFixupReferences(struct ttfinfo *info) {
     GProgressNextStage();
 }
 
+static void TtfCopyTableBlindly(struct ttfinfo *info,FILE *ttf,
+	uint32 start,uint32 len,uint32 tag) {
+    struct ttf_table *tab;
+
+    if ( start==0 || len==0 )
+return;
+    tab = chunkalloc(sizeof(struct ttf_table));
+    tab->tag = tag;
+    tab->len = len;
+    tab->data = galloc(len);
+    fseek(ttf,start,SEEK_SET);
+    fread(tab->data,1,len,ttf);
+    tab->next = info->tabs;
+    info->tabs = tab;
+}
+
 static int readttf(FILE *ttf, struct ttfinfo *info, char *filename) {
     char *oldloc;
 
@@ -5391,6 +5426,15 @@ return( 0 );
 	/* We will default the gsub table later... */;
 	if ( info->morx_start!=0 || info->mort_start!=0 )
 	    readttfmort(ttf,info);
+    }
+    if ( info->to_order2 ) {
+	    /* Yes, even though we've looked at maxp already, let's make a blind */
+	    /*  copy too for those fields we can't compute on our own */
+	    /* Like number of instructions, etc. */
+	TtfCopyTableBlindly(info,ttf,info->maxp_start,info->maxp_len,CHR('m','a','x','p'));
+	TtfCopyTableBlindly(info,ttf,info->cvt_start,info->cvt_len,CHR('c','v','t',' '));
+	TtfCopyTableBlindly(info,ttf,info->fpgm_start,info->fpgm_len,CHR('f','p','g','m'));
+	TtfCopyTableBlindly(info,ttf,info->prep_start,info->prep_len,CHR('p','r','e','p'));
     }
     setlocale(LC_NUMERIC,oldloc);
     ttfFixupReferences(info);
@@ -5643,6 +5687,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->pfminfo = info->pfminfo;
     sf->names = info->names;
     sf->anchor = info->ahead;
+    sf->ttf_tables = info->tabs;
     if ( info->encoding_name == em_symbol || info->encoding_name == em_mac )
 	/* Don't trust those encodings */
 	CheckEncoding(info);

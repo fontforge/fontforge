@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 24-Feb-2003 -->
+  <!-- AP: Last modified: 26-Feb-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,50 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    26-Feb-2003
+    <UL>
+      <LI>
+	configure scripts got confused in the freetype libraries were findable but
+	the include files were not. Changed the scripts so that freetype is marked
+	not present if the include files are missing.
+      <LI>
+	Table ordering was not read in properly from an sfd file
+      <LI>
+	Typos in SetCharName &amp; SetUnicodeValue prevented second argument from
+	working
+      <LI>
+	Added a second argument to SetLBearing and friends to allow relative bearing
+	settings (ie. to increment the bearing by some amount)
+    </UL>
+  <LI>
+    25-Feb-2003
+    <UL>
+      <LI>
+	Bad bug in GSUB generation introduced yesterday
+      <LI>
+	Font level round 2 int command now rounds hints too.
+      <LI>
+	Adobe lies when they say that a hint can't stretch from one bluezone to another,
+	so be a bit more cautious in removing this case.
+      <LI>
+	Be a little better about getting the script from the GSUB/GPOS table. 
+	  <HR>
+      <LI>
+	PfaEdit had problems generating mac cursive connection setting.
+      <LI>
+	PfaEdit had problems defaulting ligatures in cid keyed fonts (even if there
+	were no ligature characters to be defaulted, the attempt would fail)
+      <LI>
+	I introduced memory problems yesterday. Fixed.
+      <LI>
+	Font level round 2 int will take hints into account when positioning points
+	in order to maintain stem widths. 
+	  <HR>
+      <LI>
+	When running a script from the command line PfaEdit failed to initialize
+	the adobe standard encoding.
+    </UL>
   <LI>
     24-Feb-2003
     <UL>
