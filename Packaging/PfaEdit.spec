@@ -1,5 +1,5 @@
 Name:        pfaedit
-Version:     021120
+Version:     021202
 Release:     1
 Summary:     A PostScript font editor
 Copyright:   BSD
@@ -23,22 +23,16 @@ some Type 0s), TrueType, OpenType (Type2) and CID-keyed fonts.
 %setup -T -b 0 -n pfaedit
 
 %build
-CFLAGS="$RPM_OPT_FLAGS"
-./configure
+%configure
 make
 
 %install
-mkdir -p ${RPM_BUILD_ROOT}%{_bindir}
-mkdir -p ${RPM_BUILD_ROOT}%{_mandir}/man1
-mkdir -p ${RPM_BUILD_ROOT}%{_datadir}/pfaedit
-rm -rf ${RPM_BUILD_ROOT}%{_libdir}
-mkdir -p ${RPM_BUILD_ROOT}%{_libdir}
 %makeinstall
 
-#%post
-#ldconfig
+%post
+ldconfig
 
-#%postun
+%postun
 ldconfig
 
 %clean
@@ -48,18 +42,19 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root)
 %{_bindir}/pfaedit
 %{_bindir}/sfddiff
-%{_libdir}/libgunicode.so.*.*.*
-%{_libdir}/libgdraw.so.*.*.*
-%{_libdir}/libgunicode.la
-%{_libdir}/libgdraw.la
-%{_datadir}/pfaedit/
+%{_libdir}/libgunicode.*
+%{_libdir}/libgdraw.*
+%{_datadir}/pfaedit
 %{_mandir}/man1/pfaedit.1*
 %{_mandir}/man1/sfddiff.1*
 %doc LICENSE README
 
 %changelog
+* Wed Nov 27 2002 Scott Pakin <pakin@uiuc.edu>
+- Corrected inclusion of shared libraries and cleaned up some other things
+
 * Fri Nov  2 2001 George Williams <gww@silcom.com>
-- went from three source packages down to just one which includes the others
+- Went from three source packages down to just one which includes the others
 
 * Thu May 10 2001 George Williams <gww@silcom.com>
 - My first attempt at rpm, updated to 10 May sources

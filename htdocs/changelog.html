@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 22-Nov-2002 -->
+  <!-- AP: Last modified: 25-Nov-2002 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,26 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    25-Nov-2002
+    <UL>
+      <LI>
+	Harald Harders provides a patch to allow SetItalicAngle to deal with
+	real numbers.
+      <LI>
+	Vadim Belman provides a patch to keep Element->MetaFont from crashing when
+	applied to spaces.
+      <LI>
+	Bringing up the preference dlg would segfault if there were arguments
+	specified for autotrace.
+      <LI>
+	Put in a hack so that the environment variable PFAEDIT_PI1 controls
+	whether U+03D6 is named "pi1" (as Unicode suggests it ought to be) or
+	"omega1" (as Adobe has said it should be).
+      <LI>
+	Follow riggle's suggestion and use the shell command "open" (on a Mac)
+	to bring up a browser window.
+    </UL>
   <LI>
     24-Nov-2002
     <UL>
