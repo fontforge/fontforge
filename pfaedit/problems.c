@@ -47,6 +47,7 @@ struct problems {
     unsigned int ptnearhint: 1;
     unsigned int hintwidthnearval: 1;
     unsigned int direction: 1;
+    unsigned int flippedrefs: 1;
     unsigned int cidmultiple: 1;
     unsigned int cidblank: 1;
     unsigned int explain: 1;
@@ -64,7 +65,7 @@ struct problems {
 
 static int openpaths=1, pointstooclose=1/*, missing=0*/, doxnear=0, doynear=0;
 static int doynearstd=1, linestd=1, cpstd=1, cpodd=1, hintnopt=0, ptnearhint=0;
-static int hintwidth=0, direction=0;
+static int hintwidth=0, direction=0, flippedrefs=1;
 static int cidblank=0, cidmultiple=1;
 static real near=3, xval=0, yval=0, widthval=50;
 
@@ -90,6 +91,7 @@ static real near=3, xval=0, yval=0, widthval=50;
 #define CID_CpOdd		1017
 #define CID_CIDMultiple		1018
 #define CID_CIDBlank		1019
+#define CID_FlippedRefs		1020
 
 
 static int explain_e_h(GWindow gw, GEvent *event) {
@@ -870,6 +872,25 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	}
     }
 
+    if ( p->flippedrefs && !p->finish && ( cv==NULL || cv->drawmode==dm_fore )) {
+	RefChar *ref;
+	for ( ref = sc->refs; ref!=NULL ; ref = ref->next )
+	    ref->selected = false;
+	for ( ref = sc->refs; !p->finish && ref!=NULL ; ref = ref->next ) {
+	    if ( ref->transform[0]*ref->transform[3]<0 ||
+		    (ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
+		changed = true;
+		ref->selected = true;
+		ExplainIt(p,sc,_STR_ProbFlippedRef,0,0);
+		ref->selected = false;
+		if ( p->ignorethis ) {
+		    p->flippedrefs = false;
+	break;
+		}
+	    }
+	}
+    }
+
     if ( needsupdate || changed )
 	SCUpdateAll(sc);
 return( changed );
@@ -959,6 +980,7 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	ptnearhint = p->ptnearhint = GGadgetIsChecked(GWidgetGetControl(gw,CID_PtNearHint));
 	hintwidth = p->hintwidthnearval = GGadgetIsChecked(GWidgetGetControl(gw,CID_HintWidthNear));
 	direction = p->direction = GGadgetIsChecked(GWidgetGetControl(gw,CID_Direction));
+	flippedrefs = p->flippedrefs = GGadgetIsChecked(GWidgetGetControl(gw,CID_FlippedRefs));
 	if ( p->fv->cidmaster!=NULL ) {
 	    cidmultiple = p->cidmultiple = GGadgetIsChecked(GWidgetGetControl(gw,CID_CIDMultiple));
 	    cidblank = p->cidblank = GGadgetIsChecked(GWidgetGetControl(gw,CID_CIDBlank));
@@ -978,7 +1000,7 @@ return( true );
 	GDrawSetVisible(gw,false);
 	if ( openpaths || pointstooclose /*|| missing*/ || doxnear || doynear ||
 		doynearstd || linestd || hintnopt || ptnearhint || hintwidth ||
-		direction || p->cidmultiple || p->cidblank ) {
+		direction || p->cidmultiple || p->cidblank || p->flippedrefs ) {
 	    DoProbs(p);
 	}
 	p->done = true;
@@ -1013,7 +1035,7 @@ void FindProblems(FontView *fv,CharView *cv) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[25];
+    GGadgetCreateData gcd[26];
     GTextInfo label[25];
     struct problems p;
     char xnbuf[20], ynbuf[20], widthbuf[20], nearbuf[20];
@@ -1034,7 +1056,7 @@ void FindProblems(FontView *fv,CharView *cv) {
     wattrs.window_title = GStringGetResource(_STR_Findprobs,NULL);
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,200);
-    pos.height = GDrawPointsToPixels(NULL,fv->cidmaster==NULL?315:352);
+    pos.height = GDrawPointsToPixels(NULL,fv->cidmaster==NULL?335:372);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&p,&wattrs);
 
     memset(&label,0,sizeof(label));
@@ -1218,42 +1240,53 @@ void FindProblems(FontView *fv,CharView *cv) {
     gcd[12].gd.cid = CID_Direction;
     gcd[12].creator = GCheckBoxCreate;
 
-    gcd[18].gd.pos.x = 10; gcd[18].gd.pos.y = gcd[12].gd.pos.y+22;
+    label[21].text = (unichar_t *) _STR_CheckFlippedRefs;
+    label[21].text_in_resource = true;
+    gcd[21].gd.label = &label[21];
+    gcd[21].gd.mnemonic = 'r';
+    gcd[21].gd.pos.x = 6; gcd[21].gd.pos.y = gcd[12].gd.pos.y+20; 
+    gcd[21].gd.flags = gg_visible | gg_enabled;
+    if ( flippedrefs ) gcd[21].gd.flags |= gg_cb_on;
+    gcd[21].gd.popup_msg = GStringGetResource(_STR_CheckFlippedRefsPopup,NULL);
+    gcd[21].gd.cid = CID_FlippedRefs;
+    gcd[21].creator = GCheckBoxCreate;
+
+    gcd[18].gd.pos.x = 10; gcd[18].gd.pos.y = gcd[21].gd.pos.y+22;
     gcd[18].gd.pos.width = 200-20;
     gcd[18].gd.flags = gg_enabled | gg_visible;
     gcd[18].creator = GLineCreate;
 
     if ( fv->cidmaster!=NULL ) {
-	label[21].text = (unichar_t *) _STR_CIDMultiple;
-	label[21].text_in_resource = true;
-	gcd[21].gd.label = &label[21];
-	gcd[21].gd.mnemonic = 'S';
-	gcd[21].gd.pos.x = 6; gcd[21].gd.pos.y = gcd[12].gd.pos.y+24;
-	gcd[21].gd.flags = gg_visible | gg_enabled;
-	if ( cidmultiple ) gcd[21].gd.flags |= gg_cb_on;
-	gcd[21].gd.popup_msg = GStringGetResource(_STR_CIDMultiplePopup,NULL);
-	gcd[21].gd.cid = CID_CIDMultiple;
-	gcd[21].creator = GCheckBoxCreate;
-
-	label[22].text = (unichar_t *) _STR_CIDBlank;
+	label[22].text = (unichar_t *) _STR_CIDMultiple;
 	label[22].text_in_resource = true;
 	gcd[22].gd.label = &label[22];
 	gcd[22].gd.mnemonic = 'S';
-	gcd[22].gd.pos.x = 6; gcd[22].gd.pos.y = gcd[21].gd.pos.y+17; 
+	gcd[22].gd.pos.x = 6; gcd[22].gd.pos.y = gcd[21].gd.pos.y+24;
 	gcd[22].gd.flags = gg_visible | gg_enabled;
-	if ( cidblank ) gcd[22].gd.flags |= gg_cb_on;
-	gcd[22].gd.popup_msg = GStringGetResource(_STR_CIDBlankPopup,NULL);
-	gcd[22].gd.cid = CID_CIDBlank;
+	if ( cidmultiple ) gcd[22].gd.flags |= gg_cb_on;
+	gcd[22].gd.popup_msg = GStringGetResource(_STR_CIDMultiplePopup,NULL);
+	gcd[22].gd.cid = CID_CIDMultiple;
 	gcd[22].creator = GCheckBoxCreate;
 
-	ypos = gcd[22].gd.pos.y-2;
+	label[23].text = (unichar_t *) _STR_CIDBlank;
+	label[23].text_in_resource = true;
+	gcd[23].gd.label = &label[23];
+	gcd[23].gd.mnemonic = 'S';
+	gcd[23].gd.pos.x = 6; gcd[23].gd.pos.y = gcd[22].gd.pos.y+17; 
+	gcd[23].gd.flags = gg_visible | gg_enabled;
+	if ( cidblank ) gcd[23].gd.flags |= gg_cb_on;
+	gcd[23].gd.popup_msg = GStringGetResource(_STR_CIDBlankPopup,NULL);
+	gcd[23].gd.cid = CID_CIDBlank;
+	gcd[23].creator = GCheckBoxCreate;
 
-	gcd[23].gd.pos.x = 10; gcd[23].gd.pos.y = gcd[22].gd.pos.y+20;
-	gcd[23].gd.pos.width = 200-20;
-	gcd[23].gd.flags = gg_enabled | gg_visible;
-	gcd[23].creator = GLineCreate;
+	ypos = gcd[23].gd.pos.y-2;
+
+	gcd[24].gd.pos.x = 10; gcd[24].gd.pos.y = gcd[23].gd.pos.y+20;
+	gcd[24].gd.pos.width = 200-20;
+	gcd[24].gd.flags = gg_enabled | gg_visible;
+	gcd[24].creator = GLineCreate;
     } else
-	ypos = gcd[12].gd.pos.y;
+	ypos = gcd[21].gd.pos.y;
 
     label[13].text = (unichar_t *) _STR_PointsNear;
     label[13].text_in_resource = true;

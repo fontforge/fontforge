@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 15-Dec-2001 -->
+  <!-- AP: Last modified: 17-Dec-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -71,8 +71,8 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-011215.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 15-Dec-2001
+    <A HREF="pfaedit-011216.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 16-Dec-2001
   <LI>
     <A HREF="pfaedit-solaris-011211.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 11-Dec-2001
@@ -110,22 +110,22 @@ If you want to edit CID keyed fonts you need these
 <P>
 You can download a <A HREF="pfaedit-011201-1.src.rpm">source RPM</A>: Version:
 1-Dec-2001<BR>
-Or you can download the following three packages. Version: 15-Dec-2001
+Or you can download the following three packages. Version: 16-Dec-2001
 <UL>
   <LI>
     <A HREF="libgunicode-011215.tgz">Unicode library source</A> (15-Dec-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
-    <A HREF="libgdraw-011215.tgz">Unicode widget library source</A>
-    (15-Dec-2001)<BR>
+    <A HREF="libgdraw-011216.tgz">Unicode widget library source</A>
+    (16-Dec-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-011215.tgz">Pfaedit source</A> (15-Dec-2001)<BR>
+    <A HREF="pfaedit_src-011216.tgz">Pfaedit source</A> (16-Dec-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
-    <A HREF="pfaedit_full-011215.tgz">All three bundled together </A>(15-Dec-2001)
+    <A HREF="pfaedit_full-011216.tgz">All three bundled together </A>(16-Dec-2001)
 </UL>
 <P>
 If you want to do autotracing around character images you should also download
@@ -235,6 +235,35 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    16-Dec-2001
+    <UL>
+      <LI>
+	Scrollbars didn't always update in big textfields
+      <LI>
+	Missed the hot key for unlink reference in the font view.
+      <LI>
+	Fixed crash when clearing empty character cells
+      <LI>
+	More greek accent fixes
+      <LI>
+	changed character popups slightly.
+      <LI>
+	Added another problem to find problems. Will now check for flipped references
+	(=&gt;counter-clockwise paths most of the time)
+      <LI>
+	Interesting. The EuroFont uses the endchar opcode in way that both the type1
+	and type2 docs claim to be illegal (it is not the last thing in the subroutine,
+	it is followed by a return). Since EuroFont is from adobe, I presume the
+	docs are wrong, so I ignore this error now.
+      <LI>
+	PfaEdit will be better able to figure out where hints should be active when
+	it reads in a postscript font.
+      <LI>
+	Autohint will no longer find some erroneous hints.
+      <LI>
+	Autohint will now find the serifs in Nimbus Roman
+    </UL>
   <LI>
     15-Dec-2001
     <UL>
@@ -497,237 +526,6 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
 	</UL>
     </UL>
   <LI>
-    11-Nov-2001
-    <UL>
-      <LI>
-	Added support for macintosh resource fonts (by reading them from and writing
-	them to macbinary wrapped files)
-      <LI>
-	Fixed a bug in metricsview where pasting with more than one character caused
-	a crash.
-    </UL>
-  <LI>
-    8-Nov-2001
-    <UL>
-      <LI>
-	PfaEdit will now save ligature information in the GSUB table when creating
-	an opentype font.
-      <LI>
-	When double clicking on a previously unused character, PfaEdit would not
-	set the default ligature properly.
-      <LI>
-	PfaEdit would crash if you merged a font containing ligature information
-	into another one (or diagonal stems or minimum distances).
-      <LI>
-	When opening some bdf files, pfaedit would display nothing until you resized
-	the window.
-      <LI>
-	Added the ability to set the TTF linegap fields. There are two of them (one
-	in OS/2 and one in hhea). I don't understand the distinction between them,
-	so I set both to the same value.
-      <LI>
-	When merging fonts, characters which did not fit in the current encoding
-	would be placed immediately after the last character with something in it.
-	The intent was that they should go to an unused slot outside of the encoding
-	rather than within. This has been fixed.
-      <LI>
-	I've added a preference item allowing you to configure the seperation between
-	the base character and the accent in the Build Accented Character command.
-	I've also changed it so that if the character is close to the x-height or
-	the cap height, the accent is positioned as if the character were at the
-	x-height (or cap height), this means the accents will be at a consistent
-	level rather than slightly ragged.
-      <LI>
-	I moved the Make First command to the Point menu.
-      <LI>
-	Added a command to copy the splines in the foreground layer into the background
-	layer.
-    </UL>
-  <LI>
-    2-Nov-2001
-    <UL>
-      <LI>
-	PfaEdit would not notice certain disk errors when generating truetype fonts.
-	It should do better now.
-      <LI>
-	PfaEdit could crash when generating postscript from a unicode font that did
-	not contain all the greek letters.
-      <LI>
-	Fixed a display bug in the metrics view.
-      <LI>
-	PfaEdit should not be able to read in an opentype GPOS table and extract
-	kerning information from it.
-      <LI>
-	PfaEdit will now put kerning info into the GPOS table when saving an opentype
-	font. TrueType fonts will still put kerning info into the kern table.
-    </UL>
-  <LI>
-    31-Oct-2001
-    <UL>
-      <LI>
-	Added a command to remove width MDs &amp; changed ttf generation to check
-	if there were any width MDs before setting the "metrics depend on pointsize"
-	flag in the head table.
-      <LI>
-	Improved (I hope) placement of palettes under default gnome.
-      <LI>
-	There was a bug in my otf read in of 'hflex1' instructions which warped some
-	otf fonts badly.
-    </UL>
-  <LI>
-    29-Oct-2001
-    <UL>
-      <LI>
-	Change type1 encoding vectors so that they start with a for loop setting
-	everything to notdef. older versions of dvipdfm assume it's there
-      <LI>
-	Added two new concepts to hinting which only apply to truetype:
-	<UL>
-	  <LI>
-	    You can specify that a certain point should be rounded to the grid in x or
-	    y<BR>
-	    (note: points on hints don't need this, they'll always be rounded)
-	  <LI>
-	    You can specify that the x or y distance between two points should never
-	    vanish (this is called Minimum Distance)<BR>
-	    (note: each hint implies one of these going from one side of the hint to
-	    the other, also there is an implied one of these between any two non-overlapping
-	    hints)<BR>
-	    You can also specify that the distance between a point and the width should
-	    never vanish. This means that there will always be at least one pixel between
-	    that point and the advance width of the character.
-	</UL>
-      <LI>
-	I removed the serif checker from the ttf instruction generator and moved
-	it to the autohinter (with some changes of course) and it now generates minimum
-	distances.
-      <LI>
-	I added a minimum distance between the last stem of a character and the width.
-      <LI>
-	I added a user interface to display and control these
-      <LI>
-	I realized I was misinterpretting the ttf docs (again) and that IUP worked
-	better than I thought, and so I removed my own interpolation code (thank
-	you freetype! it is so good to see what the instructions do.)
-      <LI>
-	Cleaned up some rather technical issues in the truetype instruction generation
-	occasioned by non-overlapping and non-intersecting hints.
-      <LI>
-	PfaEdit will now read (but not produce) '.gsf' files. These are yet another
-	postscript format, like a pfa but without the eexec encoding. Ghostscript
-	uses them (others may, I think Wadalab did...).
-      <LI>
-	Oops. In encodings containing characters with no defined postscript unicode
-	names, then the name generated for an unused character was wrong.
-      <LI>
-	Oops. PfaEdit thought all user defined encodings were two byte encodings
-	and produced a warning message for them when generating type1 fonts.
-      <LI>
-	Added a force encoding flag to the Font Info dlg. This is for those cases
-	where PfaEdit reads in a font but can't figure out what the proper encoding
-	is, then doing a force encoding will simply rename all the characters to
-	match what they should be in the chosen encoding.
-      <LI>
-	Oops, neither afm nor bdf files were correctly normalized for fonts whose
-	em size wasn't 1000.
-      <LI>
-	Improved bdf "CHARSET_COLLECTIONS" output.
-      <LI>
-	Added a command to make two lines parallel
-    </UL>
-  <LI>
-    21-Oct-2001
-    <UL>
-      <LI>
-	PfaEdit could crash when autohinting a diagonal hint.
-    </UL>
-  <LI>
-    20-Oct-2001
-    <UL>
-      <LI>
-	PfaEdit generated awful instructions (hints) for truetype characters. I've
-	fixed some of the more egregious problems (I hope).<BR>
-	In particular:
-	<UL>
-	  <LI>
-	    Diagonal hints were completely broken
-	  <LI>
-	    Overlapping hints didn't work either
-	  <LI>
-	    Normal hints with more than one point on them sometimes had the second (third,
-	    fourth...) point moved by the wrong amount.
-	  <LI>
-	    Points that weren't on any hints were often not interpolated properly.
-	  <LI>
-	    The serif code picked up on things which weren't serifs and tried to hint
-	    them as though they were.
-	</UL>
-	<P>
-	I've written a <A HREF="TtfMod/index.html">tool</A> which will allow you
-	to look at what the instructions are and what they do.
-      <LI>
-	TTF spline approximation (cubic-&gt;quadratic) should be twice as fast.
-      <LI>
-	Clearing/Cutting a character with references from the font view corrupted
-	PfaEdit's internal state. If this were followed by a reduction in the number
-	of characters in the font (Element-&gt;Font Info-&gt;Encoding) a crash could
-	occur.
-      <LI>
-	Clearing/Cutting a character with dependents from the font view now gives
-	the user the option of instanciating the character in all its dependents.
-    </UL>
-  <LI>
-    11-Oct-2001
-    <UL>
-      <LI>
-	Hmm. Apple has some very strange things to say about how offsets and scaling
-	factors overlap in compound ttf glyphs. It is not well enough described (at
-	least when it applies to rotations) for me to implement it. Microsoft doesn't
-	do this. Great. OpenType gives a pair of bits to control this behavior (bit
-	11 set do it apple's way, bit 12 set do it MS way, neither set flip a coin
-	and guess, both set die in horrible agony). But still no description of exactly
-	what Apple does. So I've changed my ttf output routine always to set bit
-	12 in the composit flags. And the read in does something if it gets the apple
-	bit. Probably not the right thing though.
-      <LI>
-	Fixed a potential problem clipping splines in the outline character display.
-      <LI>
-	Added a warning when attempting to save a font with a two byte encoding into
-	a format that only supports one byte encodings (ie. unicode to pfb)
-      <LI>
-	PfaEdit crashed when loading a bare bdf with more than 256 characters
-      <LI>
-	PfaEdit used out of date versions of config.guess and config.sub. These should
-	be updated now.
-    </UL>
-  <LI>
-    3-Oct-2001
-    <UL>
-      <LI>
-	Added support for saving bitmaps into ttf files. I don't know that I've got
-	it right. Windows Me ignores the bitmaps I put in. Windows may ignore all
-	bitmaps, or I may have done something wrong... There are so few files to
-	test bitmaps on though...
-      <LI>
-	Some older systems have problems taking the cubed root of 0. This can pop
-	up in the Cubic Solution code now (when doing simplify for example). There
-	should be a work-around in place now.
-      <LI>
-	On monospaced fonts PfaEdit generated a .notdef character whose width was
-	the em-square rather than the size of the rest of the font.
-    </UL>
-  <LI>
-    1-Oct-2001
-    <UL>
-      <LI>
-	makefile wouldn't build ui files if "." wasn't in PATH environment variable.
-	Should be fixed.
-      <LI>
-	Holding down the Shift key when invoking Element-&gt;AutoTrace will cause
-	it to prompt for command line arguments to the autotrace program (you have
-	to figure these arguments out yourself).
-    </UL>
-  <LI>
     <A HREF="oldchangelog.html">Earlier Changes </A>
 </UL>
 <H2>
@@ -763,6 +561,9 @@ prepared to save frequently and always work on a copy of the original.
   <LI>
     When reading in TrueType PfaEdit will not get the correct offset for composit
     glyphs where offsets are specified by point matching rather than as x,y values.
+    (some mac fonts)
+  <LI>
+    My truetype hinting is still bad. Especially for diagonals.
   <LI>
     Some truetype fonts (kaiu and mingliu) do not store the correct outline.
     Instead they rely on using the instructions to move points around to generate
@@ -1034,6 +835,8 @@ Other Encodings
     Encodings</A>
   <LI>
     <A HREF="http://devworld.apple.com/techpubs/mac/Text/Text-516.html">MacRoman</A>
+  <LI>
+    <A HREF="http://www2.arts.gla.ac.uk/IPA/fullchart.html">IPA</A>
 </UL>
 <H2>
   Other <A NAME="tools">Tools</A>

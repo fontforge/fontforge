@@ -2036,6 +2036,13 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		sp = 5;
   goto seac;
 	    }
+	    /* the docs say that endchar must be the last command in a char */
+	    /*  (or the last command in a subroutine which is the last in the */
+	    /*  char) So in theory if there's anything left we should complain*/
+	    /*  In practice though, the EuroFont has a return statement after */
+	    /*  the endchar in a subroutine. So we won't try to catch that err*/
+	    /*  and just stop. */
+  goto done;
 	  break;
 	  case 13: /* hsbw (set left sidebearing and width) */
 	    if ( sp<2 ) fprintf(stderr, "Stack underflow on hsbw in %s\n", name );
@@ -2230,6 +2237,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	  break;
 	}
     }
+  done:
     if ( pcsp!=0 )
 	fprintf(stderr, "end of subroutine reached with no return in %s\n", name );
     SCCatagorizePoints(ret);

@@ -744,7 +744,7 @@ StemInfo *HintCleanup(StemInfo *stem,int dosort) {
 	for ( p=NULL, s=stem; s!=NULL; p=s, s = sn ) {
 	    sn = s->next;
 	    for ( pt=s, t=sn; t!=NULL; pt=t, t=t->next ) {
-		if ( t->start<s->start ) {
+		if ( t->start<s->start || (t->start==s->start && t->width<s->width)) {
 		    s->next = t->next;
 		    if ( pt==s ) {
 			t->next = s;
@@ -1380,6 +1380,85 @@ return( new );
 return( dstems );
 }
 
+static StemInfo *URWSerifChecker(SplineChar *sc,StemInfo *stems) {
+    /* Some serifs we just don't notice because they are too far from */
+    /*  horizontal/vertical. So do a special check for these cases */
+    SplineSet *spl;
+    SplinePoint *sp, *n;
+    BasePoint *bp, *bn;
+    double maxheight = .04*(sc->parent->ascent+sc->parent->descent);
+    StemInfo *prev, *test, *cur;
+
+    for ( spl = sc->splines; spl!=NULL; spl=spl->next ) {
+	for ( sp = spl->first; ; sp=n ) {
+	    if ( sp->next==NULL )
+	break;
+	    n = sp->next->to;
+	    if ( n->next==NULL )
+	break;
+	    if ( sp->me.x==n->me.x && sp->prev!=NULL &&
+		    n->me.y-sp->me.y>-maxheight && n->me.y-sp->me.y<maxheight &&
+		    (sp->prev->from->me.x-sp->me.x<0) == (n->next->to->me.x-sp->me.x<0) ) {
+		double slope = 20;
+		if ( n->nonextcp ) bn = &n->next->to->me; else bn = &n->nextcp;
+		if ( sp->noprevcp ) bp = &sp->prev->from->me; else bp = &sp->prevcp;
+		if ( bp->y == sp->me.y && n->me.x!=bn->x )
+		    slope = (n->me.y-bn->y)/( n->me.x-bn->x );
+		else if ( bn->y == n->me.y && sp->me.x!=bp->x )
+		    slope = (sp->me.y-bp->y)/( sp->me.x-bp->x );
+		if ( slope<0 ) slope = -slope;
+		if ( slope< 1/7. ) {	/* URW NimbusRoman has slope of 6/74 */
+		    double start, width;
+		    start = sp->me.y; width = n->me.y-sp->me.y;
+		    if ( width<0 ) {
+			start += width;
+			width = -width;
+		    }
+		    for ( prev=NULL, test=stems; test!=NULL &&
+			    (test->start<start || (test->start==start && test->width<width));
+			    prev = test, test=test->next );
+		    if ( test==NULL || test->start!=start || test->width!=width ) {
+			cur = chunkalloc(sizeof(StemInfo));
+			cur->start = start;
+			cur->width = width;
+			cur->haspointleft = cur->haspointright = true;
+			cur->next = test;
+			if ( prev==NULL ) stems = cur;
+			else prev->next = cur;
+			test = cur;
+		    }
+		    if ( test->start==start && test->width==width && slope!=0 ) {
+			double b, e;
+			HintInstance *p, *t, *hi;
+			if ( sp->prev->from->me.x>sp->me.x ) {
+			    b = sp->me.x;
+			    e = sp->me.x+1/slope;
+			} else {
+			    b = sp->me.x-1/slope;
+			    e = sp->me.x;
+			}
+			for ( p=NULL, t=test->where; t!=NULL &&
+				(t->begin<b || (t->begin==b && t->end<e)); p=t, t=t->next );
+			if ( t!=NULL && ((b>=t->begin && b<t->end) || (e>=t->begin && e<t->end)) )
+			    /* already there */;
+			else {
+			    hi = chunkalloc(sizeof(HintInstance));
+			    hi->begin = b;
+			    hi->end = e;
+			    hi->next = t;
+			    if ( p==NULL ) test->where = hi;
+			    else p->next = hi;
+			}
+		    }
+		}
+	    }
+	    if ( n==spl->first )
+	break;
+	}
+    }
+return( stems );
+}
+
 static StemInfo *ELFindStems(EIList *el, int major, DStemInfo **dstems ) {
     EI *active=NULL, *apt, *e, *p;
     int i, change, ahv, ehv, waschange;
@@ -1457,6 +1536,8 @@ static StemInfo *ELFindStems(EIList *el, int major, DStemInfo **dstems ) {
     for ( s=stems; s!=NULL; s=s->next )
 	s->where = HIReverse(s->where);
     PendingListFree(pendings);
+    if ( major==0 )
+	stems = URWSerifChecker(el->sc,stems);
 return( stems );
 }
 
@@ -1697,10 +1778,11 @@ return( head );
 }
 
 static StemInfo *StemRemoveConflictingBigHint(StemInfo *stems,real big) {
-    /* In I we may have a hint that runs from the top of the character to the */
-    /*  bottom (especially if the serif is slightly curved), if it's the */
+    /* In "I" we may have a hint that runs from the top of the character to */
+    /*  the bottom (especially if the serif is slightly curved), if it's the */
     /*  whole character then it doesn't do much good */
     /* Unless it is needed for blue zones?... */
+    /*  It should be a ghost instead */
     StemInfo *p=NULL, *head=stems, *n;
 
     while ( stems!=NULL ) {
@@ -1716,6 +1798,32 @@ static StemInfo *StemRemoveConflictingBigHint(StemInfo *stems,real big) {
 	    p = stems;
 	stems = n;
     }
+
+    /* if we have a hint which controls no points, conflicts with another hint*/
+    /*  and contains the other hint completely then remove it */
+    for ( p=NULL, stems=head; stems!=NULL; stems = n ) {
+	n = stems->next;
+	if ( n==NULL )
+    break;
+	if ( stems->hasconflicts && n->start==stems->start && n->width>=stems->width &&
+		!n->haspointleft && !n->haspointright &&
+		(stems->haspointleft || stems->haspointright) ) {
+	    stems->next = n->next;
+	    StemInfoFree(n);
+	    n = stems->next;
+	    p = stems;
+	} else if ( stems->hasconflicts && stems->start+stems->width>n->start+n->width &&
+		(n->haspointleft || n->haspointright) &&
+		!stems->haspointleft && !stems->haspointright ) {
+	    if ( p==NULL )
+		head = n;
+	    else
+		p->next = n;
+	    StemInfoFree(stems);
+	} else
+	    p = stems;
+    }
+
 return( head );
 }
 
@@ -1961,6 +2069,56 @@ static StemInfo *SCFindStems(EIList *el, int major, int removeOverlaps,DStemInfo
 return( stems );
 }
 
+static HintInstance *SCGuessHintPoints(SplineChar *sc, StemInfo *stem,int major) {
+    SplinePoint *starts[20], *ends[20];
+    int spt=0, ept=0;
+    SplinePointList *spl;
+    SplinePoint *sp, *np;
+    int sm, wm, i, j, val;
+    HintInstance *head, *test, *cur, *prev;
+
+    for ( spl=sc->splines; spl!=NULL; spl=spl->next ) {
+	for ( sp=spl->first; ; sp = np ) {
+	    sm = (major?sp->me.x:sp->me.y)==stem->start;
+	    wm = (major?sp->me.x:sp->me.y)==stem->start+stem->width;
+	    if ( sm && spt<20 )
+		starts[spt++] = sp;
+	    if ( wm && ept<20 )
+		ends[ept++] = sp;
+	    if ( sp->next==NULL )
+	break;
+	    np = sp->next->to;
+	    if ( np==spl->first )
+	break;
+	}
+    }
+
+    head = NULL;
+    for ( i=0; i<spt; ++i ) {
+	val = 0x80000000;
+	for ( j=0; j<ept; ++j ) {
+	    if ( major && starts[i]->me.y==ends[j]->me.y ) {
+		val = starts[i]->me.y;
+	break;
+	    } else if ( !major && starts[i]->me.x==ends[j]->me.x ) {
+		val = starts[i]->me.x;
+	break;
+	    }
+	}
+	if ( val!=0x80000000 ) {
+	    for ( prev=NULL, test=head; test!=NULL && val>test->begin; prev=test, test=test->next );
+	    if ( test==NULL || val!=test->begin ) {
+		cur = chunkalloc(sizeof(HintInstance));
+		cur->begin = cur->end = val;
+		cur->next = test;
+		if ( prev==NULL ) head = cur;
+		else prev->next = cur;
+	    }
+	}
+    }
+return( head );
+}
+
 static void SCGuessHintInstances(SplineChar *sc, StemInfo *stem,int major) {
     SplinePointList *spl;
     SplinePoint *sp, *np;
@@ -2082,6 +2240,13 @@ static void SCGuessHintInstances(SplineChar *sc, StemInfo *stem,int major) {
 	chunkfree(w,sizeof(*w));
 	w=n;
     }
+
+    /* If we couldn't find anything, then see if there are two points which */
+    /*  have the same x or y value and whose other coordinates match those of */
+    /*  the hint */
+    if ( s==NULL )
+	s = SCGuessHintPoints(sc,stem,major);
+
     stem->where = s;
 }
 
@@ -2104,6 +2269,7 @@ static StemInfo *StemInfoAdd(StemInfo *list, StemInfo *new) {
 return( list );
 }
 
+#if 0
 /* Make sure that the hi list in stem does not contain any regions covered by */
 /*  the cantuse list (if it does, remove them) */
 static void HIRemoveFrom(StemInfo *stem, HintInstance *cantuse) {
@@ -2168,6 +2334,7 @@ static void StemInfoReduceOverlap(StemInfo *list, StemInfo *stem) {
 	    /*  Remove from the stem with greater width? */;
     }
 }
+#endif
 
 void SCGuessHHintInstancesAndAdd(SplineChar *sc, StemInfo *stem, real guess1, real guess2) {
     SCGuessHintInstances(sc, stem, 0);
