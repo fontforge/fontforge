@@ -1589,7 +1589,7 @@ static void bExpandStroke(Context *c) {
     } else {
 	si.caligraphic = true;
 	si.penangle = 3.1415926535897932*c->a.vals[2].u.ival/180;
-	si.thickness = c->a.vals[3].u.ival / (double) c->a.vals[4].u.ival;
+	si.ratio = c->a.vals[3].u.ival / (double) c->a.vals[4].u.ival;
     }
     FVStrokeItScript(c->curfv, &si);
 }

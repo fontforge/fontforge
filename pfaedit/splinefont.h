@@ -67,9 +67,14 @@ typedef struct strokeinfo {
     enum linejoin join;
     enum linecap cap;
     unsigned int caligraphic: 1;
+    unsigned int centerline: 1;		/* For freehand tool */
     unsigned int toobigwarn: 1;
     real penangle;
-    real thickness;			/* half-thickness actually */
+    real ratio;				/* ratio of minor pen axis to major */
+/* For freehand tool */
+    real radius2;
+    int pressure1, pressure2;
+/* End freehand tool */
     double c,s;
     real xoff[8], yoff[8];
     void *data;

@@ -402,6 +402,49 @@ return;
     }
 }
 
+static double Trace_Factor(void *_cv,Spline *spline, real t) {
+    CharView *cv = (CharView *) _cv;
+    TraceData *head = cv->freehand.head, *pt, *from=NULL, *to=NULL;
+    int fromnum = spline->from->ptindex, tonum = spline->to->ptindex;
+    StrokeInfo *si = CVFreeHandInfo();
+    int p;
+
+    if ( si->radius<=0 || si->pressure1==si->pressure2 )
+return( 1.0 );
+
+    for ( pt = head; pt!=NULL; pt=pt->next ) {
+	if ( fromnum == pt->num ) {
+	    from = pt;
+	    if ( to!=NULL )
+    break;
+	}
+	if ( tonum == pt->num ) {
+	    to = pt;
+	    if ( from!=NULL )
+    break;
+	}
+    }
+    if ( from==NULL || to==NULL ) {
+	fprintf( stderr, "Not found\n" );
+return( 1.0 );
+    }
+    p = from->pressure*t + to->pressure*(1-t);
+    
+    if ( p<=si->pressure1 && p<=si->pressure2 ) {
+	if ( si->pressure1<si->pressure2 )
+return( 1.0 );
+	else
+return( si->radius2/si->radius );
+    } else if ( p>=si->pressure1 && p>=si->pressure2 ) {
+	if ( si->pressure1<si->pressure2 )
+return( si->radius2/si->radius );
+	else
+return( 1.0 );
+    } else
+return( ((p-si->pressure1)*si->radius2 + (si->pressure2-p)*si->radius)/
+		(si->radius*(si->pressure2-si->pressure1)) );
+}
+
 static SplineSet *TraceCurve(CharView *cv) {
     TraceData *head = cv->freehand.head, *pt, *base, *e;
     SplineSet *spl;
@@ -409,6 +452,7 @@ static SplineSet *TraceCurve(CharView *cv) {
     int cnt, i, tot;
     TPoint *mids;
     double len,sofar;
+    StrokeInfo *si;
 
     /* First we look for straight lines in the data. We will put SplinePoints */
     /*  at their endpoints */
@@ -539,6 +583,13 @@ static SplineSet *TraceCurve(CharView *cv) {
     }
 
     free(mids);
+
+    si = CVFreeHandInfo();
+    if ( !si->centerline ) {
+	si->factor = ( si->pressure1==si->pressure2 ) ? NULL : Trace_Factor;
+	si->data = cv;
+	spl->next = SplineSetStroke(spl,si,cv->sc);
+    }
 return( spl );
 }
 
@@ -567,7 +618,7 @@ return; /* Eh? No points? How did that happen? */
 	new->next = NULL;
 	cv->freehand.last->next = new;
 	cv->freehand.last = new;
-	SplinePointListFree(cv->freehand.current_trace);
+	SplinePointListsFree(cv->freehand.current_trace);
 	cv->freehand.current_trace = TraceCurve(cv);
     } else if ( cv->freehand.head == cv->freehand.last )
 return;			/* Only one point, no good way to close it */
@@ -653,7 +704,7 @@ void CVMouseDownFreeHand(CharView *cv, GEvent *event) {
 
 void CVMouseMoveFreeHand(CharView *cv, GEvent *event) {
     TraceDataFromEvent(cv,event);
-    SplinePointListFree(cv->freehand.current_trace);
+    SplinePointListsFree(cv->freehand.current_trace);
     cv->freehand.current_trace = TraceCurve(cv);
     GDrawRequestExpose(cv->v,NULL,false);
 }
@@ -669,8 +720,22 @@ void CVMouseUpFreeHand(CharView *cv, GEvent *event) {
 	SplinePointListSimplify(cv->sc,cv->freehand.current_trace,
 		sf_normal,.75/cv->scale);
 	CVPreserveState(cv);
-	cv->freehand.current_trace->next = *cv->heads[cv->drawmode];
-	*cv->heads[cv->drawmode] = cv->freehand.current_trace;
+	if ( CVFreeHandInfo()->centerline ) {
+	    cv->freehand.current_trace->next = *cv->heads[cv->drawmode];
+	    *cv->heads[cv->drawmode] = cv->freehand.current_trace;
+	} else {
+	    SplineSet *ss = cv->freehand.current_trace;
+	    while ( ss->next!=NULL )
+		ss = ss->next;
+	    ss->next = *cv->heads[cv->drawmode];
+#if 0		/* This branch is correct */
+	    *cv->heads[cv->drawmode] = cv->freehand.current_trace->next;
+	    cv->freehand.current_trace->next = NULL;
+	    SplinePointListFree(cv->freehand.current_trace);
+#else		/* Debug!!!! */
+	    *cv->heads[cv->drawmode] = cv->freehand.current_trace;
+#endif
+	}
 	cv->freehand.current_trace = NULL;
     }
     TraceDataFree(cv->freehand.head);

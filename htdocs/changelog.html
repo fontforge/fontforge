@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 3-Dec-2002 -->
+  <!-- AP: Last modified: 10-Dec-2002 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,45 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    ??-Dec-2002
+    <UL>
+      <LI>
+	Revert Glyph is now undoable
+      <LI>
+	Fixed a crash when pressing return in the font display of a bitmap font.
+      <LI>
+	Display the name of references near the top of the reference in the outline char view.
+      <LI>
+	Took the width display off the info line and did it as hints are displayed.
+      <LI>
+	Menus now respond to Home and End key events.
+      <LI>
+	I have changed the calling conventions for the ExpandStroke scripting
+	command to reflect the height ratio value that is now needed.
+      <LI>
+	Holding down the Alt (Meta) key when using the freehand tool will now
+	close the path.
+      <LI>
+	The Generate Fonts dlg will now display an appropriate bitmap fontname
+	if "No Outline Font" is selected.
+      <LI>
+	I think I've got the wacom stuff working now. FreeHand tool now takes
+	options.
+    </UL>
+  <LI>
+    08-Dec-2002
+    <UL>
+      <LI>
+	Oops. Can't use Alt-Shift for menus (it's treated as a mnemonic) use
+	Alt-Ctl-Shift instead.
+      <LI>
+	Reorganized the prefs dlg.
+      <LI>
+	Made FontInfo non-modal.
+      <LI>
+	Added a default icon for all pfaedit's windows & dlgs.
+    </UL>
   <LI>
     06-Dec-2002
     <UL>

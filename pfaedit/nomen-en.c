@@ -1038,6 +1038,13 @@ static unichar_t mnemonic_PenHeightRatio = 'H';
 static char *str_PenHeightRatioPopup = "A caligraphic pen's nib has two dimensions, the width\n(which may be set by Stroke Width below) and a thickness\nor height. I express the height as a ratio to the width.";
 static char *str_BadStroke = "Bad Stroke";
 static char *str_StrokeWidthTooBig = "The stroke width is so big that the generated path\nmay intersect itself in %.100hs";
+static char *str_FreeHand = "Free Hand";
+static char *str_CenterLine = "Don't Expand";
+static char *mnemonic_CenterLine = 'D';
+static char *str_CenterLinePopup = "The splines drawn with the freehand tool will not be expanded,\nonly the line itself will be generated.";
+static char *str_Pressure = "Pressure:";
+static char *mnemonic_Pressure = 'P';
+static char *str_PressurePopup = "Press in this square with a wacom pressure sensitive tool\nto set the pressure end-point";
     /* Auto Width/Kern */
 static char *str_EnterTwoCharRange = "Enter two character ranges";
 static char *str_ToBeAdjusted = "to be adjusted.";
