@@ -164,7 +164,7 @@ void GProgressStartIndicator(
     int tot,			/* Number of sub-entities in the operation */
     int stages			/* Number of stages, each processing tot sub-entities */
 ) {
-    static unichar_t monospace[] = { 'm', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',', '\0' };
+    static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     GProgress *new;
     FontRequest rq;
     GWindowAttrs wattrs;

@@ -157,7 +157,7 @@ return;
 	_GWidget_FindPost((GContainerD *) topd,NULL,&last);
 	focus = last;
     }
-    GWidgetIndicateFocusGadget(focus);
+    _GWidget_IndicateFocusGadget(focus,mf_tab);
 }
 
 static GGadget *_GWidget_FindPrev(GContainerD *cd,GGadget *oldfocus,GGadget **first, int *found) {
@@ -199,7 +199,7 @@ return;
 	if ( (focus = _GWidget_FindPrev((GContainerD *) topd,topd->gfocus,&first,&found))== NULL )
 	    focus = first;
     }
-    GWidgetIndicateFocusGadget(focus);
+    _GWidget_IndicateFocusGadget(focus,mf_tab);
 }
 
 static int _GWidget_Container_eh(GWindow gw, GEvent *event) {

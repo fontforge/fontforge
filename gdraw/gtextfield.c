@@ -883,6 +883,7 @@ static void GTextFieldDrawLineSel(GWindow pixmap, GTextField *gt, int line, Colo
 
     y = gt->g.inner.y+(line-gt->loff_top)*gt->fh;
     selr = gt->g.inner; selr.y = y; selr.height = gt->fh;
+    if ( !gt->g.has_focus ) --selr.height;
     llen = gt->lines[line+1]==-1?
 	    u_strlen(gt->text+gt->lines[line])+gt->lines[line]:
 	    gt->lines[line+1];
@@ -898,7 +899,10 @@ static void GTextFieldDrawLineSel(GWindow pixmap, GTextField *gt, int line, Colo
 	if ( gt->sel_end <= gt->lines[line+1] || gt->lines[line+1]==-1 )
 	    selr.width = GDrawGetTextWidth(pixmap,text+gt->lines[line],gt->sel_end-gt->lines[line],NULL)-
 		    gt->xoff_left - (selr.x-gt->g.inner.x);
-	GDrawFillRect(pixmap,&selr,gt->g.box->active_border);
+	if ( gt->g.has_focus )
+	    GDrawFillRect(pixmap,&selr,gt->g.box->active_border);
+	else
+	    GDrawDrawRect(pixmap,&selr,gt->g.box->active_border);
 	if ( sel!=fg ) {
 	    GDrawDrawText(pixmap,selr.x,y+gt->as,
 		    text+s,e-s,NULL, sel );
@@ -916,7 +920,10 @@ static void GTextFieldDrawLineSel(GWindow pixmap, GTextField *gt, int line, Colo
 		selr.x = GDrawGetTextWidth(pixmap,gt->bidata.text+gt->lines[line],i-gt->lines[line],NULL)+
 			gt->g.inner.x - gt->xoff_left;
 		selr.width = GDrawGetTextWidth(pixmap,gt->bidata.text+i,j-i,NULL);
-		GDrawFillRect(pixmap,&selr,gt->g.box->active_border);
+		if ( gt->g.has_focus )
+		    GDrawFillRect(pixmap,&selr,gt->g.box->active_border);
+		else
+		    GDrawDrawRect(pixmap,&selr,gt->g.box->active_border);
 		if ( sel!=fg )
 		    GDrawDrawText(pixmap,selr.x,y+gt->as,
 			    gt->bidata.text+i,j-i,NULL, sel );
@@ -1248,9 +1255,12 @@ static int gtextfield_focus(GGadget *g, GEvent *event) {
 	gt->cursor = NULL;
 	gt->cursor_on = false;
     }
+    gt->g.has_focus = event->u.focus.gained_focus;
     if ( event->u.focus.gained_focus ) {
 	gt->cursor = GDrawRequestTimer(gt->g.base,400,400,NULL);
 	gt->cursor_on = true;
+	if ( event->u.focus.mnemonic_focus != mf_normal )
+	    GTextFieldSelect(&gt->g,0,-1);
     }
     _ggadget_redraw(g);
     GTextFieldFocusChanged(gt,event->u.focus.gained_focus);
@@ -1722,7 +1732,7 @@ struct gfuncs glistfield_funcs = {
 };
 
 static void GTextFieldInit() {
-    static unichar_t courier[] = { 'c', 'o', 'u', 'r', 'i', 'e', 'r',',','m','o','n','o','s','p','a','c','e',',','u','n','i','f','o','n','t', '\0' };
+    static unichar_t courier[] = { 'c', 'o', 'u', 'r', 'i', 'e', 'r', ',', 'm','o','n','o','s','p','a','c','e',',','c','l','e','a','r','l','y','u',',', 'u','n','i','f','o','n','t', '\0' };
     FontRequest rq;
 
     GGadgetInit();

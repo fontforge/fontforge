@@ -1030,7 +1030,7 @@ static GWindow CharIcon(CharView *cv, FontView *fv) {
     } else if ( sc->unicodeenc!=-1 ) {
 	FontRequest rq;
 	GFont *font;
-	static unichar_t times[] = { 't', 'i', 'm', 'e', 's', '\0' };
+	static unichar_t times[] = { 't', 'i', 'm', 'e', 's',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t', '\0' };
 	unichar_t text[2];
 	int as, ds, ld, width;
 
@@ -3987,7 +3987,7 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv) {
     int sbsize;
     FontRequest rq;
     int as, ds, ld;
-    static unichar_t fixed[] = { 'f','i','x','e','d', '\0' };
+    static unichar_t fixed[] = { 'f','i','x','e','d',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t', '\0' };
     unichar_t ubuf[300];
 
     cv->sc = sc;

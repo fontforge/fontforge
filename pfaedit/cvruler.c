@@ -75,7 +75,7 @@ void CVMouseDownRuler(CharView *cv, GEvent *event) {
     GWindowAttrs wattrs;
     GRect pos;
     FontRequest rq;
-    static unichar_t fixed[] = { 'f','i','x','e','d', '\0' };
+    static unichar_t fixed[] = { 'f','i','x','e','d', ',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     int as, ds, ld;
 
     if ( cv->ruler_w==NULL ) {

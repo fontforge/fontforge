@@ -1602,7 +1602,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     GRect gsize;
     MetricsView *mv = gcalloc(1,sizeof(MetricsView));
     FontRequest rq;
-    static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a', '\0' };
+    static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a', ',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     static GWindow icon = NULL;
     extern int _GScrollBar_Width;
     char buffer[100];

@@ -702,7 +702,7 @@ GWindow CVMakeLayers(CharView *cv) {
     GGadgetCreateData gcd[21];
     GTextInfo label[21];
     static GBox radio_box = { bt_none, bs_rect, 0, 0, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };
-    static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',  '\0' };
+    static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     GFont *font;
     FontRequest rq;
     int i, base;
@@ -1034,7 +1034,7 @@ GWindow BVMakeLayers(BitmapView *bv) {
     GGadgetCreateData gcd[8];
     GTextInfo label[8];
     static GBox radio_box = { bt_none, bs_rect, 0, 0, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };
-    static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',  '\0' };
+    static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     GFont *font;
     FontRequest rq;
     int i;

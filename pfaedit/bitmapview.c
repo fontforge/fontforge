@@ -1352,7 +1352,7 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv) {
     GTextInfo ti;
     FontRequest rq;
     int as, ds, ld;
-    static unichar_t fixed[] = { 'f','i','x','e','d', '\0' };
+    static unichar_t fixed[] = { 'f','i','x','e','d',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t', '\0' };
 
     BVShows.lastpixelsize = bdf->pixelsize;
 

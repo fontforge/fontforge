@@ -882,7 +882,7 @@ void GWidgetCreateInsChar(void) {
     int i;
     FontRequest rq;
     int as, ds, ld;
-    static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a', ',', 'c','a','l','i','b','a','n',',','c', 'l', 'e', 'a', 'r', 'l', 'y', 'u', ',', 'c', 'a', 's', 'l', 'o', 'n',  '\0' };
+    static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a', ',', 'c','a','l','i','b','a','n',',','c', 'l', 'e', 'a', 'r', 'l', 'y', 'u', ',', 'c', 'a', 's', 'l', 'o', 'n',',','u','n','i','f','o','n','t',  '\0' };
 
     if ( inschr.icw!=NULL ) {
 	inschr.hidden = false;
