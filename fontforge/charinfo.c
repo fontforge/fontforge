@@ -4517,6 +4517,12 @@ int UniFromName(const char *name,enum uni_interp interp,Encoding *encname) {
 	i = strtol(name+3,&end,16);
 	if ( *end || end-name!=7 )	/* uniXXXXXXXX means a ligature of uniXXXX and uniXXXX */
 	    i = -1;
+    } else if ( (name[0]=='U' || name[0]=='u') && name[1]=='+' &&
+	    (strlen(name)==6 || strlen(name)==7)) {
+	/* Unifont uses this convention */
+	i = strtol(name+2,&end,16);
+	if ( *end )
+	    i = -1;
     } else if ( name[0]=='u' && strlen(name)>=5 ) {
 	i = strtol(name+1,&end,16);
 	if ( *end )
@@ -4532,12 +4538,8 @@ int UniFromName(const char *name,enum uni_interp interp,Encoding *encname) {
 	    break;
 		}
 	}
-    } else if ( name[0]=='U' && name[1]=='+' && strlen(name)==6 ) {
-	/* Unifont uses this convention */
-	i = strtol(name+2,&end,16);
-	if ( *end )
-	    i = -1;
-    }
+    } else if ( name[1]=='\0' )
+	i = ((unsigned char *) name)[0];
     if ( i==-1 ) {
 	if ( !psnamesinited )
 	    psinitnames();
@@ -4558,6 +4560,12 @@ int uUniFromName(const unichar_t *name,enum uni_interp interp,Encoding *encname)
 	i = u_strtol(name+3,&end,16);
 	if ( *end || end-name!=7 )	/* uniXXXXXXXX means a ligature of uniXXXX and uniXXXX */
 	    i = -1;
+    } else if ( (name[0]=='U' || name[0]=='u') && name[1]=='+' &&
+	    (u_strlen(name)==6 || u_strlen(name)==7)) {
+	/* Unifont uses this convention */
+	i = u_strtol(name+2,&end,16);
+	if ( *end )
+	    i = -1;
     } else if ( name[0]=='u' && u_strlen(name)>=5 ) {
 	i = u_strtol(name+1,&end,16);
 	if ( *end )
@@ -4573,12 +4581,8 @@ int uUniFromName(const unichar_t *name,enum uni_interp interp,Encoding *encname)
 	    break;
 		}
 	}
-    } else if ( name[0]=='U' && name[1]=='+' && u_strlen(name)==6 ) {
-	/* Unifont uses this convention */
-	i = u_strtol(name+2,&end,16);
-	if ( *end )
-	    i = -1;
-    }
+    } else if ( name[1]=='\0' && name[0]<256 )
+	i = name[0];
     if ( i==-1 ) for ( i=psunicodenames_cnt-1; i>=0 ; --i ) {
 	if ( psunicodenames[i]!=NULL )
 	    if ( uc_strcmp(name,psunicodenames[i])==0 )
