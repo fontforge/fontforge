@@ -2054,15 +2054,6 @@ return( WriteMacFamily(filename,sfs,oldformatstate,oldbitmapstate,flags));
     if ( oldformatstate == ff_multiple )
 return( !WriteMultiplePSFont(sf,filename,sizes,res,subfontdefinition));
 
-    if ( oldformatstate>ff_cffcid ) {
-	if ( fmflags&1 )
-	    WriteAfmFile(filename,sf,oldformatstate);
-	if ( fmflags&2 )
-	    WritePfmFile(filename,sf,oldformatstate==ff_ptype0);
-	if ( fmflags&0x10000 )
-	    WriteTfmFile(filename,sf,oldformatstate);
-    }
-
 return( !_DoSave(sf,filename,sizes,res));
 }
 

@@ -3437,10 +3437,23 @@ void FVBuildDuplicate(FontView *fv) {
 static void FVMenuBuildDuplicate(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVBuildDuplicate( (FontView *) GDrawGetUserData(gw));
 # elif defined(FONTFORGE_CONFIG_GTK)
-void FontViewMenu_Transform(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_BuildDuplicatem(GtkMenuItem *menuitem, gpointer user_data) {
     FVBuildDuplicate( (FontView *) FV_From_MI(menuitem));
 # endif
 }
+#endif
+
+#ifdef KOREAN
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+# if defined(FONTFORGE_CONFIG_GDRAW)
+static void FVMenuShowGroup(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    ShowGroup( ((FontView *) GDrawGetUserData(gw))->sf );
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_ShowGroup(GtkMenuItem *menuitem, gpointer user_data) {
+    ShowGroup( ((FontView *) FV_From_MI(menuitem))->sf );
+# endif
+}
+#endif
 #endif
 
 int ScriptLangMatch(struct script_record *sr,uint32 script,uint32 lang) {
@@ -5630,6 +5643,10 @@ static GMenuItem balist[] = {
     { { (unichar_t *) _STR_Buildaccent, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, 'A', ksm_control|ksm_shift, NULL, NULL, FVMenuBuildAccent, MID_BuildAccent },
     { { (unichar_t *) _STR_Buildcomposit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuBuildComposite, MID_BuildComposite },
     { { (unichar_t *) _STR_BuildDuplicates, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuBuildDuplicate, MID_BuildDuplicates },
+#ifdef KOREAN
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_ShowGrp, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuShowGroup },
+#endif
     { NULL }
 };
 
