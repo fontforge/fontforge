@@ -2587,16 +2587,44 @@ static void MVPopupMenu(MetricsView *mv,GEvent *event,int sel) {
     PosSubsMenuFree(mi);
 }
 
+static GMenuItem wnmenu[] = {
+    { { (unichar_t *) _STR_NewOutline, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'u' }, 'H', ksm_control, NULL, NULL, MVMenuOpenOutline, MID_OpenOutline },
+    { { (unichar_t *) _STR_NewBitmap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, 'J', ksm_control, NULL, NULL, MVMenuOpenBitmap, MID_OpenBitmap },
+    { { (unichar_t *) _STR_NewMetrics, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 'K', ksm_control, NULL, NULL, /* No function, never avail */NULL },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { NULL }
+};
+
+static void MVWindowMenuBuild(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    int i;
+    SplineChar *sc;
+    struct gmenuitem *wmi;
+
+    for ( i=mv->charcnt-1; i>=0; --i )
+	if ( mv->perchar[i].selected )
+    break;
+    if ( i==-1 ) sc = NULL; else sc = mv->perchar[i].sc;
+
+    for ( wmi = wnmenu; wmi->ti.text!=NULL || wmi->ti.line ; ++wmi ) {
+	switch ( wmi->mid ) {
+	  case MID_OpenOutline:
+	    wmi->ti.disabled = sc==NULL;
+	  break;
+	  case MID_OpenBitmap:
+	    mi->ti.disabled = mv->fv->sf->bitmaps==NULL || sc==NULL;
+	  break;
+	}
+    }
+    WindowMenuBuild(gw,mi,e,wnmenu);
+}
+
 static GMenuItem dummyitem[] = { { (unichar_t *) _STR_New, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, NULL };
 static GMenuItem fllist[] = {
     { { (unichar_t *) _STR_New, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, 'N', ksm_control, NULL, NULL, MenuNew },
     { { (unichar_t *) _STR_Open, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'O' }, 'O', ksm_control, NULL, NULL, MenuOpen },
     { { (unichar_t *) _STR_Recent, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 't' }, '\0', ksm_control, dummyitem, MenuRecentBuild, NULL, MID_Recent },
     { { (unichar_t *) _STR_Close, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, 'Q', ksm_control|ksm_shift, NULL, NULL, MVMenuClose },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Openoutline, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'u' }, 'H', ksm_control, NULL, NULL, MVMenuOpenOutline },
-    { { (unichar_t *) _STR_Openbitmap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, 'J', ksm_control, NULL, NULL, MVMenuOpenBitmap, MID_OpenBitmap },
-    { { (unichar_t *) _STR_Openmetrics, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 'K', ksm_control, NULL, NULL, /* No function, never avail */NULL },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Save, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 'S', ksm_control, NULL, NULL, MVMenuSave },
     { { (unichar_t *) _STR_Saveas, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'a' }, 'S', ksm_control|ksm_shift, NULL, NULL, MVMenuSaveAs },
@@ -2818,9 +2846,6 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
-	  case MID_OpenBitmap:
-	    mi->ti.disabled = mv->fv->sf->bitmaps==NULL;
-	  break;
 	  case MID_Recent:
 	    mi->ti.disabled = !RecentFilesAny();
 	  break;
@@ -3070,7 +3095,7 @@ static GMenuItem mblist[] = {
     { { (unichar_t *) _STR_Element, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, 0, 0, ellist, ellistcheck },
     { { (unichar_t *) _STR_View, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, 0, 0, vwlist, vwlistcheck },
     { { (unichar_t *) _STR_Metric, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 0, 0, mtlist, mtlistcheck },
-    { { (unichar_t *) _STR_Window, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'W' }, 0, 0, NULL, WindowMenuBuild, NULL },
+    { { (unichar_t *) _STR_Window, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'W' }, 0, 0, wnmenu, MVWindowMenuBuild, NULL },
     { { (unichar_t *) _STR_Help, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, 0, 0, helplist, NULL },
     { NULL }
 };
