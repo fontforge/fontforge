@@ -3082,7 +3082,7 @@ return;
 	    if ( u_strncmp(old[i]->text,newname,upt-newname)==0 )
 	break;
 	}
-	if ( i<len && sel+1!=pst_ligature ) {
+	if ( i<len && sel+1!=pst_pair ) {
 	    GWidgetErrorR(_STR_DuplicateTag,_STR_DuplicateTag);
 	    free(newname);
 return;
