@@ -812,7 +812,7 @@ return( glyphs );
 }
 
 static void DumpClass(FILE *gpos,uint16 *class,int numGlyphs) {
-    int ranges, i, cur, first= -1, last, istart;
+    int ranges, i, cur, first= -1, last=-1, istart;
 
     for ( i=ranges=0; i<numGlyphs; ) {
 	istart = i;
@@ -825,7 +825,8 @@ static void DumpClass(FILE *gpos,uint16 *class,int numGlyphs) {
 	    last = i-1;
 	}
     }
-    if ( ranges*3+1>last-first+1+2 ) {
+    if ( ranges*3+1>last-first+1+2 || first==-1 ) {
+	if ( first==-1 ) first = last = 0;
 	putshort(gpos,1);		/* Format 1, list of all posibilities */
 	putshort(gpos,first);
 	putshort(gpos,last-first+1);

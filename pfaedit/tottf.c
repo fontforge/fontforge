@@ -2299,7 +2299,10 @@ static int dumpcffhmtx(struct alltabs *at,SplineFont *sf,int bitmaps) {
 	}
 	cnt = 3;
     }
-    for ( i=1; i<sf->charcnt; ++i ) {
+    i=1;
+    if ( !SCIsNotdef(sf->chars[0],width) )
+	i = 0;
+    for ( ; i<sf->charcnt; ++i ) {
 	sc = sf->chars[i];
 	if ( SCWorthOutputting(sc)) {
 	    if ( i<=at->gi.lasthwidth )

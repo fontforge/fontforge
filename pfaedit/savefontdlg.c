@@ -1677,24 +1677,26 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 
     for ( i=0; extensions[i]!=NULL; ++i ) {
 	if ( strlen( extensions[i])>0 &&
+		end-filename>=strlen(extensions[i]) &&
 		strmatch(end-strlen(extensions[i]),extensions[i])==0 )
     break;
     }
-    if ( strmatch(end-strlen(".ttf.bin"),".ttf.bin")==0 )
+    if ( end-filename>8 && strmatch(end-strlen(".ttf.bin"),".ttf.bin")==0 )
 	i = ff_ttfmacbin;
-    else if ( strmatch(end-strlen(".suit"),".suit")==0 )	/* Different extensions for Mac/non Mac, support both always */
+    else if ( end-filename>5 && strmatch(end-strlen(".suit"),".suit")==0 )	/* Different extensions for Mac/non Mac, support both always */
 	i = ff_ttfmacbin;
-    else if ( strmatch(end-strlen(".bin"),".bin")==0 )
+    else if ( end-filename>4 && strmatch(end-strlen(".bin"),".bin")==0 )
 	i = ff_pfbmacbin;
-    else if ( strmatch(end-strlen(".res"),".res")==0 )
+    else if ( end-filename>4 && strmatch(end-strlen(".res"),".res")==0 )
 	i = ff_pfbmacbin;
-    else if ( strmatch(end-strlen(".sym.ttf"),".sym.ttf")==0 )
+    else if ( end-filename>8 && strmatch(end-strlen(".sym.ttf"),".sym.ttf")==0 )
 	i = ff_ttfsym;
-    else if ( strmatch(end-strlen(".cid.cff"),".cid.cff")==0 )
+    else if ( end-filename>8 && strmatch(end-strlen(".cid.cff"),".cid.cff")==0 )
 	i = ff_cffcid;
     if ( extensions[i]==NULL ) {
 	for ( i=0; bitmaps[i]!=NULL; ++i ) {
-	    if ( strmatch(end-strlen(bitmaps[i]),bitmaps[i])==0 )
+	    if ( end-filename>strlen(bitmaps[i]) &&
+		    strmatch(end-strlen(bitmaps[i]),bitmaps[i])==0 )
 	break;
 	}
 	if ( *filename=='\0' || end[-1]=='.' )
