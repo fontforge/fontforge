@@ -3953,6 +3953,8 @@ return;
 	cv->sc->views = temp.views;
 	cv->sc->changed = temp.changed;
 	cv->sc->enc = temp.enc;
+	cv->layerheads[dm_back] = &cv->sc->layers[ly_back];
+	cv->layerheads[dm_fore] = &cv->sc->layers[ly_fore];
 	RevertedGlyphReferenceFixup(cv->sc, temp.parent);
 	_CVCharChangedUpdate(cv,false);
     }
