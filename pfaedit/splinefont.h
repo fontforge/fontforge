@@ -664,6 +664,7 @@ extern int SCSetMetaData(SplineChar *sc,char *name,int unienc,char *lig);
 extern int SFDWrite(char *filename,SplineFont *sf);
 extern int SFDWriteBak(SplineFont *sf);
 extern SplineFont *SFDRead(char *filename);
+extern unichar_t *TTFGetFontName(FILE *ttf,int32 offset,int32 off2);
 extern void TTFLoadBitmaps(FILE *ttf,struct ttfinfo *info, int onlyone);
 enum ttfflags { ttf_onlystrikes=1, ttf_onlyonestrike=2 };
 extern SplineFont *_SFReadTTF(FILE *ttf,int flags,char *filename);

@@ -308,7 +308,7 @@ return( 0 );
     }
 }
 
-static unichar_t *TTFGetFontName(FILE *ttf,int32 offset) {
+unichar_t *TTFGetFontName(FILE *ttf,int32 offset,int32 off2) {
     int i,num;
     int32 tag, nameoffset, length, stringoffset;
     int plat, spec, lang, name, len, off, val;
@@ -324,7 +324,7 @@ static unichar_t *TTFGetFontName(FILE *ttf,int32 offset) {
     for ( i=0; i<num; ++i ) {
 	tag = getlong(ttf);
 	/* checksum = */ getlong(ttf);
-	nameoffset = getlong(ttf);
+	nameoffset = off2+getlong(ttf);
 	length = getlong(ttf);
 	if ( tag==CHR('n','a','m','e'))
     break;
@@ -392,7 +392,7 @@ return( true );
 	offsets[i] = getlong(ttf);
     names = galloc(cnt*sizeof(unichar_t *));
     for ( i=j=0; i<cnt; ++i ) {
-	names[j] = TTFGetFontName(ttf,offsets[i]);
+	names[j] = TTFGetFontName(ttf,offsets[i],0);
 	if ( names[j]!=NULL ) ++j;
     }
     choice = GWidgetChoicesR(_STR_PickFont,(const unichar_t **) names,j,0,_STR_MultipleFontsPick);

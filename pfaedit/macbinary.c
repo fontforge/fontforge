@@ -1113,8 +1113,35 @@ static SplineFont *SearchTtfResources(FILE *f,long rlistpos,int subcnt,long rdat
     int max = 0;
     FILE *ttf;
     SplineFont *sf;
+    int which = 0;
+    unichar_t **names;
 
     fseek(f,rlistpos,SEEK_SET);
+    if ( subcnt>1 ) {
+	names = gcalloc(subcnt,sizeof(unichar_t *));
+	for ( i=0; i<subcnt; ++i ) {
+	    /* resource id = */ getushort(f);
+	    /* rname = (short) */ getushort(f);
+	    /* flags = */ getc(f);
+	    ch1 = getc(f); ch2 = getc(f);
+	    roff = rdata_pos+((ch1<<16)|(ch2<<8)|getc(f));
+	    /* mbz = */ getlong(f);
+	    here = ftell(f);
+	    names[i] = TTFGetFontName(f,roff+4,roff+4);
+	    if ( names[i]==NULL ) {
+		char buffer[32];
+		sprintf( buffer, "Nameless%d", i );
+		names[i] = uc_copy(buffer);
+	    }
+	    fseek(f,here,SEEK_SET);
+	}
+	which = GWidgetChoicesR(_STR_PickFont,(const unichar_t **) names,subcnt,0,_STR_MultipleFontsPick);
+	for ( i=0; i<subcnt; ++i )
+	    free(names[i]);
+	free(names);
+	fseek(f,rlistpos,SEEK_SET);
+    }
+
     for ( i=0; i<subcnt; ++i ) {
 	/* resource id = */ getushort(f);
 	rname = (short) getushort(f);
@@ -1122,6 +1149,8 @@ static SplineFont *SearchTtfResources(FILE *f,long rlistpos,int subcnt,long rdat
 	ch1 = getc(f); ch2 = getc(f);
 	roff = rdata_pos+((ch1<<16)|(ch2<<8)|getc(f));
 	/* mbz = */ getlong(f);
+	if ( i!=which )
+    continue;
 	here = ftell(f);
 
 	ttf = tmpfile();
