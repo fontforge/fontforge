@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 8-Feb-2002 -->
+  <!-- AP: Last modified: 9-Feb-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -211,8 +211,9 @@ bitmap fonts that pfaedit uses
 <P>
 All the documentation files in this directory bundled up into one
 <A HREF="pfaedit_htdocs-020208.tgz">tgz file</A> 8-Feb-2002.<BR>
-PfaEdit will find (ie. if you press F1 in PfaEdit it will look in
-/usr/share/doc/pfaedit before it looks on the web) it if you:
+If you do the following then PfaEdit will find the docs for you when you
+press F1 (ie. PfaEdit it will look in /usr/share/doc/pfaedit before it looks
+on the web):
 <BLOCKQUOTE>
   <PRE>$ mkdir -p /usr/share/doc/pfaedit
 $ cd /usr/share/doc/pfaedit
@@ -224,6 +225,8 @@ $ rm pfaedit_htdocs-*.tar
 <P>
 Or you can download an <A HREF="pfaedit-doc-020208-1.i386.rpm">rpm</A> which
 should install them properly for you.
+<P>
+Or you can just browse the <A HREF="overview.html">docs online</A>.
 <H2>
   License
 </H2>
@@ -993,6 +996,20 @@ now placed in graceful retirement by MacroMedia.
 	code used by X11</A>.
       <LI>
 	<A HREF="pcf-format.html">So I wrote my own description...</A>
+    </UL>
+  <LI>
+    TeX font formats
+    <UL>
+      <LI>
+	<A HREF="http://www.ctan.org/tex-archive/systems/knuth/local/mfware/pktype.web">pk
+	bitmap format</A>
+      <LI>
+	<A HREF="http://www.ctan.org/tex-archive/systems/knuth/texware/tftopl.web">tfm
+	metrics format</A>
+      <LI>
+	To make these viewable you probably want to do something like:<BR>
+	$ weave pktype.web<BR>
+	$ pdftex pktype.tex
     </UL>
   <LI>
     <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5014.CMap_CIDFont_Spec.pdf">CID

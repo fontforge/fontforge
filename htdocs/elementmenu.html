@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 8-Feb-2002 -->
+  <!-- AP: Last modified: 9-Feb-2002 -->
   <TITLE>The Element Menu</TITLE>
 </HEAD>
 <BODY>
@@ -127,11 +127,70 @@ This menu is not present in the Metrics View.
     If you have bitmap fonts this will show their pixel sizes. If you remove
     a size that is in the list then that font will be deleted from the sfd file.
     If you add a size then that size font will be created and stored in the sfd
-    file. Note that on different systems have different standard resolutions
-    and the resolution affects the mapping from pixel to pointsize. This dlg
-    tries to provide you with the common resolutions under X, MS Windows and
-    Macintosh. On X these are 75 and 100dpi, on MS Windows 96 and 120dpi, and
-    on the Mac 72dpi. This dialog provides the conversion between pixel size
+    file.
+    <P>
+    PfaEdit deals in pixel sizes, not point sizes. The conversion between pixels
+    and points differs on different systems and indeed on different screens.
+    A point is (approximately) 1/72 of an inch, a pixel is however big a pixel
+    happens to be on your screen. Usually pixels range from about 1/72 of an
+    inch to about 1/144 of an inch. Different systems support different screen
+    resolutions as "standard", and PfaEdit tries to know about these standards.
+    <TABLE BORDER CELLPADDING="2" ALIGN=Center>
+      <CAPTION>
+	Some conversions between points and pixels
+      </CAPTION>
+      <TR>
+	<TH><P ALIGN=Left>
+	  <U>Screen Resolution</U><BR>
+	  Point Size</TH>
+	<TH>72dpi<BR>
+	  Mac</TH>
+	<TH>75dpi<BR>
+	  X</TH>
+	<TH>96dpi<BR>
+	  Win</TH>
+	<TH>100dpi<BR>
+	  X</TH>
+	<TH>120dpi<BR>
+	  Win</TH>
+      </TR>
+      <TR>
+	<TH>10pt</TH>
+	<TD>10</TD>
+	<TD>10</TD>
+	<TD>13</TD>
+	<TD>14</TD>
+	<TD>17</TD>
+      </TR>
+      <TR>
+	<TH>12pt</TH>
+	<TD>12</TD>
+	<TD>12~13</TD>
+	<TD>16</TD>
+	<TD>17</TD>
+	<TD>20</TD>
+      </TR>
+      <TR>
+	<TH>18pt</TH>
+	<TD>18</TD>
+	<TD>19</TD>
+	<TD>24</TD>
+	<TD>25</TD>
+	<TD>30</TD>
+      </TR>
+      <TR>
+	<TH>24pt</TH>
+	<TD>24</TD>
+	<TD>25</TD>
+	<TD>32</TD>
+	<TD>33</TD>
+	<TD>40</TD>
+      </TR>
+    </TABLE>
+    <P>
+    Sadly your screen will probably not match one of the standard screens precisely.
+    On X the standard resolutions are 75 and 100dpi, on MS Windows 96 and 120dpi,
+    and on the Mac 72dpi. This dialog provides the conversion between pixel size
     and point sizes at these resolutions.
     <P>
     Normally the new characters are created by rasterizing the outline font,
