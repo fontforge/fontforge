@@ -561,6 +561,19 @@ static void bSetPrefs(Context *c) {
 	errors( c, "Bad type for preference variable",  c->a.vals[1].u.sval);
 }
 
+static void bGetEnv(Context *c) {
+    char *env;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_str )
+	error( c, "Bad type for argument" );
+    if ( (env = getenv(c->a.vals[1].u.sval))==NULL )
+	errors( c, "Unknown Preference variable", c->a.vals[1].u.sval );
+    c->return_val.type = v_str;
+    c->return_val.u.sval = strdup(env);
+}
+
 static void bUnicodeFromName(Context *c) {
     if ( c->a.argc!=2 )
 	error( c, "Wrong number of arguments" );
@@ -3748,6 +3761,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "Strskipint", bStrskipint, 1 },
     { "GetPref", bGetPrefs, 1 },
     { "SetPref", bSetPrefs, 1 },
+    { "GetEnv", bGetEnv, 1 },
     { "UnicodeFromName", bUnicodeFromName, 1 },
     { "Chr", bChr, 1 },
     { "Ord", bOrd, 1 },
