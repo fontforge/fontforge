@@ -340,6 +340,7 @@ Undoes *SCPreserveState(SplineChar *sc) {
     undo->u.state.splines = SplinePointListCopy(sc->splines);
     undo->u.state.refs = RefCharsCopyState(sc);
     undo->u.state.images = NULL;
+    undo->u.state.copied_from = sc->parent;
 return( AddUndo(undo,&sc->undoes[0],&sc->redoes[0]));
 }
 
@@ -351,6 +352,7 @@ Undoes *SCPreserveBackground(SplineChar *sc) {
     undo->u.state.splines = SplinePointListCopy(sc->backgroundsplines);
     undo->u.state.refs = RefCharsCopyState(sc);
     undo->u.state.images = NULL;
+    undo->u.state.copied_from = sc->parent;
 return( AddUndo(undo,&sc->undoes[1],&sc->redoes[1]));
 }
 
@@ -672,6 +674,7 @@ void CopySelected(CharView *cv) {
 	    copybuffer.u.state.images = new;
 	}
     }
+    copybuffer.u.state.copied_from = cv->sc->parent;
 }
 
 static Undoes *SCCopyAll(SplineChar *sc,int full) {
@@ -695,6 +698,7 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
 	    ref->adobe_enc = getAdobeEnc(sc->name);
 	    ref->transform[0] = ref->transform[3] = 1.0;
 	}
+	cur->u.state.copied_from = sc->parent;
     }
 return( cur );
 }
@@ -710,6 +714,10 @@ void CopyWidth(CharView *cv) {
 static SplineChar *FindCharacter(SplineFont *sf,RefChar *rf) {
     extern char *AdobeStandardEncoding[256];
     int i;
+
+    if ( rf->local_enc<sf->charcnt && sf->chars[rf->local_enc]!=NULL &&
+	    sf->chars[rf->local_enc]->unicodeenc == rf->unicode_enc )
+return( sf->chars[rf->local_enc] );
 
     if ( rf->unicode_enc!=-1 ) {
 	for ( i=0; i<sf->charcnt; ++i )
@@ -738,6 +746,56 @@ return( true );
 return( true );
     }
 return( false );
+}
+
+static void PasteNonExistantRefCheck(SplineChar *sc,Undoes *paster,RefChar *ref,
+	int *refstate) {
+    FontView *fv;
+    SplineChar *rsc=NULL;
+    SplineSet *new, *spl;
+    int yes = 3;
+
+    for ( fv = fv_list; fv!=NULL && fv->sf!=paster->u.state.copied_from; fv=fv->next );
+    if ( fv!=NULL ) {
+	rsc = FindCharacter(fv->sf,ref);
+	if ( rsc==NULL )
+	    fv = NULL;
+    }
+    if ( fv==NULL ) {
+	if ( !(*refstate&0x4) ) {
+	    static int buts[] = { _STR_DontWarnAgain, _STR_OK, 0 };
+	    char buf[10]; const char *name;
+	    if ( ref->unicode_enc==-1 )
+		name = "<Unknown>";
+	    else if ( psunicodenames[ref->unicode_enc]!=NULL )
+		name = psunicodenames[ref->unicode_enc];
+	    else {
+		sprintf( buf, "uni%04X", ref->unicode_enc );
+		name = buf;
+	    }
+	    yes = GWidgetAskCenteredR(_STR_BadReference,buts,1,1,_STR_FontNoRefNoOrig,name,sc->name);
+	    if ( yes==0 )
+		*refstate |= 0x4;
+	}
+    } else {
+	if ( !(*refstate&0x3) ) {
+	    static int buts[] = { _STR_Yes, _STR_YesToAll, _STR_NoToAll, _STR_No, 0 };
+	    yes = GWidgetAskCenteredR(_STR_BadReference,buts,0,3,_STR_FontNoRef,rsc->name,sc->name);
+	    if ( yes==1 )
+		*refstate |= 1;
+	    else if ( yes==2 )
+		*refstate |= 2;
+	}
+	if ( (*refstate&1) || yes<=1 ) {
+	    new = SplinePointListTransform(SplinePointListCopy(rsc->splines),ref->transform,true);
+	    SplinePointListSelect(new,true);
+	    if ( new!=NULL ) {
+		for ( spl = new; spl->next!=NULL; spl = spl->next );
+		spl->next = sc->splines;
+		sc->splines = new;
+	    }
+	}
+    }
 }
 
 /* when pasting from the fontview we do a clear first */
@@ -772,6 +830,10 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv) {
 		    sc->refs = new;
 		    SCReinstanciateRefChar(sc,new);
 		    SCMakeDependent(sc,rsc);
+		} else {
+		    int refstate = fv->refstate;
+		    PasteNonExistantRefCheck(sc,paster,refs,&refstate);
+		    fv->refstate = refstate;
 		}
 	    }
 	}
@@ -785,8 +847,8 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv) {
     }
 }
 
-
 static void _PasteToCV(CharView *cv,Undoes *paster) {
+    int refstate = 0;
 
     cv->lastselpt = NULL;
     switch ( paster->undotype ) {
@@ -832,6 +894,8 @@ static void _PasteToCV(CharView *cv,Undoes *paster) {
 		    cv->sc->refs = new;
 		    SCReinstanciateRefChar(cv->sc,new);
 		    SCMakeDependent(cv->sc,sc);
+		} else {
+		    PasteNonExistantRefCheck(cv->sc,paster,refs,&refstate);
 		}
 	    }
 	} else if ( paster->u.state.refs!=NULL && cv->drawmode==dm_back ) {
@@ -1035,20 +1099,22 @@ static BDFFont *BitmapCreateCheck(FontView *fv,int *yestoall, int first, int pix
     int yes = 0;
     BDFFont *bdf = NULL;
 
-    if ( !*yestoall && first ) {
-	static int buts[] = { _STR_Yes, _STR_YesToAll, _STR_No, 0 };
+    if ( *yestoall>0 && first ) {
+	static int buts[] = { _STR_Yes, _STR_YesToAll, _STR_NoToAll, _STR_No, 0 };
 	char buf[20]; unichar_t ubuf[400];
 	sprintf( buf, "%d", pixelsize );
 	u_strcpy(ubuf,GStringGetResource(_STR_ClipContainsPre,NULL));
 	uc_strcat(ubuf,buf);
 	u_strcat(ubuf,GStringGetResource(_STR_ClipContainsPost,NULL));
-	yes = GWidgetAskCenteredR_(_STR_BitmapPaste,buts,0,2,ubuf);
+	yes = GWidgetAskCenteredR_(_STR_BitmapPaste,buts,0,3,ubuf);
 	if ( yes==1 )
 	    *yestoall = true;
+	else if ( yes==2 )
+	    *yestoall = -1;
 	else
-	    yes= yes!=2;
+	    yes= yes!=3;
     }
-    if ( yes || *yestoall ) {
+    if ( yes==1 || *yestoall ) {
 	bdf = SplineFontRasterize(fv->sf,pixelsize,false);
 	bdf->next = fv->sf->bitmaps;
 	fv->sf->bitmaps = bdf;
@@ -1064,9 +1130,26 @@ void PasteIntoFV(FontView *fv) {
     int i, cnt=0;
     int yestoall=0, first=true;
 
+    fv->refstate = 0;
+
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] )
 	++cnt;
     GProgressStartIndicatorR(10,_STR_Pasting,_STR_Pasting,0,cnt,1);
+
+    cur = &copybuffer;
+    if ( cur->undotype==ut_multiple )
+	cur = cur->u.multiple.mult;
+    /* This little gem of code is to keep us from throwing out forward */
+    /*  references. Say we are pasting into both "i" and dotlessi (and */
+    /*  dotlessi isn't defined yet) without this the paste to "i" will */
+    /*  search for dotlessi, not find it and ignore the reference */
+    if ( cur->undotype==ut_state ||
+	    (cur->undotype==ut_composit && cur->u.composit.state!=NULL)) {
+	for ( i=0; i<fv->sf->charcnt; ++i )
+	    if ( fv->selected[i] && fv->sf->chars[i]==NULL )
+		SFMakeChar(fv->sf,i);
+    }
+    cur = NULL;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
 	if ( cur==NULL ) {
@@ -1104,7 +1187,7 @@ void PasteIntoFV(FontView *fv) {
 		if ( bdf!=NULL )
 		    _PasteToBC(BDFMakeChar(bdf,i),bdf->pixelsize,bmp,true,fv);
 	    }
-	     first = false;
+	    first = false;
 	  break;
 	}
 	cur = cur->next;

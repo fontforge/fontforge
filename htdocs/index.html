@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 22-Jul-2001 -->
+  <!-- AP: Last modified: 24-Jul-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -59,8 +59,8 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-010722.tgz">Download pfaedit linux-i386 Debian
-    </A><A NAME="downloads">executable</A> Version: 22-July-2001
+    <A HREF="pfaedit-010724.tgz">Download pfaedit linux-i386 Debian
+    </A><A NAME="downloads">executable</A> Version: 24-July-2001
   <LI>
     <A HREF="pfaedit-solaris-010624.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 24-June-2001
@@ -86,12 +86,12 @@ Or you can download the following three packages. Version: 22-July-2001
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
-    <A HREF="libgdraw-010722.tgz">Unicode widget library source</A>
-    (22-July-2001)<BR>
+    <A HREF="libgdraw-010724.tgz">Unicode widget library source</A>
+    (24-July-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-010722.tgz">Pfaedit source</A> (22-July-2001)<BR>
+    <A HREF="pfaedit_src-010724.tgz">Pfaedit source</A> (24-July-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
     If you want to do autotracing around character images you should also download
@@ -166,6 +166,38 @@ bitmap fonts that pfaedit uses
 </H2>
 <UL>
   <LI>
+    24-July-2001
+    <UL>
+      <LI>
+	Although the family name accepted spaces, it then silently removed them.
+	No longer. (I hope)
+      <LI>
+	PfaEdit is now more careful when you attempt to clear a character from the
+	font view which has dependents (at least one of which is not being cleared
+	itself). It will warn you and allow you not to clear that character.
+      <LI>
+	PfaEdit is also more careful when you attempt to paste a reference to a character
+	that does not exist in the current font. Before it silently ignored it. Now
+	it will warn you and give you the option of pasting the outlines of the original
+	character being refered to (if it can find that character).
+      <LI>
+	Fixed an uninitialized variable in print that could cause things to go into
+	an infinite loop.
+      <LI>
+	Fixed a rounding error problem in ttf generation that could cause an infinite
+	loop.
+      <LI>
+	Small bitmap fonts will be magnified in the font view
+      <LI>
+	Expand Stroke didn't work on counter-clockwise triangles (presumably other
+	shapes, but I didn't check). It also would randomly leave paths counter-clockwise
+	when they should have been clockwise.
+      <LI>
+	Finally!<BR>
+	Often when joining two paths (or closing one path) the point would jump when
+	you released the mouse. I finally figured out why.
+    </UL>
+  <LI>
     22-July-2001
     <UL>
       <LI>
@@ -190,8 +222,8 @@ bitmap fonts that pfaedit uses
       <LI>
 	Added a Find Problems detector for almost horizontal/vertical control points.
       <LI>
-	Some improvements to metafont (well, a few characters look better anyway, I
-	hope it's an improvement). It still doesn't work of course.
+	Some improvements to metafont (well, a few characters look better anyway,
+	I hope it's an improvement). It still doesn't work of course.
     </UL>
   <LI>
     17-July-2001
@@ -1528,6 +1560,8 @@ The following people have helped debug pfaedit. Many thanks!
     Dung Ta Quang
   <LI>
     Sivan Toledo
+  <LI>
+    Gerhard Schellhorn
 </UL>
 <P>
 PfaEdit was inspired by AltSys's

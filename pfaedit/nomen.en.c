@@ -589,6 +589,8 @@ static char *str_Simplifying = "Simplifying...";
 static char *str_RemovingOverlap = "Removing overlaps...";
 static char *str_CorrectingDirection = "Correcting Direction...";
 static char *str_Rounding = "Rounding to integer...";
+static char *str_ClearDependent = "You are attempting to clear %.30hs which is refered to by\nanother character. Are you sure you want to clear it?";
+static char *str_dPixelBitmap = "%d pixel bitmap";
     /* Messages from accented characters */
 static char str_Buildingaccented[] = "Building accented letters";
 static char str_Replacearing[] = "Replace Å";
@@ -752,12 +754,19 @@ static char *str_popHand = "Scroll Bitmap";
 static char *str_BitmapPaste = "Bitmap Paste";
 static char *str_YesToAll = "Yes to All";
 static char *mnemonic_YesToAll = 'A';
+static char *str_NoToAll = "No to All";
+static char *mnemonic_NoToAll = 'o';
 /* "The clipboard contains a bitmap character of size %d,\na size which is not in your database.\nWould you like to create a bitmap font of that size,\nor ignore this character?" */
 static char *str_ClipContainsPre = "The clipboard contains a bitmap character of size ";
 static char *str_ClipContainsPost = ",\na size which is not in your database.\nWould you like to create a bitmap font of that size,\nor ignore this character?";
 static char *str_Pasting = "Pasting...";
 static char *str_SelfRef = "Self-referential character"
 static char *str_AttemptSelfRef = "Attempt to make a character that refers to itself";
+static char *str_BadReference = "Bad Reference";
+static char *str_FontNoRef = "You are attempting to paste a reference to %1$hs into %2$hs.\nBut %1$hs does not exist in this font.\nWould you like to copy the original splines (or delete the reference)?";
+static char *str_FontNoRefNoOrig = "You are attempting to paste a reference to %1$hs into %2$hs.\nBut %1$hs does not exist in this font, nor can I find the original character refered to.\nIt will not be copied.";
+static char *str_DontWarnAgain = "Don't Warn Again";
+static char *mnemonic_DontWarnAgain = 'W';
     /* dump pfa */
 static char *str_CvtPS = "Converting Postscript";
 static char *str_SavePS = "Saving Postscript Font";

@@ -1663,7 +1663,8 @@ return;
     /* If we've changed the character (recentchange is true) we want to */
     /*  snap to the original location, otherwise we'll keep snapping to the */
     /*  current point as it moves across the screen (jerkily) */
-    { SplinePointList *spl;
+    if ( !cv->joinvalid || !CheckPoint(&fs,&cv->joinpos,NULL)) {
+	SplinePointList *spl;
 	spl = *cv->heads[cv->drawmode];
 	if ( cv->recentchange && cv->active_tool==cvt_pointer &&
 		((*cv->uheads[cv->drawmode])->undotype==ut_state ||
@@ -1671,7 +1672,7 @@ return;
 	    spl = (*cv->uheads[cv->drawmode])->u.state.splines;
 	if ( cv->active_tool != cvt_knife )
 	    NearSplineSetPoints(&fs,spl);
-	else
+	else 
 	    InSplineSet(&fs,spl);
     }
     if ( p.sp!=NULL && p.sp!=cv->active_sp ) {		/* Snap to points */

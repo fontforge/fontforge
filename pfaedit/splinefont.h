@@ -110,15 +110,16 @@ typedef struct undoes {
 	    struct splinepointlist *splines;
 	    struct refchar *refs;
 	    struct imagelist *images;
+	    struct splinefont *copied_from;
 	} state;
 	int width;
 	struct {
 	    /*int16 width;*/	/* width should be controled by postscript */
 	    int16 xmin,xmax,ymin,ymax;
 	    int16 bytes_per_line;
+	    int16 pixelsize;
 	    uint8 *bitmap;
 	    BDFFloat *selection;
-	    int pixelsize;
 	} bmpstate;
 	struct {		/* copy contains an outline state and a set of bitmap states */
 	    struct undoes *state;

@@ -1467,6 +1467,7 @@ void SFSetFontName(SplineFont *sf, char *family, char *mods,char *full) {
 	    ++pt;
     }
     *tpt = '\0';
+#if 0
     for ( pt=tpt=family; *pt; ) {
 	if ( !isspace(*pt))
 	    *tpt++ = *pt++;
@@ -1474,6 +1475,7 @@ void SFSetFontName(SplineFont *sf, char *family, char *mods,char *full) {
 	    ++pt;
     }
     *tpt = '\0';
+#endif
     free(sf->fontname); sf->fontname = n;
     free(sf->fullname); sf->fullname = copy(full);
     free(sf->familyname); sf->familyname = copy(family);
@@ -1484,6 +1486,8 @@ void SFSetFontName(SplineFont *sf, char *family, char *mods,char *full) {
 	sf->weight = copy("DemiLight");
     else if ( strstrmatch(mods,"demibold")!=NULL || strstrmatch(mods,"demi-bold")!=NULL )
 	sf->weight = copy("DemiBold");
+    else if ( strstrmatch(mods,"semibold")!=NULL || strstrmatch(mods,"semi-bold")!=NULL )
+	sf->weight = copy("SemiBold");
     else if ( strstrmatch(mods,"demiblack")!=NULL || strstrmatch(mods,"demi-black")!=NULL )
 	sf->weight = copy("DemiBlack");
     else if ( strstrmatch(mods,"extrabold")!=NULL || strstrmatch(mods,"extra-bold")!=NULL )

@@ -140,7 +140,18 @@ static void dump_prologue(PI *pi) {
 
     fprintf( pi->out, "%%%%IncludeResource: font Times-Bold\n" );
     fprintf( pi->out, "/MyFontDict 100 dict def\n" );
+#if 1
     fprintf( pi->out, "/Times-Bold-ISO-8859-1 /Times-Bold findfont ISOLatin1Encoding font_remap definefont\n" );
+#else
+    /* And sometimes findfont executes "invalidfont" and dies, so there's no point to this */
+    fprintf( pi->out, "%%A Hack. gv sometimes doesn't have Times-Bold, but the first call to\n" );
+    fprintf( pi->out, "%% findfont returns Courier rather than null. Second returns null. Weird.\n" );
+    fprintf( pi->out, "/Times-Bold findfont pop\n" );
+    fprintf( pi->out, "/Times-Bold findfont null eq\n" );
+    fprintf( pi->out, " { /Times-Bold-ISO-8859-1 /Times-Bold findfont ISOLatin1Encoding font_remap definefont}\n" );
+    fprintf( pi->out, " { /Times-Bold-ISO-8859-1 /Courier findfont ISOLatin1Encoding font_remap definefont}\n" );
+    fprintf( pi->out, "ifelse\n" );
+#endif
     fprintf( pi->out, "MyFontDict /Times-Bold__12 /Times-Bold-ISO-8859-1 findfont 12 scalefont put\n" );
 
     if ( pi->fontfile!=NULL ) {
@@ -251,7 +262,7 @@ static void startpage(PI *pi ) {
 }
 
 static int DumpLine(PI *pi) {
-    int i, line;
+    int i=0, line;
 
     /* First find the next line with stuff on it */
     for ( line = pi->chline ; line<pi->sf->charcnt; line += pi->max ) {

@@ -97,8 +97,10 @@ return( false );
     }
     other = !dim;
 
+    t = tmin;
     dt = (tmax-tmin)/ddim;
     for ( t=tmin; t<=tmax; t+= dt ) {
+	if ( t>tmax-dt/8. ) t = tmax;		/* Avoid rounding errors */
 	d = ((ps->splines[dim].a*t+ps->splines[dim].b)*t+ps->splines[dim].c)*t+ps->splines[dim].d;
 	o = ((ps->splines[other].a*t+ps->splines[other].b)*t+ps->splines[other].c)*t+ps->splines[other].d;
 	if ( ttf->splines[dim].b == 0 ) {
@@ -271,7 +273,7 @@ return( sp );
 return( LinearSpline(ps,start,tmax));
 
     dt = (tmax-tmin)/ddim;
-    for ( t=tmax; t>tmin; t-= dt ) {
+    for ( t=tmax; t>tmin+dt/128; t-= dt ) {		/* dt/128 is a hack to avoid rounding errors */
 	x = ((ps->splines[0].a*t+ps->splines[0].b)*t+ps->splines[0].c)*t+ps->splines[0].d;
 	y = ((ps->splines[1].a*t+ps->splines[1].b)*t+ps->splines[1].c)*t+ps->splines[1].d;
 	ttf.splines[0].d = xmin;
@@ -2597,6 +2599,7 @@ void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname) {
     int i, samewid= -1;
 
     if ( !pfminfo->pfmset ) {
+	memset(pfminfo,'\0',sizeof(*pfminfo));
 	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	    if ( SCWorthOutputting(sf->chars[i]) ) {
 		if ( samewid==-1 )

@@ -982,13 +982,11 @@ static int TextWidth2(struct font_data *fd,GChar2b *transbuf,int len) {
     XFontStruct *info = fd->info;
     int offset1 = info->min_byte1, offset2 = info->min_char_or_byte2;
     int row = (info->max_char_or_byte2-offset2+1);
+    int tot = row*(info->max_byte1-offset1+1);
     int ch1;
     register XCharStruct *per_char = info->per_char;
     register GChar2b *tpt = transbuf, *end = tpt+len;
-    int width = 0, cw;
-
-    if ( per_char==NULL )
-return( len*info->max_bounds.width );
+    int width = 0;
 
     /* if we scale jis208 then the XFontStruct comes back with per_char NULL */
     /*  I speculate that this only happens for monospace fonts and use */
@@ -996,8 +994,10 @@ return( len*info->max_bounds.width );
     if ( per_char!=NULL ) {
 	ch1 = (tpt->byte1-offset1)*row+tpt->byte2-offset2;
 	while ( tpt<end ) {
-	    cw = per_char[ch1].width;
-	    width += cw;
+	    if ( ch1>=0 && ch1<tot )
+		width += per_char[ch1].width;
+	    else
+		width += info->max_bounds.width;
 	    ++tpt;
 	    ch1 = (tpt->byte1-offset1)*row+tpt->byte2-offset2;
 	}
@@ -1099,6 +1099,7 @@ static int RealAsDs16(struct font_data *fd,GChar2b *transbuf,int len, struct tf_
     XFontStruct *info = fd->info;
     int offset1 = info->min_byte1, offset2 = info->min_char_or_byte2;
     int row = (info->max_char_or_byte2-offset2+1);
+    int tot = row*(info->max_byte1-offset1+1);
     int ch1;
     register XCharStruct *per_char = info->per_char;
     register XChar2b *tpt = (XChar2b *) transbuf, *end = tpt+len;
@@ -1112,18 +1113,20 @@ return( 0 );
     if ( per_char!=NULL ) {
 	ch1 = (tpt->byte1-offset1)*row+tpt->byte2-offset2;
 	while ( tpt<end ) {
-	    if ( first ) {
-		arg->first = first = false;
-		if ( fd->scale_metrics_by )
-		    arg->size.lbearing = (fd->scale_metrics_by*per_char[ch1].lbearing)/72000;
-		else
-		    arg->size.lbearing = per_char[ch1].lbearing;
+	    if ( ch1>=0 && ch1<tot ) {
+		if ( first ) {
+		    arg->first = first = false;
+		    if ( fd->scale_metrics_by )
+			arg->size.lbearing = (fd->scale_metrics_by*per_char[ch1].lbearing)/72000;
+		    else
+			arg->size.lbearing = per_char[ch1].lbearing;
+		}
+		if ( per_char[ch1].descent>ds )
+		    ds = per_char[ch1].descent;
+		if ( per_char[ch1].ascent>as )
+		    as = per_char[ch1].ascent;
+		rbearing = per_char[ch1].rbearing-per_char[ch1].width;
 	    }
-	    if ( per_char[ch1].descent>ds )
-		ds = per_char[ch1].descent;
-	    if ( per_char[ch1].ascent>as )
-		as = per_char[ch1].ascent;
-	    rbearing = per_char[ch1].rbearing-per_char[ch1].width;
 	    ++tpt;
 	    ch1 = (tpt->byte1-offset1)*row+tpt->byte2-offset2;
 	}

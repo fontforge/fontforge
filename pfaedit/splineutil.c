@@ -1016,9 +1016,13 @@ return;
 }
 
 static char *copyparse(char *str) {
-    char *ret=galloc(strlen(str)+1), *rpt=ret;
+    char *ret, *rpt;
     int ch,i;
 
+    if ( str==NULL )
+return( str );
+
+    rpt=ret=galloc(strlen(str)+1);
     while ( *str ) {
 	if ( *str=='\\' ) {
 	    ++str;

@@ -355,6 +355,9 @@ SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
     Spline *first, *spline;
 
     if ( spl->first==spl->last && spl->first->next!=NULL ) {
+	/* My routine gets screwed up by counter-clockwise triangles */
+	if ( !SplinePointListIsClockwise(spl))
+	    SplineSetReverse(spl);
 	/* It's a loop, we'll return two SplineSets */
 	StrokeJoint(spl->first,si,&first_plus,&first_minus);
 	plus = first_plus.from;
@@ -427,14 +430,16 @@ return( ssplus );
 
     ssplus = gcalloc(1,sizeof(SplineSet));
     ssplus->first = ssplus->last = plus;
-    if ( !SplinePointListIsClockwise(ssplus))
-	SplineSetReverse(ssplus);
     if ( spl->first==spl->last ) {
 	ssminus = gcalloc(1,sizeof(SplineSet));
 	ssminus->first = ssminus->last = minus;
 	if ( SplinePointListIsClockwise(ssplus))
 	    SplineSetReverse(ssplus);
 	ssplus->next = ssminus;
+	SplineSetsCorrect(ssplus);
+    } else {
+	if ( !SplinePointListIsClockwise(ssplus))
+	    SplineSetReverse(ssplus);
     }
 return( ssplus );
 }

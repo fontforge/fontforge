@@ -727,12 +727,44 @@ return;
     SCCharChangedUpdate(sc,fv);
 }
 
+static int UnselectedDependents(FontView *fv, SplineChar *sc) {
+    struct splinecharlist *dep;
+
+    for ( dep=sc->dependents; dep!=NULL; dep=dep->next ) {
+	if ( !fv->selected[dep->sc->enc] )
+return( true );
+	if ( UnselectedDependents(fv,dep->sc))
+return( true );
+    }
+return( false );
+}
+
 static void FVMenuClear(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int i;
     BDFFont *bdf;
+    int refstate = 0;
+    static int buts[] = { _STR_Yes, _STR_YesToAll, _STR_NoToAll, _STR_No, 0 };
+    int yes;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
+	if ( !fv->onlycopydisplayed || fv->filled==fv->show ) {
+	    /* If we are messing with the outline character, check for dependencies */
+	    if ( refstate<=0 && fv->sf->chars[i]->dependents!=NULL ) {
+		if ( UnselectedDependents(fv,fv->sf->chars[i])) {
+		    if ( refstate<0 )
+    continue;
+		    yes = GWidgetAskCenteredR(_STR_BadReference,buts,0,3,_STR_ClearDependent,fv->sf->chars[i]->name);
+		    if ( yes==1 )
+			refstate = 1;
+		    else if ( yes==2 )
+			refstate = -1;
+		    if ( yes>=2 )
+    continue;
+		}
+	    }
+	}
+
 	if ( fv->onlycopydisplayed && fv->filled==fv->show ) {
 	    SCClearAll(fv->sf->chars[i],fv);
 	} else if ( fv->onlycopydisplayed ) {
@@ -1145,8 +1177,16 @@ static void FVChangeDisplayFont(FontView *fv,BDFFont *bdf) {
 	if ( fv->show!=NULL && fv->show->pixelsize==bdf->pixelsize )
 	    samesize = true;
 	fv->show = bdf;
-	fv->cbw = bdf->pixelsize+1;
-	fv->cbh = bdf->pixelsize+1+FV_LAB_HEIGHT+1;
+	if ( bdf->pixelsize<20 ) {
+	    if ( bdf->pixelsize<=9 )
+		fv->magnify = 3;
+	    else
+		fv->magnify = 2;
+	    samesize = ( fv->show && fv->cbw == (bdf->pixelsize*fv->magnify)+1 );
+	} else
+	    fv->magnify = 1;
+	fv->cbw = (bdf->pixelsize*fv->magnify)+1;
+	fv->cbh = (bdf->pixelsize*fv->magnify)+1+FV_LAB_HEIGHT+1;
 	if ( samesize ) {
 	    GDrawRequestExpose(fv->v,NULL,false);
 	} else if ( bdf->pixelsize<=48 ) {
@@ -1171,6 +1211,7 @@ static void FVMenuSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     int dspsize = fv->filled->pixelsize;
     int changealias = false;
 
+    fv->magnify = 1;
     if ( mi->mid == MID_24 )
 	default_fv_font_size = dspsize = 24;
     else if ( mi->mid == MID_36 )
@@ -1204,6 +1245,7 @@ static void FVMenuShowBitmap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 void FVShowFilled(FontView *fv) {
+    fv->magnify = 1;
     if ( fv->show!=fv->filled )
 	FVChangeDisplayFont(fv,fv->filled);
     fv->sf->display_size = -fv->filled->pixelsize;
@@ -1510,7 +1552,7 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     int anychars = FVAnyCharSelected(fv);
     int i, base;
     BDFFont *bdf;
-    char buffer[50];
+    unichar_t buffer[50];
     extern void GMenuItemArrayFree(GMenuItem *mi);
     extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
 
@@ -1529,8 +1571,8 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	for ( bdf = fv->sf->bitmaps, i=base;
 		i<sizeof(vwlist)/sizeof(vwlist[0])-1 && bdf!=NULL;
 		++i, bdf = bdf->next ) {
-	    sprintf( buffer, "%d pixel bitmap", bdf->pixelsize );
-	    vwlist[i].ti.text = uc_copy(buffer);
+	    u_sprintf( buffer, GStringGetResource(_STR_DPixelBitmap,NULL), bdf->pixelsize );
+	    vwlist[i].ti.text = u_copy(buffer);
 	    vwlist[i].ti.checkable = true;
 	    vwlist[i].ti.checked = bdf==fv->show;
 	    vwlist[i].ti.userdata = bdf;
@@ -1643,9 +1685,15 @@ return;
 	box.y = i*fv->cbh+14; box.height = fv->cbw;
 	GDrawPushClip(fv->v,&box,&old);
 	GDrawFillRect(fv->v,&box,GDrawGetDefaultBackground(NULL));
-	GDrawDrawImage(fv->v,&gi,NULL,
-		j*fv->cbw+(fv->cbw-1-base.width)/2,
-		i*fv->cbh+FV_LAB_HEIGHT+1+fv->show->ascent-bdfc->ymax);
+	if ( fv->magnify>1 ) {
+	    GDrawDrawImageMagnified(fv->v,&gi,NULL,
+		    j*fv->cbw+(fv->cbw-1-fv->magnify*base.width)/2,
+		    i*fv->cbh+FV_LAB_HEIGHT+1+fv->magnify*(fv->show->ascent-bdfc->ymax),
+		    fv->magnify*base.width,fv->magnify*base.height);
+	} else
+	    GDrawDrawImage(fv->v,&gi,NULL,
+		    j*fv->cbw+(fv->cbw-1-base.width)/2,
+		    i*fv->cbh+FV_LAB_HEIGHT+1+fv->show->ascent-bdfc->ymax);
 	GDrawPopClip(fv->v,&old);
 	if ( fv->selected[enc] ) {
 	    GDrawSetXORBase(fv->v,GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(fv->v)));
@@ -1909,9 +1957,15 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		    ++b.x; ++b.y; b.width -= 2; b.height -= 2;
 		    GDrawDrawRect(pixmap,&b,0x008000);
 		}
-		GDrawDrawImage(pixmap,&gi,NULL,
-			j*fv->cbw+(fv->cbw-1-base.width)/2,
-			i*fv->cbh+FV_LAB_HEIGHT+1+fv->show->ascent-bdfc->ymax);
+		if ( fv->magnify>1 ) {
+		    GDrawDrawImageMagnified(pixmap,&gi,NULL,
+			    j*fv->cbw+(fv->cbw-1-fv->magnify*base.width)/2,
+			    i*fv->cbh+FV_LAB_HEIGHT+1+fv->magnify*(fv->show->ascent-bdfc->ymax),
+			    fv->magnify*base.width,fv->magnify*base.height);
+		} else
+		    GDrawDrawImage(pixmap,&gi,NULL,
+			    j*fv->cbw+(fv->cbw-1-base.width)/2,
+			    i*fv->cbh+FV_LAB_HEIGHT+1+fv->show->ascent-bdfc->ymax);
 		GDrawPopClip(pixmap,&old2);
 	    }
 	    if ( fv->selected[index] ) {
@@ -2391,6 +2445,7 @@ FontView *FontViewCreate(SplineFont *sf) {
     sf->fv = fv;
     fv->cbw = default_fv_font_size+1;
     fv->cbh = default_fv_font_size+1+FV_LAB_HEIGHT+1;
+    fv->magnify = 1;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_icon;
@@ -2497,7 +2552,8 @@ return( NULL );
     GProgressEnableStop(0);
 
     sf = NULL;
-    if ( strmatch(filename+strlen(filename)-4, ".sfd")==0 ) {
+    if ( strmatch(filename+strlen(filename)-4, ".sfd")==0 ||
+	 strmatch(filename+strlen(filename)-5, ".sfd~")==0 ) {
 	sf = SFDRead(filename);
     } else if ( strmatch(filename+strlen(filename)-4, ".ttf")==0 ||
 		strmatch(filename+strlen(filename)-4, ".ttc")==0 ||

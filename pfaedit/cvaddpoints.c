@@ -208,6 +208,8 @@ return;			/* We clicked on the active point, that's a no-op */
 	    ss->last = sp;
 	} else if ( cv->p.spl==sel ) {
 	    /* Close the current spline set */
+	    cv->joinvalid = true;
+	    cv->joinpos = *sp; cv->joinpos.selected = false;
 	    if ( cv->active_tool!=cvt_pen )
 		SplineCharDefaultNextCP(base,sp);
 	    SplineCharDefaultPrevCP(sp,base);
@@ -219,6 +221,8 @@ return;			/* We clicked on the active point, that's a no-op */
 	    }
 	} else {
 	    /* Merge two spline sets */
+	    cv->joinvalid = true;
+	    cv->joinpos = *sp; cv->joinpos.selected = false;
 	    if ( sp->prev!=NULL )
 		SplineSetReverse(cv->p.spl);
 	    if ( sp->prev!=NULL )
@@ -314,6 +318,9 @@ void CVMergeSplineSets(CharView *cv, SplinePoint *active, SplineSet *activess,
 	SplinePoint *merge, SplineSet *mergess) {
     SplinePointList *spl;
 
+    cv->joinvalid = true;
+    cv->joinpos = *merge; cv->joinpos.selected = false;
+
     if ( active->prev==NULL )
 	SplineSetReverse(activess);
     if ( merge->next==NULL )
@@ -401,5 +408,6 @@ void CVMouseUpPoint(CharView *cv) {
     cv->lastselpt = cv->active_sp;
     cv->active_spl = NULL;
     cv->active_sp = NULL;
+    cv->joinvalid = false;
     CVInfoDraw(cv,cv->gw);
 }

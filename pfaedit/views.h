@@ -112,6 +112,7 @@ typedef struct charview {
     unsigned int info_within: 1;		/* cursor is within main window */
     unsigned int back_img_out_of_date: 1;	/* Force redraw of back image pixmap */
     unsigned int cntrldown:1;
+    unsigned int joinvalid:1;
     SplinePointList **heads[dm_max];
     Undoes **uheads[dm_max];
     Undoes **rheads[dm_max];
@@ -150,6 +151,7 @@ typedef struct charview {
     BasePoint expandorigin;
     double expandwidth, expandheight;
     SplinePointList *active_shape;
+    SplinePoint joinpos;
 } CharView;
 
 typedef struct bitmapview {
@@ -237,6 +239,8 @@ typedef struct fontview {
     unsigned int onlycopydisplayed: 1;
     unsigned int antialias:1;
     unsigned int wasonlybitmaps:1;
+    unsigned int refstate: 3;	/* 0x1 => paste orig of all non exist refs, 0x2=>don't, 0x3 => don't warn about non-exist refs with no source font */
+    int16 magnify;
 } FontView;
 
 typedef struct findsel {

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 23-Jun-2001 -->
-  <!-- AP: Last modified: 22-Jul-2001 -->
+  <!-- AP: Last modified: 23-Jul-2001 -->
   <TITLE>MetaFont -- Standard Transformations on Fonts</TITLE>
 </HEAD>
 <BODY>
@@ -60,7 +60,7 @@ is 1.03 times higher.
     <TD>Ratio of Bold/Regular Stems</TD>
     <TD>Ratio of DemiBold/Regular</TD>
     <TD>Expansion</TD>
-    <TD>Bold serif height/Regular serif </TD>
+    <TD>Bold serif height/Regular serif</TD>
     <TD>Bold serif width/regular</TD>
   </TR>
   <TR>
@@ -125,12 +125,14 @@ is 1.03 times higher.
   Point Size
 </H3>
 <P>
-Traditionally, as the point-size decreases the boldness (thickness of the
-stems) increases slightly, the counters and side bearings also change. For
-metal type there were generally three drawings for a character in a given
-font, one for pointsizes less than 10, one for pointsizes 10,11 and 12, and
-one for display sizes (above 12). Most computer vector fonts do not show
-this change, while Knuth's Computer Modern fonts have a continuum:
+At first glance this does not seem like much of a transformation, after all
+postscript and truetype fonts can be drawn at any pointsize. But traditionally,
+as the point-size decreases the boldness (thickness of the stems) increases
+slightly, the counters and side bearings also change. For metal type there
+were generally three drawings for a character in a given font, one for pointsizes
+less than 10, one for pointsizes 10,11 and 12, and one for display sizes
+(above 12). Most computer vector fonts do not show this change, while Knuth's
+Computer Modern fonts have a continuum:
 <TABLE CELLPADDING="2">
   <CAPTION>
     Stem width, scaled by point size, made relative to 12pt
@@ -340,12 +342,20 @@ letters are different:
 <P>
 <BR Clear=All>
 <H3>
+  SmallCaps
+</H3>
+<P>
+A SmallCaps font is made by <A HREF="transform.html">scaling</A> the capital
+letters to the x-height (so that they are the same height as lower case letters
+without ascendors) and then adjusting the stem widths so that they too will
+match stem widths of the lower case.
+<H3>
   Italic
 </H3>
 <P>
 The Italic transformation contains at least four parts: A change in the
-letterforms of the lowercase letters, a skew, and a condensation and a narrowing
-of the vertical stems..
+letterforms of the lowercase letters, a <A HREF="transform.html">skew</A>,
+and a condensation and a narrowing of the vertical stems..
 <TABLE BORDER CELLPADDING="2">
   <TR>
     <TD></TD>
@@ -391,7 +401,7 @@ such a transformation.
   Oblique
 </H3>
 <P>
-The Oblique transformation is a simple skew,
+The Oblique transformation is a simple <A HREF="transform.html">skew</A>,
 <TABLE BORDER CELLPADDING="2">
   <TR>
     <TD>Computer Modern Slanted Sans Serif</TD>

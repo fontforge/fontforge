@@ -1365,7 +1365,7 @@ return( openhead );
 }
 
 /* The idea behind SplineSetsCorrect is simple. However there are many splinesets */
-/*  where it is impossible, so bare in mind that this only works for nice */
+/*  where it is impossible, so bear in mind that this only works for nice */
 /*  splines. Figure 8's, interesecting splines all cause problems */
 /* The outermost spline should be clockwise (up), the next splineset we find */
 /*  should be down, if it isn't reverse it (if it's already been dealt with */

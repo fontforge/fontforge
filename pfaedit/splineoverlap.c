@@ -246,6 +246,8 @@ return( old );
 	xpos = par_major->mmin+es->mmin;
 	ypos = opos;
     }
+    xpos = rint(xpos*1024)/1024;
+    ypos = rint(ypos*1024)/1024;
 
     if (( edge->spline->to->next==par_major->spline &&
 	    DoubleNearish(xpos,edge->spline->to->me.x) &&
