@@ -337,6 +337,7 @@ return( false );
 	bdfc->bitmap = gcalloc(bdfc->bytes_per_line*fntheader.height,sizeof(uint8));
 	bdfc->enc = i;
 	bdfc->sc = sf->chars[i];
+	bdfc->sc->widthset = true;
 
 	fseek(fnt,base+charinfo[i].offset,SEEK_SET);
 	for ( j=0; j<bdfc->bytes_per_line; ++j ) {
