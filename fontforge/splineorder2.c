@@ -166,27 +166,13 @@ return( end );
 }
 
 static int buildtestquads(Spline *ttf,real xmin,real ymin,real cx,real cy,
-	real x,real y,real tmin,real t,real err,Spline *ps) {
-#if 0
-    BasePoint norm;
-    real sq;
-#endif
+	real x,real y,real tmin,real t,real err,Spline *ps, DBounds *psbb) {
 
     /* test the control points are reasonable */
-    if ( xmin<x ) {
-	if ( cx<xmin-.1 || cx>x+.1 )
+    if ( cx<psbb->minx || cx>psbb->maxx )
 return( false );
-    } else {
-	if ( cx<x-.1 || cx>xmin+.1 )
+    if ( cy<psbb->miny || cy>psbb->maxy )
 return( false );
-    }
-    if ( ymin<y ) {
-	if ( cy<ymin-.1 || cy>y+.1 )
-return( false );
-    } else {
-	if ( cy<y-.1 || cy>ymin+.1 )
-return( false );
-    }
 
     ttf->splines[0].d = xmin;
     ttf->splines[0].c = 2*(cx-xmin);
@@ -301,6 +287,7 @@ static SplinePoint *_ttfapprox(Spline *ps,real tmin, real tmax, SplinePoint *sta
     Spline ttf;
     int cnt = -1, forceit, unforceable;
     BasePoint end, rend, dend;
+    DBounds bb;
 
     if ( RealNearish(ps->splines[0].a,0) && RealNearish(ps->splines[1].a,0) ) {
 	/* Already Quadratic, just need to find the control point */
@@ -338,6 +325,21 @@ return( sp );
     dend.x = (3*ps->splines[0].a*tmax+2*ps->splines[0].b)*tmax+ps->splines[0].c;
     dend.y = (3*ps->splines[1].a*tmax+2*ps->splines[1].b)*tmax+ps->splines[1].c;
     memset(&ttf,'\0',sizeof(ttf));
+
+    bb.minx = bb.maxx = ps->from->me.x;
+    if ( ps->from->nextcp.x > bb.maxx ) bb.maxx = ps->from->nextcp.x;
+    else if ( ps->from->nextcp.x < bb.minx ) bb.minx = ps->from->nextcp.x;
+    if ( ps->to->prevcp.x > bb.maxx ) bb.maxx = ps->to->prevcp.x;
+    else if ( ps->to->prevcp.x < bb.minx ) bb.minx = ps->to->prevcp.x;
+    if ( ps->to->me.x > bb.maxx ) bb.maxx = ps->to->me.x;
+    else if ( ps->to->me.x < bb.minx ) bb.minx = ps->to->me.x;
+    bb.miny = bb.maxy = ps->from->me.y;
+    if ( ps->from->nextcp.y > bb.maxy ) bb.maxy = ps->from->nextcp.y;
+    else if ( ps->from->nextcp.y < bb.miny ) bb.miny = ps->from->nextcp.y;
+    if ( ps->to->prevcp.y > bb.maxy ) bb.maxy = ps->to->prevcp.y;
+    else if ( ps->to->prevcp.y < bb.miny ) bb.miny = ps->to->prevcp.y;
+    if ( ps->to->me.y > bb.maxy ) bb.maxy = ps->to->me.y;
+    else if ( ps->to->me.y < bb.miny ) bb.miny = ps->to->me.y;
 
   tail_recursion:
     ++cnt;
@@ -422,7 +424,7 @@ return( sp );
 	if ( t==tmax && ((cy==y && cx==x) || (cy==ymin && cx==xmin)) )
 	    unforceable = true;
 	/* Make the quadratic spline from (xmin,ymin) through (cx,cy) to (x,y)*/
-	if ( forceit || buildtestquads(&ttf,xmin,ymin,cx,cy,x,y,tmin,t,err,ps)) {
+	if ( forceit || buildtestquads(&ttf,xmin,ymin,cx,cy,x,y,tmin,t,err,ps,&bb)) {
 	    if ( !forceit && !unforceable && (rend.x-x)*(rend.x-x)+(rend.y-y)*(rend.y-y)<4*4 ) {
 		forceit = true;
  goto force_end;
