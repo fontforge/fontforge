@@ -476,7 +476,7 @@ struct contextchaindlg {
 #define CID_ClassType		2002
 #define CID_SameAsClasses	2003
 
-static char *cu_copybetween(const unichar_t *start, const unichar_t *end) {
+char *cu_copybetween(const unichar_t *start, const unichar_t *end) {
     char *ret = galloc(end-start+1);
     cu_strncpy(ret,start,end-start);
     ret[end-start] = '\0';
@@ -950,7 +950,7 @@ return( name );
 return( NULL );
 }
 
-static int CCD_NameListCheck(SplineFont *sf,const unichar_t *ret,int empty_bad,int title) {
+int CCD_NameListCheck(SplineFont *sf,const unichar_t *ret,int empty_bad,int title) {
     char *missingname;
     static int buts[] = { _STR_Yes, _STR_No, 0 };
     int ans;
@@ -971,7 +971,7 @@ return(!ans);
 return( true );
 }
 
-static unichar_t *CCD_InvalidClassList(const unichar_t *ret,GGadget *list,int wasedit) {
+int CCD_InvalidClassList(const unichar_t *ret,GGadget *list,int wasedit) {
     int32 len;
     GTextInfo **ti = GGadgetGetList(list,&len);
     const unichar_t *pt, *end, *tpt, *tend;
@@ -990,12 +990,16 @@ static unichar_t *CCD_InvalidClassList(const unichar_t *ret,GGadget *list,int wa
 		while ( *tpt==' ' ) ++tpt;
 		tend = u_strchr(tpt,' ');
 		if ( tend==NULL ) tend = tpt+u_strlen(tpt);
-		if ( tend-tpt==end-pt && u_strncmp(pt,tpt,end-pt)==0 )
-return( u_copyn(pt,end-pt));
+		if ( tend-tpt==end-pt && u_strncmp(pt,tpt,end-pt)==0 ) {
+		    unichar_t *dupname = u_copyn(pt,end-pt);
+		    GWidgetErrorR(_STR_BadClass,_STR_BadClassName, dupname);
+		    free(dupname);
+return( true );
+		}
 	    }
 	}
     }
-return( NULL );
+return( false );
 }
 
 static int CCD_ReasonableClassNum(const unichar_t *match,GGadget *mlist,
@@ -1105,7 +1109,6 @@ return( true );
 
 static void CCD_FinishEditNew(struct contextchaindlg *ccd) {
     char *temp;
-    unichar_t *dupname;
     struct fpst_rule dummy;
     GGadget *list = GWidgetGetControl(ccd->gw,CID_GList+ccd->wasoffset);
 
@@ -1113,11 +1116,8 @@ static void CCD_FinishEditNew(struct contextchaindlg *ccd) {
 	const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList+300));
 	if ( !CCD_NameListCheck(ccd->sf,ret,true,_STR_BadClass) )
 return;
-	if ( (dupname=CCD_InvalidClassList(ret,list,ccd->wasedit))!=NULL ) {
-	    GWidgetErrorR(_STR_BadClass,_STR_BadClassName, dupname);
-	    free(dupname);
+	if ( CCD_InvalidClassList(ret,list,ccd->wasedit) )
 return;
-	}
 	if ( ccd->wasedit ) {
 	    GListChangeLine(list,GGadgetGetFirstListSelectedItem(list),ret);
 	} else {

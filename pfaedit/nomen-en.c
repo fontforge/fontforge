@@ -3167,6 +3167,25 @@ static char *str_ThisSettingIsAlreadyUsed = "This setting is already used";
 static char *str_FeatureSetting = "Feature, Setting:";
 static char *str_StartOfInput = "{Start of Input}";
 static char *str_StartOfLine = "{Start of Line}";
+static char *str_EditStateTransition = "Edit State Transition";
+static char *str_AdvanceToNextGlyph = "Advance To Next Glyph";
+static char *str_MarkCurrentGlyph = "Mark Current Glyph";
+static char *str_MarkCurrentGlyphAsFirst = "Mark Current Glyph As First";
+static char *str_MarkCurrentGlyphAsLast = "Mark Current Glyph As Last";
+static char *str_CurrentGlyphIsKashida = "Current Glyph Is Kashida Like";
+static char *str_MarkedGlyphIsKashida = "Marked Glyph Is Kashida Like";
+static char *str_InsertBeforeCurrentGlyph = "Insert Before Current Glyph";
+static char *str_InsertBeforeMarkedGlyph = "Insert Before Marked Glyph";
+static char *str_NoChange = "No Change";
+static char *str_CurrentInsert = "Current Insert:";
+static char *str_MarkInsert = "Mark Insert:";
+static char *str_CurrentSubs = "Current Subs:";
+static char *str_MarkSubs = "Mark Subs:";
+static char *str_NextState = "Next State:";
+static char *str_TooManyGlyphs = "Too Many Glyphs";
+static char *str_AtMost31Glyphs = "At most 31 glyphs may be specified in an insert list";
+static char *str_BadFeatureSetting = "Bad Feature Setting";
+
 
 static int num_buttonsize = 55;
 static int num_ScaleFactor = 100;

@@ -2051,6 +2051,7 @@ return( true );
 
 static void GFI_CleanupContext(struct gfi_data *d) {
     FPST *fpst;
+    ASM *sm;
     int i, j;
 
     /* Free any context which were created but got [Cancelled] */
@@ -2077,10 +2078,36 @@ static void GFI_CleanupContext(struct gfi_data *d) {
 	    }
 	}
     }
+
+    /* Do the same thing for apple state machines */
+    for ( i=0; i<3; ++i ) {
+	GGadget *list = GWidgetGetControl(d->gw,CID_SMList+i*100);
+	int len;
+	GTextInfo **old = GGadgetGetList(list,&len);
+	for ( j=0; j<len; ++j ) {
+	    sm = (ASM *) (old[j]->userdata);
+	    if ( sm!=NULL ) sm->ticked = false;
+	}
+    }
+    for ( sm = d->sf->sm; sm!=NULL; sm=sm->next )
+	sm->ticked = true;
+    for ( i=0; i<3; ++i ) {
+	GGadget *list = GWidgetGetControl(d->gw,CID_SMList+i*100);
+	int len;
+	GTextInfo **old = GGadgetGetList(list,&len);
+	for ( j=0; j<len; ++j ) {
+	    sm = (ASM *) (old[j]->userdata);
+	    if ( sm!=NULL && !sm->ticked ) {
+		sm->next = NULL;
+		ASMFree(sm);
+	    }
+	}
+    }
 }
 
 static void GFI_ProcessContexts(struct gfi_data *d) {
     FPST *fpst, *next, *p, *last;
+    ASM *sm, *nextsm, *psm, *lastsm;
     int i, j;
 
     /* Free any contexts which have been deleted */
@@ -2110,7 +2137,7 @@ static void GFI_ProcessContexts(struct gfi_data *d) {
 	}
     }
 
-    /* Now build up a new list containing all active classes */
+    /* Now build up a new list containing all fpst's */
     last = NULL;
     for ( i=0; i<fpst_max-pst_contextpos; ++i ) {
 	GGadget *list = GWidgetGetControl(d->gw,CID_ContextClasses+i*100);
@@ -2132,6 +2159,57 @@ static void GFI_ProcessContexts(struct gfi_data *d) {
 	d->sf->possub = NULL;
     else
 	last->next = NULL;
+
+    /* And for apple state machines... */
+    /* Free any state machines which have been deleted */
+    for ( sm = d->sf->sm; sm!=NULL; sm=sm->next )
+	sm->ticked = false;
+    for ( i=0; i<3; ++i ) {
+	GGadget *list = GWidgetGetControl(d->gw,CID_SMList+i*100);
+	int len;
+	GTextInfo **old = GGadgetGetList(list,&len);
+	for ( j=0; j<len; ++j ) {
+	    sm = (ASM *) (old[j]->userdata);
+	    if ( sm!=NULL ) sm->ticked = true;
+	}
+    }
+    psm = NULL;
+    for ( sm = d->sf->sm; sm!=NULL; sm=nextsm ) {
+	nextsm = sm->next;
+	if ( sm->ticked )
+	    psm = sm;
+	else {
+	    if ( p==NULL )
+		d->sf->sm = nextsm;
+	    else
+		psm->next = nextsm;
+	    sm->next = NULL;
+	    ASMFree(sm);
+	}
+    }
+
+    /* Now build up a new list containing all active state machines */
+    lastsm = NULL;
+    for ( i=0; i<3; ++i ) {
+	GGadget *list = GWidgetGetControl(d->gw,CID_SMList+i*100);
+	int len;
+	GTextInfo **old = GGadgetGetList(list,&len);
+	for ( j=0; j<len; ++j ) {
+	    sm = (ASM *) (old[j]->userdata);
+	    if ( sm!=NULL ) {
+		if ( lastsm==NULL )
+		    d->sf->sm = sm;
+		else
+		    lastsm->next = sm;
+		lastsm = sm;
+	    }
+	    old[j]->userdata = NULL;
+	}
+    }
+    if ( lastsm==NULL )
+	d->sf->sm = NULL;
+    else
+	lastsm->next = NULL;
 }
 
 static void GFI_Close(struct gfi_data *d) {
@@ -2854,7 +2932,7 @@ static int GFI_SMNew(GGadget *g, GEvent *e) {
 	if ( d->smd )
 return( true );
 
-	sm = chunkalloc(sizeof(sm));
+	sm = chunkalloc(sizeof(ASM));
 	sm->type = which==0 ? asm_indic : which==1 ? asm_context : asm_insert;
 	if ( (d->smd = StateMachineEdit(d->sf,sm,d))!=NULL ) {
 	    for ( i=0; i<3; ++i ) {

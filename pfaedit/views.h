@@ -926,6 +926,9 @@ extern GTextInfo **SFGenTagListFromType(struct gentagtype *gentags,enum possub_t
 extern struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
 	struct gfi_data *gfi,unichar_t *newname);
 extern void CCD_Close(struct contextchaindlg *ccd);
+extern int CCD_NameListCheck(SplineFont *sf,const unichar_t *ret,int empty_bad,int title);
+extern int CCD_InvalidClassList(const unichar_t *ret,GGadget *list,int wasedit);
+extern char *cu_copybetween(const unichar_t *start, const unichar_t *end);
 
 extern struct statemachinedlg *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d);
 extern void SMD_Close(struct statemachinedlg *smd);
