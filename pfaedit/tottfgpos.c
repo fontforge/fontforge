@@ -2256,7 +2256,7 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 	    if ( ac->type!=act_curs )
 		ac->has_mark = AnchorHasMark(sf,ac);
 	}
-	AnchorsAway(lfile,sf,lookups,0);
+	lookups = AnchorsAway(lfile,sf,lookups,0);
 	AnchorGuessContext(sf,at);
     }
 
