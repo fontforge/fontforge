@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 16-Aug-2003 -->
-  <!-- AP: Last modified: 13-Oct-2004 -->
+  <!-- AP: Last modified: 19-Oct-2004 -->
   <TITLE>The dialog for editing Contextual or Chaining Contextual features</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -24,13 +24,14 @@ You can also specify classes of glyphs so you could say something like:<BR>
 <CODE>&nbsp; &nbsp; &nbsp; [0-9] t h</CODE><BR>
 to raise "t" and "h" after any digit.
 <P>
-Chained Contextual Positioning does not really give you any more capabilities
-than Contextual Positioning, but it allows you to specify things in a slightly
-more logical fashion. In a chained feature you specify three match strings,
-one for glyphs before the current glyph, one for the current search, and
-one for glyphs after the current search. The advantage of this is that you
-can apply a transformation at the current glyph rather than having to apply
-it to some other glyph.
+After applying this lookup, a word processor will skip over the three glyphs
+matched by the pattern, at least it will in a simple "Contextual Positioning"
+lookup. The "Chained Contextual Positioning" lookup is a bit more general
+and allows you to divide the pattern into three parts: A part before the
+current glyph (called backtracking), a part including the current glyph,
+and a part after the current glyph (called lookahead). Positioning changes
+may only be made to the part including the current glyph, and the word processor
+will advance by the number of glyphs in that subset of the pattern.
 <H2>
   What is a Contextual Substitution feature?
 </H2>
