@@ -167,7 +167,7 @@ return;
 	    i>>=1; --j;
 	    putshort(at->kern,i*6);		/* binary search headers */
 	    putshort(at->kern,j);
-	    putshort(at->kern,6*(i-c));
+	    putshort(at->kern,6*(c-i));
 
 	    glnum = galloc(m*sizeof(uint16));
 	    offsets = galloc(m*sizeof(uint16));
