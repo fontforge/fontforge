@@ -6680,7 +6680,7 @@ return;
 	if ( sc!=NULL && sc->ttf_glyph!=-1 ) {
 	    fprintf( file, "GLYPHID %d\tPSNAME %s", sc->ttf_glyph, sc->name );
 	    if ( sc->unicodeenc!=-1 )
-		fprintf( file, "UNICODE %04X", sc->unicodeenc );
+		fprintf( file, "\tUNICODE %04X", sc->unicodeenc );
 	    putc('\n',file);
 	}
     }
