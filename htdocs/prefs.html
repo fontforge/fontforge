@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 2-Sep-2002 -->
-  <!-- AP: Last modified: 31-Dec-2002 -->
+  <!-- AP: Last modified: 12-Jan-2003 -->
   <TITLE>Preferences Dialog</TITLE>
 </HEAD>
 <BODY>
@@ -83,7 +83,19 @@
   <DD>
     The maximum distance at which pointer motion in the character view will be
     snapped to an interesting object (ie. a point, baseline, width line,
-    etc.)<BR Clear=all>
+    etc.). This is measured in pixels.
+  <DT>
+    JoinSnap
+  <DD>
+    The maximum distance between the endpoints of two splines before they will
+    join with the Edit->Join command. This is measured in pixels in the char view
+    and em-units elsewhere.
+  <DT>
+    CopyMetaData
+  <DD>
+    Controls the behavior of Edit->Copy from the fontview. Normally Copy does not
+    copy a character's metadata (name, encoding, etc.) but if this is set then it
+    will.<BR Clear=all>
 </DL>
 <P>
 <IMG SRC="prefs-font.png" WIDTH="294" HEIGHT="369" ALIGN="Right">
