@@ -1,0 +1,12 @@
+#!/usr/local/bin/pfaedit
+#Needs: fonts/QuadraticConversionBug.sfd
+#Make sure quadratic conversion works...
+
+Open("fonts/QuadraticConversionBug.sfd");
+# the following use to crash (when in a script)
+SetFontOrder(2);
+Save("results/QuadraticConversionBug2.sfd")
+Close()
+# this used to give us IErrors
+Open("results/QuadraticConversionBug2.sfd")
+Quit()
