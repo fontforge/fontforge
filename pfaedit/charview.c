@@ -1814,7 +1814,8 @@ return;
 	     event->u.chr.keysym == GK_Meta_L || event->u.chr.keysym == GK_Meta_R ) {
 	CVFakeMove(cv, event);
     } else if ( (event->u.chr.state&ksm_meta) &&
-	    !(event->u.chr.state&(ksm_control|ksm_shift)) ) {
+	    !(event->u.chr.state&(ksm_control|ksm_shift)) &&
+	    event->u.chr.chars[0]!='\0' ) {
 	CVPaletteMnemonicCheck(event);
     } else if ( !(event->u.chr.state&(ksm_control|ksm_meta)) &&
 	    event->u.chr.keysym == GK_BackSpace ) {
@@ -1863,7 +1864,7 @@ return;
 	    dy = -1;
 	  break;
 	}
-	if ( event->u.chr.state & (ksm_meta|ksm_control) ) {
+	if ( event->u.chr.state & ksm_control ) {
 	    struct sbevent sb;
 	    sb.type = dy>0 || dx<0 ? et_sb_halfup : et_sb_halfdown;
 	    if ( dx==0 )
@@ -1871,6 +1872,9 @@ return;
 	    else
 		CVHScroll(cv,&sb);
 	} else {
+	    if ( event->u.chr.state & ksm_meta ) {
+		dx *= 10; dy *= 10;
+	    }
 	    if ( event->u.chr.state & (ksm_shift) )
 		dx -= dy*tan((cv->sc->parent->italicangle)*(3.1415926535897932/180) );
 	    if (( cv->p.sp!=NULL || cv->lastselpt!=NULL ) &&
