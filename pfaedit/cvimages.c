@@ -914,7 +914,7 @@ static int GFD_ImportOk(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	unichar_t *ret = GGadgetGetTitle(d->gfc);
-	char *temp = cu_copy(ret);
+	char *temp = u2def_copy(ret);
 	int format = GGadgetGetFirstListSelectedItem(d->format);
 
 	GDrawSetCursor(GGadgetGetWindow(g),ct_watch);
