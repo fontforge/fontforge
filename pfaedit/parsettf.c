@@ -2405,6 +2405,7 @@ static SplineFont *cffsffillup(struct topdicts *subdict, char **strings ) {
     sf->upos = subdict->underlinepos;
     sf->uwidth = subdict->underlinewidth;
     sf->xuid = intarray2str(subdict->xuid,sizeof(subdict->xuid)/sizeof(subdict->xuid[0]));
+    sf->uniqueid = subdict->uniqueid;
 
     if ( subdict->private_size>0 ) {
 	sf->private = gcalloc(1,sizeof(struct psdict));
@@ -2441,6 +2442,7 @@ static void cffinfofillup(struct ttfinfo *info, struct topdicts *dict,
     info->upos = dict->underlinepos;
     info->uwidth = dict->underlinewidth;
     info->xuid = intarray2str(dict->xuid,sizeof(dict->xuid)/sizeof(dict->xuid[0]));
+    info->uniqueid = dict->uniqueid;
 
     if ( dict->private_size>0 ) {
 	info->private = gcalloc(1,sizeof(struct psdict));
@@ -4059,6 +4061,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->descent = info->descent;
     sf->private = info->private;
     sf->xuid = info->xuid;
+    sf->uniqueid = info->uniqueid;
     sf->pfminfo = info->pfminfo;
     sf->names = info->names;
     if ( info->encoding_name == em_symbol || info->encoding_name == em_mac )

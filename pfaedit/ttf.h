@@ -57,6 +57,7 @@ struct ttfinfo {
     char *version;		/* nameid=5 */
     char *fontname;		/* postscript font name, nameid=6 */
     char *xuid;			/* Only for open type cff fonts */
+    int uniqueid;
     real italicAngle;		/* from post table */
     int upos, uwidth;		/* underline pos, width from post table */
     int fstype;

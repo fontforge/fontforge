@@ -1384,6 +1384,7 @@ static void SplineFontMetaData(SplineFont *sf,struct fontdict *fd) {
 	sf->ascent = fd->fontinfo->ascent;
 	sf->descent = fd->fontinfo->descent;
     }
+    if ( sf->uniqueid==0 ) sf->uniqueid = fd->uniqueid;
     if ( sf->fontname==NULL ) sf->fontname = GetNextUntitledName();
     if ( sf->fullname==NULL ) sf->fullname = copy(sf->fontname);
     if ( sf->familyname==NULL ) sf->familyname = copy(sf->fontname);
