@@ -663,13 +663,25 @@ static void GListButtonDoPopup(GListButton *gl) {
 
 GGadget *GListButtonCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     GListButton *gl = gcalloc(1,sizeof(GListButton));
+    int i;
 
     gl->labeltype = 2;
     gl->g.takes_input = true;
     if ( gd->u.list!=NULL )
 	gl->ti = GTextInfoArrayFromList(gd->u.list,&gl->ltot);
-    if ( gd->label==NULL && gd->u.list!=NULL )
-	gd->label = &gd->u.list[0];
+    if ( gd->label==NULL && gd->u.list!=NULL ) {
+	/* find first selected item if there is one */
+	for ( i=0; gd->u.list[i].text!=NULL || gd->u.list[i].line; ++i )
+	    if ( gd->u.list[i].selected )
+	break;
+	/* else first item with text */
+	if ( gd->u.list[i].text==NULL && !gd->u.list[i].line ) {
+	    for ( i=0; gd->u.list[i].line; ++i );
+	    if ( gd->u.list[i].text==NULL && !gd->u.list[i].line )
+		i = 0;
+	}
+	gd->label = &gd->u.list[i];
+    }
     _GLabelCreate((GLabel *) gl,base,gd,data,&button_box);
     gl->g.funcs = &glistbutton_funcs;
 return( &gl->g );

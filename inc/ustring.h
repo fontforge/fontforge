@@ -76,6 +76,7 @@ extern char      *  strstrmatch(const char *,const char *);
 extern char *u_to_c(const unichar_t *);
 extern unichar_t *c_to_u(const char *);
 
+extern unsigned long u_strtoul(const unichar_t *,unichar_t **,int);
 extern long   u_strtol(const unichar_t *,unichar_t **,int);
 extern double u_strtod(const unichar_t *,unichar_t **);
 

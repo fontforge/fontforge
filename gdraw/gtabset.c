@@ -130,7 +130,8 @@ return( false );
 
     GBoxDrawBackground(pixmap,&g->r,g->box,
 	    g->state==gs_enabled? gs_pressedactive: g->state,false);
-    bounds = g->r; bounds.y += gts->rcnt*gts->rowh+yoff; bounds.height -= gts->rcnt*gts->rowh-yoff;
+    bounds = g->r; bounds.y += gts->rcnt*gts->rowh+yoff-1;
+    bounds.height -= gts->rcnt*gts->rowh+yoff-1;
     GBoxDrawBorder(pixmap,&bounds,g->box,g->state,false);
     GDrawSetFont(pixmap,gts->font);
 

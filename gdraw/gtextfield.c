@@ -790,7 +790,7 @@ return( true );
 	  case 'I': case 'i':
 	    if ( !( event->u.chr.state&ksm_control ) )
 return( false );
-	    /* fall through into return case */
+	    /* fall through into tab case */
 	  case GK_Tab:
 	    if ( gt->accepts_tabs ) {
 		GTextFieldReplace(gt,tabstr);
@@ -1235,6 +1235,8 @@ return( false );
 
     if ( GTextFieldDoChange(gt,event))
 	GTextFieldChanged(gt,-1);
+    else
+return( false );
     _ggadget_redraw(g);
 return( true );
 }

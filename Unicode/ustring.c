@@ -405,10 +405,28 @@ long u_strtol(const unichar_t *str, unichar_t **ptr, int base) {
     long val;
     extern long strtol();		/* Please don't delete this, not all of us have good ansi headers */
 
-    for ( upt=str, pt=buf; *upt<128 && *upt!='\0'; )
+    for ( upt=str, pt=buf; *upt<128 && *upt!='\0' && pt<buf+sizeof(buf)-1; )
 	*pt++ = *upt++;
     *pt = '\0';
     val = strtol(buf,&ret,base);
+    if ( ptr!=NULL ) {
+	if ( pt==ret )
+	    *ptr = (unichar_t *) upt;
+	else
+	    *ptr = (unichar_t *) (str + (ret-buf));
+    }
+return( val );
+}
+
+unsigned long u_strtoul(const unichar_t *str, unichar_t **ptr, int base) {
+    char buf[60], *pt, *ret;
+    const unichar_t *upt;
+    unsigned long val;
+
+    for ( upt=str, pt=buf; *upt<128 && *upt!='\0' && pt<buf+sizeof(buf)-1; )
+	*pt++ = *upt++;
+    *pt = '\0';
+    val = strtoul(buf,&ret,base);
     if ( ptr!=NULL ) {
 	if ( pt==ret )
 	    *ptr = (unichar_t *) upt;

@@ -245,7 +245,7 @@ typedef struct gevent {
 		    int clicks;
 		} button;
 		struct {
-		    int from_mouse;
+		    int from_mouse, changed_index;
 		} list;
 	    } u;
 	} control;
