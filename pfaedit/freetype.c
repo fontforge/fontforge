@@ -346,9 +346,12 @@ return( NULL );
 	} else {
 	    ftc->glyph_indeces = galloc(sf->charcnt*sizeof(int));
 	    memset(ftc->glyph_indeces,-1,sf->charcnt*sizeof(int));
-	    if ( SCWorthOutputting(sf->chars[0]))
+	    cnt = 1; i = 0;
+	    if ( SCIsNotdef(sf->chars[0], -1)) {
 		ftc->glyph_indeces[0] = 0;
-	    for ( i=cnt=1; i<sf->charcnt; ++i ) {
+		i = 1;
+	    }
+	    for ( ; i<sf->charcnt; ++i ) {
 		if ( SCWorthOutputting(sf->chars[i])) {
 		    if ( ff==ff_pfa || ff==ff_pfb )
 			ftc->glyph_indeces[i] = cnt++;
