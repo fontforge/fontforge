@@ -4513,9 +4513,10 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		BDFPieceMeal(fv->show,index);
 
 	    if ( !SCWorthOutputting(fv->sf->chars[index]) ) {
-		box.x = j*fv->cbw+1; box.width = fv->cbw-1;
-		box.y = i*fv->cbh+14+2; box.height = box.width+1;
-		GDrawFillRect(pixmap,&box,0xb0b0d0);
+		int x = j*fv->cbw+1, xend = x+fv->cbw-1;
+		int y = i*fv->cbh+14+2, yend = y+fv->cbw;
+		GDrawDrawLine(pixmap,x,y,xend,yend,0xb0b0d0);
+		GDrawDrawLine(pixmap,x,yend,xend,y,0xb0b0d0);
 	    }
 	    if ( fv->show!=NULL && fv->show->chars[index]==NULL &&
 		    SCWorthOutputting(fv->sf->chars[index]) ) {
