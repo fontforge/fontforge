@@ -5862,9 +5862,10 @@ return( NULL );
 		(ch1=='t' && ch2=='r' && ch3=='u' && ch4=='e') ||
 		(ch1=='t' && ch2=='t' && ch3=='c' && ch4=='f') ) {
 	    sf = SFReadTTF(fullname,0);
-	} else if ( ch1=='%' && ch2=='!' ) {
+	} else if (( ch1=='%' && ch2=='!' ) ||
+		    ( ch1==0x80 && ch2=='\01' ) ) {	/* PFB header */
 	    sf = SFReadPostscript(fullname);
-	} else if ( ch1==1 && ch2==0 && ch3==4 && ch4==4 ) {
+	} else if ( ch1==1 && ch2==0 && ch3==4 ) {
 	    sf = CFFParse(fullname);
 	} else if ( ch1=='<' && ch2=='?' && (ch3=='x'||ch3=='X') && (ch4=='m'||ch4=='M') ) {
 	    sf = SFReadSVG(fullname,0);

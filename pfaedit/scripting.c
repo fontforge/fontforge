@@ -700,12 +700,15 @@ static char **GetFontNames(char *filename) {
 		(ch1=='t' && ch2=='r' && ch3=='u' && ch4=='e') ||
 		(ch1=='t' && ch2=='t' && ch3=='c' && ch4=='f') ) {
 	    ret = NamesReadTTF(filename);
-	} else if ( ch1=='%' && ch2=='!' ) {
+	} else if (( ch1=='%' && ch2=='!' ) ||
+		    ( ch1==0x80 && ch2=='\01' ) ) {	/* PFB header */
 	    ret = NamesReadPostscript(filename);
 	} else if ( ch1=='<' && ch2=='?' && (ch3=='x'||ch3=='X') && (ch4=='m'||ch4=='M') ) {
 	    ret = NamesReadSVG(filename);
 	} else if ( ch1=='S' && ch2=='p' && ch3=='l' && ch4=='i' ) {
 	    ret = NamesReadSFD(filename);
+	} else if ( ch1==1 && ch2==0 && ch3==4 ) {
+	    ret = NamesReadCFF(filename);
 	} else /* Too hard to figure out a valid mark for a mac resource file */
 	    ret = NamesReadMacBinary(filename);
     }

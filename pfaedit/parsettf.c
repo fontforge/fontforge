@@ -4186,6 +4186,28 @@ return( NULL );
 return( sf );
 }
 
+char **NamesReadCFF(char *filename) {
+    FILE *cff = fopen(filename,"rb");
+    int32 hdrsize, offsize;
+    char **fontnames;
+
+    if ( cff==NULL )
+return( NULL );
+    if ( getc(cff)!='\1' ) {		/* Major version */
+	fprintf( stderr, "CFF version mismatch\n" );
+	fclose(cff);
+return( NULL );
+    }
+    getc(cff);				/* Minor version */
+    hdrsize = getc(cff);
+    offsize = getc(cff);
+    if ( hdrsize!=4 )
+	fseek(cff,hdrsize,SEEK_SET);
+    fontnames = readcfffontnames(cff);
+    fclose(cff);
+return( fontnames );
+}
+
 char **NamesReadTTF(char *filename) {
     FILE *ttf = fopen(filename,"rb");
     int32 version, cnt, *offsets;

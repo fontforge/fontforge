@@ -1226,6 +1226,7 @@ extern uint16 MacStyleCode( SplineFont *sf, uint16 *psstyle );
 extern SplineFont *SFReadIkarus(char *fontname);
 extern char **NamesReadSFD(char *filename);
 extern char **NamesReadTTF(char *filename);
+extern char **NamesReadCFF(char *filename);
 extern char **NamesReadPostscript(char *filename);
 extern char **_NamesReadPostscript(FILE *ps);
 extern char **NamesReadSVG(char *filename);
