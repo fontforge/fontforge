@@ -2329,6 +2329,7 @@ static char *str_popSkew = "Skew the selection";
 static char *str_popRectElipse = "Rectangle or Ellipse";
 static char *str_popPolyStar = "Polygon or Star";
 static char *str_popPencil = "Set/Clear Pixels";
+static char *str_popPencilGrey = "Set/Clear Pixels\n(Eyedropper with alt)";
 static char *str_popLine = "Draw a Line";
 static char *str_popShift = "Shift Entire Bitmap";
 static char *str_popHand = "Scroll Bitmap";

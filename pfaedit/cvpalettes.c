@@ -1777,10 +1777,13 @@ static void BVToolsMouse(BitmapView *bv, GEvent *event) {
 	    event->u.chr.state |= (1<<(7+event->u.mouse.button));
 	}
     } else if ( event->type == et_mousemove ) {
-	if ( bv->pressed_tool==bvt_none && pos!=bvt_none )
+	if ( bv->pressed_tool==bvt_none && pos!=bvt_none ) {
 	    /* Not pressed */
-	    GGadgetPreparePopupR(bvtools,bvpopups[pos]);
-	else if ( pos!=bv->pressed_tool || bv->had_control != (((event->u.mouse.state&ksm_control)||styluscntl)?1:0) )
+	    if ( !bv->shades_hidden && bvpopups[pos]==_STR_PopPencil )
+		GGadgetPreparePopupR(bvtools,_STR_PopPencilGrey);
+	    else
+		GGadgetPreparePopupR(bvtools,bvpopups[pos]);
+	} else if ( pos!=bv->pressed_tool || bv->had_control != (((event->u.mouse.state&ksm_control)||styluscntl)?1:0) )
 	    bv->pressed_display = bvt_none;
 	else
 	    bv->pressed_display = bv->pressed_tool;
