@@ -321,25 +321,31 @@ static GTextInfo *AvailableRanges(SplineFont *sf) {
 return( ret );
 }
 
-static int NameToEncoding(SplineFont *sf,const unichar_t *name) {
+static int NameToEncoding(SplineFont *sf,const unichar_t *uname) {
     int enc, uni, i;
-    unichar_t *end, *dot=NULL, *freeme=NULL;
+    char *end, *dot=NULL, *freeme=NULL;
+    char *name = cu_copy(uname);
 
     enc = uni = -1;
     while ( 1 ) {
+	enc = SFFindChar(sf,-1,name);
+	if ( enc!=-1 ) {
+	    free(name);
+return( enc );
+	}
 	if ( (*name=='U' || *name=='u') && name[1]=='+' ) {
-	    uni = u_strtol(name+2,&end,16);
+	    uni = strtol(name+2,&end,16);
 	    if ( *end!='\0' )
 		uni = -1;
 	} else if ( name[0]=='u' && name[1]=='n' && name[2]=='i' ) {
-	    uni = u_strtol(name+3,&end,16);
+	    uni = strtol(name+3,&end,16);
 	    if ( *end!='\0' )
 		uni = -1;
 	} else if ( isdigit(*name)) {
-	    enc = u_strtoul(name,&end,0);
+	    enc = strtoul(name,&end,0);
 	    if ( *end==',' && ((sf->encoding_name>=em_jis208 && sf->encoding_name<=em_last94x94) ||
 		    sf->encoding_name == em_unicode )) {
-		int j = u_strtoul(end+1,&end,10);
+		int j = strtoul(end+1,&end,10);
 		/* kuten */
 		if ( *end!='\0' )
 		    enc = -1;
@@ -368,15 +374,15 @@ static int NameToEncoding(SplineFont *sf,const unichar_t *name) {
 	    }
 	} else {
 	    for ( i=0; i<sf->charcnt; ++i )
-		if ( sf->chars[i]!=NULL && uc_strcmp(name,sf->chars[i]->name)==0 ) {
+		if ( sf->chars[i]!=NULL && strcmp(name,sf->chars[i]->name)==0 ) {
 		    enc = i;
 	    break;
 		}
 	    if ( enc==-1 ) {
-		uni = uUniFromName(name);
+		uni = UniFromName(name);
 		if ( uni<0 ) {
 		    for ( i=0; specialnames[i].name!=NULL; ++i )
-			if ( uc_strcmp(name,specialnames[i].name)==0 ) {
+			if ( strcmp(name,specialnames[i].name)==0 ) {
 			    uni = specialnames[i].first;
 		    break;
 			}
@@ -396,28 +402,32 @@ static int NameToEncoding(SplineFont *sf,const unichar_t *name) {
 		uni = enc;
 	}
 	if ( dot!=NULL ) {
-	    free(freeme);
+	    free(name);
 	    if ( uni==-1 )
 return( -1 );
 	    if ( uni<0x600 || uni>0x6ff )
 return( -1 );
-	    if ( uc_strmatch(dot,".begin")==0 || uc_strmatch(dot,".initial")==0 )
+	    if ( strmatch(dot,".begin")==0 || strmatch(dot,".initial")==0 )
 		uni = ArabicForms[uni-0x600].initial;
-	    else if ( uc_strmatch(dot,".end")==0 || uc_strmatch(dot,".final")==0 )
+	    else if ( strmatch(dot,".end")==0 || strmatch(dot,".final")==0 )
 		uni = ArabicForms[uni-0x600].final;
-	    else if ( uc_strmatch(dot,".medial")==0 )
+	    else if ( strmatch(dot,".medial")==0 )
 		uni = ArabicForms[uni-0x600].medial;
-	    else if ( uc_strmatch(dot,".isolated")==0 )
+	    else if ( strmatch(dot,".isolated")==0 )
 		uni = ArabicForms[uni-0x600].isolated;
 	    else
 return( -1 );
 return( SFFindChar(sf,uni,NULL) );
-	} else 	if ( enc!=-1 )
+	} else 	if ( enc!=-1 ) {
+	    free(name);
 return( enc );
-	dot = u_strrchr(name,'.');
+	}
+	dot = strrchr(name,'.');
 	if ( dot==NULL )
 return( -1 );
-	name = freeme = u_copyn(name,dot-name);
+	freeme = copyn(name,dot-name);
+	free(name);
+	name = freeme;
     }
 }
 
