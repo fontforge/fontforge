@@ -904,6 +904,8 @@ static char *str_Caligraphic = "Caligraphic";
 static unichar_t mnemonic_Caligraphic = 'C';
 static char *str_PenAngle = "Pen Angle:";
 static unichar_t mnemonic_PenAngle = 'A';
+static char *str_BadStroke = "Bad Stroke";
+static char *str_StrokeWidthTooBig = "The stroke width is so big that the generated path\nmay intersect itself in %.100hs";
     /* Auto Width/Kern */
 static char *str_EnterTwoCharRange = "Enter two character ranges";
 static char *str_ToBeAdjusted = "to be adjusted.";

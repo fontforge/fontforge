@@ -270,6 +270,31 @@ SplinePoint *SplineBisect(Spline *spline, double t) {
 return( mid );
 }
 
+static Spline *IsLinearApprox(SplinePoint *from, SplinePoint *to,
+	TPoint *mid, int cnt) {
+    double vx, vy, slope;
+    int i;
+
+    vx = to->me.x-from->me.x; vy = to->me.y-from->me.y;
+    if ( vx==0 && vy==0 ) {
+	for ( i=0; i<cnt; ++i )
+	    if ( mid[i].x != from->me.x || mid[i].y != from->me.y )
+return( NULL );
+    } else if ( fabs(vx)>fabs(vy) ) {
+	slope = vy/vx;
+	for ( i=0; i<cnt; ++i )
+	    if ( !RealNear(mid[i].y,from->me.y+slope*(mid[i].x-from->me.x)) )
+return( NULL );
+    } else {
+	slope = vx/vy; 
+	for ( i=0; i<cnt; ++i )
+	    if ( !RealNear(mid[i].x,from->me.x+slope*(mid[i].y-from->me.y)) )
+return( NULL );
+    }
+    from->nonextcp = to->noprevcp = true;
+return( SplineMake(from,to) );
+}
+
 /* Least squares tells us that:
 	| S(xi*ti^3) |	 | S(ti^6) S(ti^5) S(ti^4) S(ti^3) |   | a |
 	| S(xi*ti^2) | = | S(ti^5) S(ti^4) S(ti^3) S(ti^2) | * | b |
@@ -296,7 +321,7 @@ Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
     real t, t2, t3, t4, t5, x, y, xt, xt2, yt, yt2, tt, ttn;
     real sx, sy;
     int i;
-    real v[6], m[6][6];
+    double v[6], m[6][6];	/* Yes! rounding errors cause problems here */
     Spline *spline;
     BasePoint prevcp, *p, *n;
     int err;
@@ -527,9 +552,12 @@ Spline *ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
 	TPoint *mid, int cnt) {
     real t, t2, t3, t4, x, y, xt, yt, tt, ttn;
     int i;
-    real vx[3], vy[3], m[3][3];
+    double vx[3], vy[3], m[3][3];
     Spline *spline;
     BasePoint nextcp, prevcp;
+
+    if ( (spline = IsLinearApprox(from,to,mid,cnt))!=NULL )
+return( spline );
 
     t = t2 = t3 = t4 = 1;
     x = from->me.x+to->me.x; y = from->me.y+to->me.y;
@@ -566,17 +594,18 @@ Spline *ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
     vy[1] -= t3*vy[2];
     m[1][0] = 0; m[1][1] -= t3; m[1][2] -= t3;
 
-    if ( m[1][1]==0 ) {
+    if ( fabs(m[1][1])<fabs(m[0][1]) ) {
 	real temp;
 	temp = vx[1]; vx[1] = vx[0]; vx[0] = temp;
 	temp = vy[1]; vy[1] = vy[0]; vy[0] = temp;
-	m[1][1] = m[0][1]; m[0][1] = 0;
+	temp = m[1][1]; m[1][1] = m[0][1]; m[0][1] = temp;
 	temp = m[1][2]; m[1][2] = m[0][2]; m[0][2] = temp;
     }
     /* remove b terms from rows 0 and 2 (first normalize row 1 so m[1][1] is 1*/
     vx[1] /= m[1][1];
     vy[1] /= m[1][1];
     m[1][2] /= m[1][1];
+    m[1][1] = 1;
     vx[0] -= m[0][1]*vx[1];
     vy[0] -= m[0][1]*vy[1];
     m[0][2] -= m[0][1]*m[1][2]; m[0][1] = 0;

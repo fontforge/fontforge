@@ -342,6 +342,7 @@ static void StrokeJoint(SplinePoint *base,StrokeInfo *si,JointPoint *plus,JointP
     }
 }
 
+#if 0
 static void SplineSetFixRidiculous(SplineSet *ss) {
     /* Make sure we don't have any splines with ridiculous control points */
     /* No control point, when projected onto the vector between the two */
@@ -374,6 +375,7 @@ static void SplineSetFixRidiculous(SplineSet *ss) {
 	    SplineRefigure(s);
     }
 }
+#endif
 
 SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
     JointPoint first_plus, first_minus, cur_plus, cur_minus;
@@ -431,24 +433,31 @@ return( ssplus );
 	t_end = (p_tlast<m_tcur)?p_tlast:m_tcur;
 	if (( p_tcur>=p_tlast || m_tcur<=m_tlast ) && !si->toobigwarn ) {
 	    si->toobigwarn = true;
-	    GDrawError( "You have chosen a stroke width so big that the generated path\nmay intersect itself in %s",
+	    GWidgetErrorR( _STR_BadStroke, _STR_StrokeWidthTooBig,
 		    sc==NULL?"<nameless char>": sc->name );
 	}
-#if 0
-	if ( p_tcur>=p_tlast ) GDrawIError( "p_tcur is wrong in SplineSetStroke" );
-	if ( m_tcur<=m_tlast ) GDrawIError( "m_tcur is wrong in SplineSetStroke" );
-#endif
-	for ( i=0; i<4; ++i ) {
-	    BasePoint p,m;
-	    real t = t_start + (i+1)*(t_end-t_start)/5;
-	    pmids[i].t = (t-p_tlast)/(p_tcur-p_tlast);
-	    mmids[i].t = (t-m_tlast)/(m_tcur-m_tlast);
-	    SplineExpand(spline,t,si,&p,&m);
-	    pmids[i].x = p.x; pmids[i].y = p.y;
-	    mmids[i].x = m.x; mmids[i].y = m.y;
+	if ( spline->knownlinear ||
+		p_tcur<=0 || m_tcur>=1 || m_tlast<=0 || p_tlast>=1 ||
+		m_tcur<=m_tlast || p_tcur>=p_tlast ) {
+	    pto->nonextcp = plus->noprevcp = true;
+	    minus->nonextcp = mto->noprevcp = true;
+	    SplineMake(pto,plus);
+	    SplineMake(minus,mto);
+	    if ( plus->nonextcp && plus->noprevcp ) plus->pointtype = pt_corner;
+	    if ( minus->nonextcp && minus->noprevcp ) minus->pointtype = pt_corner;
+	} else {
+	    for ( i=0; i<4; ++i ) {
+		BasePoint p,m;
+		real t = t_start + (i+1)*(t_end-t_start)/5;
+		pmids[i].t = (t-p_tlast)/(p_tcur-p_tlast);
+		mmids[i].t = (t-m_tlast)/(m_tcur-m_tlast);
+		SplineExpand(spline,t,si,&p,&m);
+		pmids[i].x = p.x; pmids[i].y = p.y;
+		mmids[i].x = m.x; mmids[i].y = m.y;
+	    }
+	    ApproximateSplineFromPoints(pto,plus,pmids,4);
+	    ApproximateSplineFromPoints(minus,mto,mmids,4);
 	}
-	ApproximateSplineFromPoints(pto,plus,pmids,4);
-	ApproximateSplineFromPoints(minus,mto,mmids,4);
 	if ( spline->to->next!=NULL ) {
 	    plus = cur_plus.from;
 	    minus = cur_minus.to;
@@ -466,13 +475,13 @@ return( ssplus );
     if ( spl->first==spl->last ) {
 	ssminus = chunkalloc(sizeof(SplineSet));
 	ssminus->first = ssminus->last = minus;
-	SplineSetFixRidiculous(ssplus); SplineSetFixRidiculous(ssminus);
+	/*SplineSetFixRidiculous(ssplus); SplineSetFixRidiculous(ssminus);*/
 	if ( SplinePointListIsClockwise(ssplus))
 	    SplineSetReverse(ssplus);
 	ssplus->next = ssminus;
 	SplineSetsCorrect(ssplus);
     } else {
-	SplineSetFixRidiculous(ssplus);
+	/*SplineSetFixRidiculous(ssplus);*/
 	if ( !SplinePointListIsClockwise(ssplus))
 	    SplineSetReverse(ssplus);
     }

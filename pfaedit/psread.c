@@ -107,6 +107,7 @@ enum pstoks { pt_eof=-1, pt_moveto, pt_rmoveto, pt_curveto, pt_rcurveto,
 
     /* things we sort of pretend to do, but actually do something wrong */
     pt_gsave, pt_grestore, pt_save, pt_restore, pt_currentmatrix, pt_setmatrix,
+    pt_setmiterlimit,
 
     pt_opencurly, pt_closecurly, pt_openarray, pt_closearray, pt_string,
     pt_number, pt_unknown, pt_namelit };
@@ -128,6 +129,7 @@ char *toknames[] = { "moveto", "rmoveto", "curveto", "rcurveto",
 	"fill", "stroke",
 
 	"gsave", "grestore", "save", "restore", "currentmatrix", "setmatrix",
+	"setmiterlimit",
 
 	NULL };
 
@@ -838,21 +840,18 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 	  break;
 	  case pt_translate:
 	    if ( sp>=2 ) {
-		transform[4] += stack[sp-2].u.val;
-		transform[5] += stack[sp-1].u.val;
+		transform[4] += stack[sp-2].u.val*transform[0]+stack[sp-1].u.val*transform[2];
+		transform[5] += stack[sp-1].u.val*transform[3]+stack[sp-2].u.val*transform[1];
 		sp -= 2;
 	    }
 	  break;
 	  case pt_scale:
 	    if ( sp>=2 ) {
 		transform[0] *= stack[sp-2].u.val;
-		transform[1] *= stack[sp-1].u.val;
-		transform[2] *= stack[sp-2].u.val;
+		transform[1] *= stack[sp-2].u.val;
+		transform[2] *= stack[sp-1].u.val;
 		transform[3] *= stack[sp-1].u.val;
-#if 0	/* Nope! */
-		transform[4] *= stack[sp-2].u.val;
-		transform[5] *= stack[sp-1].u.val;
-#endif
+		/* transform[4,5] are unchanged */
 		sp -= 2;
 	    }
 	  break;
@@ -1280,6 +1279,11 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 	    if ( tsp>0 )
 		memcpy(transform,transstack[--tsp],sizeof(transform));
 	  break;
+	  case pt_setmiterlimit:
+	    /* pop some junk off the stack */
+	    if ( sp>=1 )
+		--sp;
+	  break;
 
 	  default:
 	  case pt_unknown:
@@ -1302,12 +1306,14 @@ static SplinePointList *SplinesFromEntities(EntityChar *ec) {
     Entity *ent, *next;
     SplinePointList *head=NULL, *last, *new, *nlast, *temp, *each;
     StrokeInfo si;
+    int toobigwarn = false;
 
     for ( ent=ec->splines; ent!=NULL; ent = next ) {
 	next = ent->next;
 	if ( ent->type == et_splines ) {
 	    if ( ent->u.splines.fill.col==0xffffffff && ent->u.splines.stroke.col!=0xffffffff ) {
 		memset(&si,'\0',sizeof(si));
+		si.toobigwarn = toobigwarn;
 		si.join = ent->u.splines.join;
 		si.cap = ent->u.splines.cap;
 		si.radius = ent->u.splines.stroke_width/2;
@@ -1322,6 +1328,7 @@ static SplinePointList *SplinesFromEntities(EntityChar *ec) {
 			for ( nlast=temp; nlast->next!=NULL; nlast=nlast->next );
 		}
 		SplinePointListFree(ent->u.splines.splines);
+		toobigwarn = si.toobigwarn;
 	    } else {
 		new = ent->u.splines.splines;
 	    }
