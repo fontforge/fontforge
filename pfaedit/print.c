@@ -1616,7 +1616,10 @@ static unichar_t _simple3[] = { 'f','l','y','g','a','n','d','e',' ','b',(uint8)(
 static unichar_t _simple4[] = { ' ','A',' ','q','u','i','c','k',' ','b',
 	'r','o','w','n',' ','v','i','x','e','n',' ','j','u','m','p','s',' ','f','o',
 	'r',' ','t','h','e',' ','l','a','z','y',' ','d','o','g','.',  '\0' };
-static unichar_t *simplechoices[] = { _simple1, _simple2, _simple3, _simple4, NULL };
+static unichar_t _simple5[] = { ' ','T','h','e',' ','q','u','i','c','k',' ','b',
+	'l','o','n','d','e',' ','d','o','x','y',' ','j','u','m','p','s',' ','o','v',
+	'e','r',' ','a','n',' ','u','n','f','a','z','e','d',' ','w','a','g','.',  '\0' };
+static unichar_t *simplechoices[] = { _simple1, _simple2, _simple3, _simple4, _simple5, NULL };
 static unichar_t *simple[] = { _simple1, NULL };
 /* Russian */
 static unichar_t _simplecyrill1[] = {' ', 0x421, 0x44a, 0x435, 0x448, 0x44c, ' ',
@@ -2396,7 +2399,7 @@ static void u_stupidstrcpy( unichar_t *pt1, unichar_t *pt2 ) {
     *pt1++ = '\0';
 }
 
-static unichar_t *BuildDef( SplineFont *sf, int istwobyte ) {
+unichar_t *PrtBuildDef( SplineFont *sf, int istwobyte ) {
     int i, j, gotem, len, any=0;
     unichar_t *ret=NULL, **cur;
 
@@ -2616,7 +2619,7 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
 
     label[7].text = pdefs[di].text;
     if ( label[7].text==NULL || pi.sf->encoding_name!=pdefs[di].last_cs )
-	label[7].text = BuildDef(pi.sf,pi.twobyte);
+	label[7].text = PrtBuildDef(pi.sf,pi.twobyte);
     gcd[7].gd.label = &label[7];
     gcd[7].gd.mnemonic = 'T';
     gcd[7].gd.pos.x = 5; gcd[7].gd.pos.y = 13+gcd[6].gd.pos.y; 
@@ -2733,7 +2736,7 @@ void ScriptPrint(FontView *fv,int type,int32 *pointsizes,char *samplefile,
 	if ( samplefile!=NULL )
 	    sample = FileToUString(samplefile,65536);
 	if ( sample==NULL )
-	    sample = BuildDef(pi.sf,pi.twobyte);
+	    sample = PrtBuildDef(pi.sf,pi.twobyte);
     }
     if ( pi.printtype==pt_file ) {
 	if ( outputfile==NULL ) {

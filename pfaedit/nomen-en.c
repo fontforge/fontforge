@@ -58,6 +58,8 @@ static char str_Openmetrics[] = "Open Metrics";
 static unichar_t mnemonic_Openmetrics[] = 'M';
 static char str_Print[] = "Print...";
 static unichar_t mnemonic_Print[] = 'P';
+static char str_Display[] = "Display...";
+static unichar_t mnemonic_Display[] = 'D';
 static char str_ExecuteScript[] = "Execute Script...";
 static unichar_t mnemonic_ExecuteScript[] = 'x';
 static char str_Revertfile[] = "Revert File";
@@ -1570,7 +1572,15 @@ static char *str_ScalePopup = "The selection should be scaled so that it will co
 static char *str_TileScale = "Scale & Tile";
 static char mnemonic_TileScale = 'a';
 static char *str_TileScalePopup = "An integral number of the selection will be used to cover the path\nAnd if the path length is not evenly divisible by the selection's\nheight then the selection should be scaled slightly."
-
+    /* Display fonts */
+static char *str_AA = "AA";
+static char mnemonic_AA = 'A';
+static char *str_AAPopup = "AntiAlias (greymap) characters, or bitmap characters";
+static char *str_PixelSizePopup = "Specifies the pixel size of the characters on display";
+static char *str_FormatPopup = "Specifies file format used to pass the font to freetype\n  pfb -- is the standard postscript type1\n  ttf -- is truetype\n  httf-- is hinted truetype\n  otf -- is opentype\n  bitmap -- not passed to freetype for rendering\n    bitmap fonts must already be generated\n  pfaedit -- uses pfaedit's own rasterizer, not\n    freetype's. Only as last resort";
+static char *str_BadSize = "Bad Size";
+static char *str_RequestedSizeNotAvail = "Requested bitmap size not available in font. Font supports %hs";
+static char *str_BadFont = "Bad Font";
 
 static int num_buttonsize = 55;
 static int num_ScaleFactor = 100;

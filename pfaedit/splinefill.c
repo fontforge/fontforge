@@ -1314,7 +1314,10 @@ BDFChar *BDFPieceMeal(BDFFont *bdf, int index) {
 
     if ( sc==NULL )
 return(NULL);
-    if ( bdf->clut )
+    if ( bdf->freetype_context )
+	bdf->chars[index] = SplineCharFreeTypeRasterize(bdf->freetype_context,
+		sc->enc,bdf->pixelsize,bdf->clut?8:1);
+    else if ( bdf->clut )
 	bdf->chars[index] = SplineCharAntiAlias(sc,bdf->pixelsize,4);
     else
 	bdf->chars[index] = SplineCharRasterize(sc,bdf->pixelsize);
@@ -1323,7 +1326,7 @@ return( bdf->chars[index] );
 
 /* Piecemeal fonts are only used as the display font in the fontview */
 /*  as such they are simple fonts (ie. we only display the current cid subfont) */
-BDFFont *SplineFontPieceMeal(SplineFont *sf,int pixelsize,int antialias) {
+BDFFont *SplineFontPieceMeal(SplineFont *sf,int pixelsize,int antialias,void *ftc) {
     BDFFont *bdf = gcalloc(1,sizeof(BDFFont));
     real scale;
 
@@ -1338,7 +1341,10 @@ BDFFont *SplineFontPieceMeal(SplineFont *sf,int pixelsize,int antialias) {
     bdf->encoding_name = sf->encoding_name;
     bdf->piecemeal = true;
     bdf->res = -1;
-    if ( antialias )
+    bdf->freetype_context = ftc;
+    if ( ftc && antialias )
+	BDFClut(bdf,16);
+    else if ( antialias )
 	BDFClut(bdf,4);
 return( bdf );
 }
@@ -1360,5 +1366,7 @@ return;
     free(bdf->chars);
     if ( bdf->clut!=NULL )
 	free(bdf->clut);
+    if ( bdf->freetype_context!=NULL )
+	FreeTypeFreeContext(bdf->freetype_context);
     free(bdf);
 }

@@ -34,7 +34,8 @@ int hasFreeType(void) {
 return( false );
 }
 
-void *FreeTypeFontContext(SplineFont *sf,SplineChar *sc,int doall) {
+void *_FreeTypeFontContext(SplineFont *sf,SplineChar *sc,int doall,
+	enum fontformat ff,int flags, void *share) {
 return( NULL );
 }
 
@@ -133,6 +134,10 @@ typedef struct freetypecontext {
     long len;
     int *glyph_indeces;
     FT_Face face;
+    struct freetypecontext *shared_ftc;	/* file, mappedfile, glyph_indeces are shared with this ftc */
+				/*  We have a new face, but that's it. This is so we can */
+			        /*  have multiple pointsizes without loading the font many */
+			        /*  times */
 } FTC;
 
 static void TransitiveClosureAdd(SplineChar **new,SplineChar **old,SplineChar *sc) {
@@ -161,6 +166,8 @@ return;
 
     if ( ftc->face!=NULL )
 	_FT_Done_Face(ftc->face);
+    if ( ftc->shared_ftc )
+return;
     if ( ftc->mappedfile )
 	munmap(ftc->mappedfile,ftc->len);
     if ( ftc->file!=NULL )
@@ -169,13 +176,14 @@ return;
     free(ftc);
 }
     
-void *FreeTypeFontContext(SplineFont *sf,SplineChar *sc,int doall) {
+void *_FreeTypeFontContext(SplineFont *sf,SplineChar *sc,int doall,
+	enum fontformat ff,int flags,void *shared_ftc) {
     /* build up a temporary font consisting of:
      *	sc!=NULL   => Just that character (and its references)
      *  doall	   => the entire font
      *  	   => only selected characters
      */
-    FTC *ftc = gcalloc(1,sizeof(FTC));
+    FTC *ftc;
     SplineChar **old, **new;
     char *selected = sf->fv->selected;
     int i,cnt;
@@ -183,58 +191,97 @@ void *FreeTypeFontContext(SplineFont *sf,SplineChar *sc,int doall) {
     if ( !hasFreeType())
 return( NULL );
 
-    ftc->sf = sf;
-    ftc->file = NULL;
-    if ( sf->subfontcnt!=0 )
-return( ftc );
+    ftc = gcalloc(1,sizeof(FTC));
+    if ( shared_ftc!=NULL ) {
+	*ftc = *(FTC *) shared_ftc;
+	ftc->face = NULL;
+	ftc->shared_ftc = shared_ftc;
+    } else {
+	ftc->sf = sf;
+	ftc->file = NULL;
 
-    ftc->file = tmpfile();
-    if ( ftc->file==NULL ) {
-	free(ftc);
+	ftc->file = tmpfile();
+	if ( ftc->file==NULL ) {
+	    free(ftc);
 return( NULL );
-    }
-
-    old = sf->chars;
-    if ( sc!=NULL || !doall ) {
-	/* Build up a font consisting of those characters we actually use */
-	new = gcalloc(sf->charcnt,sizeof(SplineChar *));
-	if ( sc!=NULL )
-	    TransitiveClosureAdd(new,old,sc);
-	else for ( i=0; i<sf->charcnt; ++i )
-	    if ( selected[i] && SCWorthOutputting(old[i]))
-		TransitiveClosureAdd(new,old,old[i]);
-	/* Add these guys so we'll get reasonable blue values */
-	/* we won't rasterize them */
-	if ( PSDictHasEntry(sf->private,"BlueValues")==NULL ) {
-	    AddIf(sf,new,old,'I');
-	    AddIf(sf,new,old,'O');
-	    AddIf(sf,new,old,'x');
-	    AddIf(sf,new,old,'o');
 	}
-	sf->chars = new;
+
+	old = sf->chars;
+	if ( sc!=NULL || !doall ) {
+	    /* Build up a font consisting of those characters we actually use */
+	    new = gcalloc(sf->charcnt,sizeof(SplineChar *));
+	    if ( sc!=NULL )
+		TransitiveClosureAdd(new,old,sc);
+	    else for ( i=0; i<sf->charcnt; ++i )
+		if ( selected[i] && SCWorthOutputting(old[i]))
+		    TransitiveClosureAdd(new,old,old[i]);
+	    /* Add these guys so we'll get reasonable blue values */
+	    /* we won't rasterize them */
+	    if ( PSDictHasEntry(sf->private,"BlueValues")==NULL ) {
+		AddIf(sf,new,old,'I');
+		AddIf(sf,new,old,'O');
+		AddIf(sf,new,old,'x');
+		AddIf(sf,new,old,'o');
+	    }
+	    sf->chars = new;
+	}
+	switch ( ff ) {
+	  case ff_pfb: case ff_pfa:
+	    if ( !_WritePSFont(ftc->file,sf,ff))
+ goto fail;
+	  break;
+	  case ff_ttf: case ff_ttfsym: case ff_otf: case ff_otfcid:
+	    if ( !_WriteTTFFont(ftc->file,sf,ff,NULL,bf_none,flags))
+ goto fail;
+	  break;
+	  default:
+ goto fail;
+	}
+
+	if ( sf->subfontcnt!=0 ) {
+	    /* can only be an otfcid */
+	    int k, max=0;
+	    for ( k=0; k<sf->subfontcnt; ++k )
+		if ( sf->subfonts[k]->charcnt>max )
+		    max = sf->subfonts[k]->charcnt;
+	    ftc->glyph_indeces = galloc(max*sizeof(int));
+	    memset(ftc->glyph_indeces,-1,max*sizeof(int));
+	    for ( i=0; i<max; ++i ) {
+		for ( k=0; k<sf->subfontcnt; ++k ) {
+		    if ( SCWorthOutputting(sf->subfonts[k]->chars[i]) ) {
+			ftc->glyph_indeces[i] = sf->subfonts[k]->chars[i]->ttf_glyph;
+		break;
+		    }
+		}
+	    }
+	} else {
+	    ftc->glyph_indeces = galloc(sf->charcnt*sizeof(int));
+	    memset(ftc->glyph_indeces,-1,sf->charcnt*sizeof(int));
+	    if ( SCWorthOutputting(sf->chars[0]))
+		ftc->glyph_indeces[0] = 0;
+	    for ( i=cnt=1; i<sf->charcnt; ++i ) {
+		if ( SCWorthOutputting(sf->chars[i])) {
+		    if ( ff==ff_pfa || ff==ff_pfb )
+			ftc->glyph_indeces[i] = cnt++;
+		    else
+			ftc->glyph_indeces[i] = sf->chars[i]->ttf_glyph;
+		}
+	    }
+	}
+
+	fseek(ftc->file,0,SEEK_END);
+	ftc->len = ftell(ftc->file);
+	ftc->mappedfile = mmap(NULL,ftc->len,PROT_READ,MAP_PRIVATE,fileno(ftc->file),0);
+	if ( ftc->mappedfile==MAP_FAILED )
+ goto fail;
+	if ( sf->chars!=old ) {
+	    free(sf->chars);
+	    sf->chars = old;
+	}
     }
-    if ( !_WritePSFont(ftc->file,sf,ff_pfb))
- goto fail;
 
-    ftc->glyph_indeces = galloc(sf->charcnt*sizeof(int));
-    memset(ftc->glyph_indeces,-1,sf->charcnt*sizeof(int));
-    if ( SCWorthOutputting(sf->chars[0]))
-	ftc->glyph_indeces[0] = 0;
-    for ( i=cnt=1; i<sf->charcnt; ++i )
-	if ( SCWorthOutputting(sf->chars[i]))
-	    ftc->glyph_indeces[i] = cnt++;
-
-    fseek(ftc->file,0,SEEK_END);
-    ftc->len = ftell(ftc->file);
-    ftc->mappedfile = mmap(NULL,ftc->len,PROT_READ,MAP_PRIVATE,fileno(ftc->file),0);
-    if ( ftc->mappedfile==MAP_FAILED )
- goto fail;
     if ( _FT_New_Memory_Face(context,ftc->mappedfile,ftc->len,0,&ftc->face))
  goto fail;
-    if ( sf->chars!=old ) {
-	free(sf->chars);
-	sf->chars = old;
-    }
     
 return( ftc );
 
@@ -291,6 +338,7 @@ BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,
 	bdfc->enc = enc;
     }
     bdfc->bytes_per_line = slot->bitmap.pitch;
+    if ( bdfc->bytes_per_line==0 ) bdfc->bytes_per_line = 1;
     bdfc->bitmap = galloc((bdfc->ymax-bdfc->ymin+1)*bdfc->bytes_per_line);
     if ( slot->bitmap.rows==0 || slot->bitmap.width==0 )
 	memset(bdfc->bitmap,0,(bdfc->ymax-bdfc->ymin+1)*bdfc->bytes_per_line);
@@ -345,3 +393,7 @@ BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int dep
 return( bdf );
 }
 #endif
+
+void *FreeTypeFontContext(SplineFont *sf,SplineChar *sc,int doall) {
+return( _FreeTypeFontContext(sf,sc,doall,sf->subfontcnt!=0?ff_otfcid:ff_pfb,0,NULL) );
+}

@@ -633,9 +633,18 @@ extern void MfArgsInit(void);
 extern unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfile,
 	const unichar_t *initial_filter, unichar_t **mimetypes,int mult,int newok);
 
+extern unichar_t *PrtBuildDef( SplineFont *sf, int istwobyte );
 extern void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv);
 extern void ScriptPrint(FontView *fv,int type,int32 *pointsizes,char *samplefile,
 	char *outputfile);
+
+enum sftf_fonttype { sftf_pfb, sftf_ttf, sftf_httf, sftf_otf, sftf_bitmap, sftf_pfaedit };
+extern int SFTFSetFont(GGadget *g, int start, int end, SplineFont *sf,
+	enum sftf_fonttype, int size, int antialias);
+extern void SFTFRegisterCallback(GGadget *g, void *cbcontext,
+	void (*changefontcallback)(void *,SplineFont *,enum sftf_fonttype,int size,int aa));
+extern GGadget *SFTextAreaCreate(struct gwindow *base, GGadgetData *gd,void *data);
+extern void DisplayDlg(SplineFont *sf);
 
 extern void ShowAboutScreen(void);
 extern void DelayEvent(void (*func)(void *), void *data);

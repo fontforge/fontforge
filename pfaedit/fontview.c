@@ -781,6 +781,7 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_Recent	2703
 #define MID_Print	2704
 #define MID_ScriptMenu	2705
+#define MID_Display	2706
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -1950,7 +1951,7 @@ static void FVMenuSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    if ( fvs==NULL )
 	break;
 	    old = fvs->filled;
-	    new = SplineFontPieceMeal(fvs->sf,dspsize,fvs->antialias);
+	    new = SplineFontPieceMeal(fvs->sf,dspsize,fvs->antialias,NULL);
 	    for ( fvss=fvs; fvss!=NULL; fvss = fvss->nextsame ) {
 		if ( fvss->filled==old ) {
 		    fvss->filled = new;
@@ -2142,6 +2143,12 @@ static void FVMenuPrint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
     PrintDlg(fv,NULL,NULL);
+}
+
+static void FVMenuDisplay(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    DisplayDlg(fv->sf);
 }
 
 static void FVMenuExecute(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2581,6 +2588,7 @@ static GMenuItem fllist[] = {
     { { (unichar_t *) _STR_Revertfile, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, 'R', ksm_control|ksm_shift, NULL, NULL, FVMenuRevert, MID_Revert },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Print, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'P', ksm_control, NULL, NULL, FVMenuPrint, MID_Print },
+    { { (unichar_t *) _STR_Display, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, 'P', ksm_control|ksm_meta, NULL, NULL, FVMenuDisplay, MID_Display },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_ExecuteScript, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'x' }, '.', ksm_control, NULL, NULL, FVMenuExecute },
     { { (unichar_t *) _STR_ScriptMenu, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'r' }, '\0', ksm_control, dummyitem, MenuScriptsBuild, NULL, MID_ScriptMenu },
@@ -3001,8 +3009,8 @@ return;
 		gi.u.image = &base;
 		base.image_type = it_index;
 		base.clut = bdf->clut;
-		GDrawSetDither(NULL, false);
-		base.trans = -1;		/* on 8 bit displays we don't want any dithering */
+		GDrawSetDither(NULL, false);	/* on 8 bit displays we don't want any dithering */
+		base.trans = -1;
 		/*base.clut->trans_index = 0;*/
 	    } else {
 		memset(&clut,'\0',sizeof(clut));
@@ -4261,7 +4269,7 @@ return;
     if ( fvs!=NULL )
 	new = fvs->filled;
     else
-	new = SplineFontPieceMeal(fv->sf,fv->filled->pixelsize,fv->antialias);
+	new = SplineFontPieceMeal(fv->sf,fv->filled->pixelsize,fv->antialias,NULL);
     BDFFontFree(fv->filled);
     if ( fv->filled == fv->show )
 	fv->show = new;
@@ -4284,7 +4292,7 @@ return;
 	if ( fv==NULL )
     break;
 	old = fv->filled;
-	new = SplineFontPieceMeal(sf,fv->filled->pixelsize,fv->antialias);
+	new = SplineFontPieceMeal(sf,fv->filled->pixelsize,fv->antialias,NULL);
 	for ( fvs=fv; fvs!=NULL; fvs=fvs->nextsame )
 	    if ( fvs->filled == old ) {
 		fvs->filled = new;
@@ -4477,7 +4485,7 @@ FontView *FontViewCreate(SplineFont *sf) {
 	bdf = fv->nextsame->show;
     } else {
 	bdf = SplineFontPieceMeal(fv->sf,sf->display_size<0?-sf->display_size:default_fv_font_size,
-		fv->antialias );
+		fv->antialias,NULL );
 	fv->filled = bdf;
 	if ( sf->display_size>0 ) {
 	    for ( bdf=sf->bitmaps; bdf!=NULL && bdf->pixelsize!=sf->display_size ;
