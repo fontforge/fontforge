@@ -81,6 +81,8 @@ void FVToggleCharChanged(SplineChar *sc) {
     FontView *fv;
 
     fv = sc->parent->fv;
+    if ( fv==NULL )		/* Can happen when loading bitmaps, we might not have an fv yet */
+return;
     if ( fv->sf!=sc->parent )		/* Can happen in CID fonts if char's parent is not currently active */
 return;
     if ( fv->v==NULL )			/* Can happen in scripts */
@@ -4505,17 +4507,13 @@ return( NULL );
 		strmatch(fullname+strlen(fullname)-4, ".otf")==0 ) {
 	sf = SFReadTTF(fullname,0);
     } else if ( strmatch(fullname+strlen(fullname)-4, ".bdf")==0 ) {
-	sf = SplineFontNew();
-	SFImportBDF(sf,fullname,false, false);
-	sf->changed = false;
+	sf = SFFromBDF(fullname,0,true);
     } else if ( strmatch(fullname+strlen(fullname)-2, "pk")==0 ) {
-	sf = SplineFontNew();
-	SFImportBDF(sf,fullname,true, false);
-	sf->changed = false;
+	sf = SFFromBDF(fullname,1,true);
+    } else if ( strmatch(fullname+strlen(fullname)-2, "gf")==0 ) {
+	sf = SFFromBDF(fullname,3,true);
     } else if ( strmatch(fullname+strlen(fullname)-4, ".pcf")==0 ) {
-	sf = SplineFontNew();
-	SFImportBDF(sf,fullname,2, false);
-	sf->changed = false;
+	sf = SFFromBDF(fullname,2,true);
     } else if ( strmatch(fullname+strlen(strippedname)-4, ".bin")==0 ||
 		strmatch(fullname+strlen(strippedname)-4, ".hqx")==0 ||
 		strmatch(fullname+strlen(strippedname)-6, ".dfont")==0 ) {

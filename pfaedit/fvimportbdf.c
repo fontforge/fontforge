@@ -511,10 +511,310 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc,
 return( pixelsize );
 }
 
+/* ******************************** GF (TeX) ******************************** */
+enum gf_cmd { gf_paint_0=0, gf_paint_1=1, gf_paint_63=63,
+	gf_paint1b=64, gf_paint2b, gf_paint3b,	/* followed by 1,2,or3 bytes saying how far to paint */
+	gf_boc=67, /* 4bytes of character code, 4bytes of -1, min_col 4, min_row 4, max_col 4, max_row 4 */
+	    /* set row=max_row, col=min_col, paint=white */
+	gf_boc1=68, /* 1 byte quantities, and no -1 field, cc, width, max_col, height, max_row */
+	gf_eoc=69,
+	gf_skip0=70,	/* start next row (don't need to complete current) as white*/
+	gf_skip1=71, gf_skip2=72, gf_skip3=73, /* followed by 1,2,3 bytes saying number rows to skip (leave white) */
+	gf_newrow_0=74,	/* Same as skip, start drawing with black */
+	gf_newrow_1=75, gf_newrow_164=238,
+	gf_xxx1=239, /* followed by a 1 byte count, and then that many bytes of ignored data */
+	gf_xxx2, gf_xxx3, gf_xxx4,
+	gf_yyy=243, /* followed by 4 bytes of numeric data */
+	gf_no_op=244,
+	gf_char_loc=245, /* 1?byte encoding, 4byte dx, 4byte dy (<<16), 4byte advance width/design size <<24, 4byte offset to character's boc */
+	gf_char_loc0=246, /* 1?byte encoding, 1byte dx, 4byte advance width/design size <<24, 4byte offset to character's boc */
+	gf_pre=247, /* one byte containing gf_version_number, one byte count, that many bytes data */
+	gf_post=248,	/* start of post amble */
+	gf_post_post=249,	/* End of postamble, 4byte offset to start of preamble, 1byte gf_version_number, 4 or more bytes of 0xdf */
+	/* rest 250..255 are undefined */
+	gf_version_number=131 };
+/* The postamble command is followed by 9 4byte quantities */
+/*  the first is an offset to a list of xxx commands which I'm ignoring */
+/*  the second is the design size */
+/*  the third is a check sum */
+/*  the fourth is horizontal pixels per point<<16 */
+/*  the fifth is vertical pixels per point<<16 */
+/*  the sixth..ninth give the font bounding box */
+/* Then a bunch of char_locs (with back pointers to the characters and advance width info) */
+/* Then a post_post with a back pointer to start of postamble + gf_version */
+/* Then 4-7 bytes of 0xdf */
+
+static BDFChar *SFGrowTo(SplineFont *sf,BDFFont *b, int cc) {
+    char buf[20];
+    int i;
+    BDFChar *bc;
+
+    if ( cc >= sf->charcnt ) {
+	int new = ((sf->charcnt+255)>>8)<<8;
+	sf->chars = grealloc(sf->chars,new*sizeof(SplineChar *));
+	b->chars = grealloc(b->chars,new*sizeof(BDFChar *));
+	for ( i=sf->charcnt; i<new; ++i ) {
+	    sf->chars[i] = NULL;
+	    b->chars[i] = NULL;
+	}
+	sf->charcnt = b->charcnt = new;
+    }
+    if ( sf->chars[cc]==NULL )
+	SFMakeChar(sf,cc);
+    if ( sf->onlybitmaps && sf->bitmaps==b && b->next==NULL ) {
+	free(sf->chars[cc]->name);
+	sprintf( buf, "enc-%d", cc);
+	sf->chars[cc]->name = copy( buf );
+	sf->chars[cc]->unicodeenc = -1;
+    }
+    if ( cc>=b->charcnt )
+	bc = gcalloc(1,sizeof(BDFChar));
+    else if ( (bc=b->chars[cc])!=NULL ) {
+	free(bc->bitmap);
+	BDFFloatFree(bc->selection);
+    } else {
+	b->chars[cc] = bc = gcalloc(1,sizeof(BDFChar));
+	bc->sc = sf->chars[cc];
+	bc->enc = cc;
+    }
+return(bc);
+}
+
+static void gf_skip_noops(FILE *gf,char *char_name) {
+    uint8 cmd;
+    int32 val;
+    int i;
+    char buffer[257];
+
+    if ( char_name ) *char_name = '\0';
+
+    while ( 1 ) {
+	cmd = getc(gf);
+	switch( cmd ) {
+	  case gf_no_op:		/* One byte no-op */
+	  break;
+	  case gf_yyy:			/* followed by a 4 byte value */
+	    getc(gf); getc(gf); getc(gf); getc(gf);
+	  break;
+	  case gf_xxx1:
+	    val = getc(gf);
+	    for ( i=0; i<val; ++i ) buffer[i] = getc(gf);
+	    buffer[i] = 0;
+	    if (strncmp(buffer,"title",5)==0 && char_name!=NULL ) {
+		char *pt = buffer+6, *to = char_name;
+		while ( *pt ) {
+		    if ( *pt=='(' ) {
+			while ( *pt!=')' && *pt!='\0' ) ++pt;
+		    } else if ( *pt==' ' || *pt==')' ) {
+			if ( to==char_name || to[-1]!='-' )
+			    *to++ = '-';
+			++pt;
+		    } else
+			*to++ = *pt++;
+		}
+		if ( to!=char_name && to[-1]=='-' )
+		    --to;
+		*to = '\0';
+	    }
+	  break;
+	  case gf_xxx2:
+	    val = getc(gf);
+	    val = (val<<8) | getc(gf);
+	    for ( i=0; i<val; ++i ) getc(gf);
+	  break;
+	  case gf_xxx3:
+	    val = getc(gf);
+	    val = (val<<8) | getc(gf);
+	    val = (val<<8) | getc(gf);
+	    for ( i=0; i<val; ++i ) getc(gf);
+	  break;
+	  case gf_xxx4:
+	    val = getlong(gf);
+	    for ( i=0; i<val; ++i ) getc(gf);
+	  break;
+	  default:
+	    ungetc(cmd,gf);
+return;
+	}
+    }
+}
+
+static int gf_postamble(FILE *gf, int *_as, int *_ds, int *_enc, char *family,
+	char *mods, char *full, char *filename) {
+    int pixelsize=-1;
+    int ch;
+    int design_size, pixels_per_point;
+    double size;
+    char *pt, *fpt;
+    int32 pos, off;
+
+    fseek(gf,-4,SEEK_END);
+    pos = ftell(gf);
+    ch = getc(gf);
+    if ( ch!=0xdf )
+return( -2 );
+    while ( ch==0xdf ) {
+	--pos;
+	fseek(gf,-2,SEEK_CUR);
+	ch = getc(gf);
+    }
+    if ( ch!=gf_version_number )
+return( -2 );
+    pos -= 4;
+    fseek(gf,pos,SEEK_SET);
+    off = getlong(gf);
+    fseek(gf,off,SEEK_SET);
+    ch = getc(gf);
+    if ( ch!=gf_post )
+return( -2 );
+    /* offset to comments */ getlong(gf);
+    design_size = getlong(gf);
+    /* checksum = */ getlong(gf);
+    pixels_per_point = getlong(gf);
+    /* vert pixels per point = */ getlong(gf);
+    /* min_col = */ getlong(gf);
+    /* min_row = */ getlong(gf);
+    /* max_col = */ getlong(gf);
+    /* max_row = */ getlong(gf);
+
+    size = (pixels_per_point / (double) (0x10000)) * (design_size / (double) (0x100000));
+    pixelsize = size+.5;
+    *_enc = em_none;
+    *_as = *_ds = -1;
+    *mods = '\0';
+    pt = strrchr(filename, '/');
+    if ( pt==NULL ) pt = filename; else ++pt;
+    for ( fpt=family; isalpha(*pt);)
+	*fpt++ = *pt++;
+    *fpt = '\0';
+    strcpy(full,family);
+
+return( pixelsize );
+}
+
+static int gf_char(FILE *gf, SplineFont *sf, BDFFont *b) {
+    int32 pos, to;
+    int ch, enc, dx, dy, aw;
+    int min_c, max_c, min_r, max_r, w;
+    int r,c, col,cnt,i;
+    BDFChar *bc;
+    char charname[256];
+
+    /* We assume we are positioned within the postamble. we read one char_loc */
+    /*  then read the char it points to, then return to postamble */
+    ch = getc(gf);
+    if ( ch== gf_char_loc ) {
+	enc = getc(gf);
+	dx = getlong(gf)>>16;
+	dy = getlong(gf)>>16;
+	aw = (getlong(gf)*(sf->ascent+sf->descent))>>20;
+	to = getlong(gf);
+    } else if ( ch==gf_char_loc0 ) {
+	enc = getc(gf);
+	dx = getc(gf);
+	aw = (getlong(gf)*(sf->ascent+sf->descent))>>20;
+	to = getlong(gf);
+    } else
+return( false );
+    pos = ftell(gf);
+    fseek(gf,to,SEEK_SET);
+
+    gf_skip_noops(gf,charname);
+    ch = getc(gf);
+    if ( ch==gf_boc ) {
+	/* encoding = */ getlong(gf);
+	/* backpointer = */ getlong(gf);
+	min_c = getlong(gf);
+	max_c = getlong(gf);
+	min_r = getlong(gf);
+	max_r = getlong(gf);
+    } else if ( ch==gf_boc1 ) {
+	/* encoding = */ getc(gf);
+	w = getc(gf);
+	max_c = getc(gf);
+	min_c = max_c-w+1;
+	w = getc(gf);
+	max_r = getc(gf);
+	min_r = max_r-w+1;
+    } else
+return( false );
+
+    bc = SFGrowTo(sf,b,enc);
+    if ( charname[0]!='\0' && sf->onlybitmaps && (sf->bitmaps==NULL ||
+	    (sf->bitmaps==b && b->next==NULL )) ) {
+	free(sf->chars[enc]->name);
+	sf->chars[enc]->name = copy(charname);
+	sf->chars[enc]->unicodeenc = -1;
+    }
+    bc->xmin = min_c;
+    bc->xmax = max_c>min_c? max_c : min_c;
+    bc->ymin = min_r;
+    bc->ymax = max_r>min_r? max_r : min_r;
+    bc->width = dx;
+    bc->bytes_per_line = ((bc->xmax-bc->xmin+8)>>3);
+    bc->bitmap = gcalloc(bc->bytes_per_line*(bc->ymax-bc->ymin+1),1);
+
+    if ( sf->chars[enc]->splines==NULL && sf->chars[enc]->refs==NULL &&
+	    !sf->chars[enc]->widthset ) {
+	sf->chars[enc]->width = aw;
+	sf->chars[enc]->widthset = true;
+    }
+
+    for ( r=min_r, c=min_c, col=0; r<=max_r; ) {
+	gf_skip_noops(gf,NULL);
+	ch = getc(gf);
+	if ( ch==gf_eoc )
+    break;
+	if ( ch>=gf_paint_0 && ch<=gf_paint3b ) {
+	    if ( ch>=gf_paint_0 && ch<=gf_paint_63 )
+		cnt = ch-gf_paint_0;
+	    else if ( ch==gf_paint1b )
+		cnt = getc(gf);
+	    else if ( ch==gf_paint2b )
+		cnt = getushort(gf);
+	    else
+		cnt = get3byte(gf);
+	    if ( col ) {
+		for ( i=0; i<cnt && c<=max_c; ++i ) {
+		    bc->bitmap[(r-min_r)*bc->bytes_per_line+((c-min_c)>>3)]
+			    |= (0x80>>((c-min_c)&7));
+		    ++c;
+		    /*if ( c>max_c ) { c-=max_c-min_c; ++r; }*/
+		}
+	    } else {
+		c+=cnt;
+		/*while ( c>max_c ) { c-=max_c-min_c; ++r; }*/
+	    }
+	    col = !col;
+	} else if ( ch>=gf_newrow_0 && ch<=gf_newrow_164 ) {
+	    ++r;
+	    c = min_c + ch-gf_newrow_0;
+	    col = 1;
+	} else if ( ch>=gf_skip0 && ch<=gf_skip3 ) {
+	    col = 0;
+	    c = min_c;
+	    if ( ch==gf_skip0 )
+		++r;
+	    else if ( ch==gf_skip1 )
+		r += getc(gf)+1;
+	    else if ( ch==gf_skip2 )
+		r += getushort(gf)+1;
+	    else
+		r += get3byte(gf)+1;
+	} else if ( ch==EOF ) {
+	    fprintf( stderr, "Unexpected EOF in gf\n" );
+    break;
+	} else
+	    fprintf( stderr, "Uninterpreted code in gf: %d\n", ch);
+    }
+    fseek(gf,pos,SEEK_SET);
+return( true );
+}
+
 /* ******************************** PK (TeX) ******************************** */
 
-enum pk_cmd { pk_rrr1=240, pk_rrr2, pk_rrr3, pk_rrr4, pk_yyy, pk_post, pk_no_op, pk_pre,
-	pk_version_number=89 };
+enum pk_cmd { pk_rrr1=240, pk_rrr2, pk_rrr3, pk_rrr4, pk_yyy, pk_post, pk_no_op,
+	pk_pre, pk_version_number=89 };
 static void pk_skip_noops(FILE *pk) {
     uint8 cmd;
     int32 val;
@@ -635,7 +935,6 @@ static int pk_char(FILE *pk, SplineFont *sf, BDFFont *b) {
     int i, ch, j,r,c,cnt;
     BDFChar *bc;
     struct pkstate st;
-    char buf[20];
     int32 char_end;
 
     memset(&st,'\0', sizeof(st));
@@ -691,34 +990,7 @@ return( 0 );
     /* tfm is the advance width as a fraction of an em/2^20 so multiply by 1000/2^20 to get postscript values */
     /* dy is the advance height for vertical text? */
 
-    if ( cc >= sf->charcnt ) {
-	int new = ((sf->charcnt+255)>>8)<<8;
-	sf->chars = grealloc(sf->chars,new*sizeof(SplineChar *));
-	b->chars = grealloc(b->chars,new*sizeof(BDFChar *));
-	for ( i=sf->charcnt; i<new; ++i ) {
-	    sf->chars[i] = NULL;
-	    b->chars[i] = NULL;
-	}
-	sf->charcnt = b->charcnt = new;
-    }
-    if ( sf->chars[cc]==NULL )
-	SFMakeChar(sf,cc);
-    if ( sf->onlybitmaps && sf->bitmaps==b && b->next==NULL ) {
-	free(sf->chars[cc]->name);
-	sprintf( buf, "enc-%d", cc);
-	sf->chars[cc]->name = copy( buf );
-	sf->chars[cc]->unicodeenc = -1;
-    }
-    if ( cc>=b->charcnt )
-	bc = gcalloc(1,sizeof(BDFChar));
-    else if ( (bc=b->chars[cc])!=NULL ) {
-	free(bc->bitmap);
-	BDFFloatFree(bc->selection);
-    } else {
-	b->chars[cc] = bc = gcalloc(1,sizeof(BDFChar));
-	bc->sc = sf->chars[cc];
-	bc->enc = cc;
-    }
+    bc = SFGrowTo(sf,b,cc);
 
     bc->xmin = -hoff;
     bc->ymax = voff;
@@ -1397,6 +1669,8 @@ BDFFont *SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback) {
     foundry[0] = '\0';
     fontname[0] = '\0';
 
+    if ( ispk==1 && strcmp(filename+strlen(filename)-2,"gf")==0 )
+	ispk = 3;
     bdf = fopen(filename,"r");
     if ( bdf==NULL ) {
 	GWidgetErrorR(_STR_CouldNotOpenFile, _STR_CouldNotOpenFileName, filename );
@@ -1407,6 +1681,13 @@ return( NULL );
 	if ( pixelsize==-2 ) {
 	    fclose(bdf);
 	    GWidgetErrorR(_STR_NotPkFile, _STR_NotPkFileName, filename );
+return( NULL );
+	}
+    } else if ( ispk==3 ) {		/* gf */
+	pixelsize = gf_postamble(bdf,&ascent,&descent,&enc,family,mods,full, filename);
+	if ( pixelsize==-2 ) {
+	    fclose(bdf);
+	    GWidgetErrorR(_STR_NotGfFile, _STR_NotGfFileName, filename );
 return( NULL );
 	}
     } else if ( ispk==2 ) {		/* pcf */
@@ -1490,6 +1771,8 @@ return( NULL );
     b->foundry = ( foundry[0]=='\0' ) ? NULL : copy(foundry);
     if ( ispk==1 ) {
 	while ( pk_char(bdf,sf,b));
+    } else if ( ispk==3 ) {
+	while ( gf_char(bdf,sf,b));
     } else if ( ispk==2 ) {
 	if ( !PcfParse(bdf,toc,sf,b) ) {
 	    GWidgetErrorR(_STR_NotPcfFile, _STR_NotPcfFileName, filename );
@@ -1601,7 +1884,7 @@ static void SFMergeBitmaps(SplineFont *sf,BDFFont *strikes) {
     SFOrderBitmapList(sf);
 }
 
-static void FVAddToBackground(FontView *fv,BDFFont *bdf);
+static void SFAddToBackground(SplineFont *sf,BDFFont *bdf);
 
 int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
     BDFFont *b, *anyb=NULL;
@@ -1652,12 +1935,11 @@ int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
     if ( anyb==NULL ) {
 	GWidgetErrorR( _STR_NoBitmapFont, _STR_NoBitmapFontIn, filename );
     } else if ( toback )
-	FVAddToBackground(fv,anyb);
+	SFAddToBackground(fv->sf,anyb);
 return( any );
 }
 
-static void FVAddToBackground(FontView *fv,BDFFont *bdf) {
-    SplineFont *sf = fv->sf;
+static void SFAddToBackground(SplineFont *sf,BDFFont *bdf) {
     struct _GImage *base;
     GClut *clut;
     GImage *img;
@@ -1716,7 +1998,7 @@ return( false );
     }
     SFMatchEncoding(strikeholder,sf);
     if ( toback )
-	FVAddToBackground(fv,strikes);
+	SFAddToBackground(sf,strikes);
     else
 	SFMergeBitmaps(sf,strikes);
 
@@ -1724,4 +2006,15 @@ return( false );
     SplineFontFree(strikeholder);
     GProgressEndIndicator();
 return( true );
+}
+
+SplineFont *SFFromBDF(char *filename,int ispk,int toback) {
+    SplineFont *sf = SplineFontNew();
+    BDFFont *bdf = SFImportBDF(sf,filename,ispk,toback);
+
+    if ( toback )
+	SFAddToBackground(sf,bdf);
+    else
+	sf->changed = false;
+return( sf );
 }

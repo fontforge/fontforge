@@ -817,7 +817,7 @@ static unichar_t wildfig[] = { '*', '.', '{', 'f','i','g',',','x','f','i','g','}
 static unichar_t wildbdf[] = { '*', '.', 'b', 'd','{', 'f', ',','f','.','g','z',',','f','.','Z',',','f','.','b','z','2','}',  '\0' };
 static unichar_t wildpcf[] = { '*', '.', 'p', 'c','{', 'f', ',','f','.','g','z',',','f','.','Z',',','f','.','b','z','2','}',  '\0' };
 static unichar_t wildttf[] = { '*', '.', '{', 't', 't','f',',','o','t','f',',','t','t','c','}',  '\0' };
-static unichar_t wildpk[] = { '*', 'p', 'k',  '\0' };		/* pk fonts can have names like cmr10.300pk, not a normal extension */
+static unichar_t wildpk[] = { '*', '{', 'p', 'k', ',', 'g', 'f', '}',  '\0' };		/* pk fonts can have names like cmr10.300pk, not a normal extension */
 static unichar_t *wildchr[] = { wildimg, wildps, wildfig };
 static unichar_t *wildfnt[] = { wildbdf, wildttf, wildpk, wildpcf, wildimg, wildtemplate, wildps, wildepstemplate };
 
@@ -827,6 +827,7 @@ static GTextInfo formats[] = {
     { (unichar_t *) "XFig", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};
 
+enum fvformats { fv_bdf, fv_ttf, fv_pk, fv_pcf, fv_image, fv_imgtemplate, fv_eps, fv_epstemplate };
 static GTextInfo fvformats[] = {
     { (unichar_t *) "BDF", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 1, 0, 1 },
     { (unichar_t *) "TTF", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
@@ -1022,6 +1023,8 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     if ( fv!=NULL ) {
 	gcd[6].gd.pos.x = 180; gcd[6].gd.pos.y = gcd[5].gd.pos.y+4;
 	gcd[6].gd.flags = gg_visible | gg_enabled ;
+	if ( format==fv_pk )
+	    gcd[6].gd.flags = gg_visible | gg_enabled | gg_cb_on;
 	label[6].text = (unichar_t *) _STR_AsBackground;
 	label[6].text_in_resource = true;
 	gcd[6].gd.label = &label[6];

@@ -489,6 +489,7 @@ extern int FVImportImages(FontView *fv,char *path,int isimage);
 extern int FVImportImageTemplate(FontView *fv,char *path,int isimage);
 extern int FVImportBDF(FontView *fv, char *filename,int ispk, int toback);
 extern int FVImportTTF(FontView *fv, char *filename,int toback);
+extern SplineFont *SFFromBDF(char *filename,int ispk,int toback);
 extern BDFFont *SFImportBDF(SplineFont *sf, char *filename, int ispk, int toback);
 extern void CVFindCenter(CharView *cv, BasePoint *bp, int nosel);
 extern void CVStroke(CharView *cv);
