@@ -960,11 +960,13 @@ static uint32 SFsToFOND(FILE *res,struct sflist *sfs,uint32 id,int format,int bf
     /* then do bitmap faces (if any) */ /* Ordered by size damn it */
     for ( size=1; size<256; ++size ) {
 	for ( i=0; i<96; ++i ) if ( faces[i]!=NULL && faces[i]->ids!=NULL ) {
-	    int pointsize = rint( (faces[i]->bdfs[j]->pixelsize*72.0/mac_dpi) );
-	    for ( j=0; faces[i]->ids[j]!=0 ; ++j ) if ( pointsize==size ) {
-		putshort(res,size);
-		putshort(res,i);		/* style */
-		putshort(res,faces[i]->ids[j]);
+	    for ( j=0; faces[i]->ids[j]!=0 ; ++j ) {
+		int pointsize = rint( (faces[i]->bdfs[j]->pixelsize*72.0/mac_dpi) );
+		if ( pointsize==size ) {
+		    putshort(res,size);
+		    putshort(res,i);		/* style */
+		    putshort(res,faces[i]->ids[j]);
+		}
 	    }
 	}
     }
