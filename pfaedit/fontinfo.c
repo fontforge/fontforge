@@ -106,7 +106,7 @@ GTextInfo encodingtypes[] = {
     { (unichar_t *) _STR_ChineseTradHKSCS, NULL, 0, 0, (void *) em_big5hkscs, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
 GTextInfo interpretations[] = {
-    { (unichar_t *) _STR_None, NULL, 0, 0, (void *) ui_none, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_None_fem, NULL, 0, 0, (void *) ui_none, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_AdobePUA, NULL, 0, 0, (void *) ui_adobe, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_MacGreek, NULL, 0, 0, (void *) ui_greek, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_MacJapanese, NULL, 0, 0, (void *) ui_japanese, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -5353,7 +5353,7 @@ return;
     atgcd[1].gd.pos.x = 10; atgcd[1].gd.pos.y = atgcd[0].gd.pos.y+atgcd[0].gd.pos.height+4;
     atgcd[1].gd.pos.width = -1;
     atgcd[1].gd.flags = gg_visible | gg_enabled;
-    atlabel[1].text = (unichar_t *) _STR_NewDDD;
+    atlabel[1].text = (unichar_t *) _STR_NewDDD_fem;
     atlabel[1].text_in_resource = true;
     atgcd[1].gd.label = &atlabel[1];
     atgcd[1].gd.cid = CID_AnchorNew;

@@ -3271,6 +3271,11 @@ static char *str_AnyScript = "Any Script";
 static char *str_BadTag = "Bad Tag";
 static char *str_RetagWith = "Retag with...";
 static char *str_NoSelectedFont = "No Selected Font";
+    /* Adjectives, etc. that are sometimes masculine and sometimes feminine in french (perhaps other langs) */
+static char str_NewDDD_fem[] = "New...";
+static unichar_t mnemonic_NewDDD_fem[] = 'N';
+static char *str_None_fem ="None";
+static char mnemonic_None_fem ='N';
 
 static int num_buttonsize = 55;
 static int num_ScaleFactor = 100;
