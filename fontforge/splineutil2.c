@@ -699,36 +699,19 @@ return( sum );
 Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
 	TPoint *mid, int cnt, int order2) {
     BasePoint tounit, fromunit;
-    double flen,tlen,f2len,t2len;
+    double flen,tlen;
     Spline *spline, temp;
-    BasePoint nextcp, prevcp;
+    BasePoint nextcp;
     int bettern, betterp;
-    double offn, offp, incrn, incrp;
+    double offn, offp, incrn, incrp, trylen;
+    int nocnt = 0;
+    double curdiff, bestdiff;
+    int i,j,besti,bestj;
+    double fdiff, tdiff;
 
     /* If all the selected points are at the same spot, and one of the */
     /*  end-points is also at that spot, then just copy the control point */
     /* But our caller seems to have done that for us */
-#if 0
-    same = true;
-    start = from->next->to;
-    for ( sp=start; sp!=to; sp=sp->next->to )
-	if ( sp->me.x!=start->me.x || sp->me.y!=start->me.y ) {
-	    same = false;
-    break;
-	}
-    if ( same && to->me.x==start->me.x && to->me.y==start->me.y ) {
-	to->noprevcp = start->noprevcp;
-	to->prevcp = start->prevcp;
-	to->prevcpdef = start->prevcpdef;
-return( SplineMake(from,to,order2));
-    } else if ( same && from->me.x==start->me.x && from->me.y==start->me.y ) {
-	start = to->prev->from;
-	from->nonextcp = start->nonextcp;
-	from->nextcp = start->nextcp;
-	from->nextcpdef = start->nextcpdef;
-return( SplineMake(from,to,order2));
-    }
-#endif
     
     /* If the two end-points are corner points then allow the slope to vary */
     /* Or if one end-point is a tangent but the point defining the tangent's */
@@ -765,6 +748,7 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt,order2) );
 	}
 return( SplineMake2(from,to));
     }
+    /* From here down we are only working with cubic splines */
 
     tounit.x = to->prevcp.x-to->me.x; tounit.y = to->prevcp.y-to->me.y;
     tlen = sqrt(tounit.x*tounit.x + tounit.y*tounit.y);
@@ -810,121 +794,116 @@ return( SplineMake2(from,to));
     }
     fromunit.x /= flen; fromunit.y /= flen;
 
-    spline = ApproximateSplineFromPoints(from,to,mid,cnt,order2);
-    prevcp = to->prevcp; nextcp = to->nextcp;
+    trylen = (to->me.x-from->me.x)*fromunit.x + (to->me.y-from->me.y)*fromunit.y;
+    if ( trylen>flen ) flen = trylen;
+    
+    trylen = (from->me.x-to->me.x)*tounit.x + (from->me.y-to->me.y)*tounit.y;
+    if ( trylen>tlen ) tlen = trylen;
 
-    /* Hack to preserve some kind of slope here */
-    if ( from->nonextcp && flen!=0 ) {
-	from->nextcp.x += fromunit.x * flen/10.0;
-	from->nextcp.y += fromunit.y * flen/10.0;
-	from->nonextcp = false;
+    bestdiff = 1e10;
+    besti = -1; bestj = -1;
+    fdiff = flen/5;
+    tdiff = tlen/5;
+    from->nextcp = from->me;
+    from->nonextcp = false;
+    to->noprevcp = false;
+    memset(&temp,0,sizeof(Spline));
+    temp.from = from; temp.to = to;
+    for ( i=1; i<5; ++i ) {
+	from->nextcp.x += fdiff*fromunit.x; from->nextcp.y += fdiff*fromunit.y;
+	to->prevcp = to->me;
+	for ( j=1; j<5; ++j ) {
+	    to->prevcp.x += tdiff*tounit.x; to->prevcp.y += tdiff*tounit.y;
+	    SplineRefigure(&temp);
+	    curdiff = SigmaDeltas(&temp,mid,cnt);
+	    if ( curdiff<bestdiff ) {
+		bestdiff = curdiff;
+		besti = i; bestj=j;
+	    }
+	}
     }
-    if ( to->noprevcp && tlen!=0 ) {
-	to->prevcp.x += tounit.x * tlen/10.0;
-	to->prevcp.y += tounit.y * tlen/10.0;
-	to->noprevcp = false;
-    }
 
-    tlen = (to->prevcp.x-to->me.x)*tounit.x + (to->prevcp.y-to->me.y)*tounit.y;
-    flen = (from->nextcp.x-from->me.x)*fromunit.x + (from->nextcp.y-from->me.y)*fromunit.y;
-    f2len = (to->prevcp.x-to->me.x-tlen*tounit.x)*fromunit.x +
-	    (to->prevcp.y-to->me.y-tlen*tounit.y)*fromunit.y;
-    t2len = (from->nextcp.x-from->me.x-flen*fromunit.x)*tounit.x +
-	    (from->nextcp.y-from->me.y-flen*fromunit.y)*tounit.y;
-    tlen += t2len; flen += f2len;
-
+    tlen = bestj*tdiff; flen = besti*fdiff;
     to->prevcp.x = to->me.x + tlen*tounit.x; to->prevcp.y = to->me.y + tlen*tounit.y;
     from->nextcp.x = from->me.x + flen*fromunit.x; from->nextcp.y = from->me.y + flen*fromunit.y;
-    SplineRefigure(spline);
+    spline = SplineMake(from,to,false);
 
     bettern = betterp = false;
     incrn = flen/16.0; incrp = tlen/16.0;
     offn = flen; offp = tlen;
-    do {
-	double curdiff = SigmaDeltas(spline,mid,cnt);
-	double adiff, sdiff;
+    nocnt = 0;
+    curdiff = SigmaDeltas(spline,mid,cnt);
+    forever {
+	double fadiff, fsdiff;
+	double tadiff, tsdiff;
 
 	from->nextcp.x = from->me.x + (offn+incrn)*fromunit.x; from->nextcp.y = from->me.y + (offn+incrn)*fromunit.y;
+	to->prevcp.x = to->me.x + offp*tounit.x; to->prevcp.y = to->me.y + offp*tounit.y;
 	SplineRefigure(spline);
-	adiff = SigmaDeltas(spline,mid,cnt);
+	fadiff = SigmaDeltas(spline,mid,cnt);
 	from->nextcp.x = from->me.x + (offn-incrn)*fromunit.x; from->nextcp.y = from->me.y + (offn-incrn)*fromunit.y;
 	SplineRefigure(spline);
-	sdiff = SigmaDeltas(spline,mid,cnt);
-	if ( sdiff<curdiff && sdiff<adiff ) {
-	    if ( bettern>0 )
-		incrn /= 2;
-	    offn -= incrn;
-	    bettern = -1;
-	} else if ( adiff<curdiff && adiff<sdiff ) {
-	    if ( bettern<0 )
-		incrn /= 2;
-	    offn += incrn;
-	    bettern = 1;
-	} else {
-	    bettern = 0;
-	    incrn /= 2;
-	}
+	fsdiff = SigmaDeltas(spline,mid,cnt);
 	from->nextcp.x = from->me.x + offn*fromunit.x; from->nextcp.y = from->me.y + offn*fromunit.y;
-
-	SplineRefigure(spline);
-	curdiff = SigmaDeltas(spline,mid,cnt);
 
 	to->prevcp.x = to->me.x + (offp+incrp)*tounit.x; to->prevcp.y = to->me.y + (offp+incrp)*tounit.y;
 	SplineRefigure(spline);
-	adiff = SigmaDeltas(spline,mid,cnt);
+	tadiff = SigmaDeltas(spline,mid,cnt);
 	to->prevcp.x = to->me.x + (offp-incrn)*tounit.x; to->prevcp.y = to->me.y + (offp-incrn)*tounit.y;
 	SplineRefigure(spline);
-	sdiff = SigmaDeltas(spline,mid,cnt);
-	if ( sdiff<curdiff && sdiff<adiff ) {
+	tsdiff = SigmaDeltas(spline,mid,cnt);
+	to->prevcp.x = to->me.x + offp*tounit.x; to->prevcp.y = to->me.y + offp*tounit.y;
+
+	if ( fsdiff<curdiff &&
+		(fsdiff<fadiff && fsdiff<tsdiff && fsdiff<tadiff)) {
+	    offn -= incrn;
+	    if ( bettern>0 )
+		incrn /= 2;
+	    bettern = -1;
+	    if ( tsdiff>curdiff && tadiff>curdiff ) incrp /= 2.0;
+	    nocnt = 0;
+	    curdiff = fsdiff;
+	} else if ( fadiff<curdiff &&
+		(fadiff<=fsdiff && fadiff<tsdiff && fadiff<tadiff)) {
+	    offn += incrn;
+	    if ( bettern<0 )
+		incrn /= 2;
+	    bettern = 1;
+	    if ( tsdiff>curdiff && tadiff>curdiff ) incrp /= 2.0;
+	    nocnt = 0;
+	    curdiff = fadiff;
+	} else if ( tsdiff<curdiff &&
+		(tsdiff<=fsdiff && tsdiff<=fadiff && tsdiff<tadiff)) {
+	    offp -= incrp;
 	    if ( betterp>0 )
 		incrp /= 2;
-	    offp -= incrp;
 	    betterp = -1;
-	} else if ( adiff<curdiff && adiff<sdiff ) {
-	    if ( betterp<0 )
-		incrp /= 2;
+	    if ( fsdiff>curdiff && fadiff>curdiff ) incrn /= 2.0;
+	    nocnt = 0;
+	    curdiff = tsdiff;
+	} else if ( tadiff<curdiff &&
+		(tadiff<=fsdiff && tadiff<=fadiff && tadiff<=tsdiff)) {
 	    offp += incrp;
+	    if ( betterp>0 )
+		incrp /= 2;
 	    betterp = 1;
+	    if ( fsdiff>curdiff && fadiff>curdiff ) incrn /= 2.0;
+	    nocnt = 0;
+	    curdiff = tadiff;
 	} else {
-	    betterp = 0;
+	    if ( ++nocnt > 6 )
+    break;
+	    incrn /= 2;
 	    incrp /= 2;
 	}
-	to->prevcp.x = to->me.x + offp*tounit.x; to->prevcp.y = to->me.y + offp*tounit.y;
-	if ( !bettern && !betterp )
-    break;
 	if ( incrp<tlen/128 || incrn<tlen/128 )
     break;
-    } while ( bettern || betterp );
-    SplineRefigure(spline);
-
-#if 0
-    if ( (xdiff = to->me.x-from->me.x)<0 ) xdiff = -xdiff;
-    if ( (ydiff = to->me.y-from->me.y)<0 ) ydiff = -ydiff;
-
-    for ( i=0; i<cnt; ++i ) {
-	double t;
-	if ( ydiff>2*xdiff ) {
-	    t = ClosestSplineSolve(&spline->splines[1],mid[i].y,mid[i].t);
-	} else if ( xdiff>2*ydiff ) {
-	    t = ClosestSplineSolve(&spline->splines[0],mid[i].x,mid[i].t);
-	} else {
-	    t = (ClosestSplineSolve(&spline->splines[1],mid[i].y,mid[i].t) +
-		    ClosestSplineSolve(&spline->splines[0],mid[i].x,mid[i].t))/2;
-	}
-	mid[i].t = t;
-	mid[i].x -= ((spline->splines[0].a*t+spline->splines[0].b)*t+spline->splines[0].c)*t + spline->splines[0].d;
-	mid[i].y -= ((spline->splines[1].a*t+spline->splines[1].b)*t+spline->splines[1].c)*t + spline->splines[1].d;
     }
-    
-    memset(&ff,0,sizeof(ff)); memset(&ft,0,sizeof(ft));
-    _ApproximateSplineFromPoints(&ff,&ft,mid,cnt,&nextcp,&prevcp,order2);
 
-    len = prevcp.x*tounit.x + prevcp.y*tounit.y;
-    to->prevcp.x += len*tounit.x; to->prevcp.y += len*tounit.y;
-    len = nextcp.x*fromunit.x + nextcp.y*fromunit.y;
-    from->nextcp.x += len*fromunit.x; from->nextcp.y += len*fromunit.y;
+    to->prevcp.x = to->me.x + offp*tounit.x; to->prevcp.y = to->me.y + offp*tounit.y;
+    from->nextcp.x = from->me.x + offn*fromunit.x; from->nextcp.y = from->me.y + offn*fromunit.y;
     SplineRefigure(spline);
-#endif
+
 return( spline );
 }
 
@@ -1517,7 +1496,7 @@ return( false );
     if ( !(flags&sf_ignoreextremum) && SPisExtremum(mid) )
 return( false );
 
-    if ( mid->prev->knownlinear || mid->next->knownlinear ) {
+    if ( !(flags&sf_mergelines) && (mid->prev->knownlinear || mid->next->knownlinear) ) {
 	/* Be very careful about merging straight lines. Generally they should*/
 	/*  remain straight... */
 	if ( mid->prev->knownlinear && mid->next->knownlinear ) {
