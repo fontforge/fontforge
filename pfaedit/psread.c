@@ -106,9 +106,11 @@ enum pstoks { pt_eof=-1, pt_moveto, pt_rmoveto, pt_curveto, pt_rcurveto,
     pt_setrgbcolor, pt_currentrgbcolor, pt_setcmykcolor, pt_currentcmykcolor,
     pt_fill, pt_stroke,
 
+    pt_transform, pt_itransform, pt_dtransform, pt_idtransform,
+
     /* things we sort of pretend to do, but actually do something wrong */
     pt_gsave, pt_grestore, pt_save, pt_restore, pt_currentmatrix, pt_setmatrix,
-    pt_setmiterlimit,
+    pt_setmiterlimit, pt_setdash,
 
     pt_opencurly, pt_closecurly, pt_openarray, pt_closearray, pt_string,
     pt_number, pt_unknown, pt_namelit };
@@ -130,8 +132,10 @@ char *toknames[] = { "moveto", "rmoveto", "curveto", "rcurveto",
 	"setrgbcolor", "currentrgbcolor", "setcmykcolor", "currentcmykcolor",
 	"fill", "stroke",
 
+	"transform", "itransform", "dtransform", "idtransform",
+
 	"gsave", "grestore", "save", "restore", "currentmatrix", "setmatrix",
-	"setmiterlimit",
+	"setmiterlimit", "setdash",
 
 	"opencurly", "closecurly", "openarray", "closearray", "string",
 	"number", "unknown", "namelit",
@@ -322,6 +326,22 @@ static void MatMultiply(real m1[6], real m2[6], real to[6]) {
 		m1[5]*m2[3] +
 		m2[5];
     memcpy(to,trans,sizeof(trans));
+}
+
+static void MatInverse(real into[6], real orig[6]) {
+    real det = orig[0]*orig[3] - orig[1]*orig[2];
+
+    if ( det==0 ) {
+	fprintf(stderr, "Attempt to invert a singular matrix\n" );
+	memset(into,0,sizeof(*into));
+    } else {
+	into[0] =  orig[3]/det;
+	into[1] = -orig[2]/det;
+	into[2] = -orig[1]/det;
+	into[3] =  orig[0]/det;
+	into[4] = -orig[4];
+	into[5] = -orig[5];
+    }
 }
 
 static void ECCatagorizePoints( EntityChar *ec ) {
@@ -945,6 +965,35 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 		MatMultiply(t,transform,transform);
 	    }
 	  break;
+	  case pt_transform:
+	    if ( sp>=2 ) {
+		double x = stack[sp-2].u.val, y = stack[sp-1].u.val;
+		stack[sp-2].u.val = transform[0]*x + transform[1]*y + transform[4];
+		stack[sp-1].u.val = transform[2]*x + transform[3]*y + transform[5];
+	    }
+	  break;
+	  case pt_itransform:
+	    if ( sp>=2 ) {
+		double x = stack[sp-2].u.val-transform[4], y = stack[sp-1].u.val-transform[5];
+		MatInverse(t,transform);
+		stack[sp-2].u.val = t[0]*x + t[1]*y;
+		stack[sp-1].u.val = t[2]*x + t[3]*y;
+	    }
+	  case pt_dtransform:
+	    if ( sp>=2 ) {
+		double x = stack[sp-2].u.val, y = stack[sp-1].u.val;
+		stack[sp-2].u.val = transform[0]*x + transform[1]*y;
+		stack[sp-1].u.val = transform[2]*x + transform[3]*y;
+	    }
+	  break;
+	  case pt_idtransform:
+	    if ( sp>=2 ) {
+		double x = stack[sp-2].u.val, y = stack[sp-1].u.val;
+		MatInverse(t,transform);
+		stack[sp-2].u.val = t[0]*x + t[1]*y;
+		stack[sp-1].u.val = t[2]*x + t[3]*y;
+	    }
+	  break;
 	  case pt_namelit:
 	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
 		stack[sp].type = ps_lit;
@@ -1349,6 +1398,11 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 		memcpy(transform,transstack[--tsp],sizeof(transform));
 	  break;
 	  case pt_setmiterlimit:
+	    /* pop some junk off the stack */
+	    if ( sp>=1 )
+		--sp;
+	  break;
+	  case pt_setdash:
 	    /* pop some junk off the stack */
 	    if ( sp>=1 )
 		--sp;

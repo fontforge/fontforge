@@ -1568,7 +1568,7 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd) {
     RefChar *refs, *next, *pr;
     char **encoding;
     int istype2 = fd->fonttype==2;		/* Easy enough to deal with even though it will never happen... */
-    uint8 *used = gcalloc(fd->chars->next,sizeof(uint8));
+    uint8 *used = gcalloc(fd->charprocs->next!=0?fd->charprocs->next:fd->chars->next,sizeof(uint8));
 
     CleanupGreekNames(fd);
     if ( istype2 )

@@ -980,6 +980,25 @@ return;
 	    if ( fp->fd->encoding[i]==NULL )
 		fp->fd->encoding[i] = copy(".notdef");
 return;
+    } else if ( fp->inencoding && strstr(line,"Encoding")!=NULL && strstr(line,"put")!=NULL ) {
+	/* Saw a type 3 font with lines like "Encoding 1 /_a0 put" */
+	char *end;
+	int pos;
+	while ( isspace(*line)) ++line;
+	if ( strncmp(line,"Encoding ",9)==0 ) {
+	    line+=9;
+	    pos = strtol(line,&end,10);
+	    line = end;
+	    while ( isspace(*line)) ++line;
+	    if ( *line=='/' ) {
+		++line;
+		for ( pt = buffer; !isspace(*line); *pt++ = *line++ );
+		*pt = '\0';
+		if ( pos>=0 && pos<256 )
+		    fp->fd->encoding[pos] = copy(buffer);
+	    }
+	}
+return;
     } else if ( fp->insubs ) {
 	struct pschars *subrs = fp->fd->private->subrs;
 	while ( isspace(*line)) ++line;
