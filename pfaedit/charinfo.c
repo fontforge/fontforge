@@ -2131,7 +2131,7 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
     GTextInfo label[25];
     GWindow gw;
     unichar_t ubuf[8];
-    unichar_t *ret, *pt, *end, *other;
+    unichar_t *ret, *pt, *end, *other=NULL;
     const unichar_t *utag;
     uint32 tag;
     int dx=0, dy=0, dxa=0, dya=0;
@@ -2139,7 +2139,7 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
     char buf[200];
     unichar_t udx[12], udy[12], udxa[12], udya[12];
     unichar_t udx2[12], udy2[12], udxa2[12], udya2[12];
-    int i, temp, tag_pos;
+    int i, temp, tag_pos, sli_pos;
     static unichar_t nullstr[] = { 0 };
     static int buts[3] = { _STR_OK, _STR_Cancel, 0 };
 
@@ -2183,7 +2183,7 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
     for ( pt=end; *pt!='\0' && *pt!='='; ++pt ); if ( *pt=='=' ) ++pt;
     dya = u_strtol(pt,&end,10);
     if ( ispair ) {
-	for ( pt=def; *pt!='\0' && *pt!='='; ++pt ); if ( *pt=='=' ) ++pt;
+	for ( pt=end; *pt!='\0' && *pt!='='; ++pt ); if ( *pt=='=' ) ++pt;
 	dx2 = u_strtol(pt,&end,10);
 	for ( pt=end; *pt!='\0' && *pt!='='; ++pt ); if ( *pt=='=' ) ++pt;
 	dy2 = u_strtol(pt,&end,10);
@@ -2201,13 +2201,13 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
     sprintf(buf,"%d",dya);
     uc_strcpy(udya,buf);
     if ( ispair ) {
-	sprintf(buf,"%d",dx);
+	sprintf(buf,"%d",dx2);
 	uc_strcpy(udx2,buf);
-	sprintf(buf,"%d",dy);
+	sprintf(buf,"%d",dy2);
 	uc_strcpy(udy2,buf);
-	sprintf(buf,"%d",dxa);
+	sprintf(buf,"%d",dxa2);
 	uc_strcpy(udxa2,buf);
-	sprintf(buf,"%d",dya);
+	sprintf(buf,"%d",dya2);
 	uc_strcpy(udya2,buf);
     }
     
@@ -2226,7 +2226,7 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,ispair?190:160));
-	pos.height = GDrawPointsToPixels(NULL,290);
+	pos.height = GDrawPointsToPixels(NULL,ispair?320:290);
 	gw = GDrawCreateTopWindow(NULL,&pos,ptd_e_h,&ptd,&wattrs);
 
 	memset(&gcd,0,sizeof(gcd));
@@ -2327,7 +2327,7 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 
 	    label[i].text = other;
 	    gcd[i].gd.label = &label[i];
-	    gcd[i].gd.pos.x = gcd[i-6].gd.pos.x; gcd[i].gd.pos.y = gcd[i-2].gd.pos.y+26; gcd[i].gd.pos.width = gcd[i-2].gd.pos.width;
+	    gcd[i].gd.pos.x = gcd[i-2].gd.pos.x; gcd[i].gd.pos.y = gcd[i-2].gd.pos.y+26; gcd[i].gd.pos.width = gcd[i-2].gd.pos.width;
 	    gcd[i].gd.flags = gg_enabled|gg_visible;
 	    gcd[i].gd.cid = i+1;
 	    gcd[i++].creator = GTextFieldCreate;
@@ -2340,6 +2340,7 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 	gcd[i].gd.flags = gg_enabled|gg_visible;
 	gcd[i++].creator = GLabelCreate;
 
+	tag_pos = i;
 	ubuf[0] = def_tag>>24; ubuf[1] = (def_tag>>16)&0xff; ubuf[2] = (def_tag>>8)&0xff; ubuf[3] = def_tag&0xff; ubuf[4] = 0;
 	label[i].text = ubuf;
 	gcd[i].gd.label = &label[i];
@@ -2356,6 +2357,7 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 	gcd[i].gd.flags = gg_enabled|gg_visible;
 	gcd[i++].creator = GLabelCreate;
 
+	sli_pos = i;
 	gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+14;
 	gcd[i].gd.pos.width = 140;
 	gcd[i].gd.flags = gg_enabled|gg_visible;
@@ -2425,7 +2427,7 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 
 	GGadgetsCreate(gw,gcd);
 	free(other);
-	GTextInfoListFree(gcd[11].gd.u.list);
+	GTextInfoListFree(gcd[sli_pos].gd.u.list);
 
     GDrawSetVisible(gw,true);
     GWidgetIndicateFocusGadget(gcd[1].ret);
@@ -2455,8 +2457,10 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 	}
 	utag = _GGadgetGetTitle(gcd[tag_pos].ret);
 	script_lang_index = GGadgetGetFirstListSelectedItem(gcd[tag_pos+2].ret);
-	if ( err )
+	if ( err ) {
+	    ptd.done = false;
  goto tryagain;
+	}
 	if ( (ubuf[0] = utag[0])==0 )
 	    tag = 0;
 	else {
@@ -2617,7 +2621,7 @@ static void CI_DoNew(CharInfo *ci, unichar_t *def) {
 	    ? AskPosTag(newstrings[sel],def,0,flags,-1,pst_tags[sel],ci->sc->parent,ci->sc,sel==1)
 	    : AskNameTag(newstrings[sel],def,0,flags,-1,pst_tags[sel],ci->sc->parent,ci->sc,-1,-1);
     if ( newname!=NULL ) {
-	if ( sel<=1 )
+	if ( sel>1 )
 	    if ( !LigCheck(ci->sc,sel+1,(newname[0]<<24)|(newname[1]<<16)|(newname[2]<<8)|newname[3],
 		    newname+14)) {
 		free(newname );
@@ -3056,7 +3060,7 @@ return( old );
 return( NULL );
 }
 
-static int ParseVR(char *end,struct vr *vr) {
+static int ParseVR(char *end,struct vr *vr,char **done) {
     char *pt;
 
     for ( pt=end; *pt!='\0' && *pt!='='; ++pt ); if ( *pt=='=' ) ++pt;
@@ -3073,6 +3077,7 @@ static int ParseVR(char *end,struct vr *vr) {
 return(false);
     }
     vr->v_adv_off = strtol(pt,&end,10);
+    *done = end;
 return( true );
 }
 
@@ -3114,7 +3119,7 @@ return;
 	new->script_lang_index = strtol(data+9,&end,10);
 
 	if ( type==pst_position ) {
-	    if ( !ParseVR(end,&new->u.pos)) {
+	    if ( !ParseVR(end,&new->u.pos,&end)) {
 		chunkfree(new,sizeof(PST));
 return;
 	    }
@@ -3124,13 +3129,13 @@ return;
 	    while ( *pt!=' ' && *pt!='\0' ) ++pt;
 	    new->u.pair.paired = copyn(other,pt-other);
 	    new->u.pair.vr = chunkalloc(sizeof(struct vr [2]));
-	    if ( !ParseVR(end,&new->u.pair.vr[0])) {
+	    if ( !ParseVR(end,&new->u.pair.vr[0],&end)) {
 		free(new->u.pair.paired);
 		chunkfree(new->u.pair.vr,sizeof(struct vr [2]));
 		chunkfree(new,sizeof(PST));
 return;
 	    }
-	    if ( !ParseVR(end,&new->u.pair.vr[1])) {
+	    if ( !ParseVR(end,&new->u.pair.vr[1],&end)) {
 		free(new->u.pair.paired);
 		chunkfree(new->u.pair.vr,sizeof(struct vr [2]));
 		chunkfree(new,sizeof(PST));

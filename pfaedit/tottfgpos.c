@@ -1184,14 +1184,14 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,SplineChar **glyphs,
 	fseek(gpos,pos,SEEK_SET);
 
 	subcnt=0;
-	for ( pst=glyphs[cnt]->possub; pst!=NULL; pst=pst->next ) {
+	for ( pst=glyphs[i]->possub; pst!=NULL; pst=pst->next ) {
 	    if ( pst->tag==tfl->tag && (pst->flags&~1)==tfl->flags &&
 		    pst->script_lang_index == tfl->script_lang_index &&
 		    pst->type==pst_pair )
 		++subcnt;
 	}
 	putshort(gpos,subcnt);
-	for ( pst=glyphs[cnt]->possub; pst!=NULL; pst=pst->next ) {
+	for ( pst=glyphs[i]->possub; pst!=NULL; pst=pst->next ) {
 	    if ( pst->tag==tfl->tag && (pst->flags&~1)==tfl->flags &&
 		    pst->script_lang_index == tfl->script_lang_index &&
 		    pst->type==pst_pair ) {
@@ -1448,15 +1448,16 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 	    glyphs = generateGlyphTypeList(sf,type,&ligtags[j],&map);
 	    if ( glyphs!=NULL && glyphs[0]!=NULL ) {
 		new = LookupFromTagFlagLang(&ligtags[j]);
-		new->lookup_type = 1;
 		new->offset = ftell(lfile);
 		new->next = lookups;
 		lookups = new;
-		if ( type==pst_position )
+		if ( type==pst_position ) {
+		    new->lookup_type = 1;
 		    dumpGPOSsimplepos(lfile,sf,glyphs,&ligtags[j]);
-		else if ( type==pst_pair )
+		} else if ( type==pst_pair ) {
 		    dumpGPOSpairpos(lfile,sf,glyphs,&ligtags[j]);
-		else
+		    new->lookup_type = 2;
+		} else
 		    GDrawIError("Unknown PST type in GPOS figure lookups" );
 		new->len = ftell(lfile)-new->offset;
 	    }
