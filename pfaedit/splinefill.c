@@ -756,7 +756,7 @@ void BCCompressBitmap(BDFChar *bdfc) {
     }
     if ( i!=0 ) {
 	bdfc->ymax -= i;
-	memcpy(bdfc->bitmap,bdfc->bitmap+i*bdfc->bytes_per_line,(bdfc->ymax-bdfc->ymin+1)*bdfc->bytes_per_line );
+	memmove(bdfc->bitmap,bdfc->bitmap+i*bdfc->bytes_per_line,(bdfc->ymax-bdfc->ymin+1)*bdfc->bytes_per_line );
     }
 
     for ( i=bdfc->ymax-bdfc->ymin; i>0; --i ) {
@@ -779,8 +779,19 @@ void BCCompressBitmap(BDFChar *bdfc) {
 	    if ( any )
 	break;
 	}
-	if ( j!=0 ) {
-	    off = j;
+	off = j;
+	if ( off/8>0 ) {
+	    for ( i=0; i<bdfc->ymax-bdfc->ymin+1; ++i ) {
+		memmove(bdfc->bitmap+i*bdfc->bytes_per_line,
+			bdfc->bitmap+i*bdfc->bytes_per_line+off/8,
+			bdfc->bytes_per_line-off/8);
+		memset(bdfc->bitmap+(i+1)*bdfc->bytes_per_line-off/8,
+			0, off/8);
+	    }
+	    bdfc->xmin += off-off%8;
+	    off %= 8;
+	}
+	if ( off!=0 ) {
 	    for ( i=0; i<bdfc->ymax-bdfc->ymin+1; ++i ) {
 		last = 0;
 		for ( j=bdfc->bytes_per_line-1; j>=0; --j ) {
@@ -816,13 +827,13 @@ void BCCompressBitmap(BDFChar *bdfc) {
 	    if ( any )
 	break;
 	}
-	if ( j!=0 ) {
-	    off = j;
+	off = j;
+	if ( off!=0 ) {
 	    for ( i=0; i<bdfc->ymax-bdfc->ymin+1; ++i ) {
-		memcpy(bdfc->bitmap+i*bdfc->bytes_per_line,
+		memmove(bdfc->bitmap+i*bdfc->bytes_per_line,
 			bdfc->bitmap+i*bdfc->bytes_per_line+off,
 			bdfc->bytes_per_line-off);
-		memset(bdfc->bitmap+i*bdfc->bytes_per_line+bdfc->bytes_per_line-off,
+		memset(bdfc->bitmap+(i+1)*bdfc->bytes_per_line-off,
 			0, off);
 	    }
 	    bdfc->xmin += off;
