@@ -5381,7 +5381,6 @@ return;
     atgcd[3].creator = GButtonCreate;
 
     atgcd[4].gd.pos.x = 10; atgcd[4].gd.pos.y = atgcd[1].gd.pos.y+30;
-    atgcd[4].gd.pos.width = 2*GIntGetResource(_NUM_Buttonsize);
     atgcd[4].gd.flags = gg_visible;
     atlabel[4].text = (unichar_t *) _STR_ShowFirstMark;
     atlabel[4].text_in_resource = true;
@@ -5391,7 +5390,6 @@ return;
     atgcd[4].creator = GButtonCreate;
 
     atgcd[5].gd.pos.x = -10; atgcd[5].gd.pos.y = atgcd[4].gd.pos.y;
-    atgcd[5].gd.pos.width = 2*GIntGetResource(_NUM_Buttonsize);
     atgcd[5].gd.flags = gg_visible;
     atlabel[5].text = (unichar_t *) _STR_ShowFirstBase;
     atlabel[5].text_in_resource = true;
