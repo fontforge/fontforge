@@ -1237,6 +1237,7 @@ static char *str_JamoHoleTitle = "Unused glyph variant";
 static char *str_JamoHole = "For group %d of %s, glyph variant %d is not used but %d is used.\nProcede anyway?";
 static char *str_NoRules = "No Rules";
 static char *str_FileHasNoRules = "%.100hs contains no composition rules";
+static char *str_DeleteNo = "Delete";	/* With no mnemonic */
     /* Need a different mnemonic */
 static char *str_AddAll = "Add All";
 static char mnemonic_AddAll = 'd';

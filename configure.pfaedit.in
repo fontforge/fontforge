@@ -21,6 +21,9 @@ AC_DEFINE(_Keyboard,3)
 *sparc*)
 AC_DEFINE(_Keyboard,2)
  ;;
+*-pc-cygwin*)
+AC_DEFINE(_BrokenBitmapImages)
+ ;;
 esac
 
 AC_SEARCH_LIBS(dlopen, dl) dnl some systems have this in libc (Darwin uses dyld)

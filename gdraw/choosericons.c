@@ -876,11 +876,14 @@ static uint8 ttf0_data[] = {
     0xff, 0xff, 
 };
 
+static GClut ttf0_clut = { 2, 0, 1,
+    0x0, 0xb0b0b0 };
+
 static struct _GImage ttf0_base = {
     it_mono,
     2069,16,16,2,
     (uint8 *) ttf0_data,
-    NULL,
+    &ttf0_clut,
     1
 };
 
@@ -918,7 +921,7 @@ static struct _GImage cid0_base = {
     it_mono,
     2071,11,16,2,
     (uint8 *) cid0_data,
-    NULL,
+    &ttf0_clut,
     1
 };
 
@@ -945,7 +948,7 @@ static struct _GImage mac_base = {
     it_mono,
     15420,16,16,2,
     (uint8 *) mac_data,
-    NULL,
+    &ttf0_clut,
     1
 };
 

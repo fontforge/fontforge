@@ -1175,37 +1175,35 @@ void CVChar(CharView *cv, GEvent *event ) {
 	    event->u.chr.keysym == GK_KP_Up ||
 	    event->u.chr.keysym == GK_KP_Right ||
 	    event->u.chr.keysym == GK_KP_Down ) {
-	if ( CVAnySel(cv,NULL,NULL,NULL)) {
-	    real dx=0, dy=0;
-	    switch ( event->u.chr.keysym ) {
-	      case GK_Left: case GK_KP_Left:
-		dx = -1;
-	      break;
-	      case GK_Right: case GK_KP_Right:
-		dx = 1;
-	      break;
-	      case GK_Up: case GK_KP_Up:
-		dy = 1;
-	      break;
-	      case GK_Down: case GK_KP_Down:
-		dy = -1;
-	      break;
-	    }
-	    if ( event->u.chr.state & (ksm_meta|ksm_control) ) {
-		struct sbevent sb;
-		sb.type = dy>0 || dx<0 ? et_sb_halfup : et_sb_halfdown;
-		if ( dx==0 )
-		    CVVScroll(cv,&sb);
-		else
-		    CVHScroll(cv,&sb);
-	    } else {
-		extern float arrowAmount;
-		CVPreserveState(cv);
-		CVMoveSelection(cv,dx*arrowAmount,dy*arrowAmount);
-		/* Check for merge!!!! */
-		CVCharChangedUpdate(cv);
-		CVInfoDraw(cv,cv->gw);
-	    }
+	real dx=0, dy=0;
+	switch ( event->u.chr.keysym ) {
+	  case GK_Left: case GK_KP_Left:
+	    dx = -1;
+	  break;
+	  case GK_Right: case GK_KP_Right:
+	    dx = 1;
+	  break;
+	  case GK_Up: case GK_KP_Up:
+	    dy = 1;
+	  break;
+	  case GK_Down: case GK_KP_Down:
+	    dy = -1;
+	  break;
+	}
+	if ( event->u.chr.state & (ksm_meta|ksm_control) ) {
+	    struct sbevent sb;
+	    sb.type = dy>0 || dx<0 ? et_sb_halfup : et_sb_halfdown;
+	    if ( dx==0 )
+		CVVScroll(cv,&sb);
+	    else
+		CVHScroll(cv,&sb);
+	} else if ( CVAnySel(cv,NULL,NULL,NULL)) {
+	    extern float arrowAmount;
+	    CVPreserveState(cv);
+	    CVMoveSelection(cv,dx*arrowAmount,dy*arrowAmount);
+	    /* Check for merge!!!! */
+	    CVCharChangedUpdate(cv);
+	    CVInfoDraw(cv,cv->gw);
 	}
     } else if ( !(event->u.chr.state&(ksm_control|ksm_meta)) &&
 	    event->type == et_char &&

@@ -27,6 +27,9 @@
 #include "gdraw.h"
 #include "views.h"
 
+static GClut clut = { 2, 0, 1,
+    0x0, 0xb0b0b0 };
+
 static uint8 rightpointer0_data[] = {
     0xfb, 
     0xf3, 
@@ -44,7 +47,7 @@ static struct _GImage rightpointer0_base = {
     it_mono,
     2081,8,10,1,
     (uint8 *) rightpointer0_data,
-    NULL,
+    &clut,
     1
 };
 
@@ -65,7 +68,7 @@ static struct _GImage sel2ptr0_base = {
     it_mono,
     2081,16,10,2,
     (uint8 *) sel2ptr0_data,
-    NULL,
+    &clut,
     1
 };
 
@@ -86,7 +89,7 @@ static struct _GImage selectedpoint0_base = {
     it_mono,
     2081,8,10,1,
     (uint8 *) selectedpoint0_data,
-    NULL,
+    &clut,
     1
 };
 
@@ -107,7 +110,7 @@ static struct _GImage distance0_base = {
     it_mono,
     2081,16,10,2,
     (uint8 *) distance0_data,
-    NULL,
+    &clut,
     1
 };
 
@@ -128,7 +131,7 @@ static struct _GImage angle0_base = {
     it_mono,
     2081,16,10,2,
     (uint8 *) angle0_data,
-    NULL,
+    &clut,
     1
 };
 
@@ -149,7 +152,7 @@ static struct _GImage magicon0_base = {
     it_mono,
     2069,8,10,1,
     (uint8 *) magicon0_data,
-    NULL,
+    &clut,
     1
 };
 

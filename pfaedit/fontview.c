@@ -2455,7 +2455,7 @@ return;
 	    base.image_type = it_mono;
 	    base.clut = &clut;
 	    clut.clut_len = 2;
-	    clut.clut[0] = 0xffffff;
+	    clut.clut[0] = GDrawGetDefaultBackground(NULL);
 	}
 
 	base.data = bdfc->bitmap;
@@ -2728,7 +2728,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	base.image_type = it_mono;
 	base.clut = &clut;
 	clut.clut_len = 2;
-	clut.clut[0] = 0xffffff;
+	clut.clut[0] = GDrawGetDefaultBackground(NULL);
     }
 
     GDrawSetFont(pixmap,fv->header);
@@ -2785,6 +2785,12 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 			}
 		}
 		fg = 0xff0000;
+	    }
+	    if ( sc->backgroundsplines!=NULL || sc->backimages!=NULL ) {
+		GRect r;
+		r.x = j*fv->cbw+1; r.width = fv->cbw-1;
+		r.y = i*fv->cbh+1; r.height = FV_LAB_HEIGHT-1;
+		GDrawFillRect(pixmap,&r,0x808080);
 	    }
 	    width = GDrawGetTextWidth(pixmap,buf,1,NULL);
 	    if ( sc->unicodeenc<0x80 || sc->unicodeenc>=0xa0 )

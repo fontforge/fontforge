@@ -27,7 +27,7 @@
 #include "pfaeditui.h"
 
 static GClut magnify0_clut = { 2, 0, 1,
-    0x0, 0xc0c0c0 };
+    0x0, 0xb0b0b0 };
 
 static uint8 magnify0_data[] = {
     0xff, 0xff, 0xff, 
@@ -867,7 +867,7 @@ static struct _GImage beveljoin0_base = {
     it_mono,
     2069,16,16,2,
     (uint8 *) beveljoin0_data,
-    NULL,
+    &magnify0_clut,
     1
 };
 
@@ -895,7 +895,7 @@ static struct _GImage buttcap0_base = {
     it_mono,
     2069,16,16,2,
     (uint8 *) buttcap0_data,
-    NULL,
+    &magnify0_clut,
     1
 };
 
@@ -923,7 +923,7 @@ static struct _GImage miterjoin0_base = {
     it_mono,
     2069,16,16,2,
     (uint8 *) miterjoin0_data,
-    NULL,
+    &magnify0_clut,
     1
 };
 
@@ -951,7 +951,7 @@ static struct _GImage roundcap0_base = {
     it_mono,
     2069,16,16,2,
     (uint8 *) roundcap0_data,
-    NULL,
+    &magnify0_clut,
     1
 };
 
@@ -979,7 +979,7 @@ static struct _GImage roundjoin0_base = {
     it_mono,
     2069,16,16,2,
     (uint8 *) roundjoin0_data,
-    NULL,
+    &magnify0_clut,
     1
 };
 
@@ -1007,7 +1007,7 @@ static struct _GImage squarecap0_base = {
     it_mono,
     2069,16,16,2,
     (uint8 *) squarecap0_data,
-    NULL,
+    &magnify0_clut,
     1
 };
 
@@ -1042,7 +1042,7 @@ static struct _GImage rect0_base = {
     it_mono,
     2069,24,24,3,
     (uint8 *) rect0_data,
-    NULL,
+    &magnify0_clut,
     1
 };
 
@@ -1077,7 +1077,7 @@ static struct _GImage rrect0_base = {
     it_mono,
     2069,24,24,3,
     (uint8 *) rrect0_data,
-    NULL,
+    &magnify0_clut,
     1
 };
 
@@ -1113,7 +1113,7 @@ static struct _GImage elipse0_base = {
     it_mono,
     2069,24,24,3,
     (uint8 *) elipse0_data,
-    NULL,
+    &magnify0_clut,
     1
 };
 
@@ -1149,7 +1149,7 @@ static struct _GImage poly0_base = {
     it_mono,
     2069,24,24,3,
     (uint8 *) poly0_data,
-    NULL,
+    &magnify0_clut,
     1
 };
 
@@ -1185,7 +1185,7 @@ static struct _GImage star0_base = {
     it_mono,
     2069,24,24,3,
     (uint8 *) star0_data,
-    NULL,
+    &magnify0_clut,
     1
 };
 
@@ -1220,7 +1220,7 @@ static struct _GImage shift0_base = {
     it_mono,
     2069,24,24,3,
     (uint8 *) shift0_data,
-    NULL,
+    &magnify0_clut,
     1
 };
 
@@ -1496,7 +1496,7 @@ static struct _GImage press2ptr0_base = {
     it_mono,
     2069,16,10,2,
     (uint8 *) press2ptr0_data,
-    NULL,
+    &magnify0_clut,
     1
 };
 
@@ -1550,7 +1550,7 @@ static struct _GImage smallstar0_base = {
     it_mono,
     15420,16,12,2,
     (uint8 *) smallstar0_data,
-    NULL,
+    &magnify0_clut,
     1
 };
 
@@ -1573,7 +1573,7 @@ static struct _GImage smallruler0_base = {
     it_mono,
     15420,16,12,2,
     (uint8 *) smallruler0_data,
-    NULL,
+    &magnify0_clut,
     1
 };
 
@@ -1596,7 +1596,7 @@ static struct _GImage smallrect0_base = {
     it_mono,
     15420,16,12,2,
     (uint8 *) smallrect0_data,
-    NULL,
+    &magnify0_clut,
     1
 };
 
@@ -1619,7 +1619,7 @@ static struct _GImage smallelipse0_base = {
     it_mono,
     15420,16,12,2,
     (uint8 *) smallelipse0_data,
-    NULL,
+    &magnify0_clut,
     1
 };
 
@@ -1642,7 +1642,7 @@ static struct _GImage smallpoly0_base = {
     it_mono,
     15420,16,12,2,
     (uint8 *) smallpoly0_data,
-    NULL,
+    &magnify0_clut,
     1
 };
 
@@ -1665,7 +1665,7 @@ static struct _GImage smallpointer0_base = {
     it_mono,
     15420,16,12,2,
     (uint8 *) smallpointer0_data,
-    NULL,
+    &magnify0_clut,
     1
 };
 
@@ -1688,7 +1688,7 @@ static struct _GImage smallpen0_base = {
     it_mono,
     15420,16,12,2,
     (uint8 *) smallpen0_data,
-    NULL,
+    &magnify0_clut,
     1
 };
 
@@ -1711,7 +1711,7 @@ static struct _GImage smallknife0_base = {
     it_mono,
     15420,16,12,2,
     (uint8 *) smallknife0_data,
-    NULL,
+    &magnify0_clut,
     1
 };
 
@@ -1734,7 +1734,7 @@ static struct _GImage smallmag0_base = {
     it_mono,
     15420,16,12,2,
     (uint8 *) smallmag0_data,
-    NULL,
+    &magnify0_clut,
     1
 };
 

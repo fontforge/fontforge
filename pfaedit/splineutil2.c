@@ -297,6 +297,7 @@ Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
     int i;
     real v[6], m[6][6];
     Spline *spline;
+    BasePoint prevcp;
 
     /* If the two end-points are corner points then allow the slope to vary */
     /* Or if one end-point is a tangent but the point defining the tangent's */
@@ -434,11 +435,21 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
     v[1] -= m[1][2]*v[2];
     m[0][2] = m[1][2] = 0;
 
-    from->nextcp.x = from->me.x + v[2]/3;
-    from->nextcp.y = from->me.y + v[5]/3;
-    to->prevcp.x = from->nextcp.x + (v[2]+v[1])/3;
-    to->prevcp.y = from->nextcp.y + (v[5]+v[4])/3;
-    from->nonextcp = to->noprevcp = false;
+    /* Make sure the slopes we've found are in the same direction as they */
+    /*  were before (might be diametrically opposed). If not then leave */
+    /*  control points as they are (not a good soln, but it prevents an even */
+    /*  worse) */
+    if ( v[2]*(from->nextcp.x-from->me.x) + v[5]*(from->nextcp.y-from->me.y)>=0 ) {
+	from->nextcp.x = from->me.x + v[2]/3;
+	from->nextcp.y = from->me.y + v[5]/3;
+	from->nonextcp = v[2]!=0 || v[5]!=0;
+    }
+    prevcp.x = from->me.x + v[2]/3 + (v[2]+v[1])/3;
+    prevcp.y = from->me.y + v[5]/3 + (v[5]+v[4])/3;
+    if ( (prevcp.x-to->me.x)*(to->prevcp.x-to->me.x) + (prevcp.y-to->me.y)*(to->prevcp.y-to->me.y)>=0 ) {
+	to->prevcp = prevcp;
+	to->noprevcp = prevcp.x!=to->me.x || prevcp.y!=to->me.y;
+    }
     spline = SplineMake(from,to);
     if ( SplineIsLinear(spline)) {
 	spline->islinear = from->nonextcp = to->noprevcp = true;

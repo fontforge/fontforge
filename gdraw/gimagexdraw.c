@@ -26,6 +26,12 @@
  */
 #include "gxdrawP.h"
 
+/* On the cygwin X server masking with mono images is broken */
+#ifdef _BrokenBitmapImages
+# undef FAST_BITS
+# define FAST_BITS 0
+#endif
+
 /* On some X displays (my linux box for instance) bitmap drawing is very */
 /*  slow when compared to 24bit drawing. So if FAST_BITS is set then use */
 /*  1 bit masks otherwise use the depth of the screen */
@@ -1177,7 +1183,13 @@ static void gdraw_bitmap(GXWindow w, struct _GImage *image, GClut *clut,
 	}
 	xi->data = (char *) newdata;
     }
+#ifdef _BrokenBitmapImages
+    /* This doesn't really solve the problem for cygwin, it just avoids the */
+    /*  issue, and most of the time is good enough */
+    gdraw_xbitmap(w,xi,clut,-1,src,x,y);
+#else
     gdraw_xbitmap(w,xi,clut,trans,src,x,y);
+#endif
     if ( (uint8 *) (xi->data)==image->data ) xi->data = NULL;
     XDestroyImage(xi);
 }
