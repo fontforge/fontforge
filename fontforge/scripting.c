@@ -5272,6 +5272,8 @@ static void ProcessScript(int argc, char *argv[], FILE *script) {
 static void _CheckIsScript(int argc, char *argv[]) {
     if ( argc==1 )
 return;
+    if ( strcmp(argv[1],"-")==0 )	/* Someone thought that, of course, "-" meant read from a script. I guess it makes no sense with anything else... */
+	ProcessScript(argc, argv,stdin);
     if ( strcmp(argv[1],"-script")==0 || strcmp(argv[1],"--script")==0 )
 	ProcessScript(argc, argv,NULL);
     else if ( (strcmp(argv[1],"-nosplash")==0 || strcmp(argv[1],"--nosplash")==0) &&
@@ -5289,8 +5291,6 @@ return;
 		(strstr(buffer,"pfaedit")!=NULL || strstr(buffer,"fontforge")!=NULL ))
 	    ProcessScript(argc, argv,NULL);
     }
-    if ( strcmp(argv[1],"-")==0 )	/* Someone thought that, of course, "-" meant read from a script. I guess it makes no sense with anything else... */
-	ProcessScript(argc, argv,stdin);
 }
 
 #if defined(FONTFORGE_CONFIG_NO_WINDOWING_UI) || defined(X_DISPLAY_MISSING)
