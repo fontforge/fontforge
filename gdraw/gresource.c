@@ -151,7 +151,7 @@ return( -1 );
 return( 0 );
 }
 
-static void GResourceSetProg(char *prog) {
+void GResourceSetProg(char *prog) {
     char filename[1025], *pt;
     extern char *_GFile_find_program_dir(char *prog);
 

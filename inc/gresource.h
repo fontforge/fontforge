@@ -46,6 +46,7 @@ extern int local_encoding;
 extern char *iconv_local_encoding_name;
 #endif
 
+void GResourceSetProg(char *prog);
 void GResourceAddResourceFile(char *filename,char *prog);
 void GResourceAddResourceString(char *string,char *prog);
 void GResourceFind( GResStruct *info, char *prefix);
