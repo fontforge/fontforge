@@ -2322,6 +2322,12 @@ return( !cidbytes.errors );
 int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags) {
     char *oldloc;
     int err = false;
+    extern const char **othersubrs[];
+
+    if ( format!=ff_cid && format!=ff_ptype3 &&
+	    (othersubrs[0]==NULL || othersubrs[0][0]==NULL ||
+		(othersubrs[0][1]==NULL && strcmp(othersubrs[0][0],"{}")==0)))
+	flags &= ~ps_flag_noflex;
 
     /* make sure that all reals get output with '.' for decimal points */
     oldloc = setlocale(LC_NUMERIC,"C");

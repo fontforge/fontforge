@@ -252,6 +252,12 @@ const char **othersubrs[] = { othersubrs0, othersubrs1, othersubrs2, othersubrs3
 /*  the number of font instances in the mm set */
 	NULL
 };
+static const char **default_othersubrs[] = { othersubrs0, othersubrs1, othersubrs2, othersubrs3,
+	othersubrs4_12, othersubrs4_12, othersubrs4_12, othersubrs4_12, 
+	othersubrs4_12, othersubrs4_12, othersubrs4_12, othersubrs4_12,
+	othersubrs4_12, othersubrs13,
+	NULL
+};
 
 /* Lives in private dictionary. Commonly used. I have no docs on it */
 /*  The first numbers (9.5,72) change in different uses (4.5,34), (4.5,38), (5.5,41), (6.5,50) are other combo */
@@ -436,3 +442,98 @@ const char *mmfindfont[] = {
 	"end exec pop exec",
 NULL
 };
+
+#include "splinefont.h"
+#include <string.h>
+#include <ustring.h>
+
+static const char **CopyLines(char **lines, int l,int is_copyright) {
+    const char **ret;
+    int i;
+
+    if ( l==0 && !is_copyright ) {
+	ret = galloc(2*sizeof(char *));
+	ret[0] = copy("{}");
+	ret[1] = NULL;
+return( ret );
+    }
+
+    ret = galloc((l+1)*sizeof(char *));
+    for ( i=0; i<l; ++i )
+	ret[i] = lines[i];
+    ret[l] = NULL;
+return( ret );
+}
+
+void DefaultOtherSubrs(void) {
+    int i,j;
+
+    if ( othersubrs_copyright[0]!=copyright ) {
+	for ( i=0; othersubrs_copyright[0][i]!=NULL; ++i )
+	    free( (char *) othersubrs_copyright[0][i]);
+	free(othersubrs_copyright[0]);
+	othersubrs_copyright[0] = copyright;
+    }
+    for ( j=0; j<=13; ++j ) {
+	if ( othersubrs[j]!=default_othersubrs[j] ) {
+	    for ( i=0; othersubrs[j][i]!=NULL; ++i )
+		free( (char *) othersubrs[j][i]);
+	    free(othersubrs[j]);
+	   othersubrs[j] = default_othersubrs[j];
+	}
+    }
+}
+
+int ReadOtherSubrsFile(char *filename) {
+    FILE *os = fopen(filename,"r");
+    char buffer[500];
+    char **lines=NULL;
+    int l=0, lmax=0;
+    int sub_num = -1;
+    const char **co=NULL, **osubs[14];
+    int i;
+
+    if ( os==NULL )
+return( false );
+    while ( fgets(buffer,sizeof(buffer),os)!=NULL ) {
+	int len = strlen(buffer);
+	if ( len>0 && (buffer[len-1]=='\r' || buffer[len-1]=='\n')) {
+	    if ( len>1 && (buffer[len-2]=='\r' || buffer[len-2]=='\n'))
+		buffer[len-2] = '\0';
+	    else
+		buffer[len-1] = '\0';
+	}
+	if ( buffer[0]=='%' && buffer[1]=='%' && buffer[2]=='%' && buffer[3]=='%' ) {
+	    if ( sub_num == -1 )
+		co = CopyLines(lines,l,true);
+	    else if ( sub_num<14 )
+		osubs[sub_num] = CopyLines(lines,l,false);
+	    else if ( sub_num==14 )
+		fprintf( stderr, "Too many subroutines. We can deal with at most 14 (0-13)\n" );
+	    ++sub_num;
+	    l = 0;
+	} else {
+	    if ( l>=lmax ) {
+		lmax += 100;
+		lines = grealloc(lines,lmax*sizeof(char *));
+	    }
+	    lines[l++] = copy(buffer);
+	}
+    }
+    fclose( os );
+    /* we just read a copyright notice? That's no use */
+    if ( sub_num<=0 )
+return( false );
+    while ( sub_num<14 ) {
+	osubs[sub_num] = gcalloc(2,sizeof(char *));
+	osubs[sub_num][0] = copy("{}");
+	++sub_num;
+    }
+    DefaultOtherSubrs();
+    othersubrs_copyright[0] = co;
+    for ( i=0; i<14; ++i )
+	othersubrs[i] = osubs[i];
+    free(lines);
+return( true );
+}
+	
