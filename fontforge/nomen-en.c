@@ -1160,6 +1160,7 @@ static char *str_SizeNoC = "Size";
 static char *str_DesignSize = "Design Size:";
 static char mnemonic_DesignSize = 'S';
 static char *str_DesignSizePopup = "The size (in points) for which this face was designed"
+static char *str_Pts = "Points";
 static char *str_DesignRange = "Design Range";
 static char *str_DesignRangePopup = "The range of sizes (in points) to which this face applies.\nLower bound is exclusive, upper bound is inclusive."
 static char *str_TopC = "Top:";

@@ -6654,7 +6654,7 @@ return;
     szgcd[k].gd.cid = CID_DesignSize;
     szgcd[k++].creator = GTextFieldCreate;
 
-    szlabel[k].text = (unichar_t *) _STR_PointsNoC;
+    szlabel[k].text = (unichar_t *) _STR_Pts;
     szlabel[k].text_in_resource = true;
     szgcd[k].gd.label = &szlabel[k];
     szgcd[k].gd.pos.x = 134; szgcd[k].gd.pos.y = szgcd[k-2].gd.pos.y;
