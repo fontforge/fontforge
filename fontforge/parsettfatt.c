@@ -2592,6 +2592,7 @@ return;
 	    pst->next = sc->possub;
 	    sc->possub = pst;
 	    pst->type = pst_lcaret;
+	    pst->script_lang_index = SLI_UNKNOWN;
 	}
 	caret_base = ftell(ttf);
 	pst->u.lcaret.cnt = getushort(ttf);
@@ -2800,6 +2801,7 @@ return;
     cnt = getushort(ttf);
     pst = chunkalloc(sizeof(PST));
     pst->type = pst_lcaret;
+    pst->script_lang_index = SLI_UNKNOWN;
     pst->tag = CHR(' ',' ',' ',' ');
     pst->next = sc->possub;
     sc->possub = pst;
