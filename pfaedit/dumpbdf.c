@@ -57,14 +57,16 @@ static void decomposename(BDFFont *font, char *fontname, char *family_name, char
 /*  characters each. */
 	if (( ital = strstrmatch(fontname,"Ital"))!=NULL )
 	    strcpy(slant,"I");
+	else if (( ital = strstrmatch(fontname,"Kurs"))!=NULL )
+	    strcpy(slant,"I");
 	else if (( ital = strstr(fontname,"Obli"))!=NULL )
 	    strcpy(slant,"O");
     
 	if (( bold = strstr(fontname,"Bold"))==NULL &&
-		( bold = strstr(fontname,"Light"))==NULL &&
+		( bold = strstr(fontname,"Ligh"))==NULL &&
 		( bold = strstr(fontname,"Demi"))==NULL &&
-		( bold = strstr(fontname,"Black"))==NULL &&
-		( bold = strstr(fontname,"Roman"))==NULL &&
+		( bold = strstr(fontname,"Blac"))==NULL &&
+		( bold = strstr(fontname,"Roma"))==NULL &&
 		( bold = strstr(fontname,"Book"))==NULL &&
 		( bold = strstr(fontname,"Medi"))==NULL );	/* Again, URW */
     

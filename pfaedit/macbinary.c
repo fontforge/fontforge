@@ -530,31 +530,35 @@ static struct resource *BuildDummyNFNTlist(FILE *res, SplineFont *sf, real *size
 return(resstarts);
 }
 
-enum style_flags { sf_bold = 1, sf_italic = 2, sf_underline = 4, sf_outline = 8,
-	sf_shadow = 0x10, sf_condense = 0x20, sf_extend = 0x40 };
 enum psstyle_flags { psf_bold = 1, psf_italic = 2, psf_outline = 4,
 	psf_shadow = 0x8, psf_condense = 0x10, psf_extend = 0x20 };
 
-static unsigned short getstylecode( SplineFont *sf ) {
+uint16 MacStyleCode( SplineFont *sf ) {
     unsigned short stylecode= 0;
+    char *styles = SFGetModifiers(sf);
 
-    if ( strstr( sf->fontname, "Bold" ) || strstr(sf->fontname,"Demi") ||
+    if ( strstrmatch( styles, "Bold" ) || strstrmatch(styles,"Demi") ||
+	    strstrmatch( styles,"Heav") || strstrmatch(styles,"Blac") ||
 /* A few fonts have German/French styles in their names */
-	    strstr( sf->fontname,"Fett") || strstr(sf->fontname,"Gras") ) {
+	    strstrmatch( styles,"Fett") || strstrmatch(styles,"Gras") ) {
+	stylecode = sf_bold;
+    } else if ( strstrmatch( sf->weight, "Bold" ) || strstrmatch(sf->weight,"Demi") ||
+	    strstrmatch( sf->weight,"Heav") || strstrmatch(sf->weight,"Blac") ||
+	    strstrmatch( sf->weight,"Fett") || strstrmatch(sf->weight,"Gras") ) {
 	stylecode = sf_bold;
     }
     /* URW uses four leter abbreviations of Italic and Oblique */
-    if ( strstr( sf->fontname, "Ital" ) || strstr( sf->fontname, "Obli" ) ||
-	    strstr(sf->fontname, "Kurs")) {
+    if ( strstrmatch( styles, "Ital" ) || strstrmatch( styles, "Obli" ) ||
+	    strstrmatch(styles, "Kurs")) {
 	stylecode |= sf_italic;
     }
-    if ( strstr( sf->fontname, "Outl" ) ) {
+    if ( strstrmatch( styles, "Outl" ) ) {
 	stylecode |= sf_outline;
     }
-    if ( strstr( sf->fontname, "Cond" ) ) {
+    if ( strstrmatch( styles, "Cond" ) ) {
 	stylecode |= sf_condense;
     }
-    if ( strstr( sf->fontname, "Exte" ) ) {
+    if ( strstrmatch( styles, "Exte" ) ) {
 	stylecode |= sf_extend;
     }
 return( stylecode );
@@ -587,7 +591,7 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,real *sizes)
     putshort(res,2);			/* FOND version */
 
     /* Font association table */
-    stylecode = getstylecode( sf );
+    stylecode = MacStyleCode( sf );
     for ( i=0; sizes!=NULL && sizes[i]!=0; ++i );
     if ( dottf ) {
 	putshort(res,i+1-1);		/* Number of faces */

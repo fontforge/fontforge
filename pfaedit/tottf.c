@@ -3748,6 +3748,10 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont) {
 	dumpintoper(private,*pt=='t'||*pt=='T',(12<<8)|14);
     } else if ( sf->weight!=NULL &&
 	    (strstrmatch(sf->weight,"Bold")!=NULL ||
+	     strstrmatch(sf->weight,"Demi")!=NULL ||
+	     strstrmatch(sf->weight,"Fett")!=NULL ||
+	     strstrmatch(sf->weight,"Gras")!=NULL ||
+	     strstrmatch(sf->weight,"Heavy")!=NULL ||
 	     strstrmatch(sf->weight,"Black")!=NULL))
 	dumpintoper(private,1,(12<<8)|14);
     if ( (pt=PSDictHasEntry(sf->private,"LanguageGroup"))!=NULL )
@@ -4297,15 +4301,7 @@ static void sethead(struct head *head,SplineFont *_sf) {
     if ( AnyWidthMDs(_sf))
 	head->flags = 0x13;		/* baseline at 0, lsbline at 0, instructions change metrics */
     head->emunits = sf->ascent+sf->descent;
-/* Many of the following style names are truncated because that's what URW */
-/*  does. Only 4 characters for each style. Hence "obli" rather than "oblique"*/
-    if ( sf->weight!=NULL && (strstrmatch(sf->weight,"bold")!=NULL ||
-		strstrmatch(sf->weight,"demi")!=NULL ||
-		strstrmatch(sf->weight,"blac")!=NULL ))
-	head->macstyle |= 1;
-    if ( sf->fontname!=NULL && (strstrmatch(sf->fontname,"ital")!=NULL ||
-		strstrmatch(sf->fontname,"obli")!=NULL ))
-	head->macstyle |= 2;
+    head->macstyle = MacStyleCode(sf);
     head->lowestreadable = 8;
     head->locais32 = 1;
     lr = rl = 0;
@@ -4448,15 +4444,19 @@ void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *_sf,char *fontname) {
 
 	pfminfo->weight = 400;
 	pfminfo->panose[2] = 5;
-	if ( strstrmatch(fontname,"medium")!=NULL ) {
+/* urw uses 4 character abreviations */
+	if ( strstrmatch(fontname,"medi")!=NULL ) {
 	    pfminfo->weight = 500;
 	    pfminfo->panose[2] = 6;
-	} else if ( (strstrmatch(fontname,"demi")!=NULL ||
-		    strstrmatch(fontname,"semi")!=NULL) &&
-		strstrmatch(fontname,"bold")!=NULL ) {
+	} else if ( strstrmatch(fontname,"demi")!=NULL ||
+		    strstrmatch(fontname,"halb")!=NULL ||
+		    (strstrmatch(fontname,"semi")!=NULL &&
+		strstrmatch(fontname,"bold")!=NULL) ) {
 	    pfminfo->weight = 600;
 	    pfminfo->panose[2] = 7;
-	} else if ( strstrmatch(fontname,"bold")!=NULL ) {
+	} else if ( strstrmatch(fontname,"bold")!=NULL ||
+		    strstrmatch(fontname,"fett")!=NULL ||
+		    strstrmatch(fontname,"gras")!=NULL ) {
 	    pfminfo->weight = 700;
 	    pfminfo->panose[2] = 8;
 	} else if ( strstrmatch(fontname,"heavy")!=NULL ) {
@@ -4478,13 +4478,6 @@ void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *_sf,char *fontname) {
 	} else if ( strstrmatch(fontname,"light")!=NULL ) {
 	    pfminfo->weight = 300;
 	    pfminfo->panose[2] = 4;
-/* urw uses 4 character abreviations */
-	} else if ( strstrmatch(fontname,"demi")!=NULL ) {
-	    pfminfo->weight = 600;
-	    pfminfo->panose[2] = 7;
-	} else if ( strstrmatch(fontname,"medi")!=NULL ) {
-	    pfminfo->weight = 500;
-	    pfminfo->panose[2] = 6;
 	}
 
 	pfminfo->width = 5;

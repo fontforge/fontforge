@@ -472,6 +472,10 @@ typedef struct splinefont {
     char *comments;
 } SplineFont;
 
+/* mac styles. Useful idea we'll just steal it */
+enum style_flags { sf_bold = 1, sf_italic = 2, sf_underline = 4, sf_outline = 8,
+	sf_shadow = 0x10, sf_condense = 0x20, sf_extend = 0x40 };
+
 struct fontdict;
 struct pschars;
 struct findsel;
@@ -691,6 +695,7 @@ extern SplineFont *CFFParse(FILE *temp,int len,char *fontsetname);
 extern SplineFont *SFReadMacBinary(char *filename);
 extern SplineFont *LoadSplineFont(char *filename);
 extern SplineFont *ReadSplineFont(char *filename);	/* Don't use this, use LoadSF instead */
+extern uint16 MacStyleCode( SplineFont *sf );
 
 extern const char *UnicodeRange(int unienc);
 extern SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i);
