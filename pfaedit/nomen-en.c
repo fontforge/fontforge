@@ -927,6 +927,7 @@ static char str_Badtype[] = "Bad type";
 static char str_Delete[] = "Delete";
 static char mnemonic_Delete[] = 'D';
     /* Prefs */
+static char str_UTF_8[] = "UTF-8 (Unicode)";
 static char str_Default[] = "Default";
 static char *str_PrefsPopupAWS[] = "Changing the width of a character\nchanges the widths of all accented\ncharacters based on it.";
 static char *str_PrefsPopupALS[] = "Changing the left side bearing\nof a character adjusts the lbearing\nof other references in all accented\ncharacters based on it.";

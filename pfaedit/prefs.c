@@ -56,6 +56,7 @@ extern int default_fv_showhmetrics;	/* in fontview */
 extern int default_fv_showvmetrics;	/* in fontview */
 extern int palettes_docked;		/* in cvpalettes */
 /* int local_encoding; */		/* in gresource.c *//* not a charset */
+static int prefs_encoding = e_unknown;
 int greekfixup = true;
 extern int onlycopydisplayed, copymetadata;
 extern struct cvshows CVShows;
@@ -75,6 +76,8 @@ unichar_t *script_menu_names[SCRIPT_MENU_MAX];
 char *script_filenames[SCRIPT_MENU_MAX];
 
 static GTextInfo localencodingtypes[] = {
+    { (unichar_t *) _STR_Default, NULL, 0, 0, (void *) e_unknown, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
     { (unichar_t *) _STR_Isolatin1, NULL, 0, 0, (void *) e_iso8859_1, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Isolatin0, NULL, 0, 0, (void *) e_iso8859_15, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Isolatin2, NULL, 0, 0, (void *) e_iso8859_2, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -96,6 +99,7 @@ static GTextInfo localencodingtypes[] = {
     { (unichar_t *) _STR_Win, NULL, 0, 0, (void *) e_win, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
     { (unichar_t *) _STR_Unicode, NULL, 0, 0, (void *) e_unicode, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_UTF_8, NULL, 0, 0, (void *) e_utf8, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
     { (unichar_t *) _STR_SJIS, NULL, 0, 0, (void *) e_sjis, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_KoreanWansung, NULL, 0, 0, (void *) e_wansung, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -123,7 +127,7 @@ static struct prefs_list {
 	{ "AutoWidthSync", pr_bool, &adjustwidth, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupAWS },
 	{ "AutoLBearingSync", pr_bool, &adjustlbearing, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupALS },
 	{ "AutoHint", pr_bool, &autohint_before_rasterize, NULL, NULL, 'A', NULL, 0, _STR_PrefsPopupAH },
-	{ "LocalEncoding", pr_encoding, &local_encoding, NULL, NULL, 'L', NULL, 0, _STR_PrefsPopupLoc },
+	{ "LocalEncoding", pr_encoding, &prefs_encoding, NULL, NULL, 'L', NULL, 0, _STR_PrefsPopupLoc },
 	{ "NewCharset", pr_encoding, &default_encoding, NULL, NULL, 'N', NULL, 0, _STR_PrefsPopupForNewFonts },
 	{ "ShowRulers", pr_bool, &CVShows.showrulers, NULL, NULL, '\0', NULL, 1, _STR_PrefsPopupRulers },
 	{ "ItalicConstrained", pr_bool, &ItalicConstrained, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupIC },
@@ -174,7 +178,7 @@ static struct prefs_list {
 	{ NULL }
 },
  oldnames[] = {
-	{ "LocalCharset", pr_encoding, &local_encoding, NULL, NULL, 'L', NULL, 0, _STR_PrefsPopupLoc },
+	{ "LocalCharset", pr_encoding, &prefs_encoding, NULL, NULL, 'L', NULL, 0, _STR_PrefsPopupLoc },
 	{ NULL }
 },
  *prefs_list[] = { general_list, args_list, generate_list, hidden_list, NULL },
@@ -249,6 +253,67 @@ return( true );
 return( true );
     }
 return( false );
+}
+
+static int encmatch(const char *enc) {
+    static struct { char *name; int enc; } encs[] = {
+	{ "ISO-8859-1", e_iso8859_1 },
+	{ "ISO-8859-2", e_iso8859_2 },
+	{ "ISO-8859-3", e_iso8859_3 },
+	{ "ISO-8859-4", e_iso8859_4 },
+	{ "ISO-8859-5", e_iso8859_4 },
+	{ "ISO-8859-6", e_iso8859_4 },
+	{ "ISO-8859-7", e_iso8859_4 },
+	{ "ISO-8859-8", e_iso8859_4 },
+	{ "ISO-8859-9", e_iso8859_4 },
+	{ "ISO-8859-10", e_iso8859_10 },
+	{ "ISO-8859-11", e_iso8859_11 },
+	{ "ISO-8859-13", e_iso8859_13 },
+	{ "ISO-8859-14", e_iso8859_14 },
+	{ "ISO-8859-15", e_iso8859_15 },
+	{ "KOI8-R", e_koi8_r },
+	{ "CP1252", e_win },
+	{ "Big5", e_big5 },
+	{ "UTF-8", e_utf8 },
+	{ "ISO-10646-1", e_unicode },
+#if 0
+	{ "eucJP", e_euc },
+	{ "EUC-JP", e_euc },
+	{ "ujis", ??? },
+	{ "EUC-KR", e_euckorean },
+	{ "ISO-8859-4", e_iso8859_4 },
+#endif
+	{ NULL }};
+    int i;
+
+    for ( i=0; encs[i].name!=NULL; ++i )
+	if ( strmatch(enc,encs[i].name)==0 )
+return( encs[i].enc );
+
+return( e_unknown );
+}
+
+static int DefaultEncoding(void) {
+    const char *loc = getenv("LC_ALL");
+    int enc;
+
+    if ( loc==NULL ) loc = getenv("LC_MESSAGES");
+    if ( loc==NULL ) loc = getenv("LANG");
+
+    if ( loc==NULL )
+return( e_iso8859_1 );
+
+    enc = encmatch(loc);
+    if ( enc==e_unknown ) {
+	loc = strrchr(loc,'.');
+	if ( loc==NULL )
+return( e_iso8859_1 );
+	enc = encmatch(loc+1);
+    }
+    if ( enc==e_unknown )
+return( e_iso8859_1 );
+
+return( enc );
 }
 
 static void CheckLang(void) {
@@ -416,7 +481,7 @@ return;
 		Encoding *item;
 		for ( item = enclist; item!=NULL && strcmp(item->enc_name,pt)!=0; item = item->next );
 		if ( item==NULL )
-		    *((int *) (pl->val)) = em_iso8859_1;
+		    *((int *) (pl->val)) = e_iso8859_1;
 		else
 		    *((int *) (pl->val)) = item->enc_num;
 	    }
@@ -438,6 +503,10 @@ return;
     }
     fclose(p);
     GreekHack();
+    if ( prefs_encoding==e_unknown )
+	local_encoding = DefaultEncoding();
+    else
+	local_encoding = prefs_encoding;
 }
 
 void SavePrefs(void) {
@@ -560,9 +629,16 @@ return( true );
 		GetInt(gw,j*1000+1000+i,pl->name,&err);
 	    } else if ( pl->type==pr_int ) {
 		GetReal(gw,j*1000+1000+i,pl->name,&err);
-	    } else if ( pl->val == &local_encoding ) {
+	    } else if ( pl->val == &prefs_encoding ) {
 		enc = GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,j*1000+1000+i));
 		lc = (int) (localencodingtypes[enc].userdata);
+		if ( lc!=e_unknown )
+		    prefs_encoding = lc;
+		else if ( prefs_encoding!=e_unknown ) {
+		    lc = DefaultEncoding();
+		    prefs_encoding = e_unknown;
+		} else
+		    lc = local_encoding;
 	    }
 	}
 	if ( err )
@@ -587,7 +663,7 @@ return( true );
 	        *((float *) (pl->val)) = GetReal(gw,j*1000+1000+i,pl->name,&err);
 	      break;
 	      case pr_encoding:
-		if ( pl->val==&local_encoding )
+		if ( pl->val==&prefs_encoding )
 	continue;
 		enc = GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,j*1000+1000+i));
 		ti = GGadgetGetListItem(GWidgetGetControl(gw,j*1000+1000+i),enc);
@@ -806,7 +882,7 @@ void DoPrefs(void) {
 		y += 26;
 	      break;
 	      case pr_encoding:
-		if ( pl->val==&local_encoding ) {
+		if ( pl->val==&prefs_encoding ) {
 		    pgcd[gc].gd.u.list = localencodingtypes;
 		    pgcd[gc].gd.label = EncodingTypesFindEnc(localencodingtypes,
 			    *(int *) pl->val);
