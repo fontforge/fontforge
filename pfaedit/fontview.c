@@ -4459,6 +4459,7 @@ static void FVMouse(FontView *fv,GEvent *event) {
 		FVDeselectAll(fv);
 	    else if ( event->u.mouse.button!=3 ) {
 		fv->drag_and_drop = fv->has_dd_no_cursor = true;
+		fv->any_dd_events_sent = false;
 		GDrawSetCursor(fv->v,ct_prohibition);
 		GDrawGrabSelection(fv->v,sn_drag_and_drop);
 		GDrawAddSelectionType(fv->v,sn_drag_and_drop,"STRING",fv,0,sizeof(char),
@@ -4506,6 +4507,7 @@ static void FVMouse(FontView *fv,GEvent *event) {
 	    GDrawSetCursor(fv->v,ct_mypointer);
 	    if ( !fv->any_dd_events_sent )
 		FVDeselectAll(fv);
+	    fv->any_dd_events_sent = false;
 	}
     } else if ( fv->pressed!=NULL ) {
 	int showit = pos!=fv->end_pos;
