@@ -690,7 +690,7 @@ char **NamesReadSVG(char *filename) {
 return( NULL );
 }
 
-SplineSet *SplinePointListInterpretSVG(char *filename,int em_size,int ascent) {
+SplineSet *SplinePointListInterpretSVG(char *filename,int em_size,int ascent,int is_stroked) {
 return( NULL );
 }
 #else
