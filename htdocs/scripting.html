@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 9-Feb-2005 -->
+  <!-- AP: Last modified: 16-Feb-2005 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -123,6 +123,8 @@ Terms can be
   <LI>
     a unicode code point (which has a prefix of "0u" or "0U" and is followed
     by a string of hex digits. This is only used by the select command.
+  <LI>
+    a real number
   <LI>
     A string which may be enclosed in either double or single quotes
   <LI>
@@ -252,11 +254,11 @@ endloop
 </PRE>
 </BLOCKQUOTE>
 <P>
-FontForge maintains the concept of a "current font" almost all commands refer
-only to the current font (and require that there be a font). If you start
-a script with File-&gt;Execute Script, the font you were editing will be
-current, otherwise there will be no initial current font. The Open(), New()
-and Close() commands all change the current font. FontForge also maintains
+FontForge maintains the concept of a "current font"-- almost all commands
+refer only to the current font (and require that there be a font). If you
+start a script with File-&gt;Execute Script, the font you were editing will
+be current, otherwise there will be no initial current font. The Open(),
+New() and Close() commands all change the current font. FontForge also maintains
 a list of all fonts that are currently open. This list is in no particular
 order. The list starts with $firstfont.
 <P>
@@ -563,6 +565,22 @@ a[4][0] = "Nested array";
     length and the function will return the integer encoding of that character
     in the string.
   <DT>
+    Real(int)
+  <DD>
+    Converts an integer to a real number.
+  <DT>
+    Round(real)
+  <DD>
+    Converts a real number to an integer by rounding to the nearest integer
+  <DT>
+    Floor(real)
+  <DD>
+    Converts a real number to the largest integer smaller than the real.
+  <DT>
+    Ceil(real)
+  <DD>
+    Converts a real number to the smallest integer larger than the real.
+  <DT>
     Utf8(int)
   <DD>
     Takes an integer [0,0x10ffff] and returns the utf8 string representing that
@@ -858,7 +876,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
   <DD>
     For each selected glyph in the current font, this command will export that
     glyph into a file in the current directory. Format must be a string and must
-    be one of
+    end with one of
     <UL>
       <LI>
 	eps -- the selected glyphs will have their splines output into eps files.
@@ -885,6 +903,31 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 	png -- The second argument specifies a bitmap font size, the selected glyphs
 	in that bitmap font will be output as png files. The files will be named
 	"&lt;glyph-name&gt;_&lt;font-name&gt;.png".
+    </UL>
+    <P>
+    The format may consist entirely of the filetype (above), or it may include
+    a full filename (with some format control within it) which has the file type
+    as an extension:
+    <BLOCKQUOTE>
+      "Glyph %n from font %f.svg"<BR>
+      "U+%U.bmp"
+    </BLOCKQUOTE>
+    <P>
+    All characters in the format string except for % are copied verbatim. If
+    there is a % then the following character controls behavior:
+    <UL>
+      <LI>
+	%n -- inserts the glyph name (or the first 40 characters of it for long names)
+      <LI>
+	%f -- inserts the font name (or the first 40 characters)
+      <LI>
+	%e -- inserts the glyph's encoding as a decimal integer
+      <LI>
+	%u -- inserts the glyph's unicode code point in lower case hex
+      <LI>
+	%U -- inserts the glyph's unicode code point in upper case hex
+      <LI>
+	%% -- inserts a single '%'
     </UL>
   <DT>
     MergeKern(filename)
@@ -1622,14 +1665,14 @@ ApplySubstitution("*","*","vrt2")
     factor</CODE>, in other words if you set factor to 100 then it will round
     to hundredths.
   <DT>
-    RoundToCluster([within-num,within-demom[,max]])
+    RoundToCluster([within[,max]])
   <DD>
     The first two provide a fraction that indicates a value within which similar
     coordinates will be bundled together. Max indicates how many "within"s from
     the center point it will go if there are a chain of points each within "within"
     of the previous one. So
     <BLOCKQUOTE>
-      <PRE> RoundToCluster(1,10,5)
+      <PRE> RoundToCluster(.1,5)
 </PRE>
     </BLOCKQUOTE>
     <P>
@@ -1800,14 +1843,14 @@ ApplySubstitution("*","*","vrt2")
       </TR>
     </TABLE>
   <DT>
-    ReplaceWithReference([num,denom])
+    ReplaceWithReference([fudge])
   <DD>
     Finds any glyph which contains an inline copy of one of the selected glyphs,
     and converts that copy into a reference to the appropriate glyph. Selection
     is changed to the set of glyphs which the command alters.
     <P>
-    If specified the num and denom arguments specify the error allowed for coordinate
-    differences.
+    If specified the fudge argument specifie<B></B>s<B></B> the error allowed
+    for coordinate differences.
   <DT>
     MergeFonts(other-font-name[,flags])
   <DD>
