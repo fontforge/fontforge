@@ -68,6 +68,9 @@ typedef struct gidata {
 #define CID_PrevTheta	2017
 #define CID_HintMask	2020
 #define CID_ActiveHints	2030
+/* Also use CID_Next, CID_Prev below */
+#define CID_NextC	2041
+#define CID_PrevC	2042
 #define CID_TabSet	2100
 
 #define CID_X		3001
@@ -92,7 +95,7 @@ typedef struct gidata {
 #define II_Height	70
 
 #define PI_Width	228
-#define PI_Height	308
+#define PI_Height	334
 
 #define AI_Width	160
 #define AI_Height	234
@@ -1574,64 +1577,65 @@ static void PIChangePoint(GIData *ci) {
 	for ( i=0; i<len && i<HntMax; ++i )
 	    GGadgetSelectListItem(list,i, (*hm)[i>>3]&(0x80>>(i&7))?true:false );
     }
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_NextDef),ci->cursp->next!=NULL);
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_PrevDef),ci->cursp->prev!=NULL);
 }
 
-static int PI_Next(GGadget *g, GEvent *e) {
+static int PI_NextPrev(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
 	CharView *cv = ci->cv;
-
-	PI_FigureHintMask(ci);
-
-	PI_FigureNext(ci);
-	PI_FigurePrev(ci);
-	
-	ci->cursp->selected = false;
-	if ( ci->cursp->next!=NULL && ci->cursp->next->to!=ci->curspl->first )
-	    ci->cursp = ci->cursp->next->to;
-	else {
-	    if ( ci->curspl->next == NULL )
-		ci->curspl = cv->layerheads[cv->drawmode]->splines;
-	    else
-		ci->curspl = ci->curspl->next;
-	    ci->cursp = ci->curspl->first;
-	}
-	ci->cursp->selected = true;
-	PIChangePoint(ci);
-	CVShowPoint(cv,ci->cursp);
-	SCUpdateAll(cv->sc);
-    }
-return( true );
-}
-
-static int PI_Prev(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
-	CharView *cv = ci->cv;
+	int cid = GGadgetGetCid(g);
 	SplinePointList *spl;
 
 	PI_FigureHintMask(ci);
 
 	PI_FigureNext(ci);
 	PI_FigurePrev(ci);
-
-	ci->cursp->selected = false;
 	
-	if ( ci->cursp!=ci->curspl->first ) {
-	    ci->cursp = ci->cursp->prev->from;
-	} else {
-	    if ( ci->curspl==cv->layerheads[cv->drawmode]->splines ) {
-		for ( spl = cv->layerheads[cv->drawmode]->splines; spl->next!=NULL; spl=spl->next );
-	    } else {
-		for ( spl = cv->layerheads[cv->drawmode]->splines; spl->next!=ci->curspl; spl=spl->next );
+	ci->cursp->selected = false;
+	if ( cid == CID_Next ) {
+	    if ( ci->cursp->next!=NULL && ci->cursp->next->to!=ci->curspl->first )
+		ci->cursp = ci->cursp->next->to;
+	    else {
+		if ( ci->curspl->next == NULL ) {
+		    ci->curspl = cv->layerheads[cv->drawmode]->splines;
+		    GDrawBeep(NULL);
+		} else
+		    ci->curspl = ci->curspl->next;
+		ci->cursp = ci->curspl->first;
 	    }
-	    ci->curspl = spl;
-	    ci->cursp = spl->last;
-	    if ( spl->last==spl->first && spl->last->prev!=NULL )
+	} else if ( cid == CID_Prev ) {
+	    if ( ci->cursp!=ci->curspl->first ) {
 		ci->cursp = ci->cursp->prev->from;
+	    } else {
+		if ( ci->curspl==cv->layerheads[cv->drawmode]->splines ) {
+		    for ( spl = cv->layerheads[cv->drawmode]->splines; spl->next!=NULL; spl=spl->next );
+		    GDrawBeep(NULL);
+		} else {
+		    for ( spl = cv->layerheads[cv->drawmode]->splines; spl->next!=ci->curspl; spl=spl->next );
+		}
+		ci->curspl = spl;
+		ci->cursp = spl->last;
+		if ( spl->last==spl->first && spl->last->prev!=NULL )
+		    ci->cursp = ci->cursp->prev->from;
+	    }
+	} else if ( cid==CID_NextC ) {
+	    if ( ci->cursp->next!=NULL )
+		ci->cursp = ci->cursp->next->to;
+	    else {
+		ci->cursp = ci->curspl->first;
+		GDrawBeep(NULL);
+	    }
+	} else /* CID_PrevC */ {
+	    if ( ci->cursp->prev!=NULL )
+		ci->cursp = ci->cursp->prev->from;
+	    else {
+		ci->cursp = ci->curspl->last;
+		GDrawBeep(NULL);
+	    }
 	}
 	ci->cursp->selected = true;
-	cv->p.nextcp = cv->p.prevcp = false;
 	PIChangePoint(ci);
 	CVShowPoint(cv,ci->cursp);
 	SCUpdateAll(cv->sc);
@@ -1949,8 +1953,8 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
     static GIData gi;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[37], hgcd[2], h2gcd[2], mgcd[8];
-    GTextInfo label[37], mlabel[8];
+    GGadgetCreateData gcd[39], hgcd[2], h2gcd[2], mgcd[8];
+    GTextInfo label[39], mlabel[8];
     GTabInfo aspects[4];
     static GBox cur, nextcp, prevcp;
     extern Color nextcpcol, prevcpcol;
@@ -2282,9 +2286,9 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	mgcd[j].gd.flags = gg_visible | gg_enabled;
 	mlabel[j].text = (unichar_t *) _STR_PrevArrow;
 	mlabel[j].text_in_resource = true;
-	mgcd[j].gd.mnemonic = 'P';
 	mgcd[j].gd.label = &mlabel[j];
-	mgcd[j].gd.handle_controlevent = PI_Prev;
+	mgcd[j].gd.cid = CID_Prev;
+	mgcd[j].gd.handle_controlevent = PI_NextPrev;
 	mgcd[j].creator = GButtonCreate;
 	++j;
 
@@ -2294,8 +2298,31 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	mlabel[j].text = (unichar_t *) _STR_NextArrow;
 	mlabel[j].text_in_resource = true;
 	mgcd[j].gd.label = &mlabel[j];
-	mgcd[j].gd.mnemonic = 'N';
-	mgcd[j].gd.handle_controlevent = PI_Next;
+	mgcd[j].gd.cid = CID_Next;
+	mgcd[j].gd.handle_controlevent = PI_NextPrev;
+	mgcd[j].creator = GButtonCreate;
+	++j;
+
+/* Why 3? */
+	mgcd[j].gd.pos.x = mgcd[j-2].gd.pos.x-50+3; mgcd[j].gd.pos.y = mgcd[j-1].gd.pos.y+26;
+	mgcd[j].gd.pos.width = 100; mgcd[j].gd.pos.height = 0;
+	mgcd[j].gd.flags = gg_visible | gg_enabled;
+	mlabel[j].text = (unichar_t *) _STR_PrevOnContour;
+	mlabel[j].text_in_resource = true;
+	mgcd[j].gd.label = &mlabel[j];
+	mgcd[j].gd.cid = CID_PrevC;
+	mgcd[j].gd.handle_controlevent = PI_NextPrev;
+	mgcd[j].creator = GButtonCreate;
+	++j;
+
+	mgcd[j].gd.pos.x = mgcd[j-2].gd.pos.x; mgcd[j].gd.pos.y = mgcd[j-1].gd.pos.y;
+	mgcd[j].gd.pos.width = 100; mgcd[j].gd.pos.height = 0;
+	mgcd[j].gd.flags = gg_visible | gg_enabled;
+	mlabel[j].text = (unichar_t *) _STR_NextOnContour;
+	mlabel[j].text_in_resource = true;
+	mgcd[j].gd.label = &mlabel[j];
+	mgcd[j].gd.cid = CID_NextC;
+	mgcd[j].gd.handle_controlevent = PI_NextPrev;
 	mgcd[j].creator = GButtonCreate;
 	++j;
 
