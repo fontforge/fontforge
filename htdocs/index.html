@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 12-Mar-2002 -->
+  <!-- AP: Last modified: 4-Apr-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -16,10 +16,6 @@
 that lets you create your own postscript, truetype, opentype, cid-keyed and
 bitmap (bdf) fonts, or edit existing ones. Also lets you convert one format
 to another.
-<P ALIGN=Center>
-<FONT COLOR="Red"><STRONG><BIG><BIG><BIG>I will not be responding to bug
-reports (etc.) between 14-Mar and
-3-Apr.</BIG></BIG></BIG></STRONG></FONT>
 <P>
 Contents
 <UL>
@@ -87,8 +83,8 @@ you do</A>.
     <A HREF="pfaedit-020312.tgz">Download pfaedit linux-i386 Redhat 7.1
     </A><A NAME="downloads">executable</A> Version: 12-Mar-2002
   <LI>
-    <A HREF="pfaedit_ppc-020208.tgz">Download pfaedit linux-ppc SUSE 7.1
-    </A>executable Version: 8-Feb-2002
+    <A HREF="pfaedit-020312-1.ppc.rpm">Download pfaedit linux-ppc SUSE 7.1
+    </A>binary rpm Version: 12-Mar-2002
   <LI>
     <A HREF="pfaedit-solaris-020312.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 12-Mar-2002
@@ -100,7 +96,7 @@ you do</A>.
     is available at the debian site.</A>
   <LI>
     <A HREF="Problems-MacOSX.html#binary">A Mac OS/X distribution</A> (with Caveats).
-    Version 2-Mar-2002
+    Version 12-Mar-2002
   <LI>
     <A HREF="pfaedit_cygwin-020312.tgz">A cygwin version</A>. Version: 12-Mar-2002
   <LI>
@@ -122,9 +118,9 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-020312-1.src.rpm">source RPM</A>: Version:
 12-Mar-2002<BR>
-Or you can download the <A HREF="pfaedit_full-020312.tgz">entire source tree
+Or you can download the <A HREF="pfaedit_full-020403.tgz">entire source tree
 </A>in one .tgz file: Version
-12-Mar-2002<!--
+3-Apr-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -194,8 +190,7 @@ If you are editing <A NAME="cidmaps">CID keyed fonts </A>you should pull
 down the following file
 <UL>
   <LI>
-    <A HREF="cidmaps.tgz">cidmaps.tgz</A> (These were last updated
-    6-Mar-2002)<BR>
+    <A HREF="cidmaps.tgz">cidmaps.tgz</A> (These were last updated 6-Mar-2002)<BR>
     and then<BR>
     <CODE>$ gunzip cidmaps.tgz<BR>
     $ tar xf cidmaps.tar <BR>
@@ -281,7 +276,41 @@ Or you can just browse the <A HREF="overview.html">docs online</A>.
 </H2>
 <UL>
   <LI>
-    ???
+    3-Apr-2002
+    <UL>
+      <LI>
+	Various scrollbar enhancements
+	<UL>
+	  <LI>
+	    thumb now has a bigger minimum size
+	  <LI>
+	    fontview/charview both respond to page up and page down requests
+	  <LI>
+	    right mouse button may be used to position thumb
+	</UL>
+      <LI>
+	Installed James A. Crippen makefile patch so that distclean reports success
+	even if there are no files to clean.
+      <LI>
+	PfaEdit had problems guessing default ligatures for characters outside of
+	BMP.
+      <LI>
+	In the outline character view, double clicking with one of the point tools
+	(curve, corner, tangent, pen) will add a point and then bring up a
+	<A HREF="getinfo.html">Point Info</A> dialog
+      <LI>
+	If you edit in a textfield (so that the mouse pointer vanishes) and then
+	tabbed into another text field the mouse pointer would never reappear.
+      <LI>
+	Merge Fonts left memory in a bad state and would often cause a crash.
+      <LI>
+	Merge Fonts used a string for a title which was ascii when unicode was expected.
+	This could cause strange characters to be displayed.
+      <LI>
+	More fixes for build accented characters (for inverted breve and Oslash).
+    </UL>
+  <LI>
+    14-Mar-2002
     <UL>
       <LI>
 	Nifty. The modifier keys auto-repeat under cygwin (if Control is down one
