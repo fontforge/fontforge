@@ -4167,7 +4167,7 @@ static void FVChar(FontView *fv,GEvent *event) {
 		BDFFont *bdf = fv->show;
 		if ( bdf->chars[i]==NULL )
 		    bdf->chars[i] = SplineCharRasterize(sc,bdf->pixelsize);
-		BitmapViewCreate(bdf->chars[pos],bdf,fv);
+		BitmapViewCreate(bdf->chars[i],bdf,fv);
 	    }
 	    ++cnt;
 	}
