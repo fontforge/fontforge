@@ -1145,8 +1145,11 @@ static void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint 
     SplinePointCatagorize(to);
 }
 
-static void RemoveZeroLengthSplines(SplineSet *spl, int onlyselected) {
+static void RemoveZeroLengthSplines(SplineSet *spl, int onlyselected, double bound) {
     SplinePoint *curp, *next, *prev;
+    double plen, nlen;
+
+    bound *= bound;
 
     for ( curp = spl->first, prev=NULL; curp!=NULL ; curp=next ) {
 	next = NULL;
@@ -1155,38 +1158,47 @@ static void RemoveZeroLengthSplines(SplineSet *spl, int onlyselected) {
 	if ( curp==next )	/* Once we've worked a contour down to a single point we can't do anything more here. Someone else will have to free the contour */
 return;
 	/* Zero length splines give us NaNs */
-	if ( curp!=NULL && (curp->selected || !onlyselected) &&
-		((curp->prev!=NULL && curp->me.x==curp->prev->from->me.x && curp->me.y==curp->prev->from->me.y ) ||
-		 (curp->next!=NULL && curp->me.x==curp->next->to->me.x && curp->me.y==curp->next->to->me.y ))) {
-	     if ( curp->prev!=NULL && curp->me.x==curp->prev->from->me.x && curp->me.y==curp->prev->from->me.y ) {
-		 SplinePoint *other = curp->prev->from;
-		 other->nextcp = curp->nextcp;
-		 other->nonextcp = curp->nonextcp;
-		 other->nextcpdef = curp->nextcpdef;
-		 other->next = curp->next;
-		 if ( curp->next!=NULL ) other->next->from = other;
-		 SplineFree(curp->prev);
-	     } else {
-		 SplinePoint *other = next;
-		 other->prevcp = curp->prevcp;
-		 other->noprevcp = curp->noprevcp;
-		 other->prevcpdef = curp->prevcpdef;
-		 other->prev = curp->prev;
-		 if ( curp->prev!=NULL ) other->prev->to = other;
-		 SplineFree(curp->next);
-	     }
-	     SplinePointFree(curp);
-	     if ( spl->first==curp ) {
-		 spl->first = next;
-		 if ( spl->last==curp )
-		     spl->last = next;
-	     } else if ( spl->last==curp )
-		 spl->last = prev;
-	 } else
-	     prev = curp;
-	 if ( next==spl->first )
-     break;
-     }
+	if ( curp!=NULL && (curp->selected || !onlyselected) ) {
+	    plen = nlen = 1e10;
+	    if ( curp->prev!=NULL )
+		plen = (curp->me.x-curp->prev->from->me.x)*(curp->me.x-curp->prev->from->me.x) +
+			(curp->me.y-curp->prev->from->me.y)*(curp->me.y-curp->prev->from->me.y);
+	    if ( curp->next!=NULL )
+		nlen = (curp->me.x-next->me.x)*(curp->me.x-next->me.x) +
+			(curp->me.y-next->me.y)*(curp->me.y-next->me.y);
+	    if (( curp->prev!=NULL && plen<=bound && plen<nlen ) ||
+		    (curp->next!=NULL && nlen<bound && nlen<plen )) {
+		if ( curp->prev!=NULL && plen<=bound && plen<nlen ) {
+		    SplinePoint *other = curp->prev->from;
+		    other->nextcp = curp->nextcp;
+		    other->nonextcp = curp->nonextcp;
+		    other->nextcpdef = curp->nextcpdef;
+		    other->next = curp->next;
+		    if ( curp->next!=NULL ) other->next->from = other;
+		    SplineFree(curp->prev);
+		} else {
+		    SplinePoint *other = next;
+		    other->prevcp = curp->prevcp;
+		    other->noprevcp = curp->noprevcp;
+		    other->prevcpdef = curp->prevcpdef;
+		    other->prev = curp->prev;
+		    if ( curp->prev!=NULL ) other->prev->to = other;
+		    SplineFree(curp->next);
+		}
+		SplinePointFree(curp);
+		if ( spl->first==curp ) {
+		    spl->first = next;
+		    if ( spl->last==curp )
+			spl->last = next;
+		} else if ( spl->last==curp )
+		    spl->last = prev;
+	    } else
+		prev = curp;
+	} else
+	    prev = curp;
+	if ( next==spl->first )
+    break;
+    }
 }
 
 SplineSet *SSRemoveZeroLengthSplines(SplineSet *base) {
@@ -1203,7 +1215,7 @@ SplineSet *SSRemoveZeroLengthSplines(SplineSet *base) {
 	    spl->next = NULL;
 	    SplinePointListFree(spl);
 	} else {
-	    RemoveZeroLengthSplines(spl,false);
+	    RemoveZeroLengthSplines(spl,false,0);
 	    prev = spl;
 	}
     }
@@ -1282,7 +1294,7 @@ static SplinePointList *SplinePointListMerge(SplineChar *sc, SplinePointList *sp
 	all = true;		/* Merge away any splines which are just dots */
     if ( all )
 return( NULL );			/* Some one else should free it and reorder the spline set list */
-    RemoveZeroLengthSplines(spl,true);
+    RemoveZeroLengthSplines(spl,true,.3);
 
     if ( spl->first!=spl->last ) {
 	/* If the spline isn't closed, then any selected points at the ends */
@@ -1819,7 +1831,7 @@ void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,
     if ( spl==NULL )
 return;
 
-    RemoveZeroLengthSplines(spl,false);
+    RemoveZeroLengthSplines(spl,false,0.1);
     RemoveStupidControlPoints(spl);
     if ( spl->first->next!=NULL && spl->first->next->to==spl->first &&
 	    spl->first->nonextcp && spl->first->noprevcp )
