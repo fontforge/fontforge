@@ -16,11 +16,14 @@ Generate("results/Caliban.ttf","apple",-1);
 Print( "...Generated ttf w/ apple bitmaps")
 Generate("results/Caliban.otf","ms",-1);
 Print( "...Generated otf w/ ms bitmaps")
+Generate("results/Caliban.otf","ttf",0x80);
+Print( "...Generated otf w/ both apple and ot modes set (& bitmaps)")
 Generate("results/Caliban.dfont","sbit",-1);
 Print( "...Generated sbit")
 Generate("results/Caliban.dfont","dfont",-1);
 Print( "...Generated dfont w/ apple bitmaps")
 Close();
+  Quit();
 Open("results/Caliban.ps");
 Print( "...Read type0 (if PfaEdit didn't understand /CalibanBase that's ok)")
 Close();

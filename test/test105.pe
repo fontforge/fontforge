@@ -1,0 +1,7 @@
+#!/usr/local/bin/pfaedit
+#Just checking the while loop syntax
+
+i = 0
+while ( i<10 )
+  ++i
+endloop
