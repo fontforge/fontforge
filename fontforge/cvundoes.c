@@ -1282,7 +1282,7 @@ void CopySelected(CharView *cv) {
 	    copybuffer.u.state.u.images = new;
 	}
     }
-#ifdef PFAEDIT_CONFIG_TYPE3
+#ifdef FONTFORGE_CONFIG_TYPE3
     if ( cv->drawmode==dm_fore || cv->drawmode==dm_back ) {
 	copybuffer.u.state.fill_brush = cv->layerheads[cv->drawmode]->fill_brush;
 	copybuffer.u.state.stroke_pen = cv->layerheads[cv->drawmode]->stroke_pen;
