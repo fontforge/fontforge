@@ -563,6 +563,9 @@ static char *SearchDirForCidMap(char *dir,char *registry,char *ordering,
     char *pt, *end, *ret;
     int test, best = -1;
 
+    if ( dir==NULL )
+return( NULL );
+
     if ( *maybefile!=NULL ) {
 	char *pt = strrchr(*maybefile,'.');
 	while ( pt>*maybefile && isdigit(pt[-1]))

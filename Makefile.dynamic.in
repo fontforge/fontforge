@@ -25,10 +25,10 @@ clean:
 	( cd Unicode ; $(MAKE) clean )
 	( cd gdraw ; $(MAKE) clean )
 
-cleaner:
-	( cd pfaedit ; $(MAKE) cleaner )
-	( cd Unicode ; $(MAKE) cleaner )
-	( cd gdraw ; $(MAKE) cleaner )
+distclean cleaner:
+	( cd pfaedit ; $(MAKE) distclean )
+	( cd Unicode ; $(MAKE) distclean )
+	( cd gdraw ; $(MAKE) distclean )
 	rm Makefile config.cache config.log config.status
 
 install: $(sharedir)
@@ -45,6 +45,14 @@ install: $(sharedir)
 	ln -s libgunicode.so.1.0 $(libdir)/libgunicode.so.1
 	ln -s libgunicode.so.1 $(libdir)/libgunicode.so
 #	cp *.cidmap $(sharedir)
+
+uninstall:
+	-rm $(bindir)/pfaedit
+	-rm $(sharedir)/pfaedit.*.ui
+	-rm $(mandir)/man1/pfaedit.1
+	-rm $(libdir)/libgdraw.so*
+	-rm $(libdir)/libgunicode.so*
+#	-rm $(sharedir)/*.cidmap
 
 $(sharedir):
 	mkdir -p $(sharedir)

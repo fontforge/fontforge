@@ -271,6 +271,7 @@ return;
     }
     while ( info->resname!=NULL ) {
 	pos = _GResource_FindResName(info->resname);
+	info->found = (pos!=-1);
 	if ( pos==-1 )
 	    /* Do Nothing */;
 	else if ( info->type == rt_string ) {
@@ -280,18 +281,20 @@ return;
 		*(char **) (info->val) = copy( _GResource_Res[pos].val );
 	} else if ( info->type == rt_color ) {
 	    Color temp = _GImage_ColourFName(_GResource_Res[pos].val );
-	    if ( temp==-1 )
+	    if ( temp==-1 ) {
 		fprintf( stderr, "Can't convert %s to a Color for resource: %s\n",
 			_GResource_Res[pos].val, info->resname );
-	    else
+		info->found = false;
+	    } else
 		*(Color *) (info->val) = temp;
 	} else if ( info->type == rt_int ) {
 	    char *end;
 	    int val = strtol(_GResource_Res[pos].val,&end,0);
-	    if ( *end!='\0' )
+	    if ( *end!='\0' ) {
 		fprintf( stderr, "Can't convert %s to an int for resource: %s\n",
 			_GResource_Res[pos].val, info->resname );
-	    else
+		info->found = false;
+	    } else
 		*(int *) (info->val) = val;
 	} else if ( info->type == rt_bool ) {
 	    int val = -1;
@@ -301,10 +304,11 @@ return;
 	    else if ( strmatch(_GResource_Res[pos].val,"false")==0 ||
 		    strmatch(_GResource_Res[pos].val,"off")==0 || strcmp(_GResource_Res[pos].val,"0")==0 )
 		val = 0;
-	    if ( val==-1 )
+	    if ( val==-1 ) {
 		fprintf( stderr, "Can't convert %s to a boolean for resource: %s\n",
 			_GResource_Res[pos].val, info->resname );
-	    else
+		info->found = false;
+	    } else
 		*(int *) (info->val) = val;
 	} else if ( info->type == rt_double ) {
 	    char *end;
@@ -313,13 +317,16 @@ return;
 		*end = (*end==',')?'.':',';
 		val = strtod(_GResource_Res[pos].val,&end);
 	    }
-	    if ( *end!='\0' )
+	    if ( *end!='\0' ) {
 		fprintf( stderr, "Can't convert %s to a double for resource: %s\n",
 			_GResource_Res[pos].val, info->resname );
-	    else
+		info->found = false;
+	    } else
 		*(double *) (info->val) = val;
-	} else
+	} else {
 	    fprintf( stderr, "Invalid resource type for: %s\n", info->resname );
+	    info->found = false;
+	}
 	++info;
     }
     rbase = rskiplen = 0; rsummit = rcur;

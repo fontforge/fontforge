@@ -23,5 +23,5 @@ CFLAGS = @CFLAGS@ $(Incs) $(WFLAGS) $(X_CFLAGS)
 clean:
 	-rm -f *.o ../libgunicode.la
 
-cleaner:
+distclean cleaner:
 	-rm -f *.o ../libgunicode.la Makefile

@@ -11,7 +11,7 @@ X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
 
 TABLEOBJS = maxp.o OS2.o instrs.o binary.o shorts.o metrics.o _hea.o head.o \
-	post.o gasp.o
+	post.o gasp.o VORG.o
 GLYPHOBJS = fontview.o conicutil.o charview.o freetype.o bcdebug.o
 ttfmod_OBJECTS = ttfmod-ui.o start.o splashimage.o uiutil.o ttfview.o ttffile.o \
 	openfontdlg.o prefs.o cursors.o windowmenu.o psunicodenames.o \
@@ -30,5 +30,5 @@ ttfmod: $(ttfmod_OBJECTS)
 clean:
 	-rm -f *.o ttfmod
 
-cleaner:
+distclean cleaner:
 	-rm -f *.o ttfmod Makefile

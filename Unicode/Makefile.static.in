@@ -29,5 +29,5 @@ all: ../libs/libgunicode.a
 clean:
 	-rm -f *.o ../libs/libgunicode.a
 
-cleaner:
+distclean cleaner:
 	-rm -f *.o ../libs/libgunicode.a Makefile

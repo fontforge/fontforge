@@ -3260,8 +3260,8 @@ static void GXResourceInit(GXDisplay *gdisp,char *programname) {
     int format, i; unsigned long nitems, bytes_after;
     unsigned char *ret = NULL;
     GResStruct res[20];
-    int dithertemp; double sizetemp;
-    int depth = -1, vc = -1;
+    int dithertemp; double sizetemp, sizetempcm;
+    int depth = -1, vc = -1, cmpos;
 
     rmatom = XInternAtom(gdisp->display,"RESOURCE_MANAGER",true);
     if ( rmatom!=None ) {
@@ -3287,13 +3287,18 @@ static void GXResourceInit(GXDisplay *gdisp,char *programname) {
     res[i].resname = "ScreenWidthPixels"; res[i].type = rt_int; res[i].val = &gdisp->groot->pos.width; ++i;
     res[i].resname = "ScreenHeightPixels"; res[i].type = rt_int; res[i].val = &gdisp->groot->pos.height; ++i;
     sizetemp = WidthMMOfScreen(DefaultScreenOfDisplay(gdisp->display))/25.4;
+    sizetempcm = WidthMMOfScreen(DefaultScreenOfDisplay(gdisp->display))/10;
     res[i].resname = "ScreenWidthInches"; res[i].type = rt_double; res[i].val = &sizetemp; ++i;
+    cmpos = i;
+    res[i].resname = "ScreenWidthCentimeters"; res[i].type = rt_double; res[i].val = &sizetempcm; ++i;
     res[i].resname = "Depth"; res[i].type = rt_int; res[i].val = &depth; ++i;
     res[i].resname = "VisualClass"; res[i].type = rt_string; res[i].val = &vc; res[i].cvt=vc_cvt; ++i;
     res[i].resname = NULL;
     GResourceFind(res,NULL);
 
-    if ( sizetemp>=1 )
+    if ( res[cmpos].found && sizetempcm>=1 )
+	gdisp->res = gdisp->groot->pos.width*2.54/sizetempcm;
+    else if ( sizetemp>=1 )
 	gdisp->res = gdisp->groot->pos.width/sizetemp;
     gdisp->desired_depth = depth; gdisp->desired_vc = vc;
 }

@@ -49,17 +49,17 @@ dnl the static libraries we've found
 
 AC_SUBST(STATIC_LIBS)
 STATIC_LIBS=
-if test "$gww_nodynamic" == "yes"; then
- if test "$ac_cv_lib_ungif_DGifOpenFileName" == "yes"; then
+if test "$gww_nodynamic" = "yes"; then
+ if test "$ac_cv_lib_ungif_DGifOpenFileName" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -lungif"
  fi
- if test "$ac_cv_lib_png_png_create_read_struct" == "yes"; then
+ if test "$ac_cv_lib_png_png_create_read_struct" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -lpng -lz"
  fi
- if test "$ac_cv_lib_png_tiff_TIFFOpen" == "yes"; then
+ if test "$ac_cv_lib_png_tiff_TIFFOpen" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -ltiff"
  fi
- if test "$ac_cv_lib_png_jpeg_jpeg_CreateDecompress" == "yes"; then
+ if test "$ac_cv_lib_png_jpeg_jpeg_CreateDecompress" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -ljpeg"
  fi
 fi

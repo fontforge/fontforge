@@ -36,6 +36,7 @@ typedef struct gresstruct {
     enum res_type type;
     void *val;
     void *(*cvt)(char *,void *);	/* converts a string into a whatever */
+    int found;
 } GResStruct;
 
 extern char *GResourceProgramName, *GResourceFullProgram, *GResourceProgramDir;

@@ -41,7 +41,7 @@ nomen.h pfaedit-ui.c pfaedit.en.ui: nomen.*.c makenomenh.c
 	mv pfaedit-ui.en.c pfaedit-ui.c
 
 clean:
-	-rm -f *.o pfaedit *.ui nomen.h pfaedit-ui.c
+	-rm -f *.o pfaedit *.ui nomen.h pfaedit-ui.c makenomenh _nomen.*.c
 
-cleaner:
-	-rm -f *.o pfaedit *.ui nomen.h pfaedit-ui.c Makefile
+distclean cleaner: clean
+	-rm Makefile
