@@ -949,7 +949,7 @@ void SFLigaturePrepare(SplineFont *sf) {
 	    } else {
 		while ( head!=NULL ) {
 		    last = head->next;
-		    free(head);
+		    chunkfree(head,sizeof(*head));
 		    head = last;
 		}
 	    }
