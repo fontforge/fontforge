@@ -899,8 +899,13 @@ static void readttfsimpleglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, in
 
     for ( i=0; i<path_cnt; ++i )
 	endpt[i] = getushort(ttf);
-    tot = endpt[path_cnt-1]+1;
-    pts = galloc(tot*sizeof(BasePoint));
+    if ( path_cnt==0 ) {
+	tot = 0;
+	pts = galloc(sizeof(BasePoint));
+    } else {
+	tot = endpt[path_cnt-1]+1;
+	pts = galloc(tot*sizeof(BasePoint));
+    }
 
     len = getushort(ttf);
     instructions = galloc(len);
