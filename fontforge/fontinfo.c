@@ -3914,7 +3914,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	struct gfi_data *d = GDrawGetUserData(gw);
 	SplineFont *sf = d->sf, *_sf;
 	int enc, interp;
-	int reformat_fv=0, enc_changed;
+	int reformat_fv=0, enc_changed, retitle_fv=false;
 	int upos, uwid, as, des, nchar, oldcnt=sf->charcnt, err = false, weight=0;
 	int uniqueid, linegap=0, vlinegap;
 	int force_enc=0;
@@ -4021,6 +4021,7 @@ return( true );
 	TTF_PSDupsChanged(gw,sf,d->names_set ? d->names : sf->names);
 	GDrawSetCursor(gw,ct_watch);
 	namechange = SetFontName(gw,sf);
+	if ( namechange ) retitle_fv = true;
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_XUID));
 	xuidchanged = (sf->xuid==NULL && *txt!='\0') ||
 			(sf->xuid!=NULL && uc_strcmp(txt,sf->xuid)==0);
@@ -4101,7 +4102,7 @@ return(true);
 		enc_changed = SFReencodeFont(sf,enc);
 	    if ( enc_changed && nchar==oldcnt )
 		nchar = sf->charcnt;
-	    if ( enc_changed ) reformat_fv = true;
+	    if ( enc_changed ) reformat_fv = retitle_fv = true;
 	}
 	if ( nchar!=sf->charcnt )
 	    reformat_fv |= SFAddDelChars(sf,nchar);
@@ -4158,6 +4159,10 @@ return(true);
 		SFConvertToOrder2(sf);
 	    else
 		SFConvertToOrder3(sf);
+	}
+	if ( retitle_fv ) { FontView *fvs;
+	    for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame )
+		FVSetTitle(fvs);
 	}
 	if ( reformat_fv )
 	    FontViewReformatAll(sf);

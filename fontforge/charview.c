@@ -2672,6 +2672,7 @@ void CVSetCharChanged(CharView *cv,int changed) {
     FontView *fv = cv->fv;
     SplineFont *sf = fv->sf;
     SplineChar *sc = cv->sc;
+    int oldchanged = sf->changed;
 
     if ( cv->drawmode==dm_grid ) {
 	if ( changed ) {
@@ -2712,6 +2713,8 @@ void CVSetCharChanged(CharView *cv,int changed) {
 	}
     }
     cv->recentchange = true;
+    if ( !oldchanged )
+	FVSetTitle(fv);
 }
 
 void SCClearSelPt(SplineChar *sc) {
@@ -2737,6 +2740,8 @@ void _SCCharChangedUpdate(SplineChar *sc,int changed) {
 	    if ( changed )
 		SCDeGridFit(sc);
 	}
+	if ( !sf->changed && sf->fv!=NULL )
+	    FVSetTitle(sf->fv);
 	sc->changedsincelasthinted = true;
 	sc->changed_since_search = true;
 	sf->changed = true;

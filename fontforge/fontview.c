@@ -3089,24 +3089,33 @@ static void FVMenuHistograms(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 void FVSetTitle(FontView *fv) {
     unichar_t *title, *ititle, *temp;
     char *file=NULL;
+    char *enc;
     int len;
 
     if ( fv->gw==NULL )		/* In scripting */
 return;
 
-    len = strlen(fv->sf->fontname);
+    enc = SFEncodingName(fv->sf);
+    len = strlen(fv->sf->fontname)+1 + strlen(enc)+4;
     if ( (file = fv->sf->filename)==NULL )
 	file = fv->sf->origname;
     if ( file!=NULL )
 	len += 2+strlen(file);
     title = galloc((len+1)*sizeof(unichar_t));
     uc_strcpy(title,fv->sf->fontname);
+    if ( fv->sf->changed )
+	uc_strcat(title,"*");
     if ( file!=NULL ) {
 	uc_strcat(title,"  ");
 	temp = def2u_copy(GFileNameTail(file));
 	u_strcat(title,temp);
 	free(temp);
     }
+    uc_strcat(title, " (" );
+    uc_strcat(title,enc);
+    uc_strcat(title, ")" );
+    free(enc);
+
     ititle = uc_copy(fv->sf->fontname);
     GDrawSetWindowTitles(fv->gw,title,ititle);
     free(title);
