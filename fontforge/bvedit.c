@@ -43,7 +43,11 @@ return( 0 );
     xv = u_strtol(ret,&end,10);
     yv = u_strtol(end+1,&end2,10);
     if ( xv==0 || xv>10 || xv<-10 || yv<=0 || yv>10 || *end!=':' || *end2!='\0' ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR( _STR_BadNumber,_STR_BadNumber );
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error( _("Bad Number"),_("Bad Number") );
+#endif
 	free(ret);
 return( 0 );
     }

@@ -1072,7 +1072,11 @@ extern GTextInfo **SFGenTagListFromType(struct gentagtype *gentags,enum possub_t
 extern struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
 	struct gfi_data *gfi,unichar_t *newname);
 extern void CCD_Close(struct contextchaindlg *ccd);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 extern int CCD_NameListCheck(SplineFont *sf,const unichar_t *ret,int empty_bad,int title);
+#elif defined(FONTFORGE_CONFIG_GTK)
+extern int CCD_NameListCheck(SplineFont *sf,const char *ret,int empty_bad,char *title);
+#endif
 extern int CCD_InvalidClassList(const unichar_t *ret,GGadget *list,int wasedit);
 extern char *cu_copybetween(const unichar_t *start, const unichar_t *end);
 

@@ -437,7 +437,11 @@ return;
 	else
 	    last->next = bdf;
 	last = bdf;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),GStringGetResource(_STR_DPixelBitmap,NULL),
+#elif defined(FONTFORGE_CONFIG_GTK)
+	u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),_("%d pixel bitmap"),
+#endif
 		sizes[i].ppem );
 	GProgressChangeLine2(ubuf);
 	readttfbitmapfont(ttf,info,&sizes[i],bdf);

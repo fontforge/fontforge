@@ -554,7 +554,11 @@ static AnchorClass **MarkGlyphsProcessMarks(FILE *ttf,int markoffset,
     SplineChar *sc;
 
     for ( i=0; i<classcnt; ++i ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),GStringGetResource(_STR_UntitledAnchor_n,NULL),
+#elif defined(FONTFORGE_CONFIG_GTK)
+	u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),_("Anchor-%d"),
+#endif
 		info->anchor_class_cnt+i );
 	classes[i] = ac = chunkalloc(sizeof(AnchorClass));
 	ac->name = u_copy(ubuf);

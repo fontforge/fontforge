@@ -2459,9 +2459,7 @@ static char *str_YesToAll = "Yes to All";
 static char *mnemonic_YesToAll = 'A';
 static char *str_NoToAll = "No to All";
 static char *mnemonic_NoToAll = 'o';
-/* "The clipboard contains a bitmap character of size %d,\na size which is not in your database.\nWould you like to create a bitmap font of that size,\nor ignore this character?" */
-static char *str_ClipContainsPre = "The clipboard contains a bitmap character of size ";
-static char *str_ClipContainsPost = ",\na size which is not in your database.\nWould you like to create a bitmap font of that size,\nor ignore this character?";
+static char *str_ClipContains = "The clipboard contains a bitmap character of size %hs,\na size which is not in your database.\nWould you like to create a bitmap font of that size,\nor ignore this character?";
 static char *str_Pasting = "Pasting...";
 static char *str_SelfRef = "Self-referential character"
 static char *str_AttemptSelfRef = "Attempt to make a character that refers to itself";

@@ -722,7 +722,11 @@ static int TileAsk(void) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_TilePath,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Tile Path...");
+#endif
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(220));
     pos.height = GDrawPointsToPixels(NULL,92);
@@ -737,7 +741,11 @@ static int TileAsk(void) {
     label[0].text = (unichar_t *) _STR_Left;
     label[0].text_in_resource = true;
     gcd[0].gd.label = &label[0];
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[0].gd.popup_msg = GStringGetResource(_STR_LeftPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[0].gd.popup_msg = _("The tile (in the clipboard) should be placed to the left of the path\nas the path is traced from its start point to its end");
+#endif
     gcd[0].gd.cid = CID_Left;
     gcd[0].creator = GRadioCreate;
 
@@ -747,7 +755,11 @@ static int TileAsk(void) {
     label[1].text = (unichar_t *) _STR_Center_;
     label[1].text_in_resource = true;
     gcd[1].gd.label = &label[1];
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[1].gd.popup_msg = GStringGetResource(_STR_CenterPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[1].gd.popup_msg = _("The tile (in the clipboard) should be centered on the path");
+#endif
     gcd[1].gd.cid = CID_Center;
     gcd[1].creator = GRadioCreate;
 
@@ -757,7 +769,11 @@ static int TileAsk(void) {
     label[2].text = (unichar_t *) _STR_Right;
     label[2].text_in_resource = true;
     gcd[2].gd.label = &label[2];
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[2].gd.popup_msg = GStringGetResource(_STR_RightPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[2].gd.popup_msg = _("The tile (in the clipboard) should be placed to the right of the path\nas the path is traced from its start point to its end");
+#endif
     gcd[2].gd.cid = CID_Right;
     gcd[2].creator = GRadioCreate;
 
@@ -772,7 +788,11 @@ static int TileAsk(void) {
     label[4].text = (unichar_t *) _STR_Tile;
     label[4].text_in_resource = true;
     gcd[4].gd.label = &label[4];
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[4].gd.popup_msg = GStringGetResource(_STR_TilePopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[4].gd.popup_msg = _("Multiple copies of the selection should be tiled onto the path");
+#endif
     gcd[4].gd.cid = CID_Tile;
     gcd[4].creator = GRadioCreate;
 
@@ -782,7 +802,11 @@ static int TileAsk(void) {
     label[5].text = (unichar_t *) _STR_TileScale;
     label[5].text_in_resource = true;
     gcd[5].gd.label = &label[5];
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[5].gd.popup_msg = GStringGetResource(_STR_TileScalePopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[5].gd.popup_msg = _("An integral number of the selection will be used to cover the path\nAnd if the path length is not evenly divisible by the selection's\nheight then the selection should be scaled slightly.");
+#endif
     gcd[5].gd.cid = CID_TileScale;
     gcd[5].creator = GRadioCreate;
 
@@ -792,7 +816,11 @@ static int TileAsk(void) {
     label[6].text = (unichar_t *) _STR_Scale;
     label[6].text_in_resource = true;
     gcd[6].gd.label = &label[6];
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[6].gd.popup_msg = GStringGetResource(_STR_ScalePopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[6].gd.popup_msg = _("The selection should be scaled so that it will cover the path's length");
+#endif
     gcd[6].gd.cid = CID_Scale;
     gcd[6].creator = GRadioCreate;
 

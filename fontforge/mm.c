@@ -548,10 +548,18 @@ return( false );
 	if ( mm->instances[i]->order2 != mm->apple ) {
 	    if ( complain ) {
 		if ( mm->apple )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GWidgetErrorR(_STR_BadMM,_STR_MMOrder3,
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    gwwv_post_error(_("Bad Multiple Master Font"),_("The font %.30s contains cubic splines. It must be converted to quadratic splines before it can be used in an apple distortable font"),
+#endif
 			    mm->instances[i]->fontname);
 		else
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GWidgetErrorR(_STR_BadMM,_STR_MMOrder2,
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    gwwv_post_error(_("Bad Multiple Master Font"),_("The font %.30s contains quadratic splines. It must be converted to cubic splines before it can be used in a multiple master"),
+#endif
 			    mm->instances[i]->fontname);
 	    }
 return( false );
@@ -562,7 +570,11 @@ return( false );
     if ( !mm->apple && PSDictHasEntry(sf->private,"ForceBold")!=NULL &&
 	    PSDictHasEntry(mm->normal->private,"ForceBoldThreshold")==NULL) {
 	if ( complain )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadMM,_STR_MMNeedsBoldThresh,
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Multiple Master Font"),_("There is no ForceBoldThreshold entry in the weighted font, but there is a ForceBold entry in font %30s"),
+#endif
 		    sf->fontname);
 return( false );
     }
@@ -571,12 +583,20 @@ return( false );
 	if ( sf->charcnt!=mm->instances[j]->charcnt ||
 		sf->encoding_name!=mm->instances[j]->encoding_name ) {
 	    if ( complain )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_BadMM,_STR_MMDifferentNumChars,
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad Multiple Master Font"),_("The fonts %1$.30s and %2$.30s have a different number of characters or different encodings"),
+#endif
 			sf->fontname, mm->instances[j]->fontname);
 return( false );
 	} else if ( sf->order2!=mm->instances[j]->order2 ) {
 	    if ( complain )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_BadMM,_STR_MMDifferentOrder,
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad Multiple Master Font"),_("The fonts %1$.30s and %2$.30s use different types of splines (one quadratic, one cubic)"),
+#endif
 			sf->fontname, mm->instances[j]->fontname);
 return( false );
 	}
@@ -584,7 +604,11 @@ return( false );
 	    if ( PSDictHasEntry(mm->instances[j]->private,"ForceBold")!=NULL &&
 		    PSDictHasEntry(mm->normal->private,"ForceBoldThreshold")==NULL) {
 		if ( complain )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GWidgetErrorR(_STR_BadMM,_STR_MMNeedsBoldThresh,
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    gwwv_post_error(_("Bad Multiple Master Font"),_("There is no ForceBoldThreshold entry in the weighted font, but there is a ForceBold entry in font %30s"),
+#endif
 			    mm->instances[j]->fontname);
 return( false );
 	    }
@@ -592,7 +616,11 @@ return( false );
 		if ( ArrayCount(PSDictHasEntry(mm->instances[j]->private,arrnames[i]))!=
 				ArrayCount(PSDictHasEntry(sf->private,arrnames[i])) ) {
 		    if ( complain )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 			GWidgetErrorR(_STR_BadMM,_STR_MMPrivateMismatch,
+#elif defined(FONTFORGE_CONFIG_GTK)
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The entry \"%1$.20s\" is not present in the private dictionary of both %2$.30s and %3$.30s"),
+#endif
 				arrnames[i], sf->fontname, mm->instances[j]->fontname);
 return( false );
 		}
@@ -606,10 +634,18 @@ return( false );
 		if ( complain ) {
 		    FVChangeChar(sf->fv,i);
 		    if ( SCWorthOutputting(sf->chars[i]) )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 			GWidgetErrorR(_STR_BadMM,_STR_MMUndefChar,
+#elif defined(FONTFORGE_CONFIG_GTK)
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The character %1$.30s is defined in font %2$.30s but not in %3$.30s"),
+#endif
 				sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
 		    else
+#if defined(FONTFORGE_CONFIG_GDRAW)
 			GWidgetErrorR(_STR_BadMM,_STR_MMUndefChar,
+#elif defined(FONTFORGE_CONFIG_GTK)
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The character %1$.30s is defined in font %2$.30s but not in %3$.30s"),
+#endif
 				mm->instances[j]->chars[i]->name, mm->instances[j]->fontname,sf->fontname);
 		}
 return( false );
@@ -619,7 +655,11 @@ return( false );
 	    if ( mm->apple && sf->chars[i]->layers[ly_fore].refs!=NULL && sf->chars[i]->layers[ly_fore].splines!=NULL ) {
 		if ( complain ) {
 		    FVChangeChar(sf->fv,i);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GWidgetErrorR(_STR_BadMM,_STR_MMBothRefSplines,
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    gwwv_post_error(_("Bad Multiple Master Font"),_("The character %1$.30s in %2$.30s has both references and contours. This is not supported in a font with variations"),
+#endif
 			    sf->chars[i]->name,sf->fontname);
 		}
 return( false );
@@ -629,7 +669,11 @@ return( false );
 			mm->instances[j]->chars[i]->layers[ly_fore].splines!=NULL ) {
 		    if ( complain ) {
 			FVChangeChar(sf->fv,i);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 			GWidgetErrorR(_STR_BadMM,_STR_MMBothRefSplines,
+#elif defined(FONTFORGE_CONFIG_GTK)
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The character %1$.30s in %2$.30s has both references and contours. This is not supported in a font with variations"),
+#endif
 				sf->chars[i]->name,mm->instances[j]->fontname);
 		    }
 return( false );
@@ -637,42 +681,66 @@ return( false );
 		if ( ContourCount(sf->chars[i])!=ContourCount(mm->instances[j]->chars[i])) {
 		    if ( complain ) {
 			FVChangeChar(sf->fv,i);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 			GWidgetErrorR(_STR_BadMM,_STR_MMWrongContourCount,
+#elif defined(FONTFORGE_CONFIG_GTK)
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The character %1$.30s has a different number of contours in font %2$.30s than in %3$.30s"),
+#endif
 				sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
 		    }
 return( false );
 		} else if ( !mm->apple && !ContourPtMatch(sf->chars[i],mm->instances[j]->chars[i])) {
 		    if ( complain ) {
 			FVChangeChar(sf->fv,i);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchContoursPt,
+#elif defined(FONTFORGE_CONFIG_GTK)
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The character %1$.30s in font %2$.30s has a different number of points (or control points) on its contours than in %3$.30s"),
+#endif
 				sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
 		    }
 return( false );
 		} else if ( !ContourDirMatch(sf->chars[i],mm->instances[j]->chars[i])) {
 		    if ( complain ) {
 			FVChangeChar(sf->fv,i);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchContoursDir,
+#elif defined(FONTFORGE_CONFIG_GTK)
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The character %1$.30s in font %2$.30s has contours running in a different direction than in %3$.30s"),
+#endif
 				sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
 		    }
 return( false );
 		} else if ( !RefMatch(sf->chars[i],mm->instances[j]->chars[i])) {
 		    if ( complain ) {
 			FVChangeChar(sf->fv,i);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchRefs,
+#elif defined(FONTFORGE_CONFIG_GTK)
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The character %1$.30s in font %2$.30s has a different number of references than in %3$.30s"),
+#endif
 				sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
 		    }
 return( false );
 		} else if ( mm->apple && !RefTransformsMatch(sf->chars[i],mm->instances[j]->chars[i])) {
 		    if ( complain ) {
 			FVChangeChar(sf->fv,i);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchRefTrans,
+#elif defined(FONTFORGE_CONFIG_GTK)
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The character %1$.30s in font %2$.30s has references with different scaling or rotation (etc.) than in %3$.30s"),
+#endif
 				sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
 		    }
 return( false );
 		} else if ( !mm->apple && !KernsMatch(sf->chars[i],mm->instances[j]->chars[i])) {
 		    if ( complain ) {
 			FVChangeChar(sf->fv,i);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchKerns,
+#elif defined(FONTFORGE_CONFIG_GTK)
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The character %1$.30s in font %2$.30s has a different set of kern pairs than in %3$.30s"),
+#endif
 				"vertical", sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
 		    }
 return( false );
@@ -681,7 +749,11 @@ return( false );
 	    if ( mm->apple && !ContourPtNumMatch(mm,i)) {
 		if ( complain ) {
 		    FVChangeChar(sf->fv,i);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GWidgetErrorR(_STR_BadMM,_STR_MMMismatchContoursPtNum,
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    gwwv_post_error(_("Bad Multiple Master Font"),_("The character %1$.30s has a different numbering of points (and control points) on its contours than in the various instances of the font"),
+#endif
 			    sf->chars[i]->name);
 		}
 return( false );
@@ -691,14 +763,22 @@ return( false );
 		    if ( !HintsMatch(sf->chars[i]->hstem,mm->instances[j]->chars[i]->hstem)) {
 			if ( complain ) {
 			    FVChangeChar(sf->fv,i);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 			    GWidgetErrorR(_STR_BadMM,_STR_MMMismatchHints,
+#elif defined(FONTFORGE_CONFIG_GTK)
+			    gwwv_post_error(_("Bad Multiple Master Font"),_("The %1$s hints in character \"%2$.30s\" in font %3$.30s do not match those in %4$.30s (different number or different overlap criteria)"),
+#endif
 				    "horizontal", sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
 			}
 return( false );
 		    } else if ( !HintsMatch(sf->chars[i]->vstem,mm->instances[j]->chars[i]->vstem)) {
 			if ( complain ) {
 			    FVChangeChar(sf->fv,i);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 			    GWidgetErrorR(_STR_BadMM,_STR_MMMismatchHints,
+#elif defined(FONTFORGE_CONFIG_GTK)
+			    gwwv_post_error(_("Bad Multiple Master Font"),_("The %1$s hints in character \"%2$.30s\" in font %3$.30s do not match those in %4$.30s (different number or different overlap criteria)"),
+#endif
 				    "vertical", sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
 			}
 return( false );
@@ -708,7 +788,11 @@ return( false );
 		    if ( !ContourHintMaskMatch(sf->chars[i],mm->instances[j]->chars[i])) {
 			if ( complain ) {
 			    FVChangeChar(sf->fv,i);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 			    GWidgetErrorR(_STR_BadMM,_STR_MMMismatchHintMask,
+#elif defined(FONTFORGE_CONFIG_GTK)
+			    gwwv_post_error(_("Bad Multiple Master Font"),_("The character %1$.30s in font %2$.30s has a different hint mask on its contours than in %3$.30s"),
+#endif
 				    sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
 			}
 return( false );
@@ -724,7 +808,11 @@ return( false );
 	    for ( j=0; j<mm->instance_count; ++j ) {
 		if ( mm->instances[j]->ttf_tables!=NULL ) {
 		    if ( complain )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 			GWidgetErrorR(_STR_BadMM,_STR_MMMissingCVT,
+#elif defined(FONTFORGE_CONFIG_GTK)
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The default font does not have a 'cvt ' table, but the instance %.30s does"),
+#endif
 				mm->instances[j]->fontname);
 return( false );
 		}
@@ -737,14 +825,22 @@ return( false );
 			(mm->instances[j]->ttf_tables->next!=NULL ||
 			 mm->instances[j]->ttf_tables->tag!=CHR('c','v','t',' '))) {
 		    if ( complain )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 			GWidgetErrorR(_STR_BadMM,_STR_MMBadTable,
+#elif defined(FONTFORGE_CONFIG_GTK)
+			gwwv_post_error(_("Bad Multiple Master Font"),_("Instance fonts may only contain a 'cvt ' table, but %.30s has some other truetype table as well"),
+#endif
 				mm->instances[j]->fontname);
 return( false );
 		}
 		if ( mm->instances[j]->ttf_tables!=NULL &&
 			mm->instances[j]->ttf_tables->len!=cvt->len ) {
 		    if ( complain )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchCVT,
+#elif defined(FONTFORGE_CONFIG_GTK)
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The 'cvt ' table in instance %.30s is a different size from that in the default font"),
+#endif
 				mm->instances[j]->fontname);
 return( false );
 		}
@@ -753,7 +849,11 @@ return( false );
     }
 
     if ( complain )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetPostNoticeR(_STR_OK,_STR_NoProblems);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_notice(_("OK"),_("No problems detected"));
+#endif
 return( true );
 }
 
@@ -1134,9 +1234,17 @@ return( true );
     if ( fv!=NULL ) {
 	FVScrollToChar(fv,first);
 	if ( olderr==-1 )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadMM,_STR_MMVariousErrors);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Multiple Master Font"),_("Various errors occurred at the selected glyphs"));
+#endif
 	else
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadMM,_STR_MMSelErr,GStringGetResource(olderr,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Multiple Master Font"),_("The following error occurred on the selected glyphs: %.100s"),GStringGetResource(olderr,NULL));
+#endif
     }
 return( false );
 }
@@ -1547,19 +1655,31 @@ static int GetWeights(GWindow gw, real blends[MmMax], MMSet *mm,
     if ( (explicitblends && i!=instance_count ) ||
 	    (!explicitblends && i!=axis_count ) ||
 	    *upt!='\0' ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_BadMMWeights,_STR_BadOrFewWeights);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Bad MM Weights"),_("Incorrect number of instances weights, or illegal numbers"));
+#endif
 return(false);
     }
     if ( explicitblends ) {
 	if ( sum<.99 || sum>1.01 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadMMWeights,_STR_WeightsMustBe1);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad MM Weights"),_("The weights for the default version of the font must sum to 1.0"));
+#endif
 return(false);
 	}
     } else {
 	i = ExecConvertDesignVector(blends, i, mm->ndv, mm->cdv,
 		blends);
 	if ( i!=instance_count ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadMMWeights,_STR_BadNDVCDV);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad MM Weights"),_("The results produced by applying the NormalizeDesignVector and ConvertDesignVector functions were not the results expected. You may need to change these functions"));
+#endif
 return(false);
 	}
     }
@@ -1760,7 +1880,11 @@ return;
     wattrs.restrict_input_to_me = true;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(tonew ? _STR_MMBlendToNew:_STR_ChangeMMBlend,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = tonew ? _("Blend to New Font...");
+#endif
     pos.x = pos.y = 0;
 
     if ( !mm->apple ) {
@@ -2080,7 +2204,11 @@ return( true );
 	axis_count = i;
 	mn = NameGadgetsGetNames(esd->gw);
 	if ( mn==NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadMM,_STR_AtLeastOneName);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Multiple Master Font"),_("You must provide at least one name here"));
+#endif
 return( true );
 	}
 	pt = buffer; *pt++ = ' '; *pt++ = '[';
@@ -2171,7 +2299,11 @@ static void EditStyleName(MMW *mmw,int index) {
     wattrs.restrict_input_to_me = true;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_NamedStyles,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Named Styles");
+#endif
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(ESD_Width));
     pos.height = GDrawPointsToPixels(NULL,ESD_Height);
@@ -2378,7 +2510,11 @@ static int ParseWeights(GWindow gw,int cid, int str_r,
 	if ( pt==endpt || ( *endpt!='\0' && *endpt!=' ' )) {
 	    if ( tabset_cid!=-1 )
 		GTabSetSetSel(GWidgetGetControl(gw,tabset_cid),aspect);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadAxis,_STR_BadNumberIn_s,
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Axis"),_("Bad Number in %s"),
+#endif
 		    GStringGetResource(str_r,NULL));
 return( 0 );
 	}
@@ -2387,7 +2523,11 @@ return( 0 );
     if ( cnt!=expected && expected!=-1 ) {
 	if ( tabset_cid!=-1 )
 	    GTabSetSetSel(GWidgetGetControl(gw,tabset_cid),aspect);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_BadAxis,_STR_WrongNumberOfEntriesIn_s,
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Bad Axis"),_("Wrong number of entries in %s"),
+#endif
 		GStringGetResource(str_r,NULL));
 return( 0 );
     }
@@ -2437,7 +2577,11 @@ static int ParseList(GWindow gw,int cid, int str_r, int *err, real start,
 	if ( pt==endpt || ( *endpt!='\0' && *endpt!=' ' )) {
 	    GTabSetSetSel(GWidgetGetControl(gw,tabset_cid),aspect);
 	    free(list);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadAxis,_STR_BadNumberIn_s,
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Axis"),_("Bad Number in %s"),
+#endif
 		    GStringGetResource(str_r,NULL));
 	    *err = true;
 return( 0 );
@@ -2449,7 +2593,11 @@ return( 0 );
     for ( i=1; i<cnt; ++i )
 	if ( list[i-1]>list[i] ) {
 	    GTabSetSetSel(GWidgetGetControl(gw,tabset_cid),aspect);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadAxis,_STR_ListOutOfOrder,
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Axis"),_("The %s list is not ordered"),
+#endif
 		    GStringGetResource(str_r,NULL));
 	    free(list);
 	    *err = true;
@@ -2829,11 +2977,19 @@ static GTextInfo **FontList(MMW *mmw, int instance, int *sel) {
     }
     if ( pos==-1 ) pos=cnt;
     ti[cnt] = gcalloc(1,sizeof(GTextInfo));
+#if defined(FONTFORGE_CONFIG_GDRAW)
     ti[cnt]->text = u_copy(GStringGetResource(_STR_New,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+    ti[cnt]->text = u_copy(_("New"));
+#endif
     ti[cnt]->bg = ti[cnt]->fg = COLOR_DEFAULT;
     ++cnt;
     ti[cnt] = gcalloc(1,sizeof(GTextInfo));
+#if defined(FONTFORGE_CONFIG_GDRAW)
     ti[cnt]->text = u_copy(GStringGetResource(_STR_Browse,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+    ti[cnt]->text = u_copy(_("Browse..."));
+#endif
     ti[cnt]->bg = ti[cnt]->fg = COLOR_DEFAULT;
     ti[cnt]->userdata = (void *) (-1);
     ++cnt;
@@ -2924,7 +3080,11 @@ return;
 	    else
 		fn = mmw->mm->instances[i]->familyname;
 	if ( i!=mmw->instance_count ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadMM,_STR_FamilyNameRequired);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Multiple Master Font"),_("A Font Family name is required"));
+#endif
 return;
 	}
 	familyname = copy(fn);
@@ -3115,7 +3275,11 @@ static void MMW_DoNext(MMW *mmw) {
     real start, end, def, *designs, *norm;
     int n, n2;
     int isapple = GGadgetIsChecked(GWidgetGetControl(mmw->subwins[mmw_counts],CID_Apple));
+#if defined(FONTFORGE_CONFIG_GDRAW)
     static int yesno[] = { _STR_Yes, _STR_No, 0 };
+#elif defined(FONTFORGE_CONFIG_GTK)
+    char *yesno[3];
+#endif
 
     if ( mmw->state==mmw_others )
 return;
@@ -3171,7 +3335,11 @@ return;
 	    if ( *mmw->mm->axes[i]=='\0' ) {
 		GTabSetSetSel(GWidgetGetControl(mmw->subwins[mmw_axes],CID_WhichAxis),
 			i);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_BadAxis,_STR_SetAxisType);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad Axis"),_("Please set the Axis Type field"));
+#endif
 return;		/* Failure */
 	    }
 	    /* Don't free the current value. If it is non-null then it just */
@@ -3186,7 +3354,11 @@ return;		/* Failure */
 		if ( mmw->mm->axismaps[i].axisnames == NULL ) {
 		    GTabSetSetSel(GWidgetGetControl(mmw->subwins[mmw_axes],CID_WhichAxis),
 			    i);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GWidgetErrorR(_STR_BadAxis,_STR_SetAxisName);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    gwwv_post_error(_("Bad Axis"),_("When building an Apple distortable font, you must specify at least one name for the axis"));
+#endif
 return;		    /* Failure */
 		}
 	    }
@@ -3205,7 +3377,11 @@ return;		    /* Failure */
 	    if ( start>=end || def<start || def>end ) {
 		GTabSetSetSel(GWidgetGetControl(mmw->subwins[mmw_axes],CID_WhichAxis),
 			i);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_BadAxis,_STR_AxisRangeNotValid);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad Axis"),_("Axis range not valid"));
+#endif
 return;		/* Failure */
 	    }
 	    n = ParseList(mmw->subwins[mmw_axes],CID_IntermediateDesign+i*100,
@@ -3217,7 +3393,11 @@ return;		/* Failure */
 		GTabSetSetSel(GWidgetGetControl(mmw->subwins[mmw_axes],CID_WhichAxis),
 			i);
 		if ( !err )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GWidgetErrorR(_STR_BadAxis,_STR_DesignNormMustCorrespond);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    gwwv_post_error(_("Bad Axis"),_("The number of entries in the design settings must match the number in normalized settings"));
+#endif
 		free(designs); free(norm);
 return;		/* Failure */
 	    }
@@ -3273,7 +3453,11 @@ return;
 		break;
 		if ( k==mmw->axis_count ) {
 		    GTabSetSetSel(GWidgetGetControl(mmw->subwins[mmw_designs],CID_WhichDesign),i);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GWidgetErrorR(_STR_BadMM,_STR_PositionUsedTwice,
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    gwwv_post_error(_("Bad Multiple Master Font"),_("The set of positions, %.30s, is used more than once"),
+#endif
 			    _GGadgetGetTitle(GWidgetGetControl(mmw->subwins[mmw_designs],CID_AxisWeights+i*DesignScaleFactor)));
 return;
 		}
@@ -3284,7 +3468,11 @@ return;
 		for ( j=0; j<i; ++j )
 		    if ( sfs[i]==sfs[j] ) {
 			GTabSetSetSel(GWidgetGetControl(mmw->subwins[mmw_designs],CID_WhichDesign),i);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 			GWidgetErrorR(_STR_BadMM,_STR_FontUsedTwice,sfs[i]->fontname);
+#elif defined(FONTFORGE_CONFIG_GTK)
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The font %.30s is assigned to two master designs"),sfs[i]->fontname);
+#endif
 return;
 		    }
 	    }
@@ -3296,10 +3484,21 @@ return;
 		pt += 2;
 	    }
 	    if ( !isapple ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_BadMM,_STR_PositionUnused, buffer );
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad Multiple Master Font"),_("The set of positions, %.30s, is not specified in any design (and should be)"), buffer );
+#endif
 return;
 	    } else {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		if ( GWidgetAskR(_STR_BadMM,yesno,0,1,_STR_PositionUnusedOk,buffer)==1 )
+#elif defined(FONTFORGE_CONFIG_GTK)
+		yesno[0] = GTK_STOCK_YES;
+		yesno[1] = GTK_STOCK_NO;
+		yesno[2] = NULL;
+		if ( gwwv_ask(_("Bad Multiple Master Font"),yesno,0,1,_("The set of positions, %.30s, is not specified in any design.\nIs that what you want?"),buffer)==1 )
+#endif
 return;
 	    }
 	}
@@ -3319,13 +3518,24 @@ return;
 	    /* It's arranged according to our secondary expectations */;
 	else if ( !isapple && (mmw->instance_count==(1<<mmw->axis_count) ||
 		mmw->axis_count==1 )) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    if ( GWidgetAskR(_STR_DisorderedDesigns,yesno,0,1,_STR_DisorderedDesignsOk)==1 )
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    yesno[0] = GTK_STOCK_YES;
+	    yesno[1] = GTK_STOCK_NO;
+	    yesno[2] = NULL;
+	    if ( gwwv_ask(_("Disordered designs"),yesno,0,1,_("The master designs are not positioned in the expected order. FontForge will be unable to suggest a ConvertDesignVector for you. Is this what you want?"))==1 )
+#endif
 return;
 	}
     } else if ( mmw->state==mmw_funcs ) {
 	if ( *_GGadgetGetTitle(GWidgetGetControl(mmw->subwins[mmw_funcs],CID_NDV))=='\0' ||
 		*_GGadgetGetTitle(GWidgetGetControl(mmw->subwins[mmw_funcs],CID_CDV))=='\0' ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadFunction,_STR_BadFunction);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad PostScript function"),_("Bad PostScript function"));
+#endif
 return;
 	}
 	free(mmw->mm->ndv); free(mmw->mm->cdv);
@@ -3504,10 +3714,18 @@ return(true);
 	    if ( sf==NULL )
 return(true);
 	    if ( sf->cidmaster!=NULL || sf->subfonts!=0 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_BadMM,_STR_NoCIDinMM);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad Multiple Master Font"),_("CID keyed fonts may not be a master design of a multiple master font"));
+#endif
 return(true);
 	    } else if ( sf->mm!=NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_BadMM,_STR_NoCIDinMM);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad Multiple Master Font"),_("CID keyed fonts may not be a master design of a multiple master font"));
+#endif
 return(true);
 	    }
 	    if ( sf->fv==NULL ) {
@@ -3664,7 +3882,11 @@ void MMWizard(MMSet *mm) {
     wattrs.restrict_input_to_me = true;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(mmw.isnew?_STR_CreateMM:_STR_MMInfo,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = mmw.isnew?_("Create MM...");
+#endif
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(MMW_Width));
     pos.height = GDrawPointsToPixels(NULL,MMW_Height);

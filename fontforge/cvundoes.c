@@ -1495,7 +1495,11 @@ static void PasteNonExistantRefCheck(SplineChar *sc,Undoes *paster,RefChar *ref,
     }
     if ( fv==NULL ) {
 	if ( !(*refstate&0x4) ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    static int buts[] = { _STR_DontWarnAgain, _STR_OK, 0 };
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    char *buts[];
+#endif
 	    char buf[10]; const char *name;
 	    if ( ref->unicode_enc==-1 )
 		name = "<Unknown>";
@@ -1508,15 +1512,30 @@ static void PasteNonExistantRefCheck(SplineChar *sc,Undoes *paster,RefChar *ref,
 		    sprintf( buf, "u%04X", ref->unicode_enc );
 		name = buf;
 	    }
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    yes = GWidgetAskCenteredR(_STR_BadReference,buts,1,1,_STR_FontNoRefNoOrig,name,sc->name);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    buts[0] = _("Don't Warn Again"); buts[1] = GTK_STOCK_OK; buts[2] = NULL;
+	    yes = gwwv_ask(_("Bad Reference"),buts,1,1,_("You are attempting to paste a reference to %1$s into %2$s.\nBut %1$s does not exist in this font, nor can I find the original character refered to.\nIt will not be copied."),name,sc->name);
+#endif
 	    if ( yes==0 )
 		*refstate |= 0x4;
 	}
     } else {
 	if ( !(*refstate&0x3) ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    static int buts[] = { _STR_Yes, _STR_YesToAll, _STR_NoToAll, _STR_No, 0 };
 	    GProgressPauseTimer();
 	    yes = GWidgetAskCenteredR(_STR_BadReference,buts,0,3,_STR_FontNoRef,rsc->name,sc->name);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    char *buts[];
+	    buts[0] = GTK_STOCK_YES;
+	    buts[1] = _("Yes to All");
+	    buts[2] = _("No to All");
+	    buts[3] = GTK_STOCK_NO;
+	    buts[4] = NULL;
+	    yes = gwwv_ask(_("Bad Reference"),buts,0,3,_("You are attempting to paste a reference to %1$s into %2$s.\nBut %1$s does not exist in this font.\nWould you like to copy the original splines (or delete the reference)?"),rsc->name,sc->name);
+#endif
 	    GProgressResumeTimer();
 	    if ( yes==1 )
 		*refstate |= 1;
@@ -1657,7 +1676,11 @@ return;
 	    }
 	}
 	if ( anchor_lost_warning )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_AnchorLost,_STR_AnchorLostPaste);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Anchor Lost"),_("At least one anchor point was lost when pasting from one font to another because no matching anchor class could be found in the new font."));
+#endif
 	if ( anchor==NULL )
 return;
     }
@@ -1679,7 +1702,11 @@ return;
 	break;
 	    }
 	if ( test!=NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_DupAnchor,_STR_DupAnchorIn,test->anchor->name,sc->name);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Duplicate Anchor"),_("There is already an anchor point named %1$.40s in %2$.40s."),test->anchor->name,sc->name);
+#endif
 	    if ( prev==NULL )
 		anchor = next;
 	    else
@@ -1826,7 +1853,11 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto) 
 		else
 		    rsc = FindCharacter(sc->parent,refs);
 		if ( rsc!=NULL && SCDependsOnSC(rsc,sc))
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GWidgetErrorR(_STR_SelfRef,_STR_AttemptSelfRef);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    gwwv_post_error(_("Self-referential character"),_("Attempt to make a character that refers to itself"));
+#endif
 		else if ( rsc!=NULL ) {
 		    new = RefCharCreate();
 		    *new = *refs;
@@ -1864,7 +1895,11 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto) 
       break;
       case ut_vwidth:
 	if ( !sc->parent->hasvmetrics )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_NoVerticalMetrics,_STR_FontNoVerticalMetrics);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled\nUse Element->Font Info to enable them."));
+#endif
 	else {
 	    SCPreserveVWidth(sc);
 	    sc->vwidth = paster->u.width;
@@ -1996,7 +2031,11 @@ return;
 		else {
 		    sc = FindCharacter(cvsc->parent,refs);
 		    if ( sc!=NULL && SCDependsOnSC(sc,cvsc)) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 			GWidgetErrorR(_STR_SelfRef,_STR_AttemptSelfRef);
+#elif defined(FONTFORGE_CONFIG_GTK)
+			gwwv_post_error(_("Self-referential character"),_("Attempt to make a character that refers to itself"));
+#endif
 			sc = NULL;
 		    }
 		}
@@ -2057,7 +2096,11 @@ return;
       break;
       case ut_vwidth:
 	if ( !cvsc->parent->hasvmetrics )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_NoVerticalMetrics,_STR_FontNoVerticalMetrics);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled\nUse Element->Font Info to enable them."));
+#endif
 	else
 	    cvsc->vwidth = paster->u.state.vwidth;
       break;
@@ -2367,16 +2410,26 @@ static BDFFont *BitmapCreateCheck(FontView *fv,int *yestoall, int first, int pix
     BDFFont *bdf = NULL;
 
     if ( *yestoall>0 && first ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	static int buts[] = { _STR_Yes, _STR_YesToAll, _STR_NoToAll, _STR_No, 0 };
-	char buf[20]; unichar_t ubuf[400];
+#elif defined(FONTFORGE_CONFIG_GTK)
+	char *buts[];
+#endif
+	char buf[20];
 	if ( depth!=1 )
 	    sprintf( buf, "%d@%d", pixelsize, depth );
 	else
 	    sprintf( buf, "%d", pixelsize );
-	u_strcpy(ubuf,GStringGetResource(_STR_ClipContainsPre,NULL));
-	uc_strcat(ubuf,buf);
-	u_strcat(ubuf,GStringGetResource(_STR_ClipContainsPost,NULL));
-	yes = GWidgetAskCenteredR_(_STR_BitmapPaste,buts,0,3,ubuf);
+#if defined(FONTFORGE_CONFIG_GDRAW)
+	yes = GWidgetAskCenteredR_(_STR_BitmapPaste,buts,0,3,_STR_ClipContains,buf);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	buts[0] = GTK_STOCK_YES;
+	buts[1] = _("Yes to All");
+	buts[2] = _("No to All");
+	buts[3] = GTK_STOCK_NO;
+	buts[4] = NULL;
+	yes = gwwv_ask(_("Bitmap Paste"),buts,0,3,"The clipboard contains a bitmap character of size %s,\na size which is not in your database.\nWould you like to create a bitmap font of that size,\nor ignore this character?",buf);
+#endif
 	if ( yes==1 )
 	    *yestoall = true;
 	else if ( yes==2 )
@@ -2479,7 +2532,11 @@ return;
 	      case ut_statehint: case ut_statename:
 	      case ut_layers:
 		if ( !sf->hasvmetrics && cur->undotype==ut_vwidth) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GWidgetErrorR(_STR_NoVerticalMetrics,_STR_FontNoVerticalMetrics);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    gwwv_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled\nUse Element->Font Info to enable them."));
+#endif
  goto err;
 		}
 		PasteToSC(SFMakeChar(sf,i),cur,fv,pasteinto);
@@ -2550,7 +2607,11 @@ return;
       case ut_lbearing: case ut_rbearing:
       case ut_statehint: case ut_statename:
 	if ( !mv->fv->sf->hasvmetrics && cur->undotype==ut_vwidth) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_NoVerticalMetrics,_STR_FontNoVerticalMetrics);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled\nUse Element->Font Info to enable them."));
+#endif
 return;
 	}
 	PasteToSC(sc,cur,mv->fv,!doclear);

@@ -445,7 +445,11 @@ void CVReviewHints(CharView *cv) {
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	wattrs.window_title = GStringGetResource(_STR_Reviewhints,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	wattrs.window_title = _("Review Hints...");
+#endif
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,170));
@@ -591,7 +595,11 @@ void CVReviewHints(CharView *cv) {
 	gcd[15].gd.pos.x = 3; gcd[15].gd.pos.y = 12+5+3; 
 	gcd[15].gd.flags = gg_enabled|gg_visible;
 	gcd[15].gd.cid = CID_MovePoints;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	gcd[15].gd.popup_msg = GStringGetResource(_STR_MovePointsPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gcd[15].gd.popup_msg = _("When the hint's position is changed\nadjust the postion of any points\nwhich lie on that hint");
+#endif
 	gcd[15].creator = GCheckBoxCreate;
 
 	GGadgetsCreate(gw,gcd);
@@ -707,7 +715,11 @@ void CVCreateHint(CharView *cv,int ishstem) {
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	wattrs.window_title = GStringGetResource(_STR_CreateHint,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	wattrs.window_title = _("Create Hint...");
+#endif
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,170));

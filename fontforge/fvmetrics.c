@@ -51,7 +51,6 @@ static int rb2[] = { _STR_IncrWidthBy, _STR_IncrLBearingBy, _STR_IncrRBearingBy,
 static int rb3[] = { _STR_ScaleWidthBy, _STR_ScaleLBearingBy, _STR_ScaleRBearingBy, _STR_ScaleVWidthBy };
 
 static int CW_OK(GGadget *g, GEvent *e) {
-    static int buts[] = { _STR_Yes, _STR_No, 0 };
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	int err;
@@ -60,7 +59,16 @@ static int CW_OK(GGadget *g, GEvent *e) {
 	    wd->type = st_set;
 	    wd->setto = GetRealR(wd->gw,CID_SetVal,rb1[wd->wtype],&err);
 	    if ( wd->setto<0 ) {
-		if ( GWidgetAskR(_STR_NegativeWidth, buts, 0, 1, _STR_NegativeWidthCheck )==1 )
+#if defined(FONTFORGE_CONFIG_GDRAW)
+		static int yesno[] = { _STR_Yes, _STR_No, 0 };
+		if ( GWidgetAskR(_STR_NegativeWidth, yesno, 0, 1, _STR_NegativeWidthCheck )==1 )
+#elif defined(FONTFORGE_CONFIG_GTK)
+		char *yesno[3];
+		yesno[0] = GTK_STOCK_YES;
+		yesno[1] = GTK_STOCK_NO;
+		yesno[2] = NULL;
+		if ( gwwv_ask(_("Negative Width"), yesno, 0, 1, _("Negative character widths are not allowed in TrueType\nDo you really want a negative width?") )==1 )
+#endif
 return( true );
 	    }
 	} else if ( GGadgetIsChecked(GWidgetGetControl(wd->gw,CID_Incr)) ) {

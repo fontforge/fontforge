@@ -236,7 +236,11 @@ return(true);
 	transform[5] += base.y;
 
 	if (( transform[1]!=0 || transform[2]!=0 ) && !warned ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetPostNoticeR(_STR_Warning,_STR_RotateSkewWarning);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_notice(_("Warning"),_("After rotating or skewing a character you should probably apply Element->Add Extrema"));
+#endif
 	    warned = true;
 	}
 	(td->transfunc)(td->userdata,transform,origin,bvts,
@@ -522,7 +526,11 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	wattrs.window_title = GStringGetResource(_STR_Transform,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	wattrs.window_title = _("Transform...");
+#endif
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,TBlock_Width));

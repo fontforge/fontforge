@@ -790,7 +790,11 @@ static xmlNodePtr SVGPickFont(xmlNodePtr *fonts,char *filename) {
 	if ( choice==-1 ) {
 	    char *fn = copy(filename);
 	    fn[lparen-filename] = '\0';
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_NotInCollection,_STR_FontNotInCollection,find,fn);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Not in Collection"),_("%s is not in %.100s"),find,fn);
+#endif
 	    free(fn);
 	}
 	free(find);

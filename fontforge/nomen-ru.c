@@ -1445,9 +1445,7 @@ static char *str_YesToAll = "Да для всех";
 static char *mnemonic_YesToAll = 'A';
 static char *str_NoToAll = "Нет для всех";
 static char *mnemonic_NoToAll = 'o';
-/* "The clipboard contains a bitmap character of size %d,\na size which is not in your database.\nWould you like to create a bitmap font of that size,\nor ignore this character?" */
-static char *str_ClipContainsPre = "The clipboard contains a bitmap character of size "; /*new*/
-static char *str_ClipContainsPost = ",\na size which is not in your database.\nWould you like to create a bitmap font of that size,\nor ignore this character?"; /*new*/
+static char *str_ClipContains = "The clipboard contains a bitmap character of size %hs,\na size which is not in your database.\nWould you like to create a bitmap font of that size,\nor ignore this character?"; /*new*/
 static char *str_Pasting = "Вставка...";
 static char *str_SelfRef = "Символ со ссылкой на себя";
 static char *str_AttemptSelfRef = "Попытка сделать символ, который ссылается сам на себя";

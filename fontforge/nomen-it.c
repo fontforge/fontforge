@@ -1448,8 +1448,7 @@ static char *mnemonic_YesToAll = 'A';
 static char *str_NoToAll = "No a tutto";
 static char *mnemonic_NoToAll = 'o';
 /* "The clipboard contains a bitmap character of size %d,\na size which is not in your database.\nWould you like to create a bitmap font of that size,\nor ignore this character?" */
-static char *str_ClipContainsPre = "Il clipboard contiene un carattere bitmap di grandezza ";
-static char *str_ClipContainsPost = ",\ngrandezza che non è fra i valori attuali.\nVuoi creare un font bitmap di questa grandezza,\no vuoi ignorare questo carattere";
+static char *str_ClipContains = "Il clipboard contiene un carattere bitmap di grandezza %hs,\ngrandezza che non è fra i valori attuali.\nVuoi creare un font bitmap di questa grandezza,\no vuoi ignorare questo carattere";
 static char *str_Pasting = "Incolla...";
 static char *str_SelfRef = "Carattere con auto-riferimento"
 static char *str_AttemptSelfRef = "Stai cercando di creare un carattere con un riferimento a lui stesso";

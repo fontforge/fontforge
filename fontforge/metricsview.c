@@ -835,8 +835,16 @@ return( true );
 }
 
 static int AskNewKernClassEntry(SplineChar *fsc,SplineChar *lsc) {
-    static int buts[] = { _STR_Yes, _STR_No, 0 };
-return( GWidgetAskR(_STR_NewKernClassEntTitle,buts,0,1,_STR_NewKernClassEntry,
+#if defined(FONTFORGE_CONFIG_GDRAW)
+    static int yesno[] = { _STR_Yes, _STR_No, 0 };
+return( GWidgetAskR(_STR_NewKernClassEntTitle,yesno,0,1,_STR_NewKernClassEntry,
+#elif defined(FONTFORGE_CONFIG_GTK)
+    char *yesno[3];
+    yesno[0] = GTK_STOCK_YES;
+    yesno[1] = GTK_STOCK_NO;
+    yesno[2] = NULL;
+return( gwwv_ask(_("Use Kerning Class?"),yesno,0,1,_("This kerning pair (%.20s and %.20s) is currently part of a kerning class with a 0 offset for this combination. Would you like to alter this kerning class entry (or create a kerning pair for just these two glyphs)?"),
+#endif
 	fsc->name,lsc->name)==0 );
 }
 
@@ -1675,7 +1683,6 @@ static void MVClear(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     int i;
     SplineChar *sc;
-    static int buts[] = { _STR_Yes, _STR_Unlink, _STR_Cancel, 0 };
     BDFFont *bdf;
     extern int onlycopydisplayed;
 
@@ -1689,7 +1696,18 @@ static void MVClear(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 return;
 	sc = mv->perchar[i].sc;
 	if ( sc->dependents!=NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
+	    static int buts[] = { _STR_Yes, _STR_Unlink, _STR_Cancel, 0 };
 	    int yes = GWidgetAskCenteredR(_STR_BadReference,buts,1,2,_STR_ClearDependent,sc->name);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    int yes;
+	    char *buts[4];
+	    buts[0] = GTK_STOCK_YES;
+	    buts[1] = _("_Unlink");
+	    buts[2] = GTK_STOCK_CANCEL;
+	    buts[3] = NULL;
+	    yes = gwwv_ask(_("Bad Reference"),buts,1,2,_("You are attempting to clear %.30s which is refered to by\nanother character. Are you sure you want to clear it?"),sc->name);
+#endif
 	    if ( yes==2 )
 return;
 	    if ( yes==1 )
@@ -2095,13 +2113,22 @@ static void MVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	int changed = false, refchanged=false;
 	RefChar *ref;
 	int asked=-1;
-	static int buts[] = { _STR_Unlink, _STR_No, _STR_Cancel, 0 };
 
 	for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	    if ( ref->transform[0]*ref->transform[3]<0 ||
 		    (ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
 		if ( asked==-1 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
+		    static int buts[] = { _STR_Unlink, _STR_No, _STR_Cancel, 0 };
 		    asked = GWidgetAskR(_STR_FlippedRef,buts,0,2,_STR_FlippedRefUnlink, sc->name );
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    char *buts[4];
+		    buts[0] = _("_Unlink");
+		    buts[1] = GTK_RESPONSE_NO;
+		    buts[2] = GTK_RESPONSE_CANCEL;
+		    buts[3] = NULL;
+		    asked = gwwv_ask(_("Flipped Reference"),buts,0,2,_("%.50s contains a flipped reference. This cannot be corrected as is. Would you like me to unlink it and then correct it?"), sc->name );
+#endif
 		    if ( asked==2 )
 return;
 		    else if ( asked==1 )
@@ -2408,7 +2435,11 @@ static void MVSubsInvoked(GWindow gw, GMenuItem *mi, GEvent *e) {
 	if ( pt!=NULL ) *pt = ' ';
 
 	if ( sc==NULL )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_CouldntfindcharT, _STR_CouldntFindSubstitution, name);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Could not find the character"), _("Could not find substitution character: %.40s"), name);
+#endif
 	else {
 	    MVSetPos(mv,i,sc);
 	    mv->perchar[i].basesc = basesc;
@@ -2495,7 +2526,11 @@ return( NULL );
     if ( basesc!=NULL ) {
 	if ( i!=0 )
 	    mi[i++].ti.line = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	mi[i].ti.text = u_copy((unichar_t *) GStringGetResource(_STR_RevertSubs,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	mi[i].ti.text = u_copy((unichar_t *) _("Revert Substitution"));
+#endif
 	mi[i].ti.fg = COLOR_DEFAULT;
 	mi[i].ti.bg = COLOR_DEFAULT;
 	mi[i].ti.userdata = basesc;
@@ -2889,11 +2924,19 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #if 0
 	    free(mi->ti.text);
 	    if ( e==NULL || !(e->u.mouse.state&ksm_shift) ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		mi->ti.text = u_copy(GStringGetResource(_STR_Simplify,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+		mi->ti.text = u_copy(_("Simplify"));
+#endif
 		mi->short_mask = ksm_control|ksm_shift;
 		mi->invoke = MVMenuSimplify;
 	    } else {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		mi->ti.text = u_copy(GStringGetResource(_STR_SimplifyMore,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+		mi->ti.text = u_copy(_("Simplify More..."));
+#endif
 		mi->short_mask = (ksm_control|ksm_meta|ksm_shift);
 		mi->invoke = MVMenuSimplifyMore;
 	    }
@@ -2937,7 +2980,11 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    vwlist[i].ti.disabled = mv->bdf!=NULL || mv->scale_index>=sizeof(mv_scales)/sizeof(mv_scales[0])-1;
 	  break;
 	  case MID_ShowGrid:
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    vwlist[i].ti.text = (unichar_t *) GStringGetResource(mv->showgrid?_STR_Hidegrid:_STR_Showgrid,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    vwlist[i].ti.text = (unichar_t *) mv->showgrid?_("Hide Grid");
+#endif
 	    vwlist[i].ti.text_in_resource = false;
 	  break;
 	  case MID_AntiAlias:
@@ -2979,9 +3026,17 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		i<sizeof(vwlist)/sizeof(vwlist[0])-1 && bdf!=NULL;
 		++i, bdf = bdf->next ) {
 	    if ( BDFDepth(bdf)==1 )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		u_sprintf( buffer, GStringGetResource(_STR_DPixelBitmap,NULL), bdf->pixelsize );
+#elif defined(FONTFORGE_CONFIG_GTK)
+		u_sprintf( buffer, _("%d pixel bitmap"), bdf->pixelsize );
+#endif
 	    else
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		u_sprintf( buffer, GStringGetResource(_STR_DdPixelBitmap,NULL),
+#elif defined(FONTFORGE_CONFIG_GTK)
+		u_sprintf( buffer, _("%d@%d pixel bitmap"),
+#endif
 			bdf->pixelsize, BDFDepth(bdf) );
 	    vwlist[i].ti.text = u_copy(buffer);
 	    vwlist[i].ti.checkable = true;
@@ -3871,7 +3926,11 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.cursor = ct_mypointer;
     u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GStringGetResource(_STR_MetricsTitle,NULL), fv->sf->fontname);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    _("Metrics For %.50s"), fv->sf->fontname);
+#endif
     wattrs.window_title = ubuf;
     wattrs.icon = icon;
     pos.x = pos.y = 0;

@@ -457,7 +457,11 @@ static int DV_WatchPnt(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	dv = GDrawGetUserData(GGadgetGetWindow(g));
 	if ( dv->cv->sc->layers[ly_fore].refs!=NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_NoWatchPoints,_STR_NoWatchPointsWithRefs);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("No Watch Points"),_("Watch Points not supported in glyphs with references"));
+#endif
 return( true );
 	}
 
@@ -864,7 +868,11 @@ static void DVCreateRegs(DebugView *dv) {
     wattrs.mask = wam_events|wam_cursor|wam_wtitle;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_TTRegisters,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Registers (TrueType)");
+#endif
     pos.x = 664; pos.y = 1;
     pos.width = 133; pos.height = 269;
     dv->regs = GDrawCreateTopWindow(NULL,&pos,dvreg_e_h,dv,&wattrs);
@@ -880,7 +888,11 @@ static void DVCreateStack(DebugView *dv) {
     wattrs.mask = wam_events|wam_cursor|wam_wtitle;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_TTStack,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Stack (TrueType)");
+#endif
     pos.x = 664; pos.y = 302;
     pos.width = 133; pos.height = 269;
     dv->stack = GDrawCreateTopWindow(NULL,&pos,dvstack_e_h,dv,&wattrs);
@@ -896,7 +908,11 @@ static void DVCreateStore(DebugView *dv) {
     wattrs.mask = wam_events|wam_cursor|wam_wtitle;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_TTStorage,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Storage (TrueType)");
+#endif
     pos.x = 664; pos.y = 602;
     pos.width = 133; pos.height = 100;
     dv->storage = GDrawCreateTopWindow(NULL,&pos,dvstore_e_h,dv,&wattrs);
@@ -914,7 +930,11 @@ static void DVCreatePoints(DebugView *dv) {
     wattrs.mask = wam_events|wam_cursor|wam_wtitle;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_TTPoints,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Points (TrueType)");
+#endif
     pos.x = 664; pos.y = 732;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,125)); pos.height = 269;
     dv->points = GDrawCreateTopWindow(NULL,&pos,dvpoints_e_h,dv,&wattrs);
@@ -992,7 +1012,11 @@ static void DVCreateCvt(DebugView *dv) {
     wattrs.mask = wam_events|wam_cursor|wam_wtitle;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_Cvt,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Cvt");
+#endif
     pos.x = 664; pos.y = 732;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,125)); pos.height = 169;
     dv->cvt = GDrawCreateTopWindow(NULL,&pos,dvcvt_e_h,dv,&wattrs);
@@ -1149,7 +1173,11 @@ return;
 	gcd[1].gd.label = &label[1];
 	label[1].image = &GIcon_stepinto;
 	gcd[1].gd.handle_controlevent = DV_Run;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	gcd[1].gd.popup_msg = GStringGetResource(_STR_StepPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gcd[1].gd.popup_msg = _("Step into");
+#endif
 	gcd[1].creator = GButtonCreate;
 
 	gcd[2].gd.pos.y = 2; gcd[2].gd.pos.x = 38;
@@ -1158,7 +1186,11 @@ return;
 	gcd[2].gd.label = &label[2];
 	label[2].image = &GIcon_stepover;
 	gcd[2].gd.handle_controlevent = DV_Run;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	gcd[2].gd.popup_msg = GStringGetResource(_STR_NextPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gcd[2].gd.popup_msg = _("Step over (Next)");
+#endif
 	gcd[2].creator = GButtonCreate;
 
 	gcd[3].gd.pos.y = 2; gcd[3].gd.pos.x = 74;
@@ -1167,7 +1199,11 @@ return;
 	gcd[3].gd.label = &label[3];
 	label[3].image = &GIcon_stepout;
 	gcd[3].gd.handle_controlevent = DV_Run;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	gcd[3].gd.popup_msg = GStringGetResource(_STR_StepOutOfPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gcd[3].gd.popup_msg = _("Step out of current function");
+#endif
 	gcd[3].creator = GButtonCreate;
 
 	gcd[4].gd.pos.y = 2; gcd[4].gd.pos.x = 110;
@@ -1176,7 +1212,11 @@ return;
 	gcd[4].gd.label = &label[4];
 	label[4].image = &GIcon_continue;
 	gcd[4].gd.handle_controlevent = DV_Run;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	gcd[4].gd.popup_msg = GStringGetResource(_STR_ContinuePopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gcd[4].gd.popup_msg = _("Continue");
+#endif
 	gcd[4].creator = GButtonCreate;
 
 	gcd[5].gd.pos.y = 2; gcd[5].gd.pos.x = 146;
@@ -1185,7 +1225,11 @@ return;
 	gcd[5].gd.label = &label[5];
 	label[5].image = &GIcon_watchpnt;
 	gcd[5].gd.handle_controlevent = DV_WatchPnt;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	gcd[5].gd.popup_msg = GStringGetResource(_STR_WatchPointPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gcd[5].gd.popup_msg = _("Watch all selected points\n(stop when a point moves)");
+#endif
 	gcd[5].creator = GButtonCreate;
 
 	gcd[6].gd.pos.y = 2; gcd[6].gd.pos.x = 182;
@@ -1194,7 +1238,11 @@ return;
 	gcd[6].gd.label = &label[6];
 	label[6].image = &GIcon_menudelta;
 	gcd[6].gd.handle_controlevent = DV_WindowMenu;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	gcd[6].gd.popup_msg = GStringGetResource(_STR_Window,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gcd[6].gd.popup_msg = _("Window");
+#endif
 	gcd[6].creator = GButtonCreate;
 
 	gcd[7].gd.pos.y = 2; gcd[7].gd.pos.x = 218;
@@ -1203,7 +1251,11 @@ return;
 	gcd[7].gd.label = &label[7];
 	label[7].image = &GIcon_exit;
 	gcd[7].gd.handle_controlevent = DV_Exit;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	gcd[7].gd.popup_msg = GStringGetResource(_STR_ExitDebugger,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gcd[7].gd.popup_msg = _("Exit Debugger");
+#endif
 	gcd[7].creator = GButtonCreate;
 
 	GGadgetsCreate(dv->dv,gcd);

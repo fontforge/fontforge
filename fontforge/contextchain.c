@@ -791,21 +791,40 @@ return( name );
 return( NULL );
 }
 
+#if defined(FONTFORGE_CONFIG_GDRAW)
 int CCD_NameListCheck(SplineFont *sf,const unichar_t *ret,int empty_bad,int title) {
+#elif defined(FONTFORGE_CONFIG_GTK)
+int CCD_NameListCheck(SplineFont *sf,const char *ret,int empty_bad,char *title) {
+#endif
     char *missingname;
-    static int buts[] = { _STR_Yes, _STR_No, 0 };
     int ans;
 
     if ( !CCD_ValidNameList(ret,empty_bad) ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(title,title==_STR_BadClass?_STR_BadClassLong :
 		title==_STR_BadCoverage ? _STR_BadCoverageLong :
 		 _STR_BadMatchGlyphLong);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(title,
+		strcmp(title,_("Bad Class"))==0? _("A class must contain at least one glyph name, glyph names must be valid postscript names, and no glyphs may appear in any other class") :
+		strcmp(title,_("Bad Coverage"))==0? _("A coverage table must contain at least one glyph name, and glyph names must be valid postscript names") :
+		    _("A glyph list must contain at least one glyph name, and glyph names must be valid postscript names") );
+#endif
 return(false);
     }
     if ( (missingname=CCD_NonExistantName(sf,ret))!=NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
+	static int buts[] = { _STR_Yes, _STR_No, 0 };
 	ans = GWidgetAskR(title,buts,0,1,title==_STR_BadClass?_STR_MissingClassMember :
 		title==_STR_BadCoverage ? _STR_MissingClassMember :
 		 _STR_NoGlyphNamed,missingname );
+#elif defined(FONTFORGE_CONFIG_GTK)
+	static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
+	ans = gwwv_ask(title,buts,0,1,
+		strcmp(title,_("Bad Class"))==0? _("The class member \"%.20s\" is not in this font,\nIs that what you want?") :
+		strcmp(title,_("Bad Coverage"))==0? _("The coverage table member \"%.20s\" is not in this font,\nIs that what you want?") :
+		    _("There is no glyph named \"%.20hs\" in this font,\nIs that what you want?") );
+#endif
 	free(missingname);
 return(!ans);
     }
@@ -833,7 +852,11 @@ int CCD_InvalidClassList(const unichar_t *ret,GGadget *list,int wasedit) {
 		if ( tend==NULL ) tend = tpt+u_strlen(tpt);
 		if ( tend-tpt==end-pt && u_strncmp(pt,tpt,end-pt)==0 ) {
 		    unichar_t *dupname = u_copyn(pt,end-pt);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GWidgetErrorR(_STR_BadClass,_STR_BadClassName, dupname);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    gwwv_post_error(_("Bad Class"),_("No glyphs from another class may appear here, but %.30s does"), dupname);
+#endif
 		    free(dupname);
 return( true );
 		}
@@ -865,17 +888,29 @@ static int CCD_ReasonableClassNum(const unichar_t *match,GGadget *mlist,
 	if ( isdigit( *pt )) ++any;
 	val = u_strtol(pt,&end,10);
 	if ( *end!=' ' && *end!='\0' ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadClassNumber,_STR_InvalidCharInClassNumber);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Match Class Number"),_("The list of class numbers should only contain digits and spaces"));
+#endif
 return( false );
 	}
 	if ( val>=mlen || val<0) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadClassNumber,_STR_ClassNumberOutOfRange,mlen,val);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Match Class Number"),_("There are only %d classes in this class set, yet you are trying to use %d."),mlen,val);
+#endif
 return( false );
 	}
     }
     r->u.class.ncnt = any;
     if ( any==0 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_BadClassNumber,_STR_NoMatchClassNumber);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Bad Match Class Number"),_("The are no class number listed to be matched. There must be at least one."));
+#endif
 return( false );
     }
 
@@ -887,11 +922,19 @@ return( false );
 	if ( isdigit( *pt )) ++any;
 	val = u_strtol(pt,&end,10);
 	if ( *end!=' ' && *end!='\0' ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadBackClassNumber,_STR_InvalidCharInClassNumber);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Backtrack Class Number"),_("The list of class numbers should only contain digits and spaces"));
+#endif
 return( false );
 	}
 	if ( val>=blen || val<0) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadBackClassNumber,_STR_ClassNumberOutOfRange,blen,val);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Backtrack Class Number"),_("There are only %d classes in this class set, yet you are trying to use %d."),blen,val);
+#endif
 return( false );
 	}
     }
@@ -905,11 +948,19 @@ return( false );
 	if ( isdigit( *pt )) ++any;
 	val = u_strtol(pt,&end,10);
 	if ( *end!=' ' && *end!='\0' ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadLookClassNumber,_STR_InvalidCharInClassNumber);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Lookahead Class Number"),_("The list of class numbers should only contain digits and spaces"));
+#endif
 return( false );
 	}
 	if ( val>=flen || val<0) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadLookClassNumber,_STR_ClassNumberOutOfRange,flen,val);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Lookahead Class Number"),_("There are only %d classes in this class set, yet you are trying to use %d."),flen,val);
+#endif
 return( false );
 	}
     }
@@ -955,7 +1006,11 @@ static void CCD_FinishEditNew(struct contextchaindlg *ccd) {
 
     if ( ccd->wasoffset>=300 ) {		/* It's a class */
 	const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList+300));
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !CCD_NameListCheck(ccd->sf,ret,true,_STR_BadClass) )
+#elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !CCD_NameListCheck(ccd->sf,ret,true,_("Bad Class") )
+#endif
 return;
 	if ( CCD_InvalidClassList(ret,list,ccd->wasedit) )
 return;
@@ -972,7 +1027,11 @@ return;
 	memset(&dummy,0,sizeof(dummy));
 	CCD_ParseLookupList(&dummy,GWidgetGetControl(ccd->gw,CID_LookupList+500));
 	if ( dummy.lookup_cnt==0 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadSeqLookup,_STR_MissingSeqLookup);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Sequence/Lookup List"),_("There must be at least one entry in the Sequence/Lookup List"));
+#endif
 return;
 	}
 	if ( !CCD_ReasonableClassNum(
@@ -997,7 +1056,11 @@ return;
 	GDrawSetVisible(ccd->class,true);
     } else if ( ccd->wasoffset>=100 ) {		/* It's from coverage */
 	const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList+100));
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !CCD_NameListCheck(ccd->sf,ret,true,_STR_BadCoverage) )
+#elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !CCD_NameListCheck(ccd->sf,ret,true,_("Bad Coverage") )
+#endif
 return;
 	if ( ccd->wasedit ) {
 	    GListChangeLine(list,GGadgetGetFirstListSelectedItem(list),ret);
@@ -1012,6 +1075,7 @@ return;
 
 	memset(&dummy,0,sizeof(dummy));
 	val = _GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList));
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !CCD_NameListCheck(ccd->sf,val,true,_STR_BadGlyphList) )
 return;
 	val = _GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList+20));
@@ -1019,10 +1083,23 @@ return;
 return;
 	val = _GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList+40));
 	if ( !CCD_NameListCheck(ccd->sf,val,false,_STR_BadForeGlyphList) )
+#elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !CCD_NameListCheck(ccd->sf,val,true,_("Bad Glyph List")) )
+return;
+	val = _GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList+20));
+	if ( !CCD_NameListCheck(ccd->sf,val,false,_("Bad Back Glyph List")) )
+return;
+	val = _GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList+40));
+	if ( !CCD_NameListCheck(ccd->sf,val,false,_("Bad Fore Glyph List")) )
+#endif
 return;
 	CCD_ParseLookupList(&dummy,GWidgetGetControl(ccd->gw,CID_LookupList));
 	if ( dummy.lookup_cnt==0 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadSeqLookup,_STR_MissingSeqLookup);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Sequence/Lookup List"),_("There must be at least one entry in the Sequence/Lookup List"));
+#endif
 return;
 	}
 	dummy.u.glyph.names = ccd_cu_copy(_GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList)));
@@ -1490,7 +1567,11 @@ static void _CCD_DoLEditNew(struct contextchaindlg *ccd,int off,int isedit) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_SeqLookup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Sequence/Lookup");
+#endif
     pos.x = pos.y = 0;
     pos.width = GDrawPointsToPixels(NULL,180);
     pos.height = GDrawPointsToPixels(NULL,130);
@@ -1570,7 +1651,11 @@ static void _CCD_DoLEditNew(struct contextchaindlg *ccd,int off,int isedit) {
   goto retry;
 	pt = _GGadgetGetTitle(gcd[3].ret);
 	if ( u_strlen(pt)!=4 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_TagTooLong,_STR_TagTooLong);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Tag too long"),_("Tag too long"));
+#endif
   goto retry;
 	}
 	sprintf(cbuf,"%d '",seq);
@@ -1665,7 +1750,11 @@ static void _CCD_Ok(struct contextchaindlg *ccd) {
       case aw_glist: {
 	old = GGadgetGetList(GWidgetGetControl(ccd->gw,CID_GList),&len);
 	if ( len==0 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_MissingRules,_STR_MustBeRule);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Missing rules"),_(" There must be at least one contextual rule"));
+#endif
 return;
 	}
 	FPSTRulesFree(fpst->rules,fpst->format,fpst->rule_cnt);
@@ -1678,7 +1767,11 @@ return;
       case aw_class: {
 	old = GGadgetGetList(GWidgetGetControl(ccd->gw,CID_GList+200),&len);
 	if ( len==0 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_MissingRules,_STR_MustBeRule);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Missing rules"),_(" There must be at least one contextual rule"));
+#endif
 return;
 	}
 	FPSTRulesFree(fpst->rules,fpst->format,fpst->rule_cnt);
@@ -1710,17 +1803,29 @@ return;
       case aw_coverage:
 	old = GGadgetGetList(GWidgetGetControl(ccd->gw,CID_GList+100),&len);
 	if ( len==0 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadCoverage,_STR_MissingMatch);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Coverage Table"),_("There must be at least one match coverage table"));
+#endif
 return;
 	}
 	if ( fpst->format==pst_reversecoverage ) {
 	    if ( len!=1 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_BadCoverage,_STR_MatchCntWrong);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad Coverage Table"),_("In a Reverse Chaining Substitution there must be exactly one coverage table to match"));
+#endif
 return;
 	    }
 	    if ( CCD_GlyphNameCnt(old[0]->text)!=CCD_GlyphNameCnt(
 		    _GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_RplList+100))) ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_RplMismatch,_STR_ReplacementMismatch);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Replacement mismatch"),_("In a Reverse Chaining Substitution there must be exactly as many replacements as there are glyph names in the match coverage table"));
+#endif
 return;
 	    }
 	    dummy.u.rcoverage.replacements = ccd_cu_copy(
@@ -1728,7 +1833,11 @@ return;
 	} else {
 	    CCD_ParseLookupList(&dummy,GWidgetGetControl(ccd->gw,CID_LookupList+100));
 	    if ( dummy.lookup_cnt==0 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_BadSeqLookup,_STR_MissingSeqLookup);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad Sequence/Lookup List"),_("There must be at least one entry in the Sequence/Lookup List"));
+#endif
 return;
 	    }
 	}
@@ -2120,7 +2229,11 @@ static int CCD_AddGlyphList(GGadgetCreateData *gcd, GTextInfo *label,int off,
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = y;
     gcd[k].gd.pos.width = -1;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_SetGlyphsFromSelectionPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[k].gd.popup_msg = _("Set this glyph list to be the characters selected in the fontview");
+#endif
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.handle_controlevent = CCD_FromSelection;
     gcd[k].gd.cid = CID_Set+off;
@@ -2131,7 +2244,11 @@ static int CCD_AddGlyphList(GGadgetCreateData *gcd, GTextInfo *label,int off,
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 70; gcd[k].gd.pos.y = 4;
     gcd[k].gd.pos.width = -1;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_SelectFromGlyphsPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[k].gd.popup_msg = _("Set the fontview's selection to be the characters named here");
+#endif
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.handle_controlevent = CCD_ToSelection;
     gcd[k].gd.cid = CID_Select+off;
@@ -2235,7 +2352,11 @@ static void CCD_AddReplacements(GGadgetCreateData *gcd, GTextInfo *label,
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
     gcd[k].gd.pos.width = -1;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_SetGlyphsFromSelectionPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[k].gd.popup_msg = _("Set this glyph list to be the characters selected in the fontview");
+#endif
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.handle_controlevent = CCD_FromSelection2;
     gcd[k].gd.cid = CID_Set2+off;
@@ -2246,7 +2367,11 @@ static void CCD_AddReplacements(GGadgetCreateData *gcd, GTextInfo *label,
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 70; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
     gcd[k].gd.pos.width = -1;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_SelectFromGlyphsPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[k].gd.popup_msg = _("Set the fontview's selection to be the characters named here");
+#endif
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.handle_controlevent = CCD_ToSelection2;
     gcd[k].gd.cid = CID_Select2+off;
@@ -2613,7 +2738,11 @@ struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
 	GGadgetSetList(GWidgetGetControl(ccd->class,CID_GList+200),clslistlist(tempfpst),false);
 	for ( i=0; i<3; ++i ) {
 	    GGadget *list = GWidgetGetControl(ccd->class,CID_GList+300+i*20);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GListAppendLine(list,GStringGetResource(_STR_EverythingElse,NULL),false);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    GListAppendLine(list,_("{Everything Else}"),false);
+#endif
 	    for ( k=1; k<(&tempfpst->nccnt)[i]; ++k ) {
 		unichar_t *temp = uc_copy((&tempfpst->nclass)[i][k]);
 		GListAppendLine(list,temp,false);
@@ -2629,7 +2758,11 @@ struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
     } else {
 	for ( i=0; i<3; ++i )
 	    GListAppendLine(GWidgetGetControl(ccd->class,CID_GList+300+i*20),
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GStringGetResource(_STR_EverythingElse,NULL),false);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    _("{Everything Else}"),false);
+#endif
 	for ( i=1; i<3; ++i ) {
 	    GGadgetSetChecked(GWidgetGetControl(ccd->class,CID_SameAsClasses+i*20),true);
 	    CCD_SameAsClasses(GWidgetGetControl(ccd->class,CID_SameAsClasses+i*20),NULL);

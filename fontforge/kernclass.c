@@ -225,7 +225,11 @@ static int KCD_Next(GGadget *g, GEvent *e) {
 	GGadget *list = GWidgetGetControl( kcd->gw, CID_ClassList+kcd->off );
 	int i;
 
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !CCD_NameListCheck(kcd->kcld->sf,ret,true,_STR_BadClass) ||
+#elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !CCD_NameListCheck(kcd->kcld->sf,ret,true,_("Bad Class")) ||
+#endif
 		CCD_InvalidClassList(ret,list,kcd->isedit))
 return( true );
 
@@ -295,7 +299,11 @@ static int KCD_Next2(GGadget *g, GEvent *e) {
 	int val = u_strtol(ret,&end,10);
 
 	if ( val<-32768 || val>32767 || *end!='\0' ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR( _STR_BadNumber, _STR_BadNumber );
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error( _("Bad Number"), _("Bad Number") );
+#endif
 return( true );
 	}
 	kcd->offsets[kcd->st_pos] = val;
@@ -595,7 +603,11 @@ static void KCD_EditOffset(KernClassDlg *kcd) {
     static unichar_t nullstr[] = { 0 };
 
     if ( first==0 || second==0 )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetPostNoticeR(_STR_ClassZero,_STR_ClassZeroOffsets);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_notice(_("Class 0"),_("The kerning values for class 0 (\"Everything Else\") should always be 0"));
+#endif
     GGadgetSetList(GWidgetGetControl(kcd->kw,CID_First),
 	    ti = TiNamesFromClass(GWidgetGetControl(kcd->gw,CID_ClassList),first),false);
     GGadgetSetTitle(GWidgetGetControl(kcd->kw,CID_First),
@@ -663,7 +675,11 @@ return( KCD_Next2(g,e));
 
 	if ( sf->script_lang==NULL || sli<0 ||
 		sf->script_lang[sli]==NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_SelectAScript,_STR_SelectAScript);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Please select a script"),_("Please select a script"));
+#endif
 return( true );
 	}
 	if ( kcd->orig==NULL ) {
@@ -1337,7 +1353,11 @@ return;
     wattrs.restrict_input_to_me = false;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource( _STR_KernClass,NULL );
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title =  _("Kerning Class");
+#endif
     wattrs.is_dlg = false;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,KC_Width));
@@ -1477,7 +1497,11 @@ return;
 
     for ( i=0; i<2; ++i ) {
 	GGadget *list = GWidgetGetControl(kcd->gw,CID_ClassList+i*100);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GListAppendLine(list,GStringGetResource(_STR_EverythingElse,NULL),false);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	GListAppendLine(list,_("{Everything Else}"),false);
+#endif
 	if ( kcd->orig!=NULL ) {
 	    for ( k=1; k<(&kcd->first_cnt)[i]; ++k ) {
 		unichar_t *temp = uc_copy((&kcd->orig->firsts)[i][k]);
@@ -1500,7 +1524,11 @@ return;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 5;
     gcd[k].gd.pos.width = -1;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_SetGlyphsFromSelectionPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[k].gd.popup_msg = _("Set this glyph list to be the characters selected in the fontview");
+#endif
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.handle_controlevent = KCD_FromSelection;
     gcd[k].gd.cid = CID_Set;
@@ -1511,7 +1539,11 @@ return;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 70; gcd[k].gd.pos.y = 5;
     gcd[k].gd.pos.width = -1;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_SelectFromGlyphsPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[k].gd.popup_msg = _("Set the fontview's selection to be the characters named here");
+#endif
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.handle_controlevent = KCD_ToSelection;
     gcd[k].gd.cid = CID_Select;
@@ -1782,7 +1814,11 @@ return;
     wattrs.restrict_input_to_me = false;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource( isv?_STR_VKernByClasses:_STR_KernByClasses,NULL );
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title =  isv?_("VKern By Classes...");
+#endif
     wattrs.is_dlg = false;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,KCL_Width));

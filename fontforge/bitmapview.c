@@ -183,7 +183,11 @@ static unichar_t *BVMakeTitles(BitmapView *bv, BDFChar *bc,unichar_t *ubuf) {
     BDFFont *bdf = bv->bdf;
 
     sc = bc->sc;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     u_sprintf(ubuf,GStringGetResource(_STR_BvTitle,NULL),
+#elif defined(FONTFORGE_CONFIG_GTK)
+    u_sprintf(ubuf,_("%1$.80s at %2$d size %3$d from %4$.80s"),
+#endif
 	    sc==NULL ? sc->name : "", bc->enc, bdf->pixelsize, sc==NULL ? "" : sc->parent->fontname);
     title = u_copy(ubuf);
     if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x110000 && _UnicodeNameAnnot!=NULL &&

@@ -319,9 +319,17 @@ static int TA_CenRadChange(GGadget *g, GEvent *e) {
 	struct ask_info *d = GDrawGetUserData(GGadgetGetWindow(g));
 	int is_bb = GGadgetIsChecked(d->reg);
 	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_CentCornLab),
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GStringGetResource(is_bb ? _STR_Corner : _STR_Center_,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+		is_bb ? _("Corner"));
+#endif
 	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_RadDiamLab),
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GStringGetResource(is_bb ? _STR_Diameter : _STR_Radius,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+		is_bb ? _("Diameter:"));
+#endif
     }
 return( true );
 }
@@ -379,7 +387,11 @@ static int Ask(int rb1, int rb2, int rb, int lab, real *val, int *co,
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	wattrs.window_title = GStringGetResource(_STR_ShapeType,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	wattrs.window_title = _("Shape Type");
+#endif
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,190));
@@ -956,7 +968,11 @@ return( cvtools );
     wattrs.cursor = ct_mypointer;
     wattrs.positioned = true;
     wattrs.is_dlg = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_Tools,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Tools");
+#endif
 
     r.width = CV_TOOLS_WIDTH; r.height = CV_TOOLS_HEIGHT;
     if ( cvtoolsoff.x==-9999 ) {
@@ -1096,7 +1112,11 @@ return;
 		r.x+r.width,CV_LAYERS2_HEADER_HEIGHT+i*CV_LAYERS2_LINE_HEIGHT,
 		0x808080);
 	if ( i==0 || i==1 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    str = GStringGetResource(i==0?_STR_Grid:_STR_Back,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    str = i==0?_("Guide");
+#endif
 	    GDrawDrawText(pixmap,r.x+2,CV_LAYERS2_HEADER_HEIGHT + i*CV_LAYERS2_LINE_HEIGHT + (CV_LAYERS2_LINE_HEIGHT-12)/2+12,
 		    str,-1,NULL,ll==layer2.active?0xffffff:0x000000);
 	} else if ( layer2.offtop+i>=layer2.current_layers ) {
@@ -1127,7 +1147,11 @@ static void CVLayer2Invoked(GWindow v, GMenuItem *mi, GEvent *e) {
     Layer temp;
     int layer = CVLayer(cv);
     SplineChar *sc = cv->sc;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     static int buts[] = { _STR_Yes, _STR_Cancel, 0 };
+#elif defined(FONTFORGE_CONFIG_GTK)
+    static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_CANCEL, NULL };
+#endif
     int i;
 
     switch ( mi->mid ) {
@@ -1147,7 +1171,11 @@ return;
       case MID_DelLayer:
 	if ( sc->layer_cnt==2 )		/* May not delete the last foreground layer */
 return;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( GWidgetAskR(_STR_CantBeUndone,buts,0,1,_STR_CantBeUndoneDoItAnyway)==1 )
+#elif defined(FONTFORGE_CONFIG_GTK)
+	if ( gwwv_ask(_("Cannot Be Undone"),buts,0,1,_("This operation cannot be undone, do it anyway?"))==1 )
+#endif
 return;
 	SplinePointListsFree(sc->layers[layer].splines);
 	RefCharsFree(sc->layers[layer].refs);
@@ -1346,7 +1374,11 @@ return;
     wattrs.cursor = ct_mypointer;
     wattrs.positioned = true;
     wattrs.is_dlg = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_Layers,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Layers");
+#endif
 
     r.width = GGadgetScale(CV_LAYERS2_WIDTH); r.height = CV_LAYERS_HEIGHT;
     if ( cvlayersoff.x==-9999 ) {
@@ -1383,7 +1415,11 @@ return;
     gcd[1].gd.label = &label[1];
     gcd[1].gd.pos.x = 7; gcd[1].gd.pos.y = 5; 
     gcd[1].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[0].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[0].gd.popup_msg = _("Is Layer Visible?");
+#endif
     gcd[1].creator = GLabelCreate;
 
     label[2].text = (unichar_t *) _STR_Layer;
@@ -1391,27 +1427,43 @@ return;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.pos.x = 30; gcd[2].gd.pos.y = 5; 
     gcd[2].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[2].gd.popup_msg = GStringGetResource(_STR_IsEdit,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[2].gd.popup_msg = _("Is Layer Editable?");
+#endif
     gcd[2].creator = GLabelCreate;
 
     gcd[3].gd.pos.x = 5; gcd[3].gd.pos.y = CV_LAYERS2_HEADER_HEIGHT+(CV_LAYERS2_LINE_HEIGHT-12)/2; 
     gcd[3].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[3].gd.cid = CID_VGrid;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[3].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[3].gd.popup_msg = _("Is Layer Visible?");
+#endif
     gcd[3].gd.box = &radio_box;
     gcd[3].creator = GCheckBoxCreate;
 
     gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = gcd[3].gd.pos.y+CV_LAYERS2_LINE_HEIGHT; 
     gcd[4].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[4].gd.cid = CID_VBack;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[4].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[4].gd.popup_msg = _("Is Layer Visible?");
+#endif
     gcd[4].gd.box = &radio_box;
     gcd[4].creator = GCheckBoxCreate;
 
     gcd[5].gd.pos.x = 5; gcd[5].gd.pos.y = gcd[4].gd.pos.y+CV_LAYERS2_LINE_HEIGHT; 
     gcd[5].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[5].gd.cid = CID_VFore;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[5].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[5].gd.popup_msg = _("Is Layer Visible?");
+#endif
     gcd[5].gd.box = &radio_box;
     gcd[5].creator = GCheckBoxCreate;
 
@@ -1655,7 +1707,11 @@ return( cvlayers );
     wattrs.cursor = ct_mypointer;
     wattrs.positioned = true;
     wattrs.is_dlg = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_Layers,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Layers");
+#endif
 
     r.width = GGadgetScale(104); r.height = CV_LAYERS_HEIGHT;
     if ( cvlayersoff.x==-9999 ) {
@@ -1682,7 +1738,11 @@ return( cvlayers );
     gcd[0].gd.label = &label[0];
     gcd[0].gd.pos.x = 7; gcd[0].gd.pos.y = 5; 
     gcd[0].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[0].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[0].gd.popup_msg = _("Is Layer Visible?");
+#endif
     gcd[0].creator = GLabelCreate;
 
     label[1].text = (unichar_t *) _STR_E;
@@ -1690,7 +1750,11 @@ return( cvlayers );
     gcd[1].gd.label = &label[1];
     gcd[1].gd.pos.x = 30; gcd[1].gd.pos.y = 5; 
     gcd[1].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[1].gd.popup_msg = GStringGetResource(_STR_IsEdit,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[1].gd.popup_msg = _("Is Layer Editable?");
+#endif
     gcd[1].creator = GLabelCreate;
 
     label[2].text = (unichar_t *) _STR_Layer;
@@ -1698,76 +1762,120 @@ return( cvlayers );
     gcd[2].gd.label = &label[2];
     gcd[2].gd.pos.x = 47; gcd[2].gd.pos.y = 5; 
     gcd[2].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[2].gd.popup_msg = GStringGetResource(_STR_IsEdit,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[2].gd.popup_msg = _("Is Layer Editable?");
+#endif
     gcd[2].creator = GLabelCreate;
 
     gcd[3].gd.pos.x = 5; gcd[3].gd.pos.y = 21; 
     gcd[3].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[3].gd.cid = CID_VFore;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[3].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[3].gd.popup_msg = _("Is Layer Visible?");
+#endif
     gcd[3].gd.box = &radio_box;
     gcd[3].creator = GCheckBoxCreate;
 
     gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = 38; 
     gcd[4].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[4].gd.cid = CID_VBack;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[4].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[4].gd.popup_msg = _("Is Layer Visible?");
+#endif
     gcd[4].gd.box = &radio_box;
     gcd[4].creator = GCheckBoxCreate;
 
     gcd[5].gd.pos.x = 5; gcd[5].gd.pos.y = 55; 
     gcd[5].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[5].gd.cid = CID_VGrid;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[5].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[5].gd.popup_msg = _("Is Layer Visible?");
+#endif
     gcd[5].gd.box = &radio_box;
     gcd[5].creator = GCheckBoxCreate;
 
     gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = 72; 
     gcd[6].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[6].gd.cid = CID_VHHints;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[6].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[6].gd.popup_msg = _("Is Layer Visible?");
+#endif
     gcd[6].gd.box = &radio_box;
     gcd[6].creator = GCheckBoxCreate;
 
     gcd[7].gd.pos.x = 5; gcd[7].gd.pos.y = 89; 
     gcd[7].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[7].gd.cid = CID_VVHints;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[7].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[7].gd.popup_msg = _("Is Layer Visible?");
+#endif
     gcd[7].gd.box = &radio_box;
     gcd[7].creator = GCheckBoxCreate;
 
     gcd[8].gd.pos.x = 5; gcd[8].gd.pos.y = 106; 
     gcd[8].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[8].gd.cid = CID_VDHints;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[8].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[8].gd.popup_msg = _("Is Layer Visible?");
+#endif
     gcd[8].gd.box = &radio_box;
     gcd[8].creator = GCheckBoxCreate;
 
     gcd[9].gd.pos.x = 5; gcd[9].gd.pos.y = 123;
     gcd[9].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[9].gd.cid = CID_VBlues;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[9].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[9].gd.popup_msg = _("Is Layer Visible?");
+#endif
     gcd[9].gd.box = &radio_box;
     gcd[9].creator = GCheckBoxCreate;
 
     gcd[10].gd.pos.x = 5; gcd[10].gd.pos.y = 140; 
     gcd[10].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[10].gd.cid = CID_VAnchor;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[10].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[10].gd.popup_msg = _("Is Layer Visible?");
+#endif
     gcd[10].gd.box = &radio_box;
     gcd[10].creator = GCheckBoxCreate;
 
     gcd[11].gd.pos.x = 5; gcd[11].gd.pos.y = 157; 
     gcd[11].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[11].gd.cid = CID_VHMetrics;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[11].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[11].gd.popup_msg = _("Is Layer Visible?");
+#endif
     gcd[11].gd.box = &radio_box;
     gcd[11].creator = GCheckBoxCreate;
 
     gcd[12].gd.pos.x = 5; gcd[12].gd.pos.y = 174; 
     gcd[12].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[12].gd.cid = CID_VVMetrics;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[12].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[12].gd.popup_msg = _("Is Layer Visible?");
+#endif
     gcd[12].gd.box = &radio_box;
     gcd[12].creator = GCheckBoxCreate;
     base = 13;
@@ -1779,7 +1887,11 @@ return( cvlayers );
     gcd[base].gd.pos.x = 27; gcd[base].gd.pos.y = 21; 
     gcd[base].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[base].gd.cid = CID_EFore;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[base].gd.popup_msg = GStringGetResource(_STR_IsEdit,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[base].gd.popup_msg = _("Is Layer Editable?");
+#endif
     gcd[base].gd.box = &radio_box;
     gcd[base].creator = GRadioCreate;
 
@@ -1789,7 +1901,11 @@ return( cvlayers );
     gcd[base+1].gd.pos.x = 27; gcd[base+1].gd.pos.y = 38; 
     gcd[base+1].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[base+1].gd.cid = CID_EBack;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[base+1].gd.popup_msg = GStringGetResource(_STR_IsEdit,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[base+1].gd.popup_msg = _("Is Layer Editable?");
+#endif
     gcd[base+1].gd.box = &radio_box;
     gcd[base+1].creator = GRadioCreate;
 
@@ -1799,7 +1915,11 @@ return( cvlayers );
     gcd[base+2].gd.pos.x = 27; gcd[base+2].gd.pos.y = 55; 
     gcd[base+2].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[base+2].gd.cid = CID_EGrid;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[base+2].gd.popup_msg = GStringGetResource(_STR_IsEdit,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[base+2].gd.popup_msg = _("Is Layer Editable?");
+#endif
     gcd[base+2].gd.box = &radio_box;
     gcd[base+2].creator = GRadioCreate;
 
@@ -2229,7 +2349,11 @@ return(bvlayers);
     wattrs.cursor = ct_mypointer;
     wattrs.positioned = true;
     wattrs.is_dlg = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_Layers,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Layers");
+#endif
 
     r.width = GGadgetScale(BV_LAYERS_WIDTH); r.height = BV_LAYERS_HEIGHT;
     r.x = -r.width-6; r.y = bv->mbh+BV_TOOLS_HEIGHT+45/*25*/;	/* 45 is right if there's decor, is in kde, not in twm. Sigh */
@@ -2256,7 +2380,11 @@ return(bvlayers);
     gcd[0].gd.label = &label[0];
     gcd[0].gd.pos.x = 7; gcd[0].gd.pos.y = 5; 
     gcd[0].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[0].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[0].gd.popup_msg = _("Is Layer Visible?");
+#endif
     gcd[0].creator = GLabelCreate;
 
     gcd[1].gd.pos.x = 1; gcd[1].gd.pos.y = 1;
@@ -2269,13 +2397,21 @@ return(bvlayers);
     gcd[2].gd.label = &label[2];
     gcd[2].gd.pos.x = 23; gcd[2].gd.pos.y = 5; 
     gcd[2].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[2].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[2].gd.popup_msg = _("Is Layer Visible?");
+#endif
     gcd[2].creator = GLabelCreate;
 
     gcd[3].gd.pos.x = 5; gcd[3].gd.pos.y = 21; 
     gcd[3].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[3].gd.cid = CID_VFore;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[3].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[3].gd.popup_msg = _("Is Layer Visible?");
+#endif
     gcd[3].gd.box = &radio_box;
     gcd[3].creator = GCheckBoxCreate;
     label[3].text = (unichar_t *) _STR_Bitmap;
@@ -2285,7 +2421,11 @@ return(bvlayers);
     gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = 37; 
     gcd[4].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[4].gd.cid = CID_VBack;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[4].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[4].gd.popup_msg = _("Is Layer Visible?");
+#endif
     gcd[4].gd.box = &radio_box;
     gcd[4].creator = GCheckBoxCreate;
     label[4].text = (unichar_t *) _STR_Outline;
@@ -2295,7 +2435,11 @@ return(bvlayers);
     gcd[5].gd.pos.x = 5; gcd[5].gd.pos.y = 53; 
     gcd[5].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[5].gd.cid = CID_VGrid;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[5].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[5].gd.popup_msg = _("Is Layer Visible?");
+#endif
     gcd[5].gd.box = &radio_box;
     gcd[5].creator = GCheckBoxCreate;
     label[5].text = (unichar_t *) _STR_Grid;
@@ -2436,7 +2580,11 @@ return( bvshades );
     wattrs.positioned = true;
     wattrs.is_dlg = true;
     wattrs.background_color = 0xffffff;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_Shades,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Shades");
+#endif
 
     r.width = BV_SHADES_HEIGHT; r.height = r.width;
     r.x = -r.width-6; r.y = bv->mbh+225;
@@ -2664,7 +2812,11 @@ return( bvtools );
     wattrs.cursor = ct_mypointer;
     wattrs.positioned = true;
     wattrs.is_dlg = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_Tools,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Tools");
+#endif
 
     r.width = BV_TOOLS_WIDTH; r.height = BV_TOOLS_HEIGHT;
     r.x = -r.width-6; r.y = bv->mbh+20;

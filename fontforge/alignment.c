@@ -331,7 +331,11 @@ static void RegionControl(CharView *cv,DBounds *b,int cnt) {
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	wattrs.window_title = GStringGetResource(_STR_SpaceRegions,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	wattrs.window_title = _("Space Regions...");
+#endif
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,225));
@@ -628,10 +632,18 @@ return;
 	 edges[cnt++] = pts[3]->next;
 
     if ( cnt<2 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_NotEnoughLines,_STR_NotEnoughLines);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Not enough lines"),_("Not enough lines"));
+#endif
 return;
     } else if ( cnt==2 && CommonEndPoint(edges[0],edges[1]) ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_CantParallel,_STR_ShareCommonEndpoint);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Can't Parallel"),_("These two lines share a common endpoint, I can't make them parallel"));
+#endif
 return;
     }
 

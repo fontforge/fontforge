@@ -272,23 +272,39 @@ return;
     if ( hist->sum_around==0 ) {
 	if ( hist->which == hist_blues )
 	    u_snprintf(buffer,end-buffer,
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GStringGetResource(_STR_BlueHistPopup,NULL),
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    _("Position: %d\nCount: %d\n"),
+#endif
 		    x + hist->hoff,
 		    h->sum);
 	else
 	    u_snprintf(buffer,end-buffer,
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GStringGetResource(_STR_StemHistPopup,NULL),
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    _("Width: %d\nCount: %d\nPercentage of Max: %d%%\n"),
+#endif
 		    x + hist->hoff,
 		    h->sum, (int) rint(h->sum*100.0/hist->h->max));
     } else {
 	if ( hist->which == hist_blues )
 	    u_snprintf(buffer,end-buffer,
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GStringGetResource(_STR_BlueHistSumPopup,NULL),
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    _("Position: %d-%d (%d)\nCount: %d (%d)\n"),
+#endif
 		    x+hist->hoff-hist->sum_around, x+hist->hoff+hist->sum_around, x + hist->hoff,
 		    h->sum, h->cnt);
 	else
 	    u_snprintf(buffer,end-buffer,
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GStringGetResource(_STR_StemHistSumPopup,NULL),
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    _("Width: %d-%d (%d)\nCount: %d (%d)\nPercentage of Max: %d%%\n"),
+#endif
 		    x+hist->hoff-hist->sum_around, x+hist->hoff+hist->sum_around, x + hist->hoff,
 		    h->sum, h->cnt, (int) rint(h->sum*100.0/hist->h->max));
     }
@@ -372,7 +388,11 @@ return;
     if ( hist->which==hist_blues ) {
 	if ( hist->is_pending ) {
 	    if ( x<hist->pending_blue )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_BadValue,_STR_SmallerNumberFirstInBlues);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad Value"),_("The smaller number must be selected first in a pair of bluevalues"));
+#endif
 	    else if ( x<0 ) {	/* OtherBlues */
 		const unichar_t *old = _GGadgetGetTitle(GWidgetGetControl(hist->gw,CID_SecondaryVal));
 		unichar_t *new = ArrayOrder(old,2,hist->pending_blue,x);
@@ -684,7 +704,11 @@ static void CheckSmallSelection(uint8 *selected,SplineFont *sf) {
 		++cnt;
 	}
     if ( (cnt==1 && tot>1) || (cnt<8 && tot>30) )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetPostNoticeR(_STR_TinySelection,_STR_TinySelectionFull);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_notice(_("Tiny Selection"),_("There are so few characters selected that it seems unlikely to me that you will get a representative sample of this aspect of your font. If you deselect everything the command will apply to all characters in the font"));
+#endif
 }
 
 void SFHistogram(SplineFont *sf,struct psdict *private, uint8 *selected,
@@ -732,7 +756,11 @@ void SFHistogram(SplineFont *sf,struct psdict *private, uint8 *selected,
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource( which==hist_hstem?_STR_HStem:
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title =  which==hist_hstem?_("HStem")
+#endif
 					      which==hist_vstem?_STR_VStem:
 							  _STR_Blues, NULL );
     wattrs.is_dlg = true;

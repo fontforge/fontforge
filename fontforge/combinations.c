@@ -1107,7 +1107,11 @@ return;
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(ac==NULL?_STR_KernPairs:_STR_AnchoredPairs,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = ac==NULL?_("Kern Pairs");
+#endif
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(200);

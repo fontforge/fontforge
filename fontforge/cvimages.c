@@ -122,7 +122,11 @@ return( oldflags );
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_PSInterpretation,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("PS Interpretion");
+#endif
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,PSSF_Width));
@@ -182,7 +186,11 @@ return( oldflags );
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+15;
     gcd[k].gd.flags = gg_enabled | gg_visible | (oldflags&sf_removeoverlap?gg_cb_on:0);
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_CleanupSelfIntersectPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[k].gd.popup_msg = _("When FontForge detects that an expanded stroke will self-intersect,\nthen setting this option will cause it to try to make things nice\nby removing the intersections");
+#endif
     gcd[k++].creator = GCheckBoxCreate;
 
     he_k = k;
@@ -191,7 +199,11 @@ return( oldflags );
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+15;
     gcd[k].gd.flags = gg_enabled | gg_visible | (oldflags&sf_handle_eraser?gg_cb_on:0);
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[k].gd.popup_msg = GStringGetResource(_STR_HandleErasersPop,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[k].gd.popup_msg = _("Certain programs use pens with white ink as erasers\nIf you select (blacken) this checkbox, FontForge will\nattempt to simulate that.");
+#endif
     gcd[k++].creator = GCheckBoxCreate;
 
     gcd[k].gd.pos.x = (PSSF_Width-GIntGetResource(_NUM_Buttonsize))/2; gcd[k].gd.pos.y = PSSF_Height-34;
@@ -818,11 +830,19 @@ static void ImportFig(CharView *cv,char *path) {
 
     fig = fopen(path,"r");
     if ( fig==NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_CantFindFile,_STR_CantFindFile);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Can't find the file"),_("Can't find the file"));
+#endif
 return;
     }
     if ( fgets(buffer,sizeof(buffer),fig)==NULL || strcmp(buffer,"#FIG 3.2\n")!=0 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_BadXFigFile,_STR_BadXFigFile);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Bad xfig file"),_("Bad xfig file"));
+#endif
 	fclose(fig);
 return;
     }
@@ -930,7 +950,11 @@ static void ImportImage(CharView *cv,char *path) {
 
     image = GImageRead(path);
     if ( image==NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileName, path);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Bad image file"),_("Bad image file: %.100s"), path);
+#endif
 return;
     }
     layer = ly_back;
@@ -949,7 +973,11 @@ static int BVImportImage(BitmapView *bv,char *path) {
 
     image = GImageRead(path);
     if ( image==NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileName, path);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Bad image file"),_("Bad image file: %.100s"), path);
+#endif
 return(false);
     }
     base = image->list_len==0?image->u.image:image->u.images[0];
@@ -1034,13 +1062,21 @@ int FVImportImages(FontView *fv,char *path,int format) {
 	if ( format==fv_image ) {
 	    image = GImageRead(start);
 	    if ( image==NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileName,start);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad image file"),_("Bad image file: %.100s"),start);
+#endif
 return(false);
 	    }
 #if 0
 	    base = image->list_len==0?image->u.image:image->u.images[0];
 	    if ( base->image_type!=it_mono ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileNotBitmap,start);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad image file"),_("Bad image file, not a bitmap: %.100s"),start);
+#endif
 		GImageDestroy(image);
 return(false);
 	    }
@@ -1061,9 +1097,17 @@ return(false);
 	start = endpath+1;
     }
     if ( tot==0 )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_NothingSelected,_STR_NothingSelected);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Nothing Selected"),_("Nothing Selected"));
+#endif
     else if ( endpath!=NULL )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_MoreImagesThanSelected,_STR_MoreImagesThanSelected);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("More Images Than Selected Characters"),_("More Images Than Selected Characters"));
+#endif
 return( true );
 }
 
@@ -1083,7 +1127,11 @@ int FVImportImageTemplate(FontView *fv,char *path,int format) {
     ext = strrchr(path,'.');
     name = strrchr(path,'/');
     if ( ext==NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_BadTemplate,_STR_BadTemplateNoExtension);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Bad Template"),_("Bad template, no extension"));
+#endif
 return( false );
     }
     if ( name==NULL ) name=path-1;
@@ -1091,7 +1139,11 @@ return( false );
     else if ( name[1]=='c' ) isc = true;
     else if ( name[1]=='e' ) ise = true;
     else {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_BadTemplate,_STR_BadTemplateUnrecognized);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Bad Template"),_("Bad template, unrecognized format"));
+#endif
 return( false );
     }
     if ( name<path )
@@ -1102,7 +1154,11 @@ return( false );
     }
 
     if ( (dir = opendir(dirname))==NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_NothingLoaded,_STR_NothingLoaded);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Nothing Loaded"),_("Nothing Loaded"));
+#endif
 return( false );
     }
     
@@ -1123,7 +1179,11 @@ return( false );
 	if ( isu ) {
 	    i = SFFindChar(fv->sf,val,NULL);
 	    if ( i==-1 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_UnicodeNotInFont,_STR_UnicodeValueNotInFont,val);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Unicode value not in font"),_("Unicode value (%x) not in font, ignored"),val);
+#endif
     continue;
 	    }
 	    sc = SFMakeChar(fv->sf,i);
@@ -1143,7 +1203,11 @@ return( false );
 			bdf->chars[i] = NULL;
 		}
 	    } else {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_EncodingNotInFont,_STR_EncodingValueNotInFont,val);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Encoding value not in font"),_("Encoding value (%x) not in font, ignored"),val);
+#endif
     continue;
 	    }
 	    sc = SFMakeChar(fv->sf,val);
@@ -1151,12 +1215,20 @@ return( false );
 	if ( format==fv_imgtemplate ) {
 	    image = GImageRead(start);
 	    if ( image==NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileName,start);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad image file"),_("Bad image file: %.100s"),start);
+#endif
     continue;
 	    }
 	    base = image->list_len==0?image->u.image:image->u.images[0];
 	    if ( base->image_type!=it_mono ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileNotBitmap,start);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad image file"),_("Bad image file, not a bitmap: %.100s"),start);
+#endif
 		GImageDestroy(image);
     continue;
 	    }
@@ -1173,7 +1245,11 @@ return( false );
 	}
     }
     if ( tot==0 )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_NothingLoaded,_STR_NothingLoaded);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Nothing Loaded"),_("Nothing Loaded"));
+#endif
 return( true );
 }
 
@@ -1234,7 +1310,11 @@ static int GFD_ImportOk(GGadget *g, GEvent *e) {
 	if ( d->fv!=NULL ) {
 	    int toback = GGadgetIsChecked(d->background);
 	    if ( toback && strchr(temp,';')!=NULL && format<3 )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_OnlyOneFont,_STR_OnlyOneFontBackground);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Only One Font"),_("Only one font may be imported into the background"));
+#endif
 	    else if ( format==fv_bdf )
 		d->done = FVImportBDF(d->fv,temp,false, toback);
 	    else if ( format==fv_ttf )
@@ -1352,7 +1432,11 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_Import,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Import...");
+#endif
     pos.x = pos.y = 0;
     totwid = 223;
     if ( fv!=NULL ) totwid += 60;

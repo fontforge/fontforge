@@ -384,7 +384,11 @@ return( true );
 	if ( choice==-1 ) {
 	    char *fn = copy(filename);
 	    fn[lparen-filename] = '\0';
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_NotInCollection,_STR_FontNotInCollection,find,fn);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Not in Collection"),_("%s is not in %.100s"),find,fn);
+#endif
 	    free(fn);
 	}
 	free(find);
@@ -3918,8 +3922,17 @@ return( 0 );
     if ( !info->onlystrikes &&
 	    info->glyphlocations_start!=0 && info->glyph_start!=0 &&
 	    info->cff_start!=0 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	static int buts[] = { _STR_TTFGlyf, _STR_OTFCFF, _STR_Cancel, 0 };
 	int choice = GWidgetAskR(_STR_PickFont,buts,0,2,_STR_GlyfAndCFF);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	int buts[4];
+	buts[0] = _("TTF 'glyf'");
+	buts[1] = _("OTF 'CFF '");
+	buts[2] = GTK_STOCK_CANCEL;
+	buts[3] = NULL;
+	int choice = gwwv_ask(_("Pick a font, any font..."),buts,0,2,_("This font contains both a TrueType 'glyf' table and an OpenType 'CFF ' table. FontForge can only deal with one at a time, please pick which one you want to use"));
+#endif
 	if ( choice==2 )
 return( 0 );
 	else if ( choice==0 )
@@ -3950,7 +3963,11 @@ return( 0 );
     if ( info->bitmapdata_start!=0 && info->bitmaploc_start!=0 )
 	TTFLoadBitmaps(ttf,info,info->onlyonestrike);
     else if ( info->onlystrikes )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR( _STR_NoBitmaps, _STR_NoBitmapsInTTF, filename==NULL ? "<unknown>" : filename );
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error( _("No Bitmap Strikes"), _("No (useable) bitmap strikes in this TTF font: %s"), filename==NULL ? "<unknown>" : filename );
+#endif
     if ( info->onlystrikes && info->bitmaps==NULL ) {
 	free(info->chars);
 return( 0 );

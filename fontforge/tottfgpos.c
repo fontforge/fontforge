@@ -2164,11 +2164,19 @@ static void g___HandleNested(FILE *lfile,SplineFont *sf,int gpos,
 	if ( new!=NULL ) {
 	    new->lookup_cnt = pp->lookup_cnt;
 	    if ( new->next )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_MultipleLookup,_STR_MultipleLookupLong,buf);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Multiple Lookups"),_("Multiple lookups were generated for nested anchor tag '%s', only one will be used"),buf);
+#endif
 	    new->next = *nested;
 	    *nested = new;
 	} else {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_MissingLookup,_STR_MissingLookupLong,buf);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Missing Lookup"),_("A nested lookup with tag '%s' could not be found. The generated font will not be useable. Try Element->Find Problems"),buf);
+#endif
 	}
 	chunkfree(pp,sizeof(struct postponedlookup));
     }
@@ -3619,7 +3627,11 @@ void OrderTable(SplineFont *sf,uint32 table_tag) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_SetGSUBOrder,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Set GSUB/morx Ordering");
+#endif
     pos.x = pos.y = 0;
     pos.width = GDrawPointsToPixels(NULL,GGadgetScale(20)+2*GIntGetResource(_NUM_Buttonsize));
     pos.height = GDrawPointsToPixels(NULL,195);

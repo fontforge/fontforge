@@ -119,7 +119,11 @@ return( op_value );
 	    if ( strcmp(buffer,builtins[i].name)==0 )
 return( builtins[i].op );
 	}
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_BadToken, _STR_BadNameToken, buffer, c->cur );
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Bad Token"), _("Bad token \"%.30s\"\nnear ...%40s"), buffer, c->cur );
+#endif
 	c->had_error = true;
 	while (( ch = *(c->cur++))==' ' );
 	if ( ch=='(' )
@@ -165,7 +169,11 @@ return( op_lt );
 	    ++c->cur;
 return( op_eq );
 	}
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_BadToken, _STR_BadTokenExpected, "==", "=" , c->cur );
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\" got \"%.10s\"\nnear ...%40s"), "==", "=" , c->cur );
+#endif
 	c->had_error = true;
 return( op_eq );
       case '|':
@@ -173,7 +181,11 @@ return( op_eq );
 	    ++c->cur;
 return( op_or );
 	}
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_BadToken, _STR_BadTokenExpected, "||", "|" , c->cur );
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\" got \"%.10s\"\nnear ...%40s"), "||", "|" , c->cur );
+#endif
 	c->had_error = true;
 return( op_or );
       case '&':
@@ -181,7 +193,11 @@ return( op_or );
 	    ++c->cur;
 return( op_and );
 	}
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_BadToken, _STR_BadTokenExpected, "&&", "&" , c->cur );
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\" got \"%.10s\"\nnear ...%40s"), "&&", "&" , c->cur );
+#endif
 	c->had_error = true;
 return( op_and );
       case '?':
@@ -189,7 +205,11 @@ return( op_if );
       case '(': case ')': case ':':
 return( ch );
       default:
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_BadToken, _STR_BadTokenChar, ch , c->cur );
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Bad Token"), _("Bad token. got \"%c\"\nnear ...%40s"), ch , c->cur );
+#endif
 	c->had_error = true;
 	*val = 0;
 return( op_value );
@@ -223,7 +243,11 @@ return( ret );
 	ret = getexpr(c);
 	op = gettoken(c,&val);
 	if ( op!=')' ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadToken, _STR_BadTokenExpectedChar, ")" , c->cur );
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), ")" , c->cur );
+#endif
 	    c->had_error = true;
 	}
 return(ret );
@@ -235,13 +259,21 @@ return(ret );
 	ret->operator = op;
 	op = gettoken(c,&val);
 	if ( op!='(' ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadToken, _STR_BadTokenExpectedChar, "(" , c->cur );
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), "(" , c->cur );
+#endif
 	    c->had_error = true;
 	}
 	ret->op1 = getexpr(c);
 	op = gettoken(c,&val);
 	if ( op!=')' ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadToken, _STR_BadTokenExpectedChar, ")" , c->cur );
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), ")" , c->cur );
+#endif
 	    c->had_error = true;
 	}
 return( ret );
@@ -253,7 +285,11 @@ return( gete0(c));
 	ret->op1 = gete0(c);
 return( ret );
       default:
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_BadToken, _STR_UnexpectedToken , c->cur );
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Bad Token"), _("Unexpected token.\nbefore ...%40s") , c->cur );
+#endif
 	c->had_error = true;
 	ret = gcalloc(1,sizeof(struct expr));
 	ret->operator = op_value;
@@ -371,7 +407,11 @@ static struct expr *getexpr(struct context *c) {
 	ret->op2 = getexpr(c);
 	op = gettoken(c,&val);
 	if ( op!=':' ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadToken, _STR_BadTokenExpectedChar, ":" , c->cur );
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), ":" , c->cur );
+#endif
 	    c->had_error = true;
 	}
 	ret->op3 = getexpr(c);
@@ -390,7 +430,11 @@ static struct expr *parseexpr(struct context *c,char *str) {
     ret = getexpr(c);
     if ( *c->cur!='\0' ) {
 	c->had_error = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_BadToken, _STR_UnexpectedTokenAtEnd , c->cur );
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Bad Token"), _("Unexpected token after expression end.\nbefore ...%40s") , c->cur );
+#endif
     }
     if ( c->had_error ) {
 	exprfree(ret);
@@ -421,14 +465,22 @@ return( !evaluate_expr(c,e->op1) );
 	switch ( e->operator ) {
 	  case op_log:
 	    if ( val1<=0 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_BadValue,_STR_BadLogarithem, val1, c->sc->name );
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad Value"),_("Attempt to take logarithem of %g in %.30s"), val1, c->sc->name );
+#endif
 		c->had_error = true;
 return( 0 );
 	    }
 return( log(val1));
 	  case op_sqrt:
 	    if ( val1<0 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_BadValue,_STR_BadSqrt, val1, c->sc->name );
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad Value"),_("Attempt to take the square root of %g in %.30s"), val1, c->sc->name );
+#endif
 		c->had_error = true;
 return( 0 );
 	    }
@@ -457,7 +509,11 @@ return( evaluate_expr(c,e->op1) * evaluate_expr(c,e->op2) );
       case op_div: case op_mod:
 	val2 = evaluate_expr(c,e->op2);
 	if ( val2==0 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadValue,_STR_DivideByZero, c->sc->name );
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Value"),_("Attempt divide by 0 in %.30s"), c->sc->name );
+#endif
 	    c->had_error = true;
 return( 0 );
 	}
@@ -738,7 +794,11 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_NonLinearTransform,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Non Linear Transform...");
+#endif
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,200));
     pos.height = GDrawPointsToPixels(NULL,97);
@@ -752,7 +812,11 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
     gcd[0].gd.label = &label[0];
     gcd[0].gd.pos.x = 10; gcd[0].gd.pos.y = 8;
     gcd[0].gd.flags = gg_visible | gg_enabled;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[0].gd.popup_msg = GStringGetResource(_STR_ExprPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[0].gd.popup_msg = _("These expressions may contain the operators +,-,*,/,%,^ (which means raise to the power of here), and ?: It may also contain a few standard functions. Basic terms are real numbers, x and y.\nExamples:\n x^3+2.5*x^2+5\n (x-300)*(y-200)/100\n y+sin(100*x)");
+#endif
     gcd[0].creator = GLabelCreate;
 
     if ( lastx!=NULL )
@@ -764,7 +828,11 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
     gcd[1].gd.label = &label[1];
     gcd[1].gd.pos.x = 55; gcd[1].gd.pos.y = 5; gcd[1].gd.pos.width = 135;
     gcd[1].gd.flags = gg_visible | gg_enabled;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[1].gd.popup_msg = GStringGetResource(_STR_ExprPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[1].gd.popup_msg = _("These expressions may contain the operators +,-,*,/,%,^ (which means raise to the power of here), and ?: It may also contain a few standard functions. Basic terms are real numbers, x and y.\nExamples:\n x^3+2.5*x^2+5\n (x-300)*(y-200)/100\n y+sin(100*x)");
+#endif
     gcd[1].creator = GTextFieldCreate;
 
     label[2].text = (unichar_t *) _STR_YExpr;
@@ -772,7 +840,11 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
     gcd[2].gd.label = &label[2];
     gcd[2].gd.pos.x = 10; gcd[2].gd.pos.y = gcd[0].gd.pos.y+26;
     gcd[2].gd.flags = gg_visible | gg_enabled;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[2].gd.popup_msg = GStringGetResource(_STR_ExprPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[2].gd.popup_msg = _("These expressions may contain the operators +,-,*,/,%,^ (which means raise to the power of here), and ?: It may also contain a few standard functions. Basic terms are real numbers, x and y.\nExamples:\n x^3+2.5*x^2+5\n (x-300)*(y-200)/100\n y+sin(100*x)");
+#endif
     gcd[2].creator = GLabelCreate;
 
     if ( lastx!=NULL )
@@ -785,7 +857,11 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
     gcd[3].gd.pos.x = gcd[1].gd.pos.x; gcd[3].gd.pos.y = gcd[1].gd.pos.y+26;
     gcd[3].gd.pos.width = gcd[1].gd.pos.width;
     gcd[3].gd.flags = gg_visible | gg_enabled;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[3].gd.popup_msg = GStringGetResource(_STR_ExprPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[3].gd.popup_msg = _("These expressions may contain the operators +,-,*,/,%,^ (which means raise to the power of here), and ?: It may also contain a few standard functions. Basic terms are real numbers, x and y.\nExamples:\n x^3+2.5*x^2+5\n (x-300)*(y-200)/100\n y+sin(100*x)");
+#endif
     gcd[3].creator = GTextFieldCreate;
 
     gcd[4].gd.pos.x = 30-3; gcd[4].gd.pos.y = gcd[3].gd.pos.y+30;

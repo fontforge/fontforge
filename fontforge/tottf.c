@@ -3928,31 +3928,51 @@ return( NULL );		/* Doesn't have the single byte entries */
     if ( base2!=-1 ) {
 	for ( i=base; i<=basebound && i<sf->charcnt; ++i )
 	    if ( SCWorthOutputting(sf->chars[i])) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_BadEncoding,_STR_ExtraneousSingleByte,i);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad Encoding"),_("There is a single byte character (%d) using one of the slots needed for double byte characters"),i);
+#endif
 	break;
 	    }
 	if ( i==basebound+1 )
 	    for ( i=base2; i<256 && i<sf->charcnt; ++i )
 		if ( SCWorthOutputting(sf->chars[i])) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GWidgetErrorR(_STR_BadEncoding,_STR_ExtraneousSingleByte,i);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    gwwv_post_error(_("Bad Encoding"),_("There is a single byte character (%d) using one of the slots needed for double byte characters"),i);
+#endif
 	    break;
 		}
     } else {
 	for ( i=base; i<256 && i<sf->charcnt; ++i )
 	    if ( SCWorthOutputting(sf->chars[i])) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_BadEncoding,_STR_ExtraneousSingleByte,i);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad Encoding"),_("There is a single byte character (%d) using one of the slots needed for double byte characters"),i);
+#endif
 	break;
 	    }
     }
     for ( i=256; i<(base<<8) && i<sf->charcnt; ++i )
 	if ( SCWorthOutputting(sf->chars[i])) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadEncoding,_STR_OutOfEncoding,i);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Encoding"),_("There is a character (%d) which cannot be encoded"),i);
+#endif
     break;
 	}
     if ( i==(base<<8) && base2==-1 )
 	for ( i=((basebound+1)<<8); i<0x10000 && i<sf->charcnt; ++i )
 	    if ( SCWorthOutputting(sf->chars[i])) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_BadEncoding,_STR_OutOfEncoding,i);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad Encoding"),_("There is a character (%d) which cannot be encoded"),i);
+#endif
 	break;
 	    }
 
@@ -3981,14 +4001,22 @@ return( NULL );		/* Doesn't have the single byte entries */
 	    for ( j=((jj==0?base:base2)<<8); j<=((jj==0?basebound:base2bound)<<8); j+= 0x100 ) {
 	for ( i=0; i<lbase; ++i )
 	    if ( !complained && SCWorthOutputting(sf->chars[i+j])) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_BadEncoding,_STR_NotNormallyEncoded,i+j);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad Encoding"),_("There is a character (%d) which is not normally in the encoding"),i+j);
+#endif
 		complained = true;
 	    }
 	if ( sf->encoding_name==em_big5 ) {
 	    /* big5 has a gap here. Does johab? */
 	    for ( i=0x7f; i<0xa1; ++i )
 		if ( !complained && SCWorthOutputting(sf->chars[i+j])) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GWidgetErrorR(_STR_BadEncoding,_STR_NotNormallyEncoded,i+j);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    gwwv_post_error(_("Bad Encoding"),_("There is a character (%d) which is not normally in the encoding"),i+j);
+#endif
 		    complained = true;
 		}
 	}
@@ -4138,11 +4166,20 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	break;
 	if ( i==0 ) {
 	    if ( sf->charcnt<=256 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		static int buts[] = { _STR_Yes, _STR_No, 0 };
 		if ( GWidgetAskR(_STR_NoEncodedChars,buts,0,1,_STR_NoUnicodeEncodingUseSymbol)==0 )
+#elif defined(FONTFORGE_CONFIG_GTK)
+		static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
+		if ( gwwv_ask(_("No Encoded Characters"),buts,0,1,_("This font contains no characters with unicode encodings.\nWould you like to use a \"Symbol\" encoding instead of Unicode?"))==0 )
+#endif
 		    format = ff_ttfsym;
 	    } else
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_NoEncodedChars,_STR_NoUnicodeEncoding);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("No Encoded Characters"),_("This font contains no characters with unicode encodings.\nYou will probably not be able to use the output."));
+#endif
 	}
     }
 

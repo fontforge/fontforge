@@ -1095,8 +1095,16 @@ static struct charone **BuildCharList(SplineFont *sf,GWindow gw, int base,
     const unichar_t *str, *pt;
 
     str = _GGadgetGetTitle(GWidgetGetControl(gw,base));
+#if defined(FONTFORGE_CONFIG_GDRAW)
     all = u_strcmp(str,GStringGetResource(_STR_All,NULL))==0;
+#elif defined(FONTFORGE_CONFIG_GTK)
+    all = u_strcmp(str,_("All"))==0;
+#endif
+#if defined(FONTFORGE_CONFIG_GDRAW)
     sel = u_strcmp(str,GStringGetResource(_STR_Selected,NULL))==0;
+#elif defined(FONTFORGE_CONFIG_GTK)
+    sel = u_strcmp(str,_("Selected"))==0;
+#endif
     if ( !all && !sel )
 	parse = true;
 
@@ -1403,7 +1411,11 @@ static int ReadKernPairFile(unichar_t *fn,WidthInfo *wi) {
     free(fn);
     file = fopen(filename,"r");
     if ( file==NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_CouldNotOpenFile, _STR_CouldNotOpenFileName, filename );
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Couldn't open file"), _("Couldn't open file %.200s"), filename );
+#endif
 	free( filename );
 return( false );
     }
@@ -1426,7 +1438,11 @@ return( false );
 
     fclose(file);
     if ( !figurekernsets(wi,&ks)) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_NoKernPairs, _STR_NoKernPairsFile, filename );
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("No Kern Pairs"), _("No kerning pairs found in %.200s"), filename );
+#endif
 	free( filename );
 	kernsetsfree(&ks);
 return( false );
@@ -1466,14 +1482,22 @@ return( true );
 	    if ( wi->real_lcnt==0 || wi->real_rcnt==0 ) {
 		FreeCharList(wi->left);
 		FreeCharList(wi->right);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_NoCharsSelected,_STR_NoCharsSelected);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("No characters selected."),_("No characters selected."));
+#endif
 return( true );
 	    }
 	    ScriptSerifChecker(wi);
 	    InitCharPairs(wi);
 	} else {
 	    static unichar_t filter[] = { '*','.','t', 'x', 't', '\0' };
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    unichar_t *fn = GWidgetOpenFile(GStringGetResource(_STR_LoadKernPairs,NULL), NULL, filter, NULL,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    unichar_t *fn = GWidgetOpenFile(_("Load Kern Pairs"), NULL, filter, NULL,NULL);
+#endif
 	    if ( fn==NULL ) {
 		GDrawSetVisible(gw,true);
 		wi->done = false;
@@ -1597,7 +1621,11 @@ static void AutoWKDlg(SplineFont *sf,int autokern) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(autokern?_STR_Autokern:_STR_Autowidth,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = autokern?_("Auto Kern...");
+#endif
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,200));
     pos.height = GDrawPointsToPixels(NULL,autokern?270:180);
@@ -1692,7 +1720,11 @@ static void AutoWKDlg(SplineFont *sf,int autokern) {
 	gcd[i].gd.mnemonic = 'B';
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.handle_controlevent = AW_OK;	/* Yes, really */
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	gcd[i].gd.popup_msg = GStringGetResource(_STR_KernPairFilePopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gcd[i].gd.popup_msg = _("Browse for a file containing a list of kerning pairs\ntwo characters per line. FontForge will only check\nthose pairs for kerning info.");
+#endif
 	gcd[i].gd.cid = CID_Browse;
 	gcd[i++].creator = GButtonCreate;
 	y += 32;

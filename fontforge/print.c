@@ -266,7 +266,11 @@ static int PIDownloadFont(PI *pi) {
 
     pi->fontfile = tmpfile();
     if ( pi->fontfile==NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_FailedOpenTemp,_STR_FailedOpenTemp);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Failed to open temporary output file"),_("Failed to open temporary output file"));
+#endif
 return(false);
     }
     GProgressStartIndicatorR(10,_STR_PrintingFont,_STR_PrintingFont,
@@ -279,7 +283,11 @@ return(false);
 		pi->twobyte?ff_ptype0:
 		ff_pfa,0)) {
 	GProgressEndIndicator();
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_FailedGenPost,_STR_FailedGenPost );
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Failed to generate postscript font"),_("Failed to generate postscript font") );
+#endif
 	fclose(pi->fontfile);
 return(false);
     }
@@ -1144,7 +1152,11 @@ return(true);
 
 	if ( GGadgetIsChecked(GWidgetGetControl(pi->setup,CID_Other)) &&
 		*_GGadgetGetTitle(GWidgetGetControl(pi->setup,CID_OtherCmd))=='\0' ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_NoCommandSpecified,_STR_NoCommandSpecified);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("No Command Specified"),_("No Command Specified"));
+#endif
 return(true);
 	}
 
@@ -1316,7 +1328,11 @@ static int PageSetup(PI *pi) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_PageSetup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Page Setup");
+#endif
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,250));
     pos.height = GDrawPointsToPixels(NULL,174);
@@ -1382,7 +1398,11 @@ static int PageSetup(PI *pi) {
     gcd[4].gd.flags = gg_visible | gg_enabled;
     gcd[4].gd.cid = CID_Other;
     gcd[4].gd.handle_controlevent = PG_RadioSet;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[4].gd.popup_msg = GStringGetResource(_STR_PrintOtherPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[4].gd.popup_msg = _("Any other command with all its arguments.\nThe command must expect to deal with a postscript\nfile which it will find by reading its standard input.");
+#endif
     gcd[4].creator = GRadioCreate;
 
     if ( (pt=pi->printtype)==pt_unknown ) pt = pt_lp;
@@ -1686,7 +1706,11 @@ static int PRT_OK(GGadget *g, GEvent *e) {
 	    if ( err )
 return(true);
 	    if ( pi->pointsize<1 || pi->pointsize>200 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_InvalidPointsize,_STR_InvalidPointsize);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Invalid point size"),_("Invalid point size"));
+#endif
 return(true);
 	    }
 	}
@@ -1697,7 +1721,11 @@ return(true);
 	if ( pi->printtype==pt_file ) {
 	    sprintf(buf,"pr-%.90s.ps", pi->sf->fontname );
 	    uc_strcpy(ubuf,buf);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    ret = GWidgetSaveAsFile(GStringGetResource(_STR_PrintToFile,NULL),ubuf,filter,NULL,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    ret = GWidgetSaveAsFile(_("Print To File..."),ubuf,filter,NULL,NULL);
+#endif
 	    if ( ret==NULL )
 return(true);
 	    file = u2def_copy(ret);
@@ -1712,7 +1740,11 @@ return(true);
 	    file = NULL;
 	    pi->out = tmpfile();
 	    if ( pi->out==NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_FailedOpenTemp,_STR_FailedOpenTemp);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Failed to open temporary output file"),_("Failed to open temporary output file"));
+#endif
 return(true);
 	    }
 	}
@@ -2840,7 +2872,11 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_Print,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Print...");
+#endif
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,310));
     pos.height = GDrawPointsToPixels(NULL,330);
@@ -2857,7 +2893,11 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     gcd[0].gd.flags = gg_visible | gg_enabled;
     gcd[0].gd.cid = CID_Display;
     gcd[0].gd.handle_controlevent = PRT_RadioSet;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[0].gd.popup_msg = GStringGetResource(_STR_FullFontPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[0].gd.popup_msg = _("Displays all the glyphs in the font on a rectangular grid at the given point size");
+#endif
     gcd[0].creator = GRadioCreate;
 
     cnt = 1;
@@ -2873,7 +2913,11 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     gcd[1].gd.flags = (cnt==0 ? gg_visible : (gg_visible | gg_enabled));
     gcd[1].gd.cid = CID_Chars;
     gcd[1].gd.handle_controlevent = PRT_RadioSet;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[1].gd.popup_msg = GStringGetResource(_STR_FullPageCharPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[1].gd.popup_msg = _("Displays all the selected characters, each on its own page, at an extremely large point size");
+#endif
     gcd[1].creator = GRadioCreate;
 
     label[2].text = (unichar_t *) (cnt==1?_STR_MultiSizeChar:_STR_MultiSizeChars);
@@ -2884,7 +2928,11 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     gcd[2].gd.flags = gcd[1].gd.flags;
     gcd[2].gd.cid = CID_MultiSize;
     gcd[2].gd.handle_controlevent = PRT_RadioSet;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[2].gd.popup_msg = GStringGetResource(_STR_MultiSizeCharPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[2].gd.popup_msg = _("Displays all the selected characters, at several different point sizes");
+#endif
     gcd[2].creator = GRadioCreate;
 
     label[3].text = (unichar_t *) _STR_SampleText;
@@ -2895,7 +2943,11 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     gcd[3].gd.flags = gg_visible | gg_enabled;
     gcd[3].gd.cid = CID_Sample;
     gcd[3].gd.handle_controlevent = PRT_RadioSet;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[3].gd.popup_msg = GStringGetResource(_STR_SampleTextPopup,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gcd[3].gd.popup_msg = _("Prints the text below at the specified point size(s)");
+#endif
     gcd[3].creator = GRadioCreate;
     /*if ( pi.iscid ) gcd[3].gd.flags = gg_visible;*/
 
@@ -3072,7 +3124,11 @@ return;
 	outputfile = NULL;
 	pi.out = tmpfile();
 	if ( pi.out==NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_FailedOpenTemp,_STR_FailedOpenTemp);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Failed to open temporary output file"),_("Failed to open temporary output file"));
+#endif
 return;
 	}
     }

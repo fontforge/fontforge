@@ -345,7 +345,11 @@ static int SB_OK(GGadget *g, GEvent *e) {
 	if ( err )
 return( true );
 	if ( *d->bits!=1 && *d->bits!=2 && *d->bits!=4 && *d->bits!=8 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_InvalidBits,_STR_InvalidBits);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("The only valid values for bits/pixel are 1, 2, 4 or 8"),_("The only valid values for bits/pixel are 1, 2, 4 or 8"));
+#endif
 return( true );
 	}
 	free( last ); free( last_bits );
@@ -390,7 +394,11 @@ static int AskSizeBits(int *pixelsize,int *bitsperpixel) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_PixelSizeQ,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Pixel size?");
+#endif
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,140));
@@ -642,7 +650,11 @@ return;
     else if ( bc!=NULL )
 	good = BCExportXBM(buffer,bc,format-3);
     if ( !good )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_Savefailedtitle,_STR_Savefailedtitle);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Save Failed"),_("Save Failed"));
+#endif
 }
 
 struct gfc_data {
@@ -697,7 +709,11 @@ static void DoExport(struct gfc_data *d,unichar_t *path) {
     else
 	good = ExportXBM(temp,d->sc,format-4);
     if ( !good )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_Savefailedtitle,_STR_Savefailedtitle);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Save Failed"),_("Save Failed"));
+#endif
     free(temp);
     d->done = good;
     d->ret = good;
@@ -717,13 +733,33 @@ static void GFD_exists(GIOControl *gio) {
     const unichar_t *rcb[3]; unichar_t rcmn[2];
 
     rcb[2]=NULL;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     rcb[0] = GStringGetResource( _STR_Replace, &rcmn[0]);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    rcb[0] =  _("Replace");
+#endif
+#if defined(FONTFORGE_CONFIG_GDRAW)
     rcb[1] = GStringGetResource( _STR_Cancel, &rcmn[1]);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    rcb[1] =  _("Cancel");
+#endif
 
+#if defined(FONTFORGE_CONFIG_GDRAW)
     u_strcpy(buffer, GStringGetResource(_STR_Fileexistspre,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+    u_strcpy(buffer, _("File, "));
+#endif
     u_strcat(buffer, u_GFileNameTail(gio->path));
+#if defined(FONTFORGE_CONFIG_GDRAW)
     u_strcat(buffer, GStringGetResource(_STR_Fileexistspost,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+    u_strcat(buffer, _(", exists. Replace it?"));
+#endif
+#if defined(FONTFORGE_CONFIG_GDRAW)
     if ( GWidgetAsk(GStringGetResource(_STR_Fileexists,NULL),rcb,rcmn,0,1,buffer)==0 ) {
+#elif defined(FONTFORGE_CONFIG_GTK)
+    if ( GWidgetAsk(_("File Exists"),rcb,rcmn,0,1,buffer)==0 ) {
+#endif
 	DoExport(d,gio->path);
     }
     GFileChooserReplaceIO(d->gfc,NULL);
@@ -792,7 +828,11 @@ static void GFD_dircreatefailed(GIOControl *gio) {
     struct gfc_data *d = gio->userdata;
     unichar_t buffer[500];
 
+#if defined(FONTFORGE_CONFIG_GDRAW)
     u_strcpy(buffer, GStringGetResource(_STR_Couldntcreatedir,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+    u_strcpy(buffer, _("Couldn't create directory"));
+#endif
     uc_strcat(buffer,": ");
     u_strcat(buffer, u_GFileNameTail(gio->path));
     uc_strcat(buffer, ".\n");
@@ -802,7 +842,11 @@ static void GFD_dircreatefailed(GIOControl *gio) {
     }
     if ( gio->status[0]!='\0' )
 	u_strcat(buffer,gio->status);
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GWidgetPostNotice(GStringGetResource(_STR_Couldntcreatedir,NULL),buffer);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    GWidgetPostNotice(_("Couldn't create directory"),buffer);
+#endif
     GFileChooserReplaceIO(d->gfc,NULL);
 }
 
@@ -865,7 +909,11 @@ static int _Export(SplineChar *sc,BDFChar *bc) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_Export,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Export...");
+#endif
     pos.x = pos.y = 0;
     totwid = GGadgetScale(223);
     bsbigger = 3*bs+4*14>totwid; totwid = bsbigger?3*bs+4*12:totwid;

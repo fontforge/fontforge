@@ -575,7 +575,11 @@ static void IVError(InstrDlg *iv,int msg,int offset) {
     GTextFieldSelect(iv->text,offset,offset);
     GTextFieldShow(iv->text,offset);
     GWidgetIndicateFocusGadget(iv->text);
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GWidgetErrorR(_STR_ParseError,msg);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_post_error(_("Parse Error"),msg);
+#endif
 }
 
 static int IVParse(InstrDlg *iv) {
@@ -1290,7 +1294,11 @@ return;
     id->instrs = galloc(id->max+1);
     if ( sc->ttf_instrs!=NULL )
 	memcpy(id->instrs,sc->ttf_instrs,id->instr_cnt);
+#if defined(FONTFORGE_CONFIG_GDRAW)
     u_sprintf(title,GStringGetResource(_STR_TTFInstructionsFor,NULL),sc->name);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    u_sprintf(title,_("TrueType Instructions for %.50s"),sc->name);
+#endif
     InstrDlgCreate(id,title);
 }
 
@@ -1374,7 +1382,11 @@ return( true );
     val = u_strtol(ret,&end,10);
     if ( *ret=='\0' || *end!='\0' || val<-32768 || val>32767 ) {
 	if ( showerr )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadNumber,_STR_BadNumber);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Number"),_("Bad Number"));
+#endif
 return( false );
     }
     oldval = sv->edits[sv->active];
@@ -1416,7 +1428,11 @@ static int SV_ChangeLength(GGadget *g, GEvent *e) {
 return( true );		/* Cancelled */
 	val = u_strtol(ret,&e,10);
 	if ( *e || val<0 || val>65535 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadNumber,_STR_BadNumber);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Number"),_("Bad Number"));
+#endif
 return( false );
 	}
 	if ( val*2>sv->len ) {
@@ -1808,7 +1824,11 @@ int SFCloseAllInstrs(SplineFont *sf) {
     struct instrdata *id, *next;
     int changed;
     char name[12], *npt;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     static int buts[] = { _STR_OK, _STR_Cancel, 0 };
+#elif defined(FONTFORGE_CONFIG_GTK)
+    static char *buts[] = { GTK_STOCK_OK, GTK_STOCK_CANCEL, NULL };
+#endif
 
     for ( id = sf->instr_dlgs; id!=NULL; id=next ) {
 	next = id->next;
@@ -1829,7 +1849,11 @@ int SFCloseAllInstrs(SplineFont *sf) {
 		npt = name;
 	    }
 	    GDrawRaise(id->id->gw);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    if ( GWidgetAskR(_STR_InstrChanged,buts,0,1,_STR_AskInstrChanged,npt)==1 )
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    if ( gwwv_ask(_("Instructions were changed"),buts,0,1,_("The instructions for %.80s have changed. Do you want to lose those changes?"),npt)==1 )
+#endif
 return( false );
 	}
 	GDrawDestroyWindow(id->id->gw);
@@ -1841,7 +1865,11 @@ return( false );
 	    name[6] = 0;
 	    npt = name;
 	    GDrawRaise(sf->cvt_dlg->gw);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    if ( GWidgetAskR(_STR_InstrChanged,buts,0,1,_STR_AskInstrChanged,npt)==1 )
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    if ( gwwv_ask(_("Instructions were changed"),buts,0,1,_("The instructions for %.80s have changed. Do you want to lose those changes?"),npt)==1 )
+#endif
 return( false );
 	}
 	GDrawDestroyWindow(sf->cvt_dlg->gw);
@@ -1887,7 +1915,11 @@ return;
 	name[0] = name[5] = '\'';
 	name[1] = tag>>24; name[2] = (tag>>16)&0xff; name[3] = (tag>>8)&0xff; name[4] = tag&0xff;
 	name[6] = 0;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	u_sprintf(title,GStringGetResource(_STR_TTFInstructionsFor,NULL),name);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	u_sprintf(title,_("TrueType Instructions for %.50s"),name);
+#endif
 	InstrDlgCreate(id,title);
     } else {
 	if ( sf->cvt_dlg!=NULL ) {

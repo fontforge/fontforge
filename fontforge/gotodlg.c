@@ -488,7 +488,11 @@ static int Goto_OK(GGadget *g, GEvent *e) {
 		d->ret = -1;
 	    if ( d->ret==-1 ) {
 		char *temp=cu_copy(ret);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetPostNoticeR(_STR_Goto,_STR_Couldntfindchar,temp);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_notice(_("Goto"),_("Could not find the character: %.70s"),temp);
+#endif
 		free(temp);
 	    } else
 		d->done = true;
@@ -522,7 +526,11 @@ return(-1);
 	if ( enc<0 || enc>=sf->charcnt )
 	    enc = -1;
 	if ( enc==-1 )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetPostNoticeR(_STR_Goto,_STR_CouldntfindcharU,ret);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_notice(_("Goto"),_("Could not find the character: %.70s"),ret);
+#endif
 	free(ret);
 return( enc );
     } else {
@@ -547,7 +555,11 @@ return( enc );
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	wattrs.window_title = GStringGetResource(_STR_Goto,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	wattrs.window_title = _("Goto");
+#endif
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,170));
@@ -555,7 +567,11 @@ return( enc );
 	gd.gw = gw = GDrawCreateTopWindow(NULL,&pos,goto_e_h,&gd,&wattrs);
 
 	GDrawSetFont(gw,GGadgetGetFont(NULL));		/* Default gadget font */
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	wid = GDrawGetTextWidth(gw,GStringGetResource(_STR_Enternameofchar,NULL),-1,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	wid = GDrawGetTextWidth(gw,_("Enter the name of a character in the font"),-1,NULL);
+#endif
 	for ( i=0; ranges[i].text!=NULL; ++i ) {
 	    uc_strncpy(ubuf,(char *) (ranges[i].text),sizeof(ubuf)/sizeof(ubuf[0])-1);
 	    temp = GDrawGetTextWidth(gw,ubuf,-1,NULL);

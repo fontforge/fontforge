@@ -113,7 +113,11 @@ static void BuildMarkedLigatures(struct node *node,struct att_dlg *att) {
 	for ( i=0, ac2=ac; i<classcnt; ++i, ac2=ac2->next ) {
 	    for ( ap=sc->anchor; ap!=NULL && (ap->type!=at_baselig || ap->anchor!=ac2 || ap->lig_index!=k); ap=ap->next );
 	    if ( ap!=NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		u_sprintf(ubuf,GStringGetResource(_STR_MarkLigComponentNamePos,NULL),
+#elif defined(FONTFORGE_CONFIG_GTK)
+		u_sprintf(ubuf,_("Component %d %.30s (%d,%d)"),
+#endif
 			k, ac2->name, (int) ap->me.x, (int) ap->me.y );
 		node->children[j].label = u_copy(ubuf);
 		node->children[j++].parent = node;
@@ -139,7 +143,11 @@ static void BuildMarkedChars(struct node *node,struct att_dlg *att) {
     for ( i=j=0, ac2=ac; i<classcnt; ++i, ac2=ac2->next ) {
 	for ( ap=sc->anchor; ap!=NULL && (!(ap->type==at_basechar || ap->type==at_basemark) || ap->anchor!=ac2); ap=ap->next );
 	if ( ap!=NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    u_sprintf(ubuf,GStringGetResource(_STR_MarkAnchorNamePos,NULL), ac2->name,
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    u_sprintf(ubuf,_("%.30s (%d,%d)"), ac2->name,
+#endif
 		    (int) ap->me.x, (int) ap->me.y );
 	    node->children[j].label = u_copy(ubuf);
 	    node->children[j++].parent = node;
@@ -152,14 +160,22 @@ static void BuildBase(struct node *node,SplineChar **bases,enum anchor_type at, 
     int i;
 
     node->parent = parent;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     node->label = u_copy(GStringGetResource(at==at_basechar?_STR_BaseCharacters:
+#elif defined(FONTFORGE_CONFIG_GTK)
+    node->label = u_copy(at==at_basechar?_("Base Characters")
+#endif
 					    at==at_baselig?_STR_BaseLigatures:
 			                    _STR_BaseMarks,NULL));
     for ( i=0; bases[i]!=NULL; ++i );
     if ( i==0 ) {
 	node->cnt = 1;
 	node->children = gcalloc(2,sizeof(struct node));
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	node->children[0].label = u_copy(GStringGetResource(_STR_Empty,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	node->children[0].label = u_copy(_("Empty"));
+#endif
 	node->children[0].parent = node;
     } else {
 	node->cnt = i;
@@ -179,20 +195,32 @@ static void BuildMark(struct node *node,SplineChar **marks,AnchorClass *ac, stru
     AnchorPoint *ap;
 
     node->parent = parent;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     u_sprintf(ubuf,GStringGetResource(_STR_MarkClassS,NULL),ac->name);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    u_sprintf(ubuf,_("Mark Class %.20s"),ac->name);
+#endif
     node->label = u_copy(ubuf);
     for ( i=0; marks[i]!=NULL; ++i );
     if ( i==0 ) {
 	node->cnt = 1;
 	node->children = gcalloc(2,sizeof(struct node));
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	node->children[0].label = u_copy(GStringGetResource(_STR_Empty,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	node->children[0].label = u_copy(_("Empty"));
+#endif
 	node->children[0].parent = node;
     } else {
 	node->cnt = i;
 	node->children = gcalloc(i+1,sizeof(struct node));
 	for ( i=0; marks[i]!=NULL; ++i ) {
 	    for ( ap=marks[i]->anchor; ap!=NULL && (ap->type!=at_mark || ap->anchor!=ac); ap=ap->next );
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    u_sprintf(ubuf,GStringGetResource(_STR_MarkCharNamePos,NULL), marks[i]->name,
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    u_sprintf(ubuf,_("%.30s (%d,%d)"), marks[i]->name,
+#endif
 		    (int) ap->me.x, (int) ap->me.y );
 	    node->children[i].label = u_copy(ubuf);
 	    node->children[i].parent = node;
@@ -217,7 +245,11 @@ static void BuildAnchorLists(struct node *node,struct att_dlg *att,uint32 script
 	if ( entryexit==NULL ) {
 	    node->children = gcalloc(2,sizeof(struct node));
 	    node->cnt = 1;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    node->children[0].label = u_copy(GStringGetResource(_STR_Empty,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    node->children[0].label = u_copy(_("Empty"));
+#endif
 	    node->children[0].parent = node;
 	} else {
 	    for ( cnt=0; entryexit[cnt]!=NULL; ++cnt );
@@ -239,7 +271,11 @@ static void BuildAnchorLists(struct node *node,struct att_dlg *att,uint32 script
 		i = 0;
 		if ( ent!=NULL ) {
 		    u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),
+#if defined(FONTFORGE_CONFIG_GDRAW)
 			    GStringGetResource(_STR_Entry,NULL),
+#elif defined(FONTFORGE_CONFIG_GTK)
+			    _("Entry (%d,%d)"),
+#endif
 			    ent->me.x, ent->me.y);
 		    node->children[cnt].children[i].label = u_copy(ubuf);
 		    node->children[cnt].children[i].parent = &node->children[cnt];
@@ -247,7 +283,11 @@ static void BuildAnchorLists(struct node *node,struct att_dlg *att,uint32 script
 		}
 		if ( ext!=NULL ) {
 		    u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),
+#if defined(FONTFORGE_CONFIG_GDRAW)
 			    GStringGetResource(_STR_Exit,NULL),
+#elif defined(FONTFORGE_CONFIG_GTK)
+			    _("Exit (%d,%d)"),
+#endif
 			    ext->me.x, ext->me.y);
 		    node->children[cnt].children[i].label = u_copy(ubuf);
 		    node->children[cnt].children[i].parent = &node->children[cnt];
@@ -1226,7 +1266,11 @@ static void BuildGSUBlang(struct node *node,struct att_dlg *att) {
 	featnodes[i].build = f[i].build==NULL ? BuildGSUBfeatures : f[i].build;
 	featnodes[i].u = f[i].acs;
 	if ( f[i].feats==REQUIRED_FEATURE ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    u_strcpy(ubuf,GStringGetResource(_STR_RequiredFeature,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    u_strcpy(ubuf,_("Required Feature"));
+#endif
 	} else {
 	    for ( k=0; pst_tags[k]!=NULL; ++k ) {
 		for ( j=0; pst_tags[k][j].text!=NULL && featnodes[i].tag!=(uint32) pst_tags[k][j].userdata; ++j );
@@ -1311,7 +1355,11 @@ return;
 	    uc_strcat(ubuf," ");
 	} else
 	    ubuf[7]='\0';
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	u_strcat(ubuf,GStringGetResource(_STR_OTFLanguage,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	u_strcat(ubuf,_("Language"));
+#endif
 	langnodes[i].label = u_copy(ubuf);
 	langnodes[i].build = BuildGSUBlang;
 	langnodes[i].parent = node;
@@ -1805,7 +1853,11 @@ return;
 	    uc_strcat(ubuf," ");
 	} else
 	    ubuf[7]='\0';
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	u_strcat(ubuf,GStringGetResource(_STR_OTFScript,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	u_strcat(ubuf,_("Script"));
+#endif
 	scriptnodes[i].label = u_copy(ubuf);
 	scriptnodes[i].build = iskern ? BuildKernScript :
 				isvkern ? BuildVKernScript :
@@ -1950,7 +2002,11 @@ static void BuildTop(struct att_dlg *att) {
 
     if ( hasgsub+hasgpos+hasgdef+hasmorx+haskern+haslcar+hasopbd+hasprop==0 ) {
 	tables = gcalloc(2,sizeof(struct node));
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	tables[0].label = u_copy(GStringGetResource(_STR_NoAdvancedTypography,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	tables[0].label = u_copy(_("No Advanced Typography"));
+#endif
     } else {
 	tables = gcalloc((hasgsub||hasgpos||hasgdef)+
 	    (hasmorx||haskern||haslcar||hasopbd||hasprop||hasvkern||haskc||hasvkc)+1,sizeof(struct node));
@@ -1982,7 +2038,11 @@ static void BuildTop(struct att_dlg *att) {
 	}
 	if ( hasmorx || haskern || hasvkern || haslcar || hasopbd || hasprop ) {
 	    int j = 0;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    tables[i].label = u_copy(GStringGetResource(_STR_AppleAdvancedTypography,NULL));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    tables[i].label = u_copy(_("Apple Advanced Typography"));
+#endif
 	    tables[i].children_checked = true;
 	    tables[i].children = gcalloc(hasmorx+haskern+haslcar+hasopbd+hasprop+hasvkern+haskc+hasvkc+1,sizeof(struct node));
 	    tables[i].cnt = hasmorx+haskern+hasopbd+hasprop+haslcar+hasvkern+haskc+hasvkc;
@@ -2208,7 +2268,11 @@ static void pututf8(uint32 ch,FILE *file) {
 
 static unichar_t txt[] = { '*','.','t','x','t',  '\0' };
 static void AttSave(struct att_dlg *att) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
     unichar_t *ret = GWidgetSaveAsFile(GStringGetResource(_STR_Save,NULL),NULL,
+#elif defined(FONTFORGE_CONFIG_GTK)
+    unichar_t *ret = GWidgetSaveAsFile(_("Save"),NULL,
+#endif
 	    txt,NULL,NULL);
     char *cret;
     FILE *file;
@@ -2222,7 +2286,11 @@ return;
     free(ret);
     file = fopen(cret,"w");
     if ( file==NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_SaveFailed,_STR_SaveFailed,cret);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Save Failed"),_("Save Failed"),cret);
+#endif
 	free(cret);
 return;
     }
@@ -2528,7 +2596,11 @@ void ShowAtt(SplineFont *sf) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_ShowAtt,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Show ATT");
+#endif
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(200));
     pos.height = GDrawPointsToPixels(NULL,300);
