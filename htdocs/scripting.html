@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 10-Sep-2002 -->
+  <!-- AP: Last modified: 12-Oct-2002 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -692,6 +692,11 @@ a[4][0] = "Nested array";
     CopyFgToBd
   <DD>
     Copies all foreground splines into the background in all selected characters
+  <DT>
+    Join([fudge])
+  <DD>
+    Joins open paths in selected characters. If fudge is specified then the endpoints
+    only need to be within fudge em-units of each other to be merged.
   <DT>
     UnlinkReference
   <DD>

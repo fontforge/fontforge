@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 11-Sep-2002 -->
+  <!-- AP: Last modified: 16-Oct-2002 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,40 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    ???
+    <UL>
+      <LI>
+	More work on Ik format files
+      <LI>
+	Redid UI for Auto Width/Kern to make it easier for cyrillic/greek users to
+	kern their alphabets.
+      <LI>
+	Changed so that CJK encodings will attempt to map directly to a CJK font
+	(rather than going through unicode) when displaying in the fontview.
+      <LI>
+	Added a command to join paths
+      <LI>
+	KANOU points out that support for mimetype cut/paste (11-Sept) broke cut/paste
+	in scripting.
+      <LI>
+	KANOU supplied a patch for the knife tool.
+      <LI>
+	KANOU points out that IsVisible didn't work properly if passed a NULL point
+	(it should never be passed a NULL pointer, but if it is no reason not to
+	work correctly).
+      <LI>
+	KANOU points out that the UniqueID for ttf files used a bad date.
+      <LI>
+	Had the wrong MS language ID for hungarian
+      <LI>
+	Some of Luc Devroye's fonts contain a "div" in the FontMatrix. ATM doesn't
+	support this, but it is easy enough to accept. Still don't support a full
+	expression there, just a div.
+      <LI>
+	If we read in a gsf font and then generated postscript from that, we weren't
+	able to read in the result.
+    </UL>
   <LI>
     11-Sept-2002
     <UL>

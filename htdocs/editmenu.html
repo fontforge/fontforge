@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 11-Sep-2002 -->
+  <!-- AP: Last modified: 12-Oct-2002 -->
   <TITLE>The Edit Menu</TITLE>
 </HEAD>
 <BODY>
@@ -39,6 +39,8 @@ in text fields.
     <A HREF="#Background">Clear Background</A>
   <LI>
     <A HREF="#Merge">Merge</A>
+  <LI>
+    <A HREF="#Join">Join</A>
   <LI>
     <A HREF="#CopyFg">Copy Fg To Bg</A>
   <LI>
@@ -248,6 +250,16 @@ view this menu will be disabled when one of the text fields has the focus.
     the curve between the two before. This command comes in two forms, in the
     default case the two surrounding points will retain their slopes (unless
     both are corner points), while in the other case (Elide)
+  <DT>
+    <A NAME="Join">Join</A>
+  <DD>
+    This command is not available in the bitmap view. It looks for any paths
+    with endpoints as the endpoints of other paths and then join those two paths.
+    Also if the endpoint of a path is the same as the start point it will make
+    that path into a loop. (The commands that move points around will normally
+    do this automatically, but Paste will not).<BR>
+    In the Outline view things are slightly more complicated: If any paths have
+    selected points on them it will only attempt to join those paths.
   <DT>
     <A NAME="Elide">Elide</A>
   <DD>
