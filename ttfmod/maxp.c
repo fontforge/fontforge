@@ -61,6 +61,7 @@ typedef struct maxpview /* : tableview */ {
     struct tableviewfuncs *virtuals;
     TtfFont *font;		/* for the encoding currently used */
     struct ttfview *owner;
+    unsigned int destroyed: 1;		/* window has been destroyed */
 /* maxp specials */
 } MaxpView;
 
@@ -71,9 +72,21 @@ static int maxp_processdata(TableView *tv) {
 	sel,sinstrs,cinstrs,cdepth;
     uint8 *data;
     int len;
+    static int buts[] = { _STR_Yes, _STR_Cancel, 0 };
 
     version = GetRealR(tv->gw,CID_Version,_STR_Version,&err);
     gc = GetIntR(tv->gw,CID_Glyphs,_STR_Glyphs,&err);
+    if ( gc!=tv->font->glyph_cnt ) {
+	if ( GWidgetAskR(_STR_ChangingGlyphCnt,buts,0,1,_STR_ReallyChangeGlyphCnt)==1 ) {
+	    char buf[8]; unichar_t ubuf[8];
+	    sprintf( buf, "%d", tv->font->glyph_cnt );
+	    uc_strcpy(ubuf,buf);
+	    GGadgetSetTitle(GWidgetGetControl(tv->gw,CID_Glyphs),ubuf);
+return( false );
+	}
+	tv->font->glyph_cnt = gc;
+	tv->table->container->gcchanged = true;
+    }
     len = 6;
     if ( version>=1 ) {
 	points = GetIntR(tv->gw,CID_Points,_STR_Points,&err);
@@ -124,6 +137,7 @@ return( true );
 
 static int maxp_close(TableView *tv) {
     if ( maxp_processdata(tv)) {
+	tv->destroyed = true;
 	GDrawDestroyWindow(tv->gw);
 return( true );
     }
@@ -152,6 +166,7 @@ static int Maxp_Cancel(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	gw = GGadgetGetWindow(g);
+	((TableView *) GDrawGetUserData(gw))->destroyed = true;
 	GDrawDestroyWindow(gw);
     }
 return( true );
@@ -172,6 +187,7 @@ return( true );
 static int maxp_e_h(GWindow gw, GEvent *event) {
     MaxpView *mv = GDrawGetUserData(gw);
     if ( event->type==et_close ) {
+	mv->destroyed = true;
 	GDrawDestroyWindow(mv->gw);
     } else if ( event->type == et_destroy ) {
 	mv->table->tv = NULL;

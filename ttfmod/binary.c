@@ -42,6 +42,7 @@ typedef struct binview /* : tableview */ {
     struct tableviewfuncs *virtuals;
     TtfFont *font;		/* for the encoding currently used */
     struct ttfview *owner;
+    unsigned int destroyed: 1;		/* window has been destroyed */
 /* instrs specials */
     GGadget *mb, *vsb;
     int lpos, lheight;
@@ -67,6 +68,7 @@ return( true );
 
 static int binary_close(TableView *tv) {
     if ( binary_processdata(tv)) {
+	tv->destroyed = true;
 	GDrawDestroyWindow(tv->gw);
 return( true );
     }
@@ -159,6 +161,9 @@ static void binary_expose(BinView *bv,GWindow pixmap,GRect *rect) {
 	    x = bv->addrend + (i/2)*(4*bv->chrlen+UNIT_SPACER);
 	    GDrawDrawText(pixmap,x,y+bv->as,uhex,-1,NULL,0x000000);
 	}
+	for ( i=0; i<bv->bytes_per_line && addr+i<table->newlen; ++i )
+	    if ( ulist[i]<' ' || (ulist[i]>=0x7f && ulist[i]<0xa0) )
+		ulist[i] = '.';
 	GDrawDrawText(pixmap,hex_end,y+bv->as,ulist,i,NULL,0x000000);
 	y += bv->fh;
     }
@@ -308,11 +313,11 @@ static GMenuItem fllist[] = {
     { { (unichar_t *) _STR_Close, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, 'Q', ksm_control|ksm_shift, NULL, NULL, IVMenuClose },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Save, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 'S', ksm_control, NULL, NULL, IVMenuSave },
-    { { (unichar_t *) _STR_Saveas, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'a' }, 'S', ksm_control|ksm_shift, NULL, NULL, IVMenuSaveAs },
+    { { (unichar_t *) _STR_SaveAs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'a' }, 'S', ksm_control|ksm_shift, NULL, NULL, IVMenuSaveAs },
     { { (unichar_t *) _STR_Revertfile, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, 'R', ksm_control|ksm_shift, NULL, NULL, IVMenuRevert, MID_Revert },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Prefs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'e' }, '\0', ksm_control, NULL, NULL, MenuPrefs },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+/*    { { (unichar_t *) _STR_Prefs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'e' }, '\0', ksm_control, NULL, NULL, MenuPrefs },*/
+/*    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},*/
     { { (unichar_t *) _STR_Quit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'Q' }, 'Q', ksm_control, NULL, NULL, MenuExit },
     { NULL }
 };

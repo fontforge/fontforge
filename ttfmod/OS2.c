@@ -402,6 +402,13 @@ static GTextInfo codepagelist[] = {
     { (unichar_t *) _STR_CPUS, NULL, 0, 0, (void *) 63, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
 
+static int anames[] = { _STR_SubXSize, _STR_SubYSize, _STR_SubXOffset, _STR_SubYOffset,
+	_STR_SupXSize, _STR_SupYSize, _STR_SupXOffset, _STR_SupYOffset,
+	_STR_StrikeSize, _STR_StrikePos, 0 };
+static int pnames[] = { _STR_Family, _STR_Serifs, _STR_Weight, _STR_Proportion,
+	_STR_Contrast, _STR_StrokeVar, _STR_ArmStyle, _STR_Letterform,
+	_STR_MidLine, _STR_XHeight, 0 };
+
 #define CID_Version		1000
 #define CID_WeightClass		1002
 #define CID_WeightClassL	1003
@@ -473,18 +480,145 @@ typedef struct os2view /* : tableview */ {
     struct tableviewfuncs *virtuals;
     TtfFont *font;		/* for the encoding currently used */
     struct ttfview *owner;
+    unsigned int destroyed: 1;		/* window has been destroyed */
 /* os2 specials */
     int16 old_aspect;
 } OS2View;
 
 static int os2_processdata(TableView *tv) {
-    OS2View *os2v = (OS2View *) tv;
-    /* Do changes!!! */
+    int err = false;
+    int version, weight, width, avwid, fstype, ibmfam, sel, first, last;
+    int subsup[10];
+    char vendor[4];
+    const unichar_t *ret;
+    char panose[10];
+    char buf[200];
+    int32 uranges[4];
+    int32 codepages[2];
+    int as, ds, was, wds, lg, xh, ch, dc, bc, mc;
+    uint8 *data;
+    int len, i;
+    
+    version = GetIntR(tv->gw,CID_Version,_STR_Version,&err);
+    weight = GetIntR(tv->gw,CID_WeightClass,_STR_WeightClass,&err);
+    width = GetIntR(tv->gw,CID_WidthClass,_STR_WidthClass,&err);
+    fstype = GetIntR(tv->gw,CID_FSType,_STR_Embeddable,&err);
+    ibmfam = GetHexR(tv->gw,CID_IBMFamily,_STR_IBMFamily,&err);
+    ret = _GGadgetGetTitle(GWidgetGetControl(tv->gw,CID_Vendor));
+    if ( u_strlen(ret)>4 ||
+	    (*ret!='\0' && (*ret>0x7e || *ret<' ' ||
+	     (ret[1]!='\0' && (ret[1]>0x7e || ret[1]<' ' ||
+	      (ret[2]!='\0' && (ret[2]>0x7e || ret[2]<' ' ||
+	       (ret[3]!='\0' && (ret[3]>0x7e || ret[3]<' ')))))))) ) {
+	ProtestR(_STR_VendorID);
+return( false );
+    }
+    vendor[0] = ret[0]; vendor[1] = ret[1]; vendor[2] = ret[2]; vendor[3] = ret[3];
+    sel = GetHexR(tv->gw,CID_Selection,_STR_Selection,&err);
+    avwid = GetIntR(tv->gw,CID_AvgWidth,_STR_AvgWidth,&err);
+    if ( err )
+return( false );
+
+    for ( i=0; i<10; ++i )
+	subsup[i] = GetIntR(tv->gw,CID_SubXSize+i,anames[i],&err);
+    if ( err )
+return( false );
+    for ( i=0; i<10; ++i )
+	panose[i] = GetListR(tv->gw,CID_PanFamily+i,pnames[i],&err);
+
+    ret = _GGadgetGetTitle(GWidgetGetControl(tv->gw,CID_UnicodeRanges));
+    cu_strncpy(buf,ret,sizeof(buf)-1);
+    buf[sizeof(buf)-1] = '\0';
+    if ( sscanf( buf, "%x.%x.%x.%x", uranges, uranges+1, uranges+2, uranges+3)!=4 ) {
+	ProtestR(_STR_UnicodeRanges);
+return( false );
+    }
+    first = GetHexR(tv->gw,CID_FirstUnicode,_STR_FirstUnicode,&err);
+    last = GetHexR(tv->gw,CID_LastUnicode,_STR_LastUnicode,&err);
+    if ( version>0 ) {
+	ret = _GGadgetGetTitle(GWidgetGetControl(tv->gw,CID_CodePageRanges));
+	cu_strncpy(buf,ret,sizeof(buf)-1);
+	buf[sizeof(buf)-1] = '\0';
+	if ( sscanf( buf, "%x.%x", codepages, codepages+1)!= 2 ) {
+	    ProtestR(_STR_CodePages);
+return( false );
+	}
+    }
+    as = GetIntR(tv->gw,CID_TypoAscender,_STR_TypoAscender,&err);
+    ds = GetIntR(tv->gw,CID_TypoDescender,_STR_TypoDescender,&err);
+    lg = GetIntR(tv->gw,CID_TypoLineGap,_STR_TypoLineGap,&err);
+    was = GetIntR(tv->gw,CID_WinAscent,_STR_WinAscent,&err);
+    wds = GetIntR(tv->gw,CID_WinDescent,_STR_WinDescent,&err);
+    if ( version>1 ) {
+	xh = GetIntR(tv->gw,CID_XHeight,_STR_XHeightC,&err);
+	ch = GetIntR(tv->gw,CID_CapHeight,_STR_CapHeightC,&err);
+	dc = GetIntR(tv->gw,CID_DefChar,_STR_DefaultChar,&err);
+	bc = GetIntR(tv->gw,CID_BrkChar,_STR_BreakChar,&err);
+	bc = GetIntR(tv->gw,CID_MaxContext,_STR_MaxContext,&err);
+    }
+    if ( err )
+return( false );
+
+    /* if we're working on a table with a version>2 (so, presumably with */
+    /*  fields we don't understand) then we'll allow people to edit the */
+    /*  fields we do know, and leave the others as they were */
+    if ( version>2 && tv->table->newlen >= 96 )
+	len = tv->table->newlen;
+    else
+	len = version<=0? 78 : version==1 ? 86 : 96;
+    if ( len==tv->table->newlen )
+	data = tv->table->data;
+    else
+	data = galloc(len);
+
+    ptputushort(data,version);
+    ptputushort(data+2,avwid);
+    ptputushort(data+4,weight);
+    ptputushort(data+6,width);
+    ptputushort(data+8,fstype);
+    for ( i=0; i<10; ++i )
+	ptputushort(data+10+2*i,subsup[i]);
+    ptputushort(data+30,ibmfam);
+    for ( i=0; i<10; ++i )
+	data[32+i] = panose[i];
+    for ( i=0; i<4; ++i )
+	ptputlong(data+42+4*i,uranges[3-i]);
+    data[58]=vendor[0]; data[59]=vendor[1]; data[60]=vendor[2]; data[63]=vendor[3];
+    ptputushort(data+62,sel);
+    ptputushort(data+64,first);
+    ptputushort(data+66,last);
+    ptputushort(data+68,as);
+    ptputushort(data+70,ds);
+    ptputushort(data+72,lg);
+    ptputushort(data+74,was);
+    ptputushort(data+76,wds);
+    if ( version>0 ) {
+	ptputlong(data+78,codepages[1]);
+	ptputlong(data+82,codepages[0]);
+    }
+    if ( version>1 ) {
+	ptputushort(data+86,xh);
+	ptputushort(data+88,ch);
+	ptputushort(data+90,dc);
+	ptputushort(data+92,bc);
+	ptputushort(data+94,mc);
+    }
+    if ( data!=tv->table->data ) {
+	free(tv->table->data);
+	tv->table->data = data;
+    }
+    tv->table->newlen = len;
+    if ( !tv->table->changed ) {
+	tv->table->changed = true;
+	tv->table->container->changed = true;
+	GDrawRequestExpose(tv->owner->v,NULL,false);
+    }
 return( true );
 }
 
 static int os2_close(TableView *tv) {
     if ( os2_processdata(tv)) {
+	tv->destroyed = true;
 	GDrawDestroyWindow(tv->gw);
 return( true );
     }
@@ -498,23 +632,21 @@ static int OS2_VersionChange(GGadget *g, GEvent *e) {
     const unichar_t *ret = _GGadgetGetTitle(g);
     int val = u_strtol(ret,NULL,10);
 
-    if ( val==0 || val==1 || val==2 ) {
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_CodePageLab),val!=0);
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_CodePageRanges),val!=0);
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_CodePageList),val!=0);
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_XHeightLab),val==2);
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_XHeight),val==2);
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_CapHeightLab),val==2);
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_CapHeight),val==2);
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_DefCharLab),val==2);
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_DefChar),val==2);
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_DefCharS),val==2);
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_BrkCharLab),val==2);
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_BrkChar),val==2);
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_BrkCharS),val==2);
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_MaxContextLab),val==2);
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_MaxContext),val==2);
-    }
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_CodePageLab),val>0);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_CodePageRanges),val>0);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_CodePageList),val>0);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_XHeightLab),val>=2);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_XHeight),val>=2);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_CapHeightLab),val>=2);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_CapHeight),val>=2);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_DefCharLab),val>=2);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_DefChar),val>=2);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_DefCharS),val>=2);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_BrkCharLab),val>=2);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_BrkChar),val>=2);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_BrkCharS),val>=2);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_MaxContextLab),val>=2);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_MaxContext),val>=2);
 return( true );
 }
 
@@ -599,7 +731,7 @@ static int OS2_FamilyChange(GGadget *g, GEvent *e) {
 
     if ( GGadgetGetCid(g)==CID_IBMFamily ) {
 	ret = _GGadgetGetTitle(g);
-	val = u_strtol(ret,NULL,10);
+	val = u_strtol(ret,NULL,16);		/* hex */
 	for ( i=0; ibmfamily[i].text!=NULL; ++i )
 	    if ( (int) (ibmfamily[i].userdata)==val )
 	break;
@@ -643,7 +775,7 @@ static int OS2_UnicodeChange(GGadget *g, GEvent *e) {
 	GWindow gw = GDrawGetParentWindow(GGadgetGetWindow(g));
 	char ranges[40]; unichar_t ur[40];
 	GTextInfo **list = GGadgetGetList(g,&len);
-	GGadget *field = GWidgetGetControl(gw,CID_Selection);
+	GGadget *field = GWidgetGetControl(gw,CID_UnicodeRanges);
 
 	flags[0] = flags[1] = flags[2] = flags[3] = 0;
 	for ( i=0; i<len; ++i )
@@ -770,6 +902,17 @@ return( true );
 
 static int OS2_Cancel(GGadget *g, GEvent *e) {
     GWindow gw;
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	gw = GGadgetGetWindow(g);
+	((TableView *) GDrawGetUserData(gw))->destroyed = true;
+	GDrawDestroyWindow(gw);
+    }
+return( true );
+}
+
+static int OS2_OK(GGadget *g, GEvent *e) {
+    GWindow gw;
     OS2View *os2v;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
@@ -780,19 +923,10 @@ static int OS2_Cancel(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static int OS2_OK(GGadget *g, GEvent *e) {
-    GWindow gw;
-
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	gw = GGadgetGetWindow(g);
-	GDrawDestroyWindow(gw);
-    }
-return( true );
-}
-
 static int os2_e_h(GWindow gw, GEvent *event) {
     OS2View *os2v = GDrawGetUserData(gw);
     if ( event->type==et_close ) {
+	os2v->destroyed = true;
 	GDrawDestroyWindow(os2v->gw);
     } else if ( event->type == et_destroy ) {
 	os2v->table->tv = NULL;
@@ -810,13 +944,6 @@ return( false );
 return( true );
 }
 
-/* OpenType adds:
-    short sxHeight;		/ * xHeight * /
-    short scapHeight;
-    ushort usDefaultChar;
-    ushort usBreakChar;
-    ushort usMaxContext;
-*/
 void OS2CreateEditor(Table *tab,TtfView *tfv) {
     OS2View *os2v = gcalloc(1,sizeof(OS2View));
     GRect pos;
@@ -832,9 +959,6 @@ void OS2CreateEditor(Table *tab,TtfView *tfv) {
 	ch[8], dc[8], bc[8], mcontext[8];
     unichar_t _dc[2], _bc[2];
     int vnum, temp, i,j;
-    static int anames[] = { _STR_SubXSize, _STR_SubYSize, _STR_SubXOffset, _STR_SubYOffset,
-	    _STR_SupXSize, _STR_SupYSize, _STR_SupXOffset, _STR_SupYOffset,
-	    _STR_StrikeSize, _STR_StrikePos, 0 };
 
     os2v->table = tab;
     os2v->virtuals = &os2funcs;
@@ -1326,7 +1450,7 @@ void OS2CreateEditor(Table *tab,TtfView *tfv) {
     tlabel[23].text = (unichar_t *) avgwidth;
     tlabel[23].text_is_1byte = true;
     tgcd[23].gd.label = &tlabel[23];
-    tgcd[23].gd.pos.x = 82; tgcd[23].gd.pos.y = tgcd[22].gd.pos.y-6;
+    tgcd[23].gd.pos.x = 82; tgcd[23].gd.pos.y = tgcd[22].gd.pos.y-6; tgcd[23].gd.pos.width = 60;
     tgcd[23].gd.flags = gg_enabled|gg_visible;
     tgcd[23].gd.cid = CID_AvgWidth;
     tgcd[23].creator = GTextFieldCreate;

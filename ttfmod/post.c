@@ -326,6 +326,7 @@ typedef struct postview /* : tableview */ {
     struct tableviewfuncs *virtuals;
     TtfFont *font;		/* for the encoding currently used */
     struct ttfview *owner;
+    unsigned int destroyed: 1;		/* window has been destroyed */
 /* post specials */
     int16 old_aspect;
     GWindow nv, ev;
@@ -520,6 +521,7 @@ return( true );
 
 static int post_close(TableView *tv) {
     if ( post_processdata(tv)) {
+	tv->destroyed = true;
 	GDrawDestroyWindow(tv->gw);
 return( true );
     }
@@ -640,7 +642,7 @@ return( true );
 static int post_Cancel(GGadget *g, GEvent *e) {
     GWindow gw;
     postView *postv;
-    struct postdata *pd = (postv->table->table_data);
+    struct postdata *pd;
     int i;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
@@ -864,7 +866,7 @@ static int ev_e_h(GWindow gw, GEvent *event) {
 				    (l-postv->etop)*postv->fh+EDGE_SPACER+1);
 	    sprintf( buf, "%d", pd->editenc==NULL ? pd->enc[l] : pd->editenc[l]);
 	    uc_strcpy(ubuf,buf);
-	    GGadgetSetTitle(postv->ntf,ubuf);
+	    GGadgetSetTitle(postv->etf,ubuf);
 	    GDrawPostEvent(event);	/* And we hope the tf catches it this time */
 	}
     }
@@ -946,6 +948,14 @@ static void postTableFillup(Table *tab,TtfFont *font) {
 
     if ( tab->table_data!=NULL )
 return;		/* Already done */
+    if ( tab->data!=NULL && tab->changed ) {
+	GWidgetErrorR(_STR_BinaryEdit,_STR_BinaryEditSave);
+return;
+    }
+    if ( tab->data ) {
+	free(tab->data);
+	tab->data = NULL;
+    }
 
     fseek(ttf,tab->start,SEEK_SET);
 

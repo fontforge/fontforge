@@ -100,6 +100,7 @@ typedef struct headview /* : tableview */ {
     struct tableviewfuncs *virtuals;
     TtfFont *font;		/* for the encoding currently used */
     struct ttfview *owner;
+    unsigned int destroyed: 1;		/* window has been destroyed */
 /* head specials */
 } HeadView;
 
@@ -164,6 +165,7 @@ return( true );
 
 static int head_close(TableView *tv) {
     if ( head_processdata(tv)) {
+	tv->destroyed = true;
 	GDrawDestroyWindow(tv->gw);
 return( true );
     }
@@ -220,6 +222,7 @@ static int Head_Cancel(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	gw = GGadgetGetWindow(g);
+	((TableView *) GDrawGetUserData(gw))->destroyed = true;
 	GDrawDestroyWindow(gw);
     }
 return( true );
@@ -240,6 +243,7 @@ return( true );
 static int head_e_h(GWindow gw, GEvent *event) {
     HeadView *hv = GDrawGetUserData(gw);
     if ( event->type==et_close ) {
+	hv->destroyed = true;
 	GDrawDestroyWindow(hv->gw);
     } else if ( event->type == et_destroy ) {
 	hv->table->tv = NULL;
@@ -292,6 +296,20 @@ static void quad2date(char str[80], int32 date1, int32 date2 ) {
     tm = localtime(&date);
     sprintf( str, "%d-%d-%d %d:%02d:%02d", tm->tm_year+1900, tm->tm_mon+1,
 	    tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec );
+}
+
+void headViewUpdateModifiedCheck(Table *tab) {
+    char modified[100];
+    unichar_t ubuf[100];
+
+    if ( tab->tv!=NULL ) {
+	quad2date(modified, tgetlong(tab,28), tgetlong(tab,32));
+	uc_strcpy(ubuf,modified);
+	GGadgetSetTitle(GWidgetGetControl(tab->tv->gw,CID_Modified),ubuf);
+	sprintf( modified, "%08x", tgetlong(tab,8) );
+	uc_strcpy(ubuf,modified);
+	GGadgetSetTitle(GWidgetGetControl(tab->tv->gw,CID_Checksum),ubuf);
+    }
 }
 
 void headCreateEditor(Table *tab,TtfView *tfv) {

@@ -30,6 +30,7 @@
 #include <utype.h>
 #include <gfile.h>
 #include <math.h>
+#include <unistd.h>
 
 extern int _GScrollBar_Width;
 
@@ -43,8 +44,12 @@ GWindow ttf_icon = NULL;
 
 TtfView *tfv_list=NULL;
 
-void FontNew(void) {}
+static int _TFVMenuClose(TtfView *tfv);
 
+void FontNew(void) {}		/* The code which calls this (in the open dlg) will never be reached, but the linker doesn't know that. */
+	/* NEVERCALL specified */
+
+#define MID_RevertTable	2701
 #define MID_Revert	2702
 #define MID_Recent	2703
 #define MID_Cut		2101
@@ -60,10 +65,11 @@ static struct tableinfo {
 } tableinfo[] = {
 /* "Required" TrueType tables (except sometimes (ie. OpenType, bitmap only, etc.)) */
     { CHR('c','m','a','p'), _STR_Tbl_cmap, NULL, "http://partners.adobe.com/asn/developer/opentype/cmap.html" },
-    { CHR('g','l','y','f'), _STR_Tbl_glyf, NULL, "http://partners.adobe.com/asn/developer/opentype/glyf.html" },
+    { CHR('g','l','y','f'), _STR_Tbl_glyf, fontCreateEditor, "http://partners.adobe.com/asn/developer/opentype/glyf.html" },
     { CHR('h','e','a','d'), _STR_Tbl_head, headCreateEditor, "http://partners.adobe.com/asn/developer/opentype/head.html" },
     { CHR('h','h','e','a'), _STR_Tbl_hhea, _heaCreateEditor, "http://partners.adobe.com/asn/developer/opentype/hhea.html" },
     { CHR('h','m','t','x'), _STR_Tbl_hmtx, metricsCreateEditor, "http://partners.adobe.com/asn/developer/opentype/hmtx.html" },
+    { CHR('l','o','c','a'), _STR_Tbl_loca, fontCreateEditor, "http://partners.adobe.com/asn/developer/opentype/loca.html" },
     { CHR('m','a','x','p'), _STR_Tbl_maxp, maxpCreateEditor, "http://partners.adobe.com/asn/developer/opentype/maxp.html" },
     { CHR('n','a','m','e'), _STR_Tbl_name, NULL, "http://partners.adobe.com/asn/developer/opentype/name.html" },
     { CHR('O','S','/','2'), _STR_Tbl_OS2 , OS2CreateEditor, "http://partners.adobe.com/asn/developer/opentype/os2.html" },
@@ -74,7 +80,7 @@ static struct tableinfo {
     { CHR('E','B','L','C'), _STR_Tbl_EBLC, NULL, "http://partners.adobe.com/asn/developer/opentype/eblc.html" },
     { CHR('E','B','S','C'), _STR_Tbl_EBSC, NULL, "http://partners.adobe.com/asn/developer/opentype/ebsc.html" },
     { CHR('f','p','g','m'), _STR_Tbl_fpgm, instrCreateEditor, "http://partners.adobe.com/asn/developer/opentype/fpgm.html" },
-    { CHR('g','a','s','p'), _STR_Tbl_gasp, NULL, "http://partners.adobe.com/asn/developer/opentype/gasp.html" },
+    { CHR('g','a','s','p'), _STR_Tbl_gasp, gaspCreateEditor, "http://partners.adobe.com/asn/developer/opentype/gasp.html" },
     { CHR('h','d','m','x'), _STR_Tbl_hdmx, NULL, "http://partners.adobe.com/asn/developer/opentype/hdmx.html" },
     { CHR('k','e','r','n'), _STR_Tbl_kern, NULL, "http://partners.adobe.com/asn/developer/opentype/kern.html" },
     { CHR('L','T','S','H'), _STR_Tbl_LTSH, NULL, "http://partners.adobe.com/asn/developer/opentype/ltsh.html" },
@@ -220,16 +226,139 @@ return;
     free(temp);
 }
 
-int _TFVMenuSaveAs(TtfView *tfv) {
+static int CheckTableViews(TtfView *tfv) {
+    int i,j, any=false, ync;
+    Table *tab;
+    static int yesnocancel[] = { _STR_Yes, _STR_No, _STR_Cancel, 0 };
+
+    for ( i=0; i<tfv->ttf->font_cnt ; ++i ) {
+	for ( j=0; j<tfv->ttf->fonts[i]->tbl_cnt ; ++j ) {
+	    tab = tfv->ttf->fonts[i]->tbls[j];
+	    if ( tab->tv && !tab->tv->destroyed && !tab->special )
+		any = true;
+	    tab->processed = false;
+	}
+    }
+    if ( any ) {
+	/* This question should not be asked twice on close because it will */
+	/*  close any open table views before calling us, so we won't see them*/
+	ync = GWidgetAskR(_STR_TablesOpen,yesnocancel,0,2,_STR_TablesOpenProcess);
+	if ( ync==2 )
+return( 0 );			/* Cancel */
+	else if ( ync==1 )
+return( 1 );			/* Don't process */
+
+	for ( i=0; i<tfv->ttf->font_cnt ; ++i ) {
+	    for ( j=0; j<tfv->ttf->fonts[i]->tbl_cnt ; ++j ) {
+		tab = tfv->ttf->fonts[i]->tbls[j];
+		if ( tab->tv && !tab->tv->destroyed && !tab->processed ) {
+		    tab->processed = true;
+		    if ( !(tab->tv->virtuals->processdata)(tab->tv))
 return( 0 );
+		}
+	    }
+	}
+    }
+return( true );
+}
+
+int _TFVMenuSaveAs(TtfView *tfv) {
+    static unichar_t filter[] = { '*','.','{','t','t','f',',','o','t','f',',','t','t','c','}',  '\0' };
+    unichar_t *ret, *temp = uc_copy(GFileNameTail(tfv->ttf->filename));
+    char *name;
+
+    if ( !CheckTableViews(tfv))
+return( false );
+
+    ret = GWidgetSaveAsFile(GStringGetResource(_STR_SaveAs,NULL),temp,filter,NULL);
+    free(temp);
+    if ( ret==NULL )
+return( false );
+    name = u2def_copy(ret);
+    if ( TtfSave(tfv->ttf,name) ) {
+	free(tfv->ttf->filename);
+	tfv->ttf->filename = name;
+	GDrawRequestExpose(tfv->v,NULL,false);
+return( true );
+    } else {
+	free(name);
+return( false );
+    }
 }
 
 int _TFVMenuSave(TtfView *tfv) {
-return( 0 );
+    if ( !CheckTableViews(tfv))
+return( false );
+
+    if ( TtfSave(tfv->ttf,tfv->ttf->filename) ) {
+	GDrawRequestExpose(tfv->v,NULL,false);
+return( true );
+    } else
+return( false );
 }
 
 int _TFVMenuRevert(TtfView *tfv) {
+    static int buts[] = { _STR_Yes, _STR_Cancel, 0 };
+    int i,j,lh,k,any;
+    TtfFont *font; TtfFile *oldfont;
+
+    if ( GWidgetAskR(_STR_ReallyRevert,buts,0,1,_STR_ReallyRevert)==1 )
 return( 0 );
+
+    for ( i=0; i<tfv->ttf->font_cnt; ++i ) {
+	font = tfv->ttf->fonts[i];
+	for ( j=0; j<font->tbl_cnt; ++j ) {
+	    if ( font->tbls[j]->tv!=NULL && !font->tbls[j]->tv->destroyed ) {
+		font->tbls[j]->tv->destroyed = true;
+		GDrawDestroyWindow(font->tbls[j]->tv->gw);
+	    }
+	}
+	GDrawSync(NULL);
+	GDrawProcessPendingEvents(NULL);
+    }
+    for ( k=0; k<10; ++k ) {
+	any = false;
+	for ( i=0; i<tfv->ttf->font_cnt; ++i ) {
+	    font = tfv->ttf->fonts[i];
+	    for ( j=0; j<font->tbl_cnt; ++j ) {
+		if ( font->tbls[j]->tv!=NULL ) {
+		    any = true;
+	    break;
+		}
+	    }
+	    if ( any )
+	break;
+	}
+	if ( !any )
+    break;
+	sleep(1);
+	GDrawSync(NULL);
+	GDrawProcessPendingEvents(NULL);
+    }
+    if ( any ) {
+	GDrawIError("Can't kill table window. Can't revert table.");
+return( 0 );
+    }
+
+    TTFFileFreeData(tfv->ttf);
+    oldfont = tfv->ttf;
+    tfv->ttf = ReadTtfFont(oldfont->filename);
+    if ( tfv->ttf==NULL ) {
+	tfv->ttf = oldfont;
+	GWidgetErrorR( _STR_RevertFailed, _STR_RevertFailed );
+	_TFVMenuClose(tfv);
+return( 0 );
+    }
+    TTFFileFree(oldfont);
+
+    for ( i=0, lh=0; i<tfv->ttf->font_cnt; ++i )
+	lh += 1 + tfv->ttf->fonts[i]->tbl_cnt;
+    tfv->lheight = lh;
+    GScrollBarSetBounds(tfv->vsb,0,lh,tfv->vheight/tfv->fh);
+    if ( tfv->lpos + tfv->vheight/tfv->fh > lh )
+	tfv->lpos = lh-tfv->vheight/tfv->fh;
+    GScrollBarSetPos(tfv->vsb,tfv->lpos);
+return( true );
 }
 
 static void TFVMenuSaveAs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -246,6 +375,52 @@ static void TFVMenuSave(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void TFVMenuRevert(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     TtfView *tfv = (TtfView *) GDrawGetUserData(gw);
     _TFVMenuRevert(tfv);
+}
+
+static void TFVMenuRevertTable(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    TtfView *tfv = (TtfView *) GDrawGetUserData(gw);
+    int i;
+    Table *tab = tfv->sel_tab;
+
+    if ( tab==NULL || tfv->ttf->gcchanged || tab->special || tab->new )
+return;
+    if ( tab->tv!=NULL ) {
+	if ( !tab->tv->destroyed ) {
+	    tab->tv->destroyed = true;
+	    GDrawDestroyWindow(tab->tv->gw);
+	}
+	GDrawSync(NULL);
+	GDrawProcessPendingEvents(NULL);
+	for ( i=0; i<10 && tab->tv!=NULL; ++i ) {
+	    sleep(1);
+	    GDrawSync(NULL);
+	    GDrawProcessPendingEvents(NULL);
+	}
+	if ( tab->tv!=NULL ) {
+	    GDrawIError("Can't kill table window. Can't revert table.");
+return;
+	}
+    }
+    if ( tab->table_data ) {
+	(tab->free_tabledata)(tab->table_data);
+	tab->table_data = NULL;
+    }
+    if ( tab->data ) {
+	free(tab->data);
+	tab->data = NULL;
+    }
+    tab->newlen = tab->len;
+    tab->changed = tab->td_changed = false;
+    if ( tab->name==CHR('c','m','a','p') ) {
+	struct enctab *oldenc = tfv->ttf->fonts[tfv->selectedfont]->enc;
+	int i;
+	for ( i=0; i<tfv->ttf->font_cnt; ++i )
+	    if ( tfv->ttf->fonts[i]->enc==oldenc ) {
+		tfv->ttf->fonts[i]->enc = NULL;	/* Part of the table data which got freed */
+		readttfencodings(tfv->ttf->file,tfv->ttf->fonts[i]);
+	    }
+    }
+    GDrawRequestExpose(tfv->v,NULL,false);
 }
 
 void MenuHelp(GWindow base,struct gmenuitem *mi,GEvent *e) {
@@ -268,18 +443,60 @@ void TableHelp(int table_name) {
 }
 
 static int _TFVMenuClose(TtfView *tfv) {
-    int i,j;
-    /* Check for changes !!!! */
-    for ( i=0; i<tfv->ttf->font_cnt; ++i ) {
-	for ( j=0; j<tfv->ttf->fonts[i]->tbl_cnt; ++j )
-	    if ( !tfv->ttf->fonts[i]->tbls[j]->destroyed &&
-		    tfv->ttf->fonts[i]->tbls[j]->tv!=NULL ) {
-		/* same table may be referenced by several fonts */
-		/* or in the case of EBDT, and bdat by the same font */
-		tfv->ttf->fonts[i]->tbls[j]->destroyed = true;
-		GDrawDestroyWindow(tfv->ttf->fonts[i]->tbls[j]->tv->gw);
-	    }
+    int i,j,mighthavechanged, process_and_save=false, ync;
+    Table *tab;
+    static int yesnocancel[] = { _STR_Yes, _STR_No, _STR_Cancel, 0 };
+
+    mighthavechanged = tfv->ttf->changed;
+    for ( i=0; i<tfv->ttf->font_cnt && !mighthavechanged; ++i ) {
+	for ( j=0; j<tfv->ttf->fonts[i]->tbl_cnt && !mighthavechanged; ++j )
+	    if ( !tfv->ttf->fonts[i]->tbls[j]->special &&
+		    tfv->ttf->fonts[i]->tbls[j]->tv!=NULL )
+		mighthavechanged = true;
     }
+    if ( tfv->ttf->changed ) {
+	ync = GWidgetAskR(_STR_FontChanged,yesnocancel,0,2,
+		tfv->ttf->font_cnt>1?_STR_FontChangedSavem:_STR_FontChangedSave,
+		tfv->ttf->fonts[0]->fontname);
+	if ( ync==2 )
+return( 0 );
+	process_and_save = ync==0;
+    } else if ( mighthavechanged ) {
+	ync = GWidgetAskR(_STR_TablesOpen,yesnocancel,0,2,
+		tfv->ttf->font_cnt>1?_STR_TablesOpenSavem:_STR_TablesOpenSave,
+		tfv->ttf->fonts[0]->fontname);
+	if ( ync==2 )
+return( 0 );
+	process_and_save = ync==0;
+    }
+
+    for ( i=0; i<tfv->ttf->font_cnt; ++i ) {
+	for ( j=0; j<tfv->ttf->fonts[i]->tbl_cnt; ++j ) {
+	    tab = tfv->ttf->fonts[i]->tbls[j];
+	    if ( tab->tv!=NULL && !tab->tv->destroyed ) {
+		/* same table may be referenced by several fonts */
+		/* or in the case of EBDT, and bdat (maybe) by the same font */
+		/* so we may have sent them a close request without getting */
+		/* the destroy event. That's what destroyed is for */
+		if ( process_and_save ) {
+		    if ( !(tab->tv->virtuals->closeme)(tab->tv))
+return( 0 );
+		} else {	/* Just close without processing */
+		    tab->tv->destroyed = true;
+		    GDrawDestroyWindow(tab->tv->gw);
+		}
+	    }
+	}
+	GDrawSync(NULL);
+	GDrawProcessPendingEvents(NULL);
+    }
+
+    if ( process_and_save && tfv->ttf->changed ) {
+	if ( !_TFVMenuSave(tfv) )
+return( 0 );
+    }
+
+    RecentFilesRemember(tfv->ttf->filename);
     GDrawDestroyWindow(tfv->gw);
 return( 1 );
 }
@@ -310,11 +527,23 @@ void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e) {
 }
 
 static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    TtfView *tfv = (TtfView *) GDrawGetUserData(gw);
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_Recent:
 	    mi->ti.disabled = !RecentFilesAny();
+	  break;
+	  case MID_Revert:
+	    mi->ti.disabled = !tfv->ttf->changed;
+	  break;
+	  case MID_RevertTable:
+	    /* If they've changed the glyph count then reverting tables is */
+	    /*  just too hard to figure out, we could easily be left in an */
+	    /*  inconsistant state */
+	    mi->ti.disabled = tfv->sel_tab==NULL || !tfv->sel_tab->changed ||
+		    tfv->sel_tab->new || tfv->sel_tab->special ||
+		    tfv->ttf->gcchanged;
 	  break;
 	}
     }
@@ -327,11 +556,12 @@ static GMenuItem fllist[] = {
     { { (unichar_t *) _STR_Close, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, 'Q', ksm_control|ksm_shift, NULL, NULL, TFVMenuClose },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Save, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 'S', ksm_control, NULL, NULL, TFVMenuSave },
-    { { (unichar_t *) _STR_Saveas, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'a' }, 'S', ksm_control|ksm_shift, NULL, NULL, TFVMenuSaveAs },
+    { { (unichar_t *) _STR_SaveAs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'a' }, 'S', ksm_control|ksm_shift, NULL, NULL, TFVMenuSaveAs },
     { { (unichar_t *) _STR_Revertfile, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, 'R', ksm_control|ksm_shift, NULL, NULL, TFVMenuRevert, MID_Revert },
+    { { (unichar_t *) _STR_RevertTable, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'T' }, '\0', ksm_control|ksm_shift, NULL, NULL, TFVMenuRevertTable, MID_RevertTable },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Prefs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'e' }, '\0', ksm_control, NULL, NULL, MenuPrefs },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+/*    { { (unichar_t *) _STR_Prefs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'e' }, '\0', ksm_control, NULL, NULL, MenuPrefs }, */
+/*    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }}, */
     { { (unichar_t *) _STR_Quit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'Q' }, 'Q', ksm_control, NULL, NULL, MenuExit },
     { NULL }
 };
@@ -361,11 +591,23 @@ static GMenuItem mblist[] = {
     { NULL }
 };
 
+static void TFVChar(TtfView *tfv,GEvent *e) {
+#if MyMemory
+    if ( e->u.chr.keysym==GK_F2 ) {
+	printf( "Memory Check On\n" );
+	__malloc_debug(5);
+    } else if ( e->u.chr.keysym==GK_F3 ) {
+	__malloc_debug(0);
+	printf( "Memory Check Off\n" );
+    }
+#endif
+}
+
 static void TFVMouse(TtfView *tfv,GEvent *e) {
     TtfFile *ttf = tfv->ttf;
     TtfFont *font;
     int seek = (e->u.mouse.y-2) / tfv->fh + tfv->lpos;
-    int i,j, l, k;
+    int i,j, l, k, needsexpose;
     Table *tab;
 
     GGadgetEndPopup();
@@ -386,8 +628,14 @@ static void TFVMouse(TtfView *tfv,GEvent *e) {
 	if ( l==seek )
     break;
     }
-    if ( j==-2 )		/* Beyond end of file */
+    if ( j==-2 ) {		/* Beyond end of file */
+	if ( tfv->sel_line!=-1 && e->type==et_mousedown ) {
+	    tfv->sel_line = -1;
+	    tfv->sel_tab = NULL;
+	    GDrawRequestExpose(tfv->v,NULL,false);
+	}
 return;
+    }
 
     tab = NULL; k = -1;
     if ( j!=-1 ) {
@@ -400,18 +648,36 @@ return;
 
     if ( e->type == et_mousedown ) {
 	tfv->pressed = true;
+
+	needsexpose = false;
+	if ( tab==NULL ) seek = -1;
+	if ( tfv->sel_line!=seek ) {
+	    tfv->sel_line = seek;
+	    tfv->sel_tab = tab;
+	    needsexpose = true;
+	}
 	if ( i!=tfv->selectedfont ) {
 	    tfv->selectedfont = i;
-	    GDrawRequestExpose(tfv->v,NULL,false);
+	    needsexpose = true;
 	}
+	if ( needsexpose )
+	    GDrawRequestExpose(tfv->v,NULL,false);
+
 	if ( tab!=NULL && e->u.mouse.clicks==2 ) {
 	    if ( tab->tv!=NULL ) {
 		GDrawSetVisible(tab->tv->gw,true);
 		GDrawRaise(tab->tv->gw);
 	    } else if ( tableinfo[k].createviewer==NULL ||
-		    (e->u.mouse.state&(ksm_control|ksm_meta)) )
+		    (e->u.mouse.state&(ksm_control|ksm_meta)) ) {
+		if ( tab->td_changed ) {
+		    static int buts[] = { _STR_Yes, _STR_Cancel, 0 };
+		    if ( GWidgetAskR(_STR_TabMod,buts,0,1,_STR_TabModNotBinary)==1 )
+return;
+		    if ( !_TFVMenuSave(tfv))
+return;
+		}
 		binaryCreateEditor(tab,tfv);
-	    else
+	    } else
 		(tableinfo[k].createviewer)(tab,tfv);
 	}
     } else if ( e->type == et_mouseup ) {
@@ -430,6 +696,8 @@ static void TFVExpose(TtfView *tfv,GWindow pixmap,GRect *rect) {
     TtfFont *font;
     unichar_t buffer[60];
     static unichar_t spec[] = { ' ', '%', '8', 'd', ' ', '%', '8', 'd',  '\0' };
+    GRect sel;
+    static unichar_t unk[] = { '?','?','?',  '\0' };
 
     low = rect->y/tfv->fh + tfv->lpos;
     high = (rect->y+rect->height+tfv->fh-1)/tfv->fh + tfv->lpos;
@@ -441,13 +709,19 @@ static void TFVExpose(TtfView *tfv,GWindow pixmap,GRect *rect) {
 	    GDrawDrawLine(pixmap,0,(l-tfv->lpos)*tfv->fh,tfv->vwidth,(l-tfv->lpos)*tfv->fh,
 		i==tfv->selectedfont || i==tfv->selectedfont+1 ? 0 : 0x808080 );
 	    GDrawSetFont(pixmap,tfv->bold);
-	    GDrawDrawText(pixmap,10,(l-tfv->lpos)*tfv->fh+tfv->as+2,font->fontname,-1,NULL,0);
+	    GDrawDrawText(pixmap,10,(l-tfv->lpos)*tfv->fh+tfv->as+2,
+		    font->fontname?font->fontname:unk,-1,NULL,0);
 	}
 	++l;
 	for ( j=0; j<font->tbl_cnt; ++j, ++l ) {
 	    if ( l>high )
 	break;
 	    if ( l>=low ) {
+		if ( l==tfv->sel_line ) {
+		    sel.x = 0; sel.width = tfv->vwidth;
+		    sel.y = (l-tfv->lpos)*tfv->fh + 3; sel.height = tfv->fh-1;
+		    GDrawFillRect(pixmap,&sel,COLOR_CREATE(0xff,0xff,0x00));
+		}
 		buffer[0] = (font->tbls[j]->name>>24)&0xff;
 		buffer[1] = (font->tbls[j]->name>>16)&0xff;
 		buffer[2] = (font->tbls[j]->name>>8)&0xff;
@@ -541,6 +815,7 @@ static int v_e_h(GWindow gw, GEvent *event) {
 	TFVExpose(tfv,gw,&event->u.expose.rect);
       break;
       case et_char:
+	TFVChar(tfv,event);
       break;
       case et_mousemove: case et_mousedown: case et_mouseup:
 	TFVMouse(tfv,event);
@@ -563,6 +838,7 @@ static int tfv_e_h(GWindow gw, GEvent *event) {
 	TFVResize(tfv,event);
       break;
       case et_char:
+	TFVChar(tfv,event);
       break;
       case et_controlevent:
 	switch ( event->u.control.subtype ) {
@@ -603,25 +879,34 @@ TtfView *TtfViewCreate(TtfFile *tf) {
     FontRequest rq;
     static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','u','n','i','f','o','n','t', '\0' };
     int as,ds,ld, i,lh;
+    unichar_t *title;
 
     if ( ttf_icon==NULL )
 	ttf_icon = GDrawCreateBitmap(NULL,ttf_width,ttf_height,ttf_bits);
 
     tf->tfv = tfv;
     tfv->ttf = tf;
+    tfv->sel_line = -1;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_icon;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = tf->is_ttc?uc_copy(GFileNameTail(tf->filename)):
-			    u_copy(tf->fonts[0]->fontname);
+    if ( tf->is_ttc || tf->fonts[0]->fontname==NULL )
+	title = uc_copy(GFileNameTail(tf->filename));
+    else {
+	title = galloc((u_strlen(tf->fonts[0]->fontname)+4+strlen(GFileNameTail(tf->filename))+1)*sizeof(unichar_t) );
+	u_strcpy(title,tf->fonts[0]->fontname);
+	uc_strcat(title," in ");
+	uc_strcat(title,GFileNameTail(tf->filename));
+    }
+    wattrs.window_title = title;
     wattrs.icon = ttf_icon;
     pos.x = pos.y = 0;
     pos.width = 180;
     pos.height = 100;
     tfv->gw = gw = GDrawCreateTopWindow(NULL,&pos,tfv_e_h,tfv,&wattrs);
-    free((unichar_t *) wattrs.window_title);
+    free(title);
 
     memset(&gd,0,sizeof(gd));
     gd.flags = gg_visible | gg_enabled;
@@ -659,7 +944,14 @@ TtfView *TtfViewCreate(TtfFile *tf) {
     if ( lh>40 ) lh = 40;
     if ( lh<4 ) lh = 4;
     GDrawResize(tfv->gw,pos.width+gd.pos.width,tfv->mbh+lh*tfv->fh);
-
     GDrawSetVisible(gw,true);
+
+    /* Open up the glyph table if it's there */
+    for ( i=0; i<tf->fonts[0]->tbl_cnt; ++i )
+	if ( tf->fonts[0]->tbls[i]->name==CHR('g','l','y','f'))
+    break;
+    if ( tf->font_cnt==1 && i<tf->fonts[0]->tbl_cnt )
+	fontCreateEditor(tf->fonts[0]->tbls[i],tfv);
+
 return( tfv );
 }

@@ -31,8 +31,7 @@
 
 extern int _GScrollBar_Width;
 
-enum byte_types { bt_instr, bt_cnt, bt_byte, bt_wordhi, bt_wordlo };
-static const char *instrs[] = {
+const char *instrs[] = {
     "SVTCA[y-axis]",
     "SVTCA[x-axis]",
     "SPVTCA[y-axis]",
@@ -79,8 +78,8 @@ static const char *instrs[] = {
     "CALL",
     "FDEF",
     "ENDF",
-    "MDAP[no round]",
-    "MDAP[round]",
+    "MDAP[no rnd]",
+    "MDAP[rnd]",
     "IUP[y]",
     "IUP[x]",
     "SHP[rp2]",
@@ -95,8 +94,8 @@ static const char *instrs[] = {
     "MSIRP[set rp0]",
     "ALIGNRP",
     "RTDG",
-    "MIAP[no round]",
-    "MIAP[round]",
+    "MIAP[no rnd]",
+    "MIAP[rnd]",
     "NPUSHB",
     "NPUSHW",
     "WS",
@@ -229,69 +228,70 @@ static const char *instrs[] = {
     "MDRP[black]",
     "MDRP[white]",
     "MDRP03",
-    "MDRP[round, grey]",
-    "MDRP[round, black]",
-    "MDRP[round, white]",
+    "MDRP[rnd, grey]",
+    "MDRP[rnd, black]",
+    "MDRP[rnd, white]",
     "MDRP07",
-    "MDRP[minimum, grey]",
-    "MDRP[minimum, black]",
-    "MDRP[minimum, white]",
+    "MDRP[min, grey]",
+    "MDRP[min, black]",
+    "MDRP[min, white]",
     "MDRP0b",
-    "MDRP[minimum, round, grey]",
-    "MDRP[minimum, round, black]",
-    "MDRP[minimum, round, white]",
+    "MDRP[min, rnd, grey]",
+    "MDRP[min, rnd, black]",
+    "MDRP[min, rnd, white]",
     "MDRP0f",
     "MDRP[rp0, grey]",
     "MDRP[rp0, black]",
     "MDRP[rp0, white]",
     "MDRP13",
-    "MDRP[rp0, round, grey]",
-    "MDRP[rp0, round, black]",
-    "MDRP[rp0, round, white]",
+    "MDRP[rp0, rnd, grey]",
+    "MDRP[rp0, rnd, black]",
+    "MDRP[rp0, rnd, white]",
     "MDRP17",
-    "MDRP[rp0, minimum, grey]",
-    "MDRP[rp0, minimum, black]",
-    "MDRP[rp0, minimum, white]",
+    "MDRP[rp0, min, grey]",
+    "MDRP[rp0, min, black]",
+    "MDRP[rp0, min, white]",
     "MDRP1b",
-    "MDRP[rp0, minimum, round, grey]",
-    "MDRP[rp0, minimum, round, black]",
-    "MDRP[rp0, minimum, round, white]",
+    "MDRP[rp0, min, rnd, grey]",
+    "MDRP[rp0, min, rnd, black]",
+    "MDRP[rp0, min, rnd, white]",
     "MDRP1f",
     "MIRP[grey]",
     "MIRP[black]",
     "MIRP[white]",
     "MIRP03",
-    "MIRP[round, grey]",
-    "MIRP[round, black]",
-    "MIRP[round, white]",
+    "MIRP[rnd, grey]",
+    "MIRP[rnd, black]",
+    "MIRP[rnd, white]",
     "MIRP07",
-    "MIRP[minimum, grey]",
-    "MIRP[minimum, black]",
-    "MIRP[minimum, white]",
+    "MIRP[min, grey]",
+    "MIRP[min, black]",
+    "MIRP[min, white]",
     "MIRP0b",
-    "MIRP[minimum, round, grey]",
-    "MIRP[minimum, round, black]",
-    "MIRP[minimum, round, white]",
+    "MIRP[min, rnd, grey]",
+    "MIRP[min, rnd, black]",
+    "MIRP[min, rnd, white]",
     "MIRP0f",
     "MIRP[rp0, grey]",
     "MIRP[rp0, black]",
     "MIRP[rp0, white]",
     "MIRP13",
-    "MIRP[rp0, round, grey]",
-    "MIRP[rp0, round, black]",
-    "MIRP[rp0, round, white]",
+    "MIRP[rp0, rnd, grey]",
+    "MIRP[rp0, rnd, black]",
+    "MIRP[rp0, rnd, white]",
     "MIRP17",
-    "MIRP[rp0, minimum, grey]",
-    "MIRP[rp0, minimum, black]",
-    "MIRP[rp0, minimum, white]",
+    "MIRP[rp0, min, grey]",
+    "MIRP[rp0, min, black]",
+    "MIRP[rp0, min, white]",
     "MIRP1b",
-    "MIRP[rp0, minimum, round, grey]",
-    "MIRP[rp0, minimum, round, black]",
-    "MIRP[rp0, minimum, round, white]",
+    "MIRP[rp0, min, rnd, grey]",
+    "MIRP[rp0, min, rnd, black]",
+    "MIRP[rp0, min, rnd, white]",
     "MIRP1f"
 };
 
-static unichar_t *instrhelppopup[256];
+unichar_t *instrhelppopup[256];
+
 static void ihaddr(int bottom,int top,char *msg) {
     unichar_t *um = uc_copy(msg);
     while ( bottom<=top )
@@ -302,7 +302,7 @@ static void ihadd(int p,char *msg) {
     ihaddr(p,p,msg);
 }
 
-static void instrhelpsetup(void) {
+void instrhelpsetup(void) {
     if ( instrhelppopup[0]!=NULL )
 return;
     ihadd(0x7f,"Adjust Angle\nObsolete instruction\nPops one value");
@@ -435,35 +435,33 @@ typedef struct instrview /* : tableview */ {
     struct tableviewfuncs *virtuals;
     TtfFont *font;		/* for the encoding currently used */
     struct ttfview *owner;
+    unsigned int destroyed: 1;		/* window has been destroyed */
 /* instrs specials */
-    GGadget *mb, *vsb;
-    int lpos, lheight;
-    int16 as, fh;
-    int16 vheight, vwidth;
     int16 mbh;
-    GFont *gfont;
-    uint8 *bts;
+    GGadget *mb;
+    struct instrdata instrdata;
+    struct instrinfo instrinfo;
 } InstrView;
 
-static void instr_typify(InstrView *iv) {
-    int i, len = iv->table->newlen, cnt, j, lh;
-    uint8 *instrs = iv->table->data;
+void instr_typify(struct instrinfo *instrinfo) {
+    int i, len = instrinfo->instrdata->instr_cnt, cnt, j, lh;
+    uint8 *instrs = instrinfo->instrdata->instrs;
     uint8 *bts;
 
-    if ( iv->bts==NULL )
-	iv->bts = galloc(len);
-    bts = iv->bts;
+    if ( instrinfo->instrdata->bts==NULL )
+	instrinfo->instrdata->bts = galloc(len);
+    bts = instrinfo->instrdata->bts;
     for ( i=lh=0; i<len; ++i ) {
 	bts[i] = bt_instr;
 	++lh;
-	if ( instrs[i]==0x40 ) {
+	if ( instrs[i]==ttf_npushb ) {
 	    /* NPUSHB */
 	    bts[++i] = bt_cnt;
 	    cnt = instrs[i];
 	    for ( j=0 ; j<cnt; ++j)
 		bts[++i] = bt_byte;
 	    lh += 1+cnt;
-	} else if ( instrs[i]==0x41 ) {
+	} else if ( instrs[i]==ttf_npushw ) {
 	    /* NPUSHW */
 	    bts[++i] = bt_cnt; ++lh;
 	    cnt = instrs[i];
@@ -488,7 +486,7 @@ static void instr_typify(InstrView *iv) {
 	    lh += cnt;
 	}
     }
-    iv->lheight = lh;
+    instrinfo->lheight = lh;
 }
 
 #define MID_Revert	2702
@@ -499,13 +497,14 @@ static void instr_typify(InstrView *iv) {
 #define MID_SelAll	2106
 
 static int instr_processdata(TableView *tv) {
-    InstrView *iv = (InstrView *) tv;
+    /*InstrView *iv = (InstrView *) tv;*/
     /* Do changes!!! */
 return( true );
 }
 
 static int instr_close(TableView *tv) {
     if ( instr_processdata(tv)) {
+	tv->destroyed = true;
 	GDrawDestroyWindow(tv->gw);
 return( true );
     }
@@ -517,93 +516,106 @@ static struct tableviewfuncs instrfuncs = { instr_close, instr_processdata };
 static void instr_resize(InstrView *iv,GEvent *event) {
     GRect pos;
     int lh;
+    struct instrinfo *ii = &iv->instrinfo;
 
     /* Multiple of the number of lines we've got */
-    if ( (event->u.resize.size.height-iv->mbh-4)%iv->fh!=0 ) {
-	int lc = (event->u.resize.size.height-iv->mbh+iv->fh/2)/iv->fh;
+    if ( (event->u.resize.size.height-iv->mbh-4)%ii->fh!=0 ) {
+	int lc = (event->u.resize.size.height-iv->mbh+ii->fh/2)/ii->fh;
 	if ( lc<=0 ) lc = 1;
-	GDrawResize(iv->gw, event->u.resize.size.width,lc*iv->fh+iv->mbh+4);
+	GDrawResize(iv->gw, event->u.resize.size.width,lc*ii->fh+iv->mbh+4);
 return;
     }
 
     pos.width = GDrawPointsToPixels(iv->gw,_GScrollBar_Width);
     pos.height = event->u.resize.size.height-iv->mbh;
     pos.x = event->u.resize.size.width-pos.width; pos.y = iv->mbh;
-    GGadgetResize(iv->vsb,pos.width,pos.height);
-    GGadgetMove(iv->vsb,pos.x,pos.y);
+    GGadgetResize(ii->vsb,pos.width,pos.height);
+    GGadgetMove(ii->vsb,pos.x,pos.y);
     pos.width = pos.x; pos.x = 0;
-    GDrawResize(iv->v,pos.width,pos.height);
+    GDrawResize(ii->v,pos.width,pos.height);
 
-    iv->vheight = pos.height; iv->vwidth = pos.width;
-    lh = iv->lheight;
+    ii->vheight = pos.height; ii->vwidth = pos.width;
+    lh = ii->lheight;
 
-    GScrollBarSetBounds(iv->vsb,0,lh,iv->vheight/iv->fh);
-    if ( iv->lpos + iv->vheight/iv->fh > lh )
-	iv->lpos = lh-iv->vheight/iv->fh;
-    GScrollBarSetPos(iv->vsb,iv->lpos);
+    GScrollBarSetBounds(ii->vsb,0,lh,ii->vheight/ii->fh);
+    if ( ii->lpos + ii->vheight/ii->fh > lh )
+	ii->lpos = lh-ii->vheight/ii->fh;
+    if ( ii->lpos<0 ) ii->lpos = 0;
+    GScrollBarSetPos(ii->vsb,ii->lpos);
 }
 
-static void instr_expose(InstrView *iv,GWindow pixmap,GRect *rect) {
+void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
     int low, high;
     int i,x,y;
-    Table *table = iv->table;
     char loc[8], ins[8], val[8]; unichar_t uloc[8], uins[8], uname[30];
     int addr_end, num_end;
     static unichar_t nums[] = { '0', '0', '0', '0', '0', '0', '\0' };
 
-    GDrawSetFont(pixmap,iv->gfont);
-    addr_end = GDrawGetTextWidth(pixmap,nums,6,NULL)+2;
-    num_end = addr_end + GDrawGetTextWidth(pixmap,nums,5,NULL)+4;
+    GDrawSetFont(pixmap,ii->gfont);
+    addr_end = 0;
+    if ( ii->showaddr )
+	addr_end = GDrawGetTextWidth(pixmap,nums,4,NULL)+2;
+    num_end = addr_end;
+    if ( ii->showhex )
+	num_end = addr_end + GDrawGetTextWidth(pixmap,nums,5,NULL)+4;
 
-    low = ( (rect->y-2)/iv->fh ) * iv->fh +2;
-    high = ( (rect->y+rect->height+iv->fh-1-2)/iv->fh ) * iv->fh +2;
+    low = ( (rect->y-2)/ii->fh ) * ii->fh +2;
+    high = ( (rect->y+rect->height+ii->fh-1-2)/ii->fh ) * ii->fh +2;
 
-    GDrawDrawLine(pixmap,addr_end,rect->y,addr_end,rect->y+rect->height,0x000000);
-    GDrawDrawLine(pixmap,num_end,rect->y,num_end,rect->y+rect->height,0x000000);
+    if ( ii->showaddr )
+	GDrawDrawLine(pixmap,addr_end,rect->y,addr_end,rect->y+rect->height,0x000000);
+    if ( ii->showhex )
+	GDrawDrawLine(pixmap,num_end,rect->y,num_end,rect->y+rect->height,0x000000);
 
-    for ( i=0, y=2-iv->lpos*iv->fh; y<low && i<table->newlen; ++i ) {
-	if ( iv->bts[i]==bt_wordhi )
+    for ( i=0, y=2-ii->lpos*ii->fh; y<low && i<ii->instrdata->instr_cnt; ++i ) {
+	if ( ii->instrdata->bts[i]==bt_wordhi )
 	    ++i;
-	y += iv->fh;
+	y += ii->fh;
     }
-    for ( ; y<=high && i<table->newlen; ++i ) {
+    if ( y<=high && ii->instrdata->instr_cnt==0 && i==0 ) {
+	uc_strcpy(uname,"<no instrs>");
+	GDrawDrawText(pixmap,num_end+2,y+ii->as,uname,-1,NULL,0xff0000);
+    } else for ( ; y<=high && i<ii->instrdata->instr_cnt; ++i ) {
 	sprintf( loc, "%d", i ); uc_strcpy(uloc,loc);
-	if ( iv->bts[i]==bt_wordhi ) {
-	    sprintf( ins, " %02x%02x", table->data[i], table->data[i+1]); uc_strcpy(uins,ins);
-	    sprintf( val, " %d", (short) ((table->data[i]<<8) | table->data[i+1]) );
+	if ( ii->instrdata->bts[i]==bt_wordhi ) {
+	    sprintf( ins, " %02x%02x", ii->instrdata->instrs[i], ii->instrdata->instrs[i+1]); uc_strcpy(uins,ins);
+	    sprintf( val, " %d", (short) ((ii->instrdata->instrs[i]<<8) | ii->instrdata->instrs[i+1]) );
 	    uc_strcpy(uname,val);
 	    ++i;
-	} else if ( iv->bts[i]==bt_cnt || iv->bts[i]==bt_byte ) {
-	    sprintf( ins, " %02x", table->data[i] ); uc_strcpy(uins,ins);
-	    sprintf( val, " %d", table->data[i]);
+	} else if ( ii->instrdata->bts[i]==bt_cnt || ii->instrdata->bts[i]==bt_byte ) {
+	    sprintf( ins, " %02x", ii->instrdata->instrs[i] ); uc_strcpy(uins,ins);
+	    sprintf( val, " %d", ii->instrdata->instrs[i]);
 	    uc_strcpy(uname,val);
 	} else {
-	    sprintf( ins, "%02x", table->data[i] ); uc_strcpy(uins,ins);
-	    uc_strcpy(uname, instrs[table->data[i]]);
+	    sprintf( ins, "%02x", ii->instrdata->instrs[i] ); uc_strcpy(uins,ins);
+	    uc_strcpy(uname, instrs[ii->instrdata->instrs[i]]);
 	}
 
-	x = addr_end - 2 - GDrawGetTextWidth(pixmap,uloc,-1,NULL);
-	GDrawDrawText(pixmap,x,y+iv->as,uloc,-1,NULL,0x000000);
+	if ( ii->showaddr ) {
+	    x = addr_end - 2 - GDrawGetTextWidth(pixmap,uloc,-1,NULL);
+	    GDrawDrawText(pixmap,x,y+ii->as,uloc,-1,NULL,0x000000);
+	}
 	x = addr_end + 2;
-	GDrawDrawText(pixmap,x,y+iv->as,uins,-1,NULL,0x000000);
-	GDrawDrawText(pixmap,num_end+2,y+iv->as,uname,-1,NULL,0x000000);
-	y += iv->fh;
+	if ( ii->showhex )
+	    GDrawDrawText(pixmap,x,y+ii->as,uins,-1,NULL,0x000000);
+	GDrawDrawText(pixmap,num_end+2,y+ii->as,uname,-1,NULL,0x000000);
+	y += ii->fh;
     }
 }
 
-static void instr_mousemove(InstrView *iv,int pos) {
+void instr_mousemove(struct instrinfo *ii,int pos) {
     int i,y;
     static unichar_t buffer[120]; const
     unichar_t *msg;
 
-    pos = ((pos-2)/iv->fh) * iv->fh + 2;
+    pos = ((pos-2)/ii->fh) * ii->fh + 2;
 
-    for ( i=0, y=2-iv->lpos*iv->fh; y<pos && i<iv->table->newlen; ++i ) {
-	if ( iv->bts[i]==bt_wordhi )
+    for ( i=0, y=2-ii->lpos*ii->fh; y<pos && i<ii->instrdata->instr_cnt; ++i ) {
+	if ( ii->instrdata->bts[i]==bt_wordhi )
 	    ++i;
-	y += iv->fh;
+	y += ii->fh;
     }
-    switch ( iv->bts[i] ) {
+    switch ( ii->instrdata->bts[i] ) {
       case bt_wordhi: case bt_wordlo:
 	uc_strcpy(buffer,"A short to be pushed on the stack");
 	msg = buffer;
@@ -617,7 +629,7 @@ static void instr_mousemove(InstrView *iv,int pos) {
 	msg = buffer;
       break;
       case bt_instr:
-	if ( (msg = instrhelppopup[iv->table->data[i]])==NULL ) {
+	if ( (msg = instrhelppopup[ii->instrdata->instrs[i]])==NULL ) {
 	    uc_strcpy(buffer,"???");
 	    msg = buffer;
 	}
@@ -627,7 +639,7 @@ static void instr_mousemove(InstrView *iv,int pos) {
 	msg = buffer;
       break;
     }
-    GGadgetPreparePopup(iv->gw,msg);
+    GGadgetPreparePopup(GDrawGetParentWindow(ii->v),msg);
 }
 
 static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -641,15 +653,15 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
-static void instr_scroll(InstrView *iv,struct sbevent *sb) {
-    int newpos = iv->lpos;
+void instr_scroll(struct instrinfo *ii,struct sbevent *sb) {
+    int newpos = ii->lpos;
 
     switch( sb->type ) {
       case et_sb_top:
         newpos = 0;
       break;
       case et_sb_uppage:
-        newpos -= iv->vheight/iv->fh;
+        newpos -= ii->vheight/ii->fh;
       break;
       case et_sb_up:
         --newpos;
@@ -658,39 +670,40 @@ static void instr_scroll(InstrView *iv,struct sbevent *sb) {
         ++newpos;
       break;
       case et_sb_downpage:
-        newpos += iv->vheight/iv->fh;
+        newpos += ii->vheight/ii->fh;
       break;
       case et_sb_bottom:
-        newpos = iv->lheight-iv->vheight/iv->fh;
+        newpos = ii->lheight-ii->vheight/ii->fh;
       break;
       case et_sb_thumb:
       case et_sb_thumbrelease:
         newpos = sb->pos;
       break;
     }
-    if ( newpos>iv->lheight-iv->vheight/iv->fh )
-        newpos = iv->lheight-iv->vheight/iv->fh;
+    if ( newpos>ii->lheight-ii->vheight/ii->fh )
+        newpos = ii->lheight-ii->vheight/ii->fh;
     if ( newpos<0 ) newpos =0;
-    if ( newpos!=iv->lpos ) {
-	int diff = newpos-iv->lpos;
-	iv->lpos = newpos;
-	GScrollBarSetPos(iv->vsb,iv->lpos);
-	GDrawScroll(iv->v,NULL,0,diff*iv->fh);
+    if ( newpos!=ii->lpos ) {
+	int diff = newpos-ii->lpos;
+	ii->lpos = newpos;
+	GScrollBarSetPos(ii->vsb,ii->lpos);
+	GDrawScroll(ii->v,NULL,0,diff*ii->fh);
     }
 }
 
 static void InstrViewFree(InstrView *iv) {
     iv->table->tv = NULL;
-    free(iv->bts);
+    free(iv->instrdata.bts);
     free(iv);
 }
 
 static int iv_v_e_h(GWindow gw, GEvent *event) {
     InstrView *iv = (InstrView *) GDrawGetUserData(gw);
+    struct instrinfo *ii = &iv->instrinfo;
 
     switch ( event->type ) {
       case et_expose:
-	instr_expose(iv,gw,&event->u.expose.rect);
+	instr_expose(ii,gw,&event->u.expose.rect);
       break;
       case et_char:
 	if ( event->u.chr.keysym == GK_Help || event->u.chr.keysym == GK_F1 )
@@ -699,7 +712,7 @@ static int iv_v_e_h(GWindow gw, GEvent *event) {
       case et_mousemove: case et_mousedown: case et_mouseup:
 	GGadgetEndPopup();
 	if ( event->type==et_mousemove )
-	    instr_mousemove(iv,event->u.mouse.y);
+	    instr_mousemove(ii,event->u.mouse.y);
       break;
       case et_timer:
       break;
@@ -725,7 +738,7 @@ static int iv_e_h(GWindow gw, GEvent *event) {
       case et_controlevent:
 	switch ( event->u.control.subtype ) {
 	  case et_scrollbarchange:
-	    instr_scroll(iv,&event->u.control.u.sb);
+	    instr_scroll(&iv->instrinfo,&event->u.control.u.sb);
 	  break;
 	}
       break;
@@ -768,11 +781,11 @@ static GMenuItem fllist[] = {
     { { (unichar_t *) _STR_Close, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, 'Q', ksm_control|ksm_shift, NULL, NULL, IVMenuClose },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Save, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 'S', ksm_control, NULL, NULL, IVMenuSave },
-    { { (unichar_t *) _STR_Saveas, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'a' }, 'S', ksm_control|ksm_shift, NULL, NULL, IVMenuSaveAs },
+    { { (unichar_t *) _STR_SaveAs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'a' }, 'S', ksm_control|ksm_shift, NULL, NULL, IVMenuSaveAs },
     { { (unichar_t *) _STR_Revertfile, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, 'R', ksm_control|ksm_shift, NULL, NULL, IVMenuRevert, MID_Revert },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Prefs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'e' }, '\0', ksm_control, NULL, NULL, MenuPrefs },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+/*    { { (unichar_t *) _STR_Prefs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'e' }, '\0', ksm_control, NULL, NULL, MenuPrefs },*/
+/*    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},*/
     { { (unichar_t *) _STR_Quit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'Q' }, 'Q', ksm_control, NULL, NULL, MenuExit },
     { NULL }
 };
@@ -822,7 +835,10 @@ void instrCreateEditor(Table *tab,TtfView *tfv) {
     tab->tv = (TableView *) iv;
 
     TableFillup(tab);
-    instr_typify(iv);
+    iv->instrdata.instrs = tab->data; iv->instrdata.instr_cnt = tab->newlen;
+    iv->instrinfo.instrdata = &iv->instrdata;
+    iv->instrinfo.showhex = iv->instrinfo.showaddr = true;
+    instr_typify(&iv->instrinfo);
 
     title[0] = (tab->name>>24)&0xff;
     title[1] = (tab->name>>16)&0xff;
@@ -854,28 +870,28 @@ void instrCreateEditor(Table *tab,TtfView *tfv) {
     gd.pos.width = GDrawPointsToPixels(gw,_GScrollBar_Width);
     gd.pos.x = pos.width-gd.pos.width;
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_sb_vert;
-    iv->vsb = sb = GScrollBarCreate(gw,&gd,iv);
+    iv->instrinfo.vsb = sb = GScrollBarCreate(gw,&gd,iv);
 
     wattrs.mask = wam_events|wam_cursor;
     pos.x = 0; pos.y = iv->mbh;
     pos.width = gd.pos.x; pos.height -= iv->mbh;
-    iv->v = GWidgetCreateSubWindow(gw,&pos,iv_v_e_h,iv,&wattrs);
-    GDrawSetVisible(iv->v,true);
+    iv->instrinfo.v = GWidgetCreateSubWindow(gw,&pos,iv_v_e_h,iv,&wattrs);
+    GDrawSetVisible(iv->instrinfo.v,true);
 
     memset(&rq,0,sizeof(rq));
     rq.family_name = monospace;
     rq.point_size = -12;
     rq.weight = 400;
-    iv->gfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
-    GDrawSetFont(iv->v,iv->gfont);
-    GDrawFontMetrics(iv->gfont,&as,&ds,&ld);
-    iv->as = as+1;
-    iv->fh = iv->as+ds;
+    iv->instrinfo.gfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+    GDrawSetFont(iv->instrinfo.v,iv->instrinfo.gfont);
+    GDrawFontMetrics(iv->instrinfo.gfont,&as,&ds,&ld);
+    iv->instrinfo.as = as+1;
+    iv->instrinfo.fh = iv->instrinfo.as+ds;
 
-    lh = iv->lheight;
+    lh = iv->instrinfo.lheight;
     if ( lh>40 ) lh = 40;
     if ( lh<4 ) lh = 4;
-    GDrawResize(iv->gw,pos.width+gd.pos.width,iv->mbh+lh*iv->fh+4);
+    GDrawResize(iv->gw,pos.width+gd.pos.width,iv->mbh+lh*iv->instrinfo.fh+4);
 
     GDrawSetVisible(gw,true);
 }

@@ -168,10 +168,76 @@ return;
 }
     
 void LoadPrefs(void) {
+    char *prefs = getTtfModPrefs();
+    FILE *p;
+    char line[1100];
+    int ri=0;
+    char *pt;
 
     TtfModSetFallback();
     CheckLang();
+
+    if ( prefs==NULL )
+return;
+    if ( (p=fopen(prefs,"r"))==NULL )
+return;
+    while ( fgets(line,sizeof(line),p)!=NULL ) {
+	if ( *line=='#' )
+    continue;
+	pt = strchr(line,':');
+	if ( pt==NULL )
+    continue;
+	for ( ++pt; *pt=='\t'; ++pt );
+	if ( line[strlen(line)-1]=='\n' )
+	    line[strlen(line)-1] = '\0';
+	if ( line[strlen(line)-1]=='\r' )
+	    line[strlen(line)-1] = '\0';
+	if ( strncmp(line,"Recent:",strlen("Recent:"))==0 && ri<RECENT_MAX ) {
+	    RecentFiles[ri++] = copy(pt);
+    continue;
+	}
+    }
+    fclose(p);
 }
 
 void DoPrefs(void) {
+}
+
+void SavePrefs(void) {
+    char *prefs = getTtfModPrefs();
+    FILE *p;
+    int i;
+
+    if ( prefs==NULL )
+return;
+    if ( (p=fopen(prefs,"w"))==NULL )
+return;
+
+    for ( i=0; i<RECENT_MAX && RecentFiles[i]!=NULL; ++i )
+	fprintf( p, "Recent:\t%s\n", RecentFiles[i]);
+
+    fclose(p);
+}
+
+void RecentFilesRemember(char *filename) {
+    int i;
+
+    for ( i=0; i<RECENT_MAX && RecentFiles[i]!=NULL; ++i )
+	if ( strcmp(RecentFiles[i],filename)==0 )
+    break;
+
+    if ( i<RECENT_MAX && RecentFiles[i]!=NULL ) {
+	if ( i!=0 ) {
+	    filename = RecentFiles[i];
+	    RecentFiles[i] = RecentFiles[0];
+	    RecentFiles[0] = filename;
+	}
+    } else {
+	if ( RecentFiles[RECENT_MAX-1]!=NULL )
+	    free( RecentFiles[RECENT_MAX-1]);
+	for ( i=RECENT_MAX-1; i>0; --i )
+	    RecentFiles[i] = RecentFiles[i-1];
+	RecentFiles[0] = copy(filename);
+    }
+    SavePrefs();
 }

@@ -32,6 +32,8 @@ static char str_File[] = "File";
 static unichar_t mnemonic_File[] = 'F';
 static char str_Edit[] = "Edit";
 static unichar_t mnemonic_Edit[] = 'E';
+static char str_View[] = "View";
+static unichar_t mnemonic_View[] = 'V';
 static char str_Window[] = "Window";
 static unichar_t mnemonic_Window[] = 'W';
 static char str_Help[] = "Help";
@@ -40,7 +42,8 @@ static char str_Recent[] = "Recent";
 static unichar_t mnemonic_Recent[] = 't';
 static char str_Revertfile[] = "Revert File";
 static unichar_t mnemonic_Revertfile[] = 'R';
-static char str_Saveas[] = "Save as...";
+static char str_RevertTable[] = "Revert Table";
+static char str_SaveAs[] = "Save as...";
 static unichar_t mnemonic_Saveas[] = 'a';
 static char str_Close[] = "Close";
 static unichar_t mnemonic_Close[] = 'c';
@@ -60,10 +63,63 @@ static char str_Paste[] = "Paste";
 static unichar_t mnemonic_Paste[] = 'P';
 static char str_Clear[] = "Clear";
 static unichar_t mnemonic_Clear[] = 'l';
+static char str_Fit[] = "Fit";
+static unichar_t mnemonic_Fit[] = 'F';
+static char str_Zoomin[] = "Zoom in";
+static unichar_t mnemonic_Zoomin[] = 'i';
+static char str_Zoomout[] = "Zoom out";
+static unichar_t mnemonic_Zoomout[] = 'o';
+static char str_NextChar[] = "Next Char";
+static unichar_t mnemonic_NextChar[] = 'N';
+static char str_PrevChar[] = "Prev Char";
+static unichar_t mnemonic_PrevChar[] = 'P';
+static char str_Goto[] = "Goto";
+static unichar_t mnemonic_Goto[] = 'G';
+static char str_ShowInstrs[] = "Show Instructions";
+static unichar_t mnemonic_ShowInstrs[] = 'I';
+static char str_HideInstrs[] = "Hide Instructions";
+static unichar_t mnemonic_HideInstrs[] = 'I';
+static char str_ShowGloss[] = "Show Gloss";
+static unichar_t mnemonic_ShowGloss[] = 'l';
+static char str_HideGloss[] = "Hide Gloss";
+static unichar_t mnemonic_HideGloss[] = 'l';
+static char str_ShowFore[] = "Show Splines";
+static unichar_t mnemonic_ShowFore[] = 'S';
+static char str_HideFore[] = "Hide Splines";
+static unichar_t mnemonic_HideFore[] = 'S';
+static char str_ShowGrid[] = "Show Grid";
+static unichar_t mnemonic_ShowGrid[] = 'd';
+static char str_HideGrid[] = "Hide Grid";
+static unichar_t mnemonic_HideGrid[] = 'd';
+static char str_ShowGridFit[] = "Show Grid Fit";
+static unichar_t mnemonic_ShowGridFit[] = 'i';
+static char str_HideGridFit[] = "Hide Grid Fit";
+static unichar_t mnemonic_HideGridFit[] = 'i';
+static char str_ShowRaster[] = "Show Raster";
+static unichar_t mnemonic_ShowRaster[] = 'r';
+static char str_HideRaster[] = "Hide Raster";
+static unichar_t mnemonic_HideRaster[] = 'r';
+static char str_GridSize[] = "Grid Pixels per Em...";
+static unichar_t mnemonic_GridSize[] = 'x';
+
 
 static char *str_TtfMod = "TtfMod";
     /* ttfview.c */
 static char *str_OpenTtf = "Open TTF...";
+static char *str_TabMod = "Can't edit modified table"
+static char *str_TabModNotBinary = "This table has been modified in such a way that\nthe binary editor can't edit it until you\nsave the file.\nWould you like to save the file now?";
+static char *str_ReallyRevert = "Really Revert to old version?";
+static char *str_RevertFailed = "Revert Failed!";
+static char *str_FontChanged = "Font Changed";
+static char *str_FontChangedSave = "Font %.100s has changed.\nWould you like to save it?";
+static char *str_FontChangedSavem = "The file containing font %.100s has changed.\nWould you like to save it?";
+static char *str_TablesOpen = "Tables Open";
+static char *str_TablesOpenSave = "There are editor windows open looking at tables in font %.100s\nWould you like them to be parsed for changes and the font saved if it needs to be?";
+static char *str_TablesOpenSavem = "There are editor windows open looking at tables in the file containing font %.100s\nWould you like them to be parsed for changes and the font saved it needs to be?";
+static char *str_TablesOpenProcess = "There are editor windows open looking at tables in this file.\nWould you like the tables parsed before the file is saved?";
+    /* ttffile.c */
+static char *str_RestrictedRightsFont = "This font is marked with an FSType of 2 (Restricted\nLicense). That means it is not editable without the\npermission of the legal owner.\n\nDo you have such permission?";
+static char *str_RestrictedFont = "Restricted Font";
     /* uiutil.c */
 static char *str_Badnumberin = "Bad number in ";
     /* Table names */
@@ -156,6 +212,8 @@ static char *str_ComponentElements = "Component Els:";
 static char mnemonic_ComponentElements = 'l';
 static char *str_ComponentDepth = "CDepth:";
 static char mnemonic_ComponentDepth = 'D';
+static char *str_ChangingGlyphCnt = "Changing Glyph Count";
+static char *str_ReallyChangeGlyphCnt = "Changing the glyph count is rather dangerous.\nDo you really want to do that?";
 
 /* OS/2 */
 static char *str_General = "General";
@@ -726,7 +784,7 @@ static char *str_LocaFormat = "loca Format:";
 static char *str_16bit = "16 bit";
 static char *str_32bit = "32 bit";
 static char *str_GlyfFormat = "glyf Format:";
-    /* metrics headers */
+    /* metrics headers (hhea,vhea) */
 static char *str_Ascent = "Ascent:";
 static char *str_Descent = "Descent:";
 static char *str_AdvanceMax = "Advance Max:";
@@ -741,6 +799,11 @@ static char *str_CaretRun = "Caret Run:";
 static char *str_CaretOffset = "Caret Offset:";
 static char *str_DataFormat = "Data Format:";
 static char *str_MetricsCount = "Metrics Count:";
+static char *str_ChangingMetricsCount = "Changing Metrics Count";
+static char *str_ReallyChangeMetricsCnt = "Changing the long metrics count is rather dangerous.\nDo you really want to do that?";
+    /* metrics data (hmtx,vmtx) */
+static char *str_GrowLongMetrics = "Do you want to exend the metrics table?";
+static char *str_GrowLongMetricsSize = "You are attempting to change the width\nof a glyph whose width is currently set\nby default. Making this change requires\na change in the table format and the\n*hea table.\nIs that what you want?"
     /* post table */
 static char *str_Names = "Names";
 static char *str_Encoding = "Encoding";
@@ -769,6 +832,28 @@ static char *str_BadPSNameChar = "A PostScript name may not include '()[]{}<>%/'
 static char *str_BadPSNameNotNumber = "A PostScript name may not be a number";
 static char *str_BadNumber = "Bad Number";
 static char *str_NumberOutOfRange = "Number out of range\nMust be between %d and %d";
-
+static char *str_BinaryEdit = "Edited with Binary Editor";
+static char *str_BinaryEditSave = "This table has been edited with\nthe binary editor. You must save\nthe font before you can edit it\nhere.";
+    /* cvt table (shorts) */
+static char *str_RetainChanges = "Retain Changes?";
+static char *str_BadNumberCloseAnyway = "Bad Number, Close Anyway?";
+    /* ttfsave */
+static char *str_NoBackup="Couldn't create backup file";
+static char *str_CouldntWriteBackup="Couldnt Write Backup File";
+static char *str_CouldntReopenFile="Couldn't open ttf file";
+static char *str_CantCreate="Can't create file";
+static char *str_CantCreateFile="Can't create file: %.100hs";
+static char *str_SaveFailed="Save Failed!";
+static char *str_SaveFailedOn="Attempt to save %.100hs failed.";
+static char *str_CantRecoverFromSave="Can't recover from failed save.";
+    /* gasp */
+static char *str_Count = "Count:";
+static char *str_GridFit = "GridFit";
+static char *str_AntiAlias = "AntiAlias";
+    /* fontview */
+static char *str_CouldntReadGlyphs = "Couldn't read glyphs";
+    /* charview */
+static char *str_CouldntReadGlyph = "Couldn't read glyph";
+static char *str_CouldntReadGlyphd = "Couldn't read glyph %d";
 
 static int num_buttonsize = 55;

@@ -32,6 +32,7 @@
 #include <string.h>
 #include <gprogress.h>
 #include "ttffont.h"
+#include "conicfont.h"
 #include "nomen.h"
 
 #define CHR(ch1,ch2,ch3,ch4) (((ch1)<<24)|((ch2)<<16)|((ch3)<<8)|(ch4))

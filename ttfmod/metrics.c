@@ -41,16 +41,21 @@ typedef struct metricmview /* : tableview */ {
     struct tableviewfuncs *virtuals;
     TtfFont *font;		/* for the encoding currently used */
     struct ttfview *owner;
+    unsigned int destroyed: 1;		/* window has been destroyed */
 /* instrs specials */
-    GGadget *mb, *vsb;
+    GGadget *mb, *vsb, *tf;
     int lpos, lheight;
     int16 as, fh;
     int16 vheight, vwidth;
     int16 mbh, sbw;
     GFont *gfont, *ifont;
-    int chrlen, addrend;
-    int longmetricscnt;
+    int chrlen, addrend, widthend;
+    int longmetricscnt, oldlongmetricscnt;
     int lastwidth;
+    int active, islb;
+    unsigned int changed: 1;
+    uint8 *edits;
+    int elen;
 } MetricsView;
 
 #define MID_Revert	2702
@@ -60,18 +65,149 @@ typedef struct metricmview /* : tableview */ {
 #define MID_Paste	2103
 #define MID_SelAll	2106
 
-static int metrics_processdata(TableView *tv) {
-    MetricsView *mv = (MetricsView *) tv;
-    /* Do changes!!! */
+static void GrowLongMetrics(MetricsView *mv,int newlongcnt) {
+    TtfFont *font = mv->font;
+    Table *table = mv->table;
+    int i, tag, newlen, gc, oldlen;
+    uint8 *data, *olddata;
+
+    if ( (table->name>>24)=='v' )
+	tag = CHR('v','m','t','x');
+    else
+	tag = CHR('h','m','t','x');
+    for ( i=0; i<font->tbl_cnt; ++i )
+	if ( font->tbls[i]->name==tag )
+    break;
+    _heaChangeLongMetrics(font->tbls[i],newlongcnt);
+
+    oldlen = mv->edits ? mv->elen : table->newlen;
+    olddata = mv->edits!=NULL?mv->edits:table->data;
+    gc = (oldlen-4*mv->longmetricscnt)/2 + mv->longmetricscnt;
+    newlen = 4*newlongcnt + 2*(gc-newlongcnt);
+    data = galloc(newlen);
+    memcpy(data,olddata,4*mv->longmetricscnt);
+    for ( i=0; i<newlongcnt; ++i ) {
+	ptputushort(data+4*mv->longmetricscnt+4*i,mv->lastwidth);
+	ptputushort(data+4*mv->longmetricscnt+4*i+2,
+		ptgetushort(olddata+4*mv->longmetricscnt+2*i));
+    }
+    for ( i=0; i<gc-newlongcnt; ++i ) {
+	ptputushort(data+4*newlongcnt+2*i,
+		ptgetushort(olddata+4*mv->longmetricscnt+2*(i+newlongcnt-mv->longmetricscnt)));
+    }
+    free(mv->edits);
+    mv->edits = data;
+    mv->elen = newlen;
+    mv->longmetricscnt = newlongcnt;
+}
+
+static int mfinishup(MetricsView *mv,int showerr) {
+    const unichar_t *ret = _GGadgetGetTitle(mv->tf);
+    unichar_t *end;
+    int val, oldval;
+    Table *table = mv->table;
+    static int buts[] = { _STR_Yes, _STR_Cancel, 0 };
+    uint8 *data = mv->edits ? mv->edits : table->data;
+
+    if ( mv->active==-1 )
+return( true );
+
+    val = u_strtol(ret,&end,10);
+    if ( *ret=='\0' || *end!='\0' || val<-32768 || val>32767 ) {
+	if ( showerr )
+	    GWidgetErrorR(_STR_BadNumber,_STR_BadNumber);
+return( false );
+    }
+    if ( mv->islb ) {
+	if ( mv->active<mv->longmetricscnt )
+	    oldval = (short) ptgetushort(data+4*mv->active+2);
+	else
+	    oldval = (short) ptgetushort(data+4*mv->longmetricscnt+2*(mv->active-mv->longmetricscnt));
+    } else {
+	if ( mv->active<mv->longmetricscnt )
+	    oldval = (short) ptgetushort(data+4*mv->active);
+	else
+	    oldval = mv->lastwidth;
+    }
+    if ( val != oldval ) {
+	if ( !mv->islb && mv->active>=mv->longmetricscnt ) {
+	    if ( GWidgetAskR(_STR_GrowLongMetrics,buts,0,1,_STR_GrowLongMetricsSize)==1 ) {
+		mv->active = -1;
+		GGadgetMove(mv->tf,mv->addrend,-100);
+		GDrawRequestExpose(mv->v,NULL,false);
+return( -1 );
+	    }
+	    GrowLongMetrics(mv,mv->active);
+	}
+	if ( mv->edits==NULL ) {
+	    mv->elen = table->len;
+	    mv->edits = galloc(mv->elen);
+	    memcpy(mv->edits,table->data,mv->elen);
+	}
+	if ( !mv->islb )
+	    ptputushort(mv->edits+4*mv->active,val);
+	else if ( mv->active<mv->longmetricscnt )
+	    ptputushort(mv->edits+4*mv->active+2,val);
+	else
+	    ptputushort(mv->edits+4*mv->longmetricscnt+2*(mv->active-mv->longmetricscnt),val);
+	mv->changed = true;
+    }
+    mv->active = -1;
+    GGadgetMove(mv->tf,mv->addrend,-100);
 return( true );
 }
 
-static int metrics_close(TableView *tv) {
-    if ( metrics_processdata(tv)) {
-	GDrawDestroyWindow(tv->gw);
-return( true );
+static int metrics_processdata(TableView *tv) {
+    MetricsView *mv = (MetricsView *) tv;
+    int ret = mfinishup(mv,true);
+
+    if ( ret>0 && !tv->table->changed ) {
+	free(tv->table->data);
+	tv->table->data = mv->edits;
+	tv->table->newlen = mv->elen;
+	tv->table->changed = true;
+	tv->table->container->changed = true;
+	GDrawRequestExpose(tv->owner->v,NULL,false);
     }
+return( ret>0 );
+}
+
+static int metrics_close(TableView *tv) {
+    static int yesnocancel[] = { _STR_Yes, _STR_No, _STR_Cancel, 0 };
+    static int closecancel[] = { _STR_Close, _STR_Cancel, 0 };
+    MetricsView *mv = (MetricsView *) tv;
+    int ret = mfinishup((MetricsView *) mv,false);
+    int copyedits = true;
+
+    if ( ret>0 ) {
+	if ( mv->changed ) {
+	    ret = GWidgetAskR(_STR_RetainChanges,yesnocancel,0,2,_STR_RetainChanges);
+	    if ( ret==2 )
 return( false );
+	    if ( ret==1 )
+		copyedits = false;
+	}
+    } else if ( ret<0 )
+return( false );
+    else {
+	ret = GWidgetAskR(_STR_BadNumber,closecancel,0,1,_STR_BadNumberCloseAnyway);
+	if ( ret==1 )
+return( false );
+    }
+    if ( copyedits && mv->edits ) {
+	free(mv->table->data);
+	mv->table->data = mv->edits;
+	mv->table->newlen = mv->elen;
+	if ( !mv->table->changed ) {
+	    mv->table->changed = true;
+	    mv->table->td_changed = true;
+	    mv->table->container->changed = true;
+	    GDrawRequestExpose(mv->owner->v,NULL,false);
+	}
+    }
+    mv->destroyed = true;
+    GDrawDestroyWindow(mv->gw);
+return( true );
 }
 
 static struct tableviewfuncs instrfuncs = { metrics_close, metrics_processdata };
@@ -102,10 +238,25 @@ return;
     mv->lheight = mv->longmetricscnt + (mv->table->newlen-mv->longmetricscnt*4)/2;
 
     GScrollBarSetBounds(mv->vsb,0,mv->lheight,mv->vheight/mv->fh);
-    if ( mv->lpos + mv->vheight/mv->fh > mv->lheight )
+    if ( mv->lpos + mv->vheight/mv->fh > mv->lheight ) {
 	mv->lpos = mv->lheight-mv->vheight/mv->fh;
-    if ( mv->lpos<0 ) mv->lpos = 0;
+	if ( mv->lpos<0 ) mv->lpos = 0;
+	if ( mv->active!=-1 ) {
+	    GRect tp;
+	    GGadgetGetSize(mv->tf,&tp);
+	    GGadgetMove(mv->tf,tp.x,(mv->active-mv->lpos)*mv->fh);
+	}
+    }
     GScrollBarSetPos(mv->vsb,mv->lpos);
+
+    if ( mv->islb ) {
+	/* The tf's width isn't going to change if !mv->islb */
+	int width = pos.width-mv->addrend;
+	if ( width < 5 ) width = 5;
+	GGadgetResize(mv->tf,width,mv->fh);
+    }
+    GDrawRequestExpose(mv->gw,NULL,false);
+    GDrawRequestExpose(mv->v,NULL,false);
 }
 
 static void metrics_expose(MetricsView *mv,GWindow pixmap,GRect *rect) {
@@ -113,16 +264,15 @@ static void metrics_expose(MetricsView *mv,GWindow pixmap,GRect *rect) {
     int x,y;
     Table *table = mv->table;
     char cval[8], caddr[8]; unichar_t uval[8], uaddr[12];
-    int index, bearing_x;
+    int index;
     int col;
+    uint8 *data = mv->edits ? mv->edits : table->data;
 
     GDrawSetFont(pixmap,mv->gfont);
 
     low = ( (rect->y-EDGE_SPACER)/mv->fh ) * mv->fh +EDGE_SPACER;
     high = ( (rect->y+rect->height+mv->fh-1-EDGE_SPACER)/mv->fh ) * mv->fh +EDGE_SPACER;
     if ( high>mv->vheight-EDGE_SPACER ) high = mv->vheight-EDGE_SPACER;
-
-    bearing_x = mv->addrend + 6*mv->chrlen+UNIT_SPACER;
 
     GDrawDrawLine(pixmap,mv->addrend-ADDR_SPACER/2,rect->y,mv->addrend-ADDR_SPACER/2,rect->y+rect->height,0x000000);
 
@@ -147,22 +297,22 @@ static void metrics_expose(MetricsView *mv,GWindow pixmap,GRect *rect) {
 	GDrawDrawText(pixmap,x,y+mv->as,uaddr,-1,NULL,col);
 
 	if ( index<mv->longmetricscnt ) {
-	    sprintf( cval, "%d", (short) tgetushort(table,4*index) );
+	    sprintf( cval, "%d", (short) ptgetushort(data+4*index) );
 	    uc_strcpy(uval,cval);
 	    GDrawDrawText(pixmap,mv->addrend,y+mv->as,uval,-1,NULL,0x000000);
-	    sprintf( cval, "%d", (short) tgetushort(table,4*index+2) );
+	    sprintf( cval, "%d", (short) ptgetushort(data+4*index+2) );
 	    uc_strcpy(uval,cval);
-	    GDrawDrawText(pixmap,bearing_x,y+mv->as,uval,-1,NULL,0x000000);
+	    GDrawDrawText(pixmap,mv->widthend,y+mv->as,uval,-1,NULL,0x000000);
 	} else {
 	    GDrawSetFont(pixmap,mv->ifont);
 	    sprintf( cval, "%d", mv->lastwidth );
 	    uc_strcpy(uval,cval);
 	    GDrawDrawText(pixmap,mv->addrend,y+mv->as,uval,-1,NULL,0x000000);
 	    GDrawSetFont(pixmap,mv->gfont);
-	    sprintf( cval, "%d", (short) tgetushort(table,
+	    sprintf( cval, "%d", (short) ptgetushort(data+
 		    4*mv->longmetricscnt+2*(index-mv->longmetricscnt)) );
 	    uc_strcpy(uval,cval);
-	    GDrawDrawText(pixmap,bearing_x,y+mv->as,uval,-1,NULL,0x000000);
+	    GDrawDrawText(pixmap,mv->widthend,y+mv->as,uval,-1,NULL,0x000000);
 	}
 	y += mv->fh;
     }
@@ -241,6 +391,11 @@ static void metrics_scroll(MetricsView *mv,struct sbevent *sb) {
 	int diff = newpos-mv->lpos;
 	mv->lpos = newpos;
 	GScrollBarSetPos(mv->vsb,mv->lpos);
+	if ( mv->active!=-1 ) {
+	    GRect pos;
+	    GGadgetGetSize(mv->tf,&pos);
+	    GGadgetMove(mv->tf,pos.x,pos.y+diff*mv->fh);
+	}
 	GDrawScroll(mv->v,NULL,0,diff*mv->fh);
     }
 }
@@ -252,6 +407,7 @@ static void MetricsViewFree(MetricsView *mv) {
 
 static int mv_v_e_h(GWindow gw, GEvent *event) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    int val;
 
     switch ( event->type ) {
       case et_expose:
@@ -265,6 +421,39 @@ static int mv_v_e_h(GWindow gw, GEvent *event) {
 	GGadgetEndPopup();
 	if ( event->type==et_mousemove )
 	    metrics_mousemove(mv,event->u.mouse.y);
+	else if ( event->type == et_mousedown ) {
+	    int l = (event->u.mouse.y-EDGE_SPACER)/mv->fh + mv->lpos;
+	    unichar_t ubuf[20]; char buf[20];
+	    uint8 *data = mv->edits ? mv->edits : mv->table->data;
+	    if ( mfinishup(mv,true)>0 && event->u.mouse.x>mv->addrend &&
+		    l<mv->font->glyph_cnt && (l!=mv->active ||
+		     (mv->islb && event->u.mouse.x<mv->widthend) ||
+		     (!mv->islb && event->u.mouse.x>=mv->widthend) )) {
+		mv->active = l;
+		mv->islb = event->u.mouse.x>=mv->widthend;
+		if ( mv->islb ) {
+		    GGadgetMove(mv->tf, mv->widthend,
+				    (l-mv->lpos)*mv->fh+EDGE_SPACER+1);
+		    GGadgetResize(mv->tf, mv->vwidth-mv->widthend,mv->fh);
+		    if ( l<mv->longmetricscnt )
+			val = (short) ptgetushort(data+4*l+2);
+		    else
+			val = (short) ptgetushort(data+4*mv->longmetricscnt+2*(l-mv->longmetricscnt));
+		} else {
+		    GGadgetMove(mv->tf, mv->addrend,
+				    (l-mv->lpos)*mv->fh+EDGE_SPACER+1);
+		    GGadgetResize(mv->tf, mv->widthend-mv->addrend-UNIT_SPACER,mv->fh);
+		    if ( l<mv->longmetricscnt )
+			val = (short) ptgetushort(data+4*l);
+		    else
+			val = mv->lastwidth;
+		}
+		sprintf( buf, "%d", val );
+		uc_strcpy(ubuf,buf);
+		GGadgetSetTitle(mv->tf,ubuf);
+		GDrawPostEvent(event);	/* And we hope the tf catches it this time */
+	    }
+	}
       break;
       case et_timer:
       break;
@@ -287,8 +476,7 @@ static int mv_e_h(GWindow gw, GEvent *event) {
 	x = mv->addrend - ADDR_SPACER - GDrawGetTextWidth(gw,addr,-1,NULL);
 	GDrawDrawText(gw,x,mv->mbh+mv->as,addr,-1,NULL,0x000000);
 	GDrawDrawText(gw,mv->addrend,mv->mbh+mv->as,width,-1,NULL,0x000000);
-	x = mv->addrend + 6*mv->chrlen + UNIT_SPACER;
-	GDrawDrawText(gw,x,mv->mbh+mv->as,bearing,-1,NULL,0x000000);
+	GDrawDrawText(gw,mv->widthend,mv->mbh+mv->as,bearing,-1,NULL,0x000000);
       break;
       case et_resize:
 	metrics_resize(mv,event);
@@ -343,11 +531,11 @@ static GMenuItem fllist[] = {
     { { (unichar_t *) _STR_Close, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, 'Q', ksm_control|ksm_shift, NULL, NULL, IVMenuClose },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Save, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 'S', ksm_control, NULL, NULL, IVMenuSave },
-    { { (unichar_t *) _STR_Saveas, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'a' }, 'S', ksm_control|ksm_shift, NULL, NULL, IVMenuSaveAs },
+    { { (unichar_t *) _STR_SaveAs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'a' }, 'S', ksm_control|ksm_shift, NULL, NULL, IVMenuSaveAs },
     { { (unichar_t *) _STR_Revertfile, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, 'R', ksm_control|ksm_shift, NULL, NULL, IVMenuRevert, MID_Revert },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Prefs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'e' }, '\0', ksm_control, NULL, NULL, MenuPrefs },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+/*    { { (unichar_t *) _STR_Prefs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'e' }, '\0', ksm_control, NULL, NULL, MenuPrefs },*/
+/*    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},*/
     { { (unichar_t *) _STR_Quit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'Q' }, 'Q', ksm_control, NULL, NULL, MenuExit },
     { NULL }
 };
@@ -414,6 +602,8 @@ void metricsCreateEditor(Table *tab,TtfView *tfv) {
     GGadget *sb;
     static unichar_t num[] = { '0',  '\0' };
     int numlen;
+    static GBox tfbox;
+    GTextInfo lab;
 
     mv->table = tab;
     mv->virtuals = &instrfuncs;
@@ -476,10 +666,24 @@ void metricsCreateEditor(Table *tab,TtfView *tfv) {
     GDrawSetFont(mv->v,mv->gfont);
 
     mv->longmetricscnt = GetMetricsCnt(mv->font,tab);
+    mv->oldlongmetricscnt = mv->longmetricscnt;
     mv->lastwidth = tgetushort(tab,(mv->longmetricscnt-1)*4);
 
     mv->chrlen = numlen = GDrawGetTextWidth(mv->v,num,1,NULL);
     mv->addrend = 8*numlen + ADDR_SPACER + EDGE_SPACER;
+    mv->widthend = mv->addrend + 6*mv->chrlen + UNIT_SPACER;
+
+    tfbox.main_background = tfbox.main_foreground = COLOR_DEFAULT;
+    gd.pos.y = -100; gd.pos.height = mv->fh;
+    gd.pos.x = mv->addrend;
+    memset(&lab,'\0',sizeof(lab));
+    lab.text = num+1;
+    lab.font = mv->gfont;
+    gd.label = &lab;
+    gd.box = &tfbox;
+    gd.flags = gg_visible|gg_enabled|gg_sb_vert|gg_dontcopybox;
+    mv->tf = GTextFieldCreate(mv->v,&gd,NULL);
+    mv->active = -1; mv->islb=0;
 
     lh = mv->lheight = mv->longmetricscnt + (tab->newlen-mv->longmetricscnt*4)/2;
     if ( lh>39 ) lh = 39;

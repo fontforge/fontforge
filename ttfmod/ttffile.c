@@ -28,6 +28,8 @@
 #include <ustring.h>
 #include <chardata.h>
 #include <charset.h>
+#include <gfile.h>
+#include <gwidget.h>
 #include <math.h>
 
 int getushort(FILE *ttf) {
@@ -159,6 +161,23 @@ real ptgetvfixed(uint8 *data) {
 return( (real) (val>>16) + (mant/10000.0) );
 }
 
+void putushort(FILE *file,uint16 val) {
+    putc((val>>8),file);
+    putc((val&0xff),file);
+}
+
+void putshort(FILE *file,uint16 val) {
+    putc((val>>8),file);
+    putc((val&0xff),file);
+}
+
+void putlong(FILE *file,uint32 val) {
+    putc((val>>24)&0xff,file);
+    putc((val>>16)&0xff,file);
+    putc((val>>8)&0xff,file);
+    putc((val&0xff),file);
+}
+
 void ptputushort(uint8 *data, uint16 val) {
     data[0] = (val>>8);
     data[1] = val&0xff;
@@ -221,6 +240,28 @@ return( 0 );
     val = getushort(ttf);
     fseek(ttf,pos,SEEK_SET);
 return(val);
+}
+
+static int checkfstype(FILE *ttf,TtfFont *tf) {
+    long pos = ftell(ttf);
+    int i, val;
+
+    for ( i=0; i<tf->tbl_cnt; ++i )
+	if ( tf->tbls[i]->name == CHR('O','S','/','2'))
+    break;
+    if ( i==tf->tbl_cnt )
+return( true );
+
+    fseek(ttf,tf->tbls[i]->start+8,SEEK_SET);
+    val = getushort(ttf);
+    fseek(ttf,pos,SEEK_SET);
+    if ( (val&0xff)==0x0002 ) {
+	static int buts[] = { _STR_Yes, _STR_No, 0 };
+	if ( GWidgetAskR(_STR_RestrictedFont,buts,1,1,_STR_RestrictedRightsFont)==1 ) {
+return( false );
+	}
+    }
+return(true);
 }
 
 static unichar_t *TTFGetFontName(FILE *ttf,TtfFont *tf) {
@@ -290,7 +331,7 @@ static void write_enctabledata(FILE *tottf,Table *cmap) {
     /* !!!! */
 }
 
-static void readttfencodings(FILE *ttf,struct ttffont *font) {
+void readttfencodings(FILE *ttf,struct ttffont *font) {
     int i,j;
     int nencs, version;
     int len;
@@ -311,6 +352,7 @@ static void readttfencodings(FILE *ttf,struct ttffont *font) {
 return;
     tab = font->tbls[i];
 
+  if ( tab->table_data == NULL ) {
 /* Find out what encodings are defined and where they live */
     fseek(ttf,tab->start,SEEK_SET);
     version = getushort(ttf);
@@ -542,6 +584,7 @@ return;
 	    }
 	}
     }
+  }
 
 /* Find the best table we can */
     for ( enc = tab->table_data; enc!=NULL; enc=enc->next ) {
@@ -594,6 +637,8 @@ return( table );
 
     table = gcalloc(1,sizeof(Table));
     table->name = name;
+    if ( name==CHR('g','l','y','f') || name==CHR('l','o','c','a') )
+	table->special = true;
     table->oldchecksum = checksum;
     table->start = offset;
     table->len = table->newlen = length;
@@ -615,6 +660,8 @@ static TtfFont *_readttfheader(FILE *ttf,TtfFile *f) {
     for ( i=0; i<tf->tbl_cnt; ++i )
 	tf->tbls[i] = readtablehead(ttf,f);
     tf->fontname = TTFGetFontName(ttf,tf);
+    if ( tf->fontname==NULL )
+	fprintf(stderr, "This font has no name. That will cause problems\n" );
     tf->glyph_cnt = TTFGetGlyphCnt(ttf,tf);
     readttfencodings(ttf,tf);
 return( tf );
@@ -628,6 +675,9 @@ static TtfFile *readttfheader(FILE *ttf,char *filename) {
     f->font_cnt = 1;
     f->fonts = gcalloc(1,sizeof(TtfFont *));
     f->fonts[0] = _readttfheader(ttf,f);
+    if ( !checkfstype(ttf,f->fonts[0]))
+return( NULL );
+
 return( f );
 }
 
@@ -650,15 +700,21 @@ static TtfFile *readttcfheader(FILE *ttf,char *filename) {
 	f->fonts[i] = _readttfheader(ttf,f);
     }
     free(offsets);
+    if ( !checkfstype(ttf,f->fonts[0]))
+return( NULL );
+
 return( f );
 }
 
 TtfFile *ReadTtfFont(char *filename) {
     FILE *ttf = fopen(filename,"r");
     int32 version;
+    char absolute[1025];
 
     if ( ttf==NULL )
 return( NULL );
+    if ( *filename!='/' )
+	filename = GFileGetAbsoluteName(filename,absolute,sizeof(absolute));
     version=getlong(ttf);
     if ( version==CHR('t','t','c','f'))
 return( readttcfheader(ttf,filename));
@@ -669,4 +725,56 @@ return( readttfheader(ttf,filename));
     /* We leave the file open for further reads, unless it's not a ttf file */
     fclose(ttf);
 return( NULL );
+}
+
+void TTFFileFreeData(TtfFile *ttf) {
+    int i,j;
+    TtfFont *font;
+    Table *tab;
+
+    for ( i=0; i<ttf->font_cnt; ++i ) {
+	font = ttf->fonts[i];
+	for ( j=0; j<font->tbl_cnt; ++j ) {
+	    tab = font->tbls[j];
+	    if ( tab->table_data ) {
+		(tab->free_tabledata)( tab->table_data );
+		tab->table_data = NULL;
+	    }
+	    if ( tab->data ) {
+		free( tab->data );
+		tab->data = NULL;
+	    }
+	    tab->changed = tab->td_changed = false;
+	}
+    }
+    ttf->changed = ttf->gcchanged = false;
+}
+
+void TTFFileFree(TtfFile *ttf) {
+    int i,j,cnt;
+    Table **tabs;
+    TtfFont *font;
+
+    TTFFileFreeData(ttf);
+
+    for ( i=cnt=0; i<ttf->font_cnt; ++i )
+	cnt += ttf->fonts[i]->tbl_cnt;
+    tabs = galloc((cnt+1)*sizeof(Table *));
+    for ( i=cnt=0; i<ttf->font_cnt; ++i ) {
+	font = ttf->fonts[i];
+	for ( j=0; j<font->tbl_cnt; ++j ) {
+	    if ( !font->tbls[j]->freeing ) {
+		font->tbls[j]->freeing = true;
+		tabs[cnt++] = font->tbls[j];
+	    }
+	}
+	free(font->tbls);
+	free(font);
+    }
+    for ( i=0; i<cnt; ++i )
+	free(tabs[i]);
+    free(tabs);
+
+    free(ttf->fonts);
+    free(ttf);
 }

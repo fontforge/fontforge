@@ -28,7 +28,9 @@
 #define _TTFVIEW_H
 
 #include "ttffont.h"
-#include "ggadget.h"
+#include "conicfont.h"
+#include <ggadget.h>
+#include <gwidget.h>
 
 struct tableviewfuncs {
     int (*closeme)(struct tableview *);		/* 1 return => closed, 0 => cancelled */
@@ -42,6 +44,7 @@ typedef struct tableview {
     struct tableviewfuncs *virtuals;
     TtfFont *font;		/* for the encoding currently used */
     struct ttfview *owner;
+    unsigned int destroyed: 1;		/* window has been destroyed */
 } TableView;
 
 typedef struct ttfview {
@@ -54,9 +57,96 @@ typedef struct ttfview {
     GFont *font, *bold;
     int16 as, fh;
     int16 selectedfont;
+    int16 sel_line;
+    Table *sel_tab;
     struct ttfview *next;
     unsigned int pressed: 1;
 } TtfView;
+
+struct freetype_raster {
+    int16 rows, cols;
+    int16 as, lb;
+    int16 bytes_per_row;
+    int16 num_greys;
+    uint8 *bitmap;
+};
+
+typedef struct fontview /* : tableview */ {
+    Table *table;		/* Glyph table */
+    GWindow gw, v;
+    struct tableviewfuncs *virtuals;
+    TtfFont *font;		/* for the encoding currently used */
+    struct ttfview *owner;
+    unsigned int destroyed: 1;		/* window has been destroyed */
+/* fontview specials */
+    GGadget *mb, *vsb;
+    int lpos, rows, cols, boxh;
+    int16 as, fh, ifh, ias;
+    int16 vheight, vwidth;
+    int16 mbh, sbw;
+    GFont *gfont, *ifont;
+    struct conicfont *cf;
+    int info_glyph;
+#if TT_RASTERIZE_FONTVIEW
+    struct freetype_raster **rasters;
+    void *freetype_face;
+#endif
+} FontView;
+
+struct charshows {
+    unsigned int instrpane: 1;		/* Show the character's instructions */
+    unsigned int glosspane: 1;		/* Show our gloss on instructions */
+    unsigned int fore: 1;		/* Show the character's splines */
+    unsigned int grid: 1;		/* Show grid lines */
+#if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+    unsigned int gridspline: 1;		/* Show gridfit splines */
+    unsigned int raster: 1;		/* Show a bitmap for this grid */
+#endif
+    uint16 ppem;			/* for the grid/gridfitting */
+};
+
+enum byte_types { bt_instr, bt_cnt, bt_byte, bt_wordhi, bt_wordlo };
+struct instrinfo {
+    GWindow v;
+    GGadget *vsb;
+    int16 sbw;
+    int16 vheight, vwidth;
+    int16 lheight,lpos;
+    int16 as, fh;
+    struct instrdata *instrdata;
+    GFont *gfont;
+    unsigned int changed: 1;
+    unsigned int showaddr: 1;
+    unsigned int showhex: 1;
+};
+
+typedef struct charview {
+    ConicChar *cc;
+    GWindow gw, v, glossv;
+    struct charview *next;
+    GGadget *mb, *gvsb, *vsb, *hsb;
+    int xoff, yoff, gvpos;
+    int16 as, fh, sas, sfh, numlen, infoh;
+    int16 vheight, vwidth, gvwidth;
+    int16 mbh, sbw;
+    GFont *gfont, *sfont;
+    real scale;
+    GPoint mouse;			/* Current mouse point */
+    BasePoint info;			/* Expressed in char coordinate system */
+    unsigned int destroyed: 1;		/* window has been destroyed */
+    struct charshows show;
+    struct instrinfo instrinfo;
+#if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+    ConicPointList *gridfit;
+    struct freetype_raster *raster;
+    real gridwidth;
+#endif
+} CharView;
+
+typedef struct drect {
+    real x, y;
+    real width, height;
+} DRect;
 
 extern void DelayEvent(void (*func)(void *), void *data);
 extern TtfView *ViewTtfFont(char *filename);
@@ -72,12 +162,17 @@ int _TFVMenuSave(TtfView *tfv);
 int _TFVMenuRevert(TtfView *tfv);
 extern void TtfModSetFallback(void);
 extern void LoadPrefs(void);
+extern void SavePrefs(void);
 extern void DoPrefs(void);
+extern void RecentFilesRemember(char *filename);
 extern unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfile,
 	const unichar_t *initial_filter, unichar_t **mimetypes,int mult,int newok);
 void WindowMenuBuild(GWindow base,struct gmenuitem *mi,GEvent *e);
 int RecentFilesAny(void);
 void MenuRecentBuild(GWindow base,struct gmenuitem *mi,GEvent *e);
+
+void _heaChangeLongMetrics(Table *_hea,int newlongcnt);
+void headViewUpdateModifiedCheck(Table *tab);
 
 void headCreateEditor(Table *tab,TtfView *tfv);
 void maxpCreateEditor(Table *tab,TtfView *tfv);
@@ -88,4 +183,25 @@ void instrCreateEditor(Table *tab,TtfView *tfv);
 void binaryCreateEditor(Table *tab,TtfView *tfv);
 void shortCreateEditor(Table *tab,TtfView *tfv);
 void metricsCreateEditor(Table *tab,TtfView *tfv);
+void gaspCreateEditor(Table *tab,TtfView *tfv);
+void fontCreateEditor(Table *tab,TtfView *tfv);		/* glyph, loca */
+
+int CVClose(CharView *cv);
+void charCreateEditor(ConicFont *cf,int glyph);
+
+void instr_scroll(struct instrinfo *ii,struct sbevent *sb);
+void instr_mousemove(struct instrinfo *ii,int pos);
+void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect);
+void instr_typify(struct instrinfo *instrinfo);
+void instrhelpsetup(void);
+
+#if TT_RASTERIZE_FONTVIEW || TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+/* Interface routines to FreeType */
+struct freetype_raster *FreeType_GetRaster(FontView *fv,int index);
+void FreeType_ShowRaster(GWindow pixmap,int x,int y,
+			struct freetype_raster *raster);
+void FreeType_FreeRaster(struct freetype_raster *);
+void FreeType_GridFitChar(CharView *cv);
+#endif
+
 #endif

@@ -70,6 +70,8 @@ int GetHexR(GWindow gw,int cid,int namer,int *err) {
     int val;
 
     txt = _GGadgetGetTitle(GWidgetGetControl(gw,cid));
+    if ( *txt=='U' && txt[1]=='+' )
+	txt += 2;
     val = u_strtoul(txt,&end,16);
     if ( *end!='\0' ) {
 	ProtestR(namer);

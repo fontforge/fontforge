@@ -40,14 +40,18 @@ typedef struct shortview /* : tableview */ {
     struct tableviewfuncs *virtuals;
     TtfFont *font;		/* for the encoding currently used */
     struct ttfview *owner;
-/* instrs specials */
-    GGadget *mb, *vsb;
+    unsigned int destroyed: 1;		/* window has been destroyed */
+/* shorts specials */
+    GGadget *mb, *vsb, *tf;
     int lpos, lheight;
     int16 as, fh;
     int16 vheight, vwidth;
     int16 mbh, sbw;
     GFont *gfont;
     int16 chrlen, addrend, hexend;
+    int16 active;
+    unsigned int changed: 1;
+    int16 *edits;
 } ShortView;
 
 #define MID_Revert	2702
@@ -57,25 +61,89 @@ typedef struct shortview /* : tableview */ {
 #define MID_Paste	2103
 #define MID_SelAll	2106
 
+static int sfinishup(ShortView *sv,int showerr) {
+    const unichar_t *ret = _GGadgetGetTitle(sv->tf);
+    unichar_t *end;
+    int val, oldval, i;
+    Table *table = sv->table;
+
+    if ( sv->active==-1 )
+return( true );
+
+    val = u_strtol(ret,&end,10);
+    if ( *ret=='\0' || *end!='\0' || val<-32768 || val>32767 ) {
+	if ( showerr )
+	    GWidgetErrorR(_STR_BadNumber,_STR_BadNumber);
+return( false );
+    }
+    oldval = sv->edits!=NULL?sv->edits[sv->active] :(short) tgetushort(table,2*sv->active);
+    if ( val != oldval ) {
+	sv->changed = true;
+	if ( sv->edits==NULL ) {
+	    sv->edits = galloc(table->len);
+	    for ( i = 0; i<table->len/2; ++i )
+		sv->edits[i] = tgetushort(table,2*i);
+	}
+	sv->edits[sv->active] = val;
+    }
+    sv->active = -1;
+    GGadgetMove(sv->tf,sv->addrend,-100);
+return( true );
+}
+
 static int short_processdata(TableView *tv) {
     ShortView *sv = (ShortView *) tv;
-    /* Do changes!!! */
-return( true );
+    int ret = sfinishup(sv,true);
+
+    if ( ret && !tv->table->changed ) {
+	tv->table->changed = true;
+	tv->table->td_changed = true;
+	GDrawRequestExpose(tv->owner->v,NULL,false);
+    }
+return( ret );
 }
 
 static int short_close(TableView *tv) {
-    if ( short_processdata(tv)) {
-	GDrawDestroyWindow(tv->gw);
-return( true );
-    }
+    static int yesnocancel[] = { _STR_Yes, _STR_No, _STR_Cancel, 0 };
+    static int closecancel[] = { _STR_Close, _STR_Cancel, 0 };
+    int ret = sfinishup((ShortView *) tv,false);
+    int copyover = true;
+    int16 *edits;
+
+    if ( ret ) {
+	if ( ((ShortView *) tv)->changed ) {
+	    ret = GWidgetAskR(_STR_RetainChanges,yesnocancel,0,2,_STR_RetainChanges);
+	    if ( ret==2 )
 return( false );
+	    if ( ret==1 )
+		copyover = false;
+	}
+    } else {
+	ret = GWidgetAskR(_STR_BadNumber,closecancel,0,1,_STR_BadNumberCloseAnyway);
+	if ( ret==1 )
+return( false );
+    }
+    if ( copyover && (edits=((ShortView *) tv)->edits)!=NULL ) {
+	int i;
+	for ( i=0; i<tv->table->len/2; ++i )
+	    ptputushort(tv->table->data+2*i,edits[i]);
+	if ( !tv->table->changed ) {
+	    tv->table->changed = true;
+	    tv->table->td_changed = true;
+	    tv->table->container->changed = true;
+	    GDrawRequestExpose(tv->owner->v,NULL,false);
+	}
+    }
+    tv->destroyed = true;
+    GDrawDestroyWindow(tv->gw);
+return( true );
 }
 
-static struct tableviewfuncs instrfuncs = { short_close, short_processdata };
+static struct tableviewfuncs shortfuncs = { short_close, short_processdata };
 
 static void short_resize(ShortView *sv,GEvent *event) {
     GRect pos;
-    int lh;
+    int lh, width;
 
     /* height must be a multiple of the line height */
     if ( (event->u.resize.size.height-sv->mbh-2*EDGE_SPACER)%sv->fh!=0 ||
@@ -99,9 +167,20 @@ return;
     sv->lheight = lh = sv->table->newlen/2;
 
     GScrollBarSetBounds(sv->vsb,0,lh,sv->vheight/sv->fh);
-    if ( sv->lpos + sv->vheight/sv->fh > lh )
-	sv->lpos = lh-sv->vheight/sv->fh;
+    if ( sv->lpos + sv->vheight/sv->fh > lh ) {
+	int lpos = lh-sv->vheight/sv->fh;
+	if ( lpos<0 ) lpos = 0;
+	if ( sv->lpos!=lpos && sv->active!=-1 )
+	    GGadgetMove(sv->tf,sv->addrend,(sv->active-lpos)*sv->fh);
+	sv->lpos = lpos;
+    }
     GScrollBarSetPos(sv->vsb,sv->lpos);
+
+    width = pos.width-sv->addrend;
+    if ( width < 5 ) width = 5;
+    GGadgetResize(sv->tf,width,sv->fh);
+    GDrawRequestExpose(sv->gw,NULL,false);
+    GDrawRequestExpose(sv->v,NULL,false);
 }
 
 static void short_expose(ShortView *sv,GWindow pixmap,GRect *rect) {
@@ -127,7 +206,7 @@ static void short_expose(ShortView *sv,GWindow pixmap,GRect *rect) {
 	x = sv->addrend - ADDR_SPACER - GDrawGetTextWidth(pixmap,uaddr,-1,NULL);
 	GDrawDrawText(pixmap,x,y+sv->as,uaddr,-1,NULL,0x000000);
 
-	sprintf( cval, "%d", (short) tgetushort(table,2*index) );
+	sprintf( cval, "%d", sv->edits!=NULL?sv->edits[index] :(short) tgetushort(table,2*index) );
 	uc_strcpy(uval,cval);
 	GDrawDrawText(pixmap,sv->addrend,y+sv->as,uval,-1,NULL,0x000000);
 	y += sv->fh;
@@ -183,12 +262,18 @@ static void short_scroll(ShortView *sv,struct sbevent *sb) {
 	int diff = newpos-sv->lpos;
 	sv->lpos = newpos;
 	GScrollBarSetPos(sv->vsb,sv->lpos);
+	if ( sv->active!=-1 ) {
+	    GRect pos;
+	    GGadgetGetSize(sv->tf,&pos);
+	    GGadgetMove(sv->tf,sv->addrend,pos.y+diff*sv->fh);
+	}
 	GDrawScroll(sv->v,NULL,0,diff*sv->fh);
     }
 }
 
 static void ShortViewFree(ShortView *sv) {
     sv->table->tv = NULL;
+    free(sv->edits);
     free(sv);
 }
 
@@ -207,6 +292,20 @@ static int sv_v_e_h(GWindow gw, GEvent *event) {
 	GGadgetEndPopup();
 	if ( event->type==et_mousemove )
 	    short_mousemove(sv,event->u.mouse.y);
+	else if ( event->type == et_mousedown ) {
+	    int l = (event->u.mouse.y-EDGE_SPACER)/sv->fh + sv->lpos;
+	    unichar_t ubuf[20]; char buf[20];
+	    if ( sfinishup(sv,true) && event->u.mouse.x>sv->addrend &&
+		    l<sv->table->newlen/2 && l!=sv->active ) {
+		sv->active = l;
+		GGadgetMove(sv->tf, sv->addrend,
+					(l-sv->lpos)*sv->fh+EDGE_SPACER+1);
+		sprintf( buf, "%d", sv->edits!=NULL?sv->edits[sv->active] :(short) tgetushort(sv->table,2*sv->active) );
+		uc_strcpy(ubuf,buf);
+		GGadgetSetTitle(sv->tf,ubuf);
+		GDrawPostEvent(event);	/* And we hope the tf catches it this time */
+	    }
+	}
       break;
       case et_timer:
       break;
@@ -265,7 +364,7 @@ static void IVMenuSave(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void IVMenuRevert(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     TtfView *tfv = ((ShortView *) GDrawGetUserData(gw))->owner;
-    _TFVMenuRevert(tfv);
+    DelayEvent((void (*)(void *)) _TFVMenuRevert, tfv);
 }
 
 static GMenuItem dummyitem[] = { { (unichar_t *) _STR_Recent, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, NULL };
@@ -275,11 +374,11 @@ static GMenuItem fllist[] = {
     { { (unichar_t *) _STR_Close, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, 'Q', ksm_control|ksm_shift, NULL, NULL, IVMenuClose },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Save, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 'S', ksm_control, NULL, NULL, IVMenuSave },
-    { { (unichar_t *) _STR_Saveas, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'a' }, 'S', ksm_control|ksm_shift, NULL, NULL, IVMenuSaveAs },
+    { { (unichar_t *) _STR_SaveAs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'a' }, 'S', ksm_control|ksm_shift, NULL, NULL, IVMenuSaveAs },
     { { (unichar_t *) _STR_Revertfile, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, 'R', ksm_control|ksm_shift, NULL, NULL, IVMenuRevert, MID_Revert },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Prefs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'e' }, '\0', ksm_control, NULL, NULL, MenuPrefs },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+/*    { { (unichar_t *) _STR_Prefs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'e' }, '\0', ksm_control, NULL, NULL, MenuPrefs },*/
+/*    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},*/
     { { (unichar_t *) _STR_Quit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'Q' }, 'Q', ksm_control, NULL, NULL, MenuExit },
     { NULL }
 };
@@ -318,12 +417,14 @@ void shortCreateEditor(Table *tab,TtfView *tfv) {
     static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','u','n','i','f','o','n','t', '\0' };
     int as,ds,ld, lh;
     GGadgetData gd;
+    GTextInfo lab;
     GGadget *sb;
     static unichar_t num[] = { '0',  '\0' };
     int numlen;
+    static GBox tfbox;
 
     sv->table = tab;
-    sv->virtuals = &instrfuncs;
+    sv->virtuals = &shortfuncs;
     sv->owner = tfv;
     sv->font = tfv->ttf->fonts[tfv->selectedfont];
     tab->tv = (TableView *) sv;
@@ -382,6 +483,18 @@ void shortCreateEditor(Table *tab,TtfView *tfv) {
 
     sv->chrlen = numlen = GDrawGetTextWidth(sv->v,num,1,NULL);
     sv->addrend = 6*numlen + ADDR_SPACER + EDGE_SPACER;
+
+    tfbox.main_background = tfbox.main_foreground = COLOR_DEFAULT;
+    gd.pos.y = -100; gd.pos.height = sv->fh;
+    gd.pos.x = sv->addrend;
+    memset(&lab,'\0',sizeof(lab));
+    lab.text = num+1;
+    lab.font = sv->gfont;
+    gd.label = &lab;
+    gd.box = &tfbox;
+    gd.flags = gg_visible|gg_enabled|gg_sb_vert|gg_dontcopybox;
+    sv->tf = GTextFieldCreate(sv->v,&gd,NULL);
+    sv->active = -1;
 
     lh = sv->table->newlen/2;
     if ( lh>40 ) lh = 40;

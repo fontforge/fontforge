@@ -49,6 +49,7 @@ typedef struct headview /* : tableview */ {
     struct tableviewfuncs *virtuals;
     TtfFont *font;		/* for the encoding currently used */
     struct ttfview *owner;
+    unsigned int destroyed: 1;		/* window has been destroyed */
 /* _head specials */
 } HeaView;
 
@@ -57,6 +58,8 @@ static int _hea_processdata(TableView *tv) {
     real version;
     int as, ds, lg, am, mlb, mrb, me, cr, crun, co, df, count;
     uint8 *data;
+    int oldcount = tgetushort(tv->table,34);
+    static int buts[] = { _STR_Yes, _STR_No, 0 };
 
     version = GetRealR(tv->gw,CID_Version,_STR_Version,&err);
     as = GetIntR(tv->gw,CID_Ascender,_STR_Ascent,&err);
@@ -73,6 +76,15 @@ static int _hea_processdata(TableView *tv) {
     count = GetIntR(tv->gw,CID_MetricsCount,_STR_MetricsCount,&err);
     if ( err )
 return( false );
+    if ( count!=oldcount ) {
+	if ( GWidgetAskR(_STR_ChangingMetricsCount,buts,0,1,_STR_ReallyChangeMetricsCnt)==1 ) {
+	    char buf[8]; unichar_t ubuf[8];
+	    sprintf( buf, "%d", oldcount);
+	    uc_strcpy(ubuf,buf);
+	    GGadgetSetTitle(GWidgetGetControl(tv->gw,CID_MetricsCount),ubuf);
+return( false );
+	}
+    }
     if ( tv->table->newlen<36 ) {
 	free(tv->table->data);
 	tv->table->data = gcalloc(36,1);
@@ -103,6 +115,7 @@ return( true );
 
 static int _hea_close(TableView *tv) {
     if ( _hea_processdata(tv)) {
+	tv->destroyed = true;
 	GDrawDestroyWindow(tv->gw);
 return( true );
     }
@@ -116,6 +129,7 @@ static int _Hea_Cancel(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	gw = GGadgetGetWindow(g);
+	((TableView *) GDrawGetUserData(gw))->destroyed = true;
 	GDrawDestroyWindow(gw);
     }
 return( true );
@@ -136,6 +150,7 @@ return( true );
 static int _hea_e_h(GWindow gw, GEvent *event) {
     HeaView *hv = GDrawGetUserData(gw);
     if ( event->type==et_close ) {
+	hv->destroyed = true;
 	GDrawDestroyWindow(hv->gw);
     } else if ( event->type == et_destroy ) {
 	hv->table->tv = NULL;
@@ -434,4 +449,21 @@ void _heaCreateEditor(Table *tab,TtfView *tfv) {
 
     GGadgetsCreate(gw,gcd);
     GDrawSetVisible(gw,true);
+}
+
+void _heaChangeLongMetrics(Table *_hea,int newlongcnt) {
+    char buf[8]; unichar_t ubuf[8];
+
+    TableFillup(_hea);
+    if ( _hea->tv!=NULL ) {
+	sprintf( buf, "%d", newlongcnt );
+	uc_strcpy(ubuf, buf);
+	GGadgetSetTitle(GWidgetGetControl(_hea->tv->gw,CID_MetricsCount),ubuf);
+    }
+    ptputushort(_hea->data+34,newlongcnt);
+    if ( !_hea->changed ) {
+	_hea->changed = true;
+	_hea->container->changed = true;
+	GDrawRequestExpose(_hea->container->tfv->v,NULL,false);
+    }
 }

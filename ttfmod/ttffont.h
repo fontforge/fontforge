@@ -27,7 +27,7 @@
 #ifndef _TTFFONT_H
 #define _TTFFONT_H
 
-#include "basics.h"
+#include "gdraw.h"		/* For GDrawIError */
 #include "charset.h"
 
 #ifdef USE_DOUBLE
@@ -59,11 +59,17 @@ typedef struct table {
     int32 newlen;			/* actual length, but data will be */
     uint8 *data;			/*  padded out to 32bit boundary with 0*/
     int32 oldchecksum;
+    int32 newstart;			/* used during saving */
+    int32 newchecksum;			/* used during saving */
     int32 othernames[4];		/* for bdat/EBDT etc. */
     unsigned int changed: 1;		/* someone has changed either data or table_data */
     unsigned int td_changed: 1;		/* it's table_data that has changed */
     unsigned int special: 1;		/* loca, hmtx, glyph all are bound together */
-    unsigned int destroyed: 1;		/* window has been destroyed */
+    unsigned int new: 1;		/* table is new, nothing to revert to */
+    unsigned int freeing: 1;		/* table has been put on list of tables to be freed */
+    unsigned int inserted: 1;		/* table has been inserted into ordered table list (for save) */
+    unsigned int processed: 1;
+    int orderingval;
     struct ttffile *container;
     /* No pointer to the font, because a given table may be part of several */
     /*  different fonts in a ttc */
@@ -82,6 +88,7 @@ typedef struct ttffont {
     struct enctab *enc;
     struct ttffile *container;
     unsigned int expanded: 1;		/* should be in TtfView */
+    int32 version_pos;
 } TtfFont;
 
 typedef struct ttffile {
@@ -91,6 +98,8 @@ typedef struct ttffile {
     TtfFont **fonts;
     int is_ttc: 1;
     int changed: 1;
+    unsigned int gcchanged: 1;		/* If the glyph count in any font changes then set this... */
+    unsigned int backedup: 1;		/* a backup file has been created */
     struct ttfview *tfv;
 } TtfFile;
 
@@ -109,12 +118,20 @@ int ptgetushort(uint8 *data);
 int32 ptgetlong(uint8 *data);
 real ptgetfixed(uint8 *data);
 real ptgetvfixed(uint8 *data);
+
+void putushort(FILE *file,uint16 val);
+void putshort(FILE *file,uint16 val);
+void putlong(FILE *file,uint32 val);
 void ptputushort(uint8 *data, uint16 val);
 void ptputlong(uint8 *data, uint32 val);
 void ptputfixed(uint8 *data,real val);
 void ptputvfixed(uint8 *data,real val);
 
+void readttfencodings(FILE *ttf,struct ttffont *font);
+void TTFFileFreeData(TtfFile *ttf);
+void TTFFileFree(TtfFile *ttf);
 extern TtfFile *ReadTtfFont(char *filename);
 extern TtfFile *LoadTtfFont(char *filename);
+extern int TtfSave(TtfFile *ttf,char *newpath);
 
 #endif
