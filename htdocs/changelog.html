@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 24-Aug-2004 -->
+  <!-- AP: Last modified: 30-Sep-2004 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -11,6 +11,91 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    ???
+    <UL>
+      <LI>
+	I have rewritten Remove Overlap from scratch. I seems less likely to crash,
+	but I'm not sure that in any other respect it is improved.
+      <LI>
+	In the character view the Remove Overlap (and Intersect and Find Intersections)
+	now only work on selected contours, or, if no contours are selected then
+	on all contours. This change makes these commands consistant with most other
+	commands in the character view, but it is a change from past behavior.
+      <LI>
+	The Import scripting command has been extended to give the user control over
+	the stroking flags (correct direction, remove overlap, handle erasers). And
+	the background flag has been extended a bit to apply to other things than
+	bitmaps.
+      <LI>
+	ff had a pointer dangling to a freed block after loading a font containing
+	multiple versions of some greek letters.
+      <LI>
+	U+1D400-U+1D7FF are stylized variants of the latin and greek alphabets as
+	used in Mathematics. The font view will now display (in the glyph header)
+	the proper variant of the glyph (assuming it can find a font with that style).
+      <LI>
+	The AMS (American Mathematical Society) has their own interpretation of the
+	public use area. FF now understands their glyph names as alternates for those
+	glyphs, and has an AMS interpretation (under FontInfo-&gt;Encoding) that
+	will make ff use those names in new fonts.
+      <LI>
+	Many of code points in the AMS PUA are reencodings of other glyphs. FontForge
+	will automatically generate these reencodings for you.
+      <LI>
+	The AMS also describes how some TeX glyph names map to unicode. So include
+	those names in our alternate list too (so we can map them correctly, not
+	as a way of encouraging people to use them).
+      <LI>
+	Both the AMS defn. of the PUA and the Big5 defn. map characters which are
+	properly in other unicode planes into the BMP. FF now understands this, and
+	converting between a BMP encoding and a full unicode encoding will move things
+	from the PUA to their proper unicode slot in higher planes.
+      <LI>
+	Find Problems thought that adjacent splines intersected at their common
+	end-point. I suppose they do, but it isn't useful information
+      <LI>
+	In the char view, I used to blank out the status line when the mouse moved
+	outside the window. But some of that info is still valid. So only blank out
+	the meaningless bits.
+      <LI>
+	Kanou requests a disambiguation between two strings with the same label in
+	English but different meanings in Japanese. (Vertical/VerticalWriting)
+      <LI>
+	The Point-&gt;Make Line command would crash if either of the the two points
+	was missing a previous or next spline.
+      <LI>
+	Pierre HANSER provides a patch to problems.c (it would crash when dealing
+	with fonts with an encoding with &lt; 32 code points.
+      <LI>
+	Pierre HANSER provides a patch to merge fonts (it would crash when merging
+	bitmap fonts.
+      <LI>
+	Closing a charview window with a docked palette could cause a crash if the
+	cursor was moved quickly into another charview which needed a new cursor.
+      <LI>
+	The perspective icon had the wrong background
+      <LI>
+	Piska keeps complaining about the way ff handles 0 width strokes. He wants
+	it to have zero width (disappear, I guess), but PS says it should be stroked
+	as the thinnest line possible (not clear what this should mean in ff, I interpret
+	it as a 1em-unit stroke). But METAPOST uses a 0 width stroke in cases where
+	it wants no stroking (with a fill) so in the special case of a fill with
+	a 0 width stroke, turn off stroking.
+      <LI>
+	Use a different approach to approximating a set of points with fixed slopes
+	at the end points. Used to do least squares (fixup slopes), least squares
+	again (fixup slopes). Now I do least squares (fixup slopes), perturb the
+	lengths of the slope vectors until we find the best fit.
+      <LI>
+	I was generating flex hints when I should not have done so. Add a heuristic
+	so that ff doesn't add flexes to small circles.
+      <LI>
+	Failed to read long format pk bitmaps.
+      <LI>
+	Patch by Mchael Ghrken to make the Skew scripting command take a
+	numerator/denominator style argument.
+    </UL>
   <LI>
     24-Aug-2004
     <UL>

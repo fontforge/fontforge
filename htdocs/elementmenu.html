@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 17-Aug-2004 -->
+  <!-- AP: Last modified: 29-Sep-2004 -->
   <TITLE>The Element Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -140,8 +140,15 @@
   <LI>
     <A HREF="#Correct">Correct Direction</A>
   <LI>
-    <A HREF="#Accented">Build Accented Char<BR>
-    Build Composite Char</A>
+    Build
+    <UL>
+      <LI>
+	<A HREF="#Accented">Build Accented Char</A>
+      <LI>
+	<A HREF="#Accented">Build Composite Char</A>
+      <LI>
+	<A HREF="#BuildDuplicate">Build Duplicate</A>
+    </UL>
   <LI>
     <A HREF="#Merge">Merge Fonts...</A>
   <LI>
@@ -734,6 +741,15 @@ compiling FontForge.
     view).<BR>
     A more complete description is given in the section on
     <A HREF="accented.html">accented characters</A>.
+  <DT>
+    Build <A NAME="BuildDuplicate">Duplicate</A>
+  <DD>
+    Only in the font view.<BR>
+    Consider the letters "Alpha" and "A". Often these may be represented by the
+    same glyph. This command which change the encoding slightly so that the encoding
+    for U+0391 will refer to the glyph named "A". Note that this is subtly different
+    from refering to a glyph named "Alpha" which refers to another glyph named
+    "A".
   <DT>
     <A NAME="Merge">Merge</A> Fonts...
   <DD>
