@@ -851,12 +851,19 @@ static int SCSetsColor(SplineChar *sc) {
 #ifdef FONTFORGE_CONFIG_TYPE3
     int l;
     RefChar *r;
+    ImageList *img;
 
     for ( l=ly_fore ; l<sc->layer_cnt; ++l ) {
 	if ( sc->layers[l].fill_brush.col != COLOR_INHERITED )
 return( true );
 	if ( sc->layers[l].stroke_pen.brush.col != COLOR_INHERITED )
 return( true );
+	for ( img = sc->layers[l].images; img!=NULL; img=img->next ) {
+	    GImage *image = img->image;
+	    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+	    if ( base->image_type!=it_mono )
+return( true );
+	}
 	for ( r = sc->layers[l].refs; r!=NULL; r = r->next )
 	    if ( SCSetsColor(r->sc) )
 return( true );
