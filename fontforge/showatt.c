@@ -2150,6 +2150,8 @@ static void AttExpose(struct att_dlg *att,GWindow pixmap,GRect *rect) {
 	    GDrawSetFont(pixmap,att->font);
 	node = NodeNext(node,&depth);
 	y += att->fh;
+	if ( y-att->fh>rect->y+rect->height )
+    break;
     }
 }
 
@@ -2369,7 +2371,7 @@ static void AttResize(struct att_dlg *att,GEvent *event) {
     att->page_width = size.width-sbsize;
     att->lines_page = lcnt;
     GScrollBarSetBounds(att->vsb,0,att->open_cnt,att->lines_page);
-    GScrollBarSetBounds(att->vsb,0,att->maxl,att->page_width);
+    GScrollBarSetBounds(att->hsb,0,att->maxl,att->page_width);
 
     GGadgetGetSize(att->cancel,&wsize);
     GGadgetMove(att->cancel,(size.width-wsize.width)/2,lcnt*att->fh+sbsize+5);
