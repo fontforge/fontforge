@@ -1006,7 +1006,7 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 	    ach = ch;
 	else if ( ch==0x31b && haschar(sf,','))
 	    ach = ',';
-	else if (( ch == 0x32f || ch == 0x311 ) && haschar(sf,0x2d8)) {
+	else if (( ch == 0x32f || ch == 0x311 ) && haschar(sf,0x2d8) && ia==0 ) {
 	    ach = 0x2d8;
 	    invert = true;
 	} else if ( (ch == 0x30c || ch == 0x32c ) &&
