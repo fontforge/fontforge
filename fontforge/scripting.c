@@ -2388,7 +2388,6 @@ static void bScaleToEm(Context *c) {
 }
 
 static void bNonLinearTransform(Context *c) {
-#ifdef FONTFORGE_CONFIG_NONLINEAR
 
     if ( c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
@@ -2398,9 +2397,6 @@ static void bNonLinearTransform(Context *c) {
 	error(c,"Can only be applied to cubic (PostScript) fonts");
     if ( !SFNLTrans(c->curfv,c->a.vals[1].u.sval,c->a.vals[2].u.sval))
 	error(c,"Bad expression");
-#else
-    error(c,"The NonLinearTransform command is not enabled. Edit configure-pfaedit.h and define FONTFORGE_CONFIG_NONLINEAR and recompile everything" );
-#endif
 }
 
 static void bExpandStroke(Context *c) {

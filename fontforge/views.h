@@ -582,6 +582,16 @@ enum fvtrans_flags { fvt_dobackground=1, fvt_round_to_int=2,
 	fvt_dontsetwidth=4, fvt_dontmovewidth=8, fvt_scalekernclasses=0x10,
 	fvt_scalepstpos=0x20 };
 
+enum origins { or_zero, or_center, or_lastpress, or_value, or_undefined };
+struct pov_data {
+    enum origins xorigin, yorigin;
+    double x, y, z;
+    double direction;		/* Direction of gaze projected into xy plane */
+    double tilt;		/* Angle which drawing plane is tilted with respect to projection plane */
+    double d;			/* Distance to projection plane */
+    double sintilt;		/* Used internally */
+};
+
 extern FontView *_FontViewCreate(SplineFont *sf);
 extern FontView *FontViewCreate(SplineFont *sf);
 extern void SplineFontSetUnChanged(SplineFont *sf);
@@ -613,6 +623,7 @@ extern void FVTrans(FontView *fv,SplineChar *sc,real transform[6],uint8 *sel,
 extern int SFNLTrans(FontView *fv,char *x_expr,char *y_expr);
 extern void FVApplySubstitution(FontView *fv,uint32 script, uint32 lang, uint32 tag);
 extern void NonLinearDlg(FontView *fv,struct charview *cv);
+extern void FVPointOfView(FontView *fv,struct pov_data *);
 extern void FVBuildAccent(FontView *fv,int onlyaccents);
 extern void FVChangeChar(FontView *fv,int encoding);
 extern void SCClearContents(SplineChar *sc);
@@ -792,7 +803,6 @@ extern unichar_t *DecomposeClassName(const unichar_t *clsnm, unichar_t **name,
 	uint16 *flags, uint16 *script_lang_index,int *merge_with,int *act_type);
 extern PST *AddSubs(PST *last,uint32 tag,char *name,uint16 flags,
 	uint16 sli,SplineChar *sc);
-
 
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -1173,6 +1183,9 @@ extern void MMWizard(MMSet *mm);
 
 extern int LayerDialog(Layer *layer);
 extern void CVLayerChange(CharView *cv);
+
+extern void CVPointOfView(CharView *cv,struct pov_data *);
+extern int PointOfViewDlg(struct pov_data *pov,SplineFont *sf,int flags);
 
 #ifdef FONTFORGE_CONFIG_GDRAW
 extern GMenuItem helplist[];

@@ -1391,6 +1391,7 @@ void FontViewMenu_MetaFont(GtkMenuItem *menuitem, gpointer user_data) {
 #define MID_SimplifyMore	2233
 #define MID_ShowDependentSubs	2234
 #define MID_DefaultATT	2235
+#define MID_POV		2236
 #define MID_Center	2600
 #define MID_Thirds	2601
 #define MID_SetWidth	2602
@@ -2746,22 +2747,38 @@ return;
 }
 
 #if defined(FONTFORGE_CONFIG_GDRAW)
-# ifdef FONTFORGE_CONFIG_NONLINEAR
+static void FVMenuPOV(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    struct pov_data pov_data;
+    if ( FVAnyCharSelected(fv)==-1 || fv->sf->onlybitmaps )
+return;
+    if ( PointOfViewDlg(&pov_data,fv->sf,false)==-1 )
+return;
+    FVPointOfView(fv,&pov_data);
+}
+
 static void FVMenuNLTransform(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     if ( FVAnyCharSelected(fv)==-1 )
 return;
     NonLinearDlg(fv,NULL);
 }
-# endif
 #elif defined(FONTFORGE_CONFIG_GTK)
-void FontViewMenu_NonLinearTransform(GtkMenuItem *menuitem, gpointer user_data) {
-# ifdef FONTFORGE_CONFIG_NONLINEAR
+void FontViewMenu_PointOfView(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
-    if ( FVAnyCharSelected(fv)==-1 )
+    struct pov_data pov_data;
+    if ( FVAnyCharSelected(fv)==-1 || fv->sf->onlybitmaps )
+return;
+    if ( PointOfViewDlg(&pov_data,fv->sf,false)==-1 )
+return;
+    FVPointOfView(fv,&pov_data);
+}
+
+void FontViewMenu_NonLinearTransform(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+    if ( FVAnyCharSelected(fv)==-1 || fv->sf->onlybitmaps )
 return;
     NonLinearDlg(fv,NULL);
-# endif
 }
 #endif
 
@@ -4942,6 +4959,22 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
+static void trlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    int anychars = FVAnyCharSelected(fv);
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_Transform:
+	    mi->ti.disabled = anychars==-1;
+	  break;
+	  case MID_NLTransform: case MID_POV:
+	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps;
+	  break;
+	}
+    }
+}
+
 static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int anychars = FVAnyCharSelected(fv);
@@ -4957,7 +4990,7 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_FindProblems:
 	    mi->ti.disabled = anychars==-1;
 	  break;
-	  case MID_Transform: case MID_NLTransform:
+	  case MID_Transform:
 	    mi->ti.disabled = anychars==-1;
 	    /* some Transformations make sense on bitmaps now */
 	  break;
@@ -5307,6 +5340,13 @@ static GMenuItem delist[] = {
     { NULL }
 };
 
+static GMenuItem trlist[] = {
+    { { (unichar_t *) _STR_Transform, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'T' }, '\\', ksm_control, NULL, NULL, FVMenuTransform, MID_Transform },
+    { { (unichar_t *) _STR_PoVProj, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'T' }, '<', ksm_shift|ksm_control, NULL, NULL, FVMenuPOV, MID_POV },
+    { { (unichar_t *) _STR_NonLinearTransform, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'T' }, '|', ksm_shift|ksm_control, NULL, NULL, FVMenuNLTransform, MID_NLTransform },
+    { NULL }
+};
+
 static GMenuItem ellist[] = {
     { { (unichar_t *) _STR_Fontinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'F', ksm_control|ksm_shift, NULL, NULL, FVMenuFontInfo },
     { { (unichar_t *) _STR_Charinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'I', ksm_control, NULL, NULL, FVMenuCharInfo, MID_CharInfo },
@@ -5317,10 +5357,7 @@ static GMenuItem ellist[] = {
     { { (unichar_t *) _STR_Bitmapsavail, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'B', ksm_control|ksm_shift, NULL, NULL, FVMenuBitmaps, MID_AvailBitmaps },
     { { (unichar_t *) _STR_Regenbitmaps, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, 'B', ksm_control, NULL, NULL, FVMenuBitmaps, MID_RegenBitmaps },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Transform, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'T' }, '\\', ksm_control, NULL, NULL, FVMenuTransform, MID_Transform },
-#ifdef FONTFORGE_CONFIG_NONLINEAR
-    { { (unichar_t *) _STR_NonLinearTransform, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'T' }, '|', ksm_shift|ksm_control, NULL, NULL, FVMenuNLTransform, MID_NLTransform },
-#endif
+    { { (unichar_t *) _STR_Transformations, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'T' }, 0, ksm_control, trlist, trlistcheck, NULL, MID_Transform },
     { { (unichar_t *) _STR_Stroke, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'E' }, 'E', ksm_control|ksm_shift, NULL, NULL, FVMenuStroke, MID_Stroke },
 #ifdef FONTFORGE_CONFIG_TILEPATH
     { { (unichar_t *) _STR_TilePath, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuTilePath, MID_TilePath },
