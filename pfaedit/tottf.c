@@ -321,20 +321,6 @@ return( start );
     for ( t=tmax; t>tmin+dt/128; t-= dt ) {		/* dt/128 is a hack to avoid rounding errors */
 	x = ((ps->splines[0].a*t+ps->splines[0].b)*t+ps->splines[0].c)*t+ps->splines[0].d;
 	y = ((ps->splines[1].a*t+ps->splines[1].b)*t+ps->splines[1].c)*t+ps->splines[1].d;
-	ttf.splines[0].d = xmin;
-	ttf.splines[0].c = x-xmin;
-	ttf.splines[0].b = 0;
-	ttf.splines[1].d = ymin;
-	ttf.splines[1].c = y-ymin;
-	ttf.splines[1].b = 0;
-	if ( comparespline(ps,&ttf,tmin,t,err) ) {
-	    sp = LinearSpline(ps,start,t);
-	    if ( t==tmax )
-return( sp );
-	    tmin = t;
-	    start = sp;
-  goto tail_recursion;
-	}
 	dxdt = (3*ps->splines[0].a*t+2*ps->splines[0].b)*t + ps->splines[0].c;
 	dydt = (3*ps->splines[1].a*t+2*ps->splines[1].b)*t + ps->splines[1].c;
 	/* if the slopes are parallel at the ends there can be no bezier quadratic */
@@ -394,6 +380,20 @@ return( sp );
 	    start->nextcp.y = sp->prevcp.y = cy;
 #endif
 /* End of quadratic code */
+	    if ( t==tmax )
+return( sp );
+	    tmin = t;
+	    start = sp;
+  goto tail_recursion;
+	}
+	ttf.splines[0].d = xmin;
+	ttf.splines[0].c = x-xmin;
+	ttf.splines[0].b = 0;
+	ttf.splines[1].d = ymin;
+	ttf.splines[1].c = y-ymin;
+	ttf.splines[1].b = 0;
+	if ( comparespline(ps,&ttf,tmin,t,err) ) {
+	    sp = LinearSpline(ps,start,t);
 	    if ( t==tmax )
 return( sp );
 	    tmin = t;
