@@ -3131,6 +3131,7 @@ static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
 		(uname = _UnicodeNameAnnot[uni>>16][(uni>>8)&0xff][uni&0xff].name)!=NULL &&
 		strstr(uname,"LIGATURE")==NULL &&
 		strstr(uname,"VULGAR FRACTION")==NULL &&
+		(uni<0xfb2a || uni>0xfb4f) &&	/* Allow hebrew precomposed chars */
 		uni!=0x215f )
 	    alt = NULL;
     }
@@ -3346,7 +3347,9 @@ uint32 LigTagFromUnicode(int uni) {
 
     if (( uni>=0xbc && uni<=0xbe ) || (uni>=0x2153 && uni<=0x215f) )
 	tag = CHR('f','r','a','c');	/* Fraction */
-    switch ( uni ) {
+    else if ( uni>=0xfb2a && uni<=0xfb4f )
+	tag = CHR('c','c','m','p');
+    else switch ( uni ) {
       case 0xfb05:		/* long-s t */
 	tag = CHR('h','l','i','g');
       break;
