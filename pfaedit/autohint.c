@@ -2381,13 +2381,14 @@ static StemInfo *StemRemoveConflictingBigHint(StemInfo *stems,real big) {
     /*  whole character then it doesn't do much good */
     /* Unless it is needed for blue zones?... */
     /*  It should be a ghost instead */
-    StemInfo *p=NULL, *head=stems, *n, *biggest, *bp, *s;
+    StemInfo *p, *head=stems, *n, *biggest, *bp, *s;
     int any=true, conflicts;
     double max;
 
     while ( any ) {
 	any = false;
 	stems = head;
+	p = NULL;
 	while ( stems!=NULL ) {
 	    max = stems->width<0 ? stems->start : stems->start+stems->width;
 	    biggest = stems;
