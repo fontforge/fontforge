@@ -3201,9 +3201,7 @@ static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format)
 	if ( sf->chars[0]!=NULL && strcmp(sf->chars[0]->name,".notdef")!=0 )
 	    i=0;
 	for ( pos=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
-	    if ( sf->chars[i]->unicodeenc<128 && sf->chars[i]->unicodeenc!=-1 )
-		putshort(at->post,sf->chars[i]->unicodeenc-32+3);
-	    else if ( strcmp(sf->chars[i]->name,".notdef")==0 )
+	    if ( strcmp(sf->chars[i]->name,".notdef")==0 )
 		putshort(at->post,0);
 	    else {
 		for ( j=127-32+3; j<258; ++j )
@@ -3219,9 +3217,7 @@ static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format)
 	}
 	if ( pos!=0 ) {
 	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
-		if ( sf->chars[i]->unicodeenc<128 && sf->chars[i]->unicodeenc!=-1 )
-		    /* Do Nothing */;
-		else if ( strcmp(sf->chars[i]->name,".notdef")==0 )
+		if ( strcmp(sf->chars[i]->name,".notdef")==0 )
 		    /* Do Nothing */;
 		else {
 		    for ( j=127-32+3; j<258; ++j )
