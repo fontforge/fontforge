@@ -2289,7 +2289,7 @@ struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
     GGadgetCreateData bgcd[6], rgcd[15];
     GTextInfo blabel[4], rlabel[15];
     struct fpst_rule *r=NULL;
-    int blen = GIntGetResource(_NUM_Buttonsize);
+    int blen = GIntGetResource(_NUM_Buttonsize)*100/GGadgetScale(100);
     int text[] = { _STR_OTCCSubFormat1, _STR_OTCCSubFormat2,
 	    _STR_OTCCSubFormat3, _STR_OTCCSubFormat4,
 	    _STR_OTCCSubFormat5, _STR_OTCCSubFormat6,
@@ -2339,7 +2339,7 @@ struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
     bgcd[0].gd.handle_controlevent = CCD_OK;
     bgcd[0].creator = GButtonCreate;
 
-    space = (GGadgetScale(CCD_WIDTH)-4*blen-40)/3;
+    space = (CCD_WIDTH-4*blen-40)/3;
     bgcd[1].gd.pos.x = bgcd[0].gd.pos.x+blen+space; bgcd[1].gd.pos.y = bgcd[0].gd.pos.y;
     bgcd[1].gd.pos.width = -1; bgcd[1].gd.pos.height = 0;
     bgcd[1].gd.flags = gg_visible;
