@@ -786,7 +786,8 @@ typedef struct splinefont {
     } *ttf_tables;
 	/* We copy: fpgm, prep, cvt, maxp */
     struct instrdata *instr_dlgs;	/* Pointer to all table and character instruction dlgs in this font */
-    /* Any GPOS/GSUB entry (PST, AnchorClass (in theory kerns, but not in my code) */
+    struct shortview *cvt_dlg;
+    /* Any GPOS/GSUB entry (PST, AnchorClass, kerns, FPST */
     /*  Has an entry saying what scripts/languages it should appear it */
     /*  Things like fractions will appear in almost all possible script/lang */
     /*  combinations, while alphabetic ligatures will only live in one script */

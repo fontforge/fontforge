@@ -1288,73 +1288,6 @@ return;
     InstrDlgCreate(id,title);
 }
 
-void SFEditTable(SplineFont *sf, uint32 tag) {
-    struct instrdata *id;
-    struct ttf_table *tab;
-    char name[12];
-    unichar_t title[100];
-
-    for ( id = sf->instr_dlgs; id!=NULL && id->tag!=tag; id=id->next );
-    if ( id!=NULL ) {
-	GDrawSetVisible(id->id->gw,true);
-	GDrawRaise(id->id->gw);
-return;
-    }
-
-    id = gcalloc(1,sizeof(*id));
-    id->sf = sf;
-    id->tag = tag;
-    tab = SFFindTable(sf,tag);
-    id->instr_cnt = id->max = tab==NULL ? 0 : tab->len;
-    id->instrs = galloc(id->max+1);
-    if ( tab!=NULL && tab->data!=NULL )
-	memcpy(id->instrs,tab->data,id->instr_cnt);
-    else
-	id->instrs[0]='\0';
-    name[0] = name[5] = '\'';
-    name[1] = tag>>24; name[2] = (tag>>16)&0xff; name[3] = (tag>>8)&0xff; name[4] = tag&0xff;
-    name[6] = 0;
-    u_sprintf(title,GStringGetResource(_STR_TTFInstructionsFor,NULL),name);
-    InstrDlgCreate(id,title);
-}
-
-int SFCloseAllInstrs(SplineFont *sf) {
-    struct instrdata *id, *next;
-    int changed;
-    char name[12], *npt;
-    static int buts[] = { _STR_OK, _STR_Cancel, 0 };
-
-    for ( id = sf->instr_dlgs; id!=NULL; id=next ) {
-	next = id->next;
-	changed = id->changed;
-	if ( !changed && id->id->inedit ) {
-	    if ( !IVParse(id->id))
-		changed = true;
-	    else
-		changed = id->changed;
-	}
-	if ( changed ) {
-	    if ( id->tag==0 )
-		npt = id->sc->name;
-	    else {
-		name[0] = name[5] = '\'';
-		name[1] = id->tag>>24; name[2] = (id->tag>>16)&0xff; name[3] = (id->tag>>8)&0xff; name[4] = id->tag&0xff;
-		name[6] = 0;
-		npt = name;
-	    }
-	    GDrawRaise(id->id->gw);
-	    if ( GWidgetAskR(_STR_InstrChanged,buts,0,1,_STR_AskInstrChanged,npt)==1 )
-return( false );
-	}
-	GDrawDestroyWindow(id->id->gw);
-    }
-    if ( screen_display!=NULL ) {
-	GDrawSync(NULL);
-	GDrawProcessPendingEvents(NULL);
-    }
-return( true );
-}
-
 void SCMarkInstrDlgAsChanged(SplineChar *sc) {
     struct instrdata *id;
 
@@ -1394,4 +1327,558 @@ void IIReinit(struct instrinfo *ii,int ip) {
     instr_typify(ii);
     GScrollBarSetBounds(ii->vsb,0,ii->lheight+1, ii->vheight/ii->fh);
     IIScrollTo(ii,ip,true);
+}
+
+/* ************************************************************************** */
+/* **************************** CVT table editor **************************** */
+/* ************************************************************************** */
+
+#define ADDR_SPACER	4
+#define EDGE_SPACER	2
+
+typedef struct shortview /* : tableview */ {
+    struct ttf_table *table;
+    GWindow gw, v;
+    SplineFont *sf;
+    unsigned int destroyed: 1;		/* window has been destroyed */
+    unsigned int changed: 1;
+    GGadget *vsb, *tf;
+    GGadget *ok, *cancel, *setsize;
+    int lpos, lheight;
+    int16 as, fh;
+    int16 vheight, vwidth;
+    int16 sbw, bh;
+    GFont *gfont;
+    int16 chrlen, addrend, hexend;
+    int16 active;
+    int16 *edits;
+    uint8 *data;
+    int32 len;
+    uint32 tag;
+} ShortView;
+
+static int sfinishup(ShortView *sv,int showerr) {
+    const unichar_t *ret = _GGadgetGetTitle(sv->tf);
+    unichar_t *end;
+    int val, oldval;
+
+    if ( sv->active==-1 )
+return( true );
+
+    val = u_strtol(ret,&end,10);
+    if ( *ret=='\0' || *end!='\0' || val<-32768 || val>32767 ) {
+	if ( showerr )
+	    GWidgetErrorR(_STR_BadNumber,_STR_BadNumber);
+return( false );
+    }
+    oldval = sv->edits[sv->active];
+    if ( val != oldval ) {
+	sv->changed = true;
+	sv->edits[sv->active] = val;
+    }
+    sv->active = -1;
+    GGadgetMove(sv->tf,sv->addrend,-100);
+return( true );
+}
+
+static void SV_SetScrollBar(ShortView *sv) {
+    int lh;
+    sv->lheight = lh = sv->len/2;
+
+    GScrollBarSetBounds(sv->vsb,0,lh,sv->vheight/sv->fh);
+    if ( sv->lpos + sv->vheight/sv->fh > lh ) {
+	int lpos = lh-sv->vheight/sv->fh;
+	if ( lpos<0 ) lpos = 0;
+	if ( sv->lpos!=lpos && sv->active!=-1 )
+	    GGadgetMove(sv->tf,sv->addrend,(sv->active-lpos)*sv->fh);
+	sv->lpos = lpos;
+    }
+    GScrollBarSetPos(sv->vsb,sv->lpos);
+}
+
+static int SV_ChangeLength(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	ShortView *sv = GDrawGetUserData(GGadgetGetWindow(g));
+	char buffer[12];
+	unichar_t ubuf[12], *ret, *e;
+	int val,i;
+
+	sprintf( buffer, "%d", sv->len/2 );
+	uc_strcpy(ubuf,buffer);
+	ret = GWidgetAskStringR(_STR_ChangeLength, ubuf,_STR_EnterNewLength);
+	if ( ret==NULL )
+return( true );		/* Cancelled */
+	val = u_strtol(ret,&e,10);
+	if ( *e || val<0 || val>65535 ) {
+	    GWidgetErrorR(_STR_BadNumber,_STR_BadNumber);
+return( false );
+	}
+	if ( val*2>sv->len ) {
+	    sv->edits = grealloc(sv->edits,val*2);
+	    for ( i=sv->len/2; i<val; ++i )
+		sv->edits[i] = 0;
+	}
+	sv->len = 2*val;
+	SV_SetScrollBar(sv);
+    }
+return( true );
+}
+
+static void SV_DoClose(ShortView *sv) {
+
+    sv->destroyed = true;
+    GDrawDestroyWindow(sv->gw);
+}
+
+static int SV_Cancel(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	ShortView *sv = GDrawGetUserData(GGadgetGetWindow(g));
+
+	SV_DoClose(sv);
+    }
+return( true );
+}
+
+static int SV_OK(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	ShortView *sv = GDrawGetUserData(GGadgetGetWindow(g));
+	int i;
+	struct ttf_table *prev, *tab;
+
+	if ( sv->len==0 ) {
+	    if ( sv->table!=NULL ) {
+		prev = NULL;
+		for ( tab=sv->sf->ttf_tables; tab!=NULL && tab!=sv->table; prev=tab, tab=tab->next );
+		if ( prev!=NULL )
+		    prev->next = tab->next;
+		else
+		    sv->sf->ttf_tables = tab->next;
+		free(sv->table->data);
+		free(sv->table);
+	    }
+	} else {
+	    if ( sv->table!=NULL )
+		free(sv->table->data);
+	    else {
+		tab = chunkalloc(sizeof(struct ttf_table));
+		tab->next = sv->sf->ttf_tables;
+		sv->sf->ttf_tables = tab;
+		tab->tag = sv->tag;
+	    }
+	    sv->table->data = galloc(sv->len);
+	    for ( i=0; i<sv->len/2; ++i ) {
+		sv->table->data[i<<1] = (sv->edits[i]>>8)&0xff;
+		sv->table->data[(i<<1)+1] = sv->edits[i]&0xff;
+	    }
+	    sv->table->len = sv->len;
+	}
+	sv->sf->changed = true;
+	SV_DoClose(sv);
+    }
+return( true );
+}
+
+static void short_resize(ShortView *sv,GEvent *event) {
+    GRect pos, gsize;
+    int width;
+
+    /* height must be a multiple of the line height */
+    if ( (event->u.resize.size.height-2*EDGE_SPACER-sv->bh)%sv->fh!=0 ||
+	    (event->u.resize.size.height-2*EDGE_SPACER-sv->fh-sv->bh)<0 ) {
+	int lc = (event->u.resize.size.height+sv->fh/2-EDGE_SPACER)/sv->fh;
+	if ( lc<=0 ) lc = 1;
+	GDrawResize(sv->gw, event->u.resize.size.width,
+		lc*sv->fh+2*EDGE_SPACER+sv->bh);
+return;
+    }
+
+    pos.width = GDrawPointsToPixels(sv->gw,_GScrollBar_Width);
+    pos.height = event->u.resize.size.height-sv->bh;
+    pos.x = event->u.resize.size.width-pos.width; pos.y = 0;
+    GGadgetResize(sv->vsb,pos.width,pos.height+1);
+    GGadgetMove(sv->vsb,pos.x,pos.y);
+    pos.width = pos.x; pos.x = 0;
+    GDrawResize(sv->v,pos.width,pos.height);
+
+    sv->vheight = pos.height; sv->vwidth = pos.width;
+    SV_SetScrollBar(sv);
+
+    width = pos.width-sv->addrend;
+    if ( width < 5 ) width = 5;
+    GGadgetResize(sv->tf,width,sv->fh);
+
+    GGadgetGetSize(sv->ok,&gsize);
+    GGadgetMove(sv->ok,gsize.x,event->u.resize.size.height-GDrawPointsToPixels(sv->gw,33));
+    GGadgetMove(sv->cancel,event->u.resize.size.width-gsize.x-gsize.width,event->u.resize.size.height-GDrawPointsToPixels(sv->gw,30));
+    GGadgetGetSize(sv->setsize,&gsize);
+    GGadgetMove(sv->setsize,(event->u.resize.size.width-gsize.width)/2,
+	    event->u.resize.size.height-GDrawPointsToPixels(sv->gw,60));
+    
+    GDrawRequestExpose(sv->gw,NULL,false);
+    GDrawRequestExpose(sv->v,NULL,false);
+}
+
+static void short_expose(ShortView *sv,GWindow pixmap,GRect *rect) {
+    int low, high;
+    int x,y;
+    char cval[8], caddr[8]; unichar_t uval[8], uaddr[8];
+    int index;
+
+    GDrawSetFont(pixmap,sv->gfont);
+
+    low = ( (rect->y-EDGE_SPACER)/sv->fh ) * sv->fh + EDGE_SPACER;
+    high = ( (rect->y+rect->height+sv->fh-1-EDGE_SPACER)/sv->fh ) * sv->fh +EDGE_SPACER;
+    if ( high>sv->vheight-EDGE_SPACER ) high = sv->vheight-EDGE_SPACER;
+
+    GDrawDrawLine(pixmap,sv->addrend-ADDR_SPACER/2,rect->y,sv->addrend-ADDR_SPACER/2,rect->y+rect->height,0x000000);
+
+    index = (sv->lpos+(low-EDGE_SPACER)/sv->fh);
+    y = low;
+    for ( ; y<=high && index<sv->len/2; ++index ) {
+	sprintf( caddr, "%d", index );
+	uc_strcpy(uaddr,caddr);
+	x = sv->addrend - ADDR_SPACER - GDrawGetTextWidth(pixmap,uaddr,-1,NULL);
+	GDrawDrawText(pixmap,x,y+sv->as,uaddr,-1,NULL,0x000000);
+
+	sprintf( cval, "%d", sv->edits[index] );
+	uc_strcpy(uval,cval);
+	GDrawDrawText(pixmap,sv->addrend,y+sv->as,uval,-1,NULL,0x000000);
+	y += sv->fh;
+    }
+}
+
+static void short_mousemove(ShortView *sv,int pos) {
+    /*GGadgetPreparePopup(sv->gw,msg);*/
+}
+
+static void short_scroll(ShortView *sv,struct sbevent *sb) {
+    int newpos = sv->lpos;
+
+    switch( sb->type ) {
+      case et_sb_top:
+        newpos = 0;
+      break;
+      case et_sb_uppage:
+        newpos -= sv->vheight/sv->fh;
+      break;
+      case et_sb_up:
+        --newpos;
+      break;
+      case et_sb_down:
+        ++newpos;
+      break;
+      case et_sb_downpage:
+        newpos += sv->vheight/sv->fh;
+      break;
+      case et_sb_bottom:
+        newpos = sv->lheight-sv->vheight/sv->fh;
+      break;
+      case et_sb_thumb:
+      case et_sb_thumbrelease:
+        newpos = sb->pos;
+      break;
+    }
+    if ( newpos>sv->lheight-sv->vheight/sv->fh )
+        newpos = sv->lheight-sv->vheight/sv->fh;
+    if ( newpos<0 ) newpos =0;
+    if ( newpos!=sv->lpos ) {
+	int diff = newpos-sv->lpos;
+	sv->lpos = newpos;
+	GScrollBarSetPos(sv->vsb,sv->lpos);
+	if ( sv->active!=-1 ) {
+	    GRect pos;
+	    GGadgetGetSize(sv->tf,&pos);
+	    GGadgetMove(sv->tf,sv->addrend,pos.y+diff*sv->fh);
+	}
+	GDrawScroll(sv->v,NULL,0,diff*sv->fh);
+    }
+}
+
+static void ShortViewFree(ShortView *sv) {
+    sv->sf->cvt_dlg = NULL;
+    free(sv->edits);
+    free(sv);
+}
+
+static int sv_v_e_h(GWindow gw, GEvent *event) {
+    ShortView *sv = (ShortView *) GDrawGetUserData(gw);
+
+    switch ( event->type ) {
+      case et_expose:
+	short_expose(sv,gw,&event->u.expose.rect);
+      break;
+      case et_char:
+	if ( event->u.chr.keysym == GK_Help || event->u.chr.keysym == GK_F1 )
+	    help("ttfinstrs.html#cvt");
+      break;
+      case et_mousemove: case et_mousedown: case et_mouseup:
+	GGadgetEndPopup();
+	if ( event->type==et_mousemove )
+	    short_mousemove(sv,event->u.mouse.y);
+	else if ( event->type == et_mousedown ) {
+	    int l = (event->u.mouse.y-EDGE_SPACER)/sv->fh + sv->lpos;
+	    unichar_t ubuf[20]; char buf[20];
+	    if ( sfinishup(sv,true) && event->u.mouse.x>sv->addrend &&
+		    l<sv->len/2 && l!=sv->active ) {
+		sv->active = l;
+		GGadgetMove(sv->tf, sv->addrend,
+					(l-sv->lpos)*sv->fh+EDGE_SPACER+1);
+		sprintf( buf, "%d", sv->edits[sv->active] );
+		uc_strcpy(ubuf,buf);
+		GGadgetSetTitle(sv->tf,ubuf);
+		GDrawPostEvent(event);	/* And we hope the tf catches it this time */
+	    }
+	}
+      break;
+      case et_timer:
+      break;
+      case et_focus:
+      break;
+    }
+return( true );
+}
+
+static int sv_e_h(GWindow gw, GEvent *event) {
+    ShortView *sv = (ShortView *) GDrawGetUserData(gw);
+
+    switch ( event->type ) {
+      case et_expose:
+	GDrawDrawLine(gw,0,sv->vheight,sv->vwidth,sv->vheight,0x000000);
+      break;
+      case et_resize:
+	short_resize(sv,event);
+      break;
+      case et_char:
+	if ( event->u.chr.keysym == GK_Help || event->u.chr.keysym == GK_F1 )
+	    help("ttfinstrs.html#cvt");
+      break;
+      case et_controlevent:
+	switch ( event->u.control.subtype ) {
+	  case et_scrollbarchange:
+	    short_scroll(sv,&event->u.control.u.sb);
+	  break;
+	}
+      break;
+      case et_close:
+	SV_DoClose(sv);
+      break;
+      case et_destroy:
+	ShortViewFree(sv);
+      break;
+    }
+return( true );
+}
+
+/* cvt table */
+static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
+    ShortView *sv = gcalloc(1,sizeof(ShortView));
+    unichar_t title[60];
+    GRect pos, gsize;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    FontRequest rq;
+    static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','u','n','i','f','o','n','t', '\0' };
+    int as,ds,ld, lh;
+    GGadgetData gd;
+    GTextInfo lab;
+    GGadget *sb;
+    static unichar_t num[] = { '0',  '\0' };
+    int numlen;
+    static GBox tfbox;
+    int i;
+
+    sv->table = tab;
+    sv->sf = sf;
+    sf->cvt_dlg = sv;
+    sv->tag = tag;
+    if ( tab==NULL ) {
+	sv->edits = galloc(2);
+	sv->len = 0;
+    } else {
+	sv->len = tab->len;
+	sv->edits = galloc(tab->len+1);
+	for ( i=0; i<tab->len/2; ++i )
+	    sv->edits[i] = (tab->data[i<<1]<<8) | tab->data[(i<<1)+1];
+    }
+
+    title[0] = (tag>>24)&0xff;
+    title[1] = (tag>>16)&0xff;
+    title[2] = (tag>>8 )&0xff;
+    title[3] = (tag    )&0xff;
+    title[4] = ' ';
+    uc_strncpy(title+5, sf->fontname, sizeof(title)/sizeof(title[0])-6);
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_icon;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.window_title = title;
+    wattrs.icon = ttf_icon;
+    pos.x = pos.y = 0;
+    pos.width =GDrawPointsToPixels(NULL,150);
+    pos.height = GDrawPointsToPixels(NULL,200);
+    sv->gw = gw = GDrawCreateTopWindow(NULL,&pos,sv_e_h,sv,&wattrs);
+
+    memset(&gd,0,sizeof(gd));
+    memset(&lab,0,sizeof(lab));
+    gd.pos.x = 5; gd.pos.y = 105;
+    gd.pos.width = -1;
+    lab.text = (unichar_t *) _STR_OK;
+    lab.text_in_resource = true;
+    gd.label = &lab;
+    gd.flags = gg_visible|gg_enabled|gg_but_default;
+    gd.handle_controlevent = SV_OK;
+    sv->ok = GButtonCreate(gw,&gd,sv);
+    gd.pos.x = -8; gd.pos.y += 3;
+    gd.pos.width = -1;
+    lab.text = (unichar_t *) _STR_Cancel;
+    lab.text_in_resource = true;
+    gd.label = &lab;
+    gd.flags = gg_visible|gg_enabled|gg_but_cancel;
+    gd.handle_controlevent = SV_Cancel;
+    sv->cancel = GButtonCreate(gw,&gd,sv);
+    lab.text = (unichar_t *) _STR_ChangeLength;
+    gd.pos.width = 90;
+    gd.flags = gg_visible|gg_enabled;
+    gd.handle_controlevent = SV_ChangeLength;
+    sv->setsize = GButtonCreate(gw,&gd,sv);
+    sv->bh = GDrawPointsToPixels(gw,64);
+
+    gd.pos.y = 0; gd.pos.height = pos.height-sv->bh;
+    gd.pos.width = GDrawPointsToPixels(gw,_GScrollBar_Width);
+    gd.pos.x = pos.width-gd.pos.width;
+    gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_sb_vert;
+    gd.handle_controlevent = NULL;
+    sv->vsb = sb = GScrollBarCreate(gw,&gd,sv);
+    GGadgetGetSize(sv->vsb,&gsize);
+    sv->sbw = gsize.width;
+
+    wattrs.mask = wam_events|wam_cursor;
+    pos.x = 0; pos.y = 0;
+    pos.width = gd.pos.x; pos.height -= sv->bh;
+    sv->v = GWidgetCreateSubWindow(gw,&pos,sv_v_e_h,sv,&wattrs);
+    GDrawSetVisible(sv->v,true);
+
+    memset(&rq,0,sizeof(rq));
+    rq.family_name = monospace;
+    rq.point_size = -12;
+    rq.weight = 400;
+    sv->gfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+    GDrawSetFont(sv->v,sv->gfont);
+    GDrawFontMetrics(sv->gfont,&as,&ds,&ld);
+    sv->as = as+1;
+    sv->fh = sv->as+ds;
+
+    sv->chrlen = numlen = GDrawGetTextWidth(sv->v,num,1,NULL);
+    sv->addrend = 6*numlen + ADDR_SPACER + EDGE_SPACER;
+
+    tfbox.main_background = tfbox.main_foreground = COLOR_DEFAULT;
+    gd.pos.y = -100; gd.pos.height = sv->fh;
+    gd.pos.x = sv->addrend;
+    memset(&lab,'\0',sizeof(lab));
+    lab.text = num+1;
+    lab.font = sv->gfont;
+    gd.label = &lab;
+    gd.box = &tfbox;
+    gd.flags = gg_visible|gg_enabled|gg_sb_vert|gg_dontcopybox;
+    sv->tf = GTextFieldCreate(sv->v,&gd,NULL);
+    sv->active = -1;
+
+    lh = sv->len/2;
+    if ( lh>40 ) lh = 40;
+    if ( lh<4 ) lh = 4;
+    if ( pos.width<sv->addrend+6*numlen+EDGE_SPACER+sv->sbw )
+	pos.width = sv->addrend+6*numlen+EDGE_SPACER+sv->sbw;
+    GDrawResize(sv->gw,pos.width,lh*sv->fh+2*EDGE_SPACER);
+
+    GDrawSetVisible(gw,true);
+}
+
+int SFCloseAllInstrs(SplineFont *sf) {
+    struct instrdata *id, *next;
+    int changed;
+    char name[12], *npt;
+    static int buts[] = { _STR_OK, _STR_Cancel, 0 };
+
+    for ( id = sf->instr_dlgs; id!=NULL; id=next ) {
+	next = id->next;
+	changed = id->changed;
+	if ( !changed && id->id->inedit ) {
+	    if ( !IVParse(id->id))
+		changed = true;
+	    else
+		changed = id->changed;
+	}
+	if ( changed ) {
+	    if ( id->tag==0 )
+		npt = id->sc->name;
+	    else {
+		name[0] = name[5] = '\'';
+		name[1] = id->tag>>24; name[2] = (id->tag>>16)&0xff; name[3] = (id->tag>>8)&0xff; name[4] = id->tag&0xff;
+		name[6] = 0;
+		npt = name;
+	    }
+	    GDrawRaise(id->id->gw);
+	    if ( GWidgetAskR(_STR_InstrChanged,buts,0,1,_STR_AskInstrChanged,npt)==1 )
+return( false );
+	}
+	GDrawDestroyWindow(id->id->gw);
+    }
+    if ( sf->cvt_dlg!=NULL ) {
+	if ( sf->cvt_dlg->changed ) {
+	    name[0] = name[5] = '\'';
+	    name[1] = id->tag>>24; name[2] = (id->tag>>16)&0xff; name[3] = (id->tag>>8)&0xff; name[4] = id->tag&0xff;
+	    name[6] = 0;
+	    npt = name;
+	    GDrawRaise(sf->cvt_dlg->gw);
+	    if ( GWidgetAskR(_STR_InstrChanged,buts,0,1,_STR_AskInstrChanged,npt)==1 )
+return( false );
+	}
+	GDrawDestroyWindow(sf->cvt_dlg->gw);
+    }
+    if ( screen_display!=NULL ) {
+	GDrawSync(NULL);
+	GDrawProcessPendingEvents(NULL);
+    }
+return( true );
+}
+
+void SFEditTable(SplineFont *sf, uint32 tag) {
+    struct instrdata *id;
+    struct ttf_table *tab;
+    char name[12];
+    unichar_t title[100];
+
+    tab = SFFindTable(sf,tag);
+    if ( tag!=CHR('c','v','t',' ') ) {
+	for ( id = sf->instr_dlgs; id!=NULL && id->tag!=tag; id=id->next );
+	if ( id!=NULL ) {
+	    GDrawSetVisible(id->id->gw,true);
+	    GDrawRaise(id->id->gw);
+return;
+	}
+
+	id = gcalloc(1,sizeof(*id));
+	id->sf = sf;
+	id->tag = tag;
+	id->instr_cnt = id->max = tab==NULL ? 0 : tab->len;
+	id->instrs = galloc(id->max+1);
+	if ( tab!=NULL && tab->data!=NULL )
+	    memcpy(id->instrs,tab->data,id->instr_cnt);
+	else
+	    id->instrs[0]='\0';
+	name[0] = name[5] = '\'';
+	name[1] = tag>>24; name[2] = (tag>>16)&0xff; name[3] = (tag>>8)&0xff; name[4] = tag&0xff;
+	name[6] = 0;
+	u_sprintf(title,GStringGetResource(_STR_TTFInstructionsFor,NULL),name);
+	InstrDlgCreate(id,title);
+    } else {
+	if ( sf->cvt_dlg!=NULL ) {
+	    GDrawSetVisible(sf->cvt_dlg->gw,true);
+	    GDrawRaise(sf->cvt_dlg->gw);
+return;
+	}
+	cvtCreateEditor(tab,sf,tag);
+    }
 }

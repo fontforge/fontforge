@@ -930,6 +930,7 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_HStemHist	2509
 #define MID_VStemHist	2510
 #define MID_BlueValuesHist	2511
+#define MID_Editcvt	2512
 #define MID_OpenBitmap	2700
 #define MID_OpenOutline	2701
 #define MID_Revert	2702
@@ -2796,7 +2797,10 @@ return;
 
 static void FVMenuEditTable(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    SFEditTable(fv->sf,mi->mid==MID_Editprep?CHR('p','r','e','p'):CHR('f','p','g','m'));
+    SFEditTable(fv->sf,
+	    mi->mid==MID_Editprep?CHR('p','r','e','p'):
+	    mi->mid==MID_Editfpgm?CHR('f','p','g','m'):
+				  CHR('c','v','t',' '));
 }
 
 static void FVMenuClearInstrs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -3151,7 +3155,7 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_AutoInstr: case MID_EditInstructions:
 	    mi->ti.disabled = !fv->sf->order2 || anychars==-1;
 	  break;
-	  case MID_Editfpgm: case MID_Editprep:
+	  case MID_Editfpgm: case MID_Editprep: case MID_Editcvt:
 	    mi->ti.disabled = !fv->sf->order2 ;
 	  break;
 	  case MID_ClearHints: case MID_ClearWidthMD: case MID_ClearInstrs:
@@ -3661,6 +3665,7 @@ static GMenuItem htlist[] = {
     { { (unichar_t *) _STR_EditInstructions, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, '\0', 0, NULL, NULL, FVMenuEditInstrs, MID_EditInstructions },
     { { (unichar_t *) _STR_Editfpgm, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuEditTable, MID_Editfpgm },
     { { (unichar_t *) _STR_Editprep, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuEditTable, MID_Editprep },
+    { { (unichar_t *) _STR_Editcvt, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuEditTable, MID_Editcvt },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_ClearHints, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuClearHints, MID_ClearHints },
     { { (unichar_t *) _STR_ClearWidthMD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuClearWidthMD, MID_ClearWidthMD },

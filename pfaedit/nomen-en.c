@@ -301,6 +301,7 @@ static char str_DebugDDD = "Debug...";
 static char mnemonic_DebugDDD = 'D';
 static char str_Editfpgm[] = "Edit 'fpgm'...";
 static char str_Editprep[] = "Edit 'prep'...";
+static char str_Editcvt[] = "Edit 'cvt '...";
 static char str_ClearHints[] = "Clear Hints";
 static unichar_t mnemonic_ClearHints[] = 'C';
 static char str_ClearInstructions[] = "Clear Instructions";
@@ -2918,6 +2919,8 @@ static char *str_BracketNumTooBig = "Bracketted value is too large"
 static char *str_InvalidShort = "A value must be between [-32768,32767]"
 static char *str_InstrChanged = "Instructions were changed";
 static char *str_AskInstrChanged = "The instructions for %.80hs have changed. Do you want to lose those changes?"
+static char *str_ChangeLength = "Change Length"
+static char *str_EnterNewLength = "How many entries should there be in the cvt table?"
     /* cvgridfit.c */
 static char *str_DPI = "DPI:";
 static char mnemonic_DPI = 'P';
