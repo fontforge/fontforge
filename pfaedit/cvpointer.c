@@ -475,7 +475,7 @@ return;
 		cv->vwidthsel = !cv->vwidthsel;
 	    else
 		cv->vwidthsel = true;
-	    if ( cv->widthsel ) {
+	    if ( cv->vwidthsel ) {
 		cv->oldvwidth = cv->sc->vwidth;
 		fs->p->cy = cv->sc->parent->vertical_origin-cv->sc->vwidth;
 		CVInfoDraw(cv,cv->gw);
@@ -826,7 +826,7 @@ return;
     if ( cv->widthsel )
 	cv->sc->width += dx;
     if ( cv->vwidthsel )
-	cv->sc->vwidth += dy;
+	cv->sc->vwidth -= dy;
     CVSetCharChanged(cv,true);
     CVCheckMerges( cv );
 }
