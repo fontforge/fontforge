@@ -231,13 +231,13 @@ static void DVCvtExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 #define CID_EmUnit	1004
 #define CID_Current	1005
 #define CID_Original	1006
-static int show_twilight = true, show_grid=true, show_current=true;
+static int show_twilight = false, show_grid=true, show_current=true;
 
 static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     TT_ExecContext exc = DebuggerGetEContext(dv->dc);
     char buffer[100];
     unichar_t ubuffer[100];
-    int i, y;
+    int i, l, y;
     FT_Vector *pts;
     int n, n_watch;
     char watched;
@@ -258,19 +258,33 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 	watches = DebuggerGetWatches(dv->dc,&n_watch);
 
 	GDrawSetFont(pixmap,dv->ii.gfont);
-	y = 3+dv->ii.as;
+	y = 3+dv->ii.as-dv->points_offtop*dv->ii.fh;
 	for ( i=0; i<n; ++i ) {
+	    if ( i==0 ) l=n-1; else l=i-1;
+	    if ( !(r->tags[i]&FT_Curve_Tag_On) && !(r->tags[l]&FT_Curve_Tag_On)) {
+		if ( show_grid )
+		    sprintf(buffer, "   : I    %.2f,%.2f",
+			    (pts[i].x+pts[l].x)/128.0, (pts[i].y+pts[l].y)/128.0 );
+		else
+		    sprintf(buffer, "   : I    %g,%g",
+			    (pts[i].x+pts[l].x)*dv->scale/2.0, (pts[i].y+pts[l].y)*dv->scale/2.0 );
+		uc_strcpy(ubuffer,buffer);
+		if ( y>0 )
+		    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
+		y += dv->ii.fh;
+	    }
 	    watched = i<n_watch && !show_twilight && watches!=NULL && watches[i] ? 'W' : ' ';
 	    if ( show_grid )
-		sprintf(buffer, "%3d: %c%c%c %.2f,%.2f", i,
-			r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ', watched,
+		sprintf(buffer, "%3d: %c%c%c%c %.2f,%.2f", i,
+			r->tags[i]&FT_Curve_Tag_On?'P':'C', r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ', watched,
 			pts[i].x/64.0, pts[i].y/64.0 );
 	    else
-		sprintf(buffer, "%3d: %c%c%c %g,%g", i,
-			r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ', watched,
+		sprintf(buffer, "%3d: %c%c%c%c %g,%g", i,
+			r->tags[i]&FT_Curve_Tag_On?'P':'C', r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ', watched,
 			pts[i].x*dv->scale, pts[i].y*dv->scale );
 	    uc_strcpy(ubuffer,buffer);
-	    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
+	    if ( y>0 )
+		GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
 	    if ( y>event->u.expose.rect.y+event->u.expose.rect.height )
 	break;
 	    y += dv->ii.fh;
@@ -357,8 +371,7 @@ static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scale) {
 	    ++i;
 	}
 	if ( start==i-1 ) {
-	    /* MS chinese fonts have contours consisting of a single off curve*/
-	    /*  point. What on earth do they think that means? */
+	    /* Single point contours (probably for positioning components, etc.) */
 	    sp = SplinePointCreate(pts->cur[start].x*scale,pts->cur[start].y*scale);
 	    sp->ttfindex = i-1;
 	    cur->first = cur->last = sp;
@@ -373,12 +386,18 @@ static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scale) {
 	    cur->last = sp;
 	    cur->last->nextcp.x = cur->first->prevcp.x = pts->cur[start].x * scale;
 	    cur->last->nextcp.y = cur->first->prevcp.y = pts->cur[start].y * scale;
+	    cur->first->noprevcp = false;
+	    cur->last->nextcpindex = start;
 	} else if ( !(pts->tags[i-1]&FT_Curve_Tag_On)) {
 	    cur->last->nextcp.x = cur->first->prevcp.x = pts->cur[i-1].x * scale;
 	    cur->last->nextcp.y = cur->first->prevcp.y = pts->cur[i-1].y * scale;
+	    cur->last->nonextcp = cur->first->noprevcp = false;
+	    cur->last->nextcpindex = i-1;
 	} else if ( !(pts->tags[start]&FT_Curve_Tag_On) ) {
 	    cur->last->nextcp.x = cur->first->prevcp.x = pts->cur[start].x * scale;
 	    cur->last->nextcp.y = cur->first->prevcp.y = pts->cur[start].y * scale;
+	    cur->last->nonextcp = cur->first->noprevcp = false;
+	    cur->last->nextcpindex = start;
 	}
 	if ( cur->last!=cur->first ) {
 	    SplineMake2(cur->last,cur->first);
@@ -756,9 +775,91 @@ return( DVChar(dv,event));
 return( true );
 }
 
+static int dvpts_cnt(DebugView *dv) {
+    TT_ExecContext exc = DebuggerGetEContext(dv->dc);
+    int i, l, cnt;
+    FT_Vector *pts;
+    int n;
+    TT_GlyphZoneRec *r;
+
+    show_twilight = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Twilight));
+    show_current = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Current));
+    r = show_twilight ? &exc->twilight : &exc->pts;
+    n = r->n_points;
+    pts = show_current ? r->cur : r->org;
+
+    cnt = 0;
+    for ( i=0; i<n; ++i ) {
+	if ( i==0 ) l=n-1; else l=i-1;
+	if ( !(r->tags[i]&FT_Curve_Tag_On) && !(r->tags[l]&FT_Curve_Tag_On))
+	    ++cnt;
+	++cnt;
+    }
+return( cnt );
+}
+
+static void DVPointsFigureSB(DebugView *dv) {
+    int l, cnt;
+    GRect size;
+
+    cnt = dvpts_cnt(dv);
+    GDrawGetSize(dv->points_v,&size);
+    l = size.width/dv->ii.fh;
+    GScrollBarSetBounds(dv->pts_vsb,0,cnt,l);
+    if ( dv->points_offtop+l > cnt )
+	dv->points_offtop = cnt-l;
+    if ( dv->points_offtop < 0 )
+	dv->points_offtop = 0;
+    GScrollBarSetPos(dv->pts_vsb,dv->points_offtop);
+}
+
+static void dvpts_scroll(DebugView *dv,struct sbevent *sb) {
+    int newpos = dv->cvt_offtop;
+    GRect size;
+    int cnt;
+
+    GDrawGetSize(dv->points_v,&size);
+    cnt = dvpts_cnt(dv);
+    switch( sb->type ) {
+      case et_sb_top:
+        newpos = 0;
+      break;
+      case et_sb_uppage:
+        newpos -= size.height/dv->ii.fh;
+      break;
+      case et_sb_up:
+        --newpos;
+      break;
+      case et_sb_down:
+        ++newpos;
+      break;
+      case et_sb_downpage:
+        newpos += size.height/dv->ii.fh;
+      break;
+      case et_sb_bottom:
+        newpos = cnt-size.height/dv->ii.fh;
+      break;
+      case et_sb_thumb:
+      case et_sb_thumbrelease:
+        newpos = sb->pos;
+      break;
+    }
+    if ( newpos>cnt-size.height/dv->ii.fh )
+        newpos = cnt-size.height/dv->ii.fh;
+    if ( newpos<0 ) newpos =0;
+    if ( newpos!=dv->points_offtop ) {
+	int diff = newpos-dv->points_offtop;
+	dv->points_offtop = newpos;
+	GScrollBarSetPos(dv->pts_vsb,dv->points_offtop);
+	GDrawScroll(dv->points_v,NULL,0,diff*dv->ii.fh);
+    }
+}
+
 static int dvpoints_e_h(GWindow gw, GEvent *event) {
     DebugView *dv = (DebugView *) GDrawGetUserData(gw);
     GRect r;
+    extern int _GScrollBar_Width;
+    int sbwidth;
 
     if ( dv==NULL )
 return( true );
@@ -774,12 +875,19 @@ return( DVChar(dv,event));
 	switch ( event->u.control.subtype ) {
 	  case et_radiochanged:
 	    GDrawRequestExpose(dv->points_v,NULL,false);
+	    DVPointsFigureSB(dv);
+	  break;
+	  case et_scrollbarchange:
+	    dvpts_scroll(dv,&event->u.control.u.sb);
 	  break;
 	}
       break;
       case et_resize:
 	GDrawGetSize(gw,&r);
-	GDrawResize(dv->points_v,r.width,r.height-dv->pts_head);
+	sbwidth = GDrawPointsToPixels(gw,_GScrollBar_Width);
+	GDrawResize(dv->points_v,r.width-sbwidth,r.height-dv->pts_head);
+	GGadgetResize(dv->pts_vsb,sbwidth,r.height-dv->pts_head);
+	DVPointsFigureSB(dv);
       break;
       case et_close:
 	GDrawDestroyWindow(dv->points);
@@ -961,6 +1069,7 @@ static void DVCreatePoints(DebugView *dv) {
     /*extern int _GScrollBar_Width;*/
     GGadgetCreateData gcd[8];
     GTextInfo label[8];
+    extern int _GScrollBar_Width;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle;
@@ -972,8 +1081,11 @@ static void DVCreatePoints(DebugView *dv) {
     wattrs.window_title = _("Points (TrueType)");
 #endif
     pos.x = 664; pos.y = 732;
-    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,125)); pos.height = 269;
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,132+_GScrollBar_Width));
+    pos.height = 269;
     dv->points = GDrawCreateTopWindow(NULL,&pos,dvpoints_e_h,dv,&wattrs);
+
+    dv->pts_head = GDrawPointsToPixels(NULL,GGadgetScale(5+3*16+3));
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
@@ -1026,12 +1138,19 @@ static void DVCreatePoints(DebugView *dv) {
     gcd[5].gd.cid = CID_EmUnit;
     gcd[5].creator = GRadioCreate;
 
-    GGadgetsCreate(dv->points,gcd);
+    gcd[6].gd.pos.width = GDrawPointsToPixels(NULL,_GScrollBar_Width);
+    gcd[6].gd.pos.height = pos.height-dv->pts_head;
+    gcd[6].gd.pos.x = pos.width-gcd[6].gd.pos.width; gcd[6].gd.pos.y = dv->pts_head;
+    gcd[6].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_sb_vert;
+    gcd[6].creator = GScrollBarCreate;
 
-    dv->pts_head = GDrawPointsToPixels(NULL,GGadgetScale(5+3*16+3));
+    GGadgetsCreate(dv->points,gcd);
+    dv->pts_vsb = gcd[6].ret;
+
     pos.x = 0;
     pos.y = dv->pts_head;
     pos.height -= dv->pts_head;
+    pos.width -= gcd[6].gd.pos.width;
     dv->points_v = GWidgetCreateSubWindow(dv->points,&pos,dvpointsv_e_h,dv,&wattrs);
     GDrawSetVisible(dv->points_v,true);
     GDrawSetVisible(dv->points,true);
