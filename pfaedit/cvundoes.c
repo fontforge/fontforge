@@ -966,7 +966,7 @@ static void PasteNonExistantRefCheck(SplineChar *sc,Undoes *paster,RefChar *ref,
 }
 
 /* when pasting from the fontview we do a clear first */
-static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv) {
+static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 
     switch ( paster->undotype ) {
       case ut_noop:
@@ -976,8 +976,11 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv) {
 	SCPreserveState(sc,paster->undotype==ut_statehint);
 	SCSynchronizeWidth(sc,paster->u.state.width,sc->width,fv);
 	sc->vwidth = paster->u.state.vwidth;
-	SplinePointListsFree(sc->splines);
-	sc->splines = NULL;
+	if ( doclear ) {
+	    SplinePointListsFree(sc->splines);
+	    sc->splines = NULL;
+	    SCRemoveDependents(sc);
+	}
 	if ( paster->u.state.splines!=NULL )
 	    sc->splines = SplinePointListCopy(paster->u.state.splines);
 	/* Ignore any images, can't be in foreground level */
@@ -988,7 +991,6 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv) {
 	    SCSetMetaData(sc,paster->u.state.charname,
 		    paster->u.state.unicodeenc==0xffff?-1:paster->u.state.unicodeenc,
 		    paster->u.state.lig);
-	SCRemoveDependents(sc);
 	if ( paster->u.state.refs!=NULL ) {
 	    RefChar *new, *refs;
 	    SplineChar *rsc;
@@ -1311,7 +1313,7 @@ static BDFFont *BitmapCreateCheck(FontView *fv,int *yestoall, int first, int pix
 return( bdf );
 }
 
-void PasteIntoFV(FontView *fv) {
+void PasteIntoFV(FontView *fv,int doclear) {
     Undoes *cur=NULL, *bmp;
     BDFFont *bdf;
     int i, cnt=0;
@@ -1366,11 +1368,11 @@ void PasteIntoFV(FontView *fv) {
 	  break;
 	  case ut_state: case ut_width: case ut_vwidth:
 	  case ut_statehint: case ut_statename:
-	    PasteToSC(SFMakeChar(fv->sf,i),cur,fv);
+	    PasteToSC(SFMakeChar(fv->sf,i),cur,fv,doclear);
 	  break;
 	  case ut_bitmapsel: case ut_bitmap:
 	    if ( onlycopydisplayed && fv->show!=fv->filled )
-		_PasteToBC(BDFMakeChar(fv->show,i),fv->show->pixelsize,cur,true,fv);
+		_PasteToBC(BDFMakeChar(fv->show,i),fv->show->pixelsize,cur,doclear,fv);
 	    else {
 		for ( bdf=fv->sf->bitmaps; bdf!=NULL && bdf->pixelsize!=cur->u.bmpstate.pixelsize; bdf=bdf->next );
 		if ( bdf==NULL ) {
@@ -1378,19 +1380,19 @@ void PasteIntoFV(FontView *fv) {
 		    first = false;
 		}
 		if ( bdf!=NULL )
-		    _PasteToBC(BDFMakeChar(bdf,i),bdf->pixelsize,cur,true,fv);
+		    _PasteToBC(BDFMakeChar(bdf,i),bdf->pixelsize,cur,doclear,fv);
 	    }
 	  break;
 	  case ut_composit:
 	    if ( cur->u.composit.state!=NULL )
-		PasteToSC(SFMakeChar(fv->sf,i),cur->u.composit.state,fv);
+		PasteToSC(SFMakeChar(fv->sf,i),cur->u.composit.state,fv,doclear);
 	    for ( bmp=cur->u.composit.bitmaps; bmp!=NULL; bmp = bmp->next ) {
 		for ( bdf=fv->sf->bitmaps; bdf!=NULL &&
 			bdf->pixelsize!=bmp->u.bmpstate.pixelsize; bdf=bdf->next );
 		if ( bdf==NULL )
 		    bdf = BitmapCreateCheck(fv,&yestoall,first,bmp->u.bmpstate.pixelsize);
 		if ( bdf!=NULL )
-		    _PasteToBC(BDFMakeChar(bdf,i),bdf->pixelsize,bmp,true,fv);
+		    _PasteToBC(BDFMakeChar(bdf,i),bdf->pixelsize,bmp,doclear,fv);
 	    }
 	    first = false;
 	  break;

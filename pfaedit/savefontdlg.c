@@ -209,6 +209,126 @@ return( false );
 return( true );
 }
 
+static int _DoSave(SplineFont *sf,char *newname,real *sizes) {
+    unichar_t *path;
+    int err=false;
+    int iscid = oldformatstate==ff_cid || oldformatstate==ff_otfcid || oldformatstate==ff_otfciddfont;
+
+    path = uc_copy(newname);
+    GProgressStartIndicator(10,GStringGetResource(_STR_SavingFont,NULL),
+		GStringGetResource(oldformatstate==ff_ttf || oldformatstate==ff_ttfsym?_STR_SavingTTFont:
+		 (oldformatstate==ff_otf || oldformatstate==ff_otfdfont) ?_STR_SavingOpenTypeFont:
+		 oldformatstate==ff_cid || oldformatstate==ff_otfcid || oldformatstate==ff_otfciddfont ?_STR_SavingCIDFont:
+		 _STR_SavingPSFont,NULL),
+	    path,sf->charcnt,1);
+    free(path);
+    GProgressEnableStop(false);
+    if ( oldformatstate!=ff_none ) {
+	int oerr = 0;
+	switch ( oldformatstate ) {
+	  case ff_pfa: case ff_pfb: case ff_ptype3: case ff_ptype0: case ff_cid:
+	    oerr = !WritePSFont(newname,sf,oldformatstate);
+	  break;
+	  case ff_ttf: case ff_ttfsym: case ff_otf: case ff_otfcid:
+	    oerr = !WriteTTFFont(newname,sf,oldformatstate,sizes,oldbitmapstate);
+	  break;
+	  case ff_pfbmacbin:
+	    oerr = !WriteMacPSFont(newname,sf,oldformatstate);
+	  break;
+	  case ff_ttfmacbin: case ff_ttfdfont: case ff_otfdfont: case ff_otfciddfont:
+	    oerr = !WriteMacTTFFont(newname,sf,oldformatstate,sizes,
+		    oldbitmapstate);
+	  break;
+	}
+	if ( oerr ) {
+	    GWidgetErrorR(_STR_Savefailedtitle,_STR_Savefailedtitle);
+	    err = true;
+	}
+    }
+    if ( !err && oldafmstate ) {
+	GProgressChangeLine1R(_STR_SavingAFM);
+	GProgressIncrementBy(-sf->charcnt);
+	if ( !WriteAfmFile(newname,sf,oldformatstate)) {
+	    GWidgetErrorR(_STR_Afmfailedtitle,_STR_Afmfailedtitle);
+	    err = true;
+	}
+    }
+    if ( !err && oldpfmstate && !iscid ) {
+	GProgressChangeLine1R(_STR_SavingPFM);
+	GProgressIncrementBy(-sf->charcnt);
+	if ( !WritePfmFile(newname,sf,oldformatstate==ff_ptype0)) {
+	    GWidgetErrorR(_STR_Pfmfailedtitle,_STR_Pfmfailedtitle);
+	    err = true;
+	}
+    }
+    if ( (oldbitmapstate==bf_bdf || oldbitmapstate==bf_gdf) && !err ) {
+	GProgressChangeLine1R(_STR_SavingBitmapFonts);
+	GProgressIncrementBy(-sf->charcnt);
+	if ( !WriteBitmaps(newname,sf,sizes,oldbitmapstate))
+	    err = true;
+    } else if ( (oldbitmapstate==bf_nfntmacbin || oldbitmapstate==bf_nfntdfont) &&
+	    !err ) {
+	if ( !WriteMacBitmaps(newname,sf,sizes,oldbitmapstate==bf_nfntdfont))
+	    err = true;
+    }
+    free( sizes );
+    GProgressEndIndicator();
+return( err );
+}
+
+int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype) {
+    int i;
+    static char *bitmaps[] = {"bdf", "ms", "apple", "gdf", "bin", "dfont", NULL };
+    real *sizes=NULL;
+
+    for ( i=0; extensions[i]!=NULL; ++i ) {
+	if ( strmatch(filename-strlen(extensions[i]),extensions[i])==0 )
+    break;
+    }
+    if ( extensions[i]==NULL ) i = ff_pfb;
+    if ( i==ff_ptype3 && sf->encoding_name>=em_first2byte && sf->encoding_name<=em_unicode )
+	i = ff_ptype0;
+    else if ( i==ff_ttfdfont && strmatch(filename-strlen(".otf.dfont"),".otf.dfont")==0 )
+	i = ff_otfdfont;
+    if ( sf->cidmaster!=NULL ) {
+	if ( i==ff_otf ) i = ff_otfcid;
+	else if ( i==ff_otfdfont ) i = ff_otfciddfont;
+    }
+    oldformatstate = i;
+
+    if ( sf->bitmaps==NULL ) i = bf_none;
+    else if ( strmatch(bitmaptype,"ttf")==0 ) i = bf_ttf_ms;
+    else for ( i=0; bitmaps[i]!=NULL; ++i ) {
+	if ( strmatch(bitmaptype,bitmaps[i])==0 )
+    break;
+    }
+    oldbitmapstate = i;
+
+    oldafmstate = true;
+    if ( oldformatstate==ff_ttf || oldformatstate==ff_ttfsym || oldformatstate==ff_otf ||
+	    oldformatstate==ff_ttfdfont || oldformatstate==ff_otfdfont || oldformatstate==ff_otfciddfont ||
+	    oldformatstate==ff_otfcid || oldformatstate==ff_ttfmacbin || oldformatstate==ff_none )
+	oldafmstate = false;
+
+    if ( oldbitmapstate!=bf_none ) {
+	BDFFont *bdf;
+	int cnt;
+	for ( i=0; i<2; ++i ) {
+	    cnt = 0;
+	    for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+		if ( sizes!=NULL )
+		    sizes[cnt] = bdf->pixelsize;
+		++cnt;
+	    }
+	    if ( i==1 )
+	break;
+	    sizes = galloc((cnt+1)*sizeof(real));
+	}
+	sizes[cnt] = 0;
+    }
+return( !_DoSave(sf,filename,sizes));
+}
+
 static void DoSave(struct gfc_data *d,unichar_t *path) {
     int err=false;
     char *temp;
@@ -237,70 +357,11 @@ return;
     if ( oldbitmapstate!=bf_none )
 	sizes = ParseBitmapSizes(d->bmpsizes,&err);
 
-    GProgressStartIndicator(10,GStringGetResource(_STR_SavingFont,NULL),
-		GStringGetResource(oldformatstate==ff_ttf || oldformatstate==ff_ttfsym?_STR_SavingTTFont:
-		 (oldformatstate==ff_otf || oldformatstate==ff_otfdfont) ?_STR_SavingOpenTypeFont:
-		 oldformatstate==ff_cid || oldformatstate==ff_otfcid || oldformatstate==ff_otfciddfont ?_STR_SavingCIDFont:
-		 _STR_SavingPSFont,NULL),
-	    path,d->sf->charcnt,1);
-    GProgressEnableStop(false);
-    if ( oldformatstate!=ff_none ) {
-	int oerr = 0;
-	switch ( oldformatstate ) {
-	  case ff_pfa: case ff_pfb: case ff_ptype3: case ff_ptype0: case ff_cid:
-	    oerr = !WritePSFont(temp,d->sf,oldformatstate);
-	  break;
-	  case ff_ttf: case ff_ttfsym: case ff_otf: case ff_otfcid:
-	    oerr = !WriteTTFFont(temp,d->sf,oldformatstate,sizes,oldbitmapstate);
-	  break;
-	  case ff_pfbmacbin:
-	    oerr = !WriteMacPSFont(temp,d->sf,oldformatstate);
-	  break;
-	  case ff_ttfmacbin: case ff_ttfdfont: case ff_otfdfont: case ff_otfciddfont:
-	    oerr = !WriteMacTTFFont(temp,d->sf,oldformatstate,sizes,
-		    oldbitmapstate);
-	  break;
-	}
-	if ( oerr ) {
-	    GWidgetErrorR(_STR_Savefailedtitle,_STR_Savefailedtitle);
-	    err = true;
-	}
-    }
     oldafmstate = GGadgetIsChecked(d->doafm);
     oldpfmstate = GGadgetIsChecked(d->dopfm);
-    if ( !err && oldafmstate ) {
-	GProgressChangeLine1R(_STR_SavingAFM);
-	GProgressIncrementBy(-d->sf->charcnt);
-	if ( !WriteAfmFile(temp,d->sf,oldformatstate)) {
-	    GWidgetErrorR(_STR_Afmfailedtitle,_STR_Afmfailedtitle);
-	    err = true;
-	}
-    }
-    if ( !err && oldpfmstate && !iscid ) {
-	GProgressChangeLine1R(_STR_SavingPFM);
-	GProgressIncrementBy(-d->sf->charcnt);
-	if ( !WritePfmFile(temp,d->sf,oldformatstate==ff_ptype0)) {
-	    GWidgetErrorR(_STR_Pfmfailedtitle,_STR_Pfmfailedtitle);
-	    err = true;
-	}
-    }
-    if ( (oldbitmapstate==bf_bdf || oldbitmapstate==bf_gdf) && !err ) {
-	GProgressChangeLine1R(_STR_SavingBitmapFonts);
-	GProgressIncrementBy(-d->sf->charcnt);
-	if ( !WriteBitmaps(temp,d->sf,sizes,oldbitmapstate))
-	    err = true;
-    } else if ( (oldbitmapstate==bf_nfntmacbin || oldbitmapstate==bf_nfntdfont) &&
-	    !err ) {
-	if ( !WriteMacBitmaps(temp,d->sf,sizes,oldbitmapstate==bf_nfntdfont))
-	    err = true;
-    }
-    free( sizes );
-    if ( !err ) {
-	/*free(d->sf->filename);*/
-	/*d->sf->filename = copy(temp);*/
-	/*SplineFontSetUnChanged(d->sf);*/
-    }
-    GProgressEndIndicator();
+
+    err = _DoSave(d->sf,temp,sizes);
+
     free(temp);
     d->done = !err;
     d->ret = !err;

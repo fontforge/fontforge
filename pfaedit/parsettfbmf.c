@@ -324,8 +324,10 @@ return;
 		if ( sizes[i].ppem>sizes[biggest].ppem )
 		    biggest = i;
 	    sel[biggest] = true;
-	} else
-	    biggest = -1;
+	} else {
+	    for ( i=0; i<cnt; ++i )
+		sel[i] = true;
+	}
     } else if ( onlyone ) {
 	biggest=GWidgetChoicesBR(_STR_LoadBitmapFonts, choices,cnt,biggest,buttons,_STR_LoadTTFBitmaps);
 	if ( biggest!=-1 ) sel[biggest] = true;

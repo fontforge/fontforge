@@ -81,6 +81,7 @@ typedef struct context {
     enum token_type tok;
     Val tok_val;
     Val return_val;
+    Val trace;
     char *filename;
     int lineno;
     FontView *curfv;
@@ -168,14 +169,14 @@ static void dereflvalif(Val *val) {
 /* *************************** Built in Functions *************************** */
 
 static void bQuit(Context *c) {
-    if ( c->argc==0 )
+    if ( c->argc==1 )
 exit(0);
-    if ( c->argc>1 )
+    if ( c->argc>2 )
 	error( c, "Too many arguments" );
-    else if ( c->args[0].type!=v_int )
+    else if ( c->args[1].type!=v_int )
 	error( c, "Expected integer argument" );
     else
-exit(c->args[0].u.ival );
+exit(c->args[1].u.ival );
 exit(1);
 }
 
@@ -258,9 +259,17 @@ static void bSave(Context *c) {
 }
 
 static void bGenerate(Context *c) {
-    /*SplineFont *sf = c->curfv->sf;*/
-    error( c, "Generate fonts isn't implemented yet" );
-    /* !!! */
+    SplineFont *sf = c->curfv->sf;
+    char *bitmaptype = "";
+
+    if ( c->argc!=2 && c->argc!=3 )
+	error( c, "Wrong number of arguments to Generate");
+    if ( c->args[1].type!=v_str || (c->argc==3 && c->args[2].type!=v_str ))
+	error( c, "Bad type of arguments to Generate");
+    if ( c->argc==3 )
+	bitmaptype = c->args[2].u.sval;
+    if ( !GenerateScript(sf,c->args[1].u.sval,bitmaptype) )
+	error(c,"Save failed");
 }
 
 /* **** Edit menu **** */
@@ -288,6 +297,10 @@ static void bCopyWidth(Context *c) {
 
 static void bPaste(Context *c) {
     doEdit(c,4);
+}
+
+static void bPasteInto(Context *c) {
+    doEdit(c,9);
 }
 
 static void bClear(Context *c) {
@@ -422,9 +435,9 @@ static void bReencode(Context *c) {
 	{ em_mac, "mac" },
 	{ em_ksc5601, "ksc5601" },
 	{ em_ksc5601, "wansung" },
-	{ em_big5, "ebig5" },
-	{ em_johab, "ejohab" },
-	{ em_jis208, "jis" },
+	{ em_big5, "big5" },
+	{ em_johab, "johab" },
+	{ em_jis208, "jis208" },
 	{ em_unicode, "unicode" },
 	{ em_unicode, "iso10646" },
 	{ em_unicode, "iso10646-1" },
@@ -848,6 +861,7 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "CopyReference", bCopyReference },
     { "CopyWidth", bCopyWidth },
     { "Paste", bPaste },
+    { "PasteInto", bPasteInto },
     { "Clear", bClear },
     { "ClearBackground", bClearBackground },
     { "CopyFgToBg", bCopyFgToBg },
@@ -1163,21 +1177,22 @@ static void backuptok(Context *c) {
     c->backedup = true;
 }
 
+#define PE_ARG_MAX	20
+
 static void docall(Context *c,char *name,Val *val) {
     /* Be prepared for c->donteval */
-    Val args[ARG_MAX];
+    Val args[PE_ARG_MAX];
     int i;
     enum token_type tok;
     Context sub;
 
- printf( "Calling %s...\n", name );
     tok = NextToken(c);
     if ( tok==tt_rparen )
 	i = 1;
     else {
 	backuptok(c);
 	for ( i=1; tok!=tt_rparen; ++i ) {
-	    if ( i>=ARG_MAX )
+	    if ( i>=PE_ARG_MAX )
 		error(c,"Too many arguments");
 	    expr(c,&args[i]);
 	    tok = NextToken(c);
@@ -1196,8 +1211,28 @@ static void docall(Context *c,char *name,Val *val) {
 	sub.return_val.type = v_void;
 	sub.filename = name;
 	sub.curfv = c->curfv;
+	sub.trace = c->trace;
 	for ( i=0; i<sub.argc; ++i )
 	    dereflvalif(&args[i]);
+
+	if ( c->trace.u.ival ) {
+	    printf( "Calling %s(", name );
+	    for ( i=1; i<sub.argc; ++i ) {
+		if ( i!=1 ) putchar(',');
+		if ( args[i].type == v_int )
+		    printf( "%d", args[i].u.ival );
+		else if ( args[i].type == v_unicode )
+		    printf( "0u%x", args[i].u.ival );
+		else if ( args[i].type == v_str )
+		    printf( "\"%s\"", args[i].u.sval );
+		else if ( args[i].type == v_void )
+		    printf( "<void>");
+		else
+		    printf( "<???>");
+	    }
+	    printf(")\n");
+	}
+
 	for ( i=0; builtins[i].name!=NULL; ++i )
 	    if ( strcmp(builtins[i].name,name)==0 )
 	break;
@@ -1301,6 +1336,9 @@ static void handlename(Context *c,Val *val) {
 	    val->type = v_str;
 	    val->u.sval = copy(sf==NULL?"":
 		    sf->filename!=NULL?sf->filename:sf->origname);
+	} else if ( strcmp(name,"$trace")==0 ) {
+	    val->type = v_lval;
+	    val->u.lval = &c->trace;
 	} else if ( c->locals!=NULL ) {
 	    for ( temp=0; temp<c->lc; ++temp )
 		if ( strcmp(c->locals[temp].name,name)==0 ) {

@@ -1137,6 +1137,8 @@ static void CVHScroll(CharView *cv,struct sbevent *sb);
 static void CVVScroll(CharView *cv,struct sbevent *sb);
 static void CVElide(GWindow gw,struct gmenuitem *mi,GEvent *e);
 static void CVMerge(GWindow gw,struct gmenuitem *mi,GEvent *e);
+static void CVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e);
+static void CVMenuSimplifyMore(GWindow gw,struct gmenuitem *mi,GEvent *e);
 
 
 void CVChar(CharView *cv, GEvent *event ) {
@@ -1153,13 +1155,17 @@ void CVChar(CharView *cv, GEvent *event ) {
 
     CVPaletteActivate(cv);
     CVToolsSetCursor(cv,TrueCharState(event));
-    if ( event->u.chr.keysym=='M' ||event->u.chr.keysym=='m' ) {
-	if ( (event->u.chr.state&ksm_meta) && (event->u.chr.state&ksm_control))
+    if (( event->u.chr.keysym=='M' ||event->u.chr.keysym=='m' ) &&
+	    (event->u.chr.state&ksm_control) ) {
+	if ( (event->u.chr.state&ksm_meta) && (event->u.chr.state&ksm_shift))
+	    CVMenuSimplifyMore(cv->gw,NULL,NULL);
+	else if ( (event->u.chr.state&ksm_shift))
+	    CVMenuSimplify(cv->gw,NULL,NULL);
+	else if ( (event->u.chr.state&ksm_meta) && (event->u.chr.state&ksm_control))
 	    CVElide(cv->gw,NULL,NULL);
 	else
 	    CVMerge(cv->gw,NULL,NULL);
-    }
-    if ( event->u.chr.keysym == GK_Shift_L || event->u.chr.keysym == GK_Shift_R ) {
+    } else if ( event->u.chr.keysym == GK_Shift_L || event->u.chr.keysym == GK_Shift_R ) {
 	GEvent e;
 	e.type = et_mousemove;
 	e.w = cv->v;
@@ -2440,6 +2446,7 @@ return( true );
 #define MID_MakeParallel	2222
 #define MID_ShowDependents	2223
 #define MID_AddExtrema	2224
+#define MID_CleanupChar	2225
 #define MID_Corner	2301
 #define MID_Tangent	2302
 #define MID_Curve	2303
@@ -3374,7 +3381,21 @@ static void CVMenuAddExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     CVPreserveState(cv);
-    *cv->heads[cv->drawmode] = SplineCharSimplify(cv->sc,*cv->heads[cv->drawmode],e!=NULL && (e->u.mouse.state&ksm_shift));
+    *cv->heads[cv->drawmode] = SplineCharSimplify(cv->sc,*cv->heads[cv->drawmode],false);
+    CVCharChangedUpdate(cv);
+}
+
+static void CVMenuSimplifyMore(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    CVPreserveState(cv);
+    *cv->heads[cv->drawmode] = SplineCharSimplify(cv->sc,*cv->heads[cv->drawmode],true);
+    CVCharChangedUpdate(cv);
+}
+
+static void CVMenuCleanupChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    CVPreserveState(cv);
+    *cv->heads[cv->drawmode] = SplineCharSimplify(cv->sc,*cv->heads[cv->drawmode],-1);
     CVCharChangedUpdate(cv);
 }
 
@@ -3550,14 +3571,23 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  /* Like Simplify, always available, but may not do anything if */
 	  /*  all extrema have points. I'm not going to check for that, too hard */
 	  break;
+	  case MID_CleanupChar:
+	    mi->ti.disabled = *cv->heads[cv->drawmode]==NULL;
+	  break;
 	  case MID_Simplify:
 	    mi->ti.disabled = *cv->heads[cv->drawmode]==NULL;
 	  /* Simplify is always available (it may not do anything though) */
 	  /*  well, ok. Disable it if there is absolutely nothing to work on */
 	    free(mi->ti.text);
-	    mi->ti.text = u_copy(GStringGetResource(
-		    e!=NULL && (e->u.mouse.state&ksm_shift)
-			?_STR_CleanupChars:_STR_Simplify,NULL));
+	    if ( e==NULL || !(e->u.mouse.state&ksm_shift) ) {
+		mi->ti.text = u_copy(GStringGetResource(_STR_Simplify,NULL));
+		mi->short_mask = ksm_control|ksm_shift;
+		mi->invoke = CVMenuSimplify;
+	    } else {
+		mi->ti.text = u_copy(GStringGetResource(_STR_SimplifyMore,NULL));
+		mi->short_mask = (ksm_control|ksm_meta|ksm_shift);
+		mi->invoke = CVMenuSimplifyMore;
+	    }
 	  break;
 	  case MID_BuildAccent:
 	    mi->ti.disabled = !SFIsSomethingBuildable(cv->fv->sf,cv->sc);
@@ -4041,6 +4071,7 @@ static GMenuItem ellist[] = {
     { { (unichar_t *) _STR_Stroke, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'E' }, 'E', ksm_control|ksm_shift, NULL, NULL, CVMenuStroke, MID_Stroke },
     { { (unichar_t *) _STR_Rmoverlap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'v' }, 'O', ksm_control|ksm_shift, NULL, NULL, CVMenuOverlap, MID_RmOverlap },
     { { (unichar_t *) _STR_Simplify, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 'M', ksm_control|ksm_shift, NULL, NULL, CVMenuSimplify, MID_Simplify },
+    { { (unichar_t *) _STR_CleanupChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'n' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuCleanupChar, MID_CleanupChar },
     { { (unichar_t *) _STR_AddExtrema, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'x' }, 'X', ksm_control|ksm_shift, NULL, NULL, CVMenuAddExtrema, MID_AddExtrema },
     { { (unichar_t *) _STR_MetaFont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, '!', ksm_control|ksm_shift, NULL, NULL, CVMenuMetaFont, MID_MetaFont },
     { { (unichar_t *) _STR_Autotrace, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'r' }, 'T', ksm_control|ksm_shift, NULL, NULL, CVMenuAutotrace, MID_Autotrace },

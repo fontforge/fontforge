@@ -294,6 +294,7 @@ extern void MenuHelp(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuAbout(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuNew(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void MergeKernInfo(SplineFont *sf);
+extern int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype);
 extern int FontMenuGeneratePostscript(SplineFont *sf);
 extern void FontInfo(SplineFont *sf);
 extern void FontMenuFontInfo(void *fv);
@@ -448,7 +449,7 @@ extern void BCCopySelected(BDFChar *bc,int pixelsize);
 extern void PasteToBC(BDFChar *bc,int pixelsize,FontView *fv);
 extern void FVCopyWidth(FontView *fv);
 extern void FVCopy(FontView *fv, int fullcopy);
-extern void PasteIntoFV(FontView *fv);
+extern void PasteIntoFV(FontView *fv, int doclear);
 
 extern void WindowMenuBuild(GWindow base,struct gmenuitem *mi,GEvent *);
 extern void MenuRecentBuild(GWindow base,struct gmenuitem *mi,GEvent *);

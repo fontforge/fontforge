@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 17-Jan-2002 -->
+  <!-- AP: Last modified: 19-Jan-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -234,6 +234,18 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    19-Jan-2002
+    <UL>
+      <LI>
+	Initial version of <A HREF="scripting.html">scripting</A>.
+      <LI>
+	Optimizer caused rounding errors which caused test for divide by zero to
+	fail leading to errors in Simplify and Merge commands.
+      <LI>
+	bdf fonts with an encoding which did not itself include "-1" (or similar)
+	failed to get the implied "-0" added.
+    </UL>
   <LI>
     17-Jan-2002
     <UL>

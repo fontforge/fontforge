@@ -614,7 +614,7 @@ extern int SplineIsLinear(Spline *spline);
 extern int SplineIsLinearMake(Spline *spline);
 extern int SplineInSplineSet(Spline *spline, SplineSet *spl);
 extern void SplineCharMerge(SplineChar *sc,SplineSet **head,int type);
-extern void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,int cleanup);
+extern void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,int type);
 extern void SplineCharAddExtrema(SplineSet *head,int between_selected);
 extern SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,int cleanup);
 extern SplineSet *SplineCharRemoveTiny(SplineChar *sc,SplineSet *head);

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 4-Jan-2002 -->
+  <!-- AP: Last modified: 19-Jan-2002 -->
   <TITLE>The Element Menu</TITLE>
 </HEAD>
 <BODY>
@@ -46,8 +46,10 @@ This menu is not present in the Metrics View.
   <LI>
     <A HREF="#Remove">Remove Overlap</A>
   <LI>
-    <A HREF="#Simplify">Simplify<BR>
-    Cleanup Chars</A>
+    <A HREF="#Simplify">Simplify</A><BR>
+    Simplify More
+  <LI>
+    <A HREF="#Cleanup">Cleanup Chars</A>
   <LI>
     <A HREF="elementmenu.html#Add-Extrema">Add Extrema</A>
   <LI>
@@ -216,10 +218,15 @@ This menu is not present in the Metrics View.
     at the point is horizontal or vertical as postscript likes to have these
     points present).
   <DT>
-    Cleanup Char
+    Simplify More
   <DD>
-    This is a variant on the simplify command, obtainable if you hold down the
-    shift key when invoking from the menu. In this case if there is a spline
+    This is a varient of the simplify command, obtainable if you hold down the
+    shift key when invoking from the menu. It will allow the slope to change
+    on points around the points being removed.
+  <DT>
+    <A NAME="Cleanup">Cleanup Char</A>
+  <DD>
+    This is similar to the simplify command. In this case if there is a spline
     which actually traces out a line but none the less has control points, then
     this command will remove the control points.
   <DT>

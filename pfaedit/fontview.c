@@ -705,6 +705,7 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_InterpolateFonts	2215
 #define MID_ShowDependents	2222
 #define MID_AddExtrema	2224
+#define MID_CleanupChar	2225
 #define MID_Center	2600
 #define MID_Thirds	2601
 #define MID_SetWidth	2602
@@ -794,7 +795,7 @@ static void FVMenuPaste(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     if ( FVAnyCharSelected(fv)==-1 )
 return;
-    PasteIntoFV(fv);
+    PasteIntoFV(fv,true);
 }
 
 static void FVCopyFgtoBg(FontView *fv) {
@@ -1263,7 +1264,7 @@ static void FVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVOverlap(fv);
 }
 
-static void FVSimplify(FontView *fv,int cleanup) {
+static void FVSimplify(FontView *fv,int type) {
     int i, cnt=0;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
@@ -1273,7 +1274,7 @@ static void FVSimplify(FontView *fv,int cleanup) {
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
 	SCPreserveState(sc,false);
-	sc->splines = SplineCharSimplify(sc,sc->splines,cleanup);
+	sc->splines = SplineCharSimplify(sc,sc->splines,type);
 	SCCharChangedUpdate(sc);
 	if ( !GProgressNext())
     break;
@@ -1282,8 +1283,15 @@ static void FVSimplify(FontView *fv,int cleanup) {
 }
 
 static void FVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    int cleanup = e!=NULL && (e->u.mouse.state&ksm_shift);
-    FVSimplify( (FontView *) GDrawGetUserData(gw),cleanup );
+    FVSimplify( (FontView *) GDrawGetUserData(gw),false );
+}
+
+static void FVMenuSimplifyMore(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FVSimplify( (FontView *) GDrawGetUserData(gw),true );
+}
+
+static void FVMenuCleanup(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FVSimplify( (FontView *) GDrawGetUserData(gw),-1 );
 }
 
 static void FVAddExtrema(FontView *fv) {
@@ -1628,9 +1636,15 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_Simplify:
 	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps;
 	    free(mi->ti.text);
-	    mi->ti.text = u_copy(GStringGetResource(
-		    e!=NULL && (e->u.mouse.state&ksm_shift)
-			?_STR_CleanupChars:_STR_Simplify,NULL));
+	    if ( e==NULL || !(e->u.mouse.state&ksm_shift) ) {
+		mi->ti.text = u_copy(GStringGetResource(_STR_Simplify,NULL));
+		mi->short_mask = ksm_control|ksm_shift;
+		mi->invoke = FVMenuSimplify;
+	    } else {
+		mi->ti.text = u_copy(GStringGetResource(_STR_SimplifyMore,NULL));
+		mi->short_mask = (ksm_control|ksm_meta|ksm_shift);
+		mi->invoke = FVMenuSimplifyMore;
+	    }
 	  break;
 	  case MID_Stroke: case MID_RmOverlap:
 	  case MID_Round: case MID_Correct:
@@ -2264,6 +2278,7 @@ static GMenuItem ellist[] = {
     { { (unichar_t *) _STR_Stroke, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'E' }, 'E', ksm_control|ksm_shift, NULL, NULL, FVMenuStroke, MID_Stroke },
     { { (unichar_t *) _STR_Rmoverlap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'O' }, 'O', ksm_control|ksm_shift, NULL, NULL, FVMenuOverlap, MID_RmOverlap },
     { { (unichar_t *) _STR_Simplify, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 'M', ksm_control|ksm_shift, NULL, NULL, FVMenuSimplify, MID_Simplify },
+    { { (unichar_t *) _STR_CleanupChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'n' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuCleanup, MID_CleanupChar },
     { { (unichar_t *) _STR_AddExtrema, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'x' }, 'X', ksm_control|ksm_shift, NULL, NULL, FVMenuAddExtrema, MID_AddExtrema },
     { { (unichar_t *) _STR_Round2int, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '_', ksm_control|ksm_shift, NULL, NULL, FVMenuRound2Int, MID_Round },
     { { (unichar_t *) _STR_MetaFont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, '!', ksm_control|ksm_shift, NULL, NULL, FVMenuMetaFont, MID_MetaFont },
@@ -3028,7 +3043,13 @@ static void FVChar(FontView *fv,GEvent *event) {
     }
 #endif
 
-    if ( event->u.chr.keysym == GK_Left ||
+    if (( event->u.chr.keysym=='M' ||event->u.chr.keysym=='m' ) &&
+	    (event->u.chr.state&ksm_control) ) {
+	if ( (event->u.chr.state&ksm_meta) && (event->u.chr.state&ksm_shift))
+	    FVSimplify(fv,1);
+	else if ( (event->u.chr.state&ksm_shift))
+	    FVSimplify(fv,0);
+    } else if ( event->u.chr.keysym == GK_Left ||
 	    event->u.chr.keysym == GK_Tab ||
 	    event->u.chr.keysym == GK_BackTab ||
 	    event->u.chr.keysym == GK_Up ||
@@ -3750,11 +3771,32 @@ return( NULL );
 return( sf );
 }
 
+static SplineFont *AbsoluteNameCheck(char *filename) {
+    char buffer[1025];
+    FontView *fv;
+
+    GFileGetAbsoluteName(filename,buffer,sizeof(buffer)); 
+    for ( fv=fv_list; fv!=NULL ; fv=fv->next ) {
+	if ( fv->sf->filename!=NULL && strcmp(fv->sf->filename,filename)==0 )
+return( fv->sf );
+	else if ( fv->sf->origname!=NULL && strcmp(fv->sf->origname,filename)==0 )
+return( fv->sf );
+    }
+return( NULL );
+}
+
+static char *ToAbsolute(char *filename) {
+    char buffer[1025];
+
+    GFileGetAbsoluteName(filename,buffer,sizeof(buffer));
+return( copy(buffer));
+}
+
 SplineFont *LoadSplineFont(char *filename) {
     FontView *fv;
     SplineFont *sf;
-    char *pt, *ept;
-    static char *extens[] = { ".sfd", ".pfa", ".pfb", ".ttf", ".otf", ".ps", ".cid", ".PFA", ".PFB", ".TTF", ".OTF", ".PS", ".CID", NULL };
+    char *pt, *ept, *tobefreed1=NULL, *tobefreed2=NULL;
+    static char *extens[] = { ".sfd", ".pfa", ".pfb", ".ttf", ".otf", ".ps", ".cid", ".bin", ".dfont", ".PFA", ".PFB", ".TTF", ".OTF", ".PS", ".CID", ".BIN", ".DFONT", NULL };
     int i;
 
     if ( filename==NULL )
@@ -3772,23 +3814,23 @@ return( NULL );
 	    fclose(test);
 	}
 	if ( !ok ) {
-	    pt = galloc(strlen(filename)+8);
-	    strcpy(pt,filename);
-	    ept = pt+strlen(pt);
+	    tobefreed1 = galloc(strlen(filename)+8);
+	    strcpy(tobefreed1,filename);
+	    ept = tobefreed1+strlen(tobefreed1);
 	    for ( i=0; extens[i]!=NULL; ++i ) {
 		strcpy(ept,extens[i]);
-		if ( GFileExists(pt))
+		if ( GFileExists(tobefreed1))
 	    break;
 	    }
 	    if ( extens[i]!=NULL )
-		filename = pt;
+		filename = tobefreed1;
 	    else {
-		free(pt);
-		pt = NULL;
+		free(tobefreed1);
+		tobefreed1 = NULL;
 	    }
 	}
     } else
-	pt = NULL;
+	tobefreed1 = NULL;
 
     sf = NULL;
     /* Only one view per font */
@@ -3798,12 +3840,16 @@ return( NULL );
 	else if ( fv->sf->origname!=NULL && strcmp(fv->sf->origname,filename)==0 )
 	    sf = fv->sf;
     }
+    if ( sf==NULL && *filename!='/' )
+	sf = AbsoluteNameCheck(filename);
+    if ( sf==NULL && *filename!='/' )
+	filename = tobefreed2 = ToAbsolute(filename);
 
     if ( sf==NULL )
 	sf = ReadSplineFont(filename);
 
-    if ( pt==filename )
-	free(filename);
+    free(tobefreed1);
+    free(tobefreed2);
 return( sf );
 }
 
@@ -3846,7 +3892,7 @@ void FVFakeMenus(FontView *fv,int cmd) {
 	FVCopyWidth(fv);
       break;
       case 4:
-	PasteIntoFV(fv);
+	PasteIntoFV(fv,true);
       break;
       case 5:
 	FVClear(fv);
@@ -3859,6 +3905,9 @@ void FVFakeMenus(FontView *fv,int cmd) {
       break;
       case 8:
 	FVUnlinkRef(fv);
+      break;
+      case 9:
+	PasteIntoFV(fv,false);
       break;
 
       case 100:
