@@ -48,7 +48,7 @@
 #define CID_PS_Hints		1007
 #define CID_PS_Restrict256	1008
 #define CID_TTF_Hints		1101
-#define CID_TTF_ShortPS		1102
+#define CID_TTF_FullPS		1102
 #define CID_TTF_AppleMode	1103
 #define CID_TTF_PfEdComments	1104
 #define CID_TTF_PfEdColors	1105
@@ -356,7 +356,7 @@ return( false );
 		d->ttf_flags = 0;
 		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_Hints)) )
 		    d->ttf_flags |= ttf_flag_nohints;
-		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_ShortPS)) )
+		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_FullPS)) )
 		    d->ttf_flags |= ttf_flag_shortps;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_AppleMode)) )
 		    d->ttf_flags |= ttf_flag_applemode;
@@ -368,7 +368,7 @@ return( false );
 		    d->ttf_flags |= ttf_flag_pfed_colors;
 	    } else if ( d->sod_which==2 ) {				/* OpenType */
 		d->otf_flags = 0;
-		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_ShortPS)) )
+		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_FullPS)) )
 		    d->otf_flags |= ttf_flag_shortps;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_AppleMode)) )
 		    d->otf_flags |= ttf_flag_applemode;
@@ -402,7 +402,7 @@ return( false );
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_TFM)) )
 		     d->psotb_flags = d->ps_flags |= ps_flag_tfm;
 
-		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_ShortPS)) )
+		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_FullPS)) )
 		    d->psotb_flags |= ttf_flag_shortps;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdComments)) )
 		    d->psotb_flags |= ttf_flag_pfed_comments;
@@ -431,7 +431,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_TFM),flags&ps_flag_tfm);
 
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_Hints),!(flags&ttf_flag_nohints));
-    GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_ShortPS),flags&ttf_flag_shortps);
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_FullPS),!(flags&ttf_flag_shortps));
     if ( which==0 || which==3 )	/* Postscript */
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_AppleMode),false);
     else if ( alwaysgenapple ||
@@ -467,7 +467,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_TFM),which==0 || which==3);
 
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_Hints),which==1);
-    GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_ShortPS),which!=0);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_FullPS),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_AppleMode),which!=0 && which!=3);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_OpenTypeMode),which!=0 && which!=3);
 
@@ -620,7 +620,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     label[k].text_in_resource = true;
     gcd[k].gd.popup_msg = GStringGetResource(_STR_PSNamesPopup,NULL);
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.cid = CID_TTF_ShortPS;
+    gcd[k].gd.cid = CID_TTF_FullPS;
     gcd[k++].creator = GCheckBoxCreate;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
