@@ -342,6 +342,39 @@ static void StrokeJoint(SplinePoint *base,StrokeInfo *si,JointPoint *plus,JointP
     }
 }
 
+static void SplineSetFixRidiculous(SplineSet *ss) {
+    /* Make sure we don't have any splines with ridiculous control points */
+    /* No control point, when projected onto the vector between the two */
+    /*  end points should be far beyond either of the end points... */
+    Spline *s, *first;
+    double vx, vy, test, end;
+    int unreasonable;
+
+    first = NULL;
+    for ( s=ss->first->next; s!=NULL && s!=first; s = s->to->next ) {
+	if ( first==NULL ) first = s;
+	vx = s->to->me.x-s->from->me.x; vy = s->to->me.y-s->from->me.y;
+	end = vx*vx + vy*vy;
+	unreasonable = false;
+	test = vx*(s->from->nextcp.x-s->from->me.x) +
+		vy*(s->from->nextcp.y-s->from->me.y);
+	if ( test<-2*end || test>2*end ) {
+	    s->from->nextcp = s->from->me;
+	    s->from->nonextcp = true;
+	    unreasonable = true;
+	}
+	test = vx*(s->to->prevcp.x-s->from->me.x) +
+		vy*(s->to->prevcp.y-s->from->me.y);
+	if ( test<-2*end || test>2*end ) {
+	    s->to->prevcp = s->to->me;
+	    s->to->noprevcp = true;
+	    unreasonable = true;
+	}
+	if ( unreasonable )
+	    SplineRefigure(s);
+    }
+}
+
 SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
     JointPoint first_plus, first_minus, cur_plus, cur_minus;
     SplineSet *ssplus, *ssminus;
@@ -398,7 +431,7 @@ return( ssplus );
 	t_end = (p_tlast<m_tcur)?p_tlast:m_tcur;
 	if (( p_tcur>=p_tlast || m_tcur<=m_tlast ) && !si->toobigwarn ) {
 	    si->toobigwarn = true;
-	    GDrawError( "You have chosen a stroke width so big that the generated path\nmay intersects itself in %s",
+	    GDrawError( "You have chosen a stroke width so big that the generated path\nmay intersect itself in %s",
 		    sc==NULL?"<nameless char>": sc->name );
 	}
 #if 0
@@ -433,11 +466,13 @@ return( ssplus );
     if ( spl->first==spl->last ) {
 	ssminus = chunkalloc(sizeof(SplineSet));
 	ssminus->first = ssminus->last = minus;
+	SplineSetFixRidiculous(ssplus); SplineSetFixRidiculous(ssminus);
 	if ( SplinePointListIsClockwise(ssplus))
 	    SplineSetReverse(ssplus);
 	ssplus->next = ssminus;
 	SplineSetsCorrect(ssplus);
     } else {
+	SplineSetFixRidiculous(ssplus);
 	if ( !SplinePointListIsClockwise(ssplus))
 	    SplineSetReverse(ssplus);
     }

@@ -1841,48 +1841,52 @@ SplineSet *SplineSetsCorrect(SplineSet *base) {
     es.mmax = ceil(b.maxy*es.scale);
     es.omin = b.minx*es.scale;
     es.omax = b.maxx*es.scale;
-    es.cnt = (int) (es.mmax-es.mmin) + 1;
-    es.edges = gcalloc(es.cnt,sizeof(Edge *));
-    es.interesting = gcalloc(es.cnt,sizeof(char));
-    es.sc = NULL;
-    es.major = 1; es.other = 0;
-    FindEdgesSplineSet(base,&es);
 
-    check_cnt = 0;
-    for ( i=0; i<es.cnt && check_cnt<sscnt; ++i ) {
-	active = ActiveEdgesRefigure(&es,active,i);
-	if ( es.edges[i]!=NULL )
-    continue;			/* Just too hard to get the edges sorted when we are at a start vertex */
-	if ( /*es.edges[i]==NULL &&*/ !es.interesting[i] &&
-		!(i>0 && es.interesting[i-1]) && !(i>0 && es.edges[i-1]!=NULL) &&
-		!(i<es.cnt-1 && es.edges[i+1]!=NULL) &&
-		!(i<es.cnt-1 && es.interesting[i+1]))	/* interesting things happen when we add (or remove) entries */
-    continue;			/* and where we have points of inflection */
-	for ( apt=active; apt!=NULL; apt = e) {
-	    check_cnt += SSCheck(base,apt,true,&es);
-	    winding = apt->up?1:-1;
-	    for ( pr=apt, e=apt->aenext; e!=NULL && winding!=0; pr=e, e=e->aenext ) {
-		if ( !e->spline->isticked )
-		    check_cnt += SSCheck(base,e,winding<0,&es);
-		if ( pr->up!=e->up )
-		    winding += (e->up?1:-1);
-		else if ( (pr->before==e || pr->after==e ) &&
-			(( pr->mmax==i && e->mmin==i ) ||
-			 ( pr->mmin==i && e->mmax==i )) )
-		    /* This just continues the line and doesn't change count */;
-		else
-		    winding += (e->up?1:-1);
-	    }
-	    /* color a horizontal line that comes out of the last vertex */
-	    if ( e!=NULL && (e->before==pr || e->after==pr) &&
-			(( pr->mmax==i && e->mmin==i ) ||
-			 ( pr->mmin==i && e->mmax==i )) ) {
-		pr = e;
-		e = e->aenext;
+/* Give up if we are given unreasonable values (ie. if rounding errors might screw us up) */
+    if ( es.mmin<1e5 && es.mmax>-1e5 && es.omin<1e5 && es.omax>-1e5 ) {
+	es.cnt = (int) (es.mmax-es.mmin) + 1;
+	es.edges = gcalloc(es.cnt,sizeof(Edge *));
+	es.interesting = gcalloc(es.cnt,sizeof(char));
+	es.sc = NULL;
+	es.major = 1; es.other = 0;
+	FindEdgesSplineSet(base,&es);
+
+	check_cnt = 0;
+	for ( i=0; i<es.cnt && check_cnt<sscnt; ++i ) {
+	    active = ActiveEdgesRefigure(&es,active,i);
+	    if ( es.edges[i]!=NULL )
+	continue;			/* Just too hard to get the edges sorted when we are at a start vertex */
+	    if ( /*es.edges[i]==NULL &&*/ !es.interesting[i] &&
+		    !(i>0 && es.interesting[i-1]) && !(i>0 && es.edges[i-1]!=NULL) &&
+		    !(i<es.cnt-1 && es.edges[i+1]!=NULL) &&
+		    !(i<es.cnt-1 && es.interesting[i+1]))	/* interesting things happen when we add (or remove) entries */
+	continue;			/* and where we have points of inflection */
+	    for ( apt=active; apt!=NULL; apt = e) {
+		check_cnt += SSCheck(base,apt,true,&es);
+		winding = apt->up?1:-1;
+		for ( pr=apt, e=apt->aenext; e!=NULL && winding!=0; pr=e, e=e->aenext ) {
+		    if ( !e->spline->isticked )
+			check_cnt += SSCheck(base,e,winding<0,&es);
+		    if ( pr->up!=e->up )
+			winding += (e->up?1:-1);
+		    else if ( (pr->before==e || pr->after==e ) &&
+			    (( pr->mmax==i && e->mmin==i ) ||
+			     ( pr->mmin==i && e->mmax==i )) )
+			/* This just continues the line and doesn't change count */;
+		    else
+			winding += (e->up?1:-1);
+		}
+		/* color a horizontal line that comes out of the last vertex */
+		if ( e!=NULL && (e->before==pr || e->after==pr) &&
+			    (( pr->mmax==i && e->mmin==i ) ||
+			     ( pr->mmin==i && e->mmax==i )) ) {
+		    pr = e;
+		    e = e->aenext;
+		}
 	    }
 	}
+	FreeEdges(&es);
     }
-    FreeEdges(&es);
     if ( open==NULL )
 	open = base;
     else {

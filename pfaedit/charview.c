@@ -2180,8 +2180,11 @@ static void CVExposeRulers(CharView *cv, GWindow pixmap ) {
 	units = 1000; littleunits=200;
     } else if ( onehundred<10000 ) {
 	units = 2500; littleunits=500;
-    } else {
+    } else if ( onehundred<10000 ) {
 	units = 10000; littleunits=2000;
+    } else {
+	for ( units=1 ; units<onehundred; units *= 10 );
+	units/=10; littleunits = units/2;
     }
 
     rect.x = 0; rect.width = cv->width+cv->rulerh; rect.y = ybase; rect.height = cv->rulerh;
@@ -2200,25 +2203,27 @@ static void CVExposeRulers(CharView *cv, GWindow pixmap ) {
 	CVDrawVNum(cv,pixmap,1,ybase+cv->rulerh+cv->sas,"%.3f",ymin,0);
 	CVDrawVNum(cv,pixmap,1,ybase+cv->rulerh+cv->height+cv->sas,"%.3f",ymax,2);
     }
-    if ( littleunits!=0 ) {
-	for ( pos=littleunits*ceil(xmin/littleunits); pos<xmax; pos += littleunits ) {
+    if ( fabs(xmin/units) < 1e5 && fabs(ymin/units)<1e5 && fabs(xmax/units)<1e5 && fabs(ymax/units)<1e5 ) {
+	if ( littleunits!=0 ) {
+	    for ( pos=littleunits*ceil(xmin/littleunits); pos<xmax; pos += littleunits ) {
+		x = cv->xoff + rint(pos*cv->scale);
+		GDrawDrawLine(pixmap,x+cv->rulerh,ybase+cv->rulerh-4,x+cv->rulerh,ybase+cv->rulerh, 0x000000);
+	    }
+	    for ( pos=littleunits*ceil(ymin/littleunits); pos<ymax; pos += littleunits ) {
+		y = -cv->yoff + cv->height - rint(pos*cv->scale);
+		GDrawDrawLine(pixmap,cv->rulerh-4,ybase+cv->rulerh+y,cv->rulerh,ybase+cv->rulerh+y, 0x000000);
+	    }
+	}
+	for ( pos=units*ceil(xmin/units); pos<xmax; pos += units ) {
 	    x = cv->xoff + rint(pos*cv->scale);
-	    GDrawDrawLine(pixmap,x+cv->rulerh,ybase+cv->rulerh-4,x+cv->rulerh,ybase+cv->rulerh, 0x000000);
+	    GDrawDrawLine(pixmap,x+cv->rulerh,ybase+cv->rulerh-6,x+cv->rulerh,ybase+cv->rulerh, 0x000000);
+	    CVDrawNum(cv,pixmap,x+cv->rulerh,ybase+cv->sas,"%g",pos,1);
 	}
-	for ( pos=littleunits*ceil(ymin/littleunits); pos<ymax; pos += littleunits ) {
+	for ( pos=units*ceil(ymin/units); pos<ymax; pos += units ) {
 	    y = -cv->yoff + cv->height - rint(pos*cv->scale);
-	    GDrawDrawLine(pixmap,cv->rulerh-4,ybase+cv->rulerh+y,cv->rulerh,ybase+cv->rulerh+y, 0x000000);
+	    GDrawDrawLine(pixmap,cv->rulerh-6,ybase+cv->rulerh+y,cv->rulerh,ybase+cv->rulerh+y, 0x000000);
+	    CVDrawVNum(cv,pixmap,1,y+ybase+cv->rulerh+cv->sas,"%g",pos,1);
 	}
-    }
-    for ( pos=units*ceil(xmin/units); pos<xmax; pos += units ) {
-	x = cv->xoff + rint(pos*cv->scale);
-	GDrawDrawLine(pixmap,x+cv->rulerh,ybase+cv->rulerh-6,x+cv->rulerh,ybase+cv->rulerh, 0x000000);
-	CVDrawNum(cv,pixmap,x+cv->rulerh,ybase+cv->sas,"%g",pos,1);
-    }
-    for ( pos=units*ceil(ymin/units); pos<ymax; pos += units ) {
-	y = -cv->yoff + cv->height - rint(pos*cv->scale);
-	GDrawDrawLine(pixmap,cv->rulerh-6,ybase+cv->rulerh+y,cv->rulerh,ybase+cv->rulerh+y, 0x000000);
-	CVDrawVNum(cv,pixmap,1,y+ybase+cv->rulerh+cv->sas,"%g",pos,1);
     }
 }
 

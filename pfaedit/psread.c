@@ -103,7 +103,10 @@ enum pstoks { pt_eof=-1, pt_moveto, pt_rmoveto, pt_curveto, pt_rcurveto,
     pt_currentlinecap, pt_currentlinejoin, pt_currentlinewidth,
     pt_setgray, pt_currentgray, pt_sethsbcolor, pt_currenthsbcolor,
     pt_setrgbcolor, pt_currentrgbcolor, pt_setcmykcolor, pt_currentcmykcolor,
-    pt_fill, pt_stroke, pt_gsave, pt_grestore,
+    pt_fill, pt_stroke,
+
+    /* things we sort of pretend to do, but actually do something wrong */
+    pt_gsave, pt_grestore, pt_save, pt_restore, pt_currentmatrix, pt_setmatrix,
 
     pt_opencurly, pt_closecurly, pt_openarray, pt_closearray, pt_string,
     pt_number, pt_unknown, pt_namelit };
@@ -122,7 +125,10 @@ char *toknames[] = { "moveto", "rmoveto", "curveto", "rcurveto",
 	"currentlinecap", "currentlinejoin", "currentlinewidth",
 	"setgray", "currentgray", "sethsbcolor", "currenthsbcolor",
 	"setrgbcolor", "currentrgbcolor", "setcmykcolor", "currentcmykcolor",
-	"fill", "stroke", "gsave", "grestore",
+	"fill", "stroke",
+
+	"gsave", "grestore", "save", "restore", "currentmatrix", "setmatrix",
+
 	NULL };
 
 /* length (of string)
@@ -512,6 +518,8 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
     SplinePoint *pt;
     RefChar *ref, *lastref=NULL;
     real transform[6], t[6];
+    real transstack[30][6];
+    int tsp = 0;
     int ccnt=0;
     char tokbuf[100];
     IO wrapper;
@@ -841,8 +849,10 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 		transform[1] *= stack[sp-1].u.val;
 		transform[2] *= stack[sp-2].u.val;
 		transform[3] *= stack[sp-1].u.val;
+#if 0	/* Nope! */
 		transform[4] *= stack[sp-2].u.val;
 		transform[5] *= stack[sp-1].u.val;
+#endif
 		sp -= 2;
 	    }
 	  break;
@@ -853,7 +863,7 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 		t[1] = sin(stack[sp].u.val);
 		t[2] = -t[1];
 		t[4] = t[5] = 0;
-		MatMultiply(transform,t,transform);
+		MatMultiply(t,transform,transform);
 	    }
 	  break;
 	  case pt_concat:
@@ -864,7 +874,7 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 		t[2] = stack[--sp].u.val;
 		t[1] = stack[--sp].u.val;
 		t[0] = stack[--sp].u.val;
-		MatMultiply(transform,t,transform);
+		MatMultiply(t,transform,transform);
 	    }
 	  break;
 	  case pt_namelit:
@@ -1245,6 +1255,32 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 	    head = NULL; cur = NULL;
 	  break;
 
+	  /* We don't do these right, but at least we'll avoid some errors with this hack */
+	  case pt_save: case pt_currentmatrix:
+	    /* push some junk on the stack */
+	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
+		stack[sp].type = ps_num;
+		stack[sp++].u.val = 0;
+	    }
+	    if ( tsp<30 )
+		memcpy(transstack[tsp++],transform,sizeof(transform));
+	  break;
+	  case pt_restore: case pt_setmatrix:
+	    /* pop some junk off the stack */
+	    if ( sp>=1 )
+		--sp;
+	    if ( tsp>0 )
+		memcpy(transform,transstack[--tsp],sizeof(transform));
+	  break;
+	  case pt_gsave:
+	    if ( tsp<30 )
+		memcpy(transstack[tsp++],transform,sizeof(transform));
+	  break;
+	  case pt_grestore:
+	    if ( tsp>0 )
+		memcpy(transform,transstack[--tsp],sizeof(transform));
+	  break;
+
 	  default:
 	  case pt_unknown:
 	  case pt_openarray: case pt_closearray:
@@ -1264,7 +1300,7 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 
 static SplinePointList *SplinesFromEntities(EntityChar *ec) {
     Entity *ent, *next;
-    SplinePointList *head=NULL, *last, *new, *nlast, *temp;
+    SplinePointList *head=NULL, *last, *new, *nlast, *temp, *each;
     StrokeInfo si;
 
     for ( ent=ec->splines; ent!=NULL; ent = next ) {
@@ -1276,13 +1312,14 @@ static SplinePointList *SplinesFromEntities(EntityChar *ec) {
 		si.cap = ent->u.splines.cap;
 		si.radius = ent->u.splines.stroke_width/2;
 		new = NULL;
-		for ( last = ent->u.splines.splines; last!=NULL; last=last->next ) {
-		    temp = SplineSetStroke(last,&si,NULL);
+		for ( each = ent->u.splines.splines; each!=NULL; each=each->next ) {
+		    temp = SplineSetStroke(each,&si,NULL);
 		    if ( new==NULL )
 			new=temp;
 		    else
 			nlast->next = temp;
-		    for ( nlast=temp; nlast->next!=NULL; nlast=nlast->next );
+		    if ( temp!=NULL )
+			for ( nlast=temp; nlast->next!=NULL; nlast=nlast->next );
 		}
 		SplinePointListFree(ent->u.splines.splines);
 	    } else {
