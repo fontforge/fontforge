@@ -742,6 +742,14 @@ return( NULL );
 	    r1 = strtoul(end,&end,0);
 	    if ( orig==end )
 	break;
+	    while ( isspace(*end)) ++end;
+	    if ( *end==':' ) {
+		if ( r1>=256 || r1<0)
+		    fprintf( stderr, "Bad offset: %d for subfont %s\n", r1, names[subfilecnt]);
+		else
+		    thusfar = r1;
+		r1 = strtoul(end+1,&end,0);
+	    }
 	    if ( *end=='_' || *end=='-' )
 		r2 = strtoul(end+1,&end,0);
 	    else
@@ -926,6 +934,7 @@ static void RestoreSF(SplineFont *sf) {
     } while ( k<sf->subfontcnt );
 }
 
+/* ttf2tfm supports multiple sfd files. I do not. */
 static int WriteMultiplePSFont(SplineFont *sf,char *newname,int32 *sizes,
 	int res, char *wernerfilename) {
     int err=0, tofree=false, max, filecnt;
