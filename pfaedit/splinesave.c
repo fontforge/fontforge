@@ -1448,6 +1448,16 @@ return(cnt);
 	hasrealname1 = true;
     if ( i2!=-1 && *sf->chars[i2]->name!='u' )
 	hasrealname2 = true;
+    /* How very annoying. MS solves the problem a different way, they have */
+    /*  created "mu1", etc. for 0xb5 (which Adobe says should be mu) */
+    if ( hasrealname1 && hasrealname2 ) {
+	if ( strcmp(sf->chars[i1]->name,"mu")==0 ||
+		strcmp( sf->chars[i1]->name,"Omega")==0 ||
+		strcmp( sf->chars[i1]->name,"Delta")==0 )
+	    hasrealname2 = false;
+	else
+	    hasrealname1 = false;
+    }
     hasrealname = hasrealname1 || hasrealname2;
     if ( i1 == -1 || hasrealname1 ) {
 	if ( hasrealname || (name = psunicodenames[c1])==NULL ) {
@@ -1591,6 +1601,8 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
     if ( exists[4] || exists[5] )
 	cnt = AddGreekDuplicates(chrs,sf,cnt,round,iscjk,subrs,0x3a9,0x2126);
     chrs->next = cnt;
+    if ( chrs->next>chrs->cnt )
+	GDrawIError("Character estimate failed, about to die..." );
 return( chrs );
 }
 
