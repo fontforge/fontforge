@@ -1812,7 +1812,7 @@ return( false );
 	    ch1 = getc(file);
 	    ch2 = getc(file);
 	    offset = (short) getlshort(file);
-	    if ( !feof(file))
+	    if ( !feof(file) && winmap[ch1]!=-1 && winmap[ch2]!=-1 )
 		KPInsert(sf->chars[winmap[ch1]],sf->chars[winmap[ch2]],offset,false);
 		/* No support for vertical kerning that I'm aware of */
 	}
