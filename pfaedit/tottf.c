@@ -4419,7 +4419,7 @@ static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format)
 	    putc('\0',at->post);
 }
 
-static void SetTo(uint16 *avail,uint16 *sfind,int to,int from) {
+static void SetTo(uint32 *avail,uint16 *sfind,int to,int from) {
     avail[to] = avail[from];
     if ( sfind!=NULL ) sfind[to] = sfind[from];
 }
@@ -4638,7 +4638,6 @@ return(  ((((ch1+1)>>1) + ro )<<8 )    |    (ch2+co) );
 }
 
 static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format) {
-    uint16 *avail = galloc(65536*sizeof(uint16));
     uint16 *sfind = NULL;
     int i,j,k,l,charcnt,enccnt;
     int segcnt, cnt=0, delta, rpos;
@@ -4648,7 +4647,6 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
     SplineFont *sf = _sf;
     SplineChar *sc;
 
-    memset(avail,0xff,65536*sizeof(uint16));
     at->cmap = tmpfile();
 
     /* Mac, symbol encoding table */ /* Not going to bother with this for cid fonts */
@@ -4682,6 +4680,8 @@ return;		/* All Done */
     } else if ( sf->encoding_name==em_johab && Needs816Enc(at,sf)) {
 return;		/* All Done */
     } else {
+	uint32 *avail = galloc(65536*sizeof(uint32));
+	memset(avail,0xff,65536*sizeof(uint32));
 	if ( _sf->subfontcnt!=0 ) sfind = gcalloc(65536,sizeof(uint16));
 	charcnt = _sf->charcnt;
 	if ( _sf->subfontcnt!=0 ) {
@@ -4707,37 +4707,37 @@ return;		/* All Done */
 	if ( _sf->encoding_name!=em_jis208 && _sf->encoding_name!=em_ksc5601 &&
 		_sf->encoding_name!=em_big5 && _sf->encoding_name!=em_johab ) {
 	    /* Duplicate glyphs for greek */	/* Only meaningful if unicode */
-	    if ( avail[0xb5]==0xffff && avail[0x3bc]!=0xffff )
+	    if ( avail[0xb5]==0xffffffff && avail[0x3bc]!=0xffffffff )
 		SetTo(avail,sfind,0xb5,0x3bc);
-	    else if ( avail[0x3bc]==0xffff && avail[0xb5]!=0xffff )
+	    else if ( avail[0x3bc]==0xffffffff && avail[0xb5]!=0xffffffff )
 		SetTo(avail,sfind,0x3bc,0xb5);
-	    if ( avail[0x394]==0xffff && avail[0x2206]!=0xffff )
+	    if ( avail[0x394]==0xffffffff && avail[0x2206]!=0xffffffff )
 		SetTo(avail,sfind,0x394,0x2206);
-	    else if ( avail[0x2206]==0xffff && avail[0x394]!=0xffff )
+	    else if ( avail[0x2206]==0xffffffff && avail[0x394]!=0xffffffff )
 		SetTo(avail,sfind,0x2206,0x394);
-	    if ( avail[0x3a9]==0xffff && avail[0x2126]!=0xffff )
+	    if ( avail[0x3a9]==0xffffffff && avail[0x2126]!=0xffffffff )
 		SetTo(avail,sfind,0x3a9,0x2126);
-	    else if ( avail[0x2126]==0xffff && avail[0x3a9]!=0xffff )
+	    else if ( avail[0x2126]==0xffffffff && avail[0x3a9]!=0xffffffff )
 		SetTo(avail,sfind,0x2126,0x3a9);
 	}
 
 	j = -1;
 	for ( i=segcnt=0; i<65536; ++i ) {
-	    if ( avail[i]!=0xffff && j==-1 ) {
+	    if ( avail[i]!=0xffffffff && j==-1 ) {
 		j=i;
 		++segcnt;
-	    } else if ( j!=-1 && avail[i]==0xffff )
+	    } else if ( j!=-1 && avail[i]==0xffffffff )
 		j = -1;
 	}
 	cmapseg = gcalloc(segcnt+1,sizeof(struct cmapseg));
 	ranges = galloc(cnt*sizeof(int16));
 	j = -1;
 	for ( i=segcnt=0; i<65536; ++i ) {
-	    if ( avail[i]!=0xffff && j==-1 ) {
+	    if ( avail[i]!=0xffffffff && j==-1 ) {
 		j=i;
 		cmapseg[segcnt].start = j;
 		++segcnt;
-	    } else if ( j!=-1 && avail[i]==0xffff ) {
+	    } else if ( j!=-1 && avail[i]==0xffffffff ) {
 		cmapseg[segcnt-1].end = i-1;
 		j = -1;
 	    }
