@@ -78,9 +78,10 @@ return( -1 );
 	vals[i] = 0;
 	best = 0; val = -1;
 	for ( i=0; vals[i]!=0; ++i ) {
-	    if ( ucs2_score(vals[i])>best ) {
+	    int score=ucs2_score(vals[i]);
+	    if ( score>best || score==best&&vals[i]<val ) {
 		val = vals[i];
-		best = ucs2_score(vals[i]);
+		best = score;
 	    }
 	}
     }
@@ -260,6 +261,8 @@ int main(int argc, char **argv) {
 	    else if ( cid==9735 ) uni = 0x1d4;
 	    else if ( cid==9736 ) uni = 0x16f;
 	    else if ( cid==9737 ) uni = 0x169;
+    /* duplicate with U+29fd7. JIS X 0213:2004 declares that U+29fce is authentic */
+	    else if ( cid==19071 ) uni = 0x29fce;
 	}
 	maxcid = cid;
 	if (( cid>=7887 && cid<=7916 ) || ( cid>=8720 && cid<=9353) ||
