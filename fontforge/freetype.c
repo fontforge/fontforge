@@ -72,6 +72,11 @@ SplineSet *FreeType_GridFitChar(void *single_glyph_context,
 	int enc, real ptsize, int dpi, int16 *width, SplineSet *splines) {
 return( NULL );
 }
+
+BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,
+	int pixelsize,int depth) {
+return( NULL );
+}
 #else
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -98,6 +103,7 @@ static FT_Library context;
 #define _FT_Render_Glyph FT_Render_Glyph
 #define _FT_Outline_Decompose FT_Outline_Decompose
 #define _FT_Library_Version FT_Library_Version
+#define _FT_Outline_Get_Bitmap FT_Outline_Get_Bitmap
 
 # if FREETYPE_HAS_DEBUGGER
 #  include "ttobjs.h"
@@ -127,6 +133,7 @@ static FT_Error (*_FT_Load_Glyph)( FT_Face, int, int);
 static FT_Error (*_FT_Render_Glyph)( FT_GlyphSlot, int);
 static FT_Error (*_FT_Outline_Decompose)(FT_Outline *, const FT_Outline_Funcs *,void *);
 static FT_Error (*_FT_Library_Version)(FT_Library, FT_Int *, FT_Int *, FT_Int *);
+static FT_Error (*_FT_Outline_Get_Bitmap)(FT_Library, FT_Outline *,FT_Bitmap *);
 
 # if FREETYPE_HAS_DEBUGGER
 #  include "ttobjs.h"
@@ -151,6 +158,7 @@ return( false );
     _FT_Load_Glyph = (FT_Error (*)(FT_Face, int, int)) dlsym(libfreetype,"FT_Load_Glyph");
     _FT_Render_Glyph = (FT_Error (*)(FT_GlyphSlot, int)) dlsym(libfreetype,"FT_Render_Glyph");
     _FT_Outline_Decompose = (FT_Error (*)(FT_Outline *, const FT_Outline_Funcs *,void *)) dlsym(libfreetype,"FT_Outline_Decompose");
+    _FT_Outline_Get_Bitmap = (FT_Error (*)(FT_Library, FT_Outline *,  FT_Bitmap *)) dlsym(libfreetype,"FT_Outline_Get_Bitmap");
     _FT_Library_Version = (FT_Error (*)(FT_Library, FT_Int *,  FT_Int *, FT_Int *)) dlsym(libfreetype,"FT_Library_Version");
 #if FREETYPE_HAS_DEBUGGER
     _FT_Set_Debug_Hook = (void (*)(FT_Library, FT_UInt, FT_DebugHook_Func)) dlsym(libfreetype,"FT_Set_Debug_Hook");
@@ -449,6 +457,39 @@ static void BCTruncateToDepth(BDFChar *bdfc,int depth) {
     }
 }
 
+static BDFChar *BdfCFromBitmap(FT_Bitmap *bitmap, int bitmap_left,
+	int bitmap_top, int pixelsize, int depth, SplineChar *sc) {
+    BDFChar *bdfc;
+
+    bdfc = chunkalloc(sizeof(BDFChar));
+    bdfc->sc = sc;
+    bdfc->ymax = bitmap_top-1;
+    bdfc->ymin = bitmap_top-bitmap->rows;
+    if ( bitmap->rows==0 )
+	bdfc->ymax = bdfc->ymin;
+    bdfc->xmin = bitmap_left;
+    bdfc->xmax = bitmap_left+bitmap->width-1;
+    if ( bitmap->width==0 )
+	bdfc->xmax = bdfc->xmin;
+    bdfc->byte_data = (depth!=1);
+    bdfc->depth = depth;
+    if ( sc!=NULL ) {
+	bdfc->width = rint(sc->width*pixelsize / (real) (sc->parent->ascent+sc->parent->descent));
+	bdfc->enc = sc->enc;
+    }
+    bdfc->bytes_per_line = bitmap->pitch;
+    if ( bdfc->bytes_per_line==0 ) bdfc->bytes_per_line = 1;
+    bdfc->bitmap = galloc((bdfc->ymax-bdfc->ymin+1)*bdfc->bytes_per_line);
+    if ( bitmap->rows==0 || bitmap->width==0 )
+	memset(bdfc->bitmap,0,(bdfc->ymax-bdfc->ymin+1)*bdfc->bytes_per_line);
+    else
+	memcpy(bdfc->bitmap,bitmap->buffer,bitmap->rows*bdfc->bytes_per_line);
+    BCCompressBitmap(bdfc);
+    if ( depth!=1 && depth!=8 )
+	BCTruncateToDepth(bdfc,depth);
+return( bdfc );
+}
+
 BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,
 	int pixelsize,int depth) {
     FTC *ftc = freetypecontext;
@@ -466,32 +507,8 @@ BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,
 
     slot = ftc->face->glyph;
     sc = ftc->sf->chars[enc];
-    bdfc = chunkalloc(sizeof(BDFChar));
-    bdfc->sc = sc;
-    bdfc->ymax = slot->bitmap_top-1;
-    bdfc->ymin = slot->bitmap_top-slot->bitmap.rows;
-    if ( slot->bitmap.rows==0 )
-	bdfc->ymax = bdfc->ymin;
-    bdfc->xmin = slot->bitmap_left;
-    bdfc->xmax = slot->bitmap_left+slot->bitmap.width-1;
-    if ( slot->bitmap.width==0 )
-	bdfc->xmax = bdfc->xmin;
-    bdfc->byte_data = (depth!=1);
-    bdfc->depth = depth;
-    if ( sc!=NULL ) {
-	bdfc->width = rint(sc->width*pixelsize / (real) (sc->parent->ascent+sc->parent->descent));
-	bdfc->enc = enc;
-    }
-    bdfc->bytes_per_line = slot->bitmap.pitch;
-    if ( bdfc->bytes_per_line==0 ) bdfc->bytes_per_line = 1;
-    bdfc->bitmap = galloc((bdfc->ymax-bdfc->ymin+1)*bdfc->bytes_per_line);
-    if ( slot->bitmap.rows==0 || slot->bitmap.width==0 )
-	memset(bdfc->bitmap,0,(bdfc->ymax-bdfc->ymin+1)*bdfc->bytes_per_line);
-    else
-	memcpy(bdfc->bitmap,slot->bitmap.buffer,slot->bitmap.rows*bdfc->bytes_per_line);
-    BCCompressBitmap(bdfc);
-    if ( depth!=1 && depth!=8 )
-	BCTruncateToDepth(bdfc,depth);
+    bdfc = BdfCFromBitmap(&slot->bitmap, slot->bitmap_left, slot->bitmap_top,
+	    pixelsize, depth, sc);
 return( bdfc );
 
  fail:
@@ -750,6 +767,147 @@ return( NULL );
     ret->bitmap = galloc(ret->rows*ret->bytes_per_row);
     memcpy(ret->bitmap,slot->bitmap.buffer,ret->rows*ret->bytes_per_row);
 return( ret );
+}
+
+BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,
+	int pixelsize,int depth) {
+    FT_Outline outline;
+    FT_Bitmap bitmap;
+    int ccnt, pcnt, k;
+    SplineSet *ss;
+    SplinePoint *sp;
+    real scale = pixelsize*(1<<6)/(double) (sc->parent->ascent+sc->parent->descent);
+    int xmin, xmax, ymin, ymax;
+    BDFChar *bdfc;
+    int err;
+
+    if ( !hasFreeType())
+return( NULL );
+
+    memset(&outline,0,sizeof(outline));
+    memset(&bitmap,0,sizeof(bitmap));
+    
+    if ( sc->parent->order2 ) {
+	for ( k=0; k<2; ++k ) {
+	    pcnt = ccnt = 0;
+	    for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+		for ( sp=ss->first; ; ) {
+		    if ( k ) {
+			outline.points[pcnt].x = rint(sp->me.x*scale);
+			outline.points[pcnt].y = rint(sp->me.y*scale);
+			outline.tags[pcnt] = 1;	/* On curve */
+		    }
+		    ++pcnt;
+		    if ( sp->next==NULL )
+		break;
+		    if ( !sp->nonextcp ) {
+			if ( k ) {
+			    outline.points[pcnt].x = rint(sp->nextcp.x*scale);
+			    outline.points[pcnt].y = rint(sp->nextcp.y*scale);
+			}
+			++pcnt;
+		    }
+		    sp = sp->next->to;
+		    if ( sp==ss->first )
+		break;
+		}
+		if ( k )
+		    outline.contours[ccnt] = pcnt-1;
+		++ccnt;
+	    }
+	    if ( !k ) {
+		outline.n_contours = ccnt;
+		outline.n_points = pcnt;
+		outline.points = galloc(pcnt*sizeof(FT_Vector));
+		outline.tags = gcalloc(pcnt,sizeof(char));
+		outline.contours = galloc(ccnt*sizeof(short));
+		outline.flags = ft_outline_none;
+	    }
+	}
+    } else {
+	for ( k=0; k<2; ++k ) {
+	    pcnt = ccnt = 0;
+	    for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+		for ( sp=ss->first; ; ) {
+		    if ( k ) {
+			outline.points[pcnt].x = rint(sp->me.x*scale);
+			outline.points[pcnt].y = rint(sp->me.y*scale);
+			outline.tags[pcnt] = 1;	/* On curve */
+		    }
+		    ++pcnt;
+		    if ( sp->next==NULL )
+		break;
+		    if ( !sp->nonextcp || !sp->next->to->noprevcp ) {
+			if ( k ) {
+			    outline.points[pcnt].x = rint(sp->nextcp.x*scale);
+			    outline.points[pcnt].y = rint(sp->nextcp.y*scale);
+			    outline.tags[pcnt] = 2;	/* cubic control */
+			    outline.points[pcnt+1].x = rint(sp->next->to->prevcp.x*scale);
+			    outline.points[pcnt+1].y = rint(sp->next->to->prevcp.y*scale);
+			    outline.tags[pcnt+1] = 2;	/* cubic control */
+			}
+			pcnt += 2;
+		    }
+		    sp = sp->next->to;
+		    if ( sp==ss->first )
+		break;
+		}
+		if ( k )
+		    outline.contours[ccnt] = pcnt-1;
+		++ccnt;
+	    }
+	    if ( !k ) {
+		outline.n_contours = ccnt;
+		outline.n_points = pcnt;
+		outline.points = galloc(pcnt*sizeof(FT_Vector));
+		outline.tags = gcalloc(pcnt,sizeof(char));
+		outline.contours = galloc(ccnt*sizeof(short));
+		outline.flags = ft_outline_reverse_fill;
+	    }
+	}
+    }
+
+    if ( outline.n_points==0 )
+	xmin = xmax = ymin = ymax = 0;
+    else {
+	xmin = xmax = outline.points[0].x;
+	ymin = ymax = outline.points[0].y;
+    }
+    for ( pcnt=1; pcnt<outline.n_points; ++pcnt ) {
+	if ( outline.points[pcnt].x < xmin ) xmin = outline.points[pcnt].x;
+	if ( outline.points[pcnt].x > xmax ) xmax = outline.points[pcnt].x;
+	if ( outline.points[pcnt].y < ymin ) ymin = outline.points[pcnt].y;
+	if ( outline.points[pcnt].y > ymax ) ymax = outline.points[pcnt].y;
+    }
+    for ( pcnt=0; pcnt<outline.n_points; ++pcnt ) {
+	outline.points[pcnt].x -= xmin;
+	outline.points[pcnt].y -= ymin;
+    }
+    xmin >>=6; ymin >>= 6;
+    xmax = (xmax+0x3f)>>6; ymax = (ymax+0x3f)>>6;
+    bitmap.rows = ymax-ymin+2;
+    bitmap.width = xmax-xmin+2;
+    if ( depth==1 ) {
+	bitmap.pitch = (bitmap.width+7)>>3;
+	bitmap.num_grays = 2;
+	bitmap.pixel_mode = ft_pixel_mode_mono;
+    } else {
+	bitmap.pitch = bitmap.width;
+	bitmap.num_grays = 256;
+	bitmap.pixel_mode = ft_pixel_mode_grays;
+    }
+    bitmap.buffer = gcalloc(bitmap.pitch*bitmap.rows,sizeof(uint8));
+
+    err = (_FT_Outline_Get_Bitmap)(context,&outline,&bitmap);
+
+    free(outline.points);
+    free(outline.tags);
+    free(outline.contours);
+    bdfc = NULL;
+    if ( !err )
+	bdfc = BdfCFromBitmap(&bitmap, xmin, ymax, pixelsize, depth, sc);
+    free( bitmap.buffer );
+return( bdfc );
 }
 #endif
 

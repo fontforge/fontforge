@@ -1745,10 +1745,16 @@ return(NULL);
     if ( bdf->freetype_context )
 	bdf->chars[index] = SplineCharFreeTypeRasterize(bdf->freetype_context,
 		sc->enc,bdf->truesize,bdf->clut?8:1);
-    else if ( bdf->clut )
-	bdf->chars[index] = SplineCharAntiAlias(sc,bdf->truesize,4);
-    else
-	bdf->chars[index] = SplineCharRasterize(sc,bdf->truesize);
+    else {
+	bdf->chars[index] = SplineCharFreeTypeRasterizeNoHints(sc,
+		bdf->truesize,bdf->clut?4:1);
+	if ( bdf->chars[index]==NULL ) {
+	    if ( bdf->clut )
+		bdf->chars[index] = SplineCharAntiAlias(sc,bdf->truesize,4);
+	    else
+		bdf->chars[index] = SplineCharRasterize(sc,bdf->truesize);
+	}
+    }
 return( bdf->chars[index] );
 }
 
