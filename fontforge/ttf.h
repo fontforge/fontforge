@@ -37,6 +37,30 @@ struct dup {
     struct dup *prev;
 };
 
+struct variations {
+    int axis_count;
+    struct taxis {
+	uint32 tag;
+	float min, def, max;	/* in user design space */
+	int nameid;
+	int paircount;
+	float *mapfrom;		/* after conversion from [-1,1] */
+	float *mapto;		/* secondary conversiont to [-1,1] */
+    } *axes;		/* Array of axis_count entries */
+    int instance_count;	/* Not master designs, but named interpolations in design space */
+    struct tinstance {
+	int nameid;
+	real *coords;	/* Location along axes array[axis_count] */
+    } *instances;
+    int tuple_count;
+    struct tuples {
+	real *coords;	/* Location along axes array[axis_count] */
+	SplineChar **chars;	/* Varied glyphs, array parallels one in info */
+	KernClass *khead, *klast, *vkhead, *vklast;
+				/* Varied kern classes */
+    } *tuples;
+};
+	
 struct ttfinfo {
     int emsize;			/* ascent + descent? from the head table */
     int ascent, descent;	/* from the hhea table */
@@ -104,6 +128,11 @@ struct ttfinfo {
     int bitmapdata_start;	/* Offset to start of bitmap data */
 		/* EBLT, bloc */
     int bitmaploc_start;	/* Offset to start of bitmap locator data */
+		/* gvar, etc. */
+    int gvar_start, gvar_len;
+    int fvar_start, fvar_len;
+    int avar_start, avar_len;
+    int cvar_start, cvar_len;
 		/* head */
     int head_start;
 		/* hhea */
@@ -184,6 +213,7 @@ struct ttfinfo {
     char *chosenname;
     int macstyle;
     int lookup_cnt;		/* Max lookup in current GPOS/GSUB table */
+    struct variations *variations;
 };
 
 #define MAX_TAB	32
@@ -622,3 +652,5 @@ extern void readttfgsubUsed(FILE *ttf,struct ttfinfo *info);
 extern void GuessNamesFromGSUB(FILE *ttf,struct ttfinfo *info);
 extern void readttfgpossub(FILE *ttf,struct ttfinfo *info,int gpos);
 extern void readttfgdef(FILE *ttf,struct ttfinfo *info);
+
+extern void readttfvariations(struct ttfinfo *info, FILE *ttf);
