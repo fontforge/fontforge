@@ -2161,6 +2161,59 @@ static unichar_t *thaijohn[] = { _thaijohn1, NULL };
 
 /* I've omitted cornish. no interesting letters. no current speakers */
 
+#if 1 /* http://www.ethnologue.com/iso639/codes.asp */
+enum scripts { sc_latin, sc_greek, sc_cyrillic, sc_georgian, sc_hebrew, sc_hangul,
+	sc_chinesetrad, sc_chinesemod, sc_kanji
+};
+static struct langsamples {
+    unichar_t **sample;
+    char *lang;		/* ISO 639 two character abbreviation */
+    enum scripts script;
+} sample[] = {
+    { simple, "various", sc_latin },
+    { simplecyrill, "various", sc_cyrillic },
+    { faust, "de", sc_latin },
+    { pheadra, "fr", sc_latin },
+    { antigone, "el", sc_greek },
+    { annakarenena, "ru", sc_cyrillic },
+    { debello, "la", sc_latin },
+    { hebrew, "he", sc_hebrew },
+    { hangulsijo, "ko", sc_hangul },
+    { YihKing, "zh", sc_chinesetrad },
+    { LiiBair, "zh", sc_chinesetrad },
+    { Genji, "ja", sc_kanji },
+    { IAmACat, "ja", sc_kanji },
+    { donquixote, "es", sc_latin },
+    { inferno, "it", sc_latin },
+    { beorwulf, "enm", sc_latin },		/* 639-2 name for middle english */
+    { muchado, "eng", sc_latin },		/* 639-2 name for modern english */
+    { PippiGarOmBord, "sv", sc_latin },
+    { mabinogion, "cy", sc_latin },
+    { goodsoldier, "cs", sc_latin },
+    { macedonian, "mk", sc_cyrillic },
+    { bulgarian, "bg", sc_cyrillic },
+    { belorussianjohn, "be", sc_cyrillic },
+    { churchjohn, "cu", sc_cyrillic },
+    { lithuanian, "lt", sc_latin },
+    { polish, "pl", sc_latin },
+    { slovene, "sl", sc_latin },
+    { irishjohn, "ga", sc_latin },
+    { basquejohn, "eu", sc_latin },
+    { portjohn, "pt", sc_latin },
+    { icelandicjohn, "is", sc_latin },
+    { danishjohn, "da", sc_latin },
+    { swedishjohn, "sv", sc_latin },
+    { norwegianjohn, "no", sc_latin },
+    { nnorwegianjohn, "no", sc_latin },
+    { dutchjohn, "nl", sc_latin },
+    { finnishjohn, "fi", sc_latin },
+    { cherokeejohn, "chr", sc_latin },
+    { thaijohn, "th", sc_latin },
+    { georgianjohn, "ka", sc_georgian },
+    { swahilijohn, "sw", sc_latin },
+    { NULL }
+};
+#else
 static unichar_t **sample[] = { simple, simplecyrill, faust, pheadra, antigone,
 	annakarenena, debello, hebrew, hangulsijo, YihKing, LiiBair, Genji,
 	IAmACat, donquixote, inferno, beorwulf, muchado, PippiGarOmBord,
@@ -2171,6 +2224,41 @@ static unichar_t **sample[] = { simple, simplecyrill, faust, pheadra, antigone,
 	dutchjohn, finnishjohn,
 	cherokeejohn, thaijohn, georgianjohn, swahilijohn,
 	NULL };
+#endif
+
+static void OrderSampleByLang(void) {
+    const char *lang = getenv("LANG");
+    char langbuf[12], *pt;
+    int i,j;
+
+    if ( lang==NULL )
+return;
+
+    strncpy(langbuf,lang,10);
+    langbuf[10] = '\0';
+    for ( j=0; j<3; ++j ) {
+	if ( j==1 ) {
+	    for ( pt=langbuf; *pt!='\0' && *pt!='.'; ++pt );
+	    *pt = '\0';
+	} else if ( j==2 ) {
+	    for ( pt=langbuf; *pt!='\0' && *pt!='_'; ++pt );
+	    *pt = '\0';
+	}
+	for ( i=0; sample[i].sample!=NULL; ++i )
+	    if ( strcmp(sample[i].lang,langbuf)==0 ) {
+		struct langsamples temp;
+		temp = sample[i];
+		sample[i] = sample[2];
+		sample[2] = temp;
+    goto out;
+	    }
+    }
+    out:
+    if ( strcmp(langbuf,"sv")==0 )
+	simple[0] = _simple3;
+    else if ( strcmp(langbuf,"en")==0 && simple[0] == _simple3 )
+	simple[0] = _simple1;
+}
 
 static int AllChars( SplineFont *sf, unichar_t *str, int istwobyte) {
     int i, ch;
@@ -2232,17 +2320,19 @@ static unichar_t *BuildDef( SplineFont *sf, int istwobyte ) {
     for ( j=0; simplecyrillchoices[j]!=NULL; ++j );
     simplecyrill[0] = simplecyrillchoices[rand()%j];
 
+    OrderSampleByLang();
+
     while ( 1 ) {
 	len = any = 0;
-	for ( i=0; sample[i]!=NULL; ++i ) {
+	for ( i=0; sample[i].sample!=NULL; ++i ) {
 	    gotem = true;
-	    cur = sample[i];
+	    cur = sample[i].sample;
 	    for ( j=0; cur[j]!=NULL && gotem; ++j )
 		gotem = AllChars(sf,cur[j],istwobyte);
-	    if ( !gotem && sample[i]==simple ) {
+	    if ( !gotem && sample[i].sample==simple ) {
 		gotem = true;
 		simple[0] = _simple1;
-	    } else if ( !gotem && sample[i]==LiiBair ) {
+	    } else if ( !gotem && sample[i].sample==LiiBair ) {
 		cur = LiiBairShort;
 		gotem = true;
 		for ( j=0; cur[j]!=NULL && gotem; ++j )
