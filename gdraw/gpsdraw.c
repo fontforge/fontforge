@@ -948,7 +948,6 @@ static int PSFinishJob(GPSWindow ps,int cancel) {
 	rewind(ps->output_file);
 	_GPSDraw_CopyFile(ps->init_file,ps->output_file);
 	fclose(ps->output_file);
-	GFileUnlink(gdisp->tempname); gfree(gdisp->tempname); gdisp->tempname=NULL;
     }
     error |= ferror(ps->init_file);
     fclose(ps->init_file);
@@ -1087,13 +1086,12 @@ return( NULL );
     }
     if ( gdisp->filename==NULL )
 	gdisp->filename = tempnam(NULL,"gprnt");
-    gdisp->tempname = tempnam(NULL,"gprt");
     if (( init = fopen(gdisp->filename,"w"))==NULL ) {
 	GDrawError("Can't open %s: %s", gdisp->print_to_file?"user file":"printer spooling file",
 		gdisp->filename);
 return( NULL );
     }
-    output = fopen(gdisp->tempname,"w+");
+    output = tmpfile();
     if ( output==NULL )
 	output = init;
 

@@ -210,6 +210,8 @@ return( &_GIcon_object );
 return( &_GIcon_core );
     if ( cu_strstartmatch("application/x-font/ttf",m) || cu_strstartmatch("application/x-font/otf",m))
 return( &_GIcon_ttf );
+    if ( cu_strstartmatch("application/x-font/cid",m) )
+return( &_GIcon_cid );
 
 return( &_GIcon_unknown );
 }

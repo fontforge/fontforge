@@ -52,6 +52,7 @@ unichar_t dir[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','n',
 unichar_t core[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','c','o','r','e', '\0' };
 unichar_t fontttf[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','f','o','n','t','/','t','t','f', '\0' };
 unichar_t fontotf[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','f','o','n','t','/','o','t','f', '\0' };
+unichar_t fontcid[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','f','o','n','t','/','c','i','d', '\0' };
 
 unichar_t *GIOguessMimeType(const unichar_t *path,int isdir) {
     unichar_t *pt;
@@ -89,6 +90,8 @@ return( textsfdfont );
 return( fontttf );
     else if ( uc_strmatch(pt,".otf")==0 )
 return( fontotf );
+    else if ( uc_strmatch(pt,".cid")==0 )
+return( fontcid );
     else if ( uc_strmatch(pt,".ps")==0 || uc_strmatch(pt,".eps")==0 )
 return( textps );
     else if ( uc_strmatch(pt,".bdf")==0 )
