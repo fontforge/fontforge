@@ -3095,7 +3095,7 @@ return( 0 );
 	cnt = ICAddInter(cnt,foundpos,foundt1,foundt2,s1,s2,t1,t2);
     forever {
 	t1 += t1diff;
-	if (( t1max>t1min && t1>=t1max ) || (t1max<t1min && t1<=t1max))
+	if (( t1max>t1min && t1>=t1max ) || (t1max<t1min && t1<=t1max) || cnt>3 )
     break;
 	m = ((s1->splines[major].a*t1+s1->splines[major].b)*t1+
 			s1->splines[major].c)*t1+s1->splines[major].d;
@@ -3134,8 +3134,13 @@ int SplinesIntersect(Spline *s1, Spline *s2, BasePoint pts[9],
     double extrema1[6], extrema2[6];
     int ecnt1, ecnt2;
 
+    t1s[0] = t1s[1] = t1s[2] = t1s[3] = -1;
+    t2s[0] = t2s[1] = t2s[2] = t2s[3] = -1;
+
     if ( s1==s2 && !s1->knownlinear && !s1->isquadratic )
 	/* Special case see if it doubles back on itself anywhere */;
+    else if ( s1==s2 )
+return( 0 );			/* Linear and quadratics can't double back, can't self-intersect */
     else if ( s1->splines[0].a == s2->splines[0].a &&
 	    s1->splines[0].b == s2->splines[0].b &&
 	    s1->splines[0].c == s2->splines[0].c &&
@@ -3145,9 +3150,6 @@ int SplinesIntersect(Spline *s1, Spline *s2, BasePoint pts[9],
 	    s1->splines[1].c == s2->splines[1].c &&
 	    s1->splines[1].d == s2->splines[1].d )
 return( -1 );			/* Same spline. Intersects everywhere */
-
-    t1s[0] = t1s[1] = t1s[2] = t1s[3] = -1;
-    t2s[0] = t2s[1] = t2s[2] = t2s[3] = -1;
 
     min1 = s1->from->me; max1 = min1;
     min2 = s2->from->me; max2 = min2;
