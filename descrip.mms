@@ -3,5 +3,5 @@ all :
 	mms
 	set def [-.gdraw]
 	mms
-	set def [-.pfaedit]
+	set def [-.fontforge]
 	mms
