@@ -1020,6 +1020,7 @@ return( DVChar(dv,event));
       case et_destroy:
 	dv->dv = NULL;
 	free(dv->id.bts);
+	free(dv);
       break;
       case et_mouseup: case et_mousedown:
 	GGadgetEndPopup();
@@ -1056,9 +1057,8 @@ void CVDebugFree(DebugView *dv) {
 	    CVResize(cv);
 	    GDrawRequestExpose(cv->v,NULL,false);
 	}
-	free(dv);
 
-	for ( ss = dv->cv->sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+	for ( ss = cv->sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
 	    for ( sp=ss->first; ; ) {
 		sp->watched = false;
 		if ( sp->next==NULL )
