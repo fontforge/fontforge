@@ -400,6 +400,9 @@ extern void MenuAbout(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuNew(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void MergeKernInfo(SplineFont *sf);
 extern int32 *ParseBitmapSizes(GGadget *g,int msg,int *err);
+#ifdef PFAEDIT_CONFIG_WRITE_PFM
+extern int WritePfmFile(char *filename,SplineFont *sf, int type0);
+#endif
 extern int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype,
 	int fmflags,int res, char *subfontdirectory,struct sflist *sfs);
 extern int SFGenerateFont(SplineFont *sf,int family);

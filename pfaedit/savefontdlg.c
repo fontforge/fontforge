@@ -179,7 +179,10 @@ return( 0 );
 return( ret );
 }
 
-static int WritePfmFile(char *filename,SplineFont *sf, int type0) {
+#ifndef PFAEDIT_CONFIG_WRITE_PFM
+static
+#endif
+int WritePfmFile(char *filename,SplineFont *sf, int type0) {
     char *buf = galloc(strlen(filename)+6), *pt, *pt2;
     FILE *pfm;
     int ret;

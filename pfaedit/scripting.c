@@ -804,6 +804,19 @@ static void bImport(Context *c) {
 	error(c,"Import failed" );
 }
 
+#ifdef PFAEDIT_CONFIG_WRITE_PFM
+static void bWritePfm(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments to WritePfm");
+    if ( c->a.vals[1].type!=v_str )
+	error( c, "Bad type of argument");
+    if ( !WritePfmFile(c->a.vals[1].u.sval,sf,0) )
+	error(c,"Save failed");
+}
+#endif
+
 static void bExport(Context *c) {
     int format,i ;
     BDFFont *bdf;
@@ -1994,6 +2007,9 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "Save", bSave },
     { "Generate", bGenerate },
     { "GenerateFamily", bGenerateFamily },
+#ifdef PFAEDIT_CONFIG_WRITE_PFM
+    { "WritePfm", bWritePfm },
+#endif
     { "Import", bImport },
     { "Export", bExport },
     { "MergeKern", bMergeKern },

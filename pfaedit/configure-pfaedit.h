@@ -46,4 +46,12 @@
 /* #define PFAEDIT_CONFIG_BDF_GLYPH_RANGES				      */
 /*									      */
 
+
+/* Harald Harders would like to be able to generate a PFM file without        */
+/*  creating a font along with it. I don't see the need for this, but he pro- */
+/*  vided a patch. Setting this flag will enable his patch		      */
+/*									      */
+/* #define PFAEDIT_CONFIG_WRITE_PFM					      */
+/*									      */
+
 #endif
