@@ -457,6 +457,13 @@ static char *str_HasVerticalMetrics = "Has Vertical Metrics";
 static char mnemonic_HasVerticalMetrics = 'V';
 static char *str_VOrigin = "Vertical Origin:";
 static char mnemonic_VOrigin = 'O';
+static char str_UniqueIDTitle = "Change UniqueID?"
+static char str_UniqueIDChange = "You have changed this font's name without changing the UniqueID (or XUID).\nThis is probably not a good idea, would you like me to\ngenerate a random new value?";
+static char str_Change = "Change";
+static char mnemonic_Change = 'h';
+static char str_Retain = "Retain";
+static char mnemonic_Retain = 'R';
+
     /* Private info */
 static char *str_PrivateKey = "Private Key";
 static char *str_KeyInPrivate = "Key (in Private dictionary)";
