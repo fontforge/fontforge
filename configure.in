@@ -47,6 +47,7 @@ esac
 
 AC_SEARCH_LIBS(dlopen, dl) dnl some systems have this in libc (Darwin uses dyld)
 AC_SEARCH_LIBS(inet_aton, resolv) dnl some systems have this in libc
+AC_SEARCH_LIBS(libiconv, iconv) dnl linux has iconv in libc, mac has libiconv in libiconv, and a define to map iconv() to libiconv(), so we can't do the obvious check
 
 dnl Is there a better way to add a directory to the include path?
 
