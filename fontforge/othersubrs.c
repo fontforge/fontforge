@@ -34,16 +34,16 @@ const int subrslens[] = { sizeof(subrs0), sizeof(subrs1), sizeof(subrs2),
 	sizeof(subrs3), sizeof(subrs4), sizeof(subrs5), sizeof(subrs6),
 	sizeof(subrs7), sizeof(subrs8), sizeof(subrs9) };
 
-/* Assumption: We always want to do hint substitution (anyway, it's small) */
-/* If we also want flex output use the "othersubrs" array. If no flex the "othersubrsnoflex" */
-/* If we want to do counters, output "othersubrscounters" too */
-/* Finish up with othersubrsend */
-const char *othersubrs[] = {
+static const char *copyright[] = {
 	"% Copyright (c) 1987-1990 Adobe Systems Incorporated.",
 	"% All Rights Reserved.",
 	"% This code to be used for Flex and hint replacement.",
 	"% Version 1.1",
-	"[systemdict /internaldict known",
+	NULL
+};
+
+static const char *othersubrs0[] = {
+	"systemdict /internaldict known",
 	"{1183615869 systemdict /internaldict get exec",
 	"/FlxProc known {save true} {false} ifelse}",
 	"{userdict /internaldict known not {",
@@ -204,8 +204,20 @@ const char *othersubrs[] = {
 	"{{1183615869 userdict /internaldict get exec /FlxProc get exec}}",
 	"ifelse executeonly",
 	"} if",
+	NULL
+};
+
+static const char *othersubrs1[] = {
 	"{gsave currentpoint newpath moveto} executeonly",
+	NULL
+};
+
+static const char *othersubrs2[] = {
 	"{currentpoint grestore gsave currentpoint newpath moveto} executeonly",
+	NULL
+};
+
+static const char *othersubrs3[] = {
 	"{systemdict /internaldict known not",
 	"{pop 3}",
 	"{1183615869 systemdict /internaldict get exec",
@@ -221,60 +233,23 @@ const char *othersubrs[] = {
 	NULL
 };
 
-const char *othersubrsnoflex[] = {
-	"% Copyright (c) 1987-1990 Adobe Systems Incorporated.",
-	"% All Rights Reserved.",
-	"% This code to be used for Hint replacement only.",
-	"% Version 1.1",
-	"[ {} {} {}",
-	"{systemdict /internaldict known not",
-	"{pop 3}",
-	"{1183615869 systemdict /internaldict get exec",
-	"dup /startlock known",
-	"{/startlock get exec}",
-	"{dup /strtlck known",
-	"{/strtlck get exec}",
-	"{pop 3}",
-	"ifelse}",
-	"ifelse}",
-	"ifelse",
-	"} executeonly",
+static const char *othersubrs4_12[] = {
+	"{}",
 	NULL
 };
 
-const char *othersubrscounters[] = {
-	"{}",		/* Other subr 4 */
-	"{}",		/* Other subr 5 */
-	"{}",		/* Other subr 6 */
-	"{}",		/* Other subr 7 */
-	"{}",		/* Other subr 8 */
-	"{}",		/* Other subr 9 */
-	"{}",		/* Other subr 10 */
-	"{}",		/* Other subr 11 */
-	"{}",		/* Other Subr 12, for counter hints */
+static const char *othersubrs13[] = {
 	"{2 {cvi {{pop 0 lt {exit} if} loop} repeat} repeat}",	/* Other Subr 13 for counter hints */
 	NULL
 };
 
-const char *othersubrsnocounters[] = {
-	"{}",		/* Other subr 4 */
-	"{}",		/* Other subr 5 */
-	"{}",		/* Other subr 6 */
-	"{}",		/* Other subr 7 */
-	"{}",		/* Other subr 8 */
-	"{}",		/* Other subr 9 */
-	"{}",		/* Other subr 10 */
-	"{}",		/* Other subr 11 */
-	"{}",		/* Other Subr 12 */
-	"{}",		/* Other Subr 13 */
-	NULL
-};
-
+const char **othersubrs_copyright[] = { copyright };
+const char **othersubrs[] = { othersubrs0, othersubrs1, othersubrs2, othersubrs3,
+	othersubrs4_12, othersubrs4_12, othersubrs4_12, othersubrs4_12, 
+	othersubrs4_12, othersubrs4_12, othersubrs4_12, othersubrs4_12,
+	othersubrs4_12, othersubrs13,
 /* code for other subrs 14-18 must be done at run time as it depends on */
 /*  the number of font instances in the mm set */
-
-const char *othersubrsend[] = {
-	"] ",
 	NULL
 };
 
