@@ -924,13 +924,14 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
     } else {
 	offset = 2+2*cnt;
 	suboffset = 0;
+	max = 0;
 	for ( j=0; j<cnt; ++j ) {
 	    putshort(gpos,offset);
-	    pos = tot = max = 0;
+	    pos = tot = 0;
 	    for ( ap=base[j]->anchor; ap!=NULL ; ap=ap->next )
 		for ( k=0, ac=_ac; k<classcnt; ++k, ac=ac->next ) {
 		    if ( ap->anchor==ac ) {
-			if ( pos<ap->lig_index ) pos = ap->lig_index;
+			if ( ap->lig_index>pos ) pos = ap->lig_index;
 			++tot;
 		    }
 		}
@@ -946,7 +947,7 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 	    for ( ap=base[j]->anchor; ap!=NULL ; ap=ap->next )
 		for ( k=0, ac=_ac; k<classcnt; ++k, ac=ac->next ) {
 		    if ( ap->anchor==ac ) {
-			if ( pos<ap->lig_index ) pos = ap->lig_index;
+			if ( ap->lig_index>pos ) pos = ap->lig_index;
 			aps[k*max+ap->lig_index] = ap;
 		    }
 		}
@@ -2143,7 +2144,7 @@ return;					/* No anchor positioning, no ligature carets */
 		    }
 		    ++l;
 		} while ( l<_sf->subfontcnt );
-		if ( sc==NULL && sc->ttf_glyph!=-1 ) {
+		if ( sc!=NULL && sc->ttf_glyph!=-1 ) {
 		    lastval = gdefclass(sf->chars[i]);
 		    start = last = i;
 		    for ( ; i<sf->charcnt; ++i ) {
