@@ -181,6 +181,7 @@ struct ttfinfo {
     char *chosenname;
 };
 
+#define MAX_TAB	32
 struct tabdir {
     int32 version;	/* 0x00010000 */
     uint16 numtab;
@@ -192,7 +193,11 @@ struct tabdir {
 	uint32 checksum;/* for table */
 	uint32 offset;	/* to start of table in file */
 	uint32 length;
-    } tabs[32];		/* room for all the above tables */
+	FILE *data;
+	uint16 dup_of;
+	uint16 orderingval;
+    } tabs[MAX_TAB];		/* room for all the above tables */
+    struct taboff *ordered[MAX_TAB];
 };
 
 struct glyphhead {
